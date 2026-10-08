@@ -656,13 +656,73 @@ function onLand(){
   const wp = warpAt(x, y);
   if (wp && !(wp.need && !cond(wp.need, false))) { if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return; }
   const pk = objAt(x, y, o => o.kind === 'pickup');
-  if (pk) { S.bag[pk.item] = (S.bag[pk.item] || 0) + pk.n; S.flags['item.' + pk.id] = true; sfx('befriend'); toast('Found ' + itemLabel(pk.item, pk.n) + '!'); save(); }
+  if (pk) {                                  // INVENTORY §8: clamped to the stack cap; the flag is set either way, so nothing loops
+    const r = grantItem(pk.item, pk.n); S.flags['item.' + pk.id] = true; sfx('befriend');
+    if (r.added) toast('Found ' + itemLabel(pk.item, r.added) + '!');
+    if (r.lost) setTimeout(() => toast(BAG_FULL_MSG), r.added ? 1900 : 0);
+    save();
+  }
   if (checkTriggers()) return;
   if (checkSight()) return;
   checkChatter();
 }
-const ITEM_NAMES = { heal_snack: ['Heal Snack', 'Heal Snacks'], befriend_treat: ['Befriend Treat', 'Befriend Treats'] };
-const itemLabel = (id, n) => { const nm = ITEM_NAMES[id] || [id, id]; return n === 1 ? 'a ' + nm[0] : n + ' ' + nm[1]; };
+/* ---------- items (INVENTORY v1 §3): one catalog for the Bag, the Travel Shelf, battle, scene `give` and map pickups ---------- */
+// use: where it works ('battle' and/or 'field'); target: needs a pet; cap: stack limit (enforced on grant, not on load); price in Acorns.
+const ITEMS = {
+  heal_snack:     { name: 'Heal Snack',     plural: 'Heal Snacks',     cap: 20, price: 50,  use: ['battle', 'field'], target: true,  heal: 0.4,  blurb: 'Restores some HP.' },
+  hearty_snack:   { name: 'Hearty Snack',   plural: 'Hearty Snacks',   cap: 10, price: 150, use: ['battle', 'field'], target: true,  heal: 0.75, blurb: 'Restores a lot of HP.' },
+  wake_tonic:     { name: 'Wake Tonic',     plural: 'Wake Tonics',     cap: 5,  price: 400, use: ['battle', 'field'], target: true,  blurb: 'Wakes a napping Walkling.' },
+  befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild Walklings like it.' },
+  energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. NRG +40.' },
+  joy_crumb:      { name: 'Joy Crumb',      plural: 'Joy Crumbs',      cap: 10, price: 40,  use: ['field'],           target: true,  blurb: 'A sweet treat. JOY +20.' },
+};
+const ITEM_ORDER = Object.keys(ITEMS);
+const BAG_FULL_MSG = 'Bag is full; some were left behind.';
+const itemLabel = (id, n) => { const it = ITEMS[id], one = it ? it.name : id, many = it ? it.plural : id; return n === 1 ? 'a ' + one : n + ' ' + many; };
+const acorns = n => n + (n === 1 ? ' Acorn' : ' Acorns');      // INVENTORY §2: the save field stays `money`
+const itemCount = id => (S && S.bag && S.bag[id]) || 0;
+const warnedItems = new Set();
+// Grant n of an item, clamped to the room left under its cap (overflow is lost). Unknown ids: a no-op that warns once.
+function grantItem(id, n){
+  const it = ITEMS[id]; n = Math.max(0, n | 0);
+  if (!it) { if (!warnedItems.has(id)) { warnedItems.add(id); console.warn('Walklings: unknown item id "' + id + '" (nothing given).'); } return { added: 0, lost: 0, unknown: true }; }
+  const added = Math.min(n, Math.max(0, it.cap - itemCount(id)));
+  if (added) S.bag[id] = itemCount(id) + added;
+  return { added, lost: n - added };
+}
+function takeItem(id){ const c = itemCount(id) - 1; if (c > 0) S.bag[id] = c; else delete S.bag[id]; }
+// Why an item can't be used right now (null = it can). ctx 'battle' | 'field'; p = the target pet (if the item needs one).
+function itemRefusal(id, p, ctx){
+  const it = ITEMS[id];
+  if (!it) return "Can't use that here yet.";
+  if (itemCount(id) < 1) return 'Your bag is empty.';
+  if (id === 'befriend_treat') {
+    if (ctx !== 'battle' || !battle.on) return 'Save it for a wild battle.';
+    if (battle.kind !== 'wild') return "Can't use that here.";
+    if (battle.treat) return "It's already nibbling a treat.";
+    return null;
+  }
+  if (!it.use.includes(ctx)) return "Can't use that here yet.";
+  if (it.target && !p) return 'Pick a Walkling first.';
+  const nm = petName(p);
+  if (it.heal) { if (isFainted(p)) return nm + ' needs a proper rest.'; if (hpOf(p) >= maxHpOf(p)) return nm + ' is already at full HP.'; }
+  if (id === 'wake_tonic' && !isFainted(p)) return nm + " isn't napping.";
+  if (id === 'energy_sip' && p.energy >= 98) return nm + ' is already bright-eyed.';
+  if (id === 'joy_crumb' && p.happy >= 98) return nm + ' is already beaming.';
+  return null;
+}
+// INVENTORY §6: one function for the Bag and battle. Writes bag, hpNow/faintUntil/energy/happy (and the battle's treat) only.
+function useItem(id, petId, ctx = 'field'){
+  const p = petId ? petById(petId) : null, no = itemRefusal(id, p, ctx);
+  if (no) return { ok: false, msg: no };
+  const it = ITEMS[id]; takeItem(id);
+  if (it.heal) { setMyHp(p, hpOf(p) + Math.ceil(it.heal * maxHpOf(p))); return { ok: true, msg: petName(p) + ' ate a ' + it.name + ' and feels better!' }; }
+  if (id === 'wake_tonic') { delete p.faintUntil; setMyHp(p, Math.ceil(0.25 * maxHpOf(p))); return { ok: true, msg: petName(p) + ' blinks awake!' }; }
+  if (id === 'energy_sip') { p.energy = clamp(p.energy + 40, 0, 100); return { ok: true, msg: petName(p) + ' perks right up! +NRG' }; }
+  if (id === 'joy_crumb') { p.happy = clamp(p.happy + 20, 0, 100); return { ok: true, msg: petName(p) + ' munches happily. +JOY' }; }
+  if (id === 'befriend_treat') { battle.treat = true; return { ok: true, msg: foeName(curFoe()) + ' sniffs the treat. It looks friendlier!' }; }
+  return { ok: false, msg: "Can't use that here yet." };
+}
 // Triggers (§4): fire when a step ends within Manhattan r; once until the keeper ends a step outside the area (or the map changes).
 function checkTriggers(){
   const x = S.world.x, y = S.world.y;
@@ -1154,7 +1214,7 @@ async function execStep(st){
       return;
     }
     case 'setFlag': { const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; }); return; }
-    case 'give': pend(() => { S.bag[a] = (S.bag[a] || 0) + (b | 0); }); return;
+    case 'give': pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
     case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook') S.world.respawn = r; }); return; }
     case 'lookPick': {
       sc.skip = false;
@@ -1863,12 +1923,10 @@ async function playerAction(a, id){
     await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(petById(a.id)) }), id);
     B.foePlan = aiPick(); return false;                    // the foe re-reads the new target's type (no peeking at the action itself)
   }
-  if (a.kind === 'bag') {
-    S.bag[a.item] = (S.bag[a.item] || 0) - 1; if (S.bag[a.item] <= 0) delete S.bag[a.item];
-    if (a.item === 'heal_snack') {
-      const q = petById(a.target) || p; setMyHp(q, hpOf(q) + Math.ceil(0.4 * maxHpOf(q))); sfx('heal'); renderBattleCards(); save();
-      await say(petName(q) + ' ate a Heal Snack and feels better!', id);
-    } else if (a.item === 'befriend_treat') { B.treat = true; sfx('heal'); await say(foeName(f) + ' sniffs the treat. It looks friendlier!', id); }
+  if (a.kind === 'bag') {                                // INVENTORY §3.2: checked before the turn, applied here (uses the turn)
+    const r = useItem(a.item, a.target || null, 'battle');
+    sfx(r.ok ? 'heal' : 'denied'); renderBattleCards(); save();
+    await say(r.msg, id);
     return false;
   }
   return false;
@@ -2010,21 +2068,27 @@ function swapSheet(forced){
   });
   return openSheet(forced ? 'Who goes next?' : 'Swap to which Walkling?', items, forced ? null : 'BACK');
 }
+// The pet list for an item that needs a target (party, HP bars, FAINTED Nm / TIRED badges); `pre` is listed first and marked.
+function itemTargetSheet(id, pre){
+  const it = ITEMS[id], order = S.party.slice().sort((a, b) => (b.id === pre) - (a.id === pre));
+  const title = id === 'wake_tonic' ? 'Wake which Walkling?' : it.heal ? 'Heal which Walkling?' : 'Give it to which Walkling?';
+  return openSheet(title, order.map(q => ({ label: petName(q) + '  Lv ' + levelOf(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (hpBadge(q) ? '  ' + hpBadge(q) : '')
+    + (id === 'energy_sip' ? '  NRG ' + Math.round(q.energy) : id === 'joy_crumb' ? '  JOY ' + Math.round(q.happy) : ''), hp: hpOf(q) / maxHpOf(q), value: q.id, cls: q.id === pre ? 'sh-pre' : '' })), 'BACK');
+}
+// Battle BAG (INVENTORY §3.2): the catalog in order (count >= 1); a refusal says why and keeps the item and the turn.
 async function bagSheet(){
-  const B = battle, ids = Object.keys(S.bag || {}).filter(k => S.bag[k] > 0);
+  const B = battle, ids = ITEM_ORDER.filter(k => itemCount(k) > 0);
+  const refuse = async msg => { sfx('denied'); B.state = 'MSG'; setPanel('busy'); await say(msg); if (B.on) toChoose(); };
   if (!ids.length) { sfx('denied'); B.state = 'MSG'; await say('Your bag is empty.'); if (B.on) toChoose(); return; }
-  const NAMES = { heal_snack: 'Heal Snack', befriend_treat: 'Befriend Treat' };
-  const pick = await openSheet('Bag', ids.map(k => ({ label: (NAMES[k] || k.replace(/_/g, ' ')) + '  x' + S.bag[k], value: k })), 'BACK');
+  const pick = await openSheet('Bag', ids.map(k => ({ label: ITEMS[k].name + '  x' + itemCount(k), sub: ITEMS[k].blurb, value: k })), 'BACK');
   if (!pick || !B.on) return;
-  if (pick === 'heal_snack') {
-    const tgt = await openSheet('Heal which Walkling?', S.party.map(q => ({ label: petName(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (hpBadge(q) ? '  ' + hpBadge(q) : ''), hp: hpOf(q) / maxHpOf(q), value: q.id })), 'BACK');
-    if (!tgt || !B.on) return;
-    const q = petById(tgt);
-    if (isFainted(q)) { sfx('denied'); B.state = 'MSG'; setPanel('busy'); await say(petName(q) + ' needs a proper rest.'); if (B.on) toChoose(); return; }   // item not used
-    return resolveTurn({ kind: 'bag', item: pick, target: tgt });
-  }
-  if (pick === 'befriend_treat' && B.kind === 'wild') return resolveTurn({ kind: 'bag', item: pick });
-  sfx('denied'); B.state = 'MSG'; setPanel('busy'); await say("Can't use that here yet."); if (B.on) toChoose();
+  const it = ITEMS[pick];
+  if (!it.use.includes('battle')) return refuse("Can't use that here yet.");
+  let tgt = null;
+  if (it.target) { tgt = await itemTargetSheet(pick, B.me.petId); if (!tgt || !B.on) return; }
+  const no = itemRefusal(pick, tgt ? petById(tgt) : null, 'battle');
+  if (no) return refuse(no);
+  return resolveTurn({ kind: 'bag', item: pick, target: tgt });
 }
 
 /* --- end of battle: lines, RESULTS (§7), CLOSE --- */
@@ -2062,7 +2126,7 @@ async function results(result, id){
     S.money = (S.money || 0) + money; S.flags['trainer.' + B.trainerId] = true;
     if (t.hall && t.seal) { S.seals[t.seal] = Date.now(); }
     save();
-    await say(playerName() + ' got ' + money + ' coins!', id); if (!alive(id)) return;
+    await say(playerName() + ' got ' + acorns(money) + '!', id); if (!alive(id)) return;
     if (t.hall && t.seal) { showSealCard(t.seal); sfx('evoFanfare'); sfx('levelup', 0.9); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
   }
   if (t && t.oneShot && (result === 'win' || result === 'tired')) {      // §6: Rook never repeats; the scene reads the result
@@ -2741,7 +2805,9 @@ function boot(){
       for (let i = 0; i < d.length; i += 4) if (d[i + 3]) o.add('#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('')); return [...o]; }, get fadeQueue(){ return fadeQ.slice(); },
     winBattle: () => { if (battle.on) finish('win', battle.id); }, loseBattle: () => { if (battle.on) finish('tired', battle.id); },
     healTeam, setFaint: (min = 20) => { const p = pet(); if (!p) return; if (min <= 0) { delete p.faintUntil; delete p.hpNow; } else faintPet(p, Date.now() - (20 - min) * 60000); updateHUD(); save(); },
-    giveItem: (id, n = 1) => { S.bag[id] = (S.bag[id] || 0) + Math.max(0, n | 0); save(); return S.bag[id]; },
+    giveItem: (id, n = 1) => { n |= 0; const c = Math.max(0, itemCount(id) + n); if (c) S.bag[id] = c; else delete S.bag[id]; save(); return c; },   // debug: no cap; a negative n trims (INVENTORY §6)
+    useItem: (id, petId, ctx = 'field') => { const r = useItem(id, petId || (pet() && pet().id), ctx); if (r.ok) { updateHUD(); save(); } return r; },
+    grantItem: (id, n) => { const r = grantItem(id, n); save(); return r; },
     setMoney: n => { S.money = Math.max(0, n | 0); save(); return S.money; },
     battle,
     setMoves: ids => { const p = pet(); if (!p) return; p.moves = (ids || []).filter(id => MOVES[id]).slice(0, 4); save(); return p.moves.slice(); },

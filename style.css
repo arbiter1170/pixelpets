@@ -388,3 +388,4 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 
 /* Settings: the build id (tools/bump_build.py writes window.BUILD), small and dim at the bottom */
 .set-build{margin:10px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-item.sh-pre{box-shadow:inset 0 0 0 3px var(--y)}

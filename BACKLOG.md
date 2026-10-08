@@ -22,7 +22,8 @@ This order applies after the Kindle Wild rename, which shipped as 9cc836d and 9d
    - **Progress:** Trial Hall #1 (Master Fen, Fernbrook Seal, Seal card) is built with Phase M (see item 2). Later Halls wait for their maps.
 4. **Pacing fix, revisited.** The original "a full Walkling starves too fast" problem, tuned so a full Walkling lasts long enough and players come back daily. The first pass is live (item 1 below: 16h/20h/24h real-time decay). What's left: re-tune against real play, the harsh comeback floor, and how chores grow with a large collection (see Balance).
 
-Inventory (INVENTORY v0.1) and online saves (ONLINE_SAVES_SCOPE) were drafted to come after Phase M; Vincent sets where they fit in this order.
+**Locked build order after Phase M (Vincent, Oct 8):** INVENTORY v1.0 -> online saves (ONLINE_SAVES_SCOPE) -> Route 2 (ACT1_ROUTE2).
+   - **Progress (INVENTORY 1/3, items + Acorns):** the §3 catalog (Heal Snack, Hearty Snack, Wake Tonic, Befriend Treat, Energy Sip, Joy Crumb; caps and prices), one `useItem(id, petId, ctx)` for battle and field with the spec's refusals, the battle BAG now lists the catalog (treat once per wild battle, refused in trainer battles; care items "Can't use that here yet."; Wake Tonic wakes a benched Fainted pet at ceil(25%) HP and uses the turn), scene `give` / map pickups clamp to the cap ("Bag is full; some were left behind."; the pickup flag is set either way), unknown ids warn once, `normalizeV2` drops bad bag counts and keeps unknown ids (still v2). Money reads Acorns ("Mo got 420 Acorns!"). Next: the Bag screen (Walk + Pet tab), then the Travel Shelf.
 
 ## Top 3
 

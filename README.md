@@ -91,8 +91,10 @@ Levels, types and stats (`stats.js`):
 Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text in `moves.js`):
 - Bump into a wild creature (or tap it) and a turn-based battle opens: "A wild X appeared!", "Go, <partner>!".
   Your partner leads (or the first party Walkling that can battle). Each turn pick FIGHT (up to 4 moves with limited
-  uses; with none left a Walkling uses Wobble), BEFRIEND, SWAP, BAG (Heal Snack, Befriend Treat) or RUN. Faster Walklings act
+  uses; with none left a Walkling uses Wobble), BEFRIEND, SWAP, BAG (any battle item you carry) or RUN. Faster Walklings act
   first; damage uses ATK/DEF, level, type, same-type bonus, mood, stat stages (-2..+2) and rare critical hits.
+- Items (INVENTORY v1): Heal Snack (+40% HP), Hearty Snack (+75% HP), Wake Tonic (wakes a napping Walkling early at 25% HP),
+  Befriend Treat (wild battles, once per battle), Energy Sip (NRG +40) and Joy Crumb (JOY +20). Trainers pay Acorns.
 - Type hints start hidden: once you've seen a move's effect on a type, its button shows a 2x / ½ / 0 badge for
   that type (seen pairs are saved in `dex.hits`).
 - BEFRIEND works from turn 1 with the timing bar (3 tries); the target zone is smaller at full HP and grows as
@@ -106,7 +108,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
   Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
   then the summon lines); after that only a bump starts a rematch until you win. Master Fen's Trial Hall in Fernbrook
-  opens once the orchard is cleared: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 coins, 2 Heal Snacks).
+  opens once the orchard is cleared: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   evolving (each line's evolution move, then any level moves of the new form). Older saves get missed evolution
   moves on their next visit ("<name> remembers something from evolving!").

@@ -179,6 +179,8 @@ const PPSave = (() => {
     fill(w, 'x', Number.isInteger, 3); fill(w, 'y', Number.isInteger, 3);
     fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || x === 'hearthmoor' || x === 'fernbrook', null);
     for (const k of ['bag', 'seals', 'flags']) fill(s, k, isObj, {});
+    // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
+    for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];
     fill(s, 'money', x => Number.isInteger(x) && x >= 0, 0);
     fill(s, 'eggs', isObj, d.eggs);
     fill(s.eggs, 'incubators', x => Array.isArray(x) && x.length > 0, [{ egg: null }]); fill(s.eggs, 'held', Array.isArray, []);
