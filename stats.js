@@ -43,7 +43,10 @@ const STAT_RULES = {
   STAGE_MULT: [1, 1.25, 1.5], TRAINER_MULT: 1.5, LEVEL_DIFF: { per: 0.1, min: 0.25, max: 1.5 },
   SAME_TYPE: 1.25, CRIT: { chance: 1 / 16, spiritedChance: 1 / 10, mult: 1.5 }, RAND: [0.90, 1.00], DMG_DIV: 60, GLOW: 1.05,
   MOOD: { hungryAtk: 0.9, sulkySpd: 0.9, drowsyDef: 0.9, low: 25, spirited: 80, glowCare: 75, minBattleNrg: 10 },
-  COST: { nrg: 3, food: 2, tiredNrg: 5, winJoy: 3 }, REGEN: { pctPer10Min: 10, restPct: 50 },
+  COST: { nrg: 3, food: 2, tiredNrg: 5, winJoy: 3 }, REGEN: { pctPer10Min: 10, restPct: 50 },   // tiredNrg = the faint cost (id kept)
+  // v1.1 / BATTLE §7.2: real-time nap after fainting. wakeFull = BATTLE §7.3 Q2 (default false: the pet wakes with whatever
+  // HP regen gave it during the nap, ~20%; true = wake at full HP). One constant, easy to flip.
+  FAINT: { minutes: 20, tiredBelow: 0.25, wakeFull: false },
   WILD_LEVELS: { proto: [[2, 5], [6, 8]] },   // until spawn tables exist: stage 0 -> 2-5, stage 1+ -> 6-8
   // Per-species stage-0 range on the proto map for the CREATURES_SLICE lines (their Route 1 rows). Stage 1+ stays 6-8.
   WILD_LEVELS_SPECIES: { proto: { beetle: [2, 4], mole: [3, 5], crab: [3, 5], moth: [2, 4], vane: [4, 6], dormouse: [3, 5] } },
@@ -92,9 +95,28 @@ function effStat(b, k, stageMult = 1){
 }
 const maxHpOf = p => { const s = statsAt(formIdOf(p), levelOf(p)); return s ? s.hp : 1; };
 const hpOf = p => Number.isFinite(p.hpNow) ? Math.min(p.hpNow, maxHpOf(p)) : maxHpOf(p);
-const isTired = p => Number.isFinite(p.hpNow) && p.hpNow <= 0;
-// §7. Can be sent out: has HP and NRG >= 10.
-const canBattle = p => !!p && !isTired(p) && p.energy >= STAT_RULES.MOOD.minBattleNrg;
+// BATTLE §7.2 (v0.3) FAINT_RULES: a pet at 0 HP in battle is Fainted and naps for FAINT.minutes of real time (`faintUntil`).
+const FAINT_RULES = STAT_RULES.FAINT;
+const isFainted = (p, now = Date.now()) => !!p && Number.isFinite(p.faintUntil) && p.faintUntil > now;
+const faintMinLeft = (p, now = Date.now()) => isFainted(p, now) ? Math.ceil((p.faintUntil - now) / 60000) : 0;
+function faintPet(p, now = Date.now()){ p.hpNow = 0; p.faintUntil = now + FAINT_RULES.minutes * 60000; }
+// REST clears the nap. kind 'pet' = Pet-tab REST (+50% max HP via restHp); 'full' = Lantern House / interior `rest` step.
+function restPet(p, kind){ delete p.faintUntil; if (kind === 'full') delete p.hpNow; else restHp(p); }
+// Badge text: 'FAINTED 12m' while napping, else 'TIRED' below 25% of max HP, else null (the caller decides GLOWING).
+function hpBadge(p, now = Date.now()){
+  if (isFainted(p, now)) return 'FAINTED ' + faintMinLeft(p, now) + 'm';
+  return hpOf(p) < FAINT_RULES.tiredBelow * maxHpOf(p) ? 'TIRED' : null;
+}
+// An expired nap: drop the stamp (and, if §7.3 Q2 says so, wake at full HP). Returns true if it changed anything.
+function wakeIfRested(p, now = Date.now()){
+  if (!p || p.faintUntil == null || isFainted(p, now)) return false;
+  delete p.faintUntil; if (FAINT_RULES.wakeFull) delete p.hpNow;
+  return true;
+}
+// The TIRED badge test (v1.1): awake but under 25% of max HP. The follower droop keys off isFainted.
+const isTired = p => !!p && !isFainted(p) && hpOf(p) < FAINT_RULES.tiredBelow * maxHpOf(p);
+// §7. Can be sent out: not Fainted, has HP and NRG >= 10.
+const canBattle = (p, now = Date.now()) => !!p && !isFainted(p, now) && hpOf(p) > 0 && p.energy >= STAT_RULES.MOOD.minBattleNrg;
 // A battle-ready snapshot of a pet: {form, species, stage, type, level, maxHp, hp, atk, def, spd, mood}.
 function battlerOf(p){
   const form = formIdOf(p), level = levelOf(p), s = statsAt(form, level) || { hp: 1, atk: 1, def: 1, spd: 1 };
@@ -120,7 +142,7 @@ function regenHp(p, sec){
   const max = maxHpOf(p), hp = Math.min(max, p.hpNow + max * STAT_RULES.REGEN.pctPer10Min / 100 * sec / 600);
   if (hp >= max - 1e-9) delete p.hpNow; else p.hpNow = hp;
 }
-// REST: +50% of max HP, clears Tired. Returns true if it healed anything.
+// REST: +50% of max HP. Returns true if it healed anything (restPet also clears Fainted).
 function restHp(p){
   if (!Number.isFinite(p.hpNow)) return false;
   const max = maxHpOf(p), hp = p.hpNow + max * STAT_RULES.REGEN.restPct / 100;

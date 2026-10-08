@@ -41,7 +41,7 @@ const PPSave = (() => {
 
   function defaultStateV2(now = Date.now()){
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
-      dex: { seen: {}, caught: {}, legacy: [] }, steps: 0, world: { map: 'proto', x: 3, y: 3, facing: 'down', respawn: null },
+      dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: { map: 'proto', x: 3, y: 3, facing: 'down', respawn: null },
       bag: {}, money: 0, seals: {}, flags: {}, eggs: { incubators: [{ egg: null }], held: [] },
       settings: { textSpeed: 'normal', battleAnims: true, follower: true },
       player: { name: null, look: null },
@@ -68,6 +68,21 @@ const PPSave = (() => {
     else if (q.bx > BX_CAP) q.bx = BX_CAP;
     // TYPES_STATS §7: current HP, optional (absent = full). Bad values or full HP -> absent.
     if (has(q, 'hpNow') && (!fin(q.hpNow) || q.hpNow < 0 || q.hpNow >= maxHpOf(q))) delete q.hpNow;
+    // BATTLE v0.3 §7.2 / SAVE_V2 §3.2: the faint nap stamp. Bad -> delete; > 20 min ahead -> now + 20 min; no hpNow -> delete.
+    if (has(q, 'faintUntil')) {
+      const nap = (typeof STAT_RULES === 'object' && STAT_RULES.FAINT ? STAT_RULES.FAINT.minutes : 20) * 60000, t = Date.now();
+      if (!fin(q.faintUntil) || q.faintUntil <= 0 || !has(q, 'hpNow')) delete q.faintUntil;
+      else if (q.faintUntil > t + nap) q.faintUntil = t + nap;
+    }
+    // BATTLE §3.3/§3.4: known moves (<= 4) and the stages whose evolution move was offered. Additive, no version bump.
+    if (typeof MOVES === 'object' && typeof defaultMoves === 'function') {
+      const ok = Array.isArray(q.moves) && q.moves.length >= 1 && q.moves.length <= 4 && q.moves.every(m => typeof m === 'string' && MOVES[m] && !MOVES[m].fallback) && new Set(q.moves).size === q.moves.length;
+      const filled = !ok;
+      if (filled) q.moves = defaultMoves(formId(q.species, q.stage), levelOf(q));
+      const ev = q.evoMoves;
+      if (!(Array.isArray(ev) && ev.every(k => k === 1 || k === 2))) q.evoMoves = filled ? Array.from({ length: q.stage }, (_, i) => i + 1) : [];
+      q.evoMoves = [...new Set(q.evoMoves)].filter(k => k <= q.stage).sort();
+    }
     return q;
   }
   const formId = (species, stage) => species + '/' + stage;
@@ -116,6 +131,7 @@ const PPSave = (() => {
     fill(s, 'partnerId', x => x === null || typeof x === 'string', null);
     fill(s, 'dex', isObj, d.dex);
     fill(s.dex, 'seen', isObj, {}); fill(s.dex, 'caught', isObj, {}); fill(s.dex, 'legacy', Array.isArray, []);
+    fill(s.dex, 'hits', isObj, {});                    // BATTLE type hints: "moveId>TYPE" -> multiplier you have seen
     fill(s, 'steps', x => Number.isInteger(x) && x >= 0, fin(s.steps) && s.steps >= 0 ? Math.floor(s.steps) : 0);
     fill(s, 'world', isObj, d.world);
     const w = s.world;

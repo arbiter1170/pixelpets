@@ -70,6 +70,16 @@ const PPSound = (() => {
                        seq(t, [48, 52, 55, 60], 0.12, 0.13, 'triangle', 0.5); tone(48, t + 0.5, 0.6, 'triangle', 0.5); },
     levelup:  t => { tone(84, t, 0.08, 'triangle', 0.45); tone(91, t + 0.08, 0.22, 'triangle', 0.45); },
     cap:      t => seq(t, [88, 83, 88], 0.09, 0.2, 'triangle', 0.3),
+    // BATTLE §8
+    hit:      t => { noise(t, 0.08, 0.35, 1400); tone(f(180), t, 0.08, 'square', 0.12, 90); },
+    hitStrong:t => { noise(t, 0.14, 0.45, 2200); tone(f(220), t, 0.14, 'square', 0.14, 70); tone(f(110), t + 0.05, 0.12, 'triangle', 0.5, 55); },
+    hitWeak:  t => { noise(t, 0.05, 0.18, 700); tone(f(150), t, 0.05, 'triangle', 0.35, 110); },
+    statUp:   t => seq(t, [67, 71, 74, 79], 0.05, 0.07, 'triangle', 0.4),
+    statDown: t => seq(t, [79, 74, 71, 67], 0.05, 0.07, 'triangle', 0.4),
+    heal:     t => { tone(f(500), t, 0.18, 'triangle', 0.4, 900); tone(84, t + 0.18, 0.12, 'triangle', 0.3); },
+    tired:    t => { tone(f(440), t, 0.35, 'triangle', 0.45, 140); noise(t + 0.2, 0.15, 0.08, 600); },
+    win:      t => { seq(t, [72, 76, 79, 84], 0.09, 0.1, 'square', 0.12); tone(88, t + 0.36, 0.3, 'square', 0.12); seq(t, [48, 55, 60], 0.12, 0.12, 'triangle', 0.45); },
+    learn:    t => seq(t, [76, 81, 86], 0.08, 0.1, 'triangle', 0.3),          // quieter than levelup
   };
 
   function play(name, delay){

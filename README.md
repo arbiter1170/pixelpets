@@ -11,24 +11,30 @@ Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
 
 Touch: bottom tabs (Pet / Walk / Pets / Friends); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
-Keyboard (bonus): Arrows/WASD walk, 1-4 tabs, Space = Befriend in an encounter.
-Sound: the speaker button in the header mutes/unmutes (remembered in `pixelpets.mute`).
+Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
+Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
+Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Follower on/off, Change look, and Start over.
 
 Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off). A small
 DBG tag shows in the header. Only in debug mode:
-- Keys: E = force-evolve current partner, G = force a wild encounter (species weighted by the current area),
-  F = toggle fast mode.
+- Keys: E = force-evolve current partner, G = force a wild battle (species weighted by the current area),
+  H = heal the whole team (clears HP loss and naps), F = toggle fast mode.
 - Fast mode (below) and the "Pick a place" presets in the Walk badge card.
 - Cheat console hooks: `PixelPets.giveXp(50)` (growth XP, ignores the caps), `PixelPets.giveBx(100)` (battle XP,
-  raises the Level), `PixelPets.resetDailyCaps()` (clears today's
+  raises the Level; `giveBx(100, true)` also queues the move-learn prompts), `PixelPets.resetDailyCaps()` (clears today's
   care and explore XP for the partner), `forceEvolve()`, `forceEncounter()`, `setFast()`, `setEnv()`,
   `spawnWild()`, `clearWild()`, `autoWild()`, `pickSpecies(tags?)`, `pickStage()`, plus live `state`, `enc` and `walk`.
+  Battle: `forceBattle(form?, level?)` (e.g. `forceBattle('stone/0', 4)`), `forceTrainer('route1_pia' | 'hall1_fen')`
+  (false once beaten), `winBattle()`, `loseBattle()`, `setHp(n)`, `healTeam()`, `setFaint(min = 20)` (0 wakes the
+  partner), `giveItem('heal_snack' | 'befriend_treat', n)`, `setMoney(n)`, `setMoves([ids])`, `clearEvoMoves()`,
+  `aiPick()` and the live `battle` object.
 Without debug those hooks are inert (they do nothing and return `undefined`), a stored fast/place choice is
 ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only hooks always work: `env`,
 `wild`, `spawnOdds(tags?)`, `cooldownLeft(act)`, `careXpToday`, `exploreXpToday`, `rates`, `fast`, `debug`,
 `muted`, `careGain(base, value)`, `refreshEnv()`, `showTab(name)`, `typeMult(attType, defType)`, `statsAt(formId, level)`,
 `openStats(petId?)` / `closeStats()` / `statsCard` (the stats card), `petScene` (Pet tab backdrop, sky and tags),
-`keeper` (tile, facing, walk frame, look, name) and `follower` (shown, tile, facing, pet id, tired, bob).
+`keeper` (tile, facing, walk frame, look, name), `follower` (shown, tile, facing, pet id, tired, fainted, bob, droop),
+`moves()` (the move table), `learnset(form)`, `defaultMoves(form, level)`, `befriendWidth(...)` and `battleLine(key, vars)`.
 Debug only: `setMapBackdrop('town'|'route'|'meadow'|'grove'|null)` sets the current map's backdrop to preview it.
 
 Stat pacing: FOOD, JOY and NRG drain in real time for every pet you own (not just the partner).
@@ -37,7 +43,7 @@ zone (<25) after about 12h / 15h / 18h; JOY drains twice as fast while FOOD is u
 While you're away (closed app or background tab) the same rates apply with no time cap, but
 away-time never pushes a stat below 10.
 
-Care balance: each pet has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 30 min),
+Care balance: each pet has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 15 min),
 saved with the pet so reloading doesn't reset it. A button on cooldown greys out and shows the time
 left; tapping it explains the wait. Gains shrink as the stat fills, band by band: the part of a gain
 that lands below 50 counts in full, between 50 and 80 at half, above 80 at a quarter (FEED +25, PLAY +20 joy,
@@ -48,34 +54,60 @@ Daily XP caps (per pet, reset at local midnight):
 - Explore XP: up to 30 a day, shared by walking (1 XP per 5 steps; leftover steps carry over, even
   across sessions) and befriending (+5, or whatever still fits under the cap). Befriending a pet
   always works, even at the cap; only the XP stops.
-- Walking cost: each step costs the partner 0.16 NRG and 0.15 FOOD (`STEP_NRG` / `STEP_FOOD` in `game.js`),
-  so 100 steps = 16 NRG and 15 FOOD. Below 1 NRG it's too tired to walk until it RESTs.
+- Walking cost: each step costs the partner 0.15 FOOD (`STEP_FOOD` in `game.js`); NRG is not drained by walking
+  (`STEP_NRG` = 0), so you can keep exploring even when energy is low. FOOD still drops 15 per 100 steps.
 So a pet can earn at most 55 XP a day: stage 2 (40 XP) on day 1 and stage 3 (120 XP) around day 3
 for a player who maxes both caps, or day 2 and day 5 with care only. The Pet tab shows
 "Today: care XP 12/25 · explore XP 8/30"; the Walk tab shows the same explore count as TODAY 8/30.
 A counter turns green when maxed.
 
-Levels, types and stats (`stats.js`; battles themselves come in a later build):
+Levels, types and stats (`stats.js`):
 - Two progress tracks per pet. **Growth XP** (`xp`, the GROW bar) comes from care and exploring, is
-  daily-capped as above and drives evolution (40 / 120, plus care). **Battle XP** (`bx`) will come only from
-  battles, is not capped per day and sets the **Level** shown in the header and on the Pets tab
-  (`bx` for level L = 4 x (L-1)^2, Lv 1-50). Care and exploring never change the Level, and battles will never
+  daily-capped as above and drives evolution (40 / 120, plus care). **Battle XP** (`bx`) comes only from
+  battles (wins and befriends), is not capped per day and sets the **Level** shown in the header and on the Pets tab
+  (`bx` for level L = 4 x (L-1)^2, Lv 1-50). Care and exploring never change the Level, and battles never
   give growth XP. The level-up chime plays when battle XP raises the Level ("<name> grew to Lv N!").
 - Starters begin at Lv 5. Wild creatures on the map have a level (2-5, or 6-8 for the rare second forms) and
   join at that level when befriended. The six newer lines use their own first-form ranges (Pomlet and
   Fuzzwick 2-4, Loamlet, Clinkit and Dozmouse 3-5, Vanelet 4-6; second forms still 6-8). Pets from older saves start at their old displayed level
   (1 + XP/10) kept between Lv 5 and Lv 10.
 - 4 battle stats (HP, ATK, DEF, SPD) per form from base stats and level; one type per line (the `type` in
-  `sprites.js`) with an 8x8 type chart (2x / 0.5x, and VOLT can't hurt STONE). Damage, battle XP, mood
-  (Hungry / Sulky / Drowsy / Spirited / Glowing from FOOD/JOY/NRG) and "too sleepy to battle" (NRG < 10) are
-  ready for the battle build.
+  `sprites.js`) with an 8x8 type chart (2x / 0.5x, and VOLT can't hurt STONE). Mood (Hungry / Sulky / Drowsy /
+  Spirited / Glowing from FOOD/JOY/NRG) changes battle stats; a pet with NRG under 10 is too sleepy to battle.
 - HP: a pet's current HP (`hpNow`, absent = full) comes back at 10% of max every 10 real minutes, also while
-  away; REST restores half of max HP and clears Tired (0 HP). Nothing lowers HP until battles exist.
+  away (paused during a battle). REST restores half of max HP and wakes a Fainted pet.
+- Fainted and TIRED: a pet knocked to 0 HP in battle is **Fainted** for a 20-minute real-time nap (`faintUntil`
+  in the save; `STAT_RULES.FAINT` in `stats.js`). It can't battle or PLAY, droops on the Walk map and shows
+  "FAINTED 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
+  (and not Fainted) a pet shows **TIRED**. The badge (FAINTED, else TIRED, else GLOWING) shows on the stats card,
+  the Pet scene and the Pets tab.
 - Stats card: tap STATS (top-left of the Pet tab scene) or any pet on the Pets tab. It shows the type badge, Level,
-  GROW left to the next form, HP now/max with a TIRED or GLOWING tag, HP/ATK/DEF/SPD at the pet's level with bars
+  GROW left to the next form, HP now/max with a FAINTED, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the pet's level with bars
   scaled to the highest value of that stat among all 42 forms at the same level, and one type-chart line
-  ("Strong vs X · Weak to Y"). No moves until battles ship. It's an overlay (tabs lock, decay pauses); CLOSE, a
+  ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
   tap outside it or Escape closes it. Any tab can open it with a pet id (`openStatsCard(id)` in `game.js`).
+
+Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text in `moves.js`):
+- Bump into a wild creature (or tap it) and a turn-based battle opens: "A wild X appeared!", "Go, <partner>!".
+  Your partner leads (or the first party pet that can battle). Each turn pick FIGHT (up to 4 moves with limited
+  uses; with none left a pet uses Wobble), BEFRIEND, SWAP, BAG (Heal Snack, Befriend Treat) or RUN. Faster pets act
+  first; damage uses ATK/DEF, level, type, same-type bonus, mood, stat stages (-2..+2) and rare critical hits.
+- Type hints start hidden: once you've seen a move's effect on a type, its button shows a 2x / ½ / 0 badge for
+  that type (seen pairs are saved in `dex.hits`).
+- BEFRIEND works from turn 1 with the timing bar (3 tries); the target zone is smaller at full HP and grows as
+  the foe gets hurt (a Befriend Treat helps). A befriended creature keeps its moves and counts as a defeat for
+  battle XP. A wild creature knocked to 0 HP faints and wanders off; it can't be befriended. RUN always works
+  if you're at least as fast, otherwise the odds depend on speed and rise with every failed try.
+- After a battle every pet that took part pays NRG 3 and FOOD 2 (5 more NRG if it fainted), winners gain +3 JOY,
+  and pets that fought share the battle XP. If your whole team faints you wake at the start point with your pets
+  still hurt and their nap timers kept.
+- Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
+  "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
+  Route trainer Pia and Hall Keeper Fen (Fernbrook Seal) are in the game data; placing them on maps comes with the
+  next maps phase, so for now they're reachable through the debug `forceTrainer()` hook.
+- Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
+  evolving (each line's evolution move, then any level moves of the new form). Older saves get missed evolution
+  moves on their next visit ("<name> remembers something from evolving!").
 
 Keeper and follower (MAPS_SLICE Phase K): you walk the map as a keeper, a 16x16 person drawn in 3 layers (body,
 outfit, hair; art in `keeper.js`, copied from Design's `keeper_art.js`) with 4 facings (left mirrors right) and 2
@@ -84,15 +116,16 @@ walk frames. Six skin tones are new `PAL` keys `1`-`6` (nothing else in `PAL` ch
 no version bump; `normalizeLook()` fixes old or bad looks on load, e.g. the v0.4 draft's `{hair, skin, coat, scarf}`).
 - Look picker (`#ovLook`): a big animated preview, NAME, then SKIN (6), HAIR STYLE (short, long, spiky, bun),
   HAIR COLOUR (7), OUTFIT (coat, hoodie, tunic), OUTFIT COLOUR (7) and ACCENT (7), plus SHUFFLE. A new player sees
-  it first ("WHO ARE YOU?", no CANCEL), then the starter picker; nothing is saved until DONE. Later, CHANGE LOOK on
-  the Pet tab opens it with CANCEL. Names: trimmed, spaces collapsed, `< > { }` and control characters dropped,
-  10 characters max, empty = "Wayfarer". The Friends tab shows "KEEPER  name" above the friend code.
+  it first ("WHO ARE YOU?", no CANCEL), then the starter picker; nothing is saved until DONE. Later, Change look in
+  Settings (the header gear) opens it with CANCEL. Names: trimmed, spaces collapsed, `< > { }` and control characters dropped,
+  10 characters max, empty = "Wayfarer". The Friends tab shows "KEEPER  name" above the friend code, and the Pet scene shows a small "KEEPER  name"
+  label in its top-right corner ("Wayfarer" until named).
 - With no pet yet the keeper still walks (no energy, food or XP, no wild creatures).
 - Follower: your partner walks one tile behind you on the Walk map, taking the tile you just left (it never
-  blocks you, wild creatures or spawns), bobs as it goes (half speed and 1px lower when Tired), swaps when you
+  blocks you, wild creatures or spawns), bobs as it goes (half speed and 1px lower while Fainted, the 20-minute nap after a battle faint), swaps when you
   pick a new partner and changes when it evolves. On load it stands behind you, or under you if that tile is
-  solid. Tap it to open its stats card (a wild creature on the same tile wins the tap). FOLLOWER: ON/OFF next to
-  CHANGE LOOK turns it off (`settings.follower`, default on).
+  solid. Tap it to open its stats card (a wild creature on the same tile wins the tap). Follower on/off in
+  Settings turns it off (`settings.follower`, default on).
 
 Pet tab scene: drawn from the current map's `backdrop` (town, route, meadow or grove; `MAP_INFO` in `game.js`,
 missing or unknown = meadow; the one map today is meadow) with the same time of day and weather as Walk: night
@@ -104,15 +137,16 @@ Turn it on with `?debug=1&fast=1` in the URL (`?fast=0` turns it off), the F key
 `PixelPets.setFast(true)` / `PixelPets.setFast(false)` in the console. The choice is remembered in
 localStorage key `pixelpets.fast` (separate from the save). While it's on, a small FAST tag shows
 next to the pet's name in the header, and a toast appears on toggle and on load.
-Fast mode also shrinks care cooldowns by the same ratio (~1/57: FEED ~21s, PLAY ~10s, REST ~31s);
+Fast mode also shrinks care cooldowns by the same ratio (~1/57: FEED ~21s, PLAY ~10s, REST ~16s);
 the daily XP caps are not scaled (use `PixelPets.resetDailyCaps()`).
 
 Wild creatures: there are no hidden tall-grass rolls any more. 3-4 wild pets wander the Walk map
 (on grass, shore or woods tiles, blocked by trees/water, never on the path). They bob and blink,
 leave after ~2.5-4.5 minutes of Walk time (or sooner when far off-screen) and new ones pop in.
-Bump into one, or tap it so your pet walks next to it, to start an encounter with exactly that
-species and form. Second forms are rare (5%, they twinkle). RUN leaves the creature where it
-is (it shies away for a moment); befriending or letting it flee removes it.
+Bump into one, or tap it so your pet walks next to it, to start a battle with exactly that
+species and form (see Battles above). Second forms are rare (5%, they twinkle). RUN leaves the creature where it
+is (it shies away for a moment); befriending it, beating it or letting it flee removes it. If no pet can battle
+it shies away too, with "Your team needs a rest first!".
 
 Which species appear depends on where you are and the weather there:
 - Habitats: EMBER hot, meadow · TIDE water, rain · BLOOM forest, park, meadow · STONE mountain ·
@@ -175,7 +209,8 @@ Forest, Desert, Snow, Storm, Night, plus AUTO to go back to real data), saved in
 Sound: tiny chiptune effects synthesized in code with WebAudio (square, triangle and noise; no audio
 files) in `sfx.js`: UI tap, feed, play, rest, cooldown/refusal buzz, a quiet footstep every other step,
 "noticed" blip when you tap a creature, encounter jingle, befriend fanfare, miss, flee, evolution
-build-up + fanfare, level-up and daily-cap chimes. Default volume is low. The AudioContext is only
+build-up + fanfare, level-up and daily-cap chimes, and battle effects (hit, strong/weak hit, stat up/down,
+heal, tired, win, move learned). Default volume is low. The AudioContext is only
 created on the first tap/key press (iOS and Chrome autoplay rules) and resumed after interruptions;
 muted means no audio nodes at all, and browsers without WebAudio just stay silent. There is no
 background music (left out for now; see BACKLOG).
@@ -208,7 +243,7 @@ Saves (format v2, `save.js`):
   too, first copy the backup back:
   `localStorage.setItem('pixelpets.save.v1', localStorage.getItem('pixelpets.save.v1.bak'))`.
 
-Start over: the low-key "Start over" button at the bottom of the Friends tab (no debug needed) asks
+Start over: Settings → Start over (no debug needed) asks
 "Start over? Your pets will be gone for good." Press and hold the red START OVER for 1.5 s (touch, mouse, or
 Space/Enter); a bar fills while you hold and letting go early cancels. It removes `pixelpets.save.v2`,
 `pixelpets.save.v1`, `pixelpets.save.v1.bak` and `pixelpets.save.corrupt` (so migration can't bring old pets

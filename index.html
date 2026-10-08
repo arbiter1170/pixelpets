@@ -26,7 +26,7 @@
   <main>
     <!-- PET CARE -->
     <section id="scr-pet" class="screen active">
-      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="80" height="64"></canvas><button id="petStatsBtn" class="scene-btn" type="button" aria-label="Stats card">STATS</button></div>
+      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="80" height="64"></canvas><button id="petStatsBtn" class="scene-btn" type="button" aria-label="Stats card">STATS</button><span id="petKeeper" class="scene-keeper" aria-label="Keeper Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
       <div class="stats">
         <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
         <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
@@ -108,21 +108,58 @@
 </div>
 
 <!-- Encounter overlay -->
-<div id="ovEncounter" class="overlay" hidden>
-  <div class="ov-inner">
-    <div class="ov-title" id="encTitle">A wild pet appears!</div>
-    <div class="scene-wrap"><canvas id="encCanvas" width="56" height="44"></canvas></div>
-    <div id="encMsg" class="hint">Tap BEFRIEND when the marker is in the green zone!</div>
-    <div class="tbar" id="tbar"><div class="tzone" id="tzone"></div><div class="tmark" id="tmark"></div></div>
-    <div id="encTries" class="tries"></div>
-    <div id="encName" class="name-row" hidden>
-      <label for="encNick">Give it a name?</label>
-      <input id="encNick" type="text" maxlength="10" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="Nickname (optional, up to 10 letters)">
+<!-- BATTLE (design/specs/BATTLE.md v0.3.1 §8): full-screen, tabs locked. The befriend bar reuses the old encounter ids. -->
+<div id="ovBattle" class="overlay battle" hidden>
+  <div class="bt-inner">
+    <div class="bt-card bt-foe">
+      <div class="bt-row"><span id="btFoeLv" class="bt-lv"></span><span id="btFoeName" class="bt-name"></span><span id="btFoeType" class="type-chip"></span><span id="btTwinkle" class="bt-twinkle" hidden>&#10022;</span></div>
+      <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btFoeHp"></i></div><span id="btFoeStages" class="bt-stages"></span></div>
     </div>
-    <div class="actions two">
-      <button id="encGo" class="btn btn-feed">BEFRIEND</button>
-      <button id="encRun" class="btn btn-rest">RUN</button>
+    <div id="btStage" class="bt-stage"><canvas id="battleCanvas" width="80" height="56"></canvas></div>
+    <div class="bt-card bt-me">
+      <div class="bt-row"><span id="btMeName" class="bt-name"></span><span id="btMeLv" class="bt-lv"></span><span id="btMeType" class="type-chip"></span></div>
+      <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btMeHp"></i></div><span id="btMeHpTxt" class="bt-hpt"></span></div>
+      <div id="btMood" class="bt-mood"></div>
     </div>
+    <div id="btMsg" class="bt-msg" role="status" aria-live="polite"></div>
+    <div class="bt-panel">
+      <div id="btActs" class="bt-acts">
+        <button class="btn btn-feed bt-fight" data-bact="fight" type="button">FIGHT</button>
+        <button id="btBefriendAct" class="btn btn-play bt-bef" data-bact="befriend" type="button">BEFRIEND <span id="btHearts" class="bt-hearts"></span></button>
+        <button class="btn bt-small" data-bact="swap" type="button">SWAP</button>
+        <button class="btn bt-small" data-bact="bag" type="button">BAG</button>
+        <button id="btRun" class="btn btn-rest bt-small" data-bact="run" type="button">RUN</button>
+      </div>
+      <div id="btFight" class="bt-fightmenu" hidden>
+        <div id="btMoves" class="bt-moves"></div>
+        <button id="btFightBack" class="btn bt-back" type="button">BACK</button>
+      </div>
+      <div id="btBef" class="bt-befbar" hidden>
+        <div class="tbar" id="tbar"><div class="tzone" id="tzone"></div><div class="tmark" id="tmark"></div></div>
+        <div id="encTries" class="tries"></div>
+        <div class="actions two">
+          <button id="encGo" class="btn btn-feed" type="button">BEFRIEND</button>
+          <button id="btBefBack" class="btn bt-back" type="button">BACK</button>
+        </div>
+      </div>
+      <div id="btEnd" class="bt-end" hidden>
+        <div id="btEndTitle" class="ov-title"></div>
+        <div id="encName" class="name-row" hidden>
+          <label for="encNick">Give it a name?</label>
+          <input id="encNick" type="text" maxlength="10" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="Nickname (optional, up to 10 letters)">
+        </div>
+        <button id="btOk" class="btn btn-feed" type="button">OK</button>
+      </div>
+      <div id="btBusy" class="bt-busy" hidden></div>
+    </div>
+  </div>
+</div>
+<!-- Choice sheet (swap, bag, learn-move replace, the evolution-move offer): above the battle and evolve overlays. -->
+<div id="ovSheet" class="overlay sheet" hidden>
+  <div class="ov-inner sheet-inner" role="dialog" aria-modal="true" aria-labelledby="shTitle">
+    <div id="shTitle" class="sh-title"></div>
+    <div id="shList" class="sh-list"></div>
+    <button id="shCancel" class="btn bt-back" type="button" hidden>BACK</button>
   </div>
 </div>
 
@@ -254,6 +291,7 @@
 <script src="sprites.js"></script>
 <script src="keeper.js"></script>
 <script src="stats.js"></script>
+<script src="moves.js"></script>
 <script src="save.js"></script>
 <script src="env.js"></script>
 <script src="sfx.js"></script>
