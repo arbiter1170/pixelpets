@@ -367,7 +367,7 @@ function updateCareButtons(){
 }
 
 /* ---------- pet care ---------- */
-const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [] };
+const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, bowlFrom: 0, bowlUntil: 0, parts: [] };
 function addPart(type, x, y, vx=0, vy=-8, life=1.2){ anim.parts.push({ type, x, y, vx, vy, life, max: life }); }
 const PET_H = 64, GROUND = PET_H - 14;                  // max logical height of the Pet tab scene (56..64, see fitPetScene)
 function petPos(t){ const c = $('#petCanvas'), W = (c && c.width) || 56, H = (c && c.height) || 56, x = Math.round((W - 16) / 2 + Math.sin(t / 2200) * 7); return { x, y: H - 14 - 7 }; }
@@ -383,7 +383,7 @@ function doAction(act){
     if (p.hunger >= 98) { sfx('denied'); return toast('Too full to eat!'); }
     const bowl = bowlReady();
     p.hunger = clamp(p.hunger + careGain(FEED_FOOD, p.hunger, FEED_BANDS) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + (bowl ? BOWL.joy : 3), 0, 100);
-    if (bowl) S.flags[BOWL.flag] = dayKey(Date.now());
+    if (bowl) { S.flags[BOWL.flag] = dayKey(Date.now()); anim.bowlFrom = t + 600; anim.bowlUntil = t + 2100; }   // two-hearts balloon (ICONS_SEALS Q6)
     addPart('apple', pp.x + 6, pp.y - 4, 0, 4, 0.9);
     setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
     anim.busyUntil = t + (bowl ? 1500 : 1100); msg = bowl ? 'Warm Bowl! ' + petName(p) + ' gobbles it up. +FOOD +JOY' : 'Yum! +FOOD';
@@ -509,6 +509,7 @@ function drawPetScene(t, dt){
     if (Math.random() < dt * 2.5) addPart('z', x + 12, y, 3, -6, 1.4);
   }
   drawParticles(g, dt);
+  if (t >= anim.bowlFrom && t < anim.bowlUntil) drawGlyph(g, 'emote_hearts', x + 5, Math.max(0, y + bob - 13));   // Warm Bowl: two-hearts balloon over the particles (ICONS_SEALS Q6)
 }
 
 /* ---------- maps, objects, conditions (MAPS_SLICE Phase M + INTERIORS_DIALOG v1.0) ---------- */
@@ -785,15 +786,15 @@ const ITEM_ART = {
 };
 // Item icons: Design ICONS_SEALS item_* grids, drawn via keeperCanvas at 36 CSS px.
 const ITEMS = {
-  heal_snack:     { name: 'Heal Snack',     plural: 'Heal Snacks',     cap: 20, price: 50,  use: ['battle', 'field'], target: true,  heal: 0.4,  blurb: 'Restores some HP.' },
-  hearty_snack:   { name: 'Hearty Snack',   plural: 'Hearty Snacks',   cap: 10, price: 150, use: ['battle', 'field'], target: true,  heal: 0.75, blurb: 'Restores a lot of HP.' },
-  wake_tonic:     { name: 'Wake Tonic',     plural: 'Wake Tonics',     cap: 5,  price: 400, use: ['battle', 'field'], target: true,  blurb: 'Wakes a napping Walkling.' },
-  befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild Walklings like it.' },
+  heal_snack:     { name: 'Heal Snack',     plural: 'Heal Snacks',     cap: 20, price: 50,  use: ['battle', 'field'], target: true,  heal: 0.4,  blurb: 'Restores 40% HP.' },
+  hearty_snack:   { name: 'Hearty Snack',   plural: 'Hearty Snacks',   cap: 10, price: 150, use: ['battle', 'field'], target: true,  heal: 0.75, blurb: 'Restores 75% HP.' },
+  wake_tonic:     { name: 'Wake Tonic',     plural: 'Wake Tonics',     cap: 5,  price: 400, use: ['battle', 'field'], target: true,  blurb: 'Wakes a fainted Walkling at 25% HP.' },
+  befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild battles only. Easier to befriend.' },
   energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. NRG +40.' },
   joy_crumb:      { name: 'Joy Crumb',      plural: 'Joy Crumbs',      cap: 10, price: 40,  use: ['field'],           target: true,  blurb: 'A sweet treat. JOY +20.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
-const BAG_FULL_MSG = 'Bag is full; some were left behind.';
+const BAG_FULL_MSG = 'Bag is full, so some were left behind.';
 const itemLabel = (id, n) => { const it = ITEMS[id], one = it ? it.name : id, many = it ? it.plural : id; return n === 1 ? 'a ' + one : n + ' ' + many; };
 const acorns = n => n + (n === 1 ? ' Acorn' : ' Acorns');      // INVENTORY §2: the save field stays `money`
 const itemCount = id => (S && S.bag && S.bag[id]) || 0;
@@ -818,7 +819,7 @@ function itemRefusal(id, p, ctx){
     if (battle.treat) return "It's already nibbling a treat.";
     return null;
   }
-  if (!it.use.includes(ctx)) return "Can't use that here yet.";
+  if (!it.use.includes(ctx)) return ctx === 'battle' ? "Can't use that in battle." : "Can't use that here yet.";
   if (it.target && !p) return 'Pick a Walkling first.';
   const nm = petName(p);
   if (it.heal) { if (isFainted(p)) return nm + ' needs a proper rest.'; if (hpOf(p) >= maxHpOf(p)) return nm + ' is already at full HP.'; }
@@ -1242,10 +1243,10 @@ function checkChatter(){
 function drawBubbles(g, cx, cy, t){
   if (spot.bang && spot.id) {                          // §6.1 "!" bubble, 2px above the trainer's head
     const o = CUR.objs.find(x => x.id === spot.id);
-    if (o) { const q = objPos(o), X = Math.round(q.x * TS - cx) + 4, Y = Math.round(q.y * TS - cy) - 15;
-      g.fillStyle = PAL.k; g.fillRect(X, Y, 9, 12); g.fillStyle = PAL.w; g.fillRect(X + 1, Y + 1, 7, 10);
-      g.fillStyle = PAL.r; g.fillRect(X + 3, Y + 2, 3, 5); g.fillRect(X + 3, Y + 8, 3, 2); }
+    if (o) { const q = objPos(o); drawGlyph(g, 'emote_bang', Math.round(q.x * TS - cx) + 4, Math.round(q.y * TS - cy) - 15); }
   }
+  const fp = pet();                                    // Zz over a napping (Fainted) follower (ICONS_SEALS Q6)
+  if (fol.x != null && fp && followerOn() && isFainted(fp) && !scene) drawGlyph(g, 'emote_sleep', Math.round(fol.fx * TS - cx) + 4, Math.round(fol.fy * TS - cy) - 15);
   const ft = !moveHeld() && !walk.to && facingTarget();
   if (ft && ft.kind !== 'door') { const q = objPos(ft); const X = q.x * TS - cx + 4, Y = q.y * TS - cy - 11 - (Math.floor(t / 400) % 2);
     WART.talk.forEach((r, j) => { for (let i = 0; i < 8; i++) if (r[i] !== '.') { g.fillStyle = PAL[r[i]]; g.fillRect(X + i, Y + j, 1, 1); } }); }
@@ -2335,7 +2336,7 @@ async function bagSheet(){
   const pick = await openSheet('Bag', ids.map(k => ({ label: ITEMS[k].name + '  x' + itemCount(k), sub: ITEMS[k].blurb, value: k, art: k })), 'BACK');
   if (!pick || !B.on) return;
   const it = ITEMS[pick];
-  if (!it.use.includes('battle')) return refuse("Can't use that here yet.");
+  if (!it.use.includes('battle')) return refuse("Can't use that in battle.");
   let tgt = null;
   if (it.target) { tgt = await itemTargetSheet(pick, B.me.petId); if (!tgt || !B.on) return; }
   const no = itemRefusal(pick, tgt ? petById(tgt) : null, 'battle');
@@ -2554,6 +2555,7 @@ function drawBattle(t, dt){
   drawMon('foe', f.si, f.stage, fx0, fy0, false, !!f.faded);
   if (B.kind === 'wild' && f.stage > 0 && Math.floor(t / 350) % 5 === 0) drawGlyph(g, 'spark', fx0 + 14, fy0 - 2);   // rare form twinkle
   drawMon('me', spi(p), p.stage, mx0, my0, true, isFaded(p));             // back view = mirrored
+  if (B.fx.some(e => e.kind === 'hearts' && t - e.t0 < e.dur)) drawGlyph(g, 'emote_heart', fx0 + 5, Math.max(0, fy0 - 13));   // befriend success (ICONS_SEALS Q6)
   btParts = btParts.filter(pt => (pt.life -= dt) > 0);
   btParts.forEach(pt => { pt.y += pt.vy * dt; drawGlyph(g, pt.type, pt.x, pt.y); });
 }
@@ -3111,6 +3113,9 @@ function boot(){
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows
+  Object.defineProperty(api, 'emotes', { enumerable: true, get(){ const fp = pet(), t = performance.now();
+    return { bang: !!(spot.bang && spot.id), sleep: !!(fol.x != null && fp && followerOn() && isFainted(fp) && !scene),
+      heart: !!(battle.on && battle.fx && battle.fx.some(e => e.kind === 'hearts' && now() - e.t0 < e.dur)), hearts: t >= anim.bowlFrom && t < anim.bowlUntil, fol: fol.x != null ? { fx: fol.fx, fy: fol.fy } : null }; } });   // debug: which Q6 emotes are showing
   Object.defineProperty(api, 'fading', { enumerable: true, get(){ return fade.busy; } });
   Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
