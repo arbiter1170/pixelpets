@@ -29,6 +29,13 @@ const BASE_STATS = {               // key = form id "<speciesId>/<stage>" (save 
   'frost/0': { hp: 63, atk: 42, def: 54, spd: 33 }, 'frost/1': { hp: 84, atk: 56, def: 72, spd: 44 }, 'frost/2': { hp: 105, atk: 70, def: 90, spd: 55 },
   'gust/0':  { hp: 45, atk: 45, def: 39, spd: 63 }, 'gust/1':  { hp: 60, atk: 60, def: 52, spd: 84 }, 'gust/2':  { hp: 75, atk: 75, def: 65, spd: 105 },
   'shade/0': { hp: 39, atk: 63, def: 42, spd: 48 }, 'shade/1': { hp: 52, atk: 84, def: 56, spd: 64 }, 'shade/2': { hp: 65, atk: 105, def: 70, spd: 80 },
+  // CREATURES_SLICE.md §8 (totals 192/256/320; stages 1-2 = stage 3 x 0.6/0.8, largest remainder)
+  'beetle/0':   { hp: 45, atk: 42, def: 63, spd: 42 }, 'beetle/1':   { hp: 60, atk: 56, def: 84, spd: 56 }, 'beetle/2':   { hp: 75, atk: 70, def: 105, spd: 70 },
+  'mole/0':     { hp: 60, atk: 60, def: 39, spd: 33 }, 'mole/1':     { hp: 80, atk: 80, def: 52, spd: 44 }, 'mole/2':     { hp: 100, atk: 100, def: 65, spd: 55 },
+  'crab/0':     { hp: 39, atk: 60, def: 57, spd: 36 }, 'crab/1':     { hp: 52, atk: 80, def: 76, spd: 48 }, 'crab/2':     { hp: 65, atk: 100, def: 95, spd: 60 },
+  'moth/0':     { hp: 48, atk: 54, def: 33, spd: 57 }, 'moth/1':     { hp: 64, atk: 72, def: 44, spd: 76 }, 'moth/2':     { hp: 80, atk: 90, def: 55, spd: 95 },
+  'vane/0':     { hp: 42, atk: 54, def: 45, spd: 51 }, 'vane/1':     { hp: 56, atk: 72, def: 60, spd: 68 }, 'vane/2':     { hp: 70, atk: 90, def: 75, spd: 85 },
+  'dormouse/0': { hp: 57, atk: 51, def: 48, spd: 36 }, 'dormouse/1': { hp: 76, atk: 68, def: 64, spd: 48 }, 'dormouse/2': { hp: 95, atk: 85, def: 80, spd: 60 },
 };
 const STAT_RULES = {
   LEVEL_CAP: 50, STARTER_LEVEL: 5, MIGRATED_LEVEL_MIN: 5, MIGRATED_LEVEL_MAX: 10,
@@ -38,6 +45,8 @@ const STAT_RULES = {
   MOOD: { hungryAtk: 0.9, sulkySpd: 0.9, drowsyDef: 0.9, low: 25, spirited: 80, glowCare: 75, minBattleNrg: 10 },
   COST: { nrg: 3, food: 2, tiredNrg: 5, winJoy: 3 }, REGEN: { pctPer10Min: 10, restPct: 50 },
   WILD_LEVELS: { proto: [[2, 5], [6, 8]] },   // until spawn tables exist: stage 0 -> 2-5, stage 1+ -> 6-8
+  // Per-species stage-0 range on the proto map for the CREATURES_SLICE lines (their Route 1 rows). Stage 1+ stays 6-8.
+  WILD_LEVELS_SPECIES: { proto: { beetle: [2, 4], mole: [3, 5], crab: [3, 5], moth: [2, 4], vane: [4, 6], dormouse: [3, 5] } },
 };
 const BX_CAP = STAT_RULES.bxForLevel(STAT_RULES.LEVEL_CAP);
 const statClamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -59,8 +68,9 @@ function levelOf(p){
 // Level a pet from an old save starts at (when it has no bx yet): its old display level, kept within 5..10.
 const migratedLevel = xp => statClamp(1 + Math.floor((Number.isFinite(xp) && xp > 0 ? xp : 0) / 10), STAT_RULES.MIGRATED_LEVEL_MIN, STAT_RULES.MIGRATED_LEVEL_MAX);
 // Proto-map wild level for a form stage (rng injectable).
-function wildLevel(stage, rng = Math.random, map = 'proto'){
-  const t = STAT_RULES.WILD_LEVELS[map] || STAT_RULES.WILD_LEVELS.proto, [a, b] = t[Math.min(stage, t.length - 1)];
+function wildLevel(stage, rng = Math.random, map = 'proto', speciesId = null){
+  const t = STAT_RULES.WILD_LEVELS[map] || STAT_RULES.WILD_LEVELS.proto, own = (STAT_RULES.WILD_LEVELS_SPECIES[map] || {})[speciesId];
+  const [a, b] = !stage && own ? own : t[Math.min(stage, t.length - 1)];
   return a + Math.floor(rng() * (b - a + 1));
 }
 // §5. Battle XP for one defeated (or befriended) foe, for one participant.

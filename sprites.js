@@ -3,7 +3,9 @@
    An outline is added automatically.
    habitat: spawn weight per environment tag (see env.js); tiles: preferred spawn spot on the map
    ('grass' = tall grass, 'shore' = next to water, 'woods' = next to trees). starter: offered as a first pet. uiHalo: draw a light rim around the
-   sprite on dark UI cells (dex, collection, header) for dark-bodied species; the map art is unchanged. */
+   sprite on dark UI cells (dex, collection, header) for dark-bodied species; the map art is unchanged.
+   weatherOnly: env tags; the species spawns only while one of them is active and never in the any-species roll.
+   Order matters: indices are runtime species numbers and ids are save-v2 form ids, so new lines are only ever appended. */
 'use strict';
 const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f070',g:'#38b764',t:'#257179',
   n:'#29366f',b:'#3b5dc9',c:'#41a6f6',s:'#73eff7',w:'#f4f4f4',h:'#94b0c2',m:'#566c86',d:'#333c57'};
@@ -126,6 +128,98 @@ const SPECIES = [
       '.a......','.aa.....','.aba...d','.abaa.dd','..aaaaad',
       'c.aaaaaa','ccaieaaa','ccaeeaaa','cccaaabe','cccabbbb',
       'cc.abbbb','c..abbbb','...abbbb','..aaaaaa','..aaa.aa','..cc..cc']}
+  ]},
+  // CREATURES_SLICE.md lines (v0.2), indices 8-13. Ids are permanent and append-only (save v2 form ids).
+  // Art: the designer's draft halves, copied here (design/ is never deployed).
+  { id:'beetle', habitat:{park:5, forest:4, meadow:4, rain:1}, tiles:'grass',
+    type:'BLOOM', blurb:'An apple-shelled beetle. Orchards love it.', stages:[
+    { name:'Pomlet', col:{a:PAL.r,b:PAL.y,c:PAL.g,d:PAL.d,x:PAL.w}, half:[
+      '........', '........', '........', '.......d', '.....ccd',
+      '....aaaa', '...aaxaa', '..aaaaaa', '..aaieaa', '..aaeeaa',
+      '..aaaaaa', '..abbbbb', '...abbbb', '....aaaa', '....d.d.', '........']},
+    { name:'Pomshell', col:{a:PAL.r,b:PAL.y,c:PAL.g,d:PAL.d,x:PAL.w}, half:[
+      '........', '....d...', '.....d..', '.....aaa', '....aaaa',
+      '....aiea', '....aeea', '..ccaaad', '.caaaaad', 'ccaadaad',
+      'ccaaaaad', '.caaadad', '.caaaaad', '..caaaad', '..d..d..', '........']},
+    { name:'Orchardon', col:{a:PAL.r,b:PAL.y,c:PAL.g,d:PAL.d,x:PAL.w}, half:[
+      '......x.', '.....xbx', '.......d', 'c.....aa', 'cc...aaa',
+      'ccc.aaaa', '.ccaieaa', '.ccaeeaa', 'ccaaaaad', 'ccaadaad',
+      'ccaaaaad', '.caadaad', '.caaaaad', '..aabbbd', '.d..d...', 'd..d....']}
+  ]},
+  { id:'mole', habitat:{meadow:5, forest:3, park:3, rain:2}, tiles:'grass',
+    type:'BLOOM', blurb:'A sleepy mole. Plants things as it digs.', stages:[
+    { name:'Loamlet', col:{a:PAL.m,b:PAL.h,c:PAL.g,d:PAL.r,x:PAL.y}, half:[
+      '........', '........', '........', '......c.', '.......c',
+      '....aaaa', '...aaaaa', '..aaaaaa', '..abieba', '..abeeba',
+      '..aaaabb', '..aaaabd', '.xxaaaaa', '..aaaaaa', '...aaaaa', '........']},
+    { name:'Burrowbloom', col:{a:PAL.m,b:PAL.h,c:PAL.g,d:PAL.r,x:PAL.y}, half:[
+      '........', '.......d', '......dx', '.....c.d', '....aaaa',
+      '...aaaaa', '..aaaaaa', '.aabieba', '.aabeeba', '.aaaaabb',
+      '.aaaaabd', 'xxaaaaaa', 'xxaaaaaa', '.aaaaabb', '..aaaabb', '..aaa.aa']},
+    { name:'Hedgewarden', col:{a:PAL.m,b:PAL.h,c:PAL.g,d:PAL.r,x:PAL.y}, half:[
+      '...c...d', '..ccc.dx', '.ccccc.d', 'ccccaaaa', 'cccaaaaa',
+      'ccaaaaaa', 'ccabieba', 'c.abeeba', '..aaaabb', '..aaaabd',
+      'xxaaaaaa', 'xxaaaabb', 'xxaaabbb', '.aaaabbb', '..aaaaaa', '..aaa.aa']}
+  ]},
+  { id:'crab', habitat:{water:7, rain:4, fog:2}, tiles:'shore',
+    type:'TIDE', blurb:'A tidepool crab. Collects beach glass.', stages:[
+    { name:'Clinkit', col:{a:PAL.o,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.r}, half:[
+      '........', '........', '........', '........', '........',
+      '.....dcc', '....aaaa', 'x..aaaaa', 'xx.aieaa', 'xxaaeeaa',
+      '.xaaaaaa', '..abbbbb', '...abbbb', '..a.a..a', '........', '........']},
+    { name:'Shardpincer', col:{a:PAL.o,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.r}, half:[
+      '........', '........', 'x.......', 'xx...c.d', 'xx..cbdc',
+      '.x.aaaaa', '.xaaaaaa', '..aaaaaa', '..aaieaa', '..aaeeaa',
+      '.aaaaaaa', '..abbbbb', '.a.abbbb', 'a.a.aaaa', '.a..a..a', '........']},
+    { name:'Mosaicrab', col:{a:PAL.o,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.r}, half:[
+      'x.......', 'xx......', 'xxx..c.d', 'xxx.cbdc', '.xx.dcbd',
+      '..xaaaaa', '..aacadc', '..aaaaaa', '.aaaieaa', 'aaaaeeaa',
+      'a.aaaaaa', '.aaabbbb', 'a.aabbbb', '.a.abbbb', 'a.a.aaaa', '.a..a..a']}
+  ]},
+  { id:'moth', habitat:{night:6, city:5, park:1}, tiles:'grass',
+    type:'VOLT', blurb:'A fuzzy static moth. Drawn to bright lanterns.', stages:[
+    { name:'Fuzzwick', col:{a:PAL.y,b:PAL.w,c:PAL.o,d:PAL.s,x:PAL.n}, half:[
+      '........', '........', '........', '...d....', '....a...',
+      '.....a..', '....bbbb', '...bbbbb', '..baieaa', '..baeeaa',
+      '..bbaaaa', '...ccaaa', '...aaaaa', '...ccaaa', '....aaaa', '....d..d']},
+    { name:'Filamoth', col:{a:PAL.y,b:PAL.w,c:PAL.o,d:PAL.s,x:PAL.n}, half:[
+      '...d....', '....a...', '.....a..', 'cc....aa', 'caa..aaa',
+      'caaabaaa', 'caaabiea', 'caaabeea', 'ccaaabbb', '.caaabbb',
+      '..caabbb', '.caaabbb', 'ccaa.bbb', 'cca..bbb', '.....bb.', '......d.']},
+    { name:'Halowatt', col:{a:PAL.y,b:PAL.w,c:PAL.o,d:PAL.s,x:PAL.n}, half:[
+      '....dddd', '...d....', '....dddd', 'cc....aa', 'cca..aaa',
+      'caaa.aaa', 'caaabiea', 'caaabeea', 'caxaabbb', 'caaaabbb',
+      'ccaaabbb', '.caaabbb', 'caxaabbb', 'ccaa.bbb', 'cc...bbb', '......dd']}
+  ]},
+  { id:'vane', habitat:{storm:8, snow:8, windy:3}, weatherOnly:['storm','snow'], tiles:'grass',   // weather form: storm/snow only
+    type:'GUST', blurb:'A weathervane chick. Only seen in wild weather.', stages:[
+    { name:'Vanelet', col:{a:PAL.c,b:PAL.w,c:PAL.y,d:PAL.s,x:PAL.m}, half:[
+      '........', '........', '.......c', '......cc', '.......c',
+      '....aaaa', '...aaaaa', '..aaieaa', '..aaeeaa', '..aaaaax',
+      '.daaabbb', '..aaabbb', '...abbbb', '....aaaa', '....x.x.', '........']},
+    { name:'Vanefledge', col:{a:PAL.c,b:PAL.w,c:PAL.y,d:PAL.s,x:PAL.m}, half:[
+      '.......c', '......cc', '.....c.c', '.......c', '....aaaa',
+      '...aaaaa', 'd.aaieaa', 'd.aaeeaa', 'aa.aaaax', 'aaaaabbb',
+      '.aaaabbb', 'aaaaabbb', '.aa.abbb', '....aaaa', '....x.x.', '........']},
+    { name:'Squallvane', col:{a:PAL.b,b:PAL.w,c:PAL.y,d:PAL.s,x:PAL.m}, half:[
+      '.......c', 'c.....cc', 'cc...c.c', '.cc...aa', '..caaaaa',
+      'd.aaaaaa', 'd.aaieaa', 'ddaaeeaa', 'aaaaaaax', 'aaaaabbb',
+      'aaaaabbb', '.aaaabbb', 'aa.aabbb', 'a...abbb', '....aaaa', '....x.x.']}
+  ]},
+  { id:'dormouse', habitat:{night:8, fog:3, forest:2, cold:1}, tiles:'woods', uiHalo:true,   // main colour PAL.b (draft: PAL.n) so it reads on the night map
+    type:'SHADE', blurb:'A humming night dormouse. Glows in the cold.', stages:[
+    { name:'Dozmouse', col:{a:PAL.b,b:PAL.h,c:PAL.s,d:PAL.y,x:PAL.w}, half:[
+      '........', '........', '........', '..aa....', '.acca...',
+      '.accaaaa', '..aaaaaa', '..abbbbb', '..abiebb', '..abeebb',
+      '..abbbbd', '...aaaaa', '..aaabbb', '..aaabbb', '...aaaaa', '...aa.aa']},
+    { name:'Lullamouse', col:{a:PAL.b,b:PAL.h,c:PAL.s,d:PAL.y,x:PAL.w}, half:[
+      '........', '.aa.....', 'acca....', 'acca....', 'accaaaaa',
+      '.aaaaacc', '..aaaaaa', '..abbbbb', '..abiebb', '..abeebb',
+      '..abbbbd', '..aaaaaa', '.aaaabbb', '.aaaabbb', '..aaaaaa', '..aaa.aa']},
+    { name:'Moondozer', col:{a:PAL.b,b:PAL.h,c:PAL.s,d:PAL.y,x:PAL.w}, half:[
+      'd.......', 'aa......', 'aca.....', 'acca....', '.accaaac',
+      '..aaaacc', '..aaaaaa', 'c.abbbbb', 'ccabiebb', 'ccabeebb',
+      'ccabbbbd', 'ccaaaaaa', '.caaabbb', 'c.aaabbb', '...aaaaa', '..aa..aa']}
   ]}
 ];
 

@@ -116,12 +116,16 @@ h2 small{color:var(--h);font-size:17px}
 .card .partner{color:var(--y);font-size:17px;padding:0 6px}
 .owned .group-label{font-size:17px;color:var(--h);padding:4px 2px 0}
 .card.boxed{opacity:.88}
-.dex{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 3px 10px}   /* 8 lines x 3 forms = 24 cells */
+.dex{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 3px 10px}   /* 14 lines x 3 forms = 42 cells */
 .dex .cell{background:var(--d);padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:0 0 0 3px var(--k);font-size:13px;text-align:center;min-width:0}
 .dex .cell div{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dex canvas{width:54px;height:54px;background:var(--n)}
 @media (max-width:340px){ .dex{grid-template-columns:repeat(3,1fr)} }
 .dex .unk{color:var(--m)}
+.name-row{display:flex;align-items:center;gap:10px}
+.name-row[hidden]{display:none}
+.name-row label{flex:none;color:var(--y)}
+.name-row input{flex:1;min-width:0;width:100%}
 
 /* friends */
 .panel{background:var(--d);padding:12px;margin:6px;display:flex;flex-direction:column;gap:8px}

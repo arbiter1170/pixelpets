@@ -40,6 +40,8 @@ const STEPS_PER_XP = 5;            // walking: 1 XP per 5 steps, remainder kept 
 const BEFRIEND_XP = 5;             // shares the explore cap below
 const EXPLORE_XP_DAILY_CAP = 30;   // per pet per local day, shared by walking + befriending XP (p.ex)
 const STEP_MS = 170;
+const STEP_NRG = 0.16;            // NRG per step on the Walk map (was 0.4; cut 60% so walks last longer)
+const STEP_FOOD = 0.15;           // FOOD per step (unchanged)
 
 /* ---------- sprites & tiles ---------- */
 const SPR = SPECIES.map(sp => sp.stages.map(st => ({
@@ -80,7 +82,10 @@ function save(){ if (!S || readOnly) return; S.last = Date.now(); PPSave.writeV2
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
 const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
-const petName = p => nameOf(spi(p), p.stage);
+// Nicknames (CREATURES_SLICE §6): optional, offered after a befriend. Cleaned for display only; the saved string is never rewritten.
+const NICK_MAX = 10;
+const cleanNick = v => typeof v === 'string' ? v.normalize('NFKC').replace(/[^A-Za-z0-9 '.!?-]/g, '').replace(/\s+/g, ' ').trim().slice(0, NICK_MAX).trim() : '';
+const petName = p => cleanNick(p.nick) || nameOf(spi(p), p.stage);
 // Level comes from battle XP (p.bx, stats.js levelOf); growth XP (p.xp) only drives evolution.
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
 const canEvolve = p => p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_CARE[p.stage];
@@ -155,7 +160,7 @@ function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.togg
 function updateHUD(){
   const p = pet(); if (!p) return;
   const st = SPECIES[spi(p)].stages[p.stage];
-  $('#hdrName').textContent = st.name;
+  $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
   $('#hdrStage').textContent = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   spriteCanvas($('#hdrIcon'), spi(p), p.stage);
@@ -384,7 +389,7 @@ function tryStep(d){
 function onLand(){
   const p = pet();
   S.steps++; if (S.steps % 2 === 0) sfx('step');   // quiet footstep on every other step
-  p.energy = clamp(p.energy - 0.4, 0, 100); p.hunger = clamp(p.hunger - 0.15, 0, 100);
+  p.energy = clamp(p.energy - STEP_NRG, 0, 100); p.hunger = clamp(p.hunger - STEP_FOOD, 0, 100);
   if (S.steps % 50 === 0) toast(S.steps + ' steps! Nice walk.');
   p.sr = (+p.sr || 0) + 1;                   // per-pet step remainder, carried across sessions
   if (p.sr >= STEPS_PER_XP) { p.sr -= STEPS_PER_XP; grantExploreXp(p, 1); }
@@ -457,14 +462,17 @@ const wild = { list: [], poofs: [], seq: 0, chase: null, started: false, clock: 
 let ENV = null;
 const rnd = ([a, b]) => a + Math.random() * (b - a);
 const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow'];
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0)); }
+// weatherOnly species (the vane line): weight 0 unless one of their tags is active, and never part of the any-species roll.
+const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
+const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly);
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => weatherOk(sp, tags) ? tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0) : 0); }
 function spawnOdds(tags = envTags()){              // expected spawn probability per species for these tags
-  const w = speciesWeights(tags), tot = w.reduce((a, b) => a + b, 0), n = SPECIES.length;
-  return w.map(v => tot ? (1 - ANY_SPECIES_CHANCE) * v / tot + ANY_SPECIES_CHANCE / n : 1 / n);
+  const w = speciesWeights(tags), tot = w.reduce((a, b) => a + b, 0), any = i => ANY_POOL.includes(i) ? 1 / ANY_POOL.length : 0;
+  return w.map((v, i) => tot ? (1 - ANY_SPECIES_CHANCE) * v / tot + ANY_SPECIES_CHANCE * any(i) : any(i));
 }
 function pickSpecies(tags = envTags()){
   const w = speciesWeights(tags), tot = w.reduce((a, b) => a + b, 0);
-  if (!tot || Math.random() < ANY_SPECIES_CHANCE) return Math.random() * SPECIES.length | 0;
+  if (!tot || Math.random() < ANY_SPECIES_CHANCE) return ANY_POOL[Math.random() * ANY_POOL.length | 0];
   let r = Math.random() * tot;
   for (let i = 0; i < w.length; i++) { r -= w[i]; if (r < 0) return i; }
   return w.length - 1;
@@ -489,7 +497,7 @@ function spawnWild(sp, stage, at){
   if (stage == null) stage = pickStage();
   const spot = at || spawnSpot(sp); if (!spot) return null;
   const c = wild.clock;
-  const w = { id: ++wild.seq, sp, stage, lv: wildLevel(stage), x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
+  const w = { id: ++wild.seq, sp, stage, lv: wildLevel(stage, Math.random, 'proto', SPECIES[sp].id), x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
     born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + rnd(WILD_IDLE_MS), phase: Math.random() * 3000, shyUntil: 0 };
   wild.list.push(w); return w;
 }
@@ -634,7 +642,7 @@ function meetWild(w){ w.to = null; w.fx = w.x; w.fy = w.y; startEncounterIntro(w
 function openEncounter(){
   const p = pet();
   const nx = enc.next || { sp: pickSpecies(), stage: pickStage(), wid: null }; enc.next = null;
-  enc.sp = nx.sp; enc.stage = nx.stage; enc.wid = nx.wid; enc.lv = nx.lv || wildLevel(enc.stage);   // forced encounters roll a proto level
+  enc.sp = nx.sp; enc.stage = nx.stage; enc.wid = nx.wid; enc.lv = nx.lv || wildLevel(enc.stage, Math.random, 'proto', SPECIES[enc.sp].id);   // forced encounters roll a proto level
   enc.tries = 3; enc.done = false; enc.result = null; enc.freezeUntil = 0; enc.t0 = now();
   const w = (enc.stage ? 0.14 : 0.22) + p.happy / 1000;
   const c = 0.2 + Math.random() * 0.6; enc.zone = [clamp(c - w/2, 0, 1), clamp(c + w/2, 0, 1)];
@@ -650,6 +658,11 @@ function openEncounter(){
 }
 function renderTries(){ $('#encTries').textContent = '\u2665'.repeat(enc.tries) + '\u2661'.repeat(3 - enc.tries); }
 function closeEncounter(){
+  if (enc.result === 'win' && enc.newId) {                  // optional nickname (skip = species name)
+    const p = allPets().find(o => o.id === enc.newId), nk = cleanNick($('#encNick').value);
+    if (p && nk && nk !== nameOf(spi(p), p.stage)) { p.nick = nk; toast(nameOf(spi(p), p.stage) + ' is now called ' + nk + '!'); }
+  }
+  enc.newId = null; $('#encName').hidden = true; $('#encNick').blur();
   $('#ovEncounter').hidden = true; $('#tabs').classList.remove('locked');
   const w = enc.wid && wild.list.find(o => o.id === enc.wid);
   if (w) {
@@ -674,6 +687,7 @@ function encounterPress(){
     $('#encTitle').textContent = nm + ' befriended!';
     $('#encMsg').textContent = nm + ' joined your collection! ' + (gx ? '(+' + gx + ' XP)' : '(No XP: explored enough today)');
     $('#encGo').textContent = 'YAY!'; $('#encRun').hidden = true; $('#tbar').style.visibility = 'hidden';
+    enc.newId = np.id; $('#encNick').value = ''; $('#encNick').placeholder = nm; $('#encName').hidden = false; fitAll();
     if (toBox) toast(nm + ' was sent to your box.');
     save();
   } else {
@@ -754,7 +768,7 @@ function renderCollection(){
     const info = document.createElement('div');
     info.innerHTML = '<div class="nm"></div><div class="sub"></div>';
     info.firstChild.textContent = petName(p);
-    info.lastChild.textContent = SPECIES[spi(p)].type + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
+    info.lastChild.textContent = (cleanNick(p.nick) ? nameOf(spi(p), p.stage) : SPECIES[spi(p)].type) + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
     c.append(cv, info);
     if (p.id === S.partnerId) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; c.append(s); }
     else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
@@ -771,6 +785,7 @@ function renderCollection(){
     const f = formOf(si, k), seen = !!S.dex.seen[f] || owned.has(f); if (seen) n++;
     const cell = document.createElement('div'); cell.className = 'cell';
     const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, si, k, seen ? 'n' : 's');
+    if (!seen && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
     const lb = document.createElement('div'); lb.textContent = seen ? st.name : '???'; if (!seen) lb.className = 'unk';
     cell.append(cv, lb); dex.append(cell);
   }));
@@ -826,6 +841,7 @@ function bindInput(){
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', () => { evo.active = false; $('#ovEvolve').hidden = true; $('#tabs').classList.remove('locked'); updateHUD(); });
   $('#encGo').addEventListener('click', encounterPress);
+  $('#encNick').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (enc.done) closeEncounter(); } });
   $('#encRun').addEventListener('click', () => { closeEncounter(); toast('Got away safely.'); });
   $('#geoAllow').addEventListener('click', () => { closeGeoAsk(); useLocation(); });
   $('#geoLater').addEventListener('click', () => { PPEnv.setGeoPref('deny'); closeGeoAsk(); toast('OK! A meadow for now. Tap the area badge to change.'); });
@@ -985,7 +1001,7 @@ function boot(){
     setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; },
     spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
     clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
-    pickSpecies: () => pickSpecies(), pickStage: () => pickStage(),
+    pickSpecies: tags => pickSpecies(tags), pickStage: () => pickStage(),
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
     giveBx: n => { const r = grantBattleXp(pet(), n); updateHUD(); save(); return r; },   // battle XP (Level)
     resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },

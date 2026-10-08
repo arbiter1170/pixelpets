@@ -19,7 +19,7 @@ DBG tag shows in the header. Only in debug mode:
 - Cheat console hooks: `PixelPets.giveXp(50)` (growth XP, ignores the caps), `PixelPets.giveBx(100)` (battle XP,
   raises the Level), `PixelPets.resetDailyCaps()` (clears today's
   care and explore XP for the partner), `forceEvolve()`, `forceEncounter()`, `setFast()`, `setEnv()`,
-  `spawnWild()`, `clearWild()`, `autoWild()`, `pickSpecies()`, `pickStage()`, plus live `state`, `enc` and `walk`.
+  `spawnWild()`, `clearWild()`, `autoWild()`, `pickSpecies(tags?)`, `pickStage()`, plus live `state`, `enc` and `walk`.
 Without debug those hooks are inert (they do nothing and return `undefined`), a stored fast/place choice is
 ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only hooks always work: `env`,
 `wild`, `spawnOdds(tags?)`, `cooldownLeft(act)`, `careXpToday`, `exploreXpToday`, `rates`, `fast`, `debug`,
@@ -42,6 +42,8 @@ Daily XP caps (per pet, reset at local midnight):
 - Explore XP: up to 30 a day, shared by walking (1 XP per 5 steps; leftover steps carry over, even
   across sessions) and befriending (+5, or whatever still fits under the cap). Befriending a pet
   always works, even at the cap; only the XP stops.
+- Walking cost: each step costs the partner 0.16 NRG and 0.15 FOOD (`STEP_NRG` / `STEP_FOOD` in `game.js`),
+  so 100 steps = 16 NRG and 15 FOOD. Below 1 NRG it's too tired to walk until it RESTs.
 So a pet can earn at most 55 XP a day: stage 2 (40 XP) on day 1 and stage 3 (120 XP) around day 3
 for a player who maxes both caps, or day 2 and day 5 with care only. The Pet tab shows
 "Today: care XP 12/25 · explore XP 8/30"; the Walk tab shows the same explore count as TODAY 8/30.
@@ -54,7 +56,8 @@ Levels, types and stats (`stats.js`; battles themselves come in a later build):
   (`bx` for level L = 4 x (L-1)^2, Lv 1-50). Care and exploring never change the Level, and battles will never
   give growth XP. The level-up chime plays when battle XP raises the Level ("<name> grew to Lv N!").
 - Starters begin at Lv 5. Wild creatures on the map have a level (2-5, or 6-8 for the rare second forms) and
-  join at that level when befriended. Pets from older saves start at their old displayed level
+  join at that level when befriended. The six newer lines use their own first-form ranges (Pomlet and
+  Fuzzwick 2-4, Loamlet, Clinkit and Dozmouse 3-5, Vanelet 4-6; second forms still 6-8). Pets from older saves start at their old displayed level
   (1 + XP/10) kept between Lv 5 and Lv 10.
 - 4 battle stats (HP, ATK, DEF, SPD) per form from base stats and level; one type per line (the `type` in
   `sprites.js`) with an 8x8 type chart (2x / 0.5x, and VOLT can't hurt STONE). Damage, battle XP, mood
@@ -80,17 +83,32 @@ is (it shies away for a moment); befriending or letting it flee removes it.
 
 Which species appear depends on where you are and the weather there:
 - Habitats: EMBER hot, meadow · TIDE water, rain · BLOOM forest, park, meadow · STONE mountain ·
-  VOLT city, storm · FROST snow, cold · GUST storm, wind, rain · SHADE night, fog.
+  VOLT city, storm · FROST snow, cold · GUST storm, wind, rain · SHADE night, fog ·
+  Pomlet park, forest, meadow · Loamlet meadow, forest, park · Clinkit water (shore tiles), rain, fog ·
+  Fuzzwick night, city · Dozmouse night, fog, forest (woods tiles) · Vanelet storm, snow, wind.
   Each species has habitat weights in `sprites.js`; every active tag adds its weight, and 8% of
-  spawns are any species, so nothing is impossible anywhere. The Walk badge's card lists the
-  three most likely species. Examples: cold mountain = Pebblit 54% / Chillbit 34%, snowfield =
-  Chillbit 55% / Pebblit 35%, city = Zipmite 82%, night meadow = Duskmote 51%.
+  spawns are any species, so almost nothing is impossible anywhere. The exception is the weather form:
+  Vanelet (`weatherOnly: ['storm','snow']`) only appears while it storms or snows and is never part of
+  the 8% roll. One already on the map stays until it wanders off. The Walk badge's card lists the
+  three most likely species. Examples: cold mountain = Pebblit 50% / Chillbit 31%, snowfield =
+  Chillbit 39% / Pebblit 24% / Vanelet 24%, city = Zipmite 50% / Fuzzwick 36%, night meadow =
+  Dozmouse 22% / Duskmote 17% / Fuzzwick 17%, stormy coast = Puffkin 26% / Drizzlet 20% / Clinkit 18% / Vanelet 18%.
 - Tags: mountain (elevation >= 800 m or >= 150 m relief within ~1 km), water / city / forest / park
   (OpenStreetMap features within 350 m; city = several urban landuse areas or 40+ buildings),
   meadow (none of those), rain / snow / storm / fog (current weather code), hot (>= 28 °C),
   cold (<= 3 °C), windy (>= 30 km/h), night (sun down there; device clock 20:00-06:00 as fallback).
 - The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
+
+Creatures: 14 lines of 3 forms (42 Pixeldex entries), all befriendable and all evolving the same way
+(growth XP 40 / 120 plus care, then EVOLVE). The six newer lines (design spec CREATURES_SLICE):
+Pomlet → Pomshell → Orchardon (BLOOM beetle), Loamlet → Burrowbloom → Hedgewarden (BLOOM mole),
+Clinkit → Shardpincer → Mosaicrab (TIDE crab), Fuzzwick → Filamoth → Halowatt (VOLT moth),
+Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lullamouse → Moondozer (SHADE dormouse).
+Unseen Vanelet-line entries in the Pixeldex show a small cloud ("check back in bad weather").
+Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
+digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
+the Pets tab (with the species name underneath) and is saved in the pet's `nick`.
 
 Location and privacy: on the first visit to Walk a card asks "Use your location so local creatures
 appear? ..." with Allow / Not now. Only Allow calls the browser's Geolocation API; the answer is
@@ -138,7 +156,11 @@ Saves (format v2, `save.js`):
   choosing a boxed pet as partner moves it into the party; if the party is full, the last party member that
   isn't the partner moves to the top of the box. Every pet, party or box, gets hungry the same way.
   Pets name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
-  `shade`); the Pixeldex is keyed by form id (`ember/1`). Unknown fields are kept on load and save.
+  `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the Pixeldex is keyed by form id (`ember/1`).
+  The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 42 form ids) is append-only: new lines are added at the end
+  of `SPECIES` and of the table without a new save version, and a dev check reports any reorder. A pet whose
+  species an older build didn't know sits in `orphans` there and comes back to the box once the species exists.
+  Unknown fields are kept on load and save.
 - An old `pixelpets.save.v1` is migrated once, on the first load of this version: every pet and its
   cooldown/daily-cap/step fields carry over, away-time decay still applies, the friend code stays the same.
   The v1 key is never changed or deleted, and its raw text is copied once to `pixelpets.save.v1.bak`.

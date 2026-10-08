@@ -10,6 +10,10 @@ const PPSave = (() => {
   const V1_KEY = 'pixelpets.save.v1', V2_KEY = 'pixelpets.save.v2', BAK_KEY = 'pixelpets.save.v1.bak', CORRUPT_KEY = 'pixelpets.save.corrupt';
   // Frozen forever: v1 stored species by array index. Never derive this from SPECIES order.
   const V1_SPECIES = Object.freeze(['ember', 'tide', 'bloom', 'stone', 'volt', 'frost', 'gust', 'shade']);
+  // Save v2 species/form-id table: append-only, in SPECIES order (v1 lines first, then CREATURES_SLICE lines 8-13).
+  // Adding ids keeps the save at v2; never remove, rename or reorder one. 14 lines x 3 stages = 42 form ids.
+  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse']);
+  const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
   const MAPS = ['proto'];                       // the only map today (the 24x20 Walk map)
   const MAP_W = 24, MAP_H = 20;
@@ -192,13 +196,20 @@ const PPSave = (() => {
     owned = true; lastWritten = str; return true;
   }
 
-  // Dev check (§2): the frozen v1 table must match sprites.js, and species ids must be unique.
+  // Dev check (§2): the frozen v1 table and the append-only form-id table must match sprites.js, and species ids must be unique.
+  // Returns the list of problems (empty = fine); each one is also logged as a console error.
   function devCheck(){
-    const ids = SPECIES.map(s => s.id), bad = V1_SPECIES.filter((id, i) => ids[i] !== id);
-    if (bad.length) console.error('PixelPets: SPECIES order/ids no longer match the frozen V1_SPECIES table:', bad.join(', '));
-    if (new Set(ids).size !== ids.length) console.error('PixelPets: duplicate species ids in SPECIES');
+    const ids = SPECIES.map(s => s.id), out = [], err = m => { out.push(m); console.error('PixelPets: ' + m); };
+    const bad = V1_SPECIES.filter((id, i) => ids[i] !== id);
+    if (bad.length) err('SPECIES order/ids no longer match the frozen V1_SPECIES table: ' + bad.join(', '));
+    const off = SPECIES_IDS.filter((id, i) => i >= V1_SPECIES.length && ids[i] !== id), extra = ids.slice(SPECIES_IDS.length);
+    if (off.length || extra.length) err('SPECIES order/ids no longer match the save form-id table (append new ids to SPECIES_IDS): ' + off.concat(extra).join(', '));
+    const forms = SPECIES.flatMap(sp => sp.stages.map((st, k) => sp.id + '/' + k)).filter(f => !FORM_IDS.includes(f));
+    if (forms.length) err('forms missing from the save form-id table: ' + forms.join(', '));
+    if (new Set(ids).size !== ids.length) err('duplicate species ids in SPECIES');
+    return out;
   }
 
-  return Object.freeze({ V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, V1_SPECIES, PARTY_MAX, formId, isSpecies,
+  return Object.freeze({ V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
     defaultStateV2, migrateV1toV2, normalizeV2, loadSave, writeV2, devCheck });
 })();
