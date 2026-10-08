@@ -696,7 +696,19 @@ function enterDoor(dr){
   if (dr.to) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
 }
-function openPlace(dr){ runSteps([['say', '', 'Closed for now. Come back soon!']]); }   // Fernbrook panels arrive with the Fernbrook build
+// MAPS_SLICE §9 place panels (Fernbrook keeps panels; Hearthmoor's became rooms). The Lantern House: the keeper's line -> REST / LEAVE;
+// REST heals the team and makes this town the respawn (§7 beat 6). The Trial Hall panel arrives with Trial Hall #1.
+function placeSteps(dr){
+  if (dr.panel === 'lantern') {
+    const who = dr.keeper || '';
+    return [['say', who, 'Long walk from Hearthmoor? Rest a while.'],
+      ['if', 'story.starter_received',
+        [['choice', 'Let your team rest?', [['Rest a while', [['rest'], ['respawnHere'], ['say', '', 'You all doze in the lantern glow. Your team is rested.']]], ['Leave', []]]]],
+        [['say', who, 'No team to rest yet? Come back with a friend.']]]];
+  }
+  return [['say', '', 'Closed for now. Come back soon!']];
+}
+function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }); }
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -1226,9 +1238,9 @@ const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly);
 // species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
 const SPAWNS = {
   route1:    { stage2: 0.05, table: [['beetle', 30, 2, 4], ['mole', 20, 3, 5], ['crab', 12, 3, 5], ['moth', 15, 2, 4],
-               ['dormouse', 10, 3, 5], ['gust', 6, 3, 5], ['frost', 2, 4, 5], ['vane', 4, 4, 6]] },
+               ['dormouse', 10, 3, 5], ['gust', 6, 3, 5], ['frost', 2, 4, 5], ['vane', 8, 4, 6]] },
   fernbrook: { stage2: 0.05, table: [['beetle', 30, 6, 9], ['mole', 25, 7, 10], ['moth', 10, 6, 9], ['dormouse', 10, 7, 10],
-               ['crab', 8, 7, 9], ['frost', 3, 7, 9], ['shade', 5, 7, 9], ['vane', 4, 7, 9]] },
+               ['crab', 8, 7, 9], ['frost', 3, 7, 9], ['shade', 5, 7, 9], ['vane', 7, 7, 9]] },
 };
 const spawnKey = () => (CUR && CUR.spawns) || 'proto';
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
@@ -1568,7 +1580,8 @@ function respawnAfterWipe(){
   const id = WORLD[S.world.respawn] ? S.world.respawn : 'hearthmoor', m = WORLD[id];
   const at = m.respawnIn ? m.respawnIn : Object.assign({ map: id }, m.respawn || m.safe);
   clearMoves(); arriveAt(at);
-  toast('Your team fainted... you wake at the Lantern House. Rest by the beds.');
+  toast(m.respawnIn ? 'Your team fainted... you wake at the Lantern House. Rest by the beds.'
+    : 'Your team fainted... you wake at the ' + (m.name || 'town') + ' Lantern House door. Step inside to rest.');
 }
 // Lantern House REST / interior `rest` step (Phase M calls this): every party pet to full HP, naps cleared.
 function lanternRest(){ S.party.forEach(q => restPet(q, 'full')); updateHUD(); save(); }
