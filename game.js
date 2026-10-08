@@ -341,7 +341,7 @@ function grantBattleXp(p, n, quiet){   // quiet: the battle shows its own level-
   const from = levelOf(p), before = p.bx;
   p.bx = clamp(before + Math.max(0, Math.round(n) || 0), 0, BX_CAP);
   const to = levelOf(p);
-  if (to > from && !quiet) { sfx('levelup', xpChimeDelay); toast(petName(p) + ' grew to Lv ' + to + '!'); }
+  if (to > from && !quiet) { sfx('stinger_levelup', xpChimeDelay); toast(petName(p) + ' grew to Lv ' + to + '!'); }
   return { gained: p.bx - before, from, to };
 }
 const grantCareXp = (p, n) => grantCapped(p, 'cx', CARE_XP_DAILY_CAP, n);
@@ -663,7 +663,7 @@ function onLand(){
   if (wp && !(wp.need && !cond(wp.need, false))) { if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return; }
   const pk = objAt(x, y, o => o.kind === 'pickup');
   if (pk) {                                  // INVENTORY §8: clamped to the stack cap; the flag is set either way, so nothing loops
-    const r = grantItem(pk.item, pk.n); S.flags['item.' + pk.id] = true; sfx('befriend');
+    const r = grantItem(pk.item, pk.n); S.flags['item.' + pk.id] = true; sfx(r.added ? 'stinger_item' : 'denied');
     if (r.added) toast('Found ' + itemLabel(pk.item, r.added) + '!');
     if (r.lost) setTimeout(() => toast(BAG_FULL_MSG), r.added ? 1900 : 0);
     save();
@@ -1332,7 +1332,7 @@ async function execStep(st){
       return;
     }
     case 'setFlag': { const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; }); return; }
-    case 'give': pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
+    case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
     case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook') S.world.respawn = r; }); return; }
     case 'lookPick': {
       sc.skip = false;
@@ -2060,7 +2060,7 @@ async function befriendTry(id){
     if (B.faded) { np.faded = B.faded; np.fc = { d: dayKey(Date.now()), sum: 0, n: 0 }; }   // CREATURES_SLICE §5: faded: days left (additive field)
     if (B.story) S.flags['story.' + B.story] = true;                                          // a story creature: its flag is set on befriend only
     const toBox = S.party.length >= PPSave.PARTY_MAX; (toBox ? S.box : S.party).push(np);
-    sfx('befriend'); xpChimeDelay = 0.75;
+    sfx('stinger_befriend'); xpChimeDelay = 0.75;
     const gx = grantExploreXp(pet(), BEFRIEND_XP); xpChimeDelay = 0; pet().happy = clamp(pet().happy + 5, 0, 100);
     B.newId = np.id; B.lastGx = gx; B.toBox = toBox; if (toBox) toast(nameOf(f.si, f.stage) + ' was sent to your box.');
     B.fx.push({ who: 'foe', kind: 'hearts', t0: now(), dur: 1500 });
@@ -2380,14 +2380,14 @@ async function results(result, id){
     if (t.hall && t.seal) { S.seals[t.seal] = Date.now(); }
     save();
     await say(playerName() + ' got ' + acorns(money) + '!', id); if (!alive(id)) return;
-    if (t.hall && t.seal) { showSealCard(t.seal); sfx('evoFanfare'); sfx('levelup', 0.9); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
+    if (t.hall && t.seal) { showSealCard(t.seal); sfx('stinger_seal'); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
   }
   if (t && t.oneShot && (result === 'win' || result === 'tired')) {      // §6: Rook never repeats; the scene reads the result
     S.flags['story.rival1_done'] = true; S.flags['story.rival1_result'] = result === 'win' ? 'won' : 'lost'; save();
   }
   for (const lu of B.levelUps) {
     const p = petById(lu.id); if (!p) continue;
-    sfx('levelup'); await say(petName(p) + ' grew to Lv ' + lu.to + '!', id); if (!alive(id)) return;
+    sfx('stinger_levelup'); await say(petName(p) + ' grew to Lv ' + lu.to + '!', id); if (!alive(id)) return;
     for (const e of levelMoves(p, lu.from, lu.to)) { await teachMove(p, e.id, s => say(s, id)); if (!alive(id)) return; }
   }
   B.levelUps = []; save(); updateHUD();
@@ -2575,7 +2575,7 @@ function startEvolution(force){
 function finishEvolution(){
   const p = pet(), oldMax = maxHpOf(p); p.stage = evo.to; if (p.xp < EVO_XP[evo.to-1]) p.xp = EVO_XP[evo.to-1];
   carryHpOnEvolve(p, oldMax);                // new form's stats right away; current HP keeps the same % (rounded up)
-  p.happy = clamp(p.happy + 15, 0, 100); markCaught(evo.sp, p.stage); evo.done = true; sfx('evoFanfare');
+  p.happy = clamp(p.happy + 15, 0, 100); markCaught(evo.sp, p.stage); evo.done = true; sfx('stinger_evolve');
   $('#evoTitle').textContent = 'Congratulations!';
   $('#evoMsg').textContent = (cleanNick(p.nick) || nameOf(evo.sp, evo.from)) + ' evolved into ' + nameOf(evo.sp, evo.to) + '!';   // the nickname if set, like the toasts
   // BATTLE §3.3: the evolution move first, then the new form's level moves it already passed (one per OK tap).
@@ -3078,6 +3078,7 @@ function boot(){
       moving: !!fol.to, id: p ? p.id : null, tired: !!(p && isTired(p)), fainted: !!(p && isFainted(p)), bob: followerBob(now()), droop: p && isFainted(p) ? 1 : 0, under: fol.x === S.world.x && fol.y === S.world.y }; },
   };
   const cheats = {
+    runSteps: steps => { showTab('walk'); if (overlayOpen()) return false; runSteps(steps); return true; },   // debug: play ad-hoc scene steps (STINGERS test 14)
     forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
     forceBattle: (form, level) => {
       showTab('walk'); if (overlayOpen()) return;
