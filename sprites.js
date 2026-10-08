@@ -293,5 +293,46 @@ function buildTiles(){
     for (let y=0;y<16;y++) for (let x=0;x<16;x++){ const d=(x-7.5)**2+(y-6.5)**2;
       if (d<=49) px(g,PAL.k,x,y); if (d<=36) px(g,PAL.t,x,y); if (d<=36 && (x-6)**2+(y-5)**2<=12) px(g,PAL.g,x,y); if ((x-5)**2+(y-4)**2<=2) px(g,PAL.l,x,y); }
     px(g,PAL.k,6,13,4,3); px(g,PAL.p,7,13,2,3); });
+  // MAPS_SLICE §2 town tiles
+  T.R = mkTile(g => { px(g,PAL.r,0,0,16,16);
+    for (let y=0;y<12;y+=4){ px(g,PAL.p,0,y+3,16,1); for (let x=(y/4)%2*4;x<16;x+=8) px(g,PAL.p,x,y,1,3); px(g,PAL.o,((y/4)%2*4+2)%16,y+1,2,1); }
+    px(g,PAL.p,0,12,16,4); px(g,PAL.k,0,15,16,1); });
+  T.H = mkTile(g => { px(g,PAL.h,0,0,16,16); [3,7,11,15].forEach(y => px(g,PAL.m,0,y,16,1)); [[5,0],[12,4],[2,8],[9,12]].forEach(([x,y]) => px(g,PAL.m,x,y,1,3)); px(g,PAL.w,0,0,16,1); });
+  T.F = mkTile(g => { grassBase(g, 9); [1,12].forEach(x => { px(g,PAL.h,x,3,3,12); px(g,PAL.w,x,3,2,11); }); [5,10].forEach(y => { px(g,PAL.h,0,y,16,2); px(g,PAL.w,0,y,16,1); }); });
+  T.s = mkTile(g => { px(g,PAL.y,0,0,16,16); const r=rng(23); for(let i=0;i<12;i++) px(g, PAL.o, (r()*16)|0, (r()*16)|0); px(g,PAL.w,(r()*16)|0,(r()*16)|0); });
+  T.B = mkTile(g => { px(g,PAL.o,0,0,16,16); [3,7,11,15].forEach(x => px(g,PAL.d,x,0,1,16)); px(g,PAL.d,0,0,16,1); px(g,PAL.d,0,15,16,1); px(g,PAL.y,1,2,1,1); px(g,PAL.y,9,9,1,1); });
+  // INTERIORS §2.1 interior tiles (W2 = the window variant on odd columns)
+  const planks = g => { px(g,PAL.o,0,0,16,16); [4,9,14].forEach(y => px(g,PAL.d,0,y,16,1)); [[6,0],[13,5],[3,10]].forEach(([x,y]) => px(g,PAL.d,x,y,1,4)); };
+  T['#'] = mkTile(g => { planks(g); px(g,PAL.m,0,0,16,3); px(g,PAL.d,0,3,16,1); });
+  T.W = mkTile(g => { planks(g); px(g,PAL.d,0,15,16,1); });
+  T.W2 = mkTile(g => { planks(g); px(g,PAL.d,0,15,16,1); px(g,PAL.d,4,3,8,8); px(g,PAL.c,5,4,6,6); px(g,PAL.s,5,4,3,2); px(g,PAL.d,7,4,1,6); px(g,PAL.d,5,6,6,1); });
+  T['.'] = mkTile(g => { px(g,PAL.y,0,0,16,16); [0,5,10,15].forEach(y => px(g,PAL.o,0,y,16,1)); [[3,1],[11,6],[6,11]].forEach(([x,y]) => px(g,PAL.o,x,y,1,4)); });
+  T['='] = mkTile(g => { px(g,PAL.r,0,0,16,16); for (let y=2;y<16;y+=4) for (let x=(y%8?0:2);x<16;x+=4) px(g,PAL.p,x,y,1,1); });
+  T.m = mkTile(g => { px(g,PAL.y,0,0,16,16); px(g,PAL.d,1,3,14,10); px(g,PAL.o,2,4,12,8); for (let x=3;x<14;x+=2) px(g,PAL.d,x,5,1,6); });
   return T;
+}
+// World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
+function buildWorldArt(){
+  const A = {}, oval = (g, cx, cy, rx, ry, col) => { for (let y=0;y<16;y++) for (let x=0;x<16;x++) if (((x-cx)/rx)**2 + ((y-cy)/ry)**2 <= 1) px(g,col,x,y); };
+  A.door = mkTile(g => { px(g,PAL.d,3,2,10,14); px(g,PAL.o,4,3,8,13); px(g,PAL.d,7,4,1,12); px(g,PAL.y,10,9,1,2); px(g,PAL.d,4,2,8,1); });
+  A.sign = mkTile(g => { px(g,PAL.d,7,9,2,7); px(g,PAL.o,7,9,1,6); px(g,PAL.d,1,2,14,8); px(g,PAL.o,2,3,12,6); px(g,PAL.y,4,4,8,1); px(g,PAL.y,4,6,6,1); px(g,PAL.k,1,10,14,1); });
+  A.bed = mkTile(g => { px(g,PAL.d,1,0,14,16); px(g,PAL.w,2,1,12,4); px(g,PAL.h,2,4,12,1); px(g,PAL.r,2,5,12,10);
+    for (let y=5;y<15;y+=4) for (let x=2+((y-5)/4%2)*3;x<14;x+=6) px(g,PAL.y,x,y,3,2); px(g,PAL.k,1,15,14,1); });
+  A.rest_bed = mkTile(g => { oval(g,7.5,10,7,5,PAL.d); oval(g,7.5,10,6,4,PAL.o); oval(g,7.5,9.5,4.5,2.5,PAL.c); px(g,PAL.y,3,12,10,1); px(g,PAL.s,5,8,3,1); });
+  A.bookshelf = mkTile(g => { px(g,PAL.d,1,0,14,16); px(g,PAL.k,2,1,12,14); [5,10].forEach(y => px(g,PAL.d,2,y,12,1));
+    const cols = ['r','b','g','y','c','r','w']; [[1,4],[6,9],[11,14]].forEach(([y0,y1],j) => { for (let x=2,i=j;x<14;x+=2,i++) px(g,PAL[cols[i%cols.length]],x,y0+(i%2),1,y1-y0-(i%2)); }); });
+  A.mirror = mkTile(g => { px(g,PAL.o,4,13,1,3); px(g,PAL.o,11,13,1,3); px(g,PAL.o,5,13,6,1); oval(g,7.5,6.5,5,6.5,PAL.o); oval(g,7.5,6.5,4,5.5,PAL.c); oval(g,7.5,6.5,3,4.5,PAL.s); px(g,PAL.w,6,3,1,3); px(g,PAL.w,7,2,1,1); });
+  A.glowbox = mkTile(g => { px(g,PAL.d,1,3,14,12); px(g,PAL.o,2,4,12,10); px(g,PAL.k,3,5,8,8); px(g,PAL.c,4,6,6,6); px(g,PAL.s,4,6,3,2); px(g,PAL.y,12,6,1,1); px(g,PAL.y,12,9,1,1); px(g,PAL.d,3,15,2,1); px(g,PAL.d,11,15,2,1); });
+  A.pet_terminal = mkTile(g => { px(g,PAL.m,1,2,14,14); px(g,PAL.h,2,3,12,12); px(g,PAL.k,3,4,10,4); px(g,PAL.t,4,5,8,2); [3,7,11].forEach((x,i) => { px(g,PAL.d,x,10,3,3); px(g,i===1?PAL.l:PAL.y,x+1,11,1,1); }); px(g,PAL.k,1,15,14,1); });
+  A.table_small = mkTile(g => { px(g,PAL.d,4,10,1,6); px(g,PAL.d,11,10,1,6); oval(g,7.5,8,7,3,PAL.d); oval(g,7.5,7.5,6,2.2,PAL.o); px(g,PAL.w,7,3,3,4); px(g,PAL.h,7,6,3,1); px(g,PAL.w,10,4,1,2); });
+  const wicker = g => { px(g,PAL.d,2,6,12,9); px(g,PAL.o,3,7,10,7); for (let y=7;y<14;y+=2) for (let x=3+(y%4?1:0);x<13;x+=2) px(g,PAL.y,x,y,1,1); px(g,PAL.k,2,15,12,1); };
+  A.basket = mkTile(g => { wicker(g); px(g,PAL.w,2,4,12,3); px(g,PAL.c,3,5,10,1); px(g,PAL.y,7,3,2,1); });
+  A.basket_empty = mkTile(g => { wicker(g); px(g,PAL.d,3,7,10,2); px(g,PAL.w,10,3,4,4); px(g,PAL.h,11,6,3,1); });
+  A.wall_lantern = [0,1].map(f => mkTile(g => { px(g,PAL.d,7,0,2,3); px(g,PAL.d,5,3,6,1); px(g,PAL.y,5,4,6,8); px(g,PAL.d,6,5,4,6); px(g,PAL.o,7,7-f,2,3+f); px(g,PAL.y,7,8,2,1+f); px(g,PAL.d,5,12,6,1); }));
+  A.floor_lantern = [0,1].map(f => mkTile(g => { oval(g,7.5,4.5,6+f,4+f,'rgba(255,205,117,.25)'); px(g,PAL.d,7,8,2,7); px(g,PAL.d,4,15,8,1); px(g,PAL.y,5,1,6,7); px(g,PAL.d,6,2,4,5); px(g,PAL.o,7,4-f,2,3+f); px(g,PAL.y,7,5,2,1); }));
+  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'l'],[7,'s'],[11,'l']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.l,1,7,14,1); });
+  A.crate = mkTile(g => { px(g,PAL.d,1,3,14,13); px(g,PAL.o,2,4,12,11); px(g,PAL.d,2,9,12,1); for (let i=0;i<11;i++) px(g,PAL.d,2+i,4+i,1,1); px(g,PAL.y,3,5,1,1); });
+  A.pickup = mkTile(g => { oval(g,7.5,10,4,3.5,PAL.k); oval(g,7.5,10,3,2.5,PAL.r); px(g,PAL.w,6,9,1,1); px(g,PAL.y,7,6,2,2); px(g,PAL.w,12,4,1,1); px(g,PAL.y,11,4,3,1); px(g,PAL.y,12,3,1,3); });
+  A.talk = ['.wwwwww.','wwwwwwww','wkwkwkww','wwwwwwww','.wwwwww.','..ww....','.w......','........'];   // 8x8 speech bubble (INTERIORS §6)
+  return A;
 }

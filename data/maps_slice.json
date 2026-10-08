@@ -1,0 +1,268 @@
+{
+  "spec": "MAPS_SLICE.md", "version": "0.4.2", "tile_px": 16,
+  "note": "Source of truth for the slice maps, tiles, trainers and scenes. MAPS_SLICE.md mirrors it; maps_slice_check.py verifies both.",
+  "tiles": {
+    "T": {"name": "tree", "walk": false},
+    "w": {"name": "water", "walk": false},
+    "t": {"name": "tall grass", "walk": true, "roam": true},
+    "g": {"name": "grass", "walk": true, "roam": true},
+    "p": {"name": "path", "walk": true},
+    "f": {"name": "flowers", "walk": true, "roam": true},
+    "R": {"name": "roof", "walk": false},
+    "H": {"name": "house wall", "walk": false},
+    "F": {"name": "fence", "walk": false},
+    "s": {"name": "sand / stream bank", "walk": true, "roam": true},
+    "B": {"name": "bridge", "walk": true}
+  },
+  "maps": {
+    "hearthmoor": {
+      "name": "Hearthmoor", "backdrop": "town", "w": 24, "h": 20, "spawns": null, "respawn": {"x": 16, "y": 13, "facing": "down"}, "start": {"x": 3, "y": 5, "facing": "down"}, "safe": {"x": 3, "y": 6},
+      "zones": [],
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTTTTTT",
+        "TgggggggggggggTgggggTTTT",
+        "TgRRRRgTRRRRRRgRRRRgTTTT",
+        "TgRRRRggRRRRRRgRRRRgTTTT",
+        "TgHHHHggRRRRRRgHHHHgTTTT",
+        "TggpggggHHHHHHggpgggTTTT",
+        "TfgpgggggggpggggpgggTTTT",
+        "TggpggfggggpgfggpgggTTTT",
+        "Tggppppppppppppppppppppp",
+        "TgggggggggggggpgggggTTTT",
+        "TggggggggfggggpRRRRgTTTT",
+        "TgFFFgFFggggggpRRRRgTTTT",
+        "TgFffffFgssssspHHHHgTTTT",
+        "TgFffffFgswwwspppgggTTTT",
+        "TgFffffFgswwwsgggfggTTTT",
+        "TgFFFFFFgswwwsggggggTTTT",
+        "TggggggggsssssgggTggTTTT",
+        "TTgggfggggggfgggggTgTTTT",
+        "TgTggggggggggggggggTTTTT",
+        "TTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {"kind": "door", "id": "hm_home", "x": 3, "y": 5, "panel": "home"},
+        {"kind": "door", "id": "hm_lodge", "x": 11, "y": 6, "panel": "lodge", "keeper": "Warden Ilse Marrow"},
+        {"kind": "door", "id": "hm_lantern", "x": 16, "y": 13, "panel": "lantern"},
+        {"kind": "door", "id": "hm_rook", "x": 16, "y": 5, "panel": "rook_house"},
+        {"kind": "warp", "id": "hm_east", "x": 23, "y": 8, "to": "route1", "tx": 1, "ty": 8, "facing": "right", "need": "story.starter_received"},
+        {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 9, "text": "HEARTHMOOR · Hill village of keepers. East: Route 1."},
+        {"kind": "sign", "id": "hm_sign_lodge", "x": 12, "y": 7, "text": "WARDEN'S LODGE · Warden Ilse Marrow. New keepers, knock and come in."},
+        {"kind": "sign", "id": "hm_sign_lantern", "x": 17, "y": 13, "text": "LANTERN HOUSE · Rest and recover. Free, always."},
+        {"kind": "npc", "id": "hattie", "name": "Hattie", "x": 4, "y": 13, "lines": {"!story.starter_received": "Off to see Ilse? She's been fussing over three baskets since dawn.", "else": "Route 1 has shy crabs by the stream. On rainy days they come right out."}},
+        {"kind": "npc", "id": "rook_home", "name": "Rook", "x": 17, "y": 6, "when": ["!story.starter_received"], "lines": {"else": "Ilse's handing out partners today! Bet I get mine first. Just... warming up."}},
+        {"kind": "npc", "id": "rook_gate", "name": "Rook", "x": 22, "y": 8, "when": ["story.starter_received", "!story.rival1_done"], "scene": "rival1"},
+        {"kind": "trigger", "id": "hm_gate", "x": 21, "y": 8, "r": 0, "when": ["!story.starter_received"], "scene": "gate_home"},
+        {"kind": "trigger", "id": "hm_rival1", "x": 21, "y": 8, "r": 0, "when": ["story.starter_received", "!story.rival1_done"], "scene": "rival1"}
+      ]
+    },
+    "route1": {
+      "name": "Route 1", "backdrop": "route", "w": 48, "h": 20, "spawns": "route1", "respawn": null, "safe": {"x": 2, "y": 8},
+      "zones": [{"x": 4, "y": 2, "w": 6, "h": 5}, {"x": 11, "y": 11, "w": 9, "h": 6}, {"x": 26, "y": 2, "w": 4, "h": 5}, {"x": 28, "y": 11, "w": 13, "h": 6}, {"x": 41, "y": 2, "w": 5, "h": 4}],
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+        "TTTgggggggggggggggggggggggggggwwggggggggggggggTT",
+        "TTggttttttgggggggggggTTTggttsswwggggTTgggtttttTT",
+        "TgggttttttgggTTggggggTTTggttsswwgggggTgggtttttgT",
+        "TgggttttttgggTTgfggggTTTggttsswwgggggggggtttttgT",
+        "TgggttttttgggggggggggTTTggttsswwgggggggggtttttgT",
+        "TgggttttttggggggggggggggggttsswwgggfgggggggggggT",
+        "TgggggggggggggggggggggggggggggwwgggggggggggggggT",
+        "ppppppppppppppppppppppppppppppBBpppppppppppppppp",
+        "TggggggggggggggggggggggggfggggwwgggggggfgggggggT",
+        "TggfggggggggggggggggggggggggggwwggggggggggfggggT",
+        "TggggggggggtttttttttggggggggsswwsttttttttggggggT",
+        "TggggggggggtttttttttgggTTTggsswwsttttttttggggggT",
+        "TggggggggggtttttttttgggTTTggsswwsttttttttgggTTTT",
+        "TggggggggggtttttttttgggTTTggsswwsttttttttgggTTTT",
+        "TgggggfggggtttttttttgggTTTggsswwsttttttttgggTTTT",
+        "TggggggggggtttttttttggggggggggwwsttttttttgggTTTT",
+        "TTggggpgggggggggggggggggggggggwwggggggggggggTTTT",
+        "TTTgggpggTggggggggggTgggggggggwwgggggggggggggggT",
+        "TTTTTTpTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "r1_west", "x": 0, "y": 8, "to": "hearthmoor", "tx": 22, "ty": 8, "facing": "left"},
+        {"kind": "warp", "id": "r1_east", "x": 47, "y": 8, "to": "fernbrook", "tx": 1, "ty": 8, "facing": "right", "setFlag": "story.reached_fernbrook"},
+        {"kind": "sign", "id": "r1_sign_west", "x": 2, "y": 7, "text": "ROUTE 1 · Hearthmoor to Fernbrook. Tall grass hides shy creatures."},
+        {"kind": "sign", "id": "r1_sign_stream", "x": 29, "y": 9, "text": "STREAM BANK · Crabs collect bright glass here. Best after rain."},
+        {"kind": "sign", "id": "r1_sign_east", "x": 45, "y": 7, "text": "FERNBROOK · Orchard village, just ahead."},
+        {"kind": "warp", "id": "r1_south", "x": 6, "y": 19, "to": "proto", "tx": 3, "ty": 1, "facing": "down"},
+        {"kind": "sign", "id": "r1_sign_meadow", "x": 5, "y": 18, "text": "OLD MEADOW · South. Wild, quiet, a little overgrown. Every kind of creature wanders in."},
+        {"kind": "trainer", "id": "route1_pia", "x": 10, "y": 6},
+        {"kind": "trainer", "id": "route1_tam", "x": 32, "y": 11},
+        {"kind": "trainer", "id": "route1_ollie", "x": 42, "y": 7},
+        {"kind": "pickup", "id": "r1_snack", "x": 2, "y": 16, "item": "heal_snack", "n": 1},
+        {"kind": "pickup", "id": "r1_treat", "x": 45, "y": 3, "item": "befriend_treat", "n": 2}
+      ]
+    },
+    "fernbrook": {
+      "name": "Fernbrook", "backdrop": "town", "w": 32, "h": 20, "spawns": "fernbrook", "respawn": {"x": 5, "y": 5, "facing": "down"}, "safe": {"x": 5, "y": 6},
+      "zones": [{"x": 3, "y": 11, "w": 13, "h": 7}, {"x": 19, "y": 11, "w": 10, "h": 6}],
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+        "TTggggggggggTTgggggRRRRRRRRggggT",
+        "TggRRRRRRggggggggggRRRRRRRRgTTgT",
+        "TggRRRRRRggfgggggggRRRRRRRRggTgT",
+        "TggHHHHHHggggggfgggRRRRRRRRggggT",
+        "TggggpgggggggggggggHHHHHHHHggggT",
+        "TggggpggggfgggggggggggpggggggggT",
+        "TggggpgggggggggggfggggpggggfgggT",
+        "pppppppppppppppppppppppppppppppT",
+        "TggggggggggggggggggggggggggggggT",
+        "TgFFFFFFFgFFFFFFFgggggggggggggTT",
+        "TgFtttttttttttttFggssssssttttggT",
+        "TgFtTtTtTtTtTtTtFggswwwwsttttfgT",
+        "TgFtttttttttttttFggswwwwsttttggT",
+        "TgFtttttttttttttFggswwwwsttttggT",
+        "TgFtTtTtTtTtTtTtFggswwwwsttttggT",
+        "TgFtttttttttttttFggssssssttttggT",
+        "TgFtttttttttttttFTgggggggggggTgT",
+        "TgFFFFFFFFFFFFFFFgTgggggggggggTT",
+        "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "fb_west", "x": 0, "y": 8, "to": "route1", "tx": 46, "ty": 8, "facing": "left"},
+        {"kind": "door", "id": "fb_lantern", "x": 5, "y": 5, "panel": "lantern", "keeper": "Keeper Amos"},
+        {"kind": "door", "id": "fb_hall", "x": 22, "y": 6, "panel": "hall1", "need": "story.orchard_cleared", "deny": "The door is latched. A note: 'Out in the orchard. — Fen'"},
+        {"kind": "sign", "id": "fb_sign_town", "x": 2, "y": 7, "text": "FERNBROOK · Orchard village. Home of the Bloom Trial Hall."},
+        {"kind": "sign", "id": "fb_sign_hall", "x": 24, "y": 7, "text": "TRIAL HALL · Master Fen. Bring a strong root and a stronger heart."},
+        {"kind": "sign", "id": "fb_sign_route2", "x": 29, "y": 7, "text": "ROUTE 2 · Closed after a rockslide. The crews say: soon!"},
+        {"kind": "prop", "id": "fb_lantern_stand", "x": 13, "y": 6, "sprite": "glimmer_stand"},
+        {"kind": "prop", "id": "fb_crate_a", "x": 14, "y": 16, "sprite": "crate", "when": ["!story.orchard_cleared"]},
+        {"kind": "prop", "id": "fb_crate_b", "x": 15, "y": 16, "sprite": "crate", "when": ["!story.orchard_cleared"]},
+        {"kind": "npc", "id": "juniper", "name": "Associate Juniper", "x": 14, "y": 6, "scene": "glimmer1", "lines": {"else": "Glimmerwell Co. Lighting the Kindlewild, one lantern at a time!"}},
+        {"kind": "wild", "id": "faded_fuzzwick", "x": 13, "y": 7, "form": "moth/0", "level": 4, "faded": 3, "moves": ["wobble"], "befriendBonus": 0.1, "when": ["!story.faded_fuzzwick"], "scene": "faded1"},
+        {"kind": "npc", "id": "fen_orchard", "name": "Master Fen", "x": 10, "y": 9, "when": ["!story.orchard_cleared"], "scene": "fen_intro"},
+        {"kind": "trainer", "id": "fern_associate", "x": 9, "y": 14},
+        {"kind": "npc", "id": "odile", "name": "Odile", "x": 27, "y": 9, "lines": {"else": "On snowy mornings a little Chillbit nibbles windfalls by the orchard. Fen's creatures hate the cold, you know."}},
+        {"kind": "pickup", "id": "fb_snack", "x": 28, "y": 16, "item": "heal_snack", "n": 1},
+        {"kind": "npc", "id": "rook_fb", "name": "Rook", "x": 22, "y": 8, "when": ["seal:seal_fernbrook", "!story.slice_end"], "scene": "teaser"},
+        {"kind": "trigger", "id": "fb_glimmer", "x": 13, "y": 8, "r": 3, "when": ["!story.met_glimmerwell"], "scene": "glimmer1"},
+        {"kind": "trigger", "id": "fb_teaser", "x": 22, "y": 6, "r": 0, "when": ["seal:seal_fernbrook", "!story.slice_end"], "scene": "teaser"}
+      ]
+    },
+    "proto": {
+      "name": "Old Meadow", "backdrop": "meadow", "w": 24, "h": 20, "spawns": "proto", "respawn": null, "safe": {"x": 3, "y": 3},
+      "zones": [{"x": 1, "y": 1, "w": 22, "h": 18}],
+      "grid": [
+        "TTTpTTTTTTTTTTTTTTTTTTTT",
+        "TggpgggttttgggTTggggtttT",
+        "TgfpggtttttggggggfgttttT",
+        "TggppppppppppppppgggtttT",
+        "TggpggggggggwwwgpgggggTT",
+        "TttpgTTggfggwwwgpggtttgT",
+        "TttpgTggggggwwwwpggttttT",
+        "TttpggggttttgwwgpggttttT",
+        "TggpggggttttggggpgggggTT",
+        "TggpppppppppppppppppgggT",
+        "TfggggggpgggggggggfpgggT",
+        "TgtttgggpgggTTgggggpgtgT",
+        "TgttttggpgggTTggwwwpttgT",
+        "TgttttggpggggggwwwwpttgT",
+        "TggtttggpgfggggwwwgpggTT",
+        "TgggggggppppppppppppgggT",
+        "TTggfgggggtttttggggggggT",
+        "TggggTTgggttttttgggfgggT",
+        "TggggggggggtttggggggTTTT",
+        "TTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "om_north", "x": 3, "y": 0, "to": "route1", "tx": 6, "ty": 18, "facing": "up"},
+        {"kind": "sign", "id": "om_sign", "x": 4, "y": 1, "text": "OLD MEADOW · Where many keepers took their very first walk."}
+      ]
+    }
+  },
+  "trainers": {
+    "route1_pia": {"name": "Pia", "title": "Kite Kid", "map": "route1", "x": 10, "y": 6, "facing": "down", "sight": 3, "ai": "basic", "team": [{"form": "gust/0", "level": 4}, {"form": "beetle/0", "level": 5}], "money": null, "lines": {"intro": "My kites never lose!", "win": "Aw, my string snapped...", "lose": "Ha! Rest up and come back, {player}."}},
+    "route1_tam": {"name": "Tam", "title": "Beachcomber", "map": "route1", "x": 32, "y": 11, "facing": "up", "sight": 3, "ai": "basic", "team": [{"form": "crab/0", "level": 5}, {"form": "crab/0", "level": 6}], "money": null, "lines": {"intro": "See this blue glass? My crabs found it. Want to see them fight for it?", "win": "They'll find more glass. They always do.", "lose": "Shiny shells, shiny wins!"}},
+    "route1_ollie": {"name": "Ollie", "title": "Moth Watcher", "map": "route1", "x": 42, "y": 7, "facing": "left", "sight": 3, "ai": "basic", "team": [{"form": "moth/0", "level": 6}, {"form": "dormouse/0", "level": 7}], "money": null, "lines": {"intro": "Shh, I'm waiting for moths. Fine, one quick battle.", "win": "You scared the moths off... worth it.", "lose": "Lantern moths love a winner."}},
+    "rival1_rook": {"name": "Rook", "title": "Rival", "map": "hearthmoor", "x": 22, "y": 8, "facing": "left", "sight": 0, "ai": "basic", "oneShot": true, "team": null, "counterTeam": {"ember": [{"form": "tide/0", "level": 5}], "tide": [{"form": "bloom/0", "level": 5}], "bloom": [{"form": "ember/0", "level": 5}]}, "money": null, "lines": {"intro": "Mine's a perfect match for yours. Let's see whose kindle burns brighter!", "win": "Okay, okay. You got lucky.", "lose": "Ha! Told you mine was the perfect match."}},
+    "fern_associate": {"name": "Tobin", "title": "Glimmerwell Associate", "map": "fernbrook", "x": 9, "y": 14, "facing": "up", "sight": 3, "ai": "basic", "team": [{"form": "beetle/0", "level": 8}, {"form": "moth/0", "level": 9}], "money": null, "onWin": "orchard", "lines": {"intro": "Hi! We're relocating these little ones to a Comfort Sanctuary. It's a partnership!", "win": "Wow, okay! I'll... check with my manager. Have a bright day!", "lose": "See? They're happier with us. Have a bright day!"}}
+  },
+  "scenes": {
+    "intro": [
+      ["say", "", "Morning! Sunlight pokes through the shutters."],
+      ["say", "", "You check the little mirror by the door."],
+      ["lookPick"],
+      ["say", "", "A note is pinned to your door:"],
+      ["say", "", "\"Come to the Warden's Lodge when you wake. Someone small is waiting. — I. Marrow\""],
+      ["setFlag", "story.intro_seen", true]
+    ],
+    "starter": [
+      ["say", "Warden Ilse", "There you are! Come in, come in. Mind the baskets, they wriggle."],
+      ["if", "!has:name", [["nameEntry", "player", "First things first. What do folk call you?", "Wayfarer", 10]]],
+      ["say", "Warden Ilse", "{name}. A good name for the road."],
+      ["say", "Warden Ilse", "Every keeper starts with one friend who trusts them. Let me get a feel for you."],
+      ["choice", "A storm catches you on the hill path. What do you do?", [["Race it home!", [["say", "Warden Ilse", "Ha! Quick feet and a warm heart."]], "ember"], ["Splash in the puddles", [["say", "Warden Ilse", "Rain never hurt anyone who laughs at it."]], "tide"], ["Wait under a tree", [["say", "Warden Ilse", "Patient. The wild loves a patient keeper."]], "bloom"]]],
+      ["choice", "And a shy creature hides from you in the grass?", [["Make it laugh", [], "ember"], ["Sit down and wait", [], "tide"], ["Leave a snack, step back", [], "bloom"]]],
+      ["say", "Warden Ilse", "Then I think {suggest} would suit you. But any of them would be lucky. You choose."],
+      ["showBasket", {"ember": "A little fire fox with a warm nose and no patience at all. Loves a game of chase.", "tide": "A bubbly water drop, calm as a pond. Nothing ruffles it. Except bath time, oddly.", "bloom": "A sprouting bunny. Shy at first, then braver than anyone I know."}],
+      ["givePet", "$line"],
+      ["say", "", "{species} hops out of the basket and sniffs your boots."],
+      ["nameEntry", "partner", "Give it a name?", null, 10],
+      ["say", "Warden Ilse", "{pet} and {name}. I like the sound of that."],
+      ["if", "!story.starter_received", [["say", "", "The door bangs open. Rook skids in, out of breath."], ["say", "Rook", "Did I miss it? Aw, you picked already! Then I'll take... that one!"], ["say", "", "Rook scoops up the {rival} basket and grins at you."], ["say", "Rook", "{rivalType} beats {type}, everybody knows that. Meet me at the east gate!"], ["say", "Warden Ilse", "That boy. Well, now you each have someone to grow with."]]],
+      ["say", "Warden Ilse", "Feed them, play, let them rest. A bright kindle is the best armour there is."],
+      ["give", "heal_snack", 2],
+      ["give", "befriend_treat", 3],
+      ["respawnHere"],
+      ["say", "Warden Ilse", "Snacks for the road, treats for shy ones. The Lantern House by the gate is always lit."],
+      ["setFlag", "story.starter_line", "$line"],
+      ["setFlag", "story.starter_received", true]
+    ],
+    "ask_name": [
+      ["say", "Warden Ilse", "Ah, {pet}'s keeper! I never did write your name in my ledger."],
+      ["nameEntry", "player", "What do folk call you?", "Wayfarer", 10],
+      ["say", "Warden Ilse", "{name}. There, it's in the book. Off you go, the Kindlewild is awake."]
+    ],
+    "rename": [
+      ["say", "Warden Ilse", "A new name for my ledger? Easy. I'll just smudge the old one."],
+      ["nameEntry", "player", "What should I write down?", "Wayfarer", 10],
+      ["say", "Warden Ilse", "{name}. There, freshly inked. It suits you."]
+    ],
+    "gate_home": [
+      ["say", "", "The path out of town is no place to walk alone. Ilse is waiting at the Warden's Lodge."],
+      ["push", -1, 0]
+    ],
+    "rival1": [
+      ["say", "Rook", "Hey, wait up! Me and {rival} have been practising. For ten whole minutes."],
+      ["battle", "rival1_rook"],
+      ["if", "story.rival1_result=won", [["say", "Rook", "Okay, okay, you two are good. Race you to Fernbrook!"]], [["say", "Rook", "Ha! Don't sweat it, the Lantern House fixes everyone up."], ["say", "Rook", "Race you to Fernbrook! Last one there feeds the other one's pet!"]]]
+    ],
+    "glimmer1": [
+      ["say", "Associate Juniper", "Hi there! Free Glimmer lantern? Brighter by nature!"],
+      ["say", "Associate Juniper", "Your friend with the spiky hair took two!"],
+      ["say", "Associate Juniper", "That grey moth? It just loves our lanterns. It'll perk up! Have a bright day!"],
+      ["setFlag", "story.met_glimmerwell", true]
+    ],
+    "faded1": [
+      ["say", "", "A grey Fuzzwick is huddled under the lantern. It barely looks up."],
+      ["encounter", "faded_fuzzwick"],
+      ["if", "story.faded_fuzzwick", [["say", "Associate Juniper", "Oh! It likes you. Keep it, our gift!"]]]
+    ],
+    "fen_intro": [
+      ["say", "Master Fen", "A Wayfarer! Forgive me, I'm worried. Associates are packing my orchard friends into crates."],
+      ["say", "Master Fen", "\"Relocating\", they said. Would you go and see? The Hall can wait."],
+      ["setFlag", "story.met_fen", true]
+    ],
+    "orchard": [
+      ["say", "", "The crates pop open. Pomlets tumble out and scurry up the apple trees."],
+      ["say", "Master Fen", "Thank you, truly. The Hall is open. Come when you're ready, and bring your best."],
+      ["setFlag", "story.orchard_cleared", true]
+    ],
+    "seal1": [
+      ["say", "Master Fen", "This is the Fernbrook Seal. Wear it kindly."],
+      ["give", "heal_snack", 2],
+      ["say", "Master Fen", "Orchard snacks, too. Growing things need feeding."],
+      ["setFlag", "story.seal1", true]
+    ],
+    "teaser": [
+      ["say", "Rook", "You beat Fen? Me too! Well... almost."],
+      ["say", "Rook", "Look: Glimmerwell picked me for \"Junior Bright\". Clean energy, Wayfarer!"],
+      ["say", "Rook", "See you in Cobblecrest, once they clear that rockslide."],
+      ["say", "", "Route 2 opens in the next update. Thanks for playing the slice!"],
+      ["setFlag", "story.slice_end", true]
+    ]
+  }
+}

@@ -16,8 +16,16 @@ const PPSave = (() => {
   const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse']);
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
-  const MAPS = ['proto'];                       // the only map today (the 24x20 Walk map)
-  const MAP_W = 24, MAP_H = 20;
+  // MAPS_SLICE §10 / INTERIORS §5: map ids and sizes come from data/mapdata.js (maps_slice.json + interiors.json rooms).
+  const MD = typeof MAPDATA === 'object' ? MAPDATA : null;
+  const MAP_SIZE = {};
+  if (MD) { for (const [id, m] of Object.entries(MD.maps_slice.maps)) MAP_SIZE[id] = [m.w, m.h]; for (const [id, m] of Object.entries(MD.interiors.maps)) MAP_SIZE[id] = [m.w, m.h]; }
+  else MAP_SIZE.proto = [24, 20];
+  const MAPS = Object.keys(MAP_SIZE);
+  const MAP_W = 24, MAP_H = 20;                 // v1 positions were on the 24x20 proto map
+  const NEW_GAME = MD ? MD.interiors.newGame : { map: 'proto', x: 3, y: 3, facing: 'down' };
+  const LODGE_STEP = { map: 'hearthmoor', x: 11, y: 6, facing: 'up' };          // mid-starter resume (MAPS_SLICE §10)
+  const LANTERN_STEP = { map: 'hearthmoor', x: 16, y: 13, facing: 'down' };     // existing saves / unknown maps (§10)
   const V1_KNOWN = ['v', 'uid', 'created', 'last', 'pets', 'active', 'seen', 'steps', 'pos'];
   const FACINGS = ['up', 'down', 'left', 'right'], TEXT_SPEEDS = ['slow', 'normal', 'fast'], BACKUPS = ['ok', 'existing', 'failed'];
 
@@ -39,8 +47,8 @@ const PPSave = (() => {
   };
   function writeCorrupt(from, raw){ ls.set(CORRUPT_KEY, JSON.stringify({ at: Date.now(), from, raw })); }
 
-  // The fresh-game start (MAPS_SLICE: the current start map's start tile). A new object every call: nothing can share or keep it.
-  const startWorld = () => ({ map: 'proto', x: 3, y: 3, facing: 'down', respawn: null });
+  // The fresh-game start: INTERIORS §3.3 newGame = your home room hm_home_in (1,3) facing down. A new object every call.
+  const startWorld = () => ({ map: NEW_GAME.map, x: NEW_GAME.x, y: NEW_GAME.y, facing: NEW_GAME.facing, respawn: null });
   function defaultStateV2(now = Date.now()){
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
       dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: startWorld(),
@@ -88,6 +96,33 @@ const PPSave = (() => {
     return q;
   }
   const formId = (species, stage) => species + '/' + stage;
+  const setWorld = (s, at) => { Object.assign(s.world, { map: at.map, x: at.x, y: at.y, facing: at.facing }); };
+  // MAPS_SLICE §10 + INTERIORS §3.3, after pets and flags are normalized (idempotent):
+  // - no pets, no story.intro_seen: a new game, always at newGame (home room 1,3): nothing from an old position survives;
+  // - no pets but intro_seen: closed mid-`starter` -> the Lodge doorstep (11,6) facing up;
+  // - pets on `proto` with no intro_seen (a save from before the maps): skip the opening -> Hearthmoor Lantern doorstep, starter flags set;
+  // - pets but intro_seen without starter_received (defensive): the same flags, in place;
+  // - unknown map id -> the Lantern doorstep; a position off the map is clamped to its size (Route 1 is 48 wide).
+  function placeWorld(s){
+    const w = s.world, f = s.flags, pets = s.party.length + s.box.length;
+    if (!pets) {
+      if (!f['story.intro_seen']) { s.world = startWorld(); return; }
+      if (!f['story.starter_received'] || !MAPS.includes(w.map)) setWorld(s, LODGE_STEP);
+    } else {
+      const old = !f['story.intro_seen'];      // pets but no intro: a save from before Phase M (they all lived in Old Meadow)
+      if (old || !f['story.starter_received']) {
+        const lead = s.party.find(p => p.id === s.partnerId) || s.party[0];
+        const sp = lead && SPECIES[speciesIndex()[lead.species]];
+        if (!['ember', 'tide', 'bloom'].includes(f['story.starter_line'])) f['story.starter_line'] = sp && sp.starter ? sp.id : 'ember';
+        f['story.intro_seen'] = true; f['story.starter_received'] = true;
+        if (old) { setWorld(s, LANTERN_STEP); w.respawn = 'hearthmoor'; }
+        if (!w.respawn) w.respawn = 'hearthmoor';
+      }
+      if (!MAPS.includes(w.map)) { setWorld(s, LANTERN_STEP); if (!w.respawn) w.respawn = 'hearthmoor'; }
+    }
+    const [mw, mh] = MAP_SIZE[s.world.map] || [24, 20];
+    s.world.x = clamp(s.world.x, 0, mw - 1); s.world.y = clamp(s.world.y, 0, mh - 1);
+  }
 
   // §5: pure, `now` injected. `backup` is the result of the .bak write (§4 step 4).
   function migrateV1toV2(o, now, backup = null){
@@ -138,12 +173,8 @@ const PPSave = (() => {
     fill(s, 'world', isObj, d.world);
     const w = s.world;
     fill(w, 'map', x => typeof x === 'string', 'proto');
-    if (!MAPS.includes(w.map)) { w.map = 'proto'; w.x = 3; w.y = 3; }
     fill(w, 'x', Number.isInteger, 3); fill(w, 'y', Number.isInteger, 3);
-    fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || typeof x === 'string', null);
-    // A game with no pets has not reached the starter yet, so it always opens at the start tile: a position left in a
-    // pet-less save (however it got there) can never carry over into a new game's opening.
-    if (!s.party.length && !s.box.length) s.world = startWorld();
+    fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || x === 'hearthmoor' || x === 'fernbrook', null);
     for (const k of ['bag', 'seals', 'flags']) fill(s, k, isObj, {});
     fill(s, 'money', x => Number.isInteger(x) && x >= 0, 0);
     fill(s, 'eggs', isObj, d.eggs);
@@ -177,6 +208,7 @@ const PPSave = (() => {
     if (s.party.length > PARTY_MAX) s.box.push(...s.party.splice(PARTY_MAX));
     if (!s.party.length && s.box.length) s.party.push(s.box.shift());
     if (!s.party.some(p => p.id === s.partnerId)) s.partnerId = s.party[0] ? s.party[0].id : null;
+    placeWorld(s);
     return s;
   }
 
@@ -253,5 +285,5 @@ const PPSave = (() => {
   }
 
   return Object.freeze({ PLAYER_NAME_MAX, V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, GAME_KEYS, startOver, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
-    defaultStateV2, startWorld, migrateV1toV2, normalizeV2, loadSave, writeV2, devCheck });
+    defaultStateV2, startWorld, MAPS, MAP_SIZE, migrateV1toV2, normalizeV2, loadSave, writeV2, devCheck });
 })();

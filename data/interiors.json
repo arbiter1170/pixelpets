@@ -1,0 +1,223 @@
+{
+  "spec": "INTERIORS_DIALOG.md",
+  "version": "1.0",
+  "status": "v1.0, ready to build (approved by Vincent Oct 8, 2026); build inside MAPS Phase M, after BATTLE",
+  "decisions": {"1_phase_m": "Phase M builds the four Hearthmoor rooms, not the Hearthmoor place panels (#ovPlace only for Fernbrook)", "2_fernbrook": "Fernbrook interiors come later, after Route 2; panels until then", "3_respawn": "losing a battle wakes you inside the Hearthmoor Lantern House by the beds (respawnIn)", "4_home_nap": "the home bed nap heals only; it never sets the respawn", "5_talk_ui": "Talk button in the d-pad centre + keeper-sprite portraits (2x, hidden under 360 px)", "6_chatter": "ambient chatter in the first build, Hattie and Rook only"},
+  "tile_px": 16,
+  "_about": "Hearthmoor interiors + dialog polish (INTERIORS_DIALOG.md). Source of truth for the interior tiles, rooms, new scenes and the slicePatch that swaps Hearthmoor's place panels for rooms. maps_slice.json is never modified: the game applies slicePatch at load, after maps_slice.json (and after act1_route2.json's patch, which touches only Fernbrook). Fernbrook keeps its place panels until a later pass after Route 2 (decision 2). Checker: interiors_check.py.",
+  "viewport": {"note": "Walk map at 390x844 shows about 11x13 tiles (2x scale); at 320 wide it renders at 1x and shows more. Rooms must fit 11x13.", "maxW": 11, "maxH": 13},
+  "tiles": {
+    "#": {"name": "wall (top / sides)", "walk": false},
+    "W": {"name": "wall face (window)", "walk": false},
+    ".": {"name": "wood floor", "walk": true},
+    "=": {"name": "rug", "walk": true},
+    "m": {"name": "exit mat", "walk": true}
+  },
+  "newGame": {"map": "hm_home_in", "x": 1, "y": 3, "facing": "down", "scene": "intro"},
+  "maps": {
+    "hm_home_in": {
+      "name": "Your Home", "kind": "interior", "outdoor": "hearthmoor", "door": "hm_home", "backdrop": "town",
+      "w": 9, "h": 8, "spawns": null, "zones": [], "safe": {"x": 4, "y": 6},
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#..===..#",
+        "#..===..#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "home_mat", "x": 4, "y": 7, "to": "hearthmoor", "tx": 3, "ty": 5, "facing": "down"},
+        {"kind": "prop", "id": "home_bed", "x": 1, "y": 2, "sprite": "bed", "lines": {"else": "@home_bed"}},
+        {"kind": "prop", "id": "home_terminal", "x": 3, "y": 2, "sprite": "pet_terminal", "lines": {
+          "!story.starter_received": "Your pet-box terminal. A row of empty nests glows softly, waiting for someone small.",
+          "else": "Your pet-box terminal hums. Friends you keep but don't walk with rest here. (See the PETS tab.)"}},
+        {"kind": "prop", "id": "home_glowbox", "x": 5, "y": 2, "sprite": "glowbox", "lines": {
+          "story.met_glimmerwell": "An ad: \"Glimmerwell. Brighter by nature.\" The jingle is a little too cheerful.",
+          "else": "A morning show: \"Keepers of the Kindlewild!\" Today: how to tuck in a very sleepy creature."}},
+        {"kind": "prop", "id": "home_bookshelf", "x": 7, "y": 2, "sprite": "bookshelf", "lines": {
+          "story.seal1": "Your map of the Kindlewild. You've inked a tiny Seal beside Fernbrook.",
+          "else": "Keeper primers and a dog-eared map of the Kindlewild. Someone drew a star on Fernbrook."}},
+        {"kind": "prop", "id": "home_table", "x": 7, "y": 5, "sprite": "table_small", "lines": {
+          "else": "A chipped mug and yesterday's crumbs. The kettle is still warm."}},
+        {"kind": "prop", "id": "home_mirror", "x": 3, "y": 6, "sprite": "mirror", "lines": {"else": "@home_mirror"}},
+        {"kind": "sign", "id": "home_note", "x": 5, "y": 6, "when": ["!story.starter_received"],
+          "text": "Ilse's note: \"Come to the Warden's Lodge when you wake. Someone small is waiting. — I. Marrow\""},
+        {"kind": "sign", "id": "home_note_kept", "x": 5, "y": 6, "when": ["story.starter_received"],
+          "text": "Ilse's note, folded neat. Someone small found you after all."}
+      ]
+    },
+    "hm_lodge_in": {
+      "name": "Warden's Lodge", "kind": "interior", "outdoor": "hearthmoor", "door": "hm_lodge", "backdrop": "town",
+      "w": 11, "h": 9, "spawns": null, "zones": [], "safe": {"x": 5, "y": 7},
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#..=====..#",
+        "#..=====..#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "lodge_mat", "x": 5, "y": 8, "to": "hearthmoor", "tx": 11, "ty": 6, "facing": "down"},
+        {"kind": "npc", "id": "ilse_lodge", "name": "Warden Ilse", "look": "ilse", "x": 5, "y": 3, "facing": "down",
+          "when": ["!story.starter_received"], "scene": "starter"},
+        {"kind": "npc", "id": "ilse_lodge_after", "name": "Warden Ilse", "look": "ilse", "x": 5, "y": 3, "facing": "down",
+          "when": ["story.starter_received"], "lines": {"!has:name": "@ask_name", "else": "@ilse_chat"}},
+        {"kind": "trigger", "id": "lodge_hello", "x": 5, "y": 6, "r": 1, "when": ["story.intro_seen", "!story.starter_received"], "scene": "starter"},
+        {"kind": "trigger", "id": "lodge_name", "x": 5, "y": 6, "r": 1, "when": ["story.starter_received", "!has:name"], "scene": "ask_name"},
+        {"kind": "prop", "id": "lodge_lantern", "x": 1, "y": 2, "sprite": "wall_lantern", "lines": {
+          "else": "The lodge lantern. Every dusk, Ilse lights the Lantern House from this flame."}},
+        {"kind": "prop", "id": "lodge_basket_e", "x": 3, "y": 2, "sprite": "basket", "when": ["!story.starter_received"], "lines": {
+          "else": "A warm basket. Something with a hot little nose sniffs at you through the weave."}},
+        {"kind": "prop", "id": "lodge_basket_t", "x": 5, "y": 2, "sprite": "basket", "when": ["!story.starter_received"], "lines": {
+          "else": "A cool, damp basket. Something inside goes \"blub\" very politely."}},
+        {"kind": "prop", "id": "lodge_basket_b", "x": 7, "y": 2, "sprite": "basket", "when": ["!story.starter_received"], "lines": {
+          "else": "A leafy basket. A pair of long ears ducks back under the cloth."}},
+        {"kind": "prop", "id": "lodge_empty_a", "x": 3, "y": 2, "sprite": "basket_empty", "when": ["story.starter_received"], "lines": {
+          "else": "An empty basket, still warm from its sleeper."}},
+        {"kind": "prop", "id": "lodge_empty_b", "x": 5, "y": 2, "sprite": "basket_empty", "when": ["story.starter_received"], "lines": {
+          "else": "A scrap of paper in this one: \"ROOK'S! HANDS OFF!\""}},
+        {"kind": "prop", "id": "lodge_empty_c", "x": 7, "y": 2, "sprite": "basket_empty", "when": ["story.starter_received"], "lines": {
+          "else": "Empty. Ilse has tucked the last little one in by the fire."}},
+        {"kind": "prop", "id": "lodge_ledger", "x": 9, "y": 2, "sprite": "bookshelf", "lines": {
+          "!has:name": "Ilse's ledger: keepers old and new, in careful ink. The newest line is still blank.",
+          "else": "Ilse's ledger: keepers old and new, in careful ink. Near the end, freshly written: {player}."}}
+      ]
+    },
+    "hm_lantern_in": {
+      "name": "Lantern House", "kind": "interior", "outdoor": "hearthmoor", "door": "hm_lantern", "backdrop": "town",
+      "w": 9, "h": 7, "spawns": null, "zones": [], "safe": {"x": 4, "y": 5},
+      "respawnSpot": {"x": 2, "y": 3, "facing": "up"},
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#..===..#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "lantern_mat", "x": 4, "y": 6, "to": "hearthmoor", "tx": 16, "ty": 13, "facing": "down"},
+        {"kind": "prop", "id": "lantern_bed_a", "x": 1, "y": 2, "sprite": "rest_bed", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "lantern_bed_b", "x": 2, "y": 2, "sprite": "rest_bed", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "lantern_bed_c", "x": 3, "y": 2, "sprite": "rest_bed", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "lantern_light", "x": 5, "y": 2, "sprite": "floor_lantern", "lines": {
+          "else": "The town lantern. Its glow feels like a hand on your shoulder."}},
+        {"kind": "sign", "id": "lantern_note", "x": 7, "y": 2, "text": "A note on the shelf: \"Rest as long as you like. — I.\""}
+      ]
+    },
+    "hm_rook_in": {
+      "name": "Rook's House", "kind": "interior", "outdoor": "hearthmoor", "door": "hm_rook", "backdrop": "town",
+      "w": 7, "h": 6, "spawns": null, "zones": [], "safe": {"x": 3, "y": 4},
+      "grid": [
+        "#######",
+        "#WWWWW#",
+        "#.....#",
+        "#.....#",
+        "#.....#",
+        "###m###"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "rook_mat", "x": 3, "y": 5, "to": "hearthmoor", "tx": 16, "ty": 5, "facing": "down"},
+        {"kind": "npc", "id": "mrs_calloway", "name": "Mrs. Calloway", "x": 1, "y": 3, "facing": "right",
+          "look": "calloway",
+          "lines": {
+            "!talked": "Oh! Hello, dear. Rook's out, as usual. Mind the kite string on the floor.",
+            "!story.starter_received": "Rook bolted out at sunrise. That boy runs everywhere. Ilse's handing out partners today!",
+            "story.slice_end": "Rook says he's a \"Junior Bright\" now. Sounds very shiny. I just hope they feed him.",
+            "else": "If you see Rook on the road, tell him supper keeps. And to wipe his boots."}},
+        {"kind": "prop", "id": "rook_table", "x": 4, "y": 2, "sprite": "table_small", "lines": {
+          "else": "Toast crumbs and a half-drawn kite plan labelled \"FASTEST KITE EVER (MINE)\"."}},
+        {"kind": "prop", "id": "rook_shelf", "x": 5, "y": 2, "sprite": "bookshelf", "lines": {
+          "story.met_glimmerwell": "Adventure comics, and a shiny Glimmerwell flyer tucked in front. \"Be Bright!\"",
+          "else": "Adventure comics, a cracked kite spool and a jar of very interesting pebbles."}}
+      ]
+    }
+  },
+  "slicePatch": {
+    "_note": "Applied at load after maps_slice.json. Hearthmoor's four place-panel doors become room doors (same ids and doorsteps; panel -> to/tx/ty/facing). Hattie and Rook gain ambient chatter (all other fields unchanged). Hearthmoor respawns land inside the Lantern House. Fernbrook is untouched.",
+    "maps": {
+      "hearthmoor": {
+        "set": {"respawnIn": {"map": "hm_lantern_in", "x": 2, "y": 3, "facing": "up"}},
+        "replaceObjs": [
+          {"kind": "door", "id": "hm_home", "x": 3, "y": 5, "to": "hm_home_in", "tx": 4, "ty": 6, "facing": "up"},
+          {"kind": "door", "id": "hm_lodge", "x": 11, "y": 6, "to": "hm_lodge_in", "tx": 5, "ty": 7, "facing": "up"},
+          {"kind": "door", "id": "hm_lantern", "x": 16, "y": 13, "to": "hm_lantern_in", "tx": 4, "ty": 5, "facing": "up"},
+          {"kind": "door", "id": "hm_rook", "x": 16, "y": 5, "to": "hm_rook_in", "tx": 3, "ty": 4, "facing": "up"},
+          {"kind": "npc", "id": "hattie", "name": "Hattie", "x": 4, "y": 13, "lines": {"!story.starter_received": "Off to see Ilse? She's been fussing over three baskets since dawn.", "else": "Route 1 has shy crabs by the stream. On rainy days they come right out."},
+            "chatter": {"!story.starter_received": "Ilse's baskets are wriggling again!", "else": "Mind the crabs by the stream!"}},
+          {"kind": "npc", "id": "rook_home", "name": "Rook", "x": 17, "y": 6, "when": ["!story.starter_received"], "lines": {"else": "Ilse's handing out partners today! Bet I get mine first. Just... warming up."},
+            "chatter": {"else": "Hup, hup! Warming up!"}}
+        ]
+      }
+    }
+  },
+  "scenes": {
+    "home_bed": [
+      ["say", "", "Your bed still smells like hay."],
+      ["if", "story.starter_received",
+        [["choice", "Take a nap?", [
+          ["Nap a while", [["rest"], ["say", "", "You doze off with {pet} curled at your feet. Everyone wakes up rested."]]],
+          ["Not now", []]]]],
+        [["say", "", "Too excited to sleep! Someone small is waiting at the Lodge."]]]
+    ],
+    "home_mirror": [
+      ["say", "", "The little mirror by the door. You tidy a stray hair."],
+      ["choice", "Change your look?", [
+        ["Change my look", [["lookPick"]]],
+        ["Looks good!", []]]]
+    ],
+    "lantern_rest": [
+      ["say", "", "Three soft beds under a warm lantern."],
+      ["if", "story.starter_received",
+        [["choice", "Let your team rest?", [
+          ["Rest a while", [["rest"], ["respawnHere"], ["say", "", "You all doze in the lantern glow. Your team is rested."]]],
+          ["Not now", []]]]],
+        [["say", "", "The beds look cosy, but you have no one to tuck in yet."]]]
+    ],
+    "ilse_chat": [
+      ["if", "story.seal1",
+        [["say", "Warden Ilse", "The Fernbrook Seal! Fen wrote to me. She says you were kind to her orchard."]],
+        [["if", "!story.rival1_done",
+          [["say", "Warden Ilse", "Rook's pacing at the east gate, isn't he? Win or lose, come home smiling."]],
+          [["say", "Warden Ilse", "{pet} looks bright-eyed. Keep that kindle glowing, {player}."]]]]],
+      ["choice", "Anything else, {player}?", [
+        ["Write a new name", [["run", "rename"]]],
+        ["Just saying hi", [["say", "Warden Ilse", "Safe roads, then. The Lantern House by the gate is always lit."]]]]]
+    ]
+  },
+  "dialog": {
+    "lineMax": 110,
+    "chatterMax": 40,
+    "tokenLen": {"name": 10, "player": 10, "pet": 10, "species": 9, "type": 5, "suggest": 9, "rival": 9, "rivalType": 5},
+    "tokenAlias": {"player": "name"},
+    "newSteps": ["rest", "run"],
+    "speakers": {"Warden Ilse": "ilse", "Rook": "rook", "Mrs. Calloway": "calloway", "Hattie": "villager"}
+  },
+  "looks": {
+    "_note": "Extra NPC looks for keeperGrid (keeper_art.js), same shape as player.look. An NPC's `look` and dialog.speakers values are a KEEPER_SWAPS key or a key here. Mrs. Calloway shares Rook's orange hair.",
+    "calloway": {"skin": "3", "hair": "bun", "hairCol": "o", "outfit": "tunic", "outfitCol": "r", "accent": "y"}
+  },
+  "furniture": {
+    "bed": {"name": "bed", "art": "single bed, patchwork quilt (r/y), pillow w"},
+    "rest_bed": {"name": "rest bed", "art": "low nest bed, straw rim (o/y), soft blanket c"},
+    "bookshelf": {"name": "bookshelf", "art": "dark wood d frame, book spines r/b/g/y"},
+    "mirror": {"name": "standing mirror", "art": "oval glass s/c with a w glint, wooden stand o"},
+    "glowbox": {"name": "glowbox (TV-equivalent)", "art": "chunky wooden box, glowing screen c/s, two knobs y"},
+    "pet_terminal": {"name": "pet-box terminal (PC-equivalent)", "art": "desk cabinet with 3 tiny lit nest cubbies y/l"},
+    "table_small": {"name": "small table", "art": "round wood table o, mug w"},
+    "basket": {"name": "lantern basket (occupied)", "art": "wicker o/y with cloth cover, tiny glow y; reuses showBasket art"},
+    "basket_empty": {"name": "lantern basket (empty)", "art": "same basket, cloth folded back, no glow"},
+    "wall_lantern": {"name": "wall lantern", "art": "brass y lantern on a bracket, flame o/y, 2-frame flicker"},
+    "floor_lantern": {"name": "floor lantern", "art": "tall lantern on a post, warm glow halo, 2-frame flicker"}
+  },
+  "newNames": [],
+  "nameCheck": "No new character names. Mrs. Calloway already exists in MAPS_SLICE §9 (rook_house panel) and gets her first sprite here. New object words (glowbox, pet-box terminal, lantern basket) are generic, not franchise terms."
+}

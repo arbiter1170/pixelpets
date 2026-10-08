@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261008-1120">
+<meta name="kw-build" content="20261008-1150">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Kindle Wild">
 <meta name="description" content="Kindle Wild: raise a pixel creature, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261008-1120">
+<link rel="stylesheet" href="style.css?v=20261008-1150">
 </head>
 <body>
 <div id="app">
@@ -54,16 +54,19 @@
         <div class="mini" title="Explore XP earned today (walking + befriending), daily cap 30"><span>TODAY</span><b id="wExp">0/30</b></div>
       </div>
       <button id="envBadge" class="env-badge" type="button"><span id="envText">Meadow</span><small id="envSrc"></small></button>
-      <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" width="176" height="176"></canvas></div>
+      <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" width="176" height="176"></canvas>
+        <div id="chatBubble" class="chat-bubble" hidden></div>
+        <div id="bumpHint" class="bump-hint" role="status" hidden></div>
+      </div>
       <div class="walk-ctl">
         <div class="dpad" id="dpad">
           <button class="dp up" data-dir="up" aria-label="Up">&#9650;</button>
           <button class="dp left" data-dir="left" aria-label="Left">&#9664;</button>
-          <div class="dp mid"></div>
+          <button class="dp mid talk" id="talkBtn" type="button" aria-label="Talk" aria-disabled="true">TALK</button>
           <button class="dp right" data-dir="right" aria-label="Right">&#9654;</button>
           <button class="dp down" data-dir="down" aria-label="Down">&#9660;</button>
         </div>
-        <p class="tip">Hold the pad, tap a tile, or drag on the map. Walk up to a <b class="tg">wild pet</b> (or tap it) to meet it!</p>
+        <p class="tip">Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild pet</b> to meet it!</p>
       </div>
     </section>
 
@@ -243,11 +246,34 @@
 </div>
 
 <!-- Starter overlay -->
-<div id="ovStarter" class="overlay" hidden>
-  <div class="ov-inner">
-    <div class="ov-title">CHOOSE YOUR FIRST PET</div>
-    <div id="starterList" class="starters"></div>
-    <p class="note">Care for it, walk it, and help it evolve!</p>
+<!-- Scene text box (MAPS_SLICE §8): bottom of the screen, the map stays visible above it -->
+<div id="ovScene" class="scene-ov" hidden>
+  <div id="sbChoices" class="sb-choices"></div>
+  <div class="sbox" id="sbox">
+    <canvas id="sbPortrait" class="sb-portrait" width="18" height="18" hidden></canvas>
+    <div class="sb-who" id="sbWho" hidden></div>
+    <button id="sbSkip" class="sb-skip" type="button" aria-label="Skip">SKIP &#9656;&#9656;</button>
+    <div class="sb-echo" id="sbEcho"></div>
+    <p class="sb-text" id="sbText" aria-live="polite"></p>
+    <div class="sb-name" id="sbName" hidden>
+      <input id="sbInput" type="text" maxlength="10" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false" aria-label="Name">
+      <div class="sb-name-btns"><button id="sbNameSkip" class="btn ghost" type="button">SKIP</button><button id="sbOk" class="btn" type="button">OK</button></div>
+    </div>
+    <span class="sb-next" id="sbNext" hidden>&#9660;</span>
+  </div>
+</div>
+
+<!-- showBasket: three lantern baskets (MAPS_SLICE §8) -->
+<div id="ovBasket" class="overlay" hidden>
+  <div class="ov-inner basket-inner">
+    <div class="ov-title" id="bkTitle">PICK A BASKET</div>
+    <div id="bkRow" class="bk-row"></div>
+    <div id="bkCard" class="bk-card" hidden>
+      <canvas id="bkBig" width="18" height="18"></canvas>
+      <div class="bk-name"><b id="bkName"></b> <span id="bkType" class="type-chip"></span></div>
+      <p id="bkLine" class="bk-line"></p>
+      <div class="bk-btns"><button id="bkNo" class="btn ghost" type="button">NOT YET</button><button id="bkYes" class="btn" type="button">YES, THIS ONE</button></div>
+    </div>
   </div>
 </div>
 
@@ -290,13 +316,14 @@
 </div>
 
 <div id="toast" aria-live="polite"></div>
-<script src="sprites.js?v=20261008-1120"></script>
-<script src="keeper.js?v=20261008-1120"></script>
-<script src="stats.js?v=20261008-1120"></script>
-<script src="moves.js?v=20261008-1120"></script>
-<script src="save.js?v=20261008-1120"></script>
-<script src="env.js?v=20261008-1120"></script>
-<script src="sfx.js?v=20261008-1120"></script>
-<script src="game.js?v=20261008-1120"></script>
+<script src="sprites.js?v=20261008-1150"></script>
+<script src="keeper.js?v=20261008-1150"></script>
+<script src="stats.js?v=20261008-1150"></script>
+<script src="moves.js?v=20261008-1150"></script>
+<script src="data/mapdata.js?v=20261008-1150"></script>
+<script src="save.js?v=20261008-1150"></script>
+<script src="env.js?v=20261008-1150"></script>
+<script src="sfx.js?v=20261008-1150"></script>
+<script src="game.js?v=20261008-1150"></script>
 </body>
 </html>
