@@ -273,7 +273,7 @@ function updateHUD(){
   const hint = $('#evoHint'), btn = $('#evolveBtn');
   if (p.stage >= 2) { hint.textContent = 'Final form! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (isFaded(p)) { hint.textContent = 'Faded: ' + p.faded + ' good-care day' + (p.faded > 1 ? 's' : '') + ' to go (care 60+).'; hint.classList.remove('ready'); btn.hidden = true; }
-  else if (canEvolve(p)) { hint.textContent = st.name + ' is ready to evolve!'; hint.classList.add('ready'); btn.hidden = false; }
+  else if (canEvolve(p)) { hint.textContent = petName(p) + ' is ready to evolve!'; hint.classList.add('ready'); btn.hidden = false; }
   else { hint.textContent = 'Next form: GROW ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
   updateCareButtons(); renderPetBadge(p);
 }
@@ -2577,7 +2577,7 @@ function finishEvolution(){
   carryHpOnEvolve(p, oldMax);                // new form's stats right away; current HP keeps the same % (rounded up)
   p.happy = clamp(p.happy + 15, 0, 100); markCaught(evo.sp, p.stage); evo.done = true; sfx('evoFanfare');
   $('#evoTitle').textContent = 'Congratulations!';
-  $('#evoMsg').textContent = nameOf(evo.sp, evo.from) + ' evolved into ' + nameOf(evo.sp, evo.to) + '!';
+  $('#evoMsg').textContent = (cleanNick(p.nick) || nameOf(evo.sp, evo.from)) + ' evolved into ' + nameOf(evo.sp, evo.to) + '!';   // the nickname if set, like the toasts
   // BATTLE §3.3: the evolution move first, then the new form's level moves it already passed (one per OK tap).
   const form = SPECIES[evo.sp].id + '/' + evo.to, L = levelOf(p), rows = LEARNSETS[form] || [];
   evo.pid = p.id; evo.evoStage = evo.to;
