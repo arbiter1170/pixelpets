@@ -1,4 +1,4 @@
-/* PixelPets - types, battle stats, levels and damage (design spec TYPES_STATS).
+/* Kindle Wild - types, battle stats, levels and damage (design spec TYPES_STATS).
    Load after sprites.js and before save.js / game.js. No battles yet: these are the pieces the battle build plugs into.
    - Growth XP (p.xp: care + explore, daily-capped) still drives evolution. Battle XP (p.bx) drives the Level.
    - p.hpNow (optional): current HP; absent = full. 0 = Tired. Regenerates out of battle (regenHp).
@@ -143,6 +143,6 @@ function applyBattleCosts(p, { tired = false, won = false } = {}){
 function statsDevCheck(){
   const missing = [];
   SPECIES.forEach(sp => sp.stages.forEach((st, k) => { if (!BASE_STATS[sp.id + '/' + k]) missing.push(sp.id + '/' + k); }));
-  if (missing.length) console.error('PixelPets: BASE_STATS has no entry for', missing.join(', '));
+  if (missing.length) console.error('Kindle Wild: BASE_STATS has no entry for', missing.join(', '));
   return missing;
 }

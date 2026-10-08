@@ -1,4 +1,4 @@
-/* PixelPets sprite data. Creatures are 16x16, defined as the LEFT half (8 cols) and mirrored.
+/* Kindle Wild sprite data. Creatures are 16x16, defined as the LEFT half (8 cols) and mirrored.
    Chars: . transparent, a main, b belly, c accent, d accent2, x extra, e eye (dark), i eye (shine).
    An outline is added automatically.
    habitat: spawn weight per environment tag (see env.js); tiles: preferred spawn spot on the map

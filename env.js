@@ -1,4 +1,4 @@
-/* PixelPets environment: real-world location + weather -> spawn tags. No dependencies, no API keys.
+/* Kindle Wild environment: real-world location + weather -> spawn tags. No dependencies, no API keys.
    Privacy: coordinates are rounded to 2 decimals (~1 km) BEFORE any network call or storage.
    Sources (all free, CORS-enabled, keyless):
      - Open-Meteo forecast   (temperature, weather code, is_day, wind, elevation)

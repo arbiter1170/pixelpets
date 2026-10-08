@@ -1,4 +1,4 @@
-# PixelPets Backlog
+# Kindle Wild Backlog
 
 Prioritized for turning the prototype into something you can actually play day to day.
 Size: S = an evening, M = a few sessions, L = needs new infrastructure.

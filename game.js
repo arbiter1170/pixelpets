@@ -1,4 +1,4 @@
-/* PixelPets - game logic. No dependencies. */
+/* Kindle Wild - game logic. No dependencies. (Identifiers keep the old name: window.PixelPets, pixelpets.* storage keys.) */
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
@@ -1340,7 +1340,7 @@ function boot(){
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
     if (DEBUG) { api[k] = v; continue; }
-    if (typeof v === 'function') api[k] = () => { if (!warned) { warned = true; console.info('PixelPets: debug hooks need ?debug=1 in the URL.'); } return undefined; };
+    if (typeof v === 'function') api[k] = () => { if (!warned) { warned = true; console.info('Kindle Wild: debug hooks need ?debug=1 in the URL.'); } return undefined; };
   }
   window.PixelPets = Object.freeze(api);
 }

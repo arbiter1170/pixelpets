@@ -1,4 +1,7 @@
-# PixelPets (prototype)
+# Kindle Wild (prototype)
+Kindle Wild was called PixelPets until October 2026. The repo, the URL, the file names, the `pixelpets.*` storage keys and the
+`PixelPets` console hooks keep the old name on purpose, so every save keeps loading.
+
 Play it at https://arbiter1170.github.io/pixelpets/ (GitHub Pages, built from `main`), or run
 `python3 -m http.server` in this folder and visit http://localhost:8000. Opening `index.html` as a file
 also works, minus location.
@@ -198,7 +201,7 @@ Saves (format v2, `save.js`):
   Pets that can't be read (unknown species) are kept aside in the save's `orphans` list, not dropped.
 - A save that can't be read is copied to `pixelpets.save.corrupt` before anything else happens. A v2 save
   that can't be read falls back to migrating the v1 save again (with a notice). A save from a newer version
-  shows "This save is from a newer PixelPets. Reload to update." and is never overwritten.
+  shows "This save is from a newer Kindle Wild. Reload to update." and is never overwritten.
 - Manual restore of the pre-migration save: in the browser console run
   `localStorage.removeItem('pixelpets.save.v2')` and reload; the game migrates again from the untouched v1
   key (once the v2 key is removed, the open page stops saving so it can't put it back). If the v1 key is gone

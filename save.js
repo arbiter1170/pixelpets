@@ -1,4 +1,4 @@
-/* PixelPets save format v2 + v1 -> v2 migration (design spec SAVE_V2).
+/* Kindle Wild save format v2 + v1 -> v2 migration (design spec SAVE_V2).
    - v2 lives in `pixelpets.save.v2`. The v1 key is read only for migration and never written or deleted.
    - Before the first v2 write, the raw v1 string is copied once to `pixelpets.save.v1.bak` (only if absent).
    - Unreadable saves are copied to `pixelpets.save.corrupt` ({at, from, raw}; latest wins).
@@ -32,7 +32,7 @@ const PPSave = (() => {
   const isSpecies = id => typeof id === 'string' && speciesIndex()[id] != null;
 
   let warned = false;
-  const warnOnce = (msg, e) => { if (!warned) { warned = true; console.warn('PixelPets: ' + msg, e && e.message ? e.message : ''); } };
+  const warnOnce = (msg, e) => { if (!warned) { warned = true; console.warn('Kindle Wild: ' + msg, e && e.message ? e.message : ''); } };
   const ls = {
     get(k){ try { return localStorage.getItem(k); } catch(e) { return null; } },
     set(k, v){ try { localStorage.setItem(k, v); return true; } catch(e) { warnOnce("couldn't write the save (storage full or blocked); playing in memory.", e); return false; } },
@@ -202,7 +202,7 @@ const PPSave = (() => {
   function writeV2(state){
     if (detached) return false;
     const why = outsideChange(state);
-    if (why) { detached = true; console.info('PixelPets: the save was ' + WHY[why] + '; not saving again until you reload.'); return false; }
+    if (why) { detached = true; console.info('Kindle Wild: the save was ' + WHY[why] + '; not saving again until you reload.'); return false; }
     const str = JSON.stringify(state);
     if (!ls.set(V2_KEY, str)) return false;
     owned = true; lastWritten = str; return true;
@@ -220,7 +220,7 @@ const PPSave = (() => {
   // Dev check (§2): the frozen v1 table and the append-only form-id table must match sprites.js, and species ids must be unique.
   // Returns the list of problems (empty = fine); each one is also logged as a console error.
   function devCheck(){
-    const ids = SPECIES.map(s => s.id), out = [], err = m => { out.push(m); console.error('PixelPets: ' + m); };
+    const ids = SPECIES.map(s => s.id), out = [], err = m => { out.push(m); console.error('Kindle Wild: ' + m); };
     const bad = V1_SPECIES.filter((id, i) => ids[i] !== id);
     if (bad.length) err('SPECIES order/ids no longer match the frozen V1_SPECIES table: ' + bad.join(', '));
     const off = SPECIES_IDS.filter((id, i) => i >= V1_SPECIES.length && ids[i] !== id), extra = ids.slice(SPECIES_IDS.length);
