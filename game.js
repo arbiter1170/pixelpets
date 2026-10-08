@@ -1222,19 +1222,49 @@ const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow
 // weatherOnly species (the vane line): weight 0 unless one of their tags is active, and never part of the any-species roll.
 const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
 const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly);
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => weatherOk(sp, tags) ? tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0) : 0); }
-function spawnOdds(tags = envTags()){              // expected spawn probability per species for these tags
-  const w = speciesWeights(tags), tot = w.reduce((a, b) => a + b, 0), any = i => ANY_POOL.includes(i) ? 1 / ANY_POOL.length : 0;
+// CREATURES_SLICE §3: authored spawn tables, rows [speciesId, baseWeight, minLv, maxLv]. Effective weight = base x (1 + 0.25 x the
+// species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
+const SPAWNS = {
+  route1:    { stage2: 0.05, table: [['beetle', 30, 2, 4], ['mole', 20, 3, 5], ['crab', 12, 3, 5], ['moth', 15, 2, 4],
+               ['dormouse', 10, 3, 5], ['gust', 6, 3, 5], ['frost', 2, 4, 5], ['vane', 4, 4, 6]] },
+  fernbrook: { stage2: 0.05, table: [['beetle', 30, 6, 9], ['mole', 25, 7, 10], ['moth', 10, 6, 9], ['dormouse', 10, 7, 10],
+               ['crab', 8, 7, 9], ['frost', 3, 7, 9], ['shade', 5, 7, 9], ['vane', 4, 7, 9]] },
+};
+const spawnKey = () => (CUR && CUR.spawns) || 'proto';
+const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
+function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
+// Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
+const starterMult = sp => !sp.starter ? 1 : (S.flags && S.flags['story.seal1']) ? 0.2 : 0;
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
+const anyWeights = () => SPECIES.map((sp, i) => ANY_POOL.includes(i) ? starterMult(sp) : 0);
+function spawnOdds(tags = envTags(), key = spawnKey()){   // expected spawn probability per species for these tags on this map's table
+  const t = SPAWNS[key];
+  if (t) {
+    const w = tableWeights(t, tags), tot = w.reduce((a, b) => a + b, 0), out = SPECIES.map(() => 0);
+    t.table.forEach(([id], k) => { out[SP_INDEX[id]] += tot ? w[k] / tot : 0; });
+    return out;
+  }
+  const w = speciesWeights(tags), tot = w.reduce((a, b) => a + b, 0), aw = anyWeights(), atot = aw.reduce((a, b) => a + b, 0), any = i => aw[i] / atot;
   return w.map((v, i) => tot ? (1 - ANY_SPECIES_CHANCE) * v / tot + ANY_SPECIES_CHANCE * any(i) : any(i));
 }
-function pickSpecies(tags = envTags()){
-  const w = speciesWeights(tags), tot = w.reduce((a, b) => a + b, 0);
-  if (!tot || Math.random() < ANY_SPECIES_CHANCE) return ANY_POOL[Math.random() * ANY_POOL.length | 0];
-  let r = Math.random() * tot;
-  for (let i = 0; i < w.length; i++) { r -= w[i]; if (r < 0) return i; }
-  return w.length - 1;
+function pickW(w){
+  let r = Math.random() * w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < w.length; i++) { r -= w[i]; if (r < 0 && w[i] > 0) return i; }
+  return w.findLastIndex(v => v > 0);
 }
-const pickStage = () => Math.random() < WILD_STAGE2_CHANCE ? 1 : 0;
+function pickSpecies(tags = envTags(), key = spawnKey()){
+  const t = SPAWNS[key];
+  if (t) return SP_INDEX[t.table[pickW(tableWeights(t, tags))][0]];
+  const w = speciesWeights(tags), tot = w.reduce((a, b) => a + b, 0);
+  if (!tot || Math.random() < ANY_SPECIES_CHANCE) return pickW(anyWeights());
+  return pickW(w);
+}
+const pickStage = (key = spawnKey()) => Math.random() < ((SPAWNS[key] || {}).stage2 || WILD_STAGE2_CHANCE) ? 1 : 0;
+// w.lv: a first form rolls uniformly in its table row's range; a second form (5%) rolls Lv 6-8 (§3); Old Meadow keeps the proto bands.
+function wildLv(sp, stage, key = spawnKey()){
+  const row = !stage && SPAWNS[key] && SPAWNS[key].table.find(r => r[0] === SPECIES[sp].id);
+  return row ? row[2] + Math.floor(Math.random() * (row[3] - row[2] + 1)) : wildLevel(stage, Math.random, 'proto', SPECIES[sp].id);
+}
 const nextTo = (x, y, ch) => [[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy]) => MAP[y+dy] && MAP[y+dy][x+dx] === ch);
 const inZone = (x, y) => !CUR.zones.length || CUR.zones.some(z => x >= z.x && y >= z.y && x < z.x + z.w && y < z.y + z.h);
 // creatures roam only on t g f s inside a spawn zone, never on p or B (MAPS_SLICE §2)
@@ -1257,7 +1287,7 @@ function spawnWild(sp, stage, at){
   if (stage == null) stage = pickStage();
   const spot = at || spawnSpot(sp); if (!spot) return null;
   const c = wild.clock;
-  const w = { id: ++wild.seq, sp, stage, lv: wildLevel(stage, Math.random, 'proto', SPECIES[sp].id), x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
+  const w = { id: ++wild.seq, sp, stage, lv: wildLv(sp, stage), x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
     born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + rnd(WILD_IDLE_MS), phase: Math.random() * 3000, shyUntil: 0 };
   wild.list.push(w); return w;
 }
@@ -1422,7 +1452,7 @@ function startEncounterIntro(sp, stage, wid, lv){
 function meetWild(w){ w.to = null; w.fx = w.x; w.fy = w.y; startEncounterIntro(w.sp, w.stage, w.id, w.lv); }
 function openEncounter(){                                  // the intro flash ends here
   const nx = enc.next || { sp: pickSpecies(), stage: pickStage(), wid: null }; enc.next = null;
-  const lv = nx.lv || wildLevel(nx.stage, Math.random, 'proto', SPECIES[nx.sp].id);   // forced encounters roll a proto level
+  const lv = nx.lv || wildLv(nx.sp, nx.stage);                 // forced encounters roll this map's level
   const w = nx.wid && wild.list.find(o => o.id === nx.wid);
   openBattle({ kind: 'wild', form: SPECIES[nx.sp].id + '/' + nx.stage, level: lv, wid: nx.wid, moves: w && w.moves });
 }
@@ -2510,7 +2540,7 @@ function boot(){
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
     get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, name: nameOf(w.sp, w.stage) })); },
     get poofs(){ return wild.poofs.length; },
-    spawnOdds: tags => spawnOdds(tags), cooldownLeft: act => cdLeft(pet(), act),
+    spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
     get muted(){ return PPSound.muted; }, careGain, showTab, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
     moves: () => JSON.parse(JSON.stringify(MOVES)), learnset: f => learnset(f).map(e => ({ ...e })),
@@ -2530,7 +2560,7 @@ function boot(){
     forceBattle: (form, level) => {
       showTab('walk'); if (overlayOpen()) return;
       let f = form, lv = level;
-      if (!f) { const sp = pickSpecies(), st = pickStage(); f = SPECIES[sp].id + '/' + st; lv = lv || wildLevel(st, Math.random, 'proto', SPECIES[sp].id); }
+      if (!f) { const sp = pickSpecies(), st = pickStage(); f = SPECIES[sp].id + '/' + st; lv = lv || wildLv(sp, st); }
       const [line, st] = String(f).split('/'); if (SP_INDEX[line] == null || !SPECIES[SP_INDEX[line]].stages[+st]) return false;
       return openBattle({ kind: 'wild', form: f, level: lv || wildLevel(+st, Math.random, 'proto', line) });
     },
@@ -2550,7 +2580,8 @@ function boot(){
     setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; },
     spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
     clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
-    pickSpecies: tags => pickSpecies(tags), pickStage: () => pickStage(),
+    pickSpecies: (tags, key) => pickSpecies(tags, key), pickStage: key => pickStage(key), wildLv: (sp, st, key) => wildLv(sp, st, key),
+    spawnTables: () => JSON.parse(JSON.stringify(SPAWNS)),
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
     giveBx: (n, learn) => { const p = pet(), r = grantBattleXp(p, n); if (learn) levelMoves(p, r.from, r.to).forEach(e => learnQ.push({ id: p.id, mid: e.id })); updateHUD(); save(); return r; },   // battle XP (Level); learn=true queues the level-up move prompts
     resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; delete S.flags[BOWL.flag]; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },

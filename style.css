@@ -336,7 +336,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sb-text.narr{color:var(--d)}
 .sb-echo{font-size:16px;line-height:1;color:var(--m);min-height:0}
 .sb-echo:empty{display:none}
-.sb-skip{position:absolute;right:4px;top:4px;min-width:44px;min-height:44px;padding:0 6px;border:0;background:transparent;color:var(--m);font-size:15px;cursor:pointer}
+/* the label sits at the top of its 44px tap target so it never overlaps the first text line (320 wide: no portrait, long first line) */
+.sb-skip{position:absolute;right:4px;top:0;min-width:44px;min-height:44px;padding:5px 6px 0;border:0;background:transparent;color:var(--m);font-size:15px;line-height:15px;cursor:pointer;display:flex;align-items:flex-start;justify-content:flex-end}
 .sb-skip[hidden]{display:none}
 .sb-next{position:absolute;right:12px;bottom:6px;font-size:14px;color:var(--r);animation:sbblink 1s steps(2) infinite}
 @keyframes sbblink{50%{opacity:0}}
