@@ -3,6 +3,17 @@
 Prioritized for turning the prototype into something you can actually play day to day.
 Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
+## Official priority order (Vincent, Oct 8, 2026)
+
+This order applies after the Kindle Wild rename, which shipped as 9cc836d and 9d294cd. It overrides the older numbering below.
+
+1. **Battles.** BATTLE v0.3: turn-based battles with types and moves, NRG battle costs, the 20-minute faint nap, the FAINTED badge and the wipe rule. Now being built.
+2. **Story.** MAPS_SLICE Phase M: maps, the opening with Juniper's intro, Hearthmoor real rooms (INTERIORS_DIALOG), Rook, Tobin and the orchard gate, then Route 2 (ACT1_ROUTE2).
+3. **Gyms.** Trial Hall #1 with Master Fen, badges/seals, and the learnsets it needs.
+4. **Pacing fix, revisited.** The original "a full pet starves too fast" problem, tuned so a full pet lasts long enough and players come back daily. The first pass is live (item 1 below: 16h/20h/24h real-time decay). What's left: re-tune against real play, the harsh comeback floor, and how chores grow with a large collection (see Balance).
+
+Inventory (INVENTORY v0.1) and online saves (ONLINE_SAVES_SCOPE) were drafted to come after Phase M; Vincent sets where they fit in this order.
+
 ## Top 3
 
 1. ~~**Real-play stat pacing (S)**~~ **DONE:** real-time decay (16h/20h/24h to empty, <25 after ~12h/15h/18h) for all owned pets live and offline, offline floor of 10 with no 12h cap (also catches up after a background tab), old rates kept as debug fast mode (`?fast=1`, F key, `PixelPets.setFast`, FAST tag in header).
