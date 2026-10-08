@@ -42,6 +42,7 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .settings-inner > .btn{width:100%;min-height:48px}
 #hdrIcon{width:36px;height:36px}
 #top .lv{display:flex;flex-direction:column;align-items:flex-end;font-size:18px;color:var(--y)}
+#top .lv[hidden]{display:none}
 .stagedots{color:var(--h);font-size:13px;letter-spacing:2px}
 .fast-tag{font-size:13px;color:var(--k);background:var(--o);padding:1px 4px;letter-spacing:1px;align-self:center}
 .fast-tag[hidden]{display:none}
@@ -322,8 +323,9 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sh-hp i.warn{background:var(--r)}
 
 /* ---------- Phase M: scene text box, baskets, talk button, bump hint, chatter (MAPS_SLICE §4.1/§8, INTERIORS §4.2) ---------- */
-.scene-ov{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;flex-direction:column;gap:8px;max-width:480px;margin:0 auto;
-  padding:0 8px calc(8px + env(safe-area-inset-bottom));box-sizing:border-box;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+/* full-screen tap layer (taps can't reach the tabs or the gear); the box itself sits 12px above the tab bar */
+.scene-ov{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;max-width:480px;margin:0 auto;
+  padding:0 8px calc(var(--tabs-h, 66px) + 12px);box-sizing:border-box;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 .scene-ov[hidden]{display:none}
 .sbox{position:relative;min-height:96px;box-sizing:border-box;padding:24px 12px 10px;background:var(--w);color:var(--k);
   box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);cursor:pointer}

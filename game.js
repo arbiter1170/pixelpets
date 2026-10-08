@@ -217,6 +217,7 @@ function fitPetScene(){
   setPetCanvas(...cands[cands.length - 1]);
 }
 function fitAll(){ fitBattle();
+  const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
   fitPetScene();
   fitCanvas($('#evoCanvas'), appW - 28, window.innerHeight * 0.4);
@@ -233,7 +234,8 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitA
 
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
 function updateHUD(){
-  const p = pet(); if (!p) return;
+  const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
+  if (!p) return;
   const st = SPECIES[spi(p)].stages[p.stage];
   $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
@@ -687,7 +689,7 @@ function arriveAt(at){
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); bump.talked = null;
-  placeFollower(); save();
+  placeFollower(); renderEnv(); save();
 }
 function enterDoor(dr){
   if (dr.need && !cond(dr.need, false)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
@@ -848,6 +850,7 @@ function openLook(newPlayer, resolve){
   $('#lookNameRow').hidden = true;
   renderLook(); drawLookPreview(now());
   $('#ovLook').hidden = false; lockTabs(true); $('#ovLook .ov-inner').scrollTop = 0;
+  if (resolve) armOptions();                // inside a scene (the intro / mirror): no accidental DONE from a text tap
   return true;
 }
 const lookPickStep = isIntro => new Promise(res => openLook(isIntro, res));
@@ -1011,7 +1014,7 @@ function endScene(){
   commitPending();
   if (sc.npc) delete mapRT.face[sc.npc.id];
   if (sc.npc && (sc.npc.kind === 'npc' || sc.npc.kind === 'trainer')) bump.talked = sc.npc.id;
-  scene = null; sbox.resolve = null;
+  scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
   $('#ovScene').hidden = true; $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
   lockTabs(false); placeFollower(); renderKeeperName(); updateHUD(); save();
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
@@ -1031,7 +1034,7 @@ function expand(text){
   const p = viewPet(), sp = p ? SPECIES[spi(p)] : null, v = scene ? scene.vars : {};
   const line = (v && v.line) || flagOf('story.starter_line', true), rv = COUNTER[line] && SPECIES[SP_INDEX[COUNTER[line]]];
   const vals = { name: curName(true) || DEFAULT_PLAYER_NAME, player: curName(true) || DEFAULT_PLAYER_NAME, pet: viewPetName(), species: p ? nameOf(spi(p), p.stage) : '',
-    type: sp ? sp.type : '', suggest: v && v.suggest ? SPECIES[SP_INDEX[v.suggest]].stages[0].name : '', rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '' };
+    type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '' };
   return String(text).replace(/\{(name|player|pet|species|type|suggest|rival|rivalType)\}/g, (m, k) => vals[k]);
 }
 async function execStep(st){
@@ -1046,7 +1049,7 @@ async function execStep(st){
       await execSteps(opt[1]); return;
     }
     case 'nameEntry': { sc.skip = false; await nameBox(a, expand(b), c, d); return; }
-    case 'showBasket': { sc.skip = false; sc.vars.suggest = suggestOf(sc.vars.tags); sc.vars.line = await basketPick(a, sc.vars.suggest); sfx('befriend'); return; }
+    case 'showBasket': { sc.skip = false; sc.vars.suggest = suggestLine(sc.vars); sc.vars.line = await basketPick(a, sc.vars.suggest); sfx('befriend'); return; }
     case 'givePet': {
       const id = a === '$line' ? sc.vars.line : a, si = SP_INDEX[id]; if (si == null) return;
       const np = newPet(si, 0, 'starter'); sc.view.pet = np; sc.view.nick = undefined;
@@ -1077,6 +1080,9 @@ async function execStep(st){
     case 'encounter': { sc.skip = false; return; }   // story creatures arrive with the Fernbrook build
   }
 }
+// Ilse's pick: known from the answers so far (her "Then I think {suggest} would suit you." comes BEFORE the baskets open)
+const SUGGEST_DEFAULT = 'ember';
+function suggestLine(v){ const id = (v && v.suggest) || (v && v.tags && suggestOf(v.tags)) || SUGGEST_DEFAULT; return SP_INDEX[id] != null ? id : SUGGEST_DEFAULT; }
 function suggestOf(tags){
   if (!tags.length) return null;
   const n = {}; tags.forEach(t => { n[t] = (n[t] || 0) + 1; });
@@ -1125,6 +1131,13 @@ function sbTick(){                          // typewriter (from the frame loop; 
   if (n >= sbox.text.length) sbFull(); else $('#sbText').textContent = sbox.text.slice(0, n);
 }
 function sbFull(){ sbox.full = true; $('#sbText').textContent = sbox.text; $('#sbNext').hidden = sbox.mode !== 'say'; if (sbox.onFull) { const f = sbox.onFull; sbox.onFull = null; f(); } }
+// Tap safety (Vincent's iPhone playtest, Design): while a scene is open a full-screen layer takes every tap (tabs + gear can't be
+// hit); a plain line advances on a tap anywhere; choices, name fields, baskets and the look picker answer only with their own
+// buttons, which ignore taps for OPT_ARM_MS after they appear; after a scene closes, tab/gear taps are ignored for TAB_GUARD_MS.
+const OPT_ARM_MS = 500, TAB_GUARD_MS = 500;
+let optArmAt = 0, tabGuardUntil = 0;
+const armOptions = () => { optArmAt = performance.now() + OPT_ARM_MS; };
+const tabsGuarded = () => !!scene || performance.now() < tabGuardUntil;
 function sceneTap(){
   if (!scene || !sbox.resolve) return;
   if (!sbox.full) { sbFull(); return; }
@@ -1140,7 +1153,7 @@ function choiceBox(prompt, labels){
     if (scene) scene.boxes++;
     sbRender(scene.who, ''); $('#sbEcho').textContent = ''; $('#sbName').hidden = true; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
     sbox.text = prompt; sbox.t0 = now(); sbox.full = false; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.mode = 'choice'; sbox.resolve = () => {};
-    const box = $('#sbChoices'); box.innerHTML = '';
+    const box = $('#sbChoices'); box.innerHTML = ''; armOptions();
     labels.forEach((lb, i) => { const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn sb-choice'; bt.textContent = lb;
       bt.addEventListener('click', () => { if (!sbox.full) sbFull(); sfx('tap'); box.innerHTML = ''; sbox.resolve = null; res(i); }); box.append(bt); });
   });
@@ -1150,7 +1163,7 @@ function nameBox(target, prompt, def, max){
   return new Promise(res => {
     if (scene) scene.boxes++;
     const p = viewPet(), species = p ? nameOf(spi(p), p.stage) : '';
-    sbRender(scene.who, prompt); sbox.text = prompt; sbox.full = true; sbox.mode = 'name'; sbox.resolve = () => {};
+    sbRender(scene.who, prompt); sbox.text = prompt; sbox.full = true; sbox.mode = 'name'; sbox.resolve = () => {}; armOptions();
     $('#sbEcho').textContent = ''; $('#sbChoices').innerHTML = ''; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
     const inp = $('#sbInput'); inp.maxLength = max || 10;
     inp.value = target === 'player' ? (curName(true) || def || DEFAULT_PLAYER_NAME) : species;
@@ -1174,7 +1187,7 @@ function nameBox(target, prompt, def, max){
 function basketPick(lines, suggest){
   return new Promise(res => {
     const ov = $('#ovBasket'), row = $('#bkRow'), card = $('#bkCard');
-    const show = which => {
+    const show = which => { armOptions();     // the card's YES / NOT YET and the basket row each ignore taps for 500 ms when drawn
       row.hidden = !!which; card.hidden = !which; $('#bkTitle').hidden = !!which;
       if (!which) return;
       const si = SP_INDEX[which], sp = SPECIES[si];
@@ -1322,11 +1335,17 @@ function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/fl
 
 /* ---------- environment: badge, location card, details/picker ---------- */
 const STATUS_TAG = { loading: '...', off: 'DEFAULT', denied: 'NO GPS', unavailable: 'NO GPS', offline: 'OFFLINE', manual: 'MANUAL' };
+// The chip names the place you're in (map display name from the slice data). The biome/weather tag shows only on maps with
+// wild Walklings (where it changes who appears); towns and rooms show just their name.
+const placeName = () => (CUR && CUR.name) || '';
+const wildHere = () => !isRoom() && !!CUR.spawns;
 function renderEnv(){
+  const name = placeName(), wildy = wildHere() && !!ENV;
+  $('#envText').textContent = wildy ? (name ? name + ' \u00b7 ' : '') + ENV.label : (name || (ENV ? ENV.label : ''));
+  $('#envSrc').textContent = wildy ? (STATUS_TAG[ENV.status] || '') : '';
+  $('#envBadge').classList.toggle('wild', wildy);
+  $('#envBadge').setAttribute('aria-label', wildy ? name + '. Wild area: ' + ENV.label + ' (' + (STATUS_TAG[ENV.status] || '') + '). Tap for details.' : name + '. Tap for location details.');
   if (!ENV) return;
-  $('#envText').textContent = ENV.label;
-  $('#envSrc').textContent = STATUS_TAG[ENV.status] || '';
-  $('#envBadge').setAttribute('aria-label', 'Wild area: ' + ENV.label + '. Tap for details.');
   if (!$('#ovEnv').hidden) renderEnvCard();
 }
 function onEnvChange(e){
@@ -2243,8 +2262,12 @@ function friendCode(){
 
 /* ---------- input ---------- */
 function bindInput(){
-  $$('#tabs button').forEach(b => b.addEventListener('click', () => { if (b.dataset.tab !== screen) sfx('tap'); showTab(b.dataset.tab); }));
-  $('#settingsBtn').addEventListener('click', () => { if ($('#ovSettings').hidden) openSettings(); else closeSettings(); });
+  $$('#tabs button').forEach(b => b.addEventListener('click', () => { if (tabsGuarded()) return; if (b.dataset.tab !== screen) sfx('tap'); showTab(b.dataset.tab); }));
+  $('#settingsBtn').addEventListener('click', () => { if (tabsGuarded()) return; if ($('#ovSettings').hidden) openSettings(); else closeSettings(); });
+  // option buttons that just appeared ignore taps (capture phase, before their own handlers)
+  for (const ev of ['click', 'pointerup']) document.addEventListener(ev, e => {
+    if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button')) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
   $('#setClose').addEventListener('click', () => { sfx('tap'); closeSettings(); });
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
   $('#setSound').addEventListener('click', () => { const m = PPSound.toggle(); renderSoundRow(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
@@ -2459,7 +2482,7 @@ function boot(){
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
   if (allPets().length) { const away = (Date.now() - S.last) / 1000; catchUp(away); regenAll(away); }
-  useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild();
+  useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv();
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
   placeFollower(); renderFollowerBtn(); renderKeeperName();
@@ -2467,10 +2490,10 @@ function boot(){
   // Closed mid-starter: Lodge doorstep with a nudge. Tabs stay locked until the starter; the opening plays on the WALK tab.
   const newGame = !allPets().length && !S.flags['story.intro_seen'];
   const late = L.notice === 'recovered' ? 2700 : 900;
-  if (!allPets().length) { showTab('walk'); lockTabs(false); if (newGame) setTimeout(() => runScene('intro'), 60); else setTimeout(() => toast('Ilse is waiting inside.'), late); }
+  if (!allPets().length) { updateHUD(); showTab('walk'); lockTabs(false); if (newGame) setTimeout(() => runScene('intro'), 60); else setTimeout(() => toast('Ilse is waiting inside.'), late); }
   else {
     updateHUD(); bowlHint(!S.player.look || L.notice === 'recovered' ? 4600 : 1200);
-    if (!S.player.look) setTimeout(() => toast("New: pick your keeper's look on the Pet tab."), late);   // after the recovery notice, never over it
+    if (!S.player.look) setTimeout(() => toast("New: pick your keeper's look under the gear (Change look)."), late);   // after the recovery notice, never over it
     else if (!S.player.name && S.world.map === 'hearthmoor') setTimeout(() => toast('Warden Ilse would like a word at the Lodge.'), late);
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
@@ -2540,6 +2563,10 @@ function boot(){
     setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); return S.flags[k]; },
     runScene: id => { if (!SCENES[id] || scene) return false; showTab('walk'); runScene(id); return true; },
     endScene: () => { if (!scene) return false; scene.skip = true; return true; },
+    // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
+    expandText: (text, vars, viewPetObj) => { const keep = scene;
+      if (!keep) scene = { vars: Object.assign({ tags: [], line: null, suggest: null }, vars || {}), view: { flags: {}, name: undefined, pet: viewPetObj || null, nick: undefined }, pending: [] };
+      try { return expand(text); } finally { scene = keep; } },
 
     enc, walk,
   };
@@ -2549,6 +2576,7 @@ function boot(){
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
     typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip }; } });
   Object.defineProperty(api, 'fading', { enumerable: true, get(){ return fade.busy; } });
+  Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
