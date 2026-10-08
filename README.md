@@ -104,8 +104,9 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   still hurt and their nap timers kept.
 - Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
-  Route trainer Pia and Hall Keeper Fen (Fernbrook Seal) are in the game data; placing them on maps comes with the
-  next maps phase, so for now they're reachable through the debug `forceTrainer()` hook.
+  Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
+  then the summon lines); after that only a bump starts a rematch until you win. Master Fen's Trial Hall in Fernbrook
+  opens once the orchard is cleared: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 coins, 2 Heal Snacks).
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   evolving (each line's evolution move, then any level moves of the new form). Older saves get missed evolution
   moves on their next visit ("<name> remembers something from evolving!").

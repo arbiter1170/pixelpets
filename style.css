@@ -283,7 +283,12 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .type-chip{font-size:12px;line-height:1;padding:2px 4px;color:var(--k);background:var(--h);letter-spacing:1px;box-shadow:0 0 0 1px var(--k);flex:0 0 auto}
 .t-plain{background:var(--h)}.t-ember{background:var(--o)}.t-tide{background:var(--c)}.t-bloom{background:var(--l)}
 .t-volt{background:var(--y)}.t-stone{background:#c2a878}.t-gale{background:var(--s)}.t-shade{background:var(--p);color:var(--w)}
-.bt-stage{flex:1 1 0;min-height:96px;display:flex;justify-content:center;align-items:center;overflow:hidden;background:var(--k);box-shadow:0 0 0 3px var(--d);line-height:0}
+.bt-stage{flex:1 1 0;min-height:96px;display:flex;justify-content:center;align-items:center;overflow:hidden;background:var(--k);box-shadow:0 0 0 3px var(--d);line-height:0;position:relative}
+/* the Seal card (BATTLE §7 Trial Hall): sprite + name over the stage */
+.bt-seal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 18px 10px;background:var(--w);color:var(--k);box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--y);line-height:1.2}
+.bt-seal[hidden]{display:none}
+.bt-seal canvas{width:72px;height:72px;image-rendering:pixelated}
+.bt-seal b{font-size:16px;white-space:nowrap}
 #battleCanvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
 .bt-msg{flex:0 0 auto;height:64px;box-sizing:border-box;padding:6px 10px;background:var(--w);color:var(--k);font-size:19px;line-height:1.2;
   box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);overflow:hidden;cursor:pointer;margin:3px}

@@ -776,9 +776,16 @@ function placeSteps(dr){
         [['choice', 'Let your team rest?', [['Rest a while', [['rest'], ['respawnHere'], ['say', '', 'You all doze in the lantern glow. Your team is rested.']]], ['Leave', []]]]],
         [['say', who, 'No team to rest yet? Come back with a friend.']]]];
   }
+  if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
+    const t = TRAINERS.hall1_fen;
+    if (t && t.seal && S.seals[t.seal]) return [['say', 'Master Fen', 'Come back any time. The orchard remembers its friends.']];
+    return [['say', 'Master Fen', t ? t.lines.intro : 'Roots first, then blossoms. Show me yours.'],
+      ['choice', 'Begin the trial?', [['Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
+  }
   return [['say', '', 'Closed for now. Come back soon!']];
 }
-function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }); }
+// After a place panel closes the keeper is still on its doorstep: a trigger there (the Hall's `teaser` after the Seal) plays now.
+function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }).then(() => { if (!scene && !fade.busy && !overlayOpen()) checkTriggers(); }); }
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -1130,7 +1137,7 @@ function expand(text){
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene;
   switch (k) {
-    case 'say': if (sc.skip) return; sc.who = a; await sayBox(a, expand(b)); return;
+    case 'say': { if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; await sayBox(a, tx); return; }
     case 'choice': {
       sc.skip = false;
       const pick = await choiceBox(expand(a), b.map(o => o[0]));
@@ -1187,7 +1194,7 @@ async function sceneBattle(id){
   commitPending(); save();
   const team = trainerTeam(t), f0 = team[0], [ln, st] = f0.form.split('/');
   const sub = s => String(s).replace(/\{(player|name)\}/g, playerName());
-  await sayBox(t.name, sub(t.lines.intro));
+  if (scene.lastSay !== sub(t.lines.intro)) await sayBox(t.name, sub(t.lines.intro));   // the Hall panel already opened with it
   await sayBox('', battleLine('trainerSummon', { trainer: t.name, foe: nameOf(SP_INDEX[ln], +st) }));
   $('#ovScene').hidden = true;
   S.flags['spotted.' + id] = true;                     // §6.1: set when the battle opens; a trainer never spots twice
@@ -1678,7 +1685,7 @@ function closeBattle(){
     const p = petById(B.newId), nk = cleanNick($('#encNick').value);
     if (p && nk && nk !== nameOf(spi(p), p.stage)) { p.nick = nk; toast(nameOf(spi(p), p.stage) + ' is now called ' + nk + '!'); }
   }
-  $('#encName').hidden = true; $('#encNick').blur();
+  $('#encName').hidden = true; $('#encNick').blur(); $('#btSeal').hidden = true;
   B.on = false; B.state = 'IDLE'; msgSkip = null; closeSheet(null);
   $('#ovBattle').hidden = true; lockTabs(false);
   const w = B.wid && wild.list.find(o => o.id === B.wid);
@@ -2056,7 +2063,7 @@ async function results(result, id){
     if (t.hall && t.seal) { S.seals[t.seal] = Date.now(); }
     save();
     await say(playerName() + ' got ' + money + ' coins!', id); if (!alive(id)) return;
-    if (t.hall && t.seal) { sfx('evoFanfare'); sfx('levelup', 0.9); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
+    if (t.hall && t.seal) { showSealCard(t.seal); sfx('evoFanfare'); sfx('levelup', 0.9); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
   }
   if (t && t.oneShot && (result === 'win' || result === 'tired')) {      // §6: Rook never repeats; the scene reads the result
     S.flags['story.rival1_done'] = true; S.flags['story.rival1_result'] = result === 'win' ? 'won' : 'lost'; save();
@@ -2067,6 +2074,30 @@ async function results(result, id){
     for (const e of levelMoves(p, lu.from, lu.to)) { await teachMove(p, e.id, s => say(s, id)); if (!alive(id)) return; }
   }
   B.levelUps = []; save(); updateHUD();
+}
+// The Seal card (BATTLE §7 Trial Hall): the Seal's sprite plus its name, over the battle stage until the battle closes.
+const SEAL_ART = { seal_fernbrook: [
+  '.....oooooo.....',
+  '...ooyyyyyyoo...',
+  '..oyyyyyyyyyyo..',
+  '.oyyyyyyyggyyyo.',
+  '.oyyyyyygggyyyo.',
+  'oyyyyyyggglgyyyo',
+  'oyyyyyggglggyyyo',
+  'oyyyyygglgggyyyo',
+  'oyyyyyglgggyyyyo',
+  'oyyyyyyggyyyyyyo',
+  'oyyyyyydyyyyyyyo',
+  '.oyyyyydyyyyyyo.',
+  '.oyyyyyyyyyyyyo.',
+  '..oyyyyyyyyyyo..',
+  '...ooyyyyyyoo...',
+  '.....oooooo.....',
+] };
+function showSealCard(id){
+  const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
+  g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
+  $('#btSealName').textContent = sealName(id); $('#btSeal').hidden = false;
 }
 const sealName = id => ({ seal_fernbrook: 'Fernbrook Seal' }[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal');
 
