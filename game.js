@@ -17,6 +17,13 @@ const perSec = h => 100 / (h * 3600);
 const REAL_RATE = { hunger: perSec(HOURS_TO_EMPTY.hunger), happy: perSec(HOURS_TO_EMPTY.happy), energy: perSec(HOURS_TO_EMPTY.energy) };
 const FAST_RATE = { hunger: 1/10, happy: 1/12, energy: 1/25 };   // old demo pacing (pts/s): full -> starving in ~17 min
 const OFFLINE_FLOOR = 10;          // catch-up decay never pushes a stat below this
+// PACING v0.1 §5 (locked by Vincent, Oct 8): decay by role, live and away. Partner x1, other party pets x0.5, box pets paused.
+// The RATE values, FEED amount, floor and food per step are unchanged (still being revisited).
+const ROLE_MULT = { partner: 1, party: 0.5, box: 0 };
+const roleOf = q => q.id === S.partnerId ? 'partner' : S.party.includes(q) ? 'party' : 'box';
+const roleMult = q => ROLE_MULT[roleOf(q)];
+// PACING v0.1 §4 Warm Bowl: the first FEED of each local day (one per player) gives FOOD +15 on top and JOY +5 instead of +3.
+const BOWL = { food: 15, joy: 5, flag: 'daily.warm_bowl' };
 const FAST_KEY = 'pixelpets.fast'; // debug fast mode, kept out of the save schema
 const DEBUG_KEY = 'pixelpets.debug';   // ?debug=1 turns debug tools on (remembered), ?debug=0 off
 function readDebugPref(){
@@ -277,6 +284,13 @@ function careGain(base, cur){
   }
   return v - cur;
 }
+const bowlReady = () => !!S && S.flags[BOWL.flag] !== dayKey(Date.now());
+let bowlToldDay = null;                      // "A Warm Bowl is ready" once per day, in memory only (PACING §4)
+function bowlHint(ms = 1200){
+  const p = pet(), d = dayKey(Date.now());
+  if (!p || bowlToldDay === d || !bowlReady() || p.hunger >= 98) return;
+  bowlToldDay = d; setTimeout(() => { const q = pet(); if (q && bowlReady() && q.hunger < 98 && !overlayOpen()) toast('A Warm Bowl is ready for ' + petName(q) + '.'); }, ms);
+}
 function dayKey(ms){ const d = new Date(ms); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 // Daily XP records on the pet: p.cx (care) and p.ex (explore), each { d: 'YYYY-MM-DD' (local), xp: earned that day,
 // told: cap toast shown }. Missing or from another day = fresh record, so old saves just work.
@@ -341,10 +355,12 @@ function doAction(act){
   let msg;
   if (act === 'feed') {
     if (p.hunger >= 98) { sfx('denied'); return toast('Too full to eat!'); }
-    p.hunger = clamp(p.hunger + careGain(25, p.hunger), 0, 100); p.happy = clamp(p.happy + 3, 0, 100);
+    const bowl = bowlReady();
+    p.hunger = clamp(p.hunger + careGain(25, p.hunger) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + (bowl ? BOWL.joy : 3), 0, 100);
+    if (bowl) S.flags[BOWL.flag] = dayKey(Date.now());
     addPart('apple', pp.x + 6, pp.y - 4, 0, 4, 0.9);
-    setTimeout(() => { for (let i=0;i<3;i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
-    anim.busyUntil = t + 1100; msg = 'Yum! +FOOD';
+    setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
+    anim.busyUntil = t + (bowl ? 1500 : 1100); msg = bowl ? 'Warm Bowl! ' + petName(p) + ' gobbles it up. +FOOD +JOY' : 'Yum! +FOOD';
   } else if (act === 'play') {
     if (isFainted(p)) { sfx('denied'); return toast(petName(p) + ' fainted and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
     if (p.energy < 10) { sfx('denied'); return toast('Too tired to play. REST first!'); }
@@ -363,7 +379,7 @@ function doAction(act){
   p.cd[act] = Date.now();                    // start this action's cooldown (saved with the pet)
   sfx(act); xpChimeDelay = 0.45;
   const xp = grantCareXp(p, CARE_XP[act]), cx = careXpToday(p); xpChimeDelay = 0;
-  if (cx.xp >= CARE_XP_DAILY_CAP && !cx.told) { cx.told = true; sfx('cap', 0.6); msg = petName(p) + ' learned all it can from care today. Go for a walk!'; }
+  if (cx.xp >= CARE_XP_DAILY_CAP && !cx.told) { cx.told = true; sfx('cap', 0.6); if (!msg.startsWith('Warm Bowl')) msg = petName(p) + ' learned all it can from care today. Go for a walk!'; }
   else if (act === 'play' && xp) msg += ' +' + xp + 'XP';
   toast(msg);
   updateHUD(); save();
@@ -1903,10 +1919,11 @@ function frame(t){
   const p = pet();
   if (p && !overlayOpen()) {
     const sleeping = t < anim.sleepUntil, R = rate();
-    allPets().forEach(q => {                         // every owned pet (party and box) gets hungry, not just the partner
-      q.hunger = clamp(q.hunger - R.hunger * dt, 0, 100);
-      q.happy = clamp(q.happy - R.happy * dt * (q.hunger < 20 ? 2 : 1), 0, 100);
-      if (!(sleeping && q.id === S.partnerId)) q.energy = clamp(q.energy - R.energy * dt, 0, 100);   // only the resting partner is exempt
+    allPets().forEach(q => {                         // decay by role (PACING §5): partner x1, party x0.5, box paused
+      const k = roleMult(q); if (!k) return;
+      q.hunger = clamp(q.hunger - R.hunger * k * dt, 0, 100);
+      q.happy = clamp(q.happy - R.happy * k * dt * (q.hunger < 20 ? 2 : 1), 0, 100);
+      if (!(sleeping && q.id === S.partnerId)) q.energy = clamp(q.energy - R.energy * k * dt, 0, 100);   // only the resting partner is exempt
     });
     tickAcc += dt; if (tickAcc > 1) { tickAcc = 0; updateHUD(); }
   }
@@ -1940,14 +1957,15 @@ function catchUp(sec){
   if (!(sec > 0) || !S || !allPets().length) return;
   const R = rate();
   const dec = (v, amt) => v <= OFFLINE_FLOOR ? v : Math.max(OFFLINE_FLOOR, v - amt);
-  allPets().forEach(p => { p.hunger = dec(p.hunger, sec*R.hunger); p.happy = dec(p.happy, sec*R.happy); p.energy = dec(p.energy, sec*R.energy); });
+  allPets().forEach(p => { const k = roleMult(p); if (!k) return;   // PACING §5: box pets never get their boxed time
+    p.hunger = dec(p.hunger, sec*R.hunger*k); p.happy = dec(p.happy, sec*R.happy*k); p.energy = dec(p.energy, sec*R.energy*k); });
 }
 // A backgrounded tab pauses requestAnimationFrame (and the periodic save keeps bumping S.last),
 // so catch up on return using the time the tab was actually hidden.
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { hiddenAt = Date.now(); return; }
-  if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); hiddenAt = 0; updateHUD(); save(); }
+  if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
 });
 
 /* ---------- boot ---------- */
@@ -1977,7 +1995,7 @@ function boot(){
   placeFollower(); renderFollowerBtn(); renderKeeperName();
   // New players pick a look (and a name) first, then a starter; a look already picked goes straight to the starter (K.2).
   if (!allPets().length) { if (!S.player.look) openLook(true); else openStarter(); }      // keeps S (uid, created, orphans)
-  else { updateHUD(); if (!S.player.look) setTimeout(() => toast("New: pick your keeper's look on the Pet tab."), L.notice === 'recovered' ? 2700 : 900); }   // after the recovery notice, never over it
+  else { updateHUD(); bowlHint(!S.player.look || L.notice === 'recovered' ? 4600 : 1200); if (!S.player.look) setTimeout(() => toast("New: pick your keeper's look on the Pet tab."), L.notice === 'recovered' ? 2700 : 900); }   // after the recovery notice, never over it
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
@@ -1994,7 +2012,7 @@ function boot(){
     get poofs(){ return wild.poofs.length; },
     spawnOdds: tags => spawnOdds(tags), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
-    get muted(){ return PPSound.muted; }, careGain, showTab,
+    get muted(){ return PPSound.muted; }, careGain, showTab, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
     moves: () => JSON.parse(JSON.stringify(MOVES)), learnset: f => learnset(f).map(e => ({ ...e })),
     defaultMoves: (f, L) => defaultMoves(f, L).slice(), befriendWidth,
     battleLine: (k, v) => battleLine(k, v),
@@ -2035,7 +2053,8 @@ function boot(){
     pickSpecies: tags => pickSpecies(tags), pickStage: () => pickStage(),
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
     giveBx: (n, learn) => { const p = pet(), r = grantBattleXp(p, n); if (learn) levelMoves(p, r.from, r.to).forEach(e => learnQ.push({ id: p.id, mid: e.id })); updateHUD(); save(); return r; },   // battle XP (Level); learn=true queues the level-up move prompts
-    resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
+    resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; delete S.flags[BOWL.flag]; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
+    away: h => { const sec = Math.max(0, +h || 0) * 3600; catchUp(sec); regenAll(sec); updateHUD(); save(); return allPets().map(q => ({ id: q.id, role: roleOf(q), hunger: q.hunger, happy: q.happy, energy: q.energy })); },   // PACING §6
     makePartner: id => { makePartner(id); updateHUD(); save(); },
     setMapBackdrop: v => { const m = MAP_INFO[S.world.map] || (MAP_INFO[S.world.map] = {}); if (v == null) delete m.backdrop; else m.backdrop = v; return backdropName(); },
     enc, walk,
