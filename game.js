@@ -294,11 +294,14 @@ function fmtCd(ms){
   return sec >= 60 ? Math.ceil(sec / 60) + 'm' : '0:' + String(sec).padStart(2, '0');
 }
 // Diminishing returns, band by band: the part of a gain that lands below 50 counts in full, 50-80 at half,
-// above 80 at a quarter. FEED (+25) from 49 / 50 / 51 ends at 62 / 62.5 / 63.5: no jump at the band edges.
+// above 80 at a quarter (PLAY joy, REST energy).
+// FEED (PACING Q2, design fa276b3): +40 with FOOD-only bands: full value below 80, a quarter at/above 80, piecewise across 80.
+// So FEED from 20 / 50 / 80 ends at 60 / 82.5 / 90 (the Warm Bowl's +15 comes on top, outside the bands).
 const GAIN_BANDS = [[50, 1], [80, 0.5], [Infinity, 0.25]];
-function careGain(base, cur){
+const FEED_FOOD = 40, FEED_BANDS = [[80, 1], [Infinity, 0.25]];
+function careGain(base, cur, bands = GAIN_BANDS){
   let v = cur, left = base;
-  for (const [top, k] of GAIN_BANDS) {
+  for (const [top, k] of bands) {
     if (left <= 0) break;
     if (v >= top) continue;
     const need = (top - v) / k;               // base points it takes to fill this band
@@ -378,7 +381,7 @@ function doAction(act){
   if (act === 'feed') {
     if (p.hunger >= 98) { sfx('denied'); return toast('Too full to eat!'); }
     const bowl = bowlReady();
-    p.hunger = clamp(p.hunger + careGain(25, p.hunger) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + (bowl ? BOWL.joy : 3), 0, 100);
+    p.hunger = clamp(p.hunger + careGain(FEED_FOOD, p.hunger, FEED_BANDS) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + (bowl ? BOWL.joy : 3), 0, 100);
     if (bowl) S.flags[BOWL.flag] = dayKey(Date.now());
     addPart('apple', pp.x + 6, pp.y - 4, 0, 4, 0.9);
     setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);

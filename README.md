@@ -47,9 +47,9 @@ away-time never pushes a stat below 10.
 Care balance: each Walkling has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 15 min),
 saved with the Walkling so reloading doesn't reset it. A button on cooldown greys out and shows the time
 left; tapping it explains the wait. Gains shrink as the stat fills, band by band: the part of a gain
-that lands below 50 counts in full, between 50 and 80 at half, above 80 at a quarter (FEED +25, PLAY +20 joy,
-REST +30 energy at full rate). So FEED from 49 / 50 / 51 ends at 62 / 62.5 / 63.5 with no jump at the edges;
-from 30 it ends at 52.5, from 90 at 96.25.
+that lands below 50 counts in full, between 50 and 80 at half, above 80 at a quarter (PLAY +20 joy,
+REST +30 energy at full rate). FEED is +40 FOOD with simpler bands: full value below 80 FOOD, a quarter at 80
+and above, so FEED from 20 / 50 / 80 ends at 60 / 82.5 / 90 (the Warm Bowl's +15 comes on top).
 Daily XP caps (per Walkling, reset at local midnight):
 - Care XP (FEED +2, PLAY +5, REST +1): up to 25 a day. After that, actions still restore stats but give no XP.
 - Explore XP: up to 30 a day, shared by walking (1 XP per 5 steps; leftover steps carry over, even
