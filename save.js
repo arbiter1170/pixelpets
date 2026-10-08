@@ -178,22 +178,34 @@ const PPSave = (() => {
   // Never fight an outside change to the v2 key from an open page:
   // - removed (the README's manual restore: remove the key and reload; the unload/periodic save would put it back),
   // - replaced by a save from a newer build (e.g. another tab), which must never be overwritten (§7.1).
-  // In both cases stop writing until the next load. Same-version writes from another tab: last writer wins, as in v1.
+  // - replaced by a different game (another uid: Start over, or a fresh game, in another tab), which this page must not overwrite.
+  // In all cases stop writing until the next load. Same-game writes from another tab (same uid): last writer wins, as in v1.
   let owned = false, detached = false, lastWritten = null;
-  function outsideChange(){
+  function outsideChange(state){
     const cur = ls.get(V2_KEY);
     if (cur === lastWritten) return null;
     if (cur === null) return owned ? 'removed' : null;
     let o = null; try { o = JSON.parse(cur); } catch(e) {}
-    return isObj(o) && Number.isInteger(o.v) && o.v > 2 ? 'newer' : null;
+    if (isObj(o) && Number.isInteger(o.v) && o.v > 2) return 'newer';
+    return isObj(o) && o.v === 2 && typeof o.uid === 'string' && state && o.uid !== state.uid ? 'other' : null;
   }
+  const WHY = { newer: 'replaced by a newer version', removed: 'removed from storage', other: 'replaced by a different game (Start over in another tab?)' };
   function writeV2(state){
     if (detached) return false;
-    const why = outsideChange();
-    if (why) { detached = true; console.info('PixelPets: the save was ' + (why === 'newer' ? 'replaced by a newer version' : 'removed from storage') + '; not saving again until you reload.'); return false; }
+    const why = outsideChange(state);
+    if (why) { detached = true; console.info('PixelPets: the save was ' + WHY[why] + '; not saving again until you reload.'); return false; }
     const str = JSON.stringify(state);
     if (!ls.set(V2_KEY, str)) return false;
     owned = true; lastWritten = str; return true;
+  }
+
+  // Start over (Friends tab): erase the game (v2, v1 and its .bak so migration can't bring old pets back, plus the corrupt-save
+  // record) and stop this page from saving; the caller reloads. Device prefs (mute, geo, env, fast, debug) are kept.
+  const GAME_KEYS = [V2_KEY, V1_KEY, BAK_KEY, CORRUPT_KEY];
+  function startOver(){
+    detached = true;
+    GAME_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    return GAME_KEYS.every(k => ls.get(k) === null);
   }
 
   // Dev check (§2): the frozen v1 table and the append-only form-id table must match sprites.js, and species ids must be unique.
@@ -210,6 +222,6 @@ const PPSave = (() => {
     return out;
   }
 
-  return Object.freeze({ V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
+  return Object.freeze({ V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, GAME_KEYS, startOver, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
     defaultStateV2, migrateV1toV2, normalizeV2, loadSave, writeV2, devCheck });
 })();

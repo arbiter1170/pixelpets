@@ -191,7 +191,7 @@ const SPECIES = [
       'caaa.aaa', 'caaabiea', 'caaabeea', 'caxaabbb', 'caaaabbb',
       'ccaaabbb', '.caaabbb', 'caxaabbb', 'ccaa.bbb', 'cc...bbb', '......dd']}
   ]},
-  { id:'vane', habitat:{storm:8, snow:8, windy:3}, weatherOnly:['storm','snow'], tiles:'grass',   // weather form: storm/snow only
+  { id:'vane', habitat:{storm:4, snow:3, windy:2}, weatherOnly:['storm','snow'], tiles:'grass',   // weather form: storm/snow only; ~1 in 10 there (spec draft: 8/8/3)
     type:'GUST', blurb:'A weathervane chick. Only seen in wild weather.', stages:[
     { name:'Vanelet', col:{a:PAL.c,b:PAL.w,c:PAL.y,d:PAL.s,x:PAL.m}, half:[
       '........', '........', '.......c', '......cc', '.......c',

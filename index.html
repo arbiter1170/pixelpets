@@ -23,7 +23,7 @@
   <main>
     <!-- PET CARE -->
     <section id="scr-pet" class="screen active">
-      <div class="scene-wrap"><canvas id="petCanvas" width="56" height="56"></canvas></div>
+      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="56" height="56"></canvas><button id="petStatsBtn" class="scene-btn" type="button" aria-label="Stats card">STATS</button></div>
       <div class="stats">
         <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
         <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
@@ -92,6 +92,7 @@
         </ul>
         <p class="note">Online friends, visits &amp; trading come in a later update. This prototype has no server &mdash; your code is generated from your local save.</p>
       </div>
+      <div class="reset-row"><button id="startOver" class="btn-quiet" type="button">Start over</button></div>
     </section>
   </main>
 
@@ -119,6 +120,35 @@
       <button id="encGo" class="btn btn-feed">BEFRIEND</button>
       <button id="encRun" class="btn btn-rest">RUN</button>
     </div>
+  </div>
+</div>
+
+<!-- Stats card (TYPES_STATS as-built 7): any tab can open it for a pet id (openStatsCard) -->
+<div id="ovStats" class="overlay" hidden>
+  <div class="ov-inner stats-card" role="dialog" aria-modal="true" aria-labelledby="scName">
+    <div class="sc-head">
+      <canvas id="scIcon" width="18" height="18"></canvas>
+      <div class="sc-who"><div id="scName" class="sc-name"></div><div id="scSpecies" class="sc-species"></div></div>
+      <span id="scType" class="type-badge"></span>
+    </div>
+    <div class="sc-row"><b id="scLv">Lv 1</b><span id="scGrow"></span></div>
+    <div class="sc-hp"><span>HP</span><div class="bar"><i id="scHpBar" class="c-hp"></i></div><b id="scHp">0/0</b><span id="scTag" class="sc-tag" hidden></span></div>
+    <div id="scStatsHead" class="sc-sub"></div>
+    <div id="scStats" class="sc-stats"></div>
+    <div id="scChart" class="sc-chart"></div>
+    <button id="scClose" class="btn" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- Start over confirm (Friends tab) -->
+<div id="ovReset" class="overlay" hidden>
+  <div class="ov-inner" role="alertdialog" aria-modal="true" aria-labelledby="resetMsg">
+    <p id="resetMsg" class="reset-msg">Start over? Your pets will be gone for good.</p>
+    <div class="actions two-even">
+      <button id="resetCancel" class="btn" type="button">CANCEL</button>
+      <button id="resetGo" class="btn btn-danger hold" type="button" aria-describedby="resetHint"><i id="resetFill" class="hold-fill"></i><span>START OVER</span></button>
+    </div>
+    <p id="resetHint" class="hint">Press and hold START OVER to confirm</p>
   </div>
 </div>
 

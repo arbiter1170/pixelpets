@@ -23,7 +23,9 @@ DBG tag shows in the header. Only in debug mode:
 Without debug those hooks are inert (they do nothing and return `undefined`), a stored fast/place choice is
 ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only hooks always work: `env`,
 `wild`, `spawnOdds(tags?)`, `cooldownLeft(act)`, `careXpToday`, `exploreXpToday`, `rates`, `fast`, `debug`,
-`muted`, `careGain(base, value)`, `refreshEnv()`, `showTab(name)`, `typeMult(attType, defType)`, `statsAt(formId, level)`.
+`muted`, `careGain(base, value)`, `refreshEnv()`, `showTab(name)`, `typeMult(attType, defType)`, `statsAt(formId, level)`,
+`openStats(petId?)` / `closeStats()` / `statsCard` (the stats card), `petScene` (Pet tab backdrop, sky and tags).
+Debug only: `setMapBackdrop('town'|'route'|'meadow'|'grove'|null)` sets the current map's backdrop to preview it.
 
 Stat pacing: FOOD, JOY and NRG drain in real time for every pet you own (not just the partner).
 From full they take about 16h / 20h / 24h to empty and drop into the blinking "needs attention"
@@ -65,6 +67,16 @@ Levels, types and stats (`stats.js`; battles themselves come in a later build):
   ready for the battle build.
 - HP: a pet's current HP (`hpNow`, absent = full) comes back at 10% of max every 10 real minutes, also while
   away; REST restores half of max HP and clears Tired (0 HP). Nothing lowers HP until battles exist.
+- Stats card: tap STATS (top-left of the Pet tab scene) or any pet on the Pets tab. It shows the type badge, Level,
+  GROW left to the next form, HP now/max with a TIRED or GLOWING tag, HP/ATK/DEF/SPD at the pet's level with bars
+  scaled to the highest value of that stat among all 42 forms at the same level, and one type-chart line
+  ("Strong vs X · Weak to Y"). No moves until battles ship. It's an overlay (tabs lock, decay pauses); CLOSE, a
+  tap outside it or Escape closes it. Any tab can open it with a pet id (`openStatsCard(id)` in `game.js`).
+
+Pet tab scene: drawn from the current map's `backdrop` (town, route, meadow or grove; `MAP_INFO` in `game.js`,
+missing or unknown = meadow; the one map today is meadow) with the same time of day and weather as Walk: night
+sky with moon and stars plus Walk's night tint, a dull sky in rain/storm/snow/fog, and the same rain, storm
+flashes, snow and fog, a little lighter on the small canvas.
 
 Fast mode (debug mode only): the old demo pacing (full to starving in about 17 minutes) for testing.
 Turn it on with `?debug=1&fast=1` in the URL (`?fast=0` turns it off), the F key, or
@@ -91,8 +103,9 @@ Which species appear depends on where you are and the weather there:
   Vanelet (`weatherOnly: ['storm','snow']`) only appears while it storms or snows and is never part of
   the 8% roll. One already on the map stays until it wanders off. The Walk badge's card lists the
   three most likely species. Examples: cold mountain = Pebblit 50% / Chillbit 31%, snowfield =
-  Chillbit 39% / Pebblit 24% / Vanelet 24%, city = Zipmite 50% / Fuzzwick 36%, night meadow =
-  Dozmouse 22% / Duskmote 17% / Fuzzwick 17%, stormy coast = Puffkin 26% / Drizzlet 20% / Clinkit 18% / Vanelet 18%.
+  Chillbit 47% / Pebblit 29% / Vanelet 11%, city = Zipmite 50% / Fuzzwick 36%, night meadow =
+  Dozmouse 22% / Duskmote 17% / Fuzzwick 17%, stormy coast = Puffkin 29% / Drizzlet 22% / Clinkit 20% / Vanelet 11%.
+  Vanelet's weights (storm 4, snow 3, windy 2) are tuned so it is about 1 in 10 in storms and snow.
 - Tags: mountain (elevation >= 800 m or >= 150 m relief within ~1 km), water / city / forest / park
   (OpenStreetMap features within 350 m; city = several urban landuse areas or 40+ buildings),
   meadow (none of those), rain / snow / storm / fog (current weather code), hot (>= 28 °C),
@@ -163,7 +176,7 @@ Saves (format v2, `save.js`):
   Unknown fields are kept on load and save.
 - An old `pixelpets.save.v1` is migrated once, on the first load of this version: every pet and its
   cooldown/daily-cap/step fields carry over, away-time decay still applies, the friend code stays the same.
-  The v1 key is never changed or deleted, and its raw text is copied once to `pixelpets.save.v1.bak`.
+  The v1 key is never changed or deleted (except by Start over), and its raw text is copied once to `pixelpets.save.v1.bak`.
   Pets that can't be read (unknown species) are kept aside in the save's `orphans` list, not dropped.
 - A save that can't be read is copied to `pixelpets.save.corrupt` before anything else happens. A v2 save
   that can't be read falls back to migrating the v1 save again (with a notice). A save from a newer version
@@ -174,6 +187,11 @@ Saves (format v2, `save.js`):
   too, first copy the backup back:
   `localStorage.setItem('pixelpets.save.v1', localStorage.getItem('pixelpets.save.v1.bak'))`.
 
-Reset: `localStorage.removeItem('pixelpets.save.v2')` (and `pixelpets.save.v1`, `pixelpets.save.v1.bak` if
-present) then reload. Per-device keys, never part of the save: `pixelpets.geo`, `pixelpets.env`,
-`pixelpets.envOverride` for location, `pixelpets.mute`, `pixelpets.debug`, `pixelpets.fast`.
+Start over: the low-key "Start over" button at the bottom of the Friends tab (no debug needed) asks
+"Start over? Your pets will be gone for good." Press and hold the red START OVER for 1.5 s (touch, mouse, or
+Space/Enter); a bar fills while you hold and letting go early cancels. It removes `pixelpets.save.v2`,
+`pixelpets.save.v1`, `pixelpets.save.v1.bak` and `pixelpets.save.corrupt` (so migration can't bring old pets
+back), then reloads into the starter choice. The page stops saving first, and any other open tab stops saving
+once it sees the save gone or replaced by a different game (a different `uid`), with a "reset in another tab"
+toast, so it can't write the old game back. Per-device keys are kept, never part of the save: `pixelpets.geo`,
+`pixelpets.env`, `pixelpets.envOverride` for location, `pixelpets.mute`, `pixelpets.debug`, `pixelpets.fast`.

@@ -133,7 +133,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref()) openGeoAsk();     // first Walk visit: ask about location (once)
 }
-const overlayOpen = () => !$('#ovEncounter').hidden || !$('#ovEvolve').hidden || !$('#ovStarter').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden;
+const overlayOpen = () => !$('#ovEncounter').hidden || !$('#ovEvolve').hidden || !$('#ovStarter').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -308,6 +308,53 @@ function makePetBg(H){
   const r = rng(9); for (let i=0;i<40;i++){ g.fillStyle = r()<.5 ? PAL.l : PAL.t; g.fillRect(r()*56|0, G + 1 + (r()*13|0), 1, 1); }
   return (bgCache[H] = c);
 }
+/* ---------- Pet tab backdrop (MAPS_SLICE §11.1) ---------- */
+// Each map names the outdoor scene the Pet tab draws behind the pet. Today's only map (proto, the future Old Meadow) is a
+// meadow; a missing or unknown value falls back to meadow. The scene gets the same time-of-day/weather tint as the Walk map
+// (envTags() + drawWeather), and stays while an overlay/panel is open (the outdoor scene doesn't change).
+const MAP_INFO = { proto: { name: 'Old Meadow', backdrop: 'meadow' } };
+const BACKDROPS = ['town', 'route', 'meadow', 'grove'];
+function backdropName(){ const b = ((S && MAP_INFO[S.world.map]) || {}).backdrop; return BACKDROPS.includes(b) ? b : 'meadow'; }
+function skyMode(tags = envTags()){
+  const has = k => tags.includes(k), dull = has('rain') || has('storm') || has('snow') || has('fog');
+  return (has('night') ? 'night' : 'day') + (dull ? '-dull' : '');      // day | day-dull | night | night-dull
+}
+const bdCache = {};
+function makeBackdrop(kind, H, mode){
+  const key = kind + '|' + H + '|' + mode; if (bdCache[key]) return bdCache[key];
+  const c = document.createElement('canvas'); c.width = 56; c.height = H; const g = ctx(c), G = H - 14;
+  const night = mode.startsWith('night'), dull = mode.endsWith('dull'), r = rng(kind.length * 7 + 3);
+  const P = (col, x, y, w = 1, h = 1) => { g.fillStyle = PAL[col]; g.fillRect(x, y, w, h); };
+  P(night ? 'n' : dull ? 'h' : 'c', 0, 0, 56, G);                                   // sky
+  P(night ? 'b' : dull ? 'w' : 's', 0, G - 12, 56, 10);                            // horizon band
+  if (!dull && !night) { P('y', 45, 4, 6, 6); P('w', 46, 5, 2, 2); }                 // sun
+  if (!dull && night) { P('w', 45, 4, 5, 5); P('n', 47, 3, 4, 4); [[6,4],[17,9],[27,3],[36,11],[52,15],[12,15]].forEach(([x, y]) => P('w', x, y)); }   // moon + stars
+  const hills = col => { for (let x = 0; x < 56; x++) { const h = Math.round(4 + Math.sin(x/6)*2 + Math.sin(x/2.3)); P(col, x, G - h, 1, h); } };
+  const ground = (base, a, b) => { P(base, 0, G, 56, H - G); for (let i = 0; i < 40; i++) P(r() < .5 ? a : b, r()*56|0, G + 1 + (r()*(H - G - 1)|0)); };
+  const tree = (x, y) => { P('k', x + 4, y + 9, 3, 6); P('p', x + 5, y + 9, 1, 6);
+    for (let j = 0; j < 10; j++) for (let i = 0; i < 11; i++) { const d = (i - 5) ** 2 + (j - 4.5) ** 2; if (d <= 26) P(d > 18 ? 'k' : (i - 4) ** 2 + (j - 3) ** 2 <= 5 ? 'g' : 't', x + i, y + j); } };
+  if (kind === 'town') {
+    [[1, 9, 11], [13, 7, 13], [27, 10, 9], [38, 8, 14]].forEach(([x, h, w]) => { const top = G - h;
+      P('h', x, top, w, h); for (let k = 0; k <= w / 2; k++) P('r', x + k, top - Math.ceil(w / 2) + k, w - 2 * k, 1);   // wall + roof
+      P(night ? 'y' : 'n', x + 2, top + 3, 2, 2); if (w > 10) P(night ? 'y' : 'n', x + w - 4, top + 3, 2, 2); });   // windows (lit at night)
+    ground('g', 'l', 't'); P('y', 0, G + 6, 56, 5); for (let i = 0; i < 12; i++) P(r() < .6 ? 'o' : 'w', r()*56|0, G + 6 + (r()*5|0));
+    P('d', 50, G - 14, 1, 20); P('k', 48, G - 17, 5, 4); P(night ? 'w' : 'y', 49, G - 16, 3, 2);           // lantern post
+    if (night) { g.fillStyle = 'rgba(255,205,117,.35)'; g.fillRect(45, G - 20, 11, 10); }
+  } else if (kind === 'route') {
+    hills('l'); ground('g', 'l', 't');
+    for (let x = 0; x < 56; x++) P('y', x, G + 4 + Math.round(Math.sin(x / 9) * 1.5), 1, 5);                     // the path
+    for (let i = 0; i < 9; i++) P('o', r()*56|0, G + 5 + (r()*3|0));
+    [[0, 9], [44, 12]].forEach(([x0, w]) => { for (let x = x0; x < x0 + w; x += 2) { P('t', x, G - 4, 2, 4); P('l', x + 1, G - 6, 1, 4); P('g', x, G - 3, 1, 3); } });   // tall grass
+  } else if (kind === 'grove') {
+    P('t', 0, G - 18, 56, 6); for (let x = -2; x < 56; x += 7) { P('k', x + 1, G - 14, 4, 14); P('p', x + 2, G - 14, 2, 14); }   // dense trunks
+    for (let x = -4; x < 58; x += 6) { P('t', x, G - 22, 8, 6); P('g', x + 2, G - 21, 3, 2); }
+    ground('t', 'g', 'k');
+  } else {                                                                           // meadow: hills, flowers and a tree
+    hills('l'); ground('g', 'l', 't'); tree(1, G - 14);
+    [[18, 2, 'w'], [30, 8, 'y'], [42, 3, 'r'], [50, 9, 'w'], [8, 10, 'y']].forEach(([x, y, col]) => { P(col, x - 1, G + y); P(col, x + 1, G + y); P(col, x, G + y - 1); P(col, x, G + y + 1); P('y', x, G + y); });
+  }
+  return (bdCache[key] = c);
+}
 function drawParticles(g, dt){
   anim.parts = anim.parts.filter(pt => (pt.life -= dt) > 0);
   for (const pt of anim.parts){
@@ -318,8 +365,9 @@ function drawParticles(g, dt){
 }
 function drawPetScene(t, dt){
   const c = $('#petCanvas'), g = ctx(c), p = pet(); if (!p) return;
-  g.drawImage(makePetBg(PET_H), 0, 0);
-  const cx = ((t / 120) % 80) - 12; drawGlyph(g, 'cloud', cx, 6); drawGlyph(g, 'cloud', ((t/180 + 40) % 80) - 12, 12);
+  const mode = skyMode();
+  g.drawImage(makeBackdrop(backdropName(), PET_H, mode), 0, 0);
+  if (mode !== 'night') { const cx = ((t / 120) % 80) - 12; drawGlyph(g, 'cloud', cx, 6); drawGlyph(g, 'cloud', ((t/180 + 40) % 80) - 12, 12); }
   const sleeping = t < anim.sleepUntil;
   let { x, y } = petPos(sleeping ? anim.sleepUntil : t);
   let bob = Math.floor(t / 400) % 2;
@@ -329,6 +377,7 @@ function drawPetScene(t, dt){
   const blink = sleeping || (t % 3200) < 140;
   g.drawImage(SPR[spi(p)][p.stage][blink ? 'b' : 'n'], x, y + bob);
   if (!sleeping && (p.hunger < 25 || p.happy < 25 || p.energy < 25) && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);
+  drawWeather(g, 56, PET_H, t, 0.18);              // same night/fog/rain/storm/snow tint as the Walk map (fewer drops on the small canvas)
   if (sleeping) {
     g.fillStyle = 'rgba(41,54,111,.55)'; g.fillRect(0,0,56,PET_H);
     g.fillStyle = PAL.w; g.fillRect(8,5,4,4); g.fillStyle = PAL.k; g.fillRect(10,5,2,2);
@@ -547,13 +596,13 @@ function drawWild(g, w, cx, cy, VW, VH, t){
 
 /* ---------- weather overlay (cheap, stateless pixel particles) ---------- */
 const WX_RND = Array.from({ length: 360 }, (_, i) => { const v = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); });
-function drawWeather(g, VW, VH, t){
+function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/flake count (the Pet tab canvas is small)
   const tags = envTags(), has = k => tags.includes(k);
   if (has('night')) { g.fillStyle = 'rgba(16,18,52,.42)'; g.fillRect(0, 0, VW, VH); }
   if (has('fog')) { g.fillStyle = 'rgba(244,244,244,.18)'; g.fillRect(0, 0, VW, VH); }
   if (has('rain') || has('storm')) {
     if (!has('night')) { g.fillStyle = 'rgba(41,54,111,.22)'; g.fillRect(0, 0, VW, VH); }   // overcast
-    const n = has('storm') ? 120 : 85; g.fillStyle = has('night') ? 'rgba(115,239,247,.75)' : 'rgba(115,239,247,.9)';
+    const n = Math.round((has('storm') ? 120 : 85) * density); g.fillStyle = has('night') ? 'rgba(115,239,247,.75)' : 'rgba(115,239,247,.9)';
     for (let i = 0; i < n; i++) {
       const r = WX_RND, sp = 0.16 + r[i*3+2] * 0.08;
       const y = (r[i*3+1] * (VH + 12) + t * sp) % (VH + 12) - 6;
@@ -564,7 +613,7 @@ function drawWeather(g, VW, VH, t){
   }
   if (has('snow')) {
     g.fillStyle = PAL.w;
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0, n = Math.round(60 * density); i < n; i++) {
       const r = WX_RND, sp = 0.012 + r[i*3+2] * 0.018, sz = r[i*3+2] > 0.7 ? 2 : 1;
       const y = (r[i*3+1] * (VH + 4) + t * sp) % (VH + 4) - 2;
       const x = ((r[i*3] * VW + Math.sin(t / 900 + i) * 4) % VW + VW) % VW;
@@ -757,6 +806,95 @@ function drawEvolution(t){
   }
 }
 
+/* ---------- stats card (TYPES_STATS as-built 7) ---------- */
+// One overlay any tab can open for a pet id (Pet tab, Pets tab; later the Walk follower, MAPS_SLICE K.4).
+// Bars: the pet's stats at its level, each scaled to the highest value of that stat across all 42 forms at the same level.
+// No moves row until battles ship.
+const STAT_KEYS = [['hp', 'HP'], ['atk', 'ATK'], ['def', 'DEF'], ['spd', 'SPD']];
+const statMaxCache = {};
+function statMaxAt(L){
+  if (statMaxCache[L]) return statMaxCache[L];
+  const m = { hp: 1, atk: 1, def: 1, spd: 1 };
+  SPECIES.forEach(sp => sp.stages.forEach((st, k) => { const s = statsAt(sp.id + '/' + k, L); if (s) for (const [key] of STAT_KEYS) m[key] = Math.max(m[key], s[key]); }));
+  return (statMaxCache[L] = m);
+}
+const typesWhere = f => TYPES.filter(f);
+function chartLine(type){
+  const strong = typesWhere(d => typeMult(type, d) === 2), weak = typesWhere(a => typeMult(a, type) === 2);
+  return { strong, weak };
+}
+function growText(p){
+  if (p.stage >= 2) return { text: 'Final form', ready: false };
+  const left = Math.max(0, EVO_XP[p.stage] - p.xp);
+  if (left > 0) return { text: 'GROW ' + left + ' to next form', ready: false };
+  if (care(p) < EVO_CARE[p.stage]) return { text: 'GROW done \u00b7 care ' + EVO_CARE[p.stage] + '+ to evolve', ready: false };
+  return { text: 'Ready to evolve!', ready: true };
+}
+const statsCard = { id: null, t: 0 };
+function openStatsCard(id){
+  const p = allPets().find(q => q.id === (id || S.partnerId)); if (!p) return false;
+  if (!$('#ovStats').hidden) { statsCard.id = p.id; renderStatsCard(); return true; }
+  if (overlayOpen()) return false;
+  clearMoves(); statsCard.id = p.id; statsCard.t = 0; renderStatsCard();
+  $('#ovStats').hidden = false; lockTabs(true); sfx('tap');
+  $('#scClose').focus({ preventScroll: true });
+  return true;
+}
+function closeStatsCard(){ if ($('#ovStats').hidden) return; $('#ovStats').hidden = true; statsCard.id = null; lockTabs(false); updateHUD(); }
+function renderStatsCard(){
+  const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
+  const si = spi(p), sp = SPECIES[si], L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
+  spriteCanvas($('#scIcon'), si, p.stage);
+  $('#scName').textContent = petName(p);
+  $('#scSpecies').textContent = (cleanNick(p.nick) ? nameOf(si, p.stage) + ' \u00b7 ' : '') + '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  $('#scStatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of 42 forms';
+  const tb = $('#scType'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
+  $('#scLv').textContent = 'Lv ' + L;
+  const gt = growText(p), ge = $('#scGrow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
+  const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), tired = isTired(p), glowing = !tired && moodOf(p).glowing;
+  $('#scHp').textContent = hp + '/' + mhp;
+  const hb = $('#scHpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25);
+  const tag = $('#scTag'); tag.hidden = !(tired || glowing); tag.textContent = tired ? 'TIRED' : 'GLOWING'; tag.className = 'sc-tag ' + (tired ? 'tired' : 'glowing');
+  const box = $('#scStats'); box.innerHTML = '';
+  for (const [key, label] of STAT_KEYS) {
+    const row = document.createElement('div'); row.className = 'sc-stat'; row.dataset.stat = key;
+    row.innerHTML = '<span></span><div class="bar"><i></i></div><b></b>';
+    row.children[0].textContent = label; row.children[2].textContent = st[key];
+    row.querySelector('i').style.width = (100 * st[key] / max[key]).toFixed(1) + '%';
+    box.append(row);
+  }
+  const ch = chartLine(sp.type), el = $('#scChart'); el.innerHTML = '';
+  const part = (lab, list) => { const s = document.createElement('span'); s.className = 'seg'; s.append(lab + ' '); const e = document.createElement('em'); e.textContent = list.join(', '); s.append(e); return s; };
+  el.append(part('Strong vs', ch.strong), ' \u00b7 ', part('Weak to', ch.weak));
+}
+
+/* ---------- start over (Friends tab) ---------- */
+// Erases the game (PPSave.startOver: v2 + v1 + .bak + corrupt record; device prefs stay) and reloads into the fresh-start path.
+// This page stops saving first; another open tab stops saving too once it sees the key gone or a different game (uid).
+// Confirm is press-and-hold (RESET_HOLD_MS) on the red button with a fill bar; letting go early cancels. Touch, mouse and keyboard (Space/Enter).
+const RESET_HOLD_MS = 1500;
+let resetting = false, gameReplaced = false;
+const hold = { t0: 0, raf: 0, by: null };
+function openReset(){ if (overlayOpen()) return; clearMoves(); holdStop(); $('#ovReset').hidden = false; lockTabs(true); sfx('tap'); $('#resetCancel').focus({ preventScroll: true }); }
+function closeReset(){ if ($('#ovReset').hidden || resetting) return; holdStop(); $('#ovReset').hidden = true; lockTabs(false); }
+function holdStart(by){
+  if (resetting || hold.by) return;
+  hold.by = by; hold.t0 = performance.now(); $('#resetGo').classList.add('holding');
+  const step = () => {
+    const k = Math.min(1, (performance.now() - hold.t0) / RESET_HOLD_MS);
+    $('#resetFill').style.width = (k * 100) + '%';
+    if (k >= 1) { hold.by = null; startOver(); return; }
+    hold.raf = requestAnimationFrame(step);
+  };
+  hold.raf = requestAnimationFrame(step);
+}
+function holdStop(){ if (resetting) return; cancelAnimationFrame(hold.raf); hold.by = null; $('#resetGo').classList.remove('holding'); $('#resetFill').style.width = '0'; }
+function startOver(){
+  if (resetting) return; resetting = true;
+  PPSave.startOver();
+  location.reload();
+}
+
 /* ---------- collection ---------- */
 function renderCollection(){
   const list = $('#ownedList'); list.innerHTML = '';
@@ -769,7 +907,10 @@ function renderCollection(){
     info.innerHTML = '<div class="nm"></div><div class="sub"></div>';
     info.firstChild.textContent = petName(p);
     info.lastChild.textContent = (cleanNick(p.nick) ? nameOf(spi(p), p.stage) : SPECIES[spi(p)].type) + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
-    c.append(cv, info);
+    const open = document.createElement('button'); open.type = 'button'; open.className = 'card-open'; open.setAttribute('aria-label', 'Stats for ' + petName(p));
+    const ico = document.createElement('span'); ico.className = 'ico'; ico.append(cv); open.append(ico, info);
+    open.addEventListener('click', () => openStatsCard(p.id));
+    c.append(open);
     if (p.id === S.partnerId) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; c.append(s); }
     else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
       b.addEventListener('click', () => { sfx('tap'); makePartner(p.id); save(); updateHUD(); renderCollection(); toast(petName(p) + ' is your partner now!'); });
@@ -841,6 +982,25 @@ function bindInput(){
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', () => { evo.active = false; $('#ovEvolve').hidden = true; $('#tabs').classList.remove('locked'); updateHUD(); });
   $('#encGo').addEventListener('click', encounterPress);
+  $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
+  $('#startOver').addEventListener('click', openReset);
+  $('#resetCancel').addEventListener('click', () => { sfx('tap'); closeReset(); });
+  const rg = $('#resetGo');
+  rg.addEventListener('pointerdown', e => { if (e.button > 0) return; e.preventDefault(); try { rg.setPointerCapture(e.pointerId); } catch(err) {} holdStart('pointer'); });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => rg.addEventListener(ev, () => { if (hold.by === 'pointer') holdStop(); }));
+  rg.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); holdStart('key'); } else if (e.key === ' ' || e.key === 'Enter') e.preventDefault(); });
+  rg.addEventListener('keyup', e => { if ((e.key === ' ' || e.key === 'Enter') && hold.by === 'key') holdStop(); });
+  rg.addEventListener('blur', () => { if (hold.by === 'key') holdStop(); });
+  rg.addEventListener('contextmenu', e => e.preventDefault());   // long-press menu on phones
+  $('#ovReset').addEventListener('click', e => { if (e.target === e.currentTarget) closeReset(); });
+  window.addEventListener('storage', e => {                // another tab started over: say so once (this page has stopped saving)
+    if ((e.key === PPSave.V2_KEY || e.key === null) && !resetting && S && allPets().length) {
+      let o = null; try { o = JSON.parse(localStorage.getItem(PPSave.V2_KEY)); } catch(err) {}
+      if (!o || o.uid !== S.uid) { if (!gameReplaced) toast('This game was reset in another tab. Reload to play the new one.'); gameReplaced = true; }
+    }
+  });
+  $('#scClose').addEventListener('click', () => { sfx('tap'); closeStatsCard(); });
+  $('#ovStats').addEventListener('click', e => { if (e.target === e.currentTarget) closeStatsCard(); });   // tap outside the card
   $('#encNick').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (enc.done) closeEncounter(); } });
   $('#encRun').addEventListener('click', () => { closeEncounter(); toast('Got away safely.'); });
   $('#geoAllow').addEventListener('click', () => { closeGeoAsk(); useLocation(); });
@@ -889,6 +1049,8 @@ function bindInput(){
   const KEYS = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'up', s:'down', a:'left', d:'right', W:'up', S:'down', A:'left', D:'right' };
   window.addEventListener('keydown', e => {
     if (e.target && e.target.tagName === 'INPUT') return;
+    if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
+    if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) walk.queued = DIRS[KEYS[e.key]]; walk.key = KEYS[e.key]; return; }
     if (DEBUG) {                                 // debug keys only with ?debug=1
       if (e.key === 'e' || e.key === 'E') { startEvolution(true); return; }          // force evolve
@@ -926,6 +1088,7 @@ function frame(t){
     if (screen === 'walk') { if (!overlayOpen() || walk.intro) updateWalk(dt, t); if (!overlayOpen() && !walk.intro) updateWild(dt); drawMap(t); }
     if (!$('#ovEncounter').hidden) drawEncounter(t, dt);
     if (evo.active) drawEvolution(t);
+    if (!$('#ovStats').hidden && (statsCard.t += dt) >= 1) { statsCard.t = 0; renderStatsCard(); }   // HP regen etc. stay live
   }
   requestAnimationFrame(frame);
 }
@@ -995,6 +1158,9 @@ function boot(){
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
     get muted(){ return PPSound.muted; }, careGain, showTab,
     typeMult: (a, d) => typeMult(a, d), statsAt: (id, L) => { const s = statsAt(id, L); return s && { ...s }; },   // read-only, always public
+    openStats: id => openStatsCard(id), closeStats: () => closeStatsCard(),          // UI only (the same as tapping STATS / CLOSE)
+    get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
+    get petScene(){ return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice() }; },
   };
   const cheats = {
     forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
@@ -1006,6 +1172,7 @@ function boot(){
     giveBx: n => { const r = grantBattleXp(pet(), n); updateHUD(); save(); return r; },   // battle XP (Level)
     resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
     makePartner: id => { makePartner(id); updateHUD(); save(); },
+    setMapBackdrop: v => { const m = MAP_INFO[S.world.map] || (MAP_INFO[S.world.map] = {}); if (v == null) delete m.backdrop; else m.backdrop = v; return backdropName(); },
     enc, walk,
   };
   let warned = false;
