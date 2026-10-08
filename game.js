@@ -187,7 +187,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -2691,6 +2691,8 @@ function openReset(){
   if (!$('#ovReset').hidden) return;
   // Start over lives in Settings: allow opening the confirm while #ovSettings is up; block if any other overlay is open.
   if (overlayOpen() && $('#ovSettings').hidden) return;
+  // ONLINE_SAVES (only when the cloud path is on): Start over also erases the cloud copy, and the confirm says so.
+  if (PPCloud.enabled) $('#resetMsg').textContent = 'Start over? Your Walklings will be gone for good, on this device and in your cloud backup.';
   clearMoves(); holdStop(); $('#ovReset').hidden = false; lockTabs(true); sfx('tap'); $('#resetCancel').focus({ preventScroll: true });
 }
 function closeReset(){ if ($('#ovReset').hidden || resetting) return; holdStop(); $('#ovReset').hidden = true; lockTabs(!$('#ovSettings').hidden); }   // back to Settings if it was opened there
@@ -2709,6 +2711,7 @@ function holdStop(){ if (resetting) return; cancelAnimationFrame(hold.raf); hold
 function startOver(){
   if (resetting) return; resetting = true;      // save() is a no-op from here on, whatever fires before the page goes
   clearMoves(); clearInterval(saveTimer);
+  if (PPCloud.enabled) { $('#resetHint').textContent = 'Erasing your cloud backup...'; PPCloud.startOver(() => PPSave.startOver()).then(() => location.reload()); return; }
   PPSave.startOver();
   location.reload();
 }
@@ -2985,6 +2988,28 @@ document.addEventListener('visibilitychange', () => {
   if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
 });
 
+/* ---------- online saves (cloud.js; a no-op unless cloud_config.js holds a config) ---------- */
+// Summary of a save string for the "which game to keep" choice: partner, pet count, Seals, last played. Never touches storage.
+function cloudSummary(raw){
+  let o = null; try { o = JSON.parse(raw); } catch(e) {}
+  if (!o || typeof o !== 'object' || o.v !== 2) return null;
+  const s = PPSave.normalizeV2(o, Date.now()), p = s.party.find(q => q.id === s.partnerId) || s.party[0];
+  return { partner: p ? petName(p) : null, sp: p ? spi(p) : null, stage: p ? p.stage : 0, pets: s.party.length + s.box.length,
+    seals: Object.values(s.seals).filter(Boolean).length, last: s.last, player: s.player.name };
+}
+function startCloud(){
+  PPCloud.start({
+    getState: () => (readOnly || resetting) ? null : S,
+    save, toast, sfx, summary: cloudSummary,
+    drawPet: (cv, sp, st) => spriteCanvas(cv, sp, st, 'n'),
+    busy: () => overlayOpen(),
+    beforeOverlay: () => { clearMoves(); lockTabs(true); },
+    afterOverlay: () => lockTabs(!$('#ovSettings').hidden),
+    // adopt a cloud save: this page stops writing, the v2 key gets the cloud copy as-is (its `last` keeps away-time decay), reload
+    adopt: raw => { if (resetting) return; resetting = true; clearMoves(); clearInterval(saveTimer); try { localStorage.setItem(PPSave.V2_KEY, raw); } catch(e) {} location.reload(); },
+  });
+}
+
 /* ---------- boot ---------- */
 // The v2 key holds a save from a newer build: block play, write nothing (save() is a no-op), keep the save as-is.
 function bootReadOnly(){
@@ -3025,6 +3050,7 @@ function boot(){
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   saveTimer = setInterval(save, 5000);
+  startCloud();
   setInterval(() => fadeTick(true), FADE_SAMPLE_MS); setInterval(() => fadeTick(false), 5000); fadeTick(false);
   requestAnimationFrame(t => { lastT = t; frame(t); });
   // Console hooks. Read-only ones are always there and can't change the game; anything that cheats

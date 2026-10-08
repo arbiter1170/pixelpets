@@ -1,0 +1,24 @@
+rules_version = '2';
+// Walklings online saves (design ONLINE_SAVES_SCOPE.md, Phase 1).
+// One private doc per player: saves/{firebaseUid} = { data: "<save JSON string>", v, rev, updatedAt }.
+// A player can read, write and delete only their own doc; nobody else (signed in or not) can touch it.
+// The revision must go up by exactly one per write, so a stale device can't overwrite a newer save.
+// Everything outside /saves is closed.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /saves/{uid} {
+      function mine() { return request.auth != null && request.auth.uid == uid; }
+      function ok() {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['data', 'v', 'rev', 'updatedAt'])
+          && d.data is string && d.data.size() < 500000
+          && d.v is int && d.v >= 2
+          && d.rev is int
+          && (!('updatedAt' in d) || d.updatedAt is int);
+      }
+      allow read, delete: if mine();
+      allow create: if mine() && ok() && request.resource.data.rev == 1;
+      allow update: if mine() && ok() && request.resource.data.rev == resource.data.rev + 1;
+    }
+  }
+}

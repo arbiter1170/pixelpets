@@ -182,6 +182,9 @@ const PPSave = (() => {
     // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
     for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];
     fill(s, 'money', x => Number.isInteger(x) && x >= 0, 0);
+    // ONLINE_SAVES: optional cloud sync fields, additive (no version bump). Absent stays absent (= rev 0, no real change yet).
+    if (has(s, 'rev') && !(Number.isInteger(s.rev) && s.rev >= 0)) s.rev = 0;
+    if (has(s, 'updatedAt') && !(fin(s.updatedAt) && s.updatedAt > 0)) delete s.updatedAt;
     fill(s, 'eggs', isObj, d.eggs);
     fill(s.eggs, 'incubators', x => Array.isArray(x) && x.length > 0, [{ egg: null }]); fill(s.eggs, 'held', Array.isArray, []);
     fill(s, 'settings', isObj, d.settings);
@@ -269,9 +272,10 @@ const PPSave = (() => {
   // Start over (Friends tab): erase the game (v2, v1 and its .bak so migration can't bring old pets back, plus the corrupt-save
   // record) and stop this page from saving; the caller reloads. Device prefs (mute, geo, env, fast, debug) are kept.
   const GAME_KEYS = [V2_KEY, V1_KEY, BAK_KEY, CORRUPT_KEY];
+  const CLOUD_KEYS = ['pixelpets.cloud', 'pixelpets.cloud.backup'];   // ONLINE_SAVES: device sync bookkeeping + the "game not kept" backup
   function startOver(){
     detached = true;
-    GAME_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
+    GAME_KEYS.concat(CLOUD_KEYS).forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
     return GAME_KEYS.every(k => ls.get(k) === null);
   }
 

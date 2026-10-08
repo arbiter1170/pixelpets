@@ -429,3 +429,19 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .shop-row .bag-meta{flex:1 1 auto}
 .overlay.shop .bag-head{align-items:flex-start}
 .overlay.shop .bag-head .bag-money{margin-top:4px}
+/* ONLINE_SAVES: Settings row, panel and the "which game to keep" choice (only built when the cloud path is on) */
+.set-row.set-cloud{padding:8px 14px}
+.set-cloud .set-lab{display:flex;flex-direction:column;gap:3px}
+.set-cloud .set-sub{font-size:14px;line-height:1.25;color:var(--dim,#94b0c2)}
+.cloud-ov{z-index:20}
+.cloud-label{margin:0;font-size:18px;line-height:1.35;color:var(--w);text-align:center}
+.cloud-inner .hint{margin:0;text-align:center}
+.cloud-privacy{font-size:13px;opacity:.85}
+.cloud-actions{display:flex;flex-direction:column;gap:8px}
+.cloud-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cloud-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 6px;border:3px solid var(--d);background:var(--k);text-align:center;min-width:0}
+.cloud-card-t{font-size:15px;color:var(--y)}
+.cloud-card-art{width:54px;height:54px;image-rendering:pixelated}
+.cloud-card-n{font-size:18px;color:var(--w);overflow-wrap:anywhere}
+.cloud-card-l{font-size:15px;color:var(--dim,#94b0c2)}
+.cloud-card .btn{margin-top:6px;width:100%;padding-left:4px;padding-right:4px}
