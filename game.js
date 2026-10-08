@@ -80,8 +80,10 @@ function newPet(sp, stage=0, origin='wild', lv=STAT_RULES.STARTER_LEVEL){   // B
   return { id: rid(8), species: SPECIES[sp].id, stage, nick: null, origin, xp: stage ? EVO_XP[stage-1] : 0, bx: STAT_RULES.bxForLevel(lv), hunger: 80, happy: 80, energy: 90, met: Date.now(),
     moves: defaultMoves(SPECIES[sp].id + '/' + stage, lv), evoMoves: Array.from({ length: stage }, (_, i) => i + 1) };
 }
-let readOnly = false;              // a save from a newer build: play nothing, write nothing
-function save(){ if (!S || readOnly) return; S.last = Date.now(); PPSave.writeV2(S); }
+let saveTimer = 0, readOnly = false;              // a save from a newer build: play nothing, write nothing
+// Once Start over has begun, nothing on this page may write again (pagehide / hidden / the 5 s timer fire while it reloads).
+let resetting = false, gameReplaced = false;
+function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); PPSave.writeV2(S); }
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
 const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
@@ -1664,7 +1666,6 @@ function renderStatsCard(){
 // This page stops saving first; another open tab stops saving too once it sees the key gone or a different game (uid).
 // Confirm is press-and-hold (RESET_HOLD_MS) on the red button with a fill bar; letting go early cancels. Touch, mouse and keyboard (Space/Enter).
 const RESET_HOLD_MS = 1500;
-let resetting = false, gameReplaced = false;
 const hold = { t0: 0, raf: 0, by: null };
 function openReset(){
   if (!$('#ovReset').hidden) return;
@@ -1686,7 +1687,8 @@ function holdStart(by){
 }
 function holdStop(){ if (resetting) return; cancelAnimationFrame(hold.raf); hold.by = null; $('#resetGo').classList.remove('holding'); $('#resetFill').style.width = '0'; }
 function startOver(){
-  if (resetting) return; resetting = true;
+  if (resetting) return; resetting = true;      // save() is a no-op from here on, whatever fires before the page goes
+  clearMoves(); clearInterval(saveTimer);
   PPSave.startOver();
   location.reload();
 }
@@ -1886,6 +1888,12 @@ function bindInput(){
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
   document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
   window.addEventListener('pagehide', save);
+  // Back/forward cache: a page restored with an old game in memory reloads if its save was erased or replaced meanwhile.
+  window.addEventListener('pageshow', e => {
+    if (!e.persisted || !S || resetting) return;
+    let o = null; try { o = JSON.parse(localStorage.getItem(PPSave.V2_KEY)); } catch(err) {}
+    if (!o || o.uid !== S.uid) { resetting = true; location.reload(); }
+  });
 }
 
 /* ---------- main loop ---------- */
@@ -1973,7 +1981,7 @@ function boot(){
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
-  setInterval(save, 5000);
+  saveTimer = setInterval(save, 5000);
   requestAnimationFrame(t => { lastT = t; frame(t); });
   // Console hooks. Read-only ones are always there and can't change the game; anything that cheats
   // (XP, evolving, spawning, places, fast mode, live state) only works with ?debug=1.

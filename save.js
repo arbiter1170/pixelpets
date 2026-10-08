@@ -39,9 +39,11 @@ const PPSave = (() => {
   };
   function writeCorrupt(from, raw){ ls.set(CORRUPT_KEY, JSON.stringify({ at: Date.now(), from, raw })); }
 
+  // The fresh-game start (MAPS_SLICE: the current start map's start tile). A new object every call: nothing can share or keep it.
+  const startWorld = () => ({ map: 'proto', x: 3, y: 3, facing: 'down', respawn: null });
   function defaultStateV2(now = Date.now()){
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
-      dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: { map: 'proto', x: 3, y: 3, facing: 'down', respawn: null },
+      dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: startWorld(),
       bag: {}, money: 0, seals: {}, flags: {}, eggs: { incubators: [{ egg: null }], held: [] },
       settings: { textSpeed: 'normal', battleAnims: true, follower: true },
       player: { name: null, look: null },
@@ -139,6 +141,9 @@ const PPSave = (() => {
     if (!MAPS.includes(w.map)) { w.map = 'proto'; w.x = 3; w.y = 3; }
     fill(w, 'x', Number.isInteger, 3); fill(w, 'y', Number.isInteger, 3);
     fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || typeof x === 'string', null);
+    // A game with no pets has not reached the starter yet, so it always opens at the start tile: a position left in a
+    // pet-less save (however it got there) can never carry over into a new game's opening.
+    if (!s.party.length && !s.box.length) s.world = startWorld();
     for (const k of ['bag', 'seals', 'flags']) fill(s, k, isObj, {});
     fill(s, 'money', x => Number.isInteger(x) && x >= 0, 0);
     fill(s, 'eggs', isObj, d.eggs);
@@ -248,5 +253,5 @@ const PPSave = (() => {
   }
 
   return Object.freeze({ PLAYER_NAME_MAX, V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, GAME_KEYS, startOver, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
-    defaultStateV2, migrateV1toV2, normalizeV2, loadSave, writeV2, devCheck });
+    defaultStateV2, startWorld, migrateV1toV2, normalizeV2, loadSave, writeV2, devCheck });
 })();
