@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261008-1522">
+<meta name="kw-build" content="20261008-1546">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261008-1522">
+<link rel="stylesheet" href="style.css?v=20261008-1546">
 </head>
 <body>
 <div id="app">
@@ -28,7 +28,7 @@
   <main>
     <!-- PET CARE -->
     <section id="scr-pet" class="screen active">
-      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="80" height="64"></canvas><button id="petStatsBtn" class="scene-btn" type="button" aria-label="Stats card">STATS</button><span id="petKeeper" class="scene-keeper" aria-label="Keeper Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
+      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="80" height="64"></canvas><button id="petStatsBtn" class="scene-btn" type="button" aria-label="Stats card">STATS</button><button id="petBagBtn" class="scene-btn scene-btn-bl" type="button" aria-label="Bag" hidden>BAG</button><span id="petKeeper" class="scene-keeper" aria-label="Keeper Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
       <div class="stats">
         <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
         <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
@@ -37,7 +37,7 @@
       </div>
       <div id="evoHint" class="hint"></div>
       <div id="dailyXp" class="hint daily"><span class="seg">Today: care XP <b id="dCare">0/25</b></span> <span class="sep">&middot;</span> <span class="seg">explore XP <b id="dExp">0/30</b></span></div>
-      <button id="evolveBtn" class="btn btn-evo" hidden>&#9733; EVOLVE! &#9733;</button>
+      <button id="evolveBtn" class="btn btn-evo" hidden type="button"><canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas> EVOLVE! <canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas></button>
       <div class="actions">
         <button class="btn btn-feed" data-act="feed">FEED</button>
         <button class="btn btn-play" data-act="play">PLAY</button>
@@ -54,17 +54,17 @@
         <div class="mini" title="Explore XP earned today (walking + befriending), daily cap 30"><span>TODAY</span><b id="wExp">0/30</b></div>
       </div>
       <button id="envBadge" class="env-badge" type="button"><span id="envText">Meadow</span><small id="envSrc"></small></button>
-      <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" width="176" height="176"></canvas>
+      <div class="map-wrap" id="mapWrap"><button id="walkBagBtn" class="scene-btn scene-btn-tr" type="button" aria-label="Bag" hidden>BAG</button><canvas id="mapCanvas" width="176" height="176"></canvas>
         <div id="chatBubble" class="chat-bubble" hidden></div>
         <div id="bumpHint" class="bump-hint" role="status" hidden></div>
       </div>
       <div class="walk-ctl">
         <div class="dpad" id="dpad">
-          <button class="dp up" data-dir="up" aria-label="Up">&#9650;</button>
-          <button class="dp left" data-dir="left" aria-label="Left">&#9664;</button>
+          <button class="dp up" data-dir="up" aria-label="Up"><canvas class="ico-dp" data-icon="up" width="8" height="8" aria-hidden="true"></canvas></button>
+          <button class="dp left" data-dir="left" aria-label="Left"><canvas class="ico-dp" data-icon="left" width="8" height="8" aria-hidden="true"></canvas></button>
           <button class="dp mid talk" id="talkBtn" type="button" aria-label="Talk" aria-disabled="true">TALK</button>
-          <button class="dp right" data-dir="right" aria-label="Right">&#9654;</button>
-          <button class="dp down" data-dir="down" aria-label="Down">&#9660;</button>
+          <button class="dp right" data-dir="right" aria-label="Right"><canvas class="ico-dp" data-icon="right" width="8" height="8" aria-hidden="true"></canvas></button>
+          <button class="dp down" data-dir="down" aria-label="Down"><canvas class="ico-dp" data-icon="down" width="8" height="8" aria-hidden="true"></canvas></button>
         </div>
         <p class="tip">Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!</p>
       </div>
@@ -165,6 +165,20 @@
     <div id="shTitle" class="sh-title"></div>
     <div id="shList" class="sh-list"></div>
     <button id="shCancel" class="btn bt-back" type="button" hidden>BACK</button>
+  </div>
+</div>
+
+
+<!-- Bag (INVENTORY §6): Walk map corner + Pet tab BAG; full-screen, tabs locked, counted by overlayOpen -->
+<div id="ovBag" class="overlay bag" hidden>
+  <div class="ov-inner bag-inner" role="dialog" aria-modal="true" aria-labelledby="bagTitle">
+    <div class="bag-head">
+      <div id="bagTitle" class="ov-title">Bag</div>
+      <div class="bag-money" aria-label="Acorns"><canvas id="bagAcorn" width="8" height="8" aria-hidden="true"></canvas><b id="bagMoney">0</b></div>
+      <button id="bagClose" class="btn bag-x" type="button" aria-label="Close">X</button>
+    </div>
+    <div id="bagList" class="bag-list" role="listbox" aria-label="Items"></div>
+    <div id="bagEmpty" class="bag-empty" hidden>Your bag is empty. Ilse's Travel Shelf has snacks.</div>
   </div>
 </div>
 
@@ -317,15 +331,15 @@
 </div>
 
 <div id="toast" aria-live="polite"></div>
-<script>window.BUILD = "20261008-1522";</script>
-<script src="sprites.js?v=20261008-1522"></script>
-<script src="keeper.js?v=20261008-1522"></script>
-<script src="stats.js?v=20261008-1522"></script>
-<script src="moves.js?v=20261008-1522"></script>
-<script src="data/mapdata.js?v=20261008-1522"></script>
-<script src="save.js?v=20261008-1522"></script>
-<script src="env.js?v=20261008-1522"></script>
-<script src="sfx.js?v=20261008-1522"></script>
-<script src="game.js?v=20261008-1522"></script>
+<script>window.BUILD = "20261008-1546";</script>
+<script src="sprites.js?v=20261008-1546"></script>
+<script src="keeper.js?v=20261008-1546"></script>
+<script src="stats.js?v=20261008-1546"></script>
+<script src="moves.js?v=20261008-1546"></script>
+<script src="data/mapdata.js?v=20261008-1546"></script>
+<script src="save.js?v=20261008-1546"></script>
+<script src="env.js?v=20261008-1546"></script>
+<script src="sfx.js?v=20261008-1546"></script>
+<script src="game.js?v=20261008-1546"></script>
 </body>
 </html>

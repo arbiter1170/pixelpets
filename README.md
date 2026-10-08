@@ -93,6 +93,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   Your partner leads (or the first party Walkling that can battle). Each turn pick FIGHT (up to 4 moves with limited
   uses; with none left a Walkling uses Wobble), BEFRIEND, SWAP, BAG (any battle item you carry) or RUN. Faster Walklings act
   first; damage uses ATK/DEF, level, type, same-type bonus, mood, stat stages (-2..+2) and rare critical hits.
+- Bag (INVENTORY v1): Walk map corner + Pet tab BAG open the Bag overlay; Travel Shelf sells snacks in the Lantern House.
 - Items (INVENTORY v1): Heal Snack (+40% HP), Hearty Snack (+75% HP), Wake Tonic (wakes a napping Walkling early at 25% HP),
   Befriend Treat (wild battles, once per battle), Energy Sip (NRG +40) and Joy Crumb (JOY +20). Trainers pay Acorns.
 - Type hints start hidden: once you've seen a move's effect on a type, its button shows a 2x / ½ / 0 badge for

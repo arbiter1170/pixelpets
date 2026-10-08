@@ -187,7 +187,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -250,6 +250,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitA
 
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
 function updateHUD(){
+  syncBagBtns();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
   if (!p) return;
   const st = SPECIES[spi(p)].stages[p.stage];
@@ -668,6 +669,117 @@ function onLand(){
 }
 /* ---------- items (INVENTORY v1 §3): one catalog for the Bag, the Travel Shelf, battle, scene `give` and map pickups ---------- */
 // use: where it works ('battle' and/or 'field'); target: needs a pet; cap: stack limit (enforced on grant, not on load); price in Acorns.
+const ITEM_ART = {
+  heal_snack: [
+    '................',
+    '................',
+    '................',
+    '.....ooooooo....',
+    '...ooyyyyyyyoo..',
+    '..oyyyrryrryyyo.',
+    '..oywyrrrrryyyo.',
+    '..oyyyyrrryyyyo.',
+    '..oyyyyyryyyyyo.',
+    '..roooyyyyyooor.',
+    '..rrrooooooorrr.',
+    '...rrrrrrrrrrr..',
+    '.....rrrrrrr....',
+    '................',
+    '................',
+    '................',
+  ],
+  hearty_snack: [
+    '................',
+    '................',
+    '.....ooooooo....',
+    '...ooyyyyyyyoo..',
+    '..oyyyrryrryyyo.',
+    '..oywyrrrrryyyo.',
+    '..oyyyyrrryyyyo.',
+    '..oyyyyyryyyyyo.',
+    '..roooyyyyyooor.',
+    '..rrrooooooorrr.',
+    '..prrrrrrrrrrrp.',
+    '..oyyyyyyyyyyyo.',
+    '..roooooooooorr.',
+    '...rrrrrrrrrrr..',
+    '................',
+    '................',
+  ],
+  wake_tonic: [
+    '................',
+    '.......pp.......',
+    '.......pp.......',
+    '......oyoo......',
+    '.....oyyoor.....',
+    '.....oyooor.....',
+    '......gggg......',
+    '.....oyyooor....',
+    '....oyyyooooo...',
+    '....oywyoooor...',
+    '....oyyooooor...',
+    '....oyooooorr...',
+    '.....ooooorr....',
+    '......orrrr.....',
+    '................',
+    '................',
+  ],
+  befriend_treat: [
+    '................',
+    '................',
+    '................',
+    '................',
+    '.y...........y..',
+    '.yy..rrrrrr.yy..',
+    '.yyyrwwrrrrryyy.',
+    '.yyyrwrrrrrryyy.',
+    '.yyyrrrrrrrpyyy.',
+    '.yy..rrrrpp..yy.',
+    '.y...........y..',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  energy_sip: [
+    '................',
+    '.....w....w.....',
+    '.....ww...ww....',
+    '......w....w....',
+    '................',
+    '................',
+    '...ccccccccc....',
+    '...csssssssc....',
+    '...cccccccccccc.',
+    '...csccccccc..c.',
+    '...csccccccc..c.',
+    '...cscccccccccc.',
+    '...ccccccccc....',
+    '....bbbbbbb.....',
+    '................',
+    '................',
+  ],
+  joy_crumb: [
+    '................',
+    '.......rr.......',
+    '.......rr.......',
+    '.....wwwwww.....',
+    '....wwcwwlww....',
+    '...wwwwwrwwww...',
+    '...wlwwwwwcww...',
+    '..wwwwrwwwwwww..',
+    '..hwwwwwlwwwwh..',
+    '...ohohohohoh...',
+    '...oohohohoho...',
+    '....ohohohoh....',
+    '....oooooooo....',
+    '................',
+    '................',
+    '................',
+  ],
+};
+// Item icons: Design ICONS_SEALS item_* grids, drawn via keeperCanvas at 36 CSS px.
 const ITEMS = {
   heal_snack:     { name: 'Heal Snack',     plural: 'Heal Snacks',     cap: 20, price: 50,  use: ['battle', 'field'], target: true,  heal: 0.4,  blurb: 'Restores some HP.' },
   hearty_snack:   { name: 'Hearty Snack',   plural: 'Hearty Snacks',   cap: 10, price: 150, use: ['battle', 'field'], target: true,  heal: 0.75, blurb: 'Restores a lot of HP.' },
@@ -2068,6 +2180,89 @@ function swapSheet(forced){
   });
   return openSheet(forced ? 'Who goes next?' : 'Swap to which Walkling?', items, forced ? null : 'BACK');
 }
+/* ---------- Bag overlay (INVENTORY §6) ---------- */
+let bagSel = 0;
+function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
+function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'star', 0, 0); }
+function paintUiIcons(){
+  $$('.ico-star').forEach(paintStar);
+  $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
+  paintAcorn($('#bagAcorn'));
+}
+function bagVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene); }
+function syncBagBtns(){
+  const on = bagVisible() && !(battle && battle.on);
+  const w = $('#walkBagBtn'), p = $('#petBagBtn');
+  if (w) w.hidden = !on; if (p) p.hidden = !on;
+}
+function openBag(){
+  if (!bagVisible() || overlayOpen()) return;
+  clearMoves(); bagSel = 0; renderBag(); $('#ovBag').hidden = false; lockTabs(true); sfx('tap');
+}
+function closeBag(){
+  if ($('#ovBag').hidden) return;
+  $('#ovBag').hidden = true; lockTabs(false); updateHUD();
+}
+function renderBag(){
+  if (!S) return;
+  paintAcorn($('#bagAcorn'));
+  $('#bagMoney').textContent = String(S.money | 0);
+  const list = $('#bagList'), empty = $('#bagEmpty');
+  list.textContent = '';
+  const ids = ITEM_ORDER.filter(k => itemCount(k) > 0);
+  empty.hidden = ids.length > 0;
+  if (!ids.length) { bagSel = 0; return; }
+  if (bagSel >= ids.length) bagSel = ids.length - 1;
+  ids.forEach((id, i) => {
+    const it = ITEMS[id], battleOnly = it.use.length === 1 && it.use[0] === 'battle';
+    const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
+    row.setAttribute('role', 'option'); row.dataset.id = id; row.dataset.i = String(i);
+    const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico' + (battleOnly ? ' grey' : '');
+    ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    const meta = document.createElement('div'); meta.className = 'bag-meta';
+    const nm = document.createElement('div'); nm.className = 'bag-name';
+    nm.textContent = it.name + ' \u00d7' + itemCount(id);
+    if (battleOnly) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = '(battle only)'; nm.appendChild(tag); }
+    const bl = document.createElement('div'); bl.className = 'bag-blurb'; bl.textContent = it.blurb;
+    meta.append(nm, bl);
+    row.append(ico, meta);
+    if (!battleOnly) {
+      const use = document.createElement('button'); use.type = 'button'; use.className = 'btn bag-use'; use.textContent = 'USE';
+      use.addEventListener('click', e => { e.stopPropagation(); bagSel = i; useBagItem(id); });
+      row.appendChild(use);
+    }
+    row.addEventListener('click', () => { bagSel = i; $$('.bag-row').forEach((r, j) => r.classList.toggle('sel', j === bagSel)); });
+    list.appendChild(row);
+  });
+  const sel = list.children[bagSel]; if (sel) sel.scrollIntoView({ block: 'nearest' });
+}
+async function useBagItem(id){
+  if ($('#ovBag').hidden || !ITEMS[id]) return;
+  const it = ITEMS[id];
+  if (!it.use.includes('field')) { sfx('denied'); toast(id === 'befriend_treat' ? 'Save it for a wild battle.' : "Can't use that here yet."); return; }
+  let tgt = null;
+  if (it.target) {
+    tgt = await itemTargetSheet(id, S.partnerId);
+    if (!tgt || $('#ovBag').hidden) return;
+  }
+  const r = useItem(id, tgt, 'field');
+  sfx(r.ok ? (id === 'joy_crumb' || id === 'befriend_treat' ? 'tap' : 'heal') : 'denied');
+  toast(r.msg); if (r.ok) save();
+  renderBag(); updateHUD();
+}
+function bagKey(e){
+  if ($('#ovBag').hidden || !$('#ovSheet').hidden) return false;
+  const ids = ITEM_ORDER.filter(k => itemCount(k) > 0);
+  if (e.key === 'Escape') { closeBag(); return true; }
+  if (e.key === 'ArrowDown') { if (ids.length) { bagSel = Math.min(ids.length - 1, bagSel + 1); renderBag(); } return true; }
+  if (e.key === 'ArrowUp') { if (ids.length) { bagSel = Math.max(0, bagSel - 1); renderBag(); } return true; }
+  if (e.key === 'Enter') {
+    const id = ids[bagSel]; if (id && !(ITEMS[id].use.length === 1 && ITEMS[id].use[0] === 'battle')) useBagItem(id);
+    return true;
+  }
+  return false;
+}
+
 // The pet list for an item that needs a target (party, HP bars, FAINTED Nm / TIRED badges); `pre` is listed first and marked.
 function itemTargetSheet(id, pre){
   const it = ITEMS[id], order = S.party.slice().sort((a, b) => (b.id === pre) - (a.id === pre));
@@ -2080,7 +2275,7 @@ async function bagSheet(){
   const B = battle, ids = ITEM_ORDER.filter(k => itemCount(k) > 0);
   const refuse = async msg => { sfx('denied'); B.state = 'MSG'; setPanel('busy'); await say(msg); if (B.on) toChoose(); };
   if (!ids.length) { sfx('denied'); B.state = 'MSG'; await say('Your bag is empty.'); if (B.on) toChoose(); return; }
-  const pick = await openSheet('Bag', ids.map(k => ({ label: ITEMS[k].name + '  x' + itemCount(k), sub: ITEMS[k].blurb, value: k })), 'BACK');
+  const pick = await openSheet('Bag', ids.map(k => ({ label: ITEMS[k].name + '  x' + itemCount(k), sub: ITEMS[k].blurb, value: k, art: k })), 'BACK');
   if (!pick || !B.on) return;
   const it = ITEMS[pick];
   if (!it.use.includes('battle')) return refuse("Can't use that here yet.");
@@ -2221,6 +2416,7 @@ function openSheet(title, items, cancel){
     const list = $('#shList'); list.textContent = '';
     items.forEach(it => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sh-item' + (it.cls ? ' ' + it.cls : ''); b.disabled = !!it.disabled;
+      if (it.art && ITEM_ART[it.art]) { const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico'; ctx(ico).drawImage(keeperCanvas(ITEM_ART[it.art]), 0, 0); b.appendChild(ico); b.classList.add('has-ico'); }
       const l = document.createElement('span'); l.className = 'sh-l'; l.textContent = it.label; b.appendChild(l);
       if (it.sub) { const s2 = document.createElement('span'); s2.className = 'sh-s'; s2.textContent = it.sub; b.appendChild(s2); }
       if (it.hp != null) { const bar = document.createElement('span'); bar.className = 'sh-hp'; const i = document.createElement('i'); i.style.width = clamp(it.hp * 100, 0, 100) + '%'; if (it.hp < 0.25) i.className = 'warn'; bar.appendChild(i); b.appendChild(bar); }
@@ -2547,6 +2743,10 @@ function bindInput(){
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
   $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
+  $('#petBagBtn').addEventListener('click', () => openBag());
+  $('#walkBagBtn').addEventListener('click', () => openBag());
+  $('#bagClose').addEventListener('click', () => closeBag());
+  $('#ovBag').addEventListener('click', e => { if (e.target === e.currentTarget) closeBag(); });
   $('#lookShuffle').addEventListener('click', shuffleLook);
   $('#lookDone').addEventListener('click', lookDone);
   $('#lookCancel').addEventListener('click', () => { sfx('tap'); closeLook(); });
@@ -2639,6 +2839,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
+    if (bagKey(e)) { e.preventDefault(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
     if (DEBUG) {                                 // debug keys only with ?debug=1
       if (e.key === 'e' || e.key === 'E') { startEvolution(true); return; }          // force evolve
@@ -2691,6 +2892,7 @@ function frame(t){
     if (screen === 'pet') { drawPetScene(t, dt); updateCareButtons(); }
     if (!$('#ovBattle').hidden) drawBattle(t, dt);
     else if (!overlayOpen()) pumpLearn();
+    syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)
     if (evo.active) drawEvolution(t);
     if (!$('#ovStats').hidden && (statsCard.t += dt) >= 1) { statsCard.t = 0; renderStatsCard(); }   // HP regen etc. stay live
   }
@@ -2731,6 +2933,7 @@ function bootReadOnly(){
 }
 function boot(){
   $$('#tabs canvas').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));
+  paintUiIcons();
   fastMode = readFastPref(); renderFastTag(); $('#dbgTag').hidden = !DEBUG;
   $('#envPick').hidden = !DEBUG;               // "Pick a place" presets are debug-only
   renderSettingsGear(); renderSoundRow();

@@ -389,3 +389,37 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 /* Settings: the build id (tools/bump_build.py writes window.BUILD), small and dim at the bottom */
 .set-build{margin:10px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sh-item.sh-pre{box-shadow:inset 0 0 0 3px var(--y)}
+
+/* INVENTORY §6 Bag overlay + BAG chrome; ICONS_SEALS HUD icons */
+.scene-btn-tr{left:auto;right:8px;top:8px}
+.scene-btn-bl{left:8px;top:auto;bottom:8px}
+.scene-badge{left:auto;right:8px} /* BAG took bottom-left; badge sits bottom-right */
+.overlay.bag{padding:0;align-items:stretch}
+.overlay.bag .bag-inner{max-width:480px;max-height:none;height:100%;margin:0 auto;box-shadow:none;gap:8px;
+  padding:calc(10px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom));overflow:hidden}
+.bag-head{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.bag-head .ov-title{flex:1;text-align:left;margin:0}
+.bag-money{display:flex;align-items:center;gap:6px;color:var(--y);font-size:20px}
+.bag-money canvas{width:16px;height:16px;image-rendering:pixelated;image-rendering:crisp-edges}
+.bag-x{min-width:44px;min-height:44px;padding:0 12px;flex:0 0 auto}
+.bag-list{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:6px}
+.bag-row{display:flex;align-items:center;gap:10px;min-height:52px;padding:6px 8px;background:var(--d);box-shadow:0 0 0 2px var(--k);color:var(--w)}
+.bag-row.battle-only{opacity:.55}
+.bag-row.sel{box-shadow:inset 0 0 0 3px var(--y),0 0 0 2px var(--k)}
+.bag-ico{width:36px;height:36px;flex:0 0 auto;image-rendering:pixelated;image-rendering:crisp-edges}
+.bag-ico.grey{filter:grayscale(1) brightness(.85)}
+.bag-meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bag-name{font-size:18px;line-height:1.1;color:var(--w)}
+.bag-blurb{font-size:13px;line-height:1.15;color:var(--h);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bag-tag{font-size:12px;color:var(--m);margin-left:6px}
+.bag-use{min-width:44px;min-height:44px;padding:0 12px;flex:0 0 auto}
+.bag-empty{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--h);font-size:16px;line-height:1.35;padding:24px 12px}
+.bag-empty[hidden]{display:none}
+.ico-star,.ico-dp{image-rendering:pixelated;image-rendering:crisp-edges;vertical-align:middle;pointer-events:none}
+.ico-star{width:16px;height:16px;margin:0 2px}
+.ico-dp{width:24px;height:24px}
+.btn-evo{display:inline-flex;align-items:center;justify-content:center;gap:2px}
+.btn-evo[hidden]{display:none}
+
+.sh-item .bag-ico{position:absolute;left:8px;top:50%;transform:translateY(-50%)}
+.sh-item.has-ico{position:relative;padding-left:54px}
