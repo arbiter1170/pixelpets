@@ -4,7 +4,7 @@ Play it at https://arbiter1170.github.io/pixelpets/ (GitHub Pages, built from `m
 also works, minus location.
 No build step, all paths relative, everything self-hosted (including the font). The only network use is the
 optional local-creatures lookup (see Wild creatures below).
-Progress saves to localStorage (`pixelpets.save.v1`).
+Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
 
 Touch: bottom tabs (Pet / Walk / Pets / Friends); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
 walk into a wild creature (or tap it and your pet walks over) to meet it.
@@ -115,6 +115,26 @@ Font: Jersey 15 by Sarah Cadigan-Fried (SIL Open Font License 1.1), self-hosted 
 subset in `fonts/` with its license (`fonts/OFL.txt`, credits in `fonts/README.md`). `font-display: swap`
 with Courier New / monospace as fallback; ★ ♥ and the arrow symbols come from the system font.
 
-Reset: `localStorage.removeItem('pixelpets.save.v1')` then reload
-(other keys: `pixelpets.geo`, `pixelpets.env`, `pixelpets.envOverride` for location, `pixelpets.mute`,
-`pixelpets.debug`, `pixelpets.fast`).
+Saves (format v2, `save.js`):
+- `pixelpets.save.v2` is the save. Pets live in a **party** (up to 6, the partner is always in it) and a
+  **box** (no limit). A 7th befriended pet goes to the box ("<name> was sent to your box."). On the Pets tab,
+  choosing a boxed pet as partner moves it into the party; if the party is full, the last party member that
+  isn't the partner moves to the top of the box. Every pet, party or box, gets hungry the same way.
+  Pets name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
+  `shade`); the Pixeldex is keyed by form id (`ember/1`). Unknown fields are kept on load and save.
+- An old `pixelpets.save.v1` is migrated once, on the first load of this version: every pet and its
+  cooldown/daily-cap/step fields carry over, away-time decay still applies, the friend code stays the same.
+  The v1 key is never changed or deleted, and its raw text is copied once to `pixelpets.save.v1.bak`.
+  Pets that can't be read (unknown species) are kept aside in the save's `orphans` list, not dropped.
+- A save that can't be read is copied to `pixelpets.save.corrupt` before anything else happens. A v2 save
+  that can't be read falls back to migrating the v1 save again (with a notice). A save from a newer version
+  shows "This save is from a newer PixelPets. Reload to update." and is never overwritten.
+- Manual restore of the pre-migration save: in the browser console run
+  `localStorage.removeItem('pixelpets.save.v2')` and reload; the game migrates again from the untouched v1
+  key (once the v2 key is removed, the open page stops saving so it can't put it back). If the v1 key is gone
+  too, first copy the backup back:
+  `localStorage.setItem('pixelpets.save.v1', localStorage.getItem('pixelpets.save.v1.bak'))`.
+
+Reset: `localStorage.removeItem('pixelpets.save.v2')` (and `pixelpets.save.v1`, `pixelpets.save.v1.bak` if
+present) then reload. Per-device keys, never part of the save: `pixelpets.geo`, `pixelpets.env`,
+`pixelpets.envOverride` for location, `pixelpets.mute`, `pixelpets.debug`, `pixelpets.fast`.

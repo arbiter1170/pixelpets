@@ -114,6 +114,8 @@ h2 small{color:var(--h);font-size:17px}
 .card .nm{font-size:21px}.card .sub{font-size:16px;color:var(--h)}
 .card .btn{min-height:48px;font-size:18px}
 .card .partner{color:var(--y);font-size:17px;padding:0 6px}
+.owned .group-label{font-size:17px;color:var(--h);padding:4px 2px 0}
+.card.boxed{opacity:.88}
 .dex{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 3px 10px}   /* 8 lines x 3 forms = 24 cells */
 .dex .cell{background:var(--d);padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:0 0 0 3px var(--k);font-size:13px;text-align:center;min-width:0}
 .dex .cell div{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

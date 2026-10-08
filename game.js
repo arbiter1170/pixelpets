@@ -6,7 +6,7 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const now = () => performance.now();
 
-const SAVE_KEY = 'pixelpets.save.v1';
+// Save: format v2 in `pixelpets.save.v2` (see save.js; v1 saves are migrated once, the v1 key is never written).
 const EVO_XP = [40, 120];          // XP needed to reach stage 2 / stage 3
 const EVO_CARE = [50, 60];         // min average care (food/joy/energy) to evolve
 /* Stat decay. Real-time pacing is the default: hours for a stat to drain 100 -> 0.
@@ -68,16 +68,24 @@ function spriteCanvas(c, sp, stage, mode='n'){ const g = ctx(c), s = SPR[sp][sta
 /* ---------- state ---------- */
 let S = null;
 const rid = n => Array.from({length:n}, () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.random()*36|0]).join('');
-function newPet(sp, stage=0){ return { id: rid(8), sp, stage, xp: stage ? EVO_XP[stage-1] : 0, hunger: 80, happy: 80, energy: 90, met: Date.now() }; }
-function defaultState(){ return { v:1, uid: rid(12), created: Date.now(), last: Date.now(), pets: [], active: 0, seen: {}, steps: 0, pos: {x:3, y:3} }; }
-function load(){ try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && s.v === 1 && Array.isArray(s.pets)) return s; } catch(e) {} return null; }
-function save(){ if (!S) return; S.last = Date.now(); try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch(e) {} }
-const pet = () => S.pets[S.active];
+// Saved pets name their species by stable string id (`species`); runtime-only things (sprites, wild creatures,
+// encounters) keep using the SPECIES array index. spIndex/spi convert.
+const SP_INDEX = Object.fromEntries(SPECIES.map((sp, i) => [sp.id, i]));
+const spIndex = id => SP_INDEX[id];
+const spi = p => SP_INDEX[p.species];
+function newPet(sp, stage=0, origin='wild'){ return { id: rid(8), species: SPECIES[sp].id, stage, nick: null, origin, xp: stage ? EVO_XP[stage-1] : 0, hunger: 80, happy: 80, energy: 90, met: Date.now() }; }
+let readOnly = false;              // a save from a newer build: play nothing, write nothing
+function save(){ if (!S || readOnly) return; S.last = Date.now(); PPSave.writeV2(S); }
+const allPets = () => [...S.party, ...S.box];
+const pet = () => S.party.find(p => p.id === S.partnerId);
 const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
+const petName = p => nameOf(spi(p), p.stage);
 const level = p => 1 + Math.floor(p.xp / 10);
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
 const canEvolve = p => p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_CARE[p.stage];
-const markSeen = (sp, st) => { S.seen[sp + '-' + st] = true; };
+const formOf = (sp, st) => SPECIES[sp].id + '/' + st;
+const markSeen = (sp, st) => { S.dex.seen[formOf(sp, st)] = true; };
+const markCaught = (sp, st) => { S.dex.seen[formOf(sp, st)] = S.dex.caught[formOf(sp, st)] = true; };
 
 /* ---------- UI helpers ---------- */
 const sfx = (name, delay) => { try { PPSound.play(name, delay); } catch(e) {} };
@@ -145,11 +153,11 @@ window.addEventListener('resize', fitAll);
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
 function updateHUD(){
   const p = pet(); if (!p) return;
-  const st = SPECIES[p.sp].stages[p.stage];
+  const st = SPECIES[spi(p)].stages[p.stage];
   $('#hdrName').textContent = st.name;
   $('#hdrLv').textContent = 'Lv ' + level(p);
   $('#hdrStage').textContent = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
-  spriteCanvas($('#hdrIcon'), p.sp, p.stage);
+  spriteCanvas($('#hdrIcon'), spi(p), p.stage);
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
@@ -215,7 +223,7 @@ const grantCareXp = (p, n) => grantCapped(p, 'cx', CARE_XP_DAILY_CAP, n);
 // Explore XP (walking + befriending). Shows the one-time "explored enough" toast when the cap is reached.
 function grantExploreXp(p, n){
   const g = grantCapped(p, 'ex', EXPLORE_XP_DAILY_CAP, n), r = exploreXpToday(p);
-  if (r.xp >= EXPLORE_XP_DAILY_CAP && !r.told) { r.told = true; sfx('cap', xpChimeDelay + 0.3); toast(nameOf(p.sp, p.stage) + ' has explored enough for today. Rest up!'); }
+  if (r.xp >= EXPLORE_XP_DAILY_CAP && !r.told) { r.told = true; sfx('cap', xpChimeDelay + 0.3); toast(petName(p) + ' has explored enough for today. Rest up!'); }
   return g;
 }
 const CD_MSG = { feed: ' is still digesting. Feed again in ', play: ' needs a breather. Play again in ', rest: " isn't sleepy yet. Rest again in " };
@@ -243,7 +251,7 @@ function doAction(act){
   const p = pet(); const t = now();
   if (t < anim.busyUntil) return;
   const left = cdLeft(p, act);
-  if (left) { sfx('denied'); return toast(nameOf(p.sp, p.stage) + CD_MSG[act] + fmtCd(left) + '.'); }
+  if (left) { sfx('denied'); return toast(petName(p) + CD_MSG[act] + fmtCd(left) + '.'); }
   const pp = petPos(t);
   let msg;
   if (act === 'feed') {
@@ -267,7 +275,7 @@ function doAction(act){
   p.cd[act] = Date.now();                    // start this action's cooldown (saved with the pet)
   sfx(act); xpChimeDelay = 0.45;
   const xp = grantCareXp(p, CARE_XP[act]), cx = careXpToday(p); xpChimeDelay = 0;
-  if (cx.xp >= CARE_XP_DAILY_CAP && !cx.told) { cx.told = true; sfx('cap', 0.6); msg = nameOf(p.sp, p.stage) + ' learned all it can from care today. Go for a walk!'; }
+  if (cx.xp >= CARE_XP_DAILY_CAP && !cx.told) { cx.told = true; sfx('cap', 0.6); msg = petName(p) + ' learned all it can from care today. Go for a walk!'; }
   else if (act === 'play' && xp) msg += ' +' + xp + 'XP';
   toast(msg);
   updateHUD(); save();
@@ -303,7 +311,7 @@ function drawPetScene(t, dt){
   if (sleeping) bob = 0;
   g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(x + 3, y + 17, 12, 2);
   const blink = sleeping || (t % 3200) < 140;
-  g.drawImage(SPR[p.sp][p.stage][blink ? 'b' : 'n'], x, y + bob);
+  g.drawImage(SPR[spi(p)][p.stage][blink ? 'b' : 'n'], x, y + bob);
   if (!sleeping && (p.hunger < 25 || p.happy < 25 || p.energy < 25) && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);
   if (sleeping) {
     g.fillStyle = 'rgba(41,54,111,.55)'; g.fillRect(0,0,56,PET_H);
@@ -345,21 +353,22 @@ function clearMoves(){ walk.dpad = walk.drag = walk.key = walk.queued = walk.tar
 
 function targetDir(){
   const tg = walk.target; if (!tg) return null;
-  const dx = tg.x - S.pos.x, dy = tg.y - S.pos.y;
+  const dx = tg.x - S.world.x, dy = tg.y - S.world.y;
   if (!dx && !dy) { walk.target = null; return null; }
   const opts = Math.abs(dx) >= Math.abs(dy) ? [[Math.sign(dx),0],[0,Math.sign(dy)]] : [[0,Math.sign(dy)],[Math.sign(dx),0]];
-  for (const [ox,oy] of opts) if ((ox||oy) && !solid(S.pos.x+ox, S.pos.y+oy)) return [ox,oy];
+  for (const [ox,oy] of opts) if ((ox||oy) && !solid(S.world.x+ox, S.world.y+oy)) return [ox,oy];
   walk.target = null; return null;
 }
 function tryStep(d){
   const p = pet();
-  const nx = S.pos.x + d[0], ny = S.pos.y + d[1];
+  const nx = S.world.x + d[0], ny = S.world.y + d[1];
   if (solid(nx, ny)) return;
   const w = wildAt(nx, ny);
   if (w) { if (w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
   if (p.energy < 1) { sfx('denied'); toast('Too tired to walk! REST on the Pet tab.'); clearMoves(); return; }
-  walk.from = { x: S.pos.x, y: S.pos.y }; walk.to = { x: nx, y: ny }; walk.prog = 0;
-  S.pos.x = nx; S.pos.y = ny;
+  walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0;
+  S.world.facing = d[0] > 0 ? 'right' : d[0] < 0 ? 'left' : d[1] < 0 ? 'up' : 'down';
+  S.world.x = nx; S.world.y = ny;
 }
 function onLand(){
   const p = pet();
@@ -384,7 +393,7 @@ function updateWalk(dt, t){
     else if (wild.chase) {                     // tapped a creature: walk up to it, meet it when adjacent
       const w = wild.list.find(o => o.id === wild.chase);
       if (!w) wild.chase = null;
-      else if (Math.abs(w.x - S.pos.x) + Math.abs(w.y - S.pos.y) === 1 && !w.to) { meetWild(w); return; }
+      else if (Math.abs(w.x - S.world.x) + Math.abs(w.y - S.world.y) === 1 && !w.to) { meetWild(w); return; }
       else walk.target = { x: w.x, y: w.y };
     }
     if (!d) d = targetDir();
@@ -412,7 +421,7 @@ function drawMap(t){
     const bob = moving ? (Math.floor(walk.prog * 2) % 2) : (Math.floor(t/500) % 2);
     const sx = Math.round(px_ - cx) - 1, sy = Math.round(py_ - cy) - 2 - bob;
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(sx + 3, Math.round(py_ - cy) + 14, 12, 2);
-    g.drawImage(SPR[p.sp][p.stage][(t % 3000) < 120 ? 'b' : 'n'], sx, sy);
+    g.drawImage(SPR[spi(p)][p.stage][(t % 3000) < 120 ? 'b' : 'n'], sx, sy);
     grassOver(walk.fx, walk.fy);
   };
   // y-sorted so creatures and the player overlap naturally
@@ -453,12 +462,12 @@ const pickStage = () => Math.random() < WILD_STAGE2_CHANCE ? 1 : 0;
 const nextTo = (x, y, ch) => [[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy]) => MAP[y+dy] && MAP[y+dy][x+dx] === ch);
 const roamable = (x, y) => !solid(x, y) && MAP[y][x] !== 'p';          // creatures keep to grass, off the path
 function wildAt(x, y, except){ return wild.list.find(w => w !== except && ((w.x === x && w.y === y) || (w.to && w.from.x === x && w.from.y === y))); }
-const playerOn = (x, y) => (S.pos.x === x && S.pos.y === y) || (walk.to && walk.from.x === x && walk.from.y === y);
+const playerOn = (x, y) => (S.world.x === x && S.world.y === y) || (walk.to && walk.from.x === x && walk.from.y === y);
 function spawnSpot(sp){
   const pref = { grass: (x, y) => MAP[y][x] === 't', shore: (x, y) => nextTo(x, y, 'w'), woods: (x, y) => nextTo(x, y, 'T') }[SPECIES[sp].tiles || 'grass'];
   const best = [], ok = [];
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) {
-    if (!roamable(x, y) || wildAt(x, y) || Math.abs(x - S.pos.x) + Math.abs(y - S.pos.y) < 3) continue;
+    if (!roamable(x, y) || wildAt(x, y) || Math.abs(x - S.world.x) + Math.abs(y - S.world.y) < 3) continue;
     if (pref(x, y)) best.push([x, y]); else if (MAP[y][x] === 't') ok.push([x, y]);
   }
   const list = best.length ? best : ok;
@@ -491,11 +500,11 @@ function updateWild(dt){
     }
     const chased = wild.chase === w.id;
     if (c - w.born > w.life && !chased) { removeWild(w, onScreen(w)); continue; }       // wandered off
-    const far = Math.abs(w.x - S.pos.x) > 11 || Math.abs(w.y - S.pos.y) > 9;
+    const far = Math.abs(w.x - S.world.x) > 11 || Math.abs(w.y - S.world.y) > 9;
     if (far && !onScreen(w) && c - w.born > 20000) { removeWild(w, false); continue; }
     if (c < w.idleUntil || chased && c > w.shyUntil) continue;                         // a chased creature waits for you
     const dirs = Object.values(DIRS).sort(() => Math.random() - 0.5);
-    if (c < w.shyUntil) dirs.sort((a, b) => (Math.abs(w.x + b[0] - S.pos.x) + Math.abs(w.y + b[1] - S.pos.y)) - (Math.abs(w.x + a[0] - S.pos.x) + Math.abs(w.y + a[1] - S.pos.y)));
+    if (c < w.shyUntil) dirs.sort((a, b) => (Math.abs(w.x + b[0] - S.world.x) + Math.abs(w.y + b[1] - S.world.y)) - (Math.abs(w.x + a[0] - S.world.x) + Math.abs(w.y + a[1] - S.world.y)));
     const d = dirs.find(([dx, dy]) => { const nx = w.x + dx, ny = w.y + dy;
       return roamable(nx, ny) && Math.abs(nx - w.hx) + Math.abs(ny - w.hy) <= WILD_LEASH && !wildAt(nx, ny, w) && !playerOn(nx, ny); });
     if (!d) { w.idleUntil = c + 600; continue; }
@@ -646,13 +655,15 @@ function encounterPress(){
   const m = enc.mark;
   if (m >= enc.zone[0] && m <= enc.zone[1]) {
     enc.done = true; enc.result = 'win'; enc.t0 = t;
-    const np = newPet(enc.sp, enc.stage); S.pets.push(np);      // befriending is never blocked by the cap, only its XP
+    const np = newPet(enc.sp, enc.stage, 'wild'); markCaught(enc.sp, enc.stage);   // befriending is never blocked by the cap, only its XP
+    const toBox = S.party.length >= PPSave.PARTY_MAX; (toBox ? S.box : S.party).push(np);
     sfx('befriend'); xpChimeDelay = 0.75;
     const gx = grantExploreXp(pet(), BEFRIEND_XP); xpChimeDelay = 0; pet().happy = clamp(pet().happy + 5, 0, 100);
     const nm = nameOf(enc.sp, enc.stage);
     $('#encTitle').textContent = nm + ' befriended!';
     $('#encMsg').textContent = nm + ' joined your collection! ' + (gx ? '(+' + gx + ' XP)' : '(No XP: explored enough today)');
     $('#encGo').textContent = 'YAY!'; $('#encRun').hidden = true; $('#tbar').style.visibility = 'hidden';
+    if (toBox) toast(nm + ' was sent to your box.');
     save();
   } else {
     enc.tries--; renderTries();
@@ -690,16 +701,16 @@ function startEvolution(force){
   if (!force && !canEvolve(p)) return;
   if (overlayOpen()) return;
   clearMoves();
-  Object.assign(evo, { active: true, t0: now(), sp: p.sp, from: p.stage, to: p.stage + 1, done: false });
-  $('#evoTitle').textContent = 'What? ' + nameOf(p.sp, p.stage) + ' is evolving!';
+  Object.assign(evo, { active: true, t0: now(), sp: spi(p), from: p.stage, to: p.stage + 1, done: false });
+  $('#evoTitle').textContent = 'What? ' + petName(p) + ' is evolving!';
   $('#evoMsg').innerHTML = '&nbsp;'; $('#evoOk').hidden = true; sfx('evoBuild');
   $('#ovEvolve').hidden = false; $('#tabs').classList.add('locked'); fitAll();
 }
 function finishEvolution(){
   const p = pet(); p.stage = evo.to; if (p.xp < EVO_XP[evo.to-1]) p.xp = EVO_XP[evo.to-1];
-  p.happy = clamp(p.happy + 15, 0, 100); markSeen(p.sp, p.stage); evo.done = true; sfx('evoFanfare');
+  p.happy = clamp(p.happy + 15, 0, 100); markCaught(evo.sp, p.stage); evo.done = true; sfx('evoFanfare');
   $('#evoTitle').textContent = 'Congratulations!';
-  $('#evoMsg').textContent = nameOf(p.sp, evo.from) + ' evolved into ' + nameOf(p.sp, evo.to) + '!';
+  $('#evoMsg').textContent = nameOf(evo.sp, evo.from) + ' evolved into ' + nameOf(evo.sp, evo.to) + '!';
   $('#evoOk').hidden = false; updateHUD(); save();
 }
 function drawEvolution(t){
@@ -723,30 +734,48 @@ function drawEvolution(t){
 /* ---------- collection ---------- */
 function renderCollection(){
   const list = $('#ownedList'); list.innerHTML = '';
-  $('#ownedCount').textContent = '(' + S.pets.length + ')';
-  S.pets.forEach((p, i) => {
-    const card = document.createElement('div'); card.className = 'card';
-    const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, p.sp, p.stage);
+  $('#ownedCount').textContent = '(' + allPets().length + ')';
+  const label = txt => { const d = document.createElement('div'); d.className = 'group-label'; d.textContent = txt; list.append(d); };
+  const card = (p, inBox) => {
+    const c = document.createElement('div'); c.className = 'card' + (inBox ? ' boxed' : '');
+    const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, spi(p), p.stage);
     const info = document.createElement('div');
     info.innerHTML = '<div class="nm"></div><div class="sub"></div>';
-    info.firstChild.textContent = nameOf(p.sp, p.stage);
-    info.lastChild.textContent = SPECIES[p.sp].type + '  Lv ' + level(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
-    card.append(cv, info);
-    if (i === S.active) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; card.append(s); }
+    info.firstChild.textContent = petName(p);
+    info.lastChild.textContent = SPECIES[spi(p)].type + '  Lv ' + level(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
+    c.append(cv, info);
+    if (p.id === S.partnerId) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; c.append(s); }
     else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
-      b.addEventListener('click', () => { sfx('tap'); S.active = i; save(); updateHUD(); renderCollection(); toast(nameOf(p.sp, p.stage) + ' is your partner now!'); });
-      card.append(b); }
-    list.append(card);
-  });
+      b.addEventListener('click', () => { sfx('tap'); makePartner(p.id); save(); updateHUD(); renderCollection(); toast(petName(p) + ' is your partner now!'); });
+      c.append(b); }
+    list.append(c);
+  };
+  if (S.box.length) label('PARTY ' + S.party.length + '/' + PPSave.PARTY_MAX);
+  S.party.forEach(p => card(p, false));
+  if (S.box.length) { label('BOX ' + S.box.length); S.box.forEach(p => card(p, true)); }
   const dex = $('#dexGrid'); dex.innerHTML = ''; let n = 0;
+  const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
   SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
-    const seen = !!S.seen[si + '-' + k] || S.pets.some(p => p.sp === si && p.stage === k); if (seen) n++;
+    const f = formOf(si, k), seen = !!S.dex.seen[f] || owned.has(f); if (seen) n++;
     const cell = document.createElement('div'); cell.className = 'cell';
     const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, si, k, seen ? 'n' : 's');
     const lb = document.createElement('div'); lb.textContent = seen ? st.name : '???'; if (!seen) lb.className = 'unk';
     cell.append(cv, lb); dex.append(cell);
   }));
   $('#dexCount').textContent = n + '/' + (SPECIES.length * 3);
+}
+// Partner = the pet on the Pet tab; it must be in the party. A box pet joins the party first; if the party is full,
+// the last party member that isn't the partner moves to the top of the box.
+function makePartner(id){
+  const bi = S.box.findIndex(p => p.id === id);
+  if (bi >= 0) {
+    const [p] = S.box.splice(bi, 1);
+    if (S.party.length >= PPSave.PARTY_MAX) {
+      for (let i = S.party.length - 1; i >= 0; i--) if (S.party[i].id !== S.partnerId) { S.box.unshift(S.party.splice(i, 1)[0]); break; }
+    }
+    S.party.push(p);
+  }
+  if (S.party.some(p => p.id === id)) S.partnerId = id;
 }
 
 /* ---------- friends (stub) ---------- */
@@ -769,7 +798,7 @@ function openStarter(){
     const d = document.createElement('div'); d.innerHTML = '<span></span><small></small>';
     d.firstChild.textContent = sp.stages[0].name + '  [' + sp.type + ']'; d.lastChild.textContent = sp.blurb;
     b.append(cv, d);
-    b.addEventListener('click', () => { sfx('befriend'); S.pets.push(newPet(i)); S.active = 0; markSeen(i, 0); save();
+    b.addEventListener('click', () => { sfx('befriend'); const np = newPet(i, 0, 'starter'); S.party.push(np); S.partnerId = np.id; markCaught(i, 0); save();
       $('#ovStarter').hidden = true; $('#tabs').classList.remove('locked'); updateHUD(); toast(sp.stages[0].name + ' joined you!'); });
     list.append(b);
   });
@@ -856,10 +885,10 @@ function frame(t){
   const p = pet();
   if (p && !overlayOpen()) {
     const sleeping = t < anim.sleepUntil, R = rate();
-    S.pets.forEach((q, i) => {                       // every owned pet gets hungry, not just the partner
+    allPets().forEach(q => {                         // every owned pet (party and box) gets hungry, not just the partner
       q.hunger = clamp(q.hunger - R.hunger * dt, 0, 100);
       q.happy = clamp(q.happy - R.happy * dt * (q.hunger < 20 ? 2 : 1), 0, 100);
-      if (!(sleeping && i === S.active)) q.energy = clamp(q.energy - R.energy * dt, 0, 100);   // only the resting partner is exempt
+      if (!(sleeping && q.id === S.partnerId)) q.energy = clamp(q.energy - R.energy * dt, 0, 100);   // only the resting partner is exempt
     });
     tickAcc += dt; if (tickAcc > 1) { tickAcc = 0; updateHUD(); }
   }
@@ -877,10 +906,10 @@ function frame(t){
 // No time cap: the floor already protects players, so a pet is never pushed below 10 and stats
 // already <= 10 stay put. (Joy uses the base rate here; the hunger<20 doubling is live-only.)
 function catchUp(sec){
-  if (!(sec > 0) || !S || !S.pets.length) return;
+  if (!(sec > 0) || !S || !allPets().length) return;
   const R = rate();
   const dec = (v, amt) => v <= OFFLINE_FLOOR ? v : Math.max(OFFLINE_FLOOR, v - amt);
-  S.pets.forEach(p => { p.hunger = dec(p.hunger, sec*R.hunger); p.happy = dec(p.happy, sec*R.happy); p.energy = dec(p.energy, sec*R.energy); });
+  allPets().forEach(p => { p.hunger = dec(p.hunger, sec*R.hunger); p.happy = dec(p.happy, sec*R.happy); p.energy = dec(p.energy, sec*R.energy); });
 }
 // A backgrounded tab pauses requestAnimationFrame (and the periodic save keeps bumping S.last),
 // so catch up on return using the time the tab was actually hidden.
@@ -891,6 +920,13 @@ document.addEventListener('visibilitychange', () => {
 });
 
 /* ---------- boot ---------- */
+// The v2 key holds a save from a newer build: block play, write nothing (save() is a no-op), keep the save as-is.
+function bootReadOnly(){
+  readOnly = true; S = null;
+  $('#ovNewer').hidden = false; $('#tabs').classList.add('locked');
+  $('#newerReload').addEventListener('click', () => location.reload());
+  window.PixelPets = Object.freeze({ readOnly: true, get debug(){ return DEBUG; }, get state(){ return null; } });
+}
 function boot(){
   $$('#tabs canvas').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));
   fastMode = readFastPref(); renderFastTag(); $('#dbgTag').hidden = !DEBUG;
@@ -899,14 +935,16 @@ function boot(){
   ENV = PPEnv.init(onEnvChange, { allowOverride: DEBUG }); renderEnv();
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
-  S = load();
-  if (S && S.pets.length) {
-    catchUp((Date.now() - (S.last || Date.now())) / 1000);
-    if (solid(S.pos.x, S.pos.y)) S.pos = { x: 3, y: 3 };
-  } else { S = defaultState(); }
-  walk.fx = S.pos.x; walk.fy = S.pos.y;
+  PPSave.devCheck();
+  const L = PPSave.loadSave();
+  if (L.readOnly) { bootReadOnly(); return; }
+  S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
+  if (allPets().length) catchUp((Date.now() - S.last) / 1000);
+  if (solid(S.world.x, S.world.y)) { S.world.x = 3; S.world.y = 3; }
+  walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
-  if (!S.pets.length) openStarter(); else updateHUD();
+  if (!allPets().length) openStarter(); else updateHUD();   // keeps S (uid, created, orphans) even with no pets
+  if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   setInterval(save, 5000);
@@ -931,6 +969,7 @@ function boot(){
     pickSpecies: () => pickSpecies(), pickStage: () => pickStage(),
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
     resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
+    makePartner: id => { makePartner(id); updateHUD(); save(); },
     enc, walk,
   };
   let warned = false;

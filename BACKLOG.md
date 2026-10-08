@@ -61,6 +61,8 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 ## Quality and tech debt
 
 - **Device testing:** only tested in Chromium phone emulation. Check real iOS Safari and Android Chrome (touch, safe areas, audio unlock, localStorage limits).
-- **Save versioning:** save is `v1` with no migration path; add a migration step before any schema change (nicknames, new species).
+- ~~**Save versioning**~~ **DONE (save v2):** `pixelpets.save.v2` with stable string species/form ids, party (6) + box, orphans, dex seen/caught, world, and empty bag/money/seals/flags/eggs/settings sections for later features. One-time v1 -> v2 migration keeps every pet field (cd/cx/ex/sr), `uid`/`created` (friend code) and away-time decay; v1 key untouched + `.bak` copy; corrupt saves copied aside; newer saves load read-only. Additive fields go through `normalizeV2` without bumping `v`; breaking changes add a `migrateVnToVn+1` step and a new key.
+- **Box screen:** the box is just a list under the party on the Pets tab (partner swap only). Reordering, releasing, and a proper box UI are later work; the Pixeldex doesn't show "caught" yet (`dex.caught` is saved).
+- **Orphan recovery:** pets that couldn't be migrated sit in `orphans` with their raw data; nothing shows them yet.
 - ~~**Debug keys in release**~~ **DONE:** E/G/F, fast mode, "Pick a place" and the cheat console hooks only work with `?debug=1` (remembered; `?debug=0` clears it). Read-only hooks stay public.
 - **Installable app:** add a manifest and service worker so it can be added to the home screen and played offline.
