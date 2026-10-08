@@ -4,13 +4,12 @@
    - Unreadable saves are copied to `pixelpets.save.corrupt` ({at, from, raw}; latest wins).
    - Unknown fields survive everywhere; unknown v1 top-level fields go to meta.legacy.
    - Device prefs (pixelpets.fast/debug/mute/geo/env/envOverride) are never read, moved or deleted here.
-   Needs SPECIES (sprites.js). Pure functions + loadSave(); game.js owns save() timing. */
+   Needs SPECIES (sprites.js) and EVO_XP/STAT_RULES/levelOf/maxHpOf (stats.js). Pure functions + loadSave(); game.js owns save() timing. */
 'use strict';
 const PPSave = (() => {
   const V1_KEY = 'pixelpets.save.v1', V2_KEY = 'pixelpets.save.v2', BAK_KEY = 'pixelpets.save.v1.bak', CORRUPT_KEY = 'pixelpets.save.corrupt';
   // Frozen forever: v1 stored species by array index. Never derive this from SPECIES order.
   const V1_SPECIES = Object.freeze(['ember', 'tide', 'bloom', 'stone', 'volt', 'frost', 'gust', 'shade']);
-  const EVO_XP = [40, 120];                     // same as game.js (stage 1 / stage 2 starting XP)
   const PARTY_MAX = 6;
   const MAPS = ['proto'];                       // the only map today (the 24x20 Walk map)
   const MAP_W = 24, MAP_H = 20;
@@ -44,7 +43,7 @@ const PPSave = (() => {
   }
 
   // §5 step 2.4: field fixes for one pet (also used by normalizeV2). `used` = ids already taken.
-  // Later specs add their per-pet defaults here (e.g. TYPES_STATS `bx`, `hpNow`).
+  // Later specs add their per-pet defaults here (additive fields, no version bump).
   function fixPet(q, used, created, originDefault){
     if (!(typeof q.id === 'string' && q.id && !used.has(q.id))) q.id = rid(8);
     while (used.has(q.id)) q.id = rid(8);
@@ -58,6 +57,11 @@ const PPSave = (() => {
     if (has(q, 'sr')) q.sr = fin(q.sr) ? Math.max(0, Math.floor(q.sr)) : 0;
     if (!has(q, 'nick') || (q.nick !== null && typeof q.nick !== 'string')) q.nick = null;
     if (!has(q, 'origin') || typeof q.origin !== 'string') q.origin = originDefault;
+    // TYPES_STATS §5: battle XP. Missing/invalid -> the old display level (1 + floor(xp/10)) kept within Lv 5..10.
+    if (!(Number.isInteger(q.bx) && q.bx >= 0)) q.bx = STAT_RULES.bxForLevel(migratedLevel(q.xp));
+    else if (q.bx > BX_CAP) q.bx = BX_CAP;
+    // TYPES_STATS §7: current HP, optional (absent = full). Bad values or full HP -> absent.
+    if (has(q, 'hpNow') && (!fin(q.hpNow) || q.hpNow < 0 || q.hpNow >= maxHpOf(q))) delete q.hpNow;
     return q;
   }
   const formId = (species, stage) => species + '/' + stage;

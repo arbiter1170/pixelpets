@@ -28,7 +28,7 @@
         <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
         <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
         <div class="stat"><span>NRG</span><div class="bar"><i id="barEnergy" class="c-nrg"></i></div><b id="valEnergy">0</b></div>
-        <div class="stat"><span>XP</span><div class="bar"><i id="barXp" class="c-xp"></i></div><b id="valXp">0</b></div>
+        <div class="stat"><span>GROW</span><div class="bar"><i id="barXp" class="c-xp"></i></div><b id="valXp">0</b></div>
       </div>
       <div id="evoHint" class="hint"></div>
       <div id="dailyXp" class="hint daily"><span class="seg">Today: care XP <b id="dCare">0/25</b></span> <span class="sep">&middot;</span> <span class="seg">explore XP <b id="dExp">0/30</b></span></div>
@@ -44,7 +44,7 @@
     <section id="scr-walk" class="screen">
       <div class="walk-hud">
         <div class="mini grow"><span>NRG</span><div class="bar"><i id="wBarEnergy" class="c-nrg"></i></div></div>
-        <div class="mini"><span>XP</span><b id="wXp">0</b></div>
+        <div class="mini"><span>GROW</span><b id="wXp">0</b></div>
         <div class="mini"><span>STEPS</span><b id="wSteps">0</b></div>
         <div class="mini" title="Explore XP earned today (walking + befriending), daily cap 30"><span>TODAY</span><b id="wExp">0/30</b></div>
       </div>
@@ -177,6 +177,7 @@
 
 <div id="toast" aria-live="polite"></div>
 <script src="sprites.js"></script>
+<script src="stats.js"></script>
 <script src="save.js"></script>
 <script src="env.js"></script>
 <script src="sfx.js"></script>

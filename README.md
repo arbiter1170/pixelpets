@@ -16,13 +16,14 @@ DBG tag shows in the header. Only in debug mode:
 - Keys: E = force-evolve current partner, G = force a wild encounter (species weighted by the current area),
   F = toggle fast mode.
 - Fast mode (below) and the "Pick a place" presets in the Walk badge card.
-- Cheat console hooks: `PixelPets.giveXp(50)` (ignores the caps), `PixelPets.resetDailyCaps()` (clears today's
+- Cheat console hooks: `PixelPets.giveXp(50)` (growth XP, ignores the caps), `PixelPets.giveBx(100)` (battle XP,
+  raises the Level), `PixelPets.resetDailyCaps()` (clears today's
   care and explore XP for the partner), `forceEvolve()`, `forceEncounter()`, `setFast()`, `setEnv()`,
   `spawnWild()`, `clearWild()`, `autoWild()`, `pickSpecies()`, `pickStage()`, plus live `state`, `enc` and `walk`.
 Without debug those hooks are inert (they do nothing and return `undefined`), a stored fast/place choice is
 ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only hooks always work: `env`,
 `wild`, `spawnOdds(tags?)`, `cooldownLeft(act)`, `careXpToday`, `exploreXpToday`, `rates`, `fast`, `debug`,
-`muted`, `careGain(base, value)`, `refreshEnv()`, `showTab(name)`.
+`muted`, `careGain(base, value)`, `refreshEnv()`, `showTab(name)`, `typeMult(attType, defType)`, `statsAt(formId, level)`.
 
 Stat pacing: FOOD, JOY and NRG drain in real time for every pet you own (not just the partner).
 From full they take about 16h / 20h / 24h to empty and drop into the blinking "needs attention"
@@ -45,6 +46,22 @@ So a pet can earn at most 55 XP a day: stage 2 (40 XP) on day 1 and stage 3 (120
 for a player who maxes both caps, or day 2 and day 5 with care only. The Pet tab shows
 "Today: care XP 12/25 · explore XP 8/30"; the Walk tab shows the same explore count as TODAY 8/30.
 A counter turns green when maxed.
+
+Levels, types and stats (`stats.js`; battles themselves come in a later build):
+- Two progress tracks per pet. **Growth XP** (`xp`, the GROW bar) comes from care and exploring, is
+  daily-capped as above and drives evolution (40 / 120, plus care). **Battle XP** (`bx`) will come only from
+  battles, is not capped per day and sets the **Level** shown in the header and on the Pets tab
+  (`bx` for level L = 4 x (L-1)^2, Lv 1-50). Care and exploring never change the Level, and battles will never
+  give growth XP. The level-up chime plays when battle XP raises the Level ("<name> grew to Lv N!").
+- Starters begin at Lv 5. Wild creatures on the map have a level (2-5, or 6-8 for the rare second forms) and
+  join at that level when befriended. Pets from older saves start at their old displayed level
+  (1 + XP/10) kept between Lv 5 and Lv 10.
+- 4 battle stats (HP, ATK, DEF, SPD) per form from base stats and level; one type per line (the `type` in
+  `sprites.js`) with an 8x8 type chart (2x / 0.5x, and VOLT can't hurt STONE). Damage, battle XP, mood
+  (Hungry / Sulky / Drowsy / Spirited / Glowing from FOOD/JOY/NRG) and "too sleepy to battle" (NRG < 10) are
+  ready for the battle build.
+- HP: a pet's current HP (`hpNow`, absent = full) comes back at 10% of max every 10 real minutes, also while
+  away; REST restores half of max HP and clears Tired (0 HP). Nothing lowers HP until battles exist.
 
 Fast mode (debug mode only): the old demo pacing (full to starving in about 17 minutes) for testing.
 Turn it on with `?debug=1&fast=1` in the URL (`?fast=0` turns it off), the F key, or

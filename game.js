@@ -7,7 +7,7 @@ const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const now = () => performance.now();
 
 // Save: format v2 in `pixelpets.save.v2` (see save.js; v1 saves are migrated once, the v1 key is never written).
-const EVO_XP = [40, 120];          // XP needed to reach stage 2 / stage 3
+// EVO_XP (growth XP to evolve: 40 / 120) lives in stats.js, shared with save.js.
 const EVO_CARE = [50, 60];         // min average care (food/joy/energy) to evolve
 /* Stat decay. Real-time pacing is the default: hours for a stat to drain 100 -> 0.
    From full, a stat drops below the 25 "needs attention" line after 75% of these hours
@@ -73,14 +73,15 @@ const rid = n => Array.from({length:n}, () => 'abcdefghijklmnopqrstuvwxyz0123456
 const SP_INDEX = Object.fromEntries(SPECIES.map((sp, i) => [sp.id, i]));
 const spIndex = id => SP_INDEX[id];
 const spi = p => SP_INDEX[p.species];
-function newPet(sp, stage=0, origin='wild'){ return { id: rid(8), species: SPECIES[sp].id, stage, nick: null, origin, xp: stage ? EVO_XP[stage-1] : 0, hunger: 80, happy: 80, energy: 90, met: Date.now() }; }
+// lv = starting Level (battle XP): starters Lv 5, befriended wild creatures their own level.
+function newPet(sp, stage=0, origin='wild', lv=STAT_RULES.STARTER_LEVEL){ return { id: rid(8), species: SPECIES[sp].id, stage, nick: null, origin, xp: stage ? EVO_XP[stage-1] : 0, bx: STAT_RULES.bxForLevel(lv), hunger: 80, happy: 80, energy: 90, met: Date.now() }; }
 let readOnly = false;              // a save from a newer build: play nothing, write nothing
 function save(){ if (!S || readOnly) return; S.last = Date.now(); PPSave.writeV2(S); }
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
 const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
 const petName = p => nameOf(spi(p), p.stage);
-const level = p => 1 + Math.floor(p.xp / 10);
+// Level comes from battle XP (p.bx, stats.js levelOf); growth XP (p.xp) only drives evolution.
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
 const canEvolve = p => p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_CARE[p.stage];
 const formOf = (sp, st) => SPECIES[sp].id + '/' + st;
@@ -155,7 +156,7 @@ function updateHUD(){
   const p = pet(); if (!p) return;
   const st = SPECIES[spi(p)].stages[p.stage];
   $('#hdrName').textContent = st.name;
-  $('#hdrLv').textContent = 'Lv ' + level(p);
+  $('#hdrLv').textContent = 'Lv ' + levelOf(p);
   $('#hdrStage').textContent = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   spriteCanvas($('#hdrIcon'), spi(p), p.stage);
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
@@ -173,7 +174,7 @@ function updateHUD(){
   const hint = $('#evoHint'), btn = $('#evolveBtn');
   if (p.stage >= 2) { hint.textContent = 'Final form! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (canEvolve(p)) { hint.textContent = st.name + ' is ready to evolve!'; hint.classList.add('ready'); btn.hidden = false; }
-  else { hint.textContent = 'Next form: XP ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
+  else { hint.textContent = 'Next form: GROW ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
   updateCareButtons();
 }
 
@@ -211,14 +212,22 @@ function dailyRec(p, k){
 const xpToday = (p, k) => (p[k] && typeof p[k] === 'object' && p[k].d === dayKey(Date.now())) ? +p[k].xp || 0 : 0;   // read-only (HUD)
 const careXpToday = p => dailyRec(p, 'cx');
 const exploreXpToday = p => dailyRec(p, 'ex');
-// Gives up to `n` XP under a daily cap. Returns the XP actually granted.
+// Gives up to `n` growth XP under a daily cap. Returns the XP actually granted. (Growth XP never changes the Level.)
 function grantCapped(p, k, cap, n){
-  const r = dailyRec(p, k), g = clamp(cap - r.xp, 0, n), lv = level(p);
+  const r = dailyRec(p, k), g = clamp(cap - r.xp, 0, n);
   r.xp += g; p.xp += g;
-  if (level(p) > lv) sfx('levelup', xpChimeDelay);
   return g;
 }
-let xpChimeDelay = 0;                        // lets a fanfare finish before the level-up chime
+let xpChimeDelay = 0;                        // lets a fanfare finish before the cap chime
+// Battle XP (from battles only; the battle build calls this per defeated/befriended foe). Uncapped per day, stops at
+// Lv 50. A level-up plays the chime and says so. Never touches xp/cx/ex. Returns { gained, from, to }.
+function grantBattleXp(p, n){
+  const from = levelOf(p), before = p.bx;
+  p.bx = clamp(before + Math.max(0, Math.round(n) || 0), 0, BX_CAP);
+  const to = levelOf(p);
+  if (to > from) { sfx('levelup', xpChimeDelay); toast(petName(p) + ' grew to Lv ' + to + '!'); }
+  return { gained: p.bx - before, from, to };
+}
 const grantCareXp = (p, n) => grantCapped(p, 'cx', CARE_XP_DAILY_CAP, n);
 // Explore XP (walking + befriending). Shows the one-time "explored enough" toast when the cap is reached.
 function grantExploreXp(p, n){
@@ -267,9 +276,11 @@ function doAction(act){
     for (let i=0;i<4;i++) addPart(i%2 ? 'heart' : 'spark', pp.x + 1 + i*4, pp.y + 2, (i-1.5)*6, -14);
     msg = 'Wheee! +JOY';
   } else if (act === 'rest') {
-    if (p.energy >= 98) { sfx('denied'); return toast('Not sleepy right now.'); }
+    const hurt = Number.isFinite(p.hpNow);   // REST also restores 50% of max HP and clears Tired
+    if (p.energy >= 98 && !hurt) { sfx('denied'); return toast('Not sleepy right now.'); }
     p.energy = clamp(p.energy + careGain(30, p.energy), 0, 100); p.hunger = clamp(p.hunger - 5, 0, 100);
-    anim.sleepUntil = t + 3000; anim.busyUntil = t + 3000; msg = 'Zzz... +ENERGY';
+    restHp(p);
+    anim.sleepUntil = t + 3000; anim.busyUntil = t + 3000; msg = 'Zzz... +ENERGY' + (hurt ? ' +HP' : '');
   } else return;
   if (!p.cd || typeof p.cd !== 'object') p.cd = {};
   p.cd[act] = Date.now();                    // start this action's cooldown (saved with the pet)
@@ -478,7 +489,7 @@ function spawnWild(sp, stage, at){
   if (stage == null) stage = pickStage();
   const spot = at || spawnSpot(sp); if (!spot) return null;
   const c = wild.clock;
-  const w = { id: ++wild.seq, sp, stage, x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
+  const w = { id: ++wild.seq, sp, stage, lv: wildLevel(stage), x: spot[0], y: spot[1], hx: spot[0], hy: spot[1], fx: spot[0], fy: spot[1], from: null, to: null, t0: 0,
     born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + rnd(WILD_IDLE_MS), phase: Math.random() * 3000, shyUntil: 0 };
   wild.list.push(w); return w;
 }
@@ -614,16 +625,16 @@ function resetWild(){ wild.list = []; wild.poofs = []; wild.chase = null; wild.s
 /* ---------- encounters ---------- */
 const enc = { sp: 0, stage: 0, tries: 3, zone: [0.4, 0.6], speed: 0.003, freezeUntil: 0, mark: 0, done: false, result: null, t0: 0 };
 // sp/stage come from the wild creature you met; debug G uses a spawn-weighted pick for the current environment.
-function startEncounterIntro(sp, stage, wid){
+function startEncounterIntro(sp, stage, wid, lv){
   clearMoves();
-  enc.next = { sp: sp != null ? sp : pickSpecies(), stage: stage != null ? stage : pickStage(), wid: wid || null };
+  enc.next = { sp: sp != null ? sp : pickSpecies(), stage: stage != null ? stage : pickStage(), wid: wid || null, lv: lv || null };
   walk.intro = now(); sfx('encounter');
 }
-function meetWild(w){ w.to = null; w.fx = w.x; w.fy = w.y; startEncounterIntro(w.sp, w.stage, w.id); }
+function meetWild(w){ w.to = null; w.fx = w.x; w.fy = w.y; startEncounterIntro(w.sp, w.stage, w.id, w.lv); }
 function openEncounter(){
   const p = pet();
   const nx = enc.next || { sp: pickSpecies(), stage: pickStage(), wid: null }; enc.next = null;
-  enc.sp = nx.sp; enc.stage = nx.stage; enc.wid = nx.wid;
+  enc.sp = nx.sp; enc.stage = nx.stage; enc.wid = nx.wid; enc.lv = nx.lv || wildLevel(enc.stage);   // forced encounters roll a proto level
   enc.tries = 3; enc.done = false; enc.result = null; enc.freezeUntil = 0; enc.t0 = now();
   const w = (enc.stage ? 0.14 : 0.22) + p.happy / 1000;
   const c = 0.2 + Math.random() * 0.6; enc.zone = [clamp(c - w/2, 0, 1), clamp(c + w/2, 0, 1)];
@@ -655,7 +666,7 @@ function encounterPress(){
   const m = enc.mark;
   if (m >= enc.zone[0] && m <= enc.zone[1]) {
     enc.done = true; enc.result = 'win'; enc.t0 = t;
-    const np = newPet(enc.sp, enc.stage, 'wild'); markCaught(enc.sp, enc.stage);   // befriending is never blocked by the cap, only its XP
+    const np = newPet(enc.sp, enc.stage, 'wild', enc.lv); markCaught(enc.sp, enc.stage);   // befriending is never blocked by the cap, only its XP
     const toBox = S.party.length >= PPSave.PARTY_MAX; (toBox ? S.box : S.party).push(np);
     sfx('befriend'); xpChimeDelay = 0.75;
     const gx = grantExploreXp(pet(), BEFRIEND_XP); xpChimeDelay = 0; pet().happy = clamp(pet().happy + 5, 0, 100);
@@ -707,7 +718,8 @@ function startEvolution(force){
   $('#ovEvolve').hidden = false; $('#tabs').classList.add('locked'); fitAll();
 }
 function finishEvolution(){
-  const p = pet(); p.stage = evo.to; if (p.xp < EVO_XP[evo.to-1]) p.xp = EVO_XP[evo.to-1];
+  const p = pet(), oldMax = maxHpOf(p); p.stage = evo.to; if (p.xp < EVO_XP[evo.to-1]) p.xp = EVO_XP[evo.to-1];
+  carryHpOnEvolve(p, oldMax);                // new form's stats right away; current HP keeps the same % (rounded up)
   p.happy = clamp(p.happy + 15, 0, 100); markCaught(evo.sp, p.stage); evo.done = true; sfx('evoFanfare');
   $('#evoTitle').textContent = 'Congratulations!';
   $('#evoMsg').textContent = nameOf(evo.sp, evo.from) + ' evolved into ' + nameOf(evo.sp, evo.to) + '!';
@@ -742,7 +754,7 @@ function renderCollection(){
     const info = document.createElement('div');
     info.innerHTML = '<div class="nm"></div><div class="sub"></div>';
     info.firstChild.textContent = petName(p);
-    info.lastChild.textContent = SPECIES[spi(p)].type + '  Lv ' + level(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
+    info.lastChild.textContent = SPECIES[spi(p)].type + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
     c.append(cv, info);
     if (p.id === S.partnerId) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; c.append(s); }
     else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
@@ -892,6 +904,7 @@ function frame(t){
     });
     tickAcc += dt; if (tickAcc > 1) { tickAcc = 0; updateHUD(); }
   }
+  if (p) regenAll(dt);
   if (p) {
     if (screen === 'pet') { drawPetScene(t, dt); updateCareButtons(); }
     if (screen === 'walk') { if (!overlayOpen() || walk.intro) updateWalk(dt, t); if (!overlayOpen() && !walk.intro) updateWild(dt); drawMap(t); }
@@ -900,6 +913,11 @@ function frame(t){
   }
   requestAnimationFrame(frame);
 }
+
+/* ---------- HP regen (TYPES_STATS §7) ---------- */
+// Out of battle every pet regains 10% of max HP per 10 real minutes (real time even in fast mode). Kept apart from the
+// care decay above and in catchUp so it can't change FOOD/JOY/NRG.
+function regenAll(sec){ if (S && sec > 0) allPets().forEach(q => regenHp(q, sec)); }
 
 /* ---------- offline catch-up ---------- */
 // Applies `sec` seconds of away-time decay to every owned pet at the current rate mode.
@@ -916,7 +934,7 @@ function catchUp(sec){
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { hiddenAt = Date.now(); return; }
-  if (hiddenAt && S) { catchUp((Date.now() - hiddenAt) / 1000); hiddenAt = 0; updateHUD(); save(); }
+  if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); hiddenAt = 0; updateHUD(); save(); }
 });
 
 /* ---------- boot ---------- */
@@ -935,11 +953,11 @@ function boot(){
   ENV = PPEnv.init(onEnvChange, { allowOverride: DEBUG }); renderEnv();
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
-  PPSave.devCheck();
+  PPSave.devCheck(); statsDevCheck();
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
-  if (allPets().length) catchUp((Date.now() - S.last) / 1000);
+  if (allPets().length) { const away = (Date.now() - S.last) / 1000; catchUp(away); regenAll(away); }
   if (solid(S.world.x, S.world.y)) { S.world.x = 3; S.world.y = 3; }
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
@@ -956,18 +974,20 @@ function boot(){
     get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; },
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
-    get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, name: nameOf(w.sp, w.stage) })); },
+    get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, name: nameOf(w.sp, w.stage) })); },
     spawnOdds: tags => spawnOdds(tags), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
     get muted(){ return PPSound.muted; }, careGain, showTab,
+    typeMult: (a, d) => typeMult(a, d), statsAt: (id, L) => { const s = statsAt(id, L); return s && { ...s }; },   // read-only, always public
   };
   const cheats = {
     forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
     setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; },
-    spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
+    spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
     clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
     pickSpecies: () => pickSpecies(), pickStage: () => pickStage(),
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
+    giveBx: n => { const r = grantBattleXp(pet(), n); updateHUD(); save(); return r; },   // battle XP (Level)
     resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
     makePartner: id => { makePartner(id); updateHUD(); save(); },
     enc, walk,
