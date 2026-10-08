@@ -377,3 +377,6 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .chat-bubble{position:absolute;transform:translate(-50%,-100%);max-width:180px;padding:3px 8px;background:var(--w);color:var(--k);font-size:15px;line-height:1.15;
   box-shadow:0 0 0 2px var(--k);pointer-events:none;text-align:center}
 .sb-portrait[hidden]{display:none}
+
+/* Settings: the build id (tools/bump_build.py writes window.BUILD), small and dim at the bottom */
+.set-build{margin:10px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

@@ -124,10 +124,13 @@ function renderFollowerBtn(){
   b.setAttribute('aria-pressed', String(on));
   $('#setFollowerVal').textContent = on ? 'ON' : 'OFF';
 }
+// the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
+function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
+function renderBuild(){ const b = buildId(); $('#setBuild').textContent = b ? 'Build ' + b : ''; $('#setBuild').hidden = !b; }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden) return;
   if (!$('#ovSettings').hidden) return;
-  clearMoves(); renderSoundRow(); renderFollowerBtn();
+  clearMoves(); renderSoundRow(); renderFollowerBtn(); renderBuild();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
   $('#setClose').focus({ preventScroll: true });
 }
