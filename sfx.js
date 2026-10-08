@@ -1,4 +1,4 @@
-/* Kindle Wild sound: tiny chiptune SFX synthesized with WebAudio (square / triangle / noise). No audio files.
+/* Walklings sound: tiny chiptune SFX synthesized with WebAudio (square / triangle / noise). No audio files.
    - The AudioContext is created/resumed only inside a user gesture (iOS + Chrome autoplay rules).
    - Mute is remembered in localStorage `pixelpets.mute` ('1' = muted). Muted = no audio nodes at all.
    - If WebAudio is missing or fails, every call is a silent no-op. */

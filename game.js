@@ -1,4 +1,4 @@
-/* Kindle Wild - game logic. No dependencies. (Identifiers keep the old name: window.PixelPets, pixelpets.* storage keys.) */
+/* Walklings - game logic. No dependencies. (Identifiers keep the old name: window.PixelPets, pixelpets.* storage keys.) */
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
@@ -1818,7 +1818,7 @@ function swapSheet(forced){
     return { label: petName(q) + '  Lv ' + levelOf(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (badge ? '  ' + badge : '') + (sleepy && !isFainted(q) ? '  TOO SLEEPY' : '') + (q.id === B.me.petId ? '  (in battle)' : ''),
       hp: hpOf(q) / maxHpOf(q), disabled: q.id === B.me.petId || !ablePet(q), value: q.id };
   });
-  return openSheet(forced ? 'Who goes next?' : 'Swap to which pet?', items, forced ? null : 'BACK');
+  return openSheet(forced ? 'Who goes next?' : 'Swap to which Walkling?', items, forced ? null : 'BACK');
 }
 async function bagSheet(){
   const B = battle, ids = Object.keys(S.bag || {}).filter(k => S.bag[k] > 0);
@@ -1827,7 +1827,7 @@ async function bagSheet(){
   const pick = await openSheet('Bag', ids.map(k => ({ label: (NAMES[k] || k.replace(/_/g, ' ')) + '  x' + S.bag[k], value: k })), 'BACK');
   if (!pick || !B.on) return;
   if (pick === 'heal_snack') {
-    const tgt = await openSheet('Heal which pet?', S.party.map(q => ({ label: petName(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (hpBadge(q) ? '  ' + hpBadge(q) : ''), hp: hpOf(q) / maxHpOf(q), value: q.id })), 'BACK');
+    const tgt = await openSheet('Heal which Walkling?', S.party.map(q => ({ label: petName(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (hpBadge(q) ? '  ' + hpBadge(q) : ''), hp: hpOf(q) / maxHpOf(q), value: q.id })), 'BACK');
     if (!tgt || !B.on) return;
     const q = petById(tgt);
     if (isFainted(q)) { sfx('denied'); B.state = 'MSG'; setPanel('busy'); await say(petName(q) + ' needs a proper rest.'); if (B.on) toChoose(); return; }   // item not used
@@ -2553,7 +2553,7 @@ function boot(){
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
     if (DEBUG) { api[k] = v; continue; }
-    if (typeof v === 'function') api[k] = () => { if (!warned) { warned = true; console.info('Kindle Wild: debug hooks need ?debug=1 in the URL.'); } return undefined; };
+    if (typeof v === 'function') api[k] = () => { if (!warned) { warned = true; console.info('Walklings: debug hooks need ?debug=1 in the URL.'); } return undefined; };
   }
   window.PixelPets = Object.freeze(api);
 }

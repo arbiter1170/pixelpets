@@ -1,4 +1,4 @@
-/* Kindle Wild moves, learnsets and trainers (design/specs/BATTLE.md v0.3.1).
+/* Walklings moves, learnsets and trainers (design/specs/BATTLE.md v0.3.1).
    Load after stats.js and before save.js / game.js. Pure data + helpers; the battle engine lives in game.js. */
 "use strict";
 
@@ -240,7 +240,7 @@ const MOVES = {
     "uses": 8
   },
   "kindle_burst": {
-    "name": "Kindle Burst",
+    "name": "Glow Burst",
     "type": "EMBER",
     "power": 70,
     "acc": 90,

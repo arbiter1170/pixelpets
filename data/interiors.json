@@ -32,14 +32,14 @@
         {"kind": "warp", "id": "home_mat", "x": 4, "y": 7, "to": "hearthmoor", "tx": 3, "ty": 5, "facing": "down"},
         {"kind": "prop", "id": "home_bed", "x": 1, "y": 2, "sprite": "bed", "lines": {"else": "@home_bed"}},
         {"kind": "prop", "id": "home_terminal", "x": 3, "y": 2, "sprite": "pet_terminal", "lines": {
-          "!story.starter_received": "Your pet-box terminal. A row of empty nests glows softly, waiting for someone small.",
-          "else": "Your pet-box terminal hums. Friends you keep but don't walk with rest here. (See the PETS tab.)"}},
+          "!story.starter_received": "Your Walkling-box terminal. A row of empty nests glows softly, waiting for someone small.",
+          "else": "Your Walkling-box terminal hums. Friends you keep but don't walk with rest here. (See the PETS tab.)"}},
         {"kind": "prop", "id": "home_glowbox", "x": 5, "y": 2, "sprite": "glowbox", "lines": {
           "story.met_glimmerwell": "An ad: \"Glimmerwell. Brighter by nature.\" The jingle is a little too cheerful.",
-          "else": "A morning show: \"Keepers of the Kindlewild!\" Today: how to tuck in a very sleepy creature."}},
+          "else": "A morning show: \"Keepers of the Amberwild!\" Today: how to tuck in a very sleepy Walkling."}},
         {"kind": "prop", "id": "home_bookshelf", "x": 7, "y": 2, "sprite": "bookshelf", "lines": {
-          "story.seal1": "Your map of the Kindlewild. You've inked a tiny Seal beside Fernbrook.",
-          "else": "Keeper primers and a dog-eared map of the Kindlewild. Someone drew a star on Fernbrook."}},
+          "story.seal1": "Your map of the Amberwild. You've inked a tiny Seal beside Fernbrook.",
+          "else": "Keeper primers and a dog-eared map of the Amberwild. Someone drew a star on Fernbrook."}},
         {"kind": "prop", "id": "home_table", "x": 7, "y": 5, "sprite": "table_small", "lines": {
           "else": "A chipped mug and yesterday's crumbs. The kettle is still warm."}},
         {"kind": "prop", "id": "home_mirror", "x": 3, "y": 6, "sprite": "mirror", "lines": {"else": "@home_mirror"}},
@@ -187,7 +187,7 @@
         [["say", "Warden Ilse", "The Fernbrook Seal! Fen wrote to me. She says you were kind to her orchard."]],
         [["if", "!story.rival1_done",
           [["say", "Warden Ilse", "Rook's pacing at the east gate, isn't he? Win or lose, come home smiling."]],
-          [["say", "Warden Ilse", "{pet} looks bright-eyed. Keep that kindle glowing, {player}."]]]]],
+          [["say", "Warden Ilse", "{pet} looks bright-eyed. Keep that glow going, {player}."]]]]],
       ["choice", "Anything else, {player}?", [
         ["Write a new name", [["run", "rename"]]],
         ["Just saying hi", [["say", "Warden Ilse", "Safe roads, then. The Lantern House by the gate is always lit."]]]]]
@@ -211,7 +211,7 @@
     "bookshelf": {"name": "bookshelf", "art": "dark wood d frame, book spines r/b/g/y"},
     "mirror": {"name": "standing mirror", "art": "oval glass s/c with a w glint, wooden stand o"},
     "glowbox": {"name": "glowbox (TV-equivalent)", "art": "chunky wooden box, glowing screen c/s, two knobs y"},
-    "pet_terminal": {"name": "pet-box terminal (PC-equivalent)", "art": "desk cabinet with 3 tiny lit nest cubbies y/l"},
+    "pet_terminal": {"name": "Walkling-box terminal (PC-equivalent)", "art": "desk cabinet with 3 tiny lit nest cubbies y/l"},
     "table_small": {"name": "small table", "art": "round wood table o, mug w"},
     "basket": {"name": "lantern basket (occupied)", "art": "wicker o/y with cloth cover, tiny glow y; reuses showBasket art"},
     "basket_empty": {"name": "lantern basket (empty)", "art": "same basket, cloth folded back, no glow"},
@@ -219,5 +219,5 @@
     "floor_lantern": {"name": "floor lantern", "art": "tall lantern on a post, warm glow halo, 2-frame flicker"}
   },
   "newNames": [],
-  "nameCheck": "No new character names. Mrs. Calloway already exists in MAPS_SLICE §9 (rook_house panel) and gets her first sprite here. New object words (glowbox, pet-box terminal, lantern basket) are generic, not franchise terms."
+  "nameCheck": "No new character names. Mrs. Calloway already exists in MAPS_SLICE §9 (rook_house panel) and gets her first sprite here. New object words (glowbox, Walkling-box terminal, lantern basket) are generic, not franchise terms."
 }
