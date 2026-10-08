@@ -233,7 +233,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .overlay.full .ov-inner{max-width:480px;max-height:none;height:100%;margin:0 auto;box-shadow:none;gap:8px;
   padding:calc(10px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom))}
 .look-top{display:flex;align-items:center;justify-content:center;gap:14px}
-.look-top canvas{width:108px;height:108px;background:var(--d);box-shadow:0 0 0 3px var(--k)}
+/* keeper previews sit on a light backdrop that matches none of the look colours (hair 'd' = --d vanished on the old dark one) */
+.look-top canvas{width:108px;height:108px;background:#c7cfdd;box-shadow:0 0 0 3px var(--k)}
 .look-top .btn{min-height:44px;font-size:18px}
 .look-row{display:flex;flex-direction:column;gap:4px}
 .look-lb{font-size:16px;color:var(--h);letter-spacing:1px}
@@ -241,7 +242,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .swatches{display:grid;grid-template-columns:repeat(auto-fill,44px);gap:6px}
 .swatch{width:44px;height:44px;border:0;padding:0;box-shadow:0 0 0 2px var(--k);cursor:pointer}
 .previews{display:flex;flex-wrap:wrap;gap:8px}
-.preview{min-width:60px;min-height:60px;display:flex;align-items:center;justify-content:center;background:var(--d);border:0;padding:2px;
+.preview{min-width:60px;min-height:60px;display:flex;align-items:center;justify-content:center;background:#c7cfdd;border:0;padding:2px;
   box-shadow:0 0 0 2px var(--k);cursor:pointer}
 .preview canvas{display:block;image-rendering:pixelated}
 .swatch.on,.preview.on{box-shadow:0 0 0 2px var(--k),0 0 0 5px var(--y)}
