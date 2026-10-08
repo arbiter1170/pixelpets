@@ -658,6 +658,7 @@ function onLand(){
   const pk = objAt(x, y, o => o.kind === 'pickup');
   if (pk) { S.bag[pk.item] = (S.bag[pk.item] || 0) + pk.n; S.flags['item.' + pk.id] = true; sfx('befriend'); toast('Found ' + itemLabel(pk.item, pk.n) + '!'); save(); }
   if (checkTriggers()) return;
+  if (checkSight()) return;
   checkChatter();
 }
 const ITEM_NAMES = { heal_snack: ['Heal Snack', 'Heal Snacks'], befriend_treat: ['Befriend Treat', 'Befriend Treats'] };
@@ -673,6 +674,54 @@ function checkTriggers(){
     mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
   }
   return false;
+}
+// Trainer sight lines (§6.1): 1..sight tiles in `facing` from the trainer, stopping before the first tile that isn't walkable or
+// holds a present blocker (roaming creatures and the follower don't block). Checked only after a completed step (onLand), never on
+// warp arrival, respawn, push or LEAVE; a trainer spots once (`spotted.<id>`) and only while unbeaten.
+const SPOT_BANG_MS = 600, SPOT_STEP_MS = STEP_MS * 1.5;
+const spot = { id: null, bang: false };
+let sightShown = false;
+function sightLine(o){
+  const t = TRAINERS[o.id], d = t && DIRS[t.facing || 'down']; if (!d || !(t.sight > 0)) return [];
+  const q = objPos(o), out = [];
+  for (let i = 1; i <= t.sight; i++) {
+    const x = q.x + d[0] * i, y = q.y + d[1] * i;
+    if (solidTile(x, y) || blockerAt(x, y)) break;
+    out.push({ x, y });
+  }
+  return out;
+}
+const canSpot = o => o.kind === 'trainer' && present(o) && !!TRAINERS[o.id] && !S.flags['trainer.' + o.id] && !S.flags['spotted.' + o.id];
+function checkSight(){
+  if (scene || fade.busy || walk.intro || overlayOpen() || !pet()) return false;
+  const x = S.world.x, y = S.world.y;
+  for (const o of CUR.objs) {
+    if (!canSpot(o) || !sightLine(o).some(c => c.x === x && c.y === y)) continue;
+    clearMoves(); runSteps([['spot', o.id], ['battle', o.id]], { npc: o }); return true;
+  }
+  return false;
+}
+// The walk-up: sfx notice + a "!" over the trainer for 600 ms, then it walks along its line (walk frames, STEP_MS x 1.5 per tile)
+// until adjacent; the keeper turns to face it. The text box stays hidden until the intro line.
+async function spotWalk(id){
+  const o = CUR.objs.find(x => x.id === id), t = TRAINERS[id], d = t && DIRS[t.facing || 'down']; if (!o || !d) return;
+  $('#ovScene').hidden = true;
+  sfx('notice'); spot.id = id; spot.bang = true;
+  await new Promise(r => setTimeout(r, SPOT_BANG_MS));
+  spot.bang = false;
+  let q = { x: objPos(o).x, y: objPos(o).y };
+  while (scene && Math.abs(S.world.x - q.x) + Math.abs(S.world.y - q.y) > 1) {
+    const nx = q.x + d[0], ny = q.y + d[1];
+    if (solidTile(nx, ny) || (nx === S.world.x && ny === S.world.y)) break;
+    const P = mapRT.pos[id] = { x: nx, y: ny, fx: q.x, fy: q.y, moving: true, facing: t.facing };
+    await new Promise(res => { const t0 = now(), from = q; (function tick(){ const k = Math.min(1, (now() - t0) / SPOT_STEP_MS);
+      P.fx = from.x + d[0] * k; P.fy = from.y + d[1] * k; if (k < 1 && scene) requestAnimationFrame(tick); else res(); })(); });
+    q = { x: nx, y: ny };
+  }
+  mapRT.pos[id] = { x: q.x, y: q.y, facing: t.facing };
+  S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y);
+  spot.id = null;
+  if (scene) { $('#ovScene').hidden = false; sbRender('', ''); }
 }
 function updateWalk(dt, t){
   if (walk.intro) { if (t - walk.intro > 700) { walk.intro = 0; openEncounter(); } return; }
@@ -752,6 +801,8 @@ function drawMap(t){
       }
     }
   for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') g.drawImage(WART.door, o.x*TS - cx, (o.y-1)*TS - cy);
+  if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
+    g.fillStyle = canSpot(o) ? 'rgba(244,80,80,.35)' : 'rgba(160,160,160,.3)'; sightLine(o).forEach(c => g.fillRect(c.x*TS - cx, c.y*TS - cy, TS, TS)); }
   if (walk.target) { g.strokeStyle = PAL.y; g.lineWidth = 1; g.strokeRect(walk.target.x*TS - cx + .5, walk.target.y*TS - cy + .5, 15, 15); }
   const grassOver = (fx, fy) => { const gx = Math.round(fx), gy = Math.round(fy); if (MAP[gy] && MAP[gy][gx] === 't') g.drawImage(TILES.t, 0, 10, 16, 6, gx*TS - cx, gy*TS - cy + 10, 16, 6); };
   const drawPlayer = () => {                 // the keeper (MAPS_SLICE K.1): 2 walk frames, 1px bob only while moving
@@ -1005,6 +1056,12 @@ function checkChatter(){
   }
 }
 function drawBubbles(g, cx, cy, t){
+  if (spot.bang && spot.id) {                          // §6.1 "!" bubble, 2px above the trainer's head
+    const o = CUR.objs.find(x => x.id === spot.id);
+    if (o) { const q = objPos(o), X = Math.round(q.x * TS - cx) + 4, Y = Math.round(q.y * TS - cy) - 15;
+      g.fillStyle = PAL.k; g.fillRect(X, Y, 9, 12); g.fillStyle = PAL.w; g.fillRect(X + 1, Y + 1, 7, 10);
+      g.fillStyle = PAL.r; g.fillRect(X + 3, Y + 2, 3, 5); g.fillRect(X + 3, Y + 8, 3, 2); }
+  }
   const ft = !moveHeld() && !walk.to && facingTarget();
   if (ft && ft.kind !== 'door') { const q = objPos(ft); const X = q.x * TS - cx + 4, Y = q.y * TS - cy - 11 - (Math.floor(t / 400) % 2);
     WART.talk.forEach((r, j) => { for (let i = 0; i < 8; i++) if (r[i] !== '.') { g.fillStyle = PAL[r[i]]; g.fillRect(X + i, Y + j, 1, 1); } }); }
@@ -1109,6 +1166,7 @@ async function execStep(st){
       if (fol.x != null) { fol.from = fol.to = null; fol.x = fol.fx = ox; fol.y = fol.fy = oy; }   // the follower onto the keeper's old tile (K.3)
       return;
     }
+    case 'spot': await spotWalk(a); return;
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
   }
@@ -1132,6 +1190,7 @@ async function sceneBattle(id){
   await sayBox(t.name, sub(t.lines.intro));
   await sayBox('', battleLine('trainerSummon', { trainer: t.name, foe: nameOf(SP_INDEX[ln], +st) }));
   $('#ovScene').hidden = true;
+  S.flags['spotted.' + id] = true;                     // §6.1: set when the battle opens; a trainer never spots twice
   const res = await new Promise(resolve => { if (!openBattle({ kind: 'trainer', trainerId: id, mapIntro: true, onEnd: resolve })) resolve(null); });
   if (!scene) return;
   $('#ovScene').hidden = false; sbRender('', '');
@@ -2640,6 +2699,8 @@ function boot(){
       const [line, st] = String(f).split('/'); if (SP_INDEX[line] == null || !SPECIES[SP_INDEX[line]].stages[+st]) return false;
       return openBattle({ kind: 'wild', form: f, level: lv || wildLevel(+st, Math.random, 'proto', line) });
     },
+    showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
+    objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
     forceTrainer: id => { if (!TRAINERS[id] || S.flags['trainer.' + id]) return false; showTab('walk'); if (overlayOpen()) return; return openBattle({ kind: 'trainer', trainerId: id }); },
     setHp: (who, n) => {
       if (!battle.on) return; if (who === 'foe') { const f = curFoe(); f.hp = clamp(Math.round(+n), 0, f.maxHp); }
@@ -2684,6 +2745,8 @@ function boot(){
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind] })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
     typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip }; } });
+  Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
+  Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'fading', { enumerable: true, get(){ return fade.busy; } });
   Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
