@@ -28,6 +28,18 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .icon-btn{width:44px;height:44px;margin-right:-6px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .icon-btn canvas{width:24px;height:24px}
 .icon-btn:active{background:var(--d)}
+
+/* Settings overlay (header gear) */
+.settings-inner{max-width:320px;width:min(320px,calc(100vw - 28px));padding:16px 14px 14px}
+.set-list{display:flex;flex-direction:column;gap:8px;margin:4px 0 14px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0 14px;border:3px solid var(--d);background:var(--n);color:var(--w);font-family:var(--font);font-size:20px;cursor:pointer;text-align:left}
+.set-row:active{transform:translateY(1px)}
+.set-row .set-lab{flex:1 1 auto}
+.set-row .set-val{color:var(--y);min-width:2.5ch;text-align:right}
+.set-row[aria-pressed="false"] .set-val{color:var(--m)}
+.set-row.set-danger{border-color:var(--r);color:var(--h)}
+.set-row.set-danger .set-val{color:var(--r)}
+.settings-inner > .btn{width:100%;min-height:48px}
 #hdrIcon{width:36px;height:36px}
 #top .lv{display:flex;flex-direction:column;align-items:flex-end;font-size:18px;color:var(--y)}
 .stagedots{color:var(--h);font-size:13px;letter-spacing:2px}
@@ -44,8 +56,9 @@ h2 small{color:var(--h);font-size:17px}
 /* pixel frame */
 .scene-wrap,.map-wrap,.panel,.tbar,.bar{box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d)}
 .scene-wrap{display:flex;justify-content:center;align-items:center;background:var(--k);margin:6px;flex:0 0 auto}
-.pet-scene{position:relative}
-.scene-btn{position:absolute;left:6px;top:6px;min-width:44px;min-height:44px;padding:0 10px;border:0;background:rgba(26,28,44,.72);color:var(--y);
+.pet-scene{position:relative;display:flex;justify-content:center;align-items:center;margin:6px;background:transparent;box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);line-height:0;overflow:hidden}
+.pet-scene canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;box-shadow:none}
+.scene-btn{position:absolute;left:8px;top:8px;z-index:1;min-width:44px;min-height:44px;padding:0 10px;border:0;background:rgba(26,28,44,.72);color:var(--y);
   font-family:var(--font);font-size:18px;box-shadow:0 0 0 2px var(--k);cursor:pointer}
 .scene-btn:active{transform:translateY(1px)}
 .scene-btn[hidden]{display:none}
@@ -169,7 +182,6 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .tries{text-align:center;color:var(--r);font-size:18px;letter-spacing:4px;min-height:20px}
 .starters{display:flex;flex-direction:column;gap:10px}
 /* start over (Friends tab): plain and low-key */
-.reset-row{display:flex;justify-content:center;padding:18px 0 8px}
 .btn-quiet{min-height:44px;min-width:44px;padding:0 16px;background:none;border:2px solid var(--m);color:var(--h);font-family:var(--font);font-size:17px;cursor:pointer}
 .btn-quiet:active{transform:translateY(1px)}
 .reset-msg{font-size:21px;line-height:1.4;text-align:center;color:var(--w);margin:4px 0}
@@ -221,9 +233,6 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 @keyframes flash{50%{filter:brightness(3)}}
 
 /* Phase K: CHANGE LOOK + FOLLOWER toggle under the care buttons (MAPS_SLICE K.2/K.3) */
-.pet-extra{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:2px 6px 4px;flex:0 0 auto}
-.pet-extra .btn-quiet{font-size:16px;padding:0 6px;white-space:nowrap}
-.pet-extra #followerBtn[aria-pressed="false"]{color:var(--m);border-style:dashed}
 .keeper-line{font-size:18px;margin-bottom:6px;color:var(--w);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .keeper-line .label{display:inline}
 .keeper-line b{color:var(--y)}

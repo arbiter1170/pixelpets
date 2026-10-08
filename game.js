@@ -32,15 +32,15 @@ const rate = () => fastMode ? FAST_RATE : REAL_RATE;   // points lost per second
 
 /* Care balance. Cooldowns are per pet, stored as last-use Date.now() stamps in p.cd (missing = ready),
    so reloading can't skip them. Fast mode shrinks them by the same ratio as the food rate (~1/57.6). */
-const CARE_CD_MIN = { feed: 20, play: 10, rest: 30 };            // real-mode cooldown, minutes
-const FAST_CD_SCALE = REAL_RATE.hunger / FAST_RATE.hunger;       // ~0.0174: 20m -> ~21s, 10m -> ~10s, 30m -> ~31s
+const CARE_CD_MIN = { feed: 20, play: 10, rest: 15 };            // real-mode cooldown, minutes (REST 15m: BATTLE §7.3 Q1, Vincent)
+const FAST_CD_SCALE = REAL_RATE.hunger / FAST_RATE.hunger;       // ~0.0174: 20m -> ~21s, 10m -> ~10s, 15m REST -> ~16s
 const CARE_XP = { feed: 2, play: 5, rest: 1 };                   // XP per care action (before the daily cap)
 const CARE_XP_DAILY_CAP = 25;      // per pet per local calendar day (feed/play/rest)
 const STEPS_PER_XP = 5;            // walking: 1 XP per 5 steps, remainder kept per pet in p.sr
 const BEFRIEND_XP = 5;             // shares the explore cap below
 const EXPLORE_XP_DAILY_CAP = 30;   // per pet per local day, shared by walking + befriending XP (p.ex)
 const STEP_MS = 170;
-const STEP_NRG = 0.16;            // NRG per step on the Walk map (was 0.4; cut 60% so walks last longer)
+const STEP_NRG = 0;               // walking no longer drains NRG (FOOD per step still applies)
 const STEP_FOOD = 0.15;           // FOOD per step (unchanged)
 
 /* ---------- sprites & tiles ---------- */
@@ -95,10 +95,33 @@ const markCaught = (sp, st) => { S.dex.seen[formOf(sp, st)] = S.dex.caught[formO
 
 /* ---------- UI helpers ---------- */
 const sfx = (name, delay) => { try { PPSound.play(name, delay); } catch(e) {} };
-function renderMute(){
-  const m = PPSound.muted, b = $('#muteBtn');
-  iconCanvas($('#muteIcon'), ICONS[m ? 'mute' : 'sound'], m ? PAL.m : PAL.y);
-  b.setAttribute('aria-pressed', m ? 'true' : 'false'); b.setAttribute('aria-label', m ? 'Sound off (tap to turn on)' : 'Sound on (tap to mute)'); b.title = m ? 'Sound off' : 'Sound on';
+function renderSettingsGear(){
+  const b = $('#settingsBtn');
+  iconCanvas($('#settingsIcon'), ICONS.gear, PAL.y);
+  b.setAttribute('aria-label', 'Settings'); b.title = 'Settings';
+}
+function renderSoundRow(){
+  const m = PPSound.muted, b = $('#setSound');
+  if (!b) return;
+  b.setAttribute('aria-pressed', m ? 'false' : 'true');
+  $('#setSoundVal').textContent = m ? 'OFF' : 'ON';
+}
+function renderFollowerBtn(){
+  const on = !!(S && S.settings.follower !== false), b = $('#setFollower');
+  if (!b) return;
+  b.setAttribute('aria-pressed', String(on));
+  $('#setFollowerVal').textContent = on ? 'ON' : 'OFF';
+}
+function openSettings(){
+  if (overlayOpen() && $('#ovSettings').hidden) return;
+  if (!$('#ovSettings').hidden) return;
+  clearMoves(); renderSoundRow(); renderFollowerBtn();
+  $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
+  $('#setClose').focus({ preventScroll: true });
+}
+function closeSettings(){
+  if ($('#ovSettings').hidden) return;
+  $('#ovSettings').hidden = true; lockTabs(false);
 }
 let toastT = 0;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
@@ -133,7 +156,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref()) openGeoAsk();     // first Walk visit: ask about location (once)
 }
-const overlayOpen = () => !$('#ovEncounter').hidden || !$('#ovEvolve').hidden || !$('#ovStarter').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden;
+const overlayOpen = () => !$('#ovEncounter').hidden || !$('#ovEvolve').hidden || !$('#ovStarter').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -141,14 +164,46 @@ function fitCanvas(c, maxW, maxH){
   s = s >= 1 ? Math.floor(s) : s;
   c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px';
 }
+// Pet tab scene (fix for side bars on iPhone): the pixel canvas is widened to the frame's aspect ratio so it fills the full
+// width with no dark side bars, at a crisp integer scale. Height is a little taller than the old 56-square (up to 64) when it
+// still fits; short phones (320x568) step the scale/height down so the care buttons stay on screen without scrolling.
+function setPetCanvas(s, H){
+  const wrap = $('.pet-scene'), pc = $('#petCanvas');
+  const frameW = Math.max(56, (wrap && wrap.clientWidth) || (Math.min(window.innerWidth, 480) - 12));
+  const W = Math.max(56, Math.ceil(frameW / s));   // canvas CSS width >= frame; the wrap crops the < 1-cell excess
+  if (pc.width !== W || pc.height !== H) { pc.width = W; pc.height = H; }
+  pc.style.width = (W * s) + 'px'; pc.style.height = (H * s) + 'px';
+}
+function fitPetScene(){
+  const ps = $('#scr-pet'), wrap = $('.pet-scene');
+  const frameW = Math.max(56, (wrap && wrap.clientWidth) || (Math.min(window.innerWidth, 480) - 12));
+  // Target a scene about as tall as the old square (or a bit taller), never a near-square at huge scale.
+  const targetCssH = Math.max(168, Math.min(window.innerHeight * 0.40, 288));  // a bit taller now that CHANGE LOOK / FOLLOWER left the Pet tab
+  const cands = [];
+  for (let s = 4; s >= 2; s--) {
+    for (const H of [64, 60, 56]) {
+      if (H * s > targetCssH + 24) continue;         // keep the display near the target height
+      if (Math.ceil(frameW / s) < 72 && s > 2) continue; // prefer a wide bitmap (not a near-square)
+      cands.push([s, H]);
+    }
+  }
+  if (!cands.length) {
+    for (let s = 3; s >= 2; s--) for (const H of [64, 60, 56]) if (H * s <= targetCssH + 40) cands.push([s, H]);
+  }
+  if (!cands.length) cands.push([2, 56]);
+  // Prefer taller display, then larger scale, then wider fill.
+  cands.sort((a, b) => (b[1] * b[0] - a[1] * a[0]) || (b[1] - a[1]) || (b[0] - a[0]));
+  if (!(ps.classList.contains('active') && ps.clientHeight)) return setPetCanvas(...cands[0]);
+  const fitsAll = () => ps.scrollHeight - ps.clientHeight <= 0;
+  const careOn = () => { const a = ps.querySelector('.actions'); return !a || a.getBoundingClientRect().bottom <= ps.getBoundingClientRect().bottom; };
+  for (const c of cands) { setPetCanvas(...c); if (fitsAll()) return; }
+  // Prefer the tallest size that keeps care buttons on screen (allow a few px of scrollHeight slack on short phones).
+  for (const c of cands) { setPetCanvas(...c); if (careOn()) return; }
+  setPetCanvas(...cands[cands.length - 1]);
+}
 function fitAll(){
   const appW = Math.min(window.innerWidth, 480) - 36;
-  const pc = $('#petCanvas'), ps = $('#scr-pet');
-  fitCanvas(pc, appW, Math.max(140, window.innerHeight * 0.42));
-  if (ps.classList.contains('active') && ps.clientHeight) {   // short phones: shrink the scene (down to 3x) so the Pet tab needs no scrolling
-    const over = ps.scrollHeight - ps.clientHeight;
-    if (over > 0) fitCanvas(pc, appW, Math.max(pc.height * 3, parseFloat(pc.style.height) - over));
-  }
+  fitPetScene();
   fitCanvas($('#encCanvas'), appW - 28, window.innerHeight * 0.34);
   fitCanvas($('#evoCanvas'), appW - 28, window.innerHeight * 0.4);
   const mw = $('#mapWrap');
@@ -160,6 +215,7 @@ function fitAll(){
   }
 }
 window.addEventListener('resize', fitAll);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
 
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
 function updateHUD(){
@@ -263,8 +319,8 @@ function updateCareButtons(){
 /* ---------- pet care ---------- */
 const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [] };
 function addPart(type, x, y, vx=0, vy=-8, life=1.2){ anim.parts.push({ type, x, y, vx, vy, life, max: life }); }
-const PET_H = 56, GROUND = PET_H - 14;
-function petPos(t){ const x = 20 + Math.round(Math.sin(t / 2200) * 7); return { x, y: GROUND - 7 }; }
+const PET_H = 64, GROUND = PET_H - 14;                  // max logical height of the Pet tab scene (56..64, see fitPetScene)
+function petPos(t){ const c = $('#petCanvas'), W = (c && c.width) || 56, H = (c && c.height) || 56, x = Math.round((W - 16) / 2 + Math.sin(t / 2200) * 7); return { x, y: H - 14 - 7 }; }
 
 function doAction(act){
   const p = pet(); const t = now();
@@ -325,38 +381,44 @@ function skyMode(tags = envTags()){
   return (has('night') ? 'night' : 'day') + (dull ? '-dull' : '');      // day | day-dull | night | night-dull
 }
 const bdCache = {};
-function makeBackdrop(kind, H, mode){
-  const key = kind + '|' + H + '|' + mode; if (bdCache[key]) return bdCache[key];
-  const c = document.createElement('canvas'); c.width = 56; c.height = H; const g = ctx(c), G = H - 14;
-  const night = mode.startsWith('night'), dull = mode.endsWith('dull'), r = rng(kind.length * 7 + 3);
+function makeBackdrop(kind, H, mode, W = 56){
+  W = Math.max(56, W | 0); H = H | 0;
+  const key = kind + '|' + W + 'x' + H + '|' + mode; if (bdCache[key]) return bdCache[key];
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = ctx(c), G = H - 14;
+  const night = mode.startsWith('night'), dull = mode.endsWith('dull'), r = rng(kind.length * 7 + 3 + W);
   const P = (col, x, y, w = 1, h = 1) => { g.fillStyle = PAL[col]; g.fillRect(x, y, w, h); };
-  P(night ? 'n' : dull ? 'h' : 'c', 0, 0, 56, G);                                   // sky
-  P(night ? 'b' : dull ? 'w' : 's', 0, G - 12, 56, 10);                            // horizon band
-  if (!dull && !night) { P('y', 45, 4, 6, 6); P('w', 46, 5, 2, 2); }                 // sun
-  if (!dull && night) { P('w', 45, 4, 5, 5); P('n', 47, 3, 4, 4); [[6,4],[17,9],[27,3],[36,11],[52,15],[12,15]].forEach(([x, y]) => P('w', x, y)); }   // moon + stars
-  const hills = col => { for (let x = 0; x < 56; x++) { const h = Math.round(4 + Math.sin(x/6)*2 + Math.sin(x/2.3)); P(col, x, G - h, 1, h); } };
-  const ground = (base, a, b) => { P(base, 0, G, 56, H - G); for (let i = 0; i < 40; i++) P(r() < .5 ? a : b, r()*56|0, G + 1 + (r()*(H - G - 1)|0)); };
+  P(night ? 'n' : dull ? 'h' : 'c', 0, 0, W, G);                                   // sky
+  P(night ? 'b' : dull ? 'w' : 's', 0, G - 12, W, 10);                            // horizon band
+  if (!dull && !night) { P('y', W - 11, 4, 6, 6); P('w', W - 10, 5, 2, 2); }       // sun (right side)
+  if (!dull && night) { P('w', W - 11, 4, 5, 5); P('n', W - 9, 3, 4, 4);           // moon
+    for (let i = 0; i < Math.max(6, W / 9 | 0); i++) P('w', (r() * W) | 0, 2 + (r() * (G - 16) | 0)); }
+  const hills = col => { for (let x = 0; x < W; x++) { const h = Math.round(4 + Math.sin(x/6)*2 + Math.sin(x/2.3)); P(col, x, G - h, 1, h); } };
+  const nDots = Math.max(40, (W * 40 / 56) | 0);
+  const ground = (base, a, b) => { P(base, 0, G, W, H - G); for (let i = 0; i < nDots; i++) P(r() < .5 ? a : b, r()*W|0, G + 1 + (r()*(H - G - 1)|0)); };
   const tree = (x, y) => { P('k', x + 4, y + 9, 3, 6); P('p', x + 5, y + 9, 1, 6);
     for (let j = 0; j < 10; j++) for (let i = 0; i < 11; i++) { const d = (i - 5) ** 2 + (j - 4.5) ** 2; if (d <= 26) P(d > 18 ? 'k' : (i - 4) ** 2 + (j - 3) ** 2 <= 5 ? 'g' : 't', x + i, y + j); } };
   if (kind === 'town') {
-    [[1, 9, 11], [13, 7, 13], [27, 10, 9], [38, 8, 14]].forEach(([x, h, w]) => { const top = G - h;
-      P('h', x, top, w, h); for (let k = 0; k <= w / 2; k++) P('r', x + k, top - Math.ceil(w / 2) + k, w - 2 * k, 1);   // wall + roof
-      P(night ? 'y' : 'n', x + 2, top + 3, 2, 2); if (w > 10) P(night ? 'y' : 'n', x + w - 4, top + 3, 2, 2); });   // windows (lit at night)
-    ground('g', 'l', 't'); P('y', 0, G + 6, 56, 5); for (let i = 0; i < 12; i++) P(r() < .6 ? 'o' : 'w', r()*56|0, G + 6 + (r()*5|0));
-    P('d', 50, G - 14, 1, 20); P('k', 48, G - 17, 5, 4); P(night ? 'w' : 'y', 49, G - 16, 3, 2);           // lantern post
-    if (night) { g.fillStyle = 'rgba(255,205,117,.35)'; g.fillRect(45, G - 20, 11, 10); }
+    const buildings = []; for (let x = 1; x < W - 12; ) { const w = 9 + (r() * 6 | 0), h = 7 + (r() * 8 | 0); buildings.push([x, h, w]); x += w + 1 + (r() * 3 | 0); }
+    buildings.forEach(([x, h, w]) => { const top = G - h;
+      P('h', x, top, w, h); for (let k = 0; k <= w / 2; k++) P('r', x + k, top - Math.ceil(w / 2) + k, w - 2 * k, 1);
+      P(night ? 'y' : 'n', x + 2, top + 3, 2, 2); if (w > 10) P(night ? 'y' : 'n', x + w - 4, top + 3, 2, 2); });
+    ground('g', 'l', 't'); P('y', 0, G + 6, W, 5); for (let i = 0; i < Math.max(12, W / 5 | 0); i++) P(r() < .6 ? 'o' : 'w', r()*W|0, G + 6 + (r()*5|0));
+    P('d', W - 6, G - 14, 1, 20); P('k', W - 8, G - 17, 5, 4); P(night ? 'w' : 'y', W - 7, G - 16, 3, 2);
+    if (night) { g.fillStyle = 'rgba(255,205,117,.35)'; g.fillRect(W - 11, G - 20, 11, 10); }
   } else if (kind === 'route') {
     hills('l'); ground('g', 'l', 't');
-    for (let x = 0; x < 56; x++) P('y', x, G + 4 + Math.round(Math.sin(x / 9) * 1.5), 1, 5);                     // the path
-    for (let i = 0; i < 9; i++) P('o', r()*56|0, G + 5 + (r()*3|0));
-    [[0, 9], [44, 12]].forEach(([x0, w]) => { for (let x = x0; x < x0 + w; x += 2) { P('t', x, G - 4, 2, 4); P('l', x + 1, G - 6, 1, 4); P('g', x, G - 3, 1, 3); } });   // tall grass
+    for (let x = 0; x < W; x++) P('y', x, G + 4 + Math.round(Math.sin(x / 9) * 1.5), 1, 5);
+    for (let i = 0; i < Math.max(9, W / 6 | 0); i++) P('o', r()*W|0, G + 5 + (r()*3|0));
+    [[0, 9], [W - 12, 12]].forEach(([x0, w]) => { for (let x = x0; x < x0 + w; x += 2) { P('t', x, G - 4, 2, 4); P('l', x + 1, G - 6, 1, 4); P('g', x, G - 3, 1, 3); } });
   } else if (kind === 'grove') {
-    P('t', 0, G - 18, 56, 6); for (let x = -2; x < 56; x += 7) { P('k', x + 1, G - 14, 4, 14); P('p', x + 2, G - 14, 2, 14); }   // dense trunks
-    for (let x = -4; x < 58; x += 6) { P('t', x, G - 22, 8, 6); P('g', x + 2, G - 21, 3, 2); }
+    P('t', 0, G - 18, W, 6); for (let x = -2; x < W; x += 7) { P('k', x + 1, G - 14, 4, 14); P('p', x + 2, G - 14, 2, 14); }
+    for (let x = -4; x < W + 2; x += 6) { P('t', x, G - 22, 8, 6); P('g', x + 2, G - 21, 3, 2); }
     ground('t', 'g', 'k');
   } else {                                                                           // meadow: hills, flowers and a tree
     hills('l'); ground('g', 'l', 't'); tree(1, G - 14);
-    [[18, 2, 'w'], [30, 8, 'y'], [42, 3, 'r'], [50, 9, 'w'], [8, 10, 'y']].forEach(([x, y, col]) => { P(col, x - 1, G + y); P(col, x + 1, G + y); P(col, x, G + y - 1); P(col, x, G + y + 1); P('y', x, G + y); });
+    const flowers = [[18, 2, 'w'], [30, 8, 'y'], [42, 3, 'r'], [50, 9, 'w'], [8, 10, 'y']];
+    for (let x = 56; x < W - 4; x += 12) flowers.push([x, 2 + (r() * 8 | 0), r() < .5 ? 'w' : 'y']);
+    flowers.forEach(([x, y, col]) => { if (x >= W) return; P(col, x - 1, G + y); P(col, x + 1, G + y); P(col, x, G + y - 1); P(col, x, G + y + 1); P('y', x, G + y); });
   }
   return (bdCache[key] = c);
 }
@@ -370,9 +432,13 @@ function drawParticles(g, dt){
 }
 function drawPetScene(t, dt){
   const c = $('#petCanvas'), g = ctx(c), p = pet(); if (!p) return;
-  const mode = skyMode();
-  g.drawImage(makeBackdrop(backdropName(), PET_H, mode), 0, 0);
-  if (mode !== 'night') { const cx = ((t / 120) % 80) - 12; drawGlyph(g, 'cloud', cx, 6); drawGlyph(g, 'cloud', ((t/180 + 40) % 80) - 12, 12); }
+  const W = c.width, H = c.height, mode = skyMode();
+  g.drawImage(makeBackdrop(backdropName(), H, mode, W), 0, 0);
+  if (mode !== 'night') {
+    const span = W + 24;
+    drawGlyph(g, 'cloud', ((t / 120) % span) - 12, 6);
+    drawGlyph(g, 'cloud', ((t / 180 + span / 2) % span) - 12, 12);
+  }
   const sleeping = t < anim.sleepUntil;
   let { x, y } = petPos(sleeping ? anim.sleepUntil : t);
   let bob = Math.floor(t / 400) % 2;
@@ -382,10 +448,10 @@ function drawPetScene(t, dt){
   const blink = sleeping || (t % 3200) < 140;
   g.drawImage(SPR[spi(p)][p.stage][blink ? 'b' : 'n'], x, y + bob);
   if (!sleeping && (p.hunger < 25 || p.happy < 25 || p.energy < 25) && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);
-  drawWeather(g, 56, PET_H, t, 0.18);              // same night/fog/rain/storm/snow tint as the Walk map (fewer drops on the small canvas)
+  drawWeather(g, W, H, t, 0.18);                   // same night/fog/rain/storm/snow tint as the Walk map
   if (sleeping) {
-    g.fillStyle = 'rgba(41,54,111,.55)'; g.fillRect(0,0,56,PET_H);
-    g.fillStyle = PAL.w; g.fillRect(8,5,4,4); g.fillStyle = PAL.k; g.fillRect(10,5,2,2);
+    g.fillStyle = 'rgba(41,54,111,.55)'; g.fillRect(0, 0, W, H);
+    g.fillStyle = PAL.w; g.fillRect(8, 5, 4, 4); g.fillStyle = PAL.k; g.fillRect(10, 5, 2, 2);
     if (Math.random() < dt * 2.5) addPart('z', x + 12, y, 3, -6, 1.4);
   }
   drawParticles(g, dt);
@@ -436,7 +502,6 @@ function tryStep(d){
   if (solid(nx, ny)) return;
   const w = wildAt(nx, ny);
   if (w) { if (p && w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
-  if (p && p.energy < 1) { sfx('denied'); toast('Too tired to walk! REST on the Pet tab.'); clearMoves(); return; }
   walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0;
   S.world.facing = dirName(d[0], d[1]);
   S.world.x = nx; S.world.y = ny;
@@ -566,7 +631,6 @@ function followerBob(t){                       // normal: twice per step / every
   return moving ? Math.floor(walk.prog * 2) % 2 : Math.floor(t / 500) % 2;
 }
 const followerAt = (tx, ty) => fol.x != null && followerOn() && ((fol.x === tx && fol.y === ty) || (Math.round(fol.fx) === tx && Math.round(fol.fy) === ty));
-function renderFollowerBtn(){ const on = !!(S && S.settings.follower !== false), b = $('#followerBtn'); b.textContent = 'FOLLOWER: ' + (on ? 'ON' : 'OFF'); b.setAttribute('aria-pressed', String(on)); }
 function toggleFollower(){
   S.settings.follower = S.settings.follower === false; placeFollower(); renderFollowerBtn(); save(); sfx('tap');
   toast(S.settings.follower ? 'Your partner walks with you.' : 'Your partner waits on the Pet tab.');
@@ -1007,15 +1071,20 @@ function renderStatsCard(){
   el.append(part('Strong vs', ch.strong), ' \u00b7 ', part('Weak to', ch.weak));
 }
 
-/* ---------- start over (Friends tab) ---------- */
+/* ---------- start over (Settings) ---------- */
 // Erases the game (PPSave.startOver: v2 + v1 + .bak + corrupt record; device prefs stay) and reloads into the fresh-start path.
 // This page stops saving first; another open tab stops saving too once it sees the key gone or a different game (uid).
 // Confirm is press-and-hold (RESET_HOLD_MS) on the red button with a fill bar; letting go early cancels. Touch, mouse and keyboard (Space/Enter).
 const RESET_HOLD_MS = 1500;
 let resetting = false, gameReplaced = false;
 const hold = { t0: 0, raf: 0, by: null };
-function openReset(){ if (overlayOpen()) return; clearMoves(); holdStop(); $('#ovReset').hidden = false; lockTabs(true); sfx('tap'); $('#resetCancel').focus({ preventScroll: true }); }
-function closeReset(){ if ($('#ovReset').hidden || resetting) return; holdStop(); $('#ovReset').hidden = true; lockTabs(false); }
+function openReset(){
+  if (!$('#ovReset').hidden) return;
+  // Start over lives in Settings: allow opening the confirm while #ovSettings is up; block if any other overlay is open.
+  if (overlayOpen() && $('#ovSettings').hidden) return;
+  clearMoves(); holdStop(); $('#ovReset').hidden = false; lockTabs(true); sfx('tap'); $('#resetCancel').focus({ preventScroll: true });
+}
+function closeReset(){ if ($('#ovReset').hidden || resetting) return; holdStop(); $('#ovReset').hidden = true; lockTabs(!$('#ovSettings').hidden); }   // back to Settings if it was opened there
 function holdStart(by){
   if (resetting || hold.by) return;
   hold.by = by; hold.t0 = performance.now(); $('#resetGo').classList.add('holding');
@@ -1115,15 +1184,18 @@ function openStarter(){
 /* ---------- input ---------- */
 function bindInput(){
   $$('#tabs button').forEach(b => b.addEventListener('click', () => { if (b.dataset.tab !== screen) sfx('tap'); showTab(b.dataset.tab); }));
-  $('#muteBtn').addEventListener('click', () => { const m = PPSound.toggle(); renderMute(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
+  $('#settingsBtn').addEventListener('click', () => { if ($('#ovSettings').hidden) openSettings(); else closeSettings(); });
+  $('#setClose').addEventListener('click', () => { sfx('tap'); closeSettings(); });
+  $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
+  $('#setSound').addEventListener('click', () => { const m = PPSound.toggle(); renderSoundRow(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
+  $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
+  $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
   ['#evoOk', '#encRun', '#geoAllow', '#geoLater', '#envBadge', '#envUseLoc', '#envClose', '#copyCode'].forEach(id => $(id).addEventListener('click', () => sfx('tap')));
   $$('[data-act]').forEach(b => b.addEventListener('click', () => doAction(b.dataset.act)));
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', () => { evo.active = false; $('#ovEvolve').hidden = true; $('#tabs').classList.remove('locked'); updateHUD(); });
   $('#encGo').addEventListener('click', encounterPress);
   $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
-  $('#changeLook').addEventListener('click', () => { sfx('tap'); openLook(false); });
-  $('#followerBtn').addEventListener('click', toggleFollower);
   $('#lookShuffle').addEventListener('click', shuffleLook);
   $('#lookDone').addEventListener('click', lookDone);
   $('#lookCancel').addEventListener('click', () => { sfx('tap'); closeLook(); });
@@ -1200,6 +1272,7 @@ function bindInput(){
     if (e.target && e.target.tagName === 'INPUT') return;
     if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
+    if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) walk.queued = DIRS[KEYS[e.key]]; walk.key = KEYS[e.key]; return; }
     if (DEBUG) {                                 // debug keys only with ?debug=1
@@ -1283,7 +1356,7 @@ function boot(){
   $$('#tabs canvas').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));
   fastMode = readFastPref(); renderFastTag(); $('#dbgTag').hidden = !DEBUG;
   $('#envPick').hidden = !DEBUG;               // "Pick a place" presets are debug-only
-  renderMute();
+  renderSettingsGear(); renderSoundRow();
   ENV = PPEnv.init(onEnvChange, { allowOverride: DEBUG }); renderEnv();
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
@@ -1318,7 +1391,7 @@ function boot(){
     typeMult: (a, d) => typeMult(a, d), statsAt: (id, L) => { const s = statsAt(id, L); return s && { ...s }; },   // read-only, always public
     openStats: id => openStatsCard(id), closeStats: () => closeStatsCard(),          // UI only (the same as tapping STATS / CLOSE)
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
-    get petScene(){ return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice() }; },
+    get petScene(){ const c = $('#petCanvas'); return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice(), w: c.width, h: c.height, cssW: parseFloat(c.style.width)||0, cssH: parseFloat(c.style.height)||0 }; },
     get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
       look: Object.assign({}, KEEPER_LOOKS.defaults, lookOf() || {}), name: playerName(), builds: keeperBuilds }; },
     get follower(){ const p = pet(); return { on: followerOn(), shown: fol.x != null && followerOn(), x: fol.x, y: fol.y, fx: fol.fx, fy: fol.fy, facing: fol.facing,

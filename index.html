@@ -19,14 +19,14 @@
     <div class="who"><canvas id="hdrIcon" width="18" height="18"></canvas><span id="hdrName">Kindle Wild</span><span id="fastTag" class="fast-tag" title="Debug fast decay is on" hidden>FAST</span><span id="dbgTag" class="fast-tag dbg-tag" title="Debug tools on (?debug=0 to turn off)" hidden>DBG</span></div>
     <div class="hdr-right">
       <div class="lv"><span id="hdrLv">Lv 1</span><span id="hdrStage" class="stagedots"></span></div>
-      <button id="muteBtn" class="icon-btn" type="button" aria-pressed="false" aria-label="Sound on (tap to mute)"><canvas id="muteIcon" width="8" height="8"></canvas></button>
+      <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings"><canvas id="settingsIcon" width="8" height="8"></canvas></button>
     </div>
   </header>
 
   <main>
     <!-- PET CARE -->
     <section id="scr-pet" class="screen active">
-      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="56" height="56"></canvas><button id="petStatsBtn" class="scene-btn" type="button" aria-label="Stats card">STATS</button></div>
+      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="80" height="64"></canvas><button id="petStatsBtn" class="scene-btn" type="button" aria-label="Stats card">STATS</button></div>
       <div class="stats">
         <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
         <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
@@ -40,10 +40,6 @@
         <button class="btn btn-feed" data-act="feed">FEED</button>
         <button class="btn btn-play" data-act="play">PLAY</button>
         <button class="btn btn-rest" data-act="rest">REST</button>
-      </div>
-      <div class="pet-extra">
-        <button id="changeLook" class="btn-quiet" type="button">CHANGE LOOK</button>
-        <button id="followerBtn" class="btn-quiet" type="button" aria-pressed="true">FOLLOWER: ON</button>
       </div>
     </section>
 
@@ -100,7 +96,6 @@
         </ul>
         <p class="note">Online friends, visits &amp; trading come in a later update. This prototype has no server &mdash; your code is generated from your local save.</p>
       </div>
-      <div class="reset-row"><button id="startOver" class="btn-quiet" type="button">Start over</button></div>
     </section>
   </main>
 
@@ -171,7 +166,22 @@
   </div>
 </div>
 
-<!-- Start over confirm (Friends tab) -->
+<!-- Settings (header gear). Plain list: sound, follower, change look, start over. Account/cloud save reserved below. -->
+<div id="ovSettings" class="overlay" hidden>
+  <div class="ov-inner settings-inner" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <div class="ov-title" id="setTitle">Settings</div>
+    <div class="set-list">
+      <button id="setSound" class="set-row" type="button" aria-pressed="true"><span class="set-lab">Sound</span><span class="set-val" id="setSoundVal">ON</span></button>
+      <button id="setFollower" class="set-row" type="button" aria-pressed="true"><span class="set-lab">Follower</span><span class="set-val" id="setFollowerVal">ON</span></button>
+      <button id="setLook" class="set-row" type="button"><span class="set-lab">Change look</span><span class="set-val">›</span></button>
+      <button id="startOver" class="set-row set-danger" type="button"><span class="set-lab">Start over</span><span class="set-val">›</span></button>
+      <!-- Account / cloud save: reserved for a future row (not shown yet). Keep this comment; do not render a stub. -->
+    </div>
+    <button id="setClose" class="btn btn-play" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- Start over confirm (opened from Settings) -->
 <div id="ovReset" class="overlay" hidden>
   <div class="ov-inner" role="alertdialog" aria-modal="true" aria-labelledby="resetMsg">
     <p id="resetMsg" class="reset-msg">Start over? Your pets will be gone for good.</p>
