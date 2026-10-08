@@ -7,7 +7,7 @@ optional local-creatures lookup (see Wild creatures below).
 Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
 
 Touch: bottom tabs (Pet / Walk / Pets / Friends); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
-walk into a wild creature (or tap it and your pet walks over) to meet it.
+walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs, Space = Befriend in an encounter.
 Sound: the speaker button in the header mutes/unmutes (remembered in `pixelpets.mute`).
 
@@ -24,7 +24,8 @@ Without debug those hooks are inert (they do nothing and return `undefined`), a 
 ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only hooks always work: `env`,
 `wild`, `spawnOdds(tags?)`, `cooldownLeft(act)`, `careXpToday`, `exploreXpToday`, `rates`, `fast`, `debug`,
 `muted`, `careGain(base, value)`, `refreshEnv()`, `showTab(name)`, `typeMult(attType, defType)`, `statsAt(formId, level)`,
-`openStats(petId?)` / `closeStats()` / `statsCard` (the stats card), `petScene` (Pet tab backdrop, sky and tags).
+`openStats(petId?)` / `closeStats()` / `statsCard` (the stats card), `petScene` (Pet tab backdrop, sky and tags),
+`keeper` (tile, facing, walk frame, look, name) and `follower` (shown, tile, facing, pet id, tired, bob).
 Debug only: `setMapBackdrop('town'|'route'|'meadow'|'grove'|null)` sets the current map's backdrop to preview it.
 
 Stat pacing: FOOD, JOY and NRG drain in real time for every pet you own (not just the partner).
@@ -72,6 +73,23 @@ Levels, types and stats (`stats.js`; battles themselves come in a later build):
   scaled to the highest value of that stat among all 42 forms at the same level, and one type-chart line
   ("Strong vs X · Weak to Y"). No moves until battles ship. It's an overlay (tabs lock, decay pauses); CLOSE, a
   tap outside it or Escape closes it. Any tab can open it with a pet id (`openStatsCard(id)` in `game.js`).
+
+Keeper and follower (MAPS_SLICE Phase K): you walk the map as a keeper, a 16x16 person drawn in 3 layers (body,
+outfit, hair; art in `keeper.js`, copied from Design's `keeper_art.js`) with 4 facings (left mirrors right) and 2
+walk frames. Six skin tones are new `PAL` keys `1`-`6` (nothing else in `PAL` changed). Your look is
+`player.look = {skin, hair, hairCol, outfit, outfitCol, accent}` and your name is `player.name` (both in the v2 save,
+no version bump; `normalizeLook()` fixes old or bad looks on load, e.g. the v0.4 draft's `{hair, skin, coat, scarf}`).
+- Look picker (`#ovLook`): a big animated preview, NAME, then SKIN (6), HAIR STYLE (short, long, spiky, bun),
+  HAIR COLOUR (7), OUTFIT (coat, hoodie, tunic), OUTFIT COLOUR (7) and ACCENT (7), plus SHUFFLE. A new player sees
+  it first ("WHO ARE YOU?", no CANCEL), then the starter picker; nothing is saved until DONE. Later, CHANGE LOOK on
+  the Pet tab opens it with CANCEL. Names: trimmed, spaces collapsed, `< > { }` and control characters dropped,
+  10 characters max, empty = "Wayfarer". The Friends tab shows "KEEPER  name" above the friend code.
+- With no pet yet the keeper still walks (no energy, food or XP, no wild creatures).
+- Follower: your partner walks one tile behind you on the Walk map, taking the tile you just left (it never
+  blocks you, wild creatures or spawns), bobs as it goes (half speed and 1px lower when Tired), swaps when you
+  pick a new partner and changes when it evolves. On load it stands behind you, or under you if that tile is
+  solid. Tap it to open its stats card (a wild creature on the same tile wins the tap). FOLLOWER: ON/OFF next to
+  CHANGE LOOK turns it off (`settings.follower`, default on).
 
 Pet tab scene: drawn from the current map's `backdrop` (town, route, meadow or grove; `MAP_INFO` in `game.js`,
 missing or unknown = meadow; the one map today is meadow) with the same time of day and weather as Walk: night
@@ -191,7 +209,7 @@ Start over: the low-key "Start over" button at the bottom of the Friends tab (no
 "Start over? Your pets will be gone for good." Press and hold the red START OVER for 1.5 s (touch, mouse, or
 Space/Enter); a bar fills while you hold and letting go early cancels. It removes `pixelpets.save.v2`,
 `pixelpets.save.v1`, `pixelpets.save.v1.bak` and `pixelpets.save.corrupt` (so migration can't bring old pets
-back), then reloads into the starter choice. The page stops saving first, and any other open tab stops saving
+back), then reloads into the new-player path (look picker, then the starter choice). The page stops saving first, and any other open tab stops saving
 once it sees the save gone or replaced by a different game (a different `uid`), with a "reset in another tab"
 toast, so it can't write the old game back. Per-device keys are kept, never part of the save: `pixelpets.geo`,
 `pixelpets.env`, `pixelpets.envOverride` for location, `pixelpets.mute`, `pixelpets.debug`, `pixelpets.fast`.

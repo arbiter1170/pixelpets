@@ -7,6 +7,7 @@
    Needs SPECIES (sprites.js) and EVO_XP/STAT_RULES/levelOf/maxHpOf (stats.js). Pure functions + loadSave(); game.js owns save() timing. */
 'use strict';
 const PPSave = (() => {
+  const PLAYER_NAME_MAX = 10;   // MAPS_SLICE §8/§10: player names, code points
   const V1_KEY = 'pixelpets.save.v1', V2_KEY = 'pixelpets.save.v2', BAK_KEY = 'pixelpets.save.v1.bak', CORRUPT_KEY = 'pixelpets.save.corrupt';
   // Frozen forever: v1 stored species by array index. Never derive this from SPECIES order.
   const V1_SPECIES = Object.freeze(['ember', 'tide', 'bloom', 'stone', 'volt', 'frost', 'gust', 'shade']);
@@ -42,7 +43,8 @@ const PPSave = (() => {
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
       dex: { seen: {}, caught: {}, legacy: [] }, steps: 0, world: { map: 'proto', x: 3, y: 3, facing: 'down', respawn: null },
       bag: {}, money: 0, seals: {}, flags: {}, eggs: { incubators: [{ egg: null }], held: [] },
-      settings: { textSpeed: 'normal', battleAnims: true },
+      settings: { textSpeed: 'normal', battleAnims: true, follower: true },
+      player: { name: null, look: null },
       meta: { migratedFrom: null, migratedAt: null, backup: null, legacy: {} } };
   }
 
@@ -127,6 +129,13 @@ const PPSave = (() => {
     fill(s.eggs, 'incubators', x => Array.isArray(x) && x.length > 0, [{ egg: null }]); fill(s.eggs, 'held', Array.isArray, []);
     fill(s, 'settings', isObj, d.settings);
     fill(s.settings, 'textSpeed', x => TEXT_SPEEDS.includes(x), 'normal'); fill(s.settings, 'battleAnims', x => typeof x === 'boolean', true);
+    fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
+    // MAPS_SLICE K.5 / §10: optional `player` {name, look}. Additive, no version bump; unknown keys inside survive.
+    fill(s, 'player', isObj, { name: null, look: null });
+    const pl = s.player;
+    if (typeof pl.name !== 'string' || !pl.name.trim()) pl.name = null;
+    else if (Array.from(pl.name).length > PLAYER_NAME_MAX) pl.name = Array.from(pl.name).slice(0, PLAYER_NAME_MAX).join('');
+    pl.look = typeof normalizeLook === 'function' ? normalizeLook(pl.look) : (isObj(pl.look) ? pl.look : null);   // keeper.js
     fill(s, 'meta', isObj, d.meta);
     const m = s.meta;
     fill(m, 'migratedFrom', x => x === null || Number.isInteger(x), null); fill(m, 'migratedAt', x => x === null || fin(x), null);
@@ -222,6 +231,6 @@ const PPSave = (() => {
     return out;
   }
 
-  return Object.freeze({ V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, GAME_KEYS, startOver, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
+  return Object.freeze({ PLAYER_NAME_MAX, V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, GAME_KEYS, startOver, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
     defaultStateV2, migrateV1toV2, normalizeV2, loadSave, writeV2, devCheck });
 })();

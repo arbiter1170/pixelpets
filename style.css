@@ -219,3 +219,31 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #toast.show{opacity:1}
 .flash{animation:flash .5s steps(2) 2}
 @keyframes flash{50%{filter:brightness(3)}}
+
+/* Phase K: CHANGE LOOK + FOLLOWER toggle under the care buttons (MAPS_SLICE K.2/K.3) */
+.pet-extra{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:2px 6px 4px;flex:0 0 auto}
+.pet-extra .btn-quiet{font-size:16px;padding:0 6px;white-space:nowrap}
+.pet-extra #followerBtn[aria-pressed="false"]{color:var(--m);border-style:dashed}
+.keeper-line{font-size:18px;margin-bottom:6px;color:var(--w);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.keeper-line .label{display:inline}
+.keeper-line b{color:var(--y)}
+
+/* look picker: full screen, scrolls on small phones */
+.overlay.full{padding:0;align-items:stretch}
+.overlay.full .ov-inner{max-width:480px;max-height:none;height:100%;margin:0 auto;box-shadow:none;gap:8px;
+  padding:calc(10px + env(safe-area-inset-top)) 16px calc(10px + env(safe-area-inset-bottom))}
+.look-top{display:flex;align-items:center;justify-content:center;gap:14px}
+.look-top canvas{width:108px;height:108px;background:var(--d);box-shadow:0 0 0 3px var(--k)}
+.look-top .btn{min-height:44px;font-size:18px}
+.look-row{display:flex;flex-direction:column;gap:4px}
+.look-lb{font-size:16px;color:var(--h);letter-spacing:1px}
+.look-row input{font-family:var(--font);font-size:20px;min-height:44px;padding:0 10px;background:var(--k);color:var(--w);border:2px solid var(--m)}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,44px);gap:6px}
+.swatch{width:44px;height:44px;border:0;padding:0;box-shadow:0 0 0 2px var(--k);cursor:pointer}
+.previews{display:flex;flex-wrap:wrap;gap:8px}
+.preview{min-width:60px;min-height:60px;display:flex;align-items:center;justify-content:center;background:var(--d);border:0;padding:2px;
+  box-shadow:0 0 0 2px var(--k);cursor:pointer}
+.preview canvas{display:block;image-rendering:pixelated}
+.swatch.on,.preview.on{box-shadow:0 0 0 2px var(--k),0 0 0 5px var(--y)}
+.look-btns{margin-top:6px}
+.look-btns.one{grid-template-columns:1fr}

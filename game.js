@@ -129,11 +129,11 @@ function showTab(name){
   $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   clearMoves();
   if (name === 'col') renderCollection();
-  if (name === 'friends') $('#friendCode').textContent = friendCode();
+  if (name === 'friends') { $('#friendCode').textContent = friendCode(); renderKeeperName(); }
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref()) openGeoAsk();     // first Walk visit: ask about location (once)
 }
-const overlayOpen = () => !$('#ovEncounter').hidden || !$('#ovEvolve').hidden || !$('#ovStarter').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden;
+const overlayOpen = () => !$('#ovEncounter').hidden || !$('#ovEvolve').hidden || !$('#ovStarter').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -143,7 +143,12 @@ function fitCanvas(c, maxW, maxH){
 }
 function fitAll(){
   const appW = Math.min(window.innerWidth, 480) - 36;
-  fitCanvas($('#petCanvas'), appW, Math.max(140, window.innerHeight * 0.42));
+  const pc = $('#petCanvas'), ps = $('#scr-pet');
+  fitCanvas(pc, appW, Math.max(140, window.innerHeight * 0.42));
+  if (ps.classList.contains('active') && ps.clientHeight) {   // short phones: shrink the scene (down to 3x) so the Pet tab needs no scrolling
+    const over = ps.scrollHeight - ps.clientHeight;
+    if (over > 0) fitCanvas(pc, appW, Math.max(pc.height * 3, parseFloat(pc.style.height) - over));
+  }
   fitCanvas($('#encCanvas'), appW - 28, window.innerHeight * 0.34);
   fitCanvas($('#evoCanvas'), appW - 28, window.innerHeight * 0.4);
   const mw = $('#mapWrap');
@@ -424,22 +429,25 @@ function targetDir(){
   for (const [ox,oy] of opts) if ((ox||oy) && !solid(S.world.x+ox, S.world.y+oy)) return [ox,oy];
   walk.target = null; return null;
 }
+const dirName = (dx, dy) => dx > 0 ? 'right' : dx < 0 ? 'left' : dy < 0 ? 'up' : 'down';
 function tryStep(d){
-  const p = pet();
+  const p = pet();                           // the keeper walks with or without a partner (MAPS_SLICE K.1)
   const nx = S.world.x + d[0], ny = S.world.y + d[1];
   if (solid(nx, ny)) return;
   const w = wildAt(nx, ny);
-  if (w) { if (w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
-  if (p.energy < 1) { sfx('denied'); toast('Too tired to walk! REST on the Pet tab.'); clearMoves(); return; }
+  if (w) { if (p && w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
+  if (p && p.energy < 1) { sfx('denied'); toast('Too tired to walk! REST on the Pet tab.'); clearMoves(); return; }
   walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0;
-  S.world.facing = d[0] > 0 ? 'right' : d[0] < 0 ? 'left' : d[1] < 0 ? 'up' : 'down';
+  S.world.facing = dirName(d[0], d[1]);
   S.world.x = nx; S.world.y = ny;
+  followerStep();
 }
 function onLand(){
   const p = pet();
   S.steps++; if (S.steps % 2 === 0) sfx('step');   // quiet footstep on every other step
-  p.energy = clamp(p.energy - STEP_NRG, 0, 100); p.hunger = clamp(p.hunger - STEP_FOOD, 0, 100);
   if (S.steps % 50 === 0) toast(S.steps + ' steps! Nice walk.');
+  if (!p) return;                            // energy/hunger/step XP only with a partner
+  p.energy = clamp(p.energy - STEP_NRG, 0, 100); p.hunger = clamp(p.hunger - STEP_FOOD, 0, 100);
   p.sr = (+p.sr || 0) + 1;                   // per-pet step remainder, carried across sessions
   if (p.sr >= STEPS_PER_XP) { p.sr -= STEPS_PER_XP; grantExploreXp(p, 1); }
   updateHUD();
@@ -448,8 +456,9 @@ function updateWalk(dt, t){
   if (walk.intro) { if (t - walk.intro > 700) { walk.intro = 0; openEncounter(); } return; }
   if (walk.to) {
     walk.prog += dt * 1000 / STEP_MS;
-    if (walk.prog >= 1) { walk.fx = walk.to.x; walk.fy = walk.to.y; walk.to = null; onLand(); }
-    else { walk.fx = walk.from.x + (walk.to.x - walk.from.x) * walk.prog; walk.fy = walk.from.y + (walk.to.y - walk.from.y) * walk.prog; }
+    if (walk.prog >= 1) { walk.fx = walk.to.x; walk.fy = walk.to.y; walk.to = null; if (fol.to) { fol.fx = fol.x; fol.fy = fol.y; fol.to = null; } onLand(); }
+    else { walk.fx = walk.from.x + (walk.to.x - walk.from.x) * walk.prog; walk.fy = walk.from.y + (walk.to.y - walk.from.y) * walk.prog;
+      if (fol.to) { fol.fx = fol.from.x + (fol.to.x - fol.from.x) * walk.prog; fol.fy = fol.from.y + (fol.to.y - fol.from.y) * walk.prog; } }
   }
   if (!walk.to && !walk.intro && $('#ovEncounter').hidden) {
     let d = walk.queued || (walk.dpad && DIRS[walk.dpad]) || (walk.drag && DIRS[walk.drag]) || (walk.key && DIRS[walk.key]);
@@ -466,7 +475,8 @@ function updateWalk(dt, t){
   }
 }
 function drawMap(t){
-  const c = $('#mapCanvas'), g = ctx(c), p = pet(); if (!p) return;
+  const c = $('#mapCanvas'), g = ctx(c), p = pet();
+  syncFollower();
   const VW = c.width, VH = c.height;
   const px_ = walk.fx * TS, py_ = walk.fy * TS;
   walk.cam.x = Math.round(clamp(px_ + 8 - VW/2, 0, MW*TS - VW));
@@ -481,16 +491,22 @@ function drawMap(t){
     }
   if (walk.target) { g.strokeStyle = PAL.y; g.lineWidth = 1; g.strokeRect(walk.target.x*TS - cx + .5, walk.target.y*TS - cy + .5, 15, 15); }
   const grassOver = (fx, fy) => { const gx = Math.round(fx), gy = Math.round(fy); if (MAP[gy] && MAP[gy][gx] === 't') g.drawImage(TILES.t, 0, 10, 16, 6, gx*TS - cx, gy*TS - cy + 10, 16, 6); };
-  const drawPlayer = () => {
-    const moving = !!walk.to;
-    const bob = moving ? (Math.floor(walk.prog * 2) % 2) : (Math.floor(t/500) % 2);
-    const sx = Math.round(px_ - cx) - 1, sy = Math.round(py_ - cy) - 2 - bob;
+  const drawPlayer = () => {                 // the keeper (MAPS_SLICE K.1): 2 walk frames, 1px bob only while moving
+    const fr = keeperFrame(), sx = Math.round(px_ - cx) - 1, sy = Math.round(py_ - cy) - 2 - fr;
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(sx + 3, Math.round(py_ - cy) + 14, 12, 2);
-    g.drawImage(SPR[spi(p)][p.stage][(t % 3000) < 120 ? 'b' : 'n'], sx, sy);
+    g.drawImage(keeperFrames(lookOf())[S.world.facing][fr], sx, sy);
     grassOver(walk.fx, walk.fy);
   };
-  // y-sorted so creatures and the player overlap naturally
+  const drawFollower = () => {               // the partner, one tile behind (K.3); Tired = slower, lower bob
+    const fx = Math.round(fol.fx * TS - cx) - 1, fy = Math.round(fol.fy * TS - cy) - 2 + (isTired(p) ? 1 : 0);
+    if (fx < -18 || fy < -18 || fx > VW || fy > VH) return;
+    g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
+    g.drawImage(SPR[spi(p)][p.stage][(t % 3000) < 120 ? 'b' : 'n'], fx, fy - followerBob(t));
+    grassOver(fol.fx, fol.fy);
+  };
+  // y-sorted so creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
   const ents = wild.list.map(w => ({ y: w.fy, draw: () => drawWild(g, w, cx, cy, VW, VH, t) }));
+  if (fol.x != null && p) ents.push({ y: fol.fy, draw: drawFollower });
   ents.push({ y: walk.fy + 0.01, draw: drawPlayer });
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
   wild.poofs = wild.poofs.filter(f => wild.clock - f.t < 500);
@@ -498,6 +514,129 @@ function drawMap(t){
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
   drawWeather(g, VW, VH, t);
   if (walk.intro) { const k = Math.floor((t - walk.intro) / 120) % 2; if (k) { g.fillStyle = PAL.w; g.fillRect(0,0,VW,VH); } }
+}
+
+/* ---------- keeper (player) sprite: MAPS_SLICE K.1 ---------- */
+// keeper.js composes 16x16 frames (keeperGrid); here they become 18x18 canvases with a 1px PAL.k outline like buildSprite,
+// built once per look and cached (the Walk map only looks them up).
+const lookOf = () => (S && S.player && S.player.look) || null;           // null = the default look
+const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|'); };
+const keeperCache = new Map(); let keeperBuilds = 0;
+function keeperCanvas(grid){
+  const c = document.createElement('canvas'); c.width = c.height = 18; const g = c.getContext('2d');
+  const filled = (x, y) => x >= 0 && y >= 0 && x < 16 && y < 16 && grid[y][x] !== '.';
+  g.fillStyle = PAL.k;
+  for (let y = -1; y <= 16; y++) for (let x = -1; x <= 16; x++)
+    if (!filled(x, y) && (filled(x-1, y) || filled(x+1, y) || filled(x, y-1) || filled(x, y+1))) g.fillRect(x+1, y+1, 1, 1);
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const ch = grid[y][x]; if (ch === '.') continue; g.fillStyle = PAL[ch] || PAL.m; g.fillRect(x+1, y+1, 1, 1); }
+  return c;
+}
+function keeperFrames(look){
+  const key = lookKey(look); let f = keeperCache.get(key);
+  if (f) return f;
+  if (keeperCache.size > 48) keeperCache.delete(keeperCache.keys().next().value);   // picker previews make new looks; keep it small
+  f = {}; for (const dir of ['down', 'up', 'right', 'left']) f[dir] = [0, 1].map(i => keeperCanvas(keeperGrid(look, dir, i)));
+  keeperBuilds++; keeperCache.set(key, f); return f;
+}
+const keeperFrame = () => walk.to ? Math.floor(walk.prog * 2) % 2 : 0;    // idle = frame 0
+
+/* ---------- follower: the partner walks one tile behind (MAPS_SLICE K.3/K.4) ---------- */
+const fol = { x: null, y: null, fx: 0, fy: 0, from: null, to: null, facing: 'down' };
+const followerOn = () => !!(S && S.settings && S.settings.follower !== false && pet());
+// Load rule: the tile behind the keeper (opposite facing) if walkable, else the keeper's own tile (drawn underneath).
+function placeFollower(){
+  fol.from = fol.to = null;
+  if (!followerOn()) { fol.x = fol.y = null; return; }
+  const [dx, dy] = DIRS[S.world.facing] || DIRS.down;
+  let x = S.world.x - dx, y = S.world.y - dy;
+  if (solid(x, y)) { x = S.world.x; y = S.world.y; }
+  fol.x = fol.fx = x; fol.y = fol.fy = y; fol.facing = S.world.facing;
+}
+function syncFollower(){ if (followerOn() ? fol.x == null : fol.x != null) placeFollower(); }
+function followerStep(){                       // keeper started a step from walk.from: the follower moves onto that tile
+  syncFollower(); if (fol.x == null) return;
+  const tx = walk.from.x, ty = walk.from.y;
+  if (fol.x === tx && fol.y === ty) return;    // it was under the keeper: stays, now one tile behind
+  fol.from = { x: fol.x, y: fol.y }; fol.to = { x: tx, y: ty };
+  fol.facing = dirName(tx - fol.x, ty - fol.y); fol.x = tx; fol.y = ty;
+}
+function followerBob(t){                       // normal: twice per step / every 500 ms idle; Tired: half speed
+  const p = pet(), moving = !!(fol.to && walk.to);
+  if (p && isTired(p)) return moving ? S.steps % 2 : Math.floor(t / 1000) % 2;
+  return moving ? Math.floor(walk.prog * 2) % 2 : Math.floor(t / 500) % 2;
+}
+const followerAt = (tx, ty) => fol.x != null && followerOn() && ((fol.x === tx && fol.y === ty) || (Math.round(fol.fx) === tx && Math.round(fol.fy) === ty));
+function renderFollowerBtn(){ const on = !!(S && S.settings.follower !== false), b = $('#followerBtn'); b.textContent = 'FOLLOWER: ' + (on ? 'ON' : 'OFF'); b.setAttribute('aria-pressed', String(on)); }
+function toggleFollower(){
+  S.settings.follower = S.settings.follower === false; placeFollower(); renderFollowerBtn(); save(); sfx('tap');
+  toast(S.settings.follower ? 'Your partner walks with you.' : 'Your partner waits on the Pet tab.');
+}
+
+/* ---------- look picker #ovLook and the keeper's name (MAPS_SLICE K.2) ---------- */
+const DEFAULT_PLAYER_NAME = 'Wayfarer';
+const BAD_NAME_CH = /[\u0000-\u001f\u007f-\u009f<>{}]/g;
+function cleanPlayerName(v){                   // nameEntry rules: drop control chars and < > { }, collapse spaces, max 10 code points
+  const s = String(v == null ? '' : v).replace(BAD_NAME_CH, '').replace(/\s+/g, ' ').trim();
+  return Array.from(s).slice(0, PPSave.PLAYER_NAME_MAX).join('').trim() || DEFAULT_PLAYER_NAME;
+}
+const playerName = () => (S && S.player && S.player.name) || DEFAULT_PLAYER_NAME;
+function renderKeeperName(){ $('#keeperName').textContent = playerName(); }
+const LOOK_ROWS = [['skin', '#lookSkin', 'Skin'], ['hair', '#lookHair', 'Hair'], ['hairCol', '#lookHairCol', 'Hair colour'],
+  ['outfit', '#lookOutfit', 'Outfit'], ['outfitCol', '#lookOutfitCol', 'Outfit colour'], ['accent', '#lookAccent', 'Accent']];
+const COLOUR_NAMES = { k:'black', p:'plum', r:'red', o:'orange', y:'yellow', l:'lime', g:'green', t:'teal', n:'navy', b:'blue', c:'sky', s:'ice',
+  w:'white', h:'grey', m:'slate', d:'charcoal', 1:'tone 1', 2:'tone 2', 3:'tone 3', 4:'tone 4', 5:'tone 5', 6:'tone 6' };
+const lookUI = { draft: null, newPlayer: false };
+function openLook(newPlayer){
+  if (!newPlayer && overlayOpen()) return false;
+  clearMoves();
+  lookUI.newPlayer = !!newPlayer;
+  lookUI.draft = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {});   // unknown extra keys ride along
+  $('#lookTitle').textContent = newPlayer ? 'WHO ARE YOU?' : 'CHANGE LOOK';
+  $('#lookCancel').hidden = !!newPlayer; $('#lookBtns').classList.toggle('one', !!newPlayer);
+  $('#lookNameRow').hidden = false;            // Phase K: the name field is always shown (the interim rename until the Lodge)
+  $('#lookName').value = S.player.name || DEFAULT_PLAYER_NAME;
+  renderLook(); drawLookPreview(now());
+  $('#ovLook').hidden = false; lockTabs(true); $('#ovLook .ov-inner').scrollTop = 0;
+  return true;
+}
+function closeLook(){ $('#ovLook').hidden = true; lookUI.draft = null; if (allPets().length) lockTabs(false); }
+function renderLook(){
+  const d = lookUI.draft;
+  for (const [slot, sel, label] of LOOK_ROWS) {
+    const box = $(sel); box.innerHTML = '';
+    for (const opt of KEEPER_LOOKS[slot]) {
+      const b = document.createElement('button'); b.type = 'button'; b.dataset.opt = opt;
+      const on = d[slot] === opt; b.className = (slot === 'hair' || slot === 'outfit' ? 'preview' : 'swatch') + (on ? ' on' : '');
+      b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', label + ': ' + (COLOUR_NAMES[opt] || opt));
+      if (slot === 'hair' || slot === 'outfit') {
+        const lk = Object.assign({}, d, { [slot]: opt }), src = keeperFrames(lk).down[0];
+        const rows = slot === 'hair' ? 13 : 18;               // hair: head and shoulders (outline + the top 12 grid rows)
+        const cv = document.createElement('canvas'); cv.width = 18; cv.height = rows; cv.style.width = '54px'; cv.style.height = (rows * 3) + 'px';
+        ctx(cv).drawImage(src, 0, 0, 18, rows, 0, 0, 18, rows); b.append(cv);
+      } else b.style.background = PAL[opt];
+      b.addEventListener('click', () => { if (lookUI.draft[slot] === opt) return; lookUI.draft[slot] = opt; sfx('tap'); renderLook(); drawLookPreview(now()); });
+      box.append(b);
+    }
+  }
+}
+const LOOK_TURN = ['down', 'right', 'up', 'left'];
+function drawLookPreview(t){                   // the big keeper turns through the 4 facings once a second, walk frames alternating
+  if (!lookUI.draft) return;
+  const c = $('#lookPreview'), g = ctx(c), f = LOOK_TURN[Math.floor(t / 1000) % 4], fr = Math.floor(t / 250) % 2;
+  g.clearRect(0, 0, 18, 18); g.drawImage(keeperFrames(lookUI.draft)[f][fr], 0, 0);
+  c.dataset.facing = f; c.dataset.frame = fr;
+}
+function shuffleLook(){
+  const pick = a => a[Math.random() * a.length | 0];
+  for (const slot of KEEPER_LOOKS.slots) lookUI.draft[slot] = pick(KEEPER_LOOKS[slot]);
+  sfx('tap'); renderLook(); drawLookPreview(now());
+}
+function lookDone(){
+  S.player.look = Object.assign({}, lookUI.draft);
+  S.player.name = cleanPlayerName($('#lookName').value);
+  const wasNew = lookUI.newPlayer;
+  closeLook(); save(); renderKeeperName(); sfx('befriend');
+  if (wasNew) openStarter(); else toast('Looking good, ' + S.player.name + '!');
 }
 
 /* ---------- wild creatures: visible on the map, species chosen from the real-world environment ---------- */
@@ -535,7 +674,7 @@ function spawnSpot(sp){
   const pref = { grass: (x, y) => MAP[y][x] === 't', shore: (x, y) => nextTo(x, y, 'w'), woods: (x, y) => nextTo(x, y, 'T') }[SPECIES[sp].tiles || 'grass'];
   const best = [], ok = [];
   for (let y = 1; y < MH - 1; y++) for (let x = 1; x < MW - 1; x++) {
-    if (!roamable(x, y) || wildAt(x, y) || Math.abs(x - S.world.x) + Math.abs(y - S.world.y) < 3) continue;
+    if (!roamable(x, y) || wildAt(x, y) || Math.abs(x - S.world.x) + Math.abs(y - S.world.y) < 3 || (fol.x === x && fol.y === y)) continue;
     if (pref(x, y)) best.push([x, y]); else if (MAP[y][x] === 't') ok.push([x, y]);
   }
   const list = best.length ? best : ok;
@@ -966,7 +1105,7 @@ function openStarter(){
     const d = document.createElement('div'); d.innerHTML = '<span></span><small></small>';
     d.firstChild.textContent = sp.stages[0].name + '  [' + sp.type + ']'; d.lastChild.textContent = sp.blurb;
     b.append(cv, d);
-    b.addEventListener('click', () => { sfx('befriend'); const np = newPet(i, 0, 'starter'); S.party.push(np); S.partnerId = np.id; markCaught(i, 0); save();
+    b.addEventListener('click', () => { sfx('befriend'); const np = newPet(i, 0, 'starter'); S.party.push(np); S.partnerId = np.id; markCaught(i, 0); placeFollower(); save();
       $('#ovStarter').hidden = true; $('#tabs').classList.remove('locked'); updateHUD(); toast(sp.stages[0].name + ' joined you!'); });
     list.append(b);
   });
@@ -983,6 +1122,15 @@ function bindInput(){
   $('#evoOk').addEventListener('click', () => { evo.active = false; $('#ovEvolve').hidden = true; $('#tabs').classList.remove('locked'); updateHUD(); });
   $('#encGo').addEventListener('click', encounterPress);
   $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
+  $('#changeLook').addEventListener('click', () => { sfx('tap'); openLook(false); });
+  $('#followerBtn').addEventListener('click', toggleFollower);
+  $('#lookShuffle').addEventListener('click', shuffleLook);
+  $('#lookDone').addEventListener('click', lookDone);
+  $('#lookCancel').addEventListener('click', () => { sfx('tap'); closeLook(); });
+  const ln = $('#lookName');
+  ln.addEventListener('input', () => { const v = ln.value.replace(BAD_NAME_CH, ''); if (v !== ln.value) ln.value = v; });   // `<b>` can't be typed
+  ln.addEventListener('focus', () => ln.select());
+  ln.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ln.blur(); } });
   $('#startOver').addEventListener('click', openReset);
   $('#resetCancel').addEventListener('click', () => { sfx('tap'); closeReset(); });
   const rg = $('#resetGo');
@@ -1040,6 +1188,7 @@ function bindInput(){
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
       if (w) { if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; }       // tap a creature: walk up and meet it
+      else if (followerAt(tx, ty)) { clearMoves(); openStatsCard(pet().id); }                                      // tap the follower: its stats card (K.4)
       else if (!solid(tx, ty)) { wild.chase = null; walk.target = { x: tx, y: ty }; }
     }
     walk.drag = null; ptr = null;
@@ -1051,6 +1200,7 @@ function bindInput(){
     if (e.target && e.target.tagName === 'INPUT') return;
     if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
+    if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) walk.queued = DIRS[KEYS[e.key]]; walk.key = KEYS[e.key]; return; }
     if (DEBUG) {                                 // debug keys only with ?debug=1
       if (e.key === 'e' || e.key === 'E') { startEvolution(true); return; }          // force evolve
@@ -1083,9 +1233,14 @@ function frame(t){
     tickAcc += dt; if (tickAcc > 1) { tickAcc = 0; updateHUD(); }
   }
   if (p) regenAll(dt);
+  if (S && screen === 'walk') {                  // the keeper walks with or without a partner; wild creatures only come with one
+    if (!overlayOpen() || walk.intro) updateWalk(dt, t);
+    if (p && !overlayOpen() && !walk.intro) updateWild(dt);
+    drawMap(t);
+  }
+  if (!$('#ovLook').hidden) drawLookPreview(t);
   if (p) {
     if (screen === 'pet') { drawPetScene(t, dt); updateCareButtons(); }
-    if (screen === 'walk') { if (!overlayOpen() || walk.intro) updateWalk(dt, t); if (!overlayOpen() && !walk.intro) updateWild(dt); drawMap(t); }
     if (!$('#ovEncounter').hidden) drawEncounter(t, dt);
     if (evo.active) drawEvolution(t);
     if (!$('#ovStats').hidden && (statsCard.t += dt) >= 1) { statsCard.t = 0; renderStatsCard(); }   // HP regen etc. stay live
@@ -1140,7 +1295,10 @@ function boot(){
   if (solid(S.world.x, S.world.y)) { S.world.x = 3; S.world.y = 3; }
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
-  if (!allPets().length) openStarter(); else updateHUD();   // keeps S (uid, created, orphans) even with no pets
+  placeFollower(); renderFollowerBtn(); renderKeeperName();
+  // New players pick a look (and a name) first, then a starter; a look already picked goes straight to the starter (K.2).
+  if (!allPets().length) { if (!S.player.look) openLook(true); else openStarter(); }      // keeps S (uid, created, orphans)
+  else { updateHUD(); if (!S.player.look) setTimeout(() => toast("New: pick your keeper's look on the Pet tab."), L.notice === 'recovered' ? 2700 : 900); }   // after the recovery notice, never over it
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
@@ -1161,6 +1319,10 @@ function boot(){
     openStats: id => openStatsCard(id), closeStats: () => closeStatsCard(),          // UI only (the same as tapping STATS / CLOSE)
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
     get petScene(){ return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice() }; },
+    get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
+      look: Object.assign({}, KEEPER_LOOKS.defaults, lookOf() || {}), name: playerName(), builds: keeperBuilds }; },
+    get follower(){ const p = pet(); return { on: followerOn(), shown: fol.x != null && followerOn(), x: fol.x, y: fol.y, fx: fol.fx, fy: fol.fy, facing: fol.facing,
+      moving: !!fol.to, id: p ? p.id : null, tired: !!(p && isTired(p)), bob: followerBob(now()), droop: p && isTired(p) ? 1 : 0, under: fol.x === S.world.x && fol.y === S.world.y }; },
   };
   const cheats = {
     forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },

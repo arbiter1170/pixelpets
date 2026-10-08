@@ -38,6 +38,10 @@
         <button class="btn btn-play" data-act="play">PLAY</button>
         <button class="btn btn-rest" data-act="rest">REST</button>
       </div>
+      <div class="pet-extra">
+        <button id="changeLook" class="btn-quiet" type="button">CHANGE LOOK</button>
+        <button id="followerBtn" class="btn-quiet" type="button" aria-pressed="true">FOLLOWER: ON</button>
+      </div>
     </section>
 
     <!-- WALK -->
@@ -74,6 +78,7 @@
     <section id="scr-friends" class="screen">
       <h2>FRIENDS</h2>
       <div class="panel">
+        <div class="keeper-line"><span class="label">KEEPER</span>&nbsp;&nbsp;<b id="keeperName">Wayfarer</b></div>
         <div class="label">YOUR FRIEND CODE</div>
         <div id="friendCode" class="fcode">----</div>
         <button id="copyCode" class="btn btn-play">COPY CODE</button>
@@ -137,6 +142,29 @@
     <div id="scStats" class="sc-stats"></div>
     <div id="scChart" class="sc-chart"></div>
     <button id="scClose" class="btn" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- Keeper look picker (MAPS_SLICE K.2): new players before the starter, CHANGE LOOK on the Pet tab -->
+<div id="ovLook" class="overlay full" hidden>
+  <div class="ov-inner look-card" role="dialog" aria-modal="true" aria-labelledby="lookTitle">
+    <div id="lookTitle" class="ov-title">WHO ARE YOU?</div>
+    <div class="look-top">
+      <canvas id="lookPreview" width="18" height="18" aria-label="Your keeper"></canvas>
+      <button id="lookShuffle" class="btn" type="button">SHUFFLE</button>
+    </div>
+    <div id="lookNameRow" class="look-row"><label class="look-lb" for="lookName">NAME</label>
+      <input id="lookName" type="text" maxlength="10" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false"></div>
+    <div class="look-row"><div class="look-lb">SKIN</div><div id="lookSkin" class="swatches" data-slot="skin"></div></div>
+    <div class="look-row"><div class="look-lb">HAIR STYLE</div><div id="lookHair" class="previews" data-slot="hair"></div></div>
+    <div class="look-row"><div class="look-lb">HAIR COLOUR</div><div id="lookHairCol" class="swatches" data-slot="hairCol"></div></div>
+    <div class="look-row"><div class="look-lb">OUTFIT</div><div id="lookOutfit" class="previews" data-slot="outfit"></div></div>
+    <div class="look-row"><div class="look-lb">OUTFIT COLOUR</div><div id="lookOutfitCol" class="swatches" data-slot="outfitCol"></div></div>
+    <div class="look-row"><div class="look-lb">ACCENT</div><div id="lookAccent" class="swatches" data-slot="accent"></div></div>
+    <div id="lookBtns" class="actions two-even look-btns">
+      <button id="lookCancel" class="btn" type="button">CANCEL</button>
+      <button id="lookDone" class="btn btn-play" type="button">DONE</button>
+    </div>
   </div>
 </div>
 
@@ -211,6 +239,7 @@
 
 <div id="toast" aria-live="polite"></div>
 <script src="sprites.js"></script>
+<script src="keeper.js"></script>
 <script src="stats.js"></script>
 <script src="save.js"></script>
 <script src="env.js"></script>
