@@ -84,6 +84,9 @@ const PPSave = (() => {
       if (!fin(q.faintUntil) || q.faintUntil <= 0 || !has(q, 'hpNow')) delete q.faintUntil;
       else if (q.faintUntil > t + nap) q.faintUntil = t + nap;
     }
+    // CREATURES_SLICE §5: faded days left (absent/0 = normal) and that day's care samples. Additive, no version bump.
+    if (has(q, 'faded')) { if (!fin(q.faded) || q.faded < 1) delete q.faded; else q.faded = Math.min(9, Math.round(q.faded)); }
+    if (has(q, 'fc') && (!has(q, 'faded') || !isObj(q.fc) || typeof q.fc.d !== 'string' || !fin(q.fc.sum) || !fin(q.fc.n) || q.fc.n < 0)) delete q.fc;
     // BATTLE §3.3/§3.4: known moves (<= 4) and the stages whose evolution move was offered. Additive, no version bump.
     if (typeof MOVES === 'object' && typeof defaultMoves === 'function') {
       const ok = Array.isArray(q.moves) && q.moves.length >= 1 && q.moves.length <= 4 && q.moves.every(m => typeof m === 'string' && MOVES[m] && !MOVES[m].fallback) && new Set(q.moves).size === q.moves.length;

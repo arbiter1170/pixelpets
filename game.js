@@ -67,12 +67,28 @@ function haloSprite(src, col){
   g.drawImage(src, 0, 0); return c;
 }
 const TILES = buildTiles();
+// CREATURES_SLICE §5 faded state: the same sprite with fadedCol(col) (light -> w, mid-light -> h, mid -> m, dark -> d); not a new form.
+const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
+const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
+const fadedCol = col => Object.fromEntries(Object.entries(col).map(([ch, v]) => [ch, PAL[FADE_KEY[PAL_KEY[v]]] || v]));
+const FADED_SPR = {};
+function sprSet(si, stage, faded){
+  if (!faded) return SPR[si][stage];
+  const k = si + '/' + stage;
+  if (!FADED_SPR[k]) {
+    const st = SPECIES[si].stages[stage], col = fadedCol(st.col), n = buildSprite(st.half, col, 'normal');
+    FADED_SPR[k] = { n, b: buildSprite(st.half, col, 'blink'), w: SPR[si][stage].w, s: SPR[si][stage].s, u: SPECIES[si].uiHalo ? haloSprite(n, PAL.h) : null };
+  }
+  return FADED_SPR[k];
+}
+const isFaded = p => !!p && (+p.faded || 0) > 0;
+const petSpr = p => sprSet(spi(p), p.stage, isFaded(p));
 
 function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return g; }
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
   grid.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === '#') g.fillRect(x,y,1,1); })); }
 // UI sprite (header, collection, dex, starter): dark species get their halo version on these dark cells.
-function spriteCanvas(c, sp, stage, mode='n'){ const g = ctx(c), s = SPR[sp][stage]; g.clearRect(0,0,c.width,c.height); g.drawImage(mode === 'n' && s.u ? s.u : s[mode], 0, 0); }
+function spriteCanvas(c, sp, stage, mode='n', faded=false){ const g = ctx(c), s = sprSet(sp, stage, faded); g.clearRect(0,0,c.width,c.height); g.drawImage(mode === 'n' && s.u ? s.u : s[mode], 0, 0); }
 
 /* ---------- state ---------- */
 let S = null;
@@ -100,7 +116,7 @@ const cleanNick = v => typeof v === 'string' ? v.normalize('NFKC').replace(/[^A-
 const petName = p => cleanNick(p.nick) || nameOf(spi(p), p.stage);
 // Level comes from battle XP (p.bx, stats.js levelOf); growth XP (p.xp) only drives evolution.
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
-const canEvolve = p => p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_CARE[p.stage];
+const canEvolve = p => !isFaded(p) && p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_CARE[p.stage];
 const formOf = (sp, st) => SPECIES[sp].id + '/' + st;
 const markSeen = (sp, st) => { S.dex.seen[formOf(sp, st)] = true; };
 const markCaught = (sp, st) => { S.dex.seen[formOf(sp, st)] = S.dex.caught[formOf(sp, st)] = true; };
@@ -240,7 +256,7 @@ function updateHUD(){
   $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
   $('#hdrStage').textContent = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
-  spriteCanvas($('#hdrIcon'), spi(p), p.stage);
+  spriteCanvas($('#hdrIcon'), spi(p), p.stage, 'n', isFaded(p));
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
@@ -255,6 +271,7 @@ function updateHUD(){
   setCount($('#dCare'), cx, CARE_XP_DAILY_CAP); setCount($('#dExp'), ex, EXPLORE_XP_DAILY_CAP); setCount($('#wExp'), ex, EXPLORE_XP_DAILY_CAP);
   const hint = $('#evoHint'), btn = $('#evolveBtn');
   if (p.stage >= 2) { hint.textContent = 'Final form! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
+  else if (isFaded(p)) { hint.textContent = 'Faded: ' + p.faded + ' good-care day' + (p.faded > 1 ? 's' : '') + ' to go (care 60+).'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (canEvolve(p)) { hint.textContent = st.name + ' is ready to evolve!'; hint.classList.add('ready'); btn.hidden = false; }
   else { hint.textContent = 'Next form: GROW ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
   updateCareButtons(); renderPetBadge(p);
@@ -478,8 +495,9 @@ function drawPetScene(t, dt){
   if (sleeping) bob = 0;
   g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(x + 3, y + 17, 12, 2);
   const blink = sleeping || (t % 3200) < 140;
-  g.drawImage(SPR[spi(p)][p.stage][blink ? 'b' : 'n'], x, y + bob);
+  g.drawImage(petSpr(p)[blink ? 'b' : 'n'], x, y + bob);
   if (!sleeping && (p.hunger < 25 || p.happy < 25 || p.energy < 25) && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);
+  if (sparkle.id === p.id && now() < sparkle.until) for (let i = 0; i < 3; i++) if (Math.floor(t / 180 + i) % 3 === 0) drawGlyph(g, 'spark', x - 2 + i * 8, y - 3 + (i % 2) * 6);   // colour back (§5)
   drawWeather(g, W, H, t, 0.18);                   // same night/fog/rain/storm/snow tint as the Walk map
   if (sleeping) {
     g.fillStyle = 'rgba(41,54,111,.55)'; g.fillRect(0, 0, W, H);
@@ -743,7 +761,7 @@ function drawMap(t){
     const fx = Math.round(fol.fx * TS - cx) - 1, fy = Math.round(fol.fy * TS - cy) - 2 + (isFainted(p) ? 1 : 0);
     if (fx < -18 || fy < -18 || fx > VW || fy > VH) return;
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
-    g.drawImage(SPR[spi(p)][p.stage][(t % 3000) < 120 ? 'b' : 'n'], fx, fy - followerBob(t));
+    g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - followerBob(t));
     grassOver(fol.fx, fol.fy);
   };
   // y-sorted so objects, creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
@@ -773,7 +791,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   } else if (o.kind === 'sign') g.drawImage(WART.sign, X, Y);
   else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) g.drawImage(Array.isArray(a) ? a[Math.floor(t / 400) % 2] : a, X, Y); }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
-  else if (o.kind === 'wild') { const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(SPR[si][+st || 0][(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
+  else if (o.kind === 'wild') { const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(sprSet(si, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
 }
 
 /* ---------- keeper (player) sprite: MAPS_SLICE K.1 ---------- */
@@ -1011,7 +1029,7 @@ const ABORT = { abort: true };
 function runScene(id, ctx){ const steps = SCENES[id]; if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id }, ctx || {})); }
 async function runSteps(steps, ctx = {}){
   if (scene || !S) return;
-  scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: null, nick: undefined },
+  scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: ctx.viewPet || null, nick: undefined },
     vars: { tags: [], line: null, suggest: null }, skip: false, deferRespawn: false, toasts: [], boxes: 0 };
   walk.target = walk.path = walk.arrive = walk.queued = null; wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
@@ -1089,7 +1107,7 @@ async function execStep(st){
       return;
     }
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
-    case 'encounter': { sc.skip = false; return; }   // story creatures arrive with the Fernbrook build
+    case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
   }
 }
 // Ilse's pick: known from the answers so far (her "Then I think {suggest} would suit you." comes BEFORE the baskets open)
@@ -1117,6 +1135,17 @@ async function sceneBattle(id){
   if (res == null) throw ABORT;
   if (res === 'tired') scene.deferRespawn = true;
   if (res === 'win' && t.onWin && SCENES[t.onWin]) await execSteps(SCENES[t.onWin]);
+}
+// A story creature (map obj kind 'wild'): a wild battle with its own form, level, moves, faded state and befriend bonus.
+async function sceneEncounter(id){
+  const o = CUR.objs.find(x => x.id === id); if (!o) return;
+  commitPending(); save();
+  $('#ovScene').hidden = true;
+  const res = await new Promise(resolve => { if (!openBattle({ kind: 'wild', form: o.form, level: o.level, moves: o.moves, faded: o.faded, bonus: o.befriendBonus, story: o.id, onEnd: resolve })) resolve(null); });
+  if (!scene) return;
+  $('#ovScene').hidden = false; sbRender('', '');
+  if (res == null) throw ABORT;
+  if (res === 'tired') scene.deferRespawn = true;
 }
 const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['story.starter_line']] || t.counterTeam.ember)) || [];
 
@@ -1446,6 +1475,34 @@ const enc = { tries: 3, zone: [0.4, 0.6], speed: 0.003, freezeUntil: 0, mark: 0,
 const BEFRIEND_TRIES = 3;
 const moveName = id => (MOVES[id] || MOVES.wobble).name;
 const petById = id => allPets().find(q => q.id === id) || null;
+/* CREATURES_SLICE §5 recovery. Each faded pet keeps that day's care samples (p.fc = { d, sum, n }; additive, no save bump), one
+   per minute while the game is open. At each daily rollover where that day's average care is >= 60, faded -= 1; at 0 the colour
+   returns with a sparkle and (§6) the naming prompt: "It remembers who it is. What will you call it?" */
+const FADE_CARE = 60, FADE_SAMPLE_MS = 60e3;
+const fadeQ = [], sparkle = { id: null, until: 0 };
+function fadeTick(sample){
+  if (!S) return;
+  const d = dayKey(Date.now());
+  for (const p of allPets()) {
+    if (!isFaded(p)) continue;
+    if (!p.fc || typeof p.fc !== 'object') p.fc = { d, sum: 0, n: 0 };
+    if (p.fc.d !== d) {
+      const avg = p.fc.n ? p.fc.sum / p.fc.n : 0;
+      if (avg >= FADE_CARE) p.faded = Math.max(0, (+p.faded || 0) - 1);
+      p.fc = { d, sum: 0, n: 0 };
+      if (!isFaded(p)) { delete p.faded; delete p.fc; fadeQ.push(p.id); save(); }
+    }
+    if (sample && isFaded(p)) { p.fc.sum += care(p); p.fc.n++; }
+  }
+  if (fadeQ.length && !scene && !battle.on && !overlayOpen()) colourBack(fadeQ.shift());
+}
+function colourBack(id){
+  const p = petById(id); if (!p) return;
+  sfx('levelup'); sparkle.id = id; sparkle.until = now() + 3000; updateHUD();
+  const steps = [['say', '', "{pet}'s colour is back! It sparkles in the light."]];
+  if (!cleanNick(p.nick)) steps.push(['nameEntry', 'partner', 'It remembers who it is. What will you call it?']);
+  runSteps(steps, { viewPet: p });
+}
 const ablePet = p => canBattle(p);
 // Lead = the partner if able, otherwise the first able party member (§1).
 function leadPet(){ const p = pet(); return ablePet(p) ? p : (S.party.find(ablePet) || null); }
@@ -1519,10 +1576,10 @@ function openBattle(o){
   const B = battle; B.id++;
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
     fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null,
-    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length) });
+    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0 });
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves));
-  else B.foes = [makeFoe(o.form, o.level, o.moves)];
+  else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
   B.participants = B.foes.map(() => new Set());
   B.me = { petId: lead.id, stages: { atk: 0, def: 0, spd: 0 }, mood: null };
   B.participants[0].add(lead.id);
@@ -1755,6 +1812,8 @@ async function befriendTry(id){
     if (f.hp < f.maxHp) np.hpNow = f.hp;
     if (!B.storyMoves) np.moves = f.moves.map(x => x.id).filter(x => x !== 'wobble');       // keeps the foe's moves (§2)
     if (!np.moves.length) np.moves = defaultMoves(f.form, f.level);
+    if (B.faded) { np.faded = B.faded; np.fc = { d: dayKey(Date.now()), sum: 0, n: 0 }; }   // CREATURES_SLICE §5: faded: days left (additive field)
+    if (B.story) S.flags['story.' + B.story] = true;                                          // a story creature: its flag is set on befriend only
     const toBox = S.party.length >= PPSave.PARTY_MAX; (toBox ? S.box : S.party).push(np);
     sfx('befriend'); xpChimeDelay = 0.75;
     const gx = grantExploreXp(pet(), BEFRIEND_XP); xpChimeDelay = 0; pet().happy = clamp(pet().happy + 5, 0, 100);
@@ -1921,7 +1980,7 @@ async function finish(result, id){
   // END panel: OK (and the optional nickname after a befriend).
   if (result === 'run') { closeBattle(); return; }
   $('#btEndTitle').textContent = { win: 'You won!', befriended: foeName(curFoe()) + ' befriended!', fled: 'It wandered off...', tired: 'Your team fainted...' }[result] || '';
-  if (result === 'befriended') { $('#encNick').value = ''; $('#encNick').placeholder = foeName(curFoe()); $('#encName').hidden = false; }
+  if (result === 'befriended' && !battle.faded) { $('#encNick').value = ''; $('#encNick').placeholder = foeName(curFoe()); $('#encName').hidden = false; }   // a faded one is named when its colour returns (§6)
   $('#btOk').textContent = result === 'befriended' ? 'YAY!' : 'OK';
   setPanel('end'); fitBattle();
 }
@@ -2029,7 +2088,7 @@ function battleAct(act){
 }
 function openBefriendBar(){
   const B = battle, f = curFoe(), p = activePet();
-  const w = befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat), c = 0.2 + Math.random() * 0.6;
+  const w = Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat) + B.bonus), c = 0.2 + Math.random() * 0.6;   // story creatures: +bonus (Faded Fuzzwick +0.10)
   enc.zone = [clamp(c - w / 2, 0, 1), clamp(c + w / 2, 0, 1)]; enc.t0 = now(); enc.freezeUntil = 0; enc.open = true;
   $('#tzone').style.left = (enc.zone[0] * 100) + '%'; $('#tzone').style.width = ((enc.zone[1] - enc.zone[0]) * 100) + '%';
   $('#encTries').textContent = '\u2665'.repeat(B.tries) + '\u2661'.repeat(BEFRIEND_TRIES - B.tries);
@@ -2061,7 +2120,7 @@ function drawBattle(t, dt){
   const fx0 = W - 26, fy0 = Math.max(4, Math.round(H * 0.18)), mx0 = 6, my0 = H - 14 - 14;
   g.fillStyle = PAL.t; g.fillRect(fx0 - 2, fy0 + 15, 22, 3); g.fillRect(mx0 - 2, my0 + 15, 22, 3);
   B.fx = B.fx.filter(e => t - e.t0 < e.dur || e.kind === 'faint' || e.kind === 'flee');
-  const drawMon = (who, si, stage, x0, y0, mirror) => {
+  const drawMon = (who, si, stage, x0, y0, mirror, faded) => {
     let x = x0, y = y0, mode = (t % 2600) < 130 ? 'b' : 'n', hide = false;
     y += Math.floor(t / 450) % 2;
     for (const e of B.fx) {
@@ -2078,12 +2137,12 @@ function drawBattle(t, dt){
     }
     if (who === 'me' && !B.meShown) hide = true;
     if (hide) return;
-    const img = SPR[si][stage][mode];
+    const img = sprSet(si, stage, faded)[mode];
     if (mirror) { g.save(); g.translate(x + 18, y); g.scale(-1, 1); g.drawImage(img, 0, 0); g.restore(); } else g.drawImage(img, x, y);
   };
-  drawMon('foe', f.si, f.stage, fx0, fy0, false);
+  drawMon('foe', f.si, f.stage, fx0, fy0, false, !!f.faded);
   if (B.kind === 'wild' && f.stage > 0 && Math.floor(t / 350) % 5 === 0) drawGlyph(g, 'spark', fx0 + 14, fy0 - 2);   // rare form twinkle
-  drawMon('me', spi(p), p.stage, mx0, my0, true);             // back view = mirrored
+  drawMon('me', spi(p), p.stage, mx0, my0, true, isFaded(p));             // back view = mirrored
   btParts = btParts.filter(pt => (pt.life -= dt) > 0);
   btParts.forEach(pt => { pt.y += pt.vy * dt; drawGlyph(g, pt.type, pt.x, pt.y); });
 }
@@ -2184,7 +2243,7 @@ function closeStatsCard(){ if ($('#ovStats').hidden) return; $('#ovStats').hidde
 function renderStatsCard(){
   const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
   const si = spi(p), sp = SPECIES[si], L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
-  spriteCanvas($('#scIcon'), si, p.stage);
+  spriteCanvas($('#scIcon'), si, p.stage, 'n', isFaded(p));
   $('#scName').textContent = petName(p);
   $('#scSpecies').textContent = (cleanNick(p.nick) ? nameOf(si, p.stage) + ' \u00b7 ' : '') + '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   $('#scStatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of 42 forms';
@@ -2248,7 +2307,7 @@ function renderCollection(){
   const label = txt => { const d = document.createElement('div'); d.className = 'group-label'; d.textContent = txt; list.append(d); };
   const card = (p, inBox) => {
     const c = document.createElement('div'); c.className = 'card' + (inBox ? ' boxed' : '');
-    const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, spi(p), p.stage);
+    const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p));
     const info = document.createElement('div');
     info.innerHTML = '<div class="nm"></div><div class="sub"></div>';
     info.firstChild.textContent = petName(p);
@@ -2543,6 +2602,7 @@ function boot(){
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   saveTimer = setInterval(save, 5000);
+  setInterval(() => fadeTick(true), FADE_SAMPLE_MS); setInterval(() => fadeTick(false), 5000); fadeTick(false);
   requestAnimationFrame(t => { lastT = t; frame(t); });
   // Console hooks. Read-only ones are always there and can't change the game; anything that cheats
   // (XP, evolving, spawning, places, fast mode, live state) only works with ?debug=1.
@@ -2582,6 +2642,8 @@ function boot(){
       if (!battle.on) return; if (who === 'foe') { const f = curFoe(); f.hp = clamp(Math.round(+n), 0, f.maxHp); }
       else { const p = activePet(); setMyHp(p, +n); } renderBattleCards(); save();
     },
+    fadeTick: sample => fadeTick(!!sample), spriteColors: (form, faded) => { const [l, st] = form.split('/'), c = sprSet(SP_INDEX[l], +st, !!faded).n, d = c.getContext('2d').getImageData(0, 0, 18, 18).data, o = new Set();
+      for (let i = 0; i < d.length; i += 4) if (d[i + 3]) o.add('#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('')); return [...o]; }, get fadeQueue(){ return fadeQ.slice(); },
     winBattle: () => { if (battle.on) finish('win', battle.id); }, loseBattle: () => { if (battle.on) finish('tired', battle.id); },
     healTeam, setFaint: (min = 20) => { const p = pet(); if (!p) return; if (min <= 0) { delete p.faintUntil; delete p.hpNow; } else faintPet(p, Date.now() - (20 - min) * 60000); updateHUD(); save(); },
     giveItem: (id, n = 1) => { S.bag[id] = (S.bag[id] || 0) + Math.max(0, n | 0); save(); return S.bag[id]; },
