@@ -2140,22 +2140,23 @@ async function results(result, id){
   B.levelUps = []; save(); updateHUD();
 }
 // The Seal card (BATTLE §7 Trial Hall): the Seal's sprite plus its name, over the battle stage until the battle closes.
+// Seal 1 art: Design ICONS_SEALS (5d59b34), ICON_ART.seal_fernbrook.grid, copied verbatim (gold rim, leaf on a white glint).
 const SEAL_ART = { seal_fernbrook: [
   '.....oooooo.....',
   '...ooyyyyyyoo...',
-  '..oyyyyyyyyyyo..',
-  '.oyyyyyyyggyyyo.',
-  '.oyyyyyygggyyyo.',
-  'oyyyyyyggglgyyyo',
-  'oyyyyyggglggyyyo',
-  'oyyyyygglgggyyyo',
-  'oyyyyyglgggyyyyo',
-  'oyyyyyyggyyyyyyo',
-  'oyyyyyydyyyyyyyo',
-  '.oyyyyydyyyyyyo.',
-  '.oyyyyyyyyyyyyo.',
-  '..oyyyyyyyyyyo..',
-  '...ooyyyyyyoo...',
+  '..oyywwwyyyyyo..',
+  '.oywwyyyyytttyo.',
+  '.owyyyyyttlgtyo.',
+  'oywyyyytlltgtyyo',
+  'oyyyyytlltggtyyo',
+  'oyyyytlltggtyyyo',
+  'oyyyytltgggtyyyo',
+  'oyyyyttgggtyyyoo',
+  'oyyyypttttyyyyoo',
+  '.oyypyyyyyyyyoo.',
+  '.oypyyyyyyyyooo.',
+  '..oyyyyyyyoooo..',
+  '...ooyyyyoooo...',
   '.....oooooo.....',
 ] };
 function showSealCard(id){
