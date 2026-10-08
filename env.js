@@ -157,8 +157,9 @@ const PPEnv = (() => {
     if (c.terrain) parts.push(c.terrain.osm ? 'map data' : c.terrain.place ? 'place lookup (map data busy)' : 'elevation only');
     return parts.join(', ');
   }
+  let overridesOn = false;                      // "Pick a place" overrides only apply in debug mode (?debug=1)
   function overrideEnv(){
-    const o = ls.json(OVERRIDE_KEY); if (!o) return null;
+    const o = overridesOn && ls.json(OVERRIDE_KEY); if (!o) return null;
     const p = o.preset && PRESETS[o.preset];
     if (p) return build(p.tags.slice(), { source: 'manual', status: 'manual', temp: p.temp, placeLabel: p.place, preset: o.preset });
     if (Array.isArray(o.tags)) { const tags = ALL_TAGS.filter(t => o.tags.includes(t)); return build(tags.length ? tags : ['meadow'], { source: 'manual', status: 'manual', temp: o.temp != null ? o.temp : null }); }
@@ -167,8 +168,8 @@ const PPEnv = (() => {
   const geoPref = () => ls.get(GEO_KEY);
   function setGeoPref(v){ ls.set(GEO_KEY, v); }
 
-  function init(onChange){
-    listener = onChange;
+  function init(onChange, opts){
+    listener = onChange; overridesOn = !!(opts && opts.allowOverride);   // a stored override is ignored (not deleted) outside debug
     env = overrideEnv();
     if (!env) {
       const c = ls.json(CACHE_KEY);
@@ -188,7 +189,7 @@ const PPEnv = (() => {
     if (busy) return busy;
     busy = (async () => {
       if (geoPref() !== 'allow') return env;
-      const manual = !!ls.json(OVERRIDE_KEY);
+      const manual = overridesOn && !!ls.json(OVERRIDE_KEY);
       const setEnv = e => { if (!manual) { env = e; emit(); } };
       const prev = env;
       setEnv(Object.assign({}, env, { status: 'loading' }));      // badge shows "..." right away
@@ -218,6 +219,7 @@ const PPEnv = (() => {
     return busy;
   }
   function setOverride(x){
+    if (!overridesOn) return env;
     if (x == null || x === 'auto') { ls.set(OVERRIDE_KEY, null); const c = ls.json(CACHE_KEY); env = c && c.key && geoPref() === 'allow' ? fromCache(c, 'cached') : fallback('off'); emit(); refresh(); return env; }
     if (typeof x === 'string') { if (!PRESETS[x]) throw new Error('Unknown preset ' + x + '. Try: ' + Object.keys(PRESETS).join(', ')); ls.set(OVERRIDE_KEY, JSON.stringify({ preset: x })); }
     else if (Array.isArray(x)) ls.set(OVERRIDE_KEY, JSON.stringify({ tags: x }));

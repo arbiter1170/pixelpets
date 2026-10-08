@@ -18,6 +18,15 @@ const REAL_RATE = { hunger: perSec(HOURS_TO_EMPTY.hunger), happy: perSec(HOURS_T
 const FAST_RATE = { hunger: 1/10, happy: 1/12, energy: 1/25 };   // old demo pacing (pts/s): full -> starving in ~17 min
 const OFFLINE_FLOOR = 10;          // catch-up decay never pushes a stat below this
 const FAST_KEY = 'pixelpets.fast'; // debug fast mode, kept out of the save schema
+const DEBUG_KEY = 'pixelpets.debug';   // ?debug=1 turns debug tools on (remembered), ?debug=0 off
+function readDebugPref(){
+  let on = false;
+  try { on = localStorage.getItem(DEBUG_KEY) === '1'; } catch(e) {}
+  const q = new URLSearchParams(location.search).get('debug');
+  if (q !== null) { on = q === '1' || q === 'true'; try { if (on) localStorage.setItem(DEBUG_KEY, '1'); else localStorage.removeItem(DEBUG_KEY); } catch(e) {} }
+  return on;
+}
+const DEBUG = readDebugPref();     // E/G/F keys, fast mode, "Pick a place" and the cheat console hooks need this
 let fastMode = false;
 const rate = () => fastMode ? FAST_RATE : REAL_RATE;   // points lost per second, every owned pet
 
@@ -28,7 +37,7 @@ const FAST_CD_SCALE = REAL_RATE.hunger / FAST_RATE.hunger;       // ~0.0174: 20m
 const CARE_XP = { feed: 2, play: 5, rest: 1 };                   // XP per care action (before the daily cap)
 const CARE_XP_DAILY_CAP = 25;      // per pet per local calendar day (feed/play/rest)
 const STEPS_PER_XP = 5;            // walking: 1 XP per 5 steps, remainder kept per pet in p.sr
-const BEFRIEND_XP = 10;
+const BEFRIEND_XP = 5;             // shares the explore cap below
 const EXPLORE_XP_DAILY_CAP = 30;   // per pet per local day, shared by walking + befriending XP (p.ex)
 const STEP_MS = 170;
 
@@ -38,13 +47,23 @@ const SPR = SPECIES.map(sp => sp.stages.map(st => ({
   b: buildSprite(st.half, st.col, 'blink'),
   w: buildSprite(st.half, st.col, PAL.w),
   s: buildSprite(st.half, st.col, PAL.m),
+  u: sp.uiHalo ? haloSprite(buildSprite(st.half, st.col, 'normal'), PAL.h) : null,
 })));
+// Light 1px ring around the outline so dark-bodied species read on the dark UI cells (map art unchanged).
+function haloSprite(src, col){
+  const c = document.createElement('canvas'); c.width = c.height = 18; const g = c.getContext('2d');
+  const d = src.getContext('2d').getImageData(0, 0, 18, 18).data, A = (x, y) => x >= 0 && y >= 0 && x < 18 && y < 18 && d[(y * 18 + x) * 4 + 3] > 0;
+  g.fillStyle = col;
+  for (let y = 0; y < 18; y++) for (let x = 0; x < 18; x++) if (!A(x, y) && (A(x-1, y) || A(x+1, y) || A(x, y-1) || A(x, y+1))) g.fillRect(x, y, 1, 1);
+  g.drawImage(src, 0, 0); return c;
+}
 const TILES = buildTiles();
 
 function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return g; }
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
   grid.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === '#') g.fillRect(x,y,1,1); })); }
-function spriteCanvas(c, sp, stage, mode='n'){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.drawImage(SPR[sp][stage][mode], 0, 0); }
+// UI sprite (header, collection, dex, starter): dark species get their halo version on these dark cells.
+function spriteCanvas(c, sp, stage, mode='n'){ const g = ctx(c), s = SPR[sp][stage]; g.clearRect(0,0,c.width,c.height); g.drawImage(mode === 'n' && s.u ? s.u : s[mode], 0, 0); }
 
 /* ---------- state ---------- */
 let S = null;
@@ -61,11 +80,18 @@ const canEvolve = p => p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_
 const markSeen = (sp, st) => { S.seen[sp + '-' + st] = true; };
 
 /* ---------- UI helpers ---------- */
+const sfx = (name, delay) => { try { PPSound.play(name, delay); } catch(e) {} };
+function renderMute(){
+  const m = PPSound.muted, b = $('#muteBtn');
+  iconCanvas($('#muteIcon'), ICONS[m ? 'mute' : 'sound'], m ? PAL.m : PAL.y);
+  b.setAttribute('aria-pressed', m ? 'true' : 'false'); b.setAttribute('aria-label', m ? 'Sound off (tap to turn on)' : 'Sound on (tap to mute)'); b.title = m ? 'Sound off' : 'Sound on';
+}
 let toastT = 0;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
 
 /* ---------- debug fast mode (?fast=1, F key, PixelPets.setFast) ---------- */
 function readFastPref(){
+  if (!DEBUG) return false;                    // fast mode is a debug tool: ignored (not stored) without ?debug=1
   let on = false;
   try { on = localStorage.getItem(FAST_KEY) === '1'; } catch(e) {}
   const q = new URLSearchParams(location.search).get('fast');   // ?fast=1 turns it on, ?fast=0 off (and remembers)
@@ -75,6 +101,7 @@ function readFastPref(){
 function storeFastPref(on){ try { if (on) localStorage.setItem(FAST_KEY, '1'); else localStorage.removeItem(FAST_KEY); } catch(e) {} }
 function renderFastTag(){ $('#fastTag').hidden = !fastMode; }
 function setFast(on, quiet){
+  if (!DEBUG) return false;
   fastMode = !!on; storeFastPref(fastMode); renderFastTag();
   if (!quiet) toast(fastMode ? 'FAST MODE ON (debug decay)' : 'Fast mode off: real-time pacing');
   return fastMode;
@@ -152,8 +179,19 @@ function fmtCd(ms){
   const sec = Math.ceil(ms / 1000);
   return sec >= 60 ? Math.ceil(sec / 60) + 'm' : '0:' + String(sec).padStart(2, '0');
 }
-// Diminishing returns from the stat's value before the action: full below 50, half 50-79, quarter 80+.
-const careGain = (base, cur) => cur < 50 ? base : cur < 80 ? base / 2 : base / 4;
+// Diminishing returns, band by band: the part of a gain that lands below 50 counts in full, 50-80 at half,
+// above 80 at a quarter. FEED (+25) from 49 / 50 / 51 ends at 62 / 62.5 / 63.5: no jump at the band edges.
+const GAIN_BANDS = [[50, 1], [80, 0.5], [Infinity, 0.25]];
+function careGain(base, cur){
+  let v = cur, left = base;
+  for (const [top, k] of GAIN_BANDS) {
+    if (left <= 0) break;
+    if (v >= top) continue;
+    const need = (top - v) / k;               // base points it takes to fill this band
+    if (left <= need) { v += left * k; left = 0; } else { v = top; left -= need; }
+  }
+  return v - cur;
+}
 function dayKey(ms){ const d = new Date(ms); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 // Daily XP records on the pet: p.cx (care) and p.ex (explore), each { d: 'YYYY-MM-DD' (local), xp: earned that day,
 // told: cap toast shown }. Missing or from another day = fresh record, so old saves just work.
@@ -167,14 +205,17 @@ const careXpToday = p => dailyRec(p, 'cx');
 const exploreXpToday = p => dailyRec(p, 'ex');
 // Gives up to `n` XP under a daily cap. Returns the XP actually granted.
 function grantCapped(p, k, cap, n){
-  const r = dailyRec(p, k), g = clamp(cap - r.xp, 0, n);
-  r.xp += g; p.xp += g; return g;
+  const r = dailyRec(p, k), g = clamp(cap - r.xp, 0, n), lv = level(p);
+  r.xp += g; p.xp += g;
+  if (level(p) > lv) sfx('levelup', xpChimeDelay);
+  return g;
 }
+let xpChimeDelay = 0;                        // lets a fanfare finish before the level-up chime
 const grantCareXp = (p, n) => grantCapped(p, 'cx', CARE_XP_DAILY_CAP, n);
 // Explore XP (walking + befriending). Shows the one-time "explored enough" toast when the cap is reached.
 function grantExploreXp(p, n){
   const g = grantCapped(p, 'ex', EXPLORE_XP_DAILY_CAP, n), r = exploreXpToday(p);
-  if (r.xp >= EXPLORE_XP_DAILY_CAP && !r.told) { r.told = true; toast(nameOf(p.sp, p.stage) + ' has explored enough for today. Rest up!'); }
+  if (r.xp >= EXPLORE_XP_DAILY_CAP && !r.told) { r.told = true; sfx('cap', xpChimeDelay + 0.3); toast(nameOf(p.sp, p.stage) + ' has explored enough for today. Rest up!'); }
   return g;
 }
 const CD_MSG = { feed: ' is still digesting. Feed again in ', play: ' needs a breather. Play again in ', rest: " isn't sleepy yet. Rest again in " };
@@ -202,30 +243,31 @@ function doAction(act){
   const p = pet(); const t = now();
   if (t < anim.busyUntil) return;
   const left = cdLeft(p, act);
-  if (left) return toast(nameOf(p.sp, p.stage) + CD_MSG[act] + fmtCd(left) + '.');
+  if (left) { sfx('denied'); return toast(nameOf(p.sp, p.stage) + CD_MSG[act] + fmtCd(left) + '.'); }
   const pp = petPos(t);
   let msg;
   if (act === 'feed') {
-    if (p.hunger >= 98) return toast('Too full to eat!');
+    if (p.hunger >= 98) { sfx('denied'); return toast('Too full to eat!'); }
     p.hunger = clamp(p.hunger + careGain(25, p.hunger), 0, 100); p.happy = clamp(p.happy + 3, 0, 100);
     addPart('apple', pp.x + 6, pp.y - 4, 0, 4, 0.9);
     setTimeout(() => { for (let i=0;i<3;i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
     anim.busyUntil = t + 1100; msg = 'Yum! +FOOD';
   } else if (act === 'play') {
-    if (p.energy < 10) return toast('Too tired to play. REST first!');
+    if (p.energy < 10) { sfx('denied'); return toast('Too tired to play. REST first!'); }
     p.happy = clamp(p.happy + careGain(20, p.happy), 0, 100); p.energy = clamp(p.energy - 8, 0, 100); p.hunger = clamp(p.hunger - 4, 0, 100);
     anim.jumpUntil = t + 1200; anim.busyUntil = t + 1200;
     for (let i=0;i<4;i++) addPart(i%2 ? 'heart' : 'spark', pp.x + 1 + i*4, pp.y + 2, (i-1.5)*6, -14);
     msg = 'Wheee! +JOY';
   } else if (act === 'rest') {
-    if (p.energy >= 98) return toast('Not sleepy right now.');
+    if (p.energy >= 98) { sfx('denied'); return toast('Not sleepy right now.'); }
     p.energy = clamp(p.energy + careGain(30, p.energy), 0, 100); p.hunger = clamp(p.hunger - 5, 0, 100);
     anim.sleepUntil = t + 3000; anim.busyUntil = t + 3000; msg = 'Zzz... +ENERGY';
   } else return;
   if (!p.cd || typeof p.cd !== 'object') p.cd = {};
   p.cd[act] = Date.now();                    // start this action's cooldown (saved with the pet)
-  const xp = grantCareXp(p, CARE_XP[act]), cx = careXpToday(p);
-  if (cx.xp >= CARE_XP_DAILY_CAP && !cx.told) { cx.told = true; msg = nameOf(p.sp, p.stage) + ' learned all it can from care today. Go for a walk!'; }
+  sfx(act); xpChimeDelay = 0.45;
+  const xp = grantCareXp(p, CARE_XP[act]), cx = careXpToday(p); xpChimeDelay = 0;
+  if (cx.xp >= CARE_XP_DAILY_CAP && !cx.told) { cx.told = true; sfx('cap', 0.6); msg = nameOf(p.sp, p.stage) + ' learned all it can from care today. Go for a walk!'; }
   else if (act === 'play' && xp) msg += ' +' + xp + 'XP';
   toast(msg);
   updateHUD(); save();
@@ -315,13 +357,14 @@ function tryStep(d){
   if (solid(nx, ny)) return;
   const w = wildAt(nx, ny);
   if (w) { if (w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
-  if (p.energy < 1) { toast('Too tired to walk! REST on the Pet tab.'); clearMoves(); return; }
+  if (p.energy < 1) { sfx('denied'); toast('Too tired to walk! REST on the Pet tab.'); clearMoves(); return; }
   walk.from = { x: S.pos.x, y: S.pos.y }; walk.to = { x: nx, y: ny }; walk.prog = 0;
   S.pos.x = nx; S.pos.y = ny;
 }
 function onLand(){
   const p = pet();
-  S.steps++; p.energy = clamp(p.energy - 0.4, 0, 100); p.hunger = clamp(p.hunger - 0.15, 0, 100);
+  S.steps++; if (S.steps % 2 === 0) sfx('step');   // quiet footstep on every other step
+  p.energy = clamp(p.energy - 0.4, 0, 100); p.hunger = clamp(p.hunger - 0.15, 0, 100);
   if (S.steps % 50 === 0) toast(S.steps + ' steps! Nice walk.');
   p.sr = (+p.sr || 0) + 1;                   // per-pet step remainder, carried across sessions
   if (p.sr >= STEPS_PER_XP) { p.sr -= STEPS_PER_XP; grantExploreXp(p, 1); }
@@ -388,7 +431,7 @@ const WILD_TARGET = 4;                          // creatures kept around the map
 const WILD_LIFE_S = [150, 270];                 // seconds (of Walk-tab time) before a creature wanders off
 const WILD_RESPAWN_S = [5, 12];                 // seconds between spawns while below the target
 const WILD_STEP_MS = 520, WILD_IDLE_MS = [900, 3200], WILD_LEASH = 4;
-const WILD_STAGE2_CHANCE = 0.15;                // wild second forms stay rare (same odds as the old grass roll)
+const WILD_STAGE2_CHANCE = 0.05;                // wild second forms are rare (they skip the first evolution)
 const ANY_SPECIES_CHANCE = 0.08;                // small share for any species, so nothing is impossible anywhere
 const wild = { list: [], poofs: [], seq: 0, chase: null, started: false, clock: 0, nextSpawn: 0, auto: true };
 let ENV = null;
@@ -565,7 +608,7 @@ const enc = { sp: 0, stage: 0, tries: 3, zone: [0.4, 0.6], speed: 0.003, freezeU
 function startEncounterIntro(sp, stage, wid){
   clearMoves();
   enc.next = { sp: sp != null ? sp : pickSpecies(), stage: stage != null ? stage : pickStage(), wid: wid || null };
-  walk.intro = now();
+  walk.intro = now(); sfx('encounter');
 }
 function meetWild(w){ w.to = null; w.fx = w.x; w.fy = w.y; startEncounterIntro(w.sp, w.stage, w.id); }
 function openEncounter(){
@@ -604,7 +647,8 @@ function encounterPress(){
   if (m >= enc.zone[0] && m <= enc.zone[1]) {
     enc.done = true; enc.result = 'win'; enc.t0 = t;
     const np = newPet(enc.sp, enc.stage); S.pets.push(np);      // befriending is never blocked by the cap, only its XP
-    const gx = grantExploreXp(pet(), BEFRIEND_XP); pet().happy = clamp(pet().happy + 5, 0, 100);
+    sfx('befriend'); xpChimeDelay = 0.75;
+    const gx = grantExploreXp(pet(), BEFRIEND_XP); xpChimeDelay = 0; pet().happy = clamp(pet().happy + 5, 0, 100);
     const nm = nameOf(enc.sp, enc.stage);
     $('#encTitle').textContent = nm + ' befriended!';
     $('#encMsg').textContent = nm + ' joined your collection! ' + (gx ? '(+' + gx + ' XP)' : '(No XP: explored enough today)');
@@ -614,10 +658,11 @@ function encounterPress(){
     enc.tries--; renderTries();
     if (enc.tries <= 0) {
       enc.done = true; enc.result = 'flee'; enc.t0 = t;
+      sfx('flee');
       $('#encTitle').textContent = 'It wandered off...';
-      $('#encMsg').textContent = 'Keep walking through tall grass to find more!';
+      $('#encMsg').textContent = 'Keep exploring to find more wild pets!';
       $('#encGo').textContent = 'OK'; $('#encRun').hidden = true; $('#tbar').style.visibility = 'hidden';
-    } else $('#encMsg').textContent = 'Missed! It looks curious... try again.';
+    } else { sfx('miss'); $('#encMsg').textContent = 'Missed! It looks curious... try again.'; }
   }
 }
 function drawEncounter(t, dt){
@@ -647,12 +692,12 @@ function startEvolution(force){
   clearMoves();
   Object.assign(evo, { active: true, t0: now(), sp: p.sp, from: p.stage, to: p.stage + 1, done: false });
   $('#evoTitle').textContent = 'What? ' + nameOf(p.sp, p.stage) + ' is evolving!';
-  $('#evoMsg').innerHTML = '&nbsp;'; $('#evoOk').hidden = true;
+  $('#evoMsg').innerHTML = '&nbsp;'; $('#evoOk').hidden = true; sfx('evoBuild');
   $('#ovEvolve').hidden = false; $('#tabs').classList.add('locked'); fitAll();
 }
 function finishEvolution(){
   const p = pet(); p.stage = evo.to; if (p.xp < EVO_XP[evo.to-1]) p.xp = EVO_XP[evo.to-1];
-  p.happy = clamp(p.happy + 15, 0, 100); markSeen(p.sp, p.stage); evo.done = true;
+  p.happy = clamp(p.happy + 15, 0, 100); markSeen(p.sp, p.stage); evo.done = true; sfx('evoFanfare');
   $('#evoTitle').textContent = 'Congratulations!';
   $('#evoMsg').textContent = nameOf(p.sp, evo.from) + ' evolved into ' + nameOf(p.sp, evo.to) + '!';
   $('#evoOk').hidden = false; updateHUD(); save();
@@ -689,7 +734,7 @@ function renderCollection(){
     card.append(cv, info);
     if (i === S.active) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; card.append(s); }
     else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
-      b.addEventListener('click', () => { S.active = i; save(); updateHUD(); renderCollection(); toast(nameOf(p.sp, p.stage) + ' is your partner now!'); });
+      b.addEventListener('click', () => { sfx('tap'); S.active = i; save(); updateHUD(); renderCollection(); toast(nameOf(p.sp, p.stage) + ' is your partner now!'); });
       card.append(b); }
     list.append(card);
   });
@@ -724,7 +769,7 @@ function openStarter(){
     const d = document.createElement('div'); d.innerHTML = '<span></span><small></small>';
     d.firstChild.textContent = sp.stages[0].name + '  [' + sp.type + ']'; d.lastChild.textContent = sp.blurb;
     b.append(cv, d);
-    b.addEventListener('click', () => { S.pets.push(newPet(i)); S.active = 0; markSeen(i, 0); save();
+    b.addEventListener('click', () => { sfx('befriend'); S.pets.push(newPet(i)); S.active = 0; markSeen(i, 0); save();
       $('#ovStarter').hidden = true; $('#tabs').classList.remove('locked'); updateHUD(); toast(sp.stages[0].name + ' joined you!'); });
     list.append(b);
   });
@@ -733,7 +778,9 @@ function openStarter(){
 
 /* ---------- input ---------- */
 function bindInput(){
-  $$('#tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  $$('#tabs button').forEach(b => b.addEventListener('click', () => { if (b.dataset.tab !== screen) sfx('tap'); showTab(b.dataset.tab); }));
+  $('#muteBtn').addEventListener('click', () => { const m = PPSound.toggle(); renderMute(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
+  ['#evoOk', '#encRun', '#geoAllow', '#geoLater', '#envBadge', '#envUseLoc', '#envClose', '#copyCode'].forEach(id => $(id).addEventListener('click', () => sfx('tap')));
   $$('[data-act]').forEach(b => b.addEventListener('click', () => doAction(b.dataset.act)));
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', () => { evo.active = false; $('#ovEvolve').hidden = true; $('#tabs').classList.remove('locked'); updateHUD(); });
@@ -775,7 +822,7 @@ function bindInput(){
       const x = (e.clientX - r.left) / r.width * mc.width + walk.cam.x, y = (e.clientY - r.top) / r.height * mc.height + walk.cam.y;
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
-      if (w) { wild.chase = w.id; walk.target = { x: w.x, y: w.y }; }       // tap a creature: walk up and meet it
+      if (w) { if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; }       // tap a creature: walk up and meet it
       else if (!solid(tx, ty)) { wild.chase = null; walk.target = { x: tx, y: ty }; }
     }
     walk.drag = null; ptr = null;
@@ -786,9 +833,11 @@ function bindInput(){
   window.addEventListener('keydown', e => {
     if (e.target && e.target.tagName === 'INPUT') return;
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) walk.queued = DIRS[KEYS[e.key]]; walk.key = KEYS[e.key]; return; }
-    if (e.key === 'e' || e.key === 'E') { startEvolution(true); return; }          // DEBUG: force evolve
-    if (e.key === 'g' || e.key === 'G') { if (!overlayOpen()) { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); } return; } // DEBUG: force encounter (spawn-weighted species)
-    if (e.key === 'f' || e.key === 'F') { setFast(!fastMode); return; }          // DEBUG: toggle fast decay
+    if (DEBUG) {                                 // debug keys only with ?debug=1
+      if (e.key === 'e' || e.key === 'E') { startEvolution(true); return; }          // force evolve
+      if (e.key === 'g' || e.key === 'G') { if (!overlayOpen()) { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); } return; } // force encounter (spawn-weighted species)
+      if (e.key === 'f' || e.key === 'F') { setFast(!fastMode); return; }          // toggle fast decay
+    }
     if (e.key === ' ' && !$('#ovEncounter').hidden) { e.preventDefault(); encounterPress(); return; }
     if ('1234'.includes(e.key)) showTab(['pet','walk','col','friends'][+e.key - 1]);
   });
@@ -844,8 +893,10 @@ document.addEventListener('visibilitychange', () => {
 /* ---------- boot ---------- */
 function boot(){
   $$('#tabs canvas').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));
-  fastMode = readFastPref(); renderFastTag();
-  ENV = PPEnv.init(onEnvChange); renderEnv();
+  fastMode = readFastPref(); renderFastTag(); $('#dbgTag').hidden = !DEBUG;
+  $('#envPick').hidden = !DEBUG;               // "Pick a place" presets are debug-only
+  renderMute();
+  ENV = PPEnv.init(onEnvChange, { allowOverride: DEBUG }); renderEnv();
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
   S = load();
@@ -860,17 +911,34 @@ function boot(){
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   setInterval(save, 5000);
   requestAnimationFrame(t => { lastT = t; frame(t); });
-  // test/debug hook
-  window.PixelPets = { get state(){ return S; }, forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
-    // environment + wild creatures (debug/test)
-    setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; }, get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; },
-    refreshEnv: () => PPEnv.refresh(true), spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
+  // Console hooks. Read-only ones are always there and can't change the game; anything that cheats
+  // (XP, evolving, spawning, places, fast mode, live state) only works with ?debug=1.
+  const copy = o => JSON.parse(JSON.stringify(o));
+  const api = {
+    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; },
+    get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
+    get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
     get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, name: nameOf(w.sp, w.stage) })); },
-    clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(), pickSpecies: () => pickSpecies(), spawnOdds: tags => spawnOdds(tags),
-    showTab, giveXp: n => { pet().xp += n; updateHUD(); }, enc, walk,
-    setFast: on => setFast(on), get fast(){ return fastMode; }, get rates(){ return { ...rate() }; },
-    cooldownLeft: act => cdLeft(pet(), act), get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
-    resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; updateHUD(); save(); toast('Daily XP caps reset (debug)'); } };
+    spawnOdds: tags => spawnOdds(tags), cooldownLeft: act => cdLeft(pet(), act),
+    get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
+    get muted(){ return PPSound.muted; }, careGain, showTab,
+  };
+  const cheats = {
+    forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
+    setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; },
+    spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
+    clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
+    pickSpecies: () => pickSpecies(), pickStage: () => pickStage(),
+    giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
+    resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
+    enc, walk,
+  };
+  let warned = false;
+  for (const [k, v] of Object.entries(cheats)) {
+    if (DEBUG) { api[k] = v; continue; }
+    if (typeof v === 'function') api[k] = () => { if (!warned) { warned = true; console.info('PixelPets: debug hooks need ?debug=1 in the URL.'); } return undefined; };
+  }
+  window.PixelPets = Object.freeze(api);
 }
 boot();
 })();

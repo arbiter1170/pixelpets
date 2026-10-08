@@ -2,7 +2,8 @@
    Chars: . transparent, a main, b belly, c accent, d accent2, x extra, e eye (dark), i eye (shine).
    An outline is added automatically.
    habitat: spawn weight per environment tag (see env.js); tiles: preferred spawn spot on the map
-   ('grass' = tall grass, 'shore' = next to water, 'woods' = next to trees). starter: offered as a first pet. */
+   ('grass' = tall grass, 'shore' = next to water, 'woods' = next to trees). starter: offered as a first pet. uiHalo: draw a light rim around the
+   sprite on dark UI cells (dex, collection, header) for dark-bodied species; the map art is unchanged. */
 'use strict';
 const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f070',g:'#38b764',t:'#257179',
   n:'#29366f',b:'#3b5dc9',c:'#41a6f6',s:'#73eff7',w:'#f4f4f4',h:'#94b0c2',m:'#566c86',d:'#333c57'};
@@ -81,7 +82,7 @@ const SPECIES = [
       'caaaaaaa','caaieaaa','daaeeaaa','dcaaaabe','.ccabbbb',
       'dccabbbb','.cabbdbb','..aabbbb','..aaaaaa','..aaa.aa','..cc..cc']}
   ]},
-  { id:'frost', habitat:{snow:8, cold:5, mountain:2}, tiles:'grass',
+  { id:'frost', habitat:{snow:8, cold:3, mountain:2}, tiles:'grass',
     type:'FROST', blurb:'A fluffy snow sprite. Hums when it snows.', stages:[
     { name:'Chillbit', col:{a:PAL.w,b:PAL.s,c:PAL.c,d:PAL.b,x:PAL.h}, half:[
       '........','........','........','.......c','......cc',
@@ -111,7 +112,7 @@ const SPECIES = [
       'cccaaaaa','.ccaieaa','.ccaeeaa','..caaaad','..caaabb',
       '.ccabbbb','.ccabbbb','..cabbbb','...abbbb','....aaaa','....d.d.']}
   ]},
-  { id:'shade', habitat:{night:6, fog:4, forest:1}, tiles:'woods',
+  { id:'shade', habitat:{night:6, fog:4, forest:1}, tiles:'woods', uiHalo:true,   // dark body: light rim on dark UI cells only
     type:'SHADE', blurb:'A sleepy shadow cat. Wakes up after dark.', stages:[
     { name:'Duskmote', col:{a:PAL.p,b:PAL.n,c:PAL.d,d:PAL.y,x:PAL.s}, half:[
       '........','........','........','........','....a...',
@@ -173,6 +174,8 @@ const ICONS = {
   walk:['..##....','.####...','.####...','..##.##.','....####','....####','.....##.','........'],
   book:['.######.','#......#','#.####.#','#......#','#.###..#','#......#','.######.','........'],
   friends:['.##..##.','.##..##.','........','###..###','###..###','###..###','........','........'],
+  sound:['...#..#.','..##...#','####.#.#','####.#.#','####.#.#','..##...#','...#..#.','........'],
+  mute:['...#....','..##....','####.#.#','####..#.','####.#.#','..##....','...#....','........'],
 };
 
 /* Tiles 16x16 */
