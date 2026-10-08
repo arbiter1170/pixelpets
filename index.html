@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261008-1546">
+<meta name="kw-build" content="20261008-1556">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261008-1546">
+<link rel="stylesheet" href="style.css?v=20261008-1556">
 </head>
 <body>
 <div id="app">
@@ -182,6 +182,22 @@
   </div>
 </div>
 
+
+<!-- Travel Shelf shop (INVENTORY §5): Hearthmoor Lantern House prop -->
+<div id="ovShop" class="overlay bag shop" hidden>
+  <div class="ov-inner bag-inner" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+    <div class="bag-head">
+      <div>
+        <div id="shopTitle" class="ov-title">Travel Shelf</div>
+        <div class="shop-flavour">Travel Shelf &middot; Leave Acorns, take a snack. &mdash; I.</div>
+      </div>
+      <div class="bag-money" aria-label="Acorns"><canvas id="shopAcorn" width="8" height="8" aria-hidden="true"></canvas><b id="shopMoney">0</b></div>
+      <button id="shopClose" class="btn bag-x" type="button" aria-label="Close">X</button>
+    </div>
+    <div id="shopList" class="bag-list" role="listbox" aria-label="Shelf"></div>
+  </div>
+</div>
+
 <!-- Stats card (TYPES_STATS as-built 7): any tab can open it for a pet id (openStatsCard) -->
 <div id="ovStats" class="overlay" hidden>
   <div class="ov-inner stats-card" role="dialog" aria-modal="true" aria-labelledby="scName">
@@ -331,15 +347,15 @@
 </div>
 
 <div id="toast" aria-live="polite"></div>
-<script>window.BUILD = "20261008-1546";</script>
-<script src="sprites.js?v=20261008-1546"></script>
-<script src="keeper.js?v=20261008-1546"></script>
-<script src="stats.js?v=20261008-1546"></script>
-<script src="moves.js?v=20261008-1546"></script>
-<script src="data/mapdata.js?v=20261008-1546"></script>
-<script src="save.js?v=20261008-1546"></script>
-<script src="env.js?v=20261008-1546"></script>
-<script src="sfx.js?v=20261008-1546"></script>
-<script src="game.js?v=20261008-1546"></script>
+<script>window.BUILD = "20261008-1556";</script>
+<script src="sprites.js?v=20261008-1556"></script>
+<script src="keeper.js?v=20261008-1556"></script>
+<script src="stats.js?v=20261008-1556"></script>
+<script src="moves.js?v=20261008-1556"></script>
+<script src="data/mapdata.js?v=20261008-1556"></script>
+<script src="save.js?v=20261008-1556"></script>
+<script src="env.js?v=20261008-1556"></script>
+<script src="sfx.js?v=20261008-1556"></script>
+<script src="game.js?v=20261008-1556"></script>
 </body>
 </html>

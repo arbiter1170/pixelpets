@@ -395,6 +395,13 @@ function buildWorldArt(){
   A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'l'],[7,'s'],[11,'l']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.l,1,7,14,1); });
   A.crate = mkTile(g => { px(g,PAL.d,1,3,14,13); px(g,PAL.o,2,4,12,11); px(g,PAL.d,2,9,12,1); for (let i=0;i<11;i++) px(g,PAL.d,2+i,4+i,1,1); px(g,PAL.y,3,5,1,1); });
   A.pickup = mkTile(g => { oval(g,7.5,10,4,3.5,PAL.k); oval(g,7.5,10,3,2.5,PAL.r); px(g,PAL.w,6,9,1,1); px(g,PAL.y,7,6,2,2); px(g,PAL.w,12,4,1,1); px(g,PAL.y,11,4,3,1); px(g,PAL.y,12,3,1,3); });
+  // Travel Shelf (INVENTORY §5): a short wooden shelf with snack jars, used at (6,2) in hm_lantern_in.
+  A.travel_shelf = mkTile(g => {
+    px(g,PAL.d,1,2,14,13); px(g,PAL.o,2,3,12,11); px(g,PAL.d,2,7,12,1); px(g,PAL.d,2,12,12,1);
+    [[3,'r'],[6,'y'],[9,'g'],[12,'c']].forEach(([x,c]) => { px(g,PAL.k,x,4,2,3); px(g,PAL[c],x,5,2,2); });
+    [[4,'y'],[7,'r'],[10,'o']].forEach(([x,c]) => { px(g,PAL.k,x,9,2,3); px(g,PAL[c],x,10,2,2); });
+    px(g,PAL.k,1,15,14,1);
+  });
   A.talk = ['.wwwwww.','wwwwwwww','wkwkwkww','wwwwwwww','.wwwwww.','..ww....','.w......','........'];   // 8x8 speech bubble (INTERIORS §6)
   return A;
 }

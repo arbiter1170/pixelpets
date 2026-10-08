@@ -187,7 +187,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -523,6 +523,10 @@ const WORLD = (() => {
     for (const o of pt.replaceObjs || []) { const k = m.objs.findIndex(x => x.id === o.id); if (k >= 0) m.objs[k] = JSON.parse(JSON.stringify(o)); else m.objs.push(JSON.parse(JSON.stringify(o))); }
   }
   Object.assign(W, JSON.parse(JSON.stringify(MD.interiors.maps)));
+  // INVENTORY §5: the Travel Shelf at (6,2) in the Lantern House (data copies stay verbatim, so it's added here).
+  if (W.hm_lantern_in && !W.hm_lantern_in.objs.some(o => o.id === 'travel_shelf'))
+    W.hm_lantern_in.objs.push({ kind: 'prop', id: 'travel_shelf', x: 6, y: 2, sprite: 'travel_shelf', name: 'the Travel Shelf',
+      shop: ['heal_snack', 'hearty_snack', 'wake_tonic', 'befriend_treat', 'energy_sip', 'joy_crumb'], lines: { else: 'Travel Shelf · Leave Acorns, take a snack. — I.' } });
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -1190,6 +1194,7 @@ function interact(o){
     return runSteps([['say', t.name, t.lines.win]], ctx);
   }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
+  if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop); return; }
   if (o.kind === 'wild') return o.scene ? runScene(o.scene, ctx) : undefined;
   if (o.scene && !scenePlayed(o.scene)) return runScene(o.scene, ctx);
   const line = linesFor(o);
@@ -2187,7 +2192,7 @@ function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); draw
 function paintUiIcons(){
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
-  paintAcorn($('#bagAcorn'));
+  paintAcorn($('#bagAcorn')); paintAcorn($('#shopAcorn'));
 }
 function bagVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene); }
 function syncBagBtns(){
@@ -2205,7 +2210,7 @@ function closeBag(){
 }
 function renderBag(){
   if (!S) return;
-  paintAcorn($('#bagAcorn'));
+  paintAcorn($('#bagAcorn')); paintAcorn($('#shopAcorn'));
   $('#bagMoney').textContent = String(S.money | 0);
   const list = $('#bagList'), empty = $('#bagEmpty');
   list.textContent = '';
@@ -2260,6 +2265,58 @@ function bagKey(e){
     const id = ids[bagSel]; if (id && !(ITEMS[id].use.length === 1 && ITEMS[id].use[0] === 'battle')) useBagItem(id);
     return true;
   }
+  return false;
+}
+
+/* ---------- Travel Shelf shop (INVENTORY §5) ---------- */
+const SHELF_LINE = 'Travel Shelf \u00b7 Leave Acorns, take a snack. \u2014 I.';
+const SHELF_EMPTY = "Empty for now. Ilse restocks once you've a partner.";
+let shopIds = [], shopSel = 0;
+function openShop(ids){
+  if (!S || overlayOpen()) return;
+  clearMoves(); shopIds = (ids || ITEM_ORDER).filter(k => ITEMS[k]); shopSel = 0;
+  renderShop(); $('#ovShop').hidden = false; lockTabs(true); sfx('tap');
+}
+function closeShop(){ if ($('#ovShop').hidden) return; $('#ovShop').hidden = true; lockTabs(false); updateHUD(); }
+function renderShop(){
+  if (!S) return;
+  paintAcorn($('#shopAcorn')); $('#shopMoney').textContent = String(S.money | 0);
+  const list = $('#shopList'); list.textContent = '';
+  shopIds.forEach((id, i) => {
+    const it = ITEMS[id];
+    const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
+    const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
+    ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    const meta = document.createElement('div'); meta.className = 'bag-meta';
+    const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = it.name;
+    const own = document.createElement('div'); own.className = 'bag-blurb shop-own'; own.textContent = '\u00d7' + itemCount(id) + ' owned';
+    meta.append(nm, own);
+    const pr = document.createElement('div'); pr.className = 'shop-price'; pr.textContent = String(it.price);
+    const buy = document.createElement('button'); buy.type = 'button'; buy.className = 'btn bag-use shop-buy'; buy.textContent = 'BUY';
+    buy.addEventListener('click', e => { e.stopPropagation(); shopSel = i; buyItem(id); });
+    row.addEventListener('click', () => { shopSel = i; $$('.shop-row').forEach((r, j) => r.classList.toggle('sel', j === shopSel)); });
+    row.append(ico, meta, pr, buy); list.appendChild(row);
+  });
+  const sel = list.children[shopSel]; if (sel) sel.scrollIntoView({ block: 'nearest' });
+}
+// One BUY = one item. Bag full first (it's the clearer reason), then Acorns; a refusal changes nothing.
+function buyItem(id){
+  const it = ITEMS[id]; if (!it || !S) return { ok: false, msg: '' };
+  let msg = null;
+  if (itemCount(id) >= it.cap) msg = "Bag can't hold more.";
+  else if ((S.money | 0) < it.price) msg = 'Not enough Acorns.';
+  if (msg) { sfx('denied'); toast(msg); return { ok: false, msg }; }
+  S.money = (S.money | 0) - it.price; S.bag[id] = itemCount(id) + 1;
+  sfx('tap'); msg = '+1 ' + it.name; toast(msg); save();
+  if (!$('#ovShop').hidden) renderShop();
+  return { ok: true, msg };
+}
+function shopKey(e){
+  if ($('#ovShop').hidden) return false;
+  if (e.key === 'Escape') { closeShop(); return true; }
+  if (e.key === 'ArrowDown') { shopSel = Math.min(shopIds.length - 1, shopSel + 1); renderShop(); return true; }
+  if (e.key === 'ArrowUp') { shopSel = Math.max(0, shopSel - 1); renderShop(); return true; }
+  if (e.key === 'Enter') { if (!e.repeat && shopIds[shopSel]) buyItem(shopIds[shopSel]); return true; }
   return false;
 }
 
@@ -2747,6 +2804,8 @@ function bindInput(){
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#bagClose').addEventListener('click', () => closeBag());
   $('#ovBag').addEventListener('click', e => { if (e.target === e.currentTarget) closeBag(); });
+  $('#shopClose').addEventListener('click', () => closeShop());
+  $('#ovShop').addEventListener('click', e => { if (e.target === e.currentTarget) closeShop(); });
   $('#lookShuffle').addEventListener('click', shuffleLook);
   $('#lookDone').addEventListener('click', lookDone);
   $('#lookCancel').addEventListener('click', () => { sfx('tap'); closeLook(); });
@@ -2840,6 +2899,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
+    if (shopKey(e)) { e.preventDefault(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
     if (DEBUG) {                                 // debug keys only with ?debug=1
       if (e.key === 'e' || e.key === 'E') { startEvolution(true); return; }          // force evolve
@@ -3012,6 +3072,8 @@ function boot(){
     giveItem: (id, n = 1) => { n |= 0; const c = Math.max(0, itemCount(id) + n); if (c) S.bag[id] = c; else delete S.bag[id]; save(); return c; },   // debug: no cap; a negative n trims (INVENTORY §6)
     useItem: (id, petId, ctx = 'field') => { const r = useItem(id, petId || (pet() && pet().id), ctx); if (r.ok) { updateHUD(); save(); } return r; },
     grantItem: (id, n) => { const r = grantItem(id, n); save(); return r; },
+    buyItem: id => buyItem(id),
+    openShop: () => openShop(),
     setMoney: n => { S.money = Math.max(0, n | 0); save(); return S.money; },
     battle,
     setMoves: ids => { const p = pet(); if (!p) return; p.moves = (ids || []).filter(id => MOVES[id]).slice(0, 4); save(); return p.moves.slice(); },
@@ -3048,6 +3110,7 @@ function boot(){
     typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
+  Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows
   Object.defineProperty(api, 'fading', { enumerable: true, get(){ return fade.busy; } });
   Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
