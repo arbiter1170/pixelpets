@@ -1,0 +1,88 @@
+# PixelPets (prototype)
+Open `index.html` directly, or run `python3 -m http.server` in this folder and visit http://localhost:8000.
+No build step. The only network use is the optional local-creatures lookup (see Wild creatures below).
+Progress saves to localStorage (`pixelpets.save.v1`).
+
+Touch: bottom tabs (Pet / Walk / Pets / Friends); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
+walk into a wild creature (or tap it and your pet walks over) to meet it.
+Keyboard (bonus): Arrows/WASD walk, 1-4 tabs, Space = Befriend in an encounter.
+Debug: E = force-evolve current partner, G = force a wild encounter (species weighted by the current area), F = toggle fast mode. Console: `PixelPets.giveXp(50)`
+(ignores the caps), `PixelPets.resetDailyCaps()` (clears today's care and explore XP for the partner).
+
+Stat pacing: FOOD, JOY and NRG drain in real time for every pet you own (not just the partner).
+From full they take about 16h / 20h / 24h to empty and drop into the blinking "needs attention"
+zone (<25) after about 12h / 15h / 18h; JOY drains twice as fast while FOOD is under 20.
+While you're away (closed app or background tab) the same rates apply with no time cap, but
+away-time never pushes a stat below 10.
+
+Care balance: each pet has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 30 min),
+saved with the pet so reloading doesn't reset it. A button on cooldown greys out and shows the time
+left; tapping it explains the wait. Gains shrink as the stat fills: full below 50, half from 50 to 79,
+a quarter at 80+ (FEED +25/+12.5/+6.25, PLAY +20/+10/+5 joy, REST +30/+15/+7.5 energy).
+Daily XP caps (per pet, reset at local midnight):
+- Care XP (FEED +2, PLAY +5, REST +1): up to 25 a day. After that, actions still restore stats but give no XP.
+- Explore XP: up to 30 a day, shared by walking (1 XP per 5 steps; leftover steps carry over, even
+  across sessions) and befriending (+10, or whatever still fits under the cap). Befriending a pet
+  always works, even at the cap; only the XP stops.
+So a pet can earn at most 55 XP a day: stage 2 (40 XP) on day 1 and stage 3 (120 XP) around day 3
+for a player who maxes both caps, or day 2 and day 5 with care only. The Pet tab shows
+"Today: care XP 12/25 · explore XP 8/30"; the Walk tab shows EXP 8/30. A counter turns green when maxed.
+
+Fast mode (debug): the old demo pacing (full to starving in about 17 minutes) for testing.
+Turn it on with `?fast=1` in the URL (`?fast=0` turns it off), the F key, or
+`PixelPets.setFast(true)` / `PixelPets.setFast(false)` in the console. The choice is remembered in
+localStorage key `pixelpets.fast` (separate from the save). While it's on, a small FAST tag shows
+next to the pet's name in the header, and a toast appears on toggle and on load.
+Fast mode also shrinks care cooldowns by the same ratio (~1/57: FEED ~21s, PLAY ~10s, REST ~31s);
+the daily XP caps are not scaled (use `PixelPets.resetDailyCaps()`).
+
+Wild creatures: there are no hidden tall-grass rolls any more. 3-4 wild pets wander the Walk map
+(on grass, shore or woods tiles, blocked by trees/water, never on the path). They bob and blink,
+leave after ~2.5-4.5 minutes of Walk time (or sooner when far off-screen) and new ones pop in.
+Bump into one, or tap it so your pet walks next to it, to start an encounter with exactly that
+species and form. Second forms are rare (15%, they twinkle). RUN leaves the creature where it
+is (it shies away for a moment); befriending or letting it flee removes it.
+
+Which species appear depends on where you are and the weather there:
+- Habitats: EMBER hot, meadow · TIDE water, rain · BLOOM forest, park, meadow · STONE mountain ·
+  VOLT city, storm · FROST snow, cold · GUST storm, wind, rain · SHADE night, fog.
+  Each species has habitat weights in `sprites.js`; every active tag adds its weight, and 8% of
+  spawns are any species, so nothing is impossible anywhere. The Walk badge's card lists the
+  three most likely species.
+- Tags: mountain (elevation >= 800 m or >= 150 m relief within ~1 km), water / city / forest / park
+  (OpenStreetMap features within 350 m; city = several urban landuse areas or 40+ buildings),
+  meadow (none of those), rain / snow / storm / fog (current weather code), hot (>= 28 °C),
+  cold (<= 3 °C), windy (>= 30 km/h), night (sun down there; device clock 20:00-06:00 as fallback).
+- The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
+  snow fall over the map, storms flash, fog hazes it and night tints it.
+
+Location and privacy: on the first visit to Walk a card asks "Use your location so local creatures
+appear? ..." with Allow / Not now. Only Allow calls the browser's Geolocation API; the answer is
+remembered (`pixelpets.geo`) and you can change it from the badge card (USE MY LOCATION).
+Coordinates are rounded to 2 decimals (about 1 km) before any request, and only the rounded
+values are sent. Nothing is sent anywhere else and the save never holds location.
+The browser only offers location in a secure context: `http://localhost` (as above) or https.
+A plain-http LAN address (e.g. testing on a phone via 192.168.x.x) will fall back to the default.
+Data sources (all free, no API key, CORS-enabled):
+- Open-Meteo forecast (temperature, weather code, day/night, wind, elevation) and Open-Meteo
+  elevation (5 points ~1 km apart for relief).
+- Overpass API (OpenStreetMap) via overpass-api.de, falling back to the maps.mail.ru mirror: one
+  tiny "count" query for water, urban landuse, buildings, woods and parks. It can be slow (10-20 s
+  in big cities) or busy; then Nominatim reverse geocoding (OpenStreetMap) decides city vs not.
+Results are cached in `pixelpets.env` (separate from the save) per rounded location: weather for
+30 minutes, terrain for 7 days (30 minutes if only partly loaded). Denied, unsupported, offline or
+failed lookups fall back to a plain meadow (plus night from the device clock); play is never
+blocked and the badge shows NO GPS / OFFLINE / DEFAULT.
+
+Pick a place (debug): the badge card has preset buttons (Meadow, City, City rain, Mountain, Lake,
+Forest, Desert, Snow, Storm, Night, plus AUTO to go back to real data), saved in
+`pixelpets.envOverride`. Console hooks:
+- `PixelPets.env`: current area `{tags, label, status, temp, place, ...}`.
+- `PixelPets.setEnv('snow')` or `PixelPets.setEnv(['city','rain'])`; `PixelPets.setEnv(null)` = real data again.
+- `PixelPets.refreshEnv()`: refetch now (ignores the cache).
+- `PixelPets.spawnWild(sp?, stage?, x?, y?)`: add a creature (default: area-weighted species, near-ish free tile).
+- `PixelPets.clearWild()` removes all creatures and pauses auto-spawning; `PixelPets.autoWild()` resumes it.
+- `PixelPets.spawnOdds(tags?)`: spawn chances per species for the current (or given) tags.
+
+Reset: `localStorage.removeItem('pixelpets.save.v1')` then reload
+(location choice/cache: `pixelpets.geo`, `pixelpets.env`, `pixelpets.envOverride`).

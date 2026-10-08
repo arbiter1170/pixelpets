@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1a1c2c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>PixelPets</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="who"><canvas id="hdrIcon" width="18" height="18"></canvas><span id="hdrName">PixelPets</span><span id="fastTag" class="fast-tag" title="Debug fast decay is on" hidden>FAST</span></div>
+    <div class="lv"><span id="hdrLv">Lv 1</span><span id="hdrStage" class="stagedots"></span></div>
+  </header>
+
+  <main>
+    <!-- PET CARE -->
+    <section id="scr-pet" class="screen active">
+      <div class="scene-wrap"><canvas id="petCanvas" width="56" height="56"></canvas></div>
+      <div class="stats">
+        <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
+        <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
+        <div class="stat"><span>NRG</span><div class="bar"><i id="barEnergy" class="c-nrg"></i></div><b id="valEnergy">0</b></div>
+        <div class="stat"><span>XP</span><div class="bar"><i id="barXp" class="c-xp"></i></div><b id="valXp">0</b></div>
+      </div>
+      <div id="evoHint" class="hint"></div>
+      <div id="dailyXp" class="hint daily"><span class="seg">Today: care XP <b id="dCare">0/25</b></span> <span class="sep">&middot;</span> <span class="seg">explore XP <b id="dExp">0/30</b></span></div>
+      <button id="evolveBtn" class="btn btn-evo" hidden>&#9733; EVOLVE! &#9733;</button>
+      <div class="actions">
+        <button class="btn btn-feed" data-act="feed">FEED</button>
+        <button class="btn btn-play" data-act="play">PLAY</button>
+        <button class="btn btn-rest" data-act="rest">REST</button>
+      </div>
+    </section>
+
+    <!-- WALK -->
+    <section id="scr-walk" class="screen">
+      <div class="walk-hud">
+        <div class="mini grow"><span>NRG</span><div class="bar"><i id="wBarEnergy" class="c-nrg"></i></div></div>
+        <div class="mini"><span>XP</span><b id="wXp">0</b></div>
+        <div class="mini"><span>STEPS</span><b id="wSteps">0</b></div>
+        <div class="mini" title="Explore XP today (walking + befriending)"><span>EXP</span><b id="wExp">0/30</b></div>
+      </div>
+      <button id="envBadge" class="env-badge" type="button"><span id="envText">Meadow</span><small id="envSrc"></small></button>
+      <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" width="176" height="176"></canvas></div>
+      <div class="walk-ctl">
+        <div class="dpad" id="dpad">
+          <button class="dp up" data-dir="up" aria-label="Up">&#9650;</button>
+          <button class="dp left" data-dir="left" aria-label="Left">&#9664;</button>
+          <div class="dp mid"></div>
+          <button class="dp right" data-dir="right" aria-label="Right">&#9654;</button>
+          <button class="dp down" data-dir="down" aria-label="Down">&#9660;</button>
+        </div>
+        <p class="tip">Hold the pad, tap a tile, or drag on the map. Walk up to a <b class="tg">wild pet</b> (or tap it) to meet it!</p>
+      </div>
+    </section>
+
+    <!-- COLLECTION -->
+    <section id="scr-col" class="screen">
+      <h2>MY PETS <small id="ownedCount"></small></h2>
+      <div id="ownedList" class="owned"></div>
+      <h2>PIXELDEX <small id="dexCount"></small></h2>
+      <div id="dexGrid" class="dex"></div>
+    </section>
+
+    <!-- FRIENDS (stub) -->
+    <section id="scr-friends" class="screen">
+      <h2>FRIENDS</h2>
+      <div class="panel">
+        <div class="label">YOUR FRIEND CODE</div>
+        <div id="friendCode" class="fcode">----</div>
+        <button id="copyCode" class="btn btn-play">COPY CODE</button>
+      </div>
+      <div class="panel">
+        <div class="label">ADD A FRIEND</div>
+        <input id="friendInput" placeholder="PXP-XXXX-XXXX" disabled>
+        <button class="btn" disabled>ADD (COMING SOON)</button>
+      </div>
+      <div class="panel">
+        <div class="label">FRIEND LIST</div>
+        <ul class="flist">
+          <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+          <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+          <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+        </ul>
+        <p class="note">Online friends, visits &amp; trading come in a later update. This prototype has no server &mdash; your code is generated from your local save.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav id="tabs">
+    <button data-tab="pet" class="active"><canvas width="8" height="8" data-icon="paw"></canvas><span>PET</span></button>
+    <button data-tab="walk"><canvas width="8" height="8" data-icon="walk"></canvas><span>WALK</span></button>
+    <button data-tab="col"><canvas width="8" height="8" data-icon="book"></canvas><span>PETS</span></button>
+    <button data-tab="friends"><canvas width="8" height="8" data-icon="friends"></canvas><span>FRIENDS</span></button>
+  </nav>
+</div>
+
+<!-- Encounter overlay -->
+<div id="ovEncounter" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title" id="encTitle">A wild pet appears!</div>
+    <div class="scene-wrap"><canvas id="encCanvas" width="56" height="44"></canvas></div>
+    <div id="encMsg" class="hint">Tap BEFRIEND when the marker is in the green zone!</div>
+    <div class="tbar" id="tbar"><div class="tzone" id="tzone"></div><div class="tmark" id="tmark"></div></div>
+    <div id="encTries" class="tries"></div>
+    <div class="actions two">
+      <button id="encGo" class="btn btn-feed">BEFRIEND</button>
+      <button id="encRun" class="btn btn-rest">RUN</button>
+    </div>
+  </div>
+</div>
+
+<!-- Evolution overlay -->
+<div id="ovEvolve" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title" id="evoTitle">What's happening?!</div>
+    <div class="scene-wrap"><canvas id="evoCanvas" width="56" height="44"></canvas></div>
+    <div id="evoMsg" class="hint">&nbsp;</div>
+    <button id="evoOk" class="btn btn-play" hidden>AWESOME!</button>
+  </div>
+</div>
+
+<!-- Starter overlay -->
+<div id="ovStarter" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title">CHOOSE YOUR FIRST PET</div>
+    <div id="starterList" class="starters"></div>
+    <p class="note">Care for it, walk it, and help it evolve!</p>
+  </div>
+</div>
+
+<!-- Location ask (first Walk visit) -->
+<div id="ovGeo" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title">LOCAL CREATURES?</div>
+    <p class="geo-text">Use your location so local creatures appear? Your location stays on your device except a rounded lookup for weather and terrain.</p>
+    <div class="actions two">
+      <button id="geoAllow" class="btn btn-play">ALLOW</button>
+      <button id="geoLater" class="btn btn-rest">NOT NOW</button>
+    </div>
+  </div>
+</div>
+
+<!-- Wild area details + place picker -->
+<div id="ovEnv" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title">WILD AREA</div>
+    <div id="envCardLabel" class="env-card-label">Meadow</div>
+    <div id="envCardTags" class="note"></div>
+    <div id="envCardLikely" class="note"></div>
+    <div id="envCardSrc" class="note"></div>
+    <button id="envUseLoc" class="btn btn-play">USE MY LOCATION</button>
+    <div class="label">PICK A PLACE (DEBUG)</div>
+    <div id="envPresets" class="env-presets"></div>
+    <button id="envClose" class="btn">CLOSE</button>
+  </div>
+</div>
+
+<div id="toast" aria-live="polite"></div>
+<script src="sprites.js"></script>
+<script src="env.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
