@@ -3030,9 +3030,22 @@ function pumpBuildBar(){
   const show = !!buildChk.ready && !readOnly && !overlayOpen();
   if (el.hidden === show) el.hidden = !show;
 }
+// Reload URL that skips the Pages cache for index.html: same path, a fresh b= first (an old b= dropped), every other param
+// (debug, fast, cloud...) kept in order, the hash kept. Params are only ever read by name, so b= is inert.
+function freshUrl(build){
+  const q = new URLSearchParams(location.search); q.delete('b');
+  const rest = q.toString(), b = encodeURIComponent((build || 'x') + '.' + Date.now().toString(36));
+  return location.pathname + '?b=' + b + (rest ? '&' + rest : '') + location.hash;
+}
+// After such a reload, tidy b= out of the address bar (DEBUG / fast / cloud already read their params at load).
+function dropBuildParam(){
+  try { const q = new URLSearchParams(location.search); if (!q.has('b')) return; q.delete('b'); const rest = q.toString();
+    history.replaceState(history.state, '', location.pathname + (rest ? '?' + rest : '') + location.hash); } catch(e) {}
+}
 function startBuildCheck(){
   const el = $('#buildBar'); if (!el) return;
-  $('#buildGo').addEventListener('click', () => { save(); location.reload(); });
+  $('#buildGo').addEventListener('click', () => { save(); location.replace(freshUrl(buildChk.ready)); });
+  dropBuildParam();
   $('#buildX').addEventListener('click', () => { buildChk.gone = buildChk.ready; buildChk.ready = null; pumpBuildBar(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkBuild(); });
   setInterval(pumpBuildBar, 500);
