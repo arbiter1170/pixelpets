@@ -1287,6 +1287,7 @@ function commitPending(){ const P = scene.pending; scene.pending = []; for (cons
 function endScene(){
   const sc = scene; if (!sc) return;
   commitPending();
+  clearCast(sc);
   if (sc.npc) delete mapRT.face[sc.npc.id];
   if (sc.npc && (sc.npc.kind === 'npc' || sc.npc.kind === 'trainer')) bump.talked = sc.npc.id;
   scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
@@ -1298,6 +1299,30 @@ function endScene(){
   else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
 }
 const pend = f => scene.pending.push(f);
+// Scene cast: someone a scene brings into a room who has no map object there. MAPS_SLICE §8 `starter`: "The door bangs open.
+// Rook skids in" (the Lodge has only Ilse, and outdoor rook_home lives on the Hearthmoor map), so nothing drew him. He appears on
+// the first line that names him or that he speaks, just inside the door mat, facing the keeper, and leaves when the scene ends.
+// A plain npc pushed into CUR.objs for the scene only: drawn, blocking and listed like any other; never saved.
+const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', map: 'hm_lodge_in' }] };
+function castOnSay(who, text){
+  const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
+  for (const c of cast) {
+    if (c.map !== CUR.id || CUR.objs.some(o => o.id === c.id)) continue;
+    if (who !== c.name && !new RegExp('\\b' + c.name + '\\b').test(text || '')) continue;
+    const at = castSpot(); if (!at) continue;
+    const dx = S.world.x - at.x, dy = S.world.y - at.y;
+    const o = { kind: 'npc', id: c.id, name: c.name, look: c.look, x: at.x, y: at.y, cast: true,
+      facing: Math.abs(dx) >= Math.abs(dy) && dx ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up') };
+    CUR.objs.push(o); (scene.cast = scene.cast || []).push({ objs: CUR.objs, o });
+  }
+}
+function castSpot(){                         // a free floor tile next to the door mat (the room's exit warp), else near it
+  const mat = CUR.objs.find(o => o.kind === 'warp') || { x: S.world.x, y: S.world.y + 1 };
+  const free = (x, y) => !solid(x, y) && !(x === S.world.x && y === S.world.y) && !(x === fol.x && y === fol.y);
+  for (const [dx, dy] of [[1, -1], [-1, -1], [0, -1], [2, -1], [-2, -1], [1, -2], [-1, -2]]) if (free(mat.x + dx, mat.y + dy)) return { x: mat.x + dx, y: mat.y + dy };
+  return null;
+}
+function clearCast(sc){ for (const { objs, o } of sc.cast || []) { const i = objs.indexOf(o); if (i >= 0) objs.splice(i, 1); } sc.cast = null; }
 function viewPet(){ return scene && scene.view.pet ? scene.view.pet : pet(); }
 function viewPetName(){
   const v = scene && scene.view, p = viewPet(); if (!p) return '';
@@ -1315,7 +1340,7 @@ function expand(text){
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene;
   switch (k) {
-    case 'say': { if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; await sayBox(a, tx); return; }
+    case 'say': { if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); await sayBox(a, tx); return; }
     case 'choice': {
       sc.skip = false;
       const pick = await choiceBox(expand(a), b.map(o => o[0]));
