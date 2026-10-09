@@ -1859,11 +1859,11 @@ async function battleIntro(id){
 }
 function closeBattle(){
   const B = battle; if (!B.on) return;
-  if (B.result === 'befriended' && B.newId) {               // optional nickname (skip = species name)
+  if (B.result === 'befriended' && B.newId && !$('#encName').hidden) {   // optional nickname (skip = species name); never read while the row is hidden (a faded one is named later)
     const p = petById(B.newId), nk = cleanNick($('#encNick').value);
     if (p && nk && nk !== nameOf(spi(p), p.stage)) { p.nick = nk; toast(nameOf(spi(p), p.stage) + ' is now called ' + nk + '!'); }
   }
-  $('#encName').hidden = true; $('#encNick').blur(); $('#btSeal').hidden = true;
+  $('#encName').hidden = true; $('#encNick').value = ''; $('#encNick').blur(); $('#btSeal').hidden = true;   // no nickname carries over to the next befriend
   B.on = false; B.state = 'IDLE'; msgSkip = null; closeSheet(null);
   $('#ovBattle').hidden = true; lockTabs(false);
   const w = B.wid && wild.list.find(o => o.id === B.wid);
