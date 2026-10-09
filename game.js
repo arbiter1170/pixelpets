@@ -1866,18 +1866,18 @@ function openBattle(o){
 }
 async function battleIntro(id){
   const B = battle, p = activePet(), t = tr();
-  B.fx.push({ who: 'foe', kind: 'pop', t0: now(), dur: 300 });
+  sendOutFx('foe');
   if (B.kind === 'trainer') {
     if (!B.mapIntro) {                                                       // debug forceTrainer only: no map text box to say them in
       await say(t.name + ': ' + trLine(t.lines.intro), id);                 // MAPS_SLICE §6.1 summon sequence
       if (!alive(id)) return; await say(btLine('trainerSummon'), id); if (!alive(id)) return;
     }
     await say(btLine('trainerIntro'), id);
-    if (!alive(id)) return; B.fx.push({ who: 'me', kind: 'pop', t0: now(), dur: 300 }); B.meShown = true;
+    if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
     await say(btLine('playerSend'), id);
   } else {
     await say(btLine('wildAppear'), id);
-    if (!alive(id)) return; B.fx.push({ who: 'me', kind: 'pop', t0: now(), dur: 300 }); B.meShown = true;
+    if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
     await say(btLine('wildSend', { pet: petName(p) }), id);
   }
   if (alive(id)) toChoose();
@@ -2062,7 +2062,7 @@ async function playerAction(a, id){
   if (a.kind === 'swap') {
     await say(btLine('swapOut', { pet: petName(p) }), id); if (!alive(id)) return true;
     B.me = { petId: a.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(petById(a.id)) }; B.participants[B.fi].add(a.id);
-    B.fx.push({ who: 'me', kind: 'pop', t0: now(), dur: 300 }); renderBattleCards();
+    sendOutFx('me'); renderBattleCards();
     await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(petById(a.id)) }), id);
     B.foePlan = aiPick(); return false;                    // the foe re-reads the new target's type (no peeking at the action itself)
   }
@@ -2152,6 +2152,10 @@ async function applyStage(side, e, id){
   const d = Math.abs(nx - cur);
   await say(nm + "'s " + S_ + (e.stages > 0 ? (d > 1 ? ' went way up!' : ' went up!') : (d > 1 ? ' dropped a lot!' : ' dropped!')), id);
 }
+// A new pet coming out on a side replaces that side's worn-out silhouette. The 'faint'/'flee' fx are kept on purpose (the worn-out pet
+// stays a grey silhouette, 4 px down, until it leaves), so without this the next pet sent out (forced swap, a trainer's next Walkling)
+// was drawn as the grey silhouette too (Vincent's playtest).
+function sendOutFx(who){ const B = battle; B.fx = B.fx.filter(e => !(e.who === who && (e.kind === 'faint' || e.kind === 'flee'))); B.fx.push({ who, kind: 'pop', t0: now(), dur: 300 }); }
 async function knockOut(side, id){
   const B = battle;
   if (side === 'me') {
@@ -2185,9 +2189,9 @@ async function endCheck(id){
     if (B.kind === 'trainer' && B.fi < B.foes.length - 1) {
       B.fi++; const nf = curFoe(); B.participants[B.fi].add(p.id); markSeen(nf.si, nf.stage);
       if (hpOf(p) > 0) {
-        B.fx.push({ who: 'foe', kind: 'pop', t0: now(), dur: 300 }); renderBattleCards();
+        sendOutFx('foe'); renderBattleCards();
         await say(btLine('trainerSend'), id); if (!alive(id)) return;
-      } else { renderBattleCards(); }
+      } else { sendOutFx('foe'); renderBattleCards(); }
     } else { await finish('win', id); return; }
   }
   if (hpOf(activePet()) <= 0) {
@@ -2196,7 +2200,7 @@ async function endCheck(id){
     const pick = await swapSheet(true); if (!alive(id)) return;
     const q = petById(pick) || next[0];
     B.me = { petId: q.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(q) }; B.participants[B.fi].add(q.id);
-    B.fx.push({ who: 'me', kind: 'pop', t0: now(), dur: 300 }); renderBattleCards();
+    sendOutFx('me'); renderBattleCards();
     await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(q) }), id);
     if (B.kind === 'trainer' && curFoe().hp > 0 && B.foeJustSent) {}
   }
