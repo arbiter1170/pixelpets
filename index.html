@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261009-1509">
+<meta name="kw-build" content="20261009-1554">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261009-1509">
+<link rel="stylesheet" href="style.css?v=20261009-1554">
 </head>
 <body>
 <div id="app">
@@ -37,7 +37,7 @@
       </div>
       <div id="evoHint" class="hint"></div>
       <div id="dailyXp" class="hint daily"><span class="seg">Today: care XP <b id="dCare">0/25</b></span> <span class="sep">&middot;</span> <span class="seg">explore XP <b id="dExp">0/30</b></span></div>
-      <button id="evolveBtn" class="btn btn-evo" hidden type="button"><canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas> EVOLVE! <canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas></button>
+      <button id="evolveBtn" class="btn btn-evo" hidden type="button"><canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas> GROW UP! <canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas></button>
       <div class="actions">
         <button class="btn btn-feed" data-act="feed">FEED</button>
         <button class="btn btn-play" data-act="play">PLAY</button>
@@ -74,7 +74,7 @@
     <section id="scr-col" class="screen">
       <h2>MY WALKLINGS <small id="ownedCount"></small></h2>
       <div id="ownedList" class="owned"></div>
-      <h2>PIXELDEX <small id="dexCount"></small></h2>
+      <h2>WALKLING JOURNAL <small id="dexCount"></small></h2>
       <div id="dexGrid" class="dex"></div>
     </section>
 
@@ -83,13 +83,13 @@
       <h2>FRIENDS</h2>
       <div class="panel">
         <div class="keeper-line"><span class="label">KEEPER</span>&nbsp;&nbsp;<b id="keeperName">Wayfarer</b></div>
-        <div class="label">YOUR FRIEND CODE</div>
+        <div class="label">YOUR KEEPER CODE</div>
         <div id="friendCode" class="fcode">----</div>
         <button id="copyCode" class="btn btn-play">COPY CODE</button>
       </div>
       <div class="panel">
         <div class="label">ADD A FRIEND</div>
-        <input id="friendInput" placeholder="PXP-XXXX-XXXX" disabled>
+        <input id="friendInput" placeholder="WLK-XXXX-XXXX" disabled>
         <button class="btn" disabled>ADD (COMING SOON)</button>
       </div>
       <div class="panel">
@@ -105,9 +105,9 @@
   </main>
 
   <nav id="tabs">
-    <button data-tab="pet" class="active"><canvas width="8" height="8" data-icon="paw"></canvas><span>PET</span></button>
+    <button data-tab="pet" class="active"><canvas width="8" height="8" data-icon="paw"></canvas><span>PARTNER</span></button>
     <button data-tab="walk"><canvas width="8" height="8" data-icon="walk"></canvas><span>WALK</span></button>
-    <button data-tab="col"><canvas width="8" height="8" data-icon="book"></canvas><span>PETS</span></button>
+    <button data-tab="col"><canvas width="8" height="8" data-icon="book"></canvas><span>WALKLINGS</span></button>
     <button data-tab="friends"><canvas width="8" height="8" data-icon="friends"></canvas><span>FRIENDS</span></button>
   </nav>
 </div>
@@ -129,11 +129,11 @@
     <div id="btMsg" class="bt-msg" role="status" aria-live="polite"></div>
     <div class="bt-panel">
       <div id="btActs" class="bt-acts">
-        <button class="btn btn-feed bt-fight" data-bact="fight" type="button">FIGHT</button>
+        <button class="btn btn-feed bt-fight" data-bact="fight" type="button">MOVES</button>
         <button id="btBefriendAct" class="btn btn-play bt-bef" data-bact="befriend" type="button">BEFRIEND <span id="btHearts" class="bt-hearts"></span></button>
         <button class="btn bt-small" data-bact="swap" type="button">SWAP</button>
         <button class="btn bt-small" data-bact="bag" type="button">BAG</button>
-        <button id="btRun" class="btn btn-rest bt-small" data-bact="run" type="button">RUN</button>
+        <button id="btRun" class="btn btn-rest bt-small" data-bact="run" type="button">LEAVE</button>
       </div>
       <div id="btFight" class="bt-fightmenu" hidden>
         <div id="btMoves" class="bt-moves"></div>
@@ -323,7 +323,7 @@
 <!-- Wild area details + place picker -->
 <div id="ovEnv" class="overlay" hidden>
   <div class="ov-inner">
-    <div class="ov-title">WILD AREA</div>
+    <div class="ov-title">AROUND HERE</div>
     <div id="envCardLabel" class="env-card-label">Meadow</div>
     <div id="envCardTags" class="note"></div>
     <div id="envCardLikely" class="note"></div>
@@ -349,17 +349,17 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261009-1509";</script>
-<script src="sprites.js?v=20261009-1509"></script>
-<script src="keeper.js?v=20261009-1509"></script>
-<script src="stats.js?v=20261009-1509"></script>
-<script src="moves.js?v=20261009-1509"></script>
-<script src="data/mapdata.js?v=20261009-1509"></script>
-<script src="save.js?v=20261009-1509"></script>
-<script src="env.js?v=20261009-1509"></script>
-<script src="sfx.js?v=20261009-1509"></script>
-<script src="cloud_config.js?v=20261009-1509"></script>
-<script src="cloud.js?v=20261009-1509"></script>
-<script src="game.js?v=20261009-1509"></script>
+<script>window.BUILD = "20261009-1554";</script>
+<script src="sprites.js?v=20261009-1554"></script>
+<script src="keeper.js?v=20261009-1554"></script>
+<script src="stats.js?v=20261009-1554"></script>
+<script src="moves.js?v=20261009-1554"></script>
+<script src="data/mapdata.js?v=20261009-1554"></script>
+<script src="save.js?v=20261009-1554"></script>
+<script src="env.js?v=20261009-1554"></script>
+<script src="sfx.js?v=20261009-1554"></script>
+<script src="cloud_config.js?v=20261009-1554"></script>
+<script src="cloud.js?v=20261009-1554"></script>
+<script src="game.js?v=20261009-1554"></script>
 </body>
 </html>

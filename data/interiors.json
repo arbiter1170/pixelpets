@@ -32,8 +32,8 @@
         {"kind": "warp", "id": "home_mat", "x": 4, "y": 7, "to": "hearthmoor", "tx": 3, "ty": 5, "facing": "down"},
         {"kind": "prop", "id": "home_bed", "x": 1, "y": 2, "sprite": "bed", "lines": {"else": "@home_bed"}},
         {"kind": "prop", "id": "home_terminal", "x": 3, "y": 2, "sprite": "pet_terminal", "lines": {
-          "!story.starter_received": "Your Walkling-box terminal. A row of empty nests glows softly, waiting for someone small.",
-          "else": "Your Walkling-box terminal hums. Friends you keep but don't walk with rest here. (See the PETS tab.)"}},
+          "!story.starter_received": "Your Walkling-box. A row of empty nests glows softly, waiting for someone small.",
+          "else": "Your Walkling-box hums. Friends you keep but don't walk with rest here. (See the WALKLINGS tab.)"}},
         {"kind": "prop", "id": "home_glowbox", "x": 5, "y": 2, "sprite": "glowbox", "lines": {
           "story.met_glimmerwell": "An ad: \"Glimmerwell. Brighter by nature.\" The jingle is a little too cheerful.",
           "else": "A morning show: \"Keepers of the Amberwild!\" Today: how to tuck in a very sleepy Walkling."}},

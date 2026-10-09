@@ -271,9 +271,9 @@ function updateHUD(){
   const setCount = (el, v, cap) => { const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
   setCount($('#dCare'), cx, CARE_XP_DAILY_CAP); setCount($('#dExp'), ex, EXPLORE_XP_DAILY_CAP); setCount($('#wExp'), ex, EXPLORE_XP_DAILY_CAP);
   const hint = $('#evoHint'), btn = $('#evolveBtn');
-  if (p.stage >= 2) { hint.textContent = 'Final form! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
+  if (p.stage >= 2) { hint.textContent = 'Fully grown! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (isFaded(p)) { hint.textContent = 'Faded: ' + p.faded + ' good-care day' + (p.faded > 1 ? 's' : '') + ' to go (care 60+).'; hint.classList.remove('ready'); btn.hidden = true; }
-  else if (canEvolve(p)) { hint.textContent = petName(p) + ' is ready to evolve!'; hint.classList.add('ready'); btn.hidden = false; }
+  else if (canEvolve(p)) { hint.textContent = petName(p) + ' is ready to grow up!'; hint.classList.add('ready'); btn.hidden = false; }
   else { hint.textContent = 'Next form: GROW ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
   updateCareButtons(); renderPetBadge(p);
 }
@@ -341,7 +341,7 @@ function grantBattleXp(p, n, quiet){   // quiet: the battle shows its own level-
   const from = levelOf(p), before = p.bx;
   p.bx = clamp(before + Math.max(0, Math.round(n) || 0), 0, BX_CAP);
   const to = levelOf(p);
-  if (to > from && !quiet) { sfx('stinger_levelup', xpChimeDelay); toast(petName(p) + ' grew to Lv ' + to + '!'); }
+  if (to > from && !quiet) { sfx('stinger_levelup', xpChimeDelay); toast(petName(p) + ' reached Lv ' + to + '!'); }
   return { gained: p.bx - before, from, to };
 }
 const grantCareXp = (p, n) => grantCapped(p, 'cx', CARE_XP_DAILY_CAP, n);
@@ -388,7 +388,7 @@ function doAction(act){
     setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
     anim.busyUntil = t + (bowl ? 1500 : 1100); msg = bowl ? 'Warm Bowl! ' + petName(p) + ' gobbles it up. +FOOD +JOY' : 'Yum! +FOOD';
   } else if (act === 'play') {
-    if (isFainted(p)) { sfx('denied'); return toast(petName(p) + ' fainted and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
+    if (isFainted(p)) { sfx('denied'); return toast(petName(p) + ' is worn out and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
     if (p.energy < 10) { sfx('denied'); return toast('Too tired to play. REST first!'); }
     p.happy = clamp(p.happy + careGain(20, p.happy), 0, 100); p.energy = clamp(p.energy - 8, 0, 100); p.hunger = clamp(p.hunger - 4, 0, 100);
     anim.jumpUntil = t + 1200; anim.busyUntil = t + 1200;
@@ -788,7 +788,7 @@ const ITEM_ART = {
 const ITEMS = {
   heal_snack:     { name: 'Heal Snack',     plural: 'Heal Snacks',     cap: 20, price: 50,  use: ['battle', 'field'], target: true,  heal: 0.4,  blurb: 'Restores 40% HP.' },
   hearty_snack:   { name: 'Hearty Snack',   plural: 'Hearty Snacks',   cap: 10, price: 150, use: ['battle', 'field'], target: true,  heal: 0.75, blurb: 'Restores 75% HP.' },
-  wake_tonic:     { name: 'Wake Tonic',     plural: 'Wake Tonics',     cap: 5,  price: 400, use: ['battle', 'field'], target: true,  blurb: 'Wakes a fainted Walkling at 25% HP.' },
+  wake_tonic:     { name: 'Wake Tonic',     plural: 'Wake Tonics',     cap: 5,  price: 400, use: ['battle', 'field'], target: true,  blurb: 'Wakes a worn-out Walkling at 25% HP.' },
   befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild battles only. Easier to befriend.' },
   energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. NRG +40.' },
   joy_crumb:      { name: 'Joy Crumb',      plural: 'Joy Crumbs',      cap: 10, price: 40,  use: ['field'],           target: true,  blurb: 'A sweet treat. JOY +20.' },
@@ -1084,7 +1084,7 @@ function followerBob(t){                       // normal: twice per step / every
 const followerAt = (tx, ty) => fol.x != null && followerOn() && ((fol.x === tx && fol.y === ty) || (Math.round(fol.fx) === tx && Math.round(fol.fy) === ty));
 function toggleFollower(){
   S.settings.follower = S.settings.follower === false; placeFollower(); renderFollowerBtn(); save(); sfx('tap');
-  toast(S.settings.follower ? 'Your partner walks with you.' : 'Your partner waits on the Pet tab.');
+  toast(S.settings.follower ? 'Your partner walks with you.' : 'Your partner waits on the Partner tab.');
 }
 
 /* ---------- look picker #ovLook and the keeper's name (MAPS_SLICE K.2) ---------- */
@@ -1328,7 +1328,7 @@ async function execStep(st){
     case 'givePet': {
       const id = a === '$line' ? sc.vars.line : a, si = SP_INDEX[id]; if (si == null) return;
       const np = newPet(si, 0, 'starter'); sc.view.pet = np; sc.view.nick = undefined;
-      pend(() => { S.party.push(np); S.partnerId = np.id; markCaught(si, 0); scene && scene.toasts.push(petName(np) + ' joined you!'); });
+      pend(() => { S.party.push(np); S.partnerId = np.id; markCaught(si, 0); scene && scene.toasts.push((cleanNick(scene.view.pet === np && scene.view.nick) || petName(np)) + ' joined you!'); });   // the nickname given later in the same scene, else the species
       return;
     }
     case 'setFlag': { const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; }); return; }
@@ -1662,7 +1662,7 @@ function renderEnv(){
   $('#envText').textContent = wildy ? (name ? name + ' \u00b7 ' : '') + ENV.label : (name || (ENV ? ENV.label : ''));
   $('#envSrc').textContent = wildy ? (STATUS_TAG[ENV.status] || '') : '';
   $('#envBadge').classList.toggle('wild', wildy);
-  $('#envBadge').setAttribute('aria-label', wildy ? name + '. Wild area: ' + ENV.label + ' (' + (STATUS_TAG[ENV.status] || '') + '). Tap for details.' : name + '. Tap for location details.');
+  $('#envBadge').setAttribute('aria-label', wildy ? name + '. Around here: ' + ENV.label + ' (' + (STATUS_TAG[ENV.status] || '') + '). Tap for details.' : name + '. Tap for location details.');
   if (!ENV) return;
   if (!$('#ovEnv').hidden) renderEnvCard();
 }
@@ -1684,7 +1684,7 @@ function useLocation(){
   PPEnv.refresh(true).then(e => {
     if (e.status === 'denied') toast('Location blocked. Using a meadow for now.');
     else if (e.status === 'offline') toast('Offline: using a meadow for now.');
-    else if (e.source === 'location') toast('Wild area: ' + e.label);
+    else if (e.source === 'location') toast('Around here: ' + e.label);
   });
 }
 function openEnvCard(){ if (overlayOpen()) return; clearMoves(); renderEnvCard(); $('#ovEnv').hidden = false; lockTabs(true); }
@@ -1872,7 +1872,7 @@ function closeBattle(){
     else if (B.result === 'win' || B.result === 'fled') removeWild(w, true);   // it wandered off
     else { w.idleUntil = 0; w.shyUntil = wild.clock + 1500; }                   // run / team wipe: it stays and scoots away
   }
-  if (B.result === 'run') toast('Got away safely.');
+  if (B.result === 'run') toast('You slipped away safely.');
   const onEnd = B.onEnd; B.onEnd = null;
   if (B.result === 'tired' && !onEnd) respawnAfterWipe();   // in a scene the respawn waits for the scene's end (§6 rival1)
   updateHUD(); save();
@@ -1884,8 +1884,8 @@ function respawnAfterWipe(){
   const id = WORLD[S.world.respawn] ? S.world.respawn : 'hearthmoor', m = WORLD[id];
   const at = m.respawnIn ? m.respawnIn : Object.assign({ map: id }, m.respawn || m.safe);
   clearMoves(); arriveAt(at);
-  toast(m.respawnIn ? 'Your team fainted... you wake at the Lantern House. Rest by the beds.'
-    : 'Your team fainted... you wake at the ' + (m.name || 'town') + ' Lantern House door. Step inside to rest.');
+  toast(m.respawnIn ? 'Your team is worn out... you wake at the Lantern House. Rest by the beds.'
+    : 'Your team is worn out... you wake at the ' + (m.name || 'town') + ' Lantern House door. Step inside to rest.');
 }
 // Lantern House REST / interior `rest` step (Phase M calls this): every party pet to full HP, naps cleared.
 function lanternRest(){ S.party.forEach(q => restPet(q, 'full')); updateHUD(); save(); }
@@ -1972,7 +1972,7 @@ function toChoose(){
   B.state = 'CHOOSE';
   const p = activePet(); B.me.mood = moodOf(p);              // mood is read at the start of each turn
   B.foePlan = aiPick();                                       // the AI decides before (and without seeing) the player's action
-  $('#btMsg').textContent = 'What will ' + petName(p) + ' do?';
+  $('#btMsg').textContent = 'What should ' + petName(p) + ' do?';
   renderBattleCards(); setPanel('acts');
 }
 
@@ -2020,7 +2020,7 @@ async function foeAct(id){
   if (f.hp <= 0) return;
   if (plan.item === 'heal_snack') {
     B.foeHealUsed = true; const h = Math.ceil(0.4 * f.maxHp); f.hp = Math.min(f.maxHp, f.hp + h);
-    sfx('heal'); renderBattleCards(); await say(tr().name + ' used a Heal Snack! ' + foeName(f) + ' feels better.', id); return;
+    sfx('heal'); renderBattleCards(); await say(tr().name + ' shares a Heal Snack! ' + foeName(f) + ' feels better.', id); return;
   }
   await doMove('foe', plan.move, id);
 }
@@ -2031,7 +2031,7 @@ async function playerAction(a, id){
     const ms = effSpd(myBattler()), fs = effSpd(foeBattler(f));
     const pr = ms >= fs ? 1 : Math.min(1, 0.4 + 0.5 * ms / fs + 0.15 * B.failedRuns);
     if (B.rng() < pr) { await finish('run', id); return true; }
-    B.failedRuns++; sfx('denied'); await say("Couldn't get away!", id); return false;
+    B.failedRuns++; sfx('denied'); await say("Couldn't slip away!", id); return false;
   }
   if (a.kind === 'befriend') return befriendTry(id);
   if (a.kind === 'swap') {
@@ -2062,7 +2062,7 @@ async function befriendTry(id){
     const toBox = S.party.length >= PPSave.PARTY_MAX; (toBox ? S.box : S.party).push(np);
     sfx('stinger_befriend'); xpChimeDelay = 0.75;
     const gx = grantExploreXp(pet(), BEFRIEND_XP); xpChimeDelay = 0; pet().happy = clamp(pet().happy + 5, 0, 100);
-    B.newId = np.id; B.lastGx = gx; B.toBox = toBox; if (toBox) toast(nameOf(f.si, f.stage) + ' was sent to your box.');
+    B.newId = np.id; B.lastGx = gx; B.toBox = toBox; if (toBox) toast(nameOf(f.si, f.stage) + ' went to your Walkling-box.');
     B.fx.push({ who: 'foe', kind: 'hearts', t0: now(), dur: 1500 });
     awardFoe(B.fi); save();
     await finish('befriended', id); return true;
@@ -2080,19 +2080,19 @@ async function doMove(side, mid, id){
   if (mid !== 'wobble') { if (mine) usesOf(p)[mid]--; else { const m = f.moves.find(x => x.id === mid); if (m) m.uses--; } }
   const uName = mine ? petName(p) : foeLabel(f), tName = mine ? foeLabel(f) : petName(p);
   B.fx.push({ who: side, kind: 'lunge', t0: now(), dur: 300 });
-  await say(uName + ' used ' + mv.name + '!', id); if (!alive(id)) return;
+  await say(uName + ' tries ' + mv.name + '!', id); if (!alive(id)) return;
   const e = mv.effect || null, selfOnly = mv.power === 0 && e && e.target === 'self';
-  if (!selfOnly && !(B.rng() < mv.acc / 100)) { sfx('miss'); await say(uName + "'s attack missed!", id); return; }
+  if (!selfOnly && !(B.rng() < mv.acc / 100)) { sfx('miss'); await say(uName + ' just misses!', id); return; }
   if (mv.power > 0) {
     const att = mine ? myBattler() : foeBattler(f), def = mine ? foeBattler(f) : myBattler();
     const r = damage({ power: mv.power, moveType: mv.type, att, def, rng: B.rng });
     const key = mid + '>' + def.type; if (S.dex.hits[key] !== r.mult) { S.dex.hits[key] = r.mult; }   // type hint seen
-    if (r.mult === 0) { sfx('hitWeak'); await say("It doesn't affect " + tName + '...', id); return; }
+    if (r.mult === 0) { sfx('hitWeak'); await say("It didn't do a thing to " + tName + '...', id); return; }
     if (mine) { f.hp = Math.max(0, f.hp - r.dmg); } else { setMyHp(p, hpOf(p) - r.dmg); }
     B.fx.push({ who: mine ? 'foe' : 'me', kind: r.mult > 1 ? 'flash' : 'shake', t0: now(), dur: 400 });
     sfx(r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit'); renderBattleCards(); if (!mine) save();
     if (r.crit) { await say('A lucky hit!', id); if (!alive(id)) return; }
-    if (r.mult > 1) await say("It's very effective!", id); else if (r.mult < 1) await say("It's not very effective...", id);
+    if (r.mult > 1) await say("That hit hard!", id); else if (r.mult < 1) await say("It barely felt that...", id);
     if (!alive(id)) return;
     const tgtDown = mine ? f.hp <= 0 : hpOf(p) <= 0;
     if (e) {
@@ -2116,16 +2116,16 @@ async function healUser(side, frac, id){
   const h = Math.ceil(frac * max);
   if (mine) setMyHp(p, Math.min(max, cur + h)); else f.hp = Math.min(max, cur + h);
   sfx('heal'); renderBattleCards(); if (mine) save();
-  await say(nm + ' got some HP back!', id);
+  await say(nm + ' feels a little better!', id);
 }
 async function applyStage(side, e, id){
   const B = battle, mine = side === 'me', st = mine ? B.me.stages : curFoe().stages, nm = mine ? petName(activePet()) : foeLabel(curFoe());
   const cur = st[e.stat] || 0, nx = clamp(cur + e.stages, -3, 3), S_ = e.stat.toUpperCase();
-  if (nx === cur) { sfx('denied'); await say(nm + "'s " + S_ + " won't go any " + (e.stages > 0 ? 'higher' : 'lower') + '!', id); return; }
+  if (nx === cur) { sfx('denied'); await say(nm + "'s " + S_ + " can't get any " + (e.stages > 0 ? 'higher' : 'lower') + '!', id); return; }
   st[e.stat] = nx; B.fx.push({ who: side, kind: e.stages > 0 ? 'up' : 'down', t0: now(), dur: 700 });
   sfx(e.stages > 0 ? 'statUp' : 'statDown'); renderBattleCards();
   const d = Math.abs(nx - cur);
-  await say(nm + "'s " + S_ + (e.stages > 0 ? (d > 1 ? ' rose sharply!' : ' rose!') : (d > 1 ? ' fell sharply!' : ' fell!')), id);
+  await say(nm + "'s " + S_ + (e.stages > 0 ? (d > 1 ? ' went way up!' : ' went up!') : (d > 1 ? ' dropped a lot!' : ' dropped!')), id);
 }
 async function knockOut(side, id){
   const B = battle;
@@ -2138,7 +2138,7 @@ async function knockOut(side, id){
     const f = curFoe(); if (f.down) return; f.down = true;
     B.fx.push({ who: 'foe', kind: B.kind === 'wild' ? 'flee' : 'faint', t0: now(), dur: 600 });
     awardFoe(B.fi);
-    if (B.kind === 'wild') { sfx('flee'); await say(foeName(f) + ' fainted and wanders off to rest.', id); }
+    if (B.kind === 'wild') { sfx('flee'); await say(foeName(f) + ' is worn out and wanders off to rest.', id); }
     else { sfx('tired'); await say(btLine('foeFainted'), id); }
   }
 }
@@ -2353,7 +2353,7 @@ async function finish(result, id){
     const nm = foeName(curFoe());
     await say(nm + ' befriended!', id); if (!alive(id)) return;
     await say(nm + ' joined your collection! ' + (B.lastGx ? '(+' + B.lastGx + ' XP)' : '(No XP: explored enough today)'), id);
-    if (B.toBox && alive(id)) await say(nm + ' was sent to your box.', id);
+    if (B.toBox && alive(id)) await say(nm + ' went to your Walkling-box.', id);
   } else if (result === 'win' && t) {
     sfx('win'); await say(btLine('trainerWin'), id); if (!alive(id)) return; await say(t.name + ': ' + trLine(t.lines.win), id);
   } else if (result === 'win') { sfx('win'); }
@@ -2365,7 +2365,7 @@ async function finish(result, id){
   await results(result, id); if (!alive(id)) return;
   // END panel: OK (and the optional nickname after a befriend).
   if (result === 'run') { closeBattle(); return; }
-  $('#btEndTitle').textContent = { win: 'You won!', befriended: foeName(curFoe()) + ' befriended!', fled: 'It wandered off...', tired: 'Your team fainted...' }[result] || '';
+  $('#btEndTitle').textContent = { win: 'You won!', befriended: foeName(curFoe()) + ' befriended!', fled: 'It wandered off...', tired: 'Your team is worn out...' }[result] || '';
   if (result === 'befriended' && !battle.faded) { $('#encNick').value = ''; $('#encNick').placeholder = foeName(curFoe()); $('#encName').hidden = false; }   // a faded one is named when its colour returns (§6)
   $('#btOk').textContent = result === 'befriended' ? 'YAY!' : 'OK';
   setPanel('end'); fitBattle();
@@ -2387,7 +2387,7 @@ async function results(result, id){
   }
   for (const lu of B.levelUps) {
     const p = petById(lu.id); if (!p) continue;
-    sfx('stinger_levelup'); await say(petName(p) + ' grew to Lv ' + lu.to + '!', id); if (!alive(id)) return;
+    sfx('stinger_levelup'); await say(petName(p) + ' reached Lv ' + lu.to + '!', id); if (!alive(id)) return;
     for (const e of levelMoves(p, lu.from, lu.to)) { await teachMove(p, e.id, s => say(s, id)); if (!alive(id)) return; }
   }
   B.levelUps = []; save(); updateHUD();
@@ -2425,19 +2425,19 @@ function levelMoves(p, from, to){
   const form = SPECIES[spi(p)].id + '/' + p.stage, seen = new Set();
   return learnset(form).filter(e => e.lv > from && e.lv <= to && e.lv >= 1 && !(p.moves || []).includes(e.id) && !seen.has(e.lv) && seen.add(e.lv));
 }
-// Teach `mid`: a free slot learns it at once; full slots open the replace sheet ("Don't learn" allowed). `tell` shows a line.
+// Teach `mid`: a free slot learns it at once; full slots open the replace sheet ("Skip it" allowed). `tell` shows a line.
 async function teachMove(p, mid, tell){
   if (!MOVES[mid] || mid === 'wobble') return 'none';
   if (!Array.isArray(p.moves)) p.moves = [];
   if (p.moves.includes(mid)) return 'known';
   const nm = petName(p), mv = moveName(mid);
-  if (p.moves.length < 4) { p.moves.push(mid); save(); sfx('learn'); await tell(nm + ' learned ' + mv + '!'); return 'learned'; }
+  if (p.moves.length < 4) { p.moves.push(mid); save(); sfx('learn'); await tell(nm + ' picked up ' + mv + '!'); return 'learned'; }
   const items = p.moves.map((x, i) => ({ label: moveName(x), sub: MOVES[x].type + '  ' + (MOVES[x].power ? 'PWR ' + MOVES[x].power : 'STATUS'), value: 'slot' + i }));
-  items.push({ label: "Don't learn", value: 'skip', cls: 'skip' });
-  const v = await openSheet(nm + ' wants to learn ' + mv + ' (' + MOVES[mid].type + (MOVES[mid].power ? ', PWR ' + MOVES[mid].power : '') + '). Replace which move?', items, null);
-  if (!v || v === 'skip') { sfx('tap'); await tell(nm + ' did not learn ' + mv + '.'); return 'declined'; }
+  items.push({ label: "Skip it", value: 'skip', cls: 'skip' });
+  const v = await openSheet(nm + ' wants to pick up ' + mv + ' (' + MOVES[mid].type + (MOVES[mid].power ? ', PWR ' + MOVES[mid].power : '') + '). Replace which move?', items, null);
+  if (!v || v === 'skip') { sfx('tap'); await tell(nm + " didn't pick up " + mv + '.'); return 'declined'; }
   const slot = +v.slice(4), old = p.moves[slot]; p.moves[slot] = mid; save(); sfx('learn');
-  await tell(nm + ' forgot ' + moveName(old) + ' and learned ' + mv + '!'); return 'learned';
+  await tell(nm + ' let go of ' + moveName(old) + ' and picked up ' + mv + '!'); return 'learned';
 }
 const infoSheet = text => openSheet(text, [{ label: 'OK', value: 'ok' }], null);
 // Level-ups outside battle (debug giveBx) and the §3.4 evolution-move offer run from here when no overlay is open.
@@ -2452,7 +2452,7 @@ async function pumpLearn(){
     learnBusy = true;
     try {
       const k = pendingEvoStage(p), mid = evoMoveOf(p, k);
-      if (mid && !(p.moves || []).includes(mid)) { await infoSheet(petName(p) + ' remembers something from evolving!'); await teachMove(p, mid, infoSheet); }
+      if (mid && !(p.moves || []).includes(mid)) { await infoSheet(petName(p) + ' remembers something from growing up!'); await teachMove(p, mid, infoSheet); }
       if (!Array.isArray(p.evoMoves)) p.evoMoves = [];
       if (!p.evoMoves.includes(k)) p.evoMoves.push(k);
       save();
@@ -2490,7 +2490,7 @@ function closeSheet(v){ const r = sheetResolve; sheetResolve = null; $('#ovSheet
 /* --- actions from the UI --- */
 function battleAct(act){
   const B = battle; if (!B.on || B.state !== 'CHOOSE') return;
-  if ((act === 'run' || act === 'befriend') && B.kind !== 'wild') { sfx('denied'); say("You can't walk away from a challenge!").then(() => { if (B.on && B.state === 'CHOOSE') $('#btMsg').textContent = 'What will ' + petName(activePet()) + ' do?'; }); return; }
+  if ((act === 'run' || act === 'befriend') && B.kind !== 'wild') { sfx('denied'); say("You can't walk away from a challenge!").then(() => { if (B.on && B.state === 'CHOOSE') $('#btMsg').textContent = 'What should ' + petName(activePet()) + ' do?'; }); return; }
   sfx('tap');
   if (act === 'fight') setPanel('fight');
   else if (act === 'befriend') openBefriendBar();
@@ -2563,12 +2563,12 @@ function drawBattle(t, dt){
 /* ---------- evolution ---------- */
 const evo = { active: false, t0: 0, sp: 0, from: 0, to: 1, done: false };
 function startEvolution(force){
-  const p = pet(); if (!p || p.stage >= 2) { toast('Already at final form!'); return; }
+  const p = pet(); if (!p || p.stage >= 2) { toast('Already fully grown!'); return; }
   if (!force && !canEvolve(p)) return;
   if (overlayOpen()) return;
   clearMoves();
   Object.assign(evo, { active: true, t0: now(), sp: spi(p), from: p.stage, to: p.stage + 1, done: false });
-  $('#evoTitle').textContent = 'What? ' + petName(p) + ' is evolving!';
+  $('#evoTitle').textContent = 'Oh? ' + petName(p) + ' is growing up!';
   $('#evoMsg').innerHTML = '&nbsp;'; $('#evoOk').hidden = true; sfx('evoBuild');
   $('#ovEvolve').hidden = false; $('#tabs').classList.add('locked'); fitAll();
 }
@@ -2576,8 +2576,8 @@ function finishEvolution(){
   const p = pet(), oldMax = maxHpOf(p); p.stage = evo.to; if (p.xp < EVO_XP[evo.to-1]) p.xp = EVO_XP[evo.to-1];
   carryHpOnEvolve(p, oldMax);                // new form's stats right away; current HP keeps the same % (rounded up)
   p.happy = clamp(p.happy + 15, 0, 100); markCaught(evo.sp, p.stage); evo.done = true; sfx('stinger_evolve');
-  $('#evoTitle').textContent = 'Congratulations!';
-  $('#evoMsg').textContent = (cleanNick(p.nick) || nameOf(evo.sp, evo.from)) + ' evolved into ' + nameOf(evo.sp, evo.to) + '!';   // the nickname if set, like the toasts
+  $('#evoTitle').textContent = 'Look at that!';
+  $('#evoMsg').textContent = (cleanNick(p.nick) || nameOf(evo.sp, evo.from)) + ' grew into ' + nameOf(evo.sp, evo.to) + '!';   // the nickname if set, like the toasts
   // BATTLE §3.3: the evolution move first, then the new form's level moves it already passed (one per OK tap).
   const form = SPECIES[evo.sp].id + '/' + evo.to, L = levelOf(p), rows = LEARNSETS[form] || [];
   evo.pid = p.id; evo.evoStage = evo.to;
@@ -2636,11 +2636,11 @@ function chartLine(type){
   return { strong, weak };
 }
 function growText(p){
-  if (p.stage >= 2) return { text: 'Final form', ready: false };
+  if (p.stage >= 2) return { text: 'Fully grown', ready: false };
   const left = Math.max(0, EVO_XP[p.stage] - p.xp);
   if (left > 0) return { text: 'GROW ' + left + ' to next form', ready: false };
-  if (care(p) < EVO_CARE[p.stage]) return { text: 'GROW done \u00b7 care ' + EVO_CARE[p.stage] + '+ to evolve', ready: false };
-  return { text: 'Ready to evolve!', ready: true };
+  if (care(p) < EVO_CARE[p.stage]) return { text: 'GROW done \u00b7 care ' + EVO_CARE[p.stage] + '+ to grow up', ready: false };
+  return { text: 'Ready to grow up!', ready: true };
 }
 const statsCard = { id: null, t: 0 };
 function openStatsCard(id){
@@ -2739,9 +2739,9 @@ function renderCollection(){
       c.append(b); }
     list.append(c);
   };
-  if (S.box.length) label('PARTY ' + S.party.length + '/' + PPSave.PARTY_MAX);
+  if (S.box.length) label('TEAM ' + S.party.length + '/' + PPSave.PARTY_MAX);
   S.party.forEach(p => card(p, false));
-  if (S.box.length) { label('BOX ' + S.box.length); S.box.forEach(p => card(p, true)); }
+  if (S.box.length) { label('WALKLING-BOX ' + S.box.length); S.box.forEach(p => card(p, true)); }
   const dex = $('#dexGrid'); dex.innerHTML = ''; let n = 0;
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
   SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
@@ -2775,7 +2775,7 @@ function friendCode(){
   let h2 = Math.imul(h ^ 0x5bd1e995, 2654435761) >>> 0;
   const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let out = '';
   for (let i=0;i<8;i++){ const v = i < 4 ? h : h2; out += A[(v >>> (5 * (i % 4))) & 31]; }
-  return 'PXP-' + out.slice(0,4) + '-' + out.slice(4);
+  return 'WLK-' + out.slice(0,4) + '-' + out.slice(4);   // display prefix only (was PXP-); derived from uid+created, nothing stored. A future ADD parser must accept both PXP- and WLK-
 }
 
 /* ---------- input ---------- */

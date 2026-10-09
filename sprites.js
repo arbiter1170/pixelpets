@@ -72,7 +72,7 @@ const SPECIES = [
       'dcaabbbb','.caabbcb','.caabbbb','..caaaaa','..aaaa..','..cccc..']}
   ]},
   { id:'volt', habitat:{city:7, storm:4}, tiles:'grass',
-    type:'VOLT', blurb:'A buzzing city critter. Loves neon lights.', stages:[
+    type:'VOLT', blurb:'A buzzing city Walkling. Loves neon lights.', stages:[
     { name:'Zipmite', col:{a:PAL.y,b:PAL.w,c:PAL.o,d:PAL.c,x:PAL.o}, half:[
       '........','........','.......d','......dd','.......d',
       '.......c','....aaaa','...aaaaa','..caaaaa','..aaieaa',

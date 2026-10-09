@@ -102,9 +102,9 @@ const faintMinLeft = (p, now = Date.now()) => isFainted(p, now) ? Math.ceil((p.f
 function faintPet(p, now = Date.now()){ p.hpNow = 0; p.faintUntil = now + FAINT_RULES.minutes * 60000; }
 // REST clears the nap. kind 'pet' = Pet-tab REST (+50% max HP via restHp); 'full' = Lantern House / interior `rest` step.
 function restPet(p, kind){ delete p.faintUntil; if (kind === 'full') delete p.hpNow; else restHp(p); }
-// Badge text: 'FAINTED 12m' while napping, else 'TIRED' below 25% of max HP, else null (the caller decides GLOWING).
+// Badge text: 'RESTING 12m' while napping, else 'TIRED' below 25% of max HP, else null (the caller decides GLOWING).
 function hpBadge(p, now = Date.now()){
-  if (isFainted(p, now)) return 'FAINTED ' + faintMinLeft(p, now) + 'm';
+  if (isFainted(p, now)) return 'RESTING ' + faintMinLeft(p, now) + 'm';
   return hpOf(p) < FAINT_RULES.tiredBelow * maxHpOf(p) ? 'TIRED' : null;
 }
 // An expired nap: drop the stamp (and, if §7.3 Q2 says so, wake at full HP). Returns true if it changed anything.

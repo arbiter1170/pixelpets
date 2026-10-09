@@ -177,7 +177,7 @@
     "route1_pia": {"name": "Pia", "title": "Kite Kid", "map": "route1", "x": 10, "y": 6, "facing": "down", "sight": 3, "ai": "basic", "team": [{"form": "gust/0", "level": 4}, {"form": "beetle/0", "level": 5}], "money": null, "lines": {"intro": "My kites never lose!", "win": "Aw, my string snapped...", "lose": "Ha! Rest up and come back, {player}."}},
     "route1_tam": {"name": "Tam", "title": "Beachcomber", "map": "route1", "x": 32, "y": 11, "facing": "up", "sight": 3, "ai": "basic", "team": [{"form": "crab/0", "level": 5}, {"form": "crab/0", "level": 6}], "money": null, "lines": {"intro": "See this blue glass? My crabs found it. Want to see them fight for it?", "win": "They'll find more glass. They always do.", "lose": "Shiny shells, shiny wins!"}},
     "route1_ollie": {"name": "Ollie", "title": "Moth Watcher", "map": "route1", "x": 42, "y": 7, "facing": "left", "sight": 3, "ai": "basic", "team": [{"form": "moth/0", "level": 6}, {"form": "dormouse/0", "level": 7}], "money": null, "lines": {"intro": "Shh, I'm waiting for moths. Fine, one quick battle.", "win": "You scared the moths off... worth it.", "lose": "Lantern moths love a winner."}},
-    "rival1_rook": {"name": "Rook", "title": "Rival", "map": "hearthmoor", "x": 22, "y": 8, "facing": "left", "sight": 0, "ai": "basic", "oneShot": true, "team": null, "counterTeam": {"ember": [{"form": "tide/0", "level": 5}], "tide": [{"form": "bloom/0", "level": 5}], "bloom": [{"form": "ember/0", "level": 5}]}, "money": null, "lines": {"intro": "Mine's a perfect match for yours. Let's see whose glow shines brighter!", "win": "Okay, okay. You got lucky.", "lose": "Ha! Told you mine was the perfect match."}},
+    "rival1_rook": {"name": "Rook", "title": "Neighbour", "map": "hearthmoor", "x": 22, "y": 8, "facing": "left", "sight": 0, "ai": "basic", "oneShot": true, "team": null, "counterTeam": {"ember": [{"form": "tide/0", "level": 5}], "tide": [{"form": "bloom/0", "level": 5}], "bloom": [{"form": "ember/0", "level": 5}]}, "money": null, "lines": {"intro": "Mine's a perfect match for yours. Let's see whose glow shines brighter!", "win": "Okay, okay. You got lucky.", "lose": "Ha! Told you mine was the perfect match."}},
     "fern_associate": {"name": "Tobin", "title": "Glimmerwell Associate", "map": "fernbrook", "x": 9, "y": 14, "facing": "up", "sight": 3, "ai": "basic", "team": [{"form": "beetle/0", "level": 8}, {"form": "moth/0", "level": 9}], "money": null, "onWin": "orchard", "lines": {"intro": "Hi! We're relocating these little ones to a Comfort Sanctuary. It's a partnership!", "win": "Wow, okay! I'll... check with my manager. Have a bright day!", "lose": "See? They're happier with us. Have a bright day!"}}
   },
   "scenes": {
@@ -242,7 +242,7 @@
       ["if", "story.faded_fuzzwick", [["say", "Associate Juniper", "Oh! It likes you. Keep it, our gift!"]]]
     ],
     "fen_intro": [
-      ["say", "Master Fen", "A Wayfarer! Forgive me, I'm worried. Associates are packing my orchard friends into crates."],
+      ["say", "Master Fen", "Oh, {name}! Forgive me, I'm worried. Associates are packing my orchard friends into crates."],
       ["say", "Master Fen", "\"Relocating\", they said. Would you go and see? The Hall can wait."],
       ["setFlag", "story.met_fen", true]
     ],
@@ -259,7 +259,7 @@
     ],
     "teaser": [
       ["say", "Rook", "You beat Fen? Me too! Well... almost."],
-      ["say", "Rook", "Look: Glimmerwell picked me for \"Junior Bright\". Clean energy, Wayfarer!"],
+      ["say", "Rook", "Look: Glimmerwell picked me for \"Junior Bright\". Clean energy, {name}!"],
       ["say", "Rook", "See you in Cobblecrest, once they clear that rockslide."],
       ["say", "", "Route 2 opens in the next update. Thanks for playing the slice!"],
       ["setFlag", "story.slice_end", true]

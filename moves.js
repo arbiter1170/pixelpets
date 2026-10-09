@@ -1474,16 +1474,16 @@ const TRAINERS = {
 
 const BATTLE_TEXT = {
   "trainerSummon": "{trainer} has summoned {foe}!",
-  "trainerIntro": "{title} {trainer} challenges {player}!",
+  "trainerIntro": "{title} {trainer} wants a friendly match with {player}!",
   "trainerSend": "{trainer} summons {foe}!",
   "playerSend": "{player} summons {pet}!",
-  "wildAppear": "A wild {foe} appeared!",
-  "wildSend": "Go, {pet}!",
-  "swapOut": "{pet}, come back!",
-  "trainerWin": "{player} beat {title} {trainer}!",
-  "trainerLose": "{player}'s whole team fainted...",
-  "petFainted": "{pet} fainted!",
-  "foeFainted": "{foe} fainted!"
+  "wildAppear": "A wild {foe} wanders out!",
+  "wildSend": "You're up, {pet}!",
+  "swapOut": "{pet}, take a breather!",
+  "trainerWin": "{player} won the match against {title} {trainer}!",
+  "trainerLose": "{player}'s whole team is worn out...",
+  "petFainted": "{pet} is worn out!",
+  "foeFainted": "{foe} is worn out!"
 };
 
 const STAGE_MULT = {
