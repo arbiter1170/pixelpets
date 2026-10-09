@@ -31,7 +31,11 @@ const PPSound = (() => {
      2. older iOS (no audioSession): start a looping, silent <audio> (a 0.5 s 8 kHz WAV built here), which moves the page into the same playback session;
      3. play a one-sample silent buffer through the context (the classic iOS warm-up) and resume() it.
      Muting drops back to 'ambient' and pauses the silent loop, so a muted game never holds the session (or pauses other apps' audio).
-     Leaving the page pauses the loop; the next gesture brings it back. All of it is best-effort and silent on failure. */
+     Leaving the page pauses the loop; the next gesture brings it back. All of it is best-effort and silent on failure.
+     ** Steps 1-2 are OFF: playing through the silent switch is an open red decision (MUSIC Q1, Vincent). With the flag false the game
+     obeys the ring/silent switch and stays in 'ambient' (mixes with other apps' audio, never pauses them); step 3 (the warm-up) and
+     the first-tap sound fix below stay on. Flip IOS_PLAY_THROUGH_SILENT to true once Q1 says so. */
+  const IOS_PLAY_THROUGH_SILENT = false;
   let keep = null, warmed = false;
   const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
   function silentWav(){                                // 0.5 s of 8-bit silence, mono 8 kHz
@@ -42,6 +46,7 @@ const PPSound = (() => {
     return 'data:audio/wav;base64,' + btoa(bin);
   }
   function session(on){
+    if (!IOS_PLAY_THROUGH_SILENT) { try { if (navigator.audioSession) navigator.audioSession.type = 'ambient'; } catch(e) {} return; }
     try { if (navigator.audioSession) navigator.audioSession.type = on ? 'playback' : 'ambient'; } catch(e) {}
     if (navigator.audioSession || !IOS) return;       // the API covers it; other browsers have no silent switch to beat
     try {
@@ -211,6 +216,6 @@ const PPSound = (() => {
     return muted;
   }
   return { play, setMuted, toggle: () => setMuted(!muted), get muted(){ return muted; }, get available(){ return !!AC; },
-    get state(){ return ac ? ac.state : 'none'; }, get session(){ return { type: navigator.audioSession ? navigator.audioSession.type : null, loop: keep ? (keep.paused ? 'paused' : 'playing') : 'none', warmed }; }, get played(){ return played.slice(); },
+    get state(){ return ac ? ac.state : 'none'; }, get session(){ return { playThroughSilent: IOS_PLAY_THROUGH_SILENT, type: navigator.audioSession ? navigator.audioSession.type : null, loop: keep ? (keep.paused ? 'paused' : 'playing') : 'none', warmed }; }, get played(){ return played.slice(); },
     names: Object.keys(SFX).concat(Object.keys(STINGERS).map(k => 'stinger_' + k)), get stingers(){ return live.map(s => s.id); } };
 })();
