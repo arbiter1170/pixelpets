@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261009-1908">
+<meta name="kw-build" content="20261009-1927">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261009-1908">
+<link rel="stylesheet" href="style.css?v=20261009-1927">
 </head>
 <body>
 <div id="app">
@@ -54,7 +54,7 @@
         <div class="mini" title="Explore XP earned today (walking + befriending), daily cap 30"><span>TODAY</span><b id="wExp">0/30</b></div>
       </div>
       <button id="envBadge" class="env-badge" type="button"><span id="envText">Meadow</span><small id="envSrc"></small></button>
-      <div class="map-wrap" id="mapWrap"><button id="walkBagBtn" class="scene-btn scene-btn-tr" type="button" aria-label="Bag" hidden>BAG</button><canvas id="mapCanvas" width="176" height="176"></canvas>
+      <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" width="176" height="176"></canvas>
         <div id="chatBubble" class="chat-bubble" hidden></div>
         <div id="bumpHint" class="bump-hint" role="status" hidden></div>
       </div>
@@ -65,6 +65,8 @@
           <button class="dp mid talk" id="talkBtn" type="button" aria-label="Talk" aria-disabled="true">TALK</button>
           <button class="dp right" data-dir="right" aria-label="Right"><canvas class="ico-dp" data-icon="right" width="8" height="8" aria-hidden="true"></canvas></button>
           <button class="dp down" data-dir="down" aria-label="Down"><canvas class="ico-dp" data-icon="down" width="8" height="8" aria-hidden="true"></canvas></button>
+          <button class="dpc bl" id="walkBagBtn" type="button" aria-label="Bag" hidden><canvas class="ico-hud" data-hud="icon_bag" width="8" height="8" aria-hidden="true"></canvas><span>BAG</span></button>
+          <button class="dpc br" id="mapBtn" type="button" aria-label="Map"><canvas class="ico-hud" data-hud="icon_map" width="8" height="8" aria-hidden="true"></canvas><span>MAP</span></button>
         </div>
         <p class="tip">Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!</p>
       </div>
@@ -170,6 +172,15 @@
 
 
 <!-- Bag (INVENTORY §6): Walk map corner + Pet tab BAG; full-screen, tabs locked, counted by overlayOpen -->
+<div id="ovMap" class="overlay regionmap" hidden>
+  <div class="map-inner" role="dialog" aria-modal="true" aria-label="Region map">
+    <div class="map-top"><div class="map-title" id="mapTitle">THE AMBERWILD</div><button id="mapClose" class="btn map-x" type="button">CLOSE</button></div>
+    <canvas id="regionCanvas" width="320" height="192" aria-hidden="true"></canvas>
+    <div class="map-place"><div class="map-pname" id="mapPlaceName"></div><div class="map-pblurb" id="mapPlaceBlurb"></div></div>
+    <p class="map-hint">Tap anywhere to close.</p>
+    <p class="sr-only" id="mapSr" aria-live="polite"></p>
+  </div>
+</div>
 <div id="ovBag" class="overlay bag" hidden>
   <div class="ov-inner bag-inner" role="dialog" aria-modal="true" aria-labelledby="bagTitle">
     <div class="bag-head">
@@ -349,17 +360,17 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261009-1908";</script>
-<script src="sprites.js?v=20261009-1908"></script>
-<script src="keeper.js?v=20261009-1908"></script>
-<script src="stats.js?v=20261009-1908"></script>
-<script src="moves.js?v=20261009-1908"></script>
-<script src="data/mapdata.js?v=20261009-1908"></script>
-<script src="save.js?v=20261009-1908"></script>
-<script src="env.js?v=20261009-1908"></script>
-<script src="sfx.js?v=20261009-1908"></script>
-<script src="cloud_config.js?v=20261009-1908"></script>
-<script src="cloud.js?v=20261009-1908"></script>
-<script src="game.js?v=20261009-1908"></script>
+<script>window.BUILD = "20261009-1927";</script>
+<script src="sprites.js?v=20261009-1927"></script>
+<script src="keeper.js?v=20261009-1927"></script>
+<script src="stats.js?v=20261009-1927"></script>
+<script src="moves.js?v=20261009-1927"></script>
+<script src="data/mapdata.js?v=20261009-1927"></script>
+<script src="save.js?v=20261009-1927"></script>
+<script src="env.js?v=20261009-1927"></script>
+<script src="sfx.js?v=20261009-1927"></script>
+<script src="cloud_config.js?v=20261009-1927"></script>
+<script src="cloud.js?v=20261009-1927"></script>
+<script src="game.js?v=20261009-1927"></script>
 </body>
 </html>

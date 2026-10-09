@@ -187,7 +187,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -935,7 +935,7 @@ function arriveAt(at){
   useMap(at.map);
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
-  resetWild(); bump.talked = null;
+  resetWild(); bump.talked = null; markMapSeen();
   placeFollower(); renderEnv(); save();
 }
 function enterDoor(dr){
@@ -1278,7 +1278,7 @@ async function runSteps(steps, ctx = {}){
     vars: { tags: [], line: null, suggest: null }, skip: false, deferRespawn: false, toasts: [], boxes: 0 };
   walk.target = walk.path = walk.arrive = walk.queued = null; wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
-  $('#ovScene').hidden = false; sbRender('', '');
+  $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   try { await execSteps(steps); } catch (e) { if (e !== ABORT) console.error(e); }
   endScene();
 }
@@ -1291,7 +1291,7 @@ function endScene(){
   if (sc.npc) delete mapRT.face[sc.npc.id];
   if (sc.npc && (sc.npc.kind === 'npc' || sc.npc.kind === 'trainer')) bump.talked = sc.npc.id;
   scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
-  $('#ovScene').hidden = true; $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+  $('#ovScene').hidden = true; document.body.classList.remove('scene-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
   lockTabs(false); placeFollower(); renderKeeperName(); updateHUD(); save();
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
   for (const o of CUR.objs) if (o.kind === 'trigger' && !(Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y) <= (o.r || 0))) delete mapRT.trig[o.id];
@@ -1403,7 +1403,7 @@ async function sceneBattle(id){
   S.flags['spotted.' + id] = true;                     // §6.1: set when the battle opens; a trainer never spots twice
   const res = await new Promise(resolve => { if (!openBattle({ kind: 'trainer', trainerId: id, mapIntro: true, onEnd: resolve })) resolve(null); });
   if (!scene) return;
-  $('#ovScene').hidden = false; sbRender('', '');
+  $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   if (res == null) throw ABORT;
   if (res === 'tired') scene.deferRespawn = true;
   if (res === 'win' && t.onWin && SCENES[t.onWin]) await execSteps(SCENES[t.onWin]);
@@ -1415,7 +1415,7 @@ async function sceneEncounter(id){
   $('#ovScene').hidden = true;
   const res = await new Promise(resolve => { if (!openBattle({ kind: 'wild', form: o.form, level: o.level, moves: o.moves, faded: o.faded, bonus: o.befriendBonus, story: o.id, onEnd: resolve })) resolve(null); });
   if (!scene) return;
-  $('#ovScene').hidden = false; sbRender('', '');
+  $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   if (res == null) throw ABORT;
   if (res === 'tired') scene.deferRespawn = true;
 }
@@ -2215,6 +2215,95 @@ function swapSheet(forced){
   });
   return openSheet(forced ? 'Who goes next?' : 'Swap to which Walkling?', items, forced ? null : 'BACK');
 }
+/* ---------- MAP v0 (design/specs/MAP_V0.md): "where am I?" region map ---------- */
+// Data copied from design/specs/map_v0.json (nodes, interiors, pal, icons). No fast travel, zoom, markers or legend (§1, §10).
+const REGION_MAP = {
+  title: 'THE AMBERWILD', unknownLabel: '???', unknownBlurb: "You haven't been here yet.",
+  nodes: {
+    hearthmoor:    { kind: 'town',  col: 2,  row: 6, label: 'HEARTHMOOR',  labelAt: 'below', blurb: 'Hill village of keepers. Home.' },
+    route1:        { kind: 'route', col: 6,  row: 7, label: 'ROUTE 1',     labelAt: 'below', blurb: 'Hearthmoor to Fernbrook, by the stream.', path: [[2, 6], [4, 7], [8, 7], [10, 6]] },
+    proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]] },
+    fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Bloom Trial Hall.' },
+    route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]] },
+    route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]] },
+    cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.' },
+    cobble_quarry: { kind: 'side',  col: 17, row: 3, label: 'QUARRY',      labelAt: 'above', blurb: 'Pebblits nap in the old seam.', path: [[17, 6], [17, 3]] },
+  },
+  // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
+  flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [] },
+  interiors: { hm_home_in: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest' },
+  icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
+  icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
+};
+// §4: the node for a map id: itself; else the room's own `outdoor` field; else the interiors table; else its door-mat warp's `to`.
+function nodeOf(id){
+  const N = REGION_MAP.nodes; if (!id) return null; if (N[id]) return id;
+  const m = WORLD[id]; if (!m) return N[REGION_MAP.interiors[id]] ? REGION_MAP.interiors[id] : null;
+  if (m.outdoor && N[m.outdoor]) return m.outdoor;
+  if (N[REGION_MAP.interiors[id]]) return REGION_MAP.interiors[id];
+  const mat = (m.objs || []).find(o => o.kind === 'warp' && N[o.to]); return mat ? mat.to : null;
+}
+function markMapSeen(){ const n = nodeOf(S && S.world && S.world.map); if (!n) return; if (!S.mapSeen || typeof S.mapSeen !== 'object') S.mapSeen = {}; S.mapSeen[n] = 1; }
+function mapVisited(id, cur){
+  if (!WORLD[id]) return false;                                   // not built in this build: always ??? (§5, test 8)
+  if (id === cur || id === 'hearthmoor') return true;
+  if (S.mapSeen && S.mapSeen[id]) return true;
+  return (REGION_MAP.flags[id] || []).some(f => !!S.flags[f]);
+}
+const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy && !tabsGuarded() && !(battle && battle.on);
+let mapOffShown = null;
+function syncMapBtn(){ const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false'); }
+const mapUI = { t0: 0, cur: null };
+function openMap(){
+  if (!mapReady()) { sfx('denied'); return; }
+  clearMoves(); markMapSeen();
+  const cur = nodeOf(S.world.map), nd = cur && REGION_MAP.nodes[cur];
+  mapUI.cur = cur; mapUI.t0 = performance.now();
+  const name = nd ? ((WORLD[cur] && WORLD[cur].name) || nd.label).toUpperCase() : REGION_MAP.unknownLabel, blurb = nd ? nd.blurb : REGION_MAP.unknownBlurb;
+  $('#mapTitle').textContent = REGION_MAP.title; $('#mapPlaceName').textContent = name; $('#mapPlaceBlurb').textContent = blurb;
+  $('#mapSr').textContent = nd ? 'You are in ' + ((WORLD[cur] && WORLD[cur].name) || nd.label) + '. ' + blurb : 'You are somewhere new.';
+  fitRegionMap(); $('#ovMap').hidden = false; lockTabs(true); sfx('tap'); drawRegionMap(performance.now());
+}
+function closeMap(){ if ($('#ovMap').hidden) return; $('#ovMap').hidden = true; lockTabs(false); sfx('tap'); }
+function fitRegionMap(){                                           // whole-number scale only: 2x if there's room for 640 px, else 1x (§2)
+  const c = $('#regionCanvas'), k = Math.min(window.innerWidth, 480) >= 640 ? 2 : 1, dpr = Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
+  c.style.width = 320 * k + 'px'; c.style.height = 192 * k + 'px';
+  if (c.width !== 320 * dpr) { c.width = 320 * dpr; c.height = 192 * dpr; }
+}
+function drawRegionMap(t){
+  const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, N = REGION_MAP.nodes, cur = mapUI.cur;
+  g.setTransform(k, 0, 0, k, 0, 0); g.imageSmoothingEnabled = false;
+  const R = (x, y, w, h, col) => { g.fillStyle = PAL[col]; g.fillRect(x, y, w, h); };
+  R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');                                 // parchment, 2 px orange edge
+  [[30, 40], [70, 150], [150, 30], [200, 140], [255, 45], [290, 160], [120, 100]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });   // faint hill ticks (decoration)
+  const P = ([cc, rr]) => [cc * 16 + 8, rr * 16 + 8];
+  const seg = (a, b, col, dashed) => {                                              // 3 px pixel line between grid points (no anti-aliasing)
+    const [x0, y0] = P(a), [x1, y1] = P(b), n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    for (let i = 0; i <= n; i++) { if (dashed && Math.floor(i / 4) % 2) continue; R(Math.round(x0 + (x1 - x0) * i / n) - 1, Math.round(y0 + (y1 - y0) * i / n) - 1, 3, 3, col); }
+  };
+  const vis = {}; for (const id in N) vis[id] = mapVisited(id, cur);
+  for (const id in N) { const pth = N[id].path; if (!pth) continue; for (let i = 0; i < pth.length - 1; i++) seg(pth[i], pth[i + 1], vis[id] ? 'o' : 'h', !vis[id]); }
+  const disc = (cx, cy, r, col) => { for (let y = -r; y <= r; y++) { const w = Math.floor(Math.sqrt(r * r - y * y + r * 0.8)); R(cx - w, cy + y, 2 * w + 1, 1, col); } };
+  const ring = (cx, cy, r, col) => { for (let a = 0; a < 360; a += 2) { const x = Math.round(cx + r * Math.cos(a * Math.PI / 180)), y = Math.round(cy + r * Math.sin(a * Math.PI / 180)); R(x - 1, y - 1, 2, 2, col); } };
+  g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textAlign = 'center'; g.textBaseline = 'middle';
+  for (const id in N) {
+    const n = N[id], [x, y] = P([n.col, n.row]), v = vis[id];
+    if (n.kind === 'town') { R(x - 8, y - 8, 17, 17, v ? 'k' : 'm'); R(x - 7, y - 7, 15, 15, v ? 'r' : 'h'); if (v) R(x - 7, y - 7, 15, 4, 'o'); }
+    else if (n.kind === 'side') { disc(x, y, 7, v ? 't' : 'm'); disc(x, y, 6, v ? 'g' : 'h'); }
+    else { disc(x, y, 4, v ? 'k' : 'm'); disc(x, y, 3, v ? 'p' : 'h'); }
+    const dy = n.labelAt === 'above' ? -(n.kind === 'route' ? 12 : 16) : (n.kind === 'route' ? 12 : 16);
+    g.fillStyle = PAL[v ? 'k' : 'm']; g.fillText(v ? n.label : REGION_MAP.unknownLabel, x, y + dy);
+  }
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (cur && N[cur] && (reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0)) {   // 500 ms on / 500 ms off; steady with reduced motion (§4)
+    const [x, y] = P([N[cur].col, N[cur].row]); ring(x, y, 11, 'b');
+    R(x - 1, y - 19, 3, 3, 'r');                                                    // small down-arrow 13-19 px above the node: stem...
+    for (let i = 0; i < 4; i++) R(x - 3 + i, y - 16 + i, 7 - 2 * i, 1, 'r');       // ...and point
+  }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+}
+
 /* ---------- Bag overlay (INVENTORY §6) ---------- */
 let bagSel = 0;
 function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
@@ -2222,6 +2311,8 @@ function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); draw
 function paintUiIcons(){
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
+  $$('.ico-hud').forEach(c => { const gr = (REGION_MAP[c.dataset.hud] || {}).grid; if (!gr) return; const g = ctx(c); g.clearRect(0,0,8,8);
+    gr.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } })); });
   paintAcorn($('#bagAcorn')); paintAcorn($('#shopAcorn'));
 }
 function bagVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene); }
@@ -2836,6 +2927,8 @@ function bindInput(){
   $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
   $('#petBagBtn').addEventListener('click', () => openBag());
   $('#walkBagBtn').addEventListener('click', () => openBag());
+  $('#mapBtn').addEventListener('click', openMap);
+  $('#ovMap').addEventListener('click', () => closeMap());   // tap anywhere (map, box, background, CLOSE) closes (MAP_V0 §2)
   $('#bagClose').addEventListener('click', () => closeBag());
   $('#ovBag').addEventListener('click', e => { if (e.target === e.currentTarget) closeBag(); });
   $('#shopClose').addEventListener('click', () => closeShop());
@@ -2932,6 +3025,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
+    if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
     if (shopKey(e)) { e.preventDefault(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
@@ -2980,6 +3074,8 @@ function frame(t){
     if (p && !overlayOpen() && !walk.intro) updateWild(dt);
     drawMap(t);
   }
+  if (S && screen === 'walk') syncMapBtn();
+  if (!$('#ovMap').hidden) drawRegionMap(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
   if (p) {
@@ -3103,7 +3199,7 @@ function boot(){
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
   if (allPets().length) { const away = (Date.now() - S.last) / 1000; catchUp(away); regenAll(away); }
-  useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv();
+  useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen();
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
   placeFollower(); renderFollowerBtn(); renderKeeperName();

@@ -190,6 +190,7 @@ const PPSave = (() => {
     fill(s, 'settings', isObj, d.settings);
     fill(s.settings, 'textSpeed', x => TEXT_SPEEDS.includes(x), 'normal'); fill(s.settings, 'battleAnims', x => typeof x === 'boolean', true);
     fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
+    fill(s, 'mapSeen', isObj, {});                                                // MAP_V0 §5 (Q2): visited region-map nodes, additive
     // MAPS_SLICE K.5 / §10: optional `player` {name, look}. Additive, no version bump; unknown keys inside survive.
     fill(s, 'player', isObj, { name: null, look: null });
     const pl = s.player;
