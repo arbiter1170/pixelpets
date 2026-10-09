@@ -445,3 +445,11 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .cloud-card-n{font-size:18px;color:var(--w);overflow-wrap:anywhere}
 .cloud-card-l{font-size:15px;color:var(--dim,#94b0c2)}
 .cloud-card .btn{margin-top:6px;width:100%;padding-left:4px;padding-right:4px}
+
+/* New-build notice: sits just above the tab bar, inside the 480px column; hidden whenever an overlay is open */
+.build-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(74px + env(safe-area-inset-bottom));z-index:15;width:calc(100% - 16px);max-width:464px;
+  display:flex;align-items:stretch;background:var(--k);box-shadow:0 0 0 3px var(--y)}
+.build-bar[hidden]{display:none}
+.build-go{flex:1 1 auto;min-width:0;min-height:44px;padding:4px 10px;border:0;background:transparent;color:var(--y);font-size:18px;text-align:left;line-height:1.1}
+.build-x{flex:0 0 44px;min-height:44px;border:0;border-left:3px solid var(--d);background:transparent;color:var(--h);font-size:18px}
+.build-go:active,.build-x:active{background:var(--d)}

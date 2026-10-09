@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """Cache-busting for the live site (no build step for players): stamps every local <script src> and <link href> in
 index.html with ?v=<build id> and records the id in <meta name="kw-build"> and in window.BUILD (an inline script the
-Settings panel reads for its "Build ..." line, so the label always matches the ?v= stamp). Run before every commit:
+Settings panel reads for its "Build ..." line, so the label always matches the ?v= stamp), and writes version.json
+({"build":"<id>"}, fetched by the game to notice a newer deploy). Run before every commit:
     python3 tools/bump_build.py          # new id from the current time (America/New_York), e.g. 20261008-1124
     python3 tools/bump_build.py --check  # exit 1 if any local tag is missing the current id
 """
-import re, sys, datetime, pathlib
+import re, sys, json, datetime, pathlib
 try:
     from zoneinfo import ZoneInfo; TZ = ZoneInfo('America/New_York')
 except Exception:
     TZ = None
 HTML = pathlib.Path(__file__).resolve().parent.parent / 'index.html'
+VERSION = HTML.parent / 'version.json'   # {"build":"<id>"}; the game polls it to spot a newer deploy
 TAG = re.compile(r'(<(?:script|link)\b[^>]*?\b(?:src|href)=")([^"]+)(")', re.I)
 META = re.compile(r'<meta name="kw-build" content="([^"]*)">')
 CONST = re.compile(r'<script>window\.BUILD = "([^"]*)";</script>')
@@ -23,6 +25,9 @@ def check(html):
     bid = current(html); bad = [u for _, u in tags(html) if not u.endswith('?v=' + str(bid))]
     c = CONST.search(html)
     if not c or c.group(1) != bid: bad.append('window.BUILD=' + (c.group(1) if c else 'missing'))
+    try: vj = json.loads(VERSION.read_text()).get('build')
+    except Exception: vj = 'missing'
+    if vj != bid: bad.append('version.json=' + str(vj))
     return bid, bad
 
 def stamp(html, bid):
@@ -40,4 +45,4 @@ if __name__ == '__main__':
         bid, bad = check(html); print('build', bid, 'missing:', bad); sys.exit(1 if bad or not bid else 0)
     bid = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('-') else datetime.datetime.now(TZ).strftime('%Y%m%d-%H%M')
     if bid == current(html): bid += 'b'
-    HTML.write_text(stamp(html, bid)); print('build', bid, '->', len(tags(stamp(html, bid))), 'local tags stamped')
+    HTML.write_text(stamp(html, bid)); VERSION.write_text(json.dumps({'build': bid}, separators=(',', ':')) + '\n'); print('build', bid, '->', len(tags(stamp(html, bid))), 'local tags stamped')

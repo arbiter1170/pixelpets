@@ -3010,6 +3010,35 @@ function startCloud(){
   });
 }
 
+/* ---------- new-build check ---------- */
+// GitHub Pages caches index.html for ~10 min, so a phone can keep an old build. version.json (written by tools/bump_build.py,
+// always equal to window.BUILD) is fetched with a unique ?t= on boot and when the tab comes back (at most once a minute).
+// A different id shows a small notice; tapping it saves and reloads. Silent on any error; queued while an overlay is open.
+const buildChk = { at: 0, ready: null, gone: null };
+function checkBuild(force){
+  const t = Date.now();
+  if (readOnly || !window.BUILD || typeof fetch !== 'function' || (!force && t - buildChk.at < 60e3)) return Promise.resolve(null);
+  buildChk.at = t;
+  return fetch('version.json?t=' + t, { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => {
+    const b = j && typeof j.build === 'string' ? j.build : null;
+    if (b && b !== window.BUILD && b !== buildChk.gone) buildChk.ready = b;
+    pumpBuildBar(); return b;
+  }).catch(() => null);
+}
+function pumpBuildBar(){
+  const el = $('#buildBar'); if (!el) return;
+  const show = !!buildChk.ready && !readOnly && !overlayOpen();
+  if (el.hidden === show) el.hidden = !show;
+}
+function startBuildCheck(){
+  const el = $('#buildBar'); if (!el) return;
+  $('#buildGo').addEventListener('click', () => { save(); location.reload(); });
+  $('#buildX').addEventListener('click', () => { buildChk.gone = buildChk.ready; buildChk.ready = null; pumpBuildBar(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkBuild(); });
+  setInterval(pumpBuildBar, 500);
+  setTimeout(() => checkBuild(), 1500);              // after boot settles; never blocks it
+}
+
 /* ---------- boot ---------- */
 // The v2 key holds a save from a newer build: block play, write nothing (save() is a no-op), keep the save as-is.
 function bootReadOnly(){
@@ -3051,6 +3080,7 @@ function boot(){
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   saveTimer = setInterval(save, 5000);
   startCloud();
+  startBuildCheck();
   setInterval(() => fadeTick(true), FADE_SAMPLE_MS); setInterval(() => fadeTick(false), 5000); fadeTick(false);
   requestAnimationFrame(t => { lastT = t; frame(t); });
   // Console hooks. Read-only ones are always there and can't change the game; anything that cheats
@@ -3130,6 +3160,7 @@ function boot(){
       if (!keep) scene = { vars: Object.assign({ tags: [], line: null, suggest: null }, vars || {}), view: { flags: {}, name: undefined, pet: viewPetObj || null, nick: undefined }, pending: [] };
       try { return expand(text); } finally { scene = keep; } },
 
+    checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
