@@ -8,7 +8,7 @@ const PPSound = (() => {
   const MUTE_KEY = 'pixelpets.mute';
   const MASTER = 0.2;                                  // low default volume
   const AC = window.AudioContext || window.webkitAudioContext;
-  let ac = null, out = null, noiseBuf = null, muted = false;
+  let ac = null, out = null, noiseBuf = null, muted = false, resumeAt = -1e9;
   try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch(e) {}
   const played = [];                                   // recent sound names (debug/tests)
 
@@ -21,13 +21,49 @@ const PPSound = (() => {
         const n = Math.floor(ac.sampleRate * 0.4); noiseBuf = ac.createBuffer(1, n, ac.sampleRate);
         const d = noiseBuf.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
       }
-      if (ac.state === 'suspended' || ac.state === 'interrupted') { const r = ac.resume(); if (r && r.catch) r.catch(() => {}); }
+      if (ac.state === 'suspended' || ac.state === 'interrupted') { resumeAt = performance.now(); const r = ac.resume(); if (r && r.catch) r.catch(() => {}); }
     } catch(e) { ac = null; }
     return ac;
   }
-  // First gesture unlocks audio; kept on so iOS can resume after an interruption (phone call etc.).
-  const unlock = () => { if (!muted) ensure(); };
+  /* iPhone Safari (Vincent's playtest: no sound). WebAudio on iOS plays in the "ambient" session, which the ring/silent switch mutes,
+     and an AudioContext only really starts after something sounds inside a gesture. So, inside the unlocking gesture:
+     1. navigator.audioSession.type = 'playback' (Safari 16.4+/iOS 17): sound plays with the silent switch on, like a video would;
+     2. older iOS (no audioSession): start a looping, silent <audio> (a 0.5 s 8 kHz WAV built here), which moves the page into the same playback session;
+     3. play a one-sample silent buffer through the context (the classic iOS warm-up) and resume() it.
+     Muting drops back to 'ambient' and pauses the silent loop, so a muted game never holds the session (or pauses other apps' audio).
+     Leaving the page pauses the loop; the next gesture brings it back. All of it is best-effort and silent on failure. */
+  let keep = null, warmed = false;
+  const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  function silentWav(){                                // 0.5 s of 8-bit silence, mono 8 kHz
+    const n = 4000, b = new Uint8Array(44 + n), v = new DataView(b.buffer), w = (o, t) => { for (let i = 0; i < t.length; i++) b[o + i] = t.charCodeAt(i); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, 'data'); v.setUint32(40, n, true);
+    b.fill(128, 44); let bin = ''; for (let i = 0; i < b.length; i++) bin += String.fromCharCode(b[i]);
+    return 'data:audio/wav;base64,' + btoa(bin);
+  }
+  function session(on){
+    try { if (navigator.audioSession) navigator.audioSession.type = on ? 'playback' : 'ambient'; } catch(e) {}
+    if (navigator.audioSession || !IOS) return;       // the API covers it; other browsers have no silent switch to beat
+    try {
+      if (on) {
+        if (!keep) { keep = document.createElement('audio'); keep.src = silentWav(); keep.loop = true; keep.preload = 'auto';
+                     keep.setAttribute('playsinline', ''); keep.setAttribute('x-webkit-airplay', 'deny'); keep.volume = 0; }
+        if (keep.paused && !document.hidden) { const r = keep.play(); if (r && r.catch) r.catch(() => {}); }
+      } else if (keep && !keep.paused) keep.pause();
+    } catch(e) {}
+  }
+  function warm(){
+    if (warmed || !ac) return;
+    try { const s = ac.createBufferSource(); s.buffer = ac.createBuffer(1, 1, ac.sampleRate); s.connect(ac.destination); s.start(0); warmed = true; } catch(e) {}
+  }
+  // First gesture unlocks audio; kept on so iOS can resume after an interruption (phone call, lock screen, another app's audio).
+  // pointerdown/touchstart are not "activation" on iOS, so touchend/click/keydown do the real unlock; pointerdown is a harmless early try.
+  const unlock = () => { if (muted) return; session(true); if (ensure()) warm(); };
   ['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => window.addEventListener(ev, unlock, { capture: true, passive: true }));
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (keep && !keep.paused) try { keep.pause(); } catch(e) {} }
+    else if (ac && !muted && ac.state !== 'running') { try { const r = ac.resume(); if (r && r.catch) r.catch(() => {}); } catch(e) {} }
+  });
 
   const hz = m => 440 * Math.pow(2, (m - 69) / 12);   // MIDI note -> Hz (72 = C5)
   function tone(m, at, dur, type, vol, slideTo, dest){
@@ -157,7 +193,10 @@ const PPSound = (() => {
     const sid = /^stinger_/.test(name) && STINGERS[name.slice(8)] ? name.slice(8) : null;
     if (muted || (!SFX[name] && !sid)) return false;
     played.push(name); if (played.length > 50) played.shift();
-    if (!ac || ac.state !== 'running') return false;   // not unlocked by a gesture yet: stay silent
+    if (!ac || ac.state === 'closed') return false;     // not unlocked by a gesture yet: stay silent
+    // iOS: resume() resolves a beat after the tap, so the tap's own sound used to be dropped while still 'suspended'/'interrupted'.
+    // Within 1 s of a gesture's resume() it is scheduled anyway: queued nodes start once the context runs (or never, if it doesn't).
+    if (ac.state !== 'running' && performance.now() - resumeAt > 1000) return false;   // not resuming from a gesture: stay silent
     if (sid) { try { return stinger(sid, delay); } catch(e) { return false; } }
     if (name === 'step' && stSounding()) return false;
     try { SFX[name](ac.currentTime + 0.01 + (delay || 0)); return true; } catch(e) { return false; }
@@ -167,10 +206,11 @@ const PPSound = (() => {
     if (muted) { if (ac) live.forEach(s => stCancel(s, ac.currentTime)); live = []; }
     try { if (muted) localStorage.setItem(MUTE_KEY, '1'); else localStorage.removeItem(MUTE_KEY); } catch(e) {}
     if (out && ac) { try { out.gain.setTargetAtTime(muted ? 0 : MASTER, ac.currentTime, 0.01); } catch(e) {} }
-    if (!muted) ensure();                              // toggling is itself a gesture: unlock now
+    session(!muted);                                   // muted: back to 'ambient', silent loop paused
+    if (!muted && ensure()) warm();                    // toggling is itself a gesture: unlock now
     return muted;
   }
   return { play, setMuted, toggle: () => setMuted(!muted), get muted(){ return muted; }, get available(){ return !!AC; },
-    get state(){ return ac ? ac.state : 'none'; }, get played(){ return played.slice(); },
+    get state(){ return ac ? ac.state : 'none'; }, get session(){ return { type: navigator.audioSession ? navigator.audioSession.type : null, loop: keep ? (keep.paused ? 'paused' : 'playing') : 'none', warmed }; }, get played(){ return played.slice(); },
     names: Object.keys(SFX).concat(Object.keys(STINGERS).map(k => 'stinger_' + k)), get stingers(){ return live.map(s => s.id); } };
 })();
