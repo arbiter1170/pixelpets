@@ -2764,7 +2764,7 @@ function renderCollection(){
       c.append(b); }
     list.append(c);
   };
-  if (S.box.length) label('TEAM ' + S.party.length + '/' + PPSave.PARTY_MAX);
+  if (S.box.length) label('Party ' + S.party.length + '/' + PPSave.PARTY_MAX);
   S.party.forEach(p => card(p, false));
   if (S.box.length) { label('WALKLING-BOX ' + S.box.length); S.box.forEach(p => card(p, true)); }
   const dex = $('#dexGrid'); dex.innerHTML = ''; let n = 0;
