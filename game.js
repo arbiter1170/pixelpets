@@ -9,14 +9,18 @@ const now = () => performance.now();
 // Save: format v2 in `pixelpets.save.v2` (see save.js; v1 saves are migrated once, the v1 key is never written).
 // EVO_XP (growth XP to evolve: 40 / 120) lives in stats.js, shared with save.js.
 const EVO_CARE = [50, 60];         // min average care (food/joy/energy) to evolve
-/* Stat decay. Real-time pacing is the default: hours for a stat to drain 100 -> 0.
-   From full, a stat drops below the 25 "needs attention" line after 75% of these hours
-   (food ~12h, joy ~15h, energy ~18h). Hunger < 20 still doubles joy loss. */
-const HOURS_TO_EMPTY = { hunger: 16, happy: 20, energy: 24 };
+/* Stat decay. PACING v0.3 §2 (Q1 approved by Vincent, Oct 9; ships with the CARE_LOOP cheap slice):
+   FOOD drops 3/h with a decay floor of 20, live AND away (100 -> 20 in ~27 h). JOY keeps its 20 h rate, its floor moves to 20
+   too, and it drains x2 while Hungry (FOOD < 25), live and away. NRG is unchanged (24 h, away floor 10, live clamp 0).
+   The floors are decay-only: action costs (walking, PLAY, REST, battle) still clamp at 0. */
+const FOOD_RULES = { perHour: 3, floor: 20, hungry: 25 };
+const HOURS_TO_EMPTY = { happy: 20, energy: 24 };
 const perSec = h => 100 / (h * 3600);
-const REAL_RATE = { hunger: perSec(HOURS_TO_EMPTY.hunger), happy: perSec(HOURS_TO_EMPTY.happy), energy: perSec(HOURS_TO_EMPTY.energy) };
-const FAST_RATE = { hunger: 1/10, happy: 1/12, energy: 1/25 };   // old demo pacing (pts/s): full -> starving in ~17 min
-const OFFLINE_FLOOR = 10;          // catch-up decay never pushes a stat below this
+const REAL_RATE = { hunger: FOOD_RULES.perHour / 3600, happy: perSec(HOURS_TO_EMPTY.happy), energy: perSec(HOURS_TO_EMPTY.energy) };
+const FAST_RATE = { hunger: 0.05, happy: 1/12, energy: 1/25 };   // debug fast mode: FOOD = real x60 (PACING §6); JOY/NRG unchanged
+const JOY_FLOOR = 20;              // JOY decay floor (live and away)
+const OFFLINE_FLOOR = 10;          // NRG catch-up floor (unchanged)
+const decayTo = (v, amt, floor) => v <= floor ? v : Math.max(floor, v - amt);   // a stat already at/below the floor stays put
 // PACING v0.1 §5 (locked by Vincent, Oct 8): decay by role, live and away. Partner x1, other party pets x0.5, box pets paused.
 // The RATE values, FEED amount, floor and food per step are unchanged (still being revisited).
 const ROLE_MULT = { partner: 1, party: 0.5, box: 0 };
@@ -40,7 +44,7 @@ const rate = () => fastMode ? FAST_RATE : REAL_RATE;   // points lost per second
 /* Care balance. Cooldowns are per pet, stored as last-use Date.now() stamps in p.cd (missing = ready),
    so reloading can't skip them. Fast mode shrinks them by the same ratio as the food rate (~1/57.6). */
 const CARE_CD_MIN = { feed: 20, play: 10, rest: 15 };            // real-mode cooldown, minutes (REST 15m: BATTLE §7.3 Q1, Vincent)
-const FAST_CD_SCALE = REAL_RATE.hunger / FAST_RATE.hunger;       // ~0.0174: 20m -> ~21s, 10m -> ~10s, 15m REST -> ~16s
+const FAST_CD_SCALE = 1 / 60;                                   // fast mode: FEED 20 s, PLAY 10 s, REST 15 s (PACING §6, no longer tied to the FOOD rate)
 const CARE_XP = { feed: 2, play: 5, rest: 1 };                   // XP per care action (before the daily cap)
 const CARE_XP_DAILY_CAP = 25;      // per pet per local calendar day (feed/play/rest)
 const STEPS_PER_XP = 5;            // walking: 1 XP per 5 steps, remainder kept per pet in p.sr
@@ -48,7 +52,7 @@ const BEFRIEND_XP = 5;             // shares the explore cap below
 const EXPLORE_XP_DAILY_CAP = 30;   // per pet per local day, shared by walking + befriending XP (p.ex)
 const STEP_MS = 170;
 const STEP_NRG = 0;               // walking no longer drains NRG (FOOD per step still applies)
-const STEP_FOOD = 0.15;           // FOOD per step (unchanged)
+const STEP_FOOD = 0.05;           // FOOD per step (PACING v0.3: was 0.15; 100 steps = -5)
 
 /* ---------- sprites & tiles ---------- */
 const SPR = SPECIES.map(sp => sp.stages.map(st => ({
@@ -3062,8 +3066,8 @@ function frame(t){
     const sleeping = t < anim.sleepUntil, R = rate();
     allPets().forEach(q => {                         // decay by role (PACING §5): partner x1, party x0.5, box paused
       const k = roleMult(q); if (!k) return;
-      q.hunger = clamp(q.hunger - R.hunger * k * dt, 0, 100);
-      q.happy = clamp(q.happy - R.happy * k * dt * (q.hunger < 20 ? 2 : 1), 0, 100);
+      q.hunger = decayTo(q.hunger, R.hunger * k * dt, FOOD_RULES.floor);
+      q.happy = decayTo(q.happy, R.happy * k * dt * (q.hunger < FOOD_RULES.hungry ? 2 : 1), JOY_FLOOR);
       if (!(sleeping && q.id === S.partnerId)) q.energy = clamp(q.energy - R.energy * k * dt, 0, 100);   // only the resting partner is exempt
     });
     tickAcc += dt; if (tickAcc > 1) { tickAcc = 0; updateHUD(); }
@@ -3096,14 +3100,17 @@ function regenAll(sec){ if (S && sec > 0) allPets().forEach(q => { regenHp(q, se
 
 /* ---------- offline catch-up ---------- */
 // Applies `sec` seconds of away-time decay to every owned pet at the current rate mode.
-// No time cap: the floor already protects players, so a pet is never pushed below 10 and stats
-// already <= 10 stay put. (Joy uses the base rate here; the hunger<20 doubling is live-only.)
+// No time cap: the floors protect players (FOOD and JOY 20, NRG 10) and stats already at/below them stay put.
+// Same rule as live decay (PACING v0.3), including JOY x2 for the part of the time FOOD is under 25.
 function catchUp(sec){
   if (!(sec > 0) || !S || !allPets().length) return;
   const R = rate();
-  const dec = (v, amt) => v <= OFFLINE_FLOOR ? v : Math.max(OFFLINE_FLOOR, v - amt);
   allPets().forEach(p => { const k = roleMult(p); if (!k) return;   // PACING §5: box pets never get their boxed time
-    p.hunger = dec(p.hunger, sec*R.hunger*k); p.happy = dec(p.happy, sec*R.happy*k); p.energy = dec(p.energy, sec*R.energy*k); });
+    const fr = R.hunger * k, f0 = p.hunger;
+    const hungrySec = f0 < FOOD_RULES.hungry ? sec : Math.max(0, sec - (f0 - FOOD_RULES.hungry) / fr);   // JOY x2 only after FOOD crosses 25 (PACING §2)
+    p.hunger = decayTo(f0, sec * fr, FOOD_RULES.floor);
+    p.happy = decayTo(p.happy, (sec + hungrySec) * R.happy * k, JOY_FLOOR);
+    p.energy = decayTo(p.energy, sec * R.energy * k, OFFLINE_FLOOR); });
 }
 // A backgrounded tab pauses requestAnimationFrame (and the periodic save keeps bumping S.last),
 // so catch up on return using the time the tab was actually hidden.
