@@ -37,6 +37,7 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .set-row .set-lab{flex:1 1 auto}
 .set-row .set-val{color:var(--y);min-width:2.5ch;text-align:right}
 .set-row[aria-pressed="false"] .set-val{color:var(--m)}
+.set-hint{margin:-4px 0 0;padding:0 2px;font-size:12px;line-height:1.25;color:var(--h)}
 .set-row.set-danger{border-color:var(--r);color:var(--h)}
 .set-row.set-danger .set-val{color:var(--r)}
 .settings-inner > .btn{width:100%;min-height:48px}

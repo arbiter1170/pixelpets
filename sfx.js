@@ -2,7 +2,8 @@
    - The AudioContext is created/resumed only inside a user gesture (iOS + Chrome autoplay rules).
    - Mute is remembered in localStorage `pixelpets.mute` ('1' = muted). Muted = no audio nodes at all.
    - If WebAudio is missing or fails, every call is a silent no-op.
-   - Stingers (stinger_seal/item/befriend/levelup/evolve) queue instead of stacking; see the player below. */
+   - Stingers (stinger_seal/item/befriend/levelup/evolve) queue instead of stacking; see the player below.
+   - Background loops (town, route, battle) are original tunes played by the same voices. Music on/off is S.settings.music. */
 'use strict';
 const PPSound = (() => {
   const MUTE_KEY = 'pixelpets.mute';
@@ -32,9 +33,9 @@ const PPSound = (() => {
      3. play a one-sample silent buffer through the context (the classic iOS warm-up) and resume() it.
      Muting drops back to 'ambient' and pauses the silent loop, so a muted game never holds the session (or pauses other apps' audio).
      Leaving the page pauses the loop; the next gesture brings it back. All of it is best-effort and silent on failure.
-     ** Steps 1-2 are OFF: playing through the silent switch is an open red decision (MUSIC Q1, Vincent). With the flag false the game
-     obeys the ring/silent switch and stays in 'ambient' (mixes with other apps' audio, never pauses them); step 3 (the warm-up) and
-     the first-tap sound fix below stay on. Flip IOS_PLAY_THROUGH_SILENT to true once Q1 says so. */
+     ** Steps 1-2 stay OFF. Vincent decided Fri Oct 9 (MUSIC Q1) that the game respects the iPhone silent switch:
+     IOS_PLAY_THROUGH_SILENT stays false, the session stays 'ambient', and music follows the switch the same way SFX do.
+     Step 3 (the warm-up) and the first-tap sound fix below stay on. */
   const IOS_PLAY_THROUGH_SILENT = false;
   let keep = null, warmed = false;
   const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
@@ -63,7 +64,7 @@ const PPSound = (() => {
   }
   // First gesture unlocks audio; kept on so iOS can resume after an interruption (phone call, lock screen, another app's audio).
   // pointerdown/touchstart are not "activation" on iOS, so touchend/click/keydown do the real unlock; pointerdown is a harmless early try.
-  const unlock = () => { if (muted) return; session(true); if (ensure()) warm(); };
+  const unlock = () => { if (muted) return; session(true); if (ensure()) { warm(); startWanted(); } };
   ['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => window.addEventListener(ev, unlock, { capture: true, passive: true }));
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { if (keep && !keep.paused) try { keep.pause(); } catch(e) {} }
@@ -192,10 +193,180 @@ const PPSound = (() => {
     const nodes = STINGERS[id].map(([ms, n, d, w, v, sl]) => w === 'noise'
       ? noise(t0 + ms / 1000, d / 1000, v, n, 'highpass', bus)
       : tone(n, t0 + ms / 1000, d / 1000, w, v, sl, bus));
-    live.push({ id, bus, nodes, t0, end: t0 + stLen(id) });
+    const end = t0 + stLen(id);
+    live.push({ id, bus, nodes, t0, end });
+    duckMusic(t0, end);
     return true;
   }
   const stSounding = () => !!ac && live.some(s => s.t0 <= ac.currentTime && ac.currentTime < s.end);
+  const stPending = () => !!ac && live.some(s => s.end > ac.currentTime + 0.02);
+
+  /* MUSIC v0.1: original town / route / battle loops. Literal pasted from design/specs/MUSIC.md. No audio files. */
+  const KIT = {
+    k: ['lowpass', 260, 90, 0.30],
+    s: ['highpass', 1500, 110, 0.10],
+    h: ['highpass', 6500, 30, 0.04],
+  };
+  const MUSIC = {
+    town: { key: 'F major', bpm: 96, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.55,
+      lead: { wave: 'triangle', gain: 0.22, notes: [
+        [69,2],[72,1],[77,1],[76,2],[72,2],
+        [74,3],[77,1],[81,2],[77,2],
+        [74,2],[70,1],[72,1],[74,2],[77,2],
+        [76,3],[74,1],[72,4],
+        [69,1],[72,1],[77,2],[79,1],[77,1],[76,2],
+        [76,2],[72,2],[69,2],[72,2],
+        [74,2],[77,2],[76,1],[74,1],[76,2],
+        [77,6],[74,1],[72,1] ] },
+      bass: { wave: 'triangle', gain: 0.28, notes: [
+        [41,2],[48,2],[45,2],[48,2],  [38,2],[45,2],[41,2],[45,2],
+        [46,2],[53,2],[50,2],[53,2],  [48,2],[55,2],[52,2],[55,2],
+        [41,2],[48,2],[45,2],[48,2],  [45,2],[52,2],[48,2],[52,2],
+        [46,2],[53,2],[48,2],[55,2],  [41,4],[48,2],[41,2] ] },
+      drums: ['k.h.s.h.','k.h.s.h.','k.h.s.h.','k.h.s.hh','k.h.s.h.','k.h.s.h.','k.h.s.h.','k.h.s.ss'] },
+    route: { key: 'G major', bpm: 112, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.75,
+      lead: { wave: 'square', gain: 0.055, notes: [
+        [67,1],[71,1],[74,2],[71,1],[74,1],[79,2],
+        [76,2],[72,1],[76,1],[79,3],[76,1],
+        [74,1],[71,1],[67,2],[69,1],[71,1],[74,2],
+        [69,1],[74,1],[78,2],[76,2],[74,2],
+        [79,2],[76,1],[71,1],[76,2],[79,2],
+        [79,1],[76,1],[72,2],[76,1],[79,1],[81,2],
+        [78,2],[76,1],[74,1],[69,2],[78,2],
+        [79,4],[74,2],[0,2] ] },
+      bass: { wave: 'triangle', gain: 0.30, notes: [
+        [43,2],[55,2],[50,2],[55,2],  [48,2],[60,2],[55,2],[60,2],
+        [43,2],[55,2],[50,2],[55,2],  [50,2],[62,2],[57,2],[62,2],
+        [40,2],[52,2],[47,2],[52,2],  [48,2],[60,2],[55,2],[60,2],
+        [50,2],[62,2],[57,2],[62,2],  [43,2],[50,2],[43,4] ] },
+      drums: ['k.hks.h.','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.ss'] },
+    battle: { key: 'A minor', bpm: 140, bars: 8, stepsPerBar: 16, gate: 0.9, perc: 1.0,
+      lead: { wave: 'square', gain: 0.06, notes: [
+        [69,2],[72,2],[76,2],[81,4],[79,2],[76,2],[72,2],
+        [77,4],[76,2],[74,2],[72,4],[69,4],
+        [71,2],[74,2],[79,4],[77,2],[76,2],[74,4],
+        [76,6],[0,2],[69,2],[71,2],[72,2],[74,2],
+        [76,2],[76,2],[81,2],[76,2],[79,2],[77,2],[76,2],[72,2],
+        [74,2],[77,2],[81,4],[79,2],[77,2],[76,2],[74,2],
+        [71,2],[74,2],[79,2],[83,2],[81,4],[79,4],
+        [80,4],[76,2],[71,2],[68,2],[71,2],[74,2],[80,2] ] },
+      bass: { wave: 'triangle', gain: 0.32, notes: [
+        [45,2],[57,2],[45,2],[57,2],[45,2],[57,2],[45,2],[57,2],
+        [41,2],[53,2],[41,2],[53,2],[41,2],[53,2],[41,2],[53,2],
+        [43,2],[55,2],[43,2],[55,2],[43,2],[55,2],[43,2],[55,2],
+        [45,2],[57,2],[45,2],[57,2],[45,2],[57,2],[45,2],[57,2],
+        [45,2],[57,2],[45,2],[57,2],[45,2],[57,2],[45,2],[57,2],
+        [41,2],[53,2],[41,2],[53,2],[41,2],[53,2],[41,2],[53,2],
+        [43,2],[55,2],[43,2],[55,2],[43,2],[55,2],[43,2],[55,2],
+        [40,2],[52,2],[40,2],[52,2],[40,2],[52,2],[44,2],[47,2] ] },
+      drums: ['k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.hh',
+              'k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.s.s.ssss'] },
+  };
+  let MUSIC_ON = true, MUSIC_VOL = 0.5, want = null, trk = null, token = 0;
+  const FLAT = {};
+  function eventsFor(id){
+    if (FLAT[id]) return FLAT[id];
+    const t = MUSIC[id], n = t.bars * t.stepsPerBar, by = Array.from({ length: n }, () => []);
+    for (const voice of ['lead', 'bass']) {
+      let s = 0;
+      for (const [note, steps] of t[voice].notes) { if (note) by[s].push({ kind: voice, note, steps }); s += steps; }
+    }
+    t.drums.forEach((bar, b) => { for (let i = 0; i < bar.length; i++) if (bar[i] !== '.') by[b * t.stepsPerBar + i].push({ kind: 'd', drum: bar[i] }); });
+    FLAT[id] = { by, n, stepSec: (60 / t.bpm) * 4 / t.stepsPerBar, stepsPerBar: t.stepsPerBar, gate: t.gate, perc: t.perc, lead: t.lead, bass: t.bass };
+    return FLAT[id];
+  }
+  function canHear(){ return MUSIC_ON && !muted && !document.hidden && !!ac && ac.state === 'running'; }
+  function duckMusic(t0, end){
+    if (!trk || !trk.bus) return;
+    try { trk.bus.gain.setTargetAtTime(MUSIC_VOL * 0.35, t0, 0.013); trk.bus.gain.setTargetAtTime(MUSIC_VOL, end, 0.1); } catch(e) {}
+  }
+  function schedule(cur){
+    const info = cur.info, horizon = ac.currentTime + 0.3;
+    if (cur.nextAt < ac.currentTime - 0.05) {
+      const barSec = info.stepSec * info.stepsPerBar, late = ac.currentTime - cur.nextAt;
+      const bars = Math.max(1, Math.ceil(late / barSec));
+      cur.step = (cur.step + bars * info.stepsPerBar) % info.n;
+      cur.nextAt += bars * barSec;
+    }
+    let guard = 0;
+    while (cur.nextAt < horizon && guard++ < 80) {
+      for (const e of cur.info.by[cur.step] || []) {
+        if (e.kind === 'd') {
+          const k = KIT[e.drum]; if (!k) continue;
+          noise(cur.nextAt, k[2] / 1000, k[3] * info.perc, k[1], k[0], cur.bus);
+          if (e.drum === 'k') tone({ hz: 120 }, cur.nextAt, 0.08, 'triangle', 0.35 * info.perc, 45, cur.bus);
+        } else {
+          const voice = e.kind === 'lead' ? info.lead : info.bass;
+          tone(e.note, cur.nextAt, Math.max(0.02, e.steps * info.stepSec * info.gate), voice.wave, voice.gain, 0, cur.bus);
+        }
+      }
+      cur.step = (cur.step + 1) % info.n;
+      cur.nextAt += info.stepSec;
+    }
+  }
+  function stopTrack(fadeSec){
+    if (!trk) return;
+    const old = trk; trk = null; clearInterval(old.timer);
+    const now = ac ? ac.currentTime : 0;
+    try {
+      old.bus.gain.cancelScheduledValues(now);
+      old.bus.gain.setValueAtTime(Math.max(0.0001, old.bus.gain.value || 0.0001), now);
+      old.bus.gain.setTargetAtTime(0.0001, now, Math.max(0.01, fadeSec / 3));
+    } catch(e) {}
+    setTimeout(() => { try { old.bus.disconnect(); } catch(e) {} }, Math.round(fadeSec * 1000) + 120);
+  }
+  function startTrack(id, fadeIn){
+    if (!ac) return;
+    const info = eventsFor(id), bus = ac.createGain(), now = ac.currentTime;
+    bus.connect(out);
+    bus.gain.setValueAtTime(0.0001, now);
+    if (fadeIn <= 0.001) bus.gain.setValueAtTime(MUSIC_VOL, now);
+    else bus.gain.linearRampToValueAtTime(MUSIC_VOL, now + fadeIn);
+    const cur = { id, bus, info, step: 0, nextAt: now + 0.02, timer: null };
+    trk = cur;
+    const tick = () => { if (trk === cur) schedule(cur); };
+    cur.timer = setInterval(tick, 100);
+    tick();
+  }
+  function startWanted(){
+    if (!want || !canHear()) return;
+    if (trk && trk.id === want) return;
+    if (trk) stopTrack(0.4);
+    startTrack(want, 0.4);
+  }
+  function music(id, opt){
+    opt = opt || {};
+    if (!id || !MUSIC[id]) return false;
+    if (trk && trk.id === id && !opt.restart && !opt.delay && !opt.afterStingers && opt.minDelay == null && canHear()) { want = id; return true; }
+    want = id;
+    const my = ++token, fadeOut = (opt.fadeOut != null ? opt.fadeOut : 400) / 1000, fadeIn = (opt.fadeIn != null ? opt.fadeIn : 400) / 1000;
+    const minDelay = opt.minDelay != null ? opt.minDelay : (opt.delay || 0), t0 = performance.now();
+    if (trk && (opt.restart || trk.id !== id)) stopTrack(fadeOut);
+    const attempt = () => {
+      if (my !== token || want !== id) return;
+      if (!canHear()) return;
+      if (performance.now() - t0 < minDelay || (opt.afterStingers && stPending())) { setTimeout(attempt, 40); return; }
+      if (trk && trk.id === id && !opt.restart) return;
+      if (trk) stopTrack(fadeOut);
+      startTrack(id, fadeIn);
+    };
+    attempt();
+    return true;
+  }
+  function setMusic(on, gesture){
+    MUSIC_ON = !!on;
+    if (!MUSIC_ON) { token++; if (trk) stopTrack(0.1); return false; }
+    if (gesture && !muted && ensure()) warm();
+    startWanted();
+    return true;
+  }
+  function pauseMusic(){ token++; if (trk) stopTrack(0.03); }
+  function resumeMusic(){
+    if (!want || !MUSIC_ON || muted || document.hidden || !ac) return;
+    const begin = () => { if (!document.hidden && canHear() && (!trk || trk.id !== want)) startTrack(want, 0.4); };
+    if (ac.state !== 'running') { try { const r = ac.resume(); if (r && r.then) r.then(begin).catch(() => {}); } catch(e) {} return; }
+    begin();
+  }
 
   function play(name, delay){
     const sid = /^stinger_/.test(name) && STINGERS[name.slice(8)] ? name.slice(8) : null;
@@ -211,14 +382,19 @@ const PPSound = (() => {
   }
   function setMuted(m){
     muted = !!m;
-    if (muted) { if (ac) live.forEach(s => stCancel(s, ac.currentTime)); live = []; }
+    if (muted) { if (ac) live.forEach(s => stCancel(s, ac.currentTime)); live = []; token++; if (trk) stopTrack(0.03); }
     try { if (muted) localStorage.setItem(MUTE_KEY, '1'); else localStorage.removeItem(MUTE_KEY); } catch(e) {}
     if (out && ac) { try { out.gain.setTargetAtTime(muted ? 0 : MASTER, ac.currentTime, 0.01); } catch(e) {} }
     session(!muted);                                   // muted: back to 'ambient', silent loop paused
-    if (!muted && ensure()) warm();                    // toggling is itself a gesture: unlock now
+    if (!muted && ensure()) { warm(); startWanted(); } // toggling is itself a gesture: unlock now
     return muted;
   }
   return { play, setMuted, toggle: () => setMuted(!muted), get muted(){ return muted; }, get available(){ return !!AC; },
     get state(){ return ac ? ac.state : 'none'; }, get session(){ return { playThroughSilent: IOS_PLAY_THROUGH_SILENT, type: navigator.audioSession ? navigator.audioSession.type : null, loop: keep ? (keep.paused ? 'paused' : 'playing') : 'none', warmed }; }, get played(){ return played.slice(); },
-    names: Object.keys(SFX).concat(Object.keys(STINGERS).map(k => 'stinger_' + k)), get stingers(){ return live.map(s => s.id); } };
+    names: Object.keys(SFX).concat(Object.keys(STINGERS).map(k => 'stinger_' + k)), get stingers(){ return live.map(s => s.id); },
+    music, setMusic, pauseMusic, resumeMusic,
+    get musicOn(){ return MUSIC_ON; }, get musicTrack(){ return trk ? trk.id : null; }, get musicWant(){ return want; },
+    get musicVol(){ return MUSIC_VOL; },
+    set musicVol(v){ const n = +v; if (!Number.isFinite(n)) return; MUSIC_VOL = Math.max(0, Math.min(1, n));
+      if (trk && ac) { try { trk.bus.gain.setTargetAtTime(MUSIC_VOL, ac.currentTime, 0.05); } catch(e) {} } } };
 })();

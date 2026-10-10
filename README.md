@@ -14,7 +14,7 @@ Touch: bottom tabs (Pet / Walk / Pets / Friends); FEED / PLAY / REST; Walk = hol
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
-Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Follower on/off, Change look, and Start over.
+Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, and Start over.
 
 Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off). A small
 DBG tag shows in the header. Only in debug mode:
@@ -217,8 +217,9 @@ files) in `sfx.js`: UI tap, feed, play, rest, cooldown/refusal buzz, a quiet foo
 build-up + fanfare, level-up and daily-cap chimes, and battle effects (hit, strong/weak hit, stat up/down,
 heal, tired, win, move learned). Default volume is low. The AudioContext is only
 created on the first tap/key press (iOS and Chrome autoplay rules) and resumed after interruptions;
-muted means no audio nodes at all, and browsers without WebAudio just stay silent. There is no
-background music (left out for now; see BACKLOG).
+muted means no audio nodes at all, and browsers without WebAudio just stay silent. Three original loops
+(town, route, battle) play from the same voices after the first tap. Music on/off is `settings.music`
+(default on) and is separate from the sound-effects mute. The iPhone silent switch mutes both.
 
 Font: Jersey 15 by Sarah Cadigan-Fried (SIL Open Font License 1.1), self-hosted as a ~15 KB Latin
 subset in `fonts/` with its license (`fonts/OFL.txt`, credits in `fonts/README.md`). `font-display: swap`

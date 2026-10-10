@@ -53,7 +53,7 @@ const PPSave = (() => {
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
       dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: startWorld(),
       bag: {}, money: 0, seals: {}, flags: {}, eggs: { incubators: [{ egg: null }], held: [] },
-      settings: { textSpeed: 'normal', battleAnims: true, follower: true },
+      settings: { textSpeed: 'normal', battleAnims: true, follower: true, music: true, musicVol: 0.5 },
       player: { name: null, look: null },
       meta: { migratedFrom: null, migratedAt: null, backup: null, legacy: {} } };
   }
@@ -194,6 +194,8 @@ const PPSave = (() => {
     fill(s, 'settings', isObj, d.settings);
     fill(s.settings, 'textSpeed', x => TEXT_SPEEDS.includes(x), 'normal'); fill(s.settings, 'battleAnims', x => typeof x === 'boolean', true);
     fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
+    fill(s.settings, 'music', x => typeof x === 'boolean', true);                    // MUSIC v0.1 Q2: in the save, default on
+    fill(s.settings, 'musicVol', x => typeof x === 'number' && x >= 0 && x <= 1, 0.5); // Q3: no slider yet; the key is ready
     fill(s, 'mapSeen', isObj, {});
     // CARE_LOOP cheap slice: today's player care record { d, steps, finds, stepBond, battleBond, firstCare } (additive; bad -> dropped).
     if (has(s, 'care')) { if (!(isObj(s.care) && typeof s.care.d === 'string')) delete s.care;

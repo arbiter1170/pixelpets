@@ -138,6 +138,18 @@ function renderSoundRow(){
   b.setAttribute('aria-pressed', m ? 'false' : 'true');
   $('#setSoundVal').textContent = m ? 'OFF' : 'ON';
 }
+function renderMusicRow(){
+  const on = !S || S.settings.music !== false, b = $('#setMusic');
+  if (!b) return;
+  b.setAttribute('aria-pressed', String(on));
+  $('#setMusicVal').textContent = on ? 'ON' : 'OFF';
+}
+function toggleMusic(){
+  if (!S) return;
+  S.settings.music = S.settings.music === false;
+  PPSound.setMusic(S.settings.music, true);
+  renderMusicRow(); save(); sfx('tap');
+}
 function renderFollowerBtn(){
   const on = !!(S && S.settings.follower !== false), b = $('#setFollower');
   if (!b) return;
@@ -150,7 +162,7 @@ function renderBuild(){ const b = buildId(); $('#setBuild').textContent = b ? 'B
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden) return;
   if (!$('#ovSettings').hidden) return;
-  clearMoves(); renderSoundRow(); renderFollowerBtn(); renderBuild();
+  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderBuild();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
   $('#setClose').focus({ preventScroll: true });
 }
@@ -669,6 +681,13 @@ function useMap(id){
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };
 }
 const isRoom = () => CUR.kind === 'interior';
+// MUSIC v0.1: interiors and towns share one loop; routes and meadows share another. Unknown backdrops leave the current loop.
+function trackFor(map){
+  if (!map) return null;
+  if (map.kind === 'interior' || map.backdrop === 'town') return 'town';
+  if (map.backdrop === 'route' || map.backdrop === 'meadow') return 'route';
+  return null;
+}
 const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
 // Conditions (§4): 'flag', '!flag', 'flag=value', 'seal:id', 'has:name', 'talked' (lines keys only). `live` = read scene pending too.
 function flagOf(k, live){ if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
@@ -1076,12 +1095,14 @@ function warpTo(at, after){
   setTimeout(() => { arriveAt(at); }, FADE_MS / 2);
   setTimeout(() => { fade.busy = false; if (after) after(); }, FADE_MS);
 }
+let musicHold = false;   // closeBattle plays the return loop itself (after stingers); a wipe's arriveAt must not start it early
 function arriveAt(at){
   useMap(at.map);
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); bump.talked = null; markMapSeen();
   placeFollower(); renderEnv(); save();
+  if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
 }
 function enterDoor(dr){
   if (dr.need && !cond(dr.need, false)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
@@ -2006,6 +2027,7 @@ function openBattle(o){
   $('#btTwinkle').hidden = !(o.kind === 'wild' && f.stage > 0);
   renderBattleCards(); setPanel('busy');
   $('#ovBattle').hidden = false; lockTabs(true); fitAll(); fitBattle();
+  PPSound.music('battle', { fadeOut: 150, delay: 350, fadeIn: 100 });
   battleIntro(B.id);
   return true;
 }
@@ -2044,9 +2066,12 @@ function closeBattle(){
   }
   if (B.result === 'run') toast('You slipped away safely.');
   const onEnd = B.onEnd; B.onEnd = null;
+  musicHold = true;
   if (B.result === 'tired' && !onEnd) respawnAfterWipe();   // in a scene the respawn waits for the scene's end (§6 rival1)
+  musicHold = false;
   updateHUD(); save();
   if (onEnd) onEnd(B.result);
+  const back = trackFor(CUR); if (back) PPSound.music(back, { fadeOut: 300, minDelay: 800, fadeIn: 600, restart: true, afterStingers: true });
 }
 // §7.2 team wipe: back to world.respawn's Lantern House (Hearthmoor: inside, by the beds; INTERIORS slicePatch respawnIn).
 // Nothing lost, nobody healed, timers keep running.
@@ -3055,6 +3080,7 @@ function bindInput(){
   $('#setClose').addEventListener('click', () => { sfx('tap'); closeSettings(); });
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
   $('#setSound').addEventListener('click', () => { const m = PPSound.toggle(); renderSoundRow(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
+  $('#setMusic').addEventListener('click', toggleMusic);
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
   // scene text box (MAPS_SLICE §8): tap anywhere on the box or the map advances; SKIP jumps to the next interactive step
@@ -3190,7 +3216,7 @@ function bindInput(){
   window.addEventListener('blur', clearMoves);
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { save(); PPSound.pauseMusic(); } else PPSound.resumeMusic(); });
   window.addEventListener('pagehide', save);
   // Back/forward cache: a page restored with an old game in memory reloads if its save was erased or replaced meanwhile.
   window.addEventListener('pageshow', e => {
@@ -3366,6 +3392,9 @@ function boot(){
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
+  PPSound.setMusic(S.settings.music !== false);
+  PPSound.musicVol = typeof S.settings.musicVol === 'number' ? S.settings.musicVol : 0.5;
+  const theme = trackFor(CUR); if (theme) PPSound.music(theme);   // records the loop; the first tap starts it
   saveTimer = setInterval(save, 5000);
   startCloud();
   startBuildCheck();
