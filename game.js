@@ -397,7 +397,8 @@ const grantCareXp = (p, n) => grantCapped(p, 'cx', CARE_XP_DAILY_CAP, n);
 // Explore XP (walking + befriending). Shows the one-time "explored enough" toast when the cap is reached.
 function grantExploreXp(p, n){
   const g = grantCapped(p, 'ex', EXPLORE_XP_DAILY_CAP, n), r = exploreXpToday(p);
-  if (r.xp >= EXPLORE_XP_DAILY_CAP && !r.told) { r.told = true; sfx('cap', xpChimeDelay + 0.3); toast(petName(p) + ' has explored enough for today. Rest up!'); }
+  if (r.xp >= EXPLORE_XP_DAILY_CAP && !r.told) { r.told = true; const msg = petName(p) + ' has explored enough for today. Rest up!';
+    if (findStep) setTimeout(() => { sfx('cap'); toast(msg); }, 1900); else { sfx('cap', xpChimeDelay + 0.3); toast(msg); } }
   return g;
 }
 const CD_MSG = { feed: ' is still digesting. Feed again in ', play: ' needs a breather. Play again in ', rest: " isn't sleepy yet. Rest again in " };
@@ -772,16 +773,20 @@ function tryStep(d){
 function onLand(){
   const p = pet();
   S.steps++; if (S.steps % 2 === 0) sfx('step');   // quiet footstep on every other step
-  if (S.steps % 50 === 0) toast(S.steps + ' steps! Nice walk.');
+  let found = false;
   bump.talked = null;                        // §4.1: any completed step ends "just talked to"
   if (p) {                                   // energy/hunger/step XP only with a partner
     p.energy = clamp(p.energy - STEP_NRG, 0, 100); p.hunger = clamp(p.hunger - STEP_FOOD, 0, 100);
     p.sr = (+p.sr || 0) + 1;                 // per-pet step remainder, carried across sessions
     const cday = careDay(); cday.steps++;     // steps together today (bond, walk finds)
     if (cday.steps % BOND.steps === 0 && cday.stepBond < BOND.stepDay) { cday.stepBond++; addBond(p, 1); }
+    found = walkFind(p, cday);
+    findStep = found;                        // the explore-cap toast waits for the find's toast this step
     if (p.sr >= STEPS_PER_XP) { p.sr -= STEPS_PER_XP; grantExploreXp(p, 1); }
+    findStep = false;
     updateHUD();
   }
+  if (S.steps % 50 === 0 && !found) toast(S.steps + ' steps! Nice walk.');   // a find says more than the step count
   const x = S.world.x, y = S.world.y;
   const wp = warpAt(x, y);
   if (wp && !(wp.need && !cond(wp.need, false))) { if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return; }
@@ -930,6 +935,22 @@ function grantItem(id, n){
   const added = Math.min(n, Math.max(0, it.cap - itemCount(id)));
   if (added) S.bag[id] = itemCount(id) + added;
   return { added, lost: n - added };
+}
+/* CARE_LOOP D, cheap slice: walk finds. Twice a day, at 60 and 140 steps walked together (both before the 150-step
+   "explored enough" toast), the partner digs something up: a toast at that step, no dig animation, no keepsakes.
+   Loot: 60% Acorns (10-25), 25% a Joy Crumb or a Heal Snack (Acorns instead if that stack is full), 15% Acorns
+   (the keepsake share, Q10 deferred). +2 bond. Counted on S.care (finds, steps), per local day. */
+const FINDS = { at: [60, 140], acornMin: 10, acornMax: 25, items: ['joy_crumb', 'heal_snack'] };
+let findStep = false, findRng = Math.random;
+function walkFind(p, cday){
+  if (!FINDS.at.includes(cday.steps) || cday.finds >= FINDS.at.length) return false;
+  cday.finds++;
+  const r = findRng(); let what = null;
+  if (r >= 0.6 && r < 0.85) { const id = FINDS.items[findRng() < 0.5 ? 0 : 1]; if (grantItem(id, 1).added) what = itemLabel(id, 1); }
+  if (!what) { const n = FINDS.acornMin + Math.floor(findRng() * (FINDS.acornMax - FINDS.acornMin + 1)); S.money = (S.money || 0) + n; what = acorns(n); }
+  addBond(p, BOND.find); sfx('stinger_item');
+  toast(petName(p) + ' dug something up! Found ' + what + '.'); save();
+  return true;
 }
 function takeItem(id){ const c = itemCount(id) - 1; if (c > 0) S.bag[id] = c; else delete S.bag[id]; }
 // Why an item can't be used right now (null = it can). ctx 'battle' | 'field'; p = the target pet (if the item needs one).
@@ -3354,7 +3375,7 @@ function boot(){
   // (XP, evolving, spawning, places, fast mode, live state) only works with ?debug=1.
   const copy = o => JSON.parse(JSON.stringify(o));
   const api = {
-    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
+    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get finds(){ return { at: FINDS.at.slice(), today: S && S.care ? { ...S.care } : null }; }, setFindRng: f => { if (DEBUG) findRng = typeof f === 'function' ? f : Math.random; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
     get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, name: nameOf(w.sp, w.stage) })); },
