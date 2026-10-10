@@ -1309,15 +1309,18 @@ function drawCobbleTrim(g, cx, cy, t){
     g.restore();
   }
 }
-// A small yellow chevron on Hearthmoor's east path until the keeper has been out on Route 1.
+// A small yellow chevron above Hearthmoor's east path until the keeper has been out on Route 1.
+// The path tile is yellow, so the mark sits in the darker tile just north of it.
 function drawExitCue(g, cx, cy, t){
   if (!S || CUR.id !== 'hearthmoor' || !S.flags['story.starter_received'] || S.flags['story.reached_route1']) return;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
-  const x = 20 * TS - cx + 5, y = 8 * TS - cy - 4 - bob;
+  const x = 20 * TS - cx + 5, y = 8 * TS - cy - 12 - bob;
+  const blocks = [[0, 2], [2, 0], [2, 4], [4, 2]];
+  g.fillStyle = PAL.k;
+  for (const [dx, dy] of blocks) g.fillRect(x + dx - 1, y + dy - 1, 4, 4);
   g.fillStyle = PAL.y;
-  g.fillRect(x, y + 2, 2, 2); g.fillRect(x + 2, y, 2, 2); g.fillRect(x + 2, y + 4, 2, 2); g.fillRect(x + 4, y + 2, 2, 2);
-  g.fillStyle = PAL.k; g.fillRect(x, y + 1, 1, 1); g.fillRect(x + 5, y + 2, 1, 1);
+  for (const [dx, dy] of blocks) g.fillRect(x + dx, y + dy, 2, 2);
 }
 const WART = buildWorldArt();
 function drawObj(g, o, cx, cy, VW, VH, t){
