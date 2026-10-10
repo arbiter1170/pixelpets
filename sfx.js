@@ -125,6 +125,9 @@ const PPSound = (() => {
     win:      t => { seq(t, [72, 76, 79, 84], 0.09, 0.1, 'square', 0.12); tone(88, t + 0.36, 0.3, 'square', 0.12); seq(t, [48, 55, 60], 0.12, 0.12, 'triangle', 0.45); },
     learn:    t => seq(t, [76, 81, 86], 0.08, 0.1, 'triangle', 0.3),          // quieter than levelup
   };
+  // CARE_LOOP Q11 default: one chirp per type, pitch-shifted (hello, pats). Short and soft; two rising blips.
+  const CHIRP_BASE = { ember: 79, tide: 74, bloom: 81, stone: 67, volt: 84, frost: 86, gust: 83, shade: 70, plain: 76 };
+  for (const [k, m] of Object.entries(CHIRP_BASE)) SFX['chirp_' + k] = t => { tone(m, t, 0.06, 'triangle', 0.35, 440 * Math.pow(2, (m + 4 - 69) / 12)); tone(m + 7, t + 0.07, 0.07, 'triangle', 0.3); };
 
   /* Stingers (design STINGERS v0.1): short original jingles played by the same tone()/noise() voices. Data block pasted from the spec. */
   // Row: [startMs, note, durMs, wave, gain, slideToHz?]  note = MIDI (72 = C5) for square/triangle; for 'noise' it is the highpass cutoff in Hz (noise rows <= 400 ms: the noise buffer is 0.4 s).

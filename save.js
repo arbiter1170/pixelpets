@@ -70,6 +70,10 @@ const PPSave = (() => {
     if (!(fin(q.met) && q.met > 0)) q.met = created;
     if (has(q, 'cd')) { if (!isObj(q.cd)) delete q.cd; else for (const a of ['feed', 'play', 'rest']) if (has(q.cd, a) && !fin(q.cd[a])) delete q.cd[a]; }
     for (const k of ['cx', 'ex']) if (has(q, k) && !isObj(q[k])) delete q[k];
+    // CARE_LOOP cheap slice (additive): bond points (never a level; only goes up) and today's pat record.
+    if (has(q, 'bond')) { if (!fin(q.bond) || q.bond < 0) delete q.bond; else q.bond = Math.floor(q.bond); }
+    if (has(q, 'pat') && !(isObj(q.pat) && typeof q.pat.d === 'string')) delete q.pat;
+    else if (has(q, 'pat')) for (const k of ['n', 'joy', 'bond']) q.pat[k] = fin(q.pat[k]) && q.pat[k] >= 0 ? Math.floor(q.pat[k]) : 0;
     if (has(q, 'sr')) q.sr = fin(q.sr) ? Math.max(0, Math.floor(q.sr)) : 0;
     if (!has(q, 'nick') || (q.nick !== null && typeof q.nick !== 'string')) q.nick = null;
     if (!has(q, 'origin') || typeof q.origin !== 'string') q.origin = originDefault;
@@ -190,7 +194,10 @@ const PPSave = (() => {
     fill(s, 'settings', isObj, d.settings);
     fill(s.settings, 'textSpeed', x => TEXT_SPEEDS.includes(x), 'normal'); fill(s.settings, 'battleAnims', x => typeof x === 'boolean', true);
     fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
-    fill(s, 'mapSeen', isObj, {});                                                // MAP_V0 §5 (Q2): visited region-map nodes, additive
+    fill(s, 'mapSeen', isObj, {});
+    // CARE_LOOP cheap slice: today's player care record { d, steps, finds, stepBond, battleBond, firstCare } (additive; bad -> dropped).
+    if (has(s, 'care')) { if (!(isObj(s.care) && typeof s.care.d === 'string')) delete s.care;
+      else { for (const k of ['steps', 'finds', 'stepBond', 'battleBond']) s.care[k] = fin(s.care[k]) && s.care[k] >= 0 ? Math.floor(s.care[k]) : 0; s.care.firstCare = s.care.firstCare === true; } }                                                // MAP_V0 §5 (Q2): visited region-map nodes, additive
     // MAPS_SLICE K.5 / §10: optional `player` {name, look}. Additive, no version bump; unknown keys inside survive.
     fill(s, 'player', isObj, { name: null, look: null });
     const pl = s.player;

@@ -319,9 +319,33 @@ let bowlToldDay = null;                      // "A Warm Bowl is ready" once per 
 function bowlHint(ms = 1200){
   const p = pet(), d = dayKey(Date.now());
   if (!p || bowlToldDay === d || !bowlReady() || p.hunger >= 98) return;
+  if (helloDue()) return;                    // the hello plays first and calls this when it's done (CARE_LOOP §7 / eng notes §3.9)
   bowlToldDay = d; setTimeout(() => { const q = pet(); if (q && bowlReady() && q.hunger < 98 && !overlayOpen()) toast('A Warm Bowl is ready for ' + petName(q) + '.'); }, ms);
 }
 function dayKey(ms){ const d = new Date(ms); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+/* CARE_LOOP F, cheap slice: the hello of the day. Once per local day (flags['daily.hello'] = dayKey), on the PARTNER tab, queued behind
+   everything else: never over a scene, overlay, battle, the starter intro or a toast that's still up (boot notices, colour-back,
+   the naming nudge). One of three time-of-day lines (copy table §7; evening covers night in this slice) plus the two-hearts
+   balloon; the "!" hides meanwhile. Audio is locked until the first tap, so the chirp waits for that tap. Then the Warm Bowl hint. */
+const HELLO_FLAG = 'daily.hello';
+const HELLO_LINES = { morning: 'Morning! {pet} stretches and wiggles over to you.', midday: '{pet} perks up. You\'re back!', evening: '{pet} curls up beside you. Long day?' };
+const helloSlot = (h = new Date().getHours()) => h >= 5 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'midday' : 'evening';
+const hello = { until: 0, quietUntil: 0, chirp: 0 };
+const helloDue = () => !!S && !!pet() && !!S.flags['story.starter_received'] && S.flags[HELLO_FLAG] !== dayKey(Date.now());
+function pumpHello(){
+  const t = now();
+  if (!helloDue() || screen !== 'pet' || overlayOpen() || t < hello.quietUntil || t < anim.busyUntil || $('#toast').classList.contains('show')) return false;
+  const p = pet(); S.flags[HELLO_FLAG] = dayKey(Date.now());
+  toast(HELLO_LINES[helloSlot()].replace('{pet}', petName(p)));
+  const from = queueEmote('emote_hearts', 150, 1600); hello.until = from + 1600;
+  if (PPSound.state === 'running') sfx(chirpName(p)); else hello.chirp = Date.now();   // first tap plays it (eng notes §2)
+  helloBonus(p); save();
+  bowlToldDay = null; setTimeout(() => bowlHint(0), 2000);
+  return true;
+}
+function helloBonus(p){}                    // bond +1 (wired in the bond build)
+const chirpName = p => 'chirp_' + String((SPECIES[spi(p)] || {}).type || 'PLAIN').toLowerCase();
+window.addEventListener('pointerup', () => { if (hello.chirp && Date.now() - hello.chirp < 60000) { hello.chirp = 0; const p = pet(); if (p) setTimeout(() => sfx(chirpName(p)), 40); } }, { capture: true, passive: true });
 // Daily XP records on the pet: p.cx (care) and p.ex (explore), each { d: 'YYYY-MM-DD' (local), xp: earned that day,
 // told: cap toast shown }. Missing or from another day = fresh record, so old saves just work.
 function dailyRec(p, k){
@@ -371,7 +395,21 @@ function updateCareButtons(){
 }
 
 /* ---------- pet care ---------- */
-const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, bowlFrom: 0, bowlUntil: 0, parts: [] };
+const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [], emotes: [] };
+/* CARE_LOOP plumbing (§7 build order): a small emote queue over the partner on the PARTNER tab. Each balloon waits for the one
+   before it, so the Warm Bowl, the hello and (later) bond-ups never draw on top of each other. */
+function queueEmote(glyph, delayMs = 0, durMs = 1500){
+  const t = now(), last = anim.emotes.reduce((m, e) => Math.max(m, e.until), 0);
+  const from = Math.max(t + delayMs, last + 120); anim.emotes.push({ glyph, from, until: from + durMs }); return from;
+}
+const emoteNow = t => anim.emotes.find(e => t >= e.from && t < e.until) || null;
+// Per-day record helper: obj[k] = { d: dayKey, ...init } for today (fresh on a new local day, or if missing/broken).
+function dayRec(obj, k, init){
+  const d = dayKey(Date.now());
+  if (!obj[k] || typeof obj[k] !== 'object' || obj[k].d !== d) obj[k] = Object.assign({ d }, init);
+  return obj[k];
+}
+const careDay = () => dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false });
 function addPart(type, x, y, vx=0, vy=-8, life=1.2){ anim.parts.push({ type, x, y, vx, vy, life, max: life }); }
 const PET_H = 64, GROUND = PET_H - 14;                  // max logical height of the Pet tab scene (56..64, see fitPetScene)
 function petPos(t){ const c = $('#petCanvas'), W = (c && c.width) || 56, H = (c && c.height) || 56, x = Math.round((W - 16) / 2 + Math.sin(t / 2200) * 7); return { x, y: H - 14 - 7 }; }
@@ -387,7 +425,7 @@ function doAction(act){
     if (p.hunger >= 98) { sfx('denied'); return toast('Too full to eat!'); }
     const bowl = bowlReady();
     p.hunger = clamp(p.hunger + careGain(FEED_FOOD, p.hunger, FEED_BANDS) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + (bowl ? BOWL.joy : 3), 0, 100);
-    if (bowl) { S.flags[BOWL.flag] = dayKey(Date.now()); anim.bowlFrom = t + 600; anim.bowlUntil = t + 2100; }   // two-hearts balloon (ICONS_SEALS Q6)
+    if (bowl) { S.flags[BOWL.flag] = dayKey(Date.now()); queueEmote('emote_hearts', 600, 1500); }   // two-hearts balloon (ICONS_SEALS Q6), on the emote queue
     addPart('apple', pp.x + 6, pp.y - 4, 0, 4, 0.9);
     setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
     anim.busyUntil = t + (bowl ? 1500 : 1100); msg = bowl ? 'Warm Bowl! ' + petName(p) + ' gobbles it up. +FOOD +JOY' : 'Yum! +FOOD';
@@ -504,7 +542,8 @@ function drawPetScene(t, dt){
   g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(x + 3, y + 17, 12, 2);
   const blink = sleeping || (t % 3200) < 140;
   g.drawImage(petSpr(p)[blink ? 'b' : 'n'], x, y + bob);
-  if (!sleeping && (p.hunger < 25 || p.happy < 25 || p.energy < 25) && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);
+  anim.bangOn = !sleeping && t >= hello.until && (p.hunger < 25 || p.happy < 25 || p.energy < 25);   // (debug hook reads it)
+  if (anim.bangOn && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);   // the "!" hides while the hello plays (CARE_LOOP §7)
   if (sparkle.id === p.id && now() < sparkle.until) for (let i = 0; i < 3; i++) if (Math.floor(t / 180 + i) % 3 === 0) drawGlyph(g, 'spark', x - 2 + i * 8, y - 3 + (i % 2) * 6);   // colour back (§5)
   drawWeather(g, W, H, t, 0.18);                   // same night/fog/rain/storm/snow tint as the Walk map
   if (sleeping) {
@@ -513,7 +552,8 @@ function drawPetScene(t, dt){
     if (Math.random() < dt * 2.5) addPart('z', x + 12, y, 3, -6, 1.4);
   }
   drawParticles(g, dt);
-  if (t >= anim.bowlFrom && t < anim.bowlUntil) drawGlyph(g, 'emote_hearts', x + 5, Math.max(0, y + bob - 13));   // Warm Bowl: two-hearts balloon over the particles (ICONS_SEALS Q6)
+  const em = emoteNow(t); if (em) drawGlyph(g, em.glyph, x + 5, Math.max(0, y + bob - 13));   // queued balloon (Warm Bowl, hello) over the particles (ICONS_SEALS Q6)
+  if (anim.emotes.length && t > anim.emotes[anim.emotes.length - 1].until) anim.emotes = [];
 }
 
 /* ---------- maps, objects, conditions (MAPS_SLICE Phase M + INTERIORS_DIALOG v1.0) ---------- */
@@ -3083,7 +3123,7 @@ function frame(t){
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
   if (p) {
-    if (screen === 'pet') { drawPetScene(t, dt); updateCareButtons(); }
+    if (screen === 'pet') { pumpHello(); drawPetScene(t, dt); updateCareButtons(); }
     if (!$('#ovBattle').hidden) drawBattle(t, dt);
     else if (!overlayOpen()) pumpLearn();
     syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)
@@ -3216,7 +3256,7 @@ function boot(){
   const late = L.notice === 'recovered' ? 2700 : 900;
   if (!allPets().length) { updateHUD(); showTab('walk'); lockTabs(false); if (newGame) setTimeout(() => runScene('intro'), 60); else setTimeout(() => toast('Ilse is waiting inside.'), late); }
   else {
-    updateHUD(); bowlHint(!S.player.look || L.notice === 'recovered' ? 4600 : 1200);
+    updateHUD(); hello.quietUntil = now() + (!S.player.look || L.notice === 'recovered' ? 4600 : 1400); bowlHint(!S.player.look || L.notice === 'recovered' ? 4600 : 1200);
     if (!S.player.look) setTimeout(() => toast("New: pick your keeper's look under the gear (Change look)."), late);   // after the recovery notice, never over it
     else if (!S.player.name && S.world.map === 'hearthmoor') setTimeout(() => toast('Warden Ilse would like a word at the Lodge.'), late);
   }
@@ -3232,7 +3272,7 @@ function boot(){
   // (XP, evolving, spawning, places, fast mode, live state) only works with ?debug=1.
   const copy = o => JSON.parse(JSON.stringify(o));
   const api = {
-    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; },
+    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
     get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, name: nameOf(w.sp, w.stage) })); },
@@ -3318,7 +3358,7 @@ function boot(){
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows
   Object.defineProperty(api, 'emotes', { enumerable: true, get(){ const fp = pet(), t = performance.now();
     return { bang: !!(spot.bang && spot.id), sleep: !!(fol.x != null && fp && followerOn() && isFainted(fp) && !scene),
-      heart: !!(battle.on && battle.fx && battle.fx.some(e => e.kind === 'hearts' && now() - e.t0 < e.dur)), hearts: t >= anim.bowlFrom && t < anim.bowlUntil, fol: fol.x != null ? { fx: fol.fx, fy: fol.fy } : null }; } });   // debug: which Q6 emotes are showing
+      heart: !!(battle.on && battle.fx && battle.fx.some(e => e.kind === 'hearts' && now() - e.t0 < e.dur)), hearts: !!(emoteNow(t) && emoteNow(t).glyph === 'emote_hearts'), emote: emoteNow(t) ? emoteNow(t).glyph : null, petBang: !!anim.bangOn, fol: fol.x != null ? { fx: fol.fx, fy: fol.fy } : null }; } });   // debug: which Q6 emotes are showing
   Object.defineProperty(api, 'fading', { enumerable: true, get(){ return fade.busy; } });
   Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
