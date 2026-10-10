@@ -343,7 +343,28 @@ function pumpHello(){
   bowlToldDay = null; setTimeout(() => bowlHint(0), 2000);
   return true;
 }
-function helloBonus(p){}                    // bond +1 (wired in the bond build)
+function helloBonus(p){ addBond(p, BOND.hello); }
+/* CARE_LOOP E, cheap slice: bond. Stored as points on the Walkling (p.bond, only ever goes up), shown as 5 hearts in the PARTNER
+   scene: Bond 1-5 at 0 / 20 / 60 / 120 / 200 points. Only the partner earns it. Sources (eng notes §3.1, Design's defaults):
+   first care of the day +3, the hello +1, pats +1 (max 5 a day), each walk find +2, every 100 steps together +1 (max 3 a day),
+   a battle won or a befriend it took part in +1 (max 3 a day). One unlock in this slice: at Bond 3 it does a little stretch now
+   and then while idle (no battle perk). A bond-up is announced on the PARTNER tab, queued like the hello. */
+const BOND = { at: [0, 20, 60, 120, 200], firstCare: 3, hello: 1, pat: 1, patDay: 5, find: 2, steps: 100, stepDay: 3, battle: 1, battleDay: 3, stretchAt: 3 };
+const bondPts = p => (p && Number.isFinite(p.bond) && p.bond > 0) ? Math.floor(p.bond) : 0;
+const bondLevel = p => BOND.at.filter(v => bondPts(p) >= v).length;     // 1..5
+const bondUps = [];                          // pending "closer now" lines: { id, n }
+function addBond(p, n){
+  if (!p || !S || p.id !== S.partnerId || !(n > 0)) return 0;
+  const before = bondLevel(p); p.bond = bondPts(p) + n;
+  const after = bondLevel(p); if (after > before) bondUps.push({ id: p.id, n: after });
+  return n;
+}
+function pumpBondUp(){
+  if (!bondUps.length || screen !== 'pet' || overlayOpen() || now() < anim.busyUntil || now() < hello.until || now() < hello.quietUntil || $('#toast').classList.contains('show')) return;
+  const u = bondUps.shift(), p = petById(u.id); if (!p || p.id !== S.partnerId) return;
+  while (bondUps.length && bondUps[0].id === u.id) u.n = Math.max(u.n, bondUps.shift().n);   // two at once: say the latest
+  toast('You and ' + petName(p) + ' are closer now. Bond ' + u.n + '!'); queueEmote('emote_hearts', 100, 1600); sfx(chirpName(p)); sfx(chirpName(p), 0.16);
+}
 const chirpName = p => 'chirp_' + String((SPECIES[spi(p)] || {}).type || 'PLAIN').toLowerCase();
 window.addEventListener('pointerup', () => { if (hello.chirp && Date.now() - hello.chirp < 60000) { hello.chirp = 0; const p = pet(); if (p) setTimeout(() => sfx(chirpName(p)), 40); } }, { capture: true, passive: true });
 // Daily XP records on the pet: p.cx (care) and p.ex (explore), each { d: 'YYYY-MM-DD' (local), xp: earned that day,
@@ -445,6 +466,7 @@ function doAction(act){
   } else return;
   if (!p.cd || typeof p.cd !== 'object') p.cd = {};
   p.cd[act] = Date.now();                    // start this action's cooldown (saved with the pet)
+  const cday = careDay(); if (!cday.firstCare) { cday.firstCare = true; addBond(p, BOND.firstCare); }   // bond: first care of the day
   sfx(act); xpChimeDelay = 0.45;
   const xp = grantCareXp(p, CARE_XP[act]), cx = careXpToday(p); xpChimeDelay = 0;
   if (cx.xp >= CARE_XP_DAILY_CAP && !cx.told) { cx.told = true; sfx('cap', 0.6); if (!msg.startsWith('Warm Bowl')) msg = petName(p) + ' learned all it can from care today. Go for a walk!'; }
@@ -460,7 +482,7 @@ function doAction(act){
 const PAT = { joyDay: 10, tickleN: 4, tickleMs: 1500, huffN: 10, huffMs: 10000, awayMs: 3000, hitCss: 44 };
 const touch = { taps: [], squintUntil: 0, rollFrom: 0, rollUntil: 0, awayFrom: 0, awayUntil: 0, lastMsg: '' };
 const patRec = p => dayRec(p, 'pat', { n: 0, joy: 0, bond: 0 });
-function patBond(p, r){}                     // bond +1 per pat, max 5 a day (wired in the bond build)
+function patBond(p, r){ if (r.bond < BOND.patDay) { r.bond++; addBond(p, BOND.pat); } }
 function petHit(cx, cy){
   const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, t = now();
   if (t < touch.awayUntil) return false;
@@ -586,7 +608,11 @@ function drawPetScene(t, dt){
   g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(x + 3, y + 17, 12, 2);
   const blink = sleeping || (t % 3200) < 140 || t < touch.squintUntil;   // a pat: happy squint (the blink frame)
   const img = petSpr(p)[blink ? 'b' : 'n'];
-  if (t < touch.rollUntil) {                       // tickle roll: four crisp quarter turns
+  const stT = bondLevel(p) >= BOND.stretchAt && !sleeping && !away && t >= anim.busyUntil && t >= touch.rollUntil ? (t + 5000) % 14000 : -1;   // Bond 3: a stretch every 14 s
+  anim.stretching = stT >= 0 && stT < 700;
+  if (anim.stretching) {                       // long and low (eyes shut), then a tall reach, then back
+    if (stT < 420) g.drawImage(petSpr(p).b, x - 2, y + bob + 3, 20, 13); else g.drawImage(img, x, y + bob - 2, 16, 18);
+  } else if (t < touch.rollUntil) {                       // tickle roll: four crisp quarter turns
     const q = Math.min(3, Math.floor((t - touch.rollFrom) / 200));
     g.save(); g.translate(x + 8, y + bob + 8); g.rotate(q * Math.PI / 2); g.drawImage(img, -8, -8); g.restore();
   } else g.drawImage(img, x, y + bob);
@@ -600,6 +626,10 @@ function drawPetScene(t, dt){
     if (Math.random() < dt * 2.5) addPart('z', x + 12, y, 3, -6, 1.4);
   }
   drawParticles(g, dt);
+  const lv = bondLevel(p), hx = Math.round(W / 2) - 14;   // bond: 5 small hearts, top centre (between STATS and the keeper badge)
+  for (let i = 0; i < 5; i++) { const gl = GLYPH.heart; for (let j = 0; j < gl.length; j++) for (let k = 0; k < 5; k++) if (gl[j][k] !== '.') { g.fillStyle = i < lv ? PAL.r : PAL.k; g.globalAlpha = i < lv ? 1 : 0.35; g.fillRect(hx + i * 6 + k, 2 + j, 1, 1); } }
+  g.globalAlpha = 1;
+  if (c.dataset.bond !== String(lv)) { c.dataset.bond = String(lv); c.setAttribute('role', 'img'); c.setAttribute('aria-label', petName(p) + ', bond ' + lv + ' of 5'); }
   const em = emoteNow(t); if (em) drawGlyph(g, em.glyph, x + 5, Math.max(0, y + bob - 13));   // queued balloon (Warm Bowl, hello) over the particles (ICONS_SEALS Q6)
   if (anim.emotes.length && t > anim.emotes[anim.emotes.length - 1].until) anim.emotes = [];
 }
@@ -747,6 +777,8 @@ function onLand(){
   if (p) {                                   // energy/hunger/step XP only with a partner
     p.energy = clamp(p.energy - STEP_NRG, 0, 100); p.hunger = clamp(p.hunger - STEP_FOOD, 0, 100);
     p.sr = (+p.sr || 0) + 1;                 // per-pet step remainder, carried across sessions
+    const cday = careDay(); cday.steps++;     // steps together today (bond, walk finds)
+    if (cday.steps % BOND.steps === 0 && cday.stepBond < BOND.stepDay) { cday.stepBond++; addBond(p, 1); }
     if (p.sr >= STEPS_PER_XP) { p.sr -= STEPS_PER_XP; grantExploreXp(p, 1); }
     updateHUD();
   }
@@ -2586,6 +2618,7 @@ async function results(result, id){
   const B = battle, t = tr(), won = result === 'win' || result === 'befriended';
   const parts = new Set(); B.participants.forEach(s => s.forEach(x => parts.add(x)));
   parts.forEach(pid => { const p = petById(pid); if (p) applyBattleCosts(p, { tired: B.fainted.has(pid), won }); });   // once, clamp 0..100
+  if (won && parts.has(S.partnerId)) { const cday = careDay(); if (cday.battleBond < BOND.battleDay) { cday.battleBond++; addBond(pet(), BOND.battle); } }   // bond: won / befriended together
   if (result === 'win' && t) {
     const money = t.money != null ? t.money : 10 * Math.max(...trainerTeam(t).map(m => m.level)) * (t.hall ? 3 : 1);
     S.money = (S.money || 0) + money; S.flags['trainer.' + B.trainerId] = true;
@@ -3172,7 +3205,7 @@ function frame(t){
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
   if (p) {
-    if (screen === 'pet') { pumpHello(); drawPetScene(t, dt); updateCareButtons(); }
+    if (screen === 'pet') { pumpHello(); pumpBondUp(); drawPetScene(t, dt); updateCareButtons(); }
     if (!$('#ovBattle').hidden) drawBattle(t, dt);
     else if (!overlayOpen()) pumpLearn();
     syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)
@@ -3321,7 +3354,7 @@ function boot(){
   // (XP, evolving, spawning, places, fast mode, live state) only works with ?debug=1.
   const copy = o => JSON.parse(JSON.stringify(o));
   const api = {
-    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
+    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
     get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, name: nameOf(w.sp, w.stage) })); },
