@@ -453,6 +453,48 @@ function doAction(act){
   updateHUD(); save();
 }
 
+/* CARE_LOOP A, cheap slice: tap to pat and tickle (no rub zones). Tap the partner on the PARTNER tab: a happy squint, a chirp
+   pitched by type, a heart, +1 JOY (flat, max +10 a day, no care XP). 4 taps within 1.5 s = a tickle (giggle + roll). 10 touches
+   within 10 s = it hops away for 3 s and ignores taps. Asleep (REST) or napping after a faint: a sleepy grumble, no JOY.
+   Pats never set anim.busyUntil, so FEED/PLAY taps are never swallowed. The hit box is the sprite padded to >= 44 CSS px. */
+const PAT = { joyDay: 10, tickleN: 4, tickleMs: 1500, huffN: 10, huffMs: 10000, awayMs: 3000, hitCss: 44 };
+const touch = { taps: [], squintUntil: 0, rollFrom: 0, rollUntil: 0, awayFrom: 0, awayUntil: 0, lastMsg: '' };
+const patRec = p => dayRec(p, 'pat', { n: 0, joy: 0, bond: 0 });
+function patBond(p, r){}                     // bond +1 per pat, max 5 a day (wired in the bond build)
+function petHit(cx, cy){
+  const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, t = now();
+  if (t < touch.awayUntil) return false;
+  const pp = petPos(t < anim.sleepUntil ? anim.sleepUntil : t), mx = r.left + (pp.x + 8) * k, my = r.top + (pp.y + 8) * k;
+  const half = Math.max(8 * k + 4, PAT.hitCss / 2);
+  return Math.abs(cx - mx) <= half && Math.abs(cy - my) <= half;
+}
+function patPet(){
+  const p = pet(), t = now(); if (!p || t < touch.awayUntil) return;
+  hello.chirp = 0;                            // this tap's own chirp stands in for the hello's waiting one
+  touch.taps = touch.taps.filter(x => t - x < PAT.huffMs); touch.taps.push(t);
+  const pp = petPos(t), name = petName(p);
+  if (t < anim.sleepUntil || isFainted(p)) { sfx('denied'); return say(name + ' mumbles and keeps napping.'); }
+  if (touch.taps.length >= PAT.huffN) {           // too many: it hops away for a moment, then comes back
+    touch.taps = []; touch.awayFrom = t; touch.awayUntil = t + PAT.awayMs; sfx(chirpName(p), 0); return say(name + ' hops away for a moment.');
+  }
+  const r = patRec(p); r.n++;
+  if (r.joy < PAT.joyDay) { r.joy++; p.happy = clamp(p.happy + 1, 0, 100); }
+  patBond(p, r);
+  const recent = touch.taps.filter(x => t - x <= PAT.tickleMs).length;
+  if (recent >= PAT.tickleN && t >= touch.rollUntil) {   // tickle fit: giggle + a roll
+    touch.rollFrom = t; touch.rollUntil = t + 800; touch.squintUntil = t + 900;
+    sfx(chirpName(p)); sfx(chirpName(p), 0.14);
+    for (let i = 0; i < 3; i++) addPart(i % 2 ? 'spark' : 'heart', pp.x + 2 + i * 5, pp.y, (i - 1) * 6, -12);
+    say(name + ' giggles and rolls over!');
+  } else {
+    touch.squintUntil = t + 500; sfx(chirpName(p));
+    addPart('heart', pp.x + 6, pp.y - 2, 0, -10, 0.9);
+    if (t >= touch.rollUntil) say(name + ' leans into the pat.');
+  }
+  updateHUD(); save();
+  function say(m){ if (touch.lastMsg !== m || !$('#toast').classList.contains('show')) toast(m); touch.lastMsg = m; }
+}
+
 const bgCache = {};
 function makePetBg(H){
   if (bgCache[H]) return bgCache[H];
@@ -537,11 +579,17 @@ function drawPetScene(t, dt){
   const sleeping = t < anim.sleepUntil;
   let { x, y } = petPos(sleeping ? anim.sleepUntil : t);
   let bob = Math.floor(t / 400) % 2;
+  const away = t < touch.awayUntil;               // hopped away after too many pats: off to the side, little hops, then back
+  if (away) { const k = Math.min(1, (t - touch.awayFrom) / 300, (touch.awayUntil - t) / 300); x += Math.round((x < W / 2 ? 18 : -18) * k); bob = -Math.round(Math.abs(Math.sin(t / 140)) * 3); }
   if (t < anim.jumpUntil) bob = -Math.round(Math.abs(Math.sin((anim.jumpUntil - t) / 1200 * Math.PI * 3)) * 7);
   if (sleeping) bob = 0;
   g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(x + 3, y + 17, 12, 2);
-  const blink = sleeping || (t % 3200) < 140;
-  g.drawImage(petSpr(p)[blink ? 'b' : 'n'], x, y + bob);
+  const blink = sleeping || (t % 3200) < 140 || t < touch.squintUntil;   // a pat: happy squint (the blink frame)
+  const img = petSpr(p)[blink ? 'b' : 'n'];
+  if (t < touch.rollUntil) {                       // tickle roll: four crisp quarter turns
+    const q = Math.min(3, Math.floor((t - touch.rollFrom) / 200));
+    g.save(); g.translate(x + 8, y + bob + 8); g.rotate(q * Math.PI / 2); g.drawImage(img, -8, -8); g.restore();
+  } else g.drawImage(img, x, y + bob);
   anim.bangOn = !sleeping && t >= hello.until && (p.hunger < 25 || p.happy < 25 || p.energy < 25);   // (debug hook reads it)
   if (anim.bangOn && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);   // the "!" hides while the hello plays (CARE_LOOP §7)
   if (sparkle.id === p.id && now() < sparkle.until) for (let i = 0; i < 3; i++) if (Math.floor(t / 180 + i) % 3 === 0) drawGlyph(g, 'spark', x - 2 + i * 8, y - 3 + (i % 2) * 6);   // colour back (§5)
@@ -2969,6 +3017,7 @@ function bindInput(){
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
   $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
+  $('#petCanvas').addEventListener('pointerdown', e => { if (screen === 'pet' && !overlayOpen() && petHit(e.clientX, e.clientY)) { e.preventDefault(); patPet(); } });   // CARE_LOOP A: pats
   $('#petBagBtn').addEventListener('click', () => openBag());
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#mapBtn').addEventListener('click', openMap);
@@ -3272,7 +3321,7 @@ function boot(){
   // (XP, evolving, spawning, places, fast mode, live state) only works with ?debug=1.
   const copy = o => JSON.parse(JSON.stringify(o));
   const api = {
-    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
+    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
     get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, name: nameOf(w.sp, w.stage) })); },
