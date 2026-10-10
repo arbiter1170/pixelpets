@@ -63,11 +63,15 @@ const PPSound = (() => {
   }
   // First gesture unlocks audio; kept on so iOS can resume after an interruption (phone call, lock screen, another app's audio).
   // pointerdown/touchstart are not "activation" on iOS, so touchend/click/keydown do the real unlock; pointerdown is a harmless early try.
-  const unlock = () => { if (muted) return; session(true); if (ensure()) warm(); };
+  let stateHooked = false;
+  const unlock = () => { if (muted) return; session(true); if (ensure()) { warm();
+    if (!stateHooked) { stateHooked = true; try { ac.addEventListener('statechange', () => startWanted(400)); } catch(e) {} }
+    startWanted(400); } };
   ['pointerdown', 'touchend', 'keydown', 'click'].forEach(ev => window.addEventListener(ev, unlock, { capture: true, passive: true }));
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { if (keep && !keep.paused) try { keep.pause(); } catch(e) {} }
+    if (document.hidden) { if (keep && !keep.paused) try { keep.pause(); } catch(e) {} pauseMusic(); }   // no music nodes while hidden
     else if (ac && !muted && ac.state !== 'running') { try { const r = ac.resume(); if (r && r.catch) r.catch(() => {}); } catch(e) {} }
+    else resumeMusic();                                // running already: same loop from bar 1, 400 ms fade-in
   });
 
   const hz = m => 440 * Math.pow(2, (m - 69) / 12);   // MIDI note -> Hz (72 = C5)
@@ -193,9 +197,168 @@ const PPSound = (() => {
       ? noise(t0 + ms / 1000, d / 1000, v, n, 'highpass', bus)
       : tone(n, t0 + ms / 1000, d / 1000, w, v, sl, bus));
     live.push({ id, bus, nodes, t0, end: t0 + stLen(id) });
+    try { duck(); } catch(e) {}
     return true;
   }
   const stSounding = () => !!ac && live.some(s => s.t0 <= ac.currentTime && ac.currentTime < s.end);
+
+  /* ---------- MUSIC v0.1 (design/specs/MUSIC.md, 5b96fa9): three original loops played by tone()/noise(), no audio files ----------
+     Data literal copied verbatim from MUSIC.md §3. A look-ahead scheduler (one 100 ms timer while a loop plays) books each step on
+     AudioContext time, so the beat never drifts and nodes never pile up. Chain: voice -> track bus (crossfades) -> musicBus
+     (MUSIC_VOL, ducked under stingers) -> out (MASTER). Nothing is created before the first tap; Sound OFF, Music OFF or a hidden
+     page = no music nodes at all. Q1 (decided): the silent switch is respected (session stays 'ambient', see above). */
+  const KIT = {                      // noise() percussion: [filterType, freqHz, durMs, gain]; k also gets a tone() thump
+    k: ['lowpass', 260, 90, 0.30],   //   + tone({hz:120}, at, 0.08, 'triangle', 0.35, 45): a soft kick
+    s: ['highpass', 1500, 110, 0.10],
+    h: ['highpass', 6500, 30, 0.04],
+  };
+  const MUSIC = {
+    town: { key: 'F major', bpm: 96, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.55,
+      lead: { wave: 'triangle', gain: 0.22, notes: [
+        [69,2],[72,1],[77,1],[76,2],[72,2],          // F    A C F E C
+        [74,3],[77,1],[81,2],[77,2],                 // Dm   D F A F
+        [74,2],[70,1],[72,1],[74,2],[77,2],          // Bb   D Bb C D F
+        [76,3],[74,1],[72,4],                        // C    E D C
+        [69,1],[72,1],[77,2],[79,1],[77,1],[76,2],   // F    A C F G F E
+        [76,2],[72,2],[69,2],[72,2],                 // Am   E C A C
+        [74,2],[77,2],[76,1],[74,1],[76,2],          // Bb C D F E D E
+        [77,6],[74,1],[72,1] ] },                    // F    F, D C pickup back to bar 1
+      bass: { wave: 'triangle', gain: 0.28, notes: [
+        [41,2],[48,2],[45,2],[48,2],  [38,2],[45,2],[41,2],[45,2],
+        [46,2],[53,2],[50,2],[53,2],  [48,2],[55,2],[52,2],[55,2],
+        [41,2],[48,2],[45,2],[48,2],  [45,2],[52,2],[48,2],[52,2],
+        [46,2],[53,2],[48,2],[55,2],  [41,4],[48,2],[41,2] ] },
+      drums: ['k.h.s.h.','k.h.s.h.','k.h.s.h.','k.h.s.hh','k.h.s.h.','k.h.s.h.','k.h.s.h.','k.h.s.ss'] },
+
+    route: { key: 'G major', bpm: 112, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.75,
+      lead: { wave: 'square', gain: 0.055, notes: [
+        [67,1],[71,1],[74,2],[71,1],[74,1],[79,2],   // G    G B D B D G
+        [76,2],[72,1],[76,1],[79,3],[76,1],          // C    E C E G E
+        [74,1],[71,1],[67,2],[69,1],[71,1],[74,2],   // G    D B G A B D
+        [69,1],[74,1],[78,2],[76,2],[74,2],          // D    A D F# E D
+        [79,2],[76,1],[71,1],[76,2],[79,2],          // Em   G E B E G
+        [79,1],[76,1],[72,2],[76,1],[79,1],[81,2],   // C    G E C E G A
+        [78,2],[76,1],[74,1],[69,2],[78,2],          // D    F# E D A F#
+        [79,4],[74,2],[0,2] ] },                     // G    G D (breath)
+      bass: { wave: 'triangle', gain: 0.30, notes: [
+        [43,2],[55,2],[50,2],[55,2],  [48,2],[60,2],[55,2],[60,2],
+        [43,2],[55,2],[50,2],[55,2],  [50,2],[62,2],[57,2],[62,2],
+        [40,2],[52,2],[47,2],[52,2],  [48,2],[60,2],[55,2],[60,2],
+        [50,2],[62,2],[57,2],[62,2],  [43,2],[50,2],[43,4] ] },
+      drums: ['k.hks.h.','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.ss'] },
+
+    battle: { key: 'A minor', bpm: 140, bars: 8, stepsPerBar: 16, gate: 0.9, perc: 1.0,
+      lead: { wave: 'square', gain: 0.06, notes: [
+        [69,2],[72,2],[76,2],[81,4],[79,2],[76,2],[72,2],          // Am  A C E A G E C
+        [77,4],[76,2],[74,2],[72,4],[69,4],                        // F   F E D C A
+        [71,2],[74,2],[79,4],[77,2],[76,2],[74,4],                 // G   B D G F E D
+        [76,6],[0,2],[69,2],[71,2],[72,2],[74,2],                  // Am  E . A B C D
+        [76,2],[76,2],[81,2],[76,2],[79,2],[77,2],[76,2],[72,2],   // Am  E E A E G F E C
+        [74,2],[77,2],[81,4],[79,2],[77,2],[76,2],[74,2],          // F   D F A G F E D
+        [71,2],[74,2],[79,2],[83,2],[81,4],[79,4],                 // G   B D G B A G
+        [80,4],[76,2],[71,2],[68,2],[71,2],[74,2],[80,2] ] },      // E7  G# E B G# B D G#
+      bass: { wave: 'triangle', gain: 0.32, notes: [
+        [45,2],[57,2],[45,2],[57,2],[45,2],[57,2],[45,2],[57,2],   // A
+        [41,2],[53,2],[41,2],[53,2],[41,2],[53,2],[41,2],[53,2],   // F
+        [43,2],[55,2],[43,2],[55,2],[43,2],[55,2],[43,2],[55,2],   // G
+        [45,2],[57,2],[45,2],[57,2],[45,2],[57,2],[45,2],[57,2],   // A
+        [45,2],[57,2],[45,2],[57,2],[45,2],[57,2],[45,2],[57,2],   // A
+        [41,2],[53,2],[41,2],[53,2],[41,2],[53,2],[41,2],[53,2],   // F
+        [43,2],[55,2],[43,2],[55,2],[43,2],[55,2],[43,2],[55,2],   // G
+        [40,2],[52,2],[40,2],[52,2],[40,2],[52,2],[44,2],[47,2] ] },// E  ... G# B lead-in
+      drums: ['k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.hh',
+              'k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.s.s.ssss'] },
+  };
+  // MUSIC Q5 (open, Design default = false): Trial Hall battles use the same `battle` loop. true = a Hall variant from the same
+  // data, +8 bpm and up a whole tone.
+  const HALL_BATTLE_VARIANT = false;
+  MUSIC.battle_hall = Object.assign({}, MUSIC.battle, { key: 'B minor', bpm: MUSIC.battle.bpm + 8,
+    lead: { ...MUSIC.battle.lead, notes: MUSIC.battle.lead.notes.map(([n, k]) => [n ? n + 2 : 0, k]) },
+    bass: { ...MUSIC.battle.bass, notes: MUSIC.battle.bass.notes.map(([n, k]) => [n ? n + 2 : 0, k]) } });
+  const DUCK = 0.35;                                   // stingers duck the music bus to 35 % (STINGERS §6)
+  let musicOn = true, musicVol = 0.5, musicBus = null, want = null, wantGain = 1, trk = null, pend = null, mPaused = false;
+  let mNodes = 0, mTicks = 0, mTickMs = 0, mTickSum = 0, mStarts = 0;            // debug counters (tests: no leak, cost per tick)
+  const flatCache = {};
+  function flat(id){                                   // [step, voice, note, steps], sorted by step
+    if (flatCache[id]) return flatCache[id];
+    const t = MUSIC[id], ev = [];
+    for (const v of ['lead', 'bass']) { let st = 0; for (const [n, k] of t[v].notes) { if (n) ev.push([st, v, n, k]); st += k; } }
+    t.drums.forEach((bar, b) => [...bar].forEach((c, i) => { if (c !== '.') ev.push([b * t.stepsPerBar + i, 'd', c, 1]); }));
+    ev.sort((a, b) => a[0] - b[0]);
+    const byStep = []; for (const e of ev) (byStep[e[0]] = byStep[e[0]] || []).push(e);
+    return (flatCache[id] = byStep);
+  }
+  const canMusic = () => musicOn && !muted && !document.hidden && !!ac && ac.state === 'running';
+  function bus(){ if (!musicBus) { musicBus = ac.createGain(); musicBus.gain.value = musicVol; musicBus.connect(out); } return musicBus; }
+  function startTrack(id, fadeIn){
+    const t = MUSIC[id]; if (!t) return;
+    const g = ac.createGain(), now = ac.currentTime; g.gain.value = 0.0001; g.gain.setValueAtTime(0.0001, now);
+    g.gain.setTargetAtTime(wantGain, now, Math.max(0.005, fadeIn / 3000)); g.connect(bus());
+    trk = { id, g, t, ev: flat(id), n: t.bars * t.stepsPerBar, stepSec: 60 / t.bpm * 4 / t.stepsPerBar, nextAt: now + 0.06, step: 0, timer: 0 };
+    trk.timer = setInterval(tick, 100); tick(); mStarts++;
+  }
+  function tick(){
+    if (!trk || !ac) return;
+    const c0 = performance.now(), T = trk, now = ac.currentTime;
+    if (T.nextAt < now - 0.05) {                       // woke late (stall / throttled timer): jump to the next bar line, no burst
+      const per = T.t.stepsPerBar, lost = Math.ceil((now - T.nextAt) / T.stepSec);
+      T.step = (Math.ceil((T.step + lost) / per) * per) % T.n; T.nextAt = now + 0.05;
+    }
+    while (T.nextAt < now + 0.3) {
+      for (const [, v, n, k] of (T.ev[T.step] || [])) {
+        try {
+          if (v === 'd') {
+            const [ft, fq, ms, gn] = KIT[n]; noise(T.nextAt, ms / 1000, gn * T.t.perc, fq, ft, T.g); mNodes++;
+            if (n === 'k') { tone(f(120), T.nextAt, 0.08, 'triangle', 0.35 * T.t.perc, 45, T.g); mNodes++; }
+          } else { const vo = T.t[v]; tone(n, T.nextAt, k * T.stepSec * T.t.gate, vo.wave, vo.gain, null, T.g); mNodes++; }
+        } catch(e) {}
+      }
+      T.step = (T.step + 1) % T.n; T.nextAt += T.stepSec;
+    }
+    const dt = performance.now() - c0; mTicks++; mTickSum += dt; mTickMs = Math.max(mTickMs, dt);
+  }
+  function stopTrack(fadeOut){
+    if (!trk) return; const T = trk; trk = null; clearInterval(T.timer);
+    try { T.g.gain.cancelScheduledValues(ac.currentTime); T.g.gain.setTargetAtTime(0, ac.currentTime, Math.max(0.005, fadeOut / 3000)); } catch(e) {}
+    setTimeout(() => { try { T.g.disconnect(); } catch(e) {} }, fadeOut + 400);   // booked notes (<= 0.3 s ahead) die under the fade
+  }
+  function startWanted(fadeIn = 400){
+    if (pend || !want || !canMusic()) return;
+    if (trk && trk.id === want) return;
+    if (trk) stopTrack(400);
+    mPaused = false; startTrack(want, fadeIn);
+  }
+  // music(id, o): the wanted loop. Same loop = keep playing (only its gain follows o.gain); different = fade out o.fadeOut ms
+  // (default 400) and start the new one from bar 1 after o.delay s, or once no stinger sounds (o.afterStingers, at least o.delay),
+  // fading in over o.fadeIn ms (default 400). A start already pending keeps its timing and just takes the new id.
+  function music(id, o = {}){
+    want = id || null; wantGain = o.gain != null ? o.gain : 1;
+    if (pend) { pend.fadeIn = o.fadeIn != null ? o.fadeIn : pend.fadeIn; return true; }
+    if (!want) { if (trk) stopTrack(o.fadeOut != null ? o.fadeOut : 400); return true; }
+    if (!canMusic()) return false;                     // recorded; starts on the first tap / when allowed
+    if (trk && trk.id === want) { try { trk.g.gain.setTargetAtTime(wantGain, ac.currentTime, 0.15); } catch(e) {} return true; }
+    if (trk) stopTrack(o.fadeOut != null ? o.fadeOut : 400);
+    const fadeIn = o.fadeIn != null ? o.fadeIn : 400, delay = o.delay || 0;
+    if (!delay && !o.afterStingers) { startTrack(want, fadeIn); return true; }
+    const t0 = performance.now();
+    pend = { fadeIn, timer: setInterval(() => {
+      if (performance.now() - t0 < delay * 1000 || (o.afterStingers && stSounding())) return;
+      clearInterval(pend.timer); const fi = pend.fadeIn; pend = null;
+      if (want && canMusic() && !(trk && trk.id === want)) { if (trk) stopTrack(300); startTrack(want, fi); }
+    }, 50) };
+    return true;
+  }
+  function stopAll(fade){ if (pend) { clearInterval(pend.timer); pend = null; } stopTrack(fade); }
+  function setMusic(on, gesture){ musicOn = !!on; if (!musicOn) stopAll(80); else { if (gesture && !muted && ensure()) warm(); startWanted(400); } return musicOn; }   // gesture: the Settings tap may unlock audio; boot never does
+  function pauseMusic(){ if (trk || pend) { mPaused = true; stopAll(30); } }
+  function resumeMusic(){ startWanted(400); }
+  function setMusicVol(v){ musicVol = Math.max(0, Math.min(1, +v || 0)); if (musicBus) try { musicBus.gain.setTargetAtTime(musicVol, ac.currentTime, 0.05); } catch(e) {} }
+  function duck(){                                     // re-plan the duck around every stinger still booked (keeps it down between two)
+    if (!musicBus || !live.length) return;
+    const g = musicBus.gain, now = ac.currentTime; g.cancelScheduledValues(now); g.setTargetAtTime(g.value, now, 0.001);
+    for (const st of live) g.setTargetAtTime(musicVol * DUCK, Math.max(now, st.t0), 0.013);
+    g.setTargetAtTime(musicVol, Math.max(...live.map(st => st.end)), 0.1);
+  }
 
   function play(name, delay){
     const sid = /^stinger_/.test(name) && STINGERS[name.slice(8)] ? name.slice(8) : null;
@@ -211,14 +374,19 @@ const PPSound = (() => {
   }
   function setMuted(m){
     muted = !!m;
-    if (muted) { if (ac) live.forEach(s => stCancel(s, ac.currentTime)); live = []; }
+    if (muted) { if (ac) live.forEach(s => stCancel(s, ac.currentTime)); live = []; stopAll(30); }
     try { if (muted) localStorage.setItem(MUTE_KEY, '1'); else localStorage.removeItem(MUTE_KEY); } catch(e) {}
     if (out && ac) { try { out.gain.setTargetAtTime(muted ? 0 : MASTER, ac.currentTime, 0.01); } catch(e) {} }
     session(!muted);                                   // muted: back to 'ambient', silent loop paused
-    if (!muted && ensure()) warm();                    // toggling is itself a gesture: unlock now
+    if (!muted && ensure()) { warm(); startWanted(400); }   // toggling is itself a gesture: unlock now (and bring the music back)
     return muted;
   }
   return { play, setMuted, toggle: () => setMuted(!muted), get muted(){ return muted; }, get available(){ return !!AC; },
     get state(){ return ac ? ac.state : 'none'; }, get session(){ return { playThroughSilent: IOS_PLAY_THROUGH_SILENT, type: navigator.audioSession ? navigator.audioSession.type : null, loop: keep ? (keep.paused ? 'paused' : 'playing') : 'none', warmed }; }, get played(){ return played.slice(); },
+    music, setMusic, pauseMusic, resumeMusic, get musicOn(){ return musicOn; }, get musicVol(){ return musicVol; }, set musicVol(v){ setMusicVol(v); },
+    get hallVariant(){ return HALL_BATTLE_VARIANT; }, musicData: MUSIC,
+    get musicState(){ return { want, playing: trk ? trk.id : null, pending: !!pend, paused: mPaused, on: musicOn, step: trk ? trk.step : null,
+      bus: musicBus ? musicBus.gain.value : null, trackGain: trk ? trk.g.gain.value : null, vol: musicVol, nodes: mNodes, starts: mStarts, ticks: mTicks, maxTickMs: mTickMs, meanTickMs: mTicks ? mTickSum / mTicks : 0,
+      timer: !!(trk && trk.timer), stepSec: trk ? trk.stepSec : null }; },
     names: Object.keys(SFX).concat(Object.keys(STINGERS).map(k => 'stinger_' + k)), get stingers(){ return live.map(s => s.id); } };
 })();

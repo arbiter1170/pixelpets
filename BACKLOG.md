@@ -100,3 +100,7 @@ This order applies after the Kindle Wild rename, which shipped as 9cc836d and 9d
 - ~~**Debug keys in release**~~ **DONE:** E/G/F, fast mode, "Pick a place" and the cheat console hooks only work with `?debug=1` (remembered; `?debug=0` clears it). Read-only hooks stay public.
 - **Start over (DONE):** Friends tab, press-and-hold 1.5 s confirm; wipes v2/v1/.bak/corrupt, keeps device prefs, other tabs stop saving (uid check). Left: an export/backup before wiping.
 - **Installable app:** add a manifest and service worker so it can be added to the home screen and played offline.
+
+## PAUSED Fri Oct 9, 2026 ~9:10 PM ET (usage cap; Vincent paused all bots)
+- MUSIC v0 (design spec, Q1 decided: respect silent switch; Q2-Q5 on Design defaults, open until Sun Oct 11 6:35 PM ET) was mid-build and is UNCOMMITTED and untested: edits in game.js, index.html, save.js, sfx.js, style.css. Live is still build 20261009-2047 (82ee7a5). Next step: review the working-tree diff, finish, add verify_music, then ship. Keep IOS_PLAY_THROUGH_SILENT = false.
+- After MUSIC: Cobblecrest (COBBLECREST v0.1, approved). Open: issue #1 (verify_keeper K6).

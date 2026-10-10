@@ -138,6 +138,37 @@ function renderSoundRow(){
   b.setAttribute('aria-pressed', m ? 'false' : 'true');
   $('#setSoundVal').textContent = m ? 'OFF' : 'ON';
 }
+/* MUSIC v0.1 (design/specs/MUSIC.md §4.3, §7): which loop plays where. The player lives in sfx.js (PPSound.music). Open questions,
+   each one constant (Design's defaults, due Sun Oct 11, 6:35 PM ET):
+   Q2 MUSIC_SETTING_IN_SAVE: the Music toggle is saved in S.settings.music (travels with online saves, like Follower); false = a
+      device pref (localStorage 'pixelpets.music', next to the Sound mute).
+   Q3 MUSIC_VOL_SLIDER: no volume slider in v0; S.settings.musicVol (default MUSIC_VOL_DEFAULT 0.5) is ready for one.
+   Q4 INTERIOR_MUSIC_GAIN: rooms play the town loop unchanged (1.0, no restart at the door); 0.7 = the "70 % in rooms" option.
+   Q5 HALL_BATTLE_VARIANT lives in sfx.js (false = the same battle loop for Trial Hall battles). */
+const MUSIC_SETTING_IN_SAVE = true, MUSIC_PREF_KEY = 'pixelpets.music';
+const MUSIC_VOL_SLIDER = false, MUSIC_VOL_DEFAULT = 0.5;
+const INTERIOR_MUSIC_GAIN = 1.0;
+function trackFor(m){ if (!m) return null; if (m.kind === 'interior' || m.backdrop === 'town') return 'town'; if (m.backdrop === 'route' || m.backdrop === 'meadow') return 'route'; return null; }
+function musicOnSetting(){
+  if (MUSIC_SETTING_IN_SAVE) return !(S && S.settings && S.settings.music === false);
+  try { return localStorage.getItem(MUSIC_PREF_KEY) !== '0'; } catch(e) { return true; }
+}
+function setMusicSetting(on){
+  if (MUSIC_SETTING_IN_SAVE) { if (S) S.settings.music = !!on; save(); }
+  else try { if (on) localStorage.removeItem(MUSIC_PREF_KEY); else localStorage.setItem(MUSIC_PREF_KEY, '0'); } catch(e) {}
+}
+function mapMusic(o = {}){
+  if (battle.on) return;                     // the battle loop owns the music until closeBattle
+  const id = trackFor(CUR); if (!id) return; // unknown backdrop: keep whatever is playing
+  try { PPSound.music(id, Object.assign({ gain: isRoom() ? INTERIOR_MUSIC_GAIN : 1 }, o)); } catch(e) {}
+}
+function battleTrack(){ const t = battle.kind === 'trainer' && TRAINERS[battle.trainerId]; return t && t.hall && PPSound.hallVariant ? 'battle_hall' : 'battle'; }
+function renderMusicRow(){
+  const b = $('#setMusic'); if (!b) return;
+  const on = musicOnSetting(); b.setAttribute('aria-pressed', String(on)); $('#setMusicVal').textContent = on ? 'ON' : 'OFF';
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  $('#setMusicHint').hidden = !ios;          // MUSIC Q1 decided: the switch is respected, so iPhones get the hint
+}
 function renderFollowerBtn(){
   const on = !!(S && S.settings.follower !== false), b = $('#setFollower');
   if (!b) return;
@@ -1081,7 +1112,7 @@ function arriveAt(at){
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); bump.talked = null; markMapSeen();
-  placeFollower(); renderEnv(); save();
+  placeFollower(); renderEnv(); save(); mapMusic();
 }
 function enterDoor(dr){
   if (dr.need && !cond(dr.need, false)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
@@ -2006,6 +2037,7 @@ function openBattle(o){
   $('#btTwinkle').hidden = !(o.kind === 'wild' && f.stage > 0);
   renderBattleCards(); setPanel('busy');
   $('#ovBattle').hidden = false; lockTabs(true); fitAll(); fitBattle();
+  try { PPSound.music(battleTrack(), { fadeOut: 150, delay: 0.35, fadeIn: 100 }); } catch(e) {}   // MUSIC §4.3: after the encounter SFX
   battleIntro(B.id);
   return true;
 }
@@ -2035,6 +2067,7 @@ function closeBattle(){
   }
   $('#encName').hidden = true; $('#encNick').value = ''; $('#encNick').blur(); $('#btSeal').hidden = true;   // no nickname carries over to the next befriend
   B.on = false; B.state = 'IDLE'; msgSkip = null; closeSheet(null);
+  mapMusic({ fadeOut: 300, afterStingers: true, delay: 0.8, fadeIn: 600 });   // MUSIC §4.3: the map loop returns after the jingles
   $('#ovBattle').hidden = true; lockTabs(false);
   const w = B.wid && wild.list.find(o => o.id === B.wid);
   if (w) {
@@ -3056,6 +3089,7 @@ function bindInput(){
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
   $('#setSound').addEventListener('click', () => { const m = PPSound.toggle(); renderSoundRow(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
+  if ($('#setMusic')) $('#setMusic').addEventListener('click', () => { const on = !musicOnSetting(); setMusicSetting(on); PPSound.setMusic(on, true); if (on) { battle.on ? PPSound.music(battleTrack()) : mapMusic(); } renderMusicRow(); sfx('tap'); toast(on ? 'Music on' : 'Music off'); });
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
   // scene text box (MAPS_SLICE §8): tap anywhere on the box or the map advances; SKIP jumps to the next interactive step
   $('#ovScene').addEventListener('pointerdown', e => { if (e.target.closest('button, input')) return; e.preventDefault(); sceneTap(); });
@@ -3350,6 +3384,8 @@ function boot(){
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
   if (allPets().length) { const away = (Date.now() - S.last) / 1000; catchUp(away); regenAll(away); }
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen();
+  PPSound.setMusic(musicOnSetting()); PPSound.musicVol = Number.isFinite(S.settings.musicVol) ? S.settings.musicVol : MUSIC_VOL_DEFAULT; mapMusic();   // recorded; starts on the first tap
+  renderMusicRow();
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
   placeFollower(); renderFollowerBtn(); renderKeeperName();
