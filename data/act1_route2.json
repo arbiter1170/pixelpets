@@ -1,0 +1,301 @@
+{
+  "_about": "Walklings ACT1_ROUTE2 v1.0 data (build handoff). Same shapes as maps_slice.json; the game copies this file verbatim and merges it after maps_slice.json (ACT1_ROUTE2.md §0.2). Checked by act1_route2_check.py.",
+  "status": "v1.0, ready to build (approved by Vincent Oct 8, 2026); build after BATTLE v0.2.4 and Phase M (MAPS_SLICE v0.4.2)",
+  "decisions": {"1_rook": "Rook does not battle on Route 2 (cameo only)", "2_story_moves": "a befriended story creature joins with defaultMoves(form, level); its moves override is battle-only (BATTLE v0.2.4 §2)", "3_lead_items": "Field Lead Imogen: leader AI, no items", "4_tone": "the energy draining is only hinted at", "5_end": "the slice ends at the locked Cobblecrest gate with a coming-later card"},
+  "maps": {
+    "route2": {
+      "name": "Route 2",
+      "backdrop": "route",
+      "w": 48,
+      "h": 20,
+      "spawns": "route2",
+      "respawn": null,
+      "safe": {"x": 2, "y": 8},
+      "zones": [
+        {"x": 2, "y": 1, "w": 10, "h": 7},
+        {"x": 2, "y": 11, "w": 10, "h": 7},
+        {"x": 12, "y": 10, "w": 9, "h": 8},
+        {"x": 20, "y": 11, "w": 9, "h": 7},
+        {"x": 29, "y": 1, "w": 9, "h": 5},
+        {"x": 30, "y": 10, "w": 13, "h": 7}
+      ],
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTTTTTTpTTTTTTTTTTTTTTTTTTTTTTT",
+        "TTTggggggggggswwsggggTTgpgTTggggggggggTTggTTTTTT",
+        "TTgttttttttggswwsggggTTTpTTTggttttttttggggTTTTTT",
+        "TggtttTttttggswwsggggTTTpTTTggtttTttttggggfgggTT",
+        "TggttttttttggswwsggggTTTpTTTggttttttttggggggggTT",
+        "TggttttttTtggswwsggggTTTpTTTggttttttttggggggggTT",
+        "TggttttttttggswwsggggTTTpTTTgfgggggggggggfgggggT",
+        "TggggggggggggswwsggggTTTpTTTgggggggggggggggggggT",
+        "ppppppppppppppBBpppppppppppppppppppppppppppppppT",
+        "TggggggggggggswwsgggggggggggggggggggggggggggggTT",
+        "TggggggggggggswwsgggfgggggggfgggggggggggggggggTT",
+        "TggggggggggggswwstttgggggggggggtttttttttttggggTT",
+        "TggttttttttggswwstttgtttttttgggtttttttttttgggggT",
+        "TggttttttttggswwstttgtttttttgggttttTttttttgggggT",
+        "TggtttTttttggswwstttgtttTtttgggtttttTtttttgggggT",
+        "TggttttttttggswwstttgtttttttgggtttttttttttgggggT",
+        "TTgttttttttggswwstttgtttttttgggtttttttttttgggggT",
+        "TTfggggggggggswwsgggggfgggggggggggggggggggggTTTT",
+        "TTTggggggggggswwsgggggggggggggggggggggggggggTTTT",
+        "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "r2_west", "x": 0, "y": 8, "to": "fernbrook", "tx": 30, "ty": 8, "facing": "left"},
+        {"kind": "warp", "id": "r2_glen", "x": 24, "y": 0, "to": "route2_glen", "tx": 12, "ty": 18, "facing": "up", "setFlag": "story.reached_glen"},
+        {"kind": "sign", "id": "r2_sign_west", "x": 2, "y": 7, "text": "ROUTE 2 · Fernbrook to Cobblecrest. Path reopened by Glimmerwell Co. crews!"},
+        {"kind": "sign", "id": "r2_sign_creek", "x": 13, "y": 9, "text": "CREEK · Skipping stones welcome. Please don't skip the crabs."},
+        {"kind": "sign", "id": "r2_sign_glen", "x": 23, "y": 9, "text": "NORTH · Wickerglen. A sleepy hollow where wild Walklings nap."},
+        {"kind": "sign", "id": "r2_sign_east", "x": 45, "y": 7, "text": "COBBLECREST QUARRY ROAD · Closed for upgrades. Thank you for your patience! — Glimmerwell Co."},
+        {"kind": "prop", "id": "r2_gate", "x": 46, "y": 8, "sprite": "glimmer_gate"},
+        {"kind": "trainer", "id": "r2_rockhound", "x": 10, "y": 10},
+        {"kind": "trainer", "id": "r2_skipper", "x": 18, "y": 6},
+        {"kind": "trainer", "id": "r2_associate", "x": 24, "y": 2, "when": ["!trainer.r2_associate"]},
+        {"kind": "npc", "id": "hollis_aside", "name": "Associate Hollis", "x": 25, "y": 1, "when": ["trainer.r2_associate"], "lines": {"!story.glen_cleared": "I just hold the lamp. Honestly? I'm not sure what it counts.", "else": "The lamps went dark and the Walklings perked right up. Weird, huh? Have a... bright day."}},
+        {"kind": "trainer", "id": "r2_stargazer", "x": 38, "y": 6},
+        {"kind": "pickup", "id": "r2_snack", "x": 3, "y": 17, "item": "heal_snack", "n": 1},
+        {"kind": "pickup", "id": "r2_treat", "x": 44, "y": 3, "item": "befriend_treat", "n": 2},
+        {"kind": "npc", "id": "rook_r2", "name": "Rook", "x": 44, "y": 8, "when": ["story.glen_cleared", "!story.route2_end"], "scene": "route2_end"},
+        {"kind": "trigger", "id": "r2_census", "x": 24, "y": 8, "r": 1, "when": ["!story.met_census"], "scene": "glimmer2"},
+        {"kind": "trigger", "id": "r2_end", "x": 43, "y": 8, "r": 0, "when": ["story.glen_cleared", "!story.route2_end"], "scene": "route2_end"}
+      ]
+    },
+    "route2_glen": {
+      "name": "Wickerglen",
+      "backdrop": "grove",
+      "w": 24,
+      "h": 20,
+      "spawns": "route2_glen",
+      "respawn": null,
+      "safe": {"x": 12, "y": 17},
+      "zones": [
+        {"x": 2, "y": 11, "w": 8, "h": 7},
+        {"x": 15, "y": 11, "w": 7, "h": 6},
+        {"x": 17, "y": 1, "w": 5, "h": 5}
+      ],
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTTTTTT",
+        "TTTgggggggTTgTTggggggTTT",
+        "TTggggggggfgggfgggttttTT",
+        "TggggggfgggggggggfttttgT",
+        "TgggggggggggggggggttttgT",
+        "TggggggggggggggggggggggT",
+        "TggggggggggggggggggggggT",
+        "TggggggggfggpggfgggggggT",
+        "TgggggfgggggpgggggfggggT",
+        "TgggggggggggpggggggggggT",
+        "TgggggggggggpggggggggggT",
+        "TgssssstttggpggtttttttgT",
+        "TgswwwstttTgpgTtttttttgT",
+        "TgswwwstttTgpgTtttTtttgT",
+        "TgswwwstttTgpgTtttttttgT",
+        "TgssssstttTgpgTtttttttgT",
+        "TgtttttttgTgpgTtttttttgT",
+        "TTtttttttgTgpgTgggggggTT",
+        "TTTgggggggTgpgTggggggTTT",
+        "TTTTTTTTTTTTpTTTTTTTTTTT"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "glen_south", "x": 12, "y": 19, "to": "route2", "tx": 24, "ty": 1, "facing": "down"},
+        {"kind": "sign", "id": "glen_sign", "x": 13, "y": 17, "text": "WICKERGLEN · Hush, please. Walklings nap here between the roots."},
+        {"kind": "prop", "id": "glen_lamp_w", "x": 8, "y": 4, "sprite": "comfort_lamp", "when": ["!story.glen_cleared"]},
+        {"kind": "prop", "id": "glen_lamp_n", "x": 12, "y": 2, "sprite": "comfort_lamp", "when": ["!story.glen_cleared"]},
+        {"kind": "prop", "id": "glen_lamp_e", "x": 16, "y": 4, "sprite": "comfort_lamp", "when": ["!story.glen_cleared"]},
+        {"kind": "prop", "id": "glen_tent", "x": 6, "y": 6, "sprite": "census_tent", "when": ["!story.glen_cleared"]},
+        {"kind": "prop", "id": "glen_crate_a", "x": 17, "y": 7, "sprite": "crate", "when": ["!story.glen_cleared"]},
+        {"kind": "prop", "id": "glen_crate_b", "x": 18, "y": 7, "sprite": "crate", "when": ["!story.glen_cleared"]},
+        {"kind": "trainer", "id": "r2_lead", "x": 12, "y": 5, "when": ["!story.glen_cleared"]},
+        {"kind": "wild", "id": "faded_pebblit", "x": 15, "y": 5, "form": "stone/0", "level": 13, "faded": 3, "moves": ["wobble"], "befriendBonus": 0.1, "when": ["!story.faded_pebblit"], "scene": "faded2"},
+        {"kind": "pickup", "id": "glen_snack", "x": 20, "y": 16, "item": "heal_snack", "n": 1},
+        {"kind": "trigger", "id": "glen_intro", "x": 12, "y": 10, "r": 1, "when": ["!story.met_lead"], "scene": "lead_intro"}
+      ]
+    }
+  },
+  "trainers": {
+    "r2_rockhound": {
+      "name": "Nell",
+      "title": "Rockhound",
+      "map": "route2",
+      "x": 10,
+      "y": 10,
+      "facing": "up",
+      "sight": 2,
+      "ai": "basic",
+      "team": [
+        {"form": "stone/0", "level": 15, "moves": ["pebble_flick", "tumble_charge", "boulder_drop", "flick_flame"]},
+        {"form": "stone/1", "level": 16, "moves": ["brace_rock", "pebble_flick", "tumble_charge", "boulder_drop"]}
+      ],
+      "money": null,
+      "lines": {"intro": "Every rock on this route has a name. Want to meet my favourites?", "win": "Pebblits shrug off sparks, {player}. Handy, with all these new lamps about.", "lose": "Solid as bedrock! Rest up and come back."}
+    },
+    "r2_skipper": {
+      "name": "Teo",
+      "title": "Stone Skipper",
+      "map": "route2",
+      "x": 18,
+      "y": 6,
+      "facing": "down",
+      "sight": 2,
+      "ai": "basic",
+      "team": [
+        {"form": "crab/1", "level": 15, "moves": ["brace_rock", "ripple_jab", "tumble_charge", "pebble_flick"]},
+        {"form": "gust/1", "level": 16, "moves": ["tumble_charge", "gale_slice", "pebble_flick", "kite_swoop"]}
+      ],
+      "money": null,
+      "lines": {"intro": "Seven skips! New record! Okay, now a battle record.", "win": "Sunk like a pebble. Nice one, {player}.", "lose": "Skip, skip, splash! Better luck next time."}
+    },
+    "r2_associate": {
+      "name": "Hollis",
+      "title": "Glimmerwell Associate",
+      "map": "route2",
+      "x": 24,
+      "y": 2,
+      "facing": "down",
+      "sight": 3,
+      "ai": "basic",
+      "team": [
+        {"form": "moth/0", "level": 16, "moves": ["zap_tap", "updraft", "arc_bolt", "puff_shot"]},
+        {"form": "volt/1", "level": 17, "moves": ["tumble_charge", "arc_bolt", "puff_shot", "whisker_spark"]}
+      ],
+      "money": null,
+      "lines": {"intro": "Whoa there! The glen is closed for the Glow Census. We're just counting!", "win": "Okay, okay! Go ask my Field Lead, {player}. She does the explaining.", "lose": "See? Everything's under control. Have a bright day!"}
+    },
+    "r2_lead": {
+      "name": "Imogen",
+      "title": "Glimmerwell Field Lead",
+      "map": "route2_glen",
+      "x": 12,
+      "y": 5,
+      "facing": "down",
+      "sight": 2,
+      "ai": "leader",
+      "team": [
+        {"form": "moth/1", "level": 17, "moves": ["updraft", "arc_bolt", "puff_shot", "lantern_waltz"]},
+        {"form": "crab/1", "level": 18, "moves": ["brace_rock", "ripple_jab", "tumble_charge", "pebble_flick"]},
+        {"form": "volt/1", "level": 19, "moves": ["neon_flash", "arc_bolt", "puff_shot", "whisker_spark"]}
+      ],
+      "money": null,
+      "onWin": "glen_cleared",
+      "lines": {"intro": "Let's keep this friendly and brief. I have a report due.", "win": "Hm. Not the outcome I forecast, {player}.", "lose": "There. Back to the census. Have a bright day!"}
+    },
+    "r2_stargazer": {
+      "name": "Tilda",
+      "title": "Stargazer",
+      "map": "route2",
+      "x": 38,
+      "y": 6,
+      "facing": "down",
+      "sight": 2,
+      "ai": "basic",
+      "team": [
+        {"form": "dormouse/1", "level": 16, "moves": ["frost_nip", "dusk_fang", "sap_sip", "lullaby_hum"]},
+        {"form": "moth/1", "level": 17, "moves": ["updraft", "arc_bolt", "puff_shot", "lantern_waltz"]}
+      ],
+      "money": null,
+      "lines": {"intro": "Those new lamps wash out my stars. Battle me while I'm grumpy!", "win": "Fine, {player}. I'll come back when it's darker.", "lose": "Ha! Written in the stars."}
+    }
+  },
+  "scenes": {
+    "glimmer2": [
+      ["say", "", "A soft mint glow pulses at the top of the side path."],
+      ["say", "", "Wild Walklings drift toward it, yawning. They look greyer than they should."],
+      ["say", "", "{pet} puffs up and stares up the path."],
+      ["say", "Associate Hollis", "Glow Census in progress! Nothing to see here. Have a bright day!"],
+      ["setFlag", "story.met_census", true]
+    ],
+    "lead_intro": [
+      ["say", "", "Mint lamps hum on tall stands. Walklings doze under them, their colours washed out."],
+      ["say", "Field Lead Imogen", "Oh, {name}! Welcome to the Glow Census. Isn't it peaceful?"],
+      ["say", "Field Lead Imogen", "Our Comfort Lamps help wild Walklings relax. We just collect a little extra glow."],
+      ["choice", "Any questions? Quick ones, please.", [["They look exhausted.", [["say", "Field Lead Imogen", "That's relaxation! It photographs beautifully."]]], ["Turn the lamps off.", [["say", "Field Lead Imogen", "Off? We're on a schedule, sweetie. Quarterly targets."]]]]],
+      ["setFlag", "story.met_lead", true]
+    ],
+    "faded2": [
+      ["if", "story.glen_cleared", [["say", "", "A Pebblit, still a little grey, peeks at you from the grass."]], [["say", "", "A grey Pebblit is curled under a lamp, too sleepy to roll away."]]],
+      ["encounter", "faded_pebblit"],
+      ["if", "story.faded_pebblit", [["say", "", "Pebblit leans on your boot. It already feels a little warmer."]]]
+    ],
+    "glen_cleared": [
+      ["say", "", "Running footsteps crunch up the path."],
+      ["say", "Rook", "Delivery for the Glow Census! Twelve more lamps, fresh from... {name}?!"],
+      ["say", "Field Lead Imogen", "Ah, our Junior Bright! Tell your friend this is all perfectly comfy."],
+      ["say", "Rook", "It is! It's a census. They count Walklings. Right?"],
+      ["say", "", "{pet} bumps the nearest lamp stand. It wobbles, and every lamp clicks off at once."],
+      ["say", "", "The dozing Walklings blink. A little colour creeps back into fur and feathers."],
+      ["say", "Field Lead Imogen", "I'll log that as a minor outage. Have a bright day, both of you."],
+      ["say", "", "Imogen packs the lamps into crates and strolls off, humming."],
+      ["say", "Rook", "That... didn't look like counting."],
+      ["say", "Rook", "They gave me treats to 'calm the units'. Here. You'll use them better."],
+      ["give", "befriend_treat", 3],
+      ["say", "Rook", "My supervisor's at the Cobblecrest quarry. He'll explain. He always explains."],
+      ["setFlag", "story.rook_saw_lamps", true],
+      ["setFlag", "story.glen_cleared", true]
+    ],
+    "route2_end": [
+      ["say", "Rook", "Locked. 'Closed for upgrades.' Since when does a quarry need upgrades?"],
+      ["say", "Rook", "Master Hale's Trial Hall is up there. He dug with his Walklings, not with lamps."],
+      ["choice", "Go up together when it opens?", [["Together.", [["say", "Rook", "Together. But I'm still beating you to the Seal."]]], ["Race you!", [["say", "Rook", "Ha! Now you're talking."]]]]],
+      ["say", "", "COMING LATER · Cobblecrest and its Trial Hall. Thanks for playing Route 2!"],
+      ["setFlag", "story.route2_end", true]
+    ]
+  },
+  "spawnTables": {
+    "_note": "Proposed rows for CREATURES_SLICE §3 SPAWNS: [speciesId, baseWeight, minLv, maxLv]. Authored maps: no 8% any-species roll; starter lines never.",
+    "route2": {
+      "stage2": 0.1,
+      "table": [
+        ["stone", 20, 12, 15],
+        ["mole", 15, 12, 15],
+        ["beetle", 12, 12, 14],
+        ["moth", 12, 12, 14],
+        ["crab", 10, 12, 15],
+        ["gust", 10, 13, 15],
+        ["dormouse", 8, 13, 15],
+        ["shade", 4, 13, 15],
+        ["frost", 3, 13, 15],
+        ["vane", 4, 13, 16]
+      ]
+    },
+    "route2_glen": {
+      "stage2": 0.1,
+      "table": [
+        ["moth", 25, 13, 16],
+        ["dormouse", 20, 13, 16],
+        ["beetle", 15, 13, 16],
+        ["stone", 10, 13, 16],
+        ["crab", 8, 13, 15],
+        ["shade", 6, 13, 16],
+        ["vane", 4, 14, 16]
+      ]
+    }
+  },
+  "slicePatch": {
+    "_note": "Changes to the slice data that ship with Route 2. maps_slice.json itself stays untouched: the game applies this patch at load, after maps_slice.json (ACT1_ROUTE2.md §0.2), exactly as act1_route2_check.py does.",
+    "maps": {
+      "fernbrook": {
+        "gridRows": {"8": "pppppppppppppppppppppppppppppppp"},
+        "replaceObjs": [
+          {"kind": "sign", "id": "fb_sign_route2", "x": 29, "y": 7, "when": ["!story.seal1"], "text": "ROUTE 2 · Closed after a rockslide. The crews say: soon!"}
+        ],
+        "addObjs": [
+          {"kind": "sign", "id": "fb_sign_route2_open", "x": 29, "y": 7, "when": ["story.seal1"], "text": "ROUTE 2 · Open again! Rockslide cleared by Glimmerwell Co. Brighter by nature."},
+          {"kind": "prop", "id": "fb_rubble", "x": 31, "y": 8, "sprite": "rubble", "when": ["!story.seal1"]},
+          {"kind": "warp", "id": "fb_east", "x": 31, "y": 8, "to": "route2", "tx": 1, "ty": 8, "facing": "right", "when": ["story.seal1"], "setFlag": "story.reached_route2"}
+        ]
+      }
+    },
+    "scenes": {
+      "teaser": [
+        ["say", "Rook", "You beat Fen? Me too! Well... almost."],
+        ["say", "Rook", "Look: Glimmerwell picked me for \"Junior Bright\". Clean energy, {name}!"],
+        ["say", "Rook", "And their crews cleared the rockslide overnight. Race you up Route 2!"],
+        ["say", "", "East of town, the Route 2 path is open."],
+        ["setFlag", "story.slice_end", true]
+      ]
+    }
+  },
+  "flags": {"story.reached_route2": "fb_east warp (first step onto Route 2)", "story.met_census": "glimmer2: first sight of the Comfort Lamps", "story.reached_glen": "r2_glen warp (first entry to Wickerglen)", "story.met_lead": "lead_intro", "story.faded_pebblit": "faded2, on befriend only", "story.glen_cleared": "glen_cleared (after beating the Field Lead): lamps, tent, crates and Imogen go away", "story.rook_saw_lamps": "glen_cleared: hook for Rook's Act 1-2 doubt arc (not read yet)", "story.route2_end": "route2_end: end of Route 2's content (coming-later card)", "trainer.r2_rockhound": "auto (BATTLE §7)", "trainer.r2_skipper": "auto", "trainer.r2_associate": "auto", "trainer.r2_lead": "auto", "trainer.r2_stargazer": "auto", "spotted.r2_rockhound": "auto (MAPS_SLICE §6.1)", "spotted.r2_skipper": "auto", "spotted.r2_associate": "auto", "spotted.r2_lead": "auto", "spotted.r2_stargazer": "auto", "item.r2_snack": "auto (pickup)", "item.r2_treat": "auto (pickup)", "item.glen_snack": "auto (pickup)"},
+  "reusedFlags": ["story.seal1", "story.slice_end"],
+  "newNames": ["Wickerglen", "Imogen", "Hollis", "Nell", "Teo", "Tilda", "Glow Census", "Comfort Lamp"]
+}

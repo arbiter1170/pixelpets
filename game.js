@@ -647,32 +647,52 @@ function drawPetScene(t, dt){
   if (anim.emotes.length && t > anim.emotes[anim.emotes.length - 1].until) anim.emotes = [];
 }
 
-/* ---------- maps, objects, conditions (MAPS_SLICE Phase M + INTERIORS_DIALOG v1.0) ---------- */
-// maps_slice.json + interiors.json (verbatim, via data/mapdata.js). INTERIORS' slicePatch swaps Hearthmoor's place-panel doors
-// for room doors at load (maps_slice.json is never edited), then the four rooms join the outdoor maps.
+/* ---------- maps, objects, conditions (MAPS_SLICE Phase M + INTERIORS + ACT1_ROUTE2 + COBBLECREST) ---------- */
+// Verbatim JSON via data/mapdata.js. Merge order matches the checkers: maps_slice, interiors slicePatch,
+// act1_route2 slicePatch then its maps, interiors rooms, cobblecrest route2Patch then its maps and rooms.
 const MD = MAPDATA, TS = 16;
-const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles);
+const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles, (MD.cobblecrest && MD.cobblecrest.tiles) || {}, (MD.cobblecrest && MD.cobblecrest.roomTiles) || {});
+function applyMapPatch(W, patch){
+  if (!patch || !patch.maps) return;
+  for (const [id, pt] of Object.entries(patch.maps)) {
+    const m = W[id]; if (!m) continue;
+    if (pt.set) Object.assign(m, JSON.parse(JSON.stringify(pt.set)));
+    if (pt.gridRows) for (const [y, row] of Object.entries(pt.gridRows)) m.grid[+y] = row;
+    for (const o of pt.replaceObjs || []) {
+      const copy = JSON.parse(JSON.stringify(o)), k = m.objs.findIndex(x => x.id === o.id);
+      if (k >= 0) m.objs[k] = copy; else m.objs.push(copy);
+    }
+    for (const o of pt.addObjs || []) m.objs.push(JSON.parse(JSON.stringify(o)));
+  }
+}
 const WORLD = (() => {
   const W = JSON.parse(JSON.stringify(MD.maps_slice.maps));
-  for (const [id, pt] of Object.entries(MD.interiors.slicePatch.maps)) {
-    const m = W[id]; Object.assign(m, JSON.parse(JSON.stringify(pt.set || {})));
-    for (const o of pt.replaceObjs || []) { const k = m.objs.findIndex(x => x.id === o.id); if (k >= 0) m.objs[k] = JSON.parse(JSON.stringify(o)); else m.objs.push(JSON.parse(JSON.stringify(o))); }
-  }
+  applyMapPatch(W, MD.interiors.slicePatch);
+  if (MD.act1_route2) { applyMapPatch(W, MD.act1_route2.slicePatch); Object.assign(W, JSON.parse(JSON.stringify(MD.act1_route2.maps))); }
   Object.assign(W, JSON.parse(JSON.stringify(MD.interiors.maps)));
   // INVENTORY §5: the Travel Shelf at (6,2) in the Lantern House (data copies stay verbatim, so it's added here).
   if (W.hm_lantern_in && !W.hm_lantern_in.objs.some(o => o.id === 'travel_shelf'))
     W.hm_lantern_in.objs.push({ kind: 'prop', id: 'travel_shelf', x: 6, y: 2, sprite: 'travel_shelf', name: 'the Travel Shelf',
       shop: ['heal_snack', 'hearty_snack', 'wake_tonic', 'befriend_treat', 'energy_sip', 'joy_crumb'], lines: { else: 'Travel Shelf · Leave Acorns, take a snack. — I.' } });
+  if (MD.cobblecrest) {
+    applyMapPatch(W, MD.cobblecrest.route2Patch);
+    Object.assign(W, JSON.parse(JSON.stringify(MD.cobblecrest.maps)));
+    Object.assign(W, JSON.parse(JSON.stringify(MD.cobblecrest.rooms)));
+  }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
 const SCENES = Object.assign({}, MD.maps_slice.scenes, MD.interiors.scenes);
-for (const [id, t] of Object.entries(MD.maps_slice.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);   // §6 replaces the BATTLE examples
+if (MD.act1_route2) Object.assign(SCENES, MD.act1_route2.slicePatch.scenes || {}, MD.act1_route2.scenes);
+if (MD.cobblecrest) Object.assign(SCENES, MD.cobblecrest.route2Patch.scenes || {}, MD.cobblecrest.scenes);
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
+if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
-  'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers);
-const TRAINER_LOOK = { rival1_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen' };
+  'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
+if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
+const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };   // per map visit, never saved
@@ -719,7 +739,10 @@ const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
 function npcLook(o){
   const key = o.look || (o.kind === 'trainer' ? (TRAINER_LOOK[o.id] || 'trainer') : LOOK_OF_NAME[o.name]) || 'villager';
-  return NPC_LOOKS[key] || KEEPER_SWAPS.villager;
+  const look = NPC_LOOKS[key] || KEEPER_SWAPS.villager;
+  // Optional: Rook's mint Junior Bright lanyard once the quarry sale makes it official (COBBLECREST art, could).
+  if (key === 'rook' && S && S.flags && S.flags['story.quarry_bought']) return Object.assign({}, look, { accent: 'l' });
+  return look;
 }
 const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && !!o.lines));
 // A saved position that is off the map, solid, on a warp or under a blocker loads on the map's safe tile (§3).
@@ -1142,7 +1165,8 @@ function drawMap(t){
   for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
-      const ch = MAP[ty][tx]; const img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
+      const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
+      if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
       if (ch === '=') {                          // rug border where the rug ends
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
@@ -1361,7 +1385,7 @@ function interact(o){
     return runSteps([['say', t.name, t.lines.win]], ctx);
   }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
-  if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop); return; }
+  if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
   if (o.kind === 'wild') return o.scene ? runScene(o.scene, ctx) : undefined;
   if (o.scene && !scenePlayed(o.scene)) return runScene(o.scene, ctx);
   const line = linesFor(o);
@@ -1524,7 +1548,7 @@ async function execStep(st){
     }
     case 'setFlag': { const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; }); return; }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
-    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook') S.world.respawn = r; }); return; }
+    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest') S.world.respawn = r; }); return; }
     case 'lookPick': {
       sc.skip = false;
       const lk = await lookPickStep(sc.id === 'intro');
@@ -1709,6 +1733,7 @@ const SPAWNS = {
   fernbrook: { stage2: 0.05, table: [['beetle', 30, 6, 9], ['mole', 25, 7, 10], ['moth', 10, 6, 9], ['dormouse', 10, 7, 10],
                ['crab', 8, 7, 9], ['frost', 3, 7, 9], ['shade', 5, 7, 9], ['vane', 7, 7, 9]] },
 };
+for (const src of [MD.act1_route2, MD.cobblecrest]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = v;
 const spawnKey = () => (CUR && CUR.spawns) || 'proto';
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
 function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
@@ -1739,10 +1764,12 @@ function pickSpecies(tags = envTags(), key = spawnKey()){
   return pickW(w);
 }
 const pickStage = (key = spawnKey()) => Math.random() < ((SPAWNS[key] || {}).stage2 || WILD_STAGE2_CHANCE) ? 1 : 0;
-// w.lv: a first form rolls uniformly in its table row's range; a second form (5%) rolls Lv 6-8 (§3); Old Meadow keeps the proto bands.
+// w.lv: a first form rolls uniformly in its table row's range. A second form on Route 1 / Fernbrook stays Lv 6-8.
+// On a high-level table (row min above 8: Route 2, Wickerglen, the quarry) the second form uses that same range.
 function wildLv(sp, stage, key = spawnKey()){
-  const row = !stage && SPAWNS[key] && SPAWNS[key].table.find(r => r[0] === SPECIES[sp].id);
-  return row ? row[2] + Math.floor(Math.random() * (row[3] - row[2] + 1)) : wildLevel(stage, Math.random, 'proto', SPECIES[sp].id);
+  const row = SPAWNS[key] && SPAWNS[key].table.find(r => r[0] === SPECIES[sp].id);
+  if (row && (!stage || row[2] > 8)) return row[2] + Math.floor(Math.random() * (row[3] - row[2] + 1));
+  return wildLevel(stage, Math.random, 'proto', SPECIES[sp].id);
 }
 const nextTo = (x, y, ch) => [[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy]) => MAP[y+dy] && MAP[y+dy][x+dx] === ch);
 const inZone = (x, y) => !CUR.zones.length || CUR.zones.some(z => x >= z.x && y >= z.y && x < z.x + z.w && y < z.y + z.h);
@@ -1971,11 +1998,12 @@ let msgSkip = null;
 const alive = id => battle.on && battle.id === id;
 const curFoe = () => battle.foes[battle.fi];
 const activePet = () => battle.me && petById(battle.me.petId);
-function makeFoe(form, level, moveIds){
+function makeFoe(form, level, moveIds, opener){
   const [line, st] = form.split('/'), si = SP_INDEX[line], stage = +st, s = statsAt(form, level);
   const ids = (moveIds && moveIds.length ? moveIds : defaultMoves(form, level)).filter(id => MOVES[id]).slice(0, 4);
   return { form, si, species: line, stage, level, type: SPECIES[si].type, maxHp: s.hp, hp: s.hp, stats: s,
-    stages: { atk: 0, def: 0, spd: 0 }, moves: (ids.length ? ids : ['wobble']).map(id => ({ id, uses: MOVES[id].uses == null ? Infinity : MOVES[id].uses })) };
+    stages: { atk: 0, def: 0, spd: 0 }, opener: opener || null, acted: false,
+    moves: (ids.length ? ids : ['wobble']).map(id => ({ id, uses: MOVES[id].uses == null ? Infinity : MOVES[id].uses })) };
 }
 const foeName = f => nameOf(f.si, f.stage);
 const foeLabel = f => battle.kind === 'wild' ? 'Wild ' + foeName(f) : TRAINERS[battle.trainerId].name + "'s " + foeName(f);
@@ -2016,7 +2044,7 @@ function openBattle(o){
     fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null,
     fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0 });
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
-  if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves));
+  if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
   else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
   B.participants = B.foes.map(() => new Set());
   B.me = { petId: lead.id, stages: { atk: 0, def: 0, spd: 0 }, mood: null };
@@ -2174,6 +2202,14 @@ function toChoose(){
 /* --- AI (§6) --- */
 function aiPick(){
   const B = battle, f = curFoe(), me = myBattler(), t = tr(), kind = t ? t.ai : 'wild', rng = B.rng;
+  // COBBLECREST opener: that member's first action after it enters (Brace Rock), if the move has uses and the stat isn't capped.
+  if (f.opener && !f.acted) {
+    const slot = f.moves.find(m => m.id === f.opener && m.uses > 0), mv = MOVES[f.opener];
+    if (slot && mv) {
+      const e = mv.effect || {}, st = e.target === 'self' ? f.stages : B.me.stages, cur = (e.stat && st[e.stat]) || 0;
+      if (!((e.stages > 0 && cur >= 3) || (e.stages < 0 && cur <= -3))) return { move: f.opener };
+    }
+  }
   if (kind === 'leader' && !B.foeHealUsed && t.items && t.items.heal_snack && f.hp < 0.3 * f.maxHp) return { item: 'heal_snack' };
   const avail = f.moves.filter(m => m.uses > 0); if (!avail.length) return { move: 'wobble' };
   const statusOk = kind !== 'leader' || B.turn + 1 <= 2;
@@ -2213,6 +2249,7 @@ async function resolveTurn(action){
 async function foeAct(id){
   const B = battle, f = curFoe(), plan = B.foePlan || { move: 'wobble' };
   if (f.hp <= 0) return;
+  f.acted = true;
   if (plan.item === 'heal_snack') {
     B.foeHealUsed = true; const h = Math.ceil(0.4 * f.maxHp); f.hp = Math.min(f.maxHp, f.hp + h);
     sfx('heal'); renderBattleCards(); await say(tr().name + ' shares a Heal Snack! ' + foeName(f) + ' feels better.', id); return;
@@ -2563,9 +2600,18 @@ function bagKey(e){
 const SHELF_LINE = 'Travel Shelf \u00b7 Leave Acorns, take a snack. \u2014 I.';
 const SHELF_EMPTY = "Empty for now. Ilse restocks once you've a partner.";
 let shopIds = [], shopSel = 0;
-function openShop(ids){
+// The Travel Shelf keeps its fixed title. A stall whose welcome line names the shop (Dottie's "Welcome to Cairnside Supplies!") uses that name.
+function shopHeading(o){
+  const line = o && o.lines && o.lines.else;
+  const m = typeof line === 'string' && /^Welcome to ([^!]+)!/.exec(line);
+  return m ? m[1] : 'Travel Shelf';
+}
+function openShop(ids, title){
   if (!S || overlayOpen()) return;
   clearMoves(); shopIds = (ids || ITEM_ORDER).filter(k => ITEMS[k]); shopSel = 0;
+  $('#shopTitle').textContent = title || 'Travel Shelf';
+  const flav = $('#shopFlavour');
+  if (flav) flav.textContent = title && title !== 'Travel Shelf' ? 'Snacks for the road.' : 'Leave Acorns, take a snack. \u2014 I.';
   renderShop(); $('#ovShop').hidden = false; lockTabs(true); sfx('tap');
 }
 function closeShop(){ if ($('#ovShop').hidden) return; $('#ovShop').hidden = true; lockTabs(false); updateHUD(); }
@@ -2673,8 +2719,9 @@ async function results(result, id){
     await say(playerName() + ' got ' + acorns(money) + '!', id); if (!alive(id)) return;
     if (t.hall && t.seal) { showSealCard(t.seal); sfx('stinger_seal'); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
   }
-  if (t && t.oneShot && (result === 'win' || result === 'tired')) {      // §6: Rook never repeats; the scene reads the result
-    S.flags['story.rival1_done'] = true; S.flags['story.rival1_result'] = result === 'win' ? 'won' : 'lost'; save();
+  if (t && t.oneShot && (result === 'win' || result === 'tired')) {      // true = Rook #1; a string prefix is a later one-shot (Rook #2)
+    const prefix = t.oneShot === true ? 'story.rival1' : t.oneShot;
+    S.flags[prefix + '_done'] = true; S.flags[prefix + '_result'] = result === 'win' ? 'won' : 'lost'; save();
   }
   for (const lu of B.levelUps) {
     const p = petById(lu.id); if (!p) continue;
@@ -2685,7 +2732,24 @@ async function results(result, id){
 }
 // The Seal card (BATTLE §7 Trial Hall): the Seal's sprite plus its name, over the battle stage until the battle closes.
 // Seal 1 art: Design ICONS_SEALS (5d59b34), ICON_ART.seal_fernbrook.grid, copied verbatim (gold rim, leaf on a white glint).
-const SEAL_ART = { seal_fernbrook: [
+const SEAL_ART = { seal_cobblecrest: [
+  '.......oo.......',
+  '.....ooyyoo.....',
+  '...oowyddyyoo...',
+  '.oowwddddddyyoo.',
+  'oywdddddwhdddyyo',
+  'oydddddhhhmdddyo',
+  'oyddddddddddddyo',
+  'oydddwhhhdddddyo',
+  'oyddhhhhmmddddyo',
+  'oyddddddddddddyo',
+  'oydddwhhhhhdddyo',
+  'oyydhhhhhhmmdyoo',
+  '.ooyydmmmmdyooo.',
+  '...ooyyddyooo...',
+  '.....ooyyoo.....',
+  '.......oo.......',
+], seal_fernbrook: [
   '.....oooooo.....',
   '...ooyyyyyyoo...',
   '..oyywwwyyyyyo..',
@@ -2708,7 +2772,7 @@ function showSealCard(id){
   g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
   $('#btSealName').textContent = sealName(id); $('#btSeal').hidden = false;
 }
-const sealName = id => ({ seal_fernbrook: 'Fernbrook Seal' }[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal');
+const sealName = id => ({ seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal' }[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal');
 
 /* --- learning moves (§3): after RESULTS, after evolving, and the §3.4 sheet --- */
 // Learnset entries (all stages up to the current one) with from < lv <= to, one per level, not yet known.

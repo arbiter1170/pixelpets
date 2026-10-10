@@ -420,6 +420,16 @@ function buildTiles(){
   T.F = mkTile(g => { grassBase(g, 9); [1,12].forEach(x => { px(g,PAL.h,x,3,3,12); px(g,PAL.w,x,3,2,11); }); [5,10].forEach(y => { px(g,PAL.h,0,y,16,2); px(g,PAL.w,0,y,16,1); }); });
   T.s = mkTile(g => { px(g,PAL.y,0,0,16,16); const r=rng(23); for(let i=0;i<12;i++) px(g, PAL.o, (r()*16)|0, (r()*16)|0); px(g,PAL.w,(r()*16)|0,(r()*16)|0); });
   T.B = mkTile(g => { px(g,PAL.o,0,0,16,16); [3,7,11,15].forEach(x => px(g,PAL.d,x,0,1,16)); px(g,PAL.d,0,0,16,1); px(g,PAL.d,0,15,16,1); px(g,PAL.y,1,2,1,1); px(g,PAL.y,9,9,1,1); });
+  // COBBLECREST outdoor tiles: K rock face (solid), c gravel (walk + roam). Rm is the slate Hall roof (roofs.hall col m).
+  T.K = mkTile(g => { px(g,PAL.d,0,0,16,16);
+    for (let y = 0; y < 16; y += 4) { px(g,PAL.m,0,y,16,3); px(g,PAL.k,0,y+3,16,1); }
+    [[1,1],[8,5],[3,9],[10,13]].forEach(([x,y]) => px(g,PAL.h,x,y,4,1)); });
+  T.c = mkTile(g => { px(g,PAL.m,0,0,16,16); const r = rng(41);
+    for (let i = 0; i < 8; i++) px(g, r() < 0.55 ? PAL.h : PAL.w, (r()*14+1)|0, (r()*14+1)|0, 2, 1);
+    px(g,PAL.d,3,5,1,1); px(g,PAL.d,10,11,1,1); });
+  T.Rm = mkTile(g => { px(g,PAL.m,0,0,16,16);
+    for (let y = 0; y < 12; y += 4) { px(g,PAL.d,0,y+3,16,1); for (let x = (y/4)%2*4; x < 16; x += 8) px(g,PAL.d,x,y,1,3); px(g,PAL.h,((y/4)%2*4+2)%16,y+1,2,1); }
+    px(g,PAL.d,0,12,16,4); px(g,PAL.k,0,15,16,1); });
   // INTERIORS §2.1 interior tiles (W2 = the window variant on odd columns)
   const planks = g => { px(g,PAL.o,0,0,16,16); [4,9,14].forEach(y => px(g,PAL.d,0,y,16,1)); [[6,0],[13,5],[3,10]].forEach(([x,y]) => px(g,PAL.d,x,y,1,4)); };
   T['#'] = mkTile(g => { planks(g); px(g,PAL.m,0,0,16,3); px(g,PAL.d,0,3,16,1); });
@@ -427,6 +437,9 @@ function buildTiles(){
   T.W2 = mkTile(g => { planks(g); px(g,PAL.d,0,15,16,1); px(g,PAL.d,4,3,8,8); px(g,PAL.c,5,4,6,6); px(g,PAL.s,5,4,3,2); px(g,PAL.d,7,4,1,6); px(g,PAL.d,5,6,6,1); });
   T['.'] = mkTile(g => { px(g,PAL.y,0,0,16,16); [0,5,10,15].forEach(y => px(g,PAL.o,0,y,16,1)); [[3,1],[11,6],[6,11]].forEach(([x,y]) => px(g,PAL.o,x,y,1,4)); });
   T['='] = mkTile(g => { px(g,PAL.r,0,0,16,16); for (let y=2;y<16;y+=4) for (let x=(y%8?0:2);x<16;x+=4) px(g,PAL.p,x,y,1,1); });
+  // COBBLECREST Hall: slate flagstones and a rock pillar.
+  T[':'] = mkTile(g => { px(g,PAL.m,0,0,16,16); px(g,PAL.d,0,0,16,1); px(g,PAL.d,0,8,16,1); px(g,PAL.d,0,0,1,16); px(g,PAL.d,8,0,1,8); px(g,PAL.d,4,8,1,8); px(g,PAL.h,2,2,2,1); px(g,PAL.h,10,10,2,1); });
+  T.X = mkTile(g => { px(g,PAL.k,3,0,10,16); px(g,PAL.d,4,1,8,14); px(g,PAL.m,6,2,2,12); px(g,PAL.h,6,3,1,4); px(g,PAL.k,3,0,10,1); px(g,PAL.k,3,15,10,1); });
   T.m = mkTile(g => { px(g,PAL.y,0,0,16,16); px(g,PAL.d,1,3,14,10); px(g,PAL.o,2,4,12,8); for (let x=3;x<14;x+=2) px(g,PAL.d,x,5,1,6); });
   return T;
 }
@@ -460,5 +473,45 @@ function buildWorldArt(){
     px(g,PAL.k,1,15,14,1);
   });
   A.talk = ['.wwwwww.','wwwwwwww','wkwkwkww','wwwwwwww','.wwwwww.','..ww....','.w......','........'];   // 8x8 speech bubble (INTERIORS §6)
+  // ACT1_ROUTE2 props.
+  A.rubble = mkTile(g => { grassBase(g, 17);
+    px(g,PAL.d,1,8,6,6); px(g,PAL.h,2,9,4,3); px(g,PAL.w,2,9,1,1);
+    px(g,PAL.d,6,5,7,9); px(g,PAL.m,7,6,5,7); px(g,PAL.h,7,6,2,2);
+    px(g,PAL.d,12,9,3,5); px(g,PAL.h,12,10,2,2); });
+  A.comfort_lamp = [0, 1].map(f => mkTile(g => {
+    px(g,PAL.l,4,2,1,1); px(g,PAL.l,11,3,1,1); px(g,PAL.l,3,6,1,1); px(g,PAL.l,12,5,1,1);
+    px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.l,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
+  }));
+  A.census_tent = mkTile(g => {
+    px(g,PAL.d,7,1,2,14); px(g,PAL.w,2,4,12,8); px(g,PAL.l,2,4,12,2); px(g,PAL.l,2,8,12,1);
+    px(g,PAL.d,3,6,4,4); px(g,PAL.k,3,6,4,1); px(g,PAL.h,4,12,8,2);
+  });
+  A.glimmer_gate = mkTile(g => {
+    px(g,PAL.d,1,4,2,12); px(g,PAL.d,13,4,2,12); px(g,PAL.l,1,4,14,3); px(g,PAL.w,3,5,10,1);
+    px(g,PAL.y,7,8,2,2); px(g,PAL.o,6,9,4,1); px(g,PAL.l,7,11,2,2); px(g,PAL.m,2,14,12,1);
+  });
+  // COBBLECREST props.
+  A.seam_stone = mkTile(g => {
+    px(g,PAL.d,2,6,12,9); px(g,PAL.m,3,5,10,9); px(g,PAL.h,4,6,4,3); px(g,PAL.k,5,8,6,1);
+    px(g,PAL.w,6,10,1,2); px(g,PAL.w,8,9,2,1); px(g,PAL.w,7,11,1,2); px(g,PAL.w,9,11,1,1);
+  });
+  A.cairn = mkTile(g => {
+    px(g,PAL.d,3,12,10,3); px(g,PAL.m,4,12,8,2); px(g,PAL.h,4,12,3,1);
+    px(g,PAL.d,4,8,8,4); px(g,PAL.m,5,8,6,3); px(g,PAL.h,5,8,2,1);
+    px(g,PAL.d,6,4,5,4); px(g,PAL.h,6,4,3,2); px(g,PAL.y,8,5,1,1);
+  });
+  A.stall_counter = mkTile(g => {
+    px(g,PAL.r,1,1,14,3); px(g,PAL.w,1,2,3,1); px(g,PAL.w,8,2,3,1); px(g,PAL.w,14,2,1,1);
+    px(g,PAL.o,1,5,14,8); px(g,PAL.d,1,8,14,1); px(g,PAL.d,2,13,2,3); px(g,PAL.d,12,13,2,3);
+    [[3,'r'],[6,'y'],[9,'g'],[12,'c']].forEach(([x,c]) => { px(g,PAL.k,x,9,2,3); px(g,PAL[c],x,10,2,2); });
+  });
+  A.stage_bunting = mkTile(g => {
+    px(g,PAL.d,2,2,1,14); px(g,PAL.d,13,2,1,14); px(g,PAL.m,2,2,12,1);
+    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.l : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.l, x, 5, 2, 2); }
+  });
+  A.miner_lamps = mkTile(g => {
+    px(g,PAL.o,1,3,14,2); px(g,PAL.d,1,5,14,1); px(g,PAL.o,1,12,14,2);
+    [3,7,11].forEach(x => { px(g,PAL.d,x+1,6,1,3); px(g,PAL.y,x,9,3,3); px(g,PAL.d,x,11,3,1); px(g,PAL.h,x,9,1,1); });
+  });
   return A;
 }

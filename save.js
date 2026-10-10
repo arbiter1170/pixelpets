@@ -16,10 +16,11 @@ const PPSave = (() => {
   const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse']);
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
-  // MAPS_SLICE §10 / INTERIORS §5: map ids and sizes come from data/mapdata.js (maps_slice.json + interiors.json rooms).
+  // MAPS_SLICE §10 / INTERIORS §5 / ACT1_ROUTE2 §0.2 / COBBLECREST mapdata: ids and sizes from data/mapdata.js.
   const MD = typeof MAPDATA === 'object' ? MAPDATA : null;
   const MAP_SIZE = {};
-  if (MD) { for (const [id, m] of Object.entries(MD.maps_slice.maps)) MAP_SIZE[id] = [m.w, m.h]; for (const [id, m] of Object.entries(MD.interiors.maps)) MAP_SIZE[id] = [m.w, m.h]; }
+  const addMaps = bag => { if (bag) for (const [id, m] of Object.entries(bag)) if (m && m.w && m.h) MAP_SIZE[id] = [m.w, m.h]; };
+  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); }
   else MAP_SIZE.proto = [24, 20];
   const MAPS = Object.keys(MAP_SIZE);
   const MAP_W = 24, MAP_H = 20;                 // v1 positions were on the 24x20 proto map
@@ -181,7 +182,7 @@ const PPSave = (() => {
     const w = s.world;
     fill(w, 'map', x => typeof x === 'string', 'proto');
     fill(w, 'x', Number.isInteger, 3); fill(w, 'y', Number.isInteger, 3);
-    fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || x === 'hearthmoor' || x === 'fernbrook', null);
+    fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || x === 'hearthmoor' || x === 'fernbrook' || x === 'cobblecrest', null);
     for (const k of ['bag', 'seals', 'flags']) fill(s, k, isObj, {});
     // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
     for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];

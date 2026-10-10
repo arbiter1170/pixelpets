@@ -1,0 +1,589 @@
+{
+  "spec": "COBBLECREST",
+  "version": "0.1",
+  "status": "v0.1 APPROVED by Vincent (Fri Oct 9, 2026), defaults on Q1, Q2, Q6, Q11",
+  "_about": "Walklings COBBLECREST DRAFT v0.1 data. Same shapes as maps_slice.json / act1_route2.json (outdoor maps, trainers, scenes, spawnTables) and interiors.json (rooms). Merge order: maps_slice.json -> act1_route2.json (+ its slicePatch) -> interiors.json rooms -> this file (route2Patch, then maps/rooms/trainers/scenes). Checked by cobblecrest_check.py.",
+  "decisions": {
+    "1_rook_join": "DEFAULT (team vote pending): Rook already joined Junior Bright right after Fernbrook (MAPS_SLICE teaser / Route 2). Here he is made official (lanyard) instead of signing up; STORY row 2 reads this way until the vote.",
+    "2_rook_battle": "Rook battle #2 is scripted inside the quarry buyout (oneShot, sight 0); win or lose, the story goes on.",
+    "3_paragon": "Not decided here. No line names or hints at the Paragon; Ilse and Oriel are not mentioned.",
+    "4_scope": "Episode 1 only. No Act 2+ systems: the Seal grants no field skill; nothing reads Calm Towers or weather.",
+    "5_end": "Cobblecrest ends at the locked Brinewick road with a COMING LATER card (story.cobble_end)."
+  },
+  "tiles": {"K": {"name": "rock face", "walk": false}, "c": {"name": "gravel", "walk": true, "roam": true}},
+  "roomTiles": {":": {"name": "slate floor", "walk": true}, "X": {"name": "rock pillar", "walk": false}},
+  "roomFurniture": {
+    "seam_stone": {"name": "seam stone", "art": "waist-high grey boulder m/h with a chalk question mark w; a crack line d"},
+    "cairn": {"name": "cairn", "art": "three stacked cobbles h/m, small y glint on top (outdoor + indoor)"},
+    "miner_lamps": {"name": "miners' lamp rack", "art": "wooden rack o with three unlit brass lamps y/d"}
+  },
+  "viewport": {"maxW": 11, "maxH": 13, "hallException": "cc_hall_in is 11x13: the full viewport, over the usual 9-row room rule (open question)"},
+  "route2Patch": {
+    "_note": "Applied after act1_route2.json (and its own slicePatch). Opens the Cobblecrest gate: (47,8) T->p, the gate prop moves onto it until story.route2_end, then the east warp takes its place. Supersedes ACT1_ROUTE2 decision 5 once Cobblecrest ships.",
+    "maps": {
+      "route2": {
+        "gridRows": {"8": "ppppppppppppppBBpppppppppppppppppppppppppppppppp"},
+        "replaceObjs": [
+          {"kind": "prop", "id": "r2_gate", "x": 47, "y": 8, "sprite": "glimmer_gate", "when": ["!story.route2_end"]},
+          {"kind": "sign", "id": "r2_sign_east", "x": 45, "y": 7, "when": ["!story.route2_end"], "text": "COBBLECREST QUARRY ROAD · Closed for upgrades. Thank you for your patience! — Glimmerwell Co."}
+        ],
+        "addObjs": [
+          {"kind": "sign", "id": "r2_sign_east_open", "x": 45, "y": 7, "when": ["story.route2_end"], "text": "COBBLECREST · Quarry town, just ahead. Today: QUARRY OPEN HOUSE! — Glimmerwell Co."},
+          {"kind": "warp", "id": "r2_east", "x": 47, "y": 8, "to": "cobblecrest", "tx": 1, "ty": 8, "facing": "right", "when": ["story.route2_end"], "setFlag": "story.reached_cobblecrest"}
+        ]
+      }
+    },
+    "scenes": {
+      "route2_end": [
+        ["say", "Rook", "Locked. 'Closed for upgrades.' Since when does a quarry need upgrades?"],
+        ["say", "Rook", "Master Hale's Trial Hall is up there. He dug with his Walklings, not with lamps."],
+        ["say", "", "Clunk! The gate swings open. A banner unrolls: QUARRY OPEN HOUSE · TODAY ONLY!"],
+        ["say", "Rook", "Open house? Perfect. My supervisor's up there. He'll explain everything."],
+        [
+          "choice",
+          "Go up together, or race?",
+          [
+            ["Together.", [["say", "Rook", "Together. But I'm still beating you to the Seal."], ["setFlag", "story.rook_pact", "together"]]],
+            ["Race you!", [["say", "Rook", "Ha! Now you're talking. Go!"], ["setFlag", "story.rook_pact", "race"]]]
+          ]
+        ],
+        ["setFlag", "story.route2_end", true]
+      ]
+    }
+  },
+  "maps": {
+    "cobblecrest": {
+      "name": "Cobblecrest",
+      "backdrop": "town",
+      "w": 32,
+      "h": 20,
+      "spawns": null,
+      "respawn": null,
+      "respawnIn": {"map": "cc_lantern_in", "x": 2, "y": 3, "facing": "up"},
+      "safe": {"x": 5, "y": 6},
+      "zones": [],
+      "roofs": {"hall": {"x0": 21, "y0": 1, "x1": 28, "y1": 3, "col": "m"}},
+      "grid": [
+        "TTTTTTTTTKKKKKKKcKKKKTTTTTTTTTTT",
+        "TggggggggKKKKKKcccKKKRRRRRRRRTTT",
+        "TgRRRRRRgKKKKKKcccKKKRRRRRRRRggT",
+        "TgRRRRRRggfggKKcccKKgRRRRRRRRggT",
+        "TgHHHHHHgggggggcccgggHHHHHHHHggT",
+        "TggggpggggcccccccccccHHHHHHHHggT",
+        "TggggpggggcccccccccccfggpggggggT",
+        "TTTggpggggcccccccccccgggpggggggT",
+        "pppppppppppppppppppppppppppppppT",
+        "TTTgggggggcccccccccccggggggggggT",
+        "TgggggggggcccccccccccggggggggggT",
+        "TgggggggRRRRgggggggggRRRRggggggT",
+        "TgggggggRRRRgggggggggRRRRggggggT",
+        "TgggggggHHHHgggggggggHHHHggggggT",
+        "TgfggggggggfgggggggggggggggfgggT",
+        "TggggggggggTTggggfggggsssssssggT",
+        "TgggTTgggggTTgggggggfgswwwwwsggT",
+        "TgggTTggggggggggggggggsssssssggT",
+        "TgggfggggggggggggggggggggfgggggT",
+        "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "cc_west", "x": 0, "y": 8, "to": "route2", "tx": 46, "ty": 8, "facing": "left"},
+        {"kind": "warp", "id": "cc_north", "x": 16, "y": 0, "to": "cobble_quarry", "tx": 16, "ty": 18, "facing": "up", "setFlag": "story.reached_quarry"},
+        {"kind": "door", "id": "cc_lantern", "x": 5, "y": 5, "to": "cc_lantern_in", "tx": 4, "ty": 5, "facing": "up"},
+        {"kind": "door", "id": "cc_hall", "x": 24, "y": 6, "to": "cc_hall_in", "tx": 5, "ty": 11, "facing": "up", "need": "story.quarry_bought", "deny": "The door is latched. A chalk note: 'At the quarry meeting. — Hale'"},
+        {"kind": "sign", "id": "cc_sign_town", "x": 4, "y": 7, "text": "COBBLECREST · A quarry town. Please mind the Pebblits underfoot."},
+        {"kind": "sign", "id": "cc_sign_hall", "x": 26, "y": 7, "text": "COBBLECREST TRIAL HALL · Master Hale · STONE · \"Stone stands firm.\""},
+        {"kind": "sign", "id": "cc_sign_quarry", "x": 18, "y": 4, "when": ["!story.quarry_bought"], "text": "NORTH · Cobblecrest Quarry. OPEN HOUSE TODAY! Free brochures. — Glimmerwell Co."},
+        {"kind": "sign", "id": "cc_sign_quarry_sold", "x": 18, "y": 4, "when": ["story.quarry_bought"], "text": "NORTH · Bright Quarry, a Glimmerwell Co. site. Brighter by nature."},
+        {"kind": "sign", "id": "cc_sign_east", "x": 29, "y": 7, "text": "BRINEWICK ROAD · Closed while crates are loaded. Thank you for your patience! — Glimmerwell Co."},
+        {"kind": "prop", "id": "cc_crates", "x": 30, "y": 8, "sprite": "crate", "lines": {"else": "Glimmerwell crates, stacked high. Every one is stencilled BRINEWICK DOCKS."}},
+        {
+          "kind": "prop",
+          "id": "cc_cairn",
+          "x": 18,
+          "y": 6,
+          "sprite": "cairn",
+          "lines": {"story.seal2": "The Miners' Cairn. Someone has tucked a tiny new cobble on top. It looks like yours.", "else": "The Miners' Cairn. Each miner adds one cobble when they retire. Hale's is near the top."}
+        },
+        {"kind": "prop", "id": "cc_stall_l", "x": 11, "y": 6, "sprite": "stall_counter", "lines": {"else": "Jars of snacks and a tin marked ACORNS, PLEASE."}},
+        {"kind": "prop", "id": "cc_stall_r", "x": 13, "y": 6, "sprite": "stall_counter", "lines": {"else": "A chalkboard: CAIRNSIDE SUPPLIES · Snacks for the road."}},
+        {
+          "kind": "npc",
+          "id": "dottie",
+          "name": "Shopkeeper Dottie",
+          "x": 12,
+          "y": 6,
+          "facing": "down",
+          "shop": ["heal_snack", "hearty_snack", "wake_tonic", "befriend_treat", "energy_sip", "joy_crumb"],
+          "lines": {"else": "Welcome to Cairnside Supplies! Snacks for the road, dear."}
+        },
+        {"kind": "npc", "id": "rook_cc", "name": "Rook", "x": 3, "y": 7, "facing": "left", "when": ["!story.cobble_arrived"], "scene": "cobble_arrive"},
+        {"kind": "trigger", "id": "cc_arrive", "x": 2, "y": 8, "r": 0, "when": ["!story.cobble_arrived"], "scene": "cobble_arrive"},
+        {
+          "kind": "npc",
+          "id": "cc_miner",
+          "name": "Old Miner",
+          "x": 14,
+          "y": 10,
+          "facing": "down",
+          "lines": {
+            "story.seal2": "Hale says you moved stone the right way. Patient. That's high praise from him.",
+            "story.quarry_bought": "Sold, just like that. The Pebblits in the Old Seam won't understand a fence.",
+            "else": "Forty years Hale and I dug side by side. The Pebblits always showed us where to swing."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "pim",
+          "name": "Pim",
+          "x": 7,
+          "y": 10,
+          "facing": "down",
+          "lines": {"story.quarry_bought": "Mum voted no. She says glow should stay in the ground where it's comfy.", "else": "Glimmerwell gave out free lamp stickers! I put one on my Pebblit. It sneezed."}
+        },
+        {
+          "kind": "npc",
+          "id": "tamsin",
+          "name": "Reeve Tamsin",
+          "x": 19,
+          "y": 9,
+          "facing": "down",
+          "when": ["story.quarry_bought"],
+          "lines": {"story.seal2": "A Seal from Hale! He doesn't hand those out to just anyone. Well done.", "else": "The vote passed fair and square. I only wish it felt fair."}
+        },
+        {
+          "kind": "npc",
+          "id": "ally_a",
+          "name": "Ally A",
+          "x": 27,
+          "y": 14,
+          "facing": "left",
+          "when": ["story.quarry_bought"],
+          "friendSlot": "ALLY_A",
+          "optional": true,
+          "lines": {"else": "FRIEND SLOT · Ally A says hi! (One short line, written with the friend.)"}
+        },
+        {"kind": "pickup", "id": "cc_snack", "x": 2, "y": 14, "item": "heal_snack", "n": 2},
+        {"kind": "npc", "id": "rook_hook", "name": "Rook", "x": 25, "y": 7, "facing": "left", "when": ["story.seal2", "!story.cobble_end"], "scene": "brinewick_hook"},
+        {"kind": "trigger", "id": "cc_hook", "x": 24, "y": 7, "r": 0, "when": ["story.seal2", "!story.cobble_end"], "scene": "brinewick_hook"}
+      ]
+    },
+    "cobble_quarry": {
+      "name": "Cobblecrest Quarry",
+      "backdrop": "route",
+      "w": 32,
+      "h": 20,
+      "spawns": "cobble_quarry",
+      "respawn": null,
+      "safe": {"x": 16, "y": 17},
+      "zones": [{"x": 2, "y": 10, "w": 8, "h": 7}, {"x": 22, "y": 10, "w": 8, "h": 5}, {"x": 2, "y": 3, "w": 6, "h": 3}, {"x": 24, "y": 3, "w": 6, "h": 3}],
+      "grid": [
+        "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+        "KKKKKKKKKKKKKKKKcKKKKKKKKKKKKKKK",
+        "KKccccccccccccccccccccccccccccKK",
+        "KKttttttccccccccccccccccttttttKK",
+        "KKttttttccccccccccccccccttttttKK",
+        "KKttttttccccccccccccccccttttttKK",
+        "KKccccccccccccccccccccccccccccKK",
+        "KKccccccccccccccccccccccccccccKK",
+        "KKccccccccccccccccccccccccccccKK",
+        "KKKKKKKKKKKKKKKcccKKKKKKKKKKKKKK",
+        "KKttttttttccccccccccccttttttttKK",
+        "KKttttttttccccccccccccttttttttKK",
+        "KKttttttttccccccccccccttttttttKK",
+        "KKtsssssstccccccccccccttttttttKK",
+        "KKtswwwwstccccccccccccttttttttKK",
+        "KKtswwwwstccccccccccccggggggggKK",
+        "KKtsssssstccccccccccccggggggggKK",
+        "KKggggggggccccccccccccggggggggKK",
+        "KKggggggggccccccccccccggggggggKK",
+        "KKKKKKKKKKKKKKKKcKKKKKKKKKKKKKKK"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "q_south", "x": 16, "y": 19, "to": "cobblecrest", "tx": 16, "ty": 1, "facing": "down"},
+        {"kind": "sign", "id": "q_sign_seam", "x": 16, "y": 1, "when": ["!story.quarry_bought"], "text": "OLD SEAM · Shh. Pebblits napping. Tread softly. — Cobblecrest Miners"},
+        {"kind": "prop", "id": "q_gate", "x": 16, "y": 1, "sprite": "glimmer_gate", "when": ["story.quarry_bought"], "lines": {"else": "A shiny gate bolted across the Old Seam. A plaque: GLOW SEAM · ASSOCIATES ONLY."}},
+        {
+          "kind": "npc",
+          "id": "tobin_gate",
+          "name": "Associate Tobin",
+          "x": 17,
+          "y": 2,
+          "facing": "down",
+          "when": ["story.quarry_bought"],
+          "friendSlot": "TOBIN",
+          "lines": {"story.seal2": "Hale's Seal, huh? Doesn't open this gate, sorry. Nothing does. Have a bright day!", "else": "Associates only past the gate. It's for the Pebblits' safety! Says so on the memo."}
+        },
+        {"kind": "prop", "id": "q_stage_l", "x": 15, "y": 4, "sprite": "stage_bunting", "when": ["!story.quarry_bought"], "lines": {"else": "Bunting in Glimmerwell mint and white. It smells like new paint."}},
+        {"kind": "prop", "id": "q_stage_r", "x": 17, "y": 4, "sprite": "stage_bunting", "when": ["!story.quarry_bought"], "lines": {"else": "A banner: QUARRY OPEN HOUSE · A BRIGHT NEW PARTNERSHIP."}},
+        {"kind": "npc", "id": "dorian_q", "name": "Dorian Pell", "x": 16, "y": 4, "facing": "down", "when": ["!story.quarry_bought"], "scene": "quarry_buyout"},
+        {"kind": "npc", "id": "hale_q", "name": "Master Hale", "x": 13, "y": 6, "facing": "right", "when": ["!story.quarry_bought"], "scene": "quarry_buyout"},
+        {"kind": "npc", "id": "tamsin_q", "name": "Reeve Tamsin", "x": 19, "y": 6, "facing": "left", "when": ["!story.quarry_bought"], "scene": "quarry_buyout"},
+        {"kind": "npc", "id": "rook_q", "name": "Rook", "x": 17, "y": 7, "facing": "up", "when": ["!story.quarry_bought"], "scene": "quarry_buyout"},
+        {"kind": "trigger", "id": "q_buyout", "x": 16, "y": 9, "r": 1, "when": ["!story.quarry_bought"], "scene": "quarry_buyout"},
+        {
+          "kind": "npc",
+          "id": "juniper_q",
+          "name": "Associate Juniper",
+          "x": 14,
+          "y": 17,
+          "facing": "right",
+          "friendSlot": "JUNIPER",
+          "lines": {"story.quarry_bought": "The seam's fenced now. For the Pebblits' safety! ...That's what the memo says.", "else": "Welcome to the open house! Free brochure: 'Glow, brighter by nature.' Ooh, take a sticker too!"}
+        },
+        {"kind": "trainer", "id": "q_sketcher", "x": 11, "y": 16},
+        {"kind": "trainer", "id": "q_mason", "x": 20, "y": 13},
+        {"kind": "pickup", "id": "q_hearty", "x": 3, "y": 4, "item": "hearty_snack", "n": 1},
+        {"kind": "pickup", "id": "q_sip", "x": 28, "y": 4, "item": "energy_sip", "n": 2}
+      ]
+    }
+  },
+  "rooms": {
+    "cc_lantern_in": {
+      "name": "Cobblecrest Lantern House",
+      "kind": "interior",
+      "outdoor": "cobblecrest",
+      "door": "cc_lantern",
+      "backdrop": "town",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {"x": 4, "y": 5},
+      "respawnSpot": {"x": 2, "y": 3, "facing": "up"},
+      "grid": ["#########", "#WWWWWWW#", "#.......#", "#.......#", "#..===..#", "#.......#", "####m####"],
+      "objs": [
+        {"kind": "warp", "id": "cc_lantern_mat", "x": 4, "y": 6, "to": "cobblecrest", "tx": 5, "ty": 5, "facing": "down"},
+        {"kind": "prop", "id": "cc_bed_a", "x": 1, "y": 2, "sprite": "rest_bed", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "cc_bed_b", "x": 2, "y": 2, "sprite": "rest_bed", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "cc_bed_c", "x": 3, "y": 2, "sprite": "rest_bed", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "cc_lantern_light", "x": 5, "y": 2, "sprite": "floor_lantern", "lines": {"else": "The town lantern. Quarry dust drifts through its glow like tiny stars."}},
+        {"kind": "prop", "id": "cc_lamp_rack", "x": 7, "y": 2, "sprite": "miner_lamps", "lines": {"else": "A rack of old miners' lamps, unlit. A tag: 'Retired, like us. — the Miners.'"}},
+        {"kind": "sign", "id": "cc_lantern_note", "x": 7, "y": 4, "text": "A note pinned by the door: \"Rest as long as you like. The quarry's dusty. — Cobblecrest\""}
+      ]
+    },
+    "cc_hall_in": {
+      "name": "Cobblecrest Trial Hall",
+      "kind": "interior",
+      "outdoor": "cobblecrest",
+      "door": "cc_hall",
+      "backdrop": "town",
+      "w": 11,
+      "h": 13,
+      "spawns": null,
+      "zones": [],
+      "safe": {"x": 5, "y": 10},
+      "grid": ["###########", "#WWWWWWWWW#", "#X:::::::X#", "#X:::=:::X#", "#XXXX:XXXX#", "#:::::::::#", "#:::::::::#", "#XXXX:XXXX#", "#:::::::::#", "#:::::::::#", "#:::::::::#", "#::::=::::#", "#####m#####"],
+      "objs": [
+        {"kind": "warp", "id": "cc_hall_mat", "x": 5, "y": 12, "to": "cobblecrest", "tx": 24, "ty": 6, "facing": "down"},
+        {"kind": "npc", "id": "hale", "name": "Master Hale", "x": 5, "y": 2, "facing": "down", "look": "hale", "scene": "hale_trial"},
+        {"kind": "prop", "id": "h2_lamp_l", "x": 3, "y": 2, "sprite": "wall_lantern", "lines": {"else": "A brass lantern. Hale keeps it lit for the Pebblits, not for himself."}},
+        {"kind": "prop", "id": "h2_cairn", "x": 7, "y": 2, "sprite": "cairn", "lines": {"else": "A little cairn of cobbles, one for every keeper who earned a Seal here."}},
+        {"kind": "prop", "id": "h2_seam_b", "x": 5, "y": 4, "sprite": "seam_stone", "when": ["!story.h2_seam_b"], "lines": {"else": "@seam_b"}},
+        {"kind": "trainer", "id": "h2_sweeper", "x": 1, "y": 6},
+        {"kind": "prop", "id": "h2_seam_a", "x": 5, "y": 7, "sprite": "seam_stone", "when": ["!story.h2_seam_a"], "lines": {"else": "@seam_a"}},
+        {"kind": "trainer", "id": "h2_builder", "x": 9, "y": 9},
+        {"kind": "sign", "id": "h2_sign", "x": 1, "y": 11, "text": "Chalk on the wall: STONE STANDS FIRM. TIDE AND BLOOM SPLIT IT. SPARKS DO NOTHING."}
+      ]
+    }
+  },
+  "trainers": {
+    "q_sketcher": {
+      "name": "Lark",
+      "title": "Cliff Sketcher",
+      "map": "cobble_quarry",
+      "x": 11,
+      "y": 16,
+      "facing": "right",
+      "sight": 3,
+      "ai": "basic",
+      "team": [{"form": "gust/1", "level": 18, "moves": ["puff_shot", "gale_slice", "pebble_flick", "kite_swoop"]}, {"form": "stone/0", "level": 19, "moves": ["brace_rock", "pebble_flick", "tumble_charge", "flick_flame"]}],
+      "money": null,
+      "lines": {"intro": "Hold still! I'm sketching the cliffs. Actually, a battle's more fun.", "win": "You've got a good outline, {player}. Bold lines.", "lose": "There. Now you're in my sketchbook. Rest up!"}
+    },
+    "q_mason": {
+      "name": "Hobb",
+      "title": "Stonemason",
+      "map": "cobble_quarry",
+      "x": 20,
+      "y": 13,
+      "facing": "left",
+      "sight": 4,
+      "ai": "basic",
+      "team": [{"form": "mole/1", "level": 19, "moves": ["stoke_up", "seed_toss", "thorn_lash", "burrow_bash"]}, {"form": "stone/1", "level": 20, "moves": ["brace_rock", "pebble_flick", "tumble_charge", "flick_flame"]}],
+      "money": null,
+      "lines": {"intro": "Last day cutting stone here, they say. Let's make it a good one!", "win": "Well laid, {player}. Not a crack in it.", "lose": "Solid work from my lot. Take a breather."}
+    },
+    "h2_builder": {
+      "name": "Cass",
+      "title": "Cairn Builder",
+      "map": "cc_hall_in",
+      "x": 9,
+      "y": 9,
+      "facing": "left",
+      "sight": 8,
+      "ai": "basic",
+      "team": [
+        {"form": "stone/0", "level": 20, "opener": "brace_rock", "moves": ["brace_rock", "pebble_flick", "tumble_charge", "flick_flame"]},
+        {"form": "stone/1", "level": 21, "opener": "brace_rock", "moves": ["brace_rock", "pebble_flick", "tumble_charge", "flick_flame"]}
+      ],
+      "money": null,
+      "lines": {"intro": "Stone stands firm! Watch my Walklings dig in and brace.", "win": "My cairn tumbled! You found the weak spot, {player}.", "lose": "Steady as a cairn. Rest a while and try again."}
+    },
+    "h2_sweeper": {
+      "name": "Bix",
+      "title": "Seam Sweeper",
+      "map": "cc_hall_in",
+      "x": 1,
+      "y": 6,
+      "facing": "right",
+      "sight": 8,
+      "ai": "basic",
+      "team": [
+        {"form": "crab/1", "level": 20, "opener": "brace_rock", "moves": ["brace_rock", "ripple_jab", "tumble_charge", "pebble_flick"]},
+        {"form": "stone/1", "level": 21, "opener": "brace_rock", "moves": ["brace_rock", "pebble_flick", "tumble_charge", "flick_flame"]}
+      ],
+      "money": null,
+      "lines": {"intro": "Bracing isn't just for stone. Anyone can learn to stand firm!", "win": "Worn right down. Hale will like you, {player}.", "lose": "See? Firm as the hill. Come back steadier."}
+    },
+    "hall2_hale": {
+      "name": "Hale",
+      "title": "Trial Master",
+      "map": "cc_hall_in",
+      "x": 5,
+      "y": 2,
+      "facing": "down",
+      "sight": 0,
+      "ai": "leader",
+      "hall": true,
+      "seal": "seal_cobblecrest",
+      "items": {"heal_snack": 1},
+      "onWin": "seal2",
+      "team": [
+        {"form": "stone/0", "level": 21, "moves": ["brace_rock", "pebble_flick", "tumble_charge", "flick_flame"]},
+        {"form": "stone/1", "level": 22, "opener": "brace_rock", "moves": ["brace_rock", "pebble_flick", "tumble_charge", "undertow"]},
+        {"form": "stone/2", "level": 23, "moves": ["brace_rock", "pebble_flick", "tumble_charge", "flick_flame"]}
+      ],
+      "money": null,
+      "lines": {"intro": "Stone stands firm. Show me how a keeper moves it.", "win": "Ha! You moved the hill, {player}. Gently, too.", "lose": "Stone's patient. So am I. Rest, and come back."}
+    },
+    "rival2_rook": {
+      "name": "Rook",
+      "title": "Junior Bright",
+      "map": "cobble_quarry",
+      "x": 17,
+      "y": 7,
+      "facing": "up",
+      "sight": 0,
+      "ai": "basic",
+      "oneShot": "story.rival2",
+      "team": null,
+      "counterTeam": {
+        "ember": [
+          {"form": "moth/1", "level": 19, "moves": ["neon_flash", "zap_tap", "arc_bolt", "puff_shot"]},
+          {"form": "gust/1", "level": 20, "moves": ["updraft", "puff_shot", "gale_slice", "kite_swoop"]},
+          {"form": "tide/1", "level": 21, "moves": ["mist_veil", "ripple_jab", "undertow", "frost_nip"]}
+        ],
+        "tide": [
+          {"form": "dormouse/1", "level": 19, "moves": ["night_veil", "gloom_poke", "frost_nip", "dusk_fang"]},
+          {"form": "gust/1", "level": 20, "moves": ["updraft", "puff_shot", "gale_slice", "kite_swoop"]},
+          {"form": "bloom/1", "level": 21, "moves": ["sap_sip", "seed_toss", "thorn_lash", "pebble_flick"]}
+        ],
+        "bloom": [
+          {"form": "moth/1", "level": 19, "moves": ["neon_flash", "zap_tap", "arc_bolt", "puff_shot"]},
+          {"form": "gust/1", "level": 20, "moves": ["updraft", "puff_shot", "gale_slice", "kite_swoop"]},
+          {"form": "ember/1", "level": 21, "moves": ["stoke_up", "flick_flame", "kiln_rush", "tumble_charge"]}
+        ]
+      },
+      "money": null,
+      "lines": {"intro": "Official Junior Bright, official lanyard. Let's see whose glow shines brighter!", "win": "Okay. Okay! You're really good, {player}.", "lose": "Ha! Junior Bright training works. Told you!"}
+    }
+  },
+  "scenes": {
+    "cobble_arrive": [
+      [
+        "if",
+        "story.rook_pact=race",
+        [["say", "Rook", "Ha! Beat you here! ...By about four seconds. Still counts."]],
+        [["if", "story.rook_pact=together", [["say", "Rook", "See? Together. Now I get to beat you to the Seal, fair and square."]], [["say", "Rook", "{name}! You made it. Welcome to Cobblecrest!"]]]]
+      ],
+      ["say", "Rook", "The open house is up at the quarry. My supervisor's giving a speech!"],
+      ["say", "Rook", "Lantern House is right here, by the way. Rest up first. Trust me."],
+      ["say", "", "The Lantern House glows by the road. If your team ever tires, you'll wake up here now."],
+      ["respawnHere"],
+      ["say", "Rook", "See you up top!"],
+      ["setFlag", "story.cobble_arrived", true]
+    ],
+    "quarry_buyout": [
+      ["say", "", "A crowd fills the quarry floor. Mint-and-white bunting flaps over a little stage."],
+      ["say", "Dorian Pell", "Friends of Cobblecrest! Dorian Pell, Head of Acquisitions. What a quarry! What potential!"],
+      ["say", "Dorian Pell", "Deep in your Old Seam sleeps pure glow. Let's bring it into the light. Together!"],
+      ["say", "Reeve Tamsin", "The town voted last night. The quarry is sold to Glimmerwell Co. It passed by three votes."],
+      ["say", "Master Hale", "Pebblits have napped in that seam since before my grandad was born. Where do they go?"],
+      ["say", "Dorian Pell", "Somewhere comfy, Master Hale! Every unit gets a lovely new home. It's a partnership!"],
+      ["say", "", "Associates roll crates toward the Old Seam. Somewhere in the rock, a soft rumble goes quiet."],
+      ["say", "Rook", "Delivery! Twelve Comfort Lamps for the seam, sir!"],
+      ["say", "Dorian Pell", "Our star Junior Bright! Your official lanyard, as promised. Welcome aboard for real, Rook."],
+      ["say", "Rook", "Thanks, sir! Um. The Walklings under the Wickerglen lamps looked... drained."],
+      ["say", "Dorian Pell", "Tired is just relaxed with bad lighting, Rook. Now, who's your friend?"],
+      [
+        "choice",
+        "What do you say?",
+        [
+          ["Leave the Pebblits be!", [["say", "Dorian Pell", "Passion! I love it. Glimmerwell loves Pebblits too. Very, very much."]]],
+          ["Who are you, really?", [["say", "Dorian Pell", "Just a friend of progress. And a friend of yours, I hope."]]]
+        ]
+      ],
+      ["say", "Dorian Pell", "Rook, show {name} what Junior Bright training looks like. Friendly, of course!"],
+      ["say", "Rook", "You heard him! Our race to the Seal starts right here."],
+      ["battle", "rival2_rook"],
+      ["if", "story.rival2_result=won", [["say", "Rook", "You're good. Really good. Was my training... wrong?"]], [["say", "Rook", "See? The training works! ...It does. Right?"]]],
+      ["say", "Dorian Pell", "Splendid show, both of you! Paperwork waits for no one. Have a bright day!"],
+      ["say", "", "Dorian strolls off. The Associates bolt a shiny gate across the Old Seam."],
+      ["say", "Rook", "He called the Pebblits units. ...He'll explain later. He always explains."],
+      ["say", "Master Hale", "My Trial Hall's open, {name}. Come show me how a keeper moves stone."],
+      ["setFlag", "story.quarry_bought", true]
+    ],
+    "seam_a": [
+      ["say", "", "A seam stone blocks the way. Chalk on its face asks: WHAT SPLITS STONE?"],
+      [
+        "choice",
+        "What splits stone?",
+        [
+          ["Rain and rivers", [["say", "", "Water finds a crack and the stone rolls aside. TIDE moves hit STONE twice as hard!"], ["setFlag", "story.h2_seam_a", true]]],
+          ["Roots that grow", [["say", "", "A root-crack splits it wide and it rolls aside. BLOOM moves hit STONE twice as hard!"], ["setFlag", "story.h2_seam_a", true]]],
+          ["A sharp spark", [["say", "", "Nothing happens. Stone doesn't mind sparks at all: VOLT moves can't touch STONE."]]]
+        ]
+      ]
+    ],
+    "seam_b": [
+      ["say", "", "Another seam stone. Chalk: A BRACED STONE STANDS FIRMER. HOW DO YOU MOVE IT?"],
+      [
+        "choice",
+        "How do you move it?",
+        [
+          ["Just push harder", [["say", "", "You shove. It doesn't budge. While it stays braced, plain force barely dents it."]]],
+          ["Hit where it's weak", [["say", "", "A sharp tap on the weak side and it rolls away. Type beats a brace!"], ["setFlag", "story.h2_seam_b", true]]],
+          ["Wear its guard down", [["say", "", "Bit by bit the brace gives. Lower its DEF or raise your ATK to move braced stone."], ["setFlag", "story.h2_seam_b", true]]]
+        ]
+      ]
+    ],
+    "hale_trial": [
+      [
+        "if",
+        "seal:seal_cobblecrest",
+        [["say", "Master Hale", "Stone's patient, {name}. Visit whenever you like. The kettle's always on."]],
+        [
+          ["say", "Master Hale", "Forty years I dug beside Walklings. Never once with a lamp."],
+          ["say", "Master Hale", "Stone stands firm. Show me how you'd move it."],
+          ["choice", "Begin the trial?", [["Begin trial", [["battle", "hall2_hale"]]], ["Leave", []]]]
+        ]
+      ]
+    ],
+    "seal2": [
+      ["say", "Master Hale", "That's the Cobblecrest Seal. Carry it steady, like a good stone."],
+      ["give", "hearty_snack", 2],
+      ["give", "wake_tonic", 1],
+      ["say", "Master Hale", "A Wake Tonic, too. For the day a friend needs picking up off the ground."],
+      ["say", "Master Hale", "Next Hall's Brinewick, down on the coast. Marisol runs it. Tell her old Hale says hello."],
+      ["setFlag", "story.seal2", true]
+    ],
+    "brinewick_hook": [
+      ["say", "", "A Glimmerwell cart rattles down from the quarry, piled high with crates."],
+      ["say", "Rook", "{name}! I'm riding with the cart to Brinewick. Dorian says it's routine."],
+      ["say", "", "One crate is stencilled BRINEWICK DOCKS. It hums, very softly, like something asleep."],
+      ["say", "Rook", "If it's routine... why does it hum? Never mind. See you on the road!"],
+      ["say", "", "COMING LATER · Brinewick and its Trial Hall. Thanks for playing Cobblecrest!"],
+      ["setFlag", "story.cobble_end", true]
+    ]
+  },
+  "spawnTables": {
+    "_note": "Proposed rows for CREATURES_SLICE §3 SPAWNS: [speciesId, baseWeight, minLv, maxLv]. Authored maps: no 8% any-species roll; starter lines never. BLOOM/TIDE answers to STONE (mole, beetle, crab) are on the table for EMBER players.",
+    "cobble_quarry": {
+      "stage2": 0.1,
+      "table": [["stone", 25, 16, 19], ["mole", 14, 16, 19], ["crab", 10, 16, 19], ["beetle", 8, 16, 18], ["gust", 8, 17, 19], ["frost", 6, 16, 18], ["shade", 6, 17, 19], ["dormouse", 6, 16, 19], ["volt", 5, 17, 19], ["vane", 3, 17, 19]]
+    }
+  },
+  "flags": {
+    "story.rook_pact": "route2_end (patched): 'together' | 'race', read once by cobble_arrive",
+    "story.reached_cobblecrest": "r2_east warp (first step into Cobblecrest)",
+    "story.cobble_arrived": "cobble_arrive: Rook's welcome; also sets world.respawn = 'cobblecrest' (respawnHere)",
+    "story.reached_quarry": "cc_north warp (first step into the quarry)",
+    "story.quarry_bought": "quarry_buyout: the sale, Rook #2; opens the Trial Hall door, gates the Old Seam",
+    "story.rival2_done": "written by results() for oneShot 'story.rival2' (win or loss), like story.rival1_done",
+    "story.rival2_result": "'won' | 'lost', written by results() for oneShot 'story.rival2'",
+    "story.h2_seam_a": "seam_a: first seam stone answered (TIDE/BLOOM split stone)",
+    "story.h2_seam_b": "seam_b: second seam stone answered (how to beat a Brace)",
+    "story.seal2": "seal2 (Hale's onWin), locked id in ICONS_SEALS; S.seals.seal_cobblecrest is set by results()",
+    "story.cobble_end": "brinewick_hook: end of Cobblecrest content (coming-later card)",
+    "trainer.q_sketcher": "auto (BATTLE §7)",
+    "trainer.q_mason": "auto",
+    "trainer.h2_builder": "auto",
+    "trainer.h2_sweeper": "auto",
+    "trainer.hall2_hale": "auto",
+    "trainer.rival2_rook": "auto (win only)",
+    "spotted.q_sketcher": "auto (MAPS_SLICE §6.1)",
+    "spotted.q_mason": "auto",
+    "spotted.h2_builder": "auto",
+    "spotted.h2_sweeper": "auto",
+    "spotted.hall2_hale": "auto (sight 0: never written)",
+    "spotted.rival2_rook": "auto (sight 0: never written)",
+    "item.cc_snack": "auto (pickup)",
+    "item.q_hearty": "auto (pickup)",
+    "item.q_sip": "auto (pickup)"
+  },
+  "reusedFlags": ["story.route2_end", "story.glen_cleared"],
+  "looks": {
+    "_note": "New NPC looks (keeper_art.js look shape, normalizeLook-clean). Outdoor NPCs map by name (LOOK_OF_NAME); room NPCs carry `look`.",
+    "hale": {"skin": "5", "hair": "short", "hairCol": "h", "outfit": "coat", "outfitCol": "m", "accent": "o"},
+    "dorian": {"skin": "2", "hair": "short", "hairCol": "y", "outfit": "coat", "outfitCol": "n", "accent": "l"},
+    "tamsin": {"skin": "6", "hair": "bun", "hairCol": "d", "outfit": "tunic", "outfitCol": "r", "accent": "y"},
+    "dottie": {"skin": "1", "hair": "bun", "hairCol": "r", "outfit": "tunic", "outfitCol": "b", "accent": "w"}
+  },
+  "speakers": {
+    "Rook": "rook",
+    "Master Hale": "hale",
+    "Dorian Pell": "dorian",
+    "Reeve Tamsin": "tamsin",
+    "Shopkeeper Dottie": "dottie",
+    "Associate Juniper": "associate",
+    "Associate Tobin": "associate",
+    "Old Miner": "villager",
+    "Pim": "villager",
+    "Ally A": "villager"
+  },
+  "newSteps": [],
+  "pacingStart": {"solo": 22, "shared": 20},
+  "damageCheckLv": {"outside": 21, "hall": 23, "_note": "starter level used by the damage table: quarry + Rook at 21, Hall at 23 (at or under the shared-XP estimate, so conservative)"},
+  "engineAsks": {
+    "respawn_cobblecrest": "respawnHere + save.js world.respawn accept 'cobblecrest' (today: hearthmoor | fernbrook only). Additive; no save.v bump.",
+    "oneShot_prefix": "oneShot may be a flag prefix string: results() writes <prefix>_done / <prefix>_result. true keeps meaning 'story.rival1'.",
+    "opener": "Optional team-member field `opener: moveId`: the AI uses it on that member's first action after entering if it has uses left and the stat isn't capped.",
+    "room_trainers": "Trainer objects inside rooms (spotting, battle, win line) and an 11x13 room.",
+    "shop_title": "Shop panel title from the object's name (today fixed 'Travel Shelf'), so an npc with `shop` reads 'Cairnside Supplies'.",
+    "respawnIn_cobblecrest": "cobblecrest.respawnIn -> cc_lantern_in (same mechanism as hearthmoor).",
+    "mapdata": "data/mapdata.js gains act1_route2 + cobblecrest so save.js MAP_SIZE knows the new map ids.",
+    "wild_second_form_level": "Build note: the live wildLv rolls second forms at Lv 6-8 and ignores the table range; on Route 2 and the quarry they should use the row's range."
+  },
+  "artRequests": [
+    {"id": "tile_K", "what": "rock face tile (solid): layered slate m/d with h highlights; must read as a wall next to T trees", "priority": "must"},
+    {"id": "tile_c", "what": "gravel tile (walkable): pale h/w pebbles on m ground; distinct from path p", "priority": "must"},
+    {"id": "room_tiles", "what": "Trial Hall slate floor ':' (m/d flagstones) and rock pillar 'X' (d/k)", "priority": "must"},
+    {"id": "seam_stone", "what": "seam stone prop (see roomFurniture)", "priority": "must"},
+    {"id": "cairn", "what": "Miners' Cairn prop, outdoor + indoor", "priority": "must"},
+    {"id": "stall_counter", "what": "Cairnside Supplies stall counter: wood o, striped awning r/w, jars", "priority": "must"},
+    {"id": "stage_bunting", "what": "open-house stage post with mint/white bunting (l/w)", "priority": "should"},
+    {"id": "miner_lamps", "what": "miners' lamp rack (see roomFurniture)", "priority": "could"},
+    {"id": "npc_hale", "what": "Master Hale: grey short hair, slate coat, orange scarf, older build (look 'hale')", "priority": "must"},
+    {"id": "npc_dorian", "what": "Dorian Pell: neat blond hair, navy suit-coat, mint Glimmerwell pin (look 'dorian')", "priority": "must"},
+    {"id": "npc_tamsin_dottie", "what": "Reeve Tamsin (red tunic, chain of office y) and Shopkeeper Dottie (red bun, blue apron)", "priority": "should"},
+    {"id": "rook_lanyard", "what": "Rook with a mint Junior Bright lanyard after story.quarry_bought (accent swap)", "priority": "could"},
+    {"id": "roof_slate", "what": "Hall roof override colour m (slate) via roofs.hall", "priority": "should"},
+    {"id": "stone_line_2", "what": "OPTIONAL: a second STONE line (3 forms) via CREATURES_BATCH2; Hale's lead slot swaps to it when it exists", "priority": "could"}
+  ],
+  "newNames": ["Cobblecrest Quarry", "Old Seam", "Bright Quarry", "Miners' Cairn", "Cairnside Supplies", "Tamsin", "Dottie", "Pim", "Lark", "Hobb", "Cass", "Bix", "Seam Sweeper", "Cairn Builder", "Cliff Sketcher"],
+  "friendSlots": {
+    "JUNIPER": "Associate Juniper (NEEDS DESIGN / FRIEND SLOT): brochure cameo in the quarry, no battle",
+    "TOBIN": "Associate Tobin (NEEDS DESIGN / FRIEND SLOT): guards the Old Seam gate after the sale, no battle",
+    "ALLY_A": "Ally A (FRIEND SLOT, optional): one line in Cobblecrest after the sale; cut if the friend isn't ready"
+  }
+}
