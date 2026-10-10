@@ -78,6 +78,10 @@ const PPSave = (() => {
     if (has(q, 'sr')) q.sr = fin(q.sr) ? Math.max(0, Math.floor(q.sr)) : 0;
     if (!has(q, 'nick') || (q.nick !== null && typeof q.nick !== 'string')) q.nick = null;
     if (!has(q, 'origin') || typeof q.origin !== 'string') q.origin = originDefault;
+    if (has(q, 'metPlace')) {
+      const place = typeof q.metPlace === 'string' ? q.metPlace.replace(/[<>{}]/g, '').trim().slice(0, 40) : '';
+      if (!place) delete q.metPlace; else q.metPlace = place;
+    }
     // TYPES_STATS §5: battle XP. Missing/invalid -> the old display level (1 + floor(xp/10)) kept within Lv 5..10.
     if (!(Number.isInteger(q.bx) && q.bx >= 0)) q.bx = STAT_RULES.bxForLevel(migratedLevel(q.xp));
     else if (q.bx > BX_CAP) q.bx = BX_CAP;

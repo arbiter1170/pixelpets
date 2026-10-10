@@ -198,12 +198,15 @@ function showTab(name){
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
   $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   clearMoves();
-  if (name === 'col') renderCollection();
+  if (name === 'col') {
+    if (S && !S.flags['story.journal_opened']) { S.flags['story.journal_opened'] = true; save(); }
+    renderCollection();
+  }
   if (name === 'friends') { $('#friendCode').textContent = friendCode(); renderKeeperName(); }
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -267,6 +270,8 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitA
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
 function updateHUD(){
   syncBagBtns();
+  syncJournalBtn();
+  syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
   if (!p) return;
   const st = SPECIES[spi(p)].stages[p.stage];
@@ -484,6 +489,17 @@ function doAction(act){
   const xp = grantCareXp(p, CARE_XP[act]), cx = careXpToday(p); xpChimeDelay = 0;
   if (cx.xp >= CARE_XP_DAILY_CAP && !cx.told) { cx.told = true; sfx('cap', 0.6); if (!msg.startsWith('Warm Bowl')) msg = petName(p) + ' learned all it can from care today. Go for a walk!'; }
   else if (act === 'play' && xp) msg += ' +' + xp + 'XP';
+  const careKey = 'story.care_' + act;
+  if (!S.flags[careKey]) {
+    S.flags[careKey] = true;
+    const nm = petName(p);
+    if (!String(msg).startsWith('Warm Bowl') && !(cx.xp >= CARE_XP_DAILY_CAP)) {
+      msg = act === 'feed' ? nm + ' crunches the first bite and looks up at you.'
+        : act === 'play' ? nm + ' bounces in a little circle. First game!'
+        : nm + ' curls up for the first nap with you.';
+    }
+    queueEmote(act === 'rest' ? 'emote_sleep' : 'emote_heart', act === 'rest' ? 200 : 500);
+  }
   toast(msg);
   updateHUD(); save();
 }
@@ -692,6 +708,13 @@ if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
+// Point the new keeper outside, then (after Rook) toward the grass. Appended here so the design JSON stays verbatim.
+if (SCENES.starter) SCENES.starter.push(
+  ['say', 'Warden Ilse', 'When you step outside, take the east path. Rook is waiting by the gate.'],
+  ['say', 'Warden Ilse', 'Wild Walklings wander in the grass. Walk up to one, and it may come with you.']);
+if (SCENES.rival1) SCENES.rival1.push(
+  ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
+  ['say', '', 'A wild Walkling waits in the grass, just off the path.']);
 const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
@@ -812,9 +835,23 @@ function tryStep(d){
   S.world.x = nx; S.world.y = ny;
   followerStep();
 }
+function earlyWalk(){
+  const p = pet();
+  if (!p || !S.flags['story.starter_received'] || S.flags['story.early_done']) return;
+  if (S.flags['story.early_steps'] == null && S.steps > 1) { S.flags['story.early_done'] = true; return; }
+  const n = (+S.flags['story.early_steps'] || 0) + 1;
+  S.flags['story.early_steps'] = n;
+  const nm = petName(p);
+  if (n === 1) toast(nm + ' trots along. The east path leads out of town.');
+  else if (n === 8) toast('Keep holding the pad. Wild Walklings like the grass.');
+  else if (n === 16 && !S.flags['story.rival1_done']) toast('Rook is waiting by the east gate.');
+  if (n >= 16) S.flags['story.early_done'] = true;
+  if (n === 1 || n === 8 || n === 16) save();
+}
 function onLand(){
   const p = pet();
   S.steps++; if (S.steps % 2 === 0) sfx('step');   // quiet footstep on every other step
+  earlyWalk();
   let found = false;
   bump.talked = null;                        // §4.1: any completed step ends "just talked to"
   if (p) {                                   // energy/hunger/step XP only with a partner
@@ -1123,8 +1160,8 @@ function arriveAt(at){
   useMap(at.map);
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
-  resetWild(); bump.talked = null; markMapSeen();
-  placeFollower(); renderEnv(); save();
+  resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
+  placeFollower(); placeGuide(); renderEnv(); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
 }
 function enterDoor(dr){
@@ -1175,6 +1212,7 @@ function drawMap(t){
       }
     }
   for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') g.drawImage(WART.door, o.x*TS - cx, (o.y-1)*TS - cy);
+  drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
     g.fillStyle = canSpot(o) ? 'rgba(244,80,80,.35)' : 'rgba(160,160,160,.3)'; sightLine(o).forEach(c => g.fillRect(c.x*TS - cx, c.y*TS - cy, TS, TS)); }
   if (walk.target) { g.strokeStyle = PAL.y; g.lineWidth = 1; g.strokeRect(walk.target.x*TS - cx + .5, walk.target.y*TS - cy + .5, 15, 15); }
@@ -1189,7 +1227,9 @@ function drawMap(t){
     const fx = Math.round(fol.fx * TS - cx) - 1, fy = Math.round(fol.fy * TS - cy) - 2 + (isFainted(p) ? 1 : 0);
     if (fx < -18 || fy < -18 || fx > VW || fy > VH) return;
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
-    g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - followerBob(t));
+    const bob = followerBob(t);
+    g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - bob);
+    if (earlyBuddy() && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob);
     grassOver(fol.fx, fol.fy);
   };
   // y-sorted so objects, creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
@@ -1205,8 +1245,79 @@ function drawMap(t){
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
   drawBubbles(g, cx, cy, t);
   if (!isRoom()) drawWeather(g, VW, VH, t);   // weather tint is skipped indoors (INTERIORS §2.1)
+  drawExitCue(g, cx, cy, t);
   if (walk.intro) { const k = Math.floor((t - walk.intro) / 120) % 2; if (k) { g.fillStyle = PAL.w; g.fillRect(0,0,VW,VH); } }
   if (fade.busy) { const e = (now() - fade.t0) / (FADE_MS / 2); g.globalAlpha = clamp(e <= 1 ? e : 2 - e, 0, 1); g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH); g.globalAlpha = 1; }
+}
+// Cobblecrest only: ridge, chimney, windows and corner stones outside; banners, warm light and flagstone flecks inside.
+// Shared roof and wall tiles also draw Hearthmoor and Fernbrook, so this pass never edits those sprites.
+function drawCobbleTrim(g, cx, cy, t){
+  const town = CUR.id === 'cobblecrest', lantern = CUR.id === 'cc_lantern_in', hall = CUR.id === 'cc_hall_in';
+  if (!town && !lantern && !hall) return;
+  const slate = (x, y) => {
+    if (!CUR.roofs) return false;
+    for (const r of Object.values(CUR.roofs)) if (r && x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1 && r.col === 'm') return true;
+    return false;
+  };
+  const doorWall = (x, y) => CUR.objs.some(o => o.kind === 'door' && present(o) && o.x === x && o.y === y + 1);
+  for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
+    const ch = MAP[ty][tx], X = tx * TS - cx, Y = ty * TS - cy;
+    if (town && ch === 'R') {
+      const up = tileAt(tx, ty - 1) === 'R', down = tileAt(tx, ty + 1) === 'R', left = tileAt(tx - 1, ty) === 'R';
+      if (!up) { g.fillStyle = slate(tx, ty) ? PAL.w : PAL.y; g.fillRect(X, Y, 16, 2); g.fillStyle = PAL.k; g.fillRect(X, Y + 2, 16, 1); }
+      if (!down) { g.fillStyle = PAL.k; g.fillRect(X, Y + 14, 16, 2); }
+      if (!up && !left) {
+        g.fillStyle = PAL.m; g.fillRect(X + 2, Y + 1, 4, 6);
+        g.fillStyle = PAL.k; g.fillRect(X + 2, Y + 1, 4, 1);
+        g.fillStyle = PAL.d; g.fillRect(X + 5, Y + 2, 1, 5);
+        if (Math.floor(t / 320) % 2 === 0) { g.fillStyle = PAL.h; g.fillRect(X + 3, Y, 1, 1); }
+      }
+    } else if (town && ch === 'H' && !doorWall(tx, ty)) {
+      if (tileAt(tx, ty + 1) !== 'H') {
+        g.fillStyle = PAL.k; g.fillRect(X + 4, Y + 4, 8, 7);
+        g.fillStyle = PAL.c; g.fillRect(X + 5, Y + 5, 6, 5);
+        g.fillStyle = PAL.s; g.fillRect(X + 5, Y + 5, 2, 2);
+        g.fillStyle = PAL.k; g.fillRect(X + 7, Y + 5, 1, 5); g.fillRect(X + 5, Y + 7, 6, 1);
+        g.fillStyle = PAL.g; g.fillRect(X + 4, Y + 11, 8, 2);
+        g.fillStyle = PAL.l; g.fillRect(X + 5, Y + 11, 2, 1);
+      }
+      if (tileAt(tx - 1, ty) !== 'H' && tileAt(tx - 1, ty) !== 'R') { g.fillStyle = PAL.w; g.fillRect(X, Y, 2, 16); }
+      if (tileAt(tx + 1, ty) !== 'H' && tileAt(tx + 1, ty) !== 'R') { g.fillStyle = PAL.w; g.fillRect(X + 14, Y, 2, 16); }
+    } else if ((lantern || hall) && ch === 'W' && tx % 2 === 0 && tx > 0 && tx < MW - 1) {
+      const col = tx % 4 === 0 ? PAL.r : PAL.o;
+      g.fillStyle = PAL.k; g.fillRect(X + 5, Y + 2, 6, 8);
+      g.fillStyle = col; g.fillRect(X + 6, Y + 3, 4, 6);
+      g.fillStyle = PAL.y; g.fillRect(X + 7, Y + 5, 2, 2);
+      g.fillStyle = PAL.m; g.fillRect(X + 7, Y + 1, 2, 2);
+    } else if (lantern && (ch === '.' || ch === '=') && (tx * 3 + ty * 5) % 4 === 0) {
+      g.fillStyle = PAL.h; g.fillRect(X + 2, Y + 12, 3, 1); g.fillRect(X + 11, Y + 4, 1, 2);
+    } else if (hall && ch === ':') {
+      if ((tx + ty) % 3 === 0) { g.fillStyle = PAL.d; g.fillRect(X + 2, Y + 12, 5, 2); }
+      if ((tx * 2 + ty) % 5 === 0) { g.fillStyle = PAL.h; g.fillRect(X + 11, Y + 3, 2, 2); }
+    } else if (hall && ch === 'X') { g.fillStyle = PAL.y; g.fillRect(X + 4, Y + 6, 8, 1); }
+  }
+  if (town) for (const o of CUR.objs) if (o.kind === 'door' && present(o)) {
+    const X = o.x * TS - cx, Y = o.y * TS - cy;
+    g.fillStyle = PAL.o; g.fillRect(X + 3, Y + 12, 10, 3); g.fillStyle = PAL.y; g.fillRect(X + 4, Y + 12, 8, 1);
+  }
+  if (lantern || hall) {
+    g.save(); g.globalAlpha = 0.4; g.fillStyle = PAL.y;
+    for (const o of CUR.objs) if (o.sprite === 'floor_lantern' || o.sprite === 'wall_lantern') {
+      const X = o.x * TS - cx, Y = o.y * TS - cy;
+      g.fillRect(X - 2, Y + 10, 20, 12); g.fillRect(X + 2, Y + 6, 12, 8);
+    }
+    g.restore();
+  }
+}
+// A small yellow chevron on Hearthmoor's east path until the keeper has been out on Route 1.
+function drawExitCue(g, cx, cy, t){
+  if (!S || CUR.id !== 'hearthmoor' || !S.flags['story.starter_received'] || S.flags['story.reached_route1']) return;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
+  const x = 20 * TS - cx + 5, y = 8 * TS - cy - 4 - bob;
+  g.fillStyle = PAL.y;
+  g.fillRect(x, y + 2, 2, 2); g.fillRect(x + 2, y, 2, 2); g.fillRect(x + 2, y + 4, 2, 2); g.fillRect(x + 4, y + 2, 2, 2);
+  g.fillStyle = PAL.k; g.fillRect(x, y + 1, 1, 1); g.fillRect(x + 5, y + 2, 1, 1);
 }
 const WART = buildWorldArt();
 function drawObj(g, o, cx, cy, VW, VH, t){
@@ -1266,10 +1377,18 @@ function followerStep(){                       // keeper started a step from wal
   fol.from = { x: fol.x, y: fol.y }; fol.to = { x: tx, y: ty };
   fol.facing = dirName(tx - fol.x, ty - fol.y); fol.x = tx; fol.y = ty;
 }
+function earlyBuddy(){
+  if (!S || !pet() || !S.flags['story.starter_received'] || S.flags['story.early_done']) return false;
+  const n = +S.flags['story.early_steps'] || 0;
+  return n > 0 && n < 16;
+}
 function followerBob(t){                       // normal: twice per step / every 500 ms idle; Tired: half speed
   const p = pet(), moving = !!(fol.to && walk.to);
-  if (p && isFainted(p)) return moving ? S.steps % 2 : Math.floor(t / 1000) % 2;   // napping after a faint: half-speed bob
-  return moving ? Math.floor(walk.prog * 2) % 2 : Math.floor(t / 500) % 2;
+  let b;
+  if (p && isFainted(p)) b = moving ? S.steps % 2 : Math.floor(t / 1000) % 2;   // napping after a faint: half-speed bob
+  else b = moving ? Math.floor(walk.prog * 2) % 2 : Math.floor(t / 500) % 2;
+  if (earlyBuddy()) b += Math.floor(t / 180) % 2;
+  return b;
 }
 const followerAt = (tx, ty) => fol.x != null && followerOn() && ((fol.x === tx && fol.y === ty) || (Math.round(fol.fx) === tx && Math.round(fol.fy) === ty));
 function toggleFollower(){
@@ -1487,6 +1606,7 @@ function endScene(){
   for (const o of CUR.objs) if (o.kind === 'trigger' && !(Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y) <= (o.r || 0))) delete mapRT.trig[o.id];
   if (sc.deferRespawn) respawnAfterWipe();
   else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
+  if (sc.id === 'rival1') placeGuide();
 }
 const pend = f => scene.pending.push(f);
 // Scene cast: someone a scene brings into a room who has no map object there. MAPS_SLICE §8 `starter`: "The door bangs open.
@@ -1542,7 +1662,7 @@ async function execStep(st){
     case 'showBasket': { sc.skip = false; sc.vars.suggest = suggestLine(sc.vars); sc.vars.line = await basketPick(a, sc.vars.suggest); sfx('befriend'); return; }
     case 'givePet': {
       const id = a === '$line' ? sc.vars.line : a, si = SP_INDEX[id]; if (si == null) return;
-      const np = newPet(si, 0, 'starter'); sc.view.pet = np; sc.view.nick = undefined;
+      const np = newPet(si, 0, 'starter'); np.metPlace = 'Hearthmoor'; sc.view.pet = np; sc.view.nick = undefined;
       pend(() => { S.party.push(np); S.partnerId = np.id; markCaught(si, 0); scene && scene.toasts.push((cleanNick(scene.view.pet === np && scene.view.nick) || petName(np)) + ' joined you!'); });   // the nickname given later in the same scene, else the species
       return;
     }
@@ -1797,6 +1917,23 @@ function spawnWild(sp, stage, at){
     born: c, life: rnd(WILD_LIFE_S) * 1000, idleUntil: c + rnd(WILD_IDLE_MS), phase: Math.random() * 3000, shyUntil: 0 };
   wild.list.push(w); return w;
 }
+// One nearby wild on Hearthmoor after Rook's first battle, until it is met or the keeper already has a second friend.
+const GUIDE_SPOTS = [[20, 9], [18, 9], [19, 7], [18, 7]];
+function placeGuide(){
+  if (!S || CUR.id !== 'hearthmoor' || !S.flags['story.rival1_done'] || S.flags['story.first_wild_met'] || allPets().length >= 2) return null;
+  if (wild.list.some(w => w.guide)) return null;
+  const spot = GUIDE_SPOTS.find(([x, y]) => {
+    const ch = tileAt(x, y);
+    return (ch === 'g' || ch === 't' || ch === 'f') && !solid(x, y) && !playerOn(x, y) && !wildAt(x, y) && !(fol.x === x && fol.y === y);
+  });
+  if (!spot) return null;
+  const id = COUNTER[S.flags['story.starter_line']] || 'tide', sp = SP_INDEX[id];
+  if (sp == null) return null;
+  const w = spawnWild(sp, 0, spot);
+  if (!w) return null;
+  w.lv = 3; w.guide = true; w.life = 1e12;
+  return w;
+}
 function removeWild(w, poof){
   wild.list = wild.list.filter(o => o !== w);
   if (wild.chase === w.id) { wild.chase = null; walk.target = null; }
@@ -1814,9 +1951,9 @@ function updateWild(dt){
       continue;
     }
     const chased = wild.chase === w.id;
-    if (c - w.born > w.life && !chased) { removeWild(w, onScreen(w)); continue; }       // wandered off
+    if (!w.guide && c - w.born > w.life && !chased) { removeWild(w, onScreen(w)); continue; }       // wandered off
     const far = Math.abs(w.x - S.world.x) > 11 || Math.abs(w.y - S.world.y) > 9;
-    if (far && !onScreen(w) && c - w.born > 20000) { removeWild(w, false); continue; }
+    if (!w.guide && far && !onScreen(w) && c - w.born > 20000) { removeWild(w, false); continue; }
     if (c < w.idleUntil || chased && c > w.shyUntil) continue;                         // a chased creature waits for you
     const dirs = Object.values(DIRS).sort(() => Math.random() - 0.5);
     if (c < w.shyUntil) dirs.sort((a, b) => (Math.abs(w.x + b[0] - S.world.x) + Math.abs(w.y + b[1] - S.world.y)) - (Math.abs(w.x + a[0] - S.world.x) + Math.abs(w.y + a[1] - S.world.y)));
@@ -1836,6 +1973,7 @@ function drawWild(g, w, cx, cy, VW, VH, t){
   if (age < 400) g.globalAlpha = age / 400;                              // fade in on spawn
   g.drawImage(SPR[w.sp][w.stage][(tt % 2800) < 120 ? 'b' : 'n'], x, y0 - bob);
   g.globalAlpha = 1;
+  if (w.guide) drawGlyph(g, 'spark', x + 4, y0 - 7 - (Math.floor(tt / 280) % 2));
   const gx = Math.round(w.fx), gy = Math.round(w.fy);
   if (MAP[gy] && MAP[gy][gx] === 't') g.drawImage(TILES.t, 0, 10, 16, 6, gx*TS - cx, gy*TS - cy + 10, 16, 6);
   if (w.stage > 0 && Math.floor(tt / 350) % 5 === 0) drawGlyph(g, 'spark', x + 14, y0 - 2);   // rare form twinkle
@@ -2041,7 +2179,7 @@ function openBattle(o){
   clearMoves(); closeSheet(null);
   const B = battle; B.id++;
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
-    fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null,
+    fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null,
     fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0 });
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
@@ -2091,7 +2229,9 @@ function closeBattle(){
     if (B.result === 'befriended') removeWild(w, false);                       // it joined you
     else if (B.result === 'win' || B.result === 'fled') removeWild(w, true);   // it wandered off
     else { w.idleUntil = 0; w.shyUntil = wild.clock + 1500; }                   // run / team wipe: it stays and scoots away
+    if (w.guide && (B.result === 'befriended' || B.result === 'win' || B.result === 'fled')) S.flags['story.first_wild_met'] = true;
   }
+  const cele = B.journalNew; B.journalNew = null;
   if (B.result === 'run') toast('You slipped away safely.');
   const onEnd = B.onEnd; B.onEnd = null;
   musicHold = true;
@@ -2100,6 +2240,7 @@ function closeBattle(){
   updateHUD(); save();
   if (onEnd) onEnd(B.result);
   const back = trackFor(CUR); if (back) PPSound.music(back, { fadeOut: 300, minDelay: 800, fadeIn: 600, restart: true, afterStingers: true });
+  if (cele && !onEnd && !scene) openJournalEntry(Object.assign({ celebrate: true }, cele));
 }
 // §7.2 team wipe: back to world.respawn's Lantern House (Hearthmoor: inside, by the beds; INTERIORS slicePatch respawnIn).
 // Nothing lost, nobody healed, timers keep running.
@@ -2285,12 +2426,16 @@ async function befriendTry(id){
   const B = battle, f = curFoe(), m = enc.mark;
   enc.freezeUntil = now() + 500;
   if (m >= enc.zone[0] && m <= enc.zone[1]) {
-    const np = newPet(f.si, f.stage, 'wild', f.level); markCaught(f.si, f.stage);   // befriending is never blocked by the cap, only its XP
+    const form = formOf(f.si, f.stage), journalNew = !S.dex.caught[form];
+    const np = newPet(f.si, f.stage, 'wild', f.level); np.metPlace = metPlaceName(); markCaught(f.si, f.stage);   // befriending is never blocked by the cap, only its XP
     if (f.hp < f.maxHp) np.hpNow = f.hp;
     if (!B.storyMoves) np.moves = f.moves.map(x => x.id).filter(x => x !== 'wobble');       // keeps the foe's moves (§2)
     if (!np.moves.length) np.moves = defaultMoves(f.form, f.level);
     if (B.faded) { np.faded = B.faded; np.fc = { d: dayKey(Date.now()), sum: 0, n: 0 }; }   // CREATURES_SLICE §5: faded: days left (additive field)
     if (B.story) S.flags['story.' + B.story] = true;                                          // a story creature: its flag is set on befriend only
+    const firstWild = !S.flags['story.first_wild_met'];
+    S.flags['story.first_wild_met'] = true;
+    if (journalNew) B.journalNew = { si: f.si, stage: f.stage, id: np.id, firstWild };
     const toBox = S.party.length >= PPSave.PARTY_MAX; (toBox ? S.box : S.party).push(np);
     sfx('stinger_befriend'); xpChimeDelay = 0.75;
     const gx = grantExploreXp(pet(), BEFRIEND_XP); xpChimeDelay = 0; pet().happy = clamp(pet().happy + 5, 0, 100);
@@ -2518,11 +2663,37 @@ function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); draw
 function paintUiIcons(){
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
-  $$('.ico-hud').forEach(c => { const gr = (REGION_MAP[c.dataset.hud] || {}).grid; if (!gr) return; const g = ctx(c); g.clearRect(0,0,8,8);
+  $$('.ico-hud').forEach(c => {
+    if (c.dataset.hud === 'icon_book') { iconCanvas(c, ICONS.book, PAL.y); return; }
+    const gr = (REGION_MAP[c.dataset.hud] || {}).grid; if (!gr) return; const g = ctx(c); g.clearRect(0,0,8,8);
     gr.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } })); });
   paintAcorn($('#bagAcorn')); paintAcorn($('#shopAcorn'));
 }
 function bagVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene); }
+function journalVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene && !(battle && battle.on)); }
+function syncJournalBtn(){
+  const b = $('#journalBtn'); if (!b) return;
+  const on = journalVisible();
+  b.hidden = !on;
+  b.classList.toggle('pulse', on && !S.flags['story.journal_opened']);
+}
+function openJournalTab(){
+  if (!journalVisible() || overlayOpen()) { sfx('denied'); return; }
+  sfx('tap'); showTab('col'); syncJournalBtn();
+}
+const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
+function walkTipText(){
+  if (!S || !S.flags['story.starter_received']) return WALK_TIP_DEFAULT;
+  const n = +S.flags['story.early_steps'] || 0;
+  if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
+  if (!S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
+  return WALK_TIP_DEFAULT;
+}
+function syncWalkTip(){
+  const el = $('#walkTip'); if (!el) return;
+  const html = walkTipText();
+  if (el.innerHTML !== html) el.innerHTML = html;
+}
 function syncBagBtns(){
   const on = bagVisible() && !(battle && battle.on);
   const w = $('#walkBagBtn'), p = $('#petBagBtn');
@@ -3071,7 +3242,64 @@ function startOver(){
   location.reload();
 }
 
-/* ---------- collection ---------- */
+/* ---------- collection / journal album ---------- */
+const LORE = {
+  ember: 'Pipkits nap beside warm hearths and wake up ready to chase.',
+  tide: 'Drizzlets keep to quiet water and hum when the rain starts.',
+  bloom: 'Sproutbuns hide in tall grass until a patient keeper sits down.',
+  stone: 'Pebblits nap on cobbles and show miners where the seam is kind.',
+  volt: 'Zipmites gather under lanterns and street lamps after dark.',
+  frost: 'Chillbits drift in with the first snow and leave a small hum behind.',
+  gust: 'Puffkins ride the high wind and land only when the air goes still.',
+  shade: 'Duskmotes curl up in doorways and open one eye after sunset.',
+  beetle: 'Pomlets shell themselves in fallen fruit and keep the orchard rows.',
+  mole: 'Loamlets dig soft tunnels and leave a seed in every one.',
+  crab: 'Clinkits line their burrows with beach glass from the stream.',
+  moth: 'Fuzzwicks follow any warm glow, even a miner\'s old lamp.',
+  vane: 'Vanelets turn with the weather and are rarely seen on a calm day.',
+  dormouse: 'Dozmice hum in the cold and glow faintly when the path is dark.',
+};
+function metPlaceName(){
+  const id = isRoom() ? outdoorId() : (CUR && CUR.id);
+  const m = id && WORLD[id];
+  return String((m && m.name) || (CUR && CUR.name) || 'the wild').slice(0, 40);
+}
+function journalPet(si, stage){
+  const id = SPECIES[si].id;
+  return allPets().find(p => p.species === id && p.stage === stage) || null;
+}
+function metLine(p){
+  if (!p) return 'You met them on a walk.';
+  if (p.origin === 'starter') return 'Warden Ilse trusted them to you in Hearthmoor.';
+  if (typeof p.metPlace === 'string' && p.metPlace) return 'You met them while walking in ' + p.metPlace + '.';
+  return 'You met them on a walk.';
+}
+function openJournalEntry(o){
+  if (!$('#ovJournal').hidden) return;
+  if (overlayOpen()) return;
+  const sp = SPECIES[o.si], st = sp && sp.stages[o.stage]; if (!sp || !st) return;
+  const form = formOf(o.si, o.stage), caught = !!S.dex.caught[form];
+  const p = o.id ? petById(o.id) : journalPet(o.si, o.stage);
+  spriteCanvas($('#jnIcon'), o.si, o.stage, 'n', !!(p && isFaded(p)));
+  $('#jnTitle').textContent = st.name;
+  $('#jnStars').textContent = '\u2605'.repeat(o.stage + 1) + '\u2606'.repeat(2 - o.stage);
+  const chip = $('#jnType'); chip.textContent = sp.type; chip.className = 'type-badge t-' + sp.type;
+  $('#jnBlurb').textContent = sp.blurb || '';
+  const lore = LORE[sp.id] || '';
+  $('#jnLore').hidden = !lore; $('#jnLore').textContent = lore;
+  let met = caught ? metLine(p) : "You've seen one. It hasn't joined you yet.";
+  if (o.celebrate && o.firstWild) met += ' Your first wild page.';
+  $('#jnMet').textContent = met;
+  $('#jnKicker').hidden = !o.celebrate;
+  $('#jnClose').textContent = o.celebrate ? 'YAY!' : 'CLOSE';
+  $('#ovJournal').hidden = false; lockTabs(true);
+  if (!o.celebrate) sfx('tap');
+  $('#jnClose').focus({ preventScroll: true });
+}
+function closeJournal(){
+  if ($('#ovJournal').hidden) return;
+  $('#ovJournal').hidden = true; lockTabs(false); sfx('tap');
+}
 function renderCollection(){
   const list = $('#ownedList'); list.innerHTML = '';
   $('#ownedCount').textContent = '(' + allPets().length + ')';
@@ -3080,10 +3308,11 @@ function renderCollection(){
     const c = document.createElement('div'); c.className = 'card' + (inBox ? ' boxed' : '');
     const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p));
     const info = document.createElement('div');
-    info.innerHTML = '<div class="nm"></div><div class="sub"></div>';
-    info.firstChild.textContent = petName(p);
-    info.lastChild.textContent = (cleanNick(p.nick) ? nameOf(spi(p), p.stage) : SPECIES[spi(p)].type) + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
-    const hb = hpBadge(p); if (hb) { const t = document.createElement('span'); t.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); t.textContent = hb; info.lastChild.append(t); }
+    info.innerHTML = '<div class="nm"></div><div class="sub"></div><div class="met"></div>';
+    info.children[0].textContent = petName(p);
+    info.children[1].textContent = (cleanNick(p.nick) ? nameOf(spi(p), p.stage) : SPECIES[spi(p)].type) + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
+    info.children[2].textContent = metLine(p);
+    const hb = hpBadge(p); if (hb) { const t = document.createElement('span'); t.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); t.textContent = hb; info.children[1].append(t); }
     const open = document.createElement('button'); open.type = 'button'; open.className = 'card-open'; open.setAttribute('aria-label', 'Stats for ' + petName(p));
     const ico = document.createElement('span'); ico.className = 'ico'; ico.append(cv); open.append(ico, info);
     open.addEventListener('click', () => openStatsCard(p.id));
@@ -3101,7 +3330,9 @@ function renderCollection(){
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
   SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
     const f = formOf(si, k), seen = !!S.dex.seen[f] || owned.has(f); if (seen) n++;
-    const cell = document.createElement('div'); cell.className = 'cell';
+    const cell = document.createElement(seen ? 'button' : 'div');
+    cell.className = 'cell' + (seen ? ' dex-cell' : '');
+    if (seen) { cell.type = 'button'; cell.setAttribute('aria-label', st.name + ', journal page'); cell.addEventListener('click', () => openJournalEntry({ si, stage: k })); }
     const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, si, k, seen ? 'n' : 's');
     if (!seen && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
     const lb = document.createElement('div'); lb.textContent = seen ? st.name : '???'; if (!seen) lb.className = 'unk';
@@ -3164,6 +3395,7 @@ function bindInput(){
   $('#petCanvas').addEventListener('pointerdown', e => { if (screen === 'pet' && !overlayOpen() && petHit(e.clientX, e.clientY)) { e.preventDefault(); patPet(); } });   // CARE_LOOP A: pats
   $('#petBagBtn').addEventListener('click', () => openBag());
   $('#walkBagBtn').addEventListener('click', () => openBag());
+  $('#journalBtn').addEventListener('click', openJournalTab);
   $('#mapBtn').addEventListener('click', openMap);
   $('#ovMap').addEventListener('click', () => closeMap());   // tap anywhere (map, box, background, CLOSE) closes (MAP_V0 §2)
   $('#bagClose').addEventListener('click', () => closeBag());
@@ -3195,6 +3427,8 @@ function bindInput(){
   });
   $('#scClose').addEventListener('click', () => { sfx('tap'); closeStatsCard(); });
   $('#ovStats').addEventListener('click', e => { if (e.target === e.currentTarget) closeStatsCard(); });   // tap outside the card
+  $('#jnClose').addEventListener('click', () => closeJournal());
+  $('#ovJournal').addEventListener('click', e => { if (e.target === e.currentTarget) closeJournal(); });
   $('#encNick').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (battle.panel === 'end') closeBattle(); } });
   // battle (BATTLE §8)
   $$('[data-bact]').forEach(b => b.addEventListener('click', () => battleAct(b.dataset.bact)));
@@ -3259,6 +3493,7 @@ function bindInput(){
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
     if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
+    if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
@@ -3311,7 +3546,7 @@ function frame(t){
     if (p && !overlayOpen() && !walk.intro) updateWild(dt);
     drawMap(t);
   }
-  if (S && screen === 'walk') syncMapBtn();
+  if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncWalkTip(); }
   if (!$('#ovMap').hidden) drawRegionMap(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
@@ -3442,7 +3677,7 @@ function boot(){
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen();
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
-  placeFollower(); renderFollowerBtn(); renderKeeperName();
+  placeFollower(); placeGuide(); renderFollowerBtn(); renderKeeperName();
   // Phase M (INTERIORS §3.3): a new game wakes in the home room and Ilse's intro runs at once (the look picker is inside it).
   // Closed mid-starter: Lodge doorstep with a nudge. Tabs stay locked until the starter; the opening plays on the WALK tab.
   const newGame = !allPets().length && !S.flags['story.intro_seen'];
@@ -3471,7 +3706,7 @@ function boot(){
     get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get finds(){ return { at: FINDS.at.slice(), today: S && S.care ? { ...S.care } : null }; }, setFindRng: f => { if (DEBUG) findRng = typeof f === 'function' ? f : Math.random; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
-    get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, name: nameOf(w.sp, w.stage) })); },
+    get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, guide: !!w.guide, name: nameOf(w.sp, w.stage) })); },
     get poofs(){ return wild.poofs.length; },
     spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
@@ -3535,6 +3770,7 @@ function boot(){
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
     setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); return S.flags[k]; },
     runScene: id => { if (!SCENES[id] || scene) return false; showTab('walk'); runScene(id); return true; },
+    storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
     endScene: () => { if (!scene) return false; scene.skip = true; return true; },
     // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
     expandText: (text, vars, viewPetObj) => { const keep = scene;

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261009-2222">
+<meta name="kw-build" content="20261010-0359">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261009-2222">
+<link rel="stylesheet" href="style.css?v=20261010-0359">
 </head>
 <body>
 <div id="app">
@@ -65,10 +65,11 @@
           <button class="dp mid talk" id="talkBtn" type="button" aria-label="Talk" aria-disabled="true">TALK</button>
           <button class="dp right" data-dir="right" aria-label="Right"><canvas class="ico-dp" data-icon="right" width="8" height="8" aria-hidden="true"></canvas></button>
           <button class="dp down" data-dir="down" aria-label="Down"><canvas class="ico-dp" data-icon="down" width="8" height="8" aria-hidden="true"></canvas></button>
+          <button class="dpc tl" id="journalBtn" type="button" aria-label="Walkling Journal" hidden><canvas class="ico-hud" data-hud="icon_book" width="8" height="8" aria-hidden="true"></canvas><span>BOOK</span></button>
           <button class="dpc bl" id="walkBagBtn" type="button" aria-label="Bag" hidden><canvas class="ico-hud" data-hud="icon_bag" width="8" height="8" aria-hidden="true"></canvas><span>BAG</span></button>
           <button class="dpc br" id="mapBtn" type="button" aria-label="Map"><canvas class="ico-hud" data-hud="icon_map" width="8" height="8" aria-hidden="true"></canvas><span>MAP</span></button>
         </div>
-        <p class="tip">Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!</p>
+        <p class="tip" id="walkTip">Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!</p>
       </div>
     </section>
 
@@ -206,6 +207,22 @@
       <button id="shopClose" class="btn bag-x" type="button" aria-label="Close">X</button>
     </div>
     <div id="shopList" class="bag-list" role="listbox" aria-label="Shelf"></div>
+  </div>
+</div>
+
+<!-- Walkling Journal page: species blurb, a short lore line, and how you met. Also the first-befriend celebration. -->
+<div id="ovJournal" class="overlay" hidden>
+  <div class="ov-inner journal-card" role="dialog" aria-modal="true" aria-labelledby="jnTitle">
+    <div id="jnKicker" class="jn-kicker" hidden>NEW JOURNAL ENTRY</div>
+    <div class="sc-head">
+      <canvas id="jnIcon" width="18" height="18"></canvas>
+      <div class="sc-who"><div id="jnTitle" class="sc-name"></div><div id="jnStars" class="sc-species"></div></div>
+      <span id="jnType" class="type-badge"></span>
+    </div>
+    <p id="jnBlurb" class="jn-copy"></p>
+    <p id="jnLore" class="jn-copy jn-lore"></p>
+    <p id="jnMet" class="jn-copy jn-met"></p>
+    <button id="jnClose" class="btn btn-play" type="button">CLOSE</button>
   </div>
 </div>
 
@@ -362,17 +379,17 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261009-2222";</script>
-<script src="sprites.js?v=20261009-2222"></script>
-<script src="keeper.js?v=20261009-2222"></script>
-<script src="stats.js?v=20261009-2222"></script>
-<script src="moves.js?v=20261009-2222"></script>
-<script src="data/mapdata.js?v=20261009-2222"></script>
-<script src="save.js?v=20261009-2222"></script>
-<script src="env.js?v=20261009-2222"></script>
-<script src="sfx.js?v=20261009-2222"></script>
-<script src="cloud_config.js?v=20261009-2222"></script>
-<script src="cloud.js?v=20261009-2222"></script>
-<script src="game.js?v=20261009-2222"></script>
+<script>window.BUILD = "20261010-0359";</script>
+<script src="sprites.js?v=20261010-0359"></script>
+<script src="keeper.js?v=20261010-0359"></script>
+<script src="stats.js?v=20261010-0359"></script>
+<script src="moves.js?v=20261010-0359"></script>
+<script src="data/mapdata.js?v=20261010-0359"></script>
+<script src="save.js?v=20261010-0359"></script>
+<script src="env.js?v=20261010-0359"></script>
+<script src="sfx.js?v=20261010-0359"></script>
+<script src="cloud_config.js?v=20261010-0359"></script>
+<script src="cloud.js?v=20261010-0359"></script>
+<script src="game.js?v=20261010-0359"></script>
 </body>
 </html>

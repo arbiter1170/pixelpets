@@ -111,8 +111,12 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   then the summon lines); after that only a bump starts a rematch until you win. Master Fen's Trial Hall in Fernbrook
   opens once the orchard is cleared: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
   Seal #1 opens Route 2 (the creek, Wickerglen, and the Glow Census). Past the quarry gate is Cobblecrest: Dottie's
-  stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. A loss after you arrive wakes you in the
+  stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. Cobblecrest's roofs, windows and
+  rooms get their own trim (other towns keep the shared tiles). A loss after you arrive wakes you in the
   Cobblecrest Lantern House.
+- The Walkling Journal (BOOK, top-left of the d-pad, and the WALKLINGS tab) keeps a page for each form you have seen:
+  the species line, a short note, and how you met the ones who joined you. A new form's first befriend opens that page.
+  After Rook's first battle, one wild Walkling waits in the grass by Hearthmoor's east path.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   evolving (each line's evolution move, then any level moves of the new form). Older saves get missed evolution
   moves on their next visit ("<name> remembers something from evolving!").
