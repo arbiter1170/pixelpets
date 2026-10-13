@@ -2970,7 +2970,8 @@ function renderQuestTabs(){
   $('#questTabStanding').classList.toggle('on', st); $('#questTabStanding').setAttribute('aria-selected', String(st));
   $('#questTitle').textContent = st ? SC_STANDING.tab.label : 'NEXT STEP';
   $('#questPaneNext').hidden = st; $('#questPaneStanding').hidden = !st;
-  $('#questMap').hidden = st || !(questCurrent() || {}).target;
+  const mapBtn = $('#questMap'); mapBtn.hidden = st || !(questCurrent() || {}).target;
+  mapBtn.parentElement.classList.toggle('one', mapBtn.hidden);   // CLOSE alone spans the row
   if (st) renderStanding();
 }
 function renderStanding(){
