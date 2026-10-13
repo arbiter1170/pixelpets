@@ -78,20 +78,20 @@ Levels, types and stats (`stats.js`):
   Spirited / Glowing from FOOD/JOY/NRG) changes battle stats; a Walkling with NRG under 10 is too sleepy to start a battle.
   Once a battle has started, any party Walkling with HP left who isn't napping can still be sent in (marked LOW NRG).
 - HP: a Walkling's current HP (`hpNow`, absent = full) comes back at 10% of max every 10 real minutes, also while
-  away (paused during a battle). REST restores half of max HP and wakes a Fainted Walkling.
-- Fainted and TIRED: a Walkling knocked to 0 HP in battle is **Fainted** for a 20-minute real-time nap (`faintUntil`
+  away (paused during a battle). REST restores half of max HP and wakes a worn-out Walkling.
+- Worn out and TIRED: a Walkling knocked to 0 HP in battle is **worn out** for a 20-minute real-time nap (`faintUntil`
   in the save; `STAT_RULES.FAINT` in `stats.js`). It can't battle or PLAY, droops on the Walk map and shows
-  "FAINTED 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
-  (and not Fainted) a Walkling shows **TIRED**. The badge (FAINTED, else TIRED, else GLOWING) shows on the stats card,
+  "RESTING 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
+  (and not worn out) a Walkling shows **TIRED**. The badge (RESTING, else TIRED, else GLOWING) shows on the stats card,
   the Pet scene and the Pets tab.
 - Stats card: tap STATS (top-left of the Pet tab scene) or any Walkling on the Pets tab. It shows the type badge, Level,
-  GROW left to the next form, HP now/max with a FAINTED, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
+  GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
   scaled to the highest value of that stat among all 42 forms at the same level, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
   tap outside it or Escape closes it. Any tab can open it with a Walkling id (`openStatsCard(id)` in `game.js`).
 
 Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text in `moves.js`):
-- Bump into a wild creature (or tap it) and a turn-based battle opens: "A wild X appeared!", "Go, <partner>!".
+- Bump into a wild creature (or tap it) and a turn-based battle opens: "A wild X wanders out!", "You're up, <partner>!".
   Your partner leads (or the first party Walkling that can battle). Each turn pick FIGHT (up to 4 moves with limited
   uses; with none left a Walkling uses Wobble), BEFRIEND, SWAP, BAG (any battle item you carry) or RUN. Faster Walklings act
   first; damage uses ATK/DEF, level, type, same-type bonus, mood, stat stages (-2..+2) and rare critical hits.
@@ -102,21 +102,24 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   that type (seen pairs are saved in `dex.hits`).
 - BEFRIEND works from turn 1 with the timing bar (3 tries); the target zone is smaller at full HP and grows as
   the foe gets hurt (a Befriend Treat helps). A befriended creature keeps its moves and counts as a defeat for
-  battle XP. A wild creature knocked to 0 HP faints and wanders off; it can't be befriended. RUN always works
+  battle XP. A wild creature knocked to 0 HP is worn out and wanders off; it can't be befriended. RUN always works
   if you're at least as fast, otherwise the odds depend on speed and rise with every failed try.
   Zone width (NEXT_PLAN WP-A, `befriendWidth(hpFrac, stage, joy, treat, ctx)` in `moves.js`, tuning in `BEFRIEND_TUNE`):
   `(base x (0.30 + 0.90 x (1 - hp)) + joy/1000) x levelMul x engaged + treat`, base 0.22 (first form) / 0.14 (second),
   `levelMul = clamp(1 - 0.025 x (foeLv - 2) - 0.03 x max(0, foeLv - leadLv), 0.5, 1.1)`, engaged x1.10 once a turn has
   passed, Befriend Treat +0.08, floor 0.06, cap 0.50 (0.60 with a story bonus: Faded Fuzzwick +0.10, the Hearthmoor guide
   wild +0.08). At joy 60: Route 1 Lv 3 untouched 0.12 (was 0.17), at half HP 0.24, at a quarter 0.29; Route 2 Lv 13
-  untouched 0.09, half 0.17; quarry Lv 18 untouched 0.07, quarter 0.17; the guide 0.20. The marker speeds up 1.2% per
+  untouched 0.09, half 0.17; quarry Lv 18 untouched 0.07, at 25% HP 0.18; the guide 0.20. The quarry weakened
+  width is `PixelPets.befriendOdds(18, 0.25).width`, which is 0.181 and rounds to 0.18 (lead the same level, joy 60,
+  engaged because HP is under full). The quarry is Lv 16-19: the same call at 25% HP is 0.196 at Lv 16 (rounds to 0.20)
+  and 0.174 at Lv 19 (rounds to 0.17). The marker speeds up 1.2% per
   level over 2 (cap +35%). An untouched foe says "It's wary. Wear it down first." the first time you open the bar (not the guide or a
   story creature); BACK or Escape clears that line. A WARY / FAIR / GOOD label under the hearts tracks the zone (< 0.15 / < 0.25 / more).
   Console: `PixelPets.befriendOdds(foeLv, hpFrac, { stage, joy, treat, leadLv, engaged, bonus })` returns the width, a
   rough per-press chance (sine marker, zone centre 0.2..0.8) and the speed; `PixelPets.befriendCheck()` is the boot-time
   monotonicity check. Four-argument `befriendWidth` calls still give the old formula.
-- After a battle every Walkling that took part pays NRG 3 and FOOD 2 (5 more NRG if it fainted), winners gain +3 JOY,
-  and Walklings that fought share the battle XP. If your whole team faints you wake at the start point with your Walklings
+- After a battle every Walkling that took part pays NRG 3 and FOOD 2 (5 more NRG if it was worn out), winners gain +3 JOY,
+  and Walklings that fought share the battle XP. If your whole team is worn out you wake at the start point with your Walklings
   still hurt and their nap timers kept.
 - Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
@@ -157,8 +160,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   debug `setSide('glimmer' | 'keepers')`.
   The flag icon is a placeholder until the designer's `icon_quest` lands. The first-wild step follows the live guide creature.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
-  evolving (each line's evolution move, then any level moves of the new form). Older saves get missed evolution
-  moves on their next visit ("<name> remembers something from evolving!").
+  growing up (each line's grow-up move, then any level moves of the new form). Older saves get missed grow-up
+  moves on their next visit ("<name> remembers something from growing up!").
 
 Keeper and follower (MAPS_SLICE Phase K): you walk the map as a keeper, a 16x16 person drawn in 3 layers (body,
 outfit, hair; art in `keeper.js`, copied from Design's `keeper_art.js`) with 4 facings (left mirrors right) and 2
@@ -173,8 +176,8 @@ no version bump; `normalizeLook()` fixes old or bad looks on load, e.g. the v0.4
   label in its top-right corner ("Wayfarer" until named).
 - With no Walkling yet the keeper still walks (no energy, food or XP, no wild creatures).
 - Follower: your partner walks one tile behind you on the Walk map, taking the tile you just left (it never
-  blocks you, wild creatures or spawns), bobs as it goes (half speed and 1px lower while Fainted, the 20-minute nap after a battle faint), swaps when you
-  pick a new partner and changes when it evolves. On load it stands behind you, or under you if that tile is
+  blocks you, wild creatures or spawns), bobs as it goes (half speed and 1px lower while worn out, the 20-minute RESTING nap after a battle), swaps when you
+  pick a new partner and changes when it grows up. On load it stands behind you, or under you if that tile is
   solid. Tap it to open its stats card (a wild creature on the same tile wins the tap). Follower on/off in
   Settings turns it off (`settings.follower`, default on).
 
@@ -219,12 +222,12 @@ Which species appear depends on where you are and the weather there:
 - The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
 
-Creatures: 14 lines of 3 forms (42 Pixeldex entries), all befriendable and all evolving the same way
-(growth XP 40 / 120 plus care, then EVOLVE). The six newer lines (design spec CREATURES_SLICE):
+Creatures: 14 lines of 3 forms (42 WALKLING JOURNAL entries), all befriendable and all growing up the same way
+(growth XP 40 / 120 plus care, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
 Pomlet → Pomshell → Orchardon (BLOOM beetle), Loamlet → Burrowbloom → Hedgewarden (BLOOM mole),
 Clinkit → Shardpincer → Mosaicrab (TIDE crab), Fuzzwick → Filamoth → Halowatt (VOLT moth),
 Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lullamouse → Moondozer (SHADE dormouse).
-Unseen Vanelet-line entries in the Pixeldex show a small cloud ("check back in bad weather").
+Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
 the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`.
@@ -277,7 +280,7 @@ Saves (format v2, `save.js`):
   choosing a boxed Walkling as partner moves it into the party; if the party is full, the last party member that
   isn't the partner moves to the top of the box. Every Walkling, party or box, gets hungry the same way.
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
-  `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the Pixeldex is keyed by form id (`ember/1`).
+  `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
   The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 42 form ids) is append-only: new lines are added at the end
   of `SPECIES` and of the table without a new save version, and a dev check reports any reorder. A Walkling whose
   species an older build didn't know sits in `orphans` there and comes back to the box once the species exists.
