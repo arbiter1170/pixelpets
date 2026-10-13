@@ -2406,7 +2406,8 @@ function battleKey(e){
   if (skipMsg() && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); return; }
   if (e.key === 'Escape') {
     if (!$('#ovSheet').hidden && !$('#shCancel').hidden) { closeSheet(null); return; }
-    if (battle.panel === 'fight' || battle.panel === 'bef') { enc.open = false; setPanel('acts'); return; }
+    if (battle.panel === 'fight') { setPanel('acts'); return; }
+    if (battle.panel === 'bef') { leaveBefriendBar(); return; }
   }
   if (e.key === ' ' && battle.panel === 'bef' && battle.state === 'CHOOSE') { e.preventDefault(); encounterPress(); return; }
   if (battle.state !== 'CHOOSE' || battle.panel !== 'acts') return;
@@ -3252,6 +3253,13 @@ function openBefriendBar(){
   if (f.hp >= f.maxHp && !B.wary && !B.guide && !B.bonus) { B.wary = true; $('#btMsg').textContent = battleLine('befriendWary'); }
   setPanel('bef');
 }
+// BACK / Escape from the bar. The wary line is once per battle, but it should not stay in the box after you leave.
+function leaveBefriendBar(){
+  enc.open = false;
+  const p = activePet();
+  if (p && $('#btMsg').textContent === battleLine('befriendWary')) $('#btMsg').textContent = 'What should ' + petName(p) + ' do?';
+  setPanel('acts');
+}
 function encounterPress(){                                  // BEFRIEND press (button or Space) = the player's action
   const B = battle; if (!B.on || B.state !== 'CHOOSE' || B.panel !== 'bef') return;
   if (now() < enc.freezeUntil) return;
@@ -3657,7 +3665,7 @@ function bindInput(){
   // battle (BATTLE §8)
   $$('[data-bact]').forEach(b => b.addEventListener('click', () => battleAct(b.dataset.bact)));
   $('#btFightBack').addEventListener('click', () => { if (battle.state === 'CHOOSE') { sfx('tap'); setPanel('acts'); } });
-  $('#btBefBack').addEventListener('click', () => { if (battle.state === 'CHOOSE') { sfx('tap'); enc.open = false; setPanel('acts'); } });
+  $('#btBefBack').addEventListener('click', () => { if (battle.state === 'CHOOSE') { sfx('tap'); leaveBefriendBar(); } });
   $('#encGo').addEventListener('click', encounterPress);
   $('#btOk').addEventListener('click', () => { if (battle.panel === 'end') { sfx('tap'); closeBattle(); } });
   $('#btMsg').addEventListener('click', skipMsg);
