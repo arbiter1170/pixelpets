@@ -115,7 +115,7 @@ function wakeIfRested(p, now = Date.now()){
 }
 // The TIRED badge test (v1.1): awake but under 25% of max HP. The follower droop keys off isFainted.
 const isTired = p => !!p && !isFainted(p) && hpOf(p) < FAINT_RULES.tiredBelow * maxHpOf(p);
-// §7. Can be sent out: not Fainted, has HP and NRG >= 10.
+// §7. Can start a battle: not Fainted, has HP and NRG >= 10. A battle already underway can send anyone with HP (game.js canStepIn).
 const canBattle = (p, now = Date.now()) => !!p && !isFainted(p, now) && hpOf(p) > 0 && p.energy >= STAT_RULES.MOOD.minBattleNrg;
 // A battle-ready snapshot of a pet: {form, species, stage, type, level, maxHp, hp, atk, def, spd, mood}.
 function battlerOf(p){

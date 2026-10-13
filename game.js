@@ -2249,10 +2249,15 @@ function colourBack(id){
   runSteps(steps, { viewPet: p });
 }
 const ablePet = p => canBattle(p);
+// Mid-battle the bench can step in with HP left and no faint nap. NRG under 10 still blocks *starting* a battle
+// (canBattle), but it must not: a playtest had the starter faint and the rest of the party, still standing, skipped,
+// with the loss line saying the whole party had fainted.
+const canStepIn = p => !!p && !isFainted(p) && hpOf(p) > 0;
 // Lead = the partner if able, otherwise the first able party member (§1).
 function leadPet(){ const p = pet(); return ablePet(p) ? p : (S.party.find(ablePet) || null); }
 function noBattleToast(){
-  sfx('denied'); toast(S.party.some(q => isFainted(q)) ? 'Your team needs a rest first!' : 'Your team is too sleepy. REST first!');
+  sfx('denied');
+  toast(S.party.some(canStepIn) ? 'Your team is too sleepy. REST first!' : 'Your team needs a rest first!');
 }
 function startEncounterIntro(sp, stage, wid, lv){
   clearMoves();
@@ -2690,7 +2695,7 @@ async function endCheck(id){
     } else { await finish('win', id); return; }
   }
   if (hpOf(activePet()) <= 0) {
-    const next = S.party.filter(q => q.id !== B.me.petId && ablePet(q));
+    const next = S.party.filter(q => q.id !== B.me.petId && canStepIn(q));
     if (!next.length) { await finish('tired', id); return; }
     const pick = await swapSheet(true); if (!alive(id)) return;
     const q = petById(pick) || next[0];
@@ -2701,12 +2706,12 @@ async function endCheck(id){
   }
   if (alive(id)) toChoose();
 }
-// Swap sheet: party with HP; Fainted ("FAINTED 12m") and too-sleepy pets greyed. forced = can't cancel.
+// Swap sheet: anyone in the party with HP who isn't napping. Low NRG is marked, not a lock (see canStepIn). forced = can't cancel.
 function swapSheet(forced){
   const B = battle, items = S.party.map(q => {
-    const badge = hpBadge(q), sleepy = q.energy < STAT_RULES.MOOD.minBattleNrg;
-    return { label: petName(q) + '  Lv ' + levelOf(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (badge ? '  ' + badge : '') + (sleepy && !isFainted(q) ? '  TOO SLEEPY' : '') + (q.id === B.me.petId ? '  (in battle)' : ''),
-      hp: hpOf(q) / maxHpOf(q), disabled: q.id === B.me.petId || !ablePet(q), value: q.id };
+    const badge = hpBadge(q), step = canStepIn(q), sleepy = step && q.energy < STAT_RULES.MOOD.minBattleNrg;
+    return { label: petName(q) + '  Lv ' + levelOf(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (badge ? '  ' + badge : '') + (sleepy ? '  LOW NRG' : '') + (q.id === B.me.petId ? '  (in battle)' : ''),
+      hp: hpOf(q) / maxHpOf(q), disabled: q.id === B.me.petId || !step, value: q.id };
   });
   return openSheet(forced ? 'Who goes next?' : 'Swap to which Walkling?', items, forced ? null : 'BACK');
 }

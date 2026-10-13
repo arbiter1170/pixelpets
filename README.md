@@ -75,7 +75,8 @@ Levels, types and stats (`stats.js`):
   (1 + XP/10) kept between Lv 5 and Lv 10.
 - 4 battle stats (HP, ATK, DEF, SPD) per form from base stats and level; one type per line (the `type` in
   `sprites.js`) with an 8x8 type chart (2x / 0.5x, and VOLT can't hurt STONE). Mood (Hungry / Sulky / Drowsy /
-  Spirited / Glowing from FOOD/JOY/NRG) changes battle stats; a Walkling with NRG under 10 is too sleepy to battle.
+  Spirited / Glowing from FOOD/JOY/NRG) changes battle stats; a Walkling with NRG under 10 is too sleepy to start a battle.
+  Once a battle has started, any party Walkling with HP left who isn't napping can still be sent in (marked LOW NRG).
 - HP: a Walkling's current HP (`hpNow`, absent = full) comes back at 10% of max every 10 real minutes, also while
   away (paused during a battle). REST restores half of max HP and wakes a Fainted Walkling.
 - Fainted and TIRED: a Walkling knocked to 0 HP in battle is **Fainted** for a 20-minute real-time nap (`faintUntil`
