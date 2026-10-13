@@ -110,8 +110,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   passed, Befriend Treat +0.08, floor 0.06, cap 0.50 (0.60 with a story bonus: Faded Fuzzwick +0.10, the Hearthmoor guide
   wild +0.08). At joy 60: Route 1 Lv 3 untouched 0.12 (was 0.17), at half HP 0.24, at a quarter 0.29; Route 2 Lv 13
   untouched 0.09, half 0.17; quarry Lv 18 untouched 0.07, quarter 0.17; the guide 0.20. The marker speeds up 1.2% per
-  level over 2 (cap +35%). An untouched foe says "It's wary. Wear it down first." once per battle (not the guide or a
-  story creature), and a WARY / FAIR / GOOD label under the hearts tracks the zone (< 0.15 / < 0.25 / more).
+  level over 2 (cap +35%). An untouched foe says "It's wary. Wear it down first." the first time you open the bar (not the guide or a
+  story creature); BACK or Escape clears that line. A WARY / FAIR / GOOD label under the hearts tracks the zone (< 0.15 / < 0.25 / more).
   Console: `PixelPets.befriendOdds(foeLv, hpFrac, { stage, joy, treat, leadLv, engaged, bonus })` returns the width, a
   rough per-press chance (sine marker, zone centre 0.2..0.8) and the speed; `PixelPets.befriendCheck()` is the boot-time
   monotonicity check. Four-argument `befriendWidth` calls still give the old formula.
