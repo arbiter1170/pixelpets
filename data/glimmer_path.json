@@ -1,0 +1,83 @@
+{
+  "spec": "GLIMMER_PATH",
+  "version": "0.1-b0-stub",
+  "status": "WP-B0 stub. Engine wiring is final; every line here is PLACEHOLDER text to be replaced by the B1-B4 content passes.",
+  "_about": "The Glimmerwell branch of Act 1 (NEXT_PLAN WP-B). Same shapes as the other data files: `slicePatch` (addObjs/replaceObjs on existing maps), `scenes`, `trainers`, `flags`. A scene `X@glimmer` runs instead of `X` while story.side is glimmer; a trainer `id@glimmer` is merged over `id`. The branch sets the SAME progression flags as the Keepers path (story.orchard_cleared, story.seal1, ...), so maps, gates, the quest chain and the region map need no per-side forks. No new maps. Edit this file freely: it is not a verbatim design copy.",
+  "slicePatch": {
+    "maps": {
+      "fernbrook": {
+        "replaceObjs": [
+          { "kind": "trainer", "id": "fern_associate", "x": 9, "y": 14, "when": ["!story.side=glimmer"] }
+        ],
+        "addObjs": [
+          { "kind": "trigger", "id": "fb_side_pick", "x": 9, "y": 10, "r": 0,
+            "when": ["!story.side_pick_done", "!story.orchard_cleared"], "scene": "side_pick",
+            "_note": "The orchard gate (the only way in). Tobin (9,14) faces up with sight 3, so (9,11)-(9,13) are his; the gate is the last tile where the player can still choose. Not gated on met_glimmerwell/met_fen: both pitch inside the scene, so the fork cannot be walked past." },
+          { "kind": "npc", "id": "tobin_glim", "name": "Tobin", "x": 9, "y": 14, "look": "associate",
+            "when": ["story.side=glimmer"],
+            "lines": { "story.seal1": "Bright Tier 1! Told you that you had the sparkle. Have a bright day!",
+                       "else": "Crates packed, partners happy. The Hall is reviewing your file now. Have a bright day!" } },
+          { "kind": "npc", "id": "rook_fb_glim", "name": "Rook", "x": 22, "y": 8, "when": ["story.side=glimmer", "seal:seal_glim_1", "!story.slice_end"], "scene": "teaser",
+            "_note": "rook_fb and fb_teaser (maps_slice) key on seal:seal_fernbrook. These twins key on the lanyard so Rook's teaser (story.slice_end) fires on the glimmer path too. teaser@glimmer is B1 content." },
+          { "kind": "trigger", "id": "fb_teaser_glim", "x": 22, "y": 6, "r": 0, "when": ["story.side=glimmer", "seal:seal_glim_1", "!story.slice_end"], "scene": "teaser" }
+        ]
+      }
+    }
+  },
+  "scenes": {
+    "side_pick": [
+      ["say", "", "Tobin waves from the crates. Master Fen hurries up behind you."],
+      ["say", "Tobin", "Hi, {name}! These little ones are off to a Comfort Sanctuary. Help us pack, earn a Junior Bright lanyard!"],
+      ["say", "Master Fen", "Or help me keep them home. These trees are their family, {name}."],
+      ["say", "", "This decides who you travel with for a while. You can change course later, but it will cost you."],
+      ["choice", "Who do you help?", [
+        ["Help Fen (Keepers)", [
+          ["choice", "Stand with the Keepers?", [
+            ["Yes", [
+              ["setFlag", "story.side", "keepers"], ["setFlag", "story.side_pick_done", true], ["setFlag", "story.met_fen", true],
+              ["say", "Master Fen", "Thank you. Tobin won't listen to me. Perhaps he'll listen to a keeper with a strong team."]]],
+            ["Think about it", [["say", "", "You step back from the gate."]]]]]]],
+        ["Help Tobin (Glimmerwell)", [
+          ["choice", "Join Glimmerwell?", [
+            ["Yes", [
+              ["setFlag", "story.side", "glimmer"], ["setFlag", "story.side_pick_done", true], ["setFlag", "story.met_fen", true],
+              ["say", "Tobin", "Welcome to the partnership! Here, grab that crate lid."],
+              ["run", "orchard"]]],
+            ["Think about it", [["say", "", "You step back from the gate."]]]]]]]
+      ]]
+    ],
+    "orchard@glimmer": [
+      ["say", "", "You hold the lid. Tobin coaxes a Pomlet in with a Glimmer lantern. It goes quiet."],
+      ["choice", "The Pomlet looks back at you.", [
+        ["Pat the crate", [["say", "Tobin", "Aw. They love that. Comfier already!"]]],
+        ["Say nothing", [["say", "Tobin", "First day nerves! You'll get the hang of it."]]]
+      ]],
+      ["say", "Master Fen", "{name}. I hoped you were different. Go on, then. The Hall will judge you, not I."],
+      ["say", "", "Fen walks back to the Hall without another word. The crates are loaded."],
+      ["say", "Tobin", "Great work! Head to the Hall. Partnership review, then your lanyard. Have a bright day!"],
+      ["setFlag", "story.orchard_cleared", true]
+    ],
+    "seal1@glimmer": [
+      ["say", "Associate Juniper", "Review complete! This is your Bright Tier 1 lanyard. Wear it proudly, partner."],
+      ["give", "heal_snack", 2],
+      ["say", "Associate Juniper", "Welcome snacks, too. Brighter by nature! Have a bright day!"],
+      ["setFlag", "story.seal1", true]
+    ]
+  },
+  "trainers": {
+    "hall1_fen@glimmer": {
+      "seal": "seal_glim_1",
+      "panel": { "who": "Associate Juniper", "greet": "Welcome to the partnership review, {name}! Master Fen has agreed to one match.", "ask": "Begin the review?", "begin": "Begin review",
+                 "again": "Your file is complete, partner. Have a bright day!" },
+      "lines": { "intro": "You chose their lamps over my trees. Show me the orchard taught you nothing, then.",
+                 "win": "...Strong. Stronger than I'd like. Take your ribbon and go.",
+                 "lose": "Roots hold. Think about why, before you come back." }
+    }
+  },
+  "flags": {
+    "story.side": "\"keepers\" (default, absent on old saves) or \"glimmer\". Pledge, not permanent (BS adds switching).",
+    "story.side_pick_done": "The Fernbrook gate choice was made once.",
+    "story.beat.<scene>": "Set by the engine when a story beat (a scene that sets a story.* flag) finishes: which side played it.",
+    "seals.seal_glim_1": "Bright Tier 1 lanyard (the Glimmer Hall #1 stub). Sets story.seal1 through seal1@glimmer."
+  }
+}

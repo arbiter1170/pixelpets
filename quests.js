@@ -12,7 +12,8 @@
   const LINE_MAX = 110;   // same as interiors.json dialog.lineMax
 
   // Story flags written by the design data that are deliberately not chain steps (branch inputs, puzzle bits, values).
-  const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b'];
+  const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
+    'story.side', 'story.side_pick_done'];   // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],

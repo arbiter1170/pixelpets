@@ -272,6 +272,7 @@ function updateHUD(){
   syncBagBtns();
   syncJournalBtn();
   syncQuestBtn();
+  syncSide();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
   if (!p) return;
@@ -696,14 +697,82 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.cobblecrest.maps)));
     Object.assign(W, JSON.parse(JSON.stringify(MD.cobblecrest.rooms)));
   }
+  if (MD.glimmer_path) applyMapPatch(W, MD.glimmer_path.slicePatch);   // WP-B: the faction fork (ours, objects only, no new maps)
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
 const SCENES = Object.assign({}, MD.maps_slice.scenes, MD.interiors.scenes);
 if (MD.act1_route2) Object.assign(SCENES, MD.act1_route2.slicePatch.scenes || {}, MD.act1_route2.scenes);
 if (MD.cobblecrest) Object.assign(SCENES, MD.cobblecrest.route2Patch.scenes || {}, MD.cobblecrest.scenes);
-for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+if (MD.glimmer_path) Object.assign(SCENES, MD.glimmer_path.scenes || {});
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
+// WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
+// A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
+// The design JSON stays verbatim: variants live in data/glimmer_path.json. Objects use `when: ["story.side=glimmer"]` as usual.
+const SIDE_DEFAULT = 'keepers';
+const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
+function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
+const sceneSteps = id => { const s = side(); return (s !== SIDE_DEFAULT && SCENES[id + '@' + s]) || SCENES[id]; };
+let sideApplied = null;
+function syncSide(){                                   // cheap; called every frame and before a battle inside a scene
+  const s = side(); if (s === sideApplied) return; sideApplied = s;
+  for (const [id, base] of Object.entries(TRAINERS_BASE)) {
+    const ov = s !== SIDE_DEFAULT ? TRAINERS[id + '@' + s] : null;
+    TRAINERS[id] = ov ? Object.assign({}, base, ov, { lines: Object.assign({}, base.lines || {}, ov.lines || {}) }) : base;
+  }
+}
+// A story beat = a scene that writes a story.* flag. When one finishes, `story.beat.<id>` records which side played it
+// (first play wins), so later scenes can add a catch-up line after a switch without back-filling old saves.
+const beatCache = {};
+function isBeat(id){
+  if (id in beatCache) return beatCache[id];
+  const walk = n => Array.isArray(n) && ((n[0] === 'setFlag' && typeof n[1] === 'string' && n[1].startsWith('story.')) || n.some(walk));
+  return (beatCache[id] = Object.keys(SCENES).some(k => (k === id || k.startsWith(id + '@')) && walk(SCENES[k])));
+}
+// Recorded only when this run actually wrote a story.* flag (a "Think about it" exit from side_pick is not a played beat).
+const storyWrites = () => scene ? Object.keys(scene.view.flags).filter(k => k.startsWith('story.')).length : 0;
+function noteBeat(id, before){ if (!scene || !isBeat(id) || storyWrites() <= before) return; const k = 'story.beat.' + id, s = side(); pend(() => { if (!S.flags[k]) S.flags[k] = s; }); }
+// Dev check for data/glimmer_path.json (engine ask 7): the line rules the design checker applies (lineMax after the longest
+// token values, no double space, no unknown token), every `X@side` variant has a base `X`, a variant scene writes the same
+// story.* flags as its base (the gates stay shared), and objects/steps point at scenes that exist. Returns problems (empty = pass).
+function glimmerDevCheck(){
+  const G = MD.glimmer_path, bad = []; if (!G) return bad;
+  const dl = MD.interiors.dialog, MAX = dl.lineMax || 110, TOK = dl.tokenLen || {};
+  const story = steps => { const out = new Set(), walk = n => { if (!Array.isArray(n)) return; if (n[0] === 'setFlag' && typeof n[1] === 'string' && n[1].startsWith('story.')) out.add(n[1]); n.forEach(walk); }; walk(steps); return out; };
+  const line = (where, s) => {
+    if (typeof s !== 'string') return;
+    const long = s.replace(/\{(\w+)\}/g, (m, k) => { if (!(k in TOK)) { bad.push(where + ': unknown token ' + m); return ''; } return 'x'.repeat(TOK[k]); });
+    if (/  /.test(s)) bad.push(where + ': double space');
+    if (Array.from(long).length > MAX) bad.push(where + ': over ' + MAX + ' after tokens (' + Array.from(long).length + ')');
+  };
+  const walkSteps = (where, n) => { if (!Array.isArray(n)) return;
+    if (n[0] === 'say') line(where, n[2]);
+    else if (n[0] === 'choice') { line(where, n[1]); for (const o of n[2] || []) { line(where, o[0]); walkSteps(where, o[1]); } return; }
+    else if (n[0] === 'run' && !SCENES[n[1]]) bad.push(where + ': run of unknown scene ' + n[1]);
+    else if (n[0] === 'battle' && !TRAINERS[n[1]]) bad.push(where + ': battle with unknown trainer ' + n[1]);
+    n.forEach(x => walkSteps(where, x)); };
+  for (const [id, steps] of Object.entries(G.scenes || {})) {
+    walkSteps('scene ' + id, steps);
+    const at = id.indexOf('@'); if (at < 0) continue;
+    const base = SCENES[id.slice(0, at)]; if (!base) { bad.push('scene ' + id + ': no base scene'); continue; }
+    const want = story(base), got = story(steps); for (const f of want) if (!got.has(f)) bad.push('scene ' + id + ': does not set ' + f);
+  }
+  for (const [id, t] of Object.entries(G.trainers || {})) {
+    const at = id.indexOf('@'); if (at >= 0 && !TRAINERS_BASE[id.slice(0, at)]) bad.push('trainer ' + id + ': no base trainer');
+    for (const [k, v] of Object.entries(t.lines || {})) line('trainer ' + id + '.' + k, v);
+    for (const [k, v] of Object.entries(t.panel || {})) if (k !== 'who') line('trainer ' + id + '.panel.' + k, v);
+  }
+  for (const [mid, pt] of Object.entries((G.slicePatch && G.slicePatch.maps) || {})) {
+    if (!WORLD[mid]) { bad.push('patch of unknown map ' + mid); continue; }
+    for (const o of [].concat(pt.addObjs || [], pt.replaceObjs || [])) {
+      if (o.scene && !SCENES[o.scene]) bad.push('obj ' + o.id + ': unknown scene ' + o.scene);
+      for (const v of Object.values(o.lines || {})) line('obj ' + o.id, v);
+      if (o.text) line('obj ' + o.id, o.text);
+    }
+  }
+  return bad;
+}
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
@@ -734,6 +803,7 @@ function trackFor(map){
 }
 const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
 // Conditions (§4): 'flag', '!flag', 'flag=value', 'seal:id', 'has:name', 'talked' (lines keys only). `live` = read scene pending too.
+// WP-B0: numeric 'flag>=n', 'flag<=n', 'flag>n', 'flag<n' (an unset flag counts as 0) for counters written by the `inc` step.
 function flagOf(k, live){ if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
 function curName(live){ return live && scene && scene.view.name !== undefined ? scene.view.name : (S.player && S.player.name) || null; }
 function cond(c, live, o){
@@ -743,7 +813,12 @@ function cond(c, live, o){
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
-  else { const k = c.indexOf('='); v = k >= 0 ? String(flagOf(c.slice(0, k), live)) === c.slice(k + 1) : !!flagOf(c, live); }
+  else {
+    const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c);
+    if (!m) v = !!flagOf(c, live);
+    else if (m[2] === '=') v = String(flagOf(m[1], live)) === m[3];
+    else { const n = Number(flagOf(m[1], live)) || 0, r = Number(m[3]); v = m[2] === '>=' ? n >= r : m[2] === '<=' ? n <= r : m[2] === '>' ? n > r : n < r; }
+  }
   return neg ? !v : v;
 }
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
@@ -1181,10 +1256,13 @@ function placeSteps(dr){
         [['say', who, 'No team to rest yet? Come back with a friend.']]]];
   }
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
-    const t = TRAINERS.hall1_fen;
-    if (t && t.seal && S.seals[t.seal]) return [['say', 'Master Fen', 'Come back any time. The orchard remembers its friends.']];
-    return [['say', 'Master Fen', t ? t.lines.intro : 'Roots first, then blossoms. Show me yours.'],
-      ['choice', 'Begin the trial?', [['Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
+    // WP-B0 Hall stub (engine ask 5): the side-merged trainer may carry a `panel` {who, greet, ask, begin, again}; its `seal`
+    // and `onWin` scene (resolved per side) do the rest, so the glimmer Hall swaps by data when the design spike lands.
+    syncSide();
+    const t = TRAINERS.hall1_fen, pn = (t && t.panel) || {};
+    if (t && ((t.seal && S.seals[t.seal]) || S.flags['trainer.hall1_fen'])) return [['say', pn.who || 'Master Fen', pn.again || 'Come back any time. The orchard remembers its friends.']];
+    return [['say', pn.who || 'Master Fen', pn.greet || (t ? t.lines.intro : 'Roots first, then blossoms. Show me yours.')],
+      ['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
   }
   return [['say', '', 'Closed for now. Come back soon!']];
 }
@@ -1549,7 +1627,7 @@ function showBumpHint(o){
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };
-function scenePlayed(id){ const fl = (SCENES[id] || []).filter(st => st[0] === 'setFlag'); return fl.length > 0 && fl.every(st => S.flags[st[1]]); }
+function scenePlayed(id){ const fl = (sceneSteps(id) || []).filter(st => st[0] === 'setFlag'); return fl.length > 0 && fl.every(st => S.flags[st[1]]); }
 function faceKeeper(o){ const q = objPos(o); mapRT.face[o.id] = dirName(S.world.x - q.x, S.world.y - q.y); }
 // Talk (bump, tap, the Talk button, Space/Enter). Doors enter; trainers battle until beaten, then say their win line.
 function interact(o){
@@ -1639,7 +1717,7 @@ const TEXT_CPS = { slow: 30, normal: 60, fast: 120 };
 const sbox = { resolve: null, text: '', t0: 0, full: true, cps: 60 };
 const INTERACTIVE = ['choice', 'nameEntry', 'showBasket', 'lookPick', 'battle', 'encounter'];
 const ABORT = { abort: true };
-function runScene(id, ctx){ const steps = SCENES[id]; if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id }, ctx || {})); }
+function runScene(id, ctx){ const steps = sceneSteps(id); if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id, beat: id }, ctx || {})); }
 async function runSteps(steps, ctx = {}){
   if (scene || !S) return;
   scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: ctx.viewPet || null, nick: undefined },
@@ -1647,11 +1725,12 @@ async function runSteps(steps, ctx = {}){
   walk.target = walk.path = walk.arrive = walk.queued = null; wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
-  try { await execSteps(steps); } catch (e) { if (e !== ABORT) console.error(e); }
+  try { await execSteps(steps); if (ctx.beat) noteBeat(ctx.beat, 0); } catch (e) { if (e !== ABORT) console.error(e); }
   endScene();
 }
 async function execSteps(steps){ for (const st of steps || []) { if (!scene) return; await execStep(st); } }
-function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); }
+async function playScene(id){ const steps = sceneSteps(id); if (!steps) return; const n = storyWrites(); await execSteps(steps); noteBeat(id, n); }   // nested: `run` steps, onWin
+function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); syncSide(); }
 function endScene(){
   const sc = scene; if (!sc) return;
   commitPending();
@@ -1712,8 +1791,10 @@ async function execStep(st){
     case 'say': { if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); await sayBox(a, tx); return; }
     case 'choice': {
       sc.skip = false;
-      const pick = await choiceBox(expand(a), b.map(o => o[0]));
-      const opt = b[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
+      const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
+      if (!opts.length) return;
+      const pick = await choiceBox(expand(a), opts.map(o => o[0]));
+      const opt = opts[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
       $('#sbEcho').textContent = '\u203a ' + opt[0];
       await execSteps(opt[1]); return;
     }
@@ -1726,6 +1807,7 @@ async function execStep(st){
       return;
     }
     case 'setFlag': { const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; }); return; }
+    case 'inc': { const n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0); sc.view.flags[a] = n; pend(() => { S.flags[a] = n; }); return; }   // WP-B0 counters (Rook bond, Standing)
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
     case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest') S.world.respawn = r; }); return; }
     case 'lookPick': {
@@ -1735,7 +1817,7 @@ async function execStep(st){
       return;
     }
     case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); return;
-    case 'run': await execSteps(SCENES[a]); return;
+    case 'run': await playScene(a); return;
     case 'if': await execSteps(cond(a, true) ? b : c); return;
     case 'push': {
       const nx = S.world.x + a, ny = S.world.y + b;
@@ -1762,6 +1844,7 @@ function suggestOf(tags){
 // §6.1 summon sequence: the trainer's intro line and "{trainer} has summoned {foe}!" in this text box, then the battle opens with
 // its challenge line and "{player} summons {pet}!" in the battle message box.
 async function sceneBattle(id){
+  syncSide();                                          // a `setFlag story.side` earlier in this scene picks the side's trainer
   const t = TRAINERS[id]; if (!t) return;
   commitPending(); save();
   const team = trainerTeam(t), f0 = team[0], [ln, st] = f0.form.split('/');
@@ -1775,7 +1858,7 @@ async function sceneBattle(id){
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   if (res == null) throw ABORT;
   if (res === 'tired') scene.deferRespawn = true;
-  if (res === 'win' && t.onWin && SCENES[t.onWin]) await execSteps(SCENES[t.onWin]);
+  if (res === 'win' && t.onWin && sceneSteps(t.onWin)) await playScene(t.onWin);
 }
 // A story creature (map obj kind 'wild'): a wild battle with its own form, level, moves, faded state and befriend bonus.
 async function sceneEncounter(id){
@@ -3041,12 +3124,34 @@ const SEAL_ART = { seal_cobblecrest: [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ] };
+// WP-B0 PLACEHOLDER (engine ask 6): the glimmer path earns lanyard tiers, stored in S.seals like Seals. Cyan cord, a bright badge
+// with one (tier 1) or two (tier 2) gold bars. Real 16x16 art is a Design request.
+const lanyardArt = tier => [
+  '....cc....cc....',
+  '...c..c..c..c...',
+  '...c..c..c..c...',
+  '..c....cc....c..',
+  '..c..........c..',
+  '..c..........c..',
+  '...c........c...',
+  '....c......c....',
+  '.....mhhhhm.....',
+  '....mwwwwwwm....',
+  '....hw' + (tier > 1 ? 'yyyy' : 'wwww') + 'wh....',
+  '....hwwwwwwh....',
+  '....hwyyyywh....',
+  '....hwwwwwwh....',
+  '.....mhhhhm.....',
+  '................',
+];
+SEAL_ART.seal_glim_1 = lanyardArt(1); SEAL_ART.seal_glim_2 = lanyardArt(2);
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
   g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
   $('#btSealName').textContent = sealName(id); $('#btSeal').hidden = false;
 }
-const sealName = id => ({ seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal' }[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal');
+const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard' };
+const sealName = id => SEAL_NAMES[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal';
 
 /* --- learning moves (§3): after RESULTS, after evolving, and the §3.4 sheet --- */
 // Learnset entries (all stages up to the current one) with from < lv <= to, one per level, not yet known.
@@ -3661,7 +3766,7 @@ function frame(t){
     if (p && !overlayOpen() && !walk.intro) updateWild(dt);
     drawMap(t);
   }
-  if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncWalkTip(); }
+  if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncSide(); syncWalkTip(); }
   if (!$('#ovMap').hidden) drawRegionMap(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
@@ -3787,6 +3892,7 @@ function boot(){
   PPSave.devCheck(); statsDevCheck();
   { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
+  { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
@@ -3851,7 +3957,7 @@ function boot(){
       return openBattle({ kind: 'wild', form: f, level: lv || wildLevel(+st, Math.random, 'proto', line) });
     },
     showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
-    objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
+    objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
     forceTrainer: id => { if (!TRAINERS[id] || S.flags['trainer.' + id]) return false; showTab('walk'); if (overlayOpen()) return; return openBattle({ kind: 'trainer', trainerId: id }); },
     setHp: (who, n) => {
       if (!battle.on) return; if (who === 'foe') { const f = curFoe(); f.hp = clamp(Math.round(+n), 0, f.maxHp); }
@@ -3885,8 +3991,9 @@ function boot(){
     // Phase M (MAPS_SLICE §12): jump anywhere, set flags, run any scene
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
-    setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); return S.flags[k]; },
-    runScene: id => { if (!SCENES[id] || scene) return false; showTab('walk'); runScene(id); return true; },
+    setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); syncSide(); return S.flags[k]; },
+    setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); save(); syncSide(); return side(); },   // WP-B0
+    runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
     endScene: () => { if (!scene) return false; scene.skip = true; return true; },
     // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
@@ -3915,6 +4022,11 @@ function boot(){
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: !$('#questBtn').hidden && $('#questBtn').classList.contains('pulse') }; } });
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
+  // WP-B0: the pledged side, which scene id / trainer a base id resolves to right now, and the data file's dev check (read-only).
+  Object.defineProperty(api, 'side', { enumerable: true, get(){ return side(); } });
+  api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
+  api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
+  Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
   // WP-A: zone width and a rough per-press chance for a situation, without playing. opts: { stage, joy, treat, leadLv, engaged, bonus }
   api.befriendOdds = (foeLv, hpFrac, opts = {}) => { const o = Object.assign({ stage: 0, joy: 60, treat: false, leadLv: foeLv, engaged: hpFrac < 1, bonus: 0 }, opts);
     const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);
