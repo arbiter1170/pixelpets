@@ -1483,7 +1483,8 @@ const BATTLE_TEXT = {
   "trainerWin": "{player} won the match against {title} {trainer}!",
   "trainerLose": "{player}'s whole team is worn out...",
   "petFainted": "{pet} is worn out!",
-  "foeFainted": "{foe} is worn out!"
+  "foeFainted": "{foe} is worn out!",
+  "befriendWary": "It's wary. Wear it down first."
 };
 
 const STAGE_MULT = {
@@ -1513,9 +1514,39 @@ function defaultMoves(formId, L){
   return [...lvl, ...evo].map(e => e.id).slice(-4);
 }
 
-function befriendWidth(hpFrac, stage, joy, treat){
-  const base = stage === 0 ? 0.22 : 0.14;
-  return Math.max(0.06, Math.min(0.50, base * (0.5 + (1 - hpFrac)) + joy / 1000 + (treat ? 0.08 : 0)));
+// Befriend zone width (NEXT_PLAN WP-A). Without `ctx` this is the pre-WP-A formula (kept for old call sites and tests).
+// With ctx = { foeLv, leadLv, engaged }: an untouched foe is much harder (full HP 0.30, was 0.50), the width falls with the
+// foe's level and with each level it has over the lead, and being in the fight (a turn has passed) gives a small credit.
+// JOY scales with level too, so a high-level foe's zone doesn't float on the flat joy term. Floor 0.06, cap 0.50 unchanged.
+const BEFRIEND_TUNE = { fullHp: 0.30, hpSlope: 0.90, perLevel: 0.025, overLead: 0.03, levelFloor: 0.50, levelCap: 1.10, engaged: 1.10, guide: 0.08 };
+function befriendLevelMul(foeLv, leadLv){
+  const T = BEFRIEND_TUNE, fl = Math.max(1, +foeLv || 1), ll = Math.max(1, +leadLv || fl);
+  return Math.max(T.levelFloor, Math.min(T.levelCap, 1 - T.perLevel * (fl - 2) - T.overLead * Math.max(0, fl - ll)));
+}
+function befriendWidth(hpFrac, stage, joy, treat, ctx){
+  const base = stage === 0 ? 0.22 : 0.14, hp = Math.max(0, Math.min(1, +hpFrac || 0)), j = Math.max(0, Math.min(100, +joy || 0));
+  if (!ctx) return Math.max(0.06, Math.min(0.50, base * (0.5 + (1 - hp)) + j / 1000 + (treat ? 0.08 : 0)));
+  const T = BEFRIEND_TUNE, hpTerm = T.fullHp + T.hpSlope * (1 - hp), lm = befriendLevelMul(ctx.foeLv, ctx.leadLv), eng = ctx.engaged ? T.engaged : 1;
+  return Math.max(0.06, Math.min(0.50, (base * hpTerm + j / 1000) * lm * eng + (treat ? 0.08 : 0)));
+}
+// Marker speed by level: +1.2% per level over 2, capped at +35% (Lv 31+).
+function befriendSpeed(stage, foeLv){ return (stage ? 0.0042 : 0.003) * Math.min(1.35, 1 + 0.012 * Math.max(0, (+foeLv || 2) - 2)); }
+// Rough chance that a random press lands: the marker is a sine, so it lingers at the bar's ends (arcsine law); the zone's
+// centre is uniform in 0.2..0.8. Averaged over centres. Skilled timing beats this; it is a tuning yardstick, not a promise.
+function befriendHitChance(width){
+  const w = Math.max(0, Math.min(1, width)), F = m => Math.asin(2 * Math.max(0, Math.min(1, m)) - 1) / Math.PI;
+  let sum = 0, n = 0;
+  for (let c = 0.2; c <= 0.8001; c += 0.05) { sum += F(c + w / 2) - F(c - w / 2); n++; }
+  return sum / n;
+}
+// Dev check (WP-A task 6): non-increasing in foeLv, non-decreasing as HP falls, floor and cap hold. Returns problems.
+function befriendDevCheck(){
+  const bad = [], W = (hp, lv, lead, eng) => befriendWidth(hp, 0, 60, false, { foeLv: lv, leadLv: lead, engaged: eng });
+  for (const hp of [1, 0.5, 0.25]) for (let lv = 2; lv < 40; lv++) if (W(hp, lv + 1, 12, true) > W(hp, lv, 12, true) + 1e-9) bad.push('width rises with level at hp ' + hp + ' lv ' + lv);
+  for (const lv of [3, 13, 18, 30]) for (let hp = 1; hp > 0.01; hp -= 0.05) if (W(hp - 0.05, lv, lv, true) < W(hp, lv, lv, true) - 1e-9) bad.push('width falls as hp drops at lv ' + lv);
+  for (const lv of [1, 50]) for (const hp of [0, 1]) for (const st of [0, 1]) for (const tr of [false, true]) { const w = befriendWidth(hp, st, 100, tr, { foeLv: lv, leadLv: 5, engaged: true }); if (w < 0.06 - 1e-9 || w > 0.5 + 1e-9) bad.push('out of range ' + w); }
+  if (befriendWidth(1, 0, 60, false) !== Math.max(0.06, Math.min(0.5, 0.22 * 0.5 + 0.06))) bad.push('legacy formula changed');
+  return bad;
 }
 function battleLine(key, vars){
   let t = BATTLE_TEXT[key] || "";

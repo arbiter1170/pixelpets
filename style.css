@@ -335,6 +335,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .mv-hint.h-up{background:var(--l);color:var(--k)}.mv-hint.h-down{background:var(--k);color:var(--w)}
 .bt-back{min-height:44px;font-size:19px;margin:6px 0 0;width:100%}
 .bt-befbar .tbar{margin:8px 6px}
+.bef-odds{text-align:center;font-size:14px;letter-spacing:2px;min-height:16px;line-height:1}   /* WP-A odds label: WARY / FAIR / GOOD */
+.bef-odds.odds-r{color:var(--r)}.bef-odds.odds-y{color:var(--y)}.bef-odds.odds-l{color:var(--l)}
 .bt-befbar .actions{margin:0;padding:0}
 .bt-end{display:flex;flex-direction:column;gap:6px}
 .bt-end .btn{margin:0}

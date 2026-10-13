@@ -2185,7 +2185,8 @@ function openEncounter(){                                  // the intro flash en
   const nx = enc.next || { sp: pickSpecies(), stage: pickStage(), wid: null }; enc.next = null;
   const lv = nx.lv || wildLv(nx.sp, nx.stage);                 // forced encounters roll this map's level
   const w = nx.wid && wild.list.find(o => o.id === nx.wid);
-  openBattle({ kind: 'wild', form: SPECIES[nx.sp].id + '/' + nx.stage, level: lv, wid: nx.wid, moves: w && w.moves });
+  // WP-A: the Hearthmoor guide wild keeps a gentle first befriend (+guide bonus, no wary hint).
+  openBattle({ kind: 'wild', form: SPECIES[nx.sp].id + '/' + nx.stage, level: lv, wid: nx.wid, moves: w && w.moves, guide: !!(w && w.guide), bonus: w && w.guide ? BEFRIEND_TUNE.guide : 0 });
 }
 
 const battle = { on: false, id: 0, kind: 'wild', trainerId: null, wid: null, foes: [], fi: 0, me: null, uses: {}, participants: [],
@@ -2239,7 +2240,7 @@ function openBattle(o){
   const B = battle; B.id++;
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
     fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null,
-    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0 });
+    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false });
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
   else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
@@ -2247,7 +2248,7 @@ function openBattle(o){
   B.me = { petId: lead.id, stages: { atk: 0, def: 0, spd: 0 }, mood: null };
   B.participants[0].add(lead.id);
   const f = curFoe(); markSeen(f.si, f.stage); save();
-  enc.open = false; enc.speed = f.stage ? 0.0042 : 0.003;
+  enc.open = false; enc.speed = befriendSpeed(f.stage, f.level);   // WP-A: faster marker at higher levels (+1.2%/Lv, cap +35%)
   $('#encName').hidden = true; $('#btMsg').textContent = '';
   $('#btTwinkle').hidden = !(o.kind === 'wild' && f.stage > 0);
   renderBattleCards(); setPanel('busy');
@@ -3126,12 +3127,19 @@ function battleAct(act){
   else if (act === 'swap') swapSheet(false).then(v => { if (v && B.on && B.state === 'CHOOSE') resolveTurn({ kind: 'swap', id: v }); });
   else if (act === 'bag') bagSheet();
 }
+// WP-A: the zone reads the foe's HP, its level against the lead's, and whether a turn has passed (befriendWidth ctx);
+// story creatures add B.bonus (Faded Fuzzwick +0.10, the guide wild +0.08). Cap 0.6. An untouched foe says so once per battle.
+function befriendCtx(){ const B = battle, f = curFoe(), p = activePet(); return { foeLv: f.level, leadLv: levelOf(p), engaged: B.turn > 0 }; }
+function befriendZoneWidth(){ const B = battle, f = curFoe(), p = activePet(); return Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus); }
+const oddsLabel = w => w < 0.15 ? { t: 'WARY', c: 'r' } : w < 0.25 ? { t: 'FAIR', c: 'y' } : { t: 'GOOD', c: 'l' };
 function openBefriendBar(){
-  const B = battle, f = curFoe(), p = activePet();
-  const w = Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat) + B.bonus), c = 0.2 + Math.random() * 0.6;   // story creatures: +bonus (Faded Fuzzwick +0.10)
+  const B = battle, f = curFoe();
+  const w = befriendZoneWidth(), c = 0.2 + Math.random() * 0.6;
   enc.zone = [clamp(c - w / 2, 0, 1), clamp(c + w / 2, 0, 1)]; enc.t0 = now(); enc.freezeUntil = 0; enc.open = true;
   $('#tzone').style.left = (enc.zone[0] * 100) + '%'; $('#tzone').style.width = ((enc.zone[1] - enc.zone[0]) * 100) + '%';
   $('#encTries').textContent = '\u2665'.repeat(B.tries) + '\u2661'.repeat(BEFRIEND_TRIES - B.tries);
+  const od = oddsLabel(w), oe = $('#encOdds'); if (oe) { oe.textContent = od.t; oe.className = 'bef-odds odds-' + od.c; }
+  if (f.hp >= f.maxHp && !B.wary && !B.guide && !B.bonus) { B.wary = true; $('#btMsg').textContent = battleLine('befriendWary'); }
   setPanel('bef');
 }
 function encounterPress(){                                  // BEFRIEND press (button or Space) = the player's action
@@ -3777,6 +3785,7 @@ function boot(){
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
   PPSave.devCheck(); statsDevCheck();
+  { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
@@ -3906,6 +3915,11 @@ function boot(){
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: !$('#questBtn').hidden && $('#questBtn').classList.contains('pulse') }; } });
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
+  // WP-A: zone width and a rough per-press chance for a situation, without playing. opts: { stage, joy, treat, leadLv, engaged, bonus }
+  api.befriendOdds = (foeLv, hpFrac, opts = {}) => { const o = Object.assign({ stage: 0, joy: 60, treat: false, leadLv: foeLv, engaged: hpFrac < 1, bonus: 0 }, opts);
+    const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);
+    return { width: +width.toFixed(3), chance: +befriendHitChance(width).toFixed(3), speed: befriendSpeed(o.stage, foeLv), label: oddsLabel(width).t }; };
+  api.befriendCheck = () => befriendDevCheck();
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
     if (DEBUG) { api[k] = v; continue; }

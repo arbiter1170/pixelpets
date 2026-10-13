@@ -102,6 +102,17 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   the foe gets hurt (a Befriend Treat helps). A befriended creature keeps its moves and counts as a defeat for
   battle XP. A wild creature knocked to 0 HP faints and wanders off; it can't be befriended. RUN always works
   if you're at least as fast, otherwise the odds depend on speed and rise with every failed try.
+  Zone width (NEXT_PLAN WP-A, `befriendWidth(hpFrac, stage, joy, treat, ctx)` in `moves.js`, tuning in `BEFRIEND_TUNE`):
+  `(base x (0.30 + 0.90 x (1 - hp)) + joy/1000) x levelMul x engaged + treat`, base 0.22 (first form) / 0.14 (second),
+  `levelMul = clamp(1 - 0.025 x (foeLv - 2) - 0.03 x max(0, foeLv - leadLv), 0.5, 1.1)`, engaged x1.10 once a turn has
+  passed, Befriend Treat +0.08, floor 0.06, cap 0.50 (0.60 with a story bonus: Faded Fuzzwick +0.10, the Hearthmoor guide
+  wild +0.08). At joy 60: Route 1 Lv 3 untouched 0.12 (was 0.17), at half HP 0.24, at a quarter 0.29; Route 2 Lv 13
+  untouched 0.09, half 0.17; quarry Lv 18 untouched 0.07, quarter 0.17; the guide 0.20. The marker speeds up 1.2% per
+  level over 2 (cap +35%). An untouched foe says "It's wary. Wear it down first." once per battle (not the guide or a
+  story creature), and a WARY / FAIR / GOOD label under the hearts tracks the zone (< 0.15 / < 0.25 / more).
+  Console: `PixelPets.befriendOdds(foeLv, hpFrac, { stage, joy, treat, leadLv, engaged, bonus })` returns the width, a
+  rough per-press chance (sine marker, zone centre 0.2..0.8) and the speed; `PixelPets.befriendCheck()` is the boot-time
+  monotonicity check. Four-argument `befriendWidth` calls still give the old formula.
 - After a battle every Walkling that took part pays NRG 3 and FOOD 2 (5 more NRG if it fainted), winners gain +3 JOY,
   and Walklings that fought share the battle XP. If your whole team faints you wake at the start point with your Walklings
   still hurt and their nap timers kept.
