@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261013-1718">
+<meta name="kw-build" content="20261013-1839">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261013-1718">
+<link rel="stylesheet" href="style.css?v=20261013-1839">
 </head>
 <body>
 <div id="app">
@@ -123,18 +123,21 @@
     <div class="bt-card bt-foe">
       <div class="bt-row"><span id="btFoeLv" class="bt-lv"></span><span id="btFoeName" class="bt-name"></span><span id="btFoeType" class="type-chip"></span><span id="btTwinkle" class="bt-twinkle" hidden>&#10022;</span></div>
       <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btFoeHp"></i></div><span id="btFoeStages" class="bt-stages"></span></div>
+      <div class="bt-row bt-mini" id="btFoe2Row" hidden><span id="btFoe2Name" class="bt-name"></span><div class="bt-hp"><i id="btFoe2Hp"></i></div></div>
     </div>
     <div id="btStage" class="bt-stage"><canvas id="battleCanvas" width="80" height="56"></canvas><div id="btSeal" class="bt-seal" hidden><canvas id="btSealArt" width="18" height="18"></canvas><b id="btSealName"></b></div></div>
     <div class="bt-card bt-me">
       <div class="bt-row"><span id="btMeName" class="bt-name"></span><span id="btMeLv" class="bt-lv"></span><span id="btMeType" class="type-chip"></span></div>
       <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btMeHp"></i></div><span id="btMeHpTxt" class="bt-hpt"></span></div>
       <div id="btMood" class="bt-mood"></div>
+      <div class="bt-row bt-mini" id="btAllyRow" hidden><span id="btAllyName" class="bt-name"></span><div class="bt-hp"><i id="btAllyHp"></i></div></div>
     </div>
     <div id="btMsg" class="bt-msg" role="status" aria-live="polite"></div>
     <div class="bt-panel">
       <div id="btActs" class="bt-acts">
         <button class="btn btn-feed bt-fight" data-bact="fight" type="button">MOVES</button>
         <button id="btBefriendAct" class="btn btn-play bt-bef" data-bact="befriend" type="button">BEFRIEND <span id="btHearts" class="bt-hearts"></span></button>
+        <button id="btAim" class="btn bt-small" data-bact="aim" type="button" hidden>TARGET</button>
         <button class="btn bt-small" data-bact="swap" type="button">SWAP</button>
         <button class="btn bt-small" data-bact="bag" type="button">BAG</button>
         <button id="btRun" class="btn btn-rest bt-small" data-bact="run" type="button">LEAVE</button>
@@ -408,19 +411,19 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261013-1718";</script>
-<script src="sprites.js?v=20261013-1718"></script>
-<script src="keeper.js?v=20261013-1718"></script>
-<script src="stats.js?v=20261013-1718"></script>
-<script src="moves.js?v=20261013-1718"></script>
-<script src="data/mapdata.js?v=20261013-1718"></script>
-<script src="quests.js?v=20261013-1718"></script>
-<script src="standing.js?v=20261013-1718"></script>
-<script src="save.js?v=20261013-1718"></script>
-<script src="env.js?v=20261013-1718"></script>
-<script src="sfx.js?v=20261013-1718"></script>
-<script src="cloud_config.js?v=20261013-1718"></script>
-<script src="cloud.js?v=20261013-1718"></script>
-<script src="game.js?v=20261013-1718"></script>
+<script>window.BUILD = "20261013-1839";</script>
+<script src="sprites.js?v=20261013-1839"></script>
+<script src="keeper.js?v=20261013-1839"></script>
+<script src="stats.js?v=20261013-1839"></script>
+<script src="moves.js?v=20261013-1839"></script>
+<script src="data/mapdata.js?v=20261013-1839"></script>
+<script src="quests.js?v=20261013-1839"></script>
+<script src="standing.js?v=20261013-1839"></script>
+<script src="save.js?v=20261013-1839"></script>
+<script src="env.js?v=20261013-1839"></script>
+<script src="sfx.js?v=20261013-1839"></script>
+<script src="cloud_config.js?v=20261013-1839"></script>
+<script src="cloud.js?v=20261013-1839"></script>
+<script src="game.js?v=20261013-1839"></script>
 </body>
 </html>

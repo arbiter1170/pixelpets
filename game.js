@@ -698,6 +698,10 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.cobblecrest.rooms)));
   }
   if (MD.glimmer_path) applyMapPatch(W, MD.glimmer_path.slicePatch);   // WP-B: the faction fork (ours, objects only, no new maps)
+  if (MD.heights) {                                                    // Fernbrook Heights: new maps plus the north gap on Fernbrook
+    Object.assign(W, JSON.parse(JSON.stringify(MD.heights.maps)));
+    applyMapPatch(W, MD.heights.slicePatch);
+  }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -705,7 +709,8 @@ const SCENES = Object.assign({}, MD.maps_slice.scenes, MD.interiors.scenes);
 if (MD.act1_route2) Object.assign(SCENES, MD.act1_route2.slicePatch.scenes || {}, MD.act1_route2.scenes);
 if (MD.cobblecrest) Object.assign(SCENES, MD.cobblecrest.route2Patch.scenes || {}, MD.cobblecrest.scenes);
 if (MD.glimmer_path) Object.assign(SCENES, MD.glimmer_path.scenes || {});
-for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.heights]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
@@ -713,6 +718,14 @@ if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x:
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
+// The first trial (Keepers Hall, or the glimmer Tour's hall panel) waits on Fernbrook Heights, unless this save already earned Seal 1.
+function trialReady(){
+  if (!S) return false;
+  if (S.flags['story.heights_done'] || S.flags['story.seal1']) return true;
+  if (S.seals && (S.seals.seal_fernbrook || S.seals.seal_glim_1)) return true;
+  // A save that never picked a side already missed the gate (it closes once the orchard is open).
+  return !S.flags['story.side_pick_done'];
+}
 const sceneSteps = id => { const s = side(); return (s !== SIDE_DEFAULT && SCENES[id + '@' + s]) || SCENES[id]; };
 let sideApplied = null;
 function syncSide(){                                   // cheap; called every frame and before a battle inside a scene
@@ -795,6 +808,31 @@ function glimmerDevCheck(){
   for (const [id, steps] of Object.entries(SCENES)) walkStanding('scene ' + id, steps);
   return bad;
 }
+// Fernbrook Heights: line length on our scenes, and every group trainer fields two Walklings.
+function heightsDevCheck(){
+  const H = MD.heights, bad = []; if (!H) return bad;
+  const dl = MD.interiors.dialog, MAX = dl.lineMax || 110;
+  const walk = (where, n) => {
+    if (!Array.isArray(n)) return;
+    if (n[0] === 'say' && typeof n[2] === 'string') {
+      if (/  /.test(n[2])) bad.push(where + ': double space');
+      if (Array.from(n[2]).length > MAX) bad.push(where + ': over ' + MAX);
+    }
+    if (n[0] === 'battle' && !TRAINERS[n[1]]) bad.push(where + ': unknown trainer ' + n[1]);
+    n.forEach(x => walk(where, x));
+  };
+  for (const [id, steps] of Object.entries(H.scenes || {})) walk('scene ' + id, steps);
+  for (const [id, t] of Object.entries(H.trainers || {})) {
+    if (t.group && (!t.team || t.team.length < 2)) bad.push('trainer ' + id + ': a group battle needs two Walklings');
+    if (t.ally && !TRAINERS[t.ally]) bad.push('trainer ' + id + ': missing ally ' + t.ally);
+    for (const [k, v] of Object.entries(t.lines || {})) if (typeof v === 'string' && Array.from(v).length > MAX) bad.push('trainer ' + id + '.' + k + ': over ' + MAX);
+  }
+  const base = new Set(), glim = new Set();
+  const grab = (steps, into) => { const w = n => { if (!Array.isArray(n)) return; if (n[0] === 'setFlag' && typeof n[1] === 'string' && n[1].startsWith('story.')) into.add(n[1]); n.forEach(w); }; w(steps); };
+  grab(H.scenes.know_us, base); grab(H.scenes['know_us@glimmer'], glim);
+  for (const f of base) if (!glim.has(f)) bad.push('know_us@glimmer does not set ' + f);
+  return bad;
+}
 /* ---------- Standing (GLIMMER_PATH v0.2 BS; every name and number comes from STANDING_CFG in standing.js) ---------- */
 // S.standing = { keepers, glimmer } (save.js clamps it on load). Writes go through setStanding() so the tier-up toast fires
 // once per tier reached (`standing.top.<side>` remembers the highest tier toasted). Inside a scene the `standing` step is
@@ -852,6 +890,7 @@ function pledgeDeskSteps(to){
       [W.no, [['say', who, W.wait]]]]]];
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
+NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 's', outfit: 'coat', outfitCol: 'w', accent: 'c' };
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
@@ -884,7 +923,9 @@ if (SCENES.rival1) SCENES.rival1.push(
 // STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
-const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale' };
+const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale',
+  rx_wardens: 'regenx', rx_techs: 'regenx', rx_records: 'regenx', rx_quinn: 'regenx', rx_cal_ally: 'regenx',
+  sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };   // per map visit, never saved
@@ -1169,6 +1210,60 @@ const ITEM_ART = {
     '................',
     '................',
   ],
+  atten_vial: [
+    '................',
+    '................',
+    '......yyyy......',
+    '.....yyyyyy.....',
+    '......yyyy......',
+    '......cwwc......',
+    '.....cllllc.....',
+    '....llwwllll....',
+    '....llllllll....',
+    '....lwwwwwll....',
+    '....llllllll....',
+    '....llwwllll....',
+    '.....llllll.....',
+    '......cccc......',
+    '................',
+    '................',
+  ],
+  atten_plans: [
+    '................',
+    '................',
+    '.wwwwwwwwwwwww..',
+    '.wwwwwwwswwwww..',
+    '.wkbbbwwswwkkb..',
+    '.wwwwwwwswwwww..',
+    '.wwbkkwwswwbkw..',
+    '.wwwwwwwswwww...',
+    '.wwwkbbwswwwss..',
+    '.wwwwwwwswwss...',
+    '.wwwwwwwwss.....',
+    '..wwwwwwww......',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  route_page: [
+    '................',
+    '.yyyyyyyyyy.....',
+    'yyyyyyyyyyyyy...',
+    'yykkkkkyyyyyyyo.',
+    'yyyyyyyyyyyyyyo.',
+    'yykkkkkyyyyyoo..',
+    'yyyyyyyyyyyyyy..',
+    'oyykkkkkyyyyyo..',
+    'yyyyyyyyyyyyy...',
+    'yykkkyyyyyyo....',
+    'yyyyyyyyyyyy....',
+    '.yyyyyyyyy......',
+    '..yyyyyyy.......',
+    '................',
+    '................',
+    '................',
+  ],
 };
 // Item icons: Design ICONS_SEALS item_* grids, drawn via keeperCanvas at 36 CSS px.
 const ITEMS = {
@@ -1178,6 +1273,9 @@ const ITEMS = {
   befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild battles only. Easier to befriend.' },
   energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. NRG +40.' },
   joy_crumb:      { name: 'Joy Crumb',      plural: 'Joy Crumbs',      cap: 10, price: 40,  use: ['field'],           target: true,  blurb: 'A sweet treat. JOY +20.' },
+  atten_vial:     { name: 'Atten Vial',     plural: 'Atten Vials',     cap: 3,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A sealed RegenX vial. It stays in the bag.', blurb: 'RegenX Atten. It sharpens focus.' },
+  atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
+  route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
 const BAG_FULL_MSG = 'Bag is full, so some were left behind.';
@@ -1221,6 +1319,7 @@ function itemRefusal(id, p, ctx){
     if (battle.treat) return "It's already nibbling a treat.";
     return null;
   }
+  if (it.key) return it.keyNote || 'That stays in the bag.';
   if (!it.use.includes(ctx)) return ctx === 'battle' ? "Can't use that in battle." : "Can't use that here yet.";
   if (it.target && !p) return 'Pick a Walkling first.';
   const nm = petName(p);
@@ -1389,8 +1488,10 @@ function placeSteps(dr){
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
     // WP-B0 Hall stub (engine ask 5): the side-merged trainer may carry a `panel` {who, greet, ask, begin, again}; its `seal`
     // and `onWin` scene (resolved per side) do the rest. Glimmer Hall slot 1 is the Tour; the Keepers trial is unchanged.
+    // Heights: the trial is not offered until "get to know us" is done. A save that already has the Seal is left alone.
     syncSide();
     const t = TRAINERS.hall1_fen, pn = (t && t.panel) || {};
+    if (!trialReady()) return sceneSteps('trial_wait') || [['say', 'Master Fen', 'The trial can wait. Walk the Heights first.']];
     if (side() === 'glimmer') return glimmerHallSteps(t, pn);
     if (t && ((t.seal && S.seals[t.seal]) || S.flags['trainer.hall1_fen'])) return [['say', pn.who || 'Master Fen', pn.again || 'Come back any time. The orchard remembers its friends.']];
     return [['say', pn.who || 'Master Fen', pn.greet || (t ? t.lines.intro : 'Roots first, then blossoms. Show me yours.')],
@@ -2439,7 +2540,19 @@ const battle = { on: false, id: 0, kind: 'wild', trainerId: null, wid: null, foe
   newId: null, rng: Math.random, textMs: null, fx: [], levelUps: [], foeHealUsed: false, log: [] };
 let msgSkip = null;
 const alive = id => battle.on && battle.id === id;
-const curFoe = () => battle.foes[battle.fi];
+function curFoe(){
+  const B = battle;
+  if (B.group && B.slots && B.slots.length) {
+    let i = B.slots[B.aim];
+    if (!B.foes[i] || B.foes[i].hp <= 0) {
+      const s = B.slots.findIndex(j => B.foes[j] && B.foes[j].hp > 0);
+      if (s >= 0) { B.aim = s; i = B.slots[s]; }
+    }
+    return B.foes[i] || B.foes[0];
+  }
+  return B.foes[B.fi];
+}
+const groupLiving = () => !!(battle.group && battle.slots && battle.slots.some(i => battle.foes[i] && battle.foes[i].hp > 0));
 const activePet = () => battle.me && petById(battle.me.petId);
 function makeFoe(form, level, moveIds, opener){
   const [line, st] = form.split('/'), si = SP_INDEX[line], stage = +st, s = statsAt(form, level);
@@ -2485,13 +2598,26 @@ function openBattle(o){
   const B = battle; B.id++;
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
     fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null,
-    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false });
+    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false,
+    group: false, slots: null, aim: 0, bench: 0, ally: null, allyName: '' });
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
   else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
   B.participants = B.foes.map(() => new Set());
   B.me = { petId: lead.id, stages: { atk: 0, def: 0, spd: 0 }, mood: null };
   B.participants[0].add(lead.id);
+  // Group battle: two foes on the field at once. The rest wait on the bench. An optional ally Walkling fights beside you.
+  if (o.kind === 'trainer') {
+    const t = TRAINERS[o.trainerId];
+    if (t && t.group && B.foes.length >= 2) {
+      B.group = true; B.slots = [0, 1]; B.aim = 0; B.bench = 2;
+      B.participants[1].add(lead.id);
+    }
+    if (t && t.ally && TRAINERS[t.ally]) {
+      const am = trainerTeam(TRAINERS[t.ally])[0];
+      if (am) { B.ally = makeFoe(am.form, am.level, am.moves); B.allyName = TRAINERS[t.ally].name; }
+    }
+  }
   const f = curFoe(); markSeen(f.si, f.stage); save();
   enc.open = false; enc.speed = befriendSpeed(f.stage, f.level);   // WP-A: faster marker at higher levels (+1.2%/Lv, cap +35%)
   $('#encName').hidden = true; $('#btMsg').textContent = '';
@@ -2513,6 +2639,10 @@ async function battleIntro(id){
     await say(btLine('trainerIntro'), id);
     if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
     await say(btLine('playerSend'), id);
+    if (alive(id) && B.group) {
+      await say('Two at once. You move first. TARGET picks who you hit.', id);
+      if (alive(id) && B.ally) await say(B.allyName + ' sends ' + foeName(B.ally) + ' in beside you.', id);
+    }
   } else {
     await say(btLine('wildAppear'), id);
     if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
@@ -2527,6 +2657,8 @@ function closeBattle(){
     if (p && nk && nk !== nameOf(spi(p), p.stage)) { p.nick = nk; toast(nameOf(spi(p), p.stage) + ' is now called ' + nk + '!'); }
   }
   $('#encName').hidden = true; $('#encNick').value = ''; $('#encNick').blur(); $('#btSeal').hidden = true;   // no nickname carries over to the next befriend
+  const f2 = $('#btFoe2Row'), al = $('#btAllyRow'), aim = $('#btAim');
+  if (f2) f2.hidden = true; if (al) al.hidden = true; if (aim) aim.hidden = true;
   B.on = false; B.state = 'IDLE'; msgSkip = null; closeSheet(null);
   $('#ovBattle').hidden = true; lockTabs(false);
   const w = B.wid && wild.list.find(o => o.id === B.wid);
@@ -2597,6 +2729,7 @@ function setPanel(name){
 function renderActs(){
   const wildB = battle.kind === 'wild';
   $('#btBefriendAct').hidden = !wildB; $('#btRun').hidden = !wildB;
+  const aim = $('#btAim'); if (aim) aim.hidden = !(battle.group && battle.on);
   $('#btHearts').textContent = '\u2665'.repeat(battle.tries) + '\u2661'.repeat(BEFRIEND_TRIES - battle.tries);
   $('#btActs').classList.toggle('trainer', !wildB);
 }
@@ -2614,6 +2747,25 @@ function renderBattleCards(){
   if (m.hungry) chips.push('HUNGRY'); if (m.sulky) chips.push('SULKY'); if (m.drowsy) chips.push('DROWSY');
   if (m.spirited) chips.push('SPIRITED'); if (m.glowing) chips.push('GLOWING');
   $('#btMood').textContent = [stageText(B.me.stages), chips.join(' ')].filter(Boolean).join(' ');
+  const row = $('#btFoe2Row');
+  if (row) {
+    let other = null;
+    if (B.group && B.slots) B.slots.forEach((fi, s) => { if (s !== B.aim && B.foes[fi] && B.foes[fi].hp > 0) other = B.foes[fi]; });
+    row.hidden = !other;
+    if (other) {
+      $('#btFoe2Name').textContent = foeName(other) + '  Lv ' + other.level;
+      const h = $('#btFoe2Hp'); h.style.width = (100 * other.hp / other.maxHp) + '%'; h.classList.toggle('warn', other.hp / other.maxHp < 0.25);
+    }
+  }
+  const allyRow = $('#btAllyRow');
+  if (allyRow) {
+    const a = B.ally;
+    allyRow.hidden = !(a && a.hp > 0);
+    if (a && a.hp > 0) {
+      $('#btAllyName').textContent = (B.allyName || 'Ally') + "'s " + foeName(a);
+      const h = $('#btAllyHp'); h.style.width = (100 * a.hp / a.maxHp) + '%'; h.classList.toggle('warn', a.hp / a.maxHp < 0.25);
+    }
+  }
 }
 function stageText(st){ return ['atk', 'def', 'spd'].filter(k => st[k]).map(k => k.toUpperCase() + (st[k] > 0 ? '\u25b2' : '\u25bc') + Math.abs(st[k])).join(' '); }
 // Type hint badge: shown once you've seen this move's effect on this type (S.dex.hits["move>TYPE"]).
@@ -2684,6 +2836,15 @@ function aiPick(){
 async function resolveTurn(action){
   const B = battle, id = B.id; if (B.state !== 'CHOOSE') return;
   B.state = 'RESOLVE'; B.turn++; setPanel('busy');
+  if (B.group) {
+    if (action.kind !== 'fight') {
+      const ended = await playerAction(action, id); if (!alive(id) || ended) return;
+    } else await doMove('me', action.move, id);
+    if (alive(id) && hpOf(activePet()) > 0 && groupLiving()) await allyAct(id);
+    if (alive(id) && hpOf(activePet()) > 0 && groupLiving()) await foesGroupAct(id);
+    if (alive(id)) endCheck(id);
+    return;
+  }
   if (action.kind !== 'fight') {
     const ended = await playerAction(action, id); if (!alive(id)) return;
     if (ended) return;
@@ -2695,6 +2856,53 @@ async function resolveTurn(action){
     else { await foeAct(id); if (alive(id) && hpOf(activePet()) > 0 && curFoe().hp > 0) await doMove('me', action.move, id); }
   }
   if (alive(id)) endCheck(id);
+}
+function groupLivingNow(){ return groupLiving(); }
+async function allyAct(id){
+  const B = battle, a = B.ally;
+  if (!a || a.hp <= 0 || !groupLivingNow()) return;
+  let best = 0, hp = Infinity;
+  B.slots.forEach((fi, s) => { const f = B.foes[fi]; if (f && f.hp > 0 && f.hp < hp) { hp = f.hp; best = s; } });
+  const f = B.foes[B.slots[best]]; if (!f || f.hp <= 0) return;
+  await say(B.allyName + "'s " + foeName(a) + ' tries Bump!', id); if (!alive(id)) return;
+  const r = damage({ power: MOVES.bump.power, moveType: MOVES.bump.type, att: foeBattler(a), def: foeBattler(f), rng: B.rng });
+  if (r.mult === 0) { await say("It didn't do a thing...", id); return; }
+  f.hp = Math.max(0, f.hp - r.dmg);
+  sfx(r.mult > 1 ? 'hitStrong' : 'hit'); renderBattleCards();
+  if (r.mult > 1) { await say('That hit hard!', id); if (!alive(id)) return; }
+  if (f.hp <= 0) { B.aim = best; await knockOut('foe', id); }
+}
+async function foesGroupAct(id){
+  const B = battle;
+  for (let s = 0; s < B.slots.length; s++) {
+    if (!alive(id) || hpOf(activePet()) <= 0) return;
+    const f = B.foes[B.slots[s]]; if (!f || f.hp <= 0) continue;
+    B.aim = s; B.foePlan = aiPick(); await foeAct(id);
+  }
+}
+async function groupField(id){
+  const B = battle, p = activePet();
+  let sent = false;
+  for (let s = 0; s < B.slots.length; s++) {
+    const f = B.foes[B.slots[s]];
+    if (f && f.hp > 0) continue;
+    if (B.bench < B.foes.length) {
+      const ni = B.bench++;
+      B.slots[s] = ni;
+      const nf = B.foes[ni];
+      if (!B.participants[ni]) B.participants[ni] = new Set();
+      if (p) B.participants[ni].add(p.id);
+      markSeen(nf.si, nf.stage);
+      B.aim = s; sent = true;
+    }
+  }
+  if (!groupLiving()) { await finish('win', id); return false; }
+  if (!B.foes[B.slots[B.aim]] || B.foes[B.slots[B.aim]].hp <= 0) {
+    const s = B.slots.findIndex(i => B.foes[i] && B.foes[i].hp > 0);
+    if (s >= 0) B.aim = s;
+  }
+  if (sent && alive(id)) { sendOutFx('foe'); renderBattleCards(); await say(btLine('trainerSend'), id); }
+  return alive(id);
 }
 async function foeAct(id){
   const B = battle, f = curFoe(), plan = B.foePlan || { move: 'wobble' };
@@ -2827,7 +3035,7 @@ async function knockOut(side, id){
   } else {
     const f = curFoe(); if (f.down) return; f.down = true;
     B.fx.push({ who: 'foe', kind: B.kind === 'wild' ? 'flee' : 'faint', t0: now(), dur: 600 });
-    awardFoe(B.fi);
+    awardFoe(Math.max(0, B.foes.indexOf(f)));
     if (B.kind === 'wild') { sfx('flee'); await say(foeName(f) + ' is worn out and wanders off to rest.', id); }
     else { sfx('tired'); await say(btLine('foeFainted'), id); }
   }
@@ -2846,7 +3054,8 @@ function awardFoe(fi){
 }
 async function endCheck(id){
   const B = battle, f = curFoe(), p = activePet();
-  if (f.hp <= 0) {
+  if (B.group) { if (!(await groupField(id))) return; }
+  else if (f.hp <= 0) {
     if (B.kind === 'trainer' && B.fi < B.foes.length - 1) {
       B.fi++; const nf = curFoe(); B.participants[B.fi].add(p.id); markSeen(nf.si, nf.stage);
       if (hpOf(p) > 0) {
@@ -2889,10 +3098,11 @@ const REGION_MAP = {
     route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]] },
     cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.' },
     cobble_quarry: { kind: 'side',  col: 17, row: 3, label: 'QUARRY',      labelAt: 'above', blurb: 'Pebblits nap in the old seam.', path: [[17, 6], [17, 3]] },
+    fb_heights:    { kind: 'side',  col: 10, row: 3, label: 'HEIGHTS',     labelAt: 'above', blurb: 'Ridge north of Fernbrook. A lab, and old tunnels.', path: [[10, 6], [10, 3]] },
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], fb_heights: ['story.know_us'] },
   interiors: { hm_home_in: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
@@ -3467,6 +3677,16 @@ function battleAct(act){
   const B = battle; if (!B.on || B.state !== 'CHOOSE') return;
   if ((act === 'run' || act === 'befriend') && B.kind !== 'wild') { sfx('denied'); say("You can't walk away from a challenge!").then(() => { if (B.on && B.state === 'CHOOSE') $('#btMsg').textContent = 'What should ' + petName(activePet()) + ' do?'; }); return; }
   sfx('tap');
+  if (act === 'aim' && B.group && B.slots) {
+    const n = B.slots.length;
+    for (let k = 1; k <= n; k++) {
+      const s = (B.aim + k) % n;
+      if (B.foes[B.slots[s]] && B.foes[B.slots[s]].hp > 0) { B.aim = s; break; }
+    }
+    renderBattleCards();
+    $('#btMsg').textContent = 'Target: ' + foeName(curFoe());
+    return;
+  }
   if (act === 'fight') setPanel('fight');
   else if (act === 'befriend') openBefriendBar();
   else if (act === 'run') resolveTurn({ kind: 'run' });
@@ -3542,6 +3762,12 @@ function drawBattle(t, dt){
     const img = sprSet(si, stage, faded)[mode];
     if (mirror) { g.save(); g.translate(x + 18, y); g.scale(-1, 1); g.drawImage(img, 0, 0); g.restore(); } else g.drawImage(img, x, y);
   };
+  if (B.group && B.slots) {
+    let other = null;
+    B.slots.forEach((fi, s) => { if (s !== B.aim && B.foes[fi] && B.foes[fi].hp > 0) other = B.foes[fi]; });
+    if (other) drawMon('foe2', other.si, other.stage, Math.max(0, fx0 - 18), fy0 + 4, false, !!other.faded);
+    if (B.ally && B.ally.hp > 0) drawMon('ally', B.ally.si, B.ally.stage, mx0 + 18, my0 + 2, true, false);
+  }
   drawMon('foe', f.si, f.stage, fx0, fy0, false, !!f.faded);
   if (B.kind === 'wild' && f.stage > 0 && Math.floor(t / 350) % 5 === 0) drawGlyph(g, 'spark', fx0 + 14, fy0 - 2);   // rare form twinkle
   drawMon('me', spi(p), p.stage, mx0, my0, true, isFaded(p));             // back view = mirrored
@@ -4144,6 +4370,7 @@ function boot(){
   { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
+  { const hb = heightsDevCheck(); if (hb.length) console.error('Walklings: heights check failed:', hb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
@@ -4283,6 +4510,9 @@ function boot(){
   api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
+  Object.defineProperty(api, 'heightsCheck', { enumerable: true, get(){ return heightsDevCheck(); } });
+  Object.defineProperty(api, 'trialReady', { enumerable: true, get(){ return trialReady(); } });
+  Object.defineProperty(api, 'heights', { enumerable: true, get(){ return { path: S && S.flags['story.heights_path'] || null, done: !!(S && S.flags['story.heights_done']), know: !!(S && S.flags['story.know_us']) }; } });
   // BS (read-only): both meters with tier index and name, the pledge, the switch count, and whether the desk would allow a switch now.
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
   api.standingCfg = () => copy(STANDING_CFG);

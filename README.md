@@ -168,6 +168,13 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   (line length after tokens, choice labels ≤ 30, ambient lines ≤ 40, double spaces, unknown tokens, every variant has a
   base and sets the base's story flags; also run at boot), and with debug `setSide('glimmer' | 'keepers')`.
   The first-wild step follows the live guide creature.
+- Fernbrook Heights (before the first trial): once you pick a side, Fen or Juniper offers "get to know us" and sends you north.
+  Keepers investigate a smuggling tunnel (Walklings in crates, freed and sent home). Glimmerwell enters the RegenX lab,
+  four floors, to copy Atten (a focus aid) and its brewing plans. RegenX does not know Atten hides a switch for The Arbiter,
+  a cradle robot that could later send a compliance pulse (the Still Order). That pulse is not fired here. The trial and the
+  Tour's first stop wait until `story.heights_done`. A save that already has Seal 1 is not sent back.
+  Some fights are group battles: two foes at once, TARGET to choose, and on the last fight an ally Walkling steps in.
+  Stock up at the Heights crate. Key items (Atten Vial, Atten Plans, Route Page) stay in the bag.
 - Standing (Build 2, GLIMMER_PATH v0.2 BS; NEXT_PLAN WP-B "Standing and switching"): each side has a 0-100 meter,
   `S.standing = { keepers, glimmer }` (additive, `v` stays 2; `save.js` fills a missing or bad value with 0 and clamps the
   rest). Tier = the highest threshold reached (0 / 10 / 25 / 45 / 70 by default: Stranger, Friend, Trusted, Hall Friend,

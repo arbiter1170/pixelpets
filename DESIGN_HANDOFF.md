@@ -2,6 +2,8 @@
 
 For the designer. The paste-ready assignment for a designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) (what to produce, where to look, and the engine that has shipped since this file was written). This file is the background: voice, sizes, and the request list. Read `NEXT_PLAN.md` WP-B for the engineering detail behind a request.
 
+Fernbrook Heights is now in the game (`data/heights.json`): before the first trial, Keepers investigate a smuggling tunnel and Glimmerwell enters the RegenX lab. Art for Atten, the Arbiter, and a RegenX coat may still be placeholders. The paste-ready assignment below is the older list; do not rewrite Heights unless Vincent opens D27-D29.
+
 What is being built, in one paragraph: (1) a **Quest button** next to the D-pad (shipped); (2) **harder, level-scaled befriending** (shipped); (3) a **side pick at Fernbrook** between the **Keepers** and **Glimmerwell Co.**, with **Standing**, **switch desks**, and a **glimmer-path version** of the remaining Act 1 story. Fernbrook glimmer and the Bright Pavilion Tour are shipped (Build 3). Next writing is Route 2, Cobblecrest, the Cobblecrest Sacrifice, and Rook's R5. **Rook stays with Glimmerwell if the player does; he converts only on the Keepers path** (D23).
 
 Decisions already made (Vincent, Oct 13, evening): the pick is at Fernbrook and is switchable later; Standing tracks regard per faction; Hall slot 1 is the Bright Pavilion Tour (built); Hall slot 2 is the Sacrifice with Quota as the free floor (not built); Rook stays if the player is Glimmerwell and converts if the player is Keepers. The morning "Rook always leaves" / "Halls undefined" notes are superseded. Section 6 now asks for the Sacrifice one-pager and Tour stop copy, not a from-scratch Hall spike.

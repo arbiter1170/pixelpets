@@ -29,6 +29,9 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 | D24 | BH slot 2 | What does the Cobblecrest Sacrifice cost, what is the floor, and how does Quota substitute? | Not built. Vincent called the shape (Sacrifice, Quota as the free floor). Build 5 ships a stub that still sets `story.seal2` if this page is late | NEXT_PLAN §3 Build 5; `data/hall_spike.md` (does not exist yet) |
 | D25 | Rook R5 tone | Keepers convert: ally or parted? Glimmer stay: write `story.rook_end "stays"` or leave it unset? Does he appear later as a colleague? | No R5 scene. `teaser@glimmer` does not say he leaves | `brinewick_hook` / `brinewick_hook@glimmer` |
 | D26 | Tour copy | Real lantern recipients, slogans, Comfort Check lines, Census-board lines, stage-photo line, and the real name of `tour.doubt` | Placeholders in `tour1_s1`..`tour1_s4`, `tour1_wait`, and `seal1@glimmer`. `tour.doubt` is incremented; nothing reads it | `data/glimmer_path.json` `placeholders` |
+| D27 | Heights names | RegenX, Atten, The Arbiter, the Still Order. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. One rename in `data/heights.json` `_names` plus the scenes | `data/heights.json` |
+| D28 | Good-path plot | The good-quest note stopped after "underground smuggling ring" | Built as Fen's tunnel investigation: Jed the clerk, Mara Quill, crates opened, Walklings hop home. Revise if the rest of that note arrives | `data/heights.json` scenes `sm_*` |
+| D29 | Group battles | v1: two foes on the field, both hit the player, you move first, TARGET picks, an ally hits the weakest foe on the last fight only. Foes do not target the ally | As stated. A fuller 2v2 (foes can hit the ally) is not built | `openBattle` / `foesGroupAct` in `game.js` |
 
 ## Not started, blocked on people
 

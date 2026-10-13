@@ -25,7 +25,11 @@
   const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
-    'story.switches', 'story.switch_chapter', 'story.switch_at'];   // BS: switch bookkeeping written by the engine, never a step
+    'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
+    // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
+    'story.know_us', 'story.heights_path', 'story.stock_warned', 'story.rx_enter', 'story.met_nia', 'story.rx_f1',
+    'story.met_cal', 'story.rx_f2', 'story.saw_arbiter', 'story.rx_f3', 'story.rx_done', 'story.sm_yard', 'story.sm_look',
+    'story.met_jed', 'story.sm_freed', 'story.sm_haul', 'story.sm_done'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -52,6 +56,10 @@
     { id: 'fen', done: ['story.met_fen'],
       text: 'Master Fen is out in the orchard, west of the square. She looks worried.', place: 'Fernbrook orchard',
       target: { map: 'fernbrook', x: 10, y: 9 } },
+    { id: 'heights', when: ['story.side_pick_done'], done: ['story.heights_done'], skipIf: ['story.seal1'], noImply: true,
+      text: 'Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', place: 'Fernbrook Heights',
+      glimmer: { text: 'Get to know us. RegenX in the Heights brews Atten. Stock up, then bring samples and plans.', place: 'Fernbrook Heights' },
+      target: { map: 'fb_heights', x: 12, y: 10 } },
     { id: 'orchard', done: ['story.orchard_cleared'],
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
       glimmer: { text: 'Tobin needs a hand packing crates at the orchard gate.', place: 'Orchard gate' },
@@ -120,13 +128,19 @@
     return neg ? !v : v;
   }
   const all = (cs, st) => (cs || []).every(c => evalCond(c, st));
-  const ownDone = (e, st) => e.done.length > 0 && all(e.done, st);
+  const ownDone = (e, st) => (e.done.length > 0 && all(e.done, st)) || (e.skipIf && all(e.skipIf, st));
   const eligible = (e, st) => all(e.when, st);
   // Progress implies the steps before it: a step counts as done when its own flags hold or any later step's do. Saves made
   // before a flag existed (story.reached_route1 is newer than Route 2) would otherwise pin the chain on a stale step.
   function doneMask(st){
     const m = CHAIN.map(e => ownDone(e, st));
-    for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
+    // A `noImply` step (Heights) is never marked done by a later step, and it does not block that
+    // later progress from counting the steps before it. Finishing the orchard still finishes Fernbrook's intro.
+    let later = false;
+    for (let i = m.length - 1; i >= 0; i--) {
+      if (!CHAIN[i].noImply && later) m[i] = true;
+      if (m[i]) later = true;
+    }
     return m;
   }
 

@@ -20,7 +20,7 @@ const PPSave = (() => {
   const MD = typeof MAPDATA === 'object' ? MAPDATA : null;
   const MAP_SIZE = {};
   const addMaps = bag => { if (bag) for (const [id, m] of Object.entries(bag)) if (m && m.w && m.h) MAP_SIZE[id] = [m.w, m.h]; };
-  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); }
+  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); addMaps(MD.heights && MD.heights.maps); }
   else MAP_SIZE.proto = [24, 20];
   const MAPS = Object.keys(MAP_SIZE);
   const MAP_W = 24, MAP_H = 20;                 // v1 positions were on the 24x20 proto map
