@@ -260,7 +260,8 @@ test('STANDING tab: hidden before the pick, two rows after it, 44 px tabs, no ov
   expect(view.overflowX).toBe(false);
   expect(view.innerRight).toBeLessThanOrEqual(view.vw + 1);
   for (const r of view.rows) { expect(r.rect.x).toBeGreaterThanOrEqual(0); expect(r.rect.right).toBeLessThanOrEqual(view.vw + 1); expect(r.rect.bottom).toBeLessThanOrEqual(view.vh + 1); }
-  await page.evaluate(() => { const t = document.querySelector('#toast'); t.classList.remove('show'); });   // the debug setStanding toast, not part of the tab
+  await page.evaluate(() => { const t = document.querySelector('#toast'); t.style.transition = 'none'; t.classList.remove('show'); });   // the debug setStanding toast, not part of the tab
+  await expect(page.locator('#toast')).toHaveCSS('opacity', '0');
   await shot(page, 'standing-tab');
   // back to NEXT STEP, and the empty line when nobody has any Standing
   await page.locator('#questTabNext').tap();
