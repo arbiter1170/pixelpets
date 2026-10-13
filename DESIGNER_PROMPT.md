@@ -221,6 +221,8 @@ Looks, if the generic `associate` look is too samey: `imogen` and `hollis` in `l
 
 ## Phase R5. Rook always leaves
 
+**Settled by Vincent on Oct 13, 2026, after this prompt was written.** This phase's bond fork is not the plan. If the player joins Glimmerwell, Rook stays with Glimmerwell. If the player stays with the Keepers, Rook eventually converts to good. Do not write a follow-or-stay fork, and do not write Rook leaving on the glimmer path. The scene itself is still not built. The original brief follows, for the record.
+
 Rook leaves Glimmerwell on every path. There is no path where he stays in the company. Bond is `story.rook_bond`, 0 to 3, and it never resets when the player switches. Write four variants of the Brinewick-road beat. The base scene is `brinewick_hook`. Use `brinewick_hook` for the Keepers wording and `brinewick_hook@glimmer` for the Glimmerwell wording, and branch inside each with `story.rook_bond>=2`.
 
 | Branch | What happens | Flag at the end |

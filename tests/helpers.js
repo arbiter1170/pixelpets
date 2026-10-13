@@ -86,7 +86,7 @@ async function shot(page, name) {
 // Plays an open scene to its end. Plain lines advance with Space (a first press completes the typing, a second one moves
 // on); a choice box answers with the next label in `choices` (an exact button text), after the 500 ms tap guard.
 // Returns the choice prompts seen, in order, so a test can check a confirm line. `onChoice(prompt, i)` runs before each answer.
-async function playScene(page, choices = [], onChoice = null) {
+async function playScene(page, choices = [], onChoice = null, onSeal = null) {
   const prompts = [];
   let left = choices.slice();
   for (let i = 0; i < 200; i++) {
@@ -95,6 +95,8 @@ async function playScene(page, choices = [], onChoice = null) {
       return s && { mode: s.mode, full: s.full, waiting: s.waiting, text: s.text };
     });
     if (!sc) return prompts;
+    const sealUp = await page.locator('#ovBattle.seal-only').isVisible().catch(() => false);
+    if (sealUp) { if (onSeal) await onSeal(); await page.locator('#btOk').click(); await page.waitForTimeout(40); continue; }
     if (sc.mode === 'choice') {
       if (!sc.full) { await page.waitForTimeout(40); continue; }
       await page.waitForFunction(() => window.PixelPets.optionsReady === true);

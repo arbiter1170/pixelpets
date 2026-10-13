@@ -24,6 +24,7 @@
   // Story flags written by the design data that are deliberately not chain steps (branch inputs, puzzle bits, values).
   const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
+    'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at'];   // BS: switch bookkeeping written by the engine, never a step
 
   const CHAIN = [
@@ -57,7 +58,7 @@
       target: { map: 'fernbrook', x: 9, y: 14 } },
     { id: 'hall1', done: ['story.seal1'],
       text: 'The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', place: 'Fernbrook Trial Hall',
-      glimmer: { text: 'Your partnership review is at the Trial Hall. Master Fen agreed to one match.', place: 'Fernbrook Trial Hall' },
+      glimmer: { text: "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", place: 'Fernbrook Trial Hall' },
       target: { map: 'fernbrook', x: 22, y: 6 } },
     { id: 'teaser', done: ['story.slice_end'],
       text: 'Rook has news, waiting outside the Trial Hall.', place: 'Trial Hall doorstep',
