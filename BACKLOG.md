@@ -3,6 +3,8 @@
 Prioritized for turning the prototype into something you can actually play day to day.
 Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
+**Next work (Oct 13 playtest): see [NEXT_PLAN.md](NEXT_PLAN.md)** for the audit of what is not built and the scoped work packages: quest/next-step indicator, harder level-scaled befriending, and the Keepers-vs-Glimmerwell side pick with Rook's branching conversion.
+
 ## Official priority order (Vincent, Oct 8, 2026)
 
 This order applies after the Kindle Wild rename, which shipped as 9cc836d and 9d294cd, and the later Walklings rename (game Walklings, creatures Walklings, region the Amberwild, energy glow; Oct 8, 2026). It overrides the older numbering below.
