@@ -125,8 +125,12 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
   Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
-  then the summon lines). A loss sends them back to their post, and the line arms again once someone on the team can battle.
-  They stop only after you win. A worn-out party walks through the line without a fight. Master Fen's Trial Hall in Fernbrook
+  then the summon lines).   A loss sends them back to their post, and the line arms again once someone on the team can battle.
+  They stop only after you win. A worn-out party walks through the line without a fight.
+  A full wipe sets `story.must_rest`: the town's local force (Town Watch where the Keepers hold the town, Patrol Unit
+  where Glimmerwell does) stops you at the road until a Lantern House rest. The next-step marker points at that
+  Lantern House first. Hearthmoor and Fernbrook are Keepers towns; Cobblecrest is Glimmerwell; routes and meadows are neutral.
+  MY WALKLINGS shows HUNGRY, SULKY, DROWSY, SPIRITED, GLOWING, TIRED and RESTING on each card. Master Fen's Trial Hall in Fernbrook
   opens once the orchard is cleared: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
   Seal #1 opens Route 2 (the creek, Wickerglen, and the Glow Census). Past the quarry gate is Cobblecrest: Dottie's
   stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. Cobblecrest's roofs, windows and

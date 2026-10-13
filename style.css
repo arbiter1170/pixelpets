@@ -287,7 +287,14 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .scene-badge.tired,.pc-badge.tired{background:var(--m);color:var(--w)}
 .scene-badge.fainted,.pc-badge.fainted,.sc-tag.fainted{background:var(--r);color:var(--w)}
 .scene-badge[hidden]{display:none}
-.pc-badge{display:inline-block;font-size:13px;line-height:1;padding:2px 4px;margin-left:4px;box-shadow:0 0 0 2px var(--k);vertical-align:middle}
+.card .statuses{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.pc-badge{display:inline-block;font-size:13px;line-height:1;padding:2px 4px;box-shadow:0 0 0 2px var(--k);vertical-align:middle}
+.pc-badge.hungry{background:var(--o);color:var(--k)}
+.pc-badge.sulky{background:var(--p);color:var(--w)}
+.pc-badge.drowsy{background:var(--b);color:var(--w)}
+.pc-badge.spirited{background:var(--y);color:var(--k)}
+.pc-badge.glowing{background:var(--l);color:var(--k)}
+.pc-badge.resting{background:var(--r);color:var(--w)}
 
 /* ---------- battle (BATTLE §8) ---------- */
 .overlay.battle{padding:0;align-items:stretch;background:var(--k)}

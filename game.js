@@ -857,6 +857,8 @@ const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
 if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.entries(MD.glimmer_path.speakers)) if (typeof v === 'string' && !LOOK_OF_NAME[k]) LOOK_OF_NAME[k] = v;
+LOOK_OF_NAME['Town Watch'] = LOOK_OF_NAME['Town Watch'] || 'villager';
+LOOK_OF_NAME['Patrol Unit'] = LOOK_OF_NAME['Patrol Unit'] || 'associate';
 // Build 3: side-keyed ambient lines. New keys win; a leftover `else` stays behind them so it only shows if both side keys miss.
 (function applyGlimmerLines(){
   const G = MD.glimmer_path; if (!G || !G.lines || !WORLD.fernbrook) return;
@@ -1046,7 +1048,10 @@ function onLand(){
   if (S.steps % 50 === 0 && !found) toast(S.steps + ' steps! Nice walk.');   // a find says more than the step count
   const x = S.world.x, y = S.world.y;
   const wp = warpAt(x, y);
-  if (wp && !(wp.need && !cond(wp.need, false))) { if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return; }
+  if (wp && !(wp.need && !cond(wp.need, false))) {
+    if (restBlocksExit(wp)) { clearMoves(); runSteps(forceWarnSteps()); return; }
+    if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return;
+  }
   const pk = objAt(x, y, o => o.kind === 'pickup');
   if (pk) {                                  // INVENTORY §8: clamped to the stack cap; the flag is set either way, so nothing loops
     const r = grantItem(pk.item, pk.n); S.flags['item.' + pk.id] = true; sfx(r.added ? 'stinger_item' : 'denied');
@@ -1526,7 +1531,46 @@ function drawCobbleTrim(g, cx, cy, t){
 // tile; off-screen it becomes an arrow at the viewport edge; on another map it points at the exit that starts the
 // shortest route there (BFS over warps and doors). Hidden during scenes, battles and the walk-in flash.
 const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length });
-const questCurrent = () => (S && typeof PPQuests !== 'undefined') ? PPQuests.current(questState()) : null;
+// Who holds a town. Absent = neutral (routes, meadows, the quarry). Interiors use their outdoor town.
+// Yellow: Fernbrook stays with the Keepers, Cobblecrest with Glimmerwell, until a later beat says otherwise.
+const AREA_CONTROL = { hearthmoor: 'keepers', fernbrook: 'keepers', cobblecrest: 'glimmer' };
+const LANTERN_AT = {
+  hearthmoor: { map: 'hearthmoor', x: 16, y: 13, bed: { map: 'hm_lantern_in', x: 1, y: 2 } },
+  fernbrook: { map: 'fernbrook', x: 5, y: 5 },
+  cobblecrest: { map: 'cobblecrest', x: 5, y: 5, bed: { map: 'cc_lantern_in', x: 1, y: 2 } },
+};
+const TOWN_FORCE = {
+  keepers: { who: 'Town Watch', line: 'Hold on. Your team is worn out. Rest at the Lantern House before the road.' },
+  glimmer: { who: 'Patrol Unit', line: 'Exit hold. A rested Walkling is required. Lantern House first. Have a bright day!' },
+};
+function townOf(mapId){
+  const m = mapId && WORLD[mapId]; if (!m) return null;
+  const id = m.kind === 'interior' ? m.outdoor : mapId;
+  return id && AREA_CONTROL[id] ? id : null;
+}
+function areaControl(mapId){ const id = townOf(mapId); return id ? AREA_CONTROL[id] : 'neutral'; }
+const needsRest = () => !!(S && S.flags['story.must_rest']);
+function restObjective(){
+  if (!needsRest()) return null;
+  const town = LANTERN_AT[S.world.respawn] ? S.world.respawn : 'hearthmoor';
+  const spot = LANTERN_AT[town];
+  const here = CUR && CUR.id;
+  const target = (spot.bed && here === spot.bed.map) ? spot.bed : { map: spot.map, x: spot.x, y: spot.y };
+  return { id: 'must_rest', text: 'Your team is worn out. Rest at the Lantern House before you leave town.', place: 'Lantern House', target };
+}
+function restBlocksExit(wp){
+  if (!needsRest() || !wp || !wp.to) return false;
+  const here = townOf(CUR.id); if (!here) return false;
+  return townOf(wp.to) !== here;
+}
+function forceWarnSteps(){
+  const f = TOWN_FORCE[areaControl(CUR.id)] || TOWN_FORCE.keepers;
+  return [['say', f.who, f.line]];
+}
+const questCurrent = () => {
+  if (!S || typeof PPQuests === 'undefined') return null;
+  return restObjective() || PPQuests.current(questState());
+};
 const ARROW_DOWN = ['..###..', '..###..', '..###..', '#######', '.#####.', '..###..', '...#...'];   // 7x7, drawn 1 px per cell with a PAL.k outline
 const ARROW = (() => {
   const H = ARROW_DOWN.length, W = ARROW_DOWN[0].length, at = (x, y) => ARROW_DOWN[y][x] === '#';
@@ -1965,7 +2009,7 @@ async function execStep(st){
       if (lk) { sc.view.look = lk; pend(() => { S.player.look = lk; }); }
       return;
     }
-    case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); return;
+    case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); delete S.flags['story.must_rest']; scene && scene.toasts.push('Your team is rested.'); }); return;
     case 'run': await playScene(a); return;
     case 'if': await execSteps(cond(a, true) ? b : c); return;
     case 'push': {
@@ -2555,6 +2599,7 @@ function closeBattle(){
 function respawnAfterWipe(){
   const id = WORLD[S.world.respawn] ? S.world.respawn : 'hearthmoor', m = WORLD[id];
   const at = m.respawnIn ? m.respawnIn : Object.assign({ map: id }, m.respawn || m.safe);
+  S.flags['story.must_rest'] = true;   // the road stays shut until a Lantern House rest, even after the nap ends
   clearMoves(); arriveAt(at);
   toast(m.respawnIn ? 'Your team is worn out... you wake at the Lantern House. Rest by the beds.'
     : 'Your team is worn out... you wake at the ' + (m.name || 'town') + ' Lantern House door. Step inside to rest.');
@@ -3027,7 +3072,7 @@ function renderQuest(q){
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
   // Stuck-state guard: after a loss the objective stays put; say what to do first when nobody can battle (spec questStuck[0]).
-  const stuck = S.party.length > 0 && !leadPet();
+  const stuck = S.party.length > 0 && !leadPet() && q.id !== 'must_rest';
   const note = $('#questNote'); note.hidden = !stuck; note.textContent = stuck ? PPQuests.STUCK[0] : '';
   const list = $('#questDone'); list.textContent = '';
   for (const e of PPQuests.completed(questState(), 3)) { const li = document.createElement('li'); li.textContent = e.text; list.appendChild(li); }
@@ -3079,6 +3124,7 @@ function questShowOnMap(){ closeQuest(); if (mapReady()) openMap(); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkTipText(){
+  const rest = restObjective(); if (rest) return escapeHtml(rest.text);
   if (!S || !S.flags['story.starter_received']) return WALK_TIP_DEFAULT;
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
@@ -3726,6 +3772,16 @@ const LORE = {
   vane: 'Vanelets turn with the weather and are rarely seen on a calm day.',
   dormouse: 'Dozmice hum in the cold and glow faintly when the path is dark.',
 };
+function statusChips(p){
+  const out = [], hb = hpBadge(p), m = moodOf(p);
+  if (hb) out.push({ text: hb, cls: hb === 'TIRED' ? 'tired' : 'resting' });
+  if (m.hungry) out.push({ text: 'HUNGRY', cls: 'hungry' });
+  if (m.sulky) out.push({ text: 'SULKY', cls: 'sulky' });
+  if (m.drowsy) out.push({ text: 'DROWSY', cls: 'drowsy' });
+  if (m.spirited) out.push({ text: 'SPIRITED', cls: 'spirited' });
+  if (m.glowing && !hb) out.push({ text: 'GLOWING', cls: 'glowing' });
+  return out;
+}
 function metPlaceName(){
   const id = isRoom() ? outdoorId() : (CUR && CUR.id);
   const m = id && WORLD[id];
@@ -3779,7 +3835,9 @@ function renderCollection(){
     info.children[0].textContent = petName(p);
     info.children[1].textContent = (cleanNick(p.nick) ? nameOf(spi(p), p.stage) : SPECIES[spi(p)].type) + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
     info.children[2].textContent = metLine(p);
-    const hb = hpBadge(p); if (hb) { const t = document.createElement('span'); t.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); t.textContent = hb; info.children[1].append(t); }
+    const tags = document.createElement('div'); tags.className = 'statuses';
+    for (const chip of statusChips(p)) { const t = document.createElement('span'); t.className = 'pc-badge ' + chip.cls; t.textContent = chip.text; tags.append(t); }
+    if (tags.childElementCount) info.append(tags);
     const open = document.createElement('button'); open.type = 'button'; open.className = 'card-open'; open.setAttribute('aria-label', 'Stats for ' + petName(p));
     const ico = document.createElement('span'); ico.className = 'ico'; ico.append(cv); open.append(ico, info);
     open.addEventListener('click', () => openStatsCard(p.id));

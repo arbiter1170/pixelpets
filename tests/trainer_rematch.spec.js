@@ -64,10 +64,12 @@ test('a loss re-arms the sight line after a rest, and a win retires it', async (
     trainer: PixelPets.state.flags['trainer.route1_pia'],
     spotted: PixelPets.state.flags['spotted.route1_pia'],
     map: PixelPets.state.world.map,
+    rest: PixelPets.state.flags['story.must_rest'],
   }));
   expect(lost.trainer).toBeUndefined();
   expect(lost.spotted).toBeUndefined();
   expect(lost.map).toBe('hm_lantern_in');
+  expect(lost.rest).toBe(true);
 
   await page.evaluate(() => PixelPets.healTeam());
   await stepIntoPia(page);
