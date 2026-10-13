@@ -28,7 +28,9 @@ Projects (CSS pixels, mobile Chromium: `isMobile`, `hasTouch`):
 | 375 | 375×667 | 2 |
 | 390 | 390×844 | 3 |
 
-Screenshots of the walk screen (QUEST button visible) and the open next-step panel are written to `test-results/screenshots/` (`walk-quest-<width>.png`, `quest-panel-<width>.png`). That folder is gitignored.
+Screenshots are written to `test-results/screenshots/` (gitignored): the walk screen with the QUEST button (`walk-quest-<width>.png`), the open next-step panel (`quest-panel-<width>.png`), and from Build 2 the STANDING tab (`standing-tab-<width>.png`), the Pledge desk confirm step (`switch-confirm-<width>.png`), the quest panel with the designer copy on each side (`quest-panel-keepers-<width>.png`, `quest-panel-glimmer-<width>.png`) and the d-pad icons (`quest-icon-<width>.png`). Reference copies of the Build 2 set live in `screenshots/standing/`.
+
+Shared helpers are in `tests/helpers.js`: `starterSave()` (the v2 seed used below), `installSave(page, save)`, `gotoGame(page, query)`, `trackErrors(test, expect)` (the console-error assertion), `boxesOverlap`, `shot(page, name)`, and `playScene(page, choices, onChoice)` (presses Space through plain lines and clicks `#sbChoices` buttons by label once `PixelPets.optionsReady` is true; returns the prompts it saw).
 
 A console message of type `error`, or any uncaught page error, fails the test.
 
@@ -45,14 +47,33 @@ A console message of type `error`, or any uncaught page error, fails the test.
 | glimmer side swaps the orchard scene and restores keepers | e | `sceneFor('side_pick')` and `sceneFor('orchard')` resolve. `setSide('glimmer')` makes `sceneFor('orchard')` return `orchard@glimmer` and `PixelPets.side` is `glimmer`. `setSide('keepers')` restores `orchard` and `keepers`. |
 | a minimal v2 save without faction or quest fields still loads as v2 | f | Seed is only `{v:2}`. After load, `PixelPets.side` is `keepers`. The save written back (the 5 s autosave; the seed had no `party`) still has `v: 2` and no `questSeen` or `story.side`. |
 
+`tests/standing.spec.js` (Build 2; all with `?debug=1` and the starter save unless noted):
+
+| Test | What it asserts |
+|---|---|
+| fresh save: both meters 0, tier 0, v stays 2; old save without standing loads the same | A v2 starter save with no `standing` key loads with `PixelPets.state.v` 2 and `state.standing` `{keepers: 0, glimmer: 0}`; `PixelPets.standing` reads points 0, tier 0 and the tier 0 name from `standingCfg()` on both sides, side `keepers`, 0 switches, `canSwitch` false; `standingCheck()` is empty. |
+| a saved standing is clamped to the range; a non-object becomes 0/0 | `standing: {keepers: 250, glimmer: -5}` loads as `max` / `min`. In a second browser context `standing: 'x'` loads as 0/0. |
+| thresholds and tier-up toasts come from the config, once per tier | `setStanding` at each threshold and one below it gives the tier the config says; the toast text is the tier's `toast`, shown once (a 0 to tier 2 jump shows only tier 2's toast). `['if', 'standing.keepers>=2', ...]` resolves on the live view. |
+| side_pick Yes (keepers) grants once; a replay does not grant again | Playing `side_pick` and choosing Yes adds `grants.sp_pick` to keepers and sets `standing.got.sp_pick`. Running the scene again leaves the points unchanged. |
+| switching halves the side you leave, counts, and is refused again until the next Seal | Keepers 30 / glimmer 12, pledged keepers. Juniper's Pledge desk shows the letter, then "Really? Keepers Standing 30 → 15" (screenshot). Yes: keepers 15, glimmer 12, side `glimmer`, `story.switches` 1, `sceneFor('orchard')` is `orchard@glimmer`, flags, seals, party and quest id unchanged. A second desk visit in the same chapter shows `switch.refused`. Setting `story.seal1` reopens it; `switchSide('keepers')` gives switches 2 and glimmer 6. |
+| the desk is hidden before the side pick and unavailable in a battle; the Lantern panel offers it | Before `story.side_pick_done` Juniper's talk has no Pledge desk option and `pledgeDesk()` returns false. After the pick (keepers) Juniper offers it; pledged glimmer, Keeper Amos's Lantern panel lists "Pledge desk". In a battle `PixelPets.standing.canSwitch` is false and `pledgeDesk` returns false. |
+| STANDING tab: hidden before the pick, two rows after it, 44 px tabs, no overflow | `#questTabs` hidden before the pick; after it both tabs are at least 44 px tall. The STANDING pane has two rows, the pledged row carries the PLEDGED marker, a 70%-wide bar at the mid-tier points, the emblem canvas has painted pixels, nothing overflows the viewport (screenshot). With both meters at 0 the empty line shows. |
+| quest copy: every step shows the designer text on both sides; lengths and dev check hold | A 32-row table (24 base + 8 glimmer) is compared with `PixelPets.quest` text and place for each step on each side; text ≤ 110 and place ≤ 24 chars; `questCheck` is empty; the panel DOM matches (screenshots). |
+| the quest icon is the delivered signpost and the other d-pad icons are unchanged | The painted `icon_quest`, `icon_map` and `icon_bag` canvases match the expected 8x8 grids pixel by pixel (screenshot). |
+
 Seeded saves set `pixelpets.geo` to `deny` (so the location card does not cover Walk) and `pixelpets.mute` to `1`. They also stamp `daily.hello` and `daily.warm_bowl` for today so the boot toasts do not fire. The fresh-boot test does not seed a save. The minimal-save test seeds only `{v:2}`.
 
 ## Dev-check return shapes
 
-All three mean "no failures" when the list is empty. Boot already `console.error`s a non-empty list, which fails these tests on its own.
+All four mean "no failures" when the list is empty. Boot already `console.error`s a non-empty list, which fails these tests on its own.
 
 - **`PixelPets.questCheck`** (getter, not a function). Returns the array from `PPQuests.devCheck(MAPDATA)` in `quests.js`: a list of problem strings. Empty array means every `story.*` flag the map data writes is a chain step or on `NOT_STEPS`, ids are unique, objective text fits 110 characters, and the last step can never be done.
 - **`PixelPets.glimmerCheck`** (getter). Returns the array from `glimmerDevCheck()` in `game.js`: a list of problem strings. Empty array means `data/glimmer_path.json` lines fit after tokens, variants have a base scene, and those variants set the same `story.*` flags as the base.
+- **`PixelPets.standingCheck()`** (function). Returns the array from `PPStanding.devCheck()` in `standing.js`: a list of problem strings. Empty array means `STANDING_CFG` is well formed (first threshold equals `min`, thresholds rise and stay within `max`, one tier per threshold on each side, blurbs and toasts fit 40 chars, grants are positive integers, `costDiv` is an integer ≥ 1). The scene-side check (every `standing` step names a known side and, when its amount is null, a known grant id) is part of `glimmerCheck`.
 - **`PixelPets.befriendCheck()`** (function). Returns the array from `befriendDevCheck()` in `moves.js`: a list of problem strings. Empty array means zone width does not rise with foe level, does not fall as HP falls, and stays inside the floor and cap.
 
 `PixelPets.befriendOdds(foeLv, hpFrac, opts)` returns `{ width, chance, speed, label }`. `width` and `chance` are numbers rounded to 3 decimal places. Defaults: stage 0, joy 60, no treat, lead level equal to the foe, engaged when `hpFrac < 1`, bonus 0.
+
+## Standing hooks
+
+`PixelPets.standing` (getter, read-only copy) returns `{ keepers: { points, tier, name }, glimmer: { points, tier, name }, side, switches, chapter, canSwitch }`. `PixelPets.standingCfg()` returns a copy of `STANDING_CFG`. With `?debug=1` only: `PixelPets.setStanding(side, points)` (clamps, saves, toasts a new tier), `PixelPets.switchSide(to, free)` (`free` skips the cost) and `PixelPets.pledgeDesk(to)` (opens the desk scene as the NPC would; returns false when the desk is not open). Without `?debug=1` these three are absent.

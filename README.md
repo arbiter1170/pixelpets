@@ -113,8 +113,9 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   width is `PixelPets.befriendOdds(18, 0.25).width`, which is 0.181 and rounds to 0.18 (lead the same level, joy 60,
   engaged because HP is under full). The quarry is Lv 16-19: the same call at 25% HP is 0.196 at Lv 16 (rounds to 0.20)
   and 0.174 at Lv 19 (rounds to 0.17). The marker speeds up 1.2% per
-  level over 2 (cap +35%). An untouched foe says "It's wary. Wear it down first." the first time you open the bar (not the guide or a
-  story creature); BACK or Escape clears that line. A WARY / FAIR / GOOD label under the hearts tracks the zone (< 0.15 / < 0.25 / more).
+  level over 2 (cap +35%). An untouched foe says "It's wary. Wear it down first.", "It keeps its distance. Tire it first." or
+  "It's not sure yet. Weaken it a bit." (one per battle, rotating through `BEFRIEND_WARY_LINES` in `moves.js`) the first time you
+  open the bar (not the guide or a story creature); BACK or Escape clears that line. A WARY / FAIR / GOOD label under the hearts tracks the zone (< 0.15 / < 0.25 / more).
   Console: `PixelPets.befriendOdds(foeLv, hpFrac, { stage, joy, treat, leadLv, engaged, bonus })` returns the width, a
   rough per-press chance (sine marker, zone centre 0.2..0.8) and the speed; `PixelPets.befriendCheck()` is the boot-time
   monotonicity check. Four-argument `befriendWidth` calls still give the old formula.
@@ -136,7 +137,12 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - Next step (QUEST, top-right of the d-pad; NEXT_PLAN WP-C): shows once you have a Walkling, hides during scenes, battles
   and overlays, and pulses until you open it on a new objective (`questSeen`, additive). The panel (NEXT STEP) has one or
   two lines, a place line, the last three done steps, SHOW ON MAP (the region map rings the target's node in red and names
-  the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Rest at a Lantern House first."
+  the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Your team is worn out. Rest at a
+  Lantern House first." (Build 2, GLIMMER_PATH v0.2 `questStuck[0]`; the other two stuck lines are kept as data in
+  `PPQuests.STUCK`). The objective text and places are the designer's (Build 2): 24 steps, and 8 of them have a
+  Glimmerwell variant (`glimmer: { text, place }` on the entry) that shows while `story.side` is `glimmer`; ids, `when`,
+  `done` and targets are shared by both sides. Text is at most 110 characters, places at most 24 (`questCheck` enforces both).
+  The QUEST button carries the designer's `icon_quest` (a yellow arrow signpost).
   On the Walk map a yellow arrow bobs above the target tile (a map's top row gets it from below, pointing up); when the
   target is off-screen an arrow sits at the viewport edge; when it is on another map the arrow points at the exit that
   starts the shortest route there (warps and doors). The tip under the d-pad repeats the objective once the first-steps
@@ -158,7 +164,33 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   and merged last). Console: `PixelPets.side`, `sceneFor(id)`, `trainerFor(id)`, `glimmerCheck` (line length after tokens,
   double spaces, unknown tokens, every variant has a base and sets the base's story flags; also run at boot), and with
   debug `setSide('glimmer' | 'keepers')`.
-  The flag icon is a placeholder until the designer's `icon_quest` lands. The first-wild step follows the live guide creature.
+  The first-wild step follows the live guide creature.
+- Standing (Build 2, GLIMMER_PATH v0.2 BS; NEXT_PLAN WP-B "Standing and switching"): each side has a 0-100 meter,
+  `S.standing = { keepers, glimmer }` (additive, `v` stays 2; `save.js` fills a missing or bad value with 0 and clamps the
+  rest). Tier = the highest threshold reached (0 / 10 / 25 / 45 / 70 by default: Stranger, Friend, Trusted, Hall Friend,
+  Warden's Ally for the Keepers; Guest, Associate, Junior Bright, Bright Lead, Founder's Pick for Glimmerwell). **Every
+  tier name, blurb, toast, threshold, cap, grant amount, switch cost and cooldown rule lives in `STANDING_CFG` in
+  `standing.js` and nowhere else**; the yellow decisions Q2/Q3 are one edit there. No story gate depends on Standing.
+  Scenes grant it with `["standing", side, n | null, oneShotId]` (a null amount reads `STANDING_CFG.grants[oneShotId]`;
+  `standing.got.<id>` stops a replay from granting twice). Grants wired: the side pick (+10 to the picked side), the orchard
+  (+5, either side), and Seal #1 / the Bright Tier 1 review (+10 to the side played). `cond()` accepts
+  `standing.keepers>=2` / `standing.glimmer>=2` (the tier, not points) for later lines and options. Reaching a new tier shows
+  that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
+  the spec has no numbers yet.
+  **Switching** happens at a Pledge desk: an extra option on Keeper Amos's Lantern House panel in Fernbrook (to the
+  Keepers) and on Associate Juniper's line at the Fernbrook stand (to Glimmerwell), only after `story.side_pick_done`, never
+  mid-scene or mid-battle, and only where it would be a change. A reference letter from the side you join reads first, then
+  "Really? Keepers Standing 30 → 15" with Yes / Think about it; Yes halves the side you leave (floor), keeps the side you
+  join, rewrites `story.side`, counts `story.switches`, records `story.switch_chapter` and `story.switch_at`, and plays a
+  short "performance review" line from the side you left (the letter and review lines are placeholders awaiting copy).
+  Cooldown: one switch per chapter, where a chapter is the number of Seals earned (`chapterOf()` in `standing.js`; the
+  spec does not define "chapter", see OPEN_DECISIONS). Switching never touches progression flags, Seals or lanyards,
+  `story.rook_bond`, the current objective, or `story.beat.*`; unplayed scenes simply resolve to the new side's variant.
+  The quest overlay gains a read-only **STANDING** tab once the pick is made: a row per side with the emblem, tier name,
+  blurb, a bar to the next tier and a PLEDGED marker, plus "Pledged to {faction}" and the explainer. Console:
+  `PixelPets.standing` (`{keepers: {points, tier, name}, glimmer: {...}, side, switches, chapter, canSwitch}`),
+  `standingCfg()`, `standingCheck()`; with debug `setStanding(side, n)`, `switchSide(to, free)`, `pledgeDesk(to)`.
+  The designer's `switch_desk_glimmer` kiosk art is in the world-art table but not placed on any map yet.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   growing up (each line's grow-up move, then any level moves of the new form). Older saves get missed grow-up
   moves on their next visit ("<name> remembers something from growing up!").
