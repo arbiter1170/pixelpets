@@ -1,92 +1,814 @@
 {
   "spec": "GLIMMER_PATH",
-  "version": "0.2-b0-stub+bs",
-  "status": "WP-B0 stub + BS grants. Engine wiring is final; every line here is PLACEHOLDER text to be replaced by the B1-B4 content passes. Standing grants: [\"standing\", side, null, oneShotId] takes its amount from STANDING_CFG.grants (standing.js).",
-  "_about": "The Glimmerwell branch of Act 1 (NEXT_PLAN WP-B). Same shapes as the other data files: `slicePatch` (addObjs/replaceObjs on existing maps), `scenes`, `trainers`, `flags`. A scene `X@glimmer` runs instead of `X` while story.side is glimmer; a trainer `id@glimmer` is merged over `id`. The branch sets the SAME progression flags as the Keepers path (story.orchard_cleared, story.seal1, ...), so maps, gates, the quest chain and the region map need no per-side forks. No new maps. Edit this file freely: it is not a verbatim design copy.",
+  "version": "0.2-b3",
+  "status": "Build 3: Fernbrook glimmer scenes plus the Bright Pavilion Tour (Hall slot 1). Slot 2 is not in this build.",
+  "_about": "The Glimmerwell branch of Act 1. Same shapes as the other data files. A scene X@glimmer runs instead of X while story.side is glimmer; a trainer id@glimmer is merged over id. The branch sets the same progression flags as the Keepers path. No new maps.",
+  "_wiring": "Standing steps (sp_pick, orchard_g, seal1_g, tour1_match) and the seal step are engine grants kept with the delivered lines. Tour completion is seal1@glimmer, so seal1_g is granted once there. tour1_match (+5) runs only when trainer.hall1_fen is already set, which is the optional match win. The Keepers confirm label dropped its final question mark so the label stays within 30 characters.",
+  "_decisions": {
+    "hall_slot_1": "Tour. Vincent, Oct 13, 2026: slot 1 stays the stated default (Bright Pavilion Tour). The Audit battle is optional stop 4.",
+    "hall_slot_2": "Sacrifice, with Quota as the free floor. Not built in Build 3.",
+    "rook_r5": "Keepers path: Rook eventually converts to good. Glimmerwell path: Rook stays with Glimmerwell. Not bond-gated, and there is no follow-or-stay fork. The R5 scene is not in this build. teaser@glimmer does not say he leaves."
+  },
+  "placeholders": [
+    "tour1_s1, tour1_s2, tour1_s3, tour1_s4, tour1_wait, and the stage-photo line in seal1@glimmer use /* PLACEHOLDER: needs copy from Vincent */. Missing: lantern recipients, slogan text, Comfort Check deflections, Census-board lines, stage-photo presentation, and the hidden-doubt flag name (tour.doubt is a stand-in nothing reads yet)."
+  ],
   "slicePatch": {
     "maps": {
       "fernbrook": {
         "replaceObjs": [
-          { "kind": "trainer", "id": "fern_associate", "x": 9, "y": 14, "when": ["!story.side=glimmer"] }
+          {
+            "kind": "trainer",
+            "id": "fern_associate",
+            "x": 9,
+            "y": 14,
+            "when": [
+              "!story.side=glimmer"
+            ]
+          }
         ],
         "addObjs": [
-          { "kind": "trigger", "id": "fb_side_pick", "x": 9, "y": 10, "r": 0,
-            "when": ["!story.side_pick_done", "!story.orchard_cleared"], "scene": "side_pick",
-            "_note": "The orchard gate (the only way in). Tobin (9,14) faces up with sight 3, so (9,11)-(9,13) are his; the gate is the last tile where the player can still choose. Not gated on met_glimmerwell/met_fen: both pitch inside the scene, so the fork cannot be walked past." },
-          { "kind": "npc", "id": "tobin_glim", "name": "Tobin", "x": 9, "y": 14, "look": "associate",
-            "when": ["story.side=glimmer"],
-            "lines": { "story.seal1": "Bright Tier 1! Told you that you had the sparkle. Have a bright day!",
-                       "else": "Crates packed, partners happy. The Hall is reviewing your file now. Have a bright day!" } },
-          { "kind": "npc", "id": "rook_fb_glim", "name": "Rook", "x": 22, "y": 8, "when": ["story.side=glimmer", "seal:seal_glim_1", "!story.slice_end"], "scene": "teaser",
-            "_note": "rook_fb and fb_teaser (maps_slice) key on seal:seal_fernbrook. These twins key on the lanyard so Rook's teaser (story.slice_end) fires on the glimmer path too. teaser@glimmer is B1 content." },
-          { "kind": "trigger", "id": "fb_teaser_glim", "x": 22, "y": 6, "r": 0, "when": ["story.side=glimmer", "seal:seal_glim_1", "!story.slice_end"], "scene": "teaser" }
+          {
+            "kind": "trigger",
+            "id": "fb_side_pick",
+            "x": 9,
+            "y": 10,
+            "r": 0,
+            "when": [
+              "!story.side_pick_done",
+              "!story.orchard_cleared"
+            ],
+            "scene": "side_pick",
+            "_note": "The orchard gate. Tobin (9,14) faces up with sight 3, so (9,11)-(9,13) are his. Not gated on met_glimmerwell/met_fen: both pitch inside the scene."
+          },
+          {
+            "kind": "npc",
+            "id": "tobin_glim",
+            "name": "Tobin",
+            "x": 9,
+            "y": 14,
+            "look": "associate",
+            "when": [
+              "story.side=glimmer"
+            ],
+            "lines": {
+              "story.seal1": "Tier 1! Told you you had sparkle.",
+              "else": "Crates packed, units happy. Nice!"
+            }
+          },
+          {
+            "kind": "npc",
+            "id": "rook_fb_glim",
+            "name": "Rook",
+            "x": 22,
+            "y": 8,
+            "when": [
+              "story.side=glimmer",
+              "seal:seal_glim_1",
+              "!story.slice_end"
+            ],
+            "scene": "teaser",
+            "_note": "Keyed on the lanyard so teaser@glimmer (story.slice_end) fires on the glimmer path. He stays a Glimmerwell colleague here."
+          },
+          {
+            "kind": "trigger",
+            "id": "fb_teaser_glim",
+            "x": 22,
+            "y": 6,
+            "r": 0,
+            "when": [
+              "story.side=glimmer",
+              "seal:seal_glim_1",
+              "!story.slice_end"
+            ],
+            "scene": "teaser"
+          },
+          {
+            "kind": "npc",
+            "id": "fen_after",
+            "name": "Master Fen",
+            "x": 10,
+            "y": 9,
+            "look": "fen",
+            "when": [
+              "story.orchard_cleared"
+            ],
+            "lines": {
+              "story.side=glimmer": "The trees still know your step.",
+              "!story.side=glimmer": "Thank you. The blossoms remember."
+            },
+            "_note": "fen_orchard leaves once the orchard is cleared. These lines need a Fen who stays. No new look."
+          },
+          {
+            "kind": "trigger",
+            "id": "fb_tour1",
+            "x": 14,
+            "y": 7,
+            "r": 0,
+            "when": [
+              "story.side=glimmer",
+              "story.orchard_cleared",
+              "!story.tour1_s1"
+            ],
+            "scene": "tour1_s1",
+            "_note": "Tour stop 1, south of the lantern stand (13,6). (13,7) is the faded Fuzzwick, so the trigger sits on the grass beside Juniper."
+          },
+          {
+            "kind": "trigger",
+            "id": "fb_tour2",
+            "x": 14,
+            "y": 16,
+            "r": 0,
+            "when": [
+              "story.side=glimmer",
+              "story.tour1_s1",
+              "!story.tour1_s2"
+            ],
+            "scene": "tour1_s2",
+            "_note": "Tour stop 2, the packed-crate tile. The crate prop is gone after orchard_cleared, so this trigger is the stop. No new prop."
+          },
+          {
+            "kind": "trigger",
+            "id": "fb_tour3",
+            "x": 22,
+            "y": 6,
+            "r": 0,
+            "when": [
+              "story.side=glimmer",
+              "story.tour1_s2",
+              "!story.tour1_s3"
+            ],
+            "scene": "tour1_s3",
+            "_note": "Tour stop 3, the Trial Hall doorstep (the pavilion rented for the day). Stop 4 is the Hall panel once this flag is set."
+          }
         ]
       }
     }
   },
   "scenes": {
     "side_pick": [
-      ["say", "", "Tobin waves from the crates. Master Fen hurries up behind you."],
-      ["say", "Tobin", "Hi, {name}! These little ones are off to a Comfort Sanctuary. Help us pack, earn a Junior Bright lanyard!"],
-      ["say", "Master Fen", "Or help me keep them home. These trees are their family, {name}."],
-      ["say", "", "This decides who you travel with for a while. You can change course later, but it will cost you."],
-      ["choice", "Who do you help?", [
-        ["Help Fen (Keepers)", [
-          ["choice", "Stand with the Keepers?", [
-            ["Yes", [
-              ["setFlag", "story.side", "keepers"], ["setFlag", "story.side_pick_done", true], ["setFlag", "story.met_fen", true],
-              ["standing", "keepers", null, "sp_pick"],
-              ["say", "Master Fen", "Thank you. Tobin won't listen to me. Perhaps he'll listen to a keeper with a strong team."]]],
-            ["Think about it", [["say", "", "You step back from the gate."]]]]]]],
-        ["Help Tobin (Glimmerwell)", [
-          ["choice", "Join Glimmerwell?", [
-            ["Yes", [
-              ["setFlag", "story.side", "glimmer"], ["setFlag", "story.side_pick_done", true], ["setFlag", "story.met_fen", true],
-              ["standing", "glimmer", null, "sp_pick"],
-              ["say", "Tobin", "Welcome to the partnership! Here, grab that crate lid."],
-              ["run", "orchard"]]],
-            ["Think about it", [["say", "", "You step back from the gate."]]]]]]]
-      ]]
+      [
+        "say",
+        "",
+        "Crates line the orchard path. Tobin hums by the stack. Master Fen waits under the first apple tree."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "{name}, my Pomlets have rooted here since the first blossom. Help me open these crates?"
+      ],
+      [
+        "say",
+        "Master Fen",
+        "No lanterns, no lanyards. Just a keeper's hands and a little patience."
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Hi hi! Don't mind us. We're relocating these little ones to a lovely Comfort Sanctuary."
+      ],
+      [
+        "say",
+        "Tobin",
+        "Tired is just relaxed with bad lighting! They'll nap under soft lamps. Clean energy, all round."
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Help us pack and we'll sign you up for a Junior Bright trial lanyard. Today only!"
+      ],
+      [
+        "say",
+        "Tobin",
+        "Rook got one. Just saying."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "A lanyard is a ribbon, {name}. Roots are a promise. Choose what you can carry."
+      ],
+      [
+        "say",
+        "",
+        "This decides who you travel with for a while. You can change course later, but it will cost you."
+      ],
+      [
+        "choice",
+        "Who do you help?",
+        [
+          [
+            "Open the crates with Fen",
+            [
+              [
+                "choice",
+                "Really? Stand with the Keepers",
+                [
+                  [
+                    "Yes, the Keepers",
+                    [
+                      [
+                        "setFlag",
+                        "story.side",
+                        "keepers"
+                      ],
+                      [
+                        "setFlag",
+                        "story.side_pick_done",
+                        true
+                      ],
+                      [
+                        "setFlag",
+                        "story.met_fen",
+                        true
+                      ],
+                      [
+                        "standing",
+                        "keepers",
+                        null,
+                        "sp_pick"
+                      ],
+                      [
+                        "say",
+                        "Master Fen",
+                        "Then we grow together. Tobin won't listen to me. He might listen to a keeper with a strong team."
+                      ],
+                      [
+                        "say",
+                        "Associate Juniper",
+                        "Aw. No hard feelings! The trial lanyard offer stays open. Have a bright day!"
+                      ],
+                      [
+                        "say",
+                        "Master Fen",
+                        "And if your path ever bends, the Lantern House keeps a door open. Paths do bend."
+                      ]
+                    ]
+                  ],
+                  [
+                    "Think about it",
+                    [
+                      [
+                        "say",
+                        "",
+                        "You step back from the gate. The orchard can wait a moment."
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "Pack crates with Tobin",
+            [
+              [
+                "choice",
+                "Really? Join Glimmerwell?",
+                [
+                  [
+                    "Yes, Glimmerwell",
+                    [
+                      [
+                        "setFlag",
+                        "story.side",
+                        "glimmer"
+                      ],
+                      [
+                        "setFlag",
+                        "story.side_pick_done",
+                        true
+                      ],
+                      [
+                        "setFlag",
+                        "story.met_fen",
+                        true
+                      ],
+                      [
+                        "standing",
+                        "glimmer",
+                        null,
+                        "sp_pick"
+                      ],
+                      [
+                        "say",
+                        "Associate Juniper",
+                        "Yay! Welcome to the partnership, {name}! Brighter by nature."
+                      ],
+                      [
+                        "say",
+                        "Tobin",
+                        "Grab that crate lid, trainee. First rule: always smile at the units."
+                      ],
+                      [
+                        "say",
+                        "Master Fen",
+                        "...I see. The Lantern House door stays open, {name}. It always has."
+                      ],
+                      [
+                        "run",
+                        "orchard"
+                      ]
+                    ]
+                  ],
+                  [
+                    "Think about it",
+                    [
+                      [
+                        "say",
+                        "",
+                        "You step back from the gate. The orchard can wait a moment."
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "Think about it",
+            [
+              [
+                "say",
+                "",
+                "You step back from the gate. Nobody is in a hurry but the crates."
+              ]
+            ]
+          ]
+        ]
+      ]
     ],
     "orchard@glimmer": [
-      ["say", "", "You hold the lid. Tobin coaxes a Pomlet in with a Glimmer lantern. It goes quiet."],
-      ["choice", "The Pomlet looks back at you.", [
-        ["Pat the crate", [["say", "Tobin", "Aw. They love that. Comfier already!"]]],
-        ["Say nothing", [["say", "Tobin", "First day nerves! You'll get the hang of it."]]]
-      ]],
-      ["say", "Master Fen", "{name}. I hoped you were different. Go on, then. The Hall will judge you, not I."],
-      ["say", "", "Fen walks back to the Hall without another word. The crates are loaded."],
-      ["say", "Tobin", "Great work! Head to the Hall. Partnership review, then your lanyard. Have a bright day!"],
-      ["setFlag", "story.orchard_cleared", true],
-      ["standing", "glimmer", null, "orchard_g"]
+      [
+        "say",
+        "",
+        "Tobin hands you a crate lid with a mint bow on it. Juniper sets a Glimmer lantern by the stack."
+      ],
+      [
+        "say",
+        "Tobin",
+        "Easy does it. Lantern goes in first. They love the hum. Watch!"
+      ],
+      [
+        "say",
+        "",
+        "A Pomlet sniffs the lantern, yawns, and curls up. Its leaves look a shade paler. Probably the light."
+      ],
+      [
+        "choice",
+        "The Pomlet blinks at you.",
+        [
+          [
+            "Pat the crate",
+            [
+              [
+                "say",
+                "Tobin",
+                "Aw, see? That's a happy unit. Comfier already."
+              ]
+            ]
+          ],
+          [
+            "Hum along",
+            [
+              [
+                "say",
+                "Associate Juniper",
+                "You're a natural! Put that on your review."
+              ]
+            ]
+          ],
+          [
+            "Say nothing",
+            [
+              [
+                "say",
+                "Tobin",
+                "First-day nerves! It gets easier. Mostly."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Three crates, all snug. Quarterly targets, here we come!"
+      ],
+      [
+        "say",
+        "Master Fen",
+        "{name}."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "These trees will blossom without them this spring. I hoped a keeper's hands would know better."
+      ],
+      [
+        "choice",
+        "What do you say?",
+        [
+          [
+            "They'll be comfy",
+            [
+              [
+                "say",
+                "Master Fen",
+                "Comfy. Roots don't need comfy. They need home."
+              ]
+            ]
+          ],
+          [
+            "I'm sorry, Fen",
+            [
+              [
+                "say",
+                "Master Fen",
+                "Sorry is a seed. We'll see what it grows into."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Master Fen",
+        "Go on. Come to the Hall if you must. I'll stand for the orchard there."
+      ],
+      [
+        "say",
+        "",
+        "Fen walks to the Hall without looking back. The cart rolls off toward the pavilion."
+      ],
+      [
+        "say",
+        "Tobin",
+        "Great work! Head to the Hall for your partnership review. Have a bright day!"
+      ],
+      [
+        "setFlag",
+        "story.orchard_cleared",
+        true
+      ],
+      [
+        "standing",
+        "glimmer",
+        null,
+        "orchard_g"
+      ]
     ],
     "seal1@glimmer": [
-      ["say", "Associate Juniper", "Review complete! This is your Bright Tier 1 lanyard. Wear it proudly, partner."],
-      ["give", "heal_snack", 2],
-      ["say", "Associate Juniper", "Welcome snacks, too. Brighter by nature! Have a bright day!"],
-      ["setFlag", "story.seal1", true],
-      ["standing", "glimmer", null, "seal1_g"]
+      [
+        "say",
+        "Associate Juniper",
+        "Review complete! Here's your Bright Tier 1 Lanyard. Clip it on, partner!"
+      ],
+      [
+        "seal",
+        "seal_glim_1"
+      ],
+      [
+        "give",
+        "heal_snack",
+        2
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Welcome snacks, too! Units and keepers both run better on snacks."
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Wear it everywhere. People trust mint. Brighter by nature!"
+      ],
+      [
+        "if",
+        "trainer.hall1_fen",
+        [
+          [
+            "standing",
+            "glimmer",
+            null,
+            "tour1_match"
+          ]
+        ],
+        []
+      ],
+      [
+        "standing",
+        "glimmer",
+        null,
+        "seal1_g"
+      ],
+      [
+        "say",
+        "",
+        "/* PLACEHOLDER: needs copy from Vincent */"
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Have a bright day!"
+      ],
+      [
+        "setFlag",
+        "story.seal1",
+        true
+      ]
+    ],
+    "teaser@glimmer": [
+      [
+        "say",
+        "Rook",
+        "You got your Tier 1? Took you long enough. I'm going for Bright of the Month."
+      ],
+      [
+        "say",
+        "Rook",
+        "Imogen says the Route 2 Census needs volunteers. First one there gets the good clipboard."
+      ],
+      [
+        "say",
+        "Rook",
+        "Race you! ...Hey. Did those Pomlets look kind of grey to you? Never mind. Lighting."
+      ],
+      [
+        "say",
+        "",
+        "Route 2 is open now. Keep heading east!"
+      ],
+      [
+        "setFlag",
+        "story.slice_end",
+        true
+      ]
+    ],
+    "tour1_s1": [
+      [
+        "say",
+        "Associate Juniper",
+        "/* PLACEHOLDER: needs copy from Vincent */"
+      ],
+      [
+        "choice",
+        "/* PLACEHOLDER: needs copy from Vincent */",
+        [
+          [
+            "Hand a lantern",
+            [
+              [
+                "say",
+                "",
+                "/* PLACEHOLDER: needs copy from Vincent */"
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "choice",
+        "/* PLACEHOLDER: needs copy from Vincent */",
+        [
+          [
+            "Hand a lantern",
+            [
+              [
+                "say",
+                "",
+                "/* PLACEHOLDER: needs copy from Vincent */"
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "choice",
+        "/* PLACEHOLDER: needs copy from Vincent */",
+        [
+          [
+            "Hand a lantern",
+            [
+              [
+                "say",
+                "",
+                "/* PLACEHOLDER: needs copy from Vincent */"
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "setFlag",
+        "story.tour1_s1",
+        true
+      ]
+    ],
+    "tour1_s2": [
+      [
+        "say",
+        "Associate Juniper",
+        "/* PLACEHOLDER: needs copy from Vincent */"
+      ],
+      [
+        "choice",
+        "/* PLACEHOLDER: needs copy from Vincent */",
+        [
+          [
+            "Praise them",
+            [
+              [
+                "say",
+                "Associate Juniper",
+                "/* PLACEHOLDER: needs copy from Vincent */"
+              ]
+            ]
+          ],
+          [
+            "Question it",
+            [
+              [
+                "say",
+                "Associate Juniper",
+                "/* PLACEHOLDER: needs copy from Vincent */"
+              ],
+              [
+                "inc",
+                "tour.doubt"
+              ]
+            ]
+          ],
+          [
+            "Pat a crate",
+            [
+              [
+                "say",
+                "",
+                "/* PLACEHOLDER: needs copy from Vincent */"
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "setFlag",
+        "story.tour1_s2",
+        true
+      ]
+    ],
+    "tour1_s3": [
+      [
+        "say",
+        "Associate Juniper",
+        "/* PLACEHOLDER: needs copy from Vincent */"
+      ],
+      [
+        "choice",
+        "/* PLACEHOLDER: needs copy from Vincent */",
+        [
+          [
+            "First slogan",
+            [
+              [
+                "say",
+                "Associate Juniper",
+                "/* PLACEHOLDER: needs copy from Vincent */"
+              ]
+            ]
+          ],
+          [
+            "Second slogan",
+            [
+              [
+                "say",
+                "Associate Juniper",
+                "/* PLACEHOLDER: needs copy from Vincent */"
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "setFlag",
+        "story.tour1_s3",
+        true
+      ]
+    ],
+    "tour1_s4": [
+      [
+        "say",
+        "Associate Juniper",
+        "/* PLACEHOLDER: needs copy from Vincent */"
+      ],
+      [
+        "choice",
+        "/* PLACEHOLDER: needs copy from Vincent */",
+        [
+          [
+            "Begin review",
+            [
+              [
+                "battle",
+                "hall1_fen"
+              ]
+            ]
+          ],
+          [
+            "Skip the match",
+            [
+              [
+                "run",
+                "seal1"
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "tour1_wait": [
+      [
+        "say",
+        "Associate Juniper",
+        "/* PLACEHOLDER: needs copy from Vincent */"
+      ]
     ]
   },
   "trainers": {
+    "fern_associate": {
+      "lines": {
+        "intro": "Oh! A keeper. These little ones are going somewhere comfy. It's a partnership!",
+        "win": "Wow, okay! I'll... check with my manager. Have a bright day!",
+        "lose": "See? They're happier with us. Have a bright day!"
+      },
+      "_note": "Keepers-path Tobin. Win and lose match maps_slice. The intro is the delivered line."
+    },
     "hall1_fen@glimmer": {
       "seal": "seal_glim_1",
-      "panel": { "who": "Associate Juniper", "greet": "Welcome to the partnership review, {name}! Master Fen has agreed to one match.", "ask": "Begin the review?", "begin": "Begin review",
-                 "again": "Your file is complete, partner. Have a bright day!" },
-      "lines": { "intro": "You chose their lamps over my trees. Show me the orchard taught you nothing, then.",
-                 "win": "...Strong. Stronger than I'd like. Take your ribbon and go.",
-                 "lose": "Roots hold. Think about why, before you come back." }
+      "panel": {
+        "who": "Associate Juniper",
+        "greet": "Partnership review time! Master Fen agreed to one match. She looks thrilled.",
+        "ask": "Begin the review?",
+        "begin": "Begin review",
+        "again": "Your file's complete, partner! Have a bright day!"
+      },
+      "lines": {
+        "intro": "You packed my orchard into crates. Show me what roots you have left, {name}.",
+        "win": "...Strong. Stronger than I'd like. Take your ribbon. The trees will remember.",
+        "lose": "Roots hold. Rest a while, and think about why."
+      }
     }
   },
+  "lines": {
+    "_note": "Ambient NPC lines (<=40). Keys are conditions. game.js merges juniper, odile, and amos; tobin_glim and fen_after already carry theirs on the map objects.",
+    "juniper": {
+      "story.side=glimmer": "Lanyard looks great on you, partner!",
+      "!story.side=glimmer": "Free lantern? Offer never expires!"
+    },
+    "tobin_glim": {
+      "story.seal1": "Tier 1! Told you you had sparkle.",
+      "else": "Crates packed, units happy. Nice!"
+    },
+    "odile": {
+      "story.side=glimmer": "Mint's a bold colour for an orchard.",
+      "!story.side=glimmer": "Fen's trees look brighter today."
+    },
+    "amos": {
+      "story.side=glimmer": "Beds are beds. Rest up, mint-vest.",
+      "!story.side=glimmer": "Rest well, keeper. Roots need sleep."
+    },
+    "fen_after": {
+      "story.side=glimmer": "The trees still know your step.",
+      "!story.side=glimmer": "Thank you. The blossoms remember."
+    }
+  },
+  "walkAway": [
+    "The crates aren't going anywhere. Yet.",
+    "Fen watches the apple trees.",
+    "Juniper waves. \"Still deciding?\"",
+    "A Pomlet peeks out of a crate slat.",
+    "Tobin restacks the same crate. Again."
+  ],
+  "speakers": {
+    "Master Fen": "fen",
+    "Associate Juniper": "associate",
+    "Tobin": "associate",
+    "Rook": "rook",
+    "Warden Ilse": "ilse",
+    "Keeper Amos": "villager",
+    "Odile": "villager"
+  },
   "flags": {
-    "story.side": "\"keepers\" (default, absent on old saves) or \"glimmer\". Pledge, not permanent (BS adds switching).",
+    "story.side": "\"keepers\" (default, absent on old saves) or \"glimmer\". Pledge, not permanent.",
     "story.side_pick_done": "The Fernbrook gate choice was made once.",
-    "story.beat.<scene>": "Set by the engine when a story beat (a scene that sets a story.* flag) finishes: which side played it.",
-    "story.switches": "BS: how many times the pledge changed at a Pledge desk (number, written by the engine).",
-    "story.switch_chapter": "BS: the chapter (Seals earned) of the last switch; one switch per chapter (STANDING_CFG.switch.cooldown).",
-    "story.switch_at": "BS: Date.now() of the last switch.",
-    "standing.got.<id>": "BS: a one-shot Standing grant already made (STANDING_CFG.grants); a replayed scene never grants twice.",
-    "standing.top.<side>": "BS: the highest tier whose tier-up toast has shown for that side.",
-    "seals.seal_glim_1": "Bright Tier 1 lanyard (the Glimmer Hall #1 stub). Sets story.seal1 through seal1@glimmer."
+    "story.beat.<scene>": "Set by the engine when a story beat finishes: which side played it.",
+    "story.switches": "How many times the pledge changed at a Pledge desk.",
+    "story.switch_chapter": "The chapter (Seals earned) of the last switch.",
+    "story.switch_at": "Date.now() of the last switch.",
+    "story.tour1_s1": "Bright Pavilion Tour stop 1 done (lantern stand). Not a quest step.",
+    "story.tour1_s2": "Tour stop 2 done (Comfort Check at the crates). Not a quest step.",
+    "story.tour1_s3": "Tour stop 3 done (Hall slideshow). Not a quest step. Stop 4 stays open until story.seal1.",
+    "tour.doubt": "PLACEHOLDER name. +1 when the Comfort Check question is chosen. Nothing reads it yet. Vincent still needs the real flag name.",
+    "standing.got.<id>": "A one-shot Standing grant already made.",
+    "standing.top.<side>": "The highest tier whose toast has shown for that side.",
+    "seals.seal_glim_1": "Bright Tier 1 lanyard. Set by the seal step in seal1@glimmer (and by a Hall win). story.seal1 is set by that same scene."
   }
 }

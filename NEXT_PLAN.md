@@ -242,7 +242,9 @@ Beat map (R = Rook beat, same ids for both paths; the content branches by `story
 | R4 | Quarry (rival2) | He loses or wins; "Was my training wrong?" on a loss | He sides with Dorian on stage, then privately objects to "units" | `rival2_result`, `rook_bond` +1 |
 | R5 | Brinewick road (replace/extend `brinewick_hook`) | **Conversion node.** Rook quits Glimmerwell on the cart | **Conversion node.** Same event, seen from the other side | `side`, `rook_bond` |
 
-R5 outcomes (the tree to write):
+R5 outcomes were the tree to write. **Vincent (Oct 13, 2026) replaced this tree.** Keepers path: Rook eventually converts to good. Glimmerwell path: Rook stays with Glimmerwell. Bond does not gate it, and there is no follow-or-stay fork. The scene is not built. The old tree is kept below so the rejected plan stays visible:
+
+R5 outcomes (rejected Oct 13, 2026; do not build):
 - Keepers + bond >= 2: Rook returns the lanyard, joins as an ally (`rook_end = ally`; he can be a recurring friend NPC, a future double-battle partner, or a gift item).
 - Keepers + bond < 2: he leaves quietly, apologises later (`rook_end = parted`); the player can still reconcile on the next map.
 - Glimmer + bond >= 2: he warns the player first, then quits; the player gets a **fork**: follow Rook (a free switch to `keepers`, no Standing penalty, with a bridging scene) or stay (`rook_end = rival`: Rook becomes a recurring rival who fights the player). Since switching is now allowed any time (see below), "stay" is not a lock-in either: the player can still switch later at a desk.

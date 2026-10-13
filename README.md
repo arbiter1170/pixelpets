@@ -157,13 +157,16 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   glimmer (`sceneSteps`), a trainer `id@glimmer` is merged over `id` (lines merged), objects use `when: ["story.side=glimmer"]`;
   new step `["inc", flag, n?]`, numeric conditions `flag>=n`, `<=`, `>`, `<` (unset counts as 0), and an optional 4th
   element on a `choice` option (`when`, a condition or a list) hides it until earned. When a story beat (a scene that sets
-  a `story.*` flag) finishes, `story.beat.<scene>` records which side played it (first play wins). The glimmer Hall #1 is a
-  stub: the Hall panel reads an optional `panel` {who, greet, ask, begin, again} off the side-merged `hall1_fen`, the review
-  battle reuses Fen's roster, and the win stores `seals.seal_glim_1` ("Bright Tier 1 Lanyard", placeholder art) and runs
-  `seal1@glimmer`. All of it lives in `data/glimmer_path.json` (ours, not a design copy; registered in `tools/gen_mapdata.py`
-  and merged last). Console: `PixelPets.side`, `sceneFor(id)`, `trainerFor(id)`, `glimmerCheck` (line length after tokens,
-  double spaces, unknown tokens, every variant has a base and sets the base's story flags; also run at boot), and with
-  debug `setSide('glimmer' | 'keepers')`.
+  a `story.*` flag) finishes, `story.beat.<scene>` records which side played it (first play wins). Build 3 replaces the
+  Fernbrook glimmer dialog and the Hall #1 audit stub with the Bright Pavilion Tour (four stops on the existing map:
+  lantern stand, crate Comfort Check, Hall slideshow, optional Fen match). The Hall panel still reads `panel` off the
+  side-merged `hall1_fen`. Keepers still battle Fen for the Fernbrook Seal. The glimmer win or the skip stores
+  `seals.seal_glim_1` ("Bright Tier 1 Lanyard", delivered art) and runs `seal1@glimmer`. A loss wakes you at the Lantern
+  House and the tour resumes at stop 4. "Think about it" sets nothing; stepping off the gate toasts one walk-away line
+  and the pick re-arms. All of it lives in `data/glimmer_path.json` (ours, not a design copy; registered in
+  `tools/gen_mapdata.py` and merged last). Console: `PixelPets.side`, `sceneFor(id)`, `trainerFor(id)`, `glimmerCheck`
+  (line length after tokens, choice labels ≤ 30, ambient lines ≤ 40, double spaces, unknown tokens, every variant has a
+  base and sets the base's story flags; also run at boot), and with debug `setSide('glimmer' | 'keepers')`.
   The first-wild step follows the live guide creature.
 - Standing (Build 2, GLIMMER_PATH v0.2 BS; NEXT_PLAN WP-B "Standing and switching"): each side has a 0-100 meter,
   `S.standing = { keepers, glimmer }` (additive, `v` stays 2; `save.js` fills a missing or bad value with 0 and clamps the
@@ -173,7 +176,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   `standing.js` and nowhere else**; the yellow decisions Q2/Q3 are one edit there. No story gate depends on Standing.
   Scenes grant it with `["standing", side, n | null, oneShotId]` (a null amount reads `STANDING_CFG.grants[oneShotId]`;
   `standing.got.<id>` stops a replay from granting twice). Grants wired: the side pick (+10 to the picked side), the orchard
-  (+5, either side), and Seal #1 / the Bright Tier 1 review (+10 to the side played). `cond()` accepts
+  (+5, either side), Seal #1 / the Bright Tier 1 review (+10 to the side played; the Tour completion is that same grant),
+  and the optional Tour match (`tour1_match`, +5 glimmer, only on a win). `cond()` accepts
   `standing.keepers>=2` / `standing.glimmer>=2` (the tier, not points) for later lines and options. Reaching a new tier shows
   that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
   the spec has no numbers yet.

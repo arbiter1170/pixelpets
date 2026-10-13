@@ -96,7 +96,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again', async
   const before = await page.evaluate(() => PixelPets.standing.keepers.points);
   expect(before).toBe(0);
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Help Fen (Keepers)', 'Yes']);
+  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
   const after = await page.evaluate(() => ({ st: PixelPets.standing, got: PixelPets.state.flags['standing.got.sp_pick'], side: PixelPets.side, picked: PixelPets.state.flags['story.side_pick_done'] }));
   expect(after.st.keepers.points).toBe(cfg.grants.sp_pick);
   expect(after.st.glimmer.points).toBe(0);
@@ -105,7 +105,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again', async
   expect(after.picked).toBe(true);
   // replay (debug): the same choice path, no second grant
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
-  await playScene(page, ['Help Fen (Keepers)', 'Yes']);
+  await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
   expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick);
 });
 
@@ -285,7 +285,7 @@ const COPY = {
   glimmer: ["There's a shiny new stand in the square. See what all the fuss is about.", 'Fernbrook square'],
   fen: ['Master Fen is out in the orchard, west of the square. She looks worried.', 'Fernbrook orchard'],
   orchard: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
-  hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', 'Your partnership review is at the Trial Hall. Master Fen agreed to one match.', 'Fernbrook Trial Hall'],
+  hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", 'Fernbrook Trial Hall'],
   teaser: ['Rook has news, waiting outside the Trial Hall.', 'Trial Hall doorstep', 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', 'Trial Hall doorstep'],
   route2: ['The rubble east of Fernbrook is cleared. Route 2 is waiting.', 'Fernbrook, east edge'],
   census: ['Follow Route 2 east. Glimmerwell has set something up halfway along.', 'Route 2, halfway', 'The Glow Census tent is halfway along Route 2. They need volunteers.', 'Route 2, halfway'],

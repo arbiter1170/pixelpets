@@ -748,9 +748,18 @@ function glimmerDevCheck(){
   };
   const walkSteps = (where, n) => { if (!Array.isArray(n)) return;
     if (n[0] === 'say') line(where, n[2]);
-    else if (n[0] === 'choice') { line(where, n[1]); for (const o of n[2] || []) { line(where, o[0]); walkSteps(where, o[1]); } return; }
+    else if (n[0] === 'choice') {
+      line(where, n[1]);
+      for (const o of n[2] || []) {
+        line(where, o[0]);
+        if (typeof o[0] === 'string' && Array.from(o[0]).length > 30) bad.push(where + ': choice label over 30 (' + Array.from(o[0]).length + ')');
+        walkSteps(where, o[1]);
+      }
+      return;
+    }
     else if (n[0] === 'run' && !SCENES[n[1]]) bad.push(where + ': run of unknown scene ' + n[1]);
     else if (n[0] === 'battle' && !TRAINERS[n[1]]) bad.push(where + ': battle with unknown trainer ' + n[1]);
+    else if (n[0] === 'seal' && !SEAL_ART[n[1]]) bad.push(where + ': unknown seal ' + n[1]);
     n.forEach(x => walkSteps(where, x)); };
   for (const [id, steps] of Object.entries(G.scenes || {})) {
     walkSteps('scene ' + id, steps);
@@ -771,6 +780,13 @@ function glimmerDevCheck(){
       if (o.text) line('obj ' + o.id, o.text);
     }
   }
+  // Ambient lines and the gate walk-away toasts are chatter-sized (<= 40), on top of the 110-character say rule.
+  const shortLine = (where, s) => { line(where, s); if (typeof s === 'string' && Array.from(s).length > 40) bad.push(where + ': over 40 (' + Array.from(s).length + ')'); };
+  for (const [id, bag] of Object.entries(G.lines || {})) {
+    if (!bag || typeof bag !== 'object') continue;
+    for (const [k, v] of Object.entries(bag)) if (typeof v === 'string') shortLine('lines.' + id + '.' + k, v);
+  }
+  (G.walkAway || []).forEach((s, i) => shortLine('walkAway ' + i, s));
   // BS: `["standing", side, n|null, oneShotId]` steps name a real side, and a null amount names a grant in STANDING_CFG.grants.
   const walkStanding = (where, n) => { if (!Array.isArray(n)) return;
     if (n[0] === 'standing') { if (!PPStanding.isSide(n[1])) bad.push(where + ': standing step with unknown side ' + n[1]);
@@ -804,8 +820,9 @@ function setStanding(sd, pts){
 const addStanding = (sd, n) => setStanding(sd, standingOf(sd, false) + (Number(n) || 0));
 // The pledge changes (Q3 default): the side you leave keeps floor(n / costDiv), the side you join is unchanged, story.side
 // is rewritten, story.switches counts, story.switch_chapter / story.switch_at record when (the per-chapter cooldown).
-// `free` skips the cost (reserved for Rook's R5 "follow him" switch, not in this build). Never touches seals, lanyards,
-// progression flags, story.rook_bond or story.beat.*.
+// `free` skips the cost. Vincent (Oct 13, 2026) settled R5 without a follow-or-stay fork: on the Keepers path Rook
+// eventually converts to good, and on the Glimmerwell path he stays with Glimmerwell. That beat is not in this build.
+// Never touches seals, lanyards, progression flags, story.rook_bond or story.beat.*.
 function switchSide(to, opts){
   if (!PPStanding.isSide(to)) return false;
   const from = S.flags['story.side'] === 'glimmer' ? 'glimmer' : SIDE_DEFAULT;   // the saved pledge (a scene's live view may already say `to`)
@@ -839,6 +856,23 @@ if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
+if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.entries(MD.glimmer_path.speakers)) if (typeof v === 'string' && !LOOK_OF_NAME[k]) LOOK_OF_NAME[k] = v;
+// Build 3: side-keyed ambient lines. New keys win; a leftover `else` stays behind them so it only shows if both side keys miss.
+(function applyGlimmerLines(){
+  const G = MD.glimmer_path; if (!G || !G.lines || !WORLD.fernbrook) return;
+  const byId = {}; for (const o of WORLD.fernbrook.objs) byId[o.id] = o;
+  const put = (o, bag) => {
+    if (!o || !bag || typeof bag !== 'object') return;
+    const lines = {};
+    for (const [k, v] of Object.entries(bag)) if (typeof v === 'string') lines[k] = v;
+    for (const [k, v] of Object.entries(o.lines || {})) if (!(k in lines)) lines[k] = v;
+    o.lines = lines;
+  };
+  put(byId.juniper, G.lines.juniper);
+  put(byId.odile, G.lines.odile);
+  put(byId.tobin_glim, G.lines.tobin_glim);
+  put(byId.fen_after, G.lines.fen_after);
+})();
 // Point the new keeper outside, then (after Rook) toward the grass. Appended here so the design JSON stays verbatim.
 if (SCENES.starter) SCENES.starter.push(
   ['say', 'Warden Ilse', 'When you step outside, take the east path. Rook is waiting by the gate.'],
@@ -1209,12 +1243,20 @@ function useItem(id, petId, ctx = 'field'){
   return { ok: false, msg: "Can't use that here yet." };
 }
 // Triggers (§4): fire when a step ends within Manhattan r; once until the keeper ends a step outside the area (or the map changes).
+let walkAwayI = 0;   // which gate toast to show next; not saved (one line each time you step off after "Think about it")
 function checkTriggers(){
   const x = S.world.x, y = S.world.y;
   for (const o of CUR.objs) {
     if (o.kind !== 'trigger') continue;
     const inside = present(o) && Math.abs(o.x - x) + Math.abs(o.y - y) <= (o.r || 0);
-    if (!inside) { delete mapRT.trig[o.id]; continue; }
+    if (!inside) {
+      if (o.id === 'fb_side_pick' && mapRT.trig[o.id] && !S.flags['story.side_pick_done']) {
+        const lines = (MD.glimmer_path && MD.glimmer_path.walkAway) || [];
+        if (lines.length) { toast(lines[walkAwayI % lines.length]); walkAwayI++; }
+      }
+      delete mapRT.trig[o.id];
+      continue;
+    }
     if (mapRT.trig[o.id]) continue;
     mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
   }
@@ -1315,6 +1357,23 @@ function enterDoor(dr){
 }
 // MAPS_SLICE §9 place panels (Fernbrook keeps panels; Hearthmoor's became rooms). The Lantern House: the keeper's line -> REST / LEAVE;
 // REST heals the team and makes this town the respawn (§7 beat 6). The Trial Hall panel arrives with Trial Hall #1.
+function lanternGreet(who){
+  const fallback = 'Long walk from Hearthmoor? Rest a while.';
+  if (who !== 'Keeper Amos') return fallback;
+  const amos = MD.glimmer_path && MD.glimmer_path.lines && MD.glimmer_path.lines.amos;
+  if (!amos) return fallback;
+  const key = side() === 'glimmer' ? 'story.side=glimmer' : '!story.side=glimmer';
+  return amos[key] || fallback;
+}
+// Build 3: on the glimmer path the Hall door is the Bright Pavilion Tour. Stops 1-3 are map triggers; stop 4 (this panel)
+// is the optional Fen match. Keepers still get the trial exactly as before.
+function glimmerHallSteps(t, pn){
+  const who = (pn && pn.who) || 'Associate Juniper';
+  if ((t && t.seal && S.seals[t.seal]) || S.flags['story.seal1'])
+    return [['say', who, (pn && pn.again) || "Your file's complete, partner! Have a bright day!"]];
+  if (!S.flags['story.tour1_s1'] || !S.flags['story.tour1_s2'] || !S.flags['story.tour1_s3']) return [['run', 'tour1_wait']];
+  return [['run', 'tour1_s4']];
+}
 function placeSteps(dr){
   if (dr.panel === 'lantern') {
     const who = dr.keeper || '';
@@ -1322,16 +1381,17 @@ function placeSteps(dr){
     // BS: the Keepers' Pledge desk is this keeper's panel (STANDING_CFG.switch.desks.keepers), shown only when it would be a switch.
     if (who === SC_STANDING.switch.desks.keepers.who && deskOpen('keepers')) opts.push([SC_STANDING.switch.option, pledgeDeskSteps('keepers')]);
     opts.push(['Leave', []]);
-    return [['say', who, 'Long walk from Hearthmoor? Rest a while.'],
+    return [['say', who, lanternGreet(who)],
       ['if', 'story.starter_received',
         [['choice', 'Let your team rest?', opts]],
         [['say', who, 'No team to rest yet? Come back with a friend.']]]];
   }
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
     // WP-B0 Hall stub (engine ask 5): the side-merged trainer may carry a `panel` {who, greet, ask, begin, again}; its `seal`
-    // and `onWin` scene (resolved per side) do the rest, so the glimmer Hall swaps by data when the design spike lands.
+    // and `onWin` scene (resolved per side) do the rest. Glimmer Hall slot 1 is the Tour; the Keepers trial is unchanged.
     syncSide();
     const t = TRAINERS.hall1_fen, pn = (t && t.panel) || {};
+    if (side() === 'glimmer') return glimmerHallSteps(t, pn);
     if (t && ((t.seal && S.seals[t.seal]) || S.flags['trainer.hall1_fen'])) return [['say', pn.who || 'Master Fen', pn.again || 'Come back any time. The orchard remembers its friends.']];
     return [['say', pn.who || 'Master Fen', pn.greet || (t ? t.lines.intro : 'Roots first, then blossoms. Show me yours.')],
       ['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
@@ -1918,6 +1978,15 @@ async function execStep(st){
     case 'spot': await spotWalk(a); return;
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
+    // Build 3: ["seal", id] grants a lanyard without a battle (the Tour's skip path). A Hall win already set it and showed the card.
+    case 'seal': {
+      const id = a; if (!id || !SEAL_ART[id]) return;
+      const already = !!(S.seals && S.seals[id]);
+      pend(() => { if (!S.seals[id]) S.seals[id] = Date.now(); });
+      if (sc.skip || already || (battle && battle.on)) return;
+      await presentFieldSeal(id);
+      return;
+    }
   }
 }
 // Ilse's pick: known from the answers so far (her "Then I think {suggest} would suit you." comes BEFORE the baskets open)
@@ -2490,7 +2559,10 @@ function respawnAfterWipe(){
 // Lantern House REST / interior `rest` step (Phase M calls this): every party pet to full HP, naps cleared.
 function lanternRest(){ S.party.forEach(q => restPet(q, 'full')); updateHUD(); save(); }
 function healTeam(){ S.party.concat(S.box).forEach(q => { delete q.hpNow; delete q.faintUntil; }); updateHUD(); save(); }
+let sealWait = null;   // resolves the field Seal card (Tour skip); the battle card uses the battle's own OK
+function dismissSealCard(){ if (!sealWait) return false; const f = sealWait; sealWait = null; f(); return true; }
 function battleKey(e){
+  if (sealWait && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sfx('tap'); dismissSealCard(); return; }
   if (skipMsg() && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); return; }
   if (e.key === 'Escape') {
     if (!$('#ovSheet').hidden && !$('#shCancel').hidden) { closeSheet(null); return; }
@@ -3281,11 +3353,43 @@ const lanyardArt = tier => [
   '.....mhhhhm.....',
   '................',
 ];
-SEAL_ART.seal_glim_1 = lanyardArt(1); SEAL_ART.seal_glim_2 = lanyardArt(2);
+// Build 3: delivered 16x16 Bright Tier 1 lanyard (Sweetie 16). seal_glim_2 stays the tier-2 placeholder.
+const LANYARD_TIER1 = [
+  '.....oooooo.....',
+  '...ooyyyyyyoo...',
+  '..oyyssssslyyo..',
+  '.oyssssssllllyo.',
+  '.oyssssslllllyo.',
+  'oyssssswwlllllyo',
+  'oysssslwwlllllyo',
+  'oysssllwwlllllyo',
+  'oysslllwwlllllyo',
+  'oysllllwwllllyoo',
+  'oylllllwwllllyoo',
+  '.oylllllllllyoo.',
+  '.oylllllllyyooo.',
+  '..oyyllllyoooo..',
+  '...ooyyyyoooo...',
+  '.....oooooo.....',
+];
+SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = lanyardArt(2);
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
   g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
   $('#btSealName').textContent = sealName(id); $('#btSeal').hidden = false;
+}
+// The Tour can finish without a battle. Same Seal card, over a quiet stage, until OK / Space.
+async function presentFieldSeal(id){
+  showSealCard(id); sfx('stinger_seal');
+  const ov = $('#ovBattle');
+  ov.classList.add('seal-only'); ov.hidden = false;
+  $('#encName').hidden = true;
+  $('#btEndTitle').textContent = 'You earned the ' + sealName(id) + '!';
+  $('#btOk').textContent = 'OK';
+  setPanel('end'); fitBattle();
+  await new Promise(resolve => { sealWait = resolve; });
+  $('#btSeal').hidden = true; ov.classList.remove('seal-only'); ov.hidden = true;
+  if (!battle.on) setPanel('busy');
 }
 const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard' };
 const sealName = id => SEAL_NAMES[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal';
@@ -3801,7 +3905,7 @@ function bindInput(){
   $('#btFightBack').addEventListener('click', () => { if (battle.state === 'CHOOSE') { sfx('tap'); setPanel('acts'); } });
   $('#btBefBack').addEventListener('click', () => { if (battle.state === 'CHOOSE') { sfx('tap'); leaveBefriendBar(); } });
   $('#encGo').addEventListener('click', encounterPress);
-  $('#btOk').addEventListener('click', () => { if (battle.panel === 'end') { sfx('tap'); closeBattle(); } });
+  $('#btOk').addEventListener('click', () => { if (dismissSealCard()) { sfx('tap'); return; } if (battle.panel === 'end') { sfx('tap'); closeBattle(); } });
   $('#btMsg').addEventListener('click', skipMsg);
   $('#shCancel').addEventListener('click', () => { sfx('tap'); closeSheet(null); });
   $('#geoAllow').addEventListener('click', () => { closeGeoAsk(); useLocation(); });
