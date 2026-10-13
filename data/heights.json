@@ -2,12 +2,12 @@
   "spec": "FERNBROOK_HEIGHTS",
   "version": "0.1",
   "status": "Get to know us, before the first trial. Glimmerwell: RegenX lab. Keepers: smuggling tunnels.",
-  "_about": "Offered the moment the side is picked. story.heights_done gates the Trial Hall and the Tour's first stop. The Still Order is discovered and not fired. RegenX staff are decent people. No on-screen harm.",
+  "_about": "Offered the moment the side is picked. story.heights_done gates the Trial Hall and the Tour's first stop. The Arbiter emits something slowly; what it is, and why it was built, is not known yet. RegenX staff are decent people. No on-screen harm.",
   "_names": {
     "company": "RegenX",
     "drug": "Atten",
     "machine": "The Arbiter",
-    "command": "the Still Order"
+    "emission": "a slow, unnamed emission from ancient Glimmerwell technology"
   },
   "slicePatch": {
     "maps": {
@@ -442,7 +442,7 @@
           "y": 4,
           "sprite": "arbiter",
           "lines": {
-            "else": "The cradle is dark. It is not sending."
+            "else": "It emits slowly. The screen is dark."
           }
         },
         {
@@ -651,6 +651,7 @@
           "y": 5,
           "r": 0,
           "when": [
+            "story.sm_haul",
             "!story.sm_freed"
           ],
           "scene": "sm_free"
@@ -667,6 +668,20 @@
           "id": "sm_haulers",
           "x": 12,
           "y": 7
+        },
+        {
+          "kind": "npc",
+          "id": "sm_ken",
+          "name": "Ken",
+          "x": 7,
+          "y": 7,
+          "look": "villager",
+          "when": [
+            "story.sm_freed"
+          ],
+          "lines": {
+            "else": "The watch will walk them home."
+          }
         }
       ]
     },
@@ -959,6 +974,12 @@
         "Fen points up the north path. A supply crate sits in the grass before the doors."
       ],
       [
+        "standing",
+        "keepers",
+        2,
+        "heights_offer_k"
+      ],
+      [
         "setFlag",
         "story.know_us",
         true
@@ -989,6 +1010,12 @@
         "say",
         "Associate Juniper",
         "The people inside are kind. Smile anyway. Have a bright day!"
+      ],
+      [
+        "standing",
+        "glimmer",
+        2,
+        "heights_offer_g"
       ],
       [
         "setFlag",
@@ -1097,6 +1124,12 @@
         "The stair lock clicks. Nia does not look up from her clipboard."
       ],
       [
+        "standing",
+        "glimmer",
+        2,
+        "heights_lobby_g"
+      ],
+      [
         "setFlag",
         "story.rx_f1",
         true
@@ -1141,6 +1174,12 @@
         1
       ],
       [
+        "standing",
+        "glimmer",
+        2,
+        "heights_wing_g"
+      ],
+      [
         "setFlag",
         "story.rx_f2",
         true
@@ -1155,17 +1194,17 @@
       [
         "say",
         "",
-        "A second file, cheerful type, not their letterhead: THE ARBITER."
+        "Under that, an older note. Not RegenX. It only says: THE ARBITER."
       ],
       [
         "say",
         "",
-        "A cradle robot. It can pulse any Walkling that took Atten. They call it the Still Order."
+        "The machine emits something, very slowly. Nobody in the lab can name it."
       ],
       [
         "say",
         "",
-        "RegenX does not know. The cradle up top is dark. The switch is already in the vial."
+        "Glimmerwell calls it ancient, and will not say why it was built. RegenX never knew."
       ],
       [
         "setFlag",
@@ -1185,6 +1224,12 @@
         1
       ],
       [
+        "standing",
+        "glimmer",
+        2,
+        "heights_records_g"
+      ],
+      [
         "setFlag",
         "story.rx_f3",
         true
@@ -1194,17 +1239,17 @@
       [
         "say",
         "Quinn",
-        "Don't switch it on. Not today. Today we only copy the work."
+        "Leave the cradle dark. We only came for copies."
       ],
       [
         "say",
         "",
-        "The Arbiter's screen stays dark. Nothing is sent."
+        "The Arbiter keeps emitting, slow and quiet. Nothing rushes out."
       ],
       [
         "say",
         "Quinn",
-        "When that order goes out, they won't feel cross. They'll just agree."
+        "We do not know what it sends. The old ones built it. That is all I was told."
       ],
       [
         "setFlag",
@@ -1247,6 +1292,12 @@
         "The lookouts step aside, worn out. A stair drops into the dark."
       ],
       [
+        "standing",
+        "keepers",
+        2,
+        "heights_yard_k"
+      ],
+      [
         "setFlag",
         "story.sm_look",
         true
@@ -1283,12 +1334,76 @@
       [
         "say",
         "",
-        "You lift a lid. A Pomlet hops out and bolts toward the orchard light."
+        "The haulers sit quiet. You lift three lids. A Pomlet, a Pebblit, and a Fuzzwick blink up."
+      ],
+      [
+        "say",
+        "Ken",
+        "Fernbrook watch. I'm Ken. We ask them one at a time. You start."
+      ],
+      [
+        "choice",
+        "The Pomlet first.",
+        [
+          [
+            "Where were you going?",
+            [
+              [
+                "say",
+                "",
+                "The Pomlet noses toward the orchard light, then looks back at you."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "choice",
+        "The Pebblit next.",
+        [
+          [
+            "Who shut the lid?",
+            [
+              [
+                "say",
+                "",
+                "The Pebblit taps the crate slat, then your boot. It is not hurt."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "choice",
+        "The Fuzzwick last.",
+        [
+          [
+            "Are you hurt?",
+            [
+              [
+                "say",
+                "",
+                "The Fuzzwick leans on your leg. No limp. It wants out."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Ken",
+        "Town watch will walk behind them. We encourage the path. We do not drag."
       ],
       [
         "say",
         "",
-        "Another crate. A Pebblit follows, shaking, then gone. Nobody is hurt."
+        "The three hop for the daylight crack. Ken keeps pace, a step back."
+      ],
+      [
+        "standing",
+        "keepers",
+        2,
+        "heights_talk_k"
       ],
       [
         "setFlag",
@@ -1301,6 +1416,12 @@
         "say",
         "",
         "The haulers sit down. The inner door is just a bar now."
+      ],
+      [
+        "standing",
+        "keepers",
+        2,
+        "heights_hold_k"
       ],
       [
         "setFlag",
