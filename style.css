@@ -509,3 +509,27 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .q-done li{font-size:15px;line-height:1.3;color:var(--m)}
 .q-done li::before{content:"\2713\00a0";color:var(--g)}
 .quest-inner .actions{margin-top:4px}
+.quest-inner .actions.two-even.one{grid-template-columns:1fr}
+/* STANDING tab (GLIMMER_PATH BS): two tabs, each a 44 px tap target; rows with an emblem, tier name, blurb and a bar */
+.q-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:-2px 0 0}
+.q-tabs[hidden]{display:none}
+.q-tab{min-height:44px;padding:0 6px;background:var(--d);border:2px solid var(--d);color:var(--h);font-family:var(--font);font-size:16px;line-height:1.1;cursor:pointer}
+.q-tab.on{background:var(--k);border-color:var(--y);color:var(--y)}
+.q-tab:active{transform:translateY(1px)}
+#questPaneNext,#questPaneStanding{display:flex;flex-direction:column;gap:10px}
+#questPaneNext[hidden],#questPaneStanding[hidden]{display:none}
+.st-rows{display:flex;flex-direction:column;gap:8px}
+.st-row{display:grid;grid-template-columns:28px 1fr;gap:0 8px;align-items:start;padding:8px;background:var(--k);box-shadow:0 0 0 2px var(--d)}
+.st-row.pledged{box-shadow:0 0 0 2px var(--y)}
+.st-emblem{width:24px;height:24px;image-rendering:pixelated;image-rendering:crisp-edges;margin-top:2px}
+.st-head{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;min-width:0}
+.st-side{font-size:14px;color:var(--h);letter-spacing:.5px}
+.st-tier{font-size:18px;color:var(--w);line-height:1.2}
+.st-mark{margin-left:auto;font-size:12px;color:var(--k);background:var(--y);padding:1px 5px;line-height:1.4}
+.st-blurb{margin:3px 0 0;font-size:15px;line-height:1.3;color:var(--h)}
+.st-barrow{display:flex;align-items:center;gap:6px;margin-top:6px}
+.st-barrow .bar{flex:1;height:8px;margin:0}
+.st-barrow .bar i{transition:none}
+.st-fill-keepers{background:var(--y)}.st-fill-glimmer{background:var(--l)}
+.st-barrow small{font-size:12px;color:var(--m);white-space:nowrap}
+.st-explain{margin:0;font-size:14px;line-height:1.3;color:var(--m)}

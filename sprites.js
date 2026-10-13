@@ -513,5 +513,10 @@ function buildWorldArt(){
     px(g,PAL.o,1,3,14,2); px(g,PAL.d,1,5,14,1); px(g,PAL.o,1,12,14,2);
     [3,7,11].forEach(x => { px(g,PAL.d,x+1,6,1,3); px(g,PAL.y,x,9,3,3); px(g,PAL.d,x,11,3,1); px(g,PAL.h,x,9,1,1); });
   });
+  // GLIMMER_PATH BS (designer-delivered): the Glimmerwell Pledge desk, a mint kiosk with a brochure rack. In the table for
+  // later map content; no map places it yet (the desks are options on existing NPC panels in this build).
+  A.switch_desk_glimmer = mkTile(g => ['..ssssssssssss..', '..swwwwwwwwwws..', '..swlwlwlwlwls..', '..ssssssssssss..', '...d........d...', '...d.hhhhhh.d...',
+    '...d.hwhrhw.d...', '...d.hwhlhw.d...', '.llllllllllllll.', '.swwwwwwwwwwwws.', '.slllllllllllls.', '.slllwwllwwllls.', '.slllwwllwwllls.', '.slllllllllllls.',
+    '.dddddddddddddd.', '..d..........d..'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   return A;
 }

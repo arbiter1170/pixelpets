@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261013-1338">
+<meta name="kw-build" content="20261013-1611">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261013-1338">
+<link rel="stylesheet" href="style.css?v=20261013-1611">
 </head>
 <body>
 <div id="app">
@@ -189,10 +189,22 @@
 <div id="ovQuest" class="overlay" hidden>
   <div class="ov-inner quest-inner" role="dialog" aria-modal="true" aria-labelledby="questTitle">
     <div class="ov-title" id="questTitle">NEXT STEP</div>
-    <p id="questText" class="q-text"></p>
-    <p id="questPlace" class="q-place"></p>
-    <p id="questNote" class="q-note" hidden></p>
-    <ul id="questDone" class="q-done" aria-label="Done"></ul>
+    <!-- STANDING (GLIMMER_PATH BS): a second tab, shown once the side pick is made; labels come from STANDING_CFG -->
+    <div id="questTabs" class="q-tabs" role="tablist" hidden>
+      <button id="questTabNext" class="q-tab on" type="button" role="tab" aria-selected="true" aria-controls="questPaneNext">NEXT STEP</button>
+      <button id="questTabStanding" class="q-tab" type="button" role="tab" aria-selected="false" aria-controls="questPaneStanding"></button>
+    </div>
+    <div id="questPaneNext" role="tabpanel">
+      <p id="questText" class="q-text"></p>
+      <p id="questPlace" class="q-place"></p>
+      <p id="questNote" class="q-note" hidden></p>
+      <ul id="questDone" class="q-done" aria-label="Done"></ul>
+    </div>
+    <div id="questPaneStanding" class="q-standing" role="tabpanel" hidden>
+      <p id="stPledged" class="q-place"></p>
+      <div id="stRows" class="st-rows"></div>
+      <p id="stExplain" class="st-explain"></p>
+    </div>
     <div class="actions two-even">
       <button id="questMap" class="btn btn-play" type="button">SHOW ON MAP</button>
       <button id="questClose" class="btn" type="button">CLOSE</button>
@@ -396,18 +408,19 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261013-1338";</script>
-<script src="sprites.js?v=20261013-1338"></script>
-<script src="keeper.js?v=20261013-1338"></script>
-<script src="stats.js?v=20261013-1338"></script>
-<script src="moves.js?v=20261013-1338"></script>
-<script src="data/mapdata.js?v=20261013-1338"></script>
-<script src="quests.js?v=20261013-1338"></script>
-<script src="save.js?v=20261013-1338"></script>
-<script src="env.js?v=20261013-1338"></script>
-<script src="sfx.js?v=20261013-1338"></script>
-<script src="cloud_config.js?v=20261013-1338"></script>
-<script src="cloud.js?v=20261013-1338"></script>
-<script src="game.js?v=20261013-1338"></script>
+<script>window.BUILD = "20261013-1611";</script>
+<script src="sprites.js?v=20261013-1611"></script>
+<script src="keeper.js?v=20261013-1611"></script>
+<script src="stats.js?v=20261013-1611"></script>
+<script src="moves.js?v=20261013-1611"></script>
+<script src="data/mapdata.js?v=20261013-1611"></script>
+<script src="quests.js?v=20261013-1611"></script>
+<script src="standing.js?v=20261013-1611"></script>
+<script src="save.js?v=20261013-1611"></script>
+<script src="env.js?v=20261013-1611"></script>
+<script src="sfx.js?v=20261013-1611"></script>
+<script src="cloud_config.js?v=20261013-1611"></script>
+<script src="cloud.js?v=20261013-1611"></script>
+<script src="game.js?v=20261013-1611"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 Things that were built on a best guess, deviate from a plan, or need a person (Vincent or the designer) to confirm. Each row says what the code does today, so a decision can be made without reading the diff. When one is settled, move it to "Settled" with the date and the call, and update the code or plan if it changed.
 
-Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3.
+Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there.
 
 ## Open
 
@@ -16,18 +16,28 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3.
 | D6 | WP-A numbers | Quarry Lv 18 at 25% HP befriend width is 0.18, the plan's target is 0.22. `PixelPets.befriendOdds(18, 0.25).width` is 0.181 (rounds to 0.18; lead the same level, joy 60). The quarry is Lv 16-19: at 25% HP the same call is 0.196 at Lv 16 (rounds to 0.20) and 0.174 at Lv 19 (rounds to 0.17). Everything else is within about 0.02 of the plan table | Left as is. A one-knob change that reaches 0.22 also lifts Route 2 at half HP by about 0.02, further from that row's target, so it was not applied. The formula and `BEFRIEND_TUNE` were not changed; the 0.18 figure is the measured hook width rounded to 2 decimal places | `BEFRIEND_TUNE` in `moves.js` |
 | D7 | WP-A | Show the WARY / FAIR / GOOD label (the plan called it optional)? Thresholds are 0.15 / 0.25 | Shown under the hearts | `oddsLabel` in `game.js` |
 | D8 | WP-A | Optional extras not built: wary-shrink on a miss, a Settings "Easier befriending" toggle, KO mitigation. Build any? | None built. The plan's own defaults: the toggle is no for now (section 4); the miss-shrink only if width and speed feel too soft after play; KO mitigation is flagged, not required | NEXT_PLAN WP-A |
-| D10 | WP-C copy and art | Objective text (24 steps, 110 chars max), place names, and `icon_quest` are placeholders. Need designer copy and a real icon | Placeholder text, a flag-like glyph | `CHAIN` in `quests.js`; `REGION_MAP.icon_quest` in `game.js` |
 | D11 | WP-C behaviour | The objective cue and walk tip show before the starter (pointing at the Lodge) while the QUEST button stays hidden until then. After the first-steps tips, the walk tip is replaced by the objective text. Intended? | Yes, as written: the chain's first step is the Lodge, the button waits for `story.starter_received`, and `walkTipText` falls back to the objective (WP-C tasks 1 and 6). Not changed | `drawObjectiveCue`, `walkTipText` in `game.js` |
-| D12 | WP-C scope | Side-task count (Faded Fuzzwick etc.) and per-side objective text are not built | Not built | NEXT_PLAN WP-C; needs B1-B4 for per-side text |
+| D12 | WP-C scope | Side-task count (Faded Fuzzwick etc.) is not built. Per-side objective text landed in Build 2 (8 `@glimmer` overrides) | Side tasks not built; per-side text done | NEXT_PLAN WP-C; `glimmer:` entries in `CHAIN` (`quests.js`) |
 | D13 | Art | Lanyard art (16x16, tiers 1 and 2) is a placeholder drawn in code | Cyan cord with a white badge | `lanyardArt` in `game.js`; see DESIGN_HANDOFF |
+| D14 | BS tiers (GLIMMER_PATH Q2) | Confirm the tier names and numbers: 0-100, tiers at 0 / 10 / 25 / 45 / 70, Keepers Stranger, Friend, Trusted, Hall Friend, Warden's Ally; Glimmerwell Guest, Associate, Junior Bright, Bright Lead, Founder's Pick; grants side pick 10, orchard 5, Seal #1 10 | Built exactly as the Build 2 spec table. PR stays draft until confirmed | `STANDING_CFG.thresholds`, `.sides`, `.grants` |
+| D15 | BS switching (GLIMMER_PATH Q3) | Confirm the switch rule: the side you leave keeps half its points (floor), the side you join is unchanged, one switch per chapter | Built as stated. `costDiv: 2`, `cooldown: 'perChapter'`. PR stays draft until confirmed | `STANDING_CFG.switch` |
+| D16 | BS chapter | What is a "chapter" for the one-switch-per-chapter cooldown? No spec defines it | Default: the number of Seals earned (`story.seal1` + `story.seal2`), so Fernbrook before Seal #1 is chapter 0, Route 2 and Cobblecrest are chapter 1, after Seal #2 is chapter 2. The refusal line says "One change of heart per Seal" | `PPStanding.chapterOf` and `switch.refused` in `standing.js` |
+| D17 | BS joining | Does switching require tier 1 (Friend / Associate) with the side you join? NEXT_PLAN proposed yes, the Build 2 spec dropped it | Default: not required (`joinMinTier: 0`). Setting it to 1 turns the check on; the desk then needs a refusal line for `why: 'join_tier'` (today it reuses `refused`) | `STANDING_CFG.switch.joinMinTier` |
+| D18 | BS daily earning | Should faction activities earn Standing day to day (the spec's "faction activities"), and with what cap? | Not built. Only story grants move the meter. Suggested later rule: at most 5 points per faction per day, written as a `grants` entry plus a `standing.day.<side>` flag | `addStanding` in `game.js`; new entry in `STANDING_CFG.grants` |
+| D19 | BS desk copy | The reference letter, performance review, welcome and "think about it" lines are placeholders written in each side's voice | Shipped with `/* PLACEHOLDER: needs copy from Vincent */` marks. The confirm line is "Really? {side} Standing {from} → {to}" | `STANDING_CFG.switch.letter`, `.review`, `.welcome`, `.wait` |
+| D20 | BS desks | Where do Pledge desks live? The spec names Keeper Amos and Associate Juniper | Fernbrook only: Amos's Lantern House panel offers "Pledge desk" when you are Glimmerwell, Juniper offers it when you are Keepers. Hearthmoor and Cobblecrest Lantern rooms have no keeper, so no desk. The `switch_desk_glimmer` kiosk art is in the art table but not placed on any map | `STANDING_CFG.switch.desks`; `placeSteps` and `interact` in `game.js` |
+| D21 | STANDING tab wording | "Pledged to {faction}" uses the long faction name ("Pledged to The Keepers", "Pledged to Glimmerwell Co."). The tab stays hidden until the side pick, and the empty line "Nobody knows you yet. Go say hello!" shows only when both meters are 0 | As stated. When Standing jumps more than one tier in one grant, only the highest tier's toast plays | `STANDING_CFG.tab`; `renderStanding`, `setStanding` in `game.js` |
+| D22 | WP-C copy | The spec's place lines use a comma ("Hearthmoor, home"); the old build used a middle dot. Keep the comma? The stuck lines 2 and 3 ("Lost? Open the map...", "No rush. A walk...") are kept as data only; the panel always shows line 1 | Comma shipped; `PPQuests.STUCK[0]` shown | `CHAIN` and `STUCK` in `quests.js` |
 
 ## Not started, blocked on people
 
-- BS (Standing, tiers, switch desks with cost and cooldown): needs tier names and numbers from the designer and Vincent.
+- BS daily earning, tier-gated shop rows and lines, tier icons: see D18; needs the designer's list of what each tier opens.
 - BH design spike: Vincent and the designer.
 - B1-B4 glimmer content and Rook's R5 conversion: the designer's scenes and art.
 
 ## Settled
 
+- **D10 (Oct 13, 2026, Build 2).** The designer's 24 objective rows, 8 `@glimmer` overrides and the signpost `icon_quest` replaced the placeholders. Place lines may run to 24 chars (`PLACE_MAX`).
+- **Wary line rotation (Oct 13, 2026, Build 2).** The befriend bar's wary hint rotates through three lines (`BEFRIEND_WARY_LINES` in `moves.js`) in order across battles.
 - **D9 (Oct 13, 2026).** BACK and Escape from the befriend bar clear "It's wary. Wear it down first." and put back "What should {pet} do?". The line still shows only the first time the bar opens on an untouched foe.
 - Recorded decisions (Vincent, Oct 13, 2026) live in the BACKLOG "Decisions recorded" list: Rook always leaves Glimmerwell; the side pick is at Fernbrook and switchable later with Standing; Trial Hall replacement is an open spike; capture "no combat performed" means full health in this encounter.
