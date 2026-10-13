@@ -1,6 +1,6 @@
 # Designer hand-off: art and writing needed (Oct 13, 2026)
 
-For the designer. Everything here supports the work packages in `NEXT_PLAN.md` (the implementation scope, written for the coding agent). Read this file first; read `NEXT_PLAN.md` WP-B if you want the engineering detail behind a request.
+For the designer. The paste-ready assignment for a designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) (what to produce, where to look, and the engine that has shipped since this file was written). This file is the background: voice, sizes, and the request list. Read `NEXT_PLAN.md` WP-B for the engineering detail behind a request.
 
 What is being built, in one paragraph: (1) a **Quest button** next to the D-pad that shows the player their next step; (2) **harder, level-scaled befriending**; (3) a **side pick at Fernbrook** between the **Keepers** (the current story: Fen, Hale, Lantern Houses, Trial Halls) and **Glimmerwell Co.** (the cheerful antagonist), with a **Standing** meter for each faction, the ability to **switch sides later**, a new **glimmer-path version of the Route 2 / Cobblecrest story**, and **Rook's branching exit from Glimmerwell** (he always leaves, in every path).
 
