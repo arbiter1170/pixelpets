@@ -149,7 +149,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   tips are done. The chain lives in `quests.js` and is derived from story flags only (nothing to migrate: old saves land
   on the right step; a later flag counts the earlier steps as done). Console: `PixelPets.quest` (read-only),
   `PixelPets.questCheck` (every story flag the data writes is a step or on the not-a-step list; also run at boot).
-- Sides (NEXT_PLAN WP-B0, the fork only; the glimmer dialog is placeholder text): at the Fernbrook orchard gate (9,10) a
+- Sides (NEXT_PLAN WP-B0 / Build 3): at the Fernbrook orchard gate (9,10) a
   one-time scene (`side_pick`) lets you help Fen (Keepers) or Tobin (Glimmerwell), with a confirm step. `story.side`
   (`keepers` when absent, so older saves play as before) and `story.side_pick_done` are plain flags; no save version bump.
   The glimmer branch sets the same progression flags as the keepers path (`story.orchard_cleared`, `story.seal1`, ...), so

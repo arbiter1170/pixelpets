@@ -2,9 +2,9 @@
 
 For the designer. The paste-ready assignment for a designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) (what to produce, where to look, and the engine that has shipped since this file was written). This file is the background: voice, sizes, and the request list. Read `NEXT_PLAN.md` WP-B for the engineering detail behind a request.
 
-What is being built, in one paragraph: (1) a **Quest button** next to the D-pad that shows the player their next step; (2) **harder, level-scaled befriending**; (3) a **side pick at Fernbrook** between the **Keepers** (the current story: Fen, Hale, Lantern Houses, Trial Halls) and **Glimmerwell Co.** (the cheerful antagonist), with a **Standing** meter for each faction, the ability to **switch sides later**, a new **glimmer-path version of the Route 2 / Cobblecrest story**, and **Rook's branching exit from Glimmerwell** (he always leaves, in every path).
+What is being built, in one paragraph: (1) a **Quest button** next to the D-pad (shipped); (2) **harder, level-scaled befriending** (shipped); (3) a **side pick at Fernbrook** between the **Keepers** and **Glimmerwell Co.**, with **Standing**, **switch desks**, and a **glimmer-path version** of the remaining Act 1 story. Fernbrook glimmer and the Bright Pavilion Tour are shipped (Build 3). Next writing is Route 2, Cobblecrest, the Cobblecrest Sacrifice, and Rook's R5. **Rook stays with Glimmerwell if the player does; he converts only on the Keepers path** (D23).
 
-Decisions already made (Vincent, Oct 13): Rook always leaves Glimmerwell; the pick happens at Fernbrook; the side can be switched later and Standing tracks regard per faction; Trial Hall replacements on the glimmer path will be "sacrifices / tours" and **the gameplay is not designed yet** (section 6 asks you to help define it).
+Decisions already made (Vincent, Oct 13, evening): the pick is at Fernbrook and is switchable later; Standing tracks regard per faction; Hall slot 1 is the Bright Pavilion Tour (built); Hall slot 2 is the Sacrifice with Quota as the free floor (not built); Rook stays if the player is Glimmerwell and converts if the player is Keepers. The morning "Rook always leaves" / "Halls undefined" notes are superseded. Section 6 now asks for the Sacrifice one-pager and Tour stop copy, not a from-scratch Hall spike.
 
 ## 1. Reference examples in this repo
 
@@ -78,14 +78,14 @@ Priority: **must** blocks the work package, **should** is wanted for launch, **c
 
 | Id | What | Size | Where it appears | Priority | WP |
 |---|---|---|---|---|---|
-| `icon_quest` | HUD icon for the QUEST button: reads as "next step" (flag, signpost or "!"). Same style as `icon_map`, `icon_bag`, `icon_book` | 8x8 | D-pad, top-right cell | must | C |
+| `icon_quest` | HUD icon for the QUEST button: reads as "next step" (flag, signpost or "!"). Same style as `icon_map`, `icon_bag`, `icon_book` | 8x8 | D-pad, top-right cell | **delivered** (Build 2, signpost) | C |
 | `cue_chevron` | The bobbing "go here" marker. Today it is drawn in code as four yellow blocks with a dark outline; a proper glyph is welcome | 8x8 (or 5x5) | Above the objective tile on the walk map | should | C |
 | `cue_arrow_{up,right,down,left}` | Edge-of-map arrow pointing toward an off-screen objective | 8x8 x4 | Walk map edge | should | C |
 | `befriend_odds_{low,fair,good}` | Three tiny pips or faces that show how likely a befriend is | 8x8 x3 | Befriend panel, optional | could | A |
 | `emblem_keepers` | Keepers emblem (lantern or leaf) | 8x8 | Standing tab, switch desk | must | B |
 | `emblem_glimmer` | Glimmerwell emblem (mint bulb or spark) | 8x8 | Standing tab, switch desk | must | B |
 | `tier_{keepers,glimmer}_{0..4}` | Five tier badges per faction (the tier names are a writing task below) | 8x8 x10 | Standing tab, Friends tab keeper line | should | B |
-| `seal_glim_1`, `seal_glim_2` | Glimmerwell "lanyard tier" cards, same family as `seal_fernbrook` / `seal_cobblecrest`, in mint/white (`l s w`) with a gold rim | 16x16 x2 | Card shown after a win; Bag/Journal later | must | B |
+| `seal_glim_1`, `seal_glim_2` | Glimmerwell "lanyard tier" cards, same family as `seal_fernbrook` / `seal_cobblecrest`, in mint/white (`l s w`) with a gold rim | 16x16 x2 | Card shown after a win; Bag/Journal later | **tier 1 delivered** (Build 3). Tier 2 still placeholder | B |
 | `glimmer_pavilion` | Pop-up Glimmerwell office in Fernbrook (door tile plus a sign or awning), for the glimmer path's Hall slot. Final shape depends on the Hall-replacement design (section 6) | 16x16 tile set | Fernbrook | should | B |
 | `switch_desk_glimmer` | Glimmerwell "pledge" counter or kiosk (mint, brochure rack) where the player switches to Glimmerwell | 16x16 | Fernbrook, Cobblecrest, Route towns | must | B |
 | `switch_desk_keepers` | Keepers equivalent. Probably the existing Lantern House keeper; if a separate prop is better, a pledge board | 16x16 | Lantern Houses | could | B |
@@ -111,7 +111,9 @@ Counts are rough budgets so the work can be scoped. A "line" is one `say` of <= 
 2. **A one-page Glimmerwell glossary** (their phrases for: Walklings, draining, relocating, the player, the Halls, Rook, Standing). Keep inside the existing voice.
 3. **A one-paragraph statement of what each faction asks of the player and what the player gets**, in-fiction. This anchors the Standing sources: Keepers regard care and kindness; Glimmerwell regards output and quotas (proposal in `NEXT_PLAN.md`).
 
-### 4b. The Fernbrook pick (WP-B, phase B0/B1)
+### 4b. The Fernbrook pick (WP-B, phase B0/B1) — **shipped in Build 3**
+
+Scenes below are in `data/glimmer_path.json`. Left: Tour stop copy (recipients, slogans, Comfort Check, Census board, stage photo) and the real name of `tour.doubt`. Do not rewrite the engine steps.
 | Scene id | Beat | Lines | Branching |
 |---|---|---|---|
 | `side_pick` | After both camps are met: Fen asks for help at the crates, Juniper and Tobin offer a Junior Bright trial lanyard. Ends in a choice plus a "Really?" confirm. Must say the player can change course later at a cost | 14-18 + choice + confirm | Sets the side |
@@ -121,7 +123,9 @@ Counts are rough budgets so the work can be scoped. A "line" is one `say` of <= 
 | Fen as the holdout (trainer lines for the glimmer path) | His intro / win / lose when the player comes at his Hall as Glimmerwell's helper | 3 | None |
 | Ambient (`lines` keys) | Keeper Amos, Odile, Juniper, Fen, Hattie, Ilse: a Keepers-regard variant and a Glimmerwell-regard variant each (<= 40 chars, ambient chatter) | 10-14 | By side or tier |
 
-### 4c. The switch (WP-B, phase BS)
+### 4c. The switch (WP-B, phase BS) — **engine shipped in Build 2**
+
+Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19). Write those lines; do not add new map objects.
 | Scene id | Beat | Lines |
 |---|---|---|
 | `switch_desk_glimmer` | The Glimmerwell associate's desk: first visit, repeat visit, "not enough regard yet, try this first", cooldown refusal, confirm | 10-14 |
@@ -129,7 +133,7 @@ Counts are rough budgets so the work can be scoped. A "line" is one `say` of <= 
 | `switch_bridge_to_glimmer`, `switch_bridge_to_keepers` | Short bridging scene after a switch, one per direction | 4-6 each |
 | Catch-up lines | Short lines that later scenes can drop in when the player did earlier beats under the other side ("You helped pack those crates, didn't you?"). One per major beat (orchard, Hall slot #1, Wickerglen lamps, the quarry sale) per direction | 8-10 |
 
-### 4d. Route 2 and Wickerglen, glimmer variants (phase B2)
+### 4d. Route 2 and Wickerglen, glimmer variants (phase B2) — **next, Build 4**
 | Scene id | Beat | Lines | Notes |
 |---|---|---|---|
 | `glimmer2@glimmer` | The Glow Census, the player as a volunteer | 5-6 | |
@@ -138,23 +142,25 @@ Counts are rough budgets so the work can be scoped. A "line" is one `say` of <= 
 | `glen_cleared@glimmer` | The lamps click off when `{pet}` bumps the stand; Imogen praises the player; Rook's doubts show; 3 Befriend Treats | 12-16 | `rook_bond` choice |
 | `route2_end@glimmer` | The gate and the Cobblecrest invitation. Keep the `together` / `race` choice and its flags | 8-10 | `story.rook_pact` |
 
-### 4e. Cobblecrest, glimmer variants (phase B3)
+### 4e. Cobblecrest, glimmer variants (phase B3) — **Build 5**
 | Scene id | Beat | Lines |
 |---|---|---|
 | `cobble_arrive@glimmer` | Arrival with Rook as a fellow Junior Bright (reads `rook_pact`) | 5-6 |
 | `quarry_buyout@glimmer` | The player on stage beside Dorian; Hale loses; Rook's private objection ("units") | 18-24 |
 | `rival2_rook` lines, glimmer | Rook's intro / win / lose when the player is pledged to Glimmerwell | 3 |
-| Hall slot #2, glimmer | Depends on section 6 | TBD |
+| Hall slot #2, glimmer | **Sacrifice**, Quota as the free floor (D3). Write the one-pager, then the scenes | TBD |
 | `seam_a`, `seam_b` | Shared; check they still read correctly for a glimmer player | 0-2 |
 
 ### 4f. Rook's tree (WP-B, phases B2 to B4)
-Rook always leaves Glimmerwell. Beats R1-R5 are in `NEXT_PLAN.md` ("Rook: always converts, branching tree"). Needed:
-- R2 `teaser@glimmer` (Rook as a rival colleague, "Bright of the Month"): 6-8 lines.
-- R3 and R4 variants above (bond choices, doubts): included in 4d and 4e.
-- **R5, the Brinewick road conversion**, in four variants: Keepers with high bond (he returns the lanyard, joins as an ally), Keepers with low bond (he leaves quietly, apologises later), Glimmerwell with high bond (he warns you, quits, and offers the player a fork: follow him or stay), Glimmerwell with low bond (he quits angrily, a clean rival). About 14-20 lines each, plus the fork's two outcomes (4-6 lines each) and the free-switch bridge when the player follows him.
-- Rook's post-conversion lines (ambient and a recurring rival's battle intro / win / lose if he becomes a rival): 6-8.
+**D23:** Keepers path, Rook eventually converts to good. Glimmerwell path, Rook stays. Not bond-gated. No follow-or-stay fork.
+- R2 `teaser@glimmer`: **shipped** (Build 3). Do not say he leaves.
+- R3 and R4 variants: included in 4d and 4e (Build 4 / 5). Bond may flavour a line; it must not gate R5.
+- **R5 (Build 6), two variants not four:** Keepers `brinewick_hook` (he leaves the company); `brinewick_hook@glimmer` (he stays). About 14-20 lines each. Both must still set `story.cobble_end`. No free-switch bridge.
+- Keepers-path post-conversion ambient, if he becomes an ally: 6-8. Glimmer-path colleague ambient is optional.
 
-### 4g. Quest objectives (WP-C), a good first writing task
+### 4g. Quest objectives (WP-C) — **shipped in Build 2**
+
+Do not rewrite the 24 rows. Glimmer `hall1` already names the Tour. Add Route 2 / Cobblecrest glimmer lines only if a new beat would read wrong.
 The Quest button needs one short objective per step of the story chain. For each step: **text <= 110 chars** (what to do, written as a gentle pointer, not a command), and a **place line <= 24 chars** ("Fernbrook, east side"). The chain is in `NEXT_PLAN.md` WP-C. Roughly 30 steps from "Go to the Warden's Lodge" through "Cobblecrest, Hale's Hall", plus an end-of-content line. Add glimmer variants only where the wording differs. Also needed: two or three "stuck" lines (all Walklings tired: "Rest at a Lantern House first").
 
 ### 4h. Standing and Standing-adjacent UI strings
@@ -180,16 +186,13 @@ Intro / win / lose lines for each trainer whose framing changes (Tobin, Fen as h
 3. **Sound specs** as a short table (notes, timings, voices) like the STINGERS v0.1 table.
 4. **Check your own lines**: <= 110 chars, no leftover tokens, speakers all mapped, every flag in `flags`.
 5. **Approval**: Vincent approves per phase, as with Route 2 and Cobblecrest (`status` records the approval).
-6. Deliver per phase so the build is never blocked on all of it. Suggested order: 4a, 4g, then 4b with `side_pick` and the art `must` rows; then 4c; then 4d; 4e and 4f last. Section 6 can run in parallel.
+6. Deliver per phase so the build is never blocked on all of it. **Now:** Tour stop copy (4b leftover) and the Sacrifice one-pager in parallel; then 4d (Build 4); then 4e (Build 5); then 4f R5 (Build 6). Desk copy (4c) can land any time.
 
 ## 6. Open design questions where the designer is needed
 
-1. **The glimmer path's Trial Hall replacement ("sacrifices / tours").** Not designed. Please help define, with Vincent, a one-page loop per Hall slot (what the player does in 5-10 minutes, what it costs, what it grants, how it ends). The implementer has these constraints and candidates (`NEXT_PLAN.md`, WP-B, "Hall replacement: design spike"):
-   - It must set the same progression flag as the Hall it replaces, grant Standing, grant a permanent lanyard or seal, be completable with a tired party, and keep the cheerful-and-sinister tone.
-   - Candidates: a **Tour** (a guided multi-stop route; each stop a short scene, a choice, sometimes a battle), a **Sacrifice** (give up Acorns, an item or a day's XP cap for regard, with visible cost), a **Quota** (befriend or win N times), or an **Audit battle** (a battle dressed as a review; the fallback).
-   - Which faction's trials are "sacrifices" and which "tours"? Both might apply to the glimmer path; the Keepers path keeps the Trial Halls as built unless told otherwise.
-   - Until this is answered the game ships a placeholder audit battle, and the Hall art and writing rows above are blocked.
-2. **Standing tiers and what they unlock.** Names, the number of tiers (5 proposed), and what each unlocks (lines, shop entries, titles, small optional perks). Nothing story-critical may be gated on Standing.
-3. **What switching feels like in the fiction.** The mechanical cost is proposed in `NEXT_PLAN.md` (the faction left loses half its Standing, a cooldown). The designer owns how it reads: a pledge desk, a reference letter, a "performance review".
-4. **Rook after R5.** Ally, parted or rival: how much of him do we see later, and does he ever appear in the player's party or as a battle partner?
-5. **Completionists.** After switching, can the player also complete the other faction's trials and hold both kinds of seals? Proposal: yes, optional.
+1. **Tour stop copy (D26).** Recipients, slogans, Comfort Check lines, Census-board lines, the stage photo, and the real name of `tour.doubt`. The four-stop Tour engine is already in Fernbrook.
+2. **Cobblecrest Sacrifice one-pager (D24).** Slot 2 is Sacrifice, Quota as the free floor. One page: what the player gives up in 5–10 minutes, the floor so they cannot soft-lock, how Quota substitutes, what it grants (`story.seal2`, `seals.seal_glim_2`, Standing). Cheerful-and-sinister; completable with a tired party. Then write the scenes. Slot 1 (Tour) is done.
+3. **Standing tiers and what they unlock.** Working names shipped. What each unlocks (lines, shop entries, titles) is still open. Nothing story-critical may be gated on Standing.
+4. **Switch-desk copy (D19).** Engine is in. Write the letter, review, welcome, and "think about it" lines.
+5. **Rook after R5 (D25).** Keepers convert: ally or parted, and how much of him do we see later? Glimmer stay: colleague lines only, no quit.
+6. **Completionists.** After switching, can the player also complete the other faction's trials and hold both kinds of seals? Proposal: yes, optional.
