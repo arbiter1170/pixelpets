@@ -139,7 +139,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   two lines, a place line, the last three done steps, SHOW ON MAP (the region map rings the target's node in red and names
   the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Your team is worn out. Rest at a
   Lantern House first." (Build 2, GLIMMER_PATH v0.2 `questStuck[0]`; the other two stuck lines are kept as data in
-  `PPQuests.STUCK`). The objective text and places are the designer's (Build 2): 24 steps, and 8 of them have a
+  `PPQuests.STUCK`).   The objective text and places are the designer's (Build 2), plus later glimmer lines for Heights, the
+  Cobblecrest review, and Rook's cart: 26 rows, and 10 of them have a
   Glimmerwell variant (`glimmer: { text, place }` on the entry) that shows while `story.side` is `glimmer`; ids, `when`,
   `done` and targets are shared by both sides. Text is at most 110 characters, places at most 24 (`questCheck` enforces both).
   The QUEST button carries the designer's `icon_quest` (a yellow arrow signpost).
@@ -176,6 +177,14 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   Tour's first stop wait until `story.heights_done`. A save that already has Seal 1 is not sent back.
   Some fights are group battles: two foes at once, TARGET to choose, and on the last fight an ally Walkling steps in.
   Stock up at the Heights crate. Key items (Atten Vial, Atten Plans, Route Page) stay in the bag.
+- Glimmerwell after Fernbrook (Builds 4–6, still in `data/glimmer_path.json`): Route 2 logs you as a Glow Census
+  volunteer. The quiet log gives Rook one `story.rook_bond`. Wickerglen still bumps the lamps and pays 3 Befriend Treats.
+  Cobblecrest puts you beside Dorian; Hale loses the quarry; Rook objects to the word "units". Hall slot 2 is a Sacrifice
+  stub: offer a snack (it stays in the bag), meet a free quota of three spoken names, or battle Hale. Any close grants
+  the Bright Tier 2 Lanyard (`seals.seal_glim_2`, placeholder art), 2 Hearty Snacks and 1 Wake Tonic, and sets
+  `story.seal2`. On the Brinewick cart, Keepers Rook gets off (`story.rook_end` `"ally"`) and Glimmerwell Rook stays
+  (`"stays"`). Both paths set `story.cobble_end` and show the same coming-later card. Keepers Route 2 and the Hale trial
+  are unchanged. `story.rook_bond` does not gate the cart.
 - Standing (Build 2, GLIMMER_PATH v0.2 BS; NEXT_PLAN WP-B "Standing and switching"): each side has a 0-100 meter,
   `S.standing = { keepers, glimmer }` (additive, `v` stays 2; `save.js` fills a missing or bad value with 0 and clamps the
   rest). Tier = the highest threshold reached (0 / 10 / 25 / 45 / 70 by default: Stranger, Friend, Trusted, Hall Friend,
@@ -185,7 +194,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   Scenes grant it with `["standing", side, n | null, oneShotId]` (a null amount reads `STANDING_CFG.grants[oneShotId]`;
   `standing.got.<id>` stops a replay from granting twice). Grants wired: the side pick (+10 to the picked side), the orchard
   (+5, either side), Seal #1 / the Bright Tier 1 review (+10 to the side played; the Tour completion is that same grant),
-  and the optional Tour match (`tour1_match`, +5 glimmer, only on a win). `cond()` accepts
+  the optional Tour match (`tour1_match`, +5 glimmer, only on a win), Heights beats (offer, rooms, Ken's interview, finales),
+  and Builds 4–6 (`glen_g`, `quarry_g`, `seal2_g` on glimmer, `r5_k` on keepers, `r5_g` on glimmer, 5 each, once). `cond()` accepts
   `standing.keepers>=2` / `standing.glimmer>=2` (the tier, not points) for later lines and options. Reaching a new tier shows
   that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
   the spec has no numbers yet.

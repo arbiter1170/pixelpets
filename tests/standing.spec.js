@@ -298,8 +298,8 @@ const COPY = {
   cobble_arrive: ["Rook is waiting just inside Cobblecrest's west gate.", 'Cobblecrest, west gate'],
   quarry: ["There's an open house at the quarry, up the north road.", 'Cobblecrest, north road'],
   buyout: ["Walk up to the stage. Rook's supervisor is about to speak.", 'Quarry stage', 'Join Dorian Pell on the stage. Big day for the quarry!', 'Quarry stage'],
-  hall2: ["Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", 'Cobblecrest Hall', "Your second review is at Hale's Hall. Master Hale is not thrilled.", 'Cobblecrest Hall'],
-  hook: ['Rook is outside the Hall with news from the quarry.', "Outside Hale's Hall"],
+  hall2: ["Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", 'Cobblecrest Hall', 'Your second review is a Sacrifice. The free quota still closes it.', 'Cobblecrest Hall'],
+  hook: ['Rook is outside the Hall with news from the quarry.', "Outside Hale's Hall", 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', "Outside Hale's Hall"],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -338,7 +338,7 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
     for (const t of [row[0], row[2]].filter(Boolean)) expect(Array.from(t).length, id).toBeLessThanOrEqual(110);
     for (const p of [row[1], row[3]].filter(Boolean)) expect(Array.from(p).length, id).toBeLessThanOrEqual(24);
   }
-  expect(overrides).toBe(9);
+  expect(overrides).toBe(10);
   // and the panel itself shows the side's text (keepers, then glimmer) for the orchard step
   await page.evaluate(() => { PixelPets.setFlag('story.met_fen', true); PixelPets.setFlag('story.reached_fernbrook', true); PixelPets.setFlag('story.met_glimmerwell', true); PixelPets.showTab('walk'); });
   await page.waitForFunction(() => { const b = document.querySelector('#questBtn'); return b && !b.hidden && window.PixelPets.quest.id === 'orchard'; });

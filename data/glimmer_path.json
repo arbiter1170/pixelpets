@@ -1,13 +1,13 @@
 {
   "spec": "GLIMMER_PATH",
-  "version": "0.2-b3",
-  "status": "Build 3: Fernbrook glimmer scenes plus the Bright Pavilion Tour (Hall slot 1). Slot 2 is not in this build.",
+  "version": "0.3-b46",
+  "status": "Builds 4-6 shipped: Route 2 glimmer, Cobblecrest Sacrifice stub, Rook R5 (ally / stays).",
   "_about": "The Glimmerwell branch of Act 1. Same shapes as the other data files. A scene X@glimmer runs instead of X while story.side is glimmer; a trainer id@glimmer is merged over id. The branch sets the same progression flags as the Keepers path. No new maps.",
   "_wiring": "Standing steps (sp_pick, orchard_g, seal1_g, tour1_match) and the seal step are engine grants kept with the delivered lines. Tour completion is seal1@glimmer, so seal1_g is granted once there. tour1_match (+5) runs only when trainer.hall1_fen is already set, which is the optional match win. The Keepers confirm label dropped its final question mark so the label stays within 30 characters.",
   "_decisions": {
     "hall_slot_1": "Tour. Vincent, Oct 13, 2026: slot 1 stays the stated default (Bright Pavilion Tour). The Audit battle is optional stop 4.",
-    "hall_slot_2": "Sacrifice, with Quota as the free floor. Not built in Build 3.",
-    "rook_r5": "Keepers path: Rook eventually converts to good. Glimmerwell path: Rook stays with Glimmerwell. Not bond-gated, and there is no follow-or-stay fork. The R5 scene is not in this build. teaser@glimmer does not say he leaves."
+    "hall_slot_2": "Sacrifice stub (Build 5). Quota is the free floor: three names spoken aloud. Setting a snack down is narrative only (the item stays in the bag, so the review cannot soft-lock). Face the review battles hall2_hale@glimmer and onWin runs seal2. Real cost is still D24.",
+    "rook_r5": "Built (Build 6). Keepers brinewick_hook sets story.rook_end ally. Glimmerwell brinewick_hook@glimmer sets stays. Both set story.cobble_end. Not bond-gated. Tone confirmation is still D25."
   },
   "placeholders": [
     "tour1_s1, tour1_s2, tour1_s3, tour1_s4, tour1_wait, and the stage-photo line in seal1@glimmer use /* PLACEHOLDER: needs copy from Vincent */. Missing: lantern recipients, slogan text, Comfort Check deflections, Census-board lines, stage-photo presentation, and the hidden-doubt flag name (tour.doubt is a stand-in nothing reads yet)."
@@ -735,6 +735,582 @@
         "Associate Juniper",
         "/* PLACEHOLDER: needs copy from Vincent */"
       ]
+    ],
+    "lead_intro@glimmer": [
+      [
+        "say",
+        "",
+        "Mint lamps hum. Walklings doze under them, colours washed thin."
+      ],
+      [
+        "say",
+        "Field Lead Imogen",
+        "Volunteer {name}! The Glow Census loves a helper."
+      ],
+      [
+        "say",
+        "Field Lead Imogen",
+        "Log what you see. Comfort Lamps help them relax. We collect a little glow."
+      ],
+      [
+        "choice",
+        "How do you log the lamps?",
+        [
+          [
+            "Go along",
+            [
+              [
+                "say",
+                "Field Lead Imogen",
+                "Perfect. Compliance looks wonderful in the quarterly."
+              ]
+            ]
+          ],
+          [
+            "Ask why",
+            [
+              [
+                "say",
+                "Field Lead Imogen",
+                "Why? Because relaxed units count faster, sweetie."
+              ]
+            ]
+          ],
+          [
+            "Keep it quiet",
+            [
+              [
+                "say",
+                "Field Lead Imogen",
+                "Quiet is still an answer. I will log you as curious."
+              ],
+              [
+                "say",
+                "Rook",
+                "You did not clap. ...Thanks."
+              ],
+              [
+                "inc",
+                "story.rook_bond",
+                1
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "setFlag",
+        "story.met_lead",
+        true
+      ]
+    ],
+    "faded2@glimmer": [
+      [
+        "if",
+        "story.glen_cleared",
+        [
+          [
+            "say",
+            "",
+            "A Pebblit, still a little grey, peeks up like it knows your lanyard."
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "A grey Pebblit is curled under a lamp. The Census would call that a success."
+          ]
+        ]
+      ],
+      [
+        "encounter",
+        "faded_pebblit"
+      ],
+      [
+        "if",
+        "story.faded_pebblit",
+        [
+          [
+            "say",
+            "",
+            "Pebblit leans on your boot. The grey is already thinner."
+          ]
+        ]
+      ]
+    ],
+    "glen_cleared@glimmer": [
+      [
+        "say",
+        "",
+        "Running footsteps. Rook skids in with a crate of lamps."
+      ],
+      [
+        "say",
+        "Rook",
+        "{name}? You are on the Census too? They said I was the only Junior Bright."
+      ],
+      [
+        "say",
+        "Field Lead Imogen",
+        "Two bright helpers! Tell him the lamps are perfectly comfy."
+      ],
+      [
+        "say",
+        "",
+        "{pet} bumps the nearest stand. It wobbles. Every lamp clicks off."
+      ],
+      [
+        "say",
+        "",
+        "The dozing Walklings blink. A little colour creeps back."
+      ],
+      [
+        "say",
+        "Field Lead Imogen",
+        "A minor outage, and you were here to witness it. I am proud of you."
+      ],
+      [
+        "say",
+        "Rook",
+        "Proud. They looked... empty, Imogen."
+      ],
+      [
+        "say",
+        "Rook",
+        "They gave me treats to calm the units. You take them. You will use them."
+      ],
+      [
+        "give",
+        "befriend_treat",
+        3
+      ],
+      [
+        "say",
+        "Rook",
+        "Dorian is at the quarry. Stand with him. He likes a full stage."
+      ],
+      [
+        "setFlag",
+        "story.rook_saw_lamps",
+        true
+      ],
+      [
+        "setFlag",
+        "story.glen_cleared",
+        true
+      ],
+      [
+        "standing",
+        "glimmer",
+        5,
+        "glen_g"
+      ]
+    ],
+    "route2_end@glimmer": [
+      [
+        "say",
+        "Rook",
+        "Gate says closed for upgrades. Dorian does love a curtain."
+      ],
+      [
+        "say",
+        "",
+        "Clunk. The gate opens. A banner: QUARRY OPEN HOUSE, TODAY ONLY."
+      ],
+      [
+        "say",
+        "Rook",
+        "That is our cue. Colleague to colleague: we walk in together, or we race."
+      ],
+      [
+        "choice",
+        "Go up together, or race?",
+        [
+          [
+            "Together.",
+            [
+              [
+                "say",
+                "Rook",
+                "Together. I am still beating you to Bright of the Month."
+              ],
+              [
+                "setFlag",
+                "story.rook_pact",
+                "together"
+              ]
+            ]
+          ],
+          [
+            "Race you!",
+            [
+              [
+                "say",
+                "Rook",
+                "Ha! Now you sound like me. Go!"
+              ],
+              [
+                "setFlag",
+                "story.rook_pact",
+                "race"
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "setFlag",
+        "story.route2_end",
+        true
+      ]
+    ],
+    "cobble_arrive@glimmer": [
+      [
+        "if",
+        "story.rook_pact=race",
+        [
+          [
+            "say",
+            "Rook",
+            "Beat you by four seconds. Junior Brights keep score."
+          ]
+        ],
+        [
+          [
+            "if",
+            "story.rook_pact=together",
+            [
+              [
+                "say",
+                "Rook",
+                "Together, like we said. Now we both look official."
+              ]
+            ],
+            [
+              [
+                "say",
+                "Rook",
+                "{name}! You made it. Welcome to the open house."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Rook",
+        "Dorian is on the quarry stage. We stand where he can see the lanyards."
+      ],
+      [
+        "say",
+        "Rook",
+        "Lantern House first if your team is worn out. Even a census rests."
+      ],
+      [
+        "say",
+        "",
+        "The Lantern House glows by the road. A wipe from here wakes you inside it."
+      ],
+      [
+        "respawnHere"
+      ],
+      [
+        "say",
+        "Rook",
+        "See you on the stage."
+      ],
+      [
+        "setFlag",
+        "story.cobble_arrived",
+        true
+      ]
+    ],
+    "quarry_buyout@glimmer": [
+      [
+        "say",
+        "",
+        "You stand on the stage boards beside Dorian. The crowd looks up."
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "Friends of Cobblecrest! And my two Junior Brights. What a quarry!"
+      ],
+      [
+        "say",
+        "Reeve Tamsin",
+        "The town voted. The quarry is sold. It passed by three votes."
+      ],
+      [
+        "say",
+        "Master Hale",
+        "Pebblits have napped in that seam since before my grandad. Where do they go?"
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "Somewhere comfy, Master Hale. Every unit gets a lovely new home."
+      ],
+      [
+        "say",
+        "",
+        "Associates roll crates toward the seam. A soft rumble in the rock goes quiet."
+      ],
+      [
+        "say",
+        "Rook",
+        "Sir. At Wickerglen they called the Walklings units. I did not like it."
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "Units is a warm word, Rook. It means they belong. Now, a friendly match!"
+      ],
+      [
+        "say",
+        "Rook",
+        "You heard him, {name}. Colleague against colleague."
+      ],
+      [
+        "battle",
+        "rival2_rook"
+      ],
+      [
+        "if",
+        "story.rival2_result=won",
+        [
+          [
+            "say",
+            "Rook",
+            "You won. The word units still sits wrong. That part was not the match."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Rook",
+            "Training works. The word still sits wrong. Do not make me say it twice."
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "Splendid. Hale, the Hall is yours to host. Our review will use the room."
+      ],
+      [
+        "say",
+        "Master Hale",
+        "Use it, then. Stone remembers who stood where."
+      ],
+      [
+        "say",
+        "",
+        "Dorian strolls off. A shiny gate closes across the Old Seam."
+      ],
+      [
+        "setFlag",
+        "story.quarry_bought",
+        true
+      ],
+      [
+        "standing",
+        "glimmer",
+        5,
+        "quarry_g"
+      ]
+    ],
+    "hale_trial@glimmer": [
+      [
+        "if",
+        "seal:seal_glim_2",
+        [
+          [
+            "say",
+            "Associate Quinn",
+            "Tier 2 is on file. The cradle can wait. Have a bright day!"
+          ]
+        ],
+        [
+          [
+            "say",
+            "Associate Quinn",
+            "Second review. A Sacrifice. You set something down, or you meet the quota."
+          ],
+          [
+            "say",
+            "Associate Quinn",
+            "The quota is free: three names from the seam, spoken aloud. No one is locked out."
+          ],
+          [
+            "choice",
+            "How do you close the review?",
+            [
+              [
+                "Set a snack down",
+                [
+                  [
+                    "say",
+                    "",
+                    "You set a Heal Snack on the desk. Quinn does not eat it. The cost is that you offered."
+                  ],
+                  [
+                    "run",
+                    "seal2"
+                  ]
+                ]
+              ],
+              [
+                "Meet the quota",
+                [
+                  [
+                    "say",
+                    "Associate Quinn",
+                    "Three names. Say them. The seam heard you. Quota met, no fee."
+                  ],
+                  [
+                    "run",
+                    "seal2"
+                  ]
+                ]
+              ],
+              [
+                "Face the review",
+                [
+                  [
+                    "say",
+                    "Associate Quinn",
+                    "Then Hale's floor, our rules. Win or lose, you can still take the quota after."
+                  ],
+                  [
+                    "battle",
+                    "hall2_hale"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "seal2@glimmer": [
+      [
+        "say",
+        "Associate Quinn",
+        "Review closed. Bright Tier 2 Lanyard. Two marks, one cord."
+      ],
+      [
+        "seal",
+        "seal_glim_2"
+      ],
+      [
+        "give",
+        "hearty_snack",
+        2
+      ],
+      [
+        "give",
+        "wake_tonic",
+        1
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "Same care package Hale gives his friends. We can be generous."
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "Brinewick is down the coast. The cart goes whether you ride it or not."
+      ],
+      [
+        "standing",
+        "glimmer",
+        5,
+        "seal2_g"
+      ],
+      [
+        "setFlag",
+        "story.seal2",
+        true
+      ]
+    ],
+    "brinewick_hook": [
+      [
+        "say",
+        "",
+        "A Glimmerwell cart rattles down from the quarry, piled with crates."
+      ],
+      [
+        "say",
+        "Rook",
+        "{name}. I am getting off. The lanyard can stay on the cart."
+      ],
+      [
+        "say",
+        "Rook",
+        "I saw the lamps. I heard units. I am with you, if you will have me."
+      ],
+      [
+        "setFlag",
+        "story.rook_end",
+        "ally"
+      ],
+      [
+        "say",
+        "",
+        "COMING LATER \u00b7 Brinewick and its Trial Hall. Thanks for playing Cobblecrest!"
+      ],
+      [
+        "setFlag",
+        "story.cobble_end",
+        true
+      ],
+      [
+        "standing",
+        "keepers",
+        5,
+        "r5_k"
+      ]
+    ],
+    "brinewick_hook@glimmer": [
+      [
+        "say",
+        "",
+        "A Glimmerwell cart rattles down from the quarry, piled with crates."
+      ],
+      [
+        "say",
+        "Rook",
+        "{name}. Routine run to Brinewick. I am staying with the company."
+      ],
+      [
+        "say",
+        "Rook",
+        "One crate hums. I will not ask it why. See you on the road, colleague."
+      ],
+      [
+        "setFlag",
+        "story.rook_end",
+        "stays"
+      ],
+      [
+        "say",
+        "",
+        "COMING LATER \u00b7 Brinewick and its Trial Hall. Thanks for playing Cobblecrest!"
+      ],
+      [
+        "setFlag",
+        "story.cobble_end",
+        true
+      ],
+      [
+        "standing",
+        "glimmer",
+        5,
+        "r5_g"
+      ]
     ]
   },
   "trainers": {
@@ -759,6 +1335,22 @@
         "intro": "You packed my orchard into crates. Show me what roots you have left, {name}.",
         "win": "...Strong. Stronger than I'd like. Take your ribbon. The trees will remember.",
         "lose": "Roots hold. Rest a while, and think about why."
+      }
+    },
+    "rival2_rook@glimmer": {
+      "lines": {
+        "intro": "Colleague against colleague. Do not go easy, {name}.",
+        "win": "You got me. The speech was louder than the match.",
+        "lose": "Junior Bright training. It still works. Unfortunately."
+      }
+    },
+    "hall2_hale@glimmer": {
+      "seal": "seal_glim_2",
+      "onWin": "seal2",
+      "lines": {
+        "intro": "This is an acquisition review. Show me the team you brought to my floor.",
+        "win": "Noted. You moved stone without a lamp. The quota can close.",
+        "lose": "Stone is patient. Come back, or take the free quota instead."
       }
     }
   },
@@ -795,6 +1387,8 @@
   "speakers": {
     "Master Fen": "fen",
     "Associate Juniper": "associate",
+    "Associate Quinn": "associate",
+    "Field Lead Imogen": "associate",
     "Tobin": "associate",
     "Rook": "rook",
     "Warden Ilse": "ilse",
@@ -814,6 +1408,9 @@
     "tour.doubt": "PLACEHOLDER name. +1 when the Comfort Check question is chosen. Nothing reads it yet. Vincent still needs the real flag name.",
     "standing.got.<id>": "A one-shot Standing grant already made.",
     "standing.top.<side>": "The highest tier whose toast has shown for that side.",
-    "seals.seal_glim_1": "Bright Tier 1 lanyard. Set by the seal step in seal1@glimmer (and by a Hall win). story.seal1 is set by that same scene."
+    "seals.seal_glim_1": "Bright Tier 1 lanyard. Set by the seal step in seal1@glimmer (and by a Hall win). story.seal1 is set by that same scene.",
+    "story.rook_end": "R5. Keepers: ally. Glimmerwell: stays. Not bond-gated.",
+    "story.rook_bond": "Optional flavour counter from the quiet Census choice. Does not gate R5.",
+    "seals.seal_glim_2": "Bright Tier 2 lanyard. Sacrifice review. Placeholder art until Design draws tier 2."
   }
 }
