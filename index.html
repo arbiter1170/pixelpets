@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261010-0413">
+<meta name="kw-build" content="20261013-1216">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261010-0413">
+<link rel="stylesheet" href="style.css?v=20261013-1216">
 </head>
 <body>
 <div id="app">
@@ -66,6 +66,7 @@
           <button class="dp right" data-dir="right" aria-label="Right"><canvas class="ico-dp" data-icon="right" width="8" height="8" aria-hidden="true"></canvas></button>
           <button class="dp down" data-dir="down" aria-label="Down"><canvas class="ico-dp" data-icon="down" width="8" height="8" aria-hidden="true"></canvas></button>
           <button class="dpc tl" id="journalBtn" type="button" aria-label="Walkling Journal" hidden><canvas class="ico-hud" data-hud="icon_book" width="8" height="8" aria-hidden="true"></canvas><span>BOOK</span></button>
+          <button class="dpc tr" id="questBtn" type="button" aria-label="Next step" hidden><canvas class="ico-hud" data-hud="icon_quest" width="8" height="8" aria-hidden="true"></canvas><span>QUEST</span></button>
           <button class="dpc bl" id="walkBagBtn" type="button" aria-label="Bag" hidden><canvas class="ico-hud" data-hud="icon_bag" width="8" height="8" aria-hidden="true"></canvas><span>BAG</span></button>
           <button class="dpc br" id="mapBtn" type="button" aria-label="Map"><canvas class="ico-hud" data-hud="icon_map" width="8" height="8" aria-hidden="true"></canvas><span>MAP</span></button>
         </div>
@@ -178,8 +179,23 @@
     <div class="map-top"><div class="map-title" id="mapTitle">THE AMBERWILD</div><button id="mapClose" class="btn map-x" type="button">CLOSE</button></div>
     <canvas id="regionCanvas" width="320" height="192" aria-hidden="true"></canvas>
     <div class="map-place"><div class="map-pname" id="mapPlaceName"></div><div class="map-pblurb" id="mapPlaceBlurb"></div></div>
+    <p class="map-hint map-quest" id="mapQuest" hidden></p>
     <p class="map-hint">Tap anywhere to close.</p>
     <p class="sr-only" id="mapSr" aria-live="polite"></p>
+  </div>
+</div>
+<!-- Next step (NEXT_PLAN WP-C): QUEST corner button; the objective is derived from flags by quests.js -->
+<div id="ovQuest" class="overlay" hidden>
+  <div class="ov-inner quest-inner" role="dialog" aria-modal="true" aria-labelledby="questTitle">
+    <div class="ov-title" id="questTitle">NEXT STEP</div>
+    <p id="questText" class="q-text"></p>
+    <p id="questPlace" class="q-place"></p>
+    <p id="questNote" class="q-note" hidden></p>
+    <ul id="questDone" class="q-done" aria-label="Done"></ul>
+    <div class="actions two-even">
+      <button id="questMap" class="btn btn-play" type="button">SHOW ON MAP</button>
+      <button id="questClose" class="btn" type="button">CLOSE</button>
+    </div>
   </div>
 </div>
 <div id="ovBag" class="overlay bag" hidden>
@@ -379,17 +395,18 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261010-0413";</script>
-<script src="sprites.js?v=20261010-0413"></script>
-<script src="keeper.js?v=20261010-0413"></script>
-<script src="stats.js?v=20261010-0413"></script>
-<script src="moves.js?v=20261010-0413"></script>
-<script src="data/mapdata.js?v=20261010-0413"></script>
-<script src="save.js?v=20261010-0413"></script>
-<script src="env.js?v=20261010-0413"></script>
-<script src="sfx.js?v=20261010-0413"></script>
-<script src="cloud_config.js?v=20261010-0413"></script>
-<script src="cloud.js?v=20261010-0413"></script>
-<script src="game.js?v=20261010-0413"></script>
+<script>window.BUILD = "20261013-1216";</script>
+<script src="sprites.js?v=20261013-1216"></script>
+<script src="keeper.js?v=20261013-1216"></script>
+<script src="stats.js?v=20261013-1216"></script>
+<script src="moves.js?v=20261013-1216"></script>
+<script src="data/mapdata.js?v=20261013-1216"></script>
+<script src="quests.js?v=20261013-1216"></script>
+<script src="save.js?v=20261013-1216"></script>
+<script src="env.js?v=20261013-1216"></script>
+<script src="sfx.js?v=20261013-1216"></script>
+<script src="cloud_config.js?v=20261013-1216"></script>
+<script src="cloud.js?v=20261013-1216"></script>
+<script src="game.js?v=20261013-1216"></script>
 </body>
 </html>

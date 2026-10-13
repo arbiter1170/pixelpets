@@ -206,7 +206,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -271,6 +271,7 @@ function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.togg
 function updateHUD(){
   syncBagBtns();
   syncJournalBtn();
+  syncQuestBtn();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
   if (!p) return;
@@ -1245,7 +1246,7 @@ function drawMap(t){
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
   drawBubbles(g, cx, cy, t);
   if (!isRoom()) drawWeather(g, VW, VH, t);   // weather tint is skipped indoors (INTERIORS §2.1)
-  drawExitCue(g, cx, cy, t);
+  drawObjectiveCue(g, cx, cy, t);
   if (walk.intro) { const k = Math.floor((t - walk.intro) / 120) % 2; if (k) { g.fillStyle = PAL.w; g.fillRect(0,0,VW,VH); } }
   if (fade.busy) { const e = (now() - fade.t0) / (FADE_MS / 2); g.globalAlpha = clamp(e <= 1 ? e : 2 - e, 0, 1); g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH); g.globalAlpha = 1; }
 }
@@ -1309,18 +1310,73 @@ function drawCobbleTrim(g, cx, cy, t){
     g.restore();
   }
 }
-// A small yellow chevron above Hearthmoor's east path until the keeper has been out on Route 1.
-// The path tile is yellow, so the mark sits in the darker tile just north of it.
-function drawExitCue(g, cx, cy, t){
-  if (!S || CUR.id !== 'hearthmoor' || !S.flags['story.starter_received'] || S.flags['story.reached_route1']) return;
+/* ---------- next-step cue (NEXT_PLAN WP-C): replaces the Hearthmoor-only exit chevron ---------- */
+// The objective comes from quests.js (flags only, nothing saved). On the current map a yellow arrow bobs above the target
+// tile; off-screen it becomes an arrow at the viewport edge; on another map it points at the exit that starts the
+// shortest route there (BFS over warps and doors). Hidden during scenes, battles and the walk-in flash.
+const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length });
+const questCurrent = () => (S && typeof PPQuests !== 'undefined') ? PPQuests.current(questState()) : null;
+const ARROW_DOWN = ['..###..', '..###..', '..###..', '#######', '.#####.', '..###..', '...#...'];   // 7x7, drawn 1 px per cell with a PAL.k outline
+const ARROW = (() => {
+  const H = ARROW_DOWN.length, W = ARROW_DOWN[0].length, at = (x, y) => ARROW_DOWN[y][x] === '#';
+  const grid = f => { const out = []; for (let y = 0; y < (f.h); y++) { let r = ''; for (let x = 0; x < f.w; x++) r += f.px(x, y) ? '#' : '.'; out.push(r); } return out; };
+  return {
+    down: ARROW_DOWN,
+    up: grid({ w: W, h: H, px: (x, y) => at(x, H - 1 - y) }),
+    right: grid({ w: H, h: W, px: (x, y) => at(y, x) }),
+    left: grid({ w: H, h: W, px: (x, y) => at(y, H - 1 - x) }),
+  };
+})();
+function drawArrow(g, grid, x, y, col){
+  const filled = (gx, gy) => gy >= 0 && gy < grid.length && gx >= 0 && gx < grid[0].length && grid[gy][gx] === '#';
+  g.fillStyle = PAL.k;
+  for (let gy = -1; gy <= grid.length; gy++) for (let gx = -1; gx <= grid[0].length; gx++)
+    if (!filled(gx, gy) && (filled(gx - 1, gy) || filled(gx + 1, gy) || filled(gx, gy - 1) || filled(gx, gy + 1))) g.fillRect(x + gx, y + gy, 1, 1);
+  g.fillStyle = col;
+  for (let gy = 0; gy < grid.length; gy++) for (let gx = 0; gx < grid[0].length; gx++) if (grid[gy][gx] === '#') g.fillRect(x + gx, y + gy, 1, 1);
+}
+// Shortest route between maps over warps and doors (gating ignored: the chain's flags open the way). Cached; the graph is static.
+const routeCache = new Map();
+function routeExit(from, to){
+  const key = from + '>' + to; if (routeCache.has(key)) return routeCache.get(key);
+  const exits = id => ((WORLD[id] && WORLD[id].objs) || []).filter(o => (o.kind === 'warp' || o.kind === 'door') && o.to && WORLD[o.to]);
+  let found = null;
+  if (from !== to && WORLD[from] && WORLD[to]) {
+    const prev = { [from]: null }, q = [from];
+    while (q.length && !found) { const id = q.shift(); for (const o of exits(id)) { if (o.to in prev) continue; prev[o.to] = { id, o }; if (o.to === to) { found = o.to; break; } q.push(o.to); } }
+    if (found) { let n = found; while (prev[n] && prev[n].id !== from) n = prev[n].id; found = prev[n] ? prev[n].o : null; }
+  }
+  routeCache.set(key, found); return found;
+}
+// Where the current objective is on this map: its tile, or the exit toward it; null when nothing points anywhere.
+function questPointOnMap(){
+  const q = questCurrent(); if (!q || !q.target) return null;
+  if (q.target.map === CUR.id) {
+    const gw = q.follow === 'guide' ? wild.list.find(w => w.guide) : null;   // the first-wild guide picks its own grass tile
+    return gw ? { x: gw.x, y: gw.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
+  }
+  const ex = routeExit(CUR.id, q.target.map); return ex ? { x: ex.x, y: ex.y, here: false } : null;
+}
+function drawObjectiveCue(g, cx, cy, t){
+  if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
+  const pt = questPointOnMap(); if (!pt) return;
+  if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;   // standing on it
+  const c = $('#mapCanvas'), VW = c.width, VH = c.height;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
-  const x = 20 * TS - cx + 5, y = 8 * TS - cy - 12 - bob;
-  const blocks = [[0, 2], [2, 0], [2, 4], [4, 2]];
-  g.fillStyle = PAL.k;
-  for (const [dx, dy] of blocks) g.fillRect(x + dx - 1, y + dy - 1, 4, 4);
-  g.fillStyle = PAL.y;
-  for (const [dx, dy] of blocks) g.fillRect(x + dx, y + dy, 2, 2);
+  const X = pt.x * TS - cx, Y = pt.y * TS - cy;
+  if (X > -TS && Y > -TS && X < VW && Y < VH) {                              // the tile is in view: a bobbing arrow above it
+    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5, Y - 12 - bob, PAL.y);
+    else drawArrow(g, ARROW.up, X + 5, Y + TS + 1 + bob, PAL.y);           // top row of the map: point up at it from below
+    return;
+  }
+  // Off-screen: an arrow at the viewport edge, on the line from the keeper to the target.
+  const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
+  const m = 6, kx = dx ? ((dx > 0 ? VW - m : m) - px) / dx : Infinity, ky = dy ? ((dy > 0 ? VH - m : m) - py) / dy : Infinity;
+  const k = Math.min(kx, ky), ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
+  const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'), gr = ARROW[dir];
+  const nudge = reduce ? 0 : bob, ox = dir === 'right' ? nudge : dir === 'left' ? -nudge : 0, oy = dir === 'down' ? nudge : dir === 'up' ? -nudge : 0;
+  drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox), Math.round(ey - gr.length / 2 + oy), PAL.y);
 }
 const WART = buildWorldArt();
 function drawObj(g, o, cx, cy, VW, VH, t){
@@ -2590,6 +2646,7 @@ const REGION_MAP = {
   interiors: { hm_home_in: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
+  icon_quest: { grid: ['ww......', 'wyyyyy..', 'wyyyyyyy', 'wyyyyyy.', 'wyyyy...', 'w.......', 'w.......', 'ww......'] },   // WP-C placeholder flag; the designer's icon_quest replaces it
 };
 // §4: the node for a map id: itself; else the room's own `outdoor` field; else the interiors table; else its door-mat warp's `to`.
 function nodeOf(id){
@@ -2618,6 +2675,8 @@ function openMap(){
   const name = nd ? ((WORLD[cur] && WORLD[cur].name) || nd.label).toUpperCase() : REGION_MAP.unknownLabel, blurb = nd ? nd.blurb : REGION_MAP.unknownBlurb;
   $('#mapTitle').textContent = REGION_MAP.title; $('#mapPlaceName').textContent = name; $('#mapPlaceBlurb').textContent = blurb;
   $('#mapSr').textContent = nd ? 'You are in ' + ((WORLD[cur] && WORLD[cur].name) || nd.label) + '. ' + blurb : 'You are somewhere new.';
+  const q = questCurrent(), mq = $('#mapQuest');                   // WP-C: where the ringed node is, in words
+  if (mq) { mq.hidden = !(q && q.target); if (q && q.target) mq.textContent = 'NEXT: ' + q.place; }
   fitRegionMap(); $('#ovMap').hidden = false; lockTabs(true); sfx('tap'); drawRegionMap(performance.now());
 }
 function closeMap(){ if ($('#ovMap').hidden) return; $('#ovMap').hidden = true; lockTabs(false); sfx('tap'); }
@@ -2656,6 +2715,9 @@ function drawRegionMap(t){
     R(x - 1, y - 19, 3, 3, 'r');                                                    // small down-arrow 13-19 px above the node: stem...
     for (let i = 0; i < 4; i++) R(x - 3 + i, y - 16 + i, 7 - 2 * i, 1, 'r');       // ...and point
   }
+  // WP-C: the objective's node gets a red ring on the same blink (wider when it shares the node with the blue "you are here").
+  const q = questCurrent(), qn = q && q.target ? nodeOf(q.target.map) : null;
+  if (qn && N[qn] && (reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0)) { const [x, y] = P([N[qn].col, N[qn].row]); ring(x, y, qn === cur ? 15 : 12, 'r'); }
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
 
@@ -2684,12 +2746,49 @@ function openJournalTab(){
   if (!journalVisible() || overlayOpen()) { sfx('denied'); return; }
   sfx('tap'); showTab('col'); syncJournalBtn();
 }
+/* ---------- QUEST button + NEXT STEP panel (NEXT_PLAN WP-C) ---------- */
+// Same visibility rules as BOOK. Pulses while the current objective differs from the one the panel was last opened on
+// (S.questSeen, additive), so every new beat invites a tap once and then goes quiet.
+const questVisible = () => journalVisible();
+function syncQuestBtn(){
+  const b = $('#questBtn'); if (!b) return;
+  const on = questVisible(), q = on ? questCurrent() : null;
+  b.hidden = !on;
+  b.classList.toggle('pulse', !!q && S.questSeen !== q.id);
+}
+function openQuest(){
+  if (!questVisible() || overlayOpen()) { sfx('denied'); return; }
+  const q = questCurrent(); if (!q) return;
+  clearMoves();
+  if (S.questSeen !== q.id) { S.questSeen = q.id; save(); }
+  renderQuest(q);
+  $('#ovQuest').hidden = false; lockTabs(true); armOptions(); sfx('tap'); syncQuestBtn();
+  $('#questClose').focus({ preventScroll: true });
+}
+function closeQuest(){
+  if ($('#ovQuest').hidden) return;
+  $('#ovQuest').hidden = true; lockTabs(false);
+}
+function renderQuest(q){
+  $('#questText').textContent = q.text;
+  $('#questPlace').textContent = q.place || '';
+  // Stuck-state guard: after a loss the objective stays put; say what to do first when nobody can battle.
+  const stuck = S.party.length > 0 && !leadPet();
+  const note = $('#questNote'); note.hidden = !stuck; note.textContent = stuck ? 'Rest at a Lantern House first. Your team is worn out.' : '';
+  const list = $('#questDone'); list.textContent = '';
+  for (const e of PPQuests.completed(questState(), 3)) { const li = document.createElement('li'); li.textContent = e.text; list.appendChild(li); }
+  $('#questMap').hidden = !q.target;
+}
+function questShowOnMap(){ closeQuest(); if (mapReady()) openMap(); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
+const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkTipText(){
   if (!S || !S.flags['story.starter_received']) return WALK_TIP_DEFAULT;
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
   if (!S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
+  const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
+  if (q && q.target) return escapeHtml(q.text);
   return WALK_TIP_DEFAULT;
 }
 function syncWalkTip(){
@@ -3373,7 +3472,7 @@ function bindInput(){
   $('#settingsBtn').addEventListener('click', () => { if (tabsGuarded()) return; if ($('#ovSettings').hidden) openSettings(); else closeSettings(); });
   // option buttons that just appeared ignore taps (capture phase, before their own handlers)
   for (const ev of ['click', 'pointerup']) document.addEventListener(ev, e => {
-    if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button')) { e.stopPropagation(); e.preventDefault(); }
+    if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button, #ovQuest button')) { e.stopPropagation(); e.preventDefault(); }
   }, true);
   $('#setClose').addEventListener('click', () => { sfx('tap'); closeSettings(); });
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
@@ -3399,6 +3498,10 @@ function bindInput(){
   $('#petBagBtn').addEventListener('click', () => openBag());
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#journalBtn').addEventListener('click', openJournalTab);
+  $('#questBtn').addEventListener('click', openQuest);
+  $('#questClose').addEventListener('click', () => { sfx('tap'); closeQuest(); });
+  $('#questMap').addEventListener('click', questShowOnMap);
+  $('#ovQuest').addEventListener('click', e => { if (e.target === e.currentTarget) closeQuest(); });
   $('#mapBtn').addEventListener('click', openMap);
   $('#ovMap').addEventListener('click', () => closeMap());   // tap anywhere (map, box, background, CLOSE) closes (MAP_V0 §2)
   $('#bagClose').addEventListener('click', () => closeBag());
@@ -3501,6 +3604,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
+    if (e.key === 'Escape' && !$('#ovQuest').hidden) { e.preventDefault(); closeQuest(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
     if (shopKey(e)) { e.preventDefault(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
@@ -3549,7 +3653,7 @@ function frame(t){
     if (p && !overlayOpen() && !walk.intro) updateWild(dt);
     drawMap(t);
   }
-  if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncWalkTip(); }
+  if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncWalkTip(); }
   if (!$('#ovMap').hidden) drawRegionMap(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
@@ -3673,6 +3777,7 @@ function boot(){
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
   PPSave.devCheck(); statsDevCheck();
+  { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
@@ -3797,6 +3902,10 @@ function boot(){
   Object.defineProperty(api, 'fading', { enumerable: true, get(){ return fade.busy; } });
   Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
+  // WP-C: the current objective (read-only), the point the cue draws on this map, and the chain's dev check.
+  Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
+    seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: !$('#questBtn').hidden && $('#questBtn').classList.contains('pulse') }; } });
+  Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
     if (DEBUG) { api[k] = v; continue; }

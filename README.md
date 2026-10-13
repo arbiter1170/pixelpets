@@ -117,6 +117,17 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - The Walkling Journal (BOOK, top-left of the d-pad, and the WALKLINGS tab) keeps a page for each form you have seen:
   the species line, a short note, and how you met the ones who joined you. A new form's first befriend opens that page.
   After Rook's first battle, one wild Walkling waits in the grass by Hearthmoor's east path.
+- Next step (QUEST, top-right of the d-pad; NEXT_PLAN WP-C): shows once you have a Walkling, hides during scenes, battles
+  and overlays, and pulses until you open it on a new objective (`questSeen`, additive). The panel (NEXT STEP) has one or
+  two lines, a place line, the last three done steps, SHOW ON MAP (the region map rings the target's node in red and names
+  the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Rest at a Lantern House first."
+  On the Walk map a yellow arrow bobs above the target tile (a map's top row gets it from below, pointing up); when the
+  target is off-screen an arrow sits at the viewport edge; when it is on another map the arrow points at the exit that
+  starts the shortest route there (warps and doors). The tip under the d-pad repeats the objective once the first-steps
+  tips are done. The chain lives in `quests.js` and is derived from story flags only (nothing to migrate: old saves land
+  on the right step; a later flag counts the earlier steps as done). Console: `PixelPets.quest` (read-only),
+  `PixelPets.questCheck` (every story flag the data writes is a step or on the not-a-step list; also run at boot).
+  The flag icon is a placeholder until the designer's `icon_quest` lands. The first-wild step follows the live guide creature.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   evolving (each line's evolution move, then any level moves of the new form). Older saves get missed evolution
   moves on their next visit ("<name> remembers something from evolving!").
