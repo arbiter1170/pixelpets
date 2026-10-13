@@ -771,7 +771,68 @@ function glimmerDevCheck(){
       if (o.text) line('obj ' + o.id, o.text);
     }
   }
+  // BS: `["standing", side, n|null, oneShotId]` steps name a real side, and a null amount names a grant in STANDING_CFG.grants.
+  const walkStanding = (where, n) => { if (!Array.isArray(n)) return;
+    if (n[0] === 'standing') { if (!PPStanding.isSide(n[1])) bad.push(where + ': standing step with unknown side ' + n[1]);
+      if (n[2] == null && !(n[3] in STANDING_CFG.grants)) bad.push(where + ': standing step needs an amount or a known grant id (' + n[3] + ')'); }
+    n.forEach(x => walkStanding(where, x)); };
+  for (const [id, steps] of Object.entries(SCENES)) walkStanding('scene ' + id, steps);
   return bad;
+}
+/* ---------- Standing (GLIMMER_PATH v0.2 BS; every name and number comes from STANDING_CFG in standing.js) ---------- */
+// S.standing = { keepers, glimmer } (save.js clamps it on load). Writes go through setStanding() so the tier-up toast fires
+// once per tier reached (`standing.top.<side>` remembers the highest tier toasted). Inside a scene the `standing` step is
+// buffered like setFlag: scene.view.standing holds the live value for cond() until the scene commits.
+const SC_STANDING = STANDING_CFG;
+function standingOf(sd, live){
+  if (live && scene && scene.view.standing && sd in scene.view.standing) return scene.view.standing[sd];
+  return S && S.standing ? (S.standing[sd] | 0) : 0;
+}
+function setStanding(sd, pts){
+  if (!PPStanding.isSide(sd)) return null;
+  if (!S.standing || typeof S.standing !== 'object') S.standing = { keepers: 0, glimmer: 0 };
+  const before = S.standing[sd] | 0, after = PPStanding.clampPts(pts);
+  S.standing[sd] = after;
+  const t1 = PPStanding.tierOf(after), topKey = 'standing.top.' + sd;
+  if (t1 > PPStanding.tierOf(before) && t1 > (+S.flags[topKey] || 0)) {
+    S.flags[topKey] = t1;
+    const msg = PPStanding.tierInfo(sd, after).toast;
+    if (scene) scene.toasts.push(msg); else toast(msg);
+  }
+  return after;
+}
+const addStanding = (sd, n) => setStanding(sd, standingOf(sd, false) + (Number(n) || 0));
+// The pledge changes (Q3 default): the side you leave keeps floor(n / costDiv), the side you join is unchanged, story.side
+// is rewritten, story.switches counts, story.switch_chapter / story.switch_at record when (the per-chapter cooldown).
+// `free` skips the cost (reserved for Rook's R5 "follow him" switch, not in this build). Never touches seals, lanyards,
+// progression flags, story.rook_bond or story.beat.*.
+function switchSide(to, opts){
+  if (!PPStanding.isSide(to)) return false;
+  const from = S.flags['story.side'] === 'glimmer' ? 'glimmer' : SIDE_DEFAULT;   // the saved pledge (a scene's live view may already say `to`)
+  if (to === from) return false;
+  if (!(opts && opts.free)) setStanding(from, PPStanding.switchCost(standingOf(from, false)));
+  S.flags['story.side'] = to;
+  S.flags['story.switches'] = (+S.flags['story.switches'] || 0) + 1;
+  S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
+  S.flags['story.switch_at'] = Date.now();
+  syncSide(); save();
+  return true;
+}
+const standingView = () => { const out = {}; for (const sd of PPStanding.SIDES) { const i = PPStanding.tierInfo(sd, standingOf(sd, false)); out[sd] = { points: i.points, tier: i.tier, name: i.name }; }
+  return Object.assign(out, { side: side(), switches: +S.flags['story.switches'] || 0, chapter: PPStanding.chapterOf(S.flags), canSwitch: PPStanding.canSwitch(S.flags, S.standing, side(), null).ok && !scene && !(battle && battle.on) }); };
+// Pledge desks (Q3 default): an option on an existing NPC panel, only after the side pick, never mid-scene or mid-battle,
+// and only where it would be a switch. The steps are built when the panel opens so the cost line shows live numbers.
+const deskOpen = to => !!(S && S.flags['story.side_pick_done'] && PPStanding.isSide(to) && side() !== to && !scene && !(battle && battle.on));
+function pledgeDeskSteps(to){
+  const W = SC_STANDING.switch, from = side(), who = W.desks[to].who, F = SC_STANDING.sides;
+  const can = PPStanding.canSwitch(S.flags, S.standing, from, to);
+  if (!can.ok) return [['say', who, W.refused]];
+  const pts = standingOf(from, false);
+  const costLine = PPStanding.fill(W.costLine, { side: F[from].short, from: pts, to: PPStanding.switchCost(pts) });
+  return [['say', '', W.letter[to]],
+    ['choice', W.confirm + ' ' + costLine, [
+      [W.yes, [['pledge', to], ['say', '', W.review[from]], ['say', who, W.welcome[to]]]],
+      [W.no, [['say', who, W.wait]]]]]];
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
@@ -785,6 +846,10 @@ if (SCENES.starter) SCENES.starter.push(
 if (SCENES.rival1) SCENES.rival1.push(
   ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
   ['say', '', 'A wild Walkling waits in the grass, just off the path.']);
+// BS Standing grants on the Keepers path (spec engineAsks.standingGrants): the orchard win and Seal #1. Amounts come from
+// STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
+if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
+if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
 const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
@@ -817,7 +882,10 @@ function cond(c, live, o){
     const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c);
     if (!m) v = !!flagOf(c, live);
     else if (m[2] === '=') v = String(flagOf(m[1], live)) === m[3];
-    else { const n = Number(flagOf(m[1], live)) || 0, r = Number(m[3]); v = m[2] === '>=' ? n >= r : m[2] === '<=' ? n <= r : m[2] === '>' ? n > r : n < r; }
+    else { // BS: 'standing.<side>' compares the TIER (not points) so lines and options can key on it; else a numeric flag
+      const sk = m[1].startsWith('standing.') ? m[1].slice(9) : null;
+      const n = sk && PPStanding.isSide(sk) ? PPStanding.tierOf(standingOf(sk, live)) : (Number(flagOf(m[1], live)) || 0), r = Number(m[3]);
+      v = m[2] === '>=' ? n >= r : m[2] === '<=' ? n <= r : m[2] === '>' ? n > r : n < r; }
   }
   return neg ? !v : v;
 }
@@ -1250,9 +1318,13 @@ function enterDoor(dr){
 function placeSteps(dr){
   if (dr.panel === 'lantern') {
     const who = dr.keeper || '';
+    const opts = [['Rest a while', [['rest'], ['respawnHere'], ['say', '', 'You all doze in the lantern glow. Your team is rested.']]]];
+    // BS: the Keepers' Pledge desk is this keeper's panel (STANDING_CFG.switch.desks.keepers), shown only when it would be a switch.
+    if (who === SC_STANDING.switch.desks.keepers.who && deskOpen('keepers')) opts.push([SC_STANDING.switch.option, pledgeDeskSteps('keepers')]);
+    opts.push(['Leave', []]);
     return [['say', who, 'Long walk from Hearthmoor? Rest a while.'],
       ['if', 'story.starter_received',
-        [['choice', 'Let your team rest?', [['Rest a while', [['rest'], ['respawnHere'], ['say', '', 'You all doze in the lantern glow. Your team is rested.']]], ['Leave', []]]]],
+        [['choice', 'Let your team rest?', opts]],
         [['say', who, 'No team to rest yet? Come back with a friend.']]]];
   }
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
@@ -1648,6 +1720,9 @@ function interact(o){
   if (line == null) return o.scene ? runScene(o.scene, ctx) : undefined;
   mapRT.talked.add(o.id);
   if (line[0] === '@') return runScene(line.slice(1), ctx);
+  // BS: Glimmerwell's Pledge desk is Juniper's own panel (STANDING_CFG.switch.desks.glimmer), offered after her line.
+  if (o.id === SC_STANDING.switch.desks.glimmer.npc && deskOpen('glimmer'))
+    return runSteps([['say', objName(o), line], ['choice', SC_STANDING.switch.ask, [[SC_STANDING.switch.option, pledgeDeskSteps('glimmer')], ['Leave', []]]]], ctx);
   return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line]], ctx);
 }
 // What the keeper faces: a talkable object on the next tile, or the door of the doorstep you stand on (facing up).
@@ -1807,7 +1882,20 @@ async function execStep(st){
       return;
     }
     case 'setFlag': { const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; }); return; }
-    case 'inc': { const n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0); sc.view.flags[a] = n; pend(() => { S.flags[a] = n; }); return; }   // WP-B0 counters (Rook bond, Standing)
+    case 'inc': { const n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0); sc.view.flags[a] = n; pend(() => { S.flags[a] = n; }); return; }   // WP-B0 counters (Rook bond)
+    // BS: ["standing", side, n | null, oneShotId?]. null n = STANDING_CFG.grants[oneShotId]. With an id, `standing.got.<id>`
+    // guards the grant so a replayed scene never grants twice. Buffered like setFlag; cond() sees the live value meanwhile.
+    case 'standing': {
+      if (!PPStanding.isSide(a)) return;
+      const n = b == null ? (SC_STANDING.grants[c] | 0) : (Number(b) || 0), got = c ? 'standing.got.' + c : null;
+      if (!n || (got && flagOf(got, true))) return;
+      if (got) sc.view.flags[got] = true;
+      sc.view.standing = sc.view.standing || {}; sc.view.standing[a] = PPStanding.clampPts(standingOf(a, true) + n);
+      pend(() => { if (got) { if (S.flags[got]) return; S.flags[got] = true; } addStanding(a, n); });
+      return;
+    }
+    // BS: ["pledge", side, free?]: switch the pledge to `side` (the Pledge desk's Yes). Buffered; later lines see the new side.
+    case 'pledge': { if (!PPStanding.isSide(a)) return; sc.view.flags['story.side'] = a; pend(() => { switchSide(a, { free: !!b }); }); return; }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
     case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest') S.world.respawn = r; }); return; }
     case 'lookPick': {
@@ -2736,7 +2824,7 @@ const REGION_MAP = {
   interiors: { hm_home_in: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
-  icon_quest: { grid: ['ww......', 'wyyyyy..', 'wyyyyyyy', 'wyyyyyy.', 'wyyyy...', 'w.......', 'w.......', 'ww......'] },   // WP-C placeholder flag; the designer's icon_quest replaces it
+  icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
 };
 // §4: the node for a map id: itself; else the room's own `outdoor` field; else the interiors table; else its door-mat warp's `to`.
 function nodeOf(id){
@@ -2846,12 +2934,13 @@ function syncQuestBtn(){
   b.hidden = !on;
   b.classList.toggle('pulse', !!q && S.questSeen !== q.id);
 }
+let questTab = 'next';   // 'next' | 'standing'; the panel always opens on NEXT STEP
 function openQuest(){
   if (!questVisible() || overlayOpen()) { sfx('denied'); return; }
   const q = questCurrent(); if (!q) return;
   clearMoves();
   if (S.questSeen !== q.id) { S.questSeen = q.id; save(); }
-  renderQuest(q);
+  questTab = 'next'; renderQuest(q);
   $('#ovQuest').hidden = false; lockTabs(true); armOptions(); sfx('tap'); syncQuestBtn();
   $('#questClose').focus({ preventScroll: true });
 }
@@ -2862,13 +2951,54 @@ function closeQuest(){
 function renderQuest(q){
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
-  // Stuck-state guard: after a loss the objective stays put; say what to do first when nobody can battle.
+  // Stuck-state guard: after a loss the objective stays put; say what to do first when nobody can battle (spec questStuck[0]).
   const stuck = S.party.length > 0 && !leadPet();
-  const note = $('#questNote'); note.hidden = !stuck; note.textContent = stuck ? 'Rest at a Lantern House first. Your team is worn out.' : '';
+  const note = $('#questNote'); note.hidden = !stuck; note.textContent = stuck ? PPQuests.STUCK[0] : '';
   const list = $('#questDone'); list.textContent = '';
   for (const e of PPQuests.completed(questState(), 3)) { const li = document.createElement('li'); li.textContent = e.text; list.appendChild(li); }
-  $('#questMap').hidden = !q.target;
+  renderQuestTabs();
 }
+// STANDING tab (BS): a second tab beside NEXT STEP, hidden until the side pick. Read-only: two rows (one per side) with the
+// emblem, tier name, blurb, a bar to the next tier and a PLEDGED marker; strings and numbers all from STANDING_CFG.
+const standingTabVisible = () => !!(S && S.flags['story.side_pick_done']);
+function renderQuestTabs(){
+  const on = standingTabVisible(); if (!on) questTab = 'next';
+  const tabs = $('#questTabs'); tabs.hidden = !on;
+  $('#questTabStanding').textContent = SC_STANDING.tab.label;
+  const st = questTab === 'standing';
+  $('#questTabNext').classList.toggle('on', !st); $('#questTabNext').setAttribute('aria-selected', String(!st));
+  $('#questTabStanding').classList.toggle('on', st); $('#questTabStanding').setAttribute('aria-selected', String(st));
+  $('#questTitle').textContent = st ? SC_STANDING.tab.label : 'NEXT STEP';
+  $('#questPaneNext').hidden = st; $('#questPaneStanding').hidden = !st;
+  $('#questMap').hidden = st || !(questCurrent() || {}).target;
+  if (st) renderStanding();
+}
+function renderStanding(){
+  const T = SC_STANDING.tab, sd = side(), rows = $('#stRows'); rows.textContent = '';
+  const quiet = PPStanding.SIDES.every(k => standingOf(k, false) <= SC_STANDING.min);
+  $('#stPledged').textContent = quiet ? T.empty : PPStanding.fill(T.pledged, { faction: SC_STANDING.sides[sd].name });
+  $('#stExplain').textContent = T.explain;
+  for (const k of PPStanding.SIDES) {
+    const i = PPStanding.tierInfo(k, standingOf(k, false)), F = SC_STANDING.sides[k], pledged = k === sd;
+    const row = document.createElement('div'); row.className = 'st-row' + (pledged ? ' pledged' : ''); row.dataset.side = k;
+    const em = document.createElement('canvas'); em.className = 'st-emblem'; em.width = em.height = 8; em.setAttribute('aria-hidden', 'true');
+    const g = ctx(em); (SC_STANDING.art['emblem_' + k] || []).forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
+    const body = document.createElement('div');
+    const head = document.createElement('div'); head.className = 'st-head';
+    const sideEl = document.createElement('span'); sideEl.className = 'st-side'; sideEl.textContent = F.short.toUpperCase();
+    const tier = document.createElement('b'); tier.className = 'st-tier'; tier.textContent = i.name;
+    head.append(sideEl, tier);
+    if (pledged) { const mk = document.createElement('span'); mk.className = 'st-mark'; mk.textContent = T.marker; head.append(mk); }
+    const blurb = document.createElement('p'); blurb.className = 'st-blurb'; blurb.textContent = i.blurb;
+    const barRow = document.createElement('div'); barRow.className = 'st-barrow';
+    const bar = document.createElement('div'); bar.className = 'bar'; bar.setAttribute('role', 'progressbar'); bar.setAttribute('aria-valuemin', String(i.from)); bar.setAttribute('aria-valuemax', String(i.next == null ? SC_STANDING.max : i.next)); bar.setAttribute('aria-valuenow', String(i.points));
+    const fill = document.createElement('i'); fill.className = 'st-fill-' + k; fill.style.width = Math.round(i.frac * 100) + '%'; bar.append(fill);
+    const num = document.createElement('small'); num.textContent = i.next == null ? i.points + ' / ' + SC_STANDING.max : i.points + ' / ' + i.next;
+    barRow.append(bar, num);
+    body.append(head, blurb, barRow); row.append(em, body); rows.append(row);
+  }
+}
+function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
 function questShowOnMap(){ closeQuest(); if (mapReady()) openMap(); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
@@ -3242,6 +3372,7 @@ function battleAct(act){
 // story creatures add B.bonus (Faded Fuzzwick +0.10, the guide wild +0.08). Cap 0.6. An untouched foe says so once per battle.
 function befriendCtx(){ const B = battle, f = curFoe(), p = activePet(); return { foeLv: f.level, leadLv: levelOf(p), engaged: B.turn > 0 }; }
 function befriendZoneWidth(){ const B = battle, f = curFoe(), p = activePet(); return Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus); }
+let waryTurn = 0;   // which of the three wary lines the next untouched foe gets
 const oddsLabel = w => w < 0.15 ? { t: 'WARY', c: 'r' } : w < 0.25 ? { t: 'FAIR', c: 'y' } : { t: 'GOOD', c: 'l' };
 function openBefriendBar(){
   const B = battle, f = curFoe();
@@ -3250,14 +3381,14 @@ function openBefriendBar(){
   $('#tzone').style.left = (enc.zone[0] * 100) + '%'; $('#tzone').style.width = ((enc.zone[1] - enc.zone[0]) * 100) + '%';
   $('#encTries').textContent = '\u2665'.repeat(B.tries) + '\u2661'.repeat(BEFRIEND_TRIES - B.tries);
   const od = oddsLabel(w), oe = $('#encOdds'); if (oe) { oe.textContent = od.t; oe.className = 'bef-odds odds-' + od.c; }
-  if (f.hp >= f.maxHp && !B.wary && !B.guide && !B.bonus) { B.wary = true; $('#btMsg').textContent = battleLine('befriendWary'); }
+  if (f.hp >= f.maxHp && !B.wary && !B.guide && !B.bonus) { B.wary = BEFRIEND_WARY_LINES[waryTurn++ % BEFRIEND_WARY_LINES.length]; $('#btMsg').textContent = B.wary; }   // rotates per battle (GLIMMER_PATH v0.2)
   setPanel('bef');
 }
 // BACK / Escape from the bar. The wary line is once per battle, but it should not stay in the box after you leave.
 function leaveBefriendBar(){
   enc.open = false;
-  const p = activePet();
-  if (p && $('#btMsg').textContent === battleLine('befriendWary')) $('#btMsg').textContent = 'What should ' + petName(p) + ' do?';
+  const B = battle, p = activePet();
+  if (p && B.wary && $('#btMsg').textContent === B.wary) $('#btMsg').textContent = 'What should ' + petName(p) + ' do?';
   setPanel('acts');
 }
 function encounterPress(){                                  // BEFRIEND press (button or Space) = the player's action
@@ -3625,6 +3756,8 @@ function bindInput(){
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#journalBtn').addEventListener('click', openJournalTab);
   $('#questBtn').addEventListener('click', openQuest);
+  $('#questTabNext').addEventListener('click', () => questTabTo('next'));
+  $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
   $('#questClose').addEventListener('click', () => { sfx('tap'); closeQuest(); });
   $('#questMap').addEventListener('click', questShowOnMap);
   $('#ovQuest').addEventListener('click', e => { if (e.target === e.currentTarget) closeQuest(); });
@@ -3906,6 +4039,7 @@ function boot(){
   { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
+  { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
@@ -4007,6 +4141,10 @@ function boot(){
     setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); syncSide(); return S.flags[k]; },
     setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); save(); syncSide(); return side(); },   // WP-B0
     runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
+    // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.
+    setStanding: (sd, n) => { const r = setStanding(sd, n); if (r != null) { save(); if (!$('#ovQuest').hidden) renderQuestTabs(); } return r; },
+    switchSide: (to, free) => switchSide(to, { free: !!free }),
+    pledgeDesk: to => { if (!deskOpen(to) || overlayOpen()) return false; showTab('walk'); runSteps(pledgeDeskSteps(to)); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
     endScene: () => { if (!scene) return false; scene.skip = true; return true; },
     // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
@@ -4040,6 +4178,10 @@ function boot(){
   api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
+  // BS (read-only): both meters with tier index and name, the pledge, the switch count, and whether the desk would allow a switch now.
+  Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
+  api.standingCfg = () => copy(STANDING_CFG);
+  api.standingCheck = () => PPStanding.devCheck();
   // WP-A: zone width and a rough per-press chance for a situation, without playing. opts: { stage, joy, treat, leadLv, engaged, bonus }
   api.befriendOdds = (foeLv, hpFrac, opts = {}) => { const o = Object.assign({ stage: 0, joy: 60, treat: false, leadLv: foeLv, engaged: hpFrac < 1, bonus: 0 }, opts);
     const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);

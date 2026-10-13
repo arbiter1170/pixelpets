@@ -53,7 +53,7 @@ const PPSave = (() => {
   function defaultStateV2(now = Date.now()){
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
       dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: startWorld(),
-      bag: {}, money: 0, seals: {}, flags: {}, eggs: { incubators: [{ egg: null }], held: [] },
+      bag: {}, money: 0, seals: {}, flags: {}, standing: { keepers: 0, glimmer: 0 }, eggs: { incubators: [{ egg: null }], held: [] },
       settings: { textSpeed: 'normal', battleAnims: true, follower: true, music: true, musicVol: 0.5 },
       player: { name: null, look: null },
       meta: { migratedFrom: null, migratedAt: null, backup: null, legacy: {} } };
@@ -191,6 +191,11 @@ const PPSave = (() => {
     // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
     for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];
     fill(s, 'money', x => Number.isInteger(x) && x >= 0, 0);
+    // GLIMMER_PATH v0.2 BS: per-faction Standing {keepers, glimmer}, integers within STANDING_CFG.min..max (additive, no version
+    // bump). Missing or not an object -> both 0; a bad or out-of-range number is clamped; unknown keys inside survive.
+    fill(s, 'standing', isObj, {});
+    { const SC = typeof STANDING_CFG === 'object' && STANDING_CFG ? STANDING_CFG : { min: 0, max: 100 };
+      for (const k of ['keepers', 'glimmer']) s.standing[k] = fin(s.standing[k]) ? clamp(Math.round(s.standing[k]), SC.min, SC.max) : 0; }
     // ONLINE_SAVES: optional cloud sync fields, additive (no version bump). Absent stays absent (= rev 0, no real change yet).
     if (has(s, 'rev') && !(Number.isInteger(s.rev) && s.rev >= 0)) s.rev = 0;
     if (has(s, 'updatedAt') && !(fin(s.updatedAt) && s.updatedAt > 0)) delete s.updatedAt;

@@ -1486,6 +1486,13 @@ const BATTLE_TEXT = {
   "foeFainted": "{foe} is worn out!",
   "befriendWary": "It's wary. Wear it down first."
 };
+// GLIMMER_PATH v0.2: the wary line rotates through these three (one per battle, in order); no gameplay change.
+// befriendWary above stays the first for callers that read a single string.
+const BEFRIEND_WARY_LINES = Object.freeze([
+  BATTLE_TEXT.befriendWary,
+  "It keeps its distance. Tire it first.",
+  "It's not sure yet. Weaken it a bit."
+]);
 
 const STAGE_MULT = {
   "0": 1,
