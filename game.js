@@ -1264,7 +1264,8 @@ function checkTriggers(){
 }
 // Trainer sight lines (§6.1): 1..sight tiles in `facing` from the trainer, stopping before the first tile that isn't walkable or
 // holds a present blocker (roaming creatures and the follower don't block). Checked only after a completed step (onLand), never on
-// warp arrival, respawn, push or LEAVE; a trainer spots once (`spotted.<id>`) and only while unbeaten.
+// warp arrival, respawn, push or LEAVE. A win (`trainer.<id>`) is the only thing that retires the line.
+// A loss clears `spotted.<id>` so the line arms again once someone on the team can battle. A worn-out party walks through.
 const SPOT_BANG_MS = 600, SPOT_STEP_MS = STEP_MS * 1.5;
 const spot = { id: null, bang: false };
 let sightShown = false;
@@ -1280,7 +1281,7 @@ function sightLine(o){
 }
 const canSpot = o => o.kind === 'trainer' && present(o) && !!TRAINERS[o.id] && !S.flags['trainer.' + o.id] && !S.flags['spotted.' + o.id];
 function checkSight(){
-  if (scene || fade.busy || walk.intro || overlayOpen() || !pet()) return false;
+  if (scene || fade.busy || walk.intro || overlayOpen() || !pet() || !leadPet()) return false;
   const x = S.world.x, y = S.world.y;
   for (const o of CUR.objs) {
     if (!canSpot(o) || !sightLine(o).some(c => c.x === x && c.y === y)) continue;
@@ -2003,16 +2004,18 @@ function suggestOf(tags){
 async function sceneBattle(id){
   syncSide();                                          // a `setFlag story.side` earlier in this scene picks the side's trainer
   const t = TRAINERS[id]; if (!t) return;
+  if (!leadPet()) { noBattleToast(); throw ABORT; }    // a worn-out party never starts the fight, and the line stays armed
   commitPending(); save();
   const team = trainerTeam(t), f0 = team[0], [ln, st] = f0.form.split('/');
   const sub = s => String(s).replace(/\{(player|name)\}/g, playerName());
   if (scene.lastSay !== sub(t.lines.intro)) await sayBox(t.name, sub(t.lines.intro));   // the Hall panel already opened with it
   await sayBox('', battleLine('trainerSummon', { trainer: t.name, foe: nameOf(SP_INDEX[ln], +st) }));
   $('#ovScene').hidden = true;
-  S.flags['spotted.' + id] = true;                     // §6.1: set when the battle opens; a trainer never spots twice
+  S.flags['spotted.' + id] = true;                     // held for this fight so the line cannot fire twice at once
   const res = await new Promise(resolve => { if (!openBattle({ kind: 'trainer', trainerId: id, mapIntro: true, onEnd: resolve })) resolve(null); });
   if (!scene) return;
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
+  if (res !== 'win') delete S.flags['spotted.' + id];  // only a win retires the sight line
   if (res == null) throw ABORT;
   if (res === 'tired') scene.deferRespawn = true;
   if (res === 'win' && t.onWin && sceneSteps(t.onWin)) await playScene(t.onWin);
