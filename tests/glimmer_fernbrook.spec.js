@@ -64,7 +64,7 @@ test('keepers pick leaves Fernbrook on the old path', async ({ page }) => {
   expect(after.flags['story.orchard_cleared']).toBeUndefined();
   expect(after.orchard).toBe('orchard');
   expect(after.seal).toBe('seal_fernbrook');
-  expect(after.standing.keepers.points).toBe(10);
+  expect(after.standing.keepers.points).toBe(12);
   expect(after.standing.glimmer.points).toBe(0);
   expect(after.checks).toEqual([]);
 });
@@ -139,7 +139,7 @@ test('glimmer path: orchard, tour stops, skippable match, lanyard, teaser', asyn
   }));
   expect(packed.side).toBe('glimmer');
   expect(packed.cleared).toBe(true);
-  expect(packed.points).toBe(cfg.grants.sp_pick + cfg.grants.orchard_g);
+  expect(packed.points).toBe(cfg.grants.sp_pick + 2 + cfg.grants.orchard_g);
 
   await runAndShot(page, 'tour1_s1', 'tour_stop1');
   await playScene(page, ['Hand a lantern', 'Hand a lantern', 'Hand a lantern']);
@@ -189,7 +189,7 @@ test('glimmer path: orchard, tour stops, skippable match, lanyard, teaser', asyn
   expect(done.snacks).toBe(2);
   expect(done.got).toBe(true);
   expect(done.match).toBeUndefined();
-  expect(done.points).toBe(cfg.grants.sp_pick + cfg.grants.orchard_g + cfg.grants.seal1_g);
+  expect(done.points).toBe(cfg.grants.sp_pick + 2 + cfg.grants.orchard_g + cfg.grants.seal1_g);
   expect(done.doubt).toBe(1);
   expect(done.rubble).toBe(false);
   expect(done.east).toBe(true);

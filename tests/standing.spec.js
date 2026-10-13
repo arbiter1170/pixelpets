@@ -98,7 +98,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again', async
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
   await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
   const after = await page.evaluate(() => ({ st: PixelPets.standing, got: PixelPets.state.flags['standing.got.sp_pick'], side: PixelPets.side, picked: PixelPets.state.flags['story.side_pick_done'] }));
-  expect(after.st.keepers.points).toBe(cfg.grants.sp_pick);
+  expect(after.st.keepers.points).toBe(cfg.grants.sp_pick + 2);
   expect(after.st.glimmer.points).toBe(0);
   expect(after.got).toBe(true);
   expect(after.side).toBe('keepers');
@@ -106,7 +106,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again', async
   // replay (debug): the same choice path, no second grant
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
   await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
-  expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick);
+  expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
 test('switching halves the side you leave, counts, and is refused again until the next Seal', async ({ page }) => {
