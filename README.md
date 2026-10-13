@@ -28,7 +28,8 @@ DBG tag shows in the header. Only in debug mode:
   Battle: `forceBattle(form?, level?)` (e.g. `forceBattle('stone/0', 4)`), `forceTrainer('route1_pia' | 'hall1_fen')`
   (false once beaten), `winBattle()`, `loseBattle()`, `setHp(n)`, `healTeam()`, `setFaint(min = 20)` (0 wakes the
   partner), `giveItem('heal_snack' | 'befriend_treat', n)`, `setMoney(n)`, `setMoves([ids])`, `clearEvoMoves()`,
-  `aiPick()` and the live `battle` object.
+  `aiPick()` and the live `battle` object. Story: `goto(map, x, y, facing)`, `setFlag(k, v)`, `setSide('glimmer')`,
+  `runScene(id)` (side-aware), `runSteps([...])`, `endScene()`.
 Without debug those hooks are inert (they do nothing and return `undefined`), a stored fast/place choice is
 ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only hooks always work: `env`,
 `wild`, `spawnOdds(tags?)`, `cooldownLeft(act)`, `careXpToday`, `exploreXpToday`, `rates`, `fast`, `debug`,
@@ -102,6 +103,17 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   the foe gets hurt (a Befriend Treat helps). A befriended creature keeps its moves and counts as a defeat for
   battle XP. A wild creature knocked to 0 HP faints and wanders off; it can't be befriended. RUN always works
   if you're at least as fast, otherwise the odds depend on speed and rise with every failed try.
+  Zone width (NEXT_PLAN WP-A, `befriendWidth(hpFrac, stage, joy, treat, ctx)` in `moves.js`, tuning in `BEFRIEND_TUNE`):
+  `(base x (0.30 + 0.90 x (1 - hp)) + joy/1000) x levelMul x engaged + treat`, base 0.22 (first form) / 0.14 (second),
+  `levelMul = clamp(1 - 0.025 x (foeLv - 2) - 0.03 x max(0, foeLv - leadLv), 0.5, 1.1)`, engaged x1.10 once a turn has
+  passed, Befriend Treat +0.08, floor 0.06, cap 0.50 (0.60 with a story bonus: Faded Fuzzwick +0.10, the Hearthmoor guide
+  wild +0.08). At joy 60: Route 1 Lv 3 untouched 0.12 (was 0.17), at half HP 0.24, at a quarter 0.29; Route 2 Lv 13
+  untouched 0.09, half 0.17; quarry Lv 18 untouched 0.07, quarter 0.17; the guide 0.20. The marker speeds up 1.2% per
+  level over 2 (cap +35%). An untouched foe says "It's wary. Wear it down first." once per battle (not the guide or a
+  story creature), and a WARY / FAIR / GOOD label under the hearts tracks the zone (< 0.15 / < 0.25 / more).
+  Console: `PixelPets.befriendOdds(foeLv, hpFrac, { stage, joy, treat, leadLv, engaged, bonus })` returns the width, a
+  rough per-press chance (sine marker, zone centre 0.2..0.8) and the speed; `PixelPets.befriendCheck()` is the boot-time
+  monotonicity check. Four-argument `befriendWidth` calls still give the old formula.
 - After a battle every Walkling that took part pays NRG 3 and FOOD 2 (5 more NRG if it fainted), winners gain +3 JOY,
   and Walklings that fought share the battle XP. If your whole team faints you wake at the start point with your Walklings
   still hurt and their nap timers kept.
@@ -117,6 +129,32 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - The Walkling Journal (BOOK, top-left of the d-pad, and the WALKLINGS tab) keeps a page for each form you have seen:
   the species line, a short note, and how you met the ones who joined you. A new form's first befriend opens that page.
   After Rook's first battle, one wild Walkling waits in the grass by Hearthmoor's east path.
+- Next step (QUEST, top-right of the d-pad; NEXT_PLAN WP-C): shows once you have a Walkling, hides during scenes, battles
+  and overlays, and pulses until you open it on a new objective (`questSeen`, additive). The panel (NEXT STEP) has one or
+  two lines, a place line, the last three done steps, SHOW ON MAP (the region map rings the target's node in red and names
+  the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Rest at a Lantern House first."
+  On the Walk map a yellow arrow bobs above the target tile (a map's top row gets it from below, pointing up); when the
+  target is off-screen an arrow sits at the viewport edge; when it is on another map the arrow points at the exit that
+  starts the shortest route there (warps and doors). The tip under the d-pad repeats the objective once the first-steps
+  tips are done. The chain lives in `quests.js` and is derived from story flags only (nothing to migrate: old saves land
+  on the right step; a later flag counts the earlier steps as done). Console: `PixelPets.quest` (read-only),
+  `PixelPets.questCheck` (every story flag the data writes is a step or on the not-a-step list; also run at boot).
+- Sides (NEXT_PLAN WP-B0, the fork only; the glimmer dialog is placeholder text): at the Fernbrook orchard gate (9,10) a
+  one-time scene (`side_pick`) lets you help Fen (Keepers) or Tobin (Glimmerwell), with a confirm step. `story.side`
+  (`keepers` when absent, so older saves play as before) and `story.side_pick_done` are plain flags; no save version bump.
+  The glimmer branch sets the same progression flags as the keepers path (`story.orchard_cleared`, `story.seal1`, ...), so
+  gates, the quest chain and the region map are shared. Engine: a scene `X@glimmer` runs instead of `X` while the side is
+  glimmer (`sceneSteps`), a trainer `id@glimmer` is merged over `id` (lines merged), objects use `when: ["story.side=glimmer"]`;
+  new step `["inc", flag, n?]`, numeric conditions `flag>=n`, `<=`, `>`, `<` (unset counts as 0), and an optional 4th
+  element on a `choice` option (`when`, a condition or a list) hides it until earned. When a story beat (a scene that sets
+  a `story.*` flag) finishes, `story.beat.<scene>` records which side played it (first play wins). The glimmer Hall #1 is a
+  stub: the Hall panel reads an optional `panel` {who, greet, ask, begin, again} off the side-merged `hall1_fen`, the review
+  battle reuses Fen's roster, and the win stores `seals.seal_glim_1` ("Bright Tier 1 Lanyard", placeholder art) and runs
+  `seal1@glimmer`. All of it lives in `data/glimmer_path.json` (ours, not a design copy; registered in `tools/gen_mapdata.py`
+  and merged last). Console: `PixelPets.side`, `sceneFor(id)`, `trainerFor(id)`, `glimmerCheck` (line length after tokens,
+  double spaces, unknown tokens, every variant has a base and sets the base's story flags; also run at boot), and with
+  debug `setSide('glimmer' | 'keepers')`.
+  The flag icon is a placeholder until the designer's `icon_quest` lands. The first-wild step follows the live guide creature.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   evolving (each line's evolution move, then any level moves of the new form). Older saves get missed evolution
   moves on their next visit ("<name> remembers something from evolving!").

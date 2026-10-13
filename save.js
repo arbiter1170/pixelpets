@@ -202,6 +202,8 @@ const PPSave = (() => {
     fill(s.settings, 'music', x => typeof x === 'boolean', true);                    // MUSIC v0.1 Q2: in the save, default on
     fill(s.settings, 'musicVol', x => typeof x === 'number' && x >= 0 && x <= 1, 0.5); // Q3: no slider yet; the key is ready
     fill(s, 'mapSeen', isObj, {});
+    // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
+    if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;
     // CARE_LOOP cheap slice: today's player care record { d, steps, finds, stepBond, battleBond, firstCare } (additive; bad -> dropped).
     if (has(s, 'care')) { if (!(isObj(s.care) && typeof s.care.d === 'string')) delete s.care;
       else { for (const k of ['steps', 'finds', 'stepBond', 'battleBond']) s.care[k] = fin(s.care[k]) && s.care[k] >= 0 ? Math.floor(s.care[k]) : 0; s.care.firstCare = s.care.firstCare === true; } }                                                // MAP_V0 §5 (Q2): visited region-map nodes, additive

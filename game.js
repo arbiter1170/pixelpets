@@ -206,7 +206,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -271,6 +271,8 @@ function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.togg
 function updateHUD(){
   syncBagBtns();
   syncJournalBtn();
+  syncQuestBtn();
+  syncSide();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
   if (!p) return;
@@ -695,14 +697,82 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.cobblecrest.maps)));
     Object.assign(W, JSON.parse(JSON.stringify(MD.cobblecrest.rooms)));
   }
+  if (MD.glimmer_path) applyMapPatch(W, MD.glimmer_path.slicePatch);   // WP-B: the faction fork (ours, objects only, no new maps)
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
 const SCENES = Object.assign({}, MD.maps_slice.scenes, MD.interiors.scenes);
 if (MD.act1_route2) Object.assign(SCENES, MD.act1_route2.slicePatch.scenes || {}, MD.act1_route2.scenes);
 if (MD.cobblecrest) Object.assign(SCENES, MD.cobblecrest.route2Patch.scenes || {}, MD.cobblecrest.scenes);
-for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+if (MD.glimmer_path) Object.assign(SCENES, MD.glimmer_path.scenes || {});
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
+// WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
+// A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
+// The design JSON stays verbatim: variants live in data/glimmer_path.json. Objects use `when: ["story.side=glimmer"]` as usual.
+const SIDE_DEFAULT = 'keepers';
+const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
+function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
+const sceneSteps = id => { const s = side(); return (s !== SIDE_DEFAULT && SCENES[id + '@' + s]) || SCENES[id]; };
+let sideApplied = null;
+function syncSide(){                                   // cheap; called every frame and before a battle inside a scene
+  const s = side(); if (s === sideApplied) return; sideApplied = s;
+  for (const [id, base] of Object.entries(TRAINERS_BASE)) {
+    const ov = s !== SIDE_DEFAULT ? TRAINERS[id + '@' + s] : null;
+    TRAINERS[id] = ov ? Object.assign({}, base, ov, { lines: Object.assign({}, base.lines || {}, ov.lines || {}) }) : base;
+  }
+}
+// A story beat = a scene that writes a story.* flag. When one finishes, `story.beat.<id>` records which side played it
+// (first play wins), so later scenes can add a catch-up line after a switch without back-filling old saves.
+const beatCache = {};
+function isBeat(id){
+  if (id in beatCache) return beatCache[id];
+  const walk = n => Array.isArray(n) && ((n[0] === 'setFlag' && typeof n[1] === 'string' && n[1].startsWith('story.')) || n.some(walk));
+  return (beatCache[id] = Object.keys(SCENES).some(k => (k === id || k.startsWith(id + '@')) && walk(SCENES[k])));
+}
+// Recorded only when this run actually wrote a story.* flag (a "Think about it" exit from side_pick is not a played beat).
+const storyWrites = () => scene ? Object.keys(scene.view.flags).filter(k => k.startsWith('story.')).length : 0;
+function noteBeat(id, before){ if (!scene || !isBeat(id) || storyWrites() <= before) return; const k = 'story.beat.' + id, s = side(); pend(() => { if (!S.flags[k]) S.flags[k] = s; }); }
+// Dev check for data/glimmer_path.json (engine ask 7): the line rules the design checker applies (lineMax after the longest
+// token values, no double space, no unknown token), every `X@side` variant has a base `X`, a variant scene writes the same
+// story.* flags as its base (the gates stay shared), and objects/steps point at scenes that exist. Returns problems (empty = pass).
+function glimmerDevCheck(){
+  const G = MD.glimmer_path, bad = []; if (!G) return bad;
+  const dl = MD.interiors.dialog, MAX = dl.lineMax || 110, TOK = dl.tokenLen || {};
+  const story = steps => { const out = new Set(), walk = n => { if (!Array.isArray(n)) return; if (n[0] === 'setFlag' && typeof n[1] === 'string' && n[1].startsWith('story.')) out.add(n[1]); n.forEach(walk); }; walk(steps); return out; };
+  const line = (where, s) => {
+    if (typeof s !== 'string') return;
+    const long = s.replace(/\{(\w+)\}/g, (m, k) => { if (!(k in TOK)) { bad.push(where + ': unknown token ' + m); return ''; } return 'x'.repeat(TOK[k]); });
+    if (/  /.test(s)) bad.push(where + ': double space');
+    if (Array.from(long).length > MAX) bad.push(where + ': over ' + MAX + ' after tokens (' + Array.from(long).length + ')');
+  };
+  const walkSteps = (where, n) => { if (!Array.isArray(n)) return;
+    if (n[0] === 'say') line(where, n[2]);
+    else if (n[0] === 'choice') { line(where, n[1]); for (const o of n[2] || []) { line(where, o[0]); walkSteps(where, o[1]); } return; }
+    else if (n[0] === 'run' && !SCENES[n[1]]) bad.push(where + ': run of unknown scene ' + n[1]);
+    else if (n[0] === 'battle' && !TRAINERS[n[1]]) bad.push(where + ': battle with unknown trainer ' + n[1]);
+    n.forEach(x => walkSteps(where, x)); };
+  for (const [id, steps] of Object.entries(G.scenes || {})) {
+    walkSteps('scene ' + id, steps);
+    const at = id.indexOf('@'); if (at < 0) continue;
+    const base = SCENES[id.slice(0, at)]; if (!base) { bad.push('scene ' + id + ': no base scene'); continue; }
+    const want = story(base), got = story(steps); for (const f of want) if (!got.has(f)) bad.push('scene ' + id + ': does not set ' + f);
+  }
+  for (const [id, t] of Object.entries(G.trainers || {})) {
+    const at = id.indexOf('@'); if (at >= 0 && !TRAINERS_BASE[id.slice(0, at)]) bad.push('trainer ' + id + ': no base trainer');
+    for (const [k, v] of Object.entries(t.lines || {})) line('trainer ' + id + '.' + k, v);
+    for (const [k, v] of Object.entries(t.panel || {})) if (k !== 'who') line('trainer ' + id + '.panel.' + k, v);
+  }
+  for (const [mid, pt] of Object.entries((G.slicePatch && G.slicePatch.maps) || {})) {
+    if (!WORLD[mid]) { bad.push('patch of unknown map ' + mid); continue; }
+    for (const o of [].concat(pt.addObjs || [], pt.replaceObjs || [])) {
+      if (o.scene && !SCENES[o.scene]) bad.push('obj ' + o.id + ': unknown scene ' + o.scene);
+      for (const v of Object.values(o.lines || {})) line('obj ' + o.id, v);
+      if (o.text) line('obj ' + o.id, o.text);
+    }
+  }
+  return bad;
+}
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
@@ -733,6 +803,7 @@ function trackFor(map){
 }
 const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
 // Conditions (§4): 'flag', '!flag', 'flag=value', 'seal:id', 'has:name', 'talked' (lines keys only). `live` = read scene pending too.
+// WP-B0: numeric 'flag>=n', 'flag<=n', 'flag>n', 'flag<n' (an unset flag counts as 0) for counters written by the `inc` step.
 function flagOf(k, live){ if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
 function curName(live){ return live && scene && scene.view.name !== undefined ? scene.view.name : (S.player && S.player.name) || null; }
 function cond(c, live, o){
@@ -742,7 +813,12 @@ function cond(c, live, o){
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
-  else { const k = c.indexOf('='); v = k >= 0 ? String(flagOf(c.slice(0, k), live)) === c.slice(k + 1) : !!flagOf(c, live); }
+  else {
+    const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c);
+    if (!m) v = !!flagOf(c, live);
+    else if (m[2] === '=') v = String(flagOf(m[1], live)) === m[3];
+    else { const n = Number(flagOf(m[1], live)) || 0, r = Number(m[3]); v = m[2] === '>=' ? n >= r : m[2] === '<=' ? n <= r : m[2] === '>' ? n > r : n < r; }
+  }
   return neg ? !v : v;
 }
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
@@ -1180,10 +1256,13 @@ function placeSteps(dr){
         [['say', who, 'No team to rest yet? Come back with a friend.']]]];
   }
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
-    const t = TRAINERS.hall1_fen;
-    if (t && t.seal && S.seals[t.seal]) return [['say', 'Master Fen', 'Come back any time. The orchard remembers its friends.']];
-    return [['say', 'Master Fen', t ? t.lines.intro : 'Roots first, then blossoms. Show me yours.'],
-      ['choice', 'Begin the trial?', [['Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
+    // WP-B0 Hall stub (engine ask 5): the side-merged trainer may carry a `panel` {who, greet, ask, begin, again}; its `seal`
+    // and `onWin` scene (resolved per side) do the rest, so the glimmer Hall swaps by data when the design spike lands.
+    syncSide();
+    const t = TRAINERS.hall1_fen, pn = (t && t.panel) || {};
+    if (t && ((t.seal && S.seals[t.seal]) || S.flags['trainer.hall1_fen'])) return [['say', pn.who || 'Master Fen', pn.again || 'Come back any time. The orchard remembers its friends.']];
+    return [['say', pn.who || 'Master Fen', pn.greet || (t ? t.lines.intro : 'Roots first, then blossoms. Show me yours.')],
+      ['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
   }
   return [['say', '', 'Closed for now. Come back soon!']];
 }
@@ -1245,7 +1324,7 @@ function drawMap(t){
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
   drawBubbles(g, cx, cy, t);
   if (!isRoom()) drawWeather(g, VW, VH, t);   // weather tint is skipped indoors (INTERIORS §2.1)
-  drawExitCue(g, cx, cy, t);
+  drawObjectiveCue(g, cx, cy, t);
   if (walk.intro) { const k = Math.floor((t - walk.intro) / 120) % 2; if (k) { g.fillStyle = PAL.w; g.fillRect(0,0,VW,VH); } }
   if (fade.busy) { const e = (now() - fade.t0) / (FADE_MS / 2); g.globalAlpha = clamp(e <= 1 ? e : 2 - e, 0, 1); g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH); g.globalAlpha = 1; }
 }
@@ -1309,18 +1388,73 @@ function drawCobbleTrim(g, cx, cy, t){
     g.restore();
   }
 }
-// A small yellow chevron above Hearthmoor's east path until the keeper has been out on Route 1.
-// The path tile is yellow, so the mark sits in the darker tile just north of it.
-function drawExitCue(g, cx, cy, t){
-  if (!S || CUR.id !== 'hearthmoor' || !S.flags['story.starter_received'] || S.flags['story.reached_route1']) return;
+/* ---------- next-step cue (NEXT_PLAN WP-C): replaces the Hearthmoor-only exit chevron ---------- */
+// The objective comes from quests.js (flags only, nothing saved). On the current map a yellow arrow bobs above the target
+// tile; off-screen it becomes an arrow at the viewport edge; on another map it points at the exit that starts the
+// shortest route there (BFS over warps and doors). Hidden during scenes, battles and the walk-in flash.
+const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length });
+const questCurrent = () => (S && typeof PPQuests !== 'undefined') ? PPQuests.current(questState()) : null;
+const ARROW_DOWN = ['..###..', '..###..', '..###..', '#######', '.#####.', '..###..', '...#...'];   // 7x7, drawn 1 px per cell with a PAL.k outline
+const ARROW = (() => {
+  const H = ARROW_DOWN.length, W = ARROW_DOWN[0].length, at = (x, y) => ARROW_DOWN[y][x] === '#';
+  const grid = f => { const out = []; for (let y = 0; y < (f.h); y++) { let r = ''; for (let x = 0; x < f.w; x++) r += f.px(x, y) ? '#' : '.'; out.push(r); } return out; };
+  return {
+    down: ARROW_DOWN,
+    up: grid({ w: W, h: H, px: (x, y) => at(x, H - 1 - y) }),
+    right: grid({ w: H, h: W, px: (x, y) => at(y, x) }),
+    left: grid({ w: H, h: W, px: (x, y) => at(y, H - 1 - x) }),
+  };
+})();
+function drawArrow(g, grid, x, y, col){
+  const filled = (gx, gy) => gy >= 0 && gy < grid.length && gx >= 0 && gx < grid[0].length && grid[gy][gx] === '#';
+  g.fillStyle = PAL.k;
+  for (let gy = -1; gy <= grid.length; gy++) for (let gx = -1; gx <= grid[0].length; gx++)
+    if (!filled(gx, gy) && (filled(gx - 1, gy) || filled(gx + 1, gy) || filled(gx, gy - 1) || filled(gx, gy + 1))) g.fillRect(x + gx, y + gy, 1, 1);
+  g.fillStyle = col;
+  for (let gy = 0; gy < grid.length; gy++) for (let gx = 0; gx < grid[0].length; gx++) if (grid[gy][gx] === '#') g.fillRect(x + gx, y + gy, 1, 1);
+}
+// Shortest route between maps over warps and doors (gating ignored: the chain's flags open the way). Cached; the graph is static.
+const routeCache = new Map();
+function routeExit(from, to){
+  const key = from + '>' + to; if (routeCache.has(key)) return routeCache.get(key);
+  const exits = id => ((WORLD[id] && WORLD[id].objs) || []).filter(o => (o.kind === 'warp' || o.kind === 'door') && o.to && WORLD[o.to]);
+  let found = null;
+  if (from !== to && WORLD[from] && WORLD[to]) {
+    const prev = { [from]: null }, q = [from];
+    while (q.length && !found) { const id = q.shift(); for (const o of exits(id)) { if (o.to in prev) continue; prev[o.to] = { id, o }; if (o.to === to) { found = o.to; break; } q.push(o.to); } }
+    if (found) { let n = found; while (prev[n] && prev[n].id !== from) n = prev[n].id; found = prev[n] ? prev[n].o : null; }
+  }
+  routeCache.set(key, found); return found;
+}
+// Where the current objective is on this map: its tile, or the exit toward it; null when nothing points anywhere.
+function questPointOnMap(){
+  const q = questCurrent(); if (!q || !q.target) return null;
+  if (q.target.map === CUR.id) {
+    const gw = q.follow === 'guide' ? wild.list.find(w => w.guide) : null;   // the first-wild guide picks its own grass tile
+    return gw ? { x: gw.x, y: gw.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
+  }
+  const ex = routeExit(CUR.id, q.target.map); return ex ? { x: ex.x, y: ex.y, here: false } : null;
+}
+function drawObjectiveCue(g, cx, cy, t){
+  if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
+  const pt = questPointOnMap(); if (!pt) return;
+  if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;   // standing on it
+  const c = $('#mapCanvas'), VW = c.width, VH = c.height;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
-  const x = 20 * TS - cx + 5, y = 8 * TS - cy - 12 - bob;
-  const blocks = [[0, 2], [2, 0], [2, 4], [4, 2]];
-  g.fillStyle = PAL.k;
-  for (const [dx, dy] of blocks) g.fillRect(x + dx - 1, y + dy - 1, 4, 4);
-  g.fillStyle = PAL.y;
-  for (const [dx, dy] of blocks) g.fillRect(x + dx, y + dy, 2, 2);
+  const X = pt.x * TS - cx, Y = pt.y * TS - cy;
+  if (X > -TS && Y > -TS && X < VW && Y < VH) {                              // the tile is in view: a bobbing arrow above it
+    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5, Y - 12 - bob, PAL.y);
+    else drawArrow(g, ARROW.up, X + 5, Y + TS + 1 + bob, PAL.y);           // top row of the map: point up at it from below
+    return;
+  }
+  // Off-screen: an arrow at the viewport edge, on the line from the keeper to the target.
+  const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
+  const m = 6, kx = dx ? ((dx > 0 ? VW - m : m) - px) / dx : Infinity, ky = dy ? ((dy > 0 ? VH - m : m) - py) / dy : Infinity;
+  const k = Math.min(kx, ky), ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
+  const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'), gr = ARROW[dir];
+  const nudge = reduce ? 0 : bob, ox = dir === 'right' ? nudge : dir === 'left' ? -nudge : 0, oy = dir === 'down' ? nudge : dir === 'up' ? -nudge : 0;
+  drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox), Math.round(ey - gr.length / 2 + oy), PAL.y);
 }
 const WART = buildWorldArt();
 function drawObj(g, o, cx, cy, VW, VH, t){
@@ -1493,7 +1627,7 @@ function showBumpHint(o){
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };
-function scenePlayed(id){ const fl = (SCENES[id] || []).filter(st => st[0] === 'setFlag'); return fl.length > 0 && fl.every(st => S.flags[st[1]]); }
+function scenePlayed(id){ const fl = (sceneSteps(id) || []).filter(st => st[0] === 'setFlag'); return fl.length > 0 && fl.every(st => S.flags[st[1]]); }
 function faceKeeper(o){ const q = objPos(o); mapRT.face[o.id] = dirName(S.world.x - q.x, S.world.y - q.y); }
 // Talk (bump, tap, the Talk button, Space/Enter). Doors enter; trainers battle until beaten, then say their win line.
 function interact(o){
@@ -1583,7 +1717,7 @@ const TEXT_CPS = { slow: 30, normal: 60, fast: 120 };
 const sbox = { resolve: null, text: '', t0: 0, full: true, cps: 60 };
 const INTERACTIVE = ['choice', 'nameEntry', 'showBasket', 'lookPick', 'battle', 'encounter'];
 const ABORT = { abort: true };
-function runScene(id, ctx){ const steps = SCENES[id]; if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id }, ctx || {})); }
+function runScene(id, ctx){ const steps = sceneSteps(id); if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id, beat: id }, ctx || {})); }
 async function runSteps(steps, ctx = {}){
   if (scene || !S) return;
   scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: ctx.viewPet || null, nick: undefined },
@@ -1591,11 +1725,12 @@ async function runSteps(steps, ctx = {}){
   walk.target = walk.path = walk.arrive = walk.queued = null; wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
-  try { await execSteps(steps); } catch (e) { if (e !== ABORT) console.error(e); }
+  try { await execSteps(steps); if (ctx.beat) noteBeat(ctx.beat, 0); } catch (e) { if (e !== ABORT) console.error(e); }
   endScene();
 }
 async function execSteps(steps){ for (const st of steps || []) { if (!scene) return; await execStep(st); } }
-function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); }
+async function playScene(id){ const steps = sceneSteps(id); if (!steps) return; const n = storyWrites(); await execSteps(steps); noteBeat(id, n); }   // nested: `run` steps, onWin
+function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); syncSide(); }
 function endScene(){
   const sc = scene; if (!sc) return;
   commitPending();
@@ -1656,8 +1791,10 @@ async function execStep(st){
     case 'say': { if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); await sayBox(a, tx); return; }
     case 'choice': {
       sc.skip = false;
-      const pick = await choiceBox(expand(a), b.map(o => o[0]));
-      const opt = b[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
+      const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
+      if (!opts.length) return;
+      const pick = await choiceBox(expand(a), opts.map(o => o[0]));
+      const opt = opts[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
       $('#sbEcho').textContent = '\u203a ' + opt[0];
       await execSteps(opt[1]); return;
     }
@@ -1670,6 +1807,7 @@ async function execStep(st){
       return;
     }
     case 'setFlag': { const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; }); return; }
+    case 'inc': { const n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0); sc.view.flags[a] = n; pend(() => { S.flags[a] = n; }); return; }   // WP-B0 counters (Rook bond, Standing)
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
     case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest') S.world.respawn = r; }); return; }
     case 'lookPick': {
@@ -1679,7 +1817,7 @@ async function execStep(st){
       return;
     }
     case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); return;
-    case 'run': await execSteps(SCENES[a]); return;
+    case 'run': await playScene(a); return;
     case 'if': await execSteps(cond(a, true) ? b : c); return;
     case 'push': {
       const nx = S.world.x + a, ny = S.world.y + b;
@@ -1706,6 +1844,7 @@ function suggestOf(tags){
 // §6.1 summon sequence: the trainer's intro line and "{trainer} has summoned {foe}!" in this text box, then the battle opens with
 // its challenge line and "{player} summons {pet}!" in the battle message box.
 async function sceneBattle(id){
+  syncSide();                                          // a `setFlag story.side` earlier in this scene picks the side's trainer
   const t = TRAINERS[id]; if (!t) return;
   commitPending(); save();
   const team = trainerTeam(t), f0 = team[0], [ln, st] = f0.form.split('/');
@@ -1719,7 +1858,7 @@ async function sceneBattle(id){
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   if (res == null) throw ABORT;
   if (res === 'tired') scene.deferRespawn = true;
-  if (res === 'win' && t.onWin && SCENES[t.onWin]) await execSteps(SCENES[t.onWin]);
+  if (res === 'win' && t.onWin && sceneSteps(t.onWin)) await playScene(t.onWin);
 }
 // A story creature (map obj kind 'wild'): a wild battle with its own form, level, moves, faded state and befriend bonus.
 async function sceneEncounter(id){
@@ -2129,7 +2268,8 @@ function openEncounter(){                                  // the intro flash en
   const nx = enc.next || { sp: pickSpecies(), stage: pickStage(), wid: null }; enc.next = null;
   const lv = nx.lv || wildLv(nx.sp, nx.stage);                 // forced encounters roll this map's level
   const w = nx.wid && wild.list.find(o => o.id === nx.wid);
-  openBattle({ kind: 'wild', form: SPECIES[nx.sp].id + '/' + nx.stage, level: lv, wid: nx.wid, moves: w && w.moves });
+  // WP-A: the Hearthmoor guide wild keeps a gentle first befriend (+guide bonus, no wary hint).
+  openBattle({ kind: 'wild', form: SPECIES[nx.sp].id + '/' + nx.stage, level: lv, wid: nx.wid, moves: w && w.moves, guide: !!(w && w.guide), bonus: w && w.guide ? BEFRIEND_TUNE.guide : 0 });
 }
 
 const battle = { on: false, id: 0, kind: 'wild', trainerId: null, wid: null, foes: [], fi: 0, me: null, uses: {}, participants: [],
@@ -2183,7 +2323,7 @@ function openBattle(o){
   const B = battle; B.id++;
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
     fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null,
-    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0 });
+    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false });
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
   else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
@@ -2191,7 +2331,7 @@ function openBattle(o){
   B.me = { petId: lead.id, stages: { atk: 0, def: 0, spd: 0 }, mood: null };
   B.participants[0].add(lead.id);
   const f = curFoe(); markSeen(f.si, f.stage); save();
-  enc.open = false; enc.speed = f.stage ? 0.0042 : 0.003;
+  enc.open = false; enc.speed = befriendSpeed(f.stage, f.level);   // WP-A: faster marker at higher levels (+1.2%/Lv, cap +35%)
   $('#encName').hidden = true; $('#btMsg').textContent = '';
   $('#btTwinkle').hidden = !(o.kind === 'wild' && f.stage > 0);
   renderBattleCards(); setPanel('busy');
@@ -2590,6 +2730,7 @@ const REGION_MAP = {
   interiors: { hm_home_in: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
+  icon_quest: { grid: ['ww......', 'wyyyyy..', 'wyyyyyyy', 'wyyyyyy.', 'wyyyy...', 'w.......', 'w.......', 'ww......'] },   // WP-C placeholder flag; the designer's icon_quest replaces it
 };
 // §4: the node for a map id: itself; else the room's own `outdoor` field; else the interiors table; else its door-mat warp's `to`.
 function nodeOf(id){
@@ -2618,6 +2759,8 @@ function openMap(){
   const name = nd ? ((WORLD[cur] && WORLD[cur].name) || nd.label).toUpperCase() : REGION_MAP.unknownLabel, blurb = nd ? nd.blurb : REGION_MAP.unknownBlurb;
   $('#mapTitle').textContent = REGION_MAP.title; $('#mapPlaceName').textContent = name; $('#mapPlaceBlurb').textContent = blurb;
   $('#mapSr').textContent = nd ? 'You are in ' + ((WORLD[cur] && WORLD[cur].name) || nd.label) + '. ' + blurb : 'You are somewhere new.';
+  const q = questCurrent(), mq = $('#mapQuest');                   // WP-C: where the ringed node is, in words
+  if (mq) { mq.hidden = !(q && q.target); if (q && q.target) mq.textContent = 'NEXT: ' + q.place; }
   fitRegionMap(); $('#ovMap').hidden = false; lockTabs(true); sfx('tap'); drawRegionMap(performance.now());
 }
 function closeMap(){ if ($('#ovMap').hidden) return; $('#ovMap').hidden = true; lockTabs(false); sfx('tap'); }
@@ -2656,6 +2799,9 @@ function drawRegionMap(t){
     R(x - 1, y - 19, 3, 3, 'r');                                                    // small down-arrow 13-19 px above the node: stem...
     for (let i = 0; i < 4; i++) R(x - 3 + i, y - 16 + i, 7 - 2 * i, 1, 'r');       // ...and point
   }
+  // WP-C: the objective's node gets a red ring on the same blink (wider when it shares the node with the blue "you are here").
+  const q = questCurrent(), qn = q && q.target ? nodeOf(q.target.map) : null;
+  if (qn && N[qn] && (reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0)) { const [x, y] = P([N[qn].col, N[qn].row]); ring(x, y, qn === cur ? 15 : 12, 'r'); }
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
 
@@ -2684,12 +2830,49 @@ function openJournalTab(){
   if (!journalVisible() || overlayOpen()) { sfx('denied'); return; }
   sfx('tap'); showTab('col'); syncJournalBtn();
 }
+/* ---------- QUEST button + NEXT STEP panel (NEXT_PLAN WP-C) ---------- */
+// Same visibility rules as BOOK. Pulses while the current objective differs from the one the panel was last opened on
+// (S.questSeen, additive), so every new beat invites a tap once and then goes quiet.
+const questVisible = () => journalVisible();
+function syncQuestBtn(){
+  const b = $('#questBtn'); if (!b) return;
+  const on = questVisible(), q = on ? questCurrent() : null;
+  b.hidden = !on;
+  b.classList.toggle('pulse', !!q && S.questSeen !== q.id);
+}
+function openQuest(){
+  if (!questVisible() || overlayOpen()) { sfx('denied'); return; }
+  const q = questCurrent(); if (!q) return;
+  clearMoves();
+  if (S.questSeen !== q.id) { S.questSeen = q.id; save(); }
+  renderQuest(q);
+  $('#ovQuest').hidden = false; lockTabs(true); armOptions(); sfx('tap'); syncQuestBtn();
+  $('#questClose').focus({ preventScroll: true });
+}
+function closeQuest(){
+  if ($('#ovQuest').hidden) return;
+  $('#ovQuest').hidden = true; lockTabs(false);
+}
+function renderQuest(q){
+  $('#questText').textContent = q.text;
+  $('#questPlace').textContent = q.place || '';
+  // Stuck-state guard: after a loss the objective stays put; say what to do first when nobody can battle.
+  const stuck = S.party.length > 0 && !leadPet();
+  const note = $('#questNote'); note.hidden = !stuck; note.textContent = stuck ? 'Rest at a Lantern House first. Your team is worn out.' : '';
+  const list = $('#questDone'); list.textContent = '';
+  for (const e of PPQuests.completed(questState(), 3)) { const li = document.createElement('li'); li.textContent = e.text; list.appendChild(li); }
+  $('#questMap').hidden = !q.target;
+}
+function questShowOnMap(){ closeQuest(); if (mapReady()) openMap(); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
+const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkTipText(){
   if (!S || !S.flags['story.starter_received']) return WALK_TIP_DEFAULT;
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
   if (!S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
+  const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
+  if (q && q.target) return escapeHtml(q.text);
   return WALK_TIP_DEFAULT;
 }
 function syncWalkTip(){
@@ -2941,12 +3124,34 @@ const SEAL_ART = { seal_cobblecrest: [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ] };
+// WP-B0 PLACEHOLDER (engine ask 6): the glimmer path earns lanyard tiers, stored in S.seals like Seals. Cyan cord, a bright badge
+// with one (tier 1) or two (tier 2) gold bars. Real 16x16 art is a Design request.
+const lanyardArt = tier => [
+  '....cc....cc....',
+  '...c..c..c..c...',
+  '...c..c..c..c...',
+  '..c....cc....c..',
+  '..c..........c..',
+  '..c..........c..',
+  '...c........c...',
+  '....c......c....',
+  '.....mhhhhm.....',
+  '....mwwwwwwm....',
+  '....hw' + (tier > 1 ? 'yyyy' : 'wwww') + 'wh....',
+  '....hwwwwwwh....',
+  '....hwyyyywh....',
+  '....hwwwwwwh....',
+  '.....mhhhhm.....',
+  '................',
+];
+SEAL_ART.seal_glim_1 = lanyardArt(1); SEAL_ART.seal_glim_2 = lanyardArt(2);
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
   g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
   $('#btSealName').textContent = sealName(id); $('#btSeal').hidden = false;
 }
-const sealName = id => ({ seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal' }[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal');
+const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard' };
+const sealName = id => SEAL_NAMES[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal';
 
 /* --- learning moves (§3): after RESULTS, after evolving, and the §3.4 sheet --- */
 // Learnset entries (all stages up to the current one) with from < lv <= to, one per level, not yet known.
@@ -3027,12 +3232,19 @@ function battleAct(act){
   else if (act === 'swap') swapSheet(false).then(v => { if (v && B.on && B.state === 'CHOOSE') resolveTurn({ kind: 'swap', id: v }); });
   else if (act === 'bag') bagSheet();
 }
+// WP-A: the zone reads the foe's HP, its level against the lead's, and whether a turn has passed (befriendWidth ctx);
+// story creatures add B.bonus (Faded Fuzzwick +0.10, the guide wild +0.08). Cap 0.6. An untouched foe says so once per battle.
+function befriendCtx(){ const B = battle, f = curFoe(), p = activePet(); return { foeLv: f.level, leadLv: levelOf(p), engaged: B.turn > 0 }; }
+function befriendZoneWidth(){ const B = battle, f = curFoe(), p = activePet(); return Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus); }
+const oddsLabel = w => w < 0.15 ? { t: 'WARY', c: 'r' } : w < 0.25 ? { t: 'FAIR', c: 'y' } : { t: 'GOOD', c: 'l' };
 function openBefriendBar(){
-  const B = battle, f = curFoe(), p = activePet();
-  const w = Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat) + B.bonus), c = 0.2 + Math.random() * 0.6;   // story creatures: +bonus (Faded Fuzzwick +0.10)
+  const B = battle, f = curFoe();
+  const w = befriendZoneWidth(), c = 0.2 + Math.random() * 0.6;
   enc.zone = [clamp(c - w / 2, 0, 1), clamp(c + w / 2, 0, 1)]; enc.t0 = now(); enc.freezeUntil = 0; enc.open = true;
   $('#tzone').style.left = (enc.zone[0] * 100) + '%'; $('#tzone').style.width = ((enc.zone[1] - enc.zone[0]) * 100) + '%';
   $('#encTries').textContent = '\u2665'.repeat(B.tries) + '\u2661'.repeat(BEFRIEND_TRIES - B.tries);
+  const od = oddsLabel(w), oe = $('#encOdds'); if (oe) { oe.textContent = od.t; oe.className = 'bef-odds odds-' + od.c; }
+  if (f.hp >= f.maxHp && !B.wary && !B.guide && !B.bonus) { B.wary = true; $('#btMsg').textContent = battleLine('befriendWary'); }
   setPanel('bef');
 }
 function encounterPress(){                                  // BEFRIEND press (button or Space) = the player's action
@@ -3373,7 +3585,7 @@ function bindInput(){
   $('#settingsBtn').addEventListener('click', () => { if (tabsGuarded()) return; if ($('#ovSettings').hidden) openSettings(); else closeSettings(); });
   // option buttons that just appeared ignore taps (capture phase, before their own handlers)
   for (const ev of ['click', 'pointerup']) document.addEventListener(ev, e => {
-    if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button')) { e.stopPropagation(); e.preventDefault(); }
+    if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button, #ovQuest button')) { e.stopPropagation(); e.preventDefault(); }
   }, true);
   $('#setClose').addEventListener('click', () => { sfx('tap'); closeSettings(); });
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
@@ -3399,6 +3611,10 @@ function bindInput(){
   $('#petBagBtn').addEventListener('click', () => openBag());
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#journalBtn').addEventListener('click', openJournalTab);
+  $('#questBtn').addEventListener('click', openQuest);
+  $('#questClose').addEventListener('click', () => { sfx('tap'); closeQuest(); });
+  $('#questMap').addEventListener('click', questShowOnMap);
+  $('#ovQuest').addEventListener('click', e => { if (e.target === e.currentTarget) closeQuest(); });
   $('#mapBtn').addEventListener('click', openMap);
   $('#ovMap').addEventListener('click', () => closeMap());   // tap anywhere (map, box, background, CLOSE) closes (MAP_V0 §2)
   $('#bagClose').addEventListener('click', () => closeBag());
@@ -3501,6 +3717,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
+    if (e.key === 'Escape' && !$('#ovQuest').hidden) { e.preventDefault(); closeQuest(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
     if (shopKey(e)) { e.preventDefault(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
@@ -3549,7 +3766,7 @@ function frame(t){
     if (p && !overlayOpen() && !walk.intro) updateWild(dt);
     drawMap(t);
   }
-  if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncWalkTip(); }
+  if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncSide(); syncWalkTip(); }
   if (!$('#ovMap').hidden) drawRegionMap(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
@@ -3673,6 +3890,9 @@ function boot(){
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
   PPSave.devCheck(); statsDevCheck();
+  { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
+  { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
+  { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
@@ -3737,7 +3957,7 @@ function boot(){
       return openBattle({ kind: 'wild', form: f, level: lv || wildLevel(+st, Math.random, 'proto', line) });
     },
     showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
-    objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
+    objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
     forceTrainer: id => { if (!TRAINERS[id] || S.flags['trainer.' + id]) return false; showTab('walk'); if (overlayOpen()) return; return openBattle({ kind: 'trainer', trainerId: id }); },
     setHp: (who, n) => {
       if (!battle.on) return; if (who === 'foe') { const f = curFoe(); f.hp = clamp(Math.round(+n), 0, f.maxHp); }
@@ -3771,8 +3991,9 @@ function boot(){
     // Phase M (MAPS_SLICE §12): jump anywhere, set flags, run any scene
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
-    setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); return S.flags[k]; },
-    runScene: id => { if (!SCENES[id] || scene) return false; showTab('walk'); runScene(id); return true; },
+    setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); syncSide(); return S.flags[k]; },
+    setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); save(); syncSide(); return side(); },   // WP-B0
+    runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
     endScene: () => { if (!scene) return false; scene.skip = true; return true; },
     // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
@@ -3797,6 +4018,20 @@ function boot(){
   Object.defineProperty(api, 'fading', { enumerable: true, get(){ return fade.busy; } });
   Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
+  // WP-C: the current objective (read-only), the point the cue draws on this map, and the chain's dev check.
+  Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
+    seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: !$('#questBtn').hidden && $('#questBtn').classList.contains('pulse') }; } });
+  Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
+  // WP-B0: the pledged side, which scene id / trainer a base id resolves to right now, and the data file's dev check (read-only).
+  Object.defineProperty(api, 'side', { enumerable: true, get(){ return side(); } });
+  api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
+  api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
+  Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
+  // WP-A: zone width and a rough per-press chance for a situation, without playing. opts: { stage, joy, treat, leadLv, engaged, bonus }
+  api.befriendOdds = (foeLv, hpFrac, opts = {}) => { const o = Object.assign({ stage: 0, joy: 60, treat: false, leadLv: foeLv, engaged: hpFrac < 1, bonus: 0 }, opts);
+    const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);
+    return { width: +width.toFixed(3), chance: +befriendHitChance(width).toFixed(3), speed: befriendSpeed(o.stage, foeLv), label: oddsLabel(width).t }; };
+  api.befriendCheck = () => befriendDevCheck();
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
     if (DEBUG) { api[k] = v; continue; }
