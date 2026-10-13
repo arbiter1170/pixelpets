@@ -1,0 +1,251 @@
+/* Phone smoke checks for Walklings. See tests/README.md.
+   Widths come from the Playwright projects (320, 375, 390). Fail on any console error or page error. */
+const { test, expect } = require('@playwright/test');
+const fs = require('fs');
+const path = require('path');
+
+const SHOTS = path.join('test-results', 'screenshots');
+
+function starterSave() {
+  return {
+    v: 2,
+    uid: 'smoketest0001',
+    created: 1700000000000,
+    last: Date.now(),
+    party: [{
+      id: 'petsmoke1',
+      species: 'ember',
+      stage: 0,
+      xp: 10,
+      hunger: 80,
+      happy: 60,
+      energy: 90,
+      nick: null,
+      origin: 'starter',
+    }],
+    partnerId: 'petsmoke1',
+    box: [],
+    orphans: [],
+    flags: {
+      'story.intro_seen': true,
+      'story.starter_received': true,
+      'story.starter_line': 'ember',
+    },
+    player: {
+      name: 'Tester',
+      look: { skin: '3', hair: 'short', hairCol: 'p', outfit: 'coat', outfitCol: 't', accent: 'r' },
+    },
+    settings: { textSpeed: 'fast', battleAnims: true, follower: true, music: false, musicVol: 0 },
+    world: { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' },
+    dex: { seen: { 'ember/0': true }, caught: { 'ember/0': true }, legacy: [], hits: {} },
+    bag: {},
+    money: 0,
+    seals: {},
+  };
+}
+
+// quietDay stamps today's hello and Warm Bowl flags inside the browser, so the boot toasts never fire.
+async function installSave(context, save, { quietDay = false } = {}) {
+  await context.addInitScript(({ save, quietDay }) => {
+    if (quietDay) {
+      const d = new Date();
+      const day = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      save.flags['daily.hello'] = day;
+      save.flags['daily.warm_bowl'] = day;
+    }
+    save.last = Date.now();
+    localStorage.setItem('pixelpets.save.v2', JSON.stringify(save));
+    localStorage.setItem('pixelpets.geo', 'deny');
+    localStorage.setItem('pixelpets.mute', '1');
+  }, { save, quietDay });
+}
+
+test.beforeEach(async ({ page }) => {
+  page.ppErrors = [];
+  page.on('console', (msg) => { if (msg.type() === 'error') page.ppErrors.push(msg.text()); });
+  page.on('pageerror', (err) => page.ppErrors.push(err.message));
+});
+
+test.afterEach(async ({ page }) => {
+  expect(page.ppErrors, 'console errors / page errors:\n' + page.ppErrors.join('\n')).toEqual([]);
+});
+
+async function gotoGame(page, search = '') {
+  await page.goto('/' + search, { waitUntil: 'load', timeout: 20000 });
+  await page.waitForFunction(() => window.PixelPets && window.BUILD, null, { timeout: 20000 });
+}
+
+function boxesOverlap(a, b) {
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+test('boot, build stamp, and dev checks', async ({ page }) => {
+  await gotoGame(page);
+  await page.waitForFunction(() => {
+    const s = window.PixelPets.scene;
+    return s && s.id === 'intro';
+  }, null, { timeout: 10000 });
+  const report = await page.evaluate(async () => {
+    const res = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+    const body = await res.json();
+    const problems = (list) => (Array.isArray(list) ? list : ['not an array']);
+    return {
+      build: window.BUILD,
+      version: body.build,
+      quest: problems(window.PixelPets.questCheck),
+      glimmer: problems(window.PixelPets.glimmerCheck),
+      befriend: problems(window.PixelPets.befriendCheck()),
+      hasApi: typeof window.PixelPets === 'object',
+    };
+  });
+  expect(report.hasApi).toBe(true);
+  expect(report.build).toBe(report.version);
+  expect(report.quest, 'questCheck').toEqual([]);
+  expect(report.glimmer, 'glimmerCheck').toEqual([]);
+  expect(report.befriend, 'befriendCheck').toEqual([]);
+});
+
+test('befriend odds stay inside the tuning range', async ({ page }) => {
+  await gotoGame(page);
+  const odds = await page.evaluate(() => ({
+    early: PixelPets.befriendOdds(3, 1),
+    quarry: PixelPets.befriendOdds(18, 0.25),
+    q16: PixelPets.befriendOdds(16, 0.25),
+    q19: PixelPets.befriendOdds(19, 0.25),
+  }));
+  for (const row of [odds.early, odds.quarry]) {
+    expect(typeof row.width).toBe('number');
+    expect(row.width).toBeGreaterThanOrEqual(0.06);
+    expect(row.width).toBeLessThanOrEqual(0.6);
+  }
+  expect(odds.quarry.width).toBeCloseTo(0.181, 3);
+  expect(Math.round(odds.quarry.width * 100) / 100).toBe(0.18);
+  expect(odds.q16.width).toBeCloseTo(0.196, 3);
+  expect(odds.q19.width).toBeCloseTo(0.174, 3);
+});
+
+test('quest button opens the next-step panel', async ({ page }) => {
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.waitForFunction(() => {
+    const b = document.querySelector('#questBtn');
+    if (!b || b.hidden) return false;
+    const r = b.getBoundingClientRect();
+    return r.width >= 44 && r.height >= 44;
+  });
+  const layout = await page.evaluate(() => {
+    const box = (el) => {
+      const r = el.getBoundingClientRect();
+      return { id: el.id || '', x: r.x, y: r.y, width: r.width, height: r.height };
+    };
+    const quest = box(document.querySelector('#questBtn'));
+    const dpc = [...document.querySelectorAll('.dpc')].filter((el) => !el.hidden && el.id !== 'questBtn').map(box);
+    const dp = [...document.querySelectorAll('.dp')].filter((el) => !el.hidden).map(box);
+    return { quest, dpc, dp };
+  });
+  expect(layout.quest.width).toBeGreaterThanOrEqual(44);
+  expect(layout.quest.height).toBeGreaterThanOrEqual(44);
+  const vp = page.viewportSize();
+  expect(layout.quest.y).toBeGreaterThanOrEqual(0);
+  expect(layout.quest.y + layout.quest.height).toBeLessThanOrEqual(vp.height + 1);
+  expect(layout.quest.x).toBeGreaterThanOrEqual(0);
+  expect(layout.quest.x + layout.quest.width).toBeLessThanOrEqual(vp.width + 1);
+  for (const other of layout.dpc.concat(layout.dp)) {
+    expect(boxesOverlap(layout.quest, other), 'quest overlaps ' + (other.id || 'a d-pad cell')).toBe(false);
+  }
+  fs.mkdirSync(SHOTS, { recursive: true });
+  const width = String(vp.width);
+  await page.screenshot({ path: path.join(SHOTS, 'walk-quest-' + width + '.png') });
+  await page.locator('#questBtn').tap();
+  await expect(page.locator('#ovQuest')).toBeVisible();
+  const shown = await page.locator('#questText').textContent();
+  const apiText = await page.evaluate(() => PixelPets.quest.text);
+  expect(shown).toBe(apiText);
+  expect(apiText.length).toBeGreaterThan(0);
+  await page.screenshot({ path: path.join(SHOTS, 'quest-panel-' + width + '.png') });
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#ovQuest')).toBeHidden();
+  await page.locator('#questBtn').tap();
+  await expect(page.locator('#ovQuest')).toBeVisible();
+  await page.waitForFunction(() => window.PixelPets.optionsReady === true);
+  await page.locator('#questClose').tap();
+  await expect(page.locator('#ovQuest')).toBeHidden();
+});
+
+test('befriend bar opens and BACK returns to the battle menu', async ({ page }) => {
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.forceBattle === 'function');
+  const opened = await page.evaluate(() => PixelPets.forceBattle('tide/0', 3));
+  expect(opened).toBe(true);
+  await page.waitForFunction(() => {
+    const b = window.PixelPets.battle;
+    return b && b.on && b.state === 'CHOOSE' && b.panel === 'acts';
+  }, null, { timeout: 15000 });
+  await page.locator('#btBefriendAct').tap();
+  await page.waitForFunction(() => {
+    const bef = document.querySelector('#btBef');
+    const zone = document.querySelector('#tzone');
+    const mark = document.querySelector('#tmark');
+    const enc = window.PixelPets.enc;
+    if (!bef || bef.hidden || !zone || !enc || !enc.open) return false;
+    return parseFloat(zone.style.width) > 0 && mark && mark.style.left !== '';
+  });
+  await expect(page.locator('#tbar')).toBeVisible();
+  await expect(page.locator('#btBefBack')).toBeVisible();
+  await page.locator('#btBefBack').tap();
+  await page.waitForFunction(() => {
+    const b = window.PixelPets.battle;
+    const bef = document.querySelector('#btBef');
+    const acts = document.querySelector('#btActs');
+    return b && b.state === 'CHOOSE' && b.panel === 'acts' && bef.hidden && acts && !acts.hidden;
+  });
+});
+
+test('glimmer side swaps the orchard scene and restores keepers', async ({ page }) => {
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.setSide === 'function');
+  const before = await page.evaluate(() => ({
+    sidePick: PixelPets.sceneFor('side_pick'),
+    orchard: PixelPets.sceneFor('orchard'),
+    side: PixelPets.side,
+  }));
+  expect(before.sidePick).toBe('side_pick');
+  expect(before.orchard).toBe('orchard');
+  expect(before.side).toBe('keepers');
+  const glimmer = await page.evaluate(() => {
+    PixelPets.setSide('glimmer');
+    return { orchard: PixelPets.sceneFor('orchard'), side: PixelPets.side };
+  });
+  expect(glimmer.orchard).toBe('orchard@glimmer');
+  expect(glimmer.side).toBe('glimmer');
+  const back = await page.evaluate(() => {
+    PixelPets.setSide('keepers');
+    return { orchard: PixelPets.sceneFor('orchard'), side: PixelPets.side };
+  });
+  expect(back.orchard).toBe('orchard');
+  expect(back.side).toBe('keepers');
+});
+
+test('a minimal v2 save without faction or quest fields still loads as v2', async ({ page }) => {
+  await page.context().addInitScript(() => {
+    localStorage.setItem('pixelpets.save.v2', JSON.stringify({ v: 2 }));
+  });
+  await gotoGame(page);
+  await page.waitForFunction(() => window.PixelPets.side === 'keepers');
+  // The 5 s autosave writes the normalized state back. The seed was only {v:2}, so `party` proves a write happened.
+  await page.waitForFunction(() => {
+    const raw = localStorage.getItem('pixelpets.save.v2');
+    if (!raw) return false;
+    try {
+      const o = JSON.parse(raw);
+      return o && o.v === 2 && Array.isArray(o.party) && o.flags && typeof o.flags === 'object' && !Object.prototype.hasOwnProperty.call(o, 'questSeen') && o.player;
+    } catch (e) { return false; }
+  }, null, { timeout: 15000 });
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')));
+  expect(saved.v).toBe(2);
+  expect(saved.flags['story.side']).toBeUndefined();
+  expect(await page.evaluate(() => PixelPets.side)).toBe('keepers');
+});
