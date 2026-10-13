@@ -107,6 +107,7 @@
             "when": [
               "story.side=glimmer",
               "story.orchard_cleared",
+              "story.heights_done",
               "!story.tour1_s1"
             ],
             "scene": "tour1_s1",
@@ -240,6 +241,10 @@
                         "say",
                         "Master Fen",
                         "And if your path ever bends, the Lantern House keeps a door open. Paths do bend."
+                      ],
+                      [
+                        "run",
+                        "know_us"
                       ]
                     ]
                   ],
@@ -305,7 +310,7 @@
                       ],
                       [
                         "run",
-                        "orchard"
+                        "know_us"
                       ]
                     ]
                   ],

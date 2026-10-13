@@ -36,6 +36,7 @@ Queue (suggested order top to bottom). Q1–Q4 and Fernbrook (Q5 slot 1, Q6 B1) 
 | Q8 | **Build 4** Route 2 + Wickerglen glimmer (WP-B2): `lead_intro@glimmer`, `faded2@glimmer`, `glen_cleared@glimmer`, `route2_end@glimmer`, Rook R3 | M | Unblocked. Designer copy preferred; placeholders OK. Spec: NEXT_PLAN §3 Build 4 |
 | Q9 | **Build 5** Cobblecrest glimmer + Hall slot 2 Sacrifice (WP-B3): buyout, rival2 lines, `seal_glim_2`, Quota as the free floor | M | Wants the Sacrifice one-pager (Q5). Can stub the Hall if that page is late. Spec: NEXT_PLAN §3 Build 5 |
 | Q10 | **Build 6** Rook R5 / Act 1 closer (WP-B4): Keepers `brinewick_hook` (he converts), glimmer twin (he stays). Same `story.cobble_end` | M | Rule settled (D23). Tone still open (D25). Spec: NEXT_PLAN §3 Build 6 |
+| Q11 | **Fernbrook Heights** "get to know us", before the first trial | M | **BUILT (first pass):** north ridge, RegenX lab (4 floors, Atten, The Arbiter, Still Order not fired, Nia and Cal) and the smuggling tunnels (Jed, Mara Quill, crates opened, Walklings leave). `story.heights_done` gates the Hall panel and Tour stop 1. Old `story.seal1` saves skip it. Group battles: two foes, TARGET, ally on the last fight. Open: D27-D29. Art may still be placeholders |
 
 Everything below is the earlier backlog and status history.
 

@@ -443,6 +443,10 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Next three builds (after Build 3)
 
+**Heights landed in front of the trial.** After the side pick, "get to know us" sends the player to Fernbrook Heights (RegenX lab or the smuggling tunnels) and `story.heights_done` gates the Hall and Tour stop 1. That does not replace Builds 4-6 below. Route 2 glimmer is still the next story build once Heights is in.
+
+
+
 The CIO review's recommended set (stabilise, Standing, Fernbrook glimmer) is done. Build against this order. Each build is one PR, one `bump_build.py` stamp, Playwright on 320 / 375 / 390, and BACKLOG / README / OPEN_DECISIONS / this file updated in the same PR.
 
 ### Build 4 — Route 2 + Wickerglen glimmer (WP-B2) — M

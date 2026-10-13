@@ -296,6 +296,9 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .bt-card{background:var(--k);box-shadow:0 0 0 3px var(--d);padding:4px 8px;display:flex;flex-direction:column;gap:3px;flex:0 0 auto;line-height:1.1}
 .bt-row{display:flex;align-items:center;gap:8px;min-width:0}
 .bt-name{color:var(--w);font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bt-mini{font-size:14px}
+.bt-mini .bt-name{font-size:14px}
+.bt-mini .bt-hp{height:6px}
 .bt-lv{color:var(--y);font-size:17px;white-space:nowrap}
 .bt-twinkle{color:var(--y);margin-left:auto}
 .bt-hpl{color:var(--y);font-size:14px}
