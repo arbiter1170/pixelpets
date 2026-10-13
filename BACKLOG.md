@@ -9,7 +9,7 @@ Where things are (hand these to the right person or agent):
 
 | Document | Hand to | What it holds |
 |---|---|---|
-| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Audit of what is not built, then three work packages with files, numbers, engine changes, phases and acceptance checks: WP-A capture difficulty, WP-B factions (Keepers vs Glimmerwell, Standing, switching, Rook's exit), WP-C quest indicator. Starts with a document map and the recorded decisions |
+| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail plus the next three builds after Build 3: Build 4 Route 2 glimmer, Build 5 Cobblecrest + Sacrifice, Build 6 Rook R5. Live build `20261013-1718` |
 | [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | **The designer** (art and writing) | Voice guide, art sizes, and the request list. Background. The assignment to paste into the designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) |
 | [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) | **The designer bot** (a different agent from the implementer) | The prompt: every designer item, the files to open, the engine that already exists, the delivery format, and the phase order |
 | [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat |
@@ -22,7 +22,7 @@ Decisions recorded (Vincent, Oct 13, 2026):
 - Trial Hall replacement: Fernbrook slot 1 is the Bright Pavilion Tour (built in Build 3). Cobblecrest slot 2 is the Sacrifice, with Quota as its free floor (not built). The Keepers path keeps the Halls as built. The Audit battle remains the Tour's optional last stop.
 - Capture: "no combat performed" = the creature is at full health in this encounter.
 
-Queue (suggested order top to bottom). Q1-Q3 shipped a first pass; Q4 shipped in Build 2 (numbers still open); Q5-Q6 are not started; Q7 is done in the Build 1 doc pass:
+Queue (suggested order top to bottom). Q1–Q4 and Fernbrook (Q5 slot 1, Q6 B1) shipped. Next numbered game builds are Q8–Q10 (NEXT_PLAN §3). Q7 is done.
 
 | # | Item | Size | Blocked on |
 |---|---|---|---|
@@ -33,6 +33,9 @@ Queue (suggested order top to bottom). Q1-Q3 shipped a first pass; Q4 shipped in
 | Q5 | **Hall replacement design spike (BH)**: define the sacrifices / tours loop per Hall slot | design | **Slot 1 settled and built (Build 3):** Bright Pavilion Tour. **Slot 2 settled, not built:** Sacrifice, Quota as the free floor. Tour stop copy is still placeholder |
 | Q6 | **WP-B1..B4** Glimmer-path content for Fernbrook, Route 2, Cobblecrest, and Rook's R5 | M each | **Fernbrook (B1) built in Build 3**, with placeholder lines on the Tour stops. Route 2, Cobblecrest, and the R5 scene are not started. R5's rule is settled: Keepers path, Rook eventually converts to good; Glimmerwell path, Rook stays. No bond fork |
 | Q7 | Doc hygiene pass (stale status lines in this file and the README) | S | **DONE (Build 1):** battle phrasing, WALKLING JOURNAL wording, the quarry Lv 18 at 25% HP befriend width (0.18), and shipped-status lines corrected in this file and the README |
+| Q8 | **Build 4** Route 2 + Wickerglen glimmer (WP-B2): `lead_intro@glimmer`, `faded2@glimmer`, `glen_cleared@glimmer`, `route2_end@glimmer`, Rook R3 | M | Unblocked. Designer copy preferred; placeholders OK. Spec: NEXT_PLAN §3 Build 4 |
+| Q9 | **Build 5** Cobblecrest glimmer + Hall slot 2 Sacrifice (WP-B3): buyout, rival2 lines, `seal_glim_2`, Quota as the free floor | M | Wants the Sacrifice one-pager (Q5). Can stub the Hall if that page is late. Spec: NEXT_PLAN §3 Build 5 |
+| Q10 | **Build 6** Rook R5 / Act 1 closer (WP-B4): Keepers `brinewick_hook` (he converts), glimmer twin (he stays). Same `story.cobble_end` | M | Rule settled (D23). Tone still open (D25). Spec: NEXT_PLAN §3 Build 6 |
 
 Everything below is the earlier backlog and status history.
 

@@ -2,7 +2,7 @@
 
 Things that were built on a best guess, deviate from a plan, or need a person (Vincent or the designer) to confirm. Each row says what the code does today, so a decision can be made without reading the diff. When one is settled, move it to "Settled" with the date and the call, and update the code or plan if it changed.
 
-Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there.
+Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22; Build 3 settled D3 / D5 / D23. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there. Next builds are named in NEXT_PLAN §3.
 
 ## Open
 
@@ -17,8 +17,8 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 | D11 | WP-C behaviour | The objective cue and walk tip show before the starter (pointing at the Lodge) while the QUEST button stays hidden until then. After the first-steps tips, the walk tip is replaced by the objective text. Intended? | Yes, as written: the chain's first step is the Lodge, the button waits for `story.starter_received`, and `walkTipText` falls back to the objective (WP-C tasks 1 and 6). Not changed | `drawObjectiveCue`, `walkTipText` in `game.js` |
 | D12 | WP-C scope | Side-task count (Faded Fuzzwick etc.) is not built. Per-side objective text landed in Build 2 (8 `@glimmer` overrides) | Side tasks not built; per-side text done | NEXT_PLAN WP-C; `glimmer:` entries in `CHAIN` (`quests.js`) |
 | D13 | Art | Lanyard art for tier 2 is still the code placeholder. Tier 1 shipped in Build 3 | `seal_glim_2` stays `lanyardArt(2)`. `seal_glim_1` is the delivered grid | `lanyardArt` / `LANYARD_TIER1` in `game.js` |
-| D14 | BS tiers (GLIMMER_PATH Q2) | Confirm the tier names and numbers: 0-100, tiers at 0 / 10 / 25 / 45 / 70, Keepers Stranger, Friend, Trusted, Hall Friend, Warden's Ally; Glimmerwell Guest, Associate, Junior Bright, Bright Lead, Founder's Pick; grants side pick 10, orchard 5, Seal #1 10 | Built as the Build 2 spec table. Build 3 adds `tour1_match` 5 (optional Hall match, glimmer, win only). PR stays draft until confirmed | `STANDING_CFG.thresholds`, `.sides`, `.grants` |
-| D15 | BS switching (GLIMMER_PATH Q3) | Confirm the switch rule: the side you leave keeps half its points (floor), the side you join is unchanged, one switch per chapter | Built as stated. `costDiv: 2`, `cooldown: 'perChapter'`. PR stays draft until confirmed | `STANDING_CFG.switch` |
+| D14 | BS tiers (GLIMMER_PATH Q2) | Confirm the tier names and numbers: 0-100, tiers at 0 / 10 / 25 / 45 / 70, Keepers Stranger, Friend, Trusted, Hall Friend, Warden's Ally; Glimmerwell Guest, Associate, Junior Bright, Bright Lead, Founder's Pick; grants side pick 10, orchard 5, Seal #1 10 | Built as the Build 2 spec table. Build 3 adds `tour1_match` 5 (optional Hall match, glimmer, win only). Still unconfirmed; one edit in `STANDING_CFG` | `STANDING_CFG.thresholds`, `.sides`, `.grants` |
+| D15 | BS switching (GLIMMER_PATH Q3) | Confirm the switch rule: the side you leave keeps half its points (floor), the side you join is unchanged, one switch per chapter | Built as stated. `costDiv: 2`, `cooldown: 'perChapter'`. Still unconfirmed; one edit in `STANDING_CFG` | `STANDING_CFG.switch` |
 | D16 | BS chapter | What is a "chapter" for the one-switch-per-chapter cooldown? No spec defines it | Default: the number of Seals earned (`story.seal1` + `story.seal2`), so Fernbrook before Seal #1 is chapter 0, Route 2 and Cobblecrest are chapter 1, after Seal #2 is chapter 2. The refusal line says "One change of heart per Seal" | `PPStanding.chapterOf` and `switch.refused` in `standing.js` |
 | D17 | BS joining | Does switching require tier 1 (Friend / Associate) with the side you join? NEXT_PLAN proposed yes, the Build 2 spec dropped it | Default: not required (`joinMinTier: 0`). Setting it to 1 turns the check on; the desk then needs a refusal line for `why: 'join_tier'` (today it reuses `refused`) | `STANDING_CFG.switch.joinMinTier` |
 | D18 | BS daily earning | Should faction activities earn Standing day to day (the spec's "faction activities"), and with what cap? | Not built. Only story grants move the meter. Suggested later rule: at most 5 points per faction per day, written as a `grants` entry plus a `standing.day.<side>` flag | `addStanding` in `game.js`; new entry in `STANDING_CFG.grants` |
@@ -26,13 +26,16 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 | D20 | BS desks | Where do Pledge desks live? The spec names Keeper Amos and Associate Juniper | Fernbrook only: Amos's Lantern House panel offers "Pledge desk" when you are Glimmerwell, Juniper offers it when you are Keepers. Hearthmoor and Cobblecrest Lantern rooms have no keeper, so no desk. The `switch_desk_glimmer` kiosk art is in the art table but not placed on any map | `STANDING_CFG.switch.desks`; `placeSteps` and `interact` in `game.js` |
 | D21 | STANDING tab wording | "Pledged to {faction}" uses the long faction name ("Pledged to The Keepers", "Pledged to Glimmerwell Co."). The tab stays hidden until the side pick, and the empty line "Nobody knows you yet. Go say hello!" shows only when both meters are 0 | As stated. When Standing jumps more than one tier in one grant, only the highest tier's toast plays | `STANDING_CFG.tab`; `renderStanding`, `setStanding` in `game.js` |
 | D22 | WP-C copy | The spec's place lines use a comma ("Hearthmoor, home"); the old build used a middle dot. Keep the comma? The stuck lines 2 and 3 ("Lost? Open the map...", "No rush. A walk...") are kept as data only; the panel always shows line 1 | Comma shipped; `PPQuests.STUCK[0]` shown | `CHAIN` and `STUCK` in `quests.js` |
+| D24 | BH slot 2 | What does the Cobblecrest Sacrifice cost, what is the floor, and how does Quota substitute? | Not built. Vincent called the shape (Sacrifice, Quota as the free floor). Build 5 ships a stub that still sets `story.seal2` if this page is late | NEXT_PLAN §3 Build 5; `data/hall_spike.md` (does not exist yet) |
+| D25 | Rook R5 tone | Keepers convert: ally or parted? Glimmer stay: write `story.rook_end "stays"` or leave it unset? Does he appear later as a colleague? | No R5 scene. `teaser@glimmer` does not say he leaves | `brinewick_hook` / `brinewick_hook@glimmer` |
+| D26 | Tour copy | Real lantern recipients, slogans, Comfort Check lines, Census-board lines, stage-photo line, and the real name of `tour.doubt` | Placeholders in `tour1_s1`..`tour1_s4`, `tour1_wait`, and `seal1@glimmer`. `tour.doubt` is incremented; nothing reads it | `data/glimmer_path.json` `placeholders` |
 
 ## Not started, blocked on people
 
 - BS daily earning, tier-gated shop rows and lines, tier icons: see D18; needs the designer's list of what each tier opens.
-- Hall slot 2 (Cobblecrest Sacrifice, Quota as the free floor): the call is settled; the scenes are not built.
-- Route 2 and Cobblecrest glimmer scenes, and Rook's R5 scene on the Brinewick road. The R5 rule is settled (see below); the scene is not written.
-- Tour stop copy: lantern recipients, slogans, Comfort Check lines, the Census-board lines, the stage photo, and the real name of the hidden-doubt flag (`tour.doubt` is a stand-in).
+- Hall slot 2 Sacrifice loop (D24): the call is settled; the one-pager and scenes are not built. Next: Build 5.
+- Route 2 glimmer scenes: next, Build 4. Cobblecrest glimmer: Build 5. Rook's R5 scene: Build 6. Rules for R5 are settled (D23); tone is D25.
+- Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
 
 ## Settled
 

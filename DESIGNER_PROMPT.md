@@ -16,9 +16,9 @@ Read these before you write. Do not edit the files marked verbatim.
 |---|---|
 | `DESIGN_HANDOFF.md` | Voice guide, art sizes, the older request list. This prompt overrides it where the engine has since shipped (see "Engine today"). |
 | `NEXT_PLAN.md` | WP-B content inventory, Rook's tree, Standing proposal, Hall spike constraints. Sections "Glimmer-path content inventory", "Rook: always converts", "Standing and switching", "Hall replacement: design spike". |
-| `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D10, D12, D13, D3, D5 are yours. D6, D7, D8 are not (numbers and optional battle features; leave them). |
+| `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D24 (Sacrifice loop), D25 (R5 tone), D26 (Tour copy), D13 (tier-2 lanyard), D19 (desk copy) are yours. D3 / D5 / D10 / D23 are settled. D6, D7, D8 are not (numbers and optional battle features; leave them). |
 | `data/cobblecrest.json` | The shape of a finished hand-off: `scenes`, `trainers`, `looks`, `speakers`, `artRequests`, `newNames`, `decisions`, `flags`. |
-| `data/glimmer_path.json` | **Your file.** Placeholder scenes are already wired. Replace the words. Keep every `setFlag`, `give`, `run`, and `battle` step, and the flag names. |
+| `data/glimmer_path.json` | **Your file.** Fernbrook scenes and the Tour engine are in (Build 3). Replace Tour stop *copy* only. Add Route 2 / Cobblecrest / R5 scenes. Keep every existing `setFlag`, `give`, `run`, and `battle` step, and the flag names. |
 | `data/maps_slice.json` scenes `glimmer1`, `fen_intro`, `orchard`, `seal1`, `teaser` | The Keepers-path beats you are mirroring. **Verbatim. Do not edit.** |
 | `data/act1_route2.json` scenes `lead_intro`, `glen_cleared`, `faded2`, `route2_end` | Same. **Verbatim.** Decision `4_tone`: the lamp drain is only hinted at. |
 | `data/cobblecrest.json` scenes `quarry_buyout`, `hale_trial`, `seal2`, `brinewick_hook` and trainer `rival2_rook` | Same. **Verbatim.** |
@@ -43,13 +43,14 @@ Already in the game:
 - Conditions: `flag`, `!flag`, `flag=value`, `flag>=n`, `flag<=n`, `flag>n`, `flag<n` (unset counts as 0), `seal:id`, `has:name`.
 - A `choice` option is `[label, steps, tag?, when?]`. `when` is a condition or a list of conditions. The option hides until they pass. Example: `["Keep quiet", [["inc", "story.rook_bond", 1]], null, "!story.rook_bond>=3"]`.
 - When a scene that sets a `story.*` flag finishes, the engine writes `story.beat.<sceneId>` to `"keepers"` or `"glimmer"` (first play wins). Later scenes may branch on it: `["if", "story.beat.orchard=glimmer", [...]]`.
-- Hall #1's panel reads optional fields on the trainer: `panel.who`, `panel.greet`, `panel.ask`, `panel.begin`, `panel.again`. The glimmer stub is `hall1_fen@glimmer` with `seal: "seal_glim_1"` and `onWin` still `"seal1"` (the engine runs `seal1@glimmer`).
+- Hall #1 on the glimmer path is the Bright Pavilion Tour (four walk-map stops, optional Fen match). `hall1_fen@glimmer` still has `seal: "seal_glim_1"` and `onWin` `"seal1"` (the engine runs `seal1@glimmer`).
+- Standing is in the game: `["standing", side, n | null, oneShotId]` and `standing.keepers>=2` / `standing.glimmer>=2` (tier, not points). Fernbrook Pledge desks and the STANDING tab already run. Write desk *copy*; do not add map objects for them.
 - `glimmerDevCheck()` fails the boot if a line is over 110 after tokens expand, has a double space, has an unknown `{token}`, a `@glimmer` scene has no base scene, or a variant scene does not set the same `story.*` flags as its base.
 
-Not in the game yet. Do not rely on them silently:
+Settled, do not reopen:
 
-- There is no `standing` step and no `standing.keepers>=2` condition. If a beat should grant Standing, write the scene with a comment in `engineAsks` naming the faction, the amount, and a one-shot id. The implementer adds the step. Do not invent a flag named `standing` inside `setFlag`.
-- Switch desks, tier badges, and the Standing tab are not built. Write their copy now; do not add map objects for them.
+- Hall slot 1 = Tour (built). Hall slot 2 = Sacrifice, Quota as the free floor (not built).
+- Rook: Keepers path he converts; Glimmerwell path he stays. No bond fork. No follow-or-stay.
 
 ## Rules for every line
 
@@ -69,13 +70,13 @@ Not in the game yet. Do not rely on them silently:
 4. **`data/hall_spike.md`** only for phase BH: one page per Hall slot. No scenes until Vincent approves it.
 5. Check your own lines against the rules above before you stop.
 
-Suggested order: quest copy and `icon_quest`, then faction names, then Fernbrook (`side_pick` through Hall #1), then the Hall spike (parallel), then switch-desk copy, then Route 2, then Cobblecrest, then Rook's R5.
+Suggested order now: Tour stop copy (Phase F leftover) and the Sacrifice one-pager (Phase H) in parallel, then Route 2 (Phase R2 / Build 4), then Cobblecrest + Sacrifice scenes (Phase R3 / Build 5), then Rook R5 (Phase R5 / Build 6). Switch-desk copy (Phase S) can land any time.
 
 ---
 
-## Phase Q. Quest copy and the quest icon (do this first)
+## Phase Q. Quest copy and the quest icon — **done (Build 2)**
 
-The button, panel, map cue, and chain already run. The words and the icon are placeholders (open item D10).
+The 24 rows, 8 glimmer overrides, stuck line, and `icon_quest` signpost are in the game. Do not rewrite them. Skip to Phase F leftover copy, then R2.
 
 Rewrite `text` and `place` only. Keep each id. A glimmer `side` variant is optional and only where the sentence would be wrong on that path (the Hall steps, the orchard step, Rook's teaser). Per-side text is open item D12; deliver the glimmer strings now, the implementer will hook the `side` field.
 
@@ -124,9 +125,11 @@ Deliver in `data/glimmer_path.json` under `newNames` and a `glossary` object.
 4. Standing tab strings, even though the tab is not built: tab label, empty state, "pledged to {faction}" (faction name <= 14 chars), one explanation <= 90 chars.
 5. `befriendWary` alternates, <= 40 chars, battle-box width. The shipped line is "It's wary. Wear it down first." Give two more the implementer can rotate. Do not change gameplay.
 
-## Phase F. Fernbrook, the pick and Hall slot 1
+## Phase F. Fernbrook, the pick and Hall slot 1 — **scenes shipped (Build 3)**
 
-Replace the placeholder scenes in `data/glimmer_path.json`. The gate is tile (9, 10) on `fernbrook`. It fires until the player confirms. "Think about it" must set nothing and let them step off and come back. Both camps pitch inside the scene, because the player can reach the gate before meeting either.
+`side_pick`, `orchard@glimmer`, `seal1@glimmer`, `teaser@glimmer`, and the Tour engine (`tour1_s1`..`tour1_s4`) are in. **Left: replace the `PLACEHOLDER` lines** in those Tour stops, `tour1_wait`, and the stage-photo line in `seal1@glimmer`. Keep every `setFlag` / `standing` / `run` step. `tour.doubt` is a stand-in name; put the real name in `decisions` (D26).
+
+Do not rewrite the pick, the orchard, or `teaser@glimmer`. The original brief follows only so the flag list stays visible.
 
 Must stay, on the Yes branches only:
 
@@ -150,7 +153,7 @@ Display names go in `newNames` as `seal_glim_1` and `seal_glim_2`. Earned lanyar
 
 ## Phase H. Hall replacement (design only)
 
-Open item D3. Vincent's note is "sacrifices / tours". Gameplay is not designed. Write `data/hall_spike.md`: one page per slot (Fernbrook slot 1, Cobblecrest slot 2). Each page says what the player does for 5-10 minutes, what it costs, what it grants, and how it ends.
+**Slot 1 is done** (Bright Pavilion Tour, Build 3). **Slot 2 is called** (Sacrifice, Quota as the free floor) and is not built. Write `data/hall_spike.md` for **Cobblecrest only**: what the player does for 5-10 minutes, what it costs, the floor, how Quota substitutes, what it grants, how it ends. Then write the scenes. Do not reopen slot 1.
 
 Every answer must:
 
@@ -162,16 +165,16 @@ Every answer must:
 
 Candidates already on the table: a Tour (stops with a scene and a choice, sometimes a battle), a Sacrifice (give Acorns, an item, or a day's XP, with a floor so the player cannot soft-lock), a Quota (befriend or win N times), or the Audit battle that is already the stub. Say which you pick per slot and why. The Keepers Halls stay as they are unless you and Vincent say otherwise.
 
-Do not draw Hall props and do not write the Hall scenes until this page is approved. The audit-battle copy in Phase F is the placeholder that ships if this phase is slow.
+Do not draw new Hall props until the Sacrifice page is approved. Slot 1 needs copy, not new props.
 
 ## Phase S. Switch desks (copy only)
 
-Standing and the desks are not built. Write the lines. The proposal the implementer will code unless you object in `decisions`:
+**Engine shipped (Build 2).** Fernbrook desks and the STANDING tab run. Write the letter / review / welcome / wait lines (D19). Do not add map objects. The live rules, unless you object in `decisions`:
 
 - Desks open any time after `story.side_pick_done`. Not during a battle or a scene.
 - Leaving a faction halves that faction's Standing. The faction you join keeps what it had.
 - One cooldown, your recommendation: either one switch per chapter, or 24 real hours. Say which.
-- Rook's R5 "follow him" switch is free and has no cooldown.
+- There is no R5 free switch. Rook does not offer a follow-or-stay fork (D23).
 
 Scenes to write, as normal scene JSON in `data/glimmer_path.json` even though nothing triggers them yet. Put the trigger note in `engineAsks`.
 
@@ -194,7 +197,7 @@ Art, priority must for the Glimmerwell desk, could for the Keepers desk (the Lan
 | `tier_keepers_0` .. `tier_keepers_4` | 8x8, five badges |
 | `tier_glimmer_0` .. `tier_glimmer_4` | 8x8, five badges |
 
-## Phase R2. Route 2 and Wickerglen
+## Phase R2. Route 2 and Wickerglen — **next, Build 4**
 
 New scenes in `data/glimmer_path.json`. Read the base scenes first. Each variant must set the same `story.*` flags as its base.
 
@@ -209,7 +212,7 @@ New scenes in `data/glimmer_path.json`. Read the base scenes first. Each variant
 
 Looks, if the generic `associate` look is too samey: `imogen` and `hollis` in `looks`, using skin, hair (`short` `long` `spiky` `bun`), hairCol, outfit (`coat` `hoodie` `tunic`), outfitCol, accent. Map them in `speakers`.
 
-## Phase R3. Cobblecrest
+## Phase R3. Cobblecrest — **Build 5**
 
 | id | Lines | Must |
 |---|---|---|
@@ -219,29 +222,27 @@ Looks, if the generic `associate` look is too samey: `imogen` and `hollis` in `l
 | `hale_trial@glimmer`, `hall2_hale@glimmer`, `seal2@glimmer` | after Phase H | Must set `story.seal2`. `seal2` base also gives `hearty_snack` x2 and `wake_tonic` x1. Match those gifts unless you record a swap in `decisions`. |
 | `seam_a`, `seam_b` | 0-2 | Shared puzzles. Add a single catch-up `if` only if a glimmer player would be confused. Do not change the flags `story.h2_seam_a` and `story.h2_seam_b`. |
 
-## Phase R5. Rook always leaves
+## Phase R5. Rook on the Brinewick road — **Build 6**
 
-**Settled by Vincent on Oct 13, 2026, after this prompt was written.** This phase's bond fork is not the plan. If the player joins Glimmerwell, Rook stays with Glimmerwell. If the player stays with the Keepers, Rook eventually converts to good. Do not write a follow-or-stay fork, and do not write Rook leaving on the glimmer path. The scene itself is still not built. The original brief follows, for the record.
-
-Rook leaves Glimmerwell on every path. There is no path where he stays in the company. Bond is `story.rook_bond`, 0 to 3, and it never resets when the player switches. Write four variants of the Brinewick-road beat. The base scene is `brinewick_hook`. Use `brinewick_hook` for the Keepers wording and `brinewick_hook@glimmer` for the Glimmerwell wording, and branch inside each with `story.rook_bond>=2`.
+**Settled (D23).** If the player is Keepers, Rook eventually converts to good. If the player is Glimmerwell, Rook stays with Glimmerwell. Not bond-gated. No follow-or-stay fork. Write **two** variants of `brinewick_hook`, not four.
 
 | Branch | What happens | Flag at the end |
 |---|---|---|
-| Keepers, bond >= 2 | He returns the lanyard and stays a friend. | `setFlag story.rook_end "ally"` |
-| Keepers, bond < 2 | He leaves quietly and apologises later. | `story.rook_end "parted"` |
-| Glimmer, bond >= 2 | He warns you, quits, and offers a fork: follow him, or stay. Follow is a free switch to keepers with no Standing penalty. Stay makes him a rival. | follow writes `story.side "keepers"` and `story.rook_end "ally"`. stay writes `story.rook_end "rival"`. |
-| Glimmer, bond < 2 | He quits angry. No fork. He is a rival. | `story.rook_end "rival"` |
+| Keepers | He leaves Glimmerwell. Design picks ally vs parted tone (D25). | `setFlag story.rook_end "ally"` or `"parted"` |
+| Glimmerwell | He stays. Colleague, not a quit. | `setFlag story.rook_end "stays"` (or leave unset if D25 says so) |
 
-About 14-20 says per variant, plus 4-6 for each fork outcome. Also 6-8 lines of post-conversion ambient, and intro/win/lose if he becomes a recurring rival.
+About 14-20 says each. Keepers-path post-conversion ambient 6-8 if he becomes an ally. No free-switch bridge.
 
-Every variant must still set whatever `story.*` flags `brinewick_hook` sets today (read the base scene; include `story.cobble_end` if it is there). No branch may skip the conversion.
+Every variant must still set whatever `story.*` flags `brinewick_hook` sets today (read the base scene; include `story.cobble_end`). No branch may skip the beat.
 
-Art: `rook_lanyard` and `rook_lanyard_off` as looks (mint accent on the existing Rook look, then the accent gone). Optional `lanyard_overlay` for the player while `story.side=glimmer`, 16x16, four facings, two frames. Priority should, not must.
+The rejected morning tree (four bond-gated variants, glimmer quit + fork) is not the plan. Do not write it.
+
+Art: `rook_lanyard` (mint accent, both paths after Fernbrook) and `rook_lanyard_off` (Keepers path only, after he converts). Optional `lanyard_overlay` for the player while `story.side=glimmer`, 16x16, four facings, two frames. Priority should, not must.
 
 ## Art you should not draw yet
 
 - New creatures, new maps, new tile types.
-- `glimmer_pavilion`, `comfort_lamp_tinted`, `npc_tourguide`, and any sacrifice or tour prop. They wait on Phase H.
+- `glimmer_pavilion`, `comfort_lamp_tinted`, `npc_tourguide`. The Tour shipped without them. Sacrifice props wait on the slot-2 page.
 - `item_glimmer_*` until you have names. If you do name a shop item: name <= 20, blurb <= 40, 16x16 grid, and say which shop (`travel_shelf` or a new glimmer counter).
 - `stinger_standing_up`: a short spec of notes and timings, not audio. The engine synthesizes stingers. Priority should. `town_loop_glimmer` is optional.
 
@@ -253,4 +254,4 @@ A phase is done when:
 - Every `@glimmer` scene sets the same `story.*` flags as its base.
 - `side_pick` still has a confirm and a "Think about it" that sets nothing.
 - Art grids use only `PAL` keys and `.`, at the sizes in the tables.
-- `status` in `data/glimmer_path.json` names the phase, and `engineAsks` lists anything you wrote that the engine cannot run yet (`standing`, switch-desk triggers, quest `side`).
+- `status` in `data/glimmer_path.json` names the phase, and `engineAsks` lists anything you wrote that the engine cannot run yet (do not re-ask for `standing`, desks, or quest `side`; those shipped).
