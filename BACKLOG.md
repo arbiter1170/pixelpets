@@ -3,14 +3,43 @@
 Prioritized for turning the prototype into something you can actually play day to day.
 Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
-**Next work (Oct 13 playtest): see [NEXT_PLAN.md](NEXT_PLAN.md)** for the audit of what is not built and the scoped work packages: quest/next-step indicator, harder level-scaled befriending, and the Keepers-vs-Glimmerwell side pick with Rook's branching conversion.
+## Next work: Oct 13 playtest queue (read this first)
+
+Where things are (hand these to the right person or agent):
+
+| Document | Hand to | What it holds |
+|---|---|---|
+| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Audit of what is not built, then three work packages with files, numbers, engine changes, phases and acceptance checks: WP-A capture difficulty, WP-B factions (Keepers vs Glimmerwell, Standing, switching, Rook's exit), WP-C quest indicator. Starts with a document map and the recorded decisions |
+| [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | **The designer** (art and writing) | Every art asset and every piece of writing needed, with sizes, priorities, the voice guide, the delivery format and the open design questions (the Hall replacement) |
+
+Past examples of art and writing for either reader: `DESIGN_HANDOFF.md` section 1, "Reference examples in this repo". In short: pixel art is in `sprites.js` (palette, glyphs, world props, creatures), `keeper.js` (people looks), `ITEM_ART` and `SEAL_ART` in `game.js`; writing is in the `scenes`, `trainers` and `dialog` blocks of `data/*.json` and in `BATTLE_TEXT` (`moves.js`) and `ITEMS` (`game.js`). `data/cobblecrest.json` is the best complete example of a designer hand-off (it carries its own `artRequests`, `looks`, `speakers`, `newNames`, `decisions`). Screenshots of the live UI are in `screenshots/`.
+
+Decisions recorded (Vincent, Oct 13, 2026):
+- Rook always leaves Glimmerwell, in every path.
+- The side pick happens at Fernbrook. The side is **switchable later**; each faction has a **Standing** meter (tiers, earned by story choices and faction activities) and switching has a cost and a cooldown. Impact audit is in NEXT_PLAN WP-B.
+- Trial Hall replacement on the glimmer path is "sacrifices / tours", **gameplay not yet designed**. Open design spike; a placeholder audit battle ships meanwhile. The Keepers path keeps the Halls as built.
+- Capture: "no combat performed" = the creature is at full health in this encounter.
+
+Queue (status: all NOT STARTED; suggested order top to bottom):
+
+| # | Item | Size | Blocked on |
+|---|---|---|---|
+| Q1 | **WP-C** Quest / next-step button next to the D-pad (top-right cell), panel, map and region-map pointers, stateless objective chain | S-M | Nothing for the build. Objective text and the `icon_quest` art come from the designer (`DESIGN_HANDOFF.md` 3 and 4g); the implementer can use placeholders |
+| Q2 | **WP-A** Harder, level-scaled befriending (untouched creature much harder, marker speed scales with level, tutorial wild stays gentle, wary hint) | M- | Nothing |
+| Q3 | **WP-B0** Side pick at Fernbrook: engine (`story.side`, `@glimmer` scene variants, counters, gated choices, `glimmer_path.json`, swappable Hall stub, per-beat side history) | M | Nothing for the engine; placeholder dialog until the designer delivers |
+| Q4 | **WP-B Standing (BS)**: `S.standing`, tiers, `standing` step, switch desks with cost and cooldown, STANDING tab | M | Tier names and numbers (designer + Vincent) |
+| Q5 | **Hall replacement design spike (BH)**: define the sacrifices / tours loop per Hall slot | design | Vincent + designer |
+| Q6 | **WP-B1..B4** Glimmer-path content for Fernbrook, Route 2, Cobblecrest, and Rook's R5 conversion with its fork | M each | Designer's scenes and art; Hall content also blocked on Q5 |
+| Q7 | Doc hygiene pass (stale status lines in this file and the README) | S | Nothing |
+
+Everything below is the earlier backlog and status history.
 
 ## Official priority order (Vincent, Oct 8, 2026)
 
 This order applies after the Kindle Wild rename, which shipped as 9cc836d and 9d294cd, and the later Walklings rename (game Walklings, creatures Walklings, region the Amberwild, energy glow; Oct 8, 2026). It overrides the older numbering below.
 
-1. **Battles.** BATTLE v0.3: turn-based battles with types and moves, NRG battle costs, the 20-minute faint nap, the FAINTED badge and the wipe rule. Now being built.
-   - **Progress (BATTLE v0.3.1 build):** built: wild battles (bump/tap), FIGHT/BEFRIEND/SWAP/BAG/RUN, 64 moves + 28 evolution moves with learnsets and learn prompts, hidden type hints (`dex.hits`), AI tiers, battle costs, battle XP, Fainted 20-min nap / TIRED / GLOWING badges, wipe respawn, trainer summon text, Pia and Fen in data, KEEPER label on the Pet scene. Left for Phase M: placing Pia/Fen on real maps (only the debug `forceTrainer()` reaches them now), Lantern Houses and per-map respawn points (`lanternRest()` is ready), story spawns with move overrides, and the NPC bump hint.
+1. **Battles.** BATTLE v0.3: turn-based battles with types and moves, NRG battle costs, the 20-minute faint nap, the FAINTED badge and the wipe rule. Shipped (see the Progress line below and item 2).
+   - **Progress (BATTLE v0.3.1 build):** built: wild battles (bump/tap), FIGHT/BEFRIEND/SWAP/BAG/RUN, 64 moves + 28 evolution moves with learnsets and learn prompts, hidden type hints (`dex.hits`), AI tiers, battle costs, battle XP, Fainted 20-min nap / TIRED / GLOWING badges, wipe respawn, trainer summon text, Pia and Fen in data, KEEPER label on the Pet scene. Phase M later built all of these: Pia, Fen and the other trainers sit on real maps, Lantern Houses and per-map respawn points, story spawns with move overrides, and the NPC bump hint (see item 2).
 2. **Story.** MAPS_SLICE Phase M: maps, the opening with Juniper's intro, Hearthmoor real rooms (INTERIORS_DIALOG), Rook, Tobin and the orchard gate, then Route 2 (ACT1_ROUTE2).
    - **Progress (Phase M, commit 1: the opening):** built: the map engine on the real slice data (`data/maps_slice.json` + `data/interiors.json` -> `data/mapdata.js` via `tools/gen_mapdata.py`), doors/warps/signs/NPCs/props/triggers with `when` flags, the scene runner (tap-only text, first tap completes the line, buffered writes, choices, name entry, baskets, look picker), Warden Ilse's intro in the home room (4 boxes + look picker, correction B), Hearthmoor with all four rooms (home, Lodge, Lantern House, Rook's house), gate_home, the full Lodge starter, rival1 at the east gate with the summon text in the map box, wipe respawn to the Lantern House (no healing), Lantern beds, the NPC bump hint and the TALK button. Old saves wake at the Hearthmoor Lantern House.
    - **Progress (Phase M polish, 7df7228):** Ilse's suggestion names her pick (verify fails on any empty substitution, double space or leftover `{token}` across every scene, sign, NPC and trainer line); the look toast points to the gear; no Lv/stars before a partner; the area chip shows the slice place name (wild maps add the weather/biome tag); wipe respawn checked against Design c705378. Tap safety (Vincent's iPhone bug): a full-screen dialog layer (tabs and gear locked, a tap anywhere advances plain lines), tabs ignore taps for 500 ms after a dialog closes, choice/basket/name/look buttons ignore taps for 500 ms after they appear, the box sits 12 px above the tabs.
