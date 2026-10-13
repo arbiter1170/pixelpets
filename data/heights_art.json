@@ -1,0 +1,133 @@
+{
+  "atten_vial": {
+    "size": [
+      16,
+      16
+    ],
+    "grid": [
+      "................",
+      "................",
+      "......yyyy......",
+      ".....yyyyyy.....",
+      "......yyyy......",
+      "......cwwc......",
+      ".....cllllc.....",
+      "....llwwllll....",
+      "....llllllll....",
+      "....lwwwwwll....",
+      "....llllllll....",
+      "....llwwllll....",
+      ".....llllll.....",
+      "......cccc......",
+      "................",
+      "................"
+    ]
+  },
+  "atten_plans": {
+    "size": [
+      16,
+      16
+    ],
+    "grid": [
+      "................",
+      "................",
+      ".wwwwwwwwwwwww..",
+      ".wwwwwwwswwwww..",
+      ".wkbbbwwswwkkb..",
+      ".wwwwwwwswwwww..",
+      ".wwbkkwwswwbkw..",
+      ".wwwwwwwswwww...",
+      ".wwwkbbwswwwss..",
+      ".wwwwwwwswwss...",
+      ".wwwwwwwwss.....",
+      "..wwwwwwww......",
+      "................",
+      "................",
+      "................",
+      "................"
+    ]
+  },
+  "route_page": {
+    "size": [
+      16,
+      16
+    ],
+    "grid": [
+      "................",
+      ".yyyyyyyyyy.....",
+      "yyyyyyyyyyyyy...",
+      "yykkkkkyyyyyyyo.",
+      "yyyyyyyyyyyyyyo.",
+      "yykkkkkyyyyyoo..",
+      "yyyyyyyyyyyyyy..",
+      "oyykkkkkyyyyyo..",
+      "yyyyyyyyyyyyy...",
+      "yykkkyyyyyyo....",
+      "yyyyyyyyyyyy....",
+      ".yyyyyyyyy......",
+      "..yyyyyyy.......",
+      "................",
+      "................",
+      "................"
+    ]
+  },
+  "arbiter": {
+    "size": [
+      16,
+      16
+    ],
+    "grid": [
+      "................",
+      ".....hhhhhh.....",
+      ".......hh.......",
+      ".......hh.......",
+      ".mmmmmmmmmmmmmm.",
+      ".mmhhhhhhhhhhmm.",
+      ".mmhkkkkkkkkhmm.",
+      ".mmhckkkkkkkhmm.",
+      ".mmhkkkkkkkkhmm.",
+      ".mmhkkkkkkkkhmm.",
+      ".mmhkkkkkkkkhmm.",
+      ".mmhhhhhhhhhhmm.",
+      ".mmmmddddddmmmm.",
+      ".mmmmmmmmmmmmmm.",
+      "................",
+      "................"
+    ]
+  },
+  "lab_bench": {
+    "size": [
+      16,
+      16
+    ],
+    "grid": [
+      "................",
+      "..hhhhhhhh......",
+      ".hhkkkkkkhh.....",
+      ".hhkkkkkkhh.....",
+      ".hhkkkkkkhh.....",
+      "..hhhhhhhh......",
+      ".wwwwwwwwwwwwww.",
+      ".wwwwwwwwwwyyww.",
+      ".wwwwwwwwwllllw.",
+      ".wwwwwwwwwllllw.",
+      ".wwwwwwwwwwccww.",
+      "..mmmmmmmmmmmm..",
+      "..mdddmmmdddmm..",
+      "..mmmmmmmmmmmm..",
+      "..mdddmmmdddmm..",
+      "................"
+    ]
+  },
+  "regenx_coat": {
+    "note": "a keeper look, not a grid",
+    "look": {
+      "skin": "2",
+      "hair": "bun",
+      "hairCol": "s",
+      "outfit": "coat",
+      "outfitCol": "w",
+      "accent": "c"
+    }
+  }
+}
