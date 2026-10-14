@@ -187,11 +187,30 @@ function renderSoundRow(){
   b.setAttribute('aria-pressed', m ? 'false' : 'true');
   $('#setSoundVal').textContent = m ? 'OFF' : 'ON';
 }
+function musicVol(){
+  const v = S && typeof S.settings.musicVol === 'number' ? S.settings.musicVol : 0.5;
+  return clamp(v, 0, 1);
+}
 function renderMusicRow(){
   const on = !S || S.settings.music !== false, b = $('#setMusic');
   if (!b) return;
   b.setAttribute('aria-pressed', String(on));
   $('#setMusicVal').textContent = on ? 'ON' : 'OFF';
+  const el = $('#setVolRange'); if (!el) return;
+  const pct = Math.round(musicVol() * 100);
+  el.value = String(pct);
+  el.setAttribute('aria-valuenow', String(pct));
+  el.setAttribute('aria-valuetext', pct + ' percent');
+  $('#setVolVal').textContent = pct + '%';
+}
+function setMusicVol(pct, persist){
+  if (!S) return musicVol();
+  const n = Math.round(clamp(+pct, 0, 100)) / 100;
+  S.settings.musicVol = n;
+  PPSound.musicVol = n;
+  renderMusicRow();
+  if (persist) save();
+  return n;
 }
 function toggleMusic(){
   if (!S) return;
@@ -420,6 +439,23 @@ function pumpHello(){
   return true;
 }
 function helloBonus(p){ addBond(p, BOND.hello); }
+/* Welcome back after a long absence. 14 hours is the backlog's "~14h away" note (D50). FOOD and JOY still floor at 20;
+   NRG still floors at 10. The line waits behind the daily hello and does not change those floors. */
+const WELCOME_AWAY = 14 * 3600;
+const WELCOME_LINE = '{pet} waited while you were away.'; /* PLACEHOLDER: needs copy from Vincent */
+const welcome = { due: false };
+function noteWelcome(sec){
+  if (!(sec >= WELCOME_AWAY) || !S || !pet() || !S.flags['story.starter_received']) return;
+  welcome.due = true;
+}
+function pumpWelcome(){
+  const t = now();
+  if (!welcome.due || screen !== 'pet' || overlayOpen() || helloDue() || t < hello.quietUntil || t < hello.until || t < anim.busyUntil || $('#toast').classList.contains('show')) return false;
+  const p = pet(); if (!p) return false;
+  welcome.due = false;
+  toast(WELCOME_LINE.replace('{pet}', petName(p)));
+  return true;
+}
 /* CARE_LOOP E, cheap slice: bond. Stored as points on the Walkling (p.bond, only ever goes up), shown as 5 hearts in the PARTNER
    scene: Bond 1-5 at 0 / 20 / 60 / 120 / 200 points. Only the partner earns it. Sources (eng notes §3.1, Design's defaults):
    first care of the day +3, the hello +1, pats +1 (max 5 a day), each walk find +2, every 100 steps together +1 (max 3 a day),
@@ -778,6 +814,7 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.civic.maps)));
     applyMapPatch(W, MD.civic.slicePatch);
   }
+  if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards last: squares, then the posts
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -1227,7 +1264,7 @@ function npcLook(o){
   if (key === 'rook') return rookWithLanyard(look);
   return look;
 }
-const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && !!o.lines));
+const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && (!!o.lines || !!o.board)));
 // A saved position that is off the map, solid, on a warp or under a blocker loads on the map's safe tile (§3).
 function safeSpot(){
   const w = S.world;
@@ -1825,7 +1862,7 @@ function arriveAt(at){
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
-  placeFollower(); placeGuide(); renderEnv(); save();
+  placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
 }
 function enterDoor(dr){
@@ -2352,7 +2389,7 @@ function bumpObj(o, d, turned){
   if (o.roll) { rollProp(o); return; }
   if (o.kind === 'trainer' && !S.flags['trainer.' + o.id]) { interact(o); return; }   // an unbeaten trainer: its battle, never the hint
   if ((o.kind === 'npc' || o.kind === 'trainer') && bump.talked === o.id) { showBumpHint(o); return; }
-  if (o.kind === 'prop' && !o.lines) return;                                          // silent props just block
+  if (o.kind === 'prop' && !o.lines && !o.board) return;                             // silent props just block
   interact(o);
 }
 function showBumpHint(o){
@@ -2379,6 +2416,7 @@ function interact(o){
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
+  if (o.board) return openTownBoard();
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
   if (o.kind === 'wild') return o.scene ? runScene(o.scene, ctx) : undefined;
   if (o.scene && !scenePlayed(o.scene)) return runScene(o.scene, ctx);
@@ -4166,20 +4204,109 @@ function syncJournalBtn(){
   b.hidden = !on;
   b.classList.toggle('pulse', on && !S.phoneOpened);
 }
+// Town Board (TB-1). The paper follows who holds the town. story.side does not restyle Hearthmoor.
+// sky: tags are the live env card. Everything else is a scene condition.
+function boardTownKnown(id){ return !!(id && MD.town_board && MD.town_board.towns && MD.town_board.towns[id]); }
+function boardCond(c){
+  if (typeof c === 'string' && c.slice(0, 4) === 'sky:') { const tags = (ENV && ENV.tags) || []; return tags.indexOf(c.slice(4)) >= 0; }
+  return cond(c, false);
+}
+function boardTownHere(){
+  if (!CUR) return '';
+  if (boardTownKnown(CUR.id)) return CUR.id;
+  if (CUR.kind === 'interior' && boardTownKnown(CUR.outdoor)) return CUR.outdoor;
+  return '';
+}
+function noteBoardTown(){
+  if (!S || !CUR) return;
+  if (!S.board || typeof S.board !== 'object' || Array.isArray(S.board)) S.board = { lastTown: '' };
+  if (typeof S.board.lastTown !== 'string') S.board.lastTown = '';
+  const id = boardTownHere(); if (id) S.board.lastTown = id;
+}
+function boardCopy(id){
+  const town = boardTownKnown(id) ? MD.town_board.towns[id] : null;
+  if (!town) return { masthead: '', slogan: '', reports: [] };
+  let masthead = typeof town.masthead === 'string' ? town.masthead : '', slogan = typeof town.slogan === 'string' ? town.slogan : '';
+  for (const sl of town.sleeves || []) {
+    if (!sl || !sl.when || !sl.when.every(boardCond)) continue;
+    if (typeof sl.masthead === 'string') masthead = sl.masthead;
+    if (typeof sl.slogan === 'string') slogan = sl.slogan;
+    break;
+  }
+  const reports = (town.reports || []).filter(r => r && (!r.when || !r.when.length || r.when.every(boardCond))).map(r => String(r.text || ''));
+  const sky = MD.town_board && MD.town_board.weather;
+  if (sky && sky.text && (!sky.when || !sky.when.length || sky.when.every(boardCond))) reports.push(String(sky.text));
+  return { masthead, slogan, reports };
+}
+function townBoardView(){
+  const blank = Object.freeze({ map: '', masthead: '', slogan: '', reports: Object.freeze([]), slips: Object.freeze([]), bounties: Object.freeze([]), lastTown: '' });
+  if (!S) return blank;
+  const last = (S.board && typeof S.board.lastTown === 'string') ? S.board.lastTown : '';
+  const here = boardTownHere();
+  const map = here || (boardTownKnown(last) ? last : '');
+  const copy = map ? boardCopy(map) : { masthead: '', slogan: '', reports: [] };
+  return Object.freeze({
+    map, masthead: copy.masthead, slogan: copy.slogan,
+    reports: Object.freeze(copy.reports.slice()),
+    slips: Object.freeze([]), bounties: Object.freeze([]), lastTown: last,
+  });
+}
+function renderTownBoard(body){
+  const view = townBoardView(), pack = MD.town_board || {}, empty = pack.empty || {};
+  body.dataset.town = view.map || '';
+  const add = (cls, text) => { if (!text) return; const p = document.createElement('p'); p.className = cls; p.textContent = text; body.appendChild(p); };
+  if (!boardTownHere()) add('board-away', pack.away || 'You are between towns.');
+  add('board-mast', view.masthead);
+  add('board-slogan', view.slogan);
+  view.reports.forEach(text => add('board-report', text));
+  add('board-pile', 'Slips');
+  add('board-empty', empty.slips || 'No slips are pinned up.');
+  add('board-pile', 'Bounties');
+  add('board-empty', empty.bounties || 'No creature is named today.');
+}
+function showTownBoardPane(){
+  const body = $('#phoneBody'), friends = $('#phoneFriends'), owned = phoneOwned();
+  body.hidden = false; friends.hidden = true; body.innerHTML = '';
+  const paneTitle = $('#phonePaneTitle');
+  if (paneTitle) { paneTitle.hidden = !owned; paneTitle.textContent = 'TOWN BOARD'; }
+  renderTownBoard(body);
+  $('#phoneHome').hidden = true; $('#phonePane').hidden = false;
+  const back = $('#phoneBack'); if (back) back.hidden = !owned;
+}
+function openTownBoard(){
+  if (!S || scene || fade.busy || overlayOpen()) return;
+  clearMoves();
+  const owned = phoneOwned(), hack = phoneHack(), ov = $('#ovPhone');
+  ov.classList.toggle('hack', !!hack);
+  ov.classList.toggle('board-post', !owned);
+  if (owned) {
+    $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
+    $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
+    $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
+  } else $('#phoneTitle').textContent = 'TOWN BOARD';
+  showTownBoardPane();
+  ov.hidden = false; lockTabs(true); sfx('tap');
+}
 function openPhone(){
   if (!journalVisible() || !phoneOwned() || overlayOpen()) { sfx('denied'); return; }
   if (!S.phoneOpened) { S.phoneOpened = true; save(); }
-  const hack = phoneHack();
-  $('#ovPhone').classList.toggle('hack', hack);
+  const hack = phoneHack(), ov = $('#ovPhone');
+  ov.classList.toggle('hack', hack);
+  ov.classList.remove('board-post');
+  const back = $('#phoneBack'); if (back) back.hidden = false;
+  const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
   $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
   $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
   $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
   $('#phoneHome').hidden = false; $('#phonePane').hidden = true;
-  clearMoves(); $('#ovPhone').hidden = false; lockTabs(true); sfx('tap'); syncJournalBtn();
+  clearMoves(); ov.hidden = false; lockTabs(true); sfx('tap'); syncJournalBtn();
 }
 function closePhone(){
   if ($('#ovPhone').hidden) return;
-  $('#ovPhone').hidden = true; lockTabs(false);
+  $('#ovPhone').hidden = true; $('#ovPhone').classList.remove('board-post');
+  const back = $('#phoneBack'); if (back) back.hidden = false;
+  const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
+  lockTabs(false);
 }
 function renderRibbit(body){
   const api = window.PPRibbit;
@@ -4237,6 +4364,8 @@ function renderRibbit(body){
 }
 function phoneApp(id){
   if (id === 'journal') { closePhone(); showTab('col'); return; }
+  if (id === 'board') { showTownBoardPane(); sfx('tap'); return; }
+  const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
   const hack = phoneHack();
   const body = $('#phoneBody'), friends = $('#phoneFriends');
   body.hidden = id === 'friends'; friends.hidden = id !== 'friends';
@@ -4954,7 +5083,7 @@ function clearGearBox(){
 }
 function openStatsCard(id){
   const p = allPets().find(q => q.id === (id || S.partnerId)); if (!p) return false;
-  if (statsCard.id !== p.id) clearGearBox();
+  if (statsCard.id !== p.id) { clearGearBox(); hideNickEdit(); }
   if (!$('#ovStats').hidden) { statsCard.id = p.id; renderStatsCard(); return true; }
   if (overlayOpen()) return false;
   clearMoves(); statsCard.id = p.id; statsCard.t = 0; renderStatsCard();
@@ -4962,7 +5091,36 @@ function openStatsCard(id){
   $('#scClose').focus({ preventScroll: true });
   return true;
 }
-function closeStatsCard(){ if ($('#ovStats').hidden) return; $('#ovStats').hidden = true; statsCard.id = null; clearGearBox(); lockTabs(false); updateHUD(); }
+function nickToStore(p, raw){
+  const nk = cleanNick(raw), species = nameOf(spi(p), p.stage);
+  return nk && nk !== species ? nk : null;   // empty, or the species name, keeps the species (D57)
+}
+function closeStatsCard(){ if ($('#ovStats').hidden) return; hideNickEdit(); $('#ovStats').hidden = true; statsCard.id = null; clearGearBox(); lockTabs(false); updateHUD(); }
+function hideNickEdit(){
+  const row = $('#scNick'), acts = $('#scActs');
+  if (row) row.hidden = true;
+  if (acts) acts.hidden = false;
+  if ($('#scNickIn')) $('#scNickIn').value = '';
+}
+function openNickEdit(){
+  const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
+  clearGearBox();
+  $('#scActs').hidden = true; $('#scNick').hidden = false;
+  const inp = $('#scNickIn');
+  inp.value = cleanNick(p.nick);
+  inp.placeholder = nameOf(spi(p), p.stage);
+  inp.focus();
+}
+function applyNick(){
+  const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
+  const before = petName(p), species = nameOf(spi(p), p.stage);
+  const next = nickToStore(p, $('#scNickIn').value);
+  const prev = cleanNick(p.nick) || null;
+  hideNickEdit();
+  if (next === prev) { renderStatsCard(); return; }
+  p.nick = next; save(); updateHUD(); renderCollection(); renderStatsCard();
+  toast(next ? (before + ' is now called ' + petName(p) + '!') : (before + ' goes by ' + species + ' again.')); /* PLACEHOLDER: needs copy from Vincent */
+}
 function ensureDeploy(p){ if (!p.deploy || typeof p.deploy !== 'object' || Array.isArray(p.deploy)) p.deploy = {}; return p.deploy; }
 function pruneDeploy(p){ if (p.deploy && !Object.keys(p.deploy).length) delete p.deploy; }
 function cleanGearText(v){ return String(v == null ? '' : v).replace(/[<>{}]/g, '').trim().slice(0, 40); }
@@ -5275,8 +5433,8 @@ function applySheetItem(itemId, petId){
 }
 function commitWalklingNick(){
   const p = petById(walklingSheet.id); if (!p || $('#ovWalkling').hidden) return;
-  const nick = cleanNick($('#wlNick').value);
-  p.nick = nick || null; $('#wlNick').value = nick;
+  const next = nickToStore(p, $('#wlNick').value);
+  p.nick = next; $('#wlNick').value = next || '';
   sfx('tap'); save(); updateHUD(); renderCollection(); paintWalklingStats(p);
 }
 // Confirm, then depositPet(id, nextPartnerId) when that function exists. nextPartnerId is null when they are not the partner.
@@ -6416,6 +6574,11 @@ function bindInput(){
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
   $('#setSound').addEventListener('click', () => { const m = PPSound.toggle(); renderSoundRow(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
   $('#setMusic').addEventListener('click', toggleMusic);
+  const vol = $('#setVolRange');
+  if (vol) {
+    vol.addEventListener('input', () => setMusicVol(vol.value, true));
+    vol.addEventListener('change', () => setMusicVol(vol.value, true));
+  }
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
   bindDebugUi();
@@ -6438,7 +6601,7 @@ function bindInput(){
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#phoneBtn').addEventListener('click', openPhone);
   $('#phoneClose').addEventListener('click', () => { sfx('tap'); closePhone(); });
-  $('#phoneBack').addEventListener('click', () => { sfx('tap'); $('#phoneHome').hidden = false; $('#phonePane').hidden = true; });
+  $('#phoneBack').addEventListener('click', () => { sfx('tap'); const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true; $('#phoneHome').hidden = false; $('#phonePane').hidden = true; });
   $$('#phoneHome .phone-app').forEach(b => b.addEventListener('click', () => phoneApp(b.dataset.app)));
   $('#questBtn').addEventListener('click', openQuest);
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
@@ -6498,9 +6661,17 @@ function bindInput(){
     }
   });
   $('#scClose').addEventListener('click', () => { sfx('tap'); closeStatsCard(); });
+  $('#scRename').addEventListener('click', () => { sfx('tap'); openNickEdit(); });
+  $('#scNickCancel').addEventListener('click', () => { sfx('tap'); hideNickEdit(); });
+  $('#scNickOk').addEventListener('click', () => { sfx('tap'); applyNick(); });
+  $('#scNickIn').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); applyNick(); }
+    else if (e.key === 'Escape') { e.preventDefault(); hideNickEdit(); }
+  });
   const gearBtn = $('#scGear');
   if (gearBtn) gearBtn.addEventListener('click', () => {
     const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
+    hideNickEdit();
     statsCard.gear = !statsCard.gear; sfx('tap');
     gearBtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
     const box = $('#scGearBox'); if (!box) return;
@@ -6582,7 +6753,7 @@ function bindInput(){
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
-    if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
+    if (e.key === 'Escape' && !$('#ovStats').hidden) { if (!$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
     if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
     if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
@@ -6652,7 +6823,7 @@ function frame(t){
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
   if (p) {
-    if (screen === 'pet') { pumpHello(); pumpBondUp(); drawPetScene(t, dt); updateCareButtons(); }
+    if (screen === 'pet') { pumpHello(); pumpWelcome(); pumpBondUp(); drawPetScene(t, dt); updateCareButtons(); }
     if (!$('#ovBattle').hidden) drawBattle(t, dt);
     else if (!overlayOpen()) pumpLearn();
     syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)
@@ -6691,7 +6862,7 @@ function catchUp(sec){
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { hiddenAt = Date.now(); return; }
-  if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
+  if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); noteWelcome(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
 });
 
 /* ---------- online saves (cloud.js; a no-op unless cloud_config.js holds a config) ---------- */
@@ -6836,8 +7007,8 @@ function boot(){
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
-  if (allPets().length) { const away = (Date.now() - S.last) / 1000; catchUp(away); regenAll(away); }
-  useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen();
+  if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
+  useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen(); noteBoardTown();
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
   placeFollower(); placeGuide(); renderFollowerBtn(); renderKeeperName();
@@ -6873,7 +7044,7 @@ function boot(){
     get poofs(){ return wild.poofs.length; },
     spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
-    get muted(){ return PPSound.muted; }, careGain, showTab, reorderParty, depositPet, withdrawPet, releasePet, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
+    get muted(){ return PPSound.muted; }, get musicVol(){ return PPSound.musicVol; }, careGain, showTab, reorderParty, depositPet, withdrawPet, releasePet, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
     moves: () => JSON.parse(JSON.stringify(MOVES)), learnset: f => learnset(f).map(e => ({ ...e })),
     defaultMoves: (f, L) => defaultMoves(f, L).slice(), befriendWidth,
     battleLine: (k, v) => battleLine(k, v),
@@ -6922,7 +7093,7 @@ function boot(){
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
     giveBx: (n, learn) => { const p = pet(), r = grantBattleXp(p, n); if (learn) levelMoves(p, r.from, r.to).forEach(e => learnQ.push({ id: p.id, mid: e.id })); updateHUD(); save(); return r; },   // battle XP (Level); learn=true queues the level-up move prompts
     resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; delete S.flags[BOWL.flag]; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
-    away: h => { const sec = Math.max(0, +h || 0) * 3600; catchUp(sec); regenAll(sec); updateHUD(); save(); return allPets().map(q => ({ id: q.id, role: roleOf(q), hunger: q.hunger, happy: q.happy, energy: q.energy })); },   // PACING §6
+    away: h => { const sec = Math.max(0, +h || 0) * 3600; catchUp(sec); regenAll(sec); noteWelcome(sec); updateHUD(); save(); return allPets().map(q => ({ id: q.id, role: roleOf(q), hunger: q.hunger, happy: q.happy, energy: q.energy })); },   // PACING §6
     makePartner: id => { makePartner(id); updateHUD(); save(); },
     setMapBackdrop: v => { const m = MAP_INFO[S.world.map] || (MAP_INFO[S.world.map] = {}); if (v == null) delete m.backdrop; else m.backdrop = v; return backdropName(); },
     // Phase M (MAPS_SLICE §12): jump anywhere, set flags, run any scene
@@ -6980,6 +7151,7 @@ function boot(){
   Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
   // WP-C: the current objective (read-only), the point the cue draws on this map, and the chain's dev check.
+  Object.defineProperty(api, 'townBoard', { enumerable: true, get(){ return townBoardView(); } });
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });

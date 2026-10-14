@@ -38,6 +38,12 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .set-row .set-val{color:var(--y);min-width:2.5ch;text-align:right}
 .set-row[aria-pressed="false"] .set-val{color:var(--m)}
 .set-hint{margin:-4px 0 0;padding:0 2px;font-size:12px;line-height:1.25;color:var(--h)}
+.set-music{display:flex;gap:6px;align-items:stretch}
+.set-music .set-row{flex:0 0 auto;min-width:108px}
+.set-vol{flex:1 1 auto;display:flex;align-items:center;gap:6px;min-height:44px;min-width:0;padding:0 8px;border:3px solid var(--d);background:var(--n);color:var(--w)}
+.set-vol .set-lab{flex:0 0 auto}
+.set-vol input[type=range]{flex:1 1 auto;min-width:36px;width:auto;height:44px;min-height:44px;margin:0;padding:0;border:0;background:transparent;accent-color:var(--y)}
+.set-vol .set-val{color:var(--y);min-width:3.2ch;text-align:right}
 .set-row.set-danger{border-color:var(--r);color:var(--h)}
 .set-row.set-danger .set-val{color:var(--r)}
 .settings-inner > .btn{width:100%;min-height:44px}
@@ -296,6 +302,9 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sc-stat b{text-align:right;color:var(--w)}
 .sc-stat .bar{height:12px}
 .sc-stat .bar i{background:var(--c)}
+#scActs[hidden],.sc-nick[hidden]{display:none}
+.sc-nick{display:flex;flex-direction:column;gap:6px}
+.sc-nick input{color:var(--w);user-select:text;-webkit-user-select:text}
 .sc-chart{font-size:16px;color:var(--h);line-height:1.45;text-align:center}
 .sc-chart em{font-style:normal;color:var(--w)}
 .sc-gear{display:flex;flex-direction:column;gap:6px;padding-top:4px}
@@ -696,6 +705,13 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone #phoneBody{flex:1 1 auto;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   font-size:16px;line-height:1.35;color:var(--w);display:flex;flex-direction:column;gap:8px}
 #ovPhone #phoneBody p{margin:0;overflow-wrap:anywhere}
+#ovPhone #phonePaneTitle{flex:0 0 auto;margin:0;font-size:18px;line-height:1.1;letter-spacing:.4px}
+#ovPhone:not(.hack) #phonePaneTitle{color:#143226}
+#ovPhone.hack #phonePaneTitle{color:#d7ffc8}
+#ovPhone.board-post #phoneTitle::before{content:none;display:none}
+#ovPhone.board-post #phoneFoot{display:none}
+#ovPhone:not(.hack) #phoneBody .board-mast{color:#6a3a0c;font-weight:700;letter-spacing:.4px}
+#ovPhone.hack #phoneBody .board-mast{color:#9dffc0;font-weight:700;letter-spacing:.4px}
 #ovPhone #phoneBody .who{color:var(--y)}
 #ovPhone #phoneFriends{flex:1 1 auto;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #ovPhone #phoneFriends .panel{min-width:0;max-width:100%;margin:0 0 8px}

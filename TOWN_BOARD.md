@@ -1,6 +1,6 @@
 # Town boards
 
-Scope for a bulletin board in each town, and a Town Board app on the Keeper1. Nothing in this file is built. Vincent settled the town-list D37 and D38–D49 on Oct 14, 2026. TB-1 may be built from those calls. The region-map row that also uses D37 is still open and does not gate this file. Do not renumber either D37.
+Scope for a bulletin board in each town, and a Town Board app on the Keeper1. TB-1 (empty boards, live reports, the phone app) and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not built. Vincent settled the town-list D37 and D38–D49 on Oct 14, 2026. The region-map row that also uses D37 is still open and does not gate this file. Do not renumber either D37.
 
 Q17 (the box screen) and Q18 (the installable app) are already in the game. This document does not rebuild them.
 
@@ -243,10 +243,10 @@ Each block is one PR after the decisions it names. Sizes use the backlog scale a
 
 ### TB-1 — Empty boards, live reports, phone app
 
-The calls are settled (town-list D37, D41, D43, D44, D46, D48, D49). This is the next build. It is not in the game. Hearthmoor (8, 7) is grass until the retile, so TB-1 and TB-2 should land together for Hearthmoor and Fernbrook. Cobblecrest, High Charity, and the Mahopac path board can take a prop with no retile. Mahopac's board gets reports and no slips. Every future town gets a board in the same pass as its map.
+The calls are settled (town-list D37, D41, D43, D44, D46, D48, D49). This build is on main. Hearthmoor (8, 7) and Fernbrook (8, 6) landed with their squares. Cobblecrest, High Charity, and the Mahopac path board can take a prop with no retile. Mahopac's board gets reports and no slips. Every future town gets a board in the same pass as its map.
 
 - New `data/town_board.json`, registered last in `tools/gen_mapdata.py` `names`, then `python3 tools/gen_mapdata.py`. Slice patches add the props. Words live in this file: masthead, slogan, reports with `when` clauses the scene runner already understands.
-- `sprites.js`: three 16×16 props, `bulletin_keepers`, `bulletin_glimmer`, `bulletin_plain`. Until the designer draws them, a placeholder may reuse the sign sprite and an `OPEN_DECISIONS` art row.
+- `sprites.js`: `bulletin_keepers`, `bulletin_glimmer`, `bulletin_plain`, and `flyer_glimmer` are the 16×16 grids from `data/town_board_art.json`.
 - `index.html` button, `game.js` `phoneApp('board')`, one board overlay used by the prop and the phone, `S.board.lastTown` in `save.js`.
 - `tests/town_board.spec.js`: every town in D37 has a board object; Route 1, Wickerglen, Old Meadow, the quarry, and Heights do not; the phone shows Hearthmoor's masthead in Hearthmoor and the last town on Route 1; `story.quarry_bought` swaps Cobblecrest's masthead; `story.side=glimmer` leaves Hearthmoor's masthead on the Lantern Post; slips are empty; `PixelPets.state.v === 2`.
 - Screenshot the phone and one board at 320 and 390.
@@ -255,7 +255,7 @@ KeeperUAV copy and `hq_lumen` stay as they are.
 
 ### TB-2 — Squares
 
-D45 and D38 are settled. The row strings are above. Mahopac does not grow a square. After the patch, walk Bren's patrol, the east gate, the Lodge door, the Keeper House door, Fernbrook's glimmer trigger, the side-pick tile, Tobin's sight line, and the Heights warp. No warp coordinate changes.
+D45 and D38 are settled. The Hearthmoor and Fernbrook row strings above are in the game on main. Mahopac does not grow a square. After the patch, walk Bren's patrol, the east gate, the Lodge door, the Keeper House door, Fernbrook's glimmer trigger, the side-pick tile, Tobin's sight line, and the Heights warp. No warp coordinate changes.
 
 ### TB-3 — First real slip
 

@@ -1,6 +1,6 @@
 # Walklings smoke tests
 
-Small browser checks so a later change can show the game still boots on a phone width. Players never load this folder. There is no GitHub Actions workflow yet: run the suite locally. A new spec also gets a row in this file, and the status docs follow `.cursor/skills/walklings-docs/SKILL.md`. The Oct 14 documentation audit added no spec. Recording the town-board calls the same day added no spec.
+Small browser checks so a later change can show the game still boots on a phone width. Players never load this folder. There is no GitHub Actions workflow yet: run the suite locally. A new spec also gets a row in this file, and the status docs follow `.cursor/skills/walklings-docs/SKILL.md`. The Oct 14 documentation audit added no spec. Recording the town-board calls the same day added no spec. TB-1 is covered by `tests/town_board.spec.js`.
 
 ## How to run
 
@@ -85,6 +85,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 `tests/ribbit.spec.js` checks that the Ribbit feed is stable, that the quarry sale has its own line, and that the phone shows Block News and Chirp Worldwide.
 
+`tests/town_board.spec.js` (TB-1) checks the 320 project: a v2 save with `story.phone_got` and a partner, empty slip and bounty piles, PLACEHOLDER on every report, Hearthmoor's THE LANTERN POST (unchanged when `story.side` is glimmer), Cobblecrest's BRIGHT NOTICE after `story.quarry_bought`, Mahopac's empty masthead, a High Charity board, and no board of their own on Route 1, Wickerglen, Old Meadow, the quarry, or Fernbrook Heights. The phone has BOARD (`data-app=board`) and KeeperUAV (`data-app=jobs`). `PixelPets.state.v` stays 2.
+
 `tests/save_copy.spec.js` (Build 7) downloads the v2 save from the Start over dialog, wipes, and reads the file back (same party, `story.side`, and `v` 2). A newer file, a v1 file, a file that is not JSON, and a file over the size cap are refused and the current game stays.
 
 `tests/glimmer_route2.spec.js` (Build 4) plays the Census volunteer scene (only the quiet log sets `story.rook_bond`), the grey Pebblit line, Wickerglen's three treats and flags, both the together and race pacts, and checks Keepers Route 2 still uses the base scenes.
@@ -121,3 +123,5 @@ With debug already on (`?debug=1`):
 `tests/party_board.spec.js` checks the six slots, the 42-cell journal, the quiet orphan count, reorder, deposit, withdraw, the last-Walkling release refusal, and a full party of six. `tests/party_qa.spec.js` and `tests/walkling_sheet.spec.js` cover the sheet. `tests/deploy_held.spec.js` covers held items and the battle calls.
 
 `tests/look_listen.spec.js` (Q20) checks the Tier 2 lanyard grid, Imogen and Hollis, Rook's lanyard, and that `mapTrack` returns `town_glimmer`, `quarry`, and `grove`. `tests/lantern_council.spec.js` (Q21) checks the Keepers council after Cobblecrest, the one-time `hc_council_k` grant, and that a glimmer save never takes that quest. `tests/qa_gaps.spec.js` checks quest pointers that the earlier smoke left open, including the council row after Cobblecrest.
+
+`tests/care_tools.spec.js` (Q23, Q24, Q25) renames the partner from STATS. `N<ib>  2` is stored as `Nib 2`, and the party slot's label matches. Escape leaves that name. Typing the species name clears `nick`. Save `v` stays 2. The Vol slider writes `settings.musicVol` and does not flip Music on/off. The build line stays in view. `PixelPets.away(13)` shows no welcome line. `PixelPets.away(14)` says the partner waited. FOOD and JOY stay at or above 20, and NRG stays at or above 10. Screenshots: `screenshots/care/`.

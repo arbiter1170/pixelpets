@@ -18,7 +18,7 @@ Touch: bottom tabs (PARTNER / WALK / WALKLINGS / QUEST); FEED / PLAY / REST; Wal
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
-Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, Save a copy, Read a copy, Start over, and Debug.
+Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), a Vol slider beside Music (0–100, saved as `settings.musicVol` from 0 to 1), Follower on/off, Change look, Save a copy, Read a copy, Start over, and Debug.
 
 Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off), or open Settings → Debug and enter the password Larson (any capitalization). Either way the tools turn on immediately. A DBG tag shows in the header; tap it to open the debug panel again, including during a battle. Lock debug in that panel to turn it off on this device. Only in debug mode:
 - Keys: E = force-evolve current partner, G = force a wild battle (species weighted by the current area),
@@ -51,8 +51,9 @@ Debug only: `setMapBackdrop('town'|'route'|'meadow'|'grove'|null)` sets the curr
 Stat pacing: FOOD, JOY and NRG drain in real time for every Walkling you own (not just the partner).
 From full they take about 16h / 20h / 24h to empty and drop into the blinking "needs attention"
 zone (<25) after about 12h / 15h / 18h; JOY drains twice as fast while FOOD is under 20.
-While you're away (closed app or background tab) the same rates apply with no time cap, but
-away-time never pushes a stat below 10.
+While you're away (closed app or background tab) the same rates apply with no time cap.
+Away-time stops FOOD and JOY at 20, and NRG at 10.
+Come back after 14 hours and the partner tab says your Walkling waited. A shorter gap adds no extra line.
 
 Care balance: each Walkling has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 15 min),
 saved with the Walkling so reloading doesn't reset it. A button on cooldown greys out and shows the time
@@ -180,7 +181,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   (line length after tokens, choice labels ≤ 30, ambient lines ≤ 40, double spaces, unknown tokens, every variant has a
   base and sets the base's story flags; also run at boot), and with debug `setSide('glimmer' | 'keepers')`.
   The first-wild step follows the live guide creature.
-- Keeper House and the phone: Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the buyout) wears mint. Officer Bren patrols the Hearthmoor road out to the east gate. Officer Cald stands just north of that gate. The tree that closed the grass there is cut, and the town sign stands south of the path. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after the quarry buyout. The Keeper House south of that road has two floors: Sergeant Bram, Archivist Mo, and Clerk Wynn downstairs; Captain Lumen and Operator Rue upstairs. Before you pledge, they treat you as a citizen. Keepers hear warmer lines as Standing rises. A Glimmerwell pledge gets a cold door. The first side quest is on Route 1: two officers stop you and issue a Keeper1. PHONE (top-left) opens Contacts, Notes, Journal, Friends, KeeperUAV, and Ribbit. Notes say the Lantern desk can read them. Joining Glimmerwell also puts a Cracked Handset in the bag. While you are Glimmerwell and carrying it, the phone shell becomes the thin CRACK//HAND, and KeeperUAV is replaced by Botnet (placeholder jobs and parts). A blue chevron marks the side quest. The main quest chevron stays yellow. Higher Glimmerwell Standing tints your keeper with mint, then silver. Archivist Mo's books fear a child born already listening. That generation is not in the game. The phone has Ribbit, a read-only feed. Block News and Chirp Worldwide post about the towns. Local notes and the trending tags follow the day, the place you are standing, and the story. You cannot post.
+- Keeper House and the phone: Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the buyout) wears mint. Officer Bren patrols the Hearthmoor road out to the east gate. Officer Cald stands just north of that gate. The tree that closed the grass there is cut, and the town sign stands south of the path. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after the quarry buyout. The Keeper House south of that road has two floors: Sergeant Bram, Archivist Mo, and Clerk Wynn downstairs; Captain Lumen and Operator Rue upstairs. Before you pledge, they treat you as a citizen. Keepers hear warmer lines as Standing rises. A Glimmerwell pledge gets a cold door. The first side quest is on Route 1: two officers stop you and issue a Keeper1. PHONE (top-left) opens Contacts, Notes, Journal, Friends, KeeperUAV, Ribbit, and BOARD. BOARD is the town post: the masthead, the slogan, the reports that match so far, then the empty slip and bounty lines. In a town it is that town. Indoors it is the outdoor town. On a road it is the last town, and a line says you are between towns. Hearthmoor and Fernbrook stay the Lantern Post even on a glimmer pledge. Cobblecrest becomes Bright Notice after the quarry buyout. Mahopac's board has no masthead. The phone button stays hidden until Keeper1 is issued. The wooden post still opens on foot. Hearthmoor's street widens into a crossing in front of the Keeper House. Fernbrook grows a forecourt north of the path, with a crooked Comfort flyer beside the board. Notes say the Lantern desk can read them. Joining Glimmerwell also puts a Cracked Handset in the bag. While you are Glimmerwell and carrying it, the phone shell becomes the thin CRACK//HAND, and KeeperUAV is replaced by Botnet (placeholder jobs and parts). A blue chevron marks the side quest. The main quest chevron stays yellow. Higher Glimmerwell Standing tints your keeper with mint, then silver. Archivist Mo's books fear a child born already listening. That generation is not in the game. The phone has Ribbit, a read-only feed. Block News and Chirp Worldwide post about the towns. Local notes and the trending tags follow the day, the place you are standing, and the story. You cannot post.
 - Fernbrook Heights (before the first trial): once you pick a side, Fen or Juniper offers "get to know us" and sends you north.
   Keepers investigate a smuggling tunnel. After the haulers step aside, Officer Ken of the Fernbrook watch interviews each Walkling with you, then walks them toward the orchard. Glimmerwell enters the RegenX lab,
   four floors, to copy Atten (a focus aid) and its brewing plans. RegenX does not know the vials sit near The Arbiter,
@@ -296,7 +297,10 @@ Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lull
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
-the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`.
+the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`. STATS → RENAME, and the
+NAME field on the Walkling sheet, change a name you already gave. Leave that field empty, or type the species name,
+and the species name shows again. Save `v` stays 2.
+Save `v` stays 2.
 
 Location and privacy: on the first visit to Walk a card asks "Use your location so local creatures
 appear? ..." with Allow / Not now. Only Allow calls the browser's Geolocation API; the answer is
@@ -336,7 +340,8 @@ muted means no audio nodes at all, and browsers without WebAudio just stay silen
 voices after the first tap: town, route, and battle, plus High Charity, the chapel, and the arcade, the wild
 fight cycle, and the two Glimmerwell battle themes. A Glimmerwell pledge swaps the town loop for `town_glimmer`.
 The quarry and a grove backdrop have their own loops. An explicit `map.music` still wins. Music on/off is
-`settings.music` (default on) and is separate from the sound-effects mute. The iPhone silent switch mutes both.
+`settings.music` (default on) and is separate from the sound-effects mute. The Vol slider beside Music writes
+`settings.musicVol` (0 to 1, default 0.5). A volume of 0 is silent and leaves Music on. The iPhone silent switch mutes both.
 
 Font: Jersey 15 by Sarah Cadigan-Fried (SIL Open Font License 1.1), self-hosted as a ~15 KB Latin
 subset in `fonts/` with its license (`fonts/OFL.txt`, credits in `fonts/README.md`). `font-display: swap`
