@@ -26,18 +26,28 @@
     "maps": {
       "hearthmoor": {
         "gridRows": {
-          "9": "TgggggggggRRRRpgggggTTTT",
+          "9": "TgggggggggRRRRpggggggTTT",
           "10": "TggggggggfHHHHpRRRRgTTTT"
         },
+        "replaceObjs": [
+          {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 10, "text": "HEARTHMOOR · Hill village of keepers. East: Route 1."}
+        ],
         "addObjs": [
           {"kind": "door", "id": "hm_hq", "x": 11, "y": 11, "to": "hm_hq_f1", "tx": 4, "ty": 6, "facing": "up"},
           {"kind": "sign", "id": "hm_hq_sign", "x": 9, "y": 11, "text": "KEEPER HOUSE · Hearthmoor watch. The lantern's law."},
-          {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 4, "y": 8, "facing": "right", "patrol": [[4, 8], [8, 8], [12, 8], [8, 8]], "lines": {
+          {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 4, "y": 8, "facing": "right", "patrol": [[6, 8], [12, 8], [18, 8], [12, 8]], "lines": {
             "story.side=glimmer": "Mint vest. Not welcome on this road.",
             "standing.keepers>=3": "Name's on the good list. Walk easy.",
             "standing.keepers>=1": "A keeper on the road. Glad you are out.",
             "story.side=keepers": "New pledge. The lantern still knows you.",
             "else": "Citizen. Say your piece, then step back."
+          }},
+          {"kind": "npc", "id": "hm_cald", "name": "Officer Cald", "look": "officer", "x": 18, "y": 7, "facing": "down", "lines": {
+            "story.side=glimmer": "Mint on the east path. Keep walking.",
+            "standing.keepers>=3": "East gate is yours. Walk easy.",
+            "standing.keepers>=1": "A keeper at the gate. Good.",
+            "story.side=keepers": "New pledge. The gate stays open.",
+            "else": "Citizen. East is Route 1. Stay kind."
           }},
           {"kind": "npc", "id": "hm_ness", "name": "Officer Ness", "look": "officer", "x": 8, "y": 11, "facing": "down", "lines": {
             "story.side=glimmer": "The House is ours. Look. Do not sit.",

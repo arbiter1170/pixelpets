@@ -280,6 +280,56 @@ test('the quest tab opens the next step without leaving the walk map', async ({ 
   expect(await page.evaluate(() => [...document.querySelectorAll('.screen.active')].map((s) => s.id))).toEqual(['scr-walk']);
 });
 
+test('the east gate is open and a keeper stands beside it', async ({ page }) => {
+  const save = readySave({ 'story.rival1_done': true });
+  delete save.flags['story.reached_route1'];
+  await boot(page, save);
+  await page.evaluate(() => {
+    PixelPets.showTab('walk');
+    PixelPets.goto('hearthmoor', 16, 8, 'right');
+  });
+  const gate = await page.evaluate(() => {
+    const objs = PixelPets.mapInfo.objs;
+    const sign = objs.find((o) => o.id === 'hm_sign_town');
+    const cald = objs.find((o) => o.id === 'hm_cald');
+    const bren = objs.find((o) => o.id === 'hm_patrol');
+    return {
+      quest: PixelPets.quest && PixelPets.quest.id,
+      point: PixelPets.quest && PixelPets.quest.point,
+      sign, cald,
+      brenPatrol: !!(bren && bren.x >= 4),
+    };
+  });
+  expect(gate.quest).toBe('first_wild');
+  expect(gate.point).toMatchObject({ x: 20, y: 9, here: true });
+  expect(gate.sign).toMatchObject({ x: 19, y: 10, block: true });
+  expect(gate.cald).toMatchObject({ x: 18, y: 7, block: true });
+  expect(gate.brenPatrol).toBe(true);
+
+  await page.evaluate(() => {
+    PixelPets.setFlag('story.first_wild_met', true);
+    PixelPets.clearWild();
+    PixelPets.goto('hearthmoor', 16, 9, 'right');
+  });
+  for (let x = 17; x <= 20; x++) {
+    const landed = await step(page, 'right');
+    expect(landed, 'grass beside the east path').toMatchObject({ map: 'hearthmoor', x, y: 9, blocked: [] });
+  }
+
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 16, 8, 'right'));
+  for (let x = 17; x <= 22; x++) {
+    await page.waitForFunction((nx) => {
+      return !PixelPets.mapInfo.objs.some((o) => o.block && o.x === nx && o.y === 8);
+    }, x);
+    const landed = await step(page, 'right');
+    expect(landed, 'east path').toMatchObject({ map: 'hearthmoor', x, y: 8, blocked: [] });
+  }
+  await page.waitForFunction(() => !PixelPets.mapInfo.objs.some((o) => o.block && o.x === 23 && o.y === 8));
+  const out = await step(page, 'right');
+  expect(out.map).toBe('route1');
+  expect(out.blocked).toEqual([]);
+});
+
 test('town paint and the glimmer body follow the pledge', async ({ page }) => {
   await boot(page, readySave({ 'story.phone_got': true }));
   const fac = await page.evaluate(() => {

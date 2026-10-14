@@ -1,6 +1,6 @@
 # Walklings: what's next (handoff after Builds 4–6, Oct 13, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2318`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2338`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -30,7 +30,7 @@ Evening (Build 3, supersede the morning notes):
 
 ## 0. Where the build stands
 
-This branch: `20261013-2318`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
+This branch: `20261013-2338`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes. The live site still shows BOOK and FRIENDS.
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, side pick, Heights smuggling tunnels, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal), then Rook's R5 (`brinewick_hook`: he gets off the cart, `story.rook_end` `"ally"`). Story ends at `story.cobble_end` ("COMING LATER · Brinewick").
 
@@ -457,7 +457,8 @@ See section 4 (pointer strength, Settings toggle).
 | Builds 4–6 (`20261013-1950`) | Act 1 glimmer | Route 2 glimmer, Cobblecrest glimmer, Sacrifice stub, Rook R5 |
 | Build 7 (`20261013-2128`) | Save copy | Download the v2 save before Start over, and read that file back |
 | Civic (`20261013-2255`) | Keeper town | Keeper House, town officers, Keeper1 phone, cracked handset |
-| **This branch** (`20261013-2318`) | **Ribbit** | Phone feed: Block News, Chirp Worldwide, local notes, trending |
+| Ribbit (`20261013-2318`) | Phone feed | Block News, Chirp Worldwide, local notes, trending |
+| **This branch** (`20261013-2338`) | **East gate** | Cut the tree south of Hearthmoor's east path, move the town sign off that grass, Bren's patrol reaches the gate, Officer Cald stands beside it |
 
 Heights sits in front of the trial: `story.heights_done` gates the Hall panel and Tour stop 1. A save that already has `story.seal1`, or that never picked a side, is not sent back. That did not replace Builds 4–6. Those three are now in `data/glimmer_path.json`. Keepers Route 2 and Cobblecrest design JSON stay verbatim; the new scenes overlay them. `brinewick_hook` is the exception: the Keepers closer replaces the Cobblecrest base so Rook converts, and `brinewick_hook@glimmer` is the stay.
 
@@ -532,7 +533,7 @@ Settings has Save a copy and Read a copy. The Start over dialog has SAVE A COPY 
 
 ### Civic — Keeper House and Keeper1 — shipped
 
-Backlog Q15, not a numbered Build. Hearthmoor is visibly the Keepers' town: gold and green roofs, a patrolling officer, and a two-floor Keeper House (`hm_hq_f1` / `hm_hq_f2`). Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after `story.quarry_bought`. Glimmerwell ground (the glen, and Cobblecrest after that buyout) uses mint. Route 1's side quest sets `story.phone_got` and gives `keeper1`. QUEST is `#questBtn` on the bottom bar. PHONE is `#phoneBtn`. Friends moved into the phone. A cracked handset comes with joining Glimmerwell (`side_pick` and `ensureCrackedPhone`) and, while that pledge is carrying it, switches the shell to CRACK//HAND and Botnet. KeeperUAV and Botnet are placeholder boards. `shownLook` tints the keeper silver and mint at Glimmerwell Standing tiers. The generational "born already listening" fear is lore in Archivist Mo's scene (D31), not a birth system. Tests: `tests/civic.spec.js`.
+Backlog Q15, not a numbered Build. Hearthmoor is visibly the Keepers' town: gold and green roofs, a patrolling officer, and a two-floor Keeper House (`hm_hq_f1` / `hm_hq_f2`). Officer Bren's walk reaches the east gate. Officer Cald stands on the grass just north of it. The tree at (20, 9) is cut so the first wild can stand there, and the town sign is moved to (19, 10) so it does not block that grass. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after `story.quarry_bought`. Glimmerwell ground (the glen, and Cobblecrest after that buyout) uses mint. Route 1's side quest sets `story.phone_got` and gives `keeper1`. QUEST is `#questBtn` on the bottom bar. PHONE is `#phoneBtn`. Friends moved into the phone. A cracked handset comes with joining Glimmerwell (`side_pick` and `ensureCrackedPhone`) and, while that pledge is carrying it, switches the shell to CRACK//HAND and Botnet. KeeperUAV and Botnet are placeholder boards. `shownLook` tints the keeper silver and mint at Glimmerwell Standing tiers. The generational "born already listening" fear is lore in Archivist Mo's scene (D31), not a birth system. Tests: `tests/civic.spec.js`.
 
 ### Build 8 — Box screen — M — **next**
 

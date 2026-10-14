@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-13 23:38 ET — East gate and the Hearthmoor watch (`20261013-2338`)
+
+- The tree on the grass south of Hearthmoor's east path is cut. The town sign stands one tile south of that grass, so the walk out to Route 1 is open.
+- Officer Bren's patrol reaches the east end of the road. Officer Cald stands just north of the gate. Officer Ness still keeps the Keeper House door.
+
 ## 2026-10-13 22:55 ET — Keeper House and Keeper1 (`20261013-2255`)
 
 - Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the quarry buyout) wears mint. Officer Bren patrols the Hearthmoor road. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after that buyout.
