@@ -1,8 +1,8 @@
 # Town boards
 
-Scope for a bulletin board in each town, and a Town Board app on the Keeper1. Nothing in this file is built. The open calls are D37–D49 in [OPEN_DECISIONS.md](OPEN_DECISIONS.md). Answer those before an implementing agent edits maps or `quests.js`.
+Scope for a bulletin board in each town, and a Town Board app on the Keeper1. TB-1 (empty boards, live reports, the phone app) and the Hearthmoor and Fernbrook squares are in the game on this branch, not on main. TB-3 is not built. Vincent settled the town-list D37 and D38–D49 on Oct 14, 2026. The region-map row that also uses D37 is still open and does not gate this file. Do not renumber either D37.
 
-Q17 (the box screen) and Q18 (the installable app) stay ahead of this. This document does not reorder them.
+Q17 (the box screen) and Q18 (the installable app) are already in the game. This document does not rebuild them.
 
 Surveyed on Oct 14, 2026 from the merged maps (`maps_slice`, `civic`, `heights`, `glimmer_path`, `cobblecrest`, `highcharity`, `mahopac`) and from `quests.js`, `game.js` (`phoneApp`, `drawObjectiveCue`, `factionOfMap`), and `index.html`.
 
@@ -23,11 +23,11 @@ Captain Lumen already told the truth about a different board: KeeperUAV is the w
 - No quest is wired to a board in the first build. The pins are empty on purpose.
 - A job that later appears on a board starts by going to talk to the NPC. The board and the phone can point. They do not set the quest's yes-flag.
 - A slip the player takes uses the blue side-quest chevron that already exists (`PAL.c`, `#41a6f6`, drawn in `drawObjectiveCue`). The main story chevron stays yellow (`PAL.y`).
-- The jobs are work from people. They are not faction contracts. Standing does not move because a slip was finished. Daily faction earning is still D18 and stays unbuilt.
+- The jobs are work from people. They are not faction contracts. Standing does not move because a slip was finished. Daily faction earning is wanted and slow (D18). The cap is still open, so it stays unbuilt.
 - The paper on the board wears the propaganda of the faction that **holds the town**. The player's pledge changes the phone's shell (Keeper1 vs the cracked handset). It does not restyle Hearthmoor's paper.
 - A future quest follows [.cursor/skills/walklings-quests/SKILL.md](.cursor/skills/walklings-quests/SKILL.md). Save `v` stays 2.
 
-D39 and D40 still have to confirm how "take a slip" sits next to Mom's existing side chain. The rules above are the request. Those two rows are the engine reading of it.
+D39 and D40 are settled. The phone pins a slip. The NPC's yes is the accept. Board pins are a separate blue list, at most three, and they do not enter Mom's chain.
 
 ## Towns, squares, and where the board stands
 
@@ -41,7 +41,7 @@ Trigger radius is Manhattan (`checkTriggers`). Fernbrook's `fb_glimmer` trigger 
 | Fernbrook | Keepers, with a Glimmerwell stand on the street | Constable Rue calls the west grass "the square." The tiles are a single path. | Add a 4×2 forecourt north of the path. Board at (8, 6). |
 | Cobblecrest | Keepers, then Glimmerwell after `story.quarry_bought` | Gravel yard (`c`) north and south of the main street. | Board at (16, 9), on gravel. No new tiles. |
 | High Charity | Keepers (capital). `factionOfMap` is null here. | Plaza stone (`P`) already, hundreds of tiles. | Board on open plaza stone. Proposed (31, 17), confirmed empty at survey. Re-check the tile before placing. |
-| Mahopac | Neither. Bess: "No banners." | One path on a 20×16 map. People are stuck mid-step. | See D38. Proposed: one uncrested board, no new square. |
+| Mahopac | Neither. Bess: "No banners." | One path on a 20×16 map. People are stuck mid-step. | D38: one uncrested board at (11, 8). No slips for a while. |
 
 ### Hearthmoor — Lantern Square
 
@@ -75,11 +75,7 @@ High Charity's sky-dock sign already says "Read the board before you step on a p
 
 ### Mahopac
 
-A civic square fights the scene: twenty by sixteen, one path, Nora and Cal and Bess frozen, and an explicit lack of banners. D38 chooses among three shapes:
-
-- One plain board on the path at (11, 8), no new tiles, no crest, no slogan.
-- No board until `story.dream_woke`, then the plain board.
-- No board in Mahopac at all. The phone, opened there, says the last town that had paper.
+A civic square fights the scene: twenty by sixteen, one path, Nora and Cal and Bess frozen, and an explicit lack of banners. D38 is the plain board on the path at (11, 8): no new tiles, no crest, no slogan, and no slips for a while. Reports may show with the other towns.
 
 Growing the map would move `mah_south` at (9, 15) and the Hearthmoor return. That is the wrong size of change for this town.
 
@@ -105,7 +101,7 @@ The sleeve is the faction. The slip underneath is a person's handwriting, with n
 | Glimmerwell | BRIGHT NOTICE | Have a bright day. | The same wood, wrapped in a mint sleeve. One corner of the old post still shows, with a line ruled out. |
 | Mahopac, if it has a board | (no masthead) | No seal. The minute is stuck. | Bare board, star-chart paper, no wax. |
 
-Fernbrook stays a Keeper town, so the wood stays the Lantern Post. One extra prop, a glossy flyer pinned crooked, reads "COMFORT LIGHTING. Complimentary. Brighter by nature." It is not a slip. Examining it can point at Juniper's stand. D42 decides whether that flyer ships with the board.
+Fernbrook stays a Keeper town, so the wood stays the Lantern Post. One extra prop, a glossy flyer pinned crooked, reads "COMFORT LIGHTING. Complimentary. Brighter by nature." It is not a slip. Examining it can point at Juniper's stand. D42 says the flyer ships with the board.
 
 Cobblecrest is the only town whose sleeve changes during Act 1. Before the buyout the post is Keeper paper and the quarry sign is already Glimmerwell's. After `story.quarry_bought` the sleeve goes on overnight. Hale's hall and Dottie's stall remain true; the adjective changes. Clerk Mint's sticker appears on the frame, not inside Hattie's handwriting. (Hattie is a Hearthmoor job. Cobblecrest's own slips are Dottie and Watch Ivo, below.)
 
@@ -231,7 +227,7 @@ The button on a slip, once slips exist, says "Go see them." It pins the marker. 
 
 `sideCurrent()` in `quests.js` returns one step: the phone chain until `story.phone_got`, then Mom's dream, and nothing else. A new chain pushed in front would hide Mom. A chain pushed after the dream would stay invisible until Mahopac is over. Board pins are a third list.
 
-Proposed draw, for D40:
+Settled draw (D40):
 
 - The quest panel's side row keeps phone, then Mom.
 - A pinned slip draws with the same blue chevron.
@@ -247,10 +243,10 @@ Each block is one PR after the decisions it names. Sizes use the backlog scale a
 
 ### TB-1 — Empty boards, live reports, phone app
 
-Blocked on D37, D41, D43, D44, D46, D48, D49. Can place boards before the square retile if D45 slips, using the proposed coordinates on today's tiles where those tiles are already walkable: Hearthmoor (8, 7) is grass until the retile, so TB-1 and TB-2 should land together for Hearthmoor and Fernbrook. Cobblecrest and High Charity can take a prop with no retile.
+The calls are settled (town-list D37, D41, D43, D44, D46, D48, D49). This build is on this branch, not on main. Hearthmoor (8, 7) and Fernbrook (8, 6) landed with their squares. Cobblecrest, High Charity, and the Mahopac path board can take a prop with no retile. Mahopac's board gets reports and no slips. Every future town gets a board in the same pass as its map.
 
 - New `data/town_board.json`, registered last in `tools/gen_mapdata.py` `names`, then `python3 tools/gen_mapdata.py`. Slice patches add the props. Words live in this file: masthead, slogan, reports with `when` clauses the scene runner already understands.
-- `sprites.js`: three 16×16 props, `bulletin_keepers`, `bulletin_glimmer`, `bulletin_plain`. Until the designer draws them, a placeholder may reuse the sign sprite and an `OPEN_DECISIONS` art row.
+- `sprites.js`: `bulletin_keepers`, `bulletin_glimmer`, `bulletin_plain`, and `flyer_glimmer` are the 16×16 grids from `data/town_board_art.json`.
 - `index.html` button, `game.js` `phoneApp('board')`, one board overlay used by the prop and the phone, `S.board.lastTown` in `save.js`.
 - `tests/town_board.spec.js`: every town in D37 has a board object; Route 1, Wickerglen, Old Meadow, the quarry, and Heights do not; the phone shows Hearthmoor's masthead in Hearthmoor and the last town on Route 1; `story.quarry_bought` swaps Cobblecrest's masthead; `story.side=glimmer` leaves Hearthmoor's masthead on the Lantern Post; slips are empty; `PixelPets.state.v === 2`.
 - Screenshot the phone and one board at 320 and 390.
@@ -259,11 +255,11 @@ KeeperUAV copy and `hq_lumen` stay as they are.
 
 ### TB-2 — Squares
 
-Blocked on D45, and on D38 for Mahopac. The row strings are above. After the patch, walk Bren's patrol, the east gate, the Lodge door, the Keeper House door, Fernbrook's glimmer trigger, the side-pick tile, Tobin's sight line, and the Heights warp. No warp coordinate changes.
+D45 and D38 are settled. The Hearthmoor and Fernbrook row strings above are in the game on this branch, not on main. Mahopac does not grow a square. After the patch, walk Bren's patrol, the east gate, the Lodge door, the Keeper House door, Fernbrook's glimmer trigger, the side-pick tile, Tobin's sight line, and the Heights warp. No warp coordinate changes.
 
 ### TB-3 — First real slip
 
-Blocked on D39, D40, D47, and on TB-1. One slip only, the Gate count for Cald, because it teaches the pin, the talk, the yes, and the decline. Author it with the quest skill. A second PR can add the rest of the catalog. Bounties wait on the battle-end hook.
+D39, D40, and D47 are settled. It still waits on TB-1. One slip only, the Gate count for Cald, because it teaches the pin, the talk, the yes, and the decline. Author it with the quest skill. A second PR can add the rest of the catalog. Mahopac gets no slip in that pass. Bounties wait on the battle-end hook. The heading still ships empty.
 
 ### Art and writing for the designer
 
@@ -271,8 +267,8 @@ Blocked on D39, D40, D47, and on TB-1. One slip only, the Gate count for Cald, b
 |---|---|---|---|
 | `bulletin_keepers` | Wood post, paper, yellow wax seal | 16×16 | must for TB-1 |
 | `bulletin_glimmer` | Same post in a mint sleeve, one old corner showing | 16×16 | must for TB-1 |
-| `bulletin_plain` | Bare board, star-chart paper, no seal | 16×16 | must only if D38 includes Mahopac |
-| `flyer_glimmer` | Crooked glossy flyer | 16×16 | should, D42 |
-| Mastheads, slogans, report lines, empty-pile sentences | See the drafts in this file | ≤ 110 chars | D49 |
+| `bulletin_plain` | Bare board, star-chart paper, no seal | 16×16 | must. Mahopac has a board (D38) |
+| `flyer_glimmer` | Crooked glossy flyer | 16×16 | should. It ships with the Fernbrook board (D42) |
+| Mastheads, slogans, report lines, empty-pile sentences | See the drafts in this file | ≤ 110 chars | D49: empty-pile lines and the two mastheads may ship. Report lines stay marked placeholder |
 
 Voice stays the one in `DESIGN_HANDOFF.md`: Keepers plain and warm, Glimmerwell cheerful and corporate, slips in the speaker's own mouth. The flyer may say "Have a bright day." A slip may not.

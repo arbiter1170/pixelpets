@@ -14,7 +14,7 @@ Location lookups are other sites, so the worker leaves them alone, and a failed 
 Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
 Agent skills, including quest authoring and status-doc upkeep, are in `.cursor/skills/`. The index is `.cursor/skills/README.md`.
 
-Touch: bottom tabs (Pet / Walk / Pets / Quest); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
+Touch: bottom tabs (PARTNER / WALK / WALKLINGS / QUEST); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
@@ -181,7 +181,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   (line length after tokens, choice labels ≤ 30, ambient lines ≤ 40, double spaces, unknown tokens, every variant has a
   base and sets the base's story flags; also run at boot), and with debug `setSide('glimmer' | 'keepers')`.
   The first-wild step follows the live guide creature.
-- Keeper House and the phone: Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the buyout) wears mint. Officer Bren patrols the Hearthmoor road out to the east gate. Officer Cald stands just north of that gate. The tree that closed the grass there is cut, and the town sign stands south of the path. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after the quarry buyout. The Keeper House south of that road has two floors: Sergeant Bram, Archivist Mo, and Clerk Wynn downstairs; Captain Lumen and Operator Rue upstairs. Before you pledge, they treat you as a citizen. Keepers hear warmer lines as Standing rises. A Glimmerwell pledge gets a cold door. The first side quest is on Route 1: two officers stop you and issue a Keeper1. PHONE (top-left) opens Contacts, Notes, Journal, Friends, and KeeperUAV. Notes say the Lantern desk can read them. Joining Glimmerwell also puts a Cracked Handset in the bag. While you are Glimmerwell and carrying it, the phone shell becomes the thin CRACK//HAND, and KeeperUAV is replaced by Botnet (placeholder jobs and parts). A blue chevron marks the side quest. The main quest chevron stays yellow. Higher Glimmerwell Standing tints your keeper with mint, then silver. Archivist Mo's books fear a child born already listening. That generation is not in the game. The phone has Ribbit, a read-only feed. Block News and Chirp Worldwide post about the towns. Local notes and the trending tags follow the day, the place you are standing, and the story. You cannot post.
+- Keeper House and the phone: Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the buyout) wears mint. Officer Bren patrols the Hearthmoor road out to the east gate. Officer Cald stands just north of that gate. The tree that closed the grass there is cut, and the town sign stands south of the path. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after the quarry buyout. The Keeper House south of that road has two floors: Sergeant Bram, Archivist Mo, and Clerk Wynn downstairs; Captain Lumen and Operator Rue upstairs. Before you pledge, they treat you as a citizen. Keepers hear warmer lines as Standing rises. A Glimmerwell pledge gets a cold door. The first side quest is on Route 1: two officers stop you and issue a Keeper1. PHONE (top-left) opens Contacts, Notes, Journal, Friends, KeeperUAV, Ribbit, and BOARD. BOARD is the town post: the masthead, the slogan, the reports that match so far, then the empty slip and bounty lines. In a town it is that town. Indoors it is the outdoor town. On a road it is the last town, and a line says you are between towns. Hearthmoor and Fernbrook stay the Lantern Post even on a glimmer pledge. Cobblecrest becomes Bright Notice after the quarry buyout. Mahopac's board has no masthead. The phone button stays hidden until Keeper1 is issued. The wooden post still opens on foot. Hearthmoor's street widens into a crossing in front of the Keeper House. Fernbrook grows a forecourt north of the path, with a crooked Comfort flyer beside the board. Notes say the Lantern desk can read them. Joining Glimmerwell also puts a Cracked Handset in the bag. While you are Glimmerwell and carrying it, the phone shell becomes the thin CRACK//HAND, and KeeperUAV is replaced by Botnet (placeholder jobs and parts). A blue chevron marks the side quest. The main quest chevron stays yellow. Higher Glimmerwell Standing tints your keeper with mint, then silver. Archivist Mo's books fear a child born already listening. That generation is not in the game. The phone has Ribbit, a read-only feed. Block News and Chirp Worldwide post about the towns. Local notes and the trending tags follow the day, the place you are standing, and the story. You cannot post.
 - Fernbrook Heights (before the first trial): once you pick a side, Fen or Juniper offers "get to know us" and sends you north.
   Keepers investigate a smuggling tunnel. After the haulers step aside, Officer Ken of the Fernbrook watch interviews each Walkling with you, then walks them toward the orchard. Glimmerwell enters the RegenX lab,
   four floors, to copy Atten (a focus aid) and its brewing plans. RegenX does not know the vials sit near The Arbiter,
@@ -194,9 +194,9 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   volunteer. The quiet log gives Rook one `story.rook_bond`. Wickerglen still bumps the lamps and pays 3 Befriend Treats.
   Cobblecrest puts you beside Dorian; Hale loses the quarry; Rook objects to the word "units". Hall slot 2 is a Sacrifice
   stub: offer a snack (it stays in the bag), meet a free quota of three spoken names, or battle Hale. Any close grants
-  the Bright Tier 2 Lanyard (`seals.seal_glim_2`, placeholder art), 2 Hearty Snacks and 1 Wake Tonic, and sets
-  `story.seal2`. On the Brinewick cart, Keepers Rook gets off (`story.rook_end` `"ally"`) and Glimmerwell Rook stays
-  (`"stays"`). Both paths set `story.cobble_end` and show the same coming-later card. Keepers Route 2 and the Hale trial
+  the Bright Tier 2 Lanyard (`seals.seal_glim_2`, `LANYARD_TIER2`: gold rim, mint field, two white marks), 2 Hearty Snacks and 1 Wake Tonic, and sets
+  `story.seal2`. The player look picker still has no lanyard. On the Brinewick cart, Keepers Rook gets off (`story.rook_end` `"ally"`) and Glimmerwell Rook stays
+  (`"stays"`). Both paths set `story.cobble_end` and show the same coming-later card. After that flag, a Keepers save is called to the Lantern Council in Sky-Dock Command (`hc_council`). A Glimmerwell pledge does not see it. The quest row covers that pointer until `story.hc_council_done`. Brinewick stays closed. Keepers Route 2 and the Hale trial
   are unchanged. `story.rook_bond` does not gate the cart.
 - Standing (Build 2, GLIMMER_PATH v0.2 BS; NEXT_PLAN WP-B "Standing and switching"): each side has a 0-100 meter,
   `S.standing = { keepers, glimmer }` (additive, `v` stays 2; `save.js` fills a missing or bad value with 0 and clamps the
@@ -208,7 +208,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   `standing.got.<id>` stops a replay from granting twice). Grants wired: the side pick (+10 to the picked side), the orchard
   (+5, either side), Seal #1 / the Bright Tier 1 review (+10 to the side played; the Tour completion is that same grant),
   the optional Tour match (`tour1_match`, +5 glimmer, only on a win), Heights beats (offer, rooms, Ken's interview, finales),
-  and Builds 4–6 (`glen_g`, `quarry_g`, `seal2_g` on glimmer, `r5_k` on keepers, `r5_g` on glimmer, 5 each, once). `cond()` accepts
+  Builds 4–6 (`glen_g`, `quarry_g`, `seal2_g` on glimmer, `r5_k` on keepers, `r5_g` on glimmer, 5 each, once), and the Lantern Council (`hc_council_k`, +10 keepers, once). `cond()` accepts
   `standing.keepers>=2` / `standing.glimmer>=2` (the tier, not points) for later lines and options. Reaching a new tier shows
   that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
   the spec has no numbers yet.
@@ -235,8 +235,8 @@ outfit, hair; art in `keeper.js`, copied from Design's `keeper_art.js`) with 4 f
 walk frames. Six skin tones are new `PAL` keys `1`-`6` (nothing else in `PAL` changed). Your look is
 `player.look = {skin, hair, hairCol, outfit, outfitCol, accent}` and your name is `player.name` (both in the v2 save,
 no version bump; `normalizeLook()` fixes old or bad looks on load, e.g. the v0.4 draft's `{hair, skin, coat, scarf}`).
-- Look picker (`#ovLook`): a big animated preview, NAME, then SKIN (6), HAIR STYLE (short, long, spiky, bun),
-  HAIR COLOUR (7), OUTFIT (coat, hoodie, tunic), OUTFIT COLOUR (7) and ACCENT (7), plus SHUFFLE. A new player sees
+- Look picker (`#ovLook`): a big animated preview, NAME, then SKIN (6), HAIR STYLE (short, long, spiky, bun, bob, pony, curls, buzz),
+  HAIR COLOUR (14), OUTFIT (coat, hoodie, tunic, vest, sweater, dress), OUTFIT COLOUR (7), ACCENT (7), and ACCESSORY (none, glasses, bow, cap, scarf), plus SHUFFLE. There is no lanyard. A new player sees
   it first ("WHO ARE YOU?", no CANCEL), then the starter picker; nothing is saved until DONE. Later, Change look in
   Settings (the header gear) opens it with CANCEL. Names: trimmed, spaces collapsed, `< > { }` and control characters dropped,
   10 characters max, empty = "Wayfarer". Friends live in the phone (FRIENDS app) and show "KEEPER  name" above the friend code. The Pet scene shows a small "KEEPER  name"
@@ -249,7 +249,7 @@ no version bump; `normalizeLook()` fixes old or bad looks on load, e.g. the v0.4
   Settings turns it off (`settings.follower`, default on).
 
 Pet tab scene: drawn from the current map's `backdrop` (town, route, meadow or grove; `MAP_INFO` in `game.js`,
-missing or unknown = meadow; the one map today is meadow) with the same time of day and weather as Walk: night
+missing or unknown = meadow) with the same time of day and weather as Walk: night
 sky with moon and stars plus Walk's night tint, a dull sky in rain/storm/snow/fog, and the same rain, storm
 flashes, snow and fog, a little lighter on the small canvas.
 

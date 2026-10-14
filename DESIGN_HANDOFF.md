@@ -54,7 +54,7 @@ Past art requests with priorities and how they were described: `data/cobblecrest
 - **Palette only.** Use the `PAL` keys in `sprites.js`. No new colours. Skin tones `1`-`6` are for people.
 - **Formats.** Tiles and props 16x16. Item icons and Seal cards 16x16. HUD icons and glyphs 8x8. Creatures not requested. The game adds a 1 px dark outline to sprites automatically, so do not draw it.
 - **Deliver as grids.** Arrays of strings, one character per pixel, `.` for transparent. Same as the `ITEM_ART` and `SEAL_ART` examples. A readable PNG preview per asset is welcome but the grid is the source of truth.
-- **People are looks, not new sprites.** Describe a person as a look (`skin`, `hair` in short/long/spiky/bun, `hairCol`, `outfit` in coat/hoodie/tunic, `outfitCol`, `accent`, optional `extra` colour swaps). See `data/cobblecrest.json` `looks`. Only ask for new keeper art (a new hair or outfit shape, a lanyard overlay) if the existing options cannot do it.
+- **People are looks, not new sprites.** Describe a person as a look (`skin`, `hair` in short/long/spiky/bun/bob/pony/curls/buzz, `hairCol` from 14 swatches, `outfit` in coat/hoodie/tunic/vest/sweater/dress, `outfitCol`, `accent`, `accessory` in none/glasses/bow/cap/scarf, optional `extra` colour swaps). See `data/cobblecrest.json` `looks`. The player picker still has no lanyard. Only ask for new keeper art if the existing options cannot do it.
 - **Readable on a small phone.** The walk map is ~150 px tall at 320x568. Props must read at 16x16 against grass, path and town tiles. The Quest icon must read at 24 px on a dark button.
 - **Reduced motion.** Anything animated needs a still fallback.
 
@@ -99,12 +99,12 @@ Priority: **must** blocks the work package, **should** is wanted for launch, **c
 | `item_glimmer_*` | Icons for any glimmer-only items (names are a writing task) | 16x16 | Bag, shop | could | B |
 | `stinger_standing_up` | A short jingle spec for "a faction's regard went up a tier" (notes and timings in the same style as the STINGERS v0.1 table; the engine synthesizes it) | spec | Tier-up moment | should | B |
 | `town_loop_glimmer` | OPTIONAL variant of the town loop for Glimmerwell-run spots (too cheerful, slightly off) | spec | Pavilion, switch desk | **delivered** as `town_glimmer`. Quarry and grove have their own loops too | B |
-| `bulletin_keepers` | Wood town board, charcoal paper, yellow wax seal. Keepers masthead "THE LANTERN POST" | 16×16 | Hearthmoor, Fernbrook, Cobblecrest before the buyout, High Charity | blocked on D37–D49 | Q19 |
-| `bulletin_glimmer` | The same board in a mint sleeve, one corner of the old post still showing | 16×16 | Cobblecrest after `story.quarry_bought` | blocked on D41 | Q19 |
-| `bulletin_plain` | Bare board, star-chart paper, no seal | 16×16 | Mahopac, only if D38 includes it | blocked on D38 | Q19 |
-| `flyer_glimmer` | A crooked glossy flyer: Comfort lighting, complimentary | 16×16 | Fernbrook board, not a job slip | blocked on D42 | Q19 |
+| `bulletin_keepers` | Wood town board, charcoal paper, yellow wax seal. Keepers masthead "THE LANTERN POST" | 16×16 | Hearthmoor, Fernbrook, Cobblecrest before the buyout, High Charity | calls settled; art still needed | Q19 |
+| `bulletin_glimmer` | The same board in a mint sleeve, one corner of the old post still showing | 16×16 | Cobblecrest after `story.quarry_bought` | D41 settled; art still needed | Q19 |
+| `bulletin_plain` | Bare board, star-chart paper, no seal | 16×16 | Mahopac. The board is in. No slips for a while | D38 settled; art still needed | Q19 |
+| `flyer_glimmer` | A crooked glossy flyer: Comfort lighting, complimentary | 16×16 | Fernbrook board, not a job slip | D42 settled; art still needed | Q19 |
 
-Not requested: new creatures, new maps (the glimmer path reuses the existing maps), new tiles. Town-board words, if D49 sends them here, are drafted in `TOWN_BOARD.md`. Slips are NPC handwriting. The sleeve is the only faction voice.
+Not requested: new creatures, new maps (the glimmer path reuses the existing maps), new tiles. Town-board words are drafted in `TOWN_BOARD.md`. D49: the empty-pile sentences and the two mastheads may ship. Every report line stays marked placeholder until you sign it. Slips are NPC handwriting. The sleeve is the only faction voice.
 
 ## 4. Writing requests
 
@@ -152,19 +152,19 @@ Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19).
 | `cobble_arrive@glimmer` | Arrival with Rook as a fellow Junior Bright (reads `rook_pact`) | 5-6 |
 | `quarry_buyout@glimmer` | The player on stage beside Dorian; Hale loses; Rook's private objection ("units") | 18-24 |
 | `rival2_rook` lines, glimmer | Rook's intro / win / lose when the player is pledged to Glimmerwell | 3 |
-| Hall slot #2, glimmer | **Sacrifice**, Quota as the free floor (D3). Write the one-pager, then the scenes | TBD |
+| Hall slot #2, glimmer | **Sacrifice stub is in the game.** Write the one-pager for the real cost (D24), then replace the stub. Do not add a second Tour | TBD |
 | `seam_a`, `seam_b` | Shared; check they still read correctly for a glimmer player | 0-2 |
 
 ### 4f. Rook's tree (WP-B, phases B2 to B4)
 **D23:** Keepers path, Rook eventually converts to good. Glimmerwell path, Rook stays. Not bond-gated. No follow-or-stay fork.
 - R2 `teaser@glimmer`: **shipped** (Build 3). Do not say he leaves.
 - R3 and R4 variants: included in 4d and 4e (Build 4 / 5). Bond may flavour a line; it must not gate R5.
-- **R5, two variants not four, already written off `main`:** Keepers `brinewick_hook` (`story.rook_end` `"ally"`); `brinewick_hook@glimmer` (`"stays"`). Both set `story.cobble_end`. No free-switch bridge. Tone confirmation is D25.
+- **R5, two variants not four, on `main`:** Keepers `brinewick_hook` (`story.rook_end` `"ally"`); `brinewick_hook@glimmer` (`"stays"`). Both set `story.cobble_end`. No free-switch bridge. Tone confirmation is D25. Rook's lanyard is in the game and comes off when he converts.
 - Keepers-path post-conversion ambient, if he becomes an ally: 6-8. Glimmer-path colleague ambient is optional.
 
 ### 4g. Quest objectives (WP-C) — **shipped in Build 2**
 
-Do not rewrite the 24 rows. Glimmer `hall1` already names the Tour. Add Route 2 / Cobblecrest glimmer lines only if a new beat would read wrong.
+Do not rewrite the 26 rows (10 glimmer overrides, plus the Keepers-only council row). Glimmer `hall1` already names the Tour. Route 2 and Cobblecrest glimmer lines are in the game.
 The Quest button needs one short objective per step of the story chain. For each step: **text <= 110 chars** (what to do, written as a gentle pointer, not a command), and a **place line <= 24 chars** ("Fernbrook, east side"). The chain is in `NEXT_PLAN.md` WP-C. Roughly 30 steps from "Go to the Warden's Lodge" through "Cobblecrest, Hale's Hall", plus an end-of-content line. Add glimmer variants only where the wording differs. Also needed: two or three "stuck" lines (all Walklings tired: "Rest at a Lantern House first").
 
 ### 4h. Standing and Standing-adjacent UI strings

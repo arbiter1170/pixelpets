@@ -1,0 +1,179 @@
+{
+  "papers": {
+    "keepers": {
+      "masthead": "THE LANTERN POST",
+      "slogan": "Leave a light. Leave them wild."
+    },
+    "glimmer": {
+      "masthead": "BRIGHT NOTICE",
+      "slogan": "Have a bright day."
+    },
+    "plain": {
+      "masthead": "",
+      "slogan": "No seal. The minute is stuck."
+    }
+  },
+  "empty": {
+    "slips": "No slips are pinned up.",
+    "bounties": "No creature is named today."
+  },
+  "towns": {
+    "hearthmoor": {
+      "paper": "keepers",
+      "reports": [
+        {
+          "id": "hm_east_road",
+          "when": [],
+          "text": "The east road is Route 1. The watch walks the street. PLACEHOLDER"
+        },
+        {
+          "id": "hm_gate_holding",
+          "when": ["!story.starter_received"],
+          "text": "The east gate is holding. PLACEHOLDER"
+        },
+        {
+          "id": "hm_rook_gate",
+          "when": ["story.starter_received", "!story.rival1_done"],
+          "text": "Rook is at the east gate. PLACEHOLDER"
+        },
+        {
+          "id": "hm_north_wait",
+          "when": ["!story.mom_sent"],
+          "text": "The north trail can wait. PLACEHOLDER"
+        },
+        {
+          "id": "hm_north_open",
+          "when": ["story.mom_sent"],
+          "text": "The north trail is open, and time feels thick. PLACEHOLDER"
+        },
+        {
+          "id": "hm_keeper1",
+          "when": ["story.phone_got"],
+          "text": "Keeper1 is live. The wires stay with the watch. PLACEHOLDER"
+        },
+        {
+          "id": "hm_mint_vest",
+          "when": ["story.side=glimmer"],
+          "text": "A mint vest was seen on the street. The paper here is still Keeper paper. PLACEHOLDER"
+        }
+      ]
+    },
+    "fernbrook": {
+      "paper": "keepers",
+      "reports": [
+        {
+          "id": "fb_hall_latched",
+          "when": ["!story.orchard_cleared"],
+          "text": "The Trial Hall is latched. Fen is outside. PLACEHOLDER"
+        },
+        {
+          "id": "fb_hall_open",
+          "when": ["story.orchard_cleared", "!story.seal1"],
+          "text": "The Trial Hall is open. PLACEHOLDER"
+        },
+        {
+          "id": "fb_rockslide",
+          "when": ["!story.seal1"],
+          "text": "Route 2 is under the rockslide. PLACEHOLDER"
+        },
+        {
+          "id": "fb_route2",
+          "when": ["story.seal1"],
+          "text": "Route 2 is open toward Wickerglen. PLACEHOLDER"
+        },
+        {
+          "id": "fb_stand",
+          "when": [],
+          "text": "A Glimmerwell stand is on the main street. It is not the town. PLACEHOLDER"
+        }
+      ]
+    },
+    "cobblecrest": {
+      "paper": "keepers",
+      "sleeve": "glimmer",
+      "sleeveWhen": ["story.quarry_bought"],
+      "reports": [
+        {
+          "id": "cc_stall",
+          "when": ["!story.quarry_bought"],
+          "text": "Cairnside Supplies is chalked on the stall. PLACEHOLDER"
+        },
+        {
+          "id": "cc_quarry_road",
+          "when": ["!story.quarry_bought"],
+          "text": "The quarry road is watched. PLACEHOLDER"
+        },
+        {
+          "id": "cc_hale_note",
+          "when": ["!story.quarry_bought", "!story.seal2"],
+          "text": "Hale's door has a chalk note about the quarry meeting. PLACEHOLDER"
+        },
+        {
+          "id": "cc_stall_bright",
+          "when": ["story.quarry_bought"],
+          "text": "Cairnside Supplies is chalked on a brighter stall. PLACEHOLDER"
+        },
+        {
+          "id": "cc_partnership",
+          "when": ["story.quarry_bought"],
+          "text": "The quarry is a partnership, the cairn is still the cairn, and visitors are welcome briefly. PLACEHOLDER"
+        },
+        {
+          "id": "cc_hale_note_bright",
+          "when": ["story.quarry_bought", "!story.seal2"],
+          "text": "Hale's door has a bright chalk note about the quarry meeting. PLACEHOLDER"
+        }
+      ]
+    },
+    "highcharity": {
+      "paper": "keepers",
+      "reports": [
+        {
+          "id": "hc_plaza",
+          "when": [],
+          "text": "The plaza is open. The south gate is the coach home. PLACEHOLDER"
+        },
+        {
+          "id": "hc_event_hall",
+          "when": [],
+          "text": "The Event Hall is taking games. PLACEHOLDER"
+        },
+        {
+          "id": "hc_sky_dock",
+          "when": [],
+          "text": "The sky-dock keeps its own boarding board. This post is the town's. PLACEHOLDER"
+        },
+        {
+          "id": "hc_market",
+          "when": [],
+          "text": "The Lantern Market is south of this post. PLACEHOLDER"
+        }
+      ]
+    },
+    "mahopac": {
+      "paper": "plain",
+      "reports": [
+        {
+          "id": "mp_lens",
+          "when": [],
+          "text": "The lens remembers. The minute does not move. PLACEHOLDER"
+        },
+        {
+          "id": "mp_woke",
+          "when": ["story.dream_woke"],
+          "text": "Someone woke. The path did not. PLACEHOLDER"
+        }
+      ]
+    }
+  },
+  "weather": {
+    "id": "weather_paper",
+    "when": [],
+    "text": "Rain damps the post. Snow fogs the sleeve. Night curls the star-chart. PLACEHOLDER"
+  },
+  "flyer": {
+    "id": "flyer_glimmer",
+    "slip": false,
+    "text": "Comfort lighting, complimentary. Have a bright day at Juniper's stand."
+  }
+}

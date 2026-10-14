@@ -1,6 +1,6 @@
 # Walklings smoke tests
 
-Small browser checks so a later change can show the game still boots on a phone width. Players never load this folder. There is no GitHub Actions workflow yet: run the suite locally. A new spec also gets a row in this file, and the status docs follow `.cursor/skills/walklings-docs/SKILL.md`.
+Small browser checks so a later change can show the game still boots on a phone width. Players never load this folder. There is no GitHub Actions workflow yet: run the suite locally. A new spec also gets a row in this file, and the status docs follow `.cursor/skills/walklings-docs/SKILL.md`. The Oct 14 documentation audit added no spec. Recording the town-board calls the same day added no spec. TB-1 is covered by `tests/town_board.spec.js`.
 
 ## How to run
 
@@ -84,6 +84,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 `tests/civic.spec.js` issues the Keeper1 on the Route 1 side quest, opens the phone (KeeperUAV, then Botnet after a cracked handset), enters the Keeper House, and checks that Officer Bren patrols. It also walks the Hearthmoor east path onto Route 1, checks the cut tree and the moved town sign, and checks that Officer Cald stands beside that gate.
 
 `tests/ribbit.spec.js` checks that the Ribbit feed is stable, that the quarry sale has its own line, and that the phone shows Block News and Chirp Worldwide.
+
+`tests/town_board.spec.js` (TB-1) checks the 320 project: a v2 save with `story.phone_got` and a partner, empty slip and bounty piles, PLACEHOLDER on every report, Hearthmoor's THE LANTERN POST (unchanged when `story.side` is glimmer), Cobblecrest's BRIGHT NOTICE after `story.quarry_bought`, Mahopac's empty masthead, a High Charity board, and no board of their own on Route 1, Wickerglen, Old Meadow, the quarry, or Fernbrook Heights. The phone has BOARD (`data-app=board`) and KeeperUAV (`data-app=jobs`). `PixelPets.state.v` stays 2.
 
 `tests/save_copy.spec.js` (Build 7) downloads the v2 save from the Start over dialog, wipes, and reads the file back (same party, `story.side`, and `v` 2). A newer file, a v1 file, a file that is not JSON, and a file over the size cap are refused and the current game stays.
 

@@ -814,6 +814,7 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.civic.maps)));
     applyMapPatch(W, MD.civic.slicePatch);
   }
+  if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards last: squares, then the posts
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -1263,7 +1264,7 @@ function npcLook(o){
   if (key === 'rook') return rookWithLanyard(look);
   return look;
 }
-const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && !!o.lines));
+const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && (!!o.lines || !!o.board)));
 // A saved position that is off the map, solid, on a warp or under a blocker loads on the map's safe tile (§3).
 function safeSpot(){
   const w = S.world;
@@ -1861,7 +1862,7 @@ function arriveAt(at){
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
-  placeFollower(); placeGuide(); renderEnv(); save();
+  placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
 }
 function enterDoor(dr){
@@ -2388,7 +2389,7 @@ function bumpObj(o, d, turned){
   if (o.roll) { rollProp(o); return; }
   if (o.kind === 'trainer' && !S.flags['trainer.' + o.id]) { interact(o); return; }   // an unbeaten trainer: its battle, never the hint
   if ((o.kind === 'npc' || o.kind === 'trainer') && bump.talked === o.id) { showBumpHint(o); return; }
-  if (o.kind === 'prop' && !o.lines) return;                                          // silent props just block
+  if (o.kind === 'prop' && !o.lines && !o.board) return;                             // silent props just block
   interact(o);
 }
 function showBumpHint(o){
@@ -2415,6 +2416,7 @@ function interact(o){
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
+  if (o.board) return openTownBoard();
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
   if (o.kind === 'wild') return o.scene ? runScene(o.scene, ctx) : undefined;
   if (o.scene && !scenePlayed(o.scene)) return runScene(o.scene, ctx);
@@ -4202,20 +4204,109 @@ function syncJournalBtn(){
   b.hidden = !on;
   b.classList.toggle('pulse', on && !S.phoneOpened);
 }
+// Town Board (TB-1). The paper follows who holds the town. story.side does not restyle Hearthmoor.
+// sky: tags are the live env card. Everything else is a scene condition.
+function boardTownKnown(id){ return !!(id && MD.town_board && MD.town_board.towns && MD.town_board.towns[id]); }
+function boardCond(c){
+  if (typeof c === 'string' && c.slice(0, 4) === 'sky:') { const tags = (ENV && ENV.tags) || []; return tags.indexOf(c.slice(4)) >= 0; }
+  return cond(c, false);
+}
+function boardTownHere(){
+  if (!CUR) return '';
+  if (boardTownKnown(CUR.id)) return CUR.id;
+  if (CUR.kind === 'interior' && boardTownKnown(CUR.outdoor)) return CUR.outdoor;
+  return '';
+}
+function noteBoardTown(){
+  if (!S || !CUR) return;
+  if (!S.board || typeof S.board !== 'object' || Array.isArray(S.board)) S.board = { lastTown: '' };
+  if (typeof S.board.lastTown !== 'string') S.board.lastTown = '';
+  const id = boardTownHere(); if (id) S.board.lastTown = id;
+}
+function boardCopy(id){
+  const town = boardTownKnown(id) ? MD.town_board.towns[id] : null;
+  if (!town) return { masthead: '', slogan: '', reports: [] };
+  let masthead = typeof town.masthead === 'string' ? town.masthead : '', slogan = typeof town.slogan === 'string' ? town.slogan : '';
+  for (const sl of town.sleeves || []) {
+    if (!sl || !sl.when || !sl.when.every(boardCond)) continue;
+    if (typeof sl.masthead === 'string') masthead = sl.masthead;
+    if (typeof sl.slogan === 'string') slogan = sl.slogan;
+    break;
+  }
+  const reports = (town.reports || []).filter(r => r && (!r.when || !r.when.length || r.when.every(boardCond))).map(r => String(r.text || ''));
+  const sky = MD.town_board && MD.town_board.weather;
+  if (sky && sky.text && (!sky.when || !sky.when.length || sky.when.every(boardCond))) reports.push(String(sky.text));
+  return { masthead, slogan, reports };
+}
+function townBoardView(){
+  const blank = Object.freeze({ map: '', masthead: '', slogan: '', reports: Object.freeze([]), slips: Object.freeze([]), bounties: Object.freeze([]), lastTown: '' });
+  if (!S) return blank;
+  const last = (S.board && typeof S.board.lastTown === 'string') ? S.board.lastTown : '';
+  const here = boardTownHere();
+  const map = here || (boardTownKnown(last) ? last : '');
+  const copy = map ? boardCopy(map) : { masthead: '', slogan: '', reports: [] };
+  return Object.freeze({
+    map, masthead: copy.masthead, slogan: copy.slogan,
+    reports: Object.freeze(copy.reports.slice()),
+    slips: Object.freeze([]), bounties: Object.freeze([]), lastTown: last,
+  });
+}
+function renderTownBoard(body){
+  const view = townBoardView(), pack = MD.town_board || {}, empty = pack.empty || {};
+  body.dataset.town = view.map || '';
+  const add = (cls, text) => { if (!text) return; const p = document.createElement('p'); p.className = cls; p.textContent = text; body.appendChild(p); };
+  if (!boardTownHere()) add('board-away', pack.away || 'You are between towns.');
+  add('board-mast', view.masthead);
+  add('board-slogan', view.slogan);
+  view.reports.forEach(text => add('board-report', text));
+  add('board-pile', 'Slips');
+  add('board-empty', empty.slips || 'No slips are pinned up.');
+  add('board-pile', 'Bounties');
+  add('board-empty', empty.bounties || 'No creature is named today.');
+}
+function showTownBoardPane(){
+  const body = $('#phoneBody'), friends = $('#phoneFriends'), owned = phoneOwned();
+  body.hidden = false; friends.hidden = true; body.innerHTML = '';
+  const paneTitle = $('#phonePaneTitle');
+  if (paneTitle) { paneTitle.hidden = !owned; paneTitle.textContent = 'TOWN BOARD'; }
+  renderTownBoard(body);
+  $('#phoneHome').hidden = true; $('#phonePane').hidden = false;
+  const back = $('#phoneBack'); if (back) back.hidden = !owned;
+}
+function openTownBoard(){
+  if (!S || scene || fade.busy || overlayOpen()) return;
+  clearMoves();
+  const owned = phoneOwned(), hack = phoneHack(), ov = $('#ovPhone');
+  ov.classList.toggle('hack', !!hack);
+  ov.classList.toggle('board-post', !owned);
+  if (owned) {
+    $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
+    $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
+    $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
+  } else $('#phoneTitle').textContent = 'TOWN BOARD';
+  showTownBoardPane();
+  ov.hidden = false; lockTabs(true); sfx('tap');
+}
 function openPhone(){
   if (!journalVisible() || !phoneOwned() || overlayOpen()) { sfx('denied'); return; }
   if (!S.phoneOpened) { S.phoneOpened = true; save(); }
-  const hack = phoneHack();
-  $('#ovPhone').classList.toggle('hack', hack);
+  const hack = phoneHack(), ov = $('#ovPhone');
+  ov.classList.toggle('hack', hack);
+  ov.classList.remove('board-post');
+  const back = $('#phoneBack'); if (back) back.hidden = false;
+  const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
   $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
   $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
   $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
   $('#phoneHome').hidden = false; $('#phonePane').hidden = true;
-  clearMoves(); $('#ovPhone').hidden = false; lockTabs(true); sfx('tap'); syncJournalBtn();
+  clearMoves(); ov.hidden = false; lockTabs(true); sfx('tap'); syncJournalBtn();
 }
 function closePhone(){
   if ($('#ovPhone').hidden) return;
-  $('#ovPhone').hidden = true; lockTabs(false);
+  $('#ovPhone').hidden = true; $('#ovPhone').classList.remove('board-post');
+  const back = $('#phoneBack'); if (back) back.hidden = false;
+  const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
+  lockTabs(false);
 }
 function renderRibbit(body){
   const api = window.PPRibbit;
@@ -4273,6 +4364,8 @@ function renderRibbit(body){
 }
 function phoneApp(id){
   if (id === 'journal') { closePhone(); showTab('col'); return; }
+  if (id === 'board') { showTownBoardPane(); sfx('tap'); return; }
+  const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
   const hack = phoneHack();
   const body = $('#phoneBody'), friends = $('#phoneFriends');
   body.hidden = id === 'friends'; friends.hidden = id !== 'friends';
@@ -6508,7 +6601,7 @@ function bindInput(){
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#phoneBtn').addEventListener('click', openPhone);
   $('#phoneClose').addEventListener('click', () => { sfx('tap'); closePhone(); });
-  $('#phoneBack').addEventListener('click', () => { sfx('tap'); $('#phoneHome').hidden = false; $('#phonePane').hidden = true; });
+  $('#phoneBack').addEventListener('click', () => { sfx('tap'); const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true; $('#phoneHome').hidden = false; $('#phonePane').hidden = true; });
   $$('#phoneHome .phone-app').forEach(b => b.addEventListener('click', () => phoneApp(b.dataset.app)));
   $('#questBtn').addEventListener('click', openQuest);
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
@@ -6915,7 +7008,7 @@ function boot(){
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
-  useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen();
+  useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen(); noteBoardTown();
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
   placeFollower(); placeGuide(); renderFollowerBtn(); renderKeeperName();
@@ -7058,6 +7151,7 @@ function boot(){
   Object.defineProperty(api, 'optionsReady', { enumerable: true, get(){ return performance.now() >= optArmAt; } });   // option buttons accept taps (500 ms after they appear)
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
   // WP-C: the current objective (read-only), the point the cue draws on this map, and the chain's dev check.
+  Object.defineProperty(api, 'townBoard', { enumerable: true, get(){ return townBoardView(); } });
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });

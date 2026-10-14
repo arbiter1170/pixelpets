@@ -53,7 +53,7 @@ const PPSave = (() => {
   function defaultStateV2(now = Date.now()){
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
       dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: startWorld(),
-      bag: {}, money: 0, seals: {}, flags: {}, standing: { keepers: 0, glimmer: 0 }, eggs: { incubators: [{ egg: null }], held: [] },
+      bag: {}, money: 0, seals: {}, flags: {}, standing: { keepers: 0, glimmer: 0 }, board: { lastTown: '' }, eggs: { incubators: [{ egg: null }], held: [] },
       settings: { textSpeed: 'normal', battleAnims: true, follower: true, music: true, musicVol: 0.5 },
       player: { name: null, look: null },
       meta: { migratedFrom: null, migratedAt: null, backup: null, legacy: {} } };
@@ -234,6 +234,9 @@ const PPSave = (() => {
     fill(s, 'standing', isObj, {});
     { const SC = typeof STANDING_CFG === 'object' && STANDING_CFG ? STANDING_CFG : { min: 0, max: 100 };
       for (const k of ['keepers', 'glimmer']) s.standing[k] = fin(s.standing[k]) ? clamp(Math.round(s.standing[k]), SC.min, SC.max) : 0; }
+    // TOWN BOARD: last town whose board you stood in. A missing object becomes { lastTown: "" }. No version bump.
+    fill(s, 'board', isObj, { lastTown: '' });
+    if (typeof s.board.lastTown !== 'string') s.board.lastTown = '';
     // ONLINE_SAVES: optional cloud sync fields, additive (no version bump). Absent stays absent (= rev 0, no real change yet).
     if (has(s, 'rev') && !(Number.isInteger(s.rev) && s.rev >= 0)) s.rev = 0;
     if (has(s, 'updatedAt') && !(fin(s.updatedAt) && s.updatedAt > 0)) delete s.updatedAt;
