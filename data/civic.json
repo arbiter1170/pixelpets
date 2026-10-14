@@ -1,0 +1,248 @@
+{
+  "spec": "CIVIC",
+  "version": "1",
+  "status": "Keeper House, town officers, Keeper1 phone, cracked handset.",
+  "_about": "Ours, not a design copy. Hearthmoor stays the Keepers' town. Glimmerwell buildings read mint. The phone is a side quest on Route 1.",
+  "looks": {
+    "officer": {"skin": "3", "hair": "short", "hairCol": "d", "outfit": "coat", "outfitCol": "g", "accent": "y"},
+    "clerk": {"skin": "4", "hair": "bun", "hairCol": "h", "outfit": "coat", "outfitCol": "g", "accent": "w"},
+    "captain": {"skin": "5", "hair": "short", "hairCol": "k", "outfit": "coat", "outfitCol": "g", "accent": "y"},
+    "glimclerk": {"skin": "2", "hair": "short", "hairCol": "s", "outfit": "coat", "outfitCol": "c", "accent": "l"}
+  },
+  "speakers": {
+    "Officer Cald": "officer",
+    "Officer Ness": "officer",
+    "Officer Bren": "officer",
+    "Sergeant Bram": "officer",
+    "Archivist Mo": "clerk",
+    "Clerk Wynn": "clerk",
+    "Captain Lumen": "captain",
+    "Operator Rue": "officer",
+    "Constable Rue": "officer",
+    "Watch Ivo": "officer",
+    "Clerk Mint": "glimclerk"
+  },
+  "slicePatch": {
+    "maps": {
+      "hearthmoor": {
+        "gridRows": {
+          "9": "TgggggggggRRRRpgggggTTTT",
+          "10": "TggggggggfHHHHpRRRRgTTTT"
+        },
+        "addObjs": [
+          {"kind": "door", "id": "hm_hq", "x": 11, "y": 11, "to": "hm_hq_f1", "tx": 4, "ty": 6, "facing": "up"},
+          {"kind": "sign", "id": "hm_hq_sign", "x": 9, "y": 11, "text": "KEEPER HOUSE · Hearthmoor watch. The lantern's law."},
+          {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 4, "y": 8, "facing": "right", "patrol": [[4, 8], [8, 8], [12, 8], [8, 8]], "lines": {
+            "story.side=glimmer": "Mint vest. Not welcome on this road.",
+            "standing.keepers>=3": "Your name is on the good list. Walk easy.",
+            "standing.keepers>=1": "A keeper on the road. Glad you are out.",
+            "story.side=keepers": "New pledge. The lantern still knows you.",
+            "else": "Citizen. Say your piece, then step back."
+          }},
+          {"kind": "npc", "id": "hm_ness", "name": "Officer Ness", "look": "officer", "x": 8, "y": 11, "facing": "down", "lines": {
+            "story.side=glimmer": "The House is ours. You may look, not sit.",
+            "standing.keepers>=3": "Captain Lumen asked after you this morning.",
+            "standing.keepers>=1": "Door's open for a keeper. Come through.",
+            "story.side=keepers": "New to the coat? Bram will sign you in.",
+            "else": "Citizen. The House is for the watch first."
+          }}
+        ]
+      },
+      "route1": {
+        "addObjs": [
+          {"kind": "trigger", "id": "r1_phone", "x": 2, "y": 8, "r": 0, "when": ["story.starter_received", "!story.phone_got"], "scene": "phone_grant"},
+          {"kind": "npc", "id": "r1_ness", "name": "Officer Ness", "look": "officer", "x": 4, "y": 9, "facing": "up", "when": ["story.phone_got"], "lines": {
+            "story.side=glimmer": "That handset still sits on our wires.",
+            "standing.keepers>=1": "Keeper1 behaving? Good. Walk safe.",
+            "else": "Keeper1 is yours. The wires stay ours."
+          }}
+        ]
+      },
+      "fernbrook": {
+        "addObjs": [
+          {"kind": "npc", "id": "fb_constable", "name": "Constable Rue", "look": "officer", "x": 4, "y": 9, "facing": "up", "lines": {
+            "story.side=glimmer": "Mint in the orchard. I am not smiling.",
+            "standing.keepers>=3": "Fernbrook is glad of you. Truly.",
+            "standing.keepers>=1": "A keeper in the square. Welcome.",
+            "story.side=keepers": "New pledge. The trees still count you.",
+            "else": "Citizen. Orchard rules still apply to you."
+          }}
+        ]
+      },
+      "route2": {
+        "addObjs": [
+          {"kind": "npc", "id": "r2_watch", "name": "Watch Ivo", "look": "officer", "x": 4, "y": 9, "facing": "up", "lines": {
+            "story.side=glimmer": "Census tents. I do not like the lamps.",
+            "standing.keepers>=1": "The watch walked this far with you.",
+            "else": "Citizen. Stay on the path if you can."
+          }}
+        ]
+      },
+      "route2_glen": {
+        "addObjs": [
+          {"kind": "npc", "id": "glen_watch", "name": "Watch Ivo", "look": "officer", "x": 4, "y": 8, "facing": "right", "lines": {
+            "story.side=glimmer": "You like these lamps. I am writing that.",
+            "else": "These lamps are not the lantern. I am watching."
+          }}
+        ]
+      },
+      "cobblecrest": {
+        "addObjs": [
+          {"kind": "npc", "id": "cc_watch", "name": "Watch Ivo", "look": "officer", "x": 4, "y": 9, "facing": "up", "lines": {
+            "story.side=glimmer": "You sold the seam. I remember the vote.",
+            "standing.keepers>=1": "Stone town, keeper heart. Hello.",
+            "else": "Citizen. The quarry road is watched."
+          }},
+          {"kind": "npc", "id": "cc_mint", "name": "Clerk Mint", "look": "glimclerk", "x": 12, "y": 9, "facing": "down", "when": ["story.quarry_bought"], "lines": {
+            "story.side=glimmer": "Colleague. The seam is ours. Smile.",
+            "else": "Bright Quarry welcomes a visitor. Briefly."
+          }}
+        ]
+      }
+    }
+  },
+  "maps": {
+    "hm_hq_f1": {
+      "name": "Keeper House", "kind": "interior", "outdoor": "hearthmoor", "backdrop": "town",
+      "w": 9, "h": 8, "spawns": null, "zones": [], "safe": {"x": 4, "y": 6},
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#..===..#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "hq_out", "x": 4, "y": 7, "to": "hearthmoor", "tx": 11, "ty": 11, "facing": "down"},
+        {"kind": "warp", "id": "hq_up", "x": 7, "y": 3, "to": "hm_hq_f2", "tx": 7, "ty": 3, "facing": "up"},
+        {"kind": "sign", "id": "hq_stair_sign", "x": 7, "y": 4, "text": "STAIRS · Captain Lumen and the radio, upstairs."},
+        {"kind": "npc", "id": "hq_bram", "name": "Sergeant Bram", "look": "officer", "x": 2, "y": 3, "facing": "down", "lines": {
+          "!story.met_bram": "@hq_bram",
+          "story.side=glimmer": "Doorway only. You do not sit here.",
+          "standing.keepers>=3": "Your name is on the good list. Come in.",
+          "standing.keepers>=1": "A keeper on the step. You may come in.",
+          "story.side=keepers": "New pledge. The lantern still knows you.",
+          "else": "Citizen. Say your piece, then step back."
+        }},
+        {"kind": "npc", "id": "hq_mo", "name": "Archivist Mo", "look": "clerk", "x": 5, "y": 4, "facing": "left", "lines": {
+          "!story.met_mo": "@hq_mo",
+          "story.side=glimmer": "I will note the mint. The books will too.",
+          "standing.keepers>=1": "The shelf is open to a keeper. Read.",
+          "else": "Citizen. The old books are not for borrowing."
+        }},
+        {"kind": "npc", "id": "hq_wynn", "name": "Clerk Wynn", "look": "clerk", "x": 2, "y": 5, "facing": "right", "lines": {
+          "!story.met_wynn": "@hq_wynn",
+          "story.side=glimmer": "Your notes still copy to my book.",
+          "standing.keepers>=1": "I filed you under friend of the house.",
+          "else": "Citizen. Forms are on the left. Wait there."
+        }}
+      ]
+    },
+    "hm_hq_f2": {
+      "name": "Keeper House, upstairs", "kind": "interior", "outdoor": "hearthmoor", "backdrop": "town",
+      "w": 9, "h": 8, "spawns": null, "zones": [], "safe": {"x": 4, "y": 6},
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#..===..#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "hq_down", "x": 7, "y": 3, "to": "hm_hq_f1", "tx": 7, "ty": 4, "facing": "down"},
+        {"kind": "sign", "id": "hq_radio_sign", "x": 2, "y": 4, "text": "RADIO · Every Keeper1 checks in. Even the quiet ones."},
+        {"kind": "npc", "id": "hq_lumen", "name": "Captain Lumen", "look": "captain", "x": 4, "y": 3, "facing": "down", "lines": {
+          "!story.met_lumen": "@hq_lumen",
+          "story.side=glimmer": "You are in my office. Make it short.",
+          "standing.keepers>=3": "I kept a chair for you. Sit, friend.",
+          "standing.keepers>=1": "The watch is glad of your name.",
+          "story.side=keepers": "New pledge. Do the small jobs first.",
+          "else": "Citizen. Hats off. Then you may speak."
+        }},
+        {"kind": "npc", "id": "hq_rue", "name": "Operator Rue", "look": "officer", "x": 2, "y": 3, "facing": "right", "lines": {
+          "!story.met_rue": "@hq_rue",
+          "story.side=glimmer": "I can hear the room around your set.",
+          "standing.keepers>=1": "Your Keeper1 sings a clean signal.",
+          "else": "Citizen. If the handset is on, so am I."
+        }}
+      ]
+    }
+  },
+  "scenes": {
+    "phone_grant": [
+      ["say", "", "Two green coats step out of the grass and stop you on the path."],
+      ["say", "Officer Cald", "Citizen. The wild starts here. So does the service."],
+      ["say", "Officer Ness", "Every person under the lantern gets a Keeper1. It is free."],
+      ["say", "Officer Cald", "Calls, notes, friends. The handset is yours to hold."],
+      ["say", "Officer Ness", "The poles, the wires, the companies: those stay with us."],
+      ["say", "Officer Cald", "A watched path is a safe path. Have a lawful day."],
+      ["give", "keeper1", 1],
+      ["setFlag", "story.phone_got", true]
+    ],
+    "hq_bram": [
+      ["if", "story.side=glimmer", [
+        ["say", "Sergeant Bram", "You can stand in the doorway. You do not sit."],
+        ["say", "Sergeant Bram", "The lantern keeps this house. Your company does not."],
+        ["say", "Sergeant Bram", "If you need a form, ask. If you need a friend, look elsewhere."],
+        ["setFlag", "story.met_bram", true]
+      ], [
+        ["say", "Sergeant Bram", "Sergeant Bram. I run the door, and Bren walks the road."],
+        ["say", "Sergeant Bram", "Before you pledge, you are a citizen. The watch eats first."],
+        ["say", "Sergeant Bram", "Pledge, and do the work, and the chairs get warmer."],
+        ["setFlag", "story.met_bram", true]
+      ]]
+    ],
+    "hq_mo": [
+      ["if", "story.side=glimmer", [
+        ["say", "Archivist Mo", "I will write down the mint. I write down everything."],
+        ["say", "Archivist Mo", "Your machine has been leaking a long, long time."],
+        ["setFlag", "story.met_mo", true]
+      ], [
+        ["say", "Archivist Mo", "I keep the old books. Some of them are not comfortable."],
+        ["say", "Archivist Mo", "The Arbiter, over in their house, has been emitting for ages."],
+        ["say", "Archivist Mo", "People who stay near it change. A little more metal, each birth."],
+        ["say", "Archivist Mo", "The books fear a child born already listening. We have not seen one."],
+        ["say", "Archivist Mo", "We do not hurt Walklings. We do not cheer that fear. We record it."],
+        ["say", "Archivist Mo", "If you ever wear their crest, look at your own hands."],
+        ["setFlag", "story.met_mo", true]
+      ]]
+    ],
+    "hq_wynn": [
+      ["say", "Clerk Wynn", "I copy every Keeper1 note into the book. That is the law, said plainly."],
+      ["say", "Clerk Wynn", "Their thin handset still sits on our wires. Cracked is not hidden."],
+      ["setFlag", "story.met_wynn", true]
+    ],
+    "hq_lumen": [
+      ["if", "story.side=glimmer", [
+        ["say", "Captain Lumen", "You are in my office. Say the short version."],
+        ["say", "Captain Lumen", "KeeperUAV is our board. You will not be taking jobs from it."],
+        ["setFlag", "story.met_lumen", true]
+      ], [
+        ["say", "Captain Lumen", "Captain Lumen. The watch is mine. The town is the lantern's."],
+        ["say", "Captain Lumen", "A citizen waits in the doorway. A keeper is offered a chair."],
+        ["say", "Captain Lumen", "A mint vest is asked to leave. Rank is not a secret here."],
+        ["say", "Captain Lumen", "KeeperUAV will list jobs when the desk is ready. The board is blank."],
+        ["setFlag", "story.met_lumen", true]
+      ]]
+    ],
+    "hq_rue": [
+      ["say", "Operator Rue", "If a handset is on, I can hear the room around it."],
+      ["say", "Operator Rue", "We own the poles from this hill to the coast. There is no other net."],
+      ["setFlag", "story.met_rue", true]
+    ]
+  },
+  "flags": {
+    "story.phone_got": "Route 1 side quest. The Keeper1 handset is issued. Not a main-chain step.",
+    "story.met_bram": "Sergeant Bram's first talk in the Keeper House.",
+    "story.met_mo": "Archivist Mo's first talk.",
+    "story.met_wynn": "Clerk Wynn's first talk.",
+    "story.met_lumen": "Captain Lumen's first talk.",
+    "story.met_rue": "Operator Rue's first talk."
+  }
+}

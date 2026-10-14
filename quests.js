@@ -30,7 +30,8 @@
     'story.know_us', 'story.heights_path', 'story.stock_warned', 'story.rx_enter', 'story.met_nia', 'story.rx_f1',
     'story.met_cal', 'story.rx_f2', 'story.saw_arbiter', 'story.rx_f3', 'story.rx_done', 'story.sm_yard', 'story.sm_look',
     'story.met_jed', 'story.sm_freed', 'story.sm_haul', 'story.sm_done',
-    'story.rook_end', 'story.rook_bond'];
+    'story.rook_end', 'story.rook_bond',
+    'story.met_bram', 'story.met_mo', 'story.met_wynn', 'story.met_lumen', 'story.met_rue'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -119,6 +120,14 @@
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];
 
+  // Side quests. They do not move the main chain. The first one is the issued phone on Route 1.
+  const SIDE = [
+    { id: 'phone', when: ['story.starter_received'], done: ['story.phone_got'],
+      text: 'Keeper officers are where the wild starts. They have a handset for you.',
+      place: 'Route 1, west end',
+      target: { map: 'route1', x: 2, y: 8 } },
+  ];
+
   function evalCond(c, st){
     if (c === 'else') return true;
     let neg = false; if (c[0] === '!') { neg = true; c = c.slice(1); }
@@ -178,7 +187,8 @@
     const scanMaps = maps => { for (const m of Object.values(maps || {})) for (const o of (m && m.objs) || []) if (typeof o.setFlag === 'string') written.add(o.setFlag); };
     const scanPatch = p => { if (!p) return; scanScenes(p.scenes); for (const pt of Object.values(p.maps || {})) for (const o of [].concat(pt.addObjs || [], pt.replaceObjs || [])) if (typeof o.setFlag === 'string') written.add(o.setFlag); };
     for (const src of Object.values(MD || {})) { if (!src) continue; scanScenes(src.scenes); scanMaps(src.maps); scanMaps(src.rooms); scanPatch(src.slicePatch); scanPatch(src.route2Patch); }
-    const doneFlags = new Set(); for (const e of CHAIN) for (const c of e.done) doneFlags.add(c.replace(/^!/, '').split('=')[0]);
+    const doneFlags = new Set();
+    for (const e of CHAIN.concat(SIDE)) for (const c of e.done) doneFlags.add(c.replace(/^!/, '').split('=')[0]);
     for (const f of written) if (f.startsWith('story.') && !doneFlags.has(f) && !NOT_STEPS.includes(f)) bad.push('flag not on the chain: ' + f);
     const ids = new Set();
     const copyOk = (e, tag) => {
@@ -193,10 +203,15 @@
       if (e.target && !(typeof e.target.map === 'string' && Number.isInteger(e.target.x) && Number.isInteger(e.target.y))) bad.push('bad target: ' + e.id);
     }
     if (CHAIN[CHAIN.length - 1].done.length) bad.push('the last entry must never be done');
+    for (const e of SIDE) copyOk(e, 'side ' + e.id);
     return bad;
   }
+  function sideCurrent(st){
+    for (const e of SIDE) if (!ownDone(e, st) && eligible(e, st)) return e;
+    return null;
+  }
 
-  const api = { CHAIN, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, completed, byId, resolve, devCheck };
+  const api = { CHAIN, SIDE, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, sideCurrent, completed, byId, resolve, devCheck };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PPQuests = api;
 })(typeof window !== 'undefined' ? window : globalThis);

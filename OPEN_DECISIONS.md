@@ -33,6 +33,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 | D30 | Ken in the hold | The note stopped at "Town police encourage" | Officer Ken interviews the Pomlet, Pebblit, and Fuzzwick with you, then says the watch will encourage them up the path and will not drag them | `sm_free` in `data/heights.json` |
 | D28 | Good-path plot | The good-quest note stopped after "underground smuggling ring" | Built as Fen's tunnel investigation: Jed the clerk, Mara Quill, crates opened, Walklings hop home. Revise if the rest of that note arrives | `data/heights.json` scenes `sm_*` |
 | D29 | Group battles | v1: two foes on the field, both hit the player, you move first, TARGET picks, an ally hits the weakest foe on the last fight only. Foes do not target the ally | As stated. A fuller 2v2 (foes can hit the ally) is not built | `openBattle` / `foesGroupAct` in `game.js` |
+| D31 | The slow change | How far does Glimmerwell Standing rewrite the keeper's body, and is a later generation born already listening? | The walk sprite picks up mint and silver as Glimmerwell tier rises. The saved look is not rewritten. Archivist Mo says the Arbiter has been emitting for a very long time, and the books fear a child born already listening. No such birth is in the game | `shownLook` in `game.js`; `hq_mo` in `data/civic.json` |
 
 ## Not started, blocked on people
 
@@ -41,7 +42,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 - R5 later appearances (D25): the cart scenes are in. Ally vs parted, and whether Rook shows up again, are still open.
 - Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
 - Brinewick, Trial Hall #3, Seal 3: no map and no one-pager. Do not start the region until that page exists.
-- Next unblocked coding builds: the box screen, then the installable app (NEXT_PLAN §3 Builds 8–9). Export before Start over shipped in Build 7.
+- Next unblocked coding builds: the box screen, then the installable app (NEXT_PLAN §3 Builds 8–9). Export before Start over shipped in Build 7. The Keeper House and Keeper1 phone shipped as Q15.
 
 ## Settled
 

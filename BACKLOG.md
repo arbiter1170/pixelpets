@@ -22,7 +22,7 @@ Decisions recorded (Vincent, Oct 13, 2026):
 - Trial Hall replacement: Fernbrook slot 1 is the Bright Pavilion Tour (built in Build 3). Cobblecrest slot 2 is the Sacrifice, Quota as the free floor (stub built in Build 5; the real cost is still open). The Keepers path keeps the Halls as built. The Audit battle remains the Tour's optional last stop.
 - Capture: "no combat performed" = the creature is at full health in this encounter.
 
-Queue (suggested order top to bottom). Q1–Q12 and Builds 4–7 shipped, with the Sacrifice as a stub. Next numbered game builds are Q13–Q14 (NEXT_PLAN §3). Brinewick waits on a one-pager.
+Queue (suggested order top to bottom). Q1–Q12, Q15, and Builds 4–7 shipped, with the Sacrifice as a stub. Next numbered game builds are still Q13–Q14 (the box screen, then the installable app). Brinewick waits on a one-pager.
 
 | # | Item | Size | Blocked on |
 |---|---|---|---|
@@ -40,6 +40,7 @@ Queue (suggested order top to bottom). Q1–Q12 and Builds 4–7 shipped, with t
 | Q12 | **Build 7** Export a save before Start over | S | **BUILT.** Settings and the Start over dialog download `walklings-save.json`. Read a copy replaces the game on this device. `v` stays 2. A short hold, Cancel, a v1 file, and an oversized file leave the current game in place. A fresh game can open the gear during the opening scene. Tests: `tests/save_copy.spec.js` and the settings smoke in `tests/smoke.spec.js` |
 | Q13 | **Build 8** Box screen: reorder, release, orphan recovery row | M | Unblocked. Do not bump save `v`. NEXT_PLAN §3 Build 8 |
 | Q14 | **Build 9** Installable app (manifest + service worker, offline) | S-M | Unblocked. No new network calls. NEXT_PLAN §3 Build 9 |
+| Q15 | **Civic** Keeper House, town officers, Keeper1 phone | M | **BUILT.** Hearthmoor patrol and a two-floor Keeper House. Faction roof colors. Route 1 side quest issues Keeper1. QUEST is the bottom-bar tab. Friends, Journal, Contacts, Notes, KeeperUAV, and Botnet live in the phone. Cracked Handset comes with joining Glimmerwell. Blue side-quest chevron. Tests: `tests/civic.spec.js`. Lore of the slow change: D31 |
 
 Everything below is the earlier backlog and status history.
 
