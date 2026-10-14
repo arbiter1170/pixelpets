@@ -1,0 +1,49 @@
+---
+name: walklings-docs
+description: |
+  Use when a Walklings change should update status docs, or when those docs may have drifted from the code.
+  Touch BACKLOG, CHANGELOG, NEXT_PLAN, OPEN_DECISIONS, README, and tests/README together.
+  Do not renumber an existing Q or D id. Leave save v at 2. Quest edits also follow walklings-quests.
+---
+
+# Walklings docs
+
+Use this after a code change, and when a session is only here to correct status lines. The code and the tests are the source for what the game does. These files are the source for what is next.
+
+## Read first
+
+1. `.cursor/skills/README.md`. That index is the list of skills. Quest, slip, and bounty work also follows `walklings-quests`.
+2. `BACKLOG.md`, the "Next work" section and the queue table. Status words that already exist: **BUILT**, **DONE**, **SCOPED, NOT STARTED**.
+3. `CHANGELOG.md`. Newest entry first. The build stamp is `version.json`.
+4. `NEXT_PLAN.md` §3. It is the queue an implementer follows.
+5. `OPEN_DECISIONS.md`. Open rows are unanswered. Settled rows stay in Settled with the date and the call.
+6. `README.md` when a player can see the change. `tests/README.md` when a spec was added.
+
+## What to update
+
+| Change | Also update |
+|---|---|
+| Player-visible behavior | `README.md` in the section that already describes that screen |
+| A new or finished backlog row | `BACKLOG.md` status, `NEXT_PLAN.md` §3, `CHANGELOG.md` |
+| A new guess, or a guess the code now answers | `OPEN_DECISIONS.md` |
+| A new Playwright spec | `tests/README.md` |
+| A new skill | `.cursor/skills/README.md` and that skill's `SKILL.md` |
+
+One feature updates those files in the same commit as the code. Do not leave "next is …" pointing at work this commit just finished.
+
+## Rules
+
+- Save format stays `pixelpets.save.v2` with `v: 2`. Say so when a change touches the save. `python3 tools/bump_build.py` stamps the site cache. It is not a save migration. Run it only when `index.html` script or link tags changed, then record that stamp on the changelog line.
+- Do not reuse or renumber a Q id or a D id that already appears. The next D id is one past the highest row in `OPEN_DECISIONS.md`. Town boards own D37–D49 and backlog Q19. A second meaning for those ids is a collision to report, not a silent rewrite.
+- Do not mark town boards, Brinewick, Hall #3, or Seal 3 as built. Town boards are scoped in `TOWN_BOARD.md` and blocked on the open D-rows. Brinewick still needs a one-pager.
+- A line may say the work is in the game only when that code is on this branch and the commit is about to land. Do not write "on `main`" for a commit that is still only on a feature branch.
+- Keep player-facing names: Walklings, the Amberwild, the WALKLINGS tab. The storage keys stay `pixelpets.*`.
+- Placeholder dialogue stays marked, and the open decision that owns it stays open.
+
+## Done
+
+- `BACKLOG.md` "Next work" matches the queue table.
+- `CHANGELOG.md` has a newest-first entry for the change.
+- `NEXT_PLAN.md` §3 does not still assign the finished work as the next build.
+- A new spec is named in `tests/README.md`.
+- No second Q19 and no second D37–D49 were introduced.

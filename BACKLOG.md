@@ -5,7 +5,7 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
-Act 1 is on `main`: Builds 4–6, Fernbrook Heights, the save copy, the Keeper House, Ribbit, and the open east gate landed with Mahopac, High Charity, the lantern rest, faction music, the debug panel, and the pass-the-phone games. Do not rebuild them. Q17 (the box screen) and Q18 (the installable app) are built. Detail is in [NEXT_PLAN.md](NEXT_PLAN.md) §3. Branch provenance is in [BRANCH_LOG.md](BRANCH_LOG.md).
+Act 1 is in the game: Builds 4–6, Fernbrook Heights, the save copy, the Keeper House, Ribbit, and the open east gate, with Mahopac, High Charity, the lantern rest, faction music, the debug panel, and the pass-the-phone games. Do not rebuild them. Q17 (the box screen) and Q18 (the installable app) are built. Next scoped work is Q19, town boards, blocked on D37–D49. Brinewick still waits on a one-pager. Detail is in [NEXT_PLAN.md](NEXT_PLAN.md) §3. Agent skills are in [.cursor/skills/README.md](.cursor/skills/README.md). Branch provenance is in [BRANCH_LOG.md](BRANCH_LOG.md).
 
 Where things are (hand these to the right person or agent):
 
@@ -16,6 +16,7 @@ Where things are (hand these to the right person or agent):
 | [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) | **The designer bot** (a different agent from the implementer) | The prompt: every designer item, the files to open, the engine that already exists, the delivery format, and the phase order |
 | [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat. Town boards are D37–D49, scoped and not built |
 | [TOWN_BOARD.md](TOWN_BOARD.md) | **The implementing agent, after the D-rows** | Bulletin boards, squares, the Town Board phone app, propaganda, reports, and the unwired slip catalog |
+| [.cursor/skills/README.md](.cursor/skills/README.md) | **Every agent** | Skill index. `walklings-quests` for side quests and slips. `walklings-docs` for status docs |
 
 Past examples of art and writing for either reader: `DESIGN_HANDOFF.md` section 1, "Reference examples in this repo". In short: pixel art is in `sprites.js` (palette, glyphs, world props, creatures), `keeper.js` (people looks), `ITEM_ART` and `SEAL_ART` in `game.js`; writing is in the `scenes`, `trainers` and `dialog` blocks of `data/*.json` and in `BATTLE_TEXT` (`moves.js`) and `ITEMS` (`game.js`). `data/cobblecrest.json` is the best complete example of a designer hand-off (it carries its own `artRequests`, `looks`, `speakers`, `newNames`, `decisions`). Screenshots of the live UI are in `screenshots/`.
 
@@ -27,7 +28,7 @@ Decisions recorded (Vincent, Oct 13, 2026):
 
 Also on `main` from the other line: Mahopac (D27), the 5-Acorn lantern rest (D28), High Charity and the Event Hall games, faction music, and the password-gated debug panel.
 
-Queue (suggested order top to bottom). Q1–Q12, Q15, Builds 4–7, the Keeper House, and Ribbit are on `main`, with the Sacrifice as a stub. Q17 (the box screen) and Q18 (the installable app) are built. Brinewick waits on a one-pager.
+Queue (suggested order top to bottom). Q1–Q12, Q15, Builds 4–7, the Keeper House, and Ribbit are in the game, with the Sacrifice as a stub. Q17 (the box screen) and Q18 (the installable app) are built. Next scoped work is Q19, town boards, blocked on D37–D49. Brinewick waits on a one-pager.
 
 | # | Item | Size | Blocked on |
 |---|---|---|---|

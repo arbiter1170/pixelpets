@@ -67,7 +67,7 @@ Nothing in this section is in the game. The map tiles, the draft reports, and th
 - Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
 - Brinewick, Trial Hall #3, Seal 3: no map and no one-pager.
 - The box screen and the installable app are built. Brinewick still waits on a one-pager.
-- Town boards (D37–D49) are scoped in `TOWN_BOARD.md` and are not started.
+- Town boards (Q19, D37–D49) are scoped in `TOWN_BOARD.md` and are not started. That is the next scoped work. The rows still have to be settled before any of it is built.
 
 ## Settled
 

@@ -1,6 +1,11 @@
 # Changelog
 
-Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3.
+Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
+
+## Documentation skills
+
+- Skills live in `.cursor/skills/`. The index is `.cursor/skills/README.md`. `walklings-quests` covers side quests, town-board slips, and bounties. `walklings-docs` covers backlog, changelog, next steps, and the other status docs.
+- After the box and the installable app, the next scoped work is Q19, town boards. It stays blocked on D37–D49. Brinewick still waits on a one-pager.
 
 ## 20261014-0751 — Box screen and installable app (Q17, Q18)
 

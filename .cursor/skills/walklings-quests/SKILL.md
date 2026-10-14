@@ -9,7 +9,7 @@ description: |
 
 # Walklings quests
 
-Use this when a session adds or edits a side quest, a town-board slip, or a bounty. The main story chain is already shipped. A new job hangs off to the side.
+Use this when a session adds or edits a side quest, a town-board slip, or a bounty. The main story chain is already shipped. A new job hangs off to the side. Status docs for that change follow `.cursor/skills/walklings-docs/SKILL.md`. The skill index is `.cursor/skills/README.md`.
 
 Town boards are scoped in `TOWN_BOARD.md` and not built. D37–D49 in `OPEN_DECISIONS.md` are unanswered. Do not place a board, retile a square, or invent a slip until the rows that block that work are settled. An empty board (reports, no slips) is TB-1 in that file. The first real slip is TB-3, and it is one slip: Cald's gate count.
 

@@ -1,6 +1,6 @@
 # Walklings: what's next (queue, Oct 14, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack on `main`. Q17 the box screen and Q18 the installable app are built. Do not rebuild Builds 4–6. Which branch held which piece is in `BRANCH_LOG.md`.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack. Q17 the box screen and Q18 the installable app are built. Next scoped work is Q19, town boards, blocked on D37–D49 in `OPEN_DECISIONS.md` and written up in `TOWN_BOARD.md`. Do not rebuild Builds 4–6. Agent skills are indexed in `.cursor/skills/README.md`. Which branch held which piece is in `BRANCH_LOG.md`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,8 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17 and Q18 are built on this branch |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17 and Q18 are built. Q19 town boards are scoped and not started |
+| `.cursor/skills/README.md` | Every agent | Skill index. Quest work uses `walklings-quests`. Status docs use `walklings-docs` |
 | `TOWN_BOARD.md` | The implementing agent, after D37–D49 | Town bulletin boards and the Town Board phone app. Not started. Squares, propaganda, reports, and unwired slips |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
@@ -448,7 +449,7 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Oct 14 queue
 
-Do these in order. Each one is one PR. Q16 is on `main`. Q17 and Q18 are shipped. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR.
+Q16 is done. Q17 and Q18 are shipped. Next scoped work is Q19, town boards, and it stays blocked until the D37–D49 rows that gate it are settled. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ### Q16 — Land the stranded Act 1 stack — **done**
 
