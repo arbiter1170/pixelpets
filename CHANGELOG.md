@@ -5,7 +5,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 ## 2026-10-14 — Town boards TB-1 and the two squares (no new build stamp)
 
 - Empty boards stand in Hearthmoor (8, 7), Fernbrook (8, 6), Cobblecrest (16, 9), High Charity (31, 17), and Mahopac (11, 8). Fernbrook also has the Comfort flyer at (9, 6). Hearthmoor rows 7 and 9 and Fernbrook rows 6 and 7 are the squares. The phone app is BOARD, and the pane title is TOWN BOARD. Reports are marked PLACEHOLDER. Slips and bounties stay empty. A glimmer pledge still reads the Lantern Post in Hearthmoor. Cobblecrest becomes Bright Notice after the quarry buyout. Save `v` stays 2. `index.html` script and link tags did not change, so `version.json` stays `20261014-0942`.
-- The board sprites are the grids in `data/town_board_art.json`. Brinewick, Hall #3, Seal 3, Q22, and TB-3 are not built.
+- The board sprites are the grids in `data/town_board_art.json`. `tests/town_board.spec.js` covers the empty piles, the mastheads, and the phone app at 320. Brinewick, Hall #3, Seal 3, Q22, and TB-3 are not built.
 
 ## 2026-10-14 — Town-board calls settled (no new build stamp)
 
