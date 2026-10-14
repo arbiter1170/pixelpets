@@ -1,6 +1,6 @@
 # Walklings: what's next (queue, Oct 14, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack on `main`. Next is Q17 the box screen, then Q18 the installable app. Do not rebuild Builds 4–6. Which branch held which piece is in `BRANCH_LOG.md`.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack on `main`. Q17 the box screen and Q18 the installable app are built. Do not rebuild Builds 4–6. Which branch held which piece is in `BRANCH_LOG.md`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,7 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the Oct 14 queue (section 3): Q16, Q17, Q18 |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the Oct 14 queue (section 3): Q16 is done, Q17 and Q18 are built |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
 
@@ -447,7 +447,7 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Oct 14 queue
 
-Do these in order. Each one is one PR. Q16 is the only one that starts now. Q17 waits for Q16 to be on `main`. Q18 waits for Q17. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / this file in the same PR.
+Do these in order. Each one is one PR. Q16 is on `main`. Q17 and Q18 are shipped. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR.
 
 ### Q16 — Land the stranded Act 1 stack — **done**
 
@@ -497,13 +497,13 @@ Acceptance:
 
 Leave Brinewick, Friends, a second Sacrifice, and daily Standing out of this PR.
 
-### Q17 — Box screen — M — after Q16
+### Q17 — Box screen — M — **shipped**
 
-The box is a list under the party on the Pets tab. Add reorder, release, and a row for `orphans`. Release asks for a confirm, then removes that Walkling from the party and the box. The orphan row shows the raw data that could not be migrated. Do not bump `v`. Unknown fields stay on the Walkling.
+Shipped on the WALKLINGS tab. The party is labeled, then WALKLING-BOX, then LEFT BEHIND. UP and DOWN reorder inside the list they are on. RELEASE asks, then LET THEM GO removes that Walkling; KEEP THEM leaves them. Releasing the partner promotes the next party member, or the first boxed Walkling when the party is empty. The orphan row shows the reason and the raw data that could not be migrated. Release is refused during a scene or a battle. `v` stays 2. Unknown fields stay on the Walkling.
 
-### Q18 — Installable app — S–M — after Q17
+### Q18 — Installable app — S–M — **shipped**
 
-Add a manifest and a service worker so the game can be added to the home screen and opened offline. No new network calls. Fonts stay self-hosted. The optional location lookup stays a network call and still falls back to meadow when it cannot run.
+Shipped. `manifest.json` and `sw.js` let the game be added to the home screen and opened offline. The worker caches same-origin files only. `version.json` stays on the network so a newer deploy can still announce itself. No new network calls. Fonts stay self-hosted. The optional location lookup stays a network call and still falls back to meadow when it cannot run. The icon is a sprout Walkling on `#1a1c2c` (`icons/icon-192.png`, `icons/icon-512.png`, `icons/apple-touch-icon.png`).
 
 ### Hold
 
@@ -562,7 +562,7 @@ Do not wait on bond. `story.rook_bond` may still increment on Route 2 / quarry c
 
 After this build both paths end at the same "COMING LATER · Brinewick" card. Brinewick / Hall #3 / Seal 3 is a later map and needs a spec that does not exist yet.
 
-The Oct 13 line "do not start the installable app until Builds 4–6 close" is superseded by this queue: Q16 lands those builds, Q17 is the box screen, Q18 is the installable app. Brinewick and Friends stay on hold. Trainer sight lines still do not re-arm after a loss (`canSpot` requires `!spotted.<id>`).
+The Oct 13 line "do not start the installable app until Builds 4–6 close" is superseded. Q16 landed those builds. Q17 and Q18 are built. Brinewick and Friends stay on hold. Trainer sight lines still do not re-arm after a loss (`canSpot` requires `!spotted.<id>`).
 
 Conventions for whoever implements (from `README.md` and `BACKLOG.md`):
 - No build step; all paths relative; fonts self-hosted; no new network use.

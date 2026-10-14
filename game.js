@@ -4731,11 +4731,13 @@ function renderCollection(){
     else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
       b.addEventListener('click', () => { sfx('tap'); makePartner(p.id); save(); updateHUD(); renderCollection(); toast(petName(p) + ' is your partner now!'); });
       c.append(b); }
+    c.append(petActs(p, inBox));
     list.append(c);
   };
-  if (S.box.length) label('Party ' + S.party.length + '/' + PPSave.PARTY_MAX);
+  if (S.box.length || S.party.length) label('Party ' + S.party.length + '/' + PPSave.PARTY_MAX);
   S.party.forEach(p => card(p, false));
   if (S.box.length) { label('WALKLING-BOX ' + S.box.length); S.box.forEach(p => card(p, true)); }
+  if (S.orphans && S.orphans.length) { label('LEFT BEHIND ' + S.orphans.length); S.orphans.forEach(orphanCard); }
   const dex = $('#dexGrid'); dex.innerHTML = ''; let n = 0;
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
   SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
@@ -4762,6 +4764,72 @@ function makePartner(id){
     S.party.push(p);
   }
   if (S.party.some(p => p.id === id)) S.partnerId = id;
+}
+let releaseAsk = null;
+function petListOf(id){
+  if (S.party.some(p => p.id === id)) return S.party;
+  if (S.box.some(p => p.id === id)) return S.box;
+  return null;
+}
+function movePet(id, dir){
+  const list = petListOf(id); if (!list) return false;
+  const i = list.findIndex(p => p.id === id), j = i + dir;
+  if (j < 0 || j >= list.length) return false;
+  const [p] = list.splice(i, 1); list.splice(j, 0, p);
+  releaseAsk = null; sfx('tap'); save(); renderCollection();
+  return true;
+}
+function releasePet(id){
+  if (!S || scene || (battle && battle.on)) return false;
+  const list = petListOf(id); if (!list) return false;
+  const i = list.findIndex(p => p.id === id), p = list[i];
+  list.splice(i, 1);
+  if (S.partnerId === id) {
+    if (S.party[0]) S.partnerId = S.party[0].id;
+    else if (S.box.length) { const lead = S.box.shift(); S.party.unshift(lead); S.partnerId = lead.id; }
+    else S.partnerId = null;
+  }
+  releaseAsk = null; sfx('tap'); save(); updateHUD(); renderCollection();
+  toast(petName(p) + ' headed off.');
+  return true;
+}
+function petActs(p, inBox){
+  const list = inBox ? S.box : S.party, i = list.findIndex(q => q.id === p.id);
+  const row = document.createElement('div'); row.className = 'card-acts';
+  if (releaseAsk === p.id) {
+    const note = document.createElement('p'); note.className = 'rel-note';
+    note.textContent = 'Let ' + petName(p) + ' go? They will not come back.';
+    const yes = document.createElement('button'); yes.type = 'button'; yes.className = 'btn'; yes.textContent = 'LET THEM GO';
+    yes.addEventListener('click', () => releasePet(p.id));
+    const no = document.createElement('button'); no.type = 'button'; no.className = 'btn btn-play'; no.textContent = 'KEEP THEM';
+    no.addEventListener('click', () => { releaseAsk = null; sfx('tap'); renderCollection(); });
+    row.append(note, yes, no);
+    return row;
+  }
+  const up = document.createElement('button'); up.type = 'button'; up.className = 'btn'; up.textContent = 'UP';
+  up.disabled = i <= 0; up.addEventListener('click', () => movePet(p.id, -1));
+  const down = document.createElement('button'); down.type = 'button'; down.className = 'btn'; down.textContent = 'DOWN';
+  down.disabled = i < 0 || i >= list.length - 1; down.addEventListener('click', () => movePet(p.id, 1));
+  const rel = document.createElement('button'); rel.type = 'button'; rel.className = 'btn'; rel.textContent = 'RELEASE';
+  rel.addEventListener('click', () => { if (scene || (battle && battle.on)) { sfx('denied'); return; } releaseAsk = p.id; sfx('tap'); renderCollection(); });
+  row.append(up, down, rel);
+  return row;
+}
+function orphanCard(o){
+  const c = document.createElement('div'); c.className = 'card orphan';
+  const info = document.createElement('div');
+  const nm = document.createElement('div'); nm.className = 'nm';
+  const raw = o && o.raw;
+  const who = raw && typeof raw === 'object' ? (raw.nick || raw.species || raw.sp) : null;
+  nm.textContent = who ? String(who) : 'A lost Walkling';
+  const sub = document.createElement('div'); sub.className = 'sub';
+  sub.textContent = (o && o.reason ? String(o.reason) : 'could not be kept') + (o && o.from ? ' · ' + o.from : '');
+  const dump = document.createElement('div'); dump.className = 'raw';
+  let text = '';
+  try { text = JSON.stringify(raw); } catch (e) { text = String(raw); }
+  dump.textContent = text.length > 180 ? text.slice(0, 177) + '...' : text;
+  info.append(nm, sub, dump); c.append(info);
+  $('#ownedList').append(c);
 }
 
 /* ---------- friends (stub) ---------- */
@@ -5691,6 +5759,10 @@ PPMinigames.bind({
   spd: p => { if (!p) return 48; const lv = p.guest ? (p.level || 5) : levelOf(p); const s = statsAt((p.species || 'tide') + '/' + (p.stage || 0), lv); return s ? s.spd : 48; },
   monName: p => { if (!p) return 'Walkling'; if (p.guest) return p.nick; return petName(p); },
 });
+function registerInstall(){
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+}
 function boot(){
   $$('#tabs canvas').forEach(c => {
     if (c.dataset.icon === 'quest' && REGION_MAP.icon_quest) {
@@ -5707,6 +5779,7 @@ function boot(){
   ENV = PPEnv.init(onEnvChange, { allowOverride: DEBUG }); renderEnv();
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
+  registerInstall();
   PPSave.devCheck(); statsDevCheck();
   { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }

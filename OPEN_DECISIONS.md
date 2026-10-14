@@ -2,7 +2,7 @@
 
 Things that were built on a best guess, deviate from a plan, or need a person (Vincent or the designer) to confirm. Each row says what the code does today, so a decision can be made without reading the diff. When one is settled, move it to "Settled" with the date and the call, and update the code or plan if it changed.
 
-Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22; Build 3 settled D3 / D5 / D23; Builds 4–6 wrote Route 2, the Cobblecrest Sacrifice stub, and Rook's R5. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there. Explicit `["standing", side, n, id]` amounts in scenes do not need a `grants` row. Q16 landed the Act 1 stack on `main`. Next work is the box screen, then the installable app (NEXT_PLAN §3). Which branch held which piece is in `BRANCH_LOG.md`.
+Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22; Build 3 settled D3 / D5 / D23; Builds 4–6 wrote Route 2, the Cobblecrest Sacrifice stub, and Rook's R5. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there. Explicit `["standing", side, n, id]` amounts in scenes do not need a `grants` row. Q16 landed the Act 1 stack on `main`. The box screen and the installable app are built (NEXT_PLAN §3). Which branch held which piece is in `BRANCH_LOG.md`.
 
 The old keeper-hq branch reused D27–D31. `main` already had D27 (Mahopac, settled) and D28 (lantern rest, open). Those rows are D32–D36 now.
 
@@ -45,7 +45,7 @@ The old keeper-hq branch reused D27–D31. `main` already had D27 (Mahopac, sett
 - R5 later appearances (D25): the cart scenes are on `main`. Ally vs parted, and whether Rook shows up again, are still open.
 - Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
 - Brinewick, Trial Hall #3, Seal 3: no map and no one-pager.
-- Next coding work is the box screen, then the installable app (NEXT_PLAN §3 Q17, Q18).
+- The box screen and the installable app are built. Brinewick still waits on a one-pager.
 
 ## Settled
 

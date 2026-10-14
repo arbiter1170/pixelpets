@@ -7,7 +7,10 @@ Play it at https://arbiter1170.github.io/pixelpets/ (GitHub Pages, built from `m
 `python3 -m http.server` in this folder and visit http://localhost:8000. Opening `index.html` as a file
 also works, minus location.
 No build step, all paths relative, everything self-hosted (including the font). The only network use is the
-optional local-creatures lookup (see Wild creatures below).
+optional local-creatures lookup (see Wild creatures below). A manifest and a service worker
+(`manifest.json`, `sw.js`, icons in `icons/`) let a phone add Walklings to the home screen and open the
+cached shell offline. `version.json` stays on the network so a newer deploy can still announce itself.
+Location lookups are other sites, so the worker leaves them alone, and a failed lookup still falls back to meadow.
 Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
 
 Touch: bottom tabs (Pet / Walk / Pets / Quest); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
@@ -337,9 +340,12 @@ with Courier New / monospace as fallback; ★ ♥ and the arrow symbols come fro
 
 Saves (format v2, `save.js`):
 - `pixelpets.save.v2` is the save. Walklings live in a **party** (up to 6, the partner is always in it) and a
-  **box** (no limit). A 7th befriended Walkling goes to the box ("<name> was sent to your box."). On the Pets tab,
-  choosing a boxed Walkling as partner moves it into the party; if the party is full, the last party member that
-  isn't the partner moves to the top of the box. Every Walkling, party or box, gets hungry the same way.
+  **box** (no limit). A 7th befriended Walkling goes to the box ("<name> was sent to your box."). On the WALKLINGS tab
+  the party is listed first, then WALKLING-BOX. UP and DOWN reorder inside that list. PARTNER moves a boxed Walkling
+  into the party; if the party is full, the last party member that isn't the partner moves to the top of the box.
+  RELEASE asks, then LET THEM GO removes that Walkling. Releasing the partner promotes the next party member, or the
+  first boxed Walkling when the party is empty. LEFT BEHIND shows each orphan's reason and the raw data that could
+  not be migrated. Every Walkling, party or box, gets hungry the same way.
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
   `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
   The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 42 form ids) is append-only: new lines are added at the end
