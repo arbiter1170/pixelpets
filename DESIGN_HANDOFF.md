@@ -133,7 +133,7 @@ Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19).
 | `switch_bridge_to_glimmer`, `switch_bridge_to_keepers` | Short bridging scene after a switch, one per direction | 4-6 each |
 | Catch-up lines | Short lines that later scenes can drop in when the player did earlier beats under the other side ("You helped pack those crates, didn't you?"). One per major beat (orchard, Hall slot #1, Wickerglen lamps, the quarry sale) per direction | 8-10 |
 
-### 4d. Route 2 and Wickerglen, glimmer variants (phase B2) — **next, Build 4**
+### 4d. Route 2 and Wickerglen, glimmer variants (phase B2) — **implementer copy is on the stranded branch; replace it after Q16**
 | Scene id | Beat | Lines | Notes |
 |---|---|---|---|
 | `glimmer2@glimmer` | The Glow Census, the player as a volunteer | 5-6 | |
@@ -142,7 +142,7 @@ Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19).
 | `glen_cleared@glimmer` | The lamps click off when `{pet}` bumps the stand; Imogen praises the player; Rook's doubts show; 3 Befriend Treats | 12-16 | `rook_bond` choice |
 | `route2_end@glimmer` | The gate and the Cobblecrest invitation. Keep the `together` / `race` choice and its flags | 8-10 | `story.rook_pact` |
 
-### 4e. Cobblecrest, glimmer variants (phase B3) — **Build 5**
+### 4e. Cobblecrest, glimmer variants (phase B3) — **stub is on the stranded branch; the one-pager replaces it after Q16**
 | Scene id | Beat | Lines |
 |---|---|---|
 | `cobble_arrive@glimmer` | Arrival with Rook as a fellow Junior Bright (reads `rook_pact`) | 5-6 |
@@ -155,7 +155,7 @@ Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19).
 **D23:** Keepers path, Rook eventually converts to good. Glimmerwell path, Rook stays. Not bond-gated. No follow-or-stay fork.
 - R2 `teaser@glimmer`: **shipped** (Build 3). Do not say he leaves.
 - R3 and R4 variants: included in 4d and 4e (Build 4 / 5). Bond may flavour a line; it must not gate R5.
-- **R5 (Build 6), two variants not four:** Keepers `brinewick_hook` (he leaves the company); `brinewick_hook@glimmer` (he stays). About 14-20 lines each. Both must still set `story.cobble_end`. No free-switch bridge.
+- **R5, two variants not four, already written off `main`:** Keepers `brinewick_hook` (`story.rook_end` `"ally"`); `brinewick_hook@glimmer` (`"stays"`). Both set `story.cobble_end`. No free-switch bridge. Tone confirmation is D25.
 - Keepers-path post-conversion ambient, if he becomes an ally: 6-8. Glimmer-path colleague ambient is optional.
 
 ### 4g. Quest objectives (WP-C) — **shipped in Build 2**
@@ -186,7 +186,7 @@ Intro / win / lose lines for each trainer whose framing changes (Tobin, Fen as h
 3. **Sound specs** as a short table (notes, timings, voices) like the STINGERS v0.1 table.
 4. **Check your own lines**: <= 110 chars, no leftover tokens, speakers all mapped, every flag in `flags`.
 5. **Approval**: Vincent approves per phase, as with Route 2 and Cobblecrest (`status` records the approval).
-6. Deliver per phase so the build is never blocked on all of it. **Now:** Tour stop copy (4b leftover) and the Sacrifice one-pager in parallel; then 4d (Build 4); then 4e (Build 5); then 4f R5 (Build 6). Desk copy (4c) can land any time.
+6. Deliver per phase so the build is never blocked on all of it. **Now:** Tour stop copy (4b leftover), the Sacrifice one-pager, and desk copy (4c). Route 2, Cobblecrest, and R5 (4d–4f) already have implementer scenes on `cursor/keeper-hq-phone-0bb2`. Replace that prose after Q16 lands it on `main`. Do not write a second set.
 
 ## 6. Open design questions where the designer is needed
 
