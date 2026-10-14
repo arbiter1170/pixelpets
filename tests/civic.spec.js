@@ -191,16 +191,58 @@ test('town officers answer by pledge', async ({ page }) => {
   expect(bram).not.toContain('come in');
 });
 
-test('walking into the Route 1 officers clears the phone side quest', async ({ page }) => {
+test('Officer Ness is on Route 1 before anyone steps on the marker', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => {
+  const there = await page.evaluate(() => {
     PixelPets.showTab('walk');
     PixelPets.goto('route1', 1, 8, 'right');
     PixelPets.clearWild();
+    const objs = PixelPets.mapInfo.objs;
+    return {
+      ness: objs.find((o) => o.id === 'r1_ness'),
+      trigger: objs.find((o) => o.id === 'r1_phone') || null,
+      scene: PixelPets.scene,
+      point: PixelPets.sideQuest && PixelPets.sideQuest.point,
+      v: PixelPets.state.v,
+    };
+  });
+  expect(there.ness).toMatchObject({ x: 3, y: 7, block: true });
+  expect(there.trigger).toBeNull();
+  expect(there.scene).toBeFalsy();
+  expect(there.point).toMatchObject({ x: 3, y: 7 });
+  expect(there.v).toBe(2);
+  const lines = await page.evaluate(() => {
+    const say = (steps) => (steps || []).filter((s) => s[0] === 'say').map((s) => s[2]);
+    return {
+      ilse: say(MAPDATA.maps_slice.scenes.starter).join(' '),
+      phone: say(MAPDATA.civic.scenes.phone_grant).join(' '),
+      tail: (PixelPets.storyTails().starter || []).map((s) => s[2]).join(' '),
+    };
+  });
+  expect(lines.ilse).toContain('learn to defend yourself');
+  expect(lines.ilse).toContain('join the Keepers');
+  expect(lines.ilse).toContain('for good');
+  expect(lines.tail).toContain('The wild starts past the gate');
+  expect(lines.phone).toContain('bumps into you');
+  expect(lines.phone).toContain('required');
+  expect(lines.phone).toContain('Keeper High Court');
+  expect(lines.phone).toContain('free');
+  expect(lines.phone).not.toMatch(/calls, notes/i);
+});
+
+test('walking into Officer Ness, or past him, issues the Keeper1', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => {
+    PixelPets.showTab('walk');
+    PixelPets.goto('route1', 3, 8, 'up');
+    PixelPets.clearWild();
   });
   expect(await page.evaluate(() => PixelPets.sideQuest && PixelPets.sideQuest.id)).toBe('phone');
-  await page.evaluate(() => { PixelPets.walk.queued = [1, 0]; });
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'phone_grant');
+  await page.evaluate(() => { PixelPets.walk.queued = [0, -1]; });
+  await page.waitForFunction(() => {
+    const s = PixelPets.scene;
+    return s && s.id === 'phone_grant' && s.text && s.text.indexOf('bumps into you') >= 0;
+  });
   await playScene(page, []);
   const after = await page.evaluate(() => ({
     got: PixelPets.state.flags['story.phone_got'],
@@ -208,18 +250,40 @@ test('walking into the Route 1 officers clears the phone side quest', async ({ p
     side: PixelPets.sideQuest,
     hidden: document.querySelector('#phoneBtn').hidden,
     quest: PixelPets.quest && PixelPets.quest.id,
+    v: PixelPets.state.v,
   }));
   expect(after.got).toBe(true);
   expect(after.item).toBe(1);
   expect(after.side && after.side.id).toBe('mom');
   expect(after.hidden).toBe(false);
   expect(after.quest).not.toBe('phone');
+  expect(after.v).toBe(2);
 
   await page.evaluate(() => { PixelPets.goto('route1', 1, 8, 'right'); PixelPets.clearWild(); });
-  await page.evaluate(() => { PixelPets.walk.queued = [1, 0]; });
-  await page.waitForFunction(() => PixelPets.state.world.x === 2 && !PixelPets.keeper.moving && !PixelPets.fading);
+  for (let i = 0; i < 5; i++) await step(page, 'right');
   expect(await page.evaluate(() => PixelPets.scene)).toBeFalsy();
   expect(await page.evaluate(() => PixelPets.sideQuest && PixelPets.sideQuest.id)).toBe('mom');
+  expect(await page.evaluate(() => PixelPets.state.world.x)).toBe(6);
+});
+
+test('walking past Officer Ness makes him stop you', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => {
+    PixelPets.showTab('walk');
+    PixelPets.goto('route1', 1, 8, 'right');
+    PixelPets.clearWild();
+  });
+  for (let i = 0; i < 4; i++) {
+    await step(page, 'right');
+    expect(await page.evaluate(() => PixelPets.scene), 'step ' + (i + 1)).toBeFalsy();
+  }
+  await step(page, 'right');
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'phone_grant');
+  expect(await page.evaluate(() => PixelPets.state.world)).toMatchObject({ map: 'route1', x: 6, y: 8 });
+  await playScene(page, []);
+  expect(await page.evaluate(() => PixelPets.state.flags['story.phone_got'])).toBe(true);
+  expect(await page.evaluate(() => PixelPets.state.bag.keeper1 || 0)).toBe(1);
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 
   const boxes = await page.evaluate(() => {
     const box = (el) => {
@@ -268,11 +332,30 @@ test('the quest tab opens the next step without leaving the walk map', async ({ 
     text: document.querySelector('#questText').textContent,
     api: PixelPets.quest && PixelPets.quest.text,
     side: PixelPets.sideQuest && PixelPets.sideQuest.id,
+    sideText: document.querySelector('#questSide').textContent,
+    sidePlace: document.querySelector('#questSidePlace').textContent,
+    main: document.querySelector('#questMainLabel').textContent,
+    sideLabel: document.querySelector('#questSideLabel').textContent,
+    status: document.querySelector('#questStatus').textContent,
+    sideStatus: document.querySelector('#questSideStatus').textContent,
+    objective: document.querySelector('.q-main .q-lab').textContent,
+    sideObjective: document.querySelector('.q-side-card .q-lab').textContent,
     screens: [...document.querySelectorAll('.screen.active')].map((s) => s.id),
+    v: PixelPets.state.v,
   }));
   expect(shown.text).toBe(shown.api);
   expect(shown.text.length).toBeGreaterThan(0);
   expect(shown.side).toBe('phone');
+  expect(shown.main).toBe('MAIN');
+  expect(shown.sideLabel).toBe('SIDE');
+  expect(shown.objective).toBe('Objective');
+  expect(shown.sideObjective).toBe('Objective');
+  expect(shown.status).toBe('ACTIVE');
+  expect(shown.sideStatus).toBe('ACTIVE');
+  expect(shown.sideText).toBe('The wild past the east gate is open. Go and explore.');
+  expect(shown.sidePlace).toBe('Route 1, west end');
+  expect(shown.sideText).not.toMatch(/handset|Keeper1|phone/i);
+  expect(shown.v).toBe(2);
   expect(shown.screens).toEqual(['scr-walk']);
   await page.waitForFunction(() => PixelPets.optionsReady === true);
   await page.locator('#questClose').click();

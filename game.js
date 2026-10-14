@@ -517,8 +517,12 @@ const CD_MSG = { feed: ' is still digesting. Feed again in ', play: ' needs a br
 const BTN_LABEL = { feed: 'FEED', play: 'PLAY', rest: 'REST' };
 function updateCareButtons(){
   const p = pet(); if (!p) return;
-  $$('[data-act]').forEach(b => {
-    const act = b.dataset.act, left = cdLeft(p, act), cd = left ? fmtCd(left) : '';
+  // Only the PARTNER care row. Party-board buttons also use data-act, and a page-wide
+  // query wiped their labels about a second after the WALKLINGS tab opened.
+  $$('#scr-pet .actions [data-act]').forEach(b => {
+    const act = b.dataset.act;
+    if (!BTN_LABEL[act]) return;
+    const left = cdLeft(p, act), cd = left ? fmtCd(left) : '';
     if (b.dataset.cd !== cd) {               // label on top, countdown on a small second line (fits 320px phones)
       b.dataset.cd = cd; b.textContent = BTN_LABEL[act];
       if (cd) { const sm = document.createElement('small'); sm.className = 'cdt'; sm.textContent = cd; b.append(sm); }
@@ -1160,7 +1164,7 @@ function loyaltyBagLine(id){
 }
 // Point the new keeper outside, then (after Rook) toward the grass. Appended here so the design JSON stays verbatim.
 if (SCENES.starter) SCENES.starter.push(
-  ['say', 'Warden Ilse', 'When you step outside, take the east path. Rook is waiting by the gate.'],
+  ['say', 'Warden Ilse', 'When you step outside, take the east path. The wild starts past the gate.'],
   ['say', 'Warden Ilse', 'Wild Walklings wander in the grass. Walk up to one, and it may come with you.']);
 if (SCENES.rival1) SCENES.rival1.push(
   ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
@@ -1174,10 +1178,10 @@ const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate:
   sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
-let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };   // per map visit, never saved
+let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {} };   // per map visit, never saved
 function useMap(id){
   CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
-  mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };
+  mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {} };
   patrolClock = 0;
 }
 const isRoom = () => CUR.kind === 'interior';
@@ -1382,6 +1386,7 @@ function onLand(){
   }
   if (checkTriggers()) return;
   if (checkSight()) return;
+  if (checkCatch()) return;
   checkChatter();
 }
 /* ---------- items (INVENTORY v1 §3): one catalog for the Bag, the Travel Shelf, battle, scene `give` and map pickups ---------- */
@@ -1781,6 +1786,28 @@ function checkSight(){
   }
   return false;
 }
+// An NPC with `catch` stops a trainer who walks past instead of into them. Steps that close the
+// distance do not count, so walking up to talk still works. A few steps the other way, and they come over.
+function checkCatch(){
+  if (scene || fade.busy || walk.intro || overlayOpen() || !pet() || !walk.from) return false;
+  for (const o of CUR.objs) {
+    const rule = o.catch;
+    if (!rule || o.kind !== 'npc' || !present(o) || !rule.scene) continue;
+    if (rule.when && !rule.when.every(c => cond(c, false))) continue;
+    const q = objPos(o);
+    const before = Math.abs(q.x - walk.from.x) + Math.abs(q.y - walk.from.y);
+    const after = Math.abs(q.x - S.world.x) + Math.abs(q.y - S.world.y);
+    if (after < before) { mapRT.catch[o.id] = 0; continue; }
+    const n = (mapRT.catch[o.id] || 0) + 1;
+    mapRT.catch[o.id] = n;
+    if (n < (rule.steps > 0 ? rule.steps : 3)) continue;
+    mapRT.catch[o.id] = 0;
+    clearMoves();
+    runSteps([['approach', o.id], ['run', rule.scene]], { npc: o, id: rule.scene });
+    return true;
+  }
+  return false;
+}
 // The walk-up: sfx notice + a "!" over the trainer for 600 ms, then it walks along its line (walk frames, STEP_MS x 1.5 per tile)
 // until adjacent; the keeper turns to face it. The text box stays hidden until the intro line.
 async function spotWalk(id){
@@ -1802,6 +1829,71 @@ async function spotWalk(id){
   S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y);
   spot.id = null;
   if (scene) { $('#ovScene').hidden = false; sbRender('', ''); }
+}
+// Same notice as a trainer spot, then a short walk to a tile beside the keeper. The text box stays hidden until they arrive.
+function pathBeside(from, selfId){
+  const px = S.world.x, py = S.world.y;
+  if (Math.abs(from.x - px) + Math.abs(from.y - py) <= 1) return [];
+  const goal = new Set();
+  for (const [dx, dy] of Object.values(DIRS)) {
+    const x = px + dx, y = py + dy;
+    if (solidTile(x, y)) continue;
+    const b = blockerAt(x, y);
+    if (b && b.id !== selfId) continue;
+    goal.add(x + ',' + y);
+  }
+  if (!goal.size) return [];
+  const key = (x, y) => y * 64 + x, prev = new Map([[key(from.x, from.y), null]]), q = [[from.x, from.y]];
+  let hit = null;
+  const blocked = (x, y) => {
+    if (x === px && y === py || solidTile(x, y)) return true;
+    const b = blockerAt(x, y);
+    return !!(b && b.id !== selfId);
+  };
+  while (q.length) {
+    const [x, y] = q.shift();
+    if (goal.has(x + ',' + y)) { hit = [x, y]; break; }
+    for (const [dx, dy] of Object.values(DIRS)) {
+      const nx = x + dx, ny = y + dy, k = key(nx, ny);
+      if (prev.has(k) || blocked(nx, ny)) continue;
+      prev.set(k, [x, y]); q.push([nx, ny]);
+    }
+  }
+  if (!hit) return [];
+  const out = [];
+  let c = hit;
+  while (c && !(c[0] === from.x && c[1] === from.y)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); }
+  return out;
+}
+async function approachWalk(id){
+  const o = CUR.objs.find(x => x.id === id); if (!o) return;
+  $('#ovScene').hidden = true;
+  sfx('notice'); spot.id = id; spot.bang = true;
+  await new Promise(r => setTimeout(r, SPOT_BANG_MS));
+  spot.bang = false;
+  let q = { x: objPos(o).x, y: objPos(o).y };
+  for (const step of pathBeside(q, id)) {
+    if (!scene) break;
+    const face = dirName(step.x - q.x, step.y - q.y);
+    const P = mapRT.pos[id] = { x: step.x, y: step.y, fx: q.x, fy: q.y, moving: true, facing: face };
+    mapRT.face[id] = face;
+    await new Promise(res => {
+      const t0 = now(), from = { x: q.x, y: q.y };
+      (function tick(){
+        const k = Math.min(1, (now() - t0) / SPOT_STEP_MS);
+        P.fx = from.x + (step.x - from.x) * k; P.fy = from.y + (step.y - from.y) * k;
+        if (k < 1 && scene) requestAnimationFrame(tick); else res();
+      })();
+    });
+    q = { x: step.x, y: step.y };
+    mapRT.pos[id] = { x: q.x, y: q.y, facing: face };
+  }
+  const face = dirName(S.world.x - q.x, S.world.y - q.y);
+  mapRT.face[id] = face;
+  if (mapRT.pos[id]) mapRT.pos[id].facing = face;
+  S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y);
+  spot.id = null;
+  if (scene) { $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', ''); }
 }
 let patrolClock = 0;
 function tickPatrol(dt){
@@ -2668,6 +2760,7 @@ async function execStep(st){
       return;
     }
     case 'spot': await spotWalk(a); return;
+    case 'approach': await approachWalk(a); return;
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
     // Build 3: ["seal", id] grants a lanyard without a battle (the Tour's skip path). A Hall win already set it and showed the card.
@@ -4432,15 +4525,27 @@ function renderQuest(q){
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
   const sideQ = sideQuest();
+  const card = $('#questSideCard');
   const sl = $('#questSideLabel'), stx = $('#questSide'), sp = $('#questSidePlace');
+  if (card) card.hidden = !sideQ;
   if (sl) sl.hidden = !sideQ;
   if (stx) { stx.hidden = !sideQ; stx.textContent = sideQ ? sideQ.text : ''; }
   if (sp) { sp.hidden = !sideQ; sp.textContent = sideQ ? (sideQ.place || '') : ''; }
   // Stuck-state guard: after a loss the objective stays put; say what to do first when nobody can battle (spec questStuck[0]).
   const stuck = S.party.length > 0 && !leadPet();
   const note = $('#questNote'); note.hidden = !stuck; note.textContent = stuck ? PPQuests.STUCK[0] : '';
+  const status = $('#questStatus');
+  if (status) {
+    status.textContent = stuck ? 'BLOCKED' : (q.id === 'end' ? 'OPEN' : 'ACTIVE');
+    status.classList.toggle('blocked', stuck);
+  }
+  const sideStatus = $('#questSideStatus');
+  if (sideStatus) sideStatus.textContent = 'ACTIVE';
   const list = $('#questDone'); list.textContent = '';
-  for (const e of PPQuests.completed(questState(), 3)) { const li = document.createElement('li'); li.textContent = e.text; list.appendChild(li); }
+  const done = PPQuests.completed(questState(), 3);
+  const wrap = $('#questDoneWrap');
+  if (wrap) wrap.hidden = !done.length;
+  for (const e of done) { const li = document.createElement('li'); li.textContent = e.text; list.appendChild(li); }
   renderQuestTabs();
 }
 // STANDING tab (BS): a second tab beside NEXT STEP, hidden until the side pick. Read-only: two rows (one per side) with the
@@ -6592,7 +6697,7 @@ function bindInput(){
   si.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (sbox.nameDone) sbox.nameDone(false); } });
   $('#talkBtn').addEventListener('click', () => { if (!overlayOpen() && talkFacing()) sfx('tap'); });
   ['#evoOk', '#geoAllow', '#geoLater', '#envBadge', '#envUseLoc', '#envClose', '#copyCode'].forEach(id => $(id).addEventListener('click', () => sfx('tap')));
-  $$('[data-act]').forEach(b => b.addEventListener('click', () => doAction(b.dataset.act)));
+  $$('#scr-pet .actions [data-act]').forEach(b => b.addEventListener('click', () => doAction(b.dataset.act)));
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
   $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
