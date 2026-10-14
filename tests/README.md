@@ -99,3 +99,16 @@ With debug already on (`?debug=1`):
 | catalog, side checkpoint, kit, checks | `debugCatalog().checkpoints` includes `hall1`, `mom` and `hc_plaza`. `checkpoint('mom')` is the side chain and lands in `hm_home_up` without finishing Rook. `fillKit` fills the bag and at least 999 Acorns. `setLevel(12)` sticks. `devChecks()` arrays are empty. `debugSnapshot()` names the map. |
 
 `checkpoint(id)` reconciles that chain only. Main steps do not rewind Mom / Mahopac. Side steps do not rewind the main story. A save that already has Walklings keeps `story.intro_seen` and `story.starter_received`. `hc_plaza` and `hc_hall` only add the flags that open those places.
+
+`tests/qa_gaps.spec.js` covers checks the other specs leave open. Seeded saves set `pixelpets.geo` to `deny` and `pixelpets.mute` to `1`, and stamp today's hello and Warm Bowl flags. The battle tests use `?debug=1`.
+
+| Test | What it asserts |
+|---|---|
+| map loops | `PixelPets.mapTrack(id)` is the loop `trackFor` would pick. Hearthmoor, Fernbrook, Cobblecrest, `hm_home_in`, and `cc_hall_in` are `town`. Route 2 and Old Meadow (`proto`, backdrop meadow) are `route`. `dream_2004` is an interior with a town backdrop and a dream wash, and its loop is `route`. High Charity and `hc_airport_in` are `charity`. `hc_church_in` is `chapel`. `hc_hall_in` is `arcade`. Wickerglen (`route2_glen`, backdrop grove) and an unknown id return `null`. `musicCheck()` is empty, and `town`, `route`, `charity`, `chapel`, and `arcade` are real music ids. |
+| end card and Mahopac | `setFlag('story.cobble_end')` makes `PixelPets.quest` the end card (`end`, The Amberwild). Flags through `story.mom_sent` make the side objective `mahopac` while the main id stays `end`. The save `v` stays 2. |
+| glimmer hall line | `story.orchard_cleared` shows the Keepers hall line. `setSide('glimmer')` keeps quest id `hall1` and shows the glimmer Trial Hall line. |
+| fainted lead, bench has HP | Wild and trainer. The lead is knocked to 0 HP. The bench is under the battle-energy minimum and still has HP. The battle stays open on "Who goes next?" and that bench can step in. The whole-team loss line does not play. |
+| bench already down | The other party member is fainted at 0 HP with enough energy to battle. Knocking out the lead ends the wild battle on "Your team is worn out...". |
+| minigame dev check | `PPMinigames.devCheck()` is `[]`. |
+
+`PixelPets.mapTrack(mapId)` is read-only and works without `?debug=1`. It returns the loop id for that map, or `null` when that map would leave the current loop playing.

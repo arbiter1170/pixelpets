@@ -3,15 +3,18 @@
 Prioritized for turning the prototype into something you can actually play day to day.
 Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
-## Next work: Oct 14 queue (read this first)
+## Next work: Oct 14 evening queue (read this first)
 
-Live `main` is stamp `20261013-2342` (PR #19: High Charity). Builds 4–6, Heights, the save copy, and the Keeper House are already written on `origin/cursor/keeper-hq-phone-0bb2` and are not on `main`. Do not rebuild them. The queue is Q16, then Q17, then Q18. Detail is in [NEXT_PLAN.md](NEXT_PLAN.md) §3.
+Live `main` for this pass is stamp `20261014-0614` (planning and QA). The previous stamp was `20261014-0015` (PR #21: password-gated debug panel). PR #19 (High Charity), PR #17 (Mahopac), PR #18 (5-Acorn rest), and PR #15 (faction music) are on `main`. Builds 4–6, Heights, the save copy, and the Keeper House are written on `origin/cursor/keeper-hq-phone-0bb2` (`46113b2`; `d43dde7` is an older tip) and are not on `main`. Do not rebuild them.
+
+The next four builds are Q19, Q20, Q16, then Q21. Q17 and Q18 follow those. Detail, including the two faction missions and the art and music list, is in [NEXT_PLAN.md](NEXT_PLAN.md) §3. Shipped history is in [CHANGELOG.md](CHANGELOG.md).
 
 Where things are (hand these to the right person or agent):
 
 | Document | Hand to | What it holds |
 |---|---|---|
-| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | The Oct 14 queue: Q16 land the stranded Act 1 stack, Q17 box screen, Q18 installable app. Live stamp `20261013-2342` |
+| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | The Oct 14 evening queue: Q19 Lantern Council, Q20 look and listen, Q16 land the stranded Act 1 stack, Q21 Glimmerwell briefing. Then Q17 and Q18 |
+| [CHANGELOG.md](CHANGELOG.md) | **Everyone** | What shipped, newest first. Builds 1–3 and PRs #15–#21 |
 | [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | **The designer** (art and writing) | Voice guide, art sizes, and the request list. Background. The assignment to paste into the designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) |
 | [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) | **The designer bot** (a different agent from the implementer) | The prompt: every designer item, the files to open, the engine that already exists, the delivery format, and the phase order |
 | [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat |
@@ -24,7 +27,7 @@ Decisions recorded (Vincent, Oct 13, 2026):
 - Trial Hall replacement: Fernbrook slot 1 is the Bright Pavilion Tour (built in Build 3, on `main`). Cobblecrest slot 2 is the Sacrifice, with Quota as its free floor. The stub is on the stranded branch, not on `main`. The real cost is still open. The Keepers path keeps the Halls as built. The Audit battle remains the Tour's optional last stop.
 - Capture: "no combat performed" = the creature is at full health in this encounter.
 
-Queue (suggested order top to bottom). Q1–Q4 and Fernbrook (Q5 slot 1, Q6 B1) are on `main`. Q8–Q10 are written off `main`. Next work is Q16, then Q17, then Q18 (NEXT_PLAN §3). Q7 is done.
+Queue (do the open rows in this order: Q19, Q20, Q16, Q21, Q17, Q18). Q1–Q4 and Fernbrook (Q5 slot 1, Q6 B1) are on `main`. Q8–Q10 are written off `main`. Q7 is done. This pass also adds `tests/qa_gaps.spec.js` and the read-only `PixelPets.mapTrack` hook (see CHANGELOG).
 
 | # | Item | Size | Blocked on |
 |---|---|---|---|
@@ -38,9 +41,12 @@ Queue (suggested order top to bottom). Q1–Q4 and Fernbrook (Q5 slot 1, Q6 B1) 
 | Q8 | **Build 4** Route 2 + Wickerglen glimmer (WP-B2): `lead_intro@glimmer`, `faded2@glimmer`, `glen_cleared@glimmer`, `route2_end@glimmer`, Rook R3 | M | **Written, not on `main`.** Branch `cursor/keeper-hq-phone-0bb2` (PR #13). Census volunteer, grey Pebblit, lamp bump, together/race. Do not rewrite. Land in Q16 |
 | Q9 | **Build 5** Cobblecrest glimmer + Hall slot 2 Sacrifice (WP-B3): buyout, rival2 lines, `seal_glim_2`, Quota as the free floor | M | **Written as a stub, not on `main`.** Same branch. Snack stays in the bag. Real cost still D24. Do not rewrite. Land in Q16 |
 | Q10 | **Build 6** Rook R5 / Act 1 closer (WP-B4): Keepers `brinewick_hook` (he converts), glimmer twin (he stays). Same `story.cobble_end` | M | **Written, not on `main`.** Keepers `story.rook_end` `"ally"`, Glimmerwell `"stays"`. Tone confirmation still D25. Do not rewrite. Land in Q16 |
-| Q16 | **Land the stranded Act 1 stack** onto `main`: Heights, Builds 4–6, save copy, Keeper House and Keeper1 | integration | **NEXT.** Spec: NEXT_PLAN §3 Q16. Keep High Charity, Mahopac, the 5-Acorn rest, and faction music. 15 files conflict. Renumber the stack's D27–D31 to D32–D36 |
-| Q17 | **Box screen**: reorder, release, orphan recovery row | M | After Q16. Do not bump save `v`. Spec: NEXT_PLAN §3 Q17 |
+| Q16 | **Build 9.** Land the stranded Act 1 stack onto `main`: Heights, Builds 4–6, save copy, Keeper House and Keeper1 | integration | After Q20. Spec: NEXT_PLAN §3 Q16. Keep High Charity, Mahopac, the 5-Acorn rest, faction music, the debug panel, `mapTrack`, and `tests/qa_gaps.spec.js`. Re-check conflicts at land time (19 files against `46113b2` on Oct 14). Renumber the stack's D27–D31 to D32–D36 |
+| Q17 | **Box screen**: reorder, release, orphan recovery row | M | After Q21. Do not bump save `v`. Spec: NEXT_PLAN §3 Q17 |
 | Q18 | **Installable app**: manifest + service worker, offline open | S-M | After Q17. No new network calls. Spec: NEXT_PLAN §3 Q18 |
+| Q19 | **Build 7.** Lantern Council, the next Keepers mission: after `story.cobble_end`, Sky-Dock Command reads both Seals and names the locked Brinewick road. No new map | M | **NEXT.** Ships on `main` now. Uses High Charity (PR #19). Does not wait on Q16. Spec: NEXT_PLAN §3 Build 7. Open: D37–D39, D41, D42 |
+| Q20 | **Build 8.** Look and listen: tier-2 lanyard, glimmer town loop, quarry loop, Wickerglen grove music, Imogen and Hollis looks, Rook's lanyard | M | After Q19. Art and music audit in NEXT_PLAN §3 Build 8. Sacrifice props stay blocked on D24. Tour stop copy stays D26 (writing, not this build) |
+| Q21 | **Build 10.** Capital Partnership Briefing, the next Glimmerwell mission: after the cart, a cheerful briefing in the High Charity Event Hall. No second Route 2, no Brinewick map | M | After Q16. Needs `brinewick_hook@glimmer` and `story.cobble_end` from the stranded stack. Spec: NEXT_PLAN §3 Build 10. Open: D40–D42 |
 
 Everything below is the earlier backlog and status history.
 

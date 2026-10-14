@@ -2,7 +2,7 @@
 
 Things that were built on a best guess, deviate from a plan, or need a person (Vincent or the designer) to confirm. Each row says what the code does today, so a decision can be made without reading the diff. When one is settled, move it to "Settled" with the date and the call, and update the code or plan if it changed.
 
-Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22; Build 3 settled D3 / D5 / D23. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there. Next work is NEXT_PLAN §3: Q16 land the stranded stack, then Q17 the box screen, then Q18 the installable app.
+Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22; Build 3 settled D3 / D5 / D23. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there. Next work is NEXT_PLAN §3: Q19 Lantern Council, Q20 look and listen, Q16 land the stranded stack, Q21 Glimmerwell briefing, then Q17 and Q18.
 
 The stranded branch `cursor/keeper-hq-phone-0bb2` reused D27–D31 for calls that are not on `main`. `main` already settled D27 (Mahopac) and opened D28 (lantern rest). When Q16 lands, renumber the stranded rows to D32–D36. Do not overwrite D27 or D28. The mapping is in NEXT_PLAN §3 Q16.
 
@@ -32,12 +32,18 @@ The stranded branch `cursor/keeper-hq-phone-0bb2` reused D27–D31 for calls tha
 | D25 | Rook R5 tone | Keepers convert: ally or parted? Glimmer stay: write `story.rook_end "stays"` or leave it unset? Does he appear later as a colleague? | Not on `main`. The stranded branch writes Keepers `"ally"` and Glimmerwell `"stays"`, and both set `story.cobble_end`. He does not appear again after the cart. `teaser@glimmer` on `main` does not say he leaves | `brinewick_hook` / `brinewick_hook@glimmer` on the stranded branch |
 | D26 | Tour copy | Real lantern recipients, slogans, Comfort Check lines, Census-board lines, stage-photo line, and the real name of `tour.doubt` | Placeholders in `tour1_s1`..`tour1_s4`, `tour1_wait`, and `seal1@glimmer`. `tour.doubt` is incremented; nothing reads it | `data/glimmer_path.json` `placeholders` |
 | D28 | Lantern rest | What should a Lantern House rest cost, and what happens with fewer Acorns than that? | 5 Acorns (`LANTERN_REST_COST`) heals the whole party and clears the post-wipe door hold. A full party still rests free, and that rest still sets the respawn. Home naps stay free. If you cannot pay 5, the keeper covers the fee so a wipe at 0 Acorns cannot trap you inside | `LANTERN_REST_COST` and `payRest` in `game.js` |
+| D37 | Keepers council venue | Sky-Dock Command (Captain Lumen) or the Chapel (Vesper)? | Not built. Default for Q19: Command. One existing interior, no new map | `hc_command_in` in `data/highcharity.json` |
+| D38 | Quest pointer after Act 1 | After `story.cobble_end`, does the council (and later the briefing) hide the Event Hall objective until that scene is done? | Today only the idle `end` card swaps to `HC_QUEST`. A new chain step would cover the games pointer until the scene is done. Default: yes, the chain step wins. The five games stay optional and do not gate the scene | `questCurrent` in `game.js`; the new `quests.js` row |
+| D39 | Seal presentation | Does the council show the seal cards, or only name them? | Not built. Default: dialog that names `seal_fernbrook` and `seal_cobblecrest`. No Seal 3 | the council scene |
+| D40 | Glimmer briefing gate | Require `story.rook_end` `"stays"`, or only `story.cobble_end` plus the glimmer side? | Not built. Q21 waits on Q16. Default: `story.cobble_end` and `story.side` glimmer. Mention Rook when `"stays"` is set. Do not require the Event Hall clears | the briefing scene `when` |
+| D41 | Capital Standing | Are `hc_council_k` and `hc_briefing_g` 10 points each? | Not built. Default: 10, once each. Do not stack the briefing on top of the stranded cart grant (`r5_g`) for the same beat | `STANDING_CFG.grants` |
+| D42 | Cross-side tourism | Can a Keepers player take the briefing, or a Glimmerwell player take the council? | Not built. Default: no. Each scene checks the side. Switching later is a separate completionist question | scene `when` |
 
 ## Not started, blocked on people
 
 - BS daily earning, tier-gated shop rows and lines, tier icons: see D18; needs the designer's list of what each tier opens.
 - Hall slot 2 real cost (D24): the stub is on the stranded branch. The one-pager replaces it after Q16. Do not add a second Tour.
-- Route 2 glimmer, Cobblecrest glimmer, and Rook's R5 are written on `cursor/keeper-hq-phone-0bb2` and are not on `main`. Next coding work is Q16 (land that branch), then Q17 (box screen), then Q18 (installable app). Rules for R5 are settled (D23); tone is D25.
+- Route 2 glimmer, Cobblecrest glimmer, and Rook's R5 are written on `cursor/keeper-hq-phone-0bb2` (`46113b2`) and are not on `main`. Next coding work is Q19 (Lantern Council), then Q20 (look and listen), then Q16 (land that branch), then Q21 (Glimmerwell briefing), then Q17 and Q18. Rules for R5 are settled (D23); tone is D25.
 - Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
 - Brinewick, Trial Hall #3, Seal 3: no map and no one-pager. Do not start that region in Q16.
 

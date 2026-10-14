@@ -41,7 +41,7 @@ ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only 
 `muted`, `careGain(base, value)`, `refreshEnv()`, `showTab(name)`, `typeMult(attType, defType)`, `statsAt(formId, level)`,
 `openStats(petId?)` / `closeStats()` / `statsCard` (the stats card), `petScene` (Pet tab backdrop, sky and tags),
 `keeper` (tile, facing, walk frame, look, name), `follower` (shown, tile, facing, Walkling id, tired, fainted, bob, droop),
-`moves()` (the move table), `learnset(form)`, `defaultMoves(form, level)`, `befriendWidth(...)` and `battleLine(key, vars)`.
+`moves()` (the move table), `learnset(form)`, `defaultMoves(form, level)`, `befriendWidth(...)`, `battleLine(key, vars)`, and `mapTrack(mapId)` (the music loop that map would play, or `null` when it would leave the current loop).
 Debug only: `setMapBackdrop('town'|'route'|'meadow'|'grove'|null)` sets the current map's backdrop to preview it.
 
 Stat pacing: FOOD, JOY and NRG drain in real time for every Walkling you own (not just the partner).

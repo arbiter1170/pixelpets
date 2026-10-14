@@ -1,6 +1,6 @@
-# Walklings: what's next (queue, Oct 14, 2026)
+# Walklings: what's next (queue, Oct 14, 2026, evening)
 
-Implementing-agent handoff. Live `main` is stamp `20261013-2342` (PR #19). Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail and names the next three pieces of work: Q16 land the stranded stack, Q17 the box screen, Q18 the installable app. Do not rebuild Builds 4–6. They are already on `origin/cursor/keeper-hq-phone-0bb2`.
+Implementing-agent handoff. Live `main` before this pass is stamp `20261014-0015` (PR #21, the debug panel). Source of truth for status is `BACKLOG.md`. Shipped history is `CHANGELOG.md`. This file keeps the work-package detail and names the next four builds: Q19 the Lantern Council, Q20 look and listen, Q16 land the stranded stack, Q21 the Glimmerwell briefing. Q17 (box) and Q18 (installable app) follow those. Do not rebuild Builds 4–6. They are already on `origin/cursor/keeper-hq-phone-0bb2`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,8 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the Oct 14 queue (section 3): Q16, Q17, Q18 |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the Oct 14 evening queue (section 3): Q19, Q20, Q16, Q21, then Q17 and Q18 |
+| `CHANGELOG.md` | Everyone | What shipped, newest first |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
 
@@ -30,15 +31,15 @@ Evening (Build 3, supersede the morning notes):
 
 ## 0. Where the build stands
 
-Live: `20261013-2342` (matches `version.json` on `main`).
+Live: `20261014-0614`. The previous `main` stamp was `20261014-0015` (PR #21). This pass adds `PixelPets.mapTrack` and `tests/qa_gaps.spec.js`.
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal). Story currently ends at `story.cobble_end` ("COMING LATER · Brinewick").
 
 Playable on the **Glimmerwell** path through **Fernbrook only**: orchard gate `side_pick`, crate-packing orchard (no Tobin battle), Bright Pavilion Tour (four stops; optional Fen match), Bright Tier 1 Lanyard, `teaser@glimmer`. Route 2 and Cobblecrest still play the Keepers scenes if the player walks east with `story.side=glimmer`.
 
-Also on `main` since the Oct 13 handoff: Glimmerwell and wild battle music plus loyalty-keyed talk (PR #15), the Mahopac dream side chain and extra keeper looks (PR #17, D27), a 5-Acorn Lantern rest that holds a wiped party indoors (PR #18, D28), and High Charity with five Event Hall games (PR #19).
+Also on `main` since the Oct 13 handoff: Glimmerwell and wild battle music plus loyalty-keyed talk (PR #15), the Mahopac dream side chain and extra keeper looks (PR #17, D27), a 5-Acorn Lantern rest that holds a wiped party indoors (PR #18, D28), High Charity with five Event Hall games (PR #19), and a password-gated debug panel in Settings (PR #21, password Larson). The Oct 14 morning queue (PR #20) named Q16–Q18. This evening pass inserts Q19 and Q20 in front of Q16, and Q21 between Q16 and Q17, because High Charity shipped with no main-chain beat and the art audit found loops and faces the stranded merge does not need.
 
-Not on `main`: Fernbrook Heights, glimmer Route 2, the Sacrifice stub, Rook's closer, the save copy before Start over, and the Keeper House with the Keeper1 phone. Those are the tip of `origin/cursor/keeper-hq-phone-0bb2` (`d43dde7`, stamp `20261013-2255`). The two lines share Build 3 (`5aceaf1`) and then diverge. GitHub marks PRs #11, #12, #13, #14, and #16 merged because each merged into the previous feature branch.
+Not on `main`: Fernbrook Heights, glimmer Route 2, the Sacrifice stub, Rook's closer, the save copy before Start over, and the Keeper House with the Keeper1 phone. Those are the tip of `origin/cursor/keeper-hq-phone-0bb2` (`46113b2`; `d43dde7` is an ancestor, stamp `20261013-2255`). The two lines share Build 3 (`5aceaf1`) and then diverge. GitHub marks PRs #11, #12, #13, #14, and #16 merged because each merged into the previous feature branch.
 
 Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Fernbrook Pledge desks, sound/music/stingers, save v2 (additive fields), cloud save Phase 1 (off). Playwright smokes live in `tests/` (no CI workflow yet).
 
@@ -84,7 +85,7 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 ### 1d. Quality
 - Device testing is Chromium emulation only (iOS Safari, Android Chrome untested: touch, safe areas, audio unlock, localStorage).
 - Doc hygiene: the top of `BACKLOG.md` still says "BATTLE v0.3 now being built" and "Left for Phase M: placing Pia/Fen on real maps". Both shipped. The README also predates Route 2 / Cobblecrest in places. One S pass to clean up.
-- No automated tests. Only in-page dev checks (`PPSave.devCheck()`, `statsDevCheck()`). Design's `*_check.py` scripts referenced in the data files are not in this repo. WP-A, WP-B and WP-C each add a small check; see their acceptance sections.
+- Playwright smokes live in `tests/` (no CI workflow yet). `tests/qa_gaps.spec.js` covers map loops, the end card beside Mahopac, the live glimmer hall line, a fainted lead with someone still up, and `PPMinigames.devCheck`. In-page dev checks remain (`PPSave.devCheck()`, `statsDevCheck()`, quest, standing, glimmer, befriend, music, minigames). Design's `*_check.py` scripts referenced in the data files are not in this repo.
 
 ## 2. Playtest feedback work packages
 
@@ -180,7 +181,7 @@ Known interaction to design around: a foe knocked to 0 HP "wanders off" and cann
 
 ## WP-B. "Pick a side" in the second area: Keepers vs Glimmerwell (L, phased)
 
-**Status: B0, BS, and B1 (Fernbrook) shipped.** B2 Route 2, B3 Cobblecrest + Sacrifice, and B4 Rook R5 are the next builds (section 3).
+**Status: B0, BS, and B1 (Fernbrook) shipped.** B2 Route 2, B3 Cobblecrest + Sacrifice, and B4 Rook R5 are written off `main` and land in Q16 (section 3). The next new story, after that stack, is section 3 Builds 7 and 10. Do not rewrite B2–B4.
 
 ### Playtest request
 After the player has a Walkling, the second area (Fernbrook) lets them pick between:
@@ -445,13 +446,56 @@ See section 4 (pointer strength, Settings toggle).
 
 ---
 
-## 3. Oct 14 queue
+## 3. Oct 14 evening queue
 
-Do these in order. Each one is one PR. Q16 is the only one that starts now. Q17 waits for Q16 to be on `main`. Q18 waits for Q17. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / this file in the same PR.
+Do these in order. Each one is one PR. Q19 starts now. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR.
 
-### Q16 — Land the stranded Act 1 stack — **next**
+Why this order, given what just shipped: High Charity (PR #19), Mahopac (PR #17), the 5-Acorn rest (PR #18), faction music (PR #15), and the debug panel (PR #21) are on `main`. The capital has a coach and an optional Event Hall, and no main-chain beat after `story.cobble_end`. The Keepers mission (Q19) and the art pass (Q20) use that city and the maps already on `main`. The 19-file merge (Q16) stays the way Glimmerwell reaches the same wall. The Glimmerwell mission (Q21) waits until that wall is the cart scene, not the Fernbrook teaser. Brinewick, Hall #3, and Seal 3 stay on hold. Q17 and Q18 follow Q21.
 
-Bring `origin/cursor/keeper-hq-phone-0bb2` (`d43dde7`) onto current `main`. This is a merge, not a rewrite. The content below under "Reference: Builds 4–6" is what that branch already plays.
+This pass already landed the QA the third review asked for: `tests/qa_gaps.spec.js` and `PixelPets.mapTrack`. That is not a fifth build.
+
+### Build 7 — Lantern Council (Keepers) — Q19 — **next**
+
+One main-chain scene after `story.cobble_end`. No new map, no combat, no Brinewick region. Ships on current `main`. Does not wait on Q16.
+
+The Event Hall (Ilse's letter, five minigames, `story.hc_invite`, `HC_QUEST`) is already shipped and is not this mission. The gym already says the Seals stay with Fen and Hale. Nothing reads both Seals back to the player.
+
+| Field | Call |
+|---|---|
+| Side | Keepers only (`story.side` is not `glimmer`) |
+| Starts | High Charity, Sky-Dock Command (`hc_command_in`), Captain Lumen. `story.cobble_end` and `!story.hc_council_done`. The lantern coach already requires `story.side_pick_done` |
+| Play | The council names the Fernbrook Seal and the Cobblecrest Seal, then names the locked coastal road. The road stays closed. One line can tie Ilse's letter in if `story.hc_invite` is set. Dialog only |
+| Flags | `story.hc_council_done` |
+| Standing | Grant id `hc_council_k`, amount 10. Add it to `STANDING_CFG.grants`. Scene step `['standing','keepers',null,'hc_council_k']`. Once per `standing.got.hc_council_k` |
+| Quest | Insert between `hook` and `end`. Text: `High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.` Place: `High Charity, sky-dock` |
+| Must not change | `seal2`, `brinewick_hook`, the Trial Halls, Mahopac's side chain, any `@glimmer` ending |
+
+Default for D38: the new chain step is the objective while it is open, so the Event Hall pointer waits. Do not gate the council on finishing the five games. Default for D37: Command, not the Chapel. Default for D39: dialog that names the real seal ids. No third seal card.
+
+Files: `data/highcharity.json`, `quests.js`, `standing.js`, `tools/gen_mapdata.py` and a regenerated `data/mapdata.js`, a new or extended High Charity spec. `v` stays 2.
+
+Acceptance: a Keepers save with `story.cobble_end` shows the new row; playing the scene sets the flag and grants 10 once; a replay does not grant again; a glimmer save does not see the scene or the row; the Mahopac side objective still appears beside it; old saves load.
+
+### Build 8 — Look and listen — Q20 — after Q19
+
+Art and music the Oct 14 audit found on maps that already exist. One PR. Sacrifice props stay out (D24). Tour stop lines stay out (D26, writing). Do not add a unique loop per town or per room.
+
+In this order:
+
+1. **`seal_glim_2`.** Replace `lanyardArt(2)` with a delivered 16×16 grid in `SEAL_ART` (`game.js`). Tier 1 (`LANYARD_TIER1`) stays. The card can ship before the Sacrifice scene is on `main`.
+2. **`music_town_glimmer`.** A new loop in `sfx.js` `MUSIC`. `trackFor` returns it when `side()` is `glimmer` and the map would otherwise be `town`. Keepers towns stay on `town`. High Charity's `charity`, `chapel`, and `arcade` still win for both sides.
+3. **`music_quarry`.** `cobble_quarry` gets its own loop (`map.music` or a `trackFor` rule). The buyout currently plays `route`.
+4. **`look_imogen` and `look_hollis`.** Looks in `data/act1_route2.json`. The Field Lead and Hollis stop using the generic `associate` face. `r2_lead` in `TRAINER_LOOK` points at Imogen.
+5. **`music_grove`.** Wickerglen (`route2_glen`, backdrop `grove`) makes `trackFor` return `null`, so the previous loop keeps playing. Map `grove` to `route` if a new loop is not ready. Do not leave `null`.
+6. **`look_rook_lanyard`.** A visible Junior Bright lanyard on the glimmer path after the side pick. The mint `accent` after `story.quarry_bought` is too late and too small. If `story.rook_end` is `ally`, the lanyard is off, so the Keepers conversion is ready when Q16 lands it.
+
+Checked, and not in this build: `icon_quest`, both Standing emblems, `seal_glim_1`, every `cobblecrest.json` `artRequests` tile, prop, and look (`hale`, `dorian`, `tamsin`, `dottie`), Route 2 props (`comfort_lamp`, `census_tent`, `glimmer_gate`, `rubble`, `crate`, `glimmer_stand`), High Charity and Mahopac props and looks, the `switch_desk_glimmer` raster (drawn, unplaced on purpose, D20), wild loops, and the Keeper-versus-Glimmer battle themes. Nice-to-have and out of this PR: per-tier badges, a tier-up stinger, a player lanyard, a physical switch kiosk, and a distinct Fernbrook or Cobblecrest Keeper theme.
+
+Tests: extend `tests/qa_gaps.spec.js`. `mapTrack('route2_glen')` is no longer `null`. `mapTrack('fernbrook')` is the glimmer loop only while pledged glimmer, and `town` otherwise. `mapTrack('highcharity')` stays `charity` for both sides. `mapTrack('cobble_quarry')` is the quarry id. `musicCheck()` stays empty.
+
+### Q16 — Land the stranded Act 1 stack — Build 9 — after Q20
+
+Bring `origin/cursor/keeper-hq-phone-0bb2` (`46113b2`) onto current `main`. This is a merge, not a rewrite. The content below under "Reference: Builds 4–6" is what that branch already plays. `d43dde7` is an ancestor of that tip, not the tip.
 
 Keep everything `main` gained after Build 3:
 
@@ -461,6 +505,9 @@ Keep everything `main` gained after Build 3:
 | #17 | `data/mahopac.json`, the extra keeper looks, Mom's side chain, the sky-blue side arrow |
 | #18 | `LANTERN_REST_COST` (5 Acorns), the post-wipe door hold, the keeper covering a short purse. While a rest is owed, the bed arrow wins over the side-quest arrow |
 | #19 | `data/highcharity.json`, `minigames.js`, the lantern coach, the five Event Hall games |
+| #21 | Settings → Debug, password Larson, the same tools as `?debug=1`, `tests/debug_mode.spec.js` |
+| this pass | `PixelPets.mapTrack`, `tests/qa_gaps.spec.js` |
+| Q19, Q20 | The council scene and the look-and-listen pass, if they have landed. Do not drop them in the merge |
 
 The stranded branch adds, and `main` does not have:
 
@@ -471,7 +518,7 @@ The stranded branch adds, and `main` does not have:
 | Save copy before Start over | Settings downloads `walklings-save.json` and can read that file back. `tests/save_copy.spec.js`. `v` stays 2 |
 | Keeper House, town officers, Keeper1 | `data/civic.json`, `tests/civic.spec.js`. QUEST moves to `#questBtn` on the bottom bar. PHONE is `#phoneBtn`. A cracked handset comes with joining Glimmerwell |
 
-`git merge-tree` on 14 Oct 2026 conflicts in these 15 files: `BACKLOG.md`, `DESIGNER_PROMPT.md`, `DESIGN_HANDOFF.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `README.md`, `data/glimmer_path.json`, `data/mapdata.js`, `game.js`, `index.html`, `quests.js`, `save.js`, `sprites.js`, `tools/gen_mapdata.py`, `version.json`. `style.css`, `tests/README.md`, `tests/glimmer_fernbrook.spec.js`, and `tests/smoke.spec.js` auto-merge.
+`git merge-tree` on 14 Oct 2026 against `46113b2` conflicts in these 19 files: `BACKLOG.md`, `DESIGNER_PROMPT.md`, `DESIGN_HANDOFF.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `README.md`, `data/glimmer_path.json`, `data/mapdata.js`, `game.js`, `index.html`, `quests.js`, `save.js`, `sprites.js`, `style.css`, `tests/README.md`, `tests/glimmer_fernbrook.spec.js`, `tests/smoke.spec.js`, `tools/gen_mapdata.py`, `version.json`. Re-run `merge-tree` at land time. Q19 and Q20 will add more.
 
 Decision ids collide. `main` already uses D27 (Mahopac, settled) and D28 (lantern rest, open). The stranded branch uses D27–D31 for other calls. On landing, renumber those rows. Do not overwrite `main`'s D27 or D28.
 
@@ -490,14 +537,33 @@ Acceptance:
 - A Keepers save still walks Route 2 and Cobblecrest, and Hale's trial is unchanged.
 - A glimmer save at `story.seal1` reaches `story.cobble_end` with `story.seal2` set and `story.rook_end` `"stays"`.
 - A save that already has `story.seal1` is not sent back through Heights.
-- High Charity's coach, Mahopac's side steps, the 5-Acorn rest, and the faction music still work.
+- High Charity's coach, Mahopac's side steps, the 5-Acorn rest, the faction music, and the Settings debug panel still work.
 - The quest control and the phone both exist, and Friends is still reachable.
 - Old saves load. `v` stays 2.
-- `npm test` covers the stranded suites and `tests/highcharity.spec.js`, `tests/mahopac.spec.js`, `tests/lantern_rest.spec.js`, `tests/faction_music.spec.js`.
+- `npm test` covers the stranded suites and `tests/highcharity.spec.js`, `tests/mahopac.spec.js`, `tests/lantern_rest.spec.js`, `tests/faction_music.spec.js`, `tests/debug_mode.spec.js`, and `tests/qa_gaps.spec.js`.
 
-Leave Brinewick, Friends, a second Sacrifice, and daily Standing out of this PR.
+Leave Brinewick, Friends, a second Sacrifice, daily Standing, and the Q21 briefing out of this PR.
 
-### Q17 — Box screen — M — after Q16
+### Build 10 — Capital Partnership Briefing (Glimmerwell) — Q21 — after Q16
+
+One scene after the glimmer cart. No second Route 2, no second Tour, no Brinewick map. The natural continuation of `teaser@glimmer` is the census path already written on the stranded branch (Build 4). This mission is the beat after `brinewick_hook@glimmer`.
+
+| Field | Call |
+|---|---|
+| Side | Glimmerwell only |
+| When | `story.cobble_end`, `story.side` is `glimmer`, and Q16 has landed `brinewick_hook@glimmer`. Default gate is that pair. `story.rook_end` `"stays"` may be mentioned. Do not require it until D40 says so. Do not require the five Event Hall clears |
+| Starts | High Charity Event Hall (`hc_hall_in`). A partnership desk (Clerk Nia, or a new desk). The coach already exists |
+| Play | A cheerful briefing about a Brinewick expansion: counts, comfort units, no map. Three choices (go along, ask one sharp question, stay quiet). No battle. If `story.rook_end` is `"stays"`, Rook has one line. A mint handout is flavor. No new seal |
+| Flags | `story.hc_glimmer_briefing_done` |
+| Standing | Grant id `hc_briefing_g`, amount 10, once. Do not also pay a second grant that Q16's `r5_g` already paid for the cart |
+| Quest | After `hook`, glimmer only. Text: `Glimmerwell wants you at High Charity for a partnership briefing. Mint lanyard required.` Place: `High Charity, Event Hall` |
+| Must not change | Keepers Halls, the Keepers council, Mahopac, Route 2 `@glimmer` scenes, the Sacrifice stub |
+
+Files: `data/highcharity.json` (one scene; an `if` on `story.side` is enough if the room is shared), `quests.js`, `standing.js`, tests, regenerate `data/mapdata.js`. `v` stays 2.
+
+Acceptance: a glimmer save at `story.cobble_end` shows the row and, after the scene, has the flag and 10 points once; a Keepers save does not; the council scene is unchanged; `glimmerCheck` is empty.
+
+### Q17 — Box screen — M — after Q21
 
 The box is a list under the party on the Pets tab. Add reorder, release, and a row for `orphans`. Release asks for a confirm, then removes that Walkling from the party and the box. The orphan row shows the raw data that could not be migrated. Do not bump `v`. Unknown fields stay on the Walkling.
 
@@ -509,11 +575,11 @@ Add a manifest and a service worker so the game can be added to the home screen 
 
 Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes, after Q16. The real Sacrifice cost (D24) replaces the stub after it is on `main`; it does not block Q16 and it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`.
 
-### Parallel, does not block Q16
+### Parallel, does not block Q19
 
-Designer: Tour stop copy and the real `tour.doubt` name (D26); the switch-desk letter, review, and welcome (D19); tier-2 lanyard art (D13); the Sacrifice one-pager (D24), which replaces the stub after Q16. Route 2, Cobblecrest, and R5 already have implementer copy on the stranded branch. Replace that copy. Do not write a second set.
+Designer: Tour stop copy and the real `tour.doubt` name (D26); the switch-desk letter, review, and welcome (D19). Tier-2 lanyard art (D13) is Q20's first item: draw `seal_glim_2` in the same family as `LANYARD_TIER1` and the Keeper seals. Q20 also wants a glimmer town loop, a quarry loop, a grove loop or a `route` fallback, looks for Imogen and Hollis, and Rook's Junior Bright lanyard. The Sacrifice one-pager (D24) replaces the stub after Q16. Route 2, Cobblecrest, and R5 already have implementer copy on the stranded branch. Replace that copy. Do not write a second set.
 
-Vincent: Standing numbers D14–D17 (due Thu Oct 15); the 5-Acorn rest (D28 on `main`); Firebase project and the privacy line. None of these block Q16.
+Vincent: Standing numbers D14–D17; the 5-Acorn rest (D28); the council and briefing calls D37–D42; Firebase project and the privacy line. None of these block Q19. D37–D39 have defaults in Build 7 so the scene can ship.
 
 ### Reference: Builds 4–6 as the stranded branch already plays them
 
@@ -562,7 +628,7 @@ Do not wait on bond. `story.rook_bond` may still increment on Route 2 / quarry c
 
 After this build both paths end at the same "COMING LATER · Brinewick" card. Brinewick / Hall #3 / Seal 3 is a later map and needs a spec that does not exist yet.
 
-The Oct 13 line "do not start the installable app until Builds 4–6 close" is superseded by this queue: Q16 lands those builds, Q17 is the box screen, Q18 is the installable app. Brinewick and Friends stay on hold. Trainer sight lines still do not re-arm after a loss (`canSpot` requires `!spotted.<id>`).
+The Oct 13 line "do not start the installable app until Builds 4–6 close" is superseded. Q16 lands those builds. Q19 and Q20 come first, on current `main`. Q21 is the Glimmerwell briefing after Q16. Q17 is the box screen. Q18 is the installable app. Brinewick and Friends stay on hold. Trainer sight lines still do not re-arm after a loss (`canSpot` requires `!spotted.<id>`).
 
 Conventions for whoever implements (from `README.md` and `BACKLOG.md`):
 - No build step; all paths relative; fonts self-hosted; no new network use.
@@ -587,3 +653,4 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** The stranded branch writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
+9. **Capital beats (D37–D42).** Council venue, whether the council hides the Event Hall pointer, seal presentation, whether the glimmer briefing requires `story.rook_end`, the 10-point grants, and whether each mission is side-locked. Defaults are in Builds 7 and 10. Full rows are in OPEN_DECISIONS.

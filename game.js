@@ -5347,6 +5347,7 @@ function boot(){
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
   api.musicCheck = () => PPSound.musicCheck();
+  api.mapTrack = id => trackFor(id && WORLD[id]);   // read-only: the loop trackFor would pick for that map
   api.musicIds = () => PPSound.musicIds();
   api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
   api.wildTracks = () => WILD_TRACKS.slice();
