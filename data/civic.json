@@ -60,8 +60,8 @@
       },
       "route1": {
         "addObjs": [
-          {"kind": "trigger", "id": "r1_phone", "x": 2, "y": 8, "r": 0, "when": ["story.starter_received", "!story.phone_got"], "scene": "phone_grant"},
-          {"kind": "npc", "id": "r1_ness", "name": "Officer Ness", "look": "officer", "x": 4, "y": 9, "facing": "up", "when": ["story.phone_got"], "lines": {
+          {"kind": "npc", "id": "r1_ness", "name": "Officer Ness", "look": "officer", "x": 3, "y": 7, "facing": "down", "catch": {"steps": 3, "scene": "phone_grant", "when": ["story.starter_received", "!story.phone_got"]}, "lines": {
+            "!story.phone_got": "@phone_grant",
             "story.side=glimmer": "That handset still sits on our wires.",
             "standing.keepers>=1": "Keeper1 behaving? Good. Walk safe.",
             "else": "Keeper1 is yours. The wires stay ours."
@@ -186,12 +186,10 @@
   },
   "scenes": {
     "phone_grant": [
-      ["say", "", "Two green coats step out of the grass and stop you on the path."],
-      ["say", "Officer Cald", "Citizen. The wild starts here. So does the service."],
-      ["say", "Officer Ness", "Every person under the lantern gets a Keeper1. It is free."],
-      ["say", "Officer Cald", "Calls, notes, friends. The handset is yours to hold."],
-      ["say", "Officer Ness", "The poles, the wires, the companies: those stay with us."],
-      ["say", "Officer Cald", "A watched path is a safe path. Have a lawful day."],
+      ["say", "", "Officer Ness bumps into you and blocks the path."],
+      ["say", "Officer Ness", "Hold. You are required to carry a Keeper1 before the wilds will have you."],
+      ["say", "Officer Ness", "It is free. The Keeper High Court mandates one for every trainer."],
+      ["say", "Officer Ness", "Take it. A trainer without one does not enter the wilds."],
       ["give", "keeper1", 1],
       ["setFlag", "story.phone_got", true]
     ],

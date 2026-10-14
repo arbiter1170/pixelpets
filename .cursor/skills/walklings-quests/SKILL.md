@@ -16,9 +16,9 @@ Town boards are scoped in `TOWN_BOARD.md`. Vincent settled the town-list D37 and
 ## Read first
 
 1. `quests.js` through `devCheck`. A step is `{ id, when?, done, text, place, target?: { map, x, y }, glimmer?: { text, place } }`. `CHAIN` is the shared main story. `SIDE_CHAINS` is independent chains. `sideCurrent` returns the first incomplete step of the first chain that has one. The phone chain is featured until `story.phone_got`, then Mom's dream (D27). A chain appended at the end stays hidden until every earlier chain is done, including Mom's last step `dream_study` (telling Ilse). `story.dream_woke` is only the step before that. Board pins must not be inserted into that list. They are a separate list, drawn in the same blue. D40 is settled: at most three, latest on the map, all of them on the phone.
-2. `OPEN_DECISIONS.md`. The next free id is one past the highest row, which is D58. D37 is already used twice (the region-map row, and the town-board list). D50–D55 are the Lantern Council. D56 is the welcome-back line. D57 is clearing a nickname. Do not insert a new row under an existing number. Settled rows move to Settled with the date and the call.
+2. `OPEN_DECISIONS.md`. The next free id is one past the highest row, which is D59. D37 is already used twice (the region-map row, and the town-board list). D50–D55 are the Lantern Council. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. Do not insert a new row under an existing number. Settled rows move to Settled with the date and the call.
 3. `TOWN_BOARD.md` if the work touches a board, a square, the Town Board app, a slip, or a bounty.
-4. One real side quest before inventing a shape. Phone grant: `data/civic.json` `phone_grant` and the Route 1 `r1_phone` trigger. Mom: `mom` in `data/interiors.json` and `mom_hello` in `data/mahopac.json`. Copy Mom for a new accept. The Route 1 trigger is a shipped exception. New accepts are conversations.
+4. One real side quest before inventing a shape. Phone grant: `data/civic.json` `phone_grant`. Officer Ness stands on Route 1 and the scene runs when you talk to him, or after a few steps that do not close the distance (`catch` on `r1_ness`). Mom: `mom` in `data/interiors.json` and `mom_hello` in `data/mahopac.json`. Copy Mom for a new accept. Ness's catch is the shipped exception. New accepts are conversations.
 5. `game.js` `execStep` and `drawObjectiveCue`. A quest does not need edits there. Main chevron is `PAL.y` (`#ffcd75`). Side and board chevrons are `PAL.c` (`#41a6f6`). Same tile shifts 7px.
 6. `tests/README.md`, `tests/helpers.js` (`starterSave`, `installSave`, `playScene`, `trackErrors`), and `tests/civic.spec.js` or `tests/mahopac.spec.js`.
 7. `tools/gen_mapdata.py`. After any `data/*.json` edit, run `python3 tools/gen_mapdata.py`. Do not hand-edit `data/mapdata.js`. A new JSON file joins the `names` tuple or the game never sees it. Merge order is maps_slice, interiors, act1_route2, cobblecrest, glimmer_path, mahopac, highcharity, heights, civic. A town-board file, when it exists, is last.
@@ -88,5 +88,5 @@ Add `tests/<feature>.spec.js`. `trackErrors(test, expect)`. Seed with `starterSa
 - Bumping save `v`.
 - Shipping guessed dialogue with no `OPEN_DECISIONS` row.
 - Hand-editing `data/mapdata.js`.
-- Accepting a new quest from a walk trigger. `phone_grant` already exists. New accepts follow Mom.
+- Accepting a new quest from a walk trigger. `phone_grant` is Officer Ness's talk, plus his `catch` if the player walks past. New accepts follow Mom.
 - Wiring a slip, a bounty, or a square while the blocking D-row is still open.

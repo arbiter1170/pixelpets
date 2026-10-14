@@ -372,8 +372,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
   box-shadow:0 0 0 2px var(--k);cursor:pointer}
 .preview canvas{display:block;image-rendering:pixelated}
 .swatch.on,.preview.on{box-shadow:0 0 0 2px var(--k),0 0 0 5px var(--y)}
-.q-side-lb{margin:10px 0 0;color:var(--c);font-size:14px;letter-spacing:1px}
-.q-side{color:var(--s)}
+.q-side{color:var(--w)}
 .look-btns{margin-top:6px}
 .look-btns.one{grid-template-columns:1fr}
 
@@ -642,17 +641,32 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .map-quest[hidden]{display:none}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-/* ---------- NEXT STEP panel (NEXT_PLAN WP-C): small overlay in the Bag / Settings pattern ---------- */
-.quest-inner{max-width:340px;width:min(340px,calc(100vw - 28px));padding:16px 14px 14px;gap:10px}
-.q-text{margin:0;font-size:21px;line-height:1.35;color:var(--w)}
-.q-place{margin:0;font-size:16px;line-height:1.3;color:var(--y)}
-.q-note{margin:0;font-size:16px;line-height:1.3;color:var(--o)}
+/* ---------- NEXT STEP panel (NEXT_PLAN WP-C): main and side cards, buttons pinned ---------- */
+.quest-inner{max-width:360px;width:min(360px,calc(100vw - 28px));padding:12px 12px 10px;gap:8px;
+  max-height:calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));overflow:hidden}
+.q-card{display:flex;flex-direction:column;gap:3px;padding:8px;background:var(--k);box-shadow:0 0 0 2px var(--d);min-width:0}
+.q-card[hidden],.q-done-wrap[hidden]{display:none}
+.q-main{box-shadow:0 0 0 2px var(--y)}
+.q-side-card{box-shadow:0 0 0 2px var(--c)}
+.q-card-h{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px}
+.q-kicker{margin:0;font-size:14px;letter-spacing:1px;color:var(--y);line-height:1.2}
+.q-side-card .q-kicker{color:var(--c)}
+.q-done-wrap .q-kicker{color:var(--m)}
+.q-status{flex:0 0 auto;font-size:13px;letter-spacing:.5px;color:var(--k);background:var(--y);padding:1px 6px;line-height:1.45}
+.q-side-card .q-status{background:var(--c)}
+.q-status.blocked{background:var(--o)}
+.q-lab{margin:2px 0 0;font-size:13px;letter-spacing:.5px;color:var(--h);line-height:1.2}
+.q-text{margin:0;font-size:18px;line-height:1.3;color:var(--w)}
+.q-place{margin:0;font-size:15px;line-height:1.25;color:var(--y)}
+.q-side-place{color:var(--s)}
+.q-note{margin:2px 0 0;font-size:15px;line-height:1.3;color:var(--o)}
 .q-note[hidden]{display:none}
-.q-done{list-style:none;margin:2px 0 0;padding:8px 0 0;border-top:2px solid var(--d);display:flex;flex-direction:column;gap:4px}
+.q-done-wrap{display:flex;flex-direction:column;gap:4px;padding:2px 2px 0;min-width:0}
+.q-done{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
 .q-done:empty{display:none}
-.q-done li{font-size:15px;line-height:1.3;color:var(--m)}
+.q-done li{font-size:14px;line-height:1.3;color:var(--m)}
 .q-done li::before{content:"\2713\00a0";color:var(--g)}
-.quest-inner .actions{margin-top:4px}
+.quest-inner .actions{margin-top:0;flex:0 0 auto}
 .quest-inner .actions.two-even.one{grid-template-columns:1fr}
 /* STANDING tab (GLIMMER_PATH BS): two tabs, each a 44 px tap target; rows with an emblem, tier name, blurb and a bar */
 .q-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:-2px 0 0}
@@ -660,7 +674,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .q-tab{min-height:44px;padding:0 6px;background:var(--d);border:2px solid var(--d);color:var(--h);font-family:var(--font);font-size:16px;line-height:1.1;cursor:pointer}
 .q-tab.on{background:var(--k);border-color:var(--y);color:var(--y)}
 .q-tab:active{transform:translateY(1px)}
-#questPaneNext,#questPaneStanding{display:flex;flex-direction:column;gap:10px}
+#questPaneNext,#questPaneStanding{display:flex;flex-direction:column;gap:8px;flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #questPaneNext[hidden],#questPaneStanding[hidden]{display:none}
 .st-rows{display:flex;flex-direction:column;gap:8px}
 .st-row{display:grid;grid-template-columns:28px 1fr;gap:0 8px;align-items:start;padding:8px;background:var(--k);box-shadow:0 0 0 2px var(--d)}
