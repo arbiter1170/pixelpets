@@ -67,7 +67,9 @@ Seeded saves set `pixelpets.geo` to `deny` (so the location card does not cover 
 
 All four mean "no failures" when the list is empty. Boot already `console.error`s a non-empty list, which fails these tests on its own.
 
-- **`PixelPets.questCheck`** (getter, not a function). Returns the array from `PPQuests.devCheck(MAPDATA)` in `quests.js`: a list of problem strings. Empty array means every `story.*` flag the map data writes is a chain step or on `NOT_STEPS`, ids are unique, objective text fits 110 characters, and the last step can never be done.
+- **`PixelPets.questCheck`** (getter, not a function). Returns the array from `PPQuests.devCheck(MAPDATA)` in `quests.js`: a list of problem strings. Empty array means every `story.*` flag the map data writes is a main-chain step, a side-chain step (`PPQuests.SIDE`), or on `NOT_STEPS`, ids are unique, objective text fits 110 characters, and the last main step can never be done.
+
+`tests/mahopac.spec.js` covers the optional Mom / Mahopac dream: the look picker has 8 hair styles, 14 hair colours, 6 outfits and 5 accessories (old colour-only looks still migrate), the side objective shows under the main step, clearing Mom's table adds 4 bond, Mahopac's three people are frozen and there are no trainers, pushing the 2004 toy moves it and pops, and the balloon memory continues through Dad into waking upstairs.
 - **`PixelPets.glimmerCheck`** (getter). Returns the array from `glimmerDevCheck()` in `game.js`: a list of problem strings. Empty array means `data/glimmer_path.json` lines fit after tokens, choice labels are at most 30 characters, ambient lines and walk-away toasts are at most 40, variants have a base scene, and those variants set the same `story.*` flags as the base.
 
 `tests/glimmer_fernbrook.spec.js` (Build 3) plays the Fernbrook glimmer path: Keepers pick leaves the orchard battle in place, an old save past the orchard does not see the gate, "Think about it" sets no flag and stepping off toasts one walk-away line, the glimmer pick runs the orchard and the four Tour stops, a worn-out party and a lost match can still finish at stop 4, and the optional win grants `tour1_match` once. Screenshots (320 and 390) cover the side pick, the orchard, each Tour stop, and the lanyard card.
@@ -75,6 +77,10 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 - **`PixelPets.befriendCheck()`** (function). Returns the array from `befriendDevCheck()` in `moves.js`: a list of problem strings. Empty array means zone width does not rise with foe level, does not fall as HP falls, and stays inside the floor and cap.
 
 `PixelPets.befriendOdds(foeLv, hpFrac, opts)` returns `{ width, chance, speed, label }`. `width` and `chance` are numbers rounded to 3 decimal places. Defaults: stage 0, joy 60, no treat, lead level equal to the foe, engaged when `hpFrac < 1`, bonus 0.
+
+`tests/lantern_rest.spec.js` (all with `?debug=1`): after a wipe the Hearthmoor Lantern House offers a 5 Acorn rest for the whole party, "Not yet" leaves the door mat shut, resting pays and then lets you out, and the outdoor sign states the cost. With 0 Acorns the keeper covers the fee and still heals the party. Fernbrook's lantern door will not let a wiped party walk off until that rest. A home nap stays free, a hurt party pays 5 Acorns at the beds, and a party already at full HP rests without paying.
+
+`PixelPets.lanternRest` (getter) returns `{ cost, due, hurt }`. `cost` is the Acorn price. `due` is true after a wipe until the party no longer needs a rest. `hurt` is true when any party Walkling is missing HP.
 
 ## Standing hooks
 

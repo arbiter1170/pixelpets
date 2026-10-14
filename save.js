@@ -20,7 +20,7 @@ const PPSave = (() => {
   const MD = typeof MAPDATA === 'object' ? MAPDATA : null;
   const MAP_SIZE = {};
   const addMaps = bag => { if (bag) for (const [id, m] of Object.entries(bag)) if (m && m.w && m.h) MAP_SIZE[id] = [m.w, m.h]; };
-  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); addMaps(MD.highcharity && MD.highcharity.maps); addMaps(MD.highcharity && MD.highcharity.rooms); }
+  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); addMaps(MD.mahopac && MD.mahopac.maps); addMaps(MD.highcharity && MD.highcharity.maps); addMaps(MD.highcharity && MD.highcharity.rooms); }
   else MAP_SIZE.proto = [24, 20];
   const MAPS = Object.keys(MAP_SIZE);
   const MAP_W = 24, MAP_H = 20;                 // v1 positions were on the 24x20 proto map
@@ -187,6 +187,8 @@ const PPSave = (() => {
     fill(w, 'map', x => typeof x === 'string', 'proto');
     fill(w, 'x', Number.isInteger, 3); fill(w, 'y', Number.isInteger, 3);
     fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || x === 'hearthmoor' || x === 'fernbrook' || x === 'cobblecrest' || x === 'highcharity', null);
+    // After a party wipe the Lantern House door stays shut until the party rests (additive; absent means no).
+    if (w.restDue !== true) delete w.restDue;
     for (const k of ['bag', 'seals', 'flags']) fill(s, k, isObj, {});
     // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
     for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];

@@ -1,0 +1,322 @@
+{
+  "spec": "MAHOPAC",
+  "version": "1.0",
+  "status": "playable side story. Optional after the starter. Does not gate the main chain.",
+  "_about": "Mom's upstairs, a north trail to Mahopac, and a dream at Breckenridge Observatory. Time in Mahopac is stuck: people drift a step, then hold still. The dream is three memories (a 2004 pop-toy, a seventh birthday, dinner with Dad at MacRonalds) that teach the partner to trust the player. Mom then sends you to Warden Ilse, whom she calls Professor when the work is dreams.",
+  "decisions": {
+    "1_optional": "The side chain never blocks Route 1. Old saves with a Walkling can start it by going upstairs.",
+    "2_ilse": "There is no second professor. Mom calls Warden Ilse 'Professor' for dream work. Ilse still uses her Warden title everywhere else.",
+    "3_dream_art": "Dream maps set dream to young or child. The map gets a soft wash, and the keeper draws smaller.",
+    "4_no_conflict": "Mahopac has no trainers, no faction stands, and no wild battles."
+  },
+  "tiles": {},
+  "looks": {
+    "dad": {"skin": "4", "hair": "short", "hairCol": "d", "outfit": "hoodie", "outfitCol": "n", "accent": "y", "accessory": "glasses"},
+    "nora": {"skin": "3", "hair": "pony", "hairCol": "d", "outfit": "vest", "outfitCol": "g", "accent": "y", "accessory": "none"},
+    "cal": {"skin": "1", "hair": "buzz", "hairCol": "o", "outfit": "tunic", "outfitCol": "b", "accent": "r", "accessory": "cap"},
+    "bess": {"skin": "5", "hair": "curls", "hairCol": "n", "outfit": "dress", "outfitCol": "p", "accent": "y", "accessory": "bow"}
+  },
+  "speakers": {
+    "Dad": "dad",
+    "Nora": "nora",
+    "Cal": "cal",
+    "Bess": "bess"
+  },
+  "flags": {
+    "story.mom_met": "Talked to Mom about helping the Walkling settle.",
+    "story.mom_chore": "Cleared the downstairs table.",
+    "story.mom_sent": "Mom opened the north trail to Mahopac.",
+    "story.reached_mahopac": "Stepped onto the Mahopac trail.",
+    "story.dream_started": "Looked through the observatory lens.",
+    "story.dream_roll": "How many tiles the pop-toy has been pushed. Not a chain step.",
+    "story.dream_toy": "Finished the 2004 toy memory.",
+    "story.dream_red": "Popped the red birthday balloon.",
+    "story.dream_yellow": "Popped the yellow birthday balloon.",
+    "story.dream_blue": "Popped the blue birthday balloon.",
+    "story.dream_party": "Finished the seventh-birthday memory.",
+    "story.dream_dad": "Finished the drive-through memory.",
+    "story.dream_woke": "Woke at home. Mom asked about the dream.",
+    "story.dream_study": "Told Warden Ilse about the dream."
+  },
+  "newNames": ["Mahopac", "Breckenridge Observatory", "Mom", "Dad", "Nora", "Cal", "Bess", "MacRonalds"],
+  "slicePatch": {
+    "_note": "Opens a three-tile gap in Hearthmoor's north trees. The warp stays shut until Mom says to go.",
+    "maps": {
+      "hearthmoor": {
+        "gridRows": {"0": "TTTTTTTTpppTTTTTTTTTTTTT"},
+        "addObjs": [
+          {"kind": "warp", "id": "hm_north", "x": 9, "y": 0, "to": "mahopac", "tx": 9, "ty": 14, "facing": "up", "need": "story.mom_sent", "setFlag": "story.reached_mahopac"},
+          {"kind": "sign", "id": "hm_north_closed", "x": 8, "y": 1, "when": ["!story.mom_sent"], "text": "A north trail. Mom says it can wait."},
+          {"kind": "sign", "id": "hm_north_open", "x": 8, "y": 1, "when": ["story.mom_sent"], "text": "North trail to Mahopac. Time feels thick up there."},
+          {"kind": "trigger", "id": "hm_north_wait", "x": 9, "y": 1, "when": ["!story.mom_sent"], "scene": "north_closed"}
+        ]
+      }
+    }
+  },
+  "maps": {
+    "mahopac": {
+      "name": "Mahopac", "backdrop": "town", "w": 20, "h": 16, "spawns": null,
+      "start": {"x": 9, "y": 14, "facing": "up"}, "safe": {"x": 9, "y": 14},
+      "respawn": {"x": 9, "y": 14, "facing": "up"}, "zones": [],
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTT",
+        "TggggggggggggggggggT",
+        "TgfffggggggggggfffgT",
+        "TggggggggggggggggggT",
+        "TggRRRRRggggggwwgggT",
+        "TggRRRRRggggggwwgggT",
+        "TggHHHHHggggggwwgggT",
+        "TggggpggggggggssgggT",
+        "TggggpppppppppssgggT",
+        "TggggggggggggggggggT",
+        "TgggfgggggggggfggggT",
+        "TggggggggggggggggggT",
+        "TggggggggggggggggggT",
+        "TggggggggpgggggggggT",
+        "TggggggggpgggggggggT",
+        "TTTTTTTTTpTTTTTTTTTT"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "mah_south", "x": 9, "y": 15, "to": "hearthmoor", "tx": 9, "ty": 1, "facing": "down"},
+        {"kind": "door", "id": "mah_obs", "x": 5, "y": 7, "to": "mahopac_obs", "tx": 4, "ty": 5, "facing": "up"},
+        {"kind": "sign", "id": "mah_sign", "x": 4, "y": 7, "text": "Breckenridge Observatory. The lens remembers."},
+        {"kind": "npc", "id": "nora", "name": "Nora", "look": "nora", "x": 8, "y": 10, "facing": "right", "frozen": true,
+          "loop": [[8, 10], [9, 10]],
+          "chatter": {"else": "Still waving. The minute will not end."},
+          "lines": {"else": "I started a wave. I think I am still in it. The next second will not come."}},
+        {"kind": "npc", "id": "cal", "name": "Cal", "look": "cal", "x": 12, "y": 9, "facing": "down", "frozen": true,
+          "loop": [[12, 9], [12, 10]],
+          "chatter": {"else": "My kite is stuck between seconds."},
+          "lines": {"else": "The kite moved once, then the wind forgot. It is pretty, stuck like that."}},
+        {"kind": "npc", "id": "bess", "name": "Bess", "look": "bess", "x": 2, "y": 9, "facing": "right", "frozen": true,
+          "loop": [[2, 9], [3, 9]],
+          "chatter": {"else": "No banners. Just a stopped clock."},
+          "lines": {"else": "No one is fighting here. The woods held the clock, and the clock held us."}}
+      ]
+    },
+    "mahopac_obs": {
+      "name": "Breckenridge Observatory", "kind": "interior", "outdoor": "mahopac", "backdrop": "town",
+      "w": 9, "h": 7, "spawns": null, "zones": [], "safe": {"x": 4, "y": 5},
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####.####"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "obs_out", "x": 4, "y": 6, "to": "mahopac", "tx": 5, "ty": 8, "facing": "down"},
+        {"kind": "prop", "id": "obs_scope", "x": 4, "y": 2, "sprite": "telescope", "lines": {
+          "!story.dream_started": "@dream_begin",
+          "!story.dream_woke": "@dream_resume",
+          "else": "The lens is quiet. It remembers you, and it lets you leave."}}
+      ]
+    },
+    "dream_2004": {
+      "name": "Dream: 2004", "kind": "interior", "dream": "young", "outdoor": "mahopac", "backdrop": "town",
+      "w": 9, "h": 8, "spawns": null, "zones": [], "safe": {"x": 4, "y": 6},
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#...=...#",
+        "#.......#",
+        "#.......#",
+        "#########"
+      ],
+      "objs": [
+        {"kind": "prop", "id": "pop_toy", "name": "the toy", "x": 3, "y": 3, "sprite": "pop_toy", "roll": true,
+          "rollFlag": "story.dream_roll", "rollScene": "dream_to_party",
+          "circuit": [[3, 3], [4, 3], [5, 3], [5, 4], [5, 5], [4, 5], [3, 5], [3, 4]]},
+        {"kind": "sign", "id": "dream_toy_sign", "x": 7, "y": 2, "text": "You are very small. Push the toy. It pops as it rolls."}
+      ]
+    },
+    "dream_party": {
+      "name": "Dream: seventh birthday", "kind": "interior", "dream": "child", "outdoor": "mahopac", "backdrop": "town",
+      "w": 11, "h": 8, "spawns": null, "zones": [], "safe": {"x": 5, "y": 6},
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#ppppppppp#",
+        "#ppppppppp#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "###########"
+      ],
+      "objs": [
+        {"kind": "prop", "id": "pins", "x": 5, "y": 3, "sprite": "pins", "lines": {"else": "Bowling pins, waiting. The balloons are the ones asking."}},
+        {"kind": "prop", "id": "balloon_red", "name": "the red balloon", "x": 2, "y": 5, "sprite": "balloon_r", "when": ["!story.dream_red"], "scene": "dream_balloon_red"},
+        {"kind": "prop", "id": "balloon_yellow", "name": "the yellow balloon", "x": 5, "y": 5, "sprite": "balloon_y", "when": ["!story.dream_yellow"], "scene": "dream_balloon_yellow"},
+        {"kind": "prop", "id": "balloon_blue", "name": "the blue balloon", "x": 8, "y": 5, "sprite": "balloon_c", "when": ["!story.dream_blue"], "scene": "dream_balloon_blue"},
+        {"kind": "sign", "id": "dream_party_sign", "x": 1, "y": 4, "text": "Your seventh birthday. Pop a balloon. Then another."}
+      ]
+    },
+    "dream_drive": {
+      "name": "Dream: the drive-through", "kind": "interior", "dream": "child", "outdoor": "mahopac", "backdrop": "town",
+      "w": 9, "h": 7, "spawns": null, "zones": [], "safe": {"x": 5, "y": 3},
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#########"
+      ],
+      "objs": [
+        {"kind": "npc", "id": "dream_dad", "name": "Dad", "look": "dad", "x": 2, "y": 3, "facing": "right", "lines": {
+          "!story.dream_dad": "@dream_dad",
+          "else": "Eat up. The world can wait."}},
+        {"kind": "prop", "id": "fry_tray", "x": 6, "y": 3, "sprite": "fry_tray", "lines": {"else": "Fries, a drink, and the MacRonalds tray light."}},
+        {"kind": "trigger", "id": "dream_dad_at", "x": 5, "y": 3, "arrive": true, "when": ["story.dream_party", "!story.dream_dad"], "scene": "dream_dad"}
+      ]
+    }
+  },
+  "scenes": {
+    "north_closed": [
+      ["say", "", "The trees lean in. Not today, says a voice that sounds like Mom."]
+    ],
+    "mom_hello": [
+      ["say", "Mom", "There you are. And this is {pet}? Oh, look at that little face."],
+      ["say", "", "{pet} sniffs Mom's sleeve, then leans in."],
+      ["say", "Mom", "A bond grows in small jobs. Clear the crumbs downstairs, so {pet} can sit with us."],
+      ["choice", "Help Mom?", [
+        ["I'll clear the table", [
+          ["say", "Mom", "That's my keeper. The mug can stay. The crumbs cannot."],
+          ["setFlag", "story.mom_met", true]
+        ]],
+        ["In a little bit", [
+          ["say", "Mom", "No rush. The crumbs are very patient."]
+        ]]
+      ]]
+    ],
+    "mom_tidy": [
+      ["say", "", "You sweep the crumbs into your palm. {pet} watches like this is a grand quest."],
+      ["say", "", "{pet} bumps your knee, pleased to have helped."],
+      ["bond", 4],
+      ["setFlag", "story.mom_chore", true]
+    ],
+    "mom_trip": [
+      ["say", "Mom", "The table looks kind. {pet} already stands a little taller."],
+      ["say", "Mom", "North of town is Mahopac. No banners. No one arguing in the street."],
+      ["say", "Mom", "Time snagged there. People take one step, then the minute refuses to finish."],
+      ["say", "Mom", "Breckenridge Observatory can show {pet} a memory of yours."],
+      ["say", "Mom", "A Walkling trusts you faster once it has seen who you were."],
+      ["say", "Mom", "Take the north trail when you are ready. I will keep the kettle warm."],
+      ["setFlag", "story.mom_sent", true]
+    ],
+    "dream_begin": [
+      ["say", "", "You lean into the lens. The glass blooms, soft as a night-light."],
+      ["say", "", "The floor tilts. You are very small, and the room is huge."],
+      ["setFlag", "story.dream_started", true],
+      ["warp", "dream_2004", 4, 6, "up"],
+      ["say", "", "2004. A toy rolls in circles and pops. Push it all the way around."]
+    ],
+    "dream_resume": [
+      ["say", "", "The lens is still warm. It remembers where you left the dream."],
+      ["if", "story.dream_dad", [
+        ["warp", "hm_home_up", 4, 5, "down"]
+      ], [
+        ["if", "story.dream_party", [
+          ["warp", "dream_drive", 5, 3, "left"]
+        ], [
+          ["if", "story.dream_toy", [
+            ["warp", "dream_party", 5, 6, "up"]
+          ], [
+            ["warp", "dream_2004", 4, 6, "up"]
+          ]]
+        ]]
+      ]]
+    ],
+    "dream_to_party": [
+      ["say", "", "The toy finishes its circle. The pops get bigger than the room."],
+      ["sfx", "pop"],
+      ["bond", 6],
+      ["setFlag", "story.dream_toy", true],
+      ["warp", "dream_party", 5, 6, "up"],
+      ["say", "", "Your seventh birthday, at a bowling alley. The balloons want to be popped."]
+    ],
+    "dream_balloon_red": [
+      ["say", "", "Pop! The red balloon is just a ribbon now."],
+      ["sfx", "pop"],
+      ["setFlag", "story.dream_red", true],
+      ["if", "story.dream_yellow", [["if", "story.dream_blue", [["run", "dream_to_dad"]]]]]
+    ],
+    "dream_balloon_yellow": [
+      ["say", "", "Pop! Yellow bits drift down like slow confetti."],
+      ["sfx", "pop"],
+      ["setFlag", "story.dream_yellow", true],
+      ["if", "story.dream_red", [["if", "story.dream_blue", [["run", "dream_to_dad"]]]]]
+    ],
+    "dream_balloon_blue": [
+      ["say", "", "Pop! The blue one goes, and the alley laughs with you."],
+      ["sfx", "pop"],
+      ["setFlag", "story.dream_blue", true],
+      ["if", "story.dream_red", [["if", "story.dream_yellow", [["run", "dream_to_dad"]]]]]
+    ],
+    "dream_to_dad": [
+      ["say", "", "The last pop folds the birthday away."],
+      ["bond", 6],
+      ["setFlag", "story.dream_party", true],
+      ["warp", "dream_drive", 5, 3, "left"],
+      ["say", "", "You are eight. The car smells like fries. Dad is in the next seat."]
+    ],
+    "dream_dad": [
+      ["say", "Dad", "School going all right? You do not have to be the best. Just be in it."],
+      ["choice", "What do you tell Dad?", [
+        ["School is fun", [["say", "Dad", "Good. Fun is a kind of brave."]]],
+        ["It is hard", [["say", "Dad", "Hard is allowed. Ask for help. That is growing up too."]]],
+        ["I like recess", [["say", "Dad", "Ha. Recess is a serious subject. I respect it."]]]
+      ]],
+      ["say", "Dad", "Life gets bigger. High school will feel like a new town."],
+      ["say", "Dad", "You will want things. A team, a class, a friend. Say them out loud."],
+      ["say", "Dad", "Ambition can be gentle. It does not have to shout."],
+      ["choice", "What do you want, someday?", [
+        ["To be brave", [["say", "Dad", "Then practice on small brave things. You already do."]]],
+        ["To help people", [["say", "Dad", "That is a whole life. Start with whoever is next to you."]]],
+        ["To see the stars", [["say", "Dad", "Then we will. Stars keep. So do you."]]]
+      ]],
+      ["say", "Dad", "Eat your dinner. The world can wait through one drive-through."],
+      ["say", "", "{pet}'s shape flickers in the glass, watching, learning your face."],
+      ["bond", 8],
+      ["setFlag", "story.dream_dad", true],
+      ["say", "", "The fries fade. You fall upward, into your own bed."],
+      ["warp", "hm_home_up", 4, 5, "down"]
+    ],
+    "mom_wake": [
+      ["chirp"],
+      ["say", "", "{pet} chirps, bright and shaky, like a kettle finding its note."],
+      ["say", "Mom", "I heard that from the stair. You were dreaming with your eyes shut tight."],
+      ["say", "", "{pet} spins once, then presses against your boot, sure of you."],
+      ["choice", "Mom asks what you dreamed.", [
+        ["A toy, then Dad", [["say", "Mom", "Balloons and a drive-through. Of course those two stuck."]]],
+        ["It felt real", [["say", "Mom", "The ones that matter feel like rooms you can walk."]]],
+        ["My Walkling saw it", [["say", "Mom", "That is the point. {pet} can trust a face it has seen small."]]]
+      ]],
+      ["say", "Mom", "Go see Professor Ilse at the Lodge. She gave you {pet}."],
+      ["say", "Mom", "Dreams are her other work. She will want the shape of this one."],
+      ["bond", 6],
+      ["setFlag", "story.dream_woke", true]
+    ],
+    "ilse_gate": [
+      ["if", "story.dream_study", [["run", "ilse_chat"]], [["run", "ilse_dreams"]]]
+    ],
+    "ilse_dreams": [
+      ["say", "Warden Ilse", "Your mom sent you. I can see it. {pet} looks newly sure of you."],
+      ["say", "Warden Ilse", "Professor, she calls me, when the work is dreams. Warden, for lanterns."],
+      ["choice", "What do you tell her?", [
+        ["A popping toy", [["say", "Warden Ilse", "First sounds stick. {pet} learned your laugh from a pop."]]],
+        ["Balloons at seven", [["say", "Warden Ilse", "A birthday is a brave room. {pet} felt you share it."]]],
+        ["Dinner with Dad", [["say", "Warden Ilse", "That one is tender. {pet} will keep it gently."]]]
+      ]],
+      ["say", "Warden Ilse", "I will write it in the dream ledger. If {pet} dreams again, tell me the shape."],
+      ["say", "Warden Ilse", "Trust is a slow lantern. Yours is lit."],
+      ["bond", 4],
+      ["setFlag", "story.dream_study", true]
+    ]
+  }
+}

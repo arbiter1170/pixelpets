@@ -453,6 +453,9 @@ function buildTiles(){
   T.Rb = mkTile(g => { px(g,PAL.b,0,0,16,16);
     for (let y = 0; y < 12; y += 4) { px(g,PAL.n,0,y+3,16,1); for (let x = (y/4)%2*4; x < 16; x += 8) px(g,PAL.n,x,y,1,3); px(g,PAL.h,((y/4)%2*4+2)%16,y+1,2,1); }
     px(g,PAL.n,0,12,16,4); px(g,PAL.k,0,15,16,1); });
+  // Mahopac home stairs.
+  T['^'] = mkTile(g => { px(g,PAL.o,0,0,16,16); [4,9,14].forEach(y => px(g,PAL.d,0,y,16,1));
+    px(g,PAL.d,2,12,12,2); px(g,PAL.h,3,12,10,1); px(g,PAL.d,4,8,8,2); px(g,PAL.h,5,8,6,1); px(g,PAL.d,6,4,4,2); px(g,PAL.w,7,4,2,1); });
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
@@ -485,6 +488,18 @@ function buildWorldArt(){
     px(g,PAL.k,1,15,14,1);
   });
   A.talk = ['.wwwwww.','wwwwwwww','wkwkwkww','wwwwwwww','.wwwwww.','..ww....','.w......','........'];   // 8x8 speech bubble (INTERIORS §6)
+  // Mahopac dreams: a pop-along toy, party balloons, the observatory lens, a drive-through tray, bowling pins.
+  A.pop_toy = [0, 1].map(f => mkTile(g => {
+    px(g,PAL.d,4,11,8,3); px(g,PAL.o,5,12,6,1); px(g,PAL.y,7,6,2,5);
+    [[3,4,'r'],[11,4,'y'],[2,8,'c'],[12,8,'l']].forEach(([x,y,c], i) => { const dy = (f + i) % 2; px(g,PAL[c],x,y - dy,2,2); px(g,PAL.w,x,y - dy,1,1); });
+  }));
+  const balloon = col => [0, 1].map(f => mkTile(g => {
+    oval(g, 7.5, 5 + f, 5, 4.5, PAL[col]); oval(g, 6, 4, 1.2, 1.2, PAL.w); px(g,PAL.d,7,10,2,1); px(g,PAL.h,7,11,1,4); px(g,PAL.h,8,13,1,1);
+  }));
+  A.balloon_r = balloon('r'); A.balloon_y = balloon('y'); A.balloon_c = balloon('c');
+  A.telescope = mkTile(g => { px(g,PAL.d,3,13,10,2); px(g,PAL.m,7,8,2,5); px(g,PAL.d,2,6,12,3); px(g,PAL.h,3,7,10,1); px(g,PAL.c,11,5,3,3); px(g,PAL.s,12,5,1,1); px(g,PAL.y,1,7,2,1); });
+  A.fry_tray = mkTile(g => { px(g,PAL.r,2,6,12,8); px(g,PAL.y,3,7,10,6); px(g,PAL.o,4,3,2,5); px(g,PAL.o,7,2,2,6); px(g,PAL.o,10,4,2,4); px(g,PAL.w,12,8,2,3); px(g,PAL.c,12,6,2,2); });
+  A.pins = mkTile(g => { [4, 7, 10].forEach(x => { px(g,PAL.w,x,6,2,6); px(g,PAL.r,x,8,2,1); px(g,PAL.h,x,5,2,1); }); px(g,PAL.d,3,13,10,1); });
   // ACT1_ROUTE2 props.
   A.rubble = mkTile(g => { grassBase(g, 17);
     px(g,PAL.d,1,8,6,6); px(g,PAL.h,2,9,4,3); px(g,PAL.w,2,9,1,1);

@@ -276,6 +276,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
   box-shadow:0 0 0 2px var(--k);cursor:pointer}
 .preview canvas{display:block;image-rendering:pixelated}
 .swatch.on,.preview.on{box-shadow:0 0 0 2px var(--k),0 0 0 5px var(--y)}
+.q-side-lb{margin:10px 0 0;color:var(--c);font-size:14px;letter-spacing:1px}
+.q-side{color:var(--s)}
 .look-btns{margin-top:6px}
 .look-btns.one{grid-template-columns:1fr}
 
