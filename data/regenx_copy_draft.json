@@ -1,0 +1,131 @@
+{
+  "lore": {
+    "company": "RegenX is the lab in Fernbrook Heights. The staff are decent people who believe Atten helps Walklings focus. They are not cruel, and the label is not a trick. They will stand between a visitor and the work, and they would rather the visitor simply asked.",
+    "building": "RegenX built a white four-floor lab around a hum. The floors run lobby, Focus Wing, Records, and the top bay. Stairs lock between them. Visitors come by appointment. The rooms are bright, clean, and a little proud of every job they can explain.",
+    "atten": "Atten is a focus aid with an honest label. It helps a Walkling focus. RegenX has no side effects on record, and the brewers believe the page. Glimmerwell wants a copy of one vial and the cheap plans, and talks about that errand as a kindness.",
+    "arbiter": "The Arbiter is an ancient Glimmerwell cradle in the top bay. It emits something slowly. Nobody can name the emission. RegenX never knew why the machine was built. They left the cradle dark and did the day's work around the hum. Glimmerwell calls the machine ancient, and believes that leaving it dark is care.",
+    "bitlet": "Species id byte, type VOLT. Bitlet is a tiny floating monitor with cursor eyes and no feet. Hoverbyte is a floating laptop with cable whiskers. Archivolt is a floating server stack. It woke in the Arbiter bay when the cradle hummed. It is not a product and not a sample. Staff call it a glitch and leave it alone. The player may befriend it."
+  },
+  "scenes": {
+    "know_us_glimmer": [
+      ["say", "Associate Juniper", "{name}! Welcome, partner. Before the tour, get to know us."],
+      ["say", "Associate Juniper", "RegenX sits in the Heights. They brew Atten. It helps a Walkling focus."],
+      ["say", "Tobin", "We want a copy of one Atten vial, and the plans to brew it cheap."],
+      ["say", "Associate Juniper", "The people inside are kind. They believe the label. Smile, and mean it."],
+      ["say", "Tobin", "A little screen floats in the top bay. Staff call it a glitch and leave it."],
+      ["say", "Associate Juniper", "Leave it off our list. Copies only. That is the kind way."],
+      ["say", "Tobin", "Stock up, {player}. Snacks, a rest, a full team. Four floors is a long walk."],
+      ["say", "Associate Juniper", "Have a bright day! The hum will wait. It is very good at waiting."]
+    ],
+    "rx_enter": [
+      ["say", "", "A white lobby, four floors stacked around a hum. The brass sign reads REGENX."],
+      ["say", "", "Visitors by appointment. The staff look kind. They will still stand in your way."],
+      ["say", "", "Nobody at the desk tries to name the hum. They built the lab around it and went to work."]
+    ],
+    "rx_nia": [
+      ["say", "Nia", "Visitor badge? Cute. I'm Nia. I file Atten samples for RegenX."],
+      ["say", "Nia", "And for the partnership. Don't say that where the cameras can hear."],
+      ["say", "Nia", "A floating screen lives in the top bay. Not a file. Not a vial."],
+      ["say", "Nia", "Staff call it a glitch and leave it alone. You can still say hello."],
+      ["say", "Nia", "Guards ahead are good people. They will ask you to leave the samples alone."],
+      ["say", "Nia", "Win kindly, and I'll click the stair lock. Floor two has the vials."]
+    ],
+    "rx_cal": [
+      ["say", "Cal", "You again. I'm Cal. Floor tech. I drop things. Keys, mostly..."],
+      ["say", "Cal", "Atten does what the label says. Focus. Bright eyes. RegenX believes that."],
+      ["say", "Cal", "Dr. Ivo will say it slower, and mean it more. The label is honest."],
+      ["say", "Cal", "Up top, a tiny monitor floats. Cursor eyes. No feet. We let the glitch be."],
+      ["say", "Cal", "Take a tonic. If the bay gets loud, my Walkling knows the way."]
+    ],
+    "rx_terminal": [
+      ["say", "", "A RegenX screen: Atten improves focus. No side effects on record."],
+      ["say", "", "Under that, an older note. Not RegenX. It only says: THE ARBITER."],
+      ["say", "", "The machine emits something, very slowly. Nobody in the lab can name it."],
+      ["say", "", "Glimmerwell calls it ancient, and will not say why it was built. RegenX never knew."],
+      ["say", "", "A cursor blinks on the glass. It answers the hum, one quiet blink at a time."],
+      ["say", "", "The cursor is not a product. It is not a sample. It only answers."]
+    ],
+    "rx_bitlet": [
+      ["say", "", "The top bay is white and quiet. The Arbiter cradle hums, and nothing rushes out."],
+      ["say", "", "A tiny monitor floats in front of it. Cursor eyes. No feet. No name on a tag."],
+      ["say", "", "It woke when the cradle hummed. Staff call it a glitch and step around it."],
+      ["say", "", "It is not a product. It is not a sample. The cursor finds {pet}, then you."],
+      ["if", "story.byte_joined", [
+        ["say", "", "The Bitlet tips toward {pet}, cursor bright, and floats along beside you."],
+        ["say", "", "It comes along of its own tilt. The cradle keeps humming behind you."]
+      ], [
+        ["say", "", "The Bitlet stays by the cradle. The cursor blinks, slow and pleased."],
+        ["say", "", "You leave it there. Nobody chases a glitch. The hum goes on, unnamed."]
+      ]]
+    ],
+    "rx_done_extra": [
+      ["if", "story.byte_joined", [
+        ["say", "Quinn", "The little screen went with you. Good. We were never going to file it."]
+      ], [
+        ["say", "Quinn", "The glitch stays by the cradle. Leave it. It was never a sample."]
+      ]],
+      ["say", "Quinn", "Leave the cradle dark. We only came for copies."],
+      ["say", "", "The Arbiter keeps emitting, slow and unnamed. Nothing rushes out."],
+      ["say", "Quinn", "We do not know what it sends. The old ones built it. That is all I was told."]
+    ]
+  },
+  "chatter": {
+    "rx_nia": [
+      {"when": "story.heights_done", "text": "Copies are in. I am just filing."},
+      {"when": "story.saw_arbiter", "text": "That cursor is not in my files."},
+      {"when": "story.rx_f1", "text": "Stair's open. I did not see you."},
+      {"when": "else", "text": "Cameras up. I am just filing."}
+    ],
+    "rx_cal": [
+      {"when": "story.heights_done", "text": "Keys found. The glitch is fine."},
+      {"when": "story.saw_arbiter", "text": "A cursor answered the hum."},
+      {"when": "story.rx_f1", "text": "Mind the rack. Years of work."},
+      {"when": "else", "text": "I drop keys. Occupational hazard."}
+    ],
+    "rx_ivo": [
+      {"when": "story.heights_done", "text": "Atten still matches the label."},
+      {"when": "story.saw_arbiter", "text": "A glitch. We leave it alone."},
+      {"when": "story.rx_f1", "text": "Soft steps. This wing is for focus."},
+      {"when": "else", "text": "Atten helps focus. That is the label."}
+    ],
+    "rx_arbiter": [
+      {"when": "story.heights_done", "text": "Still emitting. Slow. Unnamed."},
+      {"when": "story.saw_arbiter", "text": "A cursor answers the hum."},
+      {"when": "story.rx_f1", "text": "The hum was here before you."},
+      {"when": "else", "text": "It emits slowly. The screen is dark."}
+    ]
+  },
+  "signs": [
+    {"id": "rx_f1_plaque", "text": "REGENX LOBBY. Floor one of four. Visitors by appointment. Please leave the samples alone."},
+    {"id": "rx_f2_plaque", "text": "FOCUS WING. Atten helps a Walkling focus. The vial rack is years of work. Please let it be."},
+    {"id": "rx_f3_plaque", "text": "RECORDS. Folders stay in this room. An older note says THE ARBITER, and nothing more."},
+    {"id": "rx_f4_plaque", "text": "THE ARBITER. Top bay. The cradle emits slowly. The floating screen is not a sample."}
+  ],
+  "trainers": {
+    "rx_wardens": {
+      "intro": "RegenX is a closed lab. Please leave the samples alone.",
+      "win": "You may go up. Please still leave the samples alone. We will be here.",
+      "lose": "Go home and rest. Nobody on this floor wanted a fight."
+    },
+    "rx_techs": {
+      "intro": "That rack is years of work. Please put the vial back.",
+      "win": "Take the copy, then. Wash your hands. Atten stains, and we still like you.",
+      "lose": "We make focus, not enemies. Come back when you are ready."
+    },
+    "rx_records": {
+      "intro": "Those folders are RegenX property. I can't let you copy them.",
+      "win": "The cheap recipe is in the thin one. Please don't lose it.",
+      "lose": "Rest up. The folders will still be here, and so will I."
+    },
+    "rx_quinn": {
+      "intro": "Step away from the cradle. Those copies are not a reason to touch it.",
+      "win": "Take the copies. Leave the cradle dark. The little screen is not a prize.",
+      "lose": "Go home. The people on these floors are not your enemy."
+    },
+    "rx_cal_ally": {
+      "intro": "I'm with you.",
+      "win": "We did it.",
+      "lose": "I'll be outside."
+    }
+  }
+}
