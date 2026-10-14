@@ -30,9 +30,9 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .icon-btn:active{background:var(--d)}
 
 /* Settings overlay (header gear) */
-.settings-inner{max-width:320px;width:min(320px,calc(100vw - 28px));padding:16px 14px 14px}
-.set-list{display:flex;flex-direction:column;gap:8px;margin:4px 0 14px}
-.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0 14px;border:3px solid var(--d);background:var(--n);color:var(--w);font-family:var(--font);font-size:20px;cursor:pointer;text-align:left}
+.settings-inner{max-width:320px;width:min(320px,calc(100vw - 28px));padding:12px 14px 10px}
+.set-list{display:flex;flex-direction:column;gap:6px;margin:2px 0 10px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:0 14px;border:3px solid var(--d);background:var(--n);color:var(--w);font-family:var(--font);font-size:20px;cursor:pointer;text-align:left}
 .set-row:active{transform:translateY(1px)}
 .set-row .set-lab{flex:1 1 auto}
 .set-row .set-val{color:var(--y);min-width:2.5ch;text-align:right}
@@ -40,7 +40,12 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .set-hint{margin:-4px 0 0;padding:0 2px;font-size:12px;line-height:1.25;color:var(--h)}
 .set-row.set-danger{border-color:var(--r);color:var(--h)}
 .set-row.set-danger .set-val{color:var(--r)}
-.settings-inner > .btn{width:100%;min-height:48px}
+.settings-inner > .btn{width:100%;min-height:44px}
+/* A fresh game (no Walklings yet) can still reach the gear under the opening scene, so a wiped save can be read back. */
+body.no-pets #settingsBtn{position:relative;z-index:12}
+#ovSettings,#ovReset,#ovCopy{z-index:16}
+#resetCopy{width:100%;min-height:48px}
+#ovCopy .actions .btn[hidden]{display:none}
 #hdrIcon{width:36px;height:36px}
 #top .lv{display:flex;flex-direction:column;align-items:flex-end;font-size:18px;color:var(--y)}
 #top .lv[hidden]{display:none}
@@ -135,7 +140,7 @@ h2 small{color:var(--h);font-size:17px}
 .dpc[hidden]{display:none}
 .dpc.bl{grid-column:1;grid-row:3}.dpc.br{grid-column:3;grid-row:3}
 .dpc.tl{grid-column:1;grid-row:1}
-.dpc.tr{grid-column:3;grid-row:1}   /* QUEST (NEXT_PLAN WP-C): the last free corner */
+.dpc.tr{grid-column:3;grid-row:1}
 .dpc.pulse{animation:jpulse .8s steps(2) infinite}
 @keyframes jpulse{50%{background:var(--b)}}
 @media (prefers-reduced-motion: reduce){ .dpc.pulse{animation:none;background:var(--b)} }
@@ -215,6 +220,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #tabs button{min-height:62px;border:0;background:transparent;color:var(--m);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:16px}
 #tabs button canvas{width:24px;height:24px}
 #tabs button.active{color:var(--y);background:var(--n)}
+#tabs button.pulse{color:var(--y)}
 #tabs button:active{background:var(--d)}
 #tabs.locked{pointer-events:none;opacity:.5}
 
@@ -223,6 +229,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
   padding:calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left))}
 .overlay[hidden]{display:none}
 .ov-inner{width:100%;max-width:440px;display:flex;flex-direction:column;gap:12px;background:var(--n);padding:14px;box-shadow:0 0 0 4px var(--k),0 0 0 8px var(--d);max-height:100%;overflow-y:auto}
+.ov-inner.settings-inner{overflow:hidden}
+.settings-inner .set-list{overflow-y:auto;min-height:0;flex:1 1 auto}
 .ov-title{text-align:center;font-size:25px;color:var(--y);text-shadow:2px 2px 0 var(--k)}
 .tbar{position:relative;height:30px;background:var(--d);margin:6px}
 .tzone{position:absolute;top:0;bottom:0;background:var(--g)}
@@ -318,7 +326,11 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
   padding:6px 6px calc(6px + env(safe-area-inset-bottom));box-sizing:border-box}
 .bt-card{background:var(--k);box-shadow:0 0 0 3px var(--d);padding:4px 8px;display:flex;flex-direction:column;gap:3px;flex:0 0 auto;line-height:1.1}
 .bt-row{display:flex;align-items:center;gap:8px;min-width:0}
+.bt-row[hidden]{display:none}
 .bt-name{color:var(--w);font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.bt-mini{font-size:14px}
+.bt-mini .bt-name{font-size:14px}
+.bt-mini .bt-hp{height:6px}
 .bt-lv{color:var(--y);font-size:17px;white-space:nowrap}
 .bt-twinkle{color:var(--y);margin-left:auto}
 .bt-hpl{color:var(--y);font-size:14px}
@@ -439,7 +451,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sb-portrait[hidden]{display:none}
 
 /* Settings: the build id (tools/bump_build.py writes window.BUILD), small and dim at the bottom */
-.set-build{margin:10px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-build{margin:6px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sh-item.sh-pre{box-shadow:inset 0 0 0 3px var(--y)}
 
 /* INVENTORY §6 Bag overlay + BAG chrome; ICONS_SEALS HUD icons */
@@ -568,3 +580,122 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .st-fill-keepers{background:var(--y)}.st-fill-glimmer{background:var(--l)}
 .st-barrow small{font-size:12px;color:var(--m);white-space:nowrap}
 .st-explain{margin:0;font-size:14px;line-height:1.3;color:var(--m)}
+/* Keeper1 / cracked handset.
+   Issued shell: lantern paper, civic green, brass CLOSE. Cracked shell (.hack): thin mint terminal.
+   Scoped to #ovPhone so other overlays keep the shared navy card. */
+#ovPhone{align-items:center;align-items:safe center;z-index:16;color-scheme:light}
+#ovPhone .phone-shell{width:100%;max-width:360px;min-width:0;min-height:0;max-height:100%;
+  max-height:calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  gap:0;padding:0}
+#ovPhone .phone-top{flex:0 0 auto;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;
+  margin:0;padding:8px 8px 8px 12px}
+#ovPhone #phoneTitle{flex:1 1 auto;min-width:0;margin:0;text-align:left;font-size:22px;line-height:1.05;text-shadow:none}
+#ovPhone #phoneTitle::before{display:block;font-size:13px;letter-spacing:1px;line-height:1.15;margin-bottom:1px}
+#ovPhone #phoneClose,#ovPhone #phoneBack{flex:0 0 auto;min-width:44px;min-height:48px;margin:0;padding:6px 12px;font-size:18px;line-height:1.05;
+  box-shadow:inset -3px -3px 0 rgba(0,0,0,.28),inset 3px 3px 0 rgba(255,255,255,.3)}
+#ovPhone #phoneClose{white-space:nowrap}
+#ovPhone #phoneBack{width:100%;align-self:stretch;white-space:normal}
+#ovPhone #phoneClose:active,#ovPhone #phoneBack:active{transform:translateY(1px);box-shadow:inset 3px 3px 0 rgba(0,0,0,.3)}
+#ovPhone #phoneFoot{flex:0 0 auto;margin:8px 12px 0;font-size:16px;line-height:1.3}
+#ovPhone #phoneHome{flex:1 1 auto;min-width:0;min-height:0;margin-top:8px;padding:0 12px 12px;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#ovPhone .phone-apps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+#ovPhone .phone-app{min-width:0;min-height:48px;max-width:100%;padding:6px 4px;border:3px solid var(--g);background:var(--k);color:var(--y);
+  font-family:var(--font);font-size:16px;line-height:1.05;text-align:center;cursor:pointer;white-space:normal}
+#ovPhone .phone-app:active{transform:translateY(1px)}
+#ovPhone .phone-app:focus-visible,#ovPhone #phoneClose:focus-visible,#ovPhone #phoneBack:focus-visible{outline:3px solid var(--y);outline-offset:1px}
+#ovPhone #phonePane{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 12px 0;overflow:hidden}
+#ovPhone #phoneBody{flex:1 1 auto;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  font-size:16px;line-height:1.35;color:var(--w);display:flex;flex-direction:column;gap:8px}
+#ovPhone #phoneBody p{margin:0;overflow-wrap:anywhere}
+#ovPhone #phoneBody .who{color:var(--y)}
+#ovPhone #phoneFriends{flex:1 1 auto;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#ovPhone #phoneFriends .panel{min-width:0;max-width:100%;margin:0 0 8px}
+#ovPhone #phoneFriends .keeper-line{white-space:normal}
+#ovPhone #friendInput{width:100%;min-width:0;max-width:100%;font-size:18px;min-height:44px;padding:8px}
+#ovPhone #friendCode{max-width:100%;font-size:22px;letter-spacing:0;padding:6px 4px;overflow-wrap:anywhere}
+
+/* Issued Keeper1: warm paper, lantern brass, civic green. Reads like a desk form. */
+#ovPhone:not(.hack){background:rgba(42,28,12,.94)}
+#ovPhone:not(.hack) .phone-shell{background:#f6e6c0;color:#1c2416;border:3px solid #1d5c38;
+  box-shadow:inset 0 0 0 2px rgba(255,248,220,.7),0 0 0 4px #2a2116,0 0 0 8px #e4b04a}
+#ovPhone:not(.hack) .phone-top{background:#f6e6c0;border-bottom:3px solid #e4b04a}
+#ovPhone:not(.hack) #phoneTitle{color:#143226}
+#ovPhone:not(.hack) #phoneTitle::before{content:"CIVIC ISSUE";color:#1d5c38}
+#ovPhone:not(.hack) #phoneFoot{background:#1d5c38;color:#f6e6c0;padding:6px 8px;text-align:center}
+#ovPhone:not(.hack) .phone-app{background:#fff9ec;color:#143226;border-color:#1d5c38}
+#ovPhone:not(.hack) .phone-app:active{background:#e5f3d4}
+#ovPhone:not(.hack) #phoneBody{color:#1c2416;gap:8px}
+#ovPhone:not(.hack) #phoneBody .who{color:#6a3a0c}
+#ovPhone:not(.hack) #phoneFriends .panel{background:#fff9ec;box-shadow:0 0 0 2px #1d5c38}
+#ovPhone:not(.hack) #phoneFriends .label,#ovPhone:not(.hack) #phoneFriends .note{color:#3d4a36}
+#ovPhone:not(.hack) #phoneFriends .keeper-line,#ovPhone:not(.hack) #phoneFriends .keeper-line b{color:#143226}
+#ovPhone:not(.hack) #friendCode{color:#143226;background:#f6e6c0;box-shadow:inset 0 0 0 2px #1d5c38}
+#ovPhone:not(.hack) #phoneFriends .flist li{background:#f6e6c0;color:#3d4a36}
+#ovPhone:not(.hack) #friendInput{background:#fffdf6;color:#1c2416;border-color:#1d5c38}
+#ovPhone:not(.hack) #friendInput::placeholder{color:#5f6b56}
+#ovPhone:not(.hack) #friendInput:disabled{opacity:1;background:#efe2c4;color:#5c5648;border-color:#8aab8a}
+#ovPhone:not(.hack) .btn{background:#e4b04a;color:#1a140c}
+#ovPhone:not(.hack) .btn-play{background:#1d5c38;color:#f6e6c0}
+#ovPhone:not(.hack) .btn:disabled{background:#d7d0c0;color:#5c5648;box-shadow:inset -3px -3px 0 rgba(0,0,0,.12)}
+
+/* CRACK//HAND: dark mint terminal. Denser type, still a handset — not a console. */
+#ovPhone.hack{background:rgba(3,12,8,.96);color-scheme:dark}
+#ovPhone.hack .phone-shell{background-color:#07140e;color:#d7ffc8;border:2px solid #1e6b42;
+  background-image:repeating-linear-gradient(to bottom,rgba(94,224,138,.05) 0 2px,transparent 2px 5px);
+  box-shadow:0 0 0 3px #07140e,0 0 0 6px #5ee08a}
+#ovPhone.hack .phone-top{background:#07140e;border-bottom:2px solid #1e6b42}
+#ovPhone.hack #phoneTitle{color:#d7ffc8;font-size:20px;letter-spacing:.5px}
+#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#8ee8b0}
+#ovPhone.hack #phoneFoot{margin-top:6px;padding:2px 0 2px 8px;border-left:3px solid #5ee08a;background:transparent;color:#c8f7cf;text-align:left}
+#ovPhone.hack .phone-apps{gap:6px}
+#ovPhone.hack .phone-app{min-height:44px;padding:4px 3px;background:#0c1f16;color:#d7ffc8;border:2px solid #3dce78;font-size:16px}
+#ovPhone.hack .phone-app:active{background:#143222}
+#ovPhone.hack .phone-app:focus-visible,#ovPhone.hack #phoneClose:focus-visible,#ovPhone.hack #phoneBack:focus-visible{outline-color:#d7ffc8}
+#ovPhone.hack #phonePane{gap:6px}
+#ovPhone.hack #phoneBody{gap:4px;font-size:16px;line-height:1.3;color:#d7ffc8}
+#ovPhone.hack #phoneBody p{background:#07140e}
+#ovPhone.hack #phoneBody .who{color:#9dffc0}
+#ovPhone.hack #phoneFriends .panel{margin-bottom:6px;padding:8px;gap:6px;background:#0a1a12;box-shadow:0 0 0 2px #1e6b42}
+#ovPhone.hack #phoneFriends .label{color:#b7ebc8;font-size:15px}
+#ovPhone.hack #phoneFriends .note{color:#b7ebc8;font-size:15px;line-height:1.35}
+#ovPhone.hack #phoneFriends .keeper-line,#ovPhone.hack #phoneFriends .keeper-line b{color:#d7ffc8}
+#ovPhone.hack #friendCode{color:#d7ffc8;background:#04100c;box-shadow:inset 0 0 0 2px #1e6b42;font-size:20px}
+#ovPhone.hack #phoneFriends .flist{gap:4px}
+#ovPhone.hack #phoneFriends .flist li{background:#04100c;color:#c8f7cf;min-height:44px;padding:8px}
+#ovPhone.hack #friendInput{background:#04100c;color:#d7ffc8;border-color:#1e6b42}
+#ovPhone.hack #friendInput::placeholder{color:#7eae90}
+#ovPhone.hack #friendInput:disabled{opacity:1;background:#0a1610;color:#8fb9a0;border-color:#245c3c}
+#ovPhone.hack .btn{background:#123224;color:#e7ffe8;box-shadow:inset 0 0 0 2px #1e6b42,inset -3px -3px 0 rgba(0,0,0,.35)}
+#ovPhone.hack .btn-play{background:#1c7a45;color:#f4fff6}
+#ovPhone.hack .btn:disabled{background:#101c16;color:#8fb9a0;box-shadow:inset 0 0 0 2px #1a3d2c}
+#ovPhone.hack #phoneClose:active,#ovPhone.hack #phoneBack:active{box-shadow:inset 3px 3px 0 rgba(0,0,0,.4)}
+/* Ribbit: a read-only feed. Rows are not buttons. Handles wrap. Scroll stays on #phoneBody. */
+#ovPhone #phoneBody .ribbit-trend{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;max-width:100%}
+#ovPhone #phoneBody .ribbit-trend-lab{flex:1 0 100%;font-size:13px;letter-spacing:1px;line-height:1.2}
+#ovPhone #phoneBody .ribbit-tag{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px;min-width:0;max-width:100%;padding:3px 6px}
+#ovPhone #phoneBody .ribbit-tag b{font-size:15px;line-height:1.25;overflow-wrap:anywhere}
+#ovPhone #phoneBody .ribbit-tag small{font-size:13px;line-height:1.2}
+#ovPhone #phoneBody .ribbit-post{display:flex;flex-direction:column;gap:2px;min-width:0;max-width:100%;margin:0;padding:6px 8px}
+#ovPhone #phoneBody .ribbit-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0;max-width:100%}
+#ovPhone #phoneBody .ribbit-desk{font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+#ovPhone #phoneBody .ribbit-handle{min-width:0;max-width:100%;font-size:15px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+#ovPhone #phoneBody .ribbit-text{margin:0;font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+#ovPhone #phoneBody .ribbit-chirps,#ovPhone #phoneBody .ribbit-foot{font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+#ovPhone:not(.hack) #phoneBody .ribbit-trend-lab{color:#1d5c38}
+#ovPhone:not(.hack) #phoneBody .ribbit-tag{background:#e5f3d4;color:#143226;box-shadow:0 0 0 2px #1d5c38}
+#ovPhone:not(.hack) #phoneBody .ribbit-tag small{color:#1d5c38}
+#ovPhone:not(.hack) #phoneBody .ribbit-post{background:#fff9ec;color:#1c2416;box-shadow:0 0 0 2px #1d5c38}
+#ovPhone:not(.hack) #phoneBody .ribbit-desk{color:#6a3a0c}
+#ovPhone:not(.hack) #phoneBody .ribbit-handle{color:#143226}
+#ovPhone:not(.hack) #phoneBody .ribbit-text{color:#1c2416;background:transparent}
+#ovPhone:not(.hack) #phoneBody .ribbit-chirps,#ovPhone:not(.hack) #phoneBody .ribbit-foot{color:#3d4a36}
+#ovPhone.hack #phoneBody .ribbit-trend-lab{color:#8ee8b0}
+#ovPhone.hack #phoneBody .ribbit-tag{background:#0c1f16;color:#d7ffc8;box-shadow:0 0 0 2px #3dce78}
+#ovPhone.hack #phoneBody .ribbit-tag small{color:#8ee8b0}
+#ovPhone.hack #phoneBody .ribbit-post{background:#07140e;color:#d7ffc8;box-shadow:0 0 0 2px #1e6b42}
+#ovPhone.hack #phoneBody .ribbit-desk{color:#9dffc0}
+#ovPhone.hack #phoneBody .ribbit-handle{color:#d7ffc8}
+#ovPhone.hack #phoneBody .ribbit-text,#ovPhone.hack #phoneBody .ribbit-foot{background:transparent;color:#d7ffc8}
+#ovPhone.hack #phoneBody .ribbit-chirps{color:#b7ebc8}
+#ovPhone #phonePane[hidden],#ovPhone #phoneHome[hidden],#ovPhone #phoneBody[hidden],#ovPhone #phoneFriends[hidden]{display:none}

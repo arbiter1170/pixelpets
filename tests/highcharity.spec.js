@@ -12,6 +12,11 @@ function citySave(flags, world) {
     'story.hc_invite': true,
     'story.cobble_end': true,
   }, flags || {});
+  // Heights is a no-imply step. A finished Act 1 save is not sent back through it, so the idle end card can become the Event Hall quest.
+  if (save.flags['story.cobble_end']) {
+    if (!save.flags['story.seal1']) save.flags['story.seal1'] = true;
+    if (!save.flags['story.heights_done']) save.flags['story.heights_done'] = true;
+  }
   save.world = world || { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' };
   save.standing = { keepers: 10, glimmer: 0 };
   return save;

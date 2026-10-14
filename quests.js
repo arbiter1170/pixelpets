@@ -26,45 +26,16 @@
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
-    'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
+'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
     'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
-    'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue'];   // High Charity and Mahopac bits; neither is a main-chain step
-
-  // Optional side chain (Mom, Mahopac, the childhood dream). Never implied by the main story, and never a main-chain step.
-  // Same shape as CHAIN. A later side flag counts the earlier side steps as done, so a finished dream does not rewind.
-  const SIDE = [
-    { id: 'mom', when: ['story.starter_received'], done: ['story.mom_met'],
-      text: 'Mom is upstairs. She wants to meet your Walkling.', place: 'Your home, upstairs',
-      target: { map: 'hm_home_up', x: 5, y: 3 } },
-    { id: 'mom_chore', when: ['story.mom_met'], done: ['story.mom_chore'],
-      text: 'Clear the crumbs downstairs so your Walkling has a place to sit.', place: 'Your home',
-      target: { map: 'hm_home_in', x: 7, y: 5 } },
-    { id: 'mom_sent', when: ['story.mom_chore'], done: ['story.mom_sent'],
-      text: 'Tell Mom the table is clear. She has a trip in mind.', place: 'Your home, upstairs',
-      target: { map: 'hm_home_up', x: 5, y: 3 } },
-    { id: 'mahopac', when: ['story.mom_sent'], done: ['story.reached_mahopac'],
-      text: 'Take your Walkling up the north trail to Mahopac.', place: 'Hearthmoor, north trail',
-      target: { map: 'hearthmoor', x: 9, y: 0 } },
-    { id: 'observatory', when: ['story.reached_mahopac'], done: ['story.dream_started'],
-      text: 'Step into Breckenridge Observatory. The lens is waiting.', place: 'Mahopac observatory',
-      target: { map: 'mahopac', x: 5, y: 7 } },
-    { id: 'dream_toy', when: ['story.dream_started'], done: ['story.dream_toy'],
-      text: 'You are small again. Push the popping toy around the rug.', place: 'A dream, 2004',
-      target: { map: 'dream_2004', x: 3, y: 3 } },
-    { id: 'dream_party', when: ['story.dream_toy'], done: ['story.dream_party'],
-      text: 'Pop the balloons at your seventh birthday.', place: 'A bowling alley',
-      target: { map: 'dream_party', x: 5, y: 5 } },
-    { id: 'dream_dad', when: ['story.dream_party'], done: ['story.dream_dad'],
-      text: 'Sit with Dad at the MacRonalds drive-through.', place: 'A dream drive-through',
-      target: { map: 'dream_drive', x: 2, y: 3 } },
-    { id: 'dream_wake', when: ['story.dream_dad'], done: ['story.dream_woke'],
-      text: 'You are home. Your Walkling is chirping, and Mom is here.', place: 'Your home, upstairs',
-      target: { map: 'hm_home_up', x: 4, y: 5 } },
-    { id: 'dream_study', when: ['story.dream_woke'], done: ['story.dream_study'],
-      text: 'Tell Warden Ilse about the dream. Mom calls her Professor.', place: "Warden's Lodge",
-      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
-  ];
+    'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue',   // High Charity and Mahopac bits; neither is a main-chain step
+    // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
+    'story.know_us', 'story.heights_path', 'story.stock_warned', 'story.rx_enter', 'story.met_nia', 'story.rx_f1',
+    'story.met_cal', 'story.rx_f2', 'story.saw_arbiter', 'story.rx_f3', 'story.rx_done', 'story.sm_yard', 'story.sm_look',
+    'story.met_jed', 'story.sm_freed', 'story.sm_haul', 'story.sm_done',
+    'story.rook_end', 'story.rook_bond',
+    'story.met_bram', 'story.met_mo', 'story.met_wynn', 'story.met_lumen', 'story.met_rue'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -91,6 +62,10 @@
     { id: 'fen', done: ['story.met_fen'],
       text: 'Master Fen is out in the orchard, west of the square. She looks worried.', place: 'Fernbrook orchard',
       target: { map: 'fernbrook', x: 10, y: 9 } },
+    { id: 'heights', when: ['story.side_pick_done'], done: ['story.heights_done'], skipIf: ['story.seal1'], noImply: true,
+      text: 'Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', place: 'Fernbrook Heights',
+      glimmer: { text: 'Get to know us. RegenX in the Heights brews Atten. Stock up, then bring samples and plans.', place: 'Fernbrook Heights' },
+      target: { map: 'fb_heights', x: 12, y: 10 } },
     { id: 'orchard', done: ['story.orchard_cleared'],
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
       glimmer: { text: 'Tobin needs a hand packing crates at the orchard gate.', place: 'Orchard gate' },
@@ -139,14 +114,59 @@
       target: { map: 'cobble_quarry', x: 16, y: 4 } },
     { id: 'hall2', done: ['story.seal2'],
       text: "Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", place: 'Cobblecrest Hall',
-      glimmer: { text: "Your second review is at Hale's Hall. Master Hale is not thrilled.", place: 'Cobblecrest Hall' },
+      glimmer: { text: 'Your second review is a Sacrifice. The free quota still closes it.', place: 'Cobblecrest Hall' },
       target: { map: 'cc_hall_in', x: 5, y: 2 } },
     { id: 'hook', done: ['story.cobble_end'],
       text: 'Rook is outside the Hall with news from the quarry.', place: "Outside Hale's Hall",
+      glimmer: { text: 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', place: "Outside Hale's Hall" },
       target: { map: 'cobblecrest', x: 25, y: 7 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];
+
+  // Side quests do not move the main chain. Chains are independent: a later step implies earlier ones
+  // only inside its own chain. The phone is the featured side quest until the officers issue it, then Mom's dream.
+  const SIDE_CHAINS = [
+    [
+      { id: 'phone', when: ['story.starter_received'], done: ['story.phone_got'],
+        text: 'Keeper officers are where the wild starts. They have a handset for you.',
+        place: 'Route 1, west end',
+        target: { map: 'route1', x: 2, y: 8 } },
+    ],
+    [
+      { id: 'mom', when: ['story.starter_received'], done: ['story.mom_met'],
+        text: 'Mom is upstairs. She wants to meet your Walkling.', place: 'Your home, upstairs',
+        target: { map: 'hm_home_up', x: 5, y: 3 } },
+      { id: 'mom_chore', when: ['story.mom_met'], done: ['story.mom_chore'],
+        text: 'Clear the crumbs downstairs so your Walkling has a place to sit.', place: 'Your home',
+        target: { map: 'hm_home_in', x: 7, y: 5 } },
+      { id: 'mom_sent', when: ['story.mom_chore'], done: ['story.mom_sent'],
+        text: 'Tell Mom the table is clear. She has a trip in mind.', place: 'Your home, upstairs',
+        target: { map: 'hm_home_up', x: 5, y: 3 } },
+      { id: 'mahopac', when: ['story.mom_sent'], done: ['story.reached_mahopac'],
+        text: 'Take your Walkling up the north trail to Mahopac.', place: 'Hearthmoor, north trail',
+        target: { map: 'hearthmoor', x: 9, y: 0 } },
+      { id: 'observatory', when: ['story.reached_mahopac'], done: ['story.dream_started'],
+        text: 'Step into Breckenridge Observatory. The lens is waiting.', place: 'Mahopac observatory',
+        target: { map: 'mahopac', x: 5, y: 7 } },
+      { id: 'dream_toy', when: ['story.dream_started'], done: ['story.dream_toy'],
+        text: 'You are small again. Push the popping toy around the rug.', place: 'A dream, 2004',
+        target: { map: 'dream_2004', x: 3, y: 3 } },
+      { id: 'dream_party', when: ['story.dream_toy'], done: ['story.dream_party'],
+        text: 'Pop the balloons at your seventh birthday.', place: 'A bowling alley',
+        target: { map: 'dream_party', x: 5, y: 5 } },
+      { id: 'dream_dad', when: ['story.dream_party'], done: ['story.dream_dad'],
+        text: 'Sit with Dad at the MacRonalds drive-through.', place: 'A dream drive-through',
+        target: { map: 'dream_drive', x: 2, y: 3 } },
+      { id: 'dream_wake', when: ['story.dream_dad'], done: ['story.dream_woke'],
+        text: 'You are home. Your Walkling is chirping, and Mom is here.', place: 'Your home, upstairs',
+        target: { map: 'hm_home_up', x: 4, y: 5 } },
+      { id: 'dream_study', when: ['story.dream_woke'], done: ['story.dream_study'],
+        text: 'Tell Warden Ilse about the dream. Mom calls her Professor.', place: "Warden's Lodge",
+        target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+    ],
+  ];
+  const SIDE = SIDE_CHAINS.flat();
 
   function evalCond(c, st){
     if (c === 'else') return true;
@@ -159,23 +179,27 @@
     return neg ? !v : v;
   }
   const all = (cs, st) => (cs || []).every(c => evalCond(c, st));
-  const ownDone = (e, st) => e.done.length > 0 && all(e.done, st);
+  const ownDone = (e, st) => (e.done.length > 0 && all(e.done, st)) || (e.skipIf && all(e.skipIf, st));
   const eligible = (e, st) => all(e.when, st);
   // Progress implies the steps before it: a step counts as done when its own flags hold or any later step's do. Saves made
   // before a flag existed (story.reached_route1 is newer than Route 2) would otherwise pin the chain on a stale step.
   function doneMask(st){
     const m = CHAIN.map(e => ownDone(e, st));
-    for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
-    return m;
-  }
-  function sideDoneMask(st){
-    const m = SIDE.map(e => ownDone(e, st));
-    for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
+    // A `noImply` step (Heights) is never marked done by a later step, and it does not block that
+    // later progress from counting the steps before it. Finishing the orchard still finishes Fernbrook's intro.
+    let later = false;
+    for (let i = m.length - 1; i >= 0; i--) {
+      if (!CHAIN[i].noImply && later) m[i] = true;
+      if (m[i]) later = true;
+    }
     return m;
   }
   function sideCurrent(st){
-    const m = sideDoneMask(st);
-    for (let i = 0; i < SIDE.length; i++) if (!m[i] && eligible(SIDE[i], st)) return resolve(SIDE[i], st);
+    for (const chain of SIDE_CHAINS) {
+      const m = chain.map(e => ownDone(e, st));
+      for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
+      for (let i = 0; i < chain.length; i++) if (!m[i] && eligible(chain[i], st)) return resolve(chain[i], st);
+    }
     return null;
   }
 

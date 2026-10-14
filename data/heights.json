@@ -1,0 +1,1466 @@
+{
+  "spec": "FERNBROOK_HEIGHTS",
+  "version": "0.1",
+  "status": "Get to know us, before the first trial. Glimmerwell: RegenX lab. Keepers: smuggling tunnels.",
+  "_about": "Offered the moment the side is picked. story.heights_done gates the Trial Hall and the Tour's first stop. The Arbiter emits something slowly; what it is, and why it was built, is not known yet. RegenX staff are decent people. No on-screen harm.",
+  "_names": {
+    "company": "RegenX",
+    "drug": "Atten",
+    "machine": "The Arbiter",
+    "emission": "a slow, unnamed emission from ancient Glimmerwell technology"
+  },
+  "slicePatch": {
+    "maps": {
+      "fernbrook": {
+        "gridRows": {
+          "0": "TTTTTTpTTTTTTTTTTTTTTTTTTTTTTTTT"
+        },
+        "addObjs": [
+          {
+            "kind": "warp",
+            "id": "fb_heights",
+            "x": 6,
+            "y": 0,
+            "to": "fb_heights",
+            "tx": 11,
+            "ty": 14,
+            "facing": "up"
+          },
+          {
+            "kind": "sign",
+            "id": "fb_heights_sign",
+            "x": 7,
+            "y": 1,
+            "text": "HEIGHTS PATH. North ridge. Stock up before you climb."
+          }
+        ]
+      }
+    }
+  },
+  "maps": {
+    "fb_heights": {
+      "name": "Fernbrook Heights",
+      "backdrop": "route",
+      "w": 24,
+      "h": 16,
+      "spawns": null,
+      "respawn": {
+        "x": 11,
+        "y": 13,
+        "facing": "down"
+      },
+      "safe": {
+        "x": 11,
+        "y": 13
+      },
+      "zones": [],
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTTTTTT",
+        "TggggggggggggggggggggggT",
+        "TgRRRRRgggggggRRRRRggggT",
+        "TgHHHHHgggggggHHHHHggggT",
+        "TgHHHHHgggggggHHHHHggggT",
+        "TgpppppgggggggpppppggggT",
+        "TgggpgggggggggggpggggggT",
+        "TgggpgggggggggggpggggggT",
+        "TgggpppppppppppppggggggT",
+        "TggggggggggpgggggggggggT",
+        "TggggggggggpgggggggggggT",
+        "TggggggggggpgggggggggggT",
+        "TggggggggggpgggggggggggT",
+        "TggggggggggpgggggggggggT",
+        "TggggggggggpgggggggggggT",
+        "TTTTTTTTTTppTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "ht_south",
+          "x": 11,
+          "y": 15,
+          "to": "fernbrook",
+          "tx": 6,
+          "ty": 1,
+          "facing": "down"
+        },
+        {
+          "kind": "door",
+          "id": "ht_lab",
+          "x": 4,
+          "y": 5,
+          "to": "rx_f1",
+          "tx": 9,
+          "ty": 9,
+          "facing": "up",
+          "need": "story.heights_path=lab",
+          "deny": "The lab door stays shut. Glimmerwell has to send you."
+        },
+        {
+          "kind": "door",
+          "id": "ht_tunnel",
+          "x": 16,
+          "y": 5,
+          "to": "sm_yard",
+          "tx": 9,
+          "ty": 9,
+          "facing": "up",
+          "need": "story.heights_path=tunnels",
+          "deny": "The tunnel bar is down. Fen has to send you."
+        },
+        {
+          "kind": "sign",
+          "id": "ht_sign",
+          "x": 12,
+          "y": 10,
+          "text": "FERNBROOK HEIGHTS. Stock up before a door. The lab and the tunnels both run long."
+        },
+        {
+          "kind": "prop",
+          "id": "ht_stock",
+          "name": "supply crate",
+          "x": 13,
+          "y": 10,
+          "sprite": "crate",
+          "shop": [
+            "heal_snack",
+            "wake_tonic",
+            "hearty_snack"
+          ]
+        },
+        {
+          "kind": "npc",
+          "id": "ht_kit",
+          "name": "Kit",
+          "x": 14,
+          "y": 11,
+          "look": "villager",
+          "scene": "stock_up",
+          "lines": {
+            "else": "Snacks are in the crate. Doors are long."
+          }
+        },
+        {
+          "kind": "pickup",
+          "id": "ht_snacks",
+          "x": 10,
+          "y": 12,
+          "item": "heal_snack",
+          "n": 2
+        }
+      ]
+    },
+    "rx_f1": {
+      "name": "RegenX Lobby",
+      "kind": "interior",
+      "outdoor": "fb_heights",
+      "backdrop": "town",
+      "w": 18,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 9,
+        "y": 8
+      },
+      "grid": [
+        "##################",
+        "#WWWWWWWWWWWWWWWW#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#........m.......#",
+        "##################"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "rx1_out",
+          "x": 9,
+          "y": 10,
+          "to": "fb_heights",
+          "tx": 4,
+          "ty": 6,
+          "facing": "down"
+        },
+        {
+          "kind": "door",
+          "id": "rx1_up",
+          "x": 9,
+          "y": 3,
+          "to": "rx_f2",
+          "tx": 9,
+          "ty": 9,
+          "facing": "up",
+          "need": "story.rx_f1",
+          "deny": "The stair lock is still on."
+        },
+        {
+          "kind": "trigger",
+          "id": "rx1_in",
+          "x": 9,
+          "y": 8,
+          "r": 0,
+          "when": [
+            "!story.rx_enter"
+          ],
+          "scene": "rx_enter"
+        },
+        {
+          "kind": "npc",
+          "id": "rx_nia",
+          "name": "Nia",
+          "x": 4,
+          "y": 6,
+          "look": "regenx",
+          "scene": "rx_nia",
+          "lines": {
+            "else": "Cameras up. I am just filing."
+          }
+        },
+        {
+          "kind": "trainer",
+          "id": "rx_wardens",
+          "x": 13,
+          "y": 6
+        }
+      ]
+    },
+    "rx_f2": {
+      "name": "RegenX Focus Wing",
+      "kind": "interior",
+      "outdoor": "fb_heights",
+      "backdrop": "town",
+      "w": 18,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 9,
+        "y": 8
+      },
+      "grid": [
+        "##################",
+        "#WWWWWWWWWWWWWWWW#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#........m.......#",
+        "##################"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "rx2_down",
+          "x": 9,
+          "y": 10,
+          "to": "rx_f1",
+          "tx": 9,
+          "ty": 4,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "rx2_up",
+          "x": 14,
+          "y": 3,
+          "to": "rx_f3",
+          "tx": 9,
+          "ty": 9,
+          "facing": "up",
+          "need": "story.rx_f2",
+          "deny": "The techs are still between you and the stairs."
+        },
+        {
+          "kind": "npc",
+          "id": "rx_cal",
+          "name": "Cal",
+          "x": 5,
+          "y": 6,
+          "look": "regenx",
+          "scene": "rx_cal",
+          "lines": {
+            "else": "I drop keys. Occupational hazard."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "rx_ivo",
+          "name": "Dr. Ivo",
+          "x": 4,
+          "y": 4,
+          "look": "regenx",
+          "lines": {
+            "else": "Atten helps focus. That is the label."
+          }
+        },
+        {
+          "kind": "trainer",
+          "id": "rx_techs",
+          "x": 12,
+          "y": 7
+        },
+        {
+          "kind": "pickup",
+          "id": "rx2_heal",
+          "x": 7,
+          "y": 8,
+          "item": "heal_snack",
+          "n": 1
+        }
+      ]
+    },
+    "rx_f3": {
+      "name": "RegenX Records",
+      "kind": "interior",
+      "outdoor": "fb_heights",
+      "backdrop": "town",
+      "w": 18,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 9,
+        "y": 8
+      },
+      "grid": [
+        "##################",
+        "#WWWWWWWWWWWWWWWW#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#........m.......#",
+        "##################"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "rx3_down",
+          "x": 9,
+          "y": 10,
+          "to": "rx_f2",
+          "tx": 14,
+          "ty": 4,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "rx3_up",
+          "x": 14,
+          "y": 3,
+          "to": "rx_f4",
+          "tx": 9,
+          "ty": 9,
+          "facing": "up",
+          "need": "story.rx_f3",
+          "deny": "The records lead still has the stair key."
+        },
+        {
+          "kind": "trigger",
+          "id": "rx3_term",
+          "x": 8,
+          "y": 5,
+          "r": 0,
+          "when": [
+            "!story.saw_arbiter"
+          ],
+          "scene": "rx_terminal"
+        },
+        {
+          "kind": "trainer",
+          "id": "rx_records",
+          "x": 12,
+          "y": 6
+        },
+        {
+          "kind": "pickup",
+          "id": "rx3_heal",
+          "x": 6,
+          "y": 8,
+          "item": "heal_snack",
+          "n": 1
+        }
+      ]
+    },
+    "rx_f4": {
+      "name": "The Arbiter Bay",
+      "kind": "interior",
+      "outdoor": "fb_heights",
+      "backdrop": "town",
+      "w": 18,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 9,
+        "y": 8
+      },
+      "grid": [
+        "##################",
+        "#WWWWWWWWWWWWWWWW#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#........m.......#",
+        "##################"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "rx4_down",
+          "x": 9,
+          "y": 10,
+          "to": "rx_f3",
+          "tx": 14,
+          "ty": 4,
+          "facing": "up"
+        },
+        {
+          "kind": "prop",
+          "id": "rx_arbiter",
+          "name": "The Arbiter",
+          "x": 9,
+          "y": 4,
+          "sprite": "arbiter",
+          "lines": {
+            "else": "It emits slowly. The screen is dark."
+          }
+        },
+        {
+          "kind": "trainer",
+          "id": "rx_quinn",
+          "x": 9,
+          "y": 6
+        }
+      ]
+    },
+    "sm_yard": {
+      "name": "Heights Yard",
+      "kind": "interior",
+      "outdoor": "fb_heights",
+      "backdrop": "town",
+      "w": 18,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 9,
+        "y": 8
+      },
+      "grid": [
+        "##################",
+        "#WWWWWWWWWWWWWWWW#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#........m.......#",
+        "##################"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "smy_out",
+          "x": 9,
+          "y": 10,
+          "to": "fb_heights",
+          "tx": 16,
+          "ty": 6,
+          "facing": "down"
+        },
+        {
+          "kind": "door",
+          "id": "smy_down",
+          "x": 9,
+          "y": 3,
+          "to": "sm_tunnel",
+          "tx": 9,
+          "ty": 9,
+          "facing": "up",
+          "need": "story.sm_look",
+          "deny": "The lookouts are still on the stair."
+        },
+        {
+          "kind": "trigger",
+          "id": "smy_in",
+          "x": 9,
+          "y": 8,
+          "r": 0,
+          "when": [
+            "!story.sm_yard"
+          ],
+          "scene": "sm_enter"
+        },
+        {
+          "kind": "trainer",
+          "id": "sm_lookouts",
+          "x": 13,
+          "y": 6
+        }
+      ]
+    },
+    "sm_tunnel": {
+      "name": "Smuggler Tunnel",
+      "kind": "interior",
+      "outdoor": "fb_heights",
+      "backdrop": "town",
+      "w": 18,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 9,
+        "y": 8
+      },
+      "grid": [
+        "##################",
+        "#WWWWWWWWWWWWWWWW#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#........m.......#",
+        "##################"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "smt_up",
+          "x": 9,
+          "y": 10,
+          "to": "sm_yard",
+          "tx": 9,
+          "ty": 4,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "smt_on",
+          "x": 14,
+          "y": 3,
+          "to": "sm_hold",
+          "tx": 9,
+          "ty": 9,
+          "facing": "up",
+          "need": "story.met_jed",
+          "deny": "Jed shifts a crate into the doorway."
+        },
+        {
+          "kind": "npc",
+          "id": "sm_jed",
+          "name": "Jed",
+          "x": 5,
+          "y": 6,
+          "look": "villager",
+          "scene": "sm_jed",
+          "lines": {
+            "else": "I load crates. I am done loading these."
+          }
+        },
+        {
+          "kind": "pickup",
+          "id": "smt_heal",
+          "x": 7,
+          "y": 8,
+          "item": "heal_snack",
+          "n": 1
+        }
+      ]
+    },
+    "sm_hold": {
+      "name": "Crate Hold",
+      "kind": "interior",
+      "outdoor": "fb_heights",
+      "backdrop": "town",
+      "w": 18,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 9,
+        "y": 8
+      },
+      "grid": [
+        "##################",
+        "#WWWWWWWWWWWWWWWW#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#........m.......#",
+        "##################"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "smh_back",
+          "x": 9,
+          "y": 10,
+          "to": "sm_tunnel",
+          "tx": 14,
+          "ty": 4,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "smh_den",
+          "x": 14,
+          "y": 3,
+          "to": "sm_den",
+          "tx": 9,
+          "ty": 9,
+          "facing": "up",
+          "need": "story.sm_haul",
+          "deny": "The haulers bar the inner door."
+        },
+        {
+          "kind": "trigger",
+          "id": "smh_free",
+          "x": 8,
+          "y": 5,
+          "r": 0,
+          "when": [
+            "story.sm_haul",
+            "!story.sm_freed"
+          ],
+          "scene": "sm_free"
+        },
+        {
+          "kind": "prop",
+          "id": "sm_crate",
+          "x": 6,
+          "y": 6,
+          "sprite": "crate"
+        },
+        {
+          "kind": "trainer",
+          "id": "sm_haulers",
+          "x": 12,
+          "y": 7
+        },
+        {
+          "kind": "npc",
+          "id": "sm_ken",
+          "name": "Ken",
+          "x": 7,
+          "y": 7,
+          "look": "villager",
+          "when": [
+            "story.sm_freed"
+          ],
+          "lines": {
+            "else": "The watch will walk them home."
+          }
+        }
+      ]
+    },
+    "sm_den": {
+      "name": "Broker's Den",
+      "kind": "interior",
+      "outdoor": "fb_heights",
+      "backdrop": "town",
+      "w": 18,
+      "h": 12,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 9,
+        "y": 8
+      },
+      "grid": [
+        "##################",
+        "#WWWWWWWWWWWWWWWW#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#................#",
+        "#........m.......#",
+        "##################"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "smd_back",
+          "x": 9,
+          "y": 10,
+          "to": "sm_hold",
+          "tx": 14,
+          "ty": 4,
+          "facing": "up"
+        },
+        {
+          "kind": "trainer",
+          "id": "sm_mara",
+          "x": 9,
+          "y": 6
+        }
+      ]
+    }
+  },
+  "trainers": {
+    "rx_wardens": {
+      "name": "RegenX Wardens",
+      "title": "Lobby",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "mole/0",
+          "level": 4
+        },
+        {
+          "form": "gust/0",
+          "level": 5
+        }
+      ],
+      "lines": {
+        "intro": "RegenX is a closed lab. Please leave the samples alone.",
+        "win": "You really want those vials. I'll call this in.",
+        "lose": "Go home. Nobody here wanted a fight."
+      },
+      "group": true,
+      "onWin": "rx_f1_clear"
+    },
+    "rx_techs": {
+      "name": "Lab Pair",
+      "title": "Focus Wing",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "vane/0",
+          "level": 5
+        },
+        {
+          "form": "gust/0",
+          "level": 5
+        }
+      ],
+      "lines": {
+        "intro": "That rack is years of work. Put the vial back.",
+        "win": "Take it, then. Wash your hands. Atten stains.",
+        "lose": "We make focus, not enemies. Please remember that."
+      },
+      "group": true,
+      "onWin": "rx_f2_clear"
+    },
+    "rx_records": {
+      "name": "Records Lead",
+      "title": "RegenX",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "vane/0",
+          "level": 5
+        },
+        {
+          "form": "gust/0",
+          "level": 5
+        }
+      ],
+      "lines": {
+        "intro": "Those folders are RegenX property. I can't let you copy them.",
+        "win": "The cheap recipe is in the thin one. Don't lose it.",
+        "lose": "Come back with a badge, or don't come back."
+      },
+      "group": true,
+      "onWin": "rx_f3_clear"
+    },
+    "rx_quinn": {
+      "name": "Quinn",
+      "title": "Associate",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "shade/0",
+          "level": 6
+        },
+        {
+          "form": "vane/0",
+          "level": 6
+        }
+      ],
+      "lines": {
+        "intro": "Step away from the cradle. Those vials are not yours.",
+        "win": "Take them. The cradle stays dark.",
+        "lose": "Go home. The people on these floors are not your enemy."
+      },
+      "group": true,
+      "onWin": "rx_done",
+      "ally": "rx_cal_ally"
+    },
+    "rx_cal_ally": {
+      "name": "Cal",
+      "title": "Floor tech",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "moth/0",
+          "level": 5
+        }
+      ],
+      "lines": {
+        "intro": "I'm with you.",
+        "win": "We did it.",
+        "lose": "I'll be outside."
+      }
+    },
+    "sm_lookouts": {
+      "name": "Night Lookouts",
+      "title": "Yard",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "dormouse/0",
+          "level": 4
+        },
+        {
+          "form": "gust/0",
+          "level": 5
+        }
+      ],
+      "lines": {
+        "intro": "Private road. The crates are none of your business.",
+        "win": "Fine. The stair's down there. Don't say we waved you in.",
+        "lose": "Turn around. Night work isn't a tour."
+      },
+      "group": true,
+      "onWin": "sm_look_clear"
+    },
+    "sm_haulers": {
+      "name": "Crate Haulers",
+      "title": "Hold",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "vane/0",
+          "level": 5
+        },
+        {
+          "form": "gust/0",
+          "level": 5
+        }
+      ],
+      "lines": {
+        "intro": "Those lids stay shut. We're paid to keep them shut.",
+        "win": "Open them, then. I'm not paid enough for this.",
+        "lose": "The bar goes back on. So do you."
+      },
+      "group": true,
+      "onWin": "sm_haul_clear"
+    },
+    "sm_mara": {
+      "name": "Mara Quill",
+      "title": "Broker",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "shade/0",
+          "level": 6
+        },
+        {
+          "form": "vane/0",
+          "level": 6
+        }
+      ],
+      "lines": {
+        "intro": "Jed talks too much. Those Walklings were already packed.",
+        "win": "Take the book. The orchard can have the rest.",
+        "lose": "Come back when you can finish a fight."
+      },
+      "group": true,
+      "onWin": "sm_done",
+      "ally": "sm_jed_ally"
+    },
+    "sm_jed_ally": {
+      "name": "Jed",
+      "title": "Clerk",
+      "ai": "basic",
+      "sight": 0,
+      "team": [
+        {
+          "form": "shade/0",
+          "level": 5
+        }
+      ],
+      "lines": {
+        "intro": "I'm with you.",
+        "win": "They're going home.",
+        "lose": "I'll wait up top."
+      }
+    }
+  },
+  "scenes": {
+    "know_us": [
+      [
+        "say",
+        "Master Fen",
+        "{name}. You stood with us. Before any trial, get to know us."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "We keep by going to look. A Hall ribbon can wait until we know who is missing."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "Under the Heights, night carts move Walklings. Not Tobin's crates. No logo. No lamps."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "I will stay with the trees, in case they come home while you are still below."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "If a latch opens, let them hop toward the orchard. Bring me the road they were on."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "Stock up before the door. Snacks, a rest, a full team. The tunnel does not loop kindly."
+      ],
+      [
+        "say",
+        "Master Fen",
+        "The people down there may love their own partners, and still ship someone else's."
+      ],
+      [
+        "say",
+        "",
+        "Fen points up the north path. A supply crate sits in the grass before the doors."
+      ],
+      [
+        "standing",
+        "keepers",
+        2,
+        "heights_offer_k"
+      ],
+      [
+        "setFlag",
+        "story.know_us",
+        true
+      ],
+      [
+        "setFlag",
+        "story.heights_path",
+        "tunnels"
+      ]
+    ],
+    "know_us@glimmer": [
+      [
+        "say",
+        "Associate Juniper",
+        "Welcome, partner! Before the tour, get to know us."
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "RegenX sits in the Heights. They brew Atten. It helps a Walkling focus."
+      ],
+      [
+        "say",
+        "Tobin",
+        "We want samples, and the plans to make it cheap. Stock up. The lab is huge."
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "The people inside are kind. Smile anyway. Have a bright day!"
+      ],
+      [
+        "standing",
+        "glimmer",
+        2,
+        "heights_offer_g"
+      ],
+      [
+        "setFlag",
+        "story.know_us",
+        true
+      ],
+      [
+        "setFlag",
+        "story.heights_path",
+        "lab"
+      ],
+      [
+        "run",
+        "orchard"
+      ]
+    ],
+    "stock_up": [
+      [
+        "say",
+        "Kit",
+        "Stock up before you go in. Heal Snacks. A Wake Tonic if a friend gets worn out."
+      ],
+      [
+        "say",
+        "",
+        "The crate beside Kit sells them. Two snacks are already tucked in the grass."
+      ],
+      [
+        "give",
+        "heal_snack",
+        2
+      ],
+      [
+        "setFlag",
+        "story.stock_warned",
+        true
+      ]
+    ],
+    "trial_wait": [
+      [
+        "say",
+        "Master Fen",
+        "The trial can wait. Walk the Heights first, and get to know what we keep."
+      ]
+    ],
+    "trial_wait@glimmer": [
+      [
+        "say",
+        "Associate Juniper",
+        "Tour's on hold, partner. The Heights lab comes first. Stock up before you go in."
+      ]
+    ],
+    "rx_enter": [
+      [
+        "say",
+        "",
+        "A brass sign: REGENX. Four floors. Visitors by appointment."
+      ],
+      [
+        "say",
+        "",
+        "The staff here look kind. They will still stand in your way."
+      ],
+      [
+        "setFlag",
+        "story.rx_enter",
+        true
+      ]
+    ],
+    "rx_nia": [
+      [
+        "say",
+        "Nia",
+        "Visitor badge? Cute. I'm Nia. I file Atten samples for RegenX."
+      ],
+      [
+        "say",
+        "Nia",
+        "And for the partnership. Don't say that where the cameras can hear."
+      ],
+      [
+        "say",
+        "Nia",
+        "Guards ahead. Good people. They will not let a thief through."
+      ],
+      [
+        "say",
+        "Nia",
+        "Win, and I'll click the stair lock. Floor two has the vials."
+      ],
+      [
+        "give",
+        "heal_snack",
+        1
+      ],
+      [
+        "setFlag",
+        "story.met_nia",
+        true
+      ]
+    ],
+    "rx_f1_clear": [
+      [
+        "say",
+        "",
+        "The stair lock clicks. Nia does not look up from her clipboard."
+      ],
+      [
+        "standing",
+        "glimmer",
+        2,
+        "heights_lobby_g"
+      ],
+      [
+        "setFlag",
+        "story.rx_f1",
+        true
+      ]
+    ],
+    "rx_cal": [
+      [
+        "say",
+        "Cal",
+        "You again. I'm Cal. Floor tech. I drop things. Keys, mostly."
+      ],
+      [
+        "say",
+        "Cal",
+        "Atten does what the label says. Focus. Bright eyes. RegenX believes that."
+      ],
+      [
+        "say",
+        "Cal",
+        "Take a tonic. If the bay gets loud, my Walkling knows the way."
+      ],
+      [
+        "give",
+        "wake_tonic",
+        1
+      ],
+      [
+        "setFlag",
+        "story.met_cal",
+        true
+      ]
+    ],
+    "rx_f2_clear": [
+      [
+        "say",
+        "",
+        "A sealed Atten vial sits in the rack. You take a copy. The techs look sick about it."
+      ],
+      [
+        "give",
+        "atten_vial",
+        1
+      ],
+      [
+        "standing",
+        "glimmer",
+        2,
+        "heights_wing_g"
+      ],
+      [
+        "setFlag",
+        "story.rx_f2",
+        true
+      ]
+    ],
+    "rx_terminal": [
+      [
+        "say",
+        "",
+        "A RegenX screen: Atten improves focus. No side effects on record."
+      ],
+      [
+        "say",
+        "",
+        "Under that, an older note. Not RegenX. It only says: THE ARBITER."
+      ],
+      [
+        "say",
+        "",
+        "The machine emits something, very slowly. Nobody in the lab can name it."
+      ],
+      [
+        "say",
+        "",
+        "Glimmerwell calls it ancient, and will not say why it was built. RegenX never knew."
+      ],
+      [
+        "setFlag",
+        "story.saw_arbiter",
+        true
+      ]
+    ],
+    "rx_f3_clear": [
+      [
+        "say",
+        "",
+        "The plans are a thin folder. Cheap brewing. No mention of the Arbiter."
+      ],
+      [
+        "give",
+        "atten_plans",
+        1
+      ],
+      [
+        "standing",
+        "glimmer",
+        2,
+        "heights_records_g"
+      ],
+      [
+        "setFlag",
+        "story.rx_f3",
+        true
+      ]
+    ],
+    "rx_done": [
+      [
+        "say",
+        "Quinn",
+        "Leave the cradle dark. We only came for copies."
+      ],
+      [
+        "say",
+        "",
+        "The Arbiter keeps emitting, slow and quiet. Nothing rushes out."
+      ],
+      [
+        "say",
+        "Quinn",
+        "We do not know what it sends. The old ones built it. That is all I was told."
+      ],
+      [
+        "setFlag",
+        "story.rx_done",
+        true
+      ],
+      [
+        "setFlag",
+        "story.heights_done",
+        true
+      ],
+      [
+        "standing",
+        "glimmer",
+        5,
+        "heights_g"
+      ]
+    ],
+    "sm_enter": [
+      [
+        "say",
+        "",
+        "A Fen note, nailed to a post: night carts. Crates that breathe. Look, then bring them home."
+      ],
+      [
+        "say",
+        "",
+        "Stock up if you have not. The tunnel does not loop back kindly."
+      ],
+      [
+        "setFlag",
+        "story.sm_yard",
+        true
+      ]
+    ],
+    "sm_look_clear": [
+      [
+        "say",
+        "",
+        "The lookouts step aside, worn out. A stair drops into the dark."
+      ],
+      [
+        "standing",
+        "keepers",
+        2,
+        "heights_yard_k"
+      ],
+      [
+        "setFlag",
+        "story.sm_look",
+        true
+      ]
+    ],
+    "sm_jed": [
+      [
+        "say",
+        "Jed",
+        "Don't shout. I'm Jed. I load crates. I thought it was apples."
+      ],
+      [
+        "say",
+        "Jed",
+        "A Walkling blinked at me through a slat. I'm done helping them."
+      ],
+      [
+        "say",
+        "Jed",
+        "This page lists the night carts. If the den gets bad, I'll be there."
+      ],
+      [
+        "give",
+        "heal_snack",
+        1
+      ],
+      [
+        "setFlag",
+        "story.met_jed",
+        true
+      ]
+    ],
+    "sm_free": [
+      [
+        "say",
+        "",
+        "The haulers sit quiet. You lift three lids. A Pomlet, a Pebblit, and a Fuzzwick blink up."
+      ],
+      [
+        "say",
+        "Ken",
+        "Fernbrook watch. I'm Ken. We ask them one at a time. You start."
+      ],
+      [
+        "choice",
+        "The Pomlet first.",
+        [
+          [
+            "Where were you going?",
+            [
+              [
+                "say",
+                "",
+                "The Pomlet noses toward the orchard light, then looks back at you."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "choice",
+        "The Pebblit next.",
+        [
+          [
+            "Who shut the lid?",
+            [
+              [
+                "say",
+                "",
+                "The Pebblit taps the crate slat, then your boot. It is not hurt."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "choice",
+        "The Fuzzwick last.",
+        [
+          [
+            "Are you hurt?",
+            [
+              [
+                "say",
+                "",
+                "The Fuzzwick leans on your leg. No limp. It wants out."
+              ]
+            ]
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Ken",
+        "Town watch will walk behind them. We encourage the path. We do not drag."
+      ],
+      [
+        "say",
+        "",
+        "The three hop for the daylight crack. Ken keeps pace, a step back."
+      ],
+      [
+        "standing",
+        "keepers",
+        2,
+        "heights_talk_k"
+      ],
+      [
+        "setFlag",
+        "story.sm_freed",
+        true
+      ]
+    ],
+    "sm_haul_clear": [
+      [
+        "say",
+        "",
+        "The haulers sit down. The inner door is just a bar now."
+      ],
+      [
+        "standing",
+        "keepers",
+        2,
+        "heights_hold_k"
+      ],
+      [
+        "setFlag",
+        "story.sm_haul",
+        true
+      ]
+    ],
+    "sm_done": [
+      [
+        "say",
+        "",
+        "Mara's route book matches Jed's page. Fernbrook can take every name on it."
+      ],
+      [
+        "say",
+        "",
+        "The crates are empty. The Walklings are already on the north path home."
+      ],
+      [
+        "give",
+        "route_page",
+        1
+      ],
+      [
+        "setFlag",
+        "story.sm_done",
+        true
+      ],
+      [
+        "setFlag",
+        "story.heights_done",
+        true
+      ],
+      [
+        "standing",
+        "keepers",
+        5,
+        "heights_k"
+      ]
+    ]
+  }
+}
