@@ -186,6 +186,25 @@ body.scene-on .walk-ctl{opacity:0}
   font-size:15px;background:var(--y);color:var(--k);box-shadow:0 0 0 2px var(--k)}
 .owned .group-label{font-size:17px;color:var(--h);padding:4px 2px 0}
 .card.boxed{opacity:.88}
+.party-board,.box-list{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pet-row{background:var(--d);padding:4px;box-shadow:0 0 0 3px var(--k);display:flex;flex-direction:column;gap:4px;min-width:0}
+.pet-row .slot-main{display:flex;align-items:center;gap:8px;min-height:44px;width:100%;margin:0;padding:2px 4px;border:0;background:transparent;color:inherit;font-family:var(--font);font-weight:bold;text-align:left;cursor:pointer}
+.pet-row .slot-main canvas{width:40px;height:40px;background:var(--n);flex:0 0 auto}
+.pet-row .slot-copy{min-width:0;flex:1 1 auto}
+.pet-row .slot-nm{font-size:18px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pet-row .slot-sub{font-size:14px;line-height:1.15;color:var(--h)}
+.pet-row .partner-tag{color:var(--y);margin-left:6px;font-size:14px}
+.slot-acts{display:flex;flex-wrap:wrap;gap:4px}
+.slot-acts button{flex:1 1 calc(50% - 4px);min-width:44px;min-height:44px;margin:0;padding:0 6px;border:0;background:var(--n);color:var(--w);font-family:var(--font);font-weight:bold;font-size:16px;line-height:1.1;box-shadow:0 0 0 2px var(--k);cursor:pointer;white-space:nowrap}
+.slot-acts button.act-go{background:var(--l);color:var(--k)}
+.slot-acts button.act-danger{background:var(--r);color:var(--w)}
+.slot-acts button:disabled{background:var(--m);color:var(--d);cursor:default}
+.slot-acts button:active:not(:disabled){transform:translateY(1px)}
+.slot-confirm{margin:0;padding:2px 4px 0;font-size:15px;line-height:1.3;color:var(--s)}
+.party-slot.empty{min-height:44px;display:flex;align-items:center;padding:4px 8px;background:var(--k);color:var(--m);font-size:16px;box-shadow:0 0 0 3px var(--d)}
+.party-slot.empty button{flex:1 1 auto;width:100%;min-height:44px;min-width:44px;margin:0;border:0;background:var(--l);color:var(--k);font-family:var(--font);font-weight:bold;font-size:16px;box-shadow:0 0 0 2px var(--k);cursor:pointer}
+.box-empty{font-size:16px;color:var(--m);padding:2px}
+.orphan-row{font-size:15px;line-height:1.35;color:var(--h);padding:2px 2px 0}
 .dex{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 3px 10px}   /* 14 lines x 3 forms = 42 cells */
 .dex .cell{background:var(--d);padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:0 0 0 3px var(--k);font-size:13px;text-align:center;min-width:0}
 button.dex-cell{font-family:var(--font);color:inherit;border:0;cursor:pointer;width:100%;min-height:44px}

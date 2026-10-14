@@ -4710,45 +4710,314 @@ function closeJournal(){
   if ($('#ovJournal').hidden) return;
   $('#ovJournal').hidden = true; lockTabs(false); sfx('tap');
 }
+// Party board on the WALKLINGS tab (field only). Pets move as the same object, so HP, moves, bond,
+// faint and any unknown fields stay put. The partner stays in the party (makePartner). Hunger in the
+// box is already paused (role multiplier 0). Releasing never clears dex.caught.
+let boardUi = null;
+function partyField(){ return !!(S && !readOnly && !battle.on); }
+function reorderParty(id, toIndex){
+  if (!partyField()) return false;
+  const from = S.party.findIndex(p => p.id === id);
+  if (from < 0 || !Number.isInteger(toIndex) || toIndex < 0 || toIndex >= S.party.length || from === toIndex) return false;
+  const p = S.party[from];
+  S.party[from] = S.party[toIndex];
+  S.party[toIndex] = p;
+  return true;
+}
+function depositPet(id, newPartnerId){
+  if (!partyField()) return false;
+  const i = S.party.findIndex(p => p.id === id);
+  if (i < 0 || S.party.length + S.box.length <= 1 || S.party.length <= 1) return false;
+  if (S.partnerId === id) {
+    if (typeof newPartnerId !== 'string' || newPartnerId === id || !S.party.some(p => p.id === newPartnerId)) return false;
+  }
+  const [p] = S.party.splice(i, 1);
+  S.box.unshift(p);
+  if (S.partnerId === id) S.partnerId = newPartnerId;
+  return true;
+}
+function withdrawPet(id, slotIndex){
+  if (!partyField()) return false;
+  const bi = S.box.findIndex(p => p.id === id), max = PPSave.PARTY_MAX;
+  if (bi < 0 || !Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= max) return false;
+  // Empty slot: append. The party stays dense, so the pet lands in the first open slot.
+  // A full party has no empty slot and can only swap with someone already there.
+  if (slotIndex >= S.party.length) {
+    if (S.party.length >= max) return false;
+    S.party.push(S.box.splice(bi, 1)[0]);
+    return true;
+  }
+  const [p] = S.box.splice(bi, 1), occ = S.party[slotIndex];
+  S.party[slotIndex] = p;
+  S.box.splice(bi, 0, occ);
+  return true;
+}
+function releasePet(id){
+  if (!partyField()) return false;
+  if (S.party.length + S.box.length <= 1) return false;
+  const pi = S.party.findIndex(p => p.id === id);
+  const bi = pi < 0 ? S.box.findIndex(p => p.id === id) : -1;
+  if (pi < 0 && bi < 0) return false;
+  const p = pi >= 0 ? S.party[pi] : S.box[bi], wasPartner = S.partnerId === id;
+  if (typeof p.held === 'string' && typeof grantItem === 'function') { try { grantItem(p.held, 1); } catch (e) {} }
+  if (pi >= 0) S.party.splice(pi, 1); else S.box.splice(bi, 1);
+  if (!S.party.length && S.box.length) S.party.push(S.box.shift());
+  if (S.party.length && (wasPartner || !S.party.some(q => q.id === S.partnerId))) {
+    S.partnerId = S.party[pi >= 0 ? Math.min(pi, S.party.length - 1) : 0].id;
+  }
+  return true;
+}
+window.reorderParty = reorderParty;
+window.depositPet = depositPet;
+window.withdrawPet = withdrawPet;
+window.releasePet = releasePet;
+
+function openBoardPet(id){
+  const open = typeof openWalklingSheet === 'function' ? openWalklingSheet : window.openWalklingSheet;
+  if (typeof open === 'function') open(id); else openStatsCard(id);
+}
+function boardButton(label, act, on, cls){
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.act = act; b.textContent = label;
+  if (cls) b.className = cls;
+  b.addEventListener('click', on);
+  return b;
+}
+function boardActs(){ const d = document.createElement('div'); d.className = 'slot-acts'; return d; }
+function boardNote(text){ const p = document.createElement('p'); p.className = 'slot-confirm'; p.textContent = text; return p; }
+function closeBoard(){ boardUi = null; if (screen === 'col') renderCollection(); sfx('tap'); }
+function openBoard(ui){ boardUi = ui; if (screen === 'col') renderCollection(); sfx('tap'); }
+function refreshBoard(msg){
+  boardUi = null; save(); updateHUD();
+  if (screen === 'col') renderCollection();
+  if (msg) toast(msg);
+  sfx('tap');
+}
+function denyBoard(msg){ toast(msg); sfx('denied'); }
+function boardMove(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (boardUi && boardUi.kind === 'move' && boardUi.id === id) return closeBoard();
+  openBoard({ kind: 'move', id });
+}
+function boardDepositAsk(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (!S.party.some(p => p.id === id)) return;
+  if (S.party.length + S.box.length <= 1 || S.party.length <= 1) return denyBoard('Keep at least one Walkling with you.');
+  openBoard({ kind: 'deposit', id });
+}
+function boardDeposit(id, newPartnerId){
+  const p = petById(id);
+  if (!depositPet(id, newPartnerId)) return denyBoard('Pick who stays with you.');
+  refreshBoard((p ? petName(p) : 'They') + ' is in the box.');
+}
+function boardWithdrawAsk(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (!S.box.some(p => p.id === id)) return;
+  if (S.party.length >= PPSave.PARTY_MAX) return openBoard({ kind: 'withdraw', id });
+  const p = petById(id);
+  if (!withdrawPet(id, S.party.length)) return denyBoard('The party is full.');
+  refreshBoard((p ? petName(p) : 'They') + ' joined the party.');
+}
+function boardWithdraw(id, slot){
+  const p = petById(id);
+  if (!withdrawPet(id, slot)) return denyBoard('That slot is full.');
+  refreshBoard((p ? petName(p) : 'They') + ' joined the party.');
+}
+function boardReleaseAsk(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (!petById(id)) return;
+  if (S.party.length + S.box.length <= 1) return denyBoard("You can't let your only Walkling go.");
+  openBoard({ kind: 'release', id });
+}
+function boardRelease(id){
+  const p = petById(id), name = p ? petName(p) : 'They';
+  if (!releasePet(id)) return denyBoard("You can't let your only Walkling go.");
+  refreshBoard(name + ' headed off on their own.');
+}
+function boardPartner(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (!petById(id) || id === S.partnerId) return;
+  makePartner(id);
+  const p = pet();
+  refreshBoard((p ? petName(p) : 'They') + ' is your partner now!');
+}
+function boardReorder(id, to){
+  if (!reorderParty(id, to)) return denyBoard("Can't move them there.");
+  refreshBoard();
+}
+function slotCopy(p){
+  const info = document.createElement('div'); info.className = 'slot-copy';
+  const nm = document.createElement('div'); nm.className = 'slot-nm'; nm.textContent = petName(p);
+  if (p.id === S.partnerId) { const t = document.createElement('span'); t.className = 'partner-tag'; t.textContent = 'PARTNER'; nm.append(t); }
+  const sub = document.createElement('div'); sub.className = 'slot-sub';
+  sub.textContent = 'Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  const hb = hpBadge(p);
+  if (hb) { const b = document.createElement('span'); b.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); b.textContent = hb; sub.append(b); }
+  info.append(nm, sub);
+  return info;
+}
+function slotMain(p){
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'slot-main';
+  b.setAttribute('aria-label', petName(p) + ', open');
+  const cv = document.createElement('canvas'); cv.width = cv.height = 18;
+  spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p));
+  b.append(cv, slotCopy(p));
+  b.addEventListener('click', () => openBoardPet(p.id));
+  return b;
+}
+function partyActs(p){
+  const acts = boardActs();
+  acts.append(boardButton('MOVE', 'move', () => boardMove(p.id)));
+  acts.append(boardButton('TO BOX', 'box', () => boardDepositAsk(p.id)));
+  const partner = boardButton('PARTNER', 'partner', () => boardPartner(p.id));
+  if (p.id === S.partnerId) { partner.disabled = true; partner.setAttribute('aria-pressed', 'true'); }
+  acts.append(partner, boardButton('RELEASE', 'release', () => boardReleaseAsk(p.id), 'act-danger'));
+  return acts;
+}
+function movePanel(p, index){
+  const wrap = document.createElement('div');
+  wrap.append(boardNote('Move ' + petName(p) + ' to another slot.'));
+  const acts = boardActs();
+  const up = boardButton('UP', 'up', () => boardReorder(p.id, index - 1));
+  const down = boardButton('DOWN', 'down', () => boardReorder(p.id, index + 1));
+  if (index <= 0) up.disabled = true;
+  if (index >= S.party.length - 1) down.disabled = true;
+  acts.append(up, down);
+  S.party.forEach((q, i) => {
+    if (i === index) return;
+    const b = boardButton('SLOT ' + (i + 1), 'slot', () => boardReorder(p.id, i));
+    b.dataset.index = String(i);
+    b.setAttribute('aria-label', 'Swap with slot ' + (i + 1));
+    acts.append(b);
+  });
+  acts.append(boardButton('BACK', 'back', closeBoard));
+  wrap.append(acts);
+  return wrap;
+}
+function depositPanel(p){
+  const wrap = document.createElement('div');
+  wrap.append(boardNote('Hunger pauses in the box.'));
+  const acts = boardActs();
+  if (p.id === S.partnerId) {
+    wrap.append(boardNote('Who stays with you?'));
+    S.party.forEach(q => {
+      if (q.id === p.id) return;
+      const b = boardButton(petName(q), 'stay', () => boardDeposit(p.id, q.id), 'act-go');
+      b.dataset.partner = q.id;
+      acts.append(b);
+    });
+  } else acts.append(boardButton('SEND', 'send', () => boardDeposit(p.id), 'act-go'));
+  acts.append(boardButton('BACK', 'back', closeBoard));
+  wrap.append(acts);
+  return wrap;
+}
+function releasePanel(p){
+  const wrap = document.createElement('div');
+  wrap.append(boardNote('Let ' + petName(p) + ' go? They leave your party and your box.'));
+  const acts = boardActs();
+  acts.append(boardButton('RELEASE', 'yes', () => boardRelease(p.id), 'act-danger'));
+  acts.append(boardButton('BACK', 'back', closeBoard));
+  wrap.append(acts);
+  return wrap;
+}
+function boxActs(p){
+  const acts = boardActs();
+  const to = boardButton('TO PARTY', 'party', () => boardWithdrawAsk(p.id), 'act-go');
+  if (S.party.length >= PPSave.PARTY_MAX) to.setAttribute('aria-label', 'Swap into the party');
+  acts.append(to, boardButton('PARTNER', 'partner', () => boardPartner(p.id)));
+  acts.append(boardButton('RELEASE', 'release', () => boardReleaseAsk(p.id), 'act-danger'));
+  return acts;
+}
+function withdrawWait(){
+  const wrap = document.createElement('div');
+  wrap.append(boardNote('Tap a party slot to swap.'));
+  const acts = boardActs();
+  acts.append(boardButton('BACK', 'back', closeBoard));
+  wrap.append(acts);
+  return wrap;
+}
+function partySlot(p, index){
+  const row = document.createElement('div'); row.className = 'pet-row party-slot';
+  row.dataset.slot = String(index); row.dataset.id = p.id;
+  row.append(slotMain(p));
+  const ui = boardUi && boardUi.id === p.id ? boardUi : null;
+  if (ui && ui.kind === 'deposit') row.append(depositPanel(p));
+  else if (ui && ui.kind === 'release') row.append(releasePanel(p));
+  else if (ui && ui.kind === 'move') row.append(movePanel(p, index));
+  else row.append(partyActs(p));
+  if (boardUi && boardUi.kind === 'withdraw') {
+    const extra = boardActs();
+    const into = boardButton('SWAP', 'into', () => boardWithdraw(boardUi.id, index));
+    into.setAttribute('aria-label', 'Swap into slot ' + (index + 1));
+    extra.append(into); row.append(extra);
+  }
+  return row;
+}
+function emptySlot(index){
+  const row = document.createElement('div'); row.className = 'party-slot empty'; row.dataset.slot = String(index);
+  if (boardUi && boardUi.kind === 'withdraw' && index === S.party.length && S.party.length < PPSave.PARTY_MAX) {
+    const b = boardButton('HERE', 'into', () => boardWithdraw(boardUi.id, index), 'act-go');
+    b.setAttribute('aria-label', 'Bring into empty slot ' + (index + 1));
+    row.append(b);
+  } else { row.textContent = 'EMPTY'; row.setAttribute('aria-label', 'Empty party slot ' + (index + 1)); }
+  return row;
+}
+function boxRow(p){
+  const row = document.createElement('div'); row.className = 'pet-row box-row'; row.dataset.id = p.id;
+  row.append(slotMain(p));
+  const ui = boardUi && boardUi.id === p.id ? boardUi : null;
+  if (ui && ui.kind === 'release') row.append(releasePanel(p));
+  else if (ui && ui.kind === 'withdraw') row.append(withdrawWait());
+  else row.append(boxActs(p));
+  return row;
+}
 function renderCollection(){
+  if (boardUi && !allPets().some(p => p.id === boardUi.id)) boardUi = null;
   const list = $('#ownedList'); list.innerHTML = '';
   $('#ownedCount').textContent = '(' + allPets().length + ')';
   const label = txt => { const d = document.createElement('div'); d.className = 'group-label'; d.textContent = txt; list.append(d); };
-  const card = (p, inBox) => {
-    const c = document.createElement('div'); c.className = 'card' + (inBox ? ' boxed' : '');
-    const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p));
-    const info = document.createElement('div');
-    info.innerHTML = '<div class="nm"></div><div class="sub"></div><div class="met"></div>';
-    info.children[0].textContent = petName(p);
-    info.children[1].textContent = (cleanNick(p.nick) ? nameOf(spi(p), p.stage) : SPECIES[spi(p)].type) + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
-    info.children[2].textContent = metLine(p);
-    const hb = hpBadge(p); if (hb) { const t = document.createElement('span'); t.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); t.textContent = hb; info.children[1].append(t); }
-    const open = document.createElement('button'); open.type = 'button'; open.className = 'card-open'; open.setAttribute('aria-label', 'Stats for ' + petName(p));
-    const ico = document.createElement('span'); ico.className = 'ico'; ico.append(cv); open.append(ico, info);
-    open.addEventListener('click', () => openStatsCard(p.id));
-    c.append(open);
-    if (p.id === S.partnerId) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; c.append(s); }
-    else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
-      b.addEventListener('click', () => { sfx('tap'); makePartner(p.id); save(); updateHUD(); renderCollection(); toast(petName(p) + ' is your partner now!'); });
-      c.append(b); }
-    list.append(c);
-  };
-  if (S.box.length) label('Party ' + S.party.length + '/' + PPSave.PARTY_MAX);
-  S.party.forEach(p => card(p, false));
-  if (S.box.length) { label('WALKLING-BOX ' + S.box.length); S.box.forEach(p => card(p, true)); }
-  const dex = $('#dexGrid'); dex.innerHTML = ''; let n = 0;
+  label('PARTY ' + S.party.length + '/' + PPSave.PARTY_MAX);
+  const board = document.createElement('div'); board.id = 'partyBoard'; board.className = 'party-board';
+  for (let i = 0; i < PPSave.PARTY_MAX; i++) board.append(S.party[i] ? partySlot(S.party[i], i) : emptySlot(i));
+  list.append(board);
+  label('BOX ' + S.box.length);
+  const box = document.createElement('div'); box.id = 'boxList'; box.className = 'box-list';
+  if (!S.box.length) { const e = document.createElement('div'); e.className = 'box-empty'; e.textContent = 'The box is empty.'; box.append(e); }
+  else S.box.forEach(p => box.append(boxRow(p)));
+  list.append(box);
+  if (S.orphans && S.orphans.length) {
+    const row = document.createElement('div'); row.id = 'orphanRow'; row.className = 'orphan-row';
+    const reason = S.orphans[0] && S.orphans[0].reason ? String(S.orphans[0].reason) : '';
+    row.textContent = S.orphans.length + (S.orphans.length === 1 ? ' record could not be read' : ' records could not be read') + (reason ? '. ' + reason : '.');
+    list.append(row);
+  }
+  renderDexGrid();
+}
+function renderDexGrid(){
+  const dex = $('#dexGrid'); dex.innerHTML = '';
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
+  const seen = (S.dex && S.dex.seen) || {}, caught = (S.dex && S.dex.caught) || {};
+  const joined = Object.keys(caught).filter(k => caught[k]).length;
+  let met = 0;
   SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
-    const f = formOf(si, k), seen = !!S.dex.seen[f] || owned.has(f); if (seen) n++;
-    const cell = document.createElement(seen ? 'button' : 'div');
-    cell.className = 'cell' + (seen ? ' dex-cell' : '');
-    if (seen) { cell.type = 'button'; cell.setAttribute('aria-label', st.name + ', journal page'); cell.addEventListener('click', () => openJournalEntry({ si, stage: k })); }
-    const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, si, k, seen ? 'n' : 's');
-    if (!seen && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
-    const lb = document.createElement('div'); lb.textContent = seen ? st.name : '???'; if (!seen) lb.className = 'unk';
+    const f = formOf(si, k), flagCaught = !!caught[f], flagSeen = !!seen[f], owns = owned.has(f);
+    const state = (flagCaught || owns) ? 'joined' : flagSeen ? 'met' : 'unmet';
+    if (state === 'met') met++;
+    const known = state !== 'unmet';
+    const cell = document.createElement(known ? 'button' : 'div');
+    cell.className = 'cell' + (known ? ' dex-cell' : '');
+    cell.dataset.form = f; cell.dataset.state = state;
+    if (known) {
+      cell.type = 'button';
+      cell.setAttribute('aria-label', st.name + ', journal page');
+      cell.addEventListener('click', () => openJournalEntry({ si, stage: k }));
+    }
+    const cv = document.createElement('canvas'); cv.width = cv.height = 18;
+    spriteCanvas(cv, si, k, known ? 'n' : 's');
+    if (!known && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
+    const lb = document.createElement('div'); lb.textContent = known ? st.name : '???'; if (!known) lb.className = 'unk';
     cell.append(cv, lb); dex.append(cell);
   }));
-  $('#dexCount').textContent = n + '/' + (SPECIES.length * 3);
+  $('#dexCount').textContent = 'Joined ' + joined + ' · Met ' + met + ' · Out there ' + (SPECIES.length * 3);
 }
 // Partner = the pet on the Pet tab; it must be in the party. A box pet joins the party first; if the party is full,
 // the last party member that isn't the partner moves to the top of the box.
@@ -5756,7 +6025,7 @@ function boot(){
     get poofs(){ return wild.poofs.length; },
     spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
-    get muted(){ return PPSound.muted; }, careGain, showTab, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
+    get muted(){ return PPSound.muted; }, careGain, showTab, reorderParty, depositPet, withdrawPet, releasePet, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
     moves: () => JSON.parse(JSON.stringify(MOVES)), learnset: f => learnset(f).map(e => ({ ...e })),
     defaultMoves: (f, L) => defaultMoves(f, L).slice(), befriendWidth,
     battleLine: (k, v) => battleLine(k, v),
