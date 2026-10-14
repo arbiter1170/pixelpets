@@ -119,7 +119,7 @@ h2 small{color:var(--h);font-size:17px}
 .dpc[hidden]{display:none}
 .dpc.bl{grid-column:1;grid-row:3}.dpc.br{grid-column:3;grid-row:3}
 .dpc.tl{grid-column:1;grid-row:1}
-.dpc.tr{grid-column:3;grid-row:1}   /* QUEST (NEXT_PLAN WP-C): the last free corner */
+.dpc.tr{grid-column:3;grid-row:1}
 .dpc.pulse{animation:jpulse .8s steps(2) infinite}
 @keyframes jpulse{50%{background:var(--b)}}
 @media (prefers-reduced-motion: reduce){ .dpc.pulse{animation:none;background:var(--b)} }
@@ -199,6 +199,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #tabs button{min-height:62px;border:0;background:transparent;color:var(--m);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:16px}
 #tabs button canvas{width:24px;height:24px}
 #tabs button.active{color:var(--y);background:var(--n)}
+#tabs button.pulse{color:var(--y)}
 #tabs button:active{background:var(--d)}
 #tabs.locked{pointer-events:none;opacity:.5}
 
@@ -543,3 +544,19 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .st-fill-keepers{background:var(--y)}.st-fill-glimmer{background:var(--l)}
 .st-barrow small{font-size:12px;color:var(--m);white-space:nowrap}
 .st-explain{margin:0;font-size:14px;line-height:1.3;color:var(--m)}
+/* Keeper1 / cracked handset */
+.phone-shell{max-width:360px}
+.phone-top{display:flex;flex-direction:column;gap:8px}
+.phone-top .btn{min-height:44px}
+.phone-apps{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.phone-app{min-height:48px;border:3px solid var(--g);background:var(--k);color:var(--y);font-family:var(--font);font-size:16px;cursor:pointer}
+.phone-app:active{transform:translateY(1px)}
+.phone-body{font-size:16px;line-height:1.35;color:var(--w);display:flex;flex-direction:column;gap:8px}
+.phone-body p{margin:0}
+.phone-body .who{color:var(--y)}
+#ovPhone.hack{background:rgba(8,16,10,.96)}
+#ovPhone.hack .phone-shell{background:#10160f;box-shadow:0 0 0 4px #10160f,0 0 0 8px var(--l)}
+#ovPhone.hack .ov-title,#ovPhone.hack .phone-app{color:var(--l);border-color:var(--l)}
+#ovPhone.hack .hint{color:var(--l)}
+#phonePane[hidden],#phoneHome[hidden],#phoneFriends[hidden]{display:none}
+#phoneFriends .panel{margin:0 0 8px}

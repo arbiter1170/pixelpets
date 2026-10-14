@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-13 22:24 ET — Keeper House and Keeper1 (`20261013-2224`)
+
+- Hearthmoor roofs wear gold and green. Glimmerwell ground wears mint. Officer Bren patrols the Hearthmoor road. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer.
+- The Keeper House, south of the road, has two floors. Sergeant Bram, Archivist Mo, and Clerk Wynn are downstairs. Captain Lumen and Operator Rue are upstairs. Citizens are asked to step back. Keepers are welcomed, more warmly as Standing rises. A Glimmerwell pledge is kept in the doorway.
+- The first side quest is on Route 1. Two officers stop you and issue a Keeper1. The wires, the poles, and the companies stay with the Keepers. A blue chevron marks that quest. The main quest chevron stays yellow.
+- BOOK is now PHONE. QUEST moved to the bottom bar. The phone has Contacts, Notes, Journal, Friends, and KeeperUAV. Notes say the Lantern desk can read them. KeeperUAV's job board is a placeholder.
+- Joining Glimmerwell puts a Cracked Handset in the bag. While you carry it on that pledge, the phone becomes the thin CRACK//HAND and KeeperUAV becomes Botnet, also a placeholder.
+- Higher Glimmerwell Standing shows a little more silver on your keeper. Archivist Mo's books fear a child born already listening. That generation is not in the game.
+
 ## 2026-10-13 21:28 ET — Save a copy before Start over (`20261013-2128`)
 
 - Settings has Save a copy and Read a copy. The Start over dialog offers SAVE A COPY before the hold.

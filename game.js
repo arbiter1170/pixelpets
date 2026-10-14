@@ -206,7 +206,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -703,6 +703,10 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.heights.maps)));
     applyMapPatch(W, MD.heights.slicePatch);
   }
+  if (MD.civic) {                                                      // Keeper House, officers, the Route 1 phone
+    Object.assign(W, JSON.parse(JSON.stringify(MD.civic.maps)));
+    applyMapPatch(W, MD.civic.slicePatch);
+  }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -711,6 +715,7 @@ if (MD.act1_route2) Object.assign(SCENES, MD.act1_route2.slicePatch.scenes || {}
 if (MD.cobblecrest) Object.assign(SCENES, MD.cobblecrest.route2Patch.scenes || {}, MD.cobblecrest.scenes);
 if (MD.glimmer_path) Object.assign(SCENES, MD.glimmer_path.scenes || {});
 if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
+if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.heights]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
@@ -868,6 +873,7 @@ function switchSide(to, opts){
   if (to === from) return false;
   if (!(opts && opts.free)) setStanding(from, PPStanding.switchCost(standingOf(from, false)));
   S.flags['story.side'] = to;
+  if (to === 'glimmer') ensureCrackedPhone();
   S.flags['story.switches'] = (+S.flags['story.switches'] || 0) + 1;
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
@@ -897,6 +903,8 @@ const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
 if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.entries(MD.glimmer_path.speakers)) if (typeof v === 'string' && !LOOK_OF_NAME[k]) LOOK_OF_NAME[k] = v;
+if (MD.civic && MD.civic.looks) for (const [k, v] of Object.entries(MD.civic.looks)) if (v && typeof v === 'object') NPC_LOOKS[k] = v;
+if (MD.civic && MD.civic.speakers) for (const [k, v] of Object.entries(MD.civic.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 // Build 3: side-keyed ambient lines. New keys win; a leftover `else` stays behind them so it only shows if both side keys miss.
 (function applyGlimmerLines(){
   const G = MD.glimmer_path; if (!G || !G.lines || !WORLD.fernbrook) return;
@@ -933,6 +941,7 @@ let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };
 function useMap(id){
   CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };
+  patrolClock = 0;
 }
 const isRoom = () => CUR.kind === 'interior';
 // MUSIC v0.1: interiors and towns share one loop; routes and meadows share another. Unknown backdrops leave the current loop.
@@ -1277,6 +1286,8 @@ const ITEMS = {
   atten_vial:     { name: 'Atten Vial',     plural: 'Atten Vials',     cap: 3,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A sealed RegenX vial. It stays in the bag.', blurb: 'RegenX Atten. It sharpens focus.' },
   atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
   route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
+  keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
+  cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
 const BAG_FULL_MSG = 'Bag is full, so some were left behind.';
@@ -1285,6 +1296,10 @@ const acorns = n => n + (n === 1 ? ' Acorn' : ' Acorns');      // INVENTORY §2:
 const itemCount = id => (S && S.bag && S.bag[id]) || 0;
 const warnedItems = new Set();
 // Grant n of an item, clamped to the room left under its cap (overflow is lost). Unknown ids: a no-op that warns once.
+function ensureCrackedPhone(){
+  if (!S || S.flags['story.side'] !== 'glimmer' || itemCount('cracked_phone')) return;
+  grantItem('cracked_phone', 1);
+}
 function grantItem(id, n){
   const it = ITEMS[id]; n = Math.max(0, n | 0);
   if (!it) { if (!warnedItems.has(id)) { warnedItems.add(id); console.warn('Walklings: unknown item id "' + id + '" (nothing given).'); } return { added: 0, lost: 0, unknown: true }; }
@@ -1410,6 +1425,26 @@ async function spotWalk(id){
   spot.id = null;
   if (scene) { $('#ovScene').hidden = false; sbRender('', ''); }
 }
+let patrolClock = 0;
+function tickPatrol(dt){
+  if (!CUR || scene || fade.busy || (battle && battle.on) || overlayOpen()) return;
+  patrolClock += dt;
+  if (patrolClock < 0.7) return;
+  patrolClock = 0;
+  for (const o of CUR.objs) {
+    const path = o.patrol;
+    if (!path || !path.length || !present(o)) continue;
+    const cur = mapRT.pos[o.id] || { x: o.x, y: o.y };
+    const slot = (o._pi || 0) % path.length, dest = path[slot];
+    if (cur.x === dest[0] && cur.y === dest[1]) { o._pi = slot + 1; continue; }
+    const sx = Math.sign(dest[0] - cur.x), sy = Math.sign(dest[1] - cur.y);
+    const nx = cur.x + (sx || 0), ny = cur.y + (sy && !sx ? sy : 0);
+    const face = sx ? (sx < 0 ? 'left' : 'right') : (sy < 0 ? 'up' : 'down');
+    if (solidTile(nx, ny) || blockerAt(nx, ny) || (nx === S.world.x && ny === S.world.y)) { o._pi = slot + 1; continue; }
+    mapRT.pos[o.id] = { x: nx, y: ny, fx: nx, fy: ny, facing: face };
+    mapRT.face[o.id] = face;
+  }
+}
 function updateWalk(dt, t){
   if (walk.intro) { if (t - walk.intro > 700) { walk.intro = 0; openEncounter(); } return; }
   if (walk.to) {
@@ -1432,6 +1467,7 @@ function updateWalk(dt, t){
     if (d) tryStep(d);
   }
   if (!moveHeld()) bump.held = false;
+  tickPatrol(dt);
 }
 /* --- warps, doors and the fade (MAPS_SLICE §3, INTERIORS §3.1): 250 ms, input locked, save right after --- */
 const FADE_MS = 250;
@@ -1502,6 +1538,21 @@ function placeSteps(dr){
 }
 // After a place panel closes the keeper is still on its doorstep: a trigger there (the Hall's `teaser` after the Seal) plays now.
 function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }).then(() => { if (!scene && !fade.busy && !overlayOpen()) checkTriggers(); }); }
+// Keeper towns wear gold and green. Glimmerwell ground wears mint. The stripe sits on the roof edge and the wall foot.
+function factionOfMap(id){
+  if (!id) return null;
+  if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
+  if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
+  if (id === 'hearthmoor' || id.indexOf('hm_') === 0 || id === 'fernbrook' || id === 'route1' || id === 'route2') return 'keepers';
+  return null;
+}
+function drawFactionBand(g, ch, tx, ty, X, Y){
+  const fac = factionOfMap(CUR.id);
+  if (!fac || (ch !== 'R' && ch !== 'H')) return;
+  const ridge = fac === 'glimmer' ? PAL.c : PAL.y, band = fac === 'glimmer' ? PAL.l : PAL.g;
+  if (ch === 'R' && tileAt(tx, ty - 1) !== 'R') { g.fillStyle = ridge; g.fillRect(X, Y, 16, 2); g.fillStyle = band; g.fillRect(X, Y + 2, 16, 1); }
+  if (ch === 'H' && tileAt(tx, ty + 1) !== 'H') { g.fillStyle = band; g.fillRect(X + 2, Y + 13, 12, 2); }
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -1518,6 +1569,7 @@ function drawMap(t){
       const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
+      drawFactionBand(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
       if (ch === '=') {                          // rug border where the rug ends
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
         if (tileAt(tx, ty-1) !== '=') g.fillRect(X, Y, 16, 1); if (tileAt(tx, ty+1) !== '=') g.fillRect(X, Y+15, 16, 1);
@@ -1533,7 +1585,7 @@ function drawMap(t){
   const drawPlayer = () => {                 // the keeper (MAPS_SLICE K.1): 2 walk frames, 1px bob only while moving
     const fr = keeperFrame(), sx = Math.round(px_ - cx) - 1, sy = Math.round(py_ - cy) - 2 - fr;
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(sx + 3, Math.round(py_ - cy) + 14, 12, 2);
-    g.drawImage(keeperFrames(lookOf())[S.world.facing][fr], sx, sy);
+    g.drawImage(keeperFrames(shownLook())[S.world.facing][fr], sx, sy);
     grassOver(walk.fx, walk.fy);
   };
   const drawFollower = () => {               // the partner, one tile behind (K.3); Tired = slower, lower bob
@@ -1669,26 +1721,35 @@ function questPointOnMap(){
   }
   const ex = routeExit(CUR.id, q.target.map); return ex ? { x: ex.x, y: ex.y, here: false } : null;
 }
-function drawObjectiveCue(g, cx, cy, t){
-  if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
-  const pt = questPointOnMap(); if (!pt) return;
-  if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;   // standing on it
+function sidePointOnMap(){
+  const q = (S && PPQuests.sideCurrent) ? PPQuests.sideCurrent(questState()) : null;
+  if (!q || !q.target) return null;
+  if (q.target.map === CUR.id) return { x: q.target.x, y: q.target.y, here: true };
+  const ex = routeExit(CUR.id, q.target.map); return ex ? { x: ex.x, y: ex.y, here: false } : null;
+}
+function drawOneCue(g, cx, cy, t, pt, col, shift){
+  if (!pt || (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy))) return;
   const c = $('#mapCanvas'), VW = c.width, VH = c.height;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
   const X = pt.x * TS - cx, Y = pt.y * TS - cy;
-  if (X > -TS && Y > -TS && X < VW && Y < VH) {                              // the tile is in view: a bobbing arrow above it
-    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5, Y - 12 - bob, PAL.y);
-    else drawArrow(g, ARROW.up, X + 5, Y + TS + 1 + bob, PAL.y);           // top row of the map: point up at it from below
+  if (X > -TS && Y > -TS && X < VW && Y < VH) {
+    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
+    else drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
     return;
   }
-  // Off-screen: an arrow at the viewport edge, on the line from the keeper to the target.
   const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
   const m = 6, kx = dx ? ((dx > 0 ? VW - m : m) - px) / dx : Infinity, ky = dy ? ((dy > 0 ? VH - m : m) - py) / dy : Infinity;
   const k = Math.min(kx, ky), ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
   const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'), gr = ARROW[dir];
   const nudge = reduce ? 0 : bob, ox = dir === 'right' ? nudge : dir === 'left' ? -nudge : 0, oy = dir === 'down' ? nudge : dir === 'up' ? -nudge : 0;
-  drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox), Math.round(ey - gr.length / 2 + oy), PAL.y);
+  drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox + shift), Math.round(ey - gr.length / 2 + oy), col);
+}
+function drawObjectiveCue(g, cx, cy, t){
+  if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
+  const main = questPointOnMap(), sidePt = sidePointOnMap();
+  if (main) drawOneCue(g, cx, cy, t, main, PAL.y, 0);
+  if (sidePt) drawOneCue(g, cx, cy, t, sidePt, PAL.b, 7);   // blue chevron: side quests
 }
 const WART = buildWorldArt();
 function drawObj(g, o, cx, cy, VW, VH, t){
@@ -1708,6 +1769,19 @@ function drawObj(g, o, cx, cy, VW, VH, t){
 // keeper.js composes 16x16 frames (keeperGrid); here they become 18x18 canvases with a 1px PAL.k outline like buildSprite,
 // built once per look and cached (the Walk map only looks them up).
 const lookOf = () => (S && S.player && S.player.look) || null;           // null = the default look
+// Glimmerwell standing shows on the body: the Arbiter's emission has been in that bloodline a long time.
+// Tier 0 is unchanged. Higher tiers pick up silver and mint. The save's look is not rewritten.
+function shownLook(){
+  const base = lookOf();
+  if (!S || side() !== 'glimmer') return base;
+  const tier = PPStanding.tierOf(standingOf('glimmer', false));
+  if (!tier) return base;
+  const L = Object.assign({}, KEEPER_LOOKS.defaults, base || {});
+  L.accent = tier >= 4 ? 's' : 'c';
+  if (tier >= 2) L.outfitCol = 's';
+  if (tier >= 3) L.hairCol = 'h';
+  return L;
+}
 const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|') + (f.extra ? JSON.stringify(f.extra) : ''); };
 const keeperCache = new Map(); let keeperBuilds = 0;
 function keeperCanvas(grid){
@@ -3190,6 +3264,7 @@ function paintUiIcons(){
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {
+    if (c.dataset.hud === 'icon_phone') { iconCanvas(c, ICONS.phone, PAL.y); return; }
     if (c.dataset.hud === 'icon_book') { iconCanvas(c, ICONS.book, PAL.y); return; }
     const gr = (REGION_MAP[c.dataset.hud] || {}).grid; if (!gr) return; const g = ctx(c); g.clearRect(0,0,8,8);
     gr.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } })); });
@@ -3197,16 +3272,67 @@ function paintUiIcons(){
 }
 function bagVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene); }
 function journalVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene && !(battle && battle.on)); }
+const phoneOwned = () => !!(S && S.flags && S.flags['story.phone_got']);
+const phoneHack = () => phoneOwned() && side() === 'glimmer' && itemCount('cracked_phone') > 0;
 function syncJournalBtn(){
-  const b = $('#journalBtn'); if (!b) return;
-  const on = journalVisible();
+  const b = $('#phoneBtn'); if (!b) return;
+  const on = journalVisible() && phoneOwned();
   b.hidden = !on;
-  b.classList.toggle('pulse', on && !S.flags['story.journal_opened']);
+  b.classList.toggle('pulse', on && !S.phoneOpened);
 }
-function openJournalTab(){
-  if (!journalVisible() || overlayOpen()) { sfx('denied'); return; }
-  sfx('tap'); showTab('col'); syncJournalBtn();
+function openPhone(){
+  if (!journalVisible() || !phoneOwned() || overlayOpen()) { sfx('denied'); return; }
+  if (!S.phoneOpened) { S.phoneOpened = true; save(); }
+  const hack = phoneHack();
+  $('#ovPhone').classList.toggle('hack', hack);
+  $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
+  $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
+  $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
+  $('#phoneHome').hidden = false; $('#phonePane').hidden = true;
+  clearMoves(); $('#ovPhone').hidden = false; lockTabs(true); sfx('tap'); syncJournalBtn();
 }
+function closePhone(){
+  if ($('#ovPhone').hidden) return;
+  $('#ovPhone').hidden = true; lockTabs(false);
+}
+function phoneApp(id){
+  if (id === 'journal') { closePhone(); showTab('col'); return; }
+  const hack = phoneHack();
+  const body = $('#phoneBody'), friends = $('#phoneFriends');
+  body.hidden = id === 'friends'; friends.hidden = id !== 'friends';
+  body.innerHTML = '';
+  const add = (who, text) => { const p = document.createElement('p'); if (who) { const b = document.createElement('b'); b.className = 'who'; b.textContent = who; p.appendChild(b); p.appendChild(document.createTextNode('  ' + text)); } else p.textContent = text; body.appendChild(p); };
+  if (id === 'contacts') {
+    add('Officer Ness', 'Route 1 watch. Issued your Keeper1.');
+    add('Sergeant Bram', 'Keeper House door. Rank matters to him.');
+    add('Captain Lumen', 'Upstairs. KeeperUAV jobs wait on her desk.');
+    if (S.flags['story.met_fen']) add('Master Fen', side() === 'glimmer' ? 'She still keeps a chair for you.' : 'Orchard. Roots and blossoms.');
+    if (side() === 'glimmer') add('Clerk Mint', 'Cracked handsets. She does not do warranties.');
+  } else if (id === 'notes') {
+    if (hack) {
+      add('unnamed', 'the crest phone copies every note. this one too, probably.');
+      add('unnamed', 'jobs and parts will list here when the board wakes up.');
+    } else {
+      add('Lantern desk', 'Your Keeper1 is active. We can read this. That is the service.');
+      add('Lantern desk', 'Free handset. The poles stay with the Keepers.');
+    }
+  } else if (id === 'jobs') {
+    if (hack) {
+      add('BOTNET', 'Dark-market parts: the shelf is empty.');
+      add('BOTNET', 'Augment slot: empty. The leak is not a menu.');
+      add('BOTNET', 'Jobs: none posted. Come back later.');
+    } else {
+      add('KEEPERUAV', 'Lantern check, Fernbrook. Reward later.');
+      add('KEEPERUAV', 'Count the Route 2 lamps. Not live yet.');
+      add('KEEPERUAV', 'No jobs are open. The desk is warming up.');
+    }
+  } else if (id === 'friends') {
+    $('#friendCode').textContent = friendCode(); renderKeeperName();
+  }
+  $('#phoneHome').hidden = true; $('#phonePane').hidden = false;
+  sfx('tap');
+}
+function openJournalTab(){ openPhone(); }
 /* ---------- QUEST button + NEXT STEP panel (NEXT_PLAN WP-C) ---------- */
 // Same visibility rules as BOOK. Pulses while the current objective differs from the one the panel was last opened on
 // (S.questSeen, additive), so every new beat invites a tap once and then goes quiet.
@@ -3214,7 +3340,7 @@ const questVisible = () => journalVisible();
 function syncQuestBtn(){
   const b = $('#questBtn'); if (!b) return;
   const on = questVisible(), q = on ? questCurrent() : null;
-  b.hidden = !on;
+  b.classList.toggle('off', !on);
   b.classList.toggle('pulse', !!q && S.questSeen !== q.id);
 }
 let questTab = 'next';   // 'next' | 'standing'; the panel always opens on NEXT STEP
@@ -4108,7 +4234,12 @@ function friendCode(){
 
 /* ---------- input ---------- */
 function bindInput(){
-  $$('#tabs button').forEach(b => b.addEventListener('click', () => { if (tabsGuarded()) return; if (b.dataset.tab !== screen) sfx('tap'); showTab(b.dataset.tab); }));
+  $$('#tabs button').forEach(b => b.addEventListener('click', () => {
+    if (tabsGuarded()) return;
+    if (b.dataset.tab === 'quest') { openQuest(); return; }
+    if (b.dataset.tab !== screen) sfx('tap');
+    showTab(b.dataset.tab);
+  }));
   $('#settingsBtn').addEventListener('click', () => {
     if (!$('#ovCopy').hidden || !$('#ovReset').hidden) return;
     if (tabsGuarded() && allPets().length) return;
@@ -4141,7 +4272,10 @@ function bindInput(){
   $('#petCanvas').addEventListener('pointerdown', e => { if (screen === 'pet' && !overlayOpen() && petHit(e.clientX, e.clientY)) { e.preventDefault(); patPet(); } });   // CARE_LOOP A: pats
   $('#petBagBtn').addEventListener('click', () => openBag());
   $('#walkBagBtn').addEventListener('click', () => openBag());
-  $('#journalBtn').addEventListener('click', openJournalTab);
+  $('#phoneBtn').addEventListener('click', openPhone);
+  $('#phoneClose').addEventListener('click', () => { sfx('tap'); closePhone(); });
+  $('#phoneBack').addEventListener('click', () => { sfx('tap'); $('#phoneHome').hidden = false; $('#phonePane').hidden = true; });
+  $$('#phoneHome .phone-app').forEach(b => b.addEventListener('click', () => phoneApp(b.dataset.app)));
   $('#questBtn').addEventListener('click', openQuest);
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
@@ -4262,6 +4396,7 @@ function bindInput(){
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
     if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
+    if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
     if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
@@ -4279,7 +4414,8 @@ function bindInput(){
     }
     if (!$('#ovSheet').hidden) { if (e.key === 'Escape' && !$('#shCancel').hidden) closeSheet(null); return; }
     if (!$('#ovBattle').hidden) { battleKey(e); return; }
-    if ('1234'.includes(e.key)) showTab(['pet','walk','col','friends'][+e.key - 1]);
+    if ('123'.includes(e.key)) showTab(['pet','walk','col'][+e.key - 1]);
+    if (e.key === '4') { openQuest(); return; }
   });
   window.addEventListener('keyup', e => { if (KEYS[e.key] === walk.key) walk.key = null; });
   window.addEventListener('blur', clearMoves);
@@ -4431,7 +4567,14 @@ function bootReadOnly(){
   window.PixelPets = Object.freeze({ readOnly: true, get debug(){ return DEBUG; }, get state(){ return null; } });
 }
 function boot(){
-  $$('#tabs canvas').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));
+  $$('#tabs canvas').forEach(c => {
+    if (c.dataset.icon === 'quest' && REGION_MAP.icon_quest) {
+      const gr = REGION_MAP.icon_quest.grid, g = ctx(c); g.clearRect(0, 0, 8, 8);
+      gr.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
+      return;
+    }
+    iconCanvas(c, ICONS[c.dataset.icon], PAL.y);
+  });
   paintUiIcons();
   fastMode = readFastPref(); renderFastTag(); $('#dbgTag').hidden = !DEBUG;
   $('#envPick').hidden = !DEBUG;               // "Pick a place" presets are debug-only
@@ -4448,6 +4591,7 @@ function boot(){
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
+  if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const away = (Date.now() - S.last) / 1000; catchUp(away); regenAll(away); }
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen();
   walk.fx = S.world.x; walk.fy = S.world.y;
@@ -4494,7 +4638,7 @@ function boot(){
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
     get petScene(){ const c = $('#petCanvas'); return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice(), w: c.width, h: c.height, cssW: parseFloat(c.style.width)||0, cssH: parseFloat(c.style.height)||0 }; },
     get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
-      look: Object.assign({}, KEEPER_LOOKS.defaults, lookOf() || {}), name: playerName(), builds: keeperBuilds }; },
+      look: Object.assign({}, KEEPER_LOOKS.defaults, shownLook() || {}), name: playerName(), builds: keeperBuilds }; },
     get follower(){ const p = pet(); return { on: followerOn(), shown: fol.x != null && followerOn(), x: fol.x, y: fol.y, fx: fol.fx, fy: fol.fy, facing: fol.facing,
       moving: !!fol.to, id: p ? p.id : null, tired: !!(p && isTired(p)), fainted: !!(p && isFainted(p)), bob: followerBob(now()), droop: p && isFainted(p) ? 1 : 0, under: fol.x === S.world.x && fol.y === S.world.y }; },
   };
@@ -4544,7 +4688,7 @@ function boot(){
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
     setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); syncSide(); return S.flags[k]; },
-    setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); save(); syncSide(); return side(); },   // WP-B0
+    setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); save(); syncSide(); return side(); },   // WP-B0
     runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.
     setStanding: (sd, n) => { const r = setStanding(sd, n); if (r != null) { save(); if (!$('#ovQuest').hidden) renderQuestTabs(); } return r; },
@@ -4576,7 +4720,10 @@ function boot(){
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
   // WP-C: the current objective (read-only), the point the cue draws on this map, and the chain's dev check.
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
-    seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: !$('#questBtn').hidden && $('#questBtn').classList.contains('pulse') }; } });
+    seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
+  Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
+  api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
+  api.phoneHack = () => phoneHack();
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
   // WP-B0: the pledged side, which scene id / trainer a base id resolves to right now, and the data file's dev check (read-only).
   Object.defineProperty(api, 'side', { enumerable: true, get(){ return side(); } });

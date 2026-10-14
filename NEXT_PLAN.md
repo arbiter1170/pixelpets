@@ -1,6 +1,6 @@
 # Walklings: what's next (handoff after Builds 4–6, Oct 13, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2128`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2224`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -30,7 +30,7 @@ Evening (Build 3, supersede the morning notes):
 
 ## 0. Where the build stands
 
-This branch: `20261013-2128`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
+This branch: `20261013-2224`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, side pick, Heights smuggling tunnels, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal), then Rook's R5 (`brinewick_hook`: he gets off the cart, `story.rook_end` `"ally"`). Story ends at `story.cobble_end` ("COMING LATER · Brinewick").
 
@@ -455,7 +455,8 @@ See section 4 (pointer strength, Settings toggle).
 | Heights (PR #11, `20261013-1839`) | Before the first trial | Keepers smuggling tunnels; Glimmerwell RegenX lab (Atten, The Arbiter emits slowly); group battles |
 | PR #12 (`20261013-1933`) | Heights follow-up | Group-battle tests, Standing on Heights beats, Officer Ken's interviews |
 | Builds 4–6 (`20261013-1950`) | Act 1 glimmer | Route 2 glimmer, Cobblecrest glimmer, Sacrifice stub, Rook R5 |
-| **This branch** (`20261013-2128`) | **Build 7** | Download the v2 save before Start over, and read that file back |
+| Build 7 (`20261013-2128`) | Save copy | Download the v2 save before Start over, and read that file back |
+| **This branch** (`20261013-2224`) | **Civic** | Keeper House, town officers, Keeper1 phone, cracked handset |
 
 Heights sits in front of the trial: `story.heights_done` gates the Hall panel and Tour stop 1. A save that already has `story.seal1`, or that never picked a side, is not sent back. That did not replace Builds 4–6. Those three are now in `data/glimmer_path.json`. Keepers Route 2 and Cobblecrest design JSON stay verbatim; the new scenes overlay them. `brinewick_hook` is the exception: the Keepers closer replaces the Cobblecrest base so Rook converts, and `brinewick_hook@glimmer` is the stay.
 
@@ -515,7 +516,7 @@ Still stale on purpose: Tour stop lines marked `PLACEHOLDER`, desk letter/review
 
 ### Next steps
 
-Act 1's glimmer branch is closed enough to play. Do not invent Brinewick, Hall #3, or Seal 3 until someone writes a one-pager (map, trial, what the humming crate is). The Arbiter's emission stays unnamed; the paranormal link is later.
+Act 1's glimmer branch is closed enough to play. Do not invent Brinewick, Hall #3, or Seal 3 until someone writes a one-pager (map, trial, what the humming crate is). The Arbiter's emission stays unnamed. Archivist Mo records the fear that it has been leaking through bloodlines for a very long time. A child born already listening is not built (D31).
 
 **People, in parallel (not a numbered build):**
 
@@ -527,6 +528,10 @@ Act 1's glimmer branch is closed enough to play. Do not invent Brinewick, Hall #
 ### Build 7 — Export a save before Start over — shipped
 
 Settings has Save a copy and Read a copy. The Start over dialog has SAVE A COPY before the hold. The file is the v2 JSON (`walklings-save.json`). Reading it runs `normalizeV2` and replaces this device's game, then reloads. `v` stays 2. A fresh game (no Walklings yet) can open the gear under the opening scene, so a wipe can be undone without finishing Ilse's intro. Device prefs stay out of the file. Tests: `tests/save_copy.spec.js`.
+
+### Civic — Keeper House and Keeper1 — shipped
+
+Not one of the numbered backlog builds. Hearthmoor is visibly the Keepers' town: gold and green roofs, a patrolling officer, and a two-floor Keeper House. Other towns have a watch officer. Glimmerwell ground uses mint. Route 1's first side quest issues the Keeper1 phone. QUEST moved to the bottom bar. Friends moved into the phone. A cracked handset comes with joining Glimmerwell and switches the shell to Botnet. KeeperUAV and Botnet are placeholder boards. Glimmerwell Standing tints the keeper silver and mint. The generational "born already listening" fear is lore in Archivist Mo's scene (D31), not a birth system. Tests: `tests/civic.spec.js`.
 
 ### Build 8 — Box screen — M — **next**
 

@@ -305,6 +305,16 @@
                       ],
                       [
                         "say",
+                        "Tobin",
+                        "Thin handset. No crest. It still sits on their wires."
+                      ],
+                      [
+                        "give",
+                        "cracked_phone",
+                        1
+                      ],
+                      [
+                        "say",
                         "Master Fen",
                         "...I see. The Lantern House door stays open, {name}. It always has."
                       ],

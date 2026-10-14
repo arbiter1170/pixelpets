@@ -131,10 +131,10 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. Cobblecrest's roofs, windows and
   rooms get their own trim (other towns keep the shared tiles). A loss after you arrive wakes you in the
   Cobblecrest Lantern House.
-- The Walkling Journal (BOOK, top-left of the d-pad, and the WALKLINGS tab) keeps a page for each form you have seen:
+- The Walkling Journal (PHONE, top-left of the d-pad, then the Journal app, and the WALKLINGS tab) keeps a page for each form you have seen:
   the species line, a short note, and how you met the ones who joined you. A new form's first befriend opens that page.
   After Rook's first battle, one wild Walkling waits in the grass by Hearthmoor's east path.
-- Next step (QUEST, top-right of the d-pad; NEXT_PLAN WP-C): shows once you have a Walkling, hides during scenes, battles
+- Next step (QUEST, the bottom bar where Friends used to sit; NEXT_PLAN WP-C): shows once you have a Walkling, hides during scenes, battles
   and overlays, and pulses until you open it on a new objective (`questSeen`, additive). The panel (NEXT STEP) has one or
   two lines, a place line, the last three done steps, SHOW ON MAP (the region map rings the target's node in red and names
   the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Your team is worn out. Rest at a
@@ -169,6 +169,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   (line length after tokens, choice labels ≤ 30, ambient lines ≤ 40, double spaces, unknown tokens, every variant has a
   base and sets the base's story flags; also run at boot), and with debug `setSide('glimmer' | 'keepers')`.
   The first-wild step follows the live guide creature.
+- Keeper House and the phone: Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the buyout) wears mint. Officer Bren patrols the Hearthmoor road. The Keeper House south of that road has two floors: Sergeant Bram, Archivist Mo, and Clerk Wynn downstairs; Captain Lumen and Operator Rue upstairs. Before you pledge, they treat you as a citizen. Keepers hear warmer lines as Standing rises. A Glimmerwell pledge gets a cold door. The first side quest is on Route 1: two officers stop you and issue a Keeper1. PHONE (top-left) opens Contacts, Notes, Journal, Friends, and KeeperUAV. Notes say the Lantern desk can read them. Joining Glimmerwell also puts a Cracked Handset in the bag. While you are Glimmerwell and carrying it, the phone shell becomes the thin CRACK//HAND, and KeeperUAV is replaced by Botnet (placeholder jobs and parts). A blue chevron marks the side quest. The main quest chevron stays yellow. Higher Glimmerwell Standing shows a little more silver on your keeper. Archivist Mo's books fear a child born already listening. That generation is not in the game.
 - Fernbrook Heights (before the first trial): once you pick a side, Fen or Juniper offers "get to know us" and sends you north.
   Keepers investigate a smuggling tunnel. After the haulers step aside, Officer Ken of the Fernbrook watch interviews each Walkling with you, then walks them toward the orchard. Glimmerwell enters the RegenX lab,
   four floors, to copy Atten (a focus aid) and its brewing plans. RegenX does not know the vials sit near The Arbiter,
@@ -226,7 +227,7 @@ no version bump; `normalizeLook()` fixes old or bad looks on load, e.g. the v0.4
   HAIR COLOUR (7), OUTFIT (coat, hoodie, tunic), OUTFIT COLOUR (7) and ACCENT (7), plus SHUFFLE. A new player sees
   it first ("WHO ARE YOU?", no CANCEL), then the starter picker; nothing is saved until DONE. Later, Change look in
   Settings (the header gear) opens it with CANCEL. Names: trimmed, spaces collapsed, `< > { }` and control characters dropped,
-  10 characters max, empty = "Wayfarer". The Friends tab shows "KEEPER  name" above the friend code, and the Pet scene shows a small "KEEPER  name"
+  10 characters max, empty = "Wayfarer". Friends live in the phone (FRIENDS app) and show "KEEPER  name" above the friend code. The Pet scene shows a small "KEEPER  name"
   label in its top-right corner ("Wayfarer" until named).
 - With no Walkling yet the keeper still walks (no energy, food or XP, no wild creatures).
 - Follower: your partner walks one tile behind you on the Walk map, taking the tile you just left (it never
