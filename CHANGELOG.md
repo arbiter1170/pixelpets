@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-10-13 23:38 ET — East gate and the Hearthmoor watch (`20261013-2338`)
+## 2026-10-13 23:47 ET — East gate and the Hearthmoor watch (`20261013-2347`)
 
 - The tree on the grass south of Hearthmoor's east path is cut. The town sign stands one tile south of that grass, so the walk out to Route 1 is open.
 - Officer Bren's patrol reaches the east end of the road. Officer Cald stands just north of the gate. Officer Ness still keeps the Keeper House door.

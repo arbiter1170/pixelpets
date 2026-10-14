@@ -1,6 +1,6 @@
 # Walklings: what's next (handoff after Builds 4–6, Oct 13, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2338`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2347`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -30,7 +30,7 @@ Evening (Build 3, supersede the morning notes):
 
 ## 0. Where the build stands
 
-This branch: `20261013-2338`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes. The live site still shows BOOK and FRIENDS.
+This branch: `20261013-2347`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes. The live site still shows BOOK and FRIENDS.
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, side pick, Heights smuggling tunnels, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal), then Rook's R5 (`brinewick_hook`: he gets off the cart, `story.rook_end` `"ally"`). Story ends at `story.cobble_end` ("COMING LATER · Brinewick").
 
@@ -458,7 +458,7 @@ See section 4 (pointer strength, Settings toggle).
 | Build 7 (`20261013-2128`) | Save copy | Download the v2 save before Start over, and read that file back |
 | Civic (`20261013-2255`) | Keeper town | Keeper House, town officers, Keeper1 phone, cracked handset |
 | Ribbit (`20261013-2318`) | Phone feed | Block News, Chirp Worldwide, local notes, trending |
-| **This branch** (`20261013-2338`) | **East gate** | Cut the tree south of Hearthmoor's east path, move the town sign off that grass, Bren's patrol reaches the gate, Officer Cald stands beside it |
+| **This branch** (`20261013-2347`) | **East gate** | Cut the tree south of Hearthmoor's east path, move the town sign off that grass, Bren's patrol reaches the gate, Officer Cald stands north of the path, off the guide tiles |
 
 Heights sits in front of the trial: `story.heights_done` gates the Hall panel and Tour stop 1. A save that already has `story.seal1`, or that never picked a side, is not sent back. That did not replace Builds 4–6. Those three are now in `data/glimmer_path.json`. Keepers Route 2 and Cobblecrest design JSON stay verbatim; the new scenes overlay them. `brinewick_hook` is the exception: the Keepers closer replaces the Cobblecrest base so Rook converts, and `brinewick_hook@glimmer` is the stay.
 

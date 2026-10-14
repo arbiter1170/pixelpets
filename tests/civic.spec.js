@@ -303,7 +303,7 @@ test('the east gate is open and a keeper stands beside it', async ({ page }) => 
   expect(gate.quest).toBe('first_wild');
   expect(gate.point).toMatchObject({ x: 20, y: 9, here: true });
   expect(gate.sign).toMatchObject({ x: 19, y: 10, block: true });
-  expect(gate.cald).toMatchObject({ x: 18, y: 7, block: true });
+  expect(gate.cald).toMatchObject({ x: 17, y: 7, block: true });
   expect(gate.brenPatrol).toBe(true);
 
   await page.evaluate(() => {
