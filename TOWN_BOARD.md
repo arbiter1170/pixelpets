@@ -1,6 +1,6 @@
 # Town boards
 
-Scope for a bulletin board in each town, and a Town Board app on the Keeper1. Nothing in this file is built. The open calls are D37–D49 in [OPEN_DECISIONS.md](OPEN_DECISIONS.md). Answer those before an implementing agent edits maps or `quests.js`.
+Scope for a bulletin board in each town, and a Town Board app on the Keeper1. Nothing in this file is built. The open calls are D37–D49 in [OPEN_DECISIONS.md](OPEN_DECISIONS.md). Answer those before an implementing agent edits maps or `quests.js`. The number D37 is also the region-map claim row in that file. That claim table is already in the game. The town-list row in the scoped section is the one that gates this file. Do not renumber either row.
 
 Q17 (the box screen) and Q18 (the installable app) stay ahead of this. This document does not reorder them.
 
