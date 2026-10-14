@@ -25,6 +25,7 @@ test('boot, build stamp, and dev checks', async ({ page }) => {
       music: problems(window.PixelPets.musicCheck()),
       befriend: problems(window.PixelPets.befriendCheck()),
       standing: problems(window.PixelPets.standingCheck()),
+      map: problems(window.PixelPets.mapCheck()),
       heights: problems(window.PixelPets.heightsCheck),
       hasApi: typeof window.PixelPets === 'object',
     };
@@ -36,6 +37,7 @@ test('boot, build stamp, and dev checks', async ({ page }) => {
   expect(report.music, 'musicCheck').toEqual([]);
   expect(report.befriend, 'befriendCheck').toEqual([]);
   expect(report.standing, 'standingCheck').toEqual([]);
+  expect(report.map, 'mapCheck').toEqual([]);
   expect(report.heights, 'heightsCheck').toEqual([]);
 });
 
