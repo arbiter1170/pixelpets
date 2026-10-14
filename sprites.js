@@ -572,5 +572,75 @@ function buildWorldArt(){
     px(g,PAL.o,2,6,12,6); px(g,PAL.d,2,8,12,1); px(g,PAL.y,6,9,4,2); });
   A.marina_buoy = mkTile(g => { px(g,PAL.b,0,12,16,4); px(g,PAL.c,2,12,4,1); px(g,PAL.y,6,4,4,7); px(g,PAL.o,6,6,4,2);
     px(g,PAL.w,7,5,1,1); px(g,PAL.d,7,3,2,1); px(g,PAL.d,8,11,1,3); });
+  // Town boards. Grids copied from data/town_board_art.json.
+  const paint = (g, rows) => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
+  A.bulletin_keepers = mkTile(g => paint(g, [
+    '................',
+    '.dddddddddddddd.',
+    '.dddddddddddddd.',
+    '.doookkkkkkkkod.',
+    '.dookhhkkhhkkod.',
+    '.dokkkkkkkkkkod.',
+    '.dokkhhkkhhkkod.',
+    '.dokkkkkyyykkod.',
+    '.dokkkkyydykkod.',
+    '.dokkkkkyyykkod.',
+    '.dokkkkkooooood.',
+    '.dddddddddddddd.',
+    '.dddddddddddddd.',
+    '....dd....dd....',
+    '....dd....dd....',
+    '................']));
+  A.bulletin_glimmer = mkTile(g => paint(g, [
+    '................',
+    '.dddddddddddddd.',
+    '.dddddddddddddd.',
+    '.dookkkklllllod.',
+    '.dokhhhklllllod.',
+    '.dokwwwklllllod.',
+    '.dokkkkklllllod.',
+    '.dollwlllllllod.',
+    '.dollswllllllod.',
+    '.dollllwwllllod.',
+    '.dolllsssslllod.',
+    '.dddddddddddddd.',
+    '.dddddddddddddd.',
+    '....dd....dd....',
+    '....dd....dd....',
+    '................']));
+  A.bulletin_plain = mkTile(g => paint(g, [
+    '................',
+    '.oooooooooooooo.',
+    '.oddddddddddddo.',
+    '.ooynwnnnnnnnoo.',
+    '.ooncnncnnnnnoo.',
+    '.oonnynwnnnnnoo.',
+    '.oonnncnncnnnoo.',
+    '.oonnnnynnnynoo.',
+    '.oonnnnncnncnoo.',
+    '.oonnnnnnwnnnoo.',
+    '.oohnnnnnnnnhoo.',
+    '.oddddddddddddo.',
+    '.oooooooooooooo.',
+    '....oo....oo....',
+    '....oo....oo....',
+    '................']));
+  A.flyer_glimmer = mkTile(g => paint(g, [
+    '................',
+    '................',
+    '...md...........',
+    '.llllllll.......',
+    '..llllllll......',
+    '...lwyyyysl.....',
+    '....lwywyysl....',
+    '.....lwyyyysl...',
+    '......lwwmmssl..',
+    '.......lwwwwssl.',
+    '........lllllls.',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................']));
   return A;
 }

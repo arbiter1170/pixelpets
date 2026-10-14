@@ -1,0 +1,86 @@
+{
+  "bulletin_keepers": {
+    "size": [16, 16],
+    "grid": [
+      "................",
+      ".dddddddddddddd.",
+      ".dddddddddddddd.",
+      ".doookkkkkkkkod.",
+      ".dookhhkkhhkkod.",
+      ".dokkkkkkkkkkod.",
+      ".dokkhhkkhhkkod.",
+      ".dokkkkkyyykkod.",
+      ".dokkkkyydykkod.",
+      ".dokkkkkyyykkod.",
+      ".dokkkkkooooood.",
+      ".dddddddddddddd.",
+      ".dddddddddddddd.",
+      "....dd....dd....",
+      "....dd....dd....",
+      "................"
+    ]
+  },
+  "bulletin_glimmer": {
+    "size": [16, 16],
+    "grid": [
+      "................",
+      ".dddddddddddddd.",
+      ".dddddddddddddd.",
+      ".dookkkklllllod.",
+      ".dokhhhklllllod.",
+      ".dokwwwklllllod.",
+      ".dokkkkklllllod.",
+      ".dollwlllllllod.",
+      ".dollswllllllod.",
+      ".dollllwwllllod.",
+      ".dolllsssslllod.",
+      ".dddddddddddddd.",
+      ".dddddddddddddd.",
+      "....dd....dd....",
+      "....dd....dd....",
+      "................"
+    ]
+  },
+  "bulletin_plain": {
+    "size": [16, 16],
+    "grid": [
+      "................",
+      ".oooooooooooooo.",
+      ".oddddddddddddo.",
+      ".ooynwnnnnnnnoo.",
+      ".ooncnncnnnnnoo.",
+      ".oonnynwnnnnnoo.",
+      ".oonnncnncnnnoo.",
+      ".oonnnnynnnynoo.",
+      ".oonnnnncnncnoo.",
+      ".oonnnnnnwnnnoo.",
+      ".oohnnnnnnnnhoo.",
+      ".oddddddddddddo.",
+      ".oooooooooooooo.",
+      "....oo....oo....",
+      "....oo....oo....",
+      "................"
+    ]
+  },
+  "flyer_glimmer": {
+    "size": [16, 16],
+    "grid": [
+      "................",
+      "................",
+      "...md...........",
+      ".llllllll.......",
+      "..llllllll......",
+      "...lwyyyysl.....",
+      "....lwywyysl....",
+      ".....lwyyyysl...",
+      "......lwwmmssl..",
+      ".......lwwwwssl.",
+      "........lllllls.",
+      "................",
+      "................",
+      "................",
+      "................",
+      "................"
+    ]
+  }
+}

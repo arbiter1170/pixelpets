@@ -1,0 +1,310 @@
+{
+  "spec": "TOWN_BOARD",
+  "version": "1",
+  "status": "TB-1 empty boards and live reports. Hearthmoor and Fernbrook squares. No slips.",
+  "_about": "Ours, not a design copy. Applied last, after civic. Props face up. The player reads a board from the tile south of it. Report lines are the day-one notes and stay marked PLACEHOLDER. Slips and bounties stay empty. Sprites are copied from data/town_board_art.json.",
+  "away": "You are between towns.",
+  "empty": {
+    "slips": "No slips are pinned up.",
+    "bounties": "No creature is named today."
+  },
+  "towns": {
+    "hearthmoor": {
+      "masthead": "THE LANTERN POST",
+      "slogan": "Leave a light. Leave them wild.",
+      "reports": [
+        {
+          "id": "hm_east_road",
+          "text": "The east road is Route 1. The watch walks the street. PLACEHOLDER"
+        },
+        {
+          "id": "hm_gate_holding",
+          "text": "The east gate is holding. PLACEHOLDER",
+          "when": [
+            "!story.starter_received"
+          ]
+        },
+        {
+          "id": "hm_rook_gate",
+          "text": "Rook is at the east gate. PLACEHOLDER",
+          "when": [
+            "story.starter_received",
+            "!story.rival1_done"
+          ]
+        },
+        {
+          "id": "hm_north_wait",
+          "text": "The north trail can wait. PLACEHOLDER",
+          "when": [
+            "!story.mom_sent"
+          ]
+        },
+        {
+          "id": "hm_north_open",
+          "text": "The north trail is open, and time feels thick. PLACEHOLDER",
+          "when": [
+            "story.mom_sent"
+          ]
+        },
+        {
+          "id": "hm_keeper1",
+          "text": "Keeper1 is live. The wires stay with the watch. PLACEHOLDER",
+          "when": [
+            "story.phone_got"
+          ]
+        },
+        {
+          "id": "hm_mint_vest",
+          "text": "A mint vest was seen on the street. The paper here is still Keeper paper. PLACEHOLDER",
+          "when": [
+            "story.side=glimmer"
+          ]
+        }
+      ]
+    },
+    "fernbrook": {
+      "masthead": "THE LANTERN POST",
+      "slogan": "Leave a light. Leave them wild.",
+      "reports": [
+        {
+          "id": "fb_hall_latched",
+          "text": "The Trial Hall is latched. Fen is outside. PLACEHOLDER",
+          "when": [
+            "!story.orchard_cleared"
+          ]
+        },
+        {
+          "id": "fb_hall_open",
+          "text": "The Trial Hall is open. PLACEHOLDER",
+          "when": [
+            "story.orchard_cleared",
+            "!story.seal1"
+          ]
+        },
+        {
+          "id": "fb_rockslide",
+          "text": "Route 2 is under the rockslide. PLACEHOLDER",
+          "when": [
+            "!story.seal1"
+          ]
+        },
+        {
+          "id": "fb_route2",
+          "text": "Route 2 is open toward Wickerglen. PLACEHOLDER",
+          "when": [
+            "story.seal1"
+          ]
+        },
+        {
+          "id": "fb_stand",
+          "text": "A Glimmerwell stand is on the main street. It is not the town. PLACEHOLDER"
+        }
+      ]
+    },
+    "cobblecrest": {
+      "masthead": "THE LANTERN POST",
+      "slogan": "Leave a light. Leave them wild.",
+      "reports": [
+        {
+          "id": "cc_stall",
+          "text": "Cairnside Supplies is chalked on the stall. PLACEHOLDER",
+          "when": [
+            "!story.quarry_bought"
+          ]
+        },
+        {
+          "id": "cc_quarry_road",
+          "text": "The quarry road is watched. PLACEHOLDER",
+          "when": [
+            "!story.quarry_bought"
+          ]
+        },
+        {
+          "id": "cc_hale_note",
+          "text": "Hale's door has a chalk note about the quarry meeting. PLACEHOLDER",
+          "when": [
+            "!story.quarry_bought",
+            "!story.seal2"
+          ]
+        },
+        {
+          "id": "cc_stall_bright",
+          "text": "Cairnside Supplies is chalked on a brighter stall. PLACEHOLDER",
+          "when": [
+            "story.quarry_bought"
+          ]
+        },
+        {
+          "id": "cc_partnership",
+          "text": "The quarry is a partnership, the cairn is still the cairn, and visitors are welcome briefly. PLACEHOLDER",
+          "when": [
+            "story.quarry_bought"
+          ]
+        },
+        {
+          "id": "cc_hale_note_bright",
+          "text": "Hale's door has a bright chalk note about the quarry meeting. PLACEHOLDER",
+          "when": [
+            "story.quarry_bought",
+            "!story.seal2"
+          ]
+        }
+      ],
+      "sleeves": [
+        {
+          "when": [
+            "story.quarry_bought"
+          ],
+          "masthead": "BRIGHT NOTICE",
+          "slogan": "Have a bright day."
+        }
+      ]
+    },
+    "highcharity": {
+      "masthead": "THE LANTERN POST",
+      "slogan": "Leave a light. Leave them wild.",
+      "reports": [
+        {
+          "id": "hc_plaza",
+          "text": "The plaza is open. The south gate is the coach home. PLACEHOLDER"
+        },
+        {
+          "id": "hc_event_hall",
+          "text": "The Event Hall is taking games. PLACEHOLDER"
+        },
+        {
+          "id": "hc_sky_dock",
+          "text": "The sky-dock keeps its own boarding board. This post is the town's. PLACEHOLDER"
+        },
+        {
+          "id": "hc_market",
+          "text": "The Lantern Market is south of this post. PLACEHOLDER"
+        }
+      ]
+    },
+    "mahopac": {
+      "masthead": "",
+      "slogan": "No seal. The minute is stuck.",
+      "reports": [
+        {
+          "id": "mp_lens",
+          "text": "The lens remembers. The minute does not move. PLACEHOLDER"
+        },
+        {
+          "id": "mp_woke",
+          "text": "Someone woke. The path did not. PLACEHOLDER",
+          "when": [
+            "story.dream_woke"
+          ]
+        }
+      ]
+    }
+  },
+  "slicePatch": {
+    "maps": {
+      "hearthmoor": {
+        "gridRows": {
+          "7": "TggpggppppgpgfggpgggTTTT",
+          "9": "TgggggppppRRRRpggggggTTT"
+        },
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "hm_board",
+            "x": 8,
+            "y": 7,
+            "facing": "up",
+            "sprite": "bulletin_keepers",
+            "board": "hearthmoor"
+          }
+        ]
+      },
+      "fernbrook": {
+        "gridRows": {
+          "6": "TggggpppppfgggggggggggpggggggggT",
+          "7": "TggggpppppgggggggfggggpggggfgggT"
+        },
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "fb_board",
+            "x": 8,
+            "y": 6,
+            "facing": "up",
+            "sprite": "bulletin_keepers",
+            "board": "fernbrook"
+          },
+          {
+            "kind": "prop",
+            "id": "fb_flyer",
+            "x": 9,
+            "y": 6,
+            "facing": "up",
+            "sprite": "flyer_glimmer",
+            "lines": {
+              "else": "Comfort lighting, complimentary. Have a bright day at Juniper's stand."
+            }
+          }
+        ]
+      },
+      "cobblecrest": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "cc_board",
+            "x": 16,
+            "y": 9,
+            "facing": "up",
+            "sprite": "bulletin_keepers",
+            "board": "cobblecrest",
+            "when": [
+              "!story.quarry_bought"
+            ]
+          },
+          {
+            "kind": "prop",
+            "id": "cc_board_bright",
+            "x": 16,
+            "y": 9,
+            "facing": "up",
+            "sprite": "bulletin_glimmer",
+            "board": "cobblecrest",
+            "when": [
+              "story.quarry_bought"
+            ]
+          }
+        ]
+      },
+      "highcharity": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "hc_board",
+            "x": 31,
+            "y": 17,
+            "facing": "up",
+            "sprite": "bulletin_keepers",
+            "board": "highcharity"
+          }
+        ]
+      },
+      "mahopac": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "mah_board",
+            "x": 11,
+            "y": 8,
+            "facing": "up",
+            "sprite": "bulletin_plain",
+            "board": "mahopac"
+          }
+        ]
+      }
+    }
+  },
+  "weather": {
+    "id": "weather_paper",
+    "text": "Rain damps the post. Snow fogs the sleeve. Night curls the star-chart. PLACEHOLDER"
+  }
+}

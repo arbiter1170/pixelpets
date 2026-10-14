@@ -11,7 +11,7 @@ description: |
 
 Use this when a session adds or edits a side quest, a town-board slip, or a bounty. The main story chain is already shipped. A new job hangs off to the side. Status docs for that change follow `.cursor/skills/walklings-docs/SKILL.md`. The skill index is `.cursor/skills/README.md`.
 
-Town boards are scoped in `TOWN_BOARD.md` and not built. Vincent settled the town-list D37 and D38–D49 on Oct 14, 2026. TB-1 may be built: empty boards, live reports, and the phone app, with no slips. Mahopac gets a board and no slips for a while. The first real slip is TB-3, after TB-1, and it is one slip: Cald's gate count. Do not put a slip in Mahopac in that pass. The open table also has a D37, and that one is the region-map claim list, already in the game and still open. Do not renumber either D37.
+Town boards are scoped in `TOWN_BOARD.md`. Vincent settled the town-list D37 and D38–D49 on Oct 14, 2026. TB-1 is in the game on the branch that added it: empty boards, live reports, and the phone app, with no slips. The Hearthmoor and Fernbrook squares are in on that branch too. Mahopac has a board and no slips. The first real slip is TB-3, and it is not started: one slip, Cald's gate count. Do not put a slip in Mahopac in that pass. The open table also has a D37, and that one is the region-map claim list, already in the game and still open. Do not renumber either D37.
 
 ## Read first
 

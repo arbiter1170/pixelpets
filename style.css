@@ -696,6 +696,13 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone #phoneBody{flex:1 1 auto;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
   font-size:16px;line-height:1.35;color:var(--w);display:flex;flex-direction:column;gap:8px}
 #ovPhone #phoneBody p{margin:0;overflow-wrap:anywhere}
+#ovPhone #phonePaneTitle{flex:0 0 auto;margin:0;font-size:18px;line-height:1.1;letter-spacing:.4px}
+#ovPhone:not(.hack) #phonePaneTitle{color:#143226}
+#ovPhone.hack #phonePaneTitle{color:#d7ffc8}
+#ovPhone.board-post #phoneTitle::before{content:none;display:none}
+#ovPhone.board-post #phoneFoot{display:none}
+#ovPhone:not(.hack) #phoneBody .board-mast{color:#6a3a0c;font-weight:700;letter-spacing:.4px}
+#ovPhone.hack #phoneBody .board-mast{color:#9dffc0;font-weight:700;letter-spacing:.4px}
 #ovPhone #phoneBody .who{color:var(--y)}
 #ovPhone #phoneFriends{flex:1 1 auto;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #ovPhone #phoneFriends .panel{min-width:0;max-width:100%;margin:0 0 8px}
