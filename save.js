@@ -59,6 +59,41 @@ const PPSave = (() => {
       meta: { migratedFrom: null, migratedAt: null, backup: null, legacy: {} } };
   }
 
+  // Held item, cosmetic accessory, and battle deploy (additive, save stays v2).
+  // Invalid values are deleted. Unknown keys on the pet stay. Relief is unique across party then box (keepOneRelief).
+  const DEPLOY_CALLS = ['charge', 'brace', 'dart', 'greet'];
+  const PET_ACCESSORIES = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
+  const cleanDeployText = v => typeof v === 'string' ? v.replace(/[<>{}]/g, '').trim().slice(0, 40) : '';
+  const shortId = v => typeof v === 'string' && v.length >= 1 && v.length <= 24 && /^[a-z0-9_]+$/.test(v);
+  function fixHeldAccessoryDeploy(q){
+    if (has(q, 'held')) {
+      if (typeof ITEMS === 'object' && ITEMS) {
+        if (!(typeof q.held === 'string' && ITEMS[q.held] && ITEMS[q.held].hold === true)) delete q.held;
+      } else if (!shortId(q.held)) delete q.held;
+    }
+    if (has(q, 'accessory') && !PET_ACCESSORIES.includes(q.accessory)) delete q.accessory;
+    if (!has(q, 'deploy')) return;
+    if (!isObj(q.deploy)) { delete q.deploy; return; }
+    const d = q.deploy, next = {};
+    if (DEPLOY_CALLS.includes(d.call)) next.call = d.call;
+    if (typeof MOVES === 'object' && MOVES) {
+      if (typeof d.opener === 'string' && Array.isArray(q.moves) && q.moves.includes(d.opener)) next.opener = d.opener;
+    } else if (shortId(d.opener)) next.opener = d.opener;
+    const line = cleanDeployText(d.line); if (line) next.line = line;
+    const note = cleanDeployText(d.note); if (note) next.note = note;
+    if (d.relief === true) next.relief = true;
+    if (!Object.keys(next).length) delete q.deploy; else q.deploy = next;
+  }
+  function keepOneRelief(s){
+    let kept = false;
+    for (const p of s.party.concat(s.box)) {
+      if (!p || !p.deploy || p.deploy.relief !== true) continue;
+      if (!kept) { kept = true; continue; }
+      delete p.deploy.relief;
+      if (!Object.keys(p.deploy).length) delete p.deploy;
+    }
+  }
+
   // §5 step 2.4: field fixes for one pet (also used by normalizeV2). `used` = ids already taken.
   // Later specs add their per-pet defaults here (additive fields, no version bump).
   function fixPet(q, used, created, originDefault){
@@ -105,6 +140,7 @@ const PPSave = (() => {
       if (!(Array.isArray(ev) && ev.every(k => k === 1 || k === 2))) q.evoMoves = filled ? Array.from({ length: q.stage }, (_, i) => i + 1) : [];
       q.evoMoves = [...new Set(q.evoMoves)].filter(k => k <= q.stage).sort();
     }
+    fixHeldAccessoryDeploy(q);
     return q;
   }
   const formId = (species, stage) => species + '/' + stage;
@@ -251,6 +287,7 @@ const PPSave = (() => {
     if (s.party.length > PARTY_MAX) s.box.push(...s.party.splice(PARTY_MAX));
     if (!s.party.length && s.box.length) s.party.push(s.box.shift());
     if (!s.party.some(p => p.id === s.partnerId)) s.partnerId = s.party[0] ? s.party[0].id : null;
+    keepOneRelief(s);
     placeWorld(s);
     return s;
   }
