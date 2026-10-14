@@ -659,9 +659,20 @@
           "y": 3,
           "facing": "down",
           "lines": {
+            "story.hc_council_done": "That road stays dark. Ships still fly.",
+            "story.cobble_end&!story.side=glimmer": "@hc_council",
             "story.side=glimmer": "The dock is open. Please don't touch the lines.",
             "else": "Lantern ships. No thunder, no guns."
           }
+        },
+        {
+          "kind": "trigger",
+          "id": "hc_council_trig",
+          "x": 2,
+          "y": 4,
+          "r": 1,
+          "when": ["story.cobble_end", "!story.hc_council_done", "!story.side=glimmer"],
+          "scene": "hc_council"
         },
         {
           "kind": "prop",
@@ -670,6 +681,7 @@
           "y": 2,
           "sprite": "skydock_console",
           "lines": {
+            "story.hc_council_done": "Brinewick is marked. Its light is dark.",
             "else": "A board of little lights. Each one is a ship, not a weapon."
           }
         }
@@ -1602,6 +1614,16 @@
     }
   },
   "scenes": {
+    "hc_council": [
+      ["say", "Captain Lumen", "Both Seals are here. Fernbrook first, then Cobblecrest. The lanterns watched you walk."],
+      ["if", "story.hc_invite", [
+        ["say", "Captain Lumen", "Ilse's letter arrived ahead of you. She said the Seals would."]
+      ]],
+      ["say", "Captain Lumen", "The coastal road to Brinewick is on the board. We are not opening it."],
+      ["say", "", "The chart names the road. The light beside it stays dark."],
+      ["standing", "keepers", null, "hc_council_k"],
+      ["setFlag", "story.hc_council_done", true]
+    ],
     "hc_invite": [
       [
         "if",

@@ -33,11 +33,11 @@ test('a Walkling you already have can be renamed, and the species name clears it
   const named = await page.evaluate(() => ({
     nick: PixelPets.state.party[0].nick,
     v: PixelPets.state.v,
-    card: document.querySelector('#ownedList .nm').textContent,
+    card: document.querySelector('#ownedList .slot-main').getAttribute('aria-label'),
   }));
   expect(named.nick).toBe('Nib 2');
   expect(named.v).toBe(2);
-  expect(named.card).toBe('Nib 2');
+  expect(named.card).toBe('Nib 2, open');
 
   await page.locator('#scRename').click();
   await page.locator('#scNickIn').fill('Nope');

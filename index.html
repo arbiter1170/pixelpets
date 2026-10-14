@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261014-1027">
+<meta name="kw-build" content="20261014-1100">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -12,10 +12,10 @@
 <meta name="application-name" content="Walklings">
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
-<link rel="icon" href="icons/icon-192.png?v=20261014-1027">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261014-1027">
-<link rel="manifest" href="manifest.json?v=20261014-1027">
-<link rel="stylesheet" href="style.css?v=20261014-1027">
+<link rel="icon" href="icons/icon-192.png?v=20261014-1100">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261014-1100">
+<link rel="manifest" href="manifest.json?v=20261014-1100">
+<link rel="stylesheet" href="style.css?v=20261014-1100">
 </head>
 <body>
 <div id="app">
@@ -290,10 +290,12 @@
     <div id="scStatsHead" class="sc-sub"></div>
     <div id="scStats" class="sc-stats"></div>
     <div id="scChart" class="sc-chart"></div>
+    <div id="scGearBox" class="sc-gear" hidden></div>
     <div id="scActs" class="actions two-even">
       <button id="scRename" class="btn" type="button">RENAME</button>
-      <button id="scClose" class="btn" type="button">CLOSE</button>
+      <button id="scGear" class="btn" type="button" aria-pressed="false">GEAR</button>
     </div>
+    <button id="scClose" class="btn" type="button">CLOSE</button>
     <div id="scNick" class="sc-nick" hidden>
       <label class="look-lb" for="scNickIn">NAME</label>
       <input id="scNickIn" type="text" maxlength="10" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false" aria-label="Walkling name">
@@ -302,6 +304,33 @@
         <button id="scNickOk" class="btn btn-play" type="button">OK</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Walkling sheet: one owned pet (party or box). WALKLINGS cards call openWalklingSheet. -->
+<div id="ovWalkling" class="overlay full" role="dialog" aria-modal="true" aria-labelledby="wlName" hidden>
+  <div class="ov-inner walkling-sheet">
+    <div class="sc-head">
+      <canvas id="wlIcon" width="18" height="18"></canvas>
+      <div class="sc-who"><div id="wlName" class="sc-name"></div><div id="wlSpecies" class="sc-species"></div></div>
+      <span id="wlType" class="type-badge"></span>
+    </div>
+    <div class="sc-row"><b id="wlLv">Lv 1</b><span id="wlGrow"></span></div>
+    <div class="sc-hp"><span>HP</span><div class="bar"><i id="wlHpBar" class="c-hp"></i></div><b id="wlHp">0/0</b><span id="wlTag" class="sc-tag" hidden></span></div>
+    <div id="wlStatsHead" class="sc-sub"></div>
+    <div id="wlStats" class="sc-stats"></div>
+    <div id="wlChart" class="sc-chart"></div>
+    <div id="wlActions" class="wl-actions"></div>
+    <div class="wl-name">
+      <label for="wlNick">NAME</label>
+      <input id="wlNick" type="text" maxlength="10" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false">
+      <button id="wlNickSet" class="btn" type="button">SET</button>
+    </div>
+    <div id="wlMoves" class="wl-moves"></div>
+    <div id="wlUse" class="wl-use"></div>
+    <div id="wlRelease" class="wl-release"></div>
+    <div id="wlExtras"></div>
+    <button id="wlClose" class="btn" type="button">CLOSE</button>
   </div>
 </div>
 
@@ -637,21 +666,21 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261014-1027";</script>
-<script src="sprites.js?v=20261014-1027"></script>
-<script src="keeper.js?v=20261014-1027"></script>
-<script src="stats.js?v=20261014-1027"></script>
-<script src="moves.js?v=20261014-1027"></script>
-<script src="data/mapdata.js?v=20261014-1027"></script>
-<script src="quests.js?v=20261014-1027"></script>
-<script src="standing.js?v=20261014-1027"></script>
-<script src="save.js?v=20261014-1027"></script>
-<script src="env.js?v=20261014-1027"></script>
-<script src="sfx.js?v=20261014-1027"></script>
-<script src="minigames.js?v=20261014-1027"></script>
-<script src="ribbit.js?v=20261014-1027"></script>
-<script src="cloud_config.js?v=20261014-1027"></script>
-<script src="cloud.js?v=20261014-1027"></script>
-<script src="game.js?v=20261014-1027"></script>
+<script>window.BUILD = "20261014-1100";</script>
+<script src="sprites.js?v=20261014-1100"></script>
+<script src="keeper.js?v=20261014-1100"></script>
+<script src="stats.js?v=20261014-1100"></script>
+<script src="moves.js?v=20261014-1100"></script>
+<script src="data/mapdata.js?v=20261014-1100"></script>
+<script src="quests.js?v=20261014-1100"></script>
+<script src="standing.js?v=20261014-1100"></script>
+<script src="save.js?v=20261014-1100"></script>
+<script src="env.js?v=20261014-1100"></script>
+<script src="sfx.js?v=20261014-1100"></script>
+<script src="minigames.js?v=20261014-1100"></script>
+<script src="ribbit.js?v=20261014-1100"></script>
+<script src="cloud_config.js?v=20261014-1100"></script>
+<script src="cloud.js?v=20261014-1100"></script>
+<script src="game.js?v=20261014-1100"></script>
 </body>
 </html>

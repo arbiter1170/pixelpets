@@ -297,5 +297,16 @@
   },
   "flags": {"story.reached_route2": "fb_east warp (first step onto Route 2)", "story.met_census": "glimmer2: first sight of the Comfort Lamps", "story.reached_glen": "r2_glen warp (first entry to Wickerglen)", "story.met_lead": "lead_intro", "story.faded_pebblit": "faded2, on befriend only", "story.glen_cleared": "glen_cleared (after beating the Field Lead): lamps, tent, crates and Imogen go away", "story.rook_saw_lamps": "glen_cleared: hook for Rook's Act 1-2 doubt arc (not read yet)", "story.route2_end": "route2_end: end of Route 2's content (coming-later card)", "trainer.r2_rockhound": "auto (BATTLE §7)", "trainer.r2_skipper": "auto", "trainer.r2_associate": "auto", "trainer.r2_lead": "auto", "trainer.r2_stargazer": "auto", "spotted.r2_rockhound": "auto (MAPS_SLICE §6.1)", "spotted.r2_skipper": "auto", "spotted.r2_associate": "auto", "spotted.r2_lead": "auto", "spotted.r2_stargazer": "auto", "item.r2_snack": "auto (pickup)", "item.r2_treat": "auto (pickup)", "item.glen_snack": "auto (pickup)"},
   "reusedFlags": ["story.seal1", "story.slice_end"],
+  "looks": {
+    "_note": "Field Lead and census associate. Same keeper-look shape as cobblecrest.json. Not the generic associate coat.",
+    "imogen": {"skin": "2", "hair": "bob", "hairCol": "y", "outfit": "dress", "outfitCol": "l", "accent": "y"},
+    "hollis": {"skin": "1", "hair": "curls", "hairCol": "c", "outfit": "vest", "outfitCol": "l", "accent": "w", "accessory": "cap"}
+  },
+  "speakers": {
+    "Field Lead Imogen": "imogen",
+    "Imogen": "imogen",
+    "Associate Hollis": "hollis",
+    "Hollis": "hollis"
+  },
   "newNames": ["Wickerglen", "Imogen", "Hollis", "Nell", "Teo", "Tilda", "Glow Census", "Comfort Lamp"]
 }

@@ -33,72 +33,75 @@ async function openList(page, save) {
   await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
   await page.evaluate(() => PixelPets.showTab('col'));
-  await page.waitForSelector('#ownedList .card');
+  await page.waitForSelector('#partyBoard [data-slot="5"]');
 }
 
-test('the box can be reordered, and an extra field stays on the Walkling', async ({ page }) => {
+test('the party can be reordered, and an extra field stays on the Walkling', async ({ page }) => {
   await openList(page, boxSave());
-  const up = page.locator('#ownedList .card').first().locator('button', { hasText: 'UP' });
-  await expect(up).toBeDisabled();
-  const upBox = await up.boundingBox();
-  expect(upBox.height).toBeGreaterThanOrEqual(44);
-  await page.locator('#ownedList .card').first().locator('button', { hasText: 'DOWN' }).click();
-  const order = await page.evaluate(() => PixelPets.state.party.map(p => ({ nick: p.nick, souvenir: p.souvenir })));
-  expect(order.map(p => p.nick)).toEqual(['Nib', 'Pip']);
-  expect(order.map(p => p.souvenir)).toEqual(['leaf', 'pebble']);
-  const boxed = page.locator('#ownedList .card.boxed');
-  await expect(boxed.first().locator('button', { hasText: 'UP' })).toBeDisabled();
-  await boxed.first().locator('button', { hasText: 'DOWN' }).click();
+  const pip = page.locator('#partyBoard [data-id="petsmoke1"]');
+  const move = pip.locator('[data-act="move"]');
+  const moveBox = await move.boundingBox();
+  expect(moveBox.height).toBeGreaterThanOrEqual(44);
+  await move.click();
+  await pip.locator('[data-act="down"]').click();
   const lists = await page.evaluate(() => ({
-    party: PixelPets.state.party.map(p => p.nick),
+    party: PixelPets.state.party.map(p => ({ nick: p.nick, souvenir: p.souvenir })),
     box: PixelPets.state.box.map(p => ({ nick: p.nick, souvenir: p.souvenir })),
     v: PixelPets.state.v,
   }));
-  expect(lists.party).toEqual(['Nib', 'Pip']);
-  expect(lists.box.map(p => p.nick)).toEqual(['Crate', 'Boxy']);
-  expect(lists.box.map(p => p.souvenir)).toEqual(['twig', 'shell']);
+  expect(lists.party.map(p => p.nick)).toEqual(['Nib', 'Pip']);
+  expect(lists.party.map(p => p.souvenir)).toEqual(['leaf', 'pebble']);
+  expect(lists.box.map(p => p.nick)).toEqual(['Boxy', 'Crate']);
+  expect(lists.box.map(p => p.souvenir)).toEqual(['shell', 'twig']);
   expect(lists.v).toBe(2);
-  await page.locator('#ownedList .card.orphan').scrollIntoViewIfNeeded();
+  await page.locator('#orphanRow').scrollIntoViewIfNeeded();
   await saveShot(page, 'list');
 });
 
 test('release asks first, and an orphan row shows the raw data', async ({ page }) => {
   await openList(page, boxSave());
-  const boxed = page.locator('#ownedList .card.boxed');
-  await boxed.first().locator('button', { hasText: 'RELEASE' }).click();
-  await expect(boxed.first().locator('.rel-note')).toContainText('Boxy');
+  const boxed = page.locator('.box-row[data-id="petsmoke3"]');
+  await boxed.locator('[data-act="release"]').click();
+  await expect(boxed.locator('.slot-confirm')).toContainText('Boxy');
   await saveShot(page, 'release');
-  await boxed.first().locator('button', { hasText: 'KEEP THEM' }).click();
+  await boxed.locator('[data-act="back"]').click();
   expect(await page.evaluate(() => PixelPets.state.box.map(p => p.nick))).toEqual(['Boxy', 'Crate']);
-  await page.locator('#ownedList .card.boxed').first().locator('button', { hasText: 'RELEASE' }).click();
-  await page.locator('#ownedList .card.boxed').first().locator('button', { hasText: 'LET THEM GO' }).click();
-  const after = await page.evaluate(() => ({
-    box: PixelPets.state.box.map(p => p.nick),
-    party: PixelPets.state.party.map(p => p.souvenir),
-    v: PixelPets.state.v,
-    orphan: document.querySelector('#ownedList .card.orphan').textContent,
-  }));
+  await page.locator('.box-row[data-id="petsmoke3"] [data-act="release"]').click();
+  await page.locator('.box-row[data-id="petsmoke3"] [data-act="yes"]').click();
+  const after = await page.evaluate(() => {
+    const orphan = document.querySelector('#orphanRow');
+    return {
+      box: PixelPets.state.box.map(p => p.nick),
+      party: PixelPets.state.party.map(p => p.souvenir),
+      v: PixelPets.state.v,
+      orphan: orphan ? orphan.textContent : '',
+      buttons: orphan ? orphan.querySelectorAll('button').length : -1,
+    };
+  });
   expect(after.box).toEqual(['Crate']);
   expect(after.party).toEqual(['pebble', 'leaf']);
   expect(after.v).toBe(2);
   expect(after.orphan).toMatch(/Ghost/);
   expect(after.orphan).toMatch(/unknown-species/);
   expect(after.orphan).toMatch(/nope/);
+  expect(after.buttons).toBe(0);
 });
 
 test('releasing the partner promotes the next Walkling, then the box', async ({ page }) => {
   await openList(page, boxSave());
-  const lead = () => page.locator('#ownedList .card').first();
-  await lead().locator('button', { hasText: 'RELEASE' }).click();
-  await lead().locator('button', { hasText: 'LET THEM GO' }).click();
+  const release = async (id) => {
+    const row = page.locator('[data-id="' + id + '"]');
+    await row.locator('[data-act="release"]').click();
+    await row.locator('[data-act="yes"]').click();
+  };
+  await release('petsmoke1');
   const mid = await page.evaluate(() => ({
     party: PixelPets.state.party.map(p => p.nick),
     partner: PixelPets.state.party.find(p => p.id === PixelPets.state.partnerId).nick,
     box: PixelPets.state.box.map(p => p.nick),
   }));
   expect(mid).toEqual({ party: ['Nib'], partner: 'Nib', box: ['Boxy', 'Crate'] });
-  await lead().locator('button', { hasText: 'RELEASE' }).click();
-  await lead().locator('button', { hasText: 'LET THEM GO' }).click();
+  await release('petsmoke2');
   const after = await page.evaluate(() => ({
     party: PixelPets.state.party.map(p => ({ nick: p.nick, souvenir: p.souvenir })),
     partner: PixelPets.state.partnerId,

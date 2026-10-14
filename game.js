@@ -114,8 +114,34 @@ const petSpr = p => sprSet(spi(p), p.stage, isFaded(p));
 function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return g; }
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
   grid.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === '#') g.fillRect(x,y,1,1); })); }
+// Cosmetic Walkling accessories: an 8x8 overlay anchored at the top-right of the 18px sprite. Not keeper slots.
+const PET_ACC_IDS = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
+const PET_ACC_ART = {
+  bell: ['..yy....', '.yyyy...', '.ywyy...', 'yyyyyyy.', 'yyryyyy.', '.yyyyy..', '..yyy...', '...y....'],
+  ribbon: ['rr...rr.', 'rrr.rrr.', 'ryyyyr..', '.ryyyr..', '..rrr...', '...r....', '...r....', '...r....'],
+  scarf: ['ooooooo.', 'oyyyooo.', '.oooooo.', '..yyo...', '...oo...', '...oo...', '...oo...', '...yy...'],
+  leaf: ['..ll....', '.llll...', 'lllll...', 'lglgl...', '.llll...', '..ll....', '...l....', '....l...'],
+  star: ['...y....', '..yyy...', '.yyyyy..', 'yyyyyyy.', '.yyyyy..', '..y.y...', '.y...y..', '........'],
+};
+function drawPetAccessory(g, name, x, y, faded){
+  const grid = PET_ACC_ART[name]; if (!grid) return;
+  const ox = x + 10, oy = y;
+  g.fillStyle = faded ? PAL.h : PAL.m;
+  for (let row = 0; row < 8; row++) {
+    const line = grid[row] || '';
+    for (let col = 0; col < 8; col++) {
+      const ch = line[col]; if (!ch || ch === '.') continue;
+      if (!faded) g.fillStyle = PAL[ch] || PAL.m;
+      g.fillRect(ox + col, oy + row, 1, 1);
+    }
+  }
+}
 // UI sprite (header, collection, dex, starter): dark species get their halo version on these dark cells.
-function spriteCanvas(c, sp, stage, mode='n', faded=false){ const g = ctx(c), s = sprSet(sp, stage, faded); g.clearRect(0,0,c.width,c.height); g.drawImage(mode === 'n' && s.u ? s.u : s[mode], 0, 0); }
+// acc is a pet accessory id. Silhouettes (mode 's') skip it. Faded pets draw it in grey.
+function spriteCanvas(c, sp, stage, mode='n', faded=false, acc=null){
+  const g = ctx(c), s = sprSet(sp, stage, faded); g.clearRect(0,0,c.width,c.height); g.drawImage(mode === 'n' && s.u ? s.u : s[mode], 0, 0);
+  if (mode !== 's' && acc) drawPetAccessory(g, acc, 0, 0, !!faded);
+}
 
 /* ---------- state ---------- */
 let S = null;
@@ -248,7 +274,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -323,7 +349,7 @@ function updateHUD(){
   $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
   $('#hdrStage').textContent = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
-  spriteCanvas($('#hdrIcon'), spi(p), p.stage, 'n', isFaded(p));
+  spriteCanvas($('#hdrIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
@@ -722,7 +748,7 @@ function drawPetScene(t, dt){
   } else if (t < touch.rollUntil) {                       // tickle roll: four crisp quarter turns
     const q = Math.min(3, Math.floor((t - touch.rollFrom) / 200));
     g.save(); g.translate(x + 8, y + bob + 8); g.rotate(q * Math.PI / 2); g.drawImage(img, -8, -8); g.restore();
-  } else g.drawImage(img, x, y + bob);
+  } else { g.drawImage(img, x, y + bob); if (p.accessory) drawPetAccessory(g, p.accessory, x, y + bob, isFaded(p)); }
   anim.bangOn = !sleeping && t >= hello.until && (p.hunger < 25 || p.happy < 25 || p.energy < 25);   // (debug hook reads it)
   if (anim.bangOn && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);   // the "!" hides while the hello plays (CARE_LOOP §7)
   if (sparkle.id === p.id && now() < sparkle.until) for (let i = 0; i < 3; i++) if (Math.floor(t / 180 + i) % 3 === 0) drawGlyph(g, 'spark', x - 2 + i * 8, y - 3 + (i % 2) * 6);   // colour back (§5)
@@ -1020,12 +1046,14 @@ function pledgeDeskSteps(to){
       [W.no, [['say', who, W.wait]]]]]];
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
+if (MD.act1_route2 && MD.act1_route2.looks) for (const [k, v] of Object.entries(MD.act1_route2.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 's', outfit: 'coat', outfitCol: 'w', accent: 'c' };
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.mahopac && MD.mahopac.looks) for (const [k, v] of Object.entries(MD.mahopac.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
+if (MD.act1_route2 && MD.act1_route2.speakers) for (const [k, v] of Object.entries(MD.act1_route2.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.entries(MD.glimmer_path.speakers)) if (typeof v === 'string' && !LOOK_OF_NAME[k]) LOOK_OF_NAME[k] = v;
 if (MD.mahopac && MD.mahopac.speakers) for (const [k, v] of Object.entries(MD.mahopac.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.highcharity && MD.highcharity.looks) for (const [k, v] of Object.entries(MD.highcharity.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
@@ -1140,7 +1168,7 @@ if (SCENES.rival1) SCENES.rival1.push(
 // STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
-const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale',
+const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
   rx_wardens: 'regenx', rx_techs: 'regenx', rx_records: 'regenx', rx_quinn: 'regenx', rx_cal_ally: 'regenx',
   sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
@@ -1152,12 +1180,16 @@ function useMap(id){
   patrolClock = 0;
 }
 const isRoom = () => CUR.kind === 'interior';
-// MUSIC v0.1: interiors and towns share one loop; routes and meadows share another. Unknown backdrops leave the current loop.
+// Explicit map.music wins (High Charity). Otherwise: quarry and grove have their own loops, dreams stay on
+// route, and a Glimmerwell pledge swaps the shared town loop for town_glimmer. Keepers towns stay on town.
 function trackFor(map){
   if (!map) return null;
-  if (map.music === 'charity' || map.music === 'chapel' || map.music === 'arcade') return map.music;
-  if (map.dream) return 'route';   // dreams use the wandering loop; the wash does the rest
-  if (map.kind === 'interior' || map.backdrop === 'town') return 'town';
+  if (map.music && PPSound.musicIds().includes(map.music)) return map.music;
+  if (map.id === 'cobble_quarry') return 'quarry';
+  if (map.dream) return 'route';
+  if (map.backdrop === 'grove') return 'grove';
+  const townish = map.kind === 'interior' || map.backdrop === 'town';
+  if (townish) return side() === 'glimmer' ? 'town_glimmer' : 'town';
   if (map.backdrop === 'route' || map.backdrop === 'meadow') return 'route';
   return null;
 }
@@ -1216,11 +1248,19 @@ const solid = (x, y) => solidTile(x, y) || !!blockerAt(x, y);
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
+// Rook wears a Junior Bright lanyard once Glimmerwell has claimed him: on the glimmer path from the side
+// pick, and on either path after Fernbrook (story.slice_end) or the quarry sale. Conversion (rook_end ally) takes it off.
+function rookWithLanyard(look){
+  if (!S || !S.flags || S.flags['story.rook_end'] === 'ally') return look;
+  const glimmer = S.flags['story.side'] === 'glimmer';
+  const show = (glimmer && S.flags['story.side_pick_done']) || S.flags['story.slice_end'] || S.flags['story.quarry_bought'];
+  if (!show) return look;
+  return Object.assign({}, look, { accent: 'l', accessory: 'lanyard' });
+}
 function npcLook(o){
   const key = o.look || (o.kind === 'trainer' ? (TRAINER_LOOK[o.id] || 'trainer') : LOOK_OF_NAME[o.name]) || 'villager';
   const look = NPC_LOOKS[key] || KEEPER_SWAPS.villager;
-  // Optional: Rook's mint Junior Bright lanyard once the quarry sale makes it official (COBBLECREST art, could).
-  if (key === 'rook' && S && S.flags && S.flags['story.quarry_bought']) return Object.assign({}, look, { accent: 'l' });
+  if (key === 'rook') return rookWithLanyard(look);
   return look;
 }
 const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && !!o.lines));
@@ -1508,6 +1548,60 @@ const ITEM_ART = {
     '................',
     '................',
   ],
+  soft_berry: [
+    '................',
+    '................',
+    '................',
+    '......ggg.......',
+    '.....ggggg......',
+    '.....rrrrr......',
+    '....rrrrrrr.....',
+    '....rryyrrr.....',
+    '....rrrrrrr.....',
+    '.....rrrrr......',
+    '......rrr.......',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  bracer_band: [
+    '................',
+    '................',
+    '................',
+    '................',
+    '...oooooooooo...',
+    '..oyyyyyyyyyyo..',
+    '..oyyyymmyyyyo..',
+    '..oyyyyyyyyyyo..',
+    '...oooooooooo...',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  kin_ribbon: [
+    '................',
+    '................',
+    '..rr.......rr...',
+    '.rrrr.....rrrr..',
+    '.rrwrrrrrrrwrr..',
+    '..rrrrrrrrrrr...',
+    '....rryyyrr.....',
+    '.....yyyyy......',
+    '......yyy.......',
+    '.......y........',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
 };
 // Item icons: Design ICONS_SEALS item_* grids, drawn via keeperCanvas at 36 CSS px.
 const ITEMS = {
@@ -1517,6 +1611,9 @@ const ITEMS = {
   befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild battles only. Easier to befriend.' },
   energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. NRG +40.' },
   joy_crumb:      { name: 'Joy Crumb',      plural: 'Joy Crumbs',      cap: 10, price: 40,  use: ['field'],           target: true,  blurb: 'A sweet treat. JOY +20.' },
+  soft_berry:     { name: 'Soft Berry',     plural: 'Soft Berries',    cap: 10, price: 80,  use: ['field'],           target: false, hold: true, blurb: 'Heals once when a hit drops HP under half.' },
+  bracer_band:    { name: 'Bracer Band',    plural: 'Bracer Bands',    cap: 5,  price: 200, use: ['field'],           target: false, hold: true, blurb: 'Held. Charge, Brace or Dart starts at +2 on the way in.' },
+  kin_ribbon:     { name: 'Kin Ribbon',     plural: 'Kin Ribbons',     cap: 5,  price: 120, use: ['field'],           target: false, hold: true, blurb: 'Held. Wild befriending is a little easier.' },
   atten_vial:     { name: 'Atten Vial',     plural: 'Atten Vials',     cap: 3,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A sealed RegenX vial. It stays in the bag.', blurb: 'RegenX Atten. It sharpens focus.' },
   atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
   route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
@@ -1563,6 +1660,7 @@ function itemRefusal(id, p, ctx){
   const it = ITEMS[id];
   if (!it) return "Can't use that here yet.";
   if (itemCount(id) < 1) return 'Your bag is empty.';
+  if (it.hold) return 'Hold it on a Walkling. The bag does not use it up.';
   if (id === 'befriend_treat') {
     if (ctx !== 'battle' || !battle.on) return 'Save it for a wild battle.';
     if (battle.kind !== 'wild') return "Can't use that here.";
@@ -1590,6 +1688,41 @@ function useItem(id, petId, ctx = 'field'){
   if (id === 'joy_crumb') { p.happy = clamp(p.happy + 20, 0, 100); return { ok: true, msg: petName(p) + ' munches happily. +JOY' }; }
   if (id === 'befriend_treat') { battle.treat = true; return { ok: true, msg: foeName(curFoe()) + ' sniffs the treat. It looks friendlier!' }; }
   return { ok: false, msg: "Can't use that here yet." };
+}
+// HOLD moves one from the bag onto the pet. The old held item comes back first; a full stack refuses and changes nothing.
+function holdItem(petId, itemId){
+  const p = petById(petId), it = ITEMS[itemId];
+  if (!p) return { ok: false, msg: 'No Walkling.' };
+  if (!it || !it.hold) return { ok: false, msg: "That can't be held." };
+  if (itemCount(itemId) < 1) return { ok: false, msg: 'Your bag is empty.' };
+  if (p.held) {
+    const back = grantItem(p.held, 1);
+    if (!back.added) {
+      const old = ITEMS[p.held] ? ITEMS[p.held].name : p.held;
+      return { ok: false, msg: "Bag can't hold the " + old + '.' };
+    }
+  }
+  takeItem(itemId);
+  p.held = itemId;
+  return { ok: true, msg: petName(p) + ' holds ' + it.name + '.' };
+}
+function unholdItem(petId){
+  const p = petById(petId);
+  if (!p || !p.held) return { ok: false, msg: 'Nothing to take back.' };
+  const id = p.held, it = ITEMS[id];
+  const back = grantItem(id, 1);
+  if (!back.added) return { ok: false, msg: "Bag can't hold more." };
+  delete p.held;
+  return { ok: true, msg: 'Took back ' + (it ? it.name : id) + '.' };
+}
+function setAccessory(petId, name){
+  const p = petById(petId);
+  if (!p) return { ok: false, msg: 'No Walkling.' };
+  if (name == null || name === 'none' || name === '') { delete p.accessory; return { ok: true, msg: petName(p) + ' wears nothing.' }; }
+  if (!PET_ACC_IDS.includes(name)) return { ok: false, msg: "That isn't an accessory." };
+  p.accessory = name;
+  const label = name.charAt(0).toUpperCase() + name.slice(1);
+  return { ok: true, msg: petName(p) + ' wears a ' + label + '.' };
 }
 // Triggers (§4): fire when a step ends within Manhattan r; once until the keeper ends a step outside the area (or the map changes).
 let walkAwayI = 0;   // which gate toast to show next; not saved (one line each time you step off after "Think about it")
@@ -1848,6 +1981,7 @@ function drawMap(t){
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
     const bob = followerBob(t);
     g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - bob);
+    if (p.accessory) drawPetAccessory(g, p.accessory, fx, fy - bob, isFaded(p));
     if (earlyBuddy() && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob);
     grassOver(fol.fx, fol.fy);
   };
@@ -2641,7 +2775,8 @@ const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['sto
 
 /* --- the bottom text box (#ovScene) --- */
 function sbRender(who, text){
-  const look = who && (NPC_LOOKS[LOOK_OF_NAME[who]] || null);
+  const key = who && LOOK_OF_NAME[who];
+  const look = key ? npcLook({ look: key, name: who }) : null;
   $('#sbWho').textContent = who || ''; $('#sbWho').hidden = !who;
   $('#sbText').textContent = text; $('#sbText').classList.toggle('narr', !who);
   const pc = $('#sbPortrait'), showP = !!look && window.innerWidth >= 360;
@@ -3033,8 +3168,13 @@ const ablePet = p => canBattle(p);
 // (canBattle), but it must not: a playtest had the starter faint and the rest of the party, still standing, skipped,
 // with the loss line saying the whole party had fainted.
 const canStepIn = p => !!p && !isFainted(p) && hpOf(p) > 0;
-// Lead = the partner if able, otherwise the first able party member (§1).
-function leadPet(){ const p = pet(); return ablePet(p) ? p : (S.party.find(ablePet) || null); }
+// Lead = the partner if able, else the party member marked relief if able, else the first able party member.
+function leadPet(){
+  const p = pet();
+  if (ablePet(p)) return p;
+  const relief = S.party.find(q => q.deploy && q.deploy.relief === true && ablePet(q));
+  return relief || S.party.find(ablePet) || null;
+}
 function noBattleToast(){
   sfx('denied');
   toast(S.party.some(canStepIn) ? 'Your team is too sleepy. REST first!' : 'Your team needs a rest first!');
@@ -3111,6 +3251,15 @@ function foeBattler(f){
 }
 const effSpd = b => effStat(b, 'spd');
 function setMyHp(p, hp){ const max = maxHpOf(p); hp = clamp(Math.round(hp), 0, max); if (hp >= max) delete p.hpNow; else p.hpNow = hp; }
+// Soft Berry: one heal when a foe's hit crosses from at least half HP to under half, still standing.
+function applySoftBerry(p, before){
+  if (!p || p.held !== 'soft_berry') return false;
+  const max = maxHpOf(p), after = hpOf(p);
+  if (!(before >= max / 2 && after > 0 && after < max / 2)) return false;
+  setMyHp(p, after + Math.ceil(0.25 * max));
+  delete p.held;
+  return true;
+}
 
 /* --- open / close --- */
 function openBattle(o){
@@ -3150,6 +3299,37 @@ function openBattle(o){
   battleIntro(B.id);
   return true;
 }
+const DEPLOY_CALLS = ['charge', 'brace', 'dart', 'greet'];
+const CALL_STAT = { charge: 'atk', brace: 'def', dart: 'spd' };
+const CALL_STOCK = { charge: 'rushes in!', brace: 'plants its feet!', dart: 'slips in ahead!', greet: 'looks ready to make a friend!' };
+const CALL_LABEL = { charge: 'Charge', brace: 'Brace', dart: 'Dart', greet: 'Greet' };
+function bumpStage(st, stat, n){
+  const cur = st[stat] || 0, nx = clamp(cur + n, -3, 3);
+  if (nx !== cur) st[stat] = nx;
+  return nx !== cur;
+}
+// Stages on the way in. A bracer doubles Charge/Brace/Dart (or ATK +1 otherwise) and does not also add the call's +1.
+// The spoken line is the stock call line with a bracer; otherwise deploy.line when the player wrote one.
+async function applyEntrance(p, id){
+  const B = battle;
+  if (!B.on || !B.me || !p) return;
+  const call = p.deploy && DEPLOY_CALLS.includes(p.deploy.call) ? p.deploy.call : null;
+  const bracer = p.held === 'bracer_band';
+  if (!bracer && !call) return;
+  const st = B.me.stages;
+  let rose = false;
+  if (bracer) {
+    if (call === 'charge') rose = bumpStage(st, 'atk', 2);
+    else if (call === 'brace') rose = bumpStage(st, 'def', 2);
+    else if (call === 'dart') rose = bumpStage(st, 'spd', 2);
+    else rose = bumpStage(st, 'atk', 1);
+  } else if (CALL_STAT[call]) rose = bumpStage(st, CALL_STAT[call], 1);
+  if (rose) { B.fx.push({ who: 'me', kind: 'up', t0: now(), dur: 700 }); sfx('statUp'); }
+  renderBattleCards();
+  const custom = !bracer && p.deploy && typeof p.deploy.line === 'string' && p.deploy.line ? p.deploy.line : '';
+  const text = custom || (petName(p) + ' ' + (CALL_STOCK[call] || CALL_STOCK.charge));
+  await say(text, id == null ? B.id : id);
+}
 async function battleIntro(id){
   const B = battle, p = activePet(), t = tr();
   sendOutFx('foe');
@@ -3161,6 +3341,7 @@ async function battleIntro(id){
     await say(btLine('trainerIntro'), id);
     if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
     await say(btLine('playerSend'), id);
+    if (alive(id)) await applyEntrance(activePet(), id);
     if (alive(id) && B.group) {
       await say('Two at once. You move first. TARGET picks who you hit.', id);
       if (alive(id) && B.ally) await say(B.allyName + ' sends ' + foeName(B.ally) + ' in beside you.', id);
@@ -3169,6 +3350,7 @@ async function battleIntro(id){
     await say(btLine('wildAppear'), id);
     if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
     await say(btLine('wildSend', { pet: petName(p) }), id);
+    if (alive(id)) await applyEntrance(activePet(), id);
   }
   if (alive(id)) toChoose();
 }
@@ -3354,11 +3536,13 @@ function stageText(st){ return ['atk', 'def', 'spd'].filter(k => st[k]).map(k =>
 function hintFor(mid, type){ const v = S.dex.hits && S.dex.hits[mid + '>' + type]; return v === 2 ? '2x' : v === 0.5 ? '\u00bd' : v === 0 ? '0' : ''; }
 function renderFight(){
   const p = activePet(), u = usesOf(p), f = curFoe(), box = $('#btMoves'); box.textContent = '';
-  const ids = (p.moves || []).filter(id => MOVES[id]);
+  let ids = (p.moves || []).filter(id => MOVES[id]);
+  const opener = p.deploy && typeof p.deploy.opener === 'string' && ids.includes(p.deploy.opener) ? p.deploy.opener : null;
+  if (opener) ids = [opener].concat(ids.filter(id => id !== opener));
   const out = ids.every(id => !(u[id] > 0));
   const list = out ? ['wobble'] : ids;
   for (let i = 0; i < 4; i++) {
-    const id = list[i], b = document.createElement('button'); b.className = 'btn bt-move'; b.type = 'button';
+    const id = list[i], b = document.createElement('button'); b.className = 'btn bt-move' + (opener && id === opener && !out ? ' mv-open' : ''); b.type = 'button';
     if (!id) { b.disabled = true; b.textContent = '-'; box.appendChild(b); continue; }
     const mv = MOVES[id], left = id === 'wobble' ? null : u[id];
     b.dataset.move = id; b.disabled = id !== 'wobble' && !(left > 0);
@@ -3507,10 +3691,15 @@ async function playerAction(a, id){
   }
   if (a.kind === 'befriend') return befriendTry(id);
   if (a.kind === 'swap') {
+    const next = S.party.find(q => q.id === a.id);
+    if (!next || next.id === p.id || !canStepIn(next)) { sfx('denied'); await say("They can't come in.", id); return false; }
     await say(btLine('swapOut', { pet: petName(p) }), id); if (!alive(id)) return true;
-    B.me = { petId: a.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(petById(a.id)) }; B.participants[B.fi].add(a.id);
+    B.me = { petId: next.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(next) }; B.participants[B.fi].add(next.id);
     sendOutFx('me'); renderBattleCards();
-    await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(petById(a.id)) }), id);
+    await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(next) }), id);
+    if (!alive(id)) return true;
+    await applyEntrance(next, id);
+    if (!alive(id)) return true;
     B.foePlan = aiPick(); return false;                    // the foe re-reads the new target's type (no peeking at the action itself)
   }
   if (a.kind === 'bag') {                                // INVENTORY §3.2: checked before the turn, applied here (uses the turn)
@@ -3564,12 +3753,21 @@ async function doMove(side, mid, id){
     const r = damage({ power: mv.power, moveType: mv.type, att, def, rng: B.rng });
     const key = mid + '>' + def.type; if (S.dex.hits[key] !== r.mult) { S.dex.hits[key] = r.mult; }   // type hint seen
     if (r.mult === 0) { sfx('hitWeak'); await say("It didn't do a thing to " + tName + '...', id); return; }
-    if (mine) { f.hp = Math.max(0, f.hp - r.dmg); } else { setMyHp(p, hpOf(p) - r.dmg); }
+    let berry = false;
+    if (mine) f.hp = Math.max(0, f.hp - r.dmg);
+    else {
+      const before = hpOf(p);
+      setMyHp(p, before - r.dmg);
+      berry = applySoftBerry(p, before);
+    }
     B.fx.push({ who: mine ? 'foe' : 'me', kind: r.mult > 1 ? 'flash' : 'shake', t0: now(), dur: 400 });
-    sfx(r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit'); renderBattleCards(); if (!mine) save();
+    sfx(r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit');
+    if (berry && battle.on) sfx('heal');
+    renderBattleCards(); if (!mine) save();
     if (r.crit) { await say('A lucky hit!', id); if (!alive(id)) return; }
     if (r.mult > 1) await say("That hit hard!", id); else if (r.mult < 1) await say("It barely felt that...", id);
     if (!alive(id)) return;
+    if (berry) { await say(petName(p) + "'s Soft Berry eases the hit!", id); if (!alive(id)) return; }
     const tgtDown = mine ? f.hp <= 0 : hpOf(p) <= 0;
     if (e) {
       if (e.heal) await healUser(side, e.heal, id);
@@ -3654,17 +3852,29 @@ async function endCheck(id){
     B.me = { petId: q.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(q) }; B.participants[B.fi].add(q.id);
     sendOutFx('me'); renderBattleCards();
     await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(q) }), id);
+    if (alive(id)) await applyEntrance(q, id);
     if (B.kind === 'trainer' && curFoe().hp > 0 && B.foeJustSent) {}
   }
   if (alive(id)) toChoose();
 }
 // Swap sheet: anyone in the party with HP who isn't napping. Low NRG is marked, not a lock (see canStepIn). forced = can't cancel.
+function swapSub(q){
+  const B = battle, badge = hpBadge(q), step = canStepIn(q), sleepy = step && q.energy < STAT_RULES.MOOD.minBattleNrg;
+  let sub = 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q);
+  if (badge) sub += '  ' + badge;
+  if (sleepy) sub += '  LOW NRG';
+  const call = q.deploy && CALL_LABEL[q.deploy.call];
+  if (call) sub += '  ' + call;
+  if (q.held) sub += '  ' + (ITEMS[q.held] ? ITEMS[q.held].name : q.held);
+  if (q.deploy && q.deploy.note) sub += '  ' + q.deploy.note;
+  if (B.me && q.id === B.me.petId) sub += '  (in battle)';
+  return sub;
+}
 function swapSheet(forced){
-  const B = battle, items = S.party.map(q => {
-    const badge = hpBadge(q), step = canStepIn(q), sleepy = step && q.energy < STAT_RULES.MOOD.minBattleNrg;
-    return { label: petName(q) + '  Lv ' + levelOf(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (badge ? '  ' + badge : '') + (sleepy ? '  LOW NRG' : '') + (q.id === B.me.petId ? '  (in battle)' : ''),
-      hp: hpOf(q) / maxHpOf(q), disabled: q.id === B.me.petId || !step, value: q.id };
-  });
+  const B = battle, items = S.party.map(q => ({
+    label: petName(q) + '  Lv ' + levelOf(q), sub: swapSub(q),
+    hp: hpOf(q) / maxHpOf(q), disabled: q.id === B.me.petId || !canStepIn(q), value: q.id,
+  }));
   return openSheet(forced ? 'Who goes next?' : 'Swap to which Walkling?', items, forced ? null : 'BACK');
 }
 /* ---------- MAP v0 (design/specs/MAP_V0.md): "where am I?" region map ---------- */
@@ -4226,18 +4436,19 @@ function renderBag(){
   if (bagSel >= ids.length) bagSel = ids.length - 1;
   ids.forEach((id, i) => {
     const it = ITEMS[id], battleOnly = it.use.length === 1 && it.use[0] === 'battle';
-    const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
+    const holdable = !!it.hold;
+    const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly || holdable ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
     row.setAttribute('role', 'option'); row.dataset.id = id; row.dataset.i = String(i);
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico' + (battleOnly ? ' grey' : '');
     ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name';
     nm.textContent = it.name + ' \u00d7' + itemCount(id);
-    if (battleOnly) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = '(battle only)'; nm.appendChild(tag); }
+    if (battleOnly || holdable) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = battleOnly ? '(battle only)' : '(hold)'; nm.appendChild(tag); }
     const bl = document.createElement('div'); bl.className = 'bag-blurb'; bl.textContent = it.blurb;
     meta.append(nm, bl);
     row.append(ico, meta);
-    if (!battleOnly) {
+    if (!battleOnly && !holdable) {
       const use = document.createElement('button'); use.type = 'button'; use.className = 'btn bag-use'; use.textContent = 'USE';
       use.addEventListener('click', e => { e.stopPropagation(); bagSel = i; useBagItem(id); });
       row.appendChild(use);
@@ -4250,6 +4461,7 @@ function renderBag(){
 async function useBagItem(id){
   if ($('#ovBag').hidden || !ITEMS[id]) return;
   const it = ITEMS[id];
+  if (it.hold) { sfx('denied'); toast('Hold it on a Walkling. The bag does not use it up.'); return; }
   if (!it.use.includes('field')) { sfx('denied'); toast(id === 'befriend_treat' ? 'Save it for a wild battle.' : "Can't use that here yet."); return; }
   let tgt = null;
   if (it.target) {
@@ -4268,7 +4480,7 @@ function bagKey(e){
   if (e.key === 'ArrowDown') { if (ids.length) { bagSel = Math.min(ids.length - 1, bagSel + 1); renderBag(); } return true; }
   if (e.key === 'ArrowUp') { if (ids.length) { bagSel = Math.max(0, bagSel - 1); renderBag(); } return true; }
   if (e.key === 'Enter') {
-    const id = ids[bagSel]; if (id && !(ITEMS[id].use.length === 1 && ITEMS[id].use[0] === 'battle')) useBagItem(id);
+    const id = ids[bagSel]; if (id && !ITEMS[id].hold && !(ITEMS[id].use.length === 1 && ITEMS[id].use[0] === 'battle')) useBagItem(id);
     return true;
   }
   return false;
@@ -4446,27 +4658,8 @@ const SEAL_ART = { seal_cobblecrest: [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ] };
-// WP-B0 PLACEHOLDER (engine ask 6): the glimmer path earns lanyard tiers, stored in S.seals like Seals. Cyan cord, a bright badge
-// with one (tier 1) or two (tier 2) gold bars. Real 16x16 art is a Design request.
-const lanyardArt = tier => [
-  '....cc....cc....',
-  '...c..c..c..c...',
-  '...c..c..c..c...',
-  '..c....cc....c..',
-  '..c..........c..',
-  '..c..........c..',
-  '...c........c...',
-  '....c......c....',
-  '.....mhhhhm.....',
-  '....mwwwwwwm....',
-  '....hw' + (tier > 1 ? 'yyyy' : 'wwww') + 'wh....',
-  '....hwwwwwwh....',
-  '....hwyyyywh....',
-  '....hwwwwwwh....',
-  '.....mhhhhm.....',
-  '................',
-];
-// Build 3: delivered 16x16 Bright Tier 1 lanyard (Sweetie 16). seal_glim_2 stays the tier-2 placeholder.
+// Build 3: delivered 16x16 Bright Tier 1 lanyard. Gold rim, mint field, one white mark.
+// Tier 2 is the same badge with two white marks.
 const LANYARD_TIER1 = [
   '.....oooooo.....',
   '...ooyyyyyyoo...',
@@ -4485,7 +4678,25 @@ const LANYARD_TIER1 = [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ];
-SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = lanyardArt(2);
+const LANYARD_TIER2 = [
+  '.....oooooo.....',
+  '...ooyyyyyyoo...',
+  '..oyywsssswyyo..',
+  '.oyswwssslwwlyo.',
+  '.oyswwssllwwlyo.',
+  'oysswwslllwwllyo',
+  'oysswwllllwwllyo',
+  'oysswwllllwwllyo',
+  'oysswwllllwwllyo',
+  'oyslwwllllwwlyoo',
+  'oyllwwllllwwlyoo',
+  '.oylwwllllwwyoo.',
+  '.oylwwllllyyooo.',
+  '..oyywlllyoooo..',
+  '...ooyyyyoooo...',
+  '.....oooooo.....',
+];
+SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2;
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
   g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
@@ -4599,7 +4810,15 @@ function battleAct(act){
 // WP-A: the zone reads the foe's HP, its level against the lead's, and whether a turn has passed (befriendWidth ctx);
 // story creatures add B.bonus (Faded Fuzzwick +0.10, the guide wild +0.08). Cap 0.6. An untouched foe says so once per battle.
 function befriendCtx(){ const B = battle, f = curFoe(), p = activePet(); return { foeLv: f.level, leadLv: levelOf(p), engaged: B.turn > 0 }; }
-function befriendZoneWidth(){ const B = battle, f = curFoe(), p = activePet(); return Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus); }
+function befriendZoneWidth(){
+  const B = battle, f = curFoe(), p = activePet();
+  let extra = 0;
+  if (B.kind === 'wild' && p) {
+    if (p.deploy && p.deploy.call === 'greet') extra += 0.04;
+    if (p.held === 'kin_ribbon') extra += 0.04;
+  }
+  return Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus + extra);
+}
 let waryTurn = 0;   // which of the three wary lines the next untouched foe gets
 const oddsLabel = w => w < 0.15 ? { t: 'WARY', c: 'r' } : w < 0.25 ? { t: 'FAIR', c: 'y' } : { t: 'GOOD', c: 'l' };
 function openBefriendBar(){
@@ -4664,6 +4883,7 @@ function drawBattle(t, dt){
     if (hide) return;
     const img = sprSet(si, stage, faded)[mode];
     if (mirror) { g.save(); g.translate(x + 18, y); g.scale(-1, 1); g.drawImage(img, 0, 0); g.restore(); } else g.drawImage(img, x, y);
+    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, x, y, !!faded);
   };
   if (B.group && B.slots) {
     let other = null;
@@ -4761,17 +4981,28 @@ function growText(p){
   if (care(p) < EVO_CARE[p.stage]) return { text: 'GROW done \u00b7 care ' + EVO_CARE[p.stage] + '+ to grow up', ready: false };
   return { text: 'Ready to grow up!', ready: true };
 }
-const statsCard = { id: null, t: 0 };
+const statsCard = { id: null, t: 0, gear: false };
+function clearGearBox(){
+  statsCard.gear = false;
+  const box = $('#scGearBox'), b = $('#scGear');
+  if (box) { box.hidden = true; box.textContent = ''; }
+  if (b) b.setAttribute('aria-pressed', 'false');
+}
 function openStatsCard(id){
   const p = allPets().find(q => q.id === (id || S.partnerId)); if (!p) return false;
-  if (!$('#ovStats').hidden) { statsCard.id = p.id; hideNickEdit(); renderStatsCard(); return true; }
+  if (statsCard.id !== p.id) { clearGearBox(); hideNickEdit(); }
+  if (!$('#ovStats').hidden) { statsCard.id = p.id; renderStatsCard(); return true; }
   if (overlayOpen()) return false;
   clearMoves(); statsCard.id = p.id; statsCard.t = 0; renderStatsCard();
   $('#ovStats').hidden = false; lockTabs(true); sfx('tap');
   $('#scClose').focus({ preventScroll: true });
   return true;
 }
-function closeStatsCard(){ if ($('#ovStats').hidden) return; hideNickEdit(); $('#ovStats').hidden = true; statsCard.id = null; lockTabs(false); updateHUD(); }
+function nickToStore(p, raw){
+  const nk = cleanNick(raw), species = nameOf(spi(p), p.stage);
+  return nk && nk !== species ? nk : null;   // empty, or the species name, keeps the species (D57)
+}
+function closeStatsCard(){ if ($('#ovStats').hidden) return; hideNickEdit(); $('#ovStats').hidden = true; statsCard.id = null; clearGearBox(); lockTabs(false); updateHUD(); }
 function hideNickEdit(){
   const row = $('#scNick'), acts = $('#scActs');
   if (row) row.hidden = true;
@@ -4780,6 +5011,7 @@ function hideNickEdit(){
 }
 function openNickEdit(){
   const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
+  clearGearBox();
   $('#scActs').hidden = true; $('#scNick').hidden = false;
   const inp = $('#scNickIn');
   inp.value = cleanNick(p.nick);
@@ -4789,30 +5021,140 @@ function openNickEdit(){
 function applyNick(){
   const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
   const before = petName(p), species = nameOf(spi(p), p.stage);
-  const nk = cleanNick($('#scNickIn').value);
-  const next = nk && nk !== species ? nk : null;   // empty, or the species name, keeps the species (D51)
+  const next = nickToStore(p, $('#scNickIn').value);
   const prev = cleanNick(p.nick) || null;
   hideNickEdit();
   if (next === prev) { renderStatsCard(); return; }
   p.nick = next; save(); updateHUD(); renderCollection(); renderStatsCard();
   toast(next ? (before + ' is now called ' + petName(p) + '!') : (before + ' goes by ' + species + ' again.')); /* PLACEHOLDER: needs copy from Vincent */
 }
-function renderStatsCard(){
-  const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
+function ensureDeploy(p){ if (!p.deploy || typeof p.deploy !== 'object' || Array.isArray(p.deploy)) p.deploy = {}; return p.deploy; }
+function pruneDeploy(p){ if (p.deploy && !Object.keys(p.deploy).length) delete p.deploy; }
+function cleanGearText(v){ return String(v == null ? '' : v).replace(/[<>{}]/g, '').trim().slice(0, 40); }
+function setCall(p, call){
+  const d = ensureDeploy(p);
+  if (DEPLOY_CALLS.includes(call)) d.call = call; else delete d.call;
+  pruneDeploy(p);
+}
+function setOpener(p, id){
+  const d = ensureDeploy(p);
+  if (typeof id === 'string' && id && (p.moves || []).includes(id)) d.opener = id; else delete d.opener;
+  pruneDeploy(p);
+}
+function setDeployText(p, key, v){
+  const d = ensureDeploy(p), t = cleanGearText(v);
+  if (t) d[key] = t; else delete d[key];
+  pruneDeploy(p);
+}
+function setRelief(p, on){
+  if (on) {
+    for (const q of S.party.concat(S.box)) {
+      if (q === p || !q.deploy || q.deploy.relief !== true) continue;
+      delete q.deploy.relief;
+      if (!Object.keys(q.deploy).length) delete q.deploy;
+    }
+    ensureDeploy(p).relief = true;
+  } else if (p.deploy) { delete p.deploy.relief; pruneDeploy(p); }
+}
+function commitGear(id, opts){
+  save(); updateHUD();
+  if (typeof openWalklingSheet === 'function' && $('#ovWalkling') && !$('#ovWalkling').hidden && !(opts && opts.keep)) { openWalklingSheet(id); return; }
+  if (typeof renderCollection === 'function') renderCollection();
+  if (opts && opts.keep) return;
+  if ($('#ovStats').hidden || statsCard.id !== id || !statsCard.gear) return;
+  const p = petById(id), box = $('#scGearBox');
+  renderStatsCard();
+  if (p && box) { box.textContent = ''; fillWalklingExtras(box, p); box.hidden = false; }
+}
+function fillWalklingExtras(container, pet){
+  if (!container || !pet) return;
+  const lab = text => { const d = document.createElement('div'); d.className = 'gear-lab'; d.textContent = text; return d; };
+  const row = () => { const d = document.createElement('div'); d.className = 'gear-row'; return d; };
+  const live = () => petById(pet.id) || pet;
+  const press = (btn, on) => btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  const after = (r, keep) => {
+    sfx(r && r.ok === false ? 'denied' : 'tap');
+    if (r && r.msg) toast(r.msg);
+    commitGear(pet.id, keep ? { keep: true } : null);
+  };
+
+  container.appendChild(lab(pet.held && ITEMS[pet.held] ? 'HOLD · ' + ITEMS[pet.held].name : 'HOLD'));
+  const holds = row();
+  const owned = ITEM_ORDER.filter(id => ITEMS[id] && ITEMS[id].hold && itemCount(id) > 0);
+  if (!owned.length) { const n = document.createElement('div'); n.className = 'gear-note'; n.textContent = 'No holdable items.'; holds.appendChild(n); }
+  owned.forEach(id => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.hold = id; b.textContent = ITEMS[id].name;
+    b.addEventListener('click', () => after(holdItem(live().id, id)));
+    holds.appendChild(b);
+  });
+  const take = document.createElement('button'); take.type = 'button'; take.className = 'btn sm'; take.dataset.act = 'unhold'; take.textContent = 'TAKE BACK';
+  take.addEventListener('click', () => after(unholdItem(live().id)));
+  holds.appendChild(take);
+  container.appendChild(holds);
+
+  container.appendChild(lab('ACCESSORY'));
+  const accs = row();
+  [['none', 'None']].concat(PET_ACC_IDS.map(id => [id, id.charAt(0).toUpperCase() + id.slice(1)])).forEach(([id, name]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.acc = id; b.textContent = name;
+    press(b, (pet.accessory || 'none') === id);
+    b.addEventListener('click', () => after(setAccessory(live().id, id)));
+    accs.appendChild(b);
+  });
+  container.appendChild(accs);
+
+  container.appendChild(lab('CALL'));
+  const calls = row();
+  [['none', 'None']].concat(DEPLOY_CALLS.map(id => [id, CALL_LABEL[id]])).forEach(([id, name]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.call = id; b.textContent = name;
+    press(b, (pet.deploy && pet.deploy.call || 'none') === id);
+    b.addEventListener('click', () => { setCall(live(), id === 'none' ? '' : id); after({ ok: true }); });
+    calls.appendChild(b);
+  });
+  container.appendChild(calls);
+
+  container.appendChild(lab('OPENER'));
+  const sel = document.createElement('select'); sel.dataset.gear = 'opener';
+  const none = document.createElement('option'); none.value = ''; none.textContent = 'None'; sel.appendChild(none);
+  (pet.moves || []).forEach(id => { if (!MOVES[id]) return; const o = document.createElement('option'); o.value = id; o.textContent = MOVES[id].name; sel.appendChild(o); });
+  sel.value = pet.deploy && (pet.moves || []).includes(pet.deploy.opener) ? pet.deploy.opener : '';
+  sel.addEventListener('change', () => { setOpener(live(), sel.value); after({ ok: true }); });
+  container.appendChild(sel);
+
+  const rel = document.createElement('label'); rel.className = 'gear-check';
+  const cb = document.createElement('input'); cb.type = 'checkbox'; cb.dataset.gear = 'relief'; cb.checked = !!(pet.deploy && pet.deploy.relief);
+  cb.addEventListener('change', () => { setRelief(live(), cb.checked); after({ ok: true }); });
+  rel.append(cb, document.createTextNode(' Relief'));
+  container.appendChild(rel);
+
+  const field = (key, title) => {
+    container.appendChild(lab(title));
+    const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 40; inp.dataset.gear = key;
+    inp.value = (pet.deploy && pet.deploy[key]) || '';
+    inp.addEventListener('change', () => {
+      const q = live(); setDeployText(q, key, inp.value); inp.value = (q.deploy && q.deploy[key]) || '';
+      after({ ok: true }, true);
+    });
+    container.appendChild(inp);
+  };
+  field('line', 'LINE');
+  field('note', 'NOTE');
+}
+function paintStatsInto(prefix, p, opt){
   const si = spi(p), sp = SPECIES[si], L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
-  spriteCanvas($('#scIcon'), si, p.stage, 'n', isFaded(p));
-  $('#scName').textContent = petName(p);
-  $('#scSpecies').textContent = (cleanNick(p.nick) ? nameOf(si, p.stage) + ' \u00b7 ' : '') + '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
-  $('#scStatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of 42 forms';
-  const tb = $('#scType'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
-  $('#scLv').textContent = 'Lv ' + L;
-  const gt = growText(p), ge = $('#scGrow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
+  spriteCanvas($('#' + prefix + 'Icon'), si, p.stage, 'n', isFaded(p), p.accessory);
+  $('#' + prefix + 'Name').textContent = petName(p);
+  const species = nameOf(si, p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  $('#' + prefix + 'Species').textContent = ((opt && opt.alwaysSpecies) || cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
+  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of 42 forms';
+  const tb = $('#' + prefix + 'Type'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
+  $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
+  const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
   const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), badge = hpBadge(p), glowing = !badge && moodOf(p).glowing;   // FAINTED > TIRED > GLOWING
-  $('#scHp').textContent = hp + '/' + mhp;
-  const hb = $('#scHpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25);
-  const tag = $('#scTag'); tag.hidden = !(badge || glowing); tag.textContent = badge || 'GLOWING';
+  $('#' + prefix + 'Hp').textContent = hp + '/' + mhp;
+  const hb = $('#' + prefix + 'HpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25);
+  const tag = $('#' + prefix + 'Tag'); tag.hidden = !(badge || glowing); tag.textContent = badge || 'GLOWING';
   tag.className = 'sc-tag ' + (badge ? (badge === 'TIRED' ? 'tired' : 'fainted') : 'glowing');
-  const box = $('#scStats'); box.innerHTML = '';
+  const box = $('#' + prefix + 'Stats'); box.innerHTML = '';
   for (const [key, label] of STAT_KEYS) {
     const row = document.createElement('div'); row.className = 'sc-stat'; row.dataset.stat = key;
     row.innerHTML = '<span></span><div class="bar"><i></i></div><b></b>';
@@ -4820,9 +5162,253 @@ function renderStatsCard(){
     row.querySelector('i').style.width = (100 * st[key] / max[key]).toFixed(1) + '%';
     box.append(row);
   }
-  const ch = chartLine(sp.type), el = $('#scChart'); el.innerHTML = '';
+  const ch = chartLine(sp.type), el = $('#' + prefix + 'Chart'); el.innerHTML = '';
   const part = (lab, list) => { const s = document.createElement('span'); s.className = 'seg'; s.append(lab + ' '); const e = document.createElement('em'); e.textContent = list.join(', '); s.append(e); return s; };
   el.append(part('Strong vs', ch.strong), ' \u00b7 ', part('Weak to', ch.weak));
+}
+function renderStatsCard(){
+  const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
+  paintStatsInto('sc', p);
+  const gbtn = $('#scGear'), gbox = $('#scGearBox');
+  if (gbtn) gbtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
+  if (gbox) gbox.hidden = !statsCard.gear;
+}
+
+/* ---------- Walkling sheet (party menu, one pet) ---------- */
+// Field snacks the sheet may use on this pet, including one in the box. Battle BAG stays party-only.
+const WALK_FIELD_ITEMS = ['heal_snack', 'hearty_snack', 'wake_tonic', 'energy_sip', 'joy_crumb'];
+const walklingSheet = { id: null, t: 0, busy: false };
+// Swap two party indexes. Another slice may define reorderParty first; this only fills the gap.
+if (typeof reorderParty !== 'function') {
+  window.reorderParty = function(id, toIndex){
+    if (!S) return false;
+    const from = S.party.findIndex(q => q.id === id), to = toIndex | 0;
+    if (from < 0 || to < 0 || to >= S.party.length || from === to) return false;
+    const tmp = S.party[from]; S.party[from] = S.party[to]; S.party[to] = tmp;
+    return true;
+  };
+}
+function callReorderParty(id, toIndex){
+  if (typeof reorderParty === 'function') return reorderParty(id, toIndex);
+  if (typeof window.reorderParty === 'function') return window.reorderParty(id, toIndex);
+  return false;
+}
+function depositPetLocal(id, nextId){
+  if (!S || S.party.length < 2) return false;
+  const i = S.party.findIndex(q => q.id === id);
+  if (i < 0) return false;
+  if (id === S.partnerId) {
+    if (!nextId || !S.party.some(q => q.id === nextId && q.id !== id)) return false;
+    S.partnerId = nextId;
+  }
+  S.box.unshift(S.party.splice(i, 1)[0]);
+  if (!S.party.some(q => q.id === S.partnerId) && S.party[0]) S.partnerId = S.party[0].id;
+  return true;
+}
+function withdrawPetLocal(id){
+  if (!S || S.party.length >= PPSave.PARTY_MAX) return false;
+  const i = S.box.findIndex(q => q.id === id);
+  if (i < 0) return false;
+  S.party.push(S.box.splice(i, 1)[0]);
+  return true;
+}
+function paintWalklingStats(p){ paintStatsInto('wl', p, { alwaysSpecies: true }); }
+function sheetBtn(label, cls, onClick, opt){
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (cls ? ' ' + cls : ''); b.textContent = label;
+  if (opt && opt.aria) b.setAttribute('aria-label', opt.aria);
+  if (opt && opt.span) b.classList.add('span');
+  if (opt && opt.disabled) b.disabled = true;
+  b.addEventListener('click', onClick);
+  return b;
+}
+function renderWalklingActions(p){
+  const box = $('#wlActions'); box.textContent = '';
+  const sec = txt => { const d = document.createElement('div'); d.className = 'wl-sec'; d.textContent = txt; box.appendChild(d); };
+  if (p.id !== S.partnerId) box.appendChild(sheetBtn('PARTNER', 'btn-play', () => partnerFromSheet(p.id), { span: true }));
+  const pi = S.party.findIndex(q => q.id === p.id);
+  if (pi >= 0) {
+    sec('MOVE');
+    box.appendChild(sheetBtn('UP', '', () => shiftParty(p.id, -1), { aria: 'Party up', disabled: pi <= 0 }));
+    box.appendChild(sheetBtn('DOWN', '', () => shiftParty(p.id, 1), { aria: 'Party down', disabled: pi >= S.party.length - 1 }));
+    box.appendChild(sheetBtn('TO BOX', '', () => { depositFromSheet(p.id); }, { span: true }));
+  } else box.appendChild(sheetBtn('TO PARTY', 'btn-play', () => { withdrawFromSheet(p.id); }, { span: true }));
+}
+function renderWalklingMoves(p){
+  const box = $('#wlMoves'); box.textContent = '';
+  const lab = document.createElement('div'); lab.className = 'wl-sec'; lab.textContent = 'MOVES'; box.appendChild(lab);
+  const moves = Array.isArray(p.moves) ? p.moves.slice(0, 4) : [];
+  if (!moves.length) { const empty = document.createElement('p'); empty.className = 'wl-why'; empty.textContent = 'No moves yet.'; box.appendChild(empty); return; }
+  moves.forEach((mid, i) => {
+    const mv = MOVES[mid] || { name: mid, type: '', power: 0 };
+    const row = document.createElement('div'); row.className = 'wl-mv';
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const nm = document.createElement('b'); nm.textContent = mv.name;
+    const sub = document.createElement('span'); sub.textContent = (mv.type || '') + '  PWR ' + (mv.power || 0);
+    meta.append(nm, sub);
+    const up = sheetBtn('UP', '', () => swapWalklingMove(p.id, i, i - 1), { aria: 'Move ' + mv.name + ' up', disabled: i === 0 });
+    const down = sheetBtn('DOWN', '', () => swapWalklingMove(p.id, i, i + 1), { aria: 'Move ' + mv.name + ' down', disabled: i === moves.length - 1 });
+    row.append(meta, up, down); box.appendChild(row);
+  });
+}
+function walklingFieldItems(){
+  return WALK_FIELD_ITEMS.filter(id => {
+    const it = ITEMS[id];
+    return it && !it.key && id !== 'befriend_treat' && it.target && it.use.includes('field') && itemCount(id) > 0;
+  });
+}
+function renderWalklingUse(p){
+  const box = $('#wlUse'); box.textContent = '';
+  const lab = document.createElement('div'); lab.className = 'wl-sec'; lab.textContent = 'USE'; box.appendChild(lab);
+  const ids = walklingFieldItems();
+  if (!ids.length) { const empty = document.createElement('p'); empty.className = 'wl-why'; empty.textContent = 'No field snacks in the bag.'; box.appendChild(empty); return; }
+  ids.forEach(id => {
+    const it = ITEMS[id], why = itemRefusal(id, p, 'field');
+    const row = document.createElement('div'); row.className = 'wl-item'; row.dataset.item = id;
+    const meta = document.createElement('div');
+    const nm = document.createElement('b'); nm.textContent = it.name;
+    const sub = document.createElement('div'); sub.className = 'wl-why' + (why ? ' no' : ''); sub.textContent = why || it.blurb;
+    meta.append(nm, sub);
+    row.append(meta, sheetBtn('USE', 'btn-play', () => applySheetItem(id, p.id)));
+    box.appendChild(row);
+  });
+}
+function renderWalklingRelease(p){
+  const box = $('#wlRelease'); box.textContent = '';
+  if (typeof releasePet !== 'function') return;
+  box.appendChild(sheetBtn('RELEASE', 'btn-danger', () => { releaseFromSheet(p.id); }, { span: true }));
+}
+function renderWalklingExtras(p){
+  const box = $('#wlExtras'); if (!box) return; box.textContent = '';
+  if (typeof fillWalklingExtras === 'function') fillWalklingExtras(box, p);
+}
+function renderWalklingSheet(){
+  const p = allPets().find(q => q.id === walklingSheet.id);
+  if (!p) { closeWalklingSheet(); return; }
+  paintWalklingStats(p);
+  renderWalklingActions(p);
+  const nickEl = $('#wlNick');
+  if (nickEl && document.activeElement !== nickEl) nickEl.value = cleanNick(p.nick);
+  renderWalklingMoves(p);
+  renderWalklingUse(p);
+  renderWalklingRelease(p);
+  renderWalklingExtras(p);
+}
+function openWalklingSheet(id){
+  if (!S) return false;
+  const p = allPets().find(q => q.id === id);
+  if (!p) return false;
+  if (!$('#ovWalkling').hidden) { walklingSheet.id = p.id; walklingSheet.t = 0; renderWalklingSheet(); return true; }
+  if (overlayOpen()) return false;
+  clearMoves(); walklingSheet.id = p.id; walklingSheet.t = 0; renderWalklingSheet();
+  $('#ovWalkling').hidden = false; lockTabs(true); sfx('tap');
+  const c = $('#wlClose'); if (c) c.focus({ preventScroll: true });
+  return true;
+}
+window.openWalklingSheet = openWalklingSheet;
+function closeWalklingSheet(){
+  const ov = $('#ovWalkling'); if (!ov || ov.hidden) return;
+  if (!$('#ovSheet').hidden) closeSheet(null);
+  ov.hidden = true; walklingSheet.id = null; walklingSheet.busy = false;
+  lockTabs(false); updateHUD();
+}
+function partnerFromSheet(id){
+  const p = petById(id); if (!p || $('#ovWalkling').hidden) return;
+  sfx('tap'); makePartner(id); save(); updateHUD(); renderCollection();
+  toast(petName(petById(id) || p) + ' is your partner now!');
+  if (!$('#ovWalkling').hidden) renderWalklingSheet();
+}
+function shiftParty(id, dir){
+  const i = S.party.findIndex(q => q.id === id), to = i + dir;
+  if (i < 0 || to < 0 || to >= S.party.length || $('#ovWalkling').hidden) return;
+  sfx('tap'); callReorderParty(id, to); save(); updateHUD(); renderCollection();
+  if (!$('#ovWalkling').hidden) renderWalklingSheet();
+}
+function swapWalklingMove(id, i, j){
+  const p = petById(id);
+  if (!p || !Array.isArray(p.moves) || j < 0 || j >= p.moves.length || $('#ovWalkling').hidden) return;
+  const t = p.moves[i]; p.moves[i] = p.moves[j]; p.moves[j] = t;
+  sfx('tap'); save(); renderWalklingMoves(p);
+}
+function applySheetItem(itemId, petId){
+  const p = petById(petId); if (!p || $('#ovWalkling').hidden) return;
+  const r = useItem(itemId, petId, 'field');
+  sfx(r.ok ? (itemId === 'joy_crumb' ? 'tap' : 'heal') : 'denied');
+  toast(r.msg);
+  if (r.ok) { save(); updateHUD(); renderCollection(); }
+  const q = petById(petId);
+  if (!$('#ovWalkling').hidden && q) { paintWalklingStats(q); renderWalklingUse(q); }
+}
+function commitWalklingNick(){
+  const p = petById(walklingSheet.id); if (!p || $('#ovWalkling').hidden) return;
+  const next = nickToStore(p, $('#wlNick').value);
+  p.nick = next; $('#wlNick').value = next || '';
+  sfx('tap'); save(); updateHUD(); renderCollection(); paintWalklingStats(p);
+}
+// Confirm, then depositPet(id, nextPartnerId) when that function exists. nextPartnerId is null when they are not the partner.
+async function depositFromSheet(id){
+  if (walklingSheet.busy || $('#ovWalkling').hidden) return;
+  const p = petById(id);
+  if (!p || !S.party.some(q => q.id === id)) return;
+  if (typeof depositPet !== 'function' && S.party.length < 2) { sfx('denied'); toast('The party needs one Walkling.'); return; }
+  walklingSheet.busy = true;
+  try {
+    const yes = await openSheet('Send ' + petName(p) + ' to the box? Hunger pauses in the box.', [{ label: 'TO BOX', value: 'yes' }], 'BACK');
+    if (yes !== 'yes' || $('#ovWalkling').hidden) return;
+    let nextId = null;
+    if (p.id === S.partnerId) {
+      const rest = S.party.filter(q => q.id !== p.id);
+      if (rest.length) {
+        nextId = await openSheet('Who becomes your partner?', rest.map(q => ({ label: petName(q) + '  Lv ' + levelOf(q), value: q.id })), 'BACK');
+        if (!nextId || $('#ovWalkling').hidden) return;
+      } else if (typeof depositPet !== 'function') { sfx('denied'); toast('The party needs one Walkling.'); return; }
+    }
+    if (typeof depositPet === 'function') depositPet(p.id, nextId);
+    else if (!depositPetLocal(p.id, nextId)) { sfx('denied'); toast('The party needs one Walkling.'); return; }
+    save(); updateHUD(); renderCollection();
+    if (S.box.some(q => q.id === p.id)) toast(petName(petById(p.id) || p) + ' is in the box. Hunger pauses there.');
+    if (!$('#ovWalkling').hidden && petById(walklingSheet.id)) renderWalklingSheet();
+  } finally { walklingSheet.busy = false; }
+}
+// Boxed pets only. withdrawPet(id, slot) runs after a slot 0-5 pick; otherwise push onto the party when there is room.
+async function withdrawFromSheet(id){
+  if (walklingSheet.busy || $('#ovWalkling').hidden) return;
+  const p = petById(id);
+  if (!p || S.party.some(q => q.id === id)) return;
+  walklingSheet.busy = true;
+  try {
+    if (typeof withdrawPet === 'function') {
+      const items = [];
+      for (let i = 0; i < PPSave.PARTY_MAX; i++) {
+        const occ = S.party[i];
+        items.push({ label: 'Slot ' + (i + 1) + (occ ? ' \u00b7 ' + petName(occ) : ' \u00b7 empty'), value: i });
+      }
+      const slot = await openSheet('Which party slot?', items, 'BACK');
+      if (slot == null || $('#ovWalkling').hidden) return;
+      withdrawPet(id, slot);
+    } else if (!withdrawPetLocal(id)) { sfx('denied'); toast('The party is full.'); return; }
+    save(); updateHUD(); renderCollection();
+    if (S.party.some(q => q.id === id) && typeof withdrawPet !== 'function') toast(petName(petById(id) || p) + ' joined the party.');
+    if (!$('#ovWalkling').hidden && petById(walklingSheet.id)) renderWalklingSheet();
+  } finally { walklingSheet.busy = false; }
+}
+async function releaseFromSheet(id){
+  if (walklingSheet.busy || typeof releasePet !== 'function' || $('#ovWalkling').hidden) return;
+  const p = petById(id); if (!p) return;
+  walklingSheet.busy = true;
+  try {
+    const yes = await openSheet('Release ' + petName(p) + '?', [{ label: 'RELEASE', value: 'yes' }], 'BACK');
+    if (yes !== 'yes' || $('#ovWalkling').hidden) return;
+    const heldId = p.held;
+    if (!releasePet(id)) {
+      sfx('denied');
+      const it = ITEMS[heldId];
+      toast(it && itemCount(heldId) >= it.cap ? "Bag can't hold the " + it.name + '.' : "You can't let your only Walkling go.");
+      return;
+    }
+    save(); renderCollection(); updateHUD();
+    if (!petById(id)) closeWalklingSheet();
+    else if (!$('#ovWalkling').hidden) renderWalklingSheet();
+  } finally { walklingSheet.busy = false; }
 }
 
 /* ---------- start over (Settings) ---------- */
@@ -4949,7 +5535,7 @@ function openJournalEntry(o){
   const sp = SPECIES[o.si], st = sp && sp.stages[o.stage]; if (!sp || !st) return;
   const form = formOf(o.si, o.stage), caught = !!S.dex.caught[form];
   const p = o.id ? petById(o.id) : journalPet(o.si, o.stage);
-  spriteCanvas($('#jnIcon'), o.si, o.stage, 'n', !!(p && isFaded(p)));
+  spriteCanvas($('#jnIcon'), o.si, o.stage, 'n', !!(p && isFaded(p)), p && p.accessory);
   $('#jnTitle').textContent = st.name;
   $('#jnStars').textContent = '\u2605'.repeat(o.stage + 1) + '\u2606'.repeat(2 - o.stage);
   const chip = $('#jnType'); chip.textContent = sp.type; chip.className = 'type-badge t-' + sp.type;
@@ -4969,47 +5555,344 @@ function closeJournal(){
   if ($('#ovJournal').hidden) return;
   $('#ovJournal').hidden = true; lockTabs(false); sfx('tap');
 }
+// Party board on the WALKLINGS tab (field only). Pets move as the same object, so HP, moves, bond,
+// faint and any unknown fields stay put. The partner stays in the party (makePartner). Hunger in the
+// box is already paused (role multiplier 0). Releasing never clears dex.caught.
+let boardUi = null;
+function partyField(){ return !!(S && !readOnly && !battle.on); }
+function reorderParty(id, toIndex){
+  if (!partyField()) return false;
+  const from = S.party.findIndex(p => p.id === id);
+  if (from < 0 || !Number.isInteger(toIndex) || toIndex < 0 || toIndex >= S.party.length || from === toIndex) return false;
+  const p = S.party[from];
+  S.party[from] = S.party[toIndex];
+  S.party[toIndex] = p;
+  return true;
+}
+function depositPet(id, newPartnerId){
+  if (!partyField()) return false;
+  const i = S.party.findIndex(p => p.id === id);
+  if (i < 0 || S.party.length + S.box.length <= 1 || S.party.length <= 1) return false;
+  if (S.partnerId === id) {
+    if (typeof newPartnerId !== 'string' || newPartnerId === id || !S.party.some(p => p.id === newPartnerId)) return false;
+  }
+  const [p] = S.party.splice(i, 1);
+  S.box.unshift(p);
+  if (S.partnerId === id) S.partnerId = newPartnerId;
+  return true;
+}
+function withdrawPet(id, slotIndex){
+  if (!partyField()) return false;
+  const bi = S.box.findIndex(p => p.id === id), max = PPSave.PARTY_MAX;
+  if (bi < 0 || !Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= max) return false;
+  // Empty slot: append. The party stays dense, so the pet lands in the first open slot.
+  // A full party has no empty slot and can only swap with someone already there.
+  if (slotIndex >= S.party.length) {
+    if (S.party.length >= max) return false;
+    S.party.push(S.box.splice(bi, 1)[0]);
+    return true;
+  }
+  const [p] = S.box.splice(bi, 1), occ = S.party[slotIndex];
+  S.party[slotIndex] = p;
+  S.box.splice(bi, 0, occ);
+  if (occ.id === S.partnerId) S.partnerId = p.id;
+  return true;
+}
+function releasePet(id){
+  if (!partyField()) return false;
+  if (S.party.length + S.box.length <= 1) return false;
+  const pi = S.party.findIndex(p => p.id === id);
+  const bi = pi < 0 ? S.box.findIndex(p => p.id === id) : -1;
+  if (pi < 0 && bi < 0) return false;
+  const p = pi >= 0 ? S.party[pi] : S.box[bi], wasPartner = S.partnerId === id;
+  if (typeof p.held === 'string') {
+    const it = ITEMS[p.held];
+    if (!it || itemCount(p.held) >= it.cap || !grantItem(p.held, 1).added) return false;
+  }
+  if (pi >= 0) S.party.splice(pi, 1); else S.box.splice(bi, 1);
+  if (!S.party.length && S.box.length) S.party.push(S.box.shift());
+  if (S.party.length && (wasPartner || !S.party.some(q => q.id === S.partnerId))) {
+    S.partnerId = S.party[pi >= 0 ? Math.min(pi, S.party.length - 1) : 0].id;
+  }
+  return true;
+}
+window.reorderParty = reorderParty;
+window.depositPet = depositPet;
+window.withdrawPet = withdrawPet;
+window.releasePet = releasePet;
+window.makePartner = makePartner;
+window.useItem = useItem;
+window.holdItem = holdItem;
+window.resolveTurn = resolveTurn;
+window.befriendZoneWidth = befriendZoneWidth;
+window.applySoftBerry = applySoftBerry;
+window.hpOf = hpOf;
+window.maxHpOf = maxHpOf;
+
+function openBoardPet(id){
+  const open = typeof openWalklingSheet === 'function' ? openWalklingSheet : window.openWalklingSheet;
+  if (typeof open === 'function') open(id); else openStatsCard(id);
+}
+function boardButton(label, act, on, cls){
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.act = act; b.textContent = label;
+  if (cls) b.className = cls;
+  b.addEventListener('click', on);
+  return b;
+}
+function boardActs(){ const d = document.createElement('div'); d.className = 'slot-acts'; return d; }
+function boardNote(text){ const p = document.createElement('p'); p.className = 'slot-confirm'; p.textContent = text; return p; }
+function closeBoard(){ boardUi = null; if (screen === 'col') renderCollection(); sfx('tap'); }
+function openBoard(ui){ boardUi = ui; if (screen === 'col') renderCollection(); sfx('tap'); }
+function refreshBoard(msg){
+  boardUi = null; save(); updateHUD();
+  if (screen === 'col') renderCollection();
+  if (msg) toast(msg);
+  sfx('tap');
+}
+function denyBoard(msg){ toast(msg); sfx('denied'); }
+function boardMove(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (boardUi && boardUi.kind === 'move' && boardUi.id === id) return closeBoard();
+  openBoard({ kind: 'move', id });
+}
+function boardDepositAsk(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (!S.party.some(p => p.id === id)) return;
+  if (S.party.length + S.box.length <= 1 || S.party.length <= 1) return denyBoard('Keep at least one Walkling with you.');
+  openBoard({ kind: 'deposit', id });
+}
+function boardDeposit(id, newPartnerId){
+  const p = petById(id);
+  if (!depositPet(id, newPartnerId)) return denyBoard('Pick who stays with you.');
+  refreshBoard((p ? petName(p) : 'They') + ' is in the box.');
+}
+function boardWithdrawAsk(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (!S.box.some(p => p.id === id)) return;
+  if (S.party.length >= PPSave.PARTY_MAX) return openBoard({ kind: 'withdraw', id });
+  const p = petById(id);
+  if (!withdrawPet(id, S.party.length)) return denyBoard('The party is full.');
+  refreshBoard((p ? petName(p) : 'They') + ' joined the party.');
+}
+function boardWithdraw(id, slot){
+  const p = petById(id);
+  if (!withdrawPet(id, slot)) return denyBoard('That slot is full.');
+  refreshBoard((p ? petName(p) : 'They') + ' joined the party.');
+}
+function boardReleaseAsk(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (!petById(id)) return;
+  if (S.party.length + S.box.length <= 1) return denyBoard("You can't let your only Walkling go.");
+  openBoard({ kind: 'release', id });
+}
+function boardRelease(id){
+  const p = petById(id), name = p ? petName(p) : 'They';
+  if (!releasePet(id)) {
+    const it = p && ITEMS[p.held];
+    if (it && itemCount(p.held) >= it.cap) return denyBoard("Bag can't hold the " + it.name + '.');
+    return denyBoard("You can't let your only Walkling go.");
+  }
+  refreshBoard(name + ' headed off on their own.');
+}
+function boardPartner(id){
+  if (!partyField()) return denyBoard('Finish the battle first.');
+  if (!petById(id) || id === S.partnerId) return;
+  makePartner(id);
+  const p = pet();
+  refreshBoard((p ? petName(p) : 'They') + ' is your partner now!');
+}
+function boardReorder(id, to){
+  if (!reorderParty(id, to)) return denyBoard("Can't move them there.");
+  refreshBoard();
+}
+function slotCopy(p){
+  const info = document.createElement('div'); info.className = 'slot-copy';
+  const nm = document.createElement('div'); nm.className = 'slot-nm'; nm.textContent = petName(p);
+  if (p.id === S.partnerId) { const t = document.createElement('span'); t.className = 'partner-tag'; t.textContent = 'PARTNER'; nm.append(t); }
+  const sub = document.createElement('div'); sub.className = 'slot-sub';
+  sub.textContent = 'Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  const hb = hpBadge(p);
+  if (hb) { const b = document.createElement('span'); b.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); b.textContent = hb; sub.append(b); }
+  info.append(nm, sub);
+  return info;
+}
+function slotMain(p){
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'slot-main';
+  b.setAttribute('aria-label', petName(p) + ', open');
+  const cv = document.createElement('canvas'); cv.width = cv.height = 18;
+  spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), p.accessory);
+  b.append(cv, slotCopy(p));
+  b.addEventListener('click', () => openBoardPet(p.id));
+  return b;
+}
+function partyActs(p){
+  const acts = boardActs();
+  acts.append(boardButton('MOVE', 'move', () => boardMove(p.id)));
+  acts.append(boardButton('TO BOX', 'box', () => boardDepositAsk(p.id)));
+  const partner = boardButton('PARTNER', 'partner', () => boardPartner(p.id));
+  if (p.id === S.partnerId) { partner.disabled = true; partner.setAttribute('aria-pressed', 'true'); }
+  acts.append(partner, boardButton('RELEASE', 'release', () => boardReleaseAsk(p.id), 'act-danger'));
+  return acts;
+}
+function movePanel(p, index){
+  const wrap = document.createElement('div');
+  wrap.append(boardNote('Move ' + petName(p) + ' to another slot.'));
+  const acts = boardActs();
+  const up = boardButton('UP', 'up', () => boardReorder(p.id, index - 1));
+  const down = boardButton('DOWN', 'down', () => boardReorder(p.id, index + 1));
+  if (index <= 0) up.disabled = true;
+  if (index >= S.party.length - 1) down.disabled = true;
+  acts.append(up, down);
+  S.party.forEach((q, i) => {
+    if (i === index) return;
+    const b = boardButton('SLOT ' + (i + 1), 'slot', () => boardReorder(p.id, i));
+    b.dataset.index = String(i);
+    b.setAttribute('aria-label', 'Swap with slot ' + (i + 1));
+    acts.append(b);
+  });
+  acts.append(boardButton('BACK', 'back', closeBoard));
+  wrap.append(acts);
+  return wrap;
+}
+function depositPanel(p){
+  const wrap = document.createElement('div');
+  wrap.append(boardNote('Hunger pauses in the box.'));
+  const acts = boardActs();
+  if (p.id === S.partnerId) {
+    wrap.append(boardNote('Who stays with you?'));
+    S.party.forEach(q => {
+      if (q.id === p.id) return;
+      const b = boardButton(petName(q), 'stay', () => boardDeposit(p.id, q.id), 'act-go');
+      b.dataset.partner = q.id;
+      acts.append(b);
+    });
+  } else acts.append(boardButton('SEND', 'send', () => boardDeposit(p.id), 'act-go'));
+  acts.append(boardButton('BACK', 'back', closeBoard));
+  wrap.append(acts);
+  return wrap;
+}
+function releasePanel(p){
+  const wrap = document.createElement('div');
+  wrap.append(boardNote('Let ' + petName(p) + ' go? They leave your party and your box.'));
+  const acts = boardActs();
+  acts.append(boardButton('RELEASE', 'yes', () => boardRelease(p.id), 'act-danger'));
+  acts.append(boardButton('BACK', 'back', closeBoard));
+  wrap.append(acts);
+  return wrap;
+}
+function boxActs(p){
+  const acts = boardActs();
+  const to = boardButton('TO PARTY', 'party', () => boardWithdrawAsk(p.id), 'act-go');
+  if (S.party.length >= PPSave.PARTY_MAX) to.setAttribute('aria-label', 'Swap into the party');
+  acts.append(to, boardButton('PARTNER', 'partner', () => boardPartner(p.id)));
+  acts.append(boardButton('RELEASE', 'release', () => boardReleaseAsk(p.id), 'act-danger'));
+  return acts;
+}
+function withdrawWait(){
+  const wrap = document.createElement('div');
+  wrap.append(boardNote('Tap a party slot to swap.'));
+  const acts = boardActs();
+  acts.append(boardButton('BACK', 'back', closeBoard));
+  wrap.append(acts);
+  return wrap;
+}
+function partySlot(p, index){
+  const row = document.createElement('div'); row.className = 'pet-row party-slot';
+  row.dataset.slot = String(index); row.dataset.id = p.id;
+  row.append(slotMain(p));
+  const ui = boardUi && boardUi.id === p.id ? boardUi : null;
+  if (ui && ui.kind === 'deposit') row.append(depositPanel(p));
+  else if (ui && ui.kind === 'release') row.append(releasePanel(p));
+  else if (ui && ui.kind === 'move') row.append(movePanel(p, index));
+  else row.append(partyActs(p));
+  if (boardUi && boardUi.kind === 'withdraw') {
+    const extra = boardActs();
+    const into = boardButton('SWAP', 'into', () => boardWithdraw(boardUi.id, index));
+    into.setAttribute('aria-label', 'Swap into slot ' + (index + 1));
+    extra.append(into); row.append(extra);
+  }
+  return row;
+}
+function emptySlot(index){
+  const row = document.createElement('div'); row.className = 'party-slot empty'; row.dataset.slot = String(index);
+  if (boardUi && boardUi.kind === 'withdraw' && index === S.party.length && S.party.length < PPSave.PARTY_MAX) {
+    const b = boardButton('HERE', 'into', () => boardWithdraw(boardUi.id, index), 'act-go');
+    b.setAttribute('aria-label', 'Bring into empty slot ' + (index + 1));
+    row.append(b);
+  } else { row.textContent = 'EMPTY'; row.setAttribute('aria-label', 'Empty party slot ' + (index + 1)); }
+  return row;
+}
+function boxRow(p){
+  const row = document.createElement('div'); row.className = 'pet-row box-row'; row.dataset.id = p.id;
+  row.append(slotMain(p));
+  const ui = boardUi && boardUi.id === p.id ? boardUi : null;
+  if (ui && ui.kind === 'release') row.append(releasePanel(p));
+  else if (ui && ui.kind === 'withdraw') row.append(withdrawWait());
+  else row.append(boxActs(p));
+  return row;
+}
 function renderCollection(){
+  if (boardUi && !allPets().some(p => p.id === boardUi.id)) boardUi = null;
   const list = $('#ownedList'); list.innerHTML = '';
   $('#ownedCount').textContent = '(' + allPets().length + ')';
   const label = txt => { const d = document.createElement('div'); d.className = 'group-label'; d.textContent = txt; list.append(d); };
-  const card = (p, inBox) => {
-    const c = document.createElement('div'); c.className = 'card' + (inBox ? ' boxed' : '');
-    const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p));
-    const info = document.createElement('div');
-    info.innerHTML = '<div class="nm"></div><div class="sub"></div><div class="met"></div>';
-    info.children[0].textContent = petName(p);
-    info.children[1].textContent = (cleanNick(p.nick) ? nameOf(spi(p), p.stage) : SPECIES[spi(p)].type) + '  Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage+1) + '\u2606'.repeat(2-p.stage);
-    info.children[2].textContent = metLine(p);
-    const hb = hpBadge(p); if (hb) { const t = document.createElement('span'); t.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); t.textContent = hb; info.children[1].append(t); }
-    const open = document.createElement('button'); open.type = 'button'; open.className = 'card-open'; open.setAttribute('aria-label', 'Stats for ' + petName(p));
-    const ico = document.createElement('span'); ico.className = 'ico'; ico.append(cv); open.append(ico, info);
-    open.addEventListener('click', () => openStatsCard(p.id));
-    c.append(open);
-    if (p.id === S.partnerId) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; c.append(s); }
-    else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
-      b.addEventListener('click', () => { sfx('tap'); makePartner(p.id); save(); updateHUD(); renderCollection(); toast(petName(p) + ' is your partner now!'); });
-      c.append(b); }
-    c.append(petActs(p, inBox));
-    list.append(c);
-  };
-  if (S.box.length || S.party.length) label('Party ' + S.party.length + '/' + PPSave.PARTY_MAX);
-  S.party.forEach(p => card(p, false));
-  if (S.box.length) { label('WALKLING-BOX ' + S.box.length); S.box.forEach(p => card(p, true)); }
-  if (S.orphans && S.orphans.length) { label('LEFT BEHIND ' + S.orphans.length); S.orphans.forEach(orphanCard); }
-  const dex = $('#dexGrid'); dex.innerHTML = ''; let n = 0;
+  label('PARTY ' + S.party.length + '/' + PPSave.PARTY_MAX);
+  const board = document.createElement('div'); board.id = 'partyBoard'; board.className = 'party-board';
+  for (let i = 0; i < PPSave.PARTY_MAX; i++) board.append(S.party[i] ? partySlot(S.party[i], i) : emptySlot(i));
+  list.append(board);
+  label('BOX ' + S.box.length);
+  const box = document.createElement('div'); box.id = 'boxList'; box.className = 'box-list';
+  if (!S.box.length) { const e = document.createElement('div'); e.className = 'box-empty'; e.textContent = 'The box is empty.'; box.append(e); }
+  else S.box.forEach(p => box.append(boxRow(p)));
+  list.append(box);
+  if (S.orphans && S.orphans.length) {
+    const wrap = document.createElement('div'); wrap.id = 'orphanRow'; wrap.className = 'orphan-row';
+    const head = document.createElement('div');
+    head.textContent = 'LEFT BEHIND ' + S.orphans.length;
+    wrap.append(head);
+    S.orphans.forEach(o => {
+      const raw = o && o.raw;
+      const who = raw && typeof raw === 'object' ? (raw.nick || raw.species || raw.sp) : null;
+      const nm = document.createElement('div'); nm.className = 'slot-nm'; nm.textContent = who ? String(who) : 'A lost Walkling';
+      const sub = document.createElement('div'); sub.className = 'slot-sub';
+      sub.textContent = (o && o.reason ? String(o.reason) : 'could not be kept') + (o && o.from ? ' · ' + o.from : '');
+      const dump = document.createElement('div'); dump.className = 'raw';
+      let text = '';
+      try { text = JSON.stringify(raw); } catch (e) { text = String(raw); }
+      dump.textContent = text.length > 180 ? text.slice(0, 177) + '...' : text;
+      wrap.append(nm, sub, dump);
+    });
+    list.append(wrap);
+  }
+  renderDexGrid();
+}
+function renderDexGrid(){
+  const dex = $('#dexGrid'); dex.innerHTML = '';
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
+  const seen = (S.dex && S.dex.seen) || {}, caught = (S.dex && S.dex.caught) || {};
+  const joined = Object.keys(caught).filter(k => caught[k]).length;
+  let met = 0;
   SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
-    const f = formOf(si, k), seen = !!S.dex.seen[f] || owned.has(f); if (seen) n++;
-    const cell = document.createElement(seen ? 'button' : 'div');
-    cell.className = 'cell' + (seen ? ' dex-cell' : '');
-    if (seen) { cell.type = 'button'; cell.setAttribute('aria-label', st.name + ', journal page'); cell.addEventListener('click', () => openJournalEntry({ si, stage: k })); }
-    const cv = document.createElement('canvas'); cv.width = cv.height = 18; spriteCanvas(cv, si, k, seen ? 'n' : 's');
-    if (!seen && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
-    const lb = document.createElement('div'); lb.textContent = seen ? st.name : '???'; if (!seen) lb.className = 'unk';
+    const f = formOf(si, k), flagCaught = !!caught[f], flagSeen = !!seen[f], owns = owned.has(f);
+    const state = (flagCaught || owns) ? 'joined' : flagSeen ? 'met' : 'unmet';
+    if (state === 'met') met++;
+    const known = state !== 'unmet';
+    const cell = document.createElement(known ? 'button' : 'div');
+    cell.className = 'cell' + (known ? ' dex-cell' : '');
+    cell.dataset.form = f; cell.dataset.state = state;
+    if (known) {
+      cell.type = 'button';
+      cell.setAttribute('aria-label', st.name + ', journal page');
+      cell.addEventListener('click', () => openJournalEntry({ si, stage: k }));
+    }
+    const who = known ? journalPet(si, k) : null;
+    const cv = document.createElement('canvas'); cv.width = cv.height = 18;
+    spriteCanvas(cv, si, k, known ? 'n' : 's', !!(who && isFaded(who)), who && who.accessory);
+    if (!known && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
+    const lb = document.createElement('div'); lb.textContent = known ? st.name : '???'; if (!known) lb.className = 'unk';
     cell.append(cv, lb); dex.append(cell);
   }));
-  $('#dexCount').textContent = n + '/' + (SPECIES.length * 3);
+  $('#dexCount').textContent = 'Joined ' + joined + ' · Met ' + met + ' · Out there ' + (SPECIES.length * 3);
 }
 // Partner = the pet on the Pet tab; it must be in the party. A box pet joins the party first; if the party is full,
 // the last party member that isn't the partner moves to the top of the box.
@@ -5023,72 +5906,6 @@ function makePartner(id){
     S.party.push(p);
   }
   if (S.party.some(p => p.id === id)) S.partnerId = id;
-}
-let releaseAsk = null;
-function petListOf(id){
-  if (S.party.some(p => p.id === id)) return S.party;
-  if (S.box.some(p => p.id === id)) return S.box;
-  return null;
-}
-function movePet(id, dir){
-  const list = petListOf(id); if (!list) return false;
-  const i = list.findIndex(p => p.id === id), j = i + dir;
-  if (j < 0 || j >= list.length) return false;
-  const [p] = list.splice(i, 1); list.splice(j, 0, p);
-  releaseAsk = null; sfx('tap'); save(); renderCollection();
-  return true;
-}
-function releasePet(id){
-  if (!S || scene || (battle && battle.on)) return false;
-  const list = petListOf(id); if (!list) return false;
-  const i = list.findIndex(p => p.id === id), p = list[i];
-  list.splice(i, 1);
-  if (S.partnerId === id) {
-    if (S.party[0]) S.partnerId = S.party[0].id;
-    else if (S.box.length) { const lead = S.box.shift(); S.party.unshift(lead); S.partnerId = lead.id; }
-    else S.partnerId = null;
-  }
-  releaseAsk = null; sfx('tap'); save(); updateHUD(); renderCollection();
-  toast(petName(p) + ' headed off.');
-  return true;
-}
-function petActs(p, inBox){
-  const list = inBox ? S.box : S.party, i = list.findIndex(q => q.id === p.id);
-  const row = document.createElement('div'); row.className = 'card-acts';
-  if (releaseAsk === p.id) {
-    const note = document.createElement('p'); note.className = 'rel-note';
-    note.textContent = 'Let ' + petName(p) + ' go? They will not come back.';
-    const yes = document.createElement('button'); yes.type = 'button'; yes.className = 'btn'; yes.textContent = 'LET THEM GO';
-    yes.addEventListener('click', () => releasePet(p.id));
-    const no = document.createElement('button'); no.type = 'button'; no.className = 'btn btn-play'; no.textContent = 'KEEP THEM';
-    no.addEventListener('click', () => { releaseAsk = null; sfx('tap'); renderCollection(); });
-    row.append(note, yes, no);
-    return row;
-  }
-  const up = document.createElement('button'); up.type = 'button'; up.className = 'btn'; up.textContent = 'UP';
-  up.disabled = i <= 0; up.addEventListener('click', () => movePet(p.id, -1));
-  const down = document.createElement('button'); down.type = 'button'; down.className = 'btn'; down.textContent = 'DOWN';
-  down.disabled = i < 0 || i >= list.length - 1; down.addEventListener('click', () => movePet(p.id, 1));
-  const rel = document.createElement('button'); rel.type = 'button'; rel.className = 'btn'; rel.textContent = 'RELEASE';
-  rel.addEventListener('click', () => { if (scene || (battle && battle.on)) { sfx('denied'); return; } releaseAsk = p.id; sfx('tap'); renderCollection(); });
-  row.append(up, down, rel);
-  return row;
-}
-function orphanCard(o){
-  const c = document.createElement('div'); c.className = 'card orphan';
-  const info = document.createElement('div');
-  const nm = document.createElement('div'); nm.className = 'nm';
-  const raw = o && o.raw;
-  const who = raw && typeof raw === 'object' ? (raw.nick || raw.species || raw.sp) : null;
-  nm.textContent = who ? String(who) : 'A lost Walkling';
-  const sub = document.createElement('div'); sub.className = 'sub';
-  sub.textContent = (o && o.reason ? String(o.reason) : 'could not be kept') + (o && o.from ? ' · ' + o.from : '');
-  const dump = document.createElement('div'); dump.className = 'raw';
-  let text = '';
-  try { text = JSON.stringify(raw); } catch (e) { text = String(raw); }
-  dump.textContent = text.length > 180 ? text.slice(0, 177) + '...' : text;
-  info.append(nm, sub, dump); c.append(info);
-  $('#ownedList').append(c);
 }
 
 /* ---------- friends (stub) ---------- */
@@ -5758,7 +6575,25 @@ function bindInput(){
     if (e.key === 'Enter') { e.preventDefault(); applyNick(); }
     else if (e.key === 'Escape') { e.preventDefault(); hideNickEdit(); }
   });
+  const gearBtn = $('#scGear');
+  if (gearBtn) gearBtn.addEventListener('click', () => {
+    const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
+    hideNickEdit();
+    statsCard.gear = !statsCard.gear; sfx('tap');
+    gearBtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
+    const box = $('#scGearBox'); if (!box) return;
+    box.hidden = !statsCard.gear; box.textContent = '';
+    if (statsCard.gear) fillWalklingExtras(box, p);
+  });
   $('#ovStats').addEventListener('click', e => { if (e.target === e.currentTarget) closeStatsCard(); });   // tap outside the card
+  $('#wlClose').addEventListener('click', () => { sfx('tap'); closeWalklingSheet(); });
+  $('#wlNickSet').addEventListener('click', () => commitWalklingNick());
+  $('#wlNick').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); commitWalklingNick(); }
+    if (e.key === 'Escape') { e.preventDefault(); closeWalklingSheet(); }
+  });
+  $('#wlNick').addEventListener('change', () => { if (!$('#ovWalkling').hidden) commitWalklingNick(); });
+  $('#ovWalkling').addEventListener('click', e => { if (e.target === e.currentTarget) closeWalklingSheet(); });
   $('#jnClose').addEventListener('click', () => closeJournal());
   $('#ovJournal').addEventListener('click', e => { if (e.target === e.currentTarget) closeJournal(); });
   $('#encNick').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (battle.panel === 'end') closeBattle(); } });
@@ -5846,6 +6681,7 @@ function bindInput(){
       if (e.key === 'h' || e.key === 'H') { healTeam(); toast('Team healed (debug)'); return; }
     }
     if (!$('#ovSheet').hidden) { if (e.key === 'Escape' && !$('#shCancel').hidden) closeSheet(null); return; }
+    if (e.key === 'Escape' && !$('#ovWalkling').hidden) { closeWalklingSheet(); return; }
     if (!$('#ovBattle').hidden) { battleKey(e); return; }
     if ('123'.includes(e.key)) showTab(['pet','walk','col'][+e.key - 1]);
     if (e.key === '4') { openQuest(); return; }
@@ -5900,6 +6736,11 @@ function frame(t){
     syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)
     if (evo.active) drawEvolution(t);
     if (!$('#ovStats').hidden && (statsCard.t += dt) >= 1) { statsCard.t = 0; renderStatsCard(); }   // HP regen etc. stay live
+    if (!$('#ovWalkling').hidden && (walklingSheet.t += dt) >= 1) {
+      walklingSheet.t = 0;
+      const q = allPets().find(x => x.id === walklingSheet.id);
+      if (!q) closeWalklingSheet(); else paintWalklingStats(q);
+    }
   }
   requestAnimationFrame(frame);
 }
@@ -6068,6 +6909,7 @@ function boot(){
   { const hcb = highCharityDevCheck(); if (hcb.length) console.error('Walklings: high charity check failed:', hcb.join('; ')); }
   { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
   { const mb = mapDevCheck(); if (mb.length) console.error('Walklings: map check failed:', mb.join('; ')); }
+  window.ITEMS = ITEMS;   // save.js validates pet.held against the catalog; ITEMS lives in this file
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
@@ -6109,7 +6951,7 @@ function boot(){
     get poofs(){ return wild.poofs.length; },
     spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
-    get muted(){ return PPSound.muted; }, get musicVol(){ return PPSound.musicVol; }, careGain, showTab, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
+    get muted(){ return PPSound.muted; }, get musicVol(){ return PPSound.musicVol; }, careGain, showTab, reorderParty, depositPet, withdrawPet, releasePet, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
     moves: () => JSON.parse(JSON.stringify(MOVES)), learnset: f => learnset(f).map(e => ({ ...e })),
     defaultMoves: (f, L) => defaultMoves(f, L).slice(), befriendWidth,
     battleLine: (k, v) => battleLine(k, v),
@@ -6233,6 +7075,35 @@ function boot(){
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
   api.musicCheck = () => PPSound.musicCheck();
+  api.mapTrack = id => trackFor(id && WORLD[id]);
+  api.spriteLook = id => {
+    const o = objById(id);
+    const look = o ? npcLook(o) : (NPC_LOOKS[id] ? npcLook({ look: id, name: id }) : null);
+    if (!look) return null;
+    return { skin: look.skin || null, hair: look.hair || null, hairCol: look.hairCol || null, outfit: look.outfit || null, outfitCol: look.outfitCol || null, accent: look.accent || null, accessory: look.accessory || 'none' };
+  };
+  api.sealArt = id => (SEAL_ART[id] || []).slice();
+  api.sealName = id => sealName(id);
+  api.lookGrid = id => {
+    const o = objById(id);
+    const look = o ? npcLook(o) : (NPC_LOOKS[id] ? npcLook({ look: id, name: id }) : null);
+    return look ? keeperGrid(look, 'down', 0) : null;
+  };
+  api.paintPreview = () => {
+    const scale = 8;
+    const grids = [SEAL_ART.seal_glim_1, SEAL_ART.seal_glim_2, api.lookGrid('imogen'), api.lookGrid('hollis'), api.lookGrid('juniper'), api.lookGrid('rook')];
+    if (grids.some(g => !g)) return false;
+    const sheet = document.getElementById('artSheet') || document.createElement('canvas');
+    sheet.id = 'artSheet';
+    sheet.width = grids.length * 18 * scale;
+    sheet.height = 18 * scale;
+    sheet.style.cssText = 'position:fixed;left:0;top:0;z-index:50;background:#1a1c2c';
+    if (!sheet.parentNode) document.body.appendChild(sheet);
+    const g = sheet.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    grids.forEach((grid, i) => g.drawImage(keeperCanvas(grid), i * 18 * scale, 0, 18 * scale, 18 * scale));
+    return true;
+  };
   api.musicIds = () => PPSound.musicIds();
   api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
   api.wildTracks = () => WILD_TRACKS.slice();
@@ -6270,6 +7141,10 @@ function boot(){
     }
   }
   window.PixelPets = Object.freeze(api);
+  window.holdItem = holdItem;
+  window.unholdItem = unholdItem;
+  window.setAccessory = setAccessory;
+  window.fillWalklingExtras = fillWalklingExtras;
 }
 boot();
 })();

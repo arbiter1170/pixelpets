@@ -94,7 +94,7 @@ Levels, types and stats (`stats.js`):
   "RESTING 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
   (and not worn out) a Walkling shows **TIRED**. The badge (RESTING, else TIRED, else GLOWING) shows on the stats card,
   the Pet scene and the Pets tab.
-- Stats card: tap STATS (top-left of the Pet tab scene) or any Walkling on the Pets tab. It shows the type badge, Level,
+- Stats card: tap STATS (top-left of the Pet tab scene) or the follower. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats. It shows the type badge, Level,
   GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
   scaled to the highest value of that stat among all 42 forms at the same level, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
@@ -297,8 +297,9 @@ Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lull
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
-the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`. STATS → RENAME changes
-a name you already gave. Leave that field empty, or type the species name, and the species name shows again.
+the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`. STATS → RENAME, and the
+NAME field on the Walkling sheet, change a name you already gave. Leave that field empty, or type the species name,
+and the species name shows again. Save `v` stays 2.
 Save `v` stays 2.
 
 Location and privacy: on the first visit to Walk a card asks "Use your location so local creatures
@@ -335,10 +336,12 @@ files) in `sfx.js`: UI tap, feed, play, rest, cooldown/refusal buzz, a quiet foo
 build-up + fanfare, level-up and daily-cap chimes, and battle effects (hit, strong/weak hit, stat up/down,
 heal, tired, win, move learned). Default volume is low. The AudioContext is only
 created on the first tap/key press (iOS and Chrome autoplay rules) and resumed after interruptions;
-muted means no audio nodes at all, and browsers without WebAudio just stay silent. Three original loops
-(town, route, battle) play from the same voices after the first tap. Music on/off is `settings.music`
-(default on) and is separate from the sound-effects mute. The Vol slider beside Music writes `settings.musicVol`
-(0 to 1, default 0.5). A volume of 0 is silent and leaves Music on. The iPhone silent switch mutes both.
+muted means no audio nodes at all, and browsers without WebAudio just stay silent. Loops play from the same
+voices after the first tap: town, route, and battle, plus High Charity, the chapel, and the arcade, the wild
+fight cycle, and the two Glimmerwell battle themes. A Glimmerwell pledge swaps the town loop for `town_glimmer`.
+The quarry and a grove backdrop have their own loops. An explicit `map.music` still wins. Music on/off is
+`settings.music` (default on) and is separate from the sound-effects mute. The Vol slider beside Music writes
+`settings.musicVol` (0 to 1, default 0.5). A volume of 0 is silent and leaves Music on. The iPhone silent switch mutes both.
 
 Font: Jersey 15 by Sarah Cadigan-Fried (SIL Open Font License 1.1), self-hosted as a ~15 KB Latin
 subset in `fonts/` with its license (`fonts/OFL.txt`, credits in `fonts/README.md`). `font-display: swap`
@@ -346,12 +349,12 @@ with Courier New / monospace as fallback; ★ ♥ and the arrow symbols come fro
 
 Saves (format v2, `save.js`):
 - `pixelpets.save.v2` is the save. Walklings live in a **party** (up to 6, the partner is always in it) and a
-  **box** (no limit). A 7th befriended Walkling goes to the box ("<name> was sent to your box."). On the WALKLINGS tab
-  the party is listed first, then WALKLING-BOX. UP and DOWN reorder inside that list. PARTNER moves a boxed Walkling
-  into the party; if the party is full, the last party member that isn't the partner moves to the top of the box.
-  RELEASE asks, then LET THEM GO removes that Walkling. Releasing the partner promotes the next party member, or the
-  first boxed Walkling when the party is empty. LEFT BEHIND shows each orphan's reason and the raw data that could
-  not be migrated. Every Walkling, party or box, gets hungry the same way.
+  **box** (no limit). A 7th befriended Walkling goes to the box ("<name> was sent to your box."). The WALKLINGS tab
+  is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 42; unmet forms stay silhouettes).
+  MOVE reorders the party. TO BOX / TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling.
+  LEFT BEHIND shows each orphan's reason and the raw data. Hunger pauses in the box.
+  A battle SWAP lists the party only. The sheet on a Walkling can use a field snack, rename them, reorder moves,
+  hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an accessory, and set a call (Charge, Brace, Dart, or Greet).
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
   `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
   The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 42 form ids) is append-only: new lines are added at the end
