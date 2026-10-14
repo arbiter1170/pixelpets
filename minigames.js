@@ -1,16 +1,19 @@
-/* High Charity Event Hall. Five short games. No growth XP, no battle XP.
-   Bond: +1 on a clear, at most 3 per local day, partner only (addBond already enforces that).
-   Each booth can be finished 3 times a day. Quitting does not spend a try.
-   The play step in game.js owns the overlay; finish() pays the reward. */
+/* High Charity Event Hall. Five solo games, plus three pass-the-phone games (hop, relay, seek).
+   No growth XP, no battle XP. Bond: +1 on a clear, at most 3 per local day, partner only.
+   Each game can be finished 3 times a day. Quitting does not spend a try.
+   The two-keeper clears stay off the five-game hall count. finish() pays the reward. */
 (function (root) {
   'use strict';
-  const IDS = ['lantern', 'shells', 'chirp', 'dash', 'pairs'];
+  const IDS = ['lantern', 'shells', 'chirp', 'dash', 'pairs', 'hop', 'relay', 'seek'];
   const RULE = {
     lantern: 'Lanterns fall in three lanes. Catch 12. Arrows move, or tap a lane.',
     shells: 'Three shells. Watch the treat, then tap where it hid. Get 2 of 3.',
     chirp: 'Listen to the chirp, then tap the same beats. Get 2 of 3.',
     dash: 'Steer for a little bit. Collect 8 acorns. Puddles only make you slip.',
     pairs: 'Flip the cards. Match Ember, Tide, and Bloom in 8 flips.',
+    hop: 'A rope swings. Both jump. Left is you, right is your friend. A quicker Walkling has a wider beat.',
+    relay: 'Race to the flag. Tap your side to hop the logs. A quicker Walkling runs faster.',
+    seek: 'Take turns hiding a treat. A happy Walkling sniffs a hint. A quick one shuffles more.',
   };
   const CLEAR = {
     lantern: 'The lanterns bob. {pet} glows.',
@@ -18,6 +21,9 @@
     chirp: '{pet} sings the last beat with you.',
     dash: '{pet} shakes off a puddle and keeps the shiny ones.',
     pairs: 'Three pairs, all kindled. {pet} looks proud.',
+    hop: 'You jumped together. {pet} is still bouncing.',
+    relay: 'The flags are down. What a race.',
+    seek: 'Both Walklings had a turn. The bushes settle.',
   };
   const FAIL = {
     lantern: 'The lanterns drift off. {pet} yawns, still glad you tried.',
@@ -25,12 +31,18 @@
     chirp: 'Almost. {pet} hums the last note for you.',
     dash: '{pet} sits in the sun to dry. The puddles win today.',
     pairs: 'The cards yawn and close. {pet} pats your hand.',
+    hop: 'The rope clips a foot. {pet} giggles and sits.',
+    relay: 'The race fades. {pet} tugs your sleeve.',
+    seek: 'The bushes close up. {pet} shrugs.',
   };
   const FIRST = {
     lantern: ['hearty_snack', 1],
     shells: ['befriend_treat', 2],
     dash: ['acorns', 80],
     pairs: ['joy_crumb', 2],
+    hop: ['joy_crumb', 2],
+    relay: ['acorns', 40],
+    seek: ['befriend_treat', 1],
   };
   const REPLAY = {
     lantern: ['heal_snack', 1],
@@ -38,6 +50,9 @@
     chirp: ['energy_sip', 1],
     dash: ['acorns', 25],
     pairs: ['joy_crumb', 1],
+    hop: ['joy_crumb', 1],
+    relay: ['acorns', 15],
+    seek: ['energy_sip', 1],
   };
   const CLEAR_FLAG = {
     lantern: 'story.hc_clear_lantern',
@@ -45,6 +60,13 @@
     chirp: 'story.hc_clear_chirp',
     dash: 'story.hc_clear_dash',
     pairs: 'story.hc_clear_pairs',
+    hop: 'story.hc_clear_hop',
+    relay: 'story.hc_clear_relay',
+    seek: 'story.hc_clear_seek',
+  };
+  const TITLES = {
+    lantern: 'Lantern Catch', shells: 'Treat Shells', chirp: 'Chirp Echo', dash: 'Plaza Dash', pairs: 'Kindled Pairs',
+    hop: 'Rope Hop', relay: 'Flag Relay', seek: 'Sniff Seek',
   };
 
   const reduce = () => !!(root.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -75,6 +97,32 @@
       return 'chirp_' + t;
     } catch (e) { return 'chirp_bloom'; }
   }
+  const TYPE_COL = { EMBER: 'r', TIDE: 'b', BLOOM: 'g', STONE: 'm', VOLT: 'y', FROST: 's', GUST: 'c', SHADE: 'p' };
+  function monName(p){ return api.monName ? api.monName(p) : 'Walkling'; }
+  function spdOf(p){ const n = api.spd ? api.spd(p) : 48; return Number.isFinite(n) ? n : 48; }
+  function colOf(p){
+    try {
+      const sp = SPECIES.find(s => s.id === (p && p.species));
+      return PAL[TYPE_COL[sp && sp.type] || 'l'];
+    } catch (e) { return PAL.l; }
+  }
+  function duo(){
+    const me = api.pet ? api.pet() : null;
+    const party = api.party ? api.party() : [];
+    const other = party.find(p => me && p.id !== me.id);
+    const guestSpecies = me && me.species === 'tide' ? 'bloom' : 'tide';
+    const guest = { guest: true, species: guestSpecies, stage: 0, nick: 'Nib', happy: 70, level: 5 };
+    return { a: me, b: other || guest };
+  }
+  function showPads(on, pair){
+    const el = document.getElementById('playPads');
+    if (!el) return;
+    el.hidden = !on;
+    if (!on || !pair) return;
+    const b1 = document.getElementById('playP1'), b2 = document.getElementById('playP2');
+    if (b1) b1.textContent = monName(pair.a);
+    if (b2) b2.textContent = monName(pair.b);
+  }
 
   function finish(id, res) {
     res = res || {};
@@ -91,12 +139,13 @@
       api.save();
       return lines;
     }
-    lines.push([who, CLEAR[id]]);
+    lines.push([who, res.note || CLEAR[id]]);
     const flag = CLEAR_FLAG[id];
     const first = !S.flags[flag];
+    const solo = id === 'lantern' || id === 'shells' || id === 'chirp' || id === 'dash' || id === 'pairs';
     if (first) {
       S.flags[flag] = true;
-      S.flags['story.hc_games'] = Math.min(5, (Number(S.flags['story.hc_games']) || 0) + 1);
+      if (solo) S.flags['story.hc_games'] = Math.min(5, (Number(S.flags['story.hc_games']) || 0) + 1);
     }
     if (id === 'chirp' && !S.flags['story.hc_tonic']) {
       const r = api.grantItem('wake_tonic', 1);
@@ -139,7 +188,7 @@
   function devCheck() {
     const bad = [];
     IDS.forEach(id => {
-      if (!RULE[id] || !CLEAR[id] || !FAIL[id] || !CLEAR_FLAG[id]) bad.push('missing copy ' + id);
+      if (!RULE[id] || RULE[id].length > 110 || !CLEAR[id] || !FAIL[id] || !CLEAR_FLAG[id]) bad.push('missing copy ' + id);
     });
     if (FIRST.chirp) bad.push('chirp first prize is the Wake Tonic, not FIRST');
     return bad;
@@ -150,6 +199,7 @@
     if (ov) ov.hidden = true;
     const c = canvas();
     if (c) { c.onpointerdown = c.onpointermove = c.onpointerup = null; }
+    showPads(false);
     active = null;
   }
 
@@ -164,7 +214,7 @@
       const ov = document.getElementById('ovPlay');
       const title = document.getElementById('playTitle');
       const rule = document.getElementById('playRule');
-      if (title) title.textContent = ({ lantern: 'Lantern Catch', shells: 'Treat Shells', chirp: 'Chirp Echo', dash: 'Plaza Dash', pairs: 'Kindled Pairs' })[id];
+      if (title) title.textContent = TITLES[id] || 'Play';
       if (rule) rule.textContent = RULE[id];
       ov.hidden = false;
       try { if (api.fitCanvas) api.fitCanvas(canvas(), Math.min(window.innerWidth, 480) - 48, 320); } catch (e) {}
@@ -182,6 +232,7 @@
       };
       live.done = finishPlay;
       bootGame(live);
+      showPads(id === 'hop' || id === 'relay', live.pair);
       announce(RULE[id]);
       let last = performance.now();
       const frame = t => {
@@ -208,6 +259,9 @@
     else if (live.id === 'shells') bootShells(live);
     else if (live.id === 'chirp') bootChirp(live);
     else if (live.id === 'dash') bootDash(live);
+    else if (live.id === 'hop') bootHop(live);
+    else if (live.id === 'relay') bootRelay(live);
+    else if (live.id === 'seek') bootSeek(live);
     else bootPairs(live);
   }
 
@@ -535,6 +589,181 @@
     g.fillText(String(live.flip), 4, 0);
   }
 
+  function sideKeys(live){
+    live.press = live.press || (() => {});
+    live.onKey = (k, repeat) => {
+      if (repeat) return;
+      if (k === ' ' || k === 'f' || k === 'F' || k === 'ArrowLeft') live.press(0);
+      if (k === 'Enter' || k === 'j' || k === 'J' || k === 'ArrowRight') live.press(1);
+    };
+  }
+  function bootHop(live){
+    const pair = duo();
+    live.pair = pair; live.miss = 0; live.beat = 0; live.t = 0; live.air = [-9999, -9999];
+    const windowFor = p => 180 + Math.min(80, Math.floor(spdOf(p) / 2));
+    live.step = () => {
+      const beat = Math.floor(live.t / 1000);
+      if (beat > live.beat && live.beat < 12) {
+        const center = live.beat * 1000 + 500;
+        [0, 1].forEach(i => {
+          const p = i === 0 ? pair.a : pair.b;
+          if (Math.abs(live.air[i] - center) > windowFor(p)) live.miss++;
+        });
+        live.beat = beat;
+        if (live.beat >= 12 || live.miss >= 6) {
+          live.done({ quit: false, clear: live.miss < 6 && live.beat >= 12, score: Math.max(0, 12 - live.miss) });
+          return false;
+        }
+      }
+      drawHop(live);
+      return true;
+    };
+    const prev = live.step;
+    live.step = dt => { live.t += dt; return prev(); };
+    live.press = i => { live.air[i] = live.t; snd('tap'); };
+    sideKeys(live);
+  }
+  function drawHop(live){
+    const g = g2(); if (!g) return;
+    px(g, PAL.k, 0, 0, 176, 176);
+    const phase = (live.t % 1000) / 1000;
+    const rope = Math.abs(phase - 0.5) < 0.12 ? 150 : 40 + Math.sin(phase * Math.PI) * 90;
+    px(g, PAL.y, 16, rope, 144, 3);
+    [0, 1].forEach(i => {
+      const up = live.t - live.air[i] < 260;
+      const x = 36 + i * 80, y = up ? 112 : 132;
+      px(g, colOf(i === 0 ? live.pair.a : live.pair.b), x, y, 18, 16);
+      px(g, PAL.w, x + 4, y + 4, 4, 4);
+    });
+    g.fillStyle = PAL.w; g.font = '14px sans-serif'; g.textBaseline = 'top';
+    g.fillText(String(live.miss), 8, 4);
+  }
+  function bootRelay(live){
+    const pair = duo();
+    live.pair = pair; live.t = 0; live.prog = [0, 0]; live.stun = [0, 0]; live.hop = [0, 0];
+    live.blocks = [[22, 48, 74], [30, 56, 82]];
+    live.step = dt => {
+      live.t += dt;
+      [0, 1].forEach(i => {
+        const p = i === 0 ? pair.a : pair.b;
+        if (live.stun[i] > 0) { live.stun[i] -= dt; return; }
+        if (live.hop[i] > 0) live.hop[i] -= dt;
+        const before = live.prog[i];
+        live.prog[i] = Math.min(100, before + (28 + spdOf(p) * 0.12) * dt / 1000);
+        if (live.hop[i] <= 0 && live.blocks[i].some(b => before < b && live.prog[i] >= b)) {
+          live.stun[i] = 450; live.prog[i] = Math.max(0, live.prog[i] - 6); snd('miss');
+        }
+      });
+      drawRelay(live);
+      if (live.prog[0] >= 100 || live.prog[1] >= 100 || live.t >= 20000) {
+        const tie = live.prog[0] === live.prog[1];
+        const winner = tie ? -1 : (live.prog[0] > live.prog[1] ? 0 : 1);
+        const names = [monName(pair.a), monName(pair.b)];
+        const note = tie ? 'It is a tie. Both Walklings grin.' : names[winner] + ' reaches the flag first.';
+        live.done({ quit: false, clear: true, score: Math.round(Math.max(live.prog[0], live.prog[1])), note });
+        return false;
+      }
+      return true;
+    };
+    live.press = i => { if (live.stun[i] <= 0) { live.hop[i] = 280; snd('tap'); } };
+    sideKeys(live);
+  }
+  function drawRelay(live){
+    const g = g2(); if (!g) return;
+    px(g, PAL.h, 0, 0, 176, 176);
+    [0, 1].forEach(i => {
+      const y = 28 + i * 78;
+      px(g, PAL.n, 8, y, 160, 28);
+      live.blocks[i].forEach(b => px(g, PAL.o, 8 + b * 1.5, y + 8, 10, 14));
+      const x = 8 + live.prog[i] * 1.4;
+      const lift = live.hop[i] > 0 ? -8 : 0;
+      px(g, colOf(i === 0 ? live.pair.a : live.pair.b), x, y + 6 + lift, 14, 14);
+    });
+  }
+  function bootSeek(live){
+    const pair = duo();
+    live.pair = pair; live.round = 0; live.pts = [0, 0]; live.phase = 'hide'; live.pos = 1; live.flash = null; live.picked = -1; live.hintT = 0;
+    const petAt = i => i === 0 ? pair.a : pair.b;
+    const hider = () => live.round === 0 ? 0 : 1;
+    function startHide(){
+      live.phase = 'hide'; live.flash = null; live.picked = -1;
+      announce(monName(petAt(hider())) + ' hides the treat. Tap a bush.');
+    }
+    function beginShuffle(choice){
+      live.pos = choice;
+      const n = 2 + Math.min(3, Math.floor(spdOf(petAt(hider())) / 30));
+      live.queue = [];
+      for (let i = 0; i < n; i++) {
+        let a = (Math.random() * 3) | 0, b = (Math.random() * 3) | 0;
+        if (a === b) b = (b + 1) % 3;
+        live.queue.push([a, b]);
+      }
+      live.cursor = 0; live.phase = 'shuffle'; live.wait = reduce() ? 0 : 280;
+    }
+    function startSeek(){
+      live.phase = 'seek'; live.flash = null;
+      const p = petAt(1 - hider());
+      live.hintT = (p.happy || 0) >= 50 ? 500 : 0;
+      announce(monName(p) + ' sniffs. Tap a bush.');
+    }
+    function pick(i){
+      if (live.phase === 'hide') { beginShuffle(i); snd('tap'); }
+      else if (live.phase === 'seek') {
+        const seeker = 1 - hider();
+        if (i === live.pos) live.pts[seeker]++;
+        snd(i === live.pos ? 'tap' : 'miss');
+        live.picked = i; live.phase = 'reveal'; live.wait = 700;
+      }
+    }
+    live.step = dt => {
+      if (live.phase === 'shuffle') {
+        live.wait -= dt;
+        let guard = 0;
+        while (live.wait <= 0 && live.phase === 'shuffle' && guard++ < 8) {
+          if (live.cursor < live.queue.length) {
+            const [a, b] = live.queue[live.cursor++];
+            if (live.pos === a) live.pos = b; else if (live.pos === b) live.pos = a;
+            live.flash = [a, b];
+            live.wait = reduce() ? 0 : 280;
+          } else startSeek();
+        }
+      } else if (live.phase === 'seek' && live.hintT > 0) live.hintT -= dt;
+      else if (live.phase === 'reveal') {
+        live.wait -= dt;
+        if (live.wait <= 0) {
+          live.round++;
+          if (live.round >= 2) {
+            const names = [monName(pair.a), monName(pair.b)];
+            live.done({ quit: false, clear: true, score: Math.max(live.pts[0], live.pts[1]), note: names[0] + ' ' + live.pts[0] + ', ' + names[1] + ' ' + live.pts[1] + '.' });
+            return false;
+          }
+          startHide();
+        }
+      }
+      drawSeek(live);
+      return true;
+    };
+    live.pointer = (p, kind) => { if (kind === 'down') pick(p.x < 58 ? 0 : p.x < 117 ? 1 : 2); };
+    live.onKey = (k, repeat) => { if (!repeat && k >= '1' && k <= '3') pick(+k - 1); };
+    startHide();
+  }
+  function drawSeek(live){
+    const g = g2(); if (!g) return;
+    px(g, PAL.k, 0, 0, 176, 176);
+    for (let i = 0; i < 3; i++) {
+      const x = 18 + i * 52;
+      const hot = live.flash && live.flash.includes(i);
+      const hint = live.phase === 'seek' && live.hintT > 0 && i === live.pos;
+      px(g, hot || hint ? PAL.y : PAL.g, x, 70, 40, 28);
+      px(g, PAL.t, x + 8, 78, 24, 12);
+      if ((live.phase === 'reveal' || live.phase === 'hide') && live.pos === i && live.phase === 'reveal') {
+        px(g, PAL.o, x + 14, 96, 12, 8);
+      }
+    }
+    g.fillStyle = PAL.w; g.font = '14px sans-serif'; g.textBaseline = 'top';
+    g.fillText(live.pts[0] + ' - ' + live.pts[1], 8, 8);
+  }
+  function press(i){ if (active && active.press) active.press(i); }
   function keyDown(e) {
     if (!active) return false;
     if (e.key === 'Escape') { stop(); return true; }
@@ -547,5 +776,5 @@
     return true;
   }
 
-  root.PPMinigames = { IDS, RULE, CLEAR, FAIL, finish, play, stop, keyDown, keyUp, devCheck, bind };
+  root.PPMinigames = { IDS, RULE, CLEAR, FAIL, finish, play, stop, press, keyDown, keyUp, devCheck, bind };
 })(typeof window !== 'undefined' ? window : globalThis);

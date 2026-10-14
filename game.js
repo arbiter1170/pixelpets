@@ -183,7 +183,7 @@ function renderFollowerBtn(){
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
 function renderBuild(){ const b = buildId(); $('#setBuild').textContent = b ? 'Build ' + b : ''; $('#setBuild').hidden = !b; }
 function openSettings(){
-  if (overlayOpen() && $('#ovSettings').hidden) return;
+  if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
   clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderBuild(); renderDebugGate();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
@@ -229,7 +229,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -292,6 +292,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitA
 
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
 function updateHUD(){
+  document.body.classList.toggle('no-pets', !allPets().length);
   syncBagBtns();
   syncJournalBtn();
   syncQuestBtn();
@@ -481,10 +482,10 @@ function dayRec(obj, k, init){
   return obj[k];
 }
 const careDay = () => {
-  const c = dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false, minigameBond: 0, mg: { lantern: 0, shells: 0, chirp: 0, dash: 0, pairs: 0 } });
+  const c = dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false, minigameBond: 0, mg: { lantern: 0, shells: 0, chirp: 0, dash: 0, pairs: 0, hop: 0, relay: 0, seek: 0 } });
   if (!Number.isInteger(c.minigameBond) || c.minigameBond < 0) c.minigameBond = 0;
   if (c.minigameBond > 3) c.minigameBond = 3;
-  const ids = ['lantern', 'shells', 'chirp', 'dash', 'pairs'];
+  const ids = ['lantern', 'shells', 'chirp', 'dash', 'pairs', 'hop', 'relay', 'seek'];
   if (!c.mg || typeof c.mg !== 'object' || Array.isArray(c.mg)) c.mg = {};
   for (const id of ids) { const n = c.mg[id]; c.mg[id] = Number.isInteger(n) && n > 0 ? Math.min(3, n) : 0; }
   for (const k of Object.keys(c.mg)) if (!ids.includes(k)) delete c.mg[k];
@@ -743,6 +744,14 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.highcharity.maps)));
     Object.assign(W, JSON.parse(JSON.stringify(MD.highcharity.rooms)));
   }
+  if (MD.heights) {                                                    // Fernbrook Heights: new maps plus the north gap on Fernbrook
+    Object.assign(W, JSON.parse(JSON.stringify(MD.heights.maps)));
+    applyMapPatch(W, MD.heights.slicePatch);
+  }
+  if (MD.civic) {                                                      // Keeper House, officers, the Route 1 phone
+    Object.assign(W, JSON.parse(JSON.stringify(MD.civic.maps)));
+    applyMapPatch(W, MD.civic.slicePatch);
+  }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -752,7 +761,9 @@ if (MD.cobblecrest) Object.assign(SCENES, MD.cobblecrest.route2Patch.scenes || {
 if (MD.glimmer_path) Object.assign(SCENES, MD.glimmer_path.scenes || {});
 if (MD.mahopac) Object.assign(SCENES, MD.mahopac.scenes || {});
 if (MD.highcharity) Object.assign(SCENES, MD.highcharity.scenes || {});
-for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.highcharity]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
+if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
@@ -764,6 +775,14 @@ const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: '
 for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
+// The first trial (Keepers Hall, or the glimmer Tour's hall panel) waits on Fernbrook Heights, unless this save already earned Seal 1.
+function trialReady(){
+  if (!S) return false;
+  if (S.flags['story.heights_done'] || S.flags['story.seal1']) return true;
+  if (S.seals && (S.seals.seal_fernbrook || S.seals.seal_glim_1)) return true;
+  // A save that never picked a side already missed the gate (it closes once the orchard is open).
+  return !S.flags['story.side_pick_done'];
+}
 const sceneSteps = id => {
   if (id === 'lantern_rest') return lanternBedSteps();   // runtime: the whole party, and a few Acorns when someone is hurt
   const s = side(); return (s !== SIDE_DEFAULT && SCENES[id + '@' + s]) || SCENES[id];
@@ -882,6 +901,31 @@ function glimmerDevCheck(){
   }
   return bad;
 }
+// Fernbrook Heights: line length on our scenes, and every group trainer fields two Walklings.
+function heightsDevCheck(){
+  const H = MD.heights, bad = []; if (!H) return bad;
+  const dl = MD.interiors.dialog, MAX = dl.lineMax || 110;
+  const walk = (where, n) => {
+    if (!Array.isArray(n)) return;
+    if (n[0] === 'say' && typeof n[2] === 'string') {
+      if (/  /.test(n[2])) bad.push(where + ': double space');
+      if (Array.from(n[2]).length > MAX) bad.push(where + ': over ' + MAX);
+    }
+    if (n[0] === 'battle' && !TRAINERS[n[1]]) bad.push(where + ': unknown trainer ' + n[1]);
+    n.forEach(x => walk(where, x));
+  };
+  for (const [id, steps] of Object.entries(H.scenes || {})) walk('scene ' + id, steps);
+  for (const [id, t] of Object.entries(H.trainers || {})) {
+    if (t.group && (!t.team || t.team.length < 2)) bad.push('trainer ' + id + ': a group battle needs two Walklings');
+    if (t.ally && !TRAINERS[t.ally]) bad.push('trainer ' + id + ': missing ally ' + t.ally);
+    for (const [k, v] of Object.entries(t.lines || {})) if (typeof v === 'string' && Array.from(v).length > MAX) bad.push('trainer ' + id + '.' + k + ': over ' + MAX);
+  }
+  const base = new Set(), glim = new Set();
+  const grab = (steps, into) => { const w = n => { if (!Array.isArray(n)) return; if (n[0] === 'setFlag' && typeof n[1] === 'string' && n[1].startsWith('story.')) into.add(n[1]); n.forEach(w); }; w(steps); };
+  grab(H.scenes.know_us, base); grab(H.scenes['know_us@glimmer'], glim);
+  for (const f of base) if (!glim.has(f)) bad.push('know_us@glimmer does not set ' + f);
+  return bad;
+}
 /* ---------- Standing (GLIMMER_PATH v0.2 BS; every name and number comes from STANDING_CFG in standing.js) ---------- */
 // S.standing = { keepers, glimmer } (save.js clamps it on load). Writes go through setStanding() so the tier-up toast fires
 // once per tier reached (`standing.top.<side>` remembers the highest tier toasted). Inside a scene the `standing` step is
@@ -916,6 +960,7 @@ function switchSide(to, opts){
   if (to === from) return false;
   if (!(opts && opts.free)) setStanding(from, PPStanding.switchCost(standingOf(from, false)));
   S.flags['story.side'] = to;
+  if (to === 'glimmer') ensureCrackedPhone();
   S.flags['story.switches'] = (+S.flags['story.switches'] || 0) + 1;
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
@@ -939,6 +984,7 @@ function pledgeDeskSteps(to){
       [W.no, [['say', who, W.wait]]]]]];
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
+NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 's', outfit: 'coat', outfitCol: 'w', accent: 'c' };
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.mahopac && MD.mahopac.looks) for (const [k, v] of Object.entries(MD.mahopac.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
@@ -948,6 +994,10 @@ if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.ent
 if (MD.mahopac && MD.mahopac.speakers) for (const [k, v] of Object.entries(MD.mahopac.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.highcharity && MD.highcharity.looks) for (const [k, v] of Object.entries(MD.highcharity.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.highcharity && MD.highcharity.speakers) for (const [k, v] of Object.entries(MD.highcharity.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
+if (MD.civic && MD.civic.looks) for (const [k, v] of Object.entries(MD.civic.looks)) if (v && typeof v === 'object') NPC_LOOKS[k] = v;
+if (MD.civic && MD.civic.speakers) for (const [k, v] of Object.entries(MD.civic.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
+if (MD.heights && MD.heights.looks) for (const [k, v] of Object.entries(MD.heights.looks)) if (v && typeof v === 'object' && !k.startsWith('_')) NPC_LOOKS[k] = v;
+if (MD.heights && MD.heights.speakers) for (const [k, v] of Object.entries(MD.heights.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 // Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
 (function wireIlseLetter(){
   const steps = SCENES.ilse_chat; if (!steps) return;
@@ -988,10 +1038,17 @@ if (MD.highcharity && MD.highcharity.speakers) for (const [k, v] of Object.entri
     if (!o || !bag || typeof bag !== 'object') return;
     const intro = [], rest = [];
     for (const [k, v] of Object.entries(o.lines || {})) (introKey(k, v) ? intro : rest).push([k, v]);
+    // Civic officers already carry their own standing ladder. Keep that copy in front. Other NPCs
+    // (Juniper, Odile) take the loyalty keys first so rank lines beat the older side chatter.
+    const ownLadder = rest.some(([k]) => k.startsWith('standing.'));
     const lines = {};
     for (const [k, v] of intro) lines[k] = v;
-    for (const [k, v] of Object.entries(bag)) if (typeof v === 'string' && !(k in lines)) lines[k] = v;
-    for (const [k, v] of rest) if (!(k in lines)) lines[k] = v;
+    const rank = [];
+    for (const [k, v] of Object.entries(bag)) if (typeof v === 'string' && !(k in lines)) rank.push([k, v]);
+    const tail = ownLadder ? rank : rest;
+    const lead = ownLadder ? rest : rank;
+    for (const [k, v] of lead) if (!(k in lines)) lines[k] = v;
+    for (const [k, v] of tail) if (!(k in lines)) lines[k] = v;
     o.lines = lines;
   };
   const byId = {};
@@ -1047,13 +1104,16 @@ if (SCENES.rival1) SCENES.rival1.push(
 // STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
-const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale' };
+const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale',
+  rx_wardens: 'regenx', rx_techs: 'regenx', rx_records: 'regenx', rx_quinn: 'regenx', rx_cal_ally: 'regenx',
+  sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };   // per map visit, never saved
 function useMap(id){
   CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {} };
+  patrolClock = 0;
 }
 const isRoom = () => CUR.kind === 'interior';
 // MUSIC v0.1: interiors and towns share one loop; routes and meadows share another. Unknown backdrops leave the current loop.
@@ -1358,6 +1418,60 @@ const ITEM_ART = {
     '................',
     '................',
   ],
+  atten_vial: [
+    '................',
+    '................',
+    '......yyyy......',
+    '.....yyyyyy.....',
+    '......yyyy......',
+    '......cwwc......',
+    '.....cllllc.....',
+    '....llwwllll....',
+    '....llllllll....',
+    '....lwwwwwll....',
+    '....llllllll....',
+    '....llwwllll....',
+    '.....llllll.....',
+    '......cccc......',
+    '................',
+    '................',
+  ],
+  atten_plans: [
+    '................',
+    '................',
+    '.wwwwwwwwwwwww..',
+    '.wwwwwwwswwwww..',
+    '.wkbbbwwswwkkb..',
+    '.wwwwwwwswwwww..',
+    '.wwbkkwwswwbkw..',
+    '.wwwwwwwswwww...',
+    '.wwwkbbwswwwss..',
+    '.wwwwwwwswwss...',
+    '.wwwwwwwwss.....',
+    '..wwwwwwww......',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  route_page: [
+    '................',
+    '.yyyyyyyyyy.....',
+    'yyyyyyyyyyyyy...',
+    'yykkkkkyyyyyyyo.',
+    'yyyyyyyyyyyyyyo.',
+    'yykkkkkyyyyyoo..',
+    'yyyyyyyyyyyyyy..',
+    'oyykkkkkyyyyyo..',
+    'yyyyyyyyyyyyy...',
+    'yykkkyyyyyyo....',
+    'yyyyyyyyyyyy....',
+    '.yyyyyyyyy......',
+    '..yyyyyyy.......',
+    '................',
+    '................',
+    '................',
+  ],
 };
 // Item icons: Design ICONS_SEALS item_* grids, drawn via keeperCanvas at 36 CSS px.
 const ITEMS = {
@@ -1367,6 +1481,11 @@ const ITEMS = {
   befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild battles only. Easier to befriend.' },
   energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. NRG +40.' },
   joy_crumb:      { name: 'Joy Crumb',      plural: 'Joy Crumbs',      cap: 10, price: 40,  use: ['field'],           target: true,  blurb: 'A sweet treat. JOY +20.' },
+  atten_vial:     { name: 'Atten Vial',     plural: 'Atten Vials',     cap: 3,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A sealed RegenX vial. It stays in the bag.', blurb: 'RegenX Atten. It sharpens focus.' },
+  atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
+  route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
+  keeper1:       { name: 'Keeper1',        plural: 'Keeper1s',        cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'Your issued phone. Open PHONE on the pad.', blurb: 'Free. The wires stay with the Keepers.' },
+  cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
 const BAG_FULL_MSG = 'Bag is full, so some were left behind.';
@@ -1375,6 +1494,10 @@ const acorns = n => n + (n === 1 ? ' Acorn' : ' Acorns');      // INVENTORY §2:
 const itemCount = id => (S && S.bag && S.bag[id]) || 0;
 const warnedItems = new Set();
 // Grant n of an item, clamped to the room left under its cap (overflow is lost). Unknown ids: a no-op that warns once.
+function ensureCrackedPhone(){
+  if (!S || S.flags['story.side'] !== 'glimmer' || itemCount('cracked_phone')) return;
+  grantItem('cracked_phone', 1);
+}
 function grantItem(id, n){
   const it = ITEMS[id]; n = Math.max(0, n | 0);
   if (!it) { if (!warnedItems.has(id)) { warnedItems.add(id); console.warn('Walklings: unknown item id "' + id + '" (nothing given).'); } return { added: 0, lost: 0, unknown: true }; }
@@ -1410,6 +1533,7 @@ function itemRefusal(id, p, ctx){
     if (battle.treat) return "It's already nibbling a treat.";
     return null;
   }
+  if (it.key) return it.keyNote || 'That stays in the bag.';
   if (!it.use.includes(ctx)) return ctx === 'battle' ? "Can't use that in battle." : "Can't use that here yet.";
   if (it.target && !p) return 'Pick a Walkling first.';
   const nm = petName(p);
@@ -1509,6 +1633,26 @@ async function spotWalk(id){
   spot.id = null;
   if (scene) { $('#ovScene').hidden = false; sbRender('', ''); }
 }
+let patrolClock = 0;
+function tickPatrol(dt){
+  if (!CUR || scene || fade.busy || (battle && battle.on) || overlayOpen()) return;
+  patrolClock += dt;
+  if (patrolClock < 0.7) return;
+  patrolClock = 0;
+  for (const o of CUR.objs) {
+    const path = o.patrol;
+    if (!path || !path.length || !present(o)) continue;
+    const cur = mapRT.pos[o.id] || { x: o.x, y: o.y };
+    const slot = (o._pi || 0) % path.length, dest = path[slot];
+    if (cur.x === dest[0] && cur.y === dest[1]) { o._pi = slot + 1; continue; }
+    const sx = Math.sign(dest[0] - cur.x), sy = Math.sign(dest[1] - cur.y);
+    const nx = cur.x + (sx || 0), ny = cur.y + (sy && !sx ? sy : 0);
+    const face = sx ? (sx < 0 ? 'left' : 'right') : (sy < 0 ? 'up' : 'down');
+    if (solidTile(nx, ny) || blockerAt(nx, ny) || (nx === S.world.x && ny === S.world.y)) { o._pi = slot + 1; continue; }
+    mapRT.pos[o.id] = { x: nx, y: ny, fx: nx, fy: ny, facing: face };
+    mapRT.face[o.id] = face;
+  }
+}
 function updateWalk(dt, t){
   if (walk.intro) { if (t - walk.intro > 700) { walk.intro = 0; openEncounter(); } return; }
   if (walk.to) {
@@ -1532,6 +1676,7 @@ function updateWalk(dt, t){
     if (d) tryStep(d);
   }
   if (!moveHeld()) bump.held = false;
+  tickPatrol(dt);
 }
 /* --- warps, doors and the fade (MAPS_SLICE §3, INTERIORS §3.1): 250 ms, input locked, save right after --- */
 const FADE_MS = 250;
@@ -1596,8 +1741,10 @@ function placeSteps(dr){
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
     // WP-B0 Hall stub (engine ask 5): the side-merged trainer may carry a `panel` {who, greet, ask, begin, again}; its `seal`
     // and `onWin` scene (resolved per side) do the rest. Glimmer Hall slot 1 is the Tour; the Keepers trial is unchanged.
+    // Heights: the trial is not offered until "get to know us" is done. A save that already has the Seal is left alone.
     syncSide();
     const t = TRAINERS.hall1_fen, pn = (t && t.panel) || {};
+    if (!trialReady()) return sceneSteps('trial_wait') || [['say', 'Master Fen', 'The trial can wait. Walk the Heights first.']];
     if (side() === 'glimmer') return glimmerHallSteps(t, pn);
     if (t && ((t.seal && S.seals[t.seal]) || S.flags['trainer.hall1_fen'])) return [['say', pn.who || 'Master Fen', pn.again || 'Come back any time. The orchard remembers its friends.']];
     return [['say', pn.who || 'Master Fen', pn.greet || trainerLine('hall1_fen', 'intro') || 'Roots first, then blossoms. Show me yours.'],
@@ -1607,6 +1754,21 @@ function placeSteps(dr){
 }
 // After a place panel closes the keeper is still on its doorstep: a trigger there (the Hall's `teaser` after the Seal) plays now.
 function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }).then(() => { if (!scene && !fade.busy && !overlayOpen()) checkTriggers(); }); }
+// Keeper towns wear gold and green. Glimmerwell ground wears mint. The stripe sits on the roof edge and the wall foot.
+function factionOfMap(id){
+  if (!id) return null;
+  if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
+  if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
+  if (id === 'hearthmoor' || id.indexOf('hm_') === 0 || id === 'fernbrook' || id === 'route1' || id === 'route2') return 'keepers';
+  return null;
+}
+function drawFactionBand(g, ch, tx, ty, X, Y){
+  const fac = factionOfMap(CUR.id);
+  if (!fac || (ch !== 'R' && ch !== 'H')) return;
+  const ridge = fac === 'glimmer' ? PAL.c : PAL.y, band = fac === 'glimmer' ? PAL.l : PAL.g;
+  if (ch === 'R' && tileAt(tx, ty - 1) !== 'R') { g.fillStyle = ridge; g.fillRect(X, Y, 16, 2); g.fillStyle = band; g.fillRect(X, Y + 2, 16, 1); }
+  if (ch === 'H' && tileAt(tx, ty + 1) !== 'H') { g.fillStyle = band; g.fillRect(X + 2, Y + 13, 12, 2); }
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -1623,6 +1785,7 @@ function drawMap(t){
       const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
+      drawFactionBand(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
       if (ch === '=') {                          // rug border where the rug ends
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
         if (tileAt(tx, ty-1) !== '=') g.fillRect(X, Y, 16, 1); if (tileAt(tx, ty+1) !== '=') g.fillRect(X, Y+15, 16, 1);
@@ -1639,7 +1802,7 @@ function drawMap(t){
     const fr = keeperFrame(), sc = CUR.dream === 'young' ? 12 : CUR.dream === 'child' ? 15 : 18;
     const sx = Math.round(px_ - cx) - 1 + (18 - sc) / 2, sy = Math.round(py_ - cy) - 2 - fr + (18 - sc);
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(sx + 3, Math.round(py_ - cy) + 14, Math.max(8, sc - 6), 2);
-    g.drawImage(keeperFrames(lookOf())[S.world.facing][fr], sx, sy, sc, sc);
+    g.drawImage(keeperFrames(shownLook())[S.world.facing][fr], sx, sy, sc, sc);
     grassOver(walk.fx, walk.fy);
   };
   const drawFollower = () => {               // the partner, one tile behind (K.3); Tired = slower, lower bob
@@ -1805,15 +1968,16 @@ function restBedCue(){
 }
 function questPointOnMap(){ return pointOnMap(questCurrent()); }
 const sideQuest = () => (S && typeof PPQuests !== 'undefined' && PPQuests.sideCurrent) ? PPQuests.sideCurrent(questState()) : null;
-function drawCuePoint(g, pt, col, cx, cy, t, VW, VH){
+function sidePointOnMap(){ return pointOnMap(sideQuest()); }
+function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift){
   if (!pt) return;
   if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
   const X = pt.x * TS - cx, Y = pt.y * TS - cy;
   if (X > -TS && Y > -TS && X < VW && Y < VH) {
-    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5, Y - 12 - bob, col);
-    else drawArrow(g, ARROW.up, X + 5, Y + TS + 1 + bob, col);
+    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
+    else drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
     return;
   }
   const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
@@ -1821,15 +1985,17 @@ function drawCuePoint(g, pt, col, cx, cy, t, VW, VH){
   const k = Math.min(kx, ky), ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
   const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'), gr = ARROW[dir];
   const nudge = reduce ? 0 : bob, ox = dir === 'right' ? nudge : dir === 'left' ? -nudge : 0, oy = dir === 'down' ? nudge : dir === 'up' ? -nudge : 0;
-  drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox), Math.round(ey - gr.length / 2 + oy), col);
+  drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox + shift), Math.round(ey - gr.length / 2 + oy), col);
 }
 function drawObjectiveCue(g, cx, cy, t){
   if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
   const c = $('#mapCanvas'), VW = c.width, VH = c.height;
-  if (lanternHold()) { drawCuePoint(g, restBedCue(), PAL.y, cx, cy, t, VW, VH); return; }   // a wipe points at a bed, not the way out
-  const main = questPointOnMap(), side = pointOnMap(sideQuest());
-  drawCuePoint(g, main, PAL.y, cx, cy, t, VW, VH);
-  if (side && (!main || side.x !== main.x || side.y !== main.y)) drawCuePoint(g, side, PAL.c, cx, cy, t, VW, VH);
+  if (lanternHold()) { drawCuePoint(g, restBedCue(), PAL.y, cx, cy, t, VW, VH, 0); return; }   // a wipe points at a bed, not the way out
+  const main = questPointOnMap(), side = sidePointOnMap();
+  drawCuePoint(g, main, PAL.y, cx, cy, t, VW, VH, 0);
+  if (!side) return;
+  const same = main && side.x === main.x && side.y === main.y;
+  drawCuePoint(g, side, PAL.c, cx, cy, t, VW, VH, same ? 7 : 0);
 }
 const WART = buildWorldArt();
 function drawObj(g, o, cx, cy, VW, VH, t){
@@ -1855,6 +2021,19 @@ function drawObj(g, o, cx, cy, VW, VH, t){
 // keeper.js composes 16x16 frames (keeperGrid); here they become 18x18 canvases with a 1px PAL.k outline like buildSprite,
 // built once per look and cached (the Walk map only looks them up).
 const lookOf = () => (S && S.player && S.player.look) || null;           // null = the default look
+// Glimmerwell standing shows on the body: the Arbiter's emission has been in that bloodline a long time.
+// Tier 0 is unchanged. Higher tiers pick up silver and mint. The save's look is not rewritten.
+function shownLook(){
+  const base = lookOf();
+  if (!S || side() !== 'glimmer') return base;
+  const tier = PPStanding.tierOf(standingOf('glimmer', false));
+  if (!tier) return base;
+  const L = Object.assign({}, KEEPER_LOOKS.defaults, base || {});
+  L.accent = tier >= 4 ? 's' : 'c';
+  if (tier >= 2) L.outfitCol = 's';
+  if (tier >= 3) L.hairCol = 'h';
+  return L;
+}
 const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|') + (f.extra ? JSON.stringify(f.extra) : ''); };
 const keeperCache = new Map(); let keeperBuilds = 0;
 function keeperCanvas(grid){
@@ -2175,7 +2354,7 @@ function cueFactionMusic(ctx, steps){
 }
 async function execSteps(steps){ for (const st of steps || []) { if (!scene) return; await execStep(st); } }
 async function playScene(id){ const steps = sceneSteps(id); if (!steps) return; const n = storyWrites(); await execSteps(steps); noteBeat(id, n); }   // nested: `run` steps, onWin
-function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); syncSide(); }
+function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); if (S && S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); syncSide(); }
 function endScene(){
   const sc = scene; if (!sc) return;
   const cue = sc.musicCue;
@@ -2382,8 +2561,22 @@ async function grantTourneyPrize(){
   sfx('stinger_item'); save();
   await sayBox('Clerk Nia', "This week's prize is a Hearty Snack and 40 Acorns.");
 }
+function openDuo(o){
+  const who = o.name || '';
+  if (!S.flags['story.hc_invite']) return runSteps([['say', '', "The booths are covered. A note: bring Ilse's letter, then come play."]], { npc: o });
+  if (!pet()) return runSteps([['say', who, 'Come back with your Walkling.']], { npc: o });
+  const c = careDay();
+  const games = [['Rope Hop', 'hop'], ['Flag Relay', 'relay'], ['Sniff Seek', 'seek']].filter(([, id]) => (c.mg[id] || 0) < 3);
+  if (!games.length) return runSteps([['say', who, 'The two-keeper booth is tired. Come back tomorrow.']], { npc: o });
+  return runSteps([
+    ['say', who, 'Pass the phone. Your Walkling takes the left. A friend takes the right.'],
+    ['choice', 'Which game?', games.map(([label, id]) => [label, [['play', id]]]).concat([['Not now', [['say', who, "We'll keep your seat."]]]])],
+  ], { npc: o });
+}
 function openBooth(o){
-  if (!o || !o.booth || !PPMinigames.RULE[o.booth]) return;
+  if (!o || !o.booth) return;
+  if (o.booth === 'duo') return openDuo(o);
+  if (!PPMinigames.RULE[o.booth]) return;
   const id = o.booth, who = o.name || '';
   if (!S.flags['story.hc_invite']) return runSteps([['say', '', "The booths are covered. A note: bring Ilse's letter, then come play."]], { npc: o });
   if (!pet()) return runSteps([['say', who, 'Come back with your Walkling.']], { npc: o });
@@ -2832,7 +3025,19 @@ const battle = { on: false, id: 0, kind: 'wild', trainerId: null, wid: null, foe
   newId: null, rng: Math.random, textMs: null, fx: [], levelUps: [], foeHealUsed: false, log: [] };
 let msgSkip = null;
 const alive = id => battle.on && battle.id === id;
-const curFoe = () => battle.foes[battle.fi];
+function curFoe(){
+  const B = battle;
+  if (B.group && B.slots && B.slots.length) {
+    let i = B.slots[B.aim];
+    if (!B.foes[i] || B.foes[i].hp <= 0) {
+      const s = B.slots.findIndex(j => B.foes[j] && B.foes[j].hp > 0);
+      if (s >= 0) { B.aim = s; i = B.slots[s]; }
+    }
+    return B.foes[i] || B.foes[0];
+  }
+  return B.foes[B.fi];
+}
+const groupLiving = () => !!(battle.group && battle.slots && battle.slots.some(i => battle.foes[i] && battle.foes[i].hp > 0));
 const activePet = () => battle.me && petById(battle.me.petId);
 function makeFoe(form, level, moveIds, opener){
   const [line, st] = form.split('/'), si = SP_INDEX[line], stage = +st, s = statsAt(form, level);
@@ -2878,13 +3083,26 @@ function openBattle(o){
   const B = battle; B.id++;
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
     fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null,
-    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false });
+    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false,
+    group: false, slots: null, aim: 0, bench: 0, ally: null, allyName: '' });
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
   else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
   B.participants = B.foes.map(() => new Set());
   B.me = { petId: lead.id, stages: { atk: 0, def: 0, spd: 0 }, mood: null };
   B.participants[0].add(lead.id);
+  // Group battle: two foes on the field at once. The rest wait on the bench. An optional ally Walkling fights beside you.
+  if (o.kind === 'trainer') {
+    const t = TRAINERS[o.trainerId];
+    if (t && t.group && B.foes.length >= 2) {
+      B.group = true; B.slots = [0, 1]; B.aim = 0; B.bench = 2;
+      B.participants[1].add(lead.id);
+    }
+    if (t && t.ally && TRAINERS[t.ally]) {
+      const am = trainerTeam(TRAINERS[t.ally])[0];
+      if (am) { B.ally = makeFoe(am.form, am.level, am.moves); B.allyName = TRAINERS[t.ally].name; }
+    }
+  }
   const f = curFoe(); markSeen(f.si, f.stage); save();
   enc.open = false; enc.speed = befriendSpeed(f.stage, f.level);   // WP-A: faster marker at higher levels (+1.2%/Lv, cap +35%)
   $('#encName').hidden = true; $('#btMsg').textContent = '';
@@ -2906,6 +3124,10 @@ async function battleIntro(id){
     await say(btLine('trainerIntro'), id);
     if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
     await say(btLine('playerSend'), id);
+    if (alive(id) && B.group) {
+      await say('Two at once. You move first. TARGET picks who you hit.', id);
+      if (alive(id) && B.ally) await say(B.allyName + ' sends ' + foeName(B.ally) + ' in beside you.', id);
+    }
   } else {
     await say(btLine('wildAppear'), id);
     if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
@@ -2920,6 +3142,8 @@ function closeBattle(){
     if (p && nk && nk !== nameOf(spi(p), p.stage)) { p.nick = nk; toast(nameOf(spi(p), p.stage) + ' is now called ' + nk + '!'); }
   }
   $('#encName').hidden = true; $('#encNick').value = ''; $('#encNick').blur(); $('#btSeal').hidden = true;   // no nickname carries over to the next befriend
+  const f2 = $('#btFoe2Row'), al = $('#btAllyRow'), aim = $('#btAim');
+  if (f2) f2.hidden = true; if (al) al.hidden = true; if (aim) aim.hidden = true;
   B.on = false; B.state = 'IDLE'; msgSkip = null; closeSheet(null);
   $('#ovBattle').hidden = true; lockTabs(false);
   const w = B.wid && wild.list.find(o => o.id === B.wid);
@@ -3050,6 +3274,7 @@ function setPanel(name){
 function renderActs(){
   const wildB = battle.kind === 'wild';
   $('#btBefriendAct').hidden = !wildB; $('#btRun').hidden = !wildB;
+  const aim = $('#btAim'); if (aim) aim.hidden = !(battle.group && battle.on);
   $('#btHearts').textContent = '\u2665'.repeat(battle.tries) + '\u2661'.repeat(BEFRIEND_TRIES - battle.tries);
   $('#btActs').classList.toggle('trainer', !wildB);
 }
@@ -3067,6 +3292,25 @@ function renderBattleCards(){
   if (m.hungry) chips.push('HUNGRY'); if (m.sulky) chips.push('SULKY'); if (m.drowsy) chips.push('DROWSY');
   if (m.spirited) chips.push('SPIRITED'); if (m.glowing) chips.push('GLOWING');
   $('#btMood').textContent = [stageText(B.me.stages), chips.join(' ')].filter(Boolean).join(' ');
+  const row = $('#btFoe2Row');
+  if (row) {
+    let other = null;
+    if (B.group && B.slots) B.slots.forEach((fi, s) => { if (s !== B.aim && B.foes[fi] && B.foes[fi].hp > 0) other = B.foes[fi]; });
+    row.hidden = !other;
+    if (other) {
+      $('#btFoe2Name').textContent = foeName(other) + '  Lv ' + other.level;
+      const h = $('#btFoe2Hp'); h.style.width = (100 * other.hp / other.maxHp) + '%'; h.classList.toggle('warn', other.hp / other.maxHp < 0.25);
+    }
+  }
+  const allyRow = $('#btAllyRow');
+  if (allyRow) {
+    const a = B.ally;
+    allyRow.hidden = !(a && a.hp > 0);
+    if (a && a.hp > 0) {
+      $('#btAllyName').textContent = (B.allyName || 'Ally') + "'s " + foeName(a);
+      const h = $('#btAllyHp'); h.style.width = (100 * a.hp / a.maxHp) + '%'; h.classList.toggle('warn', a.hp / a.maxHp < 0.25);
+    }
+  }
 }
 function stageText(st){ return ['atk', 'def', 'spd'].filter(k => st[k]).map(k => k.toUpperCase() + (st[k] > 0 ? '\u25b2' : '\u25bc') + Math.abs(st[k])).join(' '); }
 // Type hint badge: shown once you've seen this move's effect on this type (S.dex.hits["move>TYPE"]).
@@ -3137,6 +3381,15 @@ function aiPick(){
 async function resolveTurn(action){
   const B = battle, id = B.id; if (B.state !== 'CHOOSE') return;
   B.state = 'RESOLVE'; B.turn++; setPanel('busy');
+  if (B.group) {
+    if (action.kind !== 'fight') {
+      const ended = await playerAction(action, id); if (!alive(id) || ended) return;
+    } else await doMove('me', action.move, id);
+    if (alive(id) && hpOf(activePet()) > 0 && groupLiving()) await allyAct(id);
+    if (alive(id) && hpOf(activePet()) > 0 && groupLiving()) await foesGroupAct(id);
+    if (alive(id)) endCheck(id);
+    return;
+  }
   if (action.kind !== 'fight') {
     const ended = await playerAction(action, id); if (!alive(id)) return;
     if (ended) return;
@@ -3148,6 +3401,53 @@ async function resolveTurn(action){
     else { await foeAct(id); if (alive(id) && hpOf(activePet()) > 0 && curFoe().hp > 0) await doMove('me', action.move, id); }
   }
   if (alive(id)) endCheck(id);
+}
+function groupLivingNow(){ return groupLiving(); }
+async function allyAct(id){
+  const B = battle, a = B.ally;
+  if (!a || a.hp <= 0 || !groupLivingNow()) return;
+  let best = 0, hp = Infinity;
+  B.slots.forEach((fi, s) => { const f = B.foes[fi]; if (f && f.hp > 0 && f.hp < hp) { hp = f.hp; best = s; } });
+  const f = B.foes[B.slots[best]]; if (!f || f.hp <= 0) return;
+  await say(B.allyName + "'s " + foeName(a) + ' tries Bump!', id); if (!alive(id)) return;
+  const r = damage({ power: MOVES.bump.power, moveType: MOVES.bump.type, att: foeBattler(a), def: foeBattler(f), rng: B.rng });
+  if (r.mult === 0) { await say("It didn't do a thing...", id); return; }
+  f.hp = Math.max(0, f.hp - r.dmg);
+  sfx(r.mult > 1 ? 'hitStrong' : 'hit'); renderBattleCards();
+  if (r.mult > 1) { await say('That hit hard!', id); if (!alive(id)) return; }
+  if (f.hp <= 0) { B.aim = best; await knockOut('foe', id); }
+}
+async function foesGroupAct(id){
+  const B = battle;
+  for (let s = 0; s < B.slots.length; s++) {
+    if (!alive(id) || hpOf(activePet()) <= 0) return;
+    const f = B.foes[B.slots[s]]; if (!f || f.hp <= 0) continue;
+    B.aim = s; B.foePlan = aiPick(); await foeAct(id);
+  }
+}
+async function groupField(id){
+  const B = battle, p = activePet();
+  let sent = false;
+  for (let s = 0; s < B.slots.length; s++) {
+    const f = B.foes[B.slots[s]];
+    if (f && f.hp > 0) continue;
+    if (B.bench < B.foes.length) {
+      const ni = B.bench++;
+      B.slots[s] = ni;
+      const nf = B.foes[ni];
+      if (!B.participants[ni]) B.participants[ni] = new Set();
+      if (p) B.participants[ni].add(p.id);
+      markSeen(nf.si, nf.stage);
+      B.aim = s; sent = true;
+    }
+  }
+  if (!groupLiving()) { await finish('win', id); return false; }
+  if (!B.foes[B.slots[B.aim]] || B.foes[B.slots[B.aim]].hp <= 0) {
+    const s = B.slots.findIndex(i => B.foes[i] && B.foes[i].hp > 0);
+    if (s >= 0) B.aim = s;
+  }
+  if (sent && alive(id)) { sendOutFx('foe'); renderBattleCards(); await say(btLine('trainerSend'), id); }
+  return alive(id);
 }
 async function foeAct(id){
   const B = battle, f = curFoe(), plan = B.foePlan || { move: 'wobble' };
@@ -3280,7 +3580,7 @@ async function knockOut(side, id){
   } else {
     const f = curFoe(); if (f.down) return; f.down = true;
     B.fx.push({ who: 'foe', kind: B.kind === 'wild' ? 'flee' : 'faint', t0: now(), dur: 600 });
-    awardFoe(B.fi);
+    awardFoe(Math.max(0, B.foes.indexOf(f)));
     if (B.kind === 'wild') { sfx('flee'); await say(foeName(f) + ' is worn out and wanders off to rest.', id); }
     else { sfx('tired'); await say(btLine('foeFainted'), id); }
   }
@@ -3299,7 +3599,8 @@ function awardFoe(fi){
 }
 async function endCheck(id){
   const B = battle, f = curFoe(), p = activePet();
-  if (f.hp <= 0) {
+  if (B.group) { if (!(await groupField(id))) return; }
+  else if (f.hp <= 0) {
     if (B.kind === 'trainer' && B.fi < B.foes.length - 1) {
       B.fi++; const nf = curFoe(); B.participants[B.fi].add(p.id); markSeen(nf.si, nf.stage);
       if (hpOf(p) > 0) {
@@ -3344,14 +3645,16 @@ const REGION_MAP = {
     cobble_quarry: { kind: 'side',  col: 17, row: 3, label: 'QUARRY',      labelAt: 'above', blurb: 'Pebblits nap in the old seam.', path: [[17, 6], [17, 3]] },
     mahopac:       { kind: 'town',  col: 2,  row: 3, label: 'MAHOPAC',     labelAt: 'below', blurb: 'Time-snagged woods. Breckenridge Observatory.', path: [[2, 6], [2, 3]] },
     highcharity:   { kind: 'town',  col: 2,  row: 2, label: 'HIGH CHARITY', labelAt: 'above', blurb: 'Keeper capital. Lanterns on every roof.', path: [[2, 6], [2, 2]] },
+    fb_heights:    { kind: 'side',  col: 10, row: 3, label: 'HEIGHTS',     labelAt: 'above', blurb: 'Ridge north of Fernbrook. A lab, and old tunnels.', path: [[10, 6], [10, 3]] },
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'] },
-  interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'] },
+  interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
-    hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity' },
+    hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
+    rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -3439,6 +3742,7 @@ function paintUiIcons(){
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {
+    if (c.dataset.hud === 'icon_phone') { iconCanvas(c, ICONS.phone, PAL.y); return; }
     if (c.dataset.hud === 'icon_book') { iconCanvas(c, ICONS.book, PAL.y); return; }
     const gr = (REGION_MAP[c.dataset.hud] || {}).grid; if (!gr) return; const g = ctx(c); g.clearRect(0,0,8,8);
     gr.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } })); });
@@ -3446,16 +3750,123 @@ function paintUiIcons(){
 }
 function bagVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene); }
 function journalVisible(){ return !!(S && S.flags && S.flags['story.starter_received'] && pet() && !scene && !(battle && battle.on)); }
+const phoneOwned = () => !!(S && S.flags && S.flags['story.phone_got']);
+const phoneHack = () => phoneOwned() && side() === 'glimmer' && itemCount('cracked_phone') > 0;
 function syncJournalBtn(){
-  const b = $('#journalBtn'); if (!b) return;
-  const on = journalVisible();
+  const b = $('#phoneBtn'); if (!b) return;
+  const on = journalVisible() && phoneOwned();
   b.hidden = !on;
-  b.classList.toggle('pulse', on && !S.flags['story.journal_opened']);
+  b.classList.toggle('pulse', on && !S.phoneOpened);
 }
-function openJournalTab(){
-  if (!journalVisible() || overlayOpen()) { sfx('denied'); return; }
-  sfx('tap'); showTab('col'); syncJournalBtn();
+function openPhone(){
+  if (!journalVisible() || !phoneOwned() || overlayOpen()) { sfx('denied'); return; }
+  if (!S.phoneOpened) { S.phoneOpened = true; save(); }
+  const hack = phoneHack();
+  $('#ovPhone').classList.toggle('hack', hack);
+  $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
+  $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
+  $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
+  $('#phoneHome').hidden = false; $('#phonePane').hidden = true;
+  clearMoves(); $('#ovPhone').hidden = false; lockTabs(true); sfx('tap'); syncJournalBtn();
 }
+function closePhone(){
+  if ($('#ovPhone').hidden) return;
+  $('#ovPhone').hidden = true; lockTabs(false);
+}
+function renderRibbit(body){
+  const api = window.PPRibbit;
+  const feed = (api && api.feed) ? api.feed({
+    flags: (S && S.flags) || {},
+    side: side(),
+    map: (CUR && CUR.id) || '',
+    uid: (S && S.uid) || '',
+    day: dayKey(Date.now()),
+  }) : { trending: [], posts: [] };
+  const trend = document.createElement('div');
+  trend.className = 'ribbit-trend';
+  const lab = document.createElement('span');
+  lab.className = 'ribbit-trend-lab';
+  lab.textContent = 'TRENDING';
+  trend.appendChild(lab);
+  (feed.trending || []).forEach(t => {
+    const chip = document.createElement('span');
+    chip.className = 'ribbit-tag';
+    const tag = document.createElement('b');
+    tag.textContent = t.tag || '';
+    const n = document.createElement('small');
+    n.textContent = String(t.count);
+    chip.append(tag, document.createTextNode(' '), n);
+    trend.appendChild(chip);
+  });
+  body.appendChild(trend);
+  (feed.posts || []).forEach(post => {
+    const row = document.createElement('article');
+    row.className = 'ribbit-post';
+    if (post.id) row.dataset.id = String(post.id);
+    const top = document.createElement('div');
+    top.className = 'ribbit-top';
+    const desk = document.createElement('b');
+    desk.className = 'ribbit-desk';
+    desk.textContent = post.desk || post.name || '';
+    const handle = document.createElement('span');
+    handle.className = 'ribbit-handle';
+    handle.textContent = '@' + (post.handle || '');
+    top.append(desk, handle);
+    const text = document.createElement('p');
+    text.className = 'ribbit-text';
+    text.textContent = post.text || '';
+    const chirps = document.createElement('span');
+    chirps.className = 'ribbit-chirps';
+    const c = post.chirps | 0;
+    chirps.textContent = c === 1 ? '1 chirp' : c + ' chirps';
+    row.append(top, text, chirps);
+    body.appendChild(row);
+  });
+  const foot = document.createElement('p');
+  foot.className = 'ribbit-foot';
+  foot.textContent = 'Ribbit rides the Keeper wires.';
+  body.appendChild(foot);
+}
+function phoneApp(id){
+  if (id === 'journal') { closePhone(); showTab('col'); return; }
+  const hack = phoneHack();
+  const body = $('#phoneBody'), friends = $('#phoneFriends');
+  body.hidden = id === 'friends'; friends.hidden = id !== 'friends';
+  body.innerHTML = '';
+  const add = (who, text) => { const p = document.createElement('p'); if (who) { const b = document.createElement('b'); b.className = 'who'; b.textContent = who; p.appendChild(b); p.appendChild(document.createTextNode('  ' + text)); } else p.textContent = text; body.appendChild(p); };
+  if (id === 'contacts') {
+    add('Officer Ness', 'Route 1 watch. Issued your Keeper1.');
+    add('Sergeant Bram', 'Keeper House door. Rank matters to him.');
+    add('Captain Lumen', 'Upstairs. KeeperUAV jobs wait on her desk.');
+    if (S.flags['story.met_fen']) add('Master Fen', side() === 'glimmer' ? 'She still keeps a chair for you.' : 'Orchard. Roots and blossoms.');
+    if (side() === 'glimmer') add('Clerk Mint', 'Cracked handsets. She does not do warranties.');
+  } else if (id === 'notes') {
+    if (hack) {
+      add('unnamed', 'the crest phone copies every note. this one too, probably.');
+      add('unnamed', 'jobs and parts will list here when the board wakes up.');
+    } else {
+      add('Lantern desk', 'Your Keeper1 is active. We can read this. That is the service.');
+      add('Lantern desk', 'Free handset. The poles stay with the Keepers.');
+    }
+  } else if (id === 'jobs') {
+    if (hack) {
+      add('BOTNET', 'Dark-market parts: the shelf is empty.');
+      add('BOTNET', 'Augment slot: empty. The leak is not a menu.');
+      add('BOTNET', 'Jobs: none posted. Come back later.');
+    } else {
+      add('KEEPERUAV', 'Lantern check, Fernbrook. Reward later.');
+      add('KEEPERUAV', 'Count the Route 2 lamps. Not live yet.');
+      add('KEEPERUAV', 'No jobs are open. The desk is warming up.');
+    }
+  } else if (id === 'ribbit') {
+    renderRibbit(body);
+  } else if (id === 'friends') {
+    $('#friendCode').textContent = friendCode(); renderKeeperName();
+  }
+  $('#phoneHome').hidden = true; $('#phonePane').hidden = false;
+  sfx('tap');
+}
+function openJournalTab(){ openPhone(); }
 /* ---------- QUEST button + NEXT STEP panel (NEXT_PLAN WP-C) ---------- */
 // Same visibility rules as BOOK. Pulses while the current objective differs from the one the panel was last opened on
 // (S.questSeen, additive), so every new beat invites a tap once and then goes quiet.
@@ -3463,7 +3874,7 @@ const questVisible = () => journalVisible();
 function syncQuestBtn(){
   const b = $('#questBtn'); if (!b) return;
   const on = questVisible(), q = on ? questCurrent() : null;
-  b.hidden = !on;
+  b.classList.toggle('off', !on);
   b.classList.toggle('pulse', !!q && S.questSeen !== q.id);
 }
 let questTab = 'next';   // 'next' | 'standing'; the panel always opens on NEXT STEP
@@ -3935,6 +4346,16 @@ function battleAct(act){
   const B = battle; if (!B.on || B.state !== 'CHOOSE') return;
   if ((act === 'run' || act === 'befriend') && B.kind !== 'wild') { sfx('denied'); say("You can't walk away from a challenge!").then(() => { if (B.on && B.state === 'CHOOSE') $('#btMsg').textContent = 'What should ' + petName(activePet()) + ' do?'; }); return; }
   sfx('tap');
+  if (act === 'aim' && B.group && B.slots) {
+    const n = B.slots.length;
+    for (let k = 1; k <= n; k++) {
+      const s = (B.aim + k) % n;
+      if (B.foes[B.slots[s]] && B.foes[B.slots[s]].hp > 0) { B.aim = s; break; }
+    }
+    renderBattleCards();
+    $('#btMsg').textContent = 'Target: ' + foeName(curFoe());
+    return;
+  }
   if (act === 'fight') setPanel('fight');
   else if (act === 'befriend') openBefriendBar();
   else if (act === 'run') resolveTurn({ kind: 'run' });
@@ -4010,6 +4431,12 @@ function drawBattle(t, dt){
     const img = sprSet(si, stage, faded)[mode];
     if (mirror) { g.save(); g.translate(x + 18, y); g.scale(-1, 1); g.drawImage(img, 0, 0); g.restore(); } else g.drawImage(img, x, y);
   };
+  if (B.group && B.slots) {
+    let other = null;
+    B.slots.forEach((fi, s) => { if (s !== B.aim && B.foes[fi] && B.foes[fi].hp > 0) other = B.foes[fi]; });
+    if (other) drawMon('foe2', other.si, other.stage, Math.max(0, fx0 - 18), fy0 + 4, false, !!other.faded);
+    if (B.ally && B.ally.hp > 0) drawMon('ally', B.ally.si, B.ally.stage, mx0 + 18, my0 + 2, true, false);
+  }
   drawMon('foe', f.si, f.stage, fx0, fy0, false, !!f.faded);
   if (B.kind === 'wild' && f.stage > 0 && Math.floor(t / 350) % 5 === 0) drawGlyph(g, 'spark', fx0 + 14, fy0 - 2);   // rare form twinkle
   drawMon('me', spi(p), p.stage, mx0, my0, true, isFaded(p));             // back view = mirrored
@@ -4171,6 +4598,57 @@ function startOver(){
   clearMoves(); clearInterval(saveTimer);
   if (PPCloud.enabled) { $('#resetHint').textContent = 'Erasing your cloud backup...'; PPCloud.startOver(() => PPSave.startOver()).then(() => location.reload()); return; }
   PPSave.startOver();
+  location.reload();
+}
+
+/* ---------- save copy (v2 JSON file; v stays 2) ---------- */
+// Settings and the Start over dialog can download the live save. Read a copy replaces this device's game and reloads.
+const COPY_WHY = { bad: "That file isn't a Walklings save.", newer: 'That save is from a newer Walklings.', big: 'That file is too big to read.', storage: "Couldn't store that copy." };
+let copyPending = null;
+function exportText(){
+  if (!S || readOnly) return null;
+  save();
+  return JSON.stringify(S);
+}
+function downloadCopy(){
+  const text = exportText();
+  if (!text) { toast('No game to copy'); return false; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  a.download = 'walklings-save.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  toast('Copy saved');
+  return true;
+}
+function openCopy(){
+  if (!$('#ovCopy').hidden || readOnly) return;
+  copyPending = null;
+  $('#copyMsg').textContent = 'This replaces the game on this device with the one in the file.';
+  $('#copyPick').hidden = false; $('#copyYes').hidden = true;
+  $('#ovCopy').hidden = false; lockTabs(true); sfx('tap');
+  $('#copyCancel').focus({ preventScroll: true });
+}
+function closeCopy(){
+  if ($('#ovCopy').hidden || resetting) return;
+  copyPending = null; $('#ovCopy').hidden = true; lockTabs(!$('#ovSettings').hidden);
+}
+function stageCopy(text){
+  const parsed = PPSave.readCopy(text);
+  if (!parsed.ok) { toast(COPY_WHY[parsed.reason] || COPY_WHY.bad); return false; }
+  copyPending = parsed.state;
+  const n = parsed.state.party.length + parsed.state.box.length;
+  const name = parsed.state.player && parsed.state.player.name;
+  const pets = n === 1 ? '1 Walkling.' : n + ' Walklings.';
+  $('#copyMsg').textContent = (name ? "Bring back " + name + "'s game? " : 'Bring this game back? ') + pets;
+  $('#copyPick').hidden = true; $('#copyYes').hidden = false;
+  return true;
+}
+function confirmCopy(){
+  if (!copyPending || resetting) return;
+  const state = copyPending; copyPending = null;
+  resetting = true; clearMoves(); clearInterval(saveTimer);
+  if (!PPSave.installCopy(state)) { resetting = false; toast(COPY_WHY.storage); return; }
   location.reload();
 }
 
@@ -4382,7 +4860,7 @@ function openDebug(){
   const c = $('#dbgClose'); if (c) c.focus({ preventScroll: true });
 }
 function dismissForDebug(){
-  for (const id of ['ovDebug', 'ovSettings', 'ovQuest', 'ovMap', 'ovBag', 'ovShop', 'ovStats', 'ovJournal', 'ovEnv', 'ovGeo', 'ovBasket']) {
+  for (const id of ['ovDebug', 'ovSettings', 'ovQuest', 'ovMap', 'ovBag', 'ovShop', 'ovStats', 'ovJournal', 'ovEnv', 'ovGeo', 'ovBasket', 'ovPhone', 'ovCopy', 'ovPlay']) {
     const el = $('#' + id); if (el) el.hidden = true;
   }
   if ($('#ovLook') && !$('#ovLook').hidden && !(lookUI && lookUI.newPlayer)) $('#ovLook').hidden = true;
@@ -4635,6 +5113,8 @@ function devChecks(){
     charity: highCharityDevCheck(),
     music: PPSound.musicCheck(),
     minigames: (window.PPMinigames && PPMinigames.devCheck) ? PPMinigames.devCheck() : [],
+    heights: heightsDevCheck(),
+    ribbit: (window.PPRibbit && PPRibbit.devCheck) ? PPRibbit.devCheck() : ['PPRibbit missing'],
   };
 }
 function debugFlagValue(raw){
@@ -4837,8 +5317,17 @@ function bindDebugUi(){
 
 /* ---------- input ---------- */
 function bindInput(){
-  $$('#tabs button').forEach(b => b.addEventListener('click', () => { if (tabsGuarded()) return; if (b.dataset.tab !== screen) sfx('tap'); showTab(b.dataset.tab); }));
-  $('#settingsBtn').addEventListener('click', () => { if (tabsGuarded()) return; if ($('#ovSettings').hidden) openSettings(); else closeSettings(); });
+  $$('#tabs button').forEach(b => b.addEventListener('click', () => {
+    if (tabsGuarded()) return;
+    if (b.dataset.tab === 'quest') { openQuest(); return; }
+    if (b.dataset.tab !== screen) sfx('tap');
+    showTab(b.dataset.tab);
+  }));
+  $('#settingsBtn').addEventListener('click', () => {
+    if (!$('#ovCopy').hidden || !$('#ovReset').hidden) return;
+    if (tabsGuarded() && allPets().length) return;
+    if ($('#ovSettings').hidden) openSettings(); else closeSettings();
+  });
   // option buttons that just appeared ignore taps (capture phase, before their own handlers)
   for (const ev of ['click', 'pointerup']) document.addEventListener(ev, e => {
     if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button, #ovQuest button')) { e.stopPropagation(); e.preventDefault(); }
@@ -4867,7 +5356,10 @@ function bindInput(){
   $('#petCanvas').addEventListener('pointerdown', e => { if (screen === 'pet' && !overlayOpen() && petHit(e.clientX, e.clientY)) { e.preventDefault(); patPet(); } });   // CARE_LOOP A: pats
   $('#petBagBtn').addEventListener('click', () => openBag());
   $('#walkBagBtn').addEventListener('click', () => openBag());
-  $('#journalBtn').addEventListener('click', openJournalTab);
+  $('#phoneBtn').addEventListener('click', openPhone);
+  $('#phoneClose').addEventListener('click', () => { sfx('tap'); closePhone(); });
+  $('#phoneBack').addEventListener('click', () => { sfx('tap'); $('#phoneHome').hidden = false; $('#phonePane').hidden = true; });
+  $$('#phoneHome .phone-app').forEach(b => b.addEventListener('click', () => phoneApp(b.dataset.app)));
   $('#questBtn').addEventListener('click', openQuest);
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
@@ -4888,6 +5380,22 @@ function bindInput(){
   ln.addEventListener('focus', () => ln.select());
   ln.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ln.blur(); } });
   $('#startOver').addEventListener('click', openReset);
+  $('#setCopy').addEventListener('click', () => { sfx('tap'); downloadCopy(); });
+  $('#setRead').addEventListener('click', openCopy);
+  $('#resetCopy').addEventListener('click', () => { sfx('tap'); downloadCopy(); });
+  $('#copyCancel').addEventListener('click', () => { sfx('tap'); closeCopy(); });
+  $('#copyPick').addEventListener('click', () => { sfx('tap'); $('#copyFile').click(); });
+  $('#copyYes').addEventListener('click', () => { sfx('tap'); confirmCopy(); });
+  $('#copyFile').addEventListener('change', () => {
+    const f = $('#copyFile').files && $('#copyFile').files[0];
+    $('#copyFile').value = '';
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => stageCopy(String(reader.result || ''));
+    reader.onerror = () => toast(COPY_WHY.bad);
+    reader.readAsText(f);
+  });
+  $('#ovCopy').addEventListener('click', e => { if (e.target === e.currentTarget) closeCopy(); });
   $('#resetCancel').addEventListener('click', () => { sfx('tap'); closeReset(); });
   const rg = $('#resetGo');
   rg.addEventListener('pointerdown', e => { if (e.button > 0) return; e.preventDefault(); try { rg.setPointerCapture(e.pointerId); } catch(err) {} holdStart('pointer'); });
@@ -4967,12 +5475,14 @@ function bindInput(){
   window.addEventListener('keydown', e => {
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
-    if (scene && sbox.resolve) {                  // Space / Enter advance the text box; Escape does nothing during a choice
+    if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && $('#ovDebug').hidden && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
     if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
+    if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
+    if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
     if (e.key === 'Escape' && !$('#ovDebug').hidden) { closeDebug(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
@@ -4990,10 +5500,14 @@ function bindInput(){
     }
     if (!$('#ovSheet').hidden) { if (e.key === 'Escape' && !$('#shCancel').hidden) closeSheet(null); return; }
     if (!$('#ovBattle').hidden) { battleKey(e); return; }
-    if ('1234'.includes(e.key)) showTab(['pet','walk','col','friends'][+e.key - 1]);
+    if ('123'.includes(e.key)) showTab(['pet','walk','col'][+e.key - 1]);
+    if (e.key === '4') { openQuest(); return; }
   });
   window.addEventListener('keyup', e => { if (window.PPMinigames) PPMinigames.keyUp(e); if (KEYS[e.key] === walk.key) walk.key = null; });
   const playStop = $('#playStop'); if (playStop) playStop.addEventListener('click', () => PPMinigames.stop());
+  const playP1 = $('#playP1'), playP2 = $('#playP2');
+  if (playP1) playP1.addEventListener('pointerdown', e => { e.preventDefault(); PPMinigames.press(0); });
+  if (playP2) playP2.addEventListener('pointerdown', e => { e.preventDefault(); PPMinigames.press(1); });
   window.addEventListener('blur', clearMoves);
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
@@ -5155,7 +5669,7 @@ function highCharityDevCheck(){
     if (!(TILE_DEF[m.grid[d.y][d.x]] || {}).walk) bad.push('door step ' + d.id);
   }
   const booths = ((WORLD.hc_hall_in && WORLD.hc_hall_in.objs) || []).filter(o => o.booth).map(o => o.booth).sort().join(',');
-  if (booths !== 'chirp,dash,lantern,pairs,shells') bad.push('booths ' + booths);
+  if (booths !== 'chirp,dash,duo,lantern,pairs,shells') bad.push('booths ' + booths);
   if (!SCENES.hc_invite || !SCENES.hc_gate || !SCENES.hc_arena_ask || !TRAINERS.hc_tourney) bad.push('scenes');
   if (!TRAINERS.hc_tourney || TRAINERS.hc_tourney.money !== 0) bad.push('tourney purse');
   if (m.music !== 'charity' || !WORLD.hc_church_in || WORLD.hc_church_in.music !== 'chapel' || !WORLD.hc_hall_in || WORLD.hc_hall_in.music !== 'arcade') bad.push('music map');
@@ -5164,7 +5678,8 @@ function highCharityDevCheck(){
   if (typeof PPMinigames === 'undefined' || !PPMinigames.devCheck) bad.push('minigames');
   else { const mg = PPMinigames.devCheck(); if (mg.length) bad.push(mg.join(',')); }
   for (const f of ['story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
-    'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs'])
+    'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
+    'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek'])
     if (!PPQuests.NOT_STEPS.includes(f)) bad.push('not step ' + f);
   if (!REGION_MAP.nodes.highcharity) bad.push('region');
   return bad;
@@ -5172,9 +5687,19 @@ function highCharityDevCheck(){
 PPMinigames.bind({
   careDay, grantItem, addBond, save, pet, sfx, toast, updateHUD, playerName, acorns, itemLabel,
   BAG_FULL_MSG, fitCanvas, state: () => S,
+  party: () => (S && S.party) ? S.party.slice() : [],
+  spd: p => { if (!p) return 48; const lv = p.guest ? (p.level || 5) : levelOf(p); const s = statsAt((p.species || 'tide') + '/' + (p.stage || 0), lv); return s ? s.spd : 48; },
+  monName: p => { if (!p) return 'Walkling'; if (p.guest) return p.nick; return petName(p); },
 });
 function boot(){
-  $$('#tabs canvas').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));
+  $$('#tabs canvas').forEach(c => {
+    if (c.dataset.icon === 'quest' && REGION_MAP.icon_quest) {
+      const gr = REGION_MAP.icon_quest.grid, g = ctx(c); g.clearRect(0, 0, 8, 8);
+      gr.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
+      return;
+    }
+    iconCanvas(c, ICONS[c.dataset.icon], PAL.y);
+  });
   paintUiIcons();
   fastMode = readFastPref(); renderFastTag(); $('#dbgTag').hidden = !DEBUG;
   $('#envPick').hidden = !DEBUG;               // "Pick a place" presets are debug-only
@@ -5186,11 +5711,14 @@ function boot(){
   { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
+  { const hb = heightsDevCheck(); if (hb.length) console.error('Walklings: heights check failed:', hb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
-  { const hb = highCharityDevCheck(); if (hb.length) console.error('Walklings: high charity check failed:', hb.join('; ')); }
+  { const hcb = highCharityDevCheck(); if (hcb.length) console.error('Walklings: high charity check failed:', hcb.join('; ')); }
+  { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
+  if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const away = (Date.now() - S.last) / 1000; catchUp(away); regenAll(away); }
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen();
   walk.fx = S.world.x; walk.fy = S.world.y;
@@ -5237,7 +5765,7 @@ function boot(){
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
     get petScene(){ const c = $('#petCanvas'); return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice(), w: c.width, h: c.height, cssW: parseFloat(c.style.width)||0, cssH: parseFloat(c.style.height)||0 }; },
     get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
-      look: Object.assign({}, KEEPER_LOOKS.defaults, lookOf() || {}), name: playerName(), builds: keeperBuilds }; },
+      look: Object.assign({}, KEEPER_LOOKS.defaults, shownLook() || {}), name: playerName(), builds: keeperBuilds }; },
     get follower(){ const p = pet(); return { on: followerOn(), shown: fol.x != null && followerOn(), x: fol.x, y: fol.y, fx: fol.fx, fy: fol.fy, facing: fol.facing,
       moving: !!fol.to, id: p ? p.id : null, tired: !!(p && isTired(p)), fainted: !!(p && isFainted(p)), bob: followerBob(now()), droop: p && isFainted(p) ? 1 : 0, under: fol.x === S.world.x && fol.y === S.world.y }; },
   };
@@ -5290,7 +5818,7 @@ function boot(){
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
     setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); syncSide(); return S.flags[k]; },
-    setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); save(); syncSide(); return side(); },   // WP-B0
+    setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); save(); syncSide(); return side(); },   // WP-B0
     runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.
     setStanding: (sd, n) => { const r = setStanding(sd, n); if (r != null) { save(); if (!$('#ovQuest').hidden) renderQuestTabs(); } return r; },
@@ -5336,7 +5864,10 @@ function boot(){
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
   // WP-C: the current objective (read-only), the point the cue draws on this map, and the chain's dev check.
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
-    seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: !$('#questBtn').hidden && $('#questBtn').classList.contains('pulse') }; } });
+    seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
+  Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
+  api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
+  api.phoneHack = () => phoneHack();
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
   Object.defineProperty(api, 'lanternRest', { enumerable: true, get(){
     return { cost: LANTERN_REST_COST, due: !!(S && S.world && S.world.restDue === true), hurt: partyNeedsLanternRest() };
@@ -5354,6 +5885,9 @@ function boot(){
   api.npcLine = id => id === 'amos' ? lanternGreet('Keeper Amos') : (objById(id) ? linesFor(objById(id)) : null);
   api.loyaltyLine = id => loyaltyBagLine(id);
   api.trainerLine = (id, key) => trainerLine(id, key);
+  Object.defineProperty(api, 'heightsCheck', { enumerable: true, get(){ return heightsDevCheck(); } });
+  Object.defineProperty(api, 'trialReady', { enumerable: true, get(){ return trialReady(); } });
+  Object.defineProperty(api, 'heights', { enumerable: true, get(){ return { path: S && S.flags['story.heights_path'] || null, done: !!(S && S.flags['story.heights_done']), know: !!(S && S.flags['story.know_us']) }; } });
   // BS (read-only): both meters with tier index and name, the pledge, the switch count, and whether the desk would allow a switch now.
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
   api.standingCfg = () => copy(STANDING_CFG);
@@ -5365,6 +5899,8 @@ function boot(){
   api.befriendCheck = () => befriendDevCheck();
   api.weekKey = ms => weekKey(ms);
   api.charityCheck = () => highCharityDevCheck();
+  api.exportSave = () => exportText();
+  api.importSave = text => { if (!stageCopy(text)) return false; confirmCopy(); return true; };
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
     if (typeof v === 'function') {

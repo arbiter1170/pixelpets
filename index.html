@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261014-0614">
+<meta name="kw-build" content="20261014-0831">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261014-0614">
+<link rel="stylesheet" href="style.css?v=20261014-0831">
 </head>
 <body>
 <div id="app">
@@ -65,8 +65,7 @@
           <button class="dp mid talk" id="talkBtn" type="button" aria-label="Talk" aria-disabled="true">TALK</button>
           <button class="dp right" data-dir="right" aria-label="Right"><canvas class="ico-dp" data-icon="right" width="8" height="8" aria-hidden="true"></canvas></button>
           <button class="dp down" data-dir="down" aria-label="Down"><canvas class="ico-dp" data-icon="down" width="8" height="8" aria-hidden="true"></canvas></button>
-          <button class="dpc tl" id="journalBtn" type="button" aria-label="Walkling Journal" hidden><canvas class="ico-hud" data-hud="icon_book" width="8" height="8" aria-hidden="true"></canvas><span>BOOK</span></button>
-          <button class="dpc tr" id="questBtn" type="button" aria-label="Next step" hidden><canvas class="ico-hud" data-hud="icon_quest" width="8" height="8" aria-hidden="true"></canvas><span>QUEST</span></button>
+          <button class="dpc tl" id="phoneBtn" type="button" aria-label="Phone" hidden><canvas class="ico-hud" data-hud="icon_phone" width="8" height="8" aria-hidden="true"></canvas><span>PHONE</span></button>
           <button class="dpc bl" id="walkBagBtn" type="button" aria-label="Bag" hidden><canvas class="ico-hud" data-hud="icon_bag" width="8" height="8" aria-hidden="true"></canvas><span>BAG</span></button>
           <button class="dpc br" id="mapBtn" type="button" aria-label="Map"><canvas class="ico-hud" data-hud="icon_map" width="8" height="8" aria-hidden="true"></canvas><span>MAP</span></button>
         </div>
@@ -82,37 +81,13 @@
       <div id="dexGrid" class="dex"></div>
     </section>
 
-    <!-- FRIENDS (stub) -->
-    <section id="scr-friends" class="screen">
-      <h2>FRIENDS</h2>
-      <div class="panel">
-        <div class="keeper-line"><span class="label">KEEPER</span>&nbsp;&nbsp;<b id="keeperName">Wayfarer</b></div>
-        <div class="label">YOUR KEEPER CODE</div>
-        <div id="friendCode" class="fcode">----</div>
-        <button id="copyCode" class="btn btn-play">COPY CODE</button>
-      </div>
-      <div class="panel">
-        <div class="label">ADD A FRIEND</div>
-        <input id="friendInput" placeholder="WLK-XXXX-XXXX" disabled>
-        <button class="btn" disabled>ADD (COMING SOON)</button>
-      </div>
-      <div class="panel">
-        <div class="label">FRIEND LIST</div>
-        <ul class="flist">
-          <li><span class="lock">?</span> ??? <em>empty slot</em></li>
-          <li><span class="lock">?</span> ??? <em>empty slot</em></li>
-          <li><span class="lock">?</span> ??? <em>empty slot</em></li>
-        </ul>
-        <p class="note">Online friends, visits &amp; trading come in a later update. This prototype has no server &mdash; your code is generated from your local save.</p>
-      </div>
-    </section>
   </main>
 
   <nav id="tabs">
     <button data-tab="pet" class="active"><canvas width="8" height="8" data-icon="paw"></canvas><span>PARTNER</span></button>
     <button data-tab="walk"><canvas width="8" height="8" data-icon="walk"></canvas><span>WALK</span></button>
     <button data-tab="col"><canvas width="8" height="8" data-icon="book"></canvas><span>WALKLINGS</span></button>
-    <button data-tab="friends"><canvas width="8" height="8" data-icon="friends"></canvas><span>FRIENDS</span></button>
+    <button id="questBtn" data-tab="quest" type="button"><canvas width="8" height="8" data-icon="quest"></canvas><span>QUEST</span></button>
   </nav>
 </div>
 
@@ -123,18 +98,21 @@
     <div class="bt-card bt-foe">
       <div class="bt-row"><span id="btFoeLv" class="bt-lv"></span><span id="btFoeName" class="bt-name"></span><span id="btFoeType" class="type-chip"></span><span id="btTwinkle" class="bt-twinkle" hidden>&#10022;</span></div>
       <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btFoeHp"></i></div><span id="btFoeStages" class="bt-stages"></span></div>
+      <div class="bt-row bt-mini" id="btFoe2Row" hidden><span id="btFoe2Name" class="bt-name"></span><div class="bt-hp"><i id="btFoe2Hp"></i></div></div>
     </div>
     <div id="btStage" class="bt-stage"><canvas id="battleCanvas" width="80" height="56"></canvas><div id="btSeal" class="bt-seal" hidden><canvas id="btSealArt" width="18" height="18"></canvas><b id="btSealName"></b></div></div>
     <div class="bt-card bt-me">
       <div class="bt-row"><span id="btMeName" class="bt-name"></span><span id="btMeLv" class="bt-lv"></span><span id="btMeType" class="type-chip"></span></div>
       <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btMeHp"></i></div><span id="btMeHpTxt" class="bt-hpt"></span></div>
       <div id="btMood" class="bt-mood"></div>
+      <div class="bt-row bt-mini" id="btAllyRow" hidden><span id="btAllyName" class="bt-name"></span><div class="bt-hp"><i id="btAllyHp"></i></div></div>
     </div>
     <div id="btMsg" class="bt-msg" role="status" aria-live="polite"></div>
     <div class="bt-panel">
       <div id="btActs" class="bt-acts">
         <button class="btn btn-feed bt-fight" data-bact="fight" type="button">MOVES</button>
         <button id="btBefriendAct" class="btn btn-play bt-bef" data-bact="befriend" type="button">BEFRIEND <span id="btHearts" class="bt-hearts"></span></button>
+        <button id="btAim" class="btn bt-small" data-bact="aim" type="button" hidden>TARGET</button>
         <button class="btn bt-small" data-bact="swap" type="button">SWAP</button>
         <button class="btn bt-small" data-bact="bag" type="button">BAG</button>
         <button id="btRun" class="btn btn-rest bt-small" data-bact="run" type="button">LEAVE</button>
@@ -227,12 +205,16 @@
 </div>
 
 
-<!-- Event Hall minigames (High Charity). One canvas, five games. -->
+<!-- Event Hall minigames (High Charity). Solo booths and pass-the-phone games. -->
 <div id="ovPlay" class="overlay play" hidden>
   <div class="ov-inner play-card" role="dialog" aria-modal="true" aria-labelledby="playTitle">
     <div id="playTitle" class="ov-title">Play</div>
     <p id="playRule" class="play-rule"></p>
     <canvas id="playCanvas" width="176" height="176"></canvas>
+    <div id="playPads" class="play-pads" hidden>
+      <button id="playP1" class="btn" type="button">You</button>
+      <button id="playP2" class="btn" type="button">Friend</button>
+    </div>
     <button id="playStop" class="btn" type="button">Stop</button>
     <div id="playLive" class="sr-only" aria-live="polite"></div>
   </div>
@@ -310,7 +292,52 @@
   </div>
 </div>
 
-<!-- Settings (header gear). Plain list: sound, follower, change look, start over. Account/cloud save reserved below. -->
+<!-- Phone. Keeper1 is the issued handset. A cracked handset, once you have joined Glimmerwell, replaces the shell. -->
+<div id="ovPhone" class="overlay" hidden>
+  <div class="ov-inner phone-shell" role="dialog" aria-modal="true" aria-labelledby="phoneTitle">
+    <div class="phone-top">
+      <div class="ov-title" id="phoneTitle">KEEPER1</div>
+      <button id="phoneClose" class="btn" type="button">CLOSE</button>
+    </div>
+    <p id="phoneFoot" class="hint">Copied to the Lantern desk.</p>
+    <div id="phoneHome" class="phone-apps">
+      <button class="phone-app" type="button" data-app="contacts">CONTACTS</button>
+      <button class="phone-app" type="button" data-app="notes">NOTES</button>
+      <button class="phone-app" type="button" data-app="journal">JOURNAL</button>
+      <button class="phone-app" type="button" data-app="friends">FRIENDS</button>
+      <button class="phone-app" type="button" data-app="jobs" id="phoneJobs">KEEPERUAV</button>
+      <button class="phone-app" type="button" data-app="ribbit">RIBBIT</button>
+    </div>
+    <div id="phonePane" hidden>
+      <div id="phoneBody" class="phone-body"></div>
+      <div id="phoneFriends" hidden>
+        <div class="panel">
+          <div class="keeper-line"><span class="label">KEEPER</span>&nbsp;&nbsp;<b id="keeperName">Wayfarer</b></div>
+          <div class="label">YOUR KEEPER CODE</div>
+          <div id="friendCode" class="fcode">----</div>
+          <button id="copyCode" class="btn btn-play" type="button">COPY CODE</button>
+        </div>
+        <div class="panel">
+          <div class="label">ADD A FRIEND</div>
+          <input id="friendInput" placeholder="WLK-XXXX-XXXX" disabled>
+          <button class="btn" type="button" disabled>ADD (COMING SOON)</button>
+        </div>
+        <div class="panel">
+          <div class="label">FRIEND LIST</div>
+          <ul class="flist">
+            <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+            <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+            <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+          </ul>
+          <p class="note">Online friends, visits and trading come later. This prototype has no server. Your code comes from this save.</p>
+        </div>
+      </div>
+      <button id="phoneBack" class="btn" type="button">APPS</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings (header gear). Plain list: sound, follower, change look, save copy, start over. Account/cloud save reserved below. -->
 <div id="ovSettings" class="overlay" hidden>
   <div class="ov-inner settings-inner" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="ov-title" id="setTitle">Settings</div>
@@ -320,6 +347,8 @@
       <p id="setMusicHint" class="set-hint">No sound? Check your iPhone's silent switch.</p>
       <button id="setFollower" class="set-row" type="button" aria-pressed="true"><span class="set-lab">Follower</span><span class="set-val" id="setFollowerVal">ON</span></button>
       <button id="setLook" class="set-row" type="button"><span class="set-lab">Change look</span><span class="set-val">›</span></button>
+      <button id="setCopy" class="set-row" type="button"><span class="set-lab">Save a copy</span><span class="set-val">›</span></button>
+      <button id="setRead" class="set-row" type="button"><span class="set-lab">Read a copy</span><span class="set-val">›</span></button>
       <button id="startOver" class="set-row set-danger" type="button"><span class="set-lab">Start over</span><span class="set-val">›</span></button>
       <button id="setDebug" class="set-row" type="button" aria-expanded="false" aria-controls="dbgGate"><span class="set-lab">Debug</span><span class="set-val" id="setDebugVal">OFF</span></button>
       <div id="dbgGate" class="dbg-gate" hidden>
@@ -462,11 +491,26 @@
 <div id="ovReset" class="overlay" hidden>
   <div class="ov-inner" role="alertdialog" aria-modal="true" aria-labelledby="resetMsg">
     <p id="resetMsg" class="reset-msg">Start over? Your Walklings will be gone for good.</p>
+    <button id="resetCopy" class="btn" type="button">SAVE A COPY</button>
     <div class="actions two-even">
       <button id="resetCancel" class="btn" type="button">CANCEL</button>
       <button id="resetGo" class="btn btn-danger hold" type="button" aria-describedby="resetHint"><i id="resetFill" class="hold-fill"></i><span>START OVER</span></button>
     </div>
-    <p id="resetHint" class="hint">Press and hold START OVER to confirm</p>
+    <p id="resetHint" class="hint">Save a copy first. Hold START OVER to erase this game.</p>
+  </div>
+</div>
+
+<!-- Read a saved copy (Settings). Replaces the game on this device, then reloads. -->
+<div id="ovCopy" class="overlay" hidden>
+  <div class="ov-inner" role="dialog" aria-modal="true" aria-labelledby="copyTitle">
+    <div class="ov-title" id="copyTitle">Read a copy</div>
+    <p id="copyMsg" class="reset-msg">This replaces the game on this device with the one in the file.</p>
+    <input id="copyFile" type="file" accept="application/json,.json" hidden>
+    <div class="actions two-even">
+      <button id="copyCancel" class="btn" type="button">CANCEL</button>
+      <button id="copyPick" class="btn btn-play" type="button">CHOOSE FILE</button>
+      <button id="copyYes" class="btn btn-play" type="button" hidden>BRING BACK</button>
+    </div>
   </div>
 </div>
 
@@ -553,20 +597,21 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261014-0614";</script>
-<script src="sprites.js?v=20261014-0614"></script>
-<script src="keeper.js?v=20261014-0614"></script>
-<script src="stats.js?v=20261014-0614"></script>
-<script src="moves.js?v=20261014-0614"></script>
-<script src="data/mapdata.js?v=20261014-0614"></script>
-<script src="quests.js?v=20261014-0614"></script>
-<script src="standing.js?v=20261014-0614"></script>
-<script src="save.js?v=20261014-0614"></script>
-<script src="env.js?v=20261014-0614"></script>
-<script src="sfx.js?v=20261014-0614"></script>
-<script src="minigames.js?v=20261014-0614"></script>
-<script src="cloud_config.js?v=20261014-0614"></script>
-<script src="cloud.js?v=20261014-0614"></script>
-<script src="game.js?v=20261014-0614"></script>
+<script>window.BUILD = "20261014-0831";</script>
+<script src="sprites.js?v=20261014-0831"></script>
+<script src="keeper.js?v=20261014-0831"></script>
+<script src="stats.js?v=20261014-0831"></script>
+<script src="moves.js?v=20261014-0831"></script>
+<script src="data/mapdata.js?v=20261014-0831"></script>
+<script src="quests.js?v=20261014-0831"></script>
+<script src="standing.js?v=20261014-0831"></script>
+<script src="save.js?v=20261014-0831"></script>
+<script src="env.js?v=20261014-0831"></script>
+<script src="sfx.js?v=20261014-0831"></script>
+<script src="minigames.js?v=20261014-0831"></script>
+<script src="ribbit.js?v=20261014-0831"></script>
+<script src="cloud_config.js?v=20261014-0831"></script>
+<script src="cloud.js?v=20261014-0831"></script>
+<script src="game.js?v=20261014-0831"></script>
 </body>
 </html>

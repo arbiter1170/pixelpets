@@ -165,6 +165,7 @@ test('story.cobble_end is the end card, and Mahopac stays a side objective', asy
   const got = await page.evaluate(() => {
     PixelPets.setFlag('story.cobble_end', true);
     const end = PixelPets.quest;
+    PixelPets.setFlag('story.phone_got', true);
     PixelPets.setFlag('story.mom_met', true);
     PixelPets.setFlag('story.mom_chore', true);
     PixelPets.setFlag('story.mom_sent', true);
