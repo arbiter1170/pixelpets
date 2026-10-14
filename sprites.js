@@ -441,6 +441,18 @@ function buildTiles(){
   T[':'] = mkTile(g => { px(g,PAL.m,0,0,16,16); px(g,PAL.d,0,0,16,1); px(g,PAL.d,0,8,16,1); px(g,PAL.d,0,0,1,16); px(g,PAL.d,8,0,1,8); px(g,PAL.d,4,8,1,8); px(g,PAL.h,2,2,2,1); px(g,PAL.h,10,10,2,1); });
   T.X = mkTile(g => { px(g,PAL.k,3,0,10,16); px(g,PAL.d,4,1,8,14); px(g,PAL.m,6,2,2,12); px(g,PAL.h,6,3,1,4); px(g,PAL.k,3,0,10,1); px(g,PAL.k,3,15,10,1); });
   T.m = mkTile(g => { px(g,PAL.y,0,0,16,16); px(g,PAL.d,1,3,14,10); px(g,PAL.o,2,4,12,8); for (let x=3;x<14;x+=2) px(g,PAL.d,x,5,1,6); });
+  // High Charity: plaza stone, dock planks, airship pad, and a blue civic roof (map cells stay R; roofs.col 'b').
+  T.P = mkTile(g => { px(g,PAL.h,0,0,16,16); px(g,PAL.n,0,7,16,2); px(g,PAL.n,7,0,2,16);
+    px(g,PAL.w,2,2,3,1); px(g,PAL.w,11,10,3,1); px(g,PAL.y,4,11,1,1); });
+  T.D = mkTile(g => { px(g,PAL.o,0,0,16,16); [0,4,8,12].forEach(y => px(g,PAL.d,0,y,16,1));
+    [[2,1],[9,5],[5,9],[12,13]].forEach(([x,y]) => px(g,PAL.d,x,y,1,3));
+    px(g,PAL.t,0,14,16,2); px(g,PAL.y,6,2,1,1); });
+  T.A = mkTile(g => { px(g,PAL.w,0,0,16,16); px(g,PAL.h,0,0,16,2); px(g,PAL.h,0,14,16,2);
+    px(g,PAL.h,0,0,2,16); px(g,PAL.h,14,0,2,16); px(g,PAL.y,6,6,4,4); px(g,PAL.o,7,7,2,2);
+    px(g,PAL.c,3,3,2,1); px(g,PAL.c,11,12,2,1); });
+  T.Rb = mkTile(g => { px(g,PAL.b,0,0,16,16);
+    for (let y = 0; y < 12; y += 4) { px(g,PAL.n,0,y+3,16,1); for (let x = (y/4)%2*4; x < 16; x += 8) px(g,PAL.n,x,y,1,3); px(g,PAL.h,((y/4)%2*4+2)%16,y+1,2,1); }
+    px(g,PAL.n,0,12,16,4); px(g,PAL.k,0,15,16,1); });
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
@@ -518,5 +530,30 @@ function buildWorldArt(){
   A.switch_desk_glimmer = mkTile(g => ['..ssssssssssss..', '..swwwwwwwwwws..', '..swlwlwlwlwls..', '..ssssssssssss..', '...d........d...', '...d.hhhhhh.d...',
     '...d.hwhrhw.d...', '...d.hwhlhw.d...', '.llllllllllllll.', '.swwwwwwwwwwwws.', '.slllllllllllls.', '.slllwwllwwllls.', '.slllwwllwwllls.', '.slllllllllllls.',
     '.dddddddddddddd.', '..d..........d..'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
+  // High Charity props. One tile each; the airship sits on an A pad and the nave is a row of pews.
+  A.airship = mkTile(g => { px(g,PAL.c,3,1,10,6); px(g,PAL.s,4,2,8,3); px(g,PAL.w,5,2,2,1);
+    px(g,PAL.d,7,7,2,3); px(g,PAL.o,4,10,8,3); px(g,PAL.y,5,11,2,1); px(g,PAL.d,4,13,8,1); });
+  A.pew = mkTile(g => { px(g,PAL.d,1,4,14,2); px(g,PAL.o,2,5,12,1); px(g,PAL.d,1,7,14,3); px(g,PAL.o,2,8,12,1);
+    px(g,PAL.d,2,10,2,5); px(g,PAL.d,12,10,2,5); });
+  A.altar = mkTile(g => { px(g,PAL.w,2,4,12,6); px(g,PAL.y,2,4,12,1); px(g,PAL.d,3,10,2,5); px(g,PAL.d,11,10,2,5);
+    px(g,PAL.o,3,14,10,1); px(g,PAL.d,6,0,4,1); px(g,PAL.y,7,1,2,3); px(g,PAL.o,7,2,2,1); });
+  A.school_desk = mkTile(g => { px(g,PAL.o,1,6,14,3); px(g,PAL.d,1,8,14,1); px(g,PAL.d,2,9,2,6); px(g,PAL.d,12,9,2,6);
+    px(g,PAL.r,3,4,5,2); px(g,PAL.w,4,4,3,1); px(g,PAL.n,10,3,3,3); px(g,PAL.b,11,4,1,1); });
+  A.bank_counter = mkTile(g => { px(g,PAL.n,1,5,14,8); px(g,PAL.h,1,5,14,2); px(g,PAL.w,2,6,4,1);
+    px(g,PAL.d,2,13,2,3); px(g,PAL.d,12,13,2,3); px(g,PAL.w,4,9,5,2); px(g,PAL.k,4,10,5,1); px(g,PAL.y,11,8,2,2); });
+  A.apt_bed = mkTile(g => { px(g,PAL.m,1,1,14,15); px(g,PAL.y,2,2,12,3); px(g,PAL.o,2,4,12,1);
+    px(g,PAL.b,2,6,12,8); px(g,PAL.c,2,6,12,1); px(g,PAL.c,2,9,12,1); px(g,PAL.c,2,12,12,1); });
+  A.mannequin = mkTile(g => { px(g,PAL.h,6,1,4,3); px(g,PAL.w,7,2,2,1); px(g,PAL.p,5,4,6,6); px(g,PAL.c,6,5,4,2);
+    px(g,PAL.d,7,10,2,3); px(g,PAL.m,4,13,8,1); });
+  A.barracks_banner = mkTile(g => { px(g,PAL.d,2,1,2,14); px(g,PAL.t,4,2,9,8); px(g,PAL.y,4,2,9,1); px(g,PAL.l,6,4,5,2);
+    px(g,PAL.y,7,7,3,2); px(g,PAL.t,6,10,2,2); px(g,PAL.t,10,10,2,2); });
+  A.skydock_console = mkTile(g => { px(g,PAL.d,1,4,14,10); px(g,PAL.o,2,5,12,8); px(g,PAL.n,3,6,10,4);
+    px(g,PAL.y,4,7,2,2); px(g,PAL.o,7,7,2,2); px(g,PAL.c,10,7,2,2); px(g,PAL.d,3,14,2,2); px(g,PAL.d,11,14,2,2); });
+  A.arena_rope = mkTile(g => { px(g,PAL.d,1,3,3,12); px(g,PAL.o,2,4,1,10); px(g,PAL.d,12,3,3,12); px(g,PAL.o,13,4,1,10);
+    px(g,PAL.y,4,6,8,1); px(g,PAL.r,4,9,8,1); });
+  A.hall_booth = mkTile(g => { px(g,PAL.d,1,2,1,13); px(g,PAL.d,14,2,1,13); px(g,PAL.y,1,2,14,3); px(g,PAL.o,3,3,3,1); px(g,PAL.o,9,3,3,1);
+    px(g,PAL.o,2,6,12,6); px(g,PAL.d,2,8,12,1); px(g,PAL.y,6,9,4,2); });
+  A.marina_buoy = mkTile(g => { px(g,PAL.b,0,12,16,4); px(g,PAL.c,2,12,4,1); px(g,PAL.y,6,4,4,7); px(g,PAL.o,6,6,4,2);
+    px(g,PAL.w,7,5,1,1); px(g,PAL.d,7,3,2,1); px(g,PAL.d,8,11,1,3); });
   return A;
 }

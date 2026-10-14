@@ -25,7 +25,9 @@
   const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
-    'story.switches', 'story.switch_chapter', 'story.switch_at'];   // BS: switch bookkeeping written by the engine, never a step
+    'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
+    'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
+    'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs'];   // High Charity side quest, not a chain step
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
