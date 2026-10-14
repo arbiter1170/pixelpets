@@ -41,7 +41,7 @@ The old keeper-hq branch reused D27–D31. `main` already had D27 (Mahopac, sett
 
 ## Scoped, not built (town boards, Oct 14, 2026)
 
-Nothing in this section is in the game. The map tiles, the draft reports, and the unwired slips are in [TOWN_BOARD.md](TOWN_BOARD.md). When a row is settled, move it to Settled with the date and the call, and only then build that part. Q17 and Q18 stay ahead of this work.
+Nothing in this section is in the game. The map tiles, the draft reports, and the unwired slips are in [TOWN_BOARD.md](TOWN_BOARD.md). When a row is settled, move it to Settled with the date and the call, and only then build that part. Q17 and Q18 are in the game. This section still waits on D37–D49. A quest that comes out of a settled row follows `.cursor/skills/walklings-quests/SKILL.md`.
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|

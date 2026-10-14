@@ -15,8 +15,8 @@ Town boards are scoped in `TOWN_BOARD.md` and not built. D37–D49 in `OPEN_DECI
 
 ## Read first
 
-1. `quests.js` through `devCheck`. A step is `{ id, when?, done, text, place, target?: { map, x, y }, glimmer?: { text, place } }`. `CHAIN` is the shared main story. `SIDE_CHAINS` is independent chains. `sideCurrent` returns the first incomplete step of the first chain that has one. The phone chain is featured until `story.phone_got`, then Mom's dream (D27). A chain appended at the end stays hidden until that dream is finished. Board pins must not be inserted into that list. They are a separate list, drawn in the same blue, once D40 is settled.
-2. `OPEN_DECISIONS.md`. The next free id is one past the highest row. Settled rows move to Settled with the date and the call.
+1. `quests.js` through `devCheck`. A step is `{ id, when?, done, text, place, target?: { map, x, y }, glimmer?: { text, place } }`. `CHAIN` is the shared main story. `SIDE_CHAINS` is independent chains. `sideCurrent` returns the first incomplete step of the first chain that has one. The phone chain is featured until `story.phone_got`, then Mom's dream (D27). A chain appended at the end stays hidden until every earlier chain is done, including Mom's last step `dream_study` (telling Ilse). `story.dream_woke` is only the step before that. Board pins must not be inserted into that list. They are a separate list, drawn in the same blue, once D40 is settled.
+2. `OPEN_DECISIONS.md`. The next free id is one past the highest row, which is D50. D37 is already used twice (the region-map row, and the town-board list). Do not insert a new row under an existing number. Settled rows move to Settled with the date and the call.
 3. `TOWN_BOARD.md` if the work touches a board, a square, the Town Board app, a slip, or a bounty.
 4. One real side quest before inventing a shape. Phone grant: `data/civic.json` `phone_grant` and the Route 1 `r1_phone` trigger. Mom: `mom` in `data/interiors.json` and `mom_hello` in `data/mahopac.json`. Copy Mom for a new accept. The Route 1 trigger is a shipped exception. New accepts are conversations.
 5. `game.js` `execStep` and `drawObjectiveCue`. A quest does not need edits there. Main chevron is `PAL.y` (`#ffcd75`). Side and board chevrons are `PAL.c` (`#41a6f6`). Same tile shifts 7px.
@@ -43,7 +43,7 @@ Town boards are scoped in `TOWN_BOARD.md` and not built. D37–D49 in `OPEN_DECI
 
 Leave `nameEntry`, `showBasket`, `givePet`, `pledge`, `standing`, `payRest`, `lookPick`, `play`, `push`, `spot`, `encounter`, `seal`, and `chirp` to the systems that own them.
 
-Conditions: `flag`, `!flag`, `flag=value`, `flag>=n` and the other inequalities (unset is 0), `seal:id`, `has:name`, `talked`. `standing.keepers>=2` compares tier, not points. Quest `when` / `done` also allow `pets>=N`.
+Scene conditions (`game.js` `cond()`): `flag`, `!flag`, `flag=value`, `flag>=n` and the other inequalities (unset is 0), `seal:id`, `has:name`, `talked`. `standing.keepers>=2` compares tier, not points. Quest `when` / `done` go through `PPQuests.evalCond` only: `!flag`, `pets>=N`, `seal:id`, `flag=value`, and a truthy flag. A side-chain `when` of `story.x>=2` does not work.
 
 NPC lines: first matching key wins. `"!story.flag": "@sceneId"` runs the scene. `"else"` is the fallback. Chatter and toasts ≤ 40 characters. A `say` body ≤ 110, no double space, straight quotes, `...` for a trailing beat. Tokens allowed in scenes: `{name}` `{player}` `{pet}` `{species}` `{type}` `{suggest}` `{rival}` `{rivalType}`. Quest `text` and `place` allow no tokens. `text` ≤ 110, `place` ≤ 24 (`LINE_MAX`, `PLACE_MAX`).
 
@@ -76,7 +76,7 @@ Add `tests/<feature>.spec.js`. `trackErrors(test, expect)`. Seed with `starterSa
 - `PixelPets.questCheck` is `[]` after `python3 tools/gen_mapdata.py`.
 - The yellow and blue chevrons are unchanged in color.
 - Acceptance is the NPC's yes. A sign, a phone row, or a board posting does not set the yes-flag.
-- KeeperUAV and Botnet still say the desk is warming up. `hq_lumen` still says KeeperUAV's board is blank.
+- KeeperUAV's jobs pane still ends with "No jobs are open. The desk is warming up." The two lines above it stay the Fernbrook lantern check and the Route 2 lamp count. Botnet still says the shelf is empty, the augment slot is empty, and "Jobs: none posted. Come back later." `hq_lumen` still says KeeperUAV's board is blank.
 - `CHAIN` ids, order, `done` flags, glimmer overrides, and `end.done === []` are unchanged.
 - The spec passes, `tests/README.md` has a row, and the spec asserts save `v` is 2.
 - Guessed copy has an Open row: number, area, the decision, what the build does today, and the file to edit.

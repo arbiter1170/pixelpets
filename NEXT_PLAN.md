@@ -66,10 +66,10 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 | Friends v1: offline trade code, then backend + visit, then live trades | Stub, no backend (3a/3b/3c) | L |
 | Online saves Phase 2 (Link Google, sign out, multi-device) | Phase 1 built with `cloud_config.js` = null. Blocked on Vincent: Firebase project, web config, privacy wording | L |
 | Eggs | `eggs` save section exists, empty; no game code | M |
-| Box screen: reorder, release, proper UI; orphan recovery UI | Box is a list; orphans invisible | M |
+| Box screen: reorder, release, proper UI; orphan recovery UI | Built (Q17). WALKLINGS tab: UP/DOWN, RELEASE, LEFT BEHIND | M |
 | Rename an existing Walkling | Left from Nicknames | S |
-| Installable app (manifest + service worker, offline) | Not started | S-M |
-| Export/backup before Start over | Left | S |
+| Installable app (manifest + service worker, offline) | Built (Q18). `manifest.json` and `sw.js` | S-M |
+| Export/backup before Start over | Built (Build 7). Save a copy / Read a copy | S |
 | Music volume slider, iPhone listen-through; MUSIC Q1 (iOS silent switch) | Open with Vincent | S |
 | Wild creatures not persisted across reload | By design for now | S |
 | Small-viewport map at 320x568 (~150 px tall) | Known cramped | S-M |
@@ -509,7 +509,7 @@ Shipped. `manifest.json` and `sw.js` let the game be added to the home screen an
 
 ### Q19 — Town boards — scoped, not started
 
-Do not start this ahead of Q17 or Q18. The scope is [TOWN_BOARD.md](TOWN_BOARD.md). The open calls are D37–D49 in [OPEN_DECISIONS.md](OPEN_DECISIONS.md). A future quest uses `.cursor/skills/walklings-quests/SKILL.md`.
+Q17 and Q18 are already in the game. This stays blocked on D37–D49. The scope is [TOWN_BOARD.md](TOWN_BOARD.md). A future quest uses `.cursor/skills/walklings-quests/SKILL.md`.
 
 TB-1 is the empty board, the reports, and the phone app. TB-2 is the Hearthmoor crossing and the Fernbrook forecourt. TB-3 is one slip (Cald's gate count) after D39 and D40. No quest is wired before that. KeeperUAV stays the blank watch desk.
 
@@ -595,4 +595,4 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (D37–D49).** Scoped in `TOWN_BOARD.md`. Nothing is built. Q19 waits behind Q17 and Q18.
+9. **Town boards (D37–D49).** Scoped in `TOWN_BOARD.md`. Nothing is built. Q19 is not waiting on the box. It waits on those open rows.

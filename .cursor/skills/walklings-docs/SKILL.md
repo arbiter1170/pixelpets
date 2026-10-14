@@ -3,7 +3,8 @@ name: walklings-docs
 description: |
   Use when a Walklings change should update status docs, or when those docs may have drifted from the code.
   Touch BACKLOG, CHANGELOG, NEXT_PLAN, OPEN_DECISIONS, README, and tests/README together.
-  Do not renumber an existing Q or D id. Leave save v at 2. Quest edits also follow walklings-quests.
+  Do not renumber an existing Q or D id. Leave save v at 2.
+  When the task adds or changes a side quest, town-board slip, bounty, or phone job pointer, read .cursor/skills/walklings-quests/SKILL.md and follow it. Leave those steps there.
 ---
 
 # Walklings docs
@@ -12,7 +13,7 @@ Use this after a code change, and when a session is only here to correct status 
 
 ## Read first
 
-1. `.cursor/skills/README.md`. That index is the list of skills. Quest, slip, and bounty work also follows `walklings-quests`.
+1. `.cursor/skills/README.md`. That index is the list of skills. When the task adds or changes a side quest, town-board slip, bounty, or phone job pointer, read `.cursor/skills/walklings-quests/SKILL.md` and follow it. Leave those steps there.
 2. `BACKLOG.md`, the "Next work" section and the queue table. Status words that already exist: **BUILT**, **DONE**, **SCOPED, NOT STARTED**.
 3. `CHANGELOG.md`. Newest entry first. The build stamp is `version.json`.
 4. `NEXT_PLAN.md` §3. It is the queue an implementer follows.
