@@ -150,6 +150,10 @@ test('the side quest replaces only the idle end card', async ({ page }) => {
   expect(early).not.toBe('hc_games');
 
   await boot(page, citySave());
+  const council = await page.evaluate(() => PixelPets.quest.id);
+  expect(council).toBe('hc_council');
+
+  await boot(page, citySave({ 'story.hc_council_done': true }));
   const side = await page.evaluate(() => ({ id: PixelPets.quest.id, place: PixelPets.quest.place, text: PixelPets.quest.text }));
   expect(side.id).toBe('hc_games');
   expect(side.place).toBe('High Charity Event Hall');
@@ -159,7 +163,7 @@ test('the side quest replaces only the idle end card', async ({ page }) => {
   const glim = await page.evaluate(() => PixelPets.quest.text);
   expect(glim).toMatch(/Ilse wrote anyway/);
 
-  const done = citySave();
+  const done = citySave({ 'story.hc_council_done': true });
   for (const id of ['lantern', 'shells', 'chirp', 'dash', 'pairs']) done.flags['story.hc_clear_' + id] = true;
   await boot(page, done);
   expect(await page.evaluate(() => PixelPets.quest.id)).toBe('end');

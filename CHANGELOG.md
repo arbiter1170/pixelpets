@@ -2,6 +2,13 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3.
 
+## 20261014-0705 — Lantern Council (Q19)
+
+- After Cobblecrest, Keepers are sent to Sky-Dock Command. Captain Lumen names the Fernbrook Seal and the Cobblecrest Seal, then leaves the Brinewick light dark. The road does not open.
+- The quest row is Keepers only. A Glimmerwell save stays on the idle end card. While the council is still open, Ilse's Event Hall pointer waits.
+- The scene grants 10 Keepers Standing once (`hc_council_k`). Talking to Lumen again, or stepping up to her, does not grant it twice.
+- If Ilse's letter was already read, Lumen says it arrived ahead of the player.
+
 ## 20261014-0628 — Look and listen (Q20)
 
 - Bright Tier 2 Lanyard is a real 16×16 badge: the tier-1 gold rim and mint field, with a second white mark. The procedural cord placeholder is gone.

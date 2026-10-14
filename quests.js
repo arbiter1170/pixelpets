@@ -143,6 +143,9 @@
     { id: 'hook', done: ['story.cobble_end'],
       text: 'Rook is outside the Hall with news from the quarry.', place: "Outside Hale's Hall",
       target: { map: 'cobblecrest', x: 25, y: 7 } },
+    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'],
+      text: 'High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', place: 'High Charity, sky-dock',
+      target: { map: 'hc_command_in', x: 2, y: 3 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];

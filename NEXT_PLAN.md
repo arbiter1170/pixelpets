@@ -448,15 +448,15 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Oct 14 evening queue
 
-Do these in order. Each one is one PR. Q19 starts now. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR.
+Do these in order. Each one is one PR. Q19 and Q20 have shipped. Q16 starts now. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR.
 
 Why this order, given what just shipped: High Charity (PR #19), Mahopac (PR #17), the 5-Acorn rest (PR #18), faction music (PR #15), and the debug panel (PR #21) are on `main`. The capital has a coach and an optional Event Hall, and no main-chain beat after `story.cobble_end`. The Keepers mission (Q19) and the art pass (Q20) use that city and the maps already on `main`. The 19-file merge (Q16) stays the way Glimmerwell reaches the same wall. The Glimmerwell mission (Q21) waits until that wall is the cart scene, not the Fernbrook teaser. Brinewick, Hall #3, and Seal 3 stay on hold. Q17 and Q18 follow Q21.
 
 This pass already landed the QA the third review asked for: `tests/qa_gaps.spec.js` and `PixelPets.mapTrack`. That is not a fifth build.
 
-### Build 7 — Lantern Council (Keepers) — Q19 — **next**
+### Build 7 — Lantern Council (Keepers) — Q19 — **shipped**
 
-One main-chain scene after `story.cobble_end`. No new map, no combat, no Brinewick region. Ships on current `main`. Does not wait on Q16.
+Shipped. One main-chain scene after `story.cobble_end`. No new map, no combat, no Brinewick region. The spec below is what the scene does.
 
 The Event Hall (Ilse's letter, five minigames, `story.hc_invite`, `HC_QUEST`) is already shipped and is not this mission. The gym already says the Seals stay with Fen and Hale. Nothing reads both Seals back to the player.
 
@@ -497,7 +497,7 @@ Checked, and not in this build: `icon_quest`, both Standing emblems, `seal_glim_
 
 Tests: extend `tests/qa_gaps.spec.js`. `mapTrack('route2_glen')` is no longer `null`. `mapTrack('fernbrook')` is the glimmer loop only while pledged glimmer, and `town` otherwise. `mapTrack('highcharity')` stays `charity` for both sides. `mapTrack('cobble_quarry')` is the quarry id. `musicCheck()` stays empty.
 
-### Q16 — Land the stranded Act 1 stack — Build 9 — after Q20
+### Q16 — Land the stranded Act 1 stack — Build 9 — **next**
 
 Bring `origin/cursor/keeper-hq-phone-0bb2` (`46113b2`) onto current `main`. This is a merge, not a rewrite. The content below under "Reference: Builds 4–6" is what that branch already plays. `d43dde7` is an ancestor of that tip, not the tip.
 

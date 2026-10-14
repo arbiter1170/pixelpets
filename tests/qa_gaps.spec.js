@@ -159,11 +159,13 @@ test('map loops follow town, route, dream, charity, chapel, and arcade', async (
   expect(got.tracks['no-such-map']).toBeNull();
 });
 
-test('story.cobble_end is the end card, and Mahopac stays a side objective', async ({ page }) => {
+test('story.cobble_end opens the Lantern Council, and Mahopac stays a side objective', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const got = await page.evaluate(() => {
     PixelPets.setFlag('story.cobble_end', true);
+    const council = PixelPets.quest;
+    PixelPets.setFlag('story.hc_council_done', true);
     const end = PixelPets.quest;
     PixelPets.setFlag('story.mom_met', true);
     PixelPets.setFlag('story.mom_chore', true);
@@ -172,10 +174,11 @@ test('story.cobble_end is the end card, and Mahopac stays a side objective', asy
     const side = PPQuests.sideCurrent({ flags: PixelPets.state.flags, seals: PixelPets.state.seals, pets });
     const saved = JSON.parse(localStorage.getItem('pixelpets.save.v2'));
     return {
-      id: PixelPets.quest.id,
-      text: PixelPets.quest.text,
-      place: PixelPets.quest.place,
-      before: end && end.id,
+      id: end && end.id,
+      text: end && end.text,
+      place: end && end.place,
+      before: council && council.id,
+      councilText: council && council.text,
       sideId: side && side.id,
       sideText: side && side.text,
       cobble: PixelPets.state.flags['story.cobble_end'],
@@ -183,7 +186,8 @@ test('story.cobble_end is the end card, and Mahopac stays a side objective', asy
       savedV: saved && saved.v,
     };
   });
-  expect(got.before).toBe('end');
+  expect(got.before).toBe('hc_council');
+  expect(got.councilText).toMatch(/Lantern Council/);
   expect(got.id).toBe('end');
   expect(got.text).toBe(END_TEXT);
   expect(got.place).toBe('The Amberwild');
