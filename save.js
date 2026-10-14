@@ -187,6 +187,8 @@ const PPSave = (() => {
     fill(w, 'map', x => typeof x === 'string', 'proto');
     fill(w, 'x', Number.isInteger, 3); fill(w, 'y', Number.isInteger, 3);
     fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || x === 'hearthmoor' || x === 'fernbrook' || x === 'cobblecrest', null);
+    // After a party wipe the Lantern House door stays shut until the party rests (additive; absent means no).
+    if (w.restDue !== true) delete w.restDue;
     for (const k of ['bag', 'seals', 'flags']) fill(s, k, isObj, {});
     // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
     for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];

@@ -713,7 +713,10 @@ if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x:
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
-const sceneSteps = id => { const s = side(); return (s !== SIDE_DEFAULT && SCENES[id + '@' + s]) || SCENES[id]; };
+const sceneSteps = id => {
+  if (id === 'lantern_rest') return lanternBedSteps();   // runtime: the whole party, and a few Acorns when someone is hurt
+  const s = side(); return (s !== SIDE_DEFAULT && SCENES[id + '@' + s]) || SCENES[id];
+};
 let sideApplied = null;
 function syncSide(){                                   // cheap; called every frame and before a battle inside a scene
   const s = side(); if (s === sideApplied) return; sideApplied = s;
@@ -1005,6 +1008,10 @@ function tryStep(d){
     if (dr && dn === 'up' && tileAt(nx, ny) === 'H') enterDoor(dr);
     return;
   }
+  if (lanternHold() && lanternDoorHere()) {   // a wipe left you on Fernbrook's lantern door: you may turn back into it, not walk off
+    S.world.facing = dn; clearMoves(); sfx('denied');
+    const door = lanternDoorHere(); runSteps(placeSteps(door), { npc: door }); return;
+  }
   if (warpBlocked(nx, ny)) { S.world.facing = dn; return; }   // the gate trigger one tile earlier tells you why
   const w = wildAt(nx, ny);
   if (w) { if (p && w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
@@ -1046,7 +1053,10 @@ function onLand(){
   if (S.steps % 50 === 0 && !found) toast(S.steps + ' steps! Nice walk.');   // a find says more than the step count
   const x = S.world.x, y = S.world.y;
   const wp = warpAt(x, y);
-  if (wp && !(wp.need && !cond(wp.need, false))) { if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return; }
+  if (wp && !(wp.need && !cond(wp.need, false))) {
+    if (lanternHold() && LANTERN_ROOMS[CUR.id]) { blockLanternExit(); return; }   // the mat stays shut until the party rests
+    if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return;
+  }
   const pk = objAt(x, y, o => o.kind === 'pickup');
   if (pk) {                                  // INVENTORY §8: clamped to the stack cap; the flag is set either way, so nothing loops
     const r = grantItem(pk.item, pk.n); S.flags['item.' + pk.id] = true; sfx(r.added ? 'stinger_item' : 'denied');
@@ -1356,7 +1366,8 @@ function enterDoor(dr){
   if (dr.panel) openPlace(dr);
 }
 // MAPS_SLICE §9 place panels (Fernbrook keeps panels; Hearthmoor's became rooms). The Lantern House: the keeper's line -> REST / LEAVE;
-// REST heals the team and makes this town the respawn (§7 beat 6). The Trial Hall panel arrives with Trial Hall #1.
+// REST heals the whole party and makes this town the respawn (§7 beat 6). Hurt parties pay a few Acorns. After a wipe the door
+// stays shut until that rest. The Trial Hall panel arrives with Trial Hall #1.
 function lanternGreet(who){
   const fallback = 'Long walk from Hearthmoor? Rest a while.';
   if (who !== 'Keeper Amos') return fallback;
@@ -1377,13 +1388,19 @@ function glimmerHallSteps(t, pn){
 function placeSteps(dr){
   if (dr.panel === 'lantern') {
     const who = dr.keeper || '';
-    const opts = [['Rest a while', [['rest'], ['respawnHere'], ['say', '', 'You all doze in the lantern glow. Your team is rested.']]]];
+    const hold = lanternHold();
+    const opts = [lanternRestOption()];
     // BS: the Keepers' Pledge desk is this keeper's panel (STANDING_CFG.switch.desks.keepers), shown only when it would be a switch.
     if (who === SC_STANDING.switch.desks.keepers.who && deskOpen('keepers')) opts.push([SC_STANDING.switch.option, pledgeDeskSteps('keepers')]);
-    opts.push(['Leave', []]);
-    return [['say', who, lanternGreet(who)],
+    opts.push(hold
+      ? ['Not yet', [['say', who, 'The door stays shut until the party is rested.']]]
+      : ['Leave', []]);
+    const greet = hold
+      ? 'Your team is worn out. A rest costs ' + LANTERN_REST_COST + ' Acorns and heals everyone.'
+      : lanternGreet(who);
+    return [['say', who, greet],
       ['if', 'story.starter_received',
-        [['choice', 'Let your team rest?', opts]],
+        [['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]],
         [['say', who, 'No team to rest yet? Come back with a friend.']]]];
   }
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
@@ -1567,9 +1584,20 @@ function questPointOnMap(){
   }
   const ex = routeExit(CUR.id, q.target.map); return ex ? { x: ex.x, y: ex.y, here: false } : null;
 }
+function restBedCue(){
+  if (!CUR || !LANTERN_ROOMS[CUR.id]) return null;
+  let best = null, bestD = 1e9;
+  for (const o of CUR.objs) {
+    if (o.kind !== 'prop' || o.sprite !== 'rest_bed' || !present(o)) continue;
+    const d = Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y);
+    if (d < bestD) { bestD = d; best = o; }
+  }
+  return best ? { x: best.x, y: best.y, here: true } : null;
+}
 function drawObjectiveCue(g, cx, cy, t){
   if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
-  const pt = questPointOnMap(); if (!pt) return;
+  const held = lanternHold();
+  const pt = held ? restBedCue() : questPointOnMap(); if (!pt) return;   // after a wipe the arrow points at a bed, not the door out
   if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;   // standing on it
   const c = $('#mapCanvas'), VW = c.width, VH = c.height;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1958,6 +1986,14 @@ async function execStep(st){
     case 'pledge': { if (!PPStanding.isSide(a)) return; sc.view.flags['story.side'] = a; pend(() => { switchSide(a, { free: !!b }); }); return; }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
     case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest') S.world.respawn = r; }); return; }
+    // Lantern rest only (home naps stay on `rest`, free). Heals the whole party. A hurt party pays LANTERN_REST_COST;
+    // a shortfall is covered so a wipe at 0 Acorns cannot trap you. Sets scene.view flag lantern.rest for the next line.
+    case 'payRest': {
+      if (!partyNeedsLanternRest()) { sc.view.flags['lantern.rest'] = 'full'; setRestDue(false); sfx('rest'); return; }
+      if ((S.money | 0) >= LANTERN_REST_COST) { S.money = (S.money | 0) - LANTERN_REST_COST; sc.view.flags['lantern.rest'] = 'paid'; }
+      else sc.view.flags['lantern.rest'] = 'covered';
+      S.party.forEach(q => restPet(q, 'full')); setRestDue(false); sfx('rest'); return;
+    }
     case 'lookPick': {
       sc.skip = false;
       const lk = await lookPickStep(sc.id === 'intro');
@@ -2547,14 +2583,74 @@ function closeBattle(){
   const back = trackFor(CUR); if (back) PPSound.music(back, { fadeOut: 300, minDelay: 800, fadeIn: 600, restart: true, afterStingers: true });
   if (cele && !onEnd && !scene) openJournalEntry(Object.assign({ celebrate: true }, cele));
 }
+// A Lantern House rest heals the whole party. Hurt Walklings cost a few Acorns (OPEN_DECISIONS D27). Home naps stay free (`rest`).
+const LANTERN_REST_COST = 5;
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1 };
+function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
+function setRestDue(on){ if (!S || !S.world) return; if (on) S.world.restDue = true; else delete S.world.restDue; }
+// After a wipe, the party has to rest before leaving. Clears itself once nobody is hurt (regen, a debug heal).
+function lanternHold(){
+  if (!S || !S.world || S.world.restDue !== true) return false;
+  if (!partyNeedsLanternRest()) { setRestDue(false); save(); return false; }
+  return true;
+}
+function lanternDoorHere(){
+  if (!S || !CUR) return null;
+  return CUR.objs.find(o => o.kind === 'door' && o.panel === 'lantern' && present(o) && o.x === S.world.x && o.y === S.world.y) || null;
+}
+function lanternRestOption(){
+  const hurt = partyNeedsLanternRest();
+  const label = hurt ? 'Rest (' + LANTERN_REST_COST + ' Acorns)' : 'Rest a while';
+  return [label, [
+    ['payRest'], ['respawnHere'],
+    ['if', 'lantern.rest=paid',
+      [['say', '', 'You leave ' + LANTERN_REST_COST + ' Acorns. You all doze in the lantern glow. Your team is rested.']],
+      [['if', 'lantern.rest=covered',
+        [['say', '', "You're short on Acorns. The keeper covers the fee, and everyone wakes up rested."]],
+        [['say', '', 'Your team is already rested. This Lantern House will remember you.']]]]],
+  ]];
+}
+function lanternBedSteps(){
+  const hold = lanternHold();
+  const opts = [lanternRestOption(), hold
+    ? ['Not yet', [['say', '', 'The door stays shut until the party is rested. Face a bed and talk to it.']]]
+    : ['Not now', []]];
+  return [
+    ['say', '', hold
+      ? 'Your team is worn out. These beds rest everyone, for ' + LANTERN_REST_COST + ' Acorns.'
+      : 'Three soft beds under a warm lantern.'],
+    ['if', 'story.starter_received',
+      [['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]],
+      [['say', '', 'The beds look cosy, but you have no one to tuck in yet.']]],
+  ];
+}
+// Stepped onto the exit mat while the party still owes a rest. After they rest, the step they were blocked from finishes.
+function blockLanternExit(){
+  clearMoves(); sfx('denied');
+  const map = CUR.id;
+  runSteps(lanternBedSteps(), { id: 'lantern_rest' }).then(() => {
+    if (scene || fade.busy || !S || CUR.id !== map || lanternHold()) return;
+    const wp = warpAt(S.world.x, S.world.y);
+    if (wp && !(wp.need && !cond(wp.need, false))) warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing });
+  });
+}
+// The design JSON still says the rest is free. Players read the cost, so the signs are patched here.
+(function patchLanternSigns(){
+  const put = (map, id, text) => { const o = WORLD[map] && WORLD[map].objs.find(x => x.id === id); if (o) o.text = text; };
+  const n = LANTERN_REST_COST;
+  put('hearthmoor', 'hm_sign_lantern', 'LANTERN HOUSE · Rest the whole party. ' + n + ' Acorns.');
+  put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns. — I."');
+  put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
+})();
 // §7.2 team wipe: back to world.respawn's Lantern House (Hearthmoor: inside, by the beds; INTERIORS slicePatch respawnIn).
-// Nothing lost, nobody healed, timers keep running.
+// Nothing lost. Nobody is healed until they rest the whole party, and the way out stays shut until they do.
 function respawnAfterWipe(){
   const id = WORLD[S.world.respawn] ? S.world.respawn : 'hearthmoor', m = WORLD[id];
   const at = m.respawnIn ? m.respawnIn : Object.assign({ map: id }, m.respawn || m.safe);
-  clearMoves(); arriveAt(at);
-  toast(m.respawnIn ? 'Your team is worn out... you wake at the Lantern House. Rest by the beds.'
-    : 'Your team is worn out... you wake at the ' + (m.name || 'town') + ' Lantern House door. Step inside to rest.');
+  setRestDue(true); clearMoves(); arriveAt(at);
+  const door = lanternDoorHere();
+  if (door) openPlace(door);
+  else runSteps(lanternBedSteps(), { id: 'lantern_rest' });
 }
 // Lantern House REST / interior `rest` step (Phase M calls this): every party pet to full HP, naps cleared.
 function lanternRest(){ S.party.forEach(q => restPet(q, 'full')); updateHUD(); save(); }
@@ -3077,6 +3173,8 @@ const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap peop
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkTipText(){
   if (!S || !S.flags['story.starter_received']) return WALK_TIP_DEFAULT;
+  if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
+  if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
   if (!S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
@@ -4278,6 +4376,9 @@ function boot(){
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: !$('#questBtn').hidden && $('#questBtn').classList.contains('pulse') }; } });
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
+  Object.defineProperty(api, 'lanternRest', { enumerable: true, get(){
+    return { cost: LANTERN_REST_COST, due: !!(S && S.world && S.world.restDue === true), hurt: partyNeedsLanternRest() };
+  } });
   // WP-B0: the pledged side, which scene id / trainer a base id resolves to right now, and the data file's dev check (read-only).
   Object.defineProperty(api, 'side', { enumerable: true, get(){ return side(); } });
   api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
