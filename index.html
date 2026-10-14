@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261014-0843">
+<meta name="kw-build" content="20261014-0918">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -12,8 +12,10 @@
 <meta name="application-name" content="Walklings">
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
-<link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261014-0843">
+<link rel="icon" href="icons/icon-192.png?v=20261014-0918">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261014-0918">
+<link rel="manifest" href="manifest.json?v=20261014-0918">
+<link rel="stylesheet" href="style.css?v=20261014-0918">
 </head>
 <body>
 <div id="app">
@@ -157,9 +159,33 @@
   <div class="map-inner" role="dialog" aria-modal="true" aria-label="Region map">
     <div class="map-top"><div class="map-title" id="mapTitle">THE AMBERWILD</div><button id="mapClose" class="btn map-x" type="button">CLOSE</button></div>
     <canvas id="regionCanvas" width="320" height="192" aria-hidden="true"></canvas>
-    <div class="map-place"><div class="map-pname" id="mapPlaceName"></div><div class="map-pblurb" id="mapPlaceBlurb"></div></div>
+    <div class="map-place">
+      <div class="map-pname"><span id="mapPlaceName"></span><span id="mapHere" class="map-here" hidden>YOU</span></div>
+      <div class="map-pblurb" id="mapPlaceBlurb"></div>
+      <div class="map-hold" id="mapHold" hidden></div>
+    </div>
     <p class="map-hint map-quest" id="mapQuest" hidden></p>
-    <p class="map-hint">Tap anywhere to close.</p>
+    <div class="map-key" id="mapKey">
+      <p class="map-key-h">KEY</p>
+      <ul class="map-key-list">
+        <li><span class="sw sw-town" aria-hidden="true"></span>Town</li>
+        <li><span class="sw sw-route" aria-hidden="true"></span>Route</li>
+        <li><span class="sw sw-side" aria-hidden="true"></span>Side place</li>
+        <li><span class="sw sw-unknown" aria-hidden="true"></span>Not visited</li>
+        <li><span class="sw sw-you" aria-hidden="true"></span>You</li>
+        <li><span class="sw sw-next" aria-hidden="true"></span>Next step</li>
+        <li><span class="sw sw-task" aria-hidden="true"></span>Side task</li>
+        <li><span class="sw sw-coach" aria-hidden="true"></span>Coach</li>
+        <li><span class="sw sw-keepers" aria-hidden="true"></span><span id="keyKeepers">Keepers</span></li>
+        <li><span class="sw sw-glimmer" aria-hidden="true"></span><span id="keyGlimmer">Glimmerwell</span></li>
+        <li><span class="sw sw-split" aria-hidden="true"></span>Both sides</li>
+        <li><span class="sw sw-wild" aria-hidden="true"></span>Wild</li>
+        <li><span class="sw sw-seal" aria-hidden="true"></span>Seal</li>
+      </ul>
+      <p class="map-key-note">Gold and green trim Keeper roofs. Cyan and mint trim Glimmerwell ground.</p>
+    </div>
+    <p class="map-pledge" id="mapPledge" hidden></p>
+    <p class="map-hint">Tap a place to read it. CLOSE puts the map away.</p>
     <p class="sr-only" id="mapSr" aria-live="polite"></p>
   </div>
 </div>
@@ -626,21 +652,21 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261014-0843";</script>
-<script src="sprites.js?v=20261014-0843"></script>
-<script src="keeper.js?v=20261014-0843"></script>
-<script src="stats.js?v=20261014-0843"></script>
-<script src="moves.js?v=20261014-0843"></script>
-<script src="data/mapdata.js?v=20261014-0843"></script>
-<script src="quests.js?v=20261014-0843"></script>
-<script src="standing.js?v=20261014-0843"></script>
-<script src="save.js?v=20261014-0843"></script>
-<script src="env.js?v=20261014-0843"></script>
-<script src="sfx.js?v=20261014-0843"></script>
-<script src="minigames.js?v=20261014-0843"></script>
-<script src="ribbit.js?v=20261014-0843"></script>
-<script src="cloud_config.js?v=20261014-0843"></script>
-<script src="cloud.js?v=20261014-0843"></script>
-<script src="game.js?v=20261014-0843"></script>
+<script>window.BUILD = "20261014-0918";</script>
+<script src="sprites.js?v=20261014-0918"></script>
+<script src="keeper.js?v=20261014-0918"></script>
+<script src="stats.js?v=20261014-0918"></script>
+<script src="moves.js?v=20261014-0918"></script>
+<script src="data/mapdata.js?v=20261014-0918"></script>
+<script src="quests.js?v=20261014-0918"></script>
+<script src="standing.js?v=20261014-0918"></script>
+<script src="save.js?v=20261014-0918"></script>
+<script src="env.js?v=20261014-0918"></script>
+<script src="sfx.js?v=20261014-0918"></script>
+<script src="minigames.js?v=20261014-0918"></script>
+<script src="ribbit.js?v=20261014-0918"></script>
+<script src="cloud_config.js?v=20261014-0918"></script>
+<script src="cloud.js?v=20261014-0918"></script>
+<script src="game.js?v=20261014-0918"></script>
 </body>
 </html>

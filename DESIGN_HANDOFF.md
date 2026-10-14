@@ -2,9 +2,9 @@
 
 For the designer. The paste-ready assignment for a designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) (what to produce, where to look, and the engine that has shipped since this file was written). This file is the background: voice, sizes, and the request list. Read `NEXT_PLAN.md` WP-B for the engineering detail behind a request.
 
-What is being built, in one paragraph: (1) a **Quest button** next to the D-pad (shipped); (2) **harder, level-scaled befriending** (shipped); (3) a **side pick at Fernbrook** between the **Keepers** and **Glimmerwell Co.**, with **Standing**, **switch desks**, and a **glimmer-path version** of the remaining Act 1 story. Fernbrook glimmer and the Bright Pavilion Tour are shipped (Build 3). Next writing is Route 2, Cobblecrest, the Cobblecrest Sacrifice, and Rook's R5. **Rook stays with Glimmerwell if the player does; he converts only on the Keepers path** (D23).
+What is being built, in one paragraph: (1) a **Quest button** next to the D-pad (shipped); (2) **harder, level-scaled befriending** (shipped); (3) a **side pick at Fernbrook** between the **Keepers** and **Glimmerwell Co.**, with **Standing**, **switch desks**, and a **glimmer-path version** of the remaining Act 1 story. Fernbrook glimmer and the Bright Pavilion Tour are shipped (Build 3). Route 2, Cobblecrest, the Sacrifice stub, and Rook's R5 are in the game as implementer copy. The open writing is the Sacrifice one-pager, Tour stop copy, and the pledge-desk copy (section 6). **Rook stays with Glimmerwell if the player does; he converts only on the Keepers path** (D23).
 
-Decisions already made (Vincent, Oct 13, evening): the pick is at Fernbrook and is switchable later; Standing tracks regard per faction; Hall slot 1 is the Bright Pavilion Tour (built); Hall slot 2 is the Sacrifice with Quota as the free floor (not built); Rook stays if the player is Glimmerwell and converts if the player is Keepers. The morning "Rook always leaves" / "Halls undefined" notes are superseded. Section 6 now asks for the Sacrifice one-pager and Tour stop copy, not a from-scratch Hall spike.
+Decisions already made (Vincent, Oct 13, evening): the pick is at Fernbrook and is switchable later; Standing tracks regard per faction; Hall slot 1 is the Bright Pavilion Tour (built); Hall slot 2 is the Sacrifice stub with Quota as the free floor (the stub is in the game; the real cost is still the one-pager, D24); Rook stays if the player is Glimmerwell and converts if the player is Keepers. The morning "Rook always leaves" / "Halls undefined" notes are superseded. Section 6 now asks for the Sacrifice one-pager and Tour stop copy, not a from-scratch Hall spike.
 
 ## 1. Reference examples in this repo
 
@@ -99,8 +99,12 @@ Priority: **must** blocks the work package, **should** is wanted for launch, **c
 | `item_glimmer_*` | Icons for any glimmer-only items (names are a writing task) | 16x16 | Bag, shop | could | B |
 | `stinger_standing_up` | A short jingle spec for "a faction's regard went up a tier" (notes and timings in the same style as the STINGERS v0.1 table; the engine synthesizes it) | spec | Tier-up moment | should | B |
 | `town_loop_glimmer` | OPTIONAL variant of the town loop for Glimmerwell-run spots (too cheerful, slightly off) | spec | Pavilion, switch desk | could | B |
+| `bulletin_keepers` | Wood town board, charcoal paper, yellow wax seal. Keepers masthead "THE LANTERN POST" | 16×16 | Hearthmoor, Fernbrook, Cobblecrest before the buyout, High Charity | blocked on D37–D49 | Q19 |
+| `bulletin_glimmer` | The same board in a mint sleeve, one corner of the old post still showing | 16×16 | Cobblecrest after `story.quarry_bought` | blocked on D41 | Q19 |
+| `bulletin_plain` | Bare board, star-chart paper, no seal | 16×16 | Mahopac, only if D38 includes it | blocked on D38 | Q19 |
+| `flyer_glimmer` | A crooked glossy flyer: Comfort lighting, complimentary | 16×16 | Fernbrook board, not a job slip | blocked on D42 | Q19 |
 
-Not requested: new creatures, new maps (the glimmer path reuses the existing maps), new tiles.
+Not requested: new creatures, new maps (the glimmer path reuses the existing maps), new tiles. Town-board words, if D49 sends them here, are drafted in `TOWN_BOARD.md`. Slips are NPC handwriting. The sleeve is the only faction voice.
 
 ## 4. Writing requests
 

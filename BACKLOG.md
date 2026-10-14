@@ -5,16 +5,18 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
-Act 1 is on `main`: Builds 4–6, Fernbrook Heights, the save copy, the Keeper House, Ribbit, and the open east gate landed with Mahopac, High Charity, the lantern rest, faction music, the debug panel, and the pass-the-phone games. Do not rebuild them. Next is Q17 (the box screen), then Q18 (the installable app). Detail is in [NEXT_PLAN.md](NEXT_PLAN.md) §3. Branch provenance is in [BRANCH_LOG.md](BRANCH_LOG.md).
+Act 1 is in the game: Builds 4–6, Fernbrook Heights, the save copy, the Keeper House, Ribbit, and the open east gate, with Mahopac, High Charity, the lantern rest, faction music, the debug panel, and the pass-the-phone games. Do not rebuild them. Q17 (the box screen) and Q18 (the installable app) are built. Next scoped work is Q19, town boards, blocked on D37–D49. Brinewick still waits on a one-pager. Detail is in [NEXT_PLAN.md](NEXT_PLAN.md) §3. Agent skills are in [.cursor/skills/README.md](.cursor/skills/README.md). Branch provenance is in [BRANCH_LOG.md](BRANCH_LOG.md).
 
 Where things are (hand these to the right person or agent):
 
 | Document | Hand to | What it holds |
 |---|---|---|
-| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail. Act 1 through the Keeper House, Ribbit, High Charity, and the pass-the-phone games is on `main`. The party board (Q17) is built. Next: the installable app. Live stamp is `version.json`. Which branch held which piece is in [BRANCH_LOG.md](BRANCH_LOG.md) |
+| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail. Act 1 through the Keeper House, Ribbit, High Charity, and the pass-the-phone games is on `main`. The party board and the installable app are built. Next: town boards. Live stamp is `version.json`. Which branch held which piece is in [BRANCH_LOG.md](BRANCH_LOG.md) |
 | [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | **The designer** (art and writing) | Voice guide, art sizes, and the request list. Background. The assignment to paste into the designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) |
 | [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) | **The designer bot** (a different agent from the implementer) | The prompt: every designer item, the files to open, the engine that already exists, the delivery format, and the phase order |
-| [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat |
+| [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat. Town boards are D37–D49, scoped and not built |
+| [TOWN_BOARD.md](TOWN_BOARD.md) | **The implementing agent, after the D-rows** | Bulletin boards, squares, the Town Board phone app, propaganda, reports, and the unwired slip catalog |
+| [.cursor/skills/README.md](.cursor/skills/README.md) | **Every agent** | Skill index. `walklings-quests` for side quests and slips. `walklings-docs` for status docs |
 
 Past examples of art and writing for either reader: `DESIGN_HANDOFF.md` section 1, "Reference examples in this repo". In short: pixel art is in `sprites.js` (palette, glyphs, world props, creatures), `keeper.js` (people looks), `ITEM_ART` and `SEAL_ART` in `game.js`; writing is in the `scenes`, `trainers` and `dialog` blocks of `data/*.json` and in `BATTLE_TEXT` (`moves.js`) and `ITEMS` (`game.js`). `data/cobblecrest.json` is the best complete example of a designer hand-off (it carries its own `artRequests`, `looks`, `speakers`, `newNames`, `decisions`). Screenshots of the live UI are in `screenshots/`.
 
@@ -26,7 +28,7 @@ Decisions recorded (Vincent, Oct 13, 2026):
 
 Also on `main` from the other line: Mahopac (D27), the 5-Acorn lantern rest (D28), High Charity and the Event Hall games, faction music, and the password-gated debug panel.
 
-Queue (suggested order top to bottom). Q1–Q12, Q15, Builds 4–7, the Keeper House, and Ribbit are on `main`, with the Sacrifice as a stub. Next is Q17 (the box screen), then Q18 (the installable app). Brinewick waits on a one-pager.
+Queue (suggested order top to bottom). Q1–Q12, Q15, Builds 4–7, the Keeper House, and Ribbit are in the game, with the Sacrifice as a stub. Q17 (the box screen) and Q18 (the installable app) are built. Next scoped work is Q19, town boards, blocked on D37–D49. Brinewick waits on a one-pager.
 
 | # | Item | Size | Blocked on |
 |---|---|---|---|
@@ -43,8 +45,9 @@ Queue (suggested order top to bottom). Q1–Q12, Q15, Builds 4–7, the Keeper H
 | Q11 | **Fernbrook Heights** "get to know us", before the first trial | M | **BUILT (first pass):** north ridge, RegenX lab (4 floors, Atten, The Arbiter emits slowly, Nia and Cal) and the smuggling tunnels (Jed, Mara Quill, Officer Ken interviews the Walklings). Standing on each faction beat. `story.heights_done` gates the Hall panel and Tour stop 1. Group battles: two foes, TARGET, ally on the last fight. Open: D32–D35 |
 | Q12 | **Build 7** Export a save before Start over | S | **BUILT.** Settings and the Start over dialog download `walklings-save.json`. Read a copy replaces the game on this device. `v` stays 2. A short hold, Cancel, a v1 file, and an oversized file leave the current game in place. A fresh game can open the gear during the opening scene. Tests: `tests/save_copy.spec.js` and the settings smoke in `tests/smoke.spec.js` |
 | Q16 | **Land the Act 1 stack** on `main` | integration | **DONE.** Heights, Builds 4–6, the save copy, the Keeper House, Ribbit, and the open east gate, kept beside Mahopac, High Charity, the lantern rest, faction music, the debug panel, and the pass-the-phone games. Provenance: [BRANCH_LOG.md](BRANCH_LOG.md) |
-| Q17 | **Box screen**: reorder, release, orphan recovery row | M | **NEXT.** Do not bump save `v`. NEXT_PLAN §3 Q17 |
-| Q18 | **Installable app**: manifest + service worker, offline open | S-M | After Q17. No new network calls. NEXT_PLAN §3 Q18 |
+| Q17 | **Box screen**: reorder, release, orphan recovery row | M | **BUILT.** The WALKLINGS tab labels the party, then WALKLING-BOX, then LEFT BEHIND. UP and DOWN reorder inside that list. RELEASE asks, then LET THEM GO removes the Walkling; KEEP THEM leaves them. Releasing the partner promotes the next party member, or the first boxed Walkling when the party is empty. An orphan row shows its reason and the raw data. Unknown fields stay on the Walkling. Release is refused during a scene or a battle. `v` stays 2. Tests: `tests/box_app.spec.js`. Shots: `screenshots/box/` |
+| Q18 | **Installable app**: manifest + service worker, offline open | S-M | **BUILT.** `manifest.json`, `sw.js`, and `icons/` (192, 512, and the Apple touch icon: a sprout Walkling on `#1a1c2c`). The shell caches same-origin files and opens offline. `version.json` stays on the network so a newer deploy can still announce itself. Location lookups stay cross-origin and still fall back to meadow. Fonts stay self-hosted. Tests: `tests/box_app.spec.js` |
+| Q19 | **Town boards**: a board in each town, a Town Board phone app, propaganda by who holds the town, reports, empty slips | L when built | **SCOPED, NOT STARTED.** Detail in [TOWN_BOARD.md](TOWN_BOARD.md). Blocked on [OPEN_DECISIONS.md](OPEN_DECISIONS.md) D37–D49. No quest wired. Quest-authoring skill: `.cursor/skills/walklings-quests/SKILL.md` |
 | Q15 | **Civic** Keeper House, town officers, Keeper1 phone | M | **BUILT.** Hearthmoor patrol (Bren walks to the east gate, Cald stands beside it) and a two-floor Keeper House. The east-gate tree is cut and the town sign stands off that grass. Faction roof colors. Route 1 side quest issues Keeper1. QUEST is the bottom-bar tab. Friends, Journal, Contacts, Notes, KeeperUAV, and Botnet live in the phone. Cracked Handset comes with joining Glimmerwell. Blue side-quest chevron. Tests: `tests/civic.spec.js`. Lore of the slow change: D36 |
 
 Everything below is the earlier backlog and status history.
@@ -144,7 +147,7 @@ This order applies after the Kindle Wild rename, which shipped as 9cc836d and 9d
 - **Device testing:** only tested in Chromium phone emulation. Check real iOS Safari and Android Chrome (touch, safe areas, audio unlock, localStorage limits).
 - ~~**Save versioning**~~ **DONE (save v2):** `pixelpets.save.v2` with stable string species/form ids, party (6) + box, orphans, dex seen/caught, world, and empty bag/money/seals/flags/eggs/settings sections for later features. One-time v1 -> v2 migration keeps every Walkling field (cd/cx/ex/sr), `uid`/`created` (friend code) and away-time decay; v1 key untouched + `.bak` copy; corrupt saves copied aside; newer saves load read-only. Additive fields go through `normalizeV2` without bumping `v`; breaking changes add a `migrateVnToVn+1` step and a new key.
 - ~~**Box screen**~~ **DONE:** the WALKLINGS tab is six party slots, a box list, and the journal. Reorder, deposit, withdraw, and release are on the slot and on the Walkling sheet. Release confirms and will not drop the last Walkling. The journal counts Joined and Out there 42; unmet forms stay silhouettes. `dex.caught` stays set after a release.
-- **Orphan recovery:** a quiet row under the box shows how many records could not be read, and the first reason. The raw data stays in `orphans`. There is no restore button.
+- **Orphan recovery (DONE):** a quiet row under the box shows how many records could not be read, and the first reason. The raw data stays in `orphans`. There is no restore button.
 - ~~**Debug keys in release**~~ **DONE:** E/G/F, fast mode, "Pick a place" and the cheat console hooks only work with `?debug=1` (remembered; `?debug=0` clears it). Read-only hooks stay public.
 - **Start over (DONE):** Settings, press-and-hold 1.5 s confirm; wipes v2/v1/.bak/corrupt, keeps device prefs, other tabs stop saving (uid check). **Build 7:** Save a copy / Read a copy, and SAVE A COPY on the confirm, so the wipe can be undone from the file.
-- **Installable app:** add a manifest and service worker so it can be added to the home screen and played offline.
+- **Installable app (DONE, Q18):** `manifest.json` and `sw.js` cache the same-origin shell. `version.json` stays on the network.

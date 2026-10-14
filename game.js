@@ -300,7 +300,7 @@ function fitPetScene(){
   for (const c of cands) { setPetCanvas(...c); if (careOn()) return; }
   setPetCanvas(...cands[cands.length - 1]);
 }
-function fitAll(){ fitBattle();
+function fitAll(){ fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
   fitPetScene();
@@ -1878,6 +1878,7 @@ function factionOfMap(id){
   if (!id) return null;
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
   if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
+  if (id === 'highcharity' || id.indexOf('hc_') === 0) return 'keepers';   // the capital wears the same gold and green as Hearthmoor
   if (id === 'hearthmoor' || id.indexOf('hm_') === 0 || id === 'fernbrook' || id === 'route1' || id === 'route2') return 'keepers';
   return null;
 }
@@ -3826,21 +3827,40 @@ function swapSheet(forced){
   return openSheet(forced ? 'Who goes next?' : 'Swap to which Walkling?', items, forced ? null : 'BACK');
 }
 /* ---------- MAP v0 (design/specs/MAP_V0.md): "where am I?" region map ---------- */
-// Data copied from design/specs/map_v0.json (nodes, interiors, pal, icons). No fast travel, zoom, markers or legend (§1, §10).
+// Nodes, interiors and icons started from design/specs/map_v0.json. No fast travel and no zoom.
+// Faction claims, the key, the coach link and tap-to-read were added later (OPEN_DECISIONS D37).
+const MAP_HOLD_LINE = {
+  keepers: 'The Keepers hold this place.',
+  glimmer: 'Glimmerwell holds this place.',
+  split: 'Both sides keep a claim.',
+  wild: 'Wild country. No faction holds it.',
+};
 const REGION_MAP = {
   title: 'THE AMBERWILD', unknownLabel: '???', unknownBlurb: "You haven't been here yet.",
   nodes: {
-    hearthmoor:    { kind: 'town',  col: 2,  row: 6, label: 'HEARTHMOOR',  labelAt: 'below', blurb: 'Hill village of keepers. Home.' },
-    route1:        { kind: 'route', col: 6,  row: 7, label: 'ROUTE 1',     labelAt: 'below', blurb: 'Hearthmoor to Fernbrook, by the stream.', path: [[2, 6], [4, 7], [8, 7], [10, 6]] },
-    proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]] },
-    fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Bloom Trial Hall.' },
-    route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]] },
-    route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]] },
-    cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.' },
-    cobble_quarry: { kind: 'side',  col: 17, row: 3, label: 'QUARRY',      labelAt: 'above', blurb: 'Pebblits nap in the old seam.', path: [[17, 6], [17, 3]] },
-    mahopac:       { kind: 'town',  col: 2,  row: 3, label: 'MAHOPAC',     labelAt: 'below', blurb: 'Time-snagged woods. Breckenridge Observatory.', path: [[2, 6], [2, 3]] },
-    highcharity:   { kind: 'town',  col: 2,  row: 2, label: 'HIGH CHARITY', labelAt: 'above', blurb: 'Keeper capital. Lanterns on every roof.', path: [[2, 6], [2, 2]] },
-    fb_heights:    { kind: 'side',  col: 10, row: 3, label: 'HEIGHTS',     labelAt: 'above', blurb: 'Ridge north of Fernbrook. A lab, and old tunnels.', path: [[10, 6], [10, 3]] },
+    hearthmoor:    { kind: 'town',  col: 2,  row: 6, label: 'HEARTHMOOR',  labelAt: 'below', blurb: 'Hill village of keepers. Home.',
+      hold: [{ id: 'keepers', line: 'Home. The Keepers hold this town.' }] },
+    route1:        { kind: 'route', col: 6,  row: 7, label: 'ROUTE 1',     labelAt: 'below', blurb: 'Hearthmoor to Fernbrook, by the stream.', path: [[2, 6], [4, 7], [8, 7], [10, 6]],
+      hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
+    proto:         { kind: 'side',  col: 4,  row: 9, label: 'OLD MEADOW',  labelAt: 'below', blurb: 'Wild, quiet, a little overgrown.', path: [[4, 7], [4, 9]],
+      hold: [{ id: 'wild' }] },
+    fernbrook:     { kind: 'town',  col: 10, row: 6, label: 'FERNBROOK',   labelAt: 'below', blurb: 'Orchard village. Bloom Trial Hall.',
+      hold: [{ id: 'split', line: 'Keepers keep the town. Glimmerwell keeps a stand.' }] },
+    route2:        { kind: 'route', col: 14, row: 5, label: 'ROUTE 2',     labelAt: 'below', blurb: 'Fernbrook to Cobblecrest, past a creek.', path: [[10, 6], [12, 5], [16, 5], [17, 6]],
+      hold: [{ id: 'split', line: 'Keepers keep the road. Glimmerwell runs the Census.' }] },
+    route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]],
+      hold: [{ id: 'glimmer', line: 'Glimmerwell holds the glen.' }] },
+    cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.',
+      hold: [{ id: 'glimmer', when: ['story.quarry_bought'], line: 'Glimmerwell holds the town. The vote passed.' }, { id: 'keepers', line: 'The Keepers hold the town.' }] },
+    cobble_quarry: { kind: 'side',  col: 17, row: 3, label: 'QUARRY',      labelAt: 'above', blurb: 'Pebblits nap in the old seam.', path: [[17, 6], [17, 3]],
+      hold: [{ id: 'glimmer', when: ['story.quarry_bought'], line: 'Glimmerwell holds the quarry.' }, { id: 'keepers', line: "The quarry is still the town's." }] },
+    mahopac:       { kind: 'town',  col: 2,  row: 3, label: 'MAHOPAC',     labelAt: 'below', blurb: 'Time-snagged woods. Breckenridge Observatory.', path: [[2, 6], [2, 3]],
+      hold: [{ id: 'wild' }] },
+    // The capital sits above Mahopac, reached by the lantern coach, so the two towns no longer share a tile.
+    highcharity:   { kind: 'town',  col: 2,  row: 1, label: 'HIGH CHARITY', labelAt: 'right', blurb: 'Keeper capital. Lanterns on every roof.', path: [[2, 6], [4, 3], [2, 1]], link: 'coach',
+      hold: [{ id: 'keepers', line: 'The Keepers hold the capital.' }] },
+    fb_heights:    { kind: 'side',  col: 10, row: 3, label: 'HEIGHTS',     labelAt: 'left', blurb: 'Ridge north of Fernbrook. A lab, and old tunnels.', path: [[10, 6], [10, 3]],
+      hold: [{ id: 'split', when: ['story.sm_done'], line: 'The watch opened the tunnels. The lab remains.' }, { id: 'glimmer', line: "Glimmerwell's lab sits on the ridge." }] },
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
@@ -3872,29 +3892,151 @@ function mapVisited(id, cur){
 const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy && !tabsGuarded() && !(battle && battle.on);
 let mapOffShown = null;
 function syncMapBtn(){ const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false'); }
-const mapUI = { t0: 0, cur: null };
+const mapUI = { t0: 0, cur: null, sel: null };
+// First matching rule wins. `flags` lets the dev check try a save without touching S. Unvisited places stay ??? on the parchment.
+function matchHold(id, flags){
+  const n = REGION_MAP.nodes[id], F = flags || (S && S.flags) || {};
+  const ok = c => String(c)[0] === '!' ? !F[String(c).slice(1)] : !!F[c];
+  for (const rule of (n && n.hold) || []) if (!rule.when || rule.when.every(ok)) return rule;
+  return { id: 'wild', line: MAP_HOLD_LINE.wild };
+}
+function mapHold(id, flags){ return matchHold(id, flags).id; }
+function holdLine(id, flags){ const rule = matchHold(id, flags); return rule.line || MAP_HOLD_LINE[rule.id] || MAP_HOLD_LINE.wild; }
+function nodeSeal(id){
+  if (!S) return false;
+  const seals = S.seals || {}, f = S.flags || {};
+  if (id === 'fernbrook') return !!(seals.seal_fernbrook || seals.seal_glim_1 || f['story.seal1']);
+  if (id === 'cobblecrest') return !!(seals.seal_cobblecrest || seals.seal_glim_2 || f['story.seal2']);
+  return false;
+}
+function nodePoint(n){ return [n.col * 16 + 8, n.row * 16 + 8]; }
+function nodeGeom(id){
+  const n = REGION_MAP.nodes[id]; if (!n) return null;
+  const [x, y] = nodePoint(n), known = mapVisited(id, mapUI.cur), label = known ? n.label : REGION_MAP.unknownLabel;
+  const out = n.kind === 'town' ? 22 : 18;                       // clear of the claim halo, the you-ring and the quest ring
+  let lx = x, ly = y, align = 'center';
+  if (n.labelAt === 'right') { lx = x + out; align = 'left'; }
+  else if (n.labelAt === 'left') { lx = x - out; align = 'right'; }
+  else ly = y + (n.labelAt === 'above' ? -out : out);
+  return { id, x, y, lx, ly, align, label, known, kind: n.kind };
+}
+function paintPlaceCard(){
+  const id = mapUI.sel, geo = id && nodeGeom(id), known = !!(geo && geo.known);
+  let name = REGION_MAP.unknownLabel, blurb = REGION_MAP.unknownBlurb;
+  if (known) {
+    const outdoor = (WORLD[id] && WORLD[id].name) || REGION_MAP.nodes[id].label;
+    const room = id === mapUI.cur && S.world.map !== id && WORLD[S.world.map] && WORLD[S.world.map].name;
+    name = (room ? outdoor + ' · ' + WORLD[S.world.map].name : outdoor).toUpperCase();
+    blurb = REGION_MAP.nodes[id].blurb;
+  }
+  $('#mapTitle').textContent = REGION_MAP.title;
+  $('#mapPlaceName').textContent = name;
+  $('#mapPlaceBlurb').textContent = blurb;
+  const here = $('#mapHere'); if (here) here.hidden = !(id && id === mapUI.cur);
+  const holdEl = $('#mapHold');
+  if (holdEl) {
+    holdEl.hidden = !known;
+    holdEl.textContent = known ? holdLine(id) : '';
+    holdEl.className = 'map-hold' + (known ? ' hold-' + mapHold(id) : '');
+    if (known) holdEl.dataset.hold = mapHold(id); else delete holdEl.dataset.hold;
+  }
+  const kk = $('#keyKeepers'), kg = $('#keyGlimmer');
+  if (kk) kk.textContent = SC_STANDING.sides.keepers.short;
+  if (kg) kg.textContent = SC_STANDING.sides.glimmer.short;
+  const pledge = $('#mapPledge');
+  if (pledge) {
+    const picked = !!(S.flags && S.flags['story.side_pick_done']);
+    pledge.hidden = !picked;
+    if (picked) pledge.textContent = 'Your pledge: ' + SC_STANDING.sides[side()].short;
+  }
+  const q = questCurrent(), mq = $('#mapQuest');
+  if (mq) { mq.hidden = !(q && q.target); if (q && q.target) mq.textContent = 'NEXT: ' + q.place; }
+  const heard = (id === mapUI.cur ? 'You are in ' : '') + name + '. ' + blurb + (known ? ' ' + holdLine(id) : '');
+  $('#mapSr').textContent = heard;
+}
 function openMap(){
   if (!mapReady()) { sfx('denied'); return; }
   clearMoves(); markMapSeen();
-  const cur = nodeOf(S.world.map), nd = cur && REGION_MAP.nodes[cur];
-  mapUI.cur = cur; mapUI.t0 = performance.now();
-  const name = nd ? ((WORLD[cur] && WORLD[cur].name) || nd.label).toUpperCase() : REGION_MAP.unknownLabel, blurb = nd ? nd.blurb : REGION_MAP.unknownBlurb;
-  $('#mapTitle').textContent = REGION_MAP.title; $('#mapPlaceName').textContent = name; $('#mapPlaceBlurb').textContent = blurb;
-  $('#mapSr').textContent = nd ? 'You are in ' + ((WORLD[cur] && WORLD[cur].name) || nd.label) + '. ' + blurb : 'You are somewhere new.';
-  const q = questCurrent(), mq = $('#mapQuest');                   // WP-C: where the ringed node is, in words
-  if (mq) { mq.hidden = !(q && q.target); if (q && q.target) mq.textContent = 'NEXT: ' + q.place; }
+  mapUI.cur = nodeOf(S.world.map); mapUI.sel = mapUI.cur; mapUI.t0 = performance.now();
+  paintPlaceCard();
   fitRegionMap(); $('#ovMap').hidden = false; lockTabs(true); sfx('tap'); drawRegionMap(performance.now());
 }
 function closeMap(){ if ($('#ovMap').hidden) return; $('#ovMap').hidden = true; lockTabs(false); sfx('tap'); }
+function selectMapNode(id){
+  if (!REGION_MAP.nodes[id] || mapUI.sel === id) return;
+  mapUI.sel = id; paintPlaceCard(); sfx('tap');
+}
+function mapNodeAt(px, py){
+  let best = null, bestD = 1e9;
+  const g = ctx($('#regionCanvas'));
+  g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font');
+  for (const id in REGION_MAP.nodes) {
+    const geo = nodeGeom(id); if (!geo) continue;
+    const icon = Math.hypot(px - geo.x, py - geo.y);
+    g.textAlign = geo.align; const tw = g.measureText(geo.label).width;
+    const left = geo.align === 'left' ? geo.lx : geo.align === 'right' ? geo.lx - tw : geo.lx - tw / 2;
+    const onLabel = px >= left - 2 && px <= left + tw + 2 && Math.abs(py - geo.ly) <= 9;
+    const d = onLabel ? 0 : icon;
+    if ((icon <= 18 || onLabel) && d < bestD) { bestD = d; best = id; }
+  }
+  return best;
+}
+function mapNudge(dir){
+  const from = REGION_MAP.nodes[mapUI.sel || mapUI.cur]; if (!from) return;
+  let best = null, bestD = 1e9;
+  for (const id in REGION_MAP.nodes) {
+    if (id === (mapUI.sel || mapUI.cur)) continue;
+    const n = REGION_MAP.nodes[id], dx = n.col - from.col, dy = n.row - from.row;
+    const ok = dir === 'left' ? dx < 0 && Math.abs(dy) <= Math.abs(dx) + 1
+      : dir === 'right' ? dx > 0 && Math.abs(dy) <= Math.abs(dx) + 1
+      : dir === 'up' ? dy < 0 && Math.abs(dx) <= Math.abs(dy) + 1
+      : dy > 0 && Math.abs(dx) <= Math.abs(dy) + 1;
+    if (!ok) continue;
+    const d = Math.hypot(dx, dy);
+    if (d < bestD) { bestD = d; best = id; }
+  }
+  if (best) selectMapNode(best);
+}
 function fitRegionMap(){                                           // whole-number scale only: 2x if there's room for 640 px, else 1x (§2)
   const c = $('#regionCanvas'), k = Math.min(window.innerWidth, 480) >= 640 ? 2 : 1, dpr = Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
   c.style.width = 320 * k + 'px'; c.style.height = 192 * k + 'px';
   if (c.width !== 320 * dpr) { c.width = 320 * dpr; c.height = 192 * dpr; }
 }
+function mapDevCheck(){
+  const bad = [], ok = ['keepers', 'glimmer', 'split', 'wild'], ids = Object.keys(REGION_MAP.nodes);
+  for (const id of ids) {
+    const n = REGION_MAP.nodes[id];
+    if (!Array.isArray(n.hold) || !n.hold.length) bad.push(id + ': hold');
+    for (const rule of n.hold || []) {
+      if (ok.indexOf(rule.id) < 0) bad.push(id + ': ' + rule.id);
+      if (rule.line && Array.from(rule.line).length > 70) bad.push(id + ': line');
+    }
+    if (ok.indexOf(mapHold(id, {})) < 0) bad.push(id + ': resolve');
+    const [x, y] = nodePoint(n);
+    if (x < 20 || x > 300 || y < 20 || y > 172) bad.push(id + ': off parchment');
+    const out = n.kind === 'town' ? 22 : 18, tw = n.label.length * 6;
+    let left = x - tw / 2, right = x + tw / 2, top = y - 8, bot = y + 8;
+    if (n.labelAt === 'right') { left = x + out; right = left + tw; }
+    else if (n.labelAt === 'left') { right = x - out; left = right - tw; }
+    else if (n.labelAt === 'above') { top = y - out - 8; bot = y - out + 8; }
+    else { top = y + out - 8; bot = y + out + 8; }
+    if (left < 4 || right > 316 || top < 4 || bot > 188) bad.push(id + ': label');
+  }
+  const pair = (a, b) => { const [ax, ay] = nodePoint(REGION_MAP.nodes[a]), [bx, by] = nodePoint(REGION_MAP.nodes[b]); return Math.hypot(ax - bx, ay - by); };
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) if (pair(ids[i], ids[j]) < 28) bad.push('close: ' + ids[i] + ' ' + ids[j]);
+  if (mapHold('cobblecrest', {}) !== 'keepers' || mapHold('cobblecrest', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('cobble');
+  if (mapHold('cobble_quarry', {}) !== 'keepers' || mapHold('cobble_quarry', { 'story.quarry_bought': true }) !== 'glimmer') bad.push('quarry');
+  if (mapHold('fb_heights', {}) !== 'glimmer' || mapHold('fb_heights', { 'story.sm_done': true }) !== 'split') bad.push('heights');
+  if (mapHold('fernbrook', {}) !== 'split' || mapHold('route2', {}) !== 'split' || mapHold('route2_glen', {}) !== 'glimmer') bad.push('fork');
+  if (mapHold('hearthmoor', {}) !== 'keepers' || mapHold('highcharity', {}) !== 'keepers' || mapHold('route1', {}) !== 'keepers') bad.push('keepers');
+  if (mapHold('proto', {}) !== 'wild' || mapHold('mahopac', {}) !== 'wild') bad.push('wild');
+  if (REGION_MAP.nodes.highcharity.link !== 'coach') bad.push('coach');
+  return bad;
+}
 function drawRegionMap(t){
   const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, N = REGION_MAP.nodes, cur = mapUI.cur;
   g.setTransform(k, 0, 0, k, 0, 0); g.imageSmoothingEnabled = false;
-  const R = (x, y, w, h, col) => { g.fillStyle = PAL[col]; g.fillRect(x, y, w, h); };
+  const R = (x, y, w, h, col) => { g.fillStyle = PAL[col]; g.fillRect(Math.round(x), Math.round(y), w, h); };
   R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');                                 // parchment, 2 px orange edge
   [[30, 40], [70, 150], [150, 30], [200, 140], [255, 45], [290, 160], [120, 100]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });   // faint hill ticks (decoration)
   const P = ([cc, rr]) => [cc * 16 + 8, rr * 16 + 8];
@@ -3902,30 +4044,86 @@ function drawRegionMap(t){
     const [x0, y0] = P(a), [x1, y1] = P(b), n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
     for (let i = 0; i <= n; i++) { if (dashed && Math.floor(i / 4) % 2) continue; R(Math.round(x0 + (x1 - x0) * i / n) - 1, Math.round(y0 + (y1 - y0) * i / n) - 1, 3, 3, col); }
   };
+  const discW = (cx, cy, r, yy) => { const dy = yy - cy; if (dy * dy > r * r + r * 0.8) return null; return Math.floor(Math.sqrt(r * r - dy * dy + r * 0.8)); };
+  const fillDisc = (cx, cy, r, col, side) => {
+    for (let y = cy - r; y <= cy + r; y++) {
+      const w = discW(cx, cy, r, y); if (w == null) continue;
+      let x0 = cx - w, x1 = cx + w;
+      if (side < 0) x1 = Math.min(x1, cx); if (side > 0) x0 = Math.max(x0, cx + 1);
+      if (x1 >= x0) R(x0, y, x1 - x0 + 1, 1, col);
+    }
+  };
+  const stipple = (cx, cy, r, col, side) => {
+    for (let y = -r; y <= r; y++) {
+      const w = discW(cx, cy, r, cy + y); if (w == null) continue;
+      for (let x = -w; x <= w; x++) {
+        if (side < 0 && x > 0) continue; if (side > 0 && x < 0) continue;
+        if (((x + y) & 3) === 0) R(cx + x, cy + y, 1, 1, col);
+      }
+    }
+  };
+  const band = (cx, cy, r, col, side) => {                                          // a gold ridge through the claim, still visible beside the icon
+    for (let dy = -1; dy <= 0; dy++) {
+      const y = cy + dy, w = discW(cx, cy, r, y); if (w == null) continue;
+      let x0 = cx - w, x1 = cx + w;
+      if (side < 0) x1 = Math.min(x1, cx); if (side > 0) x0 = Math.max(x0, cx + 1);
+      if (x1 >= x0) R(x0, y, x1 - x0 + 1, 1, col);
+    }
+  };
+  // Visited claims only, so a ??? place does not give away who holds it. Green and gold match Keeper roofs; cyan and mint match Glimmerwell ground.
+  const claim = (cx, cy, r, hold) => {
+    fillDisc(cx, cy, r + 1, 'd', 0);
+    if (hold === 'split') { fillDisc(cx, cy, r, 'g', -1); fillDisc(cx, cy, r, 'c', 1); band(cx, cy, r, 'y', -1); stipple(cx, cy, r, 'l', 1); return; }
+    if (hold === 'keepers') { fillDisc(cx, cy, r, 'g', 0); band(cx, cy, r, 'y', 0); return; }
+    fillDisc(cx, cy, r, 'c', 0); stipple(cx, cy, r, 'l', 0);
+  };
+  const sealMark = (cx, cy, right) => {                                             // orange wax stamp; parchment yellow would hide a gold one
+    const x = cx + (right ? 16 : -24), y = cy - 22;                               // Cobblecrest's road enters from the upper left
+    R(x + 3, y, 1, 1, 'k'); R(x + 2, y + 1, 3, 1, 'k'); R(x + 1, y + 2, 5, 1, 'k');
+    R(x, y + 3, 7, 1, 'k'); R(x + 1, y + 3, 5, 1, 'o'); R(x + 3, y + 3, 1, 1, 'w');
+    R(x + 1, y + 4, 5, 1, 'k'); R(x + 2, y + 5, 3, 1, 'k'); R(x + 3, y + 6, 1, 1, 'k');
+  };
+  const brackets = (cx, cy, r) => {
+    const L = 4;
+    R(cx - r, cy - r, L, 2, 'k'); R(cx - r, cy - r, 2, L, 'k');
+    R(cx + r - L + 1, cy - r, L, 2, 'k'); R(cx + r - 1, cy - r, 2, L, 'k');
+    R(cx - r, cy + r - 1, L, 2, 'k'); R(cx - r, cy + r - L + 1, 2, L, 'k');
+    R(cx + r - L + 1, cy + r - 1, L, 2, 'k'); R(cx + r - 1, cy + r - L + 1, 2, L, 'k');
+  };
   const vis = {}; for (const id in N) vis[id] = mapVisited(id, cur);
-  for (const id in N) { const pth = N[id].path; if (!pth) continue; for (let i = 0; i < pth.length - 1; i++) seg(pth[i], pth[i + 1], vis[id] ? 'o' : 'h', !vis[id]); }
-  const disc = (cx, cy, r, col) => { for (let y = -r; y <= r; y++) { const w = Math.floor(Math.sqrt(r * r - y * y + r * 0.8)); R(cx - w, cy + y, 2 * w + 1, 1, col); } };
-  const ring = (cx, cy, r, col) => { for (let a = 0; a < 360; a += 2) { const x = Math.round(cx + r * Math.cos(a * Math.PI / 180)), y = Math.round(cy + r * Math.sin(a * Math.PI / 180)); R(x - 1, y - 1, 2, 2, col); } };
-  g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textAlign = 'center'; g.textBaseline = 'middle';
+  const claimR = { town: 14, side: 11, route: 9 };
+  for (const id in N) if (vis[id] && mapHold(id) !== 'wild') { const n = N[id], [x, y] = P([n.col, n.row]); claim(x, y, claimR[n.kind] || 10, mapHold(id)); }
   for (const id in N) {
-    const n = N[id], [x, y] = P([n.col, n.row]), v = vis[id];
-    if (n.kind === 'town') { R(x - 8, y - 8, 17, 17, v ? 'k' : 'm'); R(x - 7, y - 7, 15, 15, v ? 'r' : 'h'); if (v) R(x - 7, y - 7, 15, 4, 'o'); }
-    else if (n.kind === 'side') { disc(x, y, 7, v ? 't' : 'm'); disc(x, y, 6, v ? 'g' : 'h'); }
-    else { disc(x, y, 4, v ? 'k' : 'm'); disc(x, y, 3, v ? 'p' : 'h'); }
-    const dy = n.labelAt === 'above' ? -(n.kind === 'route' ? 12 : 16) : (n.kind === 'route' ? 12 : 16);
-    g.fillStyle = PAL[v ? 'k' : 'm']; g.fillText(v ? n.label : REGION_MAP.unknownLabel, x, y + dy);
+    const pth = N[id].path; if (!pth) continue;
+    const coach = N[id].link === 'coach';
+    for (let i = 0; i < pth.length - 1; i++) seg(pth[i], pth[i + 1], vis[id] ? (coach ? 'g' : 'o') : 'h', !vis[id] || coach);
   }
+  const disc = (cx, cy, r, col) => fillDisc(cx, cy, r, col, 0);
+  const ring = (cx, cy, r, col) => { for (let a = 0; a < 360; a += 2) { const x = Math.round(cx + r * Math.cos(a * Math.PI / 180)), y = Math.round(cy + r * Math.sin(a * Math.PI / 180)); R(x - 1, y - 1, 2, 2, col); } };
+  g.font = '14px ' + getComputedStyle(document.documentElement).getPropertyValue('--font'); g.textBaseline = 'middle';
+  for (const id in N) {
+    const n = N[id], geo = nodeGeom(id), x = geo.x, y = geo.y, v = vis[id];
+    if (n.kind === 'town') { R(x - 8, y - 8, 17, 17, v ? 'k' : 'm'); R(x - 7, y - 7, 15, 15, v ? 'r' : 'h'); if (v) R(x - 7, y - 7, 15, 4, 'o'); }
+    else if (n.kind === 'side') { disc(x, y, 7, v ? 'k' : 'm'); disc(x, y, 6, v ? 't' : 'h'); }   // teal, so green on the parchment means Keepers only
+    else { disc(x, y, 4, v ? 'k' : 'm'); disc(x, y, 3, v ? 'p' : 'h'); }
+    if (v && nodeSeal(id)) sealMark(x, y, id === 'cobblecrest');
+    g.textAlign = geo.align; g.fillStyle = PAL[v ? 'k' : 'm']; g.fillText(geo.label, geo.lx, geo.ly);
+  }
+  // North is up: Heights, the glen, the quarry and the capital all sit toward the top of the parchment.
+  R(300, 8, 1, 5, 'k'); R(304, 8, 1, 5, 'k'); R(301, 9, 1, 1, 'k'); R(302, 10, 1, 1, 'k'); R(303, 11, 1, 1, 'k'); R(302, 14, 1, 4, 'k');
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (cur && N[cur] && (reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0)) {   // 500 ms on / 500 ms off; steady with reduced motion (§4)
+  const blink = reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0;
+  if (cur && N[cur] && blink) {                                                      // 500 ms on / 500 ms off; steady with reduced motion (§4)
     const [x, y] = P([N[cur].col, N[cur].row]); ring(x, y, 11, 'b');
     R(x - 1, y - 19, 3, 3, 'r');                                                    // small down-arrow 13-19 px above the node: stem...
     for (let i = 0; i < 4; i++) R(x - 3 + i, y - 16 + i, 7 - 2 * i, 1, 'r');       // ...and point
   }
   // WP-C: the objective's node gets a red ring on the same blink (wider when it shares the node with the blue "you are here").
   const q = questCurrent(), qn = q && q.target ? nodeOf(q.target.map) : null;
-  if (qn && N[qn] && (reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0)) { const [x, y] = P([N[qn].col, N[qn].row]); ring(x, y, qn === cur ? 15 : 12, 'r'); }
+  if (qn && N[qn] && blink) { const [x, y] = P([N[qn].col, N[qn].row]); ring(x, y, qn === cur ? 15 : 12, 'r'); }
   const sq = sideQuest(), sn = sq && sq.target ? nodeOf(sq.target.map) : null;
-  if (sn && N[sn] && sn !== qn && (reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0)) { const [x, y] = P([N[sn].col, N[sn].row]); ring(x, y, sn === cur ? 15 : 12, 'c'); }
+  if (sn && N[sn] && sn !== qn && blink) { const [x, y] = P([N[sn].col, N[sn].row]); ring(x, y, sn === cur ? 15 : 12, 'c'); }
+  if (mapUI.sel && N[mapUI.sel] && mapUI.sel !== cur) { const [x, y] = P([N[mapUI.sel].col, N[mapUI.sel].row]); brackets(x, y, 16); }
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
 
@@ -5617,7 +5815,6 @@ function makePartner(id){
   }
   if (S.party.some(p => p.id === id)) S.partnerId = id;
 }
-
 /* ---------- friends (stub) ---------- */
 function friendCode(){
   let h = 2166136261 >>> 0; const str = S.uid + ':' + S.created;
@@ -5969,6 +6166,7 @@ function devChecks(){
     minigames: (window.PPMinigames && PPMinigames.devCheck) ? PPMinigames.devCheck() : [],
     heights: heightsDevCheck(),
     ribbit: (window.PPRibbit && PPRibbit.devCheck) ? PPRibbit.devCheck() : ['PPRibbit missing'],
+    map: mapDevCheck(),
   };
 }
 function debugFlagValue(raw){
@@ -6221,7 +6419,13 @@ function bindInput(){
   $('#questMap').addEventListener('click', questShowOnMap);
   $('#ovQuest').addEventListener('click', e => { if (e.target === e.currentTarget) closeQuest(); });
   $('#mapBtn').addEventListener('click', openMap);
-  $('#ovMap').addEventListener('click', () => closeMap());   // tap anywhere (map, box, background, CLOSE) closes (MAP_V0 §2)
+  $('#mapClose').addEventListener('click', () => closeMap());
+  $('#ovMap').addEventListener('click', e => { if (e.target === e.currentTarget) closeMap(); });   // the dark margin closes; the parchment stays up so a place can be read
+  $('#regionCanvas').addEventListener('click', e => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const id = mapNodeAt((e.clientX - r.left) * 320 / r.width, (e.clientY - r.top) * 192 / r.height);
+    if (id) selectMapNode(id);
+  });
   $('#bagClose').addEventListener('click', () => closeBag());
   $('#ovBag').addEventListener('click', e => { if (e.target === e.currentTarget) closeBag(); });
   $('#shopClose').addEventListener('click', () => closeShop());
@@ -6358,6 +6562,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovDebug').hidden) { closeDebug(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
+    if (!$('#ovMap').hidden && KEYS[e.key]) { e.preventDefault(); if (!e.repeat) mapNudge(KEYS[e.key]); return; }   // arrows read the parchment; they must not walk the keeper underneath
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
     if (e.key === 'Escape' && !$('#ovQuest').hidden) { e.preventDefault(); closeQuest(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
@@ -6568,6 +6773,10 @@ PPMinigames.bind({
   spd: p => { if (!p) return 48; const lv = p.guest ? (p.level || 5) : levelOf(p); const s = statsAt((p.species || 'tide') + '/' + (p.stage || 0), lv); return s ? s.spd : 48; },
   monName: p => { if (!p) return 'Walkling'; if (p.guest) return p.nick; return petName(p); },
 });
+function registerInstall(){
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+}
 function boot(){
   $$('#tabs canvas').forEach(c => {
     if (c.dataset.icon === 'quest' && REGION_MAP.icon_quest) {
@@ -6584,6 +6793,7 @@ function boot(){
   ENV = PPEnv.init(onEnvChange, { allowOverride: DEBUG }); renderEnv();
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
+  registerInstall();
   PPSave.devCheck(); statsDevCheck();
   { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
@@ -6593,6 +6803,7 @@ function boot(){
   { const hcb = highCharityDevCheck(); if (hcb.length) console.error('Walklings: high charity check failed:', hcb.join('; ')); }
   { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
   window.ITEMS = ITEMS;   // save.js validates pet.held against the catalog; ITEMS lives in this file
+  { const mb = mapDevCheck(); if (mb.length) console.error('Walklings: map check failed:', mb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
@@ -6745,6 +6956,8 @@ function boot(){
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
+  api.mapHold = (id, flags) => mapHold(id, flags);
+  api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
   Object.defineProperty(api, 'lanternRest', { enumerable: true, get(){

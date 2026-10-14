@@ -1,5 +1,27 @@
 # Changelog
 
+Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
+
+## Documentation skills
+
+- Skills live in `.cursor/skills/`. The index is `.cursor/skills/README.md`. `walklings-quests` covers side quests, town-board slips, and bounties. `walklings-docs` covers backlog, changelog, next steps, and the other status docs.
+- After the box and the installable app, the next scoped work is Q19, town boards. It stays blocked on D37–D49. Brinewick still waits on a one-pager.
+- The older systems list and the tech-debt notes now match that: the box, the orphan row, the installable app, and the save copy are in the game. The quest skill matches `evalCond`, Mom's last step `dream_study`, and the KeeperUAV and Botnet job lines.
+
+## 20261014-0751 — Box screen and installable app (Q17, Q18)
+
+- The WALKLINGS tab labels the party, then WALKLING-BOX, then LEFT BEHIND. UP and DOWN reorder inside that list. RELEASE asks, then LET THEM GO removes the Walkling. Releasing the partner promotes the next party member, or the first boxed Walkling when the party is empty.
+- An orphan row shows the reason and the raw data that could not be migrated. Unknown fields stay on the Walkling. Save `v` stays 2.
+- `manifest.json` and `sw.js` cache the same-origin shell so the game can be added to the home screen and opened offline. `version.json` stays on the network. Location lookups are still a network call and still fall back to meadow. The icon is a sprout Walkling.
+- Tests: `tests/box_app.spec.js`. Shots: `screenshots/box/`. Brinewick still waits on a one-pager.
+
+## 2026-10-14 08:06 ET — Region map claims and a key (`20261014-0806`)
+
+- The region map shows who holds each place you have visited: green and gold for the Keepers, cyan and mint for Glimmerwell, a split disc where both keep a claim, and bare parchment for wild country. Places you have not reached stay `???`.
+- A key under the parchment names towns, routes, side places, you, the next step, the side task, the lantern coach, both factions, wild country, and Seals.
+- Tap a place to read it. The card names the room when you are indoors. Arrows move that reading and do not walk you. CLOSE, Escape, or the dark margin puts the map away.
+- High Charity is the lantern coach, drawn as a green dashed line, and it no longer sits on Mahopac. Its roofs wear Keeper gold and green. A wax stamp marks Fernbrook and Cobblecrest once that Seal is earned. After the pledge, the map names your side.
+
 ## 2026-10-13 23:47 ET — East gate and the Hearthmoor watch (`20261013-2347`)
 
 - The tree on the grass south of Hearthmoor's east path is cut. The town sign stands one tile south of that grass, so the walk out to Route 1 is open.
@@ -28,7 +50,7 @@
 
 ## Tests for the last three commits
 
-Smoke now checks Standing and Heights as well as the quest, glimmer, and befriend lists. It also checks that the Act 1 glimmer scenes swap back to the Keepers scenes, and that Cancel after a short hold does not wipe. Route 2 covers both gate choices, the grey Pebblit line, and that only the quiet Census log gives Rook a bond point. Cobblecrest covers the buyout, the snack that stays in the bag, the review battle, and both Rook closers (a high bond still leaves him with Glimmerwell). The save-copy spec round-trips the file and refuses a newer save, a v1 file, a non-save, and an oversized file. Next builds stay the box screen, then the installable app. Brinewick still needs a one-pager.
+Smoke now checks Standing and Heights as well as the quest, glimmer, and befriend lists. It also checks that the Act 1 glimmer scenes swap back to the Keepers scenes, and that Cancel after a short hold does not wipe. Route 2 covers both gate choices, the grey Pebblit line, and that only the quiet Census log gives Rook a bond point. Cobblecrest covers the buyout, the snack that stays in the bag, the review battle, and both Rook closers (a high bond still leaves him with Glimmerwell). The save-copy spec round-trips the file and refuses a newer save, a v1 file, a non-save, and an oversized file. The box screen and the installable app are in the game (`20261014-0751`). Brinewick still needs a one-pager.
 
 ## 2026-10-13 19:50 ET — Route 2 glimmer, Cobblecrest Sacrifice stub, Rook R5 (`20261013-1950`)
 

@@ -7,8 +7,12 @@ Play it at https://arbiter1170.github.io/pixelpets/ (GitHub Pages, built from `m
 `python3 -m http.server` in this folder and visit http://localhost:8000. Opening `index.html` as a file
 also works, minus location.
 No build step, all paths relative, everything self-hosted (including the font). The only network use is the
-optional local-creatures lookup (see Wild creatures below).
+optional local-creatures lookup (see Wild creatures below). A manifest and a service worker
+(`manifest.json`, `sw.js`, icons in `icons/`) let a phone add Walklings to the home screen and open the
+cached shell offline. `version.json` stays on the network so a newer deploy can still announce itself.
+Location lookups are other sites, so the worker leaves them alone, and a failed lookup still falls back to meadow.
 Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
+Agent skills, including quest authoring and status-doc upkeep, are in `.cursor/skills/`. The index is `.cursor/skills/README.md`.
 
 Touch: bottom tabs (Pet / Walk / Pets / Quest); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
@@ -156,6 +160,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   tips are done. The chain lives in `quests.js` and is derived from story flags only (nothing to migrate: old saves land
   on the right step; a later flag counts the earlier steps as done). Console: `PixelPets.quest` (read-only),
   `PixelPets.questCheck` (every story flag the data writes is a step or on the not-a-step list; also run at boot).
+- Region map (MAP, bottom-right of the d-pad): parchment of the Amberwild. Towns are squares, routes are small circles, side places are teal circles. A blue ring is you, a red ring is the next step, a cyan ring is the side task. Visited ground shows who holds it: green and gold for the Keepers (the same trim as Keeper roofs), cyan and mint for Glimmerwell (the same trim as their ground), split for a shared claim, bare parchment for wild country. Unvisited places stay `???` and do not give the holder away. Hearthmoor, Route 1 and High Charity are Keepers. Fernbrook is shared (the town and the Glimmerwell stand). Route 2 is shared (the Keeper road and the Census). Wickerglen is Glimmerwell. Cobblecrest and the quarry stay Keepers until `story.quarry_bought`, then Glimmerwell. The Heights stay Glimmerwell until `story.sm_done`, then shared. Old Meadow and Mahopac are wild. High Charity is the lantern coach, drawn as a green dashed line, and it no longer sits on Mahopac. A gold stamp marks Fernbrook and Cobblecrest once that Seal is earned. Tap a place to read it (the card names the room when you are indoors). Arrows move that reading and do not walk you. CLOSE, Escape, or the dark margin puts the map away. After the pledge, the map says which side you are on. The key under the parchment names every mark. Console: `PixelPets.mapHold(id)` and `PixelPets.mapCheck()` (also at boot). High Charity's roofs wear Keeper gold and green.
 - Sides (NEXT_PLAN WP-B0 / Build 3): at the Fernbrook orchard gate (9,10) a
   one-time scene (`side_pick`) lets you help Fen (Keepers) or Tobin (Glimmerwell), with a confirm step. `story.side`
   (`keepers` when absent, so older saves play as before) and `story.side_pick_done` are plain flags; no save version bump.

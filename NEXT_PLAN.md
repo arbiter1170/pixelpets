@@ -1,6 +1,6 @@
 # Walklings: what's next (queue, Oct 14, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack on `main`. Q17 the party board is built. Next is Q18 the installable app. Do not rebuild Builds 4–6. Which branch held which piece is in `BRANCH_LOG.md`.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack on `main`. Q17 the party board and Q18 the installable app are built. Next scoped work is Q19, town boards, blocked on D37–D49 in `OPEN_DECISIONS.md` and written up in `TOWN_BOARD.md`. Do not rebuild Builds 4–6. Agent skills are indexed in `.cursor/skills/README.md`. Which branch held which piece is in `BRANCH_LOG.md`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,9 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the Oct 14 queue (section 3): Q16, Q17, Q18 |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17 and Q18 are built. Q19 town boards are scoped and not started |
+| `.cursor/skills/README.md` | Every agent | Skill index. Quest work uses `walklings-quests`. Status docs use `walklings-docs` |
+| `TOWN_BOARD.md` | The implementing agent, after D37–D49 | Town bulletin boards and the Town Board phone app. Not started. Squares, propaganda, reports, and unwired slips |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
 
@@ -64,10 +66,10 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 | Friends v1: offline trade code, then backend + visit, then live trades | Stub, no backend (3a/3b/3c) | L |
 | Online saves Phase 2 (Link Google, sign out, multi-device) | Phase 1 built with `cloud_config.js` = null. Blocked on Vincent: Firebase project, web config, privacy wording | L |
 | Eggs | `eggs` save section exists, empty; no game code | M |
-| Box screen: reorder, release, proper UI; orphan recovery UI | Box is a list; orphans invisible | M |
+| Box screen: reorder, release, proper UI; orphan recovery UI | Built (Q17). WALKLINGS tab: UP/DOWN, RELEASE, LEFT BEHIND | M |
 | Rename an existing Walkling | Left from Nicknames | S |
-| Installable app (manifest + service worker, offline) | Not started | S-M |
-| Export/backup before Start over | Left | S |
+| Installable app (manifest + service worker, offline) | Built (Q18). `manifest.json` and `sw.js` | S-M |
+| Export/backup before Start over | Built (Build 7). Save a copy / Read a copy | S |
 | Music volume slider, iPhone listen-through; MUSIC Q1 (iOS silent switch) | Open with Vincent | S |
 | Wild creatures not persisted across reload | By design for now | S |
 | Small-viewport map at 320x568 (~150 px tall) | Known cramped | S-M |
@@ -447,7 +449,7 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Oct 14 queue
 
-Do these in order. Each one is one PR. Q16 is the only one that starts now. Q17 waits for Q16 to be on `main`. Q18 waits for Q17. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / this file in the same PR.
+Q16 is done. Q17 and Q18 are shipped. Next scoped work is Q19, town boards, and it stays blocked until the D37–D49 rows that gate it are settled. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ### Q16 — Land the stranded Act 1 stack — **done**
 
@@ -497,13 +499,19 @@ Acceptance:
 
 Leave Brinewick, Friends, a second Sacrifice, and daily Standing out of this PR.
 
-### Q17 — Box screen — M — after Q16 — BUILT
+### Q17 — Box screen — M — **shipped**
 
 The WALKLINGS tab is six party slots, a box list, and the journal. Reorder, deposit, withdraw, release, and the orphan row are in. The Walkling sheet adds field item use, nicknames, move order, held items (Soft Berry, Bracer Band, Kin Ribbon), accessories, and a call card. Battle SWAP stays the party. Save `v` stays 2. Unknown fields stay on the Walkling.
 
-### Q18 — Installable app — S–M — after Q17
+### Q18 — Installable app — S–M — **shipped**
 
-Add a manifest and a service worker so the game can be added to the home screen and opened offline. No new network calls. Fonts stay self-hosted. The optional location lookup stays a network call and still falls back to meadow when it cannot run.
+Shipped. `manifest.json` and `sw.js` let the game be added to the home screen and opened offline. The worker caches same-origin files only. `version.json` stays on the network so a newer deploy can still announce itself. No new network calls. Fonts stay self-hosted. The optional location lookup stays a network call and still falls back to meadow when it cannot run. The icon is a sprout Walkling on `#1a1c2c` (`icons/icon-192.png`, `icons/icon-512.png`, `icons/apple-touch-icon.png`).
+
+### Q19 — Town boards — scoped, not started
+
+Q17 and Q18 are already in the game. This stays blocked on D37–D49. The scope is [TOWN_BOARD.md](TOWN_BOARD.md). A future quest uses `.cursor/skills/walklings-quests/SKILL.md`.
+
+TB-1 is the empty board, the reports, and the phone app. TB-2 is the Hearthmoor crossing and the Fernbrook forecourt. TB-3 is one slip (Cald's gate count) after D39 and D40. No quest is wired before that. KeeperUAV stays the blank watch desk.
 
 ### Hold
 
@@ -562,7 +570,7 @@ Do not wait on bond. `story.rook_bond` may still increment on Route 2 / quarry c
 
 After this build both paths end at the same "COMING LATER · Brinewick" card. Brinewick / Hall #3 / Seal 3 is a later map and needs a spec that does not exist yet.
 
-The Oct 13 line "do not start the installable app until Builds 4–6 close" is superseded by this queue: Q16 lands those builds, Q17 is the box screen, Q18 is the installable app. Brinewick and Friends stay on hold. Trainer sight lines still do not re-arm after a loss (`canSpot` requires `!spotted.<id>`).
+The Oct 13 line "do not start the installable app until Builds 4–6 close" is superseded. Q16 landed those builds. Q17 and Q18 are built. Brinewick and Friends stay on hold. Trainer sight lines still do not re-arm after a loss (`canSpot` requires `!spotted.<id>`).
 
 Conventions for whoever implements (from `README.md` and `BACKLOG.md`):
 - No build step; all paths relative; fonts self-hosted; no new network use.
@@ -587,3 +595,4 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
+9. **Town boards (D37–D49).** Scoped in `TOWN_BOARD.md`. Nothing is built. Q19 is not waiting on the box. It waits on those open rows.
