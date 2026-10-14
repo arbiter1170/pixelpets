@@ -130,4 +130,20 @@ test('a bad file is refused and the current game stays', async ({ page }) => {
   });
   await expect(page.locator('#toast')).toHaveText("That file isn't a Walklings save.");
   expect(await page.evaluate(() => PixelPets.state.uid)).toBe('smoketest0001');
+
+  await page.locator('#copyFile').setInputFiles({
+    name: 'old.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{"v":1,"pets":[]}'),
+  });
+  await expect(page.locator('#toast')).toHaveText("That file isn't a Walklings save.");
+
+  await page.locator('#copyFile').setInputFiles({
+    name: 'huge.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{"v":2' + ' '.repeat(2000001) + '}'),
+  });
+  await expect(page.locator('#toast')).toHaveText('That file is too big to read.');
+  expect(await page.evaluate(() => PixelPets.state.uid)).toBe('smoketest0001');
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
