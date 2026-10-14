@@ -812,7 +812,7 @@
     "seals.seal_glim_1": "Bright Tier 1 lanyard. Set by the seal step in seal1@glimmer (and by a Hall win). story.seal1 is set by that same scene."
   },
   "loyalty": {
-    "_note": "Talk lines for Keepers and Glimmerwell, chosen by the player's pledge and Standing tier. First matching key wins. Keeper-facing keys use !story.side=glimmer because an absent story.side is still the Keepers. NPC lines are chatter-sized (<=40). Trainer lines are battle say lines (<=110). Preface steps are said once at the start of an existing scene.",
+    "_note": "Talk lines for Keepers and Glimmerwell, chosen by the player's pledge and Standing tier. First matching key wins. Older keeper-facing keys use !story.side=glimmer because an absent story.side is still the Keepers. Keeper House and watch lines (hm_patrol, hm_ness, hq_bram, hq_mo, hq_wynn, hq_lumen, hq_rue, and the town watches) require an explicit story.side=keepers, so a player who has not pledged stays on the civic citizen line. Those keys are applied behind any !story.met_* intro. NPC lines are chatter-sized (<=40). Trainer lines are battle say lines (<=110). Preface steps are said once at the start of an existing scene.",
     "npcs": {
       "juniper": {
         "story.side=glimmer&standing.glimmer>=4": "Founder's Pick! Marlowe asked after you.",
@@ -863,6 +863,80 @@
         "story.quarry_bought&!story.side=glimmer&standing.keepers>=2": "Fenced. Your Hall won't love this memo.",
         "!story.quarry_bought&story.side=glimmer": "Open house, partner! Take a sticker!",
         "!story.quarry_bought&!story.side=glimmer&standing.keepers>=2": "Open house! A Hall Friend can look."
+      },
+      "hm_patrol": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. The road is yours.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. I'll walk you through.",
+        "story.side=keepers&standing.keepers>=1": "A pledged keeper. Evening, friend.",
+        "story.side=glimmer": "Mint coat. Keep your hands shown."
+      },
+      "hm_ness": {
+        "story.side=keepers&standing.keepers>=4": "Ally of the Warden. Pass freely.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. The watch knows you.",
+        "story.side=keepers&standing.keepers>=1": "Keeper pledge noted. Move along.",
+        "story.side=glimmer": "Company colours. State your business."
+      },
+      "r1_ness": {
+        "story.side=keepers&standing.keepers>=4": "Ally of the Warden. Pass freely.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. The watch knows you.",
+        "story.side=keepers&standing.keepers>=1": "Keeper pledge noted. The road is clear.",
+        "story.side=glimmer": "Company colours. State your business."
+      },
+      "hq_bram": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. My watch is yours.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. The house stands open.",
+        "story.side=keepers&standing.keepers>=1": "Pledged. Sign the night book, friend.",
+        "story.side=glimmer": "Glimmerwell. You are not welcome here."
+      },
+      "hq_mo": {
+        "story.side=keepers&standing.keepers>=4": "Ally. The ledger has your page.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. I saved you a shelf.",
+        "story.side=keepers&standing.keepers>=1": "Pledged keeper. Ask, and I'll look.",
+        "story.side=glimmer": "Those files are not for mint coats."
+      },
+      "hq_wynn": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. Tea is on the hob.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. Your chit is ready.",
+        "story.side=keepers&standing.keepers>=1": "Pledge noted. Take a number, friend.",
+        "story.side=glimmer": "No company stamps on my desk."
+      },
+      "hq_lumen": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. I'd trust you a route.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. The board has your name.",
+        "story.side=keepers&standing.keepers>=1": "Pledged. Report when you're ready.",
+        "story.side=glimmer": "Captain Lumen. Leave the house."
+      },
+      "hq_rue": {
+        "story.side=keepers&standing.keepers>=4": "Ally. The lamps know your step.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. Quiet night, thanks to you.",
+        "story.side=keepers&standing.keepers>=1": "Pledged keeper. I'll log you in.",
+        "story.side=glimmer": "Company signal. I am not taking it."
+      },
+      "fb_constable": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. Fernbrook is quiet.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. The orchard is watched.",
+        "story.side=keepers&standing.keepers>=1": "Pledged keeper. Evening, friend.",
+        "story.side=glimmer": "Mint coats don't get the orchard key."
+      },
+      "r2_watch": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. The glen is watched.",
+        "story.side=keepers&standing.keepers>=1": "Pledged keeper. Mind the lamps.",
+        "story.side=glimmer": "Company lamps. I am counting them too."
+      },
+      "glen_watch": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. The glen is watched.",
+        "story.side=keepers&standing.keepers>=1": "Pledged keeper. The trees are fine.",
+        "story.side=glimmer": "Those lamps stay off while I am here."
+      },
+      "cc_watch": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. The cairn knows you.",
+        "story.side=keepers&standing.keepers>=1": "Pledged keeper. Stone stands firm.",
+        "story.side=glimmer": "Mint coats don't move this cairn."
+      },
+      "cc_mint": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. Your chit is first.",
+        "story.side=keepers&standing.keepers>=1": "Pledged. I'll stamp the day book.",
+        "story.side=glimmer": "Company ink is not accepted here."
       }
     },
     "trainers": {

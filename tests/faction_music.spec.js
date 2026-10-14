@@ -90,7 +90,29 @@ test('keeper and Glimmerwell lines follow pledge and standing', async ({ page })
   expect(lines.fenAlly).toBe("Warden's Ally. Roots first, then blossoms. Show me, {name}.");
   expect(lines.haleAlly).toBe("Ha! You moved the hill, {player}. Gently, like a Warden's Ally.");
   expect(lines.odile).toBe("Warden's Ally. The windfalls are yours.");
-  await page.evaluate(() => PixelPets.showTab('walk'));
+  const house = await page.evaluate(() => {
+    const T = PixelPets.standingCfg().thresholds;
+    PixelPets.setFlag('story.side', null);
+    PixelPets.setStanding('keepers', 0);
+    const citizen = PixelPets.loyaltyLine('hq_bram');
+    PixelPets.setFlag('story.side', 'keepers');
+    PixelPets.setStanding('keepers', T[1]);
+    const pledged = PixelPets.loyaltyLine('hq_bram');
+    PixelPets.setStanding('keepers', T[4]);
+    const ally = PixelPets.loyaltyLine('hq_lumen');
+    const watch = PixelPets.loyaltyLine('hm_patrol');
+    PixelPets.setSide('glimmer');
+    const cold = PixelPets.loyaltyLine('hq_bram');
+    const ness = PixelPets.loyaltyLine('hm_ness');
+    return { citizen, pledged, ally, watch, cold, ness };
+  });
+  expect(house.citizen).toBeNull();
+  expect(house.pledged).toBe('Pledged. Sign the night book, friend.');
+  expect(house.ally).toBe("Warden's Ally. I'd trust you a route.");
+  expect(house.watch).toBe("Warden's Ally. The road is yours.");
+  expect(house.cold).toBe('Glimmerwell. You are not welcome here.');
+  expect(house.ness).toBe('Company colours. State your business.');
+  await page.evaluate(() => { PixelPets.setSide('keepers'); PixelPets.setStanding('keepers', PixelPets.standingCfg().thresholds[4]); PixelPets.showTab('walk'); });
   await page.evaluate(() => PixelPets.runScene('ilse_chat'));
   await page.waitForFunction(() => {
     const s = window.PixelPets.scene;

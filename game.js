@@ -914,11 +914,18 @@ if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.ent
 // `story.side` absent still means Keepers, so keeper-facing keys use `!story.side=glimmer` (the same test the side lines use).
 (function applyLoyalty(){
   const L = MD.glimmer_path && MD.glimmer_path.loyalty; if (!L) return;
+  // One-shot intros (`!story.met_*`, or any line that runs a scene with `@`) stay in front. The Keeper House
+  // on Hearthmoor (data/civic.json, written on the HQ branch) depends on that order. Rank lines slot in
+  // after those intros and do not replace a key the NPC already has.
+  const introKey = (k, v) => k.startsWith('!story.met_') || (typeof v === 'string' && v.charAt(0) === '@');
   const front = (o, bag) => {
     if (!o || !bag || typeof bag !== 'object') return;
+    const intro = [], rest = [];
+    for (const [k, v] of Object.entries(o.lines || {})) (introKey(k, v) ? intro : rest).push([k, v]);
     const lines = {};
-    for (const [k, v] of Object.entries(bag)) if (typeof v === 'string') lines[k] = v;
-    for (const [k, v] of Object.entries(o.lines || {})) if (!(k in lines)) lines[k] = v;
+    for (const [k, v] of intro) lines[k] = v;
+    for (const [k, v] of Object.entries(bag)) if (typeof v === 'string' && !(k in lines)) lines[k] = v;
+    for (const [k, v] of rest) if (!(k in lines)) lines[k] = v;
     o.lines = lines;
   };
   const byId = {};
@@ -952,6 +959,15 @@ function trainerLine(id, key){
 }
 function objById(id){
   for (const m of Object.values(WORLD)) { const o = (m.objs || []).find(x => x.id === id); if (o) return o; }
+  return null;
+}
+// The rank line from data/glimmer_path.json loyalty.npcs, ignoring whatever the map object already says.
+// Used for Keeper House ids that may arrive with the civic build (hq_bram and the watch) before this branch sees them.
+function loyaltyBagLine(id){
+  const L = MD.glimmer_path && MD.glimmer_path.loyalty;
+  const bag = L && L.npcs && L.npcs[id];
+  if (!bag || typeof bag !== 'object') return null;
+  for (const [k, v] of Object.entries(bag)) if (typeof v === 'string' && cond(k, false)) return v;
   return null;
 }
 // Point the new keeper outside, then (after Rook) toward the grass. Appended here so the design JSON stays verbatim.
@@ -4410,6 +4426,7 @@ function boot(){
   api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
   api.wildTracks = () => WILD_TRACKS.slice();
   api.npcLine = id => id === 'amos' ? lanternGreet('Keeper Amos') : (objById(id) ? linesFor(objById(id)) : null);
+  api.loyaltyLine = id => loyaltyBagLine(id);
   api.trainerLine = (id, key) => trainerLine(id, key);
   // BS (read-only): both meters with tier index and name, the pledge, the switch count, and whether the desk would allow a switch now.
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
