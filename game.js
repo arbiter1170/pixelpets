@@ -206,7 +206,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -342,6 +342,13 @@ function bowlHint(ms = 1200){
   bowlToldDay = d; setTimeout(() => { const q = pet(); if (q && bowlReady() && q.hunger < 98 && !overlayOpen()) toast('A Warm Bowl is ready for ' + petName(q) + '.'); }, ms);
 }
 function dayKey(ms){ const d = new Date(ms); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+// Local Monday of the week containing ms, as YYYY-MM-DD. High Charity's arena prize uses it.
+function weekKey(ms){
+  const d = new Date(ms == null ? Date.now() : ms);
+  const local = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  local.setDate(local.getDate() - ((local.getDay() + 6) % 7));
+  return dayKey(local.getTime());
+}
 /* CARE_LOOP F, cheap slice: the hello of the day. Once per local day (flags['daily.hello'] = dayKey), on the PARTNER tab, queued behind
    everything else: never over a scene, overlay, battle, the starter intro or a toast that's still up (boot notices, colour-back,
    the naming nudge). One of three time-of-day lines (copy table §7; evening covers night in this slice) plus the two-hearts
@@ -450,7 +457,16 @@ function dayRec(obj, k, init){
   if (!obj[k] || typeof obj[k] !== 'object' || obj[k].d !== d) obj[k] = Object.assign({ d }, init);
   return obj[k];
 }
-const careDay = () => dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false });
+const careDay = () => {
+  const c = dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false, minigameBond: 0, mg: { lantern: 0, shells: 0, chirp: 0, dash: 0, pairs: 0 } });
+  if (!Number.isInteger(c.minigameBond) || c.minigameBond < 0) c.minigameBond = 0;
+  if (c.minigameBond > 3) c.minigameBond = 3;
+  const ids = ['lantern', 'shells', 'chirp', 'dash', 'pairs'];
+  if (!c.mg || typeof c.mg !== 'object' || Array.isArray(c.mg)) c.mg = {};
+  for (const id of ids) { const n = c.mg[id]; c.mg[id] = Number.isInteger(n) && n > 0 ? Math.min(3, n) : 0; }
+  for (const k of Object.keys(c.mg)) if (!ids.includes(k)) delete c.mg[k];
+  return c;
+};
 function addPart(type, x, y, vx=0, vy=-8, life=1.2){ anim.parts.push({ type, x, y, vx, vy, life, max: life }); }
 const PET_H = 64, GROUND = PET_H - 14;                  // max logical height of the Pet tab scene (56..64, see fitPetScene)
 function petPos(t){ const c = $('#petCanvas'), W = (c && c.width) || 56, H = (c && c.height) || 56, x = Math.round((W - 16) / 2 + Math.sin(t / 2200) * 7); return { x, y: H - 14 - 7 }; }
@@ -669,7 +685,7 @@ function drawPetScene(t, dt){
 // Verbatim JSON via data/mapdata.js. Merge order matches the checkers: maps_slice, interiors slicePatch,
 // act1_route2 slicePatch then its maps, interiors rooms, cobblecrest route2Patch then its maps and rooms.
 const MD = MAPDATA, TS = 16;
-const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles, (MD.cobblecrest && MD.cobblecrest.tiles) || {}, (MD.cobblecrest && MD.cobblecrest.roomTiles) || {});
+const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles, (MD.cobblecrest && MD.cobblecrest.tiles) || {}, (MD.cobblecrest && MD.cobblecrest.roomTiles) || {}, (MD.highcharity && MD.highcharity.tiles) || {});
 function applyMapPatch(W, patch){
   if (!patch || !patch.maps) return;
   for (const [id, pt] of Object.entries(patch.maps)) {
@@ -699,6 +715,11 @@ const WORLD = (() => {
   }
   if (MD.glimmer_path) applyMapPatch(W, MD.glimmer_path.slicePatch);   // WP-B: the faction fork (ours, objects only, no new maps)
   if (MD.mahopac) { applyMapPatch(W, MD.mahopac.slicePatch); Object.assign(W, JSON.parse(JSON.stringify(MD.mahopac.maps))); }
+  if (MD.highcharity) {
+    applyMapPatch(W, MD.highcharity.slicePatch);
+    Object.assign(W, JSON.parse(JSON.stringify(MD.highcharity.maps)));
+    Object.assign(W, JSON.parse(JSON.stringify(MD.highcharity.rooms)));
+  }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -707,7 +728,8 @@ if (MD.act1_route2) Object.assign(SCENES, MD.act1_route2.slicePatch.scenes || {}
 if (MD.cobblecrest) Object.assign(SCENES, MD.cobblecrest.route2Patch.scenes || {}, MD.cobblecrest.scenes);
 if (MD.glimmer_path) Object.assign(SCENES, MD.glimmer_path.scenes || {});
 if (MD.mahopac) Object.assign(SCENES, MD.mahopac.scenes || {});
-for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+if (MD.highcharity) Object.assign(SCENES, MD.highcharity.scenes || {});
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.highcharity]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
@@ -901,6 +923,20 @@ const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
 if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.entries(MD.glimmer_path.speakers)) if (typeof v === 'string' && !LOOK_OF_NAME[k]) LOOK_OF_NAME[k] = v;
 if (MD.mahopac && MD.mahopac.speakers) for (const [k, v] of Object.entries(MD.mahopac.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
+if (MD.highcharity && MD.highcharity.looks) for (const [k, v] of Object.entries(MD.highcharity.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
+if (MD.highcharity && MD.highcharity.speakers) for (const [k, v] of Object.entries(MD.highcharity.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
+// Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
+(function wireIlseLetter(){
+  const steps = SCENES.ilse_chat; if (!steps) return;
+  const ch = steps.find(s => s[0] === 'choice'); if (!ch || !Array.isArray(ch[2])) return;
+  const opts = ch[2];
+  const extra = [
+    ['Read the letter', [['run', 'hc_invite']], null, ['story.side_pick_done', '!story.hc_invite']],
+    ['Where is the coach?', [['say', 'Warden Ilse', 'The lantern coach is the grass just south of this door.']], null, ['story.hc_invite', '!story.hc_games>=5']],
+    ['About the hall', [['run', 'hc_ilse_done']], null, ['story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs']],
+  ];
+  for (let i = extra.length - 1; i >= 0; i--) if (!opts.some(o => o[0] === extra[i][0])) opts.unshift(extra[i]);
+})();
 // Build 3: side-keyed ambient lines. New keys win; a leftover `else` stays behind them so it only shows if both side keys miss.
 (function applyGlimmerLines(){
   const G = MD.glimmer_path; if (!G || !G.lines || !WORLD.fernbrook) return;
@@ -1000,6 +1036,7 @@ const isRoom = () => CUR.kind === 'interior';
 // MUSIC v0.1: interiors and towns share one loop; routes and meadows share another. Unknown backdrops leave the current loop.
 function trackFor(map){
   if (!map) return null;
+  if (map.music === 'charity' || map.music === 'chapel' || map.music === 'arcade') return map.music;
   if (map.dream) return 'route';   // dreams use the wandering loop; the wash does the rest
   if (map.kind === 'interior' || map.backdrop === 'town') return 'town';
   if (map.backdrop === 'route' || map.backdrop === 'meadow') return 'route';
@@ -1674,7 +1711,23 @@ function drawCobbleTrim(g, cx, cy, t){
 // tile; off-screen it becomes an arrow at the viewport edge; on another map it points at the exit that starts the
 // shortest route there (BFS over warps and doors). Hidden during scenes, battles and the walk-in flash.
 const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length });
-const questCurrent = () => (S && typeof PPQuests !== 'undefined') ? PPQuests.current(questState()) : null;
+const HC_CLEAR_FLAGS = ['story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs'];
+const HC_QUEST = {
+  id: 'hc_games',
+  text: "Ilse's letter points to High Charity. Play all five Event Hall games with your Walkling.",
+  place: 'High Charity Event Hall',
+  glimmerText: "Ilse wrote anyway. High Charity's Event Hall has five games for you and your Walkling.",
+  glimmerPlace: 'High Charity Event Hall',
+  target: { map: 'highcharity', x: 32, y: 29 },
+};
+// The main chain stays put. This pointer only replaces the idle `end` card, and only until all five games are cleared.
+const questCurrent = () => {
+  if (!S || typeof PPQuests === 'undefined') return null;
+  const q = PPQuests.current(questState());
+  if (!q || q.id !== 'end' || !S.flags['story.hc_invite'] || HC_CLEAR_FLAGS.every(f => S.flags[f])) return q;
+  const g = side() === 'glimmer';
+  return { id: HC_QUEST.id, text: g ? HC_QUEST.glimmerText : HC_QUEST.text, place: g ? HC_QUEST.glimmerPlace : HC_QUEST.place, target: HC_QUEST.target, variant: g ? 'glimmer' : undefined };
+};
 const ARROW_DOWN = ['..###..', '..###..', '..###..', '#######', '.#####.', '..###..', '...#...'];   // 7x7, drawn 1 px per cell with a PAL.k outline
 const ARROW = (() => {
   const H = ARROW_DOWN.length, W = ARROW_DOWN[0].length, at = (x, y) => ARROW_DOWN[y][x] === '#';
@@ -1979,6 +2032,7 @@ function faceKeeper(o){ const q = objPos(o); mapRT.face[o.id] = dirName(S.world.
 function interact(o){
   if (scene || fade.busy || !o) return;
   if (o.kind === 'door') { enterDoor(o); return; }
+  if (o.booth) { openBooth(o); return; }
   if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
   if (o.kind === 'npc' || o.kind === 'trainer') faceKeeper(o);
@@ -2197,7 +2251,22 @@ async function execStep(st){
     // BS: ["pledge", side, free?]: switch the pledge to `side` (the Pledge desk's Yes). Buffered; later lines see the new side.
     case 'pledge': { if (!PPStanding.isSide(a)) return; sc.view.flags['story.side'] = a; pend(() => { switchSide(a, { free: !!b }); }); return; }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
-    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest') S.world.respawn = r; }); return; }
+    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity') S.world.respawn = r; }); return; }
+    case 'play': {
+      sc.skip = false;
+      $('#ovScene').hidden = true;
+      let res = { quit: true, clear: false, score: 0 };
+      try {
+        res = await PPMinigames.play(a, {
+          onOpen: () => { try { PPSound.music('arcade', { fadeOut: 180, fadeIn: 180 }); } catch (e) {} },
+          onClose: () => { const th = trackFor(CUR); if (th) PPSound.music(th, { fadeOut: 180, fadeIn: 220 }); },
+        });
+      } catch (e) { res = { quit: true, clear: false, score: 0 }; }
+      if (!scene) return;
+      $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
+      for (const [who, text] of PPMinigames.finish(a, res)) { if (!scene) return; await sayBox(who, expand(text)); }
+      return;
+    }
     // Lantern rest only (home naps stay on `rest`, free). Heals the whole party. A hurt party pays LANTERN_REST_COST;
     // a shortfall is covered so a wipe at 0 Acorns cannot trap you. Sets scene.view flag lantern.rest for the next line.
     case 'payRest': {
@@ -2278,6 +2347,31 @@ async function sceneBattle(id){
   if (res == null) throw ABORT;
   if (res === 'tired') scene.deferRespawn = true;
   if (res === 'win' && t.onWin && sceneSteps(t.onWin)) await playScene(t.onWin);
+  if (res === 'win' && id === 'hc_tourney') await grantTourneyPrize();
+}
+async function grantTourneyPrize(){
+  const key = weekKey();
+  if (S.flags['weekly.hc_tourney'] === key) { await sayBox('Clerk Nia', "You already have this week's ribbon. The match was still lovely."); return; }
+  const r = grantItem('hearty_snack', 1);
+  if (r.added < 1) { await sayBox('Clerk Nia', "Your bag can't hold the snack. Make room and the prize will wait."); return; }
+  S.money = (S.money || 0) + 40;
+  S.flags['weekly.hc_tourney'] = key;
+  sfx('stinger_item'); save();
+  await sayBox('Clerk Nia', "This week's prize is a Hearty Snack and 40 Acorns.");
+}
+function openBooth(o){
+  if (!o || !o.booth || !PPMinigames.RULE[o.booth]) return;
+  const id = o.booth, who = o.name || '';
+  if (!S.flags['story.hc_invite']) return runSteps([['say', '', "The booths are covered. A note: bring Ilse's letter, then come play."]], { npc: o });
+  if (!pet()) return runSteps([['say', who, 'Come back with your Walkling.']], { npc: o });
+  if ((careDay().mg[id] || 0) >= 3) return runSteps([['say', who, 'This booth is tired. Come back tomorrow.']], { npc: o });
+  return runSteps([
+    ['say', who, PPMinigames.RULE[id]],
+    ['choice', 'Play a round?', [
+      ['Play', [['play', id]]],
+      ['Not now', [['say', who, "We'll keep your seat."]]],
+    ]],
+  ], { npc: o });
 }
 // A story creature (map obj kind 'wild'): a wild battle with its own form, level, moves, faded state and befriend bonus.
 async function sceneEncounter(id){
@@ -2825,7 +2919,7 @@ function closeBattle(){
 }
 // A Lantern House rest heals the whole party. Hurt Walklings cost a few Acorns (OPEN_DECISIONS D28). Home naps stay free (`rest`).
 const LANTERN_REST_COST = 5;
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1 };
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
 function setRestDue(on){ if (!S || !S.world) return; if (on) S.world.restDue = true; else delete S.world.restDue; }
 // After a wipe, the party has to rest before leaving. Clears itself once nobody is hurt (regen, a debug heal).
@@ -3225,13 +3319,16 @@ const REGION_MAP = {
     route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]] },
     cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.' },
     cobble_quarry: { kind: 'side',  col: 17, row: 3, label: 'QUARRY',      labelAt: 'above', blurb: 'Pebblits nap in the old seam.', path: [[17, 6], [17, 3]] },
-    mahopac:       { kind: 'town',  col: 2,  row: 3, label: 'MAHOPAC',     labelAt: 'above', blurb: 'Time-snagged woods. Breckenridge Observatory.', path: [[2, 6], [2, 3]] },
+    mahopac:       { kind: 'town',  col: 2,  row: 3, label: 'MAHOPAC',     labelAt: 'below', blurb: 'Time-snagged woods. Breckenridge Observatory.', path: [[2, 6], [2, 3]] },
+    highcharity:   { kind: 'town',  col: 2,  row: 2, label: 'HIGH CHARITY', labelAt: 'above', blurb: 'Keeper capital. Lanterns on every roof.', path: [[2, 6], [2, 2]] },
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
-    mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac' },
+    mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
+    hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
+    hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -3626,10 +3723,11 @@ async function results(result, id){
   if (won && parts.has(S.partnerId)) { const cday = careDay(); if (cday.battleBond < BOND.battleDay) { cday.battleBond++; addBond(pet(), BOND.battle); } }   // bond: won / befriended together
   if (result === 'win' && t) {
     const money = t.money != null ? t.money : 10 * Math.max(...trainerTeam(t).map(m => m.level)) * (t.hall ? 3 : 1);
-    S.money = (S.money || 0) + money; S.flags['trainer.' + B.trainerId] = true;
+    if (money > 0) S.money = (S.money || 0) + money;
+    S.flags['trainer.' + B.trainerId] = true;
     if (t.hall && t.seal) { S.seals[t.seal] = Date.now(); }
     save();
-    await say(playerName() + ' got ' + acorns(money) + '!', id); if (!alive(id)) return;
+    if (money > 0) { await say(playerName() + ' got ' + acorns(money) + '!', id); if (!alive(id)) return; }
     if (t.hall && t.seal) { showSealCard(t.seal); sfx('stinger_seal'); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
   }
   if (t && t.oneShot && (result === 'win' || result === 'tired')) {      // true = Rook #1; a string prefix is a later one-shot (Rook #2)
@@ -4305,6 +4403,7 @@ function bindInput(){
   const KEYS = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'up', s:'down', a:'left', d:'right', W:'up', S:'down', A:'left', D:'right' };
   window.addEventListener('keydown', e => {
     if (e.target && e.target.tagName === 'INPUT') return;
+    if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
     if (scene && sbox.resolve) {                  // Space / Enter advance the text box; Escape does nothing during a choice
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) sceneTap(); return; }
     }
@@ -4329,7 +4428,8 @@ function bindInput(){
     if (!$('#ovBattle').hidden) { battleKey(e); return; }
     if ('1234'.includes(e.key)) showTab(['pet','walk','col','friends'][+e.key - 1]);
   });
-  window.addEventListener('keyup', e => { if (KEYS[e.key] === walk.key) walk.key = null; });
+  window.addEventListener('keyup', e => { if (window.PPMinigames) PPMinigames.keyUp(e); if (KEYS[e.key] === walk.key) walk.key = null; });
+  const playStop = $('#playStop'); if (playStop) playStop.addEventListener('click', () => PPMinigames.stop());
   window.addEventListener('blur', clearMoves);
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
@@ -4478,6 +4578,37 @@ function bootReadOnly(){
   $('#newerReload').addEventListener('click', () => location.reload());
   window.PixelPets = Object.freeze({ readOnly: true, get debug(){ return DEBUG; }, get state(){ return null; } });
 }
+function highCharityDevCheck(){
+  const bad = [];
+  const m = WORLD.highcharity;
+  if (!m) return ['missing highcharity'];
+  if (m.w !== 64 || m.h !== 40) bad.push('size ' + m.w + 'x' + m.h);
+  if (!m.grid || m.grid.length !== 40 || m.grid.some(r => r.length !== 64)) bad.push('grid');
+  if (!TILE_DEF.P || !TILE_DEF.P.walk || !TILE_DEF.D || !TILE_DEF.D.walk || !TILE_DEF.A || !TILE_DEF.A.walk) bad.push('tiles');
+  for (const d of (m.objs || []).filter(o => o.kind === 'door' && o.to)) {
+    if (!WORLD[d.to]) bad.push('door ' + d.id);
+    if (!m.grid[d.y - 1] || m.grid[d.y - 1][d.x] !== 'H') bad.push('door wall ' + d.id);
+    if (!(TILE_DEF[m.grid[d.y][d.x]] || {}).walk) bad.push('door step ' + d.id);
+  }
+  const booths = ((WORLD.hc_hall_in && WORLD.hc_hall_in.objs) || []).filter(o => o.booth).map(o => o.booth).sort().join(',');
+  if (booths !== 'chirp,dash,lantern,pairs,shells') bad.push('booths ' + booths);
+  if (!SCENES.hc_invite || !SCENES.hc_gate || !SCENES.hc_arena_ask || !TRAINERS.hc_tourney) bad.push('scenes');
+  if (!TRAINERS.hc_tourney || TRAINERS.hc_tourney.money !== 0) bad.push('tourney purse');
+  if (m.music !== 'charity' || !WORLD.hc_church_in || WORLD.hc_church_in.music !== 'chapel' || !WORLD.hc_hall_in || WORLD.hc_hall_in.music !== 'arcade') bad.push('music map');
+  const mc = PPSound.musicCheck && PPSound.musicCheck();
+  if (mc && mc.length) bad.push('music ' + mc.join(','));
+  if (typeof PPMinigames === 'undefined' || !PPMinigames.devCheck) bad.push('minigames');
+  else { const mg = PPMinigames.devCheck(); if (mg.length) bad.push(mg.join(',')); }
+  for (const f of ['story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
+    'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs'])
+    if (!PPQuests.NOT_STEPS.includes(f)) bad.push('not step ' + f);
+  if (!REGION_MAP.nodes.highcharity) bad.push('region');
+  return bad;
+}
+PPMinigames.bind({
+  careDay, grantItem, addBond, save, pet, sfx, toast, updateHUD, playerName, acorns, itemLabel,
+  BAG_FULL_MSG, fitCanvas, state: () => S,
+});
 function boot(){
   $$('#tabs canvas').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));
   paintUiIcons();
@@ -4492,6 +4623,7 @@ function boot(){
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
+  { const hb = highCharityDevCheck(); if (hb.length) console.error('Walklings: high charity check failed:', hb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
@@ -4588,6 +4720,12 @@ function boot(){
     makePartner: id => { makePartner(id); updateHUD(); save(); },
     setMapBackdrop: v => { const m = MAP_INFO[S.world.map] || (MAP_INFO[S.world.map] = {}); if (v == null) delete m.backdrop; else m.backdrop = v; return backdropName(); },
     // Phase M (MAPS_SLICE §12): jump anywhere, set flags, run any scene
+    openBooth: id => {
+      showTab('walk'); if (scene || overlayOpen()) return false;
+      const o = Object.values(WORLD).reduce((a, m) => a.concat(m.objs || []), []).find(x => x.booth === id);
+      if (!o) return false; openBooth(o); return true;
+    },
+    applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
     setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); syncSide(); return S.flags[k]; },
@@ -4650,6 +4788,8 @@ function boot(){
     const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);
     return { width: +width.toFixed(3), chance: +befriendHitChance(width).toFixed(3), speed: befriendSpeed(o.stage, foeLv), label: oddsLabel(width).t }; };
   api.befriendCheck = () => befriendDevCheck();
+  api.weekKey = ms => weekKey(ms);
+  api.charityCheck = () => highCharityDevCheck();
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
     if (DEBUG) { api[k] = v; continue; }

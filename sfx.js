@@ -262,7 +262,55 @@ const PPSound = (() => {
         [40,2],[52,2],[40,2],[52,2],[40,2],[52,2],[44,2],[47,2] ] },
       drums: ['k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.hh',
               'k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.s.s.ssss'] },
-    // Wild walking battles: three upbeat loops, cycled so grass fights don't all sound like the trainer theme.
+    // High Charity. Original loops: civic town, chapel, and the Event Hall. Lead and bass each sum to bars*stepsPerBar.
+    charity: { key: 'Bb major', bpm: 92, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.42,
+      lead: { wave: 'triangle', gain: 0.22, notes: [
+        [70,2],[74,1],[77,1],[79,2],[77,2],
+        [75,2],[74,1],[72,1],[74,2],[70,2],
+        [72,2],[75,2],[74,1],[72,1],[70,2],
+        [69,2],[70,2],[72,2],[74,2],
+        [77,2],[81,1],[82,1],[81,2],[77,2],
+        [79,2],[77,2],[75,2],[74,2],
+        [75,1],[77,1],[79,2],[77,1],[75,1],[74,2],
+        [72,2],[74,2],[70,4] ] },
+      bass: { wave: 'triangle', gain: 0.26, notes: [
+        [46,4],[53,4],  [51,4],[58,2],[51,2],
+        [41,4],[48,4],  [46,2],[53,2],[50,2],[46,2],
+        [46,4],[58,2],[53,2],  [51,4],[58,4],
+        [51,4],[55,2],[58,2],  [41,4],[46,4] ] },
+      drums: ['k..hs.h.','k..hs...','k..hs.h.','k..hs.s.','k..hs.h.','k..hs...','k..hs.h.','k..hss.s'] },
+    chapel: { key: 'F major', bpm: 72, bars: 8, stepsPerBar: 8, gate: 0.9, perc: 0.18,
+      lead: { wave: 'triangle', gain: 0.22, notes: [
+        [65,4],[69,4],
+        [72,4],[69,2],[67,2],
+        [69,2],[70,2],[72,4],
+        [70,2],[69,2],[67,4],
+        [65,2],[69,2],[72,2],[74,2],
+        [72,4],[70,4],
+        [69,2],[67,2],[69,2],[70,2],
+        [72,2],[69,2],[65,4] ] },
+      bass: { wave: 'triangle', gain: 0.24, notes: [
+        [41,8], [48,8], [46,8], [43,8],
+        [41,4],[48,4], [48,4],[46,4],
+        [43,4],[46,4], [48,4],[41,4] ] },
+      drums: ['....h...','....h...','....h...','....h..h','....h...','....h...','....h...','......hh'] },
+    arcade: { key: 'C major', bpm: 128, bars: 8, stepsPerBar: 8, gate: 0.75, perc: 0.8,
+      lead: { wave: 'square', gain: 0.07, notes: [
+        [76,1],[79,1],[76,1],[72,1],[74,1],[76,1],[79,2],
+        [81,1],[79,1],[76,2],[74,1],[72,1],[74,2],
+        [72,1],[76,1],[79,1],[81,1],[79,2],[76,2],
+        [74,1],[76,1],[74,1],[72,1],[69,2],[0,2],
+        [79,1],[81,1],[79,1],[76,1],[72,1],[74,1],[76,2],
+        [77,1],[76,1],[74,2],[76,1],[77,1],[79,2],
+        [76,1],[74,1],[72,1],[74,1],[76,2],[79,2],
+        [72,2],[76,2],[74,2],[72,2] ] },
+      bass: { wave: 'triangle', gain: 0.28, notes: [
+        [48,2],[60,2],[48,2],[60,2],  [43,2],[55,2],[43,2],[55,2],
+        [41,2],[53,2],[41,2],[53,2],  [43,2],[55,2],[48,4],
+        [45,2],[57,2],[45,2],[57,2],  [41,2],[53,2],[43,2],[55,2],
+        [48,2],[55,2],[52,2],[55,2],  [43,2],[41,2],[48,4] ] },
+      drums: ['k.h.s.h.','k.hks.h.','k.h.s.h.','k.s.s.s.','k.h.s.h.','k.hks.h.','k.h.s.h.','k.sss.ss'] },
+// Wild walking battles: three upbeat loops, cycled so grass fights don't all sound like the trainer theme.
     wild_skip: { key: 'C major', bpm: 156, bars: 8, stepsPerBar: 8, gate: 0.85, perc: 0.85,
       lead: { wave: 'square', gain: 0.05, notes: [
         [72,1],[76,1],[79,1],[84,1],[79,1],[76,1],[72,2],
@@ -348,21 +396,21 @@ const PPSound = (() => {
       drums: ['k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.h.ssss',
               'k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.s.','k.s.s.s.k.h.ssss'] },
   };
-  let MUSIC_ON = true, MUSIC_VOL = 0.5, want = null, trk = null, token = 0;
-  const FLAT = {};
   function musicCheck(){
     const bad = [];
     for (const [id, t] of Object.entries(MUSIC)) {
-      const n = t.bars * t.stepsPerBar;
+      const need = t.bars * t.stepsPerBar;
       for (const voice of ['lead', 'bass']) {
-        const sum = (t[voice].notes || []).reduce((a, p) => a + p[1], 0);
-        if (sum !== n) bad.push(id + ' ' + voice + ' steps ' + sum + ' != ' + n);
+        const sum = t[voice].notes.reduce((s, n) => s + n[1], 0);
+        if (sum !== need) bad.push(id + ' ' + voice + ' ' + sum + '!=' + need);
       }
-      (t.drums || []).forEach((bar, i) => { if (bar.length !== t.stepsPerBar) bad.push(id + ' drum bar ' + i + ' length ' + bar.length); });
-      if ((t.drums || []).length !== t.bars) bad.push(id + ' drum bars ' + (t.drums || []).length + ' != ' + t.bars);
+      if (t.drums.length !== t.bars) bad.push(id + ' drum bars');
+      t.drums.forEach((bar, i) => { if (bar.length !== t.stepsPerBar || /[^ksh.]/.test(bar)) bad.push(id + ' drum ' + i); });
     }
     return bad;
   }
+  let MUSIC_ON = true, MUSIC_VOL = 0.5, want = null, trk = null, token = 0;
+  const FLAT = {};
   function eventsFor(id){
     if (FLAT[id]) return FLAT[id];
     const t = MUSIC[id], n = t.bars * t.stepsPerBar, by = Array.from({ length: n }, () => []);

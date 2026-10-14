@@ -26,7 +26,9 @@
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
-    'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue'];   // Mahopac dream bits; the side chain uses the milestones
+    'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
+    'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
+    'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue'];   // High Charity and Mahopac bits; neither is a main-chain step
 
   // Optional side chain (Mom, Mahopac, the childhood dream). Never implied by the main story, and never a main-chain step.
   // Same shape as CHAIN. A later side flag counts the earlier side steps as done, so a finished dream does not rewind.

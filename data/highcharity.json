@@ -1,0 +1,2004 @@
+{
+  "spec": "HIGH_CHARITY",
+  "version": "1.0",
+  "_about": "High Charity, the Keeper capital. Largest outdoor map (64x40). Unlocked after the faction pledge. Five Event Hall minigames are a side quest from Warden Ilse, not a step in the main chain.",
+  "tiles": {
+    "P": {
+      "name": "plaza stone",
+      "walk": true
+    },
+    "D": {
+      "name": "dock plank",
+      "walk": true
+    },
+    "A": {
+      "name": "airship pad",
+      "walk": true
+    }
+  },
+  "slicePatch": {
+    "_note": "The lantern coach sits on Hearthmoor, one tile south of the east-west path. The warp stays hidden until the faction pledge.",
+    "maps": {
+      "hearthmoor": {
+        "gridRows": {
+          "9": "TgggggggggggpgpgggggTTTT"
+        },
+        "addObjs": [
+          {
+            "kind": "warp",
+            "id": "hm_to_hc",
+            "x": 12,
+            "y": 9,
+            "to": "highcharity",
+            "tx": 32,
+            "ty": 37,
+            "facing": "up",
+            "when": [
+              "story.side_pick_done"
+            ],
+            "need": "story.side_pick_done",
+            "setFlag": "story.hc_arrived"
+          },
+          {
+            "kind": "npc",
+            "id": "hm_bram",
+            "name": "Porter Bram",
+            "look": "bram",
+            "x": 11,
+            "y": 9,
+            "facing": "right",
+            "when": [
+              "story.side_pick_done"
+            ],
+            "lines": {
+              "!story.hc_invite": "Ilse has a letter inside. The city is open, but the hall booths are not.",
+              "else": "Step on the lantern mark. I'll have you at the south gate."
+            }
+          },
+          {
+            "kind": "sign",
+            "id": "hm_sign_coach",
+            "x": 13,
+            "y": 9,
+            "when": [
+              "story.side_pick_done"
+            ],
+            "text": "LANTERN COACH · High Charity. Step on the mark."
+          }
+        ]
+      }
+    }
+  },
+  "maps": {
+    "highcharity": {
+      "name": "High Charity",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 64,
+      "h": 40,
+      "spawns": null,
+      "respawn": null,
+      "respawnIn": {
+        "map": "hc_lantern_in",
+        "x": 2,
+        "y": 3,
+        "facing": "up"
+      },
+      "safe": {
+        "x": 32,
+        "y": 37
+      },
+      "zones": [],
+      "roofs": {
+        "airport": {
+          "x0": 26,
+          "y0": 1,
+          "x1": 38,
+          "y1": 2,
+          "col": "b"
+        },
+        "command": {
+          "x0": 26,
+          "y0": 6,
+          "x1": 38,
+          "y1": 7,
+          "col": "b"
+        },
+        "barracks": {
+          "x0": 4,
+          "y0": 8,
+          "x1": 14,
+          "y1": 9,
+          "col": "b"
+        },
+        "chapel": {
+          "x0": 46,
+          "y0": 5,
+          "x1": 58,
+          "y1": 7,
+          "col": "b"
+        },
+        "hall": {
+          "x0": 26,
+          "y0": 26,
+          "x1": 38,
+          "y1": 27,
+          "col": "b"
+        }
+      },
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+        "TgggAAAAAAAAAAAAAAAAAAAgggRRRRRRRRRRRRRgggAAAAAAAAAAAAAAAAAAAggT",
+        "TgggAAAAAAAAAAAAAAAAAAAgggRRRRRRRRRRRRRgggAAAAAAAAAAAAAAAAAAAggT",
+        "TgggAAAAAAAAAAAAAAAAAAAgggHHHHHHHHHHHHHgggAAAAAAAAAAAAAAAAAAAggT",
+        "TgggAAAAAAAAAAAAAAAAAAAPPPPPPPPPPPPPPPPPPgAAAAAAAAAAAAAAAAAAAggT",
+        "TgggggggggggggggPggggggggggggggPPPggggggPgggggRRRRRRRRRRRRRggggT",
+        "TgggggggggggggggPgggggggggRRRRRRRRRRRRRgPgggggRRRRRRRRRRRRRggggT",
+        "TgggggggggggggggPgggggggggRRRRRRRRRRRRRgPgggggRRRRRRRRRRRRRggggT",
+        "TgggRRRRRRRRRRRgPgggggggggHHHHHHHHHHHHHgPgggggHHHHHHHHHHHHHggggT",
+        "TgggRRRRRRRRRRRgPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPggggggT",
+        "TgggHHHHHHHHHHHgPgRRRRRRRRRggggPPPgggggPPggggggggggggggggggggggT",
+        "TggggggggPggggggPgRRRRRRRRRggggPPPgggggPPggggggggggggggggggggggT",
+        "TwwwwwwggPggggggggHHHHHHHHHggggPPPgggggPRRRRRRRRRRRggggggggggggT",
+        "TwwwwwwggPggggggggggggPPPPPPgggPPPgggggPRRRRRRRRRRRggggggggggggT",
+        "TwwwwwwsgPggggRRRRRRRRRggggPgggPPPgggggPHHHHHHHHHHHggggggggggggT",
+        "TwwwwwwsgPggggRRRRRRRRRggggPgggPPPgggggPPPPPPPgggggggggggggggggT",
+        "TwwwwwwsgPggggHHHHHHHHHggggPgggPPPgggggPgggggggggggggggggggggggT",
+        "TwwwwwwsDDDDDgggggPggggggggPgggPPPgggggPgggggggggggggggggggggggT",
+        "TwwwwwwsDDDDDgggggPggggggggPgggPPPgggggPgggggggggggggggggggggggT",
+        "TwwwwwwsPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPggggggT",
+        "TwwwwwwsPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPggggggT",
+        "TwwwwwwsPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPggggggT",
+        "TwwwRRRRRRRRRgRRRRRRRgRRRRRRRggPPPgffffggggggggggggggggggggggggT",
+        "TwwwRRRRRRRRRgRRRRRRRgRRRRRRRggPPPgffffggggggggggggggggggggggggT",
+        "TwwwHHHHHHHHHgHHHHHHHgHHHHHHHggPPPgffffggggggggggggggggggggggggT",
+        "TwwwwwwsPPPPPPPPPPPPPPPPPPPPPPPPPPPggggggggggggggggggggggggggggT",
+        "TwwwwwRRRRRRRRRRRgggggggggRRRRRRRRRRRRRgggggRRRRRRRRRRRggggggggT",
+        "TwwwwwRRRRRRRRRRRgggggggggRRRRRRRRRRRRRgggggRRRRRRRRRRRggggggggT",
+        "TwwwwwHHHHHHHHHHHgggggggggHHHHHHHHHHHHHgggggHHHHHHHHHHHggggggggT",
+        "TgggggggPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPggggggT",
+        "TggggggggggggggggggggggggggggggPPPgggggggggggggggggggggggggggggT",
+        "TgggggggggggggggggRRRRRRRRRggggPPPgggggggggggggggggggggggggggggT",
+        "TgggggggggggggggggRRRRRRRRRggggPPPggggggggggggggRRRRRRRRRRRRRggT",
+        "TgggggggggggggggggHHHHHHHHHggggPPPggggggggggggggRRRRRRRRRRRRRggT",
+        "TgggggggggggggggggggggPPPPPPPPPPPPPPPPPPPPPPPPPgHHHHHHHHHHHHHggT",
+        "TgggggggggggggggggggggPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPggggT",
+        "TggggggggggggggggggggggggggggggPPPgggggggggggggggggggggggggggggT",
+        "TggggggggggggggggggggggggggggggPPPgggggggggggggggggggggggggggggT",
+        "TggggggggggggggggggggggggggggggPPPgggggggggggggggggggggggggggggT",
+        "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {
+          "kind": "door",
+          "id": "hc_airport",
+          "x": 32,
+          "y": 4,
+          "to": "hc_airport_in",
+          "tx": 4,
+          "ty": 5,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_command",
+          "x": 32,
+          "y": 9,
+          "to": "hc_command_in",
+          "tx": 4,
+          "ty": 5,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_barracks",
+          "x": 9,
+          "y": 11,
+          "to": "hc_barracks_in",
+          "tx": 4,
+          "ty": 5,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_church",
+          "x": 52,
+          "y": 9,
+          "to": "hc_church_in",
+          "tx": 5,
+          "ty": 9,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_gym",
+          "x": 22,
+          "y": 13,
+          "to": "hc_gym_in",
+          "tx": 4,
+          "ty": 5,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_marina",
+          "x": 18,
+          "y": 17,
+          "to": "hc_marina_in",
+          "tx": 4,
+          "ty": 5,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_arena",
+          "x": 45,
+          "y": 15,
+          "to": "hc_arena_in",
+          "tx": 5,
+          "ty": 7,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_apt",
+          "x": 8,
+          "y": 25,
+          "to": "hc_apt_in",
+          "tx": 3,
+          "ty": 4,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_apt_b",
+          "x": 17,
+          "y": 25,
+          "need": "story.hc_no_room",
+          "deny": "A neighbour's ribbon is on the latch."
+        },
+        {
+          "kind": "door",
+          "id": "hc_apt_c",
+          "x": 25,
+          "y": 25,
+          "need": "story.hc_no_room",
+          "deny": "A neighbour's ribbon is on the latch."
+        },
+        {
+          "kind": "door",
+          "id": "hc_school",
+          "x": 11,
+          "y": 29,
+          "to": "hc_school_in",
+          "tx": 4,
+          "ty": 5,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_hall",
+          "x": 32,
+          "y": 29,
+          "to": "hc_hall_in",
+          "tx": 5,
+          "ty": 9,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_bank",
+          "x": 49,
+          "y": 29,
+          "to": "hc_bank_in",
+          "tx": 4,
+          "ty": 5,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_lantern",
+          "x": 22,
+          "y": 34,
+          "to": "hc_lantern_in",
+          "tx": 4,
+          "ty": 5,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "hc_mall",
+          "x": 55,
+          "y": 35,
+          "to": "hc_mall_1",
+          "tx": 5,
+          "ty": 9,
+          "facing": "up"
+        },
+        {
+          "kind": "warp",
+          "id": "hc_south",
+          "x": 32,
+          "y": 38,
+          "to": "hearthmoor",
+          "tx": 12,
+          "ty": 10,
+          "facing": "up"
+        },
+        {
+          "kind": "trigger",
+          "id": "hc_gate",
+          "x": 32,
+          "y": 36,
+          "r": 0,
+          "when": [
+            "!story.hc_greeted"
+          ],
+          "scene": "hc_gate"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_moss",
+          "name": "Keeper Moss",
+          "look": "moss",
+          "x": 30,
+          "y": 36,
+          "facing": "right",
+          "scene": "hc_gate",
+          "lines": {
+            "story.side=glimmer": "Guests are welcome. The hall is south of the plaza.",
+            "else": "The lanterns stay lit. The hall is just south."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hc_shop",
+          "name": "Mira",
+          "look": "mira",
+          "x": 30,
+          "y": 22,
+          "facing": "down",
+          "shop": [
+            "heal_snack",
+            "hearty_snack",
+            "wake_tonic",
+            "befriend_treat",
+            "energy_sip",
+            "joy_crumb"
+          ],
+          "lines": {
+            "else": "Welcome to Lantern Market!"
+          },
+          "chatter": {
+            "story.side=glimmer": "We sell to guests. Have a seat.",
+            "else": "Warm buns in the back, keeper."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_stall_l",
+          "x": 29,
+          "y": 23,
+          "sprite": "stall_counter",
+          "lines": {
+            "else": "Jars of snacks and a tin marked ACORNS, PLEASE."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_stall_r",
+          "x": 31,
+          "y": 23,
+          "sprite": "hall_booth",
+          "lines": {
+            "else": "A chalkboard: LANTERN MARKET · Snacks for the road."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hc_baker",
+          "name": "Baker Cole",
+          "look": "cole",
+          "x": 36,
+          "y": 23,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "Same buns for guests. Sit if you like.",
+            "else": "The glaze is amber, same as the wild."
+          },
+          "chatter": {
+            "else": "Warm buns. Mind the glaze."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hc_kite",
+          "name": "Kit",
+          "look": "kit",
+          "x": 38,
+          "y": 23,
+          "facing": "left",
+          "lines": {
+            "else": "Wind's kind today. The kites behave."
+          },
+          "chatter": {
+            "else": "Kites for the plaza. String included."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_airship",
+          "x": 8,
+          "y": 3,
+          "sprite": "airship",
+          "lines": {
+            "else": "A lantern airship. Silk, wicker, and a bowl of fire."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_buoy",
+          "x": 10,
+          "y": 18,
+          "sprite": "marina_buoy",
+          "lines": {
+            "else": "A buoy. The crabs like the pilings under it."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_plaza",
+          "x": 34,
+          "y": 20,
+          "text": "HIGH CHARITY · Keeper capital. Lanterns on every roof. Be kind in the streets."
+        },
+        {
+          "kind": "pickup",
+          "id": "hc_snack",
+          "x": 16,
+          "y": 36,
+          "item": "heal_snack",
+          "n": 1
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_church",
+          "x": 53,
+          "y": 10,
+          "text": "HIGH CHARITY CHAPEL · The doors stay open. Come in quiet, and leave a little warmer."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_school",
+          "x": 12,
+          "y": 30,
+          "text": "LANTERN SCHOOL · Lessons at the big table. Walklings may sit in, if they can sit still."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_bank",
+          "x": 50,
+          "y": 30,
+          "text": "CIVIC BANK · Your coins are counted and kept. Withdrawals until dusk. Kindness has no fee."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_arena",
+          "x": 46,
+          "y": 16,
+          "text": "CHARITY ARENA · Fair matches and a seat for every keeper. Leave grudges at the rope."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_barracks",
+          "x": 10,
+          "y": 12,
+          "text": "KEEPER BARRACKS · Lamps, maps, and the night watch. Sign the book, then mind the banners."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_command",
+          "x": 33,
+          "y": 10,
+          "text": "SKY-DOCK COMMAND · Lantern airships berth here. Read the board before you step on a pad."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_airport",
+          "x": 33,
+          "y": 5,
+          "text": "AIRSHIP FIELD · They lift when the wind is kind. Hold your hat, and your Walkling."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_marina",
+          "x": 19,
+          "y": 18,
+          "text": "CANAL MARINA · Tie up gently. The buoys mark the deep water. Wave if you need a hand."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_mall",
+          "x": 56,
+          "y": 36,
+          "text": "TWO-FLOOR MALL · Coats upstairs, crumbs downstairs. Walk your Walkling between the benches."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_apt",
+          "x": 7,
+          "y": 25,
+          "text": "KEEPER APARTMENTS · Rooms for keepers new to the city. The landlord keeps the spare keys."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_gym",
+          "x": 23,
+          "y": 14,
+          "text": "TRIAL GYM · Practice before a real Hall. Stones, tides, and blooms are all welcome."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_lantern",
+          "x": 23,
+          "y": 35,
+          "text": "LANTERN HOUSE · Rest is free. The beds stay warm, and nobody asks why you are tired."
+        },
+        {
+          "kind": "sign",
+          "id": "hc_sign_hall",
+          "x": 33,
+          "y": 30,
+          "text": "EVENT HALL · Five booths, one evening. Play kindly. The prizes are small on purpose."
+        }
+      ]
+    }
+  },
+  "rooms": {
+    "hc_airport_in": {
+      "name": "Airship Field",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_airport",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 4,
+        "y": 5
+      },
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_airport_in_mat",
+          "x": 4,
+          "y": 6,
+          "to": "highcharity",
+          "tx": 32,
+          "ty": 4,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_quin",
+          "name": "Porter Quin",
+          "look": "quin",
+          "x": 2,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "Guests may watch the ships. No boarding.",
+            "else": "Next lantern-ship lifts at dusk."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_airship_in",
+          "x": 6,
+          "y": 3,
+          "sprite": "airship",
+          "lines": {
+            "else": "The boarding board. Dusk, if the wind stays kind."
+          }
+        }
+      ]
+    },
+    "hc_command_in": {
+      "name": "Sky-Dock Command",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_command",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 4,
+        "y": 5
+      },
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_command_in_mat",
+          "x": 4,
+          "y": 6,
+          "to": "highcharity",
+          "tx": 32,
+          "ty": 9,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_lumen",
+          "name": "Captain Lumen",
+          "look": "petra",
+          "x": 2,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "The dock is open. Please don't touch the lines.",
+            "else": "Lantern ships. No thunder, no guns."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_console",
+          "x": 6,
+          "y": 2,
+          "sprite": "skydock_console",
+          "lines": {
+            "else": "A board of little lights. Each one is a ship, not a weapon."
+          }
+        }
+      ]
+    },
+    "hc_barracks_in": {
+      "name": "Keeper Barracks",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_barracks",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 4,
+        "y": 5
+      },
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_barracks_in_mat",
+          "x": 4,
+          "y": 6,
+          "to": "highcharity",
+          "tx": 9,
+          "ty": 11,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_rowan",
+          "name": "Keeper Rowan",
+          "look": "sorrel",
+          "x": 2,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "The watch is polite. Please stay on the path.",
+            "else": "We walk the walls. The city sleeps."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_banner",
+          "x": 6,
+          "y": 2,
+          "sprite": "barracks_banner",
+          "lines": {
+            "else": "The night-watch banner. A lantern stitched in yellow."
+          }
+        }
+      ]
+    },
+    "hc_marina_in": {
+      "name": "Canal Marina",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_marina",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 4,
+        "y": 5
+      },
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_marina_in_mat",
+          "x": 4,
+          "y": 6,
+          "to": "highcharity",
+          "tx": 18,
+          "ty": 17,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_ness",
+          "name": "Dockhand Ness",
+          "look": "ness",
+          "x": 2,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "Boats are for looking. Crabs too.",
+            "else": "Crabs like the pilings. Be gentle."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_buoy_in",
+          "x": 6,
+          "y": 3,
+          "sprite": "marina_buoy",
+          "lines": {
+            "else": "A spare buoy. It smells like the canal, in a friendly way."
+          }
+        }
+      ]
+    },
+    "hc_school_in": {
+      "name": "Lantern School",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_school",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 4,
+        "y": 5
+      },
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_school_in_mat",
+          "x": 4,
+          "y": 6,
+          "to": "highcharity",
+          "tx": 11,
+          "ty": 29,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_mae",
+          "name": "Teacher Mae",
+          "look": "nessa",
+          "x": 2,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "The lesson is the same for guests.",
+            "else": "Ember, Tide, Bloom. Three friends."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_desk",
+          "x": 6,
+          "y": 3,
+          "sprite": "school_desk",
+          "lines": {
+            "else": "A desk copy of the lesson: Ember, Tide, and Bloom."
+          }
+        }
+      ]
+    },
+    "hc_bank_in": {
+      "name": "Civic Bank",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_bank",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 4,
+        "y": 5
+      },
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_bank_in_mat",
+          "x": 4,
+          "y": 6,
+          "to": "highcharity",
+          "tx": 49,
+          "ty": 29,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_ivo",
+          "name": "Teller Ivo",
+          "look": "teller",
+          "x": 2,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "We don't hold lanyards. Or Acorns.",
+            "else": "Your Acorns stay in your bag."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_counter",
+          "x": 5,
+          "y": 2,
+          "sprite": "bank_counter",
+          "lines": {
+            "else": "The counter is polished. Your Acorns never leave your bag."
+          }
+        }
+      ]
+    },
+    "hc_gym_in": {
+      "name": "Trial Gym",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_gym",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 4,
+        "y": 5
+      },
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_gym_in_mat",
+          "x": 4,
+          "y": 6,
+          "to": "highcharity",
+          "tx": 22,
+          "ty": 13,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_sol",
+          "name": "Floor Keeper Sol",
+          "look": "sol",
+          "x": 4,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "No trial today. The floor is just clean.",
+            "else": "No Seal here. Fen and Hale keep those."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "hc_gym_note",
+          "x": 2,
+          "y": 4,
+          "text": "Practice floor. No Seals. Wipe your boots."
+        }
+      ]
+    },
+    "hc_lantern_in": {
+      "name": "Lantern House",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_lantern",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 9,
+      "h": 7,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 4,
+        "y": 5
+      },
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "#.......#",
+        "####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_lantern_in_mat",
+          "x": 4,
+          "y": 6,
+          "to": "highcharity",
+          "tx": 22,
+          "ty": 34,
+          "facing": "down"
+        },
+        {
+          "kind": "prop",
+          "id": "hc_bed_a",
+          "x": 1,
+          "y": 2,
+          "sprite": "rest_bed",
+          "lines": {
+            "else": "@lantern_rest"
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_bed_b",
+          "x": 2,
+          "y": 2,
+          "sprite": "rest_bed",
+          "lines": {
+            "else": "@lantern_rest"
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_bed_c",
+          "x": 3,
+          "y": 2,
+          "sprite": "rest_bed",
+          "lines": {
+            "else": "@lantern_rest"
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_lantern_light",
+          "x": 6,
+          "y": 2,
+          "sprite": "floor_lantern",
+          "lines": {
+            "else": "The city lantern. Its glow feels like a hand on your shoulder."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "hc_lantern_note",
+          "x": 6,
+          "y": 4,
+          "text": "Rest as long as you like. The city can wait. — High Charity"
+        }
+      ],
+      "respawnSpot": {
+        "x": 2,
+        "y": 3,
+        "facing": "up"
+      }
+    },
+    "hc_church_in": {
+      "name": "High Charity Chapel",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_church",
+      "backdrop": "town",
+      "music": "chapel",
+      "w": 11,
+      "h": 11,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 9
+      },
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#....=....#",
+        "#....=....#",
+        "#....=....#",
+        "#.........#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_church_in_mat",
+          "x": 5,
+          "y": 10,
+          "to": "highcharity",
+          "tx": 52,
+          "ty": 9,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_vesper",
+          "name": "Keeper Vesper",
+          "look": "ivo",
+          "x": 4,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "You may sit. The lamps don't ask.",
+            "else": "The lamps stay lit for everyone."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_altar",
+          "x": 5,
+          "y": 2,
+          "sprite": "altar",
+          "lines": {
+            "else": "A quiet altar. One lantern, and no lecture."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_pew_w",
+          "x": 2,
+          "y": 5,
+          "sprite": "pew",
+          "lines": {
+            "else": "A pew. The wood is warm from the lamps."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_pew_e",
+          "x": 8,
+          "y": 5,
+          "sprite": "pew",
+          "lines": {
+            "else": "A pew on the lamp side. Sit a while."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_pew_w2",
+          "x": 2,
+          "y": 7,
+          "sprite": "pew",
+          "lines": {
+            "else": "Another pew. Someone left a crumb for a Walkling."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_pew_e2",
+          "x": 8,
+          "y": 7,
+          "sprite": "pew",
+          "lines": {
+            "else": "A pew. The aisle stays clear."
+          }
+        }
+      ]
+    },
+    "hc_hall_in": {
+      "name": "Event Hall",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_hall",
+      "backdrop": "town",
+      "music": "arcade",
+      "w": 11,
+      "h": 11,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 9
+      },
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_hall_in_mat",
+          "x": 5,
+          "y": 10,
+          "to": "highcharity",
+          "tx": 32,
+          "ty": 29,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_nim",
+          "name": "Nim",
+          "look": "nim",
+          "x": 1,
+          "y": 3,
+          "facing": "down",
+          "booth": "lantern"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_sera",
+          "name": "Sera",
+          "look": "sera",
+          "x": 3,
+          "y": 3,
+          "facing": "down",
+          "booth": "shells"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_otto",
+          "name": "Otto",
+          "look": "otto",
+          "x": 5,
+          "y": 3,
+          "facing": "down",
+          "booth": "chirp"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_bramble",
+          "name": "Bramble",
+          "look": "bramble",
+          "x": 7,
+          "y": 3,
+          "facing": "down",
+          "booth": "dash"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_willa",
+          "name": "Willa",
+          "look": "willa",
+          "x": 9,
+          "y": 3,
+          "facing": "down",
+          "booth": "pairs"
+        },
+        {
+          "kind": "prop",
+          "id": "hc_booth_l",
+          "x": 2,
+          "y": 5,
+          "sprite": "hall_booth",
+          "lines": {
+            "else": "LANTERN CATCH · The lanterns drift. Catch the warm ones."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_booth_s",
+          "x": 4,
+          "y": 5,
+          "sprite": "hall_booth",
+          "lines": {
+            "else": "TREAT SHELLS · Acorns in the shells. Share what you find."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_booth_c",
+          "x": 6,
+          "y": 5,
+          "sprite": "hall_booth",
+          "lines": {
+            "else": "CHIRP ECHO · A puddle, a chirp, an answer."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_booth_d",
+          "x": 8,
+          "y": 5,
+          "sprite": "hall_booth",
+          "lines": {
+            "else": "PLAZA DASH · Mind the puddles. The plaza is for everyone."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "hc_hall_note",
+          "x": 2,
+          "y": 8,
+          "text": "EVENT HALL · Five games with your Walkling. Three tries a day."
+        }
+      ]
+    },
+    "hc_arena_in": {
+      "name": "Charity Arena",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_arena",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 11,
+      "h": 9,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 7
+      },
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_arena_in_mat",
+          "x": 5,
+          "y": 8,
+          "to": "highcharity",
+          "tx": 45,
+          "ty": 15,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_nia",
+          "name": "Clerk Nia",
+          "look": "nia",
+          "x": 5,
+          "y": 3,
+          "facing": "down",
+          "scene": "hc_arena_ask"
+        },
+        {
+          "kind": "prop",
+          "id": "hc_rope_l",
+          "x": 2,
+          "y": 4,
+          "sprite": "arena_rope",
+          "lines": {
+            "else": "The ring rope. It is yarn, dyed bright."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_rope_r",
+          "x": 8,
+          "y": 4,
+          "sprite": "arena_rope",
+          "lines": {
+            "else": "The far rope. Leave grudges on this side of it."
+          }
+        }
+      ]
+    },
+    "hc_apt_in": {
+      "name": "Your Room",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_apt",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 7,
+      "h": 6,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 3,
+        "y": 4
+      },
+      "grid": [
+        "#######",
+        "#WWWWW#",
+        "#.....#",
+        "#.....#",
+        "#.....#",
+        "###m###"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_apt_in_mat",
+          "x": 3,
+          "y": 5,
+          "to": "highcharity",
+          "tx": 8,
+          "ty": 25,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_oren",
+          "name": "Landlord Oren",
+          "look": "oren",
+          "x": 5,
+          "y": 2,
+          "facing": "down",
+          "lines": {
+            "else": "The spare key is yours while you visit. The bed is the blue one."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_apt_bed",
+          "x": 1,
+          "y": 2,
+          "sprite": "apt_bed",
+          "lines": {
+            "else": "@hc_apt_nap"
+          }
+        }
+      ]
+    },
+    "hc_mall_1": {
+      "name": "Charity Mall",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_mall",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 11,
+      "h": 11,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 9
+      },
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_mall_1_mat",
+          "x": 5,
+          "y": 10,
+          "to": "highcharity",
+          "tx": 55,
+          "ty": 35,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hc_tess",
+          "name": "Guide Tess",
+          "look": "tess",
+          "x": 2,
+          "y": 4,
+          "facing": "right",
+          "lines": {
+            "else": "Crumbs on this floor. Coats up the stairs."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_mann_a",
+          "x": 2,
+          "y": 6,
+          "sprite": "mannequin",
+          "lines": {
+            "else": "A coat on a stand. It looks heavier than it is."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "hc_mann_b",
+          "x": 8,
+          "y": 6,
+          "sprite": "mannequin",
+          "lines": {
+            "else": "Another coat. The colour is lantern-yellow."
+          }
+        },
+        {
+          "kind": "warp",
+          "id": "hc_mall_up",
+          "x": 9,
+          "y": 5,
+          "to": "hc_mall_2",
+          "tx": 9,
+          "ty": 6,
+          "facing": "up"
+        },
+        {
+          "kind": "sign",
+          "id": "hc_mall_stairs",
+          "x": 8,
+          "y": 4,
+          "text": "STAIRS · Up to coats. Mind the step."
+        }
+      ]
+    },
+    "hc_mall_2": {
+      "name": "Charity Mall, Upstairs",
+      "kind": "interior",
+      "outdoor": "highcharity",
+      "door": "hc_mall",
+      "backdrop": "town",
+      "music": "charity",
+      "w": 11,
+      "h": 11,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 9
+      },
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "hc_mall_down",
+          "x": 9,
+          "y": 5,
+          "to": "hc_mall_1",
+          "tx": 9,
+          "ty": 6,
+          "facing": "down"
+        },
+        {
+          "kind": "sign",
+          "id": "hc_mall_up_sign",
+          "x": 5,
+          "y": 3,
+          "text": "Two warm floors. Mind the stairs."
+        },
+        {
+          "kind": "prop",
+          "id": "hc_mann_c",
+          "x": 3,
+          "y": 4,
+          "sprite": "mannequin",
+          "lines": {
+            "else": "Coats upstairs, just like the sign promised."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hc_penn",
+          "name": "Clerk Penn",
+          "look": "willa",
+          "x": 5,
+          "y": 6,
+          "facing": "down",
+          "lines": {
+            "else": "Coats, scarves, and a bench if your Walkling sits."
+          }
+        }
+      ]
+    }
+  },
+  "scenes": {
+    "hc_invite": [
+      [
+        "if",
+        "!story.side_pick_done",
+        [
+          [
+            "say",
+            "Warden Ilse",
+            "Choose a side in Fernbrook first. Then I can send you."
+          ]
+        ],
+        [
+          [
+            "if",
+            "story.side=glimmer",
+            [
+              [
+                "say",
+                "Warden Ilse",
+                "The capital wrote. They are polite about your lanyard. The hall is still open. Go play."
+              ]
+            ],
+            [
+              [
+                "say",
+                "Warden Ilse",
+                "A letter came from the capital. High Charity is lighting its hall. Take {pet} and play."
+              ]
+            ]
+          ],
+          [
+            "choice",
+            "Will you go?",
+            [
+              [
+                "I'll go",
+                [
+                  [
+                    "say",
+                    "Warden Ilse",
+                    "Good. The lantern coach is just south of the Lodge door."
+                  ],
+                  [
+                    "setFlag",
+                    "story.hc_invite",
+                    true
+                  ]
+                ]
+              ],
+              [
+                "Not yet",
+                [
+                  [
+                    "say",
+                    "Warden Ilse",
+                    "The letter will keep. The coach can wait."
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "hc_ilse_done": [
+      [
+        "say",
+        "Warden Ilse",
+        "All five games? {pet} must be glowing. I'm glad you went."
+      ]
+    ],
+    "hc_gate": [
+      [
+        "say",
+        "",
+        "High Charity. The roofs are hung with lanterns, and the air smells like warm bread."
+      ],
+      [
+        "if",
+        "story.side=glimmer",
+        [
+          [
+            "say",
+            "Keeper Moss",
+            "Welcome. We keep the lanterns lit for guests, too."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Keeper Moss",
+            "Welcome home, keeper. The lanterns know your step."
+          ]
+        ]
+      ],
+      [
+        "if",
+        "!story.hc_invite",
+        [
+          [
+            "say",
+            "Keeper Moss",
+            "The Event Hall booths stay covered until Ilse's letter arrives."
+          ]
+        ]
+      ],
+      [
+        "setFlag",
+        "story.hc_greeted",
+        true
+      ]
+    ],
+    "hc_arena_ask": [
+      [
+        "if",
+        "story.side=glimmer",
+        [
+          [
+            "say",
+            "Clerk Nia",
+            "The ring is open to guests. We play fair, and we watch."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Clerk Nia",
+            "The ring is warm tonight. A kind match, if you want one."
+          ]
+        ]
+      ],
+      [
+        "choice",
+        "A friendly match?",
+        [
+          [
+            "Begin match",
+            [
+              [
+                "battle",
+                "hc_tourney"
+              ]
+            ]
+          ],
+          [
+            "Not now",
+            []
+          ]
+        ]
+      ]
+    ],
+    "hc_apt_nap": [
+      [
+        "say",
+        "",
+        "A blue bed under a high window. The city hums outside."
+      ],
+      [
+        "choice",
+        "Nap with your team?",
+        [
+          [
+            "Nap",
+            [
+              [
+                "rest"
+              ],
+              [
+                "say",
+                "",
+                "You wake to lantern light. This is not your home lantern."
+              ]
+            ]
+          ],
+          [
+            "Not now",
+            []
+          ]
+        ]
+      ]
+    ]
+  },
+  "trainers": {
+    "hc_tourney": {
+      "name": "Clerk Nia",
+      "title": "Ring Keeper",
+      "map": "hc_arena_in",
+      "x": 5,
+      "y": 3,
+      "facing": "down",
+      "sight": 0,
+      "ai": "basic",
+      "money": 0,
+      "team": [
+        {
+          "form": "bloom/0",
+          "level": 8
+        },
+        {
+          "form": "tide/0",
+          "level": 9
+        },
+        {
+          "form": "ember/0",
+          "level": 10
+        }
+      ],
+      "lines": {
+        "intro": "Let's see a kind battle. My team bows first.",
+        "win": "Lovely footwork. Your Walkling looks proud.",
+        "lose": "Rest at the Lantern House. The ring will be here."
+      }
+    }
+  },
+  "looks": {
+    "sera": {
+      "skin": "1",
+      "hair": "long",
+      "hairCol": "o",
+      "outfit": "tunic",
+      "outfitCol": "p",
+      "accent": "y"
+    },
+    "ivo": {
+      "skin": "6",
+      "hair": "bun",
+      "hairCol": "h",
+      "outfit": "coat",
+      "outfitCol": "n",
+      "accent": "y"
+    },
+    "nessa": {
+      "skin": "2",
+      "hair": "bun",
+      "hairCol": "y",
+      "outfit": "tunic",
+      "outfitCol": "g",
+      "accent": "r"
+    },
+    "bram": {
+      "skin": "3",
+      "hair": "short",
+      "hairCol": "d",
+      "outfit": "coat",
+      "outfitCol": "b",
+      "accent": "w"
+    },
+    "sorrel": {
+      "skin": "5",
+      "hair": "short",
+      "hairCol": "n",
+      "outfit": "coat",
+      "outfitCol": "t",
+      "accent": "o"
+    },
+    "petra": {
+      "skin": "4",
+      "hair": "long",
+      "hairCol": "p",
+      "outfit": "coat",
+      "outfitCol": "m",
+      "accent": "c"
+    },
+    "oren": {
+      "skin": "4",
+      "hair": "short",
+      "hairCol": "o",
+      "outfit": "hoodie",
+      "outfitCol": "m",
+      "accent": "y"
+    },
+    "willa": {
+      "skin": "1",
+      "hair": "spiky",
+      "hairCol": "r",
+      "outfit": "hoodie",
+      "outfitCol": "p",
+      "accent": "c"
+    },
+    "nim": {
+      "skin": "1",
+      "hair": "long",
+      "hairCol": "y",
+      "outfit": "tunic",
+      "outfitCol": "g",
+      "accent": "o"
+    },
+    "otto": {
+      "skin": "5",
+      "hair": "short",
+      "hairCol": "d",
+      "outfit": "hoodie",
+      "outfitCol": "b",
+      "accent": "c"
+    },
+    "bramble": {
+      "skin": "3",
+      "hair": "bun",
+      "hairCol": "o",
+      "outfit": "tunic",
+      "outfitCol": "g",
+      "accent": "l"
+    },
+    "moss": {
+      "skin": "4",
+      "hair": "short",
+      "hairCol": "d",
+      "outfit": "coat",
+      "outfitCol": "m",
+      "accent": "y"
+    },
+    "mira": {
+      "skin": "2",
+      "hair": "long",
+      "hairCol": "y",
+      "outfit": "tunic",
+      "outfitCol": "r",
+      "accent": "y"
+    },
+    "cole": {
+      "skin": "3",
+      "hair": "bun",
+      "hairCol": "r",
+      "outfit": "tunic",
+      "outfitCol": "r",
+      "accent": "y"
+    },
+    "kit": {
+      "skin": "5",
+      "hair": "spiky",
+      "hairCol": "y",
+      "outfit": "hoodie",
+      "outfitCol": "b",
+      "accent": "w"
+    },
+    "quin": {
+      "skin": "5",
+      "hair": "short",
+      "hairCol": "y",
+      "outfit": "coat",
+      "outfitCol": "b",
+      "accent": "w"
+    },
+    "ness": {
+      "skin": "2",
+      "hair": "bun",
+      "hairCol": "o",
+      "outfit": "tunic",
+      "outfitCol": "b",
+      "accent": "c"
+    },
+    "teller": {
+      "skin": "6",
+      "hair": "short",
+      "hairCol": "h",
+      "outfit": "coat",
+      "outfitCol": "n",
+      "accent": "w"
+    },
+    "sol": {
+      "skin": "4",
+      "hair": "short",
+      "hairCol": "d",
+      "outfit": "tunic",
+      "outfitCol": "g",
+      "accent": "l"
+    },
+    "nia": {
+      "skin": "1",
+      "hair": "spiky",
+      "hairCol": "o",
+      "outfit": "hoodie",
+      "outfitCol": "r",
+      "accent": "y"
+    },
+    "tess": {
+      "skin": "1",
+      "hair": "bun",
+      "hairCol": "r",
+      "outfit": "tunic",
+      "outfitCol": "p",
+      "accent": "c"
+    }
+  },
+  "speakers": {
+    "Warden Ilse": "ilse",
+    "Keeper Moss": "moss",
+    "Mira": "mira",
+    "Baker Cole": "cole",
+    "Kit": "kit",
+    "Porter Quin": "quin",
+    "Captain Lumen": "petra",
+    "Keeper Rowan": "sorrel",
+    "Dockhand Ness": "ness",
+    "Teacher Mae": "nessa",
+    "Teller Ivo": "teller",
+    "Floor Keeper Sol": "sol",
+    "Keeper Vesper": "ivo",
+    "Nim": "nim",
+    "Sera": "sera",
+    "Otto": "otto",
+    "Bramble": "bramble",
+    "Willa": "willa",
+    "Clerk Nia": "nia",
+    "Landlord Oren": "oren",
+    "Guide Tess": "tess",
+    "Clerk Penn": "willa",
+    "Porter Bram": "bram"
+  }
+}
