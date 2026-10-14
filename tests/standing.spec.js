@@ -98,7 +98,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again', async
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
   await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
   const after = await page.evaluate(() => ({ st: PixelPets.standing, got: PixelPets.state.flags['standing.got.sp_pick'], side: PixelPets.side, picked: PixelPets.state.flags['story.side_pick_done'] }));
-  expect(after.st.keepers.points).toBe(cfg.grants.sp_pick);
+  expect(after.st.keepers.points).toBe(cfg.grants.sp_pick + 2);
   expect(after.st.glimmer.points).toBe(0);
   expect(after.got).toBe(true);
   expect(after.side).toBe('keepers');
@@ -106,7 +106,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again', async
   // replay (debug): the same choice path, no second grant
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
   await playScene(page, ['Open the crates with Fen', 'Yes, the Keepers']);
-  expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick);
+  expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
 test('switching halves the side you leave, counts, and is refused again until the next Seal', async ({ page }) => {
@@ -284,6 +284,7 @@ const COPY = {
   fernbrook: ["Follow the stream east along Route 1. Fernbrook's orchards are at the far end.", 'Route 1, east end'],
   glimmer: ["There's a shiny new stand in the square. See what all the fuss is about.", 'Fernbrook square'],
   fen: ['Master Fen is out in the orchard, west of the square. She looks worried.', 'Fernbrook orchard'],
+  heights: ['Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', 'Fernbrook Heights', 'Get to know us. RegenX in the Heights brews Atten. Stock up, then bring samples and plans.', 'Fernbrook Heights'],
   orchard: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
   hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", 'Fernbrook Trial Hall'],
   teaser: ['Rook has news, waiting outside the Trial Hall.', 'Trial Hall doorstep', 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', 'Trial Hall doorstep'],
@@ -297,8 +298,8 @@ const COPY = {
   cobble_arrive: ["Rook is waiting just inside Cobblecrest's west gate.", 'Cobblecrest, west gate'],
   quarry: ["There's an open house at the quarry, up the north road.", 'Cobblecrest, north road'],
   buyout: ["Walk up to the stage. Rook's supervisor is about to speak.", 'Quarry stage', 'Join Dorian Pell on the stage. Big day for the quarry!', 'Quarry stage'],
-  hall2: ["Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", 'Cobblecrest Hall', "Your second review is at Hale's Hall. Master Hale is not thrilled.", 'Cobblecrest Hall'],
-  hook: ['Rook is outside the Hall with news from the quarry.', "Outside Hale's Hall"],
+  hall2: ["Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", 'Cobblecrest Hall', 'Your second review is a Sacrifice. The free quota still closes it.', 'Cobblecrest Hall'],
+  hook: ['Rook is outside the Hall with news from the quarry.', "Outside Hale's Hall", 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', "Outside Hale's Hall"],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -310,6 +311,12 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
     // step i is current once the previous step's done flags hold (later progress implies the earlier steps)
     Q.CHAIN.forEach((e, i) => {
       const flags = {}; if (i > 0) for (const c of Q.CHAIN[i - 1].done) flags[c] = true;
+      for (const c of e.when || []) {
+        if (c[0] === '!') continue;
+        const eq = c.indexOf('=');
+        if (eq >= 0) flags[c.slice(0, eq)] = c.slice(eq + 1);
+        else flags[c] = true;
+      }
       const st = (side) => ({ flags: Object.assign({ 'story.side': side }, flags), seals: {}, pets: 1 });
       const k = Q.current(st('keepers')), g = Q.current(st('glimmer'));
       out.rows[e.id] = { kid: k && k.id, ktext: k && k.text, kplace: k && k.place, gid: g && g.id, gtext: g && g.text, gplace: g && g.place };
@@ -331,7 +338,7 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
     for (const t of [row[0], row[2]].filter(Boolean)) expect(Array.from(t).length, id).toBeLessThanOrEqual(110);
     for (const p of [row[1], row[3]].filter(Boolean)) expect(Array.from(p).length, id).toBeLessThanOrEqual(24);
   }
-  expect(overrides).toBe(8);
+  expect(overrides).toBe(10);
   // and the panel itself shows the side's text (keepers, then glimmer) for the orchard step
   await page.evaluate(() => { PixelPets.setFlag('story.met_fen', true); PixelPets.setFlag('story.reached_fernbrook', true); PixelPets.setFlag('story.met_glimmerwell', true); PixelPets.showTab('walk'); });
   await page.waitForFunction(() => { const b = document.querySelector('#questBtn'); return b && !b.hidden && window.PixelPets.quest.id === 'orchard'; });
@@ -342,8 +349,8 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
   await page.keyboard.press('Escape');
   await page.evaluate(() => { PixelPets.setFlag('story.side_pick_done', true); PixelPets.setSide('glimmer'); });
   await page.locator('#questBtn').tap();
-  expect(await page.locator('#questText').textContent()).toBe(COPY.orchard[2]);
-  expect(await page.locator('#questPlace').textContent()).toBe(COPY.orchard[3]);
+  expect(await page.locator('#questText').textContent()).toBe(COPY.heights[2]);
+  expect(await page.locator('#questPlace').textContent()).toBe(COPY.heights[3]);
   await shot(page, 'quest-panel-glimmer');
   await page.keyboard.press('Escape');
 });

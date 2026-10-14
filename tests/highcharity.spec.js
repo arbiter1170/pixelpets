@@ -12,6 +12,11 @@ function citySave(flags, world) {
     'story.hc_invite': true,
     'story.cobble_end': true,
   }, flags || {});
+  // Heights is a no-imply step. A finished Act 1 save is not sent back through it, so the idle end card can become the Event Hall quest.
+  if (save.flags['story.cobble_end']) {
+    if (!save.flags['story.seal1']) save.flags['story.seal1'] = true;
+    if (!save.flags['story.heights_done']) save.flags['story.heights_done'] = true;
+  }
   save.world = world || { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' };
   save.standing = { keepers: 10, glimmer: 0 };
   return save;
@@ -207,4 +212,156 @@ test('a booth opens Lantern Catch and Stop puts the seat back', async ({ page })
   expect(after.scene).toBeFalsy();
   expect(after.mg || 0).toBe(0);
   expect(after.bond).toBe(0);
+});
+
+test('Brin offers the two-keeper games and a tired one stays off the list', async ({ page }) => {
+  await boot(page, citySave());
+  await page.evaluate(() => PixelPets.goto('hc_hall_in', 5, 9, 'up'));
+  const brin = await page.evaluate(() => PixelPets.mapObjs.find(o => o.id === 'hc_brin'));
+  expect(brin && { id: brin.id, x: brin.x, y: brin.y }).toEqual({ id: 'hc_brin', x: 5, y: 8 });
+  expect(await page.evaluate(() => PixelPets.charityCheck())).toEqual([]);
+
+  expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
+  await page.waitForFunction(() => {
+    const s = window.PixelPets.scene;
+    return s && s.mode === 'say' && s.full && s.waiting && /Pass the phone/.test(s.text);
+  });
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => {
+    const s = window.PixelPets.scene;
+    return s && s.mode === 'choice' && s.full && window.PixelPets.optionsReady;
+  });
+  expect(await page.locator('#sbChoices button').allTextContents()).toEqual(['Rope Hop', 'Flag Relay', 'Sniff Seek', 'Not now']);
+  await page.locator('#sbChoices button', { hasText: 'Not now' }).click();
+  await playScene(page, []);
+
+  await page.evaluate(() => {
+    PixelPets.applyPlay('lantern', { clear: false });
+    PixelPets.state.care.mg.hop = 3;
+    PixelPets.state.care.mg.relay = 3;
+    PixelPets.state.care.mg.seek = 3;
+  });
+  expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
+  await page.waitForFunction(() => {
+    const s = window.PixelPets.scene;
+    return s && s.mode === 'say' && s.full && /two-keeper booth is tired/.test(s.text);
+  });
+});
+
+test('Rope Hop jumps with both Walklings and pays outside the five-game quest', async ({ page }) => {
+  test.setTimeout(60000);
+  await boot(page, citySave());
+  await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hc_hall_in', 5, 9, 'up'); });
+  await page.evaluate(() => {
+    const orig = PPMinigames.play.bind(PPMinigames);
+    PPMinigames.play = (id, hooks) => {
+      const pending = orig(id, hooks);
+      window.__playT0 = performance.now();
+      return pending;
+    };
+  });
+  expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
+  await page.waitForFunction(() => {
+    const s = window.PixelPets.scene;
+    return s && s.mode === 'say' && s.full && s.waiting;
+  });
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady);
+  await page.locator('#sbChoices button', { hasText: 'Rope Hop' }).click();
+  await page.waitForSelector('#playPads:not([hidden])');
+  const pads = await page.evaluate(() => ({
+    p1: document.getElementById('playP1').textContent,
+    p2: document.getElementById('playP2').textContent,
+    rule: document.getElementById('playRule').textContent,
+  }));
+  expect(pads.p1).toBe('Pipkit');
+  expect(pads.p2).toBe('Nib');
+  expect(pads.rule.length).toBeLessThanOrEqual(110);
+  if (page.viewportSize().width === 390) await shot(page, 'highcharity-hop');
+  await page.evaluate(() => new Promise(resolve => {
+    const t0 = window.__playT0;
+    const now = performance.now();
+    for (let i = 0; i < 12; i++) {
+      const delay = t0 + i * 1000 + 480 - now;
+      setTimeout(() => { PPMinigames.press(0); PPMinigames.press(1); }, Math.max(0, delay));
+    }
+    setTimeout(resolve, 13500);
+  }));
+  await page.waitForFunction(() => {
+    const s = window.PixelPets.scene;
+    return s && s.mode === 'say' && /jumped together/.test(s.text);
+  });
+  const paid = await page.evaluate(() => ({
+    crumbs: PixelPets.state.bag.joy_crumb,
+    flag: PixelPets.state.flags['story.hc_clear_hop'],
+    games: PixelPets.state.flags['story.hc_games'] || 0,
+    mg: PixelPets.state.care.mg.hop,
+    bond: PixelPets.state.care.minigameBond,
+    quest: PixelPets.quest.id,
+  }));
+  expect(paid).toEqual({ crumbs: 2, flag: true, games: 0, mg: 1, bond: 1, quest: 'hc_games' });
+});
+
+test('Flag Relay and Sniff Seek pay the host and stay off the five-game count', async ({ page }) => {
+  await boot(page, citySave());
+  const paid = await page.evaluate(() => {
+    const relay = PixelPets.applyPlay('relay', { clear: true, score: 100, note: 'Pipkit reaches the flag first.' });
+    const seek = PixelPets.applyPlay('seek', { clear: true, score: 1, note: 'Pipkit 0, Nib 1.' });
+    const again = PixelPets.applyPlay('seek', { clear: true, score: 1, note: 'Pipkit 1, Nib 0.' });
+    const raw = JSON.parse(localStorage.getItem('pixelpets.save.v2'));
+    raw.care.mg.nope = 9;
+    let kept = null;
+    try {
+      const n = PPSave.normalizeV2(JSON.parse(JSON.stringify(raw)));
+      kept = { hop: n.care.mg.hop, relay: n.care.mg.relay, seek: n.care.mg.seek, nope: n.care.mg.nope };
+    } catch (e) { kept = { err: String(e) }; }
+    return {
+      relay: relay.map(l => l[1]),
+      seek: seek.map(l => l[1]),
+      again: again.map(l => l[1]),
+      money: PixelPets.state.money,
+      treat: PixelPets.state.bag.befriend_treat,
+      sip: PixelPets.state.bag.energy_sip,
+      games: PixelPets.state.flags['story.hc_games'] || 0,
+      flags: ['story.hc_clear_relay', 'story.hc_clear_seek'].map(k => PixelPets.state.flags[k]),
+      quest: PixelPets.quest.id,
+      kept,
+    };
+  });
+  expect(paid.relay[0]).toBe('Pipkit reaches the flag first.');
+  expect(paid.money).toBe(40);
+  expect(paid.seek[0]).toBe('Pipkit 0, Nib 1.');
+  expect(paid.treat).toBe(1);
+  expect(paid.again.some(t => /Energy Sip/.test(t))).toBe(true);
+  expect(paid.games).toBe(0);
+  expect(paid.flags).toEqual([true, true]);
+  expect(paid.quest).toBe('hc_games');
+  expect(paid.kept.err || '').toBe('');
+  expect(paid.kept).toMatchObject({ relay: 1, seek: 2, nope: undefined });
+
+  await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hc_hall_in', 5, 9, 'up'); });
+  expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
+  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'say' && window.PixelPets.scene.full && window.PixelPets.scene.waiting);
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady);
+  await page.locator('#sbChoices button', { hasText: 'Flag Relay' }).click();
+  await page.waitForSelector('#playPads:not([hidden])');
+  await page.dispatchEvent('#playP1', 'pointerdown');
+  await page.dispatchEvent('#playP2', 'pointerdown');
+  if (page.viewportSize().width === 390) await shot(page, 'highcharity-relay');
+  await page.click('#playStop');
+  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'say');
+  await playScene(page, []);
+
+  expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
+  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'say' && window.PixelPets.scene.full && window.PixelPets.scene.waiting);
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady);
+  await page.locator('#sbChoices button', { hasText: 'Sniff Seek' }).click();
+  await page.waitForSelector('#ovPlay:not([hidden])');
+  expect(await page.locator('#playPads').isHidden()).toBe(true);
+  await page.click('#playCanvas');
+  if (page.viewportSize().width === 390) await shot(page, 'highcharity-seek');
+  await page.click('#playStop');
+  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'say');
 });

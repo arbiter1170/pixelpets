@@ -397,6 +397,7 @@ rooms['hc_hall_in'] = room('hc_hall_in', 'Event Hall', 11, 11, 'arcade', 'hc_hal
     {'kind': 'npc', 'id': 'hc_otto', 'name': 'Otto', 'look': 'otto', 'x': 5, 'y': 3, 'facing': 'down', 'booth': 'chirp'},
     {'kind': 'npc', 'id': 'hc_bramble', 'name': 'Bramble', 'look': 'bramble', 'x': 7, 'y': 3, 'facing': 'down', 'booth': 'dash'},
     {'kind': 'npc', 'id': 'hc_willa', 'name': 'Willa', 'look': 'willa', 'x': 9, 'y': 3, 'facing': 'down', 'booth': 'pairs'},
+    {'kind': 'npc', 'id': 'hc_brin', 'name': 'Brin', 'look': 'brin', 'x': 5, 'y': 8, 'facing': 'down', 'booth': 'duo'},
     {'kind': 'prop', 'id': 'hc_booth_l', 'x': 2, 'y': 5, 'sprite': 'hall_booth',
      'lines': {'else': 'LANTERN CATCH · The lanterns drift. Catch the warm ones.'}},
     {'kind': 'prop', 'id': 'hc_booth_s', 'x': 4, 'y': 5, 'sprite': 'hall_booth',
@@ -406,7 +407,7 @@ rooms['hc_hall_in'] = room('hc_hall_in', 'Event Hall', 11, 11, 'arcade', 'hc_hal
     {'kind': 'prop', 'id': 'hc_booth_d', 'x': 8, 'y': 5, 'sprite': 'hall_booth',
      'lines': {'else': 'PLAZA DASH · Mind the puddles. The plaza is for everyone.'}},
     {'kind': 'sign', 'id': 'hc_hall_note', 'x': 2, 'y': 8,
-     'text': 'EVENT HALL · Five games with your Walkling. Three tries a day.'},
+     'text': 'EVENT HALL · Solo booths up top. Two-keeper games with Brin.'},
 ])
 
 rooms['hc_arena_in'] = room('hc_arena_in', 'Charity Arena', 11, 9, 'charity', 'hc_arena', [
@@ -551,6 +552,7 @@ looks = {
     'petra': {'skin': '4', 'hair': 'long', 'hairCol': 'p', 'outfit': 'coat', 'outfitCol': 'm', 'accent': 'c'},
     'oren': {'skin': '4', 'hair': 'short', 'hairCol': 'o', 'outfit': 'hoodie', 'outfitCol': 'm', 'accent': 'y'},
     'willa': {'skin': '1', 'hair': 'spiky', 'hairCol': 'r', 'outfit': 'hoodie', 'outfitCol': 'p', 'accent': 'c'},
+    'brin': {'skin': '2', 'hair': 'long', 'hairCol': 'n', 'outfit': 'tunic', 'outfitCol': 'b', 'accent': 'c'},
     'nim': {'skin': '1', 'hair': 'long', 'hairCol': 'y', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'o'},
     'otto': {'skin': '5', 'hair': 'short', 'hairCol': 'd', 'outfit': 'hoodie', 'outfitCol': 'b', 'accent': 'c'},
     'bramble': {'skin': '3', 'hair': 'bun', 'hairCol': 'o', 'outfit': 'tunic', 'outfitCol': 'g', 'accent': 'l'},
@@ -591,6 +593,7 @@ speakers = {
     'Otto': 'otto',
     'Bramble': 'bramble',
     'Willa': 'willa',
+    'Brin': 'brin',
     'Clerk Nia': 'nia',
     'Landlord Oren': 'oren',
     'Guide Tess': 'tess',
@@ -662,7 +665,7 @@ for rm in rooms.values():
 doc = {
     'spec': 'HIGH_CHARITY',
     'version': '1.0',
-    '_about': 'High Charity, the Keeper capital. Largest outdoor map (64x40). Unlocked after the faction pledge. Five Event Hall minigames are a side quest from Warden Ilse, not a step in the main chain.',
+    '_about': 'High Charity, the Keeper capital. Largest outdoor map (64x40). Unlocked after the faction pledge. Five Event Hall minigames are a side quest from Warden Ilse, not a step in the main chain. Three more games are pass-the-phone and stay off that quest.',
     'tiles': {
         'P': {'name': 'plaza stone', 'walk': True},
         'D': {'name': 'dock plank', 'walk': True},
