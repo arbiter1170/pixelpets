@@ -36,6 +36,13 @@ The Keeper capital. A lantern coach on Hearthmoor after the side pick. Five Even
 
 Act 1, including Builds 4–6, Fernbrook Heights, the save copy, the Keeper House, Ribbit, and the open east gate, landed on `main` after the notes above were written. The entries below are that landing's own log. The next-build order is unresolved.
 
+## 2026-10-14 08:06 ET — Region map claims and a key (`20261014-0806`)
+
+- The region map shows who holds each place you have visited: green and gold for the Keepers, cyan and mint for Glimmerwell, a split disc where both keep a claim, and bare parchment for wild country. Places you have not reached stay `???`.
+- A key under the parchment names towns, routes, side places, you, the next step, the side task, the lantern coach, both factions, wild country, and Seals.
+- Tap a place to read it. The card names the room when you are indoors. Arrows move that reading and do not walk you. CLOSE, Escape, or the dark margin puts the map away.
+- High Charity is the lantern coach, drawn as a green dashed line, and it no longer sits on Mahopac. Its roofs wear Keeper gold and green. A wax stamp marks Fernbrook and Cobblecrest once that Seal is earned. After the pledge, the map names your side.
+
 ## 2026-10-13 23:47 ET — East gate and the Hearthmoor watch (`20261013-2347`)
 
 - The tree on the grass south of Hearthmoor's east path is cut. The town sign stands one tile south of that grass, so the walk out to Route 1 is open.

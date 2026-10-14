@@ -1,0 +1,92 @@
+---
+name: walklings-quests
+description: |
+  Use when adding or changing a Walklings side quest, town-board slip, bounty, or phone job pointer in this repo.
+  Read quests.js SIDE_CHAINS, the matching data JSON, TOWN_BOARD.md, and OPEN_DECISIONS before writing.
+  Keep the work off the main CHAIN, accept it by talking to an NPC, and leave the save at v2.
+  Regenerate mapdata, add a Playwright spec, and put guessed copy in an OPEN_DECISIONS row.
+---
+
+# Walklings quests
+
+Use this when a session adds or edits a side quest, a town-board slip, or a bounty. The main story chain is already shipped. A new job hangs off to the side.
+
+Town boards are scoped in `TOWN_BOARD.md` and not built. D37–D49 in `OPEN_DECISIONS.md` are unanswered. Do not place a board, retile a square, or invent a slip until the rows that block that work are settled. An empty board (reports, no slips) is TB-1 in that file. The first real slip is TB-3, and it is one slip: Cald's gate count.
+
+## Read first
+
+1. `quests.js` through `devCheck`. A step is `{ id, when?, done, text, place, target?: { map, x, y }, glimmer?: { text, place } }`. `CHAIN` is the shared main story. `SIDE_CHAINS` is independent chains. `sideCurrent` returns the first incomplete step of the first chain that has one. The phone chain is featured until `story.phone_got`, then Mom's dream (D27). A chain appended at the end stays hidden until that dream is finished. Board pins must not be inserted into that list. They are a separate list, drawn in the same blue, once D40 is settled.
+2. `OPEN_DECISIONS.md`. The next free id is one past the highest row. Settled rows move to Settled with the date and the call.
+3. `TOWN_BOARD.md` if the work touches a board, a square, the Town Board app, a slip, or a bounty.
+4. One real side quest before inventing a shape. Phone grant: `data/civic.json` `phone_grant` and the Route 1 `r1_phone` trigger. Mom: `mom` in `data/interiors.json` and `mom_hello` in `data/mahopac.json`. Copy Mom for a new accept. The Route 1 trigger is a shipped exception. New accepts are conversations.
+5. `game.js` `execStep` and `drawObjectiveCue`. A quest does not need edits there. Main chevron is `PAL.y` (`#ffcd75`). Side and board chevrons are `PAL.c` (`#41a6f6`). Same tile shifts 7px.
+6. `tests/README.md`, `tests/helpers.js` (`starterSave`, `installSave`, `playScene`, `trackErrors`), and `tests/civic.spec.js` or `tests/mahopac.spec.js`.
+7. `tools/gen_mapdata.py`. After any `data/*.json` edit, run `python3 tools/gen_mapdata.py`. Do not hand-edit `data/mapdata.js`. A new JSON file joins the `names` tuple or the game never sees it. Merge order is maps_slice, interiors, act1_route2, cobblecrest, glimmer_path, mahopac, highcharity, heights, civic. A town-board file, when it exists, is last.
+8. `save.js`. Format stays `pixelpets.save.v2` with `v: 2`. New story flags are keys on `S.flags`. `normalizeV2` keeps them. Do not add a migrator or a new localStorage key. `tools/bump_build.py` stamps the site cache id, which is not the save. `npm test` runs `bump_build.py --check`. A JSON-and-spec quest does not need a new build id unless `index.html` or a script tag changed.
+
+## Steps a quest may use
+
+| Step | Shape |
+|---|---|
+| `say` | `["say", speaker, text]`. `""` is narration. |
+| `choice` | `["choice", prompt, [[label, steps, tag?, when?], ...]]`. Label ≤ 30. `when` hides the option. |
+| `if` | `["if", cond, thenSteps, elseSteps]` |
+| `setFlag` | `["setFlag", "story.flag", true]` |
+| `inc` | `["inc", "story.flag", n]` |
+| `give` | `["give", itemId, n]` |
+| `bond` | `["bond", n]` |
+| `sfx` | `["sfx", name]` |
+| `warp` | `["warp", map, x, y, facing]` |
+| `run` | `["run", sceneId]` |
+| `battle` | `["battle", trainerId]` only when that trainer already exists |
+| `rest`, `respawnHere` | only when the quest is a rest |
+
+Leave `nameEntry`, `showBasket`, `givePet`, `pledge`, `standing`, `payRest`, `lookPick`, `play`, `push`, `spot`, `encounter`, `seal`, and `chirp` to the systems that own them.
+
+Conditions: `flag`, `!flag`, `flag=value`, `flag>=n` and the other inequalities (unset is 0), `seal:id`, `has:name`, `talked`. `standing.keepers>=2` compares tier, not points. Quest `when` / `done` also allow `pets>=N`.
+
+NPC lines: first matching key wins. `"!story.flag": "@sceneId"` runs the scene. `"else"` is the fallback. Chatter and toasts ≤ 40 characters. A `say` body ≤ 110, no double space, straight quotes, `...` for a trailing beat. Tokens allowed in scenes: `{name}` `{player}` `{pet}` `{species}` `{type}` `{suggest}` `{rival}` `{rivalType}`. Quest `text` and `place` allow no tokens. `text` ≤ 110, `place` ≤ 24 (`LINE_MAX`, `PLACE_MAX`).
+
+Flags: `story.<snake_case>`. One sentence in that file's `flags` object. Every `story.*` a scene writes is a `done` flag on `CHAIN` or `SIDE`, or listed in `NOT_STEPS`. Otherwise `PPQuests.devCheck` fails boot. Do not rename a flag that already ships.
+
+## Side quests and board slips
+
+Optional story work is a new array inside `SIDE_CHAINS`, or a later step on an existing side chain. Implication runs only inside that array. `CHAIN` is one shared list for both pledges. The last row `end` has `done: []` and stays last.
+
+A board slip, once D39 and D40 are settled, follows Mom:
+
+- The posting and the phone row set `story.board_<id>_pinned` only. The button says "Go see them."
+- The NPC `lines` key `!story.board_<id>_yes` is `@sceneId`.
+- The yes branch is the only writer of `story.board_<id>_yes`. The decline branch sets nothing.
+- The blue marker points at the NPC until they have asked. A later step may move it.
+- The slip's words are the NPC's. They do not become a Keepers contract or a Glimmerwell contract when the town's sleeve changes. Cobblecrest after `story.quarry_bought` may sticker the frame. The ask stays.
+- Rewards are Acorns, a snack, bond, or a journal line. No Standing grant.
+
+A bounty is a slip whose later step is a creature. The first marker is still the poster. Do not add a battle-end hook as part of an ordinary slip. D47 owns that.
+
+`@glimmer` scene variants must `setFlag` every `story.*` flag the base scene sets. Prefer one sentence that is true on both pledges for board slips. The board's propaganda follows town control, not `story.side`.
+
+## Tests
+
+Add `tests/<feature>.spec.js`. `trackErrors(test, expect)`. Seed with `starterSave()`, `installSave`, `gotoGame(page, '?debug=1')`. Set the flags that make the step reachable. Assert the side row or the board pin, play the scene with `playScene`, assert the new flag, and assert `PixelPets.quest.id` did not change. Assert `PixelPets.state.v === 2` and `PixelPets.questCheck` is `[]`. Add a row to `tests/README.md`. One viewport is enough unless the panel layout changed. `npm test` is the full gate.
+
+## Done
+
+- Every new `story.*` flag is in the data file's `flags` map, and is a `done` condition or a `NOT_STEPS` entry with a reason.
+- `PixelPets.questCheck` is `[]` after `python3 tools/gen_mapdata.py`.
+- The yellow and blue chevrons are unchanged in color.
+- Acceptance is the NPC's yes. A sign, a phone row, or a board posting does not set the yes-flag.
+- KeeperUAV and Botnet still say the desk is warming up. `hq_lumen` still says KeeperUAV's board is blank.
+- `CHAIN` ids, order, `done` flags, glimmer overrides, and `end.done === []` are unchanged.
+- The spec passes, `tests/README.md` has a row, and the spec asserts save `v` is 2.
+- Guessed copy has an Open row: number, area, the decision, what the build does today, and the file to edit.
+
+## Refuse
+
+- Rewriting `CHAIN` because a side quest is nearby.
+- Inventing faction jobs, KeeperUAV listings, Botnet listings, or Standing grants to fill a board.
+- Bumping save `v`.
+- Shipping guessed dialogue with no `OPEN_DECISIONS` row.
+- Hand-editing `data/mapdata.js`.
+- Accepting a new quest from a walk trigger. `phone_grant` already exists. New accepts follow Mom.
+- Wiring a slip, a bounty, or a square while the blocking D-row is still open.

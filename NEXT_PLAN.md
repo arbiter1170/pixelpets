@@ -10,7 +10,8 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the Oct 14 evening queue (section 3): Q19, Q20, Q16, Q21, then Q17 and Q18 |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Act 1 is on `main`. The next-build order is unresolved |
+| `TOWN_BOARD.md` | The implementing agent | Town bulletin boards and the Town Board phone app. Scoped, not started. `main` calls this Q19; this branch already uses Q19 for the council |
 | `CHANGELOG.md` | Everyone | What shipped, newest first |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
@@ -570,6 +571,12 @@ The box is a list under the party on the Pets tab. Add reorder, release, and a r
 
 Add a manifest and a service worker so the game can be added to the home screen and opened offline. No new network calls. Fonts stay self-hosted. The optional location lookup stays a network call and still falls back to meadow when it cannot run.
 
+### Q19 — Town boards — scoped, not started
+
+Do not start this ahead of Q17 or Q18. The scope is [TOWN_BOARD.md](TOWN_BOARD.md). The open calls are D37–D49 in [OPEN_DECISIONS.md](OPEN_DECISIONS.md). A future quest uses `.cursor/skills/walklings-quests/SKILL.md`.
+
+TB-1 is the empty board, the reports, and the phone app. TB-2 is the Hearthmoor crossing and the Fernbrook forecourt. TB-3 is one slip (Cald's gate count) after D39 and D40. No quest is wired before that. KeeperUAV stays the blank watch desk.
+
 ### Hold
 
 Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes, after Q16. The real Sacrifice cost (D24) replaces the stub after it is on `main`; it does not block Q16 and it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`.
@@ -652,4 +659,5 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Capital beats and the art pass (D37–D42, Q20).** Specified, not built. Whether they come before the box is unresolved. Full rows are in OPEN_DECISIONS.
+9. **Capital beats and the art pass.** Specified, not built. Whether they come before the box is unresolved. This branch numbered them D37–D42. `main` now uses those numbers for town boards.
+10. **Town boards.** Scoped in `TOWN_BOARD.md`. Nothing is built. `main` numbers that scope Q19 and D37–D49. Those numbers collide with the council rows. Not renumbered here.

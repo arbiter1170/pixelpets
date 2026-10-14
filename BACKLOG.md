@@ -17,7 +17,8 @@ Where things are (hand these to the right person or agent):
 | [CHANGELOG.md](CHANGELOG.md) | **Everyone** | What shipped, newest first |
 | [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | **The designer** (art and writing) | Voice guide, art sizes, and the request list. Background. The assignment to paste into the designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) |
 | [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) | **The designer bot** (a different agent from the implementer) | The prompt: every designer item, the files to open, the engine that already exists, the delivery format, and the phase order |
-| [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat |
+| [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat. Town boards are D37–D49, scoped and not built |
+| [TOWN_BOARD.md](TOWN_BOARD.md) | **The implementing agent, after the D-rows** | Bulletin boards, squares, the Town Board phone app, propaganda, reports, and the unwired slip catalog |
 
 Past examples of art and writing for either reader: `DESIGN_HANDOFF.md` section 1, "Reference examples in this repo". In short: pixel art is in `sprites.js` (palette, glyphs, world props, creatures), `keeper.js` (people looks), `ITEM_ART` and `SEAL_ART` in `game.js`; writing is in the `scenes`, `trainers` and `dialog` blocks of `data/*.json` and in `BATTLE_TEXT` (`moves.js`) and `ITEMS` (`game.js`). `data/cobblecrest.json` is the best complete example of a designer hand-off (it carries its own `artRequests`, `looks`, `speakers`, `newNames`, `decisions`). Screenshots of the live UI are in `screenshots/`.
 
@@ -52,6 +53,7 @@ Queue: Q1–Q12, Q15, and Q16 are built. The Sacrifice is still a stub. Brinewic
 | Q19 | **Lantern Council**, the Keepers mission after `story.cobble_end` | M | **Unresolved next.** Spec only. Not built in this pull request. Spec: NEXT_PLAN §3 Build 7 |
 | Q20 | **Look and listen**: tier-2 lanyard, glimmer town loop, quarry loop, Wickerglen grove music, Imogen and Hollis looks, Rook's lanyard | M | **Unresolved next.** Spec only. Not built in this pull request. Spec: NEXT_PLAN §3 Build 8 |
 | Q21 | **Capital Partnership Briefing**, the Glimmerwell mission after the cart | M | Not built. The cart is now on `main`. Whether this comes before the box is unresolved. Spec: NEXT_PLAN §3 Build 10 |
+| Q19 | **Town boards**: a board in each town, a Town Board phone app, propaganda by who holds the town, reports, empty slips | L when built | **SCOPED, NOT STARTED.** Detail in [TOWN_BOARD.md](TOWN_BOARD.md). Blocked on [OPEN_DECISIONS.md](OPEN_DECISIONS.md) D37–D49. `main` also uses Q19 for this row. This branch already uses Q19 for the Lantern Council. The number is not reassigned here. |
 
 Everything below is the earlier backlog and status history.
 
