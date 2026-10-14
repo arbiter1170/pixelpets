@@ -24,6 +24,8 @@ test('boot, build stamp, and dev checks', async ({ page }) => {
       glimmer: problems(window.PixelPets.glimmerCheck),
       music: problems(window.PixelPets.musicCheck()),
       befriend: problems(window.PixelPets.befriendCheck()),
+      standing: problems(window.PixelPets.standingCheck()),
+      heights: problems(window.PixelPets.heightsCheck),
       hasApi: typeof window.PixelPets === 'object',
     };
   });
@@ -33,6 +35,8 @@ test('boot, build stamp, and dev checks', async ({ page }) => {
   expect(report.glimmer, 'glimmerCheck').toEqual([]);
   expect(report.music, 'musicCheck').toEqual([]);
   expect(report.befriend, 'befriendCheck').toEqual([]);
+  expect(report.standing, 'standingCheck').toEqual([]);
+  expect(report.heights, 'heightsCheck').toEqual([]);
 });
 
 test('befriend odds stay inside the tuning range', async ({ page }) => {
@@ -147,16 +151,77 @@ test('glimmer side swaps the orchard scene and restores keepers', async ({ page 
   expect(before.side).toBe('keepers');
   const glimmer = await page.evaluate(() => {
     PixelPets.setSide('glimmer');
-    return { orchard: PixelPets.sceneFor('orchard'), side: PixelPets.side };
+    return {
+      orchard: PixelPets.sceneFor('orchard'),
+      lead: PixelPets.sceneFor('lead_intro'),
+      glen: PixelPets.sceneFor('glen_cleared'),
+      arrive: PixelPets.sceneFor('cobble_arrive'),
+      hall: PixelPets.sceneFor('hale_trial'),
+      hook: PixelPets.sceneFor('brinewick_hook'),
+      side: PixelPets.side,
+    };
   });
   expect(glimmer.orchard).toBe('orchard@glimmer');
+  expect(glimmer.lead).toBe('lead_intro@glimmer');
+  expect(glimmer.glen).toBe('glen_cleared@glimmer');
+  expect(glimmer.arrive).toBe('cobble_arrive@glimmer');
+  expect(glimmer.hall).toBe('hale_trial@glimmer');
+  expect(glimmer.hook).toBe('brinewick_hook@glimmer');
   expect(glimmer.side).toBe('glimmer');
   const back = await page.evaluate(() => {
     PixelPets.setSide('keepers');
-    return { orchard: PixelPets.sceneFor('orchard'), side: PixelPets.side };
+    return {
+      orchard: PixelPets.sceneFor('orchard'),
+      lead: PixelPets.sceneFor('lead_intro'),
+      hall: PixelPets.sceneFor('hale_trial'),
+      hook: PixelPets.sceneFor('brinewick_hook'),
+      side: PixelPets.side,
+    };
   });
   expect(back.orchard).toBe('orchard');
+  expect(back.lead).toBe('lead_intro');
+  expect(back.hall).toBe('hale_trial');
+  expect(back.hook).toBe('brinewick_hook');
   expect(back.side).toBe('keepers');
+});
+
+test('settings can save a copy, and cancel does not wipe the game', async ({ page }) => {
+  const save = starterSave();
+  save.flags['story.side'] = 'glimmer';
+  await installSave(page.context(), save, { quietDay: true });
+  await gotoGame(page);
+  await page.waitForFunction(() => window.PixelPets.state && window.PixelPets.state.party[0]);
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#setCopy')).toBeVisible();
+  await expect(page.locator('#setRead')).toBeVisible();
+  await expect(page.locator('#setBuild')).toBeInViewport();
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.locator('#setCopy').click(),
+  ]);
+  const file = JSON.parse(await fs.promises.readFile(await download.path(), 'utf8'));
+  expect(file.v).toBe(2);
+  expect(file.party[0].id).toBe('petsmoke1');
+  expect(file.flags['story.side']).toBe('glimmer');
+  await page.locator('#startOver').click();
+  await expect(page.locator('#resetCopy')).toBeVisible();
+  await page.locator('#resetGo').hover();
+  await page.mouse.down();
+  await page.waitForTimeout(200);
+  await page.mouse.up();
+  expect(await page.evaluate(() => PixelPets.state.uid)).toBe('smoketest0001');
+  await page.locator('#resetCancel').click();
+  await expect(page.locator('#ovReset')).toBeHidden();
+  const kept = await page.evaluate(() => ({
+    uid: PixelPets.state.uid,
+    id: PixelPets.state.party[0].id,
+    side: PixelPets.state.flags['story.side'],
+    v: PixelPets.state.v,
+  }));
+  expect(kept.uid).toBe('smoketest0001');
+  expect(kept.id).toBe('petsmoke1');
+  expect(kept.side).toBe('glimmer');
+  expect(kept.v).toBe(2);
 });
 
 test('a minimal v2 save without faction or quest fields still loads as v2', async ({ page }) => {

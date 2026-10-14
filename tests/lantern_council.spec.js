@@ -10,6 +10,8 @@ function ready(flags) {
     'story.side_pick_done': true,
     'story.side': 'keepers',
     'story.cobble_end': true,
+    'story.seal1': true,
+    'story.heights_done': true,
   }, flags || {});
   save.standing = { keepers: 20, glimmer: 0 };
   return save;
@@ -45,6 +47,7 @@ test('a Keepers save at the end of Act 1 is pointed at Sky-Dock Command', async 
   const q = await page.evaluate(() => {
     const pets = PixelPets.state.party.length;
     const side = PPQuests.sideCurrent({ flags: PixelPets.state.flags, seals: PixelPets.state.seals, pets });
+    PixelPets.setFlag('story.phone_got', true);
     PixelPets.setFlag('story.mom_met', true);
     PixelPets.setFlag('story.mom_chore', true);
     PixelPets.setFlag('story.mom_sent', true);
@@ -71,7 +74,7 @@ test('a Keepers save at the end of Act 1 is pointed at Sky-Dock Command', async 
   expect(q.side).toBe('mahopac');
   expect(q.main).toBe('hc_council');
   expect(q.v).toBe(2);
-  expect(q.mom).toBe('mom');
+  expect(q.mom).toBe('phone');
 });
 
 test('Glimmerwell does not get the council row, and the games pointer waits', async ({ page }) => {

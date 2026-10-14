@@ -167,6 +167,7 @@ test('story.cobble_end opens the Lantern Council, and Mahopac stays a side objec
     const council = PixelPets.quest;
     PixelPets.setFlag('story.hc_council_done', true);
     const end = PixelPets.quest;
+    PixelPets.setFlag('story.phone_got', true);
     PixelPets.setFlag('story.mom_met', true);
     PixelPets.setFlag('story.mom_chore', true);
     PixelPets.setFlag('story.mom_sent', true);

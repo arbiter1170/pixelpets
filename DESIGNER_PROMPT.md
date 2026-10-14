@@ -70,7 +70,7 @@ Settled, do not reopen:
 4. **`data/hall_spike.md`** only for phase BH: one page per Hall slot. No scenes until Vincent approves it.
 5. Check your own lines against the rules above before you stop.
 
-Suggested order now: Tour stop copy (Phase F leftover), the Sacrifice one-pager (Phase H), and switch-desk copy (Phase S). Route 2, Cobblecrest, and Rook's closer already have implementer copy on `cursor/keeper-hq-phone-0bb2` (not on `main`). Replace that copy after it lands. Do not write a second set of those scenes.
+Suggested order now: Tour stop copy (Phase F leftover), the Sacrifice one-pager (Phase H), and switch-desk copy (Phase S). Route 2, Cobblecrest, and Rook's closer already have implementer copy on `main`. Replace that copy. Do not write a second set of those scenes.
 
 ---
 
@@ -224,7 +224,7 @@ Looks, if the generic `associate` look is too samey: `imogen` and `hollis` in `l
 
 ## Phase R5. Rook on the Brinewick road — **two scenes exist off main (`ally` / `stays`); confirm tone, do not add the bond fork**
 
-**Settled (D23).** If the player is Keepers, Rook eventually converts to good. If the player is Glimmerwell, Rook stays with Glimmerwell. Not bond-gated. No follow-or-stay fork. The stranded branch already has two variants of `brinewick_hook`. Confirm ally vs parted. Do not add another fork.
+**Settled (D23).** If the player is Keepers, Rook eventually converts to good. If the player is Glimmerwell, Rook stays with Glimmerwell. Not bond-gated. No follow-or-stay fork. `main` already has two variants of `brinewick_hook`. Confirm ally vs parted. Do not add another fork.
 
 | Branch | What happens | Flag at the end |
 |---|---|---|
