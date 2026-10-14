@@ -714,6 +714,10 @@ if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x:
 // The design JSON stays verbatim: variants live in data/glimmer_path.json. Objects use `when: ["story.side=glimmer"]` as usual.
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
+// Glimmerwell is the company faction. A Keeper hears them as the dark side: first meeting and their battles use the sinister loops.
+const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', rival2_rook: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers' };
+for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
+function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
 const sceneSteps = id => { const s = side(); return (s !== SIDE_DEFAULT && SCENES[id + '@' + s]) || SCENES[id]; };
 let sideApplied = null;
@@ -795,6 +799,39 @@ function glimmerDevCheck(){
       if (n[2] == null && !(n[3] in STANDING_CFG.grants)) bad.push(where + ': standing step needs an amount or a known grant id (' + n[3] + ')'); }
     n.forEach(x => walkStanding(where, x)); };
   for (const [id, steps] of Object.entries(SCENES)) walkStanding('scene ' + id, steps);
+  const loy = G.loyalty || {};
+  const condKey = c => {
+    if (typeof c !== 'string' || !c) return false;
+    return c.split('&').every(part => {
+      if (!part || part === 'else' || part === 'talked' || part === 'has:name') return !!part;
+      const s = part[0] === '!' ? part.slice(1) : part;
+      return s === 'talked' || s === 'has:name' || s.startsWith('seal:') || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
+    });
+  };
+  for (const [id, bag] of Object.entries(loy.npcs || {})) {
+    if (!bag || typeof bag !== 'object' || id.startsWith('_')) continue;
+    for (const [k, v] of Object.entries(bag)) {
+      if (typeof v !== 'string') continue;
+      if (!condKey(k)) bad.push('loyalty.npcs.' + id + ': bad condition ' + k);
+      shortLine('loyalty.npcs.' + id + '.' + k, v);
+    }
+  }
+  for (const [id, keys] of Object.entries(loy.trainers || {})) {
+    if (id.startsWith('_')) continue;
+    if (!TRAINERS_BASE[id] && !TRAINERS[id]) bad.push('loyalty trainer ' + id + ': unknown');
+    for (const [key, bag] of Object.entries(keys || {})) {
+      if (key.startsWith('_') || !bag || typeof bag !== 'object') continue;
+      for (const [c, v] of Object.entries(bag)) if (typeof v === 'string') {
+        if (!condKey(c)) bad.push('loyalty.trainers.' + id + '.' + key + ': bad condition ' + c);
+        line('loyalty.trainers.' + id + '.' + key + '.' + c, v);
+      }
+    }
+  }
+  for (const [id, steps] of Object.entries(loy.preface || {})) {
+    if (id.startsWith('_')) continue;
+    if (!SCENES[id]) bad.push('loyalty preface of unknown scene ' + id);
+    walkSteps('loyalty.preface.' + id, steps);
+  }
   return bad;
 }
 /* ---------- Standing (GLIMMER_PATH v0.2 BS; every name and number comes from STANDING_CFG in standing.js) ---------- */
@@ -877,6 +914,66 @@ if (MD.mahopac && MD.mahopac.speakers) for (const [k, v] of Object.entries(MD.ma
   put(byId.tobin_glim, G.lines.tobin_glim);
   put(byId.fen_after, G.lines.fen_after);
 })();
+// Loyalty lines (Keepers and Glimmerwell). More specific keys are merged in front; the side lines already on the NPC stay as the fallback.
+// `story.side` absent still means Keepers, so keeper-facing keys use `!story.side=glimmer` (the same test the side lines use).
+(function applyLoyalty(){
+  const L = MD.glimmer_path && MD.glimmer_path.loyalty; if (!L) return;
+  // One-shot intros (`!story.met_*`, or any line that runs a scene with `@`) stay in front. The Keeper House
+  // on Hearthmoor (data/civic.json, written on the HQ branch) depends on that order. Rank lines slot in
+  // after those intros and do not replace a key the NPC already has.
+  const introKey = (k, v) => k.startsWith('!story.met_') || (typeof v === 'string' && v.charAt(0) === '@');
+  const front = (o, bag) => {
+    if (!o || !bag || typeof bag !== 'object') return;
+    const intro = [], rest = [];
+    for (const [k, v] of Object.entries(o.lines || {})) (introKey(k, v) ? intro : rest).push([k, v]);
+    const lines = {};
+    for (const [k, v] of intro) lines[k] = v;
+    for (const [k, v] of Object.entries(bag)) if (typeof v === 'string' && !(k in lines)) lines[k] = v;
+    for (const [k, v] of rest) if (!(k in lines)) lines[k] = v;
+    o.lines = lines;
+  };
+  const byId = {};
+  for (const m of Object.values(WORLD)) for (const o of m.objs || []) if (o.id && !byId[o.id]) byId[o.id] = o;
+  for (const [id, bag] of Object.entries(L.npcs || {})) {
+    if (id.startsWith('_') || !bag || typeof bag !== 'object') continue;
+    if (id === 'amos' && MD.glimmer_path.lines) {
+      const lines = {};
+      for (const [k, v] of Object.entries(bag)) if (typeof v === 'string') lines[k] = v;
+      for (const [k, v] of Object.entries(MD.glimmer_path.lines.amos || {})) if (!(k in lines) && typeof v === 'string') lines[k] = v;
+      MD.glimmer_path.lines.amos = lines;
+      continue;
+    }
+    front(byId[id], bag);
+  }
+  for (const [id, steps] of Object.entries(L.preface || {})) {
+    if (id.startsWith('_') || !Array.isArray(steps) || !SCENES[id]) continue;
+    SCENES[id].unshift(...steps);
+  }
+})();
+function trainerLine(id, key){
+  syncSide();
+  const t = TRAINERS[id];
+  const L = MD.glimmer_path && MD.glimmer_path.loyalty;
+  const bag = L && L.trainers && L.trainers[id] && L.trainers[id][key];
+  if (bag && typeof bag === 'object') {
+    for (const [c, v] of Object.entries(bag)) if (typeof v === 'string' && cond(c, true)) return v;
+  }
+  const line = t && t.lines && t.lines[key];
+  return typeof line === 'string' ? line : '';
+}
+function objById(id){
+  for (const m of Object.values(WORLD)) { const o = (m.objs || []).find(x => x.id === id); if (o) return o; }
+  return null;
+}
+// The rank line from data/glimmer_path.json loyalty.npcs, ignoring whatever the map object already says.
+// Used for Keeper House ids that may arrive with the civic build (hq_bram and the watch) before this branch sees them.
+function loyaltyBagLine(id){
+  const L = MD.glimmer_path && MD.glimmer_path.loyalty;
+  const bag = L && L.npcs && L.npcs[id];
+  if (!bag || typeof bag !== 'object') return null;
+  for (const [k, v] of Object.entries(bag)) if (typeof v === 'string' && cond(k, false)) return v;
+  return null;
+}
 // Point the new keeper outside, then (after Rook) toward the grass. Appended here so the design JSON stays verbatim.
 if (SCENES.starter) SCENES.starter.push(
   ['say', 'Warden Ilse', 'When you step outside, take the east path. Rook is waiting by the gate.'],
@@ -905,12 +1002,29 @@ function trackFor(map){
   if (map.backdrop === 'route' || map.backdrop === 'meadow') return 'route';
   return null;
 }
+// Wild fights cycle three cheerful loops. Glimmerwell fights, while pledged to the Keepers, use the dark loops:
+// the first one is the slow sting, later ones the driving minor theme. Keeper trials and route kids stay on `battle`.
+const WILD_TRACKS = ['wild_skip', 'wild_romp', 'wild_spark'];
+let wildTune = 0;
+function battleTrack(kind, trainerId){
+  if (kind === 'wild') return WILD_TRACKS[wildTune % WILD_TRACKS.length];
+  if (kind === 'trainer' && trainerFaction(trainerId) === 'glimmer' && side() !== 'glimmer')
+    return (S && S.flags['music.glimmer_fought']) ? 'glimmer_battle' : 'glimmer_first';
+  return 'battle';
+}
+function takeBattleTrack(kind, trainerId){
+  const id = battleTrack(kind, trainerId);
+  if (kind === 'wild') wildTune++;
+  if (kind === 'trainer' && trainerFaction(trainerId) === 'glimmer' && side() !== 'glimmer' && S) S.flags['music.glimmer_fought'] = true;
+  return id;
+}
 const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
 // Conditions (§4): 'flag', '!flag', 'flag=value', 'seal:id', 'has:name', 'talked' (lines keys only). `live` = read scene pending too.
 // WP-B0: numeric 'flag>=n', 'flag<=n', 'flag>n', 'flag<n' (an unset flag counts as 0) for counters written by the `inc` step.
 function flagOf(k, live){ if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
 function curName(live){ return live && scene && scene.view.name !== undefined ? scene.view.name : (S.player && S.player.name) || null; }
 function cond(c, live, o){
+  if (typeof c === 'string' && c.includes('&')) return c.split('&').every(part => part && cond(part, live, o));
   if (c === 'else') return true;
   let neg = false; if (c[0] === '!') { neg = true; c = c.slice(1); }
   let v;
@@ -1378,8 +1492,8 @@ function lanternGreet(who){
   if (who !== 'Keeper Amos') return fallback;
   const amos = MD.glimmer_path && MD.glimmer_path.lines && MD.glimmer_path.lines.amos;
   if (!amos) return fallback;
-  const key = side() === 'glimmer' ? 'story.side=glimmer' : '!story.side=glimmer';
-  return amos[key] || fallback;
+  for (const [k, v] of Object.entries(amos)) if (typeof v === 'string' && cond(k, false)) return v;
+  return fallback;
 }
 // Build 3: on the glimmer path the Hall door is the Bright Pavilion Tour. Stops 1-3 are map triggers; stop 4 (this panel)
 // is the optional Fen match. Keepers still get the trial exactly as before.
@@ -1409,7 +1523,7 @@ function placeSteps(dr){
     const t = TRAINERS.hall1_fen, pn = (t && t.panel) || {};
     if (side() === 'glimmer') return glimmerHallSteps(t, pn);
     if (t && ((t.seal && S.seals[t.seal]) || S.flags['trainer.hall1_fen'])) return [['say', pn.who || 'Master Fen', pn.again || 'Come back any time. The orchard remembers its friends.']];
-    return [['say', pn.who || 'Master Fen', pn.greet || (t ? t.lines.intro : 'Roots first, then blossoms. Show me yours.')],
+    return [['say', pn.who || 'Master Fen', pn.greet || trainerLine('hall1_fen', 'intro') || 'Roots first, then blossoms. Show me yours.'],
       ['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
   }
   return [['say', '', 'Closed for now. Come back soon!']];
@@ -1843,7 +1957,7 @@ function interact(o){
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
-    return runSteps([['say', t.name, t.lines.win]], ctx);
+    return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
@@ -1933,14 +2047,33 @@ async function runSteps(steps, ctx = {}){
   walk.target = walk.path = walk.arrive = walk.queued = null; wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
+  cueFactionMusic(ctx, steps);
   try { await execSteps(steps); if (ctx.beat) noteBeat(ctx.beat, 0); } catch (e) { if (e !== ABORT) console.error(e); }
   endScene();
+}
+// A Keeper's first meeting with Glimmerwell, and the walk-up to one of their battles, drops the town loop for the dark sting.
+const GLIMMER_MEET = { glimmer1: 1, faded1: 1 };
+function cueFactionMusic(ctx, steps){
+  if (!scene || !S || side() === 'glimmer') return;
+  const hit = (steps || []).find(st => Array.isArray(st) && st[0] === 'battle' && trainerFaction(st[1]) === 'glimmer');
+  if (hit) {
+    scene.musicCue = battleTrack('trainer', hit[1]);
+    PPSound.music(scene.musicCue, { fadeOut: 180, fadeIn: 140 });
+    return;
+  }
+  const id = (ctx && (ctx.id || ctx.beat)) || '';
+  if (GLIMMER_MEET[id] && !S.flags['music.glimmer_met']) {
+    scene.musicCue = 'glimmer_first';
+    S.flags['music.glimmer_met'] = true;
+    PPSound.music('glimmer_first', { fadeOut: 450, fadeIn: 500 });
+  }
 }
 async function execSteps(steps){ for (const st of steps || []) { if (!scene) return; await execStep(st); } }
 async function playScene(id){ const steps = sceneSteps(id); if (!steps) return; const n = storyWrites(); await execSteps(steps); noteBeat(id, n); }   // nested: `run` steps, onWin
 function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); syncSide(); }
 function endScene(){
   const sc = scene; if (!sc) return;
+  const cue = sc.musicCue;
   commitPending();
   clearCast(sc);
   if (sc.npc) delete mapRT.face[sc.npc.id];
@@ -1956,6 +2089,9 @@ function endScene(){
     if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
+  if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
+    const back = trackFor(CUR); if (back && back !== cue) PPSound.music(back, { fadeOut: 400, fadeIn: 500 });
+  }
 }
 const pend = f => scene.pending.push(f);
 // Scene cast: someone a scene brings into a room who has no map object there. MAPS_SLICE §8 `starter`: "The door bangs open.
@@ -2095,7 +2231,8 @@ async function sceneBattle(id){
   commitPending(); save();
   const team = trainerTeam(t), f0 = team[0], [ln, st] = f0.form.split('/');
   const sub = s => String(s).replace(/\{(player|name)\}/g, playerName());
-  if (scene.lastSay !== sub(t.lines.intro)) await sayBox(t.name, sub(t.lines.intro));   // the Hall panel already opened with it
+  const intro = trainerLine(id, 'intro');
+  if (scene.lastSay !== sub(intro)) await sayBox(t.name, sub(intro));   // the Hall panel already opened with it
   await sayBox('', battleLine('trainerSummon', { trainer: t.name, foe: nameOf(SP_INDEX[ln], +st) }));
   $('#ovScene').hidden = true;
   S.flags['spotted.' + id] = true;                     // §6.1: set when the battle opens; a trainer never spots twice
@@ -2601,7 +2738,7 @@ function openBattle(o){
   $('#btTwinkle').hidden = !(o.kind === 'wild' && f.stage > 0);
   renderBattleCards(); setPanel('busy');
   $('#ovBattle').hidden = false; lockTabs(true); fitAll(); fitBattle();
-  PPSound.music('battle', { fadeOut: 150, delay: 350, fadeIn: 100 });
+  PPSound.music(takeBattleTrack(o.kind, o.trainerId), { fadeOut: 150, delay: 350, fadeIn: 100 });
   battleIntro(B.id);
   return true;
 }
@@ -2610,7 +2747,7 @@ async function battleIntro(id){
   sendOutFx('foe');
   if (B.kind === 'trainer') {
     if (!B.mapIntro) {                                                       // debug forceTrainer only: no map text box to say them in
-      await say(t.name + ': ' + trLine(t.lines.intro), id);                 // MAPS_SLICE §6.1 summon sequence
+      await say(t.name + ': ' + trLine(trainerLine(B.trainerId, 'intro')), id);   // MAPS_SLICE §6.1 summon sequence
       if (!alive(id)) return; await say(btLine('trainerSummon'), id); if (!alive(id)) return;
     }
     await say(btLine('trainerIntro'), id);
@@ -3369,10 +3506,10 @@ async function finish(result, id){
     await say(nm + ' joined your collection! ' + (B.lastGx ? '(+' + B.lastGx + ' XP)' : '(No XP: explored enough today)'), id);
     if (B.toBox && alive(id)) await say(nm + ' went to your Walkling-box.', id);
   } else if (result === 'win' && t) {
-    sfx('win'); await say(btLine('trainerWin'), id); if (!alive(id)) return; await say(t.name + ': ' + trLine(t.lines.win), id);
+    sfx('win'); await say(btLine('trainerWin'), id); if (!alive(id)) return; await say(t.name + ': ' + trLine(trainerLine(B.trainerId, 'win')), id);
   } else if (result === 'win') { sfx('win'); }
   else if (result === 'tired') {
-    if (t) { await say(btLine('trainerLose'), id); if (!alive(id)) return; await say(t.name + ': ' + trLine(t.lines.lose), id); }
+    if (t) { await say(btLine('trainerLose'), id); if (!alive(id)) return; await say(t.name + ': ' + trLine(trainerLine(B.trainerId, 'lose')), id); }
     else await say(btLine('trainerLose'), id);
   }
   if (!alive(id)) return;
@@ -4363,6 +4500,7 @@ function boot(){
     switchSide: (to, free) => switchSide(to, { free: !!free }),
     pledgeDesk: to => { if (!deskOpen(to) || overlayOpen()) return false; showTab('walk'); runSteps(pledgeDeskSteps(to)); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
+    rollWildTrack: () => takeBattleTrack('wild'),
     endScene: () => { if (!scene) return false; scene.skip = true; return true; },
     // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
     expandText: (text, vars, viewPetObj) => { const keep = scene;
@@ -4395,6 +4533,13 @@ function boot(){
   api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
+  api.musicCheck = () => PPSound.musicCheck();
+  api.musicIds = () => PPSound.musicIds();
+  api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
+  api.wildTracks = () => WILD_TRACKS.slice();
+  api.npcLine = id => id === 'amos' ? lanternGreet('Keeper Amos') : (objById(id) ? linesFor(objById(id)) : null);
+  api.loyaltyLine = id => loyaltyBagLine(id);
+  api.trainerLine = (id, key) => trainerLine(id, key);
   // BS (read-only): both meters with tier index and name, the pledge, the switch count, and whether the desk would allow a switch now.
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
   api.standingCfg = () => copy(STANDING_CFG);

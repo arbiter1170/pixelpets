@@ -3,7 +3,7 @@
    - Mute is remembered in localStorage `pixelpets.mute` ('1' = muted). Muted = no audio nodes at all.
    - If WebAudio is missing or fails, every call is a silent no-op.
    - Stingers (stinger_seal/item/befriend/levelup/evolve) queue instead of stacking; see the player below.
-   - Background loops (town, route, battle) are original tunes played by the same voices. Music on/off is S.settings.music. */
+   - Background loops (town, route, battle, wild combat, Glimmerwell) are original tunes played by the same voices. Music on/off is S.settings.music. */
 'use strict';
 const PPSound = (() => {
   const MUTE_KEY = 'pixelpets.mute';
@@ -262,9 +262,107 @@ const PPSound = (() => {
         [40,2],[52,2],[40,2],[52,2],[40,2],[52,2],[44,2],[47,2] ] },
       drums: ['k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.hh',
               'k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.s.s.ssss'] },
+    // Wild walking battles: three upbeat loops, cycled so grass fights don't all sound like the trainer theme.
+    wild_skip: { key: 'C major', bpm: 156, bars: 8, stepsPerBar: 8, gate: 0.85, perc: 0.85,
+      lead: { wave: 'square', gain: 0.05, notes: [
+        [72,1],[76,1],[79,1],[84,1],[79,1],[76,1],[72,2],
+        [74,1],[77,1],[81,2],[79,1],[77,1],[74,2],
+        [76,1],[79,1],[84,2],[81,1],[79,1],[76,2],
+        [72,2],[67,1],[72,1],[76,2],[79,2],
+        [84,1],[81,1],[79,1],[76,1],[79,2],[84,2],
+        [81,1],[77,1],[74,2],[77,1],[81,1],[79,2],
+        [76,1],[72,1],[67,1],[72,1],[76,1],[79,1],[84,2],
+        [79,2],[76,2],[72,4] ] },
+      bass: { wave: 'triangle', gain: 0.28, notes: [
+        [48,2],[60,2],[55,2],[60,2],  [53,2],[65,2],[60,2],[65,2],
+        [55,2],[67,2],[62,2],[67,2],  [48,2],[60,2],[52,2],[55,2],
+        [45,2],[57,2],[52,2],[57,2],  [53,2],[65,2],[60,2],[65,2],
+        [55,2],[67,2],[62,2],[67,2],  [48,2],[55,2],[48,4] ] },
+      drums: ['k.h.s.h.','k.h.s.h.','k.h.s.h.','k.h.s.hh','k.h.s.h.','k.h.s.h.','k.h.s.h.','k.h.s.ss'] },
+    wild_romp: { key: 'G major', bpm: 144, bars: 8, stepsPerBar: 8, gate: 0.8, perc: 0.9,
+      lead: { wave: 'triangle', gain: 0.24, notes: [
+        [67,1],[71,1],[74,2],[79,2],[74,1],[71,1],
+        [72,1],[76,1],[79,2],[76,1],[72,1],[67,2],
+        [74,2],[71,1],[74,1],[78,2],[76,2],
+        [79,1],[76,1],[74,1],[71,1],[67,4],
+        [79,2],[81,1],[79,1],[76,2],[74,2],
+        [71,1],[74,1],[79,2],[76,2],[74,1],[71,1],
+        [67,1],[72,1],[76,2],[79,1],[76,1],[74,2],
+        [79,4],[74,2],[67,2] ] },
+      bass: { wave: 'triangle', gain: 0.26, notes: [
+        [43,2],[55,2],[50,2],[55,2],  [43,2],[55,2],[47,2],[55,2],
+        [41,2],[53,2],[48,2],[53,2],  [43,2],[55,2],[50,2],[43,2],
+        [40,2],[52,2],[47,2],[52,2],  [45,2],[57,2],[52,2],[57,2],
+        [43,2],[55,2],[50,2],[55,2],  [43,4],[38,2],[43,2] ] },
+      drums: ['k.hks.h.','k.hks.h.','k.hks.h.','k.hks.hh','k.hks.h.','k.hks.h.','k.hks.h.','k.hks.ss'] },
+    wild_spark: { key: 'F major', bpm: 168, bars: 8, stepsPerBar: 8, gate: 0.7, perc: 0.7,
+      lead: { wave: 'square', gain: 0.045, notes: [
+        [77,1],[81,1],[84,1],[88,1],[84,1],[81,1],[77,2],
+        [79,1],[82,1],[86,2],[84,1],[82,1],[79,2],
+        [84,1],[81,1],[77,2],[81,1],[84,1],[88,2],
+        [86,2],[84,1],[81,1],[77,4],
+        [72,1],[77,1],[81,1],[84,1],[81,1],[77,1],[84,2],
+        [88,1],[84,1],[81,2],[86,1],[84,1],[81,2],
+        [77,2],[81,2],[84,2],[79,2],
+        [84,2],[81,2],[77,4] ] },
+      bass: { wave: 'triangle', gain: 0.26, notes: [
+        [41,2],[53,2],[48,2],[53,2],  [46,2],[58,2],[53,2],[58,2],
+        [48,2],[60,2],[55,2],[60,2],  [41,2],[53,2],[48,2],[41,2],
+        [43,2],[55,2],[50,2],[55,2],  [46,2],[58,2],[53,2],[58,2],
+        [41,2],[48,2],[53,2],[48,2],  [41,4],[46,2],[41,2] ] },
+      drums: ['k.s.h.s.','k.s.h.s.','k.s.h.s.','k.s.hh.s','k.s.h.s.','k.s.h.s.','k.s.h.s.','k.s.s.ss'] },
+    // Glimmerwell, heard by a Keeper: a slow first-meeting sting, then a darker fight loop.
+    glimmer_first: { key: 'E phrygian', bpm: 76, bars: 8, stepsPerBar: 8, gate: 0.95, perc: 0.35,
+      lead: { wave: 'square', gain: 0.035, notes: [
+        [64,4],[65,2],[64,2],
+        [67,3],[65,1],[64,4],
+        [60,2],[65,2],[64,4],
+        [70,4],[67,2],[65,2],
+        [64,2],[72,2],[71,2],[65,2],
+        [64,6],[0,2],
+        [65,2],[64,2],[60,2],[58,2],
+        [64,8] ] },
+      bass: { wave: 'triangle', gain: 0.34, notes: [
+        [40,8], [40,4],[34,4], [40,4],[41,4], [34,8],
+        [40,4],[35,4], [40,6],[0,2], [41,4],[40,4], [40,8] ] },
+      drums: ['k.......','k...s...','k.......','k.....s.','k...s...','k.......','k...s.s.','k.......'] },
+    glimmer_battle: { key: 'D minor', bpm: 132, bars: 8, stepsPerBar: 16, gate: 0.85, perc: 0.85,
+      lead: { wave: 'square', gain: 0.05, notes: [
+        [62,2],[65,2],[69,4],[70,2],[69,2],[65,2],[62,2],
+        [70,4],[69,2],[67,2],[65,4],[62,4],
+        [62,2],[68,2],[69,4],[65,2],[62,2],[58,4],
+        [65,6],[0,2],[62,2],[65,2],[67,2],[69,2],
+        [74,2],[70,2],[69,2],[65,2],[69,4],[70,2],[69,2],
+        [67,2],[65,2],[62,4],[70,4],[69,4],
+        [62,2],[65,2],[69,2],[73,2],[74,4],[70,4],
+        [69,4],[65,2],[62,2],[58,2],[62,2],[65,4] ] },
+      bass: { wave: 'triangle', gain: 0.36, notes: [
+        [38,2],[50,2],[38,2],[50,2],[38,2],[50,2],[38,2],[50,2],
+        [46,2],[58,2],[46,2],[58,2],[46,2],[58,2],[46,2],[58,2],
+        [45,2],[57,2],[45,2],[57,2],[45,2],[57,2],[45,2],[57,2],
+        [38,2],[50,2],[38,2],[50,2],[38,2],[50,2],[38,2],[50,2],
+        [38,2],[50,2],[38,2],[50,2],[38,2],[50,2],[38,2],[50,2],
+        [41,2],[53,2],[41,2],[53,2],[41,2],[53,2],[41,2],[53,2],
+        [36,2],[48,2],[36,2],[48,2],[36,2],[48,2],[36,2],[48,2],
+        [38,2],[50,2],[38,2],[50,2],[38,2],[50,2],[44,2],[38,2] ] },
+      drums: ['k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.h.ssss',
+              'k.h.s.h.k.hks.h.','k.h.s.h.k.hks.h.','k.h.s.h.k.hks.s.','k.s.s.s.k.h.ssss'] },
   };
   let MUSIC_ON = true, MUSIC_VOL = 0.5, want = null, trk = null, token = 0;
   const FLAT = {};
+  function musicCheck(){
+    const bad = [];
+    for (const [id, t] of Object.entries(MUSIC)) {
+      const n = t.bars * t.stepsPerBar;
+      for (const voice of ['lead', 'bass']) {
+        const sum = (t[voice].notes || []).reduce((a, p) => a + p[1], 0);
+        if (sum !== n) bad.push(id + ' ' + voice + ' steps ' + sum + ' != ' + n);
+      }
+      (t.drums || []).forEach((bar, i) => { if (bar.length !== t.stepsPerBar) bad.push(id + ' drum bar ' + i + ' length ' + bar.length); });
+      if ((t.drums || []).length !== t.bars) bad.push(id + ' drum bars ' + (t.drums || []).length + ' != ' + t.bars);
+    }
+    return bad;
+  }
   function eventsFor(id){
     if (FLAT[id]) return FLAT[id];
     const t = MUSIC[id], n = t.bars * t.stepsPerBar, by = Array.from({ length: n }, () => []);
@@ -393,7 +491,7 @@ const PPSound = (() => {
   return { play, setMuted, toggle: () => setMuted(!muted), get muted(){ return muted; }, get available(){ return !!AC; },
     get state(){ return ac ? ac.state : 'none'; }, get session(){ return { playThroughSilent: IOS_PLAY_THROUGH_SILENT, type: navigator.audioSession ? navigator.audioSession.type : null, loop: keep ? (keep.paused ? 'paused' : 'playing') : 'none', warmed }; }, get played(){ return played.slice(); },
     names: Object.keys(SFX).concat(Object.keys(STINGERS).map(k => 'stinger_' + k)), get stingers(){ return live.map(s => s.id); },
-    music, setMusic, pauseMusic, resumeMusic,
+    music, setMusic, pauseMusic, resumeMusic, musicCheck, musicIds: () => Object.keys(MUSIC),
     get musicOn(){ return MUSIC_ON; }, get musicTrack(){ return trk ? trk.id : null; }, get musicWant(){ return want; },
     get musicVol(){ return MUSIC_VOL; },
     set musicVol(v){ const n = +v; if (!Number.isFinite(n)) return; MUSIC_VOL = Math.max(0, Math.min(1, n));
