@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261013-2300">
+<meta name="kw-build" content="20261013-2322">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261013-2300">
+<link rel="stylesheet" href="style.css?v=20261013-2322">
 </head>
 <body>
 <div id="app">
@@ -197,6 +197,9 @@
     <div id="questPaneNext" role="tabpanel">
       <p id="questText" class="q-text"></p>
       <p id="questPlace" class="q-place"></p>
+      <p id="questSideLabel" class="q-side-lb" hidden>SIDE</p>
+      <p id="questSide" class="q-text q-side" hidden></p>
+      <p id="questSidePlace" class="q-place" hidden></p>
       <p id="questNote" class="q-note" hidden></p>
       <ul id="questDone" class="q-done" aria-label="Done"></ul>
     </div>
@@ -288,6 +291,7 @@
     <div class="look-row"><div class="look-lb">OUTFIT</div><div id="lookOutfit" class="previews" data-slot="outfit"></div></div>
     <div class="look-row"><div class="look-lb">OUTFIT COLOUR</div><div id="lookOutfitCol" class="swatches" data-slot="outfitCol"></div></div>
     <div class="look-row"><div class="look-lb">ACCENT</div><div id="lookAccent" class="swatches" data-slot="accent"></div></div>
+    <div class="look-row"><div class="look-lb">ACCESSORY</div><div id="lookAccessory" class="previews" data-slot="accessory"></div></div>
     <div id="lookBtns" class="actions two-even look-btns">
       <button id="lookCancel" class="btn" type="button">CANCEL</button>
       <button id="lookDone" class="btn btn-play" type="button">DONE</button>
@@ -408,19 +412,19 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261013-2300";</script>
-<script src="sprites.js?v=20261013-2300"></script>
-<script src="keeper.js?v=20261013-2300"></script>
-<script src="stats.js?v=20261013-2300"></script>
-<script src="moves.js?v=20261013-2300"></script>
-<script src="data/mapdata.js?v=20261013-2300"></script>
-<script src="quests.js?v=20261013-2300"></script>
-<script src="standing.js?v=20261013-2300"></script>
-<script src="save.js?v=20261013-2300"></script>
-<script src="env.js?v=20261013-2300"></script>
-<script src="sfx.js?v=20261013-2300"></script>
-<script src="cloud_config.js?v=20261013-2300"></script>
-<script src="cloud.js?v=20261013-2300"></script>
-<script src="game.js?v=20261013-2300"></script>
+<script>window.BUILD = "20261013-2322";</script>
+<script src="sprites.js?v=20261013-2322"></script>
+<script src="keeper.js?v=20261013-2322"></script>
+<script src="stats.js?v=20261013-2322"></script>
+<script src="moves.js?v=20261013-2322"></script>
+<script src="data/mapdata.js?v=20261013-2322"></script>
+<script src="quests.js?v=20261013-2322"></script>
+<script src="standing.js?v=20261013-2322"></script>
+<script src="save.js?v=20261013-2322"></script>
+<script src="env.js?v=20261013-2322"></script>
+<script src="sfx.js?v=20261013-2322"></script>
+<script src="cloud_config.js?v=20261013-2322"></script>
+<script src="cloud.js?v=20261013-2322"></script>
+<script src="game.js?v=20261013-2322"></script>
 </body>
 </html>

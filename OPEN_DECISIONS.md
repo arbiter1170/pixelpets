@@ -29,7 +29,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 | D24 | BH slot 2 | What does the Cobblecrest Sacrifice cost, what is the floor, and how does Quota substitute? | Not built. Vincent called the shape (Sacrifice, Quota as the free floor). Build 5 ships a stub that still sets `story.seal2` if this page is late | NEXT_PLAN §3 Build 5; `data/hall_spike.md` (does not exist yet) |
 | D25 | Rook R5 tone | Keepers convert: ally or parted? Glimmer stay: write `story.rook_end "stays"` or leave it unset? Does he appear later as a colleague? | No R5 scene. `teaser@glimmer` does not say he leaves | `brinewick_hook` / `brinewick_hook@glimmer` |
 | D26 | Tour copy | Real lantern recipients, slogans, Comfort Check lines, Census-board lines, stage-photo line, and the real name of `tour.doubt` | Placeholders in `tour1_s1`..`tour1_s4`, `tour1_wait`, and `seal1@glimmer`. `tour.doubt` is incremented; nothing reads it | `data/glimmer_path.json` `placeholders` |
-| D27 | Lantern rest | What should a Lantern House rest cost, and what happens with fewer Acorns than that? | 5 Acorns (`LANTERN_REST_COST`) heals the whole party and clears the post-wipe door hold. A full party still rests free, and that rest still sets the respawn. Home naps stay free. If you cannot pay 5, the keeper covers the fee so a wipe at 0 Acorns cannot trap you inside | `LANTERN_REST_COST` and `payRest` in `game.js` |
+| D28 | Lantern rest | What should a Lantern House rest cost, and what happens with fewer Acorns than that? | 5 Acorns (`LANTERN_REST_COST`) heals the whole party and clears the post-wipe door hold. A full party still rests free, and that rest still sets the respawn. Home naps stay free. If you cannot pay 5, the keeper covers the fee so a wipe at 0 Acorns cannot trap you inside | `LANTERN_REST_COST` and `payRest` in `game.js` |
 
 ## Not started, blocked on people
 
@@ -39,6 +39,8 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 - Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
 
 ## Settled
+
+- **D27 (Oct 14, 2026).** Mom's upstairs bond tasks and the Mahopac dream are an optional side chain (`PPQuests.SIDE`). They never block the main story. Mom calls Warden Ilse "Professor" when the work is dreams; Ilse keeps the Warden title and says so. There is no second character who gave the Walkling.
 
 - **D23 (Oct 13, 2026, Build 3).** Rook after Glimmerwell, Vincent: "if player chooses to join evil faction, rook will stay evil. If player stays in good faction, rook eventually converts to good." Keepers path: Rook eventually converts to good. Glimmerwell path: Rook stays with Glimmerwell. Not bond-gated, and there is no follow-or-stay fork. `teaser@glimmer` does not say he leaves. The R5 scene is not in this build. Supersedes the NEXT_PLAN bond tree and the "Rook always leaves" note.
 - **D3 (Oct 13, 2026, Build 3).** Hall slot 1 is the Bright Pavilion Tour. Vincent: "Slot 2 - decision 1," read as slot 1 stays the stated default (Tour) and slot 2 is the other named option (Sacrifice, Quota as the free floor). Slot 2 is not built. The Audit battle is optional Tour stop 4.

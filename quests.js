@@ -25,7 +25,43 @@
   const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
-    'story.switches', 'story.switch_chapter', 'story.switch_at'];   // BS: switch bookkeeping written by the engine, never a step
+    'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
+    'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue'];   // Mahopac dream bits; the side chain uses the milestones
+
+  // Optional side chain (Mom, Mahopac, the childhood dream). Never implied by the main story, and never a main-chain step.
+  // Same shape as CHAIN. A later side flag counts the earlier side steps as done, so a finished dream does not rewind.
+  const SIDE = [
+    { id: 'mom', when: ['story.starter_received'], done: ['story.mom_met'],
+      text: 'Mom is upstairs. She wants to meet your Walkling.', place: 'Your home, upstairs',
+      target: { map: 'hm_home_up', x: 5, y: 3 } },
+    { id: 'mom_chore', when: ['story.mom_met'], done: ['story.mom_chore'],
+      text: 'Clear the crumbs downstairs so your Walkling has a place to sit.', place: 'Your home',
+      target: { map: 'hm_home_in', x: 7, y: 5 } },
+    { id: 'mom_sent', when: ['story.mom_chore'], done: ['story.mom_sent'],
+      text: 'Tell Mom the table is clear. She has a trip in mind.', place: 'Your home, upstairs',
+      target: { map: 'hm_home_up', x: 5, y: 3 } },
+    { id: 'mahopac', when: ['story.mom_sent'], done: ['story.reached_mahopac'],
+      text: 'Take your Walkling up the north trail to Mahopac.', place: 'Hearthmoor, north trail',
+      target: { map: 'hearthmoor', x: 9, y: 0 } },
+    { id: 'observatory', when: ['story.reached_mahopac'], done: ['story.dream_started'],
+      text: 'Step into Breckenridge Observatory. The lens is waiting.', place: 'Mahopac observatory',
+      target: { map: 'mahopac', x: 5, y: 7 } },
+    { id: 'dream_toy', when: ['story.dream_started'], done: ['story.dream_toy'],
+      text: 'You are small again. Push the popping toy around the rug.', place: 'A dream, 2004',
+      target: { map: 'dream_2004', x: 3, y: 3 } },
+    { id: 'dream_party', when: ['story.dream_toy'], done: ['story.dream_party'],
+      text: 'Pop the balloons at your seventh birthday.', place: 'A bowling alley',
+      target: { map: 'dream_party', x: 5, y: 5 } },
+    { id: 'dream_dad', when: ['story.dream_party'], done: ['story.dream_dad'],
+      text: 'Sit with Dad at the MacRonalds drive-through.', place: 'A dream drive-through',
+      target: { map: 'dream_drive', x: 2, y: 3 } },
+    { id: 'dream_wake', when: ['story.dream_dad'], done: ['story.dream_woke'],
+      text: 'You are home. Your Walkling is chirping, and Mom is here.', place: 'Your home, upstairs',
+      target: { map: 'hm_home_up', x: 4, y: 5 } },
+    { id: 'dream_study', when: ['story.dream_woke'], done: ['story.dream_study'],
+      text: 'Tell Warden Ilse about the dream. Mom calls her Professor.', place: "Warden's Lodge",
+      target: { map: 'hm_lodge_in', x: 5, y: 3 } },
+  ];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -129,6 +165,16 @@
     for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
     return m;
   }
+  function sideDoneMask(st){
+    const m = SIDE.map(e => ownDone(e, st));
+    for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
+    return m;
+  }
+  function sideCurrent(st){
+    const m = sideDoneMask(st);
+    for (let i = 0; i < SIDE.length; i++) if (!m[i] && eligible(SIDE[i], st)) return resolve(SIDE[i], st);
+    return null;
+  }
 
   // The current objective, or null when nothing applies (never happens with the chain above: `end` has no done).
   function current(st){
@@ -162,7 +208,8 @@
     const scanMaps = maps => { for (const m of Object.values(maps || {})) for (const o of (m && m.objs) || []) if (typeof o.setFlag === 'string') written.add(o.setFlag); };
     const scanPatch = p => { if (!p) return; scanScenes(p.scenes); for (const pt of Object.values(p.maps || {})) for (const o of [].concat(pt.addObjs || [], pt.replaceObjs || [])) if (typeof o.setFlag === 'string') written.add(o.setFlag); };
     for (const src of Object.values(MD || {})) { if (!src) continue; scanScenes(src.scenes); scanMaps(src.maps); scanMaps(src.rooms); scanPatch(src.slicePatch); scanPatch(src.route2Patch); }
-    const doneFlags = new Set(); for (const e of CHAIN) for (const c of e.done) doneFlags.add(c.replace(/^!/, '').split('=')[0]);
+    const doneFlags = new Set();
+    for (const e of CHAIN.concat(SIDE)) for (const c of e.done) doneFlags.add(c.replace(/^!/, '').split('=')[0]);
     for (const f of written) if (f.startsWith('story.') && !doneFlags.has(f) && !NOT_STEPS.includes(f)) bad.push('flag not on the chain: ' + f);
     const ids = new Set();
     const copyOk = (e, tag) => {
@@ -177,10 +224,16 @@
       if (e.target && !(typeof e.target.map === 'string' && Number.isInteger(e.target.x) && Number.isInteger(e.target.y))) bad.push('bad target: ' + e.id);
     }
     if (CHAIN[CHAIN.length - 1].done.length) bad.push('the last entry must never be done');
+    const sideIds = new Set();
+    for (const e of SIDE) {
+      if (sideIds.has(e.id) || ids.has(e.id)) bad.push('duplicate id: ' + e.id); sideIds.add(e.id);
+      copyOk(e, 'side ' + e.id);
+      if (e.target && !(typeof e.target.map === 'string' && Number.isInteger(e.target.x) && Number.isInteger(e.target.y))) bad.push('bad target: ' + e.id);
+    }
     return bad;
   }
 
-  const api = { CHAIN, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, completed, byId, resolve, devCheck };
+  const api = { CHAIN, SIDE, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, sideCurrent, completed, byId, resolve, devCheck };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PPQuests = api;
 })(typeof window !== 'undefined' ? window : globalThis);
