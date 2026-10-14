@@ -3639,12 +3639,14 @@ async function playerAction(a, id){
   }
   if (a.kind === 'befriend') return befriendTry(id);
   if (a.kind === 'swap') {
+    const next = S.party.find(q => q.id === a.id);
+    if (!next || next.id === p.id || !canStepIn(next)) { sfx('denied'); await say("They can't come in.", id); return false; }
     await say(btLine('swapOut', { pet: petName(p) }), id); if (!alive(id)) return true;
-    B.me = { petId: a.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(petById(a.id)) }; B.participants[B.fi].add(a.id);
+    B.me = { petId: next.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(next) }; B.participants[B.fi].add(next.id);
     sendOutFx('me'); renderBattleCards();
-    await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(petById(a.id)) }), id);
+    await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(next) }), id);
     if (!alive(id)) return true;
-    await applyEntrance(petById(a.id), id);
+    await applyEntrance(next, id);
     if (!alive(id)) return true;
     B.foePlan = aiPick(); return false;                    // the foe re-reads the new target's type (no peeking at the action itself)
   }
@@ -4185,18 +4187,19 @@ function renderBag(){
   if (bagSel >= ids.length) bagSel = ids.length - 1;
   ids.forEach((id, i) => {
     const it = ITEMS[id], battleOnly = it.use.length === 1 && it.use[0] === 'battle';
-    const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
+    const holdable = !!it.hold;
+    const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly || holdable ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
     row.setAttribute('role', 'option'); row.dataset.id = id; row.dataset.i = String(i);
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico' + (battleOnly ? ' grey' : '');
     ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name';
     nm.textContent = it.name + ' \u00d7' + itemCount(id);
-    if (battleOnly) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = '(battle only)'; nm.appendChild(tag); }
+    if (battleOnly || holdable) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = battleOnly ? '(battle only)' : '(hold)'; nm.appendChild(tag); }
     const bl = document.createElement('div'); bl.className = 'bag-blurb'; bl.textContent = it.blurb;
     meta.append(nm, bl);
     row.append(ico, meta);
-    if (!battleOnly) {
+    if (!battleOnly && !holdable) {
       const use = document.createElement('button'); use.type = 'button'; use.className = 'btn bag-use'; use.textContent = 'USE';
       use.addEventListener('click', e => { e.stopPropagation(); bagSel = i; useBagItem(id); });
       row.appendChild(use);
@@ -4209,6 +4212,7 @@ function renderBag(){
 async function useBagItem(id){
   if ($('#ovBag').hidden || !ITEMS[id]) return;
   const it = ITEMS[id];
+  if (it.hold) { sfx('denied'); toast('Hold it on a Walkling. The bag does not use it up.'); return; }
   if (!it.use.includes('field')) { sfx('denied'); toast(id === 'befriend_treat' ? 'Save it for a wild battle.' : "Can't use that here yet."); return; }
   let tgt = null;
   if (it.target) {
@@ -4227,7 +4231,7 @@ function bagKey(e){
   if (e.key === 'ArrowDown') { if (ids.length) { bagSel = Math.min(ids.length - 1, bagSel + 1); renderBag(); } return true; }
   if (e.key === 'ArrowUp') { if (ids.length) { bagSel = Math.max(0, bagSel - 1); renderBag(); } return true; }
   if (e.key === 'Enter') {
-    const id = ids[bagSel]; if (id && !(ITEMS[id].use.length === 1 && ITEMS[id].use[0] === 'battle')) useBagItem(id);
+    const id = ids[bagSel]; if (id && !ITEMS[id].hold && !(ITEMS[id].use.length === 1 && ITEMS[id].use[0] === 'battle')) useBagItem(id);
     return true;
   }
   return false;
@@ -5117,7 +5121,14 @@ async function releaseFromSheet(id){
   try {
     const yes = await openSheet('Release ' + petName(p) + '?', [{ label: 'RELEASE', value: 'yes' }], 'BACK');
     if (yes !== 'yes' || $('#ovWalkling').hidden) return;
-    releasePet(id); save(); renderCollection(); updateHUD();
+    const heldId = p.held;
+    if (!releasePet(id)) {
+      sfx('denied');
+      const it = ITEMS[heldId];
+      toast(it && itemCount(heldId) >= it.cap ? "Bag can't hold the " + it.name + '.' : "You can't let your only Walkling go.");
+      return;
+    }
+    save(); renderCollection(); updateHUD();
     if (!petById(id)) closeWalklingSheet();
     else if (!$('#ovWalkling').hidden) renderWalklingSheet();
   } finally { walklingSheet.busy = false; }
@@ -5307,6 +5318,7 @@ function withdrawPet(id, slotIndex){
   const [p] = S.box.splice(bi, 1), occ = S.party[slotIndex];
   S.party[slotIndex] = p;
   S.box.splice(bi, 0, occ);
+  if (occ.id === S.partnerId) S.partnerId = p.id;
   return true;
 }
 function releasePet(id){
@@ -5316,7 +5328,10 @@ function releasePet(id){
   const bi = pi < 0 ? S.box.findIndex(p => p.id === id) : -1;
   if (pi < 0 && bi < 0) return false;
   const p = pi >= 0 ? S.party[pi] : S.box[bi], wasPartner = S.partnerId === id;
-  if (typeof p.held === 'string' && typeof grantItem === 'function') { try { grantItem(p.held, 1); } catch (e) {} }
+  if (typeof p.held === 'string') {
+    const it = ITEMS[p.held];
+    if (!it || itemCount(p.held) >= it.cap || !grantItem(p.held, 1).added) return false;
+  }
   if (pi >= 0) S.party.splice(pi, 1); else S.box.splice(bi, 1);
   if (!S.party.length && S.box.length) S.party.push(S.box.shift());
   if (S.party.length && (wasPartner || !S.party.some(q => q.id === S.partnerId))) {
@@ -5328,6 +5343,14 @@ window.reorderParty = reorderParty;
 window.depositPet = depositPet;
 window.withdrawPet = withdrawPet;
 window.releasePet = releasePet;
+window.makePartner = makePartner;
+window.useItem = useItem;
+window.holdItem = holdItem;
+window.resolveTurn = resolveTurn;
+window.befriendZoneWidth = befriendZoneWidth;
+window.applySoftBerry = applySoftBerry;
+window.hpOf = hpOf;
+window.maxHpOf = maxHpOf;
 
 function openBoardPet(id){
   const open = typeof openWalklingSheet === 'function' ? openWalklingSheet : window.openWalklingSheet;
@@ -5387,7 +5410,11 @@ function boardReleaseAsk(id){
 }
 function boardRelease(id){
   const p = petById(id), name = p ? petName(p) : 'They';
-  if (!releasePet(id)) return denyBoard("You can't let your only Walkling go.");
+  if (!releasePet(id)) {
+    const it = p && ITEMS[p.held];
+    if (it && itemCount(p.held) >= it.cap) return denyBoard("Bag can't hold the " + it.name + '.');
+    return denyBoard("You can't let your only Walkling go.");
+  }
   refreshBoard(name + ' headed off on their own.');
 }
 function boardPartner(id){
