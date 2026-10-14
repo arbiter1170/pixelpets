@@ -85,6 +85,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 `tests/ribbit.spec.js` checks that the Ribbit feed is stable, that the quarry sale has its own line, and that the phone shows Block News and Chirp Worldwide.
 
+`tests/town_board.spec.js` (TB-1) checks the 320 project: a v2 save with `story.phone_got` and a partner, empty slip and bounty piles, PLACEHOLDER on every report, Hearthmoor's THE LANTERN POST (unchanged when `story.side` is glimmer), Cobblecrest's BRIGHT NOTICE after `story.quarry_bought`, Mahopac's empty masthead, a High Charity board, and no board of their own on Route 1, Wickerglen, Old Meadow, the quarry, or Fernbrook Heights. The phone has BOARD (`data-app=board`) and KeeperUAV (`data-app=jobs`). `PixelPets.state.v` stays 2.
+
 `tests/save_copy.spec.js` (Build 7) downloads the v2 save from the Start over dialog, wipes, and reads the file back (same party, `story.side`, and `v` 2). A newer file, a v1 file, a file that is not JSON, and a file over the size cap are refused and the current game stays.
 
 `tests/glimmer_route2.spec.js` (Build 4) plays the Census volunteer scene (only the quiet log sets `story.rook_bond`), the grey Pebblit line, Wickerglen's three treats and flags, both the together and race pacts, and checks Keepers Route 2 still uses the base scenes.
