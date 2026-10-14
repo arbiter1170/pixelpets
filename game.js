@@ -29,7 +29,8 @@ const roleMult = q => ROLE_MULT[roleOf(q)];
 // PACING v0.1 §4 Warm Bowl: the first FEED of each local day (one per player) gives FOOD +15 on top and JOY +5 instead of +3.
 const BOWL = { food: 15, joy: 5, flag: 'daily.warm_bowl' };
 const FAST_KEY = 'pixelpets.fast'; // debug fast mode, kept out of the save schema
-const DEBUG_KEY = 'pixelpets.debug';   // ?debug=1 turns debug tools on (remembered), ?debug=0 off
+const DEBUG_KEY = 'pixelpets.debug';   // ?debug=1 turns debug tools on (remembered), ?debug=0 off. Settings → Debug accepts the password too.
+const DEBUG_PASSWORD = 'larson';       // the gate word is "Larson"; any capitalization works
 function readDebugPref(){
   let on = false;
   try { on = localStorage.getItem(DEBUG_KEY) === '1'; } catch(e) {}
@@ -37,7 +38,29 @@ function readDebugPref(){
   if (q !== null) { on = q === '1' || q === 'true'; try { if (on) localStorage.setItem(DEBUG_KEY, '1'); else localStorage.removeItem(DEBUG_KEY); } catch(e) {} }
   return on;
 }
-const DEBUG = readDebugPref();     // E/G/F keys, fast mode, "Pick a place" and the cheat console hooks need this
+let DEBUG = readDebugPref();     // E/G/F keys, fast mode, "Pick a place" and the cheat console hooks need this
+function writeDebugPref(on){ try { if (on) localStorage.setItem(DEBUG_KEY, '1'); else localStorage.removeItem(DEBUG_KEY); } catch(e) {} }
+function syncDebugQuery(on){
+  try {
+    const q = new URLSearchParams(location.search);
+    if (on) { if (q.get('debug') === '0') q.delete('debug'); }
+    else q.delete('debug');
+    const rest = q.toString();
+    history.replaceState(history.state, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+  } catch(e) {}
+}
+function setDebugEnabled(on){
+  const next = !!on;
+  if (!next && fastMode) { fastMode = false; storeFastPref(false); renderFastTag(); }
+  DEBUG = next;
+  writeDebugPref(DEBUG);
+  syncDebugQuery(DEBUG);
+  const dbg = $('#dbgTag'); if (dbg) dbg.hidden = !DEBUG;
+  const pick = $('#envPick'); if (pick) pick.hidden = !DEBUG;
+  if (PPEnv.allowOverride) PPEnv.allowOverride(DEBUG);
+  renderDebugGate();
+  return DEBUG;
+}
 let fastMode = false;
 const rate = () => fastMode ? FAST_RATE : REAL_RATE;   // points lost per second, every owned pet
 
@@ -162,7 +185,7 @@ function renderBuild(){ const b = buildId(); $('#setBuild').textContent = b ? 'B
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden) return;
   if (!$('#ovSettings').hidden) return;
-  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderBuild();
+  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderBuild(); renderDebugGate();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
   $('#setClose').focus({ preventScroll: true });
 }
@@ -206,7 +229,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -4273,6 +4296,545 @@ function friendCode(){
   return 'WLK-' + out.slice(0,4) + '-' + out.slice(4);   // display prefix only (was PXP-); derived from uid+created, nothing stored. A future ADD parser must accept both PXP- and WLK-
 }
 
+/* ---------- debug panel (Settings password "Larson", or ?debug=1) ---------- */
+// Checkpoints reconcile one chain's story flags so the objective becomes that step, then stand beside its target.
+// A save that already has Walklings keeps story.intro_seen and story.starter_received: a reload would put them back.
+// Main checkpoints do not touch the Mom / Mahopac side chain. Side checkpoints do not rewind the main story.
+// Extras only add the flags that open that place (High Charity).
+const DEBUG_EXTRAS = {
+  hc_plaza: { place: 'High Charity plaza', text: 'Keeper capital. The invite is open.', map: 'highcharity', x: 32, y: 20, facing: 'down',
+    flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite'] },
+  hc_hall: { place: 'Event Hall', text: 'The five High Charity games.', map: 'hc_hall_in', x: 5, y: 9, facing: 'up',
+    flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted'] },
+};
+const DEBUG_SEALS = {
+  'story.seal1': { keepers: 'seal_fernbrook', glimmer: 'seal_glim_1' },
+  'story.seal2': { keepers: 'seal_cobblecrest', glimmer: 'seal_glim_2' },
+};
+const DEBUG_TRAINER_GATES = [
+  ['story.rival1_done', 'rival1_rook'],
+  ['story.glen_cleared', 'r2_lead'],
+  ['story.seal1', 'hall1_fen'],
+  ['story.quarry_bought', 'rival2_rook'],
+  ['story.seal2', 'hall2_hale'],
+];
+function debugWhy(reason){
+  return {
+    scene: 'Finish the scene first.', battle: 'Finish the battle first.', busy: 'Close the other window first.',
+    team: 'Your team cannot battle yet.', form: 'That Walkling is not in the game.', spot: 'No open grass for a Walkling here.',
+    unknown: 'Unknown checkpoint.', map: 'That place is not in the game.', save: 'No save is loaded.',
+  }[reason] || 'Could not do that.';
+}
+function debugOut(msg, quiet){
+  const el = $('#dbgOut');
+  if (el) { el.hidden = !msg; el.textContent = msg || ''; }
+  if (msg && !quiet) toast(msg.length > 90 ? msg.slice(0, 87) + '...' : msg);
+}
+function debugBusy(){
+  if (!S) return 'save';
+  if (scene) return 'scene';
+  if (battle.on) return 'battle';
+  if (fade.busy || !$('#ovReset').hidden || !$('#ovEvolve').hidden || !$('#ovSheet').hidden || !$('#ovPlay').hidden) return 'busy';
+  if (PPCloud.overlayOpen && PPCloud.overlayOpen()) return 'busy';
+  return null;
+}
+function renderDebugGate(){
+  const b = $('#setDebug'), v = $('#setDebugVal'), g = $('#dbgGate');
+  if (!b) return;
+  const open = !!(g && !g.hidden && !DEBUG);
+  b.setAttribute('aria-expanded', String(open));
+  if (v) v.textContent = DEBUG ? 'ON' : 'OFF';
+  if (DEBUG && g) g.hidden = true;
+}
+function tryDebugUnlock(){
+  const raw = ($('#dbgPass') && $('#dbgPass').value || '').trim();
+  const msg = $('#dbgMsg');
+  if (raw.toLowerCase() !== DEBUG_PASSWORD) {
+    if (msg) { msg.hidden = false; msg.textContent = 'Wrong password.'; }
+    sfx('denied');
+    return false;
+  }
+  if ($('#dbgPass')) $('#dbgPass').value = '';
+  if (msg) msg.hidden = true;
+  setDebugEnabled(true);
+  toast('Debug mode on.');
+  if (!$('#ovSettings').hidden) $('#ovSettings').hidden = true;
+  openDebug();
+  return true;
+}
+function closeDebug(){
+  const el = $('#ovDebug');
+  if (!el || el.hidden) return;
+  el.hidden = true;
+  lockTabs(false);
+}
+function openDebug(){
+  if (!DEBUG) return;
+  const el = $('#ovDebug');
+  if (!el || !el.hidden) return;
+  if (scene || !$('#ovReset').hidden || !$('#ovEvolve').hidden || !$('#ovSheet').hidden || !$('#ovPlay').hidden) return;
+  if (PPCloud.overlayOpen && PPCloud.overlayOpen()) return;
+  if (!$('#ovSettings').hidden) $('#ovSettings').hidden = true;
+  buildDebugUi();
+  renderDebugPanel();
+  el.hidden = false;
+  lockTabs(true);
+  const c = $('#dbgClose'); if (c) c.focus({ preventScroll: true });
+}
+function dismissForDebug(){
+  for (const id of ['ovDebug', 'ovSettings', 'ovQuest', 'ovMap', 'ovBag', 'ovShop', 'ovStats', 'ovJournal', 'ovEnv', 'ovGeo', 'ovBasket']) {
+    const el = $('#' + id); if (el) el.hidden = true;
+  }
+  if ($('#ovLook') && !$('#ovLook').hidden && !(lookUI && lookUI.newPlayer)) $('#ovLook').hidden = true;
+  lockTabs(false);
+}
+function plainStoryFlag(c){
+  if (typeof c !== 'string' || c[0] === '!' || /[=<>]/.test(c) || c.startsWith('seal:') || c.startsWith('pets')) return null;
+  return c.startsWith('story.') ? c : null;
+}
+function reconcileChain(chain, i){
+  const keep = new Set(), drop = new Set();
+  for (let k = 0; k < i; k++) for (const c of chain[k].done || []) { const f = plainStoryFlag(c); if (f) keep.add(f); }
+  for (let k = i; k < chain.length; k++) for (const c of chain[k].done || []) { const f = plainStoryFlag(c); if (f) drop.add(f); }
+  const sticky = new Set();
+  if (allPets().length) { sticky.add('story.intro_seen'); sticky.add('story.starter_received'); }
+  for (const f of drop) if (!keep.has(f) && !sticky.has(f)) delete S.flags[f];
+  for (const f of keep) S.flags[f] = true;
+}
+function chainTarget(chain, i){
+  let t = chain[i] && chain[i].target;
+  if (!t) for (let k = i - 1; k >= 0; k--) if (chain[k].target) { t = chain[k].target; break; }
+  return t ? { map: t.map, x: t.x, y: t.y } : null;
+}
+function ensureDebugStarter(){
+  if (!S.party.length) {
+    const line = (typeof S.flags['story.starter_line'] === 'string' && SP_INDEX[S.flags['story.starter_line']] != null) ? S.flags['story.starter_line'] : 'ember';
+    S.flags['story.starter_line'] = line;
+    const p = newPet(SP_INDEX[line], 0, 'starter', STAT_RULES.STARTER_LEVEL);
+    S.party.push(p); S.partnerId = p.id; markCaught(SP_INDEX[line], 0);
+  } else if (!S.party.some(p => p.id === S.partnerId)) S.partnerId = S.party[0].id;
+  return pet();
+}
+function readyParty(){
+  if (S.flags['story.starter_received'] || allPets().length) ensureDebugStarter();
+  for (const q of S.party) {
+    q.hunger = Math.max(+q.hunger || 0, 80);
+    q.happy = Math.max(+q.happy || 0, 80);
+    q.energy = Math.max(+q.energy || 0, 80);
+    delete q.hpNow; delete q.faintUntil;
+  }
+  setRestDue(false);
+}
+function debugStand(map, x, y){
+  useMap(map);
+  const spots = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1], [0, 2], [0, -2], [2, 0], [-2, 0]];
+  const face = (dx, dy) => dy > 0 ? 'up' : dy < 0 ? 'down' : dx > 0 ? 'left' : 'right';
+  for (const [dx, dy] of spots) {
+    const nx = x + dx, ny = y + dy;
+    if (!solid(nx, ny) && !warpAt(nx, ny) && !blockerAt(nx, ny)) return { x: nx, y: ny, facing: (dx || dy) ? face(dx, dy) : 'down' };
+  }
+  const m = WORLD[map], sp = (m && (m.safe || m.start)) || { x: 1, y: 1 };
+  return { x: sp.x, y: sp.y, facing: sp.facing || 'down' };
+}
+function debugRespawn(mapId){
+  let id = mapId; const seen = new Set();
+  while (WORLD[id] && WORLD[id].kind === 'interior' && WORLD[id].outdoor && !seen.has(id)) { seen.add(id); id = WORLD[id].outdoor; }
+  const m = WORLD[id];
+  return m && (m.respawn || m.respawnIn) ? id : null;
+}
+function syncDebugSeals(){
+  for (const [flag, bySide] of Object.entries(DEBUG_SEALS)) {
+    if (S.flags[flag]) { const seal = bySide[side()] || bySide.keepers; if (seal && !S.seals[seal]) S.seals[seal] = Date.now(); }
+    else for (const seal of Object.values(bySide)) delete S.seals[seal];
+  }
+}
+function syncDebugTrainers(){
+  for (const k of Object.keys(S.flags)) if (k.startsWith('trainer.') || k.startsWith('spotted.')) delete S.flags[k];
+  for (const [flag, tid] of DEBUG_TRAINER_GATES) if (S.flags[flag]) S.flags['trainer.' + tid] = true;
+}
+function debugCheckpointList(){
+  const row = (e, chain) => ({ id: e.id, chain, place: e.place, text: e.text, map: e.target ? e.target.map : null, x: e.target ? e.target.x : null, y: e.target ? e.target.y : null });
+  return PPQuests.CHAIN.map(e => row(e, 'main'))
+    .concat(PPQuests.SIDE.map(e => row(e, 'side')))
+    .concat(Object.entries(DEBUG_EXTRAS).map(([id, e]) => ({ id, chain: 'extra', place: e.place, text: e.text, map: e.map, x: e.x, y: e.y })));
+}
+function applyCheckpoint(id){
+  const busy = debugBusy(); if (busy) return { ok: false, reason: busy };
+  const mainI = PPQuests.CHAIN.findIndex(e => e.id === id);
+  const sideI = PPQuests.SIDE.findIndex(e => e.id === id);
+  const extra = DEBUG_EXTRAS[id];
+  if (mainI < 0 && sideI < 0 && !extra) return { ok: false, reason: 'unknown' };
+  if (mainI >= 0) {
+    reconcileChain(PPQuests.CHAIN, mainI);
+    const orchardAt = PPQuests.CHAIN.findIndex(e => e.id === 'orchard');
+    if (orchardAt >= 0 && mainI > orchardAt) { if (!S.flags['story.side_pick_done']) S.flags['story.side_pick_done'] = true; }
+    else if (orchardAt >= 0 && mainI <= orchardAt) delete S.flags['story.side_pick_done'];
+    if (!S.flags['story.seal1']) { delete S.flags['story.tour1_s1']; delete S.flags['story.tour1_s2']; delete S.flags['story.tour1_s3']; }
+    if (S.flags['story.rival1_done']) S.flags['story.early_done'] = true;
+    syncDebugSeals();
+    syncDebugTrainers();
+  } else if (sideI >= 0) {
+    reconcileChain(PPQuests.SIDE, sideI);
+    S.flags['story.intro_seen'] = true;
+    S.flags['story.starter_received'] = true;
+  } else for (const f of extra.flags) S.flags[f] = true;
+  if (S.flags['story.starter_received'] || allPets().length) readyParty();
+  else setRestDue(false);
+  syncSide();
+  const target = mainI >= 0 ? chainTarget(PPQuests.CHAIN, mainI) : sideI >= 0 ? chainTarget(PPQuests.SIDE, sideI) : { map: extra.map, x: extra.x, y: extra.y };
+  if (target && !WORLD[target.map]) return { ok: false, reason: 'map' };
+  dismissForDebug();
+  showTab('walk');
+  if (target) {
+    const spot = debugStand(target.map, target.x, target.y);
+    const resp = debugRespawn(target.map);
+    if (resp) S.world.respawn = resp;
+    arriveAt({ map: target.map, x: spot.x, y: spot.y, facing: spot.facing });
+  }
+  const q = questCurrent();
+  if (q && mainI >= 0) S.questSeen = q.id;
+  updateHUD(); renderKeeperName(); save();
+  const sq = sideQuest();
+  const entry = mainI >= 0 ? PPQuests.CHAIN[mainI] : sideI >= 0 ? PPQuests.SIDE[sideI] : extra;
+  toast('Checkpoint: ' + (entry.place || id));
+  return { ok: true, id, chain: mainI >= 0 ? 'main' : sideI >= 0 ? 'side' : 'extra', quest: q && q.id, sideQuest: sq && sq.id, map: S.world.map, x: S.world.x, y: S.world.y, side: side() };
+}
+function encounterPreview(speciesOrForm, level, stage, hpFrac){
+  let form = String(speciesOrForm || ''), st = stage | 0;
+  if (form.includes('/')) st = +form.split('/')[1];
+  else {
+    if (SP_INDEX[form] == null) return null;
+    st = clamp(st, 0, SPECIES[SP_INDEX[form]].stages.length - 1);
+    form = form + '/' + st;
+  }
+  const parts = form.split('/'), line = parts[0];
+  if (SP_INDEX[line] == null || !SPECIES[SP_INDEX[line]].stages[+parts[1]]) return null;
+  st = +parts[1];
+  const L = clamp((level | 0) || 1, 1, STAT_RULES.LEVEL_CAP);
+  const stats = statsAt(form, L); if (!stats) return null;
+  const frac = hpFrac == null || hpFrac === '' ? 1 : clamp(+hpFrac, 0.01, 1);
+  const hpNow = Math.max(1, Math.min(stats.hp, Math.round(stats.hp * frac)));
+  const moves = defaultMoves(form, L);
+  const lead = pet(), joy = lead ? lead.happy : 60, leadLv = lead ? levelOf(lead) : L;
+  const width = Math.min(0.6, befriendWidth(frac, st, joy, false, { foeLv: L, leadLv, engaged: frac < 1 }));
+  return {
+    form, species: line, stage: st, name: nameOf(SP_INDEX[line], st), type: SPECIES[SP_INDEX[line]].type,
+    level: L, maxHp: stats.hp, hp: hpNow, atk: stats.atk, def: stats.def, spd: stats.spd,
+    moves: moves.slice(), moveNames: moves.map(mid => (MOVES[mid] || {}).name || mid),
+    odds: { width: +width.toFixed(3), label: oddsLabel(width).t },
+  };
+}
+function spawnEncounter(opts){
+  opts = opts || {};
+  const busy = debugBusy(); if (busy) return { ok: false, reason: busy };
+  const prev = opts.form ? encounterPreview(opts.form, opts.level, null, opts.hpFrac) : encounterPreview(opts.species || opts.sp || 'ember', opts.level, opts.stage || 0, opts.hpFrac);
+  if (!prev) return { ok: false, reason: 'form' };
+  if (!leadPet()) return { ok: false, reason: 'team' };
+  if (opts.onMap) {
+    const w = spawnWild(SP_INDEX[prev.species], prev.stage, null);
+    if (!w) return { ok: false, reason: 'spot', preview: prev };
+    w.lv = prev.level;
+    return { ok: true, onMap: true, id: w.id, x: w.x, y: w.y, preview: prev };
+  }
+  dismissForDebug();
+  showTab('walk');
+  const opened = openBattle({ kind: 'wild', form: prev.form, level: prev.level });
+  if (!opened) return { ok: false, reason: 'battle', preview: prev };
+  const f = curFoe();
+  if (f && prev.hp < prev.maxHp) { f.hp = prev.hp; renderBattleCards(); }
+  return { ok: true, preview: prev, foe: f && { form: f.form, name: foeName(f), type: f.type, level: f.level, hp: f.hp, maxHp: f.maxHp, atk: f.stats.atk, def: f.stats.def, spd: f.stats.spd, moves: f.moves.map(m => m.id) } };
+}
+function setFaction(sd, opts){
+  if (sd !== 'keepers' && sd !== 'glimmer') return { ok: false, reason: 'side' };
+  if (sd === 'keepers') delete S.flags['story.side']; else S.flags['story.side'] = 'glimmer';
+  if (!opts || opts.picked !== false) S.flags['story.side_pick_done'] = true;
+  syncSide(); save();
+  return { ok: true, side: side(), picked: !!S.flags['story.side_pick_done'] };
+}
+function debugGiveItem(id, n = 1){
+  n |= 0; const c = Math.max(0, itemCount(id) + n);
+  if (c) S.bag[id] = c; else delete S.bag[id];
+  save(); return c;
+}
+function debugSetHp(who, n){
+  if (!battle.on) return false;
+  if (who === 'foe') { const f = curFoe(); if (!f) return false; f.hp = clamp(Math.round(+n), 0, f.maxHp); }
+  else { const p = activePet(); if (!p) return false; setMyHp(p, +n); }
+  renderBattleCards(); save(); return true;
+}
+function debugSetCare(o){
+  o = o || {};
+  const list = o.all ? allPets() : [pet()].filter(Boolean);
+  for (const p of list) {
+    if (o.hunger != null) p.hunger = clamp(+o.hunger, 0, 100);
+    if (o.happy != null) p.happy = clamp(+o.happy, 0, 100);
+    if (o.energy != null) p.energy = clamp(+o.energy, 0, 100);
+  }
+  updateHUD(); save();
+  return list.map(p => ({ id: p.id, hunger: p.hunger, happy: p.happy, energy: p.energy }));
+}
+function debugSetLevel(n, petId){
+  const p = petId ? petById(petId) : pet(); if (!p) return null;
+  const L = clamp(n | 0, 1, STAT_RULES.LEVEL_CAP);
+  p.bx = STAT_RULES.bxForLevel(L);
+  updateHUD(); save();
+  return { id: p.id, level: levelOf(p), bx: p.bx };
+}
+function debugSetTextSpeed(v){
+  if (!['slow', 'normal', 'fast'].includes(v)) return S.settings.textSpeed;
+  S.settings.textSpeed = v; save(); return v;
+}
+function debugHeal(){
+  healTeam(); setRestDue(false); updateHUD(); save();
+  return true;
+}
+function fillKit(){
+  debugHeal();
+  for (const q of allPets()) { q.hunger = 100; q.happy = 100; q.energy = 100; }
+  for (const id of ITEM_ORDER) S.bag[id] = ITEMS[id].cap;
+  S.money = Math.max(S.money | 0, 999);
+  updateHUD(); save();
+  return { money: S.money | 0, bag: Object.assign({}, S.bag) };
+}
+function debugSnapshot(){
+  const q = questCurrent(), p = pet(), foe = battle.on ? curFoe() : null, sq = sideQuest();
+  return {
+    debug: DEBUG, fast: fastMode,
+    map: S.world && S.world.map, x: S.world && S.world.x, y: S.world && S.world.y, facing: S.world && S.world.facing,
+    side: side(), standing: standingView(),
+    quest: q && { id: q.id, text: q.text, place: q.place },
+    sideQuest: sq && { id: sq.id, text: sq.text, place: sq.place },
+    flags: Object.keys(S.flags).filter(k => k.startsWith('story.')).sort(),
+    seals: Object.keys(S.seals || {}),
+    money: S.money | 0, bag: Object.assign({}, S.bag || {}),
+    party: S.party.map(q => ({ id: q.id, species: q.species, stage: q.stage, level: levelOf(q), hp: Math.ceil(hpOf(q)), maxHp: maxHpOf(q), hunger: +q.hunger, happy: +q.happy, energy: +q.energy })),
+    partner: p && p.id,
+    hold: !!(S.world && S.world.restDue),
+    battle: foe ? { state: battle.state, kind: battle.kind, panel: battle.panel, foe: { form: foe.form, name: foeName(foe), type: foe.type, level: foe.level, hp: foe.hp, maxHp: foe.maxHp, atk: foe.stats.atk, def: foe.stats.def, spd: foe.stats.spd, moves: foe.moves.map(m => m.id) } } : null,
+    scene: scene ? scene.id : null,
+  };
+}
+function debugCatalog(){
+  return {
+    checkpoints: debugCheckpointList(),
+    items: ITEM_ORDER.map(id => ({ id, name: ITEMS[id].name, cap: ITEMS[id].cap, price: ITEMS[id].price })),
+    species: SPECIES.map(sp => ({ id: sp.id, type: sp.type, stages: sp.stages.map(st => st.name) })),
+    factions: ['keepers', 'glimmer'],
+    maps: Object.keys(WORLD),
+    trainers: Object.keys(TRAINERS_BASE),
+    scenes: Object.keys(SCENES),
+    booths: (window.PPMinigames && PPMinigames.RULE) ? Object.keys(PPMinigames.RULE) : [],
+  };
+}
+function devChecks(){
+  return {
+    quest: PPQuests.devCheck(MAPDATA),
+    glimmer: glimmerDevCheck(),
+    standing: PPStanding.devCheck(),
+    befriend: befriendDevCheck(),
+    charity: highCharityDevCheck(),
+    music: PPSound.musicCheck(),
+    minigames: (window.PPMinigames && PPMinigames.devCheck) ? PPMinigames.devCheck() : [],
+  };
+}
+function debugFlagValue(raw){
+  const s = String(raw == null ? '' : raw).trim();
+  if (s === '' || s === 'true') return true;
+  if (s === 'false' || s === 'null') return null;
+  if (/^-?\d+$/.test(s)) return +s;
+  return s;
+}
+function readEncOpts(){
+  return { species: $('#dbgSpecies').value, stage: +$('#dbgStage').value, level: +$('#dbgLevel').value, hpFrac: +$('#dbgHp').value };
+}
+function renderEncPreview(){
+  const el = $('#dbgEncStats'); if (!el || !$('#dbgSpecies') || !$('#dbgSpecies').value) return;
+  const o = readEncOpts();
+  const p = encounterPreview(o.species, o.level, o.stage, o.hpFrac);
+  el.textContent = p
+    ? p.name + '  ·  ' + p.type + '  ·  Lv ' + p.level + '\nHP ' + p.hp + '/' + p.maxHp + '  ATK ' + p.atk + '  DEF ' + p.def + '  SPD ' + p.spd + '\nMoves: ' + (p.moveNames.join(', ') || 'none') + '\nBefriend: ' + p.odds.label + ' (' + p.odds.width + ')'
+    : 'Pick a Walkling.';
+}
+let debugUiBuilt = false;
+function fillSelect(sel, rows){
+  sel.textContent = '';
+  for (const r of rows) { const o = document.createElement('option'); o.value = r.value; o.textContent = r.label; sel.append(o); }
+}
+function addGroup(sel, label, rows){
+  const g = document.createElement('optgroup'); g.label = label;
+  for (const r of rows) { const o = document.createElement('option'); o.value = r.value; o.textContent = r.label; g.append(o); }
+  sel.append(g);
+}
+function buildDebugUi(){
+  if (debugUiBuilt) return; debugUiBuilt = true;
+  const list = debugCheckpointList();
+  addGroup($('#dbgCheckpoint'), 'Story', list.filter(e => e.chain === 'main').map(e => ({ value: e.id, label: e.place + ' · ' + e.id })));
+  addGroup($('#dbgCheckpoint'), 'Side', list.filter(e => e.chain === 'side').map(e => ({ value: e.id, label: e.place + ' · ' + e.id })));
+  addGroup($('#dbgCheckpoint'), 'Places', list.filter(e => e.chain === 'extra').map(e => ({ value: e.id, label: e.place + ' · ' + e.id })));
+  fillSelect($('#dbgItem'), ITEM_ORDER.map(id => ({ value: id, label: ITEMS[id].name })));
+  fillSelect($('#dbgSpecies'), SPECIES.map(sp => ({ value: sp.id, label: sp.stages[0].name + ' · ' + sp.type })));
+  fillSelect($('#dbgStage'), [{ value: '0', label: 'First form' }, { value: '1', label: 'Second form' }, { value: '2', label: 'Third form' }]);
+  fillSelect($('#dbgHp'), [{ value: '1', label: 'HP 100%' }, { value: '0.75', label: 'HP 75%' }, { value: '0.5', label: 'HP 50%' }, { value: '0.25', label: 'HP 25%' }, { value: '0.1', label: 'HP 10%' }]);
+  fillSelect($('#dbgMap'), Object.keys(WORLD).sort().map(id => ({ value: id, label: ((WORLD[id].name || id) + ' · ' + id) })));
+  fillSelect($('#dbgTrainer'), Object.keys(TRAINERS_BASE).sort().map(id => ({ value: id, label: ((TRAINERS_BASE[id].name || id) + ' · ' + id) })));
+  fillSelect($('#dbgTextSpeed'), [{ value: 'slow', label: 'Slow' }, { value: 'normal', label: 'Normal' }, { value: 'fast', label: 'Fast' }]);
+  const booths = (window.PPMinigames && PPMinigames.RULE) ? Object.keys(PPMinigames.RULE) : [];
+  fillSelect($('#dbgBooth'), booths.map(id => ({ value: id, label: id })));
+  $('#dbgLevel').value = '5';
+  $('#dbgItemN').value = '1';
+  $('#dbgPetLevel').value = '5';
+  $('#dbgHours').value = '8';
+  $('#dbgFlag').value = 'story.met_fen';
+  $('#dbgFlagVal').value = 'true';
+  $('#dbgScene').value = 'orchard';
+}
+function renderDebugPanel(){
+  if (!S) return;
+  const view = standingView();
+  $('#dbgKeepersNow').textContent = view.keepers.points + ' · ' + view.keepers.name;
+  $('#dbgGlimmerNow').textContent = view.glimmer.points + ' · ' + view.glimmer.name;
+  $('#dbgKeepersPts').value = String(view.keepers.points);
+  $('#dbgGlimmerPts').value = String(view.glimmer.points);
+  $('#dbgSideKeepers').setAttribute('aria-pressed', String(side() === 'keepers'));
+  $('#dbgSideGlimmer').setAttribute('aria-pressed', String(side() === 'glimmer'));
+  $('#dbgFast').textContent = fastMode ? 'FAST ON' : 'FAST OFF';
+  $('#dbgFast').setAttribute('aria-pressed', String(!!fastMode));
+  if ($('#dbgTextSpeed').options.length) $('#dbgTextSpeed').value = S.settings.textSpeed || 'normal';
+  $('#dbgAcorns').value = String(S.money | 0);
+  const live = $('#dbgLive'), hpBox = $('#dbgBattleHp');
+  if (battle.on && curFoe()) {
+    const f = curFoe(), p = activePet(), st = f.stats;
+    let line = foeName(f) + '  Lv ' + f.level + '  ' + f.type + '\nHP ' + f.hp + '/' + f.maxHp + '  ATK ' + st.atk + '  DEF ' + st.def + '  SPD ' + st.spd;
+    if (p) {
+      const L = levelOf(p), mine = statsAt(formIdOf(p), L);
+      line += '\n' + petName(p) + '  Lv ' + L + '  HP ' + Math.ceil(hpOf(p)) + '/' + maxHpOf(p);
+      if (mine) line += '  ATK ' + mine.atk + '  DEF ' + mine.def + '  SPD ' + mine.spd;
+    }
+    live.hidden = false; live.textContent = line; hpBox.hidden = false;
+    $('#dbgFoeHp').value = String(f.hp);
+    if (p) $('#dbgMyHp').value = String(Math.ceil(hpOf(p)));
+  } else { live.hidden = true; hpBox.hidden = true; }
+  renderEncPreview();
+}
+function bindDebugUi(){
+  $('#setDebug').addEventListener('click', () => {
+    sfx('tap');
+    if (DEBUG) { closeSettings(); openDebug(); return; }
+    const g = $('#dbgGate'); g.hidden = !g.hidden; renderDebugGate();
+    if (!g.hidden) $('#dbgPass').focus();
+  });
+  $('#dbgUnlock').addEventListener('click', tryDebugUnlock);
+  $('#dbgPass').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tryDebugUnlock(); } });
+  $('#dbgTag').addEventListener('click', () => { if (!DEBUG) return; if ($('#ovDebug').hidden) openDebug(); else closeDebug(); });
+  $('#dbgClose').addEventListener('click', () => { sfx('tap'); closeDebug(); });
+  $('#ovDebug').addEventListener('click', e => { if (e.target === e.currentTarget) closeDebug(); });
+  $('#dbgLock').addEventListener('click', () => { setDebugEnabled(false); closeDebug(); toast('Debug mode off.'); });
+  $('#dbgGoCheckpoint').addEventListener('click', () => {
+    const r = applyCheckpoint($('#dbgCheckpoint').value);
+    if (!r.ok) debugOut(debugWhy(r.reason));
+  });
+  $('#dbgGiveItem').addEventListener('click', () => {
+    const id = $('#dbgItem').value, n = Math.max(1, $('#dbgItemN').value | 0), c = debugGiveItem(id, n);
+    debugOut((ITEMS[id] ? ITEMS[id].name : id) + ' ×' + c + '.');
+  });
+  $('#dbgSetAcorns').addEventListener('click', () => {
+    S.money = Math.max(0, $('#dbgAcorns').value | 0); save(); debugOut(acorns(S.money) + '.');
+  });
+  for (const id of ['dbgSpecies', 'dbgStage', 'dbgLevel', 'dbgHp']) {
+    const el = $('#' + id); if (!el) continue;
+    el.addEventListener('change', renderEncPreview); el.addEventListener('input', renderEncPreview);
+  }
+  $('#dbgSpawnEnc').addEventListener('click', () => {
+    const r = spawnEncounter(readEncOpts());
+    if (!r.ok) debugOut(debugWhy(r.reason));
+  });
+  $('#dbgPlaceWild').addEventListener('click', () => {
+    const r = spawnEncounter(Object.assign({ onMap: true }, readEncOpts()));
+    if (!r.ok) { debugOut(debugWhy(r.reason)); return; }
+    dismissForDebug(); showTab('walk');
+    toast(r.preview.name + ' is on the map.');
+  });
+  $('#dbgSideKeepers').addEventListener('click', () => { const r = setFaction('keepers'); renderDebugPanel(); toast('Pledged to ' + STANDING_CFG.sides[r.side].name + '.'); });
+  $('#dbgSideGlimmer').addEventListener('click', () => { const r = setFaction('glimmer'); renderDebugPanel(); toast('Pledged to ' + STANDING_CFG.sides[r.side].name + '.'); });
+  const setMeter = (sd, input) => {
+    const n = setStanding(sd, +$(input).value);
+    if (n == null) return;
+    save(); renderDebugPanel(); toast(STANDING_CFG.sides[sd].short + ' standing ' + n + '.');
+  };
+  $('#dbgSetKeepers').addEventListener('click', () => setMeter('keepers', '#dbgKeepersPts'));
+  $('#dbgSetGlimmer').addEventListener('click', () => setMeter('glimmer', '#dbgGlimmerPts'));
+  $('#dbgHeal').addEventListener('click', () => { debugHeal(); toast('Team healed.'); });
+  $('#dbgFillCare').addEventListener('click', () => { debugSetCare({ hunger: 100, happy: 100, energy: 100, all: true }); toast('Care filled.'); });
+  $('#dbgFast').addEventListener('click', () => { setFast(!fastMode); renderDebugPanel(); });
+  $('#dbgSetLevel').addEventListener('click', () => { const r = debugSetLevel(+$('#dbgPetLevel').value); if (r) debugOut('Partner Lv ' + r.level + '.'); });
+  $('#dbgResetCaps').addEventListener('click', () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; delete S.flags[BOWL.flag]; updateHUD(); save(); toast('Daily XP caps reset.'); });
+  $('#dbgSkip').addEventListener('click', () => {
+    const sec = Math.max(0, +$('#dbgHours').value || 0) * 3600;
+    catchUp(sec); regenAll(sec); updateHUD(); save(); debugOut('Skipped ' + (+$('#dbgHours').value || 0) + ' h.');
+  });
+  $('#dbgWarp').addEventListener('click', () => {
+    const map = $('#dbgMap').value;
+    const busy = debugBusy(); if (busy) { debugOut(debugWhy(busy)); return; }
+    if (!WORLD[map]) { debugOut(debugWhy('map')); return; }
+    dismissForDebug(); showTab('walk');
+    const m = WORLD[map], sp = m.start || m.safe || { x: 1, y: 1 };
+    arriveAt({ map, x: sp.x, y: sp.y, facing: sp.facing || 'down' });
+    toast('Now in ' + (m.name || map) + '.');
+  });
+  $('#dbgRunScene').addEventListener('click', () => {
+    const id = $('#dbgScene').value.trim();
+    if (!sceneSteps(id) || scene) { debugOut(scene ? debugWhy('scene') : 'No scene "' + id + '".'); return; }
+    dismissForDebug(); showTab('walk'); runScene(id);
+  });
+  $('#dbgSetFlag').addEventListener('click', () => {
+    const k = $('#dbgFlag').value.trim(); if (!k) return;
+    const v = debugFlagValue($('#dbgFlagVal').value);
+    if (v === null) delete S.flags[k]; else S.flags[k] = v;
+    save(); syncSide(); debugOut(k + ' = ' + String(S.flags[k]));
+  });
+  $('#dbgClearFlag').addEventListener('click', () => {
+    const k = $('#dbgFlag').value.trim(); if (!k) return;
+    delete S.flags[k]; save(); syncSide(); debugOut('Cleared ' + k + '.');
+  });
+  $('#dbgForceTrainer').addEventListener('click', () => {
+    const id = $('#dbgTrainer').value;
+    const busy = debugBusy(); if (busy) { debugOut(debugWhy(busy)); return; }
+    if (!TRAINERS[id]) { debugOut('Unknown trainer.'); return; }
+    if ($('#dbgRematch').checked) delete S.flags['trainer.' + id];
+    else if (S.flags['trainer.' + id]) { debugOut('Already beaten. Turn on rematch.'); return; }
+    dismissForDebug(); showTab('walk');
+    if (!openBattle({ kind: 'trainer', trainerId: id })) debugOut('Could not start that battle.');
+  });
+  $('#dbgWin').addEventListener('click', () => { if (!battle.on) { debugOut('No battle is open.'); return; } closeDebug(); finish('win', battle.id); });
+  $('#dbgLose').addEventListener('click', () => { if (!battle.on) { debugOut('No battle is open.'); return; } closeDebug(); finish('tired', battle.id); });
+  $('#dbgSetFoeHp').addEventListener('click', () => { if (debugSetHp('foe', +$('#dbgFoeHp').value)) renderDebugPanel(); });
+  $('#dbgSetMyHp').addEventListener('click', () => { if (debugSetHp('me', +$('#dbgMyHp').value)) renderDebugPanel(); });
+  $('#dbgKit').addEventListener('click', () => { const r = fillKit(); debugOut('Kit ready. ' + acorns(r.money) + '.'); });
+  $('#dbgSight').addEventListener('click', () => { sightShown = !sightShown; debugOut(sightShown ? 'Sight lines on.' : 'Sight lines off.'); });
+  $('#dbgEndScene').addEventListener('click', () => { if (!scene) { debugOut('No scene is open.'); return; } scene.skip = true; closeDebug(); });
+  $('#dbgTextSpeed').addEventListener('change', () => debugSetTextSpeed($('#dbgTextSpeed').value));
+  $('#dbgBoothGo').addEventListener('click', () => {
+    const id = $('#dbgBooth').value;
+    const busy = debugBusy(); if (busy) { debugOut(debugWhy(busy)); return; }
+    dismissForDebug(); showTab('walk');
+    const o = Object.values(WORLD).reduce((a, m) => a.concat(m.objs || []), []).find(x => x.booth === id);
+    if (!o) { debugOut('No booth for ' + id + '.'); return; }
+    openBooth(o);
+  });
+  $('#dbgClearHold').addEventListener('click', () => { debugHeal(); toast('Lantern hold cleared.'); });
+  $('#dbgChecks').addEventListener('click', () => {
+    const d = devChecks();
+    const bad = Object.entries(d).reduce((a, [k, v]) => a.concat((v || []).map(s => k + ': ' + s)), []);
+    debugOut(bad.length ? bad.join('\n') : 'All dev checks passed.', true);
+    if (!bad.length) toast('All dev checks passed.');
+  });
+  $('#dbgSnap').addEventListener('click', () => {
+    const text = JSON.stringify(debugSnapshot(), null, 2);
+    debugOut(text, true); toast('Snapshot ready.');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(() => {});
+  });
+}
+
 /* ---------- input ---------- */
 function bindInput(){
   $$('#tabs button').forEach(b => b.addEventListener('click', () => { if (tabsGuarded()) return; if (b.dataset.tab !== screen) sfx('tap'); showTab(b.dataset.tab); }));
@@ -4287,6 +4849,7 @@ function bindInput(){
   $('#setMusic').addEventListener('click', toggleMusic);
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
+  bindDebugUi();
   // scene text box (MAPS_SLICE §8): tap anywhere on the box or the map advances; SKIP jumps to the next interactive step
   $('#ovScene').addEventListener('pointerdown', e => { if (e.target.closest('button, input')) return; e.preventDefault(); sceneTap(); });
   $('#sbSkip').addEventListener('click', e => { e.stopPropagation(); sceneSkip(); });
@@ -4402,7 +4965,7 @@ function bindInput(){
   // Keyboard (bonus)
   const KEYS = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'up', s:'down', a:'left', d:'right', W:'up', S:'down', A:'left', D:'right' };
   window.addEventListener('keydown', e => {
-    if (e.target && e.target.tagName === 'INPUT') return;
+    if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
     if (scene && sbox.resolve) {                  // Space / Enter advance the text box; Escape does nothing during a choice
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) sceneTap(); return; }
@@ -4411,6 +4974,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
+    if (e.key === 'Escape' && !$('#ovDebug').hidden) { closeDebug(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
@@ -4690,15 +5254,12 @@ function boot(){
     showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
     objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
     forceTrainer: id => { if (!TRAINERS[id] || S.flags['trainer.' + id]) return false; showTab('walk'); if (overlayOpen()) return; return openBattle({ kind: 'trainer', trainerId: id }); },
-    setHp: (who, n) => {
-      if (!battle.on) return; if (who === 'foe') { const f = curFoe(); f.hp = clamp(Math.round(+n), 0, f.maxHp); }
-      else { const p = activePet(); setMyHp(p, +n); } renderBattleCards(); save();
-    },
+    setHp: (who, n) => debugSetHp(who, n),
     fadeTick: sample => fadeTick(!!sample), spriteColors: (form, faded) => { const [l, st] = form.split('/'), c = sprSet(SP_INDEX[l], +st, !!faded).n, d = c.getContext('2d').getImageData(0, 0, 18, 18).data, o = new Set();
       for (let i = 0; i < d.length; i += 4) if (d[i + 3]) o.add('#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('')); return [...o]; }, get fadeQueue(){ return fadeQ.slice(); },
     winBattle: () => { if (battle.on) finish('win', battle.id); }, loseBattle: () => { if (battle.on) finish('tired', battle.id); },
     healTeam, setFaint: (min = 20) => { const p = pet(); if (!p) return; if (min <= 0) { delete p.faintUntil; delete p.hpNow; } else faintPet(p, Date.now() - (20 - min) * 60000); updateHUD(); save(); },
-    giveItem: (id, n = 1) => { n |= 0; const c = Math.max(0, itemCount(id) + n); if (c) S.bag[id] = c; else delete S.bag[id]; save(); return c; },   // debug: no cap; a negative n trims (INVENTORY §6)
+    giveItem: (id, n = 1) => debugGiveItem(id, n),   // debug: no cap; a negative n trims (INVENTORY §6)
     useItem: (id, petId, ctx = 'field') => { const r = useItem(id, petId || (pet() && pet().id), ctx); if (r.ok) { updateHUD(); save(); } return r; },
     grantItem: (id, n) => { const r = grantItem(id, n); save(); return r; },
     buyItem: id => buyItem(id),
@@ -4743,6 +5304,19 @@ function boot(){
       if (!keep) scene = { vars: Object.assign({ tags: [], line: null, suggest: null }, vars || {}), view: { flags: {}, name: undefined, pet: viewPetObj || null, nick: undefined }, pending: [] };
       try { return expand(text); } finally { scene = keep; } },
 
+    checkpoint: id => applyCheckpoint(id),
+    checkpoints: () => debugCheckpointList(),
+    encounterPreview: (speciesOrForm, level, stage, hpFrac) => encounterPreview(speciesOrForm, level, stage, hpFrac),
+    spawnEncounter: opts => spawnEncounter(opts),
+    setFaction: (sd, opts) => setFaction(sd, opts),
+    setCare: o => debugSetCare(o),
+    setLevel: (n, petId) => debugSetLevel(n, petId),
+    fillKit: () => fillKit(),
+    debugSnapshot: () => debugSnapshot(),
+    debugCatalog: () => debugCatalog(),
+    devChecks: () => devChecks(),
+    setTextSpeed: v => debugSetTextSpeed(v),
+    clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
   };
@@ -4792,8 +5366,17 @@ function boot(){
   api.charityCheck = () => highCharityDevCheck();
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
-    if (DEBUG) { api[k] = v; continue; }
-    if (typeof v === 'function') api[k] = () => { if (!warned) { warned = true; console.info('Walklings: debug hooks need ?debug=1 in the URL.'); } return undefined; };
+    if (typeof v === 'function') {
+      api[k] = (...args) => {
+        if (!DEBUG) {
+          if (!warned) { warned = true; console.info('Walklings: debug hooks need ?debug=1 in the URL, or Settings → Debug with the password Larson.'); }
+          return undefined;
+        }
+        return v(...args);
+      };
+    } else {
+      Object.defineProperty(api, k, { enumerable: true, configurable: true, get(){ return DEBUG ? v : undefined; } });
+    }
   }
   window.PixelPets = Object.freeze(api);
 }
