@@ -810,5 +810,196 @@
     "standing.got.<id>": "A one-shot Standing grant already made.",
     "standing.top.<side>": "The highest tier whose toast has shown for that side.",
     "seals.seal_glim_1": "Bright Tier 1 lanyard. Set by the seal step in seal1@glimmer (and by a Hall win). story.seal1 is set by that same scene."
+  },
+  "loyalty": {
+    "_note": "Talk lines for Keepers and Glimmerwell, chosen by the player's pledge and Standing tier. First matching key wins. Keeper-facing keys use !story.side=glimmer because an absent story.side is still the Keepers. NPC lines are chatter-sized (<=40). Trainer lines are battle say lines (<=110). Preface steps are said once at the start of an existing scene.",
+    "npcs": {
+      "juniper": {
+        "story.side=glimmer&standing.glimmer>=4": "Founder's Pick! Marlowe asked after you.",
+        "story.side=glimmer&standing.glimmer>=2": "Junior Bright looks good, partner!",
+        "story.side=glimmer&standing.glimmer>=1": "Lanyard looks great on you, partner!",
+        "!story.side=glimmer&standing.keepers>=3&standing.glimmer>=2": "Hall Friend, and our file's still open.",
+        "!story.side=glimmer&standing.keepers>=3": "The Halls like you. We can still talk.",
+        "!story.side=glimmer&standing.glimmer>=2": "You helped once. The offer stands!",
+        "!story.side=glimmer&standing.keepers>=1": "A Keeper friend. Brochure, anyway?"
+      },
+      "odile": {
+        "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The windfalls are yours.",
+        "!story.side=glimmer&standing.keepers>=2": "Fen's trees like a trusted keeper.",
+        "story.side=glimmer&standing.keepers>=2": "Mint coat. The orchard still knows you.",
+        "story.side=glimmer&standing.glimmer>=2": "Mint's a bold colour. The trees cope."
+      },
+      "tobin_glim": {
+        "standing.glimmer>=4": "Founder's Pick! I'll update your file.",
+        "standing.glimmer>=2": "Junior Bright. Crates love you.",
+        "standing.keepers>=3": "Hall Friend in a mint vest. Funny."
+      },
+      "fen_after": {
+        "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The roots agree.",
+        "!story.side=glimmer&standing.keepers>=2": "Trusted hands. The trees agree.",
+        "story.side=glimmer&standing.keepers>=3": "You left, and the trees kept you.",
+        "story.side=glimmer&standing.glimmer>=2": "Mint vest. Roots remember your step."
+      },
+      "amos": {
+        "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The bed's warm.",
+        "!story.side=glimmer&standing.keepers>=2": "Trusted. Rest. Roots need sleep.",
+        "!story.side=glimmer&standing.keepers>=1": "Rest well, friend. Roots need sleep.",
+        "story.side=glimmer&standing.keepers>=3": "Mint vest, old friend. Rest anyway.",
+        "story.side=glimmer&standing.glimmer>=2": "Bright day, then rest. Beds are beds."
+      },
+      "hollis_aside": {
+        "!story.glen_cleared&!story.side=glimmer&standing.keepers>=2": "I hold the lamp. Hall Friends wonder.",
+        "story.glen_cleared&story.side=glimmer&standing.glimmer>=2": "Outage logged. You look bright, partner!",
+        "story.glen_cleared&!story.side=glimmer&standing.keepers>=2": "The lamps died. Your Hall was right."
+      },
+      "tobin_gate": {
+        "story.seal2&story.side=glimmer&standing.glimmer>=2": "Seal and vest. Gate stays shut, partner.",
+        "story.seal2&!story.side=glimmer&standing.keepers>=2": "Hale's Seal. Still no gate. Sorry.",
+        "!story.side=glimmer&standing.keepers>=3": "Associates only. Even Hall Friends.",
+        "story.side=glimmer&standing.glimmer>=2": "Partners get a smile, not a gate key."
+      },
+      "juniper_q": {
+        "story.quarry_bought&story.side=glimmer&standing.glimmer>=2": "Fenced for safety, partner. Memo says.",
+        "story.quarry_bought&!story.side=glimmer&standing.keepers>=2": "Fenced. Your Hall won't love this memo.",
+        "!story.quarry_bought&story.side=glimmer": "Open house, partner! Take a sticker!",
+        "!story.quarry_bought&!story.side=glimmer&standing.keepers>=2": "Open house! A Hall Friend can look."
+      }
+    },
+    "trainers": {
+      "fern_associate": {
+        "intro": {
+          "story.side=glimmer&standing.glimmer>=3": "Bright Lead! A spar keeps the quarterly glow healthy. Ready, {player}?",
+          "story.side=glimmer&standing.glimmer>=1": "Partner! These units love a friendly match. It's a partnership!",
+          "!story.side=glimmer&standing.keepers>=3": "Oh! A Hall Friend. The crates are still a partnership, {player}.",
+          "!story.side=glimmer&standing.keepers>=1": "A Keeper friend! We're relocating them somewhere comfy.",
+          "!story.side=glimmer&standing.glimmer>=2": "You packed crates with us once. The offer's still warm, {player}."
+        },
+        "win": {
+          "story.side=glimmer&standing.glimmer>=2": "Logged! I'll call that a win for the team. Have a bright day, {player}!",
+          "!story.side=glimmer&standing.keepers>=3": "Wow, okay! I'll tell my manager a Hall Friend did that.",
+          "!story.side=glimmer&standing.keepers>=1": "Wow, okay! I'll check with my manager. Have a bright day, friend!"
+        },
+        "lose": {
+          "story.side=glimmer&standing.glimmer>=2": "See? The vest comes with good coaching. Have a bright day!",
+          "!story.side=glimmer&standing.keepers>=3": "See? They're happier with us. Even a Hall Friend can rest up!",
+          "!story.side=glimmer&standing.keepers>=1": "See? They're happier with us. Rest up, friend. Have a bright day!"
+        }
+      },
+      "r2_associate": {
+        "intro": {
+          "story.side=glimmer&standing.glimmer>=2": "Partner! The glen's closed for the Census. You can help me count!",
+          "!story.side=glimmer&standing.keepers>=3": "The glen's closed, Hall Friend. We're just counting. I think.",
+          "!story.side=glimmer&standing.keepers>=1": "Whoa, a Keeper friend! The glen's closed. We're just counting!",
+          "!story.side=glimmer&standing.glimmer>=2": "You logged lamps with us. The glen's still closed for the count."
+        },
+        "win": {
+          "story.side=glimmer&standing.glimmer>=2": "Okay! Go ask the Field Lead. I'll say you were very bright.",
+          "!story.side=glimmer&standing.keepers>=3": "Okay, okay! Ask my Field Lead. Tell her a Hall Friend got through.",
+          "!story.side=glimmer&standing.keepers>=1": "Okay, okay! Go ask my Field Lead. She does the explaining."
+        },
+        "lose": {
+          "story.side=glimmer&standing.glimmer>=2": "See? Under control. Have a bright day, partner!",
+          "!story.side=glimmer&standing.keepers>=2": "See? Under control. Rest up, friend. Have a bright day!"
+        }
+      },
+      "r2_lead": {
+        "intro": {
+          "story.side=glimmer&standing.glimmer>=3": "Sweetie, a Bright Lead doesn't need the speech. Let's be brief.",
+          "story.side=glimmer&standing.glimmer>=1": "Let's keep this friendly, partner. I have a report due.",
+          "!story.side=glimmer&standing.keepers>=3": "A Hall Friend. Let's keep this brief. I have a report due, {player}.",
+          "!story.side=glimmer&standing.keepers>=1": "A Keeper, and a friend. Brief, please. The report is due.",
+          "!story.side=glimmer&standing.glimmer>=2": "You helped the Census once. This can still be brief, {player}."
+        },
+        "win": {
+          "story.side=glimmer&standing.glimmer>=2": "Not the forecast, {player}. I'll note your sparkle in the margin.",
+          "!story.side=glimmer&standing.keepers>=3": "Not the forecast. The Halls will enjoy this, {player}.",
+          "!story.side=glimmer&standing.keepers>=1": "Not the outcome I forecast, friend. Have a bright day."
+        },
+        "lose": {
+          "story.side=glimmer&standing.glimmer>=2": "There. Back to the census, partner. Have a bright day!",
+          "!story.side=glimmer&standing.keepers>=2": "There. Back to the census. Rest up, and have a bright day!"
+        }
+      },
+      "rival2_rook": {
+        "intro": {
+          "story.side=glimmer&standing.glimmer>=3": "Bright Lead and Junior Bright! Official lanyards. Race you, {name}!",
+          "story.side=glimmer&standing.glimmer>=1": "Same vest, {name}! Let's see whose glow shines brighter!",
+          "!story.side=glimmer&standing.keepers>=3": "The Halls like you, {name}. The lanyard stays on. For now.",
+          "!story.side=glimmer&standing.glimmer>=2": "You wore this vest too, {name}. Mine still has the clip.",
+          "!story.side=glimmer&standing.keepers>=1": "Okay, {name}. Official lanyard, official match. Let's go!"
+        },
+        "win": {
+          "story.side=glimmer&standing.glimmer>=2": "Okay! You're really good, {name}. I'll log it as team spirit.",
+          "!story.side=glimmer&standing.keepers>=3": "Okay. Okay! The Halls were right about you, {name}.",
+          "!story.side=glimmer&standing.keepers>=1": "Okay. You're really good, {name}. Don't tell my supervisor."
+        },
+        "lose": {
+          "story.side=glimmer&standing.glimmer>=2": "Ha! Junior Bright training works. We're a good team, {name}!",
+          "!story.side=glimmer&standing.keepers>=2": "Ha! The lanyard stays. Rest up and come take it off me."
+        }
+      },
+      "hall1_fen": {
+        "intro": {
+          "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. Roots first, then blossoms. Show me, {name}.",
+          "!story.side=glimmer&standing.keepers>=2": "Trusted hands, {name}. Roots first, then blossoms.",
+          "!story.side=glimmer&standing.keepers>=1": "A friend of the orchard. Show me your roots, {name}.",
+          "story.side=glimmer&standing.keepers>=3": "You packed my crates, and the trees still like you. Show me.",
+          "story.side=glimmer&standing.glimmer>=2": "Mint vest, {name}. Show me what roots you have left."
+        },
+        "win": {
+          "!story.side=glimmer&standing.keepers>=3": "Strong, and kind. Take the Seal. The trees will remember, {name}.",
+          "story.side=glimmer&standing.keepers>=2": "Strong. Stronger than I'd like. The trees still know you.",
+          "story.side=glimmer&standing.glimmer>=2": "...Strong. Take your ribbon. Don't forget the orchard, {name}."
+        },
+        "lose": {
+          "!story.side=glimmer&standing.keepers>=2": "Roots hold, friend. Rest a while. The kettle is on.",
+          "story.side=glimmer&standing.glimmer>=1": "Roots hold. Rest, and think about the trees, {name}."
+        }
+      },
+      "hall2_hale": {
+        "intro": {
+          "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. Stone stands firm. Move it gently, {player}.",
+          "!story.side=glimmer&standing.keepers>=2": "Trusted. Stone stands firm. Show me a patient hand.",
+          "!story.side=glimmer&standing.keepers>=1": "A friend of the Hall. Stone stands firm, {player}.",
+          "story.side=glimmer&standing.keepers>=2": "You stood with us once. Stone still stands firm, {player}.",
+          "story.side=glimmer&standing.glimmer>=1": "Mint coat, {player}. Stone stands firm all the same."
+        },
+        "win": {
+          "!story.side=glimmer&standing.keepers>=3": "Ha! You moved the hill, {player}. Gently, like a Warden's Ally.",
+          "story.side=glimmer": "You moved the hill. Gently, even in that vest, {player}."
+        },
+        "lose": {
+          "!story.side=glimmer&standing.keepers>=2": "Stone's patient, friend. So am I. Rest, and come back.",
+          "story.side=glimmer": "Stone's patient. Rest a while, and come back, {player}."
+        }
+      }
+    },
+    "preface": {
+      "ilse_chat": [
+        ["if", "!story.side=glimmer&standing.keepers>=4",
+          [["say", "Warden Ilse", "Warden's Ally. I told the Halls they could trust you."]],
+          [["if", "story.side=glimmer&standing.glimmer>=2",
+            [["say", "Warden Ilse", "That mint collar. The ledger still has your name."]],
+            [["if", "!story.side=glimmer&standing.glimmer>=2",
+              [["say", "Warden Ilse", "You wore their vest a while. The lantern is still yours."]],
+              []]]]]]
+      ],
+      "hale_trial": [
+        ["if", "!story.side=glimmer&standing.keepers>=4",
+          [["say", "Master Hale", "Warden's Ally. The hill was waiting."]],
+          [["if", "story.side=glimmer&standing.glimmer>=2",
+            [["say", "Master Hale", "Mint coat. Stone still knows your name."]],
+            [["if", "!story.side=glimmer&standing.keepers>=2",
+              [["say", "Master Hale", "Trusted hands. Come in, friend."]],
+              []]]]]]
+      ],
+      "fen_intro": [
+        ["if", "!story.side=glimmer&standing.keepers>=1",
+          [["say", "Master Fen", "A friend already. Good. I need those hands."]],
+          [["if", "story.side=glimmer",
+            [["say", "Master Fen", "You chose the mint. My trees still need a hand."]],
+            []]]]
+      ]
+    }
   }
 }

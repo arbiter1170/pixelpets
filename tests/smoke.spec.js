@@ -22,6 +22,7 @@ test('boot, build stamp, and dev checks', async ({ page }) => {
       version: body.build,
       quest: problems(window.PixelPets.questCheck),
       glimmer: problems(window.PixelPets.glimmerCheck),
+      music: problems(window.PixelPets.musicCheck()),
       befriend: problems(window.PixelPets.befriendCheck()),
       hasApi: typeof window.PixelPets === 'object',
     };
@@ -30,6 +31,7 @@ test('boot, build stamp, and dev checks', async ({ page }) => {
   expect(report.build).toBe(report.version);
   expect(report.quest, 'questCheck').toEqual([]);
   expect(report.glimmer, 'glimmerCheck').toEqual([]);
+  expect(report.music, 'musicCheck').toEqual([]);
   expect(report.befriend, 'befriendCheck').toEqual([]);
 });
 
