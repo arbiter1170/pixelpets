@@ -1,6 +1,6 @@
 # Walklings: what's next (queue, Oct 14, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack. Q17 the party board, Q18 the installable app, Q20 look and listen, and Q21 the Lantern Council are built. Q23 rename, Q24 the music volume slider, and Q25 the welcome-back line are built. Next scoped work is Q19, town boards. The town-list calls are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is the next unbuilt board step. Detail is in `TOWN_BOARD.md`. Q22, the Capital Partnership Briefing, is not built. Do not rebuild Builds 4–6. Agent skills are indexed in `.cursor/skills/README.md`. Which branch held which piece is in `BRANCH_LOG.md`.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack. Q17 the party board, Q18 the installable app, Q20 look and listen, and Q21 the Lantern Council are built. Q23 rename, Q24 the music volume slider, and Q25 the welcome-back line are built. Q26, modern and arcade controls, is scoped and not started. The next build stays Q19, town boards. The town-list calls are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is the next unbuilt board step. Detail is in `TOWN_BOARD.md`. Q22, the Capital Partnership Briefing, is not built. Do not rebuild Builds 4–6. Agent skills are indexed in `.cursor/skills/README.md`. Which branch held which piece is in `BRANCH_LOG.md`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,7 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are built. Q19 town boards: TB-1 and the Hearthmoor and Fernbrook squares are on main. TB-3 is not started. Q22 is not built |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are built. Q19 town boards: TB-1 and the Hearthmoor and Fernbrook squares are on main. TB-3 is not started. Q22 is not built. Q26, modern and arcade controls, is scoped and not started |
 | `.cursor/skills/README.md` | Every agent | Skill index. Quest work uses `walklings-quests`. Status docs use `walklings-docs`. A phone playthrough and the check that follows it use `walklings-qa` |
 | `TOWN_BOARD.md` | The implementing agent | Town bulletin boards and the Town Board phone app. Calls settled. TB-1 and the Hearthmoor and Fernbrook squares are on main. TB-3 is not started |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
@@ -72,7 +72,7 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 | Export/backup before Start over | Built (Build 7). Save a copy / Read a copy | S |
 | Music volume slider, iPhone listen-through; MUSIC Q1 (iOS silent switch) | Slider built (Q24). `settings.musicVol` is 0 to 1. The iPhone listen-through is still open | S |
 | Wild creatures not persisted across reload | By design for now | S |
-| Small-viewport map at 320x568 (~150 px tall) | Known cramped | S-M |
+| Small-viewport map at 320x568 (~150 px tall) | Known cramped. Q26 is the scoped answer: modern hides the d-pad and gives that height to the map. Not started | S-M |
 | Overpass reliability / proxy for real-world tags | Open | M |
 
 ### 1c. Balance and pacing (all "open" in BACKLOG)
@@ -449,7 +449,7 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Oct 14 queue
 
-Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. Next scoped work is Q19, town boards. The town-list D37 and D38–D49 are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is the next unbuilt board step and is not started. The open-table D37 is the region-map claim list and shares that number. Q22, the Capital Partnership Briefing, is not built. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
+Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. The next build stays Q19, town boards. Q26, modern and arcade controls, is scoped and not started. The town-list D37 and D38–D49 are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is the next unbuilt board step and is not started. The open-table D37 is the region-map claim list and shares that number. Q22, the Capital Partnership Briefing, is not built. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ### Q16 — Land the stranded Act 1 stack — **done**
 
@@ -537,9 +537,104 @@ The Vol slider sits beside Music, 0–100. The save stores `settings.musicVol` f
 
 Fourteen hours away, once the partner tab is clear of the daily hello, the line is "{pet} waited while you were away." A shorter gap says nothing. FOOD and JOY still floor at 20. NRG still floors at 10. The hours and the sentence are D56. Save `v` stays 2.
 
+### Q26 — Modern and arcade controls — S–M — **scoped, not started**
+
+Not in the game. The next build stays Q19. This package can land beside the boards. No new art. Save `v` stays 2. The sentences are D62 and stay marked placeholder until Vincent signs them.
+
+#### What the walk screen does today
+
+`#scr-walk` is a column: the HUD, the area badge, `#mapWrap` (`flex: 1`), then `.walk-ctl` (the d-pad plus `#walkTip`). `#dpad` is a 3×3 grid of 52 px cells (`style.css`). The cross is Up, Left, Talk (`#talkBtn`), Right, Down. The corners are PHONE (`#phoneBtn`, top-left, hidden until `story.phone_got`), BAG (`#walkBagBtn`, bottom-left, hidden until the starter), and MAP (`#mapBtn`, bottom-right). The top-right cell is empty. QUEST is `#questBtn` on the bottom tab bar.
+
+`#talkBtn` calls `talkFacing()` and gains `.ready` when `facingTarget()` is set. The map already moves without the pad: tap a tile, drag to steer (`walk.drag`), tap a person, door, sign, or wild Walkling (`tapObject`), or walk into them (`bumpObj` calls `interact`). Arrows, WASD, and Space or Enter stay.
+
+`fitAll()` in `game.js` sizes `#mapCanvas` from `#mapWrap`'s box, at an integer scale, capped at 384×320. Hiding the d-pad returns its height (3 × 52 px, plus the 2 px gaps, about 160 px) to that box. On a 320×568 phone the map is about 150 px tall today.
+
+#### Arcade
+
+Today's layout. The d-pad, the Talk button, and the tip under the pad stay. Keyboard stays. A save with no `settings.controls` is arcade.
+
+#### Modern
+
+Hide the four arrows and `#talkBtn`. Leave the nodes in the page so arcade can show them again.
+
+The map grows by the d-pad's height. `applyControls()` sets `body.ctl-modern` and calls `fitAll()`.
+
+PHONE, BAG, and MAP are the same three buttons, moved into an empty `#floatCtl` inside `#mapWrap`. They sit absolute in the same corners: phone top-left, bag bottom-left, map bottom-right, 52 px (at least 44), 6 px inset. The layer itself has `pointer-events: none`. The buttons keep pointer events, so a tap on the map still walks and a tap on a button does not.
+
+Visibility stays as it is. Phone waits for `story.phone_got`. Bag waits for the starter. Map keeps `.off` until the region map is ready. The phone pulse stays.
+
+There is no Talk button. Tap and walk-up already call `interact`. The speech bubble over a faced NPC stays. Space and Enter still call `talkFacing()`. Do not add a second talk path.
+
+QUEST stays on the tab bar. The empty top-right cell does not become a fourth float.
+
+`#walkTip` stays in `.walk-ctl`, under the map. Hiding the d-pad leaves that one line, so the objective, the lantern warning, and the early hint still show. In modern, the default tip and the early-steps line do not say "Hold the pad" (D62). The quest text from `walkTipText()` is the same in both layouts. In modern the bump hint sits above the bottom buttons (`bottom: 64px`) so it does not cover BAG and MAP.
+
+During a scene, fade `#floatCtl` the way `body.scene-on .walk-ctl` fades the pad today, so the buttons do not sit on the text box.
+
+Modern does not add a virtual stick. Walking is the tap, the drag, and the keyboard that already exist.
+
+#### Settings
+
+One row in `.set-list`, under Follower and above Change look. The label is Controls. The value is ARCADE or MODERN. A click swaps, toasts, calls `save()`, and calls `applyControls()`. CLOSE stays outside the scrolling list, so a 320-wide screen still shows CLOSE. The gear already opens during the opening scene, and the row works then too.
+
+#### Save
+
+`settings.controls` is `"arcade"` or `"modern"`. `normalizeV2` fills a missing or any other value as `"arcade"`, so an old save keeps the pad and is not asked. `v` stays 2. There is no migration. `defaultStateV2` may omit the key. The prompt writes it.
+
+#### First character, still in the house
+
+A new game wakes in `hm_home_in` and runs `intro` (`data/maps_slice.json`). The look picker is the mirror step, `["lookPick"]`, before the door note. Add `["controlPick"]` immediately after it. The house exit is the mat warp `home_mat` at (4, 7). The scene holds the player until the step answers, so the pick happens before they can walk out.
+
+`controlPick` uses the scene choice buttons. SKIP is hidden, and the step clears `scene.skip`. The labels are Arcade and Modern. The prompt and the reminder live in `game.js` with a `/* PLACEHOLDER: needs copy from Vincent */` comment, so the JSON step has no extra lines. The prompt is the choice text. After the click, the step says the reminder, then returns, and the door note follows.
+
+The step writes `S.settings.controls` and calls `applyControls()` before the scene ends. The scene-end save persists it. A reload before `story.intro_seen` replays `intro` and asks again. Start over runs `intro` again, so it asks again. A save that already has `story.intro_seen` is not asked.
+
+The step is not a story flag and does not write `$line`. Add the name to the `INTERACTIVE` list in `game.js`. Regenerate with `python3 tools/gen_mapdata.py`.
+
+Placeholder copy (D62), each line at most 110 characters, each button label at most 30:
+
+| Where | Text |
+|---|---|
+| Prompt | Arcade: the pad and a Talk button. Modern: a bigger map. Tap people to talk. The gear switches this. |
+| Buttons | Arcade, Modern |
+| Reminder, after the pick | You can switch any time. The gear in the corner is Settings. |
+| Modern default tip | Tap a tile, or drag on the map. Tap people to talk, and walk up to a wild Walkling to meet it! |
+| Modern early tip | Tap the ground to walk. The east path leads out of town. |
+| Toasts | Arcade controls. / Modern controls. Tap the map to walk. |
+
+Arcade keeps `WALK_TIP_DEFAULT` and the early line "Hold the pad to walk. The east path leads out of town."
+
+#### Files
+
+| File | Change |
+|---|---|
+| `index.html` | The Settings row, and an empty `#floatCtl` inside `#mapWrap` |
+| `style.css` | `body.ctl-modern` and `body.ctl-arcade` |
+| `game.js` | `applyControls`, the settings row, `controlPick` in `execStep`, the modern tip strings, and a boot call before `fitAll()` |
+| `save.js` | Fill `settings.controls` |
+| `data/maps_slice.json` | `["controlPick"]` after `["lookPick"]` in `intro` |
+| `data/mapdata.js` | Regenerated |
+| `tests/controls.spec.js` | The checks below. Add a row to `tests/README.md` in that same change |
+
+#### Acceptance
+
+- A fresh game, after DONE on the look picker, is still on `hm_home_in`, `story.intro_seen` is still unset, and Arcade and Modern are on screen. SKIP does not pass them.
+- Modern hides the arrows and `#talkBtn`. PHONE, BAG, and MAP sit on the map corners, each at least 44 px, and they do not overlap each other or the tab bar. Bag stays hidden before the starter. Phone stays hidden before `story.phone_got`.
+- At 320×568, `#mapWrap` is at least 120 px taller in modern than in arcade.
+- In modern, tapping the home note, or walking into it, still talks. Space still talks when the keeper faces it.
+- Arcade still has the pad, the Talk button, and the same corner buttons in the grid. The quest-button overlap check in `tests/smoke.spec.js` still passes on a save with no `settings.controls`.
+- Settings swaps the layout immediately, the choice survives a reload, and `v` stays 2.
+- A save with no `settings.controls` loads as arcade and does not open the prompt.
+- Arrows and WASD walk in both layouts.
+- `npm test` at 320, 375, and 390. Stamp with `python3 tools/bump_build.py` because `index.html` changes.
+
+#### Leave out
+
+Battle controls, the partner tab, and the tab bar stay as they are. QUEST does not move. The Talk button stays in arcade. No new icons.
+
 ### Hold
 
-Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes. Q16 no longer blocks it, and it is not ahead of Q19. The phone still shows ADD (COMING SOON) and three empty slots. The real Sacrifice cost (D24) replaces the stub; it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`.
+Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes. Q16 no longer blocks it, and it is not ahead of Q19. The phone still shows ADD (COMING SOON) and three empty slots. The real Sacrifice cost (D24) replaces the stub; it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`. Q26 is scoped above. It is not on this hold list.
 
 ### Parallel, does not unblock Q19
 
@@ -619,6 +714,7 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D62. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. Daily Standing (D18) is yes and slow, with no cap yet.
+9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D63. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D62 is the modern and arcade control copy. Daily Standing (D18) is yes and slow, with no cap yet.
 10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.
 11. **Welcome back (D56) and clearing a nickname (D57).** Q25 uses 14 hours and one sentence. Q23 clears `nick` when the field is empty or equals the species name, on the stats card and on the Walkling sheet. Both lines are still placeholders.
+12. **Modern and arcade controls (Q26, D62).** Scoped, not started. Arcade keeps the d-pad and the Talk button. Modern hides that pad, floats PHONE, BAG, and MAP, and gives the height to the map. The prompt and the modern tips are placeholders.

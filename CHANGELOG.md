@@ -2,6 +2,10 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-14 — Modern and arcade controls scoped (no new build stamp)
+
+- Q26 is scoped and not started. Arcade keeps the d-pad and the Talk button. Modern hides that pad, gives the height to the map, and floats PHONE, BAG, and MAP on the map corners. Tap and walk-up stay the way you talk. Settings switches the two. A new game asks in the house, after the look picker, before the exit mat. An old save stays on the pad. The prompt and the modern tips are D62. Save `v` stays 2. No Playwright spec. `index.html` did not change, so `version.json` is unchanged. The next build stays Q19.
+
 ## 2026-10-14 — Phone QA on the Glimmerwell pledge (no new build stamp)
 
 - A play from a new game through the Glimmerwell pledge, the Hall hold, and Nia in the RegenX lobby. The bag threw when it tried to draw Keeper1 or the Cracked Handset, so BAG did nothing. Both handsets now have icons. Key items show their note and have no USE button. Cracked Notes are signed Handset.
