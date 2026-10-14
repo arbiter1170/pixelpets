@@ -120,8 +120,9 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   rough per-press chance (sine marker, zone centre 0.2..0.8) and the speed; `PixelPets.befriendCheck()` is the boot-time
   monotonicity check. Four-argument `befriendWidth` calls still give the old formula.
 - After a battle every Walkling that took part pays NRG 3 and FOOD 2 (5 more NRG if it was worn out), winners gain +3 JOY,
-  and Walklings that fought share the battle XP. If your whole team is worn out you wake at the start point with your Walklings
-  still hurt and their nap timers kept.
+  and Walklings that fought share the battle XP. If your whole team is worn out you wake at the last Lantern House,
+  still hurt. The way out stays shut until you rest the whole party. A rest there costs 5 Acorns and heals everyone
+  (the keeper covers the fee if you are short). A nap in your own bed is still free.
 - Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
   Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
@@ -137,8 +138,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - Next step (QUEST, top-right of the d-pad; NEXT_PLAN WP-C): shows once you have a Walkling, hides during scenes, battles
   and overlays, and pulses until you open it on a new objective (`questSeen`, additive). The panel (NEXT STEP) has one or
   two lines, a place line, the last three done steps, SHOW ON MAP (the region map rings the target's node in red and names
-  the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Your team is worn out. Rest at a
-  Lantern House first." (Build 2, GLIMMER_PATH v0.2 `questStuck[0]`; the other two stuck lines are kept as data in
+  the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Your team is worn out. Rest the
+  whole party at a Lantern House. A rest costs a few Acorns." (the other two stuck lines are kept as data in
   `PPQuests.STUCK`). The objective text and places are the designer's (Build 2): 24 steps, and 8 of them have a
   Glimmerwell variant (`glimmer: { text, place }` on the entry) that shows while `story.side` is `glimmer`; ids, `when`,
   `done` and targets are shared by both sides. Text is at most 110 characters, places at most 24 (`questCheck` enforces both).

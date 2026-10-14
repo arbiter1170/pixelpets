@@ -16,7 +16,7 @@
   // Panel lines for when the player is stuck (GLIMMER_PATH v0.2 questStuck). [0] shows when nobody on the team can battle;
   // [1] and [2] are kept as data (no rule says when they appear yet; see OPEN_DECISIONS).
   const STUCK = Object.freeze([
-    'Your team is worn out. Rest at a Lantern House first.',
+    'Your team is worn out. Rest the whole party at a Lantern House. A rest costs a few Acorns.',
     'Lost? Open the map. The blinking dot is you.',
     'No rush. A walk with your Walkling helps you think.',
   ]);
