@@ -2,14 +2,16 @@
 
 Things that were built on a best guess, deviate from a plan, or need a person (Vincent or the designer) to confirm. Each row says what the code does today, so a decision can be made without reading the diff. When one is settled, move it to "Settled" with the date and the call, and update the code or plan if it changed.
 
-Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22; Build 3 settled D3 / D5 / D23. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there. Next builds are named in NEXT_PLAN §3.
+Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; Build 2 (Standing, switching, quest copy) added D14-D22; Build 3 settled D3 / D5 / D23. Every Standing number and string named below lives in `STANDING_CFG` (`standing.js`), so a decision is a one-line change there. Next work is NEXT_PLAN §3: Q16 land the stranded stack, then Q17 the box screen, then Q18 the installable app.
+
+The stranded branch `cursor/keeper-hq-phone-0bb2` reused D27–D31 for calls that are not on `main`. `main` already settled D27 (Mahopac) and opened D28 (lantern rest). When Q16 lands, renumber the stranded rows to D32–D36. Do not overwrite D27 or D28. The mapping is in NEXT_PLAN §3 Q16.
 
 ## Open
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
 | D1 | WP-B0 side pick | Should `side_pick` wait until both `glimmer1` and `fen_intro` have played (the plan) or fire at the gate regardless? | Fires at the orchard gate (9,10) on `!story.side_pick_done` and `!story.orchard_cleared`. Both camps pitch inside the scene. Reason: Fen is optional, and the gate is the only orchard entrance and the last tile before Tobin's sight line, so gating on `met_*` lets the player skip the fork | `fb_side_pick` in `data/glimmer_path.json` (`when`) |
-| D2 | WP-B0 timing | Proceed with the glimmer engine and stub before the designer and Vincent deliver content and the Hall spike? | Fernbrook glimmer dialog is the delivered copy (Build 3). Route 2 and Cobblecrest glimmer scenes are still unwritten. Tour stop lines are marked placeholders | `data/glimmer_path.json` |
+| D2 | WP-B0 timing | Proceed with the glimmer engine and stub before the designer and Vincent deliver content and the Hall spike? | Fernbrook glimmer dialog on `main` is the delivered copy (Build 3). Route 2, Cobblecrest, the Sacrifice stub, and R5 are implementer copy on `cursor/keeper-hq-phone-0bb2`, not on `main`. Tour stop lines are still marked placeholders | `data/glimmer_path.json` |
 | D4 | WP-B0 history | Record `story.beat.<scene>` for every scene that sets a `story.*` flag, or only scenes that have an `@glimmer` variant? | Every such scene (about 20 small flags per full playthrough), so a later switch never needs a back-fill | `isBeat()` / `noteBeat()` in `game.js` |
 | D6 | WP-A numbers | Quarry Lv 18 at 25% HP befriend width is 0.18, the plan's target is 0.22. `PixelPets.befriendOdds(18, 0.25).width` is 0.181 (rounds to 0.18; lead the same level, joy 60). The quarry is Lv 16-19: at 25% HP the same call is 0.196 at Lv 16 (rounds to 0.20) and 0.174 at Lv 19 (rounds to 0.17). Everything else is within about 0.02 of the plan table | Left as is. A one-knob change that reaches 0.22 also lifts Route 2 at half HP by about 0.02, further from that row's target, so it was not applied. The formula and `BEFRIEND_TUNE` were not changed; the 0.18 figure is the measured hook width rounded to 2 decimal places | `BEFRIEND_TUNE` in `moves.js` |
 | D7 | WP-A | Show the WARY / FAIR / GOOD label (the plan called it optional)? Thresholds are 0.15 / 0.25 | Shown under the hearts | `oddsLabel` in `game.js` |
@@ -26,17 +28,18 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 | D20 | BS desks | Where do Pledge desks live? The spec names Keeper Amos and Associate Juniper | Fernbrook only: Amos's Lantern House panel offers "Pledge desk" when you are Glimmerwell, Juniper offers it when you are Keepers. Hearthmoor and Cobblecrest Lantern rooms have no keeper, so no desk. The `switch_desk_glimmer` kiosk art is in the art table but not placed on any map | `STANDING_CFG.switch.desks`; `placeSteps` and `interact` in `game.js` |
 | D21 | STANDING tab wording | "Pledged to {faction}" uses the long faction name ("Pledged to The Keepers", "Pledged to Glimmerwell Co."). The tab stays hidden until the side pick, and the empty line "Nobody knows you yet. Go say hello!" shows only when both meters are 0 | As stated. When Standing jumps more than one tier in one grant, only the highest tier's toast plays | `STANDING_CFG.tab`; `renderStanding`, `setStanding` in `game.js` |
 | D22 | WP-C copy | The spec's place lines use a comma ("Hearthmoor, home"); the old build used a middle dot. Keep the comma? The stuck lines 2 and 3 ("Lost? Open the map...", "No rush. A walk...") are kept as data only; the panel always shows line 1 | Comma shipped; `PPQuests.STUCK[0]` shown | `CHAIN` and `STUCK` in `quests.js` |
-| D24 | BH slot 2 | What does the Cobblecrest Sacrifice cost, what is the floor, and how does Quota substitute? | Not built. Vincent called the shape (Sacrifice, Quota as the free floor). Build 5 ships a stub that still sets `story.seal2` if this page is late | NEXT_PLAN §3 Build 5; `data/hall_spike.md` (does not exist yet) |
-| D25 | Rook R5 tone | Keepers convert: ally or parted? Glimmer stay: write `story.rook_end "stays"` or leave it unset? Does he appear later as a colleague? | No R5 scene. `teaser@glimmer` does not say he leaves | `brinewick_hook` / `brinewick_hook@glimmer` |
+| D24 | BH slot 2 | What does the Cobblecrest Sacrifice cost, what is the floor, and how does Quota substitute? | Not on `main`. The stranded branch has the stub: the snack stays in the bag, the quota is three spoken names, and Hale's review is optional. All three set `story.seal2` and `seals.seal_glim_2`. The real cost is still open | `hale_trial@glimmer` on the stranded branch; `data/hall_spike.md` (does not exist yet) |
+| D25 | Rook R5 tone | Keepers convert: ally or parted? Glimmer stay: write `story.rook_end "stays"` or leave it unset? Does he appear later as a colleague? | Not on `main`. The stranded branch writes Keepers `"ally"` and Glimmerwell `"stays"`, and both set `story.cobble_end`. He does not appear again after the cart. `teaser@glimmer` on `main` does not say he leaves | `brinewick_hook` / `brinewick_hook@glimmer` on the stranded branch |
 | D26 | Tour copy | Real lantern recipients, slogans, Comfort Check lines, Census-board lines, stage-photo line, and the real name of `tour.doubt` | Placeholders in `tour1_s1`..`tour1_s4`, `tour1_wait`, and `seal1@glimmer`. `tour.doubt` is incremented; nothing reads it | `data/glimmer_path.json` `placeholders` |
 | D28 | Lantern rest | What should a Lantern House rest cost, and what happens with fewer Acorns than that? | 5 Acorns (`LANTERN_REST_COST`) heals the whole party and clears the post-wipe door hold. A full party still rests free, and that rest still sets the respawn. Home naps stay free. If you cannot pay 5, the keeper covers the fee so a wipe at 0 Acorns cannot trap you inside | `LANTERN_REST_COST` and `payRest` in `game.js` |
 
 ## Not started, blocked on people
 
 - BS daily earning, tier-gated shop rows and lines, tier icons: see D18; needs the designer's list of what each tier opens.
-- Hall slot 2 Sacrifice loop (D24): the call is settled; the one-pager and scenes are not built. Next: Build 5.
-- Route 2 glimmer scenes: next, Build 4. Cobblecrest glimmer: Build 5. Rook's R5 scene: Build 6. Rules for R5 are settled (D23); tone is D25.
+- Hall slot 2 real cost (D24): the stub is on the stranded branch. The one-pager replaces it after Q16. Do not add a second Tour.
+- Route 2 glimmer, Cobblecrest glimmer, and Rook's R5 are written on `cursor/keeper-hq-phone-0bb2` and are not on `main`. Next coding work is Q16 (land that branch), then Q17 (box screen), then Q18 (installable app). Rules for R5 are settled (D23); tone is D25.
 - Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
+- Brinewick, Trial Hall #3, Seal 3: no map and no one-pager. Do not start that region in Q16.
 
 ## Settled
 

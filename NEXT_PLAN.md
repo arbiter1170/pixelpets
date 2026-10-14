@@ -1,6 +1,6 @@
-# Walklings: what's next (handoff after Build 3, Oct 13, 2026)
+# Walklings: what's next (queue, Oct 14, 2026)
 
-Implementing-agent handoff. Live build is `20261013-1718` (PR #9). Source of truth for status is `BACKLOG.md`; this file keeps the work-package detail (files, numbers, acceptance) and names the next three builds. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true.
+Implementing-agent handoff. Live `main` is stamp `20261013-2342` (PR #19). Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail and names the next three pieces of work: Q16 land the stranded stack, Q17 the box screen, Q18 the installable app. Do not rebuild Builds 4–6. They are already on `origin/cursor/keeper-hq-phone-0bb2`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,7 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the next three builds (section 3) |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the Oct 14 queue (section 3): Q16, Q17, Q18 |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
 
@@ -25,16 +25,20 @@ Morning (recorded in the first pass):
 
 Evening (Build 3, supersede the morning notes):
 
-5. **Rook after Glimmerwell (D23).** If the player joins Glimmerwell, Rook stays with Glimmerwell. If the player stays with the Keepers, Rook eventually converts to good. Not bond-gated. No follow-or-stay fork. Supersedes "Rook always leaves" and the bond tree below. The R5 scene is not written.
-6. **Hall replacements (D3).** Fernbrook slot 1 is the Bright Pavilion Tour (built). Cobblecrest slot 2 is the Sacrifice, with Quota as the free floor (not built). Keepers keep the Trial Halls. The Audit battle is the Tour's optional last stop.
+5. **Rook after Glimmerwell (D23).** If the player joins Glimmerwell, Rook stays with Glimmerwell. If the player stays with the Keepers, Rook eventually converts to good. Not bond-gated. No follow-or-stay fork. Supersedes "Rook always leaves" and the bond tree below. The R5 scene is written on the stranded branch (`ally` / `stays`) and is not on `main`.
+6. **Hall replacements (D3).** Fernbrook slot 1 is the Bright Pavilion Tour (on `main`). Cobblecrest slot 2 is the Sacrifice, with Quota as the free floor. The stub is on the stranded branch, not on `main`. Keepers keep the Trial Halls. The Audit battle is the Tour's optional last stop.
 
 ## 0. Where the build stands
 
-Live: `20261013-1718` (matches `version.json` and the GitHub Pages site).
+Live: `20261013-2342` (matches `version.json` on `main`).
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal). Story currently ends at `story.cobble_end` ("COMING LATER · Brinewick").
 
 Playable on the **Glimmerwell** path through **Fernbrook only**: orchard gate `side_pick`, crate-packing orchard (no Tobin battle), Bright Pavilion Tour (four stops; optional Fen match), Bright Tier 1 Lanyard, `teaser@glimmer`. Route 2 and Cobblecrest still play the Keepers scenes if the player walks east with `story.side=glimmer`.
+
+Also on `main` since the Oct 13 handoff: Glimmerwell and wild battle music plus loyalty-keyed talk (PR #15), the Mahopac dream side chain and extra keeper looks (PR #17, D27), a 5-Acorn Lantern rest that holds a wiped party indoors (PR #18, D28), and High Charity with five Event Hall games (PR #19).
+
+Not on `main`: Fernbrook Heights, glimmer Route 2, the Sacrifice stub, Rook's closer, the save copy before Start over, and the Keeper House with the Keeper1 phone. Those are the tip of `origin/cursor/keeper-hq-phone-0bb2` (`d43dde7`, stamp `20261013-2255`). The two lines share Build 3 (`5aceaf1`) and then diverge. GitHub marks PRs #11, #12, #13, #14, and #16 merged because each merged into the previous feature branch.
 
 Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Fernbrook Pledge desks, sound/music/stingers, save v2 (additive fields), cloud save Phase 1 (off). Playwright smokes live in `tests/` (no CI workflow yet).
 
@@ -312,7 +316,7 @@ Edge cases to test: switching in the middle of Route 2 with `glen_cleared` unset
 
 ### Hall replacement: design spike (sacrifices / tours)
 
-**Status (D3):** slot 1 is the Bright Pavilion Tour (built, Build 3; Tour stop *copy* is still placeholder). Slot 2 is the Sacrifice, Quota as the free floor (not built). The Keepers path keeps the Trial Halls. Remaining design work is the one-page Sacrifice loop (what is given up, the floor, how Quota substitutes, grants). That page unblocks Build 5.
+**Status (D3):** slot 1 is the Bright Pavilion Tour (on `main`, Build 3; Tour stop *copy* is still placeholder). Slot 2 is the Sacrifice, Quota as the free floor. The stub is on the stranded branch, not on `main`. The Keepers path keeps the Trial Halls. The one-page Sacrifice loop replaces that stub after Q16. It does not block Q16.
 
 Constraints any answer must satisfy:
 - Must set the shared progression flag for its slot (`story.seal1` for slot #1, `story.seal2` for #2) so the gates stay shared.
@@ -340,11 +344,11 @@ Deliverable left: a one-page Sacrifice loop for Cobblecrest slot 2 (5–10 minut
 | BS | Standing, switch desks, STANDING tab | M | **Shipped** (Build 2, PR #8). Numbers open |
 | BH | Hall replacement design | design | **Slot 1 + 2 called** (D3). Sacrifice one-pager still needed |
 | B1 | Fernbrook glimmer: orchard, Tour, teaser, lanyard tier 1 | M | **Shipped** (Build 3, PR #9). Tour stop copy still placeholder |
-| B2 | Route 2 + Wickerglen glimmer, Rook R3 | M | **Next: Build 4** |
-| B3 | Cobblecrest glimmer, Hall slot 2 Sacrifice, Rook R4 | M | **Next: Build 5** (wants the Sacrifice page) |
-| B4 | Rook R5 on the Brinewick road (D23, no bond fork) | M | **Next: Build 6** |
+| B2 | Route 2 + Wickerglen glimmer, Rook R3 | M | **Written on the stranded branch.** Land in Q16. Do not rewrite |
+| B3 | Cobblecrest glimmer, Hall slot 2 Sacrifice, Rook R4 | M | **Stub written on the stranded branch.** Real cost still D24. Land in Q16 |
+| B4 | Rook R5 on the Brinewick road (D23, no bond fork) | M | **Written on the stranded branch** (`ally` / `stays`). Land in Q16 |
 
-B2 does not wait on the Sacrifice page. B3 Hall content does. B4 only needs the D23 rule (already settled) and the two `brinewick_hook` variants.
+Q16 lands B2–B4 together with Heights, the save copy, and the Keeper House. It does not wait on the Sacrifice page. The real cost replaces the stub later.
 
 ### Acceptance
 - A save with no `story.side` plays exactly as today (checked on a fresh save through Cobblecrest and on an old save already past Fernbrook).
@@ -441,13 +445,83 @@ See section 4 (pointer strength, Settings toggle).
 
 ---
 
-## 3. Next three builds (after Build 3)
+## 3. Oct 14 queue
 
-The CIO review's recommended set (stabilise, Standing, Fernbrook glimmer) is done. Build against this order. Each build is one PR, one `bump_build.py` stamp, Playwright on 320 / 375 / 390, and BACKLOG / README / OPEN_DECISIONS / this file updated in the same PR.
+Do these in order. Each one is one PR. Q16 is the only one that starts now. Q17 waits for Q16 to be on `main`. Q18 waits for Q17. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / this file in the same PR.
 
-### Build 4 — Route 2 + Wickerglen glimmer (WP-B2) — M
+### Q16 — Land the stranded Act 1 stack — **next**
 
-Unblocked. No Hall spike. The Keepers Route 2 scenes stay verbatim; add `@glimmer` twins in `data/glimmer_path.json`.
+Bring `origin/cursor/keeper-hq-phone-0bb2` (`d43dde7`) onto current `main`. This is a merge, not a rewrite. The content below under "Reference: Builds 4–6" is what that branch already plays.
+
+Keep everything `main` gained after Build 3:
+
+| PR | Keep |
+|---|---|
+| #15 | `glimmer_first`, `glimmer_battle`, `wild_skip` / `wild_romp` / `wild_spark`, and the `loyalty` block in `data/glimmer_path.json` |
+| #17 | `data/mahopac.json`, the extra keeper looks, Mom's side chain, the sky-blue side arrow |
+| #18 | `LANTERN_REST_COST` (5 Acorns), the post-wipe door hold, the keeper covering a short purse. While a rest is owed, the bed arrow wins over the side-quest arrow |
+| #19 | `data/highcharity.json`, `minigames.js`, the lantern coach, the five Event Hall games |
+
+The stranded branch adds, and `main` does not have:
+
+| Piece | Where it lives on that branch |
+|---|---|
+| Fernbrook Heights, group battles, Standing on those beats | `data/heights.json`, `tests/heights.spec.js`. `story.heights_done` gates the Hall panel and Tour stop 1. A save that already has `story.seal1`, or that never picked a side, is not sent back |
+| Builds 4–6 | `data/glimmer_path.json`, `tests/glimmer_route2.spec.js`, `tests/glimmer_cobble.spec.js` |
+| Save copy before Start over | Settings downloads `walklings-save.json` and can read that file back. `tests/save_copy.spec.js`. `v` stays 2 |
+| Keeper House, town officers, Keeper1 | `data/civic.json`, `tests/civic.spec.js`. QUEST moves to `#questBtn` on the bottom bar. PHONE is `#phoneBtn`. A cracked handset comes with joining Glimmerwell |
+
+`git merge-tree` on 14 Oct 2026 conflicts in these 15 files: `BACKLOG.md`, `DESIGNER_PROMPT.md`, `DESIGN_HANDOFF.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `README.md`, `data/glimmer_path.json`, `data/mapdata.js`, `game.js`, `index.html`, `quests.js`, `save.js`, `sprites.js`, `tools/gen_mapdata.py`, `version.json`. `style.css`, `tests/README.md`, `tests/glimmer_fernbrook.spec.js`, and `tests/smoke.spec.js` auto-merge.
+
+Decision ids collide. `main` already uses D27 (Mahopac, settled) and D28 (lantern rest, open). The stranded branch uses D27–D31 for other calls. On landing, renumber those rows. Do not overwrite `main`'s D27 or D28.
+
+| Stranded id | Becomes | Call |
+|---|---|---|
+| D27 | D32 | RegenX vs the PharmaX name in the same note. Player text uses RegenX |
+| D28 | D33 | Heights good-path plot after the note stopped at the smuggling ring |
+| D29 | D34 | Group battles v1: two foes, TARGET, ally hits on the last fight only |
+| D30 | D35 | Officer Ken interviews the Pomlet, Pebblit, and Fuzzwick, then lets them walk |
+| D31 | D36 | Glimmerwell Standing tints the walk sprite. The saved look is not rewritten. No birth system |
+
+After the merge, register every new `data/*.json` in `tools/gen_mapdata.py` and regenerate `data/mapdata.js`. Stamp with `python3 tools/bump_build.py`. Run `npm test`.
+
+Acceptance:
+
+- A Keepers save still walks Route 2 and Cobblecrest, and Hale's trial is unchanged.
+- A glimmer save at `story.seal1` reaches `story.cobble_end` with `story.seal2` set and `story.rook_end` `"stays"`.
+- A save that already has `story.seal1` is not sent back through Heights.
+- High Charity's coach, Mahopac's side steps, the 5-Acorn rest, and the faction music still work.
+- The quest control and the phone both exist, and Friends is still reachable.
+- Old saves load. `v` stays 2.
+- `npm test` covers the stranded suites and `tests/highcharity.spec.js`, `tests/mahopac.spec.js`, `tests/lantern_rest.spec.js`, `tests/faction_music.spec.js`.
+
+Leave Brinewick, Friends, a second Sacrifice, and daily Standing out of this PR.
+
+### Q17 — Box screen — M — after Q16
+
+The box is a list under the party on the Pets tab. Add reorder, release, and a row for `orphans`. Release asks for a confirm, then removes that Walkling from the party and the box. The orphan row shows the raw data that could not be migrated. Do not bump `v`. Unknown fields stay on the Walkling.
+
+### Q18 — Installable app — S–M — after Q17
+
+Add a manifest and a service worker so the game can be added to the home screen and opened offline. No new network calls. Fonts stay self-hosted. The optional location lookup stays a network call and still falls back to meadow when it cannot run.
+
+### Hold
+
+Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes, after Q16. The real Sacrifice cost (D24) replaces the stub after it is on `main`; it does not block Q16 and it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`.
+
+### Parallel, does not block Q16
+
+Designer: Tour stop copy and the real `tour.doubt` name (D26); the switch-desk letter, review, and welcome (D19); tier-2 lanyard art (D13); the Sacrifice one-pager (D24), which replaces the stub after Q16. Route 2, Cobblecrest, and R5 already have implementer copy on the stranded branch. Replace that copy. Do not write a second set.
+
+Vincent: Standing numbers D14–D17 (due Thu Oct 15); the 5-Acorn rest (D28 on `main`); Firebase project and the privacy line. None of these block Q16.
+
+### Reference: Builds 4–6 as the stranded branch already plays them
+
+Do not rebuild these. They are the acceptance content for the glimmer half of Q16. The Keepers Route 2 scenes stay verbatim; the branch adds `@glimmer` twins in `data/glimmer_path.json`.
+
+### Build 4 — Route 2 + Wickerglen glimmer (WP-B2) — written off main
+
+The Keepers Route 2 scenes stay verbatim; `@glimmer` twins are in `data/glimmer_path.json` on the stranded branch.
 
 | Scene | Job | Must set |
 |---|---|---|
@@ -462,9 +536,9 @@ Acceptance: a glimmer save at `story.seal1` + `story.slice_end` walks Route 2 an
 
 Tests: `tests/glimmer_route2.spec.js`, same helpers as `tests/glimmer_fernbrook.spec.js`.
 
-### Build 5 — Cobblecrest glimmer + Hall slot 2 Sacrifice (WP-B3) — M
+### Build 5 — Cobblecrest glimmer + Hall slot 2 Sacrifice (WP-B3) — written off main
 
-Wants a one-page Sacrifice spec first (Vincent + Design). If that page is late, ship the Cobblecrest *scenes* with a thin Sacrifice stub that still sets `story.seal2` and `seals.seal_glim_2`, then replace the stub in a follow-up. Do not invent a second Tour.
+The stranded branch shipped the stub this section allowed. The snack stays in the bag, the quota is three spoken names, and Hale's review is optional. All three set `story.seal2` and `seals.seal_glim_2`. Do not invent a second Tour. The real cost is still D24 and replaces the stub after Q16.
 
 | Scene | Job |
 |---|---|
@@ -477,28 +551,18 @@ Wants a one-page Sacrifice spec first (Vincent + Design). If that page is late, 
 
 Acceptance: glimmer path reaches `story.cobble_end` hook with `seal2` set; Keepers Hale trial untouched; switching after Seal #1 never blocks the quarry or Hall; `glimmerCheck` empty.
 
-### Build 6 — Rook R5 / Act 1 closer (WP-B4) — M
+### Build 6 — Rook R5 / Act 1 closer (WP-B4) — written off main
 
-Rule is settled (D23). Write two variants of `brinewick_hook`, not four.
+Rule is settled (D23). The stranded branch wrote two variants of `brinewick_hook`, not four.
 
-- Keepers: Rook leaves Glimmerwell. Design owns ally vs parted tone. Writes `story.rook_end` and whatever flags the base scene writes (`story.cobble_end`).
-- Glimmerwell: Rook stays. No quit, no follow-or-stay fork, no free switch. `teaser@glimmer` already matches this. Writes the same progression flags.
+- Keepers: Rook leaves Glimmerwell. As built, `story.rook_end` is `"ally"` (parted is still D25). Also writes `story.cobble_end`.
+- Glimmerwell: Rook stays. `story.rook_end` is `"stays"`. No quit, no follow-or-stay fork, no free switch. Same progression flags.
 
 Do not wait on bond. `story.rook_bond` may still increment on Route 2 / quarry choices (flavour); it must not gate R5.
 
 After this build both paths end at the same "COMING LATER · Brinewick" card. Brinewick / Hall #3 / Seal 3 is a later map and needs a spec that does not exist yet.
 
-### Parallel, not a numbered build
-
-Designer (blocks polish, not Build 4): Tour stop copy and the real `tour.doubt` flag name; Sacrifice one-pager; Route 2 / Cobblecrest dialog; switch-desk letter/review/welcome (D19); lanyard tier 2.
-
-Vincent (none of these block Build 4): Standing numbers D14–D17 (due Thu Oct 15); Firebase project + privacy line; attorney names; Tour recipients / slogans.
-
-Do **not** start Brinewick / Seal 3, Friends v1, or the installable app until Builds 4–6 close the glimmer Act 1 branch. The CIO review's "stabilise + verify" pass already landed as Build 1; do not repeat it as Build 4.
-
-PR #9's description mentioned re-arming trainer sight lines after a loss. That change is **not** on `main` (`canSpot` still requires `!spotted.<id>`; after a loss only a bump battles). Leave it off Builds 4–6 unless Vincent asks — it is a playtest tweak, not story.
-
-Then back to the standing backlog: Brinewick and Hall #3 (needs a spec), Friends v1, installable app, box screen, balance re-tune, export/backup before Start over.
+The Oct 13 line "do not start the installable app until Builds 4–6 close" is superseded by this queue: Q16 lands those builds, Q17 is the box screen, Q18 is the installable app. Brinewick and Friends stay on hold. Trainer sight lines still do not re-arm after a loss (`canSpot` requires `!spotted.<id>`).
 
 Conventions for whoever implements (from `README.md` and `BACKLOG.md`):
 - No build step; all paths relative; fonts self-hosted; no new network use.
@@ -515,11 +579,11 @@ Settled Oct 13: Fernbrook is the pick; side is switchable with Standing; capture
 
 Remaining:
 
-1. **Sacrifice loop (Build 5).** What is given up, the floor so the player cannot soft-lock, how Quota substitutes, what it grants besides `seal_glim_2`. Default if the page is late: a stub that still sets `story.seal2`.
+1. **Sacrifice loop (D24).** The stranded branch already has the stub (snack stays in the bag, three spoken names, optional Hale review). Still open: the real cost, and whether Quota should be a befriend / win / walk target. It replaces the stub after Q16.
 2. **Standing numbers and sources (D14–D18):** tiers 0/10/25/45/70, switch halves the side left, one switch per Seal-count chapter, `joinMinTier` 0. Daily earning not built. All still proposals in `STANDING_CFG`.
 3. **Completionists:** after switching, can the player also finish the other faction's trial? Default: yes, optional, with that faction's tier granted.
 4. **Capture extras (D6–D8):** quarry width 0.18 vs target 0.22 left as is; WARY/FAIR/GOOD shown; no Easier toggle, no miss-shrink, no KO mitigation.
 5. **Quest pointer:** tile chevron plus edge arrow. Settings toggle to turn pointing off? Default: on. Side-task count not built (D12).
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
-8. **R5 tone (D25).** Keepers convert: ally or parted? Glimmer stay: does he get a `rook_end` value, and does he appear later as a colleague?
+8. **R5 tone (D25).** The stranded branch writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.

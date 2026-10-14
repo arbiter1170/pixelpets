@@ -70,13 +70,13 @@ Settled, do not reopen:
 4. **`data/hall_spike.md`** only for phase BH: one page per Hall slot. No scenes until Vincent approves it.
 5. Check your own lines against the rules above before you stop.
 
-Suggested order now: Tour stop copy (Phase F leftover) and the Sacrifice one-pager (Phase H) in parallel, then Route 2 (Phase R2 / Build 4), then Cobblecrest + Sacrifice scenes (Phase R3 / Build 5), then Rook R5 (Phase R5 / Build 6). Switch-desk copy (Phase S) can land any time.
+Suggested order now: Tour stop copy (Phase F leftover), the Sacrifice one-pager (Phase H), and switch-desk copy (Phase S). Route 2, Cobblecrest, and Rook's closer already have implementer copy on `cursor/keeper-hq-phone-0bb2` (not on `main`). Replace that copy after it lands. Do not write a second set of those scenes.
 
 ---
 
 ## Phase Q. Quest copy and the quest icon — **done (Build 2)**
 
-The 24 rows, 8 glimmer overrides, stuck line, and `icon_quest` signpost are in the game. Do not rewrite them. Skip to Phase F leftover copy, then R2.
+The 24 rows, 8 glimmer overrides, stuck line, and `icon_quest` signpost are in the game. Do not rewrite them. Skip to Phase F leftover copy, the Sacrifice one-pager, and the switch-desk letter. Phase R2 is replacement copy for scenes that already exist off `main`.
 
 Rewrite `text` and `place` only. Keep each id. A glimmer `side` variant is optional and only where the sentence would be wrong on that path (the Hall steps, the orchard step, Rook's teaser). Per-side text is open item D12; deliver the glimmer strings now, the implementer will hook the `side` field.
 
@@ -197,7 +197,7 @@ Art, priority must for the Glimmerwell desk, could for the Keepers desk (the Lan
 | `tier_keepers_0` .. `tier_keepers_4` | 8x8, five badges |
 | `tier_glimmer_0` .. `tier_glimmer_4` | 8x8, five badges |
 
-## Phase R2. Route 2 and Wickerglen — **next, Build 4**
+## Phase R2. Route 2 and Wickerglen — **implementer copy exists off main; replace it, do not rewrite the build**
 
 New scenes in `data/glimmer_path.json`. Read the base scenes first. Each variant must set the same `story.*` flags as its base.
 
@@ -212,7 +212,7 @@ New scenes in `data/glimmer_path.json`. Read the base scenes first. Each variant
 
 Looks, if the generic `associate` look is too samey: `imogen` and `hollis` in `looks`, using skin, hair (`short` `long` `spiky` `bun`), hairCol, outfit (`coat` `hoodie` `tunic`), outfitCol, accent. Map them in `speakers`.
 
-## Phase R3. Cobblecrest — **Build 5**
+## Phase R3. Cobblecrest — **implementer stub exists off main; replace the cost, do not add a second Tour**
 
 | id | Lines | Must |
 |---|---|---|
@@ -222,9 +222,9 @@ Looks, if the generic `associate` look is too samey: `imogen` and `hollis` in `l
 | `hale_trial@glimmer`, `hall2_hale@glimmer`, `seal2@glimmer` | after Phase H | Must set `story.seal2`. `seal2` base also gives `hearty_snack` x2 and `wake_tonic` x1. Match those gifts unless you record a swap in `decisions`. |
 | `seam_a`, `seam_b` | 0-2 | Shared puzzles. Add a single catch-up `if` only if a glimmer player would be confused. Do not change the flags `story.h2_seam_a` and `story.h2_seam_b`. |
 
-## Phase R5. Rook on the Brinewick road — **Build 6**
+## Phase R5. Rook on the Brinewick road — **two scenes exist off main (`ally` / `stays`); confirm tone, do not add the bond fork**
 
-**Settled (D23).** If the player is Keepers, Rook eventually converts to good. If the player is Glimmerwell, Rook stays with Glimmerwell. Not bond-gated. No follow-or-stay fork. Write **two** variants of `brinewick_hook`, not four.
+**Settled (D23).** If the player is Keepers, Rook eventually converts to good. If the player is Glimmerwell, Rook stays with Glimmerwell. Not bond-gated. No follow-or-stay fork. The stranded branch already has two variants of `brinewick_hook`. Confirm ally vs parted. Do not add another fork.
 
 | Branch | What happens | Flag at the end |
 |---|---|---|
