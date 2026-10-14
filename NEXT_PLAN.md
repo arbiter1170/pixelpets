@@ -1,6 +1,6 @@
 # Walklings: what's next (handoff after Builds 4–6, Oct 13, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-1950`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2128`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,7 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail plus the next three builds (section 3) |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Section 3 records what shipped through Build 7 and names the next builds |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
 
@@ -30,13 +30,13 @@ Evening (Build 3, supersede the morning notes):
 
 ## 0. Where the build stands
 
-This branch: `20261013-1950`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
+This branch: `20261013-2128`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, side pick, Heights smuggling tunnels, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal), then Rook's R5 (`brinewick_hook`: he gets off the cart, `story.rook_end` `"ally"`). Story ends at `story.cobble_end` ("COMING LATER · Brinewick").
 
 Playable on the **Glimmerwell** path through the same Act 1 maps: orchard gate `side_pick`, Heights RegenX lab, crate-packing orchard, Bright Pavilion Tour (four stops; optional Fen match), Bright Tier 1 Lanyard, `teaser@glimmer`, then Route 2 and Wickerglen as a Census volunteer, Cobblecrest buyout beside Dorian, Sacrifice stub (Quota or a narrative snack, optional Hale review), Bright Tier 2 Lanyard, and `brinewick_hook@glimmer` (`story.rook_end` `"stays"`). Same gates and the same coming-later card.
 
-Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Fernbrook Pledge desks, sound/music/stingers, save v2 (additive fields), cloud save Phase 1 (off). Playwright smokes live in `tests/` (no CI workflow yet).
+Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap, group battles), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Fernbrook Pledge desks, sound/music/stingers, save v2 (additive fields), a downloadable v2 save copy (Build 7), cloud save Phase 1 (off). Playwright covers smoke, Heights, group battles, the glimmer Act 1 path, and the save copy (`tests/`, no CI workflow yet).
 
 Story shape today: **Glimmerwell Co. is the antagonist** on the Keepers path and a cheerful employer on the glimmer path. Rook is a Junior Bright colleague on glimmer Fernbrook (`teaser@glimmer` does not say he leaves). The Keepers path (Fen, Hale, the Halls, the Lantern Houses) is still the default for any save that never picked a side.
 
@@ -63,7 +63,7 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 | Box screen: reorder, release, proper UI; orphan recovery UI | Box is a list; orphans invisible | M |
 | Rename an existing Walkling | Left from Nicknames | S |
 | Installable app (manifest + service worker, offline) | Not started | S-M |
-| Export/backup before Start over | Left | S |
+| Export/backup before Start over | **Shipped (Build 7).** Settings and the Start over dialog download `walklings-save.json`. Read a copy replaces this device's game. `v` stays 2 | S |
 | Music volume slider, iPhone listen-through; MUSIC Q1 (iOS silent switch) | Open with Vincent | S |
 | Wild creatures not persisted across reload | By design for now | S |
 | Small-viewport map at 320x568 (~150 px tall) | Known cramped | S-M |
@@ -454,7 +454,8 @@ See section 4 (pointer strength, Settings toggle).
 | PR #10 | Docs | NEXT_PLAN no longer says "nothing is built" or "Rook always leaves" |
 | Heights (PR #11, `20261013-1839`) | Before the first trial | Keepers smuggling tunnels; Glimmerwell RegenX lab (Atten, The Arbiter emits slowly); group battles |
 | PR #12 (`20261013-1933`) | Heights follow-up | Group-battle tests, Standing on Heights beats, Officer Ken's interviews |
-| **This branch** | **Builds 4–6** | Route 2 glimmer, Cobblecrest glimmer, Sacrifice stub, Rook R5 |
+| Builds 4–6 (`20261013-1950`) | Act 1 glimmer | Route 2 glimmer, Cobblecrest glimmer, Sacrifice stub, Rook R5 |
+| **This branch** (`20261013-2128`) | **Build 7** | Download the v2 save before Start over, and read that file back |
 
 Heights sits in front of the trial: `story.heights_done` gates the Hall panel and Tour stop 1. A save that already has `story.seal1`, or that never picked a side, is not sent back. That did not replace Builds 4–6. Those three are now in `data/glimmer_path.json`. Keepers Route 2 and Cobblecrest design JSON stay verbatim; the new scenes overlay them. `brinewick_hook` is the exception: the Keepers closer replaces the Cobblecrest base so Rook converts, and `brinewick_hook@glimmer` is the stay.
 
@@ -498,17 +499,17 @@ Both paths end on the same "COMING LATER · Brinewick" card.
 
 ### Documentation review (this pass)
 
-These files were behind the code. They now match Builds 4–6:
+These files match the code through Build 7:
 
-| Document | What changed |
+| Document | What it says now |
 |---|---|
-| `NEXT_PLAN.md` | Section 0 and this section. Phases B2–B4 marked shipped. The real Sacrifice cost and R5 tone stay open |
-| `BACKLOG.md` | Q5 slot 2 is a stub. Q6 / Q8 / Q9 / Q10 marked built. Next queue is Q12–Q14 |
-| `OPEN_DECISIONS.md` | D2, D24, D25, and the "not started" list. D23's rule is unchanged; the scenes exist |
-| `README.md` | Glimmer path now runs through R5. Standing grants list includes the new one-shots |
-| `CHANGELOG.md` | This branch's player-facing note |
+| `NEXT_PLAN.md` | Section 0 and this section. Phases B2–B4 and Build 7 are shipped. The real Sacrifice cost and R5 tone stay open |
+| `BACKLOG.md` | Q8–Q12 are built. Next numbered builds are Q13 (box screen) and Q14 (installable app) |
+| `OPEN_DECISIONS.md` | D24, D25, D26, and Brinewick stay open. The cart scenes and the Sacrifice stub are in |
+| `README.md` | Glimmer path runs through R5. Settings can save and read a v2 copy |
+| `CHANGELOG.md` | Player-facing notes for Heights, Builds 4–6, and Build 7 |
 | `DESIGN_HANDOFF.md`, `DESIGNER_PROMPT.md` | Route 2, Cobblecrest, and R5 are in the game. Design replaces copy and the Sacrifice cost; it does not invent the flags |
-| `tests/README.md` | `glimmer_route2.spec.js` and `glimmer_cobble.spec.js` |
+| `tests/README.md` | Smoke, Heights, group battles, glimmer Act 1, and the save copy |
 
 Still stale on purpose: Tour stop lines marked `PLACEHOLDER`, desk letter/review/welcome (D19), and `STANDING_CFG` numbers (D14–D17). Do not treat those as shipped writing.
 
@@ -521,13 +522,13 @@ Act 1's glimmer branch is closed enough to play. Do not invent Brinewick, Hall #
 - Designer: Tour stop copy and the real `tour.doubt` name (D26); the Sacrifice one-pager that replaces the stub (D24: a real cost, a floor that cannot soft-lock, how Quota substitutes); tier-2 lanyard art (D13); switch-desk letter/review/welcome (D19). The Build 4–6 lines are playable implementer copy. Replace the words, keep the flags, gifts, and `standing` ids.
 - Vincent: confirm R5 as-built (`"ally"` / `"stays"`) or name the change (D25); Standing numbers D14–D17; Firebase project + privacy line; attorney names; Tour recipients / slogans.
 
-**Next three coding builds** (unblocked; none of them is a new region):
+**Next coding builds** (unblocked; none of them is a new region):
 
-### Build 7 — Export a save before Start over — S
+### Build 7 — Export a save before Start over — shipped
 
-Settings "Start over" wipes the browser save with no copy. Add an export of the v2 JSON (and a way to read it back) before the wipe. Additive only. `v` stays 2. Acceptance: export, wipe, import, same party and `story.side`.
+Settings has Save a copy and Read a copy. The Start over dialog has SAVE A COPY before the hold. The file is the v2 JSON (`walklings-save.json`). Reading it runs `normalizeV2` and replaces this device's game, then reloads. `v` stays 2. A fresh game (no Walklings yet) can open the gear under the opening scene, so a wipe can be undone without finishing Ilse's intro. Device prefs stay out of the file. Tests: `tests/save_copy.spec.js`.
 
-### Build 8 — Box screen — M
+### Build 8 — Box screen — M — **next**
 
 The box is a list under the party. Reorder, release, and a proper box UI. Orphans in `orphans` stay invisible until this has a recovery row. Do not bump `v`.
 

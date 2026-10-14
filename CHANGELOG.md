@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-13 21:28 ET — Save a copy before Start over (`20261013-2128`)
+
+- Settings has Save a copy and Read a copy. The Start over dialog offers SAVE A COPY before the hold.
+- The file is `walklings-save.json`, the same v2 save the game stores. Reading it replaces the game on this device and reloads. `v` stays 2.
+- A file from a newer build, or a file that is not a save, is refused. The current game stays.
+- With no Walklings yet, the gear stays tappable under the opening scene, so a wipe can be undone without finishing the intro.
+- Device prefs (mute, location, debug) stay on this browser. They are not in the file.
+
+## Tests for the last three commits
+
+Smoke now checks Standing and Heights as well as the quest, glimmer, and befriend lists. It also checks that the Act 1 glimmer scenes swap back to the Keepers scenes, and that Cancel after a short hold does not wipe. Route 2 covers both gate choices, the grey Pebblit line, and that only the quiet Census log gives Rook a bond point. Cobblecrest covers the buyout, the snack that stays in the bag, the review battle, and both Rook closers (a high bond still leaves him with Glimmerwell). The save-copy spec round-trips the file and refuses a newer save, a v1 file, a non-save, and an oversized file. Next builds stay the box screen, then the installable app. Brinewick still needs a one-pager.
+
 ## 2026-10-13 19:50 ET — Route 2 glimmer, Cobblecrest Sacrifice stub, Rook R5 (`20261013-1950`)
 
 - Glimmerwell Route 2: Census volunteer (`lead_intro@glimmer`). The quiet log gives Rook one bond point. Wickerglen still bumps the lamps, pays 3 Befriend Treats, and opens the same gates.
