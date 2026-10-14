@@ -161,11 +161,30 @@ function renderSoundRow(){
   b.setAttribute('aria-pressed', m ? 'false' : 'true');
   $('#setSoundVal').textContent = m ? 'OFF' : 'ON';
 }
+function musicVol(){
+  const v = S && typeof S.settings.musicVol === 'number' ? S.settings.musicVol : 0.5;
+  return clamp(v, 0, 1);
+}
 function renderMusicRow(){
   const on = !S || S.settings.music !== false, b = $('#setMusic');
   if (!b) return;
   b.setAttribute('aria-pressed', String(on));
   $('#setMusicVal').textContent = on ? 'ON' : 'OFF';
+  const el = $('#setVolRange'); if (!el) return;
+  const pct = Math.round(musicVol() * 100);
+  el.value = String(pct);
+  el.setAttribute('aria-valuenow', String(pct));
+  el.setAttribute('aria-valuetext', pct + ' percent');
+  $('#setVolVal').textContent = pct + '%';
+}
+function setMusicVol(pct, persist){
+  if (!S) return musicVol();
+  const n = Math.round(clamp(+pct, 0, 100)) / 100;
+  S.settings.musicVol = n;
+  PPSound.musicVol = n;
+  renderMusicRow();
+  if (persist) save();
+  return n;
 }
 function toggleMusic(){
   if (!S) return;
@@ -394,6 +413,23 @@ function pumpHello(){
   return true;
 }
 function helloBonus(p){ addBond(p, BOND.hello); }
+/* Welcome back after a long absence. 14 hours is the backlog's "~14h away" note (D50). FOOD and JOY still floor at 20;
+   NRG still floors at 10. The line waits behind the daily hello and does not change those floors. */
+const WELCOME_AWAY = 14 * 3600;
+const WELCOME_LINE = '{pet} waited while you were away.'; /* PLACEHOLDER: needs copy from Vincent */
+const welcome = { due: false };
+function noteWelcome(sec){
+  if (!(sec >= WELCOME_AWAY) || !S || !pet() || !S.flags['story.starter_received']) return;
+  welcome.due = true;
+}
+function pumpWelcome(){
+  const t = now();
+  if (!welcome.due || screen !== 'pet' || overlayOpen() || helloDue() || t < hello.quietUntil || t < hello.until || t < anim.busyUntil || $('#toast').classList.contains('show')) return false;
+  const p = pet(); if (!p) return false;
+  welcome.due = false;
+  toast(WELCOME_LINE.replace('{pet}', petName(p)));
+  return true;
+}
 /* CARE_LOOP E, cheap slice: bond. Stored as points on the Walkling (p.bond, only ever goes up), shown as 5 hearts in the PARTNER
    scene: Bond 1-5 at 0 / 20 / 60 / 120 / 200 points. Only the partner earns it. Sources (eng notes §3.1, Design's defaults):
    first care of the day +3, the hello +1, pats +1 (max 5 a day), each walk find +2, every 100 steps together +1 (max 3 a day),
@@ -4728,14 +4764,39 @@ function growText(p){
 const statsCard = { id: null, t: 0 };
 function openStatsCard(id){
   const p = allPets().find(q => q.id === (id || S.partnerId)); if (!p) return false;
-  if (!$('#ovStats').hidden) { statsCard.id = p.id; renderStatsCard(); return true; }
+  if (!$('#ovStats').hidden) { statsCard.id = p.id; hideNickEdit(); renderStatsCard(); return true; }
   if (overlayOpen()) return false;
   clearMoves(); statsCard.id = p.id; statsCard.t = 0; renderStatsCard();
   $('#ovStats').hidden = false; lockTabs(true); sfx('tap');
   $('#scClose').focus({ preventScroll: true });
   return true;
 }
-function closeStatsCard(){ if ($('#ovStats').hidden) return; $('#ovStats').hidden = true; statsCard.id = null; lockTabs(false); updateHUD(); }
+function closeStatsCard(){ if ($('#ovStats').hidden) return; hideNickEdit(); $('#ovStats').hidden = true; statsCard.id = null; lockTabs(false); updateHUD(); }
+function hideNickEdit(){
+  const row = $('#scNick'), acts = $('#scActs');
+  if (row) row.hidden = true;
+  if (acts) acts.hidden = false;
+  if ($('#scNickIn')) $('#scNickIn').value = '';
+}
+function openNickEdit(){
+  const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
+  $('#scActs').hidden = true; $('#scNick').hidden = false;
+  const inp = $('#scNickIn');
+  inp.value = cleanNick(p.nick);
+  inp.placeholder = nameOf(spi(p), p.stage);
+  inp.focus();
+}
+function applyNick(){
+  const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
+  const before = petName(p), species = nameOf(spi(p), p.stage);
+  const nk = cleanNick($('#scNickIn').value);
+  const next = nk && nk !== species ? nk : null;   // empty, or the species name, keeps the species (D51)
+  const prev = cleanNick(p.nick) || null;
+  hideNickEdit();
+  if (next === prev) { renderStatsCard(); return; }
+  p.nick = next; save(); updateHUD(); renderCollection(); renderStatsCard();
+  toast(next ? (before + ' is now called ' + petName(p) + '!') : (before + ' goes by ' + species + ' again.')); /* PLACEHOLDER: needs copy from Vincent */
+}
 function renderStatsCard(){
   const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
   const si = spi(p), sp = SPECIES[si], L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
@@ -5603,6 +5664,11 @@ function bindInput(){
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
   $('#setSound').addEventListener('click', () => { const m = PPSound.toggle(); renderSoundRow(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
   $('#setMusic').addEventListener('click', toggleMusic);
+  const vol = $('#setVolRange');
+  if (vol) {
+    vol.addEventListener('input', () => setMusicVol(vol.value, true));
+    vol.addEventListener('change', () => setMusicVol(vol.value, true));
+  }
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
   bindDebugUi();
@@ -5685,6 +5751,13 @@ function bindInput(){
     }
   });
   $('#scClose').addEventListener('click', () => { sfx('tap'); closeStatsCard(); });
+  $('#scRename').addEventListener('click', () => { sfx('tap'); openNickEdit(); });
+  $('#scNickCancel').addEventListener('click', () => { sfx('tap'); hideNickEdit(); });
+  $('#scNickOk').addEventListener('click', () => { sfx('tap'); applyNick(); });
+  $('#scNickIn').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); applyNick(); }
+    else if (e.key === 'Escape') { e.preventDefault(); hideNickEdit(); }
+  });
   $('#ovStats').addEventListener('click', e => { if (e.target === e.currentTarget) closeStatsCard(); });   // tap outside the card
   $('#jnClose').addEventListener('click', () => closeJournal());
   $('#ovJournal').addEventListener('click', e => { if (e.target === e.currentTarget) closeJournal(); });
@@ -5752,7 +5825,7 @@ function bindInput(){
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
-    if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
+    if (e.key === 'Escape' && !$('#ovStats').hidden) { if (!$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
     if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
     if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
@@ -5821,7 +5894,7 @@ function frame(t){
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
   if (p) {
-    if (screen === 'pet') { pumpHello(); pumpBondUp(); drawPetScene(t, dt); updateCareButtons(); }
+    if (screen === 'pet') { pumpHello(); pumpWelcome(); pumpBondUp(); drawPetScene(t, dt); updateCareButtons(); }
     if (!$('#ovBattle').hidden) drawBattle(t, dt);
     else if (!overlayOpen()) pumpLearn();
     syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)
@@ -5855,7 +5928,7 @@ function catchUp(sec){
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { hiddenAt = Date.now(); return; }
-  if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
+  if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); noteWelcome(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
 });
 
 /* ---------- online saves (cloud.js; a no-op unless cloud_config.js holds a config) ---------- */
@@ -5999,7 +6072,7 @@ function boot(){
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
-  if (allPets().length) { const away = (Date.now() - S.last) / 1000; catchUp(away); regenAll(away); }
+  if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen();
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
@@ -6036,7 +6109,7 @@ function boot(){
     get poofs(){ return wild.poofs.length; },
     spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
     get careXpToday(){ return xpToday(pet(), 'cx'); }, get exploreXpToday(){ return xpToday(pet(), 'ex'); },
-    get muted(){ return PPSound.muted; }, careGain, showTab, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
+    get muted(){ return PPSound.muted; }, get musicVol(){ return PPSound.musicVol; }, careGain, showTab, get roleMult(){ return { ...ROLE_MULT }; }, get warmBowlReady(){ return bowlReady(); },
     moves: () => JSON.parse(JSON.stringify(MOVES)), learnset: f => learnset(f).map(e => ({ ...e })),
     defaultMoves: (f, L) => defaultMoves(f, L).slice(), befriendWidth,
     battleLine: (k, v) => battleLine(k, v),
@@ -6085,7 +6158,7 @@ function boot(){
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
     giveBx: (n, learn) => { const p = pet(), r = grantBattleXp(p, n); if (learn) levelMoves(p, r.from, r.to).forEach(e => learnQ.push({ id: p.id, mid: e.id })); updateHUD(); save(); return r; },   // battle XP (Level); learn=true queues the level-up move prompts
     resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; delete S.flags[BOWL.flag]; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
-    away: h => { const sec = Math.max(0, +h || 0) * 3600; catchUp(sec); regenAll(sec); updateHUD(); save(); return allPets().map(q => ({ id: q.id, role: roleOf(q), hunger: q.hunger, happy: q.happy, energy: q.energy })); },   // PACING §6
+    away: h => { const sec = Math.max(0, +h || 0) * 3600; catchUp(sec); regenAll(sec); noteWelcome(sec); updateHUD(); save(); return allPets().map(q => ({ id: q.id, role: roleOf(q), hunger: q.hunger, happy: q.happy, energy: q.energy })); },   // PACING §6
     makePartner: id => { makePartner(id); updateHUD(); save(); },
     setMapBackdrop: v => { const m = MAP_INFO[S.world.map] || (MAP_INFO[S.world.map] = {}); if (v == null) delete m.backdrop; else m.backdrop = v; return backdropName(); },
     // Phase M (MAPS_SLICE §12): jump anywhere, set flags, run any scene

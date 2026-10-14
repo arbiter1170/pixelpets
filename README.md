@@ -18,7 +18,7 @@ Touch: bottom tabs (Pet / Walk / Pets / Quest); FEED / PLAY / REST; Walk = hold 
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
-Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, Save a copy, Read a copy, Start over, and Debug.
+Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), a Vol slider beside Music (0–100, saved as `settings.musicVol` from 0 to 1), Follower on/off, Change look, Save a copy, Read a copy, Start over, and Debug.
 
 Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off), or open Settings → Debug and enter the password Larson (any capitalization). Either way the tools turn on immediately. A DBG tag shows in the header; tap it to open the debug panel again, including during a battle. Lock debug in that panel to turn it off on this device. Only in debug mode:
 - Keys: E = force-evolve current partner, G = force a wild battle (species weighted by the current area),
@@ -51,8 +51,9 @@ Debug only: `setMapBackdrop('town'|'route'|'meadow'|'grove'|null)` sets the curr
 Stat pacing: FOOD, JOY and NRG drain in real time for every Walkling you own (not just the partner).
 From full they take about 16h / 20h / 24h to empty and drop into the blinking "needs attention"
 zone (<25) after about 12h / 15h / 18h; JOY drains twice as fast while FOOD is under 20.
-While you're away (closed app or background tab) the same rates apply with no time cap, but
-away-time never pushes a stat below 10.
+While you're away (closed app or background tab) the same rates apply with no time cap.
+Away-time stops FOOD and JOY at 20, and NRG at 10.
+Come back after 14 hours and the partner tab says your Walkling waited. A shorter gap adds no extra line.
 
 Care balance: each Walkling has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 15 min),
 saved with the Walkling so reloading doesn't reset it. A button on cooldown greys out and shows the time
@@ -296,7 +297,9 @@ Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lull
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
-the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`.
+the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`. STATS → RENAME changes
+a name you already gave. Leave that field empty, or type the species name, and the species name shows again.
+Save `v` stays 2.
 
 Location and privacy: on the first visit to Walk a card asks "Use your location so local creatures
 appear? ..." with Allow / Not now. Only Allow calls the browser's Geolocation API; the answer is
@@ -334,7 +337,8 @@ heal, tired, win, move learned). Default volume is low. The AudioContext is only
 created on the first tap/key press (iOS and Chrome autoplay rules) and resumed after interruptions;
 muted means no audio nodes at all, and browsers without WebAudio just stay silent. Three original loops
 (town, route, battle) play from the same voices after the first tap. Music on/off is `settings.music`
-(default on) and is separate from the sound-effects mute. The iPhone silent switch mutes both.
+(default on) and is separate from the sound-effects mute. The Vol slider beside Music writes `settings.musicVol`
+(0 to 1, default 0.5). A volume of 0 is silent and leaves Music on. The iPhone silent switch mutes both.
 
 Font: Jersey 15 by Sarah Cadigan-Fried (SIL Open Font License 1.1), self-hosted as a ~15 KB Latin
 subset in `fonts/` with its license (`fonts/OFL.txt`, credits in `fonts/README.md`). `font-display: swap`

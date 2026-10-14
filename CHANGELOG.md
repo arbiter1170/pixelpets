@@ -5,8 +5,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 ## Documentation skills
 
 - Skills live in `.cursor/skills/`. The index is `.cursor/skills/README.md`. `walklings-quests` covers side quests, town-board slips, and bounties. `walklings-docs` covers backlog, changelog, next steps, and the other status docs.
-- After the box and the installable app, the next scoped work is Q19, town boards. It stays blocked on D37–D49. Brinewick still waits on a one-pager.
+- Q20, Q21, and Q22 are in the game: rename, the music volume slider, and the welcome-back line. The next scoped work is still Q19, town boards. It stays blocked on D37–D49. Brinewick still waits on a one-pager.
 - The older systems list and the tech-debt notes now match that: the box, the orphan row, the installable app, and the save copy are in the game. The quest skill matches `evalCond`, Mom's last step `dream_study`, and the KeeperUAV and Botnet job lines.
+
+## 20261014-1027 — Rename, music volume, welcome back (Q20, Q21, Q22)
+
+- STATS → RENAME changes a nickname you already gave. The cleaning is the same 10-character set. An empty field, or the species name, clears `nick`. CANCEL and Escape leave the old name. Save `v` stays 2. The clear line is D51.
+- The Vol slider sits beside Music. It runs 0–100 and stores `settings.musicVol` from 0 to 1. Music on/off stays its own switch. A 0 level is silent and leaves Music ON. The iPhone silent-switch listen-through is still open.
+- Fourteen hours away, the partner tab says the Walkling waited, after the daily hello. A shorter gap says nothing. FOOD and JOY still stop at 20. NRG still stops at 10. The hours and the sentence are D50.
+- Tests: `tests/care_tools.spec.js`. Shots: `screenshots/care/`. Town boards stay blocked on D37–D49. Brinewick still waits on a one-pager.
 
 ## 20261014-0751 — Box screen and installable app (Q17, Q18)
 
