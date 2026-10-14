@@ -114,8 +114,34 @@ const petSpr = p => sprSet(spi(p), p.stage, isFaded(p));
 function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return g; }
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
   grid.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === '#') g.fillRect(x,y,1,1); })); }
+// Cosmetic Walkling accessories: an 8x8 overlay anchored at the top-right of the 18px sprite. Not keeper slots.
+const PET_ACC_IDS = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
+const PET_ACC_ART = {
+  bell: ['..yy....', '.yyyy...', '.ywyy...', 'yyyyyyy.', 'yyryyyy.', '.yyyyy..', '..yyy...', '...y....'],
+  ribbon: ['rr...rr.', 'rrr.rrr.', 'ryyyyr..', '.ryyyr..', '..rrr...', '...r....', '...r....', '...r....'],
+  scarf: ['ooooooo.', 'oyyyooo.', '.oooooo.', '..yyo...', '...oo...', '...oo...', '...oo...', '...yy...'],
+  leaf: ['..ll....', '.llll...', 'lllll...', 'lglgl...', '.llll...', '..ll....', '...l....', '....l...'],
+  star: ['...y....', '..yyy...', '.yyyyy..', 'yyyyyyy.', '.yyyyy..', '..y.y...', '.y...y..', '........'],
+};
+function drawPetAccessory(g, name, x, y, faded){
+  const grid = PET_ACC_ART[name]; if (!grid) return;
+  const ox = x + 10, oy = y;
+  g.fillStyle = faded ? PAL.h : PAL.m;
+  for (let row = 0; row < 8; row++) {
+    const line = grid[row] || '';
+    for (let col = 0; col < 8; col++) {
+      const ch = line[col]; if (!ch || ch === '.') continue;
+      if (!faded) g.fillStyle = PAL[ch] || PAL.m;
+      g.fillRect(ox + col, oy + row, 1, 1);
+    }
+  }
+}
 // UI sprite (header, collection, dex, starter): dark species get their halo version on these dark cells.
-function spriteCanvas(c, sp, stage, mode='n', faded=false){ const g = ctx(c), s = sprSet(sp, stage, faded); g.clearRect(0,0,c.width,c.height); g.drawImage(mode === 'n' && s.u ? s.u : s[mode], 0, 0); }
+// acc is a pet accessory id. Silhouettes (mode 's') skip it. Faded pets draw it in grey.
+function spriteCanvas(c, sp, stage, mode='n', faded=false, acc=null){
+  const g = ctx(c), s = sprSet(sp, stage, faded); g.clearRect(0,0,c.width,c.height); g.drawImage(mode === 'n' && s.u ? s.u : s[mode], 0, 0);
+  if (mode !== 's' && acc) drawPetAccessory(g, acc, 0, 0, !!faded);
+}
 
 /* ---------- state ---------- */
 let S = null;
@@ -304,7 +330,7 @@ function updateHUD(){
   $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
   $('#hdrStage').textContent = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
-  spriteCanvas($('#hdrIcon'), spi(p), p.stage, 'n', isFaded(p));
+  spriteCanvas($('#hdrIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
@@ -686,7 +712,7 @@ function drawPetScene(t, dt){
   } else if (t < touch.rollUntil) {                       // tickle roll: four crisp quarter turns
     const q = Math.min(3, Math.floor((t - touch.rollFrom) / 200));
     g.save(); g.translate(x + 8, y + bob + 8); g.rotate(q * Math.PI / 2); g.drawImage(img, -8, -8); g.restore();
-  } else g.drawImage(img, x, y + bob);
+  } else { g.drawImage(img, x, y + bob); if (p.accessory) drawPetAccessory(g, p.accessory, x, y + bob, isFaded(p)); }
   anim.bangOn = !sleeping && t >= hello.until && (p.hunger < 25 || p.happy < 25 || p.energy < 25);   // (debug hook reads it)
   if (anim.bangOn && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);   // the "!" hides while the hello plays (CARE_LOOP §7)
   if (sparkle.id === p.id && now() < sparkle.until) for (let i = 0; i < 3; i++) if (Math.floor(t / 180 + i) % 3 === 0) drawGlyph(g, 'spark', x - 2 + i * 8, y - 3 + (i % 2) * 6);   // colour back (§5)
@@ -1472,6 +1498,60 @@ const ITEM_ART = {
     '................',
     '................',
   ],
+  soft_berry: [
+    '................',
+    '................',
+    '................',
+    '......ggg.......',
+    '.....ggggg......',
+    '.....rrrrr......',
+    '....rrrrrrr.....',
+    '....rryyrrr.....',
+    '....rrrrrrr.....',
+    '.....rrrrr......',
+    '......rrr.......',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  bracer_band: [
+    '................',
+    '................',
+    '................',
+    '................',
+    '...oooooooooo...',
+    '..oyyyyyyyyyyo..',
+    '..oyyyymmyyyyo..',
+    '..oyyyyyyyyyyo..',
+    '...oooooooooo...',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  kin_ribbon: [
+    '................',
+    '................',
+    '..rr.......rr...',
+    '.rrrr.....rrrr..',
+    '.rrwrrrrrrrwrr..',
+    '..rrrrrrrrrrr...',
+    '....rryyyrr.....',
+    '.....yyyyy......',
+    '......yyy.......',
+    '.......y........',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
 };
 // Item icons: Design ICONS_SEALS item_* grids, drawn via keeperCanvas at 36 CSS px.
 const ITEMS = {
@@ -1481,6 +1561,9 @@ const ITEMS = {
   befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild battles only. Easier to befriend.' },
   energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. NRG +40.' },
   joy_crumb:      { name: 'Joy Crumb',      plural: 'Joy Crumbs',      cap: 10, price: 40,  use: ['field'],           target: true,  blurb: 'A sweet treat. JOY +20.' },
+  soft_berry:     { name: 'Soft Berry',     plural: 'Soft Berries',    cap: 10, price: 80,  use: ['field'],           target: false, hold: true, blurb: 'Heals once when a hit drops HP under half.' },
+  bracer_band:    { name: 'Bracer Band',    plural: 'Bracer Bands',    cap: 5,  price: 200, use: ['field'],           target: false, hold: true, blurb: 'Held. Charge, Brace or Dart starts at +2 on the way in.' },
+  kin_ribbon:     { name: 'Kin Ribbon',     plural: 'Kin Ribbons',     cap: 5,  price: 120, use: ['field'],           target: false, hold: true, blurb: 'Held. Wild befriending is a little easier.' },
   atten_vial:     { name: 'Atten Vial',     plural: 'Atten Vials',     cap: 3,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A sealed RegenX vial. It stays in the bag.', blurb: 'RegenX Atten. It sharpens focus.' },
   atten_plans:    { name: 'Atten Plans',    plural: 'Atten Plans',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'RegenX brewing notes. They stay in the bag.', blurb: 'How to brew Atten cheaply.' },
   route_page:     { name: 'Route Page',     plural: 'Route Pages',     cap: 1,  price: 0,   use: ['field'],           target: false, key: true, keyNote: 'A night-cart list. It stays in the bag.', blurb: 'Names the carts. Walklings, not apples.' },
@@ -1527,6 +1610,7 @@ function itemRefusal(id, p, ctx){
   const it = ITEMS[id];
   if (!it) return "Can't use that here yet.";
   if (itemCount(id) < 1) return 'Your bag is empty.';
+  if (it.hold) return 'Hold it on a Walkling. The bag does not use it up.';
   if (id === 'befriend_treat') {
     if (ctx !== 'battle' || !battle.on) return 'Save it for a wild battle.';
     if (battle.kind !== 'wild') return "Can't use that here.";
@@ -1554,6 +1638,41 @@ function useItem(id, petId, ctx = 'field'){
   if (id === 'joy_crumb') { p.happy = clamp(p.happy + 20, 0, 100); return { ok: true, msg: petName(p) + ' munches happily. +JOY' }; }
   if (id === 'befriend_treat') { battle.treat = true; return { ok: true, msg: foeName(curFoe()) + ' sniffs the treat. It looks friendlier!' }; }
   return { ok: false, msg: "Can't use that here yet." };
+}
+// HOLD moves one from the bag onto the pet. The old held item comes back first; a full stack refuses and changes nothing.
+function holdItem(petId, itemId){
+  const p = petById(petId), it = ITEMS[itemId];
+  if (!p) return { ok: false, msg: 'No Walkling.' };
+  if (!it || !it.hold) return { ok: false, msg: "That can't be held." };
+  if (itemCount(itemId) < 1) return { ok: false, msg: 'Your bag is empty.' };
+  if (p.held) {
+    const back = grantItem(p.held, 1);
+    if (!back.added) {
+      const old = ITEMS[p.held] ? ITEMS[p.held].name : p.held;
+      return { ok: false, msg: "Bag can't hold the " + old + '.' };
+    }
+  }
+  takeItem(itemId);
+  p.held = itemId;
+  return { ok: true, msg: petName(p) + ' holds ' + it.name + '.' };
+}
+function unholdItem(petId){
+  const p = petById(petId);
+  if (!p || !p.held) return { ok: false, msg: 'Nothing to take back.' };
+  const id = p.held, it = ITEMS[id];
+  const back = grantItem(id, 1);
+  if (!back.added) return { ok: false, msg: "Bag can't hold more." };
+  delete p.held;
+  return { ok: true, msg: 'Took back ' + (it ? it.name : id) + '.' };
+}
+function setAccessory(petId, name){
+  const p = petById(petId);
+  if (!p) return { ok: false, msg: 'No Walkling.' };
+  if (name == null || name === 'none' || name === '') { delete p.accessory; return { ok: true, msg: petName(p) + ' wears nothing.' }; }
+  if (!PET_ACC_IDS.includes(name)) return { ok: false, msg: "That isn't an accessory." };
+  p.accessory = name;
+  const label = name.charAt(0).toUpperCase() + name.slice(1);
+  return { ok: true, msg: petName(p) + ' wears a ' + label + '.' };
 }
 // Triggers (§4): fire when a step ends within Manhattan r; once until the keeper ends a step outside the area (or the map changes).
 let walkAwayI = 0;   // which gate toast to show next; not saved (one line each time you step off after "Think about it")
@@ -1811,6 +1930,7 @@ function drawMap(t){
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
     const bob = followerBob(t);
     g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - bob);
+    if (p.accessory) drawPetAccessory(g, p.accessory, fx, fy - bob, isFaded(p));
     if (earlyBuddy() && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob);
     grassOver(fol.fx, fol.fy);
   };
@@ -2996,8 +3116,13 @@ const ablePet = p => canBattle(p);
 // (canBattle), but it must not: a playtest had the starter faint and the rest of the party, still standing, skipped,
 // with the loss line saying the whole party had fainted.
 const canStepIn = p => !!p && !isFainted(p) && hpOf(p) > 0;
-// Lead = the partner if able, otherwise the first able party member (§1).
-function leadPet(){ const p = pet(); return ablePet(p) ? p : (S.party.find(ablePet) || null); }
+// Lead = the partner if able, else the party member marked relief if able, else the first able party member.
+function leadPet(){
+  const p = pet();
+  if (ablePet(p)) return p;
+  const relief = S.party.find(q => q.deploy && q.deploy.relief === true && ablePet(q));
+  return relief || S.party.find(ablePet) || null;
+}
 function noBattleToast(){
   sfx('denied');
   toast(S.party.some(canStepIn) ? 'Your team is too sleepy. REST first!' : 'Your team needs a rest first!');
@@ -3074,6 +3199,15 @@ function foeBattler(f){
 }
 const effSpd = b => effStat(b, 'spd');
 function setMyHp(p, hp){ const max = maxHpOf(p); hp = clamp(Math.round(hp), 0, max); if (hp >= max) delete p.hpNow; else p.hpNow = hp; }
+// Soft Berry: one heal when a foe's hit crosses from at least half HP to under half, still standing.
+function applySoftBerry(p, before){
+  if (!p || p.held !== 'soft_berry') return false;
+  const max = maxHpOf(p), after = hpOf(p);
+  if (!(before >= max / 2 && after > 0 && after < max / 2)) return false;
+  setMyHp(p, after + Math.ceil(0.25 * max));
+  delete p.held;
+  return true;
+}
 
 /* --- open / close --- */
 function openBattle(o){
@@ -3113,6 +3247,37 @@ function openBattle(o){
   battleIntro(B.id);
   return true;
 }
+const DEPLOY_CALLS = ['charge', 'brace', 'dart', 'greet'];
+const CALL_STAT = { charge: 'atk', brace: 'def', dart: 'spd' };
+const CALL_STOCK = { charge: 'rushes in!', brace: 'plants its feet!', dart: 'slips in ahead!', greet: 'looks ready to make a friend!' };
+const CALL_LABEL = { charge: 'Charge', brace: 'Brace', dart: 'Dart', greet: 'Greet' };
+function bumpStage(st, stat, n){
+  const cur = st[stat] || 0, nx = clamp(cur + n, -3, 3);
+  if (nx !== cur) st[stat] = nx;
+  return nx !== cur;
+}
+// Stages on the way in. A bracer doubles Charge/Brace/Dart (or ATK +1 otherwise) and does not also add the call's +1.
+// The spoken line is the stock call line with a bracer; otherwise deploy.line when the player wrote one.
+async function applyEntrance(p, id){
+  const B = battle;
+  if (!B.on || !B.me || !p) return;
+  const call = p.deploy && DEPLOY_CALLS.includes(p.deploy.call) ? p.deploy.call : null;
+  const bracer = p.held === 'bracer_band';
+  if (!bracer && !call) return;
+  const st = B.me.stages;
+  let rose = false;
+  if (bracer) {
+    if (call === 'charge') rose = bumpStage(st, 'atk', 2);
+    else if (call === 'brace') rose = bumpStage(st, 'def', 2);
+    else if (call === 'dart') rose = bumpStage(st, 'spd', 2);
+    else rose = bumpStage(st, 'atk', 1);
+  } else if (CALL_STAT[call]) rose = bumpStage(st, CALL_STAT[call], 1);
+  if (rose) { B.fx.push({ who: 'me', kind: 'up', t0: now(), dur: 700 }); sfx('statUp'); }
+  renderBattleCards();
+  const custom = !bracer && p.deploy && typeof p.deploy.line === 'string' && p.deploy.line ? p.deploy.line : '';
+  const text = custom || (petName(p) + ' ' + (CALL_STOCK[call] || CALL_STOCK.charge));
+  await say(text, id == null ? B.id : id);
+}
 async function battleIntro(id){
   const B = battle, p = activePet(), t = tr();
   sendOutFx('foe');
@@ -3124,6 +3289,7 @@ async function battleIntro(id){
     await say(btLine('trainerIntro'), id);
     if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
     await say(btLine('playerSend'), id);
+    if (alive(id)) await applyEntrance(activePet(), id);
     if (alive(id) && B.group) {
       await say('Two at once. You move first. TARGET picks who you hit.', id);
       if (alive(id) && B.ally) await say(B.allyName + ' sends ' + foeName(B.ally) + ' in beside you.', id);
@@ -3132,6 +3298,7 @@ async function battleIntro(id){
     await say(btLine('wildAppear'), id);
     if (!alive(id)) return; sendOutFx('me'); B.meShown = true;
     await say(btLine('wildSend', { pet: petName(p) }), id);
+    if (alive(id)) await applyEntrance(activePet(), id);
   }
   if (alive(id)) toChoose();
 }
@@ -3317,11 +3484,13 @@ function stageText(st){ return ['atk', 'def', 'spd'].filter(k => st[k]).map(k =>
 function hintFor(mid, type){ const v = S.dex.hits && S.dex.hits[mid + '>' + type]; return v === 2 ? '2x' : v === 0.5 ? '\u00bd' : v === 0 ? '0' : ''; }
 function renderFight(){
   const p = activePet(), u = usesOf(p), f = curFoe(), box = $('#btMoves'); box.textContent = '';
-  const ids = (p.moves || []).filter(id => MOVES[id]);
+  let ids = (p.moves || []).filter(id => MOVES[id]);
+  const opener = p.deploy && typeof p.deploy.opener === 'string' && ids.includes(p.deploy.opener) ? p.deploy.opener : null;
+  if (opener) ids = [opener].concat(ids.filter(id => id !== opener));
   const out = ids.every(id => !(u[id] > 0));
   const list = out ? ['wobble'] : ids;
   for (let i = 0; i < 4; i++) {
-    const id = list[i], b = document.createElement('button'); b.className = 'btn bt-move'; b.type = 'button';
+    const id = list[i], b = document.createElement('button'); b.className = 'btn bt-move' + (opener && id === opener && !out ? ' mv-open' : ''); b.type = 'button';
     if (!id) { b.disabled = true; b.textContent = '-'; box.appendChild(b); continue; }
     const mv = MOVES[id], left = id === 'wobble' ? null : u[id];
     b.dataset.move = id; b.disabled = id !== 'wobble' && !(left > 0);
@@ -3474,6 +3643,9 @@ async function playerAction(a, id){
     B.me = { petId: a.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(petById(a.id)) }; B.participants[B.fi].add(a.id);
     sendOutFx('me'); renderBattleCards();
     await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(petById(a.id)) }), id);
+    if (!alive(id)) return true;
+    await applyEntrance(petById(a.id), id);
+    if (!alive(id)) return true;
     B.foePlan = aiPick(); return false;                    // the foe re-reads the new target's type (no peeking at the action itself)
   }
   if (a.kind === 'bag') {                                // INVENTORY §3.2: checked before the turn, applied here (uses the turn)
@@ -3527,12 +3699,21 @@ async function doMove(side, mid, id){
     const r = damage({ power: mv.power, moveType: mv.type, att, def, rng: B.rng });
     const key = mid + '>' + def.type; if (S.dex.hits[key] !== r.mult) { S.dex.hits[key] = r.mult; }   // type hint seen
     if (r.mult === 0) { sfx('hitWeak'); await say("It didn't do a thing to " + tName + '...', id); return; }
-    if (mine) { f.hp = Math.max(0, f.hp - r.dmg); } else { setMyHp(p, hpOf(p) - r.dmg); }
+    let berry = false;
+    if (mine) f.hp = Math.max(0, f.hp - r.dmg);
+    else {
+      const before = hpOf(p);
+      setMyHp(p, before - r.dmg);
+      berry = applySoftBerry(p, before);
+    }
     B.fx.push({ who: mine ? 'foe' : 'me', kind: r.mult > 1 ? 'flash' : 'shake', t0: now(), dur: 400 });
-    sfx(r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit'); renderBattleCards(); if (!mine) save();
+    sfx(r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit');
+    if (berry && battle.on) sfx('heal');
+    renderBattleCards(); if (!mine) save();
     if (r.crit) { await say('A lucky hit!', id); if (!alive(id)) return; }
     if (r.mult > 1) await say("That hit hard!", id); else if (r.mult < 1) await say("It barely felt that...", id);
     if (!alive(id)) return;
+    if (berry) { await say(petName(p) + "'s Soft Berry eases the hit!", id); if (!alive(id)) return; }
     const tgtDown = mine ? f.hp <= 0 : hpOf(p) <= 0;
     if (e) {
       if (e.heal) await healUser(side, e.heal, id);
@@ -3617,17 +3798,29 @@ async function endCheck(id){
     B.me = { petId: q.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(q) }; B.participants[B.fi].add(q.id);
     sendOutFx('me'); renderBattleCards();
     await say(btLine(B.kind === 'wild' ? 'wildSend' : 'playerSend', { pet: petName(q) }), id);
+    if (alive(id)) await applyEntrance(q, id);
     if (B.kind === 'trainer' && curFoe().hp > 0 && B.foeJustSent) {}
   }
   if (alive(id)) toChoose();
 }
 // Swap sheet: anyone in the party with HP who isn't napping. Low NRG is marked, not a lock (see canStepIn). forced = can't cancel.
+function swapSub(q){
+  const B = battle, badge = hpBadge(q), step = canStepIn(q), sleepy = step && q.energy < STAT_RULES.MOOD.minBattleNrg;
+  let sub = 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q);
+  if (badge) sub += '  ' + badge;
+  if (sleepy) sub += '  LOW NRG';
+  const call = q.deploy && CALL_LABEL[q.deploy.call];
+  if (call) sub += '  ' + call;
+  if (q.held) sub += '  ' + (ITEMS[q.held] ? ITEMS[q.held].name : q.held);
+  if (q.deploy && q.deploy.note) sub += '  ' + q.deploy.note;
+  if (B.me && q.id === B.me.petId) sub += '  (in battle)';
+  return sub;
+}
 function swapSheet(forced){
-  const B = battle, items = S.party.map(q => {
-    const badge = hpBadge(q), step = canStepIn(q), sleepy = step && q.energy < STAT_RULES.MOOD.minBattleNrg;
-    return { label: petName(q) + '  Lv ' + levelOf(q), sub: 'HP ' + Math.ceil(hpOf(q)) + '/' + maxHpOf(q) + (badge ? '  ' + badge : '') + (sleepy ? '  LOW NRG' : '') + (q.id === B.me.petId ? '  (in battle)' : ''),
-      hp: hpOf(q) / maxHpOf(q), disabled: q.id === B.me.petId || !step, value: q.id };
-  });
+  const B = battle, items = S.party.map(q => ({
+    label: petName(q) + '  Lv ' + levelOf(q), sub: swapSub(q),
+    hp: hpOf(q) / maxHpOf(q), disabled: q.id === B.me.petId || !canStepIn(q), value: q.id,
+  }));
   return openSheet(forced ? 'Who goes next?' : 'Swap to which Walkling?', items, forced ? null : 'BACK');
 }
 /* ---------- MAP v0 (design/specs/MAP_V0.md): "where am I?" region map ---------- */
@@ -4365,7 +4558,15 @@ function battleAct(act){
 // WP-A: the zone reads the foe's HP, its level against the lead's, and whether a turn has passed (befriendWidth ctx);
 // story creatures add B.bonus (Faded Fuzzwick +0.10, the guide wild +0.08). Cap 0.6. An untouched foe says so once per battle.
 function befriendCtx(){ const B = battle, f = curFoe(), p = activePet(); return { foeLv: f.level, leadLv: levelOf(p), engaged: B.turn > 0 }; }
-function befriendZoneWidth(){ const B = battle, f = curFoe(), p = activePet(); return Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus); }
+function befriendZoneWidth(){
+  const B = battle, f = curFoe(), p = activePet();
+  let extra = 0;
+  if (B.kind === 'wild' && p) {
+    if (p.deploy && p.deploy.call === 'greet') extra += 0.04;
+    if (p.held === 'kin_ribbon') extra += 0.04;
+  }
+  return Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus + extra);
+}
 let waryTurn = 0;   // which of the three wary lines the next untouched foe gets
 const oddsLabel = w => w < 0.15 ? { t: 'WARY', c: 'r' } : w < 0.25 ? { t: 'FAIR', c: 'y' } : { t: 'GOOD', c: 'l' };
 function openBefriendBar(){
@@ -4430,6 +4631,7 @@ function drawBattle(t, dt){
     if (hide) return;
     const img = sprSet(si, stage, faded)[mode];
     if (mirror) { g.save(); g.translate(x + 18, y); g.scale(-1, 1); g.drawImage(img, 0, 0); g.restore(); } else g.drawImage(img, x, y);
+    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, x, y, !!faded);
   };
   if (B.group && B.slots) {
     let other = null;
@@ -4527,9 +4729,16 @@ function growText(p){
   if (care(p) < EVO_CARE[p.stage]) return { text: 'GROW done \u00b7 care ' + EVO_CARE[p.stage] + '+ to grow up', ready: false };
   return { text: 'Ready to grow up!', ready: true };
 }
-const statsCard = { id: null, t: 0 };
+const statsCard = { id: null, t: 0, gear: false };
+function clearGearBox(){
+  statsCard.gear = false;
+  const box = $('#scGearBox'), b = $('#scGear');
+  if (box) { box.hidden = true; box.textContent = ''; }
+  if (b) b.setAttribute('aria-pressed', 'false');
+}
 function openStatsCard(id){
   const p = allPets().find(q => q.id === (id || S.partnerId)); if (!p) return false;
+  if (statsCard.id !== p.id) clearGearBox();
   if (!$('#ovStats').hidden) { statsCard.id = p.id; renderStatsCard(); return true; }
   if (overlayOpen()) return false;
   clearMoves(); statsCard.id = p.id; statsCard.t = 0; renderStatsCard();
@@ -4537,7 +4746,118 @@ function openStatsCard(id){
   $('#scClose').focus({ preventScroll: true });
   return true;
 }
-function closeStatsCard(){ if ($('#ovStats').hidden) return; $('#ovStats').hidden = true; statsCard.id = null; lockTabs(false); updateHUD(); }
+function closeStatsCard(){ if ($('#ovStats').hidden) return; $('#ovStats').hidden = true; statsCard.id = null; clearGearBox(); lockTabs(false); updateHUD(); }
+function ensureDeploy(p){ if (!p.deploy || typeof p.deploy !== 'object' || Array.isArray(p.deploy)) p.deploy = {}; return p.deploy; }
+function pruneDeploy(p){ if (p.deploy && !Object.keys(p.deploy).length) delete p.deploy; }
+function cleanGearText(v){ return String(v == null ? '' : v).replace(/[<>{}]/g, '').trim().slice(0, 40); }
+function setCall(p, call){
+  const d = ensureDeploy(p);
+  if (DEPLOY_CALLS.includes(call)) d.call = call; else delete d.call;
+  pruneDeploy(p);
+}
+function setOpener(p, id){
+  const d = ensureDeploy(p);
+  if (typeof id === 'string' && id && (p.moves || []).includes(id)) d.opener = id; else delete d.opener;
+  pruneDeploy(p);
+}
+function setDeployText(p, key, v){
+  const d = ensureDeploy(p), t = cleanGearText(v);
+  if (t) d[key] = t; else delete d[key];
+  pruneDeploy(p);
+}
+function setRelief(p, on){
+  if (on) {
+    for (const q of S.party.concat(S.box)) {
+      if (q === p || !q.deploy || q.deploy.relief !== true) continue;
+      delete q.deploy.relief;
+      if (!Object.keys(q.deploy).length) delete q.deploy;
+    }
+    ensureDeploy(p).relief = true;
+  } else if (p.deploy) { delete p.deploy.relief; pruneDeploy(p); }
+}
+function commitGear(id, opts){
+  save(); updateHUD();
+  if (typeof openWalklingSheet === 'function' && $('#ovWalkling') && !$('#ovWalkling').hidden && !(opts && opts.keep)) { openWalklingSheet(id); return; }
+  if (typeof renderCollection === 'function') renderCollection();
+  if (opts && opts.keep) return;
+  if ($('#ovStats').hidden || statsCard.id !== id || !statsCard.gear) return;
+  const p = petById(id), box = $('#scGearBox');
+  renderStatsCard();
+  if (p && box) { box.textContent = ''; fillWalklingExtras(box, p); box.hidden = false; }
+}
+function fillWalklingExtras(container, pet){
+  if (!container || !pet) return;
+  const lab = text => { const d = document.createElement('div'); d.className = 'gear-lab'; d.textContent = text; return d; };
+  const row = () => { const d = document.createElement('div'); d.className = 'gear-row'; return d; };
+  const live = () => petById(pet.id) || pet;
+  const press = (btn, on) => btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  const after = (r, keep) => {
+    sfx(r && r.ok === false ? 'denied' : 'tap');
+    if (r && r.msg) toast(r.msg);
+    commitGear(pet.id, keep ? { keep: true } : null);
+  };
+
+  container.appendChild(lab(pet.held && ITEMS[pet.held] ? 'HOLD · ' + ITEMS[pet.held].name : 'HOLD'));
+  const holds = row();
+  const owned = ITEM_ORDER.filter(id => ITEMS[id] && ITEMS[id].hold && itemCount(id) > 0);
+  if (!owned.length) { const n = document.createElement('div'); n.className = 'gear-note'; n.textContent = 'No holdable items.'; holds.appendChild(n); }
+  owned.forEach(id => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.hold = id; b.textContent = ITEMS[id].name;
+    b.addEventListener('click', () => after(holdItem(live().id, id)));
+    holds.appendChild(b);
+  });
+  const take = document.createElement('button'); take.type = 'button'; take.className = 'btn sm'; take.dataset.act = 'unhold'; take.textContent = 'TAKE BACK';
+  take.addEventListener('click', () => after(unholdItem(live().id)));
+  holds.appendChild(take);
+  container.appendChild(holds);
+
+  container.appendChild(lab('ACCESSORY'));
+  const accs = row();
+  [['none', 'None']].concat(PET_ACC_IDS.map(id => [id, id.charAt(0).toUpperCase() + id.slice(1)])).forEach(([id, name]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.acc = id; b.textContent = name;
+    press(b, (pet.accessory || 'none') === id);
+    b.addEventListener('click', () => after(setAccessory(live().id, id)));
+    accs.appendChild(b);
+  });
+  container.appendChild(accs);
+
+  container.appendChild(lab('CALL'));
+  const calls = row();
+  [['none', 'None']].concat(DEPLOY_CALLS.map(id => [id, CALL_LABEL[id]])).forEach(([id, name]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.call = id; b.textContent = name;
+    press(b, (pet.deploy && pet.deploy.call || 'none') === id);
+    b.addEventListener('click', () => { setCall(live(), id === 'none' ? '' : id); after({ ok: true }); });
+    calls.appendChild(b);
+  });
+  container.appendChild(calls);
+
+  container.appendChild(lab('OPENER'));
+  const sel = document.createElement('select'); sel.dataset.gear = 'opener';
+  const none = document.createElement('option'); none.value = ''; none.textContent = 'None'; sel.appendChild(none);
+  (pet.moves || []).forEach(id => { if (!MOVES[id]) return; const o = document.createElement('option'); o.value = id; o.textContent = MOVES[id].name; sel.appendChild(o); });
+  sel.value = pet.deploy && (pet.moves || []).includes(pet.deploy.opener) ? pet.deploy.opener : '';
+  sel.addEventListener('change', () => { setOpener(live(), sel.value); after({ ok: true }); });
+  container.appendChild(sel);
+
+  const rel = document.createElement('label'); rel.className = 'gear-check';
+  const cb = document.createElement('input'); cb.type = 'checkbox'; cb.dataset.gear = 'relief'; cb.checked = !!(pet.deploy && pet.deploy.relief);
+  cb.addEventListener('change', () => { setRelief(live(), cb.checked); after({ ok: true }); });
+  rel.append(cb, document.createTextNode(' Relief'));
+  container.appendChild(rel);
+
+  const field = (key, title) => {
+    container.appendChild(lab(title));
+    const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 40; inp.dataset.gear = key;
+    inp.value = (pet.deploy && pet.deploy[key]) || '';
+    inp.addEventListener('change', () => {
+      const q = live(); setDeployText(q, key, inp.value); inp.value = (q.deploy && q.deploy[key]) || '';
+      after({ ok: true }, true);
+    });
+    container.appendChild(inp);
+  };
+  field('line', 'LINE');
+  field('note', 'NOTE');
+}
 function paintStatsInto(prefix, p, opt){
   const si = spi(p), sp = SPECIES[si], L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
   spriteCanvas($('#' + prefix + 'Icon'), si, p.stage, 'n', isFaded(p), p.accessory);
@@ -4927,7 +5247,7 @@ function openJournalEntry(o){
   const sp = SPECIES[o.si], st = sp && sp.stages[o.stage]; if (!sp || !st) return;
   const form = formOf(o.si, o.stage), caught = !!S.dex.caught[form];
   const p = o.id ? petById(o.id) : journalPet(o.si, o.stage);
-  spriteCanvas($('#jnIcon'), o.si, o.stage, 'n', !!(p && isFaded(p)));
+  spriteCanvas($('#jnIcon'), o.si, o.stage, 'n', !!(p && isFaded(p)), p && p.accessory);
   $('#jnTitle').textContent = st.name;
   $('#jnStars').textContent = '\u2605'.repeat(o.stage + 1) + '\u2606'.repeat(2 - o.stage);
   const chip = $('#jnType'); chip.textContent = sp.type; chip.className = 'type-badge t-' + sp.type;
@@ -5096,7 +5416,7 @@ function slotMain(p){
   const b = document.createElement('button'); b.type = 'button'; b.className = 'slot-main';
   b.setAttribute('aria-label', petName(p) + ', open');
   const cv = document.createElement('canvas'); cv.width = cv.height = 18;
-  spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p));
+  spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), p.accessory);
   b.append(cv, slotCopy(p));
   b.addEventListener('click', () => openBoardPet(p.id));
   return b;
@@ -5248,8 +5568,9 @@ function renderDexGrid(){
       cell.setAttribute('aria-label', st.name + ', journal page');
       cell.addEventListener('click', () => openJournalEntry({ si, stage: k }));
     }
+    const who = known ? journalPet(si, k) : null;
     const cv = document.createElement('canvas'); cv.width = cv.height = 18;
-    spriteCanvas(cv, si, k, known ? 'n' : 's');
+    spriteCanvas(cv, si, k, known ? 'n' : 's', !!(who && isFaded(who)), who && who.accessory);
     if (!known && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
     const lb = document.createElement('div'); lb.textContent = known ? st.name : '???'; if (!known) lb.className = 'unk';
     cell.append(cv, lb); dex.append(cell);
@@ -5918,6 +6239,15 @@ function bindInput(){
     }
   });
   $('#scClose').addEventListener('click', () => { sfx('tap'); closeStatsCard(); });
+  const gearBtn = $('#scGear');
+  if (gearBtn) gearBtn.addEventListener('click', () => {
+    const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
+    statsCard.gear = !statsCard.gear; sfx('tap');
+    gearBtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
+    const box = $('#scGearBox'); if (!box) return;
+    box.hidden = !statsCard.gear; box.textContent = '';
+    if (statsCard.gear) fillWalklingExtras(box, p);
+  });
   $('#ovStats').addEventListener('click', e => { if (e.target === e.currentTarget) closeStatsCard(); });   // tap outside the card
   $('#wlClose').addEventListener('click', () => { sfx('tap'); closeWalklingSheet(); });
   $('#wlNickSet').addEventListener('click', () => commitWalklingNick());
@@ -6235,6 +6565,7 @@ function boot(){
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
   { const hcb = highCharityDevCheck(); if (hcb.length) console.error('Walklings: high charity check failed:', hcb.join('; ')); }
   { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
+  window.ITEMS = ITEMS;   // save.js validates pet.held against the catalog; ITEMS lives in this file
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
@@ -6435,6 +6766,10 @@ function boot(){
     }
   }
   window.PixelPets = Object.freeze(api);
+  window.holdItem = holdItem;
+  window.unholdItem = unholdItem;
+  window.setAccessory = setAccessory;
+  window.fillWalklingExtras = fillWalklingExtras;
 }
 boot();
 })();

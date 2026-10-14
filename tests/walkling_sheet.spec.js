@@ -60,7 +60,7 @@ test('walkling sheet opens from the collection, heals, renames, reorders moves, 
   expect(api.snacks).toBe(1);
 
   await page.locator('#tabs button[data-tab="col"]').click();
-  await page.locator('#ownedList .card').first().locator('.card-open').click();
+  await page.locator('#partyBoard .slot-main').first().click();
   await expect(page.locator('#ovWalkling')).toBeVisible();
   await expect(page.locator('#ovStats')).toBeHidden();
   await expect(page.locator('#wlName')).toHaveText('Pipkit');

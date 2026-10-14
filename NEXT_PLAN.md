@@ -1,6 +1,6 @@
 # Walklings: what's next (queue, Oct 14, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack on `main`. Next is Q17 the box screen, then Q18 the installable app. Do not rebuild Builds 4–6. Which branch held which piece is in `BRANCH_LOG.md`.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack on `main`. Q17 the party board is built. Next is Q18 the installable app. Do not rebuild Builds 4–6. Which branch held which piece is in `BRANCH_LOG.md`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -497,9 +497,9 @@ Acceptance:
 
 Leave Brinewick, Friends, a second Sacrifice, and daily Standing out of this PR.
 
-### Q17 — Box screen — M — after Q16
+### Q17 — Box screen — M — after Q16 — BUILT
 
-The box is a list under the party on the Pets tab. Add reorder, release, and a row for `orphans`. Release asks for a confirm, then removes that Walkling from the party and the box. The orphan row shows the raw data that could not be migrated. Do not bump `v`. Unknown fields stay on the Walkling.
+The WALKLINGS tab is six party slots, a box list, and the journal. Reorder, deposit, withdraw, release, and the orphan row are in. The Walkling sheet adds field item use, nicknames, move order, held items (Soft Berry, Bracer Band, Kin Ribbon), accessories, and a call card. Battle SWAP stays the party. Save `v` stays 2. Unknown fields stay on the Walkling.
 
 ### Q18 — Installable app — S–M — after Q17
 

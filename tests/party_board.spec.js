@@ -19,7 +19,7 @@ function boardSave(extra) {
     pet('pbloom', 'bloom', { mark: 'bloom' }),
   ];
   save.partnerId = 'pember';
-  save.box = [pet('pstone', 'stone', { mark: 'stone', held: 'joy_crumb' })];
+  save.box = [pet('pstone', 'stone', { mark: 'stone', held: 'soft_berry' })];
   save.orphans = [{ reason: 'unknown-species', from: 'v2.box[9]', at: 1, raw: { species: 'nope' } }];
   save.dex = {
     seen: { 'ember/0': true, 'tide/0': true, 'bloom/0': true, 'stone/0': true, 'volt/0': true },
@@ -153,7 +153,7 @@ test('reorder, deposit, withdraw, and release keep the pet and the journal', asy
     const caught = JSON.parse(JSON.stringify(PixelPets.state.dex.caught));
     out.releaseStone = releasePet('pstone');
     out.stoneGone = !PixelPets.state.party.concat(PixelPets.state.box).some((p) => p.id === 'pstone');
-    out.bag = PixelPets.state.bag.joy_crumb || 0;
+    out.bag = PixelPets.state.bag.soft_berry || 0;
     out.caughtSame = JSON.stringify(PixelPets.state.dex.caught) === JSON.stringify(caught);
     out.releaseTide = releasePet('ptide');
     out.tideGone = !PixelPets.state.party.concat(PixelPets.state.box).some((p) => p.id === 'ptide');
@@ -192,7 +192,7 @@ test('reorder, deposit, withdraw, and release keep the pet and the journal', asy
   expect(report.tideBefore.bond).toBe(5);
   expect(report.tideInParty).toBe(false);
   expect(report.withdraw).toBe(true);
-  expect(report.stone).toEqual({ id: 'pstone', mark: 'stone', held: 'joy_crumb' });
+  expect(report.stone).toEqual({ id: 'pstone', mark: 'stone', held: 'soft_berry' });
   expect(report.stoneInBox).toBe(false);
   expect(report.releaseStone).toBe(true);
   expect(report.stoneGone).toBe(true);
@@ -255,7 +255,7 @@ test('box and release confirms are thumb buttons', async ({ page }) => {
   const after = await page.evaluate(() => ({
     ids: PixelPets.state.party.concat(PixelPets.state.box).map((p) => p.id),
     caught: PixelPets.state.dex.caught['stone/0'],
-    bag: PixelPets.state.bag.joy_crumb || 0,
+    bag: PixelPets.state.bag.soft_berry || 0,
     cell: document.querySelector('#dexGrid [data-form="stone/0"]').tagName,
   }));
   expect(after.ids).not.toContain('pstone');
@@ -264,7 +264,7 @@ test('box and release confirms are thumb buttons', async ({ page }) => {
   expect(after.cell).toBe('BUTTON');
 
   await page.locator('.party-slot[data-id="pember"] .slot-main').tap();
-  await expect(page.locator('#ovStats')).toBeVisible();
-  await page.locator('#scClose').tap();
-  await expect(page.locator('#ovStats')).toBeHidden();
+  await expect(page.locator('#ovWalkling')).toBeVisible();
+  await page.locator('#wlClose').tap();
+  await expect(page.locator('#ovWalkling')).toBeHidden();
 });

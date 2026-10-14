@@ -89,7 +89,7 @@ Levels, types and stats (`stats.js`):
   "RESTING 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
   (and not worn out) a Walkling shows **TIRED**. The badge (RESTING, else TIRED, else GLOWING) shows on the stats card,
   the Pet scene and the Pets tab.
-- Stats card: tap STATS (top-left of the Pet tab scene) or any Walkling on the Pets tab. It shows the type badge, Level,
+- Stats card: tap STATS (top-left of the Pet tab scene) or the follower. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats. It shows the type badge, Level,
   GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
   scaled to the highest value of that stat among all 42 forms at the same level, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
@@ -337,9 +337,12 @@ with Courier New / monospace as fallback; ★ ♥ and the arrow symbols come fro
 
 Saves (format v2, `save.js`):
 - `pixelpets.save.v2` is the save. Walklings live in a **party** (up to 6, the partner is always in it) and a
-  **box** (no limit). A 7th befriended Walkling goes to the box ("<name> was sent to your box."). On the Pets tab,
-  choosing a boxed Walkling as partner moves it into the party; if the party is full, the last party member that
-  isn't the partner moves to the top of the box. Every Walkling, party or box, gets hungry the same way.
+  **box** (no limit). A 7th befriended Walkling goes to the box ("<name> was sent to your box."). The WALKLINGS tab
+  is six party slots, then the box, then the journal (Joined, Met, and Out there 42; unmet forms stay silhouettes).
+  MOVE reorders the party. TO BOX / TO PARTY move one Walkling. A boxed partner choice still uses `makePartner`:
+  if the party is full, the last member who is not the partner moves to the top of the box. Hunger pauses in the box.
+  A battle SWAP lists the party only. The sheet on a Walkling can use a field snack, rename them, reorder moves,
+  hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an accessory, and set a call (Charge, Brace, Dart, or Greet).
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
   `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
   The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 42 form ids) is append-only: new lines are added at the end

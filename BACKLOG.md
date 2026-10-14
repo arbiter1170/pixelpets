@@ -11,7 +11,7 @@ Where things are (hand these to the right person or agent):
 
 | Document | Hand to | What it holds |
 |---|---|---|
-| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail. Act 1 through the Keeper House, Ribbit, High Charity, and the pass-the-phone games is on `main`. Next: the box screen, then the installable app. Live stamp is `version.json`. Which branch held which piece is in [BRANCH_LOG.md](BRANCH_LOG.md) |
+| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail. Act 1 through the Keeper House, Ribbit, High Charity, and the pass-the-phone games is on `main`. The party board (Q17) is built. Next: the installable app. Live stamp is `version.json`. Which branch held which piece is in [BRANCH_LOG.md](BRANCH_LOG.md) |
 | [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | **The designer** (art and writing) | Voice guide, art sizes, and the request list. Background. The assignment to paste into the designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) |
 | [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) | **The designer bot** (a different agent from the implementer) | The prompt: every designer item, the files to open, the engine that already exists, the delivery format, and the phase order |
 | [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat |
@@ -143,8 +143,8 @@ This order applies after the Kindle Wild rename, which shipped as 9cc836d and 9d
 
 - **Device testing:** only tested in Chromium phone emulation. Check real iOS Safari and Android Chrome (touch, safe areas, audio unlock, localStorage limits).
 - ~~**Save versioning**~~ **DONE (save v2):** `pixelpets.save.v2` with stable string species/form ids, party (6) + box, orphans, dex seen/caught, world, and empty bag/money/seals/flags/eggs/settings sections for later features. One-time v1 -> v2 migration keeps every Walkling field (cd/cx/ex/sr), `uid`/`created` (friend code) and away-time decay; v1 key untouched + `.bak` copy; corrupt saves copied aside; newer saves load read-only. Additive fields go through `normalizeV2` without bumping `v`; breaking changes add a `migrateVnToVn+1` step and a new key.
-- **Box screen:** the box is just a list under the party on the Pets tab (partner swap only). Reordering, releasing, and a proper box UI are later work. The WALKLING JOURNAL opens a page for each seen form; the grid still draws seen and caught the same way (`dex.caught` is saved and the page says whether they have joined you).
-- **Orphan recovery:** Walklings that couldn't be migrated sit in `orphans` with their raw data; nothing shows them yet.
+- ~~**Box screen**~~ **DONE:** the WALKLINGS tab is six party slots, a box list, and the journal. Reorder, deposit, withdraw, and release are on the slot and on the Walkling sheet. Release confirms and will not drop the last Walkling. The journal counts Joined and Out there 42; unmet forms stay silhouettes. `dex.caught` stays set after a release.
+- **Orphan recovery:** a quiet row under the box shows how many records could not be read, and the first reason. The raw data stays in `orphans`. There is no restore button.
 - ~~**Debug keys in release**~~ **DONE:** E/G/F, fast mode, "Pick a place" and the cheat console hooks only work with `?debug=1` (remembered; `?debug=0` clears it). Read-only hooks stay public.
 - **Start over (DONE):** Settings, press-and-hold 1.5 s confirm; wipes v2/v1/.bak/corrupt, keeps device prefs, other tabs stop saving (uid check). **Build 7:** Save a copy / Read a copy, and SAVE A COPY on the confirm, so the wipe can be undone from the file.
 - **Installable app:** add a manifest and service worker so it can be added to the home screen and played offline.
