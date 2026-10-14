@@ -99,8 +99,12 @@ Priority: **must** blocks the work package, **should** is wanted for launch, **c
 | `item_glimmer_*` | Icons for any glimmer-only items (names are a writing task) | 16x16 | Bag, shop | could | B |
 | `stinger_standing_up` | A short jingle spec for "a faction's regard went up a tier" (notes and timings in the same style as the STINGERS v0.1 table; the engine synthesizes it) | spec | Tier-up moment | should | B |
 | `town_loop_glimmer` | OPTIONAL variant of the town loop for Glimmerwell-run spots (too cheerful, slightly off) | spec | Pavilion, switch desk | could | B |
+| `bulletin_keepers` | Wood town board, charcoal paper, yellow wax seal. Keepers masthead "THE LANTERN POST" | 16×16 | Hearthmoor, Fernbrook, Cobblecrest before the buyout, High Charity | blocked on D37–D49 | Q19 |
+| `bulletin_glimmer` | The same board in a mint sleeve, one corner of the old post still showing | 16×16 | Cobblecrest after `story.quarry_bought` | blocked on D41 | Q19 |
+| `bulletin_plain` | Bare board, star-chart paper, no seal | 16×16 | Mahopac, only if D38 includes it | blocked on D38 | Q19 |
+| `flyer_glimmer` | A crooked glossy flyer: Comfort lighting, complimentary | 16×16 | Fernbrook board, not a job slip | blocked on D42 | Q19 |
 
-Not requested: new creatures, new maps (the glimmer path reuses the existing maps), new tiles.
+Not requested: new creatures, new maps (the glimmer path reuses the existing maps), new tiles. Town-board words, if D49 sends them here, are drafted in `TOWN_BOARD.md`. Slips are NPC handwriting. The sleeve is the only faction voice.
 
 ## 4. Writing requests
 
