@@ -1,7 +1,7 @@
 {
   "spec": "HIGH_CHARITY",
   "version": "1.0",
-  "_about": "High Charity, the Keeper capital. Largest outdoor map (64x40). Unlocked after the faction pledge. Five Event Hall minigames are a side quest from Warden Ilse, not a step in the main chain.",
+  "_about": "High Charity, the Keeper capital. Largest outdoor map (64x40). Unlocked after the faction pledge. Five Event Hall minigames are a side quest from Warden Ilse, not a step in the main chain. Three more games are pass-the-phone and stay off that quest.",
   "tiles": {
     "P": {
       "name": "plaza stone",
@@ -1255,6 +1255,16 @@
           "booth": "pairs"
         },
         {
+          "kind": "npc",
+          "id": "hc_brin",
+          "name": "Brin",
+          "look": "brin",
+          "x": 5,
+          "y": 8,
+          "facing": "down",
+          "booth": "duo"
+        },
+        {
           "kind": "prop",
           "id": "hc_booth_l",
           "x": 2,
@@ -1299,7 +1309,7 @@
           "id": "hc_hall_note",
           "x": 2,
           "y": 8,
-          "text": "EVENT HALL · Five games with your Walkling. Three tries a day."
+          "text": "EVENT HALL · Solo booths up top. Two-keeper games with Brin."
         }
       ]
     },
@@ -1871,6 +1881,14 @@
       "outfitCol": "p",
       "accent": "c"
     },
+    "brin": {
+      "skin": "2",
+      "hair": "long",
+      "hairCol": "n",
+      "outfit": "tunic",
+      "outfitCol": "b",
+      "accent": "c"
+    },
     "nim": {
       "skin": "1",
       "hair": "long",
@@ -1995,6 +2013,7 @@
     "Otto": "otto",
     "Bramble": "bramble",
     "Willa": "willa",
+    "Brin": "brin",
     "Clerk Nia": "nia",
     "Landlord Oren": "oren",
     "Guide Tess": "tess",

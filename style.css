@@ -491,6 +491,11 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .play-card{align-items:center}
 .play-rule{margin:0;text-align:center;color:var(--h);font-size:16px;line-height:1.35}
 #playCanvas{background:#1a1c2c;box-shadow:0 0 0 4px var(--d);touch-action:none}
+.play-pads{display:flex;gap:8px;width:100%}
+.play-pads[hidden]{display:none}
+.play-pads button{flex:1;min-height:44px}
+#playP1{background:var(--y);color:var(--k)}
+#playP2{background:var(--c);color:var(--k)}
 #playStop{min-width:140px;min-height:44px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
 .map-inner{width:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:8px;
