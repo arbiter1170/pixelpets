@@ -61,7 +61,9 @@ test('look picker offers more hair, clothes, and accessories', async ({ page }) 
 });
 
 test('Mom is upstairs, and the side quest shows beside the main step', async ({ page }) => {
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  const save = starterSave();
+  save.flags['story.phone_got'] = true;
+  await installSave(page.context(), save, { quietDay: true });
   await gotoDebug(page);
   await page.locator('#questBtn').tap();
   await expect(page.locator('#questSide')).toHaveText(/Mom is upstairs/);
@@ -92,7 +94,9 @@ test('Mom is upstairs, and the side quest shows beside the main step', async ({ 
 
 test('Mahopac is quiet, and the dream toy pops into the next memory', async ({ page }) => {
   test.setTimeout(60000);
-  await installSave(page.context(), starterSave(), { quietDay: true });
+  const save = starterSave();
+  save.flags['story.phone_got'] = true;
+  await installSave(page.context(), save, { quietDay: true });
   await gotoDebug(page);
 
   const town = await page.evaluate(() => {

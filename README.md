@@ -10,11 +10,11 @@ No build step, all paths relative, everything self-hosted (including the font). 
 optional local-creatures lookup (see Wild creatures below).
 Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
 
-Touch: bottom tabs (Pet / Walk / Pets / Friends); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
+Touch: bottom tabs (Pet / Walk / Pets / Quest); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
-Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, Start over, and Debug.
+Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, Save a copy, Read a copy, Start over, and Debug.
 
 Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off), or open Settings → Debug and enter the password Larson (any capitalization). Either way the tools turn on immediately. A DBG tag shows in the header; tap it to open the debug panel again, including during a battle. Lock debug in that panel to turn it off on this device. Only in debug mode:
 - Keys: E = force-evolve current partner, G = force a wild battle (species weighted by the current area),
@@ -135,17 +135,18 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   opens once the orchard is cleared: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
   Seal #1 opens Route 2 (the creek, Wickerglen, and the Glow Census). Past the quarry gate is Cobblecrest: Dottie's
   stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. Cobblecrest's roofs, windows and
-  rooms get their own trim (other towns keep the shared tiles). A loss after you arrive wakes you in the
+  rooms get their own trim. A loss after you arrive wakes you in the
   Cobblecrest Lantern House.
-- The Walkling Journal (BOOK, top-left of the d-pad, and the WALKLINGS tab) keeps a page for each form you have seen:
+- The Walkling Journal (PHONE, top-left of the d-pad once the Route 1 officers issue it, then the Journal app, and the WALKLINGS tab) keeps a page for each form you have seen:
   the species line, a short note, and how you met the ones who joined you. A new form's first befriend opens that page.
   After Rook's first battle, one wild Walkling waits in the grass by Hearthmoor's east path.
-- Next step (QUEST, top-right of the d-pad; NEXT_PLAN WP-C): shows once you have a Walkling, hides during scenes, battles
-  and overlays, and pulses until you open it on a new objective (`questSeen`, additive). The panel (NEXT STEP) has one or
+- Next step (QUEST, `#questBtn` on the bottom bar where Friends used to sit; NEXT_PLAN WP-C): the tab stays on the bar. It opens once you have a Walkling, and the bar locks during scenes, battles,
+  and overlays. It pulses until you open it on a new objective (`questSeen`, additive). The panel (NEXT STEP) has one or
   two lines, a place line, the last three done steps, SHOW ON MAP (the region map rings the target's node in red and names
   the place under it) and CLOSE; Esc closes. If nobody on your team can battle it adds "Your team is worn out. Rest the
   whole party at a Lantern House. A rest costs a few Acorns." (the other two stuck lines are kept as data in
-  `PPQuests.STUCK`). The objective text and places are the designer's (Build 2): 24 steps, and 8 of them have a
+  `PPQuests.STUCK`). The objective text and places are the designer's (Build 2), plus later glimmer lines for Heights, the
+  Cobblecrest review, and Rook's cart: 26 rows, and 10 of them have a
   Glimmerwell variant (`glimmer: { text, place }` on the entry) that shows while `story.side` is `glimmer`; ids, `when`,
   `done` and targets are shared by both sides. Text is at most 110 characters, places at most 24 (`questCheck` enforces both).
   The QUEST button carries the designer's `icon_quest` (a yellow arrow signpost).
@@ -174,6 +175,23 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   (line length after tokens, choice labels ≤ 30, ambient lines ≤ 40, double spaces, unknown tokens, every variant has a
   base and sets the base's story flags; also run at boot), and with debug `setSide('glimmer' | 'keepers')`.
   The first-wild step follows the live guide creature.
+- Keeper House and the phone: Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the buyout) wears mint. Officer Bren patrols the Hearthmoor road out to the east gate. Officer Cald stands just north of that gate. The tree that closed the grass there is cut, and the town sign stands south of the path. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after the quarry buyout. The Keeper House south of that road has two floors: Sergeant Bram, Archivist Mo, and Clerk Wynn downstairs; Captain Lumen and Operator Rue upstairs. Before you pledge, they treat you as a citizen. Keepers hear warmer lines as Standing rises. A Glimmerwell pledge gets a cold door. The first side quest is on Route 1: two officers stop you and issue a Keeper1. PHONE (top-left) opens Contacts, Notes, Journal, Friends, and KeeperUAV. Notes say the Lantern desk can read them. Joining Glimmerwell also puts a Cracked Handset in the bag. While you are Glimmerwell and carrying it, the phone shell becomes the thin CRACK//HAND, and KeeperUAV is replaced by Botnet (placeholder jobs and parts). A blue chevron marks the side quest. The main quest chevron stays yellow. Higher Glimmerwell Standing tints your keeper with mint, then silver. Archivist Mo's books fear a child born already listening. That generation is not in the game. The phone has Ribbit, a read-only feed. Block News and Chirp Worldwide post about the towns. Local notes and the trending tags follow the day, the place you are standing, and the story. You cannot post.
+- Fernbrook Heights (before the first trial): once you pick a side, Fen or Juniper offers "get to know us" and sends you north.
+  Keepers investigate a smuggling tunnel. After the haulers step aside, Officer Ken of the Fernbrook watch interviews each Walkling with you, then walks them toward the orchard. Glimmerwell enters the RegenX lab,
+  four floors, to copy Atten (a focus aid) and its brewing plans. RegenX does not know the vials sit near The Arbiter,
+  ancient Glimmerwell technology. It emits something slowly. Nobody can name the emission, or why the machine was built.
+  Each Heights beat adds Standing for the side you are on. The trial and the
+  Tour's first stop wait until `story.heights_done`. A save that already has Seal 1 is not sent back.
+  Some fights are group battles: two foes at once, TARGET to choose, and on the last fight an ally Walkling steps in.
+  Stock up at the Heights crate. Key items (Atten Vial, Atten Plans, Route Page) stay in the bag.
+- Glimmerwell after Fernbrook (Builds 4–6, still in `data/glimmer_path.json`): Route 2 logs you as a Glow Census
+  volunteer. The quiet log gives Rook one `story.rook_bond`. Wickerglen still bumps the lamps and pays 3 Befriend Treats.
+  Cobblecrest puts you beside Dorian; Hale loses the quarry; Rook objects to the word "units". Hall slot 2 is a Sacrifice
+  stub: offer a snack (it stays in the bag), meet a free quota of three spoken names, or battle Hale. Any close grants
+  the Bright Tier 2 Lanyard (`seals.seal_glim_2`, placeholder art), 2 Hearty Snacks and 1 Wake Tonic, and sets
+  `story.seal2`. On the Brinewick cart, Keepers Rook gets off (`story.rook_end` `"ally"`) and Glimmerwell Rook stays
+  (`"stays"`). Both paths set `story.cobble_end` and show the same coming-later card. Keepers Route 2 and the Hale trial
+  are unchanged. `story.rook_bond` does not gate the cart.
 - Standing (Build 2, GLIMMER_PATH v0.2 BS; NEXT_PLAN WP-B "Standing and switching"): each side has a 0-100 meter,
   `S.standing = { keepers, glimmer }` (additive, `v` stays 2; `save.js` fills a missing or bad value with 0 and clamps the
   rest). Tier = the highest threshold reached (0 / 10 / 25 / 45 / 70 by default: Stranger, Friend, Trusted, Hall Friend,
@@ -183,7 +201,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   Scenes grant it with `["standing", side, n | null, oneShotId]` (a null amount reads `STANDING_CFG.grants[oneShotId]`;
   `standing.got.<id>` stops a replay from granting twice). Grants wired: the side pick (+10 to the picked side), the orchard
   (+5, either side), Seal #1 / the Bright Tier 1 review (+10 to the side played; the Tour completion is that same grant),
-  and the optional Tour match (`tour1_match`, +5 glimmer, only on a win). `cond()` accepts
+  the optional Tour match (`tour1_match`, +5 glimmer, only on a win), Heights beats (offer, rooms, Ken's interview, finales),
+  and Builds 4–6 (`glen_g`, `quarry_g`, `seal2_g` on glimmer, `r5_k` on keepers, `r5_g` on glimmer, 5 each, once). `cond()` accepts
   `standing.keepers>=2` / `standing.glimmer>=2` (the tier, not points) for later lines and options. Reaching a new tier shows
   that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
   the spec has no numbers yet.
@@ -214,7 +233,7 @@ no version bump; `normalizeLook()` fixes old or bad looks on load, e.g. the v0.4
   HAIR COLOUR (7), OUTFIT (coat, hoodie, tunic), OUTFIT COLOUR (7) and ACCENT (7), plus SHUFFLE. A new player sees
   it first ("WHO ARE YOU?", no CANCEL), then the starter picker; nothing is saved until DONE. Later, Change look in
   Settings (the header gear) opens it with CANCEL. Names: trimmed, spaces collapsed, `< > { }` and control characters dropped,
-  10 characters max, empty = "Wayfarer". The Friends tab shows "KEEPER  name" above the friend code, and the Pet scene shows a small "KEEPER  name"
+  10 characters max, empty = "Wayfarer". Friends live in the phone (FRIENDS app) and show "KEEPER  name" above the friend code. The Pet scene shows a small "KEEPER  name"
   label in its top-right corner ("Wayfarer" until named).
 - With no Walkling yet the keeper still walks (no energy, food or XP, no wild creatures).
 - Follower: your partner walks one tile behind you on the Walk map, taking the tile you just left (it never
@@ -341,10 +360,15 @@ Saves (format v2, `save.js`):
   `localStorage.setItem('pixelpets.save.v1', localStorage.getItem('pixelpets.save.v1.bak'))`.
 
 Start over: Settings → Start over (no debug needed) asks
-"Start over? Your Walklings will be gone for good." Press and hold the red START OVER for 1.5 s (touch, mouse, or
+"Start over? Your Walklings will be gone for good." SAVE A COPY downloads `walklings-save.json` first (the same
+v2 object the game stores; Settings → Save a copy does it any time). Press and hold the red START OVER for 1.5 s (touch, mouse, or
 Space/Enter); a bar fills while you hold and letting go early cancels. It removes `pixelpets.save.v2`,
 `pixelpets.save.v1`, `pixelpets.save.v1.bak` and `pixelpets.save.corrupt` (so migration can't bring old Walklings
 back), then reloads into the new-player path (look picker, then the starter choice). The page stops saving first, and any other open tab stops saving
 once it sees the save gone or replaced by a different game (a different `uid`), with a "reset in another tab"
-toast, so it can't write the old game back. Per-device keys are kept, never part of the save: `pixelpets.geo`,
+toast, so it can't write the old game back. Per-device keys are kept, never part of the save or the file: `pixelpets.geo`,
 `pixelpets.env`, `pixelpets.envOverride` for location, `pixelpets.mute`, `pixelpets.debug`, `pixelpets.fast`.
+Read a copy (Settings) takes that JSON file back. It must be save `v` 2. The game normalizes it, replaces the
+game on this device, and reloads. With no Walklings yet, the gear stays tappable under the opening scene so you
+can read the file without finishing the intro. Console: `PixelPets.exportSave()` (the JSON string) and
+`PixelPets.importSave(text)` (reads it and reloads).

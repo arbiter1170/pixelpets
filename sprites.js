@@ -388,6 +388,7 @@ const ICONS = {
   paw:['.##..##.','.##..##.','........','#..##..#','..####..','.######.','.######.','..#..#..'],
   walk:['..##....','.####...','.####...','..##.##.','....####','....####','.....##.','........'],
   book:['.######.','#......#','#.####.#','#......#','#.###..#','#......#','.######.','........'],
+  phone:['.######.','#......#','#.####.#','#......#','#......#','#.####.#','.######.','...##...'],
   friends:['.##..##.','.##..##.','........','###..###','###..###','###..###','........','........'],
   sound:['...#..#.','..##...#','####.#.#','####.#.#','####.#.#','..##...#','...#..#.','........'],
   mute:['...#....','..##....','####.#.#','####..#.','####.#.#','..##....','...#....','........'],
@@ -545,6 +546,7 @@ function buildWorldArt(){
   A.switch_desk_glimmer = mkTile(g => ['..ssssssssssss..', '..swwwwwwwwwws..', '..swlwlwlwlwls..', '..ssssssssssss..', '...d........d...', '...d.hhhhhh.d...',
     '...d.hwhrhw.d...', '...d.hwhlhw.d...', '.llllllllllllll.', '.swwwwwwwwwwwws.', '.slllllllllllls.', '.slllwwllwwllls.', '.slllwwllwwllls.', '.slllllllllllls.',
     '.dddddddddddddd.', '..d..........d..'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
+  A.arbiter = mkTile(g => ['................', '.....hhhhhh.....', '.......hh.......', '.......hh.......', '.mmmmmmmmmmmmmm.', '.mmhhhhhhhhhhmm.', '.mmhkkkkkkkkhmm.', '.mmhckkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhhhhhhhhhhmm.', '.mmmmddddddmmmm.', '.mmmmmmmmmmmmmm.', '................', '................'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   // High Charity props. One tile each; the airship sits on an A pad and the nave is a row of pews.
   A.airship = mkTile(g => { px(g,PAL.c,3,1,10,6); px(g,PAL.s,4,2,8,3); px(g,PAL.w,5,2,2,1);
     px(g,PAL.d,7,7,2,3); px(g,PAL.o,4,10,8,3); px(g,PAL.y,5,11,2,1); px(g,PAL.d,4,13,8,1); });

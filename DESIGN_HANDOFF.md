@@ -133,7 +133,7 @@ Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19).
 | `switch_bridge_to_glimmer`, `switch_bridge_to_keepers` | Short bridging scene after a switch, one per direction | 4-6 each |
 | Catch-up lines | Short lines that later scenes can drop in when the player did earlier beats under the other side ("You helped pack those crates, didn't you?"). One per major beat (orchard, Hall slot #1, Wickerglen lamps, the quarry sale) per direction | 8-10 |
 
-### 4d. Route 2 and Wickerglen, glimmer variants (phase B2) — **implementer copy is on the stranded branch; replace it after Q16**
+### 4d. Route 2 and Wickerglen, glimmer variants (phase B2) — **implementer copy is on main; replace that prose**
 | Scene id | Beat | Lines | Notes |
 |---|---|---|---|
 | `glimmer2@glimmer` | The Glow Census, the player as a volunteer | 5-6 | |
@@ -142,7 +142,7 @@ Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19).
 | `glen_cleared@glimmer` | The lamps click off when `{pet}` bumps the stand; Imogen praises the player; Rook's doubts show; 3 Befriend Treats | 12-16 | `rook_bond` choice |
 | `route2_end@glimmer` | The gate and the Cobblecrest invitation. Keep the `together` / `race` choice and its flags | 8-10 | `story.rook_pact` |
 
-### 4e. Cobblecrest, glimmer variants (phase B3) — **stub is on the stranded branch; the one-pager replaces it after Q16**
+### 4e. Cobblecrest, glimmer variants (phase B3) — **stub is on main; the one-pager replaces it**
 | Scene id | Beat | Lines |
 |---|---|---|
 | `cobble_arrive@glimmer` | Arrival with Rook as a fellow Junior Bright (reads `rook_pact`) | 5-6 |
@@ -186,7 +186,7 @@ Intro / win / lose lines for each trainer whose framing changes (Tobin, Fen as h
 3. **Sound specs** as a short table (notes, timings, voices) like the STINGERS v0.1 table.
 4. **Check your own lines**: <= 110 chars, no leftover tokens, speakers all mapped, every flag in `flags`.
 5. **Approval**: Vincent approves per phase, as with Route 2 and Cobblecrest (`status` records the approval).
-6. Deliver per phase so the build is never blocked on all of it. **Now:** Tour stop copy (4b leftover), the Sacrifice one-pager, and desk copy (4c). Route 2, Cobblecrest, and R5 (4d–4f) already have implementer scenes on `cursor/keeper-hq-phone-0bb2`. Replace that prose after Q16 lands it on `main`. Do not write a second set.
+6. Deliver per phase so the build is never blocked on all of it. **Now:** Tour stop copy (4b leftover), the Sacrifice one-pager, and desk copy (4c). Route 2, Cobblecrest, and R5 (4d–4f) already have implementer scenes on `main`. Replace that prose. Do not write a second set.
 
 ## 6. Open design questions where the designer is needed
 
