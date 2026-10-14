@@ -136,7 +136,7 @@ test('map loops follow town, route, dream, charity, chapel, and arcade', async (
     };
   });
   expect(got.check).toEqual([]);
-  for (const id of ['town', 'route', 'charity', 'chapel', 'arcade']) expect(got.ids).toContain(id);
+  for (const id of ['town', 'route', 'charity', 'chapel', 'arcade', 'grove', 'quarry', 'town_glimmer']) expect(got.ids).toContain(id);
   expect(got.tracks.hearthmoor).toBe('town');
   expect(got.tracks.fernbrook).toBe('town');
   expect(got.tracks.cobblecrest).toBe('town');
@@ -155,7 +155,7 @@ test('map loops follow town, route, dream, charity, chapel, and arcade', async (
   expect(got.hall).toEqual({ kind: 'interior', backdrop: 'town', music: 'arcade' });
   expect(got.tracks.hc_hall_in).toBe('arcade');
   expect(got.glen).toEqual({ backdrop: 'grove', music: null, dream: null });
-  expect(got.tracks.route2_glen).toBeNull();
+  expect(got.tracks.route2_glen).toBe('grove');
   expect(got.tracks['no-such-map']).toBeNull();
 });
 

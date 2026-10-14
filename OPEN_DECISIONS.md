@@ -18,7 +18,6 @@ The stranded branch `cursor/keeper-hq-phone-0bb2` reused D27–D31 for calls tha
 | D8 | WP-A | Optional extras not built: wary-shrink on a miss, a Settings "Easier befriending" toggle, KO mitigation. Build any? | None built. The plan's own defaults: the toggle is no for now (section 4); the miss-shrink only if width and speed feel too soft after play; KO mitigation is flagged, not required | NEXT_PLAN WP-A |
 | D11 | WP-C behaviour | The objective cue and walk tip show before the starter (pointing at the Lodge) while the QUEST button stays hidden until then. After the first-steps tips, the walk tip is replaced by the objective text. Intended? | Yes, as written: the chain's first step is the Lodge, the button waits for `story.starter_received`, and `walkTipText` falls back to the objective (WP-C tasks 1 and 6). Not changed | `drawObjectiveCue`, `walkTipText` in `game.js` |
 | D12 | WP-C scope | Side-task count (Faded Fuzzwick etc.) is not built. Per-side objective text landed in Build 2 (8 `@glimmer` overrides) | Side tasks not built; per-side text done | NEXT_PLAN WP-C; `glimmer:` entries in `CHAIN` (`quests.js`) |
-| D13 | Art | Lanyard art for tier 2 is still the code placeholder. Tier 1 shipped in Build 3 | `seal_glim_2` stays `lanyardArt(2)`. `seal_glim_1` is the delivered grid | `lanyardArt` / `LANYARD_TIER1` in `game.js` |
 | D14 | BS tiers (GLIMMER_PATH Q2) | Confirm the tier names and numbers: 0-100, tiers at 0 / 10 / 25 / 45 / 70, Keepers Stranger, Friend, Trusted, Hall Friend, Warden's Ally; Glimmerwell Guest, Associate, Junior Bright, Bright Lead, Founder's Pick; grants side pick 10, orchard 5, Seal #1 10 | Built as the Build 2 spec table. Build 3 adds `tour1_match` 5 (optional Hall match, glimmer, win only). Still unconfirmed; one edit in `STANDING_CFG` | `STANDING_CFG.thresholds`, `.sides`, `.grants` |
 | D15 | BS switching (GLIMMER_PATH Q3) | Confirm the switch rule: the side you leave keeps half its points (floor), the side you join is unchanged, one switch per chapter | Built as stated. `costDiv: 2`, `cooldown: 'perChapter'`. Still unconfirmed; one edit in `STANDING_CFG` | `STANDING_CFG.switch` |
 | D16 | BS chapter | What is a "chapter" for the one-switch-per-chapter cooldown? No spec defines it | Default: the number of Seals earned (`story.seal1` + `story.seal2`), so Fernbrook before Seal #1 is chapter 0, Route 2 and Cobblecrest are chapter 1, after Seal #2 is chapter 2. The refusal line says "One change of heart per Seal" | `PPStanding.chapterOf` and `switch.refused` in `standing.js` |
@@ -48,6 +47,8 @@ The stranded branch `cursor/keeper-hq-phone-0bb2` reused D27–D31 for calls tha
 - Brinewick, Trial Hall #3, Seal 3: no map and no one-pager. Do not start that region in Q16.
 
 ## Settled
+
+- **D13 (Oct 14, 2026, Q20).** `seal_glim_2` is a delivered 16×16 grid, `LANYARD_TIER2`. It keeps the tier-1 gold rim and mint field and adds a second white mark. The procedural `lanyardArt` placeholder is gone. The Sacrifice scene that shows the card is still on the stranded branch.
 
 - **D27 (Oct 14, 2026).** Mom's upstairs bond tasks and the Mahopac dream are an optional side chain (`PPQuests.SIDE`). They never block the main story. Mom calls Warden Ilse "Professor" when the work is dreams; Ilse keeps the Warden title and says so. There is no second character who gave the Walkling.
 

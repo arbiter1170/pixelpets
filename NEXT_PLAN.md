@@ -476,9 +476,13 @@ Files: `data/highcharity.json`, `quests.js`, `standing.js`, `tools/gen_mapdata.p
 
 Acceptance: a Keepers save with `story.cobble_end` shows the new row; playing the scene sets the flag and grants 10 once; a replay does not grant again; a glimmer save does not see the scene or the row; the Mahopac side objective still appears beside it; old saves load.
 
-### Build 8 — Look and listen — Q20 — after Q19
+### Build 8 — Look and listen — Q20 — **shipped**
 
-Art and music the Oct 14 audit found on maps that already exist. One PR. Sacrifice props stay out (D24). Tour stop lines stay out (D26, writing). Do not add a unique loop per town or per room.
+Shipped ahead of Q19. Sacrifice props stay out (D24). Tour stop lines stay out (D26, writing). No unique loop per town or per room.
+
+What landed: `LANYARD_TIER2` (same gold rim as tier 1, two white marks). `town_glimmer` is F Lydian, the town loop with the 4th raised. `quarry` is an A minor march for `cobble_quarry`. `grove` is a slow G major loop for backdrop `grove`, so Wickerglen no longer inherits the previous track. Imogen and Hollis looks live in `data/act1_route2.json`. Rook's `lanyard` accessory (mint cord, white-and-gold badge) follows the rules in the list below. Tests: `tests/look_listen.spec.js` and the grove row in `tests/qa_gaps.spec.js`.
+
+The original list, for the record:
 
 In this order:
 
@@ -611,7 +615,7 @@ The stranded branch shipped the stub this section allowed. The snack stays in th
 | `cobble_arrive@glimmer` | Rook as fellow Junior Bright. Still reads `story.rook_pact` |
 | `quarry_buyout@glimmer` | Player beside Dorian; Hale loses the quarry; Rook privately objects to "units". Sets `story.quarry_bought` |
 | `rival2_rook@glimmer` | Intro / win / lose only. Same `oneShot` and team |
-| Hall slot 2 | Sacrifice. Quota is the free floor (if the player cannot pay the cost, they do a befriend / win / walk target instead). Sets `story.seal2`, grants `seals.seal_glim_2` (needs tier-2 lanyard art; placeholder `lanyardArt(2)` is already in code) |
+| Hall slot 2 | Sacrifice. Quota is the free floor (if the player cannot pay the cost, they do a befriend / win / walk target instead). Sets `story.seal2`, grants `seals.seal_glim_2`. The tier-2 card art is `LANYARD_TIER2` on `main` |
 | `seal2@glimmer` | Match base gifts (`hearty_snack` x2, `wake_tonic` x1) unless `decisions` records a swap |
 | `seam_a` / `seam_b` | Shared. Catch-up `if` only if a glimmer player would be confused |
 

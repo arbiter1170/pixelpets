@@ -167,7 +167,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   Fernbrook glimmer dialog and the Hall #1 audit stub with the Bright Pavilion Tour (four stops on the existing map:
   lantern stand, crate Comfort Check, Hall slideshow, optional Fen match). The Hall panel still reads `panel` off the
   side-merged `hall1_fen`. Keepers still battle Fen for the Fernbrook Seal. The glimmer win or the skip stores
-  `seals.seal_glim_1` ("Bright Tier 1 Lanyard", delivered art) and runs `seal1@glimmer`. A loss wakes you at the Lantern
+  `seals.seal_glim_1` ("Bright Tier 1 Lanyard", delivered art) and runs `seal1@glimmer`. `seal_glim_2` ("Bright Tier 2 Lanyard") is the same badge with two white marks (`LANYARD_TIER2`); the scene that grants it is still on the stranded branch. A loss wakes you at the Lantern
   House and the tour resumes at stop 4. "Think about it" sets nothing; stepping off the gate toasts one walk-away line
   and the pick re-arms. All of it lives in `data/glimmer_path.json` (ours, not a design copy; registered in
   `tools/gen_mapdata.py` and merged last). Console: `PixelPets.side`, `sceneFor(id)`, `trainerFor(id)`, `glimmerCheck`

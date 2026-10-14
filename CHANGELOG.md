@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3.
 
+## 20261014-0628 — Look and listen (Q20)
+
+- Bright Tier 2 Lanyard is a real 16×16 badge: the tier-1 gold rim and mint field, with a second white mark. The procedural cord placeholder is gone.
+- Three loops in `sfx.js`: `town_glimmer` (F Lydian, the company version of the town theme) while pledged to Glimmerwell, `quarry` on the Cobblecrest quarry, and `grove` in Wickerglen. High Charity's `charity`, `chapel`, and `arcade` still win. Dreams stay on `route`.
+- Field Lead Imogen (blonde bob, mint dress, gold sash) and Associate Hollis (cyan curls, mint vest, cap) no longer share the generic associate coat.
+- Rook wears a Junior Bright lanyard (mint cord, white-and-gold badge) from the glimmer side pick, and from the end of Fernbrook on either path. `story.rook_end` `"ally"` takes it off.
+- Tests: `tests/look_listen.spec.js`. Reference sheet: `screenshots/look_listen/sheet.png`.
+
 ## 20261014-0614 — Planning and QA
 
 - Recorded what `main` already has through PR #21 (stamp `20261014-0015` before this pass).

@@ -104,7 +104,7 @@ With debug already on (`?debug=1`):
 
 | Test | What it asserts |
 |---|---|
-| map loops | `PixelPets.mapTrack(id)` is the loop `trackFor` would pick. Hearthmoor, Fernbrook, Cobblecrest, `hm_home_in`, and `cc_hall_in` are `town`. Route 2 and Old Meadow (`proto`, backdrop meadow) are `route`. `dream_2004` is an interior with a town backdrop and a dream wash, and its loop is `route`. High Charity and `hc_airport_in` are `charity`. `hc_church_in` is `chapel`. `hc_hall_in` is `arcade`. Wickerglen (`route2_glen`, backdrop grove) and an unknown id return `null`. `musicCheck()` is empty, and `town`, `route`, `charity`, `chapel`, and `arcade` are real music ids. |
+| map loops | `PixelPets.mapTrack(id)` is the loop `trackFor` would pick. Hearthmoor, Fernbrook, Cobblecrest, `hm_home_in`, and `cc_hall_in` are `town`. Route 2 and Old Meadow (`proto`, backdrop meadow) are `route`. `dream_2004` is an interior with a town backdrop and a dream wash, and its loop is `route`. High Charity and `hc_airport_in` are `charity`. `hc_church_in` is `chapel`. `hc_hall_in` is `arcade`. Wickerglen (`route2_glen`, backdrop grove) is `grove`. An unknown id returns `null`. `musicCheck()` is empty, and `town`, `route`, `charity`, `chapel`, `arcade`, `grove`, `quarry`, and `town_glimmer` are real music ids. |
 | end card and Mahopac | `setFlag('story.cobble_end')` makes `PixelPets.quest` the end card (`end`, The Amberwild). Flags through `story.mom_sent` make the side objective `mahopac` while the main id stays `end`. The save `v` stays 2. |
 | glimmer hall line | `story.orchard_cleared` shows the Keepers hall line. `setSide('glimmer')` keeps quest id `hall1` and shows the glimmer Trial Hall line. |
 | fainted lead, bench has HP | Wild and trainer. The lead is knocked to 0 HP. The bench is under the battle-energy minimum and still has HP. The battle stays open on "Who goes next?" and that bench can step in. The whole-team loss line does not play. |
@@ -112,3 +112,5 @@ With debug already on (`?debug=1`):
 | minigame dev check | `PPMinigames.devCheck()` is `[]`. |
 
 `PixelPets.mapTrack(mapId)` is read-only and works without `?debug=1`. It returns the loop id for that map, or `null` when that map would leave the current loop playing.
+
+`tests/look_listen.spec.js` covers the look-and-listen pass. A Keepers save hears `town` in Fernbrook and `quarry` at the quarry. A Glimmerwell pledge swaps Fernbrook and the home room to `town_glimmer` and leaves High Charity on `charity`, the dream on `route`, and Wickerglen on `grove`. `seal_glim_2` is a 16×16 grid in the tier-1 family with two white marks, not the old procedural cord. Imogen is a blonde mint dress and Hollis is curls, a mint vest, and a cap; neither matches the generic associate. Rook's lanyard turns on for a glimmer pledge after the side pick and after Fernbrook on either path, and turns off when `story.rook_end` is `ally`.
