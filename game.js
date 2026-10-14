@@ -698,6 +698,7 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.cobblecrest.rooms)));
   }
   if (MD.glimmer_path) applyMapPatch(W, MD.glimmer_path.slicePatch);   // WP-B: the faction fork (ours, objects only, no new maps)
+  if (MD.mahopac) { applyMapPatch(W, MD.mahopac.slicePatch); Object.assign(W, JSON.parse(JSON.stringify(MD.mahopac.maps))); }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -705,6 +706,7 @@ const SCENES = Object.assign({}, MD.maps_slice.scenes, MD.interiors.scenes);
 if (MD.act1_route2) Object.assign(SCENES, MD.act1_route2.slicePatch.scenes || {}, MD.act1_route2.scenes);
 if (MD.cobblecrest) Object.assign(SCENES, MD.cobblecrest.route2Patch.scenes || {}, MD.cobblecrest.scenes);
 if (MD.glimmer_path) Object.assign(SCENES, MD.glimmer_path.scenes || {});
+if (MD.mahopac) Object.assign(SCENES, MD.mahopac.scenes || {});
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
@@ -853,10 +855,12 @@ function pledgeDeskSteps(to){
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
+if (MD.mahopac && MD.mahopac.looks) for (const [k, v] of Object.entries(MD.mahopac.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
 if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.entries(MD.glimmer_path.speakers)) if (typeof v === 'string' && !LOOK_OF_NAME[k]) LOOK_OF_NAME[k] = v;
+if (MD.mahopac && MD.mahopac.speakers) for (const [k, v] of Object.entries(MD.mahopac.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 // Build 3: side-keyed ambient lines. New keys win; a leftover `else` stays behind them so it only shows if both side keys miss.
 (function applyGlimmerLines(){
   const G = MD.glimmer_path; if (!G || !G.lines || !WORLD.fernbrook) return;
@@ -896,6 +900,7 @@ const isRoom = () => CUR.kind === 'interior';
 // MUSIC v0.1: interiors and towns share one loop; routes and meadows share another. Unknown backdrops leave the current loop.
 function trackFor(map){
   if (!map) return null;
+  if (map.dream) return 'route';   // dreams use the wandering loop; the wash does the rest
   if (map.kind === 'interior' || map.backdrop === 'town') return 'town';
   if (map.backdrop === 'route' || map.backdrop === 'meadow') return 'route';
   return null;
@@ -1244,6 +1249,16 @@ function useItem(id, petId, ctx = 'field'){
 }
 // Triggers (§4): fire when a step ends within Manhattan r; once until the keeper ends a step outside the area (or the map changes).
 let walkAwayI = 0;   // which gate toast to show next; not saved (one line each time you step off after "Think about it")
+function checkArriveTriggers(){
+  const x = S.world.x, y = S.world.y;
+  for (const o of CUR.objs) {
+    if (o.kind !== 'trigger' || !o.arrive) continue;
+    const inside = present(o) && Math.abs(o.x - x) + Math.abs(o.y - y) <= (o.r || 0);
+    if (!inside || mapRT.trig[o.id]) continue;
+    mapRT.trig[o.id] = true; clearMoves(); runScene(o.scene); return true;
+  }
+  return false;
+}
 function checkTriggers(){
   const x = S.world.x, y = S.world.y;
   for (const o of CUR.objs) {
@@ -1318,6 +1333,7 @@ function updateWalk(dt, t){
     else { walk.fx = walk.from.x + (walk.to.x - walk.from.x) * walk.prog; walk.fy = walk.from.y + (walk.to.y - walk.from.y) * walk.prog;
       if (fol.to) { fol.fx = fol.from.x + (fol.to.x - fol.from.x) * walk.prog; fol.fy = fol.from.y + (fol.to.y - fol.from.y) * walk.prog; } }
   }
+  tickFrozen(t);
   if (!walk.to && !walk.intro && $('#ovBattle').hidden && !scene && !fade.busy) {
     let d = walk.queued || (walk.dpad && DIRS[walk.dpad]) || (walk.drag && DIRS[walk.drag]) || (walk.key && DIRS[walk.key]);
     walk.queued = null;
@@ -1429,9 +1445,10 @@ function drawMap(t){
   if (walk.target) { g.strokeStyle = PAL.y; g.lineWidth = 1; g.strokeRect(walk.target.x*TS - cx + .5, walk.target.y*TS - cy + .5, 15, 15); }
   const grassOver = (fx, fy) => { const gx = Math.round(fx), gy = Math.round(fy); if (MAP[gy] && MAP[gy][gx] === 't') g.drawImage(TILES.t, 0, 10, 16, 6, gx*TS - cx, gy*TS - cy + 10, 16, 6); };
   const drawPlayer = () => {                 // the keeper (MAPS_SLICE K.1): 2 walk frames, 1px bob only while moving
-    const fr = keeperFrame(), sx = Math.round(px_ - cx) - 1, sy = Math.round(py_ - cy) - 2 - fr;
-    g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(sx + 3, Math.round(py_ - cy) + 14, 12, 2);
-    g.drawImage(keeperFrames(lookOf())[S.world.facing][fr], sx, sy);
+    const fr = keeperFrame(), sc = CUR.dream === 'young' ? 12 : CUR.dream === 'child' ? 15 : 18;
+    const sx = Math.round(px_ - cx) - 1 + (18 - sc) / 2, sy = Math.round(py_ - cy) - 2 - fr + (18 - sc);
+    g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(sx + 3, Math.round(py_ - cy) + 14, Math.max(8, sc - 6), 2);
+    g.drawImage(keeperFrames(lookOf())[S.world.facing][fr], sx, sy, sc, sc);
     grassOver(walk.fx, walk.fy);
   };
   const drawFollower = () => {               // the partner, one tile behind (K.3); Tired = slower, lower bob
@@ -1456,6 +1473,7 @@ function drawMap(t){
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
   drawBubbles(g, cx, cy, t);
   if (!isRoom()) drawWeather(g, VW, VH, t);   // weather tint is skipped indoors (INTERIORS §2.1)
+  drawDream(g, VW, VH, t);
   drawObjectiveCue(g, cx, cy, t);
   if (walk.intro) { const k = Math.floor((t - walk.intro) / 120) % 2; if (k) { g.fillStyle = PAL.w; g.fillRect(0,0,VW,VH); } }
   if (fade.busy) { const e = (now() - fade.t0) / (FADE_MS / 2); g.globalAlpha = clamp(e <= 1 ? e : 2 - e, 0, 1); g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH); g.globalAlpha = 1; }
@@ -1558,35 +1576,42 @@ function routeExit(from, to){
   }
   routeCache.set(key, found); return found;
 }
-// Where the current objective is on this map: its tile, or the exit toward it; null when nothing points anywhere.
-function questPointOnMap(){
-  const q = questCurrent(); if (!q || !q.target) return null;
+// Where an objective is on this map: its tile, or the exit toward it; null when nothing points anywhere.
+// The first-wild guide picks its own grass tile.
+function pointOnMap(q){
+  if (!q || !q.target) return null;
   if (q.target.map === CUR.id) {
-    const gw = q.follow === 'guide' ? wild.list.find(w => w.guide) : null;   // the first-wild guide picks its own grass tile
+    const gw = q.follow === 'guide' ? wild.list.find(w => w.guide) : null;
     return gw ? { x: gw.x, y: gw.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
   }
   const ex = routeExit(CUR.id, q.target.map); return ex ? { x: ex.x, y: ex.y, here: false } : null;
 }
-function drawObjectiveCue(g, cx, cy, t){
-  if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
-  const pt = questPointOnMap(); if (!pt) return;
-  if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;   // standing on it
-  const c = $('#mapCanvas'), VW = c.width, VH = c.height;
+function questPointOnMap(){ return pointOnMap(questCurrent()); }
+const sideQuest = () => (S && typeof PPQuests !== 'undefined' && PPQuests.sideCurrent) ? PPQuests.sideCurrent(questState()) : null;
+function drawCuePoint(g, pt, col, cx, cy, t, VW, VH){
+  if (!pt) return;
+  if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
   const X = pt.x * TS - cx, Y = pt.y * TS - cy;
-  if (X > -TS && Y > -TS && X < VW && Y < VH) {                              // the tile is in view: a bobbing arrow above it
-    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5, Y - 12 - bob, PAL.y);
-    else drawArrow(g, ARROW.up, X + 5, Y + TS + 1 + bob, PAL.y);           // top row of the map: point up at it from below
+  if (X > -TS && Y > -TS && X < VW && Y < VH) {
+    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5, Y - 12 - bob, col);
+    else drawArrow(g, ARROW.up, X + 5, Y + TS + 1 + bob, col);
     return;
   }
-  // Off-screen: an arrow at the viewport edge, on the line from the keeper to the target.
   const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
   const m = 6, kx = dx ? ((dx > 0 ? VW - m : m) - px) / dx : Infinity, ky = dy ? ((dy > 0 ? VH - m : m) - py) / dy : Infinity;
   const k = Math.min(kx, ky), ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
   const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'), gr = ARROW[dir];
   const nudge = reduce ? 0 : bob, ox = dir === 'right' ? nudge : dir === 'left' ? -nudge : 0, oy = dir === 'down' ? nudge : dir === 'up' ? -nudge : 0;
-  drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox), Math.round(ey - gr.length / 2 + oy), PAL.y);
+  drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox), Math.round(ey - gr.length / 2 + oy), col);
+}
+function drawObjectiveCue(g, cx, cy, t){
+  if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
+  const c = $('#mapCanvas'), VW = c.width, VH = c.height;
+  const main = questPointOnMap(), side = pointOnMap(sideQuest());
+  drawCuePoint(g, main, PAL.y, cx, cy, t, VW, VH);
+  if (side && (!main || side.x !== main.x || side.y !== main.y)) drawCuePoint(g, side, PAL.c, cx, cy, t, VW, VH);
 }
 const WART = buildWorldArt();
 function drawObj(g, o, cx, cy, VW, VH, t){
@@ -1594,8 +1619,14 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   if (X < -18 || Y < -24 || X > VW + 2 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
+    const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
+    const img = keeperFrames(npcLook(o))[face][fr];
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
-    g.drawImage(keeperFrames(npcLook(o))[face][q.moving ? Math.floor(t / 130) % 2 : 0], X - 1, Y - 2);
+    if (o.frozen) {                          // a time echo: the same step, a pixel out of date
+      const echo = Math.floor(t / 900) % 2 ? 1 : -1;
+      g.globalAlpha = 0.35; g.drawImage(img, X - 1 + echo, Y - 2); g.globalAlpha = 0.9;
+    }
+    g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage(WART.sign, X, Y);
   else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) g.drawImage(Array.isArray(a) ? a[Math.floor(t / 400) % 2] : a, X, Y); }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
@@ -1680,7 +1711,8 @@ function renderKeeperName(){
   k.setAttribute('aria-label', 'Keeper ' + playerName());
 }
 const LOOK_ROWS = [['skin', '#lookSkin', 'Skin'], ['hair', '#lookHair', 'Hair'], ['hairCol', '#lookHairCol', 'Hair colour'],
-  ['outfit', '#lookOutfit', 'Outfit'], ['outfitCol', '#lookOutfitCol', 'Outfit colour'], ['accent', '#lookAccent', 'Accent']];
+  ['outfit', '#lookOutfit', 'Outfit'], ['outfitCol', '#lookOutfitCol', 'Outfit colour'], ['accent', '#lookAccent', 'Accent'],
+  ['accessory', '#lookAccessory', 'Accessory']];
 const COLOUR_NAMES = { k:'black', p:'plum', r:'red', o:'orange', y:'yellow', l:'lime', g:'green', t:'teal', n:'navy', b:'blue', c:'sky', s:'ice',
   w:'white', h:'grey', m:'slate', d:'charcoal', 1:'tone 1', 2:'tone 2', 3:'tone 3', 4:'tone 4', 5:'tone 5', 6:'tone 6' };
 const lookUI = { draft: null, newPlayer: false, resolve: null };
@@ -1710,9 +1742,9 @@ function renderLook(){
     const box = $(sel); box.innerHTML = '';
     for (const opt of KEEPER_LOOKS[slot]) {
       const b = document.createElement('button'); b.type = 'button'; b.dataset.opt = opt;
-      const on = d[slot] === opt; b.className = (slot === 'hair' || slot === 'outfit' ? 'preview' : 'swatch') + (on ? ' on' : '');
+      const on = d[slot] === opt; b.className = (slot === 'hair' || slot === 'outfit' || slot === 'accessory' ? 'preview' : 'swatch') + (on ? ' on' : '');
       b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', label + ': ' + (COLOUR_NAMES[opt] || opt));
-      if (slot === 'hair' || slot === 'outfit') {
+      if (slot === 'hair' || slot === 'outfit' || slot === 'accessory') {
         const lk = Object.assign({}, d, { [slot]: opt }), src = keeperFrames(lk).down[0];
         const rows = slot === 'hair' ? 13 : 18;               // hair: head and shoulders (outline + the top 12 grid rows)
         const cv = document.createElement('canvas'); cv.width = 18; cv.height = rows; cv.style.width = '54px'; cv.style.height = (rows * 3) + 'px';
@@ -1745,7 +1777,47 @@ function lookDone(){
 /* ---------- talk, bump hint, chatter (MAPS_SLICE §4/§4.1, INTERIORS §4.2) ---------- */
 const bump = { talked: null, at: -1e9, held: false, hideAt: 0 };
 const BUMP_HINT_MS = 2000, HINT_LIFE_MS = 1500, CHATTER_MS = 2500;
+// A pushable dream prop follows a fixed circuit. Each bump pops and advances one tile. The last step runs rollScene.
+function rollProp(o){
+  if (!o || !o.roll || scene) return;
+  const circuit = o.circuit || []; if (!circuit.length || !o.rollScene) return;
+  if (S.flags['story.dream_toy']) return;
+  const step = +S.flags[o.rollFlag] || 0;
+  if (step >= circuit.length) { runScene(o.rollScene); return; }
+  const nxt = circuit[(step + 1) % circuit.length], nx = nxt[0], ny = nxt[1];
+  const q = objPos(o);
+  if (solidTile(nx, ny) || (nx === S.world.x && ny === S.world.y) || blockerAt(nx, ny)) { sfx('denied'); return; }
+  sfx('pop');
+  mapRT.pos[o.id] = { x: nx, y: ny, fx: nx, fy: ny, facing: dirName(nx - q.x, ny - q.y) };
+  S.flags[o.rollFlag] = step + 1; save();
+  if (step + 1 >= circuit.length) runScene(o.rollScene);
+}
+// Mahopac's time-stuck people: one slow step along a short loop, then a long freeze.
+function tickFrozen(t){
+  if (!CUR || scene || fade.busy) return;
+  for (const o of CUR.objs) {
+    if (!o.frozen || !present(o) || !o.loop || !o.loop.length) continue;
+    let q = mapRT.pos[o.id];
+    if (!q) q = mapRT.pos[o.id] = { x: o.x, y: o.y, fx: o.x, fy: o.y, facing: o.facing || 'down', moving: false, next: t + 1200, step: 0 };
+    if (q.to) {
+      q.prog = Math.min(1, (t - q.t0) / 1400);
+      q.fx = q.fromX + (q.to.x - q.fromX) * q.prog; q.fy = q.fromY + (q.to.y - q.fromY) * q.prog; q.moving = true;
+      if (q.prog >= 1) {
+        if (q.to.x === S.world.x && q.to.y === S.world.y) { q.fx = q.x; q.fy = q.y; q.to = null; q.moving = false; q.next = t + 600; }
+        else { q.x = q.to.x; q.y = q.to.y; q.fx = q.x; q.fy = q.y; q.to = null; q.moving = false; q.next = t + 2800; }
+      }
+      continue;
+    }
+    if (t < (q.next || 0)) continue;
+    q.step = ((q.step || 0) + 1) % o.loop.length;
+    const nx = o.loop[q.step][0], ny = o.loop[q.step][1];
+    if ((nx === q.x && ny === q.y) || solidTile(nx, ny) || (nx === S.world.x && ny === S.world.y) || blockerAt(nx, ny)) { q.next = t + 2800; continue; }
+    q.fromX = q.x; q.fromY = q.y; q.to = { x: nx, y: ny }; q.t0 = t; q.prog = 0;
+    q.facing = dirName(nx - q.x, ny - q.y); mapRT.face[o.id] = q.facing;
+  }
+}
 function bumpObj(o, d, turned){
+  if (o.roll) { rollProp(o); return; }
   if (o.kind === 'trainer' && !S.flags['trainer.' + o.id]) { interact(o); return; }   // an unbeaten trainer: its battle, never the hint
   if ((o.kind === 'npc' || o.kind === 'trainer') && bump.talked === o.id) { showBumpHint(o); return; }
   if (o.kind === 'prop' && !o.lines) return;                                          // silent props just block
@@ -1765,6 +1837,7 @@ function faceKeeper(o){ const q = objPos(o); mapRT.face[o.id] = dirName(S.world.
 function interact(o){
   if (scene || fade.busy || !o) return;
   if (o.kind === 'door') { enterDoor(o); return; }
+  if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
   if (o.kind === 'npc' || o.kind === 'trainer') faceKeeper(o);
   if (o.kind === 'trainer') {
@@ -1878,7 +1951,10 @@ function endScene(){
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
   for (const o of CUR.objs) if (o.kind === 'trigger' && !(Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y) <= (o.r || 0))) delete mapRT.trig[o.id];
   if (sc.deferRespawn) respawnAfterWipe();
-  else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
+  else {
+    checkArriveTriggers();   // only triggers marked arrive (a dream warp landing on the next scene)
+    if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
+  }
   if (sc.id === 'rival1') placeGuide();
 }
 const pend = f => scene.pending.push(f);
@@ -1985,6 +2061,19 @@ async function execStep(st){
       pend(() => { if (!S.seals[id]) S.seals[id] = Date.now(); });
       if (sc.skip || already || (battle && battle.on)) return;
       await presentFieldSeal(id);
+      return;
+    }
+    case 'bond': { const n = Number(a) || 0; if (n) pend(() => { const p = pet(); if (p) addBond(p, n); }); return; }
+    case 'sfx': { if (a) sfx(a); return; }
+    case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
+    case 'warp': {
+      if (!a || !WORLD[a]) return;
+      commitPending();   // the position save inside the warp must not outrun this scene's flags
+      await new Promise(res => {
+        const at = { map: a, x: b | 0, y: c | 0, facing: d || 'down' };
+        if (fade.busy) { arriveAt(at); res(); return; }
+        warpTo(at, res);
+      });
       return;
     }
   }
@@ -2278,6 +2367,20 @@ function drawWild(g, w, cx, cy, VW, VH, t){
   if (w.stage > 0 && Math.floor(tt / 350) % 5 === 0) drawGlyph(g, 'spark', x + 14, y0 - 2);   // rare form twinkle
 }
 
+// Dream maps (Mahopac memories): a plum wash and slow sparks, indoors or out. The keeper is drawn smaller.
+function drawDream(g, VW, VH, t){
+  if (!CUR || !CUR.dream) return;
+  g.fillStyle = 'rgba(93,39,93,.28)'; g.fillRect(0, 0, VW, VH);
+  g.fillStyle = 'rgba(115,239,247,.12)'; g.fillRect(0, 0, VW, VH);
+  g.fillStyle = 'rgba(244,244,244,.9)';
+  for (let i = 0; i < 16; i++) {
+    const r = WX_RND, sp = 0.008 + r[(i * 3 + 2) % 360] * 0.016;
+    const y = (r[(i * 3 + 1) % 360] * (VH + 4) + t * sp) % (VH + 4) - 2;
+    const x = (r[(i * 3) % 360] * VW + Math.sin(t / 1400 + i) * 6) % VW;
+    g.fillRect(x | 0, y | 0, 1, 1);
+    if (r[(i * 3 + 2) % 360] > 0.55) g.fillRect((x | 0) + 1, (y | 0), 1, 1);
+  }
+}
 /* ---------- weather overlay (cheap, stateless pixel particles) ---------- */
 const WX_RND = Array.from({ length: 360 }, (_, i) => { const v = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); });
 function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/flake count (the Pet tab canvas is small)
@@ -2889,11 +2992,13 @@ const REGION_MAP = {
     route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]] },
     cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.' },
     cobble_quarry: { kind: 'side',  col: 17, row: 3, label: 'QUARRY',      labelAt: 'above', blurb: 'Pebblits nap in the old seam.', path: [[17, 6], [17, 3]] },
+    mahopac:       { kind: 'town',  col: 2,  row: 3, label: 'MAHOPAC',     labelAt: 'above', blurb: 'Time-snagged woods. Breckenridge Observatory.', path: [[2, 6], [2, 3]] },
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [] },
-  interiors: { hm_home_in: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest' },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'] },
+  interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
+    mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -2968,6 +3073,8 @@ function drawRegionMap(t){
   // WP-C: the objective's node gets a red ring on the same blink (wider when it shares the node with the blue "you are here").
   const q = questCurrent(), qn = q && q.target ? nodeOf(q.target.map) : null;
   if (qn && N[qn] && (reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0)) { const [x, y] = P([N[qn].col, N[qn].row]); ring(x, y, qn === cur ? 15 : 12, 'r'); }
+  const sq = sideQuest(), sn = sq && sq.target ? nodeOf(sq.target.map) : null;
+  if (sn && N[sn] && sn !== qn && (reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0)) { const [x, y] = P([N[sn].col, N[sn].row]); ring(x, y, sn === cur ? 15 : 12, 'c'); }
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
 
@@ -3023,6 +3130,11 @@ function closeQuest(){
 function renderQuest(q){
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
+  const sideQ = sideQuest();
+  const sl = $('#questSideLabel'), stx = $('#questSide'), sp = $('#questSidePlace');
+  if (sl) sl.hidden = !sideQ;
+  if (stx) { stx.hidden = !sideQ; stx.textContent = sideQ ? sideQ.text : ''; }
+  if (sp) { sp.hidden = !sideQ; sp.textContent = sideQ ? (sideQ.place || '') : ''; }
   // Stuck-state guard: after a loss the objective stays put; say what to do first when nobody can battle (spec questStuck[0]).
   const stuck = S.party.length > 0 && !leadPet();
   const note = $('#questNote'); note.hidden = !stuck; note.textContent = stuck ? PPQuests.STUCK[0] : '';
@@ -4261,8 +4373,8 @@ function boot(){
     enc, walk,
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
-  Object.defineProperty(api, 'mapInfo', { enumerable: true, get(){ return { id: CUR.id, w: MW, h: MH, room: isRoom(), outdoor: outdoorId(), backdrop: backdropName(),
-    objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind] })) }; } });
+  Object.defineProperty(api, 'mapInfo', { enumerable: true, get(){ return { id: CUR.id, w: MW, h: MH, room: isRoom(), outdoor: outdoorId(), backdrop: backdropName(), dream: CUR.dream || null,
+    objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
     typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
