@@ -1,6 +1,6 @@
 # Walklings: what's next (queue, Oct 14, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack. Q17 the party board, Q18 the installable app, Q20 look and listen, and Q21 the Lantern Council are built. Q23 rename, Q24 the music volume slider, and Q25 the welcome-back line are built. Next scoped work is Q19, town boards. The town-list calls are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on this branch, not on main. TB-3 is the next unbuilt board step. Detail is in `TOWN_BOARD.md`. Q22, the Capital Partnership Briefing, is not built. Do not rebuild Builds 4–6. Agent skills are indexed in `.cursor/skills/README.md`. Which branch held which piece is in `BRANCH_LOG.md`.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack. Q17 the party board, Q18 the installable app, Q20 look and listen, and Q21 the Lantern Council are built. Q23 rename, Q24 the music volume slider, and Q25 the welcome-back line are built. Next scoped work is Q19, town boards. The town-list calls are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is the next unbuilt board step. Detail is in `TOWN_BOARD.md`. Q22, the Capital Partnership Briefing, is not built. Do not rebuild Builds 4–6. Agent skills are indexed in `.cursor/skills/README.md`. Which branch held which piece is in `BRANCH_LOG.md`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,9 +8,9 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are built. Q19 town boards: TB-1 and the Hearthmoor and Fernbrook squares are on this branch, not on main. TB-3 is not started. Q22 is not built |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are built. Q19 town boards: TB-1 and the Hearthmoor and Fernbrook squares are on main. TB-3 is not started. Q22 is not built |
 | `.cursor/skills/README.md` | Every agent | Skill index. Quest work uses `walklings-quests`. Status docs use `walklings-docs`. A phone playthrough and the check that follows it use `walklings-qa` |
-| `TOWN_BOARD.md` | The implementing agent | Town bulletin boards and the Town Board phone app. Calls settled. TB-1 and the Hearthmoor and Fernbrook squares are on this branch, not on main. TB-3 is not started |
+| `TOWN_BOARD.md` | The implementing agent | Town bulletin boards and the Town Board phone app. Calls settled. TB-1 and the Hearthmoor and Fernbrook squares are on main. TB-3 is not started |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
 
@@ -449,7 +449,7 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Oct 14 queue
 
-Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. Next scoped work is Q19, town boards. The town-list D37 and D38–D49 are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on this branch, not on main. TB-3 is the next unbuilt board step and is not started. The open-table D37 is the region-map claim list and shares that number. Q22, the Capital Partnership Briefing, is not built. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
+Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. Next scoped work is Q19, town boards. The town-list D37 and D38–D49 are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is the next unbuilt board step and is not started. The open-table D37 is the region-map claim list and shares that number. Q22, the Capital Partnership Briefing, is not built. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ### Q16 — Land the stranded Act 1 stack — **done**
 
@@ -509,7 +509,7 @@ Shipped. `manifest.json` and `sw.js` let the game be added to the home screen an
 
 ### Q19 — Town boards — scoped
 
-Q17 and Q18 are already in the game. The town-list calls are settled. TB-1 is in the game on this branch, not on main: empty boards, live reports, the phone app, and no slips. The Hearthmoor crossing and the Fernbrook forecourt are in on this branch too. Mahopac has a board and no slips. Every future town gets a board with its map. KeeperUAV stays the blank watch desk for now and later carries faction-related abilities. The open-table D37 is the region-map claim list and shares that number. The scope is [TOWN_BOARD.md](TOWN_BOARD.md). A future quest uses `.cursor/skills/walklings-quests/SKILL.md`.
+Q17 and Q18 are already in the game. The town-list calls are settled. TB-1 is in the game on main: empty boards, live reports, the phone app, and no slips. The Hearthmoor crossing and the Fernbrook forecourt are on main too. Mahopac has a board and no slips. Every future town gets a board with its map. KeeperUAV stays the blank watch desk for now and later carries faction-related abilities. The open-table D37 is the region-map claim list and shares that number. The scope is [TOWN_BOARD.md](TOWN_BOARD.md). A future quest uses `.cursor/skills/walklings-quests/SKILL.md`.
 
 TB-1 is the empty board, the reports, and the phone app. The Hearthmoor and Fernbrook squares from TB-2 landed with it. TB-3 is the next unbuilt board step: one slip (Cald's gate count). It is not started. No quest is wired. KeeperUAV stays the blank watch desk.
 
@@ -619,6 +619,6 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on this branch, not on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D62. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. Daily Standing (D18) is yes and slow, with no cap yet.
+9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D62. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. Daily Standing (D18) is yes and slow, with no cap yet.
 10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.
 11. **Welcome back (D56) and clearing a nickname (D57).** Q25 uses 14 hours and one sentence. Q23 clears `nick` when the field is empty or equals the species name, on the stats card and on the Walkling sheet. Both lines are still placeholders.

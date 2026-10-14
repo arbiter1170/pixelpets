@@ -48,7 +48,7 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 
 ## Town boards (calls settled Oct 14, 2026)
 
-The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on this branch, not on main. TB-3 is not started. Q23–Q25 are in the game. A quest that comes out of those calls follows `.cursor/skills/walklings-quests/SKILL.md`. The D37 still in the open table is the region-map claim list.
+The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. Q23–Q25 are in the game. A quest that comes out of those calls follows `.cursor/skills/walklings-quests/SKILL.md`. The D37 still in the open table is the region-map claim list.
 
 ## Not started, blocked on people
 
@@ -58,12 +58,12 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 - Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
 - Brinewick, Trial Hall #3, Seal 3: no map and no one-pager.
 - The box screen and the installable app are built. Rename (Q23), the music volume slider (Q24), and the welcome-back line (Q25) are built. Brinewick still waits on a one-pager.
-- Town boards (Q19) are scoped in `TOWN_BOARD.md`. TB-1 and the Hearthmoor and Fernbrook squares are in the game on this branch, not on main. TB-3 is not started. Mahopac has a board and no slips. The open-table D37 is the region-map claim list and is still open. D56 and D57 are the open lines on the welcome and on clearing a nickname. They do not block the boards.
+- Town boards (Q19) are scoped in `TOWN_BOARD.md`. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. Mahopac has a board and no slips. The open-table D37 is the region-map claim list and is still open. D56 and D57 are the open lines on the welcome and on clearing a nickname. They do not block the boards.
 - The Capital Partnership Briefing (Q22) is not built. It must not add a second Standing grant on top of `r5_g`.
 
 ## Settled
 
-- **D37 town list (Oct 14, 2026).** Vincent: yes, and all future towns. This is the town-list row. The region-map row that uses the same number stays open. Boards go in Hearthmoor, Fernbrook, Cobblecrest, High Charity, and Mahopac, and in every town added later, including Brinewick in the same pass as its map. Routes, Wickerglen, Old Meadow, the quarry, the Heights, RegenX, and the tunnels get none. The sky-dock boarding board and the lantern coach stay their own signs. TB-1 and the Hearthmoor and Fernbrook squares are in the game on this branch, not on main. TB-3 is not built. Brinewick still has no map.
+- **D37 town list (Oct 14, 2026).** Vincent: yes, and all future towns. This is the town-list row. The region-map row that uses the same number stays open. Boards go in Hearthmoor, Fernbrook, Cobblecrest, High Charity, and Mahopac, and in every town added later, including Brinewick in the same pass as its map. Routes, Wickerglen, Old Meadow, the quarry, the Heights, RegenX, and the tunnels get none. The sky-dock boarding board and the lantern coach stay their own signs. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not built. Brinewick still has no map.
 - **D38 (Oct 14, 2026).** Mahopac gets a board now: one uncrested board on the path at (11, 8), no new tiles. It does not receive slips for a while. Reports may show with the other boards. TB-3 (Cald's gate count) does not add a Mahopac slip.
 - **D39 (Oct 14, 2026).** Yes. The phone says "Go see them" and sets only a pin. The NPC's yes is the only accept. Talking without the pin still works.
 - **D40 (Oct 14, 2026).** Yes. Board pins are a separate list, at most three, drawn in the same blue. The latest pin is on the map. All of them are on the phone. They do not go into `SIDE_CHAINS`.
