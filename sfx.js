@@ -125,6 +125,7 @@ const PPSound = (() => {
     tired:    t => { tone(f(440), t, 0.35, 'triangle', 0.45, 140); noise(t + 0.2, 0.15, 0.08, 600); },
     win:      t => { seq(t, [72, 76, 79, 84], 0.09, 0.1, 'square', 0.12); tone(88, t + 0.36, 0.3, 'square', 0.12); seq(t, [48, 55, 60], 0.12, 0.12, 'triangle', 0.45); },
     learn:    t => seq(t, [76, 81, 86], 0.08, 0.1, 'triangle', 0.3),          // quieter than levelup
+    pop:      t => { noise(t, 0.05, 0.22, 1800); tone(f(880), t, 0.04, 'square', 0.1, 220); },
   };
   // CARE_LOOP Q11 default: one chirp per type, pitch-shifted (hello, pats). Short and soft; two rising blips.
   const CHIRP_BASE = { ember: 79, tide: 74, bloom: 81, stone: 67, volt: 84, frost: 86, gust: 83, shade: 70, plain: 76 };

@@ -39,6 +39,8 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 
 ## Settled
 
+- **D27 (Oct 14, 2026).** Mom's upstairs bond tasks and the Mahopac dream are an optional side chain (`PPQuests.SIDE`). They never block the main story. Mom calls Warden Ilse "Professor" when the work is dreams; Ilse keeps the Warden title and says so. There is no second character who gave the Walkling.
+
 - **D23 (Oct 13, 2026, Build 3).** Rook after Glimmerwell, Vincent: "if player chooses to join evil faction, rook will stay evil. If player stays in good faction, rook eventually converts to good." Keepers path: Rook eventually converts to good. Glimmerwell path: Rook stays with Glimmerwell. Not bond-gated, and there is no follow-or-stay fork. `teaser@glimmer` does not say he leaves. The R5 scene is not in this build. Supersedes the NEXT_PLAN bond tree and the "Rook always leaves" note.
 - **D3 (Oct 13, 2026, Build 3).** Hall slot 1 is the Bright Pavilion Tour. Vincent: "Slot 2 - decision 1," read as slot 1 stays the stated default (Tour) and slot 2 is the other named option (Sacrifice, Quota as the free floor). Slot 2 is not built. The Audit battle is optional Tour stop 4.
 - **D5 (Oct 13, 2026, Build 3).** `teaser@glimmer` is the glimmer teaser. It sets `story.slice_end`. Rook is a rival colleague chasing Bright of the Month, with one lighting doubt.

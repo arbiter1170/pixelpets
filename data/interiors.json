@@ -11,7 +11,8 @@
     "W": {"name": "wall face (window)", "walk": false},
     ".": {"name": "wood floor", "walk": true},
     "=": {"name": "rug", "walk": true},
-    "m": {"name": "exit mat", "walk": true}
+    "m": {"name": "exit mat", "walk": true},
+    "^": {"name": "stairs", "walk": true}
   },
   "newGame": {"map": "hm_home_in", "x": 1, "y": 3, "facing": "down", "scene": "intro"},
   "maps": {
@@ -24,12 +25,13 @@
         "#.......#",
         "#.......#",
         "#..===..#",
-        "#..===..#",
+        "#^.===..#",
         "#.......#",
         "####m####"
       ],
       "objs": [
         {"kind": "warp", "id": "home_mat", "x": 4, "y": 7, "to": "hearthmoor", "tx": 3, "ty": 5, "facing": "down"},
+        {"kind": "warp", "id": "home_stairs", "x": 1, "y": 5, "to": "hm_home_up", "tx": 2, "ty": 5, "facing": "right"},
         {"kind": "prop", "id": "home_bed", "x": 1, "y": 2, "sprite": "bed", "lines": {"else": "@home_bed"}},
         {"kind": "prop", "id": "home_terminal", "x": 3, "y": 2, "sprite": "pet_terminal", "lines": {
           "!story.starter_received": "Your Walkling-box. A row of empty nests glows softly, waiting for someone small.",
@@ -41,12 +43,44 @@
           "story.seal1": "Your map of the Amberwild. You've inked a tiny Seal beside Fernbrook.",
           "else": "Keeper primers and a dog-eared map of the Amberwild. Someone drew a star on Fernbrook."}},
         {"kind": "prop", "id": "home_table", "x": 7, "y": 5, "sprite": "table_small", "lines": {
-          "else": "A chipped mug and yesterday's crumbs. The kettle is still warm."}},
+          "!story.mom_met": "A chipped mug and yesterday's crumbs. The kettle is still warm.",
+          "!story.mom_chore": "@mom_tidy",
+          "else": "The table is clear. A good spot for a small friend."}},
         {"kind": "prop", "id": "home_mirror", "x": 3, "y": 6, "sprite": "mirror", "lines": {"else": "@home_mirror"}},
         {"kind": "sign", "id": "home_note", "x": 5, "y": 6, "when": ["!story.starter_received"],
           "text": "Ilse's note: \"Come to the Warden's Lodge when you wake. Someone small is waiting. — I. Marrow\""},
         {"kind": "sign", "id": "home_note_kept", "x": 5, "y": 6, "when": ["story.starter_received"],
           "text": "Ilse's note, folded neat. Someone small found you after all."}
+      ]
+    },
+    "hm_home_up": {
+      "name": "Your Home, upstairs", "kind": "interior", "outdoor": "hearthmoor", "door": "hm_home", "backdrop": "town",
+      "w": 9, "h": 8, "spawns": null, "zones": [], "safe": {"x": 4, "y": 5},
+      "grid": [
+        "#########",
+        "#WWWWWWW#",
+        "#.......#",
+        "#.......#",
+        "#..===..#",
+        "#^......#",
+        "#.......#",
+        "#########"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "home_stairs_down", "x": 1, "y": 5, "to": "hm_home_in", "tx": 1, "ty": 6, "facing": "down"},
+        {"kind": "npc", "id": "mom", "name": "Mom", "look": "mom", "x": 5, "y": 3, "facing": "down",
+          "chatter": {"!story.starter_received": "Ilse is waiting, love.", "else": "Kettle's on upstairs."},
+          "lines": {
+            "!story.starter_received": "Morning, love. Ilse is waiting at the Lodge. Someone small, she said.",
+            "!story.mom_met": "@mom_hello",
+            "!story.mom_chore": "The table downstairs still has crumbs. Clear a spot for your Walkling.",
+            "!story.mom_sent": "@mom_trip",
+            "!story.dream_woke": "The north trail is open. Mahopac is quiet. Take your Walkling.",
+            "!story.dream_study": "Tell Professor Ilse what you dreamed. She gave you your Walkling.",
+            "else": "Your Walkling trusts you a little more. I can hear it."}},
+        {"kind": "prop", "id": "up_bed", "x": 7, "y": 2, "sprite": "bed", "lines": {"else": "Mom's bed, quilt pulled tight. It smells like soap and rain."}},
+        {"kind": "prop", "id": "up_shelf", "x": 2, "y": 2, "sprite": "bookshelf", "lines": {"else": "Old school photos and a book of star maps. Mahopac is circled."}},
+        {"kind": "trigger", "id": "mom_wake_at", "x": 4, "y": 5, "r": 1, "arrive": true, "when": ["story.dream_dad", "!story.dream_woke"], "scene": "mom_wake"}
       ]
     },
     "hm_lodge_in": {
@@ -68,7 +102,7 @@
         {"kind": "npc", "id": "ilse_lodge", "name": "Warden Ilse", "look": "ilse", "x": 5, "y": 3, "facing": "down",
           "when": ["!story.starter_received"], "scene": "starter"},
         {"kind": "npc", "id": "ilse_lodge_after", "name": "Warden Ilse", "look": "ilse", "x": 5, "y": 3, "facing": "down",
-          "when": ["story.starter_received"], "lines": {"!has:name": "@ask_name", "else": "@ilse_chat"}},
+          "when": ["story.starter_received"], "lines": {"!has:name": "@ask_name", "story.dream_woke": "@ilse_gate", "else": "@ilse_chat"}},
         {"kind": "trigger", "id": "lodge_hello", "x": 5, "y": 6, "r": 1, "when": ["story.intro_seen", "!story.starter_received"], "scene": "starter"},
         {"kind": "trigger", "id": "lodge_name", "x": 5, "y": 6, "r": 1, "when": ["story.starter_received", "!has:name"], "scene": "ask_name"},
         {"kind": "prop", "id": "lodge_lantern", "x": 1, "y": 2, "sprite": "wall_lantern", "lines": {
@@ -199,11 +233,12 @@
     "tokenLen": {"name": 10, "player": 10, "pet": 10, "species": 9, "type": 5, "suggest": 9, "rival": 9, "rivalType": 5},
     "tokenAlias": {"player": "name"},
     "newSteps": ["rest", "run"],
-    "speakers": {"Warden Ilse": "ilse", "Rook": "rook", "Mrs. Calloway": "calloway", "Hattie": "villager"}
+    "speakers": {"Warden Ilse": "ilse", "Rook": "rook", "Mrs. Calloway": "calloway", "Hattie": "villager", "Mom": "mom"}
   },
   "looks": {
     "_note": "Extra NPC looks for keeperGrid (keeper_art.js), same shape as player.look. An NPC's `look` and dialog.speakers values are a KEEPER_SWAPS key or a key here. Mrs. Calloway shares Rook's orange hair.",
-    "calloway": {"skin": "3", "hair": "bun", "hairCol": "o", "outfit": "tunic", "outfitCol": "r", "accent": "y"}
+    "calloway": {"skin": "3", "hair": "bun", "hairCol": "o", "outfit": "tunic", "outfitCol": "r", "accent": "y"},
+    "mom": {"skin": "2", "hair": "bob", "hairCol": "d", "outfit": "sweater", "outfitCol": "r", "accent": "y", "accessory": "none"}
   },
   "furniture": {
     "bed": {"name": "bed", "art": "single bed, patchwork quilt (r/y), pillow w"},
