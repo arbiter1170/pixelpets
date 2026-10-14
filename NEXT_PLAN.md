@@ -1,6 +1,6 @@
 # Walklings: what's next (queue, Oct 14, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack on `main`. Q17 the party board and Q18 the installable app are built. Next scoped work is Q19, town boards, blocked on D37–D49 in `OPEN_DECISIONS.md` and written up in `TOWN_BOARD.md`. Do not rebuild Builds 4–6. Agent skills are indexed in `.cursor/skills/README.md`. Which branch held which piece is in `BRANCH_LOG.md`.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. Q16 landed the Act 1 stack. Q17 the party board, Q18 the installable app, Q20 look and listen, and Q21 the Lantern Council are built. Next scoped work is Q19, town boards, blocked on D37–D49 in `OPEN_DECISIONS.md` and written up in `TOWN_BOARD.md`. Do not rebuild Builds 4–6. Agent skills are indexed in `.cursor/skills/README.md`. Which branch held which piece is in `BRANCH_LOG.md`.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,7 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17 and Q18 are built. Q19 town boards are scoped and not started |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17, Q18, Q20, and Q21 are built. Q19 town boards are scoped and not started. Q22 is not built |
 | `.cursor/skills/README.md` | Every agent | Skill index. Quest work uses `walklings-quests`. Status docs use `walklings-docs` |
 | `TOWN_BOARD.md` | The implementing agent, after D37–D49 | Town bulletin boards and the Town Board phone app. Not started. Squares, propaganda, reports, and unwired slips |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
@@ -449,7 +449,7 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Oct 14 queue
 
-Q16 is done. Q17 and Q18 are shipped. Next scoped work is Q19, town boards, and it stays blocked until the D37–D49 rows that gate it are settled. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
+Q16 is done. Q17, Q18, Q20, and Q21 are shipped. Next scoped work is Q19, town boards, and it stays blocked until the D37–D49 rows that gate it are settled. Q22, the Capital Partnership Briefing, is not built. A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ### Q16 — Land the stranded Act 1 stack — **done**
 
@@ -501,7 +501,7 @@ Leave Brinewick, Friends, a second Sacrifice, and daily Standing out of this PR.
 
 ### Q17 — Box screen — M — **shipped**
 
-The WALKLINGS tab is six party slots, a box list, and the journal. Reorder, deposit, withdraw, release, and the orphan row are in. The Walkling sheet adds field item use, nicknames, move order, held items (Soft Berry, Bracer Band, Kin Ribbon), accessories, and a call card. Battle SWAP stays the party. Save `v` stays 2. Unknown fields stay on the Walkling.
+The WALKLINGS tab is six party slots, then the box, then LEFT BEHIND. MOVE reorders the party. TO BOX and TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling. LEFT BEHIND shows each orphan's reason and raw data. The Walkling sheet adds field item use, nicknames, move order, held items (Soft Berry, Bracer Band, Kin Ribbon), accessories, and a call card. Battle SWAP stays the party. Save `v` stays 2. Unknown fields stay on the Walkling.
 
 ### Q18 — Installable app — S–M — **shipped**
 
@@ -512,6 +512,18 @@ Shipped. `manifest.json` and `sw.js` let the game be added to the home screen an
 Q17 and Q18 are already in the game. This stays blocked on D37–D49. The scope is [TOWN_BOARD.md](TOWN_BOARD.md). A future quest uses `.cursor/skills/walklings-quests/SKILL.md`.
 
 TB-1 is the empty board, the reports, and the phone app. TB-2 is the Hearthmoor crossing and the Fernbrook forecourt. TB-3 is one slip (Cald's gate count) after D39 and D40. No quest is wired before that. KeeperUAV stays the blank watch desk.
+
+### Q20 — Look and listen — M — **shipped**
+
+`seal_glim_2` is the `LANYARD_TIER2` grid (gold rim, mint field, two white marks). Field Lead Imogen and Associate Hollis have their own keeper looks on Route 2. Rook's portrait wears the lanyard accessory once Glimmerwell has claimed him, and drops it when `story.rook_end` is `"ally"`. The player look picker still has no lanyard. `trackFor` plays `town_glimmer` in a Glimmerwell town, `quarry` in the quarry, and `grove` on a grove backdrop. An explicit `map.music` still wins. Tests: `tests/look_listen.spec.js`.
+
+### Q21 — Lantern Council — M — **shipped**
+
+Keepers only, in Sky-Dock Command, after `story.cobble_end`. Drafted under Q19; town boards own that number, so this is Q21. The scene is `hc_council`. The quest row sits between `hook` and `end` and covers the Event Hall pointer until `story.hc_council_done`. The Seals are named in dialog. The chart names the coastal road and leaves its light dark. `hc_council_k` grants 10 Keepers Standing once. A glimmer pledge never sees the council. Calls: D50–D55. Tests: `tests/lantern_council.spec.js`.
+
+### Q22 — Capital Partnership Briefing — M — **not built**
+
+The glimmer counterpart after Cobblecrest. Not in the game. Do not stack another grant on `r5_g`. Do not open Brinewick, Hall #3, or Seal 3.
 
 ### Hold
 
@@ -595,4 +607,5 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (D37–D49).** Scoped in `TOWN_BOARD.md`. Nothing is built. Q19 is not waiting on the box. It waits on those open rows.
+9. **Town boards (D37–D49).** Scoped in `TOWN_BOARD.md`. Nothing is built. Q19 waits on those open rows.
+10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.

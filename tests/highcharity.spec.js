@@ -16,6 +16,7 @@ function citySave(flags, world) {
   if (save.flags['story.cobble_end']) {
     if (!save.flags['story.seal1']) save.flags['story.seal1'] = true;
     if (!save.flags['story.heights_done']) save.flags['story.heights_done'] = true;
+    if (!Object.prototype.hasOwnProperty.call(flags || {}, 'story.hc_council_done')) save.flags['story.hc_council_done'] = true;
   }
   save.world = world || { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' };
   save.standing = { keepers: 10, glimmer: 0 };

@@ -41,6 +41,19 @@ The branch commits are still "ahead" of `main` in `git log` because the pull req
 | `cursor/next-plan-wp-c-quest-indicator-a308` | #3 | `7a5a717` | Quest indicator, level-scaled befriending, faction fork engine |
 | `cursor/next-steps-scope-630f` | #2 | `fbb983b` | Scope note for the next work packages |
 
+## Open work brought in Oct 14, 2026
+
+These pull requests were left conflicting with `main` because each one still carried an older copy of the status docs, and two of them reused numbers `main` had already given to town boards. The playable code was ported. The old pull requests were not merged as branches.
+
+| Source | What landed | Number on this landing |
+|---|---|---|
+| Look and listen (PR #25) | Tier 2 lanyard, Imogen, Hollis, Rook's lanyard, `town_glimmer`, `quarry`, `grove` | Q20, the number it already had |
+| Lantern Council (PR #26) | Keepers council in Sky-Dock Command after Cobblecrest | Q21. Its draft Q19 belongs to town boards. Its draft D37–D42 are D50–D55 |
+| Planning and QA (PR #23) | `mapTrack` and `tests/qa_gaps.spec.js` | No new queue row. The doc draft that restated the collision was not imported |
+| Party board (PR #30) | Six party slots, the Walkling sheet, held items, and battle calls | Q17, replacing the earlier card list. LEFT BEHIND still shows the raw orphan data |
+
+Town boards stay Q19 and D37–D49, scoped and not built. The Capital Partnership Briefing is Q22 and is not built.
+
 ## Left on their branches
 
 | Branch | Tip | Why it stayed off `main` |

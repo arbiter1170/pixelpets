@@ -85,20 +85,20 @@ Priority: **must** blocks the work package, **should** is wanted for launch, **c
 | `emblem_keepers` | Keepers emblem (lantern or leaf) | 8x8 | Standing tab, switch desk | must | B |
 | `emblem_glimmer` | Glimmerwell emblem (mint bulb or spark) | 8x8 | Standing tab, switch desk | must | B |
 | `tier_{keepers,glimmer}_{0..4}` | Five tier badges per faction (the tier names are a writing task below) | 8x8 x10 | Standing tab, Friends tab keeper line | should | B |
-| `seal_glim_1`, `seal_glim_2` | Glimmerwell "lanyard tier" cards, same family as `seal_fernbrook` / `seal_cobblecrest`, in mint/white (`l s w`) with a gold rim | 16x16 x2 | Card shown after a win; Bag/Journal later | **tier 1 delivered** (Build 3). Tier 2 still placeholder | B |
+| `seal_glim_1`, `seal_glim_2` | Glimmerwell "lanyard tier" cards, same family as `seal_fernbrook` / `seal_cobblecrest`, in mint/white (`l s w`) with a gold rim | 16x16 x2 | Card shown after a win; Bag/Journal later | **both delivered.** Tier 2 is `LANYARD_TIER2` | B |
 | `glimmer_pavilion` | Pop-up Glimmerwell office in Fernbrook (door tile plus a sign or awning), for the glimmer path's Hall slot. Final shape depends on the Hall-replacement design (section 6) | 16x16 tile set | Fernbrook | should | B |
 | `switch_desk_glimmer` | Glimmerwell "pledge" counter or kiosk (mint, brochure rack) where the player switches to Glimmerwell | 16x16 | Fernbrook, Cobblecrest, Route towns | must | B |
 | `switch_desk_keepers` | Keepers equivalent. Probably the existing Lantern House keeper; if a separate prop is better, a pledge board | 16x16 | Lantern Houses | could | B |
 | `lanyard_overlay` | A mint Junior Bright lanyard on the player keeper while pledged to Glimmerwell (accent swap or overlay) | 16x16 frames x4 facings x2 | Player sprite | could | B |
-| `rook_lanyard` | Rook with a mint lanyard (carried over from the Cobblecrest list; `artRequests.rook_lanyard`) | look swap | Rook after Fernbrook | should | B |
-| `rook_lanyard_off` | Rook with the lanyard gone (post-conversion) | look swap | After Rook's R5 beat | should | B |
-| `npc_imogen`, `npc_hollis` | Distinct looks for Field Lead Imogen and Associate Hollis (today both use the generic `associate` look) | looks | Route 2, Wickerglen | should | B |
+| `rook_lanyard` | Rook with a mint lanyard (carried over from the Cobblecrest list; `artRequests.rook_lanyard`) | look swap | Rook after Fernbrook | **delivered.** `rookWithLanyard` | B |
+| `rook_lanyard_off` | Rook with the lanyard gone (post-conversion) | look swap | After Rook's R5 beat | **delivered** when `story.rook_end` is `"ally"` | B |
+| `npc_imogen`, `npc_hollis` | Distinct looks for Field Lead Imogen and Associate Hollis | looks | Route 2, Wickerglen | **delivered** | B |
 | `npc_tourguide` | A Glimmerwell tour guide look (only if "tours" is chosen, section 6) | look | TBD | could | B |
 | `comfort_lamp_tinted` | Variants of the existing lamp stand for a Hall-replacement stop (only if needed) | 16x16 | TBD | could | B |
 | Hall-replacement props | Depends entirely on the design in section 6 (tour stops, a sacrifice altar or bowl, a quota board). Do not draw until the loop is approved | 16x16 | TBD | blocked | B |
 | `item_glimmer_*` | Icons for any glimmer-only items (names are a writing task) | 16x16 | Bag, shop | could | B |
 | `stinger_standing_up` | A short jingle spec for "a faction's regard went up a tier" (notes and timings in the same style as the STINGERS v0.1 table; the engine synthesizes it) | spec | Tier-up moment | should | B |
-| `town_loop_glimmer` | OPTIONAL variant of the town loop for Glimmerwell-run spots (too cheerful, slightly off) | spec | Pavilion, switch desk | could | B |
+| `town_loop_glimmer` | OPTIONAL variant of the town loop for Glimmerwell-run spots (too cheerful, slightly off) | spec | Pavilion, switch desk | **delivered** as `town_glimmer`. Quarry and grove have their own loops too | B |
 | `bulletin_keepers` | Wood town board, charcoal paper, yellow wax seal. Keepers masthead "THE LANTERN POST" | 16×16 | Hearthmoor, Fernbrook, Cobblecrest before the buyout, High Charity | blocked on D37–D49 | Q19 |
 | `bulletin_glimmer` | The same board in a mint sleeve, one corner of the old post still showing | 16×16 | Cobblecrest after `story.quarry_bought` | blocked on D41 | Q19 |
 | `bulletin_plain` | Bare board, star-chart paper, no seal | 16×16 | Mahopac, only if D38 includes it | blocked on D38 | Q19 |

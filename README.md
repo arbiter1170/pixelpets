@@ -332,9 +332,11 @@ files) in `sfx.js`: UI tap, feed, play, rest, cooldown/refusal buzz, a quiet foo
 build-up + fanfare, level-up and daily-cap chimes, and battle effects (hit, strong/weak hit, stat up/down,
 heal, tired, win, move learned). Default volume is low. The AudioContext is only
 created on the first tap/key press (iOS and Chrome autoplay rules) and resumed after interruptions;
-muted means no audio nodes at all, and browsers without WebAudio just stay silent. Three original loops
-(town, route, battle) play from the same voices after the first tap. Music on/off is `settings.music`
-(default on) and is separate from the sound-effects mute. The iPhone silent switch mutes both.
+muted means no audio nodes at all, and browsers without WebAudio just stay silent. Loops play from the same
+voices after the first tap: town, route, and battle, plus High Charity, the chapel, and the arcade, the wild
+fight cycle, and the two Glimmerwell battle themes. A Glimmerwell pledge swaps the town loop for `town_glimmer`.
+The quarry and a grove backdrop have their own loops. An explicit `map.music` still wins. Music on/off is
+`settings.music` (default on) and is separate from the sound-effects mute. The iPhone silent switch mutes both.
 
 Font: Jersey 15 by Sarah Cadigan-Fried (SIL Open Font License 1.1), self-hosted as a ~15 KB Latin
 subset in `fonts/` with its license (`fonts/OFL.txt`, credits in `fonts/README.md`). `font-display: swap`
@@ -343,9 +345,9 @@ with Courier New / monospace as fallback; ★ ♥ and the arrow symbols come fro
 Saves (format v2, `save.js`):
 - `pixelpets.save.v2` is the save. Walklings live in a **party** (up to 6, the partner is always in it) and a
   **box** (no limit). A 7th befriended Walkling goes to the box ("<name> was sent to your box."). The WALKLINGS tab
-  is six party slots, then the box, then the journal (Joined, Met, and Out there 42; unmet forms stay silhouettes).
-  MOVE reorders the party. TO BOX / TO PARTY move one Walkling. A boxed partner choice still uses `makePartner`:
-  if the party is full, the last member who is not the partner moves to the top of the box. Hunger pauses in the box.
+  is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 42; unmet forms stay silhouettes).
+  MOVE reorders the party. TO BOX / TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling.
+  LEFT BEHIND shows each orphan's reason and the raw data. Hunger pauses in the box.
   A battle SWAP lists the party only. The sheet on a Walkling can use a field snack, rename them, reorder moves,
   hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an accessory, and set a call (Charge, Brace, Dart, or Greet).
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
