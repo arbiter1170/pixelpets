@@ -11,7 +11,7 @@ Where things are (hand these to the right person or agent):
 
 | Document | Hand to | What it holds |
 |---|---|---|
-| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail. The party board, the installable app, look and listen, and the Lantern Council are in the game. Next scoped work is town boards (Q19). Live stamp is `version.json` |
+| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail. The party board, the installable app, look and listen, and the Lantern Council are in the game. Next scoped work is town boards (Q19). Live stamp is `version.json`. Which branch held which piece is in [BRANCH_LOG.md](BRANCH_LOG.md) |
 | [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | **The designer** (art and writing) | Voice guide, art sizes, and the request list. Background. The assignment to paste into the designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) |
 | [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) | **The designer bot** (a different agent from the implementer) | The prompt: every designer item, the files to open, the engine that already exists, the delivery format, and the phase order |
 | [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat. Town boards are D37–D49, scoped and not built |

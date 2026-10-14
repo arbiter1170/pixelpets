@@ -501,7 +501,7 @@ Leave Brinewick, Friends, a second Sacrifice, and daily Standing out of this PR.
 
 ### Q17 — Box screen — M — **shipped**
 
-The WALKLINGS tab is six party slots, then the box, then LEFT BEHIND. MOVE reorders the party. TO BOX and TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling. LEFT BEHIND shows each orphan's reason and raw data. The Walkling sheet adds field item use, nicknames, move order, held items, accessories, and a call card. Battle SWAP stays the party. Save `v` stays 2. Unknown fields stay on the Walkling.
+The WALKLINGS tab is six party slots, then the box, then LEFT BEHIND. MOVE reorders the party. TO BOX and TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling. LEFT BEHIND shows each orphan's reason and raw data. The Walkling sheet adds field item use, nicknames, move order, held items (Soft Berry, Bracer Band, Kin Ribbon), accessories, and a call card. Battle SWAP stays the party. Save `v` stays 2. Unknown fields stay on the Walkling.
 
 ### Q18 — Installable app — S–M — **shipped**
 
