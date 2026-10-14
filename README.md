@@ -14,10 +14,9 @@ Touch: bottom tabs (Pet / Walk / Pets / Friends); FEED / PLAY / REST; Walk = hol
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
-Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, and Start over.
+Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, Start over, and Debug.
 
-Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off). A small
-DBG tag shows in the header. Only in debug mode:
+Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off), or open Settings → Debug and enter the password Larson (any capitalization). Either way the tools turn on immediately. A DBG tag shows in the header; tap it to open the debug panel again, including during a battle. Lock debug in that panel to turn it off on this device. Only in debug mode:
 - Keys: E = force-evolve current partner, G = force a wild battle (species weighted by the current area),
   H = heal the whole team (clears HP loss and naps), F = toggle fast mode.
 - Fast mode (below) and the "Pick a place" presets in the Walk badge card.
@@ -30,6 +29,12 @@ DBG tag shows in the header. Only in debug mode:
   partner), `giveItem('heal_snack' | 'befriend_treat', n)`, `setMoney(n)`, `setMoves([ids])`, `clearEvoMoves()`,
   `aiPick()` and the live `battle` object. Story: `goto(map, x, y, facing)`, `setFlag(k, v)`, `setSide('glimmer')`,
   `runScene(id)` (side-aware), `runSteps([...])`, `endScene()`.
+  Panel: checkpoints (main story, the Mom / Mahopac side chain, High Charity plaza and the Event Hall), items and Acorns,
+  a wild battle at a chosen species, form, level and HP with that Walkling's stats shown first, faction, and Standing.
+  The same calls are `checkpoint(id)`, `checkpoints()`, `encounterPreview(species, level, stage, hpFrac)`,
+  `spawnEncounter({ species, stage, level, hpFrac, onMap })`, `setFaction('keepers'|'glimmer')` (`{ picked: false }` leaves the side pick unset),
+  `setCare({ hunger, happy, energy, all })`, `setLevel(n)`, `fillKit()`, `clearHold()`, `setTextSpeed('fast')`,
+  `debugSnapshot()`, `debugCatalog()` and `devChecks()`.
 Without debug those hooks are inert (they do nothing and return `undefined`), a stored fast/place choice is
 ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only hooks always work: `env`,
 `wild`, `spawnOdds(tags?)`, `cooldownLeft(act)`, `careXpToday`, `exploreXpToday`, `rates`, `fast`, `debug`,

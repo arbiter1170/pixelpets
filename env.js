@@ -218,6 +218,18 @@ const PPEnv = (() => {
     })().finally(() => { busy = null; });
     return busy;
   }
+  function allowOverride(on){
+    overridesOn = !!on;
+    if (!overridesOn && env && env.source === 'manual') {
+      const c = ls.json(CACHE_KEY);
+      env = c && c.key && geoPref() === 'allow' ? fromCache(c, 'cached') : fallback(geoPref() === 'deny' ? 'off' : 'off');
+      emit();
+    } else if (overridesOn) {
+      const manual = overrideEnv();
+      if (manual) { env = manual; emit(); }
+    }
+    return overridesOn;
+  }
   function setOverride(x){
     if (!overridesOn) return env;
     if (x == null || x === 'auto') { ls.set(OVERRIDE_KEY, null); const c = ls.json(CACHE_KEY); env = c && c.key && geoPref() === 'allow' ? fromCache(c, 'cached') : fallback('off'); emit(); refresh(); return env; }
@@ -229,6 +241,6 @@ const PPEnv = (() => {
   // Recompute time-dependent bits (device-clock night for the fallback) without any network.
   function tick(){ if (env && env.source === 'default') { const e = fallback(env.status); if (e.label !== env.label) { env = e; emit(); } } }
 
-  return { init, refresh, setOverride, tick, geoPref, setGeoPref, get current(){ return env; },
+  return { init, refresh, setOverride, allowOverride, tick, geoPref, setGeoPref, get current(){ return env; },
     PRESETS, ALL_TAGS, deriveTags, labelFor, wmo, round2, overpassQuery, WEATHER_TTL, TERRAIN_TTL };
 })();

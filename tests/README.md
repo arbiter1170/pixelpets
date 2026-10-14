@@ -84,4 +84,18 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 ## Standing hooks
 
-`PixelPets.standing` (getter, read-only copy) returns `{ keepers: { points, tier, name }, glimmer: { points, tier, name }, side, switches, chapter, canSwitch }`. `PixelPets.standingCfg()` returns a copy of `STANDING_CFG`. With `?debug=1` only: `PixelPets.setStanding(side, points)` (clamps, saves, toasts a new tier), `PixelPets.switchSide(to, free)` (`free` skips the cost) and `PixelPets.pledgeDesk(to)` (opens the desk scene as the NPC would; returns false when the desk is not open). Without `?debug=1` these three are absent.
+`PixelPets.standing` (getter, read-only copy) returns `{ keepers: { points, tier, name }, glimmer: { points, tier, name }, side, switches, chapter, canSwitch }`. `PixelPets.standingCfg()` returns a copy of `STANDING_CFG`. With `?debug=1` only: `PixelPets.setStanding(side, points)` (clamps, saves, toasts a new tier), `PixelPets.switchSide(to, free)` (`free` skips the cost) and `PixelPets.pledgeDesk(to)` (opens the desk scene as the NPC would; returns false when the desk is not open). Without debug these three return `undefined`.
+
+## Debug panel
+
+`tests/debug_mode.spec.js` covers Settings → Debug. The password is Larson (any capitalization). A wrong word leaves `PixelPets.debug` false and `giveItem` returns `undefined`. The right word turns debug on without a reload (`pixelpets.debug` is `1`, the DBG tag shows, the panel opens). Lock turns it off again.
+
+With debug already on (`?debug=1`):
+
+| Test | What it asserts |
+|---|---|
+| checkpoint, item, faction, standing | The panel's GO on `hall1` sets the earlier story flags, not `story.seal1`, marks the side pick done, and lands on `fernbrook` with quest id `hall1`. GIVE adds Heal Snacks. Glimmerwell sets `story.side` and the side pick. Keepers standing 40 matches `standingCfg()` tier math. |
+| encounter stats and spawn | The preview text matches `encounterPreview('stone', 8, 0, 0.5)`. START BATTLE opens a wild battle at that level, type, and HP. |
+| catalog, side checkpoint, kit, checks | `debugCatalog().checkpoints` includes `hall1`, `mom` and `hc_plaza`. `checkpoint('mom')` is the side chain and lands in `hm_home_up` without finishing Rook. `fillKit` fills the bag and at least 999 Acorns. `setLevel(12)` sticks. `devChecks()` arrays are empty. `debugSnapshot()` names the map. |
+
+`checkpoint(id)` reconciles that chain only. Main steps do not rewind Mom / Mahopac. Side steps do not rewind the main story. A save that already has Walklings keeps `story.intro_seen` and `story.starter_received`. `hc_plaza` and `hc_hall` only add the flags that open those places.
