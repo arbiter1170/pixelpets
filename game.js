@@ -229,7 +229,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -4538,22 +4538,22 @@ function openStatsCard(id){
   return true;
 }
 function closeStatsCard(){ if ($('#ovStats').hidden) return; $('#ovStats').hidden = true; statsCard.id = null; lockTabs(false); updateHUD(); }
-function renderStatsCard(){
-  const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
+function paintStatsInto(prefix, p, opt){
   const si = spi(p), sp = SPECIES[si], L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
-  spriteCanvas($('#scIcon'), si, p.stage, 'n', isFaded(p));
-  $('#scName').textContent = petName(p);
-  $('#scSpecies').textContent = (cleanNick(p.nick) ? nameOf(si, p.stage) + ' \u00b7 ' : '') + '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
-  $('#scStatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of 42 forms';
-  const tb = $('#scType'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
-  $('#scLv').textContent = 'Lv ' + L;
-  const gt = growText(p), ge = $('#scGrow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
+  spriteCanvas($('#' + prefix + 'Icon'), si, p.stage, 'n', isFaded(p), p.accessory);
+  $('#' + prefix + 'Name').textContent = petName(p);
+  const species = nameOf(si, p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  $('#' + prefix + 'Species').textContent = ((opt && opt.alwaysSpecies) || cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
+  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of 42 forms';
+  const tb = $('#' + prefix + 'Type'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
+  $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
+  const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
   const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), badge = hpBadge(p), glowing = !badge && moodOf(p).glowing;   // FAINTED > TIRED > GLOWING
-  $('#scHp').textContent = hp + '/' + mhp;
-  const hb = $('#scHpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25);
-  const tag = $('#scTag'); tag.hidden = !(badge || glowing); tag.textContent = badge || 'GLOWING';
+  $('#' + prefix + 'Hp').textContent = hp + '/' + mhp;
+  const hb = $('#' + prefix + 'HpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25);
+  const tag = $('#' + prefix + 'Tag'); tag.hidden = !(badge || glowing); tag.textContent = badge || 'GLOWING';
   tag.className = 'sc-tag ' + (badge ? (badge === 'TIRED' ? 'tired' : 'fainted') : 'glowing');
-  const box = $('#scStats'); box.innerHTML = '';
+  const box = $('#' + prefix + 'Stats'); box.innerHTML = '';
   for (const [key, label] of STAT_KEYS) {
     const row = document.createElement('div'); row.className = 'sc-stat'; row.dataset.stat = key;
     row.innerHTML = '<span></span><div class="bar"><i></i></div><b></b>';
@@ -4561,9 +4561,246 @@ function renderStatsCard(){
     row.querySelector('i').style.width = (100 * st[key] / max[key]).toFixed(1) + '%';
     box.append(row);
   }
-  const ch = chartLine(sp.type), el = $('#scChart'); el.innerHTML = '';
+  const ch = chartLine(sp.type), el = $('#' + prefix + 'Chart'); el.innerHTML = '';
   const part = (lab, list) => { const s = document.createElement('span'); s.className = 'seg'; s.append(lab + ' '); const e = document.createElement('em'); e.textContent = list.join(', '); s.append(e); return s; };
   el.append(part('Strong vs', ch.strong), ' \u00b7 ', part('Weak to', ch.weak));
+}
+function renderStatsCard(){
+  const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
+  paintStatsInto('sc', p);
+  const gbtn = $('#scGear'), gbox = $('#scGearBox');
+  if (gbtn) gbtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
+  if (gbox) gbox.hidden = !statsCard.gear;
+}
+
+/* ---------- Walkling sheet (party menu, one pet) ---------- */
+// Field snacks the sheet may use on this pet, including one in the box. Battle BAG stays party-only.
+const WALK_FIELD_ITEMS = ['heal_snack', 'hearty_snack', 'wake_tonic', 'energy_sip', 'joy_crumb'];
+const walklingSheet = { id: null, t: 0, busy: false };
+// Swap two party indexes. Another slice may define reorderParty first; this only fills the gap.
+if (typeof reorderParty !== 'function') {
+  window.reorderParty = function(id, toIndex){
+    if (!S) return false;
+    const from = S.party.findIndex(q => q.id === id), to = toIndex | 0;
+    if (from < 0 || to < 0 || to >= S.party.length || from === to) return false;
+    const tmp = S.party[from]; S.party[from] = S.party[to]; S.party[to] = tmp;
+    return true;
+  };
+}
+function callReorderParty(id, toIndex){
+  if (typeof reorderParty === 'function') return reorderParty(id, toIndex);
+  if (typeof window.reorderParty === 'function') return window.reorderParty(id, toIndex);
+  return false;
+}
+function depositPetLocal(id, nextId){
+  if (!S || S.party.length < 2) return false;
+  const i = S.party.findIndex(q => q.id === id);
+  if (i < 0) return false;
+  if (id === S.partnerId) {
+    if (!nextId || !S.party.some(q => q.id === nextId && q.id !== id)) return false;
+    S.partnerId = nextId;
+  }
+  S.box.unshift(S.party.splice(i, 1)[0]);
+  if (!S.party.some(q => q.id === S.partnerId) && S.party[0]) S.partnerId = S.party[0].id;
+  return true;
+}
+function withdrawPetLocal(id){
+  if (!S || S.party.length >= PPSave.PARTY_MAX) return false;
+  const i = S.box.findIndex(q => q.id === id);
+  if (i < 0) return false;
+  S.party.push(S.box.splice(i, 1)[0]);
+  return true;
+}
+function paintWalklingStats(p){ paintStatsInto('wl', p, { alwaysSpecies: true }); }
+function sheetBtn(label, cls, onClick, opt){
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (cls ? ' ' + cls : ''); b.textContent = label;
+  if (opt && opt.aria) b.setAttribute('aria-label', opt.aria);
+  if (opt && opt.span) b.classList.add('span');
+  if (opt && opt.disabled) b.disabled = true;
+  b.addEventListener('click', onClick);
+  return b;
+}
+function renderWalklingActions(p){
+  const box = $('#wlActions'); box.textContent = '';
+  const sec = txt => { const d = document.createElement('div'); d.className = 'wl-sec'; d.textContent = txt; box.appendChild(d); };
+  if (p.id !== S.partnerId) box.appendChild(sheetBtn('PARTNER', 'btn-play', () => partnerFromSheet(p.id), { span: true }));
+  const pi = S.party.findIndex(q => q.id === p.id);
+  if (pi >= 0) {
+    sec('MOVE');
+    box.appendChild(sheetBtn('UP', '', () => shiftParty(p.id, -1), { aria: 'Party up', disabled: pi <= 0 }));
+    box.appendChild(sheetBtn('DOWN', '', () => shiftParty(p.id, 1), { aria: 'Party down', disabled: pi >= S.party.length - 1 }));
+    box.appendChild(sheetBtn('TO BOX', '', () => { depositFromSheet(p.id); }, { span: true }));
+  } else box.appendChild(sheetBtn('TO PARTY', 'btn-play', () => { withdrawFromSheet(p.id); }, { span: true }));
+}
+function renderWalklingMoves(p){
+  const box = $('#wlMoves'); box.textContent = '';
+  const lab = document.createElement('div'); lab.className = 'wl-sec'; lab.textContent = 'MOVES'; box.appendChild(lab);
+  const moves = Array.isArray(p.moves) ? p.moves.slice(0, 4) : [];
+  if (!moves.length) { const empty = document.createElement('p'); empty.className = 'wl-why'; empty.textContent = 'No moves yet.'; box.appendChild(empty); return; }
+  moves.forEach((mid, i) => {
+    const mv = MOVES[mid] || { name: mid, type: '', power: 0 };
+    const row = document.createElement('div'); row.className = 'wl-mv';
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const nm = document.createElement('b'); nm.textContent = mv.name;
+    const sub = document.createElement('span'); sub.textContent = (mv.type || '') + '  PWR ' + (mv.power || 0);
+    meta.append(nm, sub);
+    const up = sheetBtn('UP', '', () => swapWalklingMove(p.id, i, i - 1), { aria: 'Move ' + mv.name + ' up', disabled: i === 0 });
+    const down = sheetBtn('DOWN', '', () => swapWalklingMove(p.id, i, i + 1), { aria: 'Move ' + mv.name + ' down', disabled: i === moves.length - 1 });
+    row.append(meta, up, down); box.appendChild(row);
+  });
+}
+function walklingFieldItems(){
+  return WALK_FIELD_ITEMS.filter(id => {
+    const it = ITEMS[id];
+    return it && !it.key && id !== 'befriend_treat' && it.target && it.use.includes('field') && itemCount(id) > 0;
+  });
+}
+function renderWalklingUse(p){
+  const box = $('#wlUse'); box.textContent = '';
+  const lab = document.createElement('div'); lab.className = 'wl-sec'; lab.textContent = 'USE'; box.appendChild(lab);
+  const ids = walklingFieldItems();
+  if (!ids.length) { const empty = document.createElement('p'); empty.className = 'wl-why'; empty.textContent = 'No field snacks in the bag.'; box.appendChild(empty); return; }
+  ids.forEach(id => {
+    const it = ITEMS[id], why = itemRefusal(id, p, 'field');
+    const row = document.createElement('div'); row.className = 'wl-item'; row.dataset.item = id;
+    const meta = document.createElement('div');
+    const nm = document.createElement('b'); nm.textContent = it.name;
+    const sub = document.createElement('div'); sub.className = 'wl-why' + (why ? ' no' : ''); sub.textContent = why || it.blurb;
+    meta.append(nm, sub);
+    row.append(meta, sheetBtn('USE', 'btn-play', () => applySheetItem(id, p.id)));
+    box.appendChild(row);
+  });
+}
+function renderWalklingRelease(p){
+  const box = $('#wlRelease'); box.textContent = '';
+  if (typeof releasePet !== 'function') return;
+  box.appendChild(sheetBtn('RELEASE', 'btn-danger', () => { releaseFromSheet(p.id); }, { span: true }));
+}
+function renderWalklingExtras(p){
+  const box = $('#wlExtras'); if (!box) return; box.textContent = '';
+  if (typeof fillWalklingExtras === 'function') fillWalklingExtras(box, p);
+}
+function renderWalklingSheet(){
+  const p = allPets().find(q => q.id === walklingSheet.id);
+  if (!p) { closeWalklingSheet(); return; }
+  paintWalklingStats(p);
+  renderWalklingActions(p);
+  const nickEl = $('#wlNick');
+  if (nickEl && document.activeElement !== nickEl) nickEl.value = cleanNick(p.nick);
+  renderWalklingMoves(p);
+  renderWalklingUse(p);
+  renderWalklingRelease(p);
+  renderWalklingExtras(p);
+}
+function openWalklingSheet(id){
+  if (!S) return false;
+  const p = allPets().find(q => q.id === id);
+  if (!p) return false;
+  if (!$('#ovWalkling').hidden) { walklingSheet.id = p.id; walklingSheet.t = 0; renderWalklingSheet(); return true; }
+  if (overlayOpen()) return false;
+  clearMoves(); walklingSheet.id = p.id; walklingSheet.t = 0; renderWalklingSheet();
+  $('#ovWalkling').hidden = false; lockTabs(true); sfx('tap');
+  const c = $('#wlClose'); if (c) c.focus({ preventScroll: true });
+  return true;
+}
+window.openWalklingSheet = openWalklingSheet;
+function closeWalklingSheet(){
+  const ov = $('#ovWalkling'); if (!ov || ov.hidden) return;
+  if (!$('#ovSheet').hidden) closeSheet(null);
+  ov.hidden = true; walklingSheet.id = null; walklingSheet.busy = false;
+  lockTabs(false); updateHUD();
+}
+function partnerFromSheet(id){
+  const p = petById(id); if (!p || $('#ovWalkling').hidden) return;
+  sfx('tap'); makePartner(id); save(); updateHUD(); renderCollection();
+  toast(petName(petById(id) || p) + ' is your partner now!');
+  if (!$('#ovWalkling').hidden) renderWalklingSheet();
+}
+function shiftParty(id, dir){
+  const i = S.party.findIndex(q => q.id === id), to = i + dir;
+  if (i < 0 || to < 0 || to >= S.party.length || $('#ovWalkling').hidden) return;
+  sfx('tap'); callReorderParty(id, to); save(); updateHUD(); renderCollection();
+  if (!$('#ovWalkling').hidden) renderWalklingSheet();
+}
+function swapWalklingMove(id, i, j){
+  const p = petById(id);
+  if (!p || !Array.isArray(p.moves) || j < 0 || j >= p.moves.length || $('#ovWalkling').hidden) return;
+  const t = p.moves[i]; p.moves[i] = p.moves[j]; p.moves[j] = t;
+  sfx('tap'); save(); renderWalklingMoves(p);
+}
+function applySheetItem(itemId, petId){
+  const p = petById(petId); if (!p || $('#ovWalkling').hidden) return;
+  const r = useItem(itemId, petId, 'field');
+  sfx(r.ok ? (itemId === 'joy_crumb' ? 'tap' : 'heal') : 'denied');
+  toast(r.msg);
+  if (r.ok) { save(); updateHUD(); renderCollection(); }
+  const q = petById(petId);
+  if (!$('#ovWalkling').hidden && q) { paintWalklingStats(q); renderWalklingUse(q); }
+}
+function commitWalklingNick(){
+  const p = petById(walklingSheet.id); if (!p || $('#ovWalkling').hidden) return;
+  const nick = cleanNick($('#wlNick').value);
+  p.nick = nick || null; $('#wlNick').value = nick;
+  sfx('tap'); save(); updateHUD(); renderCollection(); paintWalklingStats(p);
+}
+// Confirm, then depositPet(id, nextPartnerId) when that function exists. nextPartnerId is null when they are not the partner.
+async function depositFromSheet(id){
+  if (walklingSheet.busy || $('#ovWalkling').hidden) return;
+  const p = petById(id);
+  if (!p || !S.party.some(q => q.id === id)) return;
+  if (typeof depositPet !== 'function' && S.party.length < 2) { sfx('denied'); toast('The party needs one Walkling.'); return; }
+  walklingSheet.busy = true;
+  try {
+    const yes = await openSheet('Send ' + petName(p) + ' to the box? Hunger pauses in the box.', [{ label: 'TO BOX', value: 'yes' }], 'BACK');
+    if (yes !== 'yes' || $('#ovWalkling').hidden) return;
+    let nextId = null;
+    if (p.id === S.partnerId) {
+      const rest = S.party.filter(q => q.id !== p.id);
+      if (rest.length) {
+        nextId = await openSheet('Who becomes your partner?', rest.map(q => ({ label: petName(q) + '  Lv ' + levelOf(q), value: q.id })), 'BACK');
+        if (!nextId || $('#ovWalkling').hidden) return;
+      } else if (typeof depositPet !== 'function') { sfx('denied'); toast('The party needs one Walkling.'); return; }
+    }
+    if (typeof depositPet === 'function') depositPet(p.id, nextId);
+    else if (!depositPetLocal(p.id, nextId)) { sfx('denied'); toast('The party needs one Walkling.'); return; }
+    save(); updateHUD(); renderCollection();
+    if (S.box.some(q => q.id === p.id)) toast(petName(petById(p.id) || p) + ' is in the box. Hunger pauses there.');
+    if (!$('#ovWalkling').hidden && petById(walklingSheet.id)) renderWalklingSheet();
+  } finally { walklingSheet.busy = false; }
+}
+// Boxed pets only. withdrawPet(id, slot) runs after a slot 0-5 pick; otherwise push onto the party when there is room.
+async function withdrawFromSheet(id){
+  if (walklingSheet.busy || $('#ovWalkling').hidden) return;
+  const p = petById(id);
+  if (!p || S.party.some(q => q.id === id)) return;
+  walklingSheet.busy = true;
+  try {
+    if (typeof withdrawPet === 'function') {
+      const items = [];
+      for (let i = 0; i < PPSave.PARTY_MAX; i++) {
+        const occ = S.party[i];
+        items.push({ label: 'Slot ' + (i + 1) + (occ ? ' \u00b7 ' + petName(occ) : ' \u00b7 empty'), value: i });
+      }
+      const slot = await openSheet('Which party slot?', items, 'BACK');
+      if (slot == null || $('#ovWalkling').hidden) return;
+      withdrawPet(id, slot);
+    } else if (!withdrawPetLocal(id)) { sfx('denied'); toast('The party is full.'); return; }
+    save(); updateHUD(); renderCollection();
+    if (S.party.some(q => q.id === id) && typeof withdrawPet !== 'function') toast(petName(petById(id) || p) + ' joined the party.');
+    if (!$('#ovWalkling').hidden && petById(walklingSheet.id)) renderWalklingSheet();
+  } finally { walklingSheet.busy = false; }
+}
+async function releaseFromSheet(id){
+  if (walklingSheet.busy || typeof releasePet !== 'function' || $('#ovWalkling').hidden) return;
+  const p = petById(id); if (!p) return;
+  walklingSheet.busy = true;
+  try {
+    const yes = await openSheet('Release ' + petName(p) + '?', [{ label: 'RELEASE', value: 'yes' }], 'BACK');
+    if (yes !== 'yes' || $('#ovWalkling').hidden) return;
+    releasePet(id); save(); renderCollection(); updateHUD();
+    if (!petById(id)) closeWalklingSheet();
+    else if (!$('#ovWalkling').hidden) renderWalklingSheet();
+  } finally { walklingSheet.busy = false; }
 }
 
 /* ---------- start over (Settings) ---------- */
@@ -4725,7 +4962,7 @@ function renderCollection(){
     const hb = hpBadge(p); if (hb) { const t = document.createElement('span'); t.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); t.textContent = hb; info.children[1].append(t); }
     const open = document.createElement('button'); open.type = 'button'; open.className = 'card-open'; open.setAttribute('aria-label', 'Stats for ' + petName(p));
     const ico = document.createElement('span'); ico.className = 'ico'; ico.append(cv); open.append(ico, info);
-    open.addEventListener('click', () => openStatsCard(p.id));
+    open.addEventListener('click', () => openWalklingSheet(p.id));
     c.append(open);
     if (p.id === S.partnerId) { const s = document.createElement('span'); s.className = 'partner'; s.textContent = '\u2605 PARTNER'; c.append(s); }
     else { const b = document.createElement('button'); b.className = 'btn btn-play'; b.textContent = 'PARTNER';
@@ -5413,6 +5650,14 @@ function bindInput(){
   });
   $('#scClose').addEventListener('click', () => { sfx('tap'); closeStatsCard(); });
   $('#ovStats').addEventListener('click', e => { if (e.target === e.currentTarget) closeStatsCard(); });   // tap outside the card
+  $('#wlClose').addEventListener('click', () => { sfx('tap'); closeWalklingSheet(); });
+  $('#wlNickSet').addEventListener('click', () => commitWalklingNick());
+  $('#wlNick').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); commitWalklingNick(); }
+    if (e.key === 'Escape') { e.preventDefault(); closeWalklingSheet(); }
+  });
+  $('#wlNick').addEventListener('change', () => { if (!$('#ovWalkling').hidden) commitWalklingNick(); });
+  $('#ovWalkling').addEventListener('click', e => { if (e.target === e.currentTarget) closeWalklingSheet(); });
   $('#jnClose').addEventListener('click', () => closeJournal());
   $('#ovJournal').addEventListener('click', e => { if (e.target === e.currentTarget) closeJournal(); });
   $('#encNick').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (battle.panel === 'end') closeBattle(); } });
@@ -5499,6 +5744,7 @@ function bindInput(){
       if (e.key === 'h' || e.key === 'H') { healTeam(); toast('Team healed (debug)'); return; }
     }
     if (!$('#ovSheet').hidden) { if (e.key === 'Escape' && !$('#shCancel').hidden) closeSheet(null); return; }
+    if (e.key === 'Escape' && !$('#ovWalkling').hidden) { closeWalklingSheet(); return; }
     if (!$('#ovBattle').hidden) { battleKey(e); return; }
     if ('123'.includes(e.key)) showTab(['pet','walk','col'][+e.key - 1]);
     if (e.key === '4') { openQuest(); return; }
@@ -5553,6 +5799,11 @@ function frame(t){
     syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)
     if (evo.active) drawEvolution(t);
     if (!$('#ovStats').hidden && (statsCard.t += dt) >= 1) { statsCard.t = 0; renderStatsCard(); }   // HP regen etc. stay live
+    if (!$('#ovWalkling').hidden && (walklingSheet.t += dt) >= 1) {
+      walklingSheet.t = 0;
+      const q = allPets().find(x => x.id === walklingSheet.id);
+      if (!q) closeWalklingSheet(); else paintWalklingStats(q);
+    }
   }
   requestAnimationFrame(frame);
 }
