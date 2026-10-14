@@ -34,17 +34,17 @@
           {"kind": "sign", "id": "hm_hq_sign", "x": 9, "y": 11, "text": "KEEPER HOUSE · Hearthmoor watch. The lantern's law."},
           {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 4, "y": 8, "facing": "right", "patrol": [[4, 8], [8, 8], [12, 8], [8, 8]], "lines": {
             "story.side=glimmer": "Mint vest. Not welcome on this road.",
-            "standing.keepers>=3": "Your name is on the good list. Walk easy.",
+            "standing.keepers>=3": "Name's on the good list. Walk easy.",
             "standing.keepers>=1": "A keeper on the road. Glad you are out.",
             "story.side=keepers": "New pledge. The lantern still knows you.",
             "else": "Citizen. Say your piece, then step back."
           }},
           {"kind": "npc", "id": "hm_ness", "name": "Officer Ness", "look": "officer", "x": 8, "y": 11, "facing": "down", "lines": {
-            "story.side=glimmer": "The House is ours. You may look, not sit.",
-            "standing.keepers>=3": "Captain Lumen asked after you this morning.",
+            "story.side=glimmer": "The House is ours. Look. Do not sit.",
+            "standing.keepers>=3": "Captain Lumen asked after you today.",
             "standing.keepers>=1": "Door's open for a keeper. Come through.",
             "story.side=keepers": "New to the coat? Bram will sign you in.",
-            "else": "Citizen. The House is for the watch first."
+            "else": "Citizen. The House is for the watch."
           }}
         ]
       },
@@ -65,7 +65,7 @@
             "standing.keepers>=3": "Fernbrook is glad of you. Truly.",
             "standing.keepers>=1": "A keeper in the square. Welcome.",
             "story.side=keepers": "New pledge. The trees still count you.",
-            "else": "Citizen. Orchard rules still apply to you."
+            "else": "Citizen. Orchard rules still apply."
           }}
         ]
       },
@@ -82,7 +82,7 @@
         "addObjs": [
           {"kind": "npc", "id": "glen_watch", "name": "Watch Ivo", "look": "officer", "x": 4, "y": 8, "facing": "right", "lines": {
             "story.side=glimmer": "You like these lamps. I am writing that.",
-            "else": "These lamps are not the lantern. I am watching."
+            "else": "Not the lantern. I am watching."
           }}
         ]
       },
@@ -95,7 +95,7 @@
           }},
           {"kind": "npc", "id": "cc_mint", "name": "Clerk Mint", "look": "glimclerk", "x": 12, "y": 9, "facing": "down", "when": ["story.quarry_bought"], "lines": {
             "story.side=glimmer": "Colleague. The seam is ours. Smile.",
-            "else": "Bright Quarry welcomes a visitor. Briefly."
+            "else": "Bright Quarry welcomes you. Briefly."
           }}
         ]
       }
@@ -129,15 +129,15 @@
         }},
         {"kind": "npc", "id": "hq_mo", "name": "Archivist Mo", "look": "clerk", "x": 5, "y": 4, "facing": "left", "lines": {
           "!story.met_mo": "@hq_mo",
-          "story.side=glimmer": "I will note the mint. The books will too.",
+          "story.side=glimmer": "I note the mint. The books will too.",
           "standing.keepers>=1": "The shelf is open to a keeper. Read.",
-          "else": "Citizen. The old books are not for borrowing."
+          "else": "Citizen. Old books stay on the shelf."
         }},
         {"kind": "npc", "id": "hq_wynn", "name": "Clerk Wynn", "look": "clerk", "x": 2, "y": 5, "facing": "right", "lines": {
           "!story.met_wynn": "@hq_wynn",
           "story.side=glimmer": "Your notes still copy to my book.",
           "standing.keepers>=1": "I filed you under friend of the house.",
-          "else": "Citizen. Forms are on the left. Wait there."
+          "else": "Citizen. Forms are on the left. Wait."
         }}
       ]
     },
@@ -155,7 +155,7 @@
         "####m####"
       ],
       "objs": [
-        {"kind": "warp", "id": "hq_down", "x": 7, "y": 3, "to": "hm_hq_f1", "tx": 7, "ty": 4, "facing": "down"},
+        {"kind": "warp", "id": "hq_down", "x": 7, "y": 3, "to": "hm_hq_f1", "tx": 6, "ty": 4, "facing": "down"},
         {"kind": "sign", "id": "hq_radio_sign", "x": 2, "y": 4, "text": "RADIO · Every Keeper1 checks in. Even the quiet ones."},
         {"kind": "npc", "id": "hq_lumen", "name": "Captain Lumen", "look": "captain", "x": 4, "y": 3, "facing": "down", "lines": {
           "!story.met_lumen": "@hq_lumen",
@@ -190,11 +190,14 @@
         ["say", "Sergeant Bram", "You can stand in the doorway. You do not sit."],
         ["say", "Sergeant Bram", "The lantern keeps this house. Your company does not."],
         ["say", "Sergeant Bram", "If you need a form, ask. If you need a friend, look elsewhere."],
+        ["say", "Sergeant Bram", "Mo writes the mint down. Wynn copies your notes. You do not get a chair."],
+        ["say", "Sergeant Bram", "Your company likes a bright day. This doorway is as far as you come."],
         ["setFlag", "story.met_bram", true]
       ], [
         ["say", "Sergeant Bram", "Sergeant Bram. I run the door, and Bren walks the road."],
         ["say", "Sergeant Bram", "Before you pledge, you are a citizen. The watch eats first."],
         ["say", "Sergeant Bram", "Pledge, and do the work, and the chairs get warmer."],
+        ["say", "Sergeant Bram", "Mo has the shelf. Wynn has the book. Lumen and Rue keep the upstairs."],
         ["setFlag", "story.met_bram", true]
       ]]
     ],
@@ -202,6 +205,8 @@
       ["if", "story.side=glimmer", [
         ["say", "Archivist Mo", "I will write down the mint. I write down everything."],
         ["say", "Archivist Mo", "Your machine has been leaking a long, long time."],
+        ["say", "Archivist Mo", "They smile and will not name it. The books leave that space blank."],
+        ["say", "Archivist Mo", "The books fear a child born already listening. No date is written."],
         ["setFlag", "story.met_mo", true]
       ], [
         ["say", "Archivist Mo", "I keep the old books. Some of them are not comfortable."],
@@ -209,6 +214,7 @@
         ["say", "Archivist Mo", "People who stay near it change. A little more metal, each birth."],
         ["say", "Archivist Mo", "The books fear a child born already listening. We have not seen one."],
         ["say", "Archivist Mo", "We do not hurt Walklings. We do not cheer that fear. We record it."],
+        ["say", "Archivist Mo", "The emission has no name. The oldest page leaves that space empty."],
         ["say", "Archivist Mo", "If you ever wear their crest, look at your own hands."],
         ["setFlag", "story.met_mo", true]
       ]]
@@ -216,25 +222,42 @@
     "hq_wynn": [
       ["say", "Clerk Wynn", "I copy every Keeper1 note into the book. That is the law, said plainly."],
       ["say", "Clerk Wynn", "Their thin handset still sits on our wires. Cracked is not hidden."],
-      ["setFlag", "story.met_wynn", true]
+      ["say", "Clerk Wynn", "The handset is free. The poles and the wires stay with this house."],
+      ["if", "story.side=glimmer", [
+        ["say", "Clerk Wynn", "They say have a bright day. The copy in my book does not."],
+        ["setFlag", "story.met_wynn", true]
+      ], [
+        ["say", "Clerk Wynn", "Bram keeps the door. I keep the copies. The captain keeps the rank."],
+        ["setFlag", "story.met_wynn", true]
+      ]]
     ],
     "hq_lumen": [
       ["if", "story.side=glimmer", [
         ["say", "Captain Lumen", "You are in my office. Say the short version."],
         ["say", "Captain Lumen", "KeeperUAV is our board. You will not be taking jobs from it."],
+        ["say", "Captain Lumen", "Your posters say brighter by nature. My office says you may leave."],
         ["setFlag", "story.met_lumen", true]
       ], [
         ["say", "Captain Lumen", "Captain Lumen. The watch is mine. The town is the lantern's."],
         ["say", "Captain Lumen", "A citizen waits in the doorway. A keeper is offered a chair."],
         ["say", "Captain Lumen", "A mint vest is asked to leave. Rank is not a secret here."],
         ["say", "Captain Lumen", "KeeperUAV will list jobs when the desk is ready. The board is blank."],
+        ["say", "Captain Lumen", "Rue holds the radio. Every Keeper1 on our wires checks in with her."],
+        ["say", "Captain Lumen", "Mo records a slow change. I keep my watch clear of their machine."],
         ["setFlag", "story.met_lumen", true]
       ]]
     ],
     "hq_rue": [
       ["say", "Operator Rue", "If a handset is on, I can hear the room around it."],
       ["say", "Operator Rue", "We own the poles from this hill to the coast. There is no other net."],
-      ["setFlag", "story.met_rue", true]
+      ["if", "story.side=glimmer", [
+        ["say", "Operator Rue", "Smile for your company if you like. I already hear your room."],
+        ["setFlag", "story.met_rue", true]
+      ], [
+        ["say", "Operator Rue", "The Keeper1 is free. The law stops at the handset. The wire is ours."],
+        ["say", "Operator Rue", "Wynn copies the notes. I hear the quiet rooms. Lumen says who sits here."],
+        ["setFlag", "story.met_rue", true]
+      ]]
     ]
   },
   "flags": {

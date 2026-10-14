@@ -2041,7 +2041,7 @@ async function runSteps(steps, ctx = {}){
 }
 async function execSteps(steps){ for (const st of steps || []) { if (!scene) return; await execStep(st); } }
 async function playScene(id){ const steps = sceneSteps(id); if (!steps) return; const n = storyWrites(); await execSteps(steps); noteBeat(id, n); }   // nested: `run` steps, onWin
-function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); syncSide(); }
+function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); if (S && S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); syncSide(); }
 function endScene(){
   const sc = scene; if (!sc) return;
   commitPending();

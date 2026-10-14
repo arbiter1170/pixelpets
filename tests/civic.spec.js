@@ -1,6 +1,6 @@
 /* Keeper House, town officers, and the Keeper1 phone. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, boxesOverlap } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -100,4 +100,236 @@ test('the road officer actually walks', async ({ page }) => {
     await page.waitForTimeout(400);
   }
   expect(seen.size).toBeGreaterThan(1);
+});
+
+async function step(page, dir) {
+  const before = await page.evaluate(() => ({
+    map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y,
+  }));
+  await page.evaluate((dir) => {
+    PixelPets.showTab('walk');
+    PixelPets.walk.queued = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir];
+  }, dir);
+  await page.waitForFunction((prev) => {
+    if (PixelPets.fading || PixelPets.keeper.moving) return false;
+    const s = PixelPets.state.world;
+    return PixelPets.mapInfo.id !== prev.map || s.x !== prev.x || s.y !== prev.y;
+  }, before, { timeout: 4000 });
+  return page.evaluate(() => {
+    const s = PixelPets.state.world;
+    const blocked = PixelPets.mapInfo.objs.filter((o) => o.block && o.x === s.x && o.y === s.y).map((o) => o.id);
+    return { map: PixelPets.mapInfo.id, x: s.x, y: s.y, facing: s.facing, blocked };
+  });
+}
+
+async function sayFacing(page) {
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
+  const text = await page.evaluate(() => PixelPets.scene.text);
+  await playScene(page, []);
+  return text;
+}
+
+test('the Keeper House door opens on the floor and the way out is clear', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hearthmoor', 11, 11, 'up'); });
+  const inside = await step(page, 'up');
+  expect(inside).toMatchObject({ map: 'hm_hq_f1', x: 4, y: 6, blocked: [] });
+  const deeper = await step(page, 'up');
+  expect(deeper).toMatchObject({ map: 'hm_hq_f1', x: 4, y: 5, blocked: [] });
+  const cue = await page.evaluate(() => PixelPets.sideQuest && PixelPets.sideQuest.point);
+  expect(cue).toMatchObject({ x: 4, y: 7, here: false });
+  await step(page, 'down');
+  const out = await step(page, 'down');
+  expect(out).toMatchObject({ map: 'hearthmoor', x: 11, y: 11, blocked: [] });
+  const south = await step(page, 'down');
+  expect(south).toMatchObject({ map: 'hearthmoor', x: 11, y: 12, blocked: [] });
+});
+
+test('stairs down do not drop you inside the stair sign', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hm_hq_f1', 6, 3, 'right'); });
+  const up = await step(page, 'right');
+  expect(up).toMatchObject({ map: 'hm_hq_f2', x: 7, y: 3, blocked: [] });
+  const aside = await step(page, 'left');
+  expect(aside).toMatchObject({ map: 'hm_hq_f2', x: 6, y: 3 });
+  const down = await step(page, 'right');
+  expect(down.map).toBe('hm_hq_f1');
+  expect(down.blocked, 'downstairs warp landed on ' + down.blocked.join(', ')).toEqual([]);
+});
+
+test('town officers answer by pledge', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hearthmoor', 8, 12, 'up'); });
+  await page.locator('#tabs button[data-tab="walk"]').click();
+  const citizen = await sayFacing(page);
+  expect(citizen).toContain('Citizen');
+  expect(citizen).not.toContain('mint');
+
+  await page.evaluate(() => { PixelPets.setFlag('story.side', 'keepers'); PixelPets.setStanding('keepers', 0); });
+  const pledge = await sayFacing(page);
+  expect(pledge).toContain('coat');
+  expect(pledge).not.toContain('Citizen');
+
+  await page.evaluate(() => PixelPets.setStanding('keepers', 45));
+  const trusted = await sayFacing(page);
+  expect(trusted).toContain('asked after you');
+  expect(trusted).not.toContain('Citizen');
+
+  await page.evaluate(() => PixelPets.setFlag('story.side', 'glimmer'));
+  const mint = await sayFacing(page);
+  expect(mint).toContain('not sit');
+  expect(mint).not.toContain('Come through');
+  expect(mint).not.toContain('good list');
+
+  await page.evaluate(() => {
+    PixelPets.setFlag('story.met_bram', true);
+    PixelPets.goto('hm_hq_f1', 2, 4, 'up');
+  });
+  const bram = await sayFacing(page);
+  expect(bram).toContain('Doorway only');
+  expect(bram).not.toContain('come in');
+});
+
+test('walking into the Route 1 officers clears the phone side quest', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => {
+    PixelPets.showTab('walk');
+    PixelPets.goto('route1', 1, 8, 'right');
+    PixelPets.clearWild();
+  });
+  expect(await page.evaluate(() => PixelPets.sideQuest && PixelPets.sideQuest.id)).toBe('phone');
+  await page.evaluate(() => { PixelPets.walk.queued = [1, 0]; });
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'phone_grant');
+  await playScene(page, []);
+  const after = await page.evaluate(() => ({
+    got: PixelPets.state.flags['story.phone_got'],
+    item: PixelPets.state.bag.keeper1 || 0,
+    side: PixelPets.sideQuest,
+    hidden: document.querySelector('#phoneBtn').hidden,
+    quest: PixelPets.quest && PixelPets.quest.id,
+  }));
+  expect(after.got).toBe(true);
+  expect(after.item).toBe(1);
+  expect(after.side).toBeFalsy();
+  expect(after.hidden).toBe(false);
+  expect(after.quest).not.toBe('phone');
+
+  await page.evaluate(() => { PixelPets.goto('route1', 1, 8, 'right'); PixelPets.clearWild(); });
+  await page.evaluate(() => { PixelPets.walk.queued = [1, 0]; });
+  await page.waitForFunction(() => PixelPets.state.world.x === 2 && !PixelPets.keeper.moving && !PixelPets.fading);
+  expect(await page.evaluate(() => PixelPets.scene)).toBeFalsy();
+  expect(await page.evaluate(() => PixelPets.sideQuest)).toBeFalsy();
+
+  const boxes = await page.evaluate(() => {
+    const box = (el) => {
+      const r = el.getBoundingClientRect();
+      return { x: r.x, y: r.y, width: r.width, height: r.height };
+    };
+    return {
+      phone: box(document.querySelector('#phoneBtn')),
+      up: box(document.querySelector('.dp.up')),
+      quest: box(document.querySelector('#questBtn')),
+    };
+  });
+  expect(boxesOverlap(boxes.phone, boxes.up)).toBe(false);
+  expect(boxesOverlap(boxes.phone, boxes.quest)).toBe(false);
+});
+
+test('a story glimmer pledge cracks the handset in that same session', async ({ page }) => {
+  await boot(page, readySave({ 'story.phone_got': true }));
+  expect(await page.evaluate(() => PixelPets.runSteps([
+    ['give', 'keeper1', 1],
+    ['setFlag', 'story.side', 'glimmer'],
+    ['setFlag', 'story.side_pick_done', true],
+    ['standing', 'glimmer', null, 'sp_pick'],
+  ]))).toBe(true);
+  await playScene(page, []);
+  await page.waitForFunction(() => !PixelPets.scene && PixelPets.state.flags['story.side'] === 'glimmer');
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.locator('#phoneBtn').click();
+  await expect(page.locator('#ovPhone')).toBeVisible();
+  const got = await page.evaluate(() => ({
+    title: document.querySelector('#phoneTitle').textContent,
+    jobs: document.querySelector('#phoneJobs').textContent,
+    cracked: PixelPets.state.bag.cracked_phone || 0,
+    hack: PixelPets.phoneHack(),
+    side: PixelPets.state.flags['story.side'],
+  }));
+  expect(got).toEqual({ title: 'CRACK//HAND', jobs: 'BOTNET', cracked: 1, hack: true, side: 'glimmer' });
+});
+
+test('the quest tab opens the next step without leaving the walk map', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.locator('#questBtn').click();
+  await expect(page.locator('#ovQuest')).toBeVisible();
+  const shown = await page.evaluate(() => ({
+    text: document.querySelector('#questText').textContent,
+    api: PixelPets.quest && PixelPets.quest.text,
+    side: PixelPets.sideQuest && PixelPets.sideQuest.id,
+    screens: [...document.querySelectorAll('.screen.active')].map((s) => s.id),
+  }));
+  expect(shown.text).toBe(shown.api);
+  expect(shown.text.length).toBeGreaterThan(0);
+  expect(shown.side).toBe('phone');
+  expect(shown.screens).toEqual(['scr-walk']);
+  await page.waitForFunction(() => PixelPets.optionsReady === true);
+  await page.locator('#questClose').click();
+  await expect(page.locator('#ovQuest')).toBeHidden();
+  expect(await page.evaluate(() => [...document.querySelectorAll('.screen.active')].map((s) => s.id))).toEqual(['scr-walk']);
+});
+
+test('town paint and the glimmer body follow the pledge', async ({ page }) => {
+  await boot(page, readySave({ 'story.phone_got': true }));
+  const fac = await page.evaluate(() => {
+    const bought = () => {
+      PixelPets.setFlag('story.quarry_bought', true);
+      return { cobble: PixelPets.townFaction('cobblecrest'), hall: PixelPets.townFaction('cc_hall_in') };
+    };
+    return {
+      town: PixelPets.townFaction('hearthmoor'),
+      hq: PixelPets.townFaction('hm_hq_f1'),
+      glen: PixelPets.townFaction('route2_glen'),
+      route2: PixelPets.townFaction('route2'),
+      cobble: PixelPets.townFaction('cobblecrest'),
+      hall: PixelPets.townFaction('cc_hall_in'),
+      bought: bought(),
+    };
+  });
+  expect(fac.town).toBe('keepers');
+  expect(fac.hq).toBe('keepers');
+  expect(fac.glen).toBe('glimmer');
+  expect(fac.route2).toBe('keepers');
+  expect(fac.cobble).toBe('keepers');
+  expect(fac.hall).toBe('keepers');
+  expect(fac.bought).toEqual({ cobble: 'glimmer', hall: 'glimmer' });
+
+  const look = await page.evaluate(() => {
+    const saved = PixelPets.state.player.look.accent;
+    const coat = PixelPets.state.player.look.outfitCol;
+    PixelPets.setSide('glimmer');
+    PixelPets.setStanding('glimmer', 0);
+    const tier0 = PixelPets.keeper.look.accent;
+    PixelPets.setStanding('glimmer', 10);
+    const tier1 = { accent: PixelPets.keeper.look.accent, outfit: PixelPets.keeper.look.outfitCol };
+    PixelPets.setStanding('glimmer', 25);
+    const tier2 = PixelPets.keeper.look.outfitCol;
+    PixelPets.setStanding('glimmer', 45);
+    const tier3 = PixelPets.keeper.look.hairCol;
+    PixelPets.setStanding('glimmer', 70);
+    const tier4 = PixelPets.keeper.look.accent;
+    return {
+      saved, coat, tier0, tier1, tier2, tier3, tier4,
+      stillAccent: PixelPets.state.player.look.accent,
+      stillCoat: PixelPets.state.player.look.outfitCol,
+    };
+  });
+  expect(look.tier0).toBe(look.saved);
+  expect(look.tier1).toEqual({ accent: 'c', outfit: look.coat });
+  expect(look.tier2).toBe('s');
+  expect(look.tier3).toBe('h');
+  expect(look.tier4).toBe('s');
+  expect(look.stillAccent).toBe(look.saved);
+  expect(look.stillCoat).toBe(look.coat);
 });

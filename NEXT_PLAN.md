@@ -1,6 +1,6 @@
 # Walklings: what's next (handoff after Builds 4–6, Oct 13, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2224`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2255`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -8,7 +8,7 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 
 | Document | For | What it is |
 |---|---|---|
-| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Section 3 records what shipped through Build 7 and names the next builds |
+| `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Section 3 records what shipped through civic (`20261013-2224`) and names the next builds: the box screen, then the installable app |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
 
@@ -30,13 +30,13 @@ Evening (Build 3, supersede the morning notes):
 
 ## 0. Where the build stands
 
-This branch: `20261013-2224`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
+This branch: `20261013-2255`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, side pick, Heights smuggling tunnels, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal), then Rook's R5 (`brinewick_hook`: he gets off the cart, `story.rook_end` `"ally"`). Story ends at `story.cobble_end` ("COMING LATER · Brinewick").
 
 Playable on the **Glimmerwell** path through the same Act 1 maps: orchard gate `side_pick`, Heights RegenX lab, crate-packing orchard, Bright Pavilion Tour (four stops; optional Fen match), Bright Tier 1 Lanyard, `teaser@glimmer`, then Route 2 and Wickerglen as a Census volunteer, Cobblecrest buyout beside Dorian, Sacrifice stub (Quota or a narrative snack, optional Hale review), Bright Tier 2 Lanyard, and `brinewick_hook@glimmer` (`story.rook_end` `"stays"`). Same gates and the same coming-later card.
 
-Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap, group battles), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Fernbrook Pledge desks, sound/music/stingers, save v2 (additive fields), a downloadable v2 save copy (Build 7), cloud save Phase 1 (off). Playwright covers smoke, Heights, group battles, the glimmer Act 1 path, and the save copy (`tests/`, no CI workflow yet).
+Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap, group battles), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP (bottom-bar `#questBtn`; PHONE is `#phoneBtn`), Standing meters and Fernbrook Pledge desks, the Keeper House, town officers, and the Keeper1 phone (Q15), sound/music/stingers, save v2 (additive fields), a downloadable v2 save copy (Build 7), cloud save Phase 1 (off). Playwright covers smoke, Heights, group battles, the glimmer Act 1 path, the save copy, and civic (`tests/civic.spec.js`; no CI workflow yet).
 
 Story shape today: **Glimmerwell Co. is the antagonist** on the Keepers path and a cheerful employer on the glimmer path. Rook is a Junior Bright colleague on glimmer Fernbrook (`teaser@glimmer` does not say he leaves). The Keepers path (Fen, Hale, the Halls, the Lantern Houses) is still the default for any save that never picked a side.
 
@@ -176,7 +176,7 @@ Known interaction to design around: a foe knocked to 0 HP "wanders off" and cann
 
 ## WP-B. "Pick a side" in the second area: Keepers vs Glimmerwell (L, phased)
 
-**Status: B0, BS, and B1 (Fernbrook) shipped.** B2 Route 2, B3 Cobblecrest + Sacrifice, and B4 Rook R5 are the next builds (section 3).
+**Status: B0, BS, and B1–B4 shipped** (Fernbrook, Route 2, the Cobblecrest Sacrifice stub, and Rook R5). See section 3. Next numbered builds are the box screen, then the installable app.
 
 ### Playtest request
 After the player has a Walkling, the second area (Fernbrook) lets them pick between:
@@ -284,7 +284,7 @@ Rules to keep the tree safe:
 3. **Optional daily loop idea, to decide**: Keepers regard care (bond, care streak, journal pages); Glimmerwell regards output (befriends, battles won, steps). This links Standing to the game's core loop and makes Standing visible outside story scenes. Cap it per day like care XP (e.g. 5 per faction per local day) to prevent grind.
 
 **What Standing does.** Tiers gate content, not progression:
-- Faction shop entries and gift items, NPC line variants (`lines` keys can use `standing.glimmer>=2`), quest text, titles shown on the Friends tab keeper line.
+- Faction shop entries and gift items, NPC line variants (`lines` keys can use `standing.glimmer>=2`), quest text, titles shown on the keeper line in the phone's Friends app.
 - At most small, optional perks (design TBD). Do not gate any story gate, Hall slot or Lantern House on Standing.
 
 **Switching.**
@@ -367,7 +367,7 @@ B2 did not wait on the Sacrifice page. B3 shipped the stub so the Hall still clo
 
 ## WP-C. "Next step" indicator next to the D-pad (S-M)
 
-**Status: shipped** (PR #3 first pass; Build 2 designer copy and `icon_quest`). Left: side-task count (D12).
+**Status: shipped** (PR #3 first pass; Build 2 designer copy and `icon_quest`). Civic moved `#questBtn` onto the bottom tab bar and replaced BOOK with PHONE (`#phoneBtn`). The layout notes below are the original spec. Left: side-task count (D12).
 
 ### Current state
 There is no objective or quest system. What exists are one-off hints:
@@ -456,7 +456,7 @@ See section 4 (pointer strength, Settings toggle).
 | PR #12 (`20261013-1933`) | Heights follow-up | Group-battle tests, Standing on Heights beats, Officer Ken's interviews |
 | Builds 4–6 (`20261013-1950`) | Act 1 glimmer | Route 2 glimmer, Cobblecrest glimmer, Sacrifice stub, Rook R5 |
 | Build 7 (`20261013-2128`) | Save copy | Download the v2 save before Start over, and read that file back |
-| **This branch** (`20261013-2224`) | **Civic** | Keeper House, town officers, Keeper1 phone, cracked handset |
+| **This branch** (`20261013-2255`) | **Civic** | Keeper House, town officers, Keeper1 phone, cracked handset |
 
 Heights sits in front of the trial: `story.heights_done` gates the Hall panel and Tour stop 1. A save that already has `story.seal1`, or that never picked a side, is not sent back. That did not replace Builds 4–6. Those three are now in `data/glimmer_path.json`. Keepers Route 2 and Cobblecrest design JSON stay verbatim; the new scenes overlay them. `brinewick_hook` is the exception: the Keepers closer replaces the Cobblecrest base so Rook converts, and `brinewick_hook@glimmer` is the stay.
 
@@ -500,19 +500,19 @@ Both paths end on the same "COMING LATER · Brinewick" card.
 
 ### Documentation review (this pass)
 
-These files match the code through Build 7:
+These files match the code through civic (`20261013-2224`):
 
 | Document | What it says now |
 |---|---|
-| `NEXT_PLAN.md` | Section 0 and this section. Phases B2–B4 and Build 7 are shipped. The real Sacrifice cost and R5 tone stay open |
-| `BACKLOG.md` | Q8–Q12 are built. Next numbered builds are Q13 (box screen) and Q14 (installable app) |
-| `OPEN_DECISIONS.md` | D24, D25, D26, and Brinewick stay open. The cart scenes and the Sacrifice stub are in |
-| `README.md` | Glimmer path runs through R5. Settings can save and read a v2 copy |
-| `CHANGELOG.md` | Player-facing notes for Heights, Builds 4–6, and Build 7 |
-| `DESIGN_HANDOFF.md`, `DESIGNER_PROMPT.md` | Route 2, Cobblecrest, and R5 are in the game. Design replaces copy and the Sacrifice cost; it does not invent the flags |
-| `tests/README.md` | Smoke, Heights, group battles, glimmer Act 1, and the save copy |
+| `NEXT_PLAN.md` | Section 0 and this section. Civic shipped. Next numbered builds are Build 8 (box screen) and Build 9 (installable app). The real Sacrifice cost and R5 tone stay open |
+| `BACKLOG.md` | Q8–Q12 and Q15 are built. Next numbered builds are Q13 (box screen) and Q14 (installable app) |
+| `OPEN_DECISIONS.md` | D24, D25, D26, D31, and Brinewick stay open. The cart scenes, the Sacrifice stub, and the Keeper House tint are in |
+| `README.md` | Bottom tabs are Pet / Walk / Pets / Quest. The Keeper House and the Keeper1 phone are in. Settings can save and read a v2 copy |
+| `CHANGELOG.md` | Player-facing notes for civic, the save copy, Heights, and Builds 4–6 |
+| `DESIGN_HANDOFF.md`, `DESIGNER_PROMPT.md` | Route 2, Cobblecrest, and R5 are in the game. Design replaces copy and the Sacrifice cost; it does not invent the flags. Those files were not edited in this pass |
+| `tests/README.md` | Smoke, Heights, group battles, glimmer Act 1, the save copy, and `tests/civic.spec.js` |
 
-Still stale on purpose: Tour stop lines marked `PLACEHOLDER`, desk letter/review/welcome (D19), and `STANDING_CFG` numbers (D14–D17). Do not treat those as shipped writing.
+Still stale on purpose: Tour stop lines marked `PLACEHOLDER`, desk letter/review/welcome (D19), and `STANDING_CFG` numbers (D14–D17). Do not treat those as shipped writing. `DESIGN_HANDOFF.md` still places `icon_quest` on the d-pad's top-right cell and tier badges on the Friends tab. That file was not edited here.
 
 ### Next steps
 
@@ -531,7 +531,7 @@ Settings has Save a copy and Read a copy. The Start over dialog has SAVE A COPY 
 
 ### Civic — Keeper House and Keeper1 — shipped
 
-Not one of the numbered backlog builds. Hearthmoor is visibly the Keepers' town: gold and green roofs, a patrolling officer, and a two-floor Keeper House. Other towns have a watch officer. Glimmerwell ground uses mint. Route 1's first side quest issues the Keeper1 phone. QUEST moved to the bottom bar. Friends moved into the phone. A cracked handset comes with joining Glimmerwell and switches the shell to Botnet. KeeperUAV and Botnet are placeholder boards. Glimmerwell Standing tints the keeper silver and mint. The generational "born already listening" fear is lore in Archivist Mo's scene (D31), not a birth system. Tests: `tests/civic.spec.js`.
+Backlog Q15, not a numbered Build. Hearthmoor is visibly the Keepers' town: gold and green roofs, a patrolling officer, and a two-floor Keeper House (`hm_hq_f1` / `hm_hq_f2`). Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after `story.quarry_bought`. Glimmerwell ground (the glen, and Cobblecrest after that buyout) uses mint. Route 1's side quest sets `story.phone_got` and gives `keeper1`. QUEST is `#questBtn` on the bottom bar. PHONE is `#phoneBtn`. Friends moved into the phone. A cracked handset comes with joining Glimmerwell (`side_pick` and `ensureCrackedPhone`) and, while that pledge is carrying it, switches the shell to CRACK//HAND and Botnet. KeeperUAV and Botnet are placeholder boards. `shownLook` tints the keeper silver and mint at Glimmerwell Standing tiers. The generational "born already listening" fear is lore in Archivist Mo's scene (D31), not a birth system. Tests: `tests/civic.spec.js`.
 
 ### Build 8 — Box screen — M — **next**
 
