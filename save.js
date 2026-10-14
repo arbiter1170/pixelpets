@@ -220,8 +220,8 @@ const PPSave = (() => {
         if (has(s.care, 'mg')) {
           if (!isObj(s.care.mg)) delete s.care.mg;
           else {
-            for (const id of ['lantern', 'shells', 'chirp', 'dash', 'pairs']) if (id in s.care.mg) s.care.mg[id] = fin(s.care.mg[id]) && s.care.mg[id] >= 0 ? Math.min(3, Math.floor(s.care.mg[id])) : 0;
-            for (const k of Object.keys(s.care.mg)) if (!['lantern', 'shells', 'chirp', 'dash', 'pairs'].includes(k)) delete s.care.mg[k];
+            for (const id of ['lantern', 'shells', 'chirp', 'dash', 'pairs', 'hop', 'relay', 'seek']) if (id in s.care.mg) s.care.mg[id] = fin(s.care.mg[id]) && s.care.mg[id] >= 0 ? Math.min(3, Math.floor(s.care.mg[id])) : 0;
+            for (const k of Object.keys(s.care.mg)) if (!['lantern', 'shells', 'chirp', 'dash', 'pairs', 'hop', 'relay', 'seek'].includes(k)) delete s.care.mg[k];
           }
         }
       } }                                                // MAP_V0 §5 (Q2): visited region-map nodes, additive

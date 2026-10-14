@@ -481,10 +481,10 @@ function dayRec(obj, k, init){
   return obj[k];
 }
 const careDay = () => {
-  const c = dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false, minigameBond: 0, mg: { lantern: 0, shells: 0, chirp: 0, dash: 0, pairs: 0 } });
+  const c = dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false, minigameBond: 0, mg: { lantern: 0, shells: 0, chirp: 0, dash: 0, pairs: 0, hop: 0, relay: 0, seek: 0 } });
   if (!Number.isInteger(c.minigameBond) || c.minigameBond < 0) c.minigameBond = 0;
   if (c.minigameBond > 3) c.minigameBond = 3;
-  const ids = ['lantern', 'shells', 'chirp', 'dash', 'pairs'];
+  const ids = ['lantern', 'shells', 'chirp', 'dash', 'pairs', 'hop', 'relay', 'seek'];
   if (!c.mg || typeof c.mg !== 'object' || Array.isArray(c.mg)) c.mg = {};
   for (const id of ids) { const n = c.mg[id]; c.mg[id] = Number.isInteger(n) && n > 0 ? Math.min(3, n) : 0; }
   for (const k of Object.keys(c.mg)) if (!ids.includes(k)) delete c.mg[k];
@@ -2382,8 +2382,22 @@ async function grantTourneyPrize(){
   sfx('stinger_item'); save();
   await sayBox('Clerk Nia', "This week's prize is a Hearty Snack and 40 Acorns.");
 }
+function openDuo(o){
+  const who = o.name || '';
+  if (!S.flags['story.hc_invite']) return runSteps([['say', '', "The booths are covered. A note: bring Ilse's letter, then come play."]], { npc: o });
+  if (!pet()) return runSteps([['say', who, 'Come back with your Walkling.']], { npc: o });
+  const c = careDay();
+  const games = [['Rope Hop', 'hop'], ['Flag Relay', 'relay'], ['Sniff Seek', 'seek']].filter(([, id]) => (c.mg[id] || 0) < 3);
+  if (!games.length) return runSteps([['say', who, 'The two-keeper booth is tired. Come back tomorrow.']], { npc: o });
+  return runSteps([
+    ['say', who, 'Pass the phone. Your Walkling takes the left. A friend takes the right.'],
+    ['choice', 'Which game?', games.map(([label, id]) => [label, [['play', id]]]).concat([['Not now', [['say', who, "We'll keep your seat."]]]])],
+  ], { npc: o });
+}
 function openBooth(o){
-  if (!o || !o.booth || !PPMinigames.RULE[o.booth]) return;
+  if (!o || !o.booth) return;
+  if (o.booth === 'duo') return openDuo(o);
+  if (!PPMinigames.RULE[o.booth]) return;
   const id = o.booth, who = o.name || '';
   if (!S.flags['story.hc_invite']) return runSteps([['say', '', "The booths are covered. A note: bring Ilse's letter, then come play."]], { npc: o });
   if (!pet()) return runSteps([['say', who, 'Come back with your Walkling.']], { npc: o });
@@ -4994,6 +5008,9 @@ function bindInput(){
   });
   window.addEventListener('keyup', e => { if (window.PPMinigames) PPMinigames.keyUp(e); if (KEYS[e.key] === walk.key) walk.key = null; });
   const playStop = $('#playStop'); if (playStop) playStop.addEventListener('click', () => PPMinigames.stop());
+  const playP1 = $('#playP1'), playP2 = $('#playP2');
+  if (playP1) playP1.addEventListener('pointerdown', e => { e.preventDefault(); PPMinigames.press(0); });
+  if (playP2) playP2.addEventListener('pointerdown', e => { e.preventDefault(); PPMinigames.press(1); });
   window.addEventListener('blur', clearMoves);
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
@@ -5155,7 +5172,7 @@ function highCharityDevCheck(){
     if (!(TILE_DEF[m.grid[d.y][d.x]] || {}).walk) bad.push('door step ' + d.id);
   }
   const booths = ((WORLD.hc_hall_in && WORLD.hc_hall_in.objs) || []).filter(o => o.booth).map(o => o.booth).sort().join(',');
-  if (booths !== 'chirp,dash,lantern,pairs,shells') bad.push('booths ' + booths);
+  if (booths !== 'chirp,dash,duo,lantern,pairs,shells') bad.push('booths ' + booths);
   if (!SCENES.hc_invite || !SCENES.hc_gate || !SCENES.hc_arena_ask || !TRAINERS.hc_tourney) bad.push('scenes');
   if (!TRAINERS.hc_tourney || TRAINERS.hc_tourney.money !== 0) bad.push('tourney purse');
   if (m.music !== 'charity' || !WORLD.hc_church_in || WORLD.hc_church_in.music !== 'chapel' || !WORLD.hc_hall_in || WORLD.hc_hall_in.music !== 'arcade') bad.push('music map');
@@ -5164,7 +5181,8 @@ function highCharityDevCheck(){
   if (typeof PPMinigames === 'undefined' || !PPMinigames.devCheck) bad.push('minigames');
   else { const mg = PPMinigames.devCheck(); if (mg.length) bad.push(mg.join(',')); }
   for (const f of ['story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
-    'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs'])
+    'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
+    'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek'])
     if (!PPQuests.NOT_STEPS.includes(f)) bad.push('not step ' + f);
   if (!REGION_MAP.nodes.highcharity) bad.push('region');
   return bad;
@@ -5172,6 +5190,9 @@ function highCharityDevCheck(){
 PPMinigames.bind({
   careDay, grantItem, addBond, save, pet, sfx, toast, updateHUD, playerName, acorns, itemLabel,
   BAG_FULL_MSG, fitCanvas, state: () => S,
+  party: () => (S && S.party) ? S.party.slice() : [],
+  spd: p => { if (!p) return 48; const lv = p.guest ? (p.level || 5) : levelOf(p); const s = statsAt((p.species || 'tide') + '/' + (p.stage || 0), lv); return s ? s.spd : 48; },
+  monName: p => { if (!p) return 'Walkling'; if (p.guest) return p.nick; return petName(p); },
 });
 function boot(){
   $$('#tabs canvas').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));

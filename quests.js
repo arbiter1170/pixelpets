@@ -28,6 +28,7 @@
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
     'story.hc_invite', 'story.hc_arrived', 'story.hc_greeted', 'story.hc_games', 'story.hc_tonic',
     'story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs',
+    'story.hc_clear_hop', 'story.hc_clear_relay', 'story.hc_clear_seek',
     'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue'];   // High Charity and Mahopac bits; neither is a main-chain step
 
   // Optional side chain (Mom, Mahopac, the childhood dream). Never implied by the main story, and never a main-chain step.
