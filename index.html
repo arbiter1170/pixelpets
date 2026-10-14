@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261014-0015">
+<meta name="kw-build" content="20261014-0108">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261014-0015">
+<link rel="stylesheet" href="style.css?v=20261014-0108">
 </head>
 <body>
 <div id="app">
@@ -227,12 +227,16 @@
 </div>
 
 
-<!-- Event Hall minigames (High Charity). One canvas, five games. -->
+<!-- Event Hall minigames (High Charity). Solo booths and pass-the-phone games. -->
 <div id="ovPlay" class="overlay play" hidden>
   <div class="ov-inner play-card" role="dialog" aria-modal="true" aria-labelledby="playTitle">
     <div id="playTitle" class="ov-title">Play</div>
     <p id="playRule" class="play-rule"></p>
     <canvas id="playCanvas" width="176" height="176"></canvas>
+    <div id="playPads" class="play-pads" hidden>
+      <button id="playP1" class="btn" type="button">You</button>
+      <button id="playP2" class="btn" type="button">Friend</button>
+    </div>
     <button id="playStop" class="btn" type="button">Stop</button>
     <div id="playLive" class="sr-only" aria-live="polite"></div>
   </div>
@@ -553,20 +557,20 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261014-0015";</script>
-<script src="sprites.js?v=20261014-0015"></script>
-<script src="keeper.js?v=20261014-0015"></script>
-<script src="stats.js?v=20261014-0015"></script>
-<script src="moves.js?v=20261014-0015"></script>
-<script src="data/mapdata.js?v=20261014-0015"></script>
-<script src="quests.js?v=20261014-0015"></script>
-<script src="standing.js?v=20261014-0015"></script>
-<script src="save.js?v=20261014-0015"></script>
-<script src="env.js?v=20261014-0015"></script>
-<script src="sfx.js?v=20261014-0015"></script>
-<script src="minigames.js?v=20261014-0015"></script>
-<script src="cloud_config.js?v=20261014-0015"></script>
-<script src="cloud.js?v=20261014-0015"></script>
-<script src="game.js?v=20261014-0015"></script>
+<script>window.BUILD = "20261014-0108";</script>
+<script src="sprites.js?v=20261014-0108"></script>
+<script src="keeper.js?v=20261014-0108"></script>
+<script src="stats.js?v=20261014-0108"></script>
+<script src="moves.js?v=20261014-0108"></script>
+<script src="data/mapdata.js?v=20261014-0108"></script>
+<script src="quests.js?v=20261014-0108"></script>
+<script src="standing.js?v=20261014-0108"></script>
+<script src="save.js?v=20261014-0108"></script>
+<script src="env.js?v=20261014-0108"></script>
+<script src="sfx.js?v=20261014-0108"></script>
+<script src="minigames.js?v=20261014-0108"></script>
+<script src="cloud_config.js?v=20261014-0108"></script>
+<script src="cloud.js?v=20261014-0108"></script>
+<script src="game.js?v=20261014-0108"></script>
 </body>
 </html>
