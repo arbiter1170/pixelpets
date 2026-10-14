@@ -44,7 +44,7 @@
     },
     // One-shot grants (spec engineAsks.standingGrants). A `["standing", side, null, id]` step takes its amount from here;
     // `standing.got.<id>` guards each one so a replayed scene never grants twice.
-    grants: { sp_pick: 10, orchard_k: 5, orchard_g: 5, seal1_k: 10, seal1_g: 10, tour1_match: 5 },
+    grants: { sp_pick: 10, orchard_k: 5, orchard_g: 5, seal1_k: 10, seal1_g: 10, tour1_match: 5, hc_council_k: 10 },
     // Switching (Q3 default): the side you leave keeps floor(points / costDiv); the side you join is unchanged.
     switch: {
       costDiv: 2,

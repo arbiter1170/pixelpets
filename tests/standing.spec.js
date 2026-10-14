@@ -300,6 +300,7 @@ const COPY = {
   buyout: ["Walk up to the stage. Rook's supervisor is about to speak.", 'Quarry stage', 'Join Dorian Pell on the stage. Big day for the quarry!', 'Quarry stage'],
   hall2: ["Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", 'Cobblecrest Hall', 'Your second review is a Sacrifice. The free quota still closes it.', 'Cobblecrest Hall'],
   hook: ['Rook is outside the Hall with news from the quarry.', "Outside Hale's Hall", 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', "Outside Hale's Hall"],
+  hc_council: ['High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', 'High Charity, sky-dock'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -329,11 +330,17 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
     expect(r.kid, id).toBe(id);
-    expect(r.gid, id).toBe(id);
     expect(r.ktext, id).toBe(row[0]);
     expect(r.kplace, id).toBe(row[1]);
-    expect(r.gtext, id + '@glimmer').toBe(row[2] || row[0]);
-    expect(r.gplace, id + '@glimmer').toBe(row[3] || row[1]);
+    if (id === 'hc_council') {
+      expect(r.gid, id).toBe('end');
+      expect(r.gtext).toBe(COPY.end[0]);
+      expect(r.gplace).toBe(COPY.end[1]);
+    } else {
+      expect(r.gid, id).toBe(id);
+      expect(r.gtext, id + '@glimmer').toBe(row[2] || row[0]);
+      expect(r.gplace, id + '@glimmer').toBe(row[3] || row[1]);
+    }
     if (row[2]) overrides++;
     for (const t of [row[0], row[2]].filter(Boolean)) expect(Array.from(t).length, id).toBeLessThanOrEqual(110);
     for (const p of [row[1], row[3]].filter(Boolean)) expect(Array.from(p).length, id).toBeLessThanOrEqual(24);

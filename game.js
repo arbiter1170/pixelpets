@@ -984,12 +984,14 @@ function pledgeDeskSteps(to){
       [W.no, [['say', who, W.wait]]]]]];
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
+if (MD.act1_route2 && MD.act1_route2.looks) for (const [k, v] of Object.entries(MD.act1_route2.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 's', outfit: 'coat', outfitCol: 'w', accent: 'c' };
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.mahopac && MD.mahopac.looks) for (const [k, v] of Object.entries(MD.mahopac.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
+if (MD.act1_route2 && MD.act1_route2.speakers) for (const [k, v] of Object.entries(MD.act1_route2.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.entries(MD.glimmer_path.speakers)) if (typeof v === 'string' && !LOOK_OF_NAME[k]) LOOK_OF_NAME[k] = v;
 if (MD.mahopac && MD.mahopac.speakers) for (const [k, v] of Object.entries(MD.mahopac.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.highcharity && MD.highcharity.looks) for (const [k, v] of Object.entries(MD.highcharity.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
@@ -1104,7 +1106,7 @@ if (SCENES.rival1) SCENES.rival1.push(
 // STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
-const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'associate', r2_lead: 'associate', hall2_hale: 'hale',
+const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
   rx_wardens: 'regenx', rx_techs: 'regenx', rx_records: 'regenx', rx_quinn: 'regenx', rx_cal_ally: 'regenx',
   sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
@@ -1116,12 +1118,16 @@ function useMap(id){
   patrolClock = 0;
 }
 const isRoom = () => CUR.kind === 'interior';
-// MUSIC v0.1: interiors and towns share one loop; routes and meadows share another. Unknown backdrops leave the current loop.
+// Explicit map.music wins (High Charity). Otherwise: quarry and grove have their own loops, dreams stay on
+// route, and a Glimmerwell pledge swaps the shared town loop for town_glimmer. Keepers towns stay on town.
 function trackFor(map){
   if (!map) return null;
-  if (map.music === 'charity' || map.music === 'chapel' || map.music === 'arcade') return map.music;
-  if (map.dream) return 'route';   // dreams use the wandering loop; the wash does the rest
-  if (map.kind === 'interior' || map.backdrop === 'town') return 'town';
+  if (map.music && PPSound.musicIds().includes(map.music)) return map.music;
+  if (map.id === 'cobble_quarry') return 'quarry';
+  if (map.dream) return 'route';
+  if (map.backdrop === 'grove') return 'grove';
+  const townish = map.kind === 'interior' || map.backdrop === 'town';
+  if (townish) return side() === 'glimmer' ? 'town_glimmer' : 'town';
   if (map.backdrop === 'route' || map.backdrop === 'meadow') return 'route';
   return null;
 }
@@ -1180,11 +1186,19 @@ const solid = (x, y) => solidTile(x, y) || !!blockerAt(x, y);
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
+// Rook wears a Junior Bright lanyard once Glimmerwell has claimed him: on the glimmer path from the side
+// pick, and on either path after Fernbrook (story.slice_end) or the quarry sale. Conversion (rook_end ally) takes it off.
+function rookWithLanyard(look){
+  if (!S || !S.flags || S.flags['story.rook_end'] === 'ally') return look;
+  const glimmer = S.flags['story.side'] === 'glimmer';
+  const show = (glimmer && S.flags['story.side_pick_done']) || S.flags['story.slice_end'] || S.flags['story.quarry_bought'];
+  if (!show) return look;
+  return Object.assign({}, look, { accent: 'l', accessory: 'lanyard' });
+}
 function npcLook(o){
   const key = o.look || (o.kind === 'trainer' ? (TRAINER_LOOK[o.id] || 'trainer') : LOOK_OF_NAME[o.name]) || 'villager';
   const look = NPC_LOOKS[key] || KEEPER_SWAPS.villager;
-  // Optional: Rook's mint Junior Bright lanyard once the quarry sale makes it official (COBBLECREST art, could).
-  if (key === 'rook' && S && S.flags && S.flags['story.quarry_bought']) return Object.assign({}, look, { accent: 'l' });
+  if (key === 'rook') return rookWithLanyard(look);
   return look;
 }
 const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && !!o.lines));
@@ -2605,7 +2619,8 @@ const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['sto
 
 /* --- the bottom text box (#ovScene) --- */
 function sbRender(who, text){
-  const look = who && (NPC_LOOKS[LOOK_OF_NAME[who]] || null);
+  const key = who && LOOK_OF_NAME[who];
+  const look = key ? npcLook({ look: key, name: who }) : null;
   $('#sbWho').textContent = who || ''; $('#sbWho').hidden = !who;
   $('#sbText').textContent = text; $('#sbText').classList.toggle('narr', !who);
   const pc = $('#sbPortrait'), showP = !!look && window.innerWidth >= 360;
@@ -4410,27 +4425,8 @@ const SEAL_ART = { seal_cobblecrest: [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ] };
-// WP-B0 PLACEHOLDER (engine ask 6): the glimmer path earns lanyard tiers, stored in S.seals like Seals. Cyan cord, a bright badge
-// with one (tier 1) or two (tier 2) gold bars. Real 16x16 art is a Design request.
-const lanyardArt = tier => [
-  '....cc....cc....',
-  '...c..c..c..c...',
-  '...c..c..c..c...',
-  '..c....cc....c..',
-  '..c..........c..',
-  '..c..........c..',
-  '...c........c...',
-  '....c......c....',
-  '.....mhhhhm.....',
-  '....mwwwwwwm....',
-  '....hw' + (tier > 1 ? 'yyyy' : 'wwww') + 'wh....',
-  '....hwwwwwwh....',
-  '....hwyyyywh....',
-  '....hwwwwwwh....',
-  '.....mhhhhm.....',
-  '................',
-];
-// Build 3: delivered 16x16 Bright Tier 1 lanyard (Sweetie 16). seal_glim_2 stays the tier-2 placeholder.
+// Build 3: delivered 16x16 Bright Tier 1 lanyard. Gold rim, mint field, one white mark.
+// Tier 2 is the same badge with two white marks.
 const LANYARD_TIER1 = [
   '.....oooooo.....',
   '...ooyyyyyyoo...',
@@ -4449,7 +4445,25 @@ const LANYARD_TIER1 = [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ];
-SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = lanyardArt(2);
+const LANYARD_TIER2 = [
+  '.....oooooo.....',
+  '...ooyyyyyyoo...',
+  '..oyywsssswyyo..',
+  '.oyswwssslwwlyo.',
+  '.oyswwssllwwlyo.',
+  'oysswwslllwwllyo',
+  'oysswwllllwwllyo',
+  'oysswwllllwwllyo',
+  'oysswwllllwwllyo',
+  'oyslwwllllwwlyoo',
+  'oyllwwllllwwlyoo',
+  '.oylwwllllwwyoo.',
+  '.oylwwllllyyooo.',
+  '..oyywlllyoooo..',
+  '...ooyyyyoooo...',
+  '.....oooooo.....',
+];
+SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2;
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
   g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
@@ -6160,6 +6174,35 @@ function boot(){
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
   api.musicCheck = () => PPSound.musicCheck();
+  api.mapTrack = id => trackFor(id && WORLD[id]);
+  api.spriteLook = id => {
+    const o = objById(id);
+    const look = o ? npcLook(o) : (NPC_LOOKS[id] ? npcLook({ look: id, name: id }) : null);
+    if (!look) return null;
+    return { skin: look.skin || null, hair: look.hair || null, hairCol: look.hairCol || null, outfit: look.outfit || null, outfitCol: look.outfitCol || null, accent: look.accent || null, accessory: look.accessory || 'none' };
+  };
+  api.sealArt = id => (SEAL_ART[id] || []).slice();
+  api.sealName = id => sealName(id);
+  api.lookGrid = id => {
+    const o = objById(id);
+    const look = o ? npcLook(o) : (NPC_LOOKS[id] ? npcLook({ look: id, name: id }) : null);
+    return look ? keeperGrid(look, 'down', 0) : null;
+  };
+  api.paintPreview = () => {
+    const scale = 8;
+    const grids = [SEAL_ART.seal_glim_1, SEAL_ART.seal_glim_2, api.lookGrid('imogen'), api.lookGrid('hollis'), api.lookGrid('juniper'), api.lookGrid('rook')];
+    if (grids.some(g => !g)) return false;
+    const sheet = document.getElementById('artSheet') || document.createElement('canvas');
+    sheet.id = 'artSheet';
+    sheet.width = grids.length * 18 * scale;
+    sheet.height = 18 * scale;
+    sheet.style.cssText = 'position:fixed;left:0;top:0;z-index:50;background:#1a1c2c';
+    if (!sheet.parentNode) document.body.appendChild(sheet);
+    const g = sheet.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    grids.forEach((grid, i) => g.drawImage(keeperCanvas(grid), i * 18 * scale, 0, 18 * scale, 18 * scale));
+    return true;
+  };
   api.musicIds = () => PPSound.musicIds();
   api.battleTrack = (kind, trainerId) => battleTrack(kind, trainerId);
   api.wildTracks = () => WILD_TRACKS.slice();
