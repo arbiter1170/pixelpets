@@ -40,13 +40,15 @@ A console message of type `error`, or any uncaught page error, fails the test.
 
 | Test | Brief check | What it asserts |
 |---|---|---|
-| boot, build stamp, and dev checks | a, b | Fresh context (empty localStorage). `window.BUILD` equals `version.json`'s `build`. `PixelPets` exists. The opening scene starts. `questCheck`, `glimmerCheck`, `befriendCheck()`, `standingCheck()`, and `heightsCheck` return no problems. |
+| boot, build stamp, and dev checks | a, b | Fresh context (empty localStorage). `window.BUILD` equals `version.json`'s `build`. `PixelPets` exists. The opening scene starts. `questCheck`, `glimmerCheck`, `befriendCheck()`, `standingCheck()`, `mapCheck()`, and `heightsCheck` return no problems. |
 | befriend odds stay inside the tuning range | d (numbers) | `befriendOdds(3, 1)` and `befriendOdds(18, 0.25)` have `width` in 0.06–0.6. The quarry call is 0.181 (0.18 at 2 decimal places). Lv 16 and Lv 19 at 25% HP are recorded as 0.196 and 0.174. |
 | quest button opens the next-step panel | c | A v2 save past the starter. `#questBtn` is the bottom-bar tab (the old Friends slot), at least 44 CSS px, inside the viewport, and it does not overlap the d-pad. A tap opens `#ovQuest`. The panel text equals `PixelPets.quest.text`. Escape closes it. CLOSE closes it after `PixelPets.optionsReady`. |
 | befriend bar opens and BACK returns to the battle menu | d (bar) | `?debug=1`, `forceBattle('tide/0', 3)`. Waits until `PixelPets.battle.state` is `CHOOSE` and the menu panel is up (no fixed sleep). BEFRIEND opens the bar: the zone has a width and the marker has been drawn. BACK returns to the battle menu. |
 | glimmer side swaps the orchard scene and restores keepers | e | `sceneFor('side_pick')` and `sceneFor('orchard')` resolve. `setSide('glimmer')` makes the orchard, Route 2 lead, Wickerglen clear, Cobblecrest arrival, Hale's trial, and the Brinewick hook resolve to their `@glimmer` ids. `setSide('keepers')` restores the base ids. |
 | settings can save a copy, and cancel does not wipe the game | Build 7 | A seeded save. Settings shows Save a copy and Read a copy, and the build line is in the viewport. Save a copy downloads v2 JSON with the party and `story.side`. A short hold on START OVER, then Cancel, leaves the same `uid`, party, side, and `v`. |
 | a minimal v2 save without faction or quest fields still loads as v2 | f | Seed is only `{v:2}`. After load, `PixelPets.side` is `keepers`. The save written back (the 5 s autosave; the seed had no `party`) still has `v: 2` and no `questSeen` or `story.side`. |
+
+`tests/map.spec.js` (region map): the key lists towns, routes, side places, you, the next step, the side task, the coach, Keepers, Glimmerwell, both sides, wild, and Seals. Hearthmoor reads as Keepers. An unvisited Route 1 tap stays `???` and leaves the map open. Arrow keys change the reading and, if one is still held when the map closes, do not walk the keeper. With debug, `mapHold` follows the buyout and `story.sm_done`, High Charity's `townFaction` is `keepers`, Fernbrook's card says Glimmerwell, and an indoor card names the room. Screenshots: `region-map-home`, `region-map-claims`, `region-map-key`.
 
 `tests/standing.spec.js` (Build 2; all with `?debug=1` and the starter save unless noted):
 
