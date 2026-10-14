@@ -10,6 +10,7 @@ Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastr
 |---|---|---|
 | `NEXT_PLAN.md` (this file) | The implementing agent | Work-package detail. Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are built. Q19 town boards: TB-1 and the Hearthmoor and Fernbrook squares are on main. TB-3 is not started. Q22 is not built |
 | `.cursor/skills/README.md` | Every agent | Skill index. Quest work uses `walklings-quests`. Status docs use `walklings-docs`. A phone playthrough and the check that follows it use `walklings-qa` |
+| `.clinerules` / `CLAUDE.md` / `AGENTS.md` | Every agent | Consolidated Cursor/Grok rules, team roles, and skills |
 | `TOWN_BOARD.md` | The implementing agent | Town bulletin boards and the Town Board phone app. Calls settled. TB-1 and the Hearthmoor and Fernbrook squares are on main. TB-3 is not started |
 | `DESIGN_HANDOFF.md` | The designer (art + writing) | Every art asset and every piece of writing the work packages need, with specs, priorities, the voice guide, and pointers to past examples |
 | `BACKLOG.md` | Everyone | Status and priority order. Points at both documents above |
