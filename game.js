@@ -160,7 +160,7 @@ function renderFollowerBtn(){
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
 function renderBuild(){ const b = buildId(); $('#setBuild').textContent = b ? 'Build ' + b : ''; $('#setBuild').hidden = !b; }
 function openSettings(){
-  if (overlayOpen() && $('#ovSettings').hidden) return;
+  if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
   clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderBuild();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
@@ -206,7 +206,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -269,6 +269,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitA
 
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
 function updateHUD(){
+  document.body.classList.toggle('no-pets', !allPets().length);
   syncBagBtns();
   syncJournalBtn();
   syncQuestBtn();
@@ -3932,6 +3933,57 @@ function startOver(){
   location.reload();
 }
 
+/* ---------- save copy (v2 JSON file; v stays 2) ---------- */
+// Settings and the Start over dialog can download the live save. Read a copy replaces this device's game and reloads.
+const COPY_WHY = { bad: "That file isn't a Walklings save.", newer: 'That save is from a newer Walklings.', big: 'That file is too big to read.', storage: "Couldn't store that copy." };
+let copyPending = null;
+function exportText(){
+  if (!S || readOnly) return null;
+  save();
+  return JSON.stringify(S);
+}
+function downloadCopy(){
+  const text = exportText();
+  if (!text) { toast('No game to copy'); return false; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  a.download = 'walklings-save.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  toast('Copy saved');
+  return true;
+}
+function openCopy(){
+  if (!$('#ovCopy').hidden || readOnly) return;
+  copyPending = null;
+  $('#copyMsg').textContent = 'This replaces the game on this device with the one in the file.';
+  $('#copyPick').hidden = false; $('#copyYes').hidden = true;
+  $('#ovCopy').hidden = false; lockTabs(true); sfx('tap');
+  $('#copyCancel').focus({ preventScroll: true });
+}
+function closeCopy(){
+  if ($('#ovCopy').hidden || resetting) return;
+  copyPending = null; $('#ovCopy').hidden = true; lockTabs(!$('#ovSettings').hidden);
+}
+function stageCopy(text){
+  const parsed = PPSave.readCopy(text);
+  if (!parsed.ok) { toast(COPY_WHY[parsed.reason] || COPY_WHY.bad); return false; }
+  copyPending = parsed.state;
+  const n = parsed.state.party.length + parsed.state.box.length;
+  const name = parsed.state.player && parsed.state.player.name;
+  const pets = n === 1 ? '1 Walkling.' : n + ' Walklings.';
+  $('#copyMsg').textContent = (name ? "Bring back " + name + "'s game? " : 'Bring this game back? ') + pets;
+  $('#copyPick').hidden = true; $('#copyYes').hidden = false;
+  return true;
+}
+function confirmCopy(){
+  if (!copyPending || resetting) return;
+  const state = copyPending; copyPending = null;
+  resetting = true; clearMoves(); clearInterval(saveTimer);
+  if (!PPSave.installCopy(state)) { resetting = false; toast(COPY_WHY.storage); return; }
+  location.reload();
+}
+
 /* ---------- collection / journal album ---------- */
 const LORE = {
   ember: 'Pipkits nap beside warm hearths and wake up ready to chase.',
@@ -4057,7 +4109,11 @@ function friendCode(){
 /* ---------- input ---------- */
 function bindInput(){
   $$('#tabs button').forEach(b => b.addEventListener('click', () => { if (tabsGuarded()) return; if (b.dataset.tab !== screen) sfx('tap'); showTab(b.dataset.tab); }));
-  $('#settingsBtn').addEventListener('click', () => { if (tabsGuarded()) return; if ($('#ovSettings').hidden) openSettings(); else closeSettings(); });
+  $('#settingsBtn').addEventListener('click', () => {
+    if (!$('#ovCopy').hidden || !$('#ovReset').hidden) return;
+    if (tabsGuarded() && allPets().length) return;
+    if ($('#ovSettings').hidden) openSettings(); else closeSettings();
+  });
   // option buttons that just appeared ignore taps (capture phase, before their own handlers)
   for (const ev of ['click', 'pointerup']) document.addEventListener(ev, e => {
     if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button, #ovQuest button')) { e.stopPropagation(); e.preventDefault(); }
@@ -4106,6 +4162,22 @@ function bindInput(){
   ln.addEventListener('focus', () => ln.select());
   ln.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ln.blur(); } });
   $('#startOver').addEventListener('click', openReset);
+  $('#setCopy').addEventListener('click', () => { sfx('tap'); downloadCopy(); });
+  $('#setRead').addEventListener('click', openCopy);
+  $('#resetCopy').addEventListener('click', () => { sfx('tap'); downloadCopy(); });
+  $('#copyCancel').addEventListener('click', () => { sfx('tap'); closeCopy(); });
+  $('#copyPick').addEventListener('click', () => { sfx('tap'); $('#copyFile').click(); });
+  $('#copyYes').addEventListener('click', () => { sfx('tap'); confirmCopy(); });
+  $('#copyFile').addEventListener('change', () => {
+    const f = $('#copyFile').files && $('#copyFile').files[0];
+    $('#copyFile').value = '';
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => stageCopy(String(reader.result || ''));
+    reader.onerror = () => toast(COPY_WHY.bad);
+    reader.readAsText(f);
+  });
+  $('#ovCopy').addEventListener('click', e => { if (e.target === e.currentTarget) closeCopy(); });
   $('#resetCancel').addEventListener('click', () => { sfx('tap'); closeReset(); });
   const rg = $('#resetGo');
   rg.addEventListener('pointerdown', e => { if (e.button > 0) return; e.preventDefault(); try { rg.setPointerCapture(e.pointerId); } catch(err) {} holdStart('pointer'); });
@@ -4184,12 +4256,13 @@ function bindInput(){
   const KEYS = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'up', s:'down', a:'left', d:'right', W:'up', S:'down', A:'left', D:'right' };
   window.addEventListener('keydown', e => {
     if (e.target && e.target.tagName === 'INPUT') return;
-    if (scene && sbox.resolve) {                  // Space / Enter advance the text box; Escape does nothing during a choice
+    if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
     if (e.key === 'Escape' && !$('#ovStats').hidden) { closeStatsCard(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
+    if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
@@ -4522,6 +4595,8 @@ function boot(){
     const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);
     return { width: +width.toFixed(3), chance: +befriendHitChance(width).toFixed(3), speed: befriendSpeed(o.stage, foeLv), label: oddsLabel(width).t }; };
   api.befriendCheck = () => befriendDevCheck();
+  api.exportSave = () => exportText();
+  api.importSave = text => { if (!stageCopy(text)) return false; confirmCopy(); return true; };
   let warned = false;
   for (const [k, v] of Object.entries(cheats)) {
     if (DEBUG) { api[k] = v; continue; }

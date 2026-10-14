@@ -30,9 +30,9 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .icon-btn:active{background:var(--d)}
 
 /* Settings overlay (header gear) */
-.settings-inner{max-width:320px;width:min(320px,calc(100vw - 28px));padding:16px 14px 14px}
-.set-list{display:flex;flex-direction:column;gap:8px;margin:4px 0 14px}
-.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;padding:0 14px;border:3px solid var(--d);background:var(--n);color:var(--w);font-family:var(--font);font-size:20px;cursor:pointer;text-align:left}
+.settings-inner{max-width:320px;width:min(320px,calc(100vw - 28px));padding:12px 14px 10px}
+.set-list{display:flex;flex-direction:column;gap:6px;margin:2px 0 10px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:0 14px;border:3px solid var(--d);background:var(--n);color:var(--w);font-family:var(--font);font-size:20px;cursor:pointer;text-align:left}
 .set-row:active{transform:translateY(1px)}
 .set-row .set-lab{flex:1 1 auto}
 .set-row .set-val{color:var(--y);min-width:2.5ch;text-align:right}
@@ -40,7 +40,12 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .set-hint{margin:-4px 0 0;padding:0 2px;font-size:12px;line-height:1.25;color:var(--h)}
 .set-row.set-danger{border-color:var(--r);color:var(--h)}
 .set-row.set-danger .set-val{color:var(--r)}
-.settings-inner > .btn{width:100%;min-height:48px}
+.settings-inner > .btn{width:100%;min-height:44px}
+/* A fresh game (no Walklings yet) can still reach the gear under the opening scene, so a wiped save can be read back. */
+body.no-pets #settingsBtn{position:relative;z-index:12}
+#ovSettings,#ovReset,#ovCopy{z-index:16}
+#resetCopy{width:100%;min-height:48px}
+#ovCopy .actions .btn[hidden]{display:none}
 #hdrIcon{width:36px;height:36px}
 #top .lv{display:flex;flex-direction:column;align-items:flex-end;font-size:18px;color:var(--y)}
 #top .lv[hidden]{display:none}
@@ -420,7 +425,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sb-portrait[hidden]{display:none}
 
 /* Settings: the build id (tools/bump_build.py writes window.BUILD), small and dim at the bottom */
-.set-build{margin:10px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-build{margin:6px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sh-item.sh-pre{box-shadow:inset 0 0 0 3px var(--y)}
 
 /* INVENTORY §6 Bag overlay + BAG chrome; ICONS_SEALS HUD icons */

@@ -14,7 +14,7 @@ Touch: bottom tabs (Pet / Walk / Pets / Friends); FEED / PLAY / REST; Walk = hol
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
-Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, and Start over.
+Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), Follower on/off, Change look, Save a copy, Read a copy, and Start over.
 
 Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off). A small
 DBG tag shows in the header. Only in debug mode:
@@ -353,10 +353,15 @@ Saves (format v2, `save.js`):
   `localStorage.setItem('pixelpets.save.v1', localStorage.getItem('pixelpets.save.v1.bak'))`.
 
 Start over: Settings → Start over (no debug needed) asks
-"Start over? Your Walklings will be gone for good." Press and hold the red START OVER for 1.5 s (touch, mouse, or
+"Start over? Your Walklings will be gone for good." SAVE A COPY downloads `walklings-save.json` first (the same
+v2 object the game stores; Settings → Save a copy does it any time). Press and hold the red START OVER for 1.5 s (touch, mouse, or
 Space/Enter); a bar fills while you hold and letting go early cancels. It removes `pixelpets.save.v2`,
 `pixelpets.save.v1`, `pixelpets.save.v1.bak` and `pixelpets.save.corrupt` (so migration can't bring old Walklings
 back), then reloads into the new-player path (look picker, then the starter choice). The page stops saving first, and any other open tab stops saving
 once it sees the save gone or replaced by a different game (a different `uid`), with a "reset in another tab"
-toast, so it can't write the old game back. Per-device keys are kept, never part of the save: `pixelpets.geo`,
+toast, so it can't write the old game back. Per-device keys are kept, never part of the save or the file: `pixelpets.geo`,
 `pixelpets.env`, `pixelpets.envOverride` for location, `pixelpets.mute`, `pixelpets.debug`, `pixelpets.fast`.
+Read a copy (Settings) takes that JSON file back. It must be save `v` 2. The game normalizes it, replaces the
+game on this device, and reloads. With no Walklings yet, the gear stays tappable under the opening scene so you
+can read the file without finishing the intro. Console: `PixelPets.exportSave()` (the JSON string) and
+`PixelPets.importSave(text)` (reads it and reloads).

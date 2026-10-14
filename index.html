@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261013-1950">
+<meta name="kw-build" content="20261013-2128">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=20261013-1950">
+<link rel="stylesheet" href="style.css?v=20261013-2128">
 </head>
 <body>
 <div id="app">
@@ -308,6 +308,8 @@
       <p id="setMusicHint" class="set-hint">No sound? Check your iPhone's silent switch.</p>
       <button id="setFollower" class="set-row" type="button" aria-pressed="true"><span class="set-lab">Follower</span><span class="set-val" id="setFollowerVal">ON</span></button>
       <button id="setLook" class="set-row" type="button"><span class="set-lab">Change look</span><span class="set-val">›</span></button>
+      <button id="setCopy" class="set-row" type="button"><span class="set-lab">Save a copy</span><span class="set-val">›</span></button>
+      <button id="setRead" class="set-row" type="button"><span class="set-lab">Read a copy</span><span class="set-val">›</span></button>
       <button id="startOver" class="set-row set-danger" type="button"><span class="set-lab">Start over</span><span class="set-val">›</span></button>
       <!-- Account / cloud save: reserved for a future row (not shown yet). Keep this comment; do not render a stub. -->
     </div>
@@ -320,11 +322,26 @@
 <div id="ovReset" class="overlay" hidden>
   <div class="ov-inner" role="alertdialog" aria-modal="true" aria-labelledby="resetMsg">
     <p id="resetMsg" class="reset-msg">Start over? Your Walklings will be gone for good.</p>
+    <button id="resetCopy" class="btn" type="button">SAVE A COPY</button>
     <div class="actions two-even">
       <button id="resetCancel" class="btn" type="button">CANCEL</button>
       <button id="resetGo" class="btn btn-danger hold" type="button" aria-describedby="resetHint"><i id="resetFill" class="hold-fill"></i><span>START OVER</span></button>
     </div>
-    <p id="resetHint" class="hint">Press and hold START OVER to confirm</p>
+    <p id="resetHint" class="hint">Save a copy first. Hold START OVER to erase this game.</p>
+  </div>
+</div>
+
+<!-- Read a saved copy (Settings). Replaces the game on this device, then reloads. -->
+<div id="ovCopy" class="overlay" hidden>
+  <div class="ov-inner" role="dialog" aria-modal="true" aria-labelledby="copyTitle">
+    <div class="ov-title" id="copyTitle">Read a copy</div>
+    <p id="copyMsg" class="reset-msg">This replaces the game on this device with the one in the file.</p>
+    <input id="copyFile" type="file" accept="application/json,.json" hidden>
+    <div class="actions two-even">
+      <button id="copyCancel" class="btn" type="button">CANCEL</button>
+      <button id="copyPick" class="btn btn-play" type="button">CHOOSE FILE</button>
+      <button id="copyYes" class="btn btn-play" type="button" hidden>BRING BACK</button>
+    </div>
   </div>
 </div>
 
@@ -411,19 +428,19 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261013-1950";</script>
-<script src="sprites.js?v=20261013-1950"></script>
-<script src="keeper.js?v=20261013-1950"></script>
-<script src="stats.js?v=20261013-1950"></script>
-<script src="moves.js?v=20261013-1950"></script>
-<script src="data/mapdata.js?v=20261013-1950"></script>
-<script src="quests.js?v=20261013-1950"></script>
-<script src="standing.js?v=20261013-1950"></script>
-<script src="save.js?v=20261013-1950"></script>
-<script src="env.js?v=20261013-1950"></script>
-<script src="sfx.js?v=20261013-1950"></script>
-<script src="cloud_config.js?v=20261013-1950"></script>
-<script src="cloud.js?v=20261013-1950"></script>
-<script src="game.js?v=20261013-1950"></script>
+<script>window.BUILD = "20261013-2128";</script>
+<script src="sprites.js?v=20261013-2128"></script>
+<script src="keeper.js?v=20261013-2128"></script>
+<script src="stats.js?v=20261013-2128"></script>
+<script src="moves.js?v=20261013-2128"></script>
+<script src="data/mapdata.js?v=20261013-2128"></script>
+<script src="quests.js?v=20261013-2128"></script>
+<script src="standing.js?v=20261013-2128"></script>
+<script src="save.js?v=20261013-2128"></script>
+<script src="env.js?v=20261013-2128"></script>
+<script src="sfx.js?v=20261013-2128"></script>
+<script src="cloud_config.js?v=20261013-2128"></script>
+<script src="cloud.js?v=20261013-2128"></script>
+<script src="game.js?v=20261013-2128"></script>
 </body>
 </html>

@@ -41,7 +41,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 - R5 later appearances (D25): the cart scenes are in. Ally vs parted, and whether Rook shows up again, are still open.
 - Tour stop copy and `tour.doubt` (D26): engine is in; words are marked placeholder.
 - Brinewick, Trial Hall #3, Seal 3: no map and no one-pager. Do not start the region until that page exists.
-- Next unblocked coding builds: export before Start over, the box screen, the installable app (NEXT_PLAN §3 Builds 7–9).
+- Next unblocked coding builds: the box screen, then the installable app (NEXT_PLAN §3 Builds 8–9). Export before Start over shipped in Build 7.
 
 ## Settled
 

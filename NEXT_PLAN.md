@@ -1,6 +1,6 @@
 # Walklings: what's next (handoff after Builds 4–6, Oct 13, 2026)
 
-Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-1950`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
+Implementing-agent handoff. Source of truth for status is `BACKLOG.md`. This file keeps the work-package detail (files, numbers, acceptance) and, in section 3, a review of what shipped recently plus the next steps. The Oct 13 morning line "Scope only. Nothing here is built" is no longer true. This branch's stamp is `20261013-2128`. GitHub Pages follows `main`, which does not yet include Heights or Builds 4–6.
 
 Sizes follow BACKLOG: S = an evening, M = a few sessions, L = needs new infrastructure or a lot of content.
 
@@ -30,7 +30,7 @@ Evening (Build 3, supersede the morning notes):
 
 ## 0. Where the build stands
 
-This branch: `20261013-1950`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
+This branch: `20261013-2128`. GitHub Pages still follows `main`, which does not yet include Fernbrook Heights or these scenes.
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, side pick, Heights smuggling tunnels, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal), then Rook's R5 (`brinewick_hook`: he gets off the cart, `story.rook_end` `"ally"`). Story ends at `story.cobble_end` ("COMING LATER · Brinewick").
 
@@ -63,7 +63,7 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 | Box screen: reorder, release, proper UI; orphan recovery UI | Box is a list; orphans invisible | M |
 | Rename an existing Walkling | Left from Nicknames | S |
 | Installable app (manifest + service worker, offline) | Not started | S-M |
-| Export/backup before Start over | Left | S |
+| Export/backup before Start over | **Shipped (Build 7).** Settings and the Start over dialog download `walklings-save.json`. Read a copy replaces this device's game. `v` stays 2 | S |
 | Music volume slider, iPhone listen-through; MUSIC Q1 (iOS silent switch) | Open with Vincent | S |
 | Wild creatures not persisted across reload | By design for now | S |
 | Small-viewport map at 320x568 (~150 px tall) | Known cramped | S-M |
@@ -503,7 +503,7 @@ These files were behind the code. They now match Builds 4–6:
 | Document | What changed |
 |---|---|
 | `NEXT_PLAN.md` | Section 0 and this section. Phases B2–B4 marked shipped. The real Sacrifice cost and R5 tone stay open |
-| `BACKLOG.md` | Q5 slot 2 is a stub. Q6 / Q8 / Q9 / Q10 marked built. Next queue is Q12–Q14 |
+| `BACKLOG.md` | Q5 slot 2 is a stub. Q6 / Q8 / Q9 / Q10 marked built. Build 7 (save copy) is next in this branch's notes |
 | `OPEN_DECISIONS.md` | D2, D24, D25, and the "not started" list. D23's rule is unchanged; the scenes exist |
 | `README.md` | Glimmer path now runs through R5. Standing grants list includes the new one-shots |
 | `CHANGELOG.md` | This branch's player-facing note |
@@ -521,13 +521,13 @@ Act 1's glimmer branch is closed enough to play. Do not invent Brinewick, Hall #
 - Designer: Tour stop copy and the real `tour.doubt` name (D26); the Sacrifice one-pager that replaces the stub (D24: a real cost, a floor that cannot soft-lock, how Quota substitutes); tier-2 lanyard art (D13); switch-desk letter/review/welcome (D19). The Build 4–6 lines are playable implementer copy. Replace the words, keep the flags, gifts, and `standing` ids.
 - Vincent: confirm R5 as-built (`"ally"` / `"stays"`) or name the change (D25); Standing numbers D14–D17; Firebase project + privacy line; attorney names; Tour recipients / slogans.
 
-**Next three coding builds** (unblocked; none of them is a new region):
+**Next coding builds** (unblocked; none of them is a new region):
 
-### Build 7 — Export a save before Start over — S
+### Build 7 — Export a save before Start over — shipped
 
-Settings "Start over" wipes the browser save with no copy. Add an export of the v2 JSON (and a way to read it back) before the wipe. Additive only. `v` stays 2. Acceptance: export, wipe, import, same party and `story.side`.
+Settings has Save a copy and Read a copy. The Start over dialog has SAVE A COPY before the hold. The file is the v2 JSON (`walklings-save.json`). Reading it runs `normalizeV2` and replaces this device's game, then reloads. `v` stays 2. A fresh game (no Walklings yet) can open the gear under the opening scene, so a wipe can be undone without finishing Ilse's intro. Device prefs stay out of the file. Tests: `tests/save_copy.spec.js`.
 
-### Build 8 — Box screen — M
+### Build 8 — Box screen — M — **next**
 
 The box is a list under the party. Reorder, release, and a proper box UI. Orphans in `orphans` stay invisible until this has a recovery row. Do not bump `v`.
 

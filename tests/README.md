@@ -76,6 +76,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 `tests/glimmer_fernbrook.spec.js` (Build 3) plays the Fernbrook glimmer path: Keepers pick leaves the orchard battle in place, an old save past the orchard does not see the gate, "Think about it" sets no flag and stepping off toasts one walk-away line, the glimmer pick runs the orchard and the four Tour stops, a worn-out party and a lost match can still finish at stop 4, and the optional win grants `tour1_match` once. Screenshots (320 and 390) cover the side pick, the orchard, each Tour stop, and the lanyard card.
 
+`tests/save_copy.spec.js` (Build 7) downloads the v2 save from the Start over dialog, wipes, and reads the file back (same party, `story.side`, and `v` 2). A newer or unreadable file is refused and the current game stays.
+
 `tests/glimmer_route2.spec.js` (Build 4) plays the Census volunteer scene (quiet log sets `story.rook_bond`), Wickerglen's three treats and flags, the together pact, and checks Keepers Route 2 still uses the base scenes.
 
 `tests/glimmer_cobble.spec.js` (Builds 5–6) checks race arrival and the Cobblecrest respawn, Rook's glimmer battle lines, the Sacrifice quota (`story.seal2`, `seal_glim_2`, gifts, glimmer Standing, Keepers seal restored after `setSide`), and R5 (`"ally"` vs `"stays"`, both set `story.cobble_end`).

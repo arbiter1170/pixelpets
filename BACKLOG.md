@@ -9,7 +9,7 @@ Where things are (hand these to the right person or agent):
 
 | Document | Hand to | What it holds |
 |---|---|---|
-| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail, a review of what shipped through Builds 4–6, and the next three builds: export before Start over, the box screen, the installable app. Live stamp is `version.json` on this branch |
+| [NEXT_PLAN.md](NEXT_PLAN.md) | **The implementing subagent** | Work-package detail through Build 7 (save copy). Next: the box screen, then the installable app. Live stamp is `version.json` on this branch |
 | [DESIGN_HANDOFF.md](DESIGN_HANDOFF.md) | **The designer** (art and writing) | Voice guide, art sizes, and the request list. Background. The assignment to paste into the designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) |
 | [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) | **The designer bot** (a different agent from the implementer) | The prompt: every designer item, the files to open, the engine that already exists, the delivery format, and the phase order |
 | [OPEN_DECISIONS.md](OPEN_DECISIONS.md) | **Vincent** (and anyone picking up the next package) | Every decision the first NEXT_PLAN pass built on a guess, deviated from the plan on, or left open, with what the code does today and where to change it. Add new unsure items there, not in chat |
@@ -22,7 +22,7 @@ Decisions recorded (Vincent, Oct 13, 2026):
 - Trial Hall replacement: Fernbrook slot 1 is the Bright Pavilion Tour (built in Build 3). Cobblecrest slot 2 is the Sacrifice, Quota as the free floor (stub built in Build 5; the real cost is still open). The Keepers path keeps the Halls as built. The Audit battle remains the Tour's optional last stop.
 - Capture: "no combat performed" = the creature is at full health in this encounter.
 
-Queue (suggested order top to bottom). Q1–Q11 and Builds 4–6 (Q8–Q10) shipped, with the Sacrifice as a stub. Next numbered game builds are Q12–Q14 (NEXT_PLAN §3). Brinewick waits on a one-pager.
+Queue (suggested order top to bottom). Q1–Q12 and Builds 4–7 shipped, with the Sacrifice as a stub. Next numbered game builds are Q13–Q14 (NEXT_PLAN §3). Brinewick waits on a one-pager.
 
 | # | Item | Size | Blocked on |
 |---|---|---|---|
@@ -37,7 +37,7 @@ Queue (suggested order top to bottom). Q1–Q11 and Builds 4–6 (Q8–Q10) ship
 | Q9 | **Build 5** Cobblecrest glimmer + Hall slot 2 Sacrifice (WP-B3): buyout, rival2 lines, `seal_glim_2`, Quota as the free floor | M | **BUILT as a stub.** Arrival, buyout, `rival2_rook@glimmer`, Sacrifice choices, `seal2@glimmer` (2 Hearty Snacks, 1 Wake Tonic, Tier 2 lanyard placeholder). Seam puzzles shared. Real cost still D24. Tests: `tests/glimmer_cobble.spec.js` |
 | Q10 | **Build 6** Rook R5 / Act 1 closer (WP-B4): Keepers `brinewick_hook` (he converts), glimmer twin (he stays). Same `story.cobble_end` | M | **BUILT.** Keepers `"ally"`, Glimmerwell `"stays"`. Both set `story.cobble_end` and grant 5 Standing once. Tone confirmation still D25 |
 | Q11 | **Fernbrook Heights** "get to know us", before the first trial | M | **BUILT (first pass):** north ridge, RegenX lab (4 floors, Atten, The Arbiter emits slowly, Nia and Cal) and the smuggling tunnels (Jed, Mara Quill, Officer Ken interviews the Walklings). Standing on each faction beat. `story.heights_done` gates the Hall panel and Tour stop 1. Group battles: two foes, TARGET, ally on the last fight. Open: D27-D30 |
-| Q12 | **Build 7** Export a save before Start over | S | Unblocked. NEXT_PLAN §3 Build 7 |
+| Q12 | **Build 7** Export a save before Start over | S | **BUILT.** Settings and the Start over dialog download `walklings-save.json`. Read a copy replaces the game on this device. `v` stays 2. A fresh game can open the gear during the opening scene. Tests: `tests/save_copy.spec.js` |
 | Q13 | **Build 8** Box screen: reorder, release, orphan recovery row | M | Unblocked. Do not bump save `v`. NEXT_PLAN §3 Build 8 |
 | Q14 | **Build 9** Installable app (manifest + service worker, offline) | S-M | Unblocked. No new network calls. NEXT_PLAN §3 Build 9 |
 
@@ -140,5 +140,5 @@ This order applies after the Kindle Wild rename, which shipped as 9cc836d and 9d
 - **Box screen:** the box is just a list under the party on the Pets tab (partner swap only). Reordering, releasing, and a proper box UI are later work. The WALKLING JOURNAL opens a page for each seen form; the grid still draws seen and caught the same way (`dex.caught` is saved and the page says whether they have joined you).
 - **Orphan recovery:** Walklings that couldn't be migrated sit in `orphans` with their raw data; nothing shows them yet.
 - ~~**Debug keys in release**~~ **DONE:** E/G/F, fast mode, "Pick a place" and the cheat console hooks only work with `?debug=1` (remembered; `?debug=0` clears it). Read-only hooks stay public.
-- **Start over (DONE):** Friends tab, press-and-hold 1.5 s confirm; wipes v2/v1/.bak/corrupt, keeps device prefs, other tabs stop saving (uid check). Left: an export/backup before wiping.
+- **Start over (DONE):** Settings, press-and-hold 1.5 s confirm; wipes v2/v1/.bak/corrupt, keeps device prefs, other tabs stop saving (uid check). **Build 7:** Save a copy / Read a copy, and SAVE A COPY on the confirm, so the wipe can be undone from the file.
 - **Installable app:** add a manifest and service worker so it can be added to the home screen and played offline.

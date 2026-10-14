@@ -301,6 +301,25 @@ const PPSave = (() => {
     return GAME_KEYS.every(k => ls.get(k) === null);
   }
 
+  // A file copy of the live v2 save. v stays 2. Device prefs are not in the file.
+  // readCopy accepts only a v2 object. installCopy writes it as the current game (the caller reloads).
+  function readCopy(text){
+    if (typeof text !== 'string' || !text) return { ok: false, reason: 'bad' };
+    if (text.length > 2000000) return { ok: false, reason: 'big' };
+    let o = null; try { o = JSON.parse(text); } catch(e) { o = null; }
+    if (!isObj(o) || !Number.isInteger(o.v)) return { ok: false, reason: 'bad' };
+    if (o.v > 2) return { ok: false, reason: 'newer' };
+    if (o.v !== 2) return { ok: false, reason: 'bad' };
+    return { ok: true, state: normalizeV2(o, Date.now()) };
+  }
+  function installCopy(state){
+    if (!isObj(state) || state.v !== 2) return false;
+    detached = false;
+    const str = JSON.stringify(state);
+    if (!ls.set(V2_KEY, str)) return false;
+    owned = true; lastWritten = str; return true;
+  }
+
   // Dev check (§2): the frozen v1 table and the append-only form-id table must match sprites.js, and species ids must be unique.
   // Returns the list of problems (empty = fine); each one is also logged as a console error.
   function devCheck(){
@@ -315,6 +334,6 @@ const PPSave = (() => {
     return out;
   }
 
-  return Object.freeze({ PLAYER_NAME_MAX, V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, GAME_KEYS, startOver, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
+  return Object.freeze({ PLAYER_NAME_MAX, V1_KEY, V2_KEY, BAK_KEY, CORRUPT_KEY, GAME_KEYS, startOver, readCopy, installCopy, V1_SPECIES, SPECIES_IDS, FORM_IDS, PARTY_MAX, formId, isSpecies,
     defaultStateV2, startWorld, MAPS, MAP_SIZE, migrateV1toV2, normalizeV2, loadSave, writeV2, devCheck });
 })();

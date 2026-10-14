@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-13 21:28 ET — Save a copy before Start over (`20261013-2128`)
+
+- Settings has Save a copy and Read a copy. The Start over dialog offers SAVE A COPY before the hold.
+- The file is `walklings-save.json`, the same v2 save the game stores. Reading it replaces the game on this device and reloads. `v` stays 2.
+- A file from a newer build, or a file that is not a save, is refused. The current game stays.
+- With no Walklings yet, the gear stays tappable under the opening scene, so a wipe can be undone without finishing the intro.
+- Device prefs (mute, location, debug) stay on this browser. They are not in the file.
+
 ## 2026-10-13 19:50 ET — Route 2 glimmer, Cobblecrest Sacrifice stub, Rook R5 (`20261013-1950`)
 
 - Glimmerwell Route 2: Census volunteer (`lead_intro@glimmer`). The quiet log gives Rook one bond point. Wickerglen still bumps the lamps, pays 3 Befriend Treats, and opens the same gates.
