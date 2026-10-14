@@ -79,6 +79,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 `tests/civic.spec.js` issues the Keeper1 on the Route 1 side quest, opens the phone (KeeperUAV, then Botnet after a cracked handset), enters the Keeper House, and checks that Officer Bren patrols.
 
+`tests/ribbit.spec.js` checks that the Ribbit feed is stable, that the quarry sale has its own line, and that the phone shows Block News and Chirp Worldwide.
+
 `tests/save_copy.spec.js` (Build 7) downloads the v2 save from the Start over dialog, wipes, and reads the file back (same party, `story.side`, and `v` 2). A newer file, a v1 file, a file that is not JSON, and a file over the size cap are refused and the current game stays.
 
 `tests/glimmer_route2.spec.js` (Build 4) plays the Census volunteer scene (only the quiet log sets `story.rook_bond`), the grey Pebblit line, Wickerglen's three treats and flags, both the together and race pacts, and checks Keepers Route 2 still uses the base scenes.

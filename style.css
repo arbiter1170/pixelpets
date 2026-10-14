@@ -634,4 +634,32 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone.hack .btn-play{background:#1c7a45;color:#f4fff6}
 #ovPhone.hack .btn:disabled{background:#101c16;color:#8fb9a0;box-shadow:inset 0 0 0 2px #1a3d2c}
 #ovPhone.hack #phoneClose:active,#ovPhone.hack #phoneBack:active{box-shadow:inset 3px 3px 0 rgba(0,0,0,.4)}
+/* Ribbit: a read-only feed. Rows are not buttons. Handles wrap. Scroll stays on #phoneBody. */
+#ovPhone #phoneBody .ribbit-trend{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0;max-width:100%}
+#ovPhone #phoneBody .ribbit-trend-lab{flex:1 0 100%;font-size:13px;letter-spacing:1px;line-height:1.2}
+#ovPhone #phoneBody .ribbit-tag{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px;min-width:0;max-width:100%;padding:3px 6px}
+#ovPhone #phoneBody .ribbit-tag b{font-size:15px;line-height:1.25;overflow-wrap:anywhere}
+#ovPhone #phoneBody .ribbit-tag small{font-size:13px;line-height:1.2}
+#ovPhone #phoneBody .ribbit-post{display:flex;flex-direction:column;gap:2px;min-width:0;max-width:100%;margin:0;padding:6px 8px}
+#ovPhone #phoneBody .ribbit-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px;min-width:0;max-width:100%}
+#ovPhone #phoneBody .ribbit-desk{font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+#ovPhone #phoneBody .ribbit-handle{min-width:0;max-width:100%;font-size:15px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+#ovPhone #phoneBody .ribbit-text{margin:0;font-size:16px;line-height:1.35;overflow-wrap:anywhere}
+#ovPhone #phoneBody .ribbit-chirps,#ovPhone #phoneBody .ribbit-foot{font-size:14px;line-height:1.3;overflow-wrap:anywhere}
+#ovPhone:not(.hack) #phoneBody .ribbit-trend-lab{color:#1d5c38}
+#ovPhone:not(.hack) #phoneBody .ribbit-tag{background:#e5f3d4;color:#143226;box-shadow:0 0 0 2px #1d5c38}
+#ovPhone:not(.hack) #phoneBody .ribbit-tag small{color:#1d5c38}
+#ovPhone:not(.hack) #phoneBody .ribbit-post{background:#fff9ec;color:#1c2416;box-shadow:0 0 0 2px #1d5c38}
+#ovPhone:not(.hack) #phoneBody .ribbit-desk{color:#6a3a0c}
+#ovPhone:not(.hack) #phoneBody .ribbit-handle{color:#143226}
+#ovPhone:not(.hack) #phoneBody .ribbit-text{color:#1c2416;background:transparent}
+#ovPhone:not(.hack) #phoneBody .ribbit-chirps,#ovPhone:not(.hack) #phoneBody .ribbit-foot{color:#3d4a36}
+#ovPhone.hack #phoneBody .ribbit-trend-lab{color:#8ee8b0}
+#ovPhone.hack #phoneBody .ribbit-tag{background:#0c1f16;color:#d7ffc8;box-shadow:0 0 0 2px #3dce78}
+#ovPhone.hack #phoneBody .ribbit-tag small{color:#8ee8b0}
+#ovPhone.hack #phoneBody .ribbit-post{background:#07140e;color:#d7ffc8;box-shadow:0 0 0 2px #1e6b42}
+#ovPhone.hack #phoneBody .ribbit-desk{color:#9dffc0}
+#ovPhone.hack #phoneBody .ribbit-handle{color:#d7ffc8}
+#ovPhone.hack #phoneBody .ribbit-text,#ovPhone.hack #phoneBody .ribbit-foot{background:transparent;color:#d7ffc8}
+#ovPhone.hack #phoneBody .ribbit-chirps{color:#b7ebc8}
 #ovPhone #phonePane[hidden],#ovPhone #phoneHome[hidden],#ovPhone #phoneBody[hidden],#ovPhone #phoneFriends[hidden]{display:none}

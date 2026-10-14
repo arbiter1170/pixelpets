@@ -9,6 +9,10 @@
 - Joining Glimmerwell puts a Cracked Handset in the bag. While you carry it on that pledge, the phone becomes the thin CRACK//HAND and KeeperUAV becomes Botnet, also a placeholder.
 - Higher Glimmerwell Standing tints your keeper with mint, then silver. Archivist Mo's books fear a child born already listening. That generation is not in the game.
 
+## 2026-10-13 23:18 ET — Ribbit (`20261013-2318`)
+
+- The phone has Ribbit, a read-only feed. Block News and Chirp Worldwide post about the towns. Local notes and the trending row change with the day, the place you are standing, and the story so far. You cannot post.
+
 ## 2026-10-13 21:28 ET — Save a copy before Start over (`20261013-2128`)
 
 - Settings has Save a copy and Read a copy. The Start over dialog offers SAVE A COPY before the hold.

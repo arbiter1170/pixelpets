@@ -3295,6 +3295,60 @@ function closePhone(){
   if ($('#ovPhone').hidden) return;
   $('#ovPhone').hidden = true; lockTabs(false);
 }
+function renderRibbit(body){
+  const api = window.PPRibbit;
+  const feed = (api && api.feed) ? api.feed({
+    flags: (S && S.flags) || {},
+    side: side(),
+    map: (CUR && CUR.id) || '',
+    uid: (S && S.uid) || '',
+    day: dayKey(Date.now()),
+  }) : { trending: [], posts: [] };
+  const trend = document.createElement('div');
+  trend.className = 'ribbit-trend';
+  const lab = document.createElement('span');
+  lab.className = 'ribbit-trend-lab';
+  lab.textContent = 'TRENDING';
+  trend.appendChild(lab);
+  (feed.trending || []).forEach(t => {
+    const chip = document.createElement('span');
+    chip.className = 'ribbit-tag';
+    const tag = document.createElement('b');
+    tag.textContent = t.tag || '';
+    const n = document.createElement('small');
+    n.textContent = String(t.count);
+    chip.append(tag, document.createTextNode(' '), n);
+    trend.appendChild(chip);
+  });
+  body.appendChild(trend);
+  (feed.posts || []).forEach(post => {
+    const row = document.createElement('article');
+    row.className = 'ribbit-post';
+    if (post.id) row.dataset.id = String(post.id);
+    const top = document.createElement('div');
+    top.className = 'ribbit-top';
+    const desk = document.createElement('b');
+    desk.className = 'ribbit-desk';
+    desk.textContent = post.desk || post.name || '';
+    const handle = document.createElement('span');
+    handle.className = 'ribbit-handle';
+    handle.textContent = '@' + (post.handle || '');
+    top.append(desk, handle);
+    const text = document.createElement('p');
+    text.className = 'ribbit-text';
+    text.textContent = post.text || '';
+    const chirps = document.createElement('span');
+    chirps.className = 'ribbit-chirps';
+    const c = post.chirps | 0;
+    chirps.textContent = c === 1 ? '1 chirp' : c + ' chirps';
+    row.append(top, text, chirps);
+    body.appendChild(row);
+  });
+  const foot = document.createElement('p');
+  foot.className = 'ribbit-foot';
+  foot.textContent = 'Ribbit rides the Keeper wires.';
+  body.appendChild(foot);
+}
 function phoneApp(id){
   if (id === 'journal') { closePhone(); showTab('col'); return; }
   const hack = phoneHack();
@@ -3326,6 +3380,8 @@ function phoneApp(id){
       add('KEEPERUAV', 'Count the Route 2 lamps. Not live yet.');
       add('KEEPERUAV', 'No jobs are open. The desk is warming up.');
     }
+  } else if (id === 'ribbit') {
+    renderRibbit(body);
   } else if (id === 'friends') {
     $('#friendCode').textContent = friendCode(); renderKeeperName();
   }
@@ -4588,6 +4644,7 @@ function boot(){
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
   { const hb = heightsDevCheck(); if (hb.length) console.error('Walklings: heights check failed:', hb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
+  { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
