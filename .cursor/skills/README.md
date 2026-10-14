@@ -9,3 +9,6 @@ Skills for this repo live here, one folder per skill. Each folder has a `SKILL.m
 | `walklings-qa` | [walklings-qa/SKILL.md](walklings-qa/SKILL.md) | Playing a new feature on a phone width, and adding the Playwright check that keeps the fix |
 
 A new skill is a new folder under `.cursor/skills/` with a `SKILL.md`. Add a row to this table in the same change. Do not put skills outside this directory.
+
+Project-wide agent rules (roles, build rules, and these skills copied together) live in [`.clinerules`](../../.clinerules), [`CLAUDE.md`](../../CLAUDE.md), and [`AGENTS.md`](../../AGENTS.md). Keep those three files identical when you edit the consolidated set.
+
