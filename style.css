@@ -373,8 +373,12 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .preview canvas{display:block;image-rendering:pixelated}
 .swatch.on,.preview.on{box-shadow:0 0 0 2px var(--k),0 0 0 5px var(--y)}
 .q-side{color:var(--w)}
-.look-btns{margin-top:6px}
+.look-btns{margin-top:6px;flex:0 0 auto}
 .look-btns.one{grid-template-columns:1fr}
+/* The intro picker is taller than a phone. DONE stays on screen. The name row is hidden until a later screen asks. */
+#ovLook .look-card{height:100%;max-height:100%;overflow:hidden}
+#ovLook .look-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#lookNameRow[hidden]{display:none}
 
 /* ---------- Pet scene labels (MAPS_SLICE K.2 v0.4.7; BATTLE §7 badges) ---------- */
 .scene-keeper{position:absolute;right:8px;top:8px;z-index:1;pointer-events:none;line-height:1;padding:3px 6px;background:rgba(26,28,44,.72);color:var(--w);

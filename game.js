@@ -1554,6 +1554,42 @@ const ITEM_ART = {
     '................',
     '................',
   ],
+  keeper1: [
+    '................',
+    '................',
+    '....gggggggg....',
+    '...gwwwwwwwwg...',
+    '..gwwwwwwwwwwg..',
+    '..gwwyyyywwwwg..',
+    '..gwwyyyywwwwg..',
+    '..gwwwwwwwwwwg..',
+    '..gwwwwwwwwwwg..',
+    '..gwwkkkkwwwwg..',
+    '..gggggggggggg..',
+    '....yyyyyyyy....',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  cracked_phone: [
+    '................',
+    '................',
+    '....llllllll....',
+    '...lkkwwwwwwl...',
+    '..lkwwwwwwwwwl..',
+    '..lwwwllwwwwwl..',
+    '..lwwwwllwwwwl..',
+    '..lwwwwwllwwwl..',
+    '..lwwwwwwllwwl..',
+    '..lwwkkwwwwwwl..',
+    '..llllllllllll..',
+    '....ccccclll....',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
   soft_berry: [
     '................',
     '................',
@@ -4472,8 +4508,8 @@ function phoneApp(id){
     if (side() === 'glimmer') add('Clerk Mint', 'Cracked handsets. She does not do warranties.');
   } else if (id === 'notes') {
     if (hack) {
-      add('unnamed', 'the crest phone copies every note. this one too, probably.');
-      add('unnamed', 'jobs and parts will list here when the board wakes up.');
+      add('Handset', 'The crest phone copies every note. This one too, probably.');
+      add('Handset', 'Jobs and parts will list here when the board wakes up.');
     } else {
       add('Lantern desk', 'Your Keeper1 is active. We can read this. That is the service.');
       add('Lantern desk', 'Free handset. The poles stay with the Keepers.');
@@ -4599,8 +4635,9 @@ function walkTipText(){
   if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
-  if (!S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
   const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
+  // The first-wild hint only while that step is current. Reaching Fernbrook implies the step without setting the flag.
+  if ((!q || q.id === 'first_wild') && !S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
   if (q && q.target) return escapeHtml(q.text);
   return WALK_TIP_DEFAULT;
 }
@@ -4638,15 +4675,15 @@ function renderBag(){
     const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly || holdable ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
     row.setAttribute('role', 'option'); row.dataset.id = id; row.dataset.i = String(i);
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico' + (battleOnly ? ' grey' : '');
-    ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    if (ITEM_ART[id]) ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name';
     nm.textContent = it.name + ' \u00d7' + itemCount(id);
-    if (battleOnly || holdable) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = battleOnly ? '(battle only)' : '(hold)'; nm.appendChild(tag); }
-    const bl = document.createElement('div'); bl.className = 'bag-blurb'; bl.textContent = it.blurb;
+    if (battleOnly || holdable || it.key) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = it.key ? '(key)' : battleOnly ? '(battle only)' : '(hold)'; nm.appendChild(tag); }
+    const bl = document.createElement('div'); bl.className = 'bag-blurb'; bl.textContent = it.key && it.keyNote ? it.keyNote : it.blurb;
     meta.append(nm, bl);
     row.append(ico, meta);
-    if (!battleOnly && !holdable) {
+    if (!battleOnly && !holdable && !it.key) {
       const use = document.createElement('button'); use.type = 'button'; use.className = 'btn bag-use'; use.textContent = 'USE';
       use.addEventListener('click', e => { e.stopPropagation(); bagSel = i; useBagItem(id); });
       row.appendChild(use);
@@ -4711,7 +4748,7 @@ function renderShop(){
     const it = ITEMS[id];
     const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
-    ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    if (ITEM_ART[id]) ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = it.name;
     const own = document.createElement('div'); own.className = 'bag-blurb shop-own'; own.textContent = '\u00d7' + itemCount(id) + ' owned';
