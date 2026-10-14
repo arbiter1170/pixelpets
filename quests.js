@@ -132,9 +132,9 @@
   const SIDE_CHAINS = [
     [
       { id: 'phone', when: ['story.starter_received'], done: ['story.phone_got'],
-        text: 'Keeper officers are where the wild starts. They have a handset for you.',
+        text: 'The wild past the east gate is open. Go and explore.',
         place: 'Route 1, west end',
-        target: { map: 'route1', x: 2, y: 8 } },
+        target: { map: 'route1', x: 3, y: 7 } },
     ],
     [
       { id: 'mom', when: ['story.starter_received'], done: ['story.mom_met'],

@@ -268,3 +268,19 @@ test('box and release confirms are thumb buttons', async ({ page }) => {
   await page.locator('#wlClose').tap();
   await expect(page.locator('#ovWalkling')).toBeHidden();
 });
+
+test('party actions stay labeled after the care timer', async ({ page }) => {
+  await openCol(page, boardSave());
+  await page.waitForFunction(() => document.querySelector('#scr-pet [data-act="feed"]').dataset.cd === '');
+  const labels = await page.evaluate(() => ({
+    move: document.querySelector('.party-slot[data-id="pember"] [data-act="move"]').textContent,
+    box: document.querySelector('.party-slot[data-id="ptide"] [data-act="box"]').textContent,
+    partner: document.querySelector('.party-slot[data-id="pbloom"] [data-act="partner"]').textContent,
+    release: document.querySelector('.box-row[data-id="pstone"] [data-act="release"]').textContent,
+    party: document.querySelector('.box-row[data-id="pstone"] [data-act="party"]').textContent,
+  }));
+  expect(labels).toEqual({ move: 'MOVE', box: 'TO BOX', partner: 'PARTNER', release: 'RELEASE', party: 'TO PARTY' });
+  await page.locator('.party-slot[data-id="pember"] [data-act="move"]').tap();
+  await expect(page.locator('.party-slot[data-id="pember"] [data-act="up"]')).toBeVisible();
+  await expect(page.locator('.party-slot[data-id="pember"] [data-act="down"]')).toBeVisible();
+});
