@@ -18,7 +18,7 @@ Read these before you write. Do not edit the files marked verbatim.
 | `NEXT_PLAN.md` | WP-B content inventory, Rook's tree, Standing proposal, Hall spike constraints. Sections "Glimmer-path content inventory", "Rook: always converts", "Standing and switching", "Hall replacement: design spike". |
 | `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D24 (Sacrifice loop), D25 (R5 tone), D26 (Tour copy), D13 (tier-2 lanyard), D19 (desk copy) are yours. D3 / D5 / D10 / D23 are settled. D6, D7, D8 are not (numbers and optional battle features; leave them). |
 | `data/cobblecrest.json` | The shape of a finished hand-off: `scenes`, `trainers`, `looks`, `speakers`, `artRequests`, `newNames`, `decisions`, `flags`. |
-| `data/glimmer_path.json` | **Your file.** Fernbrook scenes and the Tour engine are in (Build 3). Replace Tour stop *copy* only. Add Route 2 / Cobblecrest / R5 scenes. Keep every existing `setFlag`, `give`, `run`, and `battle` step, and the flag names. |
+| `data/glimmer_path.json` | **Your file.** Fernbrook, Route 2, Cobblecrest, the Sacrifice stub, and R5 are in. Replace Tour stop copy and the Sacrifice cost. Keep every existing `setFlag`, `give`, `run`, `battle`, `seal`, and `standing` step, and the flag names. |
 | `data/maps_slice.json` scenes `glimmer1`, `fen_intro`, `orchard`, `seal1`, `teaser` | The Keepers-path beats you are mirroring. **Verbatim. Do not edit.** |
 | `data/act1_route2.json` scenes `lead_intro`, `glen_cleared`, `faded2`, `route2_end` | Same. **Verbatim.** Decision `4_tone`: the lamp drain is only hinted at. |
 | `data/cobblecrest.json` scenes `quarry_buyout`, `hale_trial`, `seal2`, `brinewick_hook` and trainer `rival2_rook` | Same. **Verbatim.** |
@@ -49,8 +49,8 @@ Already in the game:
 
 Settled, do not reopen:
 
-- Hall slot 1 = Tour (built). Hall slot 2 = Sacrifice, Quota as the free floor (not built).
-- Rook: Keepers path he converts; Glimmerwell path he stays. No bond fork. No follow-or-stay.
+- Hall slot 1 = Tour (built). Hall slot 2 = Sacrifice stub (built, Build 5). Quota is the free floor. Replace the cost; do not add a second Tour.
+- Rook: Keepers path he converts (`story.rook_end` `"ally"`); Glimmerwell path he stays (`"stays"`). Both scenes are in. No bond fork. No follow-or-stay.
 
 ## Rules for every line
 
@@ -70,7 +70,7 @@ Settled, do not reopen:
 4. **`data/hall_spike.md`** only for phase BH: one page per Hall slot. No scenes until Vincent approves it.
 5. Check your own lines against the rules above before you stop.
 
-Suggested order now: Tour stop copy (Phase F leftover) and the Sacrifice one-pager (Phase H) in parallel, then Route 2 (Phase R2 / Build 4), then Cobblecrest + Sacrifice scenes (Phase R3 / Build 5), then Rook R5 (Phase R5 / Build 6). Switch-desk copy (Phase S) can land any time.
+Suggested order now: Tour stop copy (Phase F leftover) and the Sacrifice one-pager that replaces the Build 5 stub (Phase H). Route 2, Cobblecrest, and R5 scenes already play. Replace their lines if you have better ones; do not drop flags. Switch-desk copy (Phase S) and the tier-2 lanyard can land any time.
 
 ---
 
@@ -153,7 +153,7 @@ Display names go in `newNames` as `seal_glim_1` and `seal_glim_2`. Earned lanyar
 
 ## Phase H. Hall replacement (design only)
 
-**Slot 1 is done** (Bright Pavilion Tour, Build 3). **Slot 2 is called** (Sacrifice, Quota as the free floor) and is not built. Write `data/hall_spike.md` for **Cobblecrest only**: what the player does for 5-10 minutes, what it costs, the floor, how Quota substitutes, what it grants, how it ends. Then write the scenes. Do not reopen slot 1.
+**Slot 1 is done** (Bright Pavilion Tour, Build 3). **Slot 2's stub is in** (Sacrifice, Quota as the free floor, Build 5). Write `data/hall_spike.md` for **Cobblecrest only**: what the player does for 5-10 minutes, what it costs, the floor, how Quota substitutes, what it grants, how it ends. Then replace the stub's cost in `hale_trial@glimmer`. Keep `story.seal2`, `seal_glim_2`, and `seal2_g`. Do not reopen slot 1.
 
 Every answer must:
 
@@ -197,7 +197,7 @@ Art, priority must for the Glimmerwell desk, could for the Keepers desk (the Lan
 | `tier_keepers_0` .. `tier_keepers_4` | 8x8, five badges |
 | `tier_glimmer_0` .. `tier_glimmer_4` | 8x8, five badges |
 
-## Phase R2. Route 2 and Wickerglen — **next, Build 4**
+## Phase R2. Route 2 and Wickerglen — **shipped, Build 4 (copy may be replaced)**
 
 New scenes in `data/glimmer_path.json`. Read the base scenes first. Each variant must set the same `story.*` flags as its base.
 
@@ -212,7 +212,7 @@ New scenes in `data/glimmer_path.json`. Read the base scenes first. Each variant
 
 Looks, if the generic `associate` look is too samey: `imogen` and `hollis` in `looks`, using skin, hair (`short` `long` `spiky` `bun`), hairCol, outfit (`coat` `hoodie` `tunic`), outfitCol, accent. Map them in `speakers`.
 
-## Phase R3. Cobblecrest — **Build 5**
+## Phase R3. Cobblecrest — **stub shipped, Build 5 (replace the Sacrifice cost)**
 
 | id | Lines | Must |
 |---|---|---|
@@ -222,7 +222,7 @@ Looks, if the generic `associate` look is too samey: `imogen` and `hollis` in `l
 | `hale_trial@glimmer`, `hall2_hale@glimmer`, `seal2@glimmer` | after Phase H | Must set `story.seal2`. `seal2` base also gives `hearty_snack` x2 and `wake_tonic` x1. Match those gifts unless you record a swap in `decisions`. |
 | `seam_a`, `seam_b` | 0-2 | Shared puzzles. Add a single catch-up `if` only if a glimmer player would be confused. Do not change the flags `story.h2_seam_a` and `story.h2_seam_b`. |
 
-## Phase R5. Rook on the Brinewick road — **Build 6**
+## Phase R5. Rook on the Brinewick road — **shipped, Build 6 (tone still D25)**
 
 **Settled (D23).** If the player is Keepers, Rook eventually converts to good. If the player is Glimmerwell, Rook stays with Glimmerwell. Not bond-gated. No follow-or-stay fork. Write **two** variants of `brinewick_hook`, not four.
 

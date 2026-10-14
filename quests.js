@@ -29,7 +29,8 @@
     // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
     'story.know_us', 'story.heights_path', 'story.stock_warned', 'story.rx_enter', 'story.met_nia', 'story.rx_f1',
     'story.met_cal', 'story.rx_f2', 'story.saw_arbiter', 'story.rx_f3', 'story.rx_done', 'story.sm_yard', 'story.sm_look',
-    'story.met_jed', 'story.sm_freed', 'story.sm_haul', 'story.sm_done'];
+    'story.met_jed', 'story.sm_freed', 'story.sm_haul', 'story.sm_done',
+    'story.rook_end', 'story.rook_bond'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -108,10 +109,11 @@
       target: { map: 'cobble_quarry', x: 16, y: 4 } },
     { id: 'hall2', done: ['story.seal2'],
       text: "Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", place: 'Cobblecrest Hall',
-      glimmer: { text: "Your second review is at Hale's Hall. Master Hale is not thrilled.", place: 'Cobblecrest Hall' },
+      glimmer: { text: 'Your second review is a Sacrifice. The free quota still closes it.', place: 'Cobblecrest Hall' },
       target: { map: 'cc_hall_in', x: 5, y: 2 } },
     { id: 'hook', done: ['story.cobble_end'],
       text: 'Rook is outside the Hall with news from the quarry.', place: "Outside Hale's Hall",
+      glimmer: { text: 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', place: "Outside Hale's Hall" },
       target: { map: 'cobblecrest', x: 25, y: 7 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
