@@ -261,6 +261,8 @@ const PPSave = (() => {
     fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
     fill(s.settings, 'music', x => typeof x === 'boolean', true);                    // MUSIC v0.1 Q2: in the save, default on
     fill(s.settings, 'musicVol', x => typeof x === 'number' && x >= 0 && x <= 1, 0.5); // Settings volume slider: 0 to 1, default half
+    fill(s.settings, 'controls', x => x === 'arcade' || x === 'modern', 'arcade');      // Q26: missing or bad = arcade, so an old save keeps the pad
+    fill(s.settings, 'joystick', x => typeof x === 'boolean', false);                 // Q26 / D63: modern joystick, default off
     fill(s, 'mapSeen', isObj, {});
     // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
     if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;

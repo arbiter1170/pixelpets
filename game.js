@@ -325,11 +325,11 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
-function renderBuild(){ const b = buildId(), d = !!(S && S.debugSave); $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d; }
+function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d; }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
-  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderBuild(); renderDebugGate();
+  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderControlsRows(); renderBuild(); renderDebugGate();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
   $('#setClose').focus({ preventScroll: true });
 }
@@ -358,10 +358,169 @@ function setFast(on, quiet){
   return fastMode;
 }
 
+/* ---------- Q26: modern and arcade controls (NEXT_PLAN §3 Q26) ----------
+   Arcade is the layout the game always had. Modern adds body.ctl-modern and re-parents a few nodes into #floatCtl, so one id
+   keeps one handler, and arcade comes back by moving them home. No node is created or destroyed on a switch. */
+const CTL_MOVES = [['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip']];
+const ctlHome = {};
+const ctlMode = () => (S && S.settings && S.settings.controls === 'modern') ? 'modern' : 'arcade';
+const joyOn = () => ctlMode() === 'modern' && !!(S && S.settings.joystick);
+function applyControls(){
+  const m = ctlMode() === 'modern';
+  CTL_MOVES.forEach(([sel]) => { const n = $(sel); if (n && !ctlHome[sel]) ctlHome[sel] = { p: n.parentNode, next: n.nextSibling }; });
+  if (m) CTL_MOVES.forEach(([sel, dst]) => { const n = $(sel), d = $(dst); if (n && d && n.parentNode !== d) d.appendChild(n); });
+  else CTL_MOVES.slice().reverse().forEach(([sel]) => { const n = $(sel), h = ctlHome[sel]; if (n && h && n.parentNode !== h.p) h.p.insertBefore(n, h.next && h.next.parentNode === h.p ? h.next : null); });
+  const qb = $('#questBtn'); if (qb) { qb.classList.toggle('dpc', m); qb.classList.toggle('fbtn', m); }
+  document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
+  const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
+  renderControlsRows(); syncWalkTip(); fitAll();
+  try { syncNavArt(true); } catch (e) {}
+}
+function renderControlsRows(){
+  const m = ctlMode() === 'modern', b = $('#setControls'); if (!b) return;
+  $('#setControlsVal').textContent = m ? 'MODERN' : 'ARCADE';
+  const j = $('#setJoystick'); j.hidden = !m; j.setAttribute('aria-pressed', String(joyOn())); $('#setJoystickVal').textContent = joyOn() ? 'ON' : 'OFF';
+}
+/* PLACEHOLDER: no approved copy yet (not in the D70 set Vincent approved Oct 15). Toasts for the Settings rows. */
+const CTL_TOASTS = { arcade: 'Arcade controls.', modern: 'Modern controls. Tap the map to walk.', joyOn: 'Joystick on.', joyOff: 'Joystick off.' };
+function setControls(mode, quiet){
+  if (!S || (mode !== 'arcade' && mode !== 'modern')) return ctlMode();
+  S.settings.controls = mode; clearMoves(); save(); applyControls();
+  if (!quiet) { sfx('tap'); toast(CTL_TOASTS[mode]); }
+  return mode;
+}
+function setJoystick(on, quiet){
+  if (!S) return false;
+  S.settings.joystick = !!on; save(); applyControls();
+  if (!quiet) { sfx('tap'); toast(on ? CTL_TOASTS.joyOn : CTL_TOASTS.joyOff); }
+  return S.settings.joystick;
+}
+// Joystick (D71): four-way, 12 px dead zone, writes walk.dpad exactly like a held d-pad arrow. It never takes a tap.
+const joy = { id: null, cx: 0, cy: 0 };
+function joyRelease(){ if (joy.id != null && walk.dpad && walk.dpad === joy.dir) walk.dpad = null; joy.id = null; joy.dir = null; const k = $('#joyKnob'); if (k) k.style.transform = ''; }
+function bindJoystick(){
+  const ring = $('#joyRing'), knob = $('#joyKnob'); if (!ring) return;
+  const R = 30, DEAD = 12;
+  const move = e => {
+    if (e.pointerId !== joy.id) return;
+    let dx = e.clientX - joy.cx, dy = e.clientY - joy.cy; const d = Math.hypot(dx, dy);
+    if (d > R) { dx = dx * R / d; dy = dy * R / d; }
+    knob.style.transform = 'translate(' + Math.round(dx) + 'px,' + Math.round(dy) + 'px)';
+    const ex = e.clientX - joy.cx, ey = e.clientY - joy.cy;
+    if (Math.hypot(ex, ey) <= DEAD) { if (walk.dpad === joy.dir) walk.dpad = null; joy.dir = null; return; }
+    const dir = Math.abs(ex) > Math.abs(ey) ? (ex > 0 ? 'right' : 'left') : (ey > 0 ? 'down' : 'up');
+    if (dir !== joy.dir) { joy.dir = dir; walk.dpad = dir; if (!walk.queued) walk.queued = DIRS[dir]; hideBumpHint(); }
+  };
+  ring.addEventListener('pointerdown', e => {
+    if (!joyOn() || overlayOpen() && !scene) return;
+    e.preventDefault(); e.stopPropagation();
+    const r = ring.getBoundingClientRect(); joy.cx = r.left + r.width / 2; joy.cy = r.top + r.height / 2; joy.id = e.pointerId; joy.dir = null;
+    try { ring.setPointerCapture(e.pointerId); } catch(_) {}
+    move(e);
+  });
+  ring.addEventListener('pointermove', move);
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => ring.addEventListener(ev, e => { if (e.pointerId === joy.id) joyRelease(); }));
+  ring.addEventListener('contextmenu', e => e.preventDefault());
+}
+function updatePetStrip(p){
+  if (!p || !$('#petStrip')) return;
+  const st = SPECIES[spi(p)].stages[p.stage];
+  $('#stripName').textContent = cleanNick(p.nick) || st.name;
+  $('#stripLv').textContent = 'Lv ' + levelOf(p);
+  spriteCanvas($('#stripIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
+  setBar($('#stripFood'), p.hunger); setBar($('#stripJoy'), p.happy); setBar($('#stripNrg'), p.energy);
+}
+
+// Nav button art (NAV_MODERN v0.2 §7, data/nav_art.js copied from Design's nav_art.json). Modern only: arcade keeps its old
+// icons. Each nav button gets a 44 px canvas painted from a 22x22 state grid at 2 px per cell; CSS adds the 1 px dark outline.
+// NAV_ICON_ONLY: Vincent approved icon-only on every modern button (Oct 15). false brings the text captions back.
+const NAV_ICON_ONLY = true;
+const NAV_BTNS = [['#questBtn', 'quest'], ['#walkBagBtn', 'bag'], ['#mapBtn', 'map'], ['#gearFloat', 'gear'], ['#phoneBtn', 'phone'], ['#colFloat', 'walklings'], ['#petFloat', 'partner']];
+const NAV_LOCKABLE = { quest: 1, walklings: 1, partner: 1, back: 1 };
+const navArt = () => window.NAV_ART_DATA || null;
+function paintGrid(g, grid, cell, ox, oy){
+  grid.forEach((row, y) => { for (let x = 0; x < row.length; x++) { const ch = row[x]; if (ch !== '.' && PAL[ch]) { g.fillStyle = PAL[ch]; g.fillRect(ox + x * cell, oy + y * cell, cell, cell); } } });
+}
+function navButtons(){
+  const out = NAV_BTNS.map(([sel, key]) => [$(sel), key]).filter(a => a[0]);
+  $$('.scr-back').forEach(b => out.push([b, 'back']));
+  return out;
+}
+function initNavArt(){
+  document.body.classList.toggle('nav-icons', NAV_ICON_ONLY);
+  if (!navArt()) return;
+  navButtons().forEach(([b]) => {
+    if (b.querySelector('.nav-art')) return;
+    const c = document.createElement('canvas'); c.className = 'nav-art'; c.width = c.height = 44; c.setAttribute('aria-hidden', 'true'); b.append(c);
+    const up = () => b.classList.remove('nav-press');
+    b.addEventListener('pointerdown', () => b.classList.add('nav-press'));
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, up));
+  });
+  [['#envBadge', 'area_banner'], ['#petStrip', 'partner_strip'], ['#walkTip', 'tip_band']].forEach(([sel, key]) => {
+    const el = $(sel); if (!el || el.querySelector('.frame-art')) return;
+    const c = document.createElement('canvas'); c.className = 'frame-art'; c.dataset.frame = key; c.setAttribute('aria-hidden', 'true'); el.prepend(c);
+  });
+  const ring = $('#joyRing');
+  if (ring && !ring.querySelector('.joy-art')) {
+    const c = document.createElement('canvas'); c.className = 'joy-art'; c.width = c.height = 48; c.setAttribute('aria-hidden', 'true'); ring.prepend(c);
+    paintGrid(ctx(c), navArt().joystick.ring, 1, 0, 0);
+    const k = $('#joyKnob'), kc = document.createElement('canvas'); kc.width = kc.height = 18; kc.setAttribute('aria-hidden', 'true'); k.append(kc);
+  }
+  syncNavArt(true);
+}
+const navPaint = new WeakMap();
+function navStateOf(b, key){
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (NAV_LOCKABLE[key] && document.body.classList.contains('nav-locked')) return 'locked';
+  if (key === 'gear' && document.body.classList.contains('gear-locked')) return 'locked';
+  if (b.classList.contains('off') || b.getAttribute('aria-disabled') === 'true') return 'disabled';
+  if (b.classList.contains('nav-press')) return 'pressed';
+  if (b.classList.contains('pulse')) return reduce ? 'reduced_motion' : (Math.floor(performance.now() / navArt().pulseMs) % 2 ? 'pulse_b' : 'pulse_a');
+  return 'normal';
+}
+// The gear's rule, shared by its handler and its locked look (QA Oct 15): blocked by a scene once you have a partner, or by Copy / Reset.
+function gearBlocked(){ return (!$('#ovCopy').hidden || !$('#ovReset').hidden) || (tabsGuarded() && allPets().length > 0); }
+function syncNavArt(force){
+  document.body.classList.toggle('gear-locked', gearBlocked());
+  const A = navArt(); if (!A || !document.body.classList.contains('ctl-modern')) return;
+  navButtons().forEach(([b, key]) => {
+    const c = b.querySelector('.nav-art'); if (!c) return;
+    const art = key === 'phone' && S && side() === 'glimmer' ? 'phone_glimmer' : key;   // nav_art.json swaps.phone
+    const st = navStateOf(b, key), tag = art + ':' + st;
+    if (!force && navPaint.get(c) === tag) return;
+    navPaint.set(c, tag); const g = ctx(c); g.clearRect(0, 0, 44, 44);
+    const grid = (A.buttons[art] || {})[st] || (A.buttons[art] || {}).normal; if (grid) paintGrid(g, grid, 2, 0, 0);
+  });
+  $$('.frame-art').forEach(c => {
+    const el = c.parentNode, w = Math.max(8, Math.round(el.offsetWidth / 2)), f = A.frames[c.dataset.frame];
+    if (!f || !el.offsetWidth) return;
+    const h = f.left.length, tag = w + 'x' + h;
+    if (!force && navPaint.get(c) === tag) return;
+    navPaint.set(c, tag); c.width = w; c.height = h; const g = ctx(c);
+    const lw = f.left[0].length, rw = f.right[0].length;
+    paintGrid(g, f.left, 1, 0, 0);
+    for (let x = lw; x < w - rw; x++) paintGrid(g, f.mid, 1, x, 0);
+    paintGrid(g, f.right, 1, w - rw, 0);
+  });
+  const kc = $('#joyKnob canvas');
+  if (kc) { const tag = joy.id != null ? 'p' : 'n'; if (force || navPaint.get(kc) !== tag) { navPaint.set(kc, tag); const g = ctx(kc); g.clearRect(0, 0, 18, 18); paintGrid(g, A.joystick[joy.id != null ? 'knob_pressed' : 'knob'], 1, 0, 0); } }
+}
+setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} }, 120);
+// The tip text can change outside syncWalkTip, and the pixel font loads after the first measure (fallback glyphs are narrower,
+// so the band measured one line and then ellipsized). Re-measure whenever the text, the width or the font state changes.
+let tipBandKey = '';
+function tipBandTick(){
+  const el = $('#walkTip'); if (!el || ctlMode() !== 'modern') return;
+  const k = el.textContent + '|' + el.clientWidth + '|' + (document.fonts ? document.fonts.status : '');
+  if (k !== tipBandKey) { tipBandKey = k; syncTipBand(); }
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { tipBandKey = ''; try { syncTipBand(); } catch (e) {} });
+
 let screen = 'pet';
 function showTab(name){
   if (overlayOpen()) return;
   screen = name;
+  document.body.dataset.screen = name;
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
   $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   clearMoves();
@@ -422,7 +581,7 @@ function fitPetScene(){
   ps.classList.remove('pet-tight');
   if (!pick()) { ps.classList.add('pet-tight'); pick(); }
 }
-function fitAll(){ fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
+function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
   fitPetScene();
@@ -430,12 +589,14 @@ function fitAll(){ fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const mw = $('#mapWrap');
   if (screen === 'walk' && mw.clientWidth) {           // fill the map area at a crisp integer scale
     const c = $('#mapCanvas'), W = mw.clientWidth, H = mw.clientHeight;
-    const s = W >= 176 ? Math.floor(W / 176) : W / 176;
-    c.width = Math.min(24 * 16, Math.floor(W / s)); c.height = Math.min(20 * 16, Math.max(64, Math.floor(H / s)));
+    const modern = ctlMode() === 'modern';         // NAV_MODERN §2 (NM-Y2): modern is 2x at every width with a 24x36 cap; arcade unchanged
+    const s = modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
+    c.width = Math.min(24 * 16, Math.floor(W / s)); c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / s)));
+    cueZone.t = -1e9;
     // E1: an interior with "fitWidth": true (the rx_f4 pilot) is shown at its full width (scale = view width / map width), so the
     // camera only scrolls vertically. Every interior bigger than the view follows the keeper and clamps at the edges (drawMap);
-    // smaller ones stay centred. Opt-in so no other map changes look.
-    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); c.width = MW * 16; c.height = Math.min(20 * 16, Math.max(64, Math.floor(H / f)));
+    // smaller ones stay centred. Opt-in so no other map changes look. Same in arcade and modern.
+    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); c.width = MW * 16; c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
       c.style.width = W + 'px'; c.style.height = Math.round(c.height * f) + 'px'; }
     else { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; }
   }
@@ -462,6 +623,7 @@ function updateHUD(){
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
   setBar($('#wBarEnergy'), p.energy);
+  updatePetStrip(p);
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
   const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
   const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
@@ -965,6 +1127,7 @@ const sceneSteps = id => {
 let sideApplied = null;
 function syncSide(){                                   // cheap; called every frame and before a battle inside a scene
   const s = side(); if (s === sideApplied) return; sideApplied = s;
+  try { syncNavArt(true); } catch (e) {}   // NAV_MODERN §7: the PHONE tile follows side() (phone / phone_glimmer)
   for (const [id, base] of Object.entries(TRAINERS_BASE)) {
     const ov = s !== SIDE_DEFAULT ? TRAINERS[id + '@' + s] : null;
     TRAINERS[id] = ov ? Object.assign({}, base, ov, { lines: Object.assign({}, base.lines || {}, ov.lines || {}) }) : base;
@@ -1458,7 +1621,7 @@ function earlyWalk(){
   S.flags['story.early_steps'] = n;
   const nm = petName(p);
   if (n === 1) toast(nm + ' trots along. The east path leads out of town.');
-  else if (n === 8) toast('Keep holding the pad. Wild Walklings like the grass.');
+  else if (n === 8) toast(ctlMode() === 'modern' ? 'Keep walking. Wild Walklings like the grass.' : 'Keep holding the pad. Wild Walklings like the grass.');   /* PLACEHOLDER modern line: no approved copy yet (not in the approved D70 set) */
   else if (n === 16 && !S.flags['story.rival1_done']) toast('Rook is waiting by the east gate.');
   if (n >= 16) S.flags['story.early_done'] = true;
   if (n === 1 || n === 8 || n === 16) save();
@@ -2416,21 +2579,47 @@ function restBedCue(){
 function questPointOnMap(){ return pointOnMap(questCurrent()); }
 const sideQuest = () => (S && typeof PPQuests !== 'undefined' && PPQuests.sideCurrent) ? PPQuests.sideCurrent(questState()) : null;
 function sidePointOnMap(){ return pointOnMap(sideQuest()); }
+// NAV_MODERN §4 (settled G4): in modern, edge arrows stay in the free rect between the button clusters, and a cue whose tile
+// sits under a button is drawn as an edge arrow instead. Rects are canvas pixels, refreshed at most every 250 ms.
+const cueZone = { t: -1e9, z: null };
+function modernCueZone(){
+  if (ctlMode() !== 'modern') return null;
+  const nowT = performance.now(); if (nowT - cueZone.t < 250) return cueZone.z;
+  cueZone.t = nowT;
+  const c = $('#mapCanvas'), cr = c.getBoundingClientRect(); if (!cr.width) return (cueZone.z = null);
+  const k = c.width / cr.width, mw = $('#mapWrap').getBoundingClientRect();
+  const toC = (x, y) => [(x - cr.left) * k, (y - cr.top) * k];
+  const tip = $('#walkTip'), tr = tip && tip.offsetParent ? tip.getBoundingClientRect() : null, joy = $('#joyRing');
+  const tipTop = tr && tr.height ? tr.top : mw.bottom - 90;
+  const jOn = joy && !joy.hidden;
+  const [x0, y0] = toC(mw.left + 8, mw.top + 160), [x1, y1] = toC(mw.right - 8, tipTop - 8);
+  const [tx0, ty] = toC(mw.left + 56, mw.top + 48), [tx1] = toC(mw.right - 56, 0);
+  const [bx0, by] = toC(mw.left + (jOn ? 116 : 8), tipTop - 32);
+  const btns = [...$$('#floatCtl button, #joyRing')].filter(b => !b.hidden && b.offsetParent).map(b => { const r = b.getBoundingClientRect(); const a = toC(r.left, r.top), z = toC(r.right, r.bottom); return [a[0], a[1], z[0], z[1]]; });
+  return (cueZone.z = { x0, y0, x1, y1, tx0, tx1, ty, bx0, by, btns });
+}
 function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift){
   if (!pt) return;
+  const zone = modernCueZone();
   if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
   const X = pt.x * TS - cx, Y = pt.y * TS - cy;
-  if (X > -TS && Y > -TS && X < VW && Y < VH) {
+  const under = zone && zone.btns.some(b => X < b[2] && X + TS > b[0] && Y < b[3] && Y + TS > b[1]);
+  if (X > -TS && Y > -TS && X < VW && Y < VH && !under) {
     if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
     else drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
     return;
   }
   const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
   const m = 6, kx = dx ? ((dx > 0 ? VW - m : m) - px) / dx : Infinity, ky = dy ? ((dy > 0 ? VH - m : m) - py) / dy : Infinity;
-  const k = Math.min(kx, ky), ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
+  const k = Math.min(kx, ky); let ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
   const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'), gr = ARROW[dir];
+  if (zone) {                                    // keep the arrow out from under the floating buttons (NAV_MODERN §4)
+    if (dir === 'up') { ex = clamp(ex, zone.tx0, zone.tx1); ey = zone.ty; }
+    else if (dir === 'down') { ex = clamp(ex, zone.bx0, zone.x1); ey = zone.by; }
+    else { ex = clamp(ex, zone.x0, zone.x1); ey = clamp(ey, zone.y0, zone.y1); }
+  }
   const nudge = reduce ? 0 : bob, ox = dir === 'right' ? nudge : dir === 'left' ? -nudge : 0, oy = dir === 'down' ? nudge : dir === 'up' ? -nudge : 0;
   drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox + shift), Math.round(ey - gr.length / 2 + oy), col);
 }
@@ -2769,7 +2958,7 @@ function drawBubbles(g, cx, cy, t){
 let scene = null;
 const TEXT_CPS = { slow: 30, normal: 60, fast: 120 };
 const sbox = { resolve: null, text: '', t0: 0, full: true, cps: 60 };
-const INTERACTIVE = ['choice', 'nameEntry', 'showBasket', 'lookPick', 'battle', 'encounter'];
+const INTERACTIVE = ['choice', 'nameEntry', 'showBasket', 'lookPick', 'controlPick', 'battle', 'encounter'];
 const ABORT = { abort: true };
 function runScene(id, ctx){ const steps = sceneSteps(id); if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id, beat: id }, ctx || {})); }
 async function runSteps(steps, ctx = {}){
@@ -2929,6 +3118,19 @@ async function execStep(st){
       sc.skip = false;
       const lk = await lookPickStep(sc.id === 'intro');
       if (lk) { sc.view.look = lk; pend(() => { S.player.look = lk; }); }
+      if (sc.id === 'intro') await execStep(['controlPick']);   // Q26 (D76): asked right after the mirror, before the door note
+      return;
+    }
+    // Q26: Arcade or Modern, in the house before the exit mat. Not a story flag; writes S.settings.controls at once.
+    case 'controlPick': {
+      sc.skip = false;
+      /* D70 copy (approved by Vincent, Oct 15 2026). */
+      const pick = await choiceBox('How do you like to walk?', [['ARCADE', 'A pad and a Talk button.'], ['MODERN', 'Tap the map to walk. Tap people to talk.']]);
+      if (!scene) return;
+      $('#sbEcho').textContent = '\u203a ' + (pick === 1 ? 'MODERN' : 'ARCADE');
+      S.settings.controls = pick === 1 ? 'modern' : 'arcade'; applyControls();
+      sc.skip = false;
+      await execStep(['say', '', 'You can change this any time under the gear.']);   /* D70 */
       return;
     }
     case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); return;
@@ -3098,7 +3300,9 @@ function choiceBox(prompt, labels){
     sbRender(scene.who, ''); $('#sbEcho').textContent = ''; $('#sbName').hidden = true; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
     sbox.text = prompt; sbox.t0 = now(); sbox.full = false; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.mode = 'choice'; sbox.resolve = () => {};
     const box = $('#sbChoices'); box.innerHTML = ''; armOptions();
-    labels.forEach((lb, i) => { const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn sb-choice'; bt.textContent = lb;
+    labels.forEach((lb, i) => { const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn sb-choice';   // lb: 'Label' or ['LABEL', 'sub-line']
+      if (Array.isArray(lb)) { const a = document.createElement('span'), b = document.createElement('span'); a.className = 'sb-ch-l'; a.textContent = lb[0]; b.className = 'sb-ch-sub'; b.textContent = lb[1]; bt.append(a, b); bt.setAttribute('aria-label', lb[0] + '. ' + lb[1]); }
+      else bt.textContent = lb;
       bt.addEventListener('click', () => { if (!sbox.full) sbFull(); sfx('tap'); box.innerHTML = ''; sbox.resolve = null; res(i); }); box.append(bt); });
   });
 }
@@ -3367,7 +3571,8 @@ function onEnvChange(e){
   }
 }
 // Tabs stay locked until the starter is received (Phase M: the opening is played on the WALK tab), and while anything is open.
-function lockTabs(on){ $('#tabs').classList.toggle('locked', !!on || (!!S && !allPets().length) || (!on && (!!scene || (typeof overlayOpen === 'function' && overlayOpen())))); }
+function lockTabs(on){ const l = !!on || (!!S && !allPets().length) || (!on && (!!scene || (typeof overlayOpen === 'function' && overlayOpen())));
+  $('#tabs').classList.toggle('locked', l); document.body.classList.toggle('nav-locked', l); }   // NAV_MODERN G2: one class locks every nav button, wherever it lives
 function openGeoAsk(){ if (overlayOpen()) return; clearMoves(); $('#ovGeo').hidden = false; lockTabs(true); }
 function closeGeoAsk(){ $('#ovGeo').hidden = true; lockTabs(false); }
 function useLocation(){
@@ -5019,23 +5224,44 @@ function renderStanding(){
 function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
 function questShowOnMap(){ closeQuest(); if (mapReady()) openMap(); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
+/* D70: modern default tip. The quest line is the same in both layouts. */
+const WALK_TIP_MODERN = 'Tap the ground to walk. Tap someone to talk.';
+const WALK_EARLY_ARCADE = 'Hold the pad to walk. The east path leads out of town.';
+const WALK_EARLY_MODERN = 'Tap a spot on the path and you\'ll walk there.';   /* D70 */
+const walkTipDefault = () => ctlMode() === 'modern' ? WALK_TIP_MODERN : WALK_TIP_DEFAULT;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkTipText(){
-  if (!S || !S.flags['story.starter_received']) return WALK_TIP_DEFAULT;
+  if (DEBUG && typeof window.PP_TIP_TEST === 'string') return window.PP_TIP_TEST;   // tests only (debug): a fixed tip line
+  if (!S || !S.flags['story.starter_received']) return walkTipDefault();
   if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   const n = +S.flags['story.early_steps'] || 0;
-  if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
+  if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return ctlMode() === 'modern' ? WALK_EARLY_MODERN : WALK_EARLY_ARCADE;
   const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
   // The first-wild hint only while that step is current. Reaching Fernbrook implies the step without setting the flag.
   if ((!q || q.id === 'first_wild') && !S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
   if (q && q.target) return escapeHtml(q.text);
-  return WALK_TIP_DEFAULT;
+  return walkTipDefault();
 }
 function syncWalkTip(){
   const el = $('#walkTip'); if (!el) return;
   const html = walkTipText();
   if (el.innerHTML !== html) el.innerHTML = html;
+  syncTipBand();
+}
+// Design green call (Oct 15): the modern tip band is one line (28 px) when the text fits, two lines (44 px) when it does not,
+// clamped with an ellipsis. It grows up from the partner strip; the joystick (8 px above it) and the toasts move with it.
+function syncTipBand(){
+  const box = $('#fcTip'), el = $('#walkTip'), st = document.body.style;
+  const joy = $('#joyRing'); st.setProperty('--joy-h', joy && !joy.hidden && ctlMode() === 'modern' ? '104px' : '0px');
+  if (!box || !el || ctlMode() !== 'modern' || !el.offsetWidth) return;
+  box.classList.remove('two'); st.setProperty('--tip-h', '28px');
+  // Measure the text alone (the frame-art canvas inside the band would inflate scrollWidth).
+  const cs = getComputedStyle(el), avail = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const rg = document.createRange(); let w = 0;
+  el.childNodes.forEach(n => { if (n.nodeName === 'CANVAS') return; rg.selectNodeContents(n); w += rg.getBoundingClientRect().width; });
+  const two = w > avail + 0.5;
+  box.classList.toggle('two', two); st.setProperty('--tip-h', two ? '44px' : '28px');
 }
 function syncBagBtns(){
   const on = bagVisible() && !(battle && battle.on);
@@ -5535,7 +5761,7 @@ function startEvolution(force){
   Object.assign(evo, { active: true, t0: now(), sp: spi(p), from: p.stage, to: p.stage + 1, done: false });
   $('#evoTitle').textContent = 'Oh? ' + petName(p) + ' is growing up!';
   $('#evoMsg').innerHTML = '&nbsp;'; $('#evoOk').hidden = true; sfx('evoBuild');
-  $('#ovEvolve').hidden = false; $('#tabs').classList.add('locked'); fitAll();
+  $('#ovEvolve').hidden = false; $('#tabs').classList.add('locked'); document.body.classList.add('nav-locked'); fitAll();
 }
 function finishEvolution(){
   const p = pet(), oldMax = maxHpOf(p); p.stage = evo.to; if (p.xp < EVO_XP[evo.to-1]) p.xp = EVO_XP[evo.to-1];
@@ -5876,8 +6102,8 @@ function renderWalklingActions(p){
     sec('MOVE');
     box.appendChild(sheetBtn('UP', '', () => shiftParty(p.id, -1), { aria: 'Party up', disabled: pi <= 0 }));
     box.appendChild(sheetBtn('DOWN', '', () => shiftParty(p.id, 1), { aria: 'Party down', disabled: pi >= S.party.length - 1 }));
-    box.appendChild(sheetBtn('TO BOX', '', () => { depositFromSheet(p.id); }, { span: true }));
-  } else box.appendChild(sheetBtn('TO PARTY', 'btn-play', () => { withdrawFromSheet(p.id); }, { span: true }));
+    box.appendChild(sheetBtn('TO WALKLING-BOX', '', () => { depositFromSheet(p.id); }, { span: true }));
+  } else box.appendChild(sheetBtn('TO TEAM', 'btn-play', () => { withdrawFromSheet(p.id); }, { span: true }));
 }
 function renderWalklingMoves(p){
   const box = $('#wlMoves'); box.textContent = '';
@@ -5998,7 +6224,7 @@ async function depositFromSheet(id){
   if (typeof depositPet !== 'function' && S.party.length < 2) { sfx('denied'); toast('The party needs one Walkling.'); return; }
   walklingSheet.busy = true;
   try {
-    const yes = await openSheet('Send ' + petName(p) + ' to the box? Hunger pauses in the box.', [{ label: 'TO BOX', value: 'yes' }], 'BACK');
+    const yes = await openSheet('Send ' + petName(p) + ' to the box? Hunger pauses in the box.', [{ label: 'TO WALKLING-BOX', value: 'yes' }], 'BACK');
     if (yes !== 'yes' || $('#ovWalkling').hidden) return;
     let nextId = null;
     if (p.id === S.partnerId) {
@@ -6374,7 +6600,7 @@ function slotMain(p){
 function partyActs(p){
   const acts = boardActs();
   acts.append(boardButton('MOVE', 'move', () => boardMove(p.id)));
-  acts.append(boardButton('TO BOX', 'box', () => boardDepositAsk(p.id)));
+  acts.append(boardButton('TO WALKLING-BOX', 'box', () => boardDepositAsk(p.id)));
   const partner = boardButton('PARTNER', 'partner', () => boardPartner(p.id));
   if (p.id === S.partnerId) { partner.disabled = true; partner.setAttribute('aria-pressed', 'true'); }
   acts.append(partner, boardButton('RELEASE', 'release', () => boardReleaseAsk(p.id), 'act-danger'));
@@ -6428,7 +6654,7 @@ function releasePanel(p){
 }
 function boxActs(p){
   const acts = boardActs();
-  const to = boardButton('TO PARTY', 'party', () => boardWithdrawAsk(p.id), 'act-go');
+  const to = boardButton('TO TEAM', 'party', () => boardWithdrawAsk(p.id), 'act-go');
   if (S.party.length >= PPSave.PARTY_MAX) to.setAttribute('aria-label', 'Swap into the party');
   acts.append(to, boardButton('PARTNER', 'partner', () => boardPartner(p.id)));
   acts.append(boardButton('RELEASE', 'release', () => boardReleaseAsk(p.id), 'act-danger'));
@@ -6482,11 +6708,11 @@ function renderCollection(){
   const list = $('#ownedList'); list.innerHTML = '';
   $('#ownedCount').textContent = '(' + allPets().length + ')';
   const label = txt => { const d = document.createElement('div'); d.className = 'group-label'; d.textContent = txt; list.append(d); };
-  label('PARTY ' + S.party.length + '/' + PPSave.PARTY_MAX);
+  label('TEAM ' + S.party.length + '/' + PPSave.PARTY_MAX);
   const board = document.createElement('div'); board.id = 'partyBoard'; board.className = 'party-board';
   for (let i = 0; i < PPSave.PARTY_MAX; i++) board.append(S.party[i] ? partySlot(S.party[i], i) : emptySlot(i));
   list.append(board);
-  label('BOX ' + S.box.length);
+  label('WALKLING-BOX ' + S.box.length);
   const box = document.createElement('div'); box.id = 'boxList'; box.className = 'box-list';
   if (!S.box.length) { const e = document.createElement('div'); e.className = 'box-empty'; e.textContent = 'The box is empty.'; box.append(e); }
   else S.box.forEach(p => box.append(boxRow(p)));
@@ -7115,11 +7341,20 @@ function bindInput(){
     if (b.dataset.tab !== screen) sfx('tap');
     showTab(b.dataset.tab);
   }));
-  $('#settingsBtn').addEventListener('click', () => {
-    if (!$('#ovCopy').hidden || !$('#ovReset').hidden) return;
-    if (tabsGuarded() && allPets().length) return;
+  const gearTap = () => {
+    if (gearBlocked()) return;
     if ($('#ovSettings').hidden) openSettings(); else closeSettings();
-  });
+  };
+  $('#settingsBtn').addEventListener('click', gearTap);
+  $('#gearFloat').addEventListener('click', gearTap);     // Q26: same handler as the header gear
+  $('#setControls').addEventListener('click', () => setControls(ctlMode() === 'modern' ? 'arcade' : 'modern'));
+  $('#setJoystick').addEventListener('click', () => setJoystick(!joyOn()));
+  const floatTab = name => { if (tabsGuarded() || overlayOpen() || !allPets().length) { sfx('denied'); return; } sfx('tap'); showTab(name); };
+  $('#colFloat').addEventListener('click', () => floatTab('col'));
+  $('#petFloat').addEventListener('click', () => floatTab('pet'));
+  $$('.scr-back').forEach(b => b.addEventListener('click', () => { if (overlayOpen()) return; sfx('tap'); showTab('walk'); }));
+  $('#petStrip').addEventListener('click', () => { if (S && pet()) openStatsCard(S.partnerId); });
+  bindJoystick();
   // option buttons that just appeared ignore taps (capture phase, before their own handlers)
   for (const ev of ['click', 'pointerup']) document.addEventListener(ev, e => {
     if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button, #ovQuest button')) { e.stopPropagation(); e.preventDefault(); }
@@ -7311,11 +7546,15 @@ function bindInput(){
   mc.addEventListener('pointerup', end); mc.addEventListener('pointercancel', end);
   // Keyboard (bonus)
   const KEYS = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'up', s:'down', a:'left', d:'right', W:'up', S:'down', A:'left', D:'right' };
+  // A focused button (TALK, QUEST...) fires its click on Space keyup. When the keydown advanced a text box, eat that keyup,
+  // or the last line of a scene (Ness's phone_grant, QA Oct 15) closes and the same Space re-opens a talk or a panel.
+  let sceneKeyEat = false;
+  window.addEventListener('keyup', e => { if (sceneKeyEat && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sceneKeyEat = false; } });
   window.addEventListener('keydown', e => {
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
     if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && $('#ovDebug').hidden && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
-      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) sceneTap(); return; }
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sceneKeyEat = true; if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
     if (e.key === 'Escape' && !$('#ovStats').hidden) { if (!$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
@@ -7499,7 +7738,7 @@ function startBuildCheck(){
 // The v2 key holds a save from a newer build: block play, write nothing (save() is a no-op), keep the save as-is.
 function bootReadOnly(){
   readOnly = true; S = null;
-  $('#ovNewer').hidden = false; $('#tabs').classList.add('locked');
+  $('#ovNewer').hidden = false; $('#tabs').classList.add('locked'); document.body.classList.add('nav-locked');
   $('#newerReload').addEventListener('click', () => location.reload());
   window.PixelPets = Object.freeze({ readOnly: true, get debug(){ return DEBUG; }, get state(){ return null; } });
 }
@@ -7555,6 +7794,7 @@ function boot(){
   fastMode = readFastPref(); renderFastTag(); $('#dbgTag').hidden = !DEBUG;
   $('#envPick').hidden = !DEBUG;               // "Pick a place" presets are debug-only
   renderSettingsGear(); renderSoundRow();
+  initNavArt();
   ENV = PPEnv.init(onEnvChange, { allowOverride: DEBUG }); renderEnv();
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
@@ -7589,6 +7829,7 @@ function boot(){
     else if (!S.player.name && S.world.map === 'hearthmoor') setTimeout(() => toast('Warden Ilse would like a word at the Lodge.'), late);
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
+  applyControls();
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   PPSound.setMusic(S.settings.music !== false);
@@ -7617,6 +7858,7 @@ function boot(){
     typeMult: (a, d) => typeMult(a, d), statsAt: (id, L) => { const s = statsAt(id, L); return s && { ...s }; },   // read-only, always public
     openStats: id => openStatsCard(id), closeStats: () => closeStatsCard(),          // UI only (the same as tapping STATS / CLOSE)
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
+    get controls(){ return { mode: ctlMode(), joystick: joyOn(), dpad: walk.dpad || null }; },   // Q26, read-only
     get petScene(){ const c = $('#petCanvas'); return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice(), w: c.width, h: c.height, cssW: parseFloat(c.style.width)||0, cssH: parseFloat(c.style.height)||0 }; },
     get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
       look: Object.assign({}, KEEPER_LOOKS.defaults, shownLook() || {}), name: playerName(), builds: keeperBuilds }; },
