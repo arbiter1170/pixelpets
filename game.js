@@ -57,6 +57,7 @@ function setDebugEnabled(on){
   writeDebugPref(DEBUG);
   syncDebugQuery(DEBUG);
   const dbg = $('#dbgTag'); if (dbg) dbg.hidden = !DEBUG;
+  if (!DEBUG && typeof dropDebugDom === 'function') { if (debugOpen()) lockTabs(false); dropDebugDom(); }
   const pick = $('#envPick'); if (pick) pick.hidden = !DEBUG;
   if (PPEnv.allowOverride) PPEnv.allowOverride(DEBUG);
   renderDebugGate();
@@ -516,7 +517,32 @@ function syncNavArt(force){
   const kc = $('#joyKnob canvas');
   if (kc) { const tag = joy.id != null ? 'p' : 'n'; if (force || navPaint.get(kc) !== tag) { navPaint.set(kc, tag); const g = ctx(kc); g.clearRect(0, 0, 18, 18); paintGrid(g, A.joystick[joy.id != null ? 'knob_pressed' : 'knob'], 1, 0, 0); } }
 }
-setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} }, 120);
+// Header acorns and the canvas labels follow the game live (every 120 ms, cheap compares; nothing is written unless it changed).
+let hdrAcornsShown = null;
+function syncHdrAcorns(){
+  const box = $('#hdrAcorns'); if (!box) return;
+  const n = S ? (S.money | 0) : 0;
+  if (n === hdrAcornsShown) return; hdrAcornsShown = n;
+  $('#hdrAcornN').textContent = String(n); box.setAttribute('aria-label', acorns(n));
+  const chip = $('#fcAcorns');   // modern walk chip (Design, green): same count, left of the gear
+  if (chip) { $('#fcAcornN').textContent = String(n); chip.setAttribute('aria-label', acorns(n)); }
+}
+// The badge band gives the chip its room (the badge text clamps first at 320).
+function fitAcornChip(){
+  const chip = $('#fcAcorns'), fc = $('#floatCtl'); if (!chip || !fc) return;
+  const w = chip.offsetWidth ? Math.ceil(chip.getBoundingClientRect().width) + 6 : 0;
+  if (fc.style.getPropertyValue('--chip-w') !== w + 'px') fc.style.setProperty('--chip-w', w + 'px');
+}
+function setLabel(el, text){ if (el && el.getAttribute('aria-label') !== text) el.setAttribute('aria-label', text); }
+function syncCanvasLabels(){
+  if (!S) return;
+  const p = pet(), pn = p ? petName(p) : null;
+  setLabel($('#mapCanvas'), (CUR && CUR.name ? CUR.name : 'The walk map') + (pn ? '. ' + pn + ' walks with you.' : '.'));
+  if (p) setLabel($('#petCanvas'), 'Your partner ' + pn + (pn !== nameOf(spi(p), p.stage) ? ' the ' + nameOf(spi(p), p.stage) : '') + ', Lv ' + levelOf(p) + (isFainted(p) ? ', worn out' : '') + '. Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + '.');
+  const f = battle.on ? curFoe() : null, me = battle.on ? activePet() : null;
+  if (f) setLabel($('#battleCanvas'), foeLabel(f) + ', Lv ' + f.level + ', HP ' + Math.ceil(f.hp) + ' of ' + f.maxHp + (me ? '. ' + petName(me) + ', HP ' + Math.ceil(hpOf(me)) + ' of ' + maxHpOf(me) + '.' : '.'));
+}
+setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} try { syncHdrAcorns(); fitAcornChip(); syncCanvasLabels(); } catch (e) {} }, 120);
 // The tip text can change outside syncWalkTip, and the pixel font loads after the first measure (fallback glyphs are narrower,
 // so the band measured one line and then ellipsized). Re-measure whenever the text, the width or the font state changes.
 let tipBandKey = '';
@@ -543,7 +569,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -615,7 +641,17 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
 window.addEventListener('resize', fitAll);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
 
-function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
+const BAR_LABEL = { barHunger: 'Food', barHappy: 'Joy', barEnergy: 'Energy', wBarEnergy: 'Energy', stripFood: 'Food', stripJoy: 'Joy', stripNrg: 'Energy', barXp: 'Growth' };
+// Accessibility: the track of a fill bar is a progressbar, kept in step with the value it shows.
+function ariaBar(fill, now, max, label){
+  const bar = fill && fill.parentNode; if (!bar) return;
+  if (bar.getAttribute('role') !== 'progressbar') { bar.setAttribute('role', 'progressbar'); bar.setAttribute('aria-valuemin', '0'); }
+  const n = String(Math.max(0, Math.round(now))), m = String(Math.max(1, Math.round(max)));
+  if (bar.getAttribute('aria-valuenow') !== n) bar.setAttribute('aria-valuenow', n);
+  if (bar.getAttribute('aria-valuemax') !== m) bar.setAttribute('aria-valuemax', m);
+  if (label && bar.getAttribute('aria-label') !== label) bar.setAttribute('aria-label', label);
+}
+function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); ariaBar(el, clamp(v, 0, 100), 100, BAR_LABEL[el.id] || null); }
 function updateHUD(){
   document.body.classList.toggle('no-pets', !allPets().length);
   syncBagBtns();
@@ -638,7 +674,7 @@ function updateHUD(){
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
   const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
   const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
-  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; $('#valXp').textContent = p.xp;
+  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = p.xp;
   $('#wXp').textContent = p.xp; $('#wSteps').textContent = S.steps;
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
   const setCount = (el, v, cap) => { const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
@@ -4157,11 +4193,11 @@ function typeChip(el, type){ el.textContent = type; el.className = 'type-chip t-
 function renderBattleCards(){
   const B = battle, f = curFoe(), p = activePet(); if (!f || !p) return;
   $('#btFoeName').textContent = foeName(f); $('#btFoeLv').textContent = 'Lv ' + f.level; typeChip($('#btFoeType'), f.type);
-  const fh = $('#btFoeHp'); fh.style.width = (100 * f.hp / f.maxHp) + '%'; fh.classList.toggle('warn', f.hp / f.maxHp < 0.25);
+  const fh = $('#btFoeHp'); fh.style.width = (100 * f.hp / f.maxHp) + '%'; fh.classList.toggle('warn', f.hp / f.maxHp < 0.25); ariaBar(fh, Math.ceil(f.hp), f.maxHp, foeName(f) + ' HP');
   $('#btFoeStages').textContent = stageText(f.stages);
   const sp = SPECIES[spi(p)], hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p);
   $('#btMeName').textContent = petName(p); $('#btMeLv').textContent = 'Lv ' + levelOf(p); typeChip($('#btMeType'), sp.type);
-  const mh = $('#btMeHp'); mh.style.width = (100 * hp / mhp) + '%'; mh.classList.toggle('warn', hp / mhp < 0.25);
+  const mh = $('#btMeHp'); mh.style.width = (100 * hp / mhp) + '%'; mh.classList.toggle('warn', hp / mhp < 0.25); ariaBar(mh, hp, mhp, petName(p) + ' HP');
   $('#btMeHpTxt').textContent = hp + '/' + mhp;
   const m = B.me.mood || moodOf(p), chips = [];
   if (m.hungry) chips.push('HUNGRY'); if (m.sulky) chips.push('SULKY'); if (m.drowsy) chips.push('DROWSY');
@@ -4838,7 +4874,7 @@ function drawRegionMap(t){
 let bagSel = 0;
 function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
 function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'star', 0, 0); }
-function paintUiIcons(){
+function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon"));
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {
@@ -6251,7 +6287,7 @@ function paintStatsInto(prefix, p, opt){
   const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
   const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), badge = hpBadge(p), glowing = !badge && moodOf(p).glowing;   // FAINTED > TIRED > GLOWING
   $('#' + prefix + 'Hp').textContent = hp + '/' + mhp;
-  const hb = $('#' + prefix + 'HpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25);
+  const hb = $('#' + prefix + 'HpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25); ariaBar(hb, hp, mhp, 'HP');
   const tag = $('#' + prefix + 'Tag'); tag.hidden = !(badge || glowing); tag.textContent = badge || 'GLOWING';
   tag.className = 'sc-tag ' + (badge ? (badge === 'TIRED' ? 'tired' : 'fainted') : 'glowing');
   const box = $('#' + prefix + 'Stats'); box.innerHTML = '';
@@ -7084,6 +7120,19 @@ function tryDebugUnlock(){
   openDebug();
   return true;
 }
+/* The debug panel is not in the player page (index.html). Its markup lives in debug_ui.js and is added only while debug is on,
+   then removed when debug is turned off, so a normal player's DOM never has the tools. */
+let debugPanelBound = false;
+const debugOpen = () => { const el = $('#ovDebug'); return !!el && !el.hidden; };
+function ensureDebugDom(){
+  if (!DEBUG || $('#ovDebug') || typeof window.PP_DEBUG_HTML !== 'string') return !!$('#ovDebug');
+  const t = document.createElement('template'); t.innerHTML = window.PP_DEBUG_HTML.trim();
+  const ref = $('#ovReset'); ref.parentNode.insertBefore(t.content, ref);
+  debugUiBuilt = false; debugPanelBound = false;
+  bindDebugPanel(); debugPanelBound = true;
+  return true;
+}
+function dropDebugDom(){ const el = $('#ovDebug'); if (!el) return; el.remove(); debugUiBuilt = false; debugPanelBound = false; }
 function closeDebug(){
   const el = $('#ovDebug');
   if (!el || el.hidden) return;
@@ -7091,7 +7140,7 @@ function closeDebug(){
   lockTabs(false);
 }
 function openDebug(){
-  if (!DEBUG) return;
+  if (!DEBUG || !ensureDebugDom()) return;
   const el = $('#ovDebug');
   if (!el || !el.hidden) return;
   if (scene || !$('#ovReset').hidden || !$('#ovEvolve').hidden || !$('#ovSheet').hidden || !$('#ovPlay').hidden) return;
@@ -7451,7 +7500,10 @@ function bindDebugUi(){
   });
   $('#dbgUnlock').addEventListener('click', tryDebugUnlock);
   $('#dbgPass').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tryDebugUnlock(); } });
-  $('#dbgTag').addEventListener('click', () => { if (!DEBUG) return; if ($('#ovDebug').hidden) openDebug(); else closeDebug(); });
+  $('#dbgTag').addEventListener('click', () => { if (!DEBUG) return; if (!debugOpen()) openDebug(); else closeDebug(); });
+}
+// The debug panel's own controls: bound once, right after debug_ui.js's markup is put in the page (debug sessions only).
+function bindDebugPanel(){
   $('#dbgClose').addEventListener('click', () => { sfx('tap'); closeDebug(); });
   $('#ovDebug').addEventListener('click', e => { if (e.target === e.currentTarget) closeDebug(); });
   $('#dbgLock').addEventListener('click', () => { setDebugEnabled(false); closeDebug(); toast('Debug mode off.'); });
@@ -7781,7 +7833,7 @@ function bindInput(){
   window.addEventListener('keydown', e => {
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
-    if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && $('#ovDebug').hidden && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
+    if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && !debugOpen() && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sceneKeyEat = true; if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
@@ -7791,7 +7843,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
     if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
-    if (e.key === 'Escape' && !$('#ovDebug').hidden) { closeDebug(); return; }
+    if (e.key === 'Escape' && debugOpen()) { closeDebug(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
     if (!$('#ovMap').hidden && KEYS[e.key]) { e.preventDefault(); if (!e.repeat) mapNudge(KEYS[e.key]); return; }   // arrows read the parchment; they must not walk the keeper underneath
