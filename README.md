@@ -186,7 +186,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - Fernbrook Heights (before the first trial): once you pick a side, Fen or Juniper offers "get to know us" and sends you north. The walk tip shows that objective once the quest has moved on, even if the Hearthmoor wild was never met. Talking to Fen again before the orchard is cleared says the crates are by the gate. The Hall can wait.
   Keepers investigate a smuggling tunnel. After the haulers step aside, Officer Ken of the Fernbrook watch interviews each Walkling with you, then walks them toward the orchard. Glimmerwell enters the RegenX lab,
   four floors, to copy Atten (a focus aid) and its brewing plans. The lobby, Focus Wing, Records room, and Arbiter bay
-  are different rooms. RegenX does not know the vials sit near The Arbiter,
+  are different rooms. The lobby, Focus Wing, and Records room are 14 by 22, the same size as the Arbiter bay. The lobby keeps the white floor and adds a mint inlay. The Focus Wing has pale blue grout, a pale blue stripe, and sound panels. Records has amber grout and an amber stripe. RegenX does not know the vials sit near The Arbiter,
   ancient Glimmerwell technology. It emits something slowly. Nobody can name the emission, or why the machine was built.
   A floating computer, the VOLT line Bitlet, Hoverbyte, and Archivolt, woke in that bay. It is not a sample. You can befriend it.
   It does not appear in the wild.

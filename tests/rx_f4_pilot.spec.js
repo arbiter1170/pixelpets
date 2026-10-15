@@ -33,7 +33,7 @@ const pos = page => page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPe
 const GRID = ['##############', '#WVWWWWWWWWVL#', '#.,..DDDD..xx#', '#..,.DDDD..xx#', '#~~~~DDDD~~~~#', '#o....||....o#', '#.....||.....#', '#..,..||..,..#', '#-----++-----#',
   '#.....||.....#', '#.,...||...,.#', '#.....||.....#', '#..o..||..o..#', '#.....||.....#', '#-----++-----#', '#.,...||.....#', '#.....||..,..#', '#gggg.||.gggg#', '#.....||.....#', '#..,..||..,..#', '#.....mm.....#', '##############'];
 
-test('E2 + A1: rx_f4 is 14x22 with the pilot grid; ids kept; other RegenX floors unchanged (QA 12)', async ({ page }) => {
+test('E2 + A1: rx_f4 is 14x22 with the pilot grid; ids kept; other RegenX floors are 14x22 (QA 12)', async ({ page }) => {
   await boot(page, labSave());
   const r = await page.evaluate(() => {
     const m = MAPDATA.heights.maps, f4 = m.rx_f4, up = m.rx_f3.objs.find(o => o.id === 'rx3_up');
@@ -46,12 +46,9 @@ test('E2 + A1: rx_f4 is 14x22 with the pilot grid; ids kept; other RegenX floors
   expect(r.up).toEqual([6, 19, 'up']);
   for (const id of ['rx4_down', 'rx4_down_b', 'rx_arbiter', 'rx_quinn', 'rx_bitlet', 'rx4_side', 'rx_f4_plaque', 'rx4_tank_a', 'rx4_tank_b', 'rx4_staff_door', 'rx4_tech', 'rx4_offlimits'])
     expect(r.ids).toContain(id);
-  expect(r.others).toEqual([[18, 12, false, false], [18, 12, false, false], [18, 12, false, false]]);
+  expect(r.others).toEqual([[14, 22, true, true], [14, 22, true, true], [14, 22, true, true]]);
   expect(r.checks.floorCap).toEqual([]);
   expect(r.checks.heights).toEqual([]);
-  // other floors still draw the plain lab floor (skin only, no variants)
-  await page.evaluate(() => PixelPets.goto('rx_f1', 9, 8, 'up'));
-  expect(await page.evaluate(() => PixelPets.tileInfo(9, 8).tile)).toBe('lab_floor');
 });
 
 test('E2: a 30x30 interior loads, walks and saves', async ({ page }) => {
@@ -74,18 +71,18 @@ test('E2: a 30x30 interior loads, walks and saves', async ({ page }) => {
   expect(back).toEqual(['test30', 27, 28, [30, 30]]);
 });
 
-test('QA 1: the stair door lands at (6,19) facing up; the mat goes back to Records (14,4)', async ({ page }) => {
+test('QA 1: the stair door lands at (6,19) facing up; the mat goes back to Records (6,4)', async ({ page }) => {
   await boot(page, labSave());
   // the Records stair door sits on a floor tile (no wall above), so a tap on it opens it (tapObject)
-  await page.evaluate(() => PixelPets.goto('rx_f3', 14, 4, 'up')); await page.waitForTimeout(200);
+  await page.evaluate(() => PixelPets.goto('rx_f3', 6, 4, 'up')); await page.waitForTimeout(200);
   const pt = await page.evaluate(() => { const c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width;
-    return { x: r.left + (14 * 16 + 8 - PixelPets.walk.cam.x) * k, y: r.top + (3 * 16 + 8 - PixelPets.walk.cam.y) * k }; });
+    return { x: r.left + (6 * 16 + 8 - PixelPets.walk.cam.x) * k, y: r.top + (2 * 16 + 8 - PixelPets.walk.cam.y) * k }; });
   await page.mouse.click(pt.x, pt.y);
   await expect.poll(() => pos(page)).toEqual({ map: 'rx_f4', x: 6, y: 19, facing: 'up' });
   for (const x of [6, 7]) {
     await at(page, x, 19, 'down');
     await page.keyboard.press('ArrowDown');
-    await expect.poll(() => pos(page)).toMatchObject({ map: 'rx_f3', x: 14, y: 4 });
+    await expect.poll(() => pos(page)).toMatchObject({ map: 'rx_f3', x: 6, y: 4 });
   }
 });
 
