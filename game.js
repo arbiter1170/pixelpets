@@ -79,12 +79,14 @@ const STEP_NRG = 0;               // walking no longer drains NRG (FOOD per step
 const STEP_FOOD = 0.05;           // FOOD per step (PACING v0.3: was 0.15; 100 steps = -5)
 
 /* ---------- sprites & tiles ---------- */
+const stageSrc = st => st.grid || st.half;
+const stageCol = st => st.grid ? null : st.col;
 const SPR = SPECIES.map(sp => sp.stages.map(st => ({
-  n: buildSprite(st.half, st.col, 'normal'),
-  b: buildSprite(st.half, st.col, 'blink'),
-  w: buildSprite(st.half, st.col, PAL.w),
-  s: buildSprite(st.half, st.col, PAL.m),
-  u: sp.uiHalo ? haloSprite(buildSprite(st.half, st.col, 'normal'), PAL.h) : null,
+  n: buildSprite(stageSrc(st), stageCol(st), 'normal'),
+  b: buildSprite(stageSrc(st), stageCol(st), 'blink'),
+  w: buildSprite(stageSrc(st), stageCol(st), PAL.w),
+  s: buildSprite(stageSrc(st), stageCol(st), PAL.m),
+  u: sp.uiHalo ? haloSprite(buildSprite(stageSrc(st), stageCol(st), 'normal'), PAL.h) : null,
 })));
 // Light 1px ring around the outline so dark-bodied species read on the dark UI cells (map art unchanged).
 function haloSprite(src, col){
@@ -99,13 +101,17 @@ const TILES = buildTiles();
 const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
 const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
 const fadedCol = col => Object.fromEntries(Object.entries(col).map(([ch, v]) => [ch, PAL[FADE_KEY[PAL_KEY[v]]] || v]));
+function fadedStage(st){
+  if (!st.grid) return { src: st.half, col: fadedCol(st.col) };
+  return { src: st.grid.map(row => [...row].map(ch => ch === '.' ? '.' : (FADE_KEY[ch] || ch)).join('')), col: null };
+}
 const FADED_SPR = {};
 function sprSet(si, stage, faded){
   if (!faded) return SPR[si][stage];
   const k = si + '/' + stage;
   if (!FADED_SPR[k]) {
-    const st = SPECIES[si].stages[stage], col = fadedCol(st.col), n = buildSprite(st.half, col, 'normal');
-    FADED_SPR[k] = { n, b: buildSprite(st.half, col, 'blink'), w: SPR[si][stage].w, s: SPR[si][stage].s, u: SPECIES[si].uiHalo ? haloSprite(n, PAL.h) : null };
+    const st = SPECIES[si].stages[stage], art = fadedStage(st), n = buildSprite(art.src, art.col, 'normal');
+    FADED_SPR[k] = { n, b: buildSprite(art.src, art.col, 'blink'), w: SPR[si][stage].w, s: SPR[si][stage].s, u: SPECIES[si].uiHalo ? haloSprite(n, PAL.h) : null };
   }
   return FADED_SPR[k];
 }
@@ -248,6 +254,8 @@ const rid = n => Array.from({length:n}, () => 'abcdefghijklmnopqrstuvwxyz0123456
 // Saved pets name their species by stable string id (`species`); runtime-only things (sprites, wild creatures,
 // encounters) keep using the SPECIES array index. spIndex/spi convert.
 const SP_INDEX = Object.fromEntries(SPECIES.map((sp, i) => [sp.id, i]));
+const JOURNAL_FORMS = SPECIES.reduce((n, sp) => n + (sp.npcOnly ? 0 : sp.stages.length), 0);
+const formNpcOnly = form => { const sp = SPECIES[SP_INDEX[String(form || '').split('/')[0]]]; return !!(sp && sp.npcOnly); };
 const spIndex = id => SP_INDEX[id];
 const spi = p => SP_INDEX[p.species];
 // lv = starting Level (battle XP): starters Lv 5, befriended wild creatures their own level.
@@ -3528,8 +3536,10 @@ const rnd = ([a, b]) => a + Math.random() * (b - a);
 const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow'];
 // weatherOnly species (the vane line): weight 0 unless one of their tags is active, and never part of the any-species roll.
 // labOnly species (the byte line): weight 0 everywhere, and never part of the any-species roll. A map object places them.
+// npcOnly species (the fetch line): weight 0 everywhere. A keeper cannot meet one, so it is not in the journal either.
 const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
-const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && !SPECIES[i].labOnly);
+const wildSpecies = sp => !sp.labOnly && !sp.npcOnly;
+const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && wildSpecies(SPECIES[i]));
 // CREATURES_SLICE §3: authored spawn tables, rows [speciesId, baseWeight, minLv, maxLv]. Effective weight = base x (1 + 0.25 x the
 // species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
 const SPAWNS = {
@@ -3541,10 +3551,10 @@ const SPAWNS = {
 for (const src of [MD.act1_route2, MD.cobblecrest]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = v;
 const spawnKey = () => (CUR && CUR.spawns) || 'proto';
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
-function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && !sp.labOnly && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
+function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
 const starterMult = sp => !sp.starter ? 1 : (S.flags && S.flags['story.seal1']) ? 0.2 : 0;
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => !sp.labOnly && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => wildSpecies(sp) && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
 const anyWeights = () => SPECIES.map((sp, i) => ANY_POOL.includes(i) ? starterMult(sp) : 0);
 function spawnOdds(tags = envTags(), key = spawnKey()){   // expected spawn probability per species for these tags on this map's table
   const t = SPAWNS[key];
@@ -5977,7 +5987,7 @@ const statMaxCache = {};
 function statMaxAt(L){
   if (statMaxCache[L]) return statMaxCache[L];
   const m = { hp: 1, atk: 1, def: 1, spd: 1 };
-  SPECIES.forEach(sp => sp.stages.forEach((st, k) => { const s = statsAt(sp.id + '/' + k, L); if (s) for (const [key] of STAT_KEYS) m[key] = Math.max(m[key], s[key]); }));
+  SPECIES.forEach(sp => { if (sp.npcOnly) return; sp.stages.forEach((st, k) => { const s = statsAt(sp.id + '/' + k, L); if (s) for (const [key] of STAT_KEYS) m[key] = Math.max(m[key], s[key]); }); });
   return (statMaxCache[L] = m);
 }
 const typesWhere = f => TYPES.filter(f);
@@ -6179,7 +6189,7 @@ function paintStatsInto(prefix, p, opt){
   $('#' + prefix + 'Name').textContent = petName(p);
   const species = nameOf(si, p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   $('#' + prefix + 'Species').textContent = ((opt && opt.alwaysSpecies) || cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
-  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of ' + (SPECIES.length * 3) + ' forms';
+  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of ' + JOURNAL_FORMS + ' forms';
   const tb = $('#' + prefix + 'Type'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
   $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
   const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
@@ -6904,9 +6914,9 @@ function renderDexGrid(){
   const dex = $('#dexGrid'); dex.innerHTML = '';
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
   const seen = (S.dex && S.dex.seen) || {}, caught = (S.dex && S.dex.caught) || {};
-  const joined = Object.keys(caught).filter(k => caught[k]).length;
+  const joined = Object.keys(caught).filter(k => caught[k] && !formNpcOnly(k)).length;
   let met = 0;
-  SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
+  SPECIES.forEach((sp, si) => { if (sp.npcOnly) return; sp.stages.forEach((st, k) => {
     const f = formOf(si, k), flagCaught = !!caught[f], flagSeen = !!seen[f], owns = owned.has(f);
     const state = (flagCaught || owns) ? 'joined' : flagSeen ? 'met' : 'unmet';
     if (state === 'met') met++;
@@ -6925,8 +6935,8 @@ function renderDexGrid(){
     if (!known && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
     const lb = document.createElement('div'); lb.textContent = known ? st.name : '???'; if (!known) lb.className = 'unk';
     cell.append(cv, lb); dex.append(cell);
-  }));
-  $('#dexCount').textContent = 'Joined ' + joined + ' · Met ' + met + ' · Out there ' + (SPECIES.length * 3);
+  }); });
+  $('#dexCount').textContent = 'Joined ' + joined + ' · Met ' + met + ' · Out there ' + JOURNAL_FORMS;
 }
 // Partner = the pet on the Pet tab; it must be in the party. A box pet joins the party first; if the party is full,
 // the last party member that isn't the partner moves to the top of the box.

@@ -98,7 +98,7 @@ Levels, types and stats (`stats.js`):
   the Pet scene and the Pets tab.
 - Stats card: tap STATS (above FEED, same button chrome as FEED / PLAY / REST) or the follower. KIT, beside STATS, opens Customize & Gear for the partner. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats and the same gear. It shows the type badge, Level,
   GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
-  scaled to the highest value of that stat among all 45 forms at the same level, and one type-chart line
+  scaled to the highest value of that stat among the 45 forms a keeper can meet, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
   tap outside it or Escape closes it. Any tab can open it with a Walkling id (`openStatsCard(id)` in `game.js`).
 
@@ -293,13 +293,15 @@ Which species appear depends on where you are and the weather there:
 - The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
 
-Creatures: 15 lines of 3 forms (45 WALKLING JOURNAL entries), all befriendable and all growing up the same way
-(growth XP 40 / 120 plus care, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
+Creatures: 16 lines of 3 forms. The WALKLING JOURNAL lists the 45 forms a keeper can meet. Every line a keeper
+can meet grows up the same way (growth XP 40 / 120 plus care, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
 Pomlet → Pomshell → Orchardon (BLOOM beetle), Loamlet → Burrowbloom → Hedgewarden (BLOOM mole),
 Clinkit → Shardpincer → Mosaicrab (TIDE crab), Fuzzwick → Filamoth → Halowatt (VOLT moth),
 Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lullamouse → Moondozer (SHADE dormouse).
 Bitlet → Hoverbyte → Archivolt (VOLT `byte`) is a floating computer. It is `labOnly`: the Arbiter bay is where you meet it,
 and it is never part of the habitat roll or the 8% any-species roll.
+Fetchling → Harvestail → Hearthound (BLOOM `fetch`) is NPC-only. `npcOnly` keeps it out of the wild roll, the starter
+baskets, and the journal, so the journal still counts 45. A keeper cannot meet one. Save `v` stays 2.
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on

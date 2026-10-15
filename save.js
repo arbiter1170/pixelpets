@@ -12,8 +12,9 @@ const PPSave = (() => {
   // Frozen forever: v1 stored species by array index. Never derive this from SPECIES order.
   const V1_SPECIES = Object.freeze(['ember', 'tide', 'bloom', 'stone', 'volt', 'frost', 'gust', 'shade']);
   // Save v2 species/form-id table: append-only, in SPECIES order (v1 lines first, then CREATURES_SLICE lines 8-13).
-  // Adding ids keeps the save at v2; never remove, rename or reorder one. 15 lines x 3 stages = 45 form ids.
-  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte']);
+  // Adding ids keeps the save at v2; never remove, rename or reorder one. 16 lines x 3 stages = 48 form ids.
+  // npcOnly lines (fetch) are in this table and left out of the journal, which still counts 45.
+  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch']);
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
   // MAPS_SLICE §10 / INTERIORS §5 / ACT1_ROUTE2 §0.2 / COBBLECREST mapdata: ids and sizes from data/mapdata.js.
