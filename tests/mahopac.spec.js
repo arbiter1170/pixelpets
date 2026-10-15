@@ -173,3 +173,106 @@ test('Mahopac is quiet, and the dream toy pops into the next memory', async ({ p
   expect(woke.woke).toBe(true);
   expect(woke.side).toBe('dream_study');
 });
+
+async function step(page, dir) {
+  const before = await page.evaluate(() => ({
+    map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y,
+  }));
+  await page.evaluate((dir) => {
+    PixelPets.showTab('walk');
+    PixelPets.walk.queued = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[dir];
+  }, dir);
+  await page.waitForFunction((prev) => {
+    if (PixelPets.fading || PixelPets.keeper.moving) return false;
+    const s = PixelPets.state.world;
+    return PixelPets.mapInfo.id !== prev.map || s.x !== prev.x || s.y !== prev.y;
+  }, before, { timeout: 4000 });
+  await page.waitForFunction(() => !PixelPets.fading && !PixelPets.keeper.moving);
+  return page.evaluate(() => {
+    const s = PixelPets.state.world;
+    return { map: PixelPets.mapInfo.id, x: s.x, y: s.y, facing: s.facing, v: PixelPets.state.v };
+  });
+}
+
+test('the north trail sign leaves the exit walkable, and the gate still holds', async ({ page }) => {
+  const save = starterSave();
+  await installSave(page.context(), save, { quietDay: true });
+  await gotoDebug(page);
+
+  const placed = await page.evaluate(() => {
+    PixelPets.goto('hearthmoor', 7, 1, 'right');
+    const objs = PixelPets.mapInfo.objs;
+    const tile = PixelPets.tileInfo(10, 1);
+    const here = objs.filter((o) => o.x === 10 && o.y === 1).map((o) => o.id);
+    const raw = MAPDATA.mahopac.slicePatch.maps.hearthmoor.addObjs.filter((o) => o.id === 'hm_north_closed' || o.id === 'hm_north_open' || o.id === 'hm_north' || o.id === 'hm_north_wait');
+    return {
+      tile, here,
+      closed: objs.find((o) => o.id === 'hm_north_closed'),
+      open: objs.find((o) => o.id === 'hm_north_open') || null,
+      raw,
+      v: PixelPets.state.v,
+      quest: PixelPets.questCheck,
+    };
+  });
+  expect(placed.tile).toMatchObject({ ch: 'g', solid: false });
+  expect(placed.here).toEqual(['hm_north_closed']);
+  expect(placed.closed).toMatchObject({ x: 10, y: 1, block: true });
+  expect(placed.open).toBeNull();
+  expect(placed.raw.find((o) => o.id === 'hm_north_closed')).toMatchObject({
+    x: 10, y: 1, when: ['!story.mom_sent'], text: 'A north trail. Mom says it can wait.',
+  });
+  expect(placed.raw.find((o) => o.id === 'hm_north_open')).toMatchObject({
+    x: 10, y: 1, when: ['story.mom_sent'], text: 'North trail to Mahopac. Time feels thick up there.',
+  });
+  expect(placed.raw.find((o) => o.id === 'hm_north')).toMatchObject({ x: 9, y: 0, need: 'story.mom_sent' });
+  expect(placed.raw.find((o) => o.id === 'hm_north_wait')).toMatchObject({ x: 9, y: 1, when: ['!story.mom_sent'] });
+  expect(placed.v).toBe(2);
+  expect(placed.quest).toEqual([]);
+
+  const approach = await step(page, 'right');
+  expect(approach).toMatchObject({ map: 'hearthmoor', x: 8, y: 1, v: 2 });
+  const doorstep = await step(page, 'right');
+  expect(doorstep).toMatchObject({ map: 'hearthmoor', x: 9, y: 1, v: 2 });
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'north_closed' && PixelPets.scene.full);
+  const heldLine = await page.evaluate(() => PixelPets.scene.text);
+  expect(heldLine).toBe('The trees lean in. Not today, says a voice that sounds like Mom.');
+  await playScene(page);
+
+  await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.walk.queued = [0, -1]; });
+  await page.waitForFunction(() => PixelPets.state.world.facing === 'up');
+  await page.waitForTimeout(400);
+  const gated = await page.evaluate(() => ({
+    map: PixelPets.mapInfo.id,
+    x: PixelPets.state.world.x,
+    y: PixelPets.state.world.y,
+    reached: PixelPets.state.flags['story.reached_mahopac'] === true,
+    scene: PixelPets.scene,
+    fading: PixelPets.fading,
+    v: PixelPets.state.v,
+  }));
+  expect(gated).toMatchObject({ map: 'hearthmoor', x: 9, y: 1, reached: false, scene: null, fading: false, v: 2 });
+
+  const opened = await page.evaluate(() => {
+    PixelPets.setFlag('story.mom_sent', true);
+    const objs = PixelPets.mapInfo.objs;
+    return {
+      closed: objs.find((o) => o.id === 'hm_north_closed') || null,
+      open: objs.find((o) => o.id === 'hm_north_open'),
+      wait: objs.find((o) => o.id === 'hm_north_wait') || null,
+    };
+  });
+  expect(opened.closed).toBeNull();
+  expect(opened.wait).toBeNull();
+  expect(opened.open).toMatchObject({ x: 10, y: 1, block: true });
+
+  const warped = await step(page, 'up');
+  expect(warped).toMatchObject({ map: 'mahopac', x: 9, y: 14, facing: 'up', v: 2 });
+  const after = await page.evaluate(() => ({
+    reached: PixelPets.state.flags['story.reached_mahopac'],
+    quest: PixelPets.questCheck,
+    v: PixelPets.state.v,
+  }));
+  expect(after.reached).toBe(true);
+  expect(after.quest).toEqual([]);
+  expect(after.v).toBe(2);
+});

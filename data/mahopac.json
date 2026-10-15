@@ -46,8 +46,8 @@
         "gridRows": {"0": "TTTTTTTTpppTTTTTTTTTTTTT"},
         "addObjs": [
           {"kind": "warp", "id": "hm_north", "x": 9, "y": 0, "to": "mahopac", "tx": 9, "ty": 14, "facing": "up", "need": "story.mom_sent", "setFlag": "story.reached_mahopac"},
-          {"kind": "sign", "id": "hm_north_closed", "x": 8, "y": 1, "when": ["!story.mom_sent"], "text": "A north trail. Mom says it can wait."},
-          {"kind": "sign", "id": "hm_north_open", "x": 8, "y": 1, "when": ["story.mom_sent"], "text": "North trail to Mahopac. Time feels thick up there."},
+          {"kind": "sign", "id": "hm_north_closed", "x": 10, "y": 1, "when": ["!story.mom_sent"], "text": "A north trail. Mom says it can wait."},
+          {"kind": "sign", "id": "hm_north_open", "x": 10, "y": 1, "when": ["story.mom_sent"], "text": "North trail to Mahopac. Time feels thick up there."},
           {"kind": "trigger", "id": "hm_north_wait", "x": 9, "y": 1, "when": ["!story.mom_sent"], "scene": "north_closed"}
         ]
       }
