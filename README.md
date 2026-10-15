@@ -20,7 +20,7 @@ Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Figh
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
 Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), a Vol slider beside Music (0–100, saved as `settings.musicVol` from 0 to 1), Follower on/off, Change look, Save a copy, Read a copy, Start over, and Debug.
 
-Debug mode: add `?debug=1` to the URL (remembered in `pixelpets.debug`; `?debug=0` turns it off), or open Settings → Debug and enter the password Larson (any capitalization). Either way the tools turn on immediately. A DBG tag shows in the header; tap it to open the debug panel again, including during a battle. Lock debug in that panel to turn it off on this device. Only in debug mode:
+Debug mode: add `?debug=1` to the URL, or open Settings → Debug and enter the team password. It lasts for this browser tab only (`pixelpets.debug` in sessionStorage; older builds kept it in localStorage, and boot now clears that). `?debug=0` turns it off. Any save written during a debug session gains `debugSave: true`, and Settings shows `DEBUG SAVE` beside the build line, so debug edits never pass as a clean save. A DBG tag shows in the header; tap it to open the debug panel again, including during a battle. Lock debug in that panel to turn it off on this device. Only in debug mode:
 - Keys: E = force-evolve current partner, G = force a wild battle (species weighted by the current area),
   H = heal the whole team (clears HP loss and naps), F = toggle fast mode.
 - Fast mode (below) and the "Pick a place" presets in the Walk badge card.
