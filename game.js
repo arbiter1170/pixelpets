@@ -57,6 +57,7 @@ function setDebugEnabled(on){
   writeDebugPref(DEBUG);
   syncDebugQuery(DEBUG);
   const dbg = $('#dbgTag'); if (dbg) dbg.hidden = !DEBUG;
+  if (!DEBUG && typeof dropDebugDom === 'function') { if (debugOpen()) lockTabs(false); dropDebugDom(); }
   const pick = $('#envPick'); if (pick) pick.hidden = !DEBUG;
   if (PPEnv.allowOverride) PPEnv.allowOverride(DEBUG);
   renderDebugGate();
@@ -79,12 +80,14 @@ const STEP_NRG = 0;               // walking no longer drains NRG (FOOD per step
 const STEP_FOOD = 0.05;           // FOOD per step (PACING v0.3: was 0.15; 100 steps = -5)
 
 /* ---------- sprites & tiles ---------- */
+const stageSrc = st => st.grid || st.half;
+const stageCol = st => st.grid ? null : st.col;
 const SPR = SPECIES.map(sp => sp.stages.map(st => ({
-  n: buildSprite(st.half, st.col, 'normal'),
-  b: buildSprite(st.half, st.col, 'blink'),
-  w: buildSprite(st.half, st.col, PAL.w),
-  s: buildSprite(st.half, st.col, PAL.m),
-  u: sp.uiHalo ? haloSprite(buildSprite(st.half, st.col, 'normal'), PAL.h) : null,
+  n: buildSprite(stageSrc(st), stageCol(st), 'normal'),
+  b: buildSprite(stageSrc(st), stageCol(st), 'blink'),
+  w: buildSprite(stageSrc(st), stageCol(st), PAL.w),
+  s: buildSprite(stageSrc(st), stageCol(st), PAL.m),
+  u: sp.uiHalo ? haloSprite(buildSprite(stageSrc(st), stageCol(st), 'normal'), PAL.h) : null,
 })));
 // Light 1px ring around the outline so dark-bodied species read on the dark UI cells (map art unchanged).
 function haloSprite(src, col){
@@ -99,13 +102,17 @@ const TILES = buildTiles();
 const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
 const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
 const fadedCol = col => Object.fromEntries(Object.entries(col).map(([ch, v]) => [ch, PAL[FADE_KEY[PAL_KEY[v]]] || v]));
+function fadedStage(st){
+  if (!st.grid) return { src: st.half, col: fadedCol(st.col) };
+  return { src: st.grid.map(row => [...row].map(ch => ch === '.' ? '.' : (FADE_KEY[ch] || ch)).join('')), col: null };
+}
 const FADED_SPR = {};
 function sprSet(si, stage, faded){
   if (!faded) return SPR[si][stage];
   const k = si + '/' + stage;
   if (!FADED_SPR[k]) {
-    const st = SPECIES[si].stages[stage], col = fadedCol(st.col), n = buildSprite(st.half, col, 'normal');
-    FADED_SPR[k] = { n, b: buildSprite(st.half, col, 'blink'), w: SPR[si][stage].w, s: SPR[si][stage].s, u: SPECIES[si].uiHalo ? haloSprite(n, PAL.h) : null };
+    const st = SPECIES[si].stages[stage], art = fadedStage(st), n = buildSprite(art.src, art.col, 'normal');
+    FADED_SPR[k] = { n, b: buildSprite(art.src, art.col, 'blink'), w: SPR[si][stage].w, s: SPR[si][stage].s, u: SPECIES[si].uiHalo ? haloSprite(n, PAL.h) : null };
   }
   return FADED_SPR[k];
 }
@@ -248,6 +255,8 @@ const rid = n => Array.from({length:n}, () => 'abcdefghijklmnopqrstuvwxyz0123456
 // Saved pets name their species by stable string id (`species`); runtime-only things (sprites, wild creatures,
 // encounters) keep using the SPECIES array index. spIndex/spi convert.
 const SP_INDEX = Object.fromEntries(SPECIES.map((sp, i) => [sp.id, i]));
+const JOURNAL_FORMS = SPECIES.reduce((n, sp) => n + (sp.npcOnly ? 0 : sp.stages.length), 0);
+const formNpcOnly = form => { const sp = SPECIES[SP_INDEX[String(form || '').split('/')[0]]]; return !!(sp && sp.npcOnly); };
 const spIndex = id => SP_INDEX[id];
 const spi = p => SP_INDEX[p.species];
 // lv = starting Level (battle XP): starters Lv 5, befriended wild creatures their own level.
@@ -508,7 +517,32 @@ function syncNavArt(force){
   const kc = $('#joyKnob canvas');
   if (kc) { const tag = joy.id != null ? 'p' : 'n'; if (force || navPaint.get(kc) !== tag) { navPaint.set(kc, tag); const g = ctx(kc); g.clearRect(0, 0, 18, 18); paintGrid(g, A.joystick[joy.id != null ? 'knob_pressed' : 'knob'], 1, 0, 0); } }
 }
-setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} }, 120);
+// Header acorns and the canvas labels follow the game live (every 120 ms, cheap compares; nothing is written unless it changed).
+let hdrAcornsShown = null;
+function syncHdrAcorns(){
+  const box = $('#hdrAcorns'); if (!box) return;
+  const n = S ? (S.money | 0) : 0;
+  if (n === hdrAcornsShown) return; hdrAcornsShown = n;
+  $('#hdrAcornN').textContent = String(n); box.setAttribute('aria-label', acorns(n));
+  const chip = $('#fcAcorns');   // modern walk chip (Design, green): same count, left of the gear
+  if (chip) { $('#fcAcornN').textContent = String(n); chip.setAttribute('aria-label', acorns(n)); }
+}
+// The badge band gives the chip its room (the badge text clamps first at 320).
+function fitAcornChip(){
+  const chip = $('#fcAcorns'), fc = $('#floatCtl'); if (!chip || !fc) return;
+  const w = chip.offsetWidth ? Math.ceil(chip.getBoundingClientRect().width) + 6 : 0;
+  if (fc.style.getPropertyValue('--chip-w') !== w + 'px') fc.style.setProperty('--chip-w', w + 'px');
+}
+function setLabel(el, text){ if (el && el.getAttribute('aria-label') !== text) el.setAttribute('aria-label', text); }
+function syncCanvasLabels(){
+  if (!S) return;
+  const p = pet(), pn = p ? petName(p) : null;
+  setLabel($('#mapCanvas'), (CUR && CUR.name ? CUR.name : 'The walk map') + (pn ? '. ' + pn + ' walks with you.' : '.'));
+  if (p) setLabel($('#petCanvas'), 'Your partner ' + pn + (pn !== nameOf(spi(p), p.stage) ? ' the ' + nameOf(spi(p), p.stage) : '') + ', Lv ' + levelOf(p) + (isFainted(p) ? ', worn out' : '') + '. Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + '.');
+  const f = battle.on ? curFoe() : null, me = battle.on ? activePet() : null;
+  if (f) setLabel($('#battleCanvas'), foeLabel(f) + ', Lv ' + f.level + ', HP ' + Math.ceil(f.hp) + ' of ' + f.maxHp + (me ? '. ' + petName(me) + ', HP ' + Math.ceil(hpOf(me)) + ' of ' + maxHpOf(me) + '.' : '.'));
+}
+setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} try { syncHdrAcorns(); fitAcornChip(); syncCanvasLabels(); } catch (e) {} }, 120);
 // The tip text can change outside syncWalkTip, and the pixel font loads after the first measure (fallback glyphs are narrower,
 // so the band measured one line and then ellipsized). Re-measure whenever the text, the width or the font state changes.
 let tipBandKey = '';
@@ -535,7 +569,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -607,7 +641,17 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
 window.addEventListener('resize', fitAll);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
 
-function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); }
+const BAR_LABEL = { barHunger: 'Food', barHappy: 'Joy', barEnergy: 'Energy', wBarEnergy: 'Energy', stripFood: 'Food', stripJoy: 'Joy', stripNrg: 'Energy', barXp: 'Growth' };
+// Accessibility: the track of a fill bar is a progressbar, kept in step with the value it shows.
+function ariaBar(fill, now, max, label){
+  const bar = fill && fill.parentNode; if (!bar) return;
+  if (bar.getAttribute('role') !== 'progressbar') { bar.setAttribute('role', 'progressbar'); bar.setAttribute('aria-valuemin', '0'); }
+  const n = String(Math.max(0, Math.round(now))), m = String(Math.max(1, Math.round(max)));
+  if (bar.getAttribute('aria-valuenow') !== n) bar.setAttribute('aria-valuenow', n);
+  if (bar.getAttribute('aria-valuemax') !== m) bar.setAttribute('aria-valuemax', m);
+  if (label && bar.getAttribute('aria-label') !== label) bar.setAttribute('aria-label', label);
+}
+function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); ariaBar(el, clamp(v, 0, 100), 100, BAR_LABEL[el.id] || null); }
 function updateHUD(){
   document.body.classList.toggle('no-pets', !allPets().length);
   syncBagBtns();
@@ -625,16 +669,15 @@ function updateHUD(){
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
-  setBar($('#wBarEnergy'), p.energy);
   updatePetStrip(p);
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
   const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
   const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
-  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; $('#valXp').textContent = p.xp;
-  $('#wXp').textContent = p.xp; $('#wSteps').textContent = S.steps;
+  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = p.xp;
+  $('#wSteps').textContent = S.steps;   // STAT_DISPLAY: the WALK slot of the shared strip
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
-  const setCount = (el, v, cap) => { const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
-  setCount($('#dCare'), cx, CARE_XP_DAILY_CAP); setCount($('#dExp'), ex, EXPLORE_XP_DAILY_CAP); setCount($('#wExp'), ex, EXPLORE_XP_DAILY_CAP);
+  const setCount = (el, v, cap) => { if (!el) return; const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
+  setCount($('#ssCare'), cx, CARE_XP_DAILY_CAP); setCount($('#ssExp'), ex, EXPLORE_XP_DAILY_CAP);   // EXPLORE once (STAT_DISPLAY §4)
   const hint = $('#evoHint'), btn = $('#evolveBtn');
   if (p.stage >= 2) { hint.textContent = 'Fully grown! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (isFaded(p)) { hint.textContent = 'Faded: ' + p.faded + ' good-care day' + (p.faded > 1 ? 's' : '') + ' to go (care 60+).'; hint.classList.remove('ready'); btn.hidden = true; }
@@ -2737,7 +2780,33 @@ function restBedCue(){
   return best ? { x: best.x, y: best.y, here: true } : null;
 }
 function questPointOnMap(){ return pointOnMap(questCurrent()); }
-const sideQuest = () => (S && typeof PPQuests !== 'undefined' && PPQuests.sideCurrent) ? PPQuests.sideCurrent(questState()) : null;
+// QUEST_MULTI (D106): every active side chain in unlock order; the tracked one drives the SIDE card, walk cue and solid ring.
+let sideTestChains = null;   // ?debug=1 only (PixelPets.debugSideChains): extra chains for layout tests; never saved
+const sideActiveList = () => {
+  if (!S || typeof PPQuests === 'undefined' || !PPQuests.sideActive) return [];
+  return PPQuests.sideActive(questState(), sideTestChains ? PPQuests.SIDE_CHAINS.concat(sideTestChains) : null);
+};
+const sideUi = () => (S.ui && typeof S.ui === 'object') ? S.ui : (S.ui = {});
+// Tracked = the stored chain if it is active, else the first active by unlock order. Never writes the save by itself.
+function trackedSide(){
+  const A = sideActiveList(); if (!A.length) return null;
+  const id = S.ui && S.ui.sideTracked;
+  return A.find(a => a.chain === id) || A[0];
+}
+const sideQuest = () => { const t = S ? trackedSide() : null; return t ? t.step : null; };
+// D106-D: when the tracked chain finishes, track the next active chain and say so. A step inside the chain keeps tracking.
+let sideTrackLast = null;   // { chain, ids } from the previous check; null until the first check after load
+function syncSideTrack(){
+  if (!S) return;
+  const A = sideActiveList(), ids = A.map(a => a.chain), cur = trackedSide();
+  const last = sideTrackLast;
+  sideTrackLast = { chain: cur ? cur.chain : null, ids };
+  if (!last || !last.chain || ids.includes(last.chain)) return;
+  // The chain we were tracking dropped out of the active list: it finished (chains never re-lock).
+  const ui = sideUi();
+  if (cur) { ui.sideTracked = cur.chain; save(); toast('Now tracking: ' + cur.label); }
+  else if (ui.sideTracked != null) { delete ui.sideTracked; save(); }
+}
 function sidePointOnMap(){ return pointOnMap(sideQuest()); }
 // NAV_MODERN §4 (settled G4): in modern, edge arrows stay in the free rect between the button clusters, and a cue whose tile
 // sits under a button is drawn as an edge arrow instead. Rects are canvas pixels, refreshed at most every 250 ms.
@@ -3531,8 +3600,10 @@ const rnd = ([a, b]) => a + Math.random() * (b - a);
 const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow'];
 // weatherOnly species (the vane line): weight 0 unless one of their tags is active, and never part of the any-species roll.
 // labOnly species (the byte line): weight 0 everywhere, and never part of the any-species roll. A map object places them.
+// npcOnly species (the fetch line): weight 0 everywhere. A keeper cannot meet one, so it is not in the journal either.
 const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
-const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && !SPECIES[i].labOnly);
+const wildSpecies = sp => !sp.labOnly && !sp.npcOnly;
+const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && wildSpecies(SPECIES[i]));
 // CREATURES_SLICE §3: authored spawn tables, rows [speciesId, baseWeight, minLv, maxLv]. Effective weight = base x (1 + 0.25 x the
 // species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
 const SPAWNS = {
@@ -3544,10 +3615,10 @@ const SPAWNS = {
 for (const src of [MD.act1_route2, MD.cobblecrest]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = v;
 const spawnKey = () => (CUR && CUR.spawns) || 'proto';
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
-function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && !sp.labOnly && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
+function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
 const starterMult = sp => !sp.starter ? 1 : (S.flags && S.flags['story.seal1']) ? 0.2 : 0;
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => !sp.labOnly && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => wildSpecies(sp) && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
 const anyWeights = () => SPECIES.map((sp, i) => ANY_POOL.includes(i) ? starterMult(sp) : 0);
 function spawnOdds(tags = envTags(), key = spawnKey()){   // expected spawn probability per species for these tags on this map's table
   const t = SPAWNS[key];
@@ -4147,11 +4218,11 @@ function typeChip(el, type){ el.textContent = type; el.className = 'type-chip t-
 function renderBattleCards(){
   const B = battle, f = curFoe(), p = activePet(); if (!f || !p) return;
   $('#btFoeName').textContent = foeName(f); $('#btFoeLv').textContent = 'Lv ' + f.level; typeChip($('#btFoeType'), f.type);
-  const fh = $('#btFoeHp'); fh.style.width = (100 * f.hp / f.maxHp) + '%'; fh.classList.toggle('warn', f.hp / f.maxHp < 0.25);
+  const fh = $('#btFoeHp'); fh.style.width = (100 * f.hp / f.maxHp) + '%'; fh.classList.toggle('warn', f.hp / f.maxHp < 0.25); ariaBar(fh, Math.ceil(f.hp), f.maxHp, foeName(f) + ' HP');
   $('#btFoeStages').textContent = stageText(f.stages);
   const sp = SPECIES[spi(p)], hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p);
   $('#btMeName').textContent = petName(p); $('#btMeLv').textContent = 'Lv ' + levelOf(p); typeChip($('#btMeType'), sp.type);
-  const mh = $('#btMeHp'); mh.style.width = (100 * hp / mhp) + '%'; mh.classList.toggle('warn', hp / mhp < 0.25);
+  const mh = $('#btMeHp'); mh.style.width = (100 * hp / mhp) + '%'; mh.classList.toggle('warn', hp / mhp < 0.25); ariaBar(mh, hp, mhp, petName(p) + ' HP');
   $('#btMeHpTxt').textContent = hp + '/' + mhp;
   const m = B.me.mood || moodOf(p), chips = [];
   if (m.hungry) chips.push('HUNGRY'); if (m.sulky) chips.push('SULKY'); if (m.drowsy) chips.push('DROWSY');
@@ -4590,6 +4661,7 @@ const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy 
 let mapOffShown = null;
 function syncMapBtn(){ const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false'); }
 const mapUI = { t0: 0, cur: null, sel: null };
+let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
 // First matching rule wins. `flags` lets the dev check try a save without touching S. Unvisited places stay ??? on the parchment.
 function matchHold(id, flags){
   const n = REGION_MAP.nodes[id], F = flags || (S && S.flags) || {};
@@ -4606,6 +4678,13 @@ function nodeSeal(id){
   if (id === 'cobblecrest') return !!(seals.seal_cobblecrest || seals.seal_glim_2 || f['story.seal2']);
   return false;
 }
+// MAP_LEGEND §3: the Seal pill shows once any stamp nodeSeal() can draw is possible; the SIDES group, claim halos and hold line wait for the pledge (D109).
+function sealsShown(){
+  if (!S) return false;
+  const seals = S.seals || {}, f = S.flags || {};
+  return !!(f['story.seal1'] || f['story.seal2'] || seals.seal_fernbrook || seals.seal_glim_1 || seals.seal_cobblecrest || seals.seal_glim_2);
+}
+const sidesShown = () => !!(S && S.flags && S.flags['story.side_pick_done']);
 function nodePoint(n){ return [n.col * 16 + 8, n.row * 16 + 8]; }
 function nodeGeom(id){
   const n = REGION_MAP.nodes[id]; if (!n) return null;
@@ -4632,11 +4711,14 @@ function paintPlaceCard(){
   const here = $('#mapHere'); if (here) here.hidden = !(id && id === mapUI.cur);
   const holdEl = $('#mapHold');
   if (holdEl) {
-    holdEl.hidden = !known;
+    holdEl.hidden = !known || !sidesShown();   // D109: no hold line before the pledge
     holdEl.textContent = known ? holdLine(id) : '';
     holdEl.className = 'map-hold' + (known ? ' hold-' + mapHold(id) : '');
     if (known) holdEl.dataset.hold = mapHold(id); else delete holdEl.dataset.hold;
   }
+  const ks = $('#keySides'), seal = $('#keySeal');
+  if (ks) ks.hidden = !sidesShown();
+  if (seal) seal.hidden = !sealsShown();
   const kk = $('#keyKeepers'), kg = $('#keyGlimmer');
   if (kk) kk.textContent = SC_STANDING.sides.keepers.short;
   if (kg) kg.textContent = SC_STANDING.sides.glimmer.short;
@@ -4646,8 +4728,14 @@ function paintPlaceCard(){
     pledge.hidden = !picked;
     if (picked) pledge.textContent = 'Your pledge: ' + SC_STANDING.sides[side()].short;
   }
+  // D110 (settled by QUEST_MULTI): the Side task key entry shows only while a side quest has a target.
+  // D110 (MAP_LEGEND): Side task pill always shown; do not gate on sideQuest().target
   const q = questCurrent(), mq = $('#mapQuest');
   if (mq) { mq.hidden = !(q && q.target); if (q && q.target) mq.textContent = 'NEXT: ' + q.place; }
+  // When the tracked side quest shares the main step's area, name it under the NEXT line (skipped below 360 px wide: no room).
+  const ms = $('#mapSide'), tsd = trackedSide();
+  if (ms) { const same = !!(q && q.target && tsd && tsd.step.target && nodeOf(tsd.step.target.map) === nodeOf(q.target.map));
+    ms.hidden = !(same && window.innerWidth >= 360); ms.textContent = ms.hidden ? '' : 'Side: ' + tsd.label; }
   const heard = (id === mapUI.cur ? 'You are in ' : '') + name + '. ' + blurb + (known ? ' ' + holdLine(id) : '');
   $('#mapSr').textContent = heard;
 }
@@ -4789,7 +4877,9 @@ function drawRegionMap(t){
   };
   const vis = {}; for (const id in N) vis[id] = mapVisited(id, cur);
   const claimR = { town: 14, side: 11, route: 9 };
-  for (const id in N) if (vis[id] && mapHold(id) !== 'wild') { const n = N[id], [x, y] = P([n.col, n.row]); claim(x, y, claimR[n.kind] || 10, mapHold(id)); }
+  mapUI.claims = 0;
+  if (sidesShown()) for (const id in N) if (vis[id] && mapHold(id) !== 'wild') {   // D109: halos wait for the pledge
+    const n = N[id], [x, y] = P([n.col, n.row]); claim(x, y, claimR[n.kind] || 10, mapHold(id)); mapUI.claims++; }
   for (const id in N) {
     const pth = N[id].path; if (!pth) continue;
     const coach = N[id].link === 'coach';
@@ -4818,8 +4908,27 @@ function drawRegionMap(t){
   // WP-C: the objective's node gets a red ring on the same blink (wider when it shares the node with the blue "you are here").
   const q = questCurrent(), qn = q && q.target ? nodeOf(q.target.map) : null;
   if (qn && N[qn] && blink) { const [x, y] = P([N[qn].col, N[qn].row]); ring(x, y, qn === cur ? 15 : 12, 'r'); }
+  // D106: the tracked side chain gets a solid side-blue ring (no blink); every other active chain a dim dot. One dot per node.
   const sq = sideQuest(), sn = sq && sq.target ? nodeOf(sq.target.map) : null;
-  if (sn && N[sn] && sn !== qn && blink) { const [x, y] = P([N[sn].col, N[sn].row]); ring(x, y, sn === cur ? 15 : 12, 'c'); }
+  const dots = new Set();
+  // Same area as main (green Design call): the main ring is untouched; the side ring sits 3 px outside it, 2 px thick, no blink.
+  let ringR = null;
+  if (sn && N[sn]) {
+    const [x, y] = P([N[sn].col, N[sn].row]), r = sn === cur ? 15 : 12;
+    if (sn !== qn) { ring(x, y, r, 'c'); ring(x, y, r + 1, 'c'); ringR = r; }
+    else { ring(x, y, r + 3, 'c'); ringR = r + 3; }
+  }
+  const trk = trackedSide();
+  for (const a of sideActiveList()) { if (trk && a.chain === trk.chain) continue; const n = a.step.target ? nodeOf(a.step.target.map) : null; if (n && N[n] && n !== sn) dots.add(n); }   // no dot where a side ring already is
+  // Dim side-blue fill with a 1 px dark navy (k) outline so it reads on a green town; 6x6 at 390 px wide and up, 4x4 below.
+  const ds = window.innerWidth >= 390 ? 6 : 4, dh = ds / 2;
+  for (const n of dots) {
+    const [x, y] = P([N[n].col, N[n].row]), dx = x + 8 - dh, dy = y - 12 - dh;
+    R(dx - 1, dy - 1, ds + 2, 1, 'k'); R(dx - 1, dy + ds, ds + 2, 1, 'k'); R(dx - 1, dy, 1, ds, 'k'); R(dx + ds, dy, 1, ds, 'k');
+    g.globalAlpha = 0.5; R(dx, dy, ds, ds, 'c'); g.globalAlpha = 1;
+  }
+  regionMapMarks = { ring: sn && N[sn] ? sn : null, ringR, ringShared: !!(sn && sn === qn), mainR: qn && N[qn] ? (qn === cur ? 15 : 12) : null, dots: [...dots], dotSize: ds, dotOutline: 'k',
+    dotRects: [...dots].map(n => { const [x, y] = P([N[n].col, N[n].row]); return { node: n, x: x + 8 - dh, y: y - 12 - dh }; }) };
   if (mapUI.sel && N[mapUI.sel] && mapUI.sel !== cur) { const [x, y] = P([N[mapUI.sel].col, N[mapUI.sel].row]); brackets(x, y, 16); }
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
@@ -4828,7 +4937,7 @@ function drawRegionMap(t){
 let bagSel = 0;
 function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
 function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'star', 0, 0); }
-function paintUiIcons(){
+function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon"));
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {
@@ -5344,7 +5453,10 @@ function syncQuestBtn(){
   const b = $('#questBtn'); if (!b) return;
   const on = questVisible(), q = on ? questCurrent() : null;
   b.classList.toggle('off', !on);
-  b.classList.toggle('pulse', !!q && S.questSeen !== q.id);
+  syncSideTrack();
+  const seen = (S.ui && Array.isArray(S.ui.sideSeen)) ? S.ui.sideSeen : [];
+  const newSide = on && sideActiveList().some(a => !seen.includes(a.chain));   // D106-C: a side chain not yet seen on the panel
+  b.classList.toggle('pulse', (!!q && S.questSeen !== q.id) || newSide);
   const m = questMarks();
   const label = questMarkLabel(m);
   if (b.getAttribute('aria-label') !== label) b.setAttribute('aria-label', label);
@@ -5354,12 +5466,16 @@ function syncQuestBtn(){
   const sig = (on ? '1' : '0') + (b.classList.contains('pulse') ? 'p' : '') + mark;
   if (sig !== questBtnSig) { questBtnSig = sig; try { syncNavArt(false); } catch (e) {} }
 }
+let questMoreOpen = false, questDoneOpen = false;   // not saved; reset on every open
 let questTab = 'next';   // 'next' | 'standing'; the panel always opens on NEXT STEP
 function openQuest(){
   if (!questVisible() || overlayOpen()) { sfx('denied'); return; }
   const q = questCurrent(); if (!q) return;
   clearMoves();
   if (S.questSeen !== q.id) { S.questSeen = q.id; save(); }
+  { const ui = sideUi(), seen = Array.isArray(ui.sideSeen) ? ui.sideSeen : [], add = sideActiveList().map(a => a.chain).filter(c => !seen.includes(c));
+    if (add.length) { ui.sideSeen = seen.concat(add); save(); } }
+  questMoreOpen = false; questDoneOpen = false;
   questTab = 'next'; renderQuest(q);
   $('#ovQuest').hidden = false; lockTabs(true); armOptions(); sfx('tap'); syncQuestBtn();
   $('#questClose').focus({ preventScroll: true });
@@ -5371,7 +5487,7 @@ function closeQuest(){
 function renderQuest(q){
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
-  const sideQ = sideQuest();
+  const A = sideActiveList(), tr = trackedSide(), sideQ = tr ? tr.step : null, many = A.length >= 2;
   const card = $('#questSideCard');
   const sl = $('#questSideLabel'), stx = $('#questSide'), sp = $('#questSidePlace');
   if (card) card.hidden = !sideQ;
@@ -5387,14 +5503,51 @@ function renderQuest(q){
     status.classList.toggle('blocked', stuck);
   }
   const sideStatus = $('#questSideStatus');
-  if (sideStatus) sideStatus.textContent = 'ACTIVE';
+  if (sideStatus) sideStatus.textContent = many ? 'TRACKED' : 'ACTIVE';
+  if (sl) sl.textContent = many ? 'SIDE \u00b7 ' + A.length : 'SIDE';
+  renderSideRows(A, tr);
   const list = $('#questDone'); list.textContent = '';
   const done = PPQuests.completed(questState(), 3);
   const wrap = $('#questDoneWrap');
   if (wrap) wrap.hidden = !done.length;
+  // D106: with two or more side chains the DONE list folds into one 44 px row; the toggle state is not saved.
+  const dt = $('#questDoneToggle'), dk = $('#questDoneKicker');
+  if (dt) { dt.hidden = !many; dt.textContent = 'DONE \u00b7 ' + done.length + '  ' + (questDoneOpen ? 'v' : '>'); dt.setAttribute('aria-expanded', String(!!questDoneOpen)); }
+  if (dk) dk.hidden = many;
+  if (wrap) wrap.classList.toggle('folded', many);
+  list.hidden = many && !questDoneOpen;
   for (const e of done) { const li = document.createElement('li'); li.textContent = e.text; list.appendChild(li); }
   renderQuestTabs();
 }
+// D106-A: other active chains as one-line rows with TRACK; at most 2 rows under 360 px wide, 3 at 360 and up, then +N more.
+const sideRowCap = () => (window.innerWidth < 360 ? 2 : 3);
+function renderSideRows(A, tr){
+  const box = $('#questSideRows'), more = $('#questSideMore'); if (!box) return;
+  box.textContent = '';
+  const others = tr ? A.filter(a => a.chain !== tr.chain) : [];
+  const cap = sideRowCap(), extra = others.length - cap;
+  const shown = (extra > 0 && !questMoreOpen) ? others.slice(0, cap) : others;
+  for (const a of shown) {
+    const row = document.createElement('div'); row.className = 'q-row'; row.dataset.chain = a.chain;
+    const lab = document.createElement('span'); lab.className = 'q-row-label'; lab.textContent = a.label;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'q-track'; btn.dataset.chain = a.chain;
+    btn.setAttribute('aria-label', 'Track ' + a.label);
+    const face = document.createElement('span'); face.textContent = 'TRACK'; btn.append(face);
+    btn.addEventListener('click', () => questTrack(a.chain));
+    row.append(lab, btn); box.append(row);
+  }
+  box.hidden = !shown.length;
+  if (more) { more.hidden = extra <= 0; more.textContent = questMoreOpen ? 'Show less' : '+' + extra + ' more'; more.setAttribute('aria-expanded', String(!!questMoreOpen)); }
+}
+function questTrack(chain){
+  if (!sideActiveList().some(a => a.chain === chain)) return;
+  sideUi().sideTracked = chain; save(); sfx('tap');
+  sideTrackLast = { chain, ids: sideActiveList().map(a => a.chain) };
+  const q = questCurrent(); if (q) renderQuest(q);
+  const h = $('#questSideLabel'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
+}
+function questToggleMore(){ questMoreOpen = !questMoreOpen; sfx('tap'); const q = questCurrent(); if (q) renderQuest(q); }
+function questToggleDone(){ questDoneOpen = !questDoneOpen; sfx('tap'); const q = questCurrent(); if (q) renderQuest(q); }
 // STANDING tab (BS): a second tab beside NEXT STEP, hidden until the side pick. Read-only: two rows (one per side) with the
 // emblem, tier name, blurb, a bar to the next tier and a PLEDGED marker; strings and numbers all from STANDING_CFG.
 const standingTabVisible = () => !!(S && S.flags['story.side_pick_done']);
@@ -6033,7 +6186,7 @@ const statMaxCache = {};
 function statMaxAt(L){
   if (statMaxCache[L]) return statMaxCache[L];
   const m = { hp: 1, atk: 1, def: 1, spd: 1 };
-  SPECIES.forEach(sp => sp.stages.forEach((st, k) => { const s = statsAt(sp.id + '/' + k, L); if (s) for (const [key] of STAT_KEYS) m[key] = Math.max(m[key], s[key]); }));
+  SPECIES.forEach(sp => { if (sp.npcOnly) return; sp.stages.forEach((st, k) => { const s = statsAt(sp.id + '/' + k, L); if (s) for (const [key] of STAT_KEYS) m[key] = Math.max(m[key], s[key]); }); });
   return (statMaxCache[L] = m);
 }
 const typesWhere = f => TYPES.filter(f);
@@ -6235,13 +6388,13 @@ function paintStatsInto(prefix, p, opt){
   $('#' + prefix + 'Name').textContent = petName(p);
   const species = nameOf(si, p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   $('#' + prefix + 'Species').textContent = ((opt && opt.alwaysSpecies) || cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
-  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of ' + (SPECIES.length * 3) + ' forms';
+  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of ' + JOURNAL_FORMS + ' forms';
   const tb = $('#' + prefix + 'Type'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
   $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
   const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
   const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), badge = hpBadge(p), glowing = !badge && moodOf(p).glowing;   // FAINTED > TIRED > GLOWING
   $('#' + prefix + 'Hp').textContent = hp + '/' + mhp;
-  const hb = $('#' + prefix + 'HpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25);
+  const hb = $('#' + prefix + 'HpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25); ariaBar(hb, hp, mhp, 'HP');
   const tag = $('#' + prefix + 'Tag'); tag.hidden = !(badge || glowing); tag.textContent = badge || 'GLOWING';
   tag.className = 'sc-tag ' + (badge ? (badge === 'TIRED' ? 'tired' : 'fainted') : 'glowing');
   const box = $('#' + prefix + 'Stats'); box.innerHTML = '';
@@ -6960,9 +7113,9 @@ function renderDexGrid(){
   const dex = $('#dexGrid'); dex.innerHTML = '';
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
   const seen = (S.dex && S.dex.seen) || {}, caught = (S.dex && S.dex.caught) || {};
-  const joined = Object.keys(caught).filter(k => caught[k]).length;
+  const joined = Object.keys(caught).filter(k => caught[k] && !formNpcOnly(k)).length;
   let met = 0;
-  SPECIES.forEach((sp, si) => sp.stages.forEach((st, k) => {
+  SPECIES.forEach((sp, si) => { if (sp.npcOnly) return; sp.stages.forEach((st, k) => {
     const f = formOf(si, k), flagCaught = !!caught[f], flagSeen = !!seen[f], owns = owned.has(f);
     const state = (flagCaught || owns) ? 'joined' : flagSeen ? 'met' : 'unmet';
     if (state === 'met') met++;
@@ -6981,8 +7134,8 @@ function renderDexGrid(){
     if (!known && sp.weatherOnly) { drawGlyph(ctx(cv), 'cloud', 10, 1); cell.title = 'Only seen in wild weather'; }   // "check back in bad weather"
     const lb = document.createElement('div'); lb.textContent = known ? st.name : '???'; if (!known) lb.className = 'unk';
     cell.append(cv, lb); dex.append(cell);
-  }));
-  $('#dexCount').textContent = 'Joined ' + joined + ' · Met ' + met + ' · Out there ' + (SPECIES.length * 3);
+  }); });
+  $('#dexCount').textContent = 'Joined ' + joined + ' · Met ' + met + ' · Out there ' + JOURNAL_FORMS;
 }
 // Partner = the pet on the Pet tab; it must be in the party. A box pet joins the party first; if the party is full,
 // the last party member that isn't the partner moves to the top of the box.
@@ -7074,6 +7227,19 @@ function tryDebugUnlock(){
   openDebug();
   return true;
 }
+/* The debug panel is not in the player page (index.html). Its markup lives in debug_ui.js and is added only while debug is on,
+   then removed when debug is turned off, so a normal player's DOM never has the tools. */
+let debugPanelBound = false;
+const debugOpen = () => { const el = $('#ovDebug'); return !!el && !el.hidden; };
+function ensureDebugDom(){
+  if (!DEBUG || $('#ovDebug') || typeof window.PP_DEBUG_HTML !== 'string') return !!$('#ovDebug');
+  const t = document.createElement('template'); t.innerHTML = window.PP_DEBUG_HTML.trim();
+  const ref = $('#ovReset'); ref.parentNode.insertBefore(t.content, ref);
+  debugUiBuilt = false; debugPanelBound = false;
+  bindDebugPanel(); debugPanelBound = true;
+  return true;
+}
+function dropDebugDom(){ const el = $('#ovDebug'); if (!el) return; el.remove(); debugUiBuilt = false; debugPanelBound = false; }
 function closeDebug(){
   const el = $('#ovDebug');
   if (!el || el.hidden) return;
@@ -7081,7 +7247,7 @@ function closeDebug(){
   lockTabs(false);
 }
 function openDebug(){
-  if (!DEBUG) return;
+  if (!DEBUG || !ensureDebugDom()) return;
   const el = $('#ovDebug');
   if (!el || !el.hidden) return;
   if (scene || !$('#ovReset').hidden || !$('#ovEvolve').hidden || !$('#ovSheet').hidden || !$('#ovPlay').hidden) return;
@@ -7316,6 +7482,7 @@ function debugSnapshot(){
     side: side(), standing: standingView(),
     quest: q && { id: q.id, text: q.text, place: q.place },
     sideQuest: sq && { id: sq.id, text: sq.text, place: sq.place },
+    sideActive: sideActiveList().map(a => a.chain), sideTracked: (S.ui && S.ui.sideTracked) || null,
     flags: Object.keys(S.flags).filter(k => k.startsWith('story.')).sort(),
     seals: Object.keys(S.seals || {}),
     money: S.money | 0, bag: Object.assign({}, S.bag || {}),
@@ -7441,7 +7608,10 @@ function bindDebugUi(){
   });
   $('#dbgUnlock').addEventListener('click', tryDebugUnlock);
   $('#dbgPass').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); tryDebugUnlock(); } });
-  $('#dbgTag').addEventListener('click', () => { if (!DEBUG) return; if ($('#ovDebug').hidden) openDebug(); else closeDebug(); });
+  $('#dbgTag').addEventListener('click', () => { if (!DEBUG) return; if (!debugOpen()) openDebug(); else closeDebug(); });
+}
+// The debug panel's own controls: bound once, right after debug_ui.js's markup is put in the page (debug sessions only).
+function bindDebugPanel(){
   $('#dbgClose').addEventListener('click', () => { sfx('tap'); closeDebug(); });
   $('#ovDebug').addEventListener('click', e => { if (e.target === e.currentTarget) closeDebug(); });
   $('#dbgLock').addEventListener('click', () => { setDebugEnabled(false); closeDebug(); toast('Debug mode off.'); });
@@ -7622,6 +7792,7 @@ function bindInput(){
     if (who && who.classList.contains('contact-main')) { contactOpen = who.dataset.who; sfx('tap'); renderContacts(); }
   });
   $('#questBtn').addEventListener('click', openQuest);
+  { const m = $('#questSideMore'), d = $('#questDoneToggle'); if (m) m.addEventListener('click', questToggleMore); if (d) d.addEventListener('click', questToggleDone); }
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
   $('#questClose').addEventListener('click', () => { sfx('tap'); closeQuest(); });
@@ -7771,7 +7942,7 @@ function bindInput(){
   window.addEventListener('keydown', e => {
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
-    if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && $('#ovDebug').hidden && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
+    if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && !debugOpen() && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sceneKeyEat = true; if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
@@ -7781,7 +7952,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
     if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
     if (e.key === 'Escape' && !$('#ovReset').hidden) { closeReset(); return; }
-    if (e.key === 'Escape' && !$('#ovDebug').hidden) { closeDebug(); return; }
+    if (e.key === 'Escape' && debugOpen()) { closeDebug(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
     if (!$('#ovMap').hidden && KEYS[e.key]) { e.preventDefault(); if (!e.repeat) mapNudge(KEYS[e.key]); return; }   // arrows read the parchment; they must not walk the keeper underneath
@@ -8184,11 +8355,19 @@ function boot(){
   Object.defineProperty(api, 'townBoard', { enumerable: true, get(){ return townBoardView(); } });
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse'), navMark: ($('#questBtn') && $('#questBtn').dataset.questMark) || '' }; } });
-  Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
+  // D106: sideQuest is the tracked step; sideActive lists every active chain in unlock order.
+  Object.defineProperty(api, 'sideActive', { enumerable: true, get(){ const t = trackedSide(); return sideActiveList().map(a => ({ chain: a.chain, label: a.label, id: a.step.id, text: a.step.text, place: a.step.place, target: a.step.target ? { ...a.step.target } : null, tracked: !!(t && t.chain === a.chain) })); } });
+  Object.defineProperty(api, 'regionMapMarks', { enumerable: true, get(){ return regionMapMarks && { ring: regionMapMarks.ring, ringR: regionMapMarks.ringR, ringShared: regionMapMarks.ringShared, mainR: regionMapMarks.mainR, dots: regionMapMarks.dots.slice(), dotSize: regionMapMarks.dotSize, dotOutline: regionMapMarks.dotOutline, dotRects: regionMapMarks.dotRects.map(r => ({ ...r })) }; } });
+  api.trackSide = chain => DEBUG ? (questTrack(chain), !!(S.ui && S.ui.sideTracked === chain)) : false;
+  // ?debug=1 only: extra side chains (same shape as PPQuests.SIDE_CHAINS rows) for the row-cap layout tests. Never saved.
+  api.debugSideChains = chains => { if (!DEBUG) return false; sideTestChains = Array.isArray(chains) && chains.length ? chains : null; sideTrackLast = null; return true; };
+  Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map
   api.exteriorCell = (x, y) => DEBUG ? exteriorCell(x, y) : null;  // map pass B4: how cell (x, y) of this map is painted
   api.mapHold = (id, flags) => mapHold(id, flags);
+  api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
+  api.mapNodeCenter = id => { const n = REGION_MAP.nodes[id]; return n ? [n.col * 16 + 8, n.row * 16 + 8] : null; };   // region-map logical px
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
   api.contacts = () => contactEntries().map(p => ({ name: p.name, quest: !!p.quest, fav: !!phoneBook().fav[p.key], place: contactPlace(p) }));
@@ -8333,5 +8512,16 @@ function boot(){
   window.setAccessory = setAccessory;
   window.fillWalklingExtras = fillWalklingExtras;
 }
-boot();
+// P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()
+// met DOM ids the old page lacks, threw before the first HUD paint, and the player saw the bare page (Lv 1, all 0). The save
+// was never touched (nothing is written before boot finishes). Recover once with a cache-busting reload; never loop.
+const BOOT_RETRY_KEY = 'pixelpets.bootRetry';
+try {
+  boot();
+  try { sessionStorage.removeItem(BOOT_RETRY_KEY); } catch (e) {}
+} catch (err) {
+  let tried = false; try { tried = sessionStorage.getItem(BOOT_RETRY_KEY) === '1'; sessionStorage.setItem(BOOT_RETRY_KEY, '1'); } catch (e) { tried = true; }
+  if (!tried && !resetting) { resetting = true; try { clearInterval(saveTimer); } catch (e) {} location.replace(freshUrl('boot')); }
+  throw err;
+}
 })();

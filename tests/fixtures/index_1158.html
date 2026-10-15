@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="kw-build" content="20261015-1158">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta name="theme-color" content="#1a1c2c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Walklings</title>
+<meta name="application-name" content="Walklings">
+<meta name="apple-mobile-web-app-title" content="Walklings">
+<meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
+<link rel="icon" href="icons/icon-192.png?v=20261015-1158">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261015-1158">
+<link rel="manifest" href="manifest.json?v=20261015-1158">
+<link rel="stylesheet" href="style.css?v=20261015-1158">
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="who"><canvas id="hdrIcon" width="18" height="18"></canvas><span id="hdrName">Walklings</span><span id="fastTag" class="fast-tag" title="Debug fast decay is on" hidden>FAST</span><button id="dbgTag" class="fast-tag dbg-tag" type="button" title="Debug tools" aria-label="Debug tools" hidden>DBG</button></div>
+    <div class="hdr-right">
+      <div id="hdrAcorns" class="hdr-acorns" role="status" aria-label="0 Acorns"><canvas id="hdrAcornIcon" width="8" height="8" aria-hidden="true"></canvas><b id="hdrAcornN" aria-hidden="true">0</b></div>
+      <div class="lv"><span id="hdrLv">Lv 1</span><span id="hdrStage" class="stagedots"></span></div>
+      <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings"><canvas id="settingsIcon" width="8" height="8"></canvas></button>
+    </div>
+  </header>
+
+  <main>
+    <!-- PET CARE -->
+    <section id="scr-pet" class="screen active">
+      <button class="scr-back" type="button" aria-label="Back to the walk screen"><canvas class="ico-hud" data-nav="back" width="8" height="8" aria-hidden="true"></canvas><span>WALK</span></button>
+      <div class="scene-wrap pet-scene"><canvas id="petCanvas" role="img" aria-label="Your partner" width="80" height="64"></canvas><span id="petKeeper" class="scene-keeper" aria-label="Keeper Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
+      <div class="stats">
+        <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
+        <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
+        <div class="stat"><span>NRG</span><div class="bar"><i id="barEnergy" class="c-nrg"></i></div><b id="valEnergy">0</b></div>
+        <div class="stat"><span>GROW</span><div class="bar"><i id="barXp" class="c-xp"></i></div><b id="valXp">0</b></div>
+      </div>
+      <div id="evoHint" class="hint"></div>
+      <div id="dailyXp" class="hint daily"><span class="seg">Today: care XP <b id="dCare">0/25</b></span> <span class="sep">&middot;</span> <span class="seg">explore XP <b id="dExp">0/30</b></span></div>
+      <button id="evolveBtn" class="btn btn-evo" hidden type="button"><canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas> GROW UP! <canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas></button>
+      <div class="actions partner-row">
+        <button id="petStatsBtn" class="btn" type="button" aria-label="Stats card">STATS</button>
+        <button id="petKitBtn" class="btn btn-play" type="button" aria-label="Customize and gear">KIT</button>
+      </div>
+      <div class="actions">
+        <button class="btn btn-feed" data-act="feed">FEED</button>
+        <button class="btn btn-play" data-act="play">PLAY</button>
+        <button class="btn btn-rest" data-act="rest">REST</button>
+      </div>
+    </section>
+
+    <!-- WALK -->
+    <section id="scr-walk" class="screen">
+      <div class="walk-hud">
+        <div class="mini grow"><span>NRG</span><div class="bar"><i id="wBarEnergy" class="c-nrg"></i></div></div>
+        <div class="mini"><span>GROW</span><b id="wXp">0</b></div>
+        <div class="mini"><span>STEPS</span><b id="wSteps">0</b></div>
+        <div class="mini" title="Explore XP earned today (walking + befriending), daily cap 30"><span>TODAY</span><b id="wExp">0/30</b></div>
+      </div>
+      <button id="envBadge" class="env-badge" type="button"><span id="envText">Meadow</span><small id="envSrc"></small></button>
+      <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" role="img" aria-label="The walk map" width="176" height="176"></canvas>
+        <div id="chatBubble" class="chat-bubble" hidden></div>
+        <div id="bumpHint" class="bump-hint" role="status" hidden></div>
+        <!-- Q26 modern controls: empty in arcade. applyControls() moves QUEST, BAG, MAP, PHONE, the area name and the tip in here. -->
+        <div id="floatCtl" class="float-ctl">
+          <div id="fcTL" class="fc-col fc-tl"></div>
+          <div id="fcTop" class="fc-top"></div>
+          <div id="fcAcorns" class="fc-acorns hdr-acorns" aria-label="0 Acorns"><canvas id="fcAcornIcon" width="8" height="8" aria-hidden="true"></canvas><b id="fcAcornN" aria-hidden="true">0</b></div>
+          <div id="fcTR" class="fc-col fc-tr"><button id="gearFloat" class="dpc fbtn icon-only" type="button" aria-label="Settings" title="Settings"><canvas id="gearFloatIcon" class="ico-hud" data-nav="gear" width="8" height="8" aria-hidden="true"></canvas></button></div>
+          <div id="joyRing" class="joy" aria-hidden="true" hidden><i id="joyKnob" class="joy-knob"></i></div>
+          <div id="fcTip" class="fc-tip"></div>
+          <div class="fc-bottom">
+            <div class="fc-row">
+              <button id="petStrip" class="pet-strip" type="button" aria-label="Partner stats"><canvas id="stripIcon" width="18" height="18" aria-hidden="true"></canvas><span class="ps-txt"><span class="ps-top"><b id="stripName">Partner</b> <span id="stripLv">Lv 1</span></span><span class="ps-bars"><i class="ps-bar"><i id="stripFood" class="c-food"></i></i><i class="ps-bar"><i id="stripJoy" class="c-joy"></i></i><i class="ps-bar"><i id="stripNrg" class="c-nrg"></i></i></span></span></button>
+              <div id="fcBR" class="fc-br">
+                <button id="petFloat" class="dpc fbtn" type="button" aria-label="Partner"><canvas class="ico-hud" data-nav="partner" width="8" height="8" aria-hidden="true"></canvas><span>PARTNER</span></button>
+                <button id="colFloat" class="dpc fbtn icon-only" type="button" aria-label="WALKLINGS" title="WALKLINGS"><canvas class="ico-hud" data-nav="walklings" width="8" height="8" aria-hidden="true"></canvas></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="walk-ctl">
+        <div class="dpad" id="dpad">
+          <button class="dp up" data-dir="up" aria-label="Up"><canvas class="ico-dp" data-icon="up" width="8" height="8" aria-hidden="true"></canvas></button>
+          <button class="dp left" data-dir="left" aria-label="Left"><canvas class="ico-dp" data-icon="left" width="8" height="8" aria-hidden="true"></canvas></button>
+          <button class="dp mid talk" id="talkBtn" type="button" aria-label="Talk" aria-disabled="true">TALK</button>
+          <button class="dp right" data-dir="right" aria-label="Right"><canvas class="ico-dp" data-icon="right" width="8" height="8" aria-hidden="true"></canvas></button>
+          <button class="dp down" data-dir="down" aria-label="Down"><canvas class="ico-dp" data-icon="down" width="8" height="8" aria-hidden="true"></canvas></button>
+          <button class="dpc tl" id="phoneBtn" type="button" aria-label="Phone" hidden><canvas class="ico-hud" data-hud="icon_phone" data-nav="phone" width="8" height="8" aria-hidden="true"></canvas><span>PHONE</span></button>
+          <button class="dpc bl" id="walkBagBtn" type="button" aria-label="Bag" hidden><canvas class="ico-hud" data-hud="icon_bag" data-nav="bag" width="8" height="8" aria-hidden="true"></canvas><span>BAG</span></button>
+          <button class="dpc br" id="mapBtn" type="button" aria-label="Map"><canvas class="ico-hud" data-hud="icon_map" data-nav="map" width="8" height="8" aria-hidden="true"></canvas><span>MAP</span></button>
+        </div>
+        <p class="tip" id="walkTip">Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!</p>
+      </div>
+    </section>
+
+    <!-- COLLECTION -->
+    <section id="scr-col" class="screen">
+      <button class="scr-back" type="button" aria-label="Back to the walk screen"><canvas class="ico-hud" data-nav="back" width="8" height="8" aria-hidden="true"></canvas><span>WALK</span></button>
+      <h2>MY WALKLINGS <small id="ownedCount"></small></h2>
+      <div id="ownedList" class="owned"></div>
+      <h2>WALKLING JOURNAL <small id="dexCount"></small></h2>
+      <div id="dexGrid" class="dex"></div>
+    </section>
+
+  </main>
+
+  <nav id="tabs">
+    <button data-tab="pet" class="active"><canvas width="8" height="8" data-icon="paw"></canvas><span>PARTNER</span></button>
+    <button data-tab="walk"><canvas width="8" height="8" data-icon="walk"></canvas><span>WALK</span></button>
+    <button data-tab="col"><canvas width="8" height="8" data-icon="book"></canvas><span>WALKLINGS</span></button>
+    <button id="questBtn" data-tab="quest" type="button"><canvas width="8" height="8" data-icon="quest" data-nav="quest"></canvas><span>QUEST</span></button>
+  </nav>
+</div>
+
+<!-- Encounter overlay -->
+<!-- BATTLE (design/specs/BATTLE.md v0.3.1 §8): full-screen, tabs locked. The befriend bar reuses the old encounter ids. -->
+<div id="ovBattle" class="overlay battle" hidden>
+  <div class="bt-inner">
+    <div class="bt-card bt-foe">
+      <div class="bt-row"><span id="btFoeLv" class="bt-lv"></span><span id="btFoeName" class="bt-name"></span><span id="btFoeType" class="type-chip"></span><span id="btTwinkle" class="bt-twinkle" hidden>&#10022;</span></div>
+      <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btFoeHp"></i></div><span id="btFoeStages" class="bt-stages"></span></div>
+      <div class="bt-row bt-mini" id="btFoe2Row" hidden><span id="btFoe2Name" class="bt-name"></span><div class="bt-hp"><i id="btFoe2Hp"></i></div></div>
+    </div>
+    <div id="btStage" class="bt-stage"><canvas id="battleCanvas" role="img" aria-label="The encounter" width="80" height="56"></canvas><div id="btSeal" class="bt-seal" hidden><canvas id="btSealArt" width="18" height="18"></canvas><b id="btSealName"></b></div></div>
+    <div class="bt-card bt-me">
+      <div class="bt-row"><span id="btMeName" class="bt-name"></span><span id="btMeLv" class="bt-lv"></span><span id="btMeType" class="type-chip"></span></div>
+      <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btMeHp"></i></div><span id="btMeHpTxt" class="bt-hpt"></span></div>
+      <div id="btMood" class="bt-mood"></div>
+      <div class="bt-row bt-mini" id="btAllyRow" hidden><span id="btAllyName" class="bt-name"></span><div class="bt-hp"><i id="btAllyHp"></i></div></div>
+    </div>
+    <div id="btMsg" class="bt-msg" role="status" aria-live="polite"></div>
+    <div class="bt-panel">
+      <div id="btActs" class="bt-acts">
+        <button class="btn btn-feed bt-fight" data-bact="fight" type="button">MOVES</button>
+        <button id="btBefriendAct" class="btn btn-play bt-bef" data-bact="befriend" type="button">BEFRIEND <span id="btHearts" class="bt-hearts"></span></button>
+        <button id="btAim" class="btn bt-small" data-bact="aim" type="button" hidden>TARGET</button>
+        <button class="btn bt-small" data-bact="swap" type="button">SWAP</button>
+        <button class="btn bt-small" data-bact="bag" type="button">BAG</button>
+        <button id="btRun" class="btn btn-rest bt-small" data-bact="run" type="button">LEAVE</button>
+      </div>
+      <div id="btFight" class="bt-fightmenu" hidden>
+        <div id="btMoves" class="bt-moves"></div>
+        <button id="btFightBack" class="btn bt-back" type="button">BACK</button>
+      </div>
+      <div id="btBef" class="bt-befbar" hidden>
+        <div class="tbar" id="tbar"><div class="tzone" id="tzone"></div><div class="tmark" id="tmark"></div></div>
+        <div id="encTries" class="tries"></div>
+        <div id="encOdds" class="bef-odds" aria-live="polite"></div>
+        <div class="actions two">
+          <button id="encGo" class="btn btn-feed" type="button">BEFRIEND</button>
+          <button id="btBefBack" class="btn bt-back" type="button">BACK</button>
+        </div>
+      </div>
+      <div id="btEnd" class="bt-end" hidden>
+        <div id="btEndTitle" class="ov-title"></div>
+        <div id="encName" class="name-row" hidden>
+          <label for="encNick">Give it a name?</label>
+          <input id="encNick" type="text" maxlength="10" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="Nickname (optional, up to 10 letters)">
+        </div>
+        <button id="btOk" class="btn btn-feed" type="button">OK</button>
+      </div>
+      <div id="btBusy" class="bt-busy" hidden></div>
+    </div>
+  </div>
+</div>
+<!-- Choice sheet (swap, bag, learn-move replace, the evolution-move offer): above the battle and evolve overlays. -->
+<div id="ovSheet" class="overlay sheet" hidden>
+  <div class="ov-inner sheet-inner" role="dialog" aria-modal="true" aria-labelledby="shTitle">
+    <div id="shTitle" class="sh-title"></div>
+    <div id="shList" class="sh-list"></div>
+    <button id="shCancel" class="btn bt-back" type="button" hidden>BACK</button>
+  </div>
+</div>
+
+
+<!-- Bag (INVENTORY §6): Walk map corner only. The partner tab has no BAG. Full-screen, tabs locked, counted by overlayOpen. -->
+<div id="ovMap" class="overlay regionmap" hidden>
+  <div class="map-inner" role="dialog" aria-modal="true" aria-label="Region map">
+    <div class="map-top"><div class="map-title" id="mapTitle">THE AMBERWILD</div><button id="mapClose" class="btn map-x" type="button">CLOSE</button></div>
+    <canvas id="regionCanvas" width="320" height="192" aria-hidden="true"></canvas>
+    <div class="map-place">
+      <div class="map-pname"><span id="mapPlaceName"></span><span id="mapHere" class="map-here" hidden>YOU</span></div>
+      <div class="map-pblurb" id="mapPlaceBlurb"></div>
+      <div class="map-hold" id="mapHold" hidden></div>
+    </div>
+    <p class="map-hint map-quest" id="mapQuest" hidden></p>
+    <div class="map-key" id="mapKey">
+      <p class="map-key-h">KEY</p>
+      <ul class="map-key-list">
+        <li><span class="sw sw-town" aria-hidden="true"></span>Town</li>
+        <li><span class="sw sw-route" aria-hidden="true"></span>Route</li>
+        <li><span class="sw sw-side" aria-hidden="true"></span>Side place</li>
+        <li><span class="sw sw-unknown" aria-hidden="true"></span>Not visited</li>
+        <li><span class="sw sw-you" aria-hidden="true"></span>You</li>
+        <li><span class="sw sw-next" aria-hidden="true"></span>Next step</li>
+        <li><span class="sw sw-task" aria-hidden="true"></span>Side task</li>
+        <li><span class="sw sw-coach" aria-hidden="true"></span>Coach</li>
+        <li><span class="sw sw-keepers" aria-hidden="true"></span><span id="keyKeepers">Keepers</span></li>
+        <li><span class="sw sw-glimmer" aria-hidden="true"></span><span id="keyGlimmer">Glimmerwell</span></li>
+        <li><span class="sw sw-split" aria-hidden="true"></span>Both sides</li>
+        <li><span class="sw sw-wild" aria-hidden="true"></span>Wild</li>
+        <li><span class="sw sw-seal" aria-hidden="true"></span>Seal</li>
+      </ul>
+      <p class="map-key-note">Gold and green trim Keeper roofs. Cyan and mint trim Glimmerwell ground.</p>
+    </div>
+    <p class="map-pledge" id="mapPledge" hidden></p>
+    <p class="map-hint">Tap a place to read it. CLOSE puts the map away.</p>
+    <p class="sr-only" id="mapSr" aria-live="polite"></p>
+  </div>
+</div>
+<!-- Next step (NEXT_PLAN WP-C): QUEST corner button; the objective is derived from flags by quests.js -->
+<div id="ovQuest" class="overlay" hidden>
+  <div class="ov-inner quest-inner" role="dialog" aria-modal="true" aria-labelledby="questTitle">
+    <div class="ov-title" id="questTitle">NEXT STEP</div>
+    <!-- STANDING (GLIMMER_PATH BS): a second tab, shown once the side pick is made; labels come from STANDING_CFG -->
+    <div id="questTabs" class="q-tabs" role="tablist" hidden>
+      <button id="questTabNext" class="q-tab on" type="button" role="tab" aria-selected="true" aria-controls="questPaneNext">NEXT STEP</button>
+      <button id="questTabStanding" class="q-tab" type="button" role="tab" aria-selected="false" aria-controls="questPaneStanding"></button>
+    </div>
+    <div id="questPaneNext" role="tabpanel">
+      <section class="q-card q-main" aria-labelledby="questMainLabel">
+        <div class="q-card-h">
+          <span id="questMainLabel" class="q-kicker">MAIN</span>
+          <span id="questStatus" class="q-status">ACTIVE</span>
+        </div>
+        <p class="q-lab">Objective</p>
+        <p id="questText" class="q-text"></p>
+        <p id="questPlace" class="q-place"></p>
+        <p id="questNote" class="q-note" hidden></p>
+      </section>
+      <section class="q-card q-side-card" id="questSideCard" hidden>
+        <div class="q-card-h">
+          <span id="questSideLabel" class="q-kicker">SIDE</span>
+          <span id="questSideStatus" class="q-status">ACTIVE</span>
+        </div>
+        <p class="q-lab">Objective</p>
+        <p id="questSide" class="q-text q-side"></p>
+        <p id="questSidePlace" class="q-place q-side-place"></p>
+      </section>
+      <section class="q-done-wrap" id="questDoneWrap" hidden>
+        <p class="q-kicker">DONE</p>
+        <ul id="questDone" class="q-done" aria-label="Done"></ul>
+      </section>
+    </div>
+    <div id="questPaneStanding" class="q-standing" role="tabpanel" hidden>
+      <p id="stPledged" class="q-place"></p>
+      <div id="stRows" class="st-rows"></div>
+      <p id="stExplain" class="st-explain"></p>
+    </div>
+    <div class="actions two-even">
+      <button id="questMap" class="btn btn-play" type="button">SHOW ON MAP</button>
+      <button id="questClose" class="btn" type="button">CLOSE</button>
+    </div>
+  </div>
+</div>
+<div id="ovBag" class="overlay bag" hidden>
+  <div class="ov-inner bag-inner" role="dialog" aria-modal="true" aria-labelledby="bagTitle">
+    <div class="bag-head">
+      <div id="bagTitle" class="ov-title">Bag</div>
+      <div class="bag-money" aria-label="Acorns"><canvas id="bagAcorn" width="8" height="8" aria-hidden="true"></canvas><b id="bagMoney">0</b></div>
+      <button id="bagClose" class="btn bag-x" type="button" aria-label="Close">X</button>
+    </div>
+    <div id="bagList" class="bag-list" role="listbox" aria-label="Items"></div>
+    <div id="bagEmpty" class="bag-empty" hidden>Your bag is empty. Ilse's Travel Shelf has snacks.</div>
+  </div>
+</div>
+
+
+<!-- Event Hall minigames (High Charity). Solo booths and pass-the-phone games. -->
+<div id="ovPlay" class="overlay play" hidden>
+  <div class="ov-inner play-card" role="dialog" aria-modal="true" aria-labelledby="playTitle">
+    <div id="playTitle" class="ov-title">Play</div>
+    <p id="playRule" class="play-rule"></p>
+    <canvas id="playCanvas" width="176" height="176"></canvas>
+    <div id="playPads" class="play-pads" hidden>
+      <button id="playP1" class="btn" type="button">You</button>
+      <button id="playP2" class="btn" type="button">Friend</button>
+    </div>
+    <button id="playStop" class="btn" type="button">Stop</button>
+    <div id="playLive" class="sr-only" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- Travel Shelf shop (INVENTORY §5): Hearthmoor Lantern House prop -->
+<div id="ovShop" class="overlay bag shop" hidden>
+  <div class="ov-inner bag-inner" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+    <div class="bag-head">
+      <div>
+        <div id="shopTitle" class="ov-title">Travel Shelf</div>
+        <div id="shopFlavour" class="shop-flavour">Leave Acorns, take a snack.&nbsp;&mdash;&nbsp;I.</div>
+      </div>
+      <div class="bag-money" aria-label="Acorns"><canvas id="shopAcorn" width="8" height="8" aria-hidden="true"></canvas><b id="shopMoney">0</b></div>
+      <button id="shopClose" class="btn bag-x" type="button" aria-label="Close">X</button>
+    </div>
+    <div id="shopList" class="bag-list" role="listbox" aria-label="Shelf"></div>
+  </div>
+</div>
+
+<!-- Walkling Journal page: species blurb, a short lore line, and how you met. Also the first-befriend celebration. -->
+<div id="ovJournal" class="overlay" hidden>
+  <div class="ov-inner journal-card" role="dialog" aria-modal="true" aria-labelledby="jnTitle">
+    <div id="jnKicker" class="jn-kicker" hidden>NEW JOURNAL ENTRY</div>
+    <div class="sc-head">
+      <canvas id="jnIcon" width="18" height="18"></canvas>
+      <div class="sc-who"><div id="jnTitle" class="sc-name"></div><div id="jnStars" class="sc-species"></div></div>
+      <span id="jnType" class="type-badge"></span>
+    </div>
+    <p id="jnBlurb" class="jn-copy"></p>
+    <p id="jnLore" class="jn-copy jn-lore"></p>
+    <p id="jnMet" class="jn-copy jn-met"></p>
+    <button id="jnClose" class="btn btn-play" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- Stats card (TYPES_STATS as-built 7): any tab can open it for a pet id (openStatsCard) -->
+<div id="ovStats" class="overlay" hidden>
+  <div class="ov-inner stats-card" role="dialog" aria-modal="true" aria-labelledby="scName">
+    <div class="sc-head">
+      <canvas id="scIcon" width="18" height="18"></canvas>
+      <div class="sc-who"><div id="scName" class="sc-name"></div><div id="scSpecies" class="sc-species"></div></div>
+      <span id="scType" class="type-badge"></span>
+    </div>
+    <div class="sc-row"><b id="scLv">Lv 1</b><span id="scGrow"></span></div>
+    <div class="sc-hp"><span>HP</span><div class="bar"><i id="scHpBar" class="c-hp"></i></div><b id="scHp">0/0</b><span id="scTag" class="sc-tag" hidden></span></div>
+    <div id="scStatsHead" class="sc-sub"></div>
+    <div id="scStats" class="sc-stats"></div>
+    <div id="scChart" class="sc-chart"></div>
+    <div id="scGearBox" class="sc-gear" hidden></div>
+    <div id="scActs" class="actions two-even">
+      <button id="scRename" class="btn" type="button">RENAME</button>
+      <button id="scGear" class="btn" type="button" aria-pressed="false">GEAR</button>
+    </div>
+    <button id="scClose" class="btn" type="button">CLOSE</button>
+    <div id="scNick" class="sc-nick" hidden>
+      <label class="look-lb" for="scNickIn">NAME</label>
+      <input id="scNickIn" type="text" maxlength="10" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false" aria-label="Walkling name">
+      <div class="actions two-even">
+        <button id="scNickCancel" class="btn" type="button">CANCEL</button>
+        <button id="scNickOk" class="btn btn-play" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Partner kit: adornments and battle gear for the partner. BAG stays on the Walk map. -->
+<div id="ovKit" class="overlay" hidden>
+  <div class="ov-inner kit-card" role="dialog" aria-modal="true" aria-labelledby="kitTitle">
+    <div id="kitTitle" class="ov-title">Customize &amp; Gear</div>
+    <div class="sc-head">
+      <canvas id="kitIcon" width="18" height="18"></canvas>
+      <div class="sc-who"><div id="kitWho" class="sc-name"></div><div id="kitSpecies" class="sc-species"></div></div>
+    </div>
+    <div id="kitBox" class="sc-gear"></div>
+    <button id="kitClose" class="btn" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- Walkling sheet: one owned pet (party or box). WALKLINGS cards call openWalklingSheet. -->
+<div id="ovWalkling" class="overlay full" role="dialog" aria-modal="true" aria-labelledby="wlName" hidden>
+  <div class="ov-inner walkling-sheet">
+    <div class="sc-head">
+      <canvas id="wlIcon" width="18" height="18"></canvas>
+      <div class="sc-who"><div id="wlName" class="sc-name"></div><div id="wlSpecies" class="sc-species"></div></div>
+      <span id="wlType" class="type-badge"></span>
+    </div>
+    <div class="sc-row"><b id="wlLv">Lv 1</b><span id="wlGrow"></span></div>
+    <div class="sc-hp"><span>HP</span><div class="bar"><i id="wlHpBar" class="c-hp"></i></div><b id="wlHp">0/0</b><span id="wlTag" class="sc-tag" hidden></span></div>
+    <div id="wlStatsHead" class="sc-sub"></div>
+    <div id="wlStats" class="sc-stats"></div>
+    <div id="wlChart" class="sc-chart"></div>
+    <div id="wlActions" class="wl-actions"></div>
+    <div class="wl-name">
+      <label for="wlNick">NAME</label>
+      <input id="wlNick" type="text" maxlength="10" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false">
+      <button id="wlNickSet" class="btn" type="button">SET</button>
+    </div>
+    <div id="wlMoves" class="wl-moves"></div>
+    <div id="wlUse" class="wl-use"></div>
+    <div id="wlRelease" class="wl-release"></div>
+    <div id="wlExtras"></div>
+    <button id="wlClose" class="btn" type="button">CLOSE</button>
+  </div>
+</div>
+
+<!-- Keeper look picker (MAPS_SLICE K.2): new players before the starter, CHANGE LOOK on the Pet tab -->
+<div id="ovLook" class="overlay full" hidden>
+  <div class="ov-inner look-card" role="dialog" aria-modal="true" aria-labelledby="lookTitle">
+    <div id="lookTitle" class="ov-title">WHO ARE YOU?</div>
+    <div class="look-top">
+      <canvas id="lookPreview" width="18" height="18" aria-label="Your keeper"></canvas>
+      <button id="lookShuffle" class="btn" type="button">SHUFFLE</button>
+    </div>
+    <div class="look-scroll">
+    <div id="lookNameRow" class="look-row"><label class="look-lb" for="lookName">NAME</label>
+      <input id="lookName" type="text" maxlength="10" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false"></div>
+    <div class="look-row"><div class="look-lb">SKIN</div><div id="lookSkin" class="swatches" data-slot="skin"></div></div>
+    <div class="look-row"><div class="look-lb">HAIR STYLE</div><div id="lookHair" class="previews" data-slot="hair"></div></div>
+    <div class="look-row"><div class="look-lb">HAIR COLOUR</div><div id="lookHairCol" class="swatches" data-slot="hairCol"></div></div>
+    <div class="look-row"><div class="look-lb">OUTFIT</div><div id="lookOutfit" class="previews" data-slot="outfit"></div></div>
+    <div class="look-row"><div class="look-lb">OUTFIT COLOUR</div><div id="lookOutfitCol" class="swatches" data-slot="outfitCol"></div></div>
+    <div class="look-row"><div class="look-lb">ACCENT</div><div id="lookAccent" class="swatches" data-slot="accent"></div></div>
+    <div class="look-row"><div class="look-lb">ACCESSORY</div><div id="lookAccessory" class="previews" data-slot="accessory"></div></div>
+    </div>
+    <div id="lookBtns" class="actions two-even look-btns">
+      <button id="lookCancel" class="btn" type="button">CANCEL</button>
+      <button id="lookDone" class="btn btn-play" type="button">DONE</button>
+    </div>
+  </div>
+</div>
+
+<!-- Phone. Keeper1 is the issued handset. A cracked handset, once you have joined Glimmerwell, replaces the shell. -->
+<div id="ovPhone" class="overlay" hidden>
+  <div class="ov-inner phone-shell" role="dialog" aria-modal="true" aria-labelledby="phoneTitle">
+    <div class="phone-top">
+      <div class="ov-title" id="phoneTitle">KEEPER1</div>
+      <button id="phoneClose" class="btn" type="button">CLOSE</button>
+    </div>
+    <p id="phoneFoot" class="hint">Copied to the Lantern desk.</p>
+    <div id="phoneHome" class="phone-apps">
+      <button class="phone-app" type="button" data-app="contacts"><span class="phone-glyph" data-glyph="contacts"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">CONTACTS</span></button>
+      <button class="phone-app" type="button" data-app="notes"><span class="phone-glyph" data-glyph="notes"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">NOTES</span></button>
+      <button class="phone-app" type="button" data-app="walklings"><span class="phone-glyph" data-glyph="walklings"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">WALKLINGS</span></button>
+      <button class="phone-app" type="button" data-app="friends"><span class="phone-glyph" data-glyph="friends"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">FRIENDS</span></button>
+      <button class="phone-app" type="button" data-app="jobs" id="phoneJobs"><span class="phone-glyph" data-glyph="jobs"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">KEEPERUAV</span></button>
+      <button class="phone-app" type="button" data-app="ribbit"><span class="phone-glyph" data-glyph="ribbit"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">RIBBIT</span></button>
+      <button class="phone-app" type="button" data-app="board"><span class="phone-glyph" data-glyph="board"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">BOARD</span></button>
+    </div>
+    <div id="phonePane" hidden>
+      <div id="phonePaneTitle" class="ov-title" hidden>TOWN BOARD</div>
+      <div id="phoneBody" class="phone-body"></div>
+      <div id="phoneFriends" hidden>
+        <div class="panel">
+          <div class="keeper-line"><span class="label">KEEPER</span>&nbsp;&nbsp;<b id="keeperName">Wayfarer</b></div>
+          <div class="label">YOUR KEEPER CODE</div>
+          <div id="friendCode" class="fcode">----</div>
+          <button id="copyCode" class="btn btn-play" type="button">COPY CODE</button>
+        </div>
+        <div class="panel">
+          <div class="label">ADD A FRIEND</div>
+          <input id="friendInput" placeholder="WLK-XXXX-XXXX" disabled>
+          <button class="btn" type="button" disabled>ADD (COMING SOON)</button>
+        </div>
+        <div class="panel">
+          <div class="label">FRIEND LIST</div>
+          <ul class="flist">
+            <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+            <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+            <li><span class="lock">?</span> ??? <em>empty slot</em></li>
+          </ul>
+          <p class="note">Online friends, visits and trading come later. This prototype has no server. Your code comes from this save.</p>
+        </div>
+      </div>
+      <button id="phoneBack" class="btn" type="button">APPS</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings (header gear). Plain list: sound, follower, change look, save copy, start over. Account/cloud save reserved below. -->
+<div id="ovSettings" class="overlay" hidden>
+  <div class="ov-inner settings-inner" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <div class="ov-title" id="setTitle">Settings</div>
+    <div class="set-list">
+      <button id="setSound" class="set-row" type="button" aria-pressed="true"><span class="set-lab">Sound</span><span class="set-val" id="setSoundVal">ON</span></button>
+      <div class="set-music">
+        <button id="setMusic" class="set-row" type="button" aria-pressed="true"><span class="set-lab">Music</span><span class="set-val" id="setMusicVal">ON</span></button>
+        <label id="setVol" class="set-vol"><span class="set-lab">Vol</span><input id="setVolRange" type="range" min="0" max="100" step="1" value="50" aria-label="Music volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span id="setVolVal" class="set-val">50%</span></label>
+      </div>
+      <p id="setMusicHint" class="set-hint">No sound? Check your iPhone's silent switch.</p>
+      <button id="setFollower" class="set-row" type="button" aria-pressed="true"><span class="set-lab">Follower</span><span class="set-val" id="setFollowerVal">ON</span></button>
+      <button id="setControls" class="set-row" type="button"><span class="set-lab">Controls</span><span class="set-val" id="setControlsVal">ARCADE</span></button>
+      <button id="setJoystick" class="set-row" type="button" aria-pressed="false" hidden><span class="set-lab">Joystick</span><span class="set-val" id="setJoystickVal">OFF</span></button>
+      <button id="setLook" class="set-row" type="button"><span class="set-lab">Change look</span><span class="set-val">›</span></button>
+      <button id="setCopy" class="set-row" type="button"><span class="set-lab">Save a copy</span><span class="set-val">›</span></button>
+      <button id="setRead" class="set-row" type="button"><span class="set-lab">Read a copy</span><span class="set-val">›</span></button>
+      <button id="startOver" class="set-row set-danger" type="button"><span class="set-lab">Start over</span><span class="set-val">›</span></button>
+      <button id="setDebug" class="set-row" type="button" aria-expanded="false" aria-controls="dbgGate"><span class="set-lab">Debug</span><span class="set-val" id="setDebugVal">OFF</span></button>
+      <div id="dbgGate" class="dbg-gate" hidden>
+        <label class="dbg-lab" for="dbgPass">Password</label>
+        <input id="dbgPass" type="password" maxlength="32" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" aria-label="Debug password">
+        <button id="dbgUnlock" class="btn btn-play" type="button">UNLOCK</button>
+        <p id="dbgMsg" class="set-hint" hidden></p>
+      </div>
+      <!-- Account / cloud save: reserved for a future row (not shown yet). Keep this comment; do not render a stub. -->
+    </div>
+    <button id="setClose" class="btn btn-play" type="button">CLOSE</button>
+    <p id="setBuild" class="set-build"></p>
+  </div>
+</div>
+
+<!-- Debug tools: not in the player page. debug_ui.js holds the markup and game.js adds it only in a debug session (?debug=1 or the Settings gate). -->
+
+<!-- Start over confirm (opened from Settings) -->
+<div id="ovReset" class="overlay" hidden>
+  <div class="ov-inner" role="alertdialog" aria-modal="true" aria-labelledby="resetMsg">
+    <p id="resetMsg" class="reset-msg">Start over? Your Walklings will be gone for good.</p>
+    <button id="resetCopy" class="btn" type="button">SAVE A COPY</button>
+    <div class="actions two-even">
+      <button id="resetCancel" class="btn" type="button">CANCEL</button>
+      <button id="resetGo" class="btn btn-danger hold" type="button" aria-describedby="resetHint"><i id="resetFill" class="hold-fill"></i><span>START OVER</span></button>
+    </div>
+    <p id="resetHint" class="hint">Save a copy first. Hold START OVER to erase this game.</p>
+  </div>
+</div>
+
+<!-- Read a saved copy (Settings). Replaces the game on this device, then reloads. -->
+<div id="ovCopy" class="overlay" hidden>
+  <div class="ov-inner" role="dialog" aria-modal="true" aria-labelledby="copyTitle">
+    <div class="ov-title" id="copyTitle">Read a copy</div>
+    <p id="copyMsg" class="reset-msg">This replaces the game on this device with the one in the file.</p>
+    <input id="copyFile" type="file" accept="application/json,.json" hidden>
+    <div class="actions two-even">
+      <button id="copyCancel" class="btn" type="button">CANCEL</button>
+      <button id="copyPick" class="btn btn-play" type="button">CHOOSE FILE</button>
+      <button id="copyYes" class="btn btn-play" type="button" hidden>BRING BACK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Evolution overlay -->
+<div id="ovEvolve" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title" id="evoTitle">What's happening?!</div>
+    <div class="scene-wrap"><canvas id="evoCanvas" width="56" height="44"></canvas></div>
+    <div id="evoMsg" class="hint">&nbsp;</div>
+    <button id="evoOk" class="btn btn-play" hidden>AWESOME!</button>
+  </div>
+</div>
+
+<!-- Starter overlay -->
+<!-- Scene text box (MAPS_SLICE §8): bottom of the screen, the map stays visible above it -->
+<div id="ovScene" class="scene-ov" hidden>
+  <div id="sbChoices" class="sb-choices"></div>
+  <div class="sbox" id="sbox">
+    <canvas id="sbPortrait" class="sb-portrait" width="18" height="18" hidden></canvas>
+    <div class="sb-who" id="sbWho" hidden></div>
+    <button id="sbSkip" class="sb-skip" type="button" aria-label="Skip">SKIP &#9656;&#9656;</button>
+    <div class="sb-echo" id="sbEcho"></div>
+    <p class="sb-text" id="sbText" aria-live="polite"></p>
+    <div class="sb-name" id="sbName" hidden>
+      <input id="sbInput" type="text" maxlength="10" autocomplete="off" autocapitalize="words" enterkeyhint="done" spellcheck="false" aria-label="Name">
+      <div class="sb-name-btns"><button id="sbNameSkip" class="btn ghost" type="button">SKIP</button><button id="sbOk" class="btn" type="button">OK</button></div>
+    </div>
+    <span class="sb-next" id="sbNext" hidden>&#9660;</span>
+  </div>
+</div>
+
+<!-- showBasket: three lantern baskets (MAPS_SLICE §8) -->
+<div id="ovBasket" class="overlay" hidden>
+  <div class="ov-inner basket-inner">
+    <div class="ov-title" id="bkTitle">PICK A BASKET</div>
+    <div id="bkRow" class="bk-row"></div>
+    <div id="bkCard" class="bk-card" hidden>
+      <canvas id="bkBig" width="18" height="18"></canvas>
+      <div class="bk-name"><b id="bkName"></b> <span id="bkType" class="type-chip"></span></div>
+      <p id="bkLine" class="bk-line"></p>
+      <div class="bk-btns"><button id="bkNo" class="btn ghost" type="button">NOT YET</button><button id="bkYes" class="btn" type="button">YES, THIS ONE</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Location ask (first Walk visit) -->
+<div id="ovGeo" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title">LOCAL WALKLINGS?</div>
+    <p class="geo-text">Use your location so local Walklings appear? Your location stays on your device except a rounded lookup for weather and terrain.</p>
+    <div class="actions two">
+      <button id="geoAllow" class="btn btn-play">ALLOW</button>
+      <button id="geoLater" class="btn btn-rest">NOT NOW</button>
+    </div>
+  </div>
+</div>
+
+<!-- Wild area details + place picker -->
+<div id="ovEnv" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title">AROUND HERE</div>
+    <div id="envCardLabel" class="env-card-label">Meadow</div>
+    <div id="envCardTags" class="note"></div>
+    <div id="envCardLikely" class="note"></div>
+    <div id="envCardSrc" class="note"></div>
+    <button id="envUseLoc" class="btn btn-play">USE MY LOCATION</button>
+    <div id="envPick" hidden>
+      <div class="label">PICK A PLACE (DEBUG)</div>
+      <div id="envPresets" class="env-presets"></div>
+    </div>
+    <button id="envClose" class="btn">CLOSE</button>
+  </div>
+</div>
+
+<!-- Save from a newer build (blocking, nothing is written) -->
+<div id="ovNewer" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title">NEWER SAVE FOUND</div>
+    <p class="geo-text">This save is from a newer version of Walklings. Reload to update.</p>
+    <button id="newerReload" class="btn btn-play">RELOAD</button>
+  </div>
+</div>
+
+<div id="toast" aria-live="polite"></div>
+<!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
+<div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
+<script>window.BUILD = "20261015-1158";</script>
+<script src="sprites.js?v=20261015-1158"></script>
+<script src="keeper.js?v=20261015-1158"></script>
+<script src="stats.js?v=20261015-1158"></script>
+<script src="moves.js?v=20261015-1158"></script>
+<script src="data/mapdata.js?v=20261015-1158"></script>
+<script src="quests.js?v=20261015-1158"></script>
+<script src="standing.js?v=20261015-1158"></script>
+<script src="save.js?v=20261015-1158"></script>
+<script src="env.js?v=20261015-1158"></script>
+<script src="sfx.js?v=20261015-1158"></script>
+<script src="minigames.js?v=20261015-1158"></script>
+<script src="ribbit.js?v=20261015-1158"></script>
+<script src="cloud_config.js?v=20261015-1158"></script>
+<script src="cloud.js?v=20261015-1158"></script>
+<script src="debug_ui.js?v=20261015-1158"></script>
+<script src="data/nav_art.js?v=20261015-1158"></script>
+<script src="game.js?v=20261015-1158"></script>
+</body>
+</html>

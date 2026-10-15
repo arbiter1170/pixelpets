@@ -619,6 +619,25 @@ const MOVES = {
     "power": 75,
     "acc": 90,
     "uses": 5
+  },
+  "fetch_dash": {
+    "name": "Fetch Dash",
+    "type": "BLOOM",
+    "power": 60,
+    "acc": 95,
+    "uses": 10
+  },
+  "steadfast_paw": {
+    "name": "Steadfast Paw",
+    "type": "BLOOM",
+    "power": 70,
+    "acc": 95,
+    "uses": 5,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": 1
+    }
   }
 };
 
@@ -1452,6 +1471,25 @@ const LEARNSETS = {
   ],
   "byte/2": [
     [0, "archive_surge"],
+    [27, "full_tilt"]
+  ],
+  "fetch/0": [
+    [1, "bump"],
+    [3, "sap_sip"],
+    [5, "seed_toss"],
+    [9, "tumble_charge"],
+    [12, "thorn_lash"],
+    [15, "mist_veil"],
+    [20, "briar_volley"],
+    [25, "stoke_up"],
+    [30, "undertow"]
+  ],
+  "fetch/1": [
+    [0, "fetch_dash"],
+    [22, "pebble_flick"]
+  ],
+  "fetch/2": [
+    [0, "steadfast_paw"],
     [27, "full_tilt"]
   ]
 };

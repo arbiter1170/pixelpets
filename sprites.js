@@ -6,7 +6,9 @@
    sprite on dark UI cells (dex, collection, header) for dark-bodied species; the map art is unchanged.
    weatherOnly: env tags; the species spawns only while one of them is active and never in the any-species roll.
    Order matters: indices are runtime species numbers and ids are save-v2 form ids, so new lines are only ever appended.
-   labOnly: never in the habitat roll or the 8% any-species roll. Met only where a map places it. */
+   labOnly: never in the habitat roll or the 8% any-species roll. Met only where a map places it.
+   npcOnly: never in a habitat roll, a spawn table, or the 8% any-species roll, and left out of the journal.
+   A stage may use grid (16x16 PAL keys, not mirrored) when the art is not symmetric. half is still mirrored. */
 'use strict';
 const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f070',g:'#38b764',t:'#257179',
   n:'#29366f',b:'#3b5dc9',c:'#41a6f6',s:'#73eff7',w:'#f4f4f4',h:'#94b0c2',m:'#566c86',d:'#333c57',
@@ -236,12 +238,71 @@ const SPECIES = [
     { name:'Archivolt', col:{a:PAL.s,b:PAL.c,c:PAL.y,d:PAL.d,x:PAL.h}, half:[
       '.......c','......dc','....dddd','....dxdd','....aiea','....aeea','....abba','....aaaa',
       '....dxdd','....dddd','....dddd','....dddd','......cc','.....c..','....c..c','........']}
+  ]},
+  // Species 15. NPC only (D97/D98): a keeper never meets this line. Full grids, not mirrored halves.
+  { id:'fetch', habitat:{}, npcOnly:true, tiles:'grass', type:'BLOOM', blurb:'A sunny field pup. Fetches seeds and plants them.',
+    kit:{ form:'fetch/1', level:18, moves:['fetch_dash','briar_volley','thorn_lash','sap_sip'], nick:'Buddy' }, stages:[
+    { name:'Fetchling', grid:[
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '..........oy....',
+      '.........oyyy...',
+      '........oyykyy..',
+      '........oyyyyyk.',
+      '........yyyyww..',
+      '..y.yyyyyyyyy...',
+      '..yyyyyyyyyyw...',
+      '...yyyyyyyyw....',
+      '...yo.yo.yo.y...',
+      '...ww.ww.ww.w...',
+      '................']},
+    { name:'Harvestail', grid:[
+      '................',
+      '................',
+      '...........yy...',
+      '..........yyyy..',
+      '.........oyykyy.',
+      '.........oyyyyyk',
+      '..........oyyww.',
+      'y.........oyrw..',
+      'yy.yyyyyyyyyw...',
+      '.yyyyyyyyyyyww..',
+      '.oyyyyyyyyyyww..',
+      '..yyyyyyyyyyw...',
+      '..oy.oy...oy.y..',
+      '..oy.oy...oy.y..',
+      '..ww.ww...ww.w..',
+      '................']},
+    { name:'Hearthound', grid:[
+      '..........yyy...',
+      '.........yyyyy..',
+      '........oyykyyy.',
+      '........oyyyyyyk',
+      '.........oyyyww.',
+      'y........oyyrww.',
+      'yy.......oyyww..',
+      'yyyoyyyyyyyyyw..',
+      '.yyyyyyyyyyyyww.',
+      '.oyyyyyyyyyyyww.',
+      '..yyyyyyyyyyyw..',
+      '..yyygyyyyyyy...',
+      '..oyy.oyy.oyy...',
+      '..oyy.oyy.oyy...',
+      '..www.www.www...',
+      '................']}
   ]}
 ];
 
-/* Build an 18x18 canvas (16x16 + 1px outline border). mode: 'normal' | 'blink' | solid colour string */
+/* Build an 18x18 canvas (16x16 + 1px outline border). mode: 'normal' | 'blink' | solid colour string.
+   A half is 8 columns and mirrored. A grid longer than 8 is a full 16x16 of PAL keys and is not mirrored. */
 function buildSprite(half, col, mode){
-  const grid = half.map(h => { h = (h + '........').slice(0,8); return (h + h.split('').reverse().join('')).split(''); });
+  const full = !!(half && half.length && String(half[0]).length > 8);
+  const grid = full
+    ? half.map(row => (String(row) + '................').slice(0, 16).split(''))
+    : half.map(h => { h = (h + '........').slice(0,8); return (h + h.split('').reverse().join('')).split(''); });
   const c = document.createElement('canvas'); c.width = 18; c.height = 18;
   const g = c.getContext('2d');
   const filled = (x,y) => x>=0 && y>=0 && x<16 && y<16 && grid[y][x] !== '.';
@@ -253,6 +314,7 @@ function buildSprite(half, col, mode){
     const ch = grid[y][x]; if (ch === '.') continue;
     let fill;
     if (mode !== 'normal' && mode !== 'blink') fill = mode;
+    else if (full) fill = PAL[ch] || PAL.m;
     else if (isEye(ch)) {
       if (mode === 'blink') fill = (y<15 && isEye(grid[y+1][x])) ? col.a : PAL.k;
       else fill = ch === 'e' ? PAL.k : PAL.w;
