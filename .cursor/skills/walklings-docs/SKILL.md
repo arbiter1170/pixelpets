@@ -17,7 +17,7 @@ Use this after a code change, and when a session is only here to correct status 
 2. `BACKLOG.md`, the "Next work" section and the queue table. Status words that already exist: **BUILT**, **DONE**, **SCOPED, NOT STARTED**.
 3. `CHANGELOG.md`. Newest entry first. The build stamp is `version.json`.
 4. `NEXT_PLAN.md` §3. It is the queue an implementer follows.
-5. `OPEN_DECISIONS.md`. Open rows are unanswered. Settled rows stay in Settled with the date and the call.
+5. `OPEN_DECISIONS.md`. Open rows are unanswered. Settled rows move to `archive/DECISIONS_SETTLED.md` with the date and the call.
 6. `README.md` when a player can see the change. `tests/README.md` when a spec was added.
 
 ## What to update
