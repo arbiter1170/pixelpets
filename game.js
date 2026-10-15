@@ -2577,7 +2577,33 @@ function restBedCue(){
   return best ? { x: best.x, y: best.y, here: true } : null;
 }
 function questPointOnMap(){ return pointOnMap(questCurrent()); }
-const sideQuest = () => (S && typeof PPQuests !== 'undefined' && PPQuests.sideCurrent) ? PPQuests.sideCurrent(questState()) : null;
+// QUEST_MULTI (D106): every active side chain in unlock order; the tracked one drives the SIDE card, walk cue and solid ring.
+let sideTestChains = null;   // ?debug=1 only (PixelPets.debugSideChains): extra chains for layout tests; never saved
+const sideActiveList = () => {
+  if (!S || typeof PPQuests === 'undefined' || !PPQuests.sideActive) return [];
+  return PPQuests.sideActive(questState(), sideTestChains ? PPQuests.SIDE_CHAINS.concat(sideTestChains) : null);
+};
+const sideUi = () => (S.ui && typeof S.ui === 'object') ? S.ui : (S.ui = {});
+// Tracked = the stored chain if it is active, else the first active by unlock order. Never writes the save by itself.
+function trackedSide(){
+  const A = sideActiveList(); if (!A.length) return null;
+  const id = S.ui && S.ui.sideTracked;
+  return A.find(a => a.chain === id) || A[0];
+}
+const sideQuest = () => { const t = S ? trackedSide() : null; return t ? t.step : null; };
+// D106-D: when the tracked chain finishes, track the next active chain and say so. A step inside the chain keeps tracking.
+let sideTrackLast = null;   // { chain, ids } from the previous check; null until the first check after load
+function syncSideTrack(){
+  if (!S) return;
+  const A = sideActiveList(), ids = A.map(a => a.chain), cur = trackedSide();
+  const last = sideTrackLast;
+  sideTrackLast = { chain: cur ? cur.chain : null, ids };
+  if (!last || !last.chain || ids.includes(last.chain)) return;
+  // The chain we were tracking dropped out of the active list: it finished (chains never re-lock).
+  const ui = sideUi();
+  if (cur) { ui.sideTracked = cur.chain; save(); toast('Now tracking: ' + cur.label); }
+  else if (ui.sideTracked != null) { delete ui.sideTracked; save(); }
+}
 function sidePointOnMap(){ return pointOnMap(sideQuest()); }
 // NAV_MODERN §4 (settled G4): in modern, edge arrows stay in the free rect between the button clusters, and a cue whose tile
 // sits under a button is drawn as an edge arrow instead. Rects are canvas pixels, refreshed at most every 250 ms.
@@ -4428,6 +4454,7 @@ const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy 
 let mapOffShown = null;
 function syncMapBtn(){ const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false'); }
 const mapUI = { t0: 0, cur: null, sel: null };
+let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
 // First matching rule wins. `flags` lets the dev check try a save without touching S. Unvisited places stay ??? on the parchment.
 function matchHold(id, flags){
   const n = REGION_MAP.nodes[id], F = flags || (S && S.flags) || {};
@@ -4484,6 +4511,8 @@ function paintPlaceCard(){
     pledge.hidden = !picked;
     if (picked) pledge.textContent = 'Your pledge: ' + SC_STANDING.sides[side()].short;
   }
+  // D95 (settled by QUEST_MULTI): the Side task key entry shows only while a side quest has a target.
+  const task = $('#keySideTask'); if (task) { const sq = sideQuest(); task.hidden = !(sq && sq.target); }
   const q = questCurrent(), mq = $('#mapQuest');
   if (mq) { mq.hidden = !(q && q.target); if (q && q.target) mq.textContent = 'NEXT: ' + q.place; }
   const heard = (id === mapUI.cur ? 'You are in ' : '') + name + '. ' + blurb + (known ? ' ' + holdLine(id) : '');
@@ -4656,8 +4685,15 @@ function drawRegionMap(t){
   // WP-C: the objective's node gets a red ring on the same blink (wider when it shares the node with the blue "you are here").
   const q = questCurrent(), qn = q && q.target ? nodeOf(q.target.map) : null;
   if (qn && N[qn] && blink) { const [x, y] = P([N[qn].col, N[qn].row]); ring(x, y, qn === cur ? 15 : 12, 'r'); }
+  // D106: the tracked side chain gets a solid side-blue ring (no blink); every other active chain a dim dot. One dot per node.
   const sq = sideQuest(), sn = sq && sq.target ? nodeOf(sq.target.map) : null;
-  if (sn && N[sn] && sn !== qn && blink) { const [x, y] = P([N[sn].col, N[sn].row]); ring(x, y, sn === cur ? 15 : 12, 'c'); }
+  const dots = new Set();
+  if (sn && N[sn] && sn !== qn) { const [x, y] = P([N[sn].col, N[sn].row]), r = sn === cur ? 15 : 12; ring(x, y, r, 'c'); ring(x, y, r + 1, 'c'); }
+  else if (sn && N[sn]) dots.add(sn);
+  const trk = trackedSide();
+  for (const a of sideActiveList()) { if (trk && a.chain === trk.chain) continue; const n = a.step.target ? nodeOf(a.step.target.map) : null; if (n && N[n]) dots.add(n); }
+  if (dots.size) { g.globalAlpha = 0.5; for (const n of dots) { const [x, y] = P([N[n].col, N[n].row]); R(x + 8 - 2, y - 12 - 2, 4, 4, 'c'); } g.globalAlpha = 1; }
+  regionMapMarks = { ring: sn && N[sn] && sn !== qn ? sn : null, dots: [...dots] };
   if (mapUI.sel && N[mapUI.sel] && mapUI.sel !== cur) { const [x, y] = P([N[mapUI.sel].col, N[mapUI.sel].row]); brackets(x, y, 16); }
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
@@ -5137,14 +5173,21 @@ function syncQuestBtn(){
   const b = $('#questBtn'); if (!b) return;
   const on = questVisible(), q = on ? questCurrent() : null;
   b.classList.toggle('off', !on);
-  b.classList.toggle('pulse', !!q && S.questSeen !== q.id);
+  syncSideTrack();
+  const seen = (S.ui && Array.isArray(S.ui.sideSeen)) ? S.ui.sideSeen : [];
+  const newSide = on && sideActiveList().some(a => !seen.includes(a.chain));   // D106-C: a side chain not yet seen on the panel
+  b.classList.toggle('pulse', (!!q && S.questSeen !== q.id) || newSide);
 }
+let questMoreOpen = false, questDoneOpen = false;   // not saved; reset on every open
 let questTab = 'next';   // 'next' | 'standing'; the panel always opens on NEXT STEP
 function openQuest(){
   if (!questVisible() || overlayOpen()) { sfx('denied'); return; }
   const q = questCurrent(); if (!q) return;
   clearMoves();
   if (S.questSeen !== q.id) { S.questSeen = q.id; save(); }
+  { const ui = sideUi(), seen = Array.isArray(ui.sideSeen) ? ui.sideSeen : [], add = sideActiveList().map(a => a.chain).filter(c => !seen.includes(c));
+    if (add.length) { ui.sideSeen = seen.concat(add); save(); } }
+  questMoreOpen = false; questDoneOpen = false;
   questTab = 'next'; renderQuest(q);
   $('#ovQuest').hidden = false; lockTabs(true); armOptions(); sfx('tap'); syncQuestBtn();
   $('#questClose').focus({ preventScroll: true });
@@ -5156,7 +5199,7 @@ function closeQuest(){
 function renderQuest(q){
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
-  const sideQ = sideQuest();
+  const A = sideActiveList(), tr = trackedSide(), sideQ = tr ? tr.step : null, many = A.length >= 2;
   const card = $('#questSideCard');
   const sl = $('#questSideLabel'), stx = $('#questSide'), sp = $('#questSidePlace');
   if (card) card.hidden = !sideQ;
@@ -5172,14 +5215,51 @@ function renderQuest(q){
     status.classList.toggle('blocked', stuck);
   }
   const sideStatus = $('#questSideStatus');
-  if (sideStatus) sideStatus.textContent = 'ACTIVE';
+  if (sideStatus) sideStatus.textContent = many ? 'TRACKED' : 'ACTIVE';
+  if (sl) sl.textContent = many ? 'SIDE \u00b7 ' + A.length : 'SIDE';
+  renderSideRows(A, tr);
   const list = $('#questDone'); list.textContent = '';
   const done = PPQuests.completed(questState(), 3);
   const wrap = $('#questDoneWrap');
   if (wrap) wrap.hidden = !done.length;
+  // D106: with two or more side chains the DONE list folds into one 44 px row; the toggle state is not saved.
+  const dt = $('#questDoneToggle'), dk = $('#questDoneKicker');
+  if (dt) { dt.hidden = !many; dt.textContent = 'DONE \u00b7 ' + done.length + '  ' + (questDoneOpen ? 'v' : '>'); dt.setAttribute('aria-expanded', String(!!questDoneOpen)); }
+  if (dk) dk.hidden = many;
+  if (wrap) wrap.classList.toggle('folded', many);
+  list.hidden = many && !questDoneOpen;
   for (const e of done) { const li = document.createElement('li'); li.textContent = e.text; list.appendChild(li); }
   renderQuestTabs();
 }
+// D106-A: other active chains as one-line rows with TRACK; at most 2 rows under 360 px wide, 3 at 360 and up, then +N more.
+const sideRowCap = () => (window.innerWidth < 360 ? 2 : 3);
+function renderSideRows(A, tr){
+  const box = $('#questSideRows'), more = $('#questSideMore'); if (!box) return;
+  box.textContent = '';
+  const others = tr ? A.filter(a => a.chain !== tr.chain) : [];
+  const cap = sideRowCap(), extra = others.length - cap;
+  const shown = (extra > 0 && !questMoreOpen) ? others.slice(0, cap) : others;
+  for (const a of shown) {
+    const row = document.createElement('div'); row.className = 'q-row'; row.dataset.chain = a.chain;
+    const lab = document.createElement('span'); lab.className = 'q-row-label'; lab.textContent = a.label;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'q-track'; btn.dataset.chain = a.chain;
+    btn.setAttribute('aria-label', 'Track ' + a.label);
+    const face = document.createElement('span'); face.textContent = 'TRACK'; btn.append(face);
+    btn.addEventListener('click', () => questTrack(a.chain));
+    row.append(lab, btn); box.append(row);
+  }
+  box.hidden = !shown.length;
+  if (more) { more.hidden = extra <= 0; more.textContent = questMoreOpen ? 'Show less' : '+' + extra + ' more'; more.setAttribute('aria-expanded', String(!!questMoreOpen)); }
+}
+function questTrack(chain){
+  if (!sideActiveList().some(a => a.chain === chain)) return;
+  sideUi().sideTracked = chain; save(); sfx('tap');
+  sideTrackLast = { chain, ids: sideActiveList().map(a => a.chain) };
+  const q = questCurrent(); if (q) renderQuest(q);
+  const h = $('#questSideLabel'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
+}
+function questToggleMore(){ questMoreOpen = !questMoreOpen; sfx('tap'); const q = questCurrent(); if (q) renderQuest(q); }
+function questToggleDone(){ questDoneOpen = !questDoneOpen; sfx('tap'); const q = questCurrent(); if (q) renderQuest(q); }
 // STANDING tab (BS): a second tab beside NEXT STEP, hidden until the side pick. Read-only: two rows (one per side) with the
 // emblem, tier name, blurb, a bar to the next tier and a PLEDGED marker; strings and numbers all from STANDING_CFG.
 const standingTabVisible = () => !!(S && S.flags['story.side_pick_done']);
@@ -7101,6 +7181,7 @@ function debugSnapshot(){
     side: side(), standing: standingView(),
     quest: q && { id: q.id, text: q.text, place: q.place },
     sideQuest: sq && { id: sq.id, text: sq.text, place: sq.place },
+    sideActive: sideActiveList().map(a => a.chain), sideTracked: (S.ui && S.ui.sideTracked) || null,
     flags: Object.keys(S.flags).filter(k => k.startsWith('story.')).sort(),
     seals: Object.keys(S.seals || {}),
     money: S.money | 0, bag: Object.assign({}, S.bag || {}),
@@ -7407,6 +7488,8 @@ function bindInput(){
     if (who && who.classList.contains('contact-main')) { contactOpen = who.dataset.who; sfx('tap'); renderContacts(); }
   });
   $('#questBtn').addEventListener('click', openQuest);
+  $('#questSideMore').addEventListener('click', questToggleMore);
+  $('#questDoneToggle').addEventListener('click', questToggleDone);
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
   $('#questClose').addEventListener('click', () => { sfx('tap'); closeQuest(); });
@@ -7968,7 +8051,13 @@ function boot(){
   Object.defineProperty(api, 'townBoard', { enumerable: true, get(){ return townBoardView(); } });
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
-  Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
+  // D106: sideQuest is the tracked step; sideActive lists every active chain in unlock order.
+  Object.defineProperty(api, 'sideActive', { enumerable: true, get(){ const t = trackedSide(); return sideActiveList().map(a => ({ chain: a.chain, label: a.label, id: a.step.id, text: a.step.text, place: a.step.place, target: a.step.target ? { ...a.step.target } : null, tracked: !!(t && t.chain === a.chain) })); } });
+  Object.defineProperty(api, 'regionMapMarks', { enumerable: true, get(){ return regionMapMarks && { ring: regionMapMarks.ring, dots: regionMapMarks.dots.slice() }; } });
+  api.trackSide = chain => DEBUG ? (questTrack(chain), !!(S.ui && S.ui.sideTracked === chain)) : false;
+  // ?debug=1 only: extra side chains (same shape as PPQuests.SIDE_CHAINS rows) for the row-cap layout tests. Never saved.
+  api.debugSideChains = chains => { if (!DEBUG) return false; sideTestChains = Array.isArray(chains) && chains.length ? chains : null; sideTrackLast = null; return true; };
+  Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.mapCheck = () => mapDevCheck();
