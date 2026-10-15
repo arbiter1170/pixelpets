@@ -284,7 +284,7 @@ const COPY = {
   fernbrook: ["Follow the stream east along Route 1. Fernbrook's orchards are at the far end.", 'Route 1, east end'],
   glimmer: ["There's a shiny new stand in the square. See what all the fuss is about.", 'Fernbrook square'],
   fen: ['Master Fen is out in the orchard, west of the square. She looks worried.', 'Fernbrook orchard'],
-  heights: ['Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', 'Fernbrook Heights', 'Get to know us. RegenX in the Heights brews Atten. Stock up, then bring samples and plans.', 'Fernbrook Heights'],
+  heights: ['Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', 'Fernbrook Heights', 'Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.', 'Fernbrook Heights'],
   orchard: ['Tobin is stacking crates by the orchard gate. Help the Pomlets out.', 'Orchard gate', 'Tobin needs a hand packing crates at the orchard gate.', 'Orchard gate'],
   hall1: ['The Trial Hall doors are open. Challenge Master Fen for the Fernbrook Seal.', 'Fernbrook Trial Hall', "Juniper's partnership tour ends at the Trial Hall. Fen's match is optional.", 'Fernbrook Trial Hall'],
   teaser: ['Rook has news, waiting outside the Trial Hall.', 'Trial Hall doorstep', 'Rook is lurking outside the Trial Hall. Probably about Bright of the Month.', 'Trial Hall doorstep'],
