@@ -69,14 +69,14 @@ test('journal counts and silhouettes stay on the WALKLINGS tab', async ({ page }
       locked: document.querySelector('#tabs').classList.contains('locked'),
     };
   });
-  expect(grid.n).toBe(42);
+  expect(grid.n).toBe(45);
   expect(grid.slots).toBe(6);
   expect(grid.header).toContain('Joined 1');
   expect(grid.header).toContain('Met 1');
-  expect(grid.header).toContain('Out there 42');
+  expect(grid.header).toContain('Out there 45');
   expect(grid.joined).toBe('joined');
   expect(grid.met).toBe('met');
-  expect(grid.unmet).toBe(40);
+  expect(grid.unmet).toBe(43);
   expect(grid.unmetButtons).toBe(0);
   expect(grid.unmetMark).toBe(true);
   expect(grid.locked).toBe(false);
@@ -193,11 +193,9 @@ test('the bag will not use up a holdable item', async ({ page }) => {
   save.bag = { soft_berry: 1, heal_snack: 1 };
   save.flags['story.side_pick_done'] = true;
   await boot(page, save);
-  await page.evaluate(() => {
-    const b = document.querySelector('#petBagBtn');
-    if (b) b.hidden = false;
-  });
-  await page.locator('#petBagBtn').click();
+  await page.locator('#tabs button[data-tab="walk"]').click();
+  await expect(page.locator('#walkBagBtn')).toBeVisible();
+  await page.locator('#walkBagBtn').click();
   await expect(page.locator('#ovBag')).toBeVisible();
   const row = page.locator('#bagList .bag-row', { hasText: 'Soft Berry' });
   await expect(row).toContainText('(hold)');
