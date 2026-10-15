@@ -3,6 +3,15 @@
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
 
+## 2026-10-15 09:35 ET: observatory and dream rooms get their own skins
+
+- What changed and why: Breckenridge Observatory and the three dream rooms keep their size. The observatory gets a dome-ribbed wall, a star-map floor, and a desk beside the existing telescope. The 2004 memory is cool blue-grey. The birthday room stays warm yellow and gains streamer decals only. The drive-through is night asphalt with painted lines and a plain menu board. The outdoor Mahopac map is unchanged. Save `v` stays 2.
+- Files touched: `sprites.js`, `data/detail_b7.json`, `data/mapdata.js`, `tests/maps_b7.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build `20261015-0935`.
+- Tests run and result: `PP_PORT=8107 npm test` at 320, 375 and 390. 534 passed, 6 skipped, 0 failed (12.2m). The 6 skips are the town-board checks that only run at 320.
+- Decisions made: D102 (green). New prop lines are neutral stand-ins.
+- Anything left unfinished: Rooms were not enlarged. The outdoor observatory still uses the shared roof; the dome, slit and mast on that building wait for the outdoor Mahopac edit. The drive-through has three talkable props, which meets one per twelve floor tiles on this small lane.
+
 ## 2026-10-15 09:02 ET: house interiors get their own floors and walls
 
 - What changed and why: The nine Hearthmoor, Keeper House and Cobblecrest rooms keep their size (D84) and gain a house skin each: own floor, wall face and baseboard, plank variants, a wall-shadow row under the windows, and props enough for one per twelve floor cells. The lab skin is unchanged. The verbatim design copies are not edited; the room edits live in `data/detail_b5.json`.

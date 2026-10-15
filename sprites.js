@@ -627,6 +627,127 @@ function buildTiles(){
   T.stair_loft = mkTile(g => { px(g, PAL.w, 0, 0, 16, 16); [4, 9, 14].forEach(y => px(g, PAL.h, 0, y, 16, 1)); px(g, PAL.d, 2, 12, 12, 2); px(g, PAL.y, 3, 12, 10, 1); px(g, PAL.d, 4, 8, 8, 2); px(g, PAL.w, 5, 8, 6, 1); px(g, PAL.d, 6, 4, 4, 2); px(g, PAL.h, 7, 4, 2, 1); });
   T.wall_shadow = mkTile(g => { px(g, PAL.d, 0, 0, 16, 1); px(g, PAL.m, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.d, x, 2, 1, 1); });
   T.window_light = mkTile(g => { px(g, PAL.d, 0, 0, 16, 1); px(g, PAL.m, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.d, x, 2, 1, 1); px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.w, 6, 7, 4, 3); });
+  // B7. Observatory dome, cool memory planks, warm party floor, night asphalt. Decals paint only their marks.
+  T.wall_dome = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16);
+    px(g, PAL.b, 0, 2, 16, 2); px(g, PAL.m, 1, 6, 14, 2); px(g, PAL.h, 3, 10, 10, 2);
+    px(g, PAL.d, 0, 0, 1, 16); px(g, PAL.d, 8, 0, 1, 16);
+    px(g, PAL.s, 4, 3, 1, 1); px(g, PAL.w, 12, 7, 1, 1);
+  });
+  T.wall_dome_face = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16);
+    px(g, PAL.b, 0, 1, 16, 2); px(g, PAL.m, 0, 5, 16, 2); px(g, PAL.h, 0, 9, 16, 2);
+    [0, 5, 10, 15].forEach(x => px(g, PAL.d, x, 0, 1, 13));
+    px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2);
+  });
+  T.wall_dome_win = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16);
+    px(g, PAL.b, 0, 1, 16, 2); px(g, PAL.m, 0, 5, 16, 2); px(g, PAL.h, 0, 9, 16, 2);
+    [0, 15].forEach(x => px(g, PAL.d, x, 0, 1, 13));
+    px(g, PAL.d, 6, 0, 4, 13); px(g, PAL.b, 7, 1, 2, 11); px(g, PAL.s, 7, 2, 2, 8); px(g, PAL.w, 7, 3, 1, 2);
+    px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2);
+  });
+  function starFloor(shift){
+    return mkTile(g => {
+      px(g, PAL.n, 0, 0, 16, 16);
+      px(g, PAL.b, 0, 8, 16, 1); px(g, PAL.b, 8, 0, 1, 16);
+      [[1, 2], [5, 1], [12, 3], [3, 6], [14, 7], [6, 10], [11, 12], [2, 13], [9, 5], [15, 14]].forEach(([x, y], i) => {
+        const col = (i + shift) % 3 === 0 ? PAL.w : (i + shift) % 3 === 1 ? PAL.s : PAL.c;
+        px(g, col, (x + shift * 2) % 16, (y + shift) % 16, 1, 1);
+      });
+      if (shift === 0) px(g, PAL.s, 2, 4, 4, 1);
+      if (shift === 1) { px(g, PAL.s, 2, 9, 5, 1); px(g, PAL.w, 4, 9, 1, 1); }
+      if (shift === 2) { px(g, PAL.h, 10, 2, 1, 4); px(g, PAL.w, 10, 4, 1, 1); }
+    });
+  }
+  T.floor_star = starFloor(0); T.floor_star_b = starFloor(1); T.floor_star_c = starFloor(2);
+  T.star_tick = mkTile(g => { px(g, PAL.s, 2, 8, 12, 1); px(g, PAL.w, 6, 4, 1, 9); px(g, PAL.w, 3, 5, 1, 1); px(g, PAL.c, 11, 11, 1, 1); });
+  T.wall_mist = mkTile(g => {
+    px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 0, 16, 2); px(g, PAL.c, 0, 6, 16, 1);
+    px(g, PAL.w, 3, 4, 1, 1); px(g, PAL.w, 11, 10, 1, 1); px(g, PAL.b, 7, 13, 2, 1);
+  });
+  T.wall_mist_face = mkTile(g => {
+    px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 4, 16, 1); px(g, PAL.c, 0, 5, 16, 1);
+    px(g, PAL.w, 2, 8, 1, 1); px(g, PAL.w, 12, 7, 1, 1);
+    px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.n, 0, 14, 16, 2);
+  });
+  T.wall_mist_win = mkTile(g => {
+    px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 4, 16, 1); px(g, PAL.c, 0, 5, 16, 1);
+    px(g, PAL.n, 4, 1, 8, 10); px(g, PAL.c, 5, 2, 6, 8); px(g, PAL.s, 5, 2, 2, 2); px(g, PAL.n, 7, 2, 1, 8);
+    px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.n, 0, 14, 16, 2);
+  });
+  function memFloor(shift){
+    return mkTile(g => {
+      px(g, PAL.h, 0, 0, 16, 16);
+      [0, 5, 11, 15].forEach((y, i) => px(g, PAL.m, 0, (y + (i === shift ? 1 : 0)) % 16, 16, 1));
+      px(g, PAL.m, (3 + shift) % 16, 1, 1, 4); px(g, PAL.m, 11, 6, 1, 4);
+      px(g, PAL.c, 6, (3 + shift) % 16, 1, 1); px(g, PAL.w, 13, 9, 1, 1);
+      if (shift === 1) px(g, PAL.b, 2, 12, 3, 1);
+      if (shift === 2) px(g, PAL.n, 8, 7, 4, 1);
+    });
+  }
+  T.floor_mem = memFloor(0); T.floor_mem_b = memFloor(1); T.floor_mem_c = memFloor(2);
+  T.rug_mem = mkTile(g => {
+    px(g, PAL.c, 0, 0, 16, 16); px(g, PAL.h, 2, 2, 12, 12);
+    for (let y = 4; y < 12; y += 3) for (let x = 4; x < 12; x += 3) px(g, PAL.s, x, y, 1, 1);
+    px(g, PAL.w, 7, 7, 2, 2);
+  });
+  T.wall_fest = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.o, 0, 0, 16, 2);
+    [[1, 'r'], [5, 'c'], [9, 'l'], [13, 'o']].forEach(([x, c]) => { px(g, PAL[c], x, 4, 3, 1); px(g, PAL[c], x + 1, 5, 1, 2); });
+    px(g, PAL.w, 3, 11, 1, 1); px(g, PAL.r, 12, 13, 1, 1);
+  });
+  T.wall_fest_face = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.o, 0, 0, 16, 1);
+    [[0, 'r'], [4, 'c'], [8, 'l'], [12, 'o']].forEach(([x, c]) => { px(g, PAL[c], x, 1, 3, 2); px(g, PAL[c], x + 1, 3, 1, 2); });
+    px(g, PAL.o, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2);
+  });
+  T.wall_fest_win = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.o, 0, 0, 16, 1);
+    [[0, 'r'], [12, 'c']].forEach(([x, c]) => { px(g, PAL[c], x, 1, 3, 2); px(g, PAL[c], x + 1, 3, 1, 2); });
+    px(g, PAL.o, 4, 5, 8, 6); px(g, PAL.s, 5, 6, 6, 4); px(g, PAL.w, 5, 6, 2, 1); px(g, PAL.o, 7, 6, 1, 4);
+    px(g, PAL.o, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2);
+  });
+  T.floor_party = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.o, 0, 0, 16, 1); px(g, PAL.o, 0, 15, 16, 1);
+    [[2, 3, 'r'], [6, 2, 'w'], [11, 4, 'c'], [4, 8, 'o'], [9, 7, 'l'], [13, 11, 'r'], [3, 12, 'c'], [8, 13, 'w']].forEach(([x, y, c]) => px(g, PAL[c], x, y, 1, 1));
+  });
+  T.floor_lane = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.w, 1, 0, 6, 16); px(g, PAL.y, 7, 0, 2, 16); px(g, PAL.w, 9, 0, 6, 16);
+    px(g, PAL.o, 0, 0, 1, 16); px(g, PAL.o, 15, 0, 1, 16); px(g, PAL.h, 4, 6, 1, 1); px(g, PAL.h, 12, 11, 1, 1);
+  });
+  T.streamer = mkTile(g => {
+    px(g, PAL.r, 1, 0, 4, 1); px(g, PAL.r, 2, 1, 2, 1); px(g, PAL.r, 2, 2, 1, 2);
+    px(g, PAL.c, 8, 0, 4, 1); px(g, PAL.c, 9, 1, 2, 1); px(g, PAL.c, 9, 2, 1, 2);
+    px(g, PAL.y, 5, 0, 1, 3);
+  });
+  T.wall_night = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.d, 0, 0, 16, 3); px(g, PAL.m, 0, 3, 16, 1); px(g, PAL.d, 0, 8, 16, 1);
+    px(g, PAL.h, 4, 6, 1, 1); px(g, PAL.y, 11, 12, 1, 1);
+  });
+  T.wall_night_face = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.d, 0, 0, 16, 2); px(g, PAL.m, 0, 6, 16, 1);
+    px(g, PAL.d, 2, 8, 3, 2); px(g, PAL.d, 11, 9, 2, 2);
+    px(g, PAL.d, 0, 13, 16, 1); px(g, PAL.m, 0, 14, 16, 2);
+  });
+  T.wall_night_win = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.d, 0, 0, 16, 2);
+    px(g, PAL.d, 1, 2, 14, 8); px(g, PAL.y, 2, 3, 12, 6); px(g, PAL.o, 2, 3, 12, 1);
+    px(g, PAL.w, 3, 5, 2, 2); px(g, PAL.g, 7, 5, 2, 2); px(g, PAL.c, 11, 5, 2, 2);
+    px(g, PAL.d, 0, 13, 16, 1); px(g, PAL.m, 0, 14, 16, 2);
+  });
+  function asphalt(shift){
+    return mkTile(g => {
+      px(g, PAL.d, 0, 0, 16, 16);
+      [[1, 1], [4, 3], [8, 2], [13, 4], [2, 7], [6, 6], [11, 8], [15, 6], [3, 11], [7, 13], [12, 12], [9, 15], [14, 10]].forEach(([x, y], i) => {
+        px(g, (i + shift) % 2 ? PAL.m : PAL.n, (x + shift) % 16, (y + shift * 2) % 16, 1, 1);
+      });
+      if (shift === 1) px(g, PAL.m, 3, 8, 6, 2);
+      if (shift === 2) { px(g, PAL.h, 10, 4, 1, 5); px(g, PAL.n, 11, 6, 2, 1); }
+    });
+  }
+  T.floor_asphalt = asphalt(0); T.floor_asphalt_b = asphalt(1); T.floor_asphalt_c = asphalt(2);
+  T.lane_paint = mkTile(g => { px(g, PAL.y, 1, 7, 14, 2); px(g, PAL.w, 1, 7, 14, 1); });
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
@@ -643,7 +764,12 @@ const HOUSE_SKINS = {
   house_hq: { remap: { '#':'wall_stone', W:'wall_stone_face', W2:'wall_stone_win', '.':'floor_flag', '=':'rug_keeper', m:'mat_keeper' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_flag', 'floor_flag_b', 'floor_flag_c') },
   house_hq_up: { remap: { '#':'wall_panel', W:'wall_panel_face', W2:'wall_panel_win', '.':'floor_ink', '=':'rug_ink', m:'mat_ink' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_ink', 'floor_ink_b', 'floor_ink_c') },
   house_cc_lantern: { remap: { '#':'wall_rough', W:'wall_rough_face', W2:'wall_rough_win', '.':'floor_cobble', '=':'rug_cobble', m:'mat_cobble' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_cobble', 'floor_cobble_b', 'floor_cobble_c') },
-  house_hall: { remap: { '#':'wall_slate', W:'wall_slate_face', W2:'wall_slate_win', '.':'floor_hall', ':':'floor_hall', i:'floor_slab', '=':'rug_hall', m:'mat_hall' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1, i:1 }, variants: { floor_hall: [['floor_hall_b', 0.22], ['floor_hall_c', 0.18]] } }
+  house_hall: { remap: { '#':'wall_slate', W:'wall_slate_face', W2:'wall_slate_win', '.':'floor_hall', ':':'floor_hall', i:'floor_slab', '=':'rug_hall', m:'mat_hall' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1, i:1 }, variants: { floor_hall: [['floor_hall_b', 0.22], ['floor_hall_c', 0.18]] } },
+  // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
+  obs: { remap: { '#':'wall_dome', W:'wall_dome_face', W2:'wall_dome_win', '.':'floor_star' }, decal: { v:'wall_shadow', u:'window_light', z:'star_tick' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_star', 'floor_star_b', 'floor_star_c') },
+  dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c') },
+  dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
+  dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') }
 };
 const SKINS = Object.assign({ lab: LAB_SKIN }, HOUSE_SKINS);
 function buildWorldArt(){
@@ -904,5 +1030,34 @@ function buildWorldArt(){
     px(g, PAL.w, 3, 12, 10, 1); px(g, PAL.y, 5, 8, 3, 1); px(g, PAL.w, 4, 9, 2, 1);
   });
   A.quilt_r = quilt('r'); A.quilt_c = quilt('c'); A.quilt_y = quilt('y');
+  // B7 signature props. Generic shapes only: a desk, a chart, blocks, a menu of plain squares.
+  A.obs_desk = mkTile(g => {
+    px(g, PAL.d, 1, 6, 14, 4); px(g, PAL.o, 2, 6, 12, 2); px(g, PAL.w, 3, 7, 5, 1); px(g, PAL.h, 4, 7, 3, 1);
+    px(g, PAL.n, 10, 4, 3, 3); px(g, PAL.c, 11, 5, 1, 1); px(g, PAL.d, 2, 10, 2, 4); px(g, PAL.d, 12, 10, 2, 4);
+  });
+  A.star_roll = mkTile(g => {
+    px(g, PAL.n, 2, 6, 12, 5); px(g, PAL.h, 3, 7, 10, 3); px(g, PAL.w, 5, 8, 1, 1); px(g, PAL.s, 8, 8, 1, 1); px(g, PAL.c, 7, 9, 1, 1);
+    px(g, PAL.d, 2, 6, 2, 5); px(g, PAL.d, 12, 6, 2, 5);
+  });
+  A.obs_case = mkTile(g => {
+    px(g, PAL.d, 3, 6, 10, 7); px(g, PAL.m, 4, 7, 8, 5); px(g, PAL.h, 4, 6, 8, 2); px(g, PAL.y, 7, 9, 2, 1); px(g, PAL.c, 6, 8, 1, 1);
+  });
+  A.dream_blocks = mkTile(g => {
+    px(g, PAL.c, 2, 8, 4, 4); px(g, PAL.s, 3, 9, 1, 1); px(g, PAL.y, 6, 6, 4, 4); px(g, PAL.w, 7, 7, 1, 1);
+    px(g, PAL.o, 5, 10, 4, 4); px(g, PAL.w, 6, 11, 1, 1); px(g, PAL.d, 2, 14, 10, 1);
+  });
+  A.dream_shelf = mkTile(g => {
+    px(g, PAL.m, 1, 4, 14, 2); px(g, PAL.h, 1, 5, 14, 1); px(g, PAL.d, 2, 6, 2, 8); px(g, PAL.d, 12, 6, 2, 8); px(g, PAL.m, 1, 10, 14, 2);
+    px(g, PAL.p, 6, 7, 4, 3); px(g, PAL.w, 7, 8, 2, 1); px(g, PAL.d, 7, 9, 1, 1);
+  });
+  A.dream_cushion = mkTile(g => { px(g, PAL.c, 3, 8, 10, 5); px(g, PAL.s, 4, 9, 8, 3); px(g, PAL.w, 5, 9, 2, 1); px(g, PAL.d, 3, 13, 10, 1); });
+  A.menu_board = mkTile(g => {
+    px(g, PAL.d, 2, 1, 12, 12); px(g, PAL.n, 3, 2, 10, 10); px(g, PAL.w, 4, 3, 8, 2);
+    px(g, PAL.o, 4, 6, 3, 2); px(g, PAL.g, 8, 6, 3, 2); px(g, PAL.c, 4, 9, 3, 2); px(g, PAL.y, 8, 9, 3, 2);
+    px(g, PAL.m, 7, 13, 2, 2); px(g, PAL.d, 4, 15, 8, 1);
+  });
+  A.order_post = mkTile(g => {
+    px(g, PAL.m, 6, 3, 4, 8); px(g, PAL.h, 7, 4, 2, 2); px(g, PAL.d, 5, 2, 6, 2); px(g, PAL.n, 6, 8, 4, 3); px(g, PAL.y, 7, 9, 1, 1); px(g, PAL.d, 4, 14, 8, 2);
+  });
   return A;
 }

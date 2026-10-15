@@ -1,0 +1,62 @@
+{
+  "spec": "handoff/maps/B7_mahopac_dreams.md",
+  "note": "Observatory and dream-room overlay. mahopac.json stays verbatim, including the outdoor mahopac map. New prop lines are D102 placeholders.",
+  "tiles": {
+    "z": {"name": "star tick", "walk": true},
+    "q": {"name": "streamer", "walk": true},
+    "j": {"name": "lane paint", "walk": true}
+  },
+  "slicePatch": {
+    "maps": {
+      "mahopac_obs": {
+        "set": {"skin": "obs", "variants": true},
+        "gridRows": {
+          "2": "#uvuvuvu#",
+          "3": "#z..z..z#",
+          "4": "#..z.z..#",
+          "5": "#.z...z.#"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "obs_desk", "x": 2, "y": 4, "sprite": "obs_desk", "lines": {"else": "A desk under the dome. A blank page waits."}},
+          {"kind": "prop", "id": "obs_stool", "x": 6, "y": 4, "sprite": "stool", "lines": {"else": "A stool pulled up to the desk."}},
+          {"kind": "prop", "id": "obs_lamp", "x": 1, "y": 5, "sprite": "lamp_stand", "lines": {"else": "A small lamp. The shade is warm."}},
+          {"kind": "prop", "id": "obs_chart", "x": 7, "y": 3, "sprite": "star_roll", "lines": {"else": "A rolled star chart. The ink is pale."}},
+          {"kind": "prop", "id": "obs_case", "x": 7, "y": 5, "sprite": "obs_case", "lines": {"else": "A small case. The lid is shut."}}
+        ]
+      },
+      "dream_2004": {
+        "set": {"skin": "dream_2004", "variants": true},
+        "gridRows": {"2": "#uvuvuvu#"},
+        "addObjs": [
+          {"kind": "prop", "id": "dream_blocks", "x": 1, "y": 6, "sprite": "dream_blocks", "lines": {"else": "Wooden blocks, stacked and still."}},
+          {"kind": "prop", "id": "dream_shelf", "x": 7, "y": 6, "sprite": "dream_shelf", "lines": {"else": "A low shelf. A round plush sits on it."}},
+          {"kind": "prop", "id": "dream_lamp", "x": 1, "y": 2, "sprite": "lamp_stand", "lines": {"else": "A small lamp by the wall."}},
+          {"kind": "prop", "id": "dream_cushion", "x": 7, "y": 4, "sprite": "dream_cushion", "lines": {"else": "A soft cushion on the floor."}}
+        ]
+      },
+      "dream_party": {
+        "set": {"skin": "dream_party"},
+        "gridRows": {
+          "2": "#uvuvuvuvu#",
+          "3": "#ppqppqppp#",
+          "4": "#q..q..q..#",
+          "5": "#q.q.q.q.q#",
+          "6": "#q..q..q..#"
+        }
+      },
+      "dream_drive": {
+        "set": {"skin": "dream_drive", "variants": true},
+        "gridRows": {
+          "2": "#uvuvuvu#",
+          "3": "#..j..j.#",
+          "4": "#j.....j#",
+          "5": "#..j..j.#"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "menu_board", "x": 4, "y": 2, "sprite": "menu_board", "lines": {"else": "A menu board. The pictures are plain shapes."}},
+          {"kind": "prop", "id": "order_post", "x": 1, "y": 4, "sprite": "order_post", "lines": {"else": "A short post by the lane. No name on it."}}
+        ]
+      }
+    }
+  }
+}
