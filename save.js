@@ -243,6 +243,7 @@ const PPSave = (() => {
     fill(s, 'eggs', isObj, d.eggs);
     fill(s.eggs, 'incubators', x => Array.isArray(x) && x.length > 0, [{ egg: null }]); fill(s.eggs, 'held', Array.isArray, []);
     fill(s, 'settings', isObj, d.settings);
+    fill(s, 'debugSave', x => typeof x === 'boolean', false);                          // set once a debug session has saved; never cleared
     fill(s.settings, 'textSpeed', x => TEXT_SPEEDS.includes(x), 'normal'); fill(s.settings, 'battleAnims', x => typeof x === 'boolean', true);
     fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
     fill(s.settings, 'music', x => typeof x === 'boolean', true);                    // MUSIC v0.1 Q2: in the save, default on
