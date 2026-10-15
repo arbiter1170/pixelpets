@@ -6,7 +6,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 
 The old keeper-hq branch reused D27–D31. `main` already had D27 (Mahopac, settled) and D28 (lantern rest, open). Those rows are D32–D36 now.
 
-D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D80. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape.
+D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D81. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape.
 
 ## Open
 
