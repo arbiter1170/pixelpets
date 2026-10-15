@@ -12,7 +12,7 @@ optional local-creatures lookup (see Wild creatures below). A manifest and a ser
 cached shell offline. `version.json` stays on the network so a newer deploy can still announce itself.
 Location lookups are other sites, so the worker leaves them alone, and a failed lookup still falls back to meadow.
 Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
-Agent skills, including quest authoring and status-doc upkeep, are in `.cursor/skills/`. The index is `.cursor/skills/README.md`. Consolidated agent rules for Cline, Claude Code, and AGENTS.md consumers are in `.clinerules`, `CLAUDE.md`, and `AGENTS.md` (kept identical).
+Agent skills, including quest authoring and status-doc upkeep, are in `.cursor/skills/`. The index is `.cursor/skills/README.md`. Consolidated agent rules for Cline, Claude Code, and AGENTS.md consumers are in `AGENTS.md`; `CLAUDE.md` and `.clinerules` point to it. History is in `archive/`.
 
 Touch: bottom tabs (PARTNER / WALK / WALKLINGS / QUEST); FEED / PLAY / REST; Walk = hold D-pad, tap a tile, or drag on the map;
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
