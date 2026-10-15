@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261015-0235">
+<meta name="kw-build" content="20261015-0244">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -12,10 +12,10 @@
 <meta name="application-name" content="Walklings">
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
-<link rel="icon" href="icons/icon-192.png?v=20261015-0235">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261015-0235">
-<link rel="manifest" href="manifest.json?v=20261015-0235">
-<link rel="stylesheet" href="style.css?v=20261015-0235">
+<link rel="icon" href="icons/icon-192.png?v=20261015-0244">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261015-0244">
+<link rel="manifest" href="manifest.json?v=20261015-0244">
+<link rel="stylesheet" href="style.css?v=20261015-0244">
 </head>
 <body>
 <div id="app">
@@ -31,7 +31,7 @@
     <!-- PET CARE -->
     <section id="scr-pet" class="screen active">
       <button class="scr-back" type="button" aria-label="Back to the walk screen"><canvas class="ico-hud" data-nav="back" width="8" height="8" aria-hidden="true"></canvas><span>WALK</span></button>
-      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="80" height="64"></canvas><button id="petStatsBtn" class="scene-btn" type="button" aria-label="Stats card">STATS</button><button id="petBagBtn" class="scene-btn scene-btn-bl" type="button" aria-label="Bag" hidden>BAG</button><span id="petKeeper" class="scene-keeper" aria-label="Keeper Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
+      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="80" height="64"></canvas><span id="petKeeper" class="scene-keeper" aria-label="Keeper Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
       <div class="stats">
         <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
         <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
@@ -41,6 +41,10 @@
       <div id="evoHint" class="hint"></div>
       <div id="dailyXp" class="hint daily"><span class="seg">Today: care XP <b id="dCare">0/25</b></span> <span class="sep">&middot;</span> <span class="seg">explore XP <b id="dExp">0/30</b></span></div>
       <button id="evolveBtn" class="btn btn-evo" hidden type="button"><canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas> GROW UP! <canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas></button>
+      <div class="actions partner-row">
+        <button id="petStatsBtn" class="btn" type="button" aria-label="Stats card">STATS</button>
+        <button id="petKitBtn" class="btn btn-play" type="button" aria-label="Customize and gear">KIT</button>
+      </div>
       <div class="actions">
         <button class="btn btn-feed" data-act="feed">FEED</button>
         <button class="btn btn-play" data-act="play">PLAY</button>
@@ -173,7 +177,7 @@
 </div>
 
 
-<!-- Bag (INVENTORY §6): Walk map corner + Pet tab BAG; full-screen, tabs locked, counted by overlayOpen -->
+<!-- Bag (INVENTORY §6): Walk map corner only. The partner tab has no BAG. Full-screen, tabs locked, counted by overlayOpen. -->
 <div id="ovMap" class="overlay regionmap" hidden>
   <div class="map-inner" role="dialog" aria-modal="true" aria-label="Region map">
     <div class="map-top"><div class="map-title" id="mapTitle">THE AMBERWILD</div><button id="mapClose" class="btn map-x" type="button">CLOSE</button></div>
@@ -342,6 +346,19 @@
   </div>
 </div>
 
+<!-- Partner kit: adornments and battle gear for the partner. BAG stays on the Walk map. -->
+<div id="ovKit" class="overlay" hidden>
+  <div class="ov-inner kit-card" role="dialog" aria-modal="true" aria-labelledby="kitTitle">
+    <div id="kitTitle" class="ov-title">Customize &amp; Gear</div>
+    <div class="sc-head">
+      <canvas id="kitIcon" width="18" height="18"></canvas>
+      <div class="sc-who"><div id="kitWho" class="sc-name"></div><div id="kitSpecies" class="sc-species"></div></div>
+    </div>
+    <div id="kitBox" class="sc-gear"></div>
+    <button id="kitClose" class="btn" type="button">CLOSE</button>
+  </div>
+</div>
+
 <!-- Walkling sheet: one owned pet (party or box). WALKLINGS cards call openWalklingSheet. -->
 <div id="ovWalkling" class="overlay full" role="dialog" aria-modal="true" aria-labelledby="wlName" hidden>
   <div class="ov-inner walkling-sheet">
@@ -404,13 +421,13 @@
     </div>
     <p id="phoneFoot" class="hint">Copied to the Lantern desk.</p>
     <div id="phoneHome" class="phone-apps">
-      <button class="phone-app" type="button" data-app="contacts">CONTACTS</button>
-      <button class="phone-app" type="button" data-app="notes">NOTES</button>
-      <button class="phone-app" type="button" data-app="journal">JOURNAL</button>
-      <button class="phone-app" type="button" data-app="friends">FRIENDS</button>
-      <button class="phone-app" type="button" data-app="jobs" id="phoneJobs">KEEPERUAV</button>
-      <button class="phone-app" type="button" data-app="ribbit">RIBBIT</button>
-      <button class="phone-app" type="button" data-app="board">BOARD</button>
+      <button class="phone-app" type="button" data-app="contacts"><span class="phone-glyph" data-glyph="contacts"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">CONTACTS</span></button>
+      <button class="phone-app" type="button" data-app="notes"><span class="phone-glyph" data-glyph="notes"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">NOTES</span></button>
+      <button class="phone-app" type="button" data-app="walklings"><span class="phone-glyph" data-glyph="walklings"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">WALKLINGS</span></button>
+      <button class="phone-app" type="button" data-app="friends"><span class="phone-glyph" data-glyph="friends"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">FRIENDS</span></button>
+      <button class="phone-app" type="button" data-app="jobs" id="phoneJobs"><span class="phone-glyph" data-glyph="jobs"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">KEEPERUAV</span></button>
+      <button class="phone-app" type="button" data-app="ribbit"><span class="phone-glyph" data-glyph="ribbit"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">RIBBIT</span></button>
+      <button class="phone-app" type="button" data-app="board"><span class="phone-glyph" data-glyph="board"><canvas width="8" height="8" aria-hidden="true"></canvas></span><span class="phone-lab">BOARD</span></button>
     </div>
     <div id="phonePane" hidden>
       <div id="phonePaneTitle" class="ov-title" hidden>TOWN BOARD</div>
@@ -707,22 +724,21 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261015-0235";</script>
-<script src="sprites.js?v=20261015-0235"></script>
-<script src="keeper.js?v=20261015-0235"></script>
-<script src="stats.js?v=20261015-0235"></script>
-<script src="moves.js?v=20261015-0235"></script>
-<script src="data/mapdata.js?v=20261015-0235"></script>
-<script src="quests.js?v=20261015-0235"></script>
-<script src="standing.js?v=20261015-0235"></script>
-<script src="save.js?v=20261015-0235"></script>
-<script src="env.js?v=20261015-0235"></script>
-<script src="sfx.js?v=20261015-0235"></script>
-<script src="minigames.js?v=20261015-0235"></script>
-<script src="ribbit.js?v=20261015-0235"></script>
-<script src="cloud_config.js?v=20261015-0235"></script>
-<script src="cloud.js?v=20261015-0235"></script>
-<script src="data/nav_art.js?v=20261015-0235"></script>
-<script src="game.js?v=20261015-0235"></script>
+<script>window.BUILD = "20261015-0244";</script>
+<script src="sprites.js?v=20261015-0244"></script>
+<script src="keeper.js?v=20261015-0244"></script>
+<script src="stats.js?v=20261015-0244"></script>
+<script src="moves.js?v=20261015-0244"></script>
+<script src="data/mapdata.js?v=20261015-0244"></script>
+<script src="quests.js?v=20261015-0244"></script>
+<script src="standing.js?v=20261015-0244"></script>
+<script src="save.js?v=20261015-0244"></script>
+<script src="env.js?v=20261015-0244"></script>
+<script src="sfx.js?v=20261015-0244"></script>
+<script src="minigames.js?v=20261015-0244"></script>
+<script src="ribbit.js?v=20261015-0244"></script>
+<script src="cloud_config.js?v=20261015-0244"></script>
+<script src="cloud.js?v=20261015-0244"></script>
+<script src="game.js?v=20261015-0244"></script>
 </body>
 </html>

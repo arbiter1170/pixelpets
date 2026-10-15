@@ -115,33 +115,131 @@ const petSpr = p => sprSet(spi(p), p.stage, isFaded(p));
 function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return g; }
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
   grid.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === '#') g.fillRect(x,y,1,1); })); }
-// Cosmetic Walkling accessories: an 8x8 overlay anchored at the top-right of the 18px sprite. Not keeper slots.
+// Cosmetic Walkling adornments. Not keeper slots. The five ids stay free.
+// More unlock from quests later; that list is not built (D75).
+// Each one is measured onto the sprite's body so the same art sits on every Walkling.
 const PET_ACC_IDS = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
-const PET_ACC_ART = {
-  bell: ['..yy....', '.yyyy...', '.ywyy...', 'yyyyyyy.', 'yyryyyy.', '.yyyyy..', '..yyy...', '...y....'],
-  ribbon: ['rr...rr.', 'rrr.rrr.', 'ryyyyr..', '.ryyyr..', '..rrr...', '...r....', '...r....', '...r....'],
-  scarf: ['ooooooo.', 'oyyyooo.', '.oooooo.', '..yyo...', '...oo...', '...oo...', '...oo...', '...yy...'],
-  leaf: ['..ll....', '.llll...', 'lllll...', 'lglgl...', '.llll...', '..ll....', '...l....', '....l...'],
-  star: ['...y....', '..yyy...', '.yyyyy..', 'yyyyyyy.', '.yyyyy..', '..y.y...', '.y...y..', '........'],
-};
-function drawPetAccessory(g, name, x, y, faded){
-  const grid = PET_ACC_ART[name]; if (!grid) return;
-  const ox = x + 10, oy = y;
-  g.fillStyle = faded ? PAL.h : PAL.m;
-  for (let row = 0; row < 8; row++) {
-    const line = grid[row] || '';
-    for (let col = 0; col < 8; col++) {
-      const ch = line[col]; if (!ch || ch === '.') continue;
-      if (!faded) g.fillStyle = PAL[ch] || PAL.m;
-      g.fillRect(ox + col, oy + row, 1, 1);
-    }
+const PET_ACC_LABEL = { bell: 'Lodge bell', ribbon: 'Hall ribbon', scarf: 'Hearth scarf', leaf: 'Orchard sprig', star: 'Amber star' };
+const accBodyCache = new WeakMap();
+function accBodyOf(img){
+  if (!img || !img.getContext) return null;
+  const cached = accBodyCache.get(img); if (cached) return cached;
+  const w = img.width, h = img.height, d = img.getContext('2d').getImageData(0, 0, w, h).data, rows = [], solid = new Set();
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++) {
+    let x0 = w, x1 = -1, n = 0, sx = 0;
+    for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 20) { n++; sx += x; solid.add(x + ',' + y); if (x < x0) x0 = x; if (x > x1) x1 = x; }
+    rows.push({ x0, x1, n, span: n ? x1 - x0 + 1 : 0, sx });
+    if (n) { if (x0 < minX) minX = x0; if (y < minY) minY = y; if (x1 > maxX) maxX = x1; if (y > maxY) maxY = y; }
   }
+  if (maxX < 0) { const empty = { minX: 1, minY: 2, maxX: 16, maxY: 16, cx: 8, crownX: 8, neck: 9, rows, solid }; accBodyCache.set(img, empty); return empty; }
+  const bh = maxY - minY + 1;
+  const yA = minY + Math.max(0, Math.round(bh * 0.42));
+  const yB = minY + Math.min(bh - 1, Math.round(bh * 0.70));
+  let neck = yA, best = -1, eye = -1;
+  for (let y = yA; y <= yB; y++) if (rows[y].span > best) { best = rows[y].span; neck = y; }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = (y * w + x) * 4;
+    if (d[i + 3] < 20 || d[i] > 40 || d[i + 1] > 40 || d[i + 2] > 55) continue;
+    const open = (xx, yy) => xx >= 0 && yy >= 0 && xx < w && yy < h && d[(yy * w + xx) * 4 + 3] > 20;
+    if (open(x - 1, y) && open(x + 1, y) && open(x, y - 1) && open(x, y + 1)) eye = y;
+  }
+  if (eye >= 0) neck = Math.max(minY + 2, Math.min(maxY - 4, eye + 4));
+  let cs = 0, cn = 0;
+  for (let y = minY; y < minY + 3 && y <= maxY; y++) if (rows[y].n) { cs += rows[y].sx; cn += rows[y].n; }
+  const box = { minX, minY, maxX, maxY, cx: (minX + maxX) >> 1, crownX: cn ? Math.round(cs / cn) : (minX + maxX) >> 1, neck, rows, solid };
+  accBodyCache.set(img, box);
+  return box;
+}
+function fitAcc(px){
+  let minX = 99, minY = 99, maxX = -99, maxY = -99;
+  for (const p of px) { if (p.x < minX) minX = p.x; if (p.y < minY) minY = p.y; if (p.x > maxX) maxX = p.x; if (p.y > maxY) maxY = p.y; }
+  let dx = 0, dy = 0;
+  if (minX < 0) dx = -minX;
+  if (maxX + dx > 17) dx -= maxX + dx - 17;
+  if (minY < 0) dy = -minY;
+  if (maxY + dy > 17) dy -= maxY + dy - 17;
+  return px.map(p => ({ x: p.x + dx, y: p.y + dy, c: p.c })).filter(p => p.x >= 0 && p.y >= 0 && p.x < 18 && p.y < 18);
+}
+function accTouches(px, solid){
+  if (!solid || !solid.size) return true;
+  for (const p of px) {
+    if (solid.has(p.x + ',' + p.y)) return true;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (solid.has((p.x + dx) + ',' + (p.y + dy))) return true;
+  }
+  return false;
+}
+function hugAcc(px, solid){
+  if (accTouches(px, solid)) return px;
+  for (let dy = 1; dy <= 8; dy++) {
+    const shifted = px.map(p => ({ x: p.x, y: p.y + dy, c: p.c }));
+    if (accTouches(shifted, solid)) return shifted;
+  }
+  return px;
+}
+function accPixels(name, box){
+  const x = box.cx, y = box.neck, row = box.rows[y];
+  if (name === 'bell') return [
+    { x, y, c: 'd' },
+    { x, y: y + 1, c: 'y' },
+    { x: x - 1, y: y + 2, c: 'y' }, { x, y: y + 2, c: 'w' }, { x: x + 1, y: y + 2, c: 'y' },
+    { x: x - 1, y: y + 3, c: 'y' }, { x, y: y + 3, c: 'y' }, { x: x + 1, y: y + 3, c: 'y' },
+    { x, y: y + 4, c: 'r' },
+  ];
+  if (name === 'ribbon') return [
+    { x: x - 2, y, c: 'r' }, { x: x - 1, y, c: 'r' }, { x: x + 1, y, c: 'r' }, { x: x + 2, y, c: 'r' },
+    { x: x - 2, y: y + 1, c: 'r' }, { x, y: y + 1, c: 'y' }, { x: x + 2, y: y + 1, c: 'r' },
+    { x: x - 1, y: y + 2, c: 'r' }, { x, y: y + 2, c: 'r' }, { x: x + 1, y: y + 2, c: 'r' },
+    { x, y: y + 3, c: 'y' },
+  ];
+  if (name === 'scarf') {
+    let a = x - 3, b = x + 3;
+    if (row && row.n) { a = Math.max(row.x0, x - 3); b = Math.min(row.x1, x + 3); }
+    if (b - a < 4) { a = x - 2; b = x + 2; }
+    const px = [];
+    for (let i = a; i <= b; i++) px.push({ x: i, y, c: i === x ? 'y' : 'o' });
+    px.push({ x: x - 1, y: y + 1, c: 'o' }, { x, y: y + 1, c: 'o' }, { x: x + 1, y: y + 1, c: 'o' });
+    px.push({ x, y: y + 2, c: 'y' }, { x, y: y + 3, c: 'o' });
+    return px;
+  }
+  const cx = box.crownX;
+  if (name === 'leaf') {
+    const top = box.minY - 3;
+    return [
+      { x: cx + 1, y: top, c: 'l' },
+      { x: cx, y: top + 1, c: 'l' }, { x: cx + 1, y: top + 1, c: 'g' },
+      { x: cx - 1, y: top + 2, c: 'l' }, { x: cx, y: top + 2, c: 'g' },
+      { x: cx, y: top + 3, c: 't' },
+    ];
+  }
+  if (name === 'star') {
+    const top = box.minY - 3;
+    return [
+      { x: cx, y: top, c: 'y' },
+      { x: cx - 1, y: top + 1, c: 'y' }, { x: cx, y: top + 1, c: 'y' }, { x: cx + 1, y: top + 1, c: 'y' },
+      { x: cx - 1, y: top + 2, c: 'y' }, { x: cx + 1, y: top + 2, c: 'y' },
+    ];
+  }
+  return [];
+}
+function drawPetAccessory(g, name, x, y, faded, img){
+  if (!PET_ACC_LABEL[name]) return;
+  const box = accBodyOf(img) || { minX: 1, minY: 2, maxX: 16, maxY: 16, cx: 8, crownX: 8, neck: 9, rows: [], solid: new Set() };
+  const px = fitAcc(hugAcc(accPixels(name, box), box.solid)); if (!px.length) return;
+  const set = new Set(px.map(p => p.x + ',' + p.y));
+  g.fillStyle = faded ? PAL.m : PAL.k;
+  for (const p of px) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const nx = p.x + dx, ny = p.y + dy;
+    if (nx < 0 || ny < 0 || nx > 17 || ny > 17 || set.has(nx + ',' + ny)) continue;
+    g.fillRect(x + nx, y + ny, 1, 1);
+  }
+  for (const p of px) { g.fillStyle = faded ? PAL.h : (PAL[p.c] || PAL.m); g.fillRect(x + p.x, y + p.y, 1, 1); }
 }
 // UI sprite (header, collection, dex, starter): dark species get their halo version on these dark cells.
 // acc is a pet accessory id. Silhouettes (mode 's') skip it. Faded pets draw it in grey.
 function spriteCanvas(c, sp, stage, mode='n', faded=false, acc=null){
   const g = ctx(c), s = sprSet(sp, stage, faded); g.clearRect(0,0,c.width,c.height); g.drawImage(mode === 'n' && s.u ? s.u : s[mode], 0, 0);
-  if (mode !== 's' && acc) drawPetAccessory(g, acc, 0, 0, !!faded);
+  if (mode !== 's' && acc) drawPetAccessory(g, acc, 0, 0, !!faded, s.n);
 }
 
 /* ---------- state ---------- */
@@ -421,7 +519,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || !$('#ovDebug').hidden || PPCloud.overlayOpen();
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -460,11 +558,15 @@ function fitPetScene(){
   cands.sort((a, b) => (b[1] * b[0] - a[1] * a[0]) || (b[1] - a[1]) || (b[0] - a[0]));
   if (!(ps.classList.contains('active') && ps.clientHeight)) return setPetCanvas(...cands[0]);
   const fitsAll = () => ps.scrollHeight - ps.clientHeight <= 0;
-  const careOn = () => { const a = ps.querySelector('.actions'); return !a || a.getBoundingClientRect().bottom <= ps.getBoundingClientRect().bottom; };
-  for (const c of cands) { setPetCanvas(...c); if (fitsAll()) return; }
-  // Prefer the tallest size that keeps care buttons on screen (allow a few px of scrollHeight slack on short phones).
-  for (const c of cands) { setPetCanvas(...c); if (careOn()) return; }
-  setPetCanvas(...cands[cands.length - 1]);
+  const careOn = () => { const rows = ps.querySelectorAll('.actions'); const a = rows[rows.length - 1]; return !a || a.getBoundingClientRect().bottom <= ps.getBoundingClientRect().bottom + 1; };
+  const pick = () => {
+    for (const c of cands) { setPetCanvas(...c); if (fitsAll()) return true; }
+    for (const c of cands) { setPetCanvas(...c); if (careOn()) return true; }
+    setPetCanvas(...cands[cands.length - 1]);
+    return false;
+  };
+  ps.classList.remove('pet-tight');
+  if (!pick()) { ps.classList.add('pet-tight'); pick(); }
 }
 function fitAll(){ fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
@@ -902,7 +1004,7 @@ function drawPetScene(t, dt){
   } else if (t < touch.rollUntil) {                       // tickle roll: four crisp quarter turns
     const q = Math.min(3, Math.floor((t - touch.rollFrom) / 200));
     g.save(); g.translate(x + 8, y + bob + 8); g.rotate(q * Math.PI / 2); g.drawImage(img, -8, -8); g.restore();
-  } else { g.drawImage(img, x, y + bob); if (p.accessory) drawPetAccessory(g, p.accessory, x, y + bob, isFaded(p)); }
+  } else { g.drawImage(img, x, y + bob); if (p.accessory) drawPetAccessory(g, p.accessory, x, y + bob, isFaded(p), petSpr(p).n); }
   anim.bangOn = !sleeping && t >= hello.until && (p.hunger < 25 || p.happy < 25 || p.energy < 25);   // (debug hook reads it)
   if (anim.bangOn && Math.floor(t/500)%2) drawGlyph(g, 'bang', x + 16, y - 2);   // the "!" hides while the hello plays (CARE_LOOP §7)
   if (sparkle.id === p.id && now() < sparkle.until) for (let i = 0; i < 3; i++) if (Math.floor(t / 180 + i) % 3 === 0) drawGlyph(g, 'spark', x - 2 + i * 8, y - 3 + (i % 2) * 6);   // colour back (§5)
@@ -913,7 +1015,7 @@ function drawPetScene(t, dt){
     if (Math.random() < dt * 2.5) addPart('z', x + 12, y, 3, -6, 1.4);
   }
   drawParticles(g, dt);
-  const lv = bondLevel(p), hx = Math.round(W / 2) - 14;   // bond: 5 small hearts, top centre (between STATS and the keeper badge)
+  const lv = bondLevel(p), hx = Math.round(W / 2) - 14;   // bond: 5 small hearts, top centre (the keeper badge sits at the right)
   for (let i = 0; i < 5; i++) { const gl = GLYPH.heart; for (let j = 0; j < gl.length; j++) for (let k = 0; k < 5; k++) if (gl[j][k] !== '.') { g.fillStyle = i < lv ? PAL.r : PAL.k; g.globalAlpha = i < lv ? 1 : 0.35; g.fillRect(hx + i * 6 + k, 2 + j, 1, 1); } }
   g.globalAlpha = 1;
   if (c.dataset.bond !== String(lv)) { c.dataset.bond = String(lv); c.setAttribute('role', 'img'); c.setAttribute('aria-label', petName(p) + ', bond ' + lv + ' of 5'); }
@@ -1325,7 +1427,7 @@ if (SCENES.rival1) SCENES.rival1.push(
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
 const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
-  rx_wardens: 'regenx', rx_techs: 'regenx', rx_records: 'regenx', rx_quinn: 'regenx', rx_cal_ally: 'regenx',
+  rx_wardens: 'rx_warden', rx_techs: 'rx_tech', rx_records: 'rx_records', rx_quinn: 'quinn', rx_cal_ally: 'cal',
   sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
@@ -1814,6 +1916,11 @@ const ITEMS = {
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
+function drawItemIcon(canvas, id){
+  const grid = ITEM_ART[id];
+  if (!canvas || !grid) return;
+  ctx(canvas).drawImage(keeperCanvas(grid), 0, 0);
+}
 const BAG_FULL_MSG = 'Bag is full, so some were left behind.';
 const itemLabel = (id, n) => { const it = ITEMS[id], one = it ? it.name : id, many = it ? it.plural : id; return n === 1 ? 'a ' + one : n + ' ' + many; };
 const acorns = n => n + (n === 1 ? ' Acorn' : ' Acorns');      // INVENTORY §2: the save field stays `money`
@@ -1914,8 +2021,7 @@ function setAccessory(petId, name){
   if (name == null || name === 'none' || name === '') { delete p.accessory; return { ok: true, msg: petName(p) + ' wears nothing.' }; }
   if (!PET_ACC_IDS.includes(name)) return { ok: false, msg: "That isn't an accessory." };
   p.accessory = name;
-  const label = name.charAt(0).toUpperCase() + name.slice(1);
-  return { ok: true, msg: petName(p) + ' wears a ' + label + '.' };
+  return { ok: true, msg: petName(p) + ' wears the ' + (PET_ACC_LABEL[name] || name) + '.' };
 }
 // Triggers (§4): fire when a step ends within Manhattan r; once until the keeper ends a step outside the area (or the map changes).
 let walkAwayI = 0;   // which gate toast to show next; not saved (one line each time you step off after "Think about it")
@@ -2233,10 +2339,11 @@ function drawMap(t){
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
       const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
+      if (CUR.skin === 'lab') { const k = ch === 'W' && tx % 2 ? 'W2' : ch, nm = ((LAB_SKIN.override[CUR.id] || {})[k]) || LAB_SKIN.remap[k]; if (nm && TILES[nm]) img = TILES[nm]; }   // FERNBROOK_HEIGHTS §3
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
       drawFactionBand(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
-      if (ch === '=') {                          // rug border where the rug ends
+      if (ch === '=' && CUR.skin !== 'lab') {    // rug border where the rug ends (the lab runner has none)
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
         if (tileAt(tx, ty-1) !== '=') g.fillRect(X, Y, 16, 1); if (tileAt(tx, ty+1) !== '=') g.fillRect(X, Y+15, 16, 1);
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
@@ -2261,7 +2368,7 @@ function drawMap(t){
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
     const bob = followerBob(t);
     g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - bob);
-    if (p.accessory) drawPetAccessory(g, p.accessory, fx, fy - bob, isFaded(p));
+    if (p.accessory) drawPetAccessory(g, p.accessory, fx, fy - bob, isFaded(p), petSpr(p).n);
     if (earlyBuddy() && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob);
     grassOver(fol.fx, fol.fy);
   };
@@ -2489,7 +2596,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     }
     g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage(WART.sign, X, Y);
-  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) g.drawImage(Array.isArray(a) ? a[Math.floor(t / 400) % 2] : a, X, Y); }
+  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) { const reduce = a.ms && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; g.drawImage(Array.isArray(a) ? a[reduce ? 0 : Math.floor(t / (a.ms || 400)) % 2] : a, X, Y); } }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') { const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(sprSet(si, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
 }
@@ -2714,7 +2821,7 @@ function interact(o){
   if (o.booth) { openBooth(o); return; }
   if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
-  if (o.kind === 'npc' || o.kind === 'trainer') faceKeeper(o);
+  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); noteContact(objName(o)); }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
@@ -2897,7 +3004,7 @@ function expand(text){
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene;
   switch (k) {
-    case 'say': { if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); await sayBox(a, tx); return; }
+    case 'say': { noteContact(a); if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); await sayBox(a, tx); return; }
     case 'choice': {
       sc.skip = false;
       const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
@@ -3207,8 +3314,9 @@ let ENV = null;
 const rnd = ([a, b]) => a + Math.random() * (b - a);
 const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow'];
 // weatherOnly species (the vane line): weight 0 unless one of their tags is active, and never part of the any-species roll.
+// labOnly species (the byte line): weight 0 everywhere, and never part of the any-species roll. A map object places them.
 const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
-const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly);
+const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && !SPECIES[i].labOnly);
 // CREATURES_SLICE §3: authored spawn tables, rows [speciesId, baseWeight, minLv, maxLv]. Effective weight = base x (1 + 0.25 x the
 // species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
 const SPAWNS = {
@@ -3220,10 +3328,10 @@ const SPAWNS = {
 for (const src of [MD.act1_route2, MD.cobblecrest]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = v;
 const spawnKey = () => (CUR && CUR.spawns) || 'proto';
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
-function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
+function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && !sp.labOnly && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
 const starterMult = sp => !sp.starter ? 1 : (S.flags && S.flags['story.seal1']) ? 0.2 : 0;
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => !sp.labOnly && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
 const anyWeights = () => SPECIES.map((sp, i) => ANY_POOL.includes(i) ? starterMult(sp) : 0);
 function spawnOdds(tags = envTags(), key = spawnKey()){   // expected spawn probability per species for these tags on this map's table
   const t = SPAWNS[key];
@@ -4593,6 +4701,250 @@ function showTownBoardPane(){
   $('#phoneHome').hidden = true; $('#phonePane').hidden = false;
   const back = $('#phoneBack'); if (back) back.hidden = !owned;
 }
+// Contacts: one card per person you have met. Quest dialog (a scene, a line that starts a scene, or a catch scene) is marked QUEST.
+// Favorites live in S.phoneBook and the save stays v2. D80.
+const PHONE_GLYPH = {
+  contacts: ['..##....', '.####...', '.####...', '..##....', '.######.', '##.##.##', '##.##.##', '.######.'],
+  notes: ['.######.', '#......#', '#.####.#', '#......#', '#.##...#', '#......#', '.######.', '........'],
+  walklings: ICONS.paw,
+  friends: ICONS.friends,
+  jobs: ['...##...', '..####..', '...##...', '.######.', '#.#..#.#', '.######.', '..#..#..', '.#....#.'],
+  ribbit: ['.#....#.', '##....##', '#.#..#.#', '.######.', '..#..#..', '.######.', '.#....#.', '.#....#.'],
+  board: ['########', '#.#..#.#', '#......#', '#.####.#', '#.#....#', '#.####.#', '#......#', '########'],
+};
+function setPhoneJobsLabel(hack){
+  const lab = $('#phoneJobs .phone-lab');
+  const text = hack ? 'BOTNET' : 'KEEPERUAV';
+  if (lab) lab.textContent = text; else $('#phoneJobs').textContent = text;
+}
+function paintPhoneHome(){
+  const hack = phoneHack();
+  const ink = hack
+    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8' }
+    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0' };
+  $$('#phoneHome .phone-glyph').forEach(el => {
+    const c = el.querySelector('canvas'), grid = PHONE_GLYPH[el.dataset.glyph];
+    if (!c || !grid) return;
+    iconCanvas(c, grid, ink[el.dataset.glyph] || '#f4f4f4');
+  });
+}
+function contactKey(name){
+  if (typeof name !== 'string') return '';
+  return name.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+}
+function phoneBook(){
+  if (!S) return { met: {}, fav: {} };
+  if (!S.phoneBook || typeof S.phoneBook !== 'object' || Array.isArray(S.phoneBook)) S.phoneBook = { met: {}, fav: {} };
+  if (!S.phoneBook.met || typeof S.phoneBook.met !== 'object' || Array.isArray(S.phoneBook.met)) S.phoneBook.met = {};
+  if (!S.phoneBook.fav || typeof S.phoneBook.fav !== 'object' || Array.isArray(S.phoneBook.fav)) S.phoneBook.fav = {};
+  return S.phoneBook;
+}
+let contactPeopleCache = null;
+function contactPeople(){
+  if (contactPeopleCache) return contactPeopleCache;
+  const people = new Map();
+  for (const m of Object.values(WORLD)) {
+    for (const o of m.objs || []) {
+      if (!o || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
+      const name = objName(o), key = contactKey(name);
+      if (!key) continue;
+      let person = people.get(key);
+      if (!person) people.set(key, person = { key, name, spots: [], quest: false });
+      person.spots.push({ id: o.id, map: m.id, mapName: m.name || m.id, o });
+      if (spotIsQuest(o)) person.quest = true;
+    }
+  }
+  contactPeopleCache = people;
+  return people;
+}
+function spotIsQuest(o){
+  if (typeof o.scene === 'string' && o.scene) return true;
+  if (o.catch && typeof o.catch.scene === 'string' && o.catch.scene) return true;
+  for (const v of Object.values(o.lines || {})) if (typeof v === 'string' && v.charAt(0) === '@') return true;
+  if (o.kind === 'trainer') { const t = TRAINERS[o.id]; if (t && t.onWin) return true; }
+  return false;
+}
+function flagBareOn(body){
+  if (!body || /[=<>]/.test(body) || body.startsWith('seal:') || body === 'talked' || body.startsWith('has:')) return false;
+  return !!S.flags[body];
+}
+function spotMet(o){
+  if (!S || !o) return false;
+  if (typeof o.scene === 'string' && scenePlayed(o.scene)) return true;
+  if (o.catch && typeof o.catch.scene === 'string' && scenePlayed(o.catch.scene)) return true;
+  if (o.kind === 'trainer' && S.flags['trainer.' + o.id]) return true;
+  for (const [k, v] of Object.entries(o.lines || {})) {
+    if (typeof k !== 'string' || k.charAt(0) !== '!') continue;
+    const body = k.slice(1);
+    if (body.startsWith('story.met_') && S.flags[body]) return true;
+    if (typeof v === 'string' && v.charAt(0) === '@' && flagBareOn(body)) return true;
+  }
+  return false;
+}
+function sceneSayNames(steps, into){
+  for (const st of steps || []) {
+    if (!Array.isArray(st) || !st.length) continue;
+    if (st[0] === 'say') { const key = contactKey(st[1]); if (key) into.add(key); }
+    else if (st[0] === 'if') { sceneSayNames(st[2], into); sceneSayNames(st[3], into); }
+    else if (st[0] === 'choice') for (const opt of st[2] || []) if (Array.isArray(opt)) sceneSayNames(opt[1], into);
+  }
+}
+function sceneFlagDone(steps){
+  if (!Array.isArray(steps)) return false;
+  const fl = steps.filter(st => Array.isArray(st) && st[0] === 'setFlag' && typeof st[1] === 'string');
+  return fl.length > 0 && fl.every(st => S.flags[st[1]]);
+}
+function playedSceneNames(){
+  const names = new Set();
+  if (!S) return names;
+  for (const [id, steps] of Object.entries(SCENES)) {
+    if (id.includes('@')) continue;
+    if (sceneFlagDone(steps)) sceneSayNames(steps, names);
+    const alt = SCENES[id + '@glimmer'];
+    if (sceneFlagDone(alt)) sceneSayNames(alt, names);
+  }
+  return names;
+}
+function personMet(person, played){
+  if (!person) return false;
+  if (phoneBook().met[person.key]) return true;
+  if (played && played.has(person.key)) return true;
+  return person.spots.some(s => spotMet(s.o));
+}
+function noteContact(name){
+  const key = contactKey(name);
+  if (!key || !S || !contactPeople().has(key)) return;
+  const book = phoneBook();
+  if (book.met[key]) return;
+  book.met[key] = true;
+  if (!scene) save();
+}
+function contactEntries(){
+  const played = playedSceneNames(), book = phoneBook(), rows = [];
+  for (const person of contactPeople().values()) if (personMet(person, played)) rows.push(person);
+  rows.sort((a, b) => {
+    const fa = book.fav[a.key] ? 0 : 1, fb = book.fav[b.key] ? 0 : 1;
+    if (fa !== fb) return fa - fb;
+    return a.name.localeCompare(b.name);
+  });
+  return rows;
+}
+function contactPlace(person){
+  const here = CUR && person.spots.find(s => s.map === CUR.id && present(s.o));
+  if (here) return here.mapName;
+  const live = person.spots.find(s => present(s.o));
+  return (live || person.spots[0]).mapName;
+}
+function contactBlurb(person){
+  const score = s => (CUR && s.map === CUR.id && present(s.o) ? 2 : 0) + (present(s.o) ? 1 : 0);
+  const spots = person.spots.slice().sort((a, b) => score(b) - score(a));
+  for (const spot of spots) {
+    if (spot.o.lines) {
+      const line = linesFor(spot.o);
+      if (typeof line === 'string' && line && line.charAt(0) !== '@') return line;
+    }
+    if (spot.o.kind === 'trainer') {
+      const t = TRAINERS[spot.o.id];
+      const spoken = t ? trainerLine(spot.o.id, S.flags['trainer.' + spot.o.id] ? 'win' : 'intro') : '';
+      if (spoken) return spoken;
+      if (t && t.title) return t.title;
+    }
+  }
+  return person.quest ? 'They still have more to say.' : 'You have met them.';
+}
+function paintContactFace(canvas, person){
+  if (!canvas) return;
+  const spot = person.spots.find(s => present(s.o)) || person.spots[0];
+  const g = ctx(canvas);
+  g.clearRect(0, 0, canvas.width, canvas.height);
+  try { g.drawImage(keeperFrames(npcLook(spot.o)).down[0], 0, 0); } catch (e) {}
+}
+let contactFilter = 'all', contactOpen = '';
+function toggleContactFav(name){
+  const key = contactKey(name), person = contactPeople().get(key);
+  if (!person || !personMet(person, playedSceneNames())) return;
+  const book = phoneBook();
+  if (book.fav[key]) delete book.fav[key]; else book.fav[key] = true;
+  save(); sfx('tap'); renderContacts();
+}
+function renderContactCard(body, person, fav){
+  const card = document.createElement('article');
+  card.className = 'contact-card';
+  card.dataset.who = person.key;
+  card.dataset.quest = person.quest ? '1' : '0';
+  const face = document.createElement('canvas');
+  face.width = face.height = 18; face.className = 'contact-face contact-face-lg'; face.setAttribute('aria-hidden', 'true');
+  paintContactFace(face, person);
+  const nm = document.createElement('h3'); nm.className = 'contact-card-name'; nm.textContent = person.name;
+  const place = document.createElement('p'); place.className = 'contact-place'; place.textContent = contactPlace(person);
+  card.append(face, nm, place);
+  if (person.quest) { const chip = document.createElement('p'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; card.appendChild(chip); }
+  const line = document.createElement('p'); line.className = 'contact-line'; line.textContent = contactBlurb(person);
+  const acts = document.createElement('div'); acts.className = 'contact-card-acts';
+  const star = document.createElement('button');
+  star.type = 'button'; star.className = 'btn contact-star'; star.dataset.fav = person.key; star.textContent = fav ? 'ON' : 'FAV';
+  star.setAttribute('aria-pressed', fav ? 'true' : 'false');
+  star.setAttribute('aria-label', (fav ? 'Unfavorite ' : 'Favorite ') + person.name);
+  const back = document.createElement('button');
+  back.type = 'button'; back.className = 'btn'; back.dataset.contactBack = '1'; back.textContent = 'LIST';
+  acts.append(star, back);
+  card.append(line, acts);
+  body.appendChild(card);
+}
+function renderContacts(){
+  const body = $('#phoneBody');
+  if (!body) return;
+  body.innerHTML = '';
+  const book = phoneBook(), rows = contactEntries();
+  const filters = document.createElement('div');
+  filters.className = 'contact-filters';
+  for (const [id, label] of [['all', 'ALL'], ['fav', 'FAVORITES']]) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn contact-filter' + (contactFilter === id ? ' on' : '');
+    b.dataset.contactFilter = id; b.textContent = label;
+    b.setAttribute('aria-pressed', contactFilter === id ? 'true' : 'false');
+    filters.appendChild(b);
+  }
+  body.appendChild(filters);
+  const open = contactOpen && rows.find(p => p.key === contactOpen);
+  if (contactOpen && !open) contactOpen = '';
+  if (open) { renderContactCard(body, open, !!book.fav[open.key]); return; }
+  const shown = contactFilter === 'fav' ? rows.filter(p => book.fav[p.key]) : rows;
+  if (!shown.length) {
+    const empty = document.createElement('p');
+    empty.className = 'contact-empty';
+    empty.textContent = contactFilter === 'fav' ? 'No favorites yet. Mark someone with FAV.' : 'Talk to someone. They stay in this list.';
+    body.appendChild(empty);
+    return;
+  }
+  const list = document.createElement('div');
+  list.className = 'contact-list'; list.setAttribute('role', 'list');
+  for (const person of shown) {
+    const fav = !!book.fav[person.key];
+    const row = document.createElement('div');
+    row.className = 'contact-row' + (person.quest ? ' is-quest' : '');
+    row.dataset.quest = person.quest ? '1' : '0';
+    row.setAttribute('role', 'listitem');
+    const main = document.createElement('button');
+    main.type = 'button'; main.className = 'contact-main'; main.dataset.who = person.key;
+    const face = document.createElement('canvas');
+    face.width = face.height = 18; face.className = 'contact-face'; face.setAttribute('aria-hidden', 'true');
+    paintContactFace(face, person);
+    const meta = document.createElement('span'); meta.className = 'contact-meta';
+    const nm = document.createElement('b'); nm.className = 'contact-name'; nm.textContent = person.name;
+    const place = document.createElement('small'); place.className = 'contact-place'; place.textContent = contactPlace(person);
+    meta.append(nm, place);
+    if (person.quest) { const chip = document.createElement('span'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; meta.appendChild(chip); }
+    main.append(face, meta);
+    const star = document.createElement('button');
+    star.type = 'button'; star.className = 'btn contact-star'; star.dataset.fav = person.key; star.textContent = fav ? 'ON' : 'FAV';
+    star.setAttribute('aria-pressed', fav ? 'true' : 'false');
+    star.setAttribute('aria-label', (fav ? 'Unfavorite ' : 'Favorite ') + person.name);
+    row.append(main, star);
+    list.appendChild(row);
+  }
+  body.appendChild(list);
+}
 function openTownBoard(){
   if (!S || scene || fade.busy || overlayOpen()) return;
   clearMoves();
@@ -4601,8 +4953,9 @@ function openTownBoard(){
   ov.classList.toggle('board-post', !owned);
   if (owned) {
     $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
-    $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
+    setPhoneJobsLabel(hack);
     $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
+    paintPhoneHome();
   } else $('#phoneTitle').textContent = 'TOWN BOARD';
   showTownBoardPane();
   ov.hidden = false; lockTabs(true); sfx('tap');
@@ -4616,9 +4969,10 @@ function openPhone(){
   const back = $('#phoneBack'); if (back) back.hidden = false;
   const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
   $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
-  $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
+  setPhoneJobsLabel(hack);
   $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
   $('#phoneHome').hidden = false; $('#phonePane').hidden = true;
+  paintPhoneHome();
   clearMoves(); ov.hidden = false; lockTabs(true); sfx('tap'); syncJournalBtn();
 }
 function closePhone(){
@@ -4683,7 +5037,7 @@ function renderRibbit(body){
   body.appendChild(foot);
 }
 function phoneApp(id){
-  if (id === 'journal') { closePhone(); showTab('col'); return; }
+  if (id === 'journal' || id === 'walklings') { closePhone(); showTab('col'); return; }
   if (id === 'board') { showTownBoardPane(); sfx('tap'); return; }
   const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
   const hack = phoneHack();
@@ -4692,11 +5046,8 @@ function phoneApp(id){
   body.innerHTML = '';
   const add = (who, text) => { const p = document.createElement('p'); if (who) { const b = document.createElement('b'); b.className = 'who'; b.textContent = who; p.appendChild(b); p.appendChild(document.createTextNode('  ' + text)); } else p.textContent = text; body.appendChild(p); };
   if (id === 'contacts') {
-    add('Officer Ness', 'Route 1 watch. Issued your Keeper1.');
-    add('Sergeant Bram', 'Keeper House door. Rank matters to him.');
-    add('Captain Lumen', 'Upstairs. KeeperUAV jobs wait on her desk.');
-    if (S.flags['story.met_fen']) add('Master Fen', side() === 'glimmer' ? 'She still keeps a chair for you.' : 'Orchard. Roots and blossoms.');
-    if (side() === 'glimmer') add('Clerk Mint', 'Cracked handsets. She does not do warranties.');
+    contactFilter = 'all'; contactOpen = '';
+    renderContacts();
   } else if (id === 'notes') {
     if (hack) {
       add('Handset', 'The crest phone copies every note. This one too, probably.');
@@ -4844,8 +5195,8 @@ function syncWalkTip(){
 }
 function syncBagBtns(){
   const on = bagVisible() && !(battle && battle.on);
-  const w = $('#walkBagBtn'), p = $('#petBagBtn');
-  if (w) w.hidden = !on; if (p) p.hidden = !on;
+  const w = $('#walkBagBtn');
+  if (w) w.hidden = !on;
 }
 function openBag(){
   if (!bagVisible() || overlayOpen()) return;
@@ -4871,7 +5222,7 @@ function renderBag(){
     const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly || holdable ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
     row.setAttribute('role', 'option'); row.dataset.id = id; row.dataset.i = String(i);
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico' + (battleOnly ? ' grey' : '');
-    if (ITEM_ART[id]) ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    drawItemIcon(ico, id);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name';
     nm.textContent = it.name + ' \u00d7' + itemCount(id);
@@ -4944,7 +5295,7 @@ function renderShop(){
     const it = ITEMS[id];
     const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
-    if (ITEM_ART[id]) ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    drawItemIcon(ico, id);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = it.name;
     const own = document.createElement('div'); own.className = 'bag-blurb shop-own'; own.textContent = '\u00d7' + itemCount(id) + ' owned';
@@ -5314,7 +5665,7 @@ function drawBattle(t, dt){
     if (hide) return;
     const img = sprSet(si, stage, faded)[mode];
     if (mirror) { g.save(); g.translate(x + 18, y); g.scale(-1, 1); g.drawImage(img, 0, 0); g.restore(); } else g.drawImage(img, x, y);
-    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, x, y, !!faded);
+    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, x, y, !!faded, sprSet(si, stage, faded).n);
   };
   if (B.group && B.slots) {
     let other = null;
@@ -5390,7 +5741,7 @@ function drawEvolution(t){
 
 /* ---------- stats card (TYPES_STATS as-built 7) ---------- */
 // One overlay any tab can open for a pet id (Pet tab, Pets tab; later the Walk follower, MAPS_SLICE K.4).
-// Bars: the pet's stats at its level, each scaled to the highest value of that stat across all 42 forms at the same level.
+// Bars: the pet's stats at its level, each scaled to the highest value of that stat across every form at the same level.
 // No moves row until battles ship.
 const STAT_KEYS = [['hp', 'HP'], ['atk', 'ATK'], ['def', 'DEF'], ['spd', 'SPD']];
 const statMaxCache = {};
@@ -5487,10 +5838,30 @@ function setRelief(p, on){
     ensureDeploy(p).relief = true;
   } else if (p.deploy) { delete p.deploy.relief; pruneDeploy(p); }
 }
+function renderKit(){
+  const p = pet(); if (!p) { closeKit(); return; }
+  spriteCanvas($('#kitIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
+  $('#kitWho').textContent = petName(p);
+  const species = nameOf(spi(p), p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  $('#kitSpecies').textContent = (cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
+  const box = $('#kitBox'); box.textContent = ''; fillWalklingExtras(box, p);
+}
+function openKit(){
+  const p = pet(); if (!p || overlayOpen()) return false;
+  clearMoves(); $('#ovKit').hidden = false; lockTabs(true); renderKit(); sfx('tap');
+  $('#kitClose').focus({ preventScroll: true });
+  return true;
+}
+function closeKit(){
+  const el = $('#ovKit'); if (!el || el.hidden) return;
+  el.hidden = true; lockTabs(false); updateHUD();
+}
 function commitGear(id, opts){
   save(); updateHUD();
   if (typeof openWalklingSheet === 'function' && $('#ovWalkling') && !$('#ovWalkling').hidden && !(opts && opts.keep)) { openWalklingSheet(id); return; }
   if (typeof renderCollection === 'function') renderCollection();
+  const kit = $('#ovKit');
+  if (kit && !kit.hidden && !(opts && opts.keep) && pet() && pet().id === id) renderKit();
   if (opts && opts.keep) return;
   if ($('#ovStats').hidden || statsCard.id !== id || !statsCard.gear) return;
   const p = petById(id), box = $('#scGearBox');
@@ -5509,6 +5880,16 @@ function fillWalklingExtras(container, pet){
     commitGear(pet.id, keep ? { keep: true } : null);
   };
 
+  container.appendChild(lab('ADORN'));
+  const accs = row();
+  [['none', 'None']].concat(PET_ACC_IDS.map(id => [id, PET_ACC_LABEL[id] || id])).forEach(([id, name]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.acc = id; b.textContent = name;
+    press(b, (pet.accessory || 'none') === id);
+    b.addEventListener('click', () => after(setAccessory(live().id, id)));
+    accs.appendChild(b);
+  });
+  container.appendChild(accs);
+
   container.appendChild(lab(pet.held && ITEMS[pet.held] ? 'HOLD · ' + ITEMS[pet.held].name : 'HOLD'));
   const holds = row();
   const owned = ITEM_ORDER.filter(id => ITEMS[id] && ITEMS[id].hold && itemCount(id) > 0);
@@ -5522,16 +5903,6 @@ function fillWalklingExtras(container, pet){
   take.addEventListener('click', () => after(unholdItem(live().id)));
   holds.appendChild(take);
   container.appendChild(holds);
-
-  container.appendChild(lab('ACCESSORY'));
-  const accs = row();
-  [['none', 'None']].concat(PET_ACC_IDS.map(id => [id, id.charAt(0).toUpperCase() + id.slice(1)])).forEach(([id, name]) => {
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.acc = id; b.textContent = name;
-    press(b, (pet.accessory || 'none') === id);
-    b.addEventListener('click', () => after(setAccessory(live().id, id)));
-    accs.appendChild(b);
-  });
-  container.appendChild(accs);
 
   container.appendChild(lab('CALL'));
   const calls = row();
@@ -5576,7 +5947,7 @@ function paintStatsInto(prefix, p, opt){
   $('#' + prefix + 'Name').textContent = petName(p);
   const species = nameOf(si, p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   $('#' + prefix + 'Species').textContent = ((opt && opt.alwaysSpecies) || cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
-  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of 42 forms';
+  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of ' + (SPECIES.length * 3) + ' forms';
   const tb = $('#' + prefix + 'Type'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
   $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
   const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
@@ -6944,13 +7315,24 @@ function bindInput(){
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
   $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
+  $('#petKitBtn').addEventListener('click', () => openKit());
+  $('#kitClose').addEventListener('click', () => { sfx('tap'); closeKit(); });
+  $('#ovKit').addEventListener('click', e => { if (e.target === e.currentTarget) closeKit(); });
   $('#petCanvas').addEventListener('pointerdown', e => { if (screen === 'pet' && !overlayOpen() && petHit(e.clientX, e.clientY)) { e.preventDefault(); patPet(); } });   // CARE_LOOP A: pats
-  $('#petBagBtn').addEventListener('click', () => openBag());
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#phoneBtn').addEventListener('click', openPhone);
   $('#phoneClose').addEventListener('click', () => { sfx('tap'); closePhone(); });
   $('#phoneBack').addEventListener('click', () => { sfx('tap'); const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true; $('#phoneHome').hidden = false; $('#phonePane').hidden = true; });
   $$('#phoneHome .phone-app').forEach(b => b.addEventListener('click', () => phoneApp(b.dataset.app)));
+  $('#phoneBody').addEventListener('click', e => {
+    const filter = e.target.closest('[data-contact-filter]');
+    if (filter) { contactFilter = filter.dataset.contactFilter === 'fav' ? 'fav' : 'all'; contactOpen = ''; sfx('tap'); renderContacts(); return; }
+    if (e.target.closest('[data-contact-back]')) { contactOpen = ''; sfx('tap'); renderContacts(); return; }
+    const fav = e.target.closest('[data-fav]');
+    if (fav) { toggleContactFav(fav.dataset.fav); return; }
+    const who = e.target.closest('[data-who]');
+    if (who && who.classList.contains('contact-main')) { contactOpen = who.dataset.who; sfx('tap'); renderContacts(); }
+  });
   $('#questBtn').addEventListener('click', openQuest);
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
@@ -7102,6 +7484,7 @@ function bindInput(){
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
     if (e.key === 'Escape' && !$('#ovStats').hidden) { if (!$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
+    if (e.key === 'Escape' && !$('#ovKit').hidden) { closeKit(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
     if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
     if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
@@ -7510,6 +7893,7 @@ function boot(){
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
+  api.contacts = () => contactEntries().map(p => ({ name: p.name, quest: !!p.quest, fav: !!phoneBook().fav[p.key], place: contactPlace(p) }));
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
   Object.defineProperty(api, 'lanternRest', { enumerable: true, get(){
     return { cost: LANTERN_REST_COST, due: !!(S && S.world && S.world.restDue === true), hurt: partyNeedsLanternRest() };
@@ -7585,6 +7969,66 @@ function boot(){
       Object.defineProperty(api, k, { enumerable: true, configurable: true, get(){ return DEBUG ? v : undefined; } });
     }
   }
+  api.adornCheck = () => {
+    const problems = [];
+    const near = (alpha, x, y) => {
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= 18 || ny >= 18) continue;
+        if (alpha[(ny * 18 + nx) * 4 + 3] > 20) return true;
+      }
+      return false;
+    };
+    const paint = (si, stage, acc, faded) => {
+      const c = document.createElement('canvas'); c.width = c.height = 18;
+      spriteCanvas(c, si, stage, 'n', faded, acc);
+      return c.getContext('2d').getImageData(0, 0, 18, 18).data;
+    };
+    SPECIES.forEach((sp, si) => sp.stages.forEach((st, stage) => {
+      const bare = paint(si, stage, null, false);
+      for (const id of PET_ACC_IDS) {
+        const worn = paint(si, stage, id, false);
+        let diff = 0, attached = 0;
+        for (let i = 0; i < worn.length; i += 4) {
+          if (worn[i] === bare[i] && worn[i + 1] === bare[i + 1] && worn[i + 2] === bare[i + 2] && worn[i + 3] === bare[i + 3]) continue;
+          diff++;
+          const p = i / 4;
+          if (near(bare, p % 18, (p / 18) | 0)) attached++;
+        }
+        if (diff < 5 || attached < 1) problems.push(sp.id + '/' + stage + ' ' + id + ' diff ' + diff + ' on ' + attached);
+      }
+      const faded = paint(si, stage, 'bell', true), plain = paint(si, stage, null, true);
+      let grey = false;
+      for (let i = 0; i < faded.length; i += 4) {
+        if (faded[i] === plain[i] && faded[i + 1] === plain[i + 1] && faded[i + 2] === plain[i + 2]) continue;
+        if (faded[i] === 0x94 && faded[i + 1] === 0xb0 && faded[i + 2] === 0xc2) grey = true;
+      }
+      if (!grey) problems.push(sp.id + '/' + stage + ' faded bell is not grey');
+    }));
+    return problems;
+  };
+  api.adornSheet = () => {
+    const scale = 6, cell = 18 * scale, label = 96, forms = [];
+    SPECIES.forEach((sp, si) => sp.stages.forEach((st, stage) => forms.push([si, stage, st.name])));
+    const sheet = document.getElementById('accSheet') || document.createElement('canvas');
+    sheet.id = 'accSheet';
+    sheet.width = label + 6 * cell;
+    sheet.height = forms.length * cell;
+    sheet.style.cssText = 'position:fixed;left:0;top:0;z-index:40;background:#1a1c2c;image-rendering:pixelated';
+    if (!sheet.parentNode) document.body.appendChild(sheet);
+    const g = sheet.getContext('2d'); g.imageSmoothingEnabled = false;
+    g.fillStyle = '#1a1c2c'; g.fillRect(0, 0, sheet.width, sheet.height);
+    g.font = '16px sans-serif'; g.fillStyle = '#ffcd75'; g.textBaseline = 'middle';
+    forms.forEach(([si, stage, name], i) => {
+      g.fillStyle = '#ffcd75'; g.fillText(name, 6, i * cell + cell / 2);
+      [null].concat(PET_ACC_IDS).forEach((id, col) => {
+        const c = document.createElement('canvas'); c.width = c.height = 18;
+        spriteCanvas(c, si, stage, 'n', false, id);
+        g.drawImage(c, label + col * cell, i * cell, cell, cell);
+      });
+    });
+    return true;
+  };
   window.PixelPets = Object.freeze(api);
   window.holdItem = holdItem;
   window.unholdItem = unholdItem;

@@ -32,7 +32,7 @@
     'story.dream_roll', 'story.dream_red', 'story.dream_yellow', 'story.dream_blue',   // High Charity and Mahopac bits; neither is a main-chain step
     // Fernbrook Heights: floor and offer flags. story.heights_done is the chain step. seal1 implies the step via skipIf.
     'story.know_us', 'story.heights_path', 'story.stock_warned', 'story.rx_enter', 'story.met_nia', 'story.rx_f1',
-    'story.met_cal', 'story.rx_f2', 'story.saw_arbiter', 'story.rx_f3', 'story.rx_done', 'story.sm_yard', 'story.sm_look',
+    'story.met_cal', 'story.rx_f2', 'story.saw_arbiter', 'story.rx_f3', 'story.rx_done', 'story.rx_bitlet', 'story.sm_yard', 'story.sm_look',
     'story.met_jed', 'story.sm_freed', 'story.sm_haul', 'story.sm_done',
     'story.rook_end', 'story.rook_bond',
     'story.met_bram', 'story.met_mo', 'story.met_wynn', 'story.met_lumen', 'story.met_rue'];
@@ -64,7 +64,7 @@
       target: { map: 'fernbrook', x: 10, y: 9 } },
     { id: 'heights', when: ['story.side_pick_done'], done: ['story.heights_done'], skipIf: ['story.seal1'], noImply: true,
       text: 'Get to know us. North in the Heights, Walklings are moved at night. Stock up first.', place: 'Fernbrook Heights',
-      glimmer: { text: 'Get to know us. RegenX in the Heights brews Atten. Stock up, then bring samples and plans.', place: 'Fernbrook Heights' },
+      glimmer: { text: 'Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.', place: 'Fernbrook Heights' },
       target: { map: 'fb_heights', x: 12, y: 10 } },
     { id: 'orchard', done: ['story.orchard_cleared'],
       text: 'Tobin is stacking crates by the orchard gate. Help the Pomlets out.', place: 'Orchard gate',
