@@ -3,6 +3,15 @@
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
 
+## 2026-10-15 09:40 ET: High Charity rooms get their own floors and walls
+
+- What changed and why: The fourteen High Charity rooms keep their size (D84) and gain a skin each: own floor, wall face and baseboard, seeded variants, a wall-shadow row under the windows, and the signature props from the building list. No two of them share a floor and wall. The lab skin and the nine house skins are unchanged. `data/highcharity.json` is not edited; the room edits live in `data/detail_b6.json`.
+- Files touched: `sprites.js`, `data/detail_b6.json`, `data/mapdata.js`, `tests/maps_b6.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build `20261015-0940`.
+- Tests run and result: `PP_PORT=8106 npm test` at 320, 375 and 390. 537 passed, 6 skipped, 0 failed (13.0m). The 6 skips are the town-board checks that only run at 320.
+- Decisions made: D100 (green). New prop lines are neutral stand-ins. D101 was not needed.
+- Anything left unfinished: Rooms were not enlarged. A 9×7 room that cannot hold both the prop count and a clear path would have been named here; each room met the count and stayed walkable.
+
 ## 2026-10-15 09:02 ET: house interiors get their own floors and walls
 
 - What changed and why: The nine Hearthmoor, Keeper House and Cobblecrest rooms keep their size (D84) and gain a house skin each: own floor, wall face and baseboard, plank variants, a wall-shadow row under the windows, and props enough for one per twelve floor cells. The lab skin is unchanged. The verbatim design copies are not edited; the room edits live in `data/detail_b5.json`.

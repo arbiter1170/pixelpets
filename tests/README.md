@@ -50,6 +50,8 @@ A console message of type `error`, or any uncaught page error, fails the test.
 
 `tests/maps_b5.spec.js` (house interiors): the nine Hearthmoor, Keeper House and Cobblecrest rooms keep their size and old object ids, each floor and wall skin is different, the wall-shadow row sits under the windows, the floor cap stays at or under 70 percent, new props are reachable and say their line, exits still land on the old tiles, a save on a wall snaps to safe, and the lab bay's floor share is unchanged. Save `v` stays 2.
 
+`tests/maps_b6.spec.js` (High Charity interiors): the fourteen rooms keep their size and old object ids, each floor and wall skin is different, the wall-shadow row sits under the windows, the floor cap stays at or under 70 percent, new props are reachable and say their line, exits and the mall stair still land on the old tiles, a save on a wall snaps to safe, and the lab bay's floor share is unchanged. Save `v` stays 2.
+
 `tests/map.spec.js` (region map): the key lists towns, routes, side places, you, the next step, the side task, the coach, Keepers, Glimmerwell, both sides, wild, and Seals. Hearthmoor reads as Keepers. An unvisited Route 1 tap stays `???` and leaves the map open. Arrow keys change the reading and, if one is still held when the map closes, do not walk the keeper. With debug, `mapHold` follows the buyout and `story.sm_done`, High Charity's `townFaction` is `keepers`, Fernbrook's card says Glimmerwell, and an indoor card names the room. Screenshots: `region-map-home`, `region-map-claims`, `region-map-key`.
 
 `tests/standing.spec.js` (Build 2; all with `?debug=1` and the starter save unless noted):

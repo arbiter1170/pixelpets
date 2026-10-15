@@ -200,7 +200,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   stub: offer a snack (it stays in the bag), meet a free quota of three spoken names, or battle Hale. Any close grants
   the Bright Tier 2 Lanyard (`seals.seal_glim_2`, `LANYARD_TIER2`: gold rim, mint field, two white marks), 2 Hearty Snacks and 1 Wake Tonic, and sets
   `story.seal2`. The player look picker still has no lanyard. On the Brinewick cart, Keepers Rook gets off (`story.rook_end` `"ally"`) and Glimmerwell Rook stays
-  (`"stays"`). Both paths set `story.cobble_end` and show the same coming-later card. After that flag, a Keepers save is called to the Lantern Council in Sky-Dock Command (`hc_council`). A Glimmerwell pledge does not see it. The quest row covers that pointer until `story.hc_council_done`. Brinewick stays closed. Keepers Route 2 and the Hale trial
+  (`"stays"`). Both paths set `story.cobble_end` and show the same coming-later card. After that flag, a Keepers save is called to the Lantern Council in Sky-Dock Command (`hc_council`). The fourteen High Charity rooms keep their size, and each one has its own floor and wall. A Glimmerwell pledge does not see it. The quest row covers that pointer until `story.hc_council_done`. Brinewick stays closed. Keepers Route 2 and the Hale trial
   are unchanged. `story.rook_bond` does not gate the cart.
 - Standing (Build 2, GLIMMER_PATH v0.2 BS; NEXT_PLAN WP-B "Standing and switching"): each side has a 0-100 meter,
   `S.standing = { keepers, glimmer }` (additive, `v` stays 2; `save.js` fills a missing or bad value with 0 and clamps the
