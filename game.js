@@ -676,7 +676,7 @@ function updateHUD(){
   $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = p.xp;
   $('#wSteps').textContent = S.steps;   // STAT_DISPLAY: the WALK slot of the shared strip
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
-  const setCount = (el, v, cap) => { const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
+  const setCount = (el, v, cap) => { if (!el) return; const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
   setCount($('#ssCare'), cx, CARE_XP_DAILY_CAP); setCount($('#ssExp'), ex, EXPLORE_XP_DAILY_CAP);   // EXPLORE once (STAT_DISPLAY §4)
   const hint = $('#evoHint'), btn = $('#evolveBtn');
   if (p.stage >= 2) { hint.textContent = 'Fully grown! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
@@ -7792,8 +7792,7 @@ function bindInput(){
     if (who && who.classList.contains('contact-main')) { contactOpen = who.dataset.who; sfx('tap'); renderContacts(); }
   });
   $('#questBtn').addEventListener('click', openQuest);
-  $('#questSideMore').addEventListener('click', questToggleMore);
-  $('#questDoneToggle').addEventListener('click', questToggleDone);
+  { const m = $('#questSideMore'), d = $('#questDoneToggle'); if (m) m.addEventListener('click', questToggleMore); if (d) d.addEventListener('click', questToggleDone); }
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
   $('#questClose').addEventListener('click', () => { sfx('tap'); closeQuest(); });
@@ -8513,5 +8512,16 @@ function boot(){
   window.setAccessory = setAccessory;
   window.fillWalklingExtras = fillWalklingExtras;
 }
-boot();
+// P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()
+// met DOM ids the old page lacks, threw before the first HUD paint, and the player saw the bare page (Lv 1, all 0). The save
+// was never touched (nothing is written before boot finishes). Recover once with a cache-busting reload; never loop.
+const BOOT_RETRY_KEY = 'pixelpets.bootRetry';
+try {
+  boot();
+  try { sessionStorage.removeItem(BOOT_RETRY_KEY); } catch (e) {}
+} catch (err) {
+  let tried = false; try { tried = sessionStorage.getItem(BOOT_RETRY_KEY) === '1'; sessionStorage.setItem(BOOT_RETRY_KEY, '1'); } catch (e) { tried = true; }
+  if (!tried && !resetting) { resetting = true; try { clearInterval(saveTimer); } catch (e) {} location.replace(freshUrl('boot')); }
+  throw err;
+}
 })();
