@@ -1603,16 +1603,68 @@ function safeSpot(){
 /* ---------- walk / map ---------- */
 const DIRS = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
 const walk = { fx: 3, fy: 3, from: null, to: null, prog: 0, dpad: null, drag: null, key: null, queued: null, target: null,
-  intro: 0, cam: { x: 0, y: 0 }, path: null, arrive: null };
-function clearMoves(){ walk.dpad = walk.drag = walk.key = walk.queued = walk.target = null; walk.path = walk.arrive = null; wild.chase = null; $$('.dp').forEach(b => b.classList.remove('on')); }
+  intro: 0, cam: { x: 0, y: 0 }, path: null, arrive: null, aim: null, repath: null };
+function clearMoves(){ walk.dpad = walk.drag = walk.key = walk.queued = walk.target = null; walk.path = walk.arrive = walk.aim = walk.repath = null; wild.chase = null; $$('.dp').forEach(b => b.classList.remove('on')); }
 const moveHeld = () => !!(walk.dpad || walk.key || walk.drag);
+const CANT_REACH = "Can't get there from here.";   // unreachable tap (Vincent, Oct 15). Straight apostrophe. Fits a toast.
 
+function dropAim(){ walk.aim = walk.repath = null; }
+function finishPath(){
+  walk.path = null; dropAim();
+  const a = walk.arrive; walk.arrive = null;
+  if (a) a();
+}
+function cantReach(){
+  walk.path = walk.arrive = walk.target = null; dropAim();
+  toast(CANT_REACH); sfx('denied');
+}
+// One cardinal step from the keeper onto `cell`, or null when the cell is not a neighbour.
+function unitStep(cell){
+  const dx = cell.x - S.world.x, dy = cell.y - S.world.y;
+  if (Math.abs(dx) + Math.abs(dy) !== 1) return null;
+  return [dx, dy];
+}
+// A path cell the keeper may step on. An open warp is legal only as the exact aim (the tap lands on it and the warp fires).
+function pathStepOk(cell){
+  if (solid(cell.x, cell.y) || wildAt(cell.x, cell.y) || warpBlocked(cell.x, cell.y)) return false;
+  if (warpAt(cell.x, cell.y)) return !!(walk.aim && !walk.aim.soft && walk.aim.x === cell.x && walk.aim.y === cell.y);
+  return true;
+}
+// Cardinal neighbours a tap can stand on. Order is DIRS (up, down, left, right): findPath's tie-break.
+// Warp tiles are left out: standing on one leaves the map. An open warp is still a goal when the tap is on that tile.
+function walkNeighbours(x, y){
+  return Object.values(DIRS).map(([dx, dy]) => ({ x: x + dx, y: y + dy })).filter(c => {
+    if (wildAt(c.x, c.y) || warpAt(c.x, c.y)) return false;
+    return !solid(c.x, c.y) || (c.x === S.world.x && c.y === S.world.y);
+  });
+}
+// The next cell went illegal (a patrol stepped in, a wild wandered on). Search once from this tile, then give up.
+function repathWalk(){
+  const aim = walk.aim;
+  if (!aim) { cantReach(); return null; }
+  const stamp = S.world.x + ',' + S.world.y;
+  if (walk.repath === stamp) { cantReach(); return null; }
+  walk.repath = stamp;
+  const goals = aim.soft ? walkNeighbours(aim.x, aim.y) : [{ x: aim.x, y: aim.y }];
+  const path = goals.length ? findPath(goals) : null;
+  if (path && !path.length) { finishPath(); return null; }   // already standing on a legal goal
+  if (!path || !pathStepOk(path[0]) || !unitStep(path[0])) { cantReach(); return null; }
+  walk.path = path; walk.target = null;
+  const nx = walk.path.shift();
+  return unitStep(nx);
+}
 function targetDir(){
-  if (walk.path) {                                  // tap-to-talk / tap a door: a BFS path (INTERIORS §4.2)
+  if (walk.path) {                                  // tap-to-walk, tap-to-talk, tap a door: a BFS path
     const nx = walk.path[0];
-    if (!nx) { walk.path = null; const a = walk.arrive; walk.arrive = null; if (a) a(); return null; }
-    if (solid(nx.x, nx.y)) { walk.path = walk.arrive = null; return null; }
-    walk.path.shift(); return [nx.x - S.world.x, nx.y - S.world.y];
+    if (!nx) { finishPath(); return null; }
+    if (walk.aim) { if (!pathStepOk(nx)) return repathWalk(); }
+    else if (solid(nx.x, nx.y)) { walk.path = walk.arrive = null; dropAim(); return null; }
+    const step = unitStep(nx);
+    if (!step) {
+      if (walk.aim) return repathWalk();
+      walk.path = walk.arrive = null; dropAim(); return null;
+    }
+    walk.path.shift(); return step;
   }
   const tg = walk.target; if (!tg) return null;
   const dx = tg.x - S.world.x, dy = tg.y - S.world.y;
@@ -1621,22 +1673,38 @@ function targetDir(){
   for (const [ox,oy] of opts) if ((ox||oy) && !solid(S.world.x+ox, S.world.y+oy) && !warpBlocked(S.world.x+ox, S.world.y+oy)) return [ox,oy];
   walk.target = null; return null;
 }
-// BFS over walkable tiles (maps are at most 48x20) to the nearest of `goals`; returns the steps (excluding the start) or null.
+// 4-dir BFS to the nearest of `goals`. High Charity is 64×40, so the key is "x,y" (y*64+x collides past x 63).
+// Visit cap is the map area. Skips solids, wilds, and gated warps. An open warp is entered only when it is a goal.
+// Returns the steps excluding the start, [] when already on a goal, or null.
 function findPath(goals){
-  const key = (x, y) => y * 64 + x, sx = S.world.x, sy = S.world.y, prev = new Map([[key(sx, sy), null]]), q = [[sx, sy]];
+  if (!goals || !goals.length || !S) return null;
+  const key = (x, y) => x + ',' + y, cap = MW * MH, sx = S.world.x, sy = S.world.y;
+  const prev = new Map([[key(sx, sy), null]]), q = [[sx, sy]];
   const isGoal = (x, y) => goals.some(g => g.x === x && g.y === y);
   if (isGoal(sx, sy)) return [];
-  while (q.length) {
+  let visits = 0;
+  while (q.length && visits < cap) {
     const [x, y] = q.shift();
+    visits++;
     for (const [dx, dy] of Object.values(DIRS)) {
       const nx = x + dx, ny = y + dy, k = key(nx, ny);
-      if (prev.has(k) || solid(nx, ny) || wildAt(nx, ny) || (warpAt(nx, ny) && !isGoal(nx, ny))) continue;
+      if (prev.has(k) || solid(nx, ny) || wildAt(nx, ny) || warpBlocked(nx, ny) || (warpAt(nx, ny) && !isGoal(nx, ny))) continue;
       prev.set(k, [x, y]);
       if (isGoal(nx, ny)) { const out = []; let c = [nx, ny]; while (c && !(c[0] === sx && c[1] === sy)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); } return out; }
       q.push([nx, ny]);
     }
   }
   return null;
+}
+// Free-tile tap: path onto it (an open warp included, so landing fires the warp). Solid or silent blocker: nearest free neighbour.
+function startTapWalk(tx, ty, soft){
+  wild.chase = null; walk.arrive = null; walk.target = null; walk.repath = null;
+  if (!soft && tx === S.world.x && ty === S.world.y) { walk.path = null; dropAim(); return; }
+  const goals = soft ? walkNeighbours(tx, ty) : [{ x: tx, y: ty }];
+  const path = goals.length ? findPath(goals) : null;
+  if (!path) { cantReach(); return; }
+  if (!path.length) { walk.path = null; dropAim(); return; }
+  walk.path = path; walk.aim = { x: tx, y: ty, soft: !!soft };
 }
 const dirName = (dx, dy) => dx > 0 ? 'right' : dx < 0 ? 'left' : dy < 0 ? 'up' : 'down';
 function warpBlocked(x, y){ const wp = warpAt(x, y); return !!(wp && wp.need && !cond(wp.need, false)); }
@@ -2291,7 +2359,7 @@ function updateWalk(dt, t){
   if (!walk.to && !walk.intro && $('#ovBattle').hidden && !scene && !fade.busy) {
     let d = walk.queued || (walk.dpad && DIRS[walk.dpad]) || (walk.drag && DIRS[walk.drag]) || (walk.key && DIRS[walk.key]);
     walk.queued = null;
-    if (d) { walk.target = null; walk.path = walk.arrive = null; wild.chase = null; }
+    if (d) { walk.target = null; walk.path = walk.arrive = null; dropAim(); wild.chase = null; }
     else if (wild.chase) {                     // tapped a creature: walk up to it, meet it when adjacent
       const w = wild.list.find(o => o.id === wild.chase);
       if (!w) wild.chase = null;
@@ -3140,13 +3208,13 @@ function tapObject(o){
     const go = () => { S.world.facing = 'up'; enterDoor(o); };
     if (S.world.x === o.x && S.world.y === o.y) { go(); return true; }
     const path = findPath([{ x: o.x, y: o.y }]); if (!path) return false;
-    walk.target = null; walk.path = path; walk.arrive = go; return true;
+    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: o.x, y: o.y, soft: false }; walk.repath = null; return true;
   }
   const nb = Object.values(DIRS).map(([dx, dy]) => ({ x: q.x + dx, y: q.y + dy })).filter(c => !solid(c.x, c.y) || (c.x === S.world.x && c.y === S.world.y));
   const talk = () => { S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y); bump.talked = null; interact(o); };
   if (Math.abs(q.x - S.world.x) + Math.abs(q.y - S.world.y) === 1) { talk(); return true; }
   const path = findPath(nb); if (!path) return false;
-  walk.target = null; walk.path = path; walk.arrive = talk; return true;
+  walk.target = null; walk.path = path; walk.arrive = talk; walk.aim = { x: q.x, y: q.y, soft: true }; walk.repath = null; return true;
 }
 // Ambient chatter (INTERIORS §4.2, decision 6): within Manhattan 2 after a step, once per NPC per visit, one bubble at a time.
 const chat = { id: null, until: 0 };
@@ -3196,7 +3264,7 @@ async function runSteps(steps, ctx = {}){
   if (scene || !S) return;
   scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: ctx.viewPet || null, nick: undefined },
     vars: { tags: [], line: null, suggest: null }, skip: false, deferRespawn: false, toasts: [], boxes: 0 };
-  walk.target = walk.path = walk.arrive = walk.queued = null; wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
+  walk.target = walk.path = walk.arrive = walk.queued = null; dropAim(); wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   cueFactionMusic(ctx, steps);
@@ -7926,10 +7994,11 @@ function bindInput(){
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
       const o = objAt(tx, ty, q => talkable(q) || q.kind === 'door') || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
       if (scene || fade.busy) { /* nothing */ }
-      else if (w && pet()) { if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; }   // tap a creature: walk up and meet it
+      else if (w && pet()) { if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
       else if (followerAt(tx, ty)) { clearMoves(); openStatsCard(pet().id); }                                      // tap the follower: its stats card (K.4)
       else if (o) { wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
-      else if (!solid(tx, ty)) { wild.chase = null; walk.path = walk.arrive = null; walk.target = { x: tx, y: ty }; }
+      else if (!solid(tx, ty) && warpBlocked(tx, ty)) { wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: tx, y: ty }; }   // gated warp: same deny as before, never step on it
+      else startTapWalk(tx, ty, solid(tx, ty));
     }
     walk.drag = null; ptr = null;
   };
@@ -8286,6 +8355,13 @@ function boot(){
     setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; },
     spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
     clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
+    findPath: goals => {   // D?? debug, read-only. Inert without ?debug=1 (the cheat wrapper). Does not move the keeper.
+      if (!S || !Array.isArray(goals)) return null;
+      const clean = [];
+      for (const g of goals) { if (g && Number.isFinite(+g.x) && Number.isFinite(+g.y)) clean.push({ x: +g.x | 0, y: +g.y | 0 }); }
+      const path = findPath(clean);
+      return path ? path.map(p => ({ x: p.x, y: p.y })) : null;
+    },
     pickSpecies: (tags, key) => pickSpecies(tags, key), pickStage: key => pickStage(key), wildLv: (sp, st, key) => wildLv(sp, st, key),
     spawnTables: () => JSON.parse(JSON.stringify(SPAWNS)),
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),

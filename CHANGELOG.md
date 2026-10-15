@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-15 13:45 ET: Tap-to-walk around obstacles
+- What changed and why: A tap on open ground under the walk map now follows a 4-direction path around solids, people, and other blockers. A tap on a solid tile or a silent prop walks to the nearest open tile beside it. If nothing can be reached, the game says "Can't get there from here." A blocked next step (a patrol, or a wild on the path) searches once more from that tile. Tap-to-talk, doors, the d-pad, drag, the keyboard, and wild chase are unchanged. An open warp tile is still walked onto. A gated warp is not. Save `v` stays 2.
+- Files touched: `game.js`, `tests/pathfinding.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261015-1345.
+- Tests run and result (widths, checks): `npm test` (build check plus Playwright) — 690 passed, 6 skipped, exit 0, at 320, 375, and 390. `tests/pathfinding.spec.js` checks the path around a person, the unreachable toast, talk, a silent prop, a door, an open warp, wild chase, a blocked next step, and that `findPath` is inert without `?debug=1`. No console errors in that run.
+- Decisions made (colour + reasoning): Vincent approved on Oct 15: walk onto an open warp, keep door taps, 4 directions only, no path cue, the toast text above, leave wild chase greedy, and keep gated warps blocked. D?? (pending id), green: a read-only `PixelPets.findPath` on the debug surface, inert without `?debug=1`. D?? (pending id), green: a solid tap does not stand on a neighbouring warp, and equal-length neighbours break ties in `DIRS` order (up, down, left, right).
+- Anything left unfinished: `pathBeside` still has its own search. Wild chase stays on the straight-line step, as settled.
+
 ## 2026-10-15 11:36 ET: NPC-only Fetchling line
 - What changed and why: Added the BLOOM line `fetch` (Fetchling, Harvestail, Hearthound) so a later packet can give Lizzy the partner Buddy. Vincent approved the line as written and that a keeper can never get one. It is not in any wild table, habitat roll, or starter basket. The journal still counts 45 forms.
 - Files touched: `sprites.js`, `stats.js`, `moves.js`, `save.js`, `game.js`, `tests/fetch_line.spec.js`, `tests/heights.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
