@@ -1,6 +1,6 @@
 /* Q26 modern and arcade controls (NEXT_PLAN §3 Q26). Arcade is the old layout; modern is a full-screen map with floating buttons. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap, shot } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -282,6 +282,109 @@ test('green copy: the Settings rows toast the approved lines', async ({ page }) 
   await page.locator('#setControls').click();
   await expect(page.locator('#toast')).toHaveText('Arcade controls. Pad and Talk button.');
 });
+const PIP = { y: [255, 205, 117, 255], c: [65, 166, 246, 255], k: [26, 28, 44, 255], w: [244, 244, 244, 255], b: [59, 93, 201, 255] };
+async function questPips(page) {
+  return page.evaluate(() => {
+    const b = document.querySelector('#questBtn'), c = b.querySelector('.nav-art');
+    const d = c.getContext('2d').getImageData(0, 0, 44, 44).data;
+    const px = (x, y) => { const i = (y * 44 + x) * 4; return [d[i], d[i + 1], d[i + 2], d[i + 3]]; };
+    const cell = (gx, gy) => px(gx * 2, gy * 2);
+    const box = b.getBoundingClientRect();
+    return {
+      mark: b.dataset.questMark || '',
+      label: b.getAttribute('aria-label'),
+      mainFill: cell(17, 1), mainEdge: cell(17, 0), mainShine: cell(18, 2),
+      sideFill: cell(4, 2), sideEdge: cell(4, 0), sideShine: cell(3, 2),
+      pressedFill: cell(17, 3), pressedSide: cell(4, 4), above: cell(17, 1),
+      w: box.width, h: box.height,
+      v: PixelPets.state.v, q: PixelPets.quest && PixelPets.quest.id, nav: PixelPets.quest && PixelPets.quest.navMark,
+    };
+  });
+}
+test('modern quest button marks a main step in gold and a side quest in blue', async ({ page }) => {
+  await installSave(page.context(), modernSave(), { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'main side');
+  let p = await questPips(page);
+  expect(p.q).toBe('rival1');
+  expect(p.nav).toBe('main side');
+  expect(p.label).toBe('QUEST, main story and side quest');
+  expect(p.w).toBeGreaterThanOrEqual(44);
+  expect(p.h).toBeGreaterThanOrEqual(44);
+  expect(p.v).toBe(2);
+  expect(p.mainFill).toEqual(PIP.y);
+  expect(p.mainEdge).toEqual(PIP.k);
+  expect(p.mainShine).toEqual(PIP.w);
+  expect(p.sideFill).toEqual(PIP.c);
+  expect(p.sideEdge).toEqual(PIP.k);
+  expect(p.sideShine).toEqual(PIP.w);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForTimeout(250);
+  p = await questPips(page);
+  expect(p.mainFill).toEqual(PIP.y);
+  expect(p.sideFill).toEqual(PIP.c);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await shot(page, 'quest-marks');
+  const box = await page.locator('#questBtn').boundingBox();
+  await page.mouse.move(box.x + 12, box.y + 12);
+  await page.mouse.down();
+  p = await questPips(page);
+  expect(p.pressedFill).toEqual(PIP.y);
+  expect(p.pressedSide).toEqual(PIP.c);
+  expect(p.above[3]).toBe(0);
+  await page.mouse.up();
+  if (await page.locator('#ovQuest').isHidden()) await page.locator('#questBtn').click();
+  await expect(page.locator('#ovQuest')).toBeVisible();
+  await page.waitForFunction(() => PixelPets.optionsReady !== false);
+  await page.locator('#questClose').click();
+  await expect(page.locator('#ovQuest')).toBeHidden();
+  await page.waitForFunction(() => {
+    const c = document.querySelector('#questBtn .nav-art');
+    const d = c.getContext('2d').getImageData(34, 2, 1, 1).data;
+    return d[0] === 255 && d[1] === 205 && d[2] === 117 && !document.querySelector('#questBtn').classList.contains('pulse');
+  });
+  p = await questPips(page);
+  expect(p.mark).toBe('main side');
+  expect(p.mainFill).toEqual(PIP.y);
+  expect(p.sideFill).toEqual(PIP.c);
+  await page.evaluate(() => PixelPets.setFlag('story.dream_study', true));
+  await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'main');
+  p = await questPips(page);
+  expect(p.label).toBe('QUEST, main story');
+  expect(p.mainFill).toEqual(PIP.y);
+  expect(p.sideFill).toEqual(PIP.b);
+  await page.evaluate(() => { PixelPets.setFlag('story.phone_got', null); PixelPets.setFlag('story.dream_study', null); PixelPets.setFlag('story.hc_council_done', true); });
+  await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'side');
+  p = await questPips(page);
+  expect(p.q).toBe('end');
+  expect(p.label).toBe('QUEST, side quest');
+  expect(p.sideFill).toEqual(PIP.c);
+  expect(p.mainFill).not.toEqual(PIP.y);
+  await page.evaluate(() => { PixelPets.setFlag('story.phone_got', true); PixelPets.setFlag('story.dream_study', true); });
+  await page.waitForFunction(() => !document.querySelector('#questBtn').dataset.questMark);
+  p = await questPips(page);
+  expect(p.label).toBe('QUEST');
+  expect(p.mainFill).not.toEqual(PIP.y);
+  expect(p.sideFill).toEqual(PIP.b);
+  expect(p.v).toBe(2);
+});
+
+test('arcade quest button keeps the signpost and still names an open quest', async ({ page }) => {
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'main side');
+  const st = await page.evaluate(() => {
+    const b = document.querySelector('#questBtn'), art = b.querySelector('.nav-art'), icon = b.querySelector('canvas');
+    const d = icon.getContext('2d').getImageData(0, 0, 8, 8).data;
+    let yellow = false;
+    for (let i = 0; i < d.length; i += 4) if (d[i] === 255 && d[i + 1] === 205 && d[i + 2] === 117) yellow = true;
+    return { mark: b.dataset.questMark, label: b.getAttribute('aria-label'), shown: getComputedStyle(art).display, yellow, v: PixelPets.state.v };
+  });
+  expect(st).toEqual({ mark: 'main side', label: 'QUEST, main story and side quest', shown: 'none', yellow: true, v: 2 });
+});
+
 for (const mode of ['arcade', 'modern']) {
   test(`green copy fits as a toast (${mode}): no clipping, inside the screen`, async ({ page }) => {
     await installSave(page.context(), modernSave({ controls: mode }), { quietDay: true });
