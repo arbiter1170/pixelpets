@@ -593,7 +593,12 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     const s = modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
     c.width = Math.min(24 * 16, Math.floor(W / s)); c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / s)));
     cueZone.t = -1e9;
-    c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px';
+    // E1: an interior with "fitWidth": true (the rx_f4 pilot) is shown at its full width (scale = view width / map width), so the
+    // camera only scrolls vertically. Every interior bigger than the view follows the keeper and clamps at the edges (drawMap);
+    // smaller ones stay centred. Opt-in so no other map changes look. Same in arcade and modern.
+    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); c.width = MW * 16; c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
+      c.style.width = W + 'px'; c.style.height = Math.round(c.height * f) + 'px'; }
+    else { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; }
   }
 }
 window.addEventListener('resize', fitAll);
@@ -1514,7 +1519,9 @@ const objPos = o => mapRT.pos[o.id] || o;
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
 const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
-const solidTile = (x, y) => x < 0 || y < 0 || x >= MW || y >= MH || !(TILE_DEF[MAP[y][x]] || {}).walk;
+// Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; LAB_SKIN.walk wins over the shared TILE_DEF for those maps only.
+const tileWalks = ch => (CUR.skin === 'lab' && LAB_SKIN.walk[ch] != null) ? !!LAB_SKIN.walk[ch] : !!(TILE_DEF[ch] || {}).walk;
+const solidTile = (x, y) => x < 0 || y < 0 || x >= MW || y >= MH || !tileWalks(MAP[y][x]);
 const solid = (x, y) => solidTile(x, y) || !!blockerAt(x, y);
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
@@ -2256,7 +2263,7 @@ function warpTo(at, after){
 }
 let musicHold = false;   // closeBattle plays the return loop itself (after stingers); a wipe's arriveAt must not start it early
 function arriveAt(at){
-  useMap(at.map);
+  useMap(at.map); fitAll();   // E1: the canvas may change shape per map
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
@@ -2338,6 +2345,30 @@ function drawFactionBand(g, ch, tx, ty, X, Y){
   if (ch === 'R' && tileAt(tx, ty - 1) !== 'R') { g.fillStyle = ridge; g.fillRect(X, Y, 16, 2); g.fillStyle = band; g.fillRect(X, Y + 2, 16, 1); }
   if (ch === 'H' && tileAt(tx, ty + 1) !== 'H') { g.fillStyle = band; g.fillRect(X + 2, Y + 13, 12, 2); }
 }
+// E5 seeded tile variants (BUILD_RX_F4_PILOT B): variant = hash(map id, x, y) with weights per base tile. Same map, same look;
+// nothing is saved. Only plain base cells vary; a hand-placed char in the grid always wins.
+function tileHash(id, x, y){ let h = 2166136261; const s = id + ':' + x + ':' + y; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15; return (h >>> 0) / 4294967296; }
+function labTileName(k, tx, ty, m){
+  m = m || CUR;
+  const nm = ((LAB_SKIN.override[m.id] || {})[k]) || LAB_SKIN.remap[k];
+  const vs = m.variants && LAB_SKIN.variants[nm];
+  if (!vs) return nm;
+  let r = tileHash(m.id, tx, ty);
+  for (const [v, w] of vs) { if (r < w) return v; r -= w; }
+  return nm;
+}
+// D88: after variants, one floor tile may cover at most 70 % of a map's walkable cells (decal cells count as their decal). Checked in
+// devChecks for rebuilt maps ("variants": true); D85 keeps older maps as they are.
+function labFloorShare(id){
+  const m = WORLD[id]; if (!m || m.skin !== 'lab') return null;
+  const n = {}; let walk = 0;
+  m.cells.forEach((row, y) => [...row].forEach((ch, x) => {
+    const w = LAB_SKIN.walk[ch] != null ? !!LAB_SKIN.walk[ch] : !!(TILE_DEF[ch] || {}).walk; if (!w) return;
+    walk++; const nm = LAB_SKIN.decal[ch] || labTileName(ch, x, y, m); n[nm] = (n[nm] || 0) + 1;   // a decal cell counts as its decal tile
+  }));
+  const top = Object.entries(n).sort((a, b) => b[1] - a[1])[0];
+  return { walk, tile: top[0], count: top[1], share: top[1] / walk };
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -2352,9 +2383,16 @@ function drawMap(t){
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
       const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
-      if (CUR.skin === 'lab') { const k = ch === 'W' && tx % 2 ? 'W2' : ch, nm = ((LAB_SKIN.override[CUR.id] || {})[k]) || LAB_SKIN.remap[k]; if (nm && TILES[nm]) img = TILES[nm]; }   // FERNBROOK_HEIGHTS §3
+      let decal = null;
+      if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
+        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
+        const nm = labTileName(dk ? '.' : k, tx, ty);
+        if (nm && TILES[nm]) img = TILES[nm];
+        if (dk) decal = TILES[dk + '_decal'];
+      }
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
+      if (decal) g.drawImage(decal, tx*TS - cx, ty*TS - cy);
       drawFactionBand(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
       if (ch === '=' && CUR.skin !== 'lab') {    // rug border where the rug ends (the lab runner has none)
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
@@ -2363,6 +2401,7 @@ function drawMap(t){
       }
     }
   for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') g.drawImage(WART.door, o.x*TS - cx, (o.y-1)*TS - cy);
+  for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) g.drawImage(WART[o.sprite], o.x*TS - cx, o.y*TS - cy);   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
     g.fillStyle = canSpot(o) ? 'rgba(244,80,80,.35)' : 'rgba(160,160,160,.3)'; sightLine(o).forEach(c => g.fillRect(c.x*TS - cx, c.y*TS - cy, TS, TS)); }
@@ -2387,7 +2426,7 @@ function drawMap(t){
   };
   // y-sorted so objects, creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
   const ents = wild.list.map(w => ({ y: w.fy, draw: () => drawWild(g, w, cx, cy, VW, VH, t) }));
-  for (const o of CUR.objs) if (present(o) && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger') {
+  for (const o of CUR.objs) if (present(o) && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
     const q = objPos(o); ents.push({ y: (q.fy != null ? q.fy : q.y) - 0.02, draw: () => drawObj(g, o, cx, cy, VW, VH, t) });
   }
   if (fol.x != null && p) ents.push({ y: fol.fy, draw: drawFollower });
@@ -2608,7 +2647,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
       g.globalAlpha = 0.35; g.drawImage(img, X - 1 + echo, Y - 2); g.globalAlpha = 0.9;
     }
     g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
-  } else if (o.kind === 'sign') g.drawImage(WART.sign, X, Y);
+  } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
   else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) { const reduce = a.ms && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; g.drawImage(Array.isArray(a) ? a[reduce ? 0 : Math.floor(t / (a.ms || 400)) % 2] : a, X, Y); } }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') { const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(sprSet(si, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
@@ -7093,6 +7132,7 @@ function devChecks(){
     heights: heightsDevCheck(),
     ribbit: (window.PPRibbit && PPRibbit.devCheck) ? PPRibbit.devCheck() : ['PPRibbit missing'],
     map: mapDevCheck(),
+    floorCap: Object.keys(WORLD).filter(id => WORLD[id].variants).map(labFloorShare).filter(r => r && r.share > 0.7).map(r => r.tile + ' ' + Math.round(r.share * 100) + '%'),   // D88
   };
 }
 function debugFlagValue(raw){
@@ -7903,6 +7943,9 @@ function boot(){
     clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
+    tileInfo: (x, y) => { const ch = tileAt(x, y), dk = CUR.skin === 'lab' && LAB_SKIN.decal[ch];   // debug: char, walk, drawn tile and decal
+      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.skin === 'lab' ? labTileName(dk ? '.' : ch, x, y) : ch, decal: dk || null }; },
+    floorShare: id => labFloorShare(id || CUR.id),   // D88
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
   Object.defineProperty(api, 'mapInfo', { enumerable: true, get(){ return { id: CUR.id, w: MW, h: MH, room: isRoom(), outdoor: outdoorId(), backdrop: backdropName(), dream: CUR.dream || null,
