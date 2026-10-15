@@ -1,9 +1,7 @@
 /* Smoke for sfx.js and minigames.js. Sound stays off. Reduced motion stays on.
    Widths come from the Playwright projects. A console error fails the test. */
-const fs = require('fs');
-const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -28,9 +26,7 @@ test('muted boot opens and closes every minigame', async ({ page }) => {
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   });
   await expect(page.locator('#ovPlay')).toBeVisible();
-  const dir = '/opt/cursor/artifacts/screenshots';
-  fs.mkdirSync(dir, { recursive: true });
-  await page.screenshot({ path: path.join(dir, 'minigame-' + page.viewportSize().width + '.png') });
+  await shot(page, 'minigame');
 
   const report = await page.evaluate(async () => {
     PPMinigames.stop();
