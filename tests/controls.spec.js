@@ -213,3 +213,55 @@ test('DEBUG SAVE shows in Settings straight after a ?debug=1 load', async ({ pag
   await page.locator('#settingsBtn').click();
   await expect(page.locator('#setBuild')).toContainText('DEBUG SAVE', { timeout: 500 });
 });
+
+/* D70 approved copy. Each project (320, 375, 390) runs these, so the fit is checked at all three widths. */
+async function tipBand(page, save, q) {
+  await installSave(page.context(), save, { quietDay: true });
+  await gotoGame(page, q);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(400);
+  return page.evaluate(() => { const el = document.querySelector('#walkTip'), b = document.querySelector('#fcTip');
+    return { txt: el.textContent.trim(), h: b.getBoundingClientRect().height, clipped: el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1 }; });
+}
+test('D70 modern early-steps tip: approved copy, fits (one or two lines, not clipped)', async ({ page }) => {
+  const s = modernSave(); delete s.flags['story.phone_got'];
+  s.flags['story.early_done'] = false; s.flags['story.early_steps'] = 0; s.steps = 0;
+  const r = await tipBand(page, s);
+  expect(r.txt).toBe("Tap a spot on the path and you'll walk there.");
+  expect([28, 44]).toContain(r.h); expect(r.clipped).toBe(false);
+});
+test('D70 modern default tip: approved copy, fits (one or two lines, not clipped)', async ({ page }) => {
+  // The default tip shows before the starter (and when no quest has a target). Loads re-derive the starter flag from the party,
+  // so clear it live and re-enter the walk tab.
+  const s = modernSave(); delete s.flags['story.phone_got'];
+  await tipBand(page, s, '?debug=1');               // debug: PixelPets.state is the live state, not a copy
+  await page.evaluate(() => { PixelPets.state.flags['story.starter_received'] = false; PixelPets.showTab('pet'); PixelPets.showTab('walk'); });
+  await page.waitForTimeout(400);
+  const r = await page.evaluate(() => { const el = document.querySelector('#walkTip'), b = document.querySelector('#fcTip');
+    return { txt: el.textContent.trim(), h: b.getBoundingClientRect().height, clipped: el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1 }; });
+  expect(r.txt).toBe('Tap the ground to walk. Tap someone to talk.');
+  expect([28, 44]).toContain(r.h); expect(r.clipped).toBe(false);
+});
+
+test('D70 first-walk prompt: approved question, ARCADE / MODERN with sub-lines, then the gear reminder; all fit', async ({ page }) => {
+  await gotoGame(page, '?debug=1');
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'intro');
+  for (let i = 0; i < 200; i++) {
+    const st = await page.evaluate(() => ({ look: !document.querySelector('#ovLook').hidden, ch: document.querySelectorAll('#sbChoices button').length, waiting: !!(PixelPets.scene && PixelPets.scene.waiting) }));
+    if (st.ch) break;
+    if (st.look) await page.locator('#lookDone').click();
+    else if (st.waiting) await page.keyboard.press('Space');
+    await page.waitForTimeout(50);
+  }
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.text === 'How do you like to walk?');
+  const btns = await page.evaluate(() => [...document.querySelectorAll('#sbChoices button')].map(b => {
+    const r = b.getBoundingClientRect(), l = b.querySelector('.sb-ch-l'), s = b.querySelector('.sb-ch-sub');
+    return { l: l && l.textContent, s: s && s.textContent, h: r.height, fits: r.left >= 0 && r.right <= innerWidth && b.scrollWidth <= b.clientWidth + 1 && b.scrollHeight <= b.clientHeight + 1 };
+  }));
+  expect(btns.map(b => [b.l, b.s])).toEqual([['ARCADE', 'A pad and a Talk button.'], ['MODERN', 'Tap the map to walk. Tap people to talk.']]);
+  for (const b of btns) { expect(b.fits).toBe(true); expect(b.h).toBeGreaterThanOrEqual(44); }
+  await page.waitForFunction(() => window.PixelPets.optionsReady === true);   // the 500 ms tap guard
+  await page.locator('#sbChoices button', { hasText: 'MODERN' }).click();
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.text === 'You can change this any time under the gear.');
+  expect(await page.evaluate(() => PixelPets.state.settings.controls)).toBe('modern');
+});

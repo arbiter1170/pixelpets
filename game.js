@@ -381,7 +381,7 @@ function renderControlsRows(){
   $('#setControlsVal').textContent = m ? 'MODERN' : 'ARCADE';
   const j = $('#setJoystick'); j.hidden = !m; j.setAttribute('aria-pressed', String(joyOn())); $('#setJoystickVal').textContent = joyOn() ? 'ON' : 'OFF';
 }
-/* PLACEHOLDER: needs copy from Vincent (D70). Toasts for the Settings rows. */
+/* PLACEHOLDER: no approved copy yet (not in the D70 set Vincent approved Oct 15). Toasts for the Settings rows. */
 const CTL_TOASTS = { arcade: 'Arcade controls.', modern: 'Modern controls. Tap the map to walk.', joyOn: 'Joystick on.', joyOff: 'Joystick off.' };
 function setControls(mode, quiet){
   if (!S || (mode !== 'arcade' && mode !== 'modern')) return ctlMode();
@@ -1614,7 +1614,7 @@ function earlyWalk(){
   S.flags['story.early_steps'] = n;
   const nm = petName(p);
   if (n === 1) toast(nm + ' trots along. The east path leads out of town.');
-  else if (n === 8) toast(ctlMode() === 'modern' ? 'Keep walking. Wild Walklings like the grass.' : 'Keep holding the pad. Wild Walklings like the grass.');   /* PLACEHOLDER modern line: needs copy from Vincent (D70) */
+  else if (n === 8) toast(ctlMode() === 'modern' ? 'Keep walking. Wild Walklings like the grass.' : 'Keep holding the pad. Wild Walklings like the grass.');   /* PLACEHOLDER modern line: no approved copy yet (not in the approved D70 set) */
   else if (n === 16 && !S.flags['story.rival1_done']) toast('Rook is waiting by the east gate.');
   if (n >= 16) S.flags['story.early_done'] = true;
   if (n === 1 || n === 8 || n === 16) save();
@@ -3085,13 +3085,13 @@ async function execStep(st){
     // Q26: Arcade or Modern, in the house before the exit mat. Not a story flag; writes S.settings.controls at once.
     case 'controlPick': {
       sc.skip = false;
-      /* PLACEHOLDER: needs copy from Vincent (D70). */
-      const pick = await choiceBox('Arcade: the pad and a Talk button. Modern: the map fills the screen. Tap people to talk. The gear switches.', ['Arcade', 'Modern']);
+      /* D70 copy (approved by Vincent, Oct 15 2026). */
+      const pick = await choiceBox('How do you like to walk?', [['ARCADE', 'A pad and a Talk button.'], ['MODERN', 'Tap the map to walk. Tap people to talk.']]);
       if (!scene) return;
-      $('#sbEcho').textContent = '\u203a ' + (pick === 1 ? 'Modern' : 'Arcade');
+      $('#sbEcho').textContent = '\u203a ' + (pick === 1 ? 'MODERN' : 'ARCADE');
       S.settings.controls = pick === 1 ? 'modern' : 'arcade'; applyControls();
       sc.skip = false;
-      await execStep(['say', '', 'You can switch any time. The gear in the corner is Settings.']);   /* PLACEHOLDER: needs copy from Vincent (D70). */
+      await execStep(['say', '', 'You can change this any time under the gear.']);   /* D70 */
       return;
     }
     case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); return;
@@ -3261,7 +3261,9 @@ function choiceBox(prompt, labels){
     sbRender(scene.who, ''); $('#sbEcho').textContent = ''; $('#sbName').hidden = true; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
     sbox.text = prompt; sbox.t0 = now(); sbox.full = false; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.mode = 'choice'; sbox.resolve = () => {};
     const box = $('#sbChoices'); box.innerHTML = ''; armOptions();
-    labels.forEach((lb, i) => { const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn sb-choice'; bt.textContent = lb;
+    labels.forEach((lb, i) => { const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn sb-choice';   // lb: 'Label' or ['LABEL', 'sub-line']
+      if (Array.isArray(lb)) { const a = document.createElement('span'), b = document.createElement('span'); a.className = 'sb-ch-l'; a.textContent = lb[0]; b.className = 'sb-ch-sub'; b.textContent = lb[1]; bt.append(a, b); bt.setAttribute('aria-label', lb[0] + '. ' + lb[1]); }
+      else bt.textContent = lb;
       bt.addEventListener('click', () => { if (!sbox.full) sbFull(); sfx('tap'); box.innerHTML = ''; sbox.resolve = null; res(i); }); box.append(bt); });
   });
 }
@@ -5183,10 +5185,10 @@ function renderStanding(){
 function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
 function questShowOnMap(){ closeQuest(); if (mapReady()) openMap(); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
-/* PLACEHOLDER: needs copy from Vincent (D70). Modern drops "Hold the pad"; the quest line is the same in both layouts. */
-const WALK_TIP_MODERN = 'Tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
+/* D70: modern default tip. The quest line is the same in both layouts. */
+const WALK_TIP_MODERN = 'Tap the ground to walk. Tap someone to talk.';
 const WALK_EARLY_ARCADE = 'Hold the pad to walk. The east path leads out of town.';
-const WALK_EARLY_MODERN = 'Tap the ground to walk. The east path leads out of town.';
+const WALK_EARLY_MODERN = 'Tap a spot on the path and you\'ll walk there.';   /* D70 */
 const walkTipDefault = () => ctlMode() === 'modern' ? WALK_TIP_MODERN : WALK_TIP_DEFAULT;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkTipText(){
