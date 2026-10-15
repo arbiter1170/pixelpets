@@ -268,7 +268,7 @@ test('D70 first-walk prompt: approved question, ARCADE / MODERN with sub-lines, 
 
 /* Design's approved green copy (Oct 15): Settings toasts, the modern step-8 toast, the welcome and rename lines. */
 const GREEN = ['Arcade controls. Pad and Talk button.', 'Modern controls. Tap to walk or talk.', 'Joystick on.', 'Joystick off.',
-  'Keep walking. Wild Walklings hide in the grass.', 'Welcome to the Amberwild!', 'Pipkit likes the new name!', 'Pick a name first.'];
+  'Keep walking. Wild Walklings hide in the grass.', 'Pipkit missed you! Welcome back.', 'Pipkit likes the new name!', 'Pipkit is back to its own name.', 'Pick a name first.'];
 test('green copy: the Settings rows toast the approved lines', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
