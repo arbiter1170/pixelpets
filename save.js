@@ -251,6 +251,11 @@ const PPSave = (() => {
     };
     cleanNames(s.phoneBook.met);
     cleanNames(s.phoneBook.fav);
+    // QUEST_MULTI (D106): UI state, additive. ui.sideTracked = tracked side chain id (absent = not chosen); ui.sideSeen = chain
+    // ids already shown on the NEXT STEP panel. Unknown keys under ui survive. No version bump.
+    fill(s, 'ui', isObj, {});
+    if (has(s.ui, 'sideTracked') && typeof s.ui.sideTracked !== 'string') delete s.ui.sideTracked;
+    if (has(s.ui, 'sideSeen')) { if (Array.isArray(s.ui.sideSeen)) s.ui.sideSeen = s.ui.sideSeen.filter(x => typeof x === 'string'); else delete s.ui.sideSeen; }
     // ONLINE_SAVES: optional cloud sync fields, additive (no version bump). Absent stays absent (= rev 0, no real change yet).
     if (has(s, 'rev') && !(Number.isInteger(s.rev) && s.rev >= 0)) s.rev = 0;
     if (has(s, 'updatedAt') && !(fin(s.updatedAt) && s.updatedAt > 0)) delete s.updatedAt;
