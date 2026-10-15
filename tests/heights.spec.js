@@ -83,7 +83,7 @@ test('a Bitlet floats in the RegenX bay and stays out of the wild', async ({ pag
   const info = await page.evaluate(() => {
     const i = SPECIES.findIndex(s => s.id === 'byte');
     const sp = SPECIES[i];
-    PixelPets.goto('rx_f4', 9, 8, 'up');
+    PixelPets.goto('rx_f4', 6, 19, 'up');
     const objs = PixelPets.mapObjs;
     return {
       i,
@@ -119,9 +119,9 @@ test('a Bitlet floats in the RegenX bay and stays out of the wild', async ({ pag
   expect(info.v).toBe(2);
   expect(info.checks).toEqual([]);
   expect(info.bay).toBe('rx_f4');
-  expect(info.wild).toMatchObject({ id: 'rx_bitlet', kind: 'wild', x: 6, y: 5 });
+  expect(info.wild).toMatchObject({ id: 'rx_bitlet', kind: 'wild', x: 4, y: 4 });   // BUILD_RX_F4_PILOT A3
   expect(info.art).toEqual(expect.arrayContaining(['arbiter:ok', 'rx_terminal:ok']));
-  expect(info.window).toBe('#WWW##########WWW#');
+  expect(info.window).toBe('#WVWWWWWWWWVL#');
   expect(info.nia).toBe('bob');
   expect(info.quest).not.toBe('end');
   await page.evaluate(() => PixelPets.showTab('walk'));

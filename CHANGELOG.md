@@ -5,8 +5,9 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 ## 2026-10-15 — Map pass plan, Q28 (docs only, no new build stamp)
 
-- Q28 is the map pass from `handoff/maps/`. Vincent cleared B1–B7; B8 waits for his go. One PR per batch into `main`, merged in order B1 → B7. B1 and B4's exterior phase are being built first; B2, B3 and B5 start from B1, and B6 and B7 from B5. Plan table in `NEXT_PLAN.md` §3.
-- D81–D89 (Design's map scale and detail limits) are recorded as settled in `archive/DECISIONS_SETTLED.md`. D90–D101 are reserved per batch. The next free decision id is D102.
+- Q28 is the map pass from `handoff/maps/`. The Arbiter Bay pilot is already on main (PR #51): the 14×22 lab, the interior camera, bigger grids, seeded floor variants and decals. B1 is a gap check against that, not a second build. Vincent cleared B2–B7. B8 waits until B5's house skins exist, and then for his go. Plan table in `NEXT_PLAN.md` §3.
+- Decision ids for the batches start at D92. D90 is the debug-save acceptance and D91 is the byte-line learnset, both already on main. D92–D103 are reserved per batch. The next free id is D104.
+
 
 ## 2026-10-15 — Map handoff packets (docs only, no new build stamp)
 

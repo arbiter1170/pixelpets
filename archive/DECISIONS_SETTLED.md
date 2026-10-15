@@ -2,20 +2,6 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
-## Map scale and detail (settled Oct 15, 2026)
-
-Design's map audit limits, as listed in `handoff/maps/README.md` §2 and `handoff/maps/AUDIT.md`. The full spec is in the private design repo. Vincent (Oct 15): prefer TOUCH UP, EXPAND and graphic upgrades; REBUILD only as a last resort, with his approval. No two buildings look identical (`handoff/maps/BUILDING_VARIETY.md`).
-
-- **D81.** Act 1 towns are not reshaped; detail only.
-- **D82.** Portrait sizes apply to new routes only.
-- **D83.** RegenX keeps four rooms; they get bigger, not more.
-- **D84.** Existing house interiors are enlarged only when rebuilt for a story beat.
-- **D85.** Size targets apply to new and rebuilt maps.
-- **D86.** `rx_f4` is the pilot: 14×22, same ids, flags and objects.
-- **D87.** The tunnel rooms get a rock skin.
-- **D88.** No single floor tile covers more than 70 % of walkable cells, measured after seeded variants.
-- **D89.** The night tech in the Arbiter Bay is optional.
-
 ## Town boards (calls settled Oct 14, 2026)
 
 The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. Q23–Q25 are in the game. A quest that comes out of those calls follows `.cursor/skills/walklings-quests/SKILL.md`. The D37 still in the open table is the region-map claim list.
@@ -23,7 +9,7 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 ## Settled
 
 - **D18 Standing cap (Oct 15, 2026, green).** The daily Standing cap is left unbuilt and folded into the Standing pass, with a placeholder of 5 per side per day. Faction activities still earn Standing slowly once that pass lands; only story grants move the meter until then. Change it in `addStanding` in `game.js` and a new `STANDING_CFG.grants` entry plus a `standing.day.<side>` flag.
-- **D69 debug save mark (Oct 15, 2026, green, engineer).** QA BUG-2 fix. Debug writes go to `pixelpets.save.v2` with an additive `debugSave: true` mark shown in Settings, not to a separate key: a separate key would break the 18 suites that seed and read the v2 key under `?debug=1`. Debug itself is per tab session (sessionStorage). Change it in `save()` in `game.js` and `normalizeV2` in `save.js`.
+- **D69 debug save mark (Oct 15, 2026, green, engineer). Closed Oct 15 by D90 (Vincent accepted it; red to yellow).** QA BUG-2 fix. Debug writes go to `pixelpets.save.v2` with an additive `debugSave: true` mark shown in Settings, not to a separate key: a separate key would break the 18 suites that seed and read the v2 key under `?debug=1`. Debug itself is per tab session (sessionStorage). Change it in `save()` in `game.js` and `normalizeV2` in `save.js`.
 - **D37 town list (Oct 14, 2026).** Vincent: yes, and all future towns. This is the town-list row. The region-map row that uses the same number stays open. Boards go in Hearthmoor, Fernbrook, Cobblecrest, High Charity, and Mahopac, and in every town added later, including Brinewick in the same pass as its map. Routes, Wickerglen, Old Meadow, the quarry, the Heights, RegenX, and the tunnels get none. The sky-dock boarding board and the lantern coach stay their own signs. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not built. Brinewick still has no map.
 - **D38 (Oct 14, 2026).** Mahopac gets a board now: one uncrested board on the path at (11, 8), no new tiles. It does not receive slips for a while. Reports may show with the other boards. TB-3 (Cald's gate count) does not add a Mahopac slip.
 - **D39 (Oct 14, 2026).** Yes. The phone says "Go see them" and sets only a pin. The NPC's yes is the only accept. Talking without the pin still works.

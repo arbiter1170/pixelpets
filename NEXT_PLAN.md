@@ -454,18 +454,18 @@ Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. Next scoped work
 
 ### Q28 — Map pass (`handoff/maps/`) — **in progress**
 
-Start at `handoff/maps/README.md`: the audit, `BUILDING_VARIETY.md`, and packets B1–B8 in priority order. Vincent cleared B1–B7 on Oct 15, 2026. B8 builds two new rooms and waits for his go. Limits are settled as D81–D89. Each batch is its own branch and PR into `main`, merged in order B1 → B7:
+Start at `handoff/maps/README.md`: the audit, `BUILDING_VARIETY.md`, and packets B1–B8 in priority order. The Arbiter Bay pilot is on main (PR #51, build 20261015-0817), so B1 is a gap check, not a second build. Vincent cleared B2–B7. B8 waits until B5's house skins exist, then for his go. Limits are settled as D81–D89. D90 and D91 are already used. Each remaining batch is its own branch and PR into `main`:
 
 | Batch | What | Starts from | Decision ids |
 |---|---|---|---|
-| B1 | Arbiter Bay 14×22 pilot and the shared engine (E1 camera, E2 no size cap, E4 decals, E5 seeded variants and the 70 % check, a skin registry) | `main` | D90–D91 |
-| B2 | RegenX floors 1–3 to 14×22, each with its own accent | B1 | D92–D93 |
-| B3 | Four tunnel rooms: rock skin and dressing, same grids | B1 | D94 |
-| B4 | A unique exterior for every building (E11), path edges, landmarks, outdoor detail; no reshaping | `main` for the exteriors, then B1 for variants and decals | D95–D96 |
-| B5 | Nine Hearthmoor, Keeper House and Cobblecrest rooms: own skins and props | B1 | D97 |
-| B6 | Fourteen High Charity rooms: own skins and signature props | B5 | D98–D99 |
-| B7 | Observatory and the three dream rooms | B5 | D100 |
-| B8 | New Fernbrook Lantern House and Bloom Trial Hall rooms | not started (Vincent's go) | D101 |
+| B1 | Gap check only. The 14×22 pilot, camera, bigger grids, variants and decals are PR #51 | `main` | D92–D93, only if a real gap remains |
+| B2 | RegenX floors 1–3 to 14×22, each with its own accent | `main` | D94–D95 |
+| B3 | Four tunnel rooms: rock skin and dressing, same grids | `main` | D96 |
+| B4 | A unique exterior for every building (E11), path edges, landmarks, outdoor detail; no reshaping. Grass variants extend the pilot's seeded variants; they do not replace them | `main` | D97–D98 |
+| B5 | Nine Hearthmoor, Keeper House and Cobblecrest rooms: own skins and props | `main` | D99 |
+| B6 | Fourteen High Charity rooms: own skins and signature props | B5 | D100–D101 |
+| B7 | Observatory and the three dream rooms | B5 | D102 |
+| B8 | New Fernbrook Lantern House and Bloom Trial Hall rooms. Not queued; reuse B5's house skins, then Vincent's go | B5 | D103 |
 
 Maps in the verbatim design copies (`maps_slice`, `act1_route2`, `cobblecrest`, `interiors`) are changed through `data/detail_b<n>.json` overlays: `tools/gen_mapdata.py` loads every `data/detail_*.json` and `game.js` applies each `slicePatch` last. Do not run `tools/build_highcharity.py`; it is older than `data/highcharity.json`. Route 3, Brinewick and the Cobblecrest cottages have no spec yet.
 
@@ -760,7 +760,7 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D102 (D81–D89 are the settled map limits; D90–D101 are reserved for the Q28 map pass). D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
+9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D104 (D90 is the debug-save acceptance and D91 is the byte-line learnset; D92–D103 are reserved for the Q28 map pass). D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
 10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.
 11. **Welcome back (D56) and clearing a nickname (D57).** Q25 uses 14 hours and one sentence. Q23 clears `nick` when the field is empty or equals the species name, on the stats card and on the Walkling sheet. Both lines are still placeholders.
 12. **Modern and arcade controls (Q26, D70–D72).** Scoped from Vincent's Oct 15 sketch, not started. Arcade is today's layout. Modern is a full-screen map with QUEST, BAG, and MAP top left, Settings and PHONE top right, WALKLINGS and PARTNER bottom right, a partner strip along the bottom, and no tab bar. The joystick is an option, off by default (D71). Landscape is D72. The prompt and the modern tips are placeholders (D70).
