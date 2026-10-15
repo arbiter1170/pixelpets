@@ -22,7 +22,7 @@ Past examples of art and writing, for both the implementer and the designer, are
 Morning (recorded in the first pass):
 
 1. **The second area is Fernbrook.** That is where the side is picked. Confirmed.
-2. **The side is not permanent.** The player can switch back after Fernbrook. Standing per faction is built (Build 2). Numbers in `STANDING_CFG` are still open (OPEN_DECISIONS D14–D17).
+2. **The side is not permanent.** The player can switch back after Fernbrook. Standing per faction is built (Build 2). Standing numbers in `STANDING_CFG` are settled (OPEN_DECISIONS D14–D17, Vincent Oct 15).
 3. **Capture:** "no combat performed" = the creature is at full health in this encounter. No global "never fought" rule.
 4. **Art and writing** go to the designer (`DESIGN_HANDOFF.md`, `DESIGNER_PROMPT.md`).
 
@@ -278,7 +278,7 @@ Rules to keep the tree safe:
 
 ### Standing and switching (Oct 13 decision: the side is switchable, needs Standing)
 
-**Status: shipped in Build 2** (`standing.js`, Fernbrook Pledge desks, STANDING tab). Numbers and desk copy are still open (D14–D22). The text below is the original spec; the live rules live in `STANDING_CFG`.
+**Status: shipped in Build 2** (`standing.js`, Fernbrook Pledge desks, STANDING tab). Standing numbers are settled (D14–D17, Vincent Oct 15); desk copy is still open (D19–D22). The text below is the original spec; the live rules live in `STANDING_CFG`.
 
 **Data (additive, no save bump).** `S.standing = { keepers: n, glimmer: n }`, integers 0-100, both always tracked, normalised in `save.js` (`fill(s, 'standing', isObj, {})` like `bag`/`seals`/`flags`, clamp on load). `story.side` stays the *pledge* ("which faction are you currently working for"). Each faction has 5 tiers (0-4) from thresholds, for example 0 / 10 / 25 / 45 / 70.
 - Keepers tiers (working names): Stranger, Friend, Trusted, Hall Friend, Warden's Ally.
@@ -669,7 +669,7 @@ Quest-unlocked Walkling adornments (D75) are not started. The five current ones 
 
 Designer: Tour stop copy and the real `tour.doubt` name (D26); the switch-desk letter, review, and welcome (D19); the Sacrifice one-pager (D24), which replaces the stub. Tier-2 lanyard art, Imogen, Hollis, and Rook's lanyard are in the game (Q20). D13 is the player look picker, which still has no lanyard. Route 2, Cobblecrest, and R5 already have implementer copy on `main`. Replace that copy. Do not write a second set.
 
-Vincent: Standing numbers D14–D17 are due Thu Oct 15 and are still the Build 2 guesses. Daily earning is wanted and slow, and D18 still needs a cap before it is built. The 5-Acorn rest (D28) and the Firebase project plus the privacy line are also open. The town-list rows are settled. The open-table D37 is the region-map claim list, already in the game, and it shares that number. Do not renumber it.
+Vincent: Standing numbers D14–D17 are settled (Oct 15) as the Build 2 defaults. Daily earning is wanted and slow, and D18 still needs a cap before it is built. The 5-Acorn rest (D28) and the Firebase project plus the privacy line are also open. The town-list rows are settled. The open-table D37 is the region-map claim list, already in the game, and it shares that number. Do not renumber it.
 
 ### Reference: Builds 4–6 as they play on main
 
@@ -736,7 +736,7 @@ Settled Oct 13: Fernbrook is the pick; side is switchable with Standing; capture
 Remaining:
 
 1. **Sacrifice loop (D24).** `main` has the stub (snack stays in the bag, three spoken names, optional Hale review). Still open: the real cost, and whether Quota should be a befriend / win / walk target. It replaces the stub.
-2. **Standing numbers and sources (D14–D18):** tiers 0/10/25/45/70, switch halves the side left, one switch per Seal-count chapter, `joinMinTier` 0. Daily earning not built. All still proposals in `STANDING_CFG`.
+2. **Standing numbers and sources (D14–D18):** D14–D17 settled Oct 15 (Vincent) as built: tiers 0/10/25/45/70, switch halves the side left, one switch per Seal-count chapter, `joinMinTier` 0. Daily earning not built (D18). Was: All still proposals in `STANDING_CFG`.
 3. **Completionists:** after switching, can the player also finish the other faction's trial? Default: yes, optional, with that faction's tier granted.
 4. **Capture extras (D6–D8):** quarry width 0.18 vs target 0.22 left as is; WARY/FAIR/GOOD shown; no Easier toggle, no miss-shrink, no KO mitigation.
 5. **Quest pointer:** tile chevron plus edge arrow. Settings toggle to turn pointing off? Default: on. Side-task count not built (D12).

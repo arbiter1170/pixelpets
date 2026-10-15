@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261015-1214">
+<meta name="kw-build" content="20261015-1230b">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -12,10 +12,10 @@
 <meta name="application-name" content="Walklings">
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
-<link rel="icon" href="icons/icon-192.png?v=20261015-1214">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261015-1214">
-<link rel="manifest" href="manifest.json?v=20261015-1214">
-<link rel="stylesheet" href="style.css?v=20261015-1214">
+<link rel="icon" href="icons/icon-192.png?v=20261015-1230b">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261015-1230b">
+<link rel="manifest" href="manifest.json?v=20261015-1230b">
+<link rel="stylesheet" href="style.css?v=20261015-1230b">
 </head>
 <body>
 <div id="app">
@@ -27,6 +27,15 @@
       <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings"><canvas id="settingsIcon" width="8" height="8"></canvas></button>
     </div>
   </header>
+  <!-- STAT_DISPLAY: one NRG / GROW strip for PARTNER and WALK (placement: D120, settled, Vincent approved Design's default, a body strip under the header).
+       To move it (e.g. into the header), move this one node; CSS shows it by body[data-screen]. -->
+  <div id="statStrip" class="stat-strip" aria-label="Partner stats">
+    <span class="ss-lab ss-nrg-l">NRG</span><div class="bar ss-bar ss-nrg-b"><i id="barEnergy" class="c-nrg"></i></div><b id="valEnergy" class="ss-val ss-nrg-v">0</b>
+    <span class="ss-lab ss-grow-l">GROW</span><div class="bar ss-bar ss-grow-b"><i id="barXp" class="c-xp"></i></div><b id="valXp" class="ss-val ss-grow-v">0</b>
+    <span class="ss-ex" title="Explore XP today from walking and befriending. Daily cap 30." aria-label="Explore XP today from walking and befriending. Daily cap 30.">EXPLORE <b id="ssExp">0/30</b></span>
+    <span class="ss-slot ss-care" title="Care XP today from FEED, PLAY and REST. Daily cap 25." aria-label="Care XP today from FEED, PLAY and REST. Daily cap 25.">CARE <b id="ssCare">0/25</b></span>
+    <span class="ss-slot ss-steps">STEPS <b id="wSteps">0</b></span>
+  </div>
 
   <main>
     <!-- PET CARE -->
@@ -36,11 +45,8 @@
       <div class="stats">
         <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
         <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
-        <div class="stat"><span>NRG</span><div class="bar"><i id="barEnergy" class="c-nrg"></i></div><b id="valEnergy">0</b></div>
-        <div class="stat"><span>GROW</span><div class="bar"><i id="barXp" class="c-xp"></i></div><b id="valXp">0</b></div>
       </div>
       <div id="evoHint" class="hint"></div>
-      <div id="dailyXp" class="hint daily"><span class="seg">Today: care XP <b id="dCare">0/25</b></span> <span class="sep">&middot;</span> <span class="seg">explore XP <b id="dExp">0/30</b></span></div>
       <button id="evolveBtn" class="btn btn-evo" hidden type="button"><canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas> GROW UP! <canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas></button>
       <div class="actions partner-row">
         <button id="petStatsBtn" class="btn" type="button" aria-label="Stats card">STATS</button>
@@ -55,12 +61,6 @@
 
     <!-- WALK -->
     <section id="scr-walk" class="screen">
-      <div class="walk-hud">
-        <div class="mini grow"><span>NRG</span><div class="bar"><i id="wBarEnergy" class="c-nrg"></i></div></div>
-        <div class="mini"><span>GROW</span><b id="wXp">0</b></div>
-        <div class="mini"><span>STEPS</span><b id="wSteps">0</b></div>
-        <div class="mini" title="Explore XP earned today (walking + befriending), daily cap 30"><span>TODAY</span><b id="wExp">0/30</b></div>
-      </div>
       <button id="envBadge" class="env-badge" type="button"><span id="envText">Meadow</span><small id="envSrc"></small></button>
       <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" role="img" aria-label="The walk map" width="176" height="176"></canvas>
         <div id="chatBubble" class="chat-bubble" hidden></div>
@@ -610,23 +610,23 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261015-1214";</script>
-<script src="sprites.js?v=20261015-1214"></script>
-<script src="keeper.js?v=20261015-1214"></script>
-<script src="stats.js?v=20261015-1214"></script>
-<script src="moves.js?v=20261015-1214"></script>
-<script src="data/mapdata.js?v=20261015-1214"></script>
-<script src="quests.js?v=20261015-1214"></script>
-<script src="standing.js?v=20261015-1214"></script>
-<script src="save.js?v=20261015-1214"></script>
-<script src="env.js?v=20261015-1214"></script>
-<script src="sfx.js?v=20261015-1214"></script>
-<script src="minigames.js?v=20261015-1214"></script>
-<script src="ribbit.js?v=20261015-1214"></script>
-<script src="cloud_config.js?v=20261015-1214"></script>
-<script src="cloud.js?v=20261015-1214"></script>
-<script src="debug_ui.js?v=20261015-1214"></script>
-<script src="data/nav_art.js?v=20261015-1214"></script>
-<script src="game.js?v=20261015-1214"></script>
+<script>window.BUILD = "20261015-1230b";</script>
+<script src="sprites.js?v=20261015-1230b"></script>
+<script src="keeper.js?v=20261015-1230b"></script>
+<script src="stats.js?v=20261015-1230b"></script>
+<script src="moves.js?v=20261015-1230b"></script>
+<script src="data/mapdata.js?v=20261015-1230b"></script>
+<script src="quests.js?v=20261015-1230b"></script>
+<script src="standing.js?v=20261015-1230b"></script>
+<script src="save.js?v=20261015-1230b"></script>
+<script src="env.js?v=20261015-1230b"></script>
+<script src="sfx.js?v=20261015-1230b"></script>
+<script src="minigames.js?v=20261015-1230b"></script>
+<script src="ribbit.js?v=20261015-1230b"></script>
+<script src="cloud_config.js?v=20261015-1230b"></script>
+<script src="cloud.js?v=20261015-1230b"></script>
+<script src="debug_ui.js?v=20261015-1230b"></script>
+<script src="data/nav_art.js?v=20261015-1230b"></script>
+<script src="game.js?v=20261015-1230b"></script>
 </body>
 </html>

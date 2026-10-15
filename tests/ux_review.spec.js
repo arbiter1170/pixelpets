@@ -42,11 +42,11 @@ for (const mode of ['arcade', 'modern']) {
 test('FOOD / JOY / NRG / GROW / HP bars are progressbars that follow the values', async ({ page }) => {
   await boot(page, starterSave(), '?debug=1');
   await page.evaluate(() => PixelPets.showTab('pet'));
-  const read = () => page.evaluate(() => Object.fromEntries(['barHunger', 'barHappy', 'barEnergy', 'barXp', 'wBarEnergy'].map(id => { const b = document.getElementById(id).parentNode;
+  const read = () => page.evaluate(() => Object.fromEntries(['barHunger', 'barHappy', 'barEnergy', 'barXp'].map(id => { const b = document.getElementById(id).parentNode;
     return [id, [b.getAttribute('role'), b.getAttribute('aria-valuemin'), b.getAttribute('aria-valuemax'), b.getAttribute('aria-valuenow'), b.getAttribute('aria-label')]]; })));
   const a = await read();
   expect(a.barHunger).toEqual(['progressbar', '0', '100', String(Math.round(await page.evaluate(() => PixelPets.state.party[0].hunger))), 'Food']);
-  expect(a.barHappy[4]).toBe('Joy'); expect(a.barEnergy[4]).toBe('Energy'); expect(a.barXp[4]).toBe('Growth'); expect(a.wBarEnergy[4]).toBe('Energy');
+  expect(a.barHappy[4]).toBe('Joy'); expect(a.barEnergy[4]).toBe('Energy'); expect(a.barXp[4]).toBe('Growth');   // STAT_DISPLAY: shared strip; #wBarEnergy gone
   for (const v of Object.values(a)) expect(v[0]).toBe('progressbar');
   await page.evaluate(() => { PixelPets.state.party[0].hunger = 33; });
   await expect.poll(async () => (await read()).barHunger[3]).toBe('33');

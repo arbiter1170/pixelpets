@@ -112,7 +112,7 @@ h2 small{color:var(--h);font-size:17px}
 .daily{font-size:16px;min-height:16px;margin-top:-4px;flex:0 0 auto}
 .daily .seg{white-space:nowrap;display:inline-block}   /* wraps between the two counters, never inside one */
 .daily b{color:var(--w);font-weight:bold}
-.daily b.maxed,.walk-hud b.maxed{color:var(--l)}        /* daily cap reached */
+.stat-strip b.maxed{color:var(--l)}        /* daily cap reached */
 
 /* buttons: big tap targets (>=52px) */
 .btn{min-height:56px;min-width:44px;padding:0 10px;border:0;background:var(--h);color:var(--k);font-size:22px;
@@ -135,12 +135,25 @@ h2 small{color:var(--h);font-size:17px}
 .actions.two{grid-template-columns:2fr 1fr}
 
 /* walk */
-.walk-hud{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:17px;padding:0 4px;flex:0 0 auto}
-.walk-hud .mini:not(.grow){flex:0 0 auto;white-space:nowrap}
-.walk-hud .grow{min-width:84px}   /* very long readouts wrap to a 2nd row instead of crushing the bar */
-.walk-hud .mini{display:flex;align-items:center;gap:6px}
-.walk-hud .grow{flex:1}.walk-hud .grow .bar{flex:1;height:12px}
-.walk-hud b{color:var(--y)}
+/* STAT_DISPLAY §3: one strip under the header, 56 px; rects at 320 and 390 (bars share the leftover width). */
+#statStrip{display:none;position:relative;flex:0 0 56px;height:56px;--bw:calc((100% - 196px) / 2);font-size:17px;white-space:nowrap}
+body[data-screen="pet"] #statStrip,body[data-screen="walk"] #statStrip{display:block}
+body.ctl-modern[data-screen="walk"] #statStrip{display:none}   /* modern walk: the partner strip covers it (NAV_MODERN) */
+#statStrip > *{position:absolute;box-sizing:border-box}
+#statStrip .ss-lab{top:6px;height:24px;line-height:24px;font-size:18px}
+#statStrip .ss-nrg-l{left:12px;width:36px}
+#statStrip .ss-bar{top:10px;height:16px;width:var(--bw)}
+#statStrip .ss-nrg-b{left:54px}
+#statStrip .ss-val{top:6px;height:24px;line-height:24px;text-align:right;color:var(--h);font-size:18px}
+#statStrip .ss-nrg-v{left:calc(54px + var(--bw) + 4px);width:28px}
+#statStrip .ss-grow-l{left:calc(54px + var(--bw) + 44px);width:40px}
+#statStrip .ss-grow-b{right:52px}
+#statStrip .ss-grow-v{right:12px;width:36px}
+#statStrip .ss-ex,#statStrip .ss-slot{top:32px;height:20px;line-height:20px;width:calc(50% - 20px);font-size:16px;color:var(--h)}
+#statStrip .ss-ex{left:12px}
+#statStrip .ss-slot{right:12px;text-align:right}
+#statStrip .ss-ex b,#statStrip .ss-slot b{color:var(--w)}
+body:not([data-screen="pet"]) #statStrip .ss-care,body:not([data-screen="walk"]) #statStrip .ss-steps{display:none}
 .walk-ctl{display:flex;align-items:center;gap:10px;flex:0 0 auto;padding:2px}
 /* Smaller d-pad (Vincent's playtest, item 3): 52 px cells (was 62), still >= 44 px targets. BAG and MAP sit in the empty bottom
    corners (MAP_V0 §1). BOOK sits in the empty top-left corner and opens the Walkling Journal. */
@@ -896,7 +909,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 body.ctl-modern{--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--sa-l:env(safe-area-inset-left,0px);--sa-r:env(safe-area-inset-right,0px)}
 body.ctl-modern[data-screen="walk"] #top,body.ctl-modern #tabs{display:none}
 body.ctl-modern #scr-walk{padding:0}
-body.ctl-modern #scr-walk .walk-hud,body.ctl-modern #scr-walk .walk-ctl{display:none}
+body.ctl-modern #scr-walk .walk-ctl{display:none}
 body.ctl-modern #scr-walk .map-wrap{margin:0;box-shadow:none;min-height:0}
 body.ctl-modern #app{padding-bottom:env(safe-area-inset-bottom)}
 body.ctl-modern .float-ctl{display:block;position:absolute;inset:0;pointer-events:none;z-index:2}
@@ -980,6 +993,7 @@ body.ctl-modern .joy{background:none;box-shadow:none;opacity:.35}
 body.ctl-modern .joy-art{display:block;position:absolute;inset:0;width:96px;height:96px;image-rendering:pixelated}
 body.ctl-modern .joy-knob{background:none;border-radius:0;position:relative}
 body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelated}
+@media (min-width:390px){#statStrip .ss-ex,#statStrip .ss-slot{width:calc(50% - 15px)}}   /* STAT_DISPLAY §3: 180 px counters at 390 */
 #keySideTask[hidden]{display:none}
 .map-side{color:var(--c);max-width:320px;text-align:center;margin-top:-4px}
 .map-side[hidden]{display:none}
