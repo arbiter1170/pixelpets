@@ -460,8 +460,8 @@ function initNavArt(){
   navButtons().forEach(([b]) => {
     if (b.querySelector('.nav-art')) return;
     const c = document.createElement('canvas'); c.className = 'nav-art'; c.width = c.height = 44; c.setAttribute('aria-hidden', 'true'); b.append(c);
-    const up = () => b.classList.remove('nav-press');
-    b.addEventListener('pointerdown', () => b.classList.add('nav-press'));
+    const up = () => { b.classList.remove('nav-press'); syncNavArt(false); };
+    b.addEventListener('pointerdown', () => { b.classList.add('nav-press'); syncNavArt(false); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, up));
   });
   [['#envBadge', 'area_banner'], ['#petStrip', 'partner_strip'], ['#walkTip', 'tip_band']].forEach(([sel, key]) => {
@@ -494,10 +494,13 @@ function syncNavArt(force){
   navButtons().forEach(([b, key]) => {
     const c = b.querySelector('.nav-art'); if (!c) return;
     const art = key === 'phone' && S && side() === 'glimmer' ? 'phone_glimmer' : key;   // nav_art.json swaps.phone
-    const st = navStateOf(b, key), tag = art + ':' + st;
+    const st = navStateOf(b, key);
+    const mark = key === 'quest' && st !== 'locked' && st !== 'disabled' ? questMarkTag() : '';
+    const tag = art + ':' + st + (mark ? ':' + mark : '');
     if (!force && navPaint.get(c) === tag) return;
     navPaint.set(c, tag); const g = ctx(c); g.clearRect(0, 0, 44, 44);
     const grid = (A.buttons[art] || {})[st] || (A.buttons[art] || {}).normal; if (grid) paintGrid(g, grid, 2, 0, 0);
+    if (mark) paintQuestMarks(g, st);
   });
   $$('.frame-art').forEach(c => {
     const el = c.parentNode, w = Math.max(8, Math.round(el.offsetWidth / 2)), f = A.frames[c.dataset.frame];
@@ -5302,11 +5305,64 @@ function openJournalTab(){ openPhone(); }
 // Same visibility rules as BOOK. Pulses while the current objective differs from the one the panel was last opened on
 // (S.questSeen, additive), so every new beat invites a tap once and then goes quiet.
 const questVisible = () => journalVisible();
+// Quest marks (D105, modern only). The approved badge pip in nav_art (the G5 state) is the mark. Main story paints it
+// gold at the top right, the same gold as the MAIN card. A side quest paints it tide blue at the top left, the same
+// blue as the SIDE card, with a dark ring so it stays clear on the blue button and while the gold pulse plays.
+// The idle last step (id end, "that's all for now") does not light a main mark. Arcade keeps the 8x8 signpost.
+let questPipCells = null;
+function questPip(){
+  if (questPipCells) return questPipCells;
+  const btn = navArt() && navArt().buttons && navArt().buttons.quest;
+  if (!btn || !btn.badge || !btn.normal) return [];
+  const raw = [];
+  btn.badge.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] !== btn.normal[y][x]) raw.push([x, y, row[x]]); });
+  const set = new Set(raw.map(([x, y]) => x + ',' + y));
+  questPipCells = raw.map(([x, y, ch]) => {
+    const edge = ch !== 'w' && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !set.has((x + dx) + ',' + (y + dy)));
+    return [x, y, ch === 'w' ? 'w' : edge ? 'k' : 'f'];
+  });
+  return questPipCells;
+}
+function questMarks(){
+  if (!questVisible()) return { main: false, side: false };
+  const q = questCurrent();
+  return { main: !!(q && q.id !== 'end'), side: !!sideQuest() };
+}
+function questMarkTag(){ const m = questMarks(); return (m.main ? 'm' : '') + (m.side ? 's' : ''); }
+function questMarkLabel(m){
+  if (m.main && m.side) return 'QUEST, main story and side quest';
+  if (m.main) return 'QUEST, main story';
+  if (m.side) return 'QUEST, side quest';
+  return 'QUEST';
+}
+function stampQuestPip(g, mirror, shift, fill){
+  for (const [x, y, k] of questPip()) {
+    const gx = mirror ? 21 - x : x, gy = y + shift;
+    if (gx < 0 || gy < 0 || gx > 21 || gy > 21) continue;
+    g.fillStyle = PAL[k === 'f' ? fill : k];
+    g.fillRect(gx * 2, gy * 2, 2, 2);
+  }
+}
+function paintQuestMarks(g, st){
+  const m = questMarks(); if (!m.main && !m.side) return;
+  const shift = st === 'pressed' ? 2 : 0;
+  if (m.main) stampQuestPip(g, false, shift, 'y');
+  if (m.side) stampQuestPip(g, true, shift, 'c');
+}
+let questBtnSig = '';
 function syncQuestBtn(){
   const b = $('#questBtn'); if (!b) return;
   const on = questVisible(), q = on ? questCurrent() : null;
   b.classList.toggle('off', !on);
   b.classList.toggle('pulse', !!q && S.questSeen !== q.id);
+  const m = questMarks();
+  const label = questMarkLabel(m);
+  if (b.getAttribute('aria-label') !== label) b.setAttribute('aria-label', label);
+  if (b.title !== label) b.title = label;
+  const mark = [m.main ? 'main' : '', m.side ? 'side' : ''].filter(Boolean).join(' ');
+  if (mark) b.dataset.questMark = mark; else delete b.dataset.questMark;
+  const sig = (on ? '1' : '0') + (b.classList.contains('pulse') ? 'p' : '') + mark;
+  if (sig !== questBtnSig) { questBtnSig = sig; try { syncNavArt(false); } catch (e) {} }
 }
 let questTab = 'next';   // 'next' | 'standing'; the panel always opens on NEXT STEP
 function openQuest(){
@@ -8137,7 +8193,7 @@ function boot(){
   // WP-C: the current objective (read-only), the point the cue draws on this map, and the chain's dev check.
   Object.defineProperty(api, 'townBoard', { enumerable: true, get(){ return townBoardView(); } });
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
-    seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
+    seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse'), navMark: ($('#questBtn') && $('#questBtn').dataset.questMark) || '' }; } });
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map

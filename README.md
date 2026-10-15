@@ -156,6 +156,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   Glimmerwell variant (`glimmer: { text, place }` on the entry) that shows while `story.side` is `glimmer`; ids, `when`,
   `done` and targets are shared by both sides. Text is at most 110 characters, places at most 24 (`questCheck` enforces both).
   The QUEST button carries the designer's `icon_quest` (a yellow arrow signpost).
+  In modern controls the same button adds the approved corner pip: gold at the top right while a main step is open (the idle "that's all for now" step stays unmarked), and tide blue at the top left while a side quest is open. Both can show at once. The pip stays after you open the panel. The button still pulses until you open a new main step.
   On the Walk map a yellow arrow bobs above the target tile (a map's top row gets it from below, pointing up); when the
   target is off-screen an arrow sits at the viewport edge; when it is on another map the arrow points at the exit that
   starts the shortest route there (warps and doors). The tip under the d-pad repeats the objective once the first-steps
