@@ -4408,7 +4408,7 @@ function showTownBoardPane(){
   const back = $('#phoneBack'); if (back) back.hidden = !owned;
 }
 // Contacts: one card per person you have met. Quest dialog (a scene, a line that starts a scene, or a catch scene) is marked QUEST.
-// Favorites live in S.phoneBook and the save stays v2. D73.
+// Favorites live in S.phoneBook and the save stays v2. D80.
 const PHONE_GLYPH = {
   contacts: ['..##....', '.####...', '.####...', '..##....', '.######.', '##.##.##', '##.##.##', '.######.'],
   notes: ['.######.', '#......#', '#.####.#', '#......#', '#.##...#', '#......#', '.######.', '........'],
