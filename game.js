@@ -7476,11 +7476,15 @@ function bindInput(){
   mc.addEventListener('pointerup', end); mc.addEventListener('pointercancel', end);
   // Keyboard (bonus)
   const KEYS = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'up', s:'down', a:'left', d:'right', W:'up', S:'down', A:'left', D:'right' };
+  // A focused button (TALK, QUEST...) fires its click on Space keyup. When the keydown advanced a text box, eat that keyup,
+  // or the last line of a scene (Ness's phone_grant, QA Oct 15) closes and the same Space re-opens a talk or a panel.
+  let sceneKeyEat = false;
+  window.addEventListener('keyup', e => { if (sceneKeyEat && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sceneKeyEat = false; } });
   window.addEventListener('keydown', e => {
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
     if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && $('#ovDebug').hidden && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
-      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) sceneTap(); return; }
+      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sceneKeyEat = true; if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
     if (e.key === 'Escape' && !$('#ovStats').hidden) { if (!$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }

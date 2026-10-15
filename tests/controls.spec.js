@@ -94,3 +94,17 @@ test('the joystick walks like a held arrow and ignores a tap', async ({ page }) 
   expect(await page.evaluate(() => PixelPets.controls.dpad)).toBe(null);
   expect(await page.evaluate(() => PixelPets.state.world.x)).toBeGreaterThan(x0);
 });
+
+test('Space advances every line of Ness\'s phone_grant, the last one too, and does not re-press a focused button', async ({ page }) => {
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.locator('#tabs button[data-tab="walk"]').click();
+  expect(await page.evaluate(() => PixelPets.runScene('phone_grant'))).toBe(true);
+  await page.focus('#talkBtn');
+  for (let i = 0; i < 12 && !(await page.locator('#ovScene').isHidden()); i++) { await page.keyboard.press(' '); await page.waitForTimeout(350); }
+  await expect(page.locator('#ovScene')).toBeHidden();
+  expect(await page.evaluate(() => PixelPets.state.flags['story.phone_got'])).toBe(true);
+  await page.waitForTimeout(300);
+  await expect(page.locator('#ovScene')).toBeHidden();
+  await expect(page.locator('#ovQuest')).toBeHidden();
+});
