@@ -1,0 +1,271 @@
+{
+  "spec": "handoff/maps/B4_exteriors_variety.md + BUILDING_VARIETY.md rows 1-27 (phase 1: exteriors, path edges, props, landmarks)",
+  "slicePatch": { "maps": {
+    "cobble_quarry": {
+      "addObjs": [
+        {"kind": "prop", "id": "q_ore_cart", "x": 27, "y": 6, "sprite": "ore_cart"},
+        {"kind": "prop", "id": "q_rock_a", "x": 3, "y": 6, "sprite": "rock_big"},
+        {"kind": "prop", "id": "q_barrel_w", "x": 10, "y": 14, "sprite": "barrel"},
+        {"kind": "prop", "id": "q_marker", "x": 21, "y": 17, "sprite": "stone_marker"},
+        {"kind": "prop", "id": "q_woodpile", "x": 29, "y": 17, "sprite": "woodpile"},
+        {"kind": "prop", "id": "q_barrel", "x": 23, "y": 16, "sprite": "barrel"},
+        {"kind": "prop", "id": "q_rope", "x": 6, "y": 7, "sprite": "rope_coil"},
+        {"kind": "prop", "id": "q_cart", "x": 22, "y": 7, "sprite": "cart_prop"},
+        {"kind": "prop", "id": "q_poles", "x": 12, "y": 18, "sprite": "pole_rack"},
+        {"kind": "prop", "id": "q_marker_w", "x": 5, "y": 17, "sprite": "stone_marker"}
+      ]
+    },
+    "cobblecrest": {
+      "set": { "roofs": {
+        "lantern": {"x0": 2, "y0": 2, "x1": 7, "y1": 3, "roof": "roof_flat_m", "wall": "wall_rough", "door": "door_iron", "win": "win_lamp", "trim": "m", "shape": "flat", "porch": ["cc_lantern_sign", "cc_ore_cart"]},
+        "hall": {"x0": 21, "y0": 1, "x1": 28, "y1": 3, "col": "m", "wall": "wall_pillar", "door": "door_slab", "win": "win_slit", "shape": "stepped", "porch": ["cc_slab_sign"]},
+        "cottage_w": {"x0": 8, "y0": 11, "x1": 11, "y1": 12, "roof": "roof_thatch_y", "wall": "wall_log", "win": "win_square", "trim": "o", "shape": "gable", "porch": ["cc_woodpile"]},
+        "cottage_e": {"x0": 21, "y0": 11, "x1": 24, "y1": 12, "roof": "roof_turf", "wall": "wall_brick", "win": "win_shutter", "trim": "d", "shape": "arch", "porch": ["cc_barrel"]}
+      } },
+      "addObjs": [
+        {"kind": "prop", "id": "cc_lantern_sign", "x": 3, "y": 5, "sprite": "lantern_sign"},
+        {"kind": "prop", "id": "cc_ore_cart", "x": 7, "y": 5, "sprite": "ore_cart"},
+        {"kind": "prop", "id": "cc_slab_sign", "x": 26, "y": 6, "sprite": "slab_sign"},
+        {"kind": "prop", "id": "cc_woodpile", "x": 12, "y": 13, "sprite": "woodpile"},
+        {"kind": "prop", "id": "cc_barrel", "x": 25, "y": 13, "sprite": "barrel"},
+        {"kind": "prop", "id": "cc_statue", "x": 16, "y": 13, "sprite": "lm_statue"},
+        {"kind": "prop", "id": "cc_rock_a", "x": 2, "y": 11, "sprite": "rock_big"},
+        {"kind": "prop", "id": "cc_rock_b", "x": 3, "y": 12, "sprite": "rock_small"},
+        {"kind": "prop", "id": "cc_flowerbed", "x": 14, "y": 14, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "cc_bush", "x": 29, "y": 17, "sprite": "bush"},
+        {"kind": "prop", "id": "cc_fence_a", "x": 28, "y": 10, "sprite": "fence_h"},
+        {"kind": "prop", "id": "cc_fence_b", "x": 29, "y": 10, "sprite": "fence_h"},
+        {"kind": "prop", "id": "cc_hay", "x": 6, "y": 15, "sprite": "hay_bale"}
+      ]
+    },
+    "fb_heights": {
+      "set": { "roofs": {
+        "regenx": {"x0": 2, "y0": 2, "x1": 6, "y1": 2, "roof": "roof_flat_w", "wall": "wall_lab_w", "door": "regenx_facade", "win": "win_band", "trim": "l", "shape": "flat", "porch": ["ht_pylon", "ht_lab_bollard"]},
+        "tunnel": {"x0": 14, "y0": 2, "x1": 18, "y1": 2, "roof": "roof_rock", "wall": "wall_rock", "door": "tunnel_mouth", "trim": "o", "shape": "arch", "porch": ["ht_lantern_hook", "ht_tunnel_rock"]}
+      } },
+      "addObjs": [
+        {"kind": "prop", "id": "ht_lab_bollard", "x": 7, "y": 5, "sprite": "bollard"},
+        {"kind": "prop", "id": "ht_lantern_hook", "x": 19, "y": 5, "sprite": "lantern_hook"},
+        {"kind": "prop", "id": "ht_tunnel_rock", "x": 13, "y": 4, "sprite": "rock_big"},
+        {"kind": "prop", "id": "ht_big_tree", "x": 22, "y": 2, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "ht_fence_a", "x": 20, "y": 9, "sprite": "fence_h"},
+        {"kind": "prop", "id": "ht_fence_b", "x": 21, "y": 9, "sprite": "fence_h"},
+        {"kind": "prop", "id": "ht_fence_c", "x": 22, "y": 9, "sprite": "fence_h"},
+        {"kind": "prop", "id": "ht_rock_a", "x": 19, "y": 12, "sprite": "rock_small"},
+        {"kind": "prop", "id": "ht_rock_b", "x": 21, "y": 13, "sprite": "rock_big"},
+        {"kind": "prop", "id": "ht_bed_a", "x": 7, "y": 11, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "ht_bed_b", "x": 8, "y": 11, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "ht_bush", "x": 1, "y": 10, "sprite": "bush"},
+        {"kind": "prop", "id": "ht_stump", "x": 5, "y": 13, "sprite": "stump"},
+        {"kind": "prop", "id": "ht_log", "x": 16, "y": 13, "sprite": "log"},
+        {"kind": "prop", "id": "ht_hay", "x": 3, "y": 9, "sprite": "hay_bale"},
+        {"kind": "prop", "id": "ht_flowers", "x": 9, "y": 2, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "ht_marker", "x": 9, "y": 9, "sprite": "stone_marker"}
+      ]
+    },
+    "fernbrook": {
+      "set": { "roofs": {
+        "lantern": {"x0": 3, "y0": 2, "x1": 8, "y1": 3, "roof": "roof_thatch_g", "wall": "wall_timber", "door": "door_dutch", "win": "win_diamond", "trim": "d", "shape": "arch", "porch": ["fb_lantern_sign", "fb_apple_crate"]},
+        "hall": {"x0": 19, "y0": 1, "x1": 26, "y1": 4, "roof": "roof_gable_p", "wall": "wall_ashlar_w", "door": "door_arch", "win": "win_box", "trim": "p", "shape": "gable", "porch": ["fb_hedge_w", "fb_hedge_e"]}
+      } },
+      "addObjs": [
+        {"kind": "prop", "id": "fb_lantern_sign", "x": 3, "y": 5, "sprite": "lantern_sign"},
+        {"kind": "prop", "id": "fb_apple_crate", "x": 7, "y": 5, "sprite": "apple_crate"},
+        {"kind": "prop", "id": "fb_hedge_w", "x": 20, "y": 6, "sprite": "hedge_planter"},
+        {"kind": "prop", "id": "fb_hedge_e", "x": 24, "y": 6, "sprite": "hedge_planter"},
+        {"kind": "prop", "id": "fb_well", "x": 13, "y": 3, "sprite": "lm_well"},
+        {"kind": "prop", "id": "fb_big_tree", "x": 29, "y": 4, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "fb_flowerbed", "x": 16, "y": 4, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "fb_fence_a", "x": 10, "y": 1, "sprite": "fence_h"},
+        {"kind": "prop", "id": "fb_fence_b", "x": 11, "y": 1, "sprite": "fence_h"},
+        {"kind": "prop", "id": "fb_bush_w", "x": 1, "y": 5, "sprite": "bush"},
+        {"kind": "prop", "id": "fb_bush_e", "x": 30, "y": 9, "sprite": "bush"},
+        {"kind": "prop", "id": "fb_stump", "x": 17, "y": 2, "sprite": "stump"}
+      ]
+    },
+    "hearthmoor": {
+      "set": { "roofs": {
+        "home": {"x0": 2, "y0": 2, "x1": 5, "y1": 3, "roof": "roof_tile_r", "wall": "wall_plaster", "door": "door_plain_g", "win": "win_round", "trim": "w", "shape": "gable", "porch": ["hm_home_planter"]},
+        "lodge": {"x0": 8, "y0": 2, "x1": 13, "y1": 4, "roof": "roof_shingle_g", "wall": "wall_log", "door": "door_double", "win": "win_shutter", "trim": "d", "shape": "steep", "porch": ["hm_lodge_sign", "hm_lodge_fence"]},
+        "rook": {"x0": 15, "y0": 2, "x1": 18, "y1": 3, "roof": "roof_tile_o", "wall": "wall_brick", "win": "win_square", "trim": "p", "shape": "+chimney", "porch": ["hm_rook_cart"]},
+        "lantern": {"x0": 15, "y0": 10, "x1": 18, "y1": 11, "roof": "roof_gold", "wall": "wall_white", "door": "door_glass", "win": "win_arch", "trim": "o", "porch": ["hm_lantern_sign", "hm_lantern_bench"]},
+        "keeper": {"x0": 10, "y0": 9, "x1": 13, "y1": 9, "roof": "roof_slate_b", "wall": "wall_stone", "door": "door_keeper", "win": "win_keeper", "trim": "y", "porch": ["hm_hq_lamp_w", "hm_hq_lamp_e", "hm_hq_banner"]}
+      } },
+      "addObjs": [
+        {"kind": "prop", "id": "hm_home_planter", "x": 2, "y": 5, "sprite": "planter_box"},
+        {"kind": "prop", "id": "hm_lodge_sign", "x": 9, "y": 6, "sprite": "sign_lodge"},
+        {"kind": "prop", "id": "hm_lodge_fence", "x": 13, "y": 6, "sprite": "fence_post"},
+        {"kind": "prop", "id": "hm_rook_cart", "x": 18, "y": 5, "sprite": "cart_prop"},
+        {"kind": "prop", "id": "hm_lantern_sign", "x": 15, "y": 14, "sprite": "lantern_sign"},
+        {"kind": "prop", "id": "hm_lantern_bench", "x": 18, "y": 13, "sprite": "bench_long"},
+        {"kind": "prop", "id": "hm_hq_lamp_w", "x": 10, "y": 11, "sprite": "lamp_post"},
+        {"kind": "prop", "id": "hm_hq_lamp_e", "x": 12, "y": 11, "sprite": "lamp_post"},
+        {"kind": "prop", "id": "hm_hq_banner", "x": 13, "y": 11, "sprite": "banner_keeper"},
+        {"kind": "prop", "id": "hm_lantern_post", "x": 14, "y": 16, "sprite": "lm_lantern_post"},
+        {"kind": "prop", "id": "hm_big_tree", "x": 3, "y": 17, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "hm_flowerbed", "x": 6, "y": 4, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "hm_rock", "x": 19, "y": 17, "sprite": "rock_big"},
+        {"kind": "prop", "id": "hm_fence_a", "x": 15, "y": 1, "sprite": "fence_h"},
+        {"kind": "prop", "id": "hm_fence_b", "x": 16, "y": 1, "sprite": "fence_h"},
+        {"kind": "prop", "id": "hm_fence_c", "x": 17, "y": 1, "sprite": "fence_h"},
+        {"kind": "prop", "id": "hm_bush_w", "x": 1, "y": 10, "sprite": "bush"},
+        {"kind": "prop", "id": "hm_flowers", "x": 7, "y": 17, "sprite": "flower_clump"}
+      ]
+    },
+    "highcharity": {
+      "set": { "roofs": {
+        "airport": {"x0": 26, "y0": 1, "x1": 38, "y1": 2, "col": "b", "roof": "roof_hangar", "wall": "wall_hangar", "door": "door_hangar", "win": "win_strip", "trim": "w", "shape": "arch", "porch": ["hc_windsock"]},
+        "command": {"x0": 26, "y0": 6, "x1": 38, "y1": 7, "col": "b", "roof": "roof_flat_h", "wall": "wall_panel_m", "door": "door_hatch", "win": "win_band", "trim": "h", "shape": "flat+mast", "porch": ["hc_bollard_w", "hc_bollard_e"]},
+        "barracks": {"x0": 4, "y0": 8, "x1": 14, "y1": 9, "col": "b", "roof": "roof_seam_t", "wall": "wall_batten_o", "door": "door_barn", "win": "win_square", "trim": "d", "shape": "gable", "porch": ["hc_pole_rack", "hc_barracks_flag"]},
+        "chapel": {"x0": 46, "y0": 5, "x1": 58, "y1": 7, "col": "b", "roof": "roof_point", "wall": "wall_ashlar_w", "door": "door_arch", "win": ["win_rose", "win_tall"], "trim": "y", "shape": "point+bell", "porch": ["hc_chapel_bed_w", "hc_chapel_bed_e"]},
+        "gym": {"x0": 18, "y0": 10, "x1": 26, "y1": 11, "roof": "roof_arch_r", "wall": "wall_concrete", "door": "door_double", "win": "win_strip", "trim": "w", "shape": "arch", "porch": ["hc_dummy", "hc_gym_banner"]},
+        "marina": {"x0": 14, "y0": 14, "x1": 22, "y1": 15, "roof": "roof_board_t", "wall": "wall_piles", "door": "door_dutch", "win": "win_porthole", "trim": "w", "shape": "gable", "porch": ["hc_rope_coil"]},
+        "arena": {"x0": 40, "y0": 12, "x1": 50, "y1": 13, "roof": "roof_canvas", "wall": "wall_drum", "door": "door_gate", "win": "win_slit", "trim": "r", "shape": "drum", "porch": ["hc_flag_w", "hc_flag_e"]},
+        "apt_a": {"x0": 4, "y0": 22, "x1": 12, "y1": 23, "roof": "roof_flat_d", "wall": "wall_stucco_o", "win": "balcony_plant", "trim": "w", "shape": "flat", "porch": ["hc_apt_planter"]},
+        "apt_b": {"x0": 14, "y0": 22, "x1": 20, "y1": 23, "roof": "roof_flat_d", "wall": "wall_stucco_o", "win": "laundry_line", "trim": "w", "shape": "flat", "porch": ["hc_apt_basket"]},
+        "apt_c": {"x0": 22, "y0": 22, "x1": 28, "y1": 23, "roof": "roof_flat_d", "wall": "wall_stucco_o", "door": "door_blue", "win": "win_square", "trim": "w", "shape": "flat", "porch": ["hc_apt_bike"]},
+        "school": {"x0": 6, "y0": 26, "x1": 16, "y1": 27, "roof": "roof_shingle_p", "wall": "wall_yellow", "door": "door_red", "win": "win_shutter", "trim": "o", "shape": "gable+clock", "porch": ["hc_slate_board"]},
+        "hall": {"x0": 26, "y0": 26, "x1": 38, "y1": 27, "col": "b", "wall": "wall_civic", "door": "door_glass", "win": "win_arch", "trim": "y", "shape": "+bunting", "porch": ["hc_poster"]},
+        "bank": {"x0": 44, "y0": 26, "x1": 54, "y1": 27, "roof": "roof_slab_h", "wall": "wall_columns", "door": "door_heavy", "trim": "w", "shape": "gable+emblem", "porch": ["hc_urn_w", "hc_urn_e"]},
+        "lantern": {"x0": 18, "y0": 31, "x1": 26, "y1": 32, "roof": "roof_teal", "wall": "wall_tile_s", "door": "door_tall_t", "win": "win_tall", "trim": "y", "porch": ["hc_lantern_sign", "hc_lantern_planter"]},
+        "mall": {"x0": 48, "y0": 32, "x1": 60, "y1": 33, "roof": "roof_glass", "wall": "wall_glass", "door": "door_sliding", "win": ["awning_r", "awning_b", "awning_y"], "trim": "h", "shape": "flat", "porch": ["hc_cafe_w", "hc_cafe_e"]}
+      } },
+      "addObjs": [
+        {"kind": "prop", "id": "hc_windsock", "x": 29, "y": 4, "sprite": "windsock"},
+        {"kind": "prop", "id": "hc_bollard_w", "x": 30, "y": 10, "sprite": "bollard"},
+        {"kind": "prop", "id": "hc_bollard_e", "x": 35, "y": 10, "sprite": "bollard"},
+        {"kind": "prop", "id": "hc_pole_rack", "x": 7, "y": 11, "sprite": "pole_rack"},
+        {"kind": "prop", "id": "hc_barracks_flag", "x": 11, "y": 11, "sprite": "banner_keeper"},
+        {"kind": "prop", "id": "hc_chapel_bed_w", "x": 50, "y": 10, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "hc_chapel_bed_e", "x": 55, "y": 10, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "hc_dummy", "x": 20, "y": 13, "sprite": "dummy"},
+        {"kind": "prop", "id": "hc_gym_banner", "x": 25, "y": 13, "sprite": "banner_red"},
+        {"kind": "prop", "id": "hc_rope_coil", "x": 16, "y": 17, "sprite": "rope_coil"},
+        {"kind": "prop", "id": "hc_flag_w", "x": 43, "y": 15, "sprite": "flag_pole"},
+        {"kind": "prop", "id": "hc_flag_e", "x": 47, "y": 15, "sprite": "flag_pole"},
+        {"kind": "prop", "id": "hc_apt_planter", "x": 13, "y": 24, "sprite": "planter_tall"},
+        {"kind": "prop", "id": "hc_apt_basket", "x": 19, "y": 25, "sprite": "laundry_basket"},
+        {"kind": "prop", "id": "hc_apt_bike", "x": 23, "y": 25, "sprite": "bike"},
+        {"kind": "prop", "id": "hc_slate_board", "x": 13, "y": 29, "sprite": "slate_board"},
+        {"kind": "prop", "id": "hc_poster", "x": 30, "y": 29, "sprite": "poster_stand"},
+        {"kind": "prop", "id": "hc_urn_w", "x": 47, "y": 29, "sprite": "stone_urn"},
+        {"kind": "prop", "id": "hc_urn_e", "x": 51, "y": 29, "sprite": "stone_urn"},
+        {"kind": "prop", "id": "hc_lantern_sign", "x": 20, "y": 34, "sprite": "lantern_sign"},
+        {"kind": "prop", "id": "hc_lantern_planter", "x": 24, "y": 34, "sprite": "planter_round"},
+        {"kind": "prop", "id": "hc_cafe_w", "x": 53, "y": 35, "sprite": "cafe_table"},
+        {"kind": "prop", "id": "hc_cafe_e", "x": 58, "y": 35, "sprite": "cafe_table"},
+        {"kind": "prop", "id": "hc_tree_ne", "x": 61, "y": 13, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "hc_tree_sw", "x": 3, "y": 32, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "hc_tree_se", "x": 44, "y": 38, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "hc_bed_e", "x": 60, "y": 30, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "hc_bush_e", "x": 61, "y": 26, "sprite": "bush"}
+      ]
+    },
+    "mahopac": {
+      "set": { "roofs": {
+        "observatory": {"x0": 3, "y0": 4, "x1": 7, "y1": 5, "roof": "roof_dome", "wall": "wall_obs", "door": "door_arch", "win": "win_round", "trim": "w", "shape": "dome+slit", "porch": ["mah_signal_mast", "mah_obs_lamp"]}
+      } },
+      "addObjs": [
+        {"kind": "prop", "id": "mah_signal_mast", "x": 9, "y": 5, "sprite": "lm_signal_mast"},
+        {"kind": "prop", "id": "mah_obs_lamp", "x": 7, "y": 7, "sprite": "lamp_post"},
+        {"kind": "prop", "id": "mah_bed_a", "x": 2, "y": 11, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "mah_bed_b", "x": 3, "y": 11, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "mah_rock_a", "x": 17, "y": 12, "sprite": "rock_big"},
+        {"kind": "prop", "id": "mah_rock_b", "x": 16, "y": 12, "sprite": "rock_small"},
+        {"kind": "prop", "id": "mah_bush_w", "x": 1, "y": 5, "sprite": "bush"},
+        {"kind": "prop", "id": "mah_bush_e", "x": 18, "y": 7, "sprite": "bush"},
+        {"kind": "prop", "id": "mah_stump", "x": 11, "y": 3, "sprite": "stump"},
+        {"kind": "prop", "id": "mah_fence_a", "x": 16, "y": 1, "sprite": "fence_h"},
+        {"kind": "prop", "id": "mah_fence_b", "x": 17, "y": 1, "sprite": "fence_h"},
+        {"kind": "prop", "id": "mah_fence_c", "x": 18, "y": 1, "sprite": "fence_h"},
+        {"kind": "prop", "id": "mah_hay", "x": 13, "y": 12, "sprite": "hay_bale"},
+        {"kind": "prop", "id": "mah_log", "x": 5, "y": 12, "sprite": "log"},
+        {"kind": "prop", "id": "mah_flowers", "x": 11, "y": 14, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "mah_marker", "x": 7, "y": 13, "sprite": "stone_marker"}
+      ]
+    },
+    "proto": {
+      "addObjs": [
+        {"kind": "prop", "id": "om_big_tree", "x": 6, "y": 13, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "om_marker", "x": 18, "y": 8, "sprite": "stone_marker"},
+        {"kind": "prop", "id": "om_rock", "x": 21, "y": 16, "sprite": "rock_big"},
+        {"kind": "prop", "id": "om_log", "x": 17, "y": 17, "sprite": "log"},
+        {"kind": "prop", "id": "om_bush", "x": 1, "y": 8, "sprite": "bush"},
+        {"kind": "prop", "id": "om_stump", "x": 10, "y": 4, "sprite": "stump"},
+        {"kind": "prop", "id": "om_flowers", "x": 13, "y": 1, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "om_pebbles", "x": 9, "y": 17, "sprite": "rock_small"},
+        {"kind": "prop", "id": "om_hay", "x": 21, "y": 10, "sprite": "hay_bale"}
+      ]
+    },
+    "route1": {
+      "addObjs": [
+        {"kind": "prop", "id": "r1_marker", "x": 8, "y": 10, "sprite": "stone_marker"},
+        {"kind": "prop", "id": "r1_big_tree", "x": 17, "y": 3, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "r1_big_tree_e", "x": 42, "y": 14, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "r1_signpost", "x": 7, "y": 17, "sprite": "signpost"},
+        {"kind": "prop", "id": "r1_rock", "x": 24, "y": 4, "sprite": "rock_big"},
+        {"kind": "prop", "id": "r1_log", "x": 35, "y": 3, "sprite": "log"},
+        {"kind": "prop", "id": "r1_bush", "x": 21, "y": 11, "sprite": "bush"},
+        {"kind": "prop", "id": "r1_stump", "x": 3, "y": 12, "sprite": "stump"},
+        {"kind": "prop", "id": "r1_pebbles", "x": 36, "y": 9, "sprite": "rock_small"},
+        {"kind": "prop", "id": "r1_hay", "x": 24, "y": 16, "sprite": "hay_bale"},
+        {"kind": "prop", "id": "r1_flowers", "x": 14, "y": 6, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "r1_bush_nw", "x": 1, "y": 4, "sprite": "bush"},
+        {"kind": "prop", "id": "r1_flowers_w", "x": 2, "y": 10, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "r1_pebbles_w", "x": 6, "y": 14, "sprite": "rock_small"},
+        {"kind": "prop", "id": "r1_hay_w", "x": 9, "y": 13, "sprite": "hay_bale"},
+        {"kind": "prop", "id": "r1_flowers_m", "x": 22, "y": 10, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "r1_rock_m", "x": 26, "y": 13, "sprite": "rock_big"},
+        {"kind": "prop", "id": "r1_bush_ne", "x": 33, "y": 2, "sprite": "bush"},
+        {"kind": "prop", "id": "r1_stump_e", "x": 38, "y": 4, "sprite": "stump"},
+        {"kind": "prop", "id": "r1_log_s", "x": 13, "y": 17, "sprite": "log"},
+        {"kind": "prop", "id": "r1_bed_s", "x": 35, "y": 17, "sprite": "flowerbed"},
+        {"kind": "prop", "id": "r1_rock_e", "x": 41, "y": 17, "sprite": "rock_small"},
+        {"kind": "prop", "id": "r1_hay_e", "x": 45, "y": 10, "sprite": "hay_bale"}
+      ]
+    },
+    "route2": {
+      "addObjs": [
+        {"kind": "prop", "id": "r2_big_tree", "x": 19, "y": 3, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "r2_signpost", "x": 25, "y": 9, "sprite": "signpost"},
+        {"kind": "prop", "id": "r2_marker", "x": 35, "y": 9, "sprite": "stone_marker"},
+        {"kind": "prop", "id": "r2_big_tree_e", "x": 45, "y": 12, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "r2_rock", "x": 41, "y": 4, "sprite": "rock_big"},
+        {"kind": "prop", "id": "r2_log", "x": 33, "y": 18, "sprite": "log"},
+        {"kind": "prop", "id": "r2_bush", "x": 20, "y": 18, "sprite": "bush"},
+        {"kind": "prop", "id": "r2_stump", "x": 46, "y": 6, "sprite": "stump"},
+        {"kind": "prop", "id": "r2_hay", "x": 6, "y": 18, "sprite": "hay_bale"},
+        {"kind": "prop", "id": "r2_pebbles", "x": 31, "y": 9, "sprite": "rock_small"},
+        {"kind": "prop", "id": "r2_bush_w", "x": 1, "y": 4, "sprite": "bush"},
+        {"kind": "prop", "id": "r2_stump_w", "x": 12, "y": 4, "sprite": "stump"},
+        {"kind": "prop", "id": "r2_pebbles_n", "x": 20, "y": 4, "sprite": "rock_small"},
+        {"kind": "prop", "id": "r2_bush_n", "x": 28, "y": 4, "sprite": "bush"},
+        {"kind": "prop", "id": "r2_log_n", "x": 39, "y": 3, "sprite": "log"},
+        {"kind": "prop", "id": "r2_flowers_ne", "x": 43, "y": 4, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "r2_pebbles_m", "x": 27, "y": 10, "sprite": "rock_small"},
+        {"kind": "prop", "id": "r2_stump_m", "x": 29, "y": 14, "sprite": "stump"},
+        {"kind": "prop", "id": "r2_bush_e", "x": 44, "y": 16, "sprite": "bush"},
+        {"kind": "prop", "id": "r2_flowers_s", "x": 26, "y": 18, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "r2_rock_s", "x": 38, "y": 18, "sprite": "rock_big"},
+        {"kind": "prop", "id": "r2_hay_s", "x": 12, "y": 18, "sprite": "hay_bale"}
+      ]
+    },
+    "route2_glen": {
+      "addObjs": [
+        {"kind": "prop", "id": "glen_big_tree", "x": 3, "y": 3, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "glen_rock", "x": 21, "y": 9, "sprite": "rock_big"},
+        {"kind": "prop", "id": "glen_stump", "x": 9, "y": 9, "sprite": "stump"},
+        {"kind": "prop", "id": "glen_log", "x": 4, "y": 10, "sprite": "log"},
+        {"kind": "prop", "id": "glen_bush", "x": 22, "y": 6, "sprite": "bush"},
+        {"kind": "prop", "id": "glen_flowers", "x": 8, "y": 10, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "glen_marker", "x": 11, "y": 15, "sprite": "stone_marker"},
+        {"kind": "prop", "id": "glen_bush_n", "x": 6, "y": 1, "sprite": "bush"},
+        {"kind": "prop", "id": "glen_stump_n", "x": 14, "y": 3, "sprite": "stump"},
+        {"kind": "prop", "id": "glen_rock_e", "x": 22, "y": 10, "sprite": "rock_small"},
+        {"kind": "prop", "id": "glen_flowers_s", "x": 5, "y": 18, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "glen_log_s", "x": 19, "y": 17, "sprite": "log"},
+        {"kind": "prop", "id": "glen_hay", "x": 1, "y": 6, "sprite": "hay_bale"}
+      ]
+    }
+  } }
+}
