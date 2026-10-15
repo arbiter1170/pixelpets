@@ -29,17 +29,18 @@ const roleMult = q => ROLE_MULT[roleOf(q)];
 // PACING v0.1 §4 Warm Bowl: the first FEED of each local day (one per player) gives FOOD +15 on top and JOY +5 instead of +3.
 const BOWL = { food: 15, joy: 5, flag: 'daily.warm_bowl' };
 const FAST_KEY = 'pixelpets.fast'; // debug fast mode, kept out of the save schema
-const DEBUG_KEY = 'pixelpets.debug';   // ?debug=1 turns debug tools on (remembered), ?debug=0 off. Settings → Debug accepts the password too.
+const DEBUG_KEY = 'pixelpets.debug';   // ?debug=1 turns debug tools on for this tab session only (sessionStorage), ?debug=0 off. Settings → Debug too.
 const DEBUG_PASSWORD = 'larson';       // the gate word is "Larson"; any capitalization works
 function readDebugPref(){
   let on = false;
-  try { on = localStorage.getItem(DEBUG_KEY) === '1'; } catch(e) {}
+  try { localStorage.removeItem(DEBUG_KEY); } catch(e) {}   // older builds remembered debug forever; a normal player never keeps it
+  try { on = sessionStorage.getItem(DEBUG_KEY) === '1'; } catch(e) {}
   const q = new URLSearchParams(location.search).get('debug');
-  if (q !== null) { on = q === '1' || q === 'true'; try { if (on) localStorage.setItem(DEBUG_KEY, '1'); else localStorage.removeItem(DEBUG_KEY); } catch(e) {} }
+  if (q !== null) { on = q === '1' || q === 'true'; writeDebugPref(on); }
   return on;
 }
 let DEBUG = readDebugPref();     // E/G/F keys, fast mode, "Pick a place" and the cheat console hooks need this
-function writeDebugPref(on){ try { if (on) localStorage.setItem(DEBUG_KEY, '1'); else localStorage.removeItem(DEBUG_KEY); } catch(e) {} }
+function writeDebugPref(on){ try { if (on) sessionStorage.setItem(DEBUG_KEY, '1'); else sessionStorage.removeItem(DEBUG_KEY); } catch(e) {} }
 function syncDebugQuery(on){
   try {
     const q = new URLSearchParams(location.search);
@@ -159,7 +160,7 @@ function newPet(sp, stage=0, origin='wild', lv=STAT_RULES.STARTER_LEVEL){   // B
 let saveTimer = 0, readOnly = false;              // a save from a newer build: play nothing, write nothing
 // Once Start over has begun, nothing on this page may write again (pagehide / hidden / the 5 s timer fire while it reloads).
 let resetting = false, gameReplaced = false;
-function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); PPSave.writeV2(S); }
+function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); if (DEBUG) S.debugSave = true; PPSave.writeV2(S); }   // a debug session marks the save (additive; shown in Settings)
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
 const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
@@ -226,7 +227,7 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
-function renderBuild(){ const b = buildId(); $('#setBuild').textContent = b ? 'Build ' + b : ''; $('#setBuild').hidden = !b; }
+function renderBuild(){ const b = buildId(), d = !!(S && S.debugSave); $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d; }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
@@ -1550,6 +1551,42 @@ const ITEM_ART = {
     'yyyyyyyyyyyy....',
     '.yyyyyyyyy......',
     '..yyyyyyy.......',
+    '................',
+    '................',
+    '................',
+  ],
+  keeper1: [
+    '................',
+    '................',
+    '....gggggggg....',
+    '...gwwwwwwwwg...',
+    '..gwwwwwwwwwwg..',
+    '..gwwyyyywwwwg..',
+    '..gwwyyyywwwwg..',
+    '..gwwwwwwwwwwg..',
+    '..gwwwwwwwwwwg..',
+    '..gwwkkkkwwwwg..',
+    '..gggggggggggg..',
+    '....yyyyyyyy....',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+  cracked_phone: [
+    '................',
+    '................',
+    '....llllllll....',
+    '...lkkwwwwwwl...',
+    '..lkwwwwwwwwwl..',
+    '..lwwwllwwwwwl..',
+    '..lwwwwllwwwwl..',
+    '..lwwwwwllwwwl..',
+    '..lwwwwwwllwwl..',
+    '..lwwkkwwwwwwl..',
+    '..llllllllllll..',
+    '....ccccclll....',
+    '................',
     '................',
     '................',
     '................',
@@ -4473,8 +4510,8 @@ function phoneApp(id){
     if (side() === 'glimmer') add('Clerk Mint', 'Cracked handsets. She does not do warranties.');
   } else if (id === 'notes') {
     if (hack) {
-      add('unnamed', 'the crest phone copies every note. this one too, probably.');
-      add('unnamed', 'jobs and parts will list here when the board wakes up.');
+      add('Handset', 'The crest phone copies every note. This one too, probably.');
+      add('Handset', 'Jobs and parts will list here when the board wakes up.');
     } else {
       add('Lantern desk', 'Your Keeper1 is active. We can read this. That is the service.');
       add('Lantern desk', 'Free handset. The poles stay with the Keepers.');
@@ -4600,8 +4637,9 @@ function walkTipText(){
   if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
-  if (!S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
   const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
+  // The first-wild hint only while that step is current. Reaching Fernbrook implies the step without setting the flag.
+  if ((!q || q.id === 'first_wild') && !S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
   if (q && q.target) return escapeHtml(q.text);
   return WALK_TIP_DEFAULT;
 }
@@ -4639,15 +4677,15 @@ function renderBag(){
     const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly || holdable ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
     row.setAttribute('role', 'option'); row.dataset.id = id; row.dataset.i = String(i);
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico' + (battleOnly ? ' grey' : '');
-    ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    if (ITEM_ART[id]) ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name';
     nm.textContent = it.name + ' \u00d7' + itemCount(id);
-    if (battleOnly || holdable) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = battleOnly ? '(battle only)' : '(hold)'; nm.appendChild(tag); }
-    const bl = document.createElement('div'); bl.className = 'bag-blurb'; bl.textContent = it.blurb;
+    if (battleOnly || holdable || it.key) { const tag = document.createElement('span'); tag.className = 'bag-tag'; tag.textContent = it.key ? '(key)' : battleOnly ? '(battle only)' : '(hold)'; nm.appendChild(tag); }
+    const bl = document.createElement('div'); bl.className = 'bag-blurb'; bl.textContent = it.key && it.keyNote ? it.keyNote : it.blurb;
     meta.append(nm, bl);
     row.append(ico, meta);
-    if (!battleOnly && !holdable) {
+    if (!battleOnly && !holdable && !it.key) {
       const use = document.createElement('button'); use.type = 'button'; use.className = 'btn bag-use'; use.textContent = 'USE';
       use.addEventListener('click', e => { e.stopPropagation(); bagSel = i; useBagItem(id); });
       row.appendChild(use);
@@ -4712,7 +4750,7 @@ function renderShop(){
     const it = ITEMS[id];
     const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
-    ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    if (ITEM_ART[id]) ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = it.name;
     const own = document.createElement('div'); own.className = 'bag-blurb shop-own'; own.textContent = '\u00d7' + itemCount(id) + ' owned';
@@ -7331,7 +7369,7 @@ function boot(){
     if (typeof v === 'function') {
       api[k] = (...args) => {
         if (!DEBUG) {
-          if (!warned) { warned = true; console.info('Walklings: debug hooks need ?debug=1 in the URL, or Settings → Debug with the password Larson.'); }
+          if (!warned) { warned = true; console.info('Walklings: debug hooks need ?debug=1 in the URL.'); }
           return undefined;
         }
         return v(...args);
