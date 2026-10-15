@@ -538,9 +538,11 @@ The Vol slider sits beside Music, 0–100. The save stores `settings.musicVol` f
 
 Fourteen hours away, once the partner tab is clear of the daily hello, the line is "{pet} waited while you were away." A shorter gap says nothing. FOOD and JOY still floor at 20. NRG still floors at 10. The hours and the sentence are D56. Save `v` stays 2.
 
-### Q26 — Modern and arcade controls — M — **scoped, not started**
+### Q26 — Modern and arcade controls — M — **built on branch `modern-nav`, awaiting review**
 
-Not in the game. The next build stays Q19. This package can land beside the boards. No new art: every button reuses an icon the game already paints. Save `v` stays 2. The sentences are D62. The joystick default is D63. Landscape is D64. All three stay marked placeholder until Vincent signs them.
+Built to this scope plus design NAV_MODERN v0.1 (button rects, 2x map with a 24x36 cap in modern, one `body.nav-locked`, the gear outside the scene fade, edge arrows in the free rect, WALK back label, TEAM / WALKLING-BOX headers, WALKLINGS icon-only). The prompt runs from `game.js` after `lookPick` (D76) instead of a new JSON step. Not on main until Vincent merges.
+
+Not in the game. The next build stays Q19. This package can land beside the boards. No new art: every button reuses an icon the game already paints. Save `v` stays 2. The sentences are D70. The joystick default is D71. Landscape is D72. All three stay marked placeholder until Vincent signs them.
 
 Vincent's sketch (Oct 15, 2026) is the picture of modern: the map fills the screen, the area name sits top centre, small square buttons sit in the corners, the partner's stats are a strip along the bottom, and a translucent joystick is an option on the left. His notes on it: Friends is the phone, Settings stays top right, the partner stats are a small overlay for the equipped Walkling, QUEST, BAG, and MAP are top left, WALKLINGS is bottom right with PARTNER beside it, and the bottom tab bar goes away in modern because those buttons replace it.
 
@@ -578,11 +580,11 @@ Moving a node means `applyControls()` re-parents it on the switch, so one id kee
 
 **Partner strip.** A new `#petStrip` sits along the bottom of `#floatCtl`, from the left edge to the WALKLINGS button, 44 px tall. It shows the partner icon (the same 18×18 sprite as `#hdrIcon`), the nick or species name, Lv, and three thin bars: FOOD, JOY, NRG, in the colours the Partner screen uses. `updateHUD()` writes it beside the header values. A tap opens the stats card (`openStatsCard(S.partnerId)`), which is what tapping the follower does today. STEPS, TODAY, and the GROW bar are not on the strip; they stay on the Partner screen and on arcade's HUD. Before the starter the strip is hidden.
 
-**The tip.** `#walkTip` moves into `#floatCtl` just above the partner strip, as one line on a dark translucent band, so the objective, the lantern warning, and the early hint still show. `walkTipText()` returns the same quest text in both layouts. In modern the default tip and the early-steps line do not say "Hold the pad" (D62). The bump hint sits above the tip.
+**The tip.** `#walkTip` moves into `#floatCtl` just above the partner strip, as one line on a dark translucent band, so the objective, the lantern warning, and the early hint still show. `walkTipText()` returns the same quest text in both layouts. In modern the default tip and the early-steps line do not say "Hold the pad" (D70). The bump hint sits above the tip.
 
 **Talking.** There is no Talk button. Tap and walk-up already call `interact`. The speech bubble over a faced NPC stays. Space and Enter still call `talkFacing()`. Do not add a second talk path.
 
-**Joystick.** Modern has a Joystick row in Settings (below). When it is on, a translucent ring (96 px, `rgba` of `--d` at about 0.35, a lighter 36 px knob) sits bottom left of `#floatCtl`, above the tip band, 12 px from the edges. Pointer down inside the ring captures the pointer. The knob follows the finger up to the ring's radius. Past a 12 px dead zone, the larger of |dx| and |dy| picks one of four directions, written to `walk.dpad` exactly as a held d-pad arrow is today, so `moveHeld()`, the queued step, and holding into a scene behave the same. Release clears it. The ring never takes a tap: a down-and-up inside the dead zone does nothing. When the joystick is on, tap-to-walk and drag on the map still work. Default off (D63). Keyboard walking stays in both layouts.
+**Joystick.** Modern has a Joystick row in Settings (below). When it is on, a translucent ring (96 px, `rgba` of `--d` at about 0.35, a lighter 36 px knob) sits bottom left of `#floatCtl`, above the tip band, 12 px from the edges. Pointer down inside the ring captures the pointer. The knob follows the finger up to the ring's radius. Past a 12 px dead zone, the larger of |dx| and |dy| picks one of four directions, written to `walk.dpad` exactly as a held d-pad arrow is today, so `moveHeld()`, the queued step, and holding into a scene behave the same. Release clears it. The ring never takes a tap: a down-and-up inside the dead zone does nothing. When the joystick is on, tap-to-walk and drag on the map still work. Default off (D71). Keyboard walking stays in both layouts.
 
 **Partner and WALKLINGS screens in modern.** `#scr-pet` and `#scr-col` keep the header. `#tabs` stays hidden. Each gets a 44 px MAP back button, `.scr-back`, top left under the header, shown only in modern, which calls `showTab('walk')`. The QUEST overlay already has CLOSE. The gear stays in the header on those two screens, so Settings is top right everywhere.
 
@@ -593,7 +595,7 @@ Moving a node means `applyControls()` re-parents it on the switch, so one id kee
 Two rows in `.set-list`, under Follower and above Change look.
 
 - **Controls**, value ARCADE or MODERN. A click swaps, toasts, calls `save()`, and calls `applyControls()`.
-- **Joystick**, value ON or OFF, shown only while Controls is MODERN. Default OFF (D63). Saved as `settings.joystick`.
+- **Joystick**, value ON or OFF, shown only while Controls is MODERN. Default OFF (D71). Saved as `settings.joystick`.
 
 CLOSE stays outside the scrolling list, so a 320-wide screen still shows CLOSE. The gear already opens during the opening scene, and both rows work then too.
 
@@ -601,9 +603,9 @@ CLOSE stays outside the scrolling list, so a 320-wide screen still shows CLOSE. 
 
 `settings.controls` is `"arcade"` or `"modern"`. `settings.joystick` is a boolean. `normalizeV2` fills a missing or bad `controls` as `"arcade"` and a missing or bad `joystick` as `false`, so an old save keeps the pad and is not asked. `v` stays 2. There is no migration. `defaultStateV2` may omit both keys. The prompt writes `controls`.
 
-#### Landscape (D64, not in this build)
+#### Landscape (D72, not in this build)
 
-The sketch is landscape, and the note on it says the game should be full screen when opened, with a vertical option in Settings. Today the app is a portrait column at most 480 px wide, and the manifest is `display: standalone`. Modern in this build is portrait: the map fills the portrait screen. A landscape layout, a Settings row for it, and whether to lock orientation in the manifest are D64 and are not built here. iOS Safari does not honour a page's own full-screen request, so the installed app is the full-screen path.
+The sketch is landscape, and the note on it says the game should be full screen when opened, with a vertical option in Settings. Today the app is a portrait column at most 480 px wide, and the manifest is `display: standalone`. Modern in this build is portrait: the map fills the portrait screen. A landscape layout, a Settings row for it, and whether to lock orientation in the manifest are D72 and are not built here. iOS Safari does not honour a page's own full-screen request, so the installed app is the full-screen path.
 
 #### First character, still in the house
 
@@ -615,7 +617,7 @@ The step writes `S.settings.controls` and calls `applyControls()` before the sce
 
 The step is not a story flag and does not write `$line`. Add the name to the `INTERACTIVE` list in `game.js`. Regenerate with `python3 tools/gen_mapdata.py`.
 
-Placeholder copy (D62), each line at most 110 characters, each button label at most 30:
+Placeholder copy (D70), each line at most 110 characters, each button label at most 30:
 
 | Where | Text |
 |---|---|
@@ -657,7 +659,7 @@ Arcade keeps `WALK_TIP_DEFAULT` and the early line "Hold the pad to walk. The ea
 
 #### Leave out
 
-Battle controls and the overlays stay as they are. The Talk button stays in arcade. No new icons. No landscape layout (D64). Switching sides is the Pledge desks (D20), not a button on the map; the sketch's "switch sides" is not built. The sketch's other notes are ideas, not part of Q26: berry bushes to pick and feed or sell, a befriend floor at half HP (that number is WP-A, D6–D8), different house art, grass movement, and season colours. Background music is already in the game.
+Battle controls and the overlays stay as they are. The Talk button stays in arcade. No new icons. No landscape layout (D72). Switching sides is the Pledge desks (D20), not a button on the map; the sketch's "switch sides" is not built. The sketch's other notes are ideas, not part of Q26: berry bushes to pick and feed or sell, a befriend floor at half HP (that number is WP-A, D6–D8), different house art, grass movement, and season colours. Background music is already in the game.
 
 ### Hold
 
@@ -741,7 +743,7 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D65. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D62 is the modern and arcade control copy. D63 is the joystick default. D64 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
+9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D80. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
 10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.
 11. **Welcome back (D56) and clearing a nickname (D57).** Q25 uses 14 hours and one sentence. Q23 clears `nick` when the field is empty or equals the species name, on the stats card and on the Walkling sheet. Both lines are still placeholders.
-12. **Modern and arcade controls (Q26, D62–D64).** Scoped from Vincent's Oct 15 sketch, not started. Arcade is today's layout. Modern is a full-screen map with QUEST, BAG, and MAP top left, Settings and PHONE top right, WALKLINGS and PARTNER bottom right, a partner strip along the bottom, and no tab bar. The joystick is an option, off by default (D63). Landscape is D64. The prompt and the modern tips are placeholders (D62).
+12. **Modern and arcade controls (Q26, D70–D72).** Scoped from Vincent's Oct 15 sketch, not started. Arcade is today's layout. Modern is a full-screen map with QUEST, BAG, and MAP top left, Settings and PHONE top right, WALKLINGS and PARTNER bottom right, a partner strip along the bottom, and no tab bar. The joystick is an option, off by default (D71). Landscape is D72. The prompt and the modern tips are placeholders (D70).

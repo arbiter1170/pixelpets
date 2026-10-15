@@ -279,7 +279,7 @@ test('party actions stay labeled after the care timer', async ({ page }) => {
     release: document.querySelector('.box-row[data-id="pstone"] [data-act="release"]').textContent,
     party: document.querySelector('.box-row[data-id="pstone"] [data-act="party"]').textContent,
   }));
-  expect(labels).toEqual({ move: 'MOVE', box: 'TO BOX', partner: 'PARTNER', release: 'RELEASE', party: 'TO PARTY' });
+  expect(labels).toEqual({ move: 'MOVE', box: 'TO WALKLING-BOX', partner: 'PARTNER', release: 'RELEASE', party: 'TO TEAM' });
   await page.locator('.party-slot[data-id="pember"] [data-act="move"]').tap();
   await expect(page.locator('.party-slot[data-id="pember"] [data-act="up"]')).toBeVisible();
   await expect(page.locator('.party-slot[data-id="pember"] [data-act="down"]')).toBeVisible();

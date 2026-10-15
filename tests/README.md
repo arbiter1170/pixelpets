@@ -1,6 +1,6 @@
 # Walklings smoke tests
 
-Small browser checks so a later change can show the game still boots on a phone width. Players never load this folder. There is no GitHub Actions workflow yet: run the suite locally. A new spec also gets a row in this file, and the status docs follow `.cursor/skills/walklings-docs/SKILL.md`. The Oct 14 documentation audit added no spec. Recording the town-board calls the same day added no spec. TB-1 is covered by `tests/town_board.spec.js`. Scoping modern and arcade controls (Q26) added no spec. The implementing change adds `tests/controls.spec.js` and a row in this file.
+Small browser checks so a later change can show the game still boots on a phone width. Players never load this folder. There is no GitHub Actions workflow yet: run the suite locally. A new spec also gets a row in this file, and the status docs follow `.cursor/skills/walklings-docs/SKILL.md`. The Oct 14 documentation audit added no spec. Recording the town-board calls the same day added no spec. TB-1 is covered by `tests/town_board.spec.js`. Scoping modern and arcade controls (Q26) added no spec. `tests/controls.spec.js` covers it: arcade on an old save, every modern button, switching both ways, and the joystick.
 
 ## How to run
 
@@ -127,3 +127,5 @@ With debug already on (`?debug=1`):
 `tests/qa_play.spec.js` (the Oct 14 phone pass) checks the 320, 375, and 390 projects. The intro look picker's DONE button is inside the viewport and the name row stays hidden. A glimmer save past the orchard, with the first wild unmet, shows the Heights objective in the walk tip. The bag lists Keeper1 and the Cracked Handset, tells you to open PHONE, and offers no USE on those rows. The cracked Notes are signed Handset, and the phone shell fits the viewport. Fen's second talk is one line. Save `v` stays 2.
 
 `tests/care_tools.spec.js` (Q23, Q24, Q25) renames the partner from STATS. `N<ib>  2` is stored as `Nib 2`, and the party slot's label matches. Escape leaves that name. Typing the species name clears `nick`. Save `v` stays 2. The Vol slider writes `settings.musicVol` and does not flip Music on/off. The build line stays in view. `PixelPets.away(13)` shows no welcome line. `PixelPets.away(14)` says the partner waited. FOOD and JOY stay at or above 20, and NRG stays at or above 10. Screenshots: `screenshots/care/`.
+
+`tests/controls.spec.js` (Q26 modern navigation): a save with no `settings.controls` stays arcade; modern hides the header, HUD, d-pad, TALK and tabs, fills `#app` with the map, keeps every floating button at least 44 px with no overlap, and each one opens and closes its target; Settings switches both ways and moved nodes go home; the joystick sets `walk.dpad` and ignores a tap.
