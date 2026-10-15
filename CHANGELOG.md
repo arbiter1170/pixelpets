@@ -5,7 +5,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 ## 20261015-0000 — Partner kit and worn adornments
 
 - On the partner tab, STATS and KIT sit above FEED and use the same buttons as FEED, PLAY, and REST. KIT opens Customize & Gear. BAG stays on the Walk map only.
-- The five adornments stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body: Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, Amber star. The names and the KIT label are D60. More adornments from quests are not built. The five stay free.
+- The five adornments stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body: Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, Amber star. The names and the KIT label are D75. More adornments from quests are not built. The five stay free.
 - Save `v` stays 2. `index.html` script tags changed, so the stamp is `20261015-0000`.
 
 ## 20261014-1314 — Quest cards, the Route 1 stop, and party buttons that stay

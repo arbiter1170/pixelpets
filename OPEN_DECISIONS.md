@@ -6,7 +6,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 
 The old keeper-hq branch reused D27–D31. `main` already had D27 (Mahopac, settled) and D28 (lantern rest, open). Those rows are D32–D36 now.
 
-D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D61. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is the partner kit label and the five adornment names.
+D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D80. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D75 is the partner kit label and the five adornment names.
 
 ## Open
 
@@ -43,7 +43,7 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 | D57 | Rename | Should an empty rename, or typing the species name, clear the nickname? | Both clear `nick` (the species name shows again), on the stats card and on the Walkling sheet. CANCEL and Escape on the stats card leave the old name. The clear toast is "{old} goes by {species} again." A new name uses the befriend toast, "{old} is now called {name}!" The sheet writes the same value and does not toast. Cleaning stays 10 characters. Marked placeholder. This row was drafted as D51 before the council took that id | `nickToStore` in `game.js` |
 | D58 | Warden Ilse | How dark should the lodge gift be, and should she ask the trainer to join the Keepers? | She gives the Walkling so a young trainer can learn to defend themselves. The wild is not kind. She hopes you join the Keepers and use `{pet}` for good. The quiz labels are unchanged. Marked placeholder | `starter` in `data/maps_slice.json`; the two lines appended in `game.js` |
 | D59 | Route 1 phone | Should the side quest name the handset, and how does Officer Ness stop a trainer who walks past? | The side line is "The wild past the east gate is open. Go and explore." Ness stands at Route 1 (3, 7) the whole time. Talking to him, or three steps that do not close the distance, runs `phone_grant`. He says a Keeper1 is required to enter the wilds, free, and mandated for every trainer by the Keeper High Court. Marked placeholder | `phone` in `quests.js`; `r1_ness` and `phone_grant` in `data/civic.json`; `checkCatch` in `game.js` |
-| D60 | Partner kit | What should the button beside STATS say, and what are the five adornment names? Later quests unlock more. | The button is KIT, beside STATS, above FEED. Both use the care-button chrome. It opens Customize & Gear. The five ids stay `bell`, `ribbon`, `scarf`, `leaf`, `star`, and they stay free. The labels are Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, and Amber star. They are drawn on the body so they sit on every Walkling. BAG is only on the Walk map. More adornments from quests are not built. Marked placeholder. Save `v` stays 2 | `PET_ACC_LABEL` and `drawPetAccessory` in `game.js` |
+| D75 | Partner kit | What should the button beside STATS say, and what are the five adornment names? Later quests unlock more. | The button is KIT, beside STATS, above FEED. Both use the care-button chrome. It opens Customize & Gear. The five ids stay `bell`, `ribbon`, `scarf`, `leaf`, `star`, and they stay free. The labels are Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, and Amber star. They are drawn on the body so they sit on every Walkling. BAG is only on the Walk map. More adornments from quests are not built. Marked placeholder. Save `v` stays 2 | `PET_ACC_LABEL` and `drawPetAccessory` in `game.js` |
 
 ## Town boards (calls settled Oct 14, 2026)
 
@@ -59,7 +59,7 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 - The box screen and the installable app are built. Rename (Q23), the music volume slider (Q24), and the welcome-back line (Q25) are built. Brinewick still waits on a one-pager.
 - Town boards (Q19) are scoped in `TOWN_BOARD.md`. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. Mahopac has a board and no slips. The open-table D37 is the region-map claim list and is still open. D56 and D57 are the open lines on the welcome and on clearing a nickname. They do not block the boards.
 - The Capital Partnership Briefing (Q22) is not built. It must not add a second Standing grant on top of `r5_g`.
-- More Walkling adornments unlock during quests (D60). That list is not built. The five current ones stay free.
+- More Walkling adornments unlock during quests (D75). That list is not built. The five current ones stay free.
 
 ## Settled
 

@@ -115,7 +115,7 @@ function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; 
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
   grid.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === '#') g.fillRect(x,y,1,1); })); }
 // Cosmetic Walkling adornments. Not keeper slots. The five ids stay free.
-// More unlock from quests later; that list is not built (D60).
+// More unlock from quests later; that list is not built (D75).
 // Each one is measured onto the sprite's body so the same art sits on every Walkling.
 const PET_ACC_IDS = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
 const PET_ACC_LABEL = { bell: 'Lodge bell', ribbon: 'Hall ribbon', scarf: 'Hearth scarf', leaf: 'Orchard sprig', star: 'Amber star' };

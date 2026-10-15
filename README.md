@@ -355,7 +355,7 @@ Saves (format v2, `save.js`):
   LEFT BEHIND shows each orphan's reason and the raw data. Hunger pauses in the box.
   A battle SWAP lists the party only. The sheet on a Walkling can use a field snack, rename them, reorder moves,
   hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an adornment (Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, or Amber star), and set a call (Charge, Brace, Dart, or Greet).
-  The five adornment ids stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body so they sit on every Walkling. More adornments unlock from quests later; that list is not built (D60). The partner button is KIT.
+  The five adornment ids stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body so they sit on every Walkling. More adornments unlock from quests later; that list is not built (D75). The partner button is KIT.
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
   `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
   The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 42 form ids) is append-only: new lines are added at the end
