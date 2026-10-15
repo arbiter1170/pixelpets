@@ -1,13 +1,14 @@
 {
   "spec": "FERNBROOK_HEIGHTS",
-  "version": "0.1",
-  "status": "Get to know us, before the first trial. Glimmerwell: RegenX lab. Keepers: smuggling tunnels.",
-  "_about": "Offered the moment the side is picked. story.heights_done gates the Trial Hall and the Tour's first stop. The Arbiter emits something slowly; what it is, and why it was built, is not known yet. RegenX staff are decent people. No on-screen harm.",
+  "version": "0.2",
+  "status": "Get to know us, before the first trial. Glimmerwell: RegenX lab, four floors, and a floating VOLT Walkling in the bay. Keepers: smuggling tunnels.",
+  "_about": "Offered the moment the side is picked. story.heights_done gates the Trial Hall and the Tour's first stop. The Arbiter emits something slowly; what it is, and why it was built, is not known yet. RegenX staff are decent people. No on-screen harm. The lab is four different rooms: lobby, Focus Wing, Records, and the Arbiter bay. A VOLT Walkling, the byte line, floats in the bay. It is not a sample. Befriending it sets story.rx_bitlet and is optional.",
   "_names": {
     "company": "RegenX",
     "drug": "Atten",
     "machine": "The Arbiter",
-    "emission": "a slow, unnamed emission from ancient Glimmerwell technology"
+    "emission": "a slow, unnamed emission from ancient Glimmerwell technology",
+    "walkling": "Bitlet, Hoverbyte, Archivolt (species id byte, type VOLT)"
   },
   "slicePatch": {
     "maps": {
@@ -146,6 +147,24 @@
           "y": 12,
           "item": "heal_snack",
           "n": 2
+        },
+        {
+          "kind": "sign",
+          "id": "ht_rx",
+          "x": 6,
+          "y": 6,
+          "text": "REGENX. White lab, four floors. Visitors by appointment."
+        },
+        {
+          "kind": "prop",
+          "id": "ht_pylon",
+          "name": "white lamp",
+          "x": 2,
+          "y": 6,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
         }
       ]
     },
@@ -166,11 +185,11 @@
         "##################",
         "#WWWWWWWWWWWWWWWW#",
         "#................#",
+        "#..=..........=..#",
+        "#..=..........=..#",
         "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
+        "#....========....#",
+        "#....========....#",
         "#................#",
         "#................#",
         "#........m.......#",
@@ -216,9 +235,12 @@
           "name": "Nia",
           "x": 4,
           "y": 6,
-          "look": "regenx",
+          "look": "nia",
           "scene": "rx_nia",
           "lines": {
+            "story.heights_done": "Copies are in. I am just filing.",
+            "story.saw_arbiter": "That cursor is not in my files.",
+            "story.rx_f1": "Stair's open. I did not see you.",
             "else": "Cameras up. I am just filing."
           }
         },
@@ -227,6 +249,24 @@
           "id": "rx_wardens",
           "x": 13,
           "y": 6
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_desk",
+          "name": "lobby desk",
+          "x": 3,
+          "y": 2,
+          "sprite": "rx_desk",
+          "lines": {
+            "else": "A clear desk. A cursor blinks on a small screen."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "rx_f1_plaque",
+          "x": 15,
+          "y": 4,
+          "text": "REGENX LOBBY. Floor one of four. Visitors by appointment. Please leave the samples alone."
         }
       ]
     },
@@ -247,8 +287,8 @@
         "##################",
         "#WWWWWWWWWWWWWWWW#",
         "#................#",
-        "#................#",
-        "#................#",
+        "#..====....====..#",
+        "#..====....====..#",
         "#................#",
         "#................#",
         "#................#",
@@ -286,9 +326,12 @@
           "name": "Cal",
           "x": 5,
           "y": 6,
-          "look": "regenx",
+          "look": "cal",
           "scene": "rx_cal",
           "lines": {
+            "story.heights_done": "Keys found. The glitch is fine.",
+            "story.saw_arbiter": "A cursor answered the hum.",
+            "story.rx_f1": "Mind the rack. Years of work.",
             "else": "I drop keys. Occupational hazard."
           }
         },
@@ -298,8 +341,11 @@
           "name": "Dr. Ivo",
           "x": 4,
           "y": 4,
-          "look": "regenx",
+          "look": "ivo",
           "lines": {
+            "story.heights_done": "Atten still matches the label.",
+            "story.saw_arbiter": "A glitch. We leave it alone.",
+            "story.rx_f1": "Soft steps. This wing is for focus.",
             "else": "Atten helps focus. That is the label."
           }
         },
@@ -316,6 +362,38 @@
           "y": 8,
           "item": "heal_snack",
           "n": 1
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_bench_a",
+          "x": 3,
+          "y": 2,
+          "sprite": "lab_bench"
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_bench_b",
+          "x": 11,
+          "y": 2,
+          "sprite": "lab_bench"
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_rack",
+          "name": "vial rack",
+          "x": 15,
+          "y": 2,
+          "sprite": "rx_rack",
+          "lines": {
+            "else": "Years of Atten, sealed and labeled."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "rx_f2_plaque",
+          "x": 2,
+          "y": 6,
+          "text": "FOCUS WING. Atten helps a Walkling focus. The vial rack is years of work. Please let it be."
         }
       ]
     },
@@ -338,8 +416,8 @@
         "#................#",
         "#................#",
         "#................#",
-        "#................#",
-        "#................#",
+        "#..============..#",
+        "#..============..#",
         "#................#",
         "#................#",
         "#................#",
@@ -393,6 +471,38 @@
           "y": 8,
           "item": "heal_snack",
           "n": 1
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_a",
+          "x": 3,
+          "y": 2,
+          "sprite": "rx_shelf"
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_b",
+          "x": 6,
+          "y": 2,
+          "sprite": "rx_shelf"
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_screen",
+          "name": "records screen",
+          "x": 11,
+          "y": 2,
+          "sprite": "rx_terminal",
+          "lines": {
+            "else": "Payroll, then a thin folder. The cheap notes."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "rx_f3_plaque",
+          "x": 2,
+          "y": 6,
+          "text": "RECORDS. Folders stay in this room. An older note says THE ARBITER, and nothing more."
         }
       ]
     },
@@ -411,7 +521,7 @@
       },
       "grid": [
         "##################",
-        "#WWWWWWWWWWWWWWWW#",
+        "#WWW##########WWW#",
         "#................#",
         "#................#",
         "#................#",
@@ -442,6 +552,9 @@
           "y": 4,
           "sprite": "arbiter",
           "lines": {
+            "story.heights_done": "Still emitting. Slow. Unnamed.",
+            "story.saw_arbiter": "A cursor answers the hum.",
+            "story.rx_f1": "The hum was here before you.",
             "else": "It emits slowly. The screen is dark."
           }
         },
@@ -450,6 +563,37 @@
           "id": "rx_quinn",
           "x": 9,
           "y": 6
+        },
+        {
+          "kind": "wild",
+          "id": "rx_bitlet",
+          "x": 6,
+          "y": 5,
+          "form": "byte/0",
+          "level": 5,
+          "befriendBonus": 0.08,
+          "when": [
+            "!story.rx_bitlet"
+          ],
+          "scene": "rx_bitlet"
+        },
+        {
+          "kind": "prop",
+          "id": "rx4_side",
+          "name": "side screen",
+          "x": 14,
+          "y": 4,
+          "sprite": "rx_terminal",
+          "lines": {
+            "else": "A side screen. The cursor blinks with the hum."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "rx_f4_plaque",
+          "x": 2,
+          "y": 6,
+          "text": "THE ARBITER. Top bay. The cradle emits slowly. The floating screen is not a sample."
         }
       ]
     },
@@ -750,8 +894,8 @@
       ],
       "lines": {
         "intro": "RegenX is a closed lab. Please leave the samples alone.",
-        "win": "You really want those vials. I'll call this in.",
-        "lose": "Go home. Nobody here wanted a fight."
+        "win": "You may go up. Please still leave the samples alone. We will be here.",
+        "lose": "Go home and rest. Nobody on this floor wanted a fight."
       },
       "group": true,
       "onWin": "rx_f1_clear"
@@ -772,9 +916,9 @@
         }
       ],
       "lines": {
-        "intro": "That rack is years of work. Put the vial back.",
-        "win": "Take it, then. Wash your hands. Atten stains.",
-        "lose": "We make focus, not enemies. Please remember that."
+        "intro": "That rack is years of work. Please put the vial back.",
+        "win": "Take the copy, then. Wash your hands. Atten stains, and we still like you.",
+        "lose": "We make focus, not enemies. Come back when you are ready."
       },
       "group": true,
       "onWin": "rx_f2_clear"
@@ -796,8 +940,8 @@
       ],
       "lines": {
         "intro": "Those folders are RegenX property. I can't let you copy them.",
-        "win": "The cheap recipe is in the thin one. Don't lose it.",
-        "lose": "Come back with a badge, or don't come back."
+        "win": "The cheap recipe is in the thin one. Please don't lose it.",
+        "lose": "Rest up. The folders will still be here, and so will I."
       },
       "group": true,
       "onWin": "rx_f3_clear"
@@ -818,8 +962,8 @@
         }
       ],
       "lines": {
-        "intro": "Step away from the cradle. Those vials are not yours.",
-        "win": "Take them. The cradle stays dark.",
+        "intro": "Step away from the cradle. Those copies are not a reason to touch it.",
+        "win": "Take the copies. Leave the cradle dark. The little screen is not a prize.",
         "lose": "Go home. The people on these floors are not your enemy."
       },
       "group": true,
@@ -994,7 +1138,7 @@
       [
         "say",
         "Associate Juniper",
-        "Welcome, partner! Before the tour, get to know us."
+        "{name}! Welcome, partner. Before the tour, get to know us."
       ],
       [
         "say",
@@ -1004,12 +1148,32 @@
       [
         "say",
         "Tobin",
-        "We want samples, and the plans to make it cheap. Stock up. The lab is huge."
+        "We want a copy of one Atten vial, and the plans to brew it cheap."
       ],
       [
         "say",
         "Associate Juniper",
-        "The people inside are kind. Smile anyway. Have a bright day!"
+        "The people inside are kind. They believe the label. Smile, and mean it."
+      ],
+      [
+        "say",
+        "Tobin",
+        "A little screen floats in the top bay. Staff call it a glitch and leave it."
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Leave it off our list. Copies only. That is the kind way."
+      ],
+      [
+        "say",
+        "Tobin",
+        "Stock up, {player}. Snacks, a rest, a full team. Four floors is a long walk."
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Have a bright day! The hum will wait. It is very good at waiting."
       ],
       [
         "standing",
@@ -1072,12 +1236,17 @@
       [
         "say",
         "",
-        "A brass sign: REGENX. Four floors. Visitors by appointment."
+        "A white lobby, four floors stacked around a hum. The brass sign reads REGENX."
       ],
       [
         "say",
         "",
-        "The staff here look kind. They will still stand in your way."
+        "Visitors by appointment. The staff look kind. They will still stand in your way."
+      ],
+      [
+        "say",
+        "",
+        "Nobody at the desk tries to name the hum. They built the lab around it and went to work."
       ],
       [
         "setFlag",
@@ -1099,12 +1268,22 @@
       [
         "say",
         "Nia",
-        "Guards ahead. Good people. They will not let a thief through."
+        "A floating screen lives in the top bay. Not a file. Not a vial."
       ],
       [
         "say",
         "Nia",
-        "Win, and I'll click the stair lock. Floor two has the vials."
+        "Staff call it a glitch and leave it alone. You can still say hello."
+      ],
+      [
+        "say",
+        "Nia",
+        "Guards ahead are good people. They will ask you to leave the samples alone."
+      ],
+      [
+        "say",
+        "Nia",
+        "Win kindly, and I'll click the stair lock. Floor two has the vials."
       ],
       [
         "give",
@@ -1139,12 +1318,22 @@
       [
         "say",
         "Cal",
-        "You again. I'm Cal. Floor tech. I drop things. Keys, mostly."
+        "You again. I'm Cal. Floor tech. I drop things. Keys, mostly..."
       ],
       [
         "say",
         "Cal",
         "Atten does what the label says. Focus. Bright eyes. RegenX believes that."
+      ],
+      [
+        "say",
+        "Cal",
+        "Dr. Ivo will say it slower, and mean it more. The label is honest."
+      ],
+      [
+        "say",
+        "Cal",
+        "Up top, a tiny monitor floats. Cursor eyes. No feet. We let the glitch be."
       ],
       [
         "say",
@@ -1207,6 +1396,16 @@
         "Glimmerwell calls it ancient, and will not say why it was built. RegenX never knew."
       ],
       [
+        "say",
+        "",
+        "A cursor blinks on the glass. It answers the hum, one quiet blink at a time."
+      ],
+      [
+        "say",
+        "",
+        "The cursor is not a product. It is not a sample. It only answers."
+      ],
+      [
         "setFlag",
         "story.saw_arbiter",
         true
@@ -1237,6 +1436,24 @@
     ],
     "rx_done": [
       [
+        "if",
+        "story.rx_bitlet",
+        [
+          [
+            "say",
+            "Quinn",
+            "The little screen went with you. Good. We were never going to file it."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Quinn",
+            "The glitch stays by the cradle. Leave it. It was never a sample."
+          ]
+        ]
+      ],
+      [
         "say",
         "Quinn",
         "Leave the cradle dark. We only came for copies."
@@ -1244,7 +1461,7 @@
       [
         "say",
         "",
-        "The Arbiter keeps emitting, slow and quiet. Nothing rushes out."
+        "The Arbiter keeps emitting, slow and unnamed. Nothing rushes out."
       ],
       [
         "say",
@@ -1461,6 +1678,134 @@
         5,
         "heights_k"
       ]
+    ],
+    "rx_bitlet": [
+      [
+        "say",
+        "",
+        "The top bay is white and quiet. The Arbiter cradle hums, and nothing rushes out."
+      ],
+      [
+        "say",
+        "",
+        "A tiny monitor floats in front of it. Cursor eyes. No feet. No name on a tag."
+      ],
+      [
+        "say",
+        "",
+        "It woke when the cradle hummed. Staff call it a glitch and step around it."
+      ],
+      [
+        "say",
+        "",
+        "It is not a product. It is not a sample. The cursor finds {pet}, then you."
+      ],
+      [
+        "encounter",
+        "rx_bitlet"
+      ],
+      [
+        "if",
+        "story.rx_bitlet",
+        [
+          [
+            "say",
+            "",
+            "The Bitlet tips toward {pet}, cursor bright, and floats along beside you."
+          ],
+          [
+            "say",
+            "",
+            "It comes along of its own tilt. The cradle keeps humming behind you."
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "The Bitlet stays by the cradle. The cursor blinks, slow and pleased."
+          ],
+          [
+            "say",
+            "",
+            "You leave it there. Nobody chases a glitch. The hum goes on, unnamed."
+          ]
+        ]
+      ]
     ]
+  },
+  "_lore": {
+    "company": "RegenX is the lab in Fernbrook Heights. The staff are decent people who believe Atten helps Walklings focus. They are not cruel, and the label is not a trick.",
+    "building": "A white four-floor lab built around a hum. Lobby, Focus Wing, Records, and the top bay. Stairs lock between floors. Visitors come by appointment.",
+    "atten": "Atten is a focus aid with an honest label. Glimmerwell wants one vial and the cheap plans, and talks about that errand as a kindness.",
+    "arbiter": "The Arbiter is an ancient Glimmerwell cradle in the top bay. It emits something slowly. Nobody can name the emission. RegenX never knew why it was built.",
+    "bitlet": "Species id byte, type VOLT. Bitlet, Hoverbyte, Archivolt. It woke when the cradle hummed. It is not a product. Staff call it a glitch and leave it alone."
+  },
+  "looks": {
+    "nia": {
+      "skin": "3",
+      "hair": "bob",
+      "hairCol": "n",
+      "outfit": "coat",
+      "outfitCol": "w",
+      "accent": "c",
+      "accessory": "glasses"
+    },
+    "cal": {
+      "skin": "4",
+      "hair": "short",
+      "hairCol": "o",
+      "outfit": "vest",
+      "outfitCol": "c",
+      "accent": "y"
+    },
+    "quinn": {
+      "skin": "1",
+      "hair": "bun",
+      "hairCol": "s",
+      "outfit": "coat",
+      "outfitCol": "w",
+      "accent": "c",
+      "accessory": "glasses"
+    },
+    "ivo": {
+      "skin": "5",
+      "hair": "buzz",
+      "hairCol": "h",
+      "outfit": "coat",
+      "outfitCol": "m",
+      "accent": "s",
+      "accessory": "glasses"
+    },
+    "rx_warden": {
+      "skin": "2",
+      "hair": "pony",
+      "hairCol": "d",
+      "outfit": "vest",
+      "outfitCol": "n",
+      "accent": "c"
+    },
+    "rx_tech": {
+      "skin": "6",
+      "hair": "bob",
+      "hairCol": "c",
+      "outfit": "coat",
+      "outfitCol": "w",
+      "accent": "s"
+    },
+    "rx_records": {
+      "skin": "3",
+      "hair": "long",
+      "hairCol": "m",
+      "outfit": "sweater",
+      "outfitCol": "n",
+      "accent": "y"
+    }
+  },
+  "speakers": {
+    "Nia": "nia",
+    "Cal": "cal",
+    "Quinn": "quinn",
+    "Dr. Ivo": "ivo"
   }
 }

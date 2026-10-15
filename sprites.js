@@ -5,7 +5,8 @@
    ('grass' = tall grass, 'shore' = next to water, 'woods' = next to trees). starter: offered as a first pet. uiHalo: draw a light rim around the
    sprite on dark UI cells (dex, collection, header) for dark-bodied species; the map art is unchanged.
    weatherOnly: env tags; the species spawns only while one of them is active and never in the any-species roll.
-   Order matters: indices are runtime species numbers and ids are save-v2 form ids, so new lines are only ever appended. */
+   Order matters: indices are runtime species numbers and ids are save-v2 form ids, so new lines are only ever appended.
+   labOnly: never in the habitat roll or the 8% any-species roll. Met only where a map places it. */
 'use strict';
 const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f070',g:'#38b764',t:'#257179',
   n:'#29366f',b:'#3b5dc9',c:'#41a6f6',s:'#73eff7',w:'#f4f4f4',h:'#94b0c2',m:'#566c86',d:'#333c57',
@@ -222,6 +223,19 @@ const SPECIES = [
       'd.......', 'aa......', 'aca.....', 'acca....', '.accaaac',
       '..aaaacc', '..aaaaaa', 'c.abbbbb', 'ccabiebb', 'ccabeebb',
       'ccabbbbd', 'ccaaaaaa', '.caaabbb', 'c.aaabbb', '...aaaaa', '..aa..aa']}
+  ]},
+  // Index 14. A floating computer. labOnly: the Arbiter bay is the only place it appears.
+  { id:'byte', habitat:{}, labOnly:true, tiles:'grass',
+    type:'VOLT', blurb:'A floating little computer. Hums when it thinks.', stages:[
+    { name:'Bitlet', col:{a:PAL.c,b:PAL.s,c:PAL.y,d:PAL.m,x:PAL.w}, half:[
+      '........','.......c','......dc','..dddddd','.daaaaaa','.daaieaa','.daaeeaa','.dabbbaa',
+      '..dddddd','...cc...','..c...c.','........','........','........','...c....','........']},
+    { name:'Hoverbyte', col:{a:PAL.b,b:PAL.c,c:PAL.y,d:PAL.h,x:PAL.w}, half:[
+      '.......c','......cc','.ddddddd','daaaaaaa','daaaieaa','daaaeeaa','dabbbbaa','daaaaaaa',
+      '.ddddddd','...cc...','..c..c..','........','........','........','........','........']},
+    { name:'Archivolt', col:{a:PAL.s,b:PAL.c,c:PAL.y,d:PAL.d,x:PAL.h}, half:[
+      '.......c','......dc','....dddd','....dxdd','....aiea','....aeea','....abba','....aaaa',
+      '....dxdd','....dddd','....dddd','....dddd','......cc','.....c..','....c..c','........']}
   ]}
 ];
 
@@ -547,6 +561,14 @@ function buildWorldArt(){
     '...d.hwhrhw.d...', '...d.hwhlhw.d...', '.llllllllllllll.', '.swwwwwwwwwwwws.', '.slllllllllllls.', '.slllwwllwwllls.', '.slllwwllwwllls.', '.slllllllllllls.',
     '.dddddddddddddd.', '..d..........d..'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   A.arbiter = mkTile(g => ['................', '.....hhhhhh.....', '.......hh.......', '.......hh.......', '.mmmmmmmmmmmmmm.', '.mmhhhhhhhhhhmm.', '.mmhkkkkkkkkhmm.', '.mmhckkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhhhhhhhhhhmm.', '.mmmmddddddmmmm.', '.mmmmmmmmmmmmmm.', '................', '................'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
+  // RegenX floors. Grids also live in data/heights_art.json.
+  const rxPaint = (g, rows) => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
+  A.lab_bench = mkTile(g => rxPaint(g, ['................','..hhhhhhhh......','.hhkkkkkkhh.....','.hhkkkkkkhh.....','.hhkkkkkkhh.....','..hhhhhhhh......','.wwwwwwwwwwwwww.','.wwwwwwwwwwyyww.','.wwwwwwwwwllllw.','.wwwwwwwwwllllw.','.wwwwwwwwwwccww.','..mmmmmmmmmmmm..','..mdddmmmdddmm..','..mmmmmmmmmmmm..','..mdddmmmdddmm..','................']));
+  A.rx_desk = mkTile(g => rxPaint(g, ['................','................','................','..wwwwwwwwwwww..','..wccwwwwwwccw..','..wkkwwwwwwkkw..','..wwwwwwwwwwww..','..mmmmmmmmmmmm..','..m..........m..','..m..........m..','..mmmmmmmmmmmm..','................','................','................','................','................']));
+  A.rx_shelf = mkTile(g => rxPaint(g, ['................','.mmmmmmmmmmmmmm.','.mwwmwwmwwmwwmm.','.mmmmmmmmmmmmmm.','.mccmwcmwcmwcmm.','.mmmmmmmmmmmmmm.','.mwwmwwmwwmwwmm.','.mmmmmmmmmmmmmm.','.mhhmmhmmhmmhmm.','.mmmmmmmmmmmmmm.','................','................','................','................','................','................']));
+  A.rx_terminal = mkTile(g => rxPaint(g, ['................','................','....dddddddd....','....dccccccd....','....dckkkkcd....','....dccccccd....','....dddddddd....','......dddd......','....wwwwwwww....','....wmmmmmmw....','....wwwwwwww....','......mmmm......','......m..m......','................','................','................']));
+  A.rx_rack = mkTile(g => rxPaint(g, ['................','................','................','...mmmmmmmmmm...','...m.yy.yy.ym...','...m.ll.ll.lm...','...m.ll.ll.lm...','...m.yy.yy.ym...','...mmmmmmmmmm...','....m..m..m.....','....m..m..m.....','...mmmmmmmmmm...','................','................','................','................']));
+  A.rx_pylon = mkTile(g => rxPaint(g, ['................','.......cc.......','......cccc......','......ckkc......','......cccc......','.......cc.......','.......mm.......','.......mm.......','.......mm.......','.......mm.......','.......mm.......','......mmmm......','.....mmmmmm.....','................','................','................']));
   // High Charity props. One tile each; the airship sits on an A pad and the nave is a row of pews.
   A.airship = mkTile(g => { px(g,PAL.c,3,1,10,6); px(g,PAL.s,4,2,8,3); px(g,PAL.w,5,2,2,1);
     px(g,PAL.d,7,7,2,3); px(g,PAL.o,4,10,8,3); px(g,PAL.y,5,11,2,1); px(g,PAL.d,4,13,8,1); });

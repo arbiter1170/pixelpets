@@ -69,14 +69,14 @@ test('journal counts and silhouettes stay on the WALKLINGS tab', async ({ page }
       locked: document.querySelector('#tabs').classList.contains('locked'),
     };
   });
-  expect(grid.n).toBe(42);
+  expect(grid.n).toBe(45);
   expect(grid.slots).toBe(6);
   expect(grid.header).toContain('Joined 1');
   expect(grid.header).toContain('Met 1');
-  expect(grid.header).toContain('Out there 42');
+  expect(grid.header).toContain('Out there 45');
   expect(grid.joined).toBe('joined');
   expect(grid.met).toBe('met');
-  expect(grid.unmet).toBe(40);
+  expect(grid.unmet).toBe(43);
   expect(grid.unmetButtons).toBe(0);
   expect(grid.unmetMark).toBe(true);
   expect(grid.locked).toBe(false);

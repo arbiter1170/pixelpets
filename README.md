@@ -96,7 +96,7 @@ Levels, types and stats (`stats.js`):
   the Pet scene and the Pets tab.
 - Stats card: tap STATS (top-left of the Pet tab scene) or the follower. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats. It shows the type badge, Level,
   GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
-  scaled to the highest value of that stat among all 42 forms at the same level, and one type-chart line
+  scaled to the highest value of that stat among all 45 forms at the same level, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
   tap outside it or Escape closes it. Any tab can open it with a Walkling id (`openStatsCard(id)` in `game.js`).
 
@@ -183,8 +183,11 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - Keeper House and the phone: Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the buyout) wears mint. Officer Bren patrols the Hearthmoor road out to the east gate. Officer Cald stands just north of that gate. The tree that closed the grass there is cut, and the town sign stands south of the path. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after the quarry buyout. The Keeper House south of that road has two floors: Sergeant Bram, Archivist Mo, and Clerk Wynn downstairs; Captain Lumen and Operator Rue upstairs. Before you pledge, they treat you as a citizen. Keepers hear warmer lines as Standing rises. A Glimmerwell pledge gets a cold door. The first side quest is on Route 1, and it only says to go explore. Officer Ness stands at the west end the whole time. Talk to him, or take a few steps past him, and he bumps into you: a Keeper1 is free and required for every trainer, by mandate of the Keeper High Court, before the wilds will have you. Warden Ilse gives the first Walkling so a young trainer can learn to defend themselves, and she hopes you join the Keepers and use it for good. PHONE (top-left) opens Contacts, Notes, Journal, Friends, KeeperUAV, Ribbit, and BOARD. BOARD is the town post: the masthead, the slogan, the reports that match so far, then the empty slip and bounty lines. In a town it is that town. Indoors it is the outdoor town. On a road it is the last town, and a line says you are between towns. Hearthmoor and Fernbrook stay the Lantern Post even on a glimmer pledge. Cobblecrest becomes Bright Notice after the quarry buyout. Mahopac's board has no masthead. The phone button stays hidden until Keeper1 is issued. The wooden post still opens on foot. Hearthmoor's street widens into a crossing in front of the Keeper House. Fernbrook grows a forecourt north of the path, with a crooked Comfort flyer beside the board. Notes say the Lantern desk can read them. Joining Glimmerwell also puts a Cracked Handset in the bag. While you are Glimmerwell and carrying it, the phone shell becomes the thin CRACK//HAND, and KeeperUAV is replaced by Botnet (placeholder jobs and parts). A blue chevron marks the side quest. The main quest chevron stays yellow. Higher Glimmerwell Standing tints your keeper with mint, then silver. Archivist Mo's books fear a child born already listening. That generation is not in the game. The phone has Ribbit, a read-only feed. Block News and Chirp Worldwide post about the towns. Local notes and the trending tags follow the day, the place you are standing, and the story. You cannot post.
 - Fernbrook Heights (before the first trial): once you pick a side, Fen or Juniper offers "get to know us" and sends you north.
   Keepers investigate a smuggling tunnel. After the haulers step aside, Officer Ken of the Fernbrook watch interviews each Walkling with you, then walks them toward the orchard. Glimmerwell enters the RegenX lab,
-  four floors, to copy Atten (a focus aid) and its brewing plans. RegenX does not know the vials sit near The Arbiter,
+  four floors, to copy Atten (a focus aid) and its brewing plans. The lobby, Focus Wing, Records room, and Arbiter bay
+  are different rooms. RegenX does not know the vials sit near The Arbiter,
   ancient Glimmerwell technology. It emits something slowly. Nobody can name the emission, or why the machine was built.
+  A floating computer, the VOLT line Bitlet, Hoverbyte, and Archivolt, woke in that bay. It is not a sample. You can befriend it.
+  It does not appear in the wild.
   Each Heights beat adds Standing for the side you are on. The trial and the
   Tour's first stop wait until `story.heights_done`. A save that already has Seal 1 is not sent back.
   Some fights are group battles: two foes at once, TARGET to choose, and on the last fight an ally Walkling steps in.
@@ -288,11 +291,13 @@ Which species appear depends on where you are and the weather there:
 - The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
 
-Creatures: 14 lines of 3 forms (42 WALKLING JOURNAL entries), all befriendable and all growing up the same way
+Creatures: 15 lines of 3 forms (45 WALKLING JOURNAL entries), all befriendable and all growing up the same way
 (growth XP 40 / 120 plus care, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
 Pomlet → Pomshell → Orchardon (BLOOM beetle), Loamlet → Burrowbloom → Hedgewarden (BLOOM mole),
 Clinkit → Shardpincer → Mosaicrab (TIDE crab), Fuzzwick → Filamoth → Halowatt (VOLT moth),
 Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lullamouse → Moondozer (SHADE dormouse).
+Bitlet → Hoverbyte → Archivolt (VOLT `byte`) is a floating computer. It is `labOnly`: the Arbiter bay is where you meet it,
+and it is never part of the habitat roll or the 8% any-species roll.
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
@@ -349,15 +354,15 @@ with Courier New / monospace as fallback; ★ ♥ and the arrow symbols come fro
 Saves (format v2, `save.js`):
 - `pixelpets.save.v2` is the save. Walklings live in a **party** (up to 6, the partner is always in it) and a
   **box** (no limit). A 7th befriended Walkling goes to the box ("<name> was sent to your box."). The WALKLINGS tab
-  is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 42; unmet forms stay silhouettes).
+  is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 45; unmet forms stay silhouettes).
   MOVE reorders the party. TO BOX / TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling.
   Those labels stay while the WALKLINGS tab is open.
   LEFT BEHIND shows each orphan's reason and the raw data. Hunger pauses in the box.
   A battle SWAP lists the party only. The sheet on a Walkling can use a field snack, rename them, reorder moves,
   hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an accessory, and set a call (Charge, Brace, Dart, or Greet).
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
-  `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
-  The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 42 form ids) is append-only: new lines are added at the end
+  `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`, then `byte`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
+  The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 45 form ids) is append-only: new lines are added at the end
   of `SPECIES` and of the table without a new save version, and a dev check reports any reorder. A Walkling whose
   species an older build didn't know sits in `orphans` there and comes back to the box once the species exists.
   Unknown fields are kept on load and save.

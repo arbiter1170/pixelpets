@@ -75,7 +75,7 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 `tests/mahopac.spec.js` covers the optional Mom / Mahopac dream: the look picker has 8 hair styles, 14 hair colours, 6 outfits and 5 accessories (old colour-only looks still migrate), the side objective shows under the main step, clearing Mom's table adds 4 bond, Mahopac's three people are frozen and there are no trainers, pushing the 2004 toy moves it and pops, and the balloon memory continues through Dad into waking upstairs.
 - **`PixelPets.glimmerCheck`** (getter). Returns the array from `glimmerDevCheck()` in `game.js`: a list of problem strings. Empty array means `data/glimmer_path.json` lines fit after tokens, choice labels are at most 30 characters, ambient lines and walk-away toasts are at most 40, variants have a base scene, and those variants set the same `story.*` flags as the base.
 
-`tests/heights.spec.js` plays the side-pick offer into Fernbrook Heights (Keepers tunnels, Glimmerwell lab), checks the trial stays shut until `story.heights_done`, and opens a group battle (two foes, TARGET).
+`tests/heights.spec.js` plays the side-pick offer into Fernbrook Heights (Keepers tunnels, Glimmerwell lab), checks the trial stays shut until `story.heights_done`, and opens a group battle (two foes, TARGET). It also checks the VOLT line Bitlet: three stages, lab-only so the wild roll stays at 0, the Arbiter bay object, and a battle that names Bitlet. Save `v` stays 2.
 
 `tests/group_battle.spec.js` checks a normal trainer is not a group fight, TARGET wraps, both foes swing in one turn, Cal joins Quinn, a win sets the trainer flag without the story scene, a loss does not, and Heights Standing grants once per faction.
 
