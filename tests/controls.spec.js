@@ -265,3 +265,32 @@ test('D70 first-walk prompt: approved question, ARCADE / MODERN with sub-lines, 
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.text === 'You can change this any time under the gear.');
   expect(await page.evaluate(() => PixelPets.state.settings.controls)).toBe('modern');
 });
+
+/* Design's approved green copy (Oct 15): Settings toasts, the modern step-8 toast, the welcome and rename lines. */
+const GREEN = ['Arcade controls. Pad and Talk button.', 'Modern controls. Tap to walk or talk.', 'Joystick on.', 'Joystick off.',
+  'Keep walking. Wild Walklings hide in the grass.', 'Pipkit missed you! Welcome back.', 'Pipkit likes the new name!', 'Pipkit is back to its own name.', 'Pick a name first.'];
+test('green copy: the Settings rows toast the approved lines', async ({ page }) => {
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page);
+  await page.locator('#settingsBtn').click();
+  await page.locator('#setControls').click();
+  await expect(page.locator('#toast')).toHaveText('Modern controls. Tap to walk or talk.');
+  await page.waitForTimeout(2600);
+  await page.locator('#setJoystick').click();
+  await expect(page.locator('#toast')).toHaveText('Joystick on.');
+  await page.waitForTimeout(2600);
+  await page.locator('#setControls').click();
+  await expect(page.locator('#toast')).toHaveText('Arcade controls. Pad and Talk button.');
+});
+for (const mode of ['arcade', 'modern']) {
+  test(`green copy fits as a toast (${mode}): no clipping, inside the screen`, async ({ page }) => {
+    await installSave(page.context(), modernSave({ controls: mode }), { quietDay: true });
+    await gotoGame(page);
+    await page.evaluate(() => PixelPets.showTab('walk'));
+    for (const line of GREEN) {
+      const r = await page.evaluate(l => { const t = document.querySelector('#toast'); t.textContent = l; t.classList.add('show');
+        const b = t.getBoundingClientRect(); return { l: b.left, r: b.right, clip: t.scrollWidth > t.clientWidth + 1 || t.scrollHeight > t.clientHeight + 1 }; }, line);
+      expect(r.clip, line).toBe(false); expect(r.l).toBeGreaterThanOrEqual(0); expect(r.r).toBeLessThanOrEqual(page.viewportSize().width);
+    }
+  });
+}
