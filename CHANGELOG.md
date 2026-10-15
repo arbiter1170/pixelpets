@@ -4,7 +4,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 ## 2026-10-14 — Modern and arcade controls scoped (no new build stamp)
 
-- Q26 is scoped and not started. Arcade keeps the d-pad and the Talk button. Modern hides that pad, gives the height to the map, and floats PHONE, BAG, and MAP on the map corners. Tap and walk-up stay the way you talk. Settings switches the two. A new game asks in the house, after the look picker, before the exit mat. An old save stays on the pad. The prompt and the modern tips are D62. Save `v` stays 2. No Playwright spec. `index.html` did not change, so `version.json` is unchanged. The next build stays Q19.
+- Q26 is scoped and not started, from Vincent's Oct 15 sketch. Arcade is today's layout. Modern fills the walk screen with the map and drops the header, the HUD, the d-pad, the Talk button, and the tab bar there. QUEST, BAG, and MAP float top left, Settings and PHONE top right, WALKLINGS and PARTNER bottom right, the area name top centre, and the partner's name, Lv, and three bars run along the bottom. A translucent four-way joystick is a Settings option, off by default. Tap and walk-up stay the way you talk. A new game asks in the house, after the look picker, before the exit mat. An old save stays on the pad. The copy is D62, the joystick default is D63, and landscape is D64. Save `v` stays 2. No Playwright spec. `index.html` did not change, so `version.json` is unchanged. The next build stays Q19.
 
 ## 2026-10-14 — Phone QA on the Glimmerwell pledge (no new build stamp)
 
