@@ -6,7 +6,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 
 The old keeper-hq branch reused D27–D31. `main` already had D27 (Mahopac, settled) and D28 (lantern rest, open). Those rows are D32–D36 now.
 
-D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D81. D80 is the phone contact list. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop.
+D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D92. D81–D89 are the MAP_SCALE_DETAIL calls, D90 is the debug-save acceptance and D91 is the byte-line learnset. D80 is the phone contact list. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop.
 
 ## Open
 
@@ -68,3 +68,16 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 ## Settled
 
 Settled decisions (including the Oct 14 town-board calls D37 town-list and D38–D49) are archived word for word in [`archive/DECISIONS_SETTLED.md`](archive/DECISIONS_SETTLED.md). Read it on demand. When a decision is settled, move its row there with the date and the call.
+
+- **D81–D89 map scale and detail (SETTLED Oct 15, 2026; mirrored from Design's `MAP_SCALE_DETAIL.md` §6, design commits 863aa2b and 6263382).**
+  - D81 (MS-R1, red, Vincent): no Act 1 town reshape; Act 1 towns get detail only; new towns use the size targets.
+  - D82 (MS-R2, red, Vincent): portrait routes (24×64) for new routes only.
+  - D83 (MS-R3, red, Vincent): bigger RegenX rooms, not more floors (four rooms stay).
+  - D84 (MS-R4, red, Vincent): enlarge a house interior only when it is rebuilt for a story beat.
+  - D85 (MS-Y1, yellow, Supervisor default): the §1 size targets apply to new and rebuilt maps only.
+  - D86 (MS-Y2, yellow, default): rebuild `rx_f4` as the 14×22 pilot; same flags and object ids, new grid (BUILD_RX_F4_PILOT.md). Built on `rx-f4-pilot`.
+  - D87 (MS-Y3, yellow, default): the tunnels (`sm_*`) get their own rock skin; same grids. Not built.
+  - D88 (MS-Y4, yellow, default): one floor tile may cover at most 70 % of a map's walkable cells, measured after seeded variants. Checked for lab maps on `rx-f4-pilot`.
+  - D89 (MS-Y5, yellow, default): an optional night tech at the bay terminals, placeholder lines, no battle. Built as `rx4_tech` on `rx-f4-pilot`.
+- **D90 debug-save marking accepted (Oct 15, 2026, Vincent).** The D69 behaviour (debug writes keep `pixelpets.save.v2` with the additive `debugSave: true` mark and `DEBUG SAVE` in Settings) is accepted. The item drops from red to yellow. D69 is closed.
+- **D91 byte-line learnset (Oct 15, 2026, green, engineer).** Bitlet / Hoverbyte / Archivolt (`byte/0..2`, VOLT) keep the learnset already in `moves.js` (added with the RegenX lab, a34dd69), which follows the volt line's shape with byte moves: `byte/0` bump 1, screen_glow 3, cursor_tap 5, zap_tap 9, arc_bolt 12, puff_shot 16, neon_burst 20, hover_hum 24, updraft 28; `byte/1` bit_burst on evolving, gale_slice 22; `byte/2` archive_surge on evolving, full_tilt 27. Every move is in `moves.js`. `battle_check` flags the line because Design's `BATTLE.md` has no byte block; Design should mirror these rows there (the game does not commit `design/`).
