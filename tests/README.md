@@ -77,6 +77,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 `tests/heights.spec.js` plays the side-pick offer into Fernbrook Heights (Keepers tunnels, Glimmerwell lab), checks the trial stays shut until `story.heights_done`, and opens a group battle (two foes, TARGET). It also checks the VOLT line Bitlet: three stages, lab-only so the wild roll stays at 0, the Arbiter bay object, and a battle that names Bitlet. Save `v` stays 2.
 
+`tests/maps_b3.spec.js` checks the four tunnel rooms (`sm_yard`, `sm_tunnel`, `sm_hold`, `sm_den`): same 18×12 grids, old object ids and spots, rock tiles only, every person and prop reachable from the south arrival, doors and warps both ways, each new prop's line, and an old save on a prop snapping to `safe`. Floor variants stay at or under 70%. The Arbiter bay's walk count stays 216. Save `v` stays 2.
+
 `tests/group_battle.spec.js` checks a normal trainer is not a group fight, TARGET wraps, both foes swing in one turn, Cal joins Quinn, a win sets the trainer flag without the story scene, a loss does not, and Heights Standing grants once per faction.
 
 `tests/glimmer_fernbrook.spec.js` (Build 3) plays the Fernbrook glimmer path: Keepers pick leaves the orchard battle in place, an old save past the orchard does not see the gate, "Think about it" sets no flag and stepping off toasts one walk-away line, the glimmer pick runs the orchard and the four Tour stops, a worn-out party and a lost match can still finish at stop 4, and the optional win grants `tour1_match` once. Screenshots (320 and 390) cover the side pick, the orchard, each Tour stop, and the lanyard card.

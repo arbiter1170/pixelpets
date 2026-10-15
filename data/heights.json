@@ -890,9 +890,9 @@
         "##################",
         "#WWWWWWWWWWWWWWWW#",
         "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
+        "#....YYYY........#",
+        "#....YYYY........#",
+        "#.....YYY........#",
         "#................#",
         "#................#",
         "#................#",
@@ -939,8 +939,180 @@
           "id": "sm_lookouts",
           "x": 13,
           "y": 6
+        },
+        {
+          "kind": "prop",
+          "id": "smy_cart",
+          "x": 6,
+          "y": 7,
+          "sprite": "tunnel_cart",
+          "lines": {
+            "else": "A wooden cart. Nothing in it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_stack_1",
+          "x": 2,
+          "y": 8,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_stack_2",
+          "x": 15,
+          "y": 4,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_stack_3",
+          "x": 15,
+          "y": 6,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_stack_4",
+          "x": 6,
+          "y": 2,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_barrel_1",
+          "x": 4,
+          "y": 8,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_barrel_2",
+          "x": 14,
+          "y": 8,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_barrel_3",
+          "x": 2,
+          "y": 6,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_barrel_4",
+          "x": 16,
+          "y": 5,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_rope_1",
+          "x": 1,
+          "y": 6,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_rope_2",
+          "x": 16,
+          "y": 8,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_rope_3",
+          "x": 7,
+          "y": 2,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_rope_4",
+          "x": 12,
+          "y": 2,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_hook_1",
+          "x": 1,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_hook_2",
+          "x": 16,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_brace_1",
+          "x": 5,
+          "y": 2,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smy_brace_2",
+          "x": 13,
+          "y": 2,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
         }
-      ]
+      ],
+      "skin": "tunnel",
+      "variants": true
     },
     "sm_tunnel": {
       "name": "Smuggler Tunnel",
@@ -959,14 +1131,14 @@
         "##################",
         "#WWWWWWWWWWWWWWWW#",
         "#................#",
+        "#..~...~...~...~.#",
         "#................#",
+        "#...~........~...#",
+        "#.~.....~.......~#",
         "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#........m.......#",
+        "#..~.......~...~.#",
+        "#...~.......~....#",
+        "#.....~..m.......#",
         "##################"
       ],
       "objs": [
@@ -1011,8 +1183,150 @@
           "y": 8,
           "item": "heal_snack",
           "n": 1
+        },
+        {
+          "kind": "prop",
+          "id": "smt_brace_1",
+          "x": 2,
+          "y": 2,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_brace_2",
+          "x": 6,
+          "y": 2,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_brace_3",
+          "x": 10,
+          "y": 2,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_brace_4",
+          "x": 14,
+          "y": 2,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_brace_5",
+          "x": 2,
+          "y": 7,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_brace_6",
+          "x": 6,
+          "y": 7,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_brace_7",
+          "x": 10,
+          "y": 7,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_brace_8",
+          "x": 14,
+          "y": 7,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_rope_1",
+          "x": 1,
+          "y": 5,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_rope_2",
+          "x": 16,
+          "y": 5,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_barrel_1",
+          "x": 4,
+          "y": 4,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_barrel_2",
+          "x": 12,
+          "y": 6,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_hook_1",
+          "x": 16,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smt_hook_2",
+          "x": 1,
+          "y": 10,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
         }
-      ]
+      ],
+      "skin": "tunnel",
+      "variants": true
     },
     "sm_hold": {
       "name": "Crate Hold",
@@ -1032,12 +1346,12 @@
         "#WWWWWWWWWWWWWWWW#",
         "#................#",
         "#................#",
+        "#........~.......#",
+        "#.........~..~.~.#",
+        "#........~.~.....#",
         "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
+        "#..........~.~...#",
+        "#.~.~............#",
         "#........m.......#",
         "##################"
       ],
@@ -1102,8 +1416,200 @@
           "lines": {
             "else": "The watch will walk them home."
           }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_1",
+          "x": 2,
+          "y": 3,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_2",
+          "x": 3,
+          "y": 3,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_3",
+          "x": 4,
+          "y": 3,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_4",
+          "x": 5,
+          "y": 3,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_5",
+          "x": 6,
+          "y": 3,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_6",
+          "x": 7,
+          "y": 3,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_7",
+          "x": 8,
+          "y": 3,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_8",
+          "x": 2,
+          "y": 8,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_9",
+          "x": 3,
+          "y": 8,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_10",
+          "x": 4,
+          "y": 8,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_11",
+          "x": 5,
+          "y": 8,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_12",
+          "x": 6,
+          "y": 8,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_stack_13",
+          "x": 7,
+          "y": 8,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_barrel_1",
+          "x": 15,
+          "y": 6,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_barrel_2",
+          "x": 15,
+          "y": 8,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_rope_1",
+          "x": 1,
+          "y": 5,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_rope_2",
+          "x": 16,
+          "y": 9,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_hook_1",
+          "x": 1,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smh_hook_2",
+          "x": 16,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
         }
-      ]
+      ],
+      "skin": "tunnel",
+      "variants": true
     },
     "sm_den": {
       "name": "Broker's Den",
@@ -1123,12 +1629,12 @@
         "#WWWWWWWWWWWWWWWW#",
         "#................#",
         "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
+        "#.....======.....#",
+        "#.....======....~#",
+        "#.~...======...~.#",
+        "#.....======.....#",
+        "#~...............#",
+        "#...~........~...#",
         "#........m.......#",
         "##################"
       ],
@@ -1148,8 +1654,160 @@
           "id": "sm_mara",
           "x": 9,
           "y": 6
+        },
+        {
+          "kind": "prop",
+          "id": "smd_desk",
+          "x": 8,
+          "y": 4,
+          "sprite": "tunnel_desk",
+          "lines": {
+            "else": "A plain desk."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_ledger",
+          "x": 9,
+          "y": 4,
+          "sprite": "tunnel_ledger",
+          "lines": {
+            "else": "A shut ledger."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_lamp",
+          "x": 10,
+          "y": 4,
+          "sprite": "tunnel_lamp",
+          "lines": {
+            "else": "A small lamp. The flame is still."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_barrel_1",
+          "x": 2,
+          "y": 3,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_barrel_2",
+          "x": 15,
+          "y": 3,
+          "sprite": "barrel",
+          "lines": {
+            "else": "A sealed barrel."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_rope_1",
+          "x": 2,
+          "y": 8,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_rope_2",
+          "x": 15,
+          "y": 8,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "A coil of rope."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_stack_1",
+          "x": 3,
+          "y": 5,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_stack_2",
+          "x": 14,
+          "y": 6,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates stacked against the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_hook_1",
+          "x": 1,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_hook_2",
+          "x": 16,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_hook_3",
+          "x": 5,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_hook_4",
+          "x": 13,
+          "y": 2,
+          "sprite": "lantern_hook",
+          "lines": {
+            "else": "An empty lantern hook."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_brace_1",
+          "x": 4,
+          "y": 2,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "smd_brace_2",
+          "x": 14,
+          "y": 2,
+          "sprite": "tunnel_brace",
+          "lines": {
+            "else": "A timber brace in the rock."
+          }
         }
-      ]
+      ],
+      "skin": "tunnel",
+      "variants": true
     }
   },
   "trainers": {

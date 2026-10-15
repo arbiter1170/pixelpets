@@ -1524,8 +1524,13 @@ const objPos = o => mapRT.pos[o.id] || o;
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
 const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
+// Per-map skins. lab is LAB_SKIN itself, so a lab map keeps today's walk table. Another batch adds a key here.
+const SKINS = { lab: LAB_SKIN, tunnel: TUNNEL_SKIN };
 // Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; LAB_SKIN.walk wins over the shared TILE_DEF for those maps only.
-const tileWalks = ch => (CUR.skin === 'lab' && LAB_SKIN.walk[ch] != null) ? !!LAB_SKIN.walk[ch] : !!(TILE_DEF[ch] || {}).walk;
+// The lab clause is unchanged. A tunnel map uses TUNNEL_SKIN.walk the same way.
+const tileWalks = ch => (CUR.skin === 'lab' && LAB_SKIN.walk[ch] != null) ? !!LAB_SKIN.walk[ch]
+  : (SKINS[CUR.skin] && SKINS[CUR.skin].walk[ch] != null) ? !!SKINS[CUR.skin].walk[ch]
+  : !!(TILE_DEF[ch] || {}).walk;
 const solidTile = (x, y) => x < 0 || y < 0 || x >= MW || y >= MH || !tileWalks(MAP[y][x]);
 const solid = (x, y) => solidTile(x, y) || !!blockerAt(x, y);
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
@@ -2353,23 +2358,37 @@ function drawFactionBand(g, ch, tx, ty, X, Y){
 // E5 seeded tile variants (BUILD_RX_F4_PILOT B): variant = hash(map id, x, y) with weights per base tile. Same map, same look;
 // nothing is saved. Only plain base cells vary; a hand-placed char in the grid always wins.
 function tileHash(id, x, y){ let h = 2166136261; const s = id + ':' + x + ':' + y; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15; return (h >>> 0) / 4294967296; }
-function labTileName(k, tx, ty, m){
+function skinTileName(k, tx, ty, m){
   m = m || CUR;
-  const nm = ((LAB_SKIN.override[m.id] || {})[k]) || LAB_SKIN.remap[k];
-  const vs = m.variants && LAB_SKIN.variants[nm];
+  const sk = SKINS[m.skin];
+  if (!sk) return null;
+  const nm = ((sk.override[m.id] || {})[k]) || sk.remap[k];
+  const vs = m.variants && sk.variants[nm];
   if (!vs) return nm;
   let r = tileHash(m.id, tx, ty);
   for (const [v, w] of vs) { if (r < w) return v; r -= w; }
   return nm;
 }
+function labTileName(k, tx, ty, m){
+  m = m || CUR;
+  if (!m.skin || m.skin === 'lab') {   // lab body unchanged; a map with no skin still resolves through LAB_SKIN, as before
+    const nm = ((LAB_SKIN.override[m.id] || {})[k]) || LAB_SKIN.remap[k];
+    const vs = m.variants && LAB_SKIN.variants[nm];
+    if (!vs) return nm;
+    let r = tileHash(m.id, tx, ty);
+    for (const [v, w] of vs) { if (r < w) return v; r -= w; }
+    return nm;
+  }
+  return skinTileName(k, tx, ty, m);
+}
 // D88: after variants, one floor tile may cover at most 70 % of a map's walkable cells (decal cells count as their decal). Checked in
-// devChecks for rebuilt maps ("variants": true); D85 keeps older maps as they are.
+// devChecks for rebuilt maps ("variants": true); D85 keeps older maps as they are. Tunnel maps opt in the same way and fail only above 70 %.
 function labFloorShare(id){
-  const m = WORLD[id]; if (!m || m.skin !== 'lab') return null;
+  const m = WORLD[id]; const sk = m && SKINS[m.skin]; if (!m || !sk) return null;
   const n = {}; let walk = 0;
   m.cells.forEach((row, y) => [...row].forEach((ch, x) => {
-    const w = LAB_SKIN.walk[ch] != null ? !!LAB_SKIN.walk[ch] : !!(TILE_DEF[ch] || {}).walk; if (!w) return;
-    walk++; const nm = LAB_SKIN.decal[ch] || labTileName(ch, x, y, m); n[nm] = (n[nm] || 0) + 1;   // a decal cell counts as its decal tile
+    const w = sk.walk[ch] != null ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk; if (!w) return;
+    walk++; const nm = sk.decal[ch] || labTileName(ch, x, y, m); n[nm] = (n[nm] || 0) + 1;   // a decal cell counts as its decal tile
   }));
   const top = Object.entries(n).sort((a, b) => b[1] - a[1])[0];
   return { walk, tile: top[0], count: top[1], share: top[1] / walk };
@@ -2389,8 +2408,10 @@ function drawMap(t){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
       const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
       let decal = null;
-      if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
+      const skDraw = SKINS[CUR.skin];
+      if (skDraw) {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
+        // Lab odd columns stay W2 (the window). A skin without remap.W2 keeps one face, so the tunnel has no house window.
+        const k = (ch === 'W' && tx % 2 && (CUR.skin === 'lab' || skDraw.remap.W2)) ? 'W2' : ch, dk = skDraw.decal[k];
         const nm = labTileName(dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
@@ -7948,8 +7969,8 @@ function boot(){
     clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
-    tileInfo: (x, y) => { const ch = tileAt(x, y), dk = CUR.skin === 'lab' && LAB_SKIN.decal[ch];   // debug: char, walk, drawn tile and decal
-      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.skin === 'lab' ? labTileName(dk ? '.' : ch, x, y) : ch, decal: dk || null }; },
+    tileInfo: (x, y) => { const ch = tileAt(x, y), sk = SKINS[CUR.skin], dk = sk && sk.decal[ch];   // debug: char, walk, drawn tile and decal
+      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: sk ? labTileName(dk ? '.' : ch, x, y) : ch, decal: dk || null }; },
     floorShare: id => labFloorShare(id || CUR.id),   // D88
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game

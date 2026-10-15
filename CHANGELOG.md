@@ -3,6 +3,15 @@
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
 
+## 2026-10-15 09:21 ET: tunnel rooms wear rock (D87), branch `cursor/maps-b3-tunnels-7807`
+
+- What changed and why: The four smuggler rooms (`sm_yard`, `sm_tunnel`, `sm_hold`, `sm_den`) keep their 18×12 grids and stop painting house planks. `TUNNEL_SKIN` uses the same remap, walk, decal, and seeded-variant path as `LAB_SKIN`. `#` is rock, `W` is the rock face, `.` is stone with gravel and damp variants. The yard has a sky patch and a cart, the tunnel has timber braces and drips, the hold has crate rows, and the den has a rug, desk, ledger, and lamp. Paths from each arrival to each exit and to every person stay open. Save `v` stays 2.
+- Files touched: `sprites.js`, `game.js`, `data/heights.json`, `data/mapdata.js`, `index.html`, `version.json`, `tests/maps_b3.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this commit, build `20261015-0921`.
+- Tests run and result: `PP_PORT=8103 npm test` at 320, 375, and 390. 522 passed, 6 skipped, 0 failed. No console errors.
+- Decisions made: D87 built (rock skin, same grids). D96 green: short placeholder lines on the new props until Design writes them. Wall tiles use the same seeded mix as the floor so a rock row is not one repeating stamp. The lab tables and the lab draw results are unchanged.
+- Anything left unfinished: the tunnel-mouth exterior on Fernbrook Heights is still the old door (row 27 of the variety list is an exterior; this batch is the four rooms). Prop lines are placeholders (D96).
+
 ## 2026-10-15 — rx_f4 pilot: the Arbiter Bay at 14x22 (BUILD_RX_F4_PILOT, design 6263382), branch `rx-f4-pilot`
 
 - What changed: `rx_f4` goes from 18x12 to 14x22 with Design's `pilot` grid and lab tiles (verbatim from `fernbrook_heights_art.json`). Every existing id is kept; the objects move to the spec's coords (A3) and the new props, the locked staff door, the off-limits wall decal and the optional night tech (`rx4_tech`, D89) are added with their lines. `rx_f3` → `rx3_up` lands at (6,19) facing up; `safe` is (6,19); a second mat warp `rx4_down_b` at (7,20).
