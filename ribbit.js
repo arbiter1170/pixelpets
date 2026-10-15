@@ -73,6 +73,7 @@
     { id: 'ht-tunnel', kind: 'local', region: 'heights', name: 'Ridge hand', handle: 'tunnelnote', desk: 'Ridge hand', when: ['story.heights_done'], text: 'The old tunnels are empty. Walklings hopped toward the orchard.' },
     { id: 'ht-ken', kind: 'local', region: 'heights', name: 'Ridge hand', handle: 'kenwalk', desk: 'Ridge hand', when: ['story.heights_done'], text: 'Officer Ken walked with the Walklings. They hopped the whole way.' },
     { id: 'ht-kettle', kind: 'local', region: 'heights', name: 'Ridge hand', handle: 'kettleclean', desk: 'Ridge hand', when: ['story.heights_done'], text: 'The lab kettles are clean. The quiet machine still has no name.' },
+    { id: 'ht-screen', kind: 'local', region: 'heights', name: 'Ridge hand', handle: 'floatglass', desk: 'Ridge hand', when: ['story.heights_done'], text: 'A little screen still floats in the RegenX bay. Staff call it a glitch.' },
   ];
 
   const TAGS = [
@@ -89,6 +90,7 @@
     { tag: '#LampsDark', w: 3, when: ['story.glen_cleared'] },
     { tag: '#SeamSold', w: 3, when: ['story.quarry_bought'] },
     { tag: '#RegenX', w: 3, when: ['story.heights_done'] },
+    { tag: '#FloatScreen', w: 2, when: ['story.rx_bitlet'] },
     { tag: '#MintStand', w: 3, when: ['story.side=glimmer'] },
   ];
 

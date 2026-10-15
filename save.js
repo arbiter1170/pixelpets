@@ -12,8 +12,8 @@ const PPSave = (() => {
   // Frozen forever: v1 stored species by array index. Never derive this from SPECIES order.
   const V1_SPECIES = Object.freeze(['ember', 'tide', 'bloom', 'stone', 'volt', 'frost', 'gust', 'shade']);
   // Save v2 species/form-id table: append-only, in SPECIES order (v1 lines first, then CREATURES_SLICE lines 8-13).
-  // Adding ids keeps the save at v2; never remove, rename or reorder one. 14 lines x 3 stages = 42 form ids.
-  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse']);
+  // Adding ids keeps the save at v2; never remove, rename or reorder one. 15 lines x 3 stages = 45 form ids.
+  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte']);
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
   // MAPS_SLICE §10 / INTERIORS §5 / ACT1_ROUTE2 §0.2 / COBBLECREST mapdata: ids and sizes from data/mapdata.js.
@@ -243,6 +243,7 @@ const PPSave = (() => {
     fill(s, 'eggs', isObj, d.eggs);
     fill(s.eggs, 'incubators', x => Array.isArray(x) && x.length > 0, [{ egg: null }]); fill(s.eggs, 'held', Array.isArray, []);
     fill(s, 'settings', isObj, d.settings);
+    fill(s, 'debugSave', x => typeof x === 'boolean', false);                          // set once a debug session has saved; never cleared
     fill(s.settings, 'textSpeed', x => TEXT_SPEEDS.includes(x), 'normal'); fill(s.settings, 'battleAnims', x => typeof x === 'boolean', true);
     fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
     fill(s.settings, 'music', x => typeof x === 'boolean', true);                    // MUSIC v0.1 Q2: in the save, default on

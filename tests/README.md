@@ -1,6 +1,6 @@
 # Walklings smoke tests
 
-Small browser checks so a later change can show the game still boots on a phone width. Players never load this folder. There is no GitHub Actions workflow yet: run the suite locally. A new spec also gets a row in this file, and the status docs follow `.cursor/skills/walklings-docs/SKILL.md`. The Oct 14 documentation audit added no spec. Recording the town-board calls the same day added no spec. TB-1 is covered by `tests/town_board.spec.js`.
+Small browser checks so a later change can show the game still boots on a phone width. Players never load this folder. There is no GitHub Actions workflow yet: run the suite locally. A new spec also gets a row in this file, and the status docs follow `.cursor/skills/walklings-docs/SKILL.md`. The Oct 14 documentation audit added no spec. Recording the town-board calls the same day added no spec. TB-1 is covered by `tests/town_board.spec.js`. Scoping modern and arcade controls (Q26) added no spec. The implementing change adds `tests/controls.spec.js` and a row in this file.
 
 ## How to run
 
@@ -75,7 +75,7 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 `tests/mahopac.spec.js` covers the optional Mom / Mahopac dream: the look picker has 8 hair styles, 14 hair colours, 6 outfits and 5 accessories (old colour-only looks still migrate), the side objective shows under the main step, clearing Mom's table adds 4 bond, Mahopac's three people are frozen and there are no trainers, pushing the 2004 toy moves it and pops, and the balloon memory continues through Dad into waking upstairs.
 - **`PixelPets.glimmerCheck`** (getter). Returns the array from `glimmerDevCheck()` in `game.js`: a list of problem strings. Empty array means `data/glimmer_path.json` lines fit after tokens, choice labels are at most 30 characters, ambient lines and walk-away toasts are at most 40, variants have a base scene, and those variants set the same `story.*` flags as the base.
 
-`tests/heights.spec.js` plays the side-pick offer into Fernbrook Heights (Keepers tunnels, Glimmerwell lab), checks the trial stays shut until `story.heights_done`, and opens a group battle (two foes, TARGET).
+`tests/heights.spec.js` plays the side-pick offer into Fernbrook Heights (Keepers tunnels, Glimmerwell lab), checks the trial stays shut until `story.heights_done`, and opens a group battle (two foes, TARGET). It also checks the VOLT line Bitlet: three stages, lab-only so the wild roll stays at 0, the Arbiter bay object, and a battle that names Bitlet. Save `v` stays 2.
 
 `tests/group_battle.spec.js` checks a normal trainer is not a group fight, TARGET wraps, both foes swing in one turn, Cal joins Quinn, a win sets the trainer flag without the story scene, a loss does not, and Heights Standing grants once per faction.
 
@@ -123,6 +123,8 @@ With debug already on (`?debug=1`):
 `tests/party_board.spec.js` checks the six slots, the 42-cell journal, the quiet orphan count, reorder, deposit, withdraw, the last-Walkling release refusal, a full party of six, and that MOVE, TO BOX, PARTNER, RELEASE, and TO PARTY stay labeled after the care timer. `tests/party_qa.spec.js` and `tests/walkling_sheet.spec.js` cover the sheet. `tests/deploy_held.spec.js` covers held items and the battle calls.
 
 `tests/look_listen.spec.js` (Q20) checks the Tier 2 lanyard grid, Imogen and Hollis, Rook's lanyard, and that `mapTrack` returns `town_glimmer`, `quarry`, and `grove`. `tests/lantern_council.spec.js` (Q21) checks the Keepers council after Cobblecrest, the one-time `hc_council_k` grant, and that a glimmer save never takes that quest. `tests/qa_gaps.spec.js` checks quest pointers that the earlier smoke left open, including the council row after Cobblecrest.
+
+`tests/qa_play.spec.js` (the Oct 14 phone pass) checks the 320, 375, and 390 projects. The intro look picker's DONE button is inside the viewport and the name row stays hidden. A glimmer save past the orchard, with the first wild unmet, shows the Heights objective in the walk tip. The bag lists Keeper1 and the Cracked Handset, tells you to open PHONE, and offers no USE on those rows. The cracked Notes are signed Handset, and the phone shell fits the viewport. Fen's second talk is one line. Save `v` stays 2.
 
 `tests/care_tools.spec.js` (Q23, Q24, Q25) renames the partner from STATS. `N<ib>  2` is stored as `Nib 2`, and the party slot's label matches. Escape leaves that name. Typing the species name clears `nick`. Save `v` stays 2. The Vol slider writes `settings.musicVol` and does not flip Music on/off. The build line stays in view. `PixelPets.away(13)` shows no welcome line. `PixelPets.away(14)` says the partner waited. FOOD and JOY stay at or above 20, and NRG stays at or above 10. Screenshots: `screenshots/care/`.
 

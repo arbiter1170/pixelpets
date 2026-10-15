@@ -1,0 +1,36 @@
+# Settled decisions (archive)
+
+Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
+
+## Town boards (calls settled Oct 14, 2026)
+
+The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. Q23–Q25 are in the game. A quest that comes out of those calls follows `.cursor/skills/walklings-quests/SKILL.md`. The D37 still in the open table is the region-map claim list.
+
+## Settled
+
+- **D18 Standing cap (Oct 15, 2026, green).** The daily Standing cap is left unbuilt and folded into the Standing pass, with a placeholder of 5 per side per day. Faction activities still earn Standing slowly once that pass lands; only story grants move the meter until then. Change it in `addStanding` in `game.js` and a new `STANDING_CFG.grants` entry plus a `standing.day.<side>` flag.
+- **D69 debug save mark (Oct 15, 2026, green, engineer).** QA BUG-2 fix. Debug writes go to `pixelpets.save.v2` with an additive `debugSave: true` mark shown in Settings, not to a separate key: a separate key would break the 18 suites that seed and read the v2 key under `?debug=1`. Debug itself is per tab session (sessionStorage). Change it in `save()` in `game.js` and `normalizeV2` in `save.js`.
+- **D37 town list (Oct 14, 2026).** Vincent: yes, and all future towns. This is the town-list row. The region-map row that uses the same number stays open. Boards go in Hearthmoor, Fernbrook, Cobblecrest, High Charity, and Mahopac, and in every town added later, including Brinewick in the same pass as its map. Routes, Wickerglen, Old Meadow, the quarry, the Heights, RegenX, and the tunnels get none. The sky-dock boarding board and the lantern coach stay their own signs. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not built. Brinewick still has no map.
+- **D38 (Oct 14, 2026).** Mahopac gets a board now: one uncrested board on the path at (11, 8), no new tiles. It does not receive slips for a while. Reports may show with the other boards. TB-3 (Cald's gate count) does not add a Mahopac slip.
+- **D39 (Oct 14, 2026).** Yes. The phone says "Go see them" and sets only a pin. The NPC's yes is the only accept. Talking without the pin still works.
+- **D40 (Oct 14, 2026).** Yes. Board pins are a separate list, at most three, drawn in the same blue. The latest pin is on the map. All of them are on the phone. They do not go into `SIDE_CHAINS`.
+- **D41 (Oct 14, 2026).** Yes. Hearthmoor and Fernbrook stay the Lantern Post even for a glimmer player. Cobblecrest becomes Bright Notice after `story.quarry_bought`. High Charity is Keepers paper.
+- **D42 (Oct 14, 2026).** Yes. One crooked Glimmerwell flyer on the Fernbrook board, not a slip. Rue can ask you to read it and leave it up.
+- **D43 (Oct 14, 2026).** Yes for now. KeeperUAV and Botnet stay the blank watch desk. Lumen's line stays. Slips do not move onto that app. Later, that app carries faction-related abilities. That later use is not this build.
+- **D44 (Oct 14, 2026).** Yes. The pane title is TOWN BOARD. The home button says BOARD if TOWN BOARD clips at 320px. The cracked shell stays hack-green, and the pane title stays TOWN BOARD.
+- **D45 (Oct 14, 2026).** Yes. The squares in `TOWN_BOARD.md`. Hearthmoor board at (8, 7), Fernbrook at (8, 6), Cobblecrest at (16, 9), High Charity at (31, 17). Maps stay the same size. Warps stay put.
+- **D46 (Oct 14, 2026).** Yes. The first build is themed boards, live reports from flags that already exist, empty slip and bounty headings, and the phone app. Zero quests. No Standing rewards.
+- **D47 (Oct 14, 2026).** Yes. The bounty heading ships empty: "No creature is named today." The battle-end hook waits.
+- **D48 (Oct 14, 2026).** Yes. In town, show that town. Indoors, show the outdoor town. On a road, show `S.board.lastTown`. Before `story.phone_got` the phone button stays hidden and the physical board still works.
+- **D49 (Oct 14, 2026).** Yes. TB-1 may ship the empty-pile sentences and the two masthead names. Every report line ships with a placeholder mark until the designer signs it.
+- **D11 (Oct 14, 2026).** Vincent wrote "S11 - yes," read here as D11. The objective cue and the walk tip before the starter are intended. The QUEST tab stays on the bar and does not open until `story.starter_received`.
+- **D50–D55 (Oct 14, 2026).** The Lantern Council (Q21). These ids were drafted as D37–D42 on the council branch. Town boards already own D37–D49, and the region map also uses D37, so the council calls are D50–D55. D50: the venue is Sky-Dock Command (`hc_council` at the command trigger). D51: the quest row `hc_council` covers the Event Hall pointer until `story.hc_council_done`. D52: the Seals are named in dialog, with no second seal card. D53: Brinewick is on the chart and its light stays dark. D54: `hc_council_k` is 10 Keepers Standing, once. D55: the council is Keepers only (`!story.side=glimmer`). The glimmer briefing is Q22 and is not built.
+- **D27 (Oct 14, 2026).** Mom's upstairs bond tasks and the Mahopac dream are an optional side chain (`PPQuests.SIDE`). They never block the main story. Mom calls Warden Ilse "Professor" when the work is dreams; Ilse keeps the Warden title and says so. There is no second character who gave the Walkling. The phone side quest is featured until the officers issue Keeper1; Mom's chain is featured after that.
+
+- **D23 (Oct 13, 2026, Build 3; scenes in Build 6).** Rook after Glimmerwell, Vincent: "if player chooses to join evil faction, rook will stay evil. If player stays in good faction, rook eventually converts to good." Keepers path: Rook eventually converts to good (`story.rook_end` `"ally"`). Glimmerwell path: Rook stays with Glimmerwell (`"stays"`). Not bond-gated, and there is no follow-or-stay fork. `teaser@glimmer` does not say he leaves. Supersedes the NEXT_PLAN bond tree and the "Rook always leaves" note. Ally vs parted is still D25.
+- **D3 (Oct 13, 2026, Build 3; stub in Build 5).** Hall slot 1 is the Bright Pavilion Tour. Vincent: "Slot 2 - decision 1," read as slot 1 stays the stated default (Tour) and slot 2 is the other named option (Sacrifice, Quota as the free floor). The stub plays. The real cost is D24. The Audit battle is optional Tour stop 4.
+- **D5 (Oct 13, 2026, Build 3).** `teaser@glimmer` is the glimmer teaser. It sets `story.slice_end`. Rook is a rival colleague chasing Bright of the Month, with one lighting doubt.
+- **D10 (Oct 13, 2026, Build 2).** The designer's objective rows and the signpost `icon_quest` replaced the placeholders. The chain is now 26 rows with 10 glimmer overrides (Heights, the Sacrifice line, Rook's cart). Place lines may run to 24 chars (`PLACE_MAX`).
+- **Wary line rotation (Oct 13, 2026, Build 2).** The befriend bar's wary hint rotates through three lines (`BEFRIEND_WARY_LINES` in `moves.js`) in order across battles.
+- **D9 (Oct 13, 2026).** BACK and Escape from the befriend bar clear "It's wary. Wear it down first." and put back "What should {pet} do?". The line still shows only the first time the bar opens on an untouched foe.
+- Recorded decisions (Vincent, Oct 13, 2026) live in the BACKLOG "Decisions recorded" list and in D3 / D23 above. Capture "no combat performed" means full health in this encounter.

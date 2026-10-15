@@ -133,7 +133,7 @@
         {"kind": "prop", "id": "fb_crate_b", "x": 15, "y": 16, "sprite": "crate", "when": ["!story.orchard_cleared"]},
         {"kind": "npc", "id": "juniper", "name": "Associate Juniper", "x": 14, "y": 6, "scene": "glimmer1", "lines": {"else": "Glimmerwell Co. Lighting the Amberwild, one lantern at a time!"}},
         {"kind": "wild", "id": "faded_fuzzwick", "x": 13, "y": 7, "form": "moth/0", "level": 4, "faded": 3, "moves": ["wobble"], "befriendBonus": 0.1, "when": ["!story.faded_fuzzwick"], "scene": "faded1"},
-        {"kind": "npc", "id": "fen_orchard", "name": "Master Fen", "x": 10, "y": 9, "when": ["!story.orchard_cleared"], "scene": "fen_intro"},
+        {"kind": "npc", "id": "fen_orchard", "name": "Master Fen", "x": 10, "y": 9, "when": ["!story.orchard_cleared"], "scene": "fen_intro", "lines": {"else": "The crates are by the gate. The Hall can wait."}},
         {"kind": "trainer", "id": "fern_associate", "x": 9, "y": 14},
         {"kind": "npc", "id": "odile", "name": "Odile", "x": 27, "y": 9, "lines": {"else": "On snowy mornings a little Chillbit nibbles windfalls by the orchard. Fen's Walklings hate the cold, you know."}},
         {"kind": "pickup", "id": "fb_snack", "x": 28, "y": 16, "item": "heal_snack", "n": 1},

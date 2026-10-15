@@ -1,0 +1,35 @@
+# Walklings agent rules (core)
+
+Canonical rules for every agent on this repo (Cursor, Cline, Claude Code, Grok, AGENTS.md readers). `CLAUDE.md` and `.clinerules` only point here. Procedures live in skills (index below); load a skill when the task matches. The full pre-2026-10-15 rule set is in `archive/AGENTS_2026-10-14_full.md` (read on demand).
+
+## Project
+**Walklings** (repo `arbiter1170/pixelpets`): original, mobile-first vanilla-JS browser game; no build step. `main` deploys to https://arbiter1170.github.io/pixelpets/. Code ids, `pixelpets.` keys and URLs keep the PixelPets name. Targets: iPhone 14–18 portrait, Android best-effort.
+
+## Team
+Vincent (CIO, final say; reviews and merges PRs) > PixelPets Supervisor (clears work, runs votes, owns the board) > PixelPets Design (specs in private `design/`), PixelPets (lead engineer, owns code), PixelPets QA. Outside coding agents wear the engineer hat. Build only what's cleared; on hold or pause, stop at a clean point.
+
+## Hard rules
+1. **Original only.** No franchise names, designs or genre-borrowed wording. Never write the classic virtual-pet toy brand anywhere; say "daily care". Player text never says fainted, evolve, coins, appeared, "Go, X!" or any "-dex" word. Skill: `walklings-wording-check`.
+2. **Saves:** key `pixelpets.save.v2`, `v` stays 2, fields are additive only (via `normalizeV2`). Never rename or remove save keys, flags, species/scene/trainer ids or `window.PixelPets.*` hooks. Old saves must load.
+3. **Red items need Vincent's approval before anyone builds them:** big interface changes, new towns/routes/whole levels, core functionality, iPhone behaviour (e.g. audio), legal or naming. Raise them privately with the Supervisor, not in the group. Yellow waits for a vote; green you decide and note. Skill: `walklings-decision`.
+4. **Git:** branch + PR; never push straight to `main`. Never force-push, rewrite history or delete branches. Don't merge your own PR. Never commit `design/`, `docs/` or `pp_verify` into this repo. Skill: `walklings-pr-handback`.
+5. **Deploys:** `python3 tools/bump_build.py` before every commit that deploys (not for docs-only). After merge, hard-refresh/cache-bust and confirm `window.BUILD`, `version.json` and the Settings Build line match; every live report carries the build id. Skill: `walklings-deploy`.
+6. **Phones:** 320, 375, 390 px; tap targets >= 44 px; zero console errors; honour reduced motion.
+7. **Scope:** don't wake paused bots, post in Project Puxel or file in the team's name unless your role does; no sign-ins, Firebase (`cloud_config.js` stays null) or spending without Vincent. Never edit another bot's files (`/home/box/agent-data/agents/*`). Debug hooks stay inert without `?debug=1`.
+8. **Content:** don't invent story facts, names, places or numbers a spec supplies; use a marked placeholder plus an `OPEN_DECISIONS.md` row. Respect existing art (`PAL` in `sprites.js`); no outside asset packs. Don't edit verbatim design data (`data/maps_slice.json`, `data/act1_route2.json`, `data/cobblecrest.json`, `data/interiors.json`); after any `data/*.json` edit run `python3 tools/gen_mapdata.py`.
+
+## Skills index (`.cursor/skills/<name>/SKILL.md`; copies in `/home/box/agent-data/workflows/`)
+- `walklings-deploy`: stamp the build, ship via PR, hard-refresh and check the build line.
+- `walklings-pr-handback`: branch/rebase routine and the required PR hand-back body.
+- `walklings-decision`: green/yellow/red, 48h ET clock, red routing, D/Q ids, settling.
+- `walklings-board`: Roadmap board moves; ids in `docs/.board-ids.txt`.
+- `walklings-design-commit`: design repo checkers, render, commit, push.
+- `walklings-wording-check`: franchise/brand/banned-word scan and approved vocabulary.
+- `walklings-handoff-log`: session summary, status docs, group-chat post format.
+- `walklings-docs`: keep BACKLOG, CHANGELOG, NEXT_PLAN, OPEN_DECISIONS, README, tests/README in sync.
+- `walklings-qa`: play a new path at phone width and add the Playwright check.
+- `walklings-qa-run`: scoped QA run on a named build (seeded saves, pp_verify, bug write-up).
+- `walklings-quests`: side quests, town-board slips, bounties, phone job pointers.
+
+## Status docs
+`BACKLOG.md` (current work), `OPEN_DECISIONS.md` (open items only), `NEXT_PLAN.md`, `TOWN_BOARD.md`, `DESIGNER_PROMPT.md` (designer bot), `CHANGELOG.md` (recent). History: `archive/`.
