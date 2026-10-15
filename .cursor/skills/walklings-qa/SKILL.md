@@ -8,6 +8,8 @@ description: |
 
 # Walklings QA
 
+Team run routine (seeded saves, pp_verify, build id, bug write-up): `.cursor/skills/walklings-qa-run/SKILL.md`.
+
 Use this after a feature is in the game, and when a session is asked to play from a point in the story and take notes. The specs in `tests/` are the checks that stay. This skill is how a new check gets added. Status docs for a fix follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ## Play
