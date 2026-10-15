@@ -1045,7 +1045,11 @@ function drawPetScene(t, dt){
 // Verbatim JSON via data/mapdata.js. Merge order matches the checkers: maps_slice, interiors slicePatch,
 // act1_route2 slicePatch then its maps, interiors rooms, cobblecrest route2Patch then its maps and rooms.
 const MD = MAPDATA, TS = 16;
-const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles, (MD.cobblecrest && MD.cobblecrest.tiles) || {}, (MD.cobblecrest && MD.cobblecrest.roomTiles) || {}, (MD.highcharity && MD.highcharity.tiles) || {});
+// Map-pass overlays (handoff/maps): data/detail_*.json, ours, one file per batch, so the verbatim design copies stay untouched.
+// Each may carry `tiles` (new map chars only, never a redefinition) and a `slicePatch`, applied after every other patch.
+const DETAIL_KEYS = Object.keys(MD).filter(k => k.startsWith('detail_')).sort();
+const TILE_DEF = Object.assign({}, MD.maps_slice.tiles, MD.interiors.tiles, (MD.cobblecrest && MD.cobblecrest.tiles) || {}, (MD.cobblecrest && MD.cobblecrest.roomTiles) || {}, (MD.highcharity && MD.highcharity.tiles) || {},
+  ...DETAIL_KEYS.map(k => MD[k].tiles || {}));
 function applyMapPatch(W, patch){
   if (!patch || !patch.maps) return;
   for (const [id, pt] of Object.entries(patch.maps)) {
@@ -1088,7 +1092,8 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.civic.maps)));
     applyMapPatch(W, MD.civic.slicePatch);
   }
-  if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards last: squares, then the posts
+  if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards: squares, then the posts
+  for (const k of DETAIL_KEYS) applyMapPatch(W, MD[k].slicePatch);
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
