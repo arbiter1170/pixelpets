@@ -4670,10 +4670,14 @@ function paintPlaceCard(){
     pledge.hidden = !picked;
     if (picked) pledge.textContent = 'Your pledge: ' + SC_STANDING.sides[side()].short;
   }
-  // D95 (settled by QUEST_MULTI): the Side task key entry shows only while a side quest has a target.
+  // D110 (settled by QUEST_MULTI): the Side task key entry shows only while a side quest has a target.
   const task = $('#keySideTask'); if (task) { const sq = sideQuest(); task.hidden = !(sq && sq.target); }
   const q = questCurrent(), mq = $('#mapQuest');
   if (mq) { mq.hidden = !(q && q.target); if (q && q.target) mq.textContent = 'NEXT: ' + q.place; }
+  // When the tracked side quest shares the main step's area, name it under the NEXT line (skipped below 360 px wide: no room).
+  const ms = $('#mapSide'), tsd = trackedSide();
+  if (ms) { const same = !!(q && q.target && tsd && tsd.step.target && nodeOf(tsd.step.target.map) === nodeOf(q.target.map));
+    ms.hidden = !(same && window.innerWidth >= 360); ms.textContent = ms.hidden ? '' : 'Side: ' + tsd.label; }
   const heard = (id === mapUI.cur ? 'You are in ' : '') + name + '. ' + blurb + (known ? ' ' + holdLine(id) : '');
   $('#mapSr').textContent = heard;
 }
@@ -4847,12 +4851,24 @@ function drawRegionMap(t){
   // D106: the tracked side chain gets a solid side-blue ring (no blink); every other active chain a dim dot. One dot per node.
   const sq = sideQuest(), sn = sq && sq.target ? nodeOf(sq.target.map) : null;
   const dots = new Set();
-  if (sn && N[sn] && sn !== qn) { const [x, y] = P([N[sn].col, N[sn].row]), r = sn === cur ? 15 : 12; ring(x, y, r, 'c'); ring(x, y, r + 1, 'c'); }
-  else if (sn && N[sn]) dots.add(sn);
+  // Same area as main (green Design call): the main ring is untouched; the side ring sits 3 px outside it, 2 px thick, no blink.
+  let ringR = null;
+  if (sn && N[sn]) {
+    const [x, y] = P([N[sn].col, N[sn].row]), r = sn === cur ? 15 : 12;
+    if (sn !== qn) { ring(x, y, r, 'c'); ring(x, y, r + 1, 'c'); ringR = r; }
+    else { ring(x, y, r + 3, 'c'); ringR = r + 3; }
+  }
   const trk = trackedSide();
-  for (const a of sideActiveList()) { if (trk && a.chain === trk.chain) continue; const n = a.step.target ? nodeOf(a.step.target.map) : null; if (n && N[n]) dots.add(n); }
-  if (dots.size) { g.globalAlpha = 0.5; for (const n of dots) { const [x, y] = P([N[n].col, N[n].row]); R(x + 8 - 2, y - 12 - 2, 4, 4, 'c'); } g.globalAlpha = 1; }
-  regionMapMarks = { ring: sn && N[sn] && sn !== qn ? sn : null, dots: [...dots] };
+  for (const a of sideActiveList()) { if (trk && a.chain === trk.chain) continue; const n = a.step.target ? nodeOf(a.step.target.map) : null; if (n && N[n] && n !== sn) dots.add(n); }   // no dot where a side ring already is
+  // Dim side-blue fill with a 1 px dark navy (k) outline so it reads on a green town; 6x6 at 390 px wide and up, 4x4 below.
+  const ds = window.innerWidth >= 390 ? 6 : 4, dh = ds / 2;
+  for (const n of dots) {
+    const [x, y] = P([N[n].col, N[n].row]), dx = x + 8 - dh, dy = y - 12 - dh;
+    R(dx - 1, dy - 1, ds + 2, 1, 'k'); R(dx - 1, dy + ds, ds + 2, 1, 'k'); R(dx - 1, dy, 1, ds, 'k'); R(dx + ds, dy, 1, ds, 'k');
+    g.globalAlpha = 0.5; R(dx, dy, ds, ds, 'c'); g.globalAlpha = 1;
+  }
+  regionMapMarks = { ring: sn && N[sn] ? sn : null, ringR, ringShared: !!(sn && sn === qn), mainR: qn && N[qn] ? (qn === cur ? 15 : 12) : null, dots: [...dots], dotSize: ds, dotOutline: 'k',
+    dotRects: [...dots].map(n => { const [x, y] = P([N[n].col, N[n].row]); return { node: n, x: x + 8 - dh, y: y - 12 - dh }; }) };
   if (mapUI.sel && N[mapUI.sel] && mapUI.sel !== cur) { const [x, y] = P([N[mapUI.sel].col, N[mapUI.sel].row]); brackets(x, y, 16); }
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
@@ -8213,7 +8229,7 @@ function boot(){
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
   // D106: sideQuest is the tracked step; sideActive lists every active chain in unlock order.
   Object.defineProperty(api, 'sideActive', { enumerable: true, get(){ const t = trackedSide(); return sideActiveList().map(a => ({ chain: a.chain, label: a.label, id: a.step.id, text: a.step.text, place: a.step.place, target: a.step.target ? { ...a.step.target } : null, tracked: !!(t && t.chain === a.chain) })); } });
-  Object.defineProperty(api, 'regionMapMarks', { enumerable: true, get(){ return regionMapMarks && { ring: regionMapMarks.ring, dots: regionMapMarks.dots.slice() }; } });
+  Object.defineProperty(api, 'regionMapMarks', { enumerable: true, get(){ return regionMapMarks && { ring: regionMapMarks.ring, ringR: regionMapMarks.ringR, ringShared: regionMapMarks.ringShared, mainR: regionMapMarks.mainR, dots: regionMapMarks.dots.slice(), dotSize: regionMapMarks.dotSize, dotOutline: regionMapMarks.dotOutline, dotRects: regionMapMarks.dotRects.map(r => ({ ...r })) }; } });
   api.trackSide = chain => DEBUG ? (questTrack(chain), !!(S.ui && S.ui.sideTracked === chain)) : false;
   // ?debug=1 only: extra side chains (same shape as PPQuests.SIDE_CHAINS rows) for the row-cap layout tests. Never saved.
   api.debugSideChains = chains => { if (!DEBUG) return false; sideTestChains = Array.isArray(chains) && chains.length ? chains : null; sideTrackLast = null; return true; };
@@ -8222,6 +8238,7 @@ function boot(){
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map
   api.exteriorCell = (x, y) => DEBUG ? exteriorCell(x, y) : null;  // map pass B4: how cell (x, y) of this map is painted
   api.mapHold = (id, flags) => mapHold(id, flags);
+  api.mapNodeCenter = id => { const n = REGION_MAP.nodes[id]; return n ? [n.col * 16 + 8, n.row * 16 + 8] : null; };   // region-map logical px
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
   api.contacts = () => contactEntries().map(p => ({ name: p.name, quest: !!p.quest, fav: !!phoneBook().fav[p.key], place: contactPlace(p) }));

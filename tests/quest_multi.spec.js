@@ -91,8 +91,9 @@ for (const mode of MODES) {
     expect(after.sq.target.map).toBe('hm_home_up');
     await openMap(page);
     marks = await page.evaluate(() => PixelPets.regionMapMarks);
-    expect(marks.ring).not.toBe('route1');                          // Mom's node is the main node: ring skipped, dot drawn (spec §4)
-    expect(marks.dots).toEqual(expect.arrayContaining(['hearthmoor', 'route1']));
+    expect(marks.ring).toBe('hearthmoor');                          // Mom shares the main node: outer side ring around the main ring
+    expect(marks.ringShared).toBe(true);
+    expect(marks.dots).toEqual(['route1']);
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 }
@@ -209,7 +210,7 @@ test('AC8: with two side chains DONE folds into one row that toggles', async ({ 
   expect((await panel(page)).doneListHidden).toBe(true);
 });
 
-test('AC9: no side quest, no SIDE card and no Side task in the map key (D95)', async ({ page }) => {
+test('AC9: no side quest, no SIDE card and no Side task in the map key (D110)', async ({ page }) => {
   await boot(page, save({ 'story.phone_got': true, 'story.dream_study': true }));
   await openPanel(page);
   const p = await panel(page);
@@ -284,4 +285,55 @@ test('debug hooks stay inert without ?debug=1', async ({ page }) => {
   const r = await page.evaluate(() => ({ a: PixelPets.debugSideChains && PixelPets.debugSideChains([]), b: PixelPets.trackSide && PixelPets.trackSide('mom') }));
   expect(r.a).toBeFalsy();
   expect(r.b).toBeFalsy();
+});
+
+test('dim dots: 1 px navy outline, dim side-blue fill, 6x6 at 390 px and up, 4x4 below', async ({ page }) => {
+  await boot(page, save());
+  await openMap(page);
+  const r = await page.evaluate(() => {
+    const m = PixelPets.regionMapMarks, c = document.querySelector('#regionCanvas'), g = c.getContext('2d');
+    const k = c.width / 320;
+    const d = m.dotRects.find((x) => x.node === 'hearthmoor');
+    const px = (x, y) => Array.from(g.getImageData(Math.floor(x * k), Math.floor(y * k), 1, 1).data.slice(0, 3));
+    return { size: m.dotSize, outline: m.dotOutline, o1: px(d.x - 0.5, d.y + 1), o2: px(d.x + m.dotSize + 0.5, d.y + 1), o3: px(d.x + 1, d.y - 0.5), fill: px(d.x + m.dotSize / 2, d.y + m.dotSize / 2) };
+  });
+  const W = page.viewportSize().width;
+  expect(r.size).toBe(W >= 390 ? 6 : 4);
+  expect(r.outline).toBe('k');
+  for (const o of [r.o1, r.o2, r.o3]) expect(o).toEqual([0x1a, 0x1c, 0x2c]);
+  expect(r.fill).not.toEqual([0x1a, 0x1c, 0x2c]);
+  expect(r.fill[2]).toBeGreaterThan(r.fill[0]);                 // blue-leaning dim c, not the 0.5 alpha of plain navy
+});
+
+test('tracked side in the main area: two rings on one centre, no dot there, Side line from 360 px', async ({ page }) => {
+  await boot(page, save());
+  await page.evaluate((x) => { PixelPets.debugSideChains(x); PixelPets.trackSide('mom'); }, EXTRA);   // t_lamp / t_well also sit in Hearthmoor
+  await openMap(page);
+  const read = () => page.evaluate(() => {
+    const m = PixelPets.regionMapMarks, c = document.querySelector('#regionCanvas'), g = c.getContext('2d'), k = c.width / 320;
+    return { m, k, w: c.width };
+  });
+  const a = await read();
+  expect(a.m.ring).toBe('hearthmoor');
+  expect(a.m.ringShared).toBe(true);
+  expect(a.m.ringR).toBe(a.m.mainR + 3);
+  expect(a.m.dots).not.toContain('hearthmoor');
+  expect(a.m.dots).toContain('route1');
+  // Solid, no blink: the side-blue pixel at the outer radius is there on several frames.
+  const samples = [];
+  for (let i = 0; i < 4; i++) {
+    samples.push(await page.evaluate(() => {
+      const c = document.querySelector('#regionCanvas'), g = c.getContext('2d'), k = c.width / 320, m = PixelPets.regionMapMarks;
+      const node = PixelPets.mapNodeCenter ? PixelPets.mapNodeCenter('hearthmoor') : null;
+      if (!node) return null;
+      const d = g.getImageData(Math.floor((node[0] + m.ringR) * k), Math.floor(node[1] * k), 1, 1).data;
+      return [d[0], d[1], d[2]];
+    }));
+    await page.waitForTimeout(260);
+  }
+  for (const px of samples) expect(px).toEqual([0x41, 0xa6, 0xf6]);
+  const W = page.viewportSize().width;
+  const side = await page.evaluate(() => ({ h: document.querySelector('#mapSide').hidden, t: document.querySelector('#mapSide').textContent }));
+  if (W >= 360) expect(side).toEqual({ h: false, t: "Side: Mom's trip" });
+  else expect(side.h).toBe(true);
 });

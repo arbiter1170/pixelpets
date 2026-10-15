@@ -978,3 +978,5 @@ body.ctl-modern .joy-art{display:block;position:absolute;inset:0;width:96px;heig
 body.ctl-modern .joy-knob{background:none;border-radius:0;position:relative}
 body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelated}
 #keySideTask[hidden]{display:none}
+.map-side{color:var(--c);max-width:320px;text-align:center;margin-top:-4px}
+.map-side[hidden]{display:none}
