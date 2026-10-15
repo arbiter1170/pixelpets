@@ -35,7 +35,9 @@
         {"kind": "prop", "id": "cc_bush", "x": 29, "y": 17, "sprite": "bush"},
         {"kind": "prop", "id": "cc_fence_a", "x": 28, "y": 10, "sprite": "fence_h"},
         {"kind": "prop", "id": "cc_fence_b", "x": 29, "y": 10, "sprite": "fence_h"},
-        {"kind": "prop", "id": "cc_hay", "x": 6, "y": 15, "sprite": "hay_bale"}
+        {"kind": "prop", "id": "cc_hay", "x": 6, "y": 15, "sprite": "hay_bale"},
+        {"kind": "prop", "id": "cc_big_tree", "x": 30, "y": 13, "sprite": "lm_big_tree"},
+        {"kind": "prop", "id": "cc_marker", "x": 9, "y": 15, "sprite": "stone_marker"}
       ]
     },
     "fb_heights": {
@@ -80,7 +82,8 @@
         {"kind": "prop", "id": "fb_fence_b", "x": 11, "y": 1, "sprite": "fence_h"},
         {"kind": "prop", "id": "fb_bush_w", "x": 1, "y": 5, "sprite": "bush"},
         {"kind": "prop", "id": "fb_bush_e", "x": 30, "y": 9, "sprite": "bush"},
-        {"kind": "prop", "id": "fb_stump", "x": 17, "y": 2, "sprite": "stump"}
+        {"kind": "prop", "id": "fb_stump", "x": 17, "y": 2, "sprite": "stump"},
+        {"kind": "prop", "id": "fb_marker", "x": 30, "y": 13, "sprite": "stone_marker"}
       ]
     },
     "hearthmoor": {
@@ -109,7 +112,8 @@
         {"kind": "prop", "id": "hm_fence_b", "x": 16, "y": 1, "sprite": "fence_h"},
         {"kind": "prop", "id": "hm_fence_c", "x": 17, "y": 1, "sprite": "fence_h"},
         {"kind": "prop", "id": "hm_bush_w", "x": 1, "y": 10, "sprite": "bush"},
-        {"kind": "prop", "id": "hm_flowers", "x": 7, "y": 17, "sprite": "flower_clump"}
+        {"kind": "prop", "id": "hm_flowers", "x": 7, "y": 17, "sprite": "flower_clump"},
+        {"kind": "prop", "id": "hm_marker", "x": 19, "y": 15, "sprite": "stone_marker"}
       ]
     },
     "highcharity": {
