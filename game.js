@@ -2083,10 +2083,11 @@ function drawMap(t){
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
       const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
+      if (CUR.skin === 'lab') { const k = ch === 'W' && tx % 2 ? 'W2' : ch, nm = ((LAB_SKIN.override[CUR.id] || {})[k]) || LAB_SKIN.remap[k]; if (nm && TILES[nm]) img = TILES[nm]; }   // FERNBROOK_HEIGHTS §3
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
       drawFactionBand(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
-      if (ch === '=') {                          // rug border where the rug ends
+      if (ch === '=' && CUR.skin !== 'lab') {    // rug border where the rug ends (the lab runner has none)
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
         if (tileAt(tx, ty-1) !== '=') g.fillRect(X, Y, 16, 1); if (tileAt(tx, ty+1) !== '=') g.fillRect(X, Y+15, 16, 1);
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
@@ -2313,7 +2314,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     }
     g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage(WART.sign, X, Y);
-  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) g.drawImage(Array.isArray(a) ? a[Math.floor(t / 400) % 2] : a, X, Y); }
+  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) { const reduce = a.ms && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; g.drawImage(Array.isArray(a) ? a[reduce ? 0 : Math.floor(t / (a.ms || 400)) % 2] : a, X, Y); } }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') { const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(sprSet(si, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
 }

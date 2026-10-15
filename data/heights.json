@@ -268,7 +268,8 @@
           "y": 4,
           "text": "REGENX LOBBY. Floor one of four. Visitors by appointment. Please leave the samples alone."
         }
-      ]
+      ],
+      "skin": "lab"
     },
     "rx_f2": {
       "name": "RegenX Focus Wing",
@@ -395,7 +396,8 @@
           "y": 6,
           "text": "FOCUS WING. Atten helps a Walkling focus. The vial rack is years of work. Please let it be."
         }
-      ]
+      ],
+      "skin": "lab"
     },
     "rx_f3": {
       "name": "RegenX Records",
@@ -504,7 +506,8 @@
           "y": 6,
           "text": "RECORDS. Folders stay in this room. An older note says THE ARBITER, and nothing more."
         }
-      ]
+      ],
+      "skin": "lab"
     },
     "rx_f4": {
       "name": "The Arbiter Bay",
@@ -594,8 +597,31 @@
           "x": 2,
           "y": 6,
           "text": "THE ARBITER. Top bay. The cradle emits slowly. The floating screen is not a sample."
+        },
+        {
+          "kind": "prop",
+          "id": "rx4_tank_a",
+          "name": "tank",
+          "x": 7,
+          "y": 2,
+          "sprite": "lab_tank",
+          "lines": {
+            "else": "The tank hums. Mint, still, very clean."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx4_tank_b",
+          "name": "tank",
+          "x": 11,
+          "y": 2,
+          "sprite": "lab_tank",
+          "lines": {
+            "else": "The tank hums. Mint, still, very clean."
+          }
         }
-      ]
+      ],
+      "skin": "lab"
     },
     "sm_yard": {
       "name": "Heights Yard",
@@ -1711,7 +1737,7 @@
           [
             "say",
             "",
-            "The Bitlet tips toward {pet}, cursor bright, and floats along beside you."
+            "The little monitor tips toward {pet}, cursor bright, and floats along beside you."
           ],
           [
             "say",
@@ -1723,7 +1749,7 @@
           [
             "say",
             "",
-            "The Bitlet stays by the cradle. The cursor blinks, slow and pleased."
+            "The little monitor stays by the cradle. The cursor blinks, slow and pleased."
           ],
           [
             "say",
