@@ -28,6 +28,7 @@ When a newer in-repo skill or status doc disagrees with a dated snapshot here, p
 | `DESIGNER_PROMPT.md` | Designer bot | Paste-ready designer assignment |
 | `OPEN_DECISIONS.md` | Vincent / anyone picking up work | Guesses and open calls |
 | `TOWN_BOARD.md` | Implementing agent | Boards, slips, phone app |
+| `SUPERVISOR_CATCHUP.md` | PixelPets Supervisor | Oct 2026 catch-up: drafts, lanes, decisions (snapshot; trust `BACKLOG.md` / `OPEN_DECISIONS.md` on conflict) |
 | `.cursor/skills/README.md` | Every agent | Skill index |
 | `.clinerules` / `CLAUDE.md` / `AGENTS.md` | Every agent | This consolidated rule set |
 

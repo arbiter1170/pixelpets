@@ -2,6 +2,10 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-15 — Supervisor catch-up snapshot (no new build stamp)
+
+- Added `SUPERVISOR_CATCHUP.md`: Oct 11–15 orientation for the PixelPets Supervisor — game state, four open draft PRs (#37, #39, #40, #41) with triage and merge order, skills, quality notes, worker lanes, and stale doc lines. Indexed from the agent document map in `AGENTS.md`, `CLAUDE.md`, and `.clinerules`. No game code change.
+
 ## 2026-10-14 — Agent rules for Cline, Claude, and AGENTS.md (no new build stamp)
 
 - Added `.clinerules`, `CLAUDE.md`, and `AGENTS.md` with the same consolidated rules: Oct 13 Cursor/Grok build rules, the Oct 9 Supervisor / engineer / designer / QA handoff, `DESIGNER_PROMPT` role constraints, and the three `.cursor/skills` bodies.
