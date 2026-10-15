@@ -643,9 +643,11 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .map-hold.hold-split{color:var(--w)}
 .map-hold.hold-wild{color:var(--h)}
 .map-key{width:min(320px, calc(100% - 12px));box-sizing:border-box}
-.map-key-h{margin:0 0 2px;color:var(--y);font-size:14px;letter-spacing:1px;line-height:1.2}
-.map-key-list{display:grid;grid-template-columns:1fr 1fr;gap:2px 8px;margin:0;padding:0;list-style:none}
-.map-key-list li{display:flex;align-items:center;gap:6px;min-height:22px;min-width:0;color:var(--w);font-size:15px;line-height:1.1}
+.map-key-g{padding-bottom:8px}   /* MAP_LEGEND §2/§4: heading 18, pill rows 26 + 4, 8 between groups */
+.map-key-g[hidden],.map-key-list li[hidden]{display:none}
+.map-key-h{margin:0;height:18px;color:var(--y);font-size:14px;letter-spacing:1px;line-height:18px}
+.map-key-list{display:flex;flex-wrap:wrap;gap:4px 6px;margin:0;padding:0;list-style:none}
+.map-key-list li{display:flex;align-items:center;gap:4px;height:26px;box-sizing:border-box;padding:0 4px;background:var(--d);white-space:nowrap;color:var(--w);font-size:15px;line-height:1.1}
 .sw{flex:0 0 16px;width:16px;height:16px;box-sizing:border-box}
 .sw-town{background:var(--r);box-shadow:inset 0 4px 0 var(--o), 0 0 0 2px var(--k)}
 .sw-route{width:10px;height:10px;flex-basis:10px;margin-left:3px;border-radius:50%;background:var(--p);box-shadow:0 0 0 2px var(--k)}
@@ -661,7 +663,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sw-wild{border-radius:50%;background:var(--y);box-shadow:0 0 0 2px var(--o)}
 .sw-coach{height:4px;flex-basis:16px;margin-top:6px;background:repeating-linear-gradient(90deg, var(--g) 0 4px, transparent 4px 7px)}
 .sw-seal{width:10px;height:10px;flex-basis:10px;margin:3px 3px 3px 5px;background:var(--o);box-shadow:inset 0 0 0 2px var(--w), 0 0 0 2px var(--k);transform:rotate(45deg)}
-.map-key-note{margin:4px 0 0;color:var(--h);font-size:14px;line-height:1.25;font-weight:normal}
+.map-key-note{margin:6px 0 0;color:var(--h);font-size:14px;line-height:1.25;font-weight:normal}
 .map-pledge{margin:0;color:var(--y);font-size:15px;line-height:1.2;text-align:center}
 .map-pledge[hidden]{display:none}
 .map-hint{color:var(--m);font-size:16px;margin:0;text-align:center;max-width:320px}

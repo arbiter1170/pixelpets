@@ -210,7 +210,7 @@ test('AC8: with two side chains DONE folds into one row that toggles', async ({ 
   expect((await panel(page)).doneListHidden).toBe(true);
 });
 
-test('AC9: no side quest, no SIDE card and no Side task in the map key (D110)', async ({ page }) => {
+test('AC9: no side quest, no SIDE card; Side task stays in the map key (D110 MAP_LEGEND)', async ({ page }) => {
   await boot(page, save({ 'story.phone_got': true, 'story.dream_study': true }));
   await openPanel(page);
   const p = await panel(page);
@@ -219,13 +219,13 @@ test('AC9: no side quest, no SIDE card and no Side task in the map key (D110)', 
   expect(p.doneToggle).toBeNull();
   await closePanel(page);
   await openMap(page);
-  expect(await page.locator('#keySideTask').isHidden()).toBe(true);
+  expect(await page.locator('#keySideTask').isVisible()).toBe(true);   // D110: always shown
   const marks = await page.evaluate(() => PixelPets.regionMapMarks);
   expect(marks.ring).toBeNull();
   expect(marks.dots).toEqual([]);
 });
 
-test('AC9b: the Side task key entry shows while a side quest exists', async ({ page }) => {
+test('AC9b: the Side task key entry is always visible (D110)', async ({ page }) => {
   await boot(page, save());
   await openMap(page);
   expect(await page.locator('#keySideTask').isVisible()).toBe(true);

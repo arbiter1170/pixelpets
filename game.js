@@ -4678,6 +4678,13 @@ function nodeSeal(id){
   if (id === 'cobblecrest') return !!(seals.seal_cobblecrest || seals.seal_glim_2 || f['story.seal2']);
   return false;
 }
+// MAP_LEGEND §3: the Seal pill shows once any stamp nodeSeal() can draw is possible; the SIDES group, claim halos and hold line wait for the pledge (D109).
+function sealsShown(){
+  if (!S) return false;
+  const seals = S.seals || {}, f = S.flags || {};
+  return !!(f['story.seal1'] || f['story.seal2'] || seals.seal_fernbrook || seals.seal_glim_1 || seals.seal_cobblecrest || seals.seal_glim_2);
+}
+const sidesShown = () => !!(S && S.flags && S.flags['story.side_pick_done']);
 function nodePoint(n){ return [n.col * 16 + 8, n.row * 16 + 8]; }
 function nodeGeom(id){
   const n = REGION_MAP.nodes[id]; if (!n) return null;
@@ -4704,11 +4711,14 @@ function paintPlaceCard(){
   const here = $('#mapHere'); if (here) here.hidden = !(id && id === mapUI.cur);
   const holdEl = $('#mapHold');
   if (holdEl) {
-    holdEl.hidden = !known;
+    holdEl.hidden = !known || !sidesShown();   // D109: no hold line before the pledge
     holdEl.textContent = known ? holdLine(id) : '';
     holdEl.className = 'map-hold' + (known ? ' hold-' + mapHold(id) : '');
     if (known) holdEl.dataset.hold = mapHold(id); else delete holdEl.dataset.hold;
   }
+  const ks = $('#keySides'), seal = $('#keySeal');
+  if (ks) ks.hidden = !sidesShown();
+  if (seal) seal.hidden = !sealsShown();
   const kk = $('#keyKeepers'), kg = $('#keyGlimmer');
   if (kk) kk.textContent = SC_STANDING.sides.keepers.short;
   if (kg) kg.textContent = SC_STANDING.sides.glimmer.short;
@@ -4719,7 +4729,7 @@ function paintPlaceCard(){
     if (picked) pledge.textContent = 'Your pledge: ' + SC_STANDING.sides[side()].short;
   }
   // D110 (settled by QUEST_MULTI): the Side task key entry shows only while a side quest has a target.
-  const task = $('#keySideTask'); if (task) { const sq = sideQuest(); task.hidden = !(sq && sq.target); }
+  // D110 (MAP_LEGEND): Side task pill always shown; do not gate on sideQuest().target
   const q = questCurrent(), mq = $('#mapQuest');
   if (mq) { mq.hidden = !(q && q.target); if (q && q.target) mq.textContent = 'NEXT: ' + q.place; }
   // When the tracked side quest shares the main step's area, name it under the NEXT line (skipped below 360 px wide: no room).
@@ -4867,7 +4877,9 @@ function drawRegionMap(t){
   };
   const vis = {}; for (const id in N) vis[id] = mapVisited(id, cur);
   const claimR = { town: 14, side: 11, route: 9 };
-  for (const id in N) if (vis[id] && mapHold(id) !== 'wild') { const n = N[id], [x, y] = P([n.col, n.row]); claim(x, y, claimR[n.kind] || 10, mapHold(id)); }
+  mapUI.claims = 0;
+  if (sidesShown()) for (const id in N) if (vis[id] && mapHold(id) !== 'wild') {   // D109: halos wait for the pledge
+    const n = N[id], [x, y] = P([n.col, n.row]); claim(x, y, claimR[n.kind] || 10, mapHold(id)); mapUI.claims++; }
   for (const id in N) {
     const pth = N[id].path; if (!pth) continue;
     const coach = N[id].link === 'coach';
@@ -8355,6 +8367,7 @@ function boot(){
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map
   api.exteriorCell = (x, y) => DEBUG ? exteriorCell(x, y) : null;  // map pass B4: how cell (x, y) of this map is painted
   api.mapHold = (id, flags) => mapHold(id, flags);
+  api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
   api.mapNodeCenter = id => { const n = REGION_MAP.nodes[id]; return n ? [n.col * 16 + 8, n.row * 16 + 8] : null; };   // region-map logical px
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
