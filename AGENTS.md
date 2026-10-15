@@ -32,4 +32,4 @@ Vincent (CIO, final say; reviews and merges PRs) > PixelPets Supervisor (clears 
 - `walklings-quests`: side quests, town-board slips, bounties, phone job pointers.
 
 ## Status docs
-`BACKLOG.md` (current work), `OPEN_DECISIONS.md` (open items only), `NEXT_PLAN.md`, `TOWN_BOARD.md`, `DESIGNER_PROMPT.md` (designer bot), `CHANGELOG.md` (recent). History: `archive/`.
+`BACKLOG.md` (current work), `OPEN_DECISIONS.md` (open items only), `NEXT_PLAN.md`, `TOWN_BOARD.md`, `DESIGNER_PROMPT.md` (designer bot), `CHANGELOG.md` (recent), `handoff/maps/` (map upgrade packets). History: `archive/`.
