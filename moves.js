@@ -579,6 +579,46 @@ const MOVES = {
       "stat": "def",
       "stages": 1
     }
+  },
+  "cursor_tap": {
+    "name": "Cursor Tap",
+    "type": "VOLT",
+    "power": 40,
+    "acc": 100,
+    "uses": 15
+  },
+  "screen_glow": {
+    "name": "Screen Glow",
+    "type": "VOLT",
+    "power": 0,
+    "acc": 100,
+    "uses": 5,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 1
+    }
+  },
+  "hover_hum": {
+    "name": "Hover Hum",
+    "type": "VOLT",
+    "power": 55,
+    "acc": 95,
+    "uses": 10
+  },
+  "bit_burst": {
+    "name": "Bit Burst",
+    "type": "VOLT",
+    "power": 60,
+    "acc": 95,
+    "uses": 10
+  },
+  "archive_surge": {
+    "name": "Archive Surge",
+    "type": "VOLT",
+    "power": 75,
+    "acc": 90,
+    "uses": 5
   }
 };
 
@@ -1394,6 +1434,25 @@ const LEARNSETS = {
       27,
       "full_tilt"
     ]
+  ],
+  "byte/0": [
+    [1, "bump"],
+    [3, "screen_glow"],
+    [5, "cursor_tap"],
+    [9, "zap_tap"],
+    [12, "arc_bolt"],
+    [16, "puff_shot"],
+    [20, "neon_burst"],
+    [24, "hover_hum"],
+    [28, "updraft"]
+  ],
+  "byte/1": [
+    [0, "bit_burst"],
+    [22, "gale_slice"]
+  ],
+  "byte/2": [
+    [0, "archive_surge"],
+    [27, "full_tilt"]
   ]
 };
 
