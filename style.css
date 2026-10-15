@@ -55,8 +55,8 @@ body.no-pets #settingsBtn{position:relative;z-index:12}
 #hdrIcon{width:36px;height:36px}
 #top .lv{display:flex;flex-direction:column;align-items:flex-end;font-size:18px;color:var(--y)}
 #top .lv[hidden]{display:none}
-#top .hdr-acorns{display:flex;align-items:center;gap:4px;color:var(--y);font-size:18px;white-space:nowrap}
-#top .hdr-acorns canvas{width:16px;height:16px;image-rendering:pixelated;image-rendering:crisp-edges}
+#top .hdr-acorns,.fc-acorns{display:flex;align-items:center;gap:4px;color:var(--y);font-size:18px;white-space:nowrap}
+#top .hdr-acorns canvas,.fc-acorns canvas{width:16px;height:16px;image-rendering:pixelated;image-rendering:crisp-edges}
 #top .hdr-acorns[hidden]{display:none}
 .stagedots{color:var(--h);font-size:13px;letter-spacing:2px}
 .fast-tag{font-size:13px;color:var(--k);background:var(--o);padding:1px 4px;letter-spacing:1px;align-self:center}
@@ -913,7 +913,7 @@ body.ctl-modern.scene-on .float-ctl .fc-tr{pointer-events:none}
 @media (prefers-reduced-motion: reduce){ .float-ctl .dpc.pulse{animation:none;background:var(--b)} }
 /* NAV_MODERN G2: one lock for every nav button */
 body.nav-locked #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,body.nav-locked .scr-back{pointer-events:none;opacity:.5}
-.fc-top{position:absolute;top:calc(6px + var(--sa-t));left:calc(56px + var(--sa-l));right:calc(56px + var(--sa-r));height:44px;display:flex;justify-content:center}
+.fc-top{position:absolute;top:calc(6px + var(--sa-t));left:calc(56px + var(--sa-l));right:calc(56px + var(--sa-r));box-sizing:border-box;padding-right:var(--chip-w, 0px);height:44px;display:flex;justify-content:center}
 .fc-top .env-badge{margin:0;max-width:100%;min-height:44px;height:44px;align-self:auto;background-clip:content-box}   /* QA Oct 15: 44 px tap target; the band art stays 28 px */
 body.ctl-modern .fc-top .env-badge > .frame-art{top:8px;height:28px}
 .fc-tip{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(56px + var(--sa-b));height:var(--tip-h,28px)}
@@ -968,3 +968,8 @@ body.ctl-modern .joy{background:none;box-shadow:none;opacity:.35}
 body.ctl-modern .joy-art{display:block;position:absolute;inset:0;width:96px;height:96px;image-rendering:pixelated}
 body.ctl-modern .joy-knob{background:none;border-radius:0;position:relative}
 body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelated}
+
+/* Modern walk acorn chip (Design, green): badge row, y 6, 44 tall, just left of the gear; read-only; fades with the badge in scenes. */
+.fc-acorns{position:absolute;top:calc(6px + var(--sa-t));right:calc(56px + var(--sa-r));height:44px;box-sizing:border-box;padding:0 8px;pointer-events:none;background:var(--n);box-shadow:inset 0 0 0 2px var(--d)}
+.fc-top .env-badge{min-width:0}
+.fc-top .env-badge #envText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
