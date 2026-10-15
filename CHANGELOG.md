@@ -6,7 +6,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 ## 2026-10-15 — MAP_LEGEND v0.1: the region-map KEY in PLACES / QUESTS / SIDES pills, unlocked by the story (design 39ef920, 69f9a08)
 
 - The 13 KEY rows become three pill groups: PLACES (Town, Route, Side place, Not visited, Coach), QUESTS (You, Next step, Side task, Seal) and SIDES (Keepers, Glimmerwell, Both sides, Wild, plus the trim note). Labels and swatches are unchanged.
-- SIDES, the claim halos and the place-card hold line wait for `story.side_pick_done` (D94, yellow). The Seal pill waits for any seal flag or seal that `nodeSeal()` reads. Side task is always shown (D95, green). No save fields. Tests: `tests/map_legend.spec.js`; `tests/map.spec.js` key check per state.
+- SIDES, the claim halos and the place-card hold line wait for `story.side_pick_done` (D109, yellow). The Seal pill waits for any seal flag or seal that `nodeSeal()` reads. Side task is always shown (D110, green). No save fields. Tests: `tests/map_legend.spec.js`; `tests/map.spec.js` key check per state.
 
 ## 2026-10-15 — Design's approved green copy replaces the leftover control, welcome and rename placeholders
 

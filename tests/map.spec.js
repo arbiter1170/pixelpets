@@ -39,7 +39,7 @@ test('the key names factions, and a new place stays hidden', async ({ page }) =>
   expect(card.line).toContain('Keepers');
   expect(card.here).toBe(false);
   expect(card.pledge).toBe(true);
-  // MAP_LEGEND: a new save shows PLACES and QUESTS without Seal; SIDES waits for the pledge (D94).
+  // MAP_LEGEND: a new save shows PLACES and QUESTS without Seal; SIDES waits for the pledge (D109).
   for (const word of ['PLACES', 'Town', 'Route', 'Side place', 'Not visited', 'Coach', 'QUESTS', 'You', 'Next step', 'Side task']) expect(card.key).toContain(word);
   for (const word of ['SIDES', 'Keepers', 'Glimmerwell', 'Both sides', 'Wild', 'Seal']) expect(card.key).not.toContain(word);
   await shot(page, 'region-map-home');

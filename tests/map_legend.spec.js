@@ -1,4 +1,4 @@
-/* MAP_LEGEND v0.1 (design 39ef920, D94/D95 per 69f9a08): KEY grouped into PLACES / QUESTS / SIDES pills, unlocked by the story. */
+/* MAP_LEGEND v0.1 (design 39ef920, D109/D110, renumbered by the Supervisor from Design 69f9a08 D109/D110): KEY grouped into PLACES / QUESTS / SIDES pills, unlocked by the story. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 

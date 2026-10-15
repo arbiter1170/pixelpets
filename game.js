@@ -4444,7 +4444,7 @@ function nodeSeal(id){
   if (id === 'cobblecrest') return !!(seals.seal_cobblecrest || seals.seal_glim_2 || f['story.seal2']);
   return false;
 }
-// MAP_LEGEND §3: the Seal pill shows once any stamp nodeSeal() can draw is possible; the SIDES group, claim halos and hold line wait for the pledge (D94).
+// MAP_LEGEND §3: the Seal pill shows once any stamp nodeSeal() can draw is possible; the SIDES group, claim halos and hold line wait for the pledge (D109).
 function sealsShown(){
   if (!S) return false;
   const seals = S.seals || {}, f = S.flags || {};
@@ -4477,7 +4477,7 @@ function paintPlaceCard(){
   const here = $('#mapHere'); if (here) here.hidden = !(id && id === mapUI.cur);
   const holdEl = $('#mapHold');
   if (holdEl) {
-    holdEl.hidden = !known || !sidesShown();   // D94: no hold line before the pledge
+    holdEl.hidden = !known || !sidesShown();   // D109: no hold line before the pledge
     holdEl.textContent = known ? holdLine(id) : '';
     holdEl.className = 'map-hold' + (known ? ' hold-' + mapHold(id) : '');
     if (known) holdEl.dataset.hold = mapHold(id); else delete holdEl.dataset.hold;
@@ -4638,7 +4638,7 @@ function drawRegionMap(t){
   const vis = {}; for (const id in N) vis[id] = mapVisited(id, cur);
   const claimR = { town: 14, side: 11, route: 9 };
   mapUI.claims = 0;
-  if (sidesShown()) for (const id in N) if (vis[id] && mapHold(id) !== 'wild') {   // D94: halos wait for the pledge
+  if (sidesShown()) for (const id in N) if (vis[id] && mapHold(id) !== 'wild') {   // D109: halos wait for the pledge
     const n = N[id], [x, y] = P([n.col, n.row]); claim(x, y, claimR[n.kind] || 10, mapHold(id)); mapUI.claims++; }
   for (const id in N) {
     const pth = N[id].path; if (!pth) continue;
