@@ -8,11 +8,13 @@ description: |
 
 # Walklings QA
 
+Team run routine (seeded saves, pp_verify, build id, bug write-up): `.cursor/skills/walklings-qa-run/SKILL.md`.
+
 Use this after a feature is in the game, and when a session is asked to play from a point in the story and take notes. The specs in `tests/` are the checks that stay. This skill is how a new check gets added. Status docs for a fix follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ## Play
 
-1. Serve the repo (`python3 -m http.server 8080 --bind 127.0.0.1`) and open `/?debug=1` in Chromium at 390×844 and at 320×568 (`isMobile`, `hasTouch`). Debug is only for ending a battle (`PixelPets.winBattle`) and reading `PixelPets.quest`. Walk, talk, and open panels yourself.
+1. Serve the repo (`python3 -m http.server 8080 --bind 127.0.0.1`) and open `/?debug=1` in Chromium at 390×844 and at 320×568 (`isMobile`, `hasTouch`). Debug is only for ending a battle (`PixelPets.winBattle`) and reading `PixelPets.quest`. Walk, talk, and open panels yourself. Read the page as text first (`page.evaluate` on the dialog box, NEXT STEP, `PixelPets.quest.text`, element sizes); `python3 /workspace/pp_verify/pp_textcheck.py --url http://127.0.0.1:8080/` covers boot, build line, console errors and overflow. Screenshot only when a check fails or the question is visual (art, layout, colour).
 2. Start from a new game when the change is in the opening, the phone, the bag, or the faction pick. Otherwise seed a v2 save that stops one step before the new beat, then walk in.
 3. For a Glimmerwell pass, pledge with Tobin at the orchard gate (`side_pick`). Play the scene that follows, open NEXT STEP and the walk tip, open the bag, open PHONE (CRACK//HAND), then try the Hall door and one Heights beat (Kit, or Nia in the RegenX lobby).
 4. Write down every line you see. Flag `PLACEHOLDER`, a leftover `{token}`, a double space, a line over 110 characters, a speaker named `unnamed`, and a quest line that disagrees with the last thing an NPC said.

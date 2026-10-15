@@ -2,13 +2,137 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-15: P0 fix, bare page (Lv 1, all 0) after a reload
+- What changed and why: Vincent's iPhone landed on the bare page (PARTNER, Lv 1, FOOD/JOY/NRG/GROW 0, no pet) right after a trainer fight. GitHub Pages ignores `?v=`, so a cached older `index.html` can load the newest scripts. `bindInput()` then called `addEventListener` on `#questSideMore` / `#questDoneToggle` (added in #66), which older pages lack. `boot()` threw before the first HUD paint. Nothing is written before boot finishes, so the save was not changed. Fix: those binds and the stat strip counts are null-safe; if `boot()` still throws, the page reloads once with a fresh `?b=` (sessionStorage guard, no loop); `sw.js` revalidates pages (`cache: 'no-cache'`). No save change.
+- Files touched: `game.js`, `sw.js`, `tests/p0_stale_page.spec.js`, `tests/p0_trainer_win.spec.js`, `tests/fixtures/index_1158.html`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261015-1336.
+- Anything left unfinished: The tests do not show why the page reloaded at that moment (an iOS tab reload or the new-build bar). The fix makes any reload onto a stale page boot correctly.
+
+## 2026-10-15 11:36 ET: NPC-only Fetchling line
+- What changed and why: Added the BLOOM line `fetch` (Fetchling, Harvestail, Hearthound) so a later packet can give Lizzy the partner Buddy. Vincent approved the line as written and that a keeper can never get one. It is not in any wild table, habitat roll, or starter basket. The journal still counts 45 forms.
+- Files touched: `sprites.js`, `stats.js`, `moves.js`, `save.js`, `game.js`, `tests/fetch_line.spec.js`, `tests/heights.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261015-1120.
+- Tests run and result (widths, checks): `npm test` (build check plus Playwright) — 561 passed, 6 skipped, exit 0, at 320, 375, and 390. `tests/fetch_line.spec.js` checks stats, learnsets, art, a zero wild chance, starters, the journal at 45, and growing up. No console errors in that run.
+- Decisions made (colour + reasoning): D121, green. Leave the NPC-only line out of the journal grid, the Out there count, and the stats-card best-of set, so a keeper still sees 45 forms. The form ids are still appended on the save table. Steadfast Paw uses the existing self DEF +1 effect, the same shape as Mist Veil.
+- Anything left unfinished: Lizzy and Buddy are not placed. No map, scene, or town change.
+
+## 2026-10-15 — UX review (green): header acorns, progressbars and canvas labels, debug panel out of the player DOM
+
+- Modern walk acorn chip (Design, green): acorn icon + count on the area badge's row (y 6, 44 tall), just left of the gear, read-only, styled like the header count. At 320 the badge text clamps first, and the chip fades with the badge in scenes and is covered in battle.
+- Header: an acorn icon and count sit left of the Lv badge and follow `money` live (checked every 120 ms; the label reads "N Acorns"). Shown wherever the header is (arcade everywhere, modern on PARTNER / WALKLINGS; NAV_MODERN hides the header on the modern walk screen).
+- Accessibility: FOOD / JOY / NRG / GROW and every HP bar (encounter cards, stats cards) are `role=progressbar` with `aria-valuemin/max/now` and an `aria-label`, kept in sync. The walk map, care scene and encounter canvases are `role=img` with live labels (area and partner; partner, level and care; foe, level and HP).
+- Debug: the debug overlay (#ovDebug, incl. "Agent tools") is no longer in index.html. Its markup is in `debug_ui.js` and game.js adds it only in a debug session, removing it when debug is turned off. `sw.js` now also caches `debug_ui.js` and `data/nav_art.js` (nav_art.js was missing from the offline shell).
+- Tests: `tests/ux_review.spec.js`.
+
+## 2026-10-15 — Several active side quests on the NEXT STEP panel (QUEST_MULTI, D106)
+
+- The SIDE card shows the tracked chain (`SIDE · N`, `TRACKED` when two or more); every other active chain is a 44 px row with TRACK (2 rows under 360 px, 3 at 360+, then `+N more`); DONE folds to `DONE · N  >` with two or more side chains. The region map draws a solid ring for the tracked chain and dim dots for the rest; the walk cue follows the tracked chain only; finishing the tracked chain auto-tracks the next with "Now tracking: <label>". The map key's Side task entry shows only while a side quest exists (D110). Saves: additive `ui.sideTracked` / `ui.sideSeen`, `v` stays 2. Mom's gating unchanged. New hooks: `PixelPets.sideActive`, `regionMapMarks`; debug-only `trackSide`, `debugSideChains`. Green follow-ups: dim dots get a 1 px navy outline (6x6 at 390 px and up, 4x4 below); when the tracked side quest shares the main step's area, a solid 2 px side-blue ring sits 3 px outside the unchanged main ring (no dot there), and the map card adds `Side: <label>` under NEXT at 360 px and up. Design's Side task pill decision is D110. Test: `tests/quest_multi.spec.js`.
+
+## 2026-10-15 — Standing numbers D14–D17 settled as built (Vincent)
+
+- Docs only. Tiers 0 / 10 / 25 / 45 / 70 with the current names, switch keeps half the points, one switch per Seal chapter, `joinMinTier` 0. No code change.
+
+## 2026-10-15 — STAT_DISPLAY v0.1: one NRG / GROW strip for PARTNER and WALK (design 39ef920)
+
+- One `#statStrip` under the header (0,52,W,56; `<main>` from y 108) on PARTNER and WALK: NRG bar + number, GROW bar + number, `EXPLORE n/30` once, and a right slot that reads `CARE n/25` on PARTNER and `STEPS n` on WALK. Hidden on WALKLINGS, QUEST and modern WALK.
+- Removed the NRG / GROW rows from the PARTNER stats, `#dailyXp` ("Today: care XP … explore XP …") and the WALK `.walk-hud` (the duplicate `TODAY 0/30`). No save fields, caps or toasts change. Placement is D120 (settled: Vincent approved Design's default). Tests: `tests/stat_display.spec.js`.
+
+## 2026-10-15 — MAP_LEGEND v0.1: the region-map KEY in PLACES / QUESTS / SIDES pills, unlocked by the story (design 39ef920, 69f9a08)
+
+- The 13 KEY rows become three pill groups: PLACES (Town, Route, Side place, Not visited, Coach), QUESTS (You, Next step, Side task, Seal) and SIDES (Keepers, Glimmerwell, Both sides, Wild, plus the trim note). Labels and swatches are unchanged.
+- SIDES, the claim halos and the place-card hold line wait for `story.side_pick_done` (D109, settled: Vincent approved the default). The Seal pill waits for any seal flag or seal that `nodeSeal()` reads. Side task is always shown (D110, green). No save fields. Tests: `tests/map_legend.spec.js`; `tests/map.spec.js` key check per state.
+
+## 2026-10-15 — Modern QUEST button shows a main mark and a side mark
+
+- What changed and why: In modern controls, an open main step lights a gold pip on the top right of QUEST, and an open side quest lights a tide-blue pip on the top left. The shape is Design's approved nav badge pip (it was drawn and unused). Gold matches the MAIN card. Tide blue matches the SIDE card. A dark ring keeps the blue mark readable on the blue button. The idle last step does not light a main mark. The pip stays after the panel is opened. The button still pulses until that main step has been opened. Arcade keeps the signpost icon. No new save field. `v` stays 2.
+- Files touched: `game.js`, `tests/controls.spec.js`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Decisions: D105, green. The pip colors follow the quest cards. The idle last step stays unmarked. D92–D104 stay with Design's reservation, so this call is not D92.
+- Commit build id: `20261015-1107` (restamped after merging main, which was `20261015-1005`).
+- Tests: `tests/controls.spec.js` (modern marks, press, reduced motion, panel, main only, side only, neither; arcade signpost). Widths 320, 375, 390.
+
+## 2026-10-15 — Map pass B4 phase 2: seeded grass, puddles and leaf litter, props toward 6 per screen (build 20261015-1005), branch `cursor/maps-b4-exteriors-7807`
+
+- What changed: all 11 outdoor maps opt in to E5 seeded variants through `data/detail_b4.json` (`"variants": true`). Plain grass `g` becomes `grass_b` (18 %), `grass_c` (12 %) or `flower_patch` (5 %) by hash of map, x and y; hand-placed chars (`f`, `t`, paths, roofs) never change, the same map always looks the same and nothing is saved. 229 `kind: "decal"` objects lay puddles and leaf litter (leaf litter beside trees, bushes, stumps and logs) on plain grass, or gravel in the quarry: drawn, never blocking, never talking, never animated, and off warps, door fronts, objects, the safe tile and the cells the specs walk. 122 more silent props bring every 320 screen (10x17 tiles) to 6 props, signs or pickups, except six screens with no free cell left (High Charity x0-9 y11-28, Route 2 x2-12 y0-17, 4-5 props). New props stand only on free walkable cells off paths, spawn zones, sight lines, patrols and door fronts. No map resized; no warp or door moved.
+- D88 check: `devChecks().floorCap` and `PixelPets.floorShare(id)` now cover outdoor maps with `variants`. Top tile after variants: Mahopac grass 53 % (was 87 %), Fernbrook Heights 54 % (was 88 %), every outdoor map 58 % or less. Lab maps unchanged (rx_f4: 216 walkable cells, bay floor 53 %).
+- Engine: `labTileName` and `labFloorShare` keep the lab path and add an outdoor table (`OUTDOOR_SKIN.variants` in `sprites.js`); a decal object counts as its decal in the floor share. The ground behind a cut roof takes the same grass variant as its cell. `PixelPets.exteriors(id)` also lists decals and `PixelPets.exteriorCell(x, y)` reports the cut-roof ground (both null without `?debug=1`); `tileInfo` shows outdoor variants and decals.
+- Saves: no new fields; `v` stays 2.
+- Tests: `tests/maps_b4.spec.js` (5 new checks, the overlay check widened for `variants` and decals).
+
+## 2026-10-15 — Map pass B4 phase 1: building exteriors, path edges, outdoor props (build 20261015-0942), branch `cursor/maps-b4-exteriors-7807`
+
+- What changed: every building on the outdoor maps (`handoff/maps/BUILDING_VARIETY.md` rows 1-27, 29 buildings) has its own roof, wall, door, windows, trim, roof shape and at least one porch prop, so no two buildings in a town look alike. That covers Hearthmoor, Fernbrook (Lantern House, Bloom Trial Hall), Cobblecrest, the fifteen High Charity blocks, the Mahopac observatory and the Fernbrook Heights RegenX front and tunnel mouth. Outdoor paths get a grass fringe where they meet grass (E7). 185 silent props: four 32x32 town landmarks (lantern post, well, statue, signal mast) and at least three landmarks per town, a route landmark about every 16 tiles, fences, rocks, flowerbeds, stumps and hay. No map size, warp, door or design-copy change; all of it is in `data/detail_b4.json`.
+- Engine: a `roofs` entry may also name `roof`, `wall`, `door`, `win`, `trim` and `shape` (E11). An entry without these draws as before; `col` keeps working, the Cobblecrest hall keeps its stepped slate, and the faction ridge follows a shaped roof's outline. 32x32 prop art stands bottom-centred on its one cell. New read-only `PixelPets.exteriors(id)` and `PixelPets.exteriorCell(x, y)` (null without `?debug=1`).
+- Art: original PAL grids in `sprites.js` (`EXTERIOR_ART`): 25 roofs, 24 walls, 17 doors, 19 window and wall pieces, 6 roof features, 41 porch and outdoor props, 7 big landmarks, 8 path edges. `grass_b`, `grass_c`, `flower_patch`, `puddle` and `leaf_litter` are drawn but not placed yet (phase 2).
+- Saves: no new fields; `v` stays 2. A save standing where a prop now stands loads on the map's safe tile.
+- Tests: `tests/maps_b4.spec.js`.
+
+## 2026-10-15 — Design's approved green copy replaces the leftover control, welcome and rename placeholders
+
+- Settings toasts: 'Arcade controls. Pad and Talk button.', 'Modern controls. Tap to walk or talk.', 'Joystick on.', 'Joystick off.'. The step-8 toast is 'Keep walking. Wild Walklings hide in the grass.' in both layouts. `WELCOME_LINE` (after 14 h away) is '{pet} missed you! Welcome back.'. Rename: '{name} likes the new name!' on success; '{name} is back to its own name.' (species name) when a blank box, or the species name typed in, clears the nickname (D57); 'Pick a name first.' when the input is rejected (every character filtered) or blank with no nickname to clear, and the editor stays open. Town-board placeholders unchanged. Design's answers to the PR #52 flags: the welcome-back line is '{pet} missed you! Welcome back.'; clearing a nickname back to the species name shows '{name} is back to its own name.'; the arcade step-8 toast matches modern ('Keep walking. Wild Walklings hide in the grass.'). Tests: `tests/care_tools.spec.js`, `tests/controls.spec.js` (Settings toasts, toast fit at 320/375/390 in both layouts).
+
+## 2026-10-15 — rx_f4 pilot: the Arbiter Bay at 14x22 (BUILD_RX_F4_PILOT, design 6263382), branch `rx-f4-pilot`
+
+- What changed: `rx_f4` goes from 18x12 to 14x22 with Design's `pilot` grid and lab tiles (verbatim from `fernbrook_heights_art.json`). Every existing id is kept; the objects move to the spec's coords (A3) and the new props, the locked staff door, the off-limits wall decal and the optional night tech (`rx4_tech`, D89) are added with their lines. `rx_f3` → `rx3_up` lands at (6,19) facing up; `safe` is (6,19); a second mat warp `rx4_down_b` at (7,20).
+- Engine (in order): E2 no interior size cap (a 30x30 test map loads, walks and saves); E1 interior camera: maps with `"fitWidth": true` show their full width and scroll vertically, clamped at every edge (other maps unchanged); E4 decal layer: cables, drains and guide lines are drawn as an overlay on the floor and never block; E5 seeded variants: hash(map, x, y) turns 14 % of plain bay floor into scuffs on maps with `"variants": true`, hand-placed chars win, nothing saved. Lab-skin maps get their own walk table (`LAB_SKIN.walk`), so `g` is glass there and grass elsewhere.
+- D88 check: `devChecks().floorCap` fails if one floor tile covers more than 70 % of a rebuilt map's walkable cells (rx_f4: 51 % after variants).
+- Saves: no new fields. An old bay position on a now-solid tile snaps to (6,19) via the existing safe-spot rule; save `v` stays 2. Tanks share one clock and hold frame 0 under reduced motion.
+- Decisions: D81–D89 mirrored as settled from MAP_SCALE_DETAIL; D90 (debug-save marking accepted, D69 closed); D91 (byte-line learnset, green). Next free id D92.
+- Tests: `tests/rx_f4_pilot.spec.js` (the spec's QA list C plus E1/E2/E4/E5); `tests/heights.spec.js` updated for the new coords.
+
+## 2026-10-15 — Map handoff packets (docs only, no new build stamp)
+
+- Added `handoff/maps/`: audit (`AUDIT.md` / `AUDIT.csv`), `BUILDING_VARIETY.md`, and self-contained B1–B8 map upgrade packets for outside build agents. Design data is pasted in each packet. No game code change.
+
+## 2026-10-15 — Modern navigation mode (Q26), branch `modern-nav` (build stamped on the branch)
+
+- What changed and why: Vincent's modern controls (PR #37 scope) with Design's NAV_MODERN v0.1 layout. Settings → Controls swaps ARCADE / MODERN at once; Joystick row in modern (off by default, D71). A new game asks Arcade or Modern after the look picker (D76). Modern: full-screen 2x map, floating QUEST / BAG / MAP, gear / PHONE, PARTNER / WALKLINGS, area name, tip band, partner strip, WALK back buttons. One `body.nav-locked` lock. Edge arrows stay clear of the buttons. Arcade unchanged. WALKLINGS screen headers: TEAM and WALKLING-BOX; sheet and board buttons TO TEAM / TO WALKLING-BOX (NM-Y3). Design's v0.2 pixel art for every nav button, the banner, strip and tip frames and the joystick, in every state (D77); icon-only, switchable with `NAV_ICON_ONLY`.
+- Save: `settings.controls` ('arcade' | 'modern', bad or missing = arcade) and `settings.joystick` (boolean, default false), filled in `normalizeV2`. `v` stays 2.
+- Decision ids renumbered from PR #37: joystick D63 → D71, landscape D64 → D72, copy D62 → D70 (PR #43 owns D62–D65). New: D76–D79.
+- Art: every modern nav button, the banner, partner strip and tip band frames, and the joystick are painted from Design's NAV_MODERN v0.2 pixel art (`data/nav_art.js`, from `nav_art.json`), with normal, pressed, disabled, locked, pulse and reduced-motion states (D77). Buttons are icon-only; `NAV_ICON_ONLY = false` in `game.js` brings the text back. WALKLINGS uses the paw icon from PR #39.
+- QA (Oct 15): the Contacts ALL / FAVORITES tabs are 44 px tall (were 40). Space on the last line of Ness's `phone_grant`: could not reproduce in Chromium (Space advances every line, arcade and modern, focused button or not); added a guard that eats the keyup after a Space or Enter that advanced a text box, so a focused button cannot fire on release, plus a test.
+- Design green calls (Oct 15): the tip band is one line (28 px) when the text fits and two lines (44 px, clamped with an ellipsis) when it does not; it grows up from the partner strip and the map gives up the space. The joystick ring sits 8 px above the band and moves with it; toasts sit above the ring (or the band) in the free map area. D70 copy stays PLACEHOLDER.
+- QA Oct 15 (PR #48): arcade no longer shows the WALK back button (a later display:flex beat the hide). In modern the gear shows its locked art and takes no taps while a scene blocks Settings (any scene once you have a partner); the opening scene keeps it live (NAV_MODERN G3). The area badge is a 44 px tap target in both layouts with the same look. The tip band re-measures when the text, the width or the font changes (it measured with fallback glyphs, then ellipsized), so the real Route 1 tip is two lines. A ?debug=1 load shows DEBUG SAVE in Settings at once.
+- D70 settled (Vincent approved Design's copy): the first-walk prompt is "How do you like to walk?" with ARCADE / MODERN buttons, each with its sub-line (choice buttons can now carry one). The reminder, the modern default tip and the modern early-steps tip use the approved text. The Settings toasts and the step-8 modern toast stay PLACEHOLDER (no approved text).
+- Tests: `tests/controls.spec.js`; pp_verify `verify_modern_nav`.
+
+## 2026-10-15 — D18 Standing cap settled; D73 story writer (docs only, no new build stamp)
+
+- D18 (Standing daily cap) settled green: cap left unbuilt and folded into the Standing pass, placeholder 5 per side per day. Row moved to `archive/DECISIONS_SETTLED.md`.
+- D73 story writer (yellow, Waiting on Vincent): recommend no new writer for now; Design keeps the story, supported by a story bible skill and a QA lore check on story PRs. Revisit if D62–D65 scoping slips.
+- Next free decision id is D81 (updated Oct 15 after the D69+ renumbering). D62–D68 remain reserved by open PRs #43 and Q26; D70+ for #39/#40/#41 D60 renumbers. No game code change.
+
+## 20261015-0000 — Partner kit and worn adornments
+
+- On the partner tab, STATS and KIT sit above FEED and use the same buttons as FEED, PLAY, and REST. KIT opens Customize & Gear. BAG stays on the Walk map only.
+- The five adornments stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body: Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, Amber star. The names and the KIT label are D75. More adornments from quests are not built. The five stay free.
+- Save `v` stays 2. `index.html` script tags changed, so the stamp was `20261015-0000`; restamped on the Oct 15 merge from main.
+
+## 20261014-2346 — Phone icons, contacts, and the bag
+
+- The Keeper1 home is an icon grid: Contacts, Notes, Walklings, Friends, KeeperUAV, Ribbit, and BOARD. The cracked handset keeps that grid. KeeperUAV is still Botnet on the thin shell. Walklings opens the WALKLINGS tab.
+- Contacts lists each person you have met, one card per name. A finished scene that names them counts. Quest dialog (a scene, a line that starts a scene, or a catch scene) is marked QUEST. Every met person opens a card. FAV sorts them first. FAVORITES shows only those. `phoneBook` is `{ met, fav }`. That rule is D80.
+- The bag opens when a Keeper1 or a Cracked Handset is inside. Those two items have icons. Save `v` stays 2. TB-3, Q22, Brinewick, Hall #3, and Seal 3 are not built.
 
 ## 2026-10-15 01:05 ET — Debug-mode leak fix (red, approved by Vincent; build 20261015-0101)
 
 - The console no longer prints the debug password when a hook runs without debug, and README no longer names it.
 - `pixelpets.debug` now lives in sessionStorage: debug lasts one tab session (`?debug=1` or the Settings password). Boot removes the old localStorage key, so a normal player never keeps debug.
-- A save written in a debug session gains the additive field `debugSave: true` (validated in `save.js`, default false), and Settings shows `DEBUG SAVE` on the build line. Save `v` stays 2. A separate save key was considered and not used: 18 existing suites seed `pixelpets.save.v2` under `?debug=1` and read it back (D69; D62–D68 are taken by PR #43 and Q26).
+- A save written in a debug session gains the additive field `debugSave: true` (validated in `save.js`, default false), and Settings shows `DEBUG SAVE` on the build line. Save `v` stays 2. A separate save key was considered and not used: 18 existing suites seed `pixelpets.save.v2` under `?debug=1` and read it back (D69; D70–D70 are taken by PR #43 and Q26).
 - Tests: pp_verify `verify_debug_leak` (new), the full pp_verify run and `npm test`.
+
+## 20261014-2349 — RegenX lab and the floating computer
+
+- RegenX is four different rooms: a rug lobby, a Focus Wing with benches and a vial rack, a Records room, and a darker Arbiter bay. Nia, Cal, Dr. Ivo, Quinn, the wardens, the techs, and the records lead have their own looks. The new lines are D74.
+- Bitlet, Hoverbyte, and Archivolt are the VOLT line `byte`. Bitlet floats in the Arbiter bay and can be befriended. That sets `story.rx_bitlet` and does not gate the Heights quest. `labOnly` keeps the line out of the wild roll. Save `v` stays 2. The journal counts 45 forms.
+- Lab skin (FERNBROOK_HEIGHTS §3, design b9dadef; build 20261015-0148, restamped in the fix commit): the four RegenX rooms carry `"skin": "lab"` and draw white lab floors, walls, windows, a mint runner and a grey mat in place of the house planks, so they match the "white lab" text. The Arbiter Bay floor has a mint dot, and two humming tanks stand either side of the cradle (600 ms frames, still under reduced motion). The RegenX exterior is unchanged.
+- Bitlet's stray lower spark is gone (the mirrored half drew it twice). The befriend lines call it "the little monitor", matching "No name on a tag".
+- PR #40's decision is D74 (it was D60 in the PR body, which clashes with Fen's second talk on main).
+- Q22, TB-3, Brinewick, Hall #3, and Seal 3 are not built.
+
+## 2026-10-14 — Modern and arcade controls scoped (no new build stamp)
+
+- Q26 is scoped and not started, from Vincent's Oct 15 sketch. Arcade is today's layout. Modern fills the walk screen with the map and drops the header, the HUD, the d-pad, the Talk button, and the tab bar there. QUEST, BAG, and MAP float top left, Settings and PHONE top right, WALKLINGS and PARTNER bottom right, the area name top centre, and the partner's name, Lv, and three bars run along the bottom. A translucent four-way joystick is a Settings option, off by default. Tap and walk-up stay the way you talk. A new game asks in the house, after the look picker, before the exit mat. An old save stays on the pad. The copy is D70, the joystick default is D71, and landscape is D72. Save `v` stays 2. No Playwright spec. `index.html` did not change, so `version.json` is unchanged. The next build stays Q19.
+
 ## 2026-10-14 — Agent rules for Cline, Claude, and AGENTS.md (no new build stamp)
 
 - Added `.clinerules`, `CLAUDE.md`, and `AGENTS.md` with the same consolidated rules: Oct 13 Cursor/Grok build rules, the Oct 9 Supervisor / engineer / designer / QA handoff, `DESIGNER_PROMPT` role constraints, and the three `.cursor/skills` bodies.
@@ -80,57 +204,6 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - `manifest.json` and `sw.js` cache the same-origin shell so the game can be added to the home screen and opened offline. `version.json` stays on the network. Location lookups are still a network call and still fall back to meadow. The icon is a sprout Walkling.
 - Tests: `tests/box_app.spec.js`. Shots: `screenshots/box/`. Brinewick still waits on a one-pager.
 
-## 2026-10-14 08:06 ET — Region map claims and a key (`20261014-0806`)
+## Older entries
 
-- The region map shows who holds each place you have visited: green and gold for the Keepers, cyan and mint for Glimmerwell, a split disc where both keep a claim, and bare parchment for wild country. Places you have not reached stay `???`.
-- A key under the parchment names towns, routes, side places, you, the next step, the side task, the lantern coach, both factions, wild country, and Seals.
-- Tap a place to read it. The card names the room when you are indoors. Arrows move that reading and do not walk you. CLOSE, Escape, or the dark margin puts the map away.
-- High Charity is the lantern coach, drawn as a green dashed line, and it no longer sits on Mahopac. Its roofs wear Keeper gold and green. A wax stamp marks Fernbrook and Cobblecrest once that Seal is earned. After the pledge, the map names your side.
-
-## 2026-10-13 23:47 ET — East gate and the Hearthmoor watch (`20261013-2347`)
-
-- The tree on the grass south of Hearthmoor's east path is cut. The town sign stands one tile south of that grass, so the walk out to Route 1 is open.
-- Officer Bren's patrol reaches the east end of the road. Officer Cald stands just north of the gate. Officer Ness still keeps the Keeper House door.
-
-## 2026-10-13 22:55 ET — Keeper House and Keeper1 (`20261013-2255`)
-
-- Hearthmoor roofs wear gold and green. Glimmerwell ground (the glen, and Cobblecrest after the quarry buyout) wears mint. Officer Bren patrols the Hearthmoor road. Fernbrook, Route 2, the glen, and Cobblecrest each have a watch officer. Clerk Mint appears in Cobblecrest after that buyout.
-- The Keeper House, south of the road, has two floors. Sergeant Bram, Archivist Mo, and Clerk Wynn are downstairs. Captain Lumen and Operator Rue are upstairs. Citizens are asked to step back. Keepers are welcomed, more warmly as Standing rises. A Glimmerwell pledge is kept in the doorway.
-- The first side quest is on Route 1. Two officers stop you and issue a Keeper1. The wires, the poles, and the companies stay with the Keepers. A blue chevron marks that quest. The main quest chevron stays yellow.
-- BOOK is now PHONE. QUEST moved to the bottom bar. The phone has Contacts, Notes, Journal, Friends, and KeeperUAV. Notes say the Lantern desk can read them. KeeperUAV's job board is a placeholder.
-- Joining Glimmerwell puts a Cracked Handset in the bag. While you carry it on that pledge, the phone becomes the thin CRACK//HAND and KeeperUAV becomes Botnet, also a placeholder.
-- Higher Glimmerwell Standing tints your keeper with mint, then silver. Archivist Mo's books fear a child born already listening. That generation is not in the game.
-
-## 2026-10-13 23:18 ET — Ribbit (`20261013-2318`)
-
-- The phone has Ribbit, a read-only feed. Block News and Chirp Worldwide post about the towns. Local notes and the trending row change with the day, the place you are standing, and the story so far. You cannot post.
-
-## 2026-10-13 21:28 ET — Save a copy before Start over (`20261013-2128`)
-
-- Settings has Save a copy and Read a copy. The Start over dialog offers SAVE A COPY before the hold.
-- The file is `walklings-save.json`, the same v2 save the game stores. Reading it replaces the game on this device and reloads. `v` stays 2.
-- A file from a newer build, or a file that is not a save, is refused. The current game stays.
-- With no Walklings yet, the gear stays tappable under the opening scene, so a wipe can be undone without finishing the intro.
-- Device prefs (mute, location, debug) stay on this browser. They are not in the file.
-
-## Tests for the last three commits
-
-Smoke now checks Standing and Heights as well as the quest, glimmer, and befriend lists. It also checks that the Act 1 glimmer scenes swap back to the Keepers scenes, and that Cancel after a short hold does not wipe. Route 2 covers both gate choices, the grey Pebblit line, and that only the quiet Census log gives Rook a bond point. Cobblecrest covers the buyout, the snack that stays in the bag, the review battle, and both Rook closers (a high bond still leaves him with Glimmerwell). The save-copy spec round-trips the file and refuses a newer save, a v1 file, a non-save, and an oversized file. The box screen and the installable app are in the game (`20261014-0751`). Brinewick still needs a one-pager.
-
-## 2026-10-13 19:50 ET — Route 2 glimmer, Cobblecrest Sacrifice stub, Rook R5 (`20261013-1950`)
-
-- Glimmerwell Route 2: Census volunteer (`lead_intro@glimmer`). The quiet log gives Rook one bond point. Wickerglen still bumps the lamps, pays 3 Befriend Treats, and opens the same gates.
-- Glimmerwell Cobblecrest: arrival still reads together or race. The buyout puts you beside Dorian. Hale loses the seam. Rook objects to "units", then you battle him.
-- Hall slot 2 is a Sacrifice stub. Offer a snack (it stays in the bag), say three names for the free quota, or face Hale. Closing it grants the Bright Tier 2 Lanyard (placeholder art), 2 Hearty Snacks, 1 Wake Tonic, and `story.seal2`. The real cost is still open.
-- Rook's closer: on the Keepers path he gets off the cart (`story.rook_end` "ally"). On the Glimmerwell path he stays ("stays"). Both paths set `story.cobble_end` and show the same Brinewick coming-later card. Bond does not gate it.
-- Planning docs (`NEXT_PLAN`, `BACKLOG`, `OPEN_DECISIONS`, `README`, the designer handoff) now record Builds 4–6 as shipped and name the next three coding builds: export before Start over, the box screen, and an installable app. Brinewick still needs a one-pager.
-
-## 2026-10-13 18:39 ET — Fernbrook Heights (`20261013-1839`)
-
-- North of Fernbrook, before the first trial. After the side pick, Fen (Keepers) or Juniper and Tobin (Glimmerwell) offer "get to know us" and tell you to stock up.
-- Keepers: a smuggling yard, tunnel, crate hold, and broker's den. Jed the clerk helps. After the haulers step aside, Officer Ken of the Fernbrook watch interviews each Walkling with you. They hop toward the orchard. Mara Quill keeps the route page. Nobody is hurt.
-- Glimmerwell: the RegenX lab, four floors. Atten really does help a Walkling focus. The staff are decent people. The Arbiter is ancient Glimmerwell technology. It emits something slowly. Nobody can name the emission, or why the machine was built. Nia Voss and Cal Dunn are inside the lab and on Glimmerwell's side. Associate Quinn waits in the bay.
-- Standing: the offer, each cleared floor or room, Ken's interview, and the finale add points only to that path's faction, once each.
-- `story.heights_done` gates the Trial Hall panel and the Tour's first stop. A save that already has `story.seal1`, or that never picked a side, is not sent back.
-- Group battles: two foes at once, you move first, TARGET chooses, and on the last fight an ally Walkling hits the weakest foe. Foes still hit you. Levels sit under Fen's trial: the door is about Lv 4-5, the last fight is Lv 6, so a partner around Lv 7 can clear it with the two Heal Snacks Kit hands over.
-- The company name in the game is RegenX. Vincent also wrote PharmaX in the same note; that spelling is not used.
+See [`archive/CHANGELOG_2026-10-14_and_earlier.md`](archive/CHANGELOG_2026-10-14_and_earlier.md).

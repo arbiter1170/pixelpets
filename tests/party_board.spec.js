@@ -1,4 +1,4 @@
-/* WALKLINGS tab: six party slots, the box, and the journal of 42 forms. */
+/* WALKLINGS tab: six party slots, the box, and the journal of 45 forms. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -92,7 +92,7 @@ test('journal grid, six slots, and the quiet orphan row', async ({ page }) => {
     };
   });
   expect(grid.slots).toBe(6);
-  expect(grid.n).toBe(42);
+  expect(grid.n).toBe(45);
   expect(grid.emberTag).toBe('BUTTON');
   expect(grid.emberState).toBe('joined');
   expect(grid.metTag).toBe('BUTTON');
@@ -103,7 +103,7 @@ test('journal grid, six slots, and the quiet orphan row', async ({ page }) => {
   expect(grid.unmetHuh).toBe(true);
   expect(grid.vaneTitle).toMatch(/weather/i);
   expect(grid.header).toContain('Joined ' + grid.joined);
-  expect(grid.header).toContain('Out there 42');
+  expect(grid.header).toContain('Out there 45');
   expect(grid.orphan).toContain('1');
   expect(grid.orphan).toContain('unknown-species');
   expect(grid.orphanButtons).toBe(0);
@@ -279,7 +279,7 @@ test('party actions stay labeled after the care timer', async ({ page }) => {
     release: document.querySelector('.box-row[data-id="pstone"] [data-act="release"]').textContent,
     party: document.querySelector('.box-row[data-id="pstone"] [data-act="party"]').textContent,
   }));
-  expect(labels).toEqual({ move: 'MOVE', box: 'TO BOX', partner: 'PARTNER', release: 'RELEASE', party: 'TO PARTY' });
+  expect(labels).toEqual({ move: 'MOVE', box: 'TO WALKLING-BOX', partner: 'PARTNER', release: 'RELEASE', party: 'TO TEAM' });
   await page.locator('.party-slot[data-id="pember"] [data-act="move"]').tap();
   await expect(page.locator('.party-slot[data-id="pember"] [data-act="up"]')).toBeVisible();
   await expect(page.locator('.party-slot[data-id="pember"] [data-act="down"]')).toBeVisible();

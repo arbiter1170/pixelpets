@@ -1,6 +1,6 @@
 /* Fernbrook Heights: the "get to know us" quest before the first trial, and group battles. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, shot } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -75,6 +75,62 @@ test('a group battle fields two foes and a target control', async ({ page }) => 
   await page.locator('#btAim').click();
   const swapped = await page.evaluate(() => document.querySelector('#btFoeName').textContent);
   expect(swapped).not.toBe(view.name);
+});
+
+test('a Bitlet floats in the RegenX bay and stays out of the wild', async ({ page }) => {
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoDebug(page);
+  const info = await page.evaluate(() => {
+    const i = SPECIES.findIndex(s => s.id === 'byte');
+    const sp = SPECIES[i];
+    PixelPets.goto('rx_f4', 6, 19, 'up');
+    const objs = PixelPets.mapObjs;
+    return {
+      i,
+      type: sp && sp.type,
+      lab: !!(sp && sp.labOnly),
+      names: sp ? sp.stages.map(s => s.name) : [],
+      lastId: PPSave.SPECIES_IDS[PPSave.SPECIES_IDS.length - 1],
+      forms: PPSave.FORM_IDS.length,
+      learn: PixelPets.learnset('byte/2').map(e => e.id),
+      moves: PixelPets.defaultMoves('byte/0', 5),
+      odd: PixelPets.spawnOdds(['city', 'storm', 'meadow', 'night'], 'proto')[i],
+      route: PixelPets.spawnOdds(['meadow'], 'route1')[i],
+      v: PixelPets.state.v,
+      quest: PixelPets.quest && PixelPets.quest.id,
+      checks: PixelPets.heightsCheck.concat(PixelPets.questCheck),
+      bay: PixelPets.mapInfo.id,
+      wild: objs.find(o => o.id === 'rx_bitlet') || null,
+      art: objs.filter(o => o.sprite).map(o => o.sprite + (o.art ? ':ok' : ':missing')),
+      window: MAPDATA.heights.maps.rx_f4.grid[1],
+      nia: MAPDATA.heights.looks.nia.hair,
+    };
+  });
+  expect(info.i).toBe(14);
+  expect(info.type).toBe('VOLT');
+  expect(info.lab).toBe(true);
+  expect(info.names).toEqual(['Bitlet', 'Hoverbyte', 'Archivolt']);
+  expect(info.lastId).toBe('fetch');
+  expect(info.forms).toBe(48);
+  expect(info.learn).toEqual(expect.arrayContaining(['cursor_tap', 'bit_burst', 'archive_surge']));
+  expect(info.moves).toEqual(expect.arrayContaining(['bump', 'screen_glow', 'cursor_tap']));
+  expect(info.odd).toBe(0);
+  expect(info.route).toBe(0);
+  expect(info.v).toBe(2);
+  expect(info.checks).toEqual([]);
+  expect(info.bay).toBe('rx_f4');
+  expect(info.wild).toMatchObject({ id: 'rx_bitlet', kind: 'wild', x: 4, y: 4 });   // BUILD_RX_F4_PILOT A3
+  expect(info.art).toEqual(expect.arrayContaining(['arbiter:ok', 'rx_terminal:ok']));
+  expect(info.window).toBe('#WVWWWWWWWWVL#');
+  expect(info.nia).toBe('bob');
+  expect(info.quest).not.toBe('end');
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await shot(page, 'regenx-bay');
+  const opened = await page.evaluate(() => PixelPets.forceBattle('byte/0', 5));
+  expect(opened).toBe(true);
+  await page.waitForFunction(() => window.PixelPets.battle && window.PixelPets.battle.state === 'CHOOSE');
+  await expect(page.locator('#btFoeName')).toContainText('Bitlet');
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
 
 test('an old Seal still opens the trial without the Heights quest', async ({ page }) => {

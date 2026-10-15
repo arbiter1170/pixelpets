@@ -12,8 +12,9 @@ const PPSave = (() => {
   // Frozen forever: v1 stored species by array index. Never derive this from SPECIES order.
   const V1_SPECIES = Object.freeze(['ember', 'tide', 'bloom', 'stone', 'volt', 'frost', 'gust', 'shade']);
   // Save v2 species/form-id table: append-only, in SPECIES order (v1 lines first, then CREATURES_SLICE lines 8-13).
-  // Adding ids keeps the save at v2; never remove, rename or reorder one. 14 lines x 3 stages = 42 form ids.
-  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse']);
+  // Adding ids keeps the save at v2; never remove, rename or reorder one. 16 lines x 3 stages = 48 form ids.
+  // npcOnly lines (fetch) are in this table and left out of the journal, which still counts 45.
+  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch']);
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
   // MAPS_SLICE §10 / INTERIORS §5 / ACT1_ROUTE2 §0.2 / COBBLECREST mapdata: ids and sizes from data/mapdata.js.
@@ -53,7 +54,7 @@ const PPSave = (() => {
   function defaultStateV2(now = Date.now()){
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
       dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: startWorld(),
-      bag: {}, money: 0, seals: {}, flags: {}, standing: { keepers: 0, glimmer: 0 }, board: { lastTown: '' }, eggs: { incubators: [{ egg: null }], held: [] },
+      bag: {}, money: 0, seals: {}, flags: {}, standing: { keepers: 0, glimmer: 0 }, board: { lastTown: '' }, phoneBook: { met: {}, fav: {} }, eggs: { incubators: [{ egg: null }], held: [] },
       settings: { textSpeed: 'normal', battleAnims: true, follower: true, music: true, musicVol: 0.5 },
       player: { name: null, look: null },
       meta: { migratedFrom: null, migratedAt: null, backup: null, legacy: {} } };
@@ -237,6 +238,24 @@ const PPSave = (() => {
     // TOWN BOARD: last town whose board you stood in. A missing object becomes { lastTown: "" }. No version bump.
     fill(s, 'board', isObj, { lastTown: '' });
     if (typeof s.board.lastTown !== 'string') s.board.lastTown = '';
+    // Phone book: people met, and favorites. Additive. v stays 2. Bad names are dropped.
+    fill(s, 'phoneBook', isObj, { met: {}, fav: {} });
+    if (!isObj(s.phoneBook.met)) s.phoneBook.met = {};
+    if (!isObj(s.phoneBook.fav)) s.phoneBook.fav = {};
+    const cleanNames = bag => {
+      for (const k of Object.keys(bag)) {
+        const key = typeof k === 'string' ? k.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
+        if (!key || bag[k] !== true) { delete bag[k]; continue; }
+        if (key !== k) { delete bag[k]; bag[key] = true; }
+      }
+    };
+    cleanNames(s.phoneBook.met);
+    cleanNames(s.phoneBook.fav);
+    // QUEST_MULTI (D106): UI state, additive. ui.sideTracked = tracked side chain id (absent = not chosen); ui.sideSeen = chain
+    // ids already shown on the NEXT STEP panel. Unknown keys under ui survive. No version bump.
+    fill(s, 'ui', isObj, {});
+    if (has(s.ui, 'sideTracked') && typeof s.ui.sideTracked !== 'string') delete s.ui.sideTracked;
+    if (has(s.ui, 'sideSeen')) { if (Array.isArray(s.ui.sideSeen)) s.ui.sideSeen = s.ui.sideSeen.filter(x => typeof x === 'string'); else delete s.ui.sideSeen; }
     // ONLINE_SAVES: optional cloud sync fields, additive (no version bump). Absent stays absent (= rev 0, no real change yet).
     if (has(s, 'rev') && !(Number.isInteger(s.rev) && s.rev >= 0)) s.rev = 0;
     if (has(s, 'updatedAt') && !(fin(s.updatedAt) && s.updatedAt > 0)) delete s.updatedAt;
@@ -248,6 +267,8 @@ const PPSave = (() => {
     fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
     fill(s.settings, 'music', x => typeof x === 'boolean', true);                    // MUSIC v0.1 Q2: in the save, default on
     fill(s.settings, 'musicVol', x => typeof x === 'number' && x >= 0 && x <= 1, 0.5); // Settings volume slider: 0 to 1, default half
+    fill(s.settings, 'controls', x => x === 'arcade' || x === 'modern', 'arcade');      // Q26: missing or bad = arcade, so an old save keeps the pad
+    fill(s.settings, 'joystick', x => typeof x === 'boolean', false);                 // Q26 / D63: modern joystick, default off
     fill(s, 'mapSeen', isObj, {});
     // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
     if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;

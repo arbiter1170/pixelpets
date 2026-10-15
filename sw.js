@@ -21,6 +21,8 @@ const SHELL = [
   './ribbit.js',
   './cloud_config.js',
   './cloud.js',
+  './debug_ui.js',
+  './data/nav_art.js',
   './game.js',
   './fonts/Jersey15.woff2',
   './icons/icon-192.png',
@@ -53,7 +55,9 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      const res = await fetch(req);
+      // P0: pages (index.html) always revalidate, so an old cached page never pairs with newer scripts (Pages ignores ?v=).
+      const page = req.mode === 'navigate' || /(^|\/)(index\.html)?$/.test(url.pathname);
+      const res = await (page ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin', redirect: req.mode === 'navigate' ? 'manual' : 'follow' }) : fetch(req));
       if (res && res.ok) { try { await cache.put(req, res.clone()); } catch (e) { /* a full cache must not drop the live response */ } }
       return res;
     } catch (e) {

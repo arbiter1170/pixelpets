@@ -36,6 +36,10 @@ const BASE_STATS = {               // key = form id "<speciesId>/<stage>" (save 
   'moth/0':     { hp: 48, atk: 54, def: 33, spd: 57 }, 'moth/1':     { hp: 64, atk: 72, def: 44, spd: 76 }, 'moth/2':     { hp: 80, atk: 90, def: 55, spd: 95 },
   'vane/0':     { hp: 42, atk: 54, def: 45, spd: 51 }, 'vane/1':     { hp: 56, atk: 72, def: 60, spd: 68 }, 'vane/2':     { hp: 70, atk: 90, def: 75, spd: 85 },
   'dormouse/0': { hp: 57, atk: 51, def: 48, spd: 36 }, 'dormouse/1': { hp: 76, atk: 68, def: 64, spd: 48 }, 'dormouse/2': { hp: 95, atk: 85, def: 80, spd: 60 },
+  // byte: floating computer. Stage totals 192 / 256 / 320 (0.6 and 0.8 of the final line).
+  'byte/0': { hp: 33, atk: 54, def: 30, spd: 75 }, 'byte/1': { hp: 44, atk: 72, def: 40, spd: 100 }, 'byte/2': { hp: 55, atk: 90, def: 50, spd: 125 },
+  // fetch: NPC-only steady guardian. Totals 192 / 256 / 320.
+  'fetch/0': { hp: 54, atk: 48, def: 48, spd: 42 }, 'fetch/1': { hp: 72, atk: 64, def: 64, spd: 56 }, 'fetch/2': { hp: 90, atk: 80, def: 80, spd: 70 },
 };
 const STAT_RULES = {
   LEVEL_CAP: 50, STARTER_LEVEL: 5, MIGRATED_LEVEL_MIN: 5, MIGRATED_LEVEL_MAX: 10,

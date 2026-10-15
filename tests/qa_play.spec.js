@@ -5,7 +5,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-const HEIGHTS_TIP = 'Get to know us. RegenX in the Heights brews Atten. Stock up, then bring samples and plans.';
+const HEIGHTS_TIP = 'Get to know us. Copy Atten from RegenX. A floating computer woke in the top bay.';   // PR #40's quest line (quests.js)
 const FEN_AGAIN = 'The crates are by the gate. The Hall can wait.';
 
 function glimmerSave() {
