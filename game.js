@@ -5295,7 +5295,7 @@ function openJournalTab(){ openPhone(); }
 // Same visibility rules as BOOK. Pulses while the current objective differs from the one the panel was last opened on
 // (S.questSeen, additive), so every new beat invites a tap once and then goes quiet.
 const questVisible = () => journalVisible();
-// Quest marks (D92, modern only). The approved badge pip in nav_art (the G5 state) is the mark. Main story paints it
+// Quest marks (D105, modern only). The approved badge pip in nav_art (the G5 state) is the mark. Main story paints it
 // gold at the top right, the same gold as the MAIN card. A side quest paints it tide blue at the top left, the same
 // blue as the SIDE card, with a dark ring so it stays clear on the blue button and while the gold pulse plays.
 // The idle last step (id end, "that's all for now") does not light a main mark. Arcade keeps the 8x8 signpost.
