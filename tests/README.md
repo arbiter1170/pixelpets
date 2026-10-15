@@ -30,7 +30,7 @@ Projects (CSS pixels, mobile Chromium: `isMobile`, `hasTouch`):
 
 Screenshots are written to `test-results/screenshots/` (gitignored): the walk screen with the QUEST button (`walk-quest-<width>.png`), the open next-step panel (`quest-panel-<width>.png`), and from Build 2 the STANDING tab (`standing-tab-<width>.png`), the Pledge desk confirm step (`switch-confirm-<width>.png`), the quest panel with the designer copy on each side (`quest-panel-keepers-<width>.png`, `quest-panel-glimmer-<width>.png`) and the d-pad icons (`quest-icon-<width>.png`). Reference copies of the Build 2 set live in `screenshots/standing/`.
 
-Shared helpers are in `tests/helpers.js`: `starterSave()` (the v2 seed used below), `installSave(page, save)`, `gotoGame(page, query)`, `trackErrors(test, expect)` (the console-error assertion), `boxesOverlap`, `shot(page, name)`, and `playScene(page, choices, onChoice)` (presses Space through plain lines and clicks `#sbChoices` buttons by label once `PixelPets.optionsReady` is true; returns the prompts it saw).
+Shared helpers are in `tests/helpers.js`: `starterSave()` (the v2 seed used below), `installSave(page, save)`, `gotoGame(page, query)`, `trackErrors(test, expect)` (the console-error assertion), `boxesOverlap`, `shot(page, name)`, `withOverlay(page, overlay, key)` (adds a fixture `data/detail_*.json` overlay to `MAPDATA` before boot; call it before `gotoGame`), and `playScene(page, choices, onChoice)` (presses Space through plain lines and clicks `#sbChoices` buttons by label once `PixelPets.optionsReady` is true; returns the prompts it saw).
 
 A console message of type `error`, or any uncaught page error, fails the test.
 
@@ -76,6 +76,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 - **`PixelPets.glimmerCheck`** (getter). Returns the array from `glimmerDevCheck()` in `game.js`: a list of problem strings. Empty array means `data/glimmer_path.json` lines fit after tokens, choice labels are at most 30 characters, ambient lines and walk-away toasts are at most 40, variants have a base scene, and those variants set the same `story.*` flags as the base.
 
 `tests/heights.spec.js` plays the side-pick offer into Fernbrook Heights (Keepers tunnels, Glimmerwell lab), checks the trial stays shut until `story.heights_done`, and opens a group battle (two foes, TARGET). It also checks the VOLT line Bitlet: three stages, lab-only so the wild roll stays at 0, the Arbiter bay object, and a battle that names Bitlet. Save `v` stays 2.
+
+`tests/rx_f4_pilot.spec.js` is the rx_f4 pilot's QA list: the 14x22 Arbiter Bay grid and ids, a 30x30 test map that walks and saves, the stair arrival and mat warps, the arcade camera, walk and block rules, every talkable line, the night tech, reduced-motion tanks, seeded floor variants under the 70 % cap (D88), and an old 18x12 save. `tests/maps_b1.spec.js` covers the B1 packet items that spec leaves out: Quinn's fight and Bitlet's befriend started from the bay, the Arbiter's lines by flag, the same variants in a second browser context, the camera in modern controls, and a map grown by a `data/detail_*.json` overlay keeping a saved spot past its old size.
 
 `tests/group_battle.spec.js` checks a normal trainer is not a group fight, TARGET wraps, both foes swing in one turn, Cal joins Quinn, a win sets the trainer flag without the story scene, a loss does not, and Heights Standing grants once per faction.
 
