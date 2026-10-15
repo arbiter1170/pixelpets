@@ -21,6 +21,8 @@ const SHELL = [
   './ribbit.js',
   './cloud_config.js',
   './cloud.js',
+  './debug_ui.js',
+  './data/nav_art.js',
   './game.js',
   './fonts/Jersey15.woff2',
   './icons/icon-192.png',
