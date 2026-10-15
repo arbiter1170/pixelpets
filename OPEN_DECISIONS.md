@@ -6,7 +6,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 
 The old keeper-hq branch reused D27–D31. `main` already had D27 (Mahopac, settled) and D28 (lantern rest, open). Those rows are D32–D36 now.
 
-D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D60. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop.
+D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D61. D60 is the phone contact list. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop.
 
 ## Open
 
@@ -43,6 +43,7 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 | D57 | Rename | Should an empty rename, or typing the species name, clear the nickname? | Both clear `nick` (the species name shows again), on the stats card and on the Walkling sheet. CANCEL and Escape on the stats card leave the old name. The clear toast is "{old} goes by {species} again." A new name uses the befriend toast, "{old} is now called {name}!" The sheet writes the same value and does not toast. Cleaning stays 10 characters. Marked placeholder. This row was drafted as D51 before the council took that id | `nickToStore` in `game.js` |
 | D58 | Warden Ilse | How dark should the lodge gift be, and should she ask the trainer to join the Keepers? | She gives the Walkling so a young trainer can learn to defend themselves. The wild is not kind. She hopes you join the Keepers and use `{pet}` for good. The quiz labels are unchanged. Marked placeholder | `starter` in `data/maps_slice.json`; the two lines appended in `game.js` |
 | D59 | Route 1 phone | Should the side quest name the handset, and how does Officer Ness stop a trainer who walks past? | The side line is "The wild past the east gate is open. Go and explore." Ness stands at Route 1 (3, 7) the whole time. Talking to him, or three steps that do not close the distance, runs `phone_grant`. He says a Keeper1 is required to enter the wilds, free, and mandated for every trainer by the Keeper High Court. Marked placeholder | `phone` in `quests.js`; `r1_ness` and `phone_grant` in `data/civic.json`; `checkCatch` in `game.js` |
+| D60 | Phone contacts | Who gets a contact card, and what does FAV keep? | One card per name, after you talk to them or a finished scene names them. Quest dialog is a scene, a line that starts a scene, or a catch scene, and the card is marked QUEST. Every met person opens a card, including people with no quest. FAV sorts them first. FAVORITES shows only those. The phone app that opens the Walkling list is labeled WALKLINGS. `phoneBook` is `{ met, fav }`. `v` stays 2. The empty lines and "They still have more to say." are placeholders | `renderContacts` in `game.js`; `phoneBook` in `save.js` |
 
 ## Town boards (calls settled Oct 14, 2026)
 

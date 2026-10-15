@@ -208,7 +208,7 @@ Until that hook exists, the bounty heading is an empty sentence.
 
 ## Phone
 
-Home screen today (`index.html`): Contacts, Notes, Journal, Friends, KeeperUAV / Botnet, Ribbit. Town Board is a new `data-app="board"` button. The pane title is TOWN BOARD. The button label is BOARD if TOWN BOARD clips the 320px grid (D44). The cracked handset keeps the hack shell. The pane still says TOWN BOARD, because the paper is the town's.
+Home screen today (`index.html`): Contacts, Notes, Walklings, Friends, KeeperUAV / Botnet, Ribbit, BOARD. Walklings opens the WALKLINGS tab. Town Board is `data-app="board"`. The pane title is TOWN BOARD. The button label is BOARD if TOWN BOARD clips the 320px grid (D44). The cracked handset keeps the hack shell. The pane still says TOWN BOARD, because the paper is the town's.
 
 The app and the prop call one renderer, so the lists cannot drift.
 

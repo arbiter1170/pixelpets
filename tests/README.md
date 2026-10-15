@@ -81,6 +81,8 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 `tests/glimmer_fernbrook.spec.js` (Build 3) plays the Fernbrook glimmer path: Keepers pick leaves the orchard battle in place, an old save past the orchard does not see the gate, "Think about it" sets no flag and stepping off toasts one walk-away line, the glimmer pick runs the orchard and the four Tour stops, a worn-out party and a lost match can still finish at stop 4, and the optional win grants `tour1_match` once. Screenshots (320 and 390) cover the side pick, the orchard, each Tour stop, and the lanyard card.
 
+`tests/phone_contacts.spec.js` opens the Keeper1 icon grid (Walklings, not Journal), lists Officer Ness, Rook, Sergeant Bram, and Warden Ilse after those meetings, hides Hattie until you talk to her, opens a QUEST card, stores a FAV in `phoneBook`, and opens the bag with a Keeper1 and a Cracked Handset inside. Save `v` stays 2.
+
 `tests/civic.spec.js` issues the Keeper1 on the Route 1 side quest, opens the phone (KeeperUAV, then Botnet after a cracked handset), enters the Keeper House, and checks that Officer Bren patrols. Officer Ness is already at Route 1 (3, 7). Walking into him, or three steps that do not close the distance, runs `phone_grant`. The quest card splits MAIN and SIDE, and the side line says to explore. It also walks the Hearthmoor east path onto Route 1, checks the cut tree and the moved town sign, and checks that Officer Cald stands beside that gate. Save `v` stays 2.
 
 `tests/ribbit.spec.js` checks that the Ribbit feed is stable, that the quarry sale has its own line, and that the phone shows Block News and Chirp Worldwide.
