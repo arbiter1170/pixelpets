@@ -540,7 +540,7 @@ Fourteen hours away, once the partner tab is clear of the daily hello, the line 
 
 ### Q26 — Modern and arcade controls — M — **built on branch `modern-nav`, awaiting review**
 
-Built to this scope plus design NAV_MODERN v0.1 (button rects, 2x map with a 24x36 cap in modern, one `body.nav-locked`, the gear outside the scene fade, edge arrows in the free rect, WALK back label, TEAM / WALKLING-BOX headers, WALKLINGS icon-only). The prompt runs from `game.js` after `lookPick` (D76) instead of a new JSON step. Modern QUEST paints the approved badge pip (D92): gold at the top right for an open main step (the idle last step stays unmarked), tide blue at the top left for an open side quest. Not on main until Vincent merges.
+Built to this scope plus design NAV_MODERN v0.1 (button rects, 2x map with a 24x36 cap in modern, one `body.nav-locked`, the gear outside the scene fade, edge arrows in the free rect, WALK back label, TEAM / WALKLING-BOX headers, WALKLINGS icon-only). The prompt runs from `game.js` after `lookPick` (D76) instead of a new JSON step. Modern QUEST paints the approved badge pip (D105): gold at the top right for an open main step (the idle last step stays unmarked), tide blue at the top left for an open side quest. Not on main until Vincent merges.
 
 Not in the game. The next build stays Q19. This package can land beside the boards. No new art: every button reuses an icon the game already paints. Save `v` stays 2. The sentences are D70. The joystick default is D71. Landscape is D72. All three stay marked placeholder until Vincent signs them.
 

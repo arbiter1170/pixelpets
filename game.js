@@ -715,7 +715,7 @@ function helloBonus(p){ addBond(p, BOND.hello); }
 /* Welcome back after a long absence. 14 hours is the backlog's "~14h away" note (D50). FOOD and JOY still floor at 20;
    NRG still floors at 10. The line waits behind the daily hello and does not change those floors. */
 const WELCOME_AWAY = 14 * 3600;
-const WELCOME_LINE = 'Welcome to the Amberwild!';   /* Design's approved green copy (Oct 15); no {pet}. Shown after 14 h away (see PR note). */
+const WELCOME_LINE = '{pet} missed you! Welcome back.';   /* Design's approved green copy (Oct 15); {pet} = the partner. Shown after 14 h away. */
 const welcome = { due: false };
 function noteWelcome(sec){
   if (!(sec >= WELCOME_AWAY) || !S || !pet() || !S.flags['story.starter_received']) return;
@@ -1624,7 +1624,7 @@ function earlyWalk(){
   S.flags['story.early_steps'] = n;
   const nm = petName(p);
   if (n === 1) toast(nm + ' trots along. The east path leads out of town.');
-  else if (n === 8) toast(ctlMode() === 'modern' ? 'Keep walking. Wild Walklings hide in the grass.' : 'Keep holding the pad. Wild Walklings like the grass.');   /* modern line: Design's approved green copy (Oct 15) */
+  else if (n === 8) toast('Keep walking. Wild Walklings hide in the grass.');   /* Design's approved green copy (Oct 15), both layouts */
   else if (n === 16 && !S.flags['story.rival1_done']) toast('Rook is waiting by the east gate.');
   if (n >= 16) S.flags['story.early_done'] = true;
   if (n === 1 || n === 8 || n === 16) save();
@@ -5136,7 +5136,7 @@ function openJournalTab(){ openPhone(); }
 // Same visibility rules as BOOK. Pulses while the current objective differs from the one the panel was last opened on
 // (S.questSeen, additive), so every new beat invites a tap once and then goes quiet.
 const questVisible = () => journalVisible();
-// Quest marks (D92, modern only). The approved badge pip in nav_art (the G5 state) is the mark. Main story paints it
+// Quest marks (D105, modern only). The approved badge pip in nav_art (the G5 state) is the mark. Main story paints it
 // gold at the top right, the same gold as the MAIN card. A side quest paints it tide blue at the top left, the same
 // blue as the SIDE card, with a dark ring so it stays clear on the blue button and while the gold pulse plays.
 // The idle last step (id end, "that's all for now") does not light a main mark. Arcade keeps the 8x8 signpost.
@@ -5906,8 +5906,8 @@ function openStatsCard(id){
   $('#scClose').focus({ preventScroll: true });
   return true;
 }
-/* Rename toasts: Design's approved green copy (Oct 15). Design gave no separate line for going back to the species name. */
-const RENAME_OK = '{name} likes the new name!', RENAME_EMPTY = 'Pick a name first.';
+/* Rename toasts: Design's approved green copy (Oct 15). RENAME_BACK when the nickname is cleared back to the species name. */
+const RENAME_OK = '{name} likes the new name!', RENAME_BACK = '{name} is back to its own name.', RENAME_EMPTY = 'Pick a name first.';
 function nickToStore(p, raw){
   const nk = cleanNick(raw), species = nameOf(spi(p), p.stage);
   return nk && nk !== species ? nk : null;   // empty, or the species name, keeps the species (D57)
@@ -5937,7 +5937,7 @@ function applyNick(){
   hideNickEdit();
   if (next === prev) { renderStatsCard(); return; }
   p.nick = next; save(); updateHUD(); renderCollection(); renderStatsCard();
-  toast(RENAME_OK.replace('{name}', petName(p)));   // also when a blank box clears the nickname back to the species name (D57)
+  toast(next ? RENAME_OK.replace('{name}', petName(p)) : RENAME_BACK.replace('{name}', nameOf(spi(p), p.stage)));   // cleared (blank box, D57, or the species name typed in)
 }
 function ensureDeploy(p){ if (!p.deploy || typeof p.deploy !== 'object' || Array.isArray(p.deploy)) p.deploy = {}; return p.deploy; }
 function pruneDeploy(p){ if (p.deploy && !Object.keys(p.deploy).length) delete p.deploy; }
