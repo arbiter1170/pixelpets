@@ -39,7 +39,8 @@ test('the password gate rejects a wrong word and accepts Larson', async ({ page 
   await expect(page.locator('#ovSettings')).toBeHidden();
   await expect(page.locator('#dbgTag')).toBeVisible();
   expect(await page.evaluate(() => window.PixelPets.debug)).toBe(true);
-  expect(await page.evaluate(() => localStorage.getItem('pixelpets.debug'))).toBe('1');
+  expect(await page.evaluate(() => localStorage.getItem('pixelpets.debug'))).toBe(null);      // debug lives for this tab session only
+  expect(await page.evaluate(() => sessionStorage.getItem('pixelpets.debug'))).toBe('1');
   expect(await page.evaluate(() => window.PixelPets.giveItem('heal_snack', 2))).toBe(2);
   await page.locator('#dbgLock').click();
   await expect(page.locator('#ovDebug')).toBeHidden();
@@ -47,6 +48,8 @@ test('the password gate rejects a wrong word and accepts Larson', async ({ page 
   expect(await page.evaluate(() => window.PixelPets.debug)).toBe(false);
   expect(await page.evaluate(() => window.PixelPets.checkpoint('hall1'))).toBeUndefined();
   expect(await page.evaluate(() => localStorage.getItem('pixelpets.debug'))).toBe(null);
+  expect(await page.evaluate(() => sessionStorage.getItem('pixelpets.debug'))).toBe(null);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')).debugSave)).toBe(true);   // the debug session marked the save
 });
 
 test('checkpoint, item, faction and standing work from the panel', async ({ page }) => {

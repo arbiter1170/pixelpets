@@ -63,6 +63,7 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D69 debug save mark (Oct 15, 2026, green, engineer).** QA BUG-2 fix. Debug writes go to `pixelpets.save.v2` with an additive `debugSave: true` mark shown in Settings, not to a separate key: a separate key would break the 18 suites that seed and read the v2 key under `?debug=1`. Debug itself is per tab session (sessionStorage). Change it in `save()` in `game.js` and `normalizeV2` in `save.js`.
 - **D37 town list (Oct 14, 2026).** Vincent: yes, and all future towns. This is the town-list row. The region-map row that uses the same number stays open. Boards go in Hearthmoor, Fernbrook, Cobblecrest, High Charity, and Mahopac, and in every town added later, including Brinewick in the same pass as its map. Routes, Wickerglen, Old Meadow, the quarry, the Heights, RegenX, and the tunnels get none. The sky-dock boarding board and the lantern coach stay their own signs. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not built. Brinewick still has no map.
 - **D38 (Oct 14, 2026).** Mahopac gets a board now: one uncrested board on the path at (11, 8), no new tiles. It does not receive slips for a while. Reports may show with the other boards. TB-3 (Cald's gate count) does not add a Mahopac slip.
 - **D39 (Oct 14, 2026).** Yes. The phone says "Go see them" and sets only a pin. The NPC's yes is the only accept. Talking without the pin still works.
