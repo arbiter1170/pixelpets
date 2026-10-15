@@ -29,17 +29,18 @@ const roleMult = q => ROLE_MULT[roleOf(q)];
 // PACING v0.1 §4 Warm Bowl: the first FEED of each local day (one per player) gives FOOD +15 on top and JOY +5 instead of +3.
 const BOWL = { food: 15, joy: 5, flag: 'daily.warm_bowl' };
 const FAST_KEY = 'pixelpets.fast'; // debug fast mode, kept out of the save schema
-const DEBUG_KEY = 'pixelpets.debug';   // ?debug=1 turns debug tools on (remembered), ?debug=0 off. Settings → Debug accepts the password too.
+const DEBUG_KEY = 'pixelpets.debug';   // ?debug=1 turns debug tools on for this tab session only (sessionStorage), ?debug=0 off. Settings → Debug too.
 const DEBUG_PASSWORD = 'larson';       // the gate word is "Larson"; any capitalization works
 function readDebugPref(){
   let on = false;
-  try { on = localStorage.getItem(DEBUG_KEY) === '1'; } catch(e) {}
+  try { localStorage.removeItem(DEBUG_KEY); } catch(e) {}   // older builds remembered debug forever; a normal player never keeps it
+  try { on = sessionStorage.getItem(DEBUG_KEY) === '1'; } catch(e) {}
   const q = new URLSearchParams(location.search).get('debug');
-  if (q !== null) { on = q === '1' || q === 'true'; try { if (on) localStorage.setItem(DEBUG_KEY, '1'); else localStorage.removeItem(DEBUG_KEY); } catch(e) {} }
+  if (q !== null) { on = q === '1' || q === 'true'; writeDebugPref(on); }
   return on;
 }
 let DEBUG = readDebugPref();     // E/G/F keys, fast mode, "Pick a place" and the cheat console hooks need this
-function writeDebugPref(on){ try { if (on) localStorage.setItem(DEBUG_KEY, '1'); else localStorage.removeItem(DEBUG_KEY); } catch(e) {} }
+function writeDebugPref(on){ try { if (on) sessionStorage.setItem(DEBUG_KEY, '1'); else sessionStorage.removeItem(DEBUG_KEY); } catch(e) {} }
 function syncDebugQuery(on){
   try {
     const q = new URLSearchParams(location.search);
@@ -159,7 +160,7 @@ function newPet(sp, stage=0, origin='wild', lv=STAT_RULES.STARTER_LEVEL){   // B
 let saveTimer = 0, readOnly = false;              // a save from a newer build: play nothing, write nothing
 // Once Start over has begun, nothing on this page may write again (pagehide / hidden / the 5 s timer fire while it reloads).
 let resetting = false, gameReplaced = false;
-function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); PPSave.writeV2(S); }
+function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); if (DEBUG) S.debugSave = true; PPSave.writeV2(S); }   // a debug session marks the save (additive; shown in Settings)
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
 const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
@@ -226,7 +227,7 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
-function renderBuild(){ const b = buildId(); $('#setBuild').textContent = b ? 'Build ' + b : ''; $('#setBuild').hidden = !b; }
+function renderBuild(){ const b = buildId(), d = !!(S && S.debugSave); $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d; }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
@@ -1174,7 +1175,7 @@ if (SCENES.rival1) SCENES.rival1.push(
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
 const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
-  rx_wardens: 'regenx', rx_techs: 'regenx', rx_records: 'regenx', rx_quinn: 'regenx', rx_cal_ally: 'regenx',
+  rx_wardens: 'rx_warden', rx_techs: 'rx_tech', rx_records: 'rx_records', rx_quinn: 'quinn', rx_cal_ally: 'cal',
   sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
@@ -2082,10 +2083,11 @@ function drawMap(t){
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
       const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
+      if (CUR.skin === 'lab') { const k = ch === 'W' && tx % 2 ? 'W2' : ch, nm = ((LAB_SKIN.override[CUR.id] || {})[k]) || LAB_SKIN.remap[k]; if (nm && TILES[nm]) img = TILES[nm]; }   // FERNBROOK_HEIGHTS §3
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
       drawFactionBand(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
-      if (ch === '=') {                          // rug border where the rug ends
+      if (ch === '=' && CUR.skin !== 'lab') {    // rug border where the rug ends (the lab runner has none)
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
         if (tileAt(tx, ty-1) !== '=') g.fillRect(X, Y, 16, 1); if (tileAt(tx, ty+1) !== '=') g.fillRect(X, Y+15, 16, 1);
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
@@ -2312,7 +2314,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     }
     g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage(WART.sign, X, Y);
-  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) g.drawImage(Array.isArray(a) ? a[Math.floor(t / 400) % 2] : a, X, Y); }
+  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) { const reduce = a.ms && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; g.drawImage(Array.isArray(a) ? a[reduce ? 0 : Math.floor(t / (a.ms || 400)) % 2] : a, X, Y); } }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') { const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(sprSet(si, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
 }
@@ -3017,8 +3019,9 @@ let ENV = null;
 const rnd = ([a, b]) => a + Math.random() * (b - a);
 const envTags = () => (ENV && ENV.tags && ENV.tags.length) ? ENV.tags : ['meadow'];
 // weatherOnly species (the vane line): weight 0 unless one of their tags is active, and never part of the any-species roll.
+// labOnly species (the byte line): weight 0 everywhere, and never part of the any-species roll. A map object places them.
 const weatherOk = (sp, tags) => !sp.weatherOnly || sp.weatherOnly.some(t => tags.includes(t));
-const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly);
+const ANY_POOL = SPECIES.map((sp, i) => i).filter(i => !SPECIES[i].weatherOnly && !SPECIES[i].labOnly);
 // CREATURES_SLICE §3: authored spawn tables, rows [speciesId, baseWeight, minLv, maxLv]. Effective weight = base x (1 + 0.25 x the
 // species' habitat sum over the active tags); weatherOnly rows weigh 0 unless their tag is active; no 8% any-species roll here.
 const SPAWNS = {
@@ -3030,10 +3033,10 @@ const SPAWNS = {
 for (const src of [MD.act1_route2, MD.cobblecrest]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = v;
 const spawnKey = () => (CUR && CUR.spawns) || 'proto';
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
-function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
+function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && !sp.labOnly && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
 // Old Meadow ('proto'): starter lines (ember, tide, bloom) weigh 0 until story.seal1, then x0.2, in the habitat pick and the 8% roll (MAPS_SLICE §11).
 const starterMult = sp => !sp.starter ? 1 : (S.flags && S.flags['story.seal1']) ? 0.2 : 0;
-function speciesWeights(tags = envTags()){ return SPECIES.map(sp => weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
+function speciesWeights(tags = envTags()){ return SPECIES.map(sp => !sp.labOnly && weatherOk(sp, tags) ? habSum(sp, tags) * starterMult(sp) : 0); }
 const anyWeights = () => SPECIES.map((sp, i) => ANY_POOL.includes(i) ? starterMult(sp) : 0);
 function spawnOdds(tags = envTags(), key = spawnKey()){   // expected spawn probability per species for these tags on this map's table
   const t = SPAWNS[key];
@@ -5194,7 +5197,7 @@ function drawEvolution(t){
 
 /* ---------- stats card (TYPES_STATS as-built 7) ---------- */
 // One overlay any tab can open for a pet id (Pet tab, Pets tab; later the Walk follower, MAPS_SLICE K.4).
-// Bars: the pet's stats at its level, each scaled to the highest value of that stat across all 42 forms at the same level.
+// Bars: the pet's stats at its level, each scaled to the highest value of that stat across every form at the same level.
 // No moves row until battles ship.
 const STAT_KEYS = [['hp', 'HP'], ['atk', 'ATK'], ['def', 'DEF'], ['spd', 'SPD']];
 const statMaxCache = {};
@@ -5380,7 +5383,7 @@ function paintStatsInto(prefix, p, opt){
   $('#' + prefix + 'Name').textContent = petName(p);
   const species = nameOf(si, p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   $('#' + prefix + 'Species').textContent = ((opt && opt.alwaysSpecies) || cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
-  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of 42 forms';
+  $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of ' + (SPECIES.length * 3) + ' forms';
   const tb = $('#' + prefix + 'Type'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
   $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
   const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
@@ -7367,7 +7370,7 @@ function boot(){
     if (typeof v === 'function') {
       api[k] = (...args) => {
         if (!DEBUG) {
-          if (!warned) { warned = true; console.info('Walklings: debug hooks need ?debug=1 in the URL, or Settings → Debug with the password Larson.'); }
+          if (!warned) { warned = true; console.info('Walklings: debug hooks need ?debug=1 in the URL.'); }
           return undefined;
         }
         return v(...args);

@@ -5,7 +5,8 @@
    ('grass' = tall grass, 'shore' = next to water, 'woods' = next to trees). starter: offered as a first pet. uiHalo: draw a light rim around the
    sprite on dark UI cells (dex, collection, header) for dark-bodied species; the map art is unchanged.
    weatherOnly: env tags; the species spawns only while one of them is active and never in the any-species roll.
-   Order matters: indices are runtime species numbers and ids are save-v2 form ids, so new lines are only ever appended. */
+   Order matters: indices are runtime species numbers and ids are save-v2 form ids, so new lines are only ever appended.
+   labOnly: never in the habitat roll or the 8% any-species roll. Met only where a map places it. */
 'use strict';
 const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f070',g:'#38b764',t:'#257179',
   n:'#29366f',b:'#3b5dc9',c:'#41a6f6',s:'#73eff7',w:'#f4f4f4',h:'#94b0c2',m:'#566c86',d:'#333c57',
@@ -222,6 +223,19 @@ const SPECIES = [
       'd.......', 'aa......', 'aca.....', 'acca....', '.accaaac',
       '..aaaacc', '..aaaaaa', 'c.abbbbb', 'ccabiebb', 'ccabeebb',
       'ccabbbbd', 'ccaaaaaa', '.caaabbb', 'c.aaabbb', '...aaaaa', '..aa..aa']}
+  ]},
+  // Index 14. A floating computer. labOnly: the Arbiter bay is the only place it appears.
+  { id:'byte', habitat:{}, labOnly:true, tiles:'grass',
+    type:'VOLT', blurb:'A floating little computer. Hums when it thinks.', stages:[
+    { name:'Bitlet', col:{a:PAL.c,b:PAL.s,c:PAL.y,d:PAL.m,x:PAL.w}, half:[
+      '........','.......c','......dc','..dddddd','.daaaaaa','.daaieaa','.daaeeaa','.dabbbaa',
+      '..dddddd','...cc...','..c...c.','........','........','........','........','........']},
+    { name:'Hoverbyte', col:{a:PAL.b,b:PAL.c,c:PAL.y,d:PAL.h,x:PAL.w}, half:[
+      '.......c','......cc','.ddddddd','daaaaaaa','daaaieaa','daaaeeaa','dabbbbaa','daaaaaaa',
+      '.ddddddd','...cc...','..c..c..','........','........','........','........','........']},
+    { name:'Archivolt', col:{a:PAL.s,b:PAL.c,c:PAL.y,d:PAL.d,x:PAL.h}, half:[
+      '.......c','......dc','....dddd','....dxdd','....aiea','....aeea','....abba','....aaaa',
+      '....dxdd','....dddd','....dddd','....dddd','......cc','.....c..','....c..c','........']}
   ]}
 ];
 
@@ -457,9 +471,13 @@ function buildTiles(){
   // Mahopac home stairs.
   T['^'] = mkTile(g => { px(g,PAL.o,0,0,16,16); [4,9,14].forEach(y => px(g,PAL.d,0,y,16,1));
     px(g,PAL.d,2,12,12,2); px(g,PAL.h,3,12,10,1); px(g,PAL.d,4,8,8,2); px(g,PAL.h,5,8,6,1); px(g,PAL.d,6,4,4,2); px(g,PAL.w,7,4,2,1); });
+  // FERNBROOK_HEIGHTS §3 lab skin (design b9dadef): drawn in place of the house tiles on maps with "skin": "lab".
+  const LAB_TILES = {"lab_floor":["hhhhhhhhhhhhhhhh","hwwwwwwwhwwwwwww","hwsswwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hhhhhhhhhhhhhhhh","hwwwwwwwhwwwwwww","hwwwwwwwhwsswwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww"],"lab_floor_bay":["hhhhhhhhhhhhhhhh","hwwwwwwwhwwwwwww","hwsswwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwlwhwwwwwww","hwwwwwwwhwwwwwww","hhhhhhhhhhhhhhhh","hwwwwwwwhwwwwwww","hwwwwwwwhwsswwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwlw","hwwwwwwwhwwwwwww"],"lab_wall":["mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm","mmmmmmmmmmmmmmmm","dddddddddddddddd","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh","hhhhhhhwhhhhhhhh"],"lab_wall_face":["wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","hhhhhhhhhhhhhhhh","llllllllllllllll","hhhhhhhhhhhhhhhh","dddddddddddddddd"],"lab_wall_win":["wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwwwwhwwwwwwww","wwwwmmmmmmmmwwww","wwwwmsssmccmwwww","wwwwmsccmccmwwww","wwwwmcccmccmwwww","wwwwmmmmmmmmwwww","wwwwmcccmccmwwww","wwwwmcccmccmwwww","wwwwmmmmmmmmwwww","wwwwwwwhwwwwwwww","hhhhhhhhhhhhhhhh","llllllllllllllll","hhhhhhhhhhhhhhhh","dddddddddddddddd"],"lab_runner":["hhhhhhhhhhhhhhhh","hwwwwwwwhwwwwwww","hwsswwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hhhhhhhhhhhhhhhh","slllslllslllslll","slllslllslllslll","hhhhhhhhhhhhhhhh","hwwwwwwwhwsswwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww"],"lab_mat":["hhhhhhhhhhhhhhhh","hwwwwwwwhwwwwwww","hwsswwwwhwwwwwww","hmmmmmmmmmmmmmmw","hmhhhhhhhhhhhhmw","hmhhsshhhhsshhmw","hmhhhhsssshhhhmw","hmhhhhhhhhhhhhmw","hmhhsshhhhsshhmh","hmhhhhsssshhhhmw","hmhhhhhhhhhhhhmw","hmhhhhhhhhhhhhmw","hmmmmmmmmmmmmmmw","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww","hwwwwwwwhwwwwwww"]};
+  for (const [k, rows] of Object.entries(LAB_TILES)) T[k] = mkTile(g => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
+const LAB_SKIN = {"remap":{"#":"lab_wall","W":"lab_wall_face","W2":"lab_wall_win",".":"lab_floor","=":"lab_runner","m":"lab_mat"},"override":{"rx_f4":{".":"lab_floor_bay"}}};   // FERNBROOK_HEIGHTS §3: house char -> lab tile, plus per-map overrides
 function buildWorldArt(){
   const A = {}, oval = (g, cx, cy, rx, ry, col) => { for (let y=0;y<16;y++) for (let x=0;x<16;x++) if (((x-cx)/rx)**2 + ((y-cy)/ry)**2 <= 1) px(g,col,x,y); };
   A.door = mkTile(g => { px(g,PAL.d,3,2,10,14); px(g,PAL.o,4,3,8,13); px(g,PAL.d,7,4,1,12); px(g,PAL.y,10,9,1,2); px(g,PAL.d,4,2,8,1); });
@@ -547,6 +565,18 @@ function buildWorldArt(){
     '...d.hwhrhw.d...', '...d.hwhlhw.d...', '.llllllllllllll.', '.swwwwwwwwwwwws.', '.slllllllllllls.', '.slllwwllwwllls.', '.slllwwllwwllls.', '.slllllllllllls.',
     '.dddddddddddddd.', '..d..........d..'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   A.arbiter = mkTile(g => ['................', '.....hhhhhh.....', '.......hh.......', '.......hh.......', '.mmmmmmmmmmmmmm.', '.mmhhhhhhhhhhmm.', '.mmhkkkkkkkkhmm.', '.mmhckkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhhhhhhhhhhmm.', '.mmmmddddddmmmm.', '.mmmmmmmmmmmmmm.', '................', '................'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
+  // RegenX floors. Grids also live in data/heights_art.json.
+  const rxPaint = (g, rows) => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
+  A.lab_bench = mkTile(g => rxPaint(g, ['................','..hhhhhhhh......','.hhkkkkkkhh.....','.hhkkkkkkhh.....','.hhkkkkkkhh.....','..hhhhhhhh......','.wwwwwwwwwwwwww.','.wwwwwwwwwwyyww.','.wwwwwwwwwllllw.','.wwwwwwwwwllllw.','.wwwwwwwwwwccww.','..mmmmmmmmmmmm..','..mdddmmmdddmm..','..mmmmmmmmmmmm..','..mdddmmmdddmm..','................']));
+  A.rx_desk = mkTile(g => rxPaint(g, ['................','................','................','..wwwwwwwwwwww..','..wccwwwwwwccw..','..wkkwwwwwwkkw..','..wwwwwwwwwwww..','..mmmmmmmmmmmm..','..m..........m..','..m..........m..','..mmmmmmmmmmmm..','................','................','................','................','................']));
+  A.rx_shelf = mkTile(g => rxPaint(g, ['................','.mmmmmmmmmmmmmm.','.mwwmwwmwwmwwmm.','.mmmmmmmmmmmmmm.','.mccmwcmwcmwcmm.','.mmmmmmmmmmmmmm.','.mwwmwwmwwmwwmm.','.mmmmmmmmmmmmmm.','.mhhmmhmmhmmhmm.','.mmmmmmmmmmmmmm.','................','................','................','................','................','................']));
+  A.rx_terminal = mkTile(g => rxPaint(g, ['................','................','....dddddddd....','....dccccccd....','....dckkkkcd....','....dccccccd....','....dddddddd....','......dddd......','....wwwwwwww....','....wmmmmmmw....','....wwwwwwww....','......mmmm......','......m..m......','................','................','................']));
+  A.rx_rack = mkTile(g => rxPaint(g, ['................','................','................','...mmmmmmmmmm...','...m.yy.yy.ym...','...m.ll.ll.lm...','...m.ll.ll.lm...','...m.yy.yy.ym...','...mmmmmmmmmm...','....m..m..m.....','....m..m..m.....','...mmmmmmmmmm...','................','................','................','................']));
+  // FERNBROOK_HEIGHTS §3 lab props: a wall counter and a two-frame humming tank (600 ms; reduced motion holds frame 0).
+  A.lab_counter = mkTile(g => rxPaint(g, ["................", "...dddd....h....", "...dscd....w....", "...dccd....l....", ".wwwwwwwwwwwwww.", ".wwwwwwwwwwwwww.", ".wwwwwwwwwwwwww.", ".llllllllllllll.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhdhmmhdhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".mmmmmmmmmmmmmm.", "................"]));
+  A.lab_tank = [["....mmmmmmmm....", "...mmmmmmmmmm...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swllllllgs...", "...swlwllllgs...", "...swllllllgs...", "...swllllwlgs...", "...swllllllgs...", "...swllllllgs...", "...slllwlllgs...", "...slllhhllgs...", "...dddddddddd...", "....dddddddd...."], ["....mmmmmmmm....", "...mmmmmmmmmm...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swllllwlgs...", "...swllllllgs...", "...swllwlllgs...", "...swllllllgs...", "...swllllllgs...", "...swlllwllgs...", "...slllllllgs...", "...slllhhllgs...", "...dddddddddd...", "....dddddddd...."]].map(fr => mkTile(g => rxPaint(g, fr)));
+  A.lab_tank.ms = 600;
+  A.rx_pylon = mkTile(g => rxPaint(g, ['................','.......cc.......','......cccc......','......ckkc......','......cccc......','.......cc.......','.......mm.......','.......mm.......','.......mm.......','.......mm.......','.......mm.......','......mmmm......','.....mmmmmm.....','................','................','................']));
   // High Charity props. One tile each; the airship sits on an A pad and the nave is a row of pews.
   A.airship = mkTile(g => { px(g,PAL.c,3,1,10,6); px(g,PAL.s,4,2,8,3); px(g,PAL.w,5,2,2,1);
     px(g,PAL.d,7,7,2,3); px(g,PAL.o,4,10,8,3); px(g,PAL.y,5,11,2,1); px(g,PAL.d,4,13,8,1); });
