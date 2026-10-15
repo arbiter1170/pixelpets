@@ -2343,11 +2343,152 @@ function factionOfMap(id){
   if (id === 'hearthmoor' || id.indexOf('hm_') === 0 || id === 'fernbrook' || id === 'route1' || id === 'route2') return 'keepers';
   return null;
 }
+// Map pass E11: a `roofs` entry may also name roof and wall (TILES keys), door and win (WART keys; win may be a list cycled
+// along the wall), trim (a PAL key) and shape ('gable', 'steep', 'point', 'dome', 'arch', 'drum', 'flat' or 'stepped', plus any of
+// '+chimney', '+mast', '+bell', '+clock', '+bunting', '+emblem', '+slit'). An entry with none of these draws exactly as before.
+// Each styled building is painted once per map and faction, then cut into 16x16 cells that replace its R and H tiles.
+const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPpt', bldCache = new Map();
+const bldKey = (x, y) => y * 4096 + x;
+function buildingsOf(m){
+  const out = [], at = (x, y) => (m.grid[y] && m.grid[y][x]) || '';
+  if (!m || !m.roofs) return out;
+  for (const [name, r] of Object.entries(m.roofs)) {
+    if (!r || !BLD_KEYS.some(k => r[k])) continue;
+    let y1 = r.y1;
+    const wallRow = y => { for (let x = r.x0; x <= r.x1; x++) if (at(x, y) === 'H') return true; return false; };
+    while (y1 + 1 < m.grid.length && wallRow(y1 + 1)) y1++;
+    const doors = m.objs.filter(o => o.kind === 'door' && o.x >= r.x0 && o.x <= r.x1 && o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H');
+    const shp = String(r.shape || '').split('+');
+    out.push({ name, x0: r.x0, y0: r.y0, x1: r.x1, y1, ry1: r.y1, col: r.col || null, roof: r.roof || null, wall: r.wall || null, door: r.door || null,
+      win: r.win ? [].concat(r.win) : [], trim: r.trim || null, shape: shp[0] || null, feats: shp.slice(1), doors: doors.map(o => ({ id: o.id, x: o.x, y: o.y })),
+      porch: r.porch || [] });
+  }
+  return out;
+}
+function paintBuilding(m, b, fac, P){
+  const at = (x, y) => (m.grid[y] && m.grid[y][x]) || '', W = (b.x1 - b.x0 + 1) * TS, H = (b.y1 - b.y0 + 1) * TS, RH = (b.ry1 - b.y0 + 1) * TS, mid = W / 2;
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const inset = by => {                      // px cut from each side of roof row `by` (0 = the top row)
+    const k = (RH - 1 - by) / RH, s = b.shape;
+    if (s === 'gable') return Math.min(mid - 2, RH - 1 - by);
+    if (s === 'steep') return Math.floor((mid - 1) * k);
+    if (s === 'point') return Math.floor((mid - 6) * Math.pow(k, 0.6));
+    if (s === 'dome') return Math.floor(mid - mid * Math.sqrt(Math.max(0, 1 - k * k)));
+    if (s === 'arch' || s === 'drum') { const r = Math.min(mid, 24); return by < r ? Math.floor(r - Math.sqrt(r * r - (r - by) * (r - by))) : 0; }
+    return 0;
+  };
+  const cut = ['gable', 'steep', 'point', 'dome', 'arch', 'drum'].indexOf(b.shape) >= 0;
+  const inside = (x, by) => by >= RH || (by >= 0 && (x < 0 || x >= W || (x >= inset(by) && x < W - inset(by))));
+  const roofImg = TILES[b.roof] || TILES['R' + b.col] || TILES.R, wallImg = TILES[b.wall] || TILES.H;
+  for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
+    const ch = at(x, y), X = (x - b.x0) * TS, Y = (y - b.y0) * TS;
+    if (ch === 'R' && y <= b.ry1) g.drawImage(roofImg, X, Y); else if (ch === 'H') g.drawImage(wallImg, X, Y);
+  }
+  const shade = (a, x, y, w, h) => { g.fillStyle = 'rgba(26,28,44,' + a + ')'; g.fillRect(x, y, w, h); };
+  if (b.roof) { shade(0.3, 0, RH - 3, W, 3); shade(0.35, 0, RH - 1, W, 1); shade(0.22, 0, RH, W, 2); }
+  if (b.shape === 'flat') { g.fillStyle = PAL.h; g.fillRect(0, 0, W, 3); g.fillStyle = PAL.w; g.fillRect(0, 0, W, 1); shade(0.3, 0, 3, W, 1); }
+  if (b.shape === 'drum') { shade(0.22, 0, 0, 5, H); shade(0.22, W - 5, 0, 5, H); }
+  if (b.trim) { g.fillStyle = PAL[b.trim]; g.fillRect(0, RH, W, 1); g.fillRect(0, RH, 2, H - RH); g.fillRect(W - 2, RH, 2, H - RH); }
+  const bigDoor = WART[b.door] && WART[b.door].width > TS, skip = new Set();
+  for (const d of b.doors) {
+    skip.add(bldKey(d.x, d.y - 1));
+    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, d.y - 1 - dy));
+  }
+  if (b.win.length) {
+    const every = /^win_(band|strip)/.test(b.win[0]);
+    for (let y = b.ry1 + 1; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
+      if (at(x, y) !== 'H' || skip.has(bldKey(x, y))) continue;
+      const ref = b.doors.length ? b.doors.reduce((a, d) => Math.abs(d.x - x) < Math.abs(a - x) ? d.x : a, b.doors[0].x) : b.x0 + 1, off = Math.abs(x - ref);
+      if (!every && off % 2) continue;
+      const art = WART[b.win[Math.floor(off / 2) % b.win.length]];
+      if (art) g.drawImage(art, (x - b.x0) * TS, (y - b.y0) * TS);
+    }
+  }
+  if (b.feats.indexOf('slit') >= 0) { g.fillStyle = PAL.d; g.fillRect(mid - 2, 2, 4, RH - 6); g.fillStyle = PAL.s; g.fillRect(mid - 1, 6, 1, 1); g.fillRect(mid, 12, 1, 1); }
+  if (cut) {
+    for (let by = 0; by < RH; by++) { const s = inset(by); if (s > 0) { g.clearRect(0, by, s, 1); g.clearRect(W - s, by, s, 1); } }
+    const ridge = fac === 'glimmer' ? PAL.c : fac ? PAL.y : null, band = fac === 'glimmer' ? PAL.l : PAL.g;
+    for (let by = 0; by < RH; by++) for (let x = 0; x < W; x++) {
+      if (!inside(x, by) || (inside(x, by - 1) && inside(x - 1, by) && inside(x + 1, by))) continue;
+      if (ridge) { g.fillStyle = ridge; g.fillRect(x, by, 1, 2); g.fillStyle = band; if (inside(x, by + 2)) g.fillRect(x, by + 2, 1, 1); }
+      else { g.fillStyle = 'rgba(244,244,244,.55)'; g.fillRect(x, by, 1, 1); }
+    }
+  }
+  const top = x => { let by = 0; while (by < RH - 1 && !inside(x, by)) by++; return by; };
+  const feat = (f, name, X, Y) => { if (b.feats.indexOf(f) >= 0 && WART[name]) g.drawImage(WART[name], Math.round(X), Math.round(Y)); };
+  const chx = W >= 3 * TS ? W - 2 * TS : W - TS;
+  feat('chimney', 'chimney', chx, Math.min(RH - TS, Math.max(0, top(chx + 7) - 3)));
+  feat('mast', 'mast', mid - 8, 0);
+  feat('bell', 'bell', mid - 8, 0);
+  feat('clock', 'clock_face', mid - 8, RH - TS);
+  if (b.feats.indexOf('bunting') >= 0) for (let X = 0; X < W; X += TS) feat('bunting', 'bunting', X, RH - 2);
+  for (const d of b.doors) feat('emblem', 'acorn_emblem', (d.x - b.x0) * TS, RH - TS);
+  const gch = [at(b.x0 - 1, b.y0), at(b.x1 + 1, b.y0), at(b.x0, b.y0 - 1)].find(ch => ch && BLD_GROUND.indexOf(ch) >= 0) || 'g';
+  for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
+    const ch = at(x, y); if (ch !== 'R' && ch !== 'H') continue;
+    const cell = document.createElement('canvas'); cell.width = cell.height = TS; const cg = cell.getContext('2d');
+    if (cut && ch === 'R') cg.drawImage(TILES[gch] || TILES.g, 0, 0);
+    cg.drawImage(c, (x - b.x0) * TS, (y - b.y0) * TS, TS, TS, 0, 0, TS, TS);
+    P.cells.set(bldKey(x, y), cell);
+    if (cut && ch === 'R') P.cut.add(bldKey(x, y));
+    if (ch === 'H' && (b.wall || b.win.length)) P.styled.add(bldKey(x, y));
+  }
+  for (const d of b.doors) if (WART[b.door]) P.doors.set(d.id, b.door);
+}
+function buildingCells(){
+  const fac = factionOfMap(CUR.id), key = CUR.id + '|' + (fac || '');
+  let P = bldCache.get(key);
+  if (P) return P;
+  if (bldCache.size > 12) bldCache.clear();
+  P = { cells: new Map(), cut: new Set(), styled: new Set(), doors: new Map() };
+  for (const b of buildingsOf(CUR)) paintBuilding(CUR, b, fac, P);
+  bldCache.set(key, P); return P;
+}
+function buildingTile(ch, tx, ty, img){ return buildingCells().cells.get(bldKey(tx, ty)) || img; }
+const shapedRoof = (tx, ty) => !!CUR.roofs && buildingCells().cut.has(bldKey(tx, ty));
+const styledWall = (tx, ty) => !!CUR.roofs && buildingCells().styled.has(bldKey(tx, ty));
+function drawDoor(g, o, cx, cy){
+  const nm = CUR.roofs && buildingCells().doors.get(o.id), a = (nm && WART[nm]) || WART.door;
+  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, (o.y - 1) * TS - cy - (a.height - TS));
+}
+// Map pass E7: on outdoor maps a path cell that touches grass gets a grass fringe on that side, rounded where two sides meet.
+const EDGE_GRASS = 'gftTF', EDGE_TILES = ['path_edge_n', 'path_edge_s', 'path_edge_w', 'path_edge_e', 'path_corner_nw', 'path_corner_ne', 'path_corner_sw', 'path_corner_se'];
+function pathEdges(tx, ty){   // bit i set = draw EDGE_TILES[i]
+  if (tileAt(tx, ty) !== 'p' || isRoom()) return 0;
+  const gr = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH && EDGE_GRASS.indexOf(MAP[y][x]) >= 0;
+  const n = gr(tx, ty - 1), s = gr(tx, ty + 1), w = gr(tx - 1, ty), e = gr(tx + 1, ty);
+  return n | s << 1 | w << 2 | e << 3 | (n && w) << 4 | (n && e) << 5 | (s && w) << 6 | (s && e) << 7;
+}
+function drawTileExtras(g, ch, tx, ty, X, Y){
+  if (ch !== 'p') return;
+  const m = pathEdges(tx, ty);
+  for (let i = 0; m >> i; i++) if (m >> i & 1) g.drawImage(TILES[EDGE_TILES[i]], X, Y);
+}
+// debug/tests (?debug=1 only): what map `id`'s styled buildings and props resolve to, and how cell (x, y) of the current map is painted
+function exteriorView(id){
+  id = id || CUR.id; const m = WORLD[id]; if (!m) return null;
+  const dim = a => a ? [a.width, a.height] : null, bs = buildingsOf(m);
+  const tiles = new Set(Object.keys(EXTERIOR_ART.tiles)), wart = new Set(Object.keys(EXTERIOR_ART.art).concat(Object.keys(EXTERIOR_ART.big)));
+  bs.forEach(b => { [b.roof, b.wall].forEach(n => n && tiles.add(n)); [b.door].concat(b.win).forEach(n => n && wart.add(n)); });
+  const props = m.objs.filter(o => o.kind === 'prop').map(o => ({ id: o.id, x: o.x, y: o.y, sprite: o.sprite || null, art: dim(WART[o.sprite]) }));
+  return { id, safe: m.safe ? { x: m.safe.x, y: m.safe.y } : null, roofs: JSON.parse(JSON.stringify(m.roofs || null)), buildings: JSON.parse(JSON.stringify(bs)), props,
+    tiles: Object.fromEntries([...tiles].map(n => [n, dim(TILES[n])])), wart: Object.fromEntries([...wart].map(n => [n, dim(WART[n])])) };
+}
+function exteriorCell(x, y){
+  const k = bldKey(x, y), P = CUR.roofs ? buildingCells() : null, cell = P && P.cells.get(k), band = document.createElement('canvas');
+  band.width = band.height = TS; drawFactionBand(band.getContext('2d'), tileAt(x, y), x, y, 0, 0);
+  const tally = c => { const d = c.getContext('2d').getImageData(0, 0, TS, TS).data, out = {};
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3]) { const h = '#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join(''); out[h] = (out[h] || 0) + 1; }
+    return out; };
+  const door = CUR.objs.find(o => o.kind === 'door' && o.x === x && o.y === y), e = pathEdges(x, y);
+  return { ch: tileAt(x, y), painted: !!cell, cut: !!P && P.cut.has(k), styled: !!P && P.styled.has(k), doorArt: door && P ? P.doors.get(door.id) || null : null,
+    edges: EDGE_TILES.filter((_, i) => e >> i & 1), cell: cell ? tally(cell) : null, band: tally(band) };
+}
 function drawFactionBand(g, ch, tx, ty, X, Y){
   const fac = factionOfMap(CUR.id);
   if (!fac || (ch !== 'R' && ch !== 'H')) return;
   const ridge = fac === 'glimmer' ? PAL.c : PAL.y, band = fac === 'glimmer' ? PAL.l : PAL.g;
-  if (ch === 'R' && tileAt(tx, ty - 1) !== 'R') { g.fillStyle = ridge; g.fillRect(X, Y, 16, 2); g.fillStyle = band; g.fillRect(X, Y + 2, 16, 1); }
+  if (ch === 'R' && tileAt(tx, ty - 1) !== 'R' && !shapedRoof(tx, ty)) { g.fillStyle = ridge; g.fillRect(X, Y, 16, 2); g.fillStyle = band; g.fillRect(X, Y + 2, 16, 1); }
   if (ch === 'H' && tileAt(tx, ty + 1) !== 'H') { g.fillStyle = band; g.fillRect(X + 2, Y + 13, 12, 2); }
 }
 // E5 seeded tile variants (BUILD_RX_F4_PILOT B): variant = hash(map id, x, y) with weights per base tile. Same map, same look;
@@ -2396,8 +2537,10 @@ function drawMap(t){
         if (dk) decal = TILES[dk + '_decal'];
       }
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
+      if (CUR.roofs && (ch === 'R' || ch === 'H')) img = buildingTile(ch, tx, ty, img);
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
       if (decal) g.drawImage(decal, tx*TS - cx, ty*TS - cy);
+      drawTileExtras(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
       drawFactionBand(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
       if (ch === '=' && CUR.skin !== 'lab') {    // rug border where the rug ends (the lab runner has none)
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
@@ -2405,7 +2548,7 @@ function drawMap(t){
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
       }
     }
-  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') g.drawImage(WART.door, o.x*TS - cx, (o.y-1)*TS - cy);
+  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') drawDoor(g, o, cx, cy);
   for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) g.drawImage(WART[o.sprite], o.x*TS - cx, o.y*TS - cy);   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
@@ -2460,7 +2603,7 @@ function drawCobbleTrim(g, cx, cy, t){
   const doorWall = (x, y) => CUR.objs.some(o => o.kind === 'door' && present(o) && o.x === x && o.y === y + 1);
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
     const ch = MAP[ty][tx], X = tx * TS - cx, Y = ty * TS - cy;
-    if (town && ch === 'R') {
+    if (town && ch === 'R' && !shapedRoof(tx, ty)) {
       const up = tileAt(tx, ty - 1) === 'R', down = tileAt(tx, ty + 1) === 'R', left = tileAt(tx - 1, ty) === 'R';
       if (!up) { g.fillStyle = slate(tx, ty) ? PAL.w : PAL.y; g.fillRect(X, Y, 16, 2); g.fillStyle = PAL.k; g.fillRect(X, Y + 2, 16, 1); }
       if (!down) { g.fillStyle = PAL.k; g.fillRect(X, Y + 14, 16, 2); }
@@ -2470,7 +2613,7 @@ function drawCobbleTrim(g, cx, cy, t){
         g.fillStyle = PAL.d; g.fillRect(X + 5, Y + 2, 1, 5);
         if (Math.floor(t / 320) % 2 === 0) { g.fillStyle = PAL.h; g.fillRect(X + 3, Y, 1, 1); }
       }
-    } else if (town && ch === 'H' && !doorWall(tx, ty)) {
+    } else if (town && ch === 'H' && !doorWall(tx, ty) && !styledWall(tx, ty)) {
       if (tileAt(tx, ty + 1) !== 'H') {
         g.fillStyle = PAL.k; g.fillRect(X + 4, Y + 4, 8, 7);
         g.fillStyle = PAL.c; g.fillRect(X + 5, Y + 5, 6, 5);
@@ -2639,9 +2782,11 @@ function drawObjectiveCue(g, cx, cy, t){
   drawCuePoint(g, side, PAL.c, cx, cy, t, VW, VH, same ? 7 : 0);
 }
 const WART = buildWorldArt();
+addExteriorArt(TILES, WART);
+const drawArt = (g, img, X, Y) => g.drawImage(img, X - (img.width - TS) / 2, Y - (img.height - TS));   // 32x32 art stands bottom-centred on its one blocking cell
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
-  if (X < -18 || Y < -24 || X > VW + 2 || Y > VH + 2) return;
+  if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
@@ -2653,7 +2798,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     }
     g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
-  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) { const reduce = a.ms && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; g.drawImage(Array.isArray(a) ? a[reduce ? 0 : Math.floor(t / (a.ms || 400)) % 2] : a, X, Y); } }
+  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) { const reduce = a.ms && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; drawArt(g, Array.isArray(a) ? a[reduce ? 0 : Math.floor(t / (a.ms || 400)) % 2] : a, X, Y); } }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') { const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(sprSet(si, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
 }
@@ -7972,6 +8117,8 @@ function boot(){
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse') }; } });
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = PPQuests.sideCurrent(questState()); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
+  api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map
+  api.exteriorCell = (x, y) => DEBUG ? exteriorCell(x, y) : null;  // map pass B4: how cell (x, y) of this map is painted
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
