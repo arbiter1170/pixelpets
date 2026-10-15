@@ -55,6 +55,9 @@ body.no-pets #settingsBtn{position:relative;z-index:12}
 #hdrIcon{width:36px;height:36px}
 #top .lv{display:flex;flex-direction:column;align-items:flex-end;font-size:18px;color:var(--y)}
 #top .lv[hidden]{display:none}
+#top .hdr-acorns{display:flex;align-items:center;gap:4px;color:var(--y);font-size:18px;white-space:nowrap}
+#top .hdr-acorns canvas{width:16px;height:16px;image-rendering:pixelated;image-rendering:crisp-edges}
+#top .hdr-acorns[hidden]{display:none}
 .stagedots{color:var(--h);font-size:13px;letter-spacing:2px}
 .fast-tag{font-size:13px;color:var(--k);background:var(--o);padding:1px 4px;letter-spacing:1px;align-self:center}
 .fast-tag[hidden]{display:none}
