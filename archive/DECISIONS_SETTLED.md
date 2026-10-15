@@ -2,6 +2,20 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Map scale and detail (settled Oct 15, 2026)
+
+Design's map audit limits, as listed in `handoff/maps/README.md` §2 and `handoff/maps/AUDIT.md`. The full spec is in the private design repo. Vincent (Oct 15): prefer TOUCH UP, EXPAND and graphic upgrades; REBUILD only as a last resort, with his approval. No two buildings look identical (`handoff/maps/BUILDING_VARIETY.md`).
+
+- **D81.** Act 1 towns are not reshaped; detail only.
+- **D82.** Portrait sizes apply to new routes only.
+- **D83.** RegenX keeps four rooms; they get bigger, not more.
+- **D84.** Existing house interiors are enlarged only when rebuilt for a story beat.
+- **D85.** Size targets apply to new and rebuilt maps.
+- **D86.** `rx_f4` is the pilot: 14×22, same ids, flags and objects.
+- **D87.** The tunnel rooms get a rock skin.
+- **D88.** No single floor tile covers more than 70 % of walkable cells, measured after seeded variants.
+- **D89.** The night tech in the Arbiter Bay is optional.
+
 ## Town boards (calls settled Oct 14, 2026)
 
 The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. Q23–Q25 are in the game. A quest that comes out of those calls follows `.cursor/skills/walklings-quests/SKILL.md`. The D37 still in the open table is the region-map claim list.

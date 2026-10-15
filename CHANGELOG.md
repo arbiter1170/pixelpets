@@ -3,6 +3,11 @@
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
 
+## 2026-10-15 — Map pass plan, Q28 (docs only, no new build stamp)
+
+- Q28 is the map pass from `handoff/maps/`. Vincent cleared B1–B7; B8 waits for his go. One PR per batch into `main`, merged in order B1 → B7. B1 and B4's exterior phase are being built first; B2, B3 and B5 start from B1, and B6 and B7 from B5. Plan table in `NEXT_PLAN.md` §3.
+- D81–D89 (Design's map scale and detail limits) are recorded as settled in `archive/DECISIONS_SETTLED.md`. D90–D101 are reserved per batch. The next free decision id is D102.
+
 ## 2026-10-15 — Map handoff packets (docs only, no new build stamp)
 
 - Added `handoff/maps/`: audit (`AUDIT.md` / `AUDIT.csv`), `BUILDING_VARIETY.md`, and self-contained B1–B8 map upgrade packets for outside build agents. Design data is pasted in each packet. No game code change.
