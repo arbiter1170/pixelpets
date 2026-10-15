@@ -908,9 +908,9 @@ body.ctl-modern.scene-on .float-ctl .fc-tr{pointer-events:none}
 body.nav-locked #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,body.nav-locked .scr-back{pointer-events:none;opacity:.5}
 .fc-top{position:absolute;top:calc(14px + var(--sa-t));left:calc(56px + var(--sa-l));right:calc(56px + var(--sa-r));height:28px;display:flex;justify-content:center}
 .fc-top .env-badge{margin:0;max-width:100%;min-height:28px;height:28px;align-self:auto}
-.fc-tip{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(56px + var(--sa-b));height:28px}
+.fc-tip{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(56px + var(--sa-b));height:var(--tip-h,28px)}
 .fc-tip:empty{display:none}
-.fc-tip .tip{height:28px;box-sizing:border-box;background:rgba(26,28,44,.85);color:var(--w);padding:0 8px;font-size:15px;line-height:28px;
+.fc-tip .tip{height:var(--tip-h,28px);box-sizing:border-box;background:rgba(26,28,44,.85);color:var(--w);padding:0 8px;font-size:15px;line-height:28px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fc-bottom{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(6px + var(--sa-b));height:44px}
 .fc-row{display:flex;gap:6px;height:44px}
@@ -928,8 +928,10 @@ body.nav-locked #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,bo
 body.no-pets .pet-strip,body.no-pets #colFloat,body.no-pets #petFloat{display:none}
 body.no-pets .fc-row{justify-content:flex-end}
 body.ctl-modern .bump-hint{bottom:calc(90px + var(--sa-b))}
-body.ctl-modern[data-screen="walk"] #toast{top:auto;bottom:calc(132px + env(safe-area-inset-bottom))}
-.joy{position:absolute;left:calc(12px + var(--sa-l));bottom:calc(96px + var(--sa-b));width:96px;height:96px;border-radius:50%;background:rgba(51,60,87,.35);
+/* Design green call (Oct 15): the band grows up from the strip; the joystick sits 8 px above the band; toasts sit above the ring (or the band). */
+body.ctl-modern[data-screen="walk"] #toast{top:auto;bottom:calc(56px + var(--tip-h,28px) + 8px + var(--joy-h,0px) + 8px + env(safe-area-inset-bottom))}
+.fc-tip.two .tip{white-space:normal;line-height:20px;padding-top:2px;padding-bottom:2px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
+.joy{position:absolute;left:calc(12px + var(--sa-l));bottom:calc(56px + var(--tip-h,28px) + 8px + var(--sa-b));width:96px;height:96px;border-radius:50%;background:rgba(51,60,87,.35);
   box-shadow:inset 0 0 0 2px rgba(148,176,194,.4);touch-action:none;display:flex;align-items:center;justify-content:center}
 .joy[hidden]{display:none}
 .joy-knob{width:36px;height:36px;border-radius:50%;background:rgba(148,176,194,.6);pointer-events:none}

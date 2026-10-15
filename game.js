@@ -568,7 +568,7 @@ function fitPetScene(){
   ps.classList.remove('pet-tight');
   if (!pick()) { ps.classList.add('pet-tight'); pick(); }
 }
-function fitAll(){ fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
+function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
   fitPetScene();
@@ -5177,6 +5177,7 @@ const WALK_EARLY_MODERN = 'Tap the ground to walk. The east path leads out of to
 const walkTipDefault = () => ctlMode() === 'modern' ? WALK_TIP_MODERN : WALK_TIP_DEFAULT;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkTipText(){
+  if (DEBUG && typeof window.PP_TIP_TEST === 'string') return window.PP_TIP_TEST;   // tests only (debug): a fixed tip line
   if (!S || !S.flags['story.starter_received']) return walkTipDefault();
   if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
@@ -5192,6 +5193,21 @@ function syncWalkTip(){
   const el = $('#walkTip'); if (!el) return;
   const html = walkTipText();
   if (el.innerHTML !== html) el.innerHTML = html;
+  syncTipBand();
+}
+// Design green call (Oct 15): the modern tip band is one line (28 px) when the text fits, two lines (44 px) when it does not,
+// clamped with an ellipsis. It grows up from the partner strip; the joystick (8 px above it) and the toasts move with it.
+function syncTipBand(){
+  const box = $('#fcTip'), el = $('#walkTip'), st = document.body.style;
+  const joy = $('#joyRing'); st.setProperty('--joy-h', joy && !joy.hidden && ctlMode() === 'modern' ? '104px' : '0px');
+  if (!box || !el || ctlMode() !== 'modern' || !el.offsetWidth) return;
+  box.classList.remove('two'); st.setProperty('--tip-h', '28px');
+  // Measure the text alone (the frame-art canvas inside the band would inflate scrollWidth).
+  const cs = getComputedStyle(el), avail = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const rg = document.createRange(); let w = 0;
+  el.childNodes.forEach(n => { if (n.nodeName === 'CANVAS') return; rg.selectNodeContents(n); w += rg.getBoundingClientRect().width; });
+  const two = w > avail + 0.5;
+  box.classList.toggle('two', two); st.setProperty('--tip-h', two ? '44px' : '28px');
 }
 function syncBagBtns(){
   const on = bagVisible() && !(battle && battle.on);

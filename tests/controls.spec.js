@@ -108,3 +108,42 @@ test('Space advances every line of Ness\'s phone_grant, the last one too, and do
   await expect(page.locator('#ovScene')).toBeHidden();
   await expect(page.locator('#ovQuest')).toBeHidden();
 });
+
+// Design green calls (Oct 15): tip band 28 px / 44 px (2-line clamp), joystick 8 px above the band, toasts above the ring.
+async function bandAt(page, html) {
+  await page.evaluate(h => { window.PP_TIP_TEST = h; }, html);
+  await expect.poll(() => page.evaluate(() => document.querySelector('#walkTip').textContent)).toContain(html.slice(0, 20));
+  await page.evaluate(() => window.dispatchEvent(new Event('resize'))); await page.waitForTimeout(150);
+  return page.evaluate(() => {
+    const r = s => document.querySelector(s).getBoundingClientRect(), t = document.querySelector('#toast');
+    t.textContent = 'Test toast'; t.classList.add('show');
+    const tip = r('#fcTip'), strip = r('#petStrip'), joy = document.querySelector('#joyRing'), tw = document.querySelector('#walkTip');
+    const out = { tipH: Math.round(tip.height), tipTop: tip.top, tipBottom: tip.bottom, stripTop: strip.top, lines: Math.round(tw.clientHeight / parseFloat(getComputedStyle(tw).lineHeight)),
+      clamped: tw.scrollHeight > tw.clientHeight + 1 || tw.scrollWidth > tw.clientWidth + 1, joy: joy.hidden ? null : r('#joyRing'), toast: r('#toast') };
+    t.classList.remove('show'); return out;
+  });
+}
+for (const joystick of [false, true]) {
+  test(`tip band heights, ring and toast placement (joystick ${joystick ? 'on' : 'off'})`, async ({ page }) => {
+    await installSave(page.context(), modernSave({ joystick }), { quietDay: true });
+    await gotoGame(page, '?debug=1');
+    await page.evaluate(() => PixelPets.showTab('walk')); await page.waitForTimeout(300);
+    const short = await bandAt(page, 'Tap the ground to walk.');
+    expect(short.tipH).toBe(28);
+    const long = await bandAt(page, 'A very long objective line that will not fit on one line at any phone width, so the band grows to two lines and then clamps the rest with an ellipsis at the end.');
+    expect(long.tipH).toBe(44);
+    expect(long.lines).toBeLessThanOrEqual(2);
+    expect(long.clamped).toBe(true);
+    for (const b of [short, long]) {
+      expect(b.tipBottom).toBeLessThanOrEqual(b.stripTop + 0.5);           // never covers the partner strip
+      if (joystick) {
+        expect(Math.abs(b.joy.bottom - (b.tipTop - 8))).toBeLessThanOrEqual(1);   // ring 8 px above the band, moves with it
+        expect(b.toast.bottom).toBeLessThanOrEqual(b.joy.top + 0.5);      // toast above the ring
+      } else {
+        expect(b.joy).toBeNull();
+        expect(b.toast.bottom).toBeLessThanOrEqual(b.tipTop + 0.5);       // toast above the band
+      }
+      expect(b.toast.top).toBeGreaterThan(60);                             // in the free map area, below the top buttons' row
+    }
+  });
+}
