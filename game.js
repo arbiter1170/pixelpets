@@ -1766,6 +1766,11 @@ const ITEMS = {
   cracked_phone:  { name: 'Cracked Handset', plural: 'Cracked Handsets', cap: 1, price: 0, use: ['field'], target: false, key: true, keyNote: 'No crest. Open PHONE.', blurb: 'A thin Glimmerwell handset. Still on their wires.' },
 };
 const ITEM_ORDER = Object.keys(ITEMS);
+function drawItemIcon(canvas, id){
+  const grid = ITEM_ART[id];
+  if (!canvas || !grid) return;
+  ctx(canvas).drawImage(keeperCanvas(grid), 0, 0);
+}
 const BAG_FULL_MSG = 'Bag is full, so some were left behind.';
 const itemLabel = (id, n) => { const it = ITEMS[id], one = it ? it.name : id, many = it ? it.plural : id; return n === 1 ? 'a ' + one : n + ' ' + many; };
 const acorns = n => n + (n === 1 ? ' Acorn' : ' Acorns');      // INVENTORY §2: the save field stays `money`
@@ -2640,7 +2645,7 @@ function interact(o){
   if (o.booth) { openBooth(o); return; }
   if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
-  if (o.kind === 'npc' || o.kind === 'trainer') faceKeeper(o);
+  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); noteContact(objName(o)); }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
@@ -2823,7 +2828,7 @@ function expand(text){
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene;
   switch (k) {
-    case 'say': { if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); await sayBox(a, tx); return; }
+    case 'say': { noteContact(a); if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); await sayBox(a, tx); return; }
     case 'choice': {
       sc.skip = false;
       const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
@@ -4506,6 +4511,250 @@ function showTownBoardPane(){
   $('#phoneHome').hidden = true; $('#phonePane').hidden = false;
   const back = $('#phoneBack'); if (back) back.hidden = !owned;
 }
+// Contacts: one card per person you have met. Quest dialog (a scene, a line that starts a scene, or a catch scene) is marked QUEST.
+// Favorites live in S.phoneBook and the save stays v2. D80.
+const PHONE_GLYPH = {
+  contacts: ['..##....', '.####...', '.####...', '..##....', '.######.', '##.##.##', '##.##.##', '.######.'],
+  notes: ['.######.', '#......#', '#.####.#', '#......#', '#.##...#', '#......#', '.######.', '........'],
+  walklings: ICONS.paw,
+  friends: ICONS.friends,
+  jobs: ['...##...', '..####..', '...##...', '.######.', '#.#..#.#', '.######.', '..#..#..', '.#....#.'],
+  ribbit: ['.#....#.', '##....##', '#.#..#.#', '.######.', '..#..#..', '.######.', '.#....#.', '.#....#.'],
+  board: ['########', '#.#..#.#', '#......#', '#.####.#', '#.#....#', '#.####.#', '#......#', '########'],
+};
+function setPhoneJobsLabel(hack){
+  const lab = $('#phoneJobs .phone-lab');
+  const text = hack ? 'BOTNET' : 'KEEPERUAV';
+  if (lab) lab.textContent = text; else $('#phoneJobs').textContent = text;
+}
+function paintPhoneHome(){
+  const hack = phoneHack();
+  const ink = hack
+    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8' }
+    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0' };
+  $$('#phoneHome .phone-glyph').forEach(el => {
+    const c = el.querySelector('canvas'), grid = PHONE_GLYPH[el.dataset.glyph];
+    if (!c || !grid) return;
+    iconCanvas(c, grid, ink[el.dataset.glyph] || '#f4f4f4');
+  });
+}
+function contactKey(name){
+  if (typeof name !== 'string') return '';
+  return name.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+}
+function phoneBook(){
+  if (!S) return { met: {}, fav: {} };
+  if (!S.phoneBook || typeof S.phoneBook !== 'object' || Array.isArray(S.phoneBook)) S.phoneBook = { met: {}, fav: {} };
+  if (!S.phoneBook.met || typeof S.phoneBook.met !== 'object' || Array.isArray(S.phoneBook.met)) S.phoneBook.met = {};
+  if (!S.phoneBook.fav || typeof S.phoneBook.fav !== 'object' || Array.isArray(S.phoneBook.fav)) S.phoneBook.fav = {};
+  return S.phoneBook;
+}
+let contactPeopleCache = null;
+function contactPeople(){
+  if (contactPeopleCache) return contactPeopleCache;
+  const people = new Map();
+  for (const m of Object.values(WORLD)) {
+    for (const o of m.objs || []) {
+      if (!o || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
+      const name = objName(o), key = contactKey(name);
+      if (!key) continue;
+      let person = people.get(key);
+      if (!person) people.set(key, person = { key, name, spots: [], quest: false });
+      person.spots.push({ id: o.id, map: m.id, mapName: m.name || m.id, o });
+      if (spotIsQuest(o)) person.quest = true;
+    }
+  }
+  contactPeopleCache = people;
+  return people;
+}
+function spotIsQuest(o){
+  if (typeof o.scene === 'string' && o.scene) return true;
+  if (o.catch && typeof o.catch.scene === 'string' && o.catch.scene) return true;
+  for (const v of Object.values(o.lines || {})) if (typeof v === 'string' && v.charAt(0) === '@') return true;
+  if (o.kind === 'trainer') { const t = TRAINERS[o.id]; if (t && t.onWin) return true; }
+  return false;
+}
+function flagBareOn(body){
+  if (!body || /[=<>]/.test(body) || body.startsWith('seal:') || body === 'talked' || body.startsWith('has:')) return false;
+  return !!S.flags[body];
+}
+function spotMet(o){
+  if (!S || !o) return false;
+  if (typeof o.scene === 'string' && scenePlayed(o.scene)) return true;
+  if (o.catch && typeof o.catch.scene === 'string' && scenePlayed(o.catch.scene)) return true;
+  if (o.kind === 'trainer' && S.flags['trainer.' + o.id]) return true;
+  for (const [k, v] of Object.entries(o.lines || {})) {
+    if (typeof k !== 'string' || k.charAt(0) !== '!') continue;
+    const body = k.slice(1);
+    if (body.startsWith('story.met_') && S.flags[body]) return true;
+    if (typeof v === 'string' && v.charAt(0) === '@' && flagBareOn(body)) return true;
+  }
+  return false;
+}
+function sceneSayNames(steps, into){
+  for (const st of steps || []) {
+    if (!Array.isArray(st) || !st.length) continue;
+    if (st[0] === 'say') { const key = contactKey(st[1]); if (key) into.add(key); }
+    else if (st[0] === 'if') { sceneSayNames(st[2], into); sceneSayNames(st[3], into); }
+    else if (st[0] === 'choice') for (const opt of st[2] || []) if (Array.isArray(opt)) sceneSayNames(opt[1], into);
+  }
+}
+function sceneFlagDone(steps){
+  if (!Array.isArray(steps)) return false;
+  const fl = steps.filter(st => Array.isArray(st) && st[0] === 'setFlag' && typeof st[1] === 'string');
+  return fl.length > 0 && fl.every(st => S.flags[st[1]]);
+}
+function playedSceneNames(){
+  const names = new Set();
+  if (!S) return names;
+  for (const [id, steps] of Object.entries(SCENES)) {
+    if (id.includes('@')) continue;
+    if (sceneFlagDone(steps)) sceneSayNames(steps, names);
+    const alt = SCENES[id + '@glimmer'];
+    if (sceneFlagDone(alt)) sceneSayNames(alt, names);
+  }
+  return names;
+}
+function personMet(person, played){
+  if (!person) return false;
+  if (phoneBook().met[person.key]) return true;
+  if (played && played.has(person.key)) return true;
+  return person.spots.some(s => spotMet(s.o));
+}
+function noteContact(name){
+  const key = contactKey(name);
+  if (!key || !S || !contactPeople().has(key)) return;
+  const book = phoneBook();
+  if (book.met[key]) return;
+  book.met[key] = true;
+  if (!scene) save();
+}
+function contactEntries(){
+  const played = playedSceneNames(), book = phoneBook(), rows = [];
+  for (const person of contactPeople().values()) if (personMet(person, played)) rows.push(person);
+  rows.sort((a, b) => {
+    const fa = book.fav[a.key] ? 0 : 1, fb = book.fav[b.key] ? 0 : 1;
+    if (fa !== fb) return fa - fb;
+    return a.name.localeCompare(b.name);
+  });
+  return rows;
+}
+function contactPlace(person){
+  const here = CUR && person.spots.find(s => s.map === CUR.id && present(s.o));
+  if (here) return here.mapName;
+  const live = person.spots.find(s => present(s.o));
+  return (live || person.spots[0]).mapName;
+}
+function contactBlurb(person){
+  const score = s => (CUR && s.map === CUR.id && present(s.o) ? 2 : 0) + (present(s.o) ? 1 : 0);
+  const spots = person.spots.slice().sort((a, b) => score(b) - score(a));
+  for (const spot of spots) {
+    if (spot.o.lines) {
+      const line = linesFor(spot.o);
+      if (typeof line === 'string' && line && line.charAt(0) !== '@') return line;
+    }
+    if (spot.o.kind === 'trainer') {
+      const t = TRAINERS[spot.o.id];
+      const spoken = t ? trainerLine(spot.o.id, S.flags['trainer.' + spot.o.id] ? 'win' : 'intro') : '';
+      if (spoken) return spoken;
+      if (t && t.title) return t.title;
+    }
+  }
+  return person.quest ? 'They still have more to say.' : 'You have met them.';
+}
+function paintContactFace(canvas, person){
+  if (!canvas) return;
+  const spot = person.spots.find(s => present(s.o)) || person.spots[0];
+  const g = ctx(canvas);
+  g.clearRect(0, 0, canvas.width, canvas.height);
+  try { g.drawImage(keeperFrames(npcLook(spot.o)).down[0], 0, 0); } catch (e) {}
+}
+let contactFilter = 'all', contactOpen = '';
+function toggleContactFav(name){
+  const key = contactKey(name), person = contactPeople().get(key);
+  if (!person || !personMet(person, playedSceneNames())) return;
+  const book = phoneBook();
+  if (book.fav[key]) delete book.fav[key]; else book.fav[key] = true;
+  save(); sfx('tap'); renderContacts();
+}
+function renderContactCard(body, person, fav){
+  const card = document.createElement('article');
+  card.className = 'contact-card';
+  card.dataset.who = person.key;
+  card.dataset.quest = person.quest ? '1' : '0';
+  const face = document.createElement('canvas');
+  face.width = face.height = 18; face.className = 'contact-face contact-face-lg'; face.setAttribute('aria-hidden', 'true');
+  paintContactFace(face, person);
+  const nm = document.createElement('h3'); nm.className = 'contact-card-name'; nm.textContent = person.name;
+  const place = document.createElement('p'); place.className = 'contact-place'; place.textContent = contactPlace(person);
+  card.append(face, nm, place);
+  if (person.quest) { const chip = document.createElement('p'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; card.appendChild(chip); }
+  const line = document.createElement('p'); line.className = 'contact-line'; line.textContent = contactBlurb(person);
+  const acts = document.createElement('div'); acts.className = 'contact-card-acts';
+  const star = document.createElement('button');
+  star.type = 'button'; star.className = 'btn contact-star'; star.dataset.fav = person.key; star.textContent = fav ? 'ON' : 'FAV';
+  star.setAttribute('aria-pressed', fav ? 'true' : 'false');
+  star.setAttribute('aria-label', (fav ? 'Unfavorite ' : 'Favorite ') + person.name);
+  const back = document.createElement('button');
+  back.type = 'button'; back.className = 'btn'; back.dataset.contactBack = '1'; back.textContent = 'LIST';
+  acts.append(star, back);
+  card.append(line, acts);
+  body.appendChild(card);
+}
+function renderContacts(){
+  const body = $('#phoneBody');
+  if (!body) return;
+  body.innerHTML = '';
+  const book = phoneBook(), rows = contactEntries();
+  const filters = document.createElement('div');
+  filters.className = 'contact-filters';
+  for (const [id, label] of [['all', 'ALL'], ['fav', 'FAVORITES']]) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn contact-filter' + (contactFilter === id ? ' on' : '');
+    b.dataset.contactFilter = id; b.textContent = label;
+    b.setAttribute('aria-pressed', contactFilter === id ? 'true' : 'false');
+    filters.appendChild(b);
+  }
+  body.appendChild(filters);
+  const open = contactOpen && rows.find(p => p.key === contactOpen);
+  if (contactOpen && !open) contactOpen = '';
+  if (open) { renderContactCard(body, open, !!book.fav[open.key]); return; }
+  const shown = contactFilter === 'fav' ? rows.filter(p => book.fav[p.key]) : rows;
+  if (!shown.length) {
+    const empty = document.createElement('p');
+    empty.className = 'contact-empty';
+    empty.textContent = contactFilter === 'fav' ? 'No favorites yet. Mark someone with FAV.' : 'Talk to someone. They stay in this list.';
+    body.appendChild(empty);
+    return;
+  }
+  const list = document.createElement('div');
+  list.className = 'contact-list'; list.setAttribute('role', 'list');
+  for (const person of shown) {
+    const fav = !!book.fav[person.key];
+    const row = document.createElement('div');
+    row.className = 'contact-row' + (person.quest ? ' is-quest' : '');
+    row.dataset.quest = person.quest ? '1' : '0';
+    row.setAttribute('role', 'listitem');
+    const main = document.createElement('button');
+    main.type = 'button'; main.className = 'contact-main'; main.dataset.who = person.key;
+    const face = document.createElement('canvas');
+    face.width = face.height = 18; face.className = 'contact-face'; face.setAttribute('aria-hidden', 'true');
+    paintContactFace(face, person);
+    const meta = document.createElement('span'); meta.className = 'contact-meta';
+    const nm = document.createElement('b'); nm.className = 'contact-name'; nm.textContent = person.name;
+    const place = document.createElement('small'); place.className = 'contact-place'; place.textContent = contactPlace(person);
+    meta.append(nm, place);
+    if (person.quest) { const chip = document.createElement('span'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; meta.appendChild(chip); }
+    main.append(face, meta);
+    const star = document.createElement('button');
+    star.type = 'button'; star.className = 'btn contact-star'; star.dataset.fav = person.key; star.textContent = fav ? 'ON' : 'FAV';
+    star.setAttribute('aria-pressed', fav ? 'true' : 'false');
+    star.setAttribute('aria-label', (fav ? 'Unfavorite ' : 'Favorite ') + person.name);
+    row.append(main, star);
+    list.appendChild(row);
+  }
+  body.appendChild(list);
+}
 function openTownBoard(){
   if (!S || scene || fade.busy || overlayOpen()) return;
   clearMoves();
@@ -4514,8 +4763,9 @@ function openTownBoard(){
   ov.classList.toggle('board-post', !owned);
   if (owned) {
     $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
-    $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
+    setPhoneJobsLabel(hack);
     $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
+    paintPhoneHome();
   } else $('#phoneTitle').textContent = 'TOWN BOARD';
   showTownBoardPane();
   ov.hidden = false; lockTabs(true); sfx('tap');
@@ -4529,9 +4779,10 @@ function openPhone(){
   const back = $('#phoneBack'); if (back) back.hidden = false;
   const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
   $('#phoneTitle').textContent = hack ? 'CRACK//HAND' : 'KEEPER1';
-  $('#phoneJobs').textContent = hack ? 'BOTNET' : 'KEEPERUAV';
+  setPhoneJobsLabel(hack);
   $('#phoneFoot').textContent = hack ? 'Still on their wires. Talk quiet.' : 'Copied to the Lantern desk.';
   $('#phoneHome').hidden = false; $('#phonePane').hidden = true;
+  paintPhoneHome();
   clearMoves(); ov.hidden = false; lockTabs(true); sfx('tap'); syncJournalBtn();
 }
 function closePhone(){
@@ -4596,7 +4847,7 @@ function renderRibbit(body){
   body.appendChild(foot);
 }
 function phoneApp(id){
-  if (id === 'journal') { closePhone(); showTab('col'); return; }
+  if (id === 'journal' || id === 'walklings') { closePhone(); showTab('col'); return; }
   if (id === 'board') { showTownBoardPane(); sfx('tap'); return; }
   const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
   const hack = phoneHack();
@@ -4605,11 +4856,8 @@ function phoneApp(id){
   body.innerHTML = '';
   const add = (who, text) => { const p = document.createElement('p'); if (who) { const b = document.createElement('b'); b.className = 'who'; b.textContent = who; p.appendChild(b); p.appendChild(document.createTextNode('  ' + text)); } else p.textContent = text; body.appendChild(p); };
   if (id === 'contacts') {
-    add('Officer Ness', 'Route 1 watch. Issued your Keeper1.');
-    add('Sergeant Bram', 'Keeper House door. Rank matters to him.');
-    add('Captain Lumen', 'Upstairs. KeeperUAV jobs wait on her desk.');
-    if (S.flags['story.met_fen']) add('Master Fen', side() === 'glimmer' ? 'She still keeps a chair for you.' : 'Orchard. Roots and blossoms.');
-    if (side() === 'glimmer') add('Clerk Mint', 'Cracked handsets. She does not do warranties.');
+    contactFilter = 'all'; contactOpen = '';
+    renderContacts();
   } else if (id === 'notes') {
     if (hack) {
       add('Handset', 'The crest phone copies every note. This one too, probably.');
@@ -4779,7 +5027,7 @@ function renderBag(){
     const row = document.createElement('div'); row.className = 'bag-row' + (battleOnly || holdable ? ' battle-only' : '') + (i === bagSel ? ' sel' : '');
     row.setAttribute('role', 'option'); row.dataset.id = id; row.dataset.i = String(i);
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico' + (battleOnly ? ' grey' : '');
-    if (ITEM_ART[id]) ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    drawItemIcon(ico, id);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name';
     nm.textContent = it.name + ' \u00d7' + itemCount(id);
@@ -4852,7 +5100,7 @@ function renderShop(){
     const it = ITEMS[id];
     const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
-    if (ITEM_ART[id]) ctx(ico).drawImage(keeperCanvas(ITEM_ART[id]), 0, 0);
+    drawItemIcon(ico, id);
     const meta = document.createElement('div'); meta.className = 'bag-meta';
     const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = it.name;
     const own = document.createElement('div'); own.className = 'bag-blurb shop-own'; own.textContent = '\u00d7' + itemCount(id) + ' owned';
@@ -6871,6 +7119,15 @@ function bindInput(){
   $('#phoneClose').addEventListener('click', () => { sfx('tap'); closePhone(); });
   $('#phoneBack').addEventListener('click', () => { sfx('tap'); const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true; $('#phoneHome').hidden = false; $('#phonePane').hidden = true; });
   $$('#phoneHome .phone-app').forEach(b => b.addEventListener('click', () => phoneApp(b.dataset.app)));
+  $('#phoneBody').addEventListener('click', e => {
+    const filter = e.target.closest('[data-contact-filter]');
+    if (filter) { contactFilter = filter.dataset.contactFilter === 'fav' ? 'fav' : 'all'; contactOpen = ''; sfx('tap'); renderContacts(); return; }
+    if (e.target.closest('[data-contact-back]')) { contactOpen = ''; sfx('tap'); renderContacts(); return; }
+    const fav = e.target.closest('[data-fav]');
+    if (fav) { toggleContactFav(fav.dataset.fav); return; }
+    const who = e.target.closest('[data-who]');
+    if (who && who.classList.contains('contact-main')) { contactOpen = who.dataset.who; sfx('tap'); renderContacts(); }
+  });
   $('#questBtn').addEventListener('click', openQuest);
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
@@ -7428,6 +7685,7 @@ function boot(){
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
+  api.contacts = () => contactEntries().map(p => ({ name: p.name, quest: !!p.quest, fav: !!phoneBook().fav[p.key], place: contactPlace(p) }));
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
   Object.defineProperty(api, 'lanternRest', { enumerable: true, get(){
     return { cost: LANTERN_REST_COST, due: !!(S && S.world && S.world.restDue === true), hurt: partyNeedsLanternRest() };

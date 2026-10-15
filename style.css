@@ -718,10 +718,13 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone #phoneClose:active,#ovPhone #phoneBack:active{transform:translateY(1px);box-shadow:inset 3px 3px 0 rgba(0,0,0,.3)}
 #ovPhone #phoneFoot{flex:0 0 auto;margin:8px 12px 0;font-size:16px;line-height:1.3}
 #ovPhone #phoneHome{flex:1 1 auto;min-width:0;min-height:0;margin-top:8px;padding:0 12px 12px;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#ovPhone .phone-apps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
-#ovPhone .phone-app{min-width:0;min-height:48px;max-width:100%;padding:6px 4px;border:3px solid var(--g);background:var(--k);color:var(--y);
-  font-family:var(--font);font-size:16px;line-height:1.05;text-align:center;cursor:pointer;white-space:normal}
-#ovPhone .phone-app:active{transform:translateY(1px)}
+#ovPhone .phone-apps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 6px;align-content:start;padding-top:6px}
+#ovPhone .phone-app{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;min-width:0;min-height:0;max-width:100%;
+  padding:0;border:0;background:transparent;color:inherit;font-family:var(--font);font-size:14px;line-height:1.05;text-align:center;cursor:pointer}
+#ovPhone .phone-glyph{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 rgba(0,0,0,.28)}
+#ovPhone .phone-glyph canvas{width:26px;height:26px;image-rendering:pixelated;image-rendering:crisp-edges}
+#ovPhone .phone-lab{max-width:100%;font-size:13px;line-height:1.05;letter-spacing:.2px;overflow-wrap:anywhere}
+#ovPhone .phone-app:active .phone-glyph{transform:translateY(1px)}
 #ovPhone .phone-app:focus-visible,#ovPhone #phoneClose:focus-visible,#ovPhone #phoneBack:focus-visible{outline:3px solid var(--y);outline-offset:1px}
 #ovPhone #phonePane{flex:1 1 auto;min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 12px 0;overflow:hidden}
 #ovPhone #phoneBody{flex:1 1 auto;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
@@ -749,8 +752,14 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone:not(.hack) #phoneTitle{color:#143226}
 #ovPhone:not(.hack) #phoneTitle::before{content:"CIVIC ISSUE";color:#1d5c38}
 #ovPhone:not(.hack) #phoneFoot{background:#1d5c38;color:#f6e6c0;padding:6px 8px;text-align:center}
-#ovPhone:not(.hack) .phone-app{background:#fff9ec;color:#143226;border-color:#1d5c38}
-#ovPhone:not(.hack) .phone-app:active{background:#e5f3d4}
+#ovPhone:not(.hack) .phone-lab{color:#143226}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="contacts"]{background:#1d5c38}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="notes"]{background:#e4b04a}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="walklings"]{background:#c45c26}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="friends"]{background:#2a6f8f}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="jobs"]{background:#f3e2b0}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="ribbit"]{background:#2f7d4a}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="board"]{background:#6a3a0c}
 #ovPhone:not(.hack) #phoneBody{color:#1c2416;gap:8px}
 #ovPhone:not(.hack) #phoneBody .who{color:#6a3a0c}
 #ovPhone:not(.hack) #phoneFriends .panel{background:#fff9ec;box-shadow:0 0 0 2px #1d5c38}
@@ -774,9 +783,16 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone.hack #phoneTitle{color:#d7ffc8;font-size:20px;letter-spacing:.5px}
 #ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#8ee8b0}
 #ovPhone.hack #phoneFoot{margin-top:6px;padding:2px 0 2px 8px;border-left:3px solid #5ee08a;background:transparent;color:#c8f7cf;text-align:left}
-#ovPhone.hack .phone-apps{gap:6px}
-#ovPhone.hack .phone-app{min-height:44px;padding:4px 3px;background:#0c1f16;color:#d7ffc8;border:2px solid #3dce78;font-size:16px}
-#ovPhone.hack .phone-app:active{background:#143222}
+#ovPhone.hack .phone-apps{gap:12px 6px}
+#ovPhone.hack .phone-lab{color:#d7ffc8}
+#ovPhone.hack .phone-glyph{box-shadow:0 0 0 2px #3dce78,0 3px 0 rgba(0,0,0,.45)}
+#ovPhone.hack .phone-glyph[data-glyph="contacts"]{background:#143222}
+#ovPhone.hack .phone-glyph[data-glyph="notes"]{background:#0c1f16}
+#ovPhone.hack .phone-glyph[data-glyph="walklings"]{background:#1c7a45}
+#ovPhone.hack .phone-glyph[data-glyph="friends"]{background:#123224}
+#ovPhone.hack .phone-glyph[data-glyph="jobs"]{background:#9dffc0}
+#ovPhone.hack .phone-glyph[data-glyph="ribbit"]{background:#0e3a22}
+#ovPhone.hack .phone-glyph[data-glyph="board"]{background:#1e6b42}
 #ovPhone.hack .phone-app:focus-visible,#ovPhone.hack #phoneClose:focus-visible,#ovPhone.hack #phoneBack:focus-visible{outline-color:#d7ffc8}
 #ovPhone.hack #phonePane{gap:6px}
 #ovPhone.hack #phoneBody{gap:4px;font-size:16px;line-height:1.3;color:#d7ffc8}
@@ -824,4 +840,33 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone.hack #phoneBody .ribbit-handle{color:#d7ffc8}
 #ovPhone.hack #phoneBody .ribbit-text,#ovPhone.hack #phoneBody .ribbit-foot{background:transparent;color:#d7ffc8}
 #ovPhone.hack #phoneBody .ribbit-chirps{color:#b7ebc8}
+#ovPhone .contact-filters{display:flex;gap:6px;margin-bottom:8px}
+#ovPhone .contact-filter{flex:1 1 0;min-height:40px;margin:0}
+#ovPhone .contact-filter.on{box-shadow:inset 0 0 0 3px currentColor}
+#ovPhone .contact-list{display:flex;flex-direction:column;gap:6px;min-width:0}
+#ovPhone .contact-row{display:flex;align-items:center;gap:6px;min-width:0;padding:4px;border-radius:12px}
+#ovPhone .contact-main{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;min-height:48px;margin:0;padding:2px 4px;border:0;background:transparent;color:inherit;font-family:var(--font);font-size:16px;text-align:left;cursor:pointer}
+#ovPhone .contact-face{width:36px;height:36px;flex:0 0 auto;border-radius:8px;background:#1a1c2c;image-rendering:pixelated;image-rendering:crisp-edges}
+#ovPhone .contact-face-lg{width:54px;height:54px;border-radius:12px}
+#ovPhone .contact-meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+#ovPhone .contact-name{max-width:100%;font-size:18px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ovPhone .contact-place{font-size:13px;line-height:1.15;opacity:.8}
+#ovPhone .contact-quest{font-size:11px;letter-spacing:.6px;line-height:1.2;padding:0 4px}
+#ovPhone .contact-star{flex:0 0 auto;min-width:44px;min-height:44px;margin:0;padding:0 8px}
+#ovPhone .contact-star[aria-pressed="true"]{background:#1d5c38;color:#f6e6c0}
+#ovPhone.hack .contact-star[aria-pressed="true"]{background:#9dffc0;color:#07140e}
+#ovPhone .contact-empty,#ovPhone .contact-line{margin:0;font-size:16px;line-height:1.35}
+#ovPhone .contact-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+#ovPhone .contact-card-name{margin:0;font-size:22px;line-height:1.1}
+#ovPhone .contact-card-acts{display:flex;gap:8px;width:100%}
+#ovPhone .contact-card-acts .btn{flex:1 1 0;min-height:44px;margin:0}
+#ovPhone:not(.hack) .contact-row{background:#fff9ec;box-shadow:0 0 0 2px #1d5c38}
+#ovPhone:not(.hack) .contact-main,#ovPhone:not(.hack) .contact-card-name{color:#143226}
+#ovPhone:not(.hack) .contact-place,#ovPhone:not(.hack) .contact-empty,#ovPhone:not(.hack) .contact-line{color:#3d4a36}
+#ovPhone:not(.hack) .contact-quest{background:#1d5c38;color:#f6e6c0}
+#ovPhone.hack .contact-row{background:#0c1f16;box-shadow:0 0 0 2px #1e6b42}
+#ovPhone.hack .contact-main,#ovPhone.hack .contact-card-name,#ovPhone.hack .contact-line{color:#d7ffc8}
+#ovPhone.hack .contact-place,#ovPhone.hack .contact-empty{color:#b7ebc8}
+#ovPhone.hack .contact-quest{background:#1c7a45;color:#f4fff6}
+#ovPhone.hack #phoneBody .contact-line,#ovPhone.hack #phoneBody .contact-place,#ovPhone.hack #phoneBody .contact-quest,#ovPhone.hack #phoneBody .contact-empty{background:transparent}
 #ovPhone #phonePane[hidden],#ovPhone #phoneHome[hidden],#ovPhone #phoneBody[hidden],#ovPhone #phoneFriends[hidden]{display:none}
