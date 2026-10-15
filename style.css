@@ -92,10 +92,6 @@ h2 small{color:var(--h);font-size:17px}
 .scene-wrap{display:flex;justify-content:center;align-items:center;background:var(--k);margin:6px;flex:0 0 auto}
 .pet-scene{position:relative;display:flex;justify-content:center;align-items:center;margin:6px;background:transparent;box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);line-height:0;overflow:hidden}
 .pet-scene canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;box-shadow:none}
-.scene-btn{position:absolute;left:8px;top:8px;z-index:1;min-width:44px;min-height:44px;padding:0 10px;border:0;background:rgba(26,28,44,.72);color:var(--y);
-  font-family:var(--font);font-size:18px;box-shadow:0 0 0 2px var(--k);cursor:pointer}
-.scene-btn:active{transform:translateY(1px)}
-.scene-btn[hidden]{display:none}
 .map-wrap{flex:1 1 0;min-height:120px;display:flex;justify-content:center;align-items:center;background:var(--k);margin:6px;overflow:hidden;touch-action:none}
 
 /* stats */
@@ -127,6 +123,12 @@ h2 small{color:var(--h);font-size:17px}
 .btn-evo{background:var(--y);animation:pulse .8s steps(2) infinite;font-size:25px}
 @keyframes pulse{50%{background:var(--w)}}
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:auto;padding:4px 3px}
+.actions.partner-row{grid-template-columns:1fr 1fr}
+.partner-row + .actions{margin-top:0}
+/* Short phones: the extra KIT row needs the scene gaps pulled in so FEED stays on screen. */
+#scr-pet.pet-tight{gap:6px}
+#scr-pet.pet-tight .actions{padding-top:0;padding-bottom:0}
+#scr-pet.pet-tight .actions .btn{margin:0}
 .actions.two{grid-template-columns:2fr 1fr}
 
 /* walk */
@@ -318,6 +320,9 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .gear-check{display:flex;align-items:center;gap:8px;min-height:44px;font-size:18px;color:var(--w)}
 .gear-check input{width:22px;height:22px}
 #scGear{min-height:44px;font-size:18px}
+.kit-card{gap:8px}
+.kit-card .ov-title{font-size:22px}
+.kit-card .sc-gear{padding-top:0}
 
 /* Walkling sheet: full-screen party menu. Buttons stay >= 44px on a 320px phone. */
 .walkling-sheet{gap:8px}
@@ -525,8 +530,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sh-item.sh-pre{box-shadow:inset 0 0 0 3px var(--y)}
 
 /* INVENTORY §6 Bag overlay + BAG chrome; ICONS_SEALS HUD icons */
-.scene-btn-bl{left:8px;top:auto;bottom:8px}
-.scene-badge{left:auto;right:8px} /* BAG took bottom-left; badge sits bottom-right */
+/* Partner BAG is gone, so the RESTING / TIRED badge keeps the bottom-left of the scene. */
 .overlay.bag{padding:0;align-items:stretch}
 .overlay.bag .bag-inner{max-width:480px;max-height:none;height:100%;margin:0 auto;box-shadow:none;gap:8px;
   padding:calc(10px + env(safe-area-inset-top)) 12px calc(10px + env(safe-area-inset-bottom));overflow:hidden}

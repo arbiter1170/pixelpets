@@ -661,7 +661,7 @@ Battle controls and the overlays stay as they are. The Talk button stays in arca
 
 ### Hold
 
-Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes. Q16 no longer blocks it, and it is not ahead of Q19. The phone still shows ADD (COMING SOON) and three empty slots. The real Sacrifice cost (D24) replaces the stub; it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`. Q26 is scoped above. It is not on this hold list.
+Quest-unlocked Walkling adornments (D75) are not started. The five current ones stay free, and the partner tab's KIT button is in the game. Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes. Q16 no longer blocks it, and it is not ahead of Q19. The phone still shows ADD (COMING SOON) and three empty slots. The real Sacrifice cost (D24) replaces the stub; it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`. Q26 is scoped above. It is not on this hold list.
 
 ### Parallel, does not unblock Q19
 

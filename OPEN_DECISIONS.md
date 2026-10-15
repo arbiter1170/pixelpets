@@ -6,7 +6,7 @@ Source: the first implementation pass of NEXT_PLAN (WP-C, WP-A, WP-B0), PR #3; B
 
 The old keeper-hq branch reused D27–D31. `main` already had D27 (Mahopac, settled) and D28 (lantern rest, open). Those rows are D32–D36 now.
 
-D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D81. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape.
+D37 is used twice. The row still in the open table is the region-map claim list, and that behavior is already in the game. The town-list row was settled on Oct 14, 2026 (see Settled). They are not the same decision. Do not renumber either row. The next free id is D81. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D75 is the partner kit label and the five adornment names.
 
 ## Open
 
@@ -49,6 +49,7 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 | D70 | Q26 controls | Sign the first-walk prompt, the Settings reminder, and the two modern walk tips. Confirm the objective line stays on the modern map as a band above the partner strip | Not built. The scope's prompt is "Arcade: the pad and a Talk button. Modern: the map fills the screen. Tap people to talk. The gear switches." The buttons are Arcade and Modern. The reminder is "You can switch any time. The gear in the corner is Settings." The modern tips drop "Hold the pad" and keep the quest line from `walkTipText`. Marked placeholder | NEXT_PLAN §3 Q26. When built: `controlPick` and `walkTipText` in `game.js`, and `intro` in `data/maps_slice.json` |
 | D71 | Q26 joystick | Should the translucent joystick be on by default in modern, or an option that starts off? Where does it sit? | Not built. The scope has a Joystick row in Settings, shown only in modern, default OFF, saved as `settings.joystick`. The ring is 96 px, bottom left, above the tip band, four-way, 12 px dead zone, writing `walk.dpad` like a held arrow. Tap-to-walk and drag stay on either way. The sketch calls it an option, so OFF is the guess | NEXT_PLAN §3 Q26. When built: `settings.joystick` in `save.js`; the ring handlers in `game.js` |
 | D72 | Q26 landscape | The sketch is landscape and says the game should be full screen when opened, with a vertical option in Settings. Build a landscape layout, and lock orientation in the manifest? | Not built. The app is a portrait column at most 480 px wide, and `manifest.json` is `display: standalone` with no orientation. Modern in Q26 is portrait: the map fills the portrait screen. A landscape layout, its Settings row, and an orientation lock are this row | NEXT_PLAN §3 Q26 "Landscape". When built: `manifest.json`, `#app` in `style.css`, `fitAll` in `game.js` |
+| D75 | Partner kit | What should the button beside STATS say, and what are the five adornment names? Later quests unlock more. | The button is KIT, beside STATS, above FEED. Both use the care-button chrome. It opens Customize & Gear. The five ids stay `bell`, `ribbon`, `scarf`, `leaf`, `star`, and they stay free. The labels are Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, and Amber star. They are drawn on the body so they sit on every Walkling. BAG is only on the Walk map. More adornments from quests are not built. Marked placeholder. Save `v` stays 2 | `PET_ACC_LABEL` and `drawPetAccessory` in `game.js` |
 
 ## Not started, blocked on people
 
@@ -61,6 +62,7 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 - Town boards (Q19) are scoped in `TOWN_BOARD.md`. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. Mahopac has a board and no slips. The open-table D37 is the region-map claim list and is still open. D56 and D57 are the open lines on the welcome and on clearing a nickname. They do not block the boards.
 - The Capital Partnership Briefing (Q22) is not built. It must not add a second Standing grant on top of `r5_g`.
 - Modern and arcade controls (Q26) are scoped in NEXT_PLAN §3 from Vincent's Oct 15 sketch. The prompt and the modern tips are D70, the joystick default is D71, and landscape is D72. Not started. The next build stays Q19.
+- More Walkling adornments unlock during quests (D75). That list is not built. The five current ones stay free.
 
 ## Settled
 

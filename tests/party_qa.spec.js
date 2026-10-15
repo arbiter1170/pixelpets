@@ -193,11 +193,9 @@ test('the bag will not use up a holdable item', async ({ page }) => {
   save.bag = { soft_berry: 1, heal_snack: 1 };
   save.flags['story.side_pick_done'] = true;
   await boot(page, save);
-  await page.evaluate(() => {
-    const b = document.querySelector('#petBagBtn');
-    if (b) b.hidden = false;
-  });
-  await page.locator('#petBagBtn').click();
+  await page.locator('#tabs button[data-tab="walk"]').click();
+  await expect(page.locator('#walkBagBtn')).toBeVisible();
+  await page.locator('#walkBagBtn').click();
   await expect(page.locator('#ovBag')).toBeVisible();
   const row = page.locator('#bagList .bag-row', { hasText: 'Soft Berry' });
   await expect(row).toContainText('(hold)');
