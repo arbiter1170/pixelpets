@@ -86,6 +86,10 @@ test('the phone home is icons, contacts are people you have met, and the bag ope
   await expect(page.locator('.contact-card .contact-star')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.contact-card .contact-star')).toHaveText('ON');
   await page.locator('[data-contact-back]').click();
+  for (const f of ['all', 'fav']) {   // QA Oct 15: the ALL / FAVORITES tabs are full 44 px touch targets
+    const box = await page.locator(`[data-contact-filter="${f}"]`).boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(44);
+  }
   await page.locator('[data-contact-filter="fav"]').click();
   await expect(page.locator('.contact-row')).toHaveCount(1);
   await expect(page.locator('.contact-name')).toHaveText('Officer Ness');

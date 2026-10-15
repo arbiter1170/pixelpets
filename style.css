@@ -170,6 +170,8 @@ body.scene-on .walk-ctl{opacity:0}
 .env-badge{align-self:flex-start;display:flex;align-items:center;gap:6px;max-width:100%;min-height:28px;margin:0 4px;padding:3px 8px;border:0;
   background:var(--k);color:var(--s);font-size:16px;box-shadow:0 0 0 2px var(--d);cursor:pointer;flex:0 0 auto;white-space:nowrap;overflow:hidden}
 #envText{overflow:hidden;text-overflow:ellipsis}
+/* QA Oct 15: a 44 px tap target in arcade without moving anything: 8 px transparent borders, pulled back by negative margins. */
+body:not(.ctl-modern) .env-badge{border-top:8px solid transparent;border-bottom:8px solid transparent;background-clip:padding-box;box-shadow:none;outline:2px solid var(--d);outline-offset:-8px;margin-top:-8px;margin-bottom:-8px;min-height:44px}
 .env-badge small{font-size:13px;color:var(--k);background:var(--h);padding:0 3px;letter-spacing:1px;flex:0 0 auto}
 .env-badge small:empty{display:none}
 .geo-text{margin:0;font-size:18px;line-height:1.45;color:var(--w)}
@@ -488,6 +490,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sb-choices{display:flex;flex-direction:column;gap:8px}
 .sb-choices:empty{display:none}
 .btn.sb-choice{margin:0;min-height:48px;font-size:20px;background:var(--y);white-space:normal;line-height:1.15;padding:8px 10px}
+.sb-choice .sb-ch-l{display:block}
+.sb-choice .sb-ch-sub{display:block;font-size:16px;line-height:1.2;margin-top:4px;opacity:.85}
 .sb-name{display:flex;flex-direction:column;gap:6px;margin-top:6px}
 .sb-name[hidden]{display:none}
 .sb-name input{font-family:var(--font);font-size:20px;min-height:44px;padding:0 10px;border:0;background:var(--n);color:var(--w);box-shadow:0 0 0 3px var(--k);user-select:text;-webkit-user-select:text}
@@ -841,7 +845,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone.hack #phoneBody .ribbit-text,#ovPhone.hack #phoneBody .ribbit-foot{background:transparent;color:#d7ffc8}
 #ovPhone.hack #phoneBody .ribbit-chirps{color:#b7ebc8}
 #ovPhone .contact-filters{display:flex;gap:6px;margin-bottom:8px}
-#ovPhone .contact-filter{flex:1 1 0;min-height:40px;margin:0}
+#ovPhone .contact-filter{flex:1 1 0;min-height:44px;margin:0}
 #ovPhone .contact-filter.on{box-shadow:inset 0 0 0 3px currentColor}
 #ovPhone .contact-list{display:flex;flex-direction:column;gap:6px;min-width:0}
 #ovPhone .contact-row{display:flex;align-items:center;gap:6px;min-width:0;padding:4px;border-radius:12px}
@@ -870,3 +874,94 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #ovPhone.hack .contact-quest{background:#1c7a45;color:#f4fff6}
 #ovPhone.hack #phoneBody .contact-line,#ovPhone.hack #phoneBody .contact-place,#ovPhone.hack #phoneBody .contact-quest,#ovPhone.hack #phoneBody .contact-empty{background:transparent}
 #ovPhone #phonePane[hidden],#ovPhone #phoneHome[hidden],#ovPhone #phoneBody[hidden],#ovPhone #phoneFriends[hidden]{display:none}
+
+/* ---------- Q26 modern navigation (NEXT_PLAN §3 Q26; layout = design/specs NAV_MODERN v0.1 §1). Arcade has no rules here. ----------
+   Rects at 320x568 / 390x844: 44 px buttons, 6 px from the edge and from each neighbour, plus the safe-area insets. */
+.float-ctl,.scr-back{display:none}
+body.ctl-modern{--sa-t:env(safe-area-inset-top,0px);--sa-b:env(safe-area-inset-bottom,0px);--sa-l:env(safe-area-inset-left,0px);--sa-r:env(safe-area-inset-right,0px)}
+body.ctl-modern[data-screen="walk"] #top,body.ctl-modern #tabs{display:none}
+body.ctl-modern #scr-walk{padding:0}
+body.ctl-modern #scr-walk .walk-hud,body.ctl-modern #scr-walk .walk-ctl{display:none}
+body.ctl-modern #scr-walk .map-wrap{margin:0;box-shadow:none;min-height:0}
+body.ctl-modern #app{padding-bottom:env(safe-area-inset-bottom)}
+body.ctl-modern .float-ctl{display:block;position:absolute;inset:0;pointer-events:none;z-index:2}
+.float-ctl > *{transition:opacity .2s}
+/* scenes: everything fades and drops taps except the gear (NAV_MODERN G3) */
+body.ctl-modern.scene-on .float-ctl > *:not(.fc-tr){opacity:0}
+body.ctl-modern.scene-on .float-ctl > *:not(.fc-tr) *{pointer-events:none!important}
+body.ctl-modern.scene-on #phoneBtn{opacity:0;pointer-events:none}
+body.ctl-modern.scene-on #gearFloat{position:relative;z-index:12}
+body.ctl-modern.scene-on .float-ctl{z-index:12}
+body.ctl-modern.scene-on .float-ctl .fc-tr{pointer-events:none}
+@media (prefers-reduced-motion: reduce){ .float-ctl > *{transition:none} }
+.float-ctl button,.float-ctl .joy{pointer-events:auto}
+.fc-col{position:absolute;top:calc(6px + var(--sa-t));display:flex;flex-direction:column;gap:6px}
+.fc-tl{left:calc(6px + var(--sa-l))}.fc-tr{right:calc(6px + var(--sa-r))}
+.float-ctl .dpc,.scr-back{position:static;width:44px;height:44px;min-width:0;min-height:0;padding:0;font-size:12px;letter-spacing:0;gap:1px;overflow:hidden;
+  border:0;color:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--n);box-shadow:0 0 0 2px var(--m),inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.12)}
+.float-ctl .dpc span,.scr-back span{white-space:nowrap;line-height:1}
+.float-ctl .dpc canvas,.scr-back canvas{width:24px;height:24px;flex:0 0 auto}
+.float-ctl .dpc.icon-only canvas{width:28px;height:28px}
+.float-ctl .dpc[hidden]{display:none}
+.float-ctl .dpc:active{transform:translateY(2px);background:var(--b)}
+.float-ctl .dpc.off{opacity:.45}
+.float-ctl .dpc.pulse{animation:jpulse .8s steps(2) infinite}
+@media (prefers-reduced-motion: reduce){ .float-ctl .dpc.pulse{animation:none;background:var(--b)} }
+/* NAV_MODERN G2: one lock for every nav button */
+body.nav-locked #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,body.nav-locked .scr-back{pointer-events:none;opacity:.5}
+.fc-top{position:absolute;top:calc(6px + var(--sa-t));left:calc(56px + var(--sa-l));right:calc(56px + var(--sa-r));height:44px;display:flex;justify-content:center}
+.fc-top .env-badge{margin:0;max-width:100%;min-height:44px;height:44px;align-self:auto;background-clip:content-box}   /* QA Oct 15: 44 px tap target; the band art stays 28 px */
+body.ctl-modern .fc-top .env-badge > .frame-art{top:8px;height:28px}
+.fc-tip{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(56px + var(--sa-b));height:var(--tip-h,28px)}
+.fc-tip:empty{display:none}
+.fc-tip .tip{height:var(--tip-h,28px);box-sizing:border-box;background:rgba(26,28,44,.85);color:var(--w);padding:0 8px;font-size:15px;line-height:28px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-bottom{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(6px + var(--sa-b));height:44px}
+.fc-row{display:flex;gap:6px;height:44px}
+.fc-br{display:flex;flex-direction:row;gap:6px;flex:0 0 auto}
+.pet-strip{flex:1 1 auto;min-width:0;height:44px;display:flex;align-items:center;gap:6px;padding:2px 6px;border:0;background:rgba(26,28,44,.88);
+  color:var(--w);box-shadow:0 0 0 2px var(--m);text-align:left;cursor:pointer}
+.pet-strip canvas{width:36px;height:36px;flex:0 0 auto}
+.ps-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.ps-top{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--y)}
+.ps-top b{color:var(--w)}
+.ps-bars{display:flex;gap:4px}
+.ps-bar{flex:1;height:6px;background:var(--d);position:relative;display:block}
+.ps-bar i{position:absolute;left:0;top:0;bottom:0;width:50%;display:block}
+.ps-bar i.low{animation:blink .6s steps(2) infinite}
+body.no-pets .pet-strip,body.no-pets #colFloat,body.no-pets #petFloat{display:none}
+body.no-pets .fc-row{justify-content:flex-end}
+body.ctl-modern .bump-hint{bottom:calc(90px + var(--sa-b))}
+/* Design green call (Oct 15): the band grows up from the strip; the joystick sits 8 px above the band; toasts sit above the ring (or the band). */
+body.ctl-modern[data-screen="walk"] #toast{top:auto;bottom:calc(56px + var(--tip-h,28px) + 8px + var(--joy-h,0px) + 8px + env(safe-area-inset-bottom))}
+.fc-tip.two .tip{white-space:normal;line-height:20px;padding-top:2px;padding-bottom:2px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
+.joy{position:absolute;left:calc(12px + var(--sa-l));bottom:calc(56px + var(--tip-h,28px) + 8px + var(--sa-b));width:96px;height:96px;border-radius:50%;background:rgba(51,60,87,.35);
+  box-shadow:inset 0 0 0 2px rgba(148,176,194,.4);touch-action:none;display:flex;align-items:center;justify-content:center}
+.joy[hidden]{display:none}
+.joy-knob{width:36px;height:36px;border-radius:50%;background:rgba(148,176,194,.6);pointer-events:none}
+body:not(.ctl-modern) .scr-back{display:none}   /* QA Oct 15: arcade has no WALK back button (the base rule above sets flex) */
+body.ctl-modern .scr-back{display:flex;margin:0 0 6px;align-self:flex-start;flex:0 0 auto;cursor:pointer;color:var(--y)}
+.set-row[hidden]{display:none}
+/* NAV_MODERN v0.2 §7 pixel art (modern only). The canvas is the face; the button box is transparent. */
+.nav-art,.frame-art,.joy-art{display:none}
+body.ctl-modern .float-ctl .dpc,body.ctl-modern .scr-back{position:relative;background:none;box-shadow:none;padding:0}
+body.ctl-modern .float-ctl .dpc:active,body.ctl-modern .scr-back:active{transform:none;background:none}
+body.ctl-modern .float-ctl .dpc.pulse,body.ctl-modern .float-ctl .dpc.off{animation:none;opacity:1;background:none}
+body.ctl-modern .nav-art{display:block;position:absolute;left:0;top:0;width:44px!important;height:44px!important;image-rendering:pixelated;
+  filter:drop-shadow(1px 0 0 #1a1c2c) drop-shadow(-1px 0 0 #1a1c2c) drop-shadow(0 1px 0 #1a1c2c) drop-shadow(0 -1px 0 #1a1c2c)}
+body.ctl-modern .float-ctl .dpc > canvas:not(.nav-art),body.ctl-modern .scr-back > canvas:not(.nav-art){display:none}
+body.nav-icons.ctl-modern .float-ctl .dpc > span,body.nav-icons.ctl-modern .scr-back > span{display:none}
+body.ctl-modern:not(.nav-icons) .float-ctl .dpc > span,body.ctl-modern:not(.nav-icons) .scr-back > span{position:absolute;left:0;right:0;bottom:0;font-size:10px;line-height:11px;
+  background:rgba(26,28,44,.75);color:var(--w);text-align:center}
+body.nav-locked .float-ctl #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,body.nav-locked .scr-back{opacity:1}
+/* QA Oct 15: when a scene blocks Settings (any scene once you have a partner) the gear shows its locked art and takes no taps.
+   The opening scene (no partner yet) keeps it live, per NAV_MODERN G3. */
+body.gear-locked #gearFloat{pointer-events:none}
+body.ctl-modern .fc-top .env-badge,body.ctl-modern .pet-strip,body.ctl-modern .fc-tip .tip{position:relative;background:none;box-shadow:none;isolation:isolate}
+body.ctl-modern .frame-art{display:block;position:absolute;left:0;top:0;width:100%;height:100%;z-index:-1;image-rendering:pixelated}
+body.ctl-modern .fc-tip .tip{padding-left:14px}
+body.ctl-modern .joy{background:none;box-shadow:none;opacity:.35}
+body.ctl-modern .joy-art{display:block;position:absolute;inset:0;width:96px;height:96px;image-rendering:pixelated}
+body.ctl-modern .joy-knob{background:none;border-radius:0;position:relative}
+body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelated}
