@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-15 18:01 ET: North trail sign no longer blocks the exit
+- What changed and why: The Hearthmoor north-trail signs stood on (8, 1), the only walk into the gap in the north trees. A sign blocks the tile it stands on, so the player could not reach the north exit at (9, 0), and could not walk back out after a visit. Both signs now stand on the grass at (10, 1). The warp still needs `story.mom_sent`. The closed-trail trigger stays at (9, 1). The sign text is unchanged. Save `v` stays 2.
+- Files touched: `data/mahopac.json`, `data/mapdata.js`, `tests/mahopac.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261015-1801.
+- Tests run and result (widths, checks): `npm test` (build check plus Playwright) — 771 passed, 12 skipped, exit 0, at 320, 375, and 390. `tests/mahopac.spec.js` walks through (8, 1) onto (9, 1) while the trail is shut, confirms a step toward (9, 0) stays in Hearthmoor, then opens the gate and warps to Mahopac (9, 14). No console errors in that run. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D127, green. (10, 1) is walkable grass south of the right path tile, clear of the warp, the closed trigger, and the return tile at (9, 1). The grass further east has no objects.
+- Anything left unfinished: none.
+
 ## 2026-10-15 16:28 ET: Minigame smoke shots use the shared helper
 - What changed and why: `tests/sfx_minigames.spec.js` wrote screenshots to hard-coded `/opt/cursor/artifacts/screenshots`, which fails on the box. It now uses the shared `shot` helper (`test-results/screenshots`, same as the other specs). No gameplay change.
 - Files touched: `tests/sfx_minigames.spec.js`, `CHANGELOG.md`, `index.html`, `version.json`.
