@@ -147,3 +147,69 @@ for (const joystick of [false, true]) {
     }
   });
 }
+
+// QA Oct 15 (PR #48) fixes.
+test('arcade hides the WALK back button on PARTNER and WALKLINGS', async ({ page }) => {
+  const s = starterSave(); s.settings = Object.assign(s.settings || {}, { controls: 'arcade' });
+  await installSave(page.context(), s, { quietDay: true });
+  await gotoGame(page);
+  for (const tab of ['pet', 'col']) {
+    await page.evaluate(t => PixelPets.showTab(t), tab);
+    await expect(page.locator(`#scr-${tab} .scr-back`)).toBeHidden();
+  }
+});
+
+test('modern gear: locked look and no action during a scene once you have a partner; works again after', async ({ page }) => {
+  await installSave(page.context(), modernSave(), { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  expect(await page.evaluate(() => PixelPets.runScene('phone_grant'))).toBe(true);
+  await expect(page.locator('body')).toHaveClass(/gear-locked/);
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#gearFloat')).pointerEvents)).toBe('none');
+  await page.locator('#gearFloat').click({ force: true });
+  await expect(page.locator('#ovSettings')).toBeHidden();
+  for (let i = 0; i < 12 && !(await page.locator('#ovScene').isHidden()); i++) { await page.keyboard.press(' '); await page.waitForTimeout(300); }
+  await expect(page.locator('body')).not.toHaveClass(/gear-locked/);
+  await page.waitForTimeout(700);
+  await page.locator('#gearFloat').click();
+  await expect(page.locator('#ovSettings')).toBeVisible();
+});
+
+for (const controls of ['arcade', 'modern']) {
+  test(`the area badge is a 44 px tap target (${controls})`, async ({ page }) => {
+    await installSave(page.context(), controls === 'modern' ? modernSave() : starterSave(), { quietDay: true });
+    await gotoGame(page);
+    await page.evaluate(() => PixelPets.showTab('walk'));
+    const b = await page.locator('#envBadge').boundingBox();
+    expect(b.height).toBeGreaterThanOrEqual(44);
+    await page.locator('#envBadge').click();
+    await expect(page.locator('#ovEnv')).toBeVisible();
+  });
+}
+
+test('the real Route 1 walk tip grows to two lines instead of an ellipsis (modern)', async ({ page }) => {
+  const s = modernSave();
+  Object.assign(s.flags, { 'story.early_done': true, 'spotted.rival1_rook': true, 'story.rival1_done': true, 'story.rival1_result': 'lost', 'story.reached_route1': true });
+  delete s.flags['story.phone_got'];
+  s.world = { map: 'route1', x: 4, y: 8, facing: 'right', respawn: 'hearthmoor' };
+  await installSave(page.context(), s, { quietDay: true });
+  await gotoGame(page);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(400);
+  const r = await page.evaluate(() => {
+    const el = document.querySelector('#walkTip'), cs = getComputedStyle(el), rg = document.createRange(); let w = 0;
+    el.childNodes.forEach(n => { if (n.nodeName !== 'CANVAS') { rg.selectNodeContents(n); w += rg.getBoundingClientRect().width; } });
+    return { txt: el.textContent, two: document.querySelector('#fcTip').classList.contains('two'), h: document.querySelector('#fcTip').getBoundingClientRect().height,
+      clipped: el.scrollHeight > el.clientHeight + 1, oneLineFits: w <= el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) };
+  });
+  expect(r.txt).toContain("Fernbrook's orchards");      // QA's line: too long for one line at 320, 375 and 390
+  expect(r.two).toBe(true); expect(r.h).toBe(44); expect(r.clipped).toBe(false);
+});
+
+test('DEBUG SAVE shows in Settings straight after a ?debug=1 load', async ({ page }) => {
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#setBuild')).toContainText('DEBUG SAVE', { timeout: 500 });
+});

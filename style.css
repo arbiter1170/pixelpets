@@ -170,6 +170,8 @@ body.scene-on .walk-ctl{opacity:0}
 .env-badge{align-self:flex-start;display:flex;align-items:center;gap:6px;max-width:100%;min-height:28px;margin:0 4px;padding:3px 8px;border:0;
   background:var(--k);color:var(--s);font-size:16px;box-shadow:0 0 0 2px var(--d);cursor:pointer;flex:0 0 auto;white-space:nowrap;overflow:hidden}
 #envText{overflow:hidden;text-overflow:ellipsis}
+/* QA Oct 15: a 44 px tap target in arcade without moving anything: 8 px transparent borders, pulled back by negative margins. */
+body:not(.ctl-modern) .env-badge{border-top:8px solid transparent;border-bottom:8px solid transparent;background-clip:padding-box;box-shadow:none;outline:2px solid var(--d);outline-offset:-8px;margin-top:-8px;margin-bottom:-8px;min-height:44px}
 .env-badge small{font-size:13px;color:var(--k);background:var(--h);padding:0 3px;letter-spacing:1px;flex:0 0 auto}
 .env-badge small:empty{display:none}
 .geo-text{margin:0;font-size:18px;line-height:1.45;color:var(--w)}
@@ -906,8 +908,9 @@ body.ctl-modern.scene-on .float-ctl .fc-tr{pointer-events:none}
 @media (prefers-reduced-motion: reduce){ .float-ctl .dpc.pulse{animation:none;background:var(--b)} }
 /* NAV_MODERN G2: one lock for every nav button */
 body.nav-locked #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,body.nav-locked .scr-back{pointer-events:none;opacity:.5}
-.fc-top{position:absolute;top:calc(14px + var(--sa-t));left:calc(56px + var(--sa-l));right:calc(56px + var(--sa-r));height:28px;display:flex;justify-content:center}
-.fc-top .env-badge{margin:0;max-width:100%;min-height:28px;height:28px;align-self:auto}
+.fc-top{position:absolute;top:calc(6px + var(--sa-t));left:calc(56px + var(--sa-l));right:calc(56px + var(--sa-r));height:44px;display:flex;justify-content:center}
+.fc-top .env-badge{margin:0;max-width:100%;min-height:44px;height:44px;align-self:auto;background-clip:content-box}   /* QA Oct 15: 44 px tap target; the band art stays 28 px */
+body.ctl-modern .fc-top .env-badge > .frame-art{top:8px;height:28px}
 .fc-tip{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(56px + var(--sa-b));height:var(--tip-h,28px)}
 .fc-tip:empty{display:none}
 .fc-tip .tip{height:var(--tip-h,28px);box-sizing:border-box;background:rgba(26,28,44,.85);color:var(--w);padding:0 8px;font-size:15px;line-height:28px;
@@ -935,6 +938,7 @@ body.ctl-modern[data-screen="walk"] #toast{top:auto;bottom:calc(56px + var(--tip
   box-shadow:inset 0 0 0 2px rgba(148,176,194,.4);touch-action:none;display:flex;align-items:center;justify-content:center}
 .joy[hidden]{display:none}
 .joy-knob{width:36px;height:36px;border-radius:50%;background:rgba(148,176,194,.6);pointer-events:none}
+body:not(.ctl-modern) .scr-back{display:none}   /* QA Oct 15: arcade has no WALK back button (the base rule above sets flex) */
 body.ctl-modern .scr-back{display:flex;margin:0 0 6px;align-self:flex-start;flex:0 0 auto;cursor:pointer;color:var(--y)}
 .set-row[hidden]{display:none}
 /* NAV_MODERN v0.2 §7 pixel art (modern only). The canvas is the face; the button box is transparent. */
@@ -949,6 +953,9 @@ body.nav-icons.ctl-modern .float-ctl .dpc > span,body.nav-icons.ctl-modern .scr-
 body.ctl-modern:not(.nav-icons) .float-ctl .dpc > span,body.ctl-modern:not(.nav-icons) .scr-back > span{position:absolute;left:0;right:0;bottom:0;font-size:10px;line-height:11px;
   background:rgba(26,28,44,.75);color:var(--w);text-align:center}
 body.nav-locked .float-ctl #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,body.nav-locked .scr-back{opacity:1}
+/* QA Oct 15: when a scene blocks Settings (any scene once you have a partner) the gear shows its locked art and takes no taps.
+   The opening scene (no partner yet) keeps it live, per NAV_MODERN G3. */
+body.gear-locked #gearFloat{pointer-events:none}
 body.ctl-modern .fc-top .env-badge,body.ctl-modern .pet-strip,body.ctl-modern .fc-tip .tip{position:relative;background:none;box-shadow:none;isolation:isolate}
 body.ctl-modern .frame-art{display:block;position:absolute;left:0;top:0;width:100%;height:100%;z-index:-1;image-rendering:pixelated}
 body.ctl-modern .fc-tip .tip{padding-left:14px}

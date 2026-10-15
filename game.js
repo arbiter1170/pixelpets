@@ -325,7 +325,7 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
-function renderBuild(){ const b = buildId(), d = !!(S && S.debugSave); $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d; }
+function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d; }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
@@ -472,12 +472,16 @@ const navPaint = new WeakMap();
 function navStateOf(b, key){
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (NAV_LOCKABLE[key] && document.body.classList.contains('nav-locked')) return 'locked';
+  if (key === 'gear' && document.body.classList.contains('gear-locked')) return 'locked';
   if (b.classList.contains('off') || b.getAttribute('aria-disabled') === 'true') return 'disabled';
   if (b.classList.contains('nav-press')) return 'pressed';
   if (b.classList.contains('pulse')) return reduce ? 'reduced_motion' : (Math.floor(performance.now() / navArt().pulseMs) % 2 ? 'pulse_b' : 'pulse_a');
   return 'normal';
 }
+// The gear's rule, shared by its handler and its locked look (QA Oct 15): blocked by a scene once you have a partner, or by Copy / Reset.
+function gearBlocked(){ return (!$('#ovCopy').hidden || !$('#ovReset').hidden) || (tabsGuarded() && allPets().length > 0); }
 function syncNavArt(force){
+  document.body.classList.toggle('gear-locked', gearBlocked());
   const A = navArt(); if (!A || !document.body.classList.contains('ctl-modern')) return;
   navButtons().forEach(([b, key]) => {
     const c = b.querySelector('.nav-art'); if (!c) return;
@@ -501,7 +505,16 @@ function syncNavArt(force){
   const kc = $('#joyKnob canvas');
   if (kc) { const tag = joy.id != null ? 'p' : 'n'; if (force || navPaint.get(kc) !== tag) { navPaint.set(kc, tag); const g = ctx(kc); g.clearRect(0, 0, 18, 18); paintGrid(g, A.joystick[joy.id != null ? 'knob_pressed' : 'knob'], 1, 0, 0); } }
 }
-setInterval(() => { try { syncNavArt(false); } catch (e) {} }, 120);
+setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} }, 120);
+// The tip text can change outside syncWalkTip, and the pixel font loads after the first measure (fallback glyphs are narrower,
+// so the band measured one line and then ellipsized). Re-measure whenever the text, the width or the font state changes.
+let tipBandKey = '';
+function tipBandTick(){
+  const el = $('#walkTip'); if (!el || ctlMode() !== 'modern') return;
+  const k = el.textContent + '|' + el.clientWidth + '|' + (document.fonts ? document.fonts.status : '');
+  if (k !== tipBandKey) { tipBandKey = k; syncTipBand(); }
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { tipBandKey = ''; try { syncTipBand(); } catch (e) {} });
 
 let screen = 'pet';
 function showTab(name){
@@ -7287,8 +7300,7 @@ function bindInput(){
     showTab(b.dataset.tab);
   }));
   const gearTap = () => {
-    if (!$('#ovCopy').hidden || !$('#ovReset').hidden) return;
-    if (tabsGuarded() && allPets().length) return;
+    if (gearBlocked()) return;
     if ($('#ovSettings').hidden) openSettings(); else closeSettings();
   };
   $('#settingsBtn').addEventListener('click', gearTap);
