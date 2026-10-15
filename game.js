@@ -513,6 +513,14 @@ function syncHdrAcorns(){
   const n = S ? (S.money | 0) : 0;
   if (n === hdrAcornsShown) return; hdrAcornsShown = n;
   $('#hdrAcornN').textContent = String(n); box.setAttribute('aria-label', acorns(n));
+  const chip = $('#fcAcorns');   // modern walk chip (Design, green): same count, left of the gear
+  if (chip) { $('#fcAcornN').textContent = String(n); chip.setAttribute('aria-label', acorns(n)); }
+}
+// The badge band gives the chip its room (the badge text clamps first at 320).
+function fitAcornChip(){
+  const chip = $('#fcAcorns'), fc = $('#floatCtl'); if (!chip || !fc) return;
+  const w = chip.offsetWidth ? Math.ceil(chip.getBoundingClientRect().width) + 6 : 0;
+  if (fc.style.getPropertyValue('--chip-w') !== w + 'px') fc.style.setProperty('--chip-w', w + 'px');
 }
 function setLabel(el, text){ if (el && el.getAttribute('aria-label') !== text) el.setAttribute('aria-label', text); }
 function syncCanvasLabels(){
@@ -523,7 +531,7 @@ function syncCanvasLabels(){
   const f = battle.on ? curFoe() : null, me = battle.on ? activePet() : null;
   if (f) setLabel($('#battleCanvas'), foeLabel(f) + ', Lv ' + f.level + ', HP ' + Math.ceil(f.hp) + ' of ' + f.maxHp + (me ? '. ' + petName(me) + ', HP ' + Math.ceil(hpOf(me)) + ' of ' + maxHpOf(me) + '.' : '.'));
 }
-setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} try { syncHdrAcorns(); syncCanvasLabels(); } catch (e) {} }, 120);
+setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} try { syncHdrAcorns(); fitAcornChip(); syncCanvasLabels(); } catch (e) {} }, 120);
 // The tip text can change outside syncWalkTip, and the pixel font loads after the first measure (fallback glyphs are narrower,
 // so the band measured one line and then ellipsized). Re-measure whenever the text, the width or the font state changes.
 let tipBandKey = '';
@@ -4853,7 +4861,7 @@ function drawRegionMap(t){
 let bagSel = 0;
 function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
 function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'star', 0, 0); }
-function paintUiIcons(){ paintAcorn($("#hdrAcornIcon"));
+function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon"));
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {

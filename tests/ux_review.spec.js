@@ -87,3 +87,46 @@ test('the debug panel is not in the player DOM; it appears only in a debug sessi
   await expect.poll(() => page.evaluate(() => !!document.querySelector('#ovDebug'))).toBe(false);
   expect(await page.evaluate(() => document.querySelector('#dbgTag').hidden)).toBe(true);
 });
+
+test('modern walk acorn chip: badge row, y 6, 44 tall, left of the gear, read-only, badge clamps first, hides with the badge', async ({ page }) => {
+  const s = starterSave(); s.money = 99999; s.settings.controls = 'modern';
+  s.world = { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' };
+  await boot(page, s, '?debug=1');
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await expect(page.locator('#fcAcornN')).toHaveText('99999');
+  await expect(page.locator('#fcAcorns')).toHaveAttribute('aria-label', '99999 Acorns');
+  await page.waitForTimeout(300);
+  const vw = page.viewportSize().width;
+  const c = await rect(page, '#fcAcorns'), gear = await rect(page, '#gearFloat'), env = await rect(page, '#envBadge');
+  expect(Math.round(c.y)).toBe(6); expect(Math.round(c.height)).toBe(44);
+  expect(c.right).toBeLessThanOrEqual(gear.x + 0.5); expect(gear.x - c.right).toBeLessThanOrEqual(8);   // immediately left of the gear
+  expect(c.right).toBeLessThanOrEqual(vw);
+  expect(boxesOverlap(c, env)).toBe(false);
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#fcAcorns')).pointerEvents)).toBe('none');
+  expect(await page.evaluate(() => document.querySelector('#fcAcorns').tagName)).toBe('DIV');
+  const icon = await page.evaluate(() => { const b = document.querySelector('#fcAcornN'), h = document.querySelector('#hdrAcornN'); return [getComputedStyle(b).color === getComputedStyle(h).color, getComputedStyle(b).fontSize === getComputedStyle(h).fontSize, b.scrollWidth <= b.clientWidth + 1]; });
+  expect(icon).toEqual([true, true, true]);
+  // a long area name: the badge text clamps, the chip stays whole
+  await page.evaluate(() => { document.querySelector('#envText').textContent = 'The Very Long Glimmerwell Orchard Gate Road'; });
+  await page.waitForTimeout(300);
+  const c2 = await rect(page, '#fcAcorns'), env2 = await rect(page, '#envBadge');
+  expect(boxesOverlap(c2, env2)).toBe(false); expect(Math.round(c2.width)).toBe(Math.round(c.width));
+  // live
+  await page.evaluate(() => PixelPets.setMoney(7)); await expect(page.locator('#fcAcornN')).toHaveText('7');
+  // dialog: fades with the badge
+  await page.evaluate(() => PixelPets.runScene('phone_grant'));
+  await page.waitForTimeout(400);
+  const op = await page.evaluate(() => [getComputedStyle(document.querySelector('#fcAcorns')).opacity, getComputedStyle(document.querySelector('#fcTop')).opacity]);
+  expect(op).toEqual(['0', '0']);
+});
+
+test('modern walk acorn chip hides in battle like the badge', async ({ page }) => {
+  const s = starterSave(); s.settings.controls = 'modern';
+  await boot(page, s, '?debug=1');
+  await page.evaluate(() => PixelPets.forceEncounter());
+  await page.waitForFunction(() => PixelPets.battle && PixelPets.battle.on, null, { timeout: 8000 });
+  await page.waitForTimeout(400);
+  const vis = await page.evaluate(() => { const v = sel => { const e = document.querySelector(sel), r = e.getBoundingClientRect(), top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+    return !!(e.offsetWidth && getComputedStyle(e).opacity !== '0' && (top === e || e.contains(top))); }; return [v('#envBadge'), v('#fcAcorns')]; });
+  expect(vis).toEqual([false, false]);
+});
