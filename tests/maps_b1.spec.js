@@ -1,8 +1,8 @@
 /* Map pass B1 (handoff/maps/B1_rx_f4.md): the acceptance items tests/rx_f4_pilot.spec.js does not cover. Quinn's fight and
-   Bitlet's befriend started from the bay itself, the Arbiter's lines by flag, floor variants on a second device, and the
-   camera in modern controls. */
+   Bitlet's befriend started from the bay itself, the Arbiter's lines by flag, floor variants on a second device, the camera
+   in modern controls, and a map resized by a data/detail_*.json overlay keeping a saved spot past its old size. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, withOverlay } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -133,4 +133,14 @@ test('E1 in modern controls: whole width visible, centred when the bay fits the 
     expect(top).toBeGreaterThanOrEqual(0);
     expect(top + 16).toBeLessThanOrEqual(c.h);
   }
+});
+
+test('E2: a map resized by a data/detail_*.json overlay keeps a saved spot past its old size', async ({ page }) => {
+  const old = await (await page.request.get('/data/heights.json')).json();
+  const f2 = old.maps.rx_f2, last = f2.grid.length - 1, floor = '#' + '.'.repeat(f2.w - 2) + '#';
+  const grid = f2.grid.slice(0, last).concat(Array(8).fill(floor), [f2.grid[last]]);
+  await withOverlay(page, { slicePatch: { maps: { rx_f2: { set: { w: f2.w, h: grid.length, grid } } } } });
+  await boot(page, labSave({}, { map: 'rx_f2', x: 9, y: 17 }));
+  const r = await page.evaluate(() => ({ size: PPSave.MAP_SIZE.rx_f2, h: PixelPets.mapInfo.h, map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, look: PixelPets.devChecks().floorCap }));
+  expect(r).toEqual({ size: [f2.w, f2.h + 8], h: f2.h + 8, map: 'rx_f2', x: 9, y: 17, look: [] });
 });
