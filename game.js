@@ -622,16 +622,15 @@ function updateHUD(){
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
-  setBar($('#wBarEnergy'), p.energy);
   updatePetStrip(p);
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
   const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
   const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
   $('#barXp').style.width = clamp(xpPct,0,100) + '%'; $('#valXp').textContent = p.xp;
-  $('#wXp').textContent = p.xp; $('#wSteps').textContent = S.steps;
+  $('#wSteps').textContent = S.steps;   // STAT_DISPLAY: the WALK slot of the shared strip
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
   const setCount = (el, v, cap) => { const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
-  setCount($('#dCare'), cx, CARE_XP_DAILY_CAP); setCount($('#dExp'), ex, EXPLORE_XP_DAILY_CAP); setCount($('#wExp'), ex, EXPLORE_XP_DAILY_CAP);
+  setCount($('#ssCare'), cx, CARE_XP_DAILY_CAP); setCount($('#ssExp'), ex, EXPLORE_XP_DAILY_CAP);   // EXPLORE once (STAT_DISPLAY §4)
   const hint = $('#evoHint'), btn = $('#evolveBtn');
   if (p.stage >= 2) { hint.textContent = 'Fully grown! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (isFaded(p)) { hint.textContent = 'Faded: ' + p.faded + ' good-care day' + (p.faded > 1 ? 's' : '') + ' to go (care 60+).'; hint.classList.remove('ready'); btn.hidden = true; }

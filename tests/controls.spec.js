@@ -27,7 +27,7 @@ test('modern fills the screen and every floating button works', async ({ page })
   await installSave(page.context(), modernSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
-  for (const s of ['#top', '#tabs', '.walk-hud', '#dpad', '#talkBtn']) await expect(page.locator(s)).toBeHidden();
+  for (const s of ['#top', '#tabs', '#statStrip', '#dpad', '#talkBtn']) await expect(page.locator(s)).toBeHidden();
   const h = await page.evaluate(() => [document.querySelector('#app').getBoundingClientRect().height, document.querySelector('#mapWrap').getBoundingClientRect().height]);
   expect(Math.abs(h[0] - h[1])).toBeLessThanOrEqual(2);
   const ids = ['#questBtn', '#walkBagBtn', '#mapBtn', '#gearFloat', '#phoneBtn', '#colFloat', '#petFloat', '#petStrip'];
