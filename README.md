@@ -94,7 +94,7 @@ Levels, types and stats (`stats.js`):
   "RESTING 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
   (and not worn out) a Walkling shows **TIRED**. The badge (RESTING, else TIRED, else GLOWING) shows on the stats card,
   the Pet scene and the Pets tab.
-- Stats card: tap STATS (top-left of the Pet tab scene) or the follower. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats. It shows the type badge, Level,
+- Stats card: tap STATS (above FEED, same button chrome as FEED / PLAY / REST) or the follower. KIT, beside STATS, opens Customize & Gear for the partner. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats and the same gear. It shows the type badge, Level,
   GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
   scaled to the highest value of that stat among all 42 forms at the same level, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
@@ -105,7 +105,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   Your partner leads (or the first party Walkling that can battle). Each turn pick FIGHT (up to 4 moves with limited
   uses; with none left a Walkling uses Wobble), BEFRIEND, SWAP, BAG (any battle item you carry) or RUN. Faster Walklings act
   first; damage uses ATK/DEF, level, type, same-type bonus, mood, stat stages (-2..+2) and rare critical hits.
-- Bag (INVENTORY v1): Walk map corner + Pet tab BAG open the Bag overlay; Travel Shelf sells snacks in the Lantern House.
+- Bag (INVENTORY v1): the Walk map corner opens the Bag overlay. The partner tab has no BAG. Travel Shelf sells snacks in the Lantern House.
 - Items (INVENTORY v1): Heal Snack (+40% HP), Hearty Snack (+75% HP), Wake Tonic (wakes a napping Walkling early at 25% HP),
   Befriend Treat (wild battles, once per battle), Energy Sip (NRG +40) and Joy Crumb (JOY +20). Trainers pay Acorns.
 - Type hints start hidden: once you've seen a move's effect on a type, its button shows a 2x / ½ / 0 badge for
@@ -354,7 +354,8 @@ Saves (format v2, `save.js`):
   Those labels stay while the WALKLINGS tab is open.
   LEFT BEHIND shows each orphan's reason and the raw data. Hunger pauses in the box.
   A battle SWAP lists the party only. The sheet on a Walkling can use a field snack, rename them, reorder moves,
-  hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an accessory, and set a call (Charge, Brace, Dart, or Greet).
+  hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an adornment (Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, or Amber star), and set a call (Charge, Brace, Dart, or Greet).
+  The five adornment ids stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body so they sit on every Walkling. More adornments unlock from quests later; that list is not built (D60). The partner button is KIT.
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
   `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
   The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 42 form ids) is append-only: new lines are added at the end

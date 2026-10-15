@@ -539,7 +539,7 @@ Fourteen hours away, once the partner tab is clear of the daily hello, the line 
 
 ### Hold
 
-Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes. Q16 no longer blocks it, and it is not ahead of Q19. The phone still shows ADD (COMING SOON) and three empty slots. The real Sacrifice cost (D24) replaces the stub; it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`.
+Quest-unlocked Walkling adornments (D60) are not started. The five current ones stay free, and the partner tab's KIT button is in the game. Brinewick, Trial Hall #3, and Seal 3 wait on a one-pager that does not exist. Friends v1 starts at offline trade codes. Q16 no longer blocks it, and it is not ahead of Q19. The phone still shows ADD (COMING SOON) and three empty slots. The real Sacrifice cost (D24) replaces the stub; it is not a second Tour. Daily Standing (D18) and a trainer rematch after a loss stay off unless Vincent asks. `canSpot` still requires `!spotted.<id>`.
 
 ### Parallel, does not unblock Q19
 
@@ -619,6 +619,6 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D60. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. Daily Standing (D18) is yes and slow, with no cap yet.
+9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D61. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is the partner kit label and the five adornment names. Quest-unlocked adornments are not started. Daily Standing (D18) is yes and slow, with no cap yet.
 10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.
 11. **Welcome back (D56) and clearing a nickname (D57).** Q25 uses 14 hours and one sentence. Q23 clears `nick` when the field is empty or equals the species name, on the stats card and on the Walkling sheet. Both lines are still placeholders.
