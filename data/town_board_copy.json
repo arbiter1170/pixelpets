@@ -1,4 +1,34 @@
 {
+  "_placeholders": {
+    "note": "TEMP copy Oct 15, 2026, replace via D49",
+    "paths": [
+      "towns.hearthmoor.reports[0].text",
+      "towns.hearthmoor.reports[1].text",
+      "towns.hearthmoor.reports[2].text",
+      "towns.hearthmoor.reports[3].text",
+      "towns.hearthmoor.reports[4].text",
+      "towns.hearthmoor.reports[5].text",
+      "towns.hearthmoor.reports[6].text",
+      "towns.fernbrook.reports[0].text",
+      "towns.fernbrook.reports[1].text",
+      "towns.fernbrook.reports[2].text",
+      "towns.fernbrook.reports[3].text",
+      "towns.fernbrook.reports[4].text",
+      "towns.cobblecrest.reports[0].text",
+      "towns.cobblecrest.reports[1].text",
+      "towns.cobblecrest.reports[2].text",
+      "towns.cobblecrest.reports[3].text",
+      "towns.cobblecrest.reports[4].text",
+      "towns.cobblecrest.reports[5].text",
+      "towns.highcharity.reports[0].text",
+      "towns.highcharity.reports[1].text",
+      "towns.highcharity.reports[2].text",
+      "towns.highcharity.reports[3].text",
+      "towns.mahopac.reports[0].text",
+      "towns.mahopac.reports[1].text",
+      "weather.text"
+    ]
+  },
   "papers": {
     "keepers": {
       "masthead": "THE LANTERN POST",
@@ -24,37 +54,37 @@
         {
           "id": "hm_east_road",
           "when": [],
-          "text": "The east road is Route 1. The watch walks the street. PLACEHOLDER"
+          "text": "The east road is Route 1. The watch walks the street at dusk, lantern in hand."
         },
         {
           "id": "hm_gate_holding",
           "when": ["!story.starter_received"],
-          "text": "The east gate is holding. PLACEHOLDER"
+          "text": "The east gate is holding. Someone left a thermos on the post for the watch."
         },
         {
           "id": "hm_rook_gate",
           "when": ["story.starter_received", "!story.rival1_done"],
-          "text": "Rook is at the east gate. PLACEHOLDER"
+          "text": "Rook is at the east gate, waving at anyone who looks lost."
         },
         {
           "id": "hm_north_wait",
           "when": ["!story.mom_sent"],
-          "text": "The north trail can wait. PLACEHOLDER"
+          "text": "The north trail can wait. The ferns are thick, and the moss is wet this week."
         },
         {
           "id": "hm_north_open",
           "when": ["story.mom_sent"],
-          "text": "The north trail is open, and time feels thick. PLACEHOLDER"
+          "text": "The north trail is open, and time feels thick. Bring a snack and walk slowly."
         },
         {
           "id": "hm_keeper1",
           "when": ["story.phone_got"],
-          "text": "Keeper1 is live. The wires stay with the watch. PLACEHOLDER"
+          "text": "Keeper1 is live. The wires stay with the watch. Ask them if yours goes quiet."
         },
         {
           "id": "hm_mint_vest",
           "when": ["story.side=glimmer"],
-          "text": "A mint vest was seen on the street. The paper here is still Keeper paper. PLACEHOLDER"
+          "text": "A mint vest was seen on the street. The paper here is still Keeper paper."
         }
       ]
     },
@@ -64,27 +94,27 @@
         {
           "id": "fb_hall_latched",
           "when": ["!story.orchard_cleared"],
-          "text": "The Trial Hall is latched. Fen is outside. PLACEHOLDER"
+          "text": "The Trial Hall is latched. Fen is outside, pacing by the steps."
         },
         {
           "id": "fb_hall_open",
           "when": ["story.orchard_cleared", "!story.seal1"],
-          "text": "The Trial Hall is open. PLACEHOLDER"
+          "text": "The Trial Hall is open. The steps were swept this morning."
         },
         {
           "id": "fb_rockslide",
           "when": ["!story.seal1"],
-          "text": "Route 2 is under the rockslide. PLACEHOLDER"
+          "text": "Route 2 is under the rockslide. The crews are clearing it stone by stone."
         },
         {
           "id": "fb_route2",
           "when": ["story.seal1"],
-          "text": "Route 2 is open toward Wickerglen. PLACEHOLDER"
+          "text": "Route 2 is open toward Wickerglen. Mind the loose gravel past the bend."
         },
         {
           "id": "fb_stand",
           "when": [],
-          "text": "A Glimmerwell stand is on the main street. It is not the town. PLACEHOLDER"
+          "text": "A Glimmerwell stand is on the main street. It is not the town."
         }
       ]
     },
@@ -96,32 +126,32 @@
         {
           "id": "cc_stall",
           "when": ["!story.quarry_bought"],
-          "text": "Cairnside Supplies is chalked on the stall. PLACEHOLDER"
+          "text": "Cairnside Supplies is chalked on the stall. Rope, lamp oil, and warm bread."
         },
         {
           "id": "cc_quarry_road",
           "when": ["!story.quarry_bought"],
-          "text": "The quarry road is watched. PLACEHOLDER"
+          "text": "The quarry road is watched. Walk it in daylight, and say hello to the guard."
         },
         {
           "id": "cc_hale_note",
           "when": ["!story.quarry_bought", "!story.seal2"],
-          "text": "Hale's door has a chalk note about the quarry meeting. PLACEHOLDER"
+          "text": "Hale's door has a chalk note about the quarry meeting. Tea after, at the cairn."
         },
         {
           "id": "cc_stall_bright",
           "when": ["story.quarry_bought"],
-          "text": "Cairnside Supplies is chalked on a brighter stall. PLACEHOLDER"
+          "text": "Cairnside Supplies is chalked on a brighter stall. The bread is still warm."
         },
         {
           "id": "cc_partnership",
           "when": ["story.quarry_bought"],
-          "text": "The quarry is a partnership, the cairn is still the cairn, and visitors are welcome briefly. PLACEHOLDER"
+          "text": "The quarry is a partnership, the cairn is still the cairn, and visitors are welcome briefly."
         },
         {
           "id": "cc_hale_note_bright",
           "when": ["story.quarry_bought", "!story.seal2"],
-          "text": "Hale's door has a bright chalk note about the quarry meeting. PLACEHOLDER"
+          "text": "Hale's door has a bright chalk note about the quarry meeting. Mint pens provided."
         }
       ]
     },
@@ -131,22 +161,22 @@
         {
           "id": "hc_plaza",
           "when": [],
-          "text": "The plaza is open. The south gate is the coach home. PLACEHOLDER"
+          "text": "The plaza is open. The south gate is the coach home. It leaves at every bell."
         },
         {
           "id": "hc_event_hall",
           "when": [],
-          "text": "The Event Hall is taking games. PLACEHOLDER"
+          "text": "The Event Hall is taking games. Sign the sheet by the door."
         },
         {
           "id": "hc_sky_dock",
           "when": [],
-          "text": "The sky-dock keeps its own boarding board. This post is the town's. PLACEHOLDER"
+          "text": "The sky-dock keeps its own boarding board. This post is the town's."
         },
         {
           "id": "hc_market",
           "when": [],
-          "text": "The Lantern Market is south of this post. PLACEHOLDER"
+          "text": "The Lantern Market is south of this post. Follow the smell of roasted nuts."
         }
       ]
     },
@@ -156,12 +186,12 @@
         {
           "id": "mp_lens",
           "when": [],
-          "text": "The lens remembers. The minute does not move. PLACEHOLDER"
+          "text": "The lens remembers. The minute does not move."
         },
         {
           "id": "mp_woke",
           "when": ["story.dream_woke"],
-          "text": "Someone woke. The path did not. PLACEHOLDER"
+          "text": "Someone woke. The path did not."
         }
       ]
     }
@@ -169,7 +199,7 @@
   "weather": {
     "id": "weather_paper",
     "when": [],
-    "text": "Rain damps the post. Snow fogs the sleeve. Night curls the star-chart. PLACEHOLDER"
+    "text": "Rain damps the post. Snow fogs the sleeve. Night curls the star-chart."
   },
   "flyer": {
     "id": "flyer_glimmer",
