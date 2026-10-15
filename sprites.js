@@ -865,4 +865,8 @@ function addExteriorArt(T, A){
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })); return c; };
   for (const [k, rows] of Object.entries(EXTERIOR_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(EXTERIOR_ART[grp])) if (!A[k]) A[k] = paint(rows);
+  for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
 }
+// E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).
+// Lab maps keep LAB_SKIN.variants; hand-placed chars (`f`, `t`, …) never vary.
+const OUTDOOR_SKIN = { variants: { g: [['grass_b', 0.18], ['grass_c', 0.12], ['flower_patch', 0.05]] } };

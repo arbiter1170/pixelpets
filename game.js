@@ -2427,7 +2427,10 @@ function paintBuilding(m, b, fac, P){
   for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
     const ch = at(x, y); if (ch !== 'R' && ch !== 'H') continue;
     const cell = document.createElement('canvas'); cell.width = cell.height = TS; const cg = cell.getContext('2d');
-    if (cut && ch === 'R') cg.drawImage(TILES[gch] || TILES.g, 0, 0);
+    if (cut && ch === 'R') {   // ground behind a cut roof takes the map's seeded grass like the cells around it
+      const v = m.skin !== 'lab' && m.variants ? labTileName(gch, x, y, m) : gch, gn = TILES[v] ? v : TILES[gch] ? gch : 'g';
+      cg.drawImage(TILES[gn], 0, 0); P.ground.set(bldKey(x, y), gn);
+    }
     cg.drawImage(c, (x - b.x0) * TS, (y - b.y0) * TS, TS, TS, 0, 0, TS, TS);
     P.cells.set(bldKey(x, y), cell);
     if (cut && ch === 'R') P.cut.add(bldKey(x, y));
@@ -2440,7 +2443,7 @@ function buildingCells(){
   let P = bldCache.get(key);
   if (P) return P;
   if (bldCache.size > 12) bldCache.clear();
-  P = { cells: new Map(), cut: new Set(), styled: new Set(), doors: new Map() };
+  P = { cells: new Map(), cut: new Set(), styled: new Set(), doors: new Map(), ground: new Map() };
   for (const b of buildingsOf(CUR)) paintBuilding(CUR, b, fac, P);
   bldCache.set(key, P); return P;
 }
@@ -2464,14 +2467,15 @@ function drawTileExtras(g, ch, tx, ty, X, Y){
   const m = pathEdges(tx, ty);
   for (let i = 0; m >> i; i++) if (m >> i & 1) g.drawImage(TILES[EDGE_TILES[i]], X, Y);
 }
-// debug/tests (?debug=1 only): what map `id`'s styled buildings and props resolve to, and how cell (x, y) of the current map is painted
+// debug/tests (?debug=1 only): what map `id`'s styled buildings, props and decals resolve to, and how cell (x, y) of the current map is painted
 function exteriorView(id){
   id = id || CUR.id; const m = WORLD[id]; if (!m) return null;
   const dim = a => a ? [a.width, a.height] : null, bs = buildingsOf(m);
   const tiles = new Set(Object.keys(EXTERIOR_ART.tiles)), wart = new Set(Object.keys(EXTERIOR_ART.art).concat(Object.keys(EXTERIOR_ART.big)));
   bs.forEach(b => { [b.roof, b.wall].forEach(n => n && tiles.add(n)); [b.door].concat(b.win).forEach(n => n && wart.add(n)); });
-  const props = m.objs.filter(o => o.kind === 'prop').map(o => ({ id: o.id, x: o.x, y: o.y, sprite: o.sprite || null, art: dim(WART[o.sprite]) }));
-  return { id, safe: m.safe ? { x: m.safe.x, y: m.safe.y } : null, roofs: JSON.parse(JSON.stringify(m.roofs || null)), buildings: JSON.parse(JSON.stringify(bs)), props,
+  const list = kind => m.objs.filter(o => o.kind === kind).map(o => ({ id: o.id, x: o.x, y: o.y, sprite: o.sprite || null, art: dim(WART[o.sprite]) }));
+  const props = list('prop'), decals = list('decal');
+  return { id, safe: m.safe ? { x: m.safe.x, y: m.safe.y } : null, roofs: JSON.parse(JSON.stringify(m.roofs || null)), buildings: JSON.parse(JSON.stringify(bs)), props, decals,
     tiles: Object.fromEntries([...tiles].map(n => [n, dim(TILES[n])])), wart: Object.fromEntries([...wart].map(n => [n, dim(WART[n])])) };
 }
 function exteriorCell(x, y){
@@ -2481,7 +2485,7 @@ function exteriorCell(x, y){
     for (let i = 0; i < d.length; i += 4) if (d[i + 3]) { const h = '#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join(''); out[h] = (out[h] || 0) + 1; }
     return out; };
   const door = CUR.objs.find(o => o.kind === 'door' && o.x === x && o.y === y), e = pathEdges(x, y);
-  return { ch: tileAt(x, y), painted: !!cell, cut: !!P && P.cut.has(k), styled: !!P && P.styled.has(k), doorArt: door && P ? P.doors.get(door.id) || null : null,
+  return { ch: tileAt(x, y), painted: !!cell, cut: !!P && P.cut.has(k), ground: (P && P.ground.get(k)) || null, styled: !!P && P.styled.has(k), doorArt: door && P ? P.doors.get(door.id) || null : null,
     edges: EDGE_TILES.filter((_, i) => e >> i & 1), cell: cell ? tally(cell) : null, band: tally(band) };
 }
 function drawFactionBand(g, ch, tx, ty, X, Y){
@@ -2496,8 +2500,9 @@ function drawFactionBand(g, ch, tx, ty, X, Y){
 function tileHash(id, x, y){ let h = 2166136261; const s = id + ':' + x + ':' + y; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15; return (h >>> 0) / 4294967296; }
 function labTileName(k, tx, ty, m){
   m = m || CUR;
-  const nm = ((LAB_SKIN.override[m.id] || {})[k]) || LAB_SKIN.remap[k];
-  const vs = m.variants && LAB_SKIN.variants[nm];
+  const lab = m.skin === 'lab';   // other maps keep their own char and take OUTDOOR_SKIN's table (map pass B4)
+  const nm = lab ? ((LAB_SKIN.override[m.id] || {})[k]) || LAB_SKIN.remap[k] : k;
+  const vs = m.variants && (lab ? LAB_SKIN.variants : OUTDOOR_SKIN.variants)[nm];
   if (!vs) return nm;
   let r = tileHash(m.id, tx, ty);
   for (const [v, w] of vs) { if (r < w) return v; r -= w; }
@@ -2506,11 +2511,12 @@ function labTileName(k, tx, ty, m){
 // D88: after variants, one floor tile may cover at most 70 % of a map's walkable cells (decal cells count as their decal). Checked in
 // devChecks for rebuilt maps ("variants": true); D85 keeps older maps as they are.
 function labFloorShare(id){
-  const m = WORLD[id]; if (!m || m.skin !== 'lab') return null;
-  const n = {}; let walk = 0;
+  const m = WORLD[id]; if (!m || (m.skin !== 'lab' && !m.variants)) return null;
+  const lab = m.skin === 'lab', n = {}; let walk = 0;
+  const marks = lab ? null : new Map(m.objs.filter(o => o.kind === 'decal' && o.sprite).map(o => [o.y * 4096 + o.x, o.sprite]));   // outdoor decal objects
   m.cells.forEach((row, y) => [...row].forEach((ch, x) => {
-    const w = LAB_SKIN.walk[ch] != null ? !!LAB_SKIN.walk[ch] : !!(TILE_DEF[ch] || {}).walk; if (!w) return;
-    walk++; const nm = LAB_SKIN.decal[ch] || labTileName(ch, x, y, m); n[nm] = (n[nm] || 0) + 1;   // a decal cell counts as its decal tile
+    const w = lab && LAB_SKIN.walk[ch] != null ? !!LAB_SKIN.walk[ch] : !!(TILE_DEF[ch] || {}).walk; if (!w) return;
+    walk++; const nm = (lab ? LAB_SKIN.decal[ch] : marks.get(y * 4096 + x)) || labTileName(ch, x, y, m); n[nm] = (n[nm] || 0) + 1;   // a decal cell counts as its decal tile
   }));
   const top = Object.entries(n).sort((a, b) => b[1] - a[1])[0];
   return { walk, tile: top[0], count: top[1], share: top[1] / walk };
@@ -2535,6 +2541,9 @@ function drawMap(t){
         const nm = labTileName(dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
+      } else if (CUR.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
+        const nm = labTileName(ch, tx, ty);
+        if (nm !== ch && TILES[nm]) img = TILES[nm];
       }
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       if (CUR.roofs && (ch === 'R' || ch === 'H')) img = buildingTile(ch, tx, ty, img);
@@ -8097,7 +8106,8 @@ function boot(){
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
     tileInfo: (x, y) => { const ch = tileAt(x, y), dk = CUR.skin === 'lab' && LAB_SKIN.decal[ch];   // debug: char, walk, drawn tile and decal
-      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.skin === 'lab' ? labTileName(dk ? '.' : ch, x, y) : ch, decal: dk || null }; },
+      const mark = CUR.skin !== 'lab' && CUR.objs.find(o => o.kind === 'decal' && o.x === x && o.y === y && present(o));   // outdoor decal objects (map pass B4)
+      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.skin === 'lab' || CUR.variants ? labTileName(dk ? '.' : ch, x, y) : ch, decal: dk || (mark && mark.sprite) || null }; },
     floorShare: id => labFloorShare(id || CUR.id),   // D88
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
