@@ -230,7 +230,7 @@ function renderBuild(){ const b = buildId(); $('#setBuild').textContent = b ? 'B
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
-  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderBuild(); renderDebugGate();
+  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderControlsRows(); renderBuild(); renderDebugGate();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
   $('#setClose').focus({ preventScroll: true });
 }
@@ -259,10 +259,83 @@ function setFast(on, quiet){
   return fastMode;
 }
 
+/* ---------- Q26: modern and arcade controls (NEXT_PLAN §3 Q26) ----------
+   Arcade is the layout the game always had. Modern adds body.ctl-modern and re-parents a few nodes into #floatCtl, so one id
+   keeps one handler, and arcade comes back by moving them home. No node is created or destroyed on a switch. */
+const CTL_MOVES = [['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip']];
+const ctlHome = {};
+const ctlMode = () => (S && S.settings && S.settings.controls === 'modern') ? 'modern' : 'arcade';
+const joyOn = () => ctlMode() === 'modern' && !!(S && S.settings.joystick);
+function applyControls(){
+  const m = ctlMode() === 'modern';
+  CTL_MOVES.forEach(([sel]) => { const n = $(sel); if (n && !ctlHome[sel]) ctlHome[sel] = { p: n.parentNode, next: n.nextSibling }; });
+  if (m) CTL_MOVES.forEach(([sel, dst]) => { const n = $(sel), d = $(dst); if (n && d && n.parentNode !== d) d.appendChild(n); });
+  else CTL_MOVES.slice().reverse().forEach(([sel]) => { const n = $(sel), h = ctlHome[sel]; if (n && h && n.parentNode !== h.p) h.p.insertBefore(n, h.next && h.next.parentNode === h.p ? h.next : null); });
+  const qb = $('#questBtn'); if (qb) { qb.classList.toggle('dpc', m); qb.classList.toggle('fbtn', m); }
+  document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
+  const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
+  renderControlsRows(); syncWalkTip(); fitAll();
+}
+function renderControlsRows(){
+  const m = ctlMode() === 'modern', b = $('#setControls'); if (!b) return;
+  $('#setControlsVal').textContent = m ? 'MODERN' : 'ARCADE';
+  const j = $('#setJoystick'); j.hidden = !m; j.setAttribute('aria-pressed', String(joyOn())); $('#setJoystickVal').textContent = joyOn() ? 'ON' : 'OFF';
+}
+/* PLACEHOLDER: needs copy from Vincent (D62). Toasts for the Settings rows. */
+const CTL_TOASTS = { arcade: 'Arcade controls.', modern: 'Modern controls. Tap the map to walk.', joyOn: 'Joystick on.', joyOff: 'Joystick off.' };
+function setControls(mode, quiet){
+  if (!S || (mode !== 'arcade' && mode !== 'modern')) return ctlMode();
+  S.settings.controls = mode; clearMoves(); save(); applyControls();
+  if (!quiet) { sfx('tap'); toast(CTL_TOASTS[mode]); }
+  return mode;
+}
+function setJoystick(on, quiet){
+  if (!S) return false;
+  S.settings.joystick = !!on; save(); applyControls();
+  if (!quiet) { sfx('tap'); toast(on ? CTL_TOASTS.joyOn : CTL_TOASTS.joyOff); }
+  return S.settings.joystick;
+}
+// Joystick (D63): four-way, 12 px dead zone, writes walk.dpad exactly like a held d-pad arrow. It never takes a tap.
+const joy = { id: null, cx: 0, cy: 0 };
+function joyRelease(){ if (joy.id != null && walk.dpad && walk.dpad === joy.dir) walk.dpad = null; joy.id = null; joy.dir = null; const k = $('#joyKnob'); if (k) k.style.transform = ''; }
+function bindJoystick(){
+  const ring = $('#joyRing'), knob = $('#joyKnob'); if (!ring) return;
+  const R = 30, DEAD = 12;
+  const move = e => {
+    if (e.pointerId !== joy.id) return;
+    let dx = e.clientX - joy.cx, dy = e.clientY - joy.cy; const d = Math.hypot(dx, dy);
+    if (d > R) { dx = dx * R / d; dy = dy * R / d; }
+    knob.style.transform = 'translate(' + Math.round(dx) + 'px,' + Math.round(dy) + 'px)';
+    const ex = e.clientX - joy.cx, ey = e.clientY - joy.cy;
+    if (Math.hypot(ex, ey) <= DEAD) { if (walk.dpad === joy.dir) walk.dpad = null; joy.dir = null; return; }
+    const dir = Math.abs(ex) > Math.abs(ey) ? (ex > 0 ? 'right' : 'left') : (ey > 0 ? 'down' : 'up');
+    if (dir !== joy.dir) { joy.dir = dir; walk.dpad = dir; if (!walk.queued) walk.queued = DIRS[dir]; hideBumpHint(); }
+  };
+  ring.addEventListener('pointerdown', e => {
+    if (!joyOn() || overlayOpen() && !scene) return;
+    e.preventDefault(); e.stopPropagation();
+    const r = ring.getBoundingClientRect(); joy.cx = r.left + r.width / 2; joy.cy = r.top + r.height / 2; joy.id = e.pointerId; joy.dir = null;
+    try { ring.setPointerCapture(e.pointerId); } catch(_) {}
+    move(e);
+  });
+  ring.addEventListener('pointermove', move);
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => ring.addEventListener(ev, e => { if (e.pointerId === joy.id) joyRelease(); }));
+  ring.addEventListener('contextmenu', e => e.preventDefault());
+}
+function updatePetStrip(p){
+  if (!p || !$('#petStrip')) return;
+  const st = SPECIES[spi(p)].stages[p.stage];
+  $('#stripName').textContent = cleanNick(p.nick) || st.name;
+  $('#stripLv').textContent = 'Lv ' + levelOf(p);
+  spriteCanvas($('#stripIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
+  setBar($('#stripFood'), p.hunger); setBar($('#stripJoy'), p.happy); setBar($('#stripNrg'), p.energy);
+}
+
 let screen = 'pet';
 function showTab(name){
   if (overlayOpen()) return;
   screen = name;
+  document.body.dataset.screen = name;
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
   $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   clearMoves();
@@ -354,6 +427,7 @@ function updateHUD(){
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
   setBar($('#wBarEnergy'), p.energy);
+  updatePetStrip(p);
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
   const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
   const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
@@ -2622,7 +2696,7 @@ function drawBubbles(g, cx, cy, t){
 let scene = null;
 const TEXT_CPS = { slow: 30, normal: 60, fast: 120 };
 const sbox = { resolve: null, text: '', t0: 0, full: true, cps: 60 };
-const INTERACTIVE = ['choice', 'nameEntry', 'showBasket', 'lookPick', 'battle', 'encounter'];
+const INTERACTIVE = ['choice', 'nameEntry', 'showBasket', 'lookPick', 'controlPick', 'battle', 'encounter'];
 const ABORT = { abort: true };
 function runScene(id, ctx){ const steps = sceneSteps(id); if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id, beat: id }, ctx || {})); }
 async function runSteps(steps, ctx = {}){
@@ -2782,6 +2856,19 @@ async function execStep(st){
       sc.skip = false;
       const lk = await lookPickStep(sc.id === 'intro');
       if (lk) { sc.view.look = lk; pend(() => { S.player.look = lk; }); }
+      if (sc.id === 'intro') await execStep(['controlPick']);   // Q26 (D66): asked right after the mirror, before the door note
+      return;
+    }
+    // Q26: Arcade or Modern, in the house before the exit mat. Not a story flag; writes S.settings.controls at once.
+    case 'controlPick': {
+      sc.skip = false;
+      /* PLACEHOLDER: needs copy from Vincent (D62). */
+      const pick = await choiceBox('Arcade: the pad and a Talk button. Modern: the map fills the screen. Tap people to talk. The gear switches.', ['Arcade', 'Modern']);
+      if (!scene) return;
+      $('#sbEcho').textContent = '\u203a ' + (pick === 1 ? 'Modern' : 'Arcade');
+      S.settings.controls = pick === 1 ? 'modern' : 'arcade'; applyControls();
+      sc.skip = false;
+      await execStep(['say', '', 'You can switch any time. The gear in the corner is Settings.']);   /* PLACEHOLDER: needs copy from Vincent (D62). */
       return;
     }
     case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); return;
@@ -4628,18 +4715,23 @@ function renderStanding(){
 function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
 function questShowOnMap(){ closeQuest(); if (mapReady()) openMap(); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
+/* PLACEHOLDER: needs copy from Vincent (D62). Modern drops "Hold the pad"; the quest line is the same in both layouts. */
+const WALK_TIP_MODERN = 'Tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
+const WALK_EARLY_ARCADE = 'Hold the pad to walk. The east path leads out of town.';
+const WALK_EARLY_MODERN = 'Tap the ground to walk. The east path leads out of town.';
+const walkTipDefault = () => ctlMode() === 'modern' ? WALK_TIP_MODERN : WALK_TIP_DEFAULT;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkTipText(){
-  if (!S || !S.flags['story.starter_received']) return WALK_TIP_DEFAULT;
+  if (!S || !S.flags['story.starter_received']) return walkTipDefault();
   if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   const n = +S.flags['story.early_steps'] || 0;
-  if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return 'Hold the pad to walk. The east path leads out of town.';
+  if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return ctlMode() === 'modern' ? WALK_EARLY_MODERN : WALK_EARLY_ARCADE;
   const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
   // The first-wild hint only while that step is current. Reaching Fernbrook implies the step without setting the flag.
   if ((!q || q.id === 'first_wild') && !S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
   if (q && q.target) return escapeHtml(q.text);
-  return WALK_TIP_DEFAULT;
+  return walkTipDefault();
 }
 function syncWalkTip(){
   const el = $('#walkTip'); if (!el) return;
@@ -6703,11 +6795,21 @@ function bindInput(){
     if (b.dataset.tab !== screen) sfx('tap');
     showTab(b.dataset.tab);
   }));
-  $('#settingsBtn').addEventListener('click', () => {
+  const gearTap = () => {
     if (!$('#ovCopy').hidden || !$('#ovReset').hidden) return;
     if (tabsGuarded() && allPets().length) return;
     if ($('#ovSettings').hidden) openSettings(); else closeSettings();
-  });
+  };
+  $('#settingsBtn').addEventListener('click', gearTap);
+  $('#gearFloat').addEventListener('click', gearTap);     // Q26: same handler as the header gear
+  $('#setControls').addEventListener('click', () => setControls(ctlMode() === 'modern' ? 'arcade' : 'modern'));
+  $('#setJoystick').addEventListener('click', () => setJoystick(!joyOn()));
+  const floatTab = name => { if (tabsGuarded() || overlayOpen() || !allPets().length) { sfx('denied'); return; } sfx('tap'); showTab(name); };
+  $('#colFloat').addEventListener('click', () => floatTab('col'));
+  $('#petFloat').addEventListener('click', () => floatTab('pet'));
+  $$('.scr-back').forEach(b => b.addEventListener('click', () => { if (overlayOpen()) return; sfx('tap'); showTab('walk'); }));
+  $('#petStrip').addEventListener('click', () => { if (S && pet()) openStatsCard(S.partnerId); });
+  bindJoystick();
   // option buttons that just appeared ignore taps (capture phase, before their own handlers)
   for (const ev of ['click', 'pointerup']) document.addEventListener(ev, e => {
     if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button, #ovQuest button')) { e.stopPropagation(); e.preventDefault(); }
@@ -7131,6 +7233,8 @@ function boot(){
   fastMode = readFastPref(); renderFastTag(); $('#dbgTag').hidden = !DEBUG;
   $('#envPick').hidden = !DEBUG;               // "Pick a place" presets are debug-only
   renderSettingsGear(); renderSoundRow();
+  iconCanvas($('#gearFloatIcon'), ICONS.gear, PAL.y);
+  $$('#floatCtl canvas[data-icon]').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.y));
   ENV = PPEnv.init(onEnvChange, { allowOverride: DEBUG }); renderEnv();
   if (PPEnv.geoPref() === 'allow') PPEnv.refresh();
   setInterval(() => { PPEnv.tick(); if (!document.hidden && PPEnv.geoPref() === 'allow') PPEnv.refresh(); }, 5 * 60e3);
@@ -7165,6 +7269,7 @@ function boot(){
     else if (!S.player.name && S.world.map === 'hearthmoor') setTimeout(() => toast('Warden Ilse would like a word at the Lodge.'), late);
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
+  applyControls();
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   PPSound.setMusic(S.settings.music !== false);
@@ -7193,6 +7298,7 @@ function boot(){
     typeMult: (a, d) => typeMult(a, d), statsAt: (id, L) => { const s = statsAt(id, L); return s && { ...s }; },   // read-only, always public
     openStats: id => openStatsCard(id), closeStats: () => closeStatsCard(),          // UI only (the same as tapping STATS / CLOSE)
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
+    get controls(){ return { mode: ctlMode(), joystick: joyOn(), dpad: walk.dpad || null }; },   // Q26, read-only
     get petScene(){ const c = $('#petCanvas'); return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice(), w: c.width, h: c.height, cssW: parseFloat(c.style.width)||0, cssH: parseFloat(c.style.height)||0 }; },
     get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
       look: Object.assign({}, KEEPER_LOOKS.defaults, shownLook() || {}), name: playerName(), builds: keeperBuilds }; },
