@@ -381,8 +381,8 @@ function renderControlsRows(){
   $('#setControlsVal').textContent = m ? 'MODERN' : 'ARCADE';
   const j = $('#setJoystick'); j.hidden = !m; j.setAttribute('aria-pressed', String(joyOn())); $('#setJoystickVal').textContent = joyOn() ? 'ON' : 'OFF';
 }
-/* PLACEHOLDER: no approved copy yet (not in the D70 set Vincent approved Oct 15). Toasts for the Settings rows. */
-const CTL_TOASTS = { arcade: 'Arcade controls.', modern: 'Modern controls. Tap the map to walk.', joyOn: 'Joystick on.', joyOff: 'Joystick off.' };
+/* Design's approved green copy (Oct 15). Toasts for the Settings rows. */
+const CTL_TOASTS = { arcade: 'Arcade controls. Pad and Talk button.', modern: 'Modern controls. Tap to walk or talk.', joyOn: 'Joystick on.', joyOff: 'Joystick off.' };
 function setControls(mode, quiet){
   if (!S || (mode !== 'arcade' && mode !== 'modern')) return ctlMode();
   S.settings.controls = mode; clearMoves(); save(); applyControls();
@@ -712,7 +712,7 @@ function helloBonus(p){ addBond(p, BOND.hello); }
 /* Welcome back after a long absence. 14 hours is the backlog's "~14h away" note (D50). FOOD and JOY still floor at 20;
    NRG still floors at 10. The line waits behind the daily hello and does not change those floors. */
 const WELCOME_AWAY = 14 * 3600;
-const WELCOME_LINE = '{pet} waited while you were away.'; /* PLACEHOLDER: needs copy from Vincent */
+const WELCOME_LINE = 'Welcome to the Amberwild!';   /* Design's approved green copy (Oct 15); no {pet}. Shown after 14 h away (see PR note). */
 const welcome = { due: false };
 function noteWelcome(sec){
   if (!(sec >= WELCOME_AWAY) || !S || !pet() || !S.flags['story.starter_received']) return;
@@ -1626,7 +1626,7 @@ function earlyWalk(){
   S.flags['story.early_steps'] = n;
   const nm = petName(p);
   if (n === 1) toast(nm + ' trots along. The east path leads out of town.');
-  else if (n === 8) toast(ctlMode() === 'modern' ? 'Keep walking. Wild Walklings like the grass.' : 'Keep holding the pad. Wild Walklings like the grass.');   /* PLACEHOLDER modern line: no approved copy yet (not in the approved D70 set) */
+  else if (n === 8) toast(ctlMode() === 'modern' ? 'Keep walking. Wild Walklings hide in the grass.' : 'Keep holding the pad. Wild Walklings like the grass.');   /* modern line: Design's approved green copy (Oct 15) */
   else if (n === 16 && !S.flags['story.rival1_done']) toast('Rook is waiting by the east gate.');
   if (n >= 16) S.flags['story.early_done'] = true;
   if (n === 1 || n === 8 || n === 16) save();
@@ -3847,7 +3847,7 @@ function closeBattle(){
   const B = battle; if (!B.on) return;
   if (B.result === 'befriended' && B.newId && !$('#encName').hidden) {   // optional nickname (skip = species name); never read while the row is hidden (a faded one is named later)
     const p = petById(B.newId), nk = cleanNick($('#encNick').value);
-    if (p && nk && nk !== nameOf(spi(p), p.stage)) { p.nick = nk; toast(nameOf(spi(p), p.stage) + ' is now called ' + nk + '!'); }
+    if (p && nk && nk !== nameOf(spi(p), p.stage)) { p.nick = nk; toast(RENAME_OK.replace('{name}', nk)); }
   }
   $('#encName').hidden = true; $('#encNick').value = ''; $('#encNick').blur(); $('#btSeal').hidden = true;   // no nickname carries over to the next befriend
   const f2 = $('#btFoe2Row'), al = $('#btAllyRow'), aim = $('#btAim');
@@ -5855,6 +5855,8 @@ function openStatsCard(id){
   $('#scClose').focus({ preventScroll: true });
   return true;
 }
+/* Rename toasts: Design's approved green copy (Oct 15). Design gave no separate line for going back to the species name. */
+const RENAME_OK = '{name} likes the new name!', RENAME_EMPTY = 'Pick a name first.';
 function nickToStore(p, raw){
   const nk = cleanNick(raw), species = nameOf(spi(p), p.stage);
   return nk && nk !== species ? nk : null;   // empty, or the species name, keeps the species (D57)
@@ -5877,13 +5879,14 @@ function openNickEdit(){
 }
 function applyNick(){
   const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
-  const before = petName(p), species = nameOf(spi(p), p.stage);
-  const next = nickToStore(p, $('#scNickIn').value);
+  const raw = $('#scNickIn').value, next = nickToStore(p, raw);
   const prev = cleanNick(p.nick) || null;
+  // Rejected input (only characters the name filter drops) or a blank box with no nickname to clear: ask again, keep the editor open.
+  if ((String(raw).trim() && !cleanNick(raw)) || (!String(raw).trim() && !prev)) { toast(RENAME_EMPTY); return; }
   hideNickEdit();
   if (next === prev) { renderStatsCard(); return; }
   p.nick = next; save(); updateHUD(); renderCollection(); renderStatsCard();
-  toast(next ? (before + ' is now called ' + petName(p) + '!') : (before + ' goes by ' + species + ' again.')); /* PLACEHOLDER: needs copy from Vincent */
+  toast(RENAME_OK.replace('{name}', petName(p)));   // also when a blank box clears the nickname back to the species name (D57)
 }
 function ensureDeploy(p){ if (!p.deploy || typeof p.deploy !== 'object' || Array.isArray(p.deploy)) p.deploy = {}; return p.deploy; }
 function pruneDeploy(p){ if (p.deploy && !Object.keys(p.deploy).length) delete p.deploy; }
