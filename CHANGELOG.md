@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 12:15 ET: Asset converters for palette grids and music loops
+
+- What changed and why: Three tools turn outside art into the forms the game already stores. `png2grid.py` maps a PNG onto palette keys. `midi2music.py` turns a MIDI file into a music-loop literal. `grid2png.py` draws that grid back to a 1× or 4× preview. No game art, player text, or save field changes. Save `v` stays 2.
+- Files touched: `tools/png2grid.py`, `tools/midi2music.py`, `tools/grid2png.py`, `tools/assetlib.py`, `tests/asset_converters.spec.js`, `tests/fixtures/assets/`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: no new build stamp. Game files are unchanged, so the live id stays `20261016-1138`.
+- Tests run and result (widths, checks): `PP_PORT=8799 npm test` exit 0. 951 passed, 12 skipped (22.0m), at 320, 375 and 390. `tests/asset_converters.spec.js` passed at all three widths. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. Vincent approved the asset handoff, including these converters, on Oct 16, 2026. No id was taken or renumbered.
+- Anything left unfinished: the tools are not wired into a deploy. Episode 1 art is still not in the game.
+
 ## 2026-10-16 11:38 ET: Merge Fernbrook rooms and the heart alert (build 20261016-1138)
 
 - What changed and why: Merged `origin/main` after PR #78 (Fernbrook Lantern House, Bloom Trial Hall) and PR #83 (heart alert). Overlay maps from `detail_*` files and `fernbrook_rooms` both load. The school hall, the flats lobby, and flat 5B are unchanged. The id notes now follow main: the next free id is D161. D138–D141 stay the settled Lizzy calls, D142–D147 have no recorded rows, and no id was renumbered. Save `v` stays 2.
