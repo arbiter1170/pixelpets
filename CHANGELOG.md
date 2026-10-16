@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 00:21 ET: iPhone no longer reloads an open game (build 20261016-0021)
+
+- What changed and why: Safari on iPhone was reloading the game every few minutes during play. A new service worker called `skipWaiting` and `clients.claim`, and iOS reloads a page when that worker takes the tab (a Pages deploy, or Safari installing the worker again). The one-shot boot reload only remembered itself in `sessionStorage`, which iOS drops across `location.replace`, so a bad boot could fire again. Page fetches also used a manual redirect, which Safari rejects and retries. Music left every finished WebAudio node connected, and Safari does not collect those, so the tab grew until iOS killed it. The worker now waits until the next visit. The boot retry also stops when the address already has `?b=boot.`. A changed `version.json` still only shows the notice. Finished notes disconnect. Save `v` stays 2.
+- Files touched: `sw.js`, `game.js`, `sfx.js`, `tests/ios_reload.spec.js`, `tests/maps_b6.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0021.
+- Tests run and result (widths, checks): `PP_PORT=8803 npm test` exited 0. 849 passed, 12 skipped, 19.5 minutes, widths 320, 375 and 390. An earlier run on this branch exited 1 (846 passed, 3 failed): `tests/maps_b6.spec.js` still read `rx_f1` (9, 8), a mint inlay since B2. That check now reads (8, 9), the same plain floor the B5 spec uses.
+- Decisions made (colour + reasoning): green. A bug fix. The notice still waits for a tap. No new player-facing words. No id was renumbered.
+- Anything left unfinished: a real iPhone is the only place that can show the Safari controller reload and the memory kill. Desktop Chromium covers the guards.
+
 ## 2026-10-15 23:40 ET: High Charity rooms merged with current main (build 20261015-2340)
 
 - What changed and why: Merged current `main` (B1, the Q28 plan, B5, B2 and B7). `sprites.js` and `game.js` merged cleanly. `data/mapdata.js` was regenerated, not hand-merged. `OPEN_DECISIONS.md` keeps D92, D94, D95, D99, D100 and D102. `tests/maps_b7.spec.js` keeps this branch's 27 shared skins and main's four lab floor variant keys. Save `v` stays 2. No id was renumbered.
