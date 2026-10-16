@@ -12,7 +12,9 @@ module.exports = defineConfig({
   workers: 1,
   timeout: 30000,
   expect: { timeout: 10000 },
-  reporter: 'list',
+  // Humans get 'list'. Agents run `npm run test:agent` (tools/pp_test.js), which passes
+  // --reporter=line,json and writes everything to test-logs/.
+  reporter: process.env.PP_REPORTER || 'list',
   use: {
     baseURL: external || ('http://127.0.0.1:' + port),
     browserName: 'chromium',
@@ -21,6 +23,9 @@ module.exports = defineConfig({
     command: 'python3 -m http.server ' + port + ' --bind 127.0.0.1',
     url: 'http://127.0.0.1:' + port + '/version.json',
     reuseExistingServer: true,
+    // python http.server logs every request to stderr (~3.6 KB per test, ~97% of output). Drop it.
+    stdout: 'ignore',
+    stderr: 'ignore',
     timeout: 20000,
   },
   projects: [

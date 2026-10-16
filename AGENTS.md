@@ -18,6 +18,9 @@ Vincent (CIO, final say; reviews and merges PRs) > PixelPets Supervisor (clears 
 7. **Scope:** don't wake paused bots, post in Project Puxel or file in the team's name unless your role does; no sign-ins, Firebase (`cloud_config.js` stays null) or spending without Vincent. Never edit another bot's files (`/home/box/agent-data/agents/*`). Debug hooks stay inert without `?debug=1`.
 8. **Content:** don't invent story facts, names, places or numbers a spec supplies; use a marked placeholder plus an `OPEN_DECISIONS.md` row. Respect existing art (`PAL` in `sprites.js`); no outside asset packs. Don't edit verbatim design data (`data/maps_slice.json`, `data/act1_route2.json`, `data/cobblecrest.json`, `data/interiors.json`); after any `data/*.json` edit run `python3 tools/gen_mapdata.py`.
 
+## Test output
+Run `npm run test:agent [spec] [--project=390]`, not bare `npm test`; it prints one `PP_TEST RESULT` line plus failures and exits with Playwright's real code. Don't read `test-logs/run.log` whole: `grep -n` it, or `tail -n 40`. Never pipe a test command.
+
 ## Skills index (`.cursor/skills/<name>/SKILL.md`; copies in `/home/box/agent-data/workflows/`)
 - `walklings-deploy`: stamp the build, ship via PR, hard-refresh and check the build line.
 - `walklings-pr-handback`: branch/rebase routine and the required PR hand-back body.

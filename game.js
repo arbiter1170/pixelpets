@@ -384,6 +384,7 @@ function applyControls(){
   document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
   const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
   renderControlsRows(); syncWalkTip(); fitAll();
+  try { syncCareAlert(); } catch (e) {}
   try { syncNavArt(true); } catch (e) {}
 }
 function renderControlsRows(){
@@ -498,11 +499,12 @@ function syncNavArt(force){
     const art = key === 'phone' && S && side() === 'glimmer' ? 'phone_glimmer' : key;   // nav_art.json swaps.phone
     const st = navStateOf(b, key);
     const mark = key === 'quest' && st !== 'locked' && st !== 'disabled' ? questMarkTag() : '';
-    const tag = art + ':' + st + (mark ? ':' + mark : '');
+    const tag = key === 'partner' ? art + ':' + st + ':' + careArtTag() : art + ':' + st + (mark ? ':' + mark : '');
     if (!force && navPaint.get(c) === tag) return;
     navPaint.set(c, tag); const g = ctx(c); g.clearRect(0, 0, 44, 44);
     const grid = (A.buttons[art] || {})[st] || (A.buttons[art] || {}).normal; if (grid) paintGrid(g, grid, 2, 0, 0);
     if (mark) paintQuestMarks(g, st);
+    if (key === 'partner') paintCareBadges(g);
   });
   $$('.frame-art').forEach(c => {
     const el = c.parentNode, w = Math.max(8, Math.round(el.offsetWidth / 2)), f = A.frames[c.dataset.frame];
@@ -661,7 +663,7 @@ function updateHUD(){
   syncSide();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
-  if (!p) return;
+  if (!p) { syncCareAlert(); return; }
   const st = SPECIES[spi(p)].stages[p.stage];
   $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
@@ -671,6 +673,7 @@ function updateHUD(){
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
   updatePetStrip(p);
+  syncCareAlert();   // HEART_ALERT: same 1 s stat tick as the strip
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
   const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
   const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
@@ -850,7 +853,67 @@ function updateCareButtons(){
 }
 
 /* ---------- pet care ---------- */
-const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [], emotes: [] };
+const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [], emotes: [], care: { food: 0, rest: 0 } };
+// HEART_ALERT v0.2 (D154–D156): levels for the partner only. 0 none, 1 low, 2 very low.
+function careAlert(p){
+  if (!p) return { food: 0, rest: 0 };
+  const food = p.hunger <= FOOD_RULES.floor ? 2 : p.hunger < FOOD_RULES.hungry ? 1 : 0;
+  const rest = (isFainted(p) || p.energy < 10) ? 2 : p.energy < 25 ? 1 : 0;
+  return { food, rest };
+}
+function careWords(p, c){
+  if (!p || !c || (!c.food && !c.rest)) return '';
+  const parts = [];
+  if (c.food) parts.push({ rank: c.food === 2 ? 0 : 1, ord: 0, w: 'hungry' });
+  if (c.rest) parts.push({ rank: c.rest === 2 ? 0 : 1, ord: 1, w: isFainted(p) ? 'napping' : 'sleepy' });
+  parts.sort((a, b) => a.rank - b.rank || a.ord - b.ord);
+  return parts.map(x => x.w).join(' and ');
+}
+let careBitsHeard = null;
+function syncCareAlert(){
+  const btn = $('#petFloat'); if (!btn || !S) return;
+  const p = pet();
+  const raw = careAlert(p);
+  anim.care = raw;
+  const show = !!(p && S.flags['story.starter_received'] && ctlMode() === 'modern' && !battle.on);
+  btn.classList.toggle('care-food', show && raw.food > 0);
+  btn.classList.toggle('care-rest', show && raw.rest > 0);
+  btn.classList.toggle('care-very', show && (raw.food === 2 || raw.rest === 2));
+  btn.classList.toggle('care-hold', show && (raw.food || raw.rest) && now() < anim.sleepUntil);
+  const words = show ? careWords(p, raw) : '';
+  const label = words ? 'Partner. ' + petName(p) + ' is ' + words + '.' : 'Partner';
+  if (btn.getAttribute('aria-label') !== label) btn.setAttribute('aria-label', label);
+  const live = $('#careAlert');
+  const bits = careWords(p, raw) ? careWords(p, raw).split(' and ') : [];
+  if (live) {
+    if (careBitsHeard === null) careBitsHeard = new Set(bits);
+    else if (show) {
+      const started = bits.some(b => !careBitsHeard.has(b));
+      careBitsHeard = new Set(bits);
+      if (started && words) { live.textContent = ''; live.textContent = petName(p) + ' is ' + words + '.'; }
+    }
+  }
+  try { syncNavArt(false); } catch (e) {}
+}
+function paintCareBadge(g, name, ox, oy){
+  const gl = GLYPH[name]; if (!gl) return;
+  const dot = (ch, x, y) => {
+    if (ch === '.' || x < 0 || y < 0 || x > 21 || y > 21 || !PAL[ch]) return;
+    g.fillStyle = PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2);
+  };
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) if (gl[j][i] !== '.') dot('k', ox + i + 1, oy + j + 1);
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) dot(gl[j][i], ox + i, oy + j);
+}
+function careArtTag(){
+  const b = $('#petFloat'); if (!b) return '';
+  return (b.classList.contains('care-food') ? 'f' : '') + (b.classList.contains('care-rest') ? 'r' : '');
+}
+function paintCareBadges(g){
+  const b = $('#petFloat'); if (!b) return;
+  const food = b.classList.contains('care-food'), rest = b.classList.contains('care-rest');
+  if (food) paintCareBadge(g, 'badge_food', 16, 1);
+  if (rest) paintCareBadge(g, 'badge_rest', 16, food ? 14 : 1);
+}
 /* CARE_LOOP plumbing (§7 build order): a small emote queue over the partner on the PARTNER tab. Each balloon waits for the one
    before it, so the Warm Bowl, the hello and (later) bond-ups never draw on top of each other. */
 function queueEmote(glyph, delayMs = 0, durMs = 1500){
@@ -1102,6 +1165,7 @@ function applyMapPatch(W, patch){
   for (const [id, pt] of Object.entries(patch.maps)) {
     const m = W[id]; if (!m) continue;
     if (pt.set) Object.assign(m, JSON.parse(JSON.stringify(pt.set)));
+    if (pt.addRoofs) m.roofs = Object.assign({}, m.roofs || {}, JSON.parse(JSON.stringify(pt.addRoofs)));
     if (pt.gridRows) for (const [y, row] of Object.entries(pt.gridRows)) m.grid[+y] = row;
     for (const o of pt.replaceObjs || []) {
       const copy = JSON.parse(JSON.stringify(o)), k = m.objs.findIndex(x => x.id === o.id);
@@ -1140,7 +1204,11 @@ const WORLD = (() => {
     applyMapPatch(W, MD.civic.slicePatch);
   }
   if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards: squares, then the posts
-  for (const k of DETAIL_KEYS) applyMapPatch(W, MD[k].slicePatch);
+  for (const k of DETAIL_KEYS) { if (MD[k].maps) Object.assign(W, JSON.parse(JSON.stringify(MD[k].maps))); applyMapPatch(W, MD[k].slicePatch); }
+  if (MD.fernbrook_rooms) {                                            // B8: rooms, then the door warp, after every detail patch
+    Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
+    applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
+  }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -1152,6 +1220,7 @@ if (MD.mahopac) Object.assign(SCENES, MD.mahopac.scenes || {});
 if (MD.highcharity) Object.assign(SCENES, MD.highcharity.scenes || {});
 if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
 if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
+for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
@@ -1390,6 +1459,7 @@ if (MD.civic && MD.civic.looks) for (const [k, v] of Object.entries(MD.civic.loo
 if (MD.civic && MD.civic.speakers) for (const [k, v] of Object.entries(MD.civic.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.heights && MD.heights.looks) for (const [k, v] of Object.entries(MD.heights.looks)) if (v && typeof v === 'object' && !k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.heights && MD.heights.speakers) for (const [k, v] of Object.entries(MD.heights.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
+for (const k of DETAIL_KEYS) for (const [n, v] of Object.entries(MD[k].looks || {})) if (!n.startsWith('_') && v && typeof v === 'object') NPC_LOOKS[n] = v;
 // Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
 (function wireIlseLetter(){
   const steps = SCENES.ilse_chat; if (!steps) return;
@@ -1721,6 +1791,8 @@ function tryStep(d){
   if (o) { const turned = S.world.facing !== dn; S.world.facing = dn; bumpObj(o, d, turned); return; }
   if (solidTile(nx, ny)) {
     S.world.facing = dn;
+    const onWall = tileAt(nx, ny) === 'H' && doorAt(nx, ny);
+    if (onWall && dn === 'up') { enterDoor(onWall); return; }   // door object sits on the wall; the step is south of it
     const dr = doorAt(S.world.x, S.world.y);  // a door: step up from its doorstep into the wall (MAPS_SLICE §4)
     if (dr && dn === 'up' && tileAt(nx, ny) === 'H') enterDoor(dr);
     return;
@@ -2396,7 +2468,7 @@ function arriveAt(at){
 }
 function enterDoor(dr){
   if (dr.need && !cond(dr.need, false)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
-  if (dr.to) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
+  if (dr.to && WORLD[dr.to]) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
 }
 // MAPS_SLICE §9 place panels (Fernbrook keeps panels; Hearthmoor's became rooms). The Lantern House: the keeper's line -> REST / LEAVE;
@@ -2476,7 +2548,12 @@ function buildingsOf(m){
     let y1 = r.y1;
     const wallRow = y => { for (let x = r.x0; x <= r.x1; x++) if (at(x, y) === 'H') return true; return false; };
     while (y1 + 1 < m.grid.length && wallRow(y1 + 1)) y1++;
-    const doors = m.objs.filter(o => o.kind === 'door' && o.x >= r.x0 && o.x <= r.x1 && o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H');
+    const doors = m.objs.filter(o => {
+      if (o.kind !== 'door' || o.x < r.x0 || o.x > r.x1) return false;
+      // A door on the wall itself (schoolhouse, flats) is entered from the grass south of that cell.
+      if (at(o.x, o.y) === 'H' && o.y > r.y1 && o.y <= y1) return true;
+      return o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H';
+    });
     const shp = String(r.shape || '').split('+');
     out.push({ name, x0: r.x0, y0: r.y0, x1: r.x1, y1, ry1: r.y1, col: r.col || null, roof: r.roof || null, wall: r.wall || null, door: r.door || null,
       win: r.win ? [].concat(r.win) : [], trim: r.trim || null, shape: shp[0] || null, feats: shp.slice(1), doors: doors.map(o => ({ id: o.id, x: o.x, y: o.y })),
@@ -2510,8 +2587,9 @@ function paintBuilding(m, b, fac, P){
   if (b.trim) { g.fillStyle = PAL[b.trim]; g.fillRect(0, RH, W, 1); g.fillRect(0, RH, 2, H - RH); g.fillRect(W - 2, RH, 2, H - RH); }
   const bigDoor = WART[b.door] && WART[b.door].width > TS, skip = new Set();
   for (const d of b.doors) {
-    skip.add(bldKey(d.x, d.y - 1));
-    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, d.y - 1 - dy));
+    const wy = at(d.x, d.y) === 'H' ? d.y : d.y - 1;
+    skip.add(bldKey(d.x, wy));
+    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, wy - dy));
   }
   if (b.win.length) {
     const every = /^win_(band|strip)/.test(b.win[0]);
@@ -2540,6 +2618,8 @@ function paintBuilding(m, b, fac, P){
   feat('mast', 'mast', mid - 8, 0);
   feat('bell', 'bell', mid - 8, 0);
   feat('clock', 'clock_face', mid - 8, RH - TS);
+  feat('vane', 'weathervane', mid - 8, 0);
+  feat('tank', 'water_tank', chx, 0);
   if (b.feats.indexOf('bunting') >= 0) for (let X = 0; X < W; X += TS) feat('bunting', 'bunting', X, RH - 2);
   for (const d of b.doors) feat('emblem', 'acorn_emblem', (d.x - b.x0) * TS, RH - TS);
   const gch = [at(b.x0 - 1, b.y0), at(b.x1 + 1, b.y0), at(b.x0, b.y0 - 1)].find(ch => ch && BLD_GROUND.indexOf(ch) >= 0) || 'g';
@@ -2571,7 +2651,8 @@ const shapedRoof = (tx, ty) => !!CUR.roofs && buildingCells().cut.has(bldKey(tx,
 const styledWall = (tx, ty) => !!CUR.roofs && buildingCells().styled.has(bldKey(tx, ty));
 function drawDoor(g, o, cx, cy){
   const nm = CUR.roofs && buildingCells().doors.get(o.id), a = (nm && WART[nm]) || WART.door;
-  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, (o.y - 1) * TS - cy - (a.height - TS));
+  const baseY = tileAt(o.x, o.y) === 'H' ? o.y : o.y - 1;
+  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, baseY * TS - cy - (a.height - TS));
 }
 // Map pass E7: on outdoor maps a path cell that touches grass gets a grass fringe on that side, rounded where two sides meet.
 const EDGE_GRASS = 'gftTF', EDGE_TILES = ['path_edge_n', 'path_edge_s', 'path_edge_w', 'path_edge_e', 'path_corner_nw', 'path_corner_ne', 'path_corner_sw', 'path_corner_se'];
@@ -2795,7 +2876,7 @@ function drawMap(t){
     }
   const shade = wallMaskOf(CUR);   // floor contact shadow, under props and actors
   if (shade) g.drawImage(shade, -cx, -cy);
-  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') drawDoor(g, o, cx, cy);
+  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && (tileAt(o.x, o.y - 1) === 'H' || tileAt(o.x, o.y) === 'H')) drawDoor(g, o, cx, cy);
   for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) g.drawImage(WART[o.sprite], o.x*TS - cx, o.y*TS - cy);   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
@@ -2968,7 +3049,8 @@ function restBedCue(){
   if (!CUR || !LANTERN_ROOMS[CUR.id]) return null;
   let best = null, bestD = 1e9;
   for (const o of CUR.objs) {
-    if (o.kind !== 'prop' || o.sprite !== 'rest_bed' || !present(o)) continue;
+    const bedLine = o.lines && Object.values(o.lines).some(v => v === '@lantern_rest');
+    if (o.kind !== 'prop' || !present(o) || (o.sprite !== 'rest_bed' && !bedLine)) continue;
     const d = Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y);
     if (d < bestD) { bestD = d; best = o; }
   }
@@ -3064,6 +3146,9 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
+    if (o.pet) { const [ln, st] = String(o.pet).split('/'), si = SP_INDEX[ln];
+      if (si != null) { g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2); g.drawImage(sprSet(si, +st || 0, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
+      return; }
     const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
     const img = keeperFrames(npcLook(o))[face][fr];
@@ -3304,12 +3389,13 @@ function interact(o){
   if (o.booth) { openBooth(o); return; }
   if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
-  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); noteContact(objName(o)); }
+  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) noteContact(objName(o)); }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
+  if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
   if (o.board) return openTownBoard();
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
@@ -3329,6 +3415,8 @@ function facingTarget(){
   if (!S || scene || fade.busy) return null;
   const [dx, dy] = DIRS[S.world.facing] || DIRS.down, nx = S.world.x + dx, ny = S.world.y + dy;
   const o = blockerAt(nx, ny); if (talkable(o)) return o;
+  const onWall = tileAt(nx, ny) === 'H' && doorAt(nx, ny);
+  if (onWall && S.world.facing === 'up') return onWall;
   const dr = doorAt(S.world.x, S.world.y); if (dr && S.world.facing === 'up' && tileAt(nx, ny) === 'H') return dr;
   return null;
 }
@@ -3337,10 +3425,11 @@ function talkFacing(){ const o = facingTarget(); if (!o) return false; clearMove
 function tapObject(o){
   const q = objPos(o);
   if (o.kind === 'door') {
+    const onWall = tileAt(o.x, o.y) === 'H', sx = o.x, sy = onWall ? o.y + 1 : o.y;
     const go = () => { S.world.facing = 'up'; enterDoor(o); };
-    if (S.world.x === o.x && S.world.y === o.y) { go(); return true; }
-    const path = findPath([{ x: o.x, y: o.y }]); if (!path) return false;
-    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: o.x, y: o.y, soft: false }; walk.repath = null; return true;
+    if (S.world.x === sx && S.world.y === sy) { go(); return true; }
+    const path = findPath([{ x: sx, y: sy }]); if (!path) return false;
+    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: sx, y: sy, soft: false }; walk.repath = null; return true;
   }
   const nb = Object.values(DIRS).map(([dx, dy]) => ({ x: q.x + dx, y: q.y + dy })).filter(c => !solid(c.x, c.y) || (c.x === S.world.x && c.y === S.world.y));
   const talk = () => { S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y); bump.talked = null; interact(o); };
@@ -4302,7 +4391,7 @@ function closeBattle(){
 }
 // A Lantern House rest heals the whole party. Hurt Walklings cost a few Acorns (OPEN_DECISIONS D28). Home naps stay free (`rest`).
 const LANTERN_REST_COST = 5;
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1 };
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
 function setRestDue(on){ if (!S || !S.world) return; if (on) S.world.restDue = true; else delete S.world.restDue; }
 // After a wipe, the party has to rest before leaving. Clears itself once nobody is hurt (regen, a debug heal).
@@ -4358,6 +4447,7 @@ function blockLanternExit(){
   put('hearthmoor', 'hm_sign_lantern', 'LANTERN HOUSE · Rest the whole party. ' + n + ' Acorns.');
   put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns. — I."');
   put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
+  put('fb_lantern_in', 'fb_lantern_note', 'A note by the shelf: "Rest the whole party. ' + n + ' Acorns. — Amos"');
 })();
 // §7.2 team wipe: back to world.respawn's Lantern House (Hearthmoor: inside, by the beds; INTERIORS slicePatch respawnIn).
 // Nothing lost. Nobody is healed until they rest the whole party, and the way out stays shut until they do.
@@ -4834,6 +4924,7 @@ const REGION_MAP = {
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
            cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
+    fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
@@ -5271,6 +5362,7 @@ function contactPeople(){
   for (const m of Object.values(WORLD)) {
     for (const o of m.objs || []) {
       if (!o || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
+      if (o.pet) continue;   // a Walkling beside an NPC talks, and never gets a phone card
       const name = objName(o), key = contactKey(name);
       if (!key) continue;
       let person = people.get(key);
@@ -8256,9 +8348,11 @@ function catchUp(sec){
 // so catch up on return using the time the tab was actually hidden.
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
+  document.body.classList.toggle('hidden-tab', document.hidden);
   if (document.hidden) { hiddenAt = Date.now(); return; }
   if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); noteWelcome(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
 });
+document.body.classList.toggle('hidden-tab', document.hidden);
 
 /* ---------- online saves (cloud.js; a no-op unless cloud_config.js holds a config) ---------- */
 // Summary of a save string for the "which game to keep" choice: partner, pet count, Seals, last played. Never touches storage.
@@ -8541,6 +8635,7 @@ function boot(){
     clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
+    care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
     tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab keeps its old tile name (raw char, not W2).
       const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
       const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part: null, shade: shadowPart(x, y) };
@@ -8603,6 +8698,7 @@ function boot(){
   api.mapTrack = id => trackFor(id && WORLD[id]);
   api.spriteLook = id => {
     const o = objById(id);
+    if (o && o.pet) return null;   // a Walkling standing with an NPC has no keeper look
     const look = o ? npcLook(o) : (NPC_LOOKS[id] ? npcLook({ look: id, name: id }) : null);
     if (!look) return null;
     return { skin: look.skin || null, hair: look.hair || null, hairCol: look.hairCol || null, outfit: look.outfit || null, outfitCol: look.outfitCol || null, accent: look.accent || null, accessory: look.accessory || 'none' };
