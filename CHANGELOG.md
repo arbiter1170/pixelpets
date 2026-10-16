@@ -11,6 +11,24 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): Settled by Vincent on Oct 16, 2026. D157 skippable. D158 fires when the starter scene closes, and an older save is marked done. D159 two additive flags, save v stays 2. D160 real care on the first run, highlight only on replay.
 - Anything left unfinished: The heart-button glow (D154) is not on main, so step T8 uses the shorter line. When that alert ships, merge main. The Playwright walk ends a one-line scene in the Lodge. It does not play the full starter.
 
+## 2026-10-16 10:11 ET: Heart alert merged with the dream pop-toy fix (build 20261016-1011)
+
+- What changed and why: Merged current `main` (PR #81). In the 2004 memory, the pop-toy answers a bump from any side, Mom cooks, and Dad watches TV. The modern heart alert stays. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `index.html` and `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1011.
+- Tests run and result (widths, checks): `PP_PORT=8794 npm test` exit 0. 912 passed, 12 skipped (20.4m), at 320, 375 and 390. `tests/heart_alert.spec.js` passed at all three widths. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. No id was renumbered.
+- Anything left unfinished: Arcade still has no heart alert. D151–D153 belong to another branch.
+
+## 2026-10-16 09:48 ET: The modern heart pulses when food or rest is low (build 20261016-0948)
+
+- What changed and why: On modern controls, the square heart button pulses when the partner's food or rest is low. Food under 25 is an orange ring and a bowl badge. Food at or under 20 pulses faster. Rest under 25 is a blue ring and a z badge. Rest under 10, or a nap, pulses faster. Both low alternates the ring and shows both badges. One FEED or one REST clears that side. The 3 second REST sleep holds the ring still. A polite live region speaks once when a state starts, and stays quiet on load if it was already on. Reduced motion holds a steady ring. A hidden tab pauses the pulse. Arcade has no alert. Save `v` stays 2.
+- Files touched: `game.js`, `style.css`, `sprites.js`, `index.html`, `tests/heart_alert.spec.js`, `screenshots/heart/`, `README.md`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261016-0948.
+- Tests run and result (widths, checks): `PP_PORT=8793 npm test` exit 0. 906 passed, 12 skipped (20.1m), at 320, 375 and 390. `tests/heart_alert.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D154, D155 and D156 were settled by Vincent on Oct 16, 2026. Building that spec is green. No id was renumbered. Save `v` stays 2. Arcade stays without the alert, as D154 says.
+- Anything left unfinished: Arcade has no heart button, so it has no alert. D151–D153 belong to another branch.
+
 ## 2026-10-16 09:45 ET: RegenX looks no longer redraw Vesper, Clerk Nia and Cal; doc corrections (build 20261016-0922)
 
 - What changed and why: PR #40 added RegenX looks keyed `nia`, `cal` and `ivo` in `data/heights.json`. Heights looks load last, so they replaced High Charity's `nia` (Clerk Nia) and `ivo` (Keeper Vesper) and Mahopac's `cal` (the kite kid). The Heights keys are now `rx_nia`, `rx_cal` and `rx_ivo`, with the RegenX NPCs and speakers pointed at them. New `tests/look_keys.spec.js` fails when two data files define the same look key. Docs: corrected the D73/D80 note, removed the duplicate open D71 row, marked Q26 built (D72 still open), the walklings-docs skill now points at the OPEN_DECISIONS header for the next id, and the next free id is D151.
