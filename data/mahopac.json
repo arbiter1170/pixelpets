@@ -116,22 +116,34 @@
     },
     "dream_2004": {
       "name": "Dream: 2004", "kind": "interior", "dream": "young", "outdoor": "mahopac", "backdrop": "town",
-      "w": 9, "h": 8, "spawns": null, "zones": [], "safe": {"x": 4, "y": 6},
+      "w": 13, "h": 9, "spawns": null, "zones": [], "safe": {"x": 4, "y": 6},
       "grid": [
-        "#########",
-        "#WWWWWWW#",
-        "#.......#",
-        "#.......#",
-        "#...=...#",
-        "#.......#",
-        "#.......#",
-        "#########"
+        "#############",
+        "#WWWWWWWWWWW#",
+        "#...........#",
+        "#...........#",
+        "#...=.......#",
+        "#...........#",
+        "#...........#",
+        "#...........#",
+        "#############"
       ],
       "objs": [
         {"kind": "prop", "id": "pop_toy", "name": "the toy", "x": 3, "y": 3, "sprite": "pop_toy", "roll": true,
           "rollFlag": "story.dream_roll", "rollScene": "dream_to_party",
           "circuit": [[3, 3], [4, 3], [5, 3], [5, 4], [5, 5], [4, 5], [3, 5], [3, 4]]},
-        {"kind": "sign", "id": "dream_toy_sign", "x": 7, "y": 2, "text": "You are very small. Push the toy. It pops as it rolls."}
+        {"kind": "sign", "id": "dream_toy_sign", "x": 7, "y": 2, "text": "You are very small. Push the toy. It pops as it rolls."},
+        {"kind": "prop", "id": "dream_stove", "x": 10, "y": 2, "sprite": "kitchen_stove", "lines": {"else": "Something good is simmering. It smells like home."}},
+        {"kind": "prop", "id": "dream_counter", "x": 11, "y": 2, "sprite": "kitchen_counter", "lines": {"else": "A cutting board, a bowl of peas, and a wooden spoon."}},
+        {"kind": "npc", "id": "dream04_mom", "name": "Mom", "look": "mom", "x": 10, "y": 3, "facing": "up", "lines": {
+          "story.dream_roll": "Keep it rolling, sweetie. Dinner's almost ready.",
+          "else": "Dinner in ten minutes. Go push your toy around the rug."}},
+        {"kind": "prop", "id": "dream_tv", "x": 10, "y": 5, "sprite": "tv_set", "lines": {"else": "The TV hums. A ball game, with the sound turned low."}},
+        {"kind": "npc", "id": "dream04_dad", "name": "Dad", "look": "dad", "x": 10, "y": 6, "facing": "up", "lines": {
+          "story.dream_roll": "Hear that pop? You're doing great, kiddo.",
+          "else": "The game's on. Show me how far that toy can roll."}},
+        {"kind": "prop", "id": "dream_couch", "x": 10, "y": 7, "sprite": "couch", "lines": {"else": "Dad's couch. It sags in exactly one spot."}},
+        {"kind": "prop", "id": "dream_couch_l", "x": 9, "y": 7, "sprite": "couch", "lines": {"else": "Dad's couch. It sags in exactly one spot."}}
       ]
     },
     "dream_party": {

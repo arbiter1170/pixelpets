@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 10:17 ET: Home wall kit merged with current main (build 20261016-1017)
+
+- What changed and why: Merged current main, which holds the RegenX look keys and the 2004 memory (the toy rolls from any side, Mom cooks, Dad watches, and that room has no partner). Your Home still draws the shared wall kit. `data/mapdata.js` was regenerated. Save `v` stays 2. The next free id stays D161. D138–D147 stay unrecorded.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md` (both sides kept), `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1017.
+- Tests run and result (widths, checks): `PP_PORT=8094 npm test` exit 0. 891 passed, 12 skipped, 0 failed (20.1m), at 320, 375, and 390. `tests/interior_walls.spec.js`, `tests/dream_toy.spec.js`, and `tests/look_keys.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. D151, D152 and D153 stay settled. No id was renumbered.
+- Anything left unfinished: The other rooms are the next pass. Upstairs lists windows at columns 3 and 5, and that list is not drawn until the loft skin opts in.
+
 ## 2026-10-16 09:53 ET: Your Home draws the shared wall kit (build 20261016-0953)
 
 - What changed and why: Your Home stays 9 by 8, with the same warps, props and honey floor. Its wall is now the shared two-tile kit: a warm cap, a pale face, trim, a baseboard, two windows, and a floor shadow under the face. Other reskinned rooms keep their colours. Upstairs stays the loft skin, so the two rooms do not match. Its window list is stored for the later room pass. Save `v` stays 2.
@@ -10,6 +19,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `PP_PORT=8093 npm test` exit 0. 879 passed, 12 skipped, 0 failed (19.7m), at 320, 375, and 390. `tests/interior_walls.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
 - Decisions made (colour + reasoning): Vincent settled D151, D152 and D153 on the defaults (two-tile walls, a window list per map, one colour table per skin). Green: upstairs stays `house_loft` so the loft colours stay and no two rooms match. No id was renumbered. The next free id is D161.
 - Anything left unfinished: The other rooms (loft, Lantern House, Rook's House, the Lodge, the Keeper House, the observatory) are the next pass. Upstairs already lists windows at columns 3 and 5, and that list is not drawn until the loft skin opts in.
+
+## 2026-10-16 09:45 ET: RegenX looks no longer redraw Vesper, Clerk Nia and Cal; doc corrections (build 20261016-0922)
+
+- What changed and why: PR #40 added RegenX looks keyed `nia`, `cal` and `ivo` in `data/heights.json`. Heights looks load last, so they replaced High Charity's `nia` (Clerk Nia) and `ivo` (Keeper Vesper) and Mahopac's `cal` (the kite kid). The Heights keys are now `rx_nia`, `rx_cal` and `rx_ivo`, with the RegenX NPCs and speakers pointed at them. New `tests/look_keys.spec.js` fails when two data files define the same look key. Docs: corrected the D73/D80 note, removed the duplicate open D71 row, marked Q26 built (D72 still open), the walklings-docs skill now points at the OPEN_DECISIONS header for the next id, and the next free id is D151.
+- Files touched: `data/heights.json`, `data/mapdata.js` (regenerated), `tests/heights.spec.js`, `tests/look_keys.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `.cursor/skills/walklings-docs/SKILL.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261016-0922.
+- Tests run and result (widths, checks): `npm test` exit 0 (882 passed, 12 skipped) at 320, 375 and 390.
+- Decisions made (colour + reasoning): green, bug fix from the after-the-fact audit of #37 and #39–#41, approved by Vincent. No D or Q id renumbered. `mahopac.json` not touched.
+- Anything left unfinished: the speaker map still resolves the name "Cal" to one look for both Cals (name collision, audit items 7–8, not in scope).
 
 ## 2026-10-16 ET: Keeper House merged with current main (build 20261016-0304)
 

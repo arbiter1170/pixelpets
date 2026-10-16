@@ -1615,6 +1615,19 @@ function buildWorldArt(){
     px(g, PAL.m, 1, 4, 14, 2); px(g, PAL.h, 1, 5, 14, 1); px(g, PAL.d, 2, 6, 2, 8); px(g, PAL.d, 12, 6, 2, 8); px(g, PAL.m, 1, 10, 14, 2);
     px(g, PAL.p, 6, 7, 4, 3); px(g, PAL.w, 7, 8, 2, 1); px(g, PAL.d, 7, 9, 1, 1);
   });
+  A.kitchen_counter = mkTile(g => {   // dream_2004 kitchen: a wooden counter, cutting board, bowl of peas
+    px(g, PAL.d, 1, 5, 14, 9); px(g, PAL.o, 2, 6, 12, 7); px(g, PAL.h, 1, 4, 14, 2); px(g, PAL.w, 3, 2, 5, 2); px(g, PAL.d, 3, 4, 5, 1);
+    px(g, PAL.m, 10, 2, 3, 2); px(g, PAL.l, 11, 2, 1, 1); px(g, PAL.d, 7, 8, 2, 3); px(g, PAL.d, 1, 14, 14, 1);
+  });
+  A.tv_set = mkTile(g => {           // dream_2004: an old boxy TV on a low stand, seen from behind the couch
+    px(g, PAL.d, 2, 2, 12, 9); px(g, PAL.m, 3, 3, 10, 7); px(g, PAL.t, 4, 4, 6, 5); px(g, PAL.g, 5, 6, 3, 2); px(g, PAL.s, 5, 4, 2, 1);
+    px(g, PAL.y, 11, 4, 1, 1); px(g, PAL.r, 11, 6, 1, 1); px(g, PAL.d, 6, 0, 1, 2); px(g, PAL.d, 9, 0, 1, 2);
+    px(g, PAL.o, 1, 11, 14, 2); px(g, PAL.d, 2, 13, 2, 2); px(g, PAL.d, 12, 13, 2, 2);
+  });
+  A.couch = mkTile(g => {            // dream_2004: Dad's couch, back to the viewer, facing the TV
+    px(g, PAL.d, 0, 4, 16, 10); px(g, PAL.r, 1, 5, 14, 5); px(g, PAL.p, 1, 10, 14, 3); px(g, PAL.o, 2, 6, 5, 1); px(g, PAL.o, 9, 6, 5, 1);
+    px(g, PAL.d, 7, 5, 1, 5); px(g, PAL.d, 1, 14, 2, 1); px(g, PAL.d, 13, 14, 2, 1);
+  });
   A.dream_cushion = mkTile(g => { px(g, PAL.c, 3, 8, 10, 5); px(g, PAL.s, 4, 9, 8, 3); px(g, PAL.w, 5, 9, 2, 1); px(g, PAL.d, 3, 13, 10, 1); });
   A.menu_board = mkTile(g => {
     px(g, PAL.d, 2, 1, 12, 12); px(g, PAL.n, 3, 2, 10, 10); px(g, PAL.w, 4, 3, 8, 2);
