@@ -454,7 +454,7 @@ Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. The NPC-only Fet
 
 ### Q28 — Map pass (`handoff/maps/`) — **in progress**
 
-Start at `handoff/maps/README.md`: the audit, `BUILDING_VARIETY.md`, and packets B1–B8 in priority order. The Arbiter Bay pilot is on main (PR #51, build 20261015-0817), so B1 is a gap check, not a second build. B4's exterior pass is on main. Vincent cleared B2–B7. B8 waits until B5's house skins exist, then for his go. Limits are settled as D81–D89. D90 and D91 are already used. The batches below keep D92–D103. D104 is already taken on main, so the next free id is D151 (D127–D136 are reserved by Design, D137 is used, and D138–D147 have no recorded rows). D148, D149 and D150 are settled and must not be reused. D154, D155 and D156 are settled and must not be reused. Do not renumber D92–D103. Each remaining batch is its own branch and PR into `main`:
+Start at `handoff/maps/README.md`: the audit, `BUILDING_VARIETY.md`, and packets B1–B8 in priority order. The Arbiter Bay pilot is on main (PR #51, build 20261015-0817), so B1 is a gap check, not a second build. B4's exterior pass is on main. Vincent cleared B2–B8. B8, the Fernbrook rooms, is built on this branch. Limits are settled as D81–D89. D90 and D91 are already used. The batches below keep D92–D103. D104 is already taken on main, so the next free id is D151 (D127–D136 are reserved by Design, D137 is used, and D138–D147 have no recorded rows). D148, D149 and D150 are settled and must not be reused. D154, D155 and D156 are settled and must not be reused. Do not renumber D92–D103. Each remaining batch is its own branch and PR into `main`:
 
 | Batch | What | Starts from | Decision ids |
 |---|---|---|---|
@@ -465,7 +465,7 @@ Start at `handoff/maps/README.md`: the audit, `BUILDING_VARIETY.md`, and packets
 | B5 | Nine Hearthmoor, Keeper House and Cobblecrest rooms: own skins and props | `main` | D99 |
 | B6 | Fourteen High Charity rooms: own skins and signature props | B5 | D100–D101 |
 | B7 | Observatory and the three dream rooms | B5 | D102 |
-| B8 | New Fernbrook Lantern House and Bloom Trial Hall rooms. Not queued; reuse B5's house skins, then Vincent's go | B5 | D103 |
+| B8 | New Fernbrook Lantern House (12×16) and Bloom Trial Hall (16×24). Built on this branch after Vincent's go. Doors keep their panel ids and also warp in. D103 is the placeholder prop lines | B5 | D103 |
 
 Maps in the verbatim design copies (`maps_slice`, `act1_route2`, `cobblecrest`, `interiors`) are changed through `data/detail_b<n>.json` overlays: `tools/gen_mapdata.py` loads every `data/detail_*.json` and `game.js` applies each `slicePatch` last. Do not run `tools/build_highcharity.py`; it is older than `data/highcharity.json`. Route 3, Brinewick and the Cobblecrest cottages have no spec yet.
 

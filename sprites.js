@@ -1121,6 +1121,105 @@ function buildTiles(){
   }
   T.floor_asphalt = asphalt(0); T.floor_asphalt_b = asphalt(1); T.floor_asphalt_c = asphalt(2);
   T.lane_paint = mkTile(g => { px(g, PAL.y, 1, 7, 14, 2); px(g, PAL.w, 1, 7, 14, 1); });
+  // B8 Fernbrook rooms. New tile names only. Palette keys A–K and P stay as written above.
+  // Wide cream boards: one soft seam and one short joint. Not the four-course brick pile.
+  function orchardPlank(seam, joint, grain){
+    return mkTile(g => {
+      px(g, PAL.C, 0, 0, 16, 16);
+      px(g, PAL.A, 0, seam, 16, 1);
+      px(g, PAL.G, joint[0], joint[1], 1, joint[2]);
+      px(g, PAL.G, grain[0], grain[1], 2, 1);
+    });
+  }
+  T.floor_orchard = orchardPlank(8, [4, 1, 6], [11, 4]);
+  T.floor_orchard_b = orchardPlank(8, [12, 9, 6], [2, 12]);
+  T.floor_orchard_c = orchardPlank(7, [7, 0, 6], [3, 11]);
+  T.hearth_orchard = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16); px(g, PAL.A, 0, 8, 16, 1); px(g, PAL.G, 5, 12, 2, 1);
+    px(g, PAL.B, 1, 0, 6, 3); px(g, PAL.F, 7, 0, 1, 3); px(g, PAL.B, 8, 0, 7, 3); px(g, PAL.F, 0, 3, 16, 1);
+  });
+  T.runner_orchard = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16); px(g, PAL.A, 0, 8, 16, 1);
+    px(g, PAL.l, 5, 0, 6, 16); px(g, PAL.g, 5, 0, 1, 16); px(g, PAL.g, 10, 0, 1, 16);
+    px(g, PAL.o, 7, 4, 2, 5); px(g, PAL.C, 7, 11, 2, 2);
+  });
+  T.wall_orchard = wallTop('A', 'F', [[3, 6, 'g'], [8, 9, 'r'], [12, 5, 'E']]);
+  T.wall_orchard_b = wallTop('A', 'F', [[5, 8, 'g'], [11, 4, 'B'], [2, 11, 'r']]);
+  T.wall_orchard_c = wallTop('A', 'E', [[7, 6, 'g'], [13, 10, 'F'], [1, 4, 'r']]);
+  T.wall_orchard_face = mkTile(g => {
+    px(g, PAL.A, 0, 0, 16, 16); px(g, PAL.F, 0, 0, 2, 13); px(g, PAL.F, 14, 0, 2, 13); px(g, PAL.F, 0, 0, 16, 2);
+    px(g, PAL.g, 6, 5, 1, 3); px(g, PAL.r, 7, 4, 1, 1); px(g, PAL.g, 8, 6, 1, 2);
+    px(g, PAL.E, 0, 13, 16, 1); px(g, PAL.g, 0, 14, 16, 2);
+  });
+  T.wall_orchard_win = mkTile(g => {
+    px(g, PAL.A, 0, 0, 16, 16); px(g, PAL.F, 0, 0, 2, 13); px(g, PAL.F, 14, 0, 2, 13); px(g, PAL.F, 0, 0, 16, 2);
+    px(g, PAL.F, 4, 3, 8, 8); px(g, PAL.y, 5, 4, 6, 6); px(g, PAL.C, 6, 5, 3, 3); px(g, PAL.F, 8, 4, 1, 6);
+    px(g, PAL.E, 0, 13, 16, 1); px(g, PAL.g, 0, 14, 16, 2);
+  });
+  T.rug_orchard = rug('g', 'r', 'A');
+  T.mat_orchard = doormat('E', 'g');
+  T.wall_shadow_orchard = mkTile(g => { px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.E, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.g, x, 2, 1, 1); });
+  T.window_light_orchard = mkTile(g => {
+    px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.E, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.g, x, 2, 1, 1);
+    px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.C, 6, 7, 4, 3);
+  });
+  T.leaf_orchard = mkTile(g => { px(g, PAL.g, 6, 8, 3, 2); px(g, PAL.E, 8, 9, 2, 1); px(g, PAL.l, 5, 8, 1, 1); });
+  T.apple_speck = mkTile(g => { px(g, PAL.r, 9, 10, 2, 2); px(g, PAL.g, 10, 9, 1, 1); });
+  function mossFloor(seams, marks){
+    return mkTile(g => {
+      px(g, PAL.g, 0, 0, 16, 16); px(g, PAL.l, 0, 0, 16, 1);
+      seams.forEach(([x, y]) => px(g, PAL.t, x, y, 2, 1));
+      specks(g, marks);
+    });
+  }
+  T.floor_moss = mossFloor([[2, 4], [9, 7], [5, 12]], [[4, 6, 'p'], [11, 3, 'l'], [7, 10, 'D'], [13, 13, 'p']]);
+  T.floor_moss_b = mossFloor([[1, 3], [8, 9], [12, 14]], [[3, 8, 'p'], [10, 5, 'E'], [6, 13, 'l']]);
+  T.floor_moss_c = mossFloor([[4, 2], [11, 8], [2, 13]], [[8, 4, 'p'], [14, 11, 'D'], [5, 9, 'l']]);
+  function bloomBed(marks){
+    return mkTile(g => {
+      px(g, PAL.g, 0, 0, 16, 16);
+      px(g, PAL.l, 1, 2, 3, 2); px(g, PAL.p, 2, 1, 1, 1);
+      px(g, PAL.r, 8, 4, 2, 2); px(g, PAL.y, 9, 3, 1, 1);
+      px(g, PAL.w, 5, 9, 2, 2); px(g, PAL.p, 6, 8, 1, 1);
+      px(g, PAL.o, 11, 11, 2, 2); px(g, PAL.y, 12, 10, 1, 1);
+      px(g, PAL.E, 3, 12, 1, 2); specks(g, marks);
+    });
+  }
+  T.floor_bloom = bloomBed([]);
+  T.floor_bloom_b = bloomBed([[7, 6, 'y'], [2, 11, 'w']]);
+  T.floor_bloom_c = bloomBed([[12, 5, 'p'], [4, 8, 'r']]);
+  function hedgeBloom(marks){
+    return mkTile(g => {
+      px(g, PAL.E, 0, 0, 16, 16); px(g, PAL.g, 1, 1, 14, 11); px(g, PAL.l, 2, 2, 4, 3); px(g, PAL.D, 8, 3, 4, 2);
+      px(g, PAL.p, 5, 4, 1, 1); px(g, PAL.r, 11, 5, 1, 1); px(g, PAL.F, 0, 13, 16, 3); specks(g, marks);
+    });
+  }
+  T.hedge_bloom = hedgeBloom([]);
+  T.hedge_bloom_b = hedgeBloom([[3, 5, 'y'], [10, 2, 'p']]);
+  T.hedge_bloom_c = hedgeBloom([[7, 6, 'w'], [12, 4, 'l']]);
+  T.wall_bloom = wallTop('C', 'p', [[2, 6, 'p'], [9, 8, 'g'], [13, 4, 'r']]);
+  T.wall_bloom_b = wallTop('C', 'D', [[6, 4, 'r'], [13, 7, 'p'], [1, 10, 'g']]);
+  T.wall_bloom_c = wallTop('C', 'g', [[4, 9, 'p'], [10, 3, 'y'], [14, 11, 'D']]);
+  T.wall_bloom_face = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16);
+    px(g, PAL.p, 2, 3, 2, 2); px(g, PAL.g, 3, 5, 1, 2); px(g, PAL.r, 10, 4, 2, 2); px(g, PAL.g, 11, 6, 1, 2);
+    px(g, PAL.D, 0, 9, 16, 1); px(g, PAL.g, 0, 10, 16, 6); px(g, PAL.E, 0, 15, 16, 1);
+  });
+  T.wall_bloom_win = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16);
+    px(g, PAL.p, 1, 2, 1, 1); px(g, PAL.r, 13, 3, 1, 1);
+    px(g, PAL.F, 4, 2, 8, 8); px(g, PAL.s, 5, 3, 6, 6); px(g, PAL.w, 6, 4, 2, 2); px(g, PAL.F, 8, 3, 1, 6);
+    px(g, PAL.D, 0, 12, 16, 1); px(g, PAL.g, 0, 13, 16, 3);
+  });
+  T.rug_bloom = rug('C', 'p', 'g');
+  T.mat_bloom = doormat('p', 'C');
+  T.wall_shadow_bloom = mkTile(g => { px(g, PAL.E, 0, 0, 16, 1); px(g, PAL.D, 0, 1, 16, 1); for (let x = 1; x < 16; x += 3) px(g, PAL.p, x, 2, 1, 1); });
+  T.window_light_bloom = mkTile(g => {
+    px(g, PAL.E, 0, 0, 16, 1); px(g, PAL.D, 0, 1, 16, 1); for (let x = 1; x < 16; x += 3) px(g, PAL.p, x, 2, 1, 1);
+    px(g, PAL.y, 3, 5, 10, 6); px(g, PAL.w, 5, 6, 5, 3);
+  });
+  T.petal_scatter = mkTile(g => { px(g, PAL.p, 4, 7, 1, 1); px(g, PAL.r, 8, 10, 1, 1); px(g, PAL.w, 11, 6, 1, 1); });
+  T.leaf_scatter = mkTile(g => { px(g, PAL.g, 6, 9, 2, 1); px(g, PAL.l, 9, 8, 1, 1); px(g, PAL.E, 7, 10, 1, 1); });
   // D87 tunnel skin. Rock, not house planks. The puddle decal is only the wet pixels on tunnel_floor.
   const TUNNEL_TILES = {
     tunnel_floor: ['hhhmhhhmmmmmmhhh','hhhmwhhhmmmmmmhh','hhhmhhhmmmmmmhhh','hhhmdddddmmmmhhh','mmmmmmmmmmmmmmmm','mmmwwmmmmmmmdmmm','mmmhhmmmmmmmdmhh','mmmhhmmmmmmmdmhh','ddddhhmmmmmmmmhh','mmmmmmmmmmmmdmhh','mmmmhhmmmmmmdmmm','mmmmhhmmmmmmmmmm','wwmmhhdddddmmmmm','mmmmhhmmmmmmmmmm','mmmmhhmmmmmmwwmm','mmmmhhmmmmmmmmmm'],
@@ -1191,7 +1290,23 @@ const HOUSE_SKINS = {
   obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_obs' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_obs', 'floor_obs_b', 'floor_obs_c') },
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c') },
   dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
-  dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') }
+  dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') },
+  // B8. Fernbrook's two new rooms. Calm cream planks and a moss hall. Neither reuses a lantern, Calloway, Lodge, observatory or Keeper floor.
+  fb_lantern: {
+    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_orchard', '=':'rug_orchard', m:'mat_orchard', ',':'runner_orchard', h:'hearth_orchard' },
+    decal: { v:'wall_shadow_orchard', u:'window_light_orchard', q:'leaf_orchard', j:'apple_speck' },
+    walk: { v:1, u:1, q:1, j:1, ',':1, h:1 },
+    variants: Object.assign({}, houseVar('floor_orchard', 'floor_orchard_b', 'floor_orchard_c'), houseVar('wall_orchard', 'wall_orchard_b', 'wall_orchard_c')),
+  },
+  fb_hall: {
+    remap: { '#':'wall_bloom', W:'wall_bloom_face', W2:'wall_bloom_win', '.':'floor_moss', ':':'floor_moss', f:'floor_bloom', T:'hedge_bloom', '=':'rug_bloom', m:'mat_bloom' },
+    decal: { v:'wall_shadow_bloom', u:'window_light_bloom', q:'petal_scatter', j:'leaf_scatter' },
+    walk: { v:1, u:1, q:1, j:1 },
+    variants: Object.assign({}, houseVar('floor_moss', 'floor_moss_b', 'floor_moss_c'), houseVar('floor_bloom', 'floor_bloom_b', 'floor_bloom_c'), {
+      hedge_bloom: [['hedge_bloom_b', 0.34], ['hedge_bloom_c', 0.33]],
+      wall_bloom: [['wall_bloom_b', 0.34], ['wall_bloom_c', 0.33]],
+    }),
+  }
 };
 // D87: # wall, W face, . floor. Floor variants are gravel (b) and damp (c). Wall variants use the same mix so a rock row is not one stamp.
 // Y is a walkable sky decal (the yard patch). ~ is a walkable drip. = is the den rug. Odd W columns stay the rock face (no house window).
@@ -1477,6 +1592,67 @@ function buildWorldArt(){
     px(g, PAL.w, 3, 12, 10, 1); px(g, PAL.y, 5, 8, 3, 1); px(g, PAL.w, 4, 9, 2, 1);
   });
   A.quilt_r = quilt('r'); A.quilt_c = quilt('c'); A.quilt_y = quilt('y');
+  A.quilt_g = quilt('g'); A.quilt_l = quilt('l'); A.quilt_o = quilt('o');
+  // B8 Fernbrook room props. Still frames, no outline. D103 owns the lines.
+  A.heal_counter = mkTile(g => {
+    px(g, PAL.F, 1, 6, 14, 8); px(g, PAL.A, 2, 7, 12, 5); px(g, PAL.E, 2, 6, 12, 1);
+    px(g, PAL.s, 8, 3, 5, 3); px(g, PAL.c, 9, 4, 3, 2); px(g, PAL.w, 9, 4, 1, 1);
+    px(g, PAL.F, 2, 13, 2, 2); px(g, PAL.F, 12, 13, 2, 2);
+  });
+  A.herb_rack = mkTile(g => {
+    px(g, PAL.F, 2, 2, 12, 2);
+    px(g, PAL.g, 3, 4, 2, 6); px(g, PAL.E, 6, 4, 2, 7); px(g, PAL.l, 9, 4, 2, 5); px(g, PAL.D, 12, 4, 2, 6);
+    px(g, PAL.A, 3, 10, 2, 2); px(g, PAL.A, 6, 11, 2, 2); px(g, PAL.A, 9, 9, 2, 2); px(g, PAL.A, 12, 10, 2, 2);
+  });
+  A.orchard_lamp = mkTile(g => {
+    px(g, PAL.F, 7, 12, 2, 3); px(g, PAL.A, 5, 11, 6, 1);
+    px(g, PAL.y, 5, 5, 6, 6); px(g, PAL.o, 6, 6, 4, 4); px(g, PAL.C, 7, 7, 2, 2); px(g, PAL.F, 7, 3, 2, 2);
+  });
+  A.orchard_table = mkTile(g => {
+    px(g, PAL.F, 2, 8, 12, 3); px(g, PAL.A, 3, 8, 10, 1); px(g, PAL.r, 6, 6, 2, 2); px(g, PAL.g, 7, 5, 1, 1);
+    px(g, PAL.F, 3, 11, 2, 4); px(g, PAL.F, 11, 11, 2, 4);
+  });
+  A.cider_jug = mkTile(g => {
+    px(g, PAL.F, 5, 3, 6, 2); px(g, PAL.A, 6, 2, 4, 1); px(g, PAL.o, 4, 5, 8, 8); px(g, PAL.y, 6, 7, 4, 3); px(g, PAL.F, 4, 13, 8, 2);
+  });
+  A.orchard_stool = mkTile(g => {
+    px(g, PAL.A, 3, 6, 10, 3); px(g, PAL.F, 4, 9, 2, 5); px(g, PAL.F, 10, 9, 2, 5); px(g, PAL.g, 6, 7, 2, 1);
+  });
+  A.orchard_basket = mkTile(g => {
+    px(g, PAL.A, 3, 6, 10, 8); px(g, PAL.F, 3, 6, 10, 1); px(g, PAL.g, 4, 4, 8, 2); px(g, PAL.l, 5, 3, 2, 1); px(g, PAL.E, 9, 4, 2, 1);
+  });
+  A.dais_lamp = mkTile(g => {
+    px(g, PAL.F, 7, 12, 2, 3); px(g, PAL.C, 4, 11, 8, 1); px(g, PAL.y, 4, 4, 8, 7); px(g, PAL.p, 6, 6, 4, 3); px(g, PAL.F, 7, 2, 2, 2);
+  });
+  A.ribbon_stand = mkTile(g => {
+    px(g, PAL.F, 7, 4, 2, 11); px(g, PAL.C, 4, 14, 8, 1);
+    px(g, PAL.p, 3, 3, 3, 5); px(g, PAL.w, 7, 4, 2, 4); px(g, PAL.r, 10, 3, 3, 5);
+  });
+  A.bloom_urn = mkTile(g => {
+    px(g, PAL.C, 5, 6, 6, 7); px(g, PAL.F, 6, 5, 4, 1); px(g, PAL.F, 4, 13, 8, 2);
+    px(g, PAL.p, 6, 2, 2, 3); px(g, PAL.g, 8, 3, 2, 2); px(g, PAL.r, 5, 4, 1, 1);
+  });
+  A.bloom_pot = mkTile(g => {
+    px(g, PAL.B, 4, 8, 8, 6); px(g, PAL.F, 3, 7, 10, 2); px(g, PAL.g, 5, 3, 6, 4); px(g, PAL.p, 6, 2, 2, 2); px(g, PAL.y, 9, 4, 1, 1);
+  });
+  A.petal_bowl = mkTile(g => {
+    px(g, PAL.C, 3, 8, 10, 4); px(g, PAL.F, 4, 12, 8, 1); px(g, PAL.p, 5, 6, 2, 2); px(g, PAL.r, 8, 6, 2, 2); px(g, PAL.w, 7, 5, 2, 1);
+  });
+  A.bloom_basket = mkTile(g => {
+    px(g, PAL.A, 3, 7, 10, 7); px(g, PAL.F, 3, 7, 10, 1); px(g, PAL.p, 4, 4, 3, 3); px(g, PAL.r, 8, 4, 3, 3); px(g, PAL.g, 6, 3, 3, 2);
+  });
+  A.bloom_bench = mkTile(g => {
+    px(g, PAL.A, 1, 8, 14, 3); px(g, PAL.F, 2, 11, 2, 4); px(g, PAL.F, 12, 11, 2, 4); px(g, PAL.p, 6, 9, 1, 1); px(g, PAL.g, 9, 9, 1, 1);
+  });
+  A.petal_jar = mkTile(g => {
+    px(g, PAL.s, 5, 4, 6, 8); px(g, PAL.C, 6, 3, 4, 2); px(g, PAL.p, 6, 6, 2, 2); px(g, PAL.w, 8, 7, 2, 2); px(g, PAL.F, 5, 12, 6, 2);
+  });
+  A.bloom_stool = mkTile(g => {
+    px(g, PAL.C, 4, 7, 8, 3); px(g, PAL.p, 6, 8, 2, 1); px(g, PAL.F, 5, 10, 2, 4); px(g, PAL.F, 9, 10, 2, 4);
+  });
+  A.petal_cushion = mkTile(g => {
+    px(g, PAL.p, 2, 6, 12, 6); px(g, PAL.r, 4, 8, 3, 2); px(g, PAL.w, 9, 7, 3, 2); px(g, PAL.C, 6, 9, 2, 1);
+  });
   // B6 High Charity signature props. Candles, the fountain and the stair flight stay on one frame.
   A.weather_board = mkTile(g => {
     px(g, PAL.d, 1, 2, 14, 10); px(g, PAL.h, 2, 3, 12, 8); px(g, PAL.b, 3, 4, 6, 3); px(g, PAL.w, 4, 5, 3, 1);

@@ -1203,6 +1203,10 @@ const WORLD = (() => {
   }
   if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards: squares, then the posts
   for (const k of DETAIL_KEYS) applyMapPatch(W, MD[k].slicePatch);
+  if (MD.fernbrook_rooms) {                                            // B8: rooms, then the door warp, after every detail patch
+    Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
+    applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
+  }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -2457,7 +2461,7 @@ function arriveAt(at){
 }
 function enterDoor(dr){
   if (dr.need && !cond(dr.need, false)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
-  if (dr.to) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
+  if (dr.to && WORLD[dr.to]) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
 }
 // MAPS_SLICE §9 place panels (Fernbrook keeps panels; Hearthmoor's became rooms). The Lantern House: the keeper's line -> REST / LEAVE;
@@ -2958,7 +2962,8 @@ function restBedCue(){
   if (!CUR || !LANTERN_ROOMS[CUR.id]) return null;
   let best = null, bestD = 1e9;
   for (const o of CUR.objs) {
-    if (o.kind !== 'prop' || o.sprite !== 'rest_bed' || !present(o)) continue;
+    const bedLine = o.lines && Object.values(o.lines).some(v => v === '@lantern_rest');
+    if (o.kind !== 'prop' || !present(o) || (o.sprite !== 'rest_bed' && !bedLine)) continue;
     const d = Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y);
     if (d < bestD) { bestD = d; best = o; }
   }
@@ -3300,6 +3305,7 @@ function interact(o){
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
+  if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
   if (o.board) return openTownBoard();
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
@@ -4292,7 +4298,7 @@ function closeBattle(){
 }
 // A Lantern House rest heals the whole party. Hurt Walklings cost a few Acorns (OPEN_DECISIONS D28). Home naps stay free (`rest`).
 const LANTERN_REST_COST = 5;
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1 };
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
 function setRestDue(on){ if (!S || !S.world) return; if (on) S.world.restDue = true; else delete S.world.restDue; }
 // After a wipe, the party has to rest before leaving. Clears itself once nobody is hurt (regen, a debug heal).
@@ -4348,6 +4354,7 @@ function blockLanternExit(){
   put('hearthmoor', 'hm_sign_lantern', 'LANTERN HOUSE · Rest the whole party. ' + n + ' Acorns.');
   put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns. — I."');
   put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
+  put('fb_lantern_in', 'fb_lantern_note', 'A note by the shelf: "Rest the whole party. ' + n + ' Acorns. — Amos"');
 })();
 // §7.2 team wipe: back to world.respawn's Lantern House (Hearthmoor: inside, by the beds; INTERIORS slicePatch respawnIn).
 // Nothing lost. Nobody is healed until they rest the whole party, and the way out stays shut until they do.
@@ -4824,6 +4831,7 @@ const REGION_MAP = {
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
            cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
+    fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',

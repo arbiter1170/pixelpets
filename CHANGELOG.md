@@ -2,6 +2,42 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 11:14 ET: Lantern House planks merged with the heart alert (build 20261016-1114)
+
+- What changed and why: Merged current `main` (PR #83, heart alert). Fernbrook rooms unchanged. `data/mapdata.js` regenerated. Save `v` stays 2. The next free id stays D151.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `NEXT_PLAN.md` (both kept), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1114.
+- Tests run and result (widths, checks): `PP_PORT=8817 npm test`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 10:24 ET: Lantern House planks merged with current main (build 20261016-1024)
+
+- What changed and why: Merged current `main` (build 20261016-0947), which keeps the dream pop-toy answering a bump from any side. The Fernbrook Lantern House floor stays the calm cream planks, rug, quilt runner, and thin hearth from build 20261016-0957. The Bloom Trial Hall is unchanged. `data/mapdata.js` was regenerated. Save `v` stays 2. The next free id stays D151.
+- Files touched: merge of `main`. Conflicts: `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped). `sprites.js` and `game.js` merged cleanly.
+- Commit(s) + build id: build 20261016-1024.
+- Tests run and result (widths, checks): `PP_PORT=8820 npm test` exit 0. 906 passed, 12 skipped, 0 failed (20.5m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 09:57 ET: Fernbrook Lantern House floor is calm orchard planks (build 20261016-0957)
+
+- What changed and why: Vincent rejected the Lantern House floor. The short dark courses read as a brick pile, the same look he turned down for Calloway and the Lodge. The floor is now wide cream planks, with the rug kept, a short quilt runner, and a two-tile brick hearth in front of the counter. Brick is only that thin lip. The Bloom Trial Hall is unchanged. The planks stay distinct from the Hearthmoor lantern checker and the Cobblecrest cobble floor. Merged `main` at build 20261016-0922. Save `v` stays 2. The next free id stays D151.
+- Files touched: `sprites.js`, `data/fernbrook_rooms.json`, `data/mapdata.js`, `tests/maps_b8.spec.js`, `tests/README.md`, `CHANGELOG.md`, `NEXT_PLAN.md`, `index.html`, `version.json`, plus the merge of `main` (`data/heights.json`, `tests/look_keys.spec.js`, `tests/heights.spec.js`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `.cursor/skills/walklings-docs/SKILL.md`).
+- Commit(s) + build id: build 20261016-0957.
+- Tests run and result (widths, checks): `PP_PORT=8819 npm test` exit 0. 900 passed, 12 skipped, 0 failed (20.2m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0. `tests/maps_b8.spec.js` also passed 18 at `PP_PORT=8818`.
+- Decisions made (colour + reasoning): Green. Vincent's review set the floor. No new D or Q id. D103 placeholders stay. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 08:59 ET: Fernbrook Lantern House and Bloom Trial Hall (build 20261016-0859)
+
+- What changed and why: Vincent approved the two new Fernbrook rooms. The Lantern House is 12 by 16, with an orchard-wood floor, Keeper Amos at the heal counter, three quilt beds, a herb rack, apple crates and a table. The Bloom Trial Hall is 16 by 24. A hedge path zig-zags to the flower dais, where Master Fen stands. Each room has its own skin. Neither reuses the lantern, Calloway, Lodge, observatory or Keeper House floor. The outdoor doors keep their panel ids and also warp in. If the room map is missing, the panel still opens. Amos still rests the party and still offers the Pledge desk. Fen still starts the trial. A save inside either room loads. Save `v` stays 2. D103 is the placeholder prop lines. The next free id is D151.
+- Files touched: `data/fernbrook_rooms.json`, `data/mapdata.js`, `sprites.js`, `game.js`, `save.js`, `tests/integrity_lib.js`, `tools/gen_mapdata.py`, `tests/maps_b8.spec.js`, `tests/maps_b7.spec.js`, `tests/standing.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0859.
+- Tests run and result (widths, checks): `PP_PORT=8817 npm test` exit 0. 894 passed, 12 skipped, 0 failed (20.3m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. D103 was already reserved for this batch. The new prop lines are placeholders. No id was renumbered. Houses were not enlarged. The lab stays four rooms.
+- Anything left unfinished: Real prop copy can replace the D103 lines. The outdoor Fernbrook map is unchanged.
+
 ## 2026-10-16 10:11 ET: Heart alert merged with the dream pop-toy fix (build 20261016-1011)
 
 - What changed and why: Merged current `main` (PR #81). In the 2004 memory, the pop-toy answers a bump from any side, Mom cooks, and Dad watches TV. The modern heart alert stays. Save `v` stays 2.
