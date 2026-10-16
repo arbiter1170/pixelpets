@@ -2866,7 +2866,9 @@ function pointOnMap(q){
     const gw = q.follow === 'guide' ? wild.list.find(w => w.guide) : null;
     return gw ? { x: gw.x, y: gw.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
   }
-  const ex = routeExit(CUR.id, q.target.map); return ex ? { x: ex.x, y: ex.y, here: false } : null;
+  const ex = routeExit(CUR.id, q.target.map); if (ex) return { x: ex.x, y: ex.y, here: false };
+  if (q.via) { if (q.via.map === CUR.id) return { x: q.via.x, y: q.via.y, here: true }; const vx = routeExit(CUR.id, q.via.map); if (vx) return { x: vx.x, y: vx.y, here: false }; }
+  return null;
 }
 function restBedCue(){
   if (!CUR || !LANTERN_ROOMS[CUR.id]) return null;
