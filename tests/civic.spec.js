@@ -134,11 +134,11 @@ test('the Keeper House door opens on the floor and the way out is clear', async 
   await boot(page);
   await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hearthmoor', 11, 11, 'up'); });
   const inside = await step(page, 'up');
-  expect(inside).toMatchObject({ map: 'hm_hq_f1', x: 4, y: 6, blocked: [] });
+  expect(inside).toMatchObject({ map: 'hm_hq_f1', x: 6, y: 14, blocked: [] });
   const deeper = await step(page, 'up');
-  expect(deeper).toMatchObject({ map: 'hm_hq_f1', x: 4, y: 5, blocked: [] });
+  expect(deeper).toMatchObject({ map: 'hm_hq_f1', x: 6, y: 13, blocked: [] });
   const cue = await page.evaluate(() => PixelPets.sideQuest && PixelPets.sideQuest.point);
-  expect(cue).toMatchObject({ x: 4, y: 7, here: false });
+  expect(cue).toMatchObject({ x: 6, y: 15, here: false });
   await step(page, 'down');
   const out = await step(page, 'down');
   expect(out).toMatchObject({ map: 'hearthmoor', x: 11, y: 11, blocked: [] });
@@ -148,14 +148,11 @@ test('the Keeper House door opens on the floor and the way out is clear', async 
 
 test('stairs down do not drop you inside the stair sign', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hm_hq_f1', 6, 3, 'right'); });
-  const up = await step(page, 'right');
-  expect(up).toMatchObject({ map: 'hm_hq_f2', x: 7, y: 3, blocked: [] });
-  const aside = await step(page, 'left');
-  expect(aside).toMatchObject({ map: 'hm_hq_f2', x: 6, y: 3 });
-  const down = await step(page, 'right');
-  expect(down.map).toBe('hm_hq_f1');
-  expect(down.blocked, 'downstairs warp landed on ' + down.blocked.join(', ')).toEqual([]);
+  await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hm_hq_f1', 12, 4, 'up'); });
+  const up = await step(page, 'up');
+  expect(up).toMatchObject({ map: 'hm_hq_f2', x: 10, y: 4, blocked: [] });
+  const down = await step(page, 'up');
+  expect(down).toMatchObject({ map: 'hm_hq_f1', x: 12, y: 4, blocked: [] });
 });
 
 test('town officers answer by pledge', async ({ page }) => {
@@ -184,7 +181,7 @@ test('town officers answer by pledge', async ({ page }) => {
 
   await page.evaluate(() => {
     PixelPets.setFlag('story.met_bram', true);
-    PixelPets.goto('hm_hq_f1', 2, 4, 'up');
+    PixelPets.goto('hm_hq_f1', 7, 3, 'down');
   });
   const bram = await sayFacing(page);
   expect(bram).toContain('Doorway only');

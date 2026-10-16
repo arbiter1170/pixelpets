@@ -4,7 +4,9 @@
   "tiles": {
     "u": {"name": "window light", "walk": true},
     "v": {"name": "wall shadow", "walk": true},
-    "i": {"name": "slab inlay", "walk": true}
+    "i": {"name": "slab inlay", "walk": true},
+    ",": {"name": "square tile", "walk": true},
+    ";": {"name": "ops mat", "walk": true}
   },
   "slicePatch": {
     "maps": {
@@ -56,25 +58,709 @@
         ]
       },
       "hm_hq_f1": {
-        "set": {"skin": "house_hq", "variants": true},
-        "gridRows": {"2": "#uvuvuvu#"},
+        "set": {
+          "skin": "house_hq",
+          "variants": true
+        },
         "addObjs": [
-          {"kind": "prop", "id": "hq_notice", "x": 1, "y": 2, "sprite": "notice_board", "lines": {"else": "A notice board. The slips are pinned in a row."}},
-          {"kind": "prop", "id": "hq_coats", "x": 1, "y": 6, "sprite": "coat_rack", "lines": {"else": "A row of hooks. One coat hangs here."}},
-          {"kind": "prop", "id": "hq_lamp", "x": 6, "y": 2, "sprite": "lamp_stand", "lines": {"else": "A standing lamp. The shade is warm."}},
-          {"kind": "prop", "id": "hq_bench", "x": 3, "y": 2, "sprite": "bench_short", "lines": {"else": "A bench under the window."}},
-          {"kind": "prop", "id": "hq_crate", "x": 7, "y": 6, "sprite": "crate", "lines": {"else": "A wooden crate."}}
+          {
+            "kind": "prop",
+            "id": "hq_cab_a",
+            "x": 1,
+            "y": 2,
+            "sprite": "keep_cabinet",
+            "lines": {
+              "else": "Case files, A to F. The drawer sticks a little."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_cab_b",
+            "x": 2,
+            "y": 2,
+            "sprite": "keep_cabinet",
+            "lines": {
+              "else": "Case files, G to P. Every folder has a green tab."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_cab_c",
+            "x": 3,
+            "y": 2,
+            "sprite": "keep_cabinet",
+            "lines": {
+              "else": "Case files, Q to Z. One drawer is labelled LOST KITES."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_banner_w",
+            "x": 5,
+            "y": 2,
+            "sprite": "banner_keeper",
+            "lines": {
+              "else": "The Keeper banner. Gold lantern on green."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_map_a",
+            "x": 6,
+            "y": 2,
+            "sprite": "keep_wallmap_a",
+            "lines": {
+              "else": "The west wilds. Pins mark the safe camps."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_map_b",
+            "x": 7,
+            "y": 2,
+            "sprite": "keep_wallmap_b",
+            "lines": {
+              "else": "Hearthmoor, in the middle. A red pin sits on the Lodge."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_map_c",
+            "x": 8,
+            "y": 2,
+            "sprite": "keep_wallmap_c",
+            "lines": {
+              "else": "The map key. Blue is water, green is wild, gold is a watch post."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_banner_e",
+            "x": 9,
+            "y": 2,
+            "sprite": "banner_keeper",
+            "lines": {
+              "else": "A second banner. The fringe has been mended."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_crest",
+            "x": 10,
+            "y": 2,
+            "sprite": "keep_insignia",
+            "lines": {
+              "else": "The Keeper crest. Someone polishes it every morning."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_shelf_a",
+            "x": 1,
+            "y": 4,
+            "sprite": "keep_cabinet",
+            "lines": {
+              "else": "Old reports, tied with string."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_notice",
+            "x": 1,
+            "y": 5,
+            "sprite": "keep_notice",
+            "lines": {
+              "else": "A notice board. The slips are pinned in a row."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_desk_mo",
+            "x": 3,
+            "y": 4,
+            "sprite": "keep_desk",
+            "lines": {
+              "else": "Mo's desk. A ledger, a lamp, and a very neat stack."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_lamp_arch",
+            "x": 1,
+            "y": 7,
+            "sprite": "keep_lamp",
+            "lines": {
+              "else": "A reading lamp. The shade is warm."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_crate",
+            "x": 4,
+            "y": 7,
+            "sprite": "keep_crate",
+            "lines": {
+              "else": "A wooden crate."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_table_tl",
+            "x": 7,
+            "y": 5,
+            "sprite": "keep_table_tl",
+            "lines": {
+              "else": "The briefing table. Today's route plan is pinned flat."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_table_tr",
+            "x": 8,
+            "y": 5,
+            "sprite": "keep_table_tr",
+            "lines": {
+              "else": "A cup of cold tea and a red pencil."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_table_bl",
+            "x": 7,
+            "y": 6,
+            "sprite": "keep_table_bl",
+            "lines": {
+              "else": "A list of patrols, two crossed out."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_table_br",
+            "x": 8,
+            "y": 6,
+            "sprite": "keep_table_br",
+            "lines": {
+              "else": "A small brass lantern weight holds the page down."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_chair_a",
+            "x": 6,
+            "y": 5,
+            "sprite": "keep_chair",
+            "lines": {
+              "else": "A chair at the briefing table."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_chair_b",
+            "x": 6,
+            "y": 6,
+            "sprite": "keep_chair",
+            "lines": {
+              "else": "A chair. The cushion is worn."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_chair_c",
+            "x": 9,
+            "y": 5,
+            "sprite": "keep_chair",
+            "lines": {
+              "else": "A chair, pushed in neatly."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_chair_d",
+            "x": 9,
+            "y": 6,
+            "sprite": "keep_chair",
+            "lines": {
+              "else": "A chair with a coat over the back."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_lamp",
+            "x": 10,
+            "y": 8,
+            "sprite": "keep_lamp",
+            "lines": {
+              "else": "A standing lamp. The shade is warm."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_plant_b",
+            "x": 5,
+            "y": 8,
+            "sprite": "keep_plant",
+            "lines": {
+              "else": "A fern. Someone waters it on time."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_trophy",
+            "x": 12,
+            "y": 5,
+            "sprite": "keep_trophy",
+            "lines": {
+              "else": "Cups from the town games, and one ribbon for neat filing."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_evid_a",
+            "x": 12,
+            "y": 6,
+            "sprite": "keep_evidence",
+            "lines": {
+              "else": "Tagged boxes. FOUND ON ROUTE 1, one says."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_evid_b",
+            "x": 12,
+            "y": 7,
+            "sprite": "keep_evidence",
+            "lines": {
+              "else": "Jars of odd pebbles, each with a label and a date."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_counter_l",
+            "x": 2,
+            "y": 11,
+            "sprite": "keep_counter_l",
+            "lines": {
+              "else": "The front desk ledger. Sign in, please."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_counter_r",
+            "x": 3,
+            "y": 11,
+            "sprite": "keep_counter_r",
+            "lines": {
+              "else": "A small brass bell. Ring once."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_cab_d",
+            "x": 1,
+            "y": 10,
+            "sprite": "keep_cabinet",
+            "lines": {
+              "else": "Forms, in a very tall stack."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_bench",
+            "x": 1,
+            "y": 13,
+            "sprite": "keep_bench",
+            "lines": {
+              "else": "A bench under the window."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_bench_b",
+            "x": 2,
+            "y": 13,
+            "sprite": "keep_bench",
+            "lines": {
+              "else": "A bench for people waiting their turn."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_coats",
+            "x": 5,
+            "y": 14,
+            "sprite": "keep_coat",
+            "lines": {
+              "else": "A row of hooks. One coat hangs here."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_plant_a",
+            "x": 1,
+            "y": 14,
+            "sprite": "keep_plant",
+            "lines": {
+              "else": "A fern by the door."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_standing",
+            "x": 12,
+            "y": 10,
+            "sprite": "keep_standing",
+            "lines": {
+              "else": "The Standing board. Keeper names in gold, newest at the bottom."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_board",
+            "x": 12,
+            "y": 11,
+            "sprite": "keep_notice",
+            "lines": {
+              "else": "Duty roster. Night watch rotates on Fridays."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_locker_a",
+            "x": 12,
+            "y": 13,
+            "sprite": "keep_locker",
+            "lines": {
+              "else": "A locker. The tag says SPARE BOOTS."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_locker_b",
+            "x": 12,
+            "y": 14,
+            "sprite": "keep_locker",
+            "lines": {
+              "else": "A locker, shut tight."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_kettle",
+            "x": 9,
+            "y": 14,
+            "sprite": "keep_kettle",
+            "lines": {
+              "else": "The tea station. The kettle is always warm."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_crates",
+            "x": 10,
+            "y": 14,
+            "sprite": "keep_crate_stack",
+            "lines": {
+              "else": "Supply crates: lamp oil and rope."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq_lamp_e",
+            "x": 8,
+            "y": 10,
+            "sprite": "keep_lamp",
+            "lines": {
+              "else": "A lamp by the tea station."
+            }
+          }
         ]
       },
       "hm_hq_f2": {
-        "set": {"skin": "house_hq_up", "variants": true},
-        "gridRows": {"2": "#uvuvuvu#"},
+        "set": {
+          "skin": "house_hq_up",
+          "variants": true
+        },
         "addObjs": [
-          {"kind": "prop", "id": "hq2_radio", "x": 1, "y": 2, "sprite": "radio_set", "lines": {"else": "The radio set. A small lamp glows on the dial."}},
-          {"kind": "prop", "id": "hq2_chart", "x": 5, "y": 6, "sprite": "chart_table", "lines": {"else": "A table with a chart of the roads."}},
-          {"kind": "prop", "id": "hq2_stool", "x": 7, "y": 5, "sprite": "stool", "lines": {"else": "A stool by the wall."}},
-          {"kind": "prop", "id": "hq2_lamp", "x": 6, "y": 2, "sprite": "lamp_stand", "lines": {"else": "A lamp by the stair."}},
-          {"kind": "prop", "id": "hq2_plant", "x": 3, "y": 6, "sprite": "plant_pot", "lines": {"else": "A pot of leaves by the chart."}}
+          {
+            "kind": "prop",
+            "id": "hq2_radio",
+            "x": 1,
+            "y": 2,
+            "sprite": "keep_radio",
+            "lines": {
+              "else": "The radio set. A small lamp glows on the dial."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_radio_b",
+            "x": 2,
+            "y": 2,
+            "sprite": "keep_radio",
+            "lines": {
+              "else": "A second console. The lights blink in order."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_rack",
+            "x": 3,
+            "y": 2,
+            "sprite": "keep_radio_rack",
+            "lines": {
+              "else": "A receiver rack. A green light means all clear."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_banner_a",
+            "x": 6,
+            "y": 2,
+            "sprite": "banner_keeper",
+            "lines": {
+              "else": "A Keeper banner over the office."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_crest",
+            "x": 7,
+            "y": 2,
+            "sprite": "keep_insignia",
+            "lines": {
+              "else": "The crest, larger up here."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_banner_b",
+            "x": 8,
+            "y": 2,
+            "sprite": "banner_keeper",
+            "lines": {
+              "else": "A banner by the captain's window."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_sconce",
+            "x": 9,
+            "y": 2,
+            "sprite": "keep_lamp_wall",
+            "lines": {
+              "else": "A brass wall lamp."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_rack_b",
+            "x": 1,
+            "y": 5,
+            "sprite": "keep_radio_rack",
+            "lines": {
+              "else": "Spare handsets, charging."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_desk_t",
+            "x": 4,
+            "y": 5,
+            "sprite": "keep_desk",
+            "lines": {
+              "else": "A signal log, filled in pencil."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_cab",
+            "x": 1,
+            "y": 7,
+            "sprite": "keep_cabinet",
+            "lines": {
+              "else": "Radio logs, one drawer per month."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_desk",
+            "x": 8,
+            "y": 4,
+            "sprite": "keep_desk_cpt",
+            "lines": {
+              "else": "The captain's desk. The blotter is spotless."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_chair",
+            "x": 8,
+            "y": 5,
+            "sprite": "keep_chair",
+            "lines": {
+              "else": "A visitor chair. Sit up straight."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_trophy",
+            "x": 10,
+            "y": 5,
+            "sprite": "keep_trophy",
+            "lines": {
+              "else": "The watch cups. The oldest is dented."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_cab_b",
+            "x": 10,
+            "y": 6,
+            "sprite": "keep_cabinet",
+            "lines": {
+              "else": "Sealed reports. Captain only."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_lamp",
+            "x": 6,
+            "y": 3,
+            "sprite": "keep_lamp",
+            "lines": {
+              "else": "A lamp by the stair."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_plant",
+            "x": 10,
+            "y": 7,
+            "sprite": "keep_plant",
+            "lines": {
+              "else": "A pot of leaves by the chart."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_chart",
+            "x": 7,
+            "y": 10,
+            "sprite": "keep_maptable",
+            "lines": {
+              "else": "A table with a chart of the roads."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_chart_b",
+            "x": 8,
+            "y": 10,
+            "sprite": "keep_maptable",
+            "lines": {
+              "else": "The road north, drawn by hand."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_stool",
+            "x": 7,
+            "y": 11,
+            "sprite": "keep_chair",
+            "lines": {
+              "else": "A stool by the wall."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_lamp_b",
+            "x": 6,
+            "y": 11,
+            "sprite": "keep_lamp",
+            "lines": {
+              "else": "A lamp over the map room."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_bunk_a",
+            "x": 1,
+            "y": 9,
+            "sprite": "keep_bunk",
+            "lines": {
+              "else": "A bunk for the night watch. Made tight."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_bunk_b",
+            "x": 1,
+            "y": 11,
+            "sprite": "keep_bunk",
+            "lines": {
+              "else": "A second bunk. A book is under the pillow."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_locker",
+            "x": 4,
+            "y": 9,
+            "sprite": "keep_locker",
+            "lines": {
+              "else": "A locker. A spare coat hangs inside."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_locker_b",
+            "x": 4,
+            "y": 10,
+            "sprite": "keep_locker",
+            "lines": {
+              "else": "A locker with a name tag, too faded to read."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_kettle",
+            "x": 3,
+            "y": 12,
+            "sprite": "keep_kettle",
+            "lines": {
+              "else": "A small kettle for the night watch."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_crate",
+            "x": 10,
+            "y": 12,
+            "sprite": "keep_crate_stack",
+            "lines": {
+              "else": "Crates of spare batteries."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_crate_b",
+            "x": 9,
+            "y": 12,
+            "sprite": "keep_crate",
+            "lines": {
+              "else": "A crate of blankets."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "hq2_evid",
+            "x": 10,
+            "y": 11,
+            "sprite": "keep_evidence",
+            "lines": {
+              "else": "Lost-and-found shelf. A single mitten waits."
+            }
+          }
         ]
       },
       "cc_lantern_in": {

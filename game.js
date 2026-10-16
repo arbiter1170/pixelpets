@@ -2660,6 +2660,24 @@ function labFloorShare(id){
   if (!top) return null;
   return { walk, tile: top[0], count: top[1], share: top[1] / walk };
 }
+// Keeper House only: a still glow on lamps and radio consoles. No pulse, so reduced motion matches the next frame.
+function drawHqGlow(g, cx, cy){
+  if (CUR.id !== 'hm_hq_f1' && CUR.id !== 'hm_hq_f2') return;
+  g.save();
+  g.globalCompositeOperation = 'lighter';
+  for (const o of CUR.objs) {
+    if (!present(o)) continue;
+    const lamp = o.sprite === 'keep_lamp' || o.sprite === 'keep_lamp_wall';
+    const radio = o.sprite === 'keep_radio' || o.sprite === 'keep_radio_rack';
+    if (!lamp && !radio) continue;
+    const q = objPos(o);
+    g.fillStyle = lamp ? 'rgba(255,205,117,0.25)' : 'rgba(167,240,112,0.25)';
+    g.beginPath();
+    g.arc(q.x * TS + 8 - cx, q.y * TS + 8 - cy, lamp ? 22 : 12, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.restore();
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -2696,7 +2714,7 @@ function drawMap(t){
       if (decal) g.drawImage(decal, tx*TS - cx, ty*TS - cy);
       drawTileExtras(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
       drawFactionBand(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
-      if (ch === '=' && CUR.skin !== 'lab') {    // rug border where the rug ends (the lab runner has none)
+      if (ch === '=' && CUR.skin !== 'lab' && CUR.skin !== 'house_hq' && CUR.skin !== 'house_hq_up') {    // rug border where the rug ends (the lab runner, and the Keeper runner, have their own edge)
         g.fillStyle = PAL.p; const X = tx*TS - cx, Y = ty*TS - cy;
         if (tileAt(tx, ty-1) !== '=') g.fillRect(X, Y, 16, 1); if (tileAt(tx, ty+1) !== '=') g.fillRect(X, Y+15, 16, 1);
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
@@ -2734,6 +2752,7 @@ function drawMap(t){
   if (fol.x != null && p) ents.push({ y: fol.fy, draw: drawFollower });
   ents.push({ y: walk.fy + 0.01, draw: drawPlayer });
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
+  drawHqGlow(g, cx, cy);
   wild.poofs = wild.poofs.filter(f => wild.clock - f.t < 500);
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }

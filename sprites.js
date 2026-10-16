@@ -26,8 +26,10 @@ const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f
   H:'#b9877a', // dusty rose plaster (Calloway wall)
   I:'#9c9382', // warm grey flagstone (Wardens floor)
   J:'#2f5a3e', // deep Keeper green (Wardens wainscot / runner)
-  // MAHOPAC_OBS_FIX (D150): dusk violet floor. Appended once. The Keeper HQ, and its slate key, are not built here.
-  P:'#9686a8'}; // dusk violet floor (observatory)
+  // MAHOPAC_OBS_FIX (D150): dusk violet floor. Appended once.
+  P:'#9686a8', // dusk violet floor (observatory)
+  // KEEPER_HQ_EXPAND (D150): slate lozenge. Appended once. A–J and P stay as written above.
+  K:'#7a8aa0'}; // slate floor (Keeper House)
 
 const SPECIES = [
   { id:'ember', starter:true, habitat:{hot:6, meadow:1, city:1}, tiles:'grass', type:'EMBER', blurb:'A cozy fire fox. Loves to play.', stages:[
@@ -810,6 +812,39 @@ function buildTiles(){
   T.window_light_rose = mkTile(g => { px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.B, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.F, x, 2, 1, 1); px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.C, 6, 7, 4, 3); });
   T.wall_shadow_warden = mkTile(g => { px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.J, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.F, x, 2, 1, 1); });
   T.window_light_warden = mkTile(g => { px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.J, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.F, x, 2, 1, 1); px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.C, 6, 7, 4, 3); });
+  // KEEPER_HQ_EXPAND: warm ashlar over a navy wainscot with a gold rail, a slate lozenge, a vertical Keeper runner, and three zone floors.
+  function ashlarFace(win){
+    return mkTile(g => {
+      px(g, PAL.h, 0, 0, 16, 16);
+      px(g, PAL.m, 0, 0, 16, 1); px(g, PAL.m, 0, 4, 16, 1);
+      px(g, PAL.m, 0, 1, 1, 3); px(g, PAL.m, 8, 1, 1, 3); px(g, PAL.m, 4, 5, 1, 3); px(g, PAL.m, 12, 5, 1, 3);
+      px(g, PAL.n, 0, 10, 16, 6); px(g, PAL.y, 0, 9, 16, 1); px(g, PAL.d, 0, 15, 16, 1);
+      if (win) {
+        px(g, PAL.n, 4, 1, 8, 7); px(g, PAL.s, 5, 2, 6, 5); px(g, PAL.w, 5, 2, 2, 2); px(g, PAL.n, 7, 2, 1, 5);
+      }
+    });
+  }
+  function lozengeFloor(marks){
+    return mkTile(g => {
+      px(g, PAL.K, 0, 0, 16, 16);
+      [[8, 4], [6, 6], [10, 6], [5, 8], [11, 8], [6, 10], [10, 10], [8, 12]].forEach(([x, y]) => px(g, PAL.m, x, y));
+      px(g, PAL.y, 8, 8);
+      specks(g, marks || []);
+    });
+  }
+  T.wall_keep = mkTile(g => { px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 0, 16, 1); px(g, PAL.m, 0, 8, 16, 1); px(g, PAL.m, 4, 1, 1, 7); px(g, PAL.m, 12, 9, 1, 5); px(g, PAL.n, 0, 14, 16, 2); px(g, PAL.y, 0, 13, 16, 1); });
+  T.wall_keep_face = ashlarFace(false);
+  T.wall_keep_win = ashlarFace(true);
+  T.floor_keep = lozengeFloor([]);
+  T.floor_keep_b = lozengeFloor([[12, 4, 'h']]);
+  T.floor_keep_c = lozengeFloor([[5, 12, 'm'], [13, 3, 'h']]);
+  T.rug_keep = mkTile(g => { px(g, PAL.g, 0, 0, 16, 16); px(g, PAL.y, 0, 0, 1, 16); px(g, PAL.y, 15, 0, 1, 16); px(g, PAL.J, 1, 0, 1, 16); px(g, PAL.J, 14, 0, 1, 16); px(g, PAL.y, 7, 7, 2, 2); });
+  T.mat_keep = doormat('J', 'y');
+  T.floor_keep_tile = mkTile(g => { px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 0, 16, 1); px(g, PAL.m, 0, 8, 16, 1); px(g, PAL.m, 0, 0, 1, 16); px(g, PAL.m, 8, 0, 1, 16); px(g, PAL.w, 2, 2, 2, 1); });
+  T.floor_keep_ops = mkTile(g => { px(g, PAL.K, 0, 0, 16, 16); [0, 4, 8, 12].forEach(i => { px(g, PAL.m, i, 0, 1, 16); px(g, PAL.m, 0, i, 16, 1); }); px(g, PAL.l, 2, 2); px(g, PAL.l, 10, 10); });
+  T.floor_keep_carpet = mkTile(g => { px(g, PAL.D, 0, 0, 16, 16); px(g, PAL.E, 0, 0, 16, 1); px(g, PAL.E, 0, 15, 16, 1); [[4, 4], [12, 4], [8, 8], [4, 12], [12, 12]].forEach(([x, y]) => px(g, PAL.y, x, y)); });
+  T.wall_shadow_keep = mkTile(g => { px(g, PAL.n, 0, 0, 16, 1); px(g, PAL.y, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.n, x, 2, 1, 1); });
+  T.window_light_keep = mkTile(g => { px(g, PAL.n, 0, 0, 16, 1); px(g, PAL.y, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.n, x, 2, 1, 1); px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.C, 6, 7, 4, 3); });
   // B6 High Charity rooms. One floor and one wall per room. `j` is a hand-placed scuff. `Y` is a keeper pilaster that breaks a long wall run.
   function padFloor(speck){ return mkTile(g => { px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 0, 16, 1); px(g, PAL.m, 0, 0, 1, 16); specks(g, speck); }); }
   function deckFloor(speck){ return mkTile(g => { px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.d, 0, 15, 16, 1); px(g, PAL.b, 0, 0, 1, 16); specks(g, speck); }); }
@@ -1130,8 +1165,9 @@ const HOUSE_SKINS = {
   house_lodge: { remap: { '#':'wall_warden', W:'wall_warden_face', W2:'wall_warden_win', '.':'floor_warden', '=':'rug_warden', m:'mat_warden' }, decal: { v:'wall_shadow_warden', u:'window_light_warden' }, walk: { v:1, u:1 }, variants: houseVar('floor_warden', 'floor_warden_b', 'floor_warden_c') },
   house_lantern: { remap: { '#':'wall_lantern', W:'wall_lantern_face', W2:'wall_lantern_win', '.':'floor_lantern', '=':'rug_lantern', m:'mat_lantern_warm' }, decal: { v:'wall_shadow_warm', u:'window_light_warm' }, walk: { v:1, u:1 }, variants: houseVar('floor_lantern', 'floor_lantern_b', 'floor_lantern_c') },
   house_rook: { remap: { '#':'wall_rose', W:'wall_rose_face', W2:'wall_rose_win', '.':'floor_honey', '=':'rug_calloway', m:'mat_calloway' }, decal: { v:'wall_shadow_rose', u:'window_light_rose' }, walk: { v:1, u:1 }, variants: houseVar('floor_honey', 'floor_honey_b', 'floor_honey_c') },
-  house_hq: { remap: { '#':'wall_stone', W:'wall_stone_face', W2:'wall_stone_win', '.':'floor_flag', '=':'rug_keeper', m:'mat_keeper' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_flag', 'floor_flag_b', 'floor_flag_c') },
-  house_hq_up: { remap: { '#':'wall_panel', W:'wall_panel_face', W2:'wall_panel_win', '.':'floor_ink', '=':'rug_ink', m:'mat_ink' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_ink', 'floor_ink_b', 'floor_ink_c') },
+  // Both Keeper House floors share this skin (D149). The old stone and ink tiles stay defined for anything that still names them.
+  house_hq: { remap: { '#':'wall_keep', W:'wall_keep_face', W2:'wall_keep_win', '.':'floor_keep', '=':'rug_keep', m:'mat_keep', ',':'floor_keep_tile', ';':'floor_keep_ops', i:'floor_keep_carpet' }, decal: { v:'wall_shadow_keep', u:'window_light_keep' }, walk: { v:1, u:1, ',':1, ';':1, i:1 }, variants: houseVar('floor_keep', 'floor_keep_b', 'floor_keep_c') },
+  house_hq_up: { remap: { '#':'wall_keep', W:'wall_keep_face', W2:'wall_keep_win', '.':'floor_keep', '=':'rug_keep', m:'mat_keep', ',':'floor_keep_tile', ';':'floor_keep_ops', i:'floor_keep_carpet' }, decal: { v:'wall_shadow_keep', u:'window_light_keep' }, walk: { v:1, u:1, ',':1, ';':1, i:1 }, variants: houseVar('floor_keep', 'floor_keep_b', 'floor_keep_c') },
   house_cc_lantern: { remap: { '#':'wall_rough', W:'wall_rough_face', W2:'wall_rough_win', '.':'floor_cobble', '=':'rug_cobble', m:'mat_cobble' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_cobble', 'floor_cobble_b', 'floor_cobble_c') },
   house_hall: { remap: { '#':'wall_slate', W:'wall_slate_face', W2:'wall_slate_win', '.':'floor_hall', ':':'floor_hall', i:'floor_slab', '=':'rug_hall', m:'mat_hall' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1, i:1 }, variants: { floor_hall: [['floor_hall_b', 0.22], ['floor_hall_c', 0.18]] } },
   hc_airport: hcSkin('floor_pad', 'wall_hangar', 'mat_pad', { decal: { q: 'pad_stripe' }, walk: { q: 1 } }),
@@ -1662,6 +1698,38 @@ const EXTERIOR_ART = {
     bench_long: ["................","................","................","................","yyyyyyyyyyyyyyyy","oodoooooooooodoo","..d..........d..","yydyyyyyyyyyydyy","oooooooooooooooo","dddddddddddddddd",".dd..........dd.",".dd..........dd.",".dd..........dd.",".dd..........dd.",".dd..........dd.","................"],
     cart_prop: ["................","...............d","..ggg..........d","..ggg..r......d.",".ddddddddddddd..",".dooodooodood...",".dooodooodood...",".dooodooodood...",".dooodooodood...",".dooodooodood...",".dddddddddddd...","...ddd...ddd....","..dhhhd.dhhhd...","..dhhhd.dhhhd...","...ddd...ddd....","................"],
     banner_keeper: ["..do............","..doyyyyyyyyy...","..doyyyyyyyyy...","..doggggggggg...","..dogggyyyggg...","..dogggylyggg...","..dogggyyyggg...","..doggggggggg...","..doggggggggg...","..doggggggggg...","..doggg...ggg...","..doggg...ggg...","..do.g.....g....","..do............",".dddd...........",".dddd..........."],
+    keep_desk: ["................", "................", "...wwwww........", "..Cwhhhw..y.....", "..Cwhhww..nnCCC.", "..CCCCCC..nnCCC.", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", ".FFBBBBBBBBBBFF.", ".FFBGGGBBGGGBFF.", ".FFBBBBBBBBBBFF.", ".FF..........FF.", ".FF..........FF.", ".FF..........FF.", "................"],
+    keep_desk_cpt: ["................", "...........y....", "..........ggg...", "..wwwww...ggg...", "..whhhw...ggg...", "..wwwww...ggg...", "yyyyyyyyyyyyyyyy", "FJJJJJJJJJJJJJJF", "FJJJJJJJJJJJJJJF", "FFFFFFFFFFFFFFFF", "FFBBBBBBBBBBBBFF", "FFBBBByyyyBBBBFF", "FFBBBBBBBBBBBBFF", "FFFFFFFFFFFFFFFF", "FF............FF", "FF............FF"],
+    keep_cabinet: ["................", "..hhhhhhhhhhhh..", "..mmCCCmmmmmmm..", "..mmmmmyymmmmm..", "..mmmmmmmmmmmm..", "..mddddddddddm..", "..mmCCCmmmmmmm..", "..mmmmmyymmmmm..", "..mmmmmmmmmmmm..", "..mmmmmmmmmmmm..", "..mddddddddddm..", "..mmCCCmmmmmmm..", "..mmmmmyymmmmm..", "..mmmmmmmmmmmm..", "..mmmmmmmmmmmm..", "..mmmmmmmmmmmm.."],
+    keep_wallmap_a: ["................", "FFFFFFFFFFFFFFFF", "FCCCCCCCCCcccccc", "FCDDDDDDCCcccccc", "FCDDDDDDCCcccccc", "FCDDDrDDCCcccccc", "FCDDDDDDCCCCCCCC", "FCCCCCCCBCCCCCCC", "FCCCDDDDBCCCCCCC", "FCCCDDDDBCCCCCCC", "FCCCDDDDBCCCCCCC", "FCCCCCCCCCCCCCCC", "FCCCCCCCCCCCCCCC", "FFFFFFFFFFFFFFFF", "FF..............", "FF.............."],
+    keep_wallmap_b: ["................", "FFFFFFFFFFFFFFFF", "cccccCCCCCCCCCCC", "cccccCCCBCCCCCCC", "cccccCCCBCCCCCCC", "CCCCCCCCBCCCCCCC", "DDDDDDDCByCCCCCC", "DDDBBBBBrrBBBCCC", "DDDDDDDCrrCCCCCC", "DDDDDDDCBCCEEEEC", "DDDDDDDCBCCEgEEC", "DDDDDDDCBCCEEEEC", "CCCCCCCCCCCCCCCC", "FFFFFFFFFFFFFFFF", "................", "................"],
+    keep_wallmap_c: ["................", "FFFFFFFFFFFFFFFF", "CCCCCCCCCCCCCCCF", "DDDDDCCCwwwwwwCF", "DDDDDCCCwhhhhwCF", "DDDgDCCCwwwwwwCF", "DDDDDCCCwhhhhwCF", "DDDDDCCCwwwwwwCF", "CCCCCCCCwhhhwwCF", "ccccccCCwwwwwwCF", "ccccccCCwwwwwwCF", "ccccccCCCCCCCCCF", "CCCCCCCCCCCCCCCF", "FFFFFFFFFFFFFFFF", "..............FF", "..............FF"],
+    keep_radio: ["...C............", "..C.............", "..C.............", "..C.............", "nnnnnnnnnnnnnnnn", "dddddddddddddddd", "dmmmmmmdnnnnnnnd", "dmhhhhmdnmnmnmnd", "dmhkkhmdnmnmnmnd", "dmhhhhmdnmnmnmnd", "dmmmmmmdnnnnnnnd", "dddddddddddddddd", "dlldyydrrdlldssd", "dddddddddddddddd", "dddddddddddddddd", "dddddddddddddddd"],
+    keep_radio_rack: ["...nnnnnnnnnn...", "...nddddddddn...", "...ndldldyydn...", "...nddddddddn...", "...nddddddddn...", "...nnnnnnnnnn...", "...nddddddddn...", "...ndssssdddn...", "...nddddddrdn...", "...nddddddddn...", "...nnnnnnnnnn...", "...nddddddddn...", "...ndldmmmmdn...", "...ndddmmmmdn...", "...nddddddddn...", "...nnnnnnnnnn..."],
+    keep_insignia: ["................", "...yyyyyyyyyy...", "...ynnnnnnnny...", "...ynnnyynnny...", "...ynnCCCCnny...", "...ynnCyyCnny...", "...ynnCyyCnny...", "...ynnCCCCnny...", "...ynnnyynnny...", "...ynnnnnnnny...", "....nggggggn....", "....nnnnnnnn....", "......nnnn......", "......nnnn......", "................", "................"],
+    keep_trophy: [".FFFFFFFFFFFFFF.", ".FhwhhhhhhhhhhF.", ".FhwhhhhhhhhrhF.", ".FhwyyyhhhhhrhF.", ".FhwyyyhhAAArhF.", ".FhwyyyhhAAArhF.", ".FhhhyhhhhhhhhF.", ".FFFFFFFFFFFFFF.", ".FhhhhhhhhhhhhF.", ".FhhyyhhbbhgghF.", ".FhhyyhhbbhgghF.", ".FhhyyhhbbhgghF.", ".FhhyyhhhhhgghF.", ".FhhhhhhhhhhhhF.", ".GGGGGGGGGGGGGG.", ".GGGGGGGGGGGGGG."],
+    keep_evidence: [".FFFFFFFFFFFFFF.", ".FCCCCFFFFAAAAF.", ".FCyyCFscFAwwAF.", ".FCCCCFccFAAAAF.", ".FCCCCFccFAAAAF.", ".GGGGGGGGGGGGGG.", ".FDDDDDFFFFBBBF.", ".FDCCDDFhhFBBBF.", ".FDDDDDFhhFBBBF.", ".FDDDDDFhhFBBBF.", ".GGGGGGGGGGGGGG.", ".FwwwFCCCCCCCFF.", ".FwrwFCyCCCCCFF.", ".FwwwFCCCCCCCFF.", ".FwwwFCCCCCCCFF.", ".GGGGGGGGGGGGGG."],
+    keep_locker: [".EEEEEEEEEEEEEE.", ".EJJJJJEEJJJJJE.", ".EJEEEJEEJEEEJE.", ".EJJJJJEEJJJJJE.", ".EJEEEJEEJEEEJE.", ".EJJJJJEEJJJJJE.", ".EJJJJJEEJJJJJE.", ".EJJJJJEEJJJJJE.", ".EJJJJyEEyJJJJE.", ".EJJJJyEEyJJJJE.", ".EJJJJJEEJJJJJE.", ".EJJJJJEEJJJJJE.", ".EJCCJJEEJJJJJE.", ".EJJJJJEEJJJJJE.", ".EJJJJJEEJJJJJE.", ".EEEEEEEEEEEEEE."],
+    keep_bunk: ["................", "................", ".FFFFFFFFFFFFFF.", ".FCCCCCCCCCCCCF.", ".FCCCCCCCCCCCCF.", ".FCCCCCCCCCCCCF.", ".FggggggggggggF.", ".FggggggggggggF.", ".FggggggggggggF.", ".FJJJJJJJJJJJJF.", ".FggggggggggggF.", ".FggggggggggggF.", ".FggggggggggggF.", ".FyyyyyyyyyyyyF.", ".FFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFF."],
+    keep_table_tl: ["................", "................", "................", "................", "..FFFFFFFFFFFFFF", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGwwwwwGGGGG", "..FGGGwhhhwGGGGG", "..FGGGwhhwwGGGGG", "..FGGGwwwwwGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG"],
+    keep_table_tr: ["................", "................", "................", "................", "FFFFFFFFFFFFFF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGCCCCGGGGGF..", "GGGGCCrCGGGGGF..", "GGGGCCCCGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF.."],
+    keep_table_bl: ["..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGyyGGGGGG", "..FGGGGGyyGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FGGGGGGGGGGGGG", "..FFFFFFFFFFFFFF", "..FFFFFFFFFFFFFF", "...FF...........", "...FF...........", "...FF...........", "...FF..........."],
+    keep_table_br: ["GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGyGGGGGGGGF..", "GGGnnnGGGGGGGF..", "GGGnnnGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "GGGGGGGGGGGGGF..", "FFFFFFFFFFFFFF..", "FFFFFFFFFFFFFF..", "...........FF...", "...........FF...", "...........FF...", "...........FF..."],
+    keep_chair: ["................", "....FFFFFFFF....", "....FJJJJJJF....", "....FJJJJJJF....", "....FJJJJJJF....", "....FJJJJJJF....", "....FJJJJJJF....", "....FFFFFFFF....", "...FJJJJJJJJF...", "...FJJJJJJJJF...", "...FFFFFFFFFF...", "....FF....FF....", "....FF....FF....", "....FF....FF....", "....FF....FF....", "....FF....FF...."],
+    keep_maptable: ["................", "................", "................", "................", "FFFFFFFFFFFFFFFF", "FCkCCCCCCCCCCCCF", "FCDDDDDCCccccCCF", "FCDDDDDCCccccCCF", "FCDDDDDCCccccCCF", "FCCCBBBBBBBBcCCF", "FCCCCCCCCCCCCkCF", "FCCCCCCCCCCCCCCF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", ".FF..........FF.", ".FF..........FF."],
+    keep_lamp: ["................", "....yyyyyyyy....", "...AAAAAAAAAA...", "...AAyyyyyyAA...", "...AAyyyyyyAA...", "...AAAAAAAAAA...", "..y....CC....y..", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", "....FFFFFFFF....", "....FFFFFFFF...."],
+    keep_lamp_wall: ["................", "................", ".......yy.......", "................", ".....yyyyyy.....", ".....yyCCyy.....", "...y.yyCCyy.y...", ".....yyyyyy.....", ".......GG.......", ".......GG.......", ".......GG.......", ".....GGGGGG.....", "................", "................", "................", "................"],
+    keep_counter_l: ["................", "................", "....wwwwwww.....", "....whhhhhw.....", "....wwwwwww.....", "yyyyyyyyyyyyyyyy", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "Fnnnnnnnnnnnnnnn", "Fnnnnnnnnnnnnnnn", "Fnnyynnnnnnnnnnn", "Fnnyynnnnnnnnnnn", "Fnnnnnnnnnnnnnnn", "Fnnnnnnnnnnnnnnn", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF"],
+    keep_counter_r: ["................", ".........G......", "........yyy.....", "........yyy.....", "................", "yyyyyyyyyyyyyyyy", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "nnnnnnnnnnnnnnnF", "nnnnnnnnnnnnnnnF", "nnnnnnnnnnnyynnF", "nnnnnnnnnnnyynnF", "nnnnnnnnnnnnnnnF", "nnnnnnnnnnnnnnnF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF"],
+    keep_standing: ["................", "FFFFFFFFFFFFFFFF", "FJJJJJJJJJJJJJJF", "FJyyyyyyyyJJyyJF", "FJJJJJJJJJJJyyJF", "FJyyyyyyyyyyJJJF", "FJJJJJJJJJJJJJJF", "FJCCCCCCJJJJJJJF", "FJJJJJJJJJJJJJJF", "FJCCCCCCCCCJJJJF", "FJJJJJJJJJJJJJJF", "FJCCCCCJJJJJJJJF", "FJJJJJJJJJJJJJJF", "FFFFFFFFFFFFFFFF", "...FF......FF...", "...FF......FF..."],
+    keep_notice: ["................", "................", "FFFFFFFFFFFFFFFF", "FAAAAAAAAAAAAAAF", "FAwrwwAAAAAwbwAF", "FAwwwwACgCCwwwAF", "FAwwwwACCCCwwwAF", "FAwwwwACCCCwwwAF", "FAAAAAAAAAAwwwAF", "FAACCCCCAAAAAAAF", "FAACCCCCAAAAAAAF", "FAACCCCCAAAAAAAF", "FAAAAAAAAAAAAAAF", "FFFFFFFFFFFFFFFF", "................", "................"],
+    keep_crate: ["................", "................", "................", "................", "................", ".BBBBBBBBBBBBBB.", ".FGGGGGFGGGGGGF.", ".FGGyyGFGGGGGGF.", ".FGGyyGFGGGGGGF.", ".FGGGGGFGGGGGGF.", ".FFFFFFFFFFFFFF.", ".FGGGGGFGGGGGGF.", ".FGGGGGFGGGGGGF.", ".FGGGGGFGGGGGGF.", ".FGGGGGFGGGGGGF.", ".FFFFFFFFFFFFFF."],
+    keep_crate_stack: ["...FFFFFFFFFF...", "...FGGGFGGGGF...", "...FGGGFGGGGF...", "...FGGGFGGGGF...", "...FGGGFGGGGF...", "...FGGGFGGGGF...", "...FFFFFFFFFF...", ".FFFFFFFFFFFFFF.", ".FGGGGGGGGGGGGF.", ".FGGGGGGGGyyGGF.", ".FGGGGGGGGGGGGF.", ".FFFFFFFFFFFFFF.", ".FGGGGGGGGGGGGF.", ".FGGGGGGGGGGGGF.", ".FGGGGGGGGGGGGF.", ".FFFFFFFFFFFFFF."],
+    keep_plant: ["........ll......", ".....gg.ll......", ".....gg.ll......", "....lgg.llggg...", "...ElEg.llggg...", "...EEEg...ggg...", "...EEEggggggg...", "...EEEggggggg...", "......gggg......", "................", "................", "....AAAAAAAA....", "....BBBBBBBB....", "....BBBBBBBB....", "....BBBBBBBB....", "....BBBBBBBB...."],
+    keep_kettle: ["................", "................", ".....yy.........", "...mmmmmm.......", "...mhhhmmmm.....", "...mhhhmm.......", "...mmmmmm..rrCC.", "...mmmmmm..CCCC.", ".GGGGGGGGGGGGGG.", ".FFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFF.", ".FFFFFFFFFFFFFF."],
+    keep_coat: ["................", ".........nnnnn..", ".......FFnnnnn..", ".......FF.yyy...", "....JJJJF.......", "....JggJF.......", "....JggJF.......", "....JggJF.......", "....JggJF.......", "....JJJJF.......", "....JJJJF.......", ".......FF.......", ".......FF.......", ".......FF.......", ".......FF.......", "....FFFFFFFF...."],
+    keep_bench: ["................", "................", "................", "................", "................", "................", "GGGGGGGGGGGGGGGG", "FJJJJJJJJJJJJJJF", "FFFFFFFFFFFFFFFF", ".FF..........FF.", ".FF..........FF.", ".FF..........FF.", ".FF..........FF.", ".FF..........FF.", ".FF..........FF.", "................"],
+    keep_stair: ["GGGGGGGGGGGGGGGG", "GGGGGGGGGGGGGGGG", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "GGGGGGGGGGGGGGGG", "GGGGGGGGGGGGGGGG", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "GGGGGGGGGGGGGGGG", "GGGGGGGGGGGGGGGG", "GGGGGGGGGGGGGGGG", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "yyyyyyyyyyyyyyyy"],
     lamp_post: [".....dddddd.....",".....ywyyyy.....",".....yywyyy.....",".....yyyyyy.....",".....yyyyyy.....","....dddddddd....",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".....dddddd....."],
     apple_crate: ["................","................","................","......g.....g...","......rr....rr..","...rr.rr.gg.rr..","...rrr..rrgrrgg.",".dddrrddrrdrrgg.",".dyyyyyyyyyyyyd.",".dooooooooooood.",".dddddddddddddd.",".dooooooooooood.",".dooooooooooood.",".dooooooooooood.",".dddddddddddddd.","................"],
     hedge_planter: ["................","................","........o.......","....grlggggg....","...glllllgtgg...","..glllllllgggg..","..gglllllgrggg..","..gggglggggggg..","..ggtggggggtgg..","...gggggggggg...","..wwggggggggww..","..hhhhhhhhhhhh..","..hhhhhhhhhhhh..","..hhhhhhhhhhhh..","..mmmmmmmmmmmm..","................"],

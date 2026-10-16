@@ -145,7 +145,8 @@ test('E7 path edges and E11 painted cells: grass fringe on paths, faction ridge 
     const bad = [];
     for (const [grp, set] of Object.entries(EXTERIOR_ART)) for (const [k, rows] of Object.entries(set)) {
       const n = grp === 'big' ? 32 : 16, size = (grp === 'tiles' ? v.tiles : v.wart)[k];
-      if (rows.length !== n || rows.some(row => row.length !== n || /[^kproylgtnbcswhmd.]/.test(row))) bad.push(k);
+      const allow = new Set(Object.keys(PAL).concat('.'));
+      if (rows.length !== n || rows.some(row => row.length !== n || [...row].some(ch => !allow.has(ch)))) bad.push(k);
       if (!size || size[0] !== n || size[1] !== n) bad.push('registry ' + k);
     }
     const out = { bad, edge: c(3, 6), mid: c(8, 8), grass: c(1, 1), rook: c(15, 2), home, lodgeWall: c(9, 5), lodgeDoor: c(lodgeDoor.x, lodgeDoor.y).doorArt,

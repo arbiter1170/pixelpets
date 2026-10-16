@@ -21,12 +21,12 @@ const ROOMS = [
   { id: 'hm_rook_in', w: 7, h: 6, ax: 3, ay: 4, safe: [3, 4], floor: '.',
     old: ['rook_mat', 'mrs_calloway', 'rook_table', 'rook_shelf'],
     exit: { x: 3, y: 4, dir: 'down', to: 'hearthmoor', tx: 16, ty: 5 } },
-  { id: 'hm_hq_f1', w: 9, h: 8, ax: 4, ay: 6, safe: [4, 6], floor: '.',
-    old: ['hq_out', 'hq_up', 'hq_stair_sign', 'hq_bram', 'hq_mo', 'hq_wynn'],
-    exit: { x: 4, y: 6, dir: 'down', to: 'hearthmoor', tx: 11, ty: 11 } },
-  { id: 'hm_hq_f2', w: 9, h: 8, ax: 7, ay: 3, safe: [4, 6], floor: '.',
-    old: ['hq_down', 'hq_radio_sign', 'hq_lumen', 'hq_rue'],
-    exit: { x: 6, y: 3, dir: 'right', to: 'hm_hq_f1', tx: 6, ty: 4 } },
+  { id: 'hm_hq_f1', w: 14, h: 16, ax: 6, ay: 14, safe: [6, 13], floor: '.',
+    old: ['hq_out', 'hq_up', 'hq_stair_sign', 'hq_bram', 'hq_mo', 'hq_wynn', 'hq_corwin', 'hq_orrin'],
+    exit: { x: 6, y: 14, dir: 'down', to: 'hearthmoor', tx: 11, ty: 11 } },
+  { id: 'hm_hq_f2', w: 12, h: 14, ax: 10, ay: 4, safe: [5, 9], floor: '.',
+    old: ['hq_down', 'hq_radio_sign', 'hq_lumen', 'hq_rue', 'hq_tamm', 'hq_linnea'],
+    exit: { x: 10, y: 2, dir: 'down', to: 'hm_hq_f1', tx: 12, ty: 4 } },
   { id: 'cc_lantern_in', w: 9, h: 7, ax: 4, ay: 5, safe: [4, 5], floor: '.',
     old: ['cc_lantern_mat', 'cc_bed_a', 'cc_bed_b', 'cc_bed_c', 'cc_lantern_light', 'cc_lamp_rack', 'cc_lantern_note'],
     exit: { x: 4, y: 5, dir: 'down', to: 'cobblecrest', tx: 5, ty: 5 } },
@@ -48,16 +48,16 @@ const LINES = [
   ['hm_rook_in', 5, 3, 'down', 'A shelf of small cups and ribbons.'],
   ['hm_rook_in', 3, 4, 'right', 'A pot of leaves on the floor.'],
   ['hm_rook_in', 3, 4, 'left', 'A stool by the wall.'],
-  ['hm_hq_f1', 1, 3, 'up', 'A notice board. The slips are pinned in a row.'],
-  ['hm_hq_f1', 2, 6, 'left', 'A row of hooks. One coat hangs here.'],
-  ['hm_hq_f1', 6, 3, 'up', 'A standing lamp. The shade is warm.'],
-  ['hm_hq_f1', 3, 3, 'up', 'A bench under the window.'],
-  ['hm_hq_f1', 6, 6, 'right', 'A wooden crate.'],
+  ['hm_hq_f1', 1, 6, 'up', 'A notice board. The slips are pinned in a row.'],
+  ['hm_hq_f1', 5, 13, 'down', 'A row of hooks. One coat hangs here.'],
+  ['hm_hq_f1', 10, 9, 'up', 'A standing lamp. The shade is warm.'],
+  ['hm_hq_f1', 1, 12, 'down', 'A bench under the window.'],
+  ['hm_hq_f1', 4, 8, 'up', 'A wooden crate.'],
   ['hm_hq_f2', 1, 3, 'up', 'The radio set. A small lamp glows on the dial.'],
-  ['hm_hq_f2', 5, 5, 'down', 'A table with a chart of the roads.'],
-  ['hm_hq_f2', 6, 5, 'right', 'A stool by the wall.'],
-  ['hm_hq_f2', 6, 3, 'up', 'A lamp by the stair.'],
-  ['hm_hq_f2', 4, 6, 'left', 'A pot of leaves by the chart.'],
+  ['hm_hq_f2', 7, 9, 'down', 'A table with a chart of the roads.'],
+  ['hm_hq_f2', 7, 12, 'up', 'A stool by the wall.'],
+  ['hm_hq_f2', 6, 4, 'up', 'A lamp by the stair.'],
+  ['hm_hq_f2', 10, 8, 'up', 'A pot of leaves by the chart.'],
   ['cc_lantern_in', 6, 3, 'up', 'A pick hangs on the wall.'],
   ['cc_lantern_in', 2, 5, 'left', 'A stool by the beds.'],
   ['cc_hall_in', 2, 9, 'up', 'A stone plinth. The top is empty.'],
@@ -140,10 +140,19 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap', a
     expect(row.badShadow, row.id).toBe(0);
     expect(row.shadow, row.id).toBeGreaterThan(0);
     expect(row.art, row.id).toEqual([]);
+    if (row.id === 'hm_hq_f1' || row.id === 'hm_hq_f2') continue;
     floors.add(row.floor); walls.add(row.wall + '|' + row.face);
   }
-  expect(floors.size).toBe(ROOMS.length);
-  expect(walls.size).toBe(ROOMS.length);
+  // The two Keeper House floors share one skin. The other seven rooms stay unique, and different from that skin.
+  expect(floors.size).toBe(ROOMS.length - 2);
+  expect(walls.size).toBe(ROOMS.length - 2);
+  for (const row of report.out.filter(r => r.id === 'hm_hq_f1' || r.id === 'hm_hq_f2')) {
+    expect(row.wall, row.id).toBe('wall_keep');
+    expect(row.face, row.id).toBe('wall_keep_face');
+    expect(row.floor.startsWith('floor_keep'), row.id + ' ' + row.floor).toBe(true);
+    expect(floors.has(row.floor), row.id).toBe(false);
+    expect(walls.has(row.wall + '|' + row.face), row.id).toBe(false);
+  }
 });
 
 test('the door reaches every person, and each new prop says its line', async ({ page }) => {
@@ -176,7 +185,7 @@ test('the door reaches every person, and each new prop says its line', async ({ 
       }
     }
     return bad;
-  }, ROOMS.filter(r => r.id !== 'cc_hall_in'));
+  }, ROOMS.filter(r => r.id !== 'cc_hall_in' && r.id !== 'hm_hq_f1' && r.id !== 'hm_hq_f2'));
   expect(reach).toEqual([]);
 
   // The hall's seam stones block the only gap in each pillar row. That gate is already in the room.

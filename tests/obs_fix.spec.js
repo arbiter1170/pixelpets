@@ -168,7 +168,7 @@ test('the observatory draws dusk-violet boards under a night dome', async ({ pag
   expect(setup.warm).toEqual(WARM);
   expect(setup.room).toEqual(ROOM);
   expect(setup.P).toBe(P);
-  expect(setup.K).toBeUndefined();
+  expect(setup.K).toBe('#7a8aa0');
   expect(setup.missing).toEqual([]);
   expect(setup.exteriorNameFree).toBe(true);
   expect(setup.skin.remap).toEqual({ '#': 'wall_obs_dome', W: 'wall_obs_face', W2: 'wall_obs_win', '.': 'floor_obs' });
@@ -177,8 +177,8 @@ test('the observatory draws dusk-violet boards under a night dome', async ({ pag
   expect(setup.dreams.toy['.']).toBe('floor_mem');
   expect(setup.dreams.party['.']).toBe('floor_party');
   expect(setup.dreams.drive['.']).toBe('floor_asphalt');
-  expect(setup.hq['.']).toBe('floor_flag');
-  expect(setup.hq['#']).toBe('wall_stone');
+  expect(setup.hq['.']).toBe('floor_keep');
+  expect(setup.hq['#']).toBe('wall_keep');
   expect(setup.old).toEqual({ star: NAVY, dome: NAVY, rib: '#333c57', tick: TICK });
 
   const drawn = await page.evaluate(async ({ violet, navy, brass, walnut, cream, foot, stile, grid, tick }) => {

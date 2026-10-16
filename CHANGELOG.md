@@ -2,6 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 ET: Keeper House merged with current main (build 20261016-0304)
+
+- What changed and why: Merged current `main`, which now holds PR #74 (lantern, Calloway, Lodge and observatory rooms) and PR #75 (the `maps_b6` lab-floor check fix). `data/mapdata.js` was regenerated. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md` (both sides kept), `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-0304.
+- Tests run and result (widths, checks): recorded in the pull request.
+- Decisions made (colour + reasoning): green. No id was renumbered.
+
+## 2026-10-16 02:16 ET: Keeper House is a two-floor command centre (build 20261016-0216)
+
+- What changed and why: Vincent approved the bigger Keeper House. The ground floor is 14 by 16 and the upstairs is 12 by 14. It is still two floors. Both floors share ashlar walls, a navy and gold wainscot, a slate lozenge, and a vertical Keeper runner. The archive, front desk, and quarters use square tiles. The radio room and the evidence corner use an ops mat. The briefing room and the captain's office use sage carpet. Lamps and radio racks hold a still glow. Existing ids, warps, NPC lines, and flags stay. Arrival tiles move with the new grids. Constable Corwin, Cadet Orrin, Signaller Tamm, and Scout Linnea stand at their stations. The upstairs prop table lists 28 props, and every listed row is placed. Save `v` stays 2. D149 was free and is settled. D150 was already settled for the observatory floor. Key K is appended once and completes that call. A–J and P are not redefined.
+- Files touched: `data/civic.json`, `data/detail_b5.json`, `data/mapdata.js`, `sprites.js`, `game.js`, `tests/keeper_hq.spec.js`, `tests/maps_b5.spec.js`, `tests/maps_b4.spec.js`, `tests/civic.spec.js`, `tests/house_reskin.spec.js`, `tests/obs_fix.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `handoff/maps/BUILDING_VARIETY.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0216.
+- Tests run and result (widths, checks): `PP_PORT=8823 npm test` exit 1. 852 passed, 12 skipped, 3 failed (18.8m), at 320, 375, and 390. The 3 failures are the pre-existing `tests/maps_b6.spec.js:289` check: it expects `lab_floor` at `rx_f1` (9, 8) and reads `lab_inlay_mint`. That check already fails on main. `tests/keeper_hq.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Red, Vincent approved. D149: 14 by 16 and 12 by 14, two floors, ids stay, save `v` stays 2. D150: key K `#7a8aa0` appended once. That id was already settled for P on the rooms change. K completes the same call. D88 still caps one floor tile at 70 percent. Both Keeper floors stay under 55 percent.
+- Anything left unfinished: The upstairs header says 33 props and the table lists 28. The table is what was placed. This branch stacks on the rooms PR and is not on `main`. The `maps_b6` lab-floor check is left as it is on main.
+
 ## 2026-10-16 ET: Lantern and house rooms merged with current main (build 20261016-0243)
 
 - What changed and why: Merged current `main` (PR #75, which fixes the `tests/maps_b6.spec.js:289` lab-floor check). `data/mapdata.js` was regenerated. Save `v` stays 2.
