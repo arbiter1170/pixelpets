@@ -4,7 +4,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 ## 2026-10-15 23:25 ET: Observatory and dream rooms merged with current main (build 20261015-2325)
 
-- What changed and why: Merged current `main` (B1, the Q28 plan, B5 house interiors and B2 RegenX floors). `sprites.js` and `game.js` merged cleanly, so the B7 skins sit beside the house skins and B2's lab skin. `data/mapdata.js` was regenerated, not hand-merged. `OPEN_DECISIONS.md` keeps D92, D99, D94, D95 and D102. Save `v` stays 2. No id was renumbered.
+- What changed and why: Merged current `main` (B1, the Q28 plan, B5 house interiors and B2 RegenX floors). `sprites.js` and `game.js` merged cleanly, so the B7 skins sit beside the house skins and B2's lab skin. `data/mapdata.js` was regenerated, not hand-merged. `OPEN_DECISIONS.md` keeps D92, D99, D94, D95 and D102. `tests/maps_b7.spec.js` now expects the four lab floor variant keys B2 added (bay, plain, focus, records). Save `v` stays 2. No id was renumbered.
 
 ## 2026-10-15 23:00 ET: RegenX floors merged with current main again (build 20261015-2300)
 
