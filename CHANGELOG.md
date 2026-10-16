@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 15:39 ET: Decision-id check for Rook's Crossroads (build 20261016-1539)
+
+- What changed and why: Supervisor id check. D161 (end-game side switch, open) does not collide: the design repo's asset-handoff calls start one past it at D162–D167. The next-free-id notes said D162; they now say D168.
+- Files touched: `OPEN_DECISIONS.md`, `NEXT_PLAN.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-1539.
+- Tests run and result (widths, checks): `npm run test:agent`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. D161 kept; no id was renumbered. Vincent, Oct 16, 2026: pledge desks stay removed and Rook's quest is the only switch until the end game.
+- Anything left unfinished: D162–D167 rows still need adding to the game repo's decision files.
+
 ## 2026-10-16 15:33 ET: Rook's Crossroads merged with current main; desks stay removed (build 20261016-1533)
 
 - What changed and why: Merged current `main` (first-time tour, wall kit, heart alert, Fernbrook rooms, Lizzy). Pledge desks stay removed. Rook's quest is still the only way to switch sides, both ways (D127, D128). End-game switching is an open follow-up (D161) and is not built. Save `v` stays 2.
