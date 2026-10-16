@@ -1003,3 +1003,23 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 .fc-acorns{position:absolute;top:calc(6px + var(--sa-t));right:calc(56px + var(--sa-r));height:44px;box-sizing:border-box;padding:0 8px;pointer-events:none;background:var(--n);box-shadow:inset 0 0 0 2px var(--d)}
 .fc-top .env-badge{min-width:0}
 .fc-top .env-badge #envText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+/* Opening tour (D157–D160). Dim is k at 60%. The ring is 2 px, 4 px outside the target. */
+#tutLayer{position:fixed;inset:0;z-index:15;pointer-events:none}
+#tutLayer[hidden]{display:none}
+.tut-dim{position:fixed;background:rgba(26,28,44,.6);pointer-events:auto}
+.tut-block{position:fixed;pointer-events:auto;background:transparent}
+.tut-ring{position:fixed;box-sizing:border-box;border:2px solid var(--y);pointer-events:none}
+.tut-ring:not([hidden]){animation:tutPulse 1.2s ease-in-out infinite}
+.tut-card{position:fixed;box-sizing:border-box;width:calc(100vw - 24px);max-width:360px;padding:12px;background:var(--n);color:var(--w);box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);pointer-events:auto;display:flex;flex-direction:column;gap:8px}
+.tut-card p{margin:0;font-size:17px;line-height:1.25;font-weight:normal}
+.tut-acts{display:flex;gap:8px}
+.tut-acts .btn{flex:1;min-height:44px;height:44px;font-size:20px}
+.tut-skip{min-height:44px;height:44px;border:0;background:transparent;color:var(--h);font-size:14px;cursor:pointer;padding:0}
+.tut-skip[hidden],.tut-card[hidden],.tut-block[hidden],.tut-ring[hidden]{display:none}
+body.tut-on #tabs.locked{opacity:1}
+body.nav-locked .tut-hit{pointer-events:auto;opacity:1}
+@keyframes tutPulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){
+  .tut-ring:not([hidden]){animation:none}
+  .tut-card{transition:none}
+}

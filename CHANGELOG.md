@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 09:52 ET: First-time tour after the starter (build 20261016-0952)
+
+- What changed and why: After the starter scene, a new game offers a 14-step tour of the screen and of FEED, PLAY and REST. SKIP and SKIP TOUR end it from any card. Settings has a Tutorial row whose value is REPLAY. The first run's care buttons are real. A replay only highlights them. The save stays v2. Two flags were added: `story.tutorial_done` and `story.tutorial_step`. A save already past the opening is marked done on load. The daily hello waits until the next day. D157–D160 are settled. No id was renumbered.
+- Files touched: `game.js`, `index.html`, `style.css`, `save.js`, `tests/helpers.js`, `tests/tutorial.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261016-0952.
+- Tests run and result (widths, checks): `PP_PORT=8092 npm test` exit 0. 897 passed, 12 skipped, 0 failed (20.6m), at 320, 375, and 390. `tests/tutorial.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Settled by Vincent on Oct 16, 2026. D157 skippable. D158 fires when the starter scene closes, and an older save is marked done. D159 two additive flags, save v stays 2. D160 real care on the first run, highlight only on replay.
+- Anything left unfinished: The heart-button glow (D154) is not on main, so step T8 uses the shorter line. When that alert ships, merge main. The Playwright walk ends a one-line scene in the Lodge. It does not play the full starter.
+
 ## 2026-10-16 09:45 ET: RegenX looks no longer redraw Vesper, Clerk Nia and Cal; doc corrections (build 20261016-0922)
 
 - What changed and why: PR #40 added RegenX looks keyed `nia`, `cal` and `ivo` in `data/heights.json`. Heights looks load last, so they replaced High Charity's `nia` (Clerk Nia) and `ivo` (Keeper Vesper) and Mahopac's `cal` (the kite kid). The Heights keys are now `rx_nia`, `rx_cal` and `rx_ivo`, with the RegenX NPCs and speakers pointed at them. New `tests/look_keys.spec.js` fails when two data files define the same look key. Docs: corrected the D73/D80 note, removed the duplicate open D71 row, marked Q26 built (D72 still open), the walklings-docs skill now points at the OPEN_DECISIONS header for the next id, and the next free id is D151.

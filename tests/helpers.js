@@ -28,6 +28,7 @@ function starterSave() {
       'story.intro_seen': true,
       'story.starter_received': true,
       'story.starter_line': 'ember',
+      'story.tutorial_done': true,
     },
     player: {
       name: 'Tester',

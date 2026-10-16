@@ -319,7 +319,18 @@ const PPSave = (() => {
     if (!s.party.some(p => p.id === s.partnerId)) s.partnerId = s.party[0] ? s.party[0].id : null;
     keepOneRelief(s);
     placeWorld(s);
+    markTutorialVeteran(s);
     return s;
+  }
+  // TUTORIAL D158/D159. Additive flags only. v stays 2. A veteran (past the early walk) is marked done on load
+  // and never has the tour pushed on them. A bad step value is dropped. Done clears the step.
+  function markTutorialVeteran(s){
+    const f = s.flags; if (!f) return;
+    if (has(f, 'story.tutorial_done') && f['story.tutorial_done'] !== true) delete f['story.tutorial_done'];
+    if (has(f, 'story.tutorial_step') && (typeof f['story.tutorial_step'] !== 'string' || !f['story.tutorial_step'])) delete f['story.tutorial_step'];
+    const past = f['story.early_done'] === true || f['story.rival1_done'] === true || (Number.isInteger(s.steps) && s.steps > 16);
+    if (f['story.starter_received'] === true && past) f['story.tutorial_done'] = true;
+    if (f['story.tutorial_done'] === true) delete f['story.tutorial_step'];
   }
 
   // §4. Returns { state, readOnly, notice }.
