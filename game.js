@@ -98,6 +98,7 @@ function haloSprite(src, col){
   g.drawImage(src, 0, 0); return c;
 }
 const TILES = buildTiles();
+for (const [id, sk] of Object.entries(SKINS)) if (sk.wall) Object.assign(TILES, buildWallKit(id, sk.wall));
 // CREATURES_SLICE §5 faded state: the same sprite with fadedCol(col) (light -> w, mid-light -> h, mid -> m, dark -> d); not a new form.
 const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
 const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
@@ -1393,6 +1394,7 @@ function applyMapPatch(W, patch){
   for (const [id, pt] of Object.entries(patch.maps)) {
     const m = W[id]; if (!m) continue;
     if (pt.set) Object.assign(m, JSON.parse(JSON.stringify(pt.set)));
+    if (pt.addRoofs) m.roofs = Object.assign({}, m.roofs || {}, JSON.parse(JSON.stringify(pt.addRoofs)));
     if (pt.gridRows) for (const [y, row] of Object.entries(pt.gridRows)) m.grid[+y] = row;
     for (const o of pt.replaceObjs || []) {
       const copy = JSON.parse(JSON.stringify(o)), k = m.objs.findIndex(x => x.id === o.id);
@@ -1431,7 +1433,7 @@ const WORLD = (() => {
     applyMapPatch(W, MD.civic.slicePatch);
   }
   if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards: squares, then the posts
-  for (const k of DETAIL_KEYS) applyMapPatch(W, MD[k].slicePatch);
+  for (const k of DETAIL_KEYS) { if (MD[k].maps) Object.assign(W, JSON.parse(JSON.stringify(MD[k].maps))); applyMapPatch(W, MD[k].slicePatch); }
   if (MD.fernbrook_rooms) {                                            // B8: rooms, then the door warp, after every detail patch
     Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
     applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
@@ -1447,6 +1449,7 @@ if (MD.mahopac) Object.assign(SCENES, MD.mahopac.scenes || {});
 if (MD.highcharity) Object.assign(SCENES, MD.highcharity.scenes || {});
 if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
 if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
+for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
@@ -1685,6 +1688,7 @@ if (MD.civic && MD.civic.looks) for (const [k, v] of Object.entries(MD.civic.loo
 if (MD.civic && MD.civic.speakers) for (const [k, v] of Object.entries(MD.civic.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.heights && MD.heights.looks) for (const [k, v] of Object.entries(MD.heights.looks)) if (v && typeof v === 'object' && !k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.heights && MD.heights.speakers) for (const [k, v] of Object.entries(MD.heights.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
+for (const k of DETAIL_KEYS) for (const [n, v] of Object.entries(MD[k].looks || {})) if (!n.startsWith('_') && v && typeof v === 'object') NPC_LOOKS[n] = v;
 // Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
 (function wireIlseLetter(){
   const steps = SCENES.ilse_chat; if (!steps) return;
@@ -1801,6 +1805,7 @@ function useMap(id){
   CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {} };
   patrolClock = 0;
+  wallMaskOf(CUR);
 }
 const isRoom = () => CUR.kind === 'interior';
 // Explicit map.music wins (High Charity). Otherwise: quarry and grove have their own loops, dreams stay on
@@ -2015,6 +2020,8 @@ function tryStep(d){
   if (o) { const turned = S.world.facing !== dn; S.world.facing = dn; bumpObj(o, d, turned); return; }
   if (solidTile(nx, ny)) {
     S.world.facing = dn;
+    const onWall = tileAt(nx, ny) === 'H' && doorAt(nx, ny);
+    if (onWall && dn === 'up') { enterDoor(onWall); return; }   // door object sits on the wall; the step is south of it
     const dr = doorAt(S.world.x, S.world.y);  // a door: step up from its doorstep into the wall (MAPS_SLICE §4)
     if (dr && dn === 'up' && tileAt(nx, ny) === 'H') enterDoor(dr);
     return;
@@ -2770,7 +2777,12 @@ function buildingsOf(m){
     let y1 = r.y1;
     const wallRow = y => { for (let x = r.x0; x <= r.x1; x++) if (at(x, y) === 'H') return true; return false; };
     while (y1 + 1 < m.grid.length && wallRow(y1 + 1)) y1++;
-    const doors = m.objs.filter(o => o.kind === 'door' && o.x >= r.x0 && o.x <= r.x1 && o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H');
+    const doors = m.objs.filter(o => {
+      if (o.kind !== 'door' || o.x < r.x0 || o.x > r.x1) return false;
+      // A door on the wall itself (schoolhouse, flats) is entered from the grass south of that cell.
+      if (at(o.x, o.y) === 'H' && o.y > r.y1 && o.y <= y1) return true;
+      return o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H';
+    });
     const shp = String(r.shape || '').split('+');
     out.push({ name, x0: r.x0, y0: r.y0, x1: r.x1, y1, ry1: r.y1, col: r.col || null, roof: r.roof || null, wall: r.wall || null, door: r.door || null,
       win: r.win ? [].concat(r.win) : [], trim: r.trim || null, shape: shp[0] || null, feats: shp.slice(1), doors: doors.map(o => ({ id: o.id, x: o.x, y: o.y })),
@@ -2804,8 +2816,9 @@ function paintBuilding(m, b, fac, P){
   if (b.trim) { g.fillStyle = PAL[b.trim]; g.fillRect(0, RH, W, 1); g.fillRect(0, RH, 2, H - RH); g.fillRect(W - 2, RH, 2, H - RH); }
   const bigDoor = WART[b.door] && WART[b.door].width > TS, skip = new Set();
   for (const d of b.doors) {
-    skip.add(bldKey(d.x, d.y - 1));
-    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, d.y - 1 - dy));
+    const wy = at(d.x, d.y) === 'H' ? d.y : d.y - 1;
+    skip.add(bldKey(d.x, wy));
+    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, wy - dy));
   }
   if (b.win.length) {
     const every = /^win_(band|strip)/.test(b.win[0]);
@@ -2834,6 +2847,8 @@ function paintBuilding(m, b, fac, P){
   feat('mast', 'mast', mid - 8, 0);
   feat('bell', 'bell', mid - 8, 0);
   feat('clock', 'clock_face', mid - 8, RH - TS);
+  feat('vane', 'weathervane', mid - 8, 0);
+  feat('tank', 'water_tank', chx, 0);
   if (b.feats.indexOf('bunting') >= 0) for (let X = 0; X < W; X += TS) feat('bunting', 'bunting', X, RH - 2);
   for (const d of b.doors) feat('emblem', 'acorn_emblem', (d.x - b.x0) * TS, RH - TS);
   const gch = [at(b.x0 - 1, b.y0), at(b.x1 + 1, b.y0), at(b.x0, b.y0 - 1)].find(ch => ch && BLD_GROUND.indexOf(ch) >= 0) || 'g';
@@ -2865,7 +2880,8 @@ const shapedRoof = (tx, ty) => !!CUR.roofs && buildingCells().cut.has(bldKey(tx,
 const styledWall = (tx, ty) => !!CUR.roofs && buildingCells().styled.has(bldKey(tx, ty));
 function drawDoor(g, o, cx, cy){
   const nm = CUR.roofs && buildingCells().doors.get(o.id), a = (nm && WART[nm]) || WART.door;
-  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, (o.y - 1) * TS - cy - (a.height - TS));
+  const baseY = tileAt(o.x, o.y) === 'H' ? o.y : o.y - 1;
+  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, baseY * TS - cy - (a.height - TS));
 }
 // Map pass E7: on outdoor maps a path cell that touches grass gets a grass fringe on that side, rounded where two sides meet.
 const EDGE_GRASS = 'gftTF', EDGE_TILES = ['path_edge_n', 'path_edge_s', 'path_edge_w', 'path_edge_e', 'path_corner_nw', 'path_corner_ne', 'path_corner_sw', 'path_corner_se'];
@@ -2976,6 +2992,70 @@ function drawHqGlow(g, cx, cy){
   }
   g.restore();
 }
+// Interior wall kit (D151–D153). `#` and `W` pick a part from the map shape. Windows and doors are per-map lists.
+// A skin with no `wall` block never comes through here, so its odd-column windows stay.
+function wallPart(x, y, m){
+  m = m || CUR;
+  if (!m || y < 0 || x < 0 || y >= m.h || x >= m.w) return null;
+  const ch = m.cells[y][x], w = m.w, h = m.h, list = m.wall || {};
+  if (ch === '#') {
+    if (y === 0) return x === 0 ? 'cap_nw' : x === w - 1 ? 'cap_ne' : 'cap_n';
+    if (y === h - 1) {
+      const row = m.cells[y];
+      if (row[x + 1] === 'm') return 'jamb_l';
+      if (row[x - 1] === 'm') return 'jamb_r';
+      if (x === 0) return 'cap_sw';
+      if (x === w - 1) return 'cap_se';
+      return 'cap_s';
+    }
+    if (x === 0) return 'side_w';
+    if (x === w - 1) return 'side_e';
+    return 'cap_n';
+  }
+  if (ch === 'W') {
+    const wins = list.windows || [], doors = list.doors || [];
+    if (wins.indexOf(x) >= 0) return 'face_win';
+    if (doors.indexOf(x) >= 0) return 'face_door';
+    if (x === 1) return 'face_l';
+    if (x === w - 2) return 'face_r';
+    return 'face';
+  }
+  return null;
+}
+function shadowPart(x, y, m){
+  m = m || CUR;
+  const sk = m && m.skin && SKINS[m.skin];
+  if (!sk || !sk.wall || y < 0 || x < 0 || y >= m.h || x >= m.w) return null;
+  const ch = m.cells[y][x];
+  if (ch === '#' || ch === 'W' || ch === 'm') return null;
+  const under = y > 0 && m.cells[y - 1][x] === 'W';
+  const sideW = x > 0 && wallPart(x - 1, y, m) === 'side_w';
+  const sideE = x + 1 < m.w && wallPart(x + 1, y, m) === 'side_e';
+  if (under && sideW) return 'shadow_nw';
+  if (under && sideE) return 'shadow_ne';
+  if (under) return 'shadow_n';
+  if (sideW) return 'shadow_w';
+  if (sideE) return 'shadow_e';
+  return null;
+}
+const wallMasks = {};
+function wallMaskOf(m){
+  if (!m) return null;
+  if (Object.prototype.hasOwnProperty.call(wallMasks, m.id)) return wallMasks[m.id];
+  const sk = m.skin && SKINS[m.skin];
+  if (!sk || !sk.wall) return wallMasks[m.id] = null;
+  const c = document.createElement('canvas');
+  c.width = m.w * TS; c.height = m.h * TS;
+  const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  const prefix = m.skin + '__';
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+    const part = shadowPart(x, y, m);
+    const img = part && TILES[prefix + part];
+    if (img) g.drawImage(img, x * TS, y * TS);
+  }
+  return wallMasks[m.id] = c;
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -2989,17 +3069,22 @@ function drawMap(t){
   for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
-      const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
+      const ch = MAP[ty][tx];
+      const skEarly = CUR.skin && CUR.skin !== 'lab' && SKINS[CUR.skin];
+      const kit = !!(skEarly && skEarly.wall && (ch === '#' || ch === 'W'));
+      let img = ch === 'w' ? TILES.w[wf] : (!kit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
       let decal = null;
       if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
         const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
         const nm = labTileName(dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
-      } else if (CUR.skin && SKINS[CUR.skin]) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
-        const skDraw = SKINS[CUR.skin];
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skDraw.decal && skDraw.decal[k];
-        const nm = skinTileName(skDraw, dk ? '.' : k, tx, ty);
+      } else if (kit) {   // shared wall kit. Windows come from the map list, not the odd column.
+        const part = wallPart(tx, ty), nm = CUR.skin + '__' + part;
+        if (TILES[nm]) img = TILES[nm];
+      } else if (skEarly) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
+        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skEarly.decal && skEarly.decal[k];
+        const nm = skinTileName(skEarly, dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'] || TILES[dk];
       } else if (CUR.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
@@ -3018,7 +3103,9 @@ function drawMap(t){
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
       }
     }
-  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') drawDoor(g, o, cx, cy);
+  const shade = wallMaskOf(CUR);   // floor contact shadow, under props and actors
+  if (shade) g.drawImage(shade, -cx, -cy);
+  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && (tileAt(o.x, o.y - 1) === 'H' || tileAt(o.x, o.y) === 'H')) drawDoor(g, o, cx, cy);
   for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) g.drawImage(WART[o.sprite], o.x*TS - cx, o.y*TS - cy);   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
@@ -3095,7 +3182,7 @@ function drawCobbleTrim(g, cx, cy, t){
       }
       if (tileAt(tx - 1, ty) !== 'H' && tileAt(tx - 1, ty) !== 'R') { g.fillStyle = PAL.w; g.fillRect(X, Y, 2, 16); }
       if (tileAt(tx + 1, ty) !== 'H' && tileAt(tx + 1, ty) !== 'R') { g.fillStyle = PAL.w; g.fillRect(X + 14, Y, 2, 16); }
-    } else if ((lantern || hall) && ch === 'W' && tx % 2 === 0 && tx > 0 && tx < MW - 1) {
+    } else if ((lantern || hall) && ch === 'W' && tx % 2 === 0 && tx > 0 && tx < MW - 1 && !(SKINS[CUR.skin] && SKINS[CUR.skin].wall)) {
       const col = tx % 4 === 0 ? PAL.r : PAL.o;
       g.fillStyle = PAL.k; g.fillRect(X + 5, Y + 2, 6, 8);
       g.fillStyle = col; g.fillRect(X + 6, Y + 3, 4, 6);
@@ -3288,6 +3375,9 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
+    if (o.pet) { const [ln, st] = String(o.pet).split('/'), si = SP_INDEX[ln];
+      if (si != null) { g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2); g.drawImage(sprSet(si, +st || 0, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
+      return; }
     const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
     const img = keeperFrames(npcLook(o))[face][fr];
@@ -3528,7 +3618,7 @@ function interact(o){
   if (o.booth) { openBooth(o); return; }
   if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
-  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); noteContact(objName(o)); }
+  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) noteContact(objName(o)); }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
@@ -3554,6 +3644,8 @@ function facingTarget(){
   if (!S || scene || fade.busy) return null;
   const [dx, dy] = DIRS[S.world.facing] || DIRS.down, nx = S.world.x + dx, ny = S.world.y + dy;
   const o = blockerAt(nx, ny); if (talkable(o)) return o;
+  const onWall = tileAt(nx, ny) === 'H' && doorAt(nx, ny);
+  if (onWall && S.world.facing === 'up') return onWall;
   const dr = doorAt(S.world.x, S.world.y); if (dr && S.world.facing === 'up' && tileAt(nx, ny) === 'H') return dr;
   return null;
 }
@@ -3562,10 +3654,11 @@ function talkFacing(){ const o = facingTarget(); if (!o) return false; clearMove
 function tapObject(o){
   const q = objPos(o);
   if (o.kind === 'door') {
+    const onWall = tileAt(o.x, o.y) === 'H', sx = o.x, sy = onWall ? o.y + 1 : o.y;
     const go = () => { S.world.facing = 'up'; enterDoor(o); };
-    if (S.world.x === o.x && S.world.y === o.y) { go(); return true; }
-    const path = findPath([{ x: o.x, y: o.y }]); if (!path) return false;
-    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: o.x, y: o.y, soft: false }; walk.repath = null; return true;
+    if (S.world.x === sx && S.world.y === sy) { go(); return true; }
+    const path = findPath([{ x: sx, y: sy }]); if (!path) return false;
+    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: sx, y: sy, soft: false }; walk.repath = null; return true;
   }
   const nb = Object.values(DIRS).map(([dx, dy]) => ({ x: q.x + dx, y: q.y + dy })).filter(c => !solid(c.x, c.y) || (c.x === S.world.x && c.y === S.world.y));
   const talk = () => { S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y); bump.talked = null; interact(o); };
@@ -5499,6 +5592,7 @@ function contactPeople(){
   for (const m of Object.values(WORLD)) {
     for (const o of m.objs || []) {
       if (!o || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
+      if (o.pet) continue;   // a Walkling beside an NPC talks, and never gets a phone card
       const name = objName(o), key = contactKey(name);
       if (!key) continue;
       let person = people.get(key);
@@ -8778,13 +8872,19 @@ function boot(){
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
     care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
-    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. Lab keeps its old tile name (raw char, not W2).
-      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }; }
+    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab keeps its old tile name (raw char, not W2).
+      const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
+      const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part: null, shade: shadowPart(x, y) };
+      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }); }
       const sk = CUR.skin && SKINS[CUR.skin];
-      if (sk) { const k = ch === 'W' && x % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
-        return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null }; }
+      if (sk) {
+        const kit = !!(sk.wall && (ch === '#' || ch === 'W'));
+        const k = kit ? ch : (ch === 'W' && x % 2 ? 'W2' : ch), dk = sk.decal && sk.decal[k];
+        const part = kit ? wallPart(x, y) : null;
+        return Object.assign(base, { part, tile: part ? CUR.skin + '__' + part : skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null });
+      }
       const mark = CUR.objs.find(o => o.kind === 'decal' && o.x === x && o.y === y && present(o));   // outdoor decal objects (map pass B4)
-      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.variants ? labTileName(ch, x, y) : ch, decal: (mark && mark.sprite) || null }; },
+      return Object.assign(base, { tile: CUR.variants ? labTileName(ch, x, y) : ch, decal: (mark && mark.sprite) || null }); },
     floorShare: id => labFloorShare(id || CUR.id),   // D88
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
@@ -8834,6 +8934,7 @@ function boot(){
   api.mapTrack = id => trackFor(id && WORLD[id]);
   api.spriteLook = id => {
     const o = objById(id);
+    if (o && o.pet) return null;   // a Walkling standing with an NPC has no keeper look
     const look = o ? npcLook(o) : (NPC_LOOKS[id] ? npcLook({ look: id, name: id }) : null);
     if (!look) return null;
     return { skin: look.skin || null, hair: look.hair || null, hairCol: look.hairCol || null, outfit: look.outfit || null, outfitCol: look.outfitCol || null, accent: look.accent || null, accessory: look.accessory || 'none' };

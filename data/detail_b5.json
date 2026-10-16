@@ -11,14 +11,14 @@
   "slicePatch": {
     "maps": {
       "hm_home_in": {
-        "set": {"skin": "house_home", "variants": true},
+        "set": {"skin": "house_home", "variants": true, "wall": {"windows": [2, 6]}},
         "gridRows": {"2": "#uvuvuvu#"},
         "addObjs": [
           {"kind": "prop", "id": "home_plant", "x": 7, "y": 6, "sprite": "plant_pot", "lines": {"else": "A pot of leaves sits by the wall."}}
         ]
       },
       "hm_home_up": {
-        "set": {"skin": "house_loft", "variants": true},
+        "set": {"skin": "house_loft", "variants": true, "wall": {"windows": [3, 5]}},
         "gridRows": {"2": "#uvuvuvu#"},
         "addObjs": [
           {"kind": "prop", "id": "up_chest", "x": 6, "y": 2, "sprite": "house_chest", "lines": {"else": "A wooden chest. The lid is shut."}},
