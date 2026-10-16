@@ -715,6 +715,118 @@ function buildTiles(){
   T.stair_loft = mkTile(g => { px(g, PAL.w, 0, 0, 16, 16); [4, 9, 14].forEach(y => px(g, PAL.h, 0, y, 16, 1)); px(g, PAL.d, 2, 12, 12, 2); px(g, PAL.y, 3, 12, 10, 1); px(g, PAL.d, 4, 8, 8, 2); px(g, PAL.w, 5, 8, 6, 1); px(g, PAL.d, 6, 4, 4, 2); px(g, PAL.h, 7, 4, 2, 1); });
   T.wall_shadow = mkTile(g => { px(g, PAL.d, 0, 0, 16, 1); px(g, PAL.m, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.d, x, 2, 1, 1); });
   T.window_light = mkTile(g => { px(g, PAL.d, 0, 0, 16, 1); px(g, PAL.m, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.d, x, 2, 1, 1); px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.w, 6, 7, 4, 3); });
+  // B6 High Charity rooms. One floor and one wall per room. `j` is a hand-placed scuff. `Y` is a keeper pilaster that breaks a long wall run.
+  function padFloor(speck){ return mkTile(g => { px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 0, 16, 1); px(g, PAL.m, 0, 0, 1, 16); specks(g, speck); }); }
+  function deckFloor(speck){ return mkTile(g => { px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.d, 0, 15, 16, 1); px(g, PAL.b, 0, 0, 1, 16); specks(g, speck); }); }
+  function clinicFloor(fill, speck){ return mkTile(g => { px(g, PAL.c, 0, 0, 16, 16); px(g, PAL[fill], 1, 1, 6, 6); px(g, PAL[fill], 9, 1, 6, 6); px(g, PAL[fill], 1, 9, 6, 6); px(g, PAL[fill], 9, 9, 6, 6); if (speck) px(g, PAL[speck], 4, 4, 2, 1); }); }
+  function shopFloor(fill, speck){ return mkTile(g => { px(g, PAL.h, 0, 0, 16, 16); px(g, PAL[fill], 1, 1, 14, 14); px(g, PAL.w, 2, 2, 2, 1); if (speck) px(g, PAL[speck], 10, 8, 2, 1); }); }
+  function marbleFloor(flip, crack){ return mkTile(g => { const a = flip ? PAL.h : PAL.w, b = flip ? PAL.w : PAL.h; px(g, a, 0, 0, 8, 8); px(g, b, 8, 0, 8, 8); px(g, b, 0, 8, 8, 8); px(g, a, 8, 8, 8, 8); px(g, PAL.s, 2, 2, 2, 1); if (crack) px(g, PAL.m, crack[0], crack[1], crack[2], 1); }); }
+  function sandFloor(speck){ return mkTile(g => { px(g, PAL.y, 0, 0, 16, 16); specks(g, speck); px(g, PAL.o, 0, 15, 16, 1); }); }
+  function parquetFloor(a, b, seam){ return mkTile(g => { px(g, PAL[seam], 0, 0, 16, 16); px(g, PAL[a], 1, 1, 6, 6); px(g, PAL[b], 9, 1, 6, 6); px(g, PAL[b], 1, 9, 6, 6); px(g, PAL[a], 9, 9, 6, 6); px(g, PAL.y, 3, 3, 2, 1); }); }
+  function carpetFloor(a, b, speck){ return mkTile(g => { px(g, PAL[a], 0, 0, 16, 16); for (let y = 1; y < 15; y += 4) px(g, PAL[b], 0, y, 16, 1); specks(g, speck); }); }
+  T.floor_pad = padFloor([[6, 6, 'w'], [12, 10, 'm']]);
+  T.floor_pad_b = padFloor([[3, 8, 'd'], [11, 4, 'm'], [8, 12, 'd']]);
+  T.floor_pad_c = padFloor([[9, 3, 'w'], [2, 11, 'y']]);
+  T.floor_deck = deckFloor([[5, 4, 'c'], [12, 9, 'b']]);
+  T.floor_deck_b = deckFloor([[2, 7, 'd'], [8, 3, 'c'], [13, 11, 's']]);
+  T.floor_deck_c = deckFloor([[7, 10, 'b'], [4, 2, 'd']]);
+  T.floor_bunk = woodFloor('t', 'g', [0, 5, 10, 15], [[2, 1], [9, 6], [6, 11]], [[4, 3, 'y'], [12, 8, 'd']]);
+  T.floor_bunk_b = woodFloor('g', 't', [1, 6, 11], [[5, 2], [12, 7]], [[3, 9, 'd'], [10, 4, 'l']]);
+  T.floor_bunk_c = woodFloor('t', 'd', [0, 6, 12], [[7, 1], [1, 8], [11, 10]], [[8, 5, 'g'], [14, 12, 'y']]);
+  T.floor_dock = woodFloor('c', 'b', [1, 6, 11], [[3, 2], [10, 7], [5, 12]], [[8, 4, 's'], [2, 9, 'w']]);
+  T.floor_dock_b = woodFloor('b', 'c', [0, 5, 10, 15], [[6, 1], [13, 6], [2, 11]], [[9, 8, 't'], [4, 3, 'd']]);
+  T.floor_dock_c = woodFloor('c', 't', [2, 8, 14], [[4, 1], [11, 9]], [[7, 5, 's'], [1, 12, 'b']]);
+  T.floor_lesson = woodFloor('y', 'w', [0, 4, 9, 14], [[6, 1], [12, 5], [3, 10]], [[8, 7, 'o'], [14, 2, 'h']]);
+  T.floor_lesson_b = woodFloor('w', 'y', [1, 6, 12], [[4, 2], [10, 8]], [[2, 5, 'o'], [13, 11, 'h']]);
+  T.floor_lesson_c = woodFloor('y', 'o', [0, 7, 13], [[8, 1], [2, 9], [12, 6]], [[5, 4, 'w'], [11, 12, 'n']]);
+  T.floor_marble = marbleFloor(false, null);
+  T.floor_marble_b = marbleFloor(true, [4, 10, 5]);
+  T.floor_marble_c = marbleFloor(false, [9, 5, 4]);
+  T.floor_court = woodFloor('o', 'r', [0, 5, 10, 15], [[4, 1], [11, 6], [2, 11]], [[7, 3, 'y'], [13, 8, 'w']]);
+  T.floor_court_b = woodFloor('y', 'o', [1, 6, 12], [[8, 2], [3, 9]], [[12, 5, 'r'], [5, 12, 'w']]);
+  T.floor_court_c = woodFloor('o', 'd', [0, 8, 14], [[6, 1], [13, 7], [2, 10]], [[9, 4, 'y'], [4, 13, 'r']]);
+  T.floor_clinic = clinicFloor('w', null);
+  T.floor_clinic_b = clinicFloor('s', 'l');
+  T.floor_clinic_c = clinicFloor('l', 'w');
+  T.floor_nave = stoneFloor('w', 'h', [[3, 4, 'y'], [11, 11, 'o']], null);
+  T.floor_nave_b = stoneFloor('h', 'w', [[6, 3, 'y'], [2, 10, 'o']], [8, 12, 4]);
+  T.floor_nave_c = stoneFloor('w', 'y', [[9, 6, 'h'], [1, 2, 'o']], [4, 9, 5]);
+  T.floor_parquet = parquetFloor('o', 'y', 'd');
+  T.floor_parquet_b = parquetFloor('y', 'o', 'd');
+  T.floor_parquet_c = parquetFloor('o', 'w', 'r');
+  T.floor_sand = sandFloor([[2, 3, 'o'], [7, 6, 'w'], [12, 4, 'o'], [5, 11, 'o'], [10, 9, 'w'], [14, 13, 'd']]);
+  T.floor_sand_b = sandFloor([[4, 2, 'd'], [9, 7, 'o'], [1, 10, 'w'], [13, 5, 'o'], [6, 14, 'd']]);
+  T.floor_sand_c = sandFloor([[8, 1, 'w'], [3, 8, 'o'], [11, 12, 'd'], [15, 6, 'o'], [6, 4, 'y']]);
+  T.floor_room = woodFloor('o', 'd', [2, 7, 12], [[5, 1], [1, 8], [10, 6]], [[8, 4, 'y'], [3, 12, 'p']]);
+  T.floor_room_b = woodFloor('d', 'o', [0, 6, 11], [[7, 2], [13, 8]], [[4, 5, 'p'], [9, 12, 'y']]);
+  T.floor_room_c = woodFloor('o', 'p', [1, 8, 14], [[3, 2], [11, 7], [6, 11]], [[12, 4, 'd'], [2, 9, 'y']]);
+  T.floor_shop = shopFloor('w', null);
+  T.floor_shop_b = shopFloor('s', 'c');
+  T.floor_shop_c = shopFloor('h', 'b');
+  T.floor_mezz = carpetFloor('p', 'm', [[4, 6, 'r'], [11, 10, 'w']]);
+  T.floor_mezz_b = carpetFloor('m', 'p', [[2, 4, 'y'], [9, 12, 'r']]);
+  T.floor_mezz_c = carpetFloor('p', 'r', [[7, 3, 'w'], [13, 8, 'm']]);
+  T.wall_hangar = wallTop('b', 'n', [[2, 5, 'h'], [8, 8, 's'], [13, 4, 'h']]);
+  T.wall_hangar_face = wallFace('b', 'n', 'm', [[4, 7, 'h']], null);
+  T.wall_hangar_win = wallFace('b', 'n', 'm', [], [2, 2, 12, 6, 'n', 's']);
+  T.wall_band = wallTop('n', 'b', [[4, 6, 'c'], [11, 9, 'c']]);
+  T.wall_band_face = mkTile(g => { px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.c, 0, 4, 16, 5); px(g, PAL.s, 0, 5, 16, 1); px(g, PAL.d, 0, 13, 16, 1); px(g, PAL.b, 0, 14, 16, 2); });
+  T.wall_band_win = mkTile(g => { px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.c, 0, 3, 16, 7); px(g, PAL.s, 1, 4, 6, 2); px(g, PAL.w, 9, 4, 4, 2); px(g, PAL.d, 0, 13, 16, 1); px(g, PAL.b, 0, 14, 16, 2); });
+  T.wall_olive = wallTop('t', 'd', [[3, 6, 'g'], [10, 9, 'l']]);
+  T.wall_olive_face = wallFace('t', 'g', 'd', [[6, 6, 'l']], null);
+  T.wall_olive_win = wallFace('t', 'g', 'd', [], [4, 2, 8, 7, 'd', 'y']);
+  T.wall_boat = wallTop('b', 'c', [[2, 6, 's'], [9, 10, 't']]);
+  T.wall_boat_face = wallFace('c', 'b', 'd', [[5, 7, 's']], null);
+  T.wall_boat_win = wallFace('c', 'b', 'd', [], [3, 3, 10, 6, 'd', 's']);
+  T.wall_chalk = wallTop('y', 'o', [[4, 5, 'w'], [11, 9, 'n']]);
+  T.wall_chalk_face = wallFace('y', 'o', 'n', [[6, 6, 'w']], null);
+  T.wall_chalk_win = wallFace('y', 'o', 'n', [], [4, 2, 8, 6, 'n', 'w']);
+  T.wall_vault = wallTop('w', 'h', [[3, 6, 'y'], [10, 8, 'm']]);
+  T.wall_vault_face = wallFace('w', 'h', 'y', [[5, 7, 'm'], [11, 5, 'm']], null);
+  T.wall_vault_win = wallFace('w', 'h', 'y', [], [5, 2, 6, 8, 'm', 'c']);
+  T.wall_arch = wallTop('w', 'r', [[2, 6, 'o'], [9, 10, 'r']]);
+  T.wall_arch_face = wallFace('w', 'r', 'r', [[6, 6, 'o']], null);
+  T.wall_arch_win = wallFace('w', 'r', 'r', [], [3, 3, 10, 5, 'r', 'y']);
+  T.wall_teal = wallTop('w', 'c', [[4, 5, 'l'], [11, 9, 's']]);
+  T.wall_teal_face = wallFace('w', 'c', 'l', [[7, 6, 's']], null);
+  T.wall_teal_win = wallFace('w', 'c', 'l', [], [4, 1, 8, 9, 'c', 's']);
+  T.wall_chapel = wallTop('w', 'y', [[3, 6, 'o'], [12, 8, 'h']]);
+  T.wall_chapel_face = wallFace('w', 'y', 'o', [[6, 7, 'h']], null);
+  T.wall_chapel_win = wallFace('w', 'y', 'o', [], [6, 1, 4, 10, 'o', 'y']);
+  T.wall_civic = wallTop('b', 'n', [[2, 6, 'y'], [8, 9, 'c'], [13, 5, 's']]);
+  T.wall_civic_face = wallFace('b', 'n', 'y', [[5, 6, 'c']], null);
+  T.wall_civic_win = wallFace('b', 'n', 'y', [], [3, 2, 10, 6, 'n', 's']);
+  T.wall_drum = wallTop('r', 'o', [[2, 5, 'o'], [8, 8, 'd'], [13, 4, 'o']]);
+  T.wall_drum_face = mkTile(g => { px(g, PAL.r, 0, 0, 16, 16); px(g, PAL.o, 0, 2, 16, 1); px(g, PAL.o, 0, 6, 16, 1); px(g, PAL.o, 0, 10, 16, 1); px(g, PAL.d, 2, 4, 3, 2); px(g, PAL.d, 11, 8, 3, 2); px(g, PAL.o, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2); });
+  T.wall_drum_win = mkTile(g => { px(g, PAL.r, 0, 0, 16, 16); px(g, PAL.o, 4, 2, 8, 8); px(g, PAL.y, 5, 3, 6, 6); px(g, PAL.w, 6, 4, 2, 2); px(g, PAL.o, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2); });
+  T.wall_peach = wallTop('p', 'm', [[4, 6, 'o'], [11, 9, 'w']]);
+  T.wall_peach_face = wallFace('p', 'm', 'o', [[6, 7, 'w']], null);
+  T.wall_peach_win = wallFace('p', 'm', 'o', [], [4, 3, 8, 6, 'o', 'y']);
+  T.wall_glass = wallTop('s', 'c', [[3, 6, 'w'], [10, 10, 'b']]);
+  T.wall_glass_face = mkTile(g => { px(g, PAL.c, 0, 0, 16, 13); px(g, PAL.s, 1, 1, 6, 8); px(g, PAL.w, 2, 2, 3, 3); px(g, PAL.b, 9, 1, 6, 8); px(g, PAL.s, 10, 2, 3, 3); px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.h, 0, 14, 16, 2); });
+  T.wall_glass_win = mkTile(g => { px(g, PAL.s, 0, 0, 16, 13); px(g, PAL.w, 2, 2, 5, 6); px(g, PAL.c, 9, 2, 5, 6); px(g, PAL.b, 0, 13, 16, 1); px(g, PAL.w, 0, 14, 16, 2); });
+  T.wall_awning = wallTop('w', 'r', [[0, 6, 'y'], [0, 10, 'b']]);
+  T.wall_awning_face = mkTile(g => { px(g, PAL.w, 0, 0, 16, 16); px(g, PAL.r, 0, 0, 16, 3); px(g, PAL.y, 0, 3, 16, 3); px(g, PAL.b, 0, 6, 16, 3); px(g, PAL.w, 0, 9, 16, 4); px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2); });
+  T.wall_awning_win = mkTile(g => { px(g, PAL.w, 0, 0, 16, 16); px(g, PAL.r, 0, 0, 16, 2); px(g, PAL.y, 0, 2, 16, 2); px(g, PAL.b, 0, 4, 16, 2); px(g, PAL.n, 4, 7, 8, 5); px(g, PAL.c, 5, 8, 6, 3); px(g, PAL.d, 0, 13, 16, 1); px(g, PAL.o, 0, 14, 16, 2); });
+  T.wall_mark = mkTile(g => { px(g, PAL.d, 0, 0, 16, 16); px(g, PAL.y, 0, 0, 16, 3); px(g, PAL.g, 0, 3, 16, 2); px(g, PAL.m, 3, 7, 10, 4); px(g, PAL.h, 5, 8, 6, 2); px(g, PAL.y, 0, 13, 16, 1); px(g, PAL.g, 0, 14, 16, 2); });
+  T.mat_pad = doormat('h', 'y');
+  T.mat_deck = doormat('n', 'c');
+  T.mat_bunk = doormat('t', 'g');
+  T.mat_dock = doormat('b', 'c');
+  T.mat_lesson = doormat('y', 'w');
+  T.mat_marble = doormat('h', 'w');
+  T.mat_court = doormat('r', 'w');
+  T.mat_clinic = doormat('c', 'w');
+  T.mat_nave = doormat('p', 'y');
+  T.mat_parquet = doormat('b', 'y');
+  T.mat_sand = doormat('o', 'y');
+  T.mat_room = doormat('p', 'o');
+  T.mat_shop = doormat('w', 'c');
+  T.mat_mezz = doormat('p', 'r');
+  T.rug_nave = mkTile(g => { px(g, PAL.p, 0, 0, 16, 16); px(g, PAL.r, 2, 0, 12, 16); px(g, PAL.y, 4, 0, 2, 16); px(g, PAL.y, 10, 0, 2, 16); });
+  T.rug_room = rug('b', 'c', 'w');
+  T.pad_stripe = mkTile(g => { px(g, PAL.y, 0, 7, 16, 2); px(g, PAL.o, 0, 6, 16, 1); });
+  T.court_stripe = mkTile(g => { px(g, PAL.w, 0, 7, 16, 2); });
   // B7. Observatory dome, cool memory planks, warm party floor, night asphalt. Decals paint only their marks.
   T.wall_dome = mkTile(g => {
     px(g, PAL.n, 0, 0, 16, 16);
@@ -843,6 +955,16 @@ const LAB_SKIN = {"remap":{"#":"lab_wall","W":"lab_wall_face","W2":"lab_wall_win
 // B5. One skin per room: floor, wall face, baseboard. `v` is the wall-shadow decal, `u` the window light (it carries the same shadow band).
 // A later batch can add a skin with SKINS.tunnel = TUNNEL_SKIN or SKINS[name] = HOUSE_SKINS[name] = { remap, decal, walk, variants }.
 const houseVar = (base, b, c) => ({ [base]: [[b, 0.18], [c, 0.16]] });
+// B6. New keys only. `Y` is the shared keeper pilaster. `j` is that room's floor scuff. `q` is a painted line where the skin asks for one.
+const hcSkin = (floor, wall, mat, extra) => {
+  extra = extra || {};
+  return {
+    remap: Object.assign({ '#': wall, Y: 'wall_mark', W: wall + '_face', W2: wall + '_win', '.': floor, m: mat, j: floor + '_b' }, extra.remap || {}),
+    decal: Object.assign({ v: 'wall_shadow', u: 'window_light' }, extra.decal || {}),
+    walk: Object.assign({ v: 1, u: 1, j: 1, Y: 0 }, extra.walk || {}),
+    variants: houseVar(floor, floor + '_b', floor + '_c'),
+  };
+};
 const HOUSE_SKINS = {
   house_home: { remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'house_floor_a', '=':'rug_rag', m:'mat_home', '^':'stair_home' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_floor_a', 'house_floor_b', 'house_honey_c') },
   house_loft: { remap: { '#':'wall_cream', W:'wall_cream_face', W2:'wall_cream_win', '.':'house_loft', '=':'rug_loft', m:'mat_loft', '^':'stair_loft' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_loft', 'house_loft_b', 'house_loft_c') },
@@ -853,6 +975,20 @@ const HOUSE_SKINS = {
   house_hq_up: { remap: { '#':'wall_panel', W:'wall_panel_face', W2:'wall_panel_win', '.':'floor_ink', '=':'rug_ink', m:'mat_ink' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_ink', 'floor_ink_b', 'floor_ink_c') },
   house_cc_lantern: { remap: { '#':'wall_rough', W:'wall_rough_face', W2:'wall_rough_win', '.':'floor_cobble', '=':'rug_cobble', m:'mat_cobble' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_cobble', 'floor_cobble_b', 'floor_cobble_c') },
   house_hall: { remap: { '#':'wall_slate', W:'wall_slate_face', W2:'wall_slate_win', '.':'floor_hall', ':':'floor_hall', i:'floor_slab', '=':'rug_hall', m:'mat_hall' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1, i:1 }, variants: { floor_hall: [['floor_hall_b', 0.22], ['floor_hall_c', 0.18]] } },
+  hc_airport: hcSkin('floor_pad', 'wall_hangar', 'mat_pad', { decal: { q: 'pad_stripe' }, walk: { q: 1 } }),
+  hc_command: hcSkin('floor_deck', 'wall_band', 'mat_deck'),
+  hc_barracks: hcSkin('floor_bunk', 'wall_olive', 'mat_bunk'),
+  hc_marina: hcSkin('floor_dock', 'wall_boat', 'mat_dock'),
+  hc_school: hcSkin('floor_lesson', 'wall_chalk', 'mat_lesson'),
+  hc_bank: hcSkin('floor_marble', 'wall_vault', 'mat_marble'),
+  hc_gym: hcSkin('floor_court', 'wall_arch', 'mat_court', { decal: { q: 'court_stripe' }, walk: { q: 1 } }),
+  hc_lantern: hcSkin('floor_clinic', 'wall_teal', 'mat_clinic'),
+  hc_church: hcSkin('floor_nave', 'wall_chapel', 'mat_nave', { remap: { '=': 'rug_nave' } }),
+  hc_hall: hcSkin('floor_parquet', 'wall_civic', 'mat_parquet'),
+  hc_arena: hcSkin('floor_sand', 'wall_drum', 'mat_sand'),
+  hc_apt: hcSkin('floor_room', 'wall_peach', 'mat_room', { remap: { '=': 'rug_room' } }),
+  hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop'),
+  hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz'),
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
   obs: { remap: { '#':'wall_dome', W:'wall_dome_face', W2:'wall_dome_win', '.':'floor_star' }, decal: { v:'wall_shadow', u:'window_light', z:'star_tick' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_star', 'floor_star_b', 'floor_star_c') },
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c') },
@@ -1127,6 +1263,73 @@ function buildWorldArt(){
     px(g, PAL.w, 3, 12, 10, 1); px(g, PAL.y, 5, 8, 3, 1); px(g, PAL.w, 4, 9, 2, 1);
   });
   A.quilt_r = quilt('r'); A.quilt_c = quilt('c'); A.quilt_y = quilt('y');
+  // B6 High Charity signature props. Candles, the fountain and the stair flight stay on one frame.
+  A.weather_board = mkTile(g => {
+    px(g, PAL.d, 1, 2, 14, 10); px(g, PAL.h, 2, 3, 12, 8); px(g, PAL.b, 3, 4, 6, 3); px(g, PAL.w, 4, 5, 3, 1);
+    px(g, PAL.y, 9, 7, 4, 1); px(g, PAL.o, 12, 6, 1, 3); px(g, PAL.d, 6, 12, 4, 3);
+  });
+  A.bunk = mkTile(g => {
+    px(g, PAL.d, 1, 1, 2, 14); px(g, PAL.d, 13, 1, 2, 14);
+    px(g, PAL.t, 2, 3, 11, 3); px(g, PAL.g, 2, 3, 11, 1); px(g, PAL.w, 2, 4, 3, 1);
+    px(g, PAL.t, 2, 9, 11, 3); px(g, PAL.y, 2, 9, 11, 1); px(g, PAL.w, 2, 10, 3, 1);
+  });
+  A.locker = mkTile(g => {
+    px(g, PAL.m, 3, 1, 10, 13); px(g, PAL.h, 4, 2, 8, 5); px(g, PAL.h, 4, 8, 8, 5); px(g, PAL.d, 4, 7, 8, 1);
+    px(g, PAL.y, 10, 4, 1, 2); px(g, PAL.y, 10, 10, 1, 2); px(g, PAL.d, 4, 14, 8, 1);
+  });
+  A.boat_rack = mkTile(g => {
+    px(g, PAL.d, 3, 11, 2, 4); px(g, PAL.d, 11, 11, 2, 4); px(g, PAL.o, 2, 8, 12, 2);
+    px(g, PAL.c, 3, 4, 10, 4); px(g, PAL.s, 4, 5, 8, 2); px(g, PAL.w, 6, 5, 2, 1); px(g, PAL.d, 7, 3, 2, 2);
+  });
+  A.net_hang = mkTile(g => {
+    px(g, PAL.d, 2, 1, 12, 2);
+    for (let y = 3; y < 14; y += 2) for (let x = 3 + (y % 4 ? 0 : 1); x < 13; x += 2) px(g, PAL.h, x, y, 1, 1);
+    px(g, PAL.b, 4, 13, 8, 1);
+  });
+  A.rope_coil = mkTile(g => { px(g, PAL.o, 3, 5, 10, 8); px(g, PAL.y, 5, 7, 6, 4); px(g, PAL.o, 7, 8, 2, 2); px(g, PAL.d, 2, 13, 12, 1); });
+  A.chalk_board = mkTile(g => {
+    px(g, PAL.o, 1, 1, 14, 12); px(g, PAL.n, 2, 2, 12, 9); px(g, PAL.w, 3, 4, 6, 1); px(g, PAL.w, 3, 6, 8, 1); px(g, PAL.y, 3, 8, 4, 1);
+    px(g, PAL.h, 2, 12, 12, 1); px(g, PAL.d, 4, 13, 2, 2); px(g, PAL.d, 10, 13, 2, 2);
+  });
+  A.vault_door = mkTile(g => {
+    px(g, PAL.m, 2, 1, 12, 14); px(g, PAL.h, 4, 3, 8, 10); px(g, PAL.d, 7, 6, 2, 4); px(g, PAL.y, 6, 7, 4, 2); px(g, PAL.y, 7, 5, 2, 1); px(g, PAL.d, 3, 14, 10, 1);
+  });
+  A.grille = mkTile(g => {
+    px(g, PAL.h, 2, 3, 12, 8); px(g, PAL.n, 3, 4, 10, 6); [4, 7, 10].forEach(x => px(g, PAL.m, x, 4, 1, 6)); px(g, PAL.m, 3, 6, 10, 1);
+    px(g, PAL.y, 3, 11, 10, 2); px(g, PAL.d, 4, 13, 2, 2); px(g, PAL.d, 10, 13, 2, 2);
+  });
+  A.gym_mat = mkTile(g => { px(g, PAL.r, 1, 4, 14, 9); px(g, PAL.w, 2, 5, 12, 7); px(g, PAL.r, 3, 8, 10, 1); });
+  A.clinic_shelf = mkTile(g => {
+    px(g, PAL.w, 1, 2, 14, 11); px(g, PAL.c, 1, 2, 14, 2); px(g, PAL.h, 2, 5, 12, 1); px(g, PAL.h, 2, 9, 12, 1);
+    [[3, 'l'], [6, 's'], [9, 'w'], [12, 'c']].forEach(([x, c]) => px(g, PAL[c], x, 6, 2, 3));
+    px(g, PAL.w, 4, 10, 3, 2); px(g, PAL.c, 9, 10, 3, 2); px(g, PAL.d, 2, 13, 12, 1);
+  });
+  A.candle_stand = mkTile(g => { px(g, PAL.d, 4, 12, 8, 3); px(g, PAL.m, 7, 6, 2, 6); px(g, PAL.y, 6, 3, 4, 3); px(g, PAL.o, 7, 2, 2, 2); px(g, PAL.w, 7, 4, 1, 1); });
+  A.hall_stage = mkTile(g => {
+    px(g, PAL.o, 0, 6, 16, 6); px(g, PAL.y, 0, 6, 16, 2); px(g, PAL.d, 0, 11, 16, 2);
+    px(g, PAL.r, 2, 8, 3, 2); px(g, PAL.b, 7, 8, 3, 2); px(g, PAL.y, 12, 8, 2, 2);
+  });
+  A.hall_chair = mkTile(g => { px(g, PAL.b, 4, 2, 8, 6); px(g, PAL.s, 5, 3, 6, 2); px(g, PAL.o, 3, 8, 10, 3); px(g, PAL.d, 4, 11, 2, 4); px(g, PAL.d, 10, 11, 2, 4); });
+  A.arena_stand = mkTile(g => {
+    px(g, PAL.r, 1, 8, 14, 6); px(g, PAL.o, 1, 8, 14, 2); px(g, PAL.r, 3, 5, 10, 3); px(g, PAL.y, 3, 5, 10, 1); px(g, PAL.d, 5, 3, 6, 2); px(g, PAL.m, 2, 13, 12, 2);
+  });
+  A.apt_desk = mkTile(g => {
+    px(g, PAL.o, 1, 6, 14, 4); px(g, PAL.y, 2, 7, 6, 2); px(g, PAL.b, 9, 7, 4, 2); px(g, PAL.d, 2, 10, 2, 5); px(g, PAL.d, 12, 10, 2, 5); px(g, PAL.w, 4, 4, 4, 2);
+  });
+  A.shop_stall = mkTile(g => {
+    px(g, PAL.r, 1, 1, 14, 3); px(g, PAL.y, 1, 2, 4, 1); px(g, PAL.b, 6, 2, 4, 1); px(g, PAL.w, 11, 2, 3, 1);
+    px(g, PAL.o, 2, 5, 12, 6); px(g, PAL.d, 2, 7, 12, 1); px(g, PAL.d, 3, 11, 2, 4); px(g, PAL.d, 11, 11, 2, 4);
+    px(g, PAL.y, 4, 8, 3, 2); px(g, PAL.c, 8, 8, 3, 2);
+  });
+  A.fountain_small = mkTile(g => {
+    px(g, PAL.m, 2, 8, 12, 6); px(g, PAL.h, 3, 9, 10, 4); px(g, PAL.c, 4, 10, 8, 2); px(g, PAL.s, 6, 10, 4, 1);
+    px(g, PAL.d, 7, 3, 2, 6); px(g, PAL.b, 5, 4, 6, 3); px(g, PAL.w, 6, 5, 2, 1);
+  });
+  A.stair_flight = mkTile(g => {
+    px(g, PAL.m, 2, 2, 12, 2); px(g, PAL.h, 3, 3, 10, 1); px(g, PAL.m, 2, 6, 12, 2); px(g, PAL.h, 3, 7, 10, 1);
+    px(g, PAL.m, 2, 10, 12, 2); px(g, PAL.h, 3, 11, 10, 1); px(g, PAL.y, 6, 12, 4, 2);
+  });
+  A.mall_bench = mkTile(g => { px(g, PAL.p, 1, 6, 14, 2); px(g, PAL.o, 1, 7, 14, 3); px(g, PAL.d, 2, 10, 2, 4); px(g, PAL.d, 12, 10, 2, 4); px(g, PAL.d, 7, 10, 2, 3); });
   // B7 signature props. Generic shapes only: a desk, a chart, blocks, a menu of plain squares.
   A.obs_desk = mkTile(g => {
     px(g, PAL.d, 1, 6, 14, 4); px(g, PAL.o, 2, 6, 12, 2); px(g, PAL.w, 3, 7, 5, 1); px(g, PAL.h, 4, 7, 3, 1);
