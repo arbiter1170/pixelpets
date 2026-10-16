@@ -383,6 +383,7 @@ function applyControls(){
   document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
   const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
   renderControlsRows(); syncWalkTip(); fitAll();
+  try { syncCareAlert(); } catch (e) {}
   try { syncNavArt(true); } catch (e) {}
 }
 function renderControlsRows(){
@@ -497,11 +498,12 @@ function syncNavArt(force){
     const art = key === 'phone' && S && side() === 'glimmer' ? 'phone_glimmer' : key;   // nav_art.json swaps.phone
     const st = navStateOf(b, key);
     const mark = key === 'quest' && st !== 'locked' && st !== 'disabled' ? questMarkTag() : '';
-    const tag = art + ':' + st + (mark ? ':' + mark : '');
+    const tag = key === 'partner' ? art + ':' + st + ':' + careArtTag() : art + ':' + st + (mark ? ':' + mark : '');
     if (!force && navPaint.get(c) === tag) return;
     navPaint.set(c, tag); const g = ctx(c); g.clearRect(0, 0, 44, 44);
     const grid = (A.buttons[art] || {})[st] || (A.buttons[art] || {}).normal; if (grid) paintGrid(g, grid, 2, 0, 0);
     if (mark) paintQuestMarks(g, st);
+    if (key === 'partner') paintCareBadges(g);
   });
   $$('.frame-art').forEach(c => {
     const el = c.parentNode, w = Math.max(8, Math.round(el.offsetWidth / 2)), f = A.frames[c.dataset.frame];
@@ -660,7 +662,7 @@ function updateHUD(){
   syncSide();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
-  if (!p) return;
+  if (!p) { syncCareAlert(); return; }
   const st = SPECIES[spi(p)].stages[p.stage];
   $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
@@ -670,6 +672,7 @@ function updateHUD(){
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
   updatePetStrip(p);
+  syncCareAlert();   // HEART_ALERT: same 1 s stat tick as the strip
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
   const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
   const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
@@ -849,7 +852,67 @@ function updateCareButtons(){
 }
 
 /* ---------- pet care ---------- */
-const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [], emotes: [] };
+const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [], emotes: [], care: { food: 0, rest: 0 } };
+// HEART_ALERT v0.2 (D154–D156): levels for the partner only. 0 none, 1 low, 2 very low.
+function careAlert(p){
+  if (!p) return { food: 0, rest: 0 };
+  const food = p.hunger <= FOOD_RULES.floor ? 2 : p.hunger < FOOD_RULES.hungry ? 1 : 0;
+  const rest = (isFainted(p) || p.energy < 10) ? 2 : p.energy < 25 ? 1 : 0;
+  return { food, rest };
+}
+function careWords(p, c){
+  if (!p || !c || (!c.food && !c.rest)) return '';
+  const parts = [];
+  if (c.food) parts.push({ rank: c.food === 2 ? 0 : 1, ord: 0, w: 'hungry' });
+  if (c.rest) parts.push({ rank: c.rest === 2 ? 0 : 1, ord: 1, w: isFainted(p) ? 'napping' : 'sleepy' });
+  parts.sort((a, b) => a.rank - b.rank || a.ord - b.ord);
+  return parts.map(x => x.w).join(' and ');
+}
+let careBitsHeard = null;
+function syncCareAlert(){
+  const btn = $('#petFloat'); if (!btn || !S) return;
+  const p = pet();
+  const raw = careAlert(p);
+  anim.care = raw;
+  const show = !!(p && S.flags['story.starter_received'] && ctlMode() === 'modern' && !battle.on);
+  btn.classList.toggle('care-food', show && raw.food > 0);
+  btn.classList.toggle('care-rest', show && raw.rest > 0);
+  btn.classList.toggle('care-very', show && (raw.food === 2 || raw.rest === 2));
+  btn.classList.toggle('care-hold', show && (raw.food || raw.rest) && now() < anim.sleepUntil);
+  const words = show ? careWords(p, raw) : '';
+  const label = words ? 'Partner. ' + petName(p) + ' is ' + words + '.' : 'Partner';
+  if (btn.getAttribute('aria-label') !== label) btn.setAttribute('aria-label', label);
+  const live = $('#careAlert');
+  const bits = careWords(p, raw) ? careWords(p, raw).split(' and ') : [];
+  if (live) {
+    if (careBitsHeard === null) careBitsHeard = new Set(bits);
+    else if (show) {
+      const started = bits.some(b => !careBitsHeard.has(b));
+      careBitsHeard = new Set(bits);
+      if (started && words) { live.textContent = ''; live.textContent = petName(p) + ' is ' + words + '.'; }
+    }
+  }
+  try { syncNavArt(false); } catch (e) {}
+}
+function paintCareBadge(g, name, ox, oy){
+  const gl = GLYPH[name]; if (!gl) return;
+  const dot = (ch, x, y) => {
+    if (ch === '.' || x < 0 || y < 0 || x > 21 || y > 21 || !PAL[ch]) return;
+    g.fillStyle = PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2);
+  };
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) if (gl[j][i] !== '.') dot('k', ox + i + 1, oy + j + 1);
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) dot(gl[j][i], ox + i, oy + j);
+}
+function careArtTag(){
+  const b = $('#petFloat'); if (!b) return '';
+  return (b.classList.contains('care-food') ? 'f' : '') + (b.classList.contains('care-rest') ? 'r' : '');
+}
+function paintCareBadges(g){
+  const b = $('#petFloat'); if (!b) return;
+  const food = b.classList.contains('care-food'), rest = b.classList.contains('care-rest');
+  if (food) paintCareBadge(g, 'badge_food', 16, 1);
+  if (rest) paintCareBadge(g, 'badge_rest', 16, food ? 14 : 1);
+}
 /* CARE_LOOP plumbing (§7 build order): a small emote queue over the partner on the PARTNER tab. Each balloon waits for the one
    before it, so the Warm Bowl, the hello and (later) bond-ups never draw on top of each other. */
 function queueEmote(glyph, delayMs = 0, durMs = 1500){
@@ -1141,6 +1204,10 @@ const WORLD = (() => {
   }
   if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards: squares, then the posts
   for (const k of DETAIL_KEYS) { if (MD[k].maps) Object.assign(W, JSON.parse(JSON.stringify(MD[k].maps))); applyMapPatch(W, MD[k].slicePatch); }
+  if (MD.fernbrook_rooms) {                                            // B8: rooms, then the door warp, after every detail patch
+    Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
+    applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
+  }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -2399,7 +2466,7 @@ function arriveAt(at){
 }
 function enterDoor(dr){
   if (dr.need && !cond(dr.need, false)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
-  if (dr.to) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
+  if (dr.to && WORLD[dr.to]) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
 }
 // MAPS_SLICE §9 place panels (Fernbrook keeps panels; Hearthmoor's became rooms). The Lantern House: the keeper's line -> REST / LEAVE;
@@ -2909,7 +2976,8 @@ function restBedCue(){
   if (!CUR || !LANTERN_ROOMS[CUR.id]) return null;
   let best = null, bestD = 1e9;
   for (const o of CUR.objs) {
-    if (o.kind !== 'prop' || o.sprite !== 'rest_bed' || !present(o)) continue;
+    const bedLine = o.lines && Object.values(o.lines).some(v => v === '@lantern_rest');
+    if (o.kind !== 'prop' || !present(o) || (o.sprite !== 'rest_bed' && !bedLine)) continue;
     const d = Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y);
     if (d < bestD) { bestD = d; best = o; }
   }
@@ -3254,6 +3322,7 @@ function interact(o){
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
+  if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
   if (o.board) return openTownBoard();
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
@@ -4249,7 +4318,7 @@ function closeBattle(){
 }
 // A Lantern House rest heals the whole party. Hurt Walklings cost a few Acorns (OPEN_DECISIONS D28). Home naps stay free (`rest`).
 const LANTERN_REST_COST = 5;
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1 };
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
 function setRestDue(on){ if (!S || !S.world) return; if (on) S.world.restDue = true; else delete S.world.restDue; }
 // After a wipe, the party has to rest before leaving. Clears itself once nobody is hurt (regen, a debug heal).
@@ -4305,6 +4374,7 @@ function blockLanternExit(){
   put('hearthmoor', 'hm_sign_lantern', 'LANTERN HOUSE · Rest the whole party. ' + n + ' Acorns.');
   put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns. — I."');
   put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
+  put('fb_lantern_in', 'fb_lantern_note', 'A note by the shelf: "Rest the whole party. ' + n + ' Acorns. — Amos"');
 })();
 // §7.2 team wipe: back to world.respawn's Lantern House (Hearthmoor: inside, by the beds; INTERIORS slicePatch respawnIn).
 // Nothing lost. Nobody is healed until they rest the whole party, and the way out stays shut until they do.
@@ -4781,6 +4851,7 @@ const REGION_MAP = {
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
            cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
+    fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
@@ -8204,9 +8275,11 @@ function catchUp(sec){
 // so catch up on return using the time the tab was actually hidden.
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
+  document.body.classList.toggle('hidden-tab', document.hidden);
   if (document.hidden) { hiddenAt = Date.now(); return; }
   if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); noteWelcome(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
 });
+document.body.classList.toggle('hidden-tab', document.hidden);
 
 /* ---------- online saves (cloud.js; a no-op unless cloud_config.js holds a config) ---------- */
 // Summary of a save string for the "which game to keep" choice: partner, pet count, Seals, last played. Never touches storage.
@@ -8489,6 +8562,7 @@ function boot(){
     clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
+    care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
     tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. Lab keeps its old tile name (raw char, not W2).
       if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }; }
       const sk = CUR.skin && SKINS[CUR.skin];

@@ -22,7 +22,7 @@ Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Figh
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
 Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), a Vol slider beside Music (0–100, saved as `settings.musicVol` from 0 to 1), Follower on/off, Change look, Save a copy, Read a copy, Start over, and Debug.
 
-Controls: Settings → Controls switches ARCADE (the d-pad, TALK and the tab bar) and MODERN (the map fills the walk screen; QUEST, BAG and MAP float top left, the gear and PHONE top right, PARTNER and WALKLINGS bottom right, the area name top centre, a one-line tip, and a partner strip you tap for the stats card; PARTNER and WALKLINGS screens have a WALK back button). Joystick, shown in modern, adds a translucent four-way stick bottom left (off by default). A new game asks which you want, in the house, after the mirror. An old save stays on arcade. Tap, drag, walking up to people, and the keyboard work in both. A tap on open ground walks around anything in the way. A tap on a solid spot walks to the nearest open tile beside it. If there is no way through, the game says "Can't get there from here."
+Controls: Settings → Controls switches ARCADE (the d-pad, TALK and the tab bar) and MODERN (the map fills the walk screen; QUEST, BAG and MAP float top left, the gear and PHONE top right, PARTNER and WALKLINGS bottom right, the area name top centre, a one-line tip, and a partner strip you tap for the stats card; PARTNER and WALKLINGS screens have a WALK back button). In modern, the heart button pulses when the partner's food or rest is low: an orange ring and a small bowl when food is low, a blue ring and a small z when rest is low, both rings in turn when both are low, and a faster pulse when either is very low or the partner is napping. One FEED or one REST clears that side. Arcade does not show it. Joystick, shown in modern, adds a translucent four-way stick bottom left (off by default). A new game asks which you want, in the house, after the mirror. An old save stays on arcade. Tap, drag, walking up to people, and the keyboard work in both. A tap on open ground walks around anything in the way. A tap on a solid spot walks to the nearest open tile beside it. If there is no way through, the game says "Can't get there from here."
 
 Debug mode: add `?debug=1` to the URL, or open Settings → Debug and enter the team password. It lasts for this browser tab only (`pixelpets.debug` in sessionStorage; older builds kept it in localStorage, and boot now clears that). `?debug=0` turns it off. Any save written during a debug session gains `debugSave: true`, and Settings shows `DEBUG SAVE` beside the build line, so debug edits never pass as a clean save. A DBG tag shows in the header; tap it to open the debug panel again, including during a battle. Lock debug in that panel to turn it off on this device. Only in debug mode:
 - Keys: E = force-evolve current partner, G = force a wild battle (species weighted by the current area),
@@ -140,8 +140,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
   Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
-  then the summon lines); after that only a bump starts a rematch until you win. Master Fen's Trial Hall in Fernbrook
-  opens once the orchard is cleared: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
+  then the summon lines); after that only a bump starts a rematch until you win. Master Fen's Bloom Trial Hall in Fernbrook
+  opens once the orchard is cleared. Talk to him on the dais: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
   Seal #1 opens Route 2 (the creek, Wickerglen, and the Glow Census). Past the quarry gate is Cobblecrest: Dottie's
   stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. Cobblecrest's roofs, windows and
   rooms get their own trim. A loss after you arrive wakes you in the
@@ -219,7 +219,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   `standing.keepers>=2` / `standing.glimmer>=2` (the tier, not points) for later lines and options. Reaching a new tier shows
   that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
   the spec has no numbers yet.
-  **Switching** happens at a Pledge desk: an extra option on Keeper Amos's Lantern House panel in Fernbrook (to the
+  **Switching** happens at a Pledge desk: an extra option when you talk to Keeper Amos inside the Fernbrook Lantern House (to the
   Keepers) and on Associate Juniper's line at the Fernbrook stand (to Glimmerwell), only after `story.side_pick_done`, never
   mid-scene or mid-battle, and only where it would be a change. A reference letter from the side you join reads first, then
   "Really? Keepers Standing 30 → 15" with Yes / Think about it; Yes halves the side you leave (floor), keeps the side you
