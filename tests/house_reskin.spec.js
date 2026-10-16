@@ -1,5 +1,5 @@
 /* Rook's House and the Warden's Lodge: the drawn floors and walls use the new tiles.
-   Keys A–G stay the lantern values. H, I and J are defined once. The Keeper House rooms stay grey. */
+   Keys A–G stay the lantern values. H, I and J are defined once. The Keeper House uses the slate key K. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -13,9 +13,9 @@ const FILL = {
   floor_honey: WARM.G, floor_honey_b: WARM.A, floor_honey_c: WARM.G,
   floor_warden: ROOM.I, floor_warden_b: ROOM.I, floor_warden_c: WARM.G,
 };
+const SLATE = '#7a8aa0';
 const HQ_FILL = {
-  floor_flag: '#94b0c2', floor_flag_b: '#566c86', floor_flag_c: '#94b0c2',
-  floor_ink: '#257179', floor_ink_b: '#29366f', floor_ink_c: '#257179',
+  floor_keep: SLATE, floor_keep_b: SLATE, floor_keep_c: SLATE,
 };
 
 function save() {
@@ -88,11 +88,14 @@ test('Rook\'s House and the Warden\'s Lodge render their new floors', async ({ p
   expect(setup.lodge.remap).toEqual({ '#': 'wall_warden', W: 'wall_warden_face', W2: 'wall_warden_win', '.': 'floor_warden', '=': 'rug_warden', m: 'mat_warden' });
   expect(setup.lodge.decal).toEqual({ v: 'wall_shadow_warden', u: 'window_light_warden' });
   expect(setup.lodge.variants.floor_warden.map(row => row[0])).toEqual(['floor_warden_b', 'floor_warden_c']);
-  expect(setup.hq.remap['.']).toBe('floor_flag');
-  expect(setup.hq.remap['#']).toBe('wall_stone');
-  expect(setup.hq.decal).toEqual({ v: 'wall_shadow', u: 'window_light' });
-  expect(setup.up.remap['.']).toBe('floor_ink');
-  expect(setup.up.remap['#']).toBe('wall_panel');
+  expect(setup.hq.remap).toEqual(setup.up.remap);
+  expect(setup.hq.remap['.']).toBe('floor_keep');
+  expect(setup.hq.remap['#']).toBe('wall_keep');
+  expect(setup.hq.remap[',']).toBe('floor_keep_tile');
+  expect(setup.hq.remap[';']).toBe('floor_keep_ops');
+  expect(setup.hq.remap.i).toBe('floor_keep_carpet');
+  expect(setup.hq.decal).toEqual({ v: 'wall_shadow_keep', u: 'window_light_keep' });
+  expect(setup.up.decal).toEqual({ v: 'wall_shadow_keep', u: 'window_light_keep' });
   expect(setup.oldTiles).toEqual({
     brick: RED, rookFloor: RED, log: ORANGE, logFloor: ORANGE,
     rug: WARM.E, mat: WARM.G, runner: ROOM.J, edge: '#ffcd75', lodgeMat: '#ffcd75',
@@ -165,6 +168,7 @@ test('Rook\'s House and the Warden\'s Lodge render their new floors', async ({ p
         shade: at(2, 2, 0, 0),
         runner: room.id === 'hm_lodge_in' ? { tile: PixelPets.tileInfo(3, 5).tile, fill: at(3, 5, 4, 4) } : null,
         hqFloor: floors[0] || null,
+        lamps: PixelPets.mapObjs.filter(o => o.sprite === 'keep_lamp' || o.sprite === 'keep_lamp_wall' || o.sprite === 'keep_radio' || o.sprite === 'keep_radio_rack').map(o => ({ x: o.x, y: o.y, sprite: o.sprite })),
       });
     }
     return out;
@@ -204,11 +208,19 @@ test('Rook\'s House and the Warden\'s Lodge render their new floors', async ({ p
   expect(lodge.shade).toBe(WARM.F);
   expect(lodge.runner).toEqual({ tile: 'rug_warden', fill: ROOM.J });
 
-  expect(hq.floors.length).toBeGreaterThan(0);
-  expect(up.floors.length).toBeGreaterThan(0);
-  for (const cell of hq.floors) expect(cell.got, cell.tile).toBe(HQ_FILL[cell.tile]);
-  for (const cell of up.floors) expect(cell.got, cell.tile).toBe(HQ_FILL[cell.tile]);
-  expect(hq.face).toBe('wall_stone_face');
-  expect(up.face).toBe('wall_panel_face');
+  const clearOfGlow = (cell, lamps) => lamps.every(l => {
+    const r = ((l.sprite === 'keep_lamp' || l.sprite === 'keep_lamp_wall') ? 22 : 12) + 8;
+    const dx = cell.x * 16 + 2 - (l.x * 16 + 8);
+    const dy = cell.y * 16 + 2 - (l.y * 16 + 8);
+    return dx * dx + dy * dy > r * r;
+  });
+  const hqFloors = hq.floors.filter(cell => clearOfGlow(cell, hq.lamps));
+  const upFloors = up.floors.filter(cell => clearOfGlow(cell, up.lamps));
+  expect(hqFloors.length).toBeGreaterThan(0);
+  expect(upFloors.length).toBeGreaterThan(0);
+  for (const cell of hqFloors) expect(cell.got, cell.tile).toBe(HQ_FILL[cell.tile]);
+  for (const cell of upFloors) expect(cell.got, cell.tile).toBe(HQ_FILL[cell.tile]);
+  expect(hq.face).toBe('wall_keep_face');
+  expect(up.face).toBe('wall_keep_face');
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });

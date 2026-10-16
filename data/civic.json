@@ -7,7 +7,11 @@
     "officer": {"skin": "3", "hair": "short", "hairCol": "d", "outfit": "coat", "outfitCol": "g", "accent": "y"},
     "clerk": {"skin": "4", "hair": "bun", "hairCol": "h", "outfit": "coat", "outfitCol": "g", "accent": "w"},
     "captain": {"skin": "5", "hair": "short", "hairCol": "k", "outfit": "coat", "outfitCol": "g", "accent": "y"},
-    "glimclerk": {"skin": "2", "hair": "short", "hairCol": "s", "outfit": "coat", "outfitCol": "c", "accent": "l"}
+    "glimclerk": {"skin": "2", "hair": "short", "hairCol": "s", "outfit": "coat", "outfitCol": "c", "accent": "l"},
+    "corwin": {"skin": "6", "hair": "short", "hairCol": "k", "outfit": "coat", "outfitCol": "n", "accent": "y"},
+    "orrin": {"skin": "1", "hair": "buzz", "hairCol": "o", "outfit": "coat", "outfitCol": "g", "accent": "r"},
+    "tamm": {"skin": "2", "hair": "bob", "hairCol": "d", "outfit": "coat", "outfitCol": "t", "accent": "y"},
+    "linnea": {"skin": "4", "hair": "pony", "hairCol": "o", "outfit": "vest", "outfitCol": "g", "accent": "y"}
   },
   "speakers": {
     "Officer Cald": "officer",
@@ -20,7 +24,11 @@
     "Operator Rue": "officer",
     "Constable Rue": "officer",
     "Watch Ivo": "officer",
-    "Clerk Mint": "glimclerk"
+    "Clerk Mint": "glimclerk",
+    "Constable Corwin": "corwin",
+    "Cadet Orrin": "orrin",
+    "Signaller Tamm": "tamm",
+    "Scout Linnea": "linnea"
   },
   "slicePatch": {
     "maps": {
@@ -33,7 +41,7 @@
           {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 10, "text": "HEARTHMOOR · Hill village of keepers. East: Route 1."}
         ],
         "addObjs": [
-          {"kind": "door", "id": "hm_hq", "x": 11, "y": 11, "to": "hm_hq_f1", "tx": 4, "ty": 6, "facing": "up"},
+          {"kind": "door", "id": "hm_hq", "x": 11, "y": 11, "to": "hm_hq_f1", "tx": 6, "ty": 14, "facing": "up"},
           {"kind": "sign", "id": "hm_hq_sign", "x": 9, "y": 11, "text": "KEEPER HOUSE · Hearthmoor watch. The lantern's law."},
           {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 4, "y": 8, "facing": "right", "patrol": [[4, 8], [8, 8], [12, 8], [16, 8], [18, 8], [16, 8], [12, 8], [8, 8]], "lines": {
             "story.side=glimmer": "Mint vest. Not welcome on this road.",
@@ -113,74 +121,243 @@
   },
   "maps": {
     "hm_hq_f1": {
-      "name": "Keeper House", "kind": "interior", "outdoor": "hearthmoor", "backdrop": "town",
-      "w": 9, "h": 8, "spawns": null, "zones": [], "safe": {"x": 4, "y": 6},
+      "name": "Keeper House",
+      "kind": "interior",
+      "outdoor": "hearthmoor",
+      "backdrop": "town",
+      "w": 14,
+      "h": 16,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 6,
+        "y": 13
+      },
       "grid": [
-        "#########",
-        "#WWWWWWW#",
-        "#.......#",
-        "#.......#",
-        "#..===..#",
-        "#.......#",
-        "#.......#",
-        "####m####"
+        "##############",
+        "#WWWWWWWWWWWW#",
+        "#uvuvuvuvuvuv#",
+        "#,,,,......;;#",
+        "#,,,,iiiiii;;#",
+        "#,,,,iiiiii;;#",
+        "#,,,,iiiiii;;#",
+        "#,,,,iiiiii;;#",
+        "#....i==iii;;#",
+        "#,,,,,==.....#",
+        "#,,,,,==.....#",
+        "#,,,,,==.....#",
+        "#,,,,,==.....#",
+        "#,,,,,==.....#",
+        "#,,,,,==.....#",
+        "######m#######"
       ],
       "objs": [
-        {"kind": "warp", "id": "hq_out", "x": 4, "y": 7, "to": "hearthmoor", "tx": 11, "ty": 11, "facing": "down"},
-        {"kind": "warp", "id": "hq_up", "x": 7, "y": 3, "to": "hm_hq_f2", "tx": 7, "ty": 3, "facing": "up"},
-        {"kind": "sign", "id": "hq_stair_sign", "x": 7, "y": 4, "text": "STAIRS · Captain Lumen and the radio, upstairs."},
-        {"kind": "npc", "id": "hq_bram", "name": "Sergeant Bram", "look": "officer", "x": 2, "y": 3, "facing": "down", "lines": {
-          "!story.met_bram": "@hq_bram",
-          "story.side=glimmer": "Doorway only. You do not sit here.",
-          "standing.keepers>=3": "Your name is on the good list. Come in.",
-          "standing.keepers>=1": "A keeper on the step. You may come in.",
-          "story.side=keepers": "New pledge. The lantern still knows you.",
-          "else": "Citizen. Say your piece, then step back."
-        }},
-        {"kind": "npc", "id": "hq_mo", "name": "Archivist Mo", "look": "clerk", "x": 5, "y": 4, "facing": "left", "lines": {
-          "!story.met_mo": "@hq_mo",
-          "story.side=glimmer": "I note the mint. The books will too.",
-          "standing.keepers>=1": "The shelf is open to a keeper. Read.",
-          "else": "Citizen. Old books stay on the shelf."
-        }},
-        {"kind": "npc", "id": "hq_wynn", "name": "Clerk Wynn", "look": "clerk", "x": 2, "y": 5, "facing": "right", "lines": {
-          "!story.met_wynn": "@hq_wynn",
-          "story.side=glimmer": "Your notes still copy to my book.",
-          "standing.keepers>=1": "I filed you under friend of the house.",
-          "else": "Citizen. Forms are on the left. Wait."
-        }}
+        {
+          "kind": "warp",
+          "id": "hq_out",
+          "x": 6,
+          "y": 15,
+          "to": "hearthmoor",
+          "tx": 11,
+          "ty": 11,
+          "facing": "down"
+        },
+        {
+          "kind": "warp",
+          "id": "hq_up",
+          "x": 12,
+          "y": 3,
+          "to": "hm_hq_f2",
+          "tx": 10,
+          "ty": 4,
+          "facing": "down"
+        },
+        {
+          "kind": "sign",
+          "id": "hq_stair_sign",
+          "x": 11,
+          "y": 2,
+          "text": "STAIRS · Captain Lumen and the radio, upstairs."
+        },
+        {
+          "kind": "npc",
+          "id": "hq_bram",
+          "name": "Sergeant Bram",
+          "look": "officer",
+          "x": 7,
+          "y": 4,
+          "facing": "down",
+          "lines": {
+            "!story.met_bram": "@hq_bram",
+            "story.side=glimmer": "Doorway only. You do not sit here.",
+            "standing.keepers>=3": "Your name is on the good list. Come in.",
+            "standing.keepers>=1": "A keeper on the step. You may come in.",
+            "story.side=keepers": "New pledge. The lantern still knows you.",
+            "else": "Citizen. Say your piece, then step back."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hq_mo",
+          "name": "Archivist Mo",
+          "look": "clerk",
+          "x": 3,
+          "y": 5,
+          "facing": "up",
+          "lines": {
+            "!story.met_mo": "@hq_mo",
+            "story.side=glimmer": "I note the mint. The books will too.",
+            "standing.keepers>=1": "The shelf is open to a keeper. Read.",
+            "else": "Citizen. Old books stay on the shelf."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hq_wynn",
+          "name": "Clerk Wynn",
+          "look": "clerk",
+          "x": 3,
+          "y": 10,
+          "facing": "down",
+          "lines": {
+            "!story.met_wynn": "@hq_wynn",
+            "story.side=glimmer": "Your notes still copy to my book.",
+            "standing.keepers>=1": "I filed you under friend of the house.",
+            "else": "Citizen. Forms are on the left. Wait."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hq_corwin",
+          "name": "Constable Corwin",
+          "look": "corwin",
+          "x": 11,
+          "y": 6,
+          "facing": "right",
+          "lines": {
+            "story.side=glimmer": "Hands where I can see them. Thank you.",
+            "else": "Every box has a tag. Every tag has a date. That is the job."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hq_orrin",
+          "name": "Cadet Orrin",
+          "look": "orrin",
+          "x": 11,
+          "y": 13,
+          "facing": "right",
+          "lines": {
+            "standing.keepers>=1": "You are on the board! I am only on the tea rota.",
+            "else": "First week. I polish boots and learn the roster."
+          }
+        }
       ]
     },
     "hm_hq_f2": {
-      "name": "Keeper House, upstairs", "kind": "interior", "outdoor": "hearthmoor", "backdrop": "town",
-      "w": 9, "h": 8, "spawns": null, "zones": [], "safe": {"x": 4, "y": 6},
+      "name": "Keeper House, upstairs",
+      "kind": "interior",
+      "outdoor": "hearthmoor",
+      "backdrop": "town",
+      "w": 12,
+      "h": 14,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 9
+      },
       "grid": [
-        "#########",
-        "#WWWWWWW#",
-        "#.......#",
-        "#.......#",
-        "#..===..#",
-        "#.......#",
-        "#.......#",
-        "####m####"
+        "############",
+        "#WWWWWWWWWW#",
+        "#uvuvuvuvuv#",
+        "#;;;;=iiiii#",
+        "#;;;;=iiiii#",
+        "#;;;;=iiiii#",
+        "#;;;;=iiiii#",
+        "#;;;;=iiiii#",
+        "#,,,,====..#",
+        "#,,,,=.....#",
+        "#,,,,=.....#",
+        "#,,,,=.....#",
+        "#,,,,=.....#",
+        "############"
       ],
       "objs": [
-        {"kind": "warp", "id": "hq_down", "x": 7, "y": 3, "to": "hm_hq_f1", "tx": 6, "ty": 4, "facing": "down"},
-        {"kind": "sign", "id": "hq_radio_sign", "x": 2, "y": 4, "text": "RADIO · Every Keeper1 checks in. Even the quiet ones."},
-        {"kind": "npc", "id": "hq_lumen", "name": "Captain Lumen", "look": "captain", "x": 4, "y": 3, "facing": "down", "lines": {
-          "!story.met_lumen": "@hq_lumen",
-          "story.side=glimmer": "You are in my office. Make it short.",
-          "standing.keepers>=3": "I kept a chair for you. Sit, friend.",
-          "standing.keepers>=1": "The watch is glad of your name.",
-          "story.side=keepers": "New pledge. Do the small jobs first.",
-          "else": "Citizen. Hats off. Then you may speak."
-        }},
-        {"kind": "npc", "id": "hq_rue", "name": "Operator Rue", "look": "officer", "x": 2, "y": 3, "facing": "right", "lines": {
-          "!story.met_rue": "@hq_rue",
-          "story.side=glimmer": "I can hear the room around your set.",
-          "standing.keepers>=1": "Your Keeper1 sings a clean signal.",
-          "else": "Citizen. If the handset is on, so am I."
-        }}
+        {
+          "kind": "warp",
+          "id": "hq_down",
+          "x": 10,
+          "y": 3,
+          "to": "hm_hq_f1",
+          "tx": 12,
+          "ty": 4,
+          "facing": "down"
+        },
+        {
+          "kind": "sign",
+          "id": "hq_radio_sign",
+          "x": 4,
+          "y": 2,
+          "text": "RADIO · Every Keeper1 checks in. Even the quiet ones."
+        },
+        {
+          "kind": "npc",
+          "id": "hq_lumen",
+          "name": "Captain Lumen",
+          "look": "captain",
+          "x": 8,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "!story.met_lumen": "@hq_lumen",
+            "story.side=glimmer": "You are in my office. Make it short.",
+            "standing.keepers>=3": "I kept a chair for you. Sit, friend.",
+            "standing.keepers>=1": "The watch is glad of your name.",
+            "story.side=keepers": "New pledge. Do the small jobs first.",
+            "else": "Citizen. Hats off. Then you may speak."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hq_rue",
+          "name": "Operator Rue",
+          "look": "officer",
+          "x": 2,
+          "y": 3,
+          "facing": "up",
+          "lines": {
+            "!story.met_rue": "@hq_rue",
+            "story.side=glimmer": "I can hear the room around your set.",
+            "standing.keepers>=1": "Your Keeper1 sings a clean signal.",
+            "else": "Citizen. If the handset is on, so am I."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hq_tamm",
+          "name": "Signaller Tamm",
+          "look": "tamm",
+          "x": 4,
+          "y": 4,
+          "facing": "down",
+          "lines": {
+            "else": "Three check-ins this hour. The quiet ones always call last."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "hq_linnea",
+          "name": "Scout Linnea",
+          "look": "linnea",
+          "x": 9,
+          "y": 10,
+          "facing": "left",
+          "lines": {
+            "story.reached_mahopac": "You walked the north trail? Draw me what you saw.",
+            "else": "I mark the roads we walk. The map is never quite done."
+          }
+        }
       ]
     }
   },
