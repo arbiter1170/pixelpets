@@ -4,7 +4,8 @@
   "description": "Local smoke tests for the Walklings browser game. Players open index.html; nothing here is loaded by the game.",
   "scripts": {
     "check:build": "python3 tools/bump_build.py --check",
-    "test": "npm run check:build && playwright test"
+    "test": "npm run check:build && playwright test",
+    "test:agent": "node tools/pp_test.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.0"
