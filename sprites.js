@@ -948,6 +948,30 @@ function buildTiles(){
   }
   T.floor_asphalt = asphalt(0); T.floor_asphalt_b = asphalt(1); T.floor_asphalt_c = asphalt(2);
   T.lane_paint = mkTile(g => { px(g, PAL.y, 1, 7, 14, 2); px(g, PAL.w, 1, 7, 14, 1); });
+  // D87 tunnel skin. Rock, not house planks. The puddle decal is only the wet pixels on tunnel_floor.
+  const TUNNEL_TILES = {
+    tunnel_floor: ['hhhmhhhmmmmmmhhh','hhhmwhhhmmmmmmhh','hhhmhhhmmmmmmhhh','hhhmdddddmmmmhhh','mmmmmmmmmmmmmmmm','mmmwwmmmmmmmdmmm','mmmhhmmmmmmmdmhh','mmmhhmmmmmmmdmhh','ddddhhmmmmmmmmhh','mmmmmmmmmmmmdmhh','mmmmhhmmmmmmdmmm','mmmmhhmmmmmmmmmm','wwmmhhdddddmmmmm','mmmmhhmmmmmmmmmm','mmmmhhmmmmmmwwmm','mmmmhhmmmmmmmmmm'],
+    tunnel_floor_b: ['mhhmwmmhhmmwmmhm','mhhmmmmhhmmmmmhm','mmmmddmmmmmmddmm','wmmmmmmmmwmmmmmm','mmhhmmmmmmhhmmwm','mmhhmmmmmmhhmmmm','mmmmmmddmmmmmmmm','mmwmmmmmmmmhhmmm','mmmmmmmmmmhhmmwm','ddmmmmwmmmmmddmm','mmmmhhmmmmmmmmmm','wmmmhhmmmmwmmmmm','mmmmmmmmmmmmhhmm','mmmmmmddmmmmhhmm','wmmmmmmmmmmmmmhm','mmhhmmwmmmmmhhmw'],
+    tunnel_floor_c: ['nnntnnnntttttnnn','nnntwnnnttttttnn','nnntnnnntttttnnn','nnntdddddttttnnn','tttttttttttttttt','tttwwtttttttdttt','ttthhtttttttnthh','ttthhtttttttnthh','ddddhhttttttttnn','ttttttttttttdtnn','tttthhttttttdttt','tttthhtttttttttt','sstthhdddddttttt','tttthhtttttttttt','tttthhttttttsstt','tttthhtttttttttt'],
+    tunnel_wall: ['ddddnnddddddnndd','dmmmmndmmmmmndmd','dmhhhmndmhhhmdnd','dmhhhmndmhhhmndd','dmmmmnddmmmmnndd','nnnnndddddddnnnn','ddmmmmmmddmmmmdd','dmhhhhmmdmhhhhmd','dmhhhhmmdmhhhhmd','ddmmmmmmdmmmmmdd','nnnnnnnnnnnnnnnn','ddmmmmddmmmmmmdd','dmhhmmddmhhhhmdd','dmhhmmddmhhhhmdd','ddmmmmddmmmmmmdd','nnnnddddddddnnnn'],
+    tunnel_wall_b: ['nnnnndddddddnnnn','ndmmmmmmddmmmmdn','ndmhhhhmmdmhhhdn','ndmhhhhmmdmhhhdn','ndmmmmmmddmmmmdn','nnnnnnnnnnnnnnnn','ddmmmmmmmmmmmmdd','dmhhhmmmmmmhhhmd','dmhhnmmmmmmnhhmd','dmhhhmmmmmmhhhmd','ddmmmmmmmmmmmmdd','nnndddddddddnnnn','dmmmmmmmmmmmmmmd','dmhhhhhhhhhhhhmd','dmmmmmmmmmmmmmmd','dddddddddddddddd'],
+    tunnel_wall_c: ['dddddddddddddddd','dmmmmmdmmmmmdmmd','dmhhgmdmhhgmdmmd','dmhhgmdmhhgmdmmd','dmmmmmdmmmmmdmmd','dddddddddddddddd','nddmmmmmmmddmmmn','nmdmhhhhhmmdmmmn','nmdmhhhhhmmdmmmn','nddmmmmmmmddmmmn','nnnnnnnnnnnnnnnn','ddmmmmmmmmmmmmdd','dmhhhhmddmhhhhmd','dmhhhhmddmhhhhmd','ddmmmmmddmmmmmdd','nnnnnnnnnnnnnnnn'],
+    tunnel_wall_face: ['mmmmmmmmmmmmmmmm','mhhhmmmmmmhhmmmm','mhhhmmmmmmhhmmmm','mmmmmmmmmmmmmmmm','mmmnnmmmmmmmmmmm','mmmnnmmmmmmmmwww','mmmmmmmmmmmmmmmm','mmhhmmmmmmmmmmmm','mmhhmmmmmmmmmmmm','mmmmmmmmmmhhmmmm','mmmmmmmmmmhhmmmm','mmmmmmmmmmmmmmmm','mmmmmmwmmmmmmmmm','mmmmmmmmmmmmmmmm','hhhhhhhhhhhhhhhh','dddddddddddddddd'],
+    tunnel_wall_face_b: ['mmmmmmmmmmmmmmmm','mhhmmmmmmmmhhmmm','mhhmmmmmmmmhhmmm','mmmmmmmmmmmmmmmm','mmmmmmnnnnmmmmmm','mmmmmmnnnnmmmmmm','wwmmmmnnnnmmmmmm','mmmmmmnnnnmmmmmm','mmmmmmmmmmmmmmmm','mmhhmmmmmmmmhhmm','mmhhmmmmmmmmhhmm','mmmmmmmmmmmmmmmm','mmmmmmmmmmwmmmmm','mmmmmmmmmmmmmmmm','hhhhhhhhhhhhhhhh','dddddddddddddddd'],
+    tunnel_wall_face_c: ['mmmmmmmmmmmmmmmm','mhhmmmmmmmmhhmmm','mhhmmmmmmmmhhmmm','mmmmmmmmmmmmmmmm','mmmmmmmmnnmmmmmm','mmmmmmmmnnmmmmmm','wwmmmmmmnnmmmmmm','mmmmmmmmnnmmmmmm','mmmmmmmmmmmmmmmm','mmmmhhmmmmmmmmmm','mmmmhhmmmmmmmmmm','mmmmmmmmmmmmmmmm','mmmmmmmmmmwmmmmm','mmmmmmmmmmmmmmmm','hhhhhhhhhhhhhhhh','dddddddddddddddd'],
+    tunnel_mat: ['mmmmmmmmmmmmmmmm','mnnnnnnnnnnnnnnm','mnmmmmmmmmmmmmnm','mnmhhhhhhhhhhmnm','mnmhwwwwwwwwwhnm','mnmhhhhhhhhhhmnm','mnmhhhhhhhhhhmnm','mnmhddddddddhhnm','mnmhhhhhhhhhhmnm','mnmhwwwwwwwwwhnm','mnmhhhhhhhhhhmnm','mnmmmmmmmmmmmmnm','mnnnnnnnnnnnnnnm','mmmmmmmmmmmmmmmm','mmmmmmmmmmmmmmmm','dddddddddddddddd'],
+    tunnel_rug: ['rprrrprrrprrrprr','prrrprrrprrrprrr','rrprrrprrrprrrpr','rprrrprrrprrrprr','prrrprrrprrrprrr','rrprrrprrrprrrpr','rprrrprrrprrrprr','prrrprrrprrrprrr','rrprrrprrrprrrpr','rprrrprrrprrrprr','prrrprrrprrrprrr','rrprrrprrrprrrpr','rprrrprrrprrrprr','prrrprrrprrrprrr','rrprrrprrrprrrpr','rprrrprrrprrrprr'],
+    tunnel_sky: ['cccccccccccccccc','ccsssssccccccccc','cssssssscccccccc','cssssssssccccccc','ccsssssssccccccc','cccscssccccccccc','cccccccccccccccc','ccccccccccsssscc','cccccccccssssssc','cccccccccssssssc','ccccccccccsssscc','cccccccccccccccc','ccsssssssscccccc','cssssssssscccccc','ccsssssssscccccc','cccccccccccccccc'],
+  };
+  const puddle = TUNNEL_TILES.tunnel_floor.map(r => r.split(''));
+  [[6,5,'n'],[7,5,'n'],[8,5,'t'],[5,6,'n'],[6,6,'t'],[7,6,'t'],[8,6,'b'],[9,6,'n'],[5,7,'n'],[6,7,'b'],[7,7,'s'],[8,7,'t'],[9,7,'n'],[6,8,'n'],[7,8,'t'],[8,8,'t'],[9,8,'n'],[7,9,'n'],[8,9,'t']].forEach(([x, y, ch]) => { puddle[y][x] = ch; });
+  TUNNEL_TILES.tunnel_puddle = puddle.map(r => r.join(''));
+  const paintGrid = (g, rows) => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
+  for (const [k, rows] of Object.entries(TUNNEL_TILES)) T[k] = mkTile(g => paintGrid(g, rows));
+  for (const k of ['tunnel_sky', 'tunnel_puddle']) {
+    const rows = TUNNEL_TILES[k], base = TUNNEL_TILES.tunnel_floor;
+    T[k + '_decal'] = mkTile(g => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.' && ch !== base[y][x]) px(g, PAL[ch], x, y); })));
+  }
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
@@ -995,7 +1019,10 @@ const HOUSE_SKINS = {
   dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
   dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') }
 };
-const SKINS = Object.assign({ lab: LAB_SKIN }, HOUSE_SKINS);
+// D87: # wall, W face, . floor. Floor variants are gravel (b) and damp (c). Wall variants use the same mix so a rock row is not one stamp.
+// Y is a walkable sky decal (the yard patch). ~ is a walkable drip. = is the den rug. Odd W columns stay the rock face (no house window).
+const TUNNEL_SKIN = {"remap":{"#":"tunnel_wall","W":"tunnel_wall_face","W2":"tunnel_wall_face",".":"tunnel_floor","=":"tunnel_rug","m":"tunnel_mat"},"override":{},"walk":{"Y":1,"~":1},"decal":{"Y":"tunnel_sky","~":"tunnel_puddle"},"variants":{"tunnel_floor":[["tunnel_floor_b",0.34],["tunnel_floor_c",0.33]],"tunnel_wall":[["tunnel_wall_b",0.34],["tunnel_wall_c",0.33]],"tunnel_wall_face":[["tunnel_wall_face_b",0.34],["tunnel_wall_face_c",0.33]]}};
+const SKINS = Object.assign({ lab: LAB_SKIN, tunnel: TUNNEL_SKIN }, HOUSE_SKINS);
 function buildWorldArt(){
   const A = {}, oval = (g, cx, cy, rx, ry, col) => { for (let y=0;y<16;y++) for (let x=0;x<16;x++) if (((x-cx)/rx)**2 + ((y-cy)/ry)**2 <= 1) px(g,col,x,y); };
   A.door = mkTile(g => { px(g,PAL.d,3,2,10,14); px(g,PAL.o,4,3,8,13); px(g,PAL.d,7,4,1,12); px(g,PAL.y,10,9,1,2); px(g,PAL.d,4,2,8,1); });
@@ -1208,6 +1235,19 @@ function buildWorldArt(){
     '................',
     '................',
     '................']));
+  // D87 tunnel props. Wood and metal on the rock floor. Still frames (no outline).
+  const TUNNEL_PROPS = {
+    tunnel_cart: ['................','................','....oooooooo....','...ohhhhhhhhho..','...ohdddddddho..','...ohhhhhhhhho..','...odddddddddo..','....oooooooo....','..oo........oo..','.ohho......ohho.','.oddo......oddo.','..oo........oo..','................','................','................','................'],
+    crate_stack: ['................','...dddddddddd...','...doooooooood..','...doooooooood..','...dooyoooooood.','...ddddddddddod.','...doooooooood..','..dddddddddddd..','..doooooooooood.','..doooooooooood.','..doooyoooooood.','..ddddddddddddd.','..doooooooooood.','..doooooooooood.','..dddddddddddd..','................'],
+    barrel: ['................','................','.....dddddd.....','....dhhhhhhd....','....dhooooohd...','...ddhooooohdd..','...ddhooooohdd..','...ddhhhhhhdd...','...ddhooooohdd..','...ddhooooohdd..','...ddhhhhhhdd...','....dhooooohd...','....dhhhhhhd....','.....dddddd.....','......dddd......','................'],
+    rope_coil: ['................','................','................','.....oooooo.....','....oyyyyyyo....','...oyooooooyo...','...oyooyyooyo...','...oyoyyyoyooy..','...oyooyyooyo...','...oyooooooyo...','....oyyyyyyo....','.....oooooo.....','......oooo......','................','................','................'],
+    tunnel_brace: ['................','...oooooooooo...','...ohhhhhhhhho..','...oooooooooo...','....oo....oo....','....oo....oo....','....oo....oo....','...ooo....ooo...','...oo......oo...','..ooo......ooo..','..oo........oo..','..oo........oo..','.ooo........ooo.','.oooooooooooooo.','................','................'],
+    lantern_hook: ['................','..oooooooooooo..','..oyyyyyyyyyyo..','..oooooooooooo..','.......oo.......','.......oo.......','......o..o......','.....o....o.....','.....o....o.....','......o..o......','.......oo.......','......oyyo......','.......oo.......','................','................','................'],
+    tunnel_desk: ['................','................','..oooooooooooo..','..ohhhhhhhhhho..','..oddddddddddo..','..oooooooooooo..','...dd......dd...','...dd......dd...','...dd......dd...','...dd......dd...','...dd......dd...','..dddd....dddd..','................','................','................','................'],
+    tunnel_ledger: ['................','................','................','....dddddddd....','....dwwwwwwd....','....dwddddwd....','....dwwwwwwd....','....dwddddwd....','....dwwwwwwd....','....dwyyywwd....','....dwwwwwwd....','....dddddddd....','................','................','................','................'],
+    tunnel_lamp: ['................','................','......yyyy......','.....yhhhhy.....','.....yhooohy....','.....yhooohy....','......yyyy......','.......oo.......','.......oo.......','.......oo.......','......dddd......','.....dddddd.....','.....dyyyyd.....','................','................','................'],
+  };
+  for (const [k, rows] of Object.entries(TUNNEL_PROPS)) A[k] = mkTile(g => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   // B5 signature props. Hearth holds frame 0 when reduced motion is on.
   A.hearth = [0, 1].map(f => mkTile(g => {
     px(g, PAL.m, 1, 2, 14, 10); px(g, PAL.d, 2, 3, 12, 8); px(g, PAL.n, 4, 5, 8, 5);
