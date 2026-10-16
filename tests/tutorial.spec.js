@@ -6,7 +6,7 @@ const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('
 
 trackErrors(test, expect);
 
-const ART = '/opt/cursor/artifacts/screenshots';
+const ART = process.env.PP_ART || '/opt/cursor/artifacts/screenshots';
 
 function tourSave() {
   const s = starterSave();
@@ -315,4 +315,23 @@ test('closing mid-tour offers to finish once', async ({ page }) => {
     step: PixelPets.state.flags['story.tutorial_step'] || null,
   }));
   expect(st).toEqual({ v: 2, done: true, step: null });
+});
+
+test('modern replay names the heart glow on the hearts step (D154 shipped)', async ({ page }) => {
+  test.setTimeout(45000);
+  const save = starterSave();
+  save.settings = Object.assign({}, save.settings, { controls: 'modern' });
+  await installSave(page.context(), save, { quietDay: true });
+  await gotoGame(page);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.locator('#gearFloat').click();
+  await page.locator('#setTutorial').click();
+  await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
+  await page.locator('#petFloat').click();
+  for (let i = 0; i < 6; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await expect(page.locator('#tutLine')).toHaveText('These hearts fill as your bond grows. If the heart button glows, Pipkit needs FOOD or REST.');
+  expectLayout(await layout(page));
+  await shot390(page, 'tutorial-t8-modern');
+  await page.locator('#tutSkip').click();
+  await expect(page.locator('#tutLayer')).toBeHidden();
 });

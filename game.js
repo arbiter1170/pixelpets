@@ -803,11 +803,10 @@ const TUT_COPY = {
 };
 const TUT_AFTER = { T0: 'T1', T0r: 'T1', T1: 'T2', T2: 'T3', T3: 'T4', T4: 'T5', T5: 'T6', T6: 'T7', T7: 'T8', T8: 'T9', T8b: 'T9', T9: 'T10', T10a: 'T11', T10m: 'T11', T10j: 'T11', T11: 'T12', T12: 'T13' };
 function tutFill(s){ const p = pet(); return String(s).replace(/\{pet\}/g, p ? petName(p) : 'your partner'); }
-// D154 paints the care glow on #petFloat. Until that alert is in this build, T8 uses the shorter line.
+// D154 paints the care glow on #petFloat (HEART_ALERT, syncCareAlert), modern controls only. Arcade has no heart
+// button, so it keeps the shorter T8b line.
 function heartGlowShipped(){
-  const b = $('#petFloat');
-  if (b && (b.classList.contains('heart-glow') || b.hasAttribute('data-heart-alert'))) return true;
-  return typeof heartAlert === 'function';
+  return typeof syncCareAlert === 'function' && ctlMode() === 'modern';
 }
 function tutResolve(id){
   if (id === 'T8') return heartGlowShipped() ? 'T8' : 'T8b';

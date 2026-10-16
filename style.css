@@ -1063,6 +1063,7 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 .tut-skip[hidden],.tut-card[hidden],.tut-block[hidden],.tut-ring[hidden]{display:none}
 body.tut-on #tabs.locked{opacity:1}
 body.nav-locked .tut-hit{pointer-events:auto;opacity:1}
+body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-locked #questBtn.tut-hit,body.nav-locked .scr-back.tut-hit{pointer-events:auto;opacity:1}
 @keyframes tutPulse{50%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){
   .tut-ring:not([hidden]){animation:none}
