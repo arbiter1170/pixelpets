@@ -166,6 +166,8 @@ With debug already on (`?debug=1`):
 
 `tests/data_integrity.spec.js` does not boot the game. It regenerates `data/mapdata.js` in a temp copy and checks it matches, then checks the composed world: every warp and door target map exists, the target tile is in bounds and walkable, every safe tile is walkable, and object ids are unique on each map. Learnset and trainer move ids must exist, and each species stage totals 192, 256 and 320 (stage 0 and 1 are the stage-2 line times 0.6 and 0.8, largest remainder). Every file named in `sw.js` must exist. A broken fixture is reported for each of those checks. `hc_south` is `test.fixme` (it lands on a house wall).
 
+`tests/look_keys.spec.js` does not boot the game. It fails when two `data/*.json` files define the same NPC look key (game.js merges them into one table, so a repeat silently redraws another file's characters), and a fixture shows a clash is reported.
+
 `tests/wording_guard.spec.js` checks player-visible say lines, choice labels, signs, toasts and blurbs: the banned-word list, the toy-brand pattern (built from character codes), say and sign and quest lines at most 110 after token widths, choice labels at most 30, no double space, and no unknown `{token}`. The ids `isFainted` and `dexGrid` are exempt. The Civic Bank sign is `test.fixme`.
 
 `tests/sfx_minigames.spec.js` loads a seeded save with sound off and reduced motion on, at 320, 375 and 390. `PPSound.play('step')` stays silent. Each minigame opens and closes with no console error. Screenshot: `minigame-<width>.png`.

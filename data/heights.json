@@ -245,7 +245,7 @@
           "name": "Nia",
           "x": 4,
           "y": 10,
-          "look": "nia",
+          "look": "rx_nia",
           "scene": "rx_nia",
           "lines": {
             "story.heights_done": "Copies are in. I am just filing.",
@@ -537,7 +537,7 @@
           "name": "Cal",
           "x": 4,
           "y": 10,
-          "look": "cal",
+          "look": "rx_cal",
           "scene": "rx_cal",
           "lines": {
             "story.heights_done": "Keys found. The glitch is fine.",
@@ -552,7 +552,7 @@
           "name": "Dr. Ivo",
           "x": 3,
           "y": 6,
-          "look": "ivo",
+          "look": "rx_ivo",
           "lines": {
             "story.heights_done": "Atten still matches the label.",
             "story.saw_arbiter": "A glitch. We leave it alone.",
@@ -3364,7 +3364,7 @@
     "bitlet": "Species id byte, type VOLT. Bitlet, Hoverbyte, Archivolt. It woke when the cradle hummed. It is not a product. Staff call it a glitch and leave it alone."
   },
   "looks": {
-    "nia": {
+    "rx_nia": {
       "skin": "3",
       "hair": "bob",
       "hairCol": "n",
@@ -3373,7 +3373,7 @@
       "accent": "c",
       "accessory": "glasses"
     },
-    "cal": {
+    "rx_cal": {
       "skin": "4",
       "hair": "short",
       "hairCol": "o",
@@ -3390,7 +3390,7 @@
       "accent": "c",
       "accessory": "glasses"
     },
-    "ivo": {
+    "rx_ivo": {
       "skin": "5",
       "hair": "buzz",
       "hairCol": "h",
@@ -3425,9 +3425,9 @@
     }
   },
   "speakers": {
-    "Nia": "nia",
-    "Cal": "cal",
+    "Nia": "rx_nia",
+    "Cal": "rx_cal",
     "Quinn": "quinn",
-    "Dr. Ivo": "ivo"
+    "Dr. Ivo": "rx_ivo"
   }
 }
