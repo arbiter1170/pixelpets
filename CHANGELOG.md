@@ -2,6 +2,24 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 14:05 ET: First-time tour merged with current main (build 20261016-1405)
+
+- What changed and why: Merged current `main` after PR #84 (Your Home wall kit), PR #83 (heart alert), PR #78 and PR #87. The tour is unchanged. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md` (both kept), `NEXT_PLAN.md` (main's wording, which already names D157–D160), `index.html`, `version.json` (restamped), `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261016-1405.
+- Tests run and result (widths, checks): `npm run test:agent`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. D157–D160 checked against main and open PRs; no collision. No id was renumbered.
+- Anything left unfinished: none from the merge.
+
+## 2026-10-16 09:52 ET: First-time tour after the starter (build 20261016-0952)
+
+- What changed and why: After the starter scene, a new game offers a 14-step tour of the screen and of FEED, PLAY and REST. SKIP and SKIP TOUR end it from any card. Settings has a Tutorial row whose value is REPLAY. The first run's care buttons are real. A replay only highlights them. The save stays v2. Two flags were added: `story.tutorial_done` and `story.tutorial_step`. A save already past the opening is marked done on load. The daily hello waits until the next day. D157–D160 are settled. No id was renumbered.
+- Files touched: `game.js`, `index.html`, `style.css`, `save.js`, `tests/helpers.js`, `tests/tutorial.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261016-0952.
+- Tests run and result (widths, checks): `PP_PORT=8093 npm test` exit 0 after merging main (the Dream 2004 toy). 903 passed, 12 skipped, 0 failed (20.8m), at 320, 375, and 390. `tests/tutorial.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Settled by Vincent on Oct 16, 2026. D157 skippable. D158 fires when the starter scene closes, and an older save is marked done. D159 two additive flags, save v stays 2. D160 real care on the first run, highlight only on replay.
+- Anything left unfinished: The heart-button glow (D154) is not on main, so step T8 uses the shorter line. When that alert ships, merge main. The Playwright walk ends a one-line scene in the Lodge. It does not play the full starter.
+
 ## 2026-10-16 13:13 ET: Home wall kit merged with current main (build 20261016-1313)
 
 - What changed and why: Merged current `main` (PR #78 Fernbrook rooms, PR #83 heart alert, PR #87 asset converters). Your Home still draws the shared wall kit; the heart-alert `care` debug hook and the door-on-wall draw from main are kept next to the wall shadow.

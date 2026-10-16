@@ -558,7 +558,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { ti
 
 let screen = 'pet';
 function showTab(name){
-  if (overlayOpen()) return;
+  if (overlayOpen() && !tutAllowsTab(name)) return;
   screen = name;
   document.body.dataset.screen = name;
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
@@ -571,8 +571,11 @@ function showTab(name){
   if (name === 'friends') { $('#friendCode').textContent = friendCode(); renderKeeperName(); }
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
+  tutSawTab(name);
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen();
+// The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
+let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false };
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -641,7 +644,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     else { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; }
   }
 }
-window.addEventListener('resize', fitAll);
+window.addEventListener('resize', () => { fitAll(); if (tut.on) tutPlace(); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
 
 const BAR_LABEL = { barHunger: 'Food', barHappy: 'Joy', barEnergy: 'Energy', wBarEnergy: 'Energy', stripFood: 'Food', stripJoy: 'Joy', stripNrg: 'Energy', barXp: 'Growth' };
@@ -775,6 +778,231 @@ function pumpWelcome(){
   welcome.due = false;
   toast(WELCOME_LINE.replace('{pet}', petName(p)));
   return true;
+}
+
+/* Opening tour (D157–D160). One #tutLayer coach mark after the starter scene. Save stays v2:
+   story.tutorial_done (finished, skipped, or a veteran on load) and story.tutorial_step (cleared when it ends). */
+const TUT_COPY = {
+  T0:  ['{pet} is your partner now! Want a quick tour of how to look after them?', 'choice', ''],
+  T0r: ['Finish the tour? It only takes a minute.', 'choice', ''],
+  T1:  ['This is the PARTNER screen. Tap it to see {pet} up close.', 'tap', 'partner'],
+  T2:  ['FOOD drops slowly through the day. When {pet} is hungry, JOY drops faster too.', 'next', 'foodjoy'],
+  T3:  ['NRG is energy. PLAY and battles use it, and REST brings it back. Walking is free.', 'next', 'nrg'],
+  T4:  ["GROW fills as you care for {pet} and walk together. When it's full, {pet} can grow up.", 'next', 'grow'],
+  T5:  ['Tap FEED to fill FOOD. After a meal, {pet} needs a little while before eating again.', 'tap', 'feed'],
+  T6:  ['Tap PLAY for JOY. It uses a little NRG and FOOD, so keep an eye on both.', 'tap', 'play'],
+  T7:  ['Tap REST to bring NRG back. A nap also heals {pet} after a tough battle.', 'tap', 'rest'],
+  T8:  ['These hearts fill as your bond grows. If the heart button glows, {pet} needs FOOD or REST.', 'next', 'hearts'],
+  T8b: ['These hearts fill as your bond grows with {pet}.', 'next', 'hearts'],
+  T9:  ['Tap WALK to head out. Wild Walklings wait in the grass past the east gate.', 'tap', 'walk'],
+  T10a:['Hold the pad to move. Stand next to someone and tap TALK to chat.', 'next', 'pad'],
+  T10m:['Tap the map to walk. Tap people to talk.', 'next', 'mapwalk'],
+  T10j:['Drag the stick to walk. Tap people to talk.', 'next', 'joy'],
+  T11: ["QUEST shows what's next. BAG holds snacks and treats. MAP shows where you are.", 'next', 'qbm'],
+  T12: ['WALKLINGS lists every friend you meet. Your TEAM is who walks with you.', 'next', 'list'],
+  T13: ["That's the tour! You can replay it any time from Settings, under the gear.", 'go', 'gear']
+};
+const TUT_AFTER = { T0: 'T1', T0r: 'T1', T1: 'T2', T2: 'T3', T3: 'T4', T4: 'T5', T5: 'T6', T6: 'T7', T7: 'T8', T8: 'T9', T8b: 'T9', T9: 'T10', T10a: 'T11', T10m: 'T11', T10j: 'T11', T11: 'T12', T12: 'T13' };
+function tutFill(s){ const p = pet(); return String(s).replace(/\{pet\}/g, p ? petName(p) : 'your partner'); }
+// D154 paints the care glow on #petFloat (HEART_ALERT, syncCareAlert), modern controls only. Arcade has no heart
+// button, so it keeps the shorter T8b line.
+function heartGlowShipped(){
+  return typeof syncCareAlert === 'function' && ctlMode() === 'modern';
+}
+function tutResolve(id){
+  if (id === 'T8') return heartGlowShipped() ? 'T8' : 'T8b';
+  if (id === 'T10') return joyOn() ? 'T10j' : (ctlMode() === 'modern' ? 'T10m' : 'T10a');
+  if (id === 'T1' && screen === 'pet') return 'T2';
+  return id;
+}
+function tutAllowsTab(name){
+  if (!tut.on || tut.adv !== 'tap') return false;
+  return (tut.key === 'partner' && name === 'pet') || (tut.key === 'walk' && name === 'walk');
+}
+function tutBox(el){
+  if (!el || el.hidden) return null;
+  const r = el.getBoundingClientRect();
+  if (r.width < 2 || r.height < 2) return null;
+  return { x: r.left, y: r.top, w: r.width, h: r.height, el: el };
+}
+function tutJoin(sels){
+  const rs = sels.map(s => tutBox($(s))).filter(Boolean);
+  if (!rs.length) return [];
+  const x = Math.min.apply(null, rs.map(r => r.x)), y = Math.min.apply(null, rs.map(r => r.y));
+  const rt = Math.max.apply(null, rs.map(r => r.x + r.w)), bt = Math.max.apply(null, rs.map(r => r.y + r.h));
+  return [{ x: x, y: y, w: rt - x, h: bt - y, el: rs[0].el }];
+}
+function tutUnion(rs){
+  if (rs.length <= 1) return rs;
+  const x = Math.min.apply(null, rs.map(r => r.x)), y = Math.min.apply(null, rs.map(r => r.y));
+  const rt = Math.max.apply(null, rs.map(r => r.x + r.w)), bt = Math.max.apply(null, rs.map(r => r.y + r.h));
+  const box = (rt - x) * (bt - y), sum = rs.reduce((a, r) => a + r.w * r.h, 0);
+  if (box < sum * 2.2 && bt - y < 220) return [{ x: x, y: y, w: rt - x, h: bt - y, el: rs[0].el }];
+  return rs;
+}
+function tutHearts(){
+  const c = $('#petCanvas'); if (!c) return [];
+  const r = c.getBoundingClientRect(); if (r.width < 2) return [];
+  const k = r.width / c.width, hx = Math.round(c.width / 2) - 14;
+  return [{ x: r.left + (hx - 2) * k, y: r.top, w: 34 * k, h: Math.max(16, 12 * k), el: c }];
+}
+function tutTargets(key){
+  const modern = ctlMode() === 'modern', one = sel => { const b = tutBox($(sel)); return b ? [b] : []; };
+  if (key === 'partner') return one(modern ? '#petFloat' : '#tabs button[data-tab="pet"]');
+  if (key === 'foodjoy') return one('#scr-pet .stats');
+  if (key === 'nrg') return tutJoin(['.ss-nrg-l', '.ss-nrg-b', '.ss-nrg-v']);
+  if (key === 'grow') return tutJoin(['.ss-grow-l', '.ss-grow-b', '.ss-grow-v']);
+  if (key === 'feed' || key === 'play' || key === 'rest') return one('#scr-pet [data-act="' + key + '"]');
+  if (key === 'hearts') return tutHearts();
+  if (key === 'walk') return one(modern ? '#scr-pet .scr-back' : '#tabs button[data-tab="walk"]');
+  if (key === 'pad') return one('#dpad');
+  if (key === 'mapwalk') {
+    const b = tutBox($('#mapCanvas')); if (!b) return [];
+    const w = Math.min(160, Math.max(44, b.w - 24)), h = Math.min(120, Math.max(44, b.h * 0.34));
+    return [{ x: b.x + (b.w - w) / 2, y: b.y + Math.min(72, Math.max(8, b.h * 0.16)), w: w, h: h, el: b.el }];
+  }
+  if (key === 'joy') return one('#joyRing');
+  if (key === 'qbm') return tutUnion(['#questBtn', '#walkBagBtn', '#mapBtn'].map(s => tutBox($(s))).filter(Boolean));
+  if (key === 'list') return one(modern ? '#colFloat' : '#tabs button[data-tab="col"]');
+  if (key === 'gear') return one(modern ? '#gearFloat' : '#settingsBtn');
+  return [];
+}
+function tutCareBlocked(act){
+  if (tut.replay) return true;
+  const p = pet(); if (!p || cdLeft(p, act)) return true;
+  if (act === 'feed') return p.hunger >= 98;
+  if (act === 'play') return isFainted(p) || p.energy < 10;
+  if (act === 'rest') return p.energy >= 98 && !(Number.isFinite(p.hpNow) || isFainted(p));
+  return false;
+}
+function tutClearHit(){
+  if (tut.hit) { tut.hit.classList.remove('tut-hit'); tut.hit.removeAttribute('aria-describedby'); tut.hit = null; }
+}
+function tutPlace(){
+  if (!tut.on) return;
+  const holes = tut.holes, h = holes.length ? holes[tut.hi % holes.length] : null;
+  const dims = ['#tutD1', '#tutD2', '#tutD3', '#tutD4'].map(s => $(s));
+  const ring = $('#tutRing'), block = $('#tutBlock');
+  const vw = window.innerWidth, vh = window.innerHeight;
+  if (!h) {
+    dims[0].style.cssText = 'left:0;top:0;width:100%;height:100%';
+    for (let i = 1; i < 4; i++) dims[i].style.cssText = 'display:none';
+    ring.hidden = true; block.hidden = true;
+  } else {
+    const x = h.x, y = h.y, w = h.w, hh = h.h;
+    dims[0].style.cssText = 'left:0;top:0;width:100%;height:' + Math.max(0, y) + 'px';
+    dims[1].style.cssText = 'left:0;top:' + y + 'px;width:' + Math.max(0, x) + 'px;height:' + hh + 'px';
+    dims[2].style.cssText = 'left:' + (x + w) + 'px;top:' + y + 'px;right:0;height:' + hh + 'px';
+    dims[3].style.cssText = 'left:0;top:' + (y + hh) + 'px;width:100%;bottom:0';
+    ring.hidden = false;
+    ring.style.left = (x - 6) + 'px'; ring.style.top = (y - 6) + 'px';
+    ring.style.width = (w + 12) + 'px'; ring.style.height = (hh + 12) + 'px';
+    const pass = tut.adv === 'tap';
+    block.hidden = pass;
+    if (!pass) { block.style.left = x + 'px'; block.style.top = y + 'px'; block.style.width = w + 'px'; block.style.height = hh + 'px'; }
+    void vw; void vh;
+  }
+  tutClearHit();
+  if (h && tut.adv === 'tap' && h.el) { tut.hit = h.el; h.el.classList.add('tut-hit'); h.el.setAttribute('aria-describedby', 'tutLine'); }
+  const card = $('#tutCard'); if (!card || card.hidden) return;
+  const cw = card.offsetWidth, ch = card.offsetHeight;
+  let left = Math.max(6, (vw - cw) / 2), top;
+  if (!h) top = Math.max(6, (vh - ch) / 2);
+  else {
+    const below = h.y + h.h + 12, above = h.y - 12 - ch;
+    top = (h.y + h.h / 2) < vh / 2 ? below : above;
+    const fits = yy => yy >= 6 && yy + ch <= vh - 6;
+    const hits = yy => yy < h.y + h.h + 4 && yy + ch > h.y - 4 && left < h.x + h.w && left + cw > h.x;
+    if (!fits(top) || hits(top)) { const alt = top === below ? above : below; if (fits(alt) && !hits(alt)) top = alt; }
+  }
+  left = Math.max(6, Math.min(left, vw - cw - 6));
+  top = Math.max(6, Math.min(top, vh - ch - 6));
+  card.style.left = left + 'px'; card.style.top = top + 'px';
+}
+function tutShow(id){
+  id = tutResolve(id);
+  const row = TUT_COPY[id]; if (!row) { tutClose(true); return; }
+  tut.id = id; tut.key = row[2]; tut.adv = row[1] === 'tap' ? 'tap' : 'next'; tut.act = (id === 'T5' || id === 'T6' || id === 'T7') ? tut.key : null;
+  if (tut.act && tutCareBlocked(tut.act)) tut.adv = 'next';
+  if (!tut.replay && S) { S.flags['story.tutorial_step'] = id === 'T0r' ? 'T0' : id.replace(/[abmj]$/, '').replace('T8b', 'T8'); save(); }
+  const line = $('#tutLine'); line.textContent = tutFill(row[0]);
+  const acts = $('#tutActs'); acts.textContent = '';
+  const addBtn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = label; b.addEventListener('click', fn); acts.append(b); return b; };
+  if (row[1] === 'choice') { addBtn('SHOW ME', () => tutShow('T1')); addBtn('SKIP', () => tutClose(true)); }
+  else if (tut.adv === 'next') addBtn(id === 'T13' ? "LET'S GO" : 'NEXT', () => (id === 'T13' ? tutClose(true) : tutAdvance()));
+  const skip = $('#tutSkip'); skip.hidden = row[1] === 'choice' || id === 'T13';
+  const card = $('#tutCard'); card.hidden = false;
+  tut.holes = tut.key ? tutTargets(tut.key) : []; tut.hi = 0;
+  clearInterval(tut.cycle); tut.cycle = 0;
+  if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
+  tutPlace();
+  const focus = acts.querySelector('button') || (skip.hidden ? null : skip);
+  if (focus) focus.focus({ preventScroll: true });
+  const layer = $('#tutLayer'); if (layer) layer.dataset.step = id;
+}
+function tutAdvance(){ const n = TUT_AFTER[tut.id]; if (!n) tutClose(true); else tutShow(n); }
+function tutSawTab(name){ if (tut.on && tut.adv === 'tap' && tutAllowsTab(name)) tutAdvance(); }
+function tutSawAct(act){
+  if (!tut.on || tut.replay || tut.adv !== 'tap' || tut.act !== act) return;
+  const card = $('#tutCard'); if (card) card.hidden = true;
+  const step = act;
+  const go = () => {
+    if (!tut.on || tut.act !== step) return;
+    const nap = step === 'rest' && now() < anim.sleepUntil;
+    if ($('#toast').classList.contains('show') || nap) { tut.wait = setTimeout(go, 120); return; }
+    tutAdvance();
+  };
+  clearTimeout(tut.wait); tut.wait = setTimeout(go, 120);
+}
+function tutMiss(act){ if (!tut.on || tut.act !== act || tut.adv !== 'tap') return; tut.adv = 'next'; tutShow(tut.id); }
+function tutClose(mark){
+  const replay = tut.replay, skipping = mark === 'skip';
+  clearTimeout(tut.wait); clearInterval(tut.cycle); tut.cycle = 0;
+  tutClearHit();
+  tut.on = false; tut.replay = false; tut.id = null; tut.adv = null; tut.key = null; tut.act = null; tut.holes = []; tut.fromScene = false;
+  const layer = $('#tutLayer'); if (layer) { layer.hidden = true; delete layer.dataset.step; }
+  document.body.classList.remove('tut-on');
+  const card = $('#tutCard'); if (card) card.hidden = false;
+  lockTabs(false);
+  if (S && (mark === true || skipping) && (!replay || skipping)) {
+    S.flags['story.tutorial_done'] = true;
+    delete S.flags['story.tutorial_step'];
+    S.flags[HELLO_FLAG] = dayKey(Date.now());
+    save();
+  }
+  if (screen === 'walk' && S && !PPEnv.geoPref() && allPets().length) openGeoAsk();
+}
+function runTutorial(opts){
+  if (!S || !pet() || tut.on) return;
+  opts = opts || {};
+  tut.on = true; tut.replay = !!opts.replay; tut.fromScene = false;
+  const layer = $('#tutLayer'); if (!layer) { tut.on = false; return; }
+  layer.hidden = false; document.body.classList.add('tut-on');
+  clearMoves(); lockTabs(true);
+  tutShow(opts.replay ? 'T1' : (opts.resume ? 'T0r' : 'T0'));
+}
+function tutorialPending(){
+  return !!(S && pet() && !tut.on && S.flags['story.starter_received'] && !S.flags['story.tutorial_done'] && !S.flags['story.early_done']);
+}
+function scheduleTutorial(fromScene){
+  if (!tutorialPending()) return;
+  if (!fromScene && !S.flags['story.tutorial_step']) return;
+  tut.fromScene = !!fromScene || tut.fromScene;
+  clearTimeout(tut.wait);
+  tut.wait = setTimeout(() => tutorialKnock(!!fromScene || !!S.flags['story.tutorial_step']), 400);
+}
+function tutorialKnock(allow){
+  if (!tutorialPending() || !allow) return;
+  const toastUp = $('#toast').classList.contains('show');
+  const busy = scene || (battle && battle.on) || !$('#ovGeo').hidden || !$('#ovSettings').hidden || !$('#ovLook').hidden;
+  if (toastUp || busy || (welcome.due && screen === 'pet')) { tut.wait = setTimeout(() => tutorialKnock(true), 200); return; }
+  runTutorial({ replay: false, resume: !!S.flags['story.tutorial_step'] });
+}
+function skipTutorial(){ if (tut.on && tut.id !== 'T13') tutClose('skip'); }
+function replayTutorial(){
+  if (!S || !pet() || scene || (battle && battle.on) || tut.on) return;
+  closeSettings();
+  runTutorial({ replay: true });
 }
 /* CARE_LOOP E, cheap slice: bond. Stored as points on the Walkling (p.bond, only ever goes up), shown as 5 hearts in the PARTNER
    scene: Bond 1-5 at 0 / 20 / 60 / 120 / 200 points. Only the partner earns it. Sources (eng notes §3.1, Design's defaults):
@@ -945,11 +1173,11 @@ function doAction(act){
   const p = pet(); const t = now();
   if (t < anim.busyUntil) return;
   const left = cdLeft(p, act);
-  if (left) { sfx('denied'); return toast(petName(p) + CD_MSG[act] + fmtCd(left) + '.'); }
+  if (left) { sfx('denied'); tutMiss(act); return toast(petName(p) + CD_MSG[act] + fmtCd(left) + '.'); }
   const pp = petPos(t);
   let msg;
   if (act === 'feed') {
-    if (p.hunger >= 98) { sfx('denied'); return toast('Too full to eat!'); }
+    if (p.hunger >= 98) { sfx('denied'); tutMiss(act); return toast('Too full to eat!'); }
     const bowl = bowlReady();
     p.hunger = clamp(p.hunger + careGain(FEED_FOOD, p.hunger, FEED_BANDS) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + (bowl ? BOWL.joy : 3), 0, 100);
     if (bowl) { S.flags[BOWL.flag] = dayKey(Date.now()); queueEmote('emote_hearts', 600, 1500); }   // two-hearts balloon (ICONS_SEALS Q6), on the emote queue
@@ -957,15 +1185,15 @@ function doAction(act){
     setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
     anim.busyUntil = t + (bowl ? 1500 : 1100); msg = bowl ? 'Warm Bowl! ' + petName(p) + ' gobbles it up. +FOOD +JOY' : 'Yum! +FOOD';
   } else if (act === 'play') {
-    if (isFainted(p)) { sfx('denied'); return toast(petName(p) + ' is worn out and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
-    if (p.energy < 10) { sfx('denied'); return toast('Too tired to play. REST first!'); }
+    if (isFainted(p)) { sfx('denied'); tutMiss(act); return toast(petName(p) + ' is worn out and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
+    if (p.energy < 10) { sfx('denied'); tutMiss(act); return toast('Too tired to play. REST first!'); }
     p.happy = clamp(p.happy + careGain(20, p.happy), 0, 100); p.energy = clamp(p.energy - 8, 0, 100); p.hunger = clamp(p.hunger - 4, 0, 100);
     anim.jumpUntil = t + 1200; anim.busyUntil = t + 1200;
     for (let i=0;i<4;i++) addPart(i%2 ? 'heart' : 'spark', pp.x + 1 + i*4, pp.y + 2, (i-1.5)*6, -14);
     msg = 'Wheee! +JOY';
   } else if (act === 'rest') {
     const hurt = Number.isFinite(p.hpNow) || isFainted(p);   // REST also restores 50% of max HP and clears Fainted (BATTLE §7.2)
-    if (p.energy >= 98 && !hurt) { sfx('denied'); return toast('Not sleepy right now.'); }
+    if (p.energy >= 98 && !hurt) { sfx('denied'); tutMiss(act); return toast('Not sleepy right now.'); }
     p.energy = clamp(p.energy + careGain(30, p.energy), 0, 100); p.hunger = clamp(p.hunger - 5, 0, 100);
     restPet(p, 'pet');
     anim.sleepUntil = t + 3000; anim.busyUntil = t + 3000; msg = 'Zzz... +ENERGY' + (hurt ? ' +HP' : '');
@@ -990,6 +1218,7 @@ function doAction(act){
   }
   toast(msg);
   updateHUD(); save();
+  tutSawAct(act);
 }
 
 /* CARE_LOOP A, cheap slice: tap to pat and tickle (no rub zones). Tap the partner on the PARTNER tab: a happy squint, a chirp
@@ -3533,6 +3762,7 @@ function endScene(){
   if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
     const back = trackFor(CUR); if (back && back !== cue) PPSound.music(back, { fadeOut: 400, fadeIn: 500 });
   }
+  scheduleTutorial(true);
 }
 const pend = f => scene.pending.push(f);
 // Scene cast: someone a scene brings into a room who has no map object there. MAPS_SLICE §8 `starter`: "The door bangs open.
@@ -8016,7 +8246,7 @@ function bindDebugPanel(){
 /* ---------- input ---------- */
 function bindInput(){
   $$('#tabs button').forEach(b => b.addEventListener('click', () => {
-    if (tabsGuarded()) return;
+    if (tabsGuarded() && !tutAllowsTab(b.dataset.tab)) return;
     if (b.dataset.tab === 'quest') { openQuest(); return; }
     if (b.dataset.tab !== screen) sfx('tap');
     showTab(b.dataset.tab);
@@ -8029,10 +8259,10 @@ function bindInput(){
   $('#gearFloat').addEventListener('click', gearTap);     // Q26: same handler as the header gear
   $('#setControls').addEventListener('click', () => setControls(ctlMode() === 'modern' ? 'arcade' : 'modern'));
   $('#setJoystick').addEventListener('click', () => setJoystick(!joyOn()));
-  const floatTab = name => { if (tabsGuarded() || overlayOpen() || !allPets().length) { sfx('denied'); return; } sfx('tap'); showTab(name); };
+  const floatTab = name => { if ((tabsGuarded() || overlayOpen() || !allPets().length) && !tutAllowsTab(name)) { sfx('denied'); return; } sfx('tap'); showTab(name); };
   $('#colFloat').addEventListener('click', () => floatTab('col'));
   $('#petFloat').addEventListener('click', () => floatTab('pet'));
-  $$('.scr-back').forEach(b => b.addEventListener('click', () => { if (overlayOpen()) return; sfx('tap'); showTab('walk'); }));
+  $$('.scr-back').forEach(b => b.addEventListener('click', () => { if (overlayOpen() && !tutAllowsTab('walk')) return; sfx('tap'); showTab('walk'); }));
   $('#petStrip').addEventListener('click', () => { if (S && pet()) openStatsCard(S.partnerId); });
   bindJoystick();
   // option buttons that just appeared ignore taps (capture phase, before their own handlers)
@@ -8050,6 +8280,8 @@ function bindInput(){
   }
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
+  const setTut = $('#setTutorial'); if (setTut) setTut.addEventListener('click', () => { sfx('tap'); replayTutorial(); });
+  const tutSkipBtn = $('#tutSkip'); if (tutSkipBtn) tutSkipBtn.addEventListener('click', () => skipTutorial());
   bindDebugUi();
   // scene text box (MAPS_SLICE §8): tap anywhere on the box or the map advances; SKIP jumps to the next interactive step
   $('#ovScene').addEventListener('pointerdown', e => { if (e.target.closest('button, input')) return; e.preventDefault(); sceneTap(); });
@@ -8233,6 +8465,8 @@ function bindInput(){
   let sceneKeyEat = false;
   window.addEventListener('keyup', e => { if (sceneKeyEat && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sceneKeyEat = false; } });
   window.addEventListener('keydown', e => {
+    if (tut.on && !(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && (e.key === 'Escape' || e.key === 'Backspace')) { e.preventDefault(); skipTutorial(); return; }
+    if (tut.on && KEYS[e.key]) { e.preventDefault(); return; }
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
     if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && !debugOpen() && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
@@ -8515,6 +8749,7 @@ function boot(){
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
   applyControls();
+  scheduleTutorial(false);
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   PPSound.setMusic(S.settings.music !== false);
@@ -8544,6 +8779,7 @@ function boot(){
     openStats: id => openStatsCard(id), closeStats: () => closeStatsCard(),          // UI only (the same as tapping STATS / CLOSE)
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
     get controls(){ return { mode: ctlMode(), joystick: joyOn(), dpad: walk.dpad || null }; },   // Q26, read-only
+    get tutorial(){ return { on: !!tut.on, id: tut.id, replay: !!tut.replay }; },   // opening tour, read-only
     get petScene(){ const c = $('#petCanvas'); return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice(), w: c.width, h: c.height, cssW: parseFloat(c.style.width)||0, cssH: parseFloat(c.style.height)||0 }; },
     get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
       look: Object.assign({}, KEEPER_LOOKS.defaults, shownLook() || {}), name: playerName(), builds: keeperBuilds }; },
