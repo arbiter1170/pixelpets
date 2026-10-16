@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 10:24 ET: Lantern House planks merged with current main (build 20261016-1024)
+
+- What changed and why: Merged current `main` (build 20261016-0947), which keeps the dream pop-toy answering a bump from any side. The Fernbrook Lantern House floor stays the calm cream planks, rug, quilt runner, and thin hearth from build 20261016-0957. The Bloom Trial Hall is unchanged. `data/mapdata.js` was regenerated. Save `v` stays 2. The next free id stays D151.
+- Files touched: merge of `main`. Conflicts: `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped). `sprites.js` and `game.js` merged cleanly.
+- Commit(s) + build id: build 20261016-1024.
+- Tests run and result (widths, checks): `PP_PORT=8820 npm test` exit 0. 906 passed, 12 skipped, 0 failed (20.5m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
 ## 2026-10-16 09:57 ET: Fernbrook Lantern House floor is calm orchard planks (build 20261016-0957)
 
 - What changed and why: Vincent rejected the Lantern House floor. The short dark courses read as a brick pile, the same look he turned down for Calloway and the Lodge. The floor is now wide cream planks, with the rug kept, a short quilt runner, and a two-tile brick hearth in front of the counter. Brick is only that thin lip. The Bloom Trial Hall is unchanged. The planks stay distinct from the Hearthmoor lantern checker and the Cobblecrest cobble floor. Merged `main` at build 20261016-0922. Save `v` stays 2. The next free id stays D151.

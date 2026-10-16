@@ -10,7 +10,8 @@ const ROOMS = [
     variants: true, dream: null,
     old: ['obs_out', 'obs_scope'],
     exit: { x: 4, y: 5, dir: 'down', to: 'mahopac', tx: 5, ty: 8 } },
-  { id: 'dream_2004', w: 9, h: 8, ax: 4, ay: 6, safe: [4, 6], floor: '.', wall: 'wall_mist', face: 'wall_mist_face',
+  { id: 'dream_2004', w: 13, h: 9,   // widened for the kitchen and TV corner (Mom and Dad)
+    ax: 4, ay: 6, safe: [4, 6], floor: '.', wall: 'wall_mist', face: 'wall_mist_face',
     variants: true, dream: 'young',
     old: ['pop_toy', 'dream_toy_sign'] },
   { id: 'dream_party', w: 11, h: 8, ax: 5, ay: 6, safe: [5, 6], floor: '.', wall: 'wall_fest', face: 'wall_fest_face',
