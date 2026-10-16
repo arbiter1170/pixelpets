@@ -203,7 +203,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   stub: offer a snack (it stays in the bag), meet a free quota of three spoken names, or battle Hale. Any close grants
   the Bright Tier 2 Lanyard (`seals.seal_glim_2`, `LANYARD_TIER2`: gold rim, mint field, two white marks), 2 Hearty Snacks and 1 Wake Tonic, and sets
   `story.seal2`. The player look picker still has no lanyard. On the Brinewick cart, Keepers Rook gets off (`story.rook_end` `"ally"`) and Glimmerwell Rook stays
-  (`"stays"`). Both paths set `story.cobble_end` and show the same coming-later card. After that flag, a Keepers save is called to the Lantern Council in Sky-Dock Command (`hc_council`). The fourteen High Charity rooms keep their size, and each one has its own floor and wall. Its Lantern House uses warm tiles with sage grout. A Glimmerwell pledge does not see it. The quest row covers that pointer until `story.hc_council_done`. Brinewick stays closed. Keepers Route 2 and the Hale trial
+  (`"stays"`). Both paths set `story.cobble_end` and show the same coming-later card. After that flag, Rook waits on the Cobblecrest east road. The side quest "The last crates" (`rc_meet`) sends you to three crates in the quarry. He quits Glimmerwell on both paths (`story.rook_quit` `"r5"` for Keepers, `"r6"` for Glimmerwell). `story.rook_end` is not rewritten. The lanyard comes off when `story.rook_quit` is set, and it still comes off when `story.rook_end` is `"ally"`. Keepers free the crates and fight Associate Tobin. A Glimmerwell player who walks away switches to the Keepers and frees them with Rook. A Glimmerwell player who stays fights Rook (`rival3_rook`). Hale pays the road snacks when the crates go home. Juniper pays an Acorn bonus when they ship. Brinewick stays closed. After that flag, a Keepers save is called to the Lantern Council in Sky-Dock Command (`hc_council`). The fourteen High Charity rooms keep their size, and each one has its own floor and wall. Its Lantern House uses warm tiles with sage grout. A Glimmerwell pledge does not see it. The quest row covers that pointer until `story.hc_council_done`. Brinewick stays closed. Keepers Route 2 and the Hale trial
   are unchanged. `story.rook_bond` does not gate the cart.
 - Standing (Build 2, GLIMMER_PATH v0.2 BS; NEXT_PLAN WP-B "Standing and switching"): each side has a 0-100 meter,
   `S.standing = { keepers, glimmer }` (additive, `v` stays 2; `save.js` fills a missing or bad value with 0 and clamps the
@@ -219,20 +219,21 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   `standing.keepers>=2` / `standing.glimmer>=2` (the tier, not points) for later lines and options. Reaching a new tier shows
   that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
   the spec has no numbers yet.
-  **Switching** happens at a Pledge desk: an extra option on Keeper Amos's Lantern House panel in Fernbrook (to the
-  Keepers) and on Associate Juniper's line at the Fernbrook stand (to Glimmerwell), only after `story.side_pick_done`, never
-  mid-scene or mid-battle, and only where it would be a change. A reference letter from the side you join reads first, then
-  "Really? Keepers Standing 30 → 15" with Yes / Think about it; Yes halves the side you leave (floor), keeps the side you
-  join, rewrites `story.side`, counts `story.switches`, records `story.switch_chapter` and `story.switch_at`, and plays a
-  short "performance review" line from the side you left (the letter and review lines are placeholders awaiting copy).
-  Cooldown: one switch per chapter, where a chapter is the number of Seals earned (`chapterOf()` in `standing.js`; the
-  spec does not define "chapter", see OPEN_DECISIONS). Switching never touches progression flags, Seals or lanyards,
-  `story.rook_bond`, the current objective, or `story.beat.*`; unplayed scenes simply resolve to the new side's variant.
+  **Switching** is only through Rook, after The last crates (`story.rc_climax`). Fernbrook Pledge desks are gone. The Lantern
+  panel is Rest and Leave again, and Juniper talks without a desk option. The gate scene offers the switch and then writes
+  `story.rc_climax`. Rook's letter reads first, then "Really? Glimmerwell Standing 30 → 15" with Yes / Not yet. Yes halves
+  the side you leave (floor), keeps the side you join, rewrites `story.side`, counts `story.switches`, records
+  `story.switch_chapter`, `story.switch_at` and `story.switch_via` `"rook"`, then plays the review and the welcome. A second
+  switch in the same chapter gets the refused line. `chapterOf()` counts `story.seal1`, `story.seal2`, and `story.seal3`
+  when that flag exists. Seal 3 is not built, so a current save gets at most one Rook switch after Seal 2. An older save
+  that already switched and has no `story.switch_via` loads with `"desk"`. Debug `switchSide(to, true)` is the only free
+  switch. Switching never touches progression flags, Seals or lanyards, `story.rook_bond`, `story.rook_end`, or `story.beat.*`.
   The quest overlay gains a read-only **STANDING** tab once the pick is made: a row per side with the emblem, tier name,
-  blurb, a bar to the next tier and a PLEDGED marker, plus "Pledged to {faction}" and the explainer. Console:
-  `PixelPets.standing` (`{keepers: {points, tier, name}, glimmer: {...}, side, switches, chapter, canSwitch}`),
-  `standingCfg()`, `standingCheck()`; with debug `setStanding(side, n)`, `switchSide(to, free)`, `pledgeDesk(to)`.
-  The designer's `switch_desk_glimmer` kiosk art is in the world-art table but not placed on any map yet.
+  blurb, a bar to the next tier and a PLEDGED marker, plus "Pledged to {faction}" and the explainer
+  "Standing is how much a side trusts you. Only Rook can help you change sides." Console:
+  `PixelPets.standing` (`{keepers: {points, tier, name}, glimmer: {...}, side, switches, chapter, via, canSwitch}`),
+  `standingCfg()`, `standingCheck()`; with debug `setStanding(side, n)`, `switchSide(to, free)`, `rookOffer(to)`.
+  The `switch_desk_glimmer` pixels stay in the art table and are retired. They are not placed.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   growing up (each line's grow-up move, then any level moves of the new form). Older saves get missed grow-up
   moves on their next visit ("<name> remembers something from growing up!").

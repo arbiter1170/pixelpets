@@ -28,7 +28,7 @@ Morning (recorded in the first pass):
 
 Evening (Build 3, supersede the morning notes):
 
-5. **Rook after Glimmerwell (D23).** If the player joins Glimmerwell, Rook stays with Glimmerwell. If the player stays with the Keepers, Rook eventually converts to good. Not bond-gated. No follow-or-stay fork. Supersedes "Rook always leaves" and the bond tree below. The R5 scene is on `main` (`ally` / `stays`).
+5. **Rook after Glimmerwell (D23).** If the player joins Glimmerwell, Rook stays with Glimmerwell. If the player stays with the Keepers, Rook eventually converts to good. Not bond-gated. No follow-or-stay fork. Supersedes "Rook always leaves" and the bond tree below. The R5 scene is on `main` (`ally` / `stays`). D130 (Oct 16): in The last crates he quits Glimmerwell on every path. `story.rook_end` is not rewritten. `story.rook_quit` records the leaving. Frostmere is not built.
 6. **Hall replacements (D3).** Fernbrook slot 1 is the Bright Pavilion Tour (on `main`). Cobblecrest slot 2 is the Sacrifice, with Quota as the free floor. The stub is on `main`. Keepers keep the Trial Halls. The Audit battle is the Tour's optional last stop.
 
 ## 0. Where the build stands
@@ -43,7 +43,7 @@ Also on `main` since the Oct 13 handoff: Glimmerwell and wild battle music plus 
 
 On `main` with this landing: Fernbrook Heights, glimmer Route 2, the Sacrifice stub, Rook's closer, the save copy before Start over, the Keeper House with the Keeper1 phone, Ribbit, and the open east gate. Those had lived on `origin/cursor/keeper-hq-phone-0bb2` (tip `46113b2`; the documented Q16 commit was `d43dde7`). GitHub had marked PRs #11, #12, #13, #14, and #16 merged because each merged into the previous feature branch, not into `main`. The provenance log is `BRANCH_LOG.md`.
 
-Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Fernbrook Pledge desks, sound/music/stingers, save v2 (additive fields), cloud save Phase 1 (off). Playwright smokes live in `tests/` (no CI workflow yet).
+Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Rook's offer (Pledge desks retired, D127), sound/music/stingers, save v2 (additive fields), cloud save Phase 1 (off). Playwright smokes live in `tests/` (no CI workflow yet).
 
 Story shape today: **Glimmerwell Co. is the antagonist** on the Keepers path and a cheerful employer on the glimmer path. Rook is a Junior Bright colleague on glimmer Fernbrook (`teaser@glimmer` does not say he leaves). The Keepers path (Fen, Hale, the Halls, the Lantern Houses) is still the default for any save that never picked a side.
 
@@ -278,7 +278,7 @@ Rules to keep the tree safe:
 
 ### Standing and switching (Oct 13 decision: the side is switchable, needs Standing)
 
-**Status: shipped in Build 2** (`standing.js`, Fernbrook Pledge desks, STANDING tab). Standing numbers are settled (D14–D17, Vincent Oct 15); desk copy is still open (D19–D22). The text below is the original spec; the live rules live in `STANDING_CFG`.
+**Status: shipped in Build 2** (`standing.js`, STANDING tab). Rook's offer replaced the Fernbrook Pledge desks (D127, Oct 16). Standing numbers are settled (D14–D17, Vincent Oct 15). Desk copy D19 and desk placement D20 are closed. D21 and D22 stay open. The text below is the original spec; the live rules live in `STANDING_CFG`.
 
 **Data (additive, no save bump).** `S.standing = { keepers: n, glimmer: n }`, integers 0-100, both always tracked, normalised in `save.js` (`fill(s, 'standing', isObj, {})` like `bag`/`seals`/`flags`, clamp on load). `story.side` stays the *pledge* ("which faction are you currently working for"). Each faction has 5 tiers (0-4) from thresholds, for example 0 / 10 / 25 / 45 / 70.
 - Keepers tiers (working names): Stranger, Friend, Trusted, Hall Friend, Warden's Ally.
@@ -454,7 +454,7 @@ Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. The NPC-only Fet
 
 ### Q28 — Map pass (`handoff/maps/`) — **in progress**
 
-Start at `handoff/maps/README.md`: the audit, `BUILDING_VARIETY.md`, and packets B1–B8 in priority order. The Arbiter Bay pilot is on main (PR #51, build 20261015-0817), so B1 is a gap check, not a second build. B4's exterior pass is on main. Vincent cleared B2–B7. B8 waits until B5's house skins exist, then for his go. Limits are settled as D81–D89. D90 and D91 are already used. The batches below keep D92–D103. D104 is already taken on main, so the next free id is D138 (D127–D136 are reserved by Design, and D137 is used). D148, D149 and D150 are settled and must not be reused. Do not renumber D92–D103. Each remaining batch is its own branch and PR into `main`:
+Start at `handoff/maps/README.md`: the audit, `BUILDING_VARIETY.md`, and packets B1–B8 in priority order. The Arbiter Bay pilot is on main (PR #51, build 20261015-0817), so B1 is a gap check, not a second build. B4's exterior pass is on main. Vincent cleared B2–B7. B8 waits until B5's house skins exist, then for his go. Limits are settled as D81–D89. D90 and D91 are already used. The batches below keep D92–D103. D104 is already taken on main, so the next free id is D138 (D127–D136 are settled for Rook's Crossroads, and D137 is used). D148, D149 and D150 are settled and must not be reused. Do not renumber D92–D103. Each remaining batch is its own branch and PR into `main`:
 
 | Batch | What | Starts from | Decision ids |
 |---|---|---|---|
@@ -676,7 +676,7 @@ Arcade keeps `WALK_TIP_DEFAULT` and the early line "Hold the pad to walk. The ea
 
 #### Leave out
 
-Battle controls and the overlays stay as they are. The Talk button stays in arcade. No new icons. No landscape layout (D72). Switching sides is the Pledge desks (D20), not a button on the map; the sketch's "switch sides" is not built. The sketch's other notes are ideas, not part of Q26: berry bushes to pick and feed or sell, a befriend floor at half HP (that number is WP-A, D6–D8), different house art, grass movement, and season colours. Background music is already in the game.
+Battle controls and the overlays stay as they are. The Talk button stays in arcade. No new icons. No landscape layout (D72). Switching sides is Rook's offer after The last crates (D127), not a button on the map; the sketch's "switch sides" is not built. The sketch's other notes are ideas, not part of Q26: berry bushes to pick and feed or sell, a befriend floor at half HP (that number is WP-A, D6–D8), different house art, grass movement, and season colours. Background music is already in the game.
 
 ### Hold
 
@@ -684,7 +684,7 @@ Quest-unlocked Walkling adornments (D75) are not started. The five current ones 
 
 ### Parallel, does not unblock Q19
 
-Designer: Tour stop copy and the real `tour.doubt` name (D26); the switch-desk letter, review, and welcome (D19); the Sacrifice one-pager (D24), which replaces the stub. Tier-2 lanyard art, Imogen, Hollis, and Rook's lanyard are in the game (Q20). D13 is the player look picker, which still has no lanyard. Route 2, Cobblecrest, and R5 already have implementer copy on `main`. Replace that copy. Do not write a second set.
+Designer: Tour stop copy and the real `tour.doubt` name (D26); the Sacrifice one-pager (D24), which replaces the stub. The switch letter, review, and welcome are Rook's (D19 closed). Tier-2 lanyard art, Imogen, Hollis, and Rook's lanyard are in the game (Q20). D13 is the player look picker, which still has no lanyard. Route 2, Cobblecrest, and R5 already have implementer copy on `main`. Replace that copy. Do not write a second set.
 
 Vincent: Standing numbers D14–D17 are settled (Oct 15) as the Build 2 defaults. Daily earning is wanted and slow, and D18 still needs a cap before it is built. The 5-Acorn rest (D28) and the Firebase project plus the privacy line are also open. The town-list rows are settled. The open-table D37 is the region-map claim list, already in the game, and it shares that number. Do not renumber it.
 
@@ -729,7 +729,7 @@ Acceptance: glimmer path reaches `story.cobble_end` hook with `seal2` set; Keepe
 Rule is settled (D23). `main` has two variants of `brinewick_hook`, not four.
 
 - Keepers: Rook leaves Glimmerwell. As built, `story.rook_end` is `"ally"` (parted is still D25). Also writes `story.cobble_end`.
-- Glimmerwell: Rook stays. `story.rook_end` is `"stays"`. No quit, no follow-or-stay fork, no free switch. Same progression flags.
+- Glimmerwell: Rook stays. `story.rook_end` is `"stays"`. No quit, no follow-or-stay fork, no free switch. Same progression flags. R6 (The last crates) is a later side quest: he quits on every path, and this `"stays"` value is left as saved (D130).
 
 Do not wait on bond. `story.rook_bond` may still increment on Route 2 / quarry choices (flavour); it must not gate R5.
 
@@ -760,7 +760,7 @@ Remaining:
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D138 (D127–D136 are reserved by Design, and D137 is used). D148, D149 and D150 are settled and must not be reused. D92–D103 stay reserved for the Q28 map pass and are not renumbered. D104 is already taken on main. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
+9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D138 (D127–D136 are settled for Rook's Crossroads, and D137 is used). D148, D149 and D150 are settled and must not be reused. D92–D103 stay reserved for the Q28 map pass and are not renumbered. D104 is already taken on main. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
 10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.
 11. **Welcome back (D56) and clearing a nickname (D57).** Q25 uses 14 hours and one sentence. Q23 clears `nick` when the field is empty or equals the species name, on the stats card and on the Walkling sheet. Both lines are still placeholders.
 12. **Modern and arcade controls (Q26, D70–D72).** Scoped from Vincent's Oct 15 sketch, not started. Arcade is today's layout. Modern is a full-screen map with QUEST, BAG, and MAP top left, Settings and PHONE top right, WALKLINGS and PARTNER bottom right, a partner strip along the bottom, and no tab bar. The joystick is an option, off by default (D71). Landscape is D72. The prompt and the modern tips are placeholders (D70).

@@ -113,6 +113,7 @@ function composeWorld(md) {
   }
   if (md.town_board) applyMapPatch(world, md.town_board.slicePatch);
   for (const k of detail) applyMapPatch(world, md[k].slicePatch);
+  if (md.rook_crossroads) applyMapPatch(world, md.rook_crossroads.slicePatch);
   return { world, tiles };
 }
 
@@ -455,20 +456,26 @@ function engineLines(items) {
     });
   }
   const sw = standing.switch;
+  const rook = sw.rook || {};
   for (const key of ['letter', 'review', 'welcome']) {
-    for (const [sid, text] of Object.entries(sw[key])) addLine(items, 'say', 'standing switch ' + key + ' ' + sid, text, STANDING_TOKENS);
+    for (const [sid, text] of Object.entries(rook[key] || {})) addLine(items, 'say', 'standing switch ' + key + ' ' + sid, text, STANDING_TOKENS);
   }
-  for (const key of ['wait', 'refused', 'costLine']) addLine(items, 'say', 'standing switch ' + key, sw[key], STANDING_TOKENS);
-  for (const key of ['option', 'ask', 'confirm', 'yes', 'no']) addLine(items, 'choice', 'standing switch ' + key, sw[key], STANDING_TOKENS);
+  for (const key of ['wait', 'refused', 'notYet']) if (typeof rook[key] === 'string') addLine(items, 'say', 'standing switch ' + key, rook[key], STANDING_TOKENS);
+  if (typeof sw.costLine === 'string') addLine(items, 'say', 'standing switch costLine', sw.costLine, STANDING_TOKENS);
+  for (const key of ['confirm', 'yes', 'no']) if (typeof sw[key] === 'string') addLine(items, 'choice', 'standing switch ' + key, sw[key], STANDING_TOKENS);
   addLine(items, 'say', 'standing tab empty', standing.tab.empty, STANDING_TOKENS);
   addLine(items, 'say', 'standing tab pledged', standing.tab.pledged, STANDING_TOKENS);
+  addLine(items, 'blurb', 'standing tab explain', standing.tab.explain, STANDING_TOKENS);
 
   const quests = loadScript('quests.js', []).PPQuests;
   for (const e of quests.CHAIN) {
     addLine(items, 'quest', 'quest ' + e.id, e.text, []);
     if (e.glimmer) addLine(items, 'quest', 'quest ' + e.id + ' glimmer', e.glimmer.text, []);
   }
-  for (const e of quests.SIDE) addLine(items, 'quest', 'side ' + e.id, e.text, []);
+  for (const e of quests.SIDE) {
+    addLine(items, 'quest', 'side ' + e.id, e.text, []);
+    if (e.glimmer) addLine(items, 'quest', 'side ' + e.id + ' glimmer', e.glimmer.text, []);
+  }
   quests.STUCK.forEach((text, i) => addLine(items, 'quest', 'stuck ' + i, text, []));
 
   const battle = loadScript('moves.js', ['BATTLE_TEXT', 'BEFRIEND_WARY_LINES', 'TRAINERS']);

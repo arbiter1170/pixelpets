@@ -87,11 +87,11 @@ Priority: **must** blocks the work package, **should** is wanted for launch, **c
 | `tier_{keepers,glimmer}_{0..4}` | Five tier badges per faction (the tier names are a writing task below) | 8x8 x10 | Standing tab, Friends tab keeper line | should | B |
 | `seal_glim_1`, `seal_glim_2` | Glimmerwell "lanyard tier" cards, same family as `seal_fernbrook` / `seal_cobblecrest`, in mint/white (`l s w`) with a gold rim | 16x16 x2 | Card shown after a win; Bag/Journal later | **both delivered.** Tier 2 is `LANYARD_TIER2` | B |
 | `glimmer_pavilion` | Pop-up Glimmerwell office in Fernbrook (door tile plus a sign or awning), for the glimmer path's Hall slot. Final shape depends on the Hall-replacement design (section 6) | 16x16 tile set | Fernbrook | should | B |
-| `switch_desk_glimmer` | Glimmerwell "pledge" counter or kiosk (mint, brochure rack) where the player switches to Glimmerwell | 16x16 | Fernbrook, Cobblecrest, Route towns | must | B |
-| `switch_desk_keepers` | Keepers equivalent. Probably the existing Lantern House keeper; if a separate prop is better, a pledge board | 16x16 | Lantern Houses | could | B |
+| `switch_desk_glimmer` | Glimmerwell "pledge" counter or kiosk (mint, brochure rack). **Retired (D133).** Pixels stay. Do not place it. Switching is Rook's offer | 16x16 | not placed | retired | B |
+| `switch_desk_keepers` | Keepers equivalent. **Retired with the desks (D127).** Do not draw a pledge board | 16x16 | not placed | retired | B |
 | `lanyard_overlay` | A mint Junior Bright lanyard on the player keeper while pledged to Glimmerwell (accent swap or overlay) | 16x16 frames x4 facings x2 | Player sprite | could | B |
 | `rook_lanyard` | Rook with a mint lanyard (carried over from the Cobblecrest list; `artRequests.rook_lanyard`) | look swap | Rook after Fernbrook | **delivered.** `rookWithLanyard` | B |
-| `rook_lanyard_off` | Rook with the lanyard gone (post-conversion) | look swap | After Rook's R5 beat | **delivered** when `story.rook_end` is `"ally"` | B |
+| `rook_lanyard_off` | Rook with the lanyard gone (post-conversion) | look swap | After Rook's R5 beat, and after he quits | **delivered** when `story.rook_end` is `"ally"` or `story.rook_quit` is set (D136) | B |
 | `npc_imogen`, `npc_hollis` | Distinct looks for Field Lead Imogen and Associate Hollis | looks | Route 2, Wickerglen | **delivered** | B |
 | `npc_tourguide` | A Glimmerwell tour guide look (only if "tours" is chosen, section 6) | look | TBD | could | B |
 | `comfort_lamp_tinted` | Variants of the existing lamp stand for a Hall-replacement stop (only if needed) | 16x16 | TBD | could | B |
@@ -127,13 +127,13 @@ Scenes below are in `data/glimmer_path.json`. Left: Tour stop copy (recipients, 
 | Fen as the holdout (trainer lines for the glimmer path) | His intro / win / lose when the player comes at his Hall as Glimmerwell's helper | 3 | None |
 | Ambient (`lines` keys) | Keeper Amos, Odile, Juniper, Fen, Hattie, Ilse: a Keepers-regard variant and a Glimmerwell-regard variant each (<= 40 chars, ambient chatter) | 10-14 | By side or tier |
 
-### 4c. The switch (WP-B, phase BS) — **engine shipped in Build 2**
+### 4c. The switch (WP-B, phase BS) — **Rook's offer, desks retired (D127, D133)**
 
-Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19). Write those lines; do not add new map objects.
+Desk copy moved to Rook (`STANDING_CFG.switch.rook`). Do not write Pledge desk scenes. Do not place `switch_desk_glimmer`.
 | Scene id | Beat | Lines |
 |---|---|---|
-| `switch_desk_glimmer` | The Glimmerwell associate's desk: first visit, repeat visit, "not enough regard yet, try this first", cooldown refusal, confirm | 10-14 |
-| `switch_desk_keepers` | The Keepers' desk (Lantern House keeper), same set | 10-14 |
+| `switch_desk_glimmer` | **Retired (D133).** Pixels stay in the art table. Not placed | 0 |
+| `switch_desk_keepers` | **Retired (D127).** Do not draw | 0 |
 | `switch_bridge_to_glimmer`, `switch_bridge_to_keepers` | Short bridging scene after a switch, one per direction | 4-6 each |
 | Catch-up lines | Short lines that later scenes can drop in when the player did earlier beats under the other side ("You helped pack those crates, didn't you?"). One per major beat (orchard, Hall slot #1, Wickerglen lamps, the quarry sale) per direction | 8-10 |
 
@@ -159,7 +159,7 @@ Desk *copy* (letter, review, welcome) is still placeholder (OPEN_DECISIONS D19).
 **D23:** Keepers path, Rook eventually converts to good. Glimmerwell path, Rook stays. Not bond-gated. No follow-or-stay fork.
 - R2 `teaser@glimmer`: **shipped** (Build 3). Do not say he leaves.
 - R3 and R4 variants: included in 4d and 4e (Build 4 / 5). Bond may flavour a line; it must not gate R5.
-- **R5, two variants not four, on `main`:** Keepers `brinewick_hook` (`story.rook_end` `"ally"`); `brinewick_hook@glimmer` (`"stays"`). Both set `story.cobble_end`. No free-switch bridge. Tone confirmation is D25. Rook's lanyard is in the game and comes off when he converts.
+- **R5, two variants not four, on `main`:** Keepers `brinewick_hook` (`story.rook_end` `"ally"`); `brinewick_hook@glimmer` (`"stays"`). Both set `story.cobble_end`. No free-switch bridge. Tone confirmation is D25. Rook's lanyard is in the game and comes off when he converts, and also when `story.rook_quit` is set (D136). R6 (The last crates) is the side quest where he quits on every path. `story.rook_end` is left as saved.
 - Keepers-path post-conversion ambient, if he becomes an ally: 6-8. Glimmer-path colleague ambient is optional.
 
 ### 4g. Quest objectives (WP-C) — **shipped in Build 2**
