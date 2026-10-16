@@ -98,6 +98,7 @@ function haloSprite(src, col){
   g.drawImage(src, 0, 0); return c;
 }
 const TILES = buildTiles();
+for (const [id, sk] of Object.entries(SKINS)) if (sk.wall) Object.assign(TILES, buildWallKit(id, sk.wall));
 // CREATURES_SLICE §5 faded state: the same sprite with fadedCol(col) (light -> w, mid-light -> h, mid -> m, dark -> d); not a new form.
 const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
 const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
@@ -1575,6 +1576,7 @@ function useMap(id){
   CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {} };
   patrolClock = 0;
+  wallMaskOf(CUR);
 }
 const isRoom = () => CUR.kind === 'interior';
 // Explicit map.music wins (High Charity). Otherwise: quarry and grove have their own loops, dreams stay on
@@ -2761,6 +2763,70 @@ function drawHqGlow(g, cx, cy){
   }
   g.restore();
 }
+// Interior wall kit (D151–D153). `#` and `W` pick a part from the map shape. Windows and doors are per-map lists.
+// A skin with no `wall` block never comes through here, so its odd-column windows stay.
+function wallPart(x, y, m){
+  m = m || CUR;
+  if (!m || y < 0 || x < 0 || y >= m.h || x >= m.w) return null;
+  const ch = m.cells[y][x], w = m.w, h = m.h, list = m.wall || {};
+  if (ch === '#') {
+    if (y === 0) return x === 0 ? 'cap_nw' : x === w - 1 ? 'cap_ne' : 'cap_n';
+    if (y === h - 1) {
+      const row = m.cells[y];
+      if (row[x + 1] === 'm') return 'jamb_l';
+      if (row[x - 1] === 'm') return 'jamb_r';
+      if (x === 0) return 'cap_sw';
+      if (x === w - 1) return 'cap_se';
+      return 'cap_s';
+    }
+    if (x === 0) return 'side_w';
+    if (x === w - 1) return 'side_e';
+    return 'cap_n';
+  }
+  if (ch === 'W') {
+    const wins = list.windows || [], doors = list.doors || [];
+    if (wins.indexOf(x) >= 0) return 'face_win';
+    if (doors.indexOf(x) >= 0) return 'face_door';
+    if (x === 1) return 'face_l';
+    if (x === w - 2) return 'face_r';
+    return 'face';
+  }
+  return null;
+}
+function shadowPart(x, y, m){
+  m = m || CUR;
+  const sk = m && m.skin && SKINS[m.skin];
+  if (!sk || !sk.wall || y < 0 || x < 0 || y >= m.h || x >= m.w) return null;
+  const ch = m.cells[y][x];
+  if (ch === '#' || ch === 'W' || ch === 'm') return null;
+  const under = y > 0 && m.cells[y - 1][x] === 'W';
+  const sideW = x > 0 && wallPart(x - 1, y, m) === 'side_w';
+  const sideE = x + 1 < m.w && wallPart(x + 1, y, m) === 'side_e';
+  if (under && sideW) return 'shadow_nw';
+  if (under && sideE) return 'shadow_ne';
+  if (under) return 'shadow_n';
+  if (sideW) return 'shadow_w';
+  if (sideE) return 'shadow_e';
+  return null;
+}
+const wallMasks = {};
+function wallMaskOf(m){
+  if (!m) return null;
+  if (Object.prototype.hasOwnProperty.call(wallMasks, m.id)) return wallMasks[m.id];
+  const sk = m.skin && SKINS[m.skin];
+  if (!sk || !sk.wall) return wallMasks[m.id] = null;
+  const c = document.createElement('canvas');
+  c.width = m.w * TS; c.height = m.h * TS;
+  const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  const prefix = m.skin + '__';
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+    const part = shadowPart(x, y, m);
+    const img = part && TILES[prefix + part];
+    if (img) g.drawImage(img, x * TS, y * TS);
+  }
+  return wallMasks[m.id] = c;
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -2774,17 +2840,22 @@ function drawMap(t){
   for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
-      const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
+      const ch = MAP[ty][tx];
+      const skEarly = CUR.skin && CUR.skin !== 'lab' && SKINS[CUR.skin];
+      const kit = !!(skEarly && skEarly.wall && (ch === '#' || ch === 'W'));
+      let img = ch === 'w' ? TILES.w[wf] : (!kit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
       let decal = null;
       if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
         const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
         const nm = labTileName(dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
-      } else if (CUR.skin && SKINS[CUR.skin]) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
-        const skDraw = SKINS[CUR.skin];
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skDraw.decal && skDraw.decal[k];
-        const nm = skinTileName(skDraw, dk ? '.' : k, tx, ty);
+      } else if (kit) {   // shared wall kit. Windows come from the map list, not the odd column.
+        const part = wallPart(tx, ty), nm = CUR.skin + '__' + part;
+        if (TILES[nm]) img = TILES[nm];
+      } else if (skEarly) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
+        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skEarly.decal && skEarly.decal[k];
+        const nm = skinTileName(skEarly, dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'] || TILES[dk];
       } else if (CUR.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
@@ -2803,6 +2874,8 @@ function drawMap(t){
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
       }
     }
+  const shade = wallMaskOf(CUR);   // floor contact shadow, under props and actors
+  if (shade) g.drawImage(shade, -cx, -cy);
   for (const o of CUR.objs) if (o.kind === 'door' && present(o) && (tileAt(o.x, o.y - 1) === 'H' || tileAt(o.x, o.y) === 'H')) drawDoor(g, o, cx, cy);
   for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) g.drawImage(WART[o.sprite], o.x*TS - cx, o.y*TS - cy);   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
@@ -2880,7 +2953,7 @@ function drawCobbleTrim(g, cx, cy, t){
       }
       if (tileAt(tx - 1, ty) !== 'H' && tileAt(tx - 1, ty) !== 'R') { g.fillStyle = PAL.w; g.fillRect(X, Y, 2, 16); }
       if (tileAt(tx + 1, ty) !== 'H' && tileAt(tx + 1, ty) !== 'R') { g.fillStyle = PAL.w; g.fillRect(X + 14, Y, 2, 16); }
-    } else if ((lantern || hall) && ch === 'W' && tx % 2 === 0 && tx > 0 && tx < MW - 1) {
+    } else if ((lantern || hall) && ch === 'W' && tx % 2 === 0 && tx > 0 && tx < MW - 1 && !(SKINS[CUR.skin] && SKINS[CUR.skin].wall)) {
       const col = tx % 4 === 0 ? PAL.r : PAL.o;
       g.fillStyle = PAL.k; g.fillRect(X + 5, Y + 2, 6, 8);
       g.fillStyle = col; g.fillRect(X + 6, Y + 3, 4, 6);
@@ -8563,13 +8636,19 @@ function boot(){
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
     care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
-    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. Lab keeps its old tile name (raw char, not W2).
-      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }; }
+    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab keeps its old tile name (raw char, not W2).
+      const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
+      const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part: null, shade: shadowPart(x, y) };
+      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }); }
       const sk = CUR.skin && SKINS[CUR.skin];
-      if (sk) { const k = ch === 'W' && x % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
-        return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null }; }
+      if (sk) {
+        const kit = !!(sk.wall && (ch === '#' || ch === 'W'));
+        const k = kit ? ch : (ch === 'W' && x % 2 ? 'W2' : ch), dk = sk.decal && sk.decal[k];
+        const part = kit ? wallPart(x, y) : null;
+        return Object.assign(base, { part, tile: part ? CUR.skin + '__' + part : skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null });
+      }
       const mark = CUR.objs.find(o => o.kind === 'decal' && o.x === x && o.y === y && present(o));   // outdoor decal objects (map pass B4)
-      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.variants ? labTileName(ch, x, y) : ch, decal: (mark && mark.sprite) || null }; },
+      return Object.assign(base, { tile: CUR.variants ? labTileName(ch, x, y) : ch, decal: (mark && mark.sprite) || null }); },
     floorShare: id => labFloorShare(id || CUR.id),   // D88
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game

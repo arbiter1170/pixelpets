@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 13:13 ET: Home wall kit merged with current main (build 20261016-1313)
+
+- What changed and why: Merged current `main` (PR #78 Fernbrook rooms, PR #83 heart alert, PR #87 asset converters). Your Home still draws the shared wall kit; the heart-alert `care` debug hook and the door-on-wall draw from main are kept next to the wall shadow.
+- Files touched: merge of `main`. Conflicts: `game.js` (both kept), `CHANGELOG.md`, `README.md`, `OPEN_DECISIONS.md` (both kept), `BACKLOG.md`, `NEXT_PLAN.md` (main's wording, which already names D151–D153 as settled), `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1313.
+- Tests run and result (widths, checks): `npm run test:agent`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. No id was renumbered.
+- Anything left unfinished: the other rooms are the next pass.
+
 ## 2026-10-16 12:15 ET: Asset converters for palette grids and music loops
 
 - What changed and why: Three tools turn outside art into the forms the game already stores. `png2grid.py` maps a PNG onto palette keys. `midi2music.py` turns a MIDI file into a music-loop literal. `grid2png.py` draws that grid back to a 1× or 4× preview. No game art, player text, or save field changes. Save `v` stays 2.
@@ -10,6 +19,24 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `PP_PORT=8799 npm test` exit 0. 951 passed, 12 skipped (22.0m), at 320, 375 and 390. `tests/asset_converters.spec.js` passed at all three widths. `python3 tools/bump_build.py --check` exit 0.
 - Decisions made (colour + reasoning): green. Vincent approved the asset handoff, including these converters, on Oct 16, 2026. No id was taken or renumbered.
 - Anything left unfinished: the tools are not wired into a deploy. Episode 1 art is still not in the game.
+
+## 2026-10-16 10:17 ET: Home wall kit merged with current main (build 20261016-1017)
+
+- What changed and why: Merged current main, which holds the RegenX look keys and the 2004 memory (the toy rolls from any side, Mom cooks, Dad watches, and that room has no partner). Your Home still draws the shared wall kit. `data/mapdata.js` was regenerated. Save `v` stays 2. The next free id stays D161. D138–D147 stay unrecorded.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md` (both sides kept), `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1017.
+- Tests run and result (widths, checks): `PP_PORT=8094 npm test` exit 0. 891 passed, 12 skipped, 0 failed (20.1m), at 320, 375, and 390. `tests/interior_walls.spec.js`, `tests/dream_toy.spec.js`, and `tests/look_keys.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. D151, D152 and D153 stay settled. No id was renumbered.
+- Anything left unfinished: The other rooms are the next pass. Upstairs lists windows at columns 3 and 5, and that list is not drawn until the loft skin opts in.
+
+## 2026-10-16 09:53 ET: Your Home draws the shared wall kit (build 20261016-0953)
+
+- What changed and why: Your Home stays 9 by 8, with the same warps, props and honey floor. Its wall is now the shared two-tile kit: a warm cap, a pale face, trim, a baseboard, two windows, and a floor shadow under the face. Other reskinned rooms keep their colours. Upstairs stays the loft skin, so the two rooms do not match. Its window list is stored for the later room pass. Save `v` stays 2.
+- Files touched: `sprites.js`, `game.js`, `data/detail_b5.json`, `data/mapdata.js`, `tests/interior_walls.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0953.
+- Tests run and result (widths, checks): `PP_PORT=8093 npm test` exit 0. 879 passed, 12 skipped, 0 failed (19.7m), at 320, 375, and 390. `tests/interior_walls.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Vincent settled D151, D152 and D153 on the defaults (two-tile walls, a window list per map, one colour table per skin). Green: upstairs stays `house_loft` so the loft colours stay and no two rooms match. No id was renumbered. The next free id is D161.
+- Anything left unfinished: The other rooms (loft, Lantern House, Rook's House, the Lodge, the Keeper House, the observatory) are the next pass. Upstairs already lists windows at columns 3 and 5, and that list is not drawn until the loft skin opts in.
 
 ## 2026-10-16 11:38 ET: Merge Fernbrook rooms and the heart alert (build 20261016-1138)
 
