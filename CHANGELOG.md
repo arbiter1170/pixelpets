@@ -2,7 +2,13 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-<<<<<<< HEAD
+## 2026-10-16 01:23 ET: Tunnel rooms merged with current main again (build 20261016-0123)
+
+- What changed and why: Merged current `main` (the iOS reload fix, PR #75). `game.js` took main's skin drawing; `sprites.js` keeps the house skins and the tunnel skin. `data/mapdata.js` was regenerated. Leftover conflict markers committed earlier in `CHANGELOG.md` and `OPEN_DECISIONS.md` were removed, keeping both sides. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-0123.
+- Tests run and result (widths, checks): recorded in the pull request after this stamp.
+- Decisions made (colour + reasoning): green. No id was renumbered.
 ## 2026-10-15 20:47 ET: Tunnel rooms brought up to current main (build 20261015-2047)
 
 - What changed and why: Merged current `main`. The four smuggler rooms still share one rock skin. Outdoor maps with no skin keep outdoor grass variants; they do not go through the lab glass remap. The lab bay still uses the lab skin. The overlay loader is the one already on `main`. `data/mapdata.js` was regenerated. Save `v` stays 2.
@@ -10,7 +16,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: build 20261015-2047.
 - Tests run and result (widths, checks): recorded in the pull request after this stamp.
 - Decisions made (colour + reasoning): D96 stays the tunnel-prop placeholder. No id was renumbered. The four rooms were left on the shared rock skin.
-=======
+## 2026-10-16 00:21 ET: iPhone no longer reloads an open game (build 20261016-0021)
+
+- What changed and why: Safari on iPhone was reloading the game every few minutes during play. A new service worker called `skipWaiting` and `clients.claim`, and iOS reloads a page when that worker takes the tab (a Pages deploy, or Safari installing the worker again). The one-shot boot reload only remembered itself in `sessionStorage`, which iOS drops across `location.replace`, so a bad boot could fire again. Page fetches also used a manual redirect, which Safari rejects and retries. Music left every finished WebAudio node connected, and Safari does not collect those, so the tab grew until iOS killed it. The worker now waits until the next visit. The boot retry also stops when the address already has `?b=boot.`. A changed `version.json` still only shows the notice. Finished notes disconnect. Save `v` stays 2.
+- Files touched: `sw.js`, `game.js`, `sfx.js`, `tests/ios_reload.spec.js`, `tests/maps_b6.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: 4c422c5, build 20261016-0021.
+- Tests run and result (widths, checks): `PP_PORT=8803 npm test` exited 0. 849 passed, 12 skipped, 19.5 minutes, widths 320, 375 and 390. An earlier run on this branch exited 1 (846 passed, 3 failed): `tests/maps_b6.spec.js` still read `rx_f1` (9, 8), a mint inlay since B2. That check now reads (8, 9), the same plain floor the B5 spec uses.
+- Decisions made (colour + reasoning): green. A bug fix. The notice still waits for a tap. No new player-facing words. No id was renumbered.
+- Anything left unfinished: a real iPhone is the only place that can show the Safari controller reload and the memory kill. Desktop Chromium covers the guards.
+
 ## 2026-10-15 23:40 ET: High Charity rooms merged with current main (build 20261015-2340)
 
 - What changed and why: Merged current `main` (B1, the Q28 plan, B5, B2 and B7). `sprites.js` and `game.js` merged cleanly. `data/mapdata.js` was regenerated, not hand-merged. `OPEN_DECISIONS.md` keeps D92, D94, D95, D99, D100 and D102. `tests/maps_b7.spec.js` keeps this branch's 27 shared skins and main's four lab floor variant keys. Save `v` stays 2. No id was renumbered.
@@ -74,7 +88,6 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: build 20261015-2035.
 - Tests run and result (widths, checks): recorded in the pull request after this stamp.
 - Decisions made (colour + reasoning): no new id. D92 stays the staff-door placeholder. Main's later ids were not renumbered.
->>>>>>> origin/main
 - Anything left unfinished: the acceptance suite on this stamp.
 
 ## 2026-10-15 18:01 ET: North trail sign no longer blocks the exit
@@ -182,7 +195,6 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 - Settings toasts: 'Arcade controls. Pad and Talk button.', 'Modern controls. Tap to walk or talk.', 'Joystick on.', 'Joystick off.'. The step-8 toast is 'Keep walking. Wild Walklings hide in the grass.' in both layouts. `WELCOME_LINE` (after 14 h away) is '{pet} missed you! Welcome back.'. Rename: '{name} likes the new name!' on success; '{name} is back to its own name.' (species name) when a blank box, or the species name typed in, clears the nickname (D57); 'Pick a name first.' when the input is rejected (every character filtered) or blank with no nickname to clear, and the editor stays open. Town-board placeholders unchanged. Design's answers to the PR #52 flags: the welcome-back line is '{pet} missed you! Welcome back.'; clearing a nickname back to the species name shows '{name} is back to its own name.'; the arcade step-8 toast matches modern ('Keep walking. Wild Walklings hide in the grass.'). Tests: `tests/care_tools.spec.js`, `tests/controls.spec.js` (Settings toasts, toast fit at 320/375/390 in both layouts).
 
-<<<<<<< HEAD
 ## 2026-10-15 09:21 ET: tunnel rooms wear rock (D87), branch `cursor/maps-b3-tunnels-7807`
 
 - What changed and why: The four smuggler rooms (`sm_yard`, `sm_tunnel`, `sm_hold`, `sm_den`) keep their 18×12 grids and stop painting house planks. `TUNNEL_SKIN` uses the same remap, walk, decal, and seeded-variant path as `LAB_SKIN`. `#` is rock, `W` is the rock face, `.` is stone with gravel and damp variants. The yard has a sky patch and a cart, the tunnel has timber braces and drips, the hold has crate rows, and the den has a rug, desk, ledger, and lamp. Paths from each arrival to each exit and to every person stay open. Save `v` stays 2.
@@ -191,7 +203,6 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result: `PP_PORT=8103 npm test` at 320, 375, and 390. 522 passed, 6 skipped, 0 failed. No console errors.
 - Decisions made: D87 built (rock skin, same grids). D96 green: short placeholder lines on the new props until Design writes them. Wall tiles use the same seeded mix as the floor so a rock row is not one repeating stamp. The lab tables and the lab draw results are unchanged.
 - Anything left unfinished: the tunnel-mouth exterior on Fernbrook Heights is still the old door (row 27 of the variety list is an exterior; this batch is the four rooms). Prop lines are placeholders (D96).
-=======
 ## 2026-10-15 09:35 ET: observatory and dream rooms get their own skins
 
 - What changed and why: Breckenridge Observatory and the three dream rooms keep their size. The observatory gets a dome-ribbed wall, a star-map floor, and a desk beside the existing telescope. The 2004 memory is cool blue-grey. The birthday room stays warm yellow and gains streamer decals only. The drive-through is night asphalt with painted lines and a plain menu board. The outdoor Mahopac map is unchanged. Save `v` stays 2.
@@ -234,7 +245,6 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 - Q28 is the map pass from `handoff/maps/`. The Arbiter Bay pilot is already on main (PR #51): the 14×22 lab, the interior camera, bigger grids, seeded floor variants and decals. B1 is a gap check against that, not a second build. Vincent cleared B2–B7. B8 waits until B5's house skins exist, and then for his go. Plan table in `NEXT_PLAN.md` §3.
 - Decision ids for the batches start at D92. D90 is the debug-save acceptance and D91 is the byte-line learnset, both already on main. D92–D103 stay reserved per batch and are not renumbered. D104 is already taken on main (Design's D96–D104 block). The next free id is D138. D127–D136 are reserved by Design, and D137 is used.
->>>>>>> origin/main
 
 ## 2026-10-15 — rx_f4 pilot: the Arbiter Bay at 14x22 (BUILD_RX_F4_PILOT, design 6263382), branch `rx-f4-pilot`
 

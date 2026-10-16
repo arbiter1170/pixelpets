@@ -10,6 +10,8 @@ No build step, all paths relative, everything self-hosted (including the font). 
 optional local-creatures lookup (see Wild creatures below). A manifest and a service worker
 (`manifest.json`, `sw.js`, icons in `icons/`) let a phone add Walklings to the home screen and open the
 cached shell offline. `version.json` stays on the network so a newer deploy can still announce itself.
+A new shell does not reload a game that is already open. It waits until the next visit. The notice still
+appears when `version.json` changes, and a tap refreshes.
 Location lookups are other sites, so the worker leaves them alone, and a failed lookup still falls back to meadow.
 Progress saves to localStorage (`pixelpets.save.v2`; see Saves below).
 Agent skills, including quest authoring and status-doc upkeep, are in `.cursor/skills/`. The index is `.cursor/skills/README.md`. Consolidated agent rules for Cline, Claude Code, and AGENTS.md consumers are in `AGENTS.md`; `CLAUDE.md` and `.clinerules` point to it. History is in `archive/`.
