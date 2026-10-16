@@ -25,8 +25,8 @@
         ]
       },
       "dream_2004": {
-        "set": {"skin": "dream_2004", "variants": true},
-        "gridRows": {"2": "#uvuvuvu#"},
+        "set": {"skin": "dream_2004", "variants": true, "noPartner": true},
+        "gridRows": {"2": "#uvuvuvuvuvu#"},
         "addObjs": [
           {"kind": "prop", "id": "dream_blocks", "x": 1, "y": 6, "sprite": "dream_blocks", "lines": {"else": "Wooden blocks, stacked and still."}},
           {"kind": "prop", "id": "dream_shelf", "x": 7, "y": 6, "sprite": "dream_shelf", "lines": {"else": "A low shelf. A round plush sits on it."}},

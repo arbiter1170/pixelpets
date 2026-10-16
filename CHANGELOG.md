@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 10:26 ET: Merge the 2004-memory toy fix (build 20261016-1026)
+
+- What changed and why: Merged `origin/main` again after PR #81. In the 2004 memory the pop-toy answers a bump from any side, Mom cooks, Dad watches the set, and no partner follows into that room. The school hall, the flats lobby, and flat 5B stay as the review left them. Save `v` stays 2. The next free id stays D142.
+- Files touched: merge of `main`. `data/detail_b7.json`, `data/mahopac.json`, `data/mapdata.js` (regenerated), `game.js`, `sprites.js`, `tests/dream_toy.spec.js`, `tests/maps_b7.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261016-1026.
+- Tests run and result (widths, checks): `PP_PORT=8806 npm test` exit 0. 903 passed, 12 skipped, 0 failed (20.6m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. The toy fix already shipped on `main`. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build.
+
 ## 2026-10-16 09:58 ET: Calm the school hall, the flats lobby, and flat 5B (build 20261016-0958)
 
 - What changed and why: Vincent's review of the schoolhouse and flats. The lobby no longer has a red brick band across the middle or a full-width brick row at the door. Those tiles are speckled terrazzo, and the door mat stays. The school hallway under the red runner is cream linoleum. Flat 5B's hall walls drop the repeated brick courses for cream plaster with one dado. The kitchen stays terracotta, the bedroom stays wood, and the game room stays navy carpet, so the three rooms stay distinct from each other and from the other houses. Merged `origin/main` at build 20261016-0922, which renamed the Heights looks to `rx_nia`, `rx_cal`, and `rx_ivo`. The next free id stays D142. D138–D141 and D148–D150 stay settled. Save `v` stays 2.
