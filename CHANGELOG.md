@@ -2,6 +2,24 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 09:58 ET: Calm the school hall, the flats lobby, and flat 5B (build 20261016-0958)
+
+- What changed and why: Vincent's review of the schoolhouse and flats. The lobby no longer has a red brick band across the middle or a full-width brick row at the door. Those tiles are speckled terrazzo, and the door mat stays. The school hallway under the red runner is cream linoleum. Flat 5B's hall walls drop the repeated brick courses for cream plaster with one dado. The kitchen stays terracotta, the bedroom stays wood, and the game room stays navy carpet, so the three rooms stay distinct from each other and from the other houses. Merged `origin/main` at build 20261016-0922, which renamed the Heights looks to `rx_nia`, `rx_cal`, and `rx_ivo`. The next free id stays D142. D138–D141 and D148–D150 stay settled. Save `v` stays 2.
+- Files touched: `sprites.js`, `data/mapdata.js` (regenerated), `README.md`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`, plus the merge of `main` (`data/heights.json`, `tests/look_keys.spec.js`, `tests/heights.spec.js`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `.cursor/skills/walklings-docs/SKILL.md`).
+- Commit(s) + build id: build 20261016-0958.
+- Tests run and result (widths, checks): `PP_PORT=8805 npm test` exit 0. 897 passed, 12 skipped, 0 failed (20.3m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. Vincent rejected the busy brick floors and approved the rest of the schoolhouse and flats. No new D id. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build. The coach cell (12, 9) is still the Keeper House roof from an earlier patch.
+
+## 2026-10-16 09:45 ET: RegenX looks no longer redraw Vesper, Clerk Nia and Cal; doc corrections (build 20261016-0922)
+
+- What changed and why: PR #40 added RegenX looks keyed `nia`, `cal` and `ivo` in `data/heights.json`. Heights looks load last, so they replaced High Charity's `nia` (Clerk Nia) and `ivo` (Keeper Vesper) and Mahopac's `cal` (the kite kid). The Heights keys are now `rx_nia`, `rx_cal` and `rx_ivo`, with the RegenX NPCs and speakers pointed at them. New `tests/look_keys.spec.js` fails when two data files define the same look key. Docs: corrected the D73/D80 note, removed the duplicate open D71 row, marked Q26 built (D72 still open), the walklings-docs skill now points at the OPEN_DECISIONS header for the next id, and the next free id is D151.
+- Files touched: `data/heights.json`, `data/mapdata.js` (regenerated), `tests/heights.spec.js`, `tests/look_keys.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `.cursor/skills/walklings-docs/SKILL.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261016-0922.
+- Tests run and result (widths, checks): `npm test` exit 0 (882 passed, 12 skipped) at 320, 375 and 390.
+- Decisions made (colour + reasoning): green, bug fix from the after-the-fact audit of #37 and #39–#41, approved by Vincent. No D or Q id renumbered. `mahopac.json` not touched.
+- Anything left unfinished: the speaker map still resolves the name "Cal" to one look for both Cals (name collision, audit items 7–8, not in scope).
+
 ## 2026-10-16 08:56 ET: Hearthmoor Schoolhouse and Amberhill Flats (build 20261016-0856)
 
 - What changed and why: Vincent approved packet P3 v2 on Design's defaults. Hearthmoor stays 24 by 20. The schoolhouse and the flats sit on the empty south tiles. Each of the three rooms has its own skin. The lift panel lists floors 1 through 6, and only 5B is a real map. Both lift doors open after Lizzy's intro. Lizzy, Buddy, Ossabell, Morelou, Pip, Wren, and Mr. Gristle are in. Morolow has a look and is not on a map yet. The intro plays once after the starter, branches on Rook, and gives two Heal Snacks. Buddy is a Walkling beside Lizzy. He is never a phone contact and never a battle. Family lines use cooking, music, and Spanish. The game names no real place. Five south props move so the new walls can land. Save `v` stays 2. Lizzy stands one tile east in the hall, and Ossabell one tile east in the kitchen, so the only doorway into each room stays open. A door drawn on a wall is entered from the grass south of it. Two art names already existed (`floor_honey`, `bunk`), so those pictures stay as they were. The rooms still differ by their walls and the other floors.
