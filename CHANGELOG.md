@@ -2,6 +2,27 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-15 23:25 ET: Observatory and dream rooms merged with current main (build 20261015-2325)
+
+- What changed and why: Merged current `main` (B1, the Q28 plan, B5 house interiors and B2 RegenX floors). `sprites.js` and `game.js` merged cleanly, so the B7 skins sit beside the house skins and B2's lab skin. `data/mapdata.js` was regenerated, not hand-merged. `OPEN_DECISIONS.md` keeps D92, D99, D94, D95 and D102. Save `v` stays 2. No id was renumbered.
+
+## 2026-10-15 23:00 ET: RegenX floors merged with current main again (build 20261015-2300)
+
+- What changed and why: Merged current `main` (map pass B1, the Q28 plan, and the B5 house interiors). `sprites.js` keeps main's `HOUSE_SKINS` and `SKINS` and this branch's `LAB_SKIN` (Focus Wing and Records floors, new lab chars). `data/mapdata.js` was regenerated, not hand-merged. `OPEN_DECISIONS.md` keeps D92, D99, D94 and D95. `tests/README.md` keeps both paragraphs. The B5 lab check in `tests/maps_b5.spec.js` now reads the plain floor at (8, 9), because B2 put a mint inlay on (9, 8). Full `npm test`: 813 passed, 3 failed (that check), then the fixed specs passed 93/93. Save `v` stays 2. No id was renumbered.
+
+## 2026-10-15 20:41 ET: RegenX floors brought up to current main (build 20261015-2041)
+
+- What changed and why: Merged current `main`. The lobby, Focus Wing, and Records stay 14×22. Outdoor grass variants and building paint from main stay, because this branch did not replace that draw path. The overlay loader is the one already on `main`. `data/mapdata.js` was regenerated. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `OPEN_DECISIONS.md` (D94 and D95 kept), `data/mapdata.js` (regenerated), `index.html` and `version.json` (restamped). `game.js` merged cleanly.
+- Commit(s) + build id: build 20261015-2041.
+- Tests run and result (widths, checks): recorded in the pull request after this stamp.
+- Decisions made (colour + reasoning): D94 and D95 stay the placeholder lines. No id was renumbered.
+- Anything left unfinished: the acceptance suite on this stamp.
+
+## 2026-10-15 22:50 ET: House interiors merged with current main again (build 20261015-2250)
+
+- What changed and why: Merged current `main` (map pass B1 and the Q28 plan). Conflicts were only in `CHANGELOG.md`, `OPEN_DECISIONS.md` (D92 and D99 both kept), `index.html` and `version.json` (restamped). `data/mapdata.js` was regenerated and did not change. Save `v` stays 2. No id was renumbered.
+
 ## 2026-10-15 20:42 ET: Observatory and dream rooms brought up to the updated house branch (build 20261015-2042)
 
 - What changed and why: Merged the updated house-interior branch (which already contains current `main`) into this branch. Outdoor grass and building paint stay. House skins and the observatory and dream skins stay in one `SKINS` table. `data/mapdata.js` was regenerated with `detail_b4`, `detail_b5`, and `detail_b7`. Save `v` stays 2. A following merge of `origin/main` is already contained in that house branch.
@@ -18,6 +39,19 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: build 20261015-2040.
 - Tests run and result (widths, checks): recorded in the pull request after this stamp. The two tap-to-walk checks that used Rook's floor now use the upstairs room, because the new stove, stool, plant, and shelf sit on the old route.
 - Decisions made (colour + reasoning): D99 stays the house-prop placeholder. No id was renumbered.
+- Anything left unfinished: the acceptance suite on this stamp.
+
+## 2026-10-15 — Q28 plan brought up to current main (docs only, no new build stamp)
+
+- Merged current `main`. The map pass still reserves D92–D103 and those ids are not renumbered. D104 is already taken on main, so the next free id is D138. D127–D136 stay reserved by Design. D137 is the north-trail sign. B4's exterior pass is on main.
+
+## 2026-10-15 20:35 ET: Map pass B1 brought up to current main (build 20261015-2035)
+
+- What changed and why: Merged current `main` into this branch with a merge commit. Main already loads `data/detail_*.json` (map pass B4), so this branch keeps that one overlay loader and keeps the save fix that reads an overlay's `set.w/h`. Save `v` stays 2. No map was resized or redrawn.
+- Files touched: merge of `main`. Conflicts: `OPEN_DECISIONS.md` (kept the D92 staff-door row and main's later rows), `index.html` and `version.json` (took main's script list, including `debug_ui.js`, then restamped).
+- Commit(s) + build id: build 20261015-2035.
+- Tests run and result (widths, checks): recorded in the pull request after this stamp.
+- Decisions made (colour + reasoning): no new id. D92 stays the staff-door placeholder. Main's later ids were not renumbered.
 - Anything left unfinished: the acceptance suite on this stamp.
 
 ## 2026-10-15 18:01 ET: North trail sign no longer blocks the exit
@@ -114,6 +148,13 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Saves: no new fields; `v` stays 2. A save standing where a prop now stands loads on the map's safe tile.
 - Tests: `tests/maps_b4.spec.js`.
 
+## 2026-10-15 08:55 ET — Map pass B1: rx_f4 acceptance gaps and overlay-resized saves (build 20261015-0910; save fix first stamped 20261015-0853), branch `cursor/maps-b1-rx-f4-7807`
+
+- What changed and why: the rx_f4 pilot (PR #51) already ships the B1 packet's map, art and engine pieces E1/E2/E4/E5, so B1 adds only what the packet's acceptance list still lacked. The map-pass overlay hook (`data/detail_*.json`, applied last) is rebased onto the pilot. `save.js` now sizes a map from an overlay's `slicePatch.maps[id].set.w/h`, so a map that a later batch grows through its overlay keeps saved spots past the old edge (it clamped them to the old size before). No map changes size or look in this build; rx_f4 draws the same as on `main`. Merged with `main` after PR #52 (stamp 20261015-0910).
+- Tests: `tests/maps_b1.spec.js` covers Quinn's group fight started by talking in the bay (the win plays `rx_done`, which sets `story.rx_done` and `story.heights_done`); Bitlet's scene from the bay and a befriend setting `story.rx_bitlet`; the Arbiter's four lines by flag; the same floor variants in a second browser context; the E1 camera in modern controls (whole width, centred when the bay fits); and an overlay that grows `rx_f2` and loads a save past its old bottom edge. `tests/helpers.js` gains `withOverlay()` for fixture overlays.
+- Saves: no new fields; `v` stays 2.
+- Decisions: D92 (open) for the staff-door deny line, which is placeholder copy.
+
 ## 2026-10-15 — Design's approved green copy replaces the leftover control, welcome and rename placeholders
 
 - Settings toasts: 'Arcade controls. Pad and Talk button.', 'Modern controls. Tap to walk or talk.', 'Joystick on.', 'Joystick off.'. The step-8 toast is 'Keep walking. Wild Walklings hide in the grass.' in both layouts. `WELCOME_LINE` (after 14 h away) is '{pet} missed you! Welcome back.'. Rename: '{name} likes the new name!' on success; '{name} is back to its own name.' (species name) when a blank box, or the species name typed in, clears the nickname (D57); 'Pick a name first.' when the input is rejected (every character filtered) or blank with no nickname to clear, and the editor stays open. Town-board placeholders unchanged. Design's answers to the PR #52 flags: the welcome-back line is '{pet} missed you! Welcome back.'; clearing a nickname back to the species name shows '{name} is back to its own name.'; the arcade step-8 toast matches modern ('Keep walking. Wild Walklings hide in the grass.'). Tests: `tests/care_tools.spec.js`, `tests/controls.spec.js` (Settings toasts, toast fit at 320/375/390 in both layouts).
@@ -127,6 +168,16 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made: D102 (green). New prop lines are neutral stand-ins.
 - Anything left unfinished: Rooms were not enlarged. The outdoor observatory still uses the shared roof; the dome, slit and mast on that building wait for the outdoor Mahopac edit. The drive-through has three talkable props, which meets one per twelve floor tiles on this small lane.
 
+## 2026-10-15 — RegenX lobby, Focus Wing, and Records at 14x22 (build 20261015-0907)
+
+- What changed and why: `rx_f1`, `rx_f2`, and `rx_f3` expand from 18x12 to 14x22 so the lab matches the Arbiter bay. Every old object id, flag, and warp id stays; only coordinates move. The lobby keeps the white floor and adds a mint inlay, waiting benches, empty white planters, and a visitor screen. The Focus Wing has pale blue grout, a pale blue stripe, quiet booths, a whiteboard, and sound panels. Records has amber grout, an amber stripe, a shelving run, sorting tables, file carts, and a dim lamp. `"variants": true` and `"fitWidth": true` turn on the existing floor check and the interior camera. `rx_f4` is unchanged except `rx4_down` and `rx4_down_b`, which land on the Records north stair at (6, 4). `rx3_up` still lands on the bay at (6, 19). The Heights lab door arrives on the lobby mat at (6, 19).
+- Files touched: `data/heights.json`, `data/mapdata.js`, `sprites.js`, `tests/maps_b2.spec.js`, `tests/rx_f4_pilot.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: branch `cursor/maps-b2-regenx-floors-7807`, build `20261015-0907`.
+- Tests run and result: `PP_PORT=8102 npm test` at 320, 375, and 390. 528 passed, 6 skipped, 0 failed. The skips are the 320-only town-board cases when the 390 project runs. Console errors stayed at zero on the new specs.
+- Decisions made (green): D94 lobby prop lines and D95 Focus Wing and Records prop lines are short placeholders. The white lamp reuses the Heights lamp line.
+- Anything left unfinished: none. Save `v` stays 2. An old position on a solid tile snaps to (6, 19) with the existing safe-spot rule.
+- Depends on the Arbiter Bay pilot already on main (PR #51, build 20261015-0817). This branch also carries the `data/detail_*.json` overlay hook from `30ff864`.
+
 ## 2026-10-15 09:02 ET: house interiors get their own floors and walls
 
 - What changed and why: The nine Hearthmoor, Keeper House and Cobblecrest rooms keep their size (D84) and gain a house skin each: own floor, wall face and baseboard, plank variants, a wall-shadow row under the windows, and props enough for one per twelve floor cells. The lab skin is unchanged. The verbatim design copies are not edited; the room edits live in `data/detail_b5.json`.
@@ -135,6 +186,12 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result: `PP_PORT=8105 npm test` at 320, 375 and 390. 525 passed, 6 skipped, 0 failed (12.3m). The 6 skips are the town-board checks that only run at 320.
 - Decisions made: D99 (green). New prop lines are neutral stand-ins.
 - Anything left unfinished: Rooms were not enlarged. The seam stones in the Cobblecrest Trial Hall still block the only gap in each pillar row until those scenes clear them.
+- Anything left unfinished: the acceptance suite on this stamp.
+
+## 2026-10-15 — Map pass plan, Q28 (docs only, no new build stamp)
+
+- Q28 is the map pass from `handoff/maps/`. The Arbiter Bay pilot is already on main (PR #51): the 14×22 lab, the interior camera, bigger grids, seeded floor variants and decals. B1 is a gap check against that, not a second build. Vincent cleared B2–B7. B8 waits until B5's house skins exist, and then for his go. Plan table in `NEXT_PLAN.md` §3.
+- Decision ids for the batches start at D92. D90 is the debug-save acceptance and D91 is the byte-line learnset, both already on main. D92–D103 stay reserved per batch and are not renumbered. D104 is already taken on main (Design's D96–D104 block). The next free id is D138. D127–D136 are reserved by Design, and D137 is used.
 
 ## 2026-10-15 — rx_f4 pilot: the Arbiter Bay at 14x22 (BUILD_RX_F4_PILOT, design 6263382), branch `rx-f4-pilot`
 

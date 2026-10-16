@@ -23,6 +23,11 @@ const PPSave = (() => {
   const addMaps = bag => { if (bag) for (const [id, m] of Object.entries(bag)) if (m && m.w && m.h) MAP_SIZE[id] = [m.w, m.h]; };
   if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); addMaps(MD.mahopac && MD.mahopac.maps); addMaps(MD.highcharity && MD.highcharity.maps); addMaps(MD.highcharity && MD.highcharity.rooms); addMaps(MD.heights && MD.heights.maps); addMaps(MD.civic && MD.civic.maps); }
   else MAP_SIZE.proto = [24, 20];
+  // Map-pass overlays (data/detail_*.json, applied last in game.js) may resize a map with `slicePatch.maps[id].set.w/h`.
+  if (MD) for (const k of Object.keys(MD).filter(k => k.startsWith('detail_')).sort()) {
+    const pm = MD[k] && MD[k].slicePatch && MD[k].slicePatch.maps;
+    if (pm) for (const [id, pt] of Object.entries(pm)) if (MAP_SIZE[id] && pt && pt.set && pt.set.w && pt.set.h) MAP_SIZE[id] = [pt.set.w, pt.set.h];
+  }
   const MAPS = Object.keys(MAP_SIZE);
   const MAP_W = 24, MAP_H = 20;                 // v1 positions were on the 24x20 proto map
   const NEW_GAME = MD ? MD.interiors.newGame : { map: 'proto', x: 3, y: 3, facing: 'down' };
