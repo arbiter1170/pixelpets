@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 16:12 ET: Lantern House test follows D127 (build 20261016-1612)
+
+- What changed and why: `tests/maps_b8.spec.js` (from PR #78) still expected Amos to offer "Pledge desk" to a Glimmerwell player. D127 removed the desks, so the test now checks the desk is absent. `tests/README.md` says the same.
+- Files touched: `tests/maps_b8.spec.js`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-1612.
+- Tests run and result (widths, checks): full `npm run test:agent` before this fix: 984 passed, 3 failed (this test at 320/375/390), 12 skipped. After: `maps_b8.spec.js`, `standing.spec.js`, `rook_crossroads.spec.js` rerun.
+- Decisions made (colour + reasoning): green; follows D127. No id was renumbered.
+- Anything left unfinished: none.
+
 ## 2026-10-16 15:39 ET: Decision-id check for Rook's Crossroads (build 20261016-1539)
 
 - What changed and why: Supervisor id check. D161 (end-game side switch, open) does not collide: the design repo's asset-handoff calls start one past it at D162–D167. The next-free-id notes said D162; they now say D168.
