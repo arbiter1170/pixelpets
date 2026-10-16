@@ -1566,7 +1566,9 @@ function present(o){
   if (o.kind === 'pickup' && S.flags['item.' + o.id]) return false;
   return true;
 }
-const objPos = o => mapRT.pos[o.id] || o;
+// A pushed dream prop that was left mid-circuit (reload, resume) starts where it stopped, not back at its first tile.
+const rollSpot = o => { const st = +S.flags[o.rollFlag] || 0, c = o.circuit[st % o.circuit.length]; return st && c ? { x: c[0], y: c[1] } : o; };
+const objPos = o => mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
 const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
@@ -3043,7 +3045,8 @@ const keeperFrame = () => walk.to ? Math.floor(walk.prog * 2) % 2 : 0;    // idl
 
 /* ---------- follower: the partner walks one tile behind (MAPS_SLICE K.3/K.4) ---------- */
 const fol = { x: null, y: null, fx: 0, fy: 0, from: null, to: null, facing: 'down' };
-const followerOn = () => !!(S && S.settings && S.settings.follower !== false && pet());
+// A memory from before the keeper had a partner (map flag noPartner, e.g. dream_2004) hides the follower there only.
+const followerOn = () => !!(S && S.settings && S.settings.follower !== false && pet() && !(CUR && CUR.noPartner));
 // Load rule: the tile behind the keeper (opposite facing) if walkable, else the keeper's own tile (drawn underneath).
 function placeFollower(){
   fol.from = fol.to = null;
@@ -3170,7 +3173,11 @@ function rollProp(o){
   if (step >= circuit.length) { runScene(o.rollScene); return; }
   const nxt = circuit[(step + 1) % circuit.length], nx = nxt[0], ny = nxt[1];
   const q = objPos(o);
-  if (solidTile(nx, ny) || (nx === S.world.x && ny === S.world.y) || blockerAt(nx, ny)) { sfx('denied'); return; }
+  // The toy rolls along its circuit whatever side it is bumped from. If the keeper stands on the next tile, the two swap places
+  // (before: a silent 'denied', so bumping it from the spawn side did nothing). Only a wall or another object stops it.
+  const onKeeper = nx === S.world.x && ny === S.world.y;
+  if (solidTile(nx, ny) || blockerAt(nx, ny)) { sfx('denied'); return; }
+  if (onKeeper) { S.world.x = q.x; S.world.y = q.y; walk.fx = q.x; walk.fy = q.y; walk.from = null; walk.to = null; }
   sfx('pop');
   mapRT.pos[o.id] = { x: nx, y: ny, fx: nx, fy: ny, facing: dirName(nx - q.x, ny - q.y) };
   S.flags[o.rollFlag] = step + 1; save();
