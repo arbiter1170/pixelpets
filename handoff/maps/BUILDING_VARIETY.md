@@ -32,7 +32,7 @@ All art: 16×16 PAL text grids, `.` transparent, no outline, original.
 | 22 | Civic Bank (`hc_bank_in`) | columns, heavy door, Acorn emblem | marble check floor, counter with grille, vault door | floor_marble, vault_door, acorn_emblem |
 | 23 | Lantern House, High Charity (`hc_lantern_in`) | teal roof, tall windows, lantern sign | warm tiled clinic floor, beds | floor_clinic |
 | 24 | Charity Mall (`hc_mall_1/2`) | glass front, awnings in 3 colours | shop stalls, fountain, escalator-free stair | awning_r/b/y, stall, fountain_small |
-| 25 | Breckenridge Observatory (mahopac `mah_obs`) | dome roof, slit, signal mast (landmark) | star-chart floor, telescope | roof_dome, telescope, floor_starmap |
+| 25 | Breckenridge Observatory (mahopac `mah_obs`) | dome roof, slit, signal mast (landmark) | dusk-violet boards with brass compass inlay, night dome on walnut | roof_dome, telescope, floor_starmap |
 | 26 | RegenX facade (fb_heights `ht_lab`) | white front, mint sign (art row 13, 32×32) | lab skin (B1/B2), each floor own accent | regenx_facade |
 | 27 | Tunnel mouth (fb_heights `ht_tunnel`) | timber-braced rock mouth, lantern hook | rock skin (B3) | tunnel_mouth |
 

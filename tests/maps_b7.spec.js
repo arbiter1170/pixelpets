@@ -6,7 +6,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 const ROOMS = [
-  { id: 'mahopac_obs', w: 9, h: 7, ax: 4, ay: 5, safe: [4, 5], floor: '.', wall: 'wall_dome', face: 'wall_dome_face',
+  { id: 'mahopac_obs', w: 9, h: 7, ax: 4, ay: 5, safe: [4, 5], floor: '.', wall: 'wall_obs_dome', face: 'wall_obs_face',
     variants: true, dream: null,
     old: ['obs_out', 'obs_scope'],
     exit: { x: 4, y: 5, dir: 'down', to: 'mahopac', tx: 5, ty: 8 } },

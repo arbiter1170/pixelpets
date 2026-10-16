@@ -25,7 +25,9 @@ const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f
   // CALLOWAY_RESKIN and WARDENS_HALL_RESKIN share these three. Defined once. A–G stay as written above.
   H:'#b9877a', // dusty rose plaster (Calloway wall)
   I:'#9c9382', // warm grey flagstone (Wardens floor)
-  J:'#2f5a3e'}; // deep Keeper green (Wardens wainscot / runner)
+  J:'#2f5a3e', // deep Keeper green (Wardens wainscot / runner)
+  // MAHOPAC_OBS_FIX (D150): dusk violet floor. Appended once. The Keeper HQ, and its slate key, are not built here.
+  P:'#9686a8'}; // dusk violet floor (observatory)
 
 const SPECIES = [
   { id:'ember', starter:true, habitat:{hot:6, meadow:1, city:1}, tiles:'grass', type:'EMBER', blurb:'A cozy fire fox. Loves to play.', stages:[
@@ -962,6 +964,39 @@ function buildTiles(){
   }
   T.floor_star = starFloor(0); T.floor_star_b = starFloor(1); T.floor_star_c = starFloor(2);
   T.star_tick = mkTile(g => { px(g, PAL.s, 2, 8, 12, 1); px(g, PAL.w, 6, 4, 1, 9); px(g, PAL.w, 3, 5, 1, 1); px(g, PAL.c, 11, 11, 1, 1); });
+  // Observatory interior. The cap is wall_obs_dome: TILES.wall_obs is the outdoor wall and must stay that tile.
+  function obsFloor(extra){
+    return mkTile(g => {
+      px(g, PAL.P, 0, 0, 16, 16);
+      px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.F, 0, 8, 16, 1);
+      px(g, PAL.F, 5, 8, 1, 8); px(g, PAL.F, 11, 0, 1, 8);
+      if (extra) extra(g);
+    });
+  }
+  function obsFace(win){
+    return mkTile(g => {
+      px(g, PAL.n, 0, 0, 16, 16);
+      [0, 8, 15].forEach(x => px(g, PAL.G, x, 0, 1, 9));
+      px(g, PAL.C, 4, 3); px(g, PAL.y, 11, 6);
+      px(g, PAL.G, 0, 9, 16, 1);
+      px(g, PAL.F, 0, 10, 16, 6);
+      px(g, PAL.B, 4, 10, 1, 5); px(g, PAL.B, 12, 10, 1, 5);
+      px(g, PAL.k, 0, 15, 16, 1);
+      if (win) { px(g, PAL.G, 5, 1, 6, 7); px(g, PAL.n, 6, 2, 4, 5); px(g, PAL.C, 7, 3); px(g, PAL.y, 8, 4); }
+    });
+  }
+  T.wall_obs_dome = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.G, 0, 0, 16, 2); px(g, PAL.G, 7, 2, 2, 14);
+    px(g, PAL.C, 3, 6); px(g, PAL.y, 12, 10);
+  });
+  T.wall_obs_face = obsFace(false);
+  T.wall_obs_win = obsFace(true);
+  T.floor_obs = obsFloor(null);
+  T.floor_obs_b = obsFloor(g => { px(g, PAL.G, 3, 4); px(g, PAL.C, 12, 12); });
+  T.floor_obs_c = obsFloor(g => { px(g, PAL.G, 9, 3, 3, 1); px(g, PAL.G, 10, 2, 1, 3); });
+  T.star_tick_brass = mkTile(g => { px(g, PAL.G, 2, 8, 12, 1); px(g, PAL.G, 7, 4, 1, 9); px(g, PAL.C, 7, 8); });
+  T.wall_shadow_obs = mkTile(g => { px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.G, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.F, x, 2, 1, 1); });
+  T.window_light_obs = mkTile(g => { px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.G, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.F, x, 2, 1, 1); px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.C, 6, 7, 4, 3); });
   T.wall_mist = mkTile(g => {
     px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 0, 16, 2); px(g, PAL.c, 0, 6, 16, 1);
     px(g, PAL.w, 3, 4, 1, 1); px(g, PAL.w, 11, 10, 1, 1); px(g, PAL.b, 7, 13, 2, 1);
@@ -1090,7 +1125,7 @@ const HOUSE_SKINS = {
   hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop'),
   hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz'),
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
-  obs: { remap: { '#':'wall_dome', W:'wall_dome_face', W2:'wall_dome_win', '.':'floor_star' }, decal: { v:'wall_shadow', u:'window_light', z:'star_tick' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_star', 'floor_star_b', 'floor_star_c') },
+  obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_obs' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_obs', 'floor_obs_b', 'floor_obs_c') },
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c') },
   dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
   dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') }
