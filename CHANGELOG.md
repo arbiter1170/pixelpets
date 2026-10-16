@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 09:45 ET: RegenX looks no longer redraw Vesper, Clerk Nia and Cal; doc corrections (build 20261016-0922)
+
+- What changed and why: PR #40 added RegenX looks keyed `nia`, `cal` and `ivo` in `data/heights.json`. Heights looks load last, so they replaced High Charity's `nia` (Clerk Nia) and `ivo` (Keeper Vesper) and Mahopac's `cal` (the kite kid). The Heights keys are now `rx_nia`, `rx_cal` and `rx_ivo`, with the RegenX NPCs and speakers pointed at them. New `tests/look_keys.spec.js` fails when two data files define the same look key. Docs: corrected the D73/D80 note, removed the duplicate open D71 row, marked Q26 built (D72 still open), the walklings-docs skill now points at the OPEN_DECISIONS header for the next id, and the next free id is D151.
+- Files touched: `data/heights.json`, `data/mapdata.js` (regenerated), `tests/heights.spec.js`, `tests/look_keys.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `.cursor/skills/walklings-docs/SKILL.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261016-0922.
+- Tests run and result (widths, checks): `npm test` exit 0 (882 passed, 12 skipped) at 320, 375 and 390.
+- Decisions made (colour + reasoning): green, bug fix from the after-the-fact audit of #37 and #39–#41, approved by Vincent. No D or Q id renumbered. `mahopac.json` not touched.
+- Anything left unfinished: the speaker map still resolves the name "Cal" to one look for both Cals (name collision, audit items 7–8, not in scope).
+
 ## 2026-10-16 ET: Keeper House merged with current main (build 20261016-0304)
 
 - What changed and why: Merged current `main`, which now holds PR #74 (lantern, Calloway, Lodge and observatory rooms) and PR #75 (the `maps_b6` lab-floor check fix). `data/mapdata.js` was regenerated. Save `v` stays 2.
