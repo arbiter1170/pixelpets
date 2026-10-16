@@ -35,7 +35,9 @@
     'story.met_cal', 'story.rx_f2', 'story.saw_arbiter', 'story.rx_f3', 'story.rx_done', 'story.rx_bitlet', 'story.sm_yard', 'story.sm_look',
     'story.met_jed', 'story.sm_freed', 'story.sm_haul', 'story.sm_done',
     'story.rook_end', 'story.rook_bond',
-    'story.met_bram', 'story.met_mo', 'story.met_wynn', 'story.met_lumen', 'story.met_rue'];
+    'story.met_bram', 'story.met_mo', 'story.met_wynn', 'story.met_lumen', 'story.met_rue',
+    // Lizzy in Hearthmoor: the meet, the hug, and the Rook hook. Sister scenes and the landlord quests are a later build.
+    'story.lizzy_met', 'story.lizzy_hug', 'story.lizzy_rook'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],

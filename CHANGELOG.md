@@ -2,6 +2,68 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 11:38 ET: Merge Fernbrook rooms and the heart alert (build 20261016-1138)
+
+- What changed and why: Merged `origin/main` after PR #78 (Fernbrook Lantern House, Bloom Trial Hall) and PR #83 (heart alert). Overlay maps from `detail_*` files and `fernbrook_rooms` both load. The school hall, the flats lobby, and flat 5B are unchanged. The id notes now follow main: the next free id is D161. D138–D141 stay the settled Lizzy calls, D142–D147 have no recorded rows, and no id was renumbered. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `game.js`, `tests/integrity_lib.js`, `tests/maps_b7.spec.js` (32 skinned rooms), `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `tests/README.md`, `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1138.
+- Tests run and result (widths, checks): `PP_PORT=8811 npm test`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. No id was renumbered.
+- Anything left unfinished: The INTERIOR_WALLS kit reaches these three rooms in PR 2.
+
+## 2026-10-16 10:26 ET: Merge the 2004-memory toy fix (build 20261016-1026)
+
+- What changed and why: Merged `origin/main` again after PR #81. In the 2004 memory the pop-toy answers a bump from any side, Mom cooks, Dad watches the set, and no partner follows into that room. The school hall, the flats lobby, and flat 5B stay as the review left them. Save `v` stays 2. The next free id stays D142.
+- Files touched: merge of `main`. `data/detail_b7.json`, `data/mahopac.json`, `data/mapdata.js` (regenerated), `game.js`, `sprites.js`, `tests/dream_toy.spec.js`, `tests/maps_b7.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261016-1026.
+- Tests run and result (widths, checks): `PP_PORT=8806 npm test` exit 0. 903 passed, 12 skipped, 0 failed (20.6m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. The toy fix already shipped on `main`. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build.
+
+## 2026-10-16 09:58 ET: Calm the school hall, the flats lobby, and flat 5B (build 20261016-0958)
+
+- What changed and why: Vincent's review of the schoolhouse and flats. The lobby no longer has a red brick band across the middle or a full-width brick row at the door. Those tiles are speckled terrazzo, and the door mat stays. The school hallway under the red runner is cream linoleum. Flat 5B's hall walls drop the repeated brick courses for cream plaster with one dado. The kitchen stays terracotta, the bedroom stays wood, and the game room stays navy carpet, so the three rooms stay distinct from each other and from the other houses. Merged `origin/main` at build 20261016-0922, which renamed the Heights looks to `rx_nia`, `rx_cal`, and `rx_ivo`. The next free id stays D142. D138–D141 and D148–D150 stay settled. Save `v` stays 2.
+- Files touched: `sprites.js`, `data/mapdata.js` (regenerated), `README.md`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`, plus the merge of `main` (`data/heights.json`, `tests/look_keys.spec.js`, `tests/heights.spec.js`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `.cursor/skills/walklings-docs/SKILL.md`).
+- Commit(s) + build id: build 20261016-0958.
+- Tests run and result (widths, checks): `PP_PORT=8805 npm test` exit 0. 897 passed, 12 skipped, 0 failed (20.3m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. Vincent rejected the busy brick floors and approved the rest of the schoolhouse and flats. No new D id. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build. The coach cell (12, 9) is still the Keeper House roof from an earlier patch.
+## 2026-10-16 11:14 ET: Lantern House planks merged with the heart alert (build 20261016-1114)
+
+- What changed and why: Merged current `main` (PR #83, heart alert). Fernbrook rooms unchanged. `data/mapdata.js` regenerated. Save `v` stays 2. The next free id stays D151.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `NEXT_PLAN.md` (both kept), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1114.
+- Tests run and result (widths, checks): `PP_PORT=8817 npm test`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 10:24 ET: Lantern House planks merged with current main (build 20261016-1024)
+
+- What changed and why: Merged current `main` (build 20261016-0947), which keeps the dream pop-toy answering a bump from any side. The Fernbrook Lantern House floor stays the calm cream planks, rug, quilt runner, and thin hearth from build 20261016-0957. The Bloom Trial Hall is unchanged. `data/mapdata.js` was regenerated. Save `v` stays 2. The next free id stays D151.
+- Files touched: merge of `main`. Conflicts: `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped). `sprites.js` and `game.js` merged cleanly.
+- Commit(s) + build id: build 20261016-1024.
+- Tests run and result (widths, checks): `PP_PORT=8820 npm test` exit 0. 906 passed, 12 skipped, 0 failed (20.5m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 09:57 ET: Fernbrook Lantern House floor is calm orchard planks (build 20261016-0957)
+
+- What changed and why: Vincent rejected the Lantern House floor. The short dark courses read as a brick pile, the same look he turned down for Calloway and the Lodge. The floor is now wide cream planks, with the rug kept, a short quilt runner, and a two-tile brick hearth in front of the counter. Brick is only that thin lip. The Bloom Trial Hall is unchanged. The planks stay distinct from the Hearthmoor lantern checker and the Cobblecrest cobble floor. Merged `main` at build 20261016-0922. Save `v` stays 2. The next free id stays D151.
+- Files touched: `sprites.js`, `data/fernbrook_rooms.json`, `data/mapdata.js`, `tests/maps_b8.spec.js`, `tests/README.md`, `CHANGELOG.md`, `NEXT_PLAN.md`, `index.html`, `version.json`, plus the merge of `main` (`data/heights.json`, `tests/look_keys.spec.js`, `tests/heights.spec.js`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `.cursor/skills/walklings-docs/SKILL.md`).
+- Commit(s) + build id: build 20261016-0957.
+- Tests run and result (widths, checks): `PP_PORT=8819 npm test` exit 0. 900 passed, 12 skipped, 0 failed (20.2m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0. `tests/maps_b8.spec.js` also passed 18 at `PP_PORT=8818`.
+- Decisions made (colour + reasoning): Green. Vincent's review set the floor. No new D or Q id. D103 placeholders stay. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 08:59 ET: Fernbrook Lantern House and Bloom Trial Hall (build 20261016-0859)
+
+- What changed and why: Vincent approved the two new Fernbrook rooms. The Lantern House is 12 by 16, with an orchard-wood floor, Keeper Amos at the heal counter, three quilt beds, a herb rack, apple crates and a table. The Bloom Trial Hall is 16 by 24. A hedge path zig-zags to the flower dais, where Master Fen stands. Each room has its own skin. Neither reuses the lantern, Calloway, Lodge, observatory or Keeper House floor. The outdoor doors keep their panel ids and also warp in. If the room map is missing, the panel still opens. Amos still rests the party and still offers the Pledge desk. Fen still starts the trial. A save inside either room loads. Save `v` stays 2. D103 is the placeholder prop lines. The next free id is D151.
+- Files touched: `data/fernbrook_rooms.json`, `data/mapdata.js`, `sprites.js`, `game.js`, `save.js`, `tests/integrity_lib.js`, `tools/gen_mapdata.py`, `tests/maps_b8.spec.js`, `tests/maps_b7.spec.js`, `tests/standing.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0859.
+- Tests run and result (widths, checks): `PP_PORT=8817 npm test` exit 0. 894 passed, 12 skipped, 0 failed (20.3m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. D103 was already reserved for this batch. The new prop lines are placeholders. No id was renumbered. Houses were not enlarged. The lab stays four rooms.
+- Anything left unfinished: Real prop copy can replace the D103 lines. The outdoor Fernbrook map is unchanged.
+
 ## 2026-10-16 10:11 ET: Heart alert merged with the dream pop-toy fix (build 20261016-1011)
 
 - What changed and why: Merged current `main` (PR #81). In the 2004 memory, the pop-toy answers a bump from any side, Mom cooks, and Dad watches TV. The modern heart alert stays. Save `v` stays 2.
@@ -28,6 +90,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `npm test` exit 0 (882 passed, 12 skipped) at 320, 375 and 390.
 - Decisions made (colour + reasoning): green, bug fix from the after-the-fact audit of #37 and #39–#41, approved by Vincent. No D or Q id renumbered. `mahopac.json` not touched.
 - Anything left unfinished: the speaker map still resolves the name "Cal" to one look for both Cals (name collision, audit items 7–8, not in scope).
+
+## 2026-10-16 08:56 ET: Hearthmoor Schoolhouse and Amberhill Flats (build 20261016-0856)
+
+- What changed and why: Vincent approved packet P3 v2 on Design's defaults. Hearthmoor stays 24 by 20. The schoolhouse and the flats sit on the empty south tiles. Each of the three rooms has its own skin. The lift panel lists floors 1 through 6, and only 5B is a real map. Both lift doors open after Lizzy's intro. Lizzy, Buddy, Ossabell, Morelou, Pip, Wren, and Mr. Gristle are in. Morolow has a look and is not on a map yet. The intro plays once after the starter, branches on Rook, and gives two Heal Snacks. Buddy is a Walkling beside Lizzy. He is never a phone contact and never a battle. Family lines use cooking, music, and Spanish. The game names no real place. Five south props move so the new walls can land. Save `v` stays 2. Lizzy stands one tile east in the hall, and Ossabell one tile east in the kitchen, so the only doorway into each room stays open. A door drawn on a wall is entered from the grass south of it. Two art names already existed (`floor_honey`, `bunk`), so those pictures stay as they were. The rooms still differ by their walls and the other floors.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `game.js`, `sprites.js`, `keeper.js`, `quests.js`, `tests/lizzy.spec.js`, `tests/maps_b4.spec.js`, `tests/maps_b7.spec.js`, `tests/integrity_lib.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0856.
+- Tests run and result (widths, checks): `PP_PORT=8803 npm test` exit 0. 891 passed, 12 skipped, 0 failed (20.2m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D111–D119 and D138–D141, Vincent, Oct 16 2026, Design's defaults. D111 red: two buildings, placement A, the map stays 24 by 20. D118: six floors on the panel, only 5B is real. D119: flower clip, Hearthmoor Schoolhouse, Amberhill Flats, Mr. Gristle. D138 green: kids use full-size looks. D139 green: the flower clip is NPC-only. D140 yellow: one overlay plus the engine notes. D141 green: five props move, nothing else. D142–D147 are unused. The next free id is D142. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build. The coach cell (12, 9) is the Keeper House roof from an earlier patch, so the approach is the path beside it.
 
 ## 2026-10-16 ET: Keeper House merged with current main (build 20261016-0304)
 

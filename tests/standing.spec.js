@@ -187,7 +187,7 @@ test('the desk is hidden before the side pick and unavailable in a battle; the L
   await page.locator('#sbChoices button', { hasText: 'Leave' }).click();
   await page.waitForFunction(() => !window.PixelPets.scene);
   // now pledged to glimmer: the Fernbrook Lantern House (Keeper Amos) offers the Keepers desk next to REST
-  await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.goto('fernbrook', 5, 5, 'up'); });
+  await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.goto('fb_lantern_in', 6, 4, 'up'); });
   await page.waitForFunction(() => !window.PixelPets.fading);
   await page.keyboard.press('Space');
   await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full && s.waiting; });
