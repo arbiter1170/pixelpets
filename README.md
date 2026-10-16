@@ -142,8 +142,8 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
   Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
-  then the summon lines); after that only a bump starts a rematch until you win. Master Fen's Trial Hall in Fernbrook
-  opens once the orchard is cleared: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
+  then the summon lines); after that only a bump starts a rematch until you win. Master Fen's Bloom Trial Hall in Fernbrook
+  opens once the orchard is cleared. Talk to him on the dais: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
   Seal #1 opens Route 2 (the creek, Wickerglen, and the Glow Census). Past the quarry gate is Cobblecrest: Dottie's
   stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. Cobblecrest's roofs, windows and
   rooms get their own trim. A loss after you arrive wakes you in the
@@ -221,7 +221,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   `standing.keepers>=2` / `standing.glimmer>=2` (the tier, not points) for later lines and options. Reaching a new tier shows
   that tier's toast once (`standing.top.<side>`). Daily earning (care for the Keepers, output for Glimmerwell) is not built:
   the spec has no numbers yet.
-  **Switching** happens at a Pledge desk: an extra option on Keeper Amos's Lantern House panel in Fernbrook (to the
+  **Switching** happens at a Pledge desk: an extra option when you talk to Keeper Amos inside the Fernbrook Lantern House (to the
   Keepers) and on Associate Juniper's line at the Fernbrook stand (to Glimmerwell), only after `story.side_pick_done`, never
   mid-scene or mid-battle, and only where it would be a change. A reference letter from the side you join reads first, then
   "Really? Keepers Standing 30 → 15" with Yes / Think about it; Yes halves the side you leave (floor), keeps the side you

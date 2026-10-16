@@ -113,6 +113,10 @@ function composeWorld(md) {
   }
   if (md.town_board) applyMapPatch(world, md.town_board.slicePatch);
   for (const k of detail) applyMapPatch(world, md[k].slicePatch);
+  if (md.fernbrook_rooms) {
+    Object.assign(world, JSON.parse(JSON.stringify(md.fernbrook_rooms.maps || {})));
+    applyMapPatch(world, md.fernbrook_rooms.slicePatch);
+  }
   return { world, tiles };
 }
 
