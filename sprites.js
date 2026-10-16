@@ -6,7 +6,9 @@
    sprite on dark UI cells (dex, collection, header) for dark-bodied species; the map art is unchanged.
    weatherOnly: env tags; the species spawns only while one of them is active and never in the any-species roll.
    Order matters: indices are runtime species numbers and ids are save-v2 form ids, so new lines are only ever appended.
-   labOnly: never in the habitat roll or the 8% any-species roll. Met only where a map places it. */
+   labOnly: never in the habitat roll or the 8% any-species roll. Met only where a map places it.
+   npcOnly: never in a habitat roll, a spawn table, or the 8% any-species roll, and left out of the journal.
+   A stage may use grid (16x16 PAL keys, not mirrored) when the art is not symmetric. half is still mirrored. */
 'use strict';
 const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f070',g:'#38b764',t:'#257179',
   n:'#29366f',b:'#3b5dc9',c:'#41a6f6',s:'#73eff7',w:'#f4f4f4',h:'#94b0c2',m:'#566c86',d:'#333c57',
@@ -236,12 +238,71 @@ const SPECIES = [
     { name:'Archivolt', col:{a:PAL.s,b:PAL.c,c:PAL.y,d:PAL.d,x:PAL.h}, half:[
       '.......c','......dc','....dddd','....dxdd','....aiea','....aeea','....abba','....aaaa',
       '....dxdd','....dddd','....dddd','....dddd','......cc','.....c..','....c..c','........']}
+  ]},
+  // Species 15. NPC only (D97/D98): a keeper never meets this line. Full grids, not mirrored halves.
+  { id:'fetch', habitat:{}, npcOnly:true, tiles:'grass', type:'BLOOM', blurb:'A sunny field pup. Fetches seeds and plants them.',
+    kit:{ form:'fetch/1', level:18, moves:['fetch_dash','briar_volley','thorn_lash','sap_sip'], nick:'Buddy' }, stages:[
+    { name:'Fetchling', grid:[
+      '................',
+      '................',
+      '................',
+      '................',
+      '................',
+      '..........oy....',
+      '.........oyyy...',
+      '........oyykyy..',
+      '........oyyyyyk.',
+      '........yyyyww..',
+      '..y.yyyyyyyyy...',
+      '..yyyyyyyyyyw...',
+      '...yyyyyyyyw....',
+      '...yo.yo.yo.y...',
+      '...ww.ww.ww.w...',
+      '................']},
+    { name:'Harvestail', grid:[
+      '................',
+      '................',
+      '...........yy...',
+      '..........yyyy..',
+      '.........oyykyy.',
+      '.........oyyyyyk',
+      '..........oyyww.',
+      'y.........oyrw..',
+      'yy.yyyyyyyyyw...',
+      '.yyyyyyyyyyyww..',
+      '.oyyyyyyyyyyww..',
+      '..yyyyyyyyyyw...',
+      '..oy.oy...oy.y..',
+      '..oy.oy...oy.y..',
+      '..ww.ww...ww.w..',
+      '................']},
+    { name:'Hearthound', grid:[
+      '..........yyy...',
+      '.........yyyyy..',
+      '........oyykyyy.',
+      '........oyyyyyyk',
+      '.........oyyyww.',
+      'y........oyyrww.',
+      'yy.......oyyww..',
+      'yyyoyyyyyyyyyw..',
+      '.yyyyyyyyyyyyww.',
+      '.oyyyyyyyyyyyww.',
+      '..yyyyyyyyyyyw..',
+      '..yyygyyyyyyy...',
+      '..oyy.oyy.oyy...',
+      '..oyy.oyy.oyy...',
+      '..www.www.www...',
+      '................']}
   ]}
 ];
 
-/* Build an 18x18 canvas (16x16 + 1px outline border). mode: 'normal' | 'blink' | solid colour string */
+/* Build an 18x18 canvas (16x16 + 1px outline border). mode: 'normal' | 'blink' | solid colour string.
+   A half is 8 columns and mirrored. A grid longer than 8 is a full 16x16 of PAL keys and is not mirrored. */
 function buildSprite(half, col, mode){
-  const grid = half.map(h => { h = (h + '........').slice(0,8); return (h + h.split('').reverse().join('')).split(''); });
+  const full = !!(half && half.length && String(half[0]).length > 8);
+  const grid = full
+    ? half.map(row => (String(row) + '................').slice(0, 16).split(''))
+    : half.map(h => { h = (h + '........').slice(0,8); return (h + h.split('').reverse().join('')).split(''); });
   const c = document.createElement('canvas'); c.width = 18; c.height = 18;
   const g = c.getContext('2d');
   const filled = (x,y) => x>=0 && y>=0 && x<16 && y<16 && grid[y][x] !== '.';
@@ -253,6 +314,7 @@ function buildSprite(half, col, mode){
     const ch = grid[y][x]; if (ch === '.') continue;
     let fill;
     if (mode !== 'normal' && mode !== 'blink') fill = mode;
+    else if (full) fill = PAL[ch] || PAL.m;
     else if (isEye(ch)) {
       if (mode === 'blink') fill = (y<15 && isEye(grid[y+1][x])) ? col.a : PAL.k;
       else fill = ch === 'e' ? PAL.k : PAL.w;
@@ -739,6 +801,127 @@ function buildTiles(){
   T.rug_room = rug('b', 'c', 'w');
   T.pad_stripe = mkTile(g => { px(g, PAL.y, 0, 7, 16, 2); px(g, PAL.o, 0, 6, 16, 1); });
   T.court_stripe = mkTile(g => { px(g, PAL.w, 0, 7, 16, 2); });
+  // B7. Observatory dome, cool memory planks, warm party floor, night asphalt. Decals paint only their marks.
+  T.wall_dome = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16);
+    px(g, PAL.b, 0, 2, 16, 2); px(g, PAL.m, 1, 6, 14, 2); px(g, PAL.h, 3, 10, 10, 2);
+    px(g, PAL.d, 0, 0, 1, 16); px(g, PAL.d, 8, 0, 1, 16);
+    px(g, PAL.s, 4, 3, 1, 1); px(g, PAL.w, 12, 7, 1, 1);
+  });
+  T.wall_dome_face = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16);
+    px(g, PAL.b, 0, 1, 16, 2); px(g, PAL.m, 0, 5, 16, 2); px(g, PAL.h, 0, 9, 16, 2);
+    [0, 5, 10, 15].forEach(x => px(g, PAL.d, x, 0, 1, 13));
+    px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2);
+  });
+  T.wall_dome_win = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16);
+    px(g, PAL.b, 0, 1, 16, 2); px(g, PAL.m, 0, 5, 16, 2); px(g, PAL.h, 0, 9, 16, 2);
+    [0, 15].forEach(x => px(g, PAL.d, x, 0, 1, 13));
+    px(g, PAL.d, 6, 0, 4, 13); px(g, PAL.b, 7, 1, 2, 11); px(g, PAL.s, 7, 2, 2, 8); px(g, PAL.w, 7, 3, 1, 2);
+    px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2);
+  });
+  function starFloor(shift){
+    return mkTile(g => {
+      px(g, PAL.n, 0, 0, 16, 16);
+      px(g, PAL.b, 0, 8, 16, 1); px(g, PAL.b, 8, 0, 1, 16);
+      [[1, 2], [5, 1], [12, 3], [3, 6], [14, 7], [6, 10], [11, 12], [2, 13], [9, 5], [15, 14]].forEach(([x, y], i) => {
+        const col = (i + shift) % 3 === 0 ? PAL.w : (i + shift) % 3 === 1 ? PAL.s : PAL.c;
+        px(g, col, (x + shift * 2) % 16, (y + shift) % 16, 1, 1);
+      });
+      if (shift === 0) px(g, PAL.s, 2, 4, 4, 1);
+      if (shift === 1) { px(g, PAL.s, 2, 9, 5, 1); px(g, PAL.w, 4, 9, 1, 1); }
+      if (shift === 2) { px(g, PAL.h, 10, 2, 1, 4); px(g, PAL.w, 10, 4, 1, 1); }
+    });
+  }
+  T.floor_star = starFloor(0); T.floor_star_b = starFloor(1); T.floor_star_c = starFloor(2);
+  T.star_tick = mkTile(g => { px(g, PAL.s, 2, 8, 12, 1); px(g, PAL.w, 6, 4, 1, 9); px(g, PAL.w, 3, 5, 1, 1); px(g, PAL.c, 11, 11, 1, 1); });
+  T.wall_mist = mkTile(g => {
+    px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 0, 16, 2); px(g, PAL.c, 0, 6, 16, 1);
+    px(g, PAL.w, 3, 4, 1, 1); px(g, PAL.w, 11, 10, 1, 1); px(g, PAL.b, 7, 13, 2, 1);
+  });
+  T.wall_mist_face = mkTile(g => {
+    px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 4, 16, 1); px(g, PAL.c, 0, 5, 16, 1);
+    px(g, PAL.w, 2, 8, 1, 1); px(g, PAL.w, 12, 7, 1, 1);
+    px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.n, 0, 14, 16, 2);
+  });
+  T.wall_mist_win = mkTile(g => {
+    px(g, PAL.h, 0, 0, 16, 16); px(g, PAL.m, 0, 4, 16, 1); px(g, PAL.c, 0, 5, 16, 1);
+    px(g, PAL.n, 4, 1, 8, 10); px(g, PAL.c, 5, 2, 6, 8); px(g, PAL.s, 5, 2, 2, 2); px(g, PAL.n, 7, 2, 1, 8);
+    px(g, PAL.m, 0, 13, 16, 1); px(g, PAL.n, 0, 14, 16, 2);
+  });
+  function memFloor(shift){
+    return mkTile(g => {
+      px(g, PAL.h, 0, 0, 16, 16);
+      [0, 5, 11, 15].forEach((y, i) => px(g, PAL.m, 0, (y + (i === shift ? 1 : 0)) % 16, 16, 1));
+      px(g, PAL.m, (3 + shift) % 16, 1, 1, 4); px(g, PAL.m, 11, 6, 1, 4);
+      px(g, PAL.c, 6, (3 + shift) % 16, 1, 1); px(g, PAL.w, 13, 9, 1, 1);
+      if (shift === 1) px(g, PAL.b, 2, 12, 3, 1);
+      if (shift === 2) px(g, PAL.n, 8, 7, 4, 1);
+    });
+  }
+  T.floor_mem = memFloor(0); T.floor_mem_b = memFloor(1); T.floor_mem_c = memFloor(2);
+  T.rug_mem = mkTile(g => {
+    px(g, PAL.c, 0, 0, 16, 16); px(g, PAL.h, 2, 2, 12, 12);
+    for (let y = 4; y < 12; y += 3) for (let x = 4; x < 12; x += 3) px(g, PAL.s, x, y, 1, 1);
+    px(g, PAL.w, 7, 7, 2, 2);
+  });
+  T.wall_fest = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.o, 0, 0, 16, 2);
+    [[1, 'r'], [5, 'c'], [9, 'l'], [13, 'o']].forEach(([x, c]) => { px(g, PAL[c], x, 4, 3, 1); px(g, PAL[c], x + 1, 5, 1, 2); });
+    px(g, PAL.w, 3, 11, 1, 1); px(g, PAL.r, 12, 13, 1, 1);
+  });
+  T.wall_fest_face = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.o, 0, 0, 16, 1);
+    [[0, 'r'], [4, 'c'], [8, 'l'], [12, 'o']].forEach(([x, c]) => { px(g, PAL[c], x, 1, 3, 2); px(g, PAL[c], x + 1, 3, 1, 2); });
+    px(g, PAL.o, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2);
+  });
+  T.wall_fest_win = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.o, 0, 0, 16, 1);
+    [[0, 'r'], [12, 'c']].forEach(([x, c]) => { px(g, PAL[c], x, 1, 3, 2); px(g, PAL[c], x + 1, 3, 1, 2); });
+    px(g, PAL.o, 4, 5, 8, 6); px(g, PAL.s, 5, 6, 6, 4); px(g, PAL.w, 5, 6, 2, 1); px(g, PAL.o, 7, 6, 1, 4);
+    px(g, PAL.o, 0, 13, 16, 1); px(g, PAL.d, 0, 14, 16, 2);
+  });
+  T.floor_party = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.o, 0, 0, 16, 1); px(g, PAL.o, 0, 15, 16, 1);
+    [[2, 3, 'r'], [6, 2, 'w'], [11, 4, 'c'], [4, 8, 'o'], [9, 7, 'l'], [13, 11, 'r'], [3, 12, 'c'], [8, 13, 'w']].forEach(([x, y, c]) => px(g, PAL[c], x, y, 1, 1));
+  });
+  T.floor_lane = mkTile(g => {
+    px(g, PAL.y, 0, 0, 16, 16); px(g, PAL.w, 1, 0, 6, 16); px(g, PAL.y, 7, 0, 2, 16); px(g, PAL.w, 9, 0, 6, 16);
+    px(g, PAL.o, 0, 0, 1, 16); px(g, PAL.o, 15, 0, 1, 16); px(g, PAL.h, 4, 6, 1, 1); px(g, PAL.h, 12, 11, 1, 1);
+  });
+  T.streamer = mkTile(g => {
+    px(g, PAL.r, 1, 0, 4, 1); px(g, PAL.r, 2, 1, 2, 1); px(g, PAL.r, 2, 2, 1, 2);
+    px(g, PAL.c, 8, 0, 4, 1); px(g, PAL.c, 9, 1, 2, 1); px(g, PAL.c, 9, 2, 1, 2);
+    px(g, PAL.y, 5, 0, 1, 3);
+  });
+  T.wall_night = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.d, 0, 0, 16, 3); px(g, PAL.m, 0, 3, 16, 1); px(g, PAL.d, 0, 8, 16, 1);
+    px(g, PAL.h, 4, 6, 1, 1); px(g, PAL.y, 11, 12, 1, 1);
+  });
+  T.wall_night_face = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.d, 0, 0, 16, 2); px(g, PAL.m, 0, 6, 16, 1);
+    px(g, PAL.d, 2, 8, 3, 2); px(g, PAL.d, 11, 9, 2, 2);
+    px(g, PAL.d, 0, 13, 16, 1); px(g, PAL.m, 0, 14, 16, 2);
+  });
+  T.wall_night_win = mkTile(g => {
+    px(g, PAL.n, 0, 0, 16, 16); px(g, PAL.d, 0, 0, 16, 2);
+    px(g, PAL.d, 1, 2, 14, 8); px(g, PAL.y, 2, 3, 12, 6); px(g, PAL.o, 2, 3, 12, 1);
+    px(g, PAL.w, 3, 5, 2, 2); px(g, PAL.g, 7, 5, 2, 2); px(g, PAL.c, 11, 5, 2, 2);
+    px(g, PAL.d, 0, 13, 16, 1); px(g, PAL.m, 0, 14, 16, 2);
+  });
+  function asphalt(shift){
+    return mkTile(g => {
+      px(g, PAL.d, 0, 0, 16, 16);
+      [[1, 1], [4, 3], [8, 2], [13, 4], [2, 7], [6, 6], [11, 8], [15, 6], [3, 11], [7, 13], [12, 12], [9, 15], [14, 10]].forEach(([x, y], i) => {
+        px(g, (i + shift) % 2 ? PAL.m : PAL.n, (x + shift) % 16, (y + shift * 2) % 16, 1, 1);
+      });
+      if (shift === 1) px(g, PAL.m, 3, 8, 6, 2);
+      if (shift === 2) { px(g, PAL.h, 10, 4, 1, 5); px(g, PAL.n, 11, 6, 2, 1); }
+    });
+  }
+  T.floor_asphalt = asphalt(0); T.floor_asphalt_b = asphalt(1); T.floor_asphalt_c = asphalt(2);
+  T.lane_paint = mkTile(g => { px(g, PAL.y, 1, 7, 14, 2); px(g, PAL.w, 1, 7, 14, 1); });
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
@@ -780,6 +963,11 @@ const HOUSE_SKINS = {
   hc_apt: hcSkin('floor_room', 'wall_peach', 'mat_room', { remap: { '=': 'rug_room' } }),
   hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop'),
   hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz'),
+  // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
+  obs: { remap: { '#':'wall_dome', W:'wall_dome_face', W2:'wall_dome_win', '.':'floor_star' }, decal: { v:'wall_shadow', u:'window_light', z:'star_tick' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_star', 'floor_star_b', 'floor_star_c') },
+  dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c') },
+  dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
+  dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') }
 };
 const SKINS = Object.assign({ lab: LAB_SKIN }, HOUSE_SKINS);
 function buildWorldArt(){
@@ -1107,5 +1295,216 @@ function buildWorldArt(){
     px(g, PAL.m, 2, 10, 12, 2); px(g, PAL.h, 3, 11, 10, 1); px(g, PAL.y, 6, 12, 4, 2);
   });
   A.mall_bench = mkTile(g => { px(g, PAL.p, 1, 6, 14, 2); px(g, PAL.o, 1, 7, 14, 3); px(g, PAL.d, 2, 10, 2, 4); px(g, PAL.d, 12, 10, 2, 4); px(g, PAL.d, 7, 10, 2, 3); });
+  // B7 signature props. Generic shapes only: a desk, a chart, blocks, a menu of plain squares.
+  A.obs_desk = mkTile(g => {
+    px(g, PAL.d, 1, 6, 14, 4); px(g, PAL.o, 2, 6, 12, 2); px(g, PAL.w, 3, 7, 5, 1); px(g, PAL.h, 4, 7, 3, 1);
+    px(g, PAL.n, 10, 4, 3, 3); px(g, PAL.c, 11, 5, 1, 1); px(g, PAL.d, 2, 10, 2, 4); px(g, PAL.d, 12, 10, 2, 4);
+  });
+  A.star_roll = mkTile(g => {
+    px(g, PAL.n, 2, 6, 12, 5); px(g, PAL.h, 3, 7, 10, 3); px(g, PAL.w, 5, 8, 1, 1); px(g, PAL.s, 8, 8, 1, 1); px(g, PAL.c, 7, 9, 1, 1);
+    px(g, PAL.d, 2, 6, 2, 5); px(g, PAL.d, 12, 6, 2, 5);
+  });
+  A.obs_case = mkTile(g => {
+    px(g, PAL.d, 3, 6, 10, 7); px(g, PAL.m, 4, 7, 8, 5); px(g, PAL.h, 4, 6, 8, 2); px(g, PAL.y, 7, 9, 2, 1); px(g, PAL.c, 6, 8, 1, 1);
+  });
+  A.dream_blocks = mkTile(g => {
+    px(g, PAL.c, 2, 8, 4, 4); px(g, PAL.s, 3, 9, 1, 1); px(g, PAL.y, 6, 6, 4, 4); px(g, PAL.w, 7, 7, 1, 1);
+    px(g, PAL.o, 5, 10, 4, 4); px(g, PAL.w, 6, 11, 1, 1); px(g, PAL.d, 2, 14, 10, 1);
+  });
+  A.dream_shelf = mkTile(g => {
+    px(g, PAL.m, 1, 4, 14, 2); px(g, PAL.h, 1, 5, 14, 1); px(g, PAL.d, 2, 6, 2, 8); px(g, PAL.d, 12, 6, 2, 8); px(g, PAL.m, 1, 10, 14, 2);
+    px(g, PAL.p, 6, 7, 4, 3); px(g, PAL.w, 7, 8, 2, 1); px(g, PAL.d, 7, 9, 1, 1);
+  });
+  A.dream_cushion = mkTile(g => { px(g, PAL.c, 3, 8, 10, 5); px(g, PAL.s, 4, 9, 8, 3); px(g, PAL.w, 5, 9, 2, 1); px(g, PAL.d, 3, 13, 10, 1); });
+  A.menu_board = mkTile(g => {
+    px(g, PAL.d, 2, 1, 12, 12); px(g, PAL.n, 3, 2, 10, 10); px(g, PAL.w, 4, 3, 8, 2);
+    px(g, PAL.o, 4, 6, 3, 2); px(g, PAL.g, 8, 6, 3, 2); px(g, PAL.c, 4, 9, 3, 2); px(g, PAL.y, 8, 9, 3, 2);
+    px(g, PAL.m, 7, 13, 2, 2); px(g, PAL.d, 4, 15, 8, 1);
+  });
+  A.order_post = mkTile(g => {
+    px(g, PAL.m, 6, 3, 4, 8); px(g, PAL.h, 7, 4, 2, 2); px(g, PAL.d, 5, 2, 6, 2); px(g, PAL.n, 6, 8, 4, 3); px(g, PAL.y, 7, 9, 1, 1); px(g, PAL.d, 4, 14, 8, 2);
+  });
   return A;
 }
+/* ---------- map pass B4: building exteriors, path edges, outdoor props, landmarks ---------- */
+// handoff/maps BUILDING_VARIETY rows 1-27. Text grids of PAL keys, "." transparent. tiles go to TILES (16x16), art to
+// WART (16x16), big to WART (32x32 landmarks and wide doors, drawn bottom-centred on their cell). Existing names are never replaced.
+const EXTERIOR_ART = {
+  tiles: {
+    // roofs (seamless; the engine adds the eave shadow and any shape cut)
+    roof_tile_r: ["rorrrorrrorrrorr","rrrrrrrrrrrrrrrr","rrrrrrrrrrrrrrrr","prrpprrpprrpprrp","rrrorrrorrrorrro","rrrrrrrrrrrrrrrr","rrrrrrrrrrrrrrrr","rpprrpprrpprrppr","rorrrorrrorrrorr","rrrrrrrrrrrrrrrr","rrrrrrrrrrrrrrrr","prrpprrpprrpprrp","rrrorrrorrrorrro","rrrrrrrrrrrrrrrr","rrrrrrrrrrrrrrrr","rpprrpprrpprrppr"],
+    roof_teal: ["tctttctttctttctt","tttttttttttttttt","tttttttttttttttt","nttnnttnnttnnttn","tttctttctttctttc","tttttttttttttttt","tttttttttttttttt","tnnttnnttnnttnnt","tctttctttctttctt","tttttttttttttttt","tttttttttttttttt","nttnnttnnttnnttn","tttctttctttctttc","tttttttttttttttt","tttttttttttttttt","tnnttnnttnnttnnt"],
+    roof_shingle_g: ["tgggggtdtgggggtd","tttttttdtttttttd","tttttttdtttttttd","dddddddddddddddd","ggtdtgggggtdtggg","tttdtttttttdtttt","tttdtttttttdtttt","dddddddddddddddd","tgggggtdtgggggtd","tttttttdtttttttd","tttttttdtttttttd","dddddddddddddddd","ggtdtgggggtdtggg","tttdtttttttdtttt","tttdtttttttdtttt","dddddddddddddddd"],
+    roof_shingle_p: ["prrrrrpdprrrrrpd","pppppppdpppppppd","pppppppdpppppppd","dddddddddddddddd","rrpdprrrrrpdprrr","popdpppppppdpppp","pppdpppppppdpppp","dddddddddddddddd","prrrrrpdprrrrrpd","pppppppdpppppppd","pppppppdpppppppd","dddddddddddddddd","rrpdprrrrrpdprrr","pppdpppppppdpppp","oppdpppppppdpppp","dddddddddddddddd"],
+    roof_slab_h: ["hwwwwwhmhwwwwwhm","hhhhhhhmhhhhhhhm","hhhhhhhmhhhhhhhm","mmmmmmmmmmmmmmmm","wwhmhwwwwwhmhwww","hhhmhhhhhhhmhhhh","hhhmhhhhhhhmhhhh","mmmmmmmmmmmmmmmm","hwwwwwhmhwwwwwhm","hhhhhhhmhhhhhhhm","hhhhhhhmhhhhhhhm","mmmmmmmmmmmmmmmm","wwhmhwwwwwhmhwww","hhhmhhhhhhhmhhhh","hhhmhhhhhhhmhhhh","mmmmmmmmmmmmmmmm"],
+    roof_flat_m: ["mhhmmmmdmhhmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmwmmdmmmmmmmd","mmmmmmmdmmmmmmmd","dddddddddddddddd","mmmdmhhmmmmdmhhm","mmmdmmmmmmmdmmmm","mmmdmmmmmmmdmmmm","mmmdmmmmmmmdmmwm","mmmdmmmmmmmdmmmm","mmmdmmmmmmmdmmmm","mmmdmmmmmmwdmmmm","dddddddddddddddd"],
+    roof_gold: ["oyyyyyyyoyyyyyyy","oywwyyyyoywwyyyy","oyyyyyyyoyyyyyyy","oooooooooooooooo","yyyyoyyyyyyyoyyy","yyyyoywwyyyyoyww","yyyyoyyyyyyyoyyy","oooooooooooooooo","oyyyyyyyoyyyyyyy","oywwyyyyoywwyyyy","oyyyyyyyoyyyyyyy","oooooooooooooooo","yyyyoyyyyyyyoyyy","yyyyoywwyyyyoyww","yyyyoyyyyyyyoyyy","oooooooooooooooo"],
+    roof_tile_o: ["yooryooryooryoor","yooryooryooryoor","yooryooryooryoor","yooryooryooryoor","yooryooryooryoor","yooryooryooryoor","yooryooryooryoor","rrrrrrrrrrrrrrrr","oryooryooryooryo","oryooryooryooryo","oryooryooryooryo","oryooryooryooryo","oryooryooryooryo","oryooryooryooryo","oryooryooryooryo","rrrrrrrrrrrrrrrr"],
+    roof_slate_b: ["bnndcnndbnndbnnd","nnndnnndnnndnnnd","nnndnnndnnndnnnd","dddddddddddddddd","ndbnndbnndbnndbn","ndnnndnnndnnndnn","ndnnndnnndnnndnn","dddddddddddddddd","bnndbnndbnndbncd","nnndnnndnnndnnnd","nnndnnndnnndnnnd","dddddddddddddddd","ndbnndbnndbnndbn","ndnnndnnndnnndnn","ndnnndnnndnnndnn","dddddddddddddddd"],
+    roof_thatch_g: ["lglglglglglglglg","gggtgggtgggtgggt","gggtgggtgggtgggt","tgtttgtttgtttgtt","lglglglglglglglg","gtgggtgggtgggtgg","gtgggtgggtgggtgg","tttgtttgtttgtttg","lglglglglglglglg","gggtgggtgggtgggt","gggtgggtgggtgggt","tgtttgtttgtttgtt","lglglglglglglglg","gtgggtgggtgggtgg","gtgggtgggtgggtgg","tttgtttgtttgtttg"],
+    roof_thatch_y: ["wywywywywywywywy","yyyoyyyoyyyoyyyo","yyyoyyyoyyyoyyyo","oyoooyoooyoooyoo","wywywywywywywywy","yoyyyoyyyoyyyoyy","yoyyyoyyyoyyyoyy","oooyoooyoooyoooy","wywywywywywywywy","yyyoyyyoyyyoyyyo","yyyoyyyoyyyoyyyo","oyoooyoooyoooyoo","wywywywywywywywy","yoyyyoyyyoyyyoyy","yoyyyoyyyoyyyoyy","oooyoooyoooyoooy"],
+    roof_gable_p: ["ppoppppdpppppppd","poyopppdpppppppd","ppoppppdppppprrd","dddldddddddddddd","pppdppppppodpppp","pppdpppppoyopppp","pppdrrppppodpppp","dddddddddddldddd","ppppppodpppppppd","pppppoyopppppppd","ppppppodpppppppd","dddddddldddddddd","popdppppprrdpopp","oyodpppppppdoyop","popdpppppppdpopp","dddddddddddddddd"],
+    roof_hangar: ["cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","ncnnnnnnncnnnnnn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","cbbncbbncbbncbbn","ncnnnnnnncnnnnnn"],
+    roof_flat_h: ["hhhhhhhmhhhhhhhm","hhhhhhhmhhhhhhhm","hhwwhhhmhhhhhhhm","hhhhhhhmhhhddhhm","hhhhhhhmhhhhhhhm","hhhhhhhmhhhhhhhm","hhhhhhhmhhhhhhhm","mmmmmmmmmmmmmmmm","hhhhhhhmhhhhhhhm","hhhhhhhmhhhhhhhm","hhhhhhhmhhwwhhhm","hhhddhhmhhhhhhhm","hhhddhhmhhhhhhhm","hhhhhhhmhhhhhhhm","hhhhhhhmhhhhhhhm","mmmmmmmmmmmmmmmm"],
+    roof_seam_t: ["gttdgttdgttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd","lttdgttdlttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd","gttdlttdgttdlttd","gttdgttdgttdgttd","gttdgttdgttdgttd","gttdgttdgttdgttd"],
+    roof_point: ["nnnmnmnnnnnmnmnn","nnmnnnmnnnmnnnmn","nmnnnnnmnmnnnnnm","mnnnnnnnmnnnnnnn","nnnnnnnnnnnnnnnn","mnnnnnnnmnnnnnnn","nmnnnnnmnmnnnnnm","hnmnnnmnhnmnnnmn","nnnmnmnnnnnmnmnn","nnmnnnmnnnmnnnmn","nmnnnnnmnmnnnnnm","mnnnnnnnmnnnnnnn","nnnnnnnnnnnnnnnn","mnnnnnnnmnnnnnnn","nmnnnnnmnmnnnnnm","hnmnnnmnhnmnnnmn"],
+    roof_arch_r: ["oooyooopooooooop","rrrrrrrprrrrrrrp","rrrrrrrprrrrrrrp","pppppppppppppppp","ooooooopoooyooop","rrrrrrrprrrrrrrp","rrrrrrrprrrrrrrp","pppppppppppppppp","oooyooopooooooop","rrrrrrrprrrrrrrp","rrrrrrrprrrrrrrp","pppppppppppppppp","ooooooopoooyooop","rrrrrrrprrrrrrrp","rrrrrrrprrrrrrrp","pppppppppppppppp"],
+    roof_board_t: ["cttttnttttcttttc","tttttntttttttttt","tttttntttttttttt","nnnnnnnnnnnnnnnn","tcttttcttttctntt","tttttttttttttntt","tttttttttttttntt","nnnnnnnnnnnnnnnn","ttnttttcttttcttt","ttnttttttttttttt","ttnttttttttttttt","nnnnnnnnnnnnnnnn","tttcttttctnttctt","ttttttttttnttttt","ttttttttttnttttt","nnnnnnnnnnnnnnnn"],
+    roof_canvas: ["rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh","rrrpwwwhrrrpwwwh"],
+    roof_flat_d: ["dddddddddddddddd","dmdddddddddddddd","dddddddddddddddd","ddmddddddddddddd","dmdddddmdddmhddd","dddddddddddddddd","ddddddmdddhmdhdd","dddddddddddmdddd","dddddddddddddddd","dddddddddddddddd","ddddddmdmdddmddd","dddddddddddddddd","ddddmdddddmddddd","ddddddhddddddddd","ddhddddhdddddddd","mddddddmdddddddd"],
+    roof_glass: ["mmmmmmmmmmmmmmmm","mccsccccmccscccc","mcccscccmcccsccc","mccccsccmccccscc","mcccccscmcccccsc","mccccccsmccccccs","mcccccccmccccccc","msbbbbbbmsbbbbbb","mmmmmmmmmmmmmmmm","mccsccccmccscccc","mcccscccmcccsccc","mccccsccmccccscc","mcccccscmcccccsc","mccccccsmccccccs","mcccccccmccccccc","msbbbbbbmsbbbbbb"],
+    roof_dome: ["wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wswhwwwhwswhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","hhhhhhhhhhhhhhhh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","mmmmmmmmmmmmmmmm"],
+    roof_flat_w: ["wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwhlhwwhwwwwwwwh","wwhhhwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwhlhwwh","wwwwwwwhwwhhhwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","hhhhhhhhhhhhhhhh"],
+    roof_rock: ["mmmmmddmmmmmdddd","mhmmmmmmmmmmmddm","mmmmmmdmmmmmdddm","mmmmmmddmmmddmmm","mmmmmmmdddddmhmm","mmmmmmmmddddmmmm","mdmmhmmmmdddmmmm","ddmmmmmmmdmggmmm","ddmmmmmmmmhmmmdd","dddmmmmmdmmmmmdd","dmggmmmdmmmmmmdd","mhmmmddmmmmmmddd","mmmmmdmhmmmddddd","mmmmmdmmmmmddddd","dmmmddmmmmmddddd","dmmmdddmmmgddddd"],
+    roof_turf: ["gggggggtgggggggg","gggtgggggggggggg","gggggggggggggggg","llggglggglggglgg","ggggtggggggggggg","tggglggggggggggg","ggggggggglgggggg","tgggtgggtgggtggg","ggggglgggggggggg","gtgggggggggggggg","gggggggglggglggg","ggglggglggglgggl","gggggtgglggggggg","gggggggggggggggg","gggggggggggggggg","ggtgggtgggtlggtg"],
+    // walls (seamless)
+    wall_plaster: ["wwwwwwwwwwwwwwww","wwwwwwwwwwwyywww","wywwwwwwwwwwwyww","wwwwwwwwwwwwwwww","wyhwwwwwwwywwyww","wwwwwwwwwywwwwww","wwwwhwwwwwwwwwww","wwwywwwwwwwwwwww","wwwwwwwwwwwwwwww","wwwwwwwwwwwwwwww","wwwwwwwwwwwwwwww","wwwwwwyhwwwwwwww","wwwwwwwwwwwwwwww","wwywwwwwwwwwwwww","wwwwwwwwwwwwwwww","wwwwwwwwwwwwwwww"],
+    wall_log: ["oyyooooyyooooyyo","oooooooooooooooo","ooooodoooooooooo","dddddddddddddddd","oooyyooooyyooooy","oooooooooooooooo","oooooooooooodooo","dddddddddddddddd","yooooyyooooyyooo","oooooooooooooooo","oodooooooooooooo","dddddddddddddddd","oyyooooyyooooyyo","oooooooooooooooo","ooooooooodoooooo","dddddddddddddddd"],
+    wall_white: ["wwwwwwwwwwwwwwww","wwwhwwwwwwwwwwww","wwwwwwwwwwwwwwww","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwww","wwwwwwwwwwwhwwww","wwwwwwwwwwwwwwww","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwww","wwwwwwhwwwwwwwww","wwwwwwwwwwwwwwww","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwww","wwwwwwwwwwwwwwhw","wwwwwwwwwwwwwwww","hhhhhhhhhhhhhhhh"],
+    wall_brick: ["orrrrrrhorrrrrrh","rrrrrrrhrrrrrrrh","rrrrrrrhrrrrrrrh","hhhhhhhhhhhhhhhh","rrrhorrrrrrhorrr","rrrhrrrrrrrhrrrr","rrrhrrrrrrrhrrrr","hhhhhhhhhhhhhhhh","orrrrrrhorrrrrrh","rrrrrrrhrrrrrrrh","rrrrrrrhrrrrrrrh","hhhhhhhhhhhhhhhh","rrrhorrrrrrhorrr","rrrhrrrrrrrhrrrr","rrrhrrrrrrrhrrrr","hhhhhhhhhhhhhhhh"],
+    wall_ashlar_w: ["wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","hhhhhhhhhhhhhhhh","wwwhwwwwwwwhwwww","wwwhwwwwwwwhwwww","wwwhwwwwwwwhwwww","hhhhhhhhhhhhhhhh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","hhhhhhhhhhhhhhhh","wwwhwwwwwwwhwwww","wwwhwwwwwwwhwwww","wwwhwwwwwwwhwwww","hhhhhhhhhhhhhhhh"],
+    wall_obs: ["hmmmmmmdhmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","dddddddddddddddd","mmmdhmmmmmmdhmmm","mmmdmmmmmmmdmmmm","mmmdmmmmmmmdmmmm","dddddddddddddddd","hmmmmmmdhmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","dddddddddddddddd","mmmdhmmmmmmdhmmm","mmmdmmmmmmmdmmmm","mmmdmmmmmmmdmmmm","dddddddddddddddd"],
+    wall_stone: ["hhhhhhhhhmhhhhhh","hwwhhhhhhmhwwhhh","hhhhhhhhhmhhhhhh","hhhhhhhhhmhhhhhh","hhhhhhhhhmhhhhhh","hhhhhhhhhmhhhhhh","hhhhhhhhhmhhhhhh","mmmmmmmmmmmmmmmm","hhhhmhhhhhhhmhhh","hhhhmhwwhhhhmhww","hhhhmhhhhhhhmhhh","hhhhmhhhhhhhmhhh","hhhhmhhhhhhhmhhh","hhhhmhhhhhhhmhhh","hhhhmhhhhhhhmhhh","mmmmmmmmmmmmmmmm"],
+    wall_timber: ["odyyyyyyyooyyyyy","odyyyyyyooyyyyyy","odyyyyyooyyyyyyy","odyyyyooyyyywyyy","odyyyooyyyyyyyyy","odyyooyyyyyyyyyy","odyooyyyyyyyyyyy","oooooooooooooooo","dddddddddddddddd","odyyyyyyyoyyyyyy","odyyyyyyyooyyyyy","odyyyyyyyyooyyyy","odyyywyyyyyooyyy","odyyyyyyyyyyooyy","odyyyyyyyyyyyooy","odyyyyyyyyyyyyoo"],
+    wall_rough: ["dmmmddmmhmmmmmmm","mhmmmdmmmmmmmddd","mmmmmdmmmmmmmddd","mmmmmddmmmmmdmmm","mmmmddddmmmdmhmm","mmddmmmddddmmmmm","mddmhmmmdddmmmmm","dddmmmmmddmmmmmm","dddmmmmmdmhmmmdd","ddddmmmddmmmmmdd","dmmmdddddmmmmmdd","mhmmmddmmmmmmddd","mmmmmdmhmmmmdmmm","mmmmmdmmmmmdmhmm","mmmmddmmmmmmmmmm","mddddddmmmmmmmmm"],
+    wall_pillar: ["dddhhhhhhhhhhddd","dddmmmmmmmmmmddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","ddddmhhwhmhmdddd","dddmmmmmmmmmmddd","dddhhhhhhhhhhddd"],
+    wall_hangar: ["whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm","whhmwhhmwhhmwhhm"],
+    wall_panel_m: ["mmmmmmmdmmmmmmmd","mhmmmhmdmhmmmhmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mmmmmmmdmmmmmmmd","mhmmmhmdmhmmmhmd","mmmmmmmdmmmmmmmd","dddddddddddddddd"],
+    wall_batten_o: ["dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo","dyoorooodyoorooo"],
+    wall_concrete: ["hhhhhhhhhhhhhhhh","hhhhhhwhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhmhhhhhhhmhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","mmmmmmmmmmmmmmmm","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhwh","hhhhhhhhhhhhhhhh","hhhmhhhhhhhmhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","mmmmmmmmmmmmmmmm"],
+    wall_piles: ["oooooooooooooooo","oooooooooooooooo","dddddddddddddddd","oooooooooooooooo","oooooooooooooooo","dddddddddddddddd","oooooooooooooooo","oooooooooooooooo","dddddddddddddddd","dddoddddddddoddd","nnnodnnnnnnnodnn","nnnodnnnnnnnodnn","nnnodnbbnnnnodnn","nnnodnnnnnnnodbb","nnnodnnnbbnnodnn","nnnodnnnnnnnodnn"],
+    wall_drum: ["mhhhhhhhhhhhhhhh","mhhhhhhhhhhhhhhh","mhhhhhhhhhhhhhhh","mmmmmmmmmmmmmmmm","mhhhhhhhhhhhhhhh","mhhhhhhhhhhhhhhh","myrrryrrryrrryrr","mrrrrrrrrrrrrrrr","mhhhhhhhmhhhhhhh","mhhhhhhhmhhhhhhh","mhhhhhhhmhhhhhhh","mmmmmmmmmmmmmmmm","mhhhhhhhmhhhhhhh","mhhhhhhhmhhhhhhh","mhhhhhhhmhhhhhhh","mmmmmmmmmmmmmmmm"],
+    wall_stucco_o: ["oooooooooooooooy","rooooooorooooooo","oooooooooooooooo","yooooooooooooooo","oooooooooooooooo","oooorooyoooooooo","oooooooooooooooo","oooooooooooooooo","oooooooyooooyooo","oooooooooooooooo","ooooooooooooooyo","oooooroooooooooo","oooooooooooooooo","oooooooooooroooo","yooooooooooyoooo","oooooooooooooooo"],
+    wall_yellow: ["yyyyyyyyyyyyyyyy","yyyywyyyyyyyyyyy","yyyyyyyyyyyyyyyy","oooooooooooooooo","yyyyyyyyyyyyyyyy","yyyyyyyyyyyyyyyy","yyyyyyyyyyyyyyyy","oooooooooooooooo","yyyyyyyyyyyyyyyy","yyyyyyyyyyyywyyy","yyyyyyyyyyyyyyyy","oooooooooooooooo","yyyyyyyyyyyyyyyy","yyyyyyyyyyyyyyyy","yyyyyyyyyyyyyyyy","oooooooooooooooo"],
+    wall_civic: ["wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","bbbcbbbbbbbcbbbb","bbbbbbbbbbbbbbbb","hhhhhhhhhhhhhhhh","wwwwwwwwwwwwwwww"],
+    wall_columns: ["hhhhhhhhhhhhhhhh","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","mwwhwhhmmwwhwhhm","hhhhhhhhhhhhhhhh"],
+    wall_tile_s: ["swwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","hhhhhhhhhhhhhhhh","wwwhwwwhswwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","hhhhhhhhhhhhhhhh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","hhhhhhhhhhhhhhhh","wwwhswwhwwwhwwwh","wwwhwwwhwwwhwwwh","wwwhwwwhwwwhwwwh","hhhhhhhhhhhhhhhh"],
+    wall_glass: ["mmmmmmmmmmmmmmmm","mcccccccmccccccc","mccccccsmccccccc","mcccccscmccccccs","mccccsccmcccccsc","mcccscccmccccscc","mccsccccmcccsccc","mcscccccmccscccc","msccccccmcsccccc","mcccccccmscccccc","mcccccccmccccccc","mccccccsmccccccc","mcccccccmccccccc","mbbbbbbbmbbbbbbb","mbbbbbbbmbbbbbbb","mbbbbbbbmbbbbbbb"],
+    wall_lab_w: ["wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","llllllllllllllll","llllllllllllllll","hhhhhhhhhhhhhhhh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh","wwwwwwwhwwwwwwwh"],
+    wall_rock: ["dmggdddmhmmmdmmm","mhmmmdmmmmmmmdmd","mmmmmmdmmmmmdddm","mmmmmdddmmmddmgg","mmmmddddddddmhmm","mdddmggdddddmmmm","mddmhmmmddddmmmm","dddmmmmmddmmmmmm","dddmmmmmdmhmmmdd","ddggmmmddmmmmmdd","dmmmdddddmmmmmdd","mhmmmddmmmmmmdgg","mmmmmdmhmmmddmmm","mmmmmdmmmmmdmhmm","mmmmddmmmmmdmmmm","mdmddddmmmgdmmmm"],
+    // E7 path edges: grass fringe drawn over a path cell on the side that touches grass
+    path_edge_n: ["ggtggggggtgggtgg","gggggggggggggggg","l.gg..g.gg.gg..l","o..g..o..o.go..o","...o............","................","................","................","................","................","................","................","................","................","................","................"],
+    path_edge_e: ["............olgg","..............gg",".............ggt","...........ogggg","..............gg","..............gg","............oggg","..............gg",".............ggg","............oggt","..............gg","............gggg","............oggg","..............gt","..............gg","............olgg"],
+    path_edge_s: ["................","................","................","................","................","................","................","................","................","................","................","............o...","o..og.o..o..g..o","l..gg.gg.g..gg.l","gggggggggggggggg","ggtgggtggggggtgg"],
+    path_edge_w: ["gglo............","gg..............","tg..............","gggo............","gggg............","gg..............","tggo............","ggg.............","gg..............","gggo............","gg..............","gg..............","ggggo...........","tgg.............","gg..............","gglo............"],
+    path_corner_nw: ["ggglgg..........","glggggo.........","ggggg...........","lgggo...........","ggg.............","gg..............",".o..............","................","................","................","................","................","................","................","................","................"],
+    path_corner_ne: ["..........gglggg",".........ogggglg","...........ggggg","...........ogggl",".............ggg","..............gg","..............o.","................","................","................","................","................","................","................","................","................"],
+    path_corner_sw: ["................","................","................","................","................","................","................","................","................",".o..............","gg..............","ggg.............","lgggo...........","ggggg...........","glggggo.........","ggglgg.........."],
+    path_corner_se: ["................","................","................","................","................","................","................","................","................","..............o.","..............gg",".............ggg","...........ogggl","...........ggggg",".........ogggglg","..........gglggg"],
+    // phase 2 ground variants and decals (drawn, not placed yet)
+    grass_b: ["gggggggggggggggg","gggggggggggggggg","gggggtgggggggggg","gggglgggggglgggg","gggllltggtgggggg","ggggtglggggggggg","gggggggggggggggg","gggggggggggggggg","gtgtgggggggggggg","gggggggggggglggg","ggggggggggglglgg","ggggggggggggtggg","gggggggggggggggg","gggggggtgggggggg","gggggggggggggggg","gggggggggggggggg"],
+    grass_c: ["gggggggggggggggg","gggggggggggggggg","ggygggggggggglgt","ggggggggggggtltg","ggggggggggggtltg","gggggggggggltltg","gggggggggggggggg","gggglggggggtgggg","gggggglggggggggg","gggggtltgggggggg","gggggtltgglggggg","gggggtltgggggggg","gggggggggggggggg","ggggggggygggglgg","gggggggggggggggg","gggggggggggggggg"],
+    flower_patch: ["gggggggggggggggg","gggggggggggggggg","gggggggggggggggg","ggggpggggggggggg","gggpypgggggggggg","ggggpggggggwgggg","gggtggggggwywggg","gggggggggggwgggg","ggggggggggggglgg","gggggggggtgggggg","gggglgoggggggggg","gggggoyoggggpggg","ggggggogglgpypgg","ggggggggggggpggg","gggggggggggggggg","gggggggggggggggg"],
+    puddle: ["................","................","................","................","................","................",".....bbbbbb.....","...bccccccccb...","..bccssscccccb..","..bccccccccccb..","..bbccccccscbb..","...bbbbbbbbbb...",".....bbbbbb.....","................","................","................"],
+    leaf_litter: ["................","................",".........rr.....","..oo.....rp.....","..or............","................","................","...yy...........","...yr...........","............oo..","............or..",".....yy.........",".....yr.........","..........rr....","..........rp....","................"],
+  },
+  art: {
+    // doors (drawn on the wall cell above the door object)
+    door_plain_g: ["................","................","...dddddddddd...","...dggggggggd...","...dgllllllgd...","...dglgggglgd...","...dglgggglgd...","...dgllllllgd...","...dggggggggd...","...dgtttttygd...","...dgtggggygd...","...dgtggggtgd...","...dgtggggtgd...","...dgttttttgd...","...dggggggggd...","...dggggggggd..."],
+    door_double: ["................","................","..dddddddddddd..","..dooooddooood..","..dyyyyddyyyyd..","..dooooddooood..","..dooooddooood..","..dooooddooood..","..dddddddddddd..","..dooooddooood..","..doooyddyoood..","..dooooddooood..","..dooooddooood..","..dooooddooood..","..dooooddooood..","..dooooddooood.."],
+    door_glass: ["................","................","...mmmmmmmmmm...","...mhhhhhhhhm...","...mhsschcchm...","...mhsschcchm...","...mhsschcchm...","...mhccchcchm...","...mhccchcchm...","...mhccchcchm...","...mhccchcchm...","...mhhhhhhhhm...","...mhhhhhhyhm...","...mhhhhhhhhm...","...mhhhhhhhhm...","...mhhhhhhhhm..."],
+    door_dutch: ["................","................","...dddddddddd...","...dooooooood...","...doyyyyyyod...","...doyyyyyyod...","...doyyyyyyod...","...dooooooood...","...dddddddddd...","...dyyyyyyyyd...","...dooooooood...","...dooooooood...","...doooooodod...","...dooooooood...","...dooooooood...","...dooooooood..."],
+    door_iron: ["................","................","...mmmmmmmmmm...","...moodoodoom...","...moodoodoom...","...mmhmmmmmmm...","...moodoodoom...","...moodoodoom...","...moodoodoom...","...moodoodyom...","...moodoodoom...","...moodoodoom...","...mmmmmmmhmm...","...moodoodoom...","...moodoodoom...","...moodoodoom..."],
+    door_tall_t: ["...dddddddddd...","...dttttttttd...","...dtssstsstd...","...dtssstsstd...","...dtssstsstd...","...dtssstsstd...","...dtssstsstd...","...dttttttttd...","...dttttttytd...","...dtnnnnnntd...","...dtnttttntd...","...dtnttttntd...","...dtnttttntd...","...dtnnnnnntd...","...dttttttttd...","...dttttttttd..."],
+    door_keeper: ["................","................","...yyyyyyyyyy...","...yggggggggy...","...yggyyyyggy...","...yggyggyggy...","...yggyyyyggy...","...yggggggggy...","...ygggtggggy...","...ygggtggggy...","...ygggtggygy...","...ygggtggggy...","...ygggtggggy...","...ygggtggggy...","...ygggtggggy...","...ygggtggggy..."],
+    door_arch: ["................","................","......dddd......","....dddddddd....","...ddooddoodd...","...doyoddoood...","...doooddoood...","...doooddoood...","...doooddoood...","...doooddoood...","...dooyddyood...","...doooddoood...","...doooddoood...","...doooddoood...","...doooddoood...","...doooddoood..."],
+    door_slab: ["................","..wwwwwwwwwwww..","..wwwwwwwwwwww..","..mhhhhhhhhhhm..","..mhddddddddhm..","..mhdoooooodhm..","..mhdoooooodhm..","..mhdoooooodhm..","..mhdoooooodhm..","..mhddddddddhm..","..mhdoooooodhm..","..mhdooooyodhm..","..mhdoooooodhm..","..mhdoooooodhm..","..mhdoooooodhm..","..mhdoooooodhm.."],
+    door_hangar: ["................","................","..dddddddddddd..","..dhhhhhhhhhhd..","..dmmmmmmmmmmd..","..dhhhhhhhhhhd..","..dmmmmmmmmmmd..","..dhhhhhhhhhhd..","..dmmmmmmmmmmd..","..dhhhhhhhhhhd..","..dmmmmmmmmmmd..","..dhhhhhhhhhhd..","..dmmmmmmmmmmd..","..dhhhyyyyhhhd..","..dmmmyyyymmmd..","..dhhhhhhhhhhd.."],
+    door_hatch: ["................","................","...dddddddddd...","...dmmmmmmmmd...","...dmmmhhmmmd...","...dmmhcchmmd...","...dmhcscchmd...","...dmhcccchmd...","...dmmhcchmmd...","...dmmmhhmmmd...","...dmmmmmmmmd...","...dhhhhhhhhd...","...dmmmmmmymd...","...dmmmmmmmmd...","...dmmmmmmmmd...","...dmmmmmmmmd..."],
+    door_barn: ["................","................","...dddddddddd...","...dyyyyyyyyd...","...dydoooodyd...","...dydoooodyd...","...dyodoodoyd...","...dyodoodoyd...","...dyooddooyd...","...dyddddddyd...","...dyooddooyd...","...dyodoodoyd...","...dyodoodoyd...","...dydoooodyd...","...dydoooodyd...","...dyyyyyyyyd..."],
+    door_gate: ["................","..mmmmmyymmmmm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mhhhhhhhhhhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm..","..mdhdhdhdhdhm.."],
+    door_blue: ["................","................","...dddddddddd...","...dbbbbbbbbd...","...dbccccccbd...","...dbcbbbbcbd...","...dbcbbbbcbd...","...dbccccccbd...","...dbbbbbbbbd...","...dbnnnnnybd...","...dbnbbbbnbd...","...dbnbbbbnbd...","...dbnbbbbnbd...","...dbnnnnnnbd...","...dbbbbbbbbd...","...dbbbbbbbbd..."],
+    door_red: ["................","................","...dddddddddd...","...drrrrrrrrd...","...drscccccrd...","...drccccccrd...","...drccccccrd...","...drccccccrd...","...drrrrrrrrd...","...drpppppyrd...","...drprrrrprd...","...drprrrrprd...","...drprrrrprd...","...drpppppprd...","...drrrrrrrrd...","...drrrrrrrrd..."],
+    door_heavy: ["................","..dddddddddddd..","..dhhhhhhhhhhd..","..dhhmmmmmmhhd..","..dhmmmmmmmmhd..","..dhmmmmmmmmhd..","..dhmmmmmmmmhd..","..dhmmmhhmmmhd..","..dhmmhhhhmmhd..","..dhhmhyyhmhhd..","..dhmmhhhhmmhd..","..dhmmmhhmmmhd..","..dhmmmmmmmmhd..","..dhmmmmmmmmhd..","..dhmmmmmmmmhd..","..dhhmmmmmmhhd.."],
+    door_sliding: ["................","................","..hhhhhhhhhhhh..","..hcccchhcccch..","..hcccshhcccch..","..hccschhccsch..","..hcscchhcscch..","..hcccchhsccch..","..hcccchhcccch..","..hcccchhcccch..","..hcccchhcccch..","..hcccchhcccch..","..hcccchhcccch..","..hcccchhcccch..","..hcccchhcccch..","..hmmmmmmmmmmh.."],
+    // windows, balconies and awnings (drawn on wall cells)
+    win_round: ["................","................","................","......dddd......",".....dcdccd.....","....dcsdcccd....","....dcsdcccd....","...dddddddddd...","....dccdcccd....","....dccdcccd....",".....dcdccd.....","......dddd......","................","................","................","................"],
+    win_shutter: ["................","................","................",".gggddddddddggg.",".gggdssdcccdggg.",".tttdssdcccdttt.",".gggddddddddggg.",".gggdccdcccdggg.",".tttdccdcccdttt.",".gggdccdcccdggg.",".gggddddddddggg.","...oooooooooo...","................","................","................","................"],
+    win_arch: ["................","................","................",".....oooooo.....","....ooyowyoo....","....oyyoyyyo....","....oyyoyyyo....","....oyyoyyyo....","....oyyoyyyo....","....oyyoyyyo....","....oyyoyyyo....","....oyyoyyyo....","....oooooooo....","...hhhhhhhhhh...","................","................"],
+    win_square: ["................","................","................","....oooooooo....","....ossoccco....","....ossoccco....","....oooooooo....","....occoccco....","....occoccco....","....occoccco....","....oooooooo....","...dddddddddd...","................","................","................","................"],
+    win_keeper: ["................",".....yyyyyy.....",".....yssccy.....",".....yssccy.....",".....yssccy.....",".....yccccy.....",".....yyyyyy.....",".....yccccy.....",".....yccccy.....",".....yccccy.....",".....yccccy.....",".....yccccy.....",".....yyyyyy.....","....gggggggg....","................","................"],
+    win_diamond: ["................","................","................","....dddddddd....","....dhchhchd....","....dhshhchd....","....dchcchcd....","....dhchhchd....","....dhchhchd....","....dchcchcd....","....dhchhchd....","....dddddddd....","...oooooooooo...","................","................","................"],
+    win_box: ["................","................","....wwwwwwww....","....wsswcccw....","....wsswcccw....","....wccwcccw....","....wccwcccw....","....wccwcccw....","....wwwwwwww....","...lrlylrlylr...","...oooooooooo...","...oooooooooo...","...dddddddddd...","................","................","................"],
+    win_lamp: ["................","................","................","................","....dddddddd....","....doodoood....","....dowdyyod....","....doydyyod....","....doydyyod....","....doodoood....","....dddddddd....","....mmmmmmmm....","................","................","................","................"],
+    win_slit: ["................","................","......dddd......","......dcnd......","......dnnd......","......dnnd......","......dnnd......","......dnnd......","......dnnd......","......dnnd......","......dnnd......","......dnnd......","......dddd......","................","................","................"],
+    win_strip: ["................","................","dddddddddddddddd","dcscccccdscccccd","dcccccccdccccccd","dddddddddddddddd","................","................","................","................","................","................","................","................","................","................"],
+    win_band: ["................","................","................","hhhhhhhhhhhhhhhh","cccccscccccccscc","ccccscccccccsccc","ccccscccccccsccc","cccscccccccscccc","ccscccccccsccccc","hhhhhhhhhhhhhhhh","................","................","................","................","................","................"],
+    win_rose: ["................","................",".....hhhhhh.....","....hhpppphh....","...hhppbppphh...","...hprpppprph...","..hhpppyyppphh..","..hpbppyypbpph..","..hhpppyyppphh..","...hprpppprph...","...hhpppbpphh...","....hhpppphh....",".....hhhhhh.....","................","................","................"],
+    win_porthole: ["................","................","................",".......mm.......",".....mmmmmm.....","....mmccccmm....","....mcsscccm....","...mhcsscccmm...","...mmcccccchm...","....mccccccm....","....mmccccmm....",".....mmmmmm.....",".......mm.......","................","................","................"],
+    win_tall: ["................",".....hhhhhh.....",".....hsscch.....",".....hsscch.....",".....hsscch.....",".....hsscch.....",".....hcccch.....",".....hhhhhh.....",".....hcccch.....",".....hcccch.....",".....hcccch.....",".....hcccch.....",".....hcccch.....",".....hhhhhh.....","....wwwwwwww....","................"],
+    balcony_plant: ["................","....dddddddd....","....dscccccd....","....dccccccd....","....dccccccd....","....dccccccd....","...gddddddddg...","..gl.r.....gyl..",".hhhhhhhhhhhhhh.",".mhmhmhmhmhmhmh.",".mhmhmhmhmhmhmh.",".mhmhmhmhmhmhmh.",".mhmhmhmhmhmhmh.","................","................","................"],
+    laundry_line: ["................","....dddddddd....","....dscccccd....","....dccccccd....","....dccccccd....","....dccccccd....","....dddddddd....","................","dhdddhdddhdddhdd",".rr..ww..bb..yy.",".rr..ww..bb..yy.",".rr..ww..bb..yy.",".rr......bb.....","................","................","................"],
+    awning_r: ["................",".wrrwrrwrrwrrwr.",".wrrwrrwrrwrrwr.",".wrrwrrwrrwrrwr.",".wrrwrrwrrwrrwr.",".r.r.r.r.r.r.r..","...dddddddddd...","...dscccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dddddddddd...","................","................"],
+    awning_b: ["................",".wbbwbbwbbwbbwb.",".wbbwbbwbbwbbwb.",".wbbwbbwbbwbbwb.",".wbbwbbwbbwbbwb.",".b.b.b.b.b.b.b..","...dddddddddd...","...dscccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dddddddddd...","................","................"],
+    awning_y: ["................",".wyywyywyywyywy.",".wyywyywyywyywy.",".wyywyywyywyywy.",".wyywyywyywyywy.",".y.y.y.y.y.y.y..","...dddddddddd...","...dscccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dccccccccd...","...dddddddddd...","................","................"],
+    // roof features
+    chimney: ["....mmmdddd.....","....ddddddd.....",".....rrrrp......",".....rrrrp......",".....rorrp......",".....rrrrp......",".....rrrrp......",".....rrrrp......",".....rrorp......",".....rrrrp......",".....rrrrp......","......pppp......","......pppp......","................","................","................"],
+    mast: [".......rr.......",".......mh.......",".......mh.......",".......mh.......","....mmmmmmmm....",".......mh.......",".......mh.......",".......mh.......",".....mmmmmm.....",".......mh.......",".......mh.......",".......mh.......",".......mh.......",".......mh.......",".....dddddd.....",".....dddddd....."],
+    clock_face: ["................","................",".......dd.......",".....ddmwdd.....","....dwwdwwwd....","...dwwwdwwwwd...","...dwwwdwwwwd...","..dmwwwddddwmd..","..dwwwwwrwwwwd..","...dwwwwwwwwd...","...dwwwwwwwwd...","....dwwwwwwd....",".....ddmwdd.....",".......dd.......","................","................"],
+    bell: ["................","....oooooooo....","....oooooooo....","....o......o....","....o..dd..o....","....o..yy..o....","....o.yyyy.o....","....oywyyyyo....","....oyyyyyyo....","....oyyyyyyo....","....oyyyyyyo....","....oyyyyyyo....","....o..oo..o....","....o......o....","....o......o....","................"],
+    bunting: ["................","dddd..dddddd..dd","rrr.yyy.bbb.yyy.","rrr.yyy.bbb.yyy.",".r...y...b...y..","................","................","................","................","................","................","................","................","................","................","................"],
+    acorn_emblem: ["................",".......d........",".......d........","....oooooooo....","...dooooooood...","...dddddddddd...","...dddddddddd...","....yooooooy....","....yoyooooy....","....yyoooooy....","....yooooooy....","....yyooooyy....","......yyyy......","................","................","................"],
+    // porch props
+    planter_box: ["................","................","................","................","................","...r..y..w..r...","..ryryyywywryr..","...gl.gl.gl.gl..","..yyyyyyyyyyyy..","..oooooooooooo..","..oooooooooooo..","..oooooooooooo..","..oooooooooooo..","..dddddddddddd..","...dd......dd...","...dd......dd..."],
+    fence_post: ["................","................","..y.........y...","..od........od..","..od........od..",".yyyyyyyyyyyyyy.",".oooooooooooooo.","..od........od..","..od........od..","..od........od..",".yyyyyyyyyyyyyy.",".oooooooooooooo.","..od........od..","..od........od..","..od........od..","..od........od.."],
+    sign_lodge: ["................","................","................",".dyyyyyyyyyyyyd.",".oooooooooooooo.",".oodddodddoddoo.","oooooooooooooooo",".ooddddddddddoo.",".oooooooooooooo.",".dddddddddddddd.",".......do.......",".......do.......",".......do.......",".......do.......",".......do.......",".......do......."],
+    lantern_sign: ["................","................","..dddddddddd....","..md......m.....","..md.....ooo....","..md....ddddd...","..md....dyyyd...","..md....dywyd...","..md....dyyyd...","..md....dyyyd...","..md....dyyyd...","..md....ddddd...","..md....ooooo...","..md............",".ddddd..........",".ddddd.........."],
+    bench_long: ["................","................","................","................","yyyyyyyyyyyyyyyy","oodoooooooooodoo","..d..........d..","yydyyyyyyyyyydyy","oooooooooooooooo","dddddddddddddddd",".dd..........dd.",".dd..........dd.",".dd..........dd.",".dd..........dd.",".dd..........dd.","................"],
+    cart_prop: ["................","...............d","..ggg..........d","..ggg..r......d.",".ddddddddddddd..",".dooodooodood...",".dooodooodood...",".dooodooodood...",".dooodooodood...",".dooodooodood...",".dddddddddddd...","...ddd...ddd....","..dhhhd.dhhhd...","..dhhhd.dhhhd...","...ddd...ddd....","................"],
+    banner_keeper: ["..do............","..doyyyyyyyyy...","..doyyyyyyyyy...","..doggggggggg...","..dogggyyyggg...","..dogggylyggg...","..dogggyyyggg...","..doggggggggg...","..doggggggggg...","..doggggggggg...","..doggg...ggg...","..doggg...ggg...","..do.g.....g....","..do............",".dddd...........",".dddd..........."],
+    lamp_post: [".....dddddd.....",".....ywyyyy.....",".....yywyyy.....",".....yyyyyy.....",".....yyyyyy.....","....dddddddd....",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".......dm.......",".....dddddd....."],
+    apple_crate: ["................","................","................","......g.....g...","......rr....rr..","...rr.rr.gg.rr..","...rrr..rrgrrgg.",".dddrrddrrdrrgg.",".dyyyyyyyyyyyyd.",".dooooooooooood.",".dddddddddddddd.",".dooooooooooood.",".dooooooooooood.",".dooooooooooood.",".dddddddddddddd.","................"],
+    hedge_planter: ["................","................","........o.......","....grlggggg....","...glllllgtgg...","..glllllllgggg..","..gglllllgrggg..","..gggglggggggg..","..ggtggggggtgg..","...gggggggggg...","..wwggggggggww..","..hhhhhhhhhhhh..","..hhhhhhhhhhhh..","..hhhhhhhhhhhh..","..mmmmmmmmmmmm..","................"],
+    ore_cart: ["................","................","................","...ddyhdddddd...","...hddhhddddd...","..dddddddddddd..","..dmmmmmmmmmmd..","..dmmmmmmmmmmd..","..dmmmmmmmmmmd..","..dmmmmmmmmmmd..","..dmmmmmmmmmmd..","..dddddddddddd..","....ddd...ddd...","....ddd...ddd...","odooodooodododoo","dddddddddddddddd"],
+    slab_sign: ["................","..mmmmmmmmmmmm..","..mwwwwwwwwwwm..","..mhhhhhhhhhhm..","..mhhhhhhhhhhm..","..mhhddddddhhm..","..mhhhhhhhhhhm..","..mhddddddddhm..","..mhhhhhhhhhhm..","..mhhdddddhhhm..","..mhhhhhhhhhhm..","..mhhhhhhhhhhm..","..mhhhhhhhhhhm..","..mmmmmmmmmmmm..",".dmmmmmmmmmmmmd.",".dddddddddddddd."],
+    windsock: ["................","..md............","..mdyyyy........","..mdoooowwwooo..","..mdoooowwwooow.","..mdoooowww.....","..md............","..md............","..md............","..md............","..md............","..md............","..md............","..md............",".dddd...........",".dddd..........."],
+    bollard: ["................","................",".......yy.......",".......yy.......","...wwwwwwwwww...","...hhhhhhhhhh...","....hhhhhhhh....","....mmmmmmmd....","....mymmmmmd....","....mmmmmmmd....","....mmmmmmmd....","....mmmmmmmd....","....mmmmmmmd....","....mmmmmmmd....","....mmmmmmmm....","...dddddddddd..."],
+    pole_rack: ["...y.o.y.o.y....","...o.y.o.y.o....",".d.o.y.o.y.o..d.",".ddodydodydoddd.",".d.o.y.o.y.o..d.",".d.o.y.o.y.o..d.",".d.o.y.o.y.o..d.",".d.o.y.o.y.o..d.",".d.o.y.o.y.o..d.",".d.o.y.o.y.o..d.",".d.o.y.o.y.o..d.",".ddodydodydoddd.",".d.o.y.o.y.o..d.",".d.o.y.o.y.o..d.",".d............d.",".d............d."],
+    dummy: ["................","......yyyy......","......yooy......",".....yyooyy.....","......yooy......","......yyyy......","....yyyyyyyy....","....oooooooo....",".....rrprrr.....",".....rrprrr.....",".....rrprrr.....",".....rrprrr.....",".....rrprrr.....",".......do.......","....dddddddd....","....dddddddd...."],
+    banner_red: ["..do............","..doyyyyyyyyy...","..doyyyyyyyyy...","..dorrrrrrrrr...","..dorrryyyrrr...","..dorrryyyrrr...","..dorrryyyrrr...","..dorrryyyrrr...","..dorrrrrrrrr...","..dorrrrrrrrr...","..dorrr...rrr...","..dorrr...rrr...","..do............","..do............",".dddd...........",".dddd..........."],
+    rope_coil: ["................","................","................","................","................","................",".....oooooo....o","...oooyyyyooo.o.","..ooyyyooyyyooo.","..odyooddooyyo..",".ooyooddddooyoo.","..oyyooddooydo..","..ooyyyooyyyoo..","...oooyyyyooo...",".....oooooo.....","................"],
+    flag_pole: ["...yh...........","...mhbbbbbbbbb..","...mhbwybbbbbb..","...mhbbbbbbb....","...mhbbbbbbb....","...mhbbbb.......","...mh...........","...mh...........","...mh...........","...mh...........","...mh...........","...mh...........","...mh...........","...mh...........","..dddd..........","..dddd.........."],
+    planter_tall: ["................","........l.......",".......lllgg....","......lllllgg...","....ggglllglg...","...ggglglggggg..","...gggggggggg...","...gggggggggg...","....gggg.ggg....","...oooooooooo...","...rrrrrrrrrr...","...rrrrrrrrrr...","...rrrrrrrrrr...","...rrrrrrrrrr...","...pppppppppp...","....dd....dd...."],
+    laundry_basket: ["................","................","................","......bbb.......","...wwwbbb.......","...wwwbbbrrr....","...wwwbbbrrr....","..oooooooooooo..","..oyoyoyoyoyoo..","..oooooooooooo..","..ooyoyoyoyoyo..","..oooooooooooo..","..oyoyoyoyoyoo..","..oooooooooooo..","..ooyoyoyoyoyo..","..dddddddddddd.."],
+    bike: ["................","................","................","................","..........ddd...","......dddd.b....",".......bb..b....",".......b.b.b....","......b.b.b.b...","..ddddb.b.bdbd..",".dd..bd..bdbb.d.",".d..bbbbbbd.b.d.",".d....d...d...d.",".dd..dd...d...d.","..dddd.....ddd..","................"],
+    slate_board: ["................","................",".....oooooo.....","....dddddddd....","....dmmmmmmd....","....dmwwwwmd....","....dmmmmmmd....","....dmwwwmmd....","....dmmmmmmd....","....dmhhhhmd....","....dmmmmmmd....","....dddddddd....","....o......o....","...o........o...","...o........o...","...o........o..."],
+    poster_stand: ["................","......d..d......","....wwwwwwww....","....wbbbbbbw....","....wbcbbbbw....","....wbbbbbbw....","....wwwwwwww....","....wrrryyyw....","....wrrryyyw....","....wrrryyyw....","....wwwwwwww....","....wwwwwwww....","....d......d....","...d........d...","...d........d...","...d........d..."],
+    stone_urn: ["................","................","......gggg......",".....glgggg.....","....gggggggg....","....ggggglgg....",".....gggggg.....","...wwwggggwww...","...wwwwwwwwww...","....wwwwwwww....","....hhwhhmhh....","....hhwhhmhh....","....hhwhhmhh....","....hhwhhmhh....","....hhwhhmhh....",".....mmmmmm....."],
+    planter_round: ["................","......gggg......",".....llllgg.....","....gllllggg....","....gllllggg....","....ggggggtg....",".....gggggg.....","......gggg......",".......od.......",".....hhodhh.....","...hdooodoodh...","..hdoooodooodh..","..hdoooooooodh..","..hhddddddddhh..","...hhhhhhhhhh...",".....hhhhhh....."],
+    cafe_table: ["................","................","................","......rr........",".....wrrwyw.....","..whhhhhhhhhhw..",".wwhhhhhhhhhhww.","..wwwwwmdwwwww..",".....wwmdww.....",".......md.......",".......md.......",".......md.......",".......md.......",".......md.......",".....dddddd.....",".....dddddd....."],
+    lantern_hook: ["................","................",".......ddddddd..",".......doooooo..",".......do...m...",".......do...m...",".......do.ddddd.",".......do.dyyyd.",".......do.dywyd.",".......do.dyyyd.",".......do.dyyyd.",".......do.ddddd.",".......do.ooooo.",".......do.......",".....dddddd.....",".....dddddd....."],
+    woodpile: ["................","................","................","................","................","................",".....oooo..oooo.","....oooyoooooyoo","....ooyyooooyyoo",".....oooo..oooo.","..oooo..oooo..oo",".oooyoooooyooooo",".ooyyooooyyooooy","..oooo..oooo..oo","................",".ddddddddddddddd"],
+    barrel: ["................","................","...dddddddddd...","...oooroooroo...","..ddddrdddrddd..","..ooyorooorooo..","..ooyorooorooo..","..ooyorooorooo..","..ooyorooorooo..","..ooyorooorooo..","..ooyorooorooo..","..ddddrdddrddd..","..oooorooorooo..","...oooroooroo...","...dddddddddd...","................"],
+    // outdoor props
+    rock_big: ["................","................","................","................","................","................","................","........m.......",".....hhhhhmm....","....hwwhhhhmm...","...hhhhhhhhhmm..","...mhhhhhhhmmm..","...mmhhhhhmdmm..","....mmmmmmmmm...","....ddddddddd...","........m......."],
+    rock_small: ["................","................","................","................","................","................","................","................","................","................","....mmm.........","..mhwhhmm.......","..mhhhhmm.hmm...","..mmmmmmmmmmmm..","....mmm...mmm...","..dddddddddddd.."],
+    flowerbed: ["................","................","................","................","..r..y..w..r.p..",".ryryoywywrypyp.","..gddgddgddgdg..","..dlddlddlddldl.","..dddddddddddd..",".yyyyyyyyyyyyyy.",".oooooooooooooo.",".oooooooooooooo.",".oooooooooooooo.",".oooooooooooooo.",".dddddddddddddd.","................"],
+    fence_h: ["................","................","..h.........h...","..wh........wh..","..wh........wh..","wwwhwwwwwwwwwhww","hhwhhhhhhhhhwhhh","..wh........wh..","..wh........wh..","..wh........wh..","wwwhwwwwwwwwwhww","hhwhhhhhhhhhwhhh","..wh........wh..","..wh........wh..","..wh........wh..",".gggggggggggggg."],
+    stump: ["................","................","................","................","................","................","..........gl....",".......yy.......","....yyyyyyyy....","...yyoodoooyy...","...yyooooooyy...","...dyyyyyyyyd...","...doooyyoood...","...dooooooood.o.",".o.....oo.......","................"],
+    bush: ["................","................","................","................","....tggggrgt....","...tglllggggt...","..tglllllgtggt..",".tglllllllggggt.",".tgglllllgggggt.",".tggtlllggggggt.",".tgggggggggtggt.",".ttggrgggggggtt.","..ttggggggggtt..","...ttggggggtt...","....tttttttt....","...dddddddddd..."],
+    log: ["................","................","................","................","................","................","................","................",".........gl.....",".yyyyyyyyyyyyyy.",".yyooodoooodooo.",".oyooodoooodooo.",".yyooodoooodooo.",".dddddddddddddd.","....d...........","................"],
+    stone_marker: ["................","................","................",".....hhhhhh.....","....hhwwhhhh....","....mhhhhhhm....","....mhhhhhhm....","....mhmmmmhm....","....mhhhhhhm....","....mhmmmmhm....","....mhhhhhhm....","....mhmmmhhm....","....mhhhhhgm....","....mghhhhhm....","....mhhhhhhm....","...dddddddddd..."],
+    signpost: ["................","................",".......do.......","..yyyyyyyyyy....",".oooooooooooo...","..oooooooooo....",".......do.......",".....yyyyyyyyyy.","....oooooooooooo",".....oooooooooo.",".......do.......",".......do.......",".......do.......",".......do.......",".....dddddd.....",".....dddddd....."],
+    hay_bale: ["................","................","................","................","................","................","................","..wwwwwwwwwwww..","..yyyoyyyyoyyy..","..yyooyyoyoyyo..","..yyyoyyyyoyyy..","..yyyoyyyyoyyy..","..yyyoyyyyoyyy..","..yyooyoyyoyyy..","..oooooooooooo..","................"],
+    flower_clump: ["................","................","................","................","................","................","................",".......y........","...y...ww..w....","...rr......yy...","....gylllllg....","..gglpplllylgg..","..ggllllllrrgg..","..gggllllllggg..","....gggggggg....","................"],
+  },
+  big: {
+    lm_lantern_post: ["............dddddddd............","..........dddddddddddd..........","..........dddddddddddd..........","...........dyyyooyyyd...........","...........dywwooyyyd...........","...........dywwooyyyd...........","...........dyyyooyyyd...........","...........dyyyooyyyd...........",".........dddddddddddddd.........","...........dddddddddd...........",".............dddmddd............","...............dd...............","...............dm...............","...............dm...............","...............dm...............","...............dm...............","..............dddd..............","...............dm...............","...............dm...............","...............dm...............","..............dddd..............","...............dm...............","...............dm...............","...............dm...............","...............dm...............",".............mmmmmm.............","............mmmmmmmm............","..........ggddddddddgg..........","........rllyddddddddwllr........",".......gyllolyllllolyllyg.......","........gggllllllllllggg........","..........gggggggggggg.........."],
+    lm_well: ["..............gggg..............","............gggggggg............","..........tttttttttttt..........","........tttttttttttttttt........","......gggggggggggggggggggg......","....tttttttttttttttttttttttt....","..tttttttttttttttttttttttttttt..","gggggggggggggggggggggggggggggggg","tttttttttttttttttttttttttttttttt","tddddddddddddddddddddddddddddddt","......od................od......","......od................odddd...","......oddddddddhddddddddod..d...","......od.......h........od..d...","......od.......h........od..d...","......od.......h........od......","......od.......h........od......","......od.......h........od......","......od.....ddddd......od......","......od.....ooooo......od......","......od.....ooooo......od......","......od..mhhdddddhhhm..od......","......odmhhddddddddddhhmod......","......odhddbbcccbbbbbddhod......","......mhhddbbbbbbbbbbddhhm......","......mhhhddbbbbbbbbddhhhm......","......mmmhhhmhhhhhhmhhhmmm......",".......mmdmhhdhhhhhhdmmmd.......","........mmmmmmmmmmmmmmmm........",".......dddddddddddddddddd.......","................................","................................"],
+    lm_statue: ["......................dddd......","...............mm.....yyyy......","............mmmmmmmm..ywyy......","............mmmmmmmm..yyyy......",".............hhhhhh...yyyy......",".............hmhhhh...hm........",".............hhhhhh...hm........",".............hhhhhh..hm.........",".............mhhhhm..hm.........",".............mhhhhmhhm..........","..........hhhmhhhhmhh...........","..........mhhmhhhhm.............","..........m..mhmhhm.............","..........m..mhmhhm.............",".........m...mhmhhm.............",".......dhdd..mhmhhm.............",".......dddd..mhmhhm.............",".......dddd..mmmhmm.............",".............mmmhmm.............",".............mmmhmm.............",".............mmmhmm.............","...........mmmmmmmmmm...........","...........mmmmmmmmmm...........",".........wwwwwwwwwwwwww.........",".........hhhhhhhhhhhhhh.........",".........hhhmmmmmmmmhhh.........",".........mmmmmmmmmmmmmm.........",".......hhhhhhhhhhhhhhhhhh.......",".......mmmmmmmmmmmmmmmmmm.......",".......mmmmmmmmmmmmmmmmmm.......",".......dddddddddddddddddd.......","................................"],
+    lm_signal_mast: [".........y...dddddd...y.........",".............dorrrd.............","..........y..drrrrd..y..........",".............dddddd.............","............mmmmmmmm............","...............dd...............","...............mm...............","...............dd...............","...............hh...............","..............hddh..............","..............hmmh..............",".............hd..dh.............",".............hmmmmh.............","............h.d..d.h............","............h.dmmd.h............","...........h..d..d..h...........","...........h..mmmm..h...........","..........h...d..d...h..........","..........h..d.mm.d..h..........",".........h...d....d...h.........","........h....mmmmmm....h........","........h....d....d....h........",".......h.....d.mm.d.....h.......",".......h.....d....d.....h.......","......h......mmmmmm......h......","......h.....d......d.....h......",".....h......d..mm..d......h.....",".....h......hhhhhhhh......h.....","....h.......mmmmmmmm.......h....","..ddd.......mmmmmmmm.......ddd..","..ddd......dddddddddd......ddd..","................................"],
+    lm_big_tree: ["................................","................................",".........ttggggggggggtt.........",".......tggglggggggggggggt.......",".....tggllllwllgggggggggggt.....","....tgllllwllllllgttgggggggt....","...tgglllllllllllgggggggggggt...","..tgglllllllllllllgggggggggggt..","..tgggllwllllllllggggggggttggt..",".ttggttllllllllllgggrggggggggtt.",".tgggggglllllllgggggggggggggggt.",".ttgggggggglgggggggggggggggggtt.",".ttggggttgggggggggggggggrggggtt.",".ttggggggrgggggggggggggggggggtt.","..ttggggggggggggggggggggggggtt..","..tttggggggggttgggggggttgggttt..","...tttggggggggggggggggggggttt...","....ttttggggggggggggggggtttt....",".....ttttttggggggggggtttttt.....",".......tttttttttttttttttt.......",".........tttttttttttttt.........",".............doyood.............",".............doyood.............",".............doyood.............",".............doyood.............",".............doyood.............",".............doyood.............",".............doyood.............","...........dddooooddd...........",".........dddodoooododdd.........",".........ddoddddddddodd.........","...........dddddddddd..........."],
+    regenx_facade: ["hwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwh","hwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwh","hwsssssssssssssssssssssssssssswh","hwllllllllllllllllllllllllllllwh","hwlllwwllwwllwwllwwllwwllwwlllwh","hwllwwwllwwllwwllwwllwwllwwwllwh","hwlllwwllwwllwwllwwllwwllwwlllwh","hwllllllllllllllllllllllllllllwh","hwggggggggggggggggggggggggggggwh","hwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwh","hwhhhhhhhhllllllllllllhhhhhhhhwh","hwhsscccchllllllllllllhsscccchwh","hwhsscccchhhhhhhhhhhhhhsscccchwh","hwhcccccchhcccchhcccchhcccccchwh","hwhcccccchhcccchhcccchhcccccchwh","hwhcccccchhcccshhcccchhcccccchwh","hwhcccccchhccschhcccchhcccccchwh","hwhhhhhhhhhccschhccschhhhhhhhhwh","hwwwwwwwwwhcscchhcscchwwwwwwwwwh","hwwwwwwwwwhcccchhcscchwwwwwwwwwh","hwwwwwwwwwhcccchhsccchwwwwwwwwwh","hwwwwwwwwwhcccchhcccchwwwwwwwwwh","hwwwwwwwwwhcccchhcccchwwwwwwwwwh","hwwwwwwwwwhcccchhcccchwwwwwwwwwh","hwwwwwwwwwhcccchhcccchwwwwwwwwwh","hwwwwwwwwwhcccchhcccchwwwwwwwwwh","hwwwwwwwwwhcccchhcccchwwwwwwwwwh","hwwwwwwwwwhcccchhcccchwwwwwwwwwh","hwwwwwwwwwhcccchhcccchwwwwwwwwwh","hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh","mmmmmmmmmmhcccchhcccchmmmmmmmmmm","hwwwwwwwwwhmmmmmmmmmmhwwwwwwwwwh"],
+    tunnel_mouth: ["................................",".......whh............whh.......","......hhhhh..........hhhhh......",".......hhh....gg......hhh.......","......gg.whh.......whh..........","........hhhhh.....hhhhh.........",".........hhhmmmmmmmhhh..gg......","........dmmmmmmmmmmmmmmd........","....whhmmmmmmmmmmmmmmmmmmwhh....","...hhhyyyyyyyyyyyyyyyyyyyyhhh...","....hhoooooooooooooooooooodd....","....mmddddddddddddddddddddmd....","...dmmoodkkkookkkkookkkdoomdd...","..dmmmoodkkokkkkkkkkokkdoomdmd..","..dmmmoodookkkkkkkkkkoodooyyyd..","..mmmmoodkkkkkkkkkkkkkkdooywym..",".dwhhmoodkkkkkkkkkkkkkkdooyyymd.",".hhhhhoodkkkkkkkkkkkkkkdooyyyhd.",".dhhhmoodkkkkkkkkkkkkkkdoodddhh.",".dmmmmoodkkkkkkkkkkkkkkdoomhhhd.",".dmmmmoodkkkkkkkkkkkkkkdoommmmd.",".dmmmmoodkkkkkkkkkkkkkkdoommmmd.",".ddmmmoodkkkkkkkkkkkkkkdoommmdd.","..dmmmoodkkkkkkkkkkkkkkdoommmd..","..ddmmoodkkkkkkkkkkkkkkdoommdd..","..ddmmoodkkkkkkkkkkkkkkdoommdd..","...ddmoodkkkkkkkkkkkkkkdoomdd...","....ddoodkkokkkokkkokkkdoodd....",".....doodmmommmommmommmdood.....","......oodkkokkkokkkokkkdoo......","......oodmmommmommmommmdoo......","......oodkkokkkokkkokkkdoo......"],
+  },
+};
+function addExteriorArt(T, A){
+  const paint = rows => { const c = document.createElement('canvas'); c.width = rows[0].length; c.height = rows.length; const g = c.getContext('2d');
+    rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })); return c; };
+  for (const [k, rows] of Object.entries(EXTERIOR_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(EXTERIOR_ART[grp])) if (!A[k]) A[k] = paint(rows);
+  for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
+}
+// E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).
+// Lab maps keep LAB_SKIN.variants; hand-placed chars (`f`, `t`, …) never vary.
+const OUTDOOR_SKIN = { variants: { g: [['grass_b', 0.18], ['grass_c', 0.12], ['flower_patch', 0.05]] } };

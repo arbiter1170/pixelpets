@@ -40,7 +40,7 @@ test.describe('town board', () => {
     await expect(phone).toContainText(LANTERN);
     await expect(phone).toContainText(EMPTY_SLIPS);
     await expect(phone).toContainText(EMPTY_BOUNTIES);
-    await expect(phone).toContainText('PLACEHOLDER');
+    await expect(phone).not.toContainText('PLACEHOLDER');
     await shot(page, 'town-board-phone');
     expectEmptyLines(linesOf(await phone.innerText()));
     await expect(page.locator('#phoneHome [data-app="jobs"]')).toHaveCount(1);
@@ -136,7 +136,7 @@ test.describe('town board', () => {
     const text = await visibleBoardText(page);
     await shot(page, 'town-board-physical');
     expect(text).toContain(LANTERN);
-    expect(text).toContain('PLACEHOLDER');
+    expect(text).not.toContain('PLACEHOLDER');
     expectEmptyLines(linesOf(text));
     const board = await requireBoard(page);
     assertPaper(board, 'hearthmoor', LANTERN);
@@ -242,7 +242,7 @@ function expectPlaceholderReports(board) {
   for (const line of board.reports) {
     const text = reportString(line);
     expect(text).toEqual(expect.any(String));
-    expect(text).toContain('PLACEHOLDER');
+    expect(text).not.toContain('PLACEHOLDER');
   }
 }
 
@@ -274,7 +274,8 @@ async function expectReadOnly(page) {
   expect(again.bounties).toEqual([]);
   expect(again.masthead).toBe(LANTERN);
   expect(again.reports.map(reportString)).not.toContain('NOPE PLACEHOLDER');
-  expect(again.reports.every((line) => reportString(line).includes('PLACEHOLDER'))).toBe(true);
+  expect(again.reports.some((line) => reportString(line).includes('PLACEHOLDER'))).toBe(false);
+  expect(again.reports.length > 0).toBe(true);
 }
 
 async function visibleBoardText(page) {
