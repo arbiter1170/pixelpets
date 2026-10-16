@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261015-0931">
+<meta name="kw-build" content="20261015-2035">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -12,34 +12,41 @@
 <meta name="application-name" content="Walklings">
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
-<link rel="icon" href="icons/icon-192.png?v=20261015-0931">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261015-0931">
-<link rel="manifest" href="manifest.json?v=20261015-0931">
-<link rel="stylesheet" href="style.css?v=20261015-0931">
+<link rel="icon" href="icons/icon-192.png?v=20261015-2035">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261015-2035">
+<link rel="manifest" href="manifest.json?v=20261015-2035">
+<link rel="stylesheet" href="style.css?v=20261015-2035">
 </head>
 <body>
 <div id="app">
   <header id="top">
     <div class="who"><canvas id="hdrIcon" width="18" height="18"></canvas><span id="hdrName">Walklings</span><span id="fastTag" class="fast-tag" title="Debug fast decay is on" hidden>FAST</span><button id="dbgTag" class="fast-tag dbg-tag" type="button" title="Debug tools" aria-label="Debug tools" hidden>DBG</button></div>
     <div class="hdr-right">
+      <div id="hdrAcorns" class="hdr-acorns" role="status" aria-label="0 Acorns"><canvas id="hdrAcornIcon" width="8" height="8" aria-hidden="true"></canvas><b id="hdrAcornN" aria-hidden="true">0</b></div>
       <div class="lv"><span id="hdrLv">Lv 1</span><span id="hdrStage" class="stagedots"></span></div>
       <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings"><canvas id="settingsIcon" width="8" height="8"></canvas></button>
     </div>
   </header>
+  <!-- STAT_DISPLAY: one NRG / GROW strip for PARTNER and WALK (placement: D120, settled, Vincent approved Design's default, a body strip under the header).
+       To move it (e.g. into the header), move this one node; CSS shows it by body[data-screen]. -->
+  <div id="statStrip" class="stat-strip" aria-label="Partner stats">
+    <span class="ss-lab ss-nrg-l">NRG</span><div class="bar ss-bar ss-nrg-b"><i id="barEnergy" class="c-nrg"></i></div><b id="valEnergy" class="ss-val ss-nrg-v">0</b>
+    <span class="ss-lab ss-grow-l">GROW</span><div class="bar ss-bar ss-grow-b"><i id="barXp" class="c-xp"></i></div><b id="valXp" class="ss-val ss-grow-v">0</b>
+    <span class="ss-ex" title="Explore XP today from walking and befriending. Daily cap 30." aria-label="Explore XP today from walking and befriending. Daily cap 30.">EXPLORE <b id="ssExp">0/30</b></span>
+    <span class="ss-slot ss-care" title="Care XP today from FEED, PLAY and REST. Daily cap 25." aria-label="Care XP today from FEED, PLAY and REST. Daily cap 25.">CARE <b id="ssCare">0/25</b></span>
+    <span class="ss-slot ss-steps">STEPS <b id="wSteps">0</b></span>
+  </div>
 
   <main>
     <!-- PET CARE -->
     <section id="scr-pet" class="screen active">
       <button class="scr-back" type="button" aria-label="Back to the walk screen"><canvas class="ico-hud" data-nav="back" width="8" height="8" aria-hidden="true"></canvas><span>WALK</span></button>
-      <div class="scene-wrap pet-scene"><canvas id="petCanvas" width="80" height="64"></canvas><span id="petKeeper" class="scene-keeper" aria-label="Keeper Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
+      <div class="scene-wrap pet-scene"><canvas id="petCanvas" role="img" aria-label="Your partner" width="80" height="64"></canvas><span id="petKeeper" class="scene-keeper" aria-label="Keeper Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
       <div class="stats">
         <div class="stat"><span>FOOD</span><div class="bar"><i id="barHunger" class="c-food"></i></div><b id="valHunger">0</b></div>
         <div class="stat"><span>JOY</span><div class="bar"><i id="barHappy" class="c-joy"></i></div><b id="valHappy">0</b></div>
-        <div class="stat"><span>NRG</span><div class="bar"><i id="barEnergy" class="c-nrg"></i></div><b id="valEnergy">0</b></div>
-        <div class="stat"><span>GROW</span><div class="bar"><i id="barXp" class="c-xp"></i></div><b id="valXp">0</b></div>
       </div>
       <div id="evoHint" class="hint"></div>
-      <div id="dailyXp" class="hint daily"><span class="seg">Today: care XP <b id="dCare">0/25</b></span> <span class="sep">&middot;</span> <span class="seg">explore XP <b id="dExp">0/30</b></span></div>
       <button id="evolveBtn" class="btn btn-evo" hidden type="button"><canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas> GROW UP! <canvas class="ico-star" width="8" height="8" aria-hidden="true"></canvas></button>
       <div class="actions partner-row">
         <button id="petStatsBtn" class="btn" type="button" aria-label="Stats card">STATS</button>
@@ -54,20 +61,15 @@
 
     <!-- WALK -->
     <section id="scr-walk" class="screen">
-      <div class="walk-hud">
-        <div class="mini grow"><span>NRG</span><div class="bar"><i id="wBarEnergy" class="c-nrg"></i></div></div>
-        <div class="mini"><span>GROW</span><b id="wXp">0</b></div>
-        <div class="mini"><span>STEPS</span><b id="wSteps">0</b></div>
-        <div class="mini" title="Explore XP earned today (walking + befriending), daily cap 30"><span>TODAY</span><b id="wExp">0/30</b></div>
-      </div>
       <button id="envBadge" class="env-badge" type="button"><span id="envText">Meadow</span><small id="envSrc"></small></button>
-      <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" width="176" height="176"></canvas>
+      <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" role="img" aria-label="The walk map" width="176" height="176"></canvas>
         <div id="chatBubble" class="chat-bubble" hidden></div>
         <div id="bumpHint" class="bump-hint" role="status" hidden></div>
         <!-- Q26 modern controls: empty in arcade. applyControls() moves QUEST, BAG, MAP, PHONE, the area name and the tip in here. -->
         <div id="floatCtl" class="float-ctl">
           <div id="fcTL" class="fc-col fc-tl"></div>
           <div id="fcTop" class="fc-top"></div>
+          <div id="fcAcorns" class="fc-acorns hdr-acorns" aria-label="0 Acorns"><canvas id="fcAcornIcon" width="8" height="8" aria-hidden="true"></canvas><b id="fcAcornN" aria-hidden="true">0</b></div>
           <div id="fcTR" class="fc-col fc-tr"><button id="gearFloat" class="dpc fbtn icon-only" type="button" aria-label="Settings" title="Settings"><canvas id="gearFloatIcon" class="ico-hud" data-nav="gear" width="8" height="8" aria-hidden="true"></canvas></button></div>
           <div id="joyRing" class="joy" aria-hidden="true" hidden><i id="joyKnob" class="joy-knob"></i></div>
           <div id="fcTip" class="fc-tip"></div>
@@ -125,7 +127,7 @@
       <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btFoeHp"></i></div><span id="btFoeStages" class="bt-stages"></span></div>
       <div class="bt-row bt-mini" id="btFoe2Row" hidden><span id="btFoe2Name" class="bt-name"></span><div class="bt-hp"><i id="btFoe2Hp"></i></div></div>
     </div>
-    <div id="btStage" class="bt-stage"><canvas id="battleCanvas" width="80" height="56"></canvas><div id="btSeal" class="bt-seal" hidden><canvas id="btSealArt" width="18" height="18"></canvas><b id="btSealName"></b></div></div>
+    <div id="btStage" class="bt-stage"><canvas id="battleCanvas" role="img" aria-label="The encounter" width="80" height="56"></canvas><div id="btSeal" class="bt-seal" hidden><canvas id="btSealArt" width="18" height="18"></canvas><b id="btSealName"></b></div></div>
     <div class="bt-card bt-me">
       <div class="bt-row"><span id="btMeName" class="bt-name"></span><span id="btMeLv" class="bt-lv"></span><span id="btMeType" class="type-chip"></span></div>
       <div class="bt-row"><span class="bt-hpl">HP</span><div class="bt-hp"><i id="btMeHp"></i></div><span id="btMeHpTxt" class="bt-hpt"></span></div>
@@ -188,24 +190,31 @@
       <div class="map-hold" id="mapHold" hidden></div>
     </div>
     <p class="map-hint map-quest" id="mapQuest" hidden></p>
-    <div class="map-key" id="mapKey">
-      <p class="map-key-h">KEY</p>
-      <ul class="map-key-list">
-        <li><span class="sw sw-town" aria-hidden="true"></span>Town</li>
-        <li><span class="sw sw-route" aria-hidden="true"></span>Route</li>
-        <li><span class="sw sw-side" aria-hidden="true"></span>Side place</li>
-        <li><span class="sw sw-unknown" aria-hidden="true"></span>Not visited</li>
-        <li><span class="sw sw-you" aria-hidden="true"></span>You</li>
-        <li><span class="sw sw-next" aria-hidden="true"></span>Next step</li>
-        <li><span class="sw sw-task" aria-hidden="true"></span>Side task</li>
-        <li><span class="sw sw-coach" aria-hidden="true"></span>Coach</li>
-        <li><span class="sw sw-keepers" aria-hidden="true"></span><span id="keyKeepers">Keepers</span></li>
-        <li><span class="sw sw-glimmer" aria-hidden="true"></span><span id="keyGlimmer">Glimmerwell</span></li>
-        <li><span class="sw sw-split" aria-hidden="true"></span>Both sides</li>
-        <li><span class="sw sw-wild" aria-hidden="true"></span>Wild</li>
-        <li><span class="sw sw-seal" aria-hidden="true"></span>Seal</li>
-      </ul>
-      <p class="map-key-note">Gold and green trim Keeper roofs. Cyan and mint trim Glimmerwell ground.</p>
+    <p class="map-hint map-side" id="mapSide" hidden></p>
+    <div class="map-key" id="mapKey" aria-label="Map key">
+      <section class="map-key-g" id="keyPlaces"><p class="map-key-h">PLACES</p>
+        <ul class="map-key-list">
+          <li><span class="sw sw-town" aria-hidden="true"></span>Town</li>
+          <li><span class="sw sw-route" aria-hidden="true"></span>Route</li>
+          <li><span class="sw sw-side" aria-hidden="true"></span>Side place</li>
+          <li><span class="sw sw-unknown" aria-hidden="true"></span>Not visited</li>
+          <li><span class="sw sw-coach" aria-hidden="true"></span>Coach</li>
+        </ul></section>
+      <section class="map-key-g" id="keyQuests"><p class="map-key-h">QUESTS</p>
+        <ul class="map-key-list">
+          <li><span class="sw sw-you" aria-hidden="true"></span>You</li>
+          <li><span class="sw sw-next" aria-hidden="true"></span>Next step</li>
+          <li id="keySideTask"><span class="sw sw-task" aria-hidden="true"></span>Side task</li>
+          <li id="keySeal" hidden><span class="sw sw-seal" aria-hidden="true"></span>Seal</li>
+        </ul></section>
+      <section class="map-key-g" id="keySides" hidden><p class="map-key-h">SIDES</p>
+        <ul class="map-key-list">
+          <li><span class="sw sw-keepers" aria-hidden="true"></span><span id="keyKeepers">Keepers</span></li>
+          <li><span class="sw sw-glimmer" aria-hidden="true"></span><span id="keyGlimmer">Glimmerwell</span></li>
+          <li><span class="sw sw-split" aria-hidden="true"></span>Both sides</li>
+          <li><span class="sw sw-wild" aria-hidden="true"></span>Wild</li>
+        </ul>
+        <p class="map-key-note">Gold and green trim Keeper roofs. Cyan and mint trim Glimmerwell ground.</p></section>
     </div>
     <p class="map-pledge" id="mapPledge" hidden></p>
     <p class="map-hint">Tap a place to read it. CLOSE puts the map away.</p>
@@ -241,8 +250,12 @@
         <p id="questSide" class="q-text q-side"></p>
         <p id="questSidePlace" class="q-place q-side-place"></p>
       </section>
+      <!-- QUEST_MULTI (D106): other active side chains, one row each with TRACK; capped, then +N more -->
+      <div id="questSideRows" class="q-rows" hidden></div>
+      <button id="questSideMore" class="q-more" type="button" aria-controls="questSideRows" hidden></button>
       <section class="q-done-wrap" id="questDoneWrap" hidden>
-        <p class="q-kicker">DONE</p>
+        <button id="questDoneToggle" class="q-done-toggle" type="button" aria-controls="questDone" hidden></button>
+        <p class="q-kicker" id="questDoneKicker">DONE</p>
         <ul id="questDone" class="q-done" aria-label="Done"></ul>
       </section>
     </div>
@@ -491,128 +504,7 @@
   </div>
 </div>
 
-<!-- Debug tools. Password gate lives in Settings. The DBG tag opens this again, including over a battle. -->
-<div id="ovDebug" class="overlay" hidden>
-  <div class="ov-inner dbg-inner" role="dialog" aria-modal="true" aria-labelledby="dbgTitle">
-    <div class="ov-title" id="dbgTitle">Debug</div>
-    <p id="dbgLive" class="dbg-live" hidden></p>
-    <div id="dbgBattleHp" hidden>
-      <div class="dbg-row">
-        <input id="dbgFoeHp" type="number" min="0" inputmode="numeric" aria-label="Foe HP">
-        <button id="dbgSetFoeHp" class="btn sm" type="button">FOE HP</button>
-      </div>
-      <div class="dbg-row">
-        <input id="dbgMyHp" type="number" min="0" inputmode="numeric" aria-label="Your HP">
-        <button id="dbgSetMyHp" class="btn sm" type="button">YOUR HP</button>
-      </div>
-      <div class="dbg-row">
-        <button id="dbgWin" class="btn sm" type="button">WIN</button>
-        <button id="dbgLose" class="btn sm" type="button">LOSE</button>
-      </div>
-    </div>
-    <section class="dbg-sec">
-      <div class="dbg-h">Checkpoint</div>
-      <select id="dbgCheckpoint" aria-label="Checkpoint"></select>
-      <button id="dbgGoCheckpoint" class="btn sm" type="button">GO</button>
-    </section>
-    <section class="dbg-sec">
-      <div class="dbg-h">Items</div>
-      <select id="dbgItem" aria-label="Item"></select>
-      <div class="dbg-row">
-        <input id="dbgItemN" type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="How many">
-        <button id="dbgGiveItem" class="btn sm" type="button">GIVE</button>
-      </div>
-      <div class="dbg-row">
-        <input id="dbgAcorns" type="number" min="0" value="0" inputmode="numeric" aria-label="Acorns">
-        <button id="dbgSetAcorns" class="btn sm" type="button">ACORNS</button>
-      </div>
-    </section>
-    <section class="dbg-sec">
-      <div class="dbg-h">Walkling encounter</div>
-      <select id="dbgSpecies" aria-label="Species"></select>
-      <div class="dbg-row">
-        <select id="dbgStage" aria-label="Form"></select>
-        <input id="dbgLevel" type="number" min="1" max="50" value="5" inputmode="numeric" aria-label="Level">
-      </div>
-      <select id="dbgHp" aria-label="Starting HP"></select>
-      <p id="dbgEncStats" class="dbg-live"></p>
-      <div class="dbg-row">
-        <button id="dbgSpawnEnc" class="btn sm btn-play" type="button">START BATTLE</button>
-        <button id="dbgPlaceWild" class="btn sm" type="button">PLACE ON MAP</button>
-      </div>
-    </section>
-    <section class="dbg-sec">
-      <div class="dbg-h">Faction</div>
-      <div class="dbg-row">
-        <button id="dbgSideKeepers" class="btn sm" type="button" aria-pressed="true">KEEPERS</button>
-        <button id="dbgSideGlimmer" class="btn sm" type="button" aria-pressed="false">GLIMMERWELL</button>
-      </div>
-    </section>
-    <section class="dbg-sec">
-      <div class="dbg-h">Standing</div>
-      <p id="dbgKeepersNow" class="dbg-live"></p>
-      <div class="dbg-row">
-        <input id="dbgKeepersPts" type="number" min="0" max="100" inputmode="numeric" aria-label="Keepers standing">
-        <button id="dbgSetKeepers" class="btn sm" type="button">KEEPERS</button>
-      </div>
-      <p id="dbgGlimmerNow" class="dbg-live"></p>
-      <div class="dbg-row">
-        <input id="dbgGlimmerPts" type="number" min="0" max="100" inputmode="numeric" aria-label="Glimmerwell standing">
-        <button id="dbgSetGlimmer" class="btn sm" type="button">GLIMMER</button>
-      </div>
-    </section>
-    <details class="dbg-sec" id="dbgAgent">
-      <summary class="dbg-h">Agent tools</summary>
-      <div class="dbg-grid">
-        <button id="dbgHeal" class="btn sm" type="button">HEAL</button>
-        <button id="dbgFillCare" class="btn sm" type="button">FILL CARE</button>
-        <button id="dbgFast" class="btn sm" type="button" aria-pressed="false">FAST OFF</button>
-        <button id="dbgClearHold" class="btn sm" type="button">CLEAR HOLD</button>
-        <button id="dbgKit" class="btn sm" type="button">PREP KIT</button>
-        <button id="dbgResetCaps" class="btn sm" type="button">RESET CAPS</button>
-        <button id="dbgSight" class="btn sm" type="button">SIGHT LINES</button>
-        <button id="dbgEndScene" class="btn sm" type="button">END SCENE</button>
-      </div>
-      <div class="dbg-row">
-        <input id="dbgPetLevel" type="number" min="1" max="50" value="5" inputmode="numeric" aria-label="Partner level">
-        <button id="dbgSetLevel" class="btn sm" type="button">SET LEVEL</button>
-      </div>
-      <div class="dbg-row">
-        <input id="dbgHours" type="number" min="0" max="240" value="8" inputmode="numeric" aria-label="Hours to skip">
-        <button id="dbgSkip" class="btn sm" type="button">SKIP HOURS</button>
-      </div>
-      <select id="dbgTextSpeed" aria-label="Text speed"></select>
-      <select id="dbgMap" aria-label="Map"></select>
-      <button id="dbgWarp" class="btn sm" type="button">WARP</button>
-      <div class="dbg-row">
-        <input id="dbgScene" type="text" maxlength="40" autocomplete="off" spellcheck="false" aria-label="Scene id" value="orchard">
-        <button id="dbgRunScene" class="btn sm" type="button">RUN SCENE</button>
-      </div>
-      <div class="dbg-row">
-        <input id="dbgFlag" type="text" maxlength="60" autocomplete="off" spellcheck="false" aria-label="Flag name">
-        <input id="dbgFlagVal" type="text" maxlength="40" autocomplete="off" spellcheck="false" aria-label="Flag value">
-      </div>
-      <div class="dbg-row">
-        <button id="dbgSetFlag" class="btn sm" type="button">SET FLAG</button>
-        <button id="dbgClearFlag" class="btn sm" type="button">CLEAR FLAG</button>
-      </div>
-      <select id="dbgTrainer" aria-label="Trainer"></select>
-      <label class="dbg-check"><input id="dbgRematch" type="checkbox" checked> Rematch if already beaten</label>
-      <button id="dbgForceTrainer" class="btn sm" type="button">TRAINER BATTLE</button>
-      <div class="dbg-row">
-        <select id="dbgBooth" aria-label="Event Hall game"></select>
-        <button id="dbgBoothGo" class="btn sm" type="button">PLAY BOOTH</button>
-      </div>
-      <div class="dbg-row">
-        <button id="dbgChecks" class="btn sm" type="button">DEV CHECKS</button>
-        <button id="dbgSnap" class="btn sm" type="button">SNAPSHOT</button>
-      </div>
-    </details>
-    <p id="dbgOut" class="dbg-out" hidden></p>
-    <button id="dbgLock" class="btn sm btn-danger" type="button">LOCK DEBUG</button>
-    <button id="dbgClose" class="btn btn-play" type="button">CLOSE</button>
-  </div>
-</div>
+<!-- Debug tools: not in the player page. debug_ui.js holds the markup and game.js adds it only in a debug session (?debug=1 or the Settings gate). -->
 
 <!-- Start over confirm (opened from Settings) -->
 <div id="ovReset" class="overlay" hidden>
@@ -724,22 +616,23 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261015-0931";</script>
-<script src="sprites.js?v=20261015-0931"></script>
-<script src="keeper.js?v=20261015-0931"></script>
-<script src="stats.js?v=20261015-0931"></script>
-<script src="moves.js?v=20261015-0931"></script>
-<script src="data/mapdata.js?v=20261015-0931"></script>
-<script src="quests.js?v=20261015-0931"></script>
-<script src="standing.js?v=20261015-0931"></script>
-<script src="save.js?v=20261015-0931"></script>
-<script src="env.js?v=20261015-0931"></script>
-<script src="sfx.js?v=20261015-0931"></script>
-<script src="minigames.js?v=20261015-0931"></script>
-<script src="ribbit.js?v=20261015-0931"></script>
-<script src="cloud_config.js?v=20261015-0931"></script>
-<script src="cloud.js?v=20261015-0931"></script>
-<script src="data/nav_art.js?v=20261015-0931"></script>
-<script src="game.js?v=20261015-0931"></script>
+<script>window.BUILD = "20261015-2035";</script>
+<script src="sprites.js?v=20261015-2035"></script>
+<script src="keeper.js?v=20261015-2035"></script>
+<script src="stats.js?v=20261015-2035"></script>
+<script src="moves.js?v=20261015-2035"></script>
+<script src="data/mapdata.js?v=20261015-2035"></script>
+<script src="quests.js?v=20261015-2035"></script>
+<script src="standing.js?v=20261015-2035"></script>
+<script src="save.js?v=20261015-2035"></script>
+<script src="env.js?v=20261015-2035"></script>
+<script src="sfx.js?v=20261015-2035"></script>
+<script src="minigames.js?v=20261015-2035"></script>
+<script src="ribbit.js?v=20261015-2035"></script>
+<script src="cloud_config.js?v=20261015-2035"></script>
+<script src="cloud.js?v=20261015-2035"></script>
+<script src="debug_ui.js?v=20261015-2035"></script>
+<script src="data/nav_art.js?v=20261015-2035"></script>
+<script src="game.js?v=20261015-2035"></script>
 </body>
 </html>
