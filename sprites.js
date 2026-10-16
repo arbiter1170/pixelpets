@@ -1160,7 +1160,8 @@ const hcSkin = (floor, wall, mat, extra) => {
   };
 };
 const HOUSE_SKINS = {
-  house_home: { remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'house_floor_a', '=':'rug_rag', m:'mat_home', '^':'stair_home' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_floor_a', 'house_floor_b', 'house_honey_c') },
+  // D153: one role table. Cap G, face w, so the top of the wall reads apart from the face. Other skins keep their own tiles until they opt in.
+  house_home: { remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'house_floor_a', '=':'rug_rag', m:'mat_home', '^':'stair_home' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_floor_a', 'house_floor_b', 'house_honey_c'), wall: { c:'G', C:'y', L:'F', f:'w', F:'h', T:'G', B:'B', S:'F', R:'G', G:'c', W:'s', D:'B' } },
   house_loft: { remap: { '#':'wall_cream', W:'wall_cream_face', W2:'wall_cream_win', '.':'house_loft', '=':'rug_loft', m:'mat_loft', '^':'stair_loft' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_loft', 'house_loft_b', 'house_loft_c') },
   house_lodge: { remap: { '#':'wall_warden', W:'wall_warden_face', W2:'wall_warden_win', '.':'floor_warden', '=':'rug_warden', m:'mat_warden' }, decal: { v:'wall_shadow_warden', u:'window_light_warden' }, walk: { v:1, u:1 }, variants: houseVar('floor_warden', 'floor_warden_b', 'floor_warden_c') },
   house_lantern: { remap: { '#':'wall_lantern', W:'wall_lantern_face', W2:'wall_lantern_win', '.':'floor_lantern', '=':'rug_lantern', m:'mat_lantern_warm' }, decal: { v:'wall_shadow_warm', u:'window_light_warm' }, walk: { v:1, u:1 }, variants: houseVar('floor_lantern', 'floor_lantern_b', 'floor_lantern_c') },
@@ -1190,6 +1191,59 @@ const HOUSE_SKINS = {
   dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
   dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') }
 };
+// Shared indoor wall kit (D151). Role letters, not PAL keys. `.` is empty. Mirrors are the other corner, the other side, and the other shadow.
+// A skin opts in with `wall` (role -> PAL key). buildWallKit bakes `<skin>__<part>` once.
+const WALL_KIT = (() => {
+  const mirrorRows = rows => rows.map(r => [...r].reverse().join(''));
+  const C16 = 'cccccccccccccccc', F16 = 'ffffffffffffffff', S16 = 'SSSSSSSSSSSSSSSS', Z16 = '................';
+  const SIDE_W = 'cccccccccccccCcL';
+  const capN = Array(12).fill(C16).concat(['CCCCCCCCCCCCCCCC', C16, 'LLLLLLLLLLLLLLLL', 'LLLLLLLLLLLLLLLL']);
+  const capNw = Array(12).fill(C16).concat(['cccccccccccccCCC', 'ccccccccccccccCc', 'ccccccccccccccLL', 'ccccccccccccccLL']);
+  const capS = ['LLLLLLLLLLLLLLLL', 'CCCCCCCCCCCCCCCC'].concat(Array(14).fill(C16));
+  const capSw = ['ccccccccccccccLL', 'cccccccccccccCCC'].concat(Array(14).fill(SIDE_W));
+  const jambL = ['LLLLLLLLLLLLLLLL', 'CCCCCCCCCCCCCCCL'].concat(Array(14).fill('ccccccccccccccCL'));
+  const face = ['FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF'].concat(Array(7).fill(F16), ['TTTTTTTTTTTTTTTT'], Array(3).fill(F16), ['BBBBBBBBBBBBBBBB', 'BBBBBBBBBBBBBBBB', 'FFFFFFFFFFFFFFFF']);
+  const faceBody = 'FFffffffffffffff';
+  const faceL = ['FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF'].concat(Array(7).fill(faceBody), ['FFTTTTTTTTTTTTTT'], Array(3).fill(faceBody), ['FFBBBBBBBBBBBBBB', 'FFBBBBBBBBBBBBBB', 'FFFFFFFFFFFFFFFF']);
+  const faceWin = [
+    'FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF',
+    'fffRRRRRRRRRRfff', 'fffRWWGGRGGGRfff', 'fffRWWGGRGGGRfff', 'fffRGGGGRGGGRfff', 'fffRGGGGRGGGRfff', 'fffRGGGGRGGGRfff', 'fffRGGGGRGGGRfff',
+    'TTTRRRRRRRRRRTTT', 'TTCCCCCCCCCCCCTT',
+    F16, F16, 'BBBBBBBBBBBBBBBB', 'BBBBBBBBBBBBBBBB', 'FFFFFFFFFFFFFFFF'];
+  const faceDoor = [
+    'FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF',
+    'ffffRRRRRRRRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff',
+    'TTTTRDDDDCDRTTTT',
+    'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff',
+    'BBBBRDDDDDDRBBBB', 'BBBBRDDDDDDRBBBB', 'FFFFRDDDDDDRFFFF'];
+  const shadowN = [S16, 'S.S.S.S.S.S.S.S.'].concat(Array(14).fill(Z16));
+  const shadowW = Array(16).fill('S...............');
+  const shadowNw = shadowN.map(r => 'S' + r.slice(1));
+  const sideW = Array(16).fill(SIDE_W);
+  return {
+    cap_n: capN, cap_nw: capNw, cap_ne: mirrorRows(capNw),
+    cap_s: capS, cap_sw: capSw, cap_se: mirrorRows(capSw),
+    side_w: sideW, side_e: mirrorRows(sideW),
+    jamb_l: jambL, jamb_r: mirrorRows(jambL),
+    face, face_l: faceL, face_r: mirrorRows(faceL), face_win: faceWin, face_door: faceDoor,
+    shadow_n: shadowN, shadow_w: shadowW, shadow_e: mirrorRows(shadowW), shadow_nw: shadowNw, shadow_ne: mirrorRows(shadowNw),
+  };
+})();
+function buildWallKit(skinId, wall){
+  const out = {};
+  for (const [part, rows] of Object.entries(WALL_KIT)) {
+    if (rows.length !== 16 || rows.some(r => r.length !== 16)) throw new Error('wall kit grid ' + part);
+    out[skinId + '__' + part] = mkTile(g => {
+      rows.forEach((row, y) => [...row].forEach((role, x) => {
+        if (role === '.') return;
+        const key = wall[role];
+        if (!key || !PAL[key] || key === 'k') throw new Error('wall kit ' + skinId + ' ' + part + ' role ' + role);
+        px(g, PAL[key], x, y);
+      }));
+    });
+  }
+  return out;
+}
 // D87: # wall, W face, . floor. Floor variants are gravel (b) and damp (c). Wall variants use the same mix so a rock row is not one stamp.
 // Y is a walkable sky decal (the yard patch). ~ is a walkable drip. = is the den rug. Odd W columns stay the rock face (no house window).
 const TUNNEL_SKIN = {"remap":{"#":"tunnel_wall","W":"tunnel_wall_face","W2":"tunnel_wall_face",".":"tunnel_floor","=":"tunnel_rug","m":"tunnel_mat"},"override":{},"walk":{"Y":1,"~":1},"decal":{"Y":"tunnel_sky","~":"tunnel_puddle"},"variants":{"tunnel_floor":[["tunnel_floor_b",0.34],["tunnel_floor_c",0.33]],"tunnel_wall":[["tunnel_wall_b",0.34],["tunnel_wall_c",0.33]],"tunnel_wall_face":[["tunnel_wall_face_b",0.34],["tunnel_wall_face_c",0.33]]}};

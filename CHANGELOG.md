@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 09:53 ET: Your Home draws the shared wall kit (build 20261016-0953)
+
+- What changed and why: Your Home stays 9 by 8, with the same warps, props and honey floor. Its wall is now the shared two-tile kit: a warm cap, a pale face, trim, a baseboard, two windows, and a floor shadow under the face. Other reskinned rooms keep their colours. Upstairs stays the loft skin, so the two rooms do not match. Its window list is stored for the later room pass. Save `v` stays 2.
+- Files touched: `sprites.js`, `game.js`, `data/detail_b5.json`, `data/mapdata.js`, `tests/interior_walls.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0953.
+- Tests run and result (widths, checks): `PP_PORT=8093 npm test` exit 0. 879 passed, 12 skipped, 0 failed (19.7m), at 320, 375, and 390. `tests/interior_walls.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Vincent settled D151, D152 and D153 on the defaults (two-tile walls, a window list per map, one colour table per skin). Green: upstairs stays `house_loft` so the loft colours stay and no two rooms match. No id was renumbered. The next free id is D161.
+- Anything left unfinished: The other rooms (loft, Lantern House, Rook's House, the Lodge, the Keeper House, the observatory) are the next pass. Upstairs already lists windows at columns 3 and 5, and that list is not drawn until the loft skin opts in.
+
 ## 2026-10-16 ET: Keeper House merged with current main (build 20261016-0304)
 
 - What changed and why: Merged current `main`, which now holds PR #74 (lantern, Calloway, Lodge and observatory rooms) and PR #75 (the `maps_b6` lab-floor check fix). `data/mapdata.js` was regenerated. Save `v` stays 2.
