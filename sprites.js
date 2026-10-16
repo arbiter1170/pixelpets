@@ -423,6 +423,9 @@ const GLYPH = {
   heart:['.r.r.','rrrrr','rrrrr','.rrr.','..r..'],
   apple:['..t..','.rrr.','rrrwr','rrrrr','.rrr.'],
   z:['www','..w','.w.','w..','www'],
+  // HEART_ALERT v0.2 badges (D156). 5x5, PAL only. Bowl for food, z for rest.
+  badge_food: ['.....','y.y.y','ooooo','.ooo.','..o..'],
+  badge_rest: ['wwww.','..w..','.w...','wwww.','.....'],
   spark:['.y.','yww','.y.'],
   bang:['y','y','y','.','y'],
   cloud:['..ww....','.wwww.ww','wwwwwwww'],
