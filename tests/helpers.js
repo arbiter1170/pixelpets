@@ -74,6 +74,16 @@ async function gotoGame(page, search = '') {
   await page.waitForFunction(() => window.PixelPets && window.BUILD, null, { timeout: 20000 });
 }
 
+// Map-pass fixtures: adds `overlay` to MAPDATA as one more data/detail_*.json before the game boots.
+// Call before gotoGame. For engine tests only; real maps live in data/.
+async function withOverlay(page, overlay, key = 'detail_zz_test') {
+  await page.route('**/data/mapdata.js*', async (route) => {
+    const res = await route.fetch();
+    const body = (await res.text()) + '\nMAPDATA[' + JSON.stringify(key) + '] = ' + JSON.stringify(overlay) + ';\n';
+    await route.fulfill({ status: 200, body, headers: { 'content-type': 'application/javascript', 'cache-control': 'no-store' } });
+  });
+}
+
 function boxesOverlap(a, b) {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
@@ -119,4 +129,4 @@ async function playScene(page, choices = [], onChoice = null, onSeal = null) {
   throw new Error('scene did not end');
 }
 
-module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, boxesOverlap, shot, playScene };
+module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, withOverlay, boxesOverlap, shot, playScene };
