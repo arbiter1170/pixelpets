@@ -21,7 +21,7 @@ const PPSave = (() => {
   const MD = typeof MAPDATA === 'object' ? MAPDATA : null;
   const MAP_SIZE = {};
   const addMaps = bag => { if (bag) for (const [id, m] of Object.entries(bag)) if (m && m.w && m.h) MAP_SIZE[id] = [m.w, m.h]; };
-  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); addMaps(MD.mahopac && MD.mahopac.maps); addMaps(MD.highcharity && MD.highcharity.maps); addMaps(MD.highcharity && MD.highcharity.rooms); addMaps(MD.heights && MD.heights.maps); addMaps(MD.civic && MD.civic.maps); }
+  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); addMaps(MD.mahopac && MD.mahopac.maps); addMaps(MD.highcharity && MD.highcharity.maps); addMaps(MD.highcharity && MD.highcharity.rooms); addMaps(MD.heights && MD.heights.maps); addMaps(MD.civic && MD.civic.maps); addMaps(MD.fernbrook_rooms && MD.fernbrook_rooms.maps); }
   else MAP_SIZE.proto = [24, 20];
   // Map-pass overlays (data/detail_*.json, applied last in game.js) may resize a map with `slicePatch.maps[id].set.w/h`.
   if (MD) for (const k of Object.keys(MD).filter(k => k.startsWith('detail_')).sort()) {
@@ -323,7 +323,18 @@ const PPSave = (() => {
     if (!s.party.some(p => p.id === s.partnerId)) s.partnerId = s.party[0] ? s.party[0].id : null;
     keepOneRelief(s);
     placeWorld(s);
+    markTutorialVeteran(s);
     return s;
+  }
+  // TUTORIAL D158/D159. Additive flags only. v stays 2. A veteran (past the early walk) is marked done on load
+  // and never has the tour pushed on them. A bad step value is dropped. Done clears the step.
+  function markTutorialVeteran(s){
+    const f = s.flags; if (!f) return;
+    if (has(f, 'story.tutorial_done') && f['story.tutorial_done'] !== true) delete f['story.tutorial_done'];
+    if (has(f, 'story.tutorial_step') && (typeof f['story.tutorial_step'] !== 'string' || !f['story.tutorial_step'])) delete f['story.tutorial_step'];
+    const past = f['story.early_done'] === true || f['story.rival1_done'] === true || (Number.isInteger(s.steps) && s.steps > 16);
+    if (f['story.starter_received'] === true && past) f['story.tutorial_done'] = true;
+    if (f['story.tutorial_done'] === true) delete f['story.tutorial_step'];
   }
 
   // §4. Returns { state, readOnly, notice }.

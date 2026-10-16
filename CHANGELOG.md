@@ -2,6 +2,149 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 15:33 ET: Rook's Crossroads merged with current main; desks stay removed (build 20261016-1533)
+
+- What changed and why: Merged current `main` (first-time tour, wall kit, heart alert, Fernbrook rooms, Lizzy). Pledge desks stay removed. Rook's quest is still the only way to switch sides, both ways (D127, D128). End-game switching is an open follow-up (D161) and is not built. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `game.js`, `quests.js`, `tools/gen_mapdata.py`, `tests/integrity_lib.js`, `tests/standing.spec.js` (Lantern room, still no Pledge desk), `CHANGELOG.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `index.html`, `version.json` (restamped), `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261016-1533.
+- Tests run and result (widths, checks): `PP_PORT=8801 npx playwright test tests/rook_crossroads.spec.js tests/standing.spec.js tests/quest_multi.spec.js` exit 0. 93 passed, 0 failed (2.3m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Vincent, Oct 16, 2026: desks stay removed. D127 stands. D128 stays both ways. D161 is open and not built. No id was renumbered. The next free id is D162.
+- Anything left unfinished: The end-game switch (D161) is not planned. Frostmere is not built. This branch is not on `main`.
+
+## 2026-10-16 14:05 ET: First-time tour merged with current main (build 20261016-1405)
+
+- What changed and why: Merged current `main` after PR #84 (Your Home wall kit), PR #83 (heart alert), PR #78 and PR #87. The tour is unchanged. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md` (both kept), `NEXT_PLAN.md` (main's wording, which already names D157–D160), `index.html`, `version.json` (restamped), `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261016-1405.
+- Tests run and result (widths, checks): `npm run test:agent`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. D157–D160 checked against main and open PRs; no collision. No id was renumbered.
+- Anything left unfinished: none from the merge.
+
+## 2026-10-16 09:52 ET: First-time tour after the starter (build 20261016-0952)
+
+- What changed and why: After the starter scene, a new game offers a 14-step tour of the screen and of FEED, PLAY and REST. SKIP and SKIP TOUR end it from any card. Settings has a Tutorial row whose value is REPLAY. The first run's care buttons are real. A replay only highlights them. The save stays v2. Two flags were added: `story.tutorial_done` and `story.tutorial_step`. A save already past the opening is marked done on load. The daily hello waits until the next day. D157–D160 are settled. No id was renumbered.
+- Files touched: `game.js`, `index.html`, `style.css`, `save.js`, `tests/helpers.js`, `tests/tutorial.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261016-0952.
+- Tests run and result (widths, checks): `PP_PORT=8093 npm test` exit 0 after merging main (the Dream 2004 toy). 903 passed, 12 skipped, 0 failed (20.8m), at 320, 375, and 390. `tests/tutorial.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Settled by Vincent on Oct 16, 2026. D157 skippable. D158 fires when the starter scene closes, and an older save is marked done. D159 two additive flags, save v stays 2. D160 real care on the first run, highlight only on replay.
+- Anything left unfinished: The heart-button glow (D154) is not on main, so step T8 uses the shorter line. When that alert ships, merge main. The Playwright walk ends a one-line scene in the Lodge. It does not play the full starter.
+
+## 2026-10-16 13:13 ET: Home wall kit merged with current main (build 20261016-1313)
+
+- What changed and why: Merged current `main` (PR #78 Fernbrook rooms, PR #83 heart alert, PR #87 asset converters). Your Home still draws the shared wall kit; the heart-alert `care` debug hook and the door-on-wall draw from main are kept next to the wall shadow.
+- Files touched: merge of `main`. Conflicts: `game.js` (both kept), `CHANGELOG.md`, `README.md`, `OPEN_DECISIONS.md` (both kept), `BACKLOG.md`, `NEXT_PLAN.md` (main's wording, which already names D151–D153 as settled), `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1313.
+- Tests run and result (widths, checks): `npm run test:agent`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. No id was renumbered.
+- Anything left unfinished: the other rooms are the next pass.
+
+## 2026-10-16 12:15 ET: Asset converters for palette grids and music loops
+
+- What changed and why: Three tools turn outside art into the forms the game already stores. `png2grid.py` maps a PNG onto palette keys. `midi2music.py` turns a MIDI file into a music-loop literal. `grid2png.py` draws that grid back to a 1× or 4× preview. No game art, player text, or save field changes. Save `v` stays 2.
+- Files touched: `tools/png2grid.py`, `tools/midi2music.py`, `tools/grid2png.py`, `tools/assetlib.py`, `tests/asset_converters.spec.js`, `tests/fixtures/assets/`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: no new build stamp. Game files are unchanged, so the live id stays `20261016-1138`.
+- Tests run and result (widths, checks): `PP_PORT=8799 npm test` exit 0. 951 passed, 12 skipped (22.0m), at 320, 375 and 390. `tests/asset_converters.spec.js` passed at all three widths. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. Vincent approved the asset handoff, including these converters, on Oct 16, 2026. No id was taken or renumbered.
+- Anything left unfinished: the tools are not wired into a deploy. Episode 1 art is still not in the game.
+
+## 2026-10-16 10:17 ET: Home wall kit merged with current main (build 20261016-1017)
+
+- What changed and why: Merged current main, which holds the RegenX look keys and the 2004 memory (the toy rolls from any side, Mom cooks, Dad watches, and that room has no partner). Your Home still draws the shared wall kit. `data/mapdata.js` was regenerated. Save `v` stays 2. The next free id stays D161. D138–D147 stay unrecorded.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md` (both sides kept), `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1017.
+- Tests run and result (widths, checks): `PP_PORT=8094 npm test` exit 0. 891 passed, 12 skipped, 0 failed (20.1m), at 320, 375, and 390. `tests/interior_walls.spec.js`, `tests/dream_toy.spec.js`, and `tests/look_keys.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. D151, D152 and D153 stay settled. No id was renumbered.
+- Anything left unfinished: The other rooms are the next pass. Upstairs lists windows at columns 3 and 5, and that list is not drawn until the loft skin opts in.
+
+## 2026-10-16 09:53 ET: Your Home draws the shared wall kit (build 20261016-0953)
+
+- What changed and why: Your Home stays 9 by 8, with the same warps, props and honey floor. Its wall is now the shared two-tile kit: a warm cap, a pale face, trim, a baseboard, two windows, and a floor shadow under the face. Other reskinned rooms keep their colours. Upstairs stays the loft skin, so the two rooms do not match. Its window list is stored for the later room pass. Save `v` stays 2.
+- Files touched: `sprites.js`, `game.js`, `data/detail_b5.json`, `data/mapdata.js`, `tests/interior_walls.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0953.
+- Tests run and result (widths, checks): `PP_PORT=8093 npm test` exit 0. 879 passed, 12 skipped, 0 failed (19.7m), at 320, 375, and 390. `tests/interior_walls.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Vincent settled D151, D152 and D153 on the defaults (two-tile walls, a window list per map, one colour table per skin). Green: upstairs stays `house_loft` so the loft colours stay and no two rooms match. No id was renumbered. The next free id is D161.
+- Anything left unfinished: The other rooms (loft, Lantern House, Rook's House, the Lodge, the Keeper House, the observatory) are the next pass. Upstairs already lists windows at columns 3 and 5, and that list is not drawn until the loft skin opts in.
+
+## 2026-10-16 11:38 ET: Merge Fernbrook rooms and the heart alert (build 20261016-1138)
+
+- What changed and why: Merged `origin/main` after PR #78 (Fernbrook Lantern House, Bloom Trial Hall) and PR #83 (heart alert). Overlay maps from `detail_*` files and `fernbrook_rooms` both load. The school hall, the flats lobby, and flat 5B are unchanged. The id notes now follow main: the next free id is D161. D138–D141 stay the settled Lizzy calls, D142–D147 have no recorded rows, and no id was renumbered. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `game.js`, `tests/integrity_lib.js`, `tests/maps_b7.spec.js` (32 skinned rooms), `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `tests/README.md`, `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1138.
+- Tests run and result (widths, checks): `PP_PORT=8811 npm test`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. No id was renumbered.
+- Anything left unfinished: The INTERIOR_WALLS kit reaches these three rooms in PR 2.
+
+## 2026-10-16 10:26 ET: Merge the 2004-memory toy fix (build 20261016-1026)
+
+- What changed and why: Merged `origin/main` again after PR #81. In the 2004 memory the pop-toy answers a bump from any side, Mom cooks, Dad watches the set, and no partner follows into that room. The school hall, the flats lobby, and flat 5B stay as the review left them. Save `v` stays 2. The next free id stays D142.
+- Files touched: merge of `main`. `data/detail_b7.json`, `data/mahopac.json`, `data/mapdata.js` (regenerated), `game.js`, `sprites.js`, `tests/dream_toy.spec.js`, `tests/maps_b7.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261016-1026.
+- Tests run and result (widths, checks): `PP_PORT=8806 npm test` exit 0. 903 passed, 12 skipped, 0 failed (20.6m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. The toy fix already shipped on `main`. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build.
+
+## 2026-10-16 09:58 ET: Calm the school hall, the flats lobby, and flat 5B (build 20261016-0958)
+
+- What changed and why: Vincent's review of the schoolhouse and flats. The lobby no longer has a red brick band across the middle or a full-width brick row at the door. Those tiles are speckled terrazzo, and the door mat stays. The school hallway under the red runner is cream linoleum. Flat 5B's hall walls drop the repeated brick courses for cream plaster with one dado. The kitchen stays terracotta, the bedroom stays wood, and the game room stays navy carpet, so the three rooms stay distinct from each other and from the other houses. Merged `origin/main` at build 20261016-0922, which renamed the Heights looks to `rx_nia`, `rx_cal`, and `rx_ivo`. The next free id stays D142. D138–D141 and D148–D150 stay settled. Save `v` stays 2.
+- Files touched: `sprites.js`, `data/mapdata.js` (regenerated), `README.md`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`, plus the merge of `main` (`data/heights.json`, `tests/look_keys.spec.js`, `tests/heights.spec.js`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `.cursor/skills/walklings-docs/SKILL.md`).
+- Commit(s) + build id: build 20261016-0958.
+- Tests run and result (widths, checks): `PP_PORT=8805 npm test` exit 0. 897 passed, 12 skipped, 0 failed (20.3m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. Vincent rejected the busy brick floors and approved the rest of the schoolhouse and flats. No new D id. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build. The coach cell (12, 9) is still the Keeper House roof from an earlier patch.
+## 2026-10-16 11:14 ET: Lantern House planks merged with the heart alert (build 20261016-1114)
+
+- What changed and why: Merged current `main` (PR #83, heart alert). Fernbrook rooms unchanged. `data/mapdata.js` regenerated. Save `v` stays 2. The next free id stays D151.
+- Files touched: merge of `main`. Conflicts: `CHANGELOG.md`, `NEXT_PLAN.md` (both kept), `index.html`, `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1114.
+- Tests run and result (widths, checks): `PP_PORT=8817 npm test`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 10:24 ET: Lantern House planks merged with current main (build 20261016-1024)
+
+- What changed and why: Merged current `main` (build 20261016-0947), which keeps the dream pop-toy answering a bump from any side. The Fernbrook Lantern House floor stays the calm cream planks, rug, quilt runner, and thin hearth from build 20261016-0957. The Bloom Trial Hall is unchanged. `data/mapdata.js` was regenerated. Save `v` stays 2. The next free id stays D151.
+- Files touched: merge of `main`. Conflicts: `data/mapdata.js` (regenerated), `index.html`, `version.json` (restamped). `sprites.js` and `game.js` merged cleanly.
+- Commit(s) + build id: build 20261016-1024.
+- Tests run and result (widths, checks): `PP_PORT=8820 npm test` exit 0. 906 passed, 12 skipped, 0 failed (20.5m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 09:57 ET: Fernbrook Lantern House floor is calm orchard planks (build 20261016-0957)
+
+- What changed and why: Vincent rejected the Lantern House floor. The short dark courses read as a brick pile, the same look he turned down for Calloway and the Lodge. The floor is now wide cream planks, with the rug kept, a short quilt runner, and a two-tile brick hearth in front of the counter. Brick is only that thin lip. The Bloom Trial Hall is unchanged. The planks stay distinct from the Hearthmoor lantern checker and the Cobblecrest cobble floor. Merged `main` at build 20261016-0922. Save `v` stays 2. The next free id stays D151.
+- Files touched: `sprites.js`, `data/fernbrook_rooms.json`, `data/mapdata.js`, `tests/maps_b8.spec.js`, `tests/README.md`, `CHANGELOG.md`, `NEXT_PLAN.md`, `index.html`, `version.json`, plus the merge of `main` (`data/heights.json`, `tests/look_keys.spec.js`, `tests/heights.spec.js`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `.cursor/skills/walklings-docs/SKILL.md`).
+- Commit(s) + build id: build 20261016-0957.
+- Tests run and result (widths, checks): `PP_PORT=8819 npm test` exit 0. 900 passed, 12 skipped, 0 failed (20.2m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0. `tests/maps_b8.spec.js` also passed 18 at `PP_PORT=8818`.
+- Decisions made (colour + reasoning): Green. Vincent's review set the floor. No new D or Q id. D103 placeholders stay. No id was renumbered.
+- Anything left unfinished: Real prop copy can still replace the D103 lines.
+
+## 2026-10-16 08:59 ET: Fernbrook Lantern House and Bloom Trial Hall (build 20261016-0859)
+
+- What changed and why: Vincent approved the two new Fernbrook rooms. The Lantern House is 12 by 16, with an orchard-wood floor, Keeper Amos at the heal counter, three quilt beds, a herb rack, apple crates and a table. The Bloom Trial Hall is 16 by 24. A hedge path zig-zags to the flower dais, where Master Fen stands. Each room has its own skin. Neither reuses the lantern, Calloway, Lodge, observatory or Keeper House floor. The outdoor doors keep their panel ids and also warp in. If the room map is missing, the panel still opens. Amos still rests the party and still offers the Pledge desk. Fen still starts the trial. A save inside either room loads. Save `v` stays 2. D103 is the placeholder prop lines. The next free id is D151.
+- Files touched: `data/fernbrook_rooms.json`, `data/mapdata.js`, `sprites.js`, `game.js`, `save.js`, `tests/integrity_lib.js`, `tools/gen_mapdata.py`, `tests/maps_b8.spec.js`, `tests/maps_b7.spec.js`, `tests/standing.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0859.
+- Tests run and result (widths, checks): `PP_PORT=8817 npm test` exit 0. 894 passed, 12 skipped, 0 failed (20.3m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. D103 was already reserved for this batch. The new prop lines are placeholders. No id was renumbered. Houses were not enlarged. The lab stays four rooms.
+- Anything left unfinished: Real prop copy can replace the D103 lines. The outdoor Fernbrook map is unchanged.
+
+## 2026-10-16 10:11 ET: Heart alert merged with the dream pop-toy fix (build 20261016-1011)
+
+- What changed and why: Merged current `main` (PR #81). In the 2004 memory, the pop-toy answers a bump from any side, Mom cooks, and Dad watches TV. The modern heart alert stays. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `index.html` and `version.json` (restamped).
+- Commit(s) + build id: build 20261016-1011.
+- Tests run and result (widths, checks): `PP_PORT=8794 npm test` exit 0. 912 passed, 12 skipped (20.4m), at 320, 375 and 390. `tests/heart_alert.spec.js` passed at all three widths. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. No id was renumbered.
+- Anything left unfinished: Arcade still has no heart alert. D151–D153 belong to another branch.
+
+## 2026-10-16 09:48 ET: The modern heart pulses when food or rest is low (build 20261016-0948)
+
+- What changed and why: On modern controls, the square heart button pulses when the partner's food or rest is low. Food under 25 is an orange ring and a bowl badge. Food at or under 20 pulses faster. Rest under 25 is a blue ring and a z badge. Rest under 10, or a nap, pulses faster. Both low alternates the ring and shows both badges. One FEED or one REST clears that side. The 3 second REST sleep holds the ring still. A polite live region speaks once when a state starts, and stays quiet on load if it was already on. Reduced motion holds a steady ring. A hidden tab pauses the pulse. Arcade has no alert. Save `v` stays 2.
+- Files touched: `game.js`, `style.css`, `sprites.js`, `index.html`, `tests/heart_alert.spec.js`, `screenshots/heart/`, `README.md`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261016-0948.
+- Tests run and result (widths, checks): `PP_PORT=8793 npm test` exit 0. 906 passed, 12 skipped (20.1m), at 320, 375 and 390. `tests/heart_alert.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D154, D155 and D156 were settled by Vincent on Oct 16, 2026. Building that spec is green. No id was renumbered. Save `v` stays 2. Arcade stays without the alert, as D154 says.
+- Anything left unfinished: Arcade has no heart button, so it has no alert. D151–D153 belong to another branch.
+
 ## 2026-10-16 09:46 ET: Rook's Crossroads, the last crates (build 20261016-0946)
 
 - What changed and why: After Cobblecrest, Rook waits on the east road. The side quest "The last crates" sends you to three quarry crates. He quits Glimmerwell on every path (`story.rook_quit`). `story.rook_end` is left as saved. Keepers free the crates and fight Associate Tobin. A Glimmerwell player can walk away with Rook (half the company score, then the Keepers) or stay and fight him. Hale or Juniper pays the wrap-up. Side switching is only through Rook. Fernbrook Pledge desks are gone. Save `v` stays 2. Merged current `main` (RegenX look keys, build 20261016-0922) and restamped.
@@ -19,6 +162,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `npm test` exit 0 (882 passed, 12 skipped) at 320, 375 and 390.
 - Decisions made (colour + reasoning): green, bug fix from the after-the-fact audit of #37 and #39–#41, approved by Vincent. No D or Q id renumbered. `mahopac.json` not touched.
 - Anything left unfinished: the speaker map still resolves the name "Cal" to one look for both Cals (name collision, audit items 7–8, not in scope).
+
+## 2026-10-16 08:56 ET: Hearthmoor Schoolhouse and Amberhill Flats (build 20261016-0856)
+
+- What changed and why: Vincent approved packet P3 v2 on Design's defaults. Hearthmoor stays 24 by 20. The schoolhouse and the flats sit on the empty south tiles. Each of the three rooms has its own skin. The lift panel lists floors 1 through 6, and only 5B is a real map. Both lift doors open after Lizzy's intro. Lizzy, Buddy, Ossabell, Morelou, Pip, Wren, and Mr. Gristle are in. Morolow has a look and is not on a map yet. The intro plays once after the starter, branches on Rook, and gives two Heal Snacks. Buddy is a Walkling beside Lizzy. He is never a phone contact and never a battle. Family lines use cooking, music, and Spanish. The game names no real place. Five south props move so the new walls can land. Save `v` stays 2. Lizzy stands one tile east in the hall, and Ossabell one tile east in the kitchen, so the only doorway into each room stays open. A door drawn on a wall is entered from the grass south of it. Two art names already existed (`floor_honey`, `bunk`), so those pictures stay as they were. The rooms still differ by their walls and the other floors.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `game.js`, `sprites.js`, `keeper.js`, `quests.js`, `tests/lizzy.spec.js`, `tests/maps_b4.spec.js`, `tests/maps_b7.spec.js`, `tests/integrity_lib.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0856.
+- Tests run and result (widths, checks): `PP_PORT=8803 npm test` exit 0. 891 passed, 12 skipped, 0 failed (20.2m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D111–D119 and D138–D141, Vincent, Oct 16 2026, Design's defaults. D111 red: two buildings, placement A, the map stays 24 by 20. D118: six floors on the panel, only 5B is real. D119: flower clip, Hearthmoor Schoolhouse, Amberhill Flats, Mr. Gristle. D138 green: kids use full-size looks. D139 green: the flower clip is NPC-only. D140 yellow: one overlay plus the engine notes. D141 green: five props move, nothing else. D142–D147 are unused. The next free id is D142. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build. The coach cell (12, 9) is the Keeper House roof from an earlier patch, so the approach is the path beside it.
 
 ## 2026-10-16 ET: Keeper House merged with current main (build 20261016-0304)
 

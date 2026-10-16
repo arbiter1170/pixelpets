@@ -7,7 +7,7 @@ description: |
 
 # Walklings deploy
 
-1. Small, single-feature commits. Run `python3 tools/bump_build.py` before **each commit that will deploy** (any change to code, data, HTML or CSS). It stamps `?v=` on every local script/link in `index.html`, sets `window.BUILD` and the `kw-build` meta tag, and writes `version.json`. `python3 tools/bump_build.py --check` must exit 0. Docs-only changes do not need a new stamp.
+1. Small, single-feature commits. Run `python3 tools/bump_build.py` before **each commit that will deploy** (any change to code, data, HTML or CSS). It stamps `?v=` on every local script/link in `index.html`, sets `window.BUILD` and the `kw-build` meta tag, and writes `version.json`. `python3 tools/bump_build.py --check` must exit 0, then `npm run test:agent` must exit 0; paste its `PP_TEST RESULT` line in the PR. Docs-only changes do not need a new stamp.
 2. After editing any `data/*.json`, also run `python3 tools/gen_mapdata.py` to regenerate `data/mapdata.js`. Do not hand-edit `data/mapdata.js`.
 3. Ship through a branch and PR (see `walklings-pr-handback`). Never push directly to `main`: Pages deploys from `main`.
 4. After Vincent merges: GitHub Pages caches about 10 minutes. Hard-refresh or cache-bust (`https://arbiter1170.github.io/pixelpets/version.json?r=<random>`, game with `?r=<random>`), then confirm `window.BUILD`, `version.json` and the Settings **Build** line all match. Run `python3 /workspace/pp_verify/pp_textcheck.py --expect-build <id>`: it does the cache-bust and the three-way match and exits 0 on a match. Paste its `RESULT` line; no screenshot needed.

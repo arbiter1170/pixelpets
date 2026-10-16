@@ -1,0 +1,956 @@
+{
+ "spec": "Lizzy part B (cloud packet P3 v2; design LIZZY.md v0.2). Overlay: applied after detail_b4 by name order.",
+ "tiles": {
+  ",": {
+   "name": "tile floor",
+   "walk": true
+  },
+  "~": {
+   "name": "runner",
+   "walk": true
+  },
+  "_": {
+   "name": "carpet",
+   "walk": true
+  },
+  "E": {
+   "name": "lift doors",
+   "walk": true
+  },
+  "S": {
+   "name": "stairs (scenery)",
+   "walk": false
+  }
+ },
+ "looks": {
+  "lizzy": {
+   "skin": "3",
+   "hair": "curls",
+   "hairCol": "d",
+   "outfit": "tunic",
+   "outfitCol": "o",
+   "accent": "y",
+   "accessory": "flower_clip",
+   "_note": "hair 'curls' already ships (keeper.js). Accessory 'flower_clip' is new art: KEEPER_ACCESSORIES only, not KEEPER_LOOKS.accessory (D139). Coral blouse, navy wide trousers. Never the Keeper coat (outfitCol g + accent y)."
+  },
+  "ossabell": {
+   "skin": "3",
+   "hair": "bun",
+   "hairCol": "d",
+   "outfit": "hoodie",
+   "outfitCol": "p",
+   "accent": "w"
+  },
+  "morelou": {
+   "skin": "4",
+   "hair": "long",
+   "hairCol": "n",
+   "outfit": "tunic",
+   "outfitCol": "c",
+   "accent": "o"
+  },
+  "morolow": {
+   "skin": "3",
+   "hair": "short",
+   "hairCol": "d",
+   "outfit": "hoodie",
+   "outfitCol": "y",
+   "accent": "n",
+   "_note": "third sister (D114); offstage in v0.1, look reserved"
+  },
+  "landlord": {
+   "skin": "2",
+   "hair": "short",
+   "hairCol": "h",
+   "outfit": "coat",
+   "outfitCol": "m",
+   "accent": "d"
+  },
+  "pip": {
+   "skin": "5",
+   "hair": "buzz",
+   "hairCol": "d",
+   "outfit": "vest",
+   "outfitCol": "g",
+   "accent": "y",
+   "accessory": "cap",
+   "_note": "junior Keeper vest + sash colours (kids may wear Keeper colours; Lizzy never does)"
+  },
+  "wren": {
+   "skin": "1",
+   "hair": "pony",
+   "hairCol": "o",
+   "outfit": "hoodie",
+   "outfitCol": "c",
+   "accent": "w",
+   "accessory": "none"
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "hearthmoor": {
+    "gridRows": {
+     "15": "TgFFFFFFgswwwsRRRRggTTTT",
+     "16": "TgRRRRRRgsssssHHHHggTTTT",
+     "17": "TTHHHHHHggggfgHHHHTgTTTT"
+    },
+    "addObjs": [
+     {
+      "kind": "door",
+      "id": "hm_school",
+      "x": 4,
+      "y": 17,
+      "to": "hm_school_in",
+      "tx": 7,
+      "ty": 12,
+      "facing": "up"
+     },
+     {
+      "kind": "sign",
+      "id": "hm_school_sign",
+      "x": 8,
+      "y": 17,
+      "text": "HEARTHMOOR SCHOOLHOUSE · Fundamentals, kindness, and Walklings for good."
+     },
+     {
+      "kind": "door",
+      "id": "hm_flats",
+      "x": 15,
+      "y": 17,
+      "to": "hm_flats_lobby",
+      "tx": 4,
+      "ty": 10,
+      "facing": "up"
+     },
+     {
+      "kind": "sign",
+      "id": "hm_flats_sign",
+      "x": 18,
+      "y": 16,
+      "text": "AMBERHILL FLATS · Six floors. Lift works. Mostly."
+     },
+     {
+      "kind": "npc",
+      "id": "hm_lizzy",
+      "name": "Lizzy",
+      "look": "lizzy",
+      "x": 6,
+      "y": 18,
+      "facing": "left",
+      "when": [
+       "story.starter_received",
+       "!story.lizzy_met"
+      ],
+      "scene": "lizzy_intro"
+     },
+     {
+      "kind": "npc",
+      "id": "hm_buddy",
+      "name": "Buddy",
+      "pet": "fetch/1",
+      "x": 7,
+      "y": 18,
+      "facing": "left",
+      "when": [
+       "story.starter_received",
+       "!story.lizzy_met"
+      ],
+      "scene": "lizzy_intro",
+      "_note": "kind npc + pet: drawn with the species sprite (P3 engine note E5); never a phone contact"
+     },
+     {
+      "kind": "prop",
+      "id": "hm_school_bowl",
+      "x": 3,
+      "y": 18,
+      "sprite": "water_bowl",
+      "lines": {
+       "else": "A low water bowl by the step. A chalk sign: FOR WALKLINGS. REFILL ME."
+      }
+     },
+     {
+      "kind": "decal",
+      "id": "hm_school_hop",
+      "x": 5,
+      "y": 18,
+      "sprite": "hopscotch"
+     },
+     {
+      "kind": "prop",
+      "id": "hm_flats_planter",
+      "x": 16,
+      "y": 18,
+      "sprite": "planter_geranium",
+      "lines": {
+       "else": "Red geraniums in a planter. Somebody on floor five waters them."
+      }
+     }
+    ],
+    "addRoofs": {
+     "school": {
+      "x0": 2,
+      "y0": 16,
+      "x1": 7,
+      "y1": 16,
+      "col": "t",
+      "roof": "roof_hip_t",
+      "wall": "wall_batten_w",
+      "door": "door_double_r",
+      "win": "win_tall_pane",
+      "trim": "c",
+      "shape": "gable+vane",
+      "porch": [
+       "hm_school_bowl",
+       "hm_school_hop"
+      ]
+     },
+     "flats": {
+      "x0": 14,
+      "y0": 15,
+      "x1": 17,
+      "y1": 15,
+      "col": "m",
+      "roof": "roof_flat_tank",
+      "wall": "wall_stucco_o_tall",
+      "door": "door_glass_awning",
+      "win": "win_stack",
+      "trim": "n",
+      "shape": "flat+tank",
+      "porch": [
+       "hm_flats_planter"
+      ]
+     }
+    },
+    "replaceObjs": [
+     {
+      "kind": "prop",
+      "id": "hm_big_tree",
+      "x": 1,
+      "y": 16,
+      "sprite": "lm_big_tree"
+     },
+     {
+      "kind": "prop",
+      "id": "hm_flowers",
+      "x": 11,
+      "y": 17,
+      "sprite": "flower_clump"
+     },
+     {
+      "kind": "prop",
+      "id": "hm_lantern_post",
+      "x": 18,
+      "y": 18,
+      "sprite": "lm_lantern_post"
+     },
+     {
+      "kind": "decal",
+      "id": "hm_puddle_6_16",
+      "x": 9,
+      "y": 18,
+      "sprite": "puddle"
+     },
+     {
+      "kind": "decal",
+      "id": "hm_leaf_17_15",
+      "x": 18,
+      "y": 15,
+      "sprite": "leaf_litter"
+     }
+    ]
+   }
+  }
+ },
+ "maps": {
+  "hm_school_in": {
+   "name": "Hearthmoor Schoolhouse",
+   "kind": "interior",
+   "outdoor": "hearthmoor",
+   "door": "hm_school",
+   "backdrop": "town",
+   "skin": "school",
+   "w": 16,
+   "h": 14,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 7,
+    "y": 11
+   },
+   "grid": [
+    "################",
+    "#WWWWWWWWWW#WWW#",
+    "#::::::::::#,,,#",
+    "#::::::::::#,,,#",
+    "#::::::::::.,,,#",
+    "#::::::::::#,,,#",
+    "#::::::::::#,,,#",
+    "####.#######.###",
+    "#==============#",
+    "#..............#",
+    "#..............#",
+    "#....~~~~~~....#",
+    "#....~~~~~~....#",
+    "#######m########"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "school_mat",
+     "x": 7,
+     "y": 13,
+     "to": "hearthmoor",
+     "tx": 4,
+     "ty": 18,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "school_board",
+     "x": 4,
+     "y": 1,
+     "sprite": "slate_board",
+     "lines": {
+      "else": "BE KIND. FEED FIRST. ASK BEFORE YOU PET. Written in Lizzy's round chalk letters."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_desk_a",
+     "x": 2,
+     "y": 4,
+     "sprite": "desk_school_small",
+     "lines": {
+      "else": "A desk with a carved leaf. Someone wrote 'R.C. was here' very small."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_desk_b",
+     "x": 5,
+     "y": 4,
+     "sprite": "desk_school_small",
+     "lines": {
+      "else": "A neat desk. A drawing of three Walklings holding paws."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_desk_c",
+     "x": 8,
+     "y": 4,
+     "sprite": "desk_school_small",
+     "lines": {
+      "else": "Spelling list: GLOW, ACORN, LANTERN, PATIENCE."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_desk_d",
+     "x": 2,
+     "y": 6,
+     "sprite": "desk_school_small",
+     "lines": {
+      "else": "A junior uniform sash, folded with care."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_desk_e",
+     "x": 5,
+     "y": 6,
+     "sprite": "desk_school_small",
+     "lines": {
+      "else": "A worksheet: 'How do you know a Walkling is tired?' Answer: 'It tells you.'"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_desk_f",
+     "x": 8,
+     "y": 6,
+     "sprite": "desk_school_small",
+     "lines": {
+      "else": "Crayons, an acorn, and a very sticky note."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_teacher_desk",
+     "x": 9,
+     "y": 2,
+     "sprite": "desk_teacher",
+     "lines": {
+      "else": "Lizzy's desk. A mug that says MAESTRA and a photo of four sisters laughing."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_cubbies",
+     "x": 13,
+     "y": 2,
+     "sprite": "walkling_cubbies",
+     "lines": {
+      "else": "Walkling cubbies: little blankets, water bowls, a name tag on each."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_water",
+     "x": 14,
+     "y": 5,
+     "sprite": "water_trough",
+     "lines": {
+      "else": "A low water trough. Fresh. Someone changes it every hour."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_pegs",
+     "x": 1,
+     "y": 9,
+     "sprite": "coat_pegs",
+     "lines": {
+      "else": "Coat pegs: green Keeper jackets, little junior sashes, one bright coral cardigan."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_shelf",
+     "x": 14,
+     "y": 9,
+     "sprite": "bookshelf",
+     "lines": {
+      "else": "Picture books: 'The Lantern Keeper', 'Glow Is For Sharing', 'Buddy Goes Fetching'."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "school_globe",
+     "x": 14,
+     "y": 11,
+     "sprite": "map_stand",
+     "lines": {
+      "else": "A painted map of the Amberwild. Hearthmoor has a gold star sticker."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "school_kid_a",
+     "name": "Pip",
+     "look": "pip",
+     "x": 3,
+     "y": 10,
+     "facing": "right",
+     "lines": {
+      "else": "I'm a junior Keeper! I can tie a sash AND feed a Walkling. At the same time."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "school_kid_b",
+     "name": "Wren",
+     "x": 11,
+     "y": 10,
+     "facing": "left",
+     "lines": {
+      "else": "Ms. Lizzy says glow grows when you share it. I'm sharing my lunch with Moss."
+     },
+     "look": "wren"
+    },
+    {
+     "kind": "npc",
+     "id": "school_lizzy",
+     "name": "Lizzy",
+     "look": "lizzy",
+     "x": 10,
+     "y": 3,
+     "facing": "down",
+     "when": [
+      "story.lizzy_met"
+     ],
+     "lines": {
+      "else": "Class is out! Want to help me wipe the board? Buddy already tried. Now it's muddy."
+     }
+    }
+   ]
+  },
+  "hm_flats_lobby": {
+   "name": "Amberhill Flats, Lobby",
+   "kind": "interior",
+   "outdoor": "hearthmoor",
+   "door": "hm_flats",
+   "backdrop": "town",
+   "skin": "flats_lobby",
+   "w": 10,
+   "h": 12,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 4,
+    "y": 9
+   },
+   "grid": [
+    "##########",
+    "#WWEEWWSS#",
+    "#,,,,,,,,#",
+    "#,,,,,,,,#",
+    "#..====..#",
+    "#..====..#",
+    "#........#",
+    "#........#",
+    "#,,,,,,,,#",
+    "#,,,,,,,,#",
+    "#........#",
+    "####m#####"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "flats_mat",
+     "x": 4,
+     "y": 11,
+     "to": "hearthmoor",
+     "tx": 15,
+     "ty": 18,
+     "facing": "down"
+    },
+    {
+     "kind": "warp",
+     "id": "flats_lift",
+     "x": 3,
+     "y": 1,
+     "to": "hm_flats_5",
+     "tx": 1,
+     "ty": 6,
+     "facing": "right",
+     "need": "story.lizzy_met",
+     "_note": "both lift doors (3,1) and (4,1); D118: plain warp to floor 5 only"
+    },
+    {
+     "kind": "warp",
+     "id": "flats_lift_b",
+     "x": 4,
+     "y": 1,
+     "to": "hm_flats_5",
+     "tx": 1,
+     "ty": 6,
+     "facing": "right",
+     "need": "story.lizzy_met"
+    },
+    {
+     "kind": "prop",
+     "id": "flats_panel",
+     "x": 5,
+     "y": 1,
+     "sprite": "lift_panel",
+     "lines": {
+      "!story.lizzy_met": "LIFT: 1 2 3 4 5 6. Floor 5 has a sticker: a gold paw. You don't know anyone up there yet.",
+      "else": "LIFT: 1 2 3 4 5 6. Only 5 lights up for you. Floor 3 hums with a trumpet."
+     }
+    },
+    {
+     "kind": "sign",
+     "id": "flats_stairs",
+     "x": 7,
+     "y": 2,
+     "text": "STAIRS · Six floors. The lift is faster. Usually."
+    },
+    {
+     "kind": "prop",
+     "id": "flats_mailboxes",
+     "x": 1,
+     "y": 2,
+     "sprite": "mailbox_wall",
+     "lines": {
+      "else": "Mailboxes. 5B has four names on tape: Lizzy, Ossabell, Morelou, Morolow, and a paw doodle."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "flats_plant",
+     "x": 8,
+     "y": 6,
+     "sprite": "plant_pot_big",
+     "lines": {
+      "else": "A rubber plant someone waters. The landlord's note says DO NOT WATER."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "flats_bench",
+     "x": 1,
+     "y": 7,
+     "sprite": "bench_long",
+     "lines": {
+      "else": "A lobby bench, one leg shimmed with folded rent notices."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "flats_office",
+     "x": 8,
+     "y": 9,
+     "sprite": "door_office_shut",
+     "lines": {
+      "else": "OFFICE · Mr. Gristle. Knock once. Then leave. A dusty note: 'Repairs: next week.'"
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "flats_landlord",
+     "name": "Mr. Gristle",
+     "look": "landlord",
+     "x": 7,
+     "y": 9,
+     "facing": "left",
+     "when": [
+      "story.lizzy_met"
+     ],
+     "lines": {
+      "else": "Visitor? Wipe your boots. Walkling hair is extra. Everything is extra."
+     }
+    }
+   ]
+  },
+  "hm_flats_5": {
+   "name": "Amberhill Flats, 5B",
+   "kind": "interior",
+   "outdoor": "hearthmoor",
+   "backdrop": "town",
+   "skin": "flats_home",
+   "w": 14,
+   "h": 12,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 2,
+    "y": 6
+   },
+   "grid": [
+    "##############",
+    "#WWWWW#WWWWWW#",
+    "#,,,,,#......#",
+    "#,,,,,#..==..#",
+    "#,,,,,#..==..#",
+    "##,#####.#####",
+    "m~~~~~~~~~~~~#",
+    "##.#####_#####",
+    "#....#_______#",
+    "#.==.#_______#",
+    "#....#_______#",
+    "##############"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "f5_lift",
+     "x": 0,
+     "y": 6,
+     "to": "hm_flats_lobby",
+     "tx": 3,
+     "ty": 2,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "f5_stove",
+     "x": 1,
+     "y": 2,
+     "sprite": "stove",
+     "lines": {
+      "else": "A pot of arroz con gandules, a caldero with the good crispy bottom. Hands off till dinner."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_table",
+     "x": 3,
+     "y": 3,
+     "sprite": "table_kitchen",
+     "lines": {
+      "else": "A kitchen table with five chairs: four sisters and one always for a guest."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_radio",
+     "x": 5,
+     "y": 2,
+     "sprite": "radio",
+     "lines": {
+      "else": "The radio plays plena. Ossabell turns it up whenever the landlord knocks."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_bed_lizzy",
+     "x": 11,
+     "y": 2,
+     "sprite": "bed_quilt_o",
+     "lines": {
+      "else": "Lizzy's bed, coral quilt. A big golden dent where Buddy sleeps."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_desk_lizzy",
+     "x": 7,
+     "y": 2,
+     "sprite": "desk_small",
+     "lines": {
+      "else": "Lesson plans in a stack. On top: 'Week 3: Walklings for good. Bring a snack to share.'"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_bunk",
+     "x": 1,
+     "y": 8,
+     "sprite": "bunk",
+     "lines": {
+      "else": "A bunk bed. Top: Ossabell. Bottom: Morelou. Morolow sleeps on the trundle."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_photo",
+     "x": 4,
+     "y": 8,
+     "sprite": "photo_wall",
+     "lines": {
+      "else": "A photo: four sisters, an abuela, and a much smaller Buddy in a party hat."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_tv",
+     "x": 9,
+     "y": 8,
+     "sprite": "game_screen",
+     "lines": {
+      "else": "The game room screen. A sticky note: 'LIZZY STILL OWES ME A REMATCH. -M'"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_dominoes",
+     "x": 7,
+     "y": 10,
+     "sprite": "domino_table",
+     "lines": {
+      "else": "A domino table mid-game. Nobody touch it. The sisters mean it."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_beanbag",
+     "x": 12,
+     "y": 10,
+     "sprite": "beanbag",
+     "lines": {
+      "else": "A squashed beanbag. Buddy's, by the amount of fur."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_leak",
+     "x": 12,
+     "y": 8,
+     "sprite": "bucket_drip",
+     "lines": {
+      "else": "A bucket under a ceiling drip. Third one this month. The landlord 'will look at it'."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "f5_lizzy",
+     "name": "Lizzy",
+     "look": "lizzy",
+     "x": 9,
+     "y": 6,
+     "facing": "left",
+     "lines": {
+      "else": "Welcome to 5B! Shoes by the door, please. Buddy, no, the shoes stay by the door."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "f5_ossabell",
+     "name": "Ossabell",
+     "look": "ossabell",
+     "x": 4,
+     "y": 4,
+     "facing": "up",
+     "lines": {
+      "else": "You're the one Lizzy won't stop talking about. Sit. Eat. You look thin."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "f5_morelou",
+     "name": "Morelou",
+     "look": "morelou",
+     "x": 10,
+     "y": 9,
+     "facing": "left",
+     "lines": {
+      "else": "Want to play? Winner picks the music. Loser does the dishes. I never lose."
+     }
+    }
+   ]
+  }
+ },
+ "scenes": {
+  "lizzy_intro": [
+   [
+    "say",
+    "Lizzy",
+    "{name}! ¡Mira quién es! Come here, let me look at you."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Your mom said Ilse gave you a partner today. And this must be {pet}. Hi, {pet}!"
+   ],
+   [
+    "say",
+    "",
+    "A big golden Walkling bounds over and sniffs {pet} very politely."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "That's Buddy. He's been with me since I was about your age. He likes you already."
+   ],
+   [
+    "choice",
+    "",
+    [
+     [
+      "Hug Buddy",
+      [
+       [
+        "say",
+        "",
+        "Buddy leans his whole weight into you. His tail thumps the grass."
+       ],
+       [
+        "setFlag",
+        "story.lizzy_hug",
+        true
+       ]
+      ]
+     ],
+     [
+      "Hi, Lizzy!",
+      [
+       [
+        "say",
+        "Lizzy",
+        "Hi yourself, corazón. You grew a whole head since summer."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Lizzy",
+    "I teach at the new schoolhouse now. Fundamentals, and how to use Walklings for good."
+   ],
+   [
+    "if",
+    "!story.rival1_done",
+    [
+     [
+      "say",
+      "Lizzy",
+      "Rook ran past an hour ago yelling about the fastest Walkling ever. Again."
+     ],
+     [
+      "say",
+      "Lizzy",
+      "Be kind if you two race. He acts tough, but he listens when it's you."
+     ]
+    ],
+    [
+     [
+      "if",
+      "story.rival1_result=won",
+      [
+       [
+        "say",
+        "Lizzy",
+        "Rook told me you beat him. He was proud of you, even if he'd never say it."
+       ]
+      ],
+      [
+       [
+        "say",
+        "Lizzy",
+        "Rook told me he won. Twice. Don't worry, he'll tell you a third time."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "choice",
+    "Rook's been...",
+    [
+     [
+      "Is Rook okay?",
+      [
+       [
+        "say",
+        "Lizzy",
+        "He's Rook. Big heart, loud mouth. I keep an eye on him. You keep the other one."
+       ],
+       [
+        "setFlag",
+        "story.lizzy_rook",
+        true
+       ]
+      ]
+     ],
+     [
+      "He's so annoying.",
+      [
+       [
+        "say",
+        "Lizzy",
+        "Ay, he is. And he'd still walk through a storm for you. Remember that."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Lizzy",
+    "We're in the Flats, floor five. My sisters cook more than we can eat. Come by anytime."
+   ],
+   [
+    "give",
+    "heal_snack",
+    2
+   ],
+   [
+    "say",
+    "Lizzy",
+    "For the road. Pa' que no pases hambre. And if anyone gives you trouble, you tell me."
+   ],
+   [
+    "setFlag",
+    "story.lizzy_met",
+    true
+   ]
+  ]
+ },
+ "flags": {
+  "story.lizzy_met": "intro scene done; Lizzy moves into the school and 5B, the lift opens",
+  "story.lizzy_hug": "cosmetic: you hugged Buddy (later lines may nod to it)",
+  "story.lizzy_rook": "you asked about Rook (Act 2 hook: Lizzy worries about Junior Bright)"
+ }
+}

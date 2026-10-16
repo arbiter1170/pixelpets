@@ -182,7 +182,7 @@ test('Pledge desks are gone; Rook says not yet until the crates, and a battle bl
   await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full; });
   expect(await page.evaluate(() => PixelPets.scene.mode)).toBe('say');
   await playScene(page, []);
-  await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.goto('fernbrook', 5, 5, 'up'); });
+  await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.goto('fb_lantern_in', 6, 4, 'up'); });
   await page.waitForFunction(() => !window.PixelPets.fading);
   await page.keyboard.press('Space');
   await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full && s.waiting; });

@@ -423,6 +423,9 @@ const GLYPH = {
   heart:['.r.r.','rrrrr','rrrrr','.rrr.','..r..'],
   apple:['..t..','.rrr.','rrrwr','rrrrr','.rrr.'],
   z:['www','..w','.w.','w..','www'],
+  // HEART_ALERT v0.2 badges (D156). 5x5, PAL only. Bowl for food, z for rest.
+  badge_food: ['.....','y.y.y','ooooo','.ooo.','..o..'],
+  badge_rest: ['wwww.','..w..','.w...','wwww.','.....'],
   spark:['.y.','yww','.y.'],
   bang:['y','y','y','.','y'],
   cloud:['..ww....','.wwww.ww','wwwwwwww'],
@@ -1118,6 +1121,105 @@ function buildTiles(){
   }
   T.floor_asphalt = asphalt(0); T.floor_asphalt_b = asphalt(1); T.floor_asphalt_c = asphalt(2);
   T.lane_paint = mkTile(g => { px(g, PAL.y, 1, 7, 14, 2); px(g, PAL.w, 1, 7, 14, 1); });
+  // B8 Fernbrook rooms. New tile names only. Palette keys A–K and P stay as written above.
+  // Wide cream boards: one soft seam and one short joint. Not the four-course brick pile.
+  function orchardPlank(seam, joint, grain){
+    return mkTile(g => {
+      px(g, PAL.C, 0, 0, 16, 16);
+      px(g, PAL.A, 0, seam, 16, 1);
+      px(g, PAL.G, joint[0], joint[1], 1, joint[2]);
+      px(g, PAL.G, grain[0], grain[1], 2, 1);
+    });
+  }
+  T.floor_orchard = orchardPlank(8, [4, 1, 6], [11, 4]);
+  T.floor_orchard_b = orchardPlank(8, [12, 9, 6], [2, 12]);
+  T.floor_orchard_c = orchardPlank(7, [7, 0, 6], [3, 11]);
+  T.hearth_orchard = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16); px(g, PAL.A, 0, 8, 16, 1); px(g, PAL.G, 5, 12, 2, 1);
+    px(g, PAL.B, 1, 0, 6, 3); px(g, PAL.F, 7, 0, 1, 3); px(g, PAL.B, 8, 0, 7, 3); px(g, PAL.F, 0, 3, 16, 1);
+  });
+  T.runner_orchard = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16); px(g, PAL.A, 0, 8, 16, 1);
+    px(g, PAL.l, 5, 0, 6, 16); px(g, PAL.g, 5, 0, 1, 16); px(g, PAL.g, 10, 0, 1, 16);
+    px(g, PAL.o, 7, 4, 2, 5); px(g, PAL.C, 7, 11, 2, 2);
+  });
+  T.wall_orchard = wallTop('A', 'F', [[3, 6, 'g'], [8, 9, 'r'], [12, 5, 'E']]);
+  T.wall_orchard_b = wallTop('A', 'F', [[5, 8, 'g'], [11, 4, 'B'], [2, 11, 'r']]);
+  T.wall_orchard_c = wallTop('A', 'E', [[7, 6, 'g'], [13, 10, 'F'], [1, 4, 'r']]);
+  T.wall_orchard_face = mkTile(g => {
+    px(g, PAL.A, 0, 0, 16, 16); px(g, PAL.F, 0, 0, 2, 13); px(g, PAL.F, 14, 0, 2, 13); px(g, PAL.F, 0, 0, 16, 2);
+    px(g, PAL.g, 6, 5, 1, 3); px(g, PAL.r, 7, 4, 1, 1); px(g, PAL.g, 8, 6, 1, 2);
+    px(g, PAL.E, 0, 13, 16, 1); px(g, PAL.g, 0, 14, 16, 2);
+  });
+  T.wall_orchard_win = mkTile(g => {
+    px(g, PAL.A, 0, 0, 16, 16); px(g, PAL.F, 0, 0, 2, 13); px(g, PAL.F, 14, 0, 2, 13); px(g, PAL.F, 0, 0, 16, 2);
+    px(g, PAL.F, 4, 3, 8, 8); px(g, PAL.y, 5, 4, 6, 6); px(g, PAL.C, 6, 5, 3, 3); px(g, PAL.F, 8, 4, 1, 6);
+    px(g, PAL.E, 0, 13, 16, 1); px(g, PAL.g, 0, 14, 16, 2);
+  });
+  T.rug_orchard = rug('g', 'r', 'A');
+  T.mat_orchard = doormat('E', 'g');
+  T.wall_shadow_orchard = mkTile(g => { px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.E, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.g, x, 2, 1, 1); });
+  T.window_light_orchard = mkTile(g => {
+    px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.E, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.g, x, 2, 1, 1);
+    px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.C, 6, 7, 4, 3);
+  });
+  T.leaf_orchard = mkTile(g => { px(g, PAL.g, 6, 8, 3, 2); px(g, PAL.E, 8, 9, 2, 1); px(g, PAL.l, 5, 8, 1, 1); });
+  T.apple_speck = mkTile(g => { px(g, PAL.r, 9, 10, 2, 2); px(g, PAL.g, 10, 9, 1, 1); });
+  function mossFloor(seams, marks){
+    return mkTile(g => {
+      px(g, PAL.g, 0, 0, 16, 16); px(g, PAL.l, 0, 0, 16, 1);
+      seams.forEach(([x, y]) => px(g, PAL.t, x, y, 2, 1));
+      specks(g, marks);
+    });
+  }
+  T.floor_moss = mossFloor([[2, 4], [9, 7], [5, 12]], [[4, 6, 'p'], [11, 3, 'l'], [7, 10, 'D'], [13, 13, 'p']]);
+  T.floor_moss_b = mossFloor([[1, 3], [8, 9], [12, 14]], [[3, 8, 'p'], [10, 5, 'E'], [6, 13, 'l']]);
+  T.floor_moss_c = mossFloor([[4, 2], [11, 8], [2, 13]], [[8, 4, 'p'], [14, 11, 'D'], [5, 9, 'l']]);
+  function bloomBed(marks){
+    return mkTile(g => {
+      px(g, PAL.g, 0, 0, 16, 16);
+      px(g, PAL.l, 1, 2, 3, 2); px(g, PAL.p, 2, 1, 1, 1);
+      px(g, PAL.r, 8, 4, 2, 2); px(g, PAL.y, 9, 3, 1, 1);
+      px(g, PAL.w, 5, 9, 2, 2); px(g, PAL.p, 6, 8, 1, 1);
+      px(g, PAL.o, 11, 11, 2, 2); px(g, PAL.y, 12, 10, 1, 1);
+      px(g, PAL.E, 3, 12, 1, 2); specks(g, marks);
+    });
+  }
+  T.floor_bloom = bloomBed([]);
+  T.floor_bloom_b = bloomBed([[7, 6, 'y'], [2, 11, 'w']]);
+  T.floor_bloom_c = bloomBed([[12, 5, 'p'], [4, 8, 'r']]);
+  function hedgeBloom(marks){
+    return mkTile(g => {
+      px(g, PAL.E, 0, 0, 16, 16); px(g, PAL.g, 1, 1, 14, 11); px(g, PAL.l, 2, 2, 4, 3); px(g, PAL.D, 8, 3, 4, 2);
+      px(g, PAL.p, 5, 4, 1, 1); px(g, PAL.r, 11, 5, 1, 1); px(g, PAL.F, 0, 13, 16, 3); specks(g, marks);
+    });
+  }
+  T.hedge_bloom = hedgeBloom([]);
+  T.hedge_bloom_b = hedgeBloom([[3, 5, 'y'], [10, 2, 'p']]);
+  T.hedge_bloom_c = hedgeBloom([[7, 6, 'w'], [12, 4, 'l']]);
+  T.wall_bloom = wallTop('C', 'p', [[2, 6, 'p'], [9, 8, 'g'], [13, 4, 'r']]);
+  T.wall_bloom_b = wallTop('C', 'D', [[6, 4, 'r'], [13, 7, 'p'], [1, 10, 'g']]);
+  T.wall_bloom_c = wallTop('C', 'g', [[4, 9, 'p'], [10, 3, 'y'], [14, 11, 'D']]);
+  T.wall_bloom_face = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16);
+    px(g, PAL.p, 2, 3, 2, 2); px(g, PAL.g, 3, 5, 1, 2); px(g, PAL.r, 10, 4, 2, 2); px(g, PAL.g, 11, 6, 1, 2);
+    px(g, PAL.D, 0, 9, 16, 1); px(g, PAL.g, 0, 10, 16, 6); px(g, PAL.E, 0, 15, 16, 1);
+  });
+  T.wall_bloom_win = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16);
+    px(g, PAL.p, 1, 2, 1, 1); px(g, PAL.r, 13, 3, 1, 1);
+    px(g, PAL.F, 4, 2, 8, 8); px(g, PAL.s, 5, 3, 6, 6); px(g, PAL.w, 6, 4, 2, 2); px(g, PAL.F, 8, 3, 1, 6);
+    px(g, PAL.D, 0, 12, 16, 1); px(g, PAL.g, 0, 13, 16, 3);
+  });
+  T.rug_bloom = rug('C', 'p', 'g');
+  T.mat_bloom = doormat('p', 'C');
+  T.wall_shadow_bloom = mkTile(g => { px(g, PAL.E, 0, 0, 16, 1); px(g, PAL.D, 0, 1, 16, 1); for (let x = 1; x < 16; x += 3) px(g, PAL.p, x, 2, 1, 1); });
+  T.window_light_bloom = mkTile(g => {
+    px(g, PAL.E, 0, 0, 16, 1); px(g, PAL.D, 0, 1, 16, 1); for (let x = 1; x < 16; x += 3) px(g, PAL.p, x, 2, 1, 1);
+    px(g, PAL.y, 3, 5, 10, 6); px(g, PAL.w, 5, 6, 5, 3);
+  });
+  T.petal_scatter = mkTile(g => { px(g, PAL.p, 4, 7, 1, 1); px(g, PAL.r, 8, 10, 1, 1); px(g, PAL.w, 11, 6, 1, 1); });
+  T.leaf_scatter = mkTile(g => { px(g, PAL.g, 6, 9, 2, 1); px(g, PAL.l, 9, 8, 1, 1); px(g, PAL.E, 7, 10, 1, 1); });
   // D87 tunnel skin. Rock, not house planks. The puddle decal is only the wet pixels on tunnel_floor.
   const TUNNEL_TILES = {
     tunnel_floor: ['hhhmhhhmmmmmmhhh','hhhmwhhhmmmmmmhh','hhhmhhhmmmmmmhhh','hhhmdddddmmmmhhh','mmmmmmmmmmmmmmmm','mmmwwmmmmmmmdmmm','mmmhhmmmmmmmdmhh','mmmhhmmmmmmmdmhh','ddddhhmmmmmmmmhh','mmmmmmmmmmmmdmhh','mmmmhhmmmmmmdmmm','mmmmhhmmmmmmmmmm','wwmmhhdddddmmmmm','mmmmhhmmmmmmmmmm','mmmmhhmmmmmmwwmm','mmmmhhmmmmmmmmmm'],
@@ -1160,7 +1262,8 @@ const hcSkin = (floor, wall, mat, extra) => {
   };
 };
 const HOUSE_SKINS = {
-  house_home: { remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'house_floor_a', '=':'rug_rag', m:'mat_home', '^':'stair_home' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_floor_a', 'house_floor_b', 'house_honey_c') },
+  // D153: one role table. Cap G, face w, so the top of the wall reads apart from the face. Other skins keep their own tiles until they opt in.
+  house_home: { remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'house_floor_a', '=':'rug_rag', m:'mat_home', '^':'stair_home' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_floor_a', 'house_floor_b', 'house_honey_c'), wall: { c:'G', C:'y', L:'F', f:'w', F:'h', T:'G', B:'B', S:'F', R:'G', G:'c', W:'s', D:'B' } },
   house_loft: { remap: { '#':'wall_cream', W:'wall_cream_face', W2:'wall_cream_win', '.':'house_loft', '=':'rug_loft', m:'mat_loft', '^':'stair_loft' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_loft', 'house_loft_b', 'house_loft_c') },
   house_lodge: { remap: { '#':'wall_warden', W:'wall_warden_face', W2:'wall_warden_win', '.':'floor_warden', '=':'rug_warden', m:'mat_warden' }, decal: { v:'wall_shadow_warden', u:'window_light_warden' }, walk: { v:1, u:1 }, variants: houseVar('floor_warden', 'floor_warden_b', 'floor_warden_c') },
   house_lantern: { remap: { '#':'wall_lantern', W:'wall_lantern_face', W2:'wall_lantern_win', '.':'floor_lantern', '=':'rug_lantern', m:'mat_lantern_warm' }, decal: { v:'wall_shadow_warm', u:'window_light_warm' }, walk: { v:1, u:1 }, variants: houseVar('floor_lantern', 'floor_lantern_b', 'floor_lantern_c') },
@@ -1188,12 +1291,84 @@ const HOUSE_SKINS = {
   obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_obs' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_obs', 'floor_obs_b', 'floor_obs_c') },
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c') },
   dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
-  dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') }
+  dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') },
+  // B8. Fernbrook's two new rooms. Calm cream planks and a moss hall. Neither reuses a lantern, Calloway, Lodge, observatory or Keeper floor.
+  fb_lantern: {
+    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_orchard', '=':'rug_orchard', m:'mat_orchard', ',':'runner_orchard', h:'hearth_orchard' },
+    decal: { v:'wall_shadow_orchard', u:'window_light_orchard', q:'leaf_orchard', j:'apple_speck' },
+    walk: { v:1, u:1, q:1, j:1, ',':1, h:1 },
+    variants: Object.assign({}, houseVar('floor_orchard', 'floor_orchard_b', 'floor_orchard_c'), houseVar('wall_orchard', 'wall_orchard_b', 'wall_orchard_c')),
+  },
+  fb_hall: {
+    remap: { '#':'wall_bloom', W:'wall_bloom_face', W2:'wall_bloom_win', '.':'floor_moss', ':':'floor_moss', f:'floor_bloom', T:'hedge_bloom', '=':'rug_bloom', m:'mat_bloom' },
+    decal: { v:'wall_shadow_bloom', u:'window_light_bloom', q:'petal_scatter', j:'leaf_scatter' },
+    walk: { v:1, u:1, q:1, j:1 },
+    variants: Object.assign({}, houseVar('floor_moss', 'floor_moss_b', 'floor_moss_c'), houseVar('floor_bloom', 'floor_bloom_b', 'floor_bloom_c'), {
+      hedge_bloom: [['hedge_bloom_b', 0.34], ['hedge_bloom_c', 0.33]],
+      wall_bloom: [['wall_bloom_b', 0.34], ['wall_bloom_c', 0.33]],
+    }),
+  }
 };
+// Shared indoor wall kit (D151). Role letters, not PAL keys. `.` is empty. Mirrors are the other corner, the other side, and the other shadow.
+// A skin opts in with `wall` (role -> PAL key). buildWallKit bakes `<skin>__<part>` once.
+const WALL_KIT = (() => {
+  const mirrorRows = rows => rows.map(r => [...r].reverse().join(''));
+  const C16 = 'cccccccccccccccc', F16 = 'ffffffffffffffff', S16 = 'SSSSSSSSSSSSSSSS', Z16 = '................';
+  const SIDE_W = 'cccccccccccccCcL';
+  const capN = Array(12).fill(C16).concat(['CCCCCCCCCCCCCCCC', C16, 'LLLLLLLLLLLLLLLL', 'LLLLLLLLLLLLLLLL']);
+  const capNw = Array(12).fill(C16).concat(['cccccccccccccCCC', 'ccccccccccccccCc', 'ccccccccccccccLL', 'ccccccccccccccLL']);
+  const capS = ['LLLLLLLLLLLLLLLL', 'CCCCCCCCCCCCCCCC'].concat(Array(14).fill(C16));
+  const capSw = ['ccccccccccccccLL', 'cccccccccccccCCC'].concat(Array(14).fill(SIDE_W));
+  const jambL = ['LLLLLLLLLLLLLLLL', 'CCCCCCCCCCCCCCCL'].concat(Array(14).fill('ccccccccccccccCL'));
+  const face = ['FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF'].concat(Array(7).fill(F16), ['TTTTTTTTTTTTTTTT'], Array(3).fill(F16), ['BBBBBBBBBBBBBBBB', 'BBBBBBBBBBBBBBBB', 'FFFFFFFFFFFFFFFF']);
+  const faceBody = 'FFffffffffffffff';
+  const faceL = ['FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF'].concat(Array(7).fill(faceBody), ['FFTTTTTTTTTTTTTT'], Array(3).fill(faceBody), ['FFBBBBBBBBBBBBBB', 'FFBBBBBBBBBBBBBB', 'FFFFFFFFFFFFFFFF']);
+  const faceWin = [
+    'FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF',
+    'fffRRRRRRRRRRfff', 'fffRWWGGRGGGRfff', 'fffRWWGGRGGGRfff', 'fffRGGGGRGGGRfff', 'fffRGGGGRGGGRfff', 'fffRGGGGRGGGRfff', 'fffRGGGGRGGGRfff',
+    'TTTRRRRRRRRRRTTT', 'TTCCCCCCCCCCCCTT',
+    F16, F16, 'BBBBBBBBBBBBBBBB', 'BBBBBBBBBBBBBBBB', 'FFFFFFFFFFFFFFFF'];
+  const faceDoor = [
+    'FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF',
+    'ffffRRRRRRRRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff',
+    'TTTTRDDDDCDRTTTT',
+    'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff', 'ffffRDDDDDDRffff',
+    'BBBBRDDDDDDRBBBB', 'BBBBRDDDDDDRBBBB', 'FFFFRDDDDDDRFFFF'];
+  const shadowN = [S16, 'S.S.S.S.S.S.S.S.'].concat(Array(14).fill(Z16));
+  const shadowW = Array(16).fill('S...............');
+  const shadowNw = shadowN.map(r => 'S' + r.slice(1));
+  const sideW = Array(16).fill(SIDE_W);
+  return {
+    cap_n: capN, cap_nw: capNw, cap_ne: mirrorRows(capNw),
+    cap_s: capS, cap_sw: capSw, cap_se: mirrorRows(capSw),
+    side_w: sideW, side_e: mirrorRows(sideW),
+    jamb_l: jambL, jamb_r: mirrorRows(jambL),
+    face, face_l: faceL, face_r: mirrorRows(faceL), face_win: faceWin, face_door: faceDoor,
+    shadow_n: shadowN, shadow_w: shadowW, shadow_e: mirrorRows(shadowW), shadow_nw: shadowNw, shadow_ne: mirrorRows(shadowNw),
+  };
+})();
+function buildWallKit(skinId, wall){
+  const out = {};
+  for (const [part, rows] of Object.entries(WALL_KIT)) {
+    if (rows.length !== 16 || rows.some(r => r.length !== 16)) throw new Error('wall kit grid ' + part);
+    out[skinId + '__' + part] = mkTile(g => {
+      rows.forEach((row, y) => [...row].forEach((role, x) => {
+        if (role === '.') return;
+        const key = wall[role];
+        if (!key || !PAL[key] || key === 'k') throw new Error('wall kit ' + skinId + ' ' + part + ' role ' + role);
+        px(g, PAL[key], x, y);
+      }));
+    });
+  }
+  return out;
+}
 // D87: # wall, W face, . floor. Floor variants are gravel (b) and damp (c). Wall variants use the same mix so a rock row is not one stamp.
 // Y is a walkable sky decal (the yard patch). ~ is a walkable drip. = is the den rug. Odd W columns stay the rock face (no house window).
 const TUNNEL_SKIN = {"remap":{"#":"tunnel_wall","W":"tunnel_wall_face","W2":"tunnel_wall_face",".":"tunnel_floor","=":"tunnel_rug","m":"tunnel_mat"},"override":{},"walk":{"Y":1,"~":1},"decal":{"Y":"tunnel_sky","~":"tunnel_puddle"},"variants":{"tunnel_floor":[["tunnel_floor_b",0.34],["tunnel_floor_c",0.33]],"tunnel_wall":[["tunnel_wall_b",0.34],["tunnel_wall_c",0.33]],"tunnel_wall_face":[["tunnel_wall_face_b",0.34],["tunnel_wall_face_c",0.33]]}};
 const SKINS = Object.assign({ lab: LAB_SKIN, tunnel: TUNNEL_SKIN }, HOUSE_SKINS);
+SKINS.school = HOUSE_SKINS.school = {"remap": {"#": "wall_wainscot_t", "W": "wall_wainscot_t_face", "W2": "wall_wainscot_t_win", ":": "floor_school_check", ",": "floor_school_tile", ".": "floor_school_lino", "=": "runner_school", "~": "rug_reading", "m": "mat_school"}, "decal": {}, "walk": {":": 1, ",": 1, "~": 1}};
+SKINS.flats_lobby = HOUSE_SKINS.flats_lobby = {"remap": {"#": "wall_wainscot_n", "W": "wall_wainscot_n_face", "W2": "wall_wainscot_n_win", ",": "floor_lobby_tile", ".": "floor_lobby_terrazzo", "=": "rug_lobby", "E": "lift_doors", "S": "stairs_up", "m": "mat_lobby"}, "decal": {}, "walk": {",": 1, "E": 1, "S": 0}};
+SKINS.flats_home = HOUSE_SKINS.flats_home = {"remap": {"#": "wall_home_5b", "W": "wall_home_5b_face", "W2": "wall_home_5b_win", ",": "floor_terracotta", ".": "floor_honey", "=": "rug_kitchen", "~": "runner_hall", "_": "carpet_navy", "m": "mat_home_5b"}, "decal": {}, "walk": {",": 1, "~": 1, "_": 1}};
 function buildWorldArt(){
   const A = {}, oval = (g, cx, cy, rx, ry, col) => { for (let y=0;y<16;y++) for (let x=0;x<16;x++) if (((x-cx)/rx)**2 + ((y-cy)/ry)**2 <= 1) px(g,col,x,y); };
   A.door = mkTile(g => { px(g,PAL.d,3,2,10,14); px(g,PAL.o,4,3,8,13); px(g,PAL.d,7,4,1,12); px(g,PAL.y,10,9,1,2); px(g,PAL.d,4,2,8,1); });
@@ -1481,6 +1656,67 @@ function buildWorldArt(){
     px(g, PAL.w, 3, 12, 10, 1); px(g, PAL.y, 5, 8, 3, 1); px(g, PAL.w, 4, 9, 2, 1);
   });
   A.quilt_r = quilt('r'); A.quilt_c = quilt('c'); A.quilt_y = quilt('y');
+  A.quilt_g = quilt('g'); A.quilt_l = quilt('l'); A.quilt_o = quilt('o');
+  // B8 Fernbrook room props. Still frames, no outline. D103 owns the lines.
+  A.heal_counter = mkTile(g => {
+    px(g, PAL.F, 1, 6, 14, 8); px(g, PAL.A, 2, 7, 12, 5); px(g, PAL.E, 2, 6, 12, 1);
+    px(g, PAL.s, 8, 3, 5, 3); px(g, PAL.c, 9, 4, 3, 2); px(g, PAL.w, 9, 4, 1, 1);
+    px(g, PAL.F, 2, 13, 2, 2); px(g, PAL.F, 12, 13, 2, 2);
+  });
+  A.herb_rack = mkTile(g => {
+    px(g, PAL.F, 2, 2, 12, 2);
+    px(g, PAL.g, 3, 4, 2, 6); px(g, PAL.E, 6, 4, 2, 7); px(g, PAL.l, 9, 4, 2, 5); px(g, PAL.D, 12, 4, 2, 6);
+    px(g, PAL.A, 3, 10, 2, 2); px(g, PAL.A, 6, 11, 2, 2); px(g, PAL.A, 9, 9, 2, 2); px(g, PAL.A, 12, 10, 2, 2);
+  });
+  A.orchard_lamp = mkTile(g => {
+    px(g, PAL.F, 7, 12, 2, 3); px(g, PAL.A, 5, 11, 6, 1);
+    px(g, PAL.y, 5, 5, 6, 6); px(g, PAL.o, 6, 6, 4, 4); px(g, PAL.C, 7, 7, 2, 2); px(g, PAL.F, 7, 3, 2, 2);
+  });
+  A.orchard_table = mkTile(g => {
+    px(g, PAL.F, 2, 8, 12, 3); px(g, PAL.A, 3, 8, 10, 1); px(g, PAL.r, 6, 6, 2, 2); px(g, PAL.g, 7, 5, 1, 1);
+    px(g, PAL.F, 3, 11, 2, 4); px(g, PAL.F, 11, 11, 2, 4);
+  });
+  A.cider_jug = mkTile(g => {
+    px(g, PAL.F, 5, 3, 6, 2); px(g, PAL.A, 6, 2, 4, 1); px(g, PAL.o, 4, 5, 8, 8); px(g, PAL.y, 6, 7, 4, 3); px(g, PAL.F, 4, 13, 8, 2);
+  });
+  A.orchard_stool = mkTile(g => {
+    px(g, PAL.A, 3, 6, 10, 3); px(g, PAL.F, 4, 9, 2, 5); px(g, PAL.F, 10, 9, 2, 5); px(g, PAL.g, 6, 7, 2, 1);
+  });
+  A.orchard_basket = mkTile(g => {
+    px(g, PAL.A, 3, 6, 10, 8); px(g, PAL.F, 3, 6, 10, 1); px(g, PAL.g, 4, 4, 8, 2); px(g, PAL.l, 5, 3, 2, 1); px(g, PAL.E, 9, 4, 2, 1);
+  });
+  A.dais_lamp = mkTile(g => {
+    px(g, PAL.F, 7, 12, 2, 3); px(g, PAL.C, 4, 11, 8, 1); px(g, PAL.y, 4, 4, 8, 7); px(g, PAL.p, 6, 6, 4, 3); px(g, PAL.F, 7, 2, 2, 2);
+  });
+  A.ribbon_stand = mkTile(g => {
+    px(g, PAL.F, 7, 4, 2, 11); px(g, PAL.C, 4, 14, 8, 1);
+    px(g, PAL.p, 3, 3, 3, 5); px(g, PAL.w, 7, 4, 2, 4); px(g, PAL.r, 10, 3, 3, 5);
+  });
+  A.bloom_urn = mkTile(g => {
+    px(g, PAL.C, 5, 6, 6, 7); px(g, PAL.F, 6, 5, 4, 1); px(g, PAL.F, 4, 13, 8, 2);
+    px(g, PAL.p, 6, 2, 2, 3); px(g, PAL.g, 8, 3, 2, 2); px(g, PAL.r, 5, 4, 1, 1);
+  });
+  A.bloom_pot = mkTile(g => {
+    px(g, PAL.B, 4, 8, 8, 6); px(g, PAL.F, 3, 7, 10, 2); px(g, PAL.g, 5, 3, 6, 4); px(g, PAL.p, 6, 2, 2, 2); px(g, PAL.y, 9, 4, 1, 1);
+  });
+  A.petal_bowl = mkTile(g => {
+    px(g, PAL.C, 3, 8, 10, 4); px(g, PAL.F, 4, 12, 8, 1); px(g, PAL.p, 5, 6, 2, 2); px(g, PAL.r, 8, 6, 2, 2); px(g, PAL.w, 7, 5, 2, 1);
+  });
+  A.bloom_basket = mkTile(g => {
+    px(g, PAL.A, 3, 7, 10, 7); px(g, PAL.F, 3, 7, 10, 1); px(g, PAL.p, 4, 4, 3, 3); px(g, PAL.r, 8, 4, 3, 3); px(g, PAL.g, 6, 3, 3, 2);
+  });
+  A.bloom_bench = mkTile(g => {
+    px(g, PAL.A, 1, 8, 14, 3); px(g, PAL.F, 2, 11, 2, 4); px(g, PAL.F, 12, 11, 2, 4); px(g, PAL.p, 6, 9, 1, 1); px(g, PAL.g, 9, 9, 1, 1);
+  });
+  A.petal_jar = mkTile(g => {
+    px(g, PAL.s, 5, 4, 6, 8); px(g, PAL.C, 6, 3, 4, 2); px(g, PAL.p, 6, 6, 2, 2); px(g, PAL.w, 8, 7, 2, 2); px(g, PAL.F, 5, 12, 6, 2);
+  });
+  A.bloom_stool = mkTile(g => {
+    px(g, PAL.C, 4, 7, 8, 3); px(g, PAL.p, 6, 8, 2, 1); px(g, PAL.F, 5, 10, 2, 4); px(g, PAL.F, 9, 10, 2, 4);
+  });
+  A.petal_cushion = mkTile(g => {
+    px(g, PAL.p, 2, 6, 12, 6); px(g, PAL.r, 4, 8, 3, 2); px(g, PAL.w, 9, 7, 3, 2); px(g, PAL.C, 6, 9, 2, 1);
+  });
   // B6 High Charity signature props. Candles, the fountain and the stair flight stay on one frame.
   A.weather_board = mkTile(g => {
     px(g, PAL.d, 1, 2, 14, 10); px(g, PAL.h, 2, 3, 12, 8); px(g, PAL.b, 3, 4, 6, 3); px(g, PAL.w, 4, 5, 3, 1);
@@ -1567,6 +1803,19 @@ function buildWorldArt(){
   A.dream_shelf = mkTile(g => {
     px(g, PAL.m, 1, 4, 14, 2); px(g, PAL.h, 1, 5, 14, 1); px(g, PAL.d, 2, 6, 2, 8); px(g, PAL.d, 12, 6, 2, 8); px(g, PAL.m, 1, 10, 14, 2);
     px(g, PAL.p, 6, 7, 4, 3); px(g, PAL.w, 7, 8, 2, 1); px(g, PAL.d, 7, 9, 1, 1);
+  });
+  A.kitchen_counter = mkTile(g => {   // dream_2004 kitchen: a wooden counter, cutting board, bowl of peas
+    px(g, PAL.d, 1, 5, 14, 9); px(g, PAL.o, 2, 6, 12, 7); px(g, PAL.h, 1, 4, 14, 2); px(g, PAL.w, 3, 2, 5, 2); px(g, PAL.d, 3, 4, 5, 1);
+    px(g, PAL.m, 10, 2, 3, 2); px(g, PAL.l, 11, 2, 1, 1); px(g, PAL.d, 7, 8, 2, 3); px(g, PAL.d, 1, 14, 14, 1);
+  });
+  A.tv_set = mkTile(g => {           // dream_2004: an old boxy TV on a low stand, seen from behind the couch
+    px(g, PAL.d, 2, 2, 12, 9); px(g, PAL.m, 3, 3, 10, 7); px(g, PAL.t, 4, 4, 6, 5); px(g, PAL.g, 5, 6, 3, 2); px(g, PAL.s, 5, 4, 2, 1);
+    px(g, PAL.y, 11, 4, 1, 1); px(g, PAL.r, 11, 6, 1, 1); px(g, PAL.d, 6, 0, 1, 2); px(g, PAL.d, 9, 0, 1, 2);
+    px(g, PAL.o, 1, 11, 14, 2); px(g, PAL.d, 2, 13, 2, 2); px(g, PAL.d, 12, 13, 2, 2);
+  });
+  A.couch = mkTile(g => {            // dream_2004: Dad's couch, back to the viewer, facing the TV
+    px(g, PAL.d, 0, 4, 16, 10); px(g, PAL.r, 1, 5, 14, 5); px(g, PAL.p, 1, 10, 14, 3); px(g, PAL.o, 2, 6, 5, 1); px(g, PAL.o, 9, 6, 5, 1);
+    px(g, PAL.d, 7, 5, 1, 5); px(g, PAL.d, 1, 14, 2, 1); px(g, PAL.d, 13, 14, 2, 1);
   });
   A.dream_cushion = mkTile(g => { px(g, PAL.c, 3, 8, 10, 5); px(g, PAL.s, 4, 9, 8, 3); px(g, PAL.w, 5, 9, 2, 1); px(g, PAL.d, 3, 13, 10, 1); });
   A.menu_board = mkTile(g => {
@@ -1783,11 +2032,80 @@ const EXTERIOR_ART = {
     tunnel_mouth: ["................................",".......whh............whh.......","......hhhhh..........hhhhh......",".......hhh....gg......hhh.......","......gg.whh.......whh..........","........hhhhh.....hhhhh.........",".........hhhmmmmmmmhhh..gg......","........dmmmmmmmmmmmmmmd........","....whhmmmmmmmmmmmmmmmmmmwhh....","...hhhyyyyyyyyyyyyyyyyyyyyhhh...","....hhoooooooooooooooooooodd....","....mmddddddddddddddddddddmd....","...dmmoodkkkookkkkookkkdoomdd...","..dmmmoodkkokkkkkkkkokkdoomdmd..","..dmmmoodookkkkkkkkkkoodooyyyd..","..mmmmoodkkkkkkkkkkkkkkdooywym..",".dwhhmoodkkkkkkkkkkkkkkdooyyymd.",".hhhhhoodkkkkkkkkkkkkkkdooyyyhd.",".dhhhmoodkkkkkkkkkkkkkkdoodddhh.",".dmmmmoodkkkkkkkkkkkkkkdoomhhhd.",".dmmmmoodkkkkkkkkkkkkkkdoommmmd.",".dmmmmoodkkkkkkkkkkkkkkdoommmmd.",".ddmmmoodkkkkkkkkkkkkkkdoommmdd.","..dmmmoodkkkkkkkkkkkkkkdoommmd..","..ddmmoodkkkkkkkkkkkkkkdoommdd..","..ddmmoodkkkkkkkkkkkkkkdoommdd..","...ddmoodkkkkkkkkkkkkkkdoomdd...","....ddoodkkokkkokkkokkkdoodd....",".....doodmmommmommmommmdood.....","......oodkkokkkokkkokkkdoo......","......oodmmommmommmommmdoo......","......oodkkokkkokkkokkkdoo......"],
   },
 };
+const LIZZY_ART = {
+  tiles: {
+    roof_hip_t: ["ncttncttncttnctt", "ntttntttntttnttt", "ntttntttntttnttt", "nnnnnnnnnnnnnnnn", "ttncttncttncttnc", "ttntttntttntttnt", "ttntttntttntttnt", "nnnnnnnnnnnnnnnn", "ncttncttncttnctt", "ntttntttntttnttt", "ntttntttntttnttt", "nnnnnnnnnnnnnnnn", "ttncttncttncttnc", "ttntttntttntttnt", "ttntttntttntttnt", "nnnnnnnnnnnnnnnn"],
+    wall_batten_w: ["wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwhwh", "wwwhwwwhwwwhwwwh", "whwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwhwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "wwwhwwwhwwwhwwwh", "hhhhhhhhhhhhhhhh"],
+    roof_flat_tank: ["wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "mmmmmmmmmmmmmmmm", "hhhhhhhhhhhhhhhh", "hhhhhhhmhhhhhhhh", "hhmhhhhhhhhhhhhh", "hhhhhhhhhhhhmhhh", "hhhhhwhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhmhhhhhhhhwhh", "hhhhhhhhhhmhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhwhhhhhmh", "hmhhhhhhhhhhhhhh", "hhhhhhmhhhhhhhhh", "hhhhhhhhhhhmhhhh"],
+    wall_stucco_o_tall: ["yyyyyyyyyyyyyyyy", "yyyyyoyyyyyyyyyy", "yoyyyyyyyyyyyoyy", "yyyyyyyyyoyyyyyy", "yyyyyyyyyyyyyyyy", "yyyyyyyoyyyyyyyy", "yyyoyyyyyyyoyyyy", "oooooooooooooooo", "yyyyyyyyyyyyyyyy", "yyyyyyyyyyyyyyyy", "yyyyyyyyyyoyyyyy", "yyoyyyyyyyyyyyyy", "yyyyyyoyyyyyyyyy", "yyyyyyyyyyyyyyoy", "yyyyoyyyyyyyyyyy", "oooooooooooooooo"],
+    wall_wainscot_t: ["nnnnnnnnnnnnnnnn", "tttttttttttttttt", "tttttttttttttttt", "tttttttttttttttt", "tttttttttttttttt", "ttttnttttttttttt", "tttttttttttttttt", "tttttttttttttttt", "tttttttttttttttt", "tttttttttttntttt", "tttttttttttttttt", "tttttttttttttttt", "tttttttntttttttt", "tttttttttttttttt", "tttttttttttttttt", "nnnnnnnnnnnnnnnn"],
+    wall_wainscot_t_face: ["wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwnwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwnwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "cccccccccccccccc", "tttttttttttttttt", "tttntttntttntttn", "tttntttntttntttn", "tttntttntttntttn", "tttntttntttntttn", "tttntttntttntttn", "dddddddddddddddd"],
+    wall_wainscot_t_win: ["wwwwwwwwwwwwwwww", "wwwwccccccccwwww", "wwwwcwscssscwwww", "wwnwcsscssscwwww", "wwwwcsscssscwwww", "wwwwcsscssscwwww", "wwwwccccccccwwww", "wwwwwwwwwwwwwwww", "cccccccccccccccc", "tttttttttttttttt", "tttntttntttntttn", "tttntttntttntttn", "tttntttntttntttn", "tttntttntttntttn", "tttntttntttntttn", "dddddddddddddddd"],
+    floor_school_check: ["mmmmhhhhmmmmhhhh", "mwmmhhhhmmmmhhhh", "mmmmhhhhmmmmhhhh", "mmmmhhhhmmmmhhhh", "hhhhmmmmhhhhmmmm", "hhhhmmmmhhhhmmmm", "hhhhmmmmhhwhmmmm", "hhhhmmmmhhhhmmmm", "mmmmhhhhmmmmhhhh", "mmmmhhhhmmmmhhhh", "mmmmhhhhmmmmhhhh", "mmmmhhhhmmmmhhhh", "hhhhmmmmhhhhmmmm", "hhhhmmmmhhhhmwmm", "hhhhmmmmhhhhmmmm", "hhhhmmmmhhhhmmmm"],
+    floor_school_tile: ["wwwwwwwhwwwwwwwh", "wwwwwwwhwwwwwwwh", "wwcwwwwhwwwwwwwh", "wwwwwwwhwwwwwwwh", "wwwwwwwhwwwwcwwh", "wwwwwwwhwwwwwwwh", "wwwwwwwhwwwwwwwh", "hhhhhhhhhhhhhhhh", "wwwhwwwwwwwhwwww", "wwwhwwwwwwwhwwww", "wwwhwwwwwwwhwwww", "wwwhwwcwwwwhwwww", "wwwhwwwwwwwhwwww", "wwwhwwwwwwwhwwww", "wwwhwwwwwwwhwwww", "hhhhhhhhhhhhhhhh"],
+    floor_school_lino: ["CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CCChCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCChCCCC", "DDDDDDDDDDDDDDDD", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CCCChCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCChCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "hhhhhhhhhhhhhhhh"],
+    runner_school: ["rrrrrrrrrrrrrrrr", "yyyyyyyyyyyyyyyy", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rorrrorrrorrrorr", "rrrorrrorrrorrro", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "yyyyyyyyyyyyyyyy", "rrrrrrrrrrrrrrrr"],
+    rug_reading: ["nnnnnnnnnnnnnnnn", "bbbbbbbbbbbbbbbb", "bbbbbbbbbbbbbbbb", "bbbcbbybbbbbbbbb", "bbbbbbbbbbbcbbbb", "bbbbbbbbbbbbbbbb", "bbbbbbbbbbbbbbbb", "bbbbybbbbbbbbbbb", "bbbbbbbcbbbbbbbb", "bbbbbbbbbbbbybbb", "bbbbbbbbbbbbbbbb", "bbcbbbbbbbbbbbbb", "bbbbbbbbbbbbbcbb", "bbbbbbbbbbbbbbbb", "bbbbbbbbbbbbbbbb", "nnnnnnnnnnnnnnnn"],
+    mat_school: ["nnnnnnnnnnnnnnnn", "nttttttttttttttn", "nttttttttttttttn", "nttttttttttttttn", "nttttttttttttttn", "nttttttttttttttn", "nttttttttttttttn", "nttcctcctcctcctn", "nttcctcctcctcctn", "nttttttttttttttn", "nttttttttttttttn", "nttttttttttttttn", "nttttttttttttttn", "nttttttttttttttn", "nttttttttttttttn", "nnnnnnnnnnnnnnnn"],
+    wall_wainscot_n: ["dddddddddddddddd", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnndnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnndnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnndnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "dddddddddddddddd"],
+    wall_wainscot_n_face: ["wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwdwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwdwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "bbbbbbbbbbbbbbbb", "nnnnnnnnnnnnnnnn", "nnndnnndnnndnnnd", "nnndnnndnnndnnnd", "nnndnnndnnndnnnd", "nnndnnndnnndnnnd", "nnndnnndnnndnnnd", "dddddddddddddddd"],
+    wall_wainscot_n_win: ["wwwwwwwwwwwwwwww", "wwwwnnnnnnnnwwww", "wwwwnwsnsssnwwww", "wwdwnssnsssnwwww", "wwwwnssnsssnwwww", "wwwwnssnsssnwwww", "wwwwnnnnnnnnwwww", "wwwwwwwwwwwwwwww", "bbbbbbbbbbbbbbbb", "nnnnnnnnnnnnnnnn", "nnndnnndnnndnnnd", "nnndnnndnnndnnnd", "nnndnnndnnndnnnd", "nnndnnndnnndnnnd", "nnndnnndnnndnnnd", "dddddddddddddddd"],
+    floor_lobby_tile: ["hhwwwwwwhhwwwwwh", "whhwwwwwwhhwwwwh", "wwwwwwwwwwwwwwwh", "wwwwwwwwwwwwwwwh", "wwwwhhwwwwwwhhwh", "wwwwwhhwwwwwwhhh", "wwwwwwwwwwwwwwwh", "wwwwwwwwwwwwwwwh", "hhwwwwwwnhwwwwwh", "whhwwwwwwhhwwwwh", "wwwwwwwwwwwwwwwh", "wwwwwwwwwwwwwwwh", "wwwwhhwwwwwwhhwh", "wwwwwhhwwwwwwhhh", "wwwwwwwwwwwwwwwh", "hhhhhhhhhhhhhhhh"],
+    floor_lobby_terrazzo: ["hhhhhhhhhhhhhhhh", "hwhhhwhhhhwhhhhh", "hhhhhhhhChhhhhhh", "hhwhhhhhhhhhmhhh", "hhhhhchhhhhhhhhh", "hhhhhhhhhwhhhhhh", "hmhhhhhhhhhhhhwh", "hhhhhhwhhhhhhhhh", "hhhhhhhhhhhchhhh", "hwhhhhhhhhhhhhhh", "hhhhhmhhhhhwhhhh", "hhhhhhhhhhhhhhhh", "hhchhhhhhhwhhhhh", "hhhhhhhwhhhhhhhh", "hhhhhhhhhmhhhhhh", "hhhhhhhhhhhhhhhh"],
+    rug_lobby: ["nnnnnnnnnnnnnnnn", "wwwwwwwwwwwwwwww", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nbnnnbnnnbnnnbnn", "nnnbnnnbnnnbnnnb", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "wwwwwwwwwwwwwwww", "nnnnnnnnnnnnnnnn"],
+    lift_doors: ["mmmmmmmyymmmmmmm", "mmmmmmymmymmmmmm", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhwhhhdmhhhwhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "hhhhhhhdmhhhhhhh", "dddddddddddddddd"],
+    stairs_up: ["poooooooooooooop", "pddddddddddddddp", "poooooooooooooop", "poooooooooooooop", "pddddddddddddddp", "pyyyyyyyyyyyyyyp", "poooooooooooooop", "pddddddddddddddp", "poooooooooooooop", "poooooooooooooop", "pddddddddddddddp", "pyyyyyyyyyyyyyyp", "poooooooooooooop", "pddddddddddddddp", "poooooooooooooop", "poooooooooooooop"],
+    mat_lobby: ["dddddddddddddddd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnwwnwwnwwnwwnd", "dnnwwnwwnwwnwwnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dnnnnnnnnnnnnnnd", "dddddddddddddddd"],
+    wall_home_5b: ["CCCCCCCCCCCCCCCC", "CCCCCCCCCyCCCCCC", "CCyCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCyCCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CyCCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCyCCCC", "CCCCCCCCCCCCCCCC", "CCCCCCCCCCCCCCCC", "oooooooooooooooo", "oooooooooooooooo", "yyyyyyyyyyyyyyyy", "dddddddddddddddd"],
+    wall_home_5b_face: ["yyyyyyyyyyyyyyyy", "yyyyyyyyyyyyyyyy", "yyyyyyyyyyyyyyyy", "yypyyyyyyyyyyyyy", "yyyyyyyyyyyyyyyy", "yyyyyyyyyypyyyyy", "yyyyyyyyyyyyyyyy", "yyyyyyyyyyyyyyyy", "wwwwwwwwwwwwwwww", "CCCCCCCCCCCCCCCC", "CCyCCCCCCCCCCyCC", "CCCCCCCCCCCCCCCC", "oooooooooooooooo", "oooooooooooooooo", "yyyyyyyyyyyyyyyy", "dddddddddddddddd"],
+    wall_home_5b_win: ["yyyyyyyyyyyyyyyy", "yyyywwwwwwwwyyyy", "yyyywwswssswyyyy", "yypywsswssswyyyy", "yyyywsswssswyyyy", "yyyywsswssswyyyy", "yyyywwwwwwwwyyyy", "yyyyyyyyyyyyyyyy", "wwwwwwwwwwwwwwww", "CCCCCCCCCCCCCCCC", "CCyCCCCCCCCCCyCC", "CCCCCCCCCCCCCCCC", "oooooooooooooooo", "oooooooooooooooo", "yyyyyyyyyyyyyyyy", "dddddddddddddddd"],
+    floor_terracotta: ["ooooooopooooooop", "ooooooopooooooop", "ooyoooopooooooop", "ooooooopooooooop", "ooooooopooooyoop", "ooooooopooooooop", "ooooooopooooooop", "pppppppppppppppp", "ooopooooooopoooo", "ooopooooooopoooo", "ooopooooooopoooo", "ooopooyoooopoooo", "ooopooooooopoooo", "ooopooooooopoooo", "ooopooooooopoooo", "pppppppppppppppp"],
+    floor_honey: ["yyyyyoyyyyyyyyyy", "yyyyyoyyywyyyyyy", "yyyyyoyyyyyyyyyy", "oooooooooooooooo", "yyyyyyyyyyyyoyyy", "yyywyyyyyyyyoyyy", "yyyyyyyyyyyyoyyy", "oooooooooooooooo", "yyoyyyyyyyyyyyyy", "yyoyyyyyyyyyywyy", "yyoyyyyyyyyyyyyy", "oooooooooooooooo", "yyyyyyyyyoyyyyyy", "yyyyyywyyoyyyyyy", "yyyyyyyyyoyyyyyy", "oooooooooooooooo"],
+    rug_kitchen: ["rrrrrrrrrrrrrrrr", "yyyyyyyyyyyyyyyy", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rwrrrwrrrwrrrwrr", "rrrwrrrwrrrwrrrw", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "rrrrrrrrrrrrrrrr", "yyyyyyyyyyyyyyyy", "rrrrrrrrrrrrrrrr"],
+    runner_hall: ["gggggggggggggggg", "llllllllllllllll", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gygggygggygggygg", "gggygggygggygggy", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "gggggggggggggggg", "llllllllllllllll", "gggggggggggggggg"],
+    carpet_navy: ["nnnnnnnnnnnnnnnn", "nnnnnnbnnnnnnnnn", "nbnnnnnnnnnnnnnn", "nnnnnnnnnnnbnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnbn", "nnnbnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnbnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnn", "nnnnnnnnnnnnbnnn", "nnbnnnnnnnnnnnnn", "nnnnnnnnnnnnnnnb", "nnnnnnbnnnnnnnnn"],
+    mat_home_5b: ["pppppppppppppppp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prryyryyryyryyrp", "prryyryyryyryyrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "prrrrrrrrrrrrrrp", "pppppppppppppppp"],
+  },
+  art: {
+    door_double_r: ["................", "..dddddddddddd..", "..drrrrdprrrrd..", "..drwssdpwssrd..", "..drsssdpsssrd..", "..drsssdpsssrd..", "..drsssdpsssrd..", "..drrrrdprrrrd..", "..drrrrdprrrrd..", "..drrrrdprrrrd..", "..drrrydpyrrrd..", "..drrrrdprrrrd..", "..drrrrdprrrrd..", "..drrrrdprrrrd..", "..drrrrdprrrrd..", "..dooooooooood.."],
+    win_tall_pane: ["................", "....cccccccc....", "....cwswsssc....", "....csswsssc....", "....csswsssc....", "....csswsssc....", "....csswsssc....", "....cwwwwwwc....", "....csswwssc....", "....csswsssc....", "....csswsssc....", "....csswsssc....", "....csswsssc....", "....cccccccc....", "...wwwwwwwwww...", "................"],
+    door_glass_awning: [".nwwnnwwnnwwnnw.", ".nwwnnwwnnwwnnw.", ".nwwnnwwnnwwnnw.", ".dddddddddddddd.", "....nnnnnnnn....", "....nscncscn....", "....ncsncccnydy.", "....nccncccnyyy.", "....nccncccn....", "....nccncccn....", "....nccncccn....", "....nccncccn....", "....nccncccn....", "....nccncccn....", "....nccncccn....", "....nccncccn...."],
+    win_stack: ["................", "....nnnnnnnn....", "....nscncccn....", "....nccncccn....", "....nccncccn....", "....nccncccn....", "...wwwwwwwwww...", "................", "....nnnnnnnn....", "....nscncccn....", "....nccncccn....", "....nccncccn....", "....nccncccn....", "...wwwwwwwwww...", "................", "................"],
+    weathervane: ["................", "........gggg....", ".......dglggg...", "........gggg....", ".......d........", ".......d........", ".......d........", ".......d........", "....ydddddy.....", ".......d........", ".......d........", ".......d........", ".......d........", ".......d........", ".......d........", ".......d........"],
+    water_tank: ["................", "...dddddddddd...", "....hhhhhhhh....", "....mhmmmmmm....", "....mhmmmmmm....", "....mhmmmmmm....", "....dddddddd....", "....mhmmmmmm....", "....mhmmmmmm....", "....mhmmmmmm....", ".....d....d.....", ".....d....d.....", ".....d....d.....", ".....dddddd.....", ".....d....d.....", ".....d....d....."],
+    hopscotch: ["................", "......wwww......", "......w..w......", "......w..w......", "......wwww......", "...wwww..wwww...", "...w..w..w..w...", "...w..w..w..w...", "...wwww..wwww...", "......wwww......", "......w..w......", "......w..w......", "......wwww......", "........y.......", ".......y.y......", "................"],
+    water_bowl: ["................", "................", "................", "................", "................", "................", "................", "................", "................", "................", "....bswssssb....", "...bbbbbbbbbb...", "....nnnnnnnn....", "................", "................", "................"],
+    planter_geranium: ["................", "................", "................", "................", "..rorrorrorror..", "..rrrrrrrrrrrr..", "...g..g..g..g...", "...g..g..g..g...", "...gl.gl.gl.gl..", "...g..g..g..g...", "..yyyyyyyyyyyy..", "..oooooooooooo..", "..oooooooooooo..", "..oooooooooooo..", "..pppppppppppp..", "................"],
+    desk_school_small: ["................", "................", "................", ".....wwww.......", ".....whhw.......", ".....wwww.g.....", "..yyyyyyyyyyyy..", "..oooooooooooo..", "..oooooooooooo..", "..pppppppppppp..", "...d........d...", "...d........d...", "...d........d...", "...d........d...", "...d........d...", "...d........d..."],
+    desk_teacher: ["................", "................", "................", "..........www...", "...yyyy...rrrw..", "...yooy...www...", "...yyyy...www...", ".yyyyyyyyyyyyyy.", ".oooooooooooooo.", ".ooppppoooooooo.", ".ooppppoooooooo.", ".ooppypoooooooo.", ".ooppppoooooooo.", ".oooooooooooooo.", ".p............p.", ".p............p."],
+    walkling_cubbies: ["................", "yyyyyyyyyyyyyyyy", "oooooooooooooooo", "oppppoppppoppppo", "opwppopwppopwppo", "oppppoppppoppppo", "oyyyyobbbborrrro", "oyyyyobbbborrrro", "oooooooooooooooo", "oppppoppppoppppo", "opwppopwppopwppo", "oppppoppppoppppo", "oyyyyobbbborrrro", "oyyyyobbbborrrro", "oooooooooooooooo", "oooooooooooooooo"],
+    water_trough: ["................", "................", "................", "................", "................", "................", "................", "................", ".hhhhhhhhhhhhhh.", ".msswsssssssssm.", ".mssssssswssssm.", ".mmmmmmmmmmmmmm.", ".mmmmmmmmmmmmmm.", ".mmmmmmmmmmmmmm.", "..d..........d..", "..d..........d.."],
+    coat_pegs: ["................", "................", ".oooooooooooooo.", ".pphppphpppphpp.", "..ggg..yy..ooo..", "..yyy..yy..oro..", "..ggg..yy..oro..", "..ggg..yy..oro..", "..ggg..yy..oro..", "..ggg..yy..oro..", "..ggg..g...oro..", "..ggg......oro..", "................", "................", "................", "................"],
+    map_stand: ["................", "..yyyyyyyyyyyy..", "..ylllllllllly..", "..ylgggglltlly..", "..ylggygllllly..", "..ylgggglcccly..", "..yllllllcccly..", "..yllllllcccly..", "..ylllllllllly..", "..yyyyyyyyyyyy..", ".......d........", ".......d........", ".......d........", ".......d........", ".......d........", "....dddddddd...."],
+    lift_panel: ["................", "................", ".....mmmmmm.....", ".....mhhhhm.....", ".....mhddhm.....", ".....mhhhhm.....", ".....mhdyhm.....", ".....mhhhhm.....", ".....mhddhm.....", ".....mhhhhm.....", ".....mhddhm.....", ".....mhhhhm.....", ".....mhrhhm.....", ".....mmmmmm.....", "................", "................"],
+    mailbox_wall: ["................", "................", ".dddddddddddddd.", ".dhhhdhhhdhhhdd.", ".dhmhdhmhdhmhdd.", ".dhhhdhhhdhhhdd.", ".dhhhdhhhdhhhdd.", ".dddddddddddddd.", ".dhhhdhhhdyyydd.", ".dhmhdhmhdyoydd.", ".dhhhdhhhdyyydd.", ".dhhhdhhhdyyydd.", ".dddddddddddddd.", ".dddddddddddddd.", "................", "................"],
+    plant_pot_big: ["................", "................", ".......lgg......", ".......ggg......", "....lgg...lgg...", "....ggg...ggg...", ".......ldg......", ".....lggdggg....", ".....gggdggg....", "........d.......", "........d.......", "....yyyyyyyy....", "....oooooooo....", "....oooooooo....", "....oooooooo....", "....oooooooo...."],
+    door_office_shut: ["................", "...pppppppppp...", "...poooooooop...", "...poyyyyyyop...", "...poyddddyop...", "...poydddyyop...", "...poyyyyyyop...", "...poooooooop...", "...poooooooop...", "...pooooooyop...", "...poowwwwoop...", "...poowwwwoop...", "...poowwwwoop...", "...poooooooop...", "...poooooooop...", "...poooooooop..."],
+    stove: ["......h...h.....", "........h.......", "....hhhhhhhh....", "...dmmmmmmmmd...", "....mmmmmmmm....", "...dddddddddd...", ".hhhhhhhhhhhhhh.", ".wwwwwwwwwwwwww.", ".wwrwwrwwwwwwww.", ".wwwwwwwwwwwwww.", ".wwddddddddddww.", ".wwdmmmmmmmmdww.", ".wwdmmmmmmmmdww.", ".wwddddddddddww.", ".wwwwwwwwwwwwww.", ".wwwwwwwwwwwwww."],
+    table_kitchen: ["................", "................", "................", "................", "....wyw..wrw....", "....www..www....", ".yyyyyyyyyyyyyy.", ".yyyyyyyyyyyyyy.", ".yyyyyyyyyyyyyy.", ".oooooooooooooo.", "..p..........p..", "..p..........p..", "..p..........p..", "..p..........p..", "..p..........p..", "..p..........p.."],
+    radio: ["................", "..y........h....", "...........h..y.", ".y.........h....", "...........h....", "...........h....", "...oooooooooo...", "...rrrrrrrrrr...", "...rddddrrrrr...", "...rdmddrryrr...", "...rddmdrrrrr...", "...rdmddrryrr...", "...rrrrrrrrrr...", "................", "................", "................"],
+    bed_quilt_o: ["................", ".yyyyyyyyyyyyyy.", ".oooooooooooooo.", ".oooooooooooooo.", "..wwwwwwwwwwww..", "..wwwwwwwwwwww..", "..wwwwwwwwwwww..", ".rrrrrrrrrrrrrr.", ".oooooooooooooo.", ".oooyoooooooyoo.", ".oooooooyoooooo.", ".oooooooyyyyooo.", ".oooooyoyyyyooo.", ".oooooooooyoooo.", ".oooooooooooooo.", "................"],
+    desk_small: ["................", "................", "...wwwww........", "...wwwww........", "...hhhhh...b....", "...wwwww...h....", "...wwwww...h....", ".oooooooooooooo.", ".pppppppppppppp.", ".pppppppppppppp.", "..d..........d..", "..d..........d..", "..d..........d..", "..d..........d..", "..d..........d..", "..d..........d.."],
+    bunk: [".p..p.........p.", ".p...p........p.", ".pwwwwwwwwwwwwp.", ".pccccccccccccp.", ".pccccccccccccp.", ".oooooooooooooo.", ".p............p.", ".p............p.", ".p............p.", ".pwwwwwwwwwwwwp.", ".pggggggggggggp.", ".pggggggggggggp.", ".oooooooooooooo.", ".p............p.", ".p.yyyyyyyyyy.p.", ".p.yyyyyyyyyy.p."],
+    photo_wall: ["................", ".........ooooo..", ".yyyyyy..ococo..", ".yccccy..occco..", ".ycoooy..ooooo..", ".yccccy.........", ".yyyyyy.........", ".........yyyyyy.", ".........yccccy.", "...pppp..ycoyoy.", "...pccp..yccocy.", "...pccp..yccccy.", "...pppp..yyyyyy.", "................", "................", "................"],
+    game_screen: ["................", "...........yyy..", ".ddddddddddyyyd.", ".dnnnnnnnnnnnnd.", ".dnnnnnnnnnnynd.", ".dnnllnnnnnnnnd.", ".dnnllnnnrrrnnd.", ".dnnnnnnnrrrnnd.", ".dnnnnnnnnnnnnd.", ".dnnnnnnnnnnnnd.", ".dddddddddddddd.", "......mmmm......", "......mmmm......", "....dddddddd....", "................", "................"],
+    domino_table: ["................", "................", "................", "................", "................", ".llllllllllllll.", ".ggggggggggwggg.", ".ggdwgdwgdwdggg.", ".gggggggggggggg.", ".gggggggggggggg.", ".tttttttttttttt.", "..p..........p..", "..p..........p..", "..p..........p..", "..p..........p..", "..p..........p.."],
+    beanbag: ["................", "................", "................", "................", "................", "................", "................", "................", "...bccccccccb...", "...bbbybbbbbb...", "..bbbnnnnynbbb..", "..bbbnnnnnnbbb..", "..bbybbbbbbybb..", "..bbbbbbbbbbbb..", "...bbbbbbbbbb...", "................"],
+    bucket_drip: ["................", ".......s........", "........c.......", ".......s........", "................", "........s.......", "................", ".......s........", "................", "....wwwwwwww....", "....mssssssm....", "....mhhhhhhm....", "....mhhhhhhm....", "....mhhhhhhm....", "....mhhhhhhm....", "................"],
+  },
+};
 function addExteriorArt(T, A){
   const paint = rows => { const c = document.createElement('canvas'); c.width = rows[0].length; c.height = rows.length; const g = c.getContext('2d');
     rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })); return c; };
   for (const [k, rows] of Object.entries(EXTERIOR_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(EXTERIOR_ART[grp])) if (!A[k]) A[k] = paint(rows);
+  for (const [k, rows] of Object.entries(LIZZY_ART.tiles)) if (!T[k]) T[k] = paint(rows);
+  for (const [k, rows] of Object.entries(LIZZY_ART.art)) if (!A[k]) A[k] = paint(rows);
   for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART
 }
 // E5 on outdoor maps that opt in with "variants": true: plain grass `g` becomes one of these by tileHash (the rest stays `g`).

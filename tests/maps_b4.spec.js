@@ -8,7 +8,7 @@ const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./hel
 
 trackErrors(test, expect);
 
-const TOWNS = { hearthmoor: 5, fernbrook: 2, cobblecrest: 4, highcharity: 15, mahopac: 1, fb_heights: 2 };
+const TOWNS = { hearthmoor: 7, fernbrook: 2, cobblecrest: 4, highcharity: 15, mahopac: 1, fb_heights: 2 };
 const OUTDOOR = Object.keys(TOWNS).concat(['route1', 'route2', 'route2_glen', 'proto', 'cobble_quarry']);
 
 async function boot(page, world) {
@@ -24,17 +24,28 @@ test('the B4 overlay lands: roofs, variants, new props and decals are on the mer
   await boot(page);
   const r = await page.evaluate(() => {
     const P = MAPDATA.detail_b4.slicePatch.maps, out = { maps: Object.keys(P).sort(), bad: [], props: 0, decals: 0 };
+    const later = id => {
+      const roofs = {}, moved = {};
+      for (const k of Object.keys(MAPDATA).filter(k => k.startsWith('detail_') && k > 'detail_b4').sort()) {
+        const pt = MAPDATA[k].slicePatch && MAPDATA[k].slicePatch.maps && MAPDATA[k].slicePatch.maps[id];
+        if (!pt) continue;
+        if (pt.addRoofs) Object.assign(roofs, JSON.parse(JSON.stringify(pt.addRoofs)));
+        for (const o of pt.replaceObjs || []) moved[o.id] = o;
+      }
+      return { roofs, moved };
+    };
     for (const [id, pt] of Object.entries(P)) {
-      const v = PixelPets.exteriors(id);
+      const v = PixelPets.exteriors(id), add = later(id);
       const ops = Object.keys(pt).filter(k => k !== 'set' && k !== 'addObjs');
       if (ops.length) out.bad.push(id + ' ops ' + ops);
       if (!pt.set || pt.set.variants !== true || Object.keys(pt.set).some(k => k !== 'roofs' && k !== 'variants')) out.bad.push(id + ' set ' + Object.keys(pt.set || {}));
-      else if (pt.set.roofs && JSON.stringify(v.roofs) !== JSON.stringify(pt.set.roofs)) out.bad.push(id + ' roofs differ');
+      else if (pt.set.roofs && JSON.stringify(v.roofs) !== JSON.stringify(Object.assign({}, pt.set.roofs, add.roofs))) out.bad.push(id + ' roofs differ');
       for (const o of pt.addObjs || []) {
-        const k = (o.kind === 'decal' ? v.decals : o.kind === 'prop' ? v.props : []).filter(x => x.id === o.id);
-        if (o.kind === 'decal') out.decals++; else out.props++;
-        if (k.length !== 1 || k[0].x !== o.x || k[0].y !== o.y || k[0].sprite !== o.sprite) out.bad.push(id + ' ' + o.id);
-        else if (!k[0].art) out.bad.push('no art ' + o.sprite);
+        const fin = add.moved[o.id] || o;
+        const k = (fin.kind === 'decal' ? v.decals : fin.kind === 'prop' ? v.props : []).filter(x => x.id === fin.id);
+        if (fin.kind === 'decal') out.decals++; else out.props++;
+        if (k.length !== 1 || k[0].x !== fin.x || k[0].y !== fin.y || k[0].sprite !== fin.sprite) out.bad.push(id + ' ' + fin.id);
+        else if (!k[0].art) out.bad.push('no art ' + fin.sprite);
       }
     }
     return out;
@@ -44,9 +55,9 @@ test('the B4 overlay lands: roofs, variants, new props and decals are on the mer
   expect(r.props).toBeGreaterThan(300);
   expect(r.decals).toBeGreaterThan(200);
 
-  await page.evaluate(() => PixelPets.goto('hearthmoor', 13, 16, 'right'));
-  const lp = await page.evaluate(() => ({ obj: PixelPets.mapObjs.find(o => o.id === 'hm_lantern_post'), at: PixelPets.tileInfo(14, 16) }));
-  expect(lp.obj).toMatchObject({ kind: 'prop', x: 14, y: 16, sprite: 'lm_lantern_post', art: true });
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 17, 18, 'right'));
+  const lp = await page.evaluate(() => ({ obj: PixelPets.mapObjs.find(o => o.id === 'hm_lantern_post'), at: PixelPets.tileInfo(18, 18) }));
+  expect(lp.obj).toMatchObject({ kind: 'prop', x: 18, y: 18, sprite: 'lm_lantern_post', art: true });
   expect(lp.at).toMatchObject({ solid: false, blocked: true });
 
   const keep = await page.evaluate(() => ({ hall: PixelPets.exteriors('cobblecrest').roofs.hall,
@@ -65,7 +76,7 @@ test('no two buildings on a town map share roof, wall, door, windows and porch p
       for (const b of v.buildings) {
         for (let y = b.y0; y <= b.ry1; y++) for (let x = b.x0; x <= b.x1; x++) roofCells.add(x + ',' + y);
         b.doors.forEach(d => doors.add(d.id));
-        const porch = b.porch.map(pid => v.props.find(o => o.id === pid)).filter(Boolean);
+        const porch = b.porch.map(pid => v.props.find(o => o.id === pid) || v.decals.find(o => o.id === pid)).filter(Boolean);
         if (!porch.length || porch.length !== b.porch.length) bad.push(b.name + ': porch prop missing');
         for (const o of porch) {
           if (o.x < b.x0 - 3 || o.x > b.x1 + 3 || o.y < b.y0 - 1 || o.y > b.y1 + 3) bad.push(b.name + ': porch prop far away ' + o.id);
@@ -100,7 +111,12 @@ test('every outdoor map loads clean, and the new props cut nobody off from the a
       PixelPets.goto(id, safe.x, safe.y, 'down');
       if (PixelPets.clearWild) PixelPets.clearWild();
       const info = PixelPets.mapInfo, W = info.w, H = info.h, key = (x, y) => y * W + x;
-      const mine = new Map((MAPDATA.detail_b4.slicePatch.maps[id].addObjs || []).map(o => [key(o.x, o.y), o.id]));
+      const moved = {};
+      for (const k of Object.keys(MAPDATA).filter(k => k.startsWith('detail_') && k > 'detail_b4').sort()) {
+        const pt = MAPDATA[k].slicePatch && MAPDATA[k].slicePatch.maps && MAPDATA[k].slicePatch.maps[id];
+        for (const o of (pt && pt.replaceObjs) || []) moved[o.id] = o;
+      }
+      const mine = new Map((MAPDATA.detail_b4.slicePatch.maps[id].addObjs || []).map(o => { const fin = moved[o.id] || o; return [key(fin.x, fin.y), fin.id]; }));
       const reach = ignoreMine => {
         const open = (x, y) => x >= 0 && y >= 0 && x < W && y < H && (!PixelPets.tileInfo(x, y).blocked || (ignoreMine && mine.has(key(x, y))));
         const seen = new Set([key(safe.x, safe.y)]), q = [[safe.x, safe.y]];
@@ -251,7 +267,7 @@ test('phase 2: puddles and leaf litter are flat decals: drawn, walkable, never t
       }
       for (const d of v.decals) {
         const t = PixelPets.tileInfo(d.x, d.y);
-        if (d.sprite !== 'puddle' && d.sprite !== 'leaf_litter') bad.push(d.id + ' sprite ' + d.sprite);
+        if (d.sprite !== 'puddle' && d.sprite !== 'leaf_litter' && d.sprite !== 'hopscotch') bad.push(d.id + ' sprite ' + d.sprite);
         if (!d.art || d.art[0] !== 16 || d.art[1] !== 16) bad.push(d.id + ' art');
         if (t.blocked || t.solid || t.decal !== d.sprite) bad.push(d.id + ' ' + JSON.stringify(t));
         if (ground.indexOf(t.ch) < 0) bad.push(d.id + ' on ' + t.ch);
@@ -290,7 +306,12 @@ test('phase 2: props reach 6 per 320 screen (10 x 17 tiles) where a free cell is
       const vw = Math.min(10, info.w), vh = Math.min(17, info.h), counts = [];
       for (let y = 0; y + vh <= info.h; y++) for (let x = 0; x + vw <= info.w; x++)
         counts.push(things.filter(o => o.x >= x && o.x < x + vw && o.y >= y && o.y < y + vh).length);
-      const mine = new Set((MAPDATA.detail_b4.slicePatch.maps[id].addObjs || []).map(o => o.x + ',' + o.y)), T = {};
+      const moved = {};
+      for (const k of Object.keys(MAPDATA).filter(k => k.startsWith('detail_') && k > 'detail_b4').sort()) {
+        const pt = MAPDATA[k].slicePatch && MAPDATA[k].slicePatch.maps && MAPDATA[k].slicePatch.maps[id];
+        for (const o of (pt && pt.replaceObjs) || []) moved[o.id] = o;
+      }
+      const mine = new Set((MAPDATA.detail_b4.slicePatch.maps[id].addObjs || []).map(o => { const fin = moved[o.id] || o; return fin.x + ',' + fin.y; })), T = {};
       for (const k of ['maps_slice', 'act1_route2', 'cobblecrest', 'glimmer_path', 'mahopac', 'highcharity', 'heights', 'civic'])
         if (MAPDATA[k] && MAPDATA[k].trainers) for (const [tid, t] of Object.entries(MAPDATA[k].trainers)) T[tid] = Object.assign({}, T[tid] || {}, t);
       const D = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }, cut = [];

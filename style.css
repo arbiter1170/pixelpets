@@ -978,6 +978,51 @@ body.ctl-modern .scr-back{display:flex;margin:0 0 6px;align-self:flex-start;flex
 body.ctl-modern .float-ctl .dpc,body.ctl-modern .scr-back{position:relative;background:none;box-shadow:none;padding:0}
 body.ctl-modern .float-ctl .dpc:active,body.ctl-modern .scr-back:active{transform:none;background:none}
 body.ctl-modern .float-ctl .dpc.pulse,body.ctl-modern .float-ctl .dpc.off{animation:none;opacity:1;background:none}
+/* HEART_ALERT v0.2 (D154–D156). Ring is a 2px box-shadow on #petFloat, outside the button, never a .pulse class.
+   Low: 3 pulses of 1.2s then frame 1 for 4.8s (8.4s). Very: 3 pulses of 0.8s then frame 1 for 2.4s (4.8s).
+   Both: orange cycle then blue cycle (16.8s / 9.6s). step-end holds each frame. */
+body.ctl-modern #petFloat.care-food{--care-a:#ef7d57;--care-b:rgba(239,125,87,.5);--care-c:rgba(239,125,87,.35);animation:care-low 8.4s step-end infinite}
+body.ctl-modern #petFloat.care-rest{--care-a:#41a6f6;--care-b:rgba(65,166,246,.5);--care-c:rgba(65,166,246,.35);animation:care-low 8.4s step-end infinite}
+body.ctl-modern #petFloat.care-very.care-food,body.ctl-modern #petFloat.care-very.care-rest{animation:care-very 4.8s step-end infinite}
+body.ctl-modern #petFloat.care-food.care-rest{animation:care-both-low 16.8s step-end infinite}
+body.ctl-modern #petFloat.care-very.care-food.care-rest{animation:care-both-very 9.6s step-end infinite}
+@keyframes care-low{
+  0%,14.2857%,28.5714%{box-shadow:none}
+  3.5714%,10.7143%,17.8571%,25%,32.1429%,39.2857%,42.8571%,100%{box-shadow:0 0 0 2px var(--care-b)}
+  7.1429%,21.4286%,35.7143%{box-shadow:0 0 0 2px var(--care-a),inset 0 0 0 2px var(--care-c)}
+}
+@keyframes care-very{
+  0%,16.6667%,33.3333%{box-shadow:none}
+  4.1667%,12.5%,20.8333%,29.1667%,37.5%,45.8333%,50%,100%{box-shadow:0 0 0 2px var(--care-b)}
+  8.3333%,25%,41.6667%{box-shadow:0 0 0 2px var(--care-a),inset 0 0 0 2px var(--care-c)}
+}
+@keyframes care-both-low{
+  0%,7.1429%,14.2857%{box-shadow:none}
+  1.7857%,5.3571%,8.9286%,12.5%,16.0714%,19.6429%,21.4286%{box-shadow:0 0 0 2px rgba(239,125,87,.5)}
+  3.5714%,10.7143%,17.8571%{box-shadow:0 0 0 2px #ef7d57,inset 0 0 0 2px rgba(239,125,87,.35)}
+  50%,57.1429%,64.2857%{box-shadow:none}
+  51.7857%,55.3571%,58.9286%,62.5%,66.0714%,69.6429%,71.4286%,100%{box-shadow:0 0 0 2px rgba(65,166,246,.5)}
+  53.5714%,60.7143%,67.8571%{box-shadow:0 0 0 2px #41a6f6,inset 0 0 0 2px rgba(65,166,246,.35)}
+}
+@keyframes care-both-very{
+  0%,8.3333%,16.6667%{box-shadow:none}
+  2.0833%,6.25%,10.4167%,14.5833%,18.75%,22.9167%,25%{box-shadow:0 0 0 2px rgba(239,125,87,.5)}
+  4.1667%,12.5%,20.8333%{box-shadow:0 0 0 2px #ef7d57,inset 0 0 0 2px rgba(239,125,87,.35)}
+  50%,58.3333%,66.6667%{box-shadow:none}
+  52.0833%,56.25%,60.4167%,64.5833%,68.75%,72.9167%,75%,100%{box-shadow:0 0 0 2px rgba(65,166,246,.5)}
+  54.1667%,62.5%,70.8333%{box-shadow:0 0 0 2px #41a6f6,inset 0 0 0 2px rgba(65,166,246,.35)}
+}
+@media (prefers-reduced-motion: reduce){
+  body.ctl-modern #petFloat.care-food,body.ctl-modern #petFloat.care-rest,body.ctl-modern #petFloat.care-food.care-rest,body.ctl-modern #petFloat.care-very.care-food,body.ctl-modern #petFloat.care-very.care-rest,body.ctl-modern #petFloat.care-very.care-food.care-rest{animation:none}
+  body.ctl-modern #petFloat.care-food:not(.care-very){box-shadow:0 0 0 2px rgba(239,125,87,.5)}
+  body.ctl-modern #petFloat.care-rest:not(.care-food):not(.care-very){box-shadow:0 0 0 2px rgba(65,166,246,.5)}
+  body.ctl-modern #petFloat.care-food.care-very{box-shadow:0 0 0 2px #ef7d57,inset 0 0 0 2px rgba(239,125,87,.35)}
+  body.ctl-modern #petFloat.care-rest.care-very:not(.care-food){box-shadow:0 0 0 2px #41a6f6,inset 0 0 0 2px rgba(65,166,246,.35)}
+}
+body.hidden-tab #petFloat{animation-play-state:paused}
+body.ctl-modern.hidden-tab #petFloat.care-food,body.ctl-modern.hidden-tab #petFloat.care-rest,body.ctl-modern.hidden-tab #petFloat.care-food.care-rest,body.ctl-modern.hidden-tab #petFloat.care-very.care-food,body.ctl-modern.hidden-tab #petFloat.care-very.care-rest,body.ctl-modern.hidden-tab #petFloat.care-very.care-food.care-rest{animation-play-state:paused}
+body.ctl-modern #petFloat.care-hold.care-food,body.ctl-modern #petFloat.care-hold.care-food.care-rest,body.ctl-modern #petFloat.care-hold.care-very.care-food,body.ctl-modern #petFloat.care-hold.care-very.care-food.care-rest{animation:none;box-shadow:0 0 0 2px rgba(239,125,87,.5)}
+body.ctl-modern #petFloat.care-hold.care-rest:not(.care-food),body.ctl-modern #petFloat.care-hold.care-very.care-rest:not(.care-food){animation:none;box-shadow:0 0 0 2px rgba(65,166,246,.5)}
 body.ctl-modern .nav-art{display:block;position:absolute;left:0;top:0;width:44px!important;height:44px!important;image-rendering:pixelated;
   filter:drop-shadow(1px 0 0 #1a1c2c) drop-shadow(-1px 0 0 #1a1c2c) drop-shadow(0 1px 0 #1a1c2c) drop-shadow(0 -1px 0 #1a1c2c)}
 body.ctl-modern .float-ctl .dpc > canvas:not(.nav-art),body.ctl-modern .scr-back > canvas:not(.nav-art){display:none}
@@ -1003,3 +1048,24 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 .fc-acorns{position:absolute;top:calc(6px + var(--sa-t));right:calc(56px + var(--sa-r));height:44px;box-sizing:border-box;padding:0 8px;pointer-events:none;background:var(--n);box-shadow:inset 0 0 0 2px var(--d)}
 .fc-top .env-badge{min-width:0}
 .fc-top .env-badge #envText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+/* Opening tour (D157–D160). Dim is k at 60%. The ring is 2 px, 4 px outside the target. */
+#tutLayer{position:fixed;inset:0;z-index:15;pointer-events:none}
+#tutLayer[hidden]{display:none}
+.tut-dim{position:fixed;background:rgba(26,28,44,.6);pointer-events:auto}
+.tut-block{position:fixed;pointer-events:auto;background:transparent}
+.tut-ring{position:fixed;box-sizing:border-box;border:2px solid var(--y);pointer-events:none}
+.tut-ring:not([hidden]){animation:tutPulse 1.2s ease-in-out infinite}
+.tut-card{position:fixed;box-sizing:border-box;width:calc(100vw - 24px);max-width:360px;padding:12px;background:var(--n);color:var(--w);box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);pointer-events:auto;display:flex;flex-direction:column;gap:8px}
+.tut-card p{margin:0;font-size:17px;line-height:1.25;font-weight:normal}
+.tut-acts{display:flex;gap:8px}
+.tut-acts .btn{flex:1;min-height:44px;height:44px;font-size:20px}
+.tut-skip{min-height:44px;height:44px;border:0;background:transparent;color:var(--h);font-size:14px;cursor:pointer;padding:0}
+.tut-skip[hidden],.tut-card[hidden],.tut-block[hidden],.tut-ring[hidden]{display:none}
+body.tut-on #tabs.locked{opacity:1}
+body.nav-locked .tut-hit{pointer-events:auto;opacity:1}
+body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-locked #questBtn.tut-hit,body.nav-locked .scr-back.tut-hit{pointer-events:auto;opacity:1}
+@keyframes tutPulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){
+  .tut-ring:not([hidden]){animation:none}
+  .tut-card{transition:none}
+}

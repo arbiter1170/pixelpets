@@ -98,6 +98,7 @@ function haloSprite(src, col){
   g.drawImage(src, 0, 0); return c;
 }
 const TILES = buildTiles();
+for (const [id, sk] of Object.entries(SKINS)) if (sk.wall) Object.assign(TILES, buildWallKit(id, sk.wall));
 // CREATURES_SLICE §5 faded state: the same sprite with fadedCol(col) (light -> w, mid-light -> h, mid -> m, dark -> d); not a new form.
 const FADE_KEY = { y: 'w', s: 'w', l: 'w', w: 'w', o: 'h', c: 'h', g: 'h', h: 'h', r: 'm', b: 'm', t: 'm', m: 'm', p: 'd', n: 'd', d: 'd', k: 'd' };
 const PAL_KEY = Object.fromEntries(Object.entries(PAL).map(([k, v]) => [v, k]));
@@ -383,6 +384,7 @@ function applyControls(){
   document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
   const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
   renderControlsRows(); syncWalkTip(); fitAll();
+  try { syncCareAlert(); } catch (e) {}
   try { syncNavArt(true); } catch (e) {}
 }
 function renderControlsRows(){
@@ -497,11 +499,12 @@ function syncNavArt(force){
     const art = key === 'phone' && S && side() === 'glimmer' ? 'phone_glimmer' : key;   // nav_art.json swaps.phone
     const st = navStateOf(b, key);
     const mark = key === 'quest' && st !== 'locked' && st !== 'disabled' ? questMarkTag() : '';
-    const tag = art + ':' + st + (mark ? ':' + mark : '');
+    const tag = key === 'partner' ? art + ':' + st + ':' + careArtTag() : art + ':' + st + (mark ? ':' + mark : '');
     if (!force && navPaint.get(c) === tag) return;
     navPaint.set(c, tag); const g = ctx(c); g.clearRect(0, 0, 44, 44);
     const grid = (A.buttons[art] || {})[st] || (A.buttons[art] || {}).normal; if (grid) paintGrid(g, grid, 2, 0, 0);
     if (mark) paintQuestMarks(g, st);
+    if (key === 'partner') paintCareBadges(g);
   });
   $$('.frame-art').forEach(c => {
     const el = c.parentNode, w = Math.max(8, Math.round(el.offsetWidth / 2)), f = A.frames[c.dataset.frame];
@@ -555,7 +558,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { ti
 
 let screen = 'pet';
 function showTab(name){
-  if (overlayOpen()) return;
+  if (overlayOpen() && !tutAllowsTab(name)) return;
   screen = name;
   document.body.dataset.screen = name;
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
@@ -568,8 +571,11 @@ function showTab(name){
   if (name === 'friends') { $('#friendCode').textContent = friendCode(); renderKeeperName(); }
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
+  tutSawTab(name);
 }
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen();
+// The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
+let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false };
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -638,7 +644,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     else { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; }
   }
 }
-window.addEventListener('resize', fitAll);
+window.addEventListener('resize', () => { fitAll(); if (tut.on) tutPlace(); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
 
 const BAR_LABEL = { barHunger: 'Food', barHappy: 'Joy', barEnergy: 'Energy', wBarEnergy: 'Energy', stripFood: 'Food', stripJoy: 'Joy', stripNrg: 'Energy', barXp: 'Growth' };
@@ -660,7 +666,7 @@ function updateHUD(){
   syncSide();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
-  if (!p) return;
+  if (!p) { syncCareAlert(); return; }
   const st = SPECIES[spi(p)].stages[p.stage];
   $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
@@ -670,6 +676,7 @@ function updateHUD(){
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
   updatePetStrip(p);
+  syncCareAlert();   // HEART_ALERT: same 1 s stat tick as the strip
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
   const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
   const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
@@ -772,6 +779,231 @@ function pumpWelcome(){
   toast(WELCOME_LINE.replace('{pet}', petName(p)));
   return true;
 }
+
+/* Opening tour (D157–D160). One #tutLayer coach mark after the starter scene. Save stays v2:
+   story.tutorial_done (finished, skipped, or a veteran on load) and story.tutorial_step (cleared when it ends). */
+const TUT_COPY = {
+  T0:  ['{pet} is your partner now! Want a quick tour of how to look after them?', 'choice', ''],
+  T0r: ['Finish the tour? It only takes a minute.', 'choice', ''],
+  T1:  ['This is the PARTNER screen. Tap it to see {pet} up close.', 'tap', 'partner'],
+  T2:  ['FOOD drops slowly through the day. When {pet} is hungry, JOY drops faster too.', 'next', 'foodjoy'],
+  T3:  ['NRG is energy. PLAY and battles use it, and REST brings it back. Walking is free.', 'next', 'nrg'],
+  T4:  ["GROW fills as you care for {pet} and walk together. When it's full, {pet} can grow up.", 'next', 'grow'],
+  T5:  ['Tap FEED to fill FOOD. After a meal, {pet} needs a little while before eating again.', 'tap', 'feed'],
+  T6:  ['Tap PLAY for JOY. It uses a little NRG and FOOD, so keep an eye on both.', 'tap', 'play'],
+  T7:  ['Tap REST to bring NRG back. A nap also heals {pet} after a tough battle.', 'tap', 'rest'],
+  T8:  ['These hearts fill as your bond grows. If the heart button glows, {pet} needs FOOD or REST.', 'next', 'hearts'],
+  T8b: ['These hearts fill as your bond grows with {pet}.', 'next', 'hearts'],
+  T9:  ['Tap WALK to head out. Wild Walklings wait in the grass past the east gate.', 'tap', 'walk'],
+  T10a:['Hold the pad to move. Stand next to someone and tap TALK to chat.', 'next', 'pad'],
+  T10m:['Tap the map to walk. Tap people to talk.', 'next', 'mapwalk'],
+  T10j:['Drag the stick to walk. Tap people to talk.', 'next', 'joy'],
+  T11: ["QUEST shows what's next. BAG holds snacks and treats. MAP shows where you are.", 'next', 'qbm'],
+  T12: ['WALKLINGS lists every friend you meet. Your TEAM is who walks with you.', 'next', 'list'],
+  T13: ["That's the tour! You can replay it any time from Settings, under the gear.", 'go', 'gear']
+};
+const TUT_AFTER = { T0: 'T1', T0r: 'T1', T1: 'T2', T2: 'T3', T3: 'T4', T4: 'T5', T5: 'T6', T6: 'T7', T7: 'T8', T8: 'T9', T8b: 'T9', T9: 'T10', T10a: 'T11', T10m: 'T11', T10j: 'T11', T11: 'T12', T12: 'T13' };
+function tutFill(s){ const p = pet(); return String(s).replace(/\{pet\}/g, p ? petName(p) : 'your partner'); }
+// D154 paints the care glow on #petFloat (HEART_ALERT, syncCareAlert), modern controls only. Arcade has no heart
+// button, so it keeps the shorter T8b line.
+function heartGlowShipped(){
+  return typeof syncCareAlert === 'function' && ctlMode() === 'modern';
+}
+function tutResolve(id){
+  if (id === 'T8') return heartGlowShipped() ? 'T8' : 'T8b';
+  if (id === 'T10') return joyOn() ? 'T10j' : (ctlMode() === 'modern' ? 'T10m' : 'T10a');
+  if (id === 'T1' && screen === 'pet') return 'T2';
+  return id;
+}
+function tutAllowsTab(name){
+  if (!tut.on || tut.adv !== 'tap') return false;
+  return (tut.key === 'partner' && name === 'pet') || (tut.key === 'walk' && name === 'walk');
+}
+function tutBox(el){
+  if (!el || el.hidden) return null;
+  const r = el.getBoundingClientRect();
+  if (r.width < 2 || r.height < 2) return null;
+  return { x: r.left, y: r.top, w: r.width, h: r.height, el: el };
+}
+function tutJoin(sels){
+  const rs = sels.map(s => tutBox($(s))).filter(Boolean);
+  if (!rs.length) return [];
+  const x = Math.min.apply(null, rs.map(r => r.x)), y = Math.min.apply(null, rs.map(r => r.y));
+  const rt = Math.max.apply(null, rs.map(r => r.x + r.w)), bt = Math.max.apply(null, rs.map(r => r.y + r.h));
+  return [{ x: x, y: y, w: rt - x, h: bt - y, el: rs[0].el }];
+}
+function tutUnion(rs){
+  if (rs.length <= 1) return rs;
+  const x = Math.min.apply(null, rs.map(r => r.x)), y = Math.min.apply(null, rs.map(r => r.y));
+  const rt = Math.max.apply(null, rs.map(r => r.x + r.w)), bt = Math.max.apply(null, rs.map(r => r.y + r.h));
+  const box = (rt - x) * (bt - y), sum = rs.reduce((a, r) => a + r.w * r.h, 0);
+  if (box < sum * 2.2 && bt - y < 220) return [{ x: x, y: y, w: rt - x, h: bt - y, el: rs[0].el }];
+  return rs;
+}
+function tutHearts(){
+  const c = $('#petCanvas'); if (!c) return [];
+  const r = c.getBoundingClientRect(); if (r.width < 2) return [];
+  const k = r.width / c.width, hx = Math.round(c.width / 2) - 14;
+  return [{ x: r.left + (hx - 2) * k, y: r.top, w: 34 * k, h: Math.max(16, 12 * k), el: c }];
+}
+function tutTargets(key){
+  const modern = ctlMode() === 'modern', one = sel => { const b = tutBox($(sel)); return b ? [b] : []; };
+  if (key === 'partner') return one(modern ? '#petFloat' : '#tabs button[data-tab="pet"]');
+  if (key === 'foodjoy') return one('#scr-pet .stats');
+  if (key === 'nrg') return tutJoin(['.ss-nrg-l', '.ss-nrg-b', '.ss-nrg-v']);
+  if (key === 'grow') return tutJoin(['.ss-grow-l', '.ss-grow-b', '.ss-grow-v']);
+  if (key === 'feed' || key === 'play' || key === 'rest') return one('#scr-pet [data-act="' + key + '"]');
+  if (key === 'hearts') return tutHearts();
+  if (key === 'walk') return one(modern ? '#scr-pet .scr-back' : '#tabs button[data-tab="walk"]');
+  if (key === 'pad') return one('#dpad');
+  if (key === 'mapwalk') {
+    const b = tutBox($('#mapCanvas')); if (!b) return [];
+    const w = Math.min(160, Math.max(44, b.w - 24)), h = Math.min(120, Math.max(44, b.h * 0.34));
+    return [{ x: b.x + (b.w - w) / 2, y: b.y + Math.min(72, Math.max(8, b.h * 0.16)), w: w, h: h, el: b.el }];
+  }
+  if (key === 'joy') return one('#joyRing');
+  if (key === 'qbm') return tutUnion(['#questBtn', '#walkBagBtn', '#mapBtn'].map(s => tutBox($(s))).filter(Boolean));
+  if (key === 'list') return one(modern ? '#colFloat' : '#tabs button[data-tab="col"]');
+  if (key === 'gear') return one(modern ? '#gearFloat' : '#settingsBtn');
+  return [];
+}
+function tutCareBlocked(act){
+  if (tut.replay) return true;
+  const p = pet(); if (!p || cdLeft(p, act)) return true;
+  if (act === 'feed') return p.hunger >= 98;
+  if (act === 'play') return isFainted(p) || p.energy < 10;
+  if (act === 'rest') return p.energy >= 98 && !(Number.isFinite(p.hpNow) || isFainted(p));
+  return false;
+}
+function tutClearHit(){
+  if (tut.hit) { tut.hit.classList.remove('tut-hit'); tut.hit.removeAttribute('aria-describedby'); tut.hit = null; }
+}
+function tutPlace(){
+  if (!tut.on) return;
+  const holes = tut.holes, h = holes.length ? holes[tut.hi % holes.length] : null;
+  const dims = ['#tutD1', '#tutD2', '#tutD3', '#tutD4'].map(s => $(s));
+  const ring = $('#tutRing'), block = $('#tutBlock');
+  const vw = window.innerWidth, vh = window.innerHeight;
+  if (!h) {
+    dims[0].style.cssText = 'left:0;top:0;width:100%;height:100%';
+    for (let i = 1; i < 4; i++) dims[i].style.cssText = 'display:none';
+    ring.hidden = true; block.hidden = true;
+  } else {
+    const x = h.x, y = h.y, w = h.w, hh = h.h;
+    dims[0].style.cssText = 'left:0;top:0;width:100%;height:' + Math.max(0, y) + 'px';
+    dims[1].style.cssText = 'left:0;top:' + y + 'px;width:' + Math.max(0, x) + 'px;height:' + hh + 'px';
+    dims[2].style.cssText = 'left:' + (x + w) + 'px;top:' + y + 'px;right:0;height:' + hh + 'px';
+    dims[3].style.cssText = 'left:0;top:' + (y + hh) + 'px;width:100%;bottom:0';
+    ring.hidden = false;
+    ring.style.left = (x - 6) + 'px'; ring.style.top = (y - 6) + 'px';
+    ring.style.width = (w + 12) + 'px'; ring.style.height = (hh + 12) + 'px';
+    const pass = tut.adv === 'tap';
+    block.hidden = pass;
+    if (!pass) { block.style.left = x + 'px'; block.style.top = y + 'px'; block.style.width = w + 'px'; block.style.height = hh + 'px'; }
+    void vw; void vh;
+  }
+  tutClearHit();
+  if (h && tut.adv === 'tap' && h.el) { tut.hit = h.el; h.el.classList.add('tut-hit'); h.el.setAttribute('aria-describedby', 'tutLine'); }
+  const card = $('#tutCard'); if (!card || card.hidden) return;
+  const cw = card.offsetWidth, ch = card.offsetHeight;
+  let left = Math.max(6, (vw - cw) / 2), top;
+  if (!h) top = Math.max(6, (vh - ch) / 2);
+  else {
+    const below = h.y + h.h + 12, above = h.y - 12 - ch;
+    top = (h.y + h.h / 2) < vh / 2 ? below : above;
+    const fits = yy => yy >= 6 && yy + ch <= vh - 6;
+    const hits = yy => yy < h.y + h.h + 4 && yy + ch > h.y - 4 && left < h.x + h.w && left + cw > h.x;
+    if (!fits(top) || hits(top)) { const alt = top === below ? above : below; if (fits(alt) && !hits(alt)) top = alt; }
+  }
+  left = Math.max(6, Math.min(left, vw - cw - 6));
+  top = Math.max(6, Math.min(top, vh - ch - 6));
+  card.style.left = left + 'px'; card.style.top = top + 'px';
+}
+function tutShow(id){
+  id = tutResolve(id);
+  const row = TUT_COPY[id]; if (!row) { tutClose(true); return; }
+  tut.id = id; tut.key = row[2]; tut.adv = row[1] === 'tap' ? 'tap' : 'next'; tut.act = (id === 'T5' || id === 'T6' || id === 'T7') ? tut.key : null;
+  if (tut.act && tutCareBlocked(tut.act)) tut.adv = 'next';
+  if (!tut.replay && S) { S.flags['story.tutorial_step'] = id === 'T0r' ? 'T0' : id.replace(/[abmj]$/, '').replace('T8b', 'T8'); save(); }
+  const line = $('#tutLine'); line.textContent = tutFill(row[0]);
+  const acts = $('#tutActs'); acts.textContent = '';
+  const addBtn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = label; b.addEventListener('click', fn); acts.append(b); return b; };
+  if (row[1] === 'choice') { addBtn('SHOW ME', () => tutShow('T1')); addBtn('SKIP', () => tutClose(true)); }
+  else if (tut.adv === 'next') addBtn(id === 'T13' ? "LET'S GO" : 'NEXT', () => (id === 'T13' ? tutClose(true) : tutAdvance()));
+  const skip = $('#tutSkip'); skip.hidden = row[1] === 'choice' || id === 'T13';
+  const card = $('#tutCard'); card.hidden = false;
+  tut.holes = tut.key ? tutTargets(tut.key) : []; tut.hi = 0;
+  clearInterval(tut.cycle); tut.cycle = 0;
+  if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
+  tutPlace();
+  const focus = acts.querySelector('button') || (skip.hidden ? null : skip);
+  if (focus) focus.focus({ preventScroll: true });
+  const layer = $('#tutLayer'); if (layer) layer.dataset.step = id;
+}
+function tutAdvance(){ const n = TUT_AFTER[tut.id]; if (!n) tutClose(true); else tutShow(n); }
+function tutSawTab(name){ if (tut.on && tut.adv === 'tap' && tutAllowsTab(name)) tutAdvance(); }
+function tutSawAct(act){
+  if (!tut.on || tut.replay || tut.adv !== 'tap' || tut.act !== act) return;
+  const card = $('#tutCard'); if (card) card.hidden = true;
+  const step = act;
+  const go = () => {
+    if (!tut.on || tut.act !== step) return;
+    const nap = step === 'rest' && now() < anim.sleepUntil;
+    if ($('#toast').classList.contains('show') || nap) { tut.wait = setTimeout(go, 120); return; }
+    tutAdvance();
+  };
+  clearTimeout(tut.wait); tut.wait = setTimeout(go, 120);
+}
+function tutMiss(act){ if (!tut.on || tut.act !== act || tut.adv !== 'tap') return; tut.adv = 'next'; tutShow(tut.id); }
+function tutClose(mark){
+  const replay = tut.replay, skipping = mark === 'skip';
+  clearTimeout(tut.wait); clearInterval(tut.cycle); tut.cycle = 0;
+  tutClearHit();
+  tut.on = false; tut.replay = false; tut.id = null; tut.adv = null; tut.key = null; tut.act = null; tut.holes = []; tut.fromScene = false;
+  const layer = $('#tutLayer'); if (layer) { layer.hidden = true; delete layer.dataset.step; }
+  document.body.classList.remove('tut-on');
+  const card = $('#tutCard'); if (card) card.hidden = false;
+  lockTabs(false);
+  if (S && (mark === true || skipping) && (!replay || skipping)) {
+    S.flags['story.tutorial_done'] = true;
+    delete S.flags['story.tutorial_step'];
+    S.flags[HELLO_FLAG] = dayKey(Date.now());
+    save();
+  }
+  if (screen === 'walk' && S && !PPEnv.geoPref() && allPets().length) openGeoAsk();
+}
+function runTutorial(opts){
+  if (!S || !pet() || tut.on) return;
+  opts = opts || {};
+  tut.on = true; tut.replay = !!opts.replay; tut.fromScene = false;
+  const layer = $('#tutLayer'); if (!layer) { tut.on = false; return; }
+  layer.hidden = false; document.body.classList.add('tut-on');
+  clearMoves(); lockTabs(true);
+  tutShow(opts.replay ? 'T1' : (opts.resume ? 'T0r' : 'T0'));
+}
+function tutorialPending(){
+  return !!(S && pet() && !tut.on && S.flags['story.starter_received'] && !S.flags['story.tutorial_done'] && !S.flags['story.early_done']);
+}
+function scheduleTutorial(fromScene){
+  if (!tutorialPending()) return;
+  if (!fromScene && !S.flags['story.tutorial_step']) return;
+  tut.fromScene = !!fromScene || tut.fromScene;
+  clearTimeout(tut.wait);
+  tut.wait = setTimeout(() => tutorialKnock(!!fromScene || !!S.flags['story.tutorial_step']), 400);
+}
+function tutorialKnock(allow){
+  if (!tutorialPending() || !allow) return;
+  const toastUp = $('#toast').classList.contains('show');
+  const busy = scene || (battle && battle.on) || !$('#ovGeo').hidden || !$('#ovSettings').hidden || !$('#ovLook').hidden;
+  if (toastUp || busy || (welcome.due && screen === 'pet')) { tut.wait = setTimeout(() => tutorialKnock(true), 200); return; }
+  runTutorial({ replay: false, resume: !!S.flags['story.tutorial_step'] });
+}
+function skipTutorial(){ if (tut.on && tut.id !== 'T13') tutClose('skip'); }
+function replayTutorial(){
+  if (!S || !pet() || scene || (battle && battle.on) || tut.on) return;
+  closeSettings();
+  runTutorial({ replay: true });
+}
 /* CARE_LOOP E, cheap slice: bond. Stored as points on the Walkling (p.bond, only ever goes up), shown as 5 hearts in the PARTNER
    scene: Bond 1-5 at 0 / 20 / 60 / 120 / 200 points. Only the partner earns it. Sources (eng notes §3.1, Design's defaults):
    first care of the day +3, the hello +1, pats +1 (max 5 a day), each walk find +2, every 100 steps together +1 (max 3 a day),
@@ -849,7 +1081,67 @@ function updateCareButtons(){
 }
 
 /* ---------- pet care ---------- */
-const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [], emotes: [] };
+const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [], emotes: [], care: { food: 0, rest: 0 } };
+// HEART_ALERT v0.2 (D154–D156): levels for the partner only. 0 none, 1 low, 2 very low.
+function careAlert(p){
+  if (!p) return { food: 0, rest: 0 };
+  const food = p.hunger <= FOOD_RULES.floor ? 2 : p.hunger < FOOD_RULES.hungry ? 1 : 0;
+  const rest = (isFainted(p) || p.energy < 10) ? 2 : p.energy < 25 ? 1 : 0;
+  return { food, rest };
+}
+function careWords(p, c){
+  if (!p || !c || (!c.food && !c.rest)) return '';
+  const parts = [];
+  if (c.food) parts.push({ rank: c.food === 2 ? 0 : 1, ord: 0, w: 'hungry' });
+  if (c.rest) parts.push({ rank: c.rest === 2 ? 0 : 1, ord: 1, w: isFainted(p) ? 'napping' : 'sleepy' });
+  parts.sort((a, b) => a.rank - b.rank || a.ord - b.ord);
+  return parts.map(x => x.w).join(' and ');
+}
+let careBitsHeard = null;
+function syncCareAlert(){
+  const btn = $('#petFloat'); if (!btn || !S) return;
+  const p = pet();
+  const raw = careAlert(p);
+  anim.care = raw;
+  const show = !!(p && S.flags['story.starter_received'] && ctlMode() === 'modern' && !battle.on);
+  btn.classList.toggle('care-food', show && raw.food > 0);
+  btn.classList.toggle('care-rest', show && raw.rest > 0);
+  btn.classList.toggle('care-very', show && (raw.food === 2 || raw.rest === 2));
+  btn.classList.toggle('care-hold', show && (raw.food || raw.rest) && now() < anim.sleepUntil);
+  const words = show ? careWords(p, raw) : '';
+  const label = words ? 'Partner. ' + petName(p) + ' is ' + words + '.' : 'Partner';
+  if (btn.getAttribute('aria-label') !== label) btn.setAttribute('aria-label', label);
+  const live = $('#careAlert');
+  const bits = careWords(p, raw) ? careWords(p, raw).split(' and ') : [];
+  if (live) {
+    if (careBitsHeard === null) careBitsHeard = new Set(bits);
+    else if (show) {
+      const started = bits.some(b => !careBitsHeard.has(b));
+      careBitsHeard = new Set(bits);
+      if (started && words) { live.textContent = ''; live.textContent = petName(p) + ' is ' + words + '.'; }
+    }
+  }
+  try { syncNavArt(false); } catch (e) {}
+}
+function paintCareBadge(g, name, ox, oy){
+  const gl = GLYPH[name]; if (!gl) return;
+  const dot = (ch, x, y) => {
+    if (ch === '.' || x < 0 || y < 0 || x > 21 || y > 21 || !PAL[ch]) return;
+    g.fillStyle = PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2);
+  };
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) if (gl[j][i] !== '.') dot('k', ox + i + 1, oy + j + 1);
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) dot(gl[j][i], ox + i, oy + j);
+}
+function careArtTag(){
+  const b = $('#petFloat'); if (!b) return '';
+  return (b.classList.contains('care-food') ? 'f' : '') + (b.classList.contains('care-rest') ? 'r' : '');
+}
+function paintCareBadges(g){
+  const b = $('#petFloat'); if (!b) return;
+  const food = b.classList.contains('care-food'), rest = b.classList.contains('care-rest');
+  if (food) paintCareBadge(g, 'badge_food', 16, 1);
+  if (rest) paintCareBadge(g, 'badge_rest', 16, food ? 14 : 1);
+}
 /* CARE_LOOP plumbing (§7 build order): a small emote queue over the partner on the PARTNER tab. Each balloon waits for the one
    before it, so the Warm Bowl, the hello and (later) bond-ups never draw on top of each other. */
 function queueEmote(glyph, delayMs = 0, durMs = 1500){
@@ -881,11 +1173,11 @@ function doAction(act){
   const p = pet(); const t = now();
   if (t < anim.busyUntil) return;
   const left = cdLeft(p, act);
-  if (left) { sfx('denied'); return toast(petName(p) + CD_MSG[act] + fmtCd(left) + '.'); }
+  if (left) { sfx('denied'); tutMiss(act); return toast(petName(p) + CD_MSG[act] + fmtCd(left) + '.'); }
   const pp = petPos(t);
   let msg;
   if (act === 'feed') {
-    if (p.hunger >= 98) { sfx('denied'); return toast('Too full to eat!'); }
+    if (p.hunger >= 98) { sfx('denied'); tutMiss(act); return toast('Too full to eat!'); }
     const bowl = bowlReady();
     p.hunger = clamp(p.hunger + careGain(FEED_FOOD, p.hunger, FEED_BANDS) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + (bowl ? BOWL.joy : 3), 0, 100);
     if (bowl) { S.flags[BOWL.flag] = dayKey(Date.now()); queueEmote('emote_hearts', 600, 1500); }   // two-hearts balloon (ICONS_SEALS Q6), on the emote queue
@@ -893,15 +1185,15 @@ function doAction(act){
     setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
     anim.busyUntil = t + (bowl ? 1500 : 1100); msg = bowl ? 'Warm Bowl! ' + petName(p) + ' gobbles it up. +FOOD +JOY' : 'Yum! +FOOD';
   } else if (act === 'play') {
-    if (isFainted(p)) { sfx('denied'); return toast(petName(p) + ' is worn out and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
-    if (p.energy < 10) { sfx('denied'); return toast('Too tired to play. REST first!'); }
+    if (isFainted(p)) { sfx('denied'); tutMiss(act); return toast(petName(p) + ' is worn out and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
+    if (p.energy < 10) { sfx('denied'); tutMiss(act); return toast('Too tired to play. REST first!'); }
     p.happy = clamp(p.happy + careGain(20, p.happy), 0, 100); p.energy = clamp(p.energy - 8, 0, 100); p.hunger = clamp(p.hunger - 4, 0, 100);
     anim.jumpUntil = t + 1200; anim.busyUntil = t + 1200;
     for (let i=0;i<4;i++) addPart(i%2 ? 'heart' : 'spark', pp.x + 1 + i*4, pp.y + 2, (i-1.5)*6, -14);
     msg = 'Wheee! +JOY';
   } else if (act === 'rest') {
     const hurt = Number.isFinite(p.hpNow) || isFainted(p);   // REST also restores 50% of max HP and clears Fainted (BATTLE §7.2)
-    if (p.energy >= 98 && !hurt) { sfx('denied'); return toast('Not sleepy right now.'); }
+    if (p.energy >= 98 && !hurt) { sfx('denied'); tutMiss(act); return toast('Not sleepy right now.'); }
     p.energy = clamp(p.energy + careGain(30, p.energy), 0, 100); p.hunger = clamp(p.hunger - 5, 0, 100);
     restPet(p, 'pet');
     anim.sleepUntil = t + 3000; anim.busyUntil = t + 3000; msg = 'Zzz... +ENERGY' + (hurt ? ' +HP' : '');
@@ -926,6 +1218,7 @@ function doAction(act){
   }
   toast(msg);
   updateHUD(); save();
+  tutSawAct(act);
 }
 
 /* CARE_LOOP A, cheap slice: tap to pat and tickle (no rub zones). Tap the partner on the PARTNER tab: a happy squint, a chirp
@@ -1101,6 +1394,7 @@ function applyMapPatch(W, patch){
   for (const [id, pt] of Object.entries(patch.maps)) {
     const m = W[id]; if (!m) continue;
     if (pt.set) Object.assign(m, JSON.parse(JSON.stringify(pt.set)));
+    if (pt.addRoofs) m.roofs = Object.assign({}, m.roofs || {}, JSON.parse(JSON.stringify(pt.addRoofs)));
     if (pt.gridRows) for (const [y, row] of Object.entries(pt.gridRows)) m.grid[+y] = row;
     for (const o of pt.replaceObjs || []) {
       const copy = JSON.parse(JSON.stringify(o)), k = m.objs.findIndex(x => x.id === o.id);
@@ -1139,7 +1433,11 @@ const WORLD = (() => {
     applyMapPatch(W, MD.civic.slicePatch);
   }
   if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards: squares, then the posts
-  for (const k of DETAIL_KEYS) applyMapPatch(W, MD[k].slicePatch);
+  for (const k of DETAIL_KEYS) { if (MD[k].maps) Object.assign(W, JSON.parse(JSON.stringify(MD[k].maps))); applyMapPatch(W, MD[k].slicePatch); }
+  if (MD.fernbrook_rooms) {                                            // B8: rooms, then the door warp, after every detail patch
+    Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
+    applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
+  }
   if (MD.rook_crossroads) applyMapPatch(W, MD.rook_crossroads.slicePatch);   // Rook's Crossroads: objects only, after detail so the crates stay
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
@@ -1154,7 +1452,8 @@ if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
 if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
 if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
 SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
-for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
@@ -1417,6 +1716,7 @@ if (MD.civic && MD.civic.looks) for (const [k, v] of Object.entries(MD.civic.loo
 if (MD.civic && MD.civic.speakers) for (const [k, v] of Object.entries(MD.civic.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.heights && MD.heights.looks) for (const [k, v] of Object.entries(MD.heights.looks)) if (v && typeof v === 'object' && !k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.heights && MD.heights.speakers) for (const [k, v] of Object.entries(MD.heights.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
+for (const k of DETAIL_KEYS) for (const [n, v] of Object.entries(MD[k].looks || {})) if (!n.startsWith('_') && v && typeof v === 'object') NPC_LOOKS[n] = v;
 // Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
 (function wireIlseLetter(){
   const steps = SCENES.ilse_chat; if (!steps) return;
@@ -1551,6 +1851,7 @@ function useMap(id){
   CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {} };
   patrolClock = 0;
+  wallMaskOf(CUR);
 }
 const isRoom = () => CUR.kind === 'interior';
 // Explicit map.music wins (High Charity). Otherwise: quarry and grove have their own loops, dreams stay on
@@ -1612,7 +1913,9 @@ function present(o){
   if (o.kind === 'pickup' && S.flags['item.' + o.id]) return false;
   return true;
 }
-const objPos = o => mapRT.pos[o.id] || o;
+// A pushed dream prop that was left mid-circuit (reload, resume) starts where it stopped, not back at its first tile.
+const rollSpot = o => { const st = +S.flags[o.rollFlag] || 0, c = o.circuit[st % o.circuit.length]; return st && c ? { x: c[0], y: c[1] } : o; };
+const objPos = o => mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
 const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
@@ -1764,6 +2067,8 @@ function tryStep(d){
   if (o) { const turned = S.world.facing !== dn; S.world.facing = dn; bumpObj(o, d, turned); return; }
   if (solidTile(nx, ny)) {
     S.world.facing = dn;
+    const onWall = tileAt(nx, ny) === 'H' && doorAt(nx, ny);
+    if (onWall && dn === 'up') { enterDoor(onWall); return; }   // door object sits on the wall; the step is south of it
     const dr = doorAt(S.world.x, S.world.y);  // a door: step up from its doorstep into the wall (MAPS_SLICE §4)
     if (dr && dn === 'up' && tileAt(nx, ny) === 'H') enterDoor(dr);
     return;
@@ -2439,7 +2744,7 @@ function arriveAt(at){
 }
 function enterDoor(dr){
   if (dr.need && !cond(dr.need, false)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
-  if (dr.to) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
+  if (dr.to && WORLD[dr.to]) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
 }
 // MAPS_SLICE §9 place panels (Fernbrook keeps panels; Hearthmoor's became rooms). The Lantern House: the keeper's line -> REST / LEAVE;
@@ -2517,7 +2822,12 @@ function buildingsOf(m){
     let y1 = r.y1;
     const wallRow = y => { for (let x = r.x0; x <= r.x1; x++) if (at(x, y) === 'H') return true; return false; };
     while (y1 + 1 < m.grid.length && wallRow(y1 + 1)) y1++;
-    const doors = m.objs.filter(o => o.kind === 'door' && o.x >= r.x0 && o.x <= r.x1 && o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H');
+    const doors = m.objs.filter(o => {
+      if (o.kind !== 'door' || o.x < r.x0 || o.x > r.x1) return false;
+      // A door on the wall itself (schoolhouse, flats) is entered from the grass south of that cell.
+      if (at(o.x, o.y) === 'H' && o.y > r.y1 && o.y <= y1) return true;
+      return o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H';
+    });
     const shp = String(r.shape || '').split('+');
     out.push({ name, x0: r.x0, y0: r.y0, x1: r.x1, y1, ry1: r.y1, col: r.col || null, roof: r.roof || null, wall: r.wall || null, door: r.door || null,
       win: r.win ? [].concat(r.win) : [], trim: r.trim || null, shape: shp[0] || null, feats: shp.slice(1), doors: doors.map(o => ({ id: o.id, x: o.x, y: o.y })),
@@ -2551,8 +2861,9 @@ function paintBuilding(m, b, fac, P){
   if (b.trim) { g.fillStyle = PAL[b.trim]; g.fillRect(0, RH, W, 1); g.fillRect(0, RH, 2, H - RH); g.fillRect(W - 2, RH, 2, H - RH); }
   const bigDoor = WART[b.door] && WART[b.door].width > TS, skip = new Set();
   for (const d of b.doors) {
-    skip.add(bldKey(d.x, d.y - 1));
-    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, d.y - 1 - dy));
+    const wy = at(d.x, d.y) === 'H' ? d.y : d.y - 1;
+    skip.add(bldKey(d.x, wy));
+    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, wy - dy));
   }
   if (b.win.length) {
     const every = /^win_(band|strip)/.test(b.win[0]);
@@ -2581,6 +2892,8 @@ function paintBuilding(m, b, fac, P){
   feat('mast', 'mast', mid - 8, 0);
   feat('bell', 'bell', mid - 8, 0);
   feat('clock', 'clock_face', mid - 8, RH - TS);
+  feat('vane', 'weathervane', mid - 8, 0);
+  feat('tank', 'water_tank', chx, 0);
   if (b.feats.indexOf('bunting') >= 0) for (let X = 0; X < W; X += TS) feat('bunting', 'bunting', X, RH - 2);
   for (const d of b.doors) feat('emblem', 'acorn_emblem', (d.x - b.x0) * TS, RH - TS);
   const gch = [at(b.x0 - 1, b.y0), at(b.x1 + 1, b.y0), at(b.x0, b.y0 - 1)].find(ch => ch && BLD_GROUND.indexOf(ch) >= 0) || 'g';
@@ -2612,7 +2925,8 @@ const shapedRoof = (tx, ty) => !!CUR.roofs && buildingCells().cut.has(bldKey(tx,
 const styledWall = (tx, ty) => !!CUR.roofs && buildingCells().styled.has(bldKey(tx, ty));
 function drawDoor(g, o, cx, cy){
   const nm = CUR.roofs && buildingCells().doors.get(o.id), a = (nm && WART[nm]) || WART.door;
-  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, (o.y - 1) * TS - cy - (a.height - TS));
+  const baseY = tileAt(o.x, o.y) === 'H' ? o.y : o.y - 1;
+  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, baseY * TS - cy - (a.height - TS));
 }
 // Map pass E7: on outdoor maps a path cell that touches grass gets a grass fringe on that side, rounded where two sides meet.
 const EDGE_GRASS = 'gftTF', EDGE_TILES = ['path_edge_n', 'path_edge_s', 'path_edge_w', 'path_edge_e', 'path_corner_nw', 'path_corner_ne', 'path_corner_sw', 'path_corner_se'];
@@ -2723,6 +3037,70 @@ function drawHqGlow(g, cx, cy){
   }
   g.restore();
 }
+// Interior wall kit (D151–D153). `#` and `W` pick a part from the map shape. Windows and doors are per-map lists.
+// A skin with no `wall` block never comes through here, so its odd-column windows stay.
+function wallPart(x, y, m){
+  m = m || CUR;
+  if (!m || y < 0 || x < 0 || y >= m.h || x >= m.w) return null;
+  const ch = m.cells[y][x], w = m.w, h = m.h, list = m.wall || {};
+  if (ch === '#') {
+    if (y === 0) return x === 0 ? 'cap_nw' : x === w - 1 ? 'cap_ne' : 'cap_n';
+    if (y === h - 1) {
+      const row = m.cells[y];
+      if (row[x + 1] === 'm') return 'jamb_l';
+      if (row[x - 1] === 'm') return 'jamb_r';
+      if (x === 0) return 'cap_sw';
+      if (x === w - 1) return 'cap_se';
+      return 'cap_s';
+    }
+    if (x === 0) return 'side_w';
+    if (x === w - 1) return 'side_e';
+    return 'cap_n';
+  }
+  if (ch === 'W') {
+    const wins = list.windows || [], doors = list.doors || [];
+    if (wins.indexOf(x) >= 0) return 'face_win';
+    if (doors.indexOf(x) >= 0) return 'face_door';
+    if (x === 1) return 'face_l';
+    if (x === w - 2) return 'face_r';
+    return 'face';
+  }
+  return null;
+}
+function shadowPart(x, y, m){
+  m = m || CUR;
+  const sk = m && m.skin && SKINS[m.skin];
+  if (!sk || !sk.wall || y < 0 || x < 0 || y >= m.h || x >= m.w) return null;
+  const ch = m.cells[y][x];
+  if (ch === '#' || ch === 'W' || ch === 'm') return null;
+  const under = y > 0 && m.cells[y - 1][x] === 'W';
+  const sideW = x > 0 && wallPart(x - 1, y, m) === 'side_w';
+  const sideE = x + 1 < m.w && wallPart(x + 1, y, m) === 'side_e';
+  if (under && sideW) return 'shadow_nw';
+  if (under && sideE) return 'shadow_ne';
+  if (under) return 'shadow_n';
+  if (sideW) return 'shadow_w';
+  if (sideE) return 'shadow_e';
+  return null;
+}
+const wallMasks = {};
+function wallMaskOf(m){
+  if (!m) return null;
+  if (Object.prototype.hasOwnProperty.call(wallMasks, m.id)) return wallMasks[m.id];
+  const sk = m.skin && SKINS[m.skin];
+  if (!sk || !sk.wall) return wallMasks[m.id] = null;
+  const c = document.createElement('canvas');
+  c.width = m.w * TS; c.height = m.h * TS;
+  const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  const prefix = m.skin + '__';
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+    const part = shadowPart(x, y, m);
+    const img = part && TILES[prefix + part];
+    if (img) g.drawImage(img, x * TS, y * TS);
+  }
+  return wallMasks[m.id] = c;
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -2736,17 +3114,22 @@ function drawMap(t){
   for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
-      const ch = MAP[ty][tx]; let img = ch === 'w' ? TILES.w[wf] : ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g;
+      const ch = MAP[ty][tx];
+      const skEarly = CUR.skin && CUR.skin !== 'lab' && SKINS[CUR.skin];
+      const kit = !!(skEarly && skEarly.wall && (ch === '#' || ch === 'W'));
+      let img = ch === 'w' ? TILES.w[wf] : (!kit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
       let decal = null;
       if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
         const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
         const nm = labTileName(dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
-      } else if (CUR.skin && SKINS[CUR.skin]) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
-        const skDraw = SKINS[CUR.skin];
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skDraw.decal && skDraw.decal[k];
-        const nm = skinTileName(skDraw, dk ? '.' : k, tx, ty);
+      } else if (kit) {   // shared wall kit. Windows come from the map list, not the odd column.
+        const part = wallPart(tx, ty), nm = CUR.skin + '__' + part;
+        if (TILES[nm]) img = TILES[nm];
+      } else if (skEarly) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
+        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skEarly.decal && skEarly.decal[k];
+        const nm = skinTileName(skEarly, dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'] || TILES[dk];
       } else if (CUR.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
@@ -2765,7 +3148,9 @@ function drawMap(t){
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
       }
     }
-  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') drawDoor(g, o, cx, cy);
+  const shade = wallMaskOf(CUR);   // floor contact shadow, under props and actors
+  if (shade) g.drawImage(shade, -cx, -cy);
+  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && (tileAt(o.x, o.y - 1) === 'H' || tileAt(o.x, o.y) === 'H')) drawDoor(g, o, cx, cy);
   for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) g.drawImage(WART[o.sprite], o.x*TS - cx, o.y*TS - cy);   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
@@ -2842,7 +3227,7 @@ function drawCobbleTrim(g, cx, cy, t){
       }
       if (tileAt(tx - 1, ty) !== 'H' && tileAt(tx - 1, ty) !== 'R') { g.fillStyle = PAL.w; g.fillRect(X, Y, 2, 16); }
       if (tileAt(tx + 1, ty) !== 'H' && tileAt(tx + 1, ty) !== 'R') { g.fillStyle = PAL.w; g.fillRect(X + 14, Y, 2, 16); }
-    } else if ((lantern || hall) && ch === 'W' && tx % 2 === 0 && tx > 0 && tx < MW - 1) {
+    } else if ((lantern || hall) && ch === 'W' && tx % 2 === 0 && tx > 0 && tx < MW - 1 && !(SKINS[CUR.skin] && SKINS[CUR.skin].wall)) {
       const col = tx % 4 === 0 ? PAL.r : PAL.o;
       g.fillStyle = PAL.k; g.fillRect(X + 5, Y + 2, 6, 8);
       g.fillStyle = col; g.fillRect(X + 6, Y + 3, 4, 6);
@@ -2938,7 +3323,8 @@ function restBedCue(){
   if (!CUR || !LANTERN_ROOMS[CUR.id]) return null;
   let best = null, bestD = 1e9;
   for (const o of CUR.objs) {
-    if (o.kind !== 'prop' || o.sprite !== 'rest_bed' || !present(o)) continue;
+    const bedLine = o.lines && Object.values(o.lines).some(v => v === '@lantern_rest');
+    if (o.kind !== 'prop' || !present(o) || (o.sprite !== 'rest_bed' && !bedLine)) continue;
     const d = Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y);
     if (d < bestD) { bestD = d; best = o; }
   }
@@ -3034,6 +3420,9 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
+    if (o.pet) { const [ln, st] = String(o.pet).split('/'), si = SP_INDEX[ln];
+      if (si != null) { g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2); g.drawImage(sprSet(si, +st || 0, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
+      return; }
     const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
     const img = keeperFrames(npcLook(o))[face][fr];
@@ -3088,7 +3477,8 @@ const keeperFrame = () => walk.to ? Math.floor(walk.prog * 2) % 2 : 0;    // idl
 
 /* ---------- follower: the partner walks one tile behind (MAPS_SLICE K.3/K.4) ---------- */
 const fol = { x: null, y: null, fx: 0, fy: 0, from: null, to: null, facing: 'down' };
-const followerOn = () => !!(S && S.settings && S.settings.follower !== false && pet());
+// A memory from before the keeper had a partner (map flag noPartner, e.g. dream_2004) hides the follower there only.
+const followerOn = () => !!(S && S.settings && S.settings.follower !== false && pet() && !(CUR && CUR.noPartner));
 // Load rule: the tile behind the keeper (opposite facing) if walkable, else the keeper's own tile (drawn underneath).
 function placeFollower(){
   fol.from = fol.to = null;
@@ -3215,7 +3605,11 @@ function rollProp(o){
   if (step >= circuit.length) { runScene(o.rollScene); return; }
   const nxt = circuit[(step + 1) % circuit.length], nx = nxt[0], ny = nxt[1];
   const q = objPos(o);
-  if (solidTile(nx, ny) || (nx === S.world.x && ny === S.world.y) || blockerAt(nx, ny)) { sfx('denied'); return; }
+  // The toy rolls along its circuit whatever side it is bumped from. If the keeper stands on the next tile, the two swap places
+  // (before: a silent 'denied', so bumping it from the spawn side did nothing). Only a wall or another object stops it.
+  const onKeeper = nx === S.world.x && ny === S.world.y;
+  if (solidTile(nx, ny) || blockerAt(nx, ny)) { sfx('denied'); return; }
+  if (onKeeper) { S.world.x = q.x; S.world.y = q.y; walk.fx = q.x; walk.fy = q.y; walk.from = null; walk.to = null; }
   sfx('pop');
   mapRT.pos[o.id] = { x: nx, y: ny, fx: nx, fy: ny, facing: dirName(nx - q.x, ny - q.y) };
   S.flags[o.rollFlag] = step + 1; save();
@@ -3269,12 +3663,13 @@ function interact(o){
   if (o.booth) { openBooth(o); return; }
   if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
-  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); noteContact(objName(o)); }
+  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) noteContact(objName(o)); }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
+  if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
   if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
   if (o.board) return openTownBoard();
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
@@ -3291,6 +3686,8 @@ function facingTarget(){
   if (!S || scene || fade.busy) return null;
   const [dx, dy] = DIRS[S.world.facing] || DIRS.down, nx = S.world.x + dx, ny = S.world.y + dy;
   const o = blockerAt(nx, ny); if (talkable(o)) return o;
+  const onWall = tileAt(nx, ny) === 'H' && doorAt(nx, ny);
+  if (onWall && S.world.facing === 'up') return onWall;
   const dr = doorAt(S.world.x, S.world.y); if (dr && S.world.facing === 'up' && tileAt(nx, ny) === 'H') return dr;
   return null;
 }
@@ -3299,10 +3696,11 @@ function talkFacing(){ const o = facingTarget(); if (!o) return false; clearMove
 function tapObject(o){
   const q = objPos(o);
   if (o.kind === 'door') {
+    const onWall = tileAt(o.x, o.y) === 'H', sx = o.x, sy = onWall ? o.y + 1 : o.y;
     const go = () => { S.world.facing = 'up'; enterDoor(o); };
-    if (S.world.x === o.x && S.world.y === o.y) { go(); return true; }
-    const path = findPath([{ x: o.x, y: o.y }]); if (!path) return false;
-    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: o.x, y: o.y, soft: false }; walk.repath = null; return true;
+    if (S.world.x === sx && S.world.y === sy) { go(); return true; }
+    const path = findPath([{ x: sx, y: sy }]); if (!path) return false;
+    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: sx, y: sy, soft: false }; walk.repath = null; return true;
   }
   const nb = Object.values(DIRS).map(([dx, dy]) => ({ x: q.x + dx, y: q.y + dy })).filter(c => !solid(c.x, c.y) || (c.x === S.world.x && c.y === S.world.y));
   const talk = () => { S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y); bump.talked = null; interact(o); };
@@ -3406,6 +3804,7 @@ function endScene(){
   if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
     const back = trackFor(CUR); if (back && back !== cue) PPSound.music(back, { fadeOut: 400, fadeIn: 500 });
   }
+  scheduleTutorial(true);
 }
 const pend = f => scene.pending.push(f);
 // Scene cast: someone a scene brings into a room who has no map object there. MAPS_SLICE §8 `starter`: "The door bangs open.
@@ -4285,7 +4684,7 @@ function closeBattle(){
 }
 // A Lantern House rest heals the whole party. Hurt Walklings cost a few Acorns (OPEN_DECISIONS D28). Home naps stay free (`rest`).
 const LANTERN_REST_COST = 5;
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1 };
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
 function setRestDue(on){ if (!S || !S.world) return; if (on) S.world.restDue = true; else delete S.world.restDue; }
 // After a wipe, the party has to rest before leaving. Clears itself once nobody is hurt (regen, a debug heal).
@@ -4341,6 +4740,7 @@ function blockLanternExit(){
   put('hearthmoor', 'hm_sign_lantern', 'LANTERN HOUSE · Rest the whole party. ' + n + ' Acorns.');
   put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns. — I."');
   put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
+  put('fb_lantern_in', 'fb_lantern_note', 'A note by the shelf: "Rest the whole party. ' + n + ' Acorns. — Amos"');
 })();
 // §7.2 team wipe: back to world.respawn's Lantern House (Hearthmoor: inside, by the beds; INTERIORS slicePatch respawnIn).
 // Nothing lost. Nobody is healed until they rest the whole party, and the way out stays shut until they do.
@@ -4817,6 +5217,7 @@ const REGION_MAP = {
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
            cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
+    fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
@@ -5254,6 +5655,7 @@ function contactPeople(){
   for (const m of Object.values(WORLD)) {
     for (const o of m.objs || []) {
       if (!o || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
+      if (o.pet) continue;   // a Walkling beside an NPC talks, and never gets a phone card
       const name = objName(o), key = contactKey(name);
       if (!key) continue;
       let person = people.get(key);
@@ -7907,7 +8309,7 @@ function bindDebugPanel(){
 /* ---------- input ---------- */
 function bindInput(){
   $$('#tabs button').forEach(b => b.addEventListener('click', () => {
-    if (tabsGuarded()) return;
+    if (tabsGuarded() && !tutAllowsTab(b.dataset.tab)) return;
     if (b.dataset.tab === 'quest') { openQuest(); return; }
     if (b.dataset.tab !== screen) sfx('tap');
     showTab(b.dataset.tab);
@@ -7920,10 +8322,10 @@ function bindInput(){
   $('#gearFloat').addEventListener('click', gearTap);     // Q26: same handler as the header gear
   $('#setControls').addEventListener('click', () => setControls(ctlMode() === 'modern' ? 'arcade' : 'modern'));
   $('#setJoystick').addEventListener('click', () => setJoystick(!joyOn()));
-  const floatTab = name => { if (tabsGuarded() || overlayOpen() || !allPets().length) { sfx('denied'); return; } sfx('tap'); showTab(name); };
+  const floatTab = name => { if ((tabsGuarded() || overlayOpen() || !allPets().length) && !tutAllowsTab(name)) { sfx('denied'); return; } sfx('tap'); showTab(name); };
   $('#colFloat').addEventListener('click', () => floatTab('col'));
   $('#petFloat').addEventListener('click', () => floatTab('pet'));
-  $$('.scr-back').forEach(b => b.addEventListener('click', () => { if (overlayOpen()) return; sfx('tap'); showTab('walk'); }));
+  $$('.scr-back').forEach(b => b.addEventListener('click', () => { if (overlayOpen() && !tutAllowsTab('walk')) return; sfx('tap'); showTab('walk'); }));
   $('#petStrip').addEventListener('click', () => { if (S && pet()) openStatsCard(S.partnerId); });
   bindJoystick();
   // option buttons that just appeared ignore taps (capture phase, before their own handlers)
@@ -7941,6 +8343,8 @@ function bindInput(){
   }
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
+  const setTut = $('#setTutorial'); if (setTut) setTut.addEventListener('click', () => { sfx('tap'); replayTutorial(); });
+  const tutSkipBtn = $('#tutSkip'); if (tutSkipBtn) tutSkipBtn.addEventListener('click', () => skipTutorial());
   bindDebugUi();
   // scene text box (MAPS_SLICE §8): tap anywhere on the box or the map advances; SKIP jumps to the next interactive step
   $('#ovScene').addEventListener('pointerdown', e => { if (e.target.closest('button, input')) return; e.preventDefault(); sceneTap(); });
@@ -8124,6 +8528,8 @@ function bindInput(){
   let sceneKeyEat = false;
   window.addEventListener('keyup', e => { if (sceneKeyEat && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sceneKeyEat = false; } });
   window.addEventListener('keydown', e => {
+    if (tut.on && !(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && (e.key === 'Escape' || e.key === 'Backspace')) { e.preventDefault(); skipTutorial(); return; }
+    if (tut.on && KEYS[e.key]) { e.preventDefault(); return; }
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
     if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && !debugOpen() && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
@@ -8239,9 +8645,11 @@ function catchUp(sec){
 // so catch up on return using the time the tab was actually hidden.
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
+  document.body.classList.toggle('hidden-tab', document.hidden);
   if (document.hidden) { hiddenAt = Date.now(); return; }
   if (hiddenAt && S) { const sec = (Date.now() - hiddenAt) / 1000; catchUp(sec); regenAll(sec); noteWelcome(sec); hiddenAt = 0; updateHUD(); save(); bowlHint(); }
 });
+document.body.classList.toggle('hidden-tab', document.hidden);
 
 /* ---------- online saves (cloud.js; a no-op unless cloud_config.js holds a config) ---------- */
 // Summary of a save string for the "which game to keep" choice: partner, pet count, Seals, last played. Never touches storage.
@@ -8404,6 +8812,7 @@ function boot(){
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
   applyControls();
+  scheduleTutorial(false);
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
   PPSound.setMusic(S.settings.music !== false);
@@ -8433,6 +8842,7 @@ function boot(){
     openStats: id => openStatsCard(id), closeStats: () => closeStatsCard(),          // UI only (the same as tapping STATS / CLOSE)
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
     get controls(){ return { mode: ctlMode(), joystick: joyOn(), dpad: walk.dpad || null }; },   // Q26, read-only
+    get tutorial(){ return { on: !!tut.on, id: tut.id, replay: !!tut.replay }; },   // opening tour, read-only
     get petScene(){ const c = $('#petCanvas'); return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice(), w: c.width, h: c.height, cssW: parseFloat(c.style.width)||0, cssH: parseFloat(c.style.height)||0 }; },
     get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
       look: Object.assign({}, KEEPER_LOOKS.defaults, shownLook() || {}), name: playerName(), builds: keeperBuilds }; },
@@ -8524,13 +8934,20 @@ function boot(){
     clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
-    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. Lab keeps its old tile name (raw char, not W2).
-      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }; }
+    care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
+    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab keeps its old tile name (raw char, not W2).
+      const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
+      const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part: null, shade: shadowPart(x, y) };
+      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }); }
       const sk = CUR.skin && SKINS[CUR.skin];
-      if (sk) { const k = ch === 'W' && x % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
-        return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null }; }
+      if (sk) {
+        const kit = !!(sk.wall && (ch === '#' || ch === 'W'));
+        const k = kit ? ch : (ch === 'W' && x % 2 ? 'W2' : ch), dk = sk.decal && sk.decal[k];
+        const part = kit ? wallPart(x, y) : null;
+        return Object.assign(base, { part, tile: part ? CUR.skin + '__' + part : skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null });
+      }
       const mark = CUR.objs.find(o => o.kind === 'decal' && o.x === x && o.y === y && present(o));   // outdoor decal objects (map pass B4)
-      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.variants ? labTileName(ch, x, y) : ch, decal: (mark && mark.sprite) || null }; },
+      return Object.assign(base, { tile: CUR.variants ? labTileName(ch, x, y) : ch, decal: (mark && mark.sprite) || null }); },
     floorShare: id => labFloorShare(id || CUR.id),   // D88
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
@@ -8580,6 +8997,7 @@ function boot(){
   api.mapTrack = id => trackFor(id && WORLD[id]);
   api.spriteLook = id => {
     const o = objById(id);
+    if (o && o.pet) return null;   // a Walkling standing with an NPC has no keeper look
     const look = o ? npcLook(o) : (NPC_LOOKS[id] ? npcLook({ look: id, name: id }) : null);
     if (!look) return null;
     return { skin: look.skin || null, hair: look.hair || null, hairCol: look.hairCol || null, outfit: look.outfit || null, outfitCol: look.outfitCol || null, accent: look.accent || null, accessory: look.accessory || 'none' };
