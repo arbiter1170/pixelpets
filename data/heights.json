@@ -90,8 +90,8 @@
           "x": 4,
           "y": 5,
           "to": "rx_f1",
-          "tx": 9,
-          "ty": 9,
+          "tx": 6,
+          "ty": 19,
           "facing": "up",
           "need": "story.heights_path=lab",
           "deny": "The lab door stays shut. Glimmerwell has to send you."
@@ -173,34 +173,44 @@
       "kind": "interior",
       "outdoor": "fb_heights",
       "backdrop": "town",
-      "w": 18,
-      "h": 12,
+      "w": 14,
+      "h": 22,
       "spawns": null,
       "zones": [],
       "safe": {
-        "x": 9,
-        "y": 8
+        "x": 6,
+        "y": 19
       },
       "grid": [
-        "##################",
-        "#WWWWWWWWWWWWWWWW#",
-        "#................#",
-        "#..=..........=..#",
-        "#..=..........=..#",
-        "#................#",
-        "#....========....#",
-        "#....========....#",
-        "#................#",
-        "#................#",
-        "#........m.......#",
-        "##################"
+        "##############",
+        "#WVWWVWWVWWVW#",
+        "#ii...^..ii..#",
+        "#.....|......#",
+        "#.....+......#",
+        "#===..|...===#",
+        "#.i...|....i.#",
+        "#....=|..==..#",
+        "#..ii.|..ii..#",
+        "#.....|......#",
+        "#..,,.+..,,..#",
+        "#i....|.....i#",
+        "#.....|......#",
+        "#i....|.....i#",
+        "#..o..|...o..#",
+        "#===..|...===#",
+        "#.....+......#",
+        "#.....|......#",
+        "#..~~.|..~~..#",
+        "#i....|.....i#",
+        "#.....m......#",
+        "##############"
       ],
       "objs": [
         {
           "kind": "warp",
           "id": "rx1_out",
-          "x": 9,
-          "y": 10,
+          "x": 6,
+          "y": 20,
           "to": "fb_heights",
           "tx": 4,
           "ty": 6,
@@ -209,11 +219,11 @@
         {
           "kind": "door",
           "id": "rx1_up",
-          "x": 9,
-          "y": 3,
+          "x": 6,
+          "y": 2,
           "to": "rx_f2",
-          "tx": 9,
-          "ty": 9,
+          "tx": 6,
+          "ty": 19,
           "facing": "up",
           "need": "story.rx_f1",
           "deny": "The stair lock is still on."
@@ -221,8 +231,8 @@
         {
           "kind": "trigger",
           "id": "rx1_in",
-          "x": 9,
-          "y": 8,
+          "x": 6,
+          "y": 18,
           "r": 0,
           "when": [
             "!story.rx_enter"
@@ -234,7 +244,7 @@
           "id": "rx_nia",
           "name": "Nia",
           "x": 4,
-          "y": 6,
+          "y": 10,
           "look": "nia",
           "scene": "rx_nia",
           "lines": {
@@ -247,15 +257,15 @@
         {
           "kind": "trainer",
           "id": "rx_wardens",
-          "x": 13,
-          "y": 6
+          "x": 9,
+          "y": 12
         },
         {
           "kind": "prop",
           "id": "rx1_desk",
           "name": "lobby desk",
-          "x": 3,
-          "y": 2,
+          "x": 2,
+          "y": 6,
           "sprite": "rx_desk",
           "lines": {
             "else": "A clear desk. A cursor blinks on a small screen."
@@ -264,59 +274,259 @@
         {
           "kind": "sign",
           "id": "rx_f1_plaque",
-          "x": 15,
-          "y": 4,
-          "text": "REGENX LOBBY. Floor one of four. Visitors by appointment. Please leave the samples alone."
+          "x": 11,
+          "y": 5,
+          "text": "REGENX LOBBY. Floor one of four. Visitors by appointment. Please leave the samples alone.",
+          "sprite": "lab_plaque"
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_signin",
+          "name": "visitor screen",
+          "x": 10,
+          "y": 6,
+          "sprite": "lab_signin",
+          "lines": {
+            "else": "A visitor screen. It waits for a name."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_bench_a",
+          "name": "waiting bench",
+          "x": 2,
+          "y": 11,
+          "sprite": "lab_bench_wait",
+          "lines": {
+            "else": "A white bench. The seat is cool."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_bench_b",
+          "name": "waiting bench",
+          "x": 2,
+          "y": 13,
+          "sprite": "lab_bench_wait",
+          "lines": {
+            "else": "A white bench. The seat is cool."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_bench_c",
+          "name": "waiting bench",
+          "x": 11,
+          "y": 11,
+          "sprite": "lab_bench_wait",
+          "lines": {
+            "else": "A white bench. The seat is cool."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_bench_d",
+          "name": "waiting bench",
+          "x": 11,
+          "y": 13,
+          "sprite": "lab_bench_wait",
+          "lines": {
+            "else": "A white bench. The seat is cool."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_planter_a",
+          "name": "planter",
+          "x": 1,
+          "y": 3,
+          "sprite": "lab_planter",
+          "lines": {
+            "else": "A white planter. Nothing is growing in it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_planter_b",
+          "name": "planter",
+          "x": 12,
+          "y": 3,
+          "sprite": "lab_planter",
+          "lines": {
+            "else": "A white planter. Nothing is growing in it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_planter_c",
+          "name": "planter",
+          "x": 1,
+          "y": 17,
+          "sprite": "lab_planter",
+          "lines": {
+            "else": "A white planter. Nothing is growing in it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_planter_d",
+          "name": "planter",
+          "x": 12,
+          "y": 17,
+          "sprite": "lab_planter",
+          "lines": {
+            "else": "A white planter. Nothing is growing in it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_lamp_a",
+          "name": "white lamp",
+          "x": 1,
+          "y": 19,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_lamp_b",
+          "name": "white lamp",
+          "x": 12,
+          "y": 19,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_counter_a",
+          "name": "side counter",
+          "x": 1,
+          "y": 8,
+          "sprite": "lab_counter",
+          "lines": {
+            "else": "A side counter. The top is clear."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_counter_b",
+          "name": "side counter",
+          "x": 12,
+          "y": 8,
+          "sprite": "lab_counter",
+          "lines": {
+            "else": "A side counter. The top is clear."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_table_a",
+          "name": "low table",
+          "x": 2,
+          "y": 15,
+          "sprite": "table_small",
+          "lines": {
+            "else": "A low table. Nothing on it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_table_b",
+          "name": "low table",
+          "x": 11,
+          "y": 15,
+          "sprite": "table_small",
+          "lines": {
+            "else": "A low table. Nothing on it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_scan",
+          "name": "scanner",
+          "x": 10,
+          "y": 18,
+          "sprite": "lab_scanner",
+          "lines": {
+            "else": "A quiet scanner by the mat."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx1_board",
+          "name": "directory",
+          "x": 11,
+          "y": 7,
+          "sprite": "lab_terminal_bank",
+          "lines": {
+            "else": "A short list of floor names."
+          }
         }
       ],
-      "skin": "lab"
+      "skin": "lab",
+      "variants": true,
+      "fitWidth": true
     },
     "rx_f2": {
       "name": "RegenX Focus Wing",
       "kind": "interior",
       "outdoor": "fb_heights",
       "backdrop": "town",
-      "w": 18,
-      "h": 12,
+      "w": 14,
+      "h": 22,
       "spawns": null,
       "zones": [],
       "safe": {
-        "x": 9,
-        "y": 8
+        "x": 6,
+        "y": 19
       },
       "grid": [
-        "##################",
-        "#WWWWWWWWWWWWWWWW#",
-        "#................#",
-        "#..====....====..#",
-        "#..====....====..#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#........m.......#",
-        "##################"
+        "##############",
+        "#WnWWnWWnWWnW#",
+        "#bb...^..bb..#",
+        "#.....|......#",
+        "#~~~~.+....~~#",
+        "#.....|......#",
+        "#bbbb.|..bbbb#",
+        "#.....|......#",
+        "#bbbb.|..bbbb#",
+        "#..,,.|..,,..#",
+        "#.....+......#",
+        "#bbbb.|..bbbb#",
+        "#.....|......#",
+        "#.....|......#",
+        "#..o..|...o..#",
+        "#.....|......#",
+        "#bbbb.+..bbbb#",
+        "#.....|......#",
+        "#~~...|..~~..#",
+        "#.....|......#",
+        "#.....m......#",
+        "##############"
       ],
       "objs": [
         {
           "kind": "warp",
           "id": "rx2_down",
-          "x": 9,
-          "y": 10,
+          "x": 6,
+          "y": 20,
           "to": "rx_f1",
-          "tx": 9,
+          "tx": 6,
           "ty": 4,
           "facing": "up"
         },
         {
           "kind": "door",
           "id": "rx2_up",
-          "x": 14,
-          "y": 3,
+          "x": 6,
+          "y": 2,
           "to": "rx_f3",
-          "tx": 9,
-          "ty": 9,
+          "tx": 6,
+          "ty": 19,
           "facing": "up",
           "need": "story.rx_f2",
           "deny": "The techs are still between you and the stairs."
@@ -325,8 +535,8 @@
           "kind": "npc",
           "id": "rx_cal",
           "name": "Cal",
-          "x": 5,
-          "y": 6,
+          "x": 4,
+          "y": 10,
           "look": "cal",
           "scene": "rx_cal",
           "lines": {
@@ -340,8 +550,8 @@
           "kind": "npc",
           "id": "rx_ivo",
           "name": "Dr. Ivo",
-          "x": 4,
-          "y": 4,
+          "x": 3,
+          "y": 6,
           "look": "ivo",
           "lines": {
             "story.heights_done": "Atten still matches the label.",
@@ -353,37 +563,37 @@
         {
           "kind": "trainer",
           "id": "rx_techs",
-          "x": 12,
-          "y": 7
+          "x": 9,
+          "y": 14
         },
         {
           "kind": "pickup",
           "id": "rx2_heal",
-          "x": 7,
-          "y": 8,
+          "x": 8,
+          "y": 18,
           "item": "heal_snack",
           "n": 1
         },
         {
           "kind": "prop",
           "id": "rx2_bench_a",
-          "x": 3,
-          "y": 2,
+          "x": 2,
+          "y": 8,
           "sprite": "lab_bench"
         },
         {
           "kind": "prop",
           "id": "rx2_bench_b",
           "x": 11,
-          "y": 2,
+          "y": 8,
           "sprite": "lab_bench"
         },
         {
           "kind": "prop",
           "id": "rx2_rack",
           "name": "vial rack",
-          "x": 15,
-          "y": 2,
+          "x": 12,
+          "y": 5,
           "sprite": "rx_rack",
           "lines": {
             "else": "Years of Atten, sealed and labeled."
@@ -393,55 +603,288 @@
           "kind": "sign",
           "id": "rx_f2_plaque",
           "x": 2,
-          "y": 6,
-          "text": "FOCUS WING. Atten helps a Walkling focus. The vial rack is years of work. Please let it be."
+          "y": 5,
+          "text": "FOCUS WING. Atten helps a Walkling focus. The vial rack is years of work. Please let it be.",
+          "sprite": "lab_plaque"
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_board",
+          "name": "whiteboard",
+          "x": 10,
+          "y": 5,
+          "sprite": "lab_whiteboard",
+          "lines": {
+            "else": "A whiteboard. The writing is wiped clean."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_scan",
+          "name": "scanner",
+          "x": 10,
+          "y": 18,
+          "sprite": "lab_scanner",
+          "lines": {
+            "else": "A quiet scanner by the mat."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_lamp_a",
+          "name": "white lamp",
+          "x": 1,
+          "y": 19,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_lamp_b",
+          "name": "white lamp",
+          "x": 12,
+          "y": 19,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_lamp_c",
+          "name": "white lamp",
+          "x": 1,
+          "y": 3,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_lamp_d",
+          "name": "white lamp",
+          "x": 12,
+          "y": 3,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_counter",
+          "name": "side counter",
+          "x": 12,
+          "y": 17,
+          "sprite": "lab_counter",
+          "lines": {
+            "else": "A side counter. The top is clear."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_table",
+          "name": "low table",
+          "x": 2,
+          "y": 17,
+          "sprite": "table_small",
+          "lines": {
+            "else": "A low table. Nothing on it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_a",
+          "name": "quiet booth",
+          "x": 1,
+          "y": 12,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_b",
+          "name": "quiet booth",
+          "x": 2,
+          "y": 12,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_c",
+          "name": "quiet booth",
+          "x": 3,
+          "y": 12,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_d",
+          "name": "quiet booth",
+          "x": 10,
+          "y": 12,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_e",
+          "name": "quiet booth",
+          "x": 11,
+          "y": 12,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_f",
+          "name": "quiet booth",
+          "x": 12,
+          "y": 12,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_g",
+          "name": "quiet booth",
+          "x": 1,
+          "y": 15,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_h",
+          "name": "quiet booth",
+          "x": 2,
+          "y": 15,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_i",
+          "name": "quiet booth",
+          "x": 3,
+          "y": 15,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_j",
+          "name": "quiet booth",
+          "x": 10,
+          "y": 15,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_k",
+          "name": "quiet booth",
+          "x": 11,
+          "y": 15,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx2_booth_l",
+          "name": "quiet booth",
+          "x": 12,
+          "y": 15,
+          "sprite": "lab_booth",
+          "lines": {
+            "else": "A quiet booth. The panel eats the sound."
+          }
         }
       ],
-      "skin": "lab"
+      "skin": "lab",
+      "variants": true,
+      "fitWidth": true
     },
     "rx_f3": {
       "name": "RegenX Records",
       "kind": "interior",
       "outdoor": "fb_heights",
       "backdrop": "town",
-      "w": 18,
-      "h": 12,
+      "w": 14,
+      "h": 22,
       "spawns": null,
       "zones": [],
       "safe": {
-        "x": 9,
-        "y": 8
+        "x": 6,
+        "y": 19
       },
       "grid": [
-        "##################",
-        "#WWWWWWWWWWWWWWWW#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#..============..#",
-        "#..============..#",
-        "#................#",
-        "#................#",
-        "#................#",
-        "#........m.......#",
-        "##################"
+        "##############",
+        "#WWWVWWWWVWWW#",
+        "#yy...^..yy..#",
+        "#.....|......#",
+        "#~~~~.+....~~#",
+        "#.....|......#",
+        "#.....|......#",
+        "#.....|......#",
+        "#yy.yy|.yyy.y#",
+        "#..,,.|..,,..#",
+        "#yy.yy+.yyy.y#",
+        "#..,,.|..,,..#",
+        "#.....|......#",
+        "#.....|......#",
+        "#..o..|...o..#",
+        "#.....|......#",
+        "#..,,.+..,,..#",
+        "#y....|.....y#",
+        "#~~...|..~~..#",
+        "#y....|.....y#",
+        "#.....m......#",
+        "##############"
       ],
       "objs": [
         {
           "kind": "warp",
           "id": "rx3_down",
-          "x": 9,
-          "y": 10,
+          "x": 6,
+          "y": 20,
           "to": "rx_f2",
-          "tx": 14,
+          "tx": 6,
           "ty": 4,
           "facing": "up"
         },
         {
           "kind": "door",
           "id": "rx3_up",
-          "x": 14,
-          "y": 3,
+          "x": 6,
+          "y": 2,
           "to": "rx_f4",
           "tx": 6,
           "ty": 19,
@@ -452,8 +895,8 @@
         {
           "kind": "trigger",
           "id": "rx3_term",
-          "x": 8,
-          "y": 5,
+          "x": 6,
+          "y": 7,
           "r": 0,
           "when": [
             "!story.saw_arbiter"
@@ -463,37 +906,37 @@
         {
           "kind": "trainer",
           "id": "rx_records",
-          "x": 12,
-          "y": 6
+          "x": 9,
+          "y": 11
         },
         {
           "kind": "pickup",
           "id": "rx3_heal",
-          "x": 6,
-          "y": 8,
+          "x": 8,
+          "y": 18,
           "item": "heal_snack",
           "n": 1
         },
         {
           "kind": "prop",
           "id": "rx3_shelf_a",
-          "x": 3,
-          "y": 2,
+          "x": 1,
+          "y": 6,
           "sprite": "rx_shelf"
         },
         {
           "kind": "prop",
           "id": "rx3_shelf_b",
-          "x": 6,
-          "y": 2,
+          "x": 2,
+          "y": 6,
           "sprite": "rx_shelf"
         },
         {
           "kind": "prop",
           "id": "rx3_screen",
           "name": "records screen",
-          "x": 11,
-          "y": 2,
+          "x": 10,
+          "y": 5,
           "sprite": "rx_terminal",
           "lines": {
             "else": "Payroll, then a thin folder. The cheap notes."
@@ -503,11 +946,256 @@
           "kind": "sign",
           "id": "rx_f3_plaque",
           "x": 2,
+          "y": 4,
+          "text": "RECORDS. Folders stay in this room. An older note says THE ARBITER, and nothing more.",
+          "sprite": "lab_plaque"
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_c",
+          "name": "shelf",
+          "x": 3,
           "y": 6,
-          "text": "RECORDS. Folders stay in this room. An older note says THE ARBITER, and nothing more."
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_d",
+          "name": "shelf",
+          "x": 4,
+          "y": 6,
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_e",
+          "name": "shelf",
+          "x": 11,
+          "y": 6,
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_f",
+          "name": "shelf",
+          "x": 12,
+          "y": 6,
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_g",
+          "name": "shelf",
+          "x": 1,
+          "y": 9,
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_h",
+          "name": "shelf",
+          "x": 2,
+          "y": 9,
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_i",
+          "name": "shelf",
+          "x": 3,
+          "y": 9,
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_j",
+          "name": "shelf",
+          "x": 11,
+          "y": 9,
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_shelf_k",
+          "name": "shelf",
+          "x": 12,
+          "y": 9,
+          "sprite": "rx_shelf",
+          "lines": {
+            "else": "A shelf of folders. The labels face out."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_sort_a",
+          "name": "sorting table",
+          "x": 4,
+          "y": 10,
+          "sprite": "lab_sort_table",
+          "lines": {
+            "else": "A sorting table. Folders in short stacks."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_sort_b",
+          "name": "sorting table",
+          "x": 8,
+          "y": 10,
+          "sprite": "lab_sort_table",
+          "lines": {
+            "else": "A sorting table. Folders in short stacks."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_cart_a",
+          "name": "file cart",
+          "x": 1,
+          "y": 14,
+          "sprite": "lab_file_cart",
+          "lines": {
+            "else": "A file cart. The wheels are locked."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_cart_b",
+          "name": "file cart",
+          "x": 2,
+          "y": 14,
+          "sprite": "lab_file_cart",
+          "lines": {
+            "else": "A file cart. The wheels are locked."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_cart_c",
+          "name": "file cart",
+          "x": 11,
+          "y": 14,
+          "sprite": "lab_file_cart",
+          "lines": {
+            "else": "A file cart. The wheels are locked."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_cart_d",
+          "name": "file cart",
+          "x": 12,
+          "y": 14,
+          "sprite": "lab_file_cart",
+          "lines": {
+            "else": "A file cart. The wheels are locked."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_lamp_a",
+          "name": "archive lamp",
+          "x": 8,
+          "y": 8,
+          "sprite": "lab_archive_lamp",
+          "lines": {
+            "else": "A dim lamp. It lights one shelf."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_lamp_b",
+          "name": "archive lamp",
+          "x": 4,
+          "y": 16,
+          "sprite": "lab_archive_lamp",
+          "lines": {
+            "else": "A dim lamp. It lights one shelf."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_lamp_c",
+          "name": "archive lamp",
+          "x": 10,
+          "y": 16,
+          "sprite": "lab_archive_lamp",
+          "lines": {
+            "else": "A dim lamp. It lights one shelf."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_scan",
+          "name": "scanner",
+          "x": 11,
+          "y": 18,
+          "sprite": "lab_scanner",
+          "lines": {
+            "else": "A quiet scanner by the mat."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_lamp_d",
+          "name": "white lamp",
+          "x": 1,
+          "y": 19,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_lamp_e",
+          "name": "white lamp",
+          "x": 12,
+          "y": 19,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "The white lamp hums, very softly."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "rx3_counter",
+          "name": "side counter",
+          "x": 2,
+          "y": 17,
+          "sprite": "lab_counter",
+          "lines": {
+            "else": "A side counter. The top is clear."
+          }
         }
       ],
-      "skin": "lab"
+      "skin": "lab",
+      "variants": true,
+      "fitWidth": true
     },
     "rx_f4": {
       "name": "The Arbiter Bay",
@@ -553,7 +1241,7 @@
           "x": 6,
           "y": 20,
           "to": "rx_f3",
-          "tx": 14,
+          "tx": 6,
           "ty": 4,
           "facing": "up"
         },
@@ -563,7 +1251,7 @@
           "x": 7,
           "y": 20,
           "to": "rx_f3",
-          "tx": 14,
+          "tx": 6,
           "ty": 4,
           "facing": "up"
         },

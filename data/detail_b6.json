@@ -1,0 +1,208 @@
+{
+  "spec": "handoff/maps/B6_highcharity_interiors.md",
+  "note": "High Charity room overlay. highcharity.json stays untouched. New prop lines are D100 placeholders. Sizes stay as they are (D84).",
+  "tiles": {
+    "q": {"name": "painted line", "walk": true},
+    "j": {"name": "floor mark", "walk": true},
+    "Y": {"name": "keeper pilaster", "walk": false}
+  },
+  "slicePatch": {
+    "maps": {
+      "hc_airport_in": {
+        "set": {"skin": "hc_airport", "variants": true},
+        "gridRows": {
+          "0": "####Y####",
+          "2": "#uvuvuvu#",
+          "3": "Y.qqqqq.Y",
+          "5": "#.qqqqq.#"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_weather", "x": 1, "y": 2, "sprite": "weather_board", "lines": {"else": "A board of winds. The marks are painted."}},
+          {"kind": "prop", "id": "hc_crate_a", "x": 1, "y": 5, "sprite": "crate", "lines": {"else": "A crate lashed for the next lift."}},
+          {"kind": "prop", "id": "hc_crate_b", "x": 7, "y": 4, "sprite": "crate", "lines": {"else": "A second crate. The lid is shut."}}
+        ]
+      },
+      "hc_command_in": {
+        "set": {"skin": "hc_command", "variants": true},
+        "gridRows": {
+          "0": "####Y####",
+          "2": "#uvuvuvu#",
+          "3": "Y.......Y"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_console_b", "x": 5, "y": 2, "sprite": "skydock_console", "lines": {"else": "A second console. Its lamps stay dim."}},
+          {"kind": "prop", "id": "hc_console_c", "x": 7, "y": 2, "sprite": "skydock_console", "lines": {"else": "The end of the console row."}},
+          {"kind": "prop", "id": "hc_chart", "x": 7, "y": 4, "sprite": "chart_table", "lines": {"else": "A table with a chart of the docks."}}
+        ]
+      },
+      "hc_barracks_in": {
+        "set": {"skin": "hc_barracks", "variants": true},
+        "gridRows": {
+          "0": "####Y####",
+          "2": "#uvuvuvu#",
+          "3": "Y.......Y"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_bunk_a", "x": 6, "y": 3, "sprite": "bunk", "lines": {"else": "A bunk. The blanket is folded."}},
+          {"kind": "prop", "id": "hc_bunk_b", "x": 6, "y": 4, "sprite": "bunk", "lines": {"else": "A bunk in the row. The pillow is thin."}},
+          {"kind": "prop", "id": "hc_bunk_c", "x": 6, "y": 5, "sprite": "bunk", "lines": {"else": "The end bunk. A yellow stitch on the blanket."}},
+          {"kind": "prop", "id": "hc_locker", "x": 1, "y": 5, "sprite": "locker", "lines": {"else": "A metal locker. The door is shut."}}
+        ]
+      },
+      "hc_marina_in": {
+        "set": {"skin": "hc_marina", "variants": true},
+        "gridRows": {
+          "0": "####Y####",
+          "2": "#uvuvuvu#",
+          "3": "Y.......Y"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_boat", "x": 7, "y": 2, "sprite": "boat_rack", "lines": {"else": "A small boat on a rack. The hull is dry."}},
+          {"kind": "prop", "id": "hc_net", "x": 1, "y": 5, "sprite": "net_hang", "lines": {"else": "A folded net. It smells like the canal."}},
+          {"kind": "prop", "id": "hc_rope", "x": 7, "y": 5, "sprite": "rope_coil", "lines": {"else": "A coil of rope beside the rack."}}
+        ]
+      },
+      "hc_school_in": {
+        "set": {"skin": "hc_school", "variants": true},
+        "gridRows": {
+          "0": "####Y####",
+          "2": "#uvuvuvu#",
+          "3": "Y.......Y"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_board", "x": 7, "y": 2, "sprite": "chalk_board", "lines": {"else": "A chalk board. The lesson is wiped clean."}},
+          {"kind": "prop", "id": "hc_desk_b", "x": 6, "y": 4, "sprite": "school_desk", "lines": {"else": "A desk in the row. The top is clear."}},
+          {"kind": "prop", "id": "hc_desk_c", "x": 6, "y": 5, "sprite": "school_desk", "lines": {"else": "Another desk. A chalk stub sits in the groove."}}
+        ]
+      },
+      "hc_bank_in": {
+        "set": {"skin": "hc_bank", "variants": true},
+        "gridRows": {
+          "0": "####Y####",
+          "2": "#uvuvuvu#",
+          "3": "Y.......Y"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_grille", "x": 6, "y": 2, "sprite": "grille", "lines": {"else": "A grille over the counter window."}},
+          {"kind": "prop", "id": "hc_vault", "x": 7, "y": 2, "sprite": "vault_door", "lines": {"else": "A heavy door. The wheel does not turn."}}
+        ]
+      },
+      "hc_gym_in": {
+        "set": {"skin": "hc_gym", "variants": true},
+        "gridRows": {
+          "0": "####Y####",
+          "2": "#uvuvuvu#",
+          "3": "Yqqqqqq.Y",
+          "5": "#.qqqqqq#"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_mat_a", "x": 7, "y": 3, "sprite": "gym_mat", "lines": {"else": "A practice mat. The floor gives under it."}},
+          {"kind": "prop", "id": "hc_mat_b", "x": 1, "y": 5, "sprite": "gym_mat", "lines": {"else": "A mat along the court line."}},
+          {"kind": "prop", "id": "hc_mat_c", "x": 6, "y": 4, "sprite": "gym_mat", "lines": {"else": "A mat by the far line."}}
+        ]
+      },
+      "hc_lantern_in": {
+        "set": {"skin": "hc_lantern", "variants": true},
+        "gridRows": {
+          "0": "####Y####",
+          "2": "#uvuvuvu#",
+          "3": "Y.......Y",
+          "5": "#.....j.#"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_clinic_shelf", "x": 1, "y": 4, "sprite": "clinic_shelf", "lines": {"else": "A shelf of folded cloth and small jars."}}
+        ]
+      },
+      "hc_church_in": {
+        "set": {"skin": "hc_church", "variants": true},
+        "gridRows": {
+          "0": "#####Y#####",
+          "2": "#uvuvuvuvu#",
+          "3": "#....=....#",
+          "4": "#....=....#",
+          "5": "Y....=....Y",
+          "6": "#....=j...#",
+          "8": "#....=....#"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_candle_a", "x": 1, "y": 3, "sprite": "candle_stand", "lines": {"else": "A candle stand. The flame holds steady."}},
+          {"kind": "prop", "id": "hc_candle_b", "x": 9, "y": 3, "sprite": "candle_stand", "lines": {"else": "A second stand. The wax is warm."}}
+        ]
+      },
+      "hc_hall_in": {
+        "set": {"skin": "hc_hall", "variants": true},
+        "gridRows": {
+          "0": "#####Y#####",
+          "2": "#uvuvuvuvu#",
+          "5": "Y.........Y"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_stage", "x": 5, "y": 2, "sprite": "hall_stage", "lines": {"else": "A low stage. The boards are set in a pattern."}},
+          {"kind": "prop", "id": "hc_chair_a", "x": 1, "y": 7, "sprite": "hall_chair", "lines": {"else": "A chair facing the stage."}},
+          {"kind": "prop", "id": "hc_chair_b", "x": 9, "y": 7, "sprite": "hall_chair", "lines": {"else": "Another chair, set a little apart."}}
+        ]
+      },
+      "hc_arena_in": {
+        "set": {"skin": "hc_arena", "variants": true},
+        "gridRows": {
+          "0": "#####Y#####",
+          "2": "#uvuvuvuvu#",
+          "3": "#...j.....#",
+          "4": "Y.........Y"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_stand_a", "x": 1, "y": 6, "sprite": "arena_stand", "lines": {"else": "A short stand facing the sand."}},
+          {"kind": "prop", "id": "hc_stand_b", "x": 3, "y": 6, "sprite": "arena_stand", "lines": {"else": "A seat in the stands."}},
+          {"kind": "prop", "id": "hc_stand_c", "x": 7, "y": 6, "sprite": "arena_stand", "lines": {"else": "Another seat. The row faces the ring."}},
+          {"kind": "prop", "id": "hc_stand_d", "x": 9, "y": 6, "sprite": "arena_stand", "lines": {"else": "The end of the stands."}}
+        ]
+      },
+      "hc_apt_in": {
+        "set": {"skin": "hc_apt", "variants": true},
+        "gridRows": {
+          "0": "###Y###",
+          "2": "#uvuvu#",
+          "3": "Y.=...Y",
+          "4": "#.=...#"
+        },
+        "addObjs": [
+          {"kind": "prop", "id": "hc_apt_desk", "x": 5, "y": 3, "sprite": "apt_desk", "lines": {"else": "A small desk by the wall."}}
+        ]
+      },
+      "hc_mall_1": {
+        "set": {"skin": "hc_mall", "variants": true},
+        "gridRows": {
+          "0": "#####Y#####",
+          "2": "#uvuvuvuvu#",
+          "4": "#....j....#",
+          "5": "Y.........Y",
+          "7": "#........j#"
+        },
+        "addObjs": [
+          {"kind": "decal", "id": "hc_stair_art", "x": 9, "y": 5, "sprite": "stair_flight"},
+          {"kind": "prop", "id": "hc_fountain", "x": 5, "y": 2, "sprite": "fountain_small", "lines": {"else": "A small fountain. The water holds still."}},
+          {"kind": "prop", "id": "hc_stall_a", "x": 1, "y": 8, "sprite": "shop_stall", "lines": {"else": "A stall with folded cloth."}},
+          {"kind": "prop", "id": "hc_stall_b", "x": 3, "y": 8, "sprite": "shop_stall", "lines": {"else": "A stall of small jars."}},
+          {"kind": "prop", "id": "hc_stall_c", "x": 7, "y": 8, "sprite": "shop_stall", "lines": {"else": "A stall under a striped awning."}},
+          {"kind": "prop", "id": "hc_stall_d", "x": 9, "y": 8, "sprite": "shop_stall", "lines": {"else": "A stall of paper bags."}}
+        ]
+      },
+      "hc_mall_2": {
+        "set": {"skin": "hc_mall_up", "variants": true},
+        "gridRows": {
+          "0": "#####Y#####",
+          "2": "#uvuvuvuvu#",
+          "5": "Y.........Y"
+        },
+        "addObjs": [
+          {"kind": "decal", "id": "hc_stair_art_up", "x": 9, "y": 5, "sprite": "stair_flight"},
+          {"kind": "prop", "id": "hc_stall_e", "x": 1, "y": 2, "sprite": "shop_stall", "lines": {"else": "A coat stall. The hangers are empty."}},
+          {"kind": "prop", "id": "hc_stall_f", "x": 7, "y": 2, "sprite": "shop_stall", "lines": {"else": "A scarf stall. The colours are quiet."}},
+          {"kind": "prop", "id": "hc_stall_g", "x": 1, "y": 8, "sprite": "shop_stall", "lines": {"else": "A stall of folded coats."}},
+          {"kind": "prop", "id": "hc_stall_h", "x": 3, "y": 8, "sprite": "shop_stall", "lines": {"else": "A stall of buttons and thread."}},
+          {"kind": "prop", "id": "hc_mall_bench", "x": 7, "y": 6, "sprite": "mall_bench", "lines": {"else": "A bench. A Walkling can sit."}}
+        ]
+      }
+    }
+  }
+}
