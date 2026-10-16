@@ -2,6 +2,19 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-15 23:00 ET: RegenX floors merged with current main again (build 20261015-2300)
+
+- What changed and why: Merged current `main` (map pass B1, the Q28 plan, and the B5 house interiors). `sprites.js` keeps main's `HOUSE_SKINS` and `SKINS` and this branch's `LAB_SKIN` (Focus Wing and Records floors, new lab chars). `data/mapdata.js` was regenerated, not hand-merged. `OPEN_DECISIONS.md` keeps D92, D99, D94 and D95. `tests/README.md` keeps both paragraphs. The B5 lab check in `tests/maps_b5.spec.js` now reads the plain floor at (8, 9), because B2 put a mint inlay on (9, 8). Full `npm test`: 813 passed, 3 failed (that check), then the fixed specs passed 93/93. Save `v` stays 2. No id was renumbered.
+
+## 2026-10-15 20:41 ET: RegenX floors brought up to current main (build 20261015-2041)
+
+- What changed and why: Merged current `main`. The lobby, Focus Wing, and Records stay 14×22. Outdoor grass variants and building paint from main stay, because this branch did not replace that draw path. The overlay loader is the one already on `main`. `data/mapdata.js` was regenerated. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `OPEN_DECISIONS.md` (D94 and D95 kept), `data/mapdata.js` (regenerated), `index.html` and `version.json` (restamped). `game.js` merged cleanly.
+- Commit(s) + build id: build 20261015-2041.
+- Tests run and result (widths, checks): recorded in the pull request after this stamp.
+- Decisions made (colour + reasoning): D94 and D95 stay the placeholder lines. No id was renumbered.
+- Anything left unfinished: the acceptance suite on this stamp.
+
 ## 2026-10-15 22:50 ET: House interiors merged with current main again (build 20261015-2250)
 
 - What changed and why: Merged current `main` (map pass B1 and the Q28 plan). Conflicts were only in `CHANGELOG.md`, `OPEN_DECISIONS.md` (D92 and D99 both kept), `index.html` and `version.json` (restamped). `data/mapdata.js` was regenerated and did not change. Save `v` stays 2. No id was renumbered.
@@ -132,6 +145,16 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 ## 2026-10-15 — Design's approved green copy replaces the leftover control, welcome and rename placeholders
 
 - Settings toasts: 'Arcade controls. Pad and Talk button.', 'Modern controls. Tap to walk or talk.', 'Joystick on.', 'Joystick off.'. The step-8 toast is 'Keep walking. Wild Walklings hide in the grass.' in both layouts. `WELCOME_LINE` (after 14 h away) is '{pet} missed you! Welcome back.'. Rename: '{name} likes the new name!' on success; '{name} is back to its own name.' (species name) when a blank box, or the species name typed in, clears the nickname (D57); 'Pick a name first.' when the input is rejected (every character filtered) or blank with no nickname to clear, and the editor stays open. Town-board placeholders unchanged. Design's answers to the PR #52 flags: the welcome-back line is '{pet} missed you! Welcome back.'; clearing a nickname back to the species name shows '{name} is back to its own name.'; the arcade step-8 toast matches modern ('Keep walking. Wild Walklings hide in the grass.'). Tests: `tests/care_tools.spec.js`, `tests/controls.spec.js` (Settings toasts, toast fit at 320/375/390 in both layouts).
+
+## 2026-10-15 — RegenX lobby, Focus Wing, and Records at 14x22 (build 20261015-0907)
+
+- What changed and why: `rx_f1`, `rx_f2`, and `rx_f3` expand from 18x12 to 14x22 so the lab matches the Arbiter bay. Every old object id, flag, and warp id stays; only coordinates move. The lobby keeps the white floor and adds a mint inlay, waiting benches, empty white planters, and a visitor screen. The Focus Wing has pale blue grout, a pale blue stripe, quiet booths, a whiteboard, and sound panels. Records has amber grout, an amber stripe, a shelving run, sorting tables, file carts, and a dim lamp. `"variants": true` and `"fitWidth": true` turn on the existing floor check and the interior camera. `rx_f4` is unchanged except `rx4_down` and `rx4_down_b`, which land on the Records north stair at (6, 4). `rx3_up` still lands on the bay at (6, 19). The Heights lab door arrives on the lobby mat at (6, 19).
+- Files touched: `data/heights.json`, `data/mapdata.js`, `sprites.js`, `tests/maps_b2.spec.js`, `tests/rx_f4_pilot.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: branch `cursor/maps-b2-regenx-floors-7807`, build `20261015-0907`.
+- Tests run and result: `PP_PORT=8102 npm test` at 320, 375, and 390. 528 passed, 6 skipped, 0 failed. The skips are the 320-only town-board cases when the 390 project runs. Console errors stayed at zero on the new specs.
+- Decisions made (green): D94 lobby prop lines and D95 Focus Wing and Records prop lines are short placeholders. The white lamp reuses the Heights lamp line.
+- Anything left unfinished: none. Save `v` stays 2. An old position on a solid tile snaps to (6, 19) with the existing safe-spot rule.
+- Depends on the Arbiter Bay pilot already on main (PR #51, build 20261015-0817). This branch also carries the `data/detail_*.json` overlay hook from `30ff864`.
 
 ## 2026-10-15 09:02 ET: house interiors get their own floors and walls
 
