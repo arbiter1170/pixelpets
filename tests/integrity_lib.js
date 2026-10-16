@@ -112,7 +112,10 @@ function composeWorld(md) {
     applyMapPatch(world, md.civic.slicePatch);
   }
   if (md.town_board) applyMapPatch(world, md.town_board.slicePatch);
-  for (const k of detail) applyMapPatch(world, md[k].slicePatch);
+  for (const k of detail) {
+    if (md[k].maps) Object.assign(world, JSON.parse(JSON.stringify(md[k].maps)));
+    applyMapPatch(world, md[k].slicePatch);
+  }
   return { world, tiles };
 }
 

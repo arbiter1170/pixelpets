@@ -1101,6 +1101,7 @@ function applyMapPatch(W, patch){
   for (const [id, pt] of Object.entries(patch.maps)) {
     const m = W[id]; if (!m) continue;
     if (pt.set) Object.assign(m, JSON.parse(JSON.stringify(pt.set)));
+    if (pt.addRoofs) m.roofs = Object.assign({}, m.roofs || {}, JSON.parse(JSON.stringify(pt.addRoofs)));
     if (pt.gridRows) for (const [y, row] of Object.entries(pt.gridRows)) m.grid[+y] = row;
     for (const o of pt.replaceObjs || []) {
       const copy = JSON.parse(JSON.stringify(o)), k = m.objs.findIndex(x => x.id === o.id);
@@ -1139,7 +1140,7 @@ const WORLD = (() => {
     applyMapPatch(W, MD.civic.slicePatch);
   }
   if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards: squares, then the posts
-  for (const k of DETAIL_KEYS) applyMapPatch(W, MD[k].slicePatch);
+  for (const k of DETAIL_KEYS) { if (MD[k].maps) Object.assign(W, JSON.parse(JSON.stringify(MD[k].maps))); applyMapPatch(W, MD[k].slicePatch); }
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -1151,6 +1152,7 @@ if (MD.mahopac) Object.assign(SCENES, MD.mahopac.scenes || {});
 if (MD.highcharity) Object.assign(SCENES, MD.highcharity.scenes || {});
 if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
 if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
+for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
@@ -1389,6 +1391,7 @@ if (MD.civic && MD.civic.looks) for (const [k, v] of Object.entries(MD.civic.loo
 if (MD.civic && MD.civic.speakers) for (const [k, v] of Object.entries(MD.civic.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.heights && MD.heights.looks) for (const [k, v] of Object.entries(MD.heights.looks)) if (v && typeof v === 'object' && !k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.heights && MD.heights.speakers) for (const [k, v] of Object.entries(MD.heights.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
+for (const k of DETAIL_KEYS) for (const [n, v] of Object.entries(MD[k].looks || {})) if (!n.startsWith('_') && v && typeof v === 'object') NPC_LOOKS[n] = v;
 // Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
 (function wireIlseLetter(){
   const steps = SCENES.ilse_chat; if (!steps) return;
@@ -1717,6 +1720,8 @@ function tryStep(d){
   if (o) { const turned = S.world.facing !== dn; S.world.facing = dn; bumpObj(o, d, turned); return; }
   if (solidTile(nx, ny)) {
     S.world.facing = dn;
+    const onWall = tileAt(nx, ny) === 'H' && doorAt(nx, ny);
+    if (onWall && dn === 'up') { enterDoor(onWall); return; }   // door object sits on the wall; the step is south of it
     const dr = doorAt(S.world.x, S.world.y);  // a door: step up from its doorstep into the wall (MAPS_SLICE §4)
     if (dr && dn === 'up' && tileAt(nx, ny) === 'H') enterDoor(dr);
     return;
@@ -2472,7 +2477,12 @@ function buildingsOf(m){
     let y1 = r.y1;
     const wallRow = y => { for (let x = r.x0; x <= r.x1; x++) if (at(x, y) === 'H') return true; return false; };
     while (y1 + 1 < m.grid.length && wallRow(y1 + 1)) y1++;
-    const doors = m.objs.filter(o => o.kind === 'door' && o.x >= r.x0 && o.x <= r.x1 && o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H');
+    const doors = m.objs.filter(o => {
+      if (o.kind !== 'door' || o.x < r.x0 || o.x > r.x1) return false;
+      // A door on the wall itself (schoolhouse, flats) is entered from the grass south of that cell.
+      if (at(o.x, o.y) === 'H' && o.y > r.y1 && o.y <= y1) return true;
+      return o.y - 1 > r.y1 && o.y - 1 <= y1 && at(o.x, o.y - 1) === 'H';
+    });
     const shp = String(r.shape || '').split('+');
     out.push({ name, x0: r.x0, y0: r.y0, x1: r.x1, y1, ry1: r.y1, col: r.col || null, roof: r.roof || null, wall: r.wall || null, door: r.door || null,
       win: r.win ? [].concat(r.win) : [], trim: r.trim || null, shape: shp[0] || null, feats: shp.slice(1), doors: doors.map(o => ({ id: o.id, x: o.x, y: o.y })),
@@ -2506,8 +2516,9 @@ function paintBuilding(m, b, fac, P){
   if (b.trim) { g.fillStyle = PAL[b.trim]; g.fillRect(0, RH, W, 1); g.fillRect(0, RH, 2, H - RH); g.fillRect(W - 2, RH, 2, H - RH); }
   const bigDoor = WART[b.door] && WART[b.door].width > TS, skip = new Set();
   for (const d of b.doors) {
-    skip.add(bldKey(d.x, d.y - 1));
-    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, d.y - 1 - dy));
+    const wy = at(d.x, d.y) === 'H' ? d.y : d.y - 1;
+    skip.add(bldKey(d.x, wy));
+    if (bigDoor) for (let dy = 0; dy < WART[b.door].height / TS; dy++) for (let dx = -1; dx <= 1; dx++) skip.add(bldKey(d.x + dx, wy - dy));
   }
   if (b.win.length) {
     const every = /^win_(band|strip)/.test(b.win[0]);
@@ -2536,6 +2547,8 @@ function paintBuilding(m, b, fac, P){
   feat('mast', 'mast', mid - 8, 0);
   feat('bell', 'bell', mid - 8, 0);
   feat('clock', 'clock_face', mid - 8, RH - TS);
+  feat('vane', 'weathervane', mid - 8, 0);
+  feat('tank', 'water_tank', chx, 0);
   if (b.feats.indexOf('bunting') >= 0) for (let X = 0; X < W; X += TS) feat('bunting', 'bunting', X, RH - 2);
   for (const d of b.doors) feat('emblem', 'acorn_emblem', (d.x - b.x0) * TS, RH - TS);
   const gch = [at(b.x0 - 1, b.y0), at(b.x1 + 1, b.y0), at(b.x0, b.y0 - 1)].find(ch => ch && BLD_GROUND.indexOf(ch) >= 0) || 'g';
@@ -2567,7 +2580,8 @@ const shapedRoof = (tx, ty) => !!CUR.roofs && buildingCells().cut.has(bldKey(tx,
 const styledWall = (tx, ty) => !!CUR.roofs && buildingCells().styled.has(bldKey(tx, ty));
 function drawDoor(g, o, cx, cy){
   const nm = CUR.roofs && buildingCells().doors.get(o.id), a = (nm && WART[nm]) || WART.door;
-  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, (o.y - 1) * TS - cy - (a.height - TS));
+  const baseY = tileAt(o.x, o.y) === 'H' ? o.y : o.y - 1;
+  g.drawImage(a, o.x * TS - cx - (a.width - TS) / 2, baseY * TS - cy - (a.height - TS));
 }
 // Map pass E7: on outdoor maps a path cell that touches grass gets a grass fringe on that side, rounded where two sides meet.
 const EDGE_GRASS = 'gftTF', EDGE_TILES = ['path_edge_n', 'path_edge_s', 'path_edge_w', 'path_edge_e', 'path_corner_nw', 'path_corner_ne', 'path_corner_sw', 'path_corner_se'];
@@ -2720,7 +2734,7 @@ function drawMap(t){
         if (tileAt(tx-1, ty) !== '=') g.fillRect(X, Y, 1, 16); if (tileAt(tx+1, ty) !== '=') g.fillRect(X+15, Y, 1, 16);
       }
     }
-  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && tileAt(o.x, o.y - 1) === 'H') drawDoor(g, o, cx, cy);
+  for (const o of CUR.objs) if (o.kind === 'door' && present(o) && (tileAt(o.x, o.y - 1) === 'H' || tileAt(o.x, o.y) === 'H')) drawDoor(g, o, cx, cy);
   for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) g.drawImage(WART[o.sprite], o.x*TS - cx, o.y*TS - cy);   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
@@ -2989,6 +3003,9 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
+    if (o.pet) { const [ln, st] = String(o.pet).split('/'), si = SP_INDEX[ln];
+      if (si != null) { g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2); g.drawImage(sprSet(si, +st || 0, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
+      return; }
     const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
     const img = keeperFrames(npcLook(o))[face][fr];
@@ -3224,7 +3241,7 @@ function interact(o){
   if (o.booth) { openBooth(o); return; }
   if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
-  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); noteContact(objName(o)); }
+  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) noteContact(objName(o)); }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
@@ -3249,6 +3266,8 @@ function facingTarget(){
   if (!S || scene || fade.busy) return null;
   const [dx, dy] = DIRS[S.world.facing] || DIRS.down, nx = S.world.x + dx, ny = S.world.y + dy;
   const o = blockerAt(nx, ny); if (talkable(o)) return o;
+  const onWall = tileAt(nx, ny) === 'H' && doorAt(nx, ny);
+  if (onWall && S.world.facing === 'up') return onWall;
   const dr = doorAt(S.world.x, S.world.y); if (dr && S.world.facing === 'up' && tileAt(nx, ny) === 'H') return dr;
   return null;
 }
@@ -3257,10 +3276,11 @@ function talkFacing(){ const o = facingTarget(); if (!o) return false; clearMove
 function tapObject(o){
   const q = objPos(o);
   if (o.kind === 'door') {
+    const onWall = tileAt(o.x, o.y) === 'H', sx = o.x, sy = onWall ? o.y + 1 : o.y;
     const go = () => { S.world.facing = 'up'; enterDoor(o); };
-    if (S.world.x === o.x && S.world.y === o.y) { go(); return true; }
-    const path = findPath([{ x: o.x, y: o.y }]); if (!path) return false;
-    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: o.x, y: o.y, soft: false }; walk.repath = null; return true;
+    if (S.world.x === sx && S.world.y === sy) { go(); return true; }
+    const path = findPath([{ x: sx, y: sy }]); if (!path) return false;
+    walk.target = null; walk.path = path; walk.arrive = go; walk.aim = { x: sx, y: sy, soft: false }; walk.repath = null; return true;
   }
   const nb = Object.values(DIRS).map(([dx, dy]) => ({ x: q.x + dx, y: q.y + dy })).filter(c => !solid(c.x, c.y) || (c.x === S.world.x && c.y === S.world.y));
   const talk = () => { S.world.facing = dirName(q.x - S.world.x, q.y - S.world.y); bump.talked = null; interact(o); };
@@ -5191,6 +5211,7 @@ function contactPeople(){
   for (const m of Object.values(WORLD)) {
     for (const o of m.objs || []) {
       if (!o || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
+      if (o.pet) continue;   // a Walkling beside an NPC talks, and never gets a phone card
       const name = objName(o), key = contactKey(name);
       if (!key) continue;
       let person = people.get(key);
@@ -8517,6 +8538,7 @@ function boot(){
   api.mapTrack = id => trackFor(id && WORLD[id]);
   api.spriteLook = id => {
     const o = objById(id);
+    if (o && o.pet) return null;   // a Walkling standing with an NPC has no keeper look
     const look = o ? npcLook(o) : (NPC_LOOKS[id] ? npcLook({ look: id, name: id }) : null);
     if (!look) return null;
     return { skin: look.skin || null, hair: look.hair || null, hairCol: look.hairCol || null, outfit: look.outfit || null, outfitCol: look.outfitCol || null, accent: look.accent || null, accessory: look.accessory || 'none' };

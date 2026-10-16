@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 08:56 ET: Hearthmoor Schoolhouse and Amberhill Flats (build 20261016-0856)
+
+- What changed and why: Vincent approved packet P3 v2 on Design's defaults. Hearthmoor stays 24 by 20. The schoolhouse and the flats sit on the empty south tiles. Each of the three rooms has its own skin. The lift panel lists floors 1 through 6, and only 5B is a real map. Both lift doors open after Lizzy's intro. Lizzy, Buddy, Ossabell, Morelou, Pip, Wren, and Mr. Gristle are in. Morolow has a look and is not on a map yet. The intro plays once after the starter, branches on Rook, and gives two Heal Snacks. Buddy is a Walkling beside Lizzy. He is never a phone contact and never a battle. Family lines use cooking, music, and Spanish. The game names no real place. Five south props move so the new walls can land. Save `v` stays 2. Lizzy stands one tile east in the hall, and Ossabell one tile east in the kitchen, so the only doorway into each room stays open. A door drawn on a wall is entered from the grass south of it. Two art names already existed (`floor_honey`, `bunk`), so those pictures stay as they were. The rooms still differ by their walls and the other floors.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `game.js`, `sprites.js`, `keeper.js`, `quests.js`, `tests/lizzy.spec.js`, `tests/maps_b4.spec.js`, `tests/maps_b7.spec.js`, `tests/integrity_lib.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0856.
+- Tests run and result (widths, checks): `PP_PORT=8803 npm test` exit 0. 891 passed, 12 skipped, 0 failed (20.2m), at 320, 375, and 390. The suite fails a run that logs a console error, and this run did not. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D111–D119 and D138–D141, Vincent, Oct 16 2026, Design's defaults. D111 red: two buildings, placement A, the map stays 24 by 20. D118: six floors on the panel, only 5B is real. D119: flower clip, Hearthmoor Schoolhouse, Amberhill Flats, Mr. Gristle. D138 green: kids use full-size looks. D139 green: the flower clip is NPC-only. D140 yellow: one overlay plus the engine notes. D141 green: five props move, nothing else. D142–D147 are unused. The next free id is D142. No id was renumbered.
+- Anything left unfinished: Sister scenes, family dinners, school lessons, and the landlord and field-day quests stay out of this build. The coach cell (12, 9) is the Keeper House roof from an earlier patch, so the approach is the path beside it.
+
 ## 2026-10-16 ET: Keeper House merged with current main (build 20261016-0304)
 
 - What changed and why: Merged current `main`, which now holds PR #74 (lantern, Calloway, Lodge and observatory rooms) and PR #75 (the `maps_b6` lab-floor check fix). `data/mapdata.js` was regenerated. Save `v` stays 2.
