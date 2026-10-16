@@ -60,7 +60,11 @@ const PPSound = (() => {
   }
   function warm(){
     if (warmed || !ac) return;
-    try { const s = ac.createBufferSource(); s.buffer = ac.createBuffer(1, 1, ac.sampleRate); s.connect(ac.destination); s.start(0); warmed = true; } catch(e) {}
+    try {
+      const s = ac.createBufferSource(); s.buffer = ac.createBuffer(1, 1, ac.sampleRate); s.connect(ac.destination);
+      s.onended = () => { try { s.disconnect(); } catch (err) {} };
+      s.start(0); warmed = true;
+    } catch(e) {}
   }
   // First gesture unlocks audio; kept on so iOS can resume after an interruption (phone call, lock screen, another app's audio).
   // pointerdown/touchstart are not "activation" on iOS, so touchend/click/keydown do the real unlock; pointerdown is a harmless early try.
@@ -72,6 +76,12 @@ const PPSound = (() => {
   });
 
   const hz = m => 440 * Math.pow(2, (m - 69) / 12);   // MIDI note -> Hz (72 = C5)
+  // Safari keeps a stopped node that is still connected. A music loop makes a new chain every note,
+  // and an iPhone tab that holds them is killed and reloaded after a few minutes. Drop the chain when it ends.
+  function endChain(source, nodes){
+    const drop = () => { for (const n of nodes) { try { n.disconnect(); } catch (e) {} } };
+    try { source.onended = drop; } catch (e) {}
+  }
   function tone(m, at, dur, type, vol, slideTo, dest){
     const o = ac.createOscillator(), g = ac.createGain();
     o.type = type || 'square';
@@ -81,6 +91,7 @@ const PPSound = (() => {
     g.gain.exponentialRampToValueAtTime(vol, at + 0.006);
     g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
     o.connect(g); g.connect(dest || out); o.start(at); o.stop(at + dur + 0.03);
+    endChain(o, [o, g]);
     return o;
   }
   const f = v => ({ hz: v });                          // raw frequency instead of a note
@@ -89,6 +100,7 @@ const PPSound = (() => {
     s.buffer = noiseBuf; fl.type = type || 'lowpass'; fl.frequency.value = freq || 2000;
     g.gain.setValueAtTime(vol, at); g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
     s.connect(fl); fl.connect(g); g.connect(dest || out); s.start(at); s.stop(at + dur + 0.03);
+    endChain(s, [s, fl, g]);
     return s;
   }
   const seq = (t, notes, step, dur, type, vol) => notes.forEach((m, i) => { if (m) tone(m, t + i * step, dur, type, vol); });

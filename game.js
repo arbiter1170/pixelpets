@@ -8187,6 +8187,7 @@ function startCloud(){
 // GitHub Pages caches index.html for ~10 min, so a phone can keep an old build. version.json (written by tools/bump_build.py,
 // always equal to window.BUILD) is fetched with a unique ?t= on boot and when the tab comes back (at most once a minute).
 // A different id shows a small notice; tapping it saves and reloads. Silent on any error; queued while an overlay is open.
+// This check never reloads by itself. A mid-game reload (a deploy, a worker takeover) was wiping play on iPhone.
 const buildChk = { at: 0, ready: null, gone: null };
 function checkBuild(force){
   const t = Date.now();
@@ -8628,13 +8629,24 @@ function boot(){
 // P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()
 // met DOM ids the old page lacks, threw before the first HUD paint, and the player saw the bare page (Lv 1, all 0). The save
 // was never touched (nothing is written before boot finishes). Recover once with a cache-busting reload; never loop.
+// The one-shot mark is the ?b=boot. query as well as sessionStorage. iOS drops sessionStorage across location.replace
+// when a service worker answers the navigation, and clearing only the storage key let the retry fire again.
 const BOOT_RETRY_KEY = 'pixelpets.bootRetry';
+function bootRetried(){
+  try {
+    const b = new URLSearchParams(location.search).get('b') || '';
+    if (b.indexOf('boot.') === 0) return true;
+  } catch (e) {}
+  try { return sessionStorage.getItem(BOOT_RETRY_KEY) === '1'; } catch (e) { return true; }
+}
 try {
   boot();
   try { sessionStorage.removeItem(BOOT_RETRY_KEY); } catch (e) {}
 } catch (err) {
-  let tried = false; try { tried = sessionStorage.getItem(BOOT_RETRY_KEY) === '1'; sessionStorage.setItem(BOOT_RETRY_KEY, '1'); } catch (e) { tried = true; }
-  if (!tried && !resetting) { resetting = true; try { clearInterval(saveTimer); } catch (e) {} location.replace(freshUrl('boot')); }
+  if (!bootRetried() && !resetting) {
+    try { sessionStorage.setItem(BOOT_RETRY_KEY, '1'); } catch (e) {}
+    resetting = true; try { clearInterval(saveTimer); } catch (e) {} location.replace(freshUrl('boot'));
+  }
   throw err;
 }
 })();

@@ -1,12 +1,13 @@
 /* Walklings shell. Same-origin files only. version.json stays on the network so a newer deploy can still announce itself.
-   Location lookups are other origins and are not touched. */
+   Location lookups are other origins and are not touched.
+   sw.js is not cached here: the browser's own update check must see the network copy.
+   A new worker does not call skipWaiting. Taking over an open page makes iOS Safari reload it. */
 const CACHE = 'walklings-shell';
 const SHELL = [
   './',
   './index.html',
   './style.css',
   './manifest.json',
-  './sw.js',
   './sprites.js',
   './keeper.js',
   './stats.js',
@@ -31,15 +32,42 @@ const SHELL = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  // No skipWaiting. The first install still activates on its own (nothing else is active).
+  // An update waits until this tab is closed, so a Pages deploy cannot reload a game in progress.
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
 });
 
 self.addEventListener('activate', event => {
+  // claim() here only runs when this worker is actually taking over. On first install that
+  // gives the open page a controller so the shell works offline. On an update it runs after
+  // the old worker is gone, not under a game that is still playing.
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
 function isVersion(url){
   return url.origin === self.location.origin && /(^|\/)version\.json$/.test(url.pathname);
+}
+
+function isWorkerScript(url){
+  return /(^|\/)sw\.js$/.test(url.pathname);
+}
+
+// Navigations and the HTML shell. A directory URL ends in "/". index.html is named.
+function isPage(req, url){
+  return req.mode === 'navigate' || /(^|\/)index\.html$/.test(url.pathname) || /\/$/.test(url.pathname);
+}
+
+// Safari rejects a navigation response whose fetch followed a redirect ("response served by
+// service worker has redirections") and retries the load. Rebuild those as a plain 200.
+async function stripRedirect(res){
+  if (!res || res.type === 'opaqueredirect' || (res.status >= 300 && res.status < 400)) return null;
+  if (!res.redirected) return res;
+  try {
+    const headers = new Headers(res.headers);
+    headers.delete('content-encoding');
+    headers.delete('content-length');
+    return new Response(await res.arrayBuffer(), { status: res.status, statusText: res.statusText, headers });
+  } catch (e) { return null; }
 }
 
 self.addEventListener('fetch', event => {
@@ -52,16 +80,23 @@ self.addEventListener('fetch', event => {
     event.respondWith(fetch(req).catch(() => new Response('', { status: 404 })));
     return;
   }
+  // Never cache the worker script. A cached copy can make an update check look new forever.
+  if (isWorkerScript(url)) {
+    event.respondWith(fetch(req).catch(() => new Response('', { status: 504 })));
+    return;
+  }
+  const page = isPage(req, url);
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      // P0: pages (index.html) always revalidate, so an old cached page never pairs with newer scripts (Pages ignores ?v=).
-      const page = req.mode === 'navigate' || /(^|\/)(index\.html)?$/.test(url.pathname);
-      const res = await (page ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin', redirect: req.mode === 'navigate' ? 'manual' : 'follow' }) : fetch(req));
-      if (res && res.ok) { try { await cache.put(req, res.clone()); } catch (e) { /* a full cache must not drop the live response */ } }
+      // P0: pages always revalidate, so an old cached page never pairs with newer scripts (Pages ignores ?v=).
+      const net = await (page ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin', redirect: 'follow' }) : fetch(req));
+      const res = await stripRedirect(net);
+      if (!res) throw new Error('redirect');
+      if (res.ok) { try { await cache.put(req, res.clone()); } catch (e) { /* a full cache must not drop the live response */ } }
       return res;
     } catch (e) {
-      const hit = (await cache.match(req)) || (await cache.match(req, { ignoreSearch: true })) || (await cache.match('./index.html'));
+      const hit = (await cache.match(req)) || (await cache.match(req, { ignoreSearch: true })) || (page ? await cache.match('./index.html') : null);
       return hit || new Response('', { status: 504 });
     }
   })());
