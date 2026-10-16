@@ -16,7 +16,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - What changed and why: Merged current `main`. Outdoor grass variants, path-edge fringe, and per-building paint stay. The nine house rooms still use their own floors and walls. The `data/detail_*.json` loader is the one already on `main` (the same hook as PR #57). This branch does not add a second loader. `data/mapdata.js` was regenerated, not hand-merged. Save `v` stays 2. These rooms are not resized by an overlay, so the overlay size fix stays on PR #57.
 - Files touched: merge of `main`. Conflicts: `game.js` (outdoor path kept, house skins kept), `data/mapdata.js` (regenerated), `OPEN_DECISIONS.md` (D99 kept beside main's later rows), `README.md` (house sentence and the north-trail sentence), `index.html` and `version.json` (restamped).
 - Commit(s) + build id: build 20261015-2040.
-- Tests run and result (widths, checks): recorded in the pull request after this stamp.
+- Tests run and result (widths, checks): recorded in the pull request after this stamp. The two tap-to-walk checks that used Rook's floor now use the upstairs room, because the new stove, stool, plant, and shelf sit on the old route.
 - Decisions made (colour + reasoning): D99 stays the house-prop placeholder. No id was renumbered.
 - Anything left unfinished: the acceptance suite on this stamp.
 
