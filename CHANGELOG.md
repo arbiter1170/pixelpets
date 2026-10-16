@@ -7,7 +7,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - What changed and why: Merged the updated observatory branch, which already contains the updated house branch and current `main`. Outdoor grass and building paint stay. High Charity skins stay beside the house, observatory, and dream skins in one `SKINS` table. `data/mapdata.js` was regenerated with `detail_b4` through `detail_b7`. Save `v` stays 2.
 - Files touched: merge of the dream branch. Conflicts: `sprites.js` (kept both tile sets, both skin rows, and both prop sets), `OPEN_DECISIONS.md` (D100 kept beside D102 and main's later rows), `tests/README.md` (both spec rows), `data/mapdata.js` (regenerated), `index.html` and `version.json` (restamped). `game.js` merged cleanly.
 - Commit(s) + build id: build 20261015-2044.
-- Tests run and result (widths, checks): recorded in the pull request after this stamp.
+- Tests run and result (widths, checks): recorded in the pull request after this stamp. The dream-room spec counts every skin in the shared table, which is 27 once the fourteen High Charity rooms are included.
 - Decisions made (colour + reasoning): D100 stays. D101 was not needed. No id was renumbered.
 - Anything left unfinished: the acceptance suite on this stamp.
 
