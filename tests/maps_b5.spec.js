@@ -240,8 +240,8 @@ test('a save standing on a wall snaps to safe, and the lab bay is unchanged', as
   await boot(page, save(null, { map: 'hm_home_in', x: 0, y: 0 }));
   expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, v: PixelPets.state.v }))).toEqual({ map: 'hm_home_in', x: 4, y: 6, v: 2 });
   const lab = await page.evaluate(() => {
-    PixelPets.goto('rx_f1', 9, 8, 'up');
-    const plain = PixelPets.tileInfo(9, 8).tile;
+    PixelPets.goto('rx_f1', 8, 9, 'up');   // (9,8) is a mint inlay since B2
+    const plain = PixelPets.tileInfo(8, 9).tile;
     const share = PixelPets.floorShare('rx_f4');
     return { plain, walk: share.walk, share: share.share, cap: PixelPets.devChecks().floorCap };
   });
