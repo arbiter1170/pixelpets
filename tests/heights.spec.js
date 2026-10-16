@@ -103,7 +103,7 @@ test('a Bitlet floats in the RegenX bay and stays out of the wild', async ({ pag
       wild: objs.find(o => o.id === 'rx_bitlet') || null,
       art: objs.filter(o => o.sprite).map(o => o.sprite + (o.art ? ':ok' : ':missing')),
       window: MAPDATA.heights.maps.rx_f4.grid[1],
-      nia: MAPDATA.heights.looks.nia.hair,
+      nia: MAPDATA.heights.looks.rx_nia.hair,
     };
   });
   expect(info.i).toBe(14);

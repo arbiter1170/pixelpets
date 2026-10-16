@@ -171,8 +171,19 @@ test('each room has its own skin, the floor cap, and a clear path', async ({ pag
     });
     const pal = {};
     Object.keys(PAL).forEach(k => { if ('ABCDEFGHIJKP'.includes(k)) pal[k] = PAL[k]; });
+    PixelPets.goto('fb_lantern_in', 5, 14, 'down');
+    const lantern = PixelPets.mapInfo;
+    let hearth = 0, runner = 0;
+    for (let y = 0; y < lantern.h; y++) for (let x = 0; x < lantern.w; x++) {
+      const t = PixelPets.tileInfo(x, y);
+      if (t.ch === 'h') hearth++;
+      if (t.ch === ',') runner++;
+    }
+    const lip = PixelPets.tileInfo(3, 4);
+    const quilt = PixelPets.tileInfo(4, 11);
     return {
       out, stuck, pairs, doors, sizes, pal,
+      hearth, runner, lip: lip.tile, quilt: quilt.tile,
       noFifth: PixelPets.goto('rx_f5', 1, 1, 'up') === false,
       floorCap: PixelPets.devChecks().floorCap,
       v: PixelPets.state.v,
@@ -188,6 +199,12 @@ test('each room has its own skin, the floor cap, and a clear path', async ({ pag
   });
   expect(report.pal).toEqual(PAL_KEEP);
   expect(report.doors.lantern).toMatchObject({ id: 'fb_lantern', x: 5, y: 5 });
+  expect(report.hearth).toBeGreaterThan(0);
+  expect(report.hearth).toBeLessThanOrEqual(4);
+  expect(report.runner).toBeGreaterThan(0);
+  expect(report.runner).toBeLessThanOrEqual(6);
+  expect(report.lip).toBe('hearth_orchard');
+  expect(report.quilt).toBe('runner_orchard');
   expect(report.doors.hall).toMatchObject({ id: 'fb_hall', x: 22, y: 6 });
   for (const row of report.out) {
     const room = ROOMS.find(r => r.id === row.id);
@@ -342,6 +359,11 @@ test('new props say their lines, and the camera clamps', async ({ page }) => {
     await page.evaluate(() => PixelPets.goto('fb_lantern_in', 5, 8, 'up'));
     await page.waitForTimeout(200);
     await shot(page, 'b8-lantern');
+    if (width === 390) {
+      await page.evaluate(() => PixelPets.goto('fb_lantern_in', 4, 5, 'up'));
+      await page.waitForTimeout(200);
+      await shot(page, 'b8-lantern-floor');
+    }
     await page.evaluate(() => PixelPets.goto('fb_hall_in', 7, 6, 'up'));
     await page.waitForTimeout(200);
     await shot(page, 'b8-hall-dais');

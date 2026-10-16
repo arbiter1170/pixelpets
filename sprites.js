@@ -1119,9 +1119,27 @@ function buildTiles(){
   T.floor_asphalt = asphalt(0); T.floor_asphalt_b = asphalt(1); T.floor_asphalt_c = asphalt(2);
   T.lane_paint = mkTile(g => { px(g, PAL.y, 1, 7, 14, 2); px(g, PAL.w, 1, 7, 14, 1); });
   // B8 Fernbrook rooms. New tile names only. Palette keys A–K and P stay as written above.
-  T.floor_orchard = woodFloor('A', 'F', [0, 5, 10, 15], [[2, 1], [9, 6], [14, 11]], [[4, 3, 'g'], [11, 8, 'r'], [7, 13, 'B']]);
-  T.floor_orchard_b = woodFloor('A', 'F', [0, 4, 9, 14], [[6, 1], [13, 6], [3, 11]], [[8, 4, 'r'], [1, 8, 'g'], [12, 12, 'B']]);
-  T.floor_orchard_c = woodFloor('A', 'B', [1, 6, 11, 15], [[4, 2], [10, 7], [1, 12]], [[13, 3, 'g'], [6, 9, 'r']]);
+  // Wide cream boards: one soft seam and one short joint. Not the four-course brick pile.
+  function orchardPlank(seam, joint, grain){
+    return mkTile(g => {
+      px(g, PAL.C, 0, 0, 16, 16);
+      px(g, PAL.A, 0, seam, 16, 1);
+      px(g, PAL.G, joint[0], joint[1], 1, joint[2]);
+      px(g, PAL.G, grain[0], grain[1], 2, 1);
+    });
+  }
+  T.floor_orchard = orchardPlank(8, [4, 1, 6], [11, 4]);
+  T.floor_orchard_b = orchardPlank(8, [12, 9, 6], [2, 12]);
+  T.floor_orchard_c = orchardPlank(7, [7, 0, 6], [3, 11]);
+  T.hearth_orchard = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16); px(g, PAL.A, 0, 8, 16, 1); px(g, PAL.G, 5, 12, 2, 1);
+    px(g, PAL.B, 1, 0, 6, 3); px(g, PAL.F, 7, 0, 1, 3); px(g, PAL.B, 8, 0, 7, 3); px(g, PAL.F, 0, 3, 16, 1);
+  });
+  T.runner_orchard = mkTile(g => {
+    px(g, PAL.C, 0, 0, 16, 16); px(g, PAL.A, 0, 8, 16, 1);
+    px(g, PAL.l, 5, 0, 6, 16); px(g, PAL.g, 5, 0, 1, 16); px(g, PAL.g, 10, 0, 1, 16);
+    px(g, PAL.o, 7, 4, 2, 5); px(g, PAL.C, 7, 11, 2, 2);
+  });
   T.wall_orchard = wallTop('A', 'F', [[3, 6, 'g'], [8, 9, 'r'], [12, 5, 'E']]);
   T.wall_orchard_b = wallTop('A', 'F', [[5, 8, 'g'], [11, 4, 'B'], [2, 11, 'r']]);
   T.wall_orchard_c = wallTop('A', 'E', [[7, 6, 'g'], [13, 10, 'F'], [1, 4, 'r']]);
@@ -1270,11 +1288,11 @@ const HOUSE_SKINS = {
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c') },
   dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
   dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') },
-  // B8. Fernbrook's two new rooms. Orchard planks and a moss hall. Neither reuses a lantern, Calloway, Lodge, observatory or Keeper floor.
+  // B8. Fernbrook's two new rooms. Calm cream planks and a moss hall. Neither reuses a lantern, Calloway, Lodge, observatory or Keeper floor.
   fb_lantern: {
-    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_orchard', '=':'rug_orchard', m:'mat_orchard' },
+    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_orchard', '=':'rug_orchard', m:'mat_orchard', ',':'runner_orchard', h:'hearth_orchard' },
     decal: { v:'wall_shadow_orchard', u:'window_light_orchard', q:'leaf_orchard', j:'apple_speck' },
-    walk: { v:1, u:1, q:1, j:1 },
+    walk: { v:1, u:1, q:1, j:1, ',':1, h:1 },
     variants: Object.assign({}, houseVar('floor_orchard', 'floor_orchard_b', 'floor_orchard_c'), houseVar('wall_orchard', 'wall_orchard_b', 'wall_orchard_c')),
   },
   fb_hall: {
