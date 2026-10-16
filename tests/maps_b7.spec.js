@@ -121,8 +121,8 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap', a
   expect(report.v).toBe(2);
   expect(report.floorCap).toEqual([]);
   expect(report.outdoor).toEqual({ w: 20, h: 16, dream: null, step: 'p', roof: 'R', door: { x: 5, y: 7 } });
-  // 9 house rooms + 4 dream rooms + 14 High Charity rooms share HOUSE_SKINS on this branch.
-  expect(report.skins).toEqual({ n: 27, home: 'house_floor_a', lab: 'lab_floor', labVar: 'lab_floor_bay,lab_floor,lab_floor_focus,lab_floor_records' });
+  // 9 house rooms + 4 dream rooms + 14 High Charity rooms + the two Fernbrook rooms share HOUSE_SKINS on this branch.
+  expect(report.skins).toEqual({ n: 29, home: 'house_floor_a', lab: 'lab_floor', labVar: 'lab_floor_bay,lab_floor,lab_floor_focus,lab_floor_records' });
   const floors = new Set(), walls = new Set();
   for (const row of report.out) {
     const room = ROOMS.find(r => r.id === row.id);

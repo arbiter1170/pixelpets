@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 08:59 ET: Fernbrook Lantern House and Bloom Trial Hall (build 20261016-0859)
+
+- What changed and why: Vincent approved the two new Fernbrook rooms. The Lantern House is 12 by 16, with an orchard-wood floor, Keeper Amos at the heal counter, three quilt beds, a herb rack, apple crates and a table. The Bloom Trial Hall is 16 by 24. A hedge path zig-zags to the flower dais, where Master Fen stands. Each room has its own skin. Neither reuses the lantern, Calloway, Lodge, observatory or Keeper House floor. The outdoor doors keep their panel ids and also warp in. If the room map is missing, the panel still opens. Amos still rests the party and still offers the Pledge desk. Fen still starts the trial. A save inside either room loads. Save `v` stays 2. D103 is the placeholder prop lines. The next free id stays D138.
+- Files touched: `data/fernbrook_rooms.json`, `data/mapdata.js`, `sprites.js`, `game.js`, `save.js`, `tests/integrity_lib.js`, `tools/gen_mapdata.py`, `tests/maps_b8.spec.js`, `tests/maps_b7.spec.js`, `tests/standing.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0859.
+- Tests run and result (widths, checks): `PP_PORT=8817 npm test` exit 0. 894 passed, 12 skipped, 0 failed (20.3m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. D103 was already reserved for this batch. The new prop lines are placeholders. No id was renumbered. Houses were not enlarged. The lab stays four rooms.
+- Anything left unfinished: Real prop copy can replace the D103 lines. The outdoor Fernbrook map is unchanged.
+
 ## 2026-10-16 ET: Keeper House merged with current main (build 20261016-0304)
 
 - What changed and why: Merged current `main`, which now holds PR #74 (lantern, Calloway, Lodge and observatory rooms) and PR #75 (the `maps_b6` lab-floor check fix). `data/mapdata.js` was regenerated. Save `v` stays 2.

@@ -1,0 +1,128 @@
+{
+  "spec": "handoff/maps/B8_new_fernbrook_rooms.md",
+  "note": "New Fernbrook rooms. maps_slice.json stays verbatim. Each door keeps its panel id and also warps into the room. New prop lines are D103 placeholders.",
+  "maps": {
+    "fb_lantern_in": {
+      "name": "Lantern House",
+      "kind": "interior",
+      "outdoor": "fernbrook",
+      "door": "fb_lantern",
+      "backdrop": "town",
+      "skin": "fb_lantern",
+      "variants": true,
+      "w": 12,
+      "h": 16,
+      "spawns": null,
+      "zones": [],
+      "safe": {"x": 5, "y": 14},
+      "grid": [
+        "############",
+        "#WWWWWWWWWW#",
+        "#uvuvuvuvuv#",
+        "#..........#",
+        "#..........#",
+        "#..........#",
+        "#..........#",
+        "#q..j..j...#",
+        "#..........#",
+        "#...===....#",
+        "#...===....#",
+        "#..q....j..#",
+        "#..........#",
+        "#j.........#",
+        "#..........#",
+        "#####m######"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "fb_lantern_mat", "x": 5, "y": 15, "to": "fernbrook", "tx": 5, "ty": 5, "facing": "down"},
+        {"kind": "npc", "id": "amos", "name": "Keeper Amos", "x": 6, "y": 3, "facing": "down", "panel": "lantern", "keeper": "Keeper Amos"},
+        {"kind": "prop", "id": "fb_heal_counter", "x": 3, "y": 3, "sprite": "heal_counter", "lines": {"else": "A wooden counter. A bowl of water sits on it."}},
+        {"kind": "prop", "id": "fb_lamp", "x": 10, "y": 3, "sprite": "orchard_lamp", "lines": {"else": "A small lamp. The shade is warm."}},
+        {"kind": "prop", "id": "fb_herb_rack", "x": 9, "y": 4, "sprite": "herb_rack", "lines": {"else": "Herbs hang here to dry."}},
+        {"kind": "prop", "id": "fb_bed_a", "x": 1, "y": 6, "sprite": "quilt_g", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "fb_bed_b", "x": 2, "y": 6, "sprite": "quilt_l", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "fb_bed_c", "x": 3, "y": 6, "sprite": "quilt_o", "lines": {"else": "@lantern_rest"}},
+        {"kind": "prop", "id": "fb_apple_a", "x": 9, "y": 7, "sprite": "apple_crate", "lines": {"else": "A crate of orchard apples."}},
+        {"kind": "prop", "id": "fb_apple_b", "x": 10, "y": 7, "sprite": "apple_crate", "lines": {"else": "Another crate of orchard apples."}},
+        {"kind": "prop", "id": "fb_table", "x": 8, "y": 10, "sprite": "orchard_table", "lines": {"else": "A low table. The top is clear."}},
+        {"kind": "prop", "id": "fb_jug", "x": 8, "y": 11, "sprite": "cider_jug", "lines": {"else": "A jug of pressed apples. The lid is on."}},
+        {"kind": "prop", "id": "fb_stool", "x": 2, "y": 10, "sprite": "orchard_stool", "lines": {"else": "A short stool by the wall."}},
+        {"kind": "prop", "id": "fb_basket", "x": 1, "y": 12, "sprite": "orchard_basket", "lines": {"else": "A basket lined with leaves."}},
+        {"kind": "sign", "id": "fb_lantern_note", "x": 10, "y": 12, "text": "A note by the shelf: \"Rest the whole party. 5 Acorns. — Amos\""}
+      ]
+    },
+    "fb_hall_in": {
+      "name": "Bloom Trial Hall",
+      "kind": "interior",
+      "outdoor": "fernbrook",
+      "door": "fb_hall",
+      "backdrop": "town",
+      "skin": "fb_hall",
+      "variants": true,
+      "w": 16,
+      "h": 24,
+      "spawns": null,
+      "zones": [],
+      "safe": {"x": 7, "y": 22},
+      "grid": [
+        "################",
+        "#WWWWWWWWWWWWWW#",
+        "#uvuvuvuvuvuvuv#",
+        "#f::::::::::::f#",
+        "#::ffffffffff::#",
+        "#::ffffffffff::#",
+        "#=q=j=q=j=q=j==#",
+        "#::::TTTTTTTTTT#",
+        "#=:f==q==j==f==#",
+        "#TTTTTTTTTT::::#",
+        "#==f==j==q==f==#",
+        "#::::TTTTTTTTTT#",
+        "#=:f==q==j==f==#",
+        "#TTTTTTTTTT::::#",
+        "#==f==j==q==f==#",
+        "#::::TTTTTTTTTT#",
+        "#=:f==q==j==f==#",
+        "#TTTTTTTTTT::::#",
+        "#=f::::::::::f=#",
+        "#TTTT:::TTTTTTT#",
+        "#f::::::::::::f#",
+        "#q=j=q=j=q=j=q=#",
+        "#=j=q=j=q=j=q==#",
+        "#######m########"
+      ],
+      "objs": [
+        {"kind": "warp", "id": "fb_hall_mat", "x": 7, "y": 23, "to": "fernbrook", "tx": 22, "ty": 6, "facing": "down"},
+        {"kind": "npc", "id": "fen_hall", "name": "Master Fen", "x": 7, "y": 4, "facing": "down", "look": "fen", "panel": "hall1"},
+        {"kind": "prop", "id": "fb_hall_lamp_w", "x": 4, "y": 3, "sprite": "dais_lamp", "lines": {"else": "A lamp by the flower dais."}},
+        {"kind": "prop", "id": "fb_hall_lamp_e", "x": 11, "y": 3, "sprite": "dais_lamp", "lines": {"else": "A lamp by the flower dais."}},
+        {"kind": "prop", "id": "fb_hall_ribbon_w", "x": 2, "y": 6, "sprite": "ribbon_stand", "lines": {"else": "A stand of pale ribbons."}},
+        {"kind": "prop", "id": "fb_hall_ribbon_e", "x": 13, "y": 6, "sprite": "ribbon_stand", "lines": {"else": "A stand of pale ribbons."}},
+        {"kind": "prop", "id": "fb_hall_hedge_a", "x": 2, "y": 8, "sprite": "hedge_planter", "lines": {"else": "A hedge in a low planter."}},
+        {"kind": "prop", "id": "fb_hall_hedge_b", "x": 13, "y": 10, "sprite": "hedge_planter", "lines": {"else": "A hedge in a low planter."}},
+        {"kind": "prop", "id": "fb_hall_hedge_c", "x": 2, "y": 12, "sprite": "hedge_planter", "lines": {"else": "A hedge in a low planter."}},
+        {"kind": "prop", "id": "fb_hall_hedge_d", "x": 13, "y": 16, "sprite": "hedge_planter", "lines": {"else": "A hedge in a low planter."}},
+        {"kind": "prop", "id": "fb_hall_urn", "x": 2, "y": 18, "sprite": "bloom_urn", "lines": {"else": "A tall urn. It holds cut stems."}},
+        {"kind": "prop", "id": "fb_hall_pot", "x": 14, "y": 18, "sprite": "bloom_pot", "lines": {"else": "A round pot of cut blooms."}},
+        {"kind": "prop", "id": "fb_hall_bowl_w", "x": 4, "y": 20, "sprite": "petal_bowl", "lines": {"else": "A bowl of loose petals."}},
+        {"kind": "prop", "id": "fb_hall_bowl_e", "x": 12, "y": 20, "sprite": "petal_bowl", "lines": {"else": "A bowl of loose petals."}},
+        {"kind": "prop", "id": "fb_hall_basket", "x": 9, "y": 21, "sprite": "bloom_basket", "lines": {"else": "A basket of pink blooms."}},
+        {"kind": "prop", "id": "fb_hall_bench_w", "x": 2, "y": 21, "sprite": "bloom_bench", "lines": {"else": "A bench along the path."}},
+        {"kind": "prop", "id": "fb_hall_bench_e", "x": 12, "y": 21, "sprite": "bloom_bench", "lines": {"else": "A bench along the path."}},
+        {"kind": "prop", "id": "fb_hall_jar", "x": 1, "y": 21, "sprite": "petal_jar", "lines": {"else": "A jar of dried petals."}},
+        {"kind": "prop", "id": "fb_hall_stool", "x": 14, "y": 21, "sprite": "bloom_stool", "lines": {"else": "A stool pulled off the path."}},
+        {"kind": "prop", "id": "fb_hall_cushion", "x": 4, "y": 22, "sprite": "petal_cushion", "lines": {"else": "A flat cushion off the mat."}},
+        {"kind": "sign", "id": "fb_hall_note", "x": 10, "y": 22, "text": "BLOOM TRIAL HALL. Master Fen waits on the dais."}
+      ]
+    }
+  },
+  "slicePatch": {
+    "maps": {
+      "fernbrook": {
+        "replaceObjs": [
+          {"kind": "door", "id": "fb_lantern", "x": 5, "y": 5, "panel": "lantern", "keeper": "Keeper Amos", "to": "fb_lantern_in", "tx": 5, "ty": 14, "facing": "up"},
+          {"kind": "door", "id": "fb_hall", "x": 22, "y": 6, "panel": "hall1", "need": "story.orchard_cleared", "deny": "The door is latched. A note: 'Out in the orchard. — Fen'", "to": "fb_hall_in", "tx": 7, "ty": 22, "facing": "up"}
+        ]
+      }
+    }
+  }
+}
