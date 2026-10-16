@@ -1,0 +1,1042 @@
+{
+  "spec": "ROOK_CROSSROADS",
+  "version": "0.1",
+  "note": "Rook's Crossroads. Scenes are the settled spec. Standing grants and the Juniper Acorn bonus are applied by the engine, not as scene steps. Pledge desks are retired; only rook_offer switches sides.",
+  "scenes": {
+    "rook_road": [
+      [
+        "say",
+        "",
+        "Rook sits on a crate by the BRINEWICK ROAD sign, no lanyard, swinging his legs."
+      ],
+      [
+        "say",
+        "Rook",
+        "{name}! The cart left without me. Best walk I never took."
+      ],
+      [
+        "if",
+        "!story.rook_quit",
+        [
+          [
+            "setFlag",
+            "story.rook_quit",
+            "r5"
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Rook",
+        "Bad news, though. Three crates are still in the quarry yard. Pebblits, from the Old Seam."
+      ],
+      [
+        "say",
+        "Rook",
+        "Tobin counts them at the gate tonight. Hale says the seam is still warm. They could go home."
+      ],
+      [
+        "choice",
+        "Help them?",
+        [
+          [
+            "Let's free them",
+            [
+              [
+                "setFlag",
+                "story.rc_start",
+                true
+              ],
+              [
+                "inc",
+                "story.rook_bond",
+                1
+              ],
+              [
+                "say",
+                "Rook",
+                "Knew you'd say that. Open the crates gently. I'll go stall Tobin at the gate."
+              ]
+            ]
+          ],
+          [
+            "Not right now",
+            [
+              [
+                "say",
+                "Rook",
+                "I'll be right here. The road's closed anyway."
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "rook_road@glimmer": [
+      [
+        "say",
+        "",
+        "Rook stands by the BRINEWICK ROAD sign. His mint lanyard is in his fist, not round his neck."
+      ],
+      [
+        "say",
+        "Rook",
+        "{name}. I got off the cart at the first bend and walked back."
+      ],
+      [
+        "say",
+        "Rook",
+        "That crate hummed the whole way. I peeked. A Pebblit, asleep. From the Old Seam."
+      ],
+      [
+        "say",
+        "Rook",
+        "So I quit. Exploring other opportunities, they'd call it. I call it going home."
+      ],
+      [
+        "setFlag",
+        "story.rook_quit",
+        "r6"
+      ],
+      [
+        "say",
+        "Rook",
+        "Three more crates sit in the quarry yard. Tobin wants them stamped for Brinewick."
+      ],
+      [
+        "choice",
+        "The crates...",
+        [
+          [
+            "I'll do my job",
+            [
+              [
+                "setFlag",
+                "story.rc_start",
+                true
+              ],
+              [
+                "say",
+                "Rook",
+                "Okay. I won't stop you. I'll just be at the gate when you're done."
+              ]
+            ]
+          ],
+          [
+            "Why tell me?",
+            [
+              [
+                "setFlag",
+                "story.rc_start",
+                true
+              ],
+              [
+                "inc",
+                "story.rook_bond",
+                1
+              ],
+              [
+                "say",
+                "Rook",
+                "Because it's you. And because there's a way out, if you ever want one."
+              ]
+            ]
+          ],
+          [
+            "Not right now",
+            [
+              [
+                "say",
+                "Rook",
+                "I'll be here. Nobody's loading anything till dusk."
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "rc_open": [
+      [
+        "say",
+        "",
+        "The crate hums. Inside, a Pebblit sleeps curled on warm gravel, its glow low and slow."
+      ],
+      [
+        "if",
+        "story.side=glimmer",
+        [
+          [
+            "choice",
+            "Stamp it?",
+            [
+              [
+                "Stamp: BRINEWICK",
+                [
+                  [
+                    "say",
+                    "",
+                    "THUNK. The stamp leaves a bright mint star. The Pebblit does not wake."
+                  ],
+                  [
+                    "inc",
+                    "story.rc_stamped",
+                    1
+                  ]
+                ]
+              ],
+              [
+                "Leave the lid loose",
+                [
+                  [
+                    "say",
+                    "",
+                    "You leave the lid loose. The Pebblit sighs in its sleep."
+                  ],
+                  [
+                    "inc",
+                    "story.rc_loose",
+                    1
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "{pet} noses the latch. You lift the lid gently. The Pebblit blinks up at the evening."
+          ],
+          [
+            "inc",
+            "story.rc_freed",
+            1
+          ]
+        ]
+      ],
+      [
+        "if",
+        "story.rc_c1",
+        [
+          [
+            "if",
+            "story.rc_c2",
+            [
+              [
+                "if",
+                "story.rc_c3",
+                [
+                  [
+                    "say",
+                    "",
+                    "That was the last crate. Rook is waving from the quarry gate."
+                  ]
+                ],
+                []
+              ]
+            ],
+            []
+          ]
+        ],
+        []
+      ]
+    ],
+    "rc_crate_1": [
+      [
+        "setFlag",
+        "story.rc_c1",
+        true
+      ],
+      [
+        "run",
+        "rc_open"
+      ]
+    ],
+    "rc_crate_2": [
+      [
+        "setFlag",
+        "story.rc_c2",
+        true
+      ],
+      [
+        "run",
+        "rc_open"
+      ]
+    ],
+    "rc_crate_3": [
+      [
+        "setFlag",
+        "story.rc_c3",
+        true
+      ],
+      [
+        "run",
+        "rc_open"
+      ]
+    ],
+    "rc_gate": [
+      [
+        "if",
+        "story.rc_c1",
+        [
+          [
+            "if",
+            "story.rc_c2",
+            [
+              [
+                "if",
+                "story.rc_c3",
+                [
+                  [
+                    "if",
+                    "story.side=glimmer",
+                    [
+                      [
+                        "say",
+                        "Associate Tobin",
+                        "Colleague! Crates stamped? Dorian checks the count at dawn."
+                      ],
+                      [
+                        "if",
+                        "story.rc_stamped>=3",
+                        [
+                          [
+                            "say",
+                            "Associate Tobin",
+                            "Three bright stars. That's a quarterly target, right there."
+                          ]
+                        ],
+                        [
+                          [
+                            "say",
+                            "Associate Tobin",
+                            "One lid is loose. I'll pretend I didn't see. Smile!"
+                          ]
+                        ]
+                      ],
+                      [
+                        "say",
+                        "",
+                        "Rook steps between you and the crates. No lanyard. Hands deep in his hoodie pocket."
+                      ],
+                      [
+                        "say",
+                        "Rook",
+                        "I quit, Tobin. And I'm not letting these go without asking {name} one thing."
+                      ],
+                      [
+                        "say",
+                        "Rook",
+                        "{name}. You can walk away with me, right now. They'd go home to the seam."
+                      ],
+                      [
+                        "say",
+                        "Rook",
+                        "It costs you. Glimmerwell halves your score. I won't pretend it doesn't."
+                      ],
+                      [
+                        "choice",
+                        "Walk away?",
+                        [
+                          [
+                            "Walk away with Rook",
+                            [
+                              [
+                                "run",
+                                "rook_offer"
+                              ],
+                              [
+                                "if",
+                                "story.side=keepers",
+                                [
+                                  [
+                                    "say",
+                                    "Rook",
+                                    "Okay. Okay! Help me with the lids."
+                                  ],
+                                  [
+                                    "say",
+                                    "",
+                                    "You and Rook lift three lids. Three Pebblits blink, then roll off toward the Old Seam."
+                                  ],
+                                  [
+                                    "say",
+                                    "Associate Tobin",
+                                    "I'm writing 'escaped'. Do not make me write anything else."
+                                  ],
+                                  [
+                                    "setFlag",
+                                    "story.rc_end",
+                                    "walked"
+                                  ],
+                                  [
+                                    "setFlag",
+                                    "story.rc_climax",
+                                    true
+                                  ]
+                                ],
+                                [
+                                  [
+                                    "say",
+                                    "Rook",
+                                    "Then I have to try. Not as a rival. As a friend asking twice."
+                                  ],
+                                  [
+                                    "battle",
+                                    "rival3_rook"
+                                  ],
+                                  [
+                                    "if",
+                                    "story.rival3_result=won",
+                                    [
+                                      [
+                                        "say",
+                                        "Rook",
+                                        "You're really good, {name}. I hope you're good at the next part too."
+                                      ]
+                                    ],
+                                    [
+                                      [
+                                        "say",
+                                        "Rook",
+                                        "I won, and it doesn't fix anything. Funny how that works."
+                                      ]
+                                    ]
+                                  ],
+                                  [
+                                    "say",
+                                    "",
+                                    "Tobin wheels the crates down the north road. One hums all the way out of sight."
+                                  ],
+                                  [
+                                    "say",
+                                    "Rook",
+                                    "The offer stands. Find me by the Brinewick road. Once per Seal, that's the rule."
+                                  ],
+                                  [
+                                    "setFlag",
+                                    "story.rc_end",
+                                    "shipped"
+                                  ],
+                                  [
+                                    "setFlag",
+                                    "story.rc_climax",
+                                    true
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ],
+                          [
+                            "Stay with the company",
+                            [
+                              [
+                                "say",
+                                "Rook",
+                                "Then I have to try. Not as a rival. As a friend asking twice."
+                              ],
+                              [
+                                "battle",
+                                "rival3_rook"
+                              ],
+                              [
+                                "if",
+                                "story.rival3_result=won",
+                                [
+                                  [
+                                    "say",
+                                    "Rook",
+                                    "You're really good, {name}. I hope you're good at the next part too."
+                                  ]
+                                ],
+                                [
+                                  [
+                                    "say",
+                                    "Rook",
+                                    "I won, and it doesn't fix anything. Funny how that works."
+                                  ]
+                                ]
+                              ],
+                              [
+                                "say",
+                                "",
+                                "Tobin wheels the crates down the north road. One hums all the way out of sight."
+                              ],
+                              [
+                                "say",
+                                "Rook",
+                                "The offer stands. Find me by the Brinewick road. Once per Seal, that's the rule."
+                              ],
+                              [
+                                "setFlag",
+                                "story.rc_end",
+                                "shipped"
+                              ],
+                              [
+                                "setFlag",
+                                "story.rc_climax",
+                                true
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
+                    [
+                      [
+                        "say",
+                        "Associate Tobin",
+                        "Hey! Those crates were counted. Dorian checks the count at dawn."
+                      ],
+                      [
+                        "say",
+                        "Rook",
+                        "Count again, Tobin. They're Pebblits. They napped in that seam before any of us were born."
+                      ],
+                      [
+                        "say",
+                        "Associate Tobin",
+                        "I just pack, Rook. You used to just pack too."
+                      ],
+                      [
+                        "battle",
+                        "rc_tobin"
+                      ],
+                      [
+                        "if",
+                        "story.rc_tobin_result=won",
+                        [
+                          [
+                            "say",
+                            "Associate Tobin",
+                            "Fine. FINE. I'll write 'escaped'. They do look happier."
+                          ]
+                        ],
+                        [
+                          [
+                            "say",
+                            "Associate Tobin",
+                            "Ha! Still, my arms are tired. I'll write 'escaped'. Don't tell Dorian."
+                          ]
+                        ]
+                      ],
+                      [
+                        "say",
+                        "",
+                        "Master Hale comes up the north road with a lantern and swings the shiny gate wide open."
+                      ],
+                      [
+                        "say",
+                        "Master Hale",
+                        "Stone remembers who stood where. In you go, little ones."
+                      ],
+                      [
+                        "say",
+                        "",
+                        "Three Pebblits roll into the warm seam. The rock rumbles softly, like a purr."
+                      ],
+                      [
+                        "setFlag",
+                        "story.rc_end",
+                        "freed"
+                      ],
+                      [
+                        "setFlag",
+                        "story.rc_climax",
+                        true
+                      ],
+                      [
+                        "say",
+                        "Rook",
+                        "{name}. Dorian left my old lanyard on the cart seat. I still have it."
+                      ],
+                      [
+                        "say",
+                        "Rook",
+                        "It's not for me anymore. But if you ever want to see their side, I can get you in."
+                      ],
+                      [
+                        "choice",
+                        "Rook's lanyard",
+                        [
+                          [
+                            "Not ever",
+                            [
+                              [
+                                "say",
+                                "Rook",
+                                "Good answer. I'd have walked you back out anyway."
+                              ]
+                            ]
+                          ],
+                          [
+                            "Maybe someday",
+                            [
+                              [
+                                "say",
+                                "Rook",
+                                "Then I'll hang onto it. Find me by the Brinewick road."
+                              ]
+                            ]
+                          ],
+                          [
+                            "Take it now",
+                            [
+                              [
+                                "run",
+                                "rook_offer"
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ],
+                [
+                  [
+                    "say",
+                    "Rook",
+                    "Crates first. Three in the yard, all humming. I'll keep Tobin talking."
+                  ]
+                ]
+              ]
+            ],
+            [
+              [
+                "say",
+                "Rook",
+                "Crates first. Three in the yard, all humming. I'll keep Tobin talking."
+              ]
+            ]
+          ]
+        ],
+        [
+          [
+            "say",
+            "Rook",
+            "Crates first. Three in the yard, all humming. I'll keep Tobin talking."
+          ]
+        ]
+      ]
+    ],
+    "rc_wrap_hale": [
+      [
+        "say",
+        "Master Hale",
+        "The Old Seam is purring again, {name}. I heard it from my kettle."
+      ],
+      [
+        "if",
+        "story.rc_end=walked",
+        [
+          [
+            "say",
+            "Master Hale",
+            "Rook says you walked away from a lanyard. Takes more nerve than any trial."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Master Hale",
+            "Forty years I dug beside Pebblits. Tonight I got to give some back."
+          ]
+        ]
+      ],
+      [
+        "give",
+        "befriend_treat",
+        3
+      ],
+      [
+        "give",
+        "hearty_snack",
+        2
+      ],
+      [
+        "say",
+        "Master Hale",
+        "For the road to Brinewick. Tell Marisol old Hale says hello."
+      ],
+      [
+        "setFlag",
+        "story.rc_done",
+        true
+      ]
+    ],
+    "rc_wrap_juniper": [
+      [
+        "say",
+        "Associate Juniper",
+        "The count's in! Three units, comfy and on their way. You're a natural, partner!"
+      ],
+      [
+        "if",
+        "story.rc_loose>=1",
+        [
+          [
+            "say",
+            "Associate Juniper",
+            "Small note: one lid was loose. Tobin fixed it. We won't put it in your review!"
+          ]
+        ],
+        [
+          [
+            "say",
+            "Associate Juniper",
+            "Not one lid loose. Dorian will hear about this. In a good way!"
+          ]
+        ]
+      ],
+      [
+        "give",
+        "energy_sip",
+        2
+      ],
+      [
+        "give",
+        "joy_crumb",
+        2
+      ],
+      [
+        "say",
+        "Associate Juniper",
+        "Bonus Acorns are on the way. Have a bright day!"
+      ],
+      [
+        "setFlag",
+        "story.rc_done",
+        true
+      ]
+    ],
+    "rook_after": [
+      [
+        "if",
+        "story.rc_end=shipped",
+        [
+          [
+            "say",
+            "Rook",
+            "Still here. Still closed. The road, I mean. Not me."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Rook",
+            "Pebblits are still purring. I check every morning. Don't tell anyone."
+          ]
+        ]
+      ],
+      [
+        "if",
+        "story.lizzy_met",
+        [
+          [
+            "say",
+            "Rook",
+            "Lizzy sent soup and a lecture. The soup was better. Don't tell her."
+          ]
+        ]
+      ],
+      [
+        "choice",
+        "Rook",
+        [
+          [
+            "How are you?",
+            [
+              [
+                "say",
+                "Rook",
+                "Better. Mom says I sleep now. I say she snores. We're both right."
+              ]
+            ]
+          ],
+          [
+            "About sides",
+            [
+              [
+                "run",
+                "rook_offer"
+              ]
+            ]
+          ],
+          [
+            "See you",
+            []
+          ]
+        ]
+      ]
+    ]
+  },
+  "slicePatch": {
+    "maps": {
+      "cobblecrest": {
+        "addObjs": [
+          {
+            "kind": "npc",
+            "id": "rook_road",
+            "name": "Rook",
+            "x": 28,
+            "y": 7,
+            "facing": "left",
+            "when": [
+              "story.cobble_end",
+              "!story.rc_start"
+            ],
+            "scene": "rook_road"
+          },
+          {
+            "kind": "npc",
+            "id": "rook_after",
+            "name": "Rook",
+            "x": 28,
+            "y": 7,
+            "facing": "left",
+            "when": [
+              "story.rc_climax"
+            ],
+            "scene": "rook_after"
+          }
+        ]
+      },
+      "cobble_quarry": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "rc_crate_1",
+            "x": 24,
+            "y": 7,
+            "sprite": "rc_crate",
+            "when": [
+              "story.rc_start",
+              "!story.rc_c1"
+            ],
+            "scene": "rc_crate_1",
+            "lines": {
+              "else": "@rc_crate_1"
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "rc_crate_2",
+            "x": 26,
+            "y": 7,
+            "sprite": "rc_crate",
+            "when": [
+              "story.rc_start",
+              "!story.rc_c2"
+            ],
+            "scene": "rc_crate_2",
+            "lines": {
+              "else": "@rc_crate_2"
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "rc_crate_3",
+            "x": 19,
+            "y": 8,
+            "sprite": "rc_crate",
+            "when": [
+              "story.rc_start",
+              "!story.rc_c3"
+            ],
+            "scene": "rc_crate_3",
+            "lines": {
+              "else": "@rc_crate_3"
+            }
+          },
+          {
+            "kind": "npc",
+            "id": "rook_gate",
+            "name": "Rook",
+            "x": 15,
+            "y": 2,
+            "facing": "right",
+            "when": [
+              "story.rc_start",
+              "!story.rc_climax"
+            ],
+            "scene": "rc_gate"
+          }
+        ]
+      }
+    }
+  },
+  "trainers": {
+    "rc_tobin": {
+      "name": "Tobin",
+      "title": "Associate",
+      "map": "cobble_quarry",
+      "x": 17,
+      "y": 2,
+      "facing": "down",
+      "sight": 0,
+      "ai": "basic",
+      "oneShot": "story.rc_tobin",
+      "money": 240,
+      "team": [
+        {
+          "form": "stone/1",
+          "level": 21,
+          "moves": [
+            "brace_rock",
+            "pebble_flick",
+            "tumble_charge",
+            "flick_flame"
+          ]
+        },
+        {
+          "form": "mole/1",
+          "level": 22,
+          "moves": [
+            "stoke_up",
+            "seed_toss",
+            "thorn_lash",
+            "burrow_bash"
+          ]
+        }
+      ],
+      "lines": {
+        "intro": "Count's a count, {player}. Let's settle it the bright way!",
+        "win": "Okay, okay. Your team's got more heart than my clipboard.",
+        "lose": "Ha! Still counts as three. Go rest up."
+      }
+    },
+    "rival3_rook": {
+      "name": "Rook",
+      "title": "Neighbour",
+      "map": "cobble_quarry",
+      "x": 15,
+      "y": 2,
+      "facing": "right",
+      "sight": 0,
+      "ai": "basic",
+      "oneShot": "story.rival3",
+      "money": null,
+      "counterTeam": {
+        "ember": [
+          {
+            "form": "moth/1",
+            "level": 21,
+            "moves": [
+              "neon_flash",
+              "zap_tap",
+              "arc_bolt",
+              "puff_shot"
+            ]
+          },
+          {
+            "form": "gust/1",
+            "level": 22,
+            "moves": [
+              "updraft",
+              "puff_shot",
+              "gale_slice",
+              "kite_swoop"
+            ]
+          },
+          {
+            "form": "tide/1",
+            "level": 23,
+            "moves": [
+              "mist_veil",
+              "ripple_jab",
+              "undertow",
+              "frost_nip"
+            ]
+          }
+        ],
+        "tide": [
+          {
+            "form": "dormouse/1",
+            "level": 21,
+            "moves": [
+              "night_veil",
+              "gloom_poke",
+              "frost_nip",
+              "dusk_fang"
+            ]
+          },
+          {
+            "form": "gust/1",
+            "level": 22,
+            "moves": [
+              "updraft",
+              "puff_shot",
+              "gale_slice",
+              "kite_swoop"
+            ]
+          },
+          {
+            "form": "bloom/1",
+            "level": 23,
+            "moves": [
+              "sap_sip",
+              "seed_toss",
+              "thorn_lash",
+              "pebble_flick"
+            ]
+          }
+        ],
+        "bloom": [
+          {
+            "form": "moth/1",
+            "level": 21,
+            "moves": [
+              "neon_flash",
+              "zap_tap",
+              "arc_bolt",
+              "puff_shot"
+            ]
+          },
+          {
+            "form": "gust/1",
+            "level": 22,
+            "moves": [
+              "updraft",
+              "puff_shot",
+              "gale_slice",
+              "kite_swoop"
+            ]
+          },
+          {
+            "form": "ember/1",
+            "level": 23,
+            "moves": [
+              "stoke_up",
+              "flick_flame",
+              "kiln_rush",
+              "tumble_charge"
+            ]
+          }
+        ]
+      },
+      "lines": {
+        "intro": "No lanyard this time. Just me and my team, asking you to stop.",
+        "win": "Okay. You're really good, {player}. That was never the problem.",
+        "lose": "I won. I still don't feel like I did."
+      }
+    }
+  },
+  "flags": {
+    "story.rook_quit": "\"r5\" (Keepers, he left at the cart) or \"r6\" (Glimmerwell, he leaves at rook_road@glimmer). Written once; never removed.",
+    "story.rc_start": "Quest accepted at rook_road / rook_road@glimmer.",
+    "story.rc_c1": "Crate 1 handled.",
+    "story.rc_c2": "Crate 2 handled.",
+    "story.rc_c3": "Crate 3 handled.",
+    "story.rc_freed": "Counter: crates opened (Keepers side).",
+    "story.rc_stamped": "Counter: crates stamped (Glimmerwell side).",
+    "story.rc_loose": "Counter: lids left loose (Glimmerwell side).",
+    "story.rc_tobin": "oneShot prefix for rc_tobin (engine writes rc_tobin_done / rc_tobin_result).",
+    "story.rival3": "oneShot prefix for rival3_rook (engine writes rival3_done / rival3_result).",
+    "story.rc_end": "\"freed\" | \"walked\" | \"shipped\". Written once at the climax.",
+    "story.rc_climax": "Climax finished; Rook's offer is now live.",
+    "story.rc_done": "Wrap-up reward taken; chain finished.",
+    "story.switch_via": "\"rook\" for every switch from now on; \"desk\" back-filled on load for saves with story.switches > 0 and no switch_via."
+  }
+}

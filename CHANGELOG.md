@@ -2,6 +2,33 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 16:12 ET: Lantern House test follows D127 (build 20261016-1612)
+
+- What changed and why: `tests/maps_b8.spec.js` (from PR #78) still expected Amos to offer "Pledge desk" to a Glimmerwell player. D127 removed the desks, so the test now checks the desk is absent. `tests/README.md` says the same.
+- Files touched: `tests/maps_b8.spec.js`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-1612.
+- Tests run and result (widths, checks): full `npm run test:agent` before this fix: 984 passed, 3 failed (this test at 320/375/390), 12 skipped. After: `maps_b8.spec.js`, `standing.spec.js`, `rook_crossroads.spec.js` rerun.
+- Decisions made (colour + reasoning): green; follows D127. No id was renumbered.
+- Anything left unfinished: none.
+
+## 2026-10-16 15:39 ET: Decision-id check for Rook's Crossroads (build 20261016-1539)
+
+- What changed and why: Supervisor id check. D161 (end-game side switch, open) does not collide: the design repo's asset-handoff calls start one past it at D162–D167. The next-free-id notes said D162; they now say D168.
+- Files touched: `OPEN_DECISIONS.md`, `NEXT_PLAN.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-1539.
+- Tests run and result (widths, checks): `npm run test:agent`; `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green. D161 kept; no id was renumbered. Vincent, Oct 16, 2026: pledge desks stay removed and Rook's quest is the only switch until the end game.
+- Anything left unfinished: D162–D167 rows still need adding to the game repo's decision files.
+
+## 2026-10-16 15:33 ET: Rook's Crossroads merged with current main; desks stay removed (build 20261016-1533)
+
+- What changed and why: Merged current `main` (first-time tour, wall kit, heart alert, Fernbrook rooms, Lizzy). Pledge desks stay removed. Rook's quest is still the only way to switch sides, both ways (D127, D128). End-game switching is an open follow-up (D161) and is not built. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `game.js`, `quests.js`, `tools/gen_mapdata.py`, `tests/integrity_lib.js`, `tests/standing.spec.js` (Lantern room, still no Pledge desk), `CHANGELOG.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `index.html`, `version.json` (restamped), `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261016-1533.
+- Tests run and result (widths, checks): `PP_PORT=8801 npx playwright test tests/rook_crossroads.spec.js tests/standing.spec.js tests/quest_multi.spec.js` exit 0. 93 passed, 0 failed (2.3m), at 320, 375, and 390. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Vincent, Oct 16, 2026: desks stay removed. D127 stands. D128 stays both ways. D161 is open and not built. No id was renumbered. The next free id is D162.
+- Anything left unfinished: The end-game switch (D161) is not planned. Frostmere is not built. This branch is not on `main`.
+
 ## 2026-10-16 14:05 ET: First-time tour merged with current main (build 20261016-1405)
 
 - What changed and why: Merged current `main` after PR #84 (Your Home wall kit), PR #83 (heart alert), PR #78 and PR #87. The tour is unchanged. Save `v` stays 2.
@@ -135,6 +162,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `PP_PORT=8793 npm test` exit 0. 906 passed, 12 skipped (20.1m), at 320, 375 and 390. `tests/heart_alert.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
 - Decisions made (colour + reasoning): D154, D155 and D156 were settled by Vincent on Oct 16, 2026. Building that spec is green. No id was renumbered. Save `v` stays 2. Arcade stays without the alert, as D154 says.
 - Anything left unfinished: Arcade has no heart button, so it has no alert. D151–D153 belong to another branch.
+
+## 2026-10-16 09:46 ET: Rook's Crossroads, the last crates (build 20261016-0946)
+
+- What changed and why: After Cobblecrest, Rook waits on the east road. The side quest "The last crates" sends you to three quarry crates. He quits Glimmerwell on every path (`story.rook_quit`). `story.rook_end` is left as saved. Keepers free the crates and fight Associate Tobin. A Glimmerwell player can walk away with Rook (half the company score, then the Keepers) or stay and fight him. Hale or Juniper pays the wrap-up. Side switching is only through Rook. Fernbrook Pledge desks are gone. Save `v` stays 2. Merged current `main` (RegenX look keys, build 20261016-0922) and restamped.
+- Files touched: `data/rook_crossroads.json`, `data/mapdata.js`, `tools/gen_mapdata.py`, `standing.js`, `quests.js`, `save.js`, `game.js`, `sprites.js`, `tests/integrity_lib.js`, `tests/standing.spec.js`, `tests/rook_crossroads.spec.js`, `tests/quest_multi.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `DESIGN_HANDOFF.md`, `DESIGNER_PROMPT.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0946 (restamped after merging main's 20261016-0922).
+- Tests run and result (widths, checks): `PP_PORT=8801 npm test` exit 0. 897 passed, 12 skipped, 0 failed (20.2m), at 320, 375, and 390, after merging main. No console errors in the new specs. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D127 red, Vincent: switching is only through this Rook quest. D128 Vincent: both ways, with the "I won't watch" warning. D129 Vincent: the chapter cooldown stays. D130 red, Vincent: he quits in Episode 1 on every path; `rook_quit` is additive. D131 Vincent: half-points, free only via debug. D132 green: `story.seal3` joins `chapterOf` when Brinewick writes it. Seal 3 is not built. D133 green: `switch_desk_glimmer` retired, pixels kept. D134 yellow, Vincent: `rival3_rook` is Rook battle 3 of 7; Keepers get no Rook battle here. D135 green: the listed rewards. D136 green: the lanyard comes off when `story.rook_quit` is set. D19 and D20 are closed by D127 and D133. No id was renumbered. The next free id stays D151.
+- Anything left unfinished: Frostmere is not built. Ally vs parted stays D25. Brinewick and Seal 3 are not built. This branch is not on `main`.
 
 ## 2026-10-16 09:45 ET: RegenX looks no longer redraw Vesper, Clerk Nia and Cal; doc corrections (build 20261016-0922)
 

@@ -109,84 +109,79 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again', async
   expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
-test('switching halves the side you leave, counts, and is refused again until the next Seal', async ({ page }) => {
-  const save = starterSave(); Object.assign(save.flags, SIDE_PICK_FLAGS, { 'story.side': 'keepers', 'story.orchard_cleared': true, 'story.rook_bond': 2 });
+test('switching halves the side you leave and stays shut until the next Seal', async ({ page }) => {
+  const save = starterSave(); Object.assign(save.flags, SIDE_PICK_FLAGS, { 'story.side': 'keepers', 'story.orchard_cleared': true, 'story.rook_bond': 2, 'story.rc_climax': true });
   save.standing = { keepers: 30, glimmer: 12 };
   save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'down', respawn: 'fernbrook' };
   await installSave(page.context(), save, { quietDay: true });
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
-  const before = await page.evaluate(() => ({ quest: PixelPets.quest.id, canSwitch: PixelPets.standing.canSwitch, orchard: PixelPets.sceneFor('orchard') }));
+  const before = await page.evaluate(() => ({ quest: PixelPets.quest.id, canSwitch: PixelPets.standing.canSwitch, via: PixelPets.standing.via, orchard: PixelPets.sceneFor('orchard') }));
   expect(before.canSwitch).toBe(true);
+  expect(before.via).toBe('rook');
   expect(before.orchard).toBe('orchard');
-  // Through the Pledge desk itself (Juniper's option), with the cost shown before confirming.
-  expect(await page.evaluate(() => PixelPets.pledgeDesk('glimmer'))).toBe(true);
-  const prompts = await playScene(page, ['Yes'], async () => { await shot(page, 'switch-confirm'); });
-  expect(prompts.length).toBe(1);
-  expect(prompts[0]).toContain(cfg.switch.confirm);
-  expect(prompts[0]).toContain(String(30));
-  expect(prompts[0]).toContain(String(Math.floor(30 / cfg.switch.costDiv)));
+  expect(await page.evaluate(() => typeof PixelPets.pledgeDesk)).toBe('undefined');
+  // The cost is the same half-points rule. Rook's own confirm line is covered in rook_crossroads.spec.js.
+  expect(await page.evaluate(() => PixelPets.switchSide('glimmer'))).toBe(true);
   const after = await page.evaluate(() => ({ st: PixelPets.standing, side: PixelPets.side, f: PixelPets.state.flags, seals: PixelPets.state.seals, quest: PixelPets.quest.id, orchard: PixelPets.sceneFor('orchard') }));
   expect(after.st.keepers.points).toBe(Math.floor(30 / cfg.switch.costDiv));
   expect(after.st.glimmer.points).toBe(12);
   expect(after.side).toBe('glimmer');
   expect(after.f['story.side']).toBe('glimmer');
   expect(after.f['story.switches']).toBe(1);
+  expect(after.f['story.switch_via']).toBe('rook');
   expect(after.st.switches).toBe(1);
-  // nothing else moved
   expect(after.f['story.orchard_cleared']).toBe(true);
   expect(after.f['story.seal1']).toBeUndefined();
   expect(after.f['story.seal2']).toBeUndefined();
   expect(after.seals).toEqual({});
   expect(after.f['story.rook_bond']).toBe(2);
   expect(after.quest).toBe(before.quest);
-  expect(after.orchard).toBe('orchard@glimmer');   // unplayed scenes resolve to the new side
-  // a second switch in the same chapter is refused with the config's line
-  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
-  expect(await page.evaluate(() => PixelPets.pledgeDesk('keepers'))).toBe(true);
-  await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.mode === 'say' && s.full; });
-  const line = await page.evaluate(() => PixelPets.scene.text);
-  expect(line).toBe(cfg.switch.refused);
-  await playScene(page);
-  expect(await page.evaluate(() => PixelPets.standing.switches)).toBe(1);
-  // the next Seal opens a new chapter
+  expect(after.orchard).toBe('orchard@glimmer');
+  expect(after.st.canSwitch).toBe(false);
+  // the next Seal opens a new chapter; a free debug switch does not halve
   await page.evaluate(() => PixelPets.setFlag('story.seal1', true));
   expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(true);
-  expect(await page.evaluate(() => PixelPets.switchSide('keepers'))).toBe(true);
+  expect(await page.evaluate(() => PixelPets.standing.chapter)).toBe(1);
+  const free = await page.evaluate(() => {
+    const beforePts = PixelPets.standing.glimmer.points;
+    const ok = PixelPets.switchSide('keepers', true);
+    return { ok, glimmer: PixelPets.standing.glimmer.points, beforePts, side: PixelPets.side };
+  });
+  expect(free.ok).toBe(true);
+  expect(free.side).toBe('keepers');
+  expect(free.glimmer).toBe(free.beforePts);
+  expect(await page.evaluate(() => PixelPets.switchSide('glimmer'))).toBe(true);
   const back = await page.evaluate(() => ({ st: PixelPets.standing, side: PixelPets.side }));
-  expect(back.side).toBe('keepers');
-  expect(back.st.switches).toBe(2);
-  expect(back.st.glimmer.points).toBe(Math.floor(12 / cfg.switch.costDiv));
-  expect(back.st.keepers.points).toBe(Math.floor(30 / cfg.switch.costDiv));
+  expect(back.side).toBe('glimmer');
+  expect(back.st.switches).toBe(3);
+  expect(back.st.keepers.points).toBe(Math.floor(Math.floor(30 / cfg.switch.costDiv) / cfg.switch.costDiv));
+  expect(back.st.glimmer.points).toBe(12);
 });
 
-test('the desk is hidden before the side pick and unavailable in a battle; the Lantern panel offers it', async ({ page }) => {
+test('Pledge desks are gone; Rook says not yet until the crates, and a battle blocks the offer', async ({ page }) => {
   const save = starterSave();
   save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'up', respawn: 'fernbrook' };
   await installSave(page.context(), save, { quietDay: true });
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
-  expect(await page.evaluate(() => PixelPets.pledgeDesk('glimmer'))).toBe(false);
+  expect(await page.evaluate(() => typeof PixelPets.pledgeDesk)).toBe('undefined');
   expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
-  // Juniper's own line has no desk option before the pick
+  expect(await page.evaluate(() => PixelPets.rookOffer('glimmer'))).toBe(true);
+  await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.mode === 'say' && s.full; });
+  expect(await page.evaluate(() => PixelPets.scene.text)).toBe(cfg.switch.rook.notYet);
+  await playScene(page);
   await page.evaluate(() => { PixelPets.setFlag('story.met_glimmerwell', true); PixelPets.showTab('walk'); PixelPets.goto('fernbrook', 14, 7, 'up'); });
   await page.waitForFunction(() => !window.PixelPets.fading);
   await page.keyboard.press('Space');
   await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full; });
   expect(await page.evaluate(() => PixelPets.scene.mode)).toBe('say');
-  await playScene(page);
-  // after the pick (pledged keepers): Juniper offers the Pledge desk, Keeper Amos's Lantern panel does not (same side)
+  await playScene(page, []);
   await page.evaluate(() => { PixelPets.setFlag('story.side_pick_done', true); PixelPets.setSide('keepers'); });
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full && s.waiting; });
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.mode === 'choice' && s.full; });
-  await page.waitForFunction(() => window.PixelPets.optionsReady === true);
-  const labels = await page.locator('#sbChoices button').allTextContents();
-  expect(labels).toContain(cfg.switch.option);
-  await page.locator('#sbChoices button', { hasText: 'Leave' }).click();
-  await page.waitForFunction(() => !window.PixelPets.scene);
-  // now pledged to glimmer: the Fernbrook Lantern House (Keeper Amos) offers the Keepers desk next to REST
+  await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full; });
+  expect(await page.evaluate(() => PixelPets.scene.mode)).toBe('say');
+  await playScene(page, []);
   await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.goto('fb_lantern_in', 6, 4, 'up'); });
   await page.waitForFunction(() => !window.PixelPets.fading);
   await page.keyboard.press('Space');
@@ -196,14 +191,13 @@ test('the desk is hidden before the side pick and unavailable in a battle; the L
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   const lantern = await page.locator('#sbChoices button').allTextContents();
   expect(lantern).toContain('Rest a while');
-  expect(lantern).toContain(cfg.switch.option);
+  expect(lantern.join('\n')).not.toContain('Pledge desk');
   await page.locator('#sbChoices button', { hasText: 'Leave' }).click();
   await page.waitForFunction(() => !window.PixelPets.scene);
-  // in a battle: no desk
   expect(await page.evaluate(() => PixelPets.forceBattle('tide/0', 3))).toBe(true);
   await page.waitForFunction(() => { const b = window.PixelPets.battle; return b && b.on && b.state === 'CHOOSE'; }, null, { timeout: 15000 });
-  const inBattle = await page.evaluate(() => ({ desk: PixelPets.pledgeDesk('keepers'), can: PixelPets.standing.canSwitch }));
-  expect(inBattle.desk).toBe(false);
+  const inBattle = await page.evaluate(() => ({ offer: PixelPets.rookOffer('keepers'), can: PixelPets.standing.canSwitch }));
+  expect(inBattle.offer).toBe(false);
   expect(inBattle.can).toBe(false);
 });
 

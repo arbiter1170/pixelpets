@@ -281,7 +281,7 @@ test('Amos rests the party and Fen starts the trial', async ({ page }) => {
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   const desk = await page.locator('#sbChoices button').allTextContents();
   expect(desk).toContain('Rest a while');
-  expect(desk).toContain('Pledge desk');
+  expect(desk).not.toContain('Pledge desk');   // D127: desks are gone
   await page.locator('#sbChoices button', { hasText: 'Leave' }).click();
   await page.waitForFunction(() => !PixelPets.scene);
 

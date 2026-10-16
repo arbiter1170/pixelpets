@@ -232,6 +232,10 @@ const PPSave = (() => {
     // After a party wipe the Lantern House door stays shut until the party rests (additive; absent means no).
     if (w.restDue !== true) delete w.restDue;
     for (const k of ['bag', 'seals', 'flags']) fill(s, k, isObj, {});
+    // D127: a switch made at the old desks (before Rook's offer) is marked desk. New switches write rook.
+    // Only when the key is absent and a switch was already counted. Never overwrites. v stays 2.
+    if ((+s.flags['story.switches'] || 0) > 0 && (s.flags['story.switch_via'] == null || s.flags['story.switch_via'] === ''))
+      s.flags['story.switch_via'] = 'desk';
     // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
     for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];
     fill(s, 'money', x => Number.isInteger(x) && x >= 0, 0);

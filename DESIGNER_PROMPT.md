@@ -44,7 +44,7 @@ Already in the game:
 - A `choice` option is `[label, steps, tag?, when?]`. `when` is a condition or a list of conditions. The option hides until they pass. Example: `["Keep quiet", [["inc", "story.rook_bond", 1]], null, "!story.rook_bond>=3"]`.
 - When a scene that sets a `story.*` flag finishes, the engine writes `story.beat.<sceneId>` to `"keepers"` or `"glimmer"` (first play wins). Later scenes may branch on it: `["if", "story.beat.orchard=glimmer", [...]]`.
 - Hall #1 on the glimmer path is the Bright Pavilion Tour (four walk-map stops, optional Fen match). `hall1_fen@glimmer` still has `seal: "seal_glim_1"` and `onWin` `"seal1"` (the engine runs `seal1@glimmer`).
-- Standing is in the game: `["standing", side, n | null, oneShotId]` and `standing.keepers>=2` / `standing.glimmer>=2` (tier, not points). Fernbrook Pledge desks and the STANDING tab already run. Write desk *copy*; do not add map objects for them.
+- Standing is in the game: `["standing", side, n | null, oneShotId]` and `standing.keepers>=2` / `standing.glimmer>=2` (tier, not points). The STANDING tab already runs. Side switching is Rook's offer only (D127). Pledge desks are retired. Do not add desk map objects, and do not write desk copy.
 - `glimmerDevCheck()` fails the boot if a line is over 110 after tokens expand, has a double space, has an unknown `{token}`, a `@glimmer` scene has no base scene, or a variant scene does not set the same `story.*` flags as its base.
 
 Settled, do not reopen:
@@ -229,7 +229,7 @@ Imogen and Hollis already have their own looks. Do not send new looks unless you
 | Branch | What happens | Flag at the end |
 |---|---|---|
 | Keepers | He leaves Glimmerwell. Design picks ally vs parted tone (D25). | `setFlag story.rook_end "ally"` or `"parted"` |
-| Glimmerwell | He stays. Colleague, not a quit. | `setFlag story.rook_end "stays"` (or leave unset if D25 says so) |
+| Glimmerwell | The cart still writes `"stays"`. R6 then records the quit in `story.rook_quit` and does not rewrite `story.rook_end` (D130). | `setFlag story.rook_end "stays"` (left as saved) |
 
 About 14-20 says each. Keepers-path post-conversion ambient 6-8 if he becomes an ally. No free-switch bridge.
 
@@ -237,7 +237,7 @@ Every variant must still set whatever `story.*` flags `brinewick_hook` sets toda
 
 The rejected morning tree (four bond-gated variants, glimmer quit + fork) is not the plan. Do not write it.
 
-Rook's lanyard is in the game. It comes off when `story.rook_end` is `"ally"`. Do not redraw it unless you are replacing that look. The player picker still has no lanyard (D13). Optional `lanyard_overlay` for the player while `story.side=glimmer` is still not built. Priority should, not must.
+Rook's lanyard is in the game. It comes off when `story.rook_end` is `"ally"` or when `story.rook_quit` is set (D136). Do not redraw it unless you are replacing that look. The player picker still has no lanyard (D13). Optional `lanyard_overlay` for the player while `story.side=glimmer` is still not built. Priority should, not must.
 
 ## Art you should not draw yet
 

@@ -1,5 +1,5 @@
 /* Walklings - Standing (GLIMMER_PATH v0.2 BS, NEXT_PLAN WP-B "Standing and switching"). Pure data plus small resolvers;
-   no DOM, no game state of its own. game.js owns S.standing, the `standing` step, the Pledge desks and the STANDING tab;
+   no DOM, no game state of its own. game.js owns S.standing, the `standing` step, Rook's offer and the STANDING tab;
    save.js clamps the saved points with the same min/max.
 
    SINGLE SOURCE: every tier name, blurb, toast, threshold, cap, grant amount, switch cost and cooldown rule lives in
@@ -7,8 +7,9 @@
    built against the spec's defaults; a changed answer is an edit here only. UI, scenes and tests read from this object.
 
    Meter: integers min..max per side, both sides always tracked. Tier = the highest threshold reached (index into tiers).
-   Chapter (for the "one switch per chapter" cooldown; "chapter" is not defined in any spec, see OPEN_DECISIONS D16):
-   the number of Seals earned so far (story.seal1, story.seal2), derived in chapterOf() only. */
+   Chapter (one switch per chapter; D16, extended by D132): the number of Seals earned so far
+   (story.seal1, story.seal2, and story.seal3 once Brinewick writes it), derived in chapterOf() only.
+   Side changes go through Rook after his crate quest (D127). Pledge desks are retired. */
 (function (root) {
   'use strict';
   const deepFreeze = o => { if (o && typeof o === 'object' && !Object.isFrozen(o)) { Object.freeze(o); Object.values(o).forEach(deepFreeze); } return o; };
@@ -44,41 +45,40 @@
     },
     // One-shot grants (spec engineAsks.standingGrants). A `["standing", side, null, id]` step takes its amount from here;
     // `standing.got.<id>` guards each one so a replayed scene never grants twice.
-    grants: { sp_pick: 10, orchard_k: 5, orchard_g: 5, seal1_k: 10, seal1_g: 10, tour1_match: 5, hc_council_k: 10 },
-    // Switching (Q3 default): the side you leave keeps floor(points / costDiv); the side you join is unchanged.
+    grants: { sp_pick: 10, orchard_k: 5, orchard_g: 5, seal1_k: 10, seal1_g: 10, tour1_match: 5, hc_council_k: 10,
+      rc_stamp1: 2, rc_stamp2: 2, rc_stamp3: 2, rc_loose: 2, rc_freed_k: 10, rc_shipped_g: 10 },
+    // Switching (D15, D127, D131): the side you leave keeps floor(points / costDiv); the side you join is unchanged.
+    // Only Rook offers it, and only after story.rc_climax. A debug switchSide may skip the cost; the scene never does.
     switch: {
       costDiv: 2,
       cooldown: 'perChapter',                       // one switch per chapter (chapterOf); 'none' = never refused
       joinMinTier: 0,                               // NEXT_PLAN proposed 1 (tier 1 with the side you join); spec v0.2 drops it. Default: not required
-      desks: {                                      // where the Pledge desk option appears (existing NPC panels; no new map objects)
-        keepers: { who: 'Keeper Amos', panel: 'lantern' },      // the Fernbrook Lantern House door panel
-        glimmer: { who: 'Associate Juniper', npc: 'juniper' },  // Juniper at the Fernbrook stand
-      },
-      option: 'Pledge desk', ask: 'Anything else?', confirm: 'Really?', yes: 'Yes', no: 'Think about it',
+      confirm: 'Really?', yes: 'Yes', no: 'Not yet',
       costLine: '{side} Standing {from} \u2192 {to}',
-      // Bridging lines. PLACEHOLDER: the spec lists the reference letter and performance review as later-phase content
-      // with no lines written; these follow the glossary voice and need copy from Vincent. Narration ('' speaker) except
-      // the desk's own greeting, so no new character is invented.
-      letter: {   // from the side you are joining, read at its desk (flavor)
-        keepers: 'Keeper Amos unfolds a letter: the Lantern Houses would be glad to count you among friends.',          /* PLACEHOLDER: needs copy from Vincent */
-        glimmer: 'Juniper slides a glossy letter across the counter: Glimmerwell would be delighted to welcome a partner!', /* PLACEHOLDER: needs copy from Vincent */
+      // Rook's offer (ROOK_CROSSROADS). letter/welcome are Rook. review is narration (empty speaker).
+      rook: {
+        letter: {
+          keepers: 'The Lantern Houses will take you. I asked Ilse myself. She said of course.',
+          glimmer: "Here's my old lanyard. Dorian will clip it on you. I won't watch.",
+        },
+        review: {
+          keepers: 'Word travels along the lanterns. Nobody says anything unkind, but the waves are slower now.',
+          glimmer: 'A mint envelope arrives. Your file is closed. Thank you for exploring other opportunities!',
+        },
+        welcome: {
+          keepers: "Welcome to the slow side, {name}. It's nicer here. Promise.",
+          glimmer: 'Okay. Be careful in there. Count the crates. Count the Walklings too.',
+        },
+        wait: "No rush. I'm not going anywhere. The road's closed anyway.",
+        refused: 'One change of heart per Seal. Earn your next Seal, then ask me again.',
+        notYet: 'Ask me after the crates. I want you to see them first.',
       },
-      review: {   // from the side you are leaving ("performance review"), right after the switch
-        keepers: 'Word travels along the lanterns. Nobody says anything unkind, but the waves are slower now.',        /* PLACEHOLDER: needs copy from Vincent */
-        glimmer: 'A mint envelope arrives. Your file is closed. Thank you for exploring other opportunities!',           /* PLACEHOLDER: needs copy from Vincent */
-      },
-      welcome: {  // the desk's own line once the pledge is made
-        keepers: 'Welcome, {name}. Rest when you need to. The lantern is lit for you.',                                 /* PLACEHOLDER: needs copy from Vincent */
-        glimmer: 'Welcome to the partnership, {name}! Have a bright day!',                                               /* PLACEHOLDER: needs copy from Vincent */
-      },
-      wait: 'No rush. The desk is here when you want it.',                                                              /* PLACEHOLDER: needs copy from Vincent */
-      refused: 'One change of heart per Seal. Earn your next Seal first, then come back.',   // cooldown line (matches chapterOf)
     },
     tab: {
       label: 'STANDING',
       empty: 'Nobody knows you yet. Go say hello!',
       pledged: 'Pledged to {faction}',
-      explain: 'Standing is how much a side trusts you. Tiers open shops and new lines, never the story.',
+      explain: 'Standing is how much a side trusts you. Only Rook can help you change sides.',
       marker: 'PLEDGED',
     },
     // Voice guide for any Glimmerwell placeholder (not UI text).
@@ -106,14 +106,17 @@
     return { side: sideId, points: n, tier, name: t.name, blurb: t.blurb, toast: t.toast, from, next, frac: next == null ? 1 : Math.max(0, Math.min(1, (n - from) / (next - from))) };
   }
   const switchCost = pts => Math.floor(clampPts(pts) / STANDING_CFG.switch.costDiv);
-  // Chapter = Seals earned so far. The only place the "chapter" of the cooldown rule is derived.
-  const chapterOf = flags => ['story.seal1', 'story.seal2'].filter(k => !!(flags || {})[k]).length;
+  // Chapter = Seals earned so far. story.seal3 counts when Brinewick writes it (D132). That chapter is not built yet.
+  const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3'].filter(k => !!(flags || {})[k]).length;
   // Can the pledge change right now? `flags` is S.flags; `standing` is S.standing; `to` the side being joined.
-  // Returns { ok, why } with why in: 'no_pick', 'same_side', 'cooldown', 'join_tier'. Scenes/battles are the caller's check.
+  // Returns { ok, why } with why in: 'no_pick', 'same_side', 'no_rook', 'cooldown', 'join_tier'.
+  // no_rook is checked before the cooldown so a quest that has not finished yet says "not yet", not "refused".
+  // Scenes and battles are the caller's check.
   function canSwitch(flags, standing, from, to){
     const F = flags || {}, cfg = STANDING_CFG.switch;
     if (!F['story.side_pick_done']) return { ok: false, why: 'no_pick' };
     if (to != null && to === from) return { ok: false, why: 'same_side' };
+    if (!F['story.rc_climax']) return { ok: false, why: 'no_rook' };
     if (cfg.cooldown === 'perChapter' && F['story.switch_chapter'] != null && Number(F['story.switch_chapter']) === chapterOf(F)) return { ok: false, why: 'cooldown' };
     if (to != null && cfg.joinMinTier > 0 && tierOf((standing || {})[to]) < cfg.joinMinTier) return { ok: false, why: 'join_tier' };
     return { ok: true, why: null };
@@ -132,7 +135,12 @@
     }
     for (const [k, v] of Object.entries(C.grants)) if (!(Number.isInteger(v) && v > 0)) bad.push('grant ' + k + ' must be a positive integer');
     if (!(Number.isInteger(C.switch.costDiv) && C.switch.costDiv >= 1)) bad.push('switch.costDiv must be an integer >= 1');
-    for (const k of ['letter', 'review', 'welcome']) for (const s of SIDES) if (typeof C.switch[k][s] !== 'string') bad.push('switch.' + k + '.' + s + ' missing');
+    const R = C.switch.rook;
+    if (!R) bad.push('switch.rook missing');
+    else {
+      for (const k of ['letter', 'review', 'welcome']) for (const s of SIDES) if (!R[k] || typeof R[k][s] !== 'string') bad.push('switch.rook.' + k + '.' + s + ' missing');
+      for (const k of ['wait', 'refused', 'notYet']) if (typeof R[k] !== 'string') bad.push('switch.rook.' + k + ' missing');
+    }
     return bad;
   }
 

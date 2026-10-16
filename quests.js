@@ -34,7 +34,10 @@
     'story.know_us', 'story.heights_path', 'story.stock_warned', 'story.rx_enter', 'story.met_nia', 'story.rx_f1',
     'story.met_cal', 'story.rx_f2', 'story.saw_arbiter', 'story.rx_f3', 'story.rx_done', 'story.rx_bitlet', 'story.sm_yard', 'story.sm_look',
     'story.met_jed', 'story.sm_freed', 'story.sm_haul', 'story.sm_done',
-    'story.rook_end', 'story.rook_bond',
+    'story.rook_end', 'story.rook_bond', 'story.rook_quit',
+    'story.rc_end', 'story.rc_freed', 'story.rc_stamped', 'story.rc_loose',
+    'story.rc_tobin_done', 'story.rc_tobin_result', 'story.rival3_done', 'story.rival3_result',
+    'story.switch_via',
     'story.met_bram', 'story.met_mo', 'story.met_wynn', 'story.met_lumen', 'story.met_rue',
     // Lizzy in Hearthmoor: the meet, the hug, and the Rook hook. Sister scenes and the landlord quests are a later build.
     'story.lizzy_met', 'story.lizzy_hug', 'story.lizzy_rook'];
@@ -173,6 +176,28 @@
         text: 'Tell Warden Ilse about the dream. Mom calls her Professor.', place: "Warden's Lodge",
         target: { map: 'hm_lodge_in', x: 5, y: 3 } },
     ],
+    // Rook's Crossroads. Off the main chain. Accepting is talking to Rook at the Brinewick road sign.
+    // The chain id the phone shows is the first entry's id (rc_meet). The label is "The last crates".
+    [
+      { id: 'rc_meet', label: 'The last crates', when: ['story.cobble_end'], done: ['story.rc_start'],
+        text: 'Rook is sitting by the Brinewick road sign. He wants a word.', place: 'Cobblecrest, east road',
+        glimmer: { text: 'Rook is by the Brinewick road sign. His lanyard is in his fist.', place: 'Cobblecrest, east road' },
+        target: { map: 'cobblecrest', x: 28, y: 7 } },
+      { id: 'rc_crates', when: ['story.rc_start'], done: ['story.rc_c1', 'story.rc_c2', 'story.rc_c3'],
+        text: 'Three Pebblit crates wait in the quarry yard. Open them gently.', place: 'Quarry yard',
+        glimmer: { text: 'Three crates in the quarry yard need a BRINEWICK stamp.', place: 'Quarry yard' },
+        target: { map: 'cobble_quarry', x: 24, y: 7 } },
+      { id: 'rc_gate', when: ['story.rc_start'], done: ['story.rc_climax'],
+        text: 'Rook is at the quarry gate, stalling Tobin. Bring the Pebblits home.', place: 'Quarry gate',
+        glimmer: { text: 'Tobin is at the quarry gate for the count. Rook is there too.', place: 'Quarry gate' },
+        target: { map: 'cobble_quarry', x: 15, y: 2 } },
+      { id: 'rc_wrap_hale', when: ['story.rc_climax', '!story.rc_end=shipped'], done: ['story.rc_done'],
+        text: 'Tell Master Hale the Old Seam is purring again.', place: "Hale's Hall",
+        target: { map: 'cc_hall_in', x: 5, y: 2 } },
+      { id: 'rc_wrap_juniper', when: ['story.rc_climax', 'story.rc_end=shipped'], done: ['story.rc_done'],
+        text: "Juniper is on the quarry's south path. Hand in the count.", place: 'Quarry, south path',
+        target: { map: 'cobble_quarry', x: 14, y: 17 } },
+    ],
   ];
   const SIDE = SIDE_CHAINS.flat();
 
@@ -269,6 +294,7 @@
     for (const e of SIDE) {
       if (sideIds.has(e.id) || ids.has(e.id)) bad.push('duplicate id: ' + e.id); sideIds.add(e.id);
       copyOk(e, 'side ' + e.id);
+      if (e.glimmer) copyOk(e.glimmer, 'side ' + e.id + '@glimmer');
       if (e.target && !(typeof e.target.map === 'string' && Number.isInteger(e.target.x) && Number.isInteger(e.target.y))) bad.push('bad target: ' + e.id);
     }
     return bad;

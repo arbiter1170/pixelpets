@@ -1438,6 +1438,7 @@ const WORLD = (() => {
     Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
     applyMapPatch(W, MD.fernbrook_rooms.slicePatch);
   }
+  if (MD.rook_crossroads) applyMapPatch(W, MD.rook_crossroads.slicePatch);   // Rook's Crossroads: objects only, after detail so the crates stay
   for (const [id, m] of Object.entries(W)) { m.id = id; m.cells = m.grid.map(r => r.split('')); }
   return W;
 })();
@@ -1449,8 +1450,10 @@ if (MD.mahopac) Object.assign(SCENES, MD.mahopac.scenes || {});
 if (MD.highcharity) Object.assign(SCENES, MD.highcharity.scenes || {});
 if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
 if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
+if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
+SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
 for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
-for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
@@ -1458,7 +1461,7 @@ if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x:
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 // Glimmerwell is the company faction. A Keeper hears them as the dark side: first meeting and their battles use the sinister loops.
-const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', rival2_rook: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers' };
+const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers' };
 for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
@@ -1472,6 +1475,7 @@ function trialReady(){
 }
 const sceneSteps = id => {
   if (id === 'lantern_rest') return lanternBedSteps();   // runtime: the whole party, and a few Acorns when someone is hurt
+  if (id === 'rook_offer') return rookOfferSteps();      // runtime: the only pledge outside side_pick (D127)
   const s = side(); return (s !== SIDE_DEFAULT && SCENES[id + '@' + s]) || SCENES[id];
 };
 let sideApplied = null;
@@ -1552,8 +1556,25 @@ function glimmerDevCheck(){
   const walkStanding = (where, n) => { if (!Array.isArray(n)) return;
     if (n[0] === 'standing') { if (!PPStanding.isSide(n[1])) bad.push(where + ': standing step with unknown side ' + n[1]);
       if (n[2] == null && !(n[3] in STANDING_CFG.grants)) bad.push(where + ': standing step needs an amount or a known grant id (' + n[3] + ')'); }
+    if (n[0] === 'pledge') {
+      const base = where.replace(/^scene /, '').split('@')[0];
+      if (base !== 'side_pick' && base !== 'rook_offer') bad.push(where + ': pledge step only in side_pick or rook_offer');
+    }
     n.forEach(x => walkStanding(where, x)); };
   for (const [id, steps] of Object.entries(SCENES)) walkStanding('scene ' + id, steps);
+  // Rook's Crossroads lives in its own pack. @glimmer variants must set the same story flags as the base.
+  const RC = MD.rook_crossroads;
+  if (RC) {
+    for (const [id, steps] of Object.entries(RC.scenes || {})) {
+      walkSteps('scene ' + id, steps);
+      const at = id.indexOf('@'); if (at < 0) continue;
+      const base = SCENES[id.slice(0, at)]; if (!base) { bad.push('scene ' + id + ': no base scene'); continue; }
+      const want = story(base), got = story(steps); for (const f of want) if (!got.has(f)) bad.push('scene ' + id + ': does not set ' + f);
+    }
+    for (const [id, t] of Object.entries(RC.trainers || {})) {
+      for (const [k, v] of Object.entries(t.lines || {})) line('trainer ' + id + '.' + k, v);
+    }
+  }
   const loy = G.loyalty || {};
   const condKey = c => {
     if (typeof c !== 'string' || !c) return false;
@@ -1637,11 +1658,10 @@ function setStanding(sd, pts){
   return after;
 }
 const addStanding = (sd, n) => setStanding(sd, standingOf(sd, false) + (Number(n) || 0));
-// The pledge changes (Q3 default): the side you leave keeps floor(n / costDiv), the side you join is unchanged, story.side
+// The pledge changes (D15, D131): the side you leave keeps floor(n / costDiv), the side you join is unchanged, story.side
 // is rewritten, story.switches counts, story.switch_chapter / story.switch_at record when (the per-chapter cooldown).
-// `free` skips the cost. Vincent (Oct 13, 2026) settled R5 without a follow-or-stay fork: on the Keepers path Rook
-// eventually converts to good, and on the Glimmerwell path he stays with Glimmerwell. That beat is not in this build.
-// Never touches seals, lanyards, progression flags, story.rook_bond or story.beat.*.
+// Every new switch is story.switch_via "rook" (D127). `free` skips the cost and is debug-only.
+// Never touches seals, lanyards, progression flags, story.rook_bond, story.rook_end or story.beat.*.
 function switchSide(to, opts){
   if (!PPStanding.isSide(to)) return false;
   const from = S.flags['story.side'] === 'glimmer' ? 'glimmer' : SIDE_DEFAULT;   // the saved pledge (a scene's live view may already say `to`)
@@ -1652,24 +1672,32 @@ function switchSide(to, opts){
   S.flags['story.switches'] = (+S.flags['story.switches'] || 0) + 1;
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
+  S.flags['story.switch_via'] = 'rook';
   syncSide(); save();
   return true;
 }
 const standingView = () => { const out = {}; for (const sd of PPStanding.SIDES) { const i = PPStanding.tierInfo(sd, standingOf(sd, false)); out[sd] = { points: i.points, tier: i.tier, name: i.name }; }
-  return Object.assign(out, { side: side(), switches: +S.flags['story.switches'] || 0, chapter: PPStanding.chapterOf(S.flags), canSwitch: PPStanding.canSwitch(S.flags, S.standing, side(), null).ok && !scene && !(battle && battle.on) }); };
-// Pledge desks (Q3 default): an option on an existing NPC panel, only after the side pick, never mid-scene or mid-battle,
-// and only where it would be a switch. The steps are built when the panel opens so the cost line shows live numbers.
-const deskOpen = to => !!(S && S.flags['story.side_pick_done'] && PPStanding.isSide(to) && side() !== to && !scene && !(battle && battle.on));
-function pledgeDeskSteps(to){
-  const W = SC_STANDING.switch, from = side(), who = W.desks[to].who, F = SC_STANDING.sides;
-  const can = PPStanding.canSwitch(S.flags, S.standing, from, to);
-  if (!can.ok) return [['say', who, W.refused]];
+  return Object.assign(out, { side: side(), switches: +S.flags['story.switches'] || 0, chapter: PPStanding.chapterOf(S.flags), via: 'rook', canSwitch: PPStanding.canSwitch(S.flags, S.standing, side(), null).ok && !scene && !(battle && battle.on) }); };
+// Rook's offer (D127–D129, D131). The only way to change sides. Built when it opens so the cost line shows live numbers.
+// Before story.rc_climax he says not yet, except inside rc_gate: that scene runs this offer and writes the flag after
+// the branch (a "Not yet" there stays on the company side and fights). A cooldown says the refused line. Yes is never free.
+function rookOfferSteps(to){
+  const W = SC_STANDING.switch, R = W.rook, from = side();
+  const dest = PPStanding.isSide(to) ? to : (from === 'glimmer' ? 'keepers' : 'glimmer');
+  const atGate = !!(scene && String(scene.id || '').split('@')[0] === 'rc_gate');
+  if (!S || (!S.flags['story.rc_climax'] && !atGate)) return [['say', 'Rook', R.notYet]];
+  if (from === dest) return [['say', 'Rook', R.wait]];
+  const can = PPStanding.canSwitch(S.flags, S.standing, from, dest);
+  if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : R.notYet]];
   const pts = standingOf(from, false);
-  const costLine = PPStanding.fill(W.costLine, { side: F[from].short, from: pts, to: PPStanding.switchCost(pts) });
-  return [['say', '', W.letter[to]],
+  const costLine = PPStanding.fill(W.costLine, { side: SC_STANDING.sides[from].short, from: pts, to: PPStanding.switchCost(pts) });
+  return [
+    ['say', 'Rook', R.letter[dest]],
     ['choice', W.confirm + ' ' + costLine, [
-      [W.yes, [['pledge', to], ['say', '', W.review[from]], ['say', who, W.welcome[to]]]],
-      [W.no, [['say', who, W.wait]]]]]];
+      [W.yes, [['pledge', dest], ['setFlag', 'story.switch_via', 'rook'], ['say', '', R.review[from]], ['say', 'Rook', R.welcome[dest]]]],
+      [W.no, [['say', 'Rook', R.wait]]],
+    ]],
+  ];
 }
 const NPC_LOOKS = Object.assign({}, KEEPER_SWAPS, MD.interiors.looks);
 if (MD.act1_route2 && MD.act1_route2.looks) for (const [k, v] of Object.entries(MD.act1_route2.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
@@ -1775,6 +1803,24 @@ function objById(id){
   for (const m of Object.values(WORLD)) { const o = (m.objs || []).find(x => x.id === id); if (o) return o; }
   return null;
 }
+// Rook's Crossroads hooks. The design JSON stays verbatim: Hale's option, Juniper's hand-in, and Tobin's stall
+// are prepended here so they win over the lines already on those NPCs.
+(function wireRookCrossroads(){
+  const prepend = (o, key, val) => {
+    if (!o) return;
+    const lines = {};
+    lines[key] = val;
+    for (const [k, v] of Object.entries(o.lines || {})) if (!(k in lines)) lines[k] = v;
+    o.lines = lines;
+  };
+  prepend(objById('juniper_q'), 'story.rc_end=shipped&!story.rc_done', '@rc_wrap_juniper');
+  prepend(objById('tobin_gate'), 'story.rc_start&!story.rc_climax', "Count's at dusk. Rook keeps talking to me about rocks.");
+  const hale = SCENES.hale_trial;
+  if (hale && !JSON.stringify(hale).includes('About the seam'))
+    hale.push(['choice', 'Master Hale', [
+      ['About the seam', [['run', 'rc_wrap_hale']], null, ['story.rc_climax', '!story.rc_done', '!story.rc_end=shipped']],
+    ]]);
+})();
 // The rank line from data/glimmer_path.json loyalty.npcs, ignoring whatever the map object already says.
 // Used for Keeper House ids that may arrive with the civic build (hq_bram and the watch) before this branch sees them.
 function loyaltyBagLine(id){
@@ -1795,7 +1841,7 @@ if (SCENES.rival1) SCENES.rival1.push(
 // STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
-const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
+const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', rival3_rook: 'rook', rc_tobin: 'associate', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
   rx_wardens: 'rx_warden', rx_techs: 'rx_tech', rx_records: 'rx_records', rx_quinn: 'quinn', rx_cal_ally: 'cal',
   sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
@@ -1882,9 +1928,10 @@ const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
 // Rook wears a Junior Bright lanyard once Glimmerwell has claimed him: on the glimmer path from the side
-// pick, and on either path after Fernbrook (story.slice_end) or the quarry sale. Conversion (rook_end ally) takes it off.
+// pick, and on either path after Fernbrook (story.slice_end) or the quarry sale. It comes off when he
+// converts (rook_end ally) or when he quits (story.rook_quit, D136).
 function rookWithLanyard(look){
-  if (!S || !S.flags || S.flags['story.rook_end'] === 'ally') return look;
+  if (!S || !S.flags || S.flags['story.rook_end'] === 'ally' || S.flags['story.rook_quit']) return look;
   const glimmer = S.flags['story.side'] === 'glimmer';
   const show = (glimmer && S.flags['story.side_pick_done']) || S.flags['story.slice_end'] || S.flags['story.quarry_bought'];
   if (!show) return look;
@@ -2725,8 +2772,6 @@ function placeSteps(dr){
     const who = dr.keeper || '';
     const hold = lanternHold();
     const opts = [lanternRestOption()];
-    // BS: the Keepers' Pledge desk is this keeper's panel (STANDING_CFG.switch.desks.keepers), shown only when it would be a switch.
-    if (who === SC_STANDING.switch.desks.keepers.who && deskOpen('keepers')) opts.push([SC_STANDING.switch.option, pledgeDeskSteps('keepers')]);
     opts.push(hold
       ? ['Not yet', [['say', who, 'The door stays shut until the party is rested.']]]
       : ['Leave', []]);
@@ -3634,9 +3679,6 @@ function interact(o){
   if (line == null) return o.scene ? runScene(o.scene, ctx) : undefined;
   mapRT.talked.add(o.id);
   if (line[0] === '@') return runScene(line.slice(1), ctx);
-  // BS: Glimmerwell's Pledge desk is Juniper's own panel (STANDING_CFG.switch.desks.glimmer), offered after her line.
-  if (o.id === SC_STANDING.switch.desks.glimmer.npc && deskOpen('glimmer'))
-    return runSteps([['say', objName(o), line], ['choice', SC_STANDING.switch.ask, [[SC_STANDING.switch.option, pledgeDeskSteps('glimmer')], ['Leave', []]]]], ctx);
   return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line]], ctx);
 }
 // What the keeper faces: a talkable object on the next tile, or the door of the doorstep you stand on (facing up).
@@ -3806,7 +3848,17 @@ function expand(text){
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene;
   switch (k) {
-    case 'say': { noteContact(a); if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); await sayBox(a, tx); return; }
+    case 'say': {
+      noteContact(a); if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx);
+      // D135: Juniper's bonus line pays 300 Acorns once per scene view. The got-line uses the usual Acorn wording.
+      if (a === 'Associate Juniper' && b === 'Bonus Acorns are on the way. Have a bright day!' && !sc.view.flags['rc.acorns']) {
+        sc.view.flags['rc.acorns'] = true;
+        pend(() => { S.money = (S.money | 0) + 300; });
+        await sayBox('', playerName() + ' got ' + acorns(300) + '!');
+        if (!scene) return;
+      }
+      await sayBox(a, tx); return;
+    }
     case 'choice': {
       sc.skip = false;
       const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
@@ -3824,8 +3876,19 @@ async function execStep(st){
       pend(() => { S.party.push(np); S.partnerId = np.id; markCaught(si, 0); scene && scene.toasts.push((cleanNick(scene.view.pet === np && scene.view.nick) || petName(np)) + ' joined you!'); });   // the nickname given later in the same scene, else the species
       return;
     }
-    case 'setFlag': { const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; }); return; }
-    case 'inc': { const n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0); sc.view.flags[a] = n; pend(() => { S.flags[a] = n; }); return; }   // WP-B0 counters (Rook bond)
+    case 'setFlag': {
+      const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; });
+      // D135: freeing or walking away always credits the Keepers meter. Shipping credits Glimmerwell. Once each.
+      if (a === 'story.rc_end' && (v === 'freed' || v === 'walked')) await execStep(['standing', 'keepers', null, 'rc_freed_k']);
+      if (a === 'story.rc_end' && v === 'shipped') await execStep(['standing', 'glimmer', null, 'rc_shipped_g']);
+      return;
+    }
+    case 'inc': {
+      const n = (Number(flagOf(a, true)) || 0) + (b == null ? 1 : Number(b) || 0); sc.view.flags[a] = n; pend(() => { S.flags[a] = n; });   // WP-B0 counters (Rook bond)
+      if (a === 'story.rc_stamped' && n >= 1 && n <= 3) await execStep(['standing', 'glimmer', null, 'rc_stamp' + n]);
+      if (a === 'story.rc_loose' && n === 1) await execStep(['standing', 'keepers', null, 'rc_loose']);
+      return;
+    }
     // BS: ["standing", side, n | null, oneShotId?]. null n = STANDING_CFG.grants[oneShotId]. With an id, `standing.got.<id>`
     // guards the grant so a replayed scene never grants twice. Buffered like setFlag; cond() sees the live value meanwhile.
     case 'standing': {
@@ -8847,7 +8910,7 @@ function boot(){
     // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.
     setStanding: (sd, n) => { const r = setStanding(sd, n); if (r != null) { save(); if (!$('#ovQuest').hidden) renderQuestTabs(); } return r; },
     switchSide: (to, free) => switchSide(to, { free: !!free }),
-    pledgeDesk: to => { if (!deskOpen(to) || overlayOpen()) return false; showTab('walk'); runSteps(pledgeDeskSteps(to)); return true; },
+    rookOffer: to => { if (!S || scene || overlayOpen() || (battle && battle.on)) return false; showTab('walk'); runSteps(rookOfferSteps(to)); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
     rollWildTrack: () => takeBattleTrack('wild'),
     endScene: () => { if (!scene) return false; scene.skip = true; return true; },
