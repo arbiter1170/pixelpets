@@ -22,7 +22,7 @@ The PR description must contain, in this order:
    ```
 2. **What changed** (plain-language summary).
 3. **Files touched** (list).
-4. **How it was tested:** commands run, widths (320/375/390), console-error result, and **screenshots attached to the PR** for each width named in the build's acceptance tests.
+4. **How it was tested:** commands run, widths (320/375/390), console-error result (paste the `pp_textcheck.py` / `npm test` result lines). Attach screenshots only when the change is visual (new art, layout or colour), one per width named in the build's acceptance tests.
 5. **Build id:** the id written by `bump_build.py`; after merge, follow `walklings-deploy` step 4.
 6. **Open questions** with the default you chose (and colour).
 7. **Player-visible wording changes** as a table: `| Where | Old | New |` (write "none" if there are none).
