@@ -48,13 +48,14 @@ async function at(page) {
 
 test('a free-tile tap walks around a person to the tile behind them', async ({ page }) => {
   await boot(page);
-  await place(page, 'hm_rook_in', 1, 4, 'up');
-  const path = await page.evaluate(() => PixelPets.findPath([{ x: 1, y: 2 }]));
+  // Mom stands at (5, 3). The tile north of her is still open. Rook's room now has a stove on the old goal tile.
+  await place(page, 'hm_home_up', 5, 4, 'up');
+  const path = await page.evaluate(() => PixelPets.findPath([{ x: 5, y: 2 }]));
   expect(path.length).toBeGreaterThan(1);
-  expect(path.some(p => p.x === 1 && p.y === 3)).toBe(false);
-  expect(path[path.length - 1]).toEqual({ x: 1, y: 2 });
-  await tapTile(page, 1, 2);
-  await expect.poll(() => at(page), { timeout: 8000 }).toEqual({ x: 1, y: 2, map: 'hm_rook_in' });
+  expect(path.some(p => p.x === 5 && p.y === 3)).toBe(false);
+  expect(path[path.length - 1]).toEqual({ x: 5, y: 2 });
+  await tapTile(page, 5, 2);
+  await expect.poll(() => at(page), { timeout: 8000 }).toEqual({ x: 5, y: 2, map: 'hm_home_up' });
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   await expect(page.locator('#ovScene')).toBeHidden();
   await shot(page, 'tap-path-around');
@@ -128,13 +129,14 @@ test('a wild tap still chases on a straight line', async ({ page }) => {
 
 test('a blocked next step is walked around', async ({ page }) => {
   await boot(page);
-  await place(page, 'hm_rook_in', 2, 4, 'right');
+  // Upstairs floor, clear of the new props. A wild on (5, 4) blocks the straight steps to (6, 4).
+  await place(page, 'hm_home_up', 3, 4, 'right');
   await page.evaluate(() => {
     PixelPets.clearWild();
-    PixelPets.spawnWild(0, 0, 4, 4);
+    PixelPets.spawnWild(0, 0, 5, 4);
     const w = PixelPets.walk;
-    w.path = [{ x: 3, y: 4 }, { x: 4, y: 4 }, { x: 5, y: 4 }];
-    w.aim = { x: 5, y: 4, soft: false };
+    w.path = [{ x: 4, y: 4 }, { x: 5, y: 4 }, { x: 6, y: 4 }];
+    w.aim = { x: 6, y: 4, soft: false };
     w.target = null;
     w.arrive = null;
     w.repath = null;
@@ -146,9 +148,9 @@ test('a blocked next step is walked around', async ({ page }) => {
       return { x: w.x, y: w.y, map: w.map, battle: !!(PixelPets.battle && PixelPets.battle.on) };
     });
     seen.push(p);
-    return p.map === 'hm_rook_in' && p.x === 5 && p.y === 4 && !p.battle;
+    return p.map === 'hm_home_up' && p.x === 6 && p.y === 4 && !p.battle;
   }, { timeout: 8000 }).toBe(true);
-  expect(seen.some(p => p.x === 4 && p.y === 4)).toBe(false);
+  expect(seen.some(p => p.x === 5 && p.y === 4)).toBe(false);
   expect(seen.some(p => p.battle)).toBe(false);
 });
 

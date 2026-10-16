@@ -1570,8 +1570,9 @@ const objPos = o => mapRT.pos[o.id] || o;
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
 const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
-// Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; LAB_SKIN.walk wins over the shared TILE_DEF for those maps only.
-const tileWalks = ch => (CUR.skin === 'lab' && LAB_SKIN.walk[ch] != null) ? !!LAB_SKIN.walk[ch] : !!(TILE_DEF[ch] || {}).walk;
+// Lab-skin maps (BUILD_RX_F4_PILOT A2) add their own chars; that skin's walk table wins over TILE_DEF.
+// House skins use the same lookup (SKINS). A map with no skin keeps the shared tile table.
+const tileWalks = ch => { const sk = CUR.skin && SKINS[CUR.skin]; return (sk && sk.walk && sk.walk[ch] != null) ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk; };
 const solidTile = (x, y) => x < 0 || y < 0 || x >= MW || y >= MH || !tileWalks(MAP[y][x]);
 const solid = (x, y) => solidTile(x, y) || !!blockerAt(x, y);
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
@@ -2622,10 +2623,33 @@ function labTileName(k, tx, ty, m){
   for (const [v, w] of vs) { if (r < w) return v; r -= w; }
   return nm;
 }
+// Same seeded pick as labTileName, for any skin in SKINS. Lab maps keep calling labTileName.
+function skinTileName(sk, k, tx, ty, m){
+  m = m || CUR;
+  const nm = (((sk.override && sk.override[m.id]) || {})[k]) || sk.remap[k];
+  const vs = m.variants && sk.variants && sk.variants[nm];
+  if (!vs) return nm;
+  let r = tileHash(m.id, tx, ty);
+  for (const [v, w] of vs) { if (r < w) return v; r -= w; }
+  return nm;
+}
 // D88: after variants, one floor tile may cover at most 70 % of a map's walkable cells (decal cells count as their decal). Checked in
-// devChecks for rebuilt maps ("variants": true); D85 keeps older maps as they are.
+// devChecks for maps with "variants": true. Lab maps still measure LAB_SKIN; a house skin is measured the same way.
 function labFloorShare(id){
-  const m = WORLD[id]; if (!m || (m.skin !== 'lab' && !m.variants)) return null;
+  const m = WORLD[id]; if (!m) return null;
+  const house = m.skin && m.skin !== 'lab' && SKINS[m.skin];
+  if (house) {   // per-room skins (map pass B5+). Lab and outdoor maps stay on the path below.
+    const sk = SKINS[m.skin], n = {}; let walk = 0;
+    m.cells.forEach((row, y) => [...row].forEach((ch, x) => {
+      const w = sk.walk && sk.walk[ch] != null ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk; if (!w) return;
+      walk++; const nm = (sk.decal && sk.decal[ch]) || skinTileName(sk, ch, x, y, m);
+      n[nm] = (n[nm] || 0) + 1;   // a decal cell counts as its decal tile
+    }));
+    const top = Object.entries(n).sort((a, b) => b[1] - a[1])[0];
+    if (!top) return null;
+    return { walk, tile: top[0], count: top[1], share: top[1] / walk };
+  }
+  if (m.skin !== 'lab' && !m.variants) return null;
   const lab = m.skin === 'lab', n = {}; let walk = 0;
   const marks = lab ? null : new Map(m.objs.filter(o => o.kind === 'decal' && o.sprite).map(o => [o.y * 4096 + o.x, o.sprite]));   // outdoor decal objects
   m.cells.forEach((row, y) => [...row].forEach((ch, x) => {
@@ -2633,6 +2657,7 @@ function labFloorShare(id){
     walk++; const nm = (lab ? LAB_SKIN.decal[ch] : marks.get(y * 4096 + x)) || labTileName(ch, x, y, m); n[nm] = (n[nm] || 0) + 1;   // a decal cell counts as its decal tile
   }));
   const top = Object.entries(n).sort((a, b) => b[1] - a[1])[0];
+  if (!top) return null;
   return { walk, tile: top[0], count: top[1], share: top[1] / walk };
 }
 function drawMap(t){
@@ -2655,6 +2680,12 @@ function drawMap(t){
         const nm = labTileName(dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
+      } else if (CUR.skin && SKINS[CUR.skin]) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
+        const skDraw = SKINS[CUR.skin];
+        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skDraw.decal && skDraw.decal[k];
+        const nm = skinTileName(skDraw, dk ? '.' : k, tx, ty);
+        if (nm && TILES[nm]) img = TILES[nm];
+        if (dk) decal = TILES[dk + '_decal'] || TILES[dk];
       } else if (CUR.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
         const nm = labTileName(ch, tx, ty);
         if (nm !== ch && TILES[nm]) img = TILES[nm];
@@ -8408,9 +8439,13 @@ function boot(){
     clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
-    tileInfo: (x, y) => { const ch = tileAt(x, y), dk = CUR.skin === 'lab' && LAB_SKIN.decal[ch];   // debug: char, walk, drawn tile and decal
-      const mark = CUR.skin !== 'lab' && CUR.objs.find(o => o.kind === 'decal' && o.x === x && o.y === y && present(o));   // outdoor decal objects (map pass B4)
-      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.skin === 'lab' || CUR.variants ? labTileName(dk ? '.' : ch, x, y) : ch, decal: dk || (mark && mark.sprite) || null }; },
+    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. Lab keeps its old tile name (raw char, not W2).
+      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }; }
+      const sk = CUR.skin && SKINS[CUR.skin];
+      if (sk) { const k = ch === 'W' && x % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
+        return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null }; }
+      const mark = CUR.objs.find(o => o.kind === 'decal' && o.x === x && o.y === y && present(o));   // outdoor decal objects (map pass B4)
+      return { ch, solid: solidTile(x, y), blocked: solid(x, y), tile: CUR.variants ? labTileName(ch, x, y) : ch, decal: (mark && mark.sprite) || null }; },
     floorShare: id => labFloorShare(id || CUR.id),   // D88
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
