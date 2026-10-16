@@ -22,7 +22,7 @@ Past examples of art and writing, for both the implementer and the designer, are
 Morning (recorded in the first pass):
 
 1. **The second area is Fernbrook.** That is where the side is picked. Confirmed.
-2. **The side is not permanent.** The player can switch back after Fernbrook. Standing per faction is built (Build 2). Numbers in `STANDING_CFG` are still open (OPEN_DECISIONS D14–D17).
+2. **The side is not permanent.** The player can switch back after Fernbrook. Standing per faction is built (Build 2). Standing numbers in `STANDING_CFG` are settled (OPEN_DECISIONS D14–D17, Vincent Oct 15).
 3. **Capture:** "no combat performed" = the creature is at full health in this encounter. No global "never fought" rule.
 4. **Art and writing** go to the designer (`DESIGN_HANDOFF.md`, `DESIGNER_PROMPT.md`).
 
@@ -278,7 +278,7 @@ Rules to keep the tree safe:
 
 ### Standing and switching (Oct 13 decision: the side is switchable, needs Standing)
 
-**Status: shipped in Build 2** (`standing.js`, Fernbrook Pledge desks, STANDING tab). Numbers and desk copy are still open (D14–D22). The text below is the original spec; the live rules live in `STANDING_CFG`.
+**Status: shipped in Build 2** (`standing.js`, Fernbrook Pledge desks, STANDING tab). Standing numbers are settled (D14–D17, Vincent Oct 15); desk copy is still open (D19–D22). The text below is the original spec; the live rules live in `STANDING_CFG`.
 
 **Data (additive, no save bump).** `S.standing = { keepers: n, glimmer: n }`, integers 0-100, both always tracked, normalised in `save.js` (`fill(s, 'standing', isObj, {})` like `bag`/`seals`/`flags`, clamp on load). `story.side` stays the *pledge* ("which faction are you currently working for"). Each faction has 5 tiers (0-4) from thresholds, for example 0 / 10 / 25 / 45 / 70.
 - Keepers tiers (working names): Stranger, Friend, Trusted, Hall Friend, Warden's Ally.
@@ -450,7 +450,7 @@ See section 4 (pointer strength, Settings toggle).
 
 ## 3. Oct 14 queue
 
-Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. Next scoped work is Q19, town boards. Q26, modern and arcade controls, is scoped and not started. The town-list D37 and D38–D49 are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is the next unbuilt board step and is not started. The open-table D37 is the region-map claim list and shares that number. Q22, the Capital Partnership Briefing, is not built. The RegenX lab pass and the VOLT line Bitlet are in the game on this branch (D74). A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
+Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. The NPC-only Fetchling line (`fetch`) is in the game on this branch and is not the next queue item. Next scoped work is Q19, town boards. Q26, modern and arcade controls, is scoped and not started. The town-list D37 and D38–D49 are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is the next unbuilt board step and is not started. The open-table D37 is the region-map claim list and shares that number. Q22, the Capital Partnership Briefing, is not built. The RegenX lab pass and the VOLT line Bitlet are in the game on this branch (D74). A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ### Q16 — Land the stranded Act 1 stack — **done**
 
@@ -540,7 +540,7 @@ Fourteen hours away, once the partner tab is clear of the daily hello, the line 
 
 ### Q26 — Modern and arcade controls — M — **built on branch `modern-nav`, awaiting review**
 
-Built to this scope plus design NAV_MODERN v0.1 (button rects, 2x map with a 24x36 cap in modern, one `body.nav-locked`, the gear outside the scene fade, edge arrows in the free rect, WALK back label, TEAM / WALKLING-BOX headers, WALKLINGS icon-only). The prompt runs from `game.js` after `lookPick` (D76) instead of a new JSON step. Not on main until Vincent merges.
+Built to this scope plus design NAV_MODERN v0.1 (button rects, 2x map with a 24x36 cap in modern, one `body.nav-locked`, the gear outside the scene fade, edge arrows in the free rect, WALK back label, TEAM / WALKLING-BOX headers, WALKLINGS icon-only). The prompt runs from `game.js` after `lookPick` (D76) instead of a new JSON step. Modern QUEST paints the approved badge pip (D105): gold at the top right for an open main step (the idle last step stays unmarked), tide blue at the top left for an open side quest. Not on main until Vincent merges.
 
 Not in the game. The next build stays Q19. This package can land beside the boards. No new art: every button reuses an icon the game already paints. Save `v` stays 2. The sentences are D70. The joystick default is D71. Landscape is D72. All three stay marked placeholder until Vincent signs them.
 
@@ -669,7 +669,7 @@ Quest-unlocked Walkling adornments (D75) are not started. The five current ones 
 
 Designer: Tour stop copy and the real `tour.doubt` name (D26); the switch-desk letter, review, and welcome (D19); the Sacrifice one-pager (D24), which replaces the stub. Tier-2 lanyard art, Imogen, Hollis, and Rook's lanyard are in the game (Q20). D13 is the player look picker, which still has no lanyard. Route 2, Cobblecrest, and R5 already have implementer copy on `main`. Replace that copy. Do not write a second set.
 
-Vincent: Standing numbers D14–D17 are due Thu Oct 15 and are still the Build 2 guesses. Daily earning is wanted and slow, and D18 still needs a cap before it is built. The 5-Acorn rest (D28) and the Firebase project plus the privacy line are also open. The town-list rows are settled. The open-table D37 is the region-map claim list, already in the game, and it shares that number. Do not renumber it.
+Vincent: Standing numbers D14–D17 are settled (Oct 15) as the Build 2 defaults. Daily earning is wanted and slow, and D18 still needs a cap before it is built. The 5-Acorn rest (D28) and the Firebase project plus the privacy line are also open. The town-list rows are settled. The open-table D37 is the region-map claim list, already in the game, and it shares that number. Do not renumber it.
 
 ### Reference: Builds 4–6 as they play on main
 
@@ -736,14 +736,14 @@ Settled Oct 13: Fernbrook is the pick; side is switchable with Standing; capture
 Remaining:
 
 1. **Sacrifice loop (D24).** `main` has the stub (snack stays in the bag, three spoken names, optional Hale review). Still open: the real cost, and whether Quota should be a befriend / win / walk target. It replaces the stub.
-2. **Standing numbers and sources (D14–D18):** tiers 0/10/25/45/70, switch halves the side left, one switch per Seal-count chapter, `joinMinTier` 0. Daily earning not built. All still proposals in `STANDING_CFG`.
+2. **Standing numbers and sources (D14–D18):** D14–D17 settled Oct 15 (Vincent) as built: tiers 0/10/25/45/70, switch halves the side left, one switch per Seal-count chapter, `joinMinTier` 0. Daily earning not built (D18). Was: All still proposals in `STANDING_CFG`.
 3. **Completionists:** after switching, can the player also finish the other faction's trial? Default: yes, optional, with that faction's tier granted.
 4. **Capture extras (D6–D8):** quarry width 0.18 vs target 0.22 left as is; WARY/FAIR/GOOD shown; no Easier toggle, no miss-shrink, no KO mitigation.
 5. **Quest pointer:** tile chevron plus edge arrow. Settings toggle to turn pointing off? Default: on. Side-task count not built (D12).
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
 7. **Tour stop copy and `tour.doubt` name (D2 / D26).** Engine is in; words are marked `PLACEHOLDER`.
 8. **R5 tone (D25).** `main` writes Keepers `"ally"` and Glimmerwell `"stays"`. Still open: parted instead of ally, and whether he appears later as a colleague.
-9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D81. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
+9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D128. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
 10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.
 11. **Welcome back (D56) and clearing a nickname (D57).** Q25 uses 14 hours and one sentence. Q23 clears `nick` when the field is empty or equals the species name, on the stats card and on the Walkling sheet. Both lines are still placeholders.
 12. **Modern and arcade controls (Q26, D70–D72).** Scoped from Vincent's Oct 15 sketch, not started. Arcade is today's layout. Modern is a full-screen map with QUEST, BAG, and MAP top left, Settings and PHONE top right, WALKLINGS and PARTNER bottom right, a partner strip along the bottom, and no tab bar. The joystick is an option, off by default (D71). Landscape is D72. The prompt and the modern tips are placeholders (D70).

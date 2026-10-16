@@ -131,13 +131,13 @@
   // only inside its own chain. The phone is the featured side quest until the officers issue it, then Mom's dream.
   const SIDE_CHAINS = [
     [
-      { id: 'phone', when: ['story.starter_received'], done: ['story.phone_got'],
+      { id: 'phone', label: 'Explore Route 1', when: ['story.starter_received'], done: ['story.phone_got'],
         text: 'The wild past the east gate is open. Go and explore.',
         place: 'Route 1, west end',
         target: { map: 'route1', x: 3, y: 7 } },
     ],
     [
-      { id: 'mom', when: ['story.starter_received'], done: ['story.mom_met'],
+      { id: 'mom', label: "Mom's trip", when: ['story.starter_received'], done: ['story.mom_met'],
         text: 'Mom is upstairs. She wants to meet your Walkling.', place: 'Your home, upstairs',
         target: { map: 'hm_home_up', x: 5, y: 3 } },
       { id: 'mom_chore', when: ['story.mom_met'], done: ['story.mom_chore'],
@@ -197,14 +197,19 @@
     }
     return m;
   }
-  function sideCurrent(st){
-    for (const chain of SIDE_CHAINS) {
+  // QUEST_MULTI (D106): every active side chain, in unlock order (SIDE_CHAINS index). Each chain keeps its own done mask
+  // (later implies earlier only inside the chain); a locked or finished chain is left out. `chains` is for tests only.
+  const LABEL_MAX = 30;
+  function sideActive(st, chains){
+    const out = [];
+    for (const chain of (chains || SIDE_CHAINS)) {
       const m = chain.map(e => ownDone(e, st));
       for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
-      for (let i = 0; i < chain.length; i++) if (!m[i] && eligible(chain[i], st)) return resolve(chain[i], st);
+      for (let i = 0; i < chain.length; i++) if (!m[i] && eligible(chain[i], st)) { out.push({ chain: chain[0].id, label: chain[0].label || chain[0].id, step: resolve(chain[i], st) }); break; }
     }
-    return null;
+    return out;
   }
+  function sideCurrent(st){ const a = sideActive(st); return a.length ? a[0].step : null; }
 
   // The current objective, or null when nothing applies (never happens with the chain above: `end` has no done).
   function current(st){
@@ -254,6 +259,7 @@
       if (e.target && !(typeof e.target.map === 'string' && Number.isInteger(e.target.x) && Number.isInteger(e.target.y))) bad.push('bad target: ' + e.id);
     }
     if (CHAIN[CHAIN.length - 1].done.length) bad.push('the last entry must never be done');
+    for (const chain of SIDE_CHAINS) { const l = chain[0].label; if (typeof l !== 'string' || !l || Array.from(l).length > LABEL_MAX) bad.push('chain label missing or over ' + LABEL_MAX + ': ' + chain[0].id); }
     const sideIds = new Set();
     for (const e of SIDE) {
       if (sideIds.has(e.id) || ids.has(e.id)) bad.push('duplicate id: ' + e.id); sideIds.add(e.id);
@@ -263,7 +269,7 @@
     return bad;
   }
 
-  const api = { CHAIN, SIDE, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, sideCurrent, completed, byId, resolve, devCheck };
+  const api = { CHAIN, SIDE, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, sideCurrent, sideActive, SIDE_CHAINS, LABEL_MAX, completed, byId, resolve, devCheck };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PPQuests = api;
 })(typeof window !== 'undefined' ? window : globalThis);

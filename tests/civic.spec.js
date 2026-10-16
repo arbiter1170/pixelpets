@@ -347,11 +347,11 @@ test('the quest tab opens the next step without leaving the walk map', async ({ 
   expect(shown.text.length).toBeGreaterThan(0);
   expect(shown.side).toBe('phone');
   expect(shown.main).toBe('MAIN');
-  expect(shown.sideLabel).toBe('SIDE');
+  expect(shown.sideLabel).toBe('SIDE \u00b7 2');   // D106: phone and Mom's trip are both active after the starter
   expect(shown.objective).toBe('Objective');
   expect(shown.sideObjective).toBe('Objective');
   expect(shown.status).toBe('ACTIVE');
-  expect(shown.sideStatus).toBe('ACTIVE');
+  expect(shown.sideStatus).toBe('TRACKED');
   expect(shown.sideText).toBe('The wild past the east gate is open. Go and explore.');
   expect(shown.sidePlace).toBe('Route 1, west end');
   expect(shown.sideText).not.toMatch(/handset|Keeper1|phone/i);
