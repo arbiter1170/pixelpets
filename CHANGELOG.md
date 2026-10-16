@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 00:50 ET: Rook's House and the Warden's Lodge get their own rooms (build 20261016-0050)
+
+- What changed and why: Vincent approved the Calloway and Warden's Lodge reskins on top of the lantern palette. Keys A–G stay as they are. Three shared keys were appended once: dusty rose, warm grey flagstone, and deep Keeper green. Rook's House (`hm_rook_in`) now has honey planks and rose sprig wallpaper over a honey wainscot. The Warden's Lodge (`hm_lodge_in`) now has warm flagstone, timber-board walls, a Keeper-green wainscot, and a green runner with gold edges. The Keeper House rooms stay stone flags and ink planks. The old brick and log tiles stay defined, so the exteriors are unchanged. Save `v` stays 2. No id was renumbered.
+- Files touched: `sprites.js`, `tests/house_reskin.spec.js`, `tests/README.md`, `README.md`, `handoff/maps/BUILDING_VARIETY.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0050.
+- Tests run and result (widths, checks): `PP_PORT=8807 npm test` exit 1. 840 passed, 12 skipped, 3 failed (18.8m), at 320, 375, and 390. The 3 failures are the pre-existing `tests/maps_b6.spec.js:289` check: it expects `lab_floor` at `rx_f1` (9, 8) and reads `lab_inlay_mint`. That check already fails on main. `tests/house_reskin.spec.js` and `tests/lantern_palette.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. Vincent approved both packets. The packets set the colours and the two skins. No new decision id. D88 still caps one floor tile at 70 percent.
+- Anything left unfinished: The private design copies were not in this workspace. The handoff copy in this repo has the new interior wording for rows 2 and 4. The `maps_b6` lab-floor check is left as it is on main.
+
 ## 2026-10-16 00:22 ET: Lantern rooms use a warm floor (build 20261016-0022)
 
 - What changed and why: The Hearthmoor and High Charity Lantern Houses were too bright. Seven palette keys were appended (sand, terracotta, cream, sage, dark sage, warm shadow, warm trim). Hearthmoor now has a sand checker floor, cream walls, and a dark sage wainscot. High Charity keeps the clinic grid, now on sand tiles with sage grout and sage walls. The window glow stays the bright accent. Cobblecrest's lantern room is unchanged. The old white floor and wall tiles stay defined, so the Hearthmoor lantern exterior is unchanged. Save `v` stays 2. No id was renumbered.
