@@ -12,7 +12,7 @@ All art: 16×16 PAL text grids, `.` transparent, no outline, original.
 |---|---|---|---|---|
 | 1 | Your Home (hearthmoor `hm_home` → `hm_home_in`) | warm red-tile roof (`r`), cream plaster wall, round window, green door, flower box | `house_floor_a` honey planks, rag rug with border, bed + mirror | roof_tile_r, wall_plaster, win_round, door_plain_g, planter_box |
 | 2 | Warden's Lodge (`hm_lodge` → `hm_lodge_in`) | steep dark-green shingle roof, log walls, double door, antler-free carved wood sign "LODGE", hitching fence | dark log planks, hearth with fire glow (still under reduced motion), map table | roof_shingle_g, wall_log, door_double, sign_lodge, fence_post |
-| 3 | Lantern House, Hearthmoor (`hm_lantern` → `hm_lantern_in`) | gold roof (`y`), white wall, hanging lantern sign (chain brand), bench | pale birch floor, three rest beds with quilts in different colours | roof_gold, lantern_sign (shared), bench_long |
+| 3 | Lantern House, Hearthmoor (`hm_lantern` → `hm_lantern_in`) | gold roof (`y`), white wall, hanging lantern sign (chain brand), bench | warm sand checker floor, cream-and-sage walls, three rest beds with quilts in different colours | roof_gold, lantern_sign (shared), bench_long |
 | 4 | Rook's House (`hm_rook` → `hm_rook_in`) | orange-red roof, brick wall, crooked chimney, bike/cart by door | red-brown planks, kitchen corner, Rook's trophy shelf | roof_tile_o, wall_brick, chimney, cart_prop |
 | 5 | Keeper House (civic `hm_hq_f1/f2`) | slate-blue roof, stone wall, banner with Keeper gold/green, two lamps | stone flags floor + carpet runner, notice board, stair landing | roof_slate_b, wall_stone, banner_keeper, lamp_post, floor_flag |
 | 6 | Lantern House, Fernbrook (`fb_lantern`, planned `fb_lantern_in`) | moss-green thatch roof, timber frame, lantern sign, apple crate | orchard-wood floor, Amos's heal counter, drying herbs | roof_thatch_g, wall_timber, apple_crate |
@@ -30,7 +30,7 @@ All art: 16×16 PAL text grids, `.` transparent, no outline, original.
 | 20 | Lantern School (`hc_school_in`) | clock gable, yellow walls, slate board sign | desks in rows, chalk board | clock_face, desk_school |
 | 21 | Event Hall (`hc_hall_in`) | blue civic roof + bunting | parquet floor, stage, chairs | floor_parquet, stage, bunting |
 | 22 | Civic Bank (`hc_bank_in`) | columns, heavy door, Acorn emblem | marble check floor, counter with grille, vault door | floor_marble, vault_door, acorn_emblem |
-| 23 | Lantern House, High Charity (`hc_lantern_in`) | teal roof, tall windows, lantern sign | tiled clinic floor, beds | floor_clinic |
+| 23 | Lantern House, High Charity (`hc_lantern_in`) | teal roof, tall windows, lantern sign | warm tiled clinic floor, beds | floor_clinic |
 | 24 | Charity Mall (`hc_mall_1/2`) | glass front, awnings in 3 colours | shop stalls, fountain, escalator-free stair | awning_r/b/y, stall, fountain_small |
 | 25 | Breckenridge Observatory (mahopac `mah_obs`) | dome roof, slit, signal mast (landmark) | star-chart floor, telescope | roof_dome, telescope, floor_starmap |
 | 26 | RegenX facade (fb_heights `ht_lab`) | white front, mint sign (art row 13, 32×32) | lab skin (B1/B2), each floor own accent | regenx_facade |

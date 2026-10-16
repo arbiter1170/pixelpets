@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-16 00:22 ET: Lantern rooms use a warm floor (build 20261016-0022)
+
+- What changed and why: The Hearthmoor and High Charity Lantern Houses were too bright. Seven palette keys were appended (sand, terracotta, cream, sage, dark sage, warm shadow, warm trim). Hearthmoor now has a sand checker floor, cream walls, and a dark sage wainscot. High Charity keeps the clinic grid, now on sand tiles with sage grout and sage walls. The window glow stays the bright accent. Cobblecrest's lantern room is unchanged. The old white floor and wall tiles stay defined, so the Hearthmoor lantern exterior is unchanged. Save `v` stays 2. No id was renumbered.
+- Files touched: `sprites.js`, `tests/lantern_palette.spec.js`, `tests/README.md`, `README.md`, `handoff/maps/BUILDING_VARIETY.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261016-0022.
+- Tests run and result (widths, checks): `PP_PORT=8804 npm test` exit 1. 837 passed, 12 skipped, 3 failed (18.8m), at 320, 375, and 390. The 3 failures are the pre-existing `tests/maps_b6.spec.js:289` check: it expects `lab_floor` at `rx_f1` (9, 8) and reads `lab_inlay_mint`. That check already fails on main. `tests/lantern_palette.spec.js` passed at all three widths, with no console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): Green. The packet set the colours and the two skins. No new decision id. D88 still caps one floor tile at 70 percent, and all three lantern rooms stay under that cap.
+- Anything left unfinished: The private design copy of BUILDING_VARIETY was not in this workspace. The handoff copy in this repo has the new floor wording for rows 3 and 23. The `maps_b6` lab-floor check is left as it is on main.
+
 ## 2026-10-15 23:40 ET: High Charity rooms merged with current main (build 20261015-2340)
 
 - What changed and why: Merged current `main` (B1, the Q28 plan, B5, B2 and B7). `sprites.js` and `game.js` merged cleanly. `data/mapdata.js` was regenerated, not hand-merged. `OPEN_DECISIONS.md` keeps D92, D94, D95, D99, D100 and D102. `tests/maps_b7.spec.js` keeps this branch's 27 shared skins and main's four lab floor variant keys. Save `v` stays 2. No id was renumbered.
