@@ -245,6 +245,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   how many joins already applied. Scenes move a number with `["rep", Name, n]`. `cond()` accepts `rep:Lizzy>=60`,
   `rep:Lizzy<20`, `reptier:Lizzy=warm`, and, on that person's own lines, `reptier=warm`. The table is `data/reputation.json`.
   `PixelPets.repGet`, `repTier`, `repEffective`, and `repCheck` are always available. Debug `repAdd(name, n)` writes a number.
+  The compass (`#repBtn`) is on screen from a new game. On the modern walk screen it is the top-left button; QUEST, BAG and MAP sit one slot lower. In the header it is the first button, 44 px. It opens PEOPLE. The list is people you have met, most recent first, each with a face, a 0-100 bar and a tier word. Fixed people sit at the end with a lock. Pets are not listed. With nobody met it says "Nobody yet. Go say hi." A face opens a card with the stored number, the tier word, and source lines from `data/reputation.json` (empty until later quests add rows). BACK on the card returns to the list. BACK on the list, or Esc, closes it.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   growing up (each line's grow-up move, then any level moves of the new form). Older saves get missed grow-up
   moves on their next visit ("<name> remembers something from growing up!").

@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 02:59 ET: Compass button and the PEOPLE list (build 20261017-0259)
+
+- What changed and why: The compass opens PEOPLE (D176). On the modern walk screen it sits at the top of the left column and QUEST, BAG and MAP move down one slot. In the header it is the first button, 44 px so the tap target matches the gear. PEOPLE lists people you have met, most recent first, with a face, a 0-100 bar and a tier word. Fixed people sit at the end with a lock. An empty list says "Nobody yet. Go say hi." A face opens a card with the stored number, the tier word, and source lines from data. That source list is empty until later quests add rows. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `style.css`, `data/nav_art.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0259.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390` PASS exit=0 passed=8. Same spec plus `tests/ux_review.spec.js` at 320: PASS exit=0 passed=15. `tests/controls.spec.js` at 320 and 390: PASS exit=0 passed=42.
+- Decisions made (colour + reasoning): builds settled D176. The spec asked for a 32 px header compass "like the settings button"; that button is 44 px and tap targets stay at least 44 px, so the compass is 44. No decision file edited.
+- Anything left unfinished: the acorn chip and letter lines are the next packets on this branch.
+
 ## 2026-10-17 02:50 ET: Reputation numbers, join penalty, and trust checks (build 20261017-0250)
 
 - What changed and why: Each person you can meet has a 0-100 reputation (D174, D175, D178). Rook starts at 40. Mom and Dad stay at 100. Warden Ilse and Clerk Wynn stay at 50. Joining a side, or switching through Rook, lowers met people of the other side by 10 once. The save stays v2 (`S.rep`, `S.repJoins`).

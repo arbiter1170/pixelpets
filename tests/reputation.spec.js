@@ -1,7 +1,7 @@
 /* LIZZY_REP v0.2 LR5 (D174, D175, D178). Defaults, the join penalty, fixed NPCs, and reptier conds.
    See tests/README.md. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, shot } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -147,4 +147,117 @@ test('a pre-PR save loads with no reputation changes and v stays 2', async ({ pa
   expect(r.picked).toBe(true);
   expect(r.unlock).toBeNull();
   expect(r.name).toBe('Tester');
+});
+
+function rect(page, sel) {
+  return page.evaluate((s) => {
+    const e = document.querySelector(s);
+    if (!e || !e.offsetWidth) return null;
+    const r = e.getBoundingClientRect();
+    return { x: r.x, y: r.y, width: r.width, height: r.height, right: r.right, bottom: r.bottom };
+  }, sel);
+}
+
+test('modern compass sits at 6,6 and quest, bag and map move down one slot', async ({ page }) => {
+  const save = starterSave();
+  save.settings.controls = 'modern';
+  save.settings.joystick = true;
+  await boot(page, save);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.waitForTimeout(200);
+  const w = page.viewportSize().width;
+  const r = {
+    rep: await rect(page, '#repBtn'),
+    quest: await rect(page, '#questBtn'),
+    bag: await rect(page, '#walkBagBtn'),
+    map: await rect(page, '#mapBtn'),
+    env: await rect(page, '#envBadge'),
+    joy: await rect(page, '#joyRing'),
+    tip: await rect(page, '#walkTip'),
+  };
+  expect(Math.round(r.rep.x)).toBe(6);
+  expect(Math.round(r.rep.y)).toBe(6);
+  expect(Math.round(r.rep.width)).toBe(44);
+  expect(Math.round(r.rep.height)).toBe(44);
+  expect(Math.round(r.quest.x)).toBe(6);
+  expect(Math.round(r.quest.y)).toBe(56);
+  expect(Math.round(r.bag.y)).toBe(106);
+  expect(Math.round(r.map.y)).toBe(156);
+  expect(Math.round(r.map.bottom)).toBeLessThanOrEqual(210);
+  expect(Math.round(r.env.y)).toBe(6);
+  expect(Math.round(r.env.x)).toBeGreaterThanOrEqual(56);
+  if (w === 320 || w === 390) {
+    expect(r.joy.y).toBeGreaterThanOrEqual(370);
+    expect(r.tip.y).toBeGreaterThanOrEqual(470);
+    expect(r.map.bottom).toBeLessThan(r.joy.y);
+    expect(r.map.bottom).toBeLessThan(r.tip.y);
+  }
+  if (w === 390) await shot(page, 'rep-compass-modern');
+});
+
+test('arcade compass is the first header button and is a 44 px target', async ({ page }) => {
+  await boot(page, starterSave());
+  await page.evaluate(() => PixelPets.showTab('pet'));
+  const home = await page.evaluate(() => {
+    const b = document.querySelector('#repBtn');
+    return { parent: b.parentNode.className, first: b.parentNode.firstElementChild.id, w: b.getBoundingClientRect().width, h: b.getBoundingClientRect().height };
+  });
+  expect(home.parent).toContain('who');
+  expect(home.first).toBe('repBtn');
+  expect(home.w).toBeGreaterThanOrEqual(44);
+  expect(home.h).toBeGreaterThanOrEqual(44);
+  if (page.viewportSize().width === 390) await shot(page, 'rep-compass-arcade');
+});
+
+test('PEOPLE is empty until someone is met, then Lizzy opens a card', async ({ page }) => {
+  // A save with pets and no starter flag is rewritten on load (starter_received comes back), so the empty list is a new game that already saw the opening.
+  const bare = starterSave();
+  bare.party = [];
+  bare.box = [];
+  bare.partnerId = null;
+  delete bare.flags['story.starter_received'];
+  delete bare.flags['story.starter_line'];
+  await boot(page, bare);
+  await page.locator('#repBtn').click();
+  await expect(page.locator('#ovRep')).toBeVisible();
+  await expect(page.locator('.rep-empty')).toHaveText('Nobody yet. Go say hi.');
+  await page.locator('#repBack').click();
+  await expect(page.locator('#ovRep')).toBeHidden();
+
+  const save = starterSave();
+  save.settings.controls = 'modern';
+  await boot(page, save);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.evaluate(() => PixelPets.runScene('lizzy_intro'));
+  await playScene(page, ['Hi, Lizzy!', 'Is Rook okay?']);
+  await page.locator('#repBtn').click();
+  const row = page.locator('.rep-row', { hasText: 'Lizzy' });
+  await expect(row).toBeVisible();
+  const face = await row.locator('.rep-face').boundingBox();
+  expect(face.width).toBeGreaterThanOrEqual(36);
+  expect(face.height).toBeGreaterThanOrEqual(36);
+  const tap = await row.locator('.rep-face-btn').boundingBox();
+  expect(tap.width).toBeGreaterThanOrEqual(44);
+  expect(tap.height).toBeGreaterThanOrEqual(44);
+  await row.locator('.rep-face-btn').click();
+  await expect(page.locator('#repCard .rep-num')).toHaveText('50');
+  await expect(page.locator('#repCard .rep-tier')).toHaveText('neutral');
+  await page.evaluate(() => {
+    MAPDATA.reputation.sources.push({
+      who: 'Lizzy', flag: 'story.moral_leak5b', eq: 'court', delta: 10,
+      line: 'You took the leak to the Keepers', open: 'Help with a leak?',
+    });
+  });
+  await page.evaluate(() => { window.__repCard = true; });
+  await page.locator('#repBack').click();
+  await page.locator('.rep-row', { hasText: 'Lizzy' }).locator('.rep-face-btn').click();
+  await expect(page.locator('#repCard .rep-src')).toHaveText('? Help with a leak?');
+  await page.evaluate(() => PixelPets.setFlag('story.moral_leak5b', 'court'));
+  await page.locator('#repBack').click();
+  await page.locator('.rep-row', { hasText: 'Lizzy' }).locator('.rep-face-btn').click();
+  await expect(page.locator('#repCard .rep-src')).toHaveText('+10 You took the leak to the Keepers');
+  if (page.viewportSize().width === 390) await shot(page, 'rep-people-card');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#ovRep')).toBeHidden();
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });

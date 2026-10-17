@@ -371,7 +371,7 @@ function setFast(on, quiet){
 /* ---------- Q26: modern and arcade controls (NEXT_PLAN §3 Q26) ----------
    Arcade is the layout the game always had. Modern adds body.ctl-modern and re-parents a few nodes into #floatCtl, so one id
    keeps one handler, and arcade comes back by moving them home. No node is created or destroyed on a switch. */
-const CTL_MOVES = [['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip']];
+const CTL_MOVES = [['#repBtn', '#fcTL'], ['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip']];
 const ctlHome = {};
 const ctlMode = () => (S && S.settings && S.settings.controls === 'modern') ? 'modern' : 'arcade';
 const joyOn = () => ctlMode() === 'modern' && !!(S && S.settings.joystick);
@@ -381,6 +381,7 @@ function applyControls(){
   if (m) CTL_MOVES.forEach(([sel, dst]) => { const n = $(sel), d = $(dst); if (n && d && n.parentNode !== d) d.appendChild(n); });
   else CTL_MOVES.slice().reverse().forEach(([sel]) => { const n = $(sel), h = ctlHome[sel]; if (n && h && n.parentNode !== h.p) h.p.insertBefore(n, h.next && h.next.parentNode === h.p ? h.next : null); });
   const qb = $('#questBtn'); if (qb) { qb.classList.toggle('dpc', m); qb.classList.toggle('fbtn', m); }
+  const rb = $('#repBtn'); if (rb) { rb.classList.toggle('dpc', m); rb.classList.toggle('fbtn', m); rb.classList.toggle('icon-only', m); rb.classList.toggle('icon-btn', !m); }
   document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
   const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
   renderControlsRows(); syncWalkTip(); fitAll();
@@ -446,7 +447,7 @@ function updatePetStrip(p){
 // icons. Each nav button gets a 44 px canvas painted from a 22x22 state grid at 2 px per cell; CSS adds the 1 px dark outline.
 // NAV_ICON_ONLY: Vincent approved icon-only on every modern button (Oct 15). false brings the text captions back.
 const NAV_ICON_ONLY = true;
-const NAV_BTNS = [['#questBtn', 'quest'], ['#walkBagBtn', 'bag'], ['#mapBtn', 'map'], ['#gearFloat', 'gear'], ['#phoneBtn', 'phone'], ['#colFloat', 'walklings'], ['#petFloat', 'partner']];
+const NAV_BTNS = [['#repBtn', 'rep'], ['#questBtn', 'quest'], ['#walkBagBtn', 'bag'], ['#mapBtn', 'map'], ['#gearFloat', 'gear'], ['#phoneBtn', 'phone'], ['#colFloat', 'walklings'], ['#petFloat', 'partner']];
 const NAV_LOCKABLE = { quest: 1, walklings: 1, partner: 1, back: 1 };
 const navArt = () => window.NAV_ART_DATA || null;
 function paintGrid(g, grid, cell, ox, oy){
@@ -575,7 +576,7 @@ function showTab(name){
 }
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || tut.on;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -5590,7 +5591,16 @@ function drawRegionMap(t){
 let bagSel = 0;
 function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
 function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'star', 0, 0); }
-function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon"));
+function paintRepIcon(){
+  const c = $('#repIcon'); const grid = navArt() && navArt().buttons.rep && navArt().buttons.rep.normal;
+  if (!c || !grid) return;
+  c.width = c.height = 24; const g = ctx(c); g.clearRect(0, 0, 24, 24);
+  for (let y = 0; y < 12; y++) for (let x = 0; x < 12; x++) {
+    const ch = grid[4 + y] && grid[4 + y][5 + x];
+    if (ch && ch !== '.' && PAL[ch]) { g.fillStyle = PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2); }
+  }
+}
+function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon")); paintRepIcon();
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {
@@ -6120,6 +6130,86 @@ function syncQuestBtn(){
   const sig = (on ? '1' : '0') + (b.classList.contains('pulse') ? 'p' : '') + mark;
   if (sig !== questBtnSig) { questBtnSig = sig; try { syncNavArt(false); } catch (e) {} }
 }
+// PEOPLE (D176). The set is the met contacts. Sort is recent first, then people met only through a scene, then fixed names with a lock.
+// +/- and ? rows are rebuilt from MAPDATA.reputation.sources (empty until Lizzy C adds entries).
+let repWho = '';
+function repRows(){
+  const played = playedSceneNames(), book = phoneBook();
+  const idx = new Map(Object.keys(book.met).map((k, i) => [k, i]));
+  const rows = [];
+  for (const person of contactPeople().values()) if (personMet(person, played)) rows.push(person);
+  rows.sort((a, b) => {
+    const fa = window.PPRep && PPRep.isFixed(a.name) ? 1 : 0;
+    const fb = window.PPRep && PPRep.isFixed(b.name) ? 1 : 0;
+    if (fa !== fb) return fa - fb;
+    const ia = idx.has(a.key) ? idx.get(a.key) : -1, ib = idx.has(b.key) ? idx.get(b.key) : -1;
+    if (ia < 0 && ib < 0) return a.name.localeCompare(b.name);
+    if (ia < 0) return 1;
+    if (ib < 0) return -1;
+    return ib - ia;
+  });
+  return rows;
+}
+function repSourceLines(name){
+  const out = [];
+  if (!window.PPRep || !S) return out;
+  for (const src of PPRep.sources()) {
+    if (!src || typeof src !== 'object') continue;
+    if (src.who && src.who !== '*' && PPRep.key(src.who) !== PPRep.key(name)) continue;
+    if (src.when && !cond(src.when, false)) continue;
+    const on = !!(src.flag && (src.eq == null ? S.flags[src.flag] : String(S.flags[src.flag]) === String(src.eq)));
+    if (on && typeof src.line === 'string') {
+      const d = Number(src.delta) || 0;
+      out.push((d > 0 ? '+' : '') + d + ' ' + src.line);
+    } else if (!on && typeof src.open === 'string' && src.open) out.push('? ' + src.open);
+  }
+  return out;
+}
+function renderRep(){
+  const list = $('#repList'), card = $('#repCard'); if (!list || !card) return;
+  if (repWho) {
+    list.hidden = true; card.hidden = false; card.replaceChildren();
+    const person = contactPeople().get(repWho);
+    if (!person) { repWho = ''; renderRep(); return; }
+    const face = document.createElement('canvas');
+    face.width = face.height = 18; face.className = 'rep-face'; face.setAttribute('aria-hidden', 'true');
+    paintContactFace(face, person);
+    const nm = document.createElement('h3'); nm.className = 'rep-name'; nm.textContent = person.name;
+    const num = document.createElement('p'); num.className = 'rep-num'; num.textContent = String(PPRep.repGet(person.name));
+    const tier = document.createElement('p'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
+    card.append(face, nm, num, tier);
+    for (const text of repSourceLines(person.name)) { const p = document.createElement('p'); p.className = 'rep-src'; p.textContent = text; card.appendChild(p); }
+    return;
+  }
+  card.hidden = true; list.hidden = false; list.replaceChildren();
+  const rows = repRows();
+  if (!rows.length) { const p = document.createElement('p'); p.className = 'rep-empty'; p.textContent = 'Nobody yet. Go say hi.'; list.appendChild(p); return; }
+  for (const person of rows) {
+    const row = document.createElement('div'); row.className = 'rep-row';
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'rep-face-btn'; btn.dataset.rep = person.key; btn.setAttribute('aria-label', person.name);
+    const face = document.createElement('canvas');
+    face.width = face.height = 18; face.className = 'rep-face'; face.setAttribute('aria-hidden', 'true');
+    paintContactFace(face, person); btn.appendChild(face);
+    const meta = document.createElement('div'); meta.className = 'rep-meta';
+    const nm = document.createElement('span'); nm.className = 'rep-name'; nm.textContent = person.name;
+    const raw = PPRep.repGet(person.name);
+    const bar = document.createElement('span'); bar.className = 'rep-bar'; bar.setAttribute('role', 'progressbar');
+    bar.setAttribute('aria-valuemin', '0'); bar.setAttribute('aria-valuemax', '100'); bar.setAttribute('aria-valuenow', String(raw));
+    bar.setAttribute('aria-label', person.name + ' ' + raw);
+    const fill = document.createElement('i'); fill.style.width = raw + '%'; bar.appendChild(fill);
+    const tier = document.createElement('span'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
+    meta.append(nm, bar, tier); row.append(btn, meta);
+    if (PPRep.isFixed(person.name)) { const lock = document.createElement('span'); lock.className = 'rep-lock'; lock.setAttribute('aria-hidden', 'true'); row.appendChild(lock); }
+    list.appendChild(row);
+  }
+}
+function openRep(){
+  if (!S || (overlayOpen() && $('#ovRep').hidden)) { sfx('denied'); return; }
+  clearMoves(); sfx('tap'); repWho = ''; renderRep(); $('#ovRep').hidden = false; lockTabs(true);
+}
+function closeRep(){ if ($('#ovRep').hidden) return; $('#ovRep').hidden = true; repWho = ''; lockTabs(false); }
+function repBack(){ if (repWho) { repWho = ''; sfx('tap'); renderRep(); return; } sfx('tap'); closeRep(); }
 let questMoreOpen = false, questDoneOpen = false;   // not saved; reset on every open
 let questTab = 'next';   // 'next' | 'standing'; the panel always opens on NEXT STEP
 function openQuest(){
@@ -8452,6 +8542,9 @@ function bindInput(){
     if (who && who.classList.contains('contact-main')) { contactOpen = who.dataset.who; sfx('tap'); renderContacts(); }
   });
   $('#questBtn').addEventListener('click', openQuest);
+  const repBtn = $('#repBtn'); if (repBtn) repBtn.addEventListener('click', () => { if ($('#ovRep').hidden) openRep(); else closeRep(); });
+  const repBackBtn = $('#repBack'); if (repBackBtn) repBackBtn.addEventListener('click', repBack);
+  const repList = $('#repList'); if (repList) repList.addEventListener('click', e => { const b = e.target.closest('[data-rep]'); if (!b) return; repWho = b.dataset.rep; sfx('tap'); renderRep(); });
   { const m = $('#questSideMore'), d = $('#questDoneToggle'); if (m) m.addEventListener('click', questToggleMore); if (d) d.addEventListener('click', questToggleDone); }
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
@@ -8621,6 +8714,7 @@ function bindInput(){
     if (!$('#ovMap').hidden && KEYS[e.key]) { e.preventDefault(); if (!e.repeat) mapNudge(KEYS[e.key]); return; }   // arrows read the parchment; they must not walk the keeper underneath
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
     if (e.key === 'Escape' && !$('#ovQuest').hidden) { e.preventDefault(); closeQuest(); return; }
+    if (e.key === 'Escape' && !$('#ovRep').hidden) { e.preventDefault(); closeRep(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
     if (shopKey(e)) { e.preventDefault(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
