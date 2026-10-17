@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 03:06 ET: Acorn chip plate (build 20261017-0306)
+
+- What changed and why: The modern walk acorn chip is a nav plate (D179), 44 px tall, with the new acorn and a yellow number. A gain turns the plate blue for 300 ms. Reduced motion skips that, and the first time the count is drawn it does not flash. The header, the bag, and the shop keep the small acorn icon. 99999 still fits inside 48 cells. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `style.css`, `data/nav_art.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0306.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js tests/ux_review.spec.js --project=390` PASS exit=0 passed=16. The acorn tests at 320 and 390 PASS exit=0 passed=10. `python3 design/specs/nav_art_check.py` PASS.
+- Decisions made (colour + reasoning): builds settled D179. The wide plate is a 9-slice frame (left 19, mid 1, right 3), not a 22 px button. No decision file edited.
+- Anything left unfinished: letter lines by trust are the next packet on this branch.
+
 ## 2026-10-17 02:59 ET: Compass button and the PEOPLE list (build 20261017-0259)
 
 - What changed and why: The compass opens PEOPLE (D176). On the modern walk screen it sits at the top of the left column and QUEST, BAG and MAP move down one slot. In the header it is the first button, 44 px so the tap target matches the gear. PEOPLE lists people you have met, most recent first, with a face, a 0-100 bar and a tier word. Fixed people sit at the end with a lock. An empty list says "Nobody yet. Go say hi." A face opens a card with the stored number, the tier word, and source lines from data. That source list is empty until later quests add rows. Save `v` stays 2.

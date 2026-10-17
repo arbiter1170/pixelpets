@@ -1,4 +1,4 @@
-/* LIZZY_REP v0.2 LR5 (D174, D175, D178). Defaults, the join penalty, fixed NPCs, and reptier conds.
+/* LIZZY_REP v0.2. LR5 reputation (D174, D175, D178), LR6 compass and PEOPLE (D176), LR8 acorn chip (D179).
    See tests/README.md. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, playScene, shot } = require('./helpers');
@@ -260,4 +260,38 @@ test('PEOPLE is empty until someone is met, then Lizzy opens a card', async ({ p
   await page.keyboard.press('Escape');
   await expect(page.locator('#ovRep')).toBeHidden();
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
+});
+
+test('the acorn chip is a 44 px plate and flashes only on a gain', async ({ page }) => {
+  const save = starterSave();
+  save.settings.controls = 'modern';
+  save.money = 128;
+  await boot(page, save);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.waitForTimeout(250);
+  const frame = () => page.evaluate(() => { const c = document.querySelector('#fcAcorns .frame-art'); return c ? c.dataset.frame : ''; });
+  expect(await frame()).toBe('acorn');
+  const box = await page.evaluate(() => {
+    const chip = document.querySelector('#fcAcorns'), n = document.querySelector('#fcAcornN');
+    const cr = chip.getBoundingClientRect(), nr = n.getBoundingClientRect();
+    return { h: Math.round(cr.height), y: Math.round(cr.y), cells: Math.round(cr.width / 2), numLeft: Math.round(nr.left - cr.left), inside: nr.right <= cr.right + 1, icon: !!document.querySelector('#fcAcornIcon') };
+  });
+  expect(box.h).toBe(44);
+  expect(box.y).toBe(6);
+  expect(box.cells).toBeGreaterThanOrEqual(32);
+  expect(box.cells).toBeLessThanOrEqual(48);
+  expect(box.numLeft).toBe(38);
+  expect(box.inside).toBe(true);
+  expect(box.icon).toBe(false);
+  if (page.viewportSize().width === 390) await shot(page, 'rep-acorn-chip');
+  await page.evaluate(() => PixelPets.setMoney(129));
+  await expect.poll(frame, { timeout: 800 }).toBe('acorn_gain');
+  await expect.poll(frame, { timeout: 1000 }).toBe('acorn');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.evaluate(() => PixelPets.setMoney(130));
+  await page.waitForTimeout(250);
+  expect(await frame()).toBe('acorn');
+  const wide = await page.evaluate(() => { PixelPets.setMoney(99999); return new Promise(r => setTimeout(() => { const cr = document.querySelector('#fcAcorns').getBoundingClientRect(), nr = document.querySelector('#fcAcornN').getBoundingClientRect(); r({ cells: Math.round(cr.width / 2), inside: nr.right <= cr.right + 1 }); }, 250)); });
+  expect(wide.inside).toBe(true);
+  expect(wide.cells).toBeLessThanOrEqual(48);
 });

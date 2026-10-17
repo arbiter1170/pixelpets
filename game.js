@@ -468,7 +468,7 @@ function initNavArt(){
     b.addEventListener('pointerdown', () => { b.classList.add('nav-press'); syncNavArt(false); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, up));
   });
-  [['#envBadge', 'area_banner'], ['#petStrip', 'partner_strip'], ['#walkTip', 'tip_band']].forEach(([sel, key]) => {
+  [['#envBadge', 'area_banner'], ['#petStrip', 'partner_strip'], ['#walkTip', 'tip_band'], ['#fcAcorns', 'acorn']].forEach(([sel, key]) => {
     const el = $(sel); if (!el || el.querySelector('.frame-art')) return;
     const c = document.createElement('canvas'); c.className = 'frame-art'; c.dataset.frame = key; c.setAttribute('aria-hidden', 'true'); el.prepend(c);
   });
@@ -510,7 +510,7 @@ function syncNavArt(force){
   $$('.frame-art').forEach(c => {
     const el = c.parentNode, w = Math.max(8, Math.round(el.offsetWidth / 2)), f = A.frames[c.dataset.frame];
     if (!f || !el.offsetWidth) return;
-    const h = f.left.length, tag = w + 'x' + h;
+    const h = f.left.length, tag = c.dataset.frame + ':' + w + 'x' + h;   // frame name, so acorn and acorn_gain both repaint
     if (!force && navPaint.get(c) === tag) return;
     navPaint.set(c, tag); c.width = w; c.height = h; const g = ctx(c);
     const lw = f.left[0].length, rw = f.right[0].length;
@@ -522,14 +522,29 @@ function syncNavArt(force){
   if (kc) { const tag = joy.id != null ? 'p' : 'n'; if (force || navPaint.get(kc) !== tag) { navPaint.set(kc, tag); const g = ctx(kc); g.clearRect(0, 0, 18, 18); paintGrid(g, A.joystick[joy.id != null ? 'knob_pressed' : 'knob'], 1, 0, 0); } }
 }
 // Header acorns and the canvas labels follow the game live (every 120 ms, cheap compares; nothing is written unless it changed).
-let hdrAcornsShown = null;
+// The modern chip (D179) uses the acorn frame. A gain turns the face blue for 300 ms. The first paint, and reduced motion, do not flash.
+let hdrAcornsShown = null, acornGainUntil = 0;
+function syncAcornFrame(){
+  const chip = $('#fcAcorns'); if (!chip) return;
+  const c = chip.querySelector('.frame-art'); if (!c) return;
+  const gain = acornGainUntil && performance.now() < acornGainUntil;
+  const want = gain ? 'acorn_gain' : 'acorn';
+  if (c.dataset.frame === want) return;
+  c.dataset.frame = want;
+  try { syncNavArt(false); } catch (e) {}
+}
 function syncHdrAcorns(){
   const box = $('#hdrAcorns'); if (!box) return;
   const n = S ? (S.money | 0) : 0;
-  if (n === hdrAcornsShown) return; hdrAcornsShown = n;
-  $('#hdrAcornN').textContent = String(n); box.setAttribute('aria-label', acorns(n));
-  const chip = $('#fcAcorns');   // modern walk chip (Design, green): same count, left of the gear
-  if (chip) { $('#fcAcornN').textContent = String(n); chip.setAttribute('aria-label', acorns(n)); }
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (hdrAcornsShown != null && n > hdrAcornsShown && !reduce) acornGainUntil = performance.now() + 300;
+  if (n !== hdrAcornsShown) {
+    hdrAcornsShown = n;
+    $('#hdrAcornN').textContent = String(n); box.setAttribute('aria-label', acorns(n));
+    const chip = $('#fcAcorns');   // modern walk chip (D179): same count, left of the gear
+    if (chip) { const num = $('#fcAcornN'); if (num) num.textContent = String(n); chip.setAttribute('aria-label', acorns(n)); }
+  }
+  syncAcornFrame();
 }
 // The badge band gives the chip its room (the badge text clamps first at 320).
 function fitAcornChip(){
