@@ -171,6 +171,7 @@
     "rx_f1": {
       "name": "RegenX Lobby",
       "kind": "interior",
+      "music": "lab",
       "outdoor": "fb_heights",
       "backdrop": "town",
       "w": 14,
@@ -475,6 +476,7 @@
     "rx_f2": {
       "name": "RegenX Focus Wing",
       "kind": "interior",
+      "music": "lab",
       "outdoor": "fb_heights",
       "backdrop": "town",
       "w": 14,
@@ -837,6 +839,7 @@
     "rx_f3": {
       "name": "RegenX Records",
       "kind": "interior",
+      "music": "lab",
       "outdoor": "fb_heights",
       "backdrop": "town",
       "w": 14,
@@ -1203,6 +1206,7 @@
     "rx_f4": {
       "name": "The Arbiter Bay",
       "kind": "interior",
+      "music": "lab",
       "outdoor": "fb_heights",
       "backdrop": "town",
       "w": 14,
@@ -1568,6 +1572,7 @@
     "sm_yard": {
       "name": "Heights Yard",
       "kind": "interior",
+      "music": "lab",
       "outdoor": "fb_heights",
       "backdrop": "town",
       "w": 18,
