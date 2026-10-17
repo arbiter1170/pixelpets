@@ -88,7 +88,7 @@ test('both lantern rooms render the warm floor, and Cobblecrest stays dark', asy
   expect(setup.hc.decal.v).toBe('wall_shadow_warm');
   expect(setup.hc.decal.u).toBe('window_light_warm');
   expect(setup.hc.variants.floor_clinic_warm.map(row => row[0])).toEqual(['floor_clinic_warm_b', 'floor_clinic_warm_c']);
-  expect(setup.cc.remap['.']).toBe('floor_cobble');
+  expect(setup.cc.remap['.']).toBe('floor_clay');
   expect(setup.cc.remap['#']).toBe('wall_rough');
   expect(setup.cc.decal).toEqual({ v: 'wall_shadow', u: 'window_light' });
   expect(setup.oldTiles).toEqual({ wall: '#f4f4f4', birch: '#f4f4f4', clinic: '#f4f4f4', grout: '#41a6f6' });
@@ -169,7 +169,7 @@ test('both lantern rooms render the warm floor, and Cobblecrest stays dark', asy
   expect(hc.decal).toBe('wall_shadow_warm');
   expect(cc.floors.length).toBeGreaterThan(0);
   for (const cell of cc.floors) {
-    expect(['floor_cobble', 'floor_cobble_b', 'floor_cobble_c']).toContain(cell.tile);
+    expect(['floor_clay', 'floor_clay_b', 'floor_clay_c']).toContain(cell.tile);
     expect(cell.got).not.toBe(WARM.A);
     expect(cell.got).not.toBe(WARM.G);
     expect(cell.got).not.toBe(WARM.C);

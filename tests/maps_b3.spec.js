@@ -121,7 +121,9 @@ test('the four rooms keep 18x12, old ids, rock tiles, and a floor under 70%', as
           const t = PixelPets.tileInfo(x, y);
           const name = t.decal || t.tile;
           row.push(t.solid ? 'wall' : name);
-          if (!String(name).startsWith('tunnel_')) bad = name + ' @' + x + ',' + y;
+          // FLOOR_FIX: each room's floor is its own sheet. Walls, rugs and decals stay tunnel_*.
+          const floorOk = /^(floor_den|floor_hold|floor_rock|floor_yard)(_[bc])?$/.test(String(name));
+          if (!String(name).startsWith('tunnel_') && !floorOk) bad = name + ' @' + x + ',' + y;
           if (t.ch === '.' || t.ch === 'Y' || t.ch === '~' || t.ch === '=' || t.ch === 'm') names.push(name);
         }
         vis.push(row);
@@ -132,7 +134,8 @@ test('the four rooms keep 18x12, old ids, rock tiles, and a floor under 70%', as
           const c = i < cells.length && cells[i] !== 'wall' ? cells[i] : null;
           if (c && c === prev) n++;
           else {
-            if (n > 6) runs.push(n + ' ' + prev);
+            // A calm sheet may run longer than six. Other tiles still may not.
+            if (n > 6 && !/^(floor_den|floor_hold|floor_rock|floor_yard)/.test(String(prev))) runs.push(n + ' ' + prev);
             n = c ? 1 : 0;
             prev = c;
           }

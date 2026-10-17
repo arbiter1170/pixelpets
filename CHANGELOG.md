@@ -2,6 +2,24 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 06:48 ET: Merged the reputation work (PR #91) into the floor fix (build 20261017-0648)
+
+- What changed and why: Merged `main` (Lizzy B, the reputation work, build 20261017-0510) and kept the calm floors. `data/mapdata.js` was regenerated. Floors only: flat 5B (`hm_flats_5`) still uses `floor_honey`. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md` (both sides kept: D162–D167 and D170–D182 from `main`, then D184–D186), `README.md` and `tests/README.md` (the floor wording on top of `main`), `CHANGELOG.md` (both sides kept), `index.html` (`main`, restamped), `version.json`.
+- Commit(s) + build id: build 20261017-0648.
+- Tests run and result (widths, checks): `floors_check.py` on the merged tree: PASS (18 rooms, 54 tiles through png2grid, no brick/block, calm, D88 <= 70 %, unique across 40 interiors). Full `npm run test:agent` at 320, 375, and 390: PP_TEST RESULT: FAIL exit=1 passed=1061 failed=4 flaky=0 skipped=12 time=2977s. All four failures were timeouts in a slow run: `[320] maps_b2.spec.js:142` and `[390] rx_f4_pilot.spec.js:149` (5 s waits for scene text), `[375] highcharity.spec.js:252` (60 s test timeout), and `[390] glimmer_fernbrook.spec.js:124`. Each passed 5 of 5 when rerun alone at that width, so they are recorded as flakes. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): kept both sides. No id was renumbered. D183 is unused. The next free id is D187.
+- Anything left unfinished: flat 5B is left for a later rebuild.
+
+## 2026-10-17 04:45 ET: Calm floors in 18 interiors (build 20261017-0419)
+
+- What changed and why: Eighteen interiors get the approved calm floors (FLOOR_FIX). Each floor is a main tile plus two accents at weights 0.22 and 0.18, so one tile stays at or under 70 percent of the walkable cells. Walls, walkability, props, rugs, grids, and warps stay as they are. The old floor tiles stay defined. Flat 5B still uses the honey floor. Save `v` stays 2. No new palette keys.
+- Files touched: `sprites.js`, `tests/floor_fix.spec.js`, `tests/floor_fix_grids.json`, `tests/floor_fix_expect.json`, `tests/house_reskin.spec.js`, `tests/lantern_palette.spec.js`, `tests/maps_b3.spec.js`, `tests/maps_b6.spec.js`, `tests/maps_b7.spec.js`, `tests/obs_fix.spec.js`, `README.md`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0419.
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=1008 failed=0 flaky=0 skipped=12 time=1542s. The suite's console-error check passed. `python3 tools/bump_build.py --check` exit 0. `floors_check.py` on the approved packet: PASS (18 rooms, 54 tiles, no brick/block, calm, D88 <= 70 %, unique across 40 interiors).
+- Decisions made (colour + reasoning): D184, D185, and D186 were yellow and are settled. Vincent, Oct 17, 2026, 3:16 AM ET, default: yes to the plank rule, the three stone floors, and the three named rooms (Rook's oak boards, the loft's white boards, the observatory's dusk-violet boards). No id was renumbered. The next free id is D187. D168–D169 stay the music test calls. Flat 5B is left for a later rebuild.
+- Anything left unfinished: Lizzy's flat 5B (`hm_flats_5`) still uses `floor_honey`. A later pass rebuilds that room.
+
 ## 2026-10-17 05:10 ET: Merged Lizzy A (PR #90) into the reputation branch (build 20261017-0510)
 
 - What changed and why: Merged `main` (Lizzy A: English Lizzy, the dialog box clears the speaker, Hearthmoor 24 by 24; build 20261017-0404) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. Merge-integration test fix: the strict reputation cast check logs a console error for any speaker missing from `data/reputation.json`, and `tests/dialog_clear.spec.js` (from PR #90) used a made-up speaker, Fern, so all of its tests failed after the merge. The test now uses Cass, who is in the cast and has the same name length; Pip and Wren were already in the cast. Every assertion, position and box check is unchanged. The cast check and the game data are unchanged.

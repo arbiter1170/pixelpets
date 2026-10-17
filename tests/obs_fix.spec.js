@@ -171,10 +171,10 @@ test('the observatory draws dusk-violet boards under a night dome', async ({ pag
   expect(setup.K).toBe('#7a8aa0');
   expect(setup.missing).toEqual([]);
   expect(setup.exteriorNameFree).toBe(true);
-  expect(setup.skin.remap).toEqual({ '#': 'wall_obs_dome', W: 'wall_obs_face', W2: 'wall_obs_win', '.': 'floor_obs' });
+  expect(setup.skin.remap).toEqual({ '#': 'wall_obs_dome', W: 'wall_obs_face', W2: 'wall_obs_win', '.': 'floor_dusk' });
   expect(setup.skin.decal).toEqual({ v: 'wall_shadow_obs', u: 'window_light_obs', z: 'star_tick_brass' });
-  expect(setup.skin.variants.floor_obs.map(row => row[0])).toEqual(['floor_obs_b', 'floor_obs_c']);
-  expect(setup.dreams.toy['.']).toBe('floor_mem');
+  expect(setup.skin.variants.floor_dusk.map(row => row[0])).toEqual(['floor_dusk_b', 'floor_dusk_c']);
+  expect(setup.dreams.toy['.']).toBe('floor_mist');
   expect(setup.dreams.party['.']).toBe('floor_party');
   expect(setup.dreams.drive['.']).toBe('floor_asphalt');
   expect(setup.hq['.']).toBe('floor_keep');
@@ -229,7 +229,7 @@ test('the observatory draws dusk-violet boards under a night dome', async ({ pag
   }, { violet: P, navy: NAVY, brass: WARM.G, walnut: WARM.F, cream: WARM.C, foot: '#1a1c2c', stile: WARM.B, grid: GRID, tick: TICK });
 
   expect(drawn.banned).toEqual([]);
-  expect(drawn.floor.tile.startsWith('floor_obs')).toBe(true);
+  expect(drawn.floor.tile.startsWith('floor_dusk')).toBe(true);
   expect(drawn.floor.fill).toBe(P);
   expect(drawn.face).toBe('obs__face');
   expect(drawn.navy).toBe(WARM.G);
