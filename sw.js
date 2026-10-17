@@ -15,6 +15,7 @@ const SHELL = [
   './data/mapdata.js',
   './quests.js',
   './standing.js',
+  './rep.js',
   './save.js',
   './env.js',
   './sfx.js',

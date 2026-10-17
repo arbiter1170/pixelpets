@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 02:50 ET: Reputation numbers, join penalty, and trust checks (build 20261017-0250)
+
+- What changed and why: Each person you can meet has a 0-100 reputation (D174, D175, D178). Rook starts at 40. Mom and Dad stay at 100. Warden Ilse and Clerk Wynn stay at 50. Joining a side, or switching through Rook, lowers met people of the other side by 10 once. The save stays v2 (`S.rep`, `S.repJoins`).
+- Files touched: `data/reputation.json`, `data/mapdata.js`, `tools/gen_mapdata.py`, `rep.js`, `save.js`, `game.js`, `index.html`, `sw.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0250.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390` — PP_TEST RESULT: PASS exit=0 passed=5 failed=0 flaky=0 skipped=0 time=3s.
+- Decisions made (colour + reasoning): builds settled D174, D175, D178. No decision file edited. Twenty-one map contacts missing from the cast table were added as faction none, base 50, so the startup check can pass without inventing a side.
+- Anything left unfinished: the compass, PEOPLE list, acorn chip, and letter lines are the next packets on this branch.
+
 ## 2026-10-16 16:12 ET: Lantern House test follows D127 (build 20261016-1612)
 
 - What changed and why: `tests/maps_b8.spec.js` (from PR #78) still expected Amos to offer "Pledge desk" to a Glimmerwell player. D127 removed the desks, so the test now checks the desk is absent. `tests/README.md` says the same.

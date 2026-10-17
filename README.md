@@ -236,6 +236,15 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   `PixelPets.standing` (`{keepers: {points, tier, name}, glimmer: {...}, side, switches, chapter, via, canSwitch}`),
   `standingCfg()`, `standingCheck()`; with debug `setStanding(side, n)`, `switchSide(to, free)`, `rookOffer(to)`.
   The `switch_desk_glimmer` pixels stay in the art table and are retired. They are not placed.
+- Reputation (LIZZY_REP v0.2, D174, D175, D178): each person you can meet has a number from 0 to 100 in `S.rep`
+  (additive, `v` stays 2; only values that differ from their start are stored). Rook starts at 40. Mom and Dad stay at 100.
+  Warden Ilse and Clerk Wynn stay at 50. Everyone else starts at 50. The tiers are hostile 0-19, cool 20-39, neutral 40-59,
+  warm 60-79, and close 80-100. A person on your side counts as 10 higher in conversation, and a person on the other side
+  counts as 10 lower. The stored number does not move for that. Joining a side, and each later switch through Rook, lowers
+  every met person of the side you did not join by 10. People you meet after that stay at their start. `S.repJoins` remembers
+  how many joins already applied. Scenes move a number with `["rep", Name, n]`. `cond()` accepts `rep:Lizzy>=60`,
+  `rep:Lizzy<20`, `reptier:Lizzy=warm`, and, on that person's own lines, `reptier=warm`. The table is `data/reputation.json`.
+  `PixelPets.repGet`, `repTier`, `repEffective`, and `repCheck` are always available. Debug `repAdd(name, n)` writes a number.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   growing up (each line's grow-up move, then any level moves of the new form). Older saves get missed grow-up
   moves on their next visit ("<name> remembers something from growing up!").

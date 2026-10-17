@@ -1673,6 +1673,7 @@ function switchSide(to, opts){
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
   S.flags['story.switch_via'] = 'rook';
+  noteRepJoin();   // D178: the side you left, met people only, once per switch
   syncSide(); save();
   return true;
 }
@@ -1888,6 +1889,65 @@ const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
 // WP-B0: numeric 'flag>=n', 'flag<=n', 'flag>n', 'flag<n' (an unset flag counts as 0) for counters written by the `inc` step.
 function flagOf(k, live){ if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
 function curName(live){ return live && scene && scene.view.name !== undefined ? scene.view.name : (S.player && S.player.name) || null; }
+// LIZZY_REP LR5 (D174, D178). rep: compares the raw number. reptier compares the effective tier.
+// "reptier=warm" with no name is the speaker (NPC lines). A stamp jump applies one new penalty, never the old ones.
+function repJoinStamp(){
+  const f = (S && S.flags) || {};
+  let n = f['story.side_pick_done'] ? 1 : 0;
+  if (f['story.switch_via'] === 'rook') n += (+f['story.switches'] || 0);
+  return n;
+}
+function metKeysNow(){
+  const played = playedSceneNames();
+  const keys = [];
+  for (const person of contactPeople().values()) if (personMet(person, played)) keys.push(person.key);
+  return keys;
+}
+function noteRepJoin(onlyKeys){
+  if (!S || !window.PPRep) return;
+  const stamp = repJoinStamp();
+  if (stamp <= 0 || (S.repJoins | 0) >= stamp) return;
+  const other = side() === 'glimmer' ? 'keepers' : 'glimmer';
+  const allow = onlyKeys ? new Set(onlyKeys) : null;
+  const pen = -((MD.reputation && MD.reputation.join_penalty) || 10);
+  const played = playedSceneNames();
+  for (const person of contactPeople().values()) {
+    if (allow && !allow.has(person.key)) continue;
+    if (!personMet(person, played)) continue;
+    const e = PPRep.entry(person.name);
+    if (!e || e.fixed != null || e.faction !== other) continue;
+    PPRep.repAdd(person.name, pen, 'join');
+  }
+  S.repJoins = stamp;
+}
+function repCastCheck(){
+  if (!window.PPRep) return ['PPRep missing'];
+  const names = [];
+  for (const person of contactPeople().values()) names.push(person.name);
+  return PPRep.devCheck(names);
+}
+function repCond(c, o){
+  if (!window.PPRep) return false;
+  let kind, name, op, rhs;
+  const named = /^(rep|reptier):(.+?)(>=|<=|>|<|=)(.+)$/.exec(c);
+  if (named) { kind = named[1]; name = named[2]; op = named[3]; rhs = named[4]; }
+  else {
+    const speaker = /^reptier(>=|<=|>|<|=)(.+)$/.exec(c);
+    if (!speaker || !o) return false;
+    kind = 'reptier'; name = objName(o); op = speaker[1]; rhs = speaker[2];
+  }
+  if (kind === 'rep') {
+    const n = PPRep.repGet(name), r = Number(rhs);
+    if (!Number.isFinite(r)) return false;
+    if (op === '=') return n === r;
+    return op === '>=' ? n >= r : op === '<=' ? n <= r : op === '>' ? n > r : n < r;
+  }
+  const tier = PPRep.repTier(name);
+  if (op === '=') return tier === rhs;
+  const a = PPRep.tierRank(tier), b = PPRep.tierRank(rhs);
+  if (a < 0 || b < 0) return false;
+  return op === '>=' ? a >= b : op === '<=' ? a <= b : op === '>' ? a > b : a < b;
+}
 function cond(c, live, o){
   if (typeof c === 'string' && c.includes('&')) return c.split('&').every(part => part && cond(part, live, o));
   if (c === 'else') return true;
@@ -1896,6 +1956,7 @@ function cond(c, live, o){
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
+  else if (c.startsWith('rep:') || c.startsWith('reptier')) v = repCond(c, o);
   else {
     const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c);
     if (!m) v = !!flagOf(c, live);
@@ -3877,7 +3938,10 @@ async function execStep(st){
       return;
     }
     case 'setFlag': {
-      const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; });
+      const v = b === '$line' ? sc.vars.line : b;
+      // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
+      const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
+      sc.view.flags[a] = v; pend(() => { S.flags[a] = v; if (joinSnap) noteRepJoin(joinSnap); });
       // D135: freeing or walking away always credits the Keepers meter. Shipping credits Glimmerwell. Once each.
       if (a === 'story.rc_end' && (v === 'freed' || v === 'walked')) await execStep(['standing', 'keepers', null, 'rc_freed_k']);
       if (a === 'story.rc_end' && v === 'shipped') await execStep(['standing', 'glimmer', null, 'rc_shipped_g']);
@@ -3898,6 +3962,11 @@ async function execStep(st){
       if (got) sc.view.flags[got] = true;
       sc.view.standing = sc.view.standing || {}; sc.view.standing[a] = PPStanding.clampPts(standingOf(a, true) + n);
       pend(() => { if (got) { if (S.flags[got]) return; S.flags[got] = true; } addStanding(a, n); });
+      return;
+    }
+    // LR5 (D174): ["rep", Name, n]. Fixed names no-op inside repAdd. Not buffered, so a later cond in this scene sees it.
+    case 'rep': {
+      if (window.PPRep) PPRep.repAdd(a, Number(b) || 0, 'scene');
       return;
     }
     // BS: ["pledge", side, free?]: switch the pledge to `side` (the Pledge desk's Yes). Buffered; later lines see the new side.
@@ -7927,6 +7996,7 @@ function applyCheckpoint(id){
   const sideI = PPQuests.SIDE.findIndex(e => e.id === id);
   const extra = DEBUG_EXTRAS[id];
   if (mainI < 0 && sideI < 0 && !extra) return { ok: false, reason: 'unknown' };
+  const wasPick = !!S.flags['story.side_pick_done'];
   if (mainI >= 0) {
     reconcileChain(PPQuests.CHAIN, mainI);
     const orchardAt = PPQuests.CHAIN.findIndex(e => e.id === 'orchard');
@@ -7944,6 +8014,7 @@ function applyCheckpoint(id){
   if (S.flags['story.starter_received'] || allPets().length) readyParty();
   else setRestDue(false);
   syncSide();
+  if (!wasPick && S.flags['story.side_pick_done']) noteRepJoin();   // D178, debug checkpoint past the orchard
   const target = mainI >= 0 ? chainTarget(PPQuests.CHAIN, mainI) : sideI >= 0 ? chainTarget(PPQuests.SIDE, sideI) : { map: extra.map, x: extra.x, y: extra.y };
   if (target && !WORLD[target.map]) return { ok: false, reason: 'map' };
   dismissForDebug();
@@ -8009,8 +8080,10 @@ function spawnEncounter(opts){
 }
 function setFaction(sd, opts){
   if (sd !== 'keepers' && sd !== 'glimmer') return { ok: false, reason: 'side' };
+  const wasPick = !!S.flags['story.side_pick_done'];
   if (sd === 'keepers') delete S.flags['story.side']; else S.flags['story.side'] = 'glimmer';
   if (!opts || opts.picked !== false) S.flags['story.side_pick_done'] = true;
+  if (!wasPick && S.flags['story.side_pick_done']) noteRepJoin();   // D178
   syncSide(); save();
   return { ok: true, side: side(), picked: !!S.flags['story.side_pick_done'] };
 }
@@ -8787,6 +8860,7 @@ function boot(){
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
   { const hb = heightsDevCheck(); if (hb.length) console.error('Walklings: heights check failed:', hb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
+  { const rpb = repCastCheck(); if (rpb.length) console.error('Walklings: reputation cast check failed:', rpb.join('; ')); }
   { const hcb = highCharityDevCheck(); if (hcb.length) console.error('Walklings: high charity check failed:', hcb.join('; ')); }
   { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
   { const mb = mapDevCheck(); if (mb.length) console.error('Walklings: map check failed:', mb.join('; ')); }
@@ -8794,6 +8868,7 @@ function boot(){
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
+  if (window.PPRep) PPRep.bind({ state: () => S, side: () => side() });   // LR5: rep.js reads S and the pledge, and does not own them
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen(); noteBoardTown();
@@ -8904,11 +8979,17 @@ function boot(){
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
-    setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); syncSide(); return S.flags[k]; },
+    setFlag: (k, v = true) => {
+      const wasPick = !!S.flags['story.side_pick_done'];
+      if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v;
+      if (k === 'story.side_pick_done' && v && !wasPick) noteRepJoin();   // D178
+      save(); syncSide(); return S.flags[k];
+    },
     setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); save(); syncSide(); return side(); },   // WP-B0
     runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.
     setStanding: (sd, n) => { const r = setStanding(sd, n); if (r != null) { save(); if (!$('#ovQuest').hidden) renderQuestTabs(); } return r; },
+    repAdd: (name, n, why) => { const r = window.PPRep ? PPRep.repAdd(name, n, why || 'debug') : 0; save(); return r; },
     switchSide: (to, free) => switchSide(to, { free: !!free }),
     rookOffer: to => { if (!S || scene || overlayOpen() || (battle && battle.on)) return false; showTab('walk'); runSteps(rookOfferSteps(to)); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
@@ -9037,6 +9118,11 @@ function boot(){
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
   api.standingCfg = () => copy(STANDING_CFG);
   api.standingCheck = () => PPStanding.devCheck();
+  // LR5 (D174): raw number, effective tier, effective value. repAdd is a debug hook; scenes use the rep step.
+  api.repGet = name => window.PPRep ? PPRep.repGet(name) : 0;
+  api.repTier = name => window.PPRep ? PPRep.repTier(name) : '';
+  api.repEffective = name => window.PPRep ? PPRep.repEffective(name) : 0;
+  api.repCheck = () => repCastCheck();
   // WP-A: zone width and a rough per-press chance for a situation, without playing. opts: { stage, joy, treat, leadLv, engaged, bonus }
   api.befriendOdds = (foeLv, hpFrac, opts = {}) => { const o = Object.assign({ stage: 0, joy: 60, treat: false, leadLv: foeLv, engaged: hpFrac < 1, bonus: 0 }, opts);
     const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);

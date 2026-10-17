@@ -1,0 +1,623 @@
+{
+  "decision": "D174",
+  "colour": "red",
+  "range": [
+    0,
+    100
+  ],
+  "base": 50,
+  "join_penalty": 10,
+  "cast": [
+    {
+      "name": "Ally A",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Archivist Mo",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Associate Hollis",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Associate Juniper",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Associate Tobin",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Baker Cole",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Bess",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Bix",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Bramble",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Brin",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Cadet Orrin",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Cal",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Captain Lumen",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Cass",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Clerk Mint",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Clerk Nia",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Clerk Penn",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Clerk Wynn",
+      "faction": "keepers",
+      "base": 50,
+      "fixed": 50,
+      "note": "\"The Processor\" (default, D175): fixed 50, still Keepers for flavour, never moves"
+    },
+    {
+      "name": "Constable Corwin",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Constable Rue",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Crate Haulers",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Dad",
+      "faction": "none",
+      "base": 50,
+      "fixed": 100
+    },
+    {
+      "name": "Dockhand Ness",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Dorian Pell",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Dr. Ivo",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Floor Keeper Sol",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Guide Tess",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Hale",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Hattie",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Hobb",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Hollis",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Imogen",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Jed",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Keeper Amos",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Keeper Moss",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Keeper Rowan",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Keeper Vesper",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Ken",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Kit",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Lab Pair",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Landlord Oren",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Lark",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Lizzy",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Mara Quill",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Master Fen",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Master Hale",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Mira",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Mom",
+      "faction": "none",
+      "base": 50,
+      "fixed": 100
+    },
+    {
+      "name": "Morelou",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Morolow",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Mr. Gristle",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Mrs. Calloway",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Nell",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Nia",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Night Lookouts",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Night Tech",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Nim",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Nora",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Odile",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Officer Bren",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Officer Cald",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Officer Ness",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Old Miner",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Ollie",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Operator Rue",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Ossabell",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Otto",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Pia",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Pim",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Pip",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Porter Bram",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Porter Quin",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Quinn",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Records Lead",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Reeve Tamsin",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "RegenX Wardens",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Rook",
+      "faction": "none",
+      "base": 40,
+      "note": "starts at 40; faction none (he changes sides in ROOK_CROSSROADS)"
+    },
+    {
+      "name": "Scout Linnea",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Sera",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Sergeant Bram",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Shopkeeper Dottie",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Signaller Tamm",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Tam",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Teacher Mae",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Teller Ivo",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Teo",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Tilda",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Tobin",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Warden Ilse",
+      "faction": "keepers",
+      "base": 50,
+      "fixed": 50,
+      "note": "\"the warden\": fixed 50"
+    },
+    {
+      "name": "Watch Ivo",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Willa",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Wren",
+      "faction": "none",
+      "base": 50
+    }
+  ],
+  "tiers": [
+    {
+      "id": "hostile",
+      "min": 0,
+      "max": 19
+    },
+    {
+      "id": "cool",
+      "min": 20,
+      "max": 39
+    },
+    {
+      "id": "neutral",
+      "min": 40,
+      "max": 59
+    },
+    {
+      "id": "warm",
+      "min": 60,
+      "max": 79
+    },
+    {
+      "id": "close",
+      "min": 80,
+      "max": 100
+    }
+  ],
+  "save": {
+    "field": "S.rep",
+    "shape": "{ \"<contactKey(name)>\": int 0..100 }, sparse: only NPCs whose value differs from base",
+    "normalize": "save.js normalizeV2: fill(s, 'rep', isPlainObject, {}); drop keys that are not strings <= 40; clamp ints 0..100; drop fixed NPCs. v stays 2, key stays pixelpets.save.v2. Older builds keep the unknown field (normalizeV2 keeps unknown keys).",
+    "no_log": "The +/- history is not saved. It is rebuilt from flags: every rep source in data (moral options, quest rows, joins) has a flag, so the compass can list what happened by checking which flags are set.",
+    "joins": "S.repJoins = int (count of faction joins applied), additive, default 0. Lets a reload know the penalty for join n already ran."
+  },
+  "join": {
+    "when": "story.side_pick_done turns true (first pick) and each switch via Rook (story.switch_via set, side changes)",
+    "effect": "every NPC with personMet() true and faction == the side you did NOT join: rep -10 (clamped, fixed NPCs skipped)",
+    "later": "NPCs met after the join start at base; the penalty is not back-dated (D178)"
+  },
+  "intensity": {
+    "rule": "effective = rep + mod. mod = +10 when the NPC faction equals your side, -10 when it is the other side, 0 for none/fixed. The tier for dialog uses effective, clamped 0..100. The compass shows the raw number and the tier of effective.",
+    "why": "Same number, different feel: a Keeper at 55 is warm to a Keeper player and cool to a Glimmerwell one."
+  },
+  "cond": {
+    "scene": "\"rep:<Name>>=60\", \"rep:<Name><20\", \"reptier:<Name>=warm\" (effective tier)",
+    "lines": "\"reptier=warm\" in an NPC lines map means the speaker",
+    "impl": "game.js cond(): add rep: and reptier: prefixes next to standing."
+  },
+  "letter_quests": {
+    "where": [
+      "High Charity invite (story.hc_invite, Warden Ilse \"Read the letter\") - Ilse is fixed, so the tiers apply to who you show the letter to: Lizzy, Rook, Captain Lumen",
+      "ROOK_CROSSROADS letter (rc_* flags) - Rook tiers"
+    ],
+    "samples": {
+      "Lizzy": {
+        "close": "High Charity! Read it twice, then read it to Buddy. He likes good news.",
+        "warm": "A letter from High Charity? Look at you. I'm proud, kiddo.",
+        "neutral": "High Charity. That's a big step. Be careful up there.",
+        "cool": "Oh. A letter. That's nice. I have papers to grade.",
+        "hostile": "I saw what you did to Mr. Gristle. Congratulations on the letter, I guess."
+      },
+      "Rook": {
+        "close": "You got one too?! We're going together. No arguing.",
+        "warm": "Huh. They picked you. Fine. They picked right.",
+        "neutral": "A letter? Mine was probably lost in the mail.",
+        "cool": "Great. Another reason for everyone to clap for you.",
+        "hostile": "Keep your letter. I don't need High Charity."
+      },
+      "Captain Lumen": {
+        "close": "Good. Bring that letter and your best manners. You've earned both.",
+        "warm": "The Keepers will be glad to see you there.",
+        "neutral": "Present it at the gate. They check the seal.",
+        "cool": "Letters are easy to get. Keeping them is harder.",
+        "hostile": "I will be watching what you do with that letter."
+      }
+    },
+    "intensity_example": "Captain Lumen at rep 55: Keeper player -> effective 65 (warm); Glimmerwell player -> effective 45 (neutral)."
+  },
+  "quest_moves": "Each quest that changes rep lists it in data (moral options; plain quests may add a \"rep\" step). No hidden moves.",
+  "compass": {
+    "decision": "D176",
+    "colour": "yellow",
+    "modern": {
+      "btn": "#repBtn in #fcTL",
+      "rect_320": [
+        6,
+        6,
+        44,
+        44
+      ],
+      "moves_320": {
+        "quest": [
+          6,
+          56
+        ],
+        "bag": [
+          6,
+          106
+        ],
+        "map": [
+          6,
+          156
+        ]
+      },
+      "rect_390": [
+        6,
+        6,
+        44,
+        44
+      ],
+      "moves_390": "same column, same 50 px step",
+      "check": "At 320x568 the left column ends at y 200; joystick starts at y 380, tip band at 484: no overlap. Area banner [56,6,208,44] unchanged."
+    },
+    "arcade": {
+      "btn": "#repBtn.icon-btn as the first child of #top .who (before #hdrIcon)",
+      "size": "32x32 like #settingsBtn"
+    },
+    "from_start": "visible from a new game (no unlock); empty list shows \"Nobody yet. Go say hi.\"",
+    "overlay": {
+      "id": "#ovRep",
+      "title": "PEOPLE",
+      "list": "grid of met NPCs (contactEntries()), each: 36 px sprite (spriteLook), name, 0-100 bar, tier word",
+      "sort": "recently met first; fixed NPCs pinned to the end with a lock",
+      "detail": "tap a sprite -> card: number, tier, \"+\" list and \"-\" list (sources whose flags are set, written as short lines), and \"?\" rows for known open sources (\"Help with a leak?\")"
+    },
+    "glyph": [
+      "....wwww....",
+      "..ww....ww..",
+      ".w...rr...w.",
+      ".w...rr...w.",
+      "w....rr....w",
+      "w...wkkw...w",
+      "w...wkkw...w",
+      "w....ww....w",
+      ".w...ww...w.",
+      ".w...ww...w.",
+      "..ww....ww..",
+      "....wwww...."
+    ],
+    "face": "t",
+    "hi": "s",
+    "lip": "n"
+  },
+  "sources": []
+}
