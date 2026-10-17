@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 08:17 ET: The leak in 5B, one moral choice (build 20261017-0817)
+
+- What changed and why: Inspecting the bucket starts "The leak in 5B". Lizzy asks you to talk to Mr. Gristle. Take it to the Keepers, make him fix it, or leave it. That choice grants Standing and trust once, through `data/moral_quests.json`. The court path is Clerk Wynn, then Constable Rue. Both endings pay Hearty Snack ×2 and stop the drip. Save `v` stays 2.
+- Files touched: `data/moral_quests.json`, `data/detail_lizzy.json`, `data/civic.json`, `data/reputation.json`, `data/mapdata.js`, `tools/gen_mapdata.py`, `game.js`, `quests.js`, `tests/leak5b.spec.js`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0817.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/leak5b.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=4 failed=0 flaky=0 skipped=0 time=13s. Widths 320 and 375 follow with the last packet.
+- Decisions made (colour + reasoning): D177 (red, the one Standing grant from a quest, only through `moral_quests.json`) and D182, both already settled. No new id.
+- Anything left unfinished: the compass tour step and the unlock tips.
+
 ## 2026-10-17 08:10 ET: Flat 5B is 18 by 16, and Buddy is home (build 20261017-0810)
 
 - What changed and why: Amberhill Flats 5B grows from 14 by 12 to 18 by 16. The bathroom, the three bedrooms, the drip, and Buddy's bed are in. Lizzy and Buddy are home only after you have met her, and Buddy also sits beside her desk at school. Patting him plays a short pet sound and gives 1 bond once a day. Windows sit on the face row at columns 3, 9 and 15. Morolow's floor is redrawn as calm planks (7 px boards, a dark groove, a few paint flecks) because the supplied tile broke the plank rule. Lizzy's room and Ossabell's room keep the honey floor. Save `v` stays 2.

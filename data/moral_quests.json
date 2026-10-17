@@ -1,0 +1,73 @@
+{
+ "quests": [
+  {
+   "id": "leak5b",
+   "title": "The leak in 5B",
+   "giver": {
+    "map": "hm_flats_5",
+    "npc": "f5_lizzy"
+   },
+   "trigger": {
+    "obj": "f5_leak",
+    "flag": "story.leak5b_seen"
+   },
+   "accept_flag": "story.leak5b_yes",
+   "result_flag": "story.moral_leak5b",
+   "done_flag": "story.leak_fixed",
+   "choice": {
+    "at": "leak_gristle",
+    "prompt": "How do you fix this?",
+    "options": [
+     {
+      "id": "court",
+      "label": "Take it to the Keepers",
+      "align": "keepers",
+      "standing": {
+       "keepers": 3,
+       "glimmer": -1
+      },
+      "rep": {
+       "Lizzy": 10,
+       "Ossabell": 5,
+       "Morolow": 5,
+       "Mr. Gristle": -5,
+       "Constable Rue": 5
+      },
+      "scene": "leak_court"
+     },
+     {
+      "id": "force",
+      "label": "Make him fix it",
+      "align": "glimmer",
+      "standing": {
+       "glimmer": 3,
+       "keepers": -2
+      },
+      "rep": {
+       "Lizzy": -5,
+       "Ossabell": 5,
+       "Morolow": -5,
+       "Mr. Gristle": -20
+      },
+      "scene": "leak_force"
+     },
+     {
+      "id": "later",
+      "label": "Not now",
+      "align": "none",
+      "standing": {},
+      "rep": {},
+      "scene": null
+     }
+    ]
+   },
+   "reward": {
+    "acorns": 0,
+    "items": {
+     "hearty_snack": 2
+    },
+    "journal": "The drip in 5B stopped."
+   }
+  }
+ ]
+}

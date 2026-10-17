@@ -619,5 +619,83 @@
     "hi": "s",
     "lip": "n"
   },
-  "sources": []
+  "sources": [
+    {
+      "who": "Lizzy",
+      "flag": "story.moral_leak5b",
+      "eq": "court",
+      "delta": 10,
+      "line": "You took the leak to the Keepers",
+      "open": "Help with a leak?",
+      "when": "!story.moral_leak5b=force"
+    },
+    {
+      "who": "Ossabell",
+      "flag": "story.moral_leak5b",
+      "eq": "court",
+      "delta": 5,
+      "line": "You took the leak to the Keepers",
+      "open": "Help with a leak?",
+      "when": "!story.moral_leak5b=force"
+    },
+    {
+      "who": "Morolow",
+      "flag": "story.moral_leak5b",
+      "eq": "court",
+      "delta": 5,
+      "line": "You took the leak to the Keepers",
+      "open": "Help with a leak?",
+      "when": "!story.moral_leak5b=force"
+    },
+    {
+      "who": "Mr. Gristle",
+      "flag": "story.moral_leak5b",
+      "eq": "court",
+      "delta": -5,
+      "line": "You took the leak to the Keepers",
+      "open": "Help with a leak?",
+      "when": "!story.moral_leak5b=force"
+    },
+    {
+      "who": "Constable Rue",
+      "flag": "story.moral_leak5b",
+      "eq": "court",
+      "delta": 5,
+      "line": "You took the leak to the Keepers",
+      "open": "Help with a leak?",
+      "when": "!story.moral_leak5b=force"
+    },
+    {
+      "who": "Lizzy",
+      "flag": "story.moral_leak5b",
+      "eq": "force",
+      "delta": -5,
+      "line": "You made him fix it",
+      "when": "story.moral_leak5b=force"
+    },
+    {
+      "who": "Ossabell",
+      "flag": "story.moral_leak5b",
+      "eq": "force",
+      "delta": 5,
+      "line": "You made him fix it",
+      "when": "story.moral_leak5b=force"
+    },
+    {
+      "who": "Morolow",
+      "flag": "story.moral_leak5b",
+      "eq": "force",
+      "delta": -5,
+      "line": "You made him fix it",
+      "when": "story.moral_leak5b=force"
+    },
+    {
+      "who": "Mr. Gristle",
+      "flag": "story.moral_leak5b",
+      "eq": "force",
+      "delta": -20,
+      "line": "You made him fix it",
+      "when": "story.moral_leak5b=force"
+    }
+  ]
 }

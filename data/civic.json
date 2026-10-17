@@ -79,6 +79,7 @@
       "fernbrook": {
         "addObjs": [
           {"kind": "npc", "id": "fb_constable", "name": "Constable Rue", "look": "officer", "x": 4, "y": 9, "facing": "up", "lines": {
+            "story.leak5b_filed&!story.leak5b_served": "@leak_serve",
             "story.side=glimmer": "Mint in the orchard. I am not smiling.",
             "standing.keepers>=3": "Fernbrook is glad of you. Truly.",
             "standing.keepers>=1": "A keeper in the square. Welcome.",
@@ -221,6 +222,7 @@
           "facing": "down",
           "lines": {
             "!story.met_wynn": "@hq_wynn",
+            "story.moral_leak5b=court&!story.leak5b_filed": "@leak_file",
             "story.side=glimmer": "Your notes still copy to my book.",
             "standing.keepers>=1": "I filed you under friend of the house.",
             "else": "Citizen. Forms are on the left. Wait."

@@ -1675,6 +1675,39 @@ function setStanding(sd, pts){
   return after;
 }
 const addStanding = (sd, n) => setStanding(sd, standingOf(sd, false) + (Number(n) || 0));
+// One line for a moral choice. The rising side, then whether Lizzy trusts you more or less.
+function moralToast(opt){
+  const st = opt.standing || {}, rp = opt.rep || {};
+  let side = '', n = 0;
+  if ((st.keepers || 0) > 0) { side = 'Keepers'; n = st.keepers; }
+  else if ((st.glimmer || 0) > 0) { side = 'Glimmerwell'; n = st.glimmer; }
+  const liz = Number(rp.Lizzy) || 0;
+  const trust = liz > 0 ? 'Lizzy trusts you more' : liz < 0 ? 'Lizzy trusts you less' : '';
+  let msg = side ? side + ' +' + n : '';
+  if (trust) msg = msg ? msg + ' · ' + trust : trust;
+  return Array.from(msg).length > 40 ? '' : msg;
+}
+function moralDevCheck(){
+  const bad = [], data = MD.moral_quests, quests = data && data.quests;
+  if (!Array.isArray(quests) || !quests.length) return ['moral quests missing'];
+  for (const q of quests) {
+    const opts = (q.choice && q.choice.options) || [];
+    const aligns = new Set(opts.map(o => o.align));
+    if (!aligns.has('keepers') || !aligns.has('glimmer')) bad.push((q.id || '?') + ' needs a keepers option and a glimmer option');
+    for (const o of opts) {
+      for (const [sd, n] of Object.entries(o.standing || {})) {
+        if (!PPStanding.isSide(sd)) bad.push(q.id + ' unknown side ' + sd);
+        if (Math.abs(Number(n) || 0) > 5) bad.push(q.id + ' standing over 5 for ' + sd);
+      }
+      for (const [nm, n] of Object.entries(o.rep || {})) {
+        if (Math.abs(Number(n) || 0) > 20) bad.push(q.id + ' rep over 20 for ' + nm);
+        const e = window.PPRep && PPRep.entry(nm);
+        if (e && e.fixed != null) bad.push(q.id + ' touches a fixed person ' + nm);
+      }
+    }
+  }
+  return bad;
+}
 // The pledge changes (D15, D131): the side you leave keeps floor(n / costDiv), the side you join is unchanged, story.side
 // is rewritten, story.switches counts, story.switch_chapter / story.switch_at record when (the per-chapter cooldown).
 // Every new switch is story.switch_via "rook" (D127). `free` skips the cost and is debug-only.
@@ -4092,6 +4125,27 @@ async function execStep(st){
     // LR5 (D174): ["rep", Name, n]. Fixed names no-op inside repAdd. Not buffered, so a later cond in this scene sees it.
     case 'rep': {
       if (window.PPRep) PPRep.repAdd(a, Number(b) || 0, 'scene');
+      return;
+    }
+    // D177: ["moral", questId, optionId]. One grant, ever. Standing goes through addStanding. Rep goes through repAdd.
+    case 'moral': {
+      const flag = 'story.moral_' + a;
+      if (flagOf(flag, true)) return;
+      const list = (MD.moral_quests && MD.moral_quests.quests) || [];
+      const quest = list.find(q => q && q.id === a);
+      const opt = quest && quest.choice && (quest.choice.options || []).find(o => o.id === b);
+      if (!opt || opt.align === 'none') return;
+      sc.view.flags[flag] = b;
+      const msg = moralToast(opt);
+      if (msg) sc.toasts.push(msg);
+      pend(() => {
+        if (S.flags[flag]) return;
+        S.flags[flag] = b;
+        const st = opt.standing || {};
+        for (const sd of Object.keys(st)) if (st[sd]) addStanding(sd, st[sd]);
+        const rp = opt.rep || {};
+        if (window.PPRep) for (const nm of Object.keys(rp)) if (rp[nm]) PPRep.repAdd(nm, rp[nm], 'moral');
+      });
       return;
     }
     // BS: ["pledge", side, free?]: switch the pledge to `side` (the Pledge desk's Yes). Buffered; later lines see the new side.
@@ -9194,6 +9248,7 @@ function boot(){
   { const hb = heightsDevCheck(); if (hb.length) console.error('Walklings: heights check failed:', hb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
   { const rpb = repCastCheck(); if (rpb.length) console.error('Walklings: reputation cast check failed:', rpb.join('; ')); }
+  { const mb = moralDevCheck(); if (mb.length) console.error('Walklings: moral quest check failed:', mb.join('; ')); }
   { const hcb = highCharityDevCheck(); if (hcb.length) console.error('Walklings: high charity check failed:', hcb.join('; ')); }
   { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
   { const mb = mapDevCheck(); if (mb.length) console.error('Walklings: map check failed:', mb.join('; ')); }
@@ -9456,6 +9511,7 @@ function boot(){
   api.repTier = name => window.PPRep ? PPRep.repTier(name) : '';
   api.repEffective = name => window.PPRep ? PPRep.repEffective(name) : 0;
   api.repCheck = () => repCastCheck();
+  api.moralCheck = () => moralDevCheck();
   // WP-A: zone width and a rough per-press chance for a situation, without playing. opts: { stage, joy, treat, leadLv, engaged, bonus }
   api.befriendOdds = (foeLv, hpFrac, opts = {}) => { const o = Object.assign({ stage: 0, joy: 60, treat: false, leadLv: foeLv, engaged: hpFrac < 1, bonus: 0 }, opts);
     const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);

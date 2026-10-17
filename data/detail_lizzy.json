@@ -655,6 +655,9 @@
       "story.lizzy_met"
      ],
      "lines": {
+      "story.leak5b_yes&!story.moral_leak5b": "@leak_gristle",
+      "story.moral_leak5b=force": "Pipe's fixed. Now go away. Please.",
+      "story.moral_leak5b=court": "Pipe's fixed. The Keepers can stop looking at me.",
       "else": "Visitor? Wipe your boots. Walkling hair is extra. Everything is extra."
      }
     }
@@ -799,7 +802,9 @@
      "y": 4,
      "sprite": "bucket_drip",
      "lines": {
-      "else": "A bucket under a ceiling drip. Third one this month. The landlord 'will look at it'."
+      "story.moral_leak5b": "The bucket is still here. So is the drip. Somebody is on it.",
+      "!story.lizzy_met": "Drip. Drip. Drip.",
+      "else": "@leak_look"
      },
      "when": [
       "!story.leak_fixed"
@@ -853,6 +858,9 @@
      "y": 3,
      "facing": "right",
      "lines": {
+      "story.leak_fixed&story.moral_leak5b=court": "@leak_after_court",
+      "story.leak_fixed&story.moral_leak5b=force": "@leak_after_force",
+      "story.leak5b_seen&!story.leak5b_yes": "@leak_ask",
       "else": "Welcome to 5B! Shoes by the door, please. Buddy, no, the shoes stay by the door."
      },
      "look": "lizzy",
@@ -1215,6 +1223,234 @@
     "say",
     "",
     "Buddy watches the bucket. Then you. Then the bucket."
+   ]
+  ],
+  "leak_look": [
+   [
+    "say",
+    "",
+    "Water runs down the wall into the bucket. The puddle keeps growing."
+   ],
+   [
+    "setFlag",
+    "story.leak5b_seen",
+    true
+   ],
+   [
+    "say",
+    "",
+    "Lizzy is in her room. Maybe she knows about this."
+   ]
+  ],
+  "leak_ask": [
+   [
+    "say",
+    "Ossabell",
+    "¿Otra vez el baño? Lizzy, dile algo al viejo."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "I know, I know. I told him twice. He said the drip is \"character.\""
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Mr. Gristle won't fix it. Would you talk to him? He listens to people who aren't me."
+   ],
+   [
+    "choice",
+    "Help Lizzy?",
+    [
+     [
+      "I'll talk to him",
+      [
+       [
+        "setFlag",
+        "story.leak5b_yes",
+        true
+       ],
+       [
+        "say",
+        "Lizzy",
+        "Thank you. Be polite. Mostly."
+       ]
+      ]
+     ],
+     [
+      "Not right now",
+      [
+       [
+        "say",
+        "Lizzy",
+        "That's okay. The bucket isn't going anywhere. Sadly."
+       ]
+      ]
+     ]
+    ]
+   ]
+  ],
+  "leak_gristle": [
+   [
+    "say",
+    "Mr. Gristle",
+    "The drip in 5B? That's not a leak. That's a water feature."
+   ],
+   [
+    "say",
+    "Mr. Gristle",
+    "Glimmerwell keeps offering to buy this whole building. \"Glimmer Home.\" Maybe I let them."
+   ],
+   [
+    "choice",
+    "How do you fix this?",
+    [
+     [
+      "Take it to the Keepers",
+      [
+       [
+        "moral",
+        "leak5b",
+        "court"
+       ],
+       [
+        "run",
+        "leak_court"
+       ]
+      ]
+     ],
+     [
+      "Make him fix it",
+      [
+       [
+        "moral",
+        "leak5b",
+        "force"
+       ],
+       [
+        "run",
+        "leak_force"
+       ]
+      ]
+     ],
+     [
+      "Not now",
+      [
+       [
+        "say",
+        "Mr. Gristle",
+        "Good. Wipe your boots on the way out."
+       ]
+      ]
+     ]
+    ]
+   ]
+  ],
+  "leak_court": [
+   [
+    "say",
+    "",
+    "You tell him the Keepers take housing claims. He goes a little pale."
+   ],
+   [
+    "say",
+    "Mr. Gristle",
+    "Forms. Stamps. Fine. Go file your little claim."
+   ]
+  ],
+  "leak_file": [
+   [
+    "say",
+    "Clerk Wynn",
+    "A landlord claim. Name, floor, nature of drip. Sign here. Wait."
+   ],
+   [
+    "setFlag",
+    "story.leak5b_filed",
+    true
+   ],
+   [
+    "say",
+    "Clerk Wynn",
+    "Stamped. Constable Rue serves notices. Tell her I sent you."
+   ]
+  ],
+  "leak_serve": [
+   [
+    "say",
+    "Constable Rue",
+    "A stamped claim from Hearthmoor? He has until sundown. I'll walk it over myself."
+   ],
+   [
+    "setFlag",
+    "story.leak5b_served",
+    true
+   ],
+   [
+    "setFlag",
+    "story.leak_fixed",
+    true
+   ],
+   [
+    "give",
+    "hearty_snack",
+    2
+   ],
+   [
+    "say",
+    "",
+    "The drip in 5B stopped."
+   ]
+  ],
+  "leak_force": [
+   [
+    "say",
+    "",
+    "{pet} plants its feet and stares at Mr. Gristle. You knock his ledger off the desk."
+   ],
+   [
+    "say",
+    "Mr. Gristle",
+    "Okay! Okay. I'll fix it today. Call off the hairball."
+   ],
+   [
+    "say",
+    "",
+    "That's how Glimmerwell gets things done. Fast. Nobody says thank you."
+   ],
+   [
+    "setFlag",
+    "story.leak_fixed",
+    true
+   ],
+   [
+    "give",
+    "hearty_snack",
+    2
+   ],
+   [
+    "say",
+    "",
+    "The drip in 5B stopped."
+   ]
+  ],
+  "leak_after_court": [
+   [
+    "say",
+    "Lizzy",
+    "He fixed it! A real pipe! You did it the right way, kiddo."
+   ]
+  ],
+  "leak_after_force": [
+   [
+    "say",
+    "Lizzy",
+    "It's fixed. Thank you. Mr. Gristle won't look at me in the lift now, though."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Next time, let's try asking nicely first. Deal?"
    ]
   ]
  },
