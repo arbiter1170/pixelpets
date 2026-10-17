@@ -371,7 +371,7 @@ function setFast(on, quiet){
 /* ---------- Q26: modern and arcade controls (NEXT_PLAN §3 Q26) ----------
    Arcade is the layout the game always had. Modern adds body.ctl-modern and re-parents a few nodes into #floatCtl, so one id
    keeps one handler, and arcade comes back by moving them home. No node is created or destroyed on a switch. */
-const CTL_MOVES = [['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip']];
+const CTL_MOVES = [['#repBtn', '#fcTL'], ['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip']];
 const ctlHome = {};
 const ctlMode = () => (S && S.settings && S.settings.controls === 'modern') ? 'modern' : 'arcade';
 const joyOn = () => ctlMode() === 'modern' && !!(S && S.settings.joystick);
@@ -381,6 +381,7 @@ function applyControls(){
   if (m) CTL_MOVES.forEach(([sel, dst]) => { const n = $(sel), d = $(dst); if (n && d && n.parentNode !== d) d.appendChild(n); });
   else CTL_MOVES.slice().reverse().forEach(([sel]) => { const n = $(sel), h = ctlHome[sel]; if (n && h && n.parentNode !== h.p) h.p.insertBefore(n, h.next && h.next.parentNode === h.p ? h.next : null); });
   const qb = $('#questBtn'); if (qb) { qb.classList.toggle('dpc', m); qb.classList.toggle('fbtn', m); }
+  const rb = $('#repBtn'); if (rb) { rb.classList.toggle('dpc', m); rb.classList.toggle('fbtn', m); rb.classList.toggle('icon-only', m); rb.classList.toggle('icon-btn', !m); }
   document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
   const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
   renderControlsRows(); syncWalkTip(); fitAll();
@@ -446,7 +447,7 @@ function updatePetStrip(p){
 // icons. Each nav button gets a 44 px canvas painted from a 22x22 state grid at 2 px per cell; CSS adds the 1 px dark outline.
 // NAV_ICON_ONLY: Vincent approved icon-only on every modern button (Oct 15). false brings the text captions back.
 const NAV_ICON_ONLY = true;
-const NAV_BTNS = [['#questBtn', 'quest'], ['#walkBagBtn', 'bag'], ['#mapBtn', 'map'], ['#gearFloat', 'gear'], ['#phoneBtn', 'phone'], ['#colFloat', 'walklings'], ['#petFloat', 'partner']];
+const NAV_BTNS = [['#repBtn', 'rep'], ['#questBtn', 'quest'], ['#walkBagBtn', 'bag'], ['#mapBtn', 'map'], ['#gearFloat', 'gear'], ['#phoneBtn', 'phone'], ['#colFloat', 'walklings'], ['#petFloat', 'partner']];
 const NAV_LOCKABLE = { quest: 1, walklings: 1, partner: 1, back: 1 };
 const navArt = () => window.NAV_ART_DATA || null;
 function paintGrid(g, grid, cell, ox, oy){
@@ -467,7 +468,7 @@ function initNavArt(){
     b.addEventListener('pointerdown', () => { b.classList.add('nav-press'); syncNavArt(false); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, up));
   });
-  [['#envBadge', 'area_banner'], ['#petStrip', 'partner_strip'], ['#walkTip', 'tip_band']].forEach(([sel, key]) => {
+  [['#envBadge', 'area_banner'], ['#petStrip', 'partner_strip'], ['#walkTip', 'tip_band'], ['#fcAcorns', 'acorn']].forEach(([sel, key]) => {
     const el = $(sel); if (!el || el.querySelector('.frame-art')) return;
     const c = document.createElement('canvas'); c.className = 'frame-art'; c.dataset.frame = key; c.setAttribute('aria-hidden', 'true'); el.prepend(c);
   });
@@ -509,7 +510,7 @@ function syncNavArt(force){
   $$('.frame-art').forEach(c => {
     const el = c.parentNode, w = Math.max(8, Math.round(el.offsetWidth / 2)), f = A.frames[c.dataset.frame];
     if (!f || !el.offsetWidth) return;
-    const h = f.left.length, tag = w + 'x' + h;
+    const h = f.left.length, tag = c.dataset.frame + ':' + w + 'x' + h;   // frame name, so acorn and acorn_gain both repaint
     if (!force && navPaint.get(c) === tag) return;
     navPaint.set(c, tag); c.width = w; c.height = h; const g = ctx(c);
     const lw = f.left[0].length, rw = f.right[0].length;
@@ -521,14 +522,29 @@ function syncNavArt(force){
   if (kc) { const tag = joy.id != null ? 'p' : 'n'; if (force || navPaint.get(kc) !== tag) { navPaint.set(kc, tag); const g = ctx(kc); g.clearRect(0, 0, 18, 18); paintGrid(g, A.joystick[joy.id != null ? 'knob_pressed' : 'knob'], 1, 0, 0); } }
 }
 // Header acorns and the canvas labels follow the game live (every 120 ms, cheap compares; nothing is written unless it changed).
-let hdrAcornsShown = null;
+// The modern chip (D179) uses the acorn frame. A gain turns the face blue for 300 ms. The first paint, and reduced motion, do not flash.
+let hdrAcornsShown = null, acornGainUntil = 0;
+function syncAcornFrame(){
+  const chip = $('#fcAcorns'); if (!chip) return;
+  const c = chip.querySelector('.frame-art'); if (!c) return;
+  const gain = acornGainUntil && performance.now() < acornGainUntil;
+  const want = gain ? 'acorn_gain' : 'acorn';
+  if (c.dataset.frame === want) return;
+  c.dataset.frame = want;
+  try { syncNavArt(false); } catch (e) {}
+}
 function syncHdrAcorns(){
   const box = $('#hdrAcorns'); if (!box) return;
   const n = S ? (S.money | 0) : 0;
-  if (n === hdrAcornsShown) return; hdrAcornsShown = n;
-  $('#hdrAcornN').textContent = String(n); box.setAttribute('aria-label', acorns(n));
-  const chip = $('#fcAcorns');   // modern walk chip (Design, green): same count, left of the gear
-  if (chip) { $('#fcAcornN').textContent = String(n); chip.setAttribute('aria-label', acorns(n)); }
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (hdrAcornsShown != null && n > hdrAcornsShown && !reduce) acornGainUntil = performance.now() + 300;
+  if (n !== hdrAcornsShown) {
+    hdrAcornsShown = n;
+    $('#hdrAcornN').textContent = String(n); box.setAttribute('aria-label', acorns(n));
+    const chip = $('#fcAcorns');   // modern walk chip (D179): same count, left of the gear
+    if (chip) { const num = $('#fcAcornN'); if (num) num.textContent = String(n); chip.setAttribute('aria-label', acorns(n)); }
+  }
+  syncAcornFrame();
 }
 // The badge band gives the chip its room (the badge text clamps first at 320).
 function fitAcornChip(){
@@ -575,7 +591,7 @@ function showTab(name){
 }
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || tut.on;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -643,6 +659,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
       c.style.width = W + 'px'; c.style.height = Math.round(c.height * f) + 'px'; }
     else { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; }
   }
+  refitSceneBox();
 }
 window.addEventListener('resize', () => { fitAll(); if (tut.on) tutPlace(); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
@@ -1673,6 +1690,7 @@ function switchSide(to, opts){
   S.flags['story.switch_chapter'] = PPStanding.chapterOf(S.flags);
   S.flags['story.switch_at'] = Date.now();
   S.flags['story.switch_via'] = 'rook';
+  noteRepJoin();   // D178: the side you left, met people only, once per switch
   syncSide(); save();
   return true;
 }
@@ -1899,6 +1917,65 @@ const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
 // WP-B0: numeric 'flag>=n', 'flag<=n', 'flag>n', 'flag<n' (an unset flag counts as 0) for counters written by the `inc` step.
 function flagOf(k, live){ if (live && scene && k in scene.view.flags) return scene.view.flags[k]; return S.flags[k]; }
 function curName(live){ return live && scene && scene.view.name !== undefined ? scene.view.name : (S.player && S.player.name) || null; }
+// LIZZY_REP LR5 (D174, D178). rep: compares the raw number. reptier compares the effective tier.
+// "reptier=warm" with no name is the speaker (NPC lines). A stamp jump applies one new penalty, never the old ones.
+function repJoinStamp(){
+  const f = (S && S.flags) || {};
+  let n = f['story.side_pick_done'] ? 1 : 0;
+  if (f['story.switch_via'] === 'rook') n += (+f['story.switches'] || 0);
+  return n;
+}
+function metKeysNow(){
+  const played = playedSceneNames();
+  const keys = [];
+  for (const person of contactPeople().values()) if (personMet(person, played)) keys.push(person.key);
+  return keys;
+}
+function noteRepJoin(onlyKeys){
+  if (!S || !window.PPRep) return;
+  const stamp = repJoinStamp();
+  if (stamp <= 0 || (S.repJoins | 0) >= stamp) return;
+  const other = side() === 'glimmer' ? 'keepers' : 'glimmer';
+  const allow = onlyKeys ? new Set(onlyKeys) : null;
+  const pen = -((MD.reputation && MD.reputation.join_penalty) || 10);
+  const played = playedSceneNames();
+  for (const person of contactPeople().values()) {
+    if (allow && !allow.has(person.key)) continue;
+    if (!personMet(person, played)) continue;
+    const e = PPRep.entry(person.name);
+    if (!e || e.fixed != null || e.faction !== other) continue;
+    PPRep.repAdd(person.name, pen, 'join');
+  }
+  S.repJoins = stamp;
+}
+function repCastCheck(){
+  if (!window.PPRep) return ['PPRep missing'];
+  const names = [];
+  for (const person of contactPeople().values()) names.push(person.name);
+  return PPRep.devCheck(names);
+}
+function repCond(c, o){
+  if (!window.PPRep) return false;
+  let kind, name, op, rhs;
+  const named = /^(rep|reptier):(.+?)(>=|<=|>|<|=)(.+)$/.exec(c);
+  if (named) { kind = named[1]; name = named[2]; op = named[3]; rhs = named[4]; }
+  else {
+    const speaker = /^reptier(>=|<=|>|<|=)(.+)$/.exec(c);
+    if (!speaker || !o) return false;
+    kind = 'reptier'; name = objName(o); op = speaker[1]; rhs = speaker[2];
+  }
+  if (kind === 'rep') {
+    const n = PPRep.repGet(name), r = Number(rhs);
+    if (!Number.isFinite(r)) return false;
+    if (op === '=') return n === r;
+    return op === '>=' ? n >= r : op === '<=' ? n <= r : op === '>' ? n > r : n < r;
+  }
+  const tier = PPRep.repTier(name);
+  if (op === '=') return tier === rhs;
+  const a = PPRep.tierRank(tier), b = PPRep.tierRank(rhs);
+  if (a < 0 || b < 0) return false;
+  return op === '>=' ? a >= b : op === '<=' ? a <= b : op === '>' ? a > b : a < b;
+}
 function cond(c, live, o){
   if (typeof c === 'string' && c.includes('&')) return c.split('&').every(part => part && cond(part, live, o));
   if (c === 'else') return true;
@@ -1907,6 +1984,7 @@ function cond(c, live, o){
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
+  else if (c.startsWith('rep:') || c.startsWith('reptier')) v = repCond(c, o);
   else {
     const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c);
     if (!m) v = !!flagOf(c, live);
@@ -1938,6 +2016,35 @@ const solid = (x, y) => solidTile(x, y) || !!blockerAt(x, y);
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
+// Letter lines (D174). The design JSON stays verbatim. Samples live in data/reputation.json and are gated on story.hc_invite.
+// The letter goes in front of everyday chatter (else, standing., story.side) and behind a later story flag or a scene pointer.
+(function spliceRepLetters(){
+  const samples = MD.reputation && MD.reputation.letter_quests && MD.reputation.letter_quests.samples;
+  if (!samples) return;
+  const tiers = ['close', 'warm', 'neutral', 'cool', 'hostile'];
+  const chatter = k => k === 'else' || k.startsWith('standing.') || k.startsWith('story.side');
+  for (const m of Object.values(WORLD)) for (const o of m.objs || []) {
+    if (!o || o.pet || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
+    const name = objName(o), bag = samples[name];
+    if (!bag || typeof bag !== 'object') continue;
+    const add = [];
+    for (const tier of tiers) {
+      const text = bag[tier];
+      if (typeof text !== 'string') continue;
+      const key = 'story.hc_invite&reptier=' + tier;
+      if (!o.lines || !(key in o.lines)) add.push([key, text]);
+    }
+    if (!add.length) continue;
+    const lines = {};
+    let placed = false;
+    for (const [k, v] of Object.entries(o.lines || {})) {
+      if (!placed && chatter(k)) { for (const pair of add) lines[pair[0]] = pair[1]; placed = true; }
+      lines[k] = v;
+    }
+    if (!placed) for (const pair of add) lines[pair[0]] = pair[1];
+    o.lines = lines;
+  }
+})();
 // Rook wears a Junior Bright lanyard once Glimmerwell has claimed him: on the glimmer path from the side
 // pick, and on either path after Fernbrook (story.slice_end) or the quarry sale. It comes off when he
 // converts (rook_end ally) or when he quits (story.rook_quit, D136).
@@ -1965,7 +2072,7 @@ function safeSpot(){
 /* ---------- walk / map ---------- */
 const DIRS = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
 const walk = { fx: 3, fy: 3, from: null, to: null, prog: 0, dpad: null, drag: null, key: null, queued: null, target: null,
-  intro: 0, cam: { x: 0, y: 0 }, path: null, arrive: null, aim: null, repath: null };
+  intro: 0, cam: { x: 0, y: 0 }, camBias: { x: 0, y: 0, from: 0, to: 0, t0: 0, ease: false, jumped: false }, path: null, arrive: null, aim: null, repath: null };
 function clearMoves(){ walk.dpad = walk.drag = walk.key = walk.queued = walk.target = null; walk.path = walk.arrive = walk.aim = walk.repath = null; wild.chase = null; $$('.dp').forEach(b => b.classList.remove('on')); }
 const moveHeld = () => !!(walk.dpad || walk.key || walk.drag);
 const CANT_REACH = "Can't get there from here.";   // unreachable tap (Vincent, Oct 15). Straight apostrophe. Fits a toast.
@@ -3145,14 +3252,21 @@ function wallMaskOf(m){
   }
   return wallMasks[m.id] = c;
 }
+function tickCamBias(t){
+  const b = walk.camBias; if (!b || !b.ease) return;
+  const k = Math.min(1, (t - b.t0) / 150);
+  const e = 1 - (1 - k) * (1 - k);
+  b.y = b.from + (b.to - b.from) * e;
+  if (k >= 1) { b.y = b.to; b.ease = false; }
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
+  // INTERIORS §3.4: a map narrower/shorter than the canvas is centred, the rest filled with PAL.k
+  // D171: camBias is added before the clamp so a covered speaker can sit in the top 40% without leaving the map.
+  syncWalkCam(t);
   const VW = c.width, VH = c.height;
   const px_ = walk.fx * TS, py_ = walk.fy * TS;
-  // INTERIORS §3.4: a map narrower/shorter than the canvas is centred, the rest filled with PAL.k
-  walk.cam.x = MW * TS <= VW ? -Math.floor((VW - MW * TS) / 2) : Math.round(clamp(px_ + 8 - VW/2, 0, MW*TS - VW));
-  walk.cam.y = MH * TS <= VH ? -Math.floor((VH - MH * TS) / 2) : Math.round(clamp(py_ + 8 - VH/2, 0, MH*TS - VH));
   const cx = walk.cam.x, cy = walk.cam.y, wf = Math.floor(t / 500) % 2;
   g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH);
   for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
@@ -3836,7 +3950,8 @@ function endScene(){
   if (sc.npc) delete mapRT.face[sc.npc.id];
   if (sc.npc && (sc.npc.kind === 'npc' || sc.npc.kind === 'trainer')) bump.talked = sc.npc.id;
   scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
-  $('#ovScene').hidden = true; document.body.classList.remove('scene-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+  $('#ovScene').hidden = true; $('#ovScene').classList.remove('top'); document.body.classList.remove('scene-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+  clearCamBias();
   lockTabs(false); placeFollower(); renderKeeperName(); updateHUD(); save();
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
   for (const o of CUR.objs) if (o.kind === 'trigger' && !(Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y) <= (o.r || 0))) delete mapRT.trig[o.id];
@@ -3902,7 +4017,8 @@ async function execStep(st){
         await sayBox('', playerName() + ' got ' + acorns(300) + '!');
         if (!scene) return;
       }
-      await sayBox(a, tx); return;
+      const box = c && typeof c === 'object' ? c.box : null;
+      await sayBox(a, tx, box); return;
     }
     case 'choice': {
       sc.skip = false;
@@ -3922,7 +4038,10 @@ async function execStep(st){
       return;
     }
     case 'setFlag': {
-      const v = b === '$line' ? sc.vars.line : b; sc.view.flags[a] = v; pend(() => { S.flags[a] = v; });
+      const v = b === '$line' ? sc.vars.line : b;
+      // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
+      const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
+      sc.view.flags[a] = v; pend(() => { S.flags[a] = v; if (joinSnap) noteRepJoin(joinSnap); });
       // D135: freeing or walking away always credits the Keepers meter. Shipping credits Glimmerwell. Once each.
       if (a === 'story.rc_end' && (v === 'freed' || v === 'walked')) await execStep(['standing', 'keepers', null, 'rc_freed_k']);
       if (a === 'story.rc_end' && v === 'shipped') await execStep(['standing', 'glimmer', null, 'rc_shipped_g']);
@@ -3943,6 +4062,11 @@ async function execStep(st){
       if (got) sc.view.flags[got] = true;
       sc.view.standing = sc.view.standing || {}; sc.view.standing[a] = PPStanding.clampPts(standingOf(a, true) + n);
       pend(() => { if (got) { if (S.flags[got]) return; S.flags[got] = true; } addStanding(a, n); });
+      return;
+    }
+    // LR5 (D174): ["rep", Name, n]. Fixed names no-op inside repAdd. Not buffered, so a later cond in this scene sees it.
+    case 'rep': {
+      if (window.PPRep) PPRep.repAdd(a, Number(b) || 0, 'scene');
       return;
     }
     // BS: ["pledge", side, free?]: switch the pledge to `side` (the Pledge desk's Yes). Buffered; later lines see the new side.
@@ -4112,7 +4236,7 @@ async function sceneEncounter(id){
 const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['story.starter_line']] || t.counterTeam.ember)) || [];
 
 /* --- the bottom text box (#ovScene) --- */
-function sbRender(who, text){
+function sbRender(who, text, box){
   const key = who && LOOK_OF_NAME[who];
   const look = key ? npcLook({ look: key, name: who }) : null;
   $('#sbWho').textContent = who || ''; $('#sbWho').hidden = !who;
@@ -4120,14 +4244,106 @@ function sbRender(who, text){
   const pc = $('#sbPortrait'), showP = !!look && window.innerWidth >= 360;
   pc.hidden = !showP; $('#sbox').classList.toggle('has-p', showP);
   if (showP) { const g = ctx(pc); g.clearRect(0, 0, 18, 18); g.drawImage(keeperFrames(look).down[0], 0, 0); }
+  placeSceneBox(who, box);
 }
-function sayBox(who, text){
+function sayBox(who, text, box){
   return new Promise(res => {
     if (scene) { scene.boxes++; scene.who = who || ''; }
-    sbRender(who, ''); $('#sbEcho').textContent = ''; $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+    $('#sbEcho').textContent = ''; $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+    sbRender(who, text, box);   // full text, so the box height used for D171 is the finished line
+    $('#sbText').textContent = '';
     sbox.text = text; sbox.t0 = now(); sbox.full = false; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.resolve = res; sbox.mode = 'say';
     $('#sbSkip').hidden = false; $('#sbNext').hidden = true;
   });
+}
+// D171: the dialog box never covers the speaker. Narrator lines, the phone, and a letter overlay keep the bottom box.
+// A 4th say element {"box":"top"|"bottom"} wins. One choice is cached for a run of lines from the same speaker.
+const prefersReduced = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+function setCamBias(y){
+  const b = walk.camBias; y = +y || 0;
+  if (Math.abs(b.to - y) < 0.5 && !b.ease && Math.abs(b.y - y) < 0.5) return;
+  b.x = 0;
+  if (prefersReduced()) { b.y = b.from = b.to = y; b.ease = false; b.jumped = true; b.t0 = 0; return; }
+  b.from = b.y; b.to = y; b.t0 = performance.now(); b.ease = Math.abs(b.from - y) >= 0.5; b.jumped = false;
+  if (!b.ease) b.y = y;
+}
+function clearCamBias(){
+  const b = walk.camBias; if (!b) return;
+  b.x = b.y = b.from = b.to = 0; b.ease = false; b.jumped = false; b.t0 = 0;
+}
+function findSpeaker(who){
+  if (!who || !CUR) return null;
+  const vis = CUR.objs.filter(present);
+  return vis.find(o => o.name === who) || vis.find(o => o.id === who) || null;
+}
+function boxRectsOverlap(a, b){
+  if (!a || !b || a.width <= 0 || b.width <= 0) return false;
+  return a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y;
+}
+function speakerScreenRect(o){
+  const c = $('#mapCanvas'), r = c.getBoundingClientRect();
+  if (!o || !r.width || !c.width) return null;
+  const q = objPos(o), k = r.width / c.width, margin = 8, head = 6;
+  const x = q.x * TS - walk.cam.x - margin, y = q.y * TS - walk.cam.y - margin - head;
+  const w = TS + margin * 2, h = TS + margin * 2 + head;
+  const left = r.left + x * k, top = r.top + y * k;
+  return { x: left, y: top, width: w * k, height: h * k, right: left + w * k, bottom: top + h * k };
+}
+function sboxScreenRect(){
+  const r = $('#sbox').getBoundingClientRect();
+  return { x: r.left, y: r.top, width: r.width, height: r.height, right: r.right, bottom: r.bottom };
+}
+function biasForSpeaker(o){
+  const VH = $('#mapCanvas').height; if (!VH) return 0;
+  const q = objPos(o), feet = (q.y + 1) * TS, target = feet - 0.4 * VH, base = walk.fy * TS + 8 - VH / 2;
+  return target - base;
+}
+function syncWalkCam(t){
+  const c = $('#mapCanvas'); if (!c || !c.width || !walk) return;
+  tickCamBias(t == null ? performance.now() : t);
+  const VW = c.width, VH = c.height, px_ = walk.fx * TS, py_ = walk.fy * TS;
+  const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
+  walk.cam.x = MW * TS <= VW ? -Math.floor((VW - MW * TS) / 2) : Math.round(clamp(px_ + 8 - VW/2 + bx, 0, MW*TS - VW));
+  walk.cam.y = MH * TS <= VH ? -Math.floor((VH - MH * TS) / 2) : Math.round(clamp(py_ + 8 - VH/2 + by, 0, MH*TS - VH));
+}
+function chooseSceneBox(who){
+  const o = findSpeaker(who), ov = $('#ovScene');
+  if (!o) return 'bottom';   // nobody on this map: the rule is off, and the camera nudge stays until the scene ends
+  syncWalkCam();
+  const spr = speakerScreenRect(o);
+  ov.classList.remove('top');
+  if (!spr || !boxRectsOverlap(spr, sboxScreenRect())) { setCamBias(0); return 'bottom'; }
+  ov.classList.add('top');
+  if (!boxRectsOverlap(spr, sboxScreenRect())) { setCamBias(0); return 'top'; }
+  ov.classList.remove('top');
+  setCamBias(biasForSpeaker(o));
+  return 'bottom';
+}
+// A font load or resize can grow the box over a speaker after the choice was cached. Recompute only when the box now covers them.
+function refitSceneBox(){
+  if (!scene || !scene.who || scene.boxPin) return;
+  const o = findSpeaker(scene.who); if (!o) return;
+  syncWalkCam();
+  const spr = speakerScreenRect(o);
+  if (!spr || !boxRectsOverlap(spr, sboxScreenRect())) return;
+  scene.boxCache = null;
+  placeSceneBox(scene.who);
+}
+function placeSceneBox(who, box){
+  const ov = $('#ovScene');
+  if (!scene) { ov.classList.remove('top'); return; }
+  if (!$('#ovPhone').hidden) return;   // the phone keeps today's box; a letter overlay does too (it is not this say step)
+  const override = box === 'top' || box === 'bottom' ? box : null;
+  if (!who) { ov.classList.remove('top'); scene.boxMode = 'bottom'; scene.boxCache = null; scene.boxPin = null; return; }
+  if (!override && scene.boxCache && scene.boxCache.who === who) {
+    ov.classList.toggle('top', scene.boxCache.mode === 'top'); scene.boxMode = scene.boxCache.mode; return;
+  }
+  if (override) { scene.boxPin = override; ov.classList.toggle('top', override === 'top'); scene.boxMode = override; scene.boxCache = null; return; }
+  scene.boxPin = null;
+  const mode = chooseSceneBox(who);
+  ov.classList.toggle('top', mode === 'top');
+  scene.boxMode = mode;
+  scene.boxCache = { who, mode };
 }
 function sbTick(){                          // typewriter (from the frame loop; nothing here can block a tap)
   if (!sbox.resolve || sbox.full) return;
@@ -5566,7 +5782,16 @@ function drawRegionMap(t){
 let bagSel = 0;
 function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
 function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'star', 0, 0); }
-function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon"));
+function paintRepIcon(){
+  const c = $('#repIcon'); const grid = navArt() && navArt().buttons.rep && navArt().buttons.rep.normal;
+  if (!c || !grid) return;
+  c.width = c.height = 24; const g = ctx(c); g.clearRect(0, 0, 24, 24);
+  for (let y = 0; y < 12; y++) for (let x = 0; x < 12; x++) {
+    const ch = grid[4 + y] && grid[4 + y][5 + x];
+    if (ch && ch !== '.' && PAL[ch]) { g.fillStyle = PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2); }
+  }
+}
+function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon")); paintRepIcon();
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {
@@ -6096,6 +6321,86 @@ function syncQuestBtn(){
   const sig = (on ? '1' : '0') + (b.classList.contains('pulse') ? 'p' : '') + mark;
   if (sig !== questBtnSig) { questBtnSig = sig; try { syncNavArt(false); } catch (e) {} }
 }
+// PEOPLE (D176). The set is the met contacts. Sort is recent first, then people met only through a scene, then fixed names with a lock.
+// +/- and ? rows are rebuilt from MAPDATA.reputation.sources (empty until Lizzy C adds entries).
+let repWho = '';
+function repRows(){
+  const played = playedSceneNames(), book = phoneBook();
+  const idx = new Map(Object.keys(book.met).map((k, i) => [k, i]));
+  const rows = [];
+  for (const person of contactPeople().values()) if (personMet(person, played)) rows.push(person);
+  rows.sort((a, b) => {
+    const fa = window.PPRep && PPRep.isFixed(a.name) ? 1 : 0;
+    const fb = window.PPRep && PPRep.isFixed(b.name) ? 1 : 0;
+    if (fa !== fb) return fa - fb;
+    const ia = idx.has(a.key) ? idx.get(a.key) : -1, ib = idx.has(b.key) ? idx.get(b.key) : -1;
+    if (ia < 0 && ib < 0) return a.name.localeCompare(b.name);
+    if (ia < 0) return 1;
+    if (ib < 0) return -1;
+    return ib - ia;
+  });
+  return rows;
+}
+function repSourceLines(name){
+  const out = [];
+  if (!window.PPRep || !S) return out;
+  for (const src of PPRep.sources()) {
+    if (!src || typeof src !== 'object') continue;
+    if (src.who && src.who !== '*' && PPRep.key(src.who) !== PPRep.key(name)) continue;
+    if (src.when && !cond(src.when, false)) continue;
+    const on = !!(src.flag && (src.eq == null ? S.flags[src.flag] : String(S.flags[src.flag]) === String(src.eq)));
+    if (on && typeof src.line === 'string') {
+      const d = Number(src.delta) || 0;
+      out.push((d > 0 ? '+' : '') + d + ' ' + src.line);
+    } else if (!on && typeof src.open === 'string' && src.open) out.push('? ' + src.open);
+  }
+  return out;
+}
+function renderRep(){
+  const list = $('#repList'), card = $('#repCard'); if (!list || !card) return;
+  if (repWho) {
+    list.hidden = true; card.hidden = false; card.replaceChildren();
+    const person = contactPeople().get(repWho);
+    if (!person) { repWho = ''; renderRep(); return; }
+    const face = document.createElement('canvas');
+    face.width = face.height = 18; face.className = 'rep-face'; face.setAttribute('aria-hidden', 'true');
+    paintContactFace(face, person);
+    const nm = document.createElement('h3'); nm.className = 'rep-name'; nm.textContent = person.name;
+    const num = document.createElement('p'); num.className = 'rep-num'; num.textContent = String(PPRep.repGet(person.name));
+    const tier = document.createElement('p'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
+    card.append(face, nm, num, tier);
+    for (const text of repSourceLines(person.name)) { const p = document.createElement('p'); p.className = 'rep-src'; p.textContent = text; card.appendChild(p); }
+    return;
+  }
+  card.hidden = true; list.hidden = false; list.replaceChildren();
+  const rows = repRows();
+  if (!rows.length) { const p = document.createElement('p'); p.className = 'rep-empty'; p.textContent = 'Nobody yet. Go say hi.'; list.appendChild(p); return; }
+  for (const person of rows) {
+    const row = document.createElement('div'); row.className = 'rep-row';
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'rep-face-btn'; btn.dataset.rep = person.key; btn.setAttribute('aria-label', person.name);
+    const face = document.createElement('canvas');
+    face.width = face.height = 18; face.className = 'rep-face'; face.setAttribute('aria-hidden', 'true');
+    paintContactFace(face, person); btn.appendChild(face);
+    const meta = document.createElement('div'); meta.className = 'rep-meta';
+    const nm = document.createElement('span'); nm.className = 'rep-name'; nm.textContent = person.name;
+    const raw = PPRep.repGet(person.name);
+    const bar = document.createElement('span'); bar.className = 'rep-bar'; bar.setAttribute('role', 'progressbar');
+    bar.setAttribute('aria-valuemin', '0'); bar.setAttribute('aria-valuemax', '100'); bar.setAttribute('aria-valuenow', String(raw));
+    bar.setAttribute('aria-label', person.name + ' ' + raw);
+    const fill = document.createElement('i'); fill.style.width = raw + '%'; bar.appendChild(fill);
+    const tier = document.createElement('span'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
+    meta.append(nm, bar, tier); row.append(btn, meta);
+    if (PPRep.isFixed(person.name)) { const lock = document.createElement('span'); lock.className = 'rep-lock'; lock.setAttribute('aria-hidden', 'true'); row.appendChild(lock); }
+    list.appendChild(row);
+  }
+}
+function openRep(){
+  if (!S || (overlayOpen() && $('#ovRep').hidden)) { sfx('denied'); return; }
+  clearMoves(); sfx('tap'); repWho = ''; renderRep(); $('#ovRep').hidden = false; lockTabs(true);
+}
+function closeRep(){ if ($('#ovRep').hidden) return; $('#ovRep').hidden = true; repWho = ''; lockTabs(false); }
+function repBack(){ if (repWho) { repWho = ''; sfx('tap'); renderRep(); return; } sfx('tap'); closeRep(); }
 let questMoreOpen = false, questDoneOpen = false;   // not saved; reset on every open
 let questTab = 'next';   // 'next' | 'standing'; the panel always opens on NEXT STEP
 function openQuest(){
@@ -7979,6 +8284,7 @@ function applyCheckpoint(id){
   const sideI = PPQuests.SIDE.findIndex(e => e.id === id);
   const extra = DEBUG_EXTRAS[id];
   if (mainI < 0 && sideI < 0 && !extra) return { ok: false, reason: 'unknown' };
+  const wasPick = !!S.flags['story.side_pick_done'];
   if (mainI >= 0) {
     reconcileChain(PPQuests.CHAIN, mainI);
     const orchardAt = PPQuests.CHAIN.findIndex(e => e.id === 'orchard');
@@ -7996,6 +8302,7 @@ function applyCheckpoint(id){
   if (S.flags['story.starter_received'] || allPets().length) readyParty();
   else setRestDue(false);
   syncSide();
+  if (!wasPick && S.flags['story.side_pick_done']) noteRepJoin();   // D178, debug checkpoint past the orchard
   const target = mainI >= 0 ? chainTarget(PPQuests.CHAIN, mainI) : sideI >= 0 ? chainTarget(PPQuests.SIDE, sideI) : { map: extra.map, x: extra.x, y: extra.y };
   if (target && !WORLD[target.map]) return { ok: false, reason: 'map' };
   dismissForDebug();
@@ -8061,8 +8368,10 @@ function spawnEncounter(opts){
 }
 function setFaction(sd, opts){
   if (sd !== 'keepers' && sd !== 'glimmer') return { ok: false, reason: 'side' };
+  const wasPick = !!S.flags['story.side_pick_done'];
   if (sd === 'keepers') delete S.flags['story.side']; else S.flags['story.side'] = 'glimmer';
   if (!opts || opts.picked !== false) S.flags['story.side_pick_done'] = true;
+  if (!wasPick && S.flags['story.side_pick_done']) noteRepJoin();   // D178
   syncSide(); save();
   return { ok: true, side: side(), picked: !!S.flags['story.side_pick_done'] };
 }
@@ -8442,6 +8751,9 @@ function bindInput(){
     if (who && who.classList.contains('contact-main')) { contactOpen = who.dataset.who; sfx('tap'); renderContacts(); }
   });
   $('#questBtn').addEventListener('click', openQuest);
+  const repBtn = $('#repBtn'); if (repBtn) repBtn.addEventListener('click', () => { if ($('#ovRep').hidden) openRep(); else closeRep(); });
+  const repBackBtn = $('#repBack'); if (repBackBtn) repBackBtn.addEventListener('click', repBack);
+  const repList = $('#repList'); if (repList) repList.addEventListener('click', e => { const b = e.target.closest('[data-rep]'); if (!b) return; repWho = b.dataset.rep; sfx('tap'); renderRep(); });
   { const m = $('#questSideMore'), d = $('#questDoneToggle'); if (m) m.addEventListener('click', questToggleMore); if (d) d.addEventListener('click', questToggleDone); }
   $('#questTabNext').addEventListener('click', () => questTabTo('next'));
   $('#questTabStanding').addEventListener('click', () => questTabTo('standing'));
@@ -8611,6 +8923,7 @@ function bindInput(){
     if (!$('#ovMap').hidden && KEYS[e.key]) { e.preventDefault(); if (!e.repeat) mapNudge(KEYS[e.key]); return; }   // arrows read the parchment; they must not walk the keeper underneath
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
     if (e.key === 'Escape' && !$('#ovQuest').hidden) { e.preventDefault(); closeQuest(); return; }
+    if (e.key === 'Escape' && !$('#ovRep').hidden) { e.preventDefault(); closeRep(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
     if (shopKey(e)) { e.preventDefault(); return; }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
@@ -8850,6 +9163,7 @@ function boot(){
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
   { const hb = heightsDevCheck(); if (hb.length) console.error('Walklings: heights check failed:', hb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
+  { const rpb = repCastCheck(); if (rpb.length) console.error('Walklings: reputation cast check failed:', rpb.join('; ')); }
   { const hcb = highCharityDevCheck(); if (hcb.length) console.error('Walklings: high charity check failed:', hcb.join('; ')); }
   { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
   { const mb = mapDevCheck(); if (mb.length) console.error('Walklings: map check failed:', mb.join('; ')); }
@@ -8857,6 +9171,7 @@ function boot(){
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
+  if (window.PPRep) PPRep.bind({ state: () => S, side: () => side() });   // LR5: rep.js reads S and the pledge, and does not own them
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen(); noteBoardTown();
@@ -8967,11 +9282,17 @@ function boot(){
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
-    setFlag: (k, v = true) => { if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v; save(); syncSide(); return S.flags[k]; },
+    setFlag: (k, v = true) => {
+      const wasPick = !!S.flags['story.side_pick_done'];
+      if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v;
+      if (k === 'story.side_pick_done' && v && !wasPick) noteRepJoin();   // D178
+      save(); syncSide(); return S.flags[k];
+    },
     setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); save(); syncSide(); return side(); },   // WP-B0
     runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.
     setStanding: (sd, n) => { const r = setStanding(sd, n); if (r != null) { save(); if (!$('#ovQuest').hidden) renderQuestTabs(); } return r; },
+    repAdd: (name, n, why) => { const r = window.PPRep ? PPRep.repAdd(name, n, why || 'debug') : 0; save(); return r; },
     switchSide: (to, free) => switchSide(to, { free: !!free }),
     rookOffer: to => { if (!S || scene || overlayOpen() || (battle && battle.on)) return false; showTab('walk'); runSteps(rookOfferSteps(to)); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
@@ -9017,7 +9338,7 @@ function boot(){
   Object.defineProperty(api, 'mapInfo', { enumerable: true, get(){ return { id: CUR.id, w: MW, h: MH, room: isRoom(), outdoor: outdoorId(), backdrop: backdropName(), dream: CUR.dream || null,
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
-    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip }; } });
+    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows
@@ -9100,6 +9421,11 @@ function boot(){
   Object.defineProperty(api, 'standing', { enumerable: true, get(){ return standingView(); } });
   api.standingCfg = () => copy(STANDING_CFG);
   api.standingCheck = () => PPStanding.devCheck();
+  // LR5 (D174): raw number, effective tier, effective value. repAdd is a debug hook; scenes use the rep step.
+  api.repGet = name => window.PPRep ? PPRep.repGet(name) : 0;
+  api.repTier = name => window.PPRep ? PPRep.repTier(name) : '';
+  api.repEffective = name => window.PPRep ? PPRep.repEffective(name) : 0;
+  api.repCheck = () => repCastCheck();
   // WP-A: zone width and a rough per-press chance for a situation, without playing. opts: { stage, joy, treat, leadLv, engaged, bonus }
   api.befriendOdds = (foeLv, hpFrac, opts = {}) => { const o = Object.assign({ stage: 0, joy: 60, treat: false, leadLv: foeLv, engaged: hpFrac < 1, bonus: 0 }, opts);
     const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);

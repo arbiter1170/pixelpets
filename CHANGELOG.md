@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 06:48 ET: Merged the reputation work (PR #91) into the floor fix (build 20261017-0648)
+
+- What changed and why: Merged `main` (Lizzy B, the reputation work, build 20261017-0510) and kept the calm floors. `data/mapdata.js` was regenerated. Floors only: flat 5B (`hm_flats_5`) still uses `floor_honey`. Save `v` stays 2.
+- Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md` (both sides kept: D162–D167 and D170–D182 from `main`, then D184–D186), `README.md` and `tests/README.md` (the floor wording on top of `main`), `CHANGELOG.md` (both sides kept), `index.html` (`main`, restamped), `version.json`.
+- Commit(s) + build id: build 20261017-0648.
+- Tests run and result (widths, checks): `floors_check.py` on the merged tree: PASS (18 rooms, 54 tiles through png2grid, no brick/block, calm, D88 <= 70 %, unique across 40 interiors). Full `npm run test:agent` at 320, 375, and 390: PP_TEST RESULT: FAIL exit=1 passed=1061 failed=4 flaky=0 skipped=12 time=2977s. All four failures were timeouts in a slow run: `[320] maps_b2.spec.js:142` and `[390] rx_f4_pilot.spec.js:149` (5 s waits for scene text), `[375] highcharity.spec.js:252` (60 s test timeout), and `[390] glimmer_fernbrook.spec.js:124`. Each passed 5 of 5 when rerun alone at that width, so they are recorded as flakes. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): kept both sides. No id was renumbered. D183 is unused. The next free id is D187.
+- Anything left unfinished: flat 5B is left for a later rebuild.
+
 ## 2026-10-17 04:45 ET: Calm floors in 18 interiors (build 20261017-0419)
 
 - What changed and why: Eighteen interiors get the approved calm floors (FLOOR_FIX). Each floor is a main tile plus two accents at weights 0.22 and 0.18, so one tile stays at or under 70 percent of the walkable cells. Walls, walkability, props, rugs, grids, and warps stay as they are. The old floor tiles stay defined. Flat 5B still uses the honey floor. Save `v` stays 2. No new palette keys.
@@ -10,6 +19,105 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=1008 failed=0 flaky=0 skipped=12 time=1542s. The suite's console-error check passed. `python3 tools/bump_build.py --check` exit 0. `floors_check.py` on the approved packet: PASS (18 rooms, 54 tiles, no brick/block, calm, D88 <= 70 %, unique across 40 interiors).
 - Decisions made (colour + reasoning): D184, D185, and D186 were yellow and are settled. Vincent, Oct 17, 2026, 3:16 AM ET, default: yes to the plank rule, the three stone floors, and the three named rooms (Rook's oak boards, the loft's white boards, the observatory's dusk-violet boards). No id was renumbered. The next free id is D187. D168–D169 stay the music test calls. Flat 5B is left for a later rebuild.
 - Anything left unfinished: Lizzy's flat 5B (`hm_flats_5`) still uses `floor_honey`. A later pass rebuilds that room.
+
+## 2026-10-17 05:10 ET: Merged Lizzy A (PR #90) into the reputation branch (build 20261017-0510)
+
+- What changed and why: Merged `main` (Lizzy A: English Lizzy, the dialog box clears the speaker, Hearthmoor 24 by 24; build 20261017-0404) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. Merge-integration test fix: the strict reputation cast check logs a console error for any speaker missing from `data/reputation.json`, and `tests/dialog_clear.spec.js` (from PR #90) used a made-up speaker, Fern, so all of its tests failed after the merge. The test now uses Cass, who is in the cast and has the same name length; Pip and Wren were already in the cast. Every assertion, position and box check is unchanged. The cast check and the game data are unchanged.
+- Files touched: merge of `main`; `tests/dialog_clear.spec.js`. Conflicts: `BACKLOG.md` (main's id text, plus the reputation line reworded to "in the game (Lizzy B, PR #91)"), `tests/README.md` (both paragraphs kept), `CHANGELOG.md` (both sides kept), `index.html` (this branch, restamped), `version.json`, `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261017-0510.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/dialog_clear.spec.js tests/reputation.spec.js tests/tutorial.spec.js tests/maps_b3.spec.js` at 320, 375, and 390: PP_TEST RESULT: PASS exit=0 passed=81 failed=0 flaky=0 skipped=0 time=148s. Full `npm run test:agent`: PP_TEST RESULT: FAIL exit=1 passed=1060 failed=2 flaky=0 skipped=12 time=2666s. Both failures were 30 s timeouts in a slow run, recorded as flakes: `[390] map.spec.js:26` (page load timed out) and `[375] maps_b8.spec.js:265`. Each passed 5 of 5 when rerun alone at that width. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): kept both sides. No id was renumbered. The next free id stays D183, as on `main`.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 04:03 ET: Merged the interior wall kit into the reputation branch (build 20261017-0403)
+
+- What changed and why: Merged `main` (every interior uses the shared wall kit, build 20261017-0352) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. This restamp is the build on the branch.
+- Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`, `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261017-0403.
+- Tests run and result (widths, checks): full `npm run test:agent` after the merge: PP_TEST RESULT: PASS exit=0 passed=1035 failed=0 flaky=0 skipped=12 time=1853s at 320, 375, and 390.
+- Decisions made (colour + reasoning): kept both sides. No decision file edited. The next free id stays D170, as on `main`.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 03:36 ET: Letter lines stay behind later story talk (build 20261017-0336)
+
+- What changed and why: The High Charity letter still answers by trust (D174), and it no longer covers a later line. Captain Lumen's council still starts, and after it he still says the road stays dark. Usual side and standing lines stay behind the letter. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `tests/reputation.spec.js`, `README.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0336.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js tests/lantern_council.spec.js --project=390` PASS exit=0 passed=13. Full `npm run test:agent` on that commit: PP_TEST RESULT: PASS exit=0 passed=1032 failed=0 flaky=0 skipped=12 time=1460s at 320, 375, and 390.
+- Decisions made (colour + reasoning): green. The letter sits in front of everyday chatter and behind a later story flag. No decision file edited.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 03:08 ET: Merged the music loops into the reputation branch (build 20261017-0308)
+
+- What changed and why: Merged `main` (the eight music loops, build 20261017-0208) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. This restamp is the build on the branch.
+- Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`, `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261017-0308.
+- Tests run and result (widths, checks): full `npm run test:agent` after the merge.
+- Decisions made (colour + reasoning): kept both sides. No decision file edited. The next free id stays D170, as on `main`.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 03:07 ET: Letter lines by trust (build 20261017-0307)
+
+- What changed and why: Once the High Charity letter is open, Lizzy, Rook, and Captain Lumen answer it from how much they trust you (D174). The five lines are the samples in `data/reputation.json`. Captain Lumen at 55 is warm for the Keepers and neutral for Glimmerwell. Lines you have not reached yet stay in front of the letter. The map files are unchanged. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0307.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390 -g "letter lines"` PASS exit=0 passed=1.
+- Decisions made (colour + reasoning): builds settled D174. The Rook's Crossroads letter uses the same High Charity samples and the same `story.hc_invite` gate. No decision file edited.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 03:06 ET: Acorn chip plate (build 20261017-0306)
+
+- What changed and why: The modern walk acorn chip is a nav plate (D179), 44 px tall, with the new acorn and a yellow number. A gain turns the plate blue for 300 ms. Reduced motion skips that, and the first time the count is drawn it does not flash. The header, the bag, and the shop keep the small acorn icon. 99999 still fits inside 48 cells. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `style.css`, `data/nav_art.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0306.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js tests/ux_review.spec.js --project=390` PASS exit=0 passed=16. The acorn tests at 320 and 390 PASS exit=0 passed=10. `python3 design/specs/nav_art_check.py` PASS.
+- Decisions made (colour + reasoning): builds settled D179. The wide plate is a 9-slice frame (left 19, mid 1, right 3), not a 22 px button. No decision file edited.
+- Anything left unfinished: letter lines by trust are the next packet on this branch.
+
+## 2026-10-17 02:59 ET: Compass button and the PEOPLE list (build 20261017-0259)
+
+- What changed and why: The compass opens PEOPLE (D176). On the modern walk screen it sits at the top of the left column and QUEST, BAG and MAP move down one slot. In the header it is the first button, 44 px so the tap target matches the gear. PEOPLE lists people you have met, most recent first, with a face, a 0-100 bar and a tier word. Fixed people sit at the end with a lock. An empty list says "Nobody yet. Go say hi." A face opens a card with the stored number, the tier word, and source lines from data. That source list is empty until later quests add rows. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `style.css`, `data/nav_art.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0259.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390` PASS exit=0 passed=8. Same spec plus `tests/ux_review.spec.js` at 320: PASS exit=0 passed=15. `tests/controls.spec.js` at 320 and 390: PASS exit=0 passed=42.
+- Decisions made (colour + reasoning): builds settled D176. The spec asked for a 32 px header compass "like the settings button"; that button is 44 px and tap targets stay at least 44 px, so the compass is 44. No decision file edited.
+- Anything left unfinished: the acorn chip and letter lines are the next packets on this branch.
+
+## 2026-10-17 02:50 ET: Reputation numbers, join penalty, and trust checks (build 20261017-0250)
+
+- What changed and why: Each person you can meet has a 0-100 reputation (D174, D175, D178). Rook starts at 40. Mom and Dad stay at 100. Warden Ilse and Clerk Wynn stay at 50. Joining a side, or switching through Rook, lowers met people of the other side by 10 once. The save stays v2 (`S.rep`, `S.repJoins`).
+- Files touched: `data/reputation.json`, `data/mapdata.js`, `tools/gen_mapdata.py`, `rep.js`, `save.js`, `game.js`, `index.html`, `sw.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0250.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390` — PP_TEST RESULT: PASS exit=0 passed=5 failed=0 flaky=0 skipped=0 time=3s.
+- Decisions made (colour + reasoning): builds settled D174, D175, D178. No decision file edited. Twenty-one map contacts missing from the cast table were added as faction none, base 50, so the startup check can pass without inventing a side.
+- Anything left unfinished: the compass, PEOPLE list, acorn chip, and letter lines are the next packets on this branch.
+
+## 2026-10-17 03:04 ET: Hearthmoor grows south to School Lane (D170)
+
+- What changed and why: Hearthmoor grows from 24 by 20 to 24 by 24. Rows 0-18 stay put, and so does every door, warp, sign, respawn, and prop. The new path is School Lane. Lizzy stands at (9, 20) facing up, and Buddy stands at (10, 20) facing up. You walk down the lane and talk to her from the grass above. The intro box does not cover her. Save `v` stays 2.
+- Files touched: `data/maps_slice.json`, `data/mapdata.js`, `data/detail_lizzy.json`, `tests/lizzy.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0304, restamped 20261017-0306 after merging the music loops from main, and 20261017-0404 after merging main with the interior wall kit (PR #89).
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390 after merging the music loops: PP_TEST RESULT: PASS exit=0 passed=1029 failed=0 flaky=0 skipped=12 time=1475s. After merging main with PR #89 (build 20261017-0404): PP_TEST RESULT: FAIL exit=1 passed=1030 failed=2 flaky=0 skipped=12 time=3125s. Both failures were 30 s timeouts in an unusually slow run (about twice the usual time), recorded as flakes: `[320] maps_b5.spec.js:159` (the door reaches every person) and `[390] group_battle.spec.js:77` (one turn). Each passed 5 of 5 when rerun alone at that width, and `node tools/pp_test.js tests/maps_b5.spec.js` at 320, 375, and 390 gave PP_TEST RESULT: PASS exit=0 passed=12 failed=0 flaky=0 skipped=0 time=46s. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D170 red, settled by Vincent Oct 17, 2026. Reshapes an Act 1 town, the exception to D81. No new id. No id was renumbered.
+- Anything left unfinished: the other Lizzy packets are not this PR.
+
+## 2026-10-17 02:57 ET: Dialog box clears the speaker (D171)
+
+- What changed and why: When a person on the map would stand under the text box, the box moves to the top. If the top would cover them too, the view eases over 150 ms so they sit in the top of the screen, clamped to the map. Reduced motion jumps. Narration, the phone, and a letter overlay stay at the bottom. A say step can force `{"box":"top"|"bottom"}`. The choice stays put for a run of lines from the same speaker. Save `v` stays 2.
+- Files touched: `game.js`, `style.css`, `tests/dialog_clear.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0257.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/dialog_clear.spec.js` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=24 failed=0 flaky=0 skipped=0 time=34s. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D171 red, settled by Vincent Oct 17, 2026. No new id. No id was renumbered.
+- Anything left unfinished: the Hearthmoor south rows (D170) are the next commit on this branch. The other Lizzy packets are not this PR.
+
+## 2026-10-17 02:40 ET: Lizzy speaks English (D172)
+
+- What changed and why: Lizzy understands Spanish and answers in English. Four lines in her intro change: the greeting, "kiddo", "Oh, he is.", and the snack line. Her sisters' Spanish is unchanged. The other nine rewrites are story lines that are not in the game. Save `v` stays 2. Settled rows D162–D167 and D170–D182 are recorded. The next free id is D183. D168–D169 stay reserved for the music test build.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `tests/lizzy.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0240.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/lizzy.spec.js` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=18 failed=0 flaky=0 skipped=0. No console errors.
+- Decisions made (colour + reasoning): D172 green, settled by Vincent Oct 17, 2026. D162–D167 and D170–D182 recorded as settled. No new id. D168–D169 left for the music build. No id was renumbered.
+- Anything left unfinished: the dialog-box rule (D171) and the Hearthmoor south rows (D170) are the next commits on this branch. The other Lizzy packets are not this PR.
 
 ## 2026-10-17 02:19 ET: Interior wall kit on every room (build 20261017-0352)
 

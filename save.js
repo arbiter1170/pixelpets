@@ -260,6 +260,31 @@ const PPSave = (() => {
     };
     cleanNames(s.phoneBook.met);
     cleanNames(s.phoneBook.fav);
+    // LIZZY_REP LR5 (D174, D175): sparse S.rep, additive, v stays 2. Non-strings and keys over 40 characters are
+    // dropped, values clamp to 0..100, and fixed NPCs (Mom, Dad, Warden Ilse, Clerk Wynn) are not stored.
+    // S.repJoins counts joins already applied so a reload never runs the penalty twice.
+    fill(s, 'rep', isObj, {});
+    {
+      const fixedKeys = new Set();
+      const cast = MD && MD.reputation && Array.isArray(MD.reputation.cast) ? MD.reputation.cast : [];
+      for (const e of cast) {
+        if (!e || e.fixed == null || typeof e.name !== 'string') continue;
+        const key = e.name.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+        if (key) fixedKeys.add(key);
+      }
+      const range = MD && MD.reputation && Array.isArray(MD.reputation.range) ? MD.reputation.range : [0, 100];
+      const lo = Number.isFinite(range[0]) ? range[0] : 0, hi = Number.isFinite(range[1]) ? range[1] : 100;
+      for (const k of Object.keys(s.rep)) {
+        if (typeof k !== 'string' || k.length > 40) { delete s.rep[k]; continue; }
+        const key = k.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim();
+        const v = s.rep[k];
+        if (!key || key.length > 40 || fixedKeys.has(key) || typeof v !== 'number' || !Number.isFinite(v)) { delete s.rep[k]; continue; }
+        const n = clamp(Math.round(v), lo, hi);
+        if (key !== k) delete s.rep[k];
+        s.rep[key] = n;
+      }
+    }
+    fill(s, 'repJoins', x => Number.isInteger(x) && x >= 0, 0);
     // QUEST_MULTI (D106): UI state, additive. ui.sideTracked = tracked side chain id (absent = not chosen); ui.sideSeen = chain
     // ids already shown on the NEXT STEP panel. Unknown keys under ui survive. No version bump.
     fill(s, 'ui', isObj, {});
