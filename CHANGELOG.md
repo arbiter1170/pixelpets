@@ -7,7 +7,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - What changed and why: Merged `main` (every interior uses the shared wall kit, build 20261017-0352) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. This restamp is the build on the branch.
 - Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`, `data/mapdata.js` (regenerated).
 - Commit(s) + build id: build 20261017-0403.
-- Tests run and result (widths, checks): full `npm run test:agent` after the merge. Result pending.
+- Tests run and result (widths, checks): full `npm run test:agent` after the merge: PP_TEST RESULT: PASS exit=0 passed=1035 failed=0 flaky=0 skipped=12 time=1853s at 320, 375, and 390.
 - Decisions made (colour + reasoning): kept both sides. No decision file edited. The next free id stays D170, as on `main`.
 - Anything left unfinished: none on this branch. Q19 stays the queue.
 
