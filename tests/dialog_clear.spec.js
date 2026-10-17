@@ -1,5 +1,5 @@
-/* D171: the dialog box never covers the speaker. A test map puts Fern on the bottom row,
-   Pip in the top third, and Wren in the middle for the camera nudge. Save v stays 2. */
+/* D171: the dialog box never covers the speaker. A test map puts Cass on the bottom row,
+   Pip in the top third, and Wren in the middle for the camera nudge. All three names are in data/reputation.json, so the strict cast check stays quiet. Save v stays 2. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, withOverlay, shot } = require('./helpers');
 
@@ -24,7 +24,7 @@ const overlay = {
       safe: { x: 8, y: 27 },
       grid: grid(W, H),
       objs: [
-        { kind: 'npc', id: 'zz_fern', name: 'Fern', x: 8, y: 28, facing: 'up' },
+        { kind: 'npc', id: 'zz_fern', name: 'Cass', x: 8, y: 28, facing: 'up' },
         { kind: 'npc', id: 'zz_pip', name: 'Pip', x: 8, y: 2, facing: 'down' },
         { kind: 'npc', id: 'zz_wren', name: 'Wren', x: 8, y: 15, facing: 'down' },
       ],
@@ -32,11 +32,11 @@ const overlay = {
   },
   scenes: {
     zz_fern_two: [
-      ['say', 'Fern', 'The box should sit clear of me.\nA tall line reaches the last row.\nThese words would cover a person.\nSo the box moves up above them.\nYou can still see who is talking.\nThe grass stays in view below.\nThat is the whole idea.'],
-      ['say', 'Fern', 'This second line stays on the same side.'],
+      ['say', 'Cass', 'The box should sit clear of me.\nA tall line reaches the last row.\nThese words would cover a person.\nSo the box moves up above them.\nYou can still see who is talking.\nThe grass stays in view below.\nThat is the whole idea.'],
+      ['say', 'Cass', 'This second line stays on the same side.'],
     ],
     zz_fern_bottom: [
-      ['say', 'Fern', 'Stay at the bottom even if the box covers me.', { box: 'bottom' }],
+      ['say', 'Cass', 'Stay at the bottom even if the box covers me.', { box: 'bottom' }],
     ],
     zz_pip_high: [
       ['say', 'Pip', 'I stand up high, so the box can stay at the bottom.'],
@@ -105,7 +105,7 @@ for (const mode of ['modern', 'arcade']) {
     const first = await overlap(page, 'zz_fern');
     expect(first.v).toBe(2);
     expect(first.quest).toEqual([]);
-    expect(first.who).toBe('Fern');
+    expect(first.who).toBe('Cass');
     expect(first.hit).toBe(false);
     expect(first.top).toBe(true);
     if (page.viewportSize().width === 390) await shot(page, 'dialog-clear-' + mode);

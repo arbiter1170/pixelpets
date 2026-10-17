@@ -2,6 +2,78 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 05:10 ET: Merged Lizzy A (PR #90) into the reputation branch (build 20261017-0510)
+
+- What changed and why: Merged `main` (Lizzy A: English Lizzy, the dialog box clears the speaker, Hearthmoor 24 by 24; build 20261017-0404) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. Merge-integration test fix: the strict reputation cast check logs a console error for any speaker missing from `data/reputation.json`, and `tests/dialog_clear.spec.js` (from PR #90) used a made-up speaker, Fern, so all of its tests failed after the merge. The test now uses Cass, who is in the cast and has the same name length; Pip and Wren were already in the cast. Every assertion, position and box check is unchanged. The cast check and the game data are unchanged.
+- Files touched: merge of `main`; `tests/dialog_clear.spec.js`. Conflicts: `BACKLOG.md` (main's id text, plus the reputation line reworded to "in the game (Lizzy B, PR #91)"), `tests/README.md` (both paragraphs kept), `CHANGELOG.md` (both sides kept), `index.html` (this branch, restamped), `version.json`, `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261017-0510.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/dialog_clear.spec.js tests/reputation.spec.js tests/tutorial.spec.js tests/maps_b3.spec.js` at 320, 375, and 390: PP_TEST RESULT: PASS exit=0 passed=81 failed=0 flaky=0 skipped=0 time=148s. Full `npm run test:agent`: PP_TEST RESULT: FAIL exit=1 passed=1060 failed=2 flaky=0 skipped=12 time=2666s. Both failures were 30 s timeouts in a slow run, recorded as flakes: `[390] map.spec.js:26` (page load timed out) and `[375] maps_b8.spec.js:265`. Each passed 5 of 5 when rerun alone at that width. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): kept both sides. No id was renumbered. The next free id stays D183, as on `main`.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 04:03 ET: Merged the interior wall kit into the reputation branch (build 20261017-0403)
+
+- What changed and why: Merged `main` (every interior uses the shared wall kit, build 20261017-0352) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. This restamp is the build on the branch.
+- Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`, `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261017-0403.
+- Tests run and result (widths, checks): full `npm run test:agent` after the merge: PP_TEST RESULT: PASS exit=0 passed=1035 failed=0 flaky=0 skipped=12 time=1853s at 320, 375, and 390.
+- Decisions made (colour + reasoning): kept both sides. No decision file edited. The next free id stays D170, as on `main`.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 03:36 ET: Letter lines stay behind later story talk (build 20261017-0336)
+
+- What changed and why: The High Charity letter still answers by trust (D174), and it no longer covers a later line. Captain Lumen's council still starts, and after it he still says the road stays dark. Usual side and standing lines stay behind the letter. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `tests/reputation.spec.js`, `README.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0336.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js tests/lantern_council.spec.js --project=390` PASS exit=0 passed=13. Full `npm run test:agent` on that commit: PP_TEST RESULT: PASS exit=0 passed=1032 failed=0 flaky=0 skipped=12 time=1460s at 320, 375, and 390.
+- Decisions made (colour + reasoning): green. The letter sits in front of everyday chatter and behind a later story flag. No decision file edited.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 03:08 ET: Merged the music loops into the reputation branch (build 20261017-0308)
+
+- What changed and why: Merged `main` (the eight music loops, build 20261017-0208) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. This restamp is the build on the branch.
+- Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`, `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261017-0308.
+- Tests run and result (widths, checks): full `npm run test:agent` after the merge.
+- Decisions made (colour + reasoning): kept both sides. No decision file edited. The next free id stays D170, as on `main`.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 03:07 ET: Letter lines by trust (build 20261017-0307)
+
+- What changed and why: Once the High Charity letter is open, Lizzy, Rook, and Captain Lumen answer it from how much they trust you (D174). The five lines are the samples in `data/reputation.json`. Captain Lumen at 55 is warm for the Keepers and neutral for Glimmerwell. Lines you have not reached yet stay in front of the letter. The map files are unchanged. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0307.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390 -g "letter lines"` PASS exit=0 passed=1.
+- Decisions made (colour + reasoning): builds settled D174. The Rook's Crossroads letter uses the same High Charity samples and the same `story.hc_invite` gate. No decision file edited.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
+## 2026-10-17 03:06 ET: Acorn chip plate (build 20261017-0306)
+
+- What changed and why: The modern walk acorn chip is a nav plate (D179), 44 px tall, with the new acorn and a yellow number. A gain turns the plate blue for 300 ms. Reduced motion skips that, and the first time the count is drawn it does not flash. The header, the bag, and the shop keep the small acorn icon. 99999 still fits inside 48 cells. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `style.css`, `data/nav_art.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0306.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js tests/ux_review.spec.js --project=390` PASS exit=0 passed=16. The acorn tests at 320 and 390 PASS exit=0 passed=10. `python3 design/specs/nav_art_check.py` PASS.
+- Decisions made (colour + reasoning): builds settled D179. The wide plate is a 9-slice frame (left 19, mid 1, right 3), not a 22 px button. No decision file edited.
+- Anything left unfinished: letter lines by trust are the next packet on this branch.
+
+## 2026-10-17 02:59 ET: Compass button and the PEOPLE list (build 20261017-0259)
+
+- What changed and why: The compass opens PEOPLE (D176). On the modern walk screen it sits at the top of the left column and QUEST, BAG and MAP move down one slot. In the header it is the first button, 44 px so the tap target matches the gear. PEOPLE lists people you have met, most recent first, with a face, a 0-100 bar and a tier word. Fixed people sit at the end with a lock. An empty list says "Nobody yet. Go say hi." A face opens a card with the stored number, the tier word, and source lines from data. That source list is empty until later quests add rows. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `style.css`, `data/nav_art.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0259.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390` PASS exit=0 passed=8. Same spec plus `tests/ux_review.spec.js` at 320: PASS exit=0 passed=15. `tests/controls.spec.js` at 320 and 390: PASS exit=0 passed=42.
+- Decisions made (colour + reasoning): builds settled D176. The spec asked for a 32 px header compass "like the settings button"; that button is 44 px and tap targets stay at least 44 px, so the compass is 44. No decision file edited.
+- Anything left unfinished: the acorn chip and letter lines are the next packets on this branch.
+
+## 2026-10-17 02:50 ET: Reputation numbers, join penalty, and trust checks (build 20261017-0250)
+
+- What changed and why: Each person you can meet has a 0-100 reputation (D174, D175, D178). Rook starts at 40. Mom and Dad stay at 100. Warden Ilse and Clerk Wynn stay at 50. Joining a side, or switching through Rook, lowers met people of the other side by 10 once. The save stays v2 (`S.rep`, `S.repJoins`).
+- Files touched: `data/reputation.json`, `data/mapdata.js`, `tools/gen_mapdata.py`, `rep.js`, `save.js`, `game.js`, `index.html`, `sw.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0250.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390` — PP_TEST RESULT: PASS exit=0 passed=5 failed=0 flaky=0 skipped=0 time=3s.
+- Decisions made (colour + reasoning): builds settled D174, D175, D178. No decision file edited. Twenty-one map contacts missing from the cast table were added as faction none, base 50, so the startup check can pass without inventing a side.
+- Anything left unfinished: the compass, PEOPLE list, acorn chip, and letter lines are the next packets on this branch.
+
 ## 2026-10-17 03:04 ET: Hearthmoor grows south to School Lane (D170)
 
 - What changed and why: Hearthmoor grows from 24 by 20 to 24 by 24. Rows 0-18 stay put, and so does every door, warp, sign, respawn, and prop. The new path is School Lane. Lizzy stands at (9, 20) facing up, and Buddy stands at (10, 20) facing up. You walk down the lane and talk to her from the grass above. The intro box does not cover her. Save `v` stays 2.

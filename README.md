@@ -236,6 +236,18 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   `PixelPets.standing` (`{keepers: {points, tier, name}, glimmer: {...}, side, switches, chapter, via, canSwitch}`),
   `standingCfg()`, `standingCheck()`; with debug `setStanding(side, n)`, `switchSide(to, free)`, `rookOffer(to)`.
   The `switch_desk_glimmer` pixels stay in the art table and are retired. They are not placed.
+- Reputation (LIZZY_REP v0.2, D174, D175, D178): each person you can meet has a number from 0 to 100 in `S.rep`
+  (additive, `v` stays 2; only values that differ from their start are stored). Rook starts at 40. Mom and Dad stay at 100.
+  Warden Ilse and Clerk Wynn stay at 50. Everyone else starts at 50. The tiers are hostile 0-19, cool 20-39, neutral 40-59,
+  warm 60-79, and close 80-100. A person on your side counts as 10 higher in conversation, and a person on the other side
+  counts as 10 lower. The stored number does not move for that. Joining a side, and each later switch through Rook, lowers
+  every met person of the side you did not join by 10. People you meet after that stay at their start. `S.repJoins` remembers
+  how many joins already applied. Scenes move a number with `["rep", Name, n]`. `cond()` accepts `rep:Lizzy>=60`,
+  `rep:Lizzy<20`, `reptier:Lizzy=warm`, and, on that person's own lines, `reptier=warm`. The table is `data/reputation.json`.
+  `PixelPets.repGet`, `repTier`, `repEffective`, and `repCheck` are always available. Debug `repAdd(name, n)` writes a number.
+  The compass (`#repBtn`) is on screen from a new game. On the modern walk screen it is the top-left button; QUEST, BAG and MAP sit one slot lower. In the header it is the first button, 44 px. It opens PEOPLE. The list is people you have met, most recent first, each with a face, a 0-100 bar and a tier word. Fixed people sit at the end with a lock. Pets are not listed. With nobody met it says "Nobody yet. Go say hi." A face opens a card with the stored number, the tier word, and source lines from `data/reputation.json` (empty until later quests add rows). BACK on the card returns to the list. BACK on the list, or Esc, closes it.
+  The modern walk acorn chip is a nav plate, 44 px tall, just left of the gear. The number is yellow and starts after the acorn. When the count goes up the plate turns blue for a moment. Reduced motion skips that flash, and the first time the count is shown it does not flash. The header, the bag, and the shop keep the small acorn icon.
+  Once you have the High Charity letter (`story.hc_invite`), Lizzy, Rook, and Captain Lumen answer it by how much they trust you. The five lines are hostile, cool, neutral, warm, and close. The word they use is the effective tier, so Captain Lumen at 55 is warm for the Keepers and neutral for Glimmerwell. A first meeting, and a later story line such as the council, stay in front of the letter. Usual side and standing lines stay behind it.
 - Moves are learned on level-up (prompts after the battle; with 4 moves you pick one to forget, or don't learn) and on
   growing up (each line's grow-up move, then any level moves of the new form). Older saves get missed grow-up
   moves on their next visit ("<name> remembers something from growing up!").
