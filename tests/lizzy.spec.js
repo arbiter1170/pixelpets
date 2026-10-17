@@ -247,6 +247,7 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
       mira: blob.includes('¡Mira quién es!'),
       heart: blob.includes('corazón'),
       road: blob.includes("Pa' que no pases hambre"),
+      english: blob.includes('Look who it is!'),
       place: /puerto rico/i.test(blob),
       buddyLook: PixelPets.spriteLook('hm_buddy'),
       lizzy: PixelPets.spriteLook('hm_lizzy'),
@@ -256,9 +257,10 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
   });
   expect(before.present).toEqual(['hm_buddy', 'hm_lizzy']);
   expect(before.v).toBe(2);
-  expect(before.mira).toBe(true);
-  expect(before.heart).toBe(true);
-  expect(before.road).toBe(true);
+  expect(before.mira).toBe(false);
+  expect(before.heart).toBe(false);
+  expect(before.road).toBe(false);
+  expect(before.english).toBe(true);
   expect(before.place).toBe(false);
   expect(before.buddyLook).toBe(null);
   expect(before.lizzy.accessory).toBe('flower_clip');
@@ -269,7 +271,7 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
   await page.keyboard.press('ArrowLeft');
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'lizzy_intro' && PixelPets.scene.full);
   const first = await page.evaluate(() => PixelPets.scene.text);
-  expect(first).toContain('¡Mira quién es!');
+  expect(first).toContain('Look who it is!');
   if (phoneShots(page)) await shot(page, 'lizzy-scene');
   await playScene(page, ['Hi, Lizzy!', "He's so annoying."]);
   const after = await page.evaluate(() => ({
@@ -327,6 +329,51 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
   });
   expect(reach.doors.filter(d => !d.ok).map(d => d.id)).toEqual([]);
   expect(reach.warps.filter(w => !w.ok)).toEqual([]);
+});
+
+test('every Lizzy line on main is English and within 110 characters', async ({ page }) => {
+  await boot(page, save());
+  const lines = await page.evaluate(() => {
+    const out = [];
+    const walk = (n) => {
+      if (!Array.isArray(n)) return;
+      if (n[0] === 'say' && n[1] === 'Lizzy' && typeof n[2] === 'string') out.push(n[2]);
+      n.forEach(walk);
+    };
+    const takeObj = (o) => {
+      if (!o || o.name !== 'Lizzy' || !o.lines) return;
+      for (const v of Object.values(o.lines)) if (typeof v === 'string' && v[0] !== '@') out.push(v);
+    };
+    for (const src of Object.values(MAPDATA)) {
+      if (!src || typeof src !== 'object') continue;
+      if (src.scenes) for (const steps of Object.values(src.scenes)) walk(steps);
+      const maps = Object.assign({}, src.maps || {}, (src.slicePatch && src.slicePatch.maps) || {});
+      for (const m of Object.values(maps)) {
+        for (const o of [].concat(m.objs || [], m.addObjs || [], m.replaceObjs || [])) takeObj(o);
+      }
+    }
+    return { lines: out, v: PixelPets.state.v };
+  });
+  expect(lines.v).toBe(2);
+  expect(lines.lines.length).toBeGreaterThan(0);
+  const words = ['corazón', 'corazon', 'mira', 'bendito', 'provecho', 'wepa', 'gracias', "pa'", 'ay', 'fuera', 'buenas', 'noches'];
+  const hasWord = (line, word) => {
+    const s = line.toLowerCase(), w = word.toLowerCase();
+    let i = 0;
+    while ((i = s.indexOf(w, i)) >= 0) {
+      const before = i === 0 || !/[a-záéíóúñ]/i.test(s[i - 1]);
+      const after = i + w.length >= s.length || !/[a-záéíóúñ]/i.test(s[i + w.length]);
+      if (before && after) return true;
+      i += w.length;
+    }
+    return false;
+  };
+  const marks = /[¡¿ñáéíóúÑÁÉÍÓÚ]/;
+  for (const line of lines.lines) {
+    for (const word of words) expect(hasWord(line, word), line + ' / ' + word).toBe(false);
+    expect(line, line).not.toMatch(marks);
+    expect(Array.from(line).length, line).toBeLessThanOrEqual(110);
+  }
 });
 
 async function saidLines(page, choices) {
