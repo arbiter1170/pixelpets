@@ -1,4 +1,4 @@
-/* LIZZY_REP v0.2. LR5 reputation (D174, D175, D178), LR6 compass and PEOPLE (D176), LR8 acorn chip (D179).
+/* LIZZY_REP v0.2. LR5 reputation (D174, D175, D178), LR6 compass and PEOPLE (D176), LR8 acorn chip (D179), LR10 letter lines (D174).
    See tests/README.md. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, playScene, shot } = require('./helpers');
@@ -294,4 +294,52 @@ test('the acorn chip is a 44 px plate and flashes only on a gain', async ({ page
   const wide = await page.evaluate(() => { PixelPets.setMoney(99999); return new Promise(r => setTimeout(() => { const cr = document.querySelector('#fcAcorns').getBoundingClientRect(), nr = document.querySelector('#fcAcornN').getBoundingClientRect(); r({ cells: Math.round(cr.width / 2), inside: nr.right <= cr.right + 1 }); }, 250)); });
   expect(wide.inside).toBe(true);
   expect(wide.cells).toBeLessThanOrEqual(48);
+});
+
+test('letter lines follow the effective tier', async ({ page }) => {
+  await boot(page, starterSave());
+  const r = await page.evaluate(() => {
+    const samples = MAPDATA.reputation.letter_quests.samples;
+    const plain = {
+      school: PixelPets.npcLine('school_lizzy'),
+      lumen: null,
+    };
+    PixelPets.state.flags['story.met_lumen'] = true;
+    plain.lumen = PixelPets.npcLine('hq_lumen');
+    PixelPets.state.flags['story.hc_invite'] = true;
+    const raw = { hostile: 10, cool: 30, neutral: 50, warm: 70, close: 90 };
+    const lumenRaw = { hostile: 0, cool: 20, neutral: 40, warm: 55, close: 90 };
+    const ids = { Lizzy: ['school_lizzy', 'f5_lizzy', 'hm_lizzy'], Rook: ['rook_home'], 'Captain Lumen': ['hq_lumen'] };
+    const got = {};
+    PixelPets.state.rep = {};
+    PixelPets.state.flags['story.side'] = 'keepers';
+    for (const [name, list] of Object.entries(ids)) {
+      got[name] = {};
+      for (const tier of Object.keys(raw)) {
+        PixelPets.state.rep[name] = name === 'Captain Lumen' ? lumenRaw[tier] : raw[tier];
+        const line = PixelPets.npcLine(list[0]);
+        got[name][tier] = { line, same: list.every(id => PixelPets.npcLine(id) === line), len: (line || '').length, sample: samples[name][tier] };
+      }
+    }
+    PixelPets.state.rep['Captain Lumen'] = 55;
+    PixelPets.state.flags['story.side'] = 'keepers';
+    const keepers = { tier: PixelPets.repTier('Captain Lumen'), line: PixelPets.npcLine('hq_lumen') };
+    PixelPets.state.flags['story.side'] = 'glimmer';
+    const glimmer = { tier: PixelPets.repTier('Captain Lumen'), line: PixelPets.npcLine('hq_lumen') };
+    return { plain, got, keepers, glimmer, v: PixelPets.state.v };
+  });
+  expect(r.plain.school).toBe('Class is out! Want to help me wipe the board? Buddy already tried. Now it\'s muddy.');
+  expect(r.plain.lumen).toBe('Citizen. Hats off. Then you may speak.');
+  for (const name of ['Lizzy', 'Rook', 'Captain Lumen']) {
+    for (const tier of ['hostile', 'cool', 'neutral', 'warm', 'close']) {
+      expect(r.got[name][tier].same, name + ' ' + tier).toBe(true);
+      expect(r.got[name][tier].line).toBe(r.got[name][tier].sample);
+      expect(r.got[name][tier].len).toBeLessThanOrEqual(110);
+    }
+  }
+  expect(r.keepers.tier).toBe('warm');
+  expect(r.keepers.line).toBe(r.got['Captain Lumen'].warm.sample);
+  expect(r.glimmer.tier).toBe('neutral');
+  expect(r.glimmer.line).toBe(r.got['Captain Lumen'].neutral.sample);
+  expect(r.v).toBe(2);
 });

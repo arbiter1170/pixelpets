@@ -2004,6 +2004,31 @@ const solid = (x, y) => solidTile(x, y) || !!blockerAt(x, y);
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
+// Letter lines (D174). The design JSON stays verbatim. Samples live in data/reputation.json and are gated on story.hc_invite.
+// Intro keys (!story.met_* and lines that start a scene) stay first. The letter sits above else.
+(function spliceRepLetters(){
+  const samples = MD.reputation && MD.reputation.letter_quests && MD.reputation.letter_quests.samples;
+  if (!samples) return;
+  const tiers = ['close', 'warm', 'neutral', 'cool', 'hostile'];
+  const introKey = (k, v) => (typeof k === 'string' && k.startsWith('!story.met_')) || (typeof v === 'string' && v.charAt(0) === '@');
+  for (const m of Object.values(WORLD)) for (const o of m.objs || []) {
+    if (!o || o.pet || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
+    const name = objName(o), bag = samples[name];
+    if (!bag || typeof bag !== 'object') continue;
+    const intro = [], rest = [];
+    for (const [k, v] of Object.entries(o.lines || {})) (introKey(k, v) ? intro : rest).push([k, v]);
+    const lines = {};
+    for (const [k, v] of intro) lines[k] = v;
+    for (const tier of tiers) {
+      const text = bag[tier];
+      if (typeof text !== 'string') continue;
+      const key = 'story.hc_invite&reptier=' + tier;
+      if (!(key in lines)) lines[key] = text;
+    }
+    for (const [k, v] of rest) if (!(k in lines)) lines[k] = v;
+    o.lines = lines;
+  }
+})();
 // Rook wears a Junior Bright lanyard once Glimmerwell has claimed him: on the glimmer path from the side
 // pick, and on either path after Fernbrook (story.slice_end) or the quarry sale. It comes off when he
 // converts (rook_end ally) or when he quits (story.rook_quit, D136).

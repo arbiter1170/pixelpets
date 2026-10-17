@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 03:07 ET: Letter lines by trust (build 20261017-0307)
+
+- What changed and why: Once the High Charity letter is open, Lizzy, Rook, and Captain Lumen answer it from how much they trust you (D174). The five lines are the samples in `data/reputation.json`. Captain Lumen at 55 is warm for the Keepers and neutral for Glimmerwell. Lines you have not reached yet stay in front of the letter. The map files are unchanged. Save `v` stays 2.
+- Files touched: `game.js`, `index.html`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `BACKLOG.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0307.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390 -g "letter lines"` PASS exit=0 passed=1.
+- Decisions made (colour + reasoning): builds settled D174. The Rook's Crossroads letter uses the same High Charity samples and the same `story.hc_invite` gate. No decision file edited.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
 ## 2026-10-17 03:06 ET: Acorn chip plate (build 20261017-0306)
 
 - What changed and why: The modern walk acorn chip is a nav plate (D179), 44 px tall, with the new acorn and a yellow number. A gain turns the plate blue for 300 ms. Reduced motion skips that, and the first time the count is drawn it does not flash. The header, the bag, and the shop keep the small acorn icon. 99999 still fits inside 48 cells. Save `v` stays 2.
