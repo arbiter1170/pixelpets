@@ -108,6 +108,8 @@ const PPSound = (() => {
   // Square waves sound louder than triangles at the same level, so they run at ~1/3 the volume. Everything is under ~0.8 s except the evolution build-up.
   const SFX = {
     tap:      t => tone(84, t, 0.04, 'square', 0.15),
+    // LR4: two soft tail thumps over a short fur brush. About 250 ms. No music duck.
+    pet:      t => { noise(t, 0.05, 0.08, 900); tone(48, t + 0.02, 0.07, 'triangle', 0.45); tone(48, t + 0.18, 0.07, 'triangle', 0.4); },
     feed:     t => { tone(f(620), t, 0.08, 'triangle', 0.5, 330); tone(f(660), t + 0.13, 0.08, 'triangle', 0.5, 350); tone(91, t + 0.3, 0.07, 'square', 0.12); },
     play:     t => seq(t, [72, 76, 79, 84], 0.06, 0.09, 'triangle', 0.45),
     rest:     t => seq(t, [79, 76, 72], 0.17, 0.24, 'triangle', 0.3),
@@ -632,7 +634,9 @@ const PPSound = (() => {
     begin();
   }
 
+  let petAt = 0;
   function play(name, delay){
+    if (name === 'pet' && performance.now() - petAt < 300) return false;
     const sid = /^stinger_/.test(name) && STINGERS[name.slice(8)] ? name.slice(8) : null;
     if (muted || (!SFX[name] && !sid)) return false;
     played.push(name); if (played.length > 50) played.shift();
@@ -642,7 +646,7 @@ const PPSound = (() => {
     if (ac.state !== 'running' && performance.now() - resumeAt > 1000) return false;   // not resuming from a gesture: stay silent
     if (sid) { try { return stinger(sid, delay); } catch(e) { return false; } }
     if (name === 'step' && stSounding()) return false;
-    try { SFX[name](ac.currentTime + 0.01 + (delay || 0)); return true; } catch(e) { return false; }
+    try { SFX[name](ac.currentTime + 0.01 + (delay || 0)); if (name === 'pet') petAt = performance.now(); return true; } catch(e) { return false; }
   }
   function setMuted(m){
     muted = !!m;

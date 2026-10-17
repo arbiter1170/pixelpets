@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 08:10 ET: Flat 5B is 18 by 16, and Buddy is home (build 20261017-0810)
+
+- What changed and why: Amberhill Flats 5B grows from 14 by 12 to 18 by 16. The bathroom, the three bedrooms, the drip, and Buddy's bed are in. Lizzy and Buddy are home only after you have met her, and Buddy also sits beside her desk at school. Patting him plays a short pet sound and gives 1 bond once a day. Windows sit on the face row at columns 3, 9 and 15. Morolow's floor is redrawn as calm planks (7 px boards, a dark groove, a few paint flecks) because the supplied tile broke the plank rule. Lizzy's room and Ossabell's room keep the honey floor. Save `v` stays 2.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `sprites.js`, `game.js`, `sfx.js`, `quests.js`, `tests/lizzy.spec.js`, `tests/interior_walls.spec.js`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0810.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/lizzy.spec.js tests/interior_walls.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0 skipped=0 time=17s. The other two widths follow with the later packets. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D173 and D181, settled earlier, built here. D184's plank rule applied to `floor_paint_plank` only. No new decision id. D177, D180 and D182 stay for the next commits on this branch.
+- Anything left unfinished: the leak quest, the moral step, and the unlock tips.
+
 ## 2026-10-17 06:48 ET: Merged the reputation work (PR #91) into the floor fix (build 20261017-0648)
 
 - What changed and why: Merged `main` (Lizzy B, the reputation work, build 20261017-0510) and kept the calm floors. `data/mapdata.js` was regenerated. Floors only: flat 5B (`hm_flats_5`) still uses `floor_honey`. Save `v` stays 2.

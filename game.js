@@ -3200,7 +3200,8 @@ function wallPart(x, y, m){
     return 'cap_n';
   }
   if (ch === 'W') {
-    if (wins.indexOf(x) >= 0) return 'face_win';
+    // Windows are the face row only. An inner W row (flat 5B's hall wall) stays a plain face.
+    if (y === 1 && wins.indexOf(x) >= 0) return 'face_win';
     if (doors.indexOf(x) >= 0) return 'face_door';
     if (x === 1) return 'face_l';
     if (x === w - 2) return 'face_r';
@@ -3310,7 +3311,7 @@ function drawMap(t){
   const shade = wallMaskOf(CUR);   // floor contact shadow, under props and actors
   if (shade) g.drawImage(shade, -cx, -cy);
   for (const o of CUR.objs) if (o.kind === 'door' && present(o) && (tileAt(o.x, o.y - 1) === 'H' || tileAt(o.x, o.y) === 'H')) drawDoor(g, o, cx, cy);
-  for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) g.drawImage(WART[o.sprite], o.x*TS - cx, o.y*TS - cy);   // wall/floor decals: drawn, never block, never talk
+  for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) { const fr = artFrame(WART[o.sprite], t); if (fr) g.drawImage(fr, o.x*TS - cx, o.y*TS - cy); }   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
     g.fillStyle = canSpot(o) ? 'rgba(244,80,80,.35)' : 'rgba(160,160,160,.3)'; sightLine(o).forEach(c => g.fillRect(c.x*TS - cx, c.y*TS - cy, TS, TS)); }
@@ -3575,12 +3576,36 @@ function drawObjectiveCue(g, cx, cy, t){
 const WART = buildWorldArt();
 addExteriorArt(TILES, WART);
 const drawArt = (g, img, X, Y) => g.drawImage(img, X - (img.width - TS) / 2, Y - (img.height - TS));   // 32x32 art stands bottom-centred on its one blocking cell
+// Animated props and decals are arrays of canvases with .ms. Reduced motion stays on frame 0.
+function artFrame(a, t){
+  if (!a) return null;
+  if (!Array.isArray(a)) return a;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const n = a.length || 1;
+  return a[reduce ? 0 : Math.floor(t / (a.ms || 400)) % n];
+}
+// Buddy at home and at school (D181). Sit and tail-up trade every 500 ms. Eyes close for 120 ms every 4 s.
+// Night curls him up with a slow z. Reduced motion is the sit frame, still.
+function drawBuddy(g, X, Y, t){
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const night = ENV && ENV.tags && ENV.tags.indexOf('night') >= 0;
+  g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
+  let img = WART.buddy_sit;
+  if (!reduce && night && WART.buddy_sleep) img = WART.buddy_sleep;
+  else if (!reduce) {
+    const blink = (t % 4000) < 120;
+    img = blink && WART.buddy_blink ? WART.buddy_blink : (Math.floor(t / 500) % 2 ? WART.buddy_tail_up : WART.buddy_sit);
+  }
+  g.drawImage(img, X - 1, Y - 2);
+  if (night && !reduce && WART.buddy_z_0) g.drawImage(Math.floor(t / 2000) % 2 ? WART.buddy_z_1 : WART.buddy_z_0, X + 4, Y - 12);
+}
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
+    if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
     if (o.pet) { const [ln, st] = String(o.pet).split('/'), si = SP_INDEX[ln];
-      if (si != null) { g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2); g.drawImage(sprSet(si, +st || 0, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
+      if (si != null) { g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2); g.drawImage(sprSet(si, +(o.stage != null ? o.stage : st) || 0, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
       return; }
     const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
@@ -3592,7 +3617,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     }
     g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
-  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) { const reduce = a.ms && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; drawArt(g, Array.isArray(a) ? a[reduce ? 0 : Math.floor(t / (a.ms || 400)) % 2] : a, X, Y); } }
+  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) drawArt(g, artFrame(a, t), X, Y); }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') { const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(sprSet(si, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
 }
@@ -4041,7 +4066,7 @@ async function execStep(st){
       const v = b === '$line' ? sc.vars.line : b;
       // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
       const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
-      sc.view.flags[a] = v; pend(() => { S.flags[a] = v; if (joinSnap) noteRepJoin(joinSnap); });
+      sc.view.flags[a] = v; pend(() => { S.flags[a] = v; if (a === 'story.buddy_pat_today' && v) S.flags['daily.buddy_pat'] = dayKey(Date.now()); if (joinSnap) noteRepJoin(joinSnap); });
       // D135: freeing or walking away always credits the Keepers meter. Shipping credits Glimmerwell. Once each.
       if (a === 'story.rc_end' && (v === 'freed' || v === 'walked')) await execStep(['standing', 'keepers', null, 'rc_freed_k']);
       if (a === 'story.rc_end' && v === 'shipped') await execStep(['standing', 'glimmer', null, 'rc_shipped_g']);
@@ -4703,6 +4728,11 @@ const fadeQ = [], sparkle = { id: null, until: 0 };
 function fadeTick(sample){
   if (!S) return;
   const d = dayKey(Date.now());
+  // Buddy's daily pat (D181). The story flag clears on the day roll. A same-day reload keeps it.
+  if (S.flags && S.flags['story.buddy_pat_today']) {
+    if (!S.flags['daily.buddy_pat']) S.flags['daily.buddy_pat'] = d;
+    else if (S.flags['daily.buddy_pat'] !== d) { delete S.flags['story.buddy_pat_today']; delete S.flags['daily.buddy_pat']; }
+  } else if (S.flags && S.flags['daily.buddy_pat'] && S.flags['daily.buddy_pat'] !== d) delete S.flags['daily.buddy_pat'];
   for (const p of allPets()) {
     if (!isFaded(p)) continue;
     if (!p.fc || typeof p.fc !== 'object') p.fc = { d, sum: 0, n: 0 };

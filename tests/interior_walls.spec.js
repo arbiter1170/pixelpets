@@ -234,7 +234,7 @@ const ROOMS = [
   { id: 'hc_mall_2', skin: 'hc_mall_up', windows: [4, 8], doors: [], jambs: [[4, 10, 'jamb_l'], [6, 10, 'jamb_r']] },
   { id: 'hc_marina_in', skin: 'hc_marina', windows: [3, 6], doors: [], jambs: [[3, 6, 'jamb_l'], [5, 6, 'jamb_r']] },
   { id: 'hc_school_in', skin: 'hc_school', windows: [3, 6], doors: [], jambs: [[3, 6, 'jamb_l'], [5, 6, 'jamb_r']] },
-  { id: 'hm_flats_5', skin: 'flats_home', windows: [3, 9], doors: [], jambs: [[0, 5, 'jamb_n'], [0, 7, 'jamb_s']] },
+  { id: 'hm_flats_5', skin: 'flats_home', windows: [3, 9, 15], doors: [], jambs: [[0, 5, 'jamb_n'], [0, 7, 'jamb_s']] },
   { id: 'hm_flats_lobby', skin: 'flats_lobby', windows: [], doors: [3, 4, 7, 8], jambs: [[3, 11, 'jamb_l'], [5, 11, 'jamb_r']] },
   { id: 'hm_home_up', skin: 'house_loft', windows: [3, 5], doors: [], jambs: [] },
   { id: 'hm_hq_f1', skin: 'house_hq', windows: [4], doors: [], jambs: [[5, 15, 'jamb_l'], [7, 15, 'jamb_r']] },
