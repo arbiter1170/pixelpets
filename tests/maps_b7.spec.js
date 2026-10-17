@@ -123,7 +123,7 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap', a
   expect(report.floorCap).toEqual([]);
   expect(report.outdoor).toEqual({ w: 20, h: 16, dream: null, step: 'p', roof: 'R', door: { x: 5, y: 7 } });
   // 9 house rooms + 4 dream rooms + 14 High Charity rooms + the two Fernbrook rooms + the schoolhouse, the lobby, and flat 5B.
-  expect(report.skins).toEqual({ n: 32, home: 'house_floor_a', lab: 'lab_floor', labVar: 'lab_floor_bay,lab_floor,lab_floor_focus,lab_floor_records' });
+  expect(report.skins).toEqual({ n: 32, home: 'floor_pine', lab: 'lab_floor', labVar: 'lab_floor_bay,lab_floor,lab_floor_focus,lab_floor_records' });
   const floors = new Set(), walls = new Set();
   for (const row of report.out) {
     const room = ROOMS.find(r => r.id === row.id);
@@ -225,6 +225,6 @@ test('the observatory door still leaves, and a save on the new desk snaps to saf
   expect(lab.walk).toBe(216);
   expect(lab.share).toBeLessThanOrEqual(0.7);
   expect(lab.cap).toEqual([]);
-  expect(lab.home === 'house_floor_a' || lab.home === 'house_floor_b' || lab.home === 'house_honey_c').toBe(true);
+  expect(lab.home === 'floor_pine' || lab.home === 'floor_pine_b' || lab.home === 'floor_pine_c').toBe(true);
   expect(lab.v).toBe(2);
 });

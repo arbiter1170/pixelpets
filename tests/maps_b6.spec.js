@@ -305,6 +305,6 @@ test('a save standing on a wall snaps to safe, and the lab bay is unchanged', as
   expect(lab.plain).toBe('lab_floor');
   expect(lab.walk).toBe(216);
   expect(lab.share).toBeLessThanOrEqual(0.7);
-  expect(['house_floor_a', 'house_floor_b', 'house_honey_c']).toContain(lab.home);
+  expect(['floor_pine', 'floor_pine_b', 'floor_pine_c']).toContain(lab.home);
   expect(lab.cap).toEqual([]);
 });

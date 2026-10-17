@@ -12,6 +12,8 @@ const ORANGE = '#ef7d57';
 const FILL = {
   floor_honey: WARM.G, floor_honey_b: WARM.A, floor_honey_c: WARM.G,
   floor_warden: ROOM.I, floor_warden_b: ROOM.I, floor_warden_c: WARM.G,
+  floor_calloway: WARM.G, floor_calloway_b: WARM.G, floor_calloway_c: WARM.G,
+  floor_wardstone: ROOM.I, floor_wardstone_b: ROOM.I, floor_wardstone_c: ROOM.I,
 };
 const SLATE = '#7a8aa0';
 const HQ_FILL = {
@@ -82,12 +84,12 @@ test('Rook\'s House and the Warden\'s Lodge render their new floors', async ({ p
   for (const row of setup.shares) expect(row.share, row.id + ' ' + row.tile).toBeLessThanOrEqual(0.7);
   expect(setup.missingRook).toEqual([]);
   expect(setup.missingLodge).toEqual([]);
-  expect(setup.rook.remap).toEqual({ '#': 'wall_rose', W: 'wall_rose_face', W2: 'wall_rose_win', '.': 'floor_honey', '=': 'rug_calloway', m: 'mat_calloway' });
+  expect(setup.rook.remap).toEqual({ '#': 'wall_rose', W: 'wall_rose_face', W2: 'wall_rose_win', '.': 'floor_calloway', '=': 'rug_calloway', m: 'mat_calloway' });
   expect(setup.rook.decal).toEqual({ v: 'wall_shadow_rose', u: 'window_light_rose' });
-  expect(setup.rook.variants.floor_honey.map(row => row[0])).toEqual(['floor_honey_b', 'floor_honey_c']);
-  expect(setup.lodge.remap).toEqual({ '#': 'wall_warden', W: 'wall_warden_face', W2: 'wall_warden_win', '.': 'floor_warden', '=': 'rug_warden', m: 'mat_warden' });
+  expect(setup.rook.variants.floor_calloway.map(row => row[0])).toEqual(['floor_calloway_b', 'floor_calloway_c']);
+  expect(setup.lodge.remap).toEqual({ '#': 'wall_warden', W: 'wall_warden_face', W2: 'wall_warden_win', '.': 'floor_wardstone', '=': 'rug_warden', m: 'mat_warden' });
   expect(setup.lodge.decal).toEqual({ v: 'wall_shadow_warden', u: 'window_light_warden' });
-  expect(setup.lodge.variants.floor_warden.map(row => row[0])).toEqual(['floor_warden_b', 'floor_warden_c']);
+  expect(setup.lodge.variants.floor_wardstone.map(row => row[0])).toEqual(['floor_wardstone_b', 'floor_wardstone_c']);
   expect(setup.hq.remap).toEqual(setup.up.remap);
   expect(setup.hq.remap['.']).toBe('floor_keep');
   expect(setup.hq.remap['#']).toBe('wall_keep');
