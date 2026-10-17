@@ -134,9 +134,9 @@
       "id": "hm_lizzy",
       "name": "Lizzy",
       "look": "lizzy",
-      "x": 6,
-      "y": 18,
-      "facing": "left",
+      "x": 9,
+      "y": 20,
+      "facing": "up",
       "when": [
        "story.starter_received",
        "!story.lizzy_met"
@@ -148,9 +148,9 @@
       "id": "hm_buddy",
       "name": "Buddy",
       "pet": "fetch/1",
-      "x": 7,
-      "y": 18,
-      "facing": "left",
+      "x": 10,
+      "y": 20,
+      "facing": "up",
       "when": [
        "story.starter_received",
        "!story.lizzy_met"

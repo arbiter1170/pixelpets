@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 03:04 ET: Hearthmoor grows south to School Lane (D170)
+
+- What changed and why: Hearthmoor grows from 24 by 20 to 24 by 24. Rows 0-18 stay put, and so does every door, warp, sign, respawn, and prop. The new path is School Lane. Lizzy stands at (9, 20) facing up, and Buddy stands at (10, 20) facing up. You walk down the lane and talk to her from the grass above. The intro box does not cover her. Save `v` stays 2.
+- Files touched: `data/maps_slice.json`, `data/mapdata.js`, `data/detail_lizzy.json`, `tests/lizzy.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0304.
+- Tests run and result (widths, checks): full suite result is filled in after `npm run test:agent`. `node tools/pp_test.js tests/lizzy.spec.js tests/maps_b4.spec.js` already passed: PP_TEST RESULT: PASS exit=0 passed=51 failed=0 flaky=0 skipped=0 time=61s. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D170 red, settled by Vincent Oct 17, 2026. Reshapes an Act 1 town, the exception to D81. No new id. No id was renumbered.
+- Anything left unfinished: the other Lizzy packets are not this PR.
+
 ## 2026-10-17 02:57 ET: Dialog box clears the speaker (D171)
 
 - What changed and why: When a person on the map would stand under the text box, the box moves to the top. If the top would cover them too, the view eases over 150 ms so they sit in the top of the screen, clamped to the map. Reduced motion jumps. Narration, the phone, and a letter overlay stay at the bottom. A say step can force `{"box":"top"|"bottom"}`. The choice stays put for a run of lines from the same speaker. Save `v` stays 2.
