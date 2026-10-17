@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 09:44 ET: The leak choice is narration (build 20261017-0944)
+
+- What changed and why: "How do you fix this?" no longer wears Mr. Gristle's name. The three answers stay the same, including "Make him fix it", so the prompt is narration. Standing and trust are unchanged. Save `v` stays 2.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `game.js`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0944.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/leak5b.spec.js` at 320, 375 and 390. PP_TEST RESULT: PASS exit=0 passed=12 failed=0 flaky=0 skipped=0 time=39s. Other choices do not pass a speaker, so their nameplates are unchanged.
+- Decisions made (colour + reasoning): no new id. The spec prompt stays "How do you fix this?"; only the speaker nameplate is cleared.
+- Anything left unfinished: none.
+
 ## 2026-10-17 08:28 ET: Compass tour step and unlock tips (build 20261017-0828)
 
 - What changed and why: The opening tour points at the compass before the last card. A save already on that last card skips it. Nine later tips (trust, the phone, a side, a side quest, a big choice, switching sides, a letter, a Lantern, and growing up) each show once, 600 ms after the walk screen is quiet. SKIP or a tap outside puts one away. Settings has Tips on/off and Replay tips. Save `v` stays 2.

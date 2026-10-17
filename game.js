@@ -4248,6 +4248,7 @@ async function execStep(st){
     }
     case 'choice': {
       sc.skip = false;
+      if (typeof c === 'string') sc.who = c;   // optional speaker; "" is narration, so the prompt is not the last person who spoke
       const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
       if (!opts.length) return;
       noteMoralChoice(opts);
