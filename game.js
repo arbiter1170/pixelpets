@@ -659,6 +659,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
       c.style.width = W + 'px'; c.style.height = Math.round(c.height * f) + 'px'; }
     else { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; }
   }
+  refitSceneBox();
 }
 window.addEventListener('resize', () => { fitAll(); if (tut.on) tutPlace(); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
@@ -2071,7 +2072,7 @@ function safeSpot(){
 /* ---------- walk / map ---------- */
 const DIRS = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
 const walk = { fx: 3, fy: 3, from: null, to: null, prog: 0, dpad: null, drag: null, key: null, queued: null, target: null,
-  intro: 0, cam: { x: 0, y: 0 }, path: null, arrive: null, aim: null, repath: null };
+  intro: 0, cam: { x: 0, y: 0 }, camBias: { x: 0, y: 0, from: 0, to: 0, t0: 0, ease: false, jumped: false }, path: null, arrive: null, aim: null, repath: null };
 function clearMoves(){ walk.dpad = walk.drag = walk.key = walk.queued = walk.target = null; walk.path = walk.arrive = walk.aim = walk.repath = null; wild.chase = null; $$('.dp').forEach(b => b.classList.remove('on')); }
 const moveHeld = () => !!(walk.dpad || walk.key || walk.drag);
 const CANT_REACH = "Can't get there from here.";   // unreachable tap (Vincent, Oct 15). Straight apostrophe. Fits a toast.
@@ -3251,14 +3252,21 @@ function wallMaskOf(m){
   }
   return wallMasks[m.id] = c;
 }
+function tickCamBias(t){
+  const b = walk.camBias; if (!b || !b.ease) return;
+  const k = Math.min(1, (t - b.t0) / 150);
+  const e = 1 - (1 - k) * (1 - k);
+  b.y = b.from + (b.to - b.from) * e;
+  if (k >= 1) { b.y = b.to; b.ease = false; }
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
+  // INTERIORS §3.4: a map narrower/shorter than the canvas is centred, the rest filled with PAL.k
+  // D171: camBias is added before the clamp so a covered speaker can sit in the top 40% without leaving the map.
+  syncWalkCam(t);
   const VW = c.width, VH = c.height;
   const px_ = walk.fx * TS, py_ = walk.fy * TS;
-  // INTERIORS §3.4: a map narrower/shorter than the canvas is centred, the rest filled with PAL.k
-  walk.cam.x = MW * TS <= VW ? -Math.floor((VW - MW * TS) / 2) : Math.round(clamp(px_ + 8 - VW/2, 0, MW*TS - VW));
-  walk.cam.y = MH * TS <= VH ? -Math.floor((VH - MH * TS) / 2) : Math.round(clamp(py_ + 8 - VH/2, 0, MH*TS - VH));
   const cx = walk.cam.x, cy = walk.cam.y, wf = Math.floor(t / 500) % 2;
   g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH);
   for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
@@ -3942,7 +3950,8 @@ function endScene(){
   if (sc.npc) delete mapRT.face[sc.npc.id];
   if (sc.npc && (sc.npc.kind === 'npc' || sc.npc.kind === 'trainer')) bump.talked = sc.npc.id;
   scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
-  $('#ovScene').hidden = true; document.body.classList.remove('scene-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+  $('#ovScene').hidden = true; $('#ovScene').classList.remove('top'); document.body.classList.remove('scene-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+  clearCamBias();
   lockTabs(false); placeFollower(); renderKeeperName(); updateHUD(); save();
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
   for (const o of CUR.objs) if (o.kind === 'trigger' && !(Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y) <= (o.r || 0))) delete mapRT.trig[o.id];
@@ -4008,7 +4017,8 @@ async function execStep(st){
         await sayBox('', playerName() + ' got ' + acorns(300) + '!');
         if (!scene) return;
       }
-      await sayBox(a, tx); return;
+      const box = c && typeof c === 'object' ? c.box : null;
+      await sayBox(a, tx, box); return;
     }
     case 'choice': {
       sc.skip = false;
@@ -4226,7 +4236,7 @@ async function sceneEncounter(id){
 const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['story.starter_line']] || t.counterTeam.ember)) || [];
 
 /* --- the bottom text box (#ovScene) --- */
-function sbRender(who, text){
+function sbRender(who, text, box){
   const key = who && LOOK_OF_NAME[who];
   const look = key ? npcLook({ look: key, name: who }) : null;
   $('#sbWho').textContent = who || ''; $('#sbWho').hidden = !who;
@@ -4234,14 +4244,106 @@ function sbRender(who, text){
   const pc = $('#sbPortrait'), showP = !!look && window.innerWidth >= 360;
   pc.hidden = !showP; $('#sbox').classList.toggle('has-p', showP);
   if (showP) { const g = ctx(pc); g.clearRect(0, 0, 18, 18); g.drawImage(keeperFrames(look).down[0], 0, 0); }
+  placeSceneBox(who, box);
 }
-function sayBox(who, text){
+function sayBox(who, text, box){
   return new Promise(res => {
     if (scene) { scene.boxes++; scene.who = who || ''; }
-    sbRender(who, ''); $('#sbEcho').textContent = ''; $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+    $('#sbEcho').textContent = ''; $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+    sbRender(who, text, box);   // full text, so the box height used for D171 is the finished line
+    $('#sbText').textContent = '';
     sbox.text = text; sbox.t0 = now(); sbox.full = false; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.resolve = res; sbox.mode = 'say';
     $('#sbSkip').hidden = false; $('#sbNext').hidden = true;
   });
+}
+// D171: the dialog box never covers the speaker. Narrator lines, the phone, and a letter overlay keep the bottom box.
+// A 4th say element {"box":"top"|"bottom"} wins. One choice is cached for a run of lines from the same speaker.
+const prefersReduced = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+function setCamBias(y){
+  const b = walk.camBias; y = +y || 0;
+  if (Math.abs(b.to - y) < 0.5 && !b.ease && Math.abs(b.y - y) < 0.5) return;
+  b.x = 0;
+  if (prefersReduced()) { b.y = b.from = b.to = y; b.ease = false; b.jumped = true; b.t0 = 0; return; }
+  b.from = b.y; b.to = y; b.t0 = performance.now(); b.ease = Math.abs(b.from - y) >= 0.5; b.jumped = false;
+  if (!b.ease) b.y = y;
+}
+function clearCamBias(){
+  const b = walk.camBias; if (!b) return;
+  b.x = b.y = b.from = b.to = 0; b.ease = false; b.jumped = false; b.t0 = 0;
+}
+function findSpeaker(who){
+  if (!who || !CUR) return null;
+  const vis = CUR.objs.filter(present);
+  return vis.find(o => o.name === who) || vis.find(o => o.id === who) || null;
+}
+function boxRectsOverlap(a, b){
+  if (!a || !b || a.width <= 0 || b.width <= 0) return false;
+  return a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y;
+}
+function speakerScreenRect(o){
+  const c = $('#mapCanvas'), r = c.getBoundingClientRect();
+  if (!o || !r.width || !c.width) return null;
+  const q = objPos(o), k = r.width / c.width, margin = 8, head = 6;
+  const x = q.x * TS - walk.cam.x - margin, y = q.y * TS - walk.cam.y - margin - head;
+  const w = TS + margin * 2, h = TS + margin * 2 + head;
+  const left = r.left + x * k, top = r.top + y * k;
+  return { x: left, y: top, width: w * k, height: h * k, right: left + w * k, bottom: top + h * k };
+}
+function sboxScreenRect(){
+  const r = $('#sbox').getBoundingClientRect();
+  return { x: r.left, y: r.top, width: r.width, height: r.height, right: r.right, bottom: r.bottom };
+}
+function biasForSpeaker(o){
+  const VH = $('#mapCanvas').height; if (!VH) return 0;
+  const q = objPos(o), feet = (q.y + 1) * TS, target = feet - 0.4 * VH, base = walk.fy * TS + 8 - VH / 2;
+  return target - base;
+}
+function syncWalkCam(t){
+  const c = $('#mapCanvas'); if (!c || !c.width || !walk) return;
+  tickCamBias(t == null ? performance.now() : t);
+  const VW = c.width, VH = c.height, px_ = walk.fx * TS, py_ = walk.fy * TS;
+  const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
+  walk.cam.x = MW * TS <= VW ? -Math.floor((VW - MW * TS) / 2) : Math.round(clamp(px_ + 8 - VW/2 + bx, 0, MW*TS - VW));
+  walk.cam.y = MH * TS <= VH ? -Math.floor((VH - MH * TS) / 2) : Math.round(clamp(py_ + 8 - VH/2 + by, 0, MH*TS - VH));
+}
+function chooseSceneBox(who){
+  const o = findSpeaker(who), ov = $('#ovScene');
+  if (!o) return 'bottom';   // nobody on this map: the rule is off, and the camera nudge stays until the scene ends
+  syncWalkCam();
+  const spr = speakerScreenRect(o);
+  ov.classList.remove('top');
+  if (!spr || !boxRectsOverlap(spr, sboxScreenRect())) { setCamBias(0); return 'bottom'; }
+  ov.classList.add('top');
+  if (!boxRectsOverlap(spr, sboxScreenRect())) { setCamBias(0); return 'top'; }
+  ov.classList.remove('top');
+  setCamBias(biasForSpeaker(o));
+  return 'bottom';
+}
+// A font load or resize can grow the box over a speaker after the choice was cached. Recompute only when the box now covers them.
+function refitSceneBox(){
+  if (!scene || !scene.who || scene.boxPin) return;
+  const o = findSpeaker(scene.who); if (!o) return;
+  syncWalkCam();
+  const spr = speakerScreenRect(o);
+  if (!spr || !boxRectsOverlap(spr, sboxScreenRect())) return;
+  scene.boxCache = null;
+  placeSceneBox(scene.who);
+}
+function placeSceneBox(who, box){
+  const ov = $('#ovScene');
+  if (!scene) { ov.classList.remove('top'); return; }
+  if (!$('#ovPhone').hidden) return;   // the phone keeps today's box; a letter overlay does too (it is not this say step)
+  const override = box === 'top' || box === 'bottom' ? box : null;
+  if (!who) { ov.classList.remove('top'); scene.boxMode = 'bottom'; scene.boxCache = null; scene.boxPin = null; return; }
+  if (!override && scene.boxCache && scene.boxCache.who === who) {
+    ov.classList.toggle('top', scene.boxCache.mode === 'top'); scene.boxMode = scene.boxCache.mode; return;
+  }
+  if (override) { scene.boxPin = override; ov.classList.toggle('top', override === 'top'); scene.boxMode = override; scene.boxCache = null; return; }
+  scene.boxPin = null;
+  const mode = chooseSceneBox(who);
+  ov.classList.toggle('top', mode === 'top');
+  scene.boxMode = mode;
+  scene.boxCache = { who, mode };
 }
 function sbTick(){                          // typewriter (from the frame loop; nothing here can block a tap)
   if (!sbox.resolve || sbox.full) return;
@@ -9236,7 +9338,7 @@ function boot(){
   Object.defineProperty(api, 'mapInfo', { enumerable: true, get(){ return { id: CUR.id, w: MW, h: MH, room: isRoom(), outdoor: outdoorId(), backdrop: backdropName(), dream: CUR.dream || null,
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
-    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip }; } });
+    typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });
   Object.defineProperty(api, 'spot', { enumerable: true, get(){ return { id: spot.id, bang: spot.bang }; } });   // §6.1 walk-up in progress
   Object.defineProperty(api, 'sightLines', { enumerable: true, get(){ return Object.fromEntries(CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => [o.id, sightLine(o)])); } });
   Object.defineProperty(api, 'mapObjs', { enumerable: true, get(){ return CUR.objs.filter(present).map(o => ({ kind: o.kind, id: o.id, x: objPos(o).x, y: objPos(o).y, sprite: o.sprite || null, shop: o.shop ? o.shop.slice() : null, art: !!(o.sprite && WART[o.sprite]) })); } });   // debug: what the current map shows
