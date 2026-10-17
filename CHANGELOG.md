@@ -2,12 +2,21 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 04:03 ET: Merged the interior wall kit into the reputation branch (build 20261017-0403)
+
+- What changed and why: Merged `main` (every interior uses the shared wall kit, build 20261017-0352) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. This restamp is the build on the branch.
+- Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`, `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261017-0403.
+- Tests run and result (widths, checks): full `npm run test:agent` after the merge. Result pending.
+- Decisions made (colour + reasoning): kept both sides. No decision file edited. The next free id stays D170, as on `main`.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
 ## 2026-10-17 03:36 ET: Letter lines stay behind later story talk (build 20261017-0336)
 
 - What changed and why: The High Charity letter still answers by trust (D174), and it no longer covers a later line. Captain Lumen's council still starts, and after it he still says the road stays dark. Usual side and standing lines stay behind the letter. Save `v` stays 2.
 - Files touched: `game.js`, `index.html`, `tests/reputation.spec.js`, `README.md`, `CHANGELOG.md`, `version.json`.
 - Commit(s) + build id: build 20261017-0336.
-- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js tests/lantern_council.spec.js --project=390` PASS exit=0 passed=13.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js tests/lantern_council.spec.js --project=390` PASS exit=0 passed=13. Full `npm run test:agent` on that commit: PP_TEST RESULT: PASS exit=0 passed=1032 failed=0 flaky=0 skipped=12 time=1460s at 320, 375, and 390.
 - Decisions made (colour + reasoning): green. The letter sits in front of everyday chatter and behind a later story flag. No decision file edited.
 - Anything left unfinished: none on this branch. Q19 stays the queue.
 
@@ -55,6 +64,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390` — PP_TEST RESULT: PASS exit=0 passed=5 failed=0 flaky=0 skipped=0 time=3s.
 - Decisions made (colour + reasoning): builds settled D174, D175, D178. No decision file edited. Twenty-one map contacts missing from the cast table were added as faction none, base 50, so the startup check can pass without inventing a side.
 - Anything left unfinished: the compass, PEOPLE list, acorn chip, and letter lines are the next packets on this branch.
+
+## 2026-10-17 02:19 ET: Interior wall kit on every room (build 20261017-0352)
+
+- What changed and why: Every interior now uses the shared two-tile wall kit, in that skin's own colours. Your Home already had it. The other 39 rooms gain the cap, face, trim, baseboard, corners, folds, windows, door jambs, and the floor shadow. Floors, grids, warps, props, and walkability stay as they are. Save `v` stays 2.
+- Files touched: `sprites.js`, `game.js`, `data/detail_b5.json`, `data/detail_b6.json`, `data/detail_b7.json`, `data/detail_lizzy.json`, `data/fernbrook_rooms.json`, `data/heights.json`, `data/mapdata.js`, `tests/interior_walls.spec.js`, `tests/house_reskin.spec.js`, `tests/lantern_palette.spec.js`, `tests/obs_fix.spec.js`, `tests/maps_b2.spec.js`, `tests/maps_b3.spec.js`, `tests/maps_b5.spec.js`, `tests/maps_b7.spec.js`, `tests/maps_b8.spec.js`, `tests/controls.spec.js`, `README.md`, `tests/README.md`, `NEXT_PLAN.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0352 (first stamped 20261017-0219; restamped after merging main with PR #88 and fixing two test races).
+- Tests run and result (widths, checks): before the main merge, `PP_TEST RESULT: PASS exit=0 passed=990 failed=0 flaky=0 skipped=12 time=1469s` at 320, 375, and 390. After merging main with PR #88 (0183fa1): `PP_TEST RESULT: FAIL exit=1 passed=1004 failed=1 flaky=0 skipped=12 time=1647s`; the one failure was a race in `tests/controls.spec.js` (the quest-button dots were read before the button redrew). Two test-only fixes in `tests/controls.spec.js`: the quest-button test now polls until the dots repaint before reading them, and the green-copy Settings test waits until the previous toast is gone and the row can be clicked instead of fixed 2.6 s waits. Every check is kept. `tests/controls.spec.js` at 320, 375, and 390, three runs each: 9 of 9 runs pass (189 passed, 0 failed). `python3 tools/bump_build.py --check` exit 0. Interior-wall checker: `PASS (39 PR 2 rooms, 33 skins, 40 interiors)`.
+- Decisions made (colour + reasoning): green. D151, D152, and D153 stay settled. No new id. No id was renumbered. The next free id is D170 (D168–D169 are the music test calls from PR #88).
+- Anything left unfinished: none from this kit. Next work stays Q19, town boards.
 
 ## 2026-10-17 02:08 ET: Eight music loops for a listening test (build 20261017-0208)
 

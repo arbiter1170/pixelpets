@@ -132,7 +132,10 @@ test('both lantern rooms render the warm floor, and Cobblecrest stays dark', asy
         id: room.id, floors, white,
         face: face.tile, faceHex: at(2, 1, 8, 3), wain: at(2, 1, 8, 12), foot: at(2, 1, 8, 15),
         win: win.tile, glow: at(3, 1, 7, 4),
-        grout: floors.length ? at(floors[0].x, floors[0].y, 0, 0) : null,
+        grout: (() => {
+          const open = floors.find(f => !PixelPets.tileInfo(f.x, f.y).shade);
+          return open ? at(open.x, open.y, 0, 0) : null;
+        })(),
         decal: PixelPets.tileInfo(2, 2).decal,
       };
       out.push(row);
@@ -148,20 +151,20 @@ test('both lantern rooms render the warm floor, and Cobblecrest stays dark', asy
   expect(hm.white).toEqual([]);
   expect(hc.white).toEqual([]);
   for (const cell of hm.floors.concat(hc.floors)) expect(cell.got, cell.tile).toBe(FILL[cell.tile]);
-  expect(hm.face).toBe('wall_lantern_face');
+  expect(hm.face).toBe('house_lantern__face');
   expect(hm.faceHex).toBe('#e3d3ac');
-  expect(hm.wain).toBe('#5f6e4f');
-  expect(hm.foot).toBe(WARM.F);
-  expect(hm.win).toBe('wall_lantern_win');
-  expect(hm.glow).toBe('#ffcd75');
+  expect(hm.wain).toBe(WARM.C);
+  expect(hm.foot).toBe(WARM.D);
+  expect(hm.win).toBe('house_lantern__face');
+  expect(hm.glow).toBe(WARM.C);
   expect(hm.grout).toBe('#a8674a');
   expect(hm.decal).toBe('wall_shadow_warm');
-  expect(hc.face).toBe('wall_sage_face');
+  expect(hc.face).toBe('hc_lantern__face');
   expect(hc.faceHex).toBe('#9fae86');
-  expect(hc.wain).toBe('#257179');
-  expect(hc.foot).toBe(WARM.F);
-  expect(hc.win).toBe('wall_sage_win');
-  expect(hc.glow).toBe('#ffcd75');
+  expect(hc.wain).toBe(WARM.D);
+  expect(hc.foot).toBe(WARM.E);
+  expect(hc.win).toBe('hc_lantern__face');
+  expect(hc.glow).toBe(WARM.D);
   expect(hc.grout).toBe('#5f6e4f');
   expect(hc.decal).toBe('wall_shadow_warm');
   expect(cc.floors.length).toBeGreaterThan(0);
@@ -171,7 +174,7 @@ test('both lantern rooms render the warm floor, and Cobblecrest stays dark', asy
     expect(cell.got).not.toBe(WARM.G);
     expect(cell.got).not.toBe(WARM.C);
   }
-  expect(cc.face).toBe('wall_rough_face');
+  expect(cc.face).toBe('house_cc_lantern__face');
   expect(cc.decal).toBe('wall_shadow');
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });

@@ -28,7 +28,7 @@
         ]
       },
       "hm_lodge_in": {
-        "set": {"skin": "house_lodge", "variants": true},
+        "set": {"skin": "house_lodge", "variants": true, "wall": {"windows": [4, 8]}},
         "gridRows": {"2": "#uvuvuvuvu#"},
         "addObjs": [
           {"kind": "prop", "id": "lodge_hearth", "x": 1, "y": 4, "sprite": "hearth", "lines": {"else": "The hearth is lit. The flame stays low."}},
@@ -36,7 +36,7 @@
         ]
       },
       "hm_lantern_in": {
-        "set": {"skin": "house_lantern", "variants": true},
+        "set": {"skin": "house_lantern", "variants": true, "wall": {"windows": [4]}},
         "gridRows": {"2": "#uvuvuvu#"},
         "replaceObjs": [
           {"kind": "prop", "id": "lantern_bed_a", "x": 1, "y": 2, "sprite": "quilt_r", "lines": {"else": "@lantern_rest"}},
@@ -48,7 +48,7 @@
         ]
       },
       "hm_rook_in": {
-        "set": {"skin": "house_rook", "variants": true},
+        "set": {"skin": "house_rook", "variants": true, "wall": {"windows": [3]}},
         "gridRows": {"2": "#uvuvu#"},
         "addObjs": [
           {"kind": "prop", "id": "rook_stove", "x": 1, "y": 2, "sprite": "kitchen_stove", "lines": {"else": "A small stove and a kettle."}},
@@ -60,7 +60,8 @@
       "hm_hq_f1": {
         "set": {
           "skin": "house_hq",
-          "variants": true
+          "variants": true,
+          "wall": {"windows": [4]}
         },
         "addObjs": [
           {
@@ -478,7 +479,8 @@
       "hm_hq_f2": {
         "set": {
           "skin": "house_hq_up",
-          "variants": true
+          "variants": true,
+          "wall": {"windows": [5]}
         },
         "addObjs": [
           {
@@ -764,7 +766,7 @@
         ]
       },
       "cc_lantern_in": {
-        "set": {"skin": "house_cc_lantern", "variants": true},
+        "set": {"skin": "house_cc_lantern", "variants": true, "wall": {"windows": [4]}},
         "gridRows": {"2": "#uvuvuvu#"},
         "addObjs": [
           {"kind": "prop", "id": "cc_pick", "x": 6, "y": 2, "sprite": "pick_wall", "lines": {"else": "A pick hangs on the wall."}},
@@ -772,7 +774,7 @@
         ]
       },
       "cc_hall_in": {
-        "set": {"skin": "house_hall", "variants": true},
+        "set": {"skin": "house_hall", "variants": true, "wall": {"windows": [4, 8]}},
         "gridRows": {
           "2": "#XvuvuvuvX#",
           "3": "#Xi::=:::X#",
