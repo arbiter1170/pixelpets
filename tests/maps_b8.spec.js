@@ -7,8 +7,8 @@ const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./hel
 trackErrors(test, expect);
 
 const ROOMS = [
-  { id: 'fb_lantern_in', w: 12, h: 16, ax: 5, ay: 14, safe: [5, 14], floor: '.', wall: 'wall_orchard', face: 'wall_orchard_face', skin: 'fb_lantern' },
-  { id: 'fb_hall_in', w: 16, h: 24, ax: 7, ay: 22, safe: [7, 22], floor: ':', wall: 'wall_bloom', face: 'wall_bloom_face', skin: 'fb_hall' },
+  { id: 'fb_lantern_in', w: 12, h: 16, ax: 5, ay: 14, safe: [5, 14], floor: '.', wall: 'fb_lantern__', face: 'fb_lantern__face', skin: 'fb_lantern' },
+  { id: 'fb_hall_in', w: 16, h: 24, ax: 7, ay: 22, safe: [7, 22], floor: ':', wall: 'fb_hall__', face: 'fb_hall__face', skin: 'fb_hall' },
 ];
 
 const PAL_KEEP = {
@@ -86,7 +86,7 @@ test('each room has its own skin, the floor cap, and a clear path', async ({ pag
         const row = [];
         for (let x = 0; x < info.w; x++) {
           const t = PixelPets.tileInfo(x, y);
-          row.push(t.tile + '|' + (t.decal || ''));
+          row.push(t.solid ? 'wall' : (t.tile + '|' + (t.decal || '')));
           if (t.ch === room.floor) floors[t.tile] = (floors[t.tile] || 0) + 1;
           if (t.ch === '#') walls[t.tile] = (walls[t.tile] || 0) + 1;
           if (t.ch === 'W' && x % 2 === 0) faces[t.tile] = (faces[t.tile] || 0) + 1;
@@ -105,6 +105,7 @@ test('each room has its own skin, the floor cap, and a clear path', async ({ pag
       for (let y = 0; y < info.h; y++) {
         let run = 1;
         for (let x = 1; x < info.w; x++) {
+          if (painted[y][x] === 'wall' || painted[y][x - 1] === 'wall') { run = 1; continue; }
           if (painted[y][x] === painted[y][x - 1]) { run++; if (run > 6) runs.push(room.id + ' h ' + x + ',' + y); }
           else run = 1;
         }
@@ -112,6 +113,7 @@ test('each room has its own skin, the floor cap, and a clear path', async ({ pag
       for (let x = 0; x < info.w; x++) {
         let run = 1;
         for (let y = 1; y < info.h; y++) {
+          if (painted[y][x] === 'wall' || painted[y - 1][x] === 'wall') { run = 1; continue; }
           if (painted[y][x] === painted[y - 1][x]) { run++; if (run > 6) runs.push(room.id + ' v ' + x + ',' + y); }
           else run = 1;
         }

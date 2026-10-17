@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 02:19 ET: Interior wall kit on every room (build 20261017-0352)
+
+- What changed and why: Every interior now uses the shared two-tile wall kit, in that skin's own colours. Your Home already had it. The other 39 rooms gain the cap, face, trim, baseboard, corners, folds, windows, door jambs, and the floor shadow. Floors, grids, warps, props, and walkability stay as they are. Save `v` stays 2.
+- Files touched: `sprites.js`, `game.js`, `data/detail_b5.json`, `data/detail_b6.json`, `data/detail_b7.json`, `data/detail_lizzy.json`, `data/fernbrook_rooms.json`, `data/heights.json`, `data/mapdata.js`, `tests/interior_walls.spec.js`, `tests/house_reskin.spec.js`, `tests/lantern_palette.spec.js`, `tests/obs_fix.spec.js`, `tests/maps_b2.spec.js`, `tests/maps_b3.spec.js`, `tests/maps_b5.spec.js`, `tests/maps_b7.spec.js`, `tests/maps_b8.spec.js`, `tests/controls.spec.js`, `README.md`, `tests/README.md`, `NEXT_PLAN.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0352 (first stamped 20261017-0219; restamped after merging main with PR #88 and fixing two test races).
+- Tests run and result (widths, checks): before the main merge, `PP_TEST RESULT: PASS exit=0 passed=990 failed=0 flaky=0 skipped=12 time=1469s` at 320, 375, and 390. After merging main with PR #88 (0183fa1): `PP_TEST RESULT: FAIL exit=1 passed=1004 failed=1 flaky=0 skipped=12 time=1647s`; the one failure was a race in `tests/controls.spec.js` (the quest-button dots were read before the button redrew). Two test-only fixes in `tests/controls.spec.js`: the quest-button test now polls until the dots repaint before reading them, and the green-copy Settings test waits until the previous toast is gone and the row can be clicked instead of fixed 2.6 s waits. Every check is kept. `tests/controls.spec.js` at 320, 375, and 390, three runs each: 9 of 9 runs pass (189 passed, 0 failed). `python3 tools/bump_build.py --check` exit 0. Interior-wall checker: `PASS (39 PR 2 rooms, 33 skins, 40 interiors)`.
+- Decisions made (colour + reasoning): green. D151, D152, and D153 stay settled. No new id. No id was renumbered. The next free id is D170 (D168–D169 are the music test calls from PR #88).
+- Anything left unfinished: none from this kit. Next work stays Q19, town boards.
+
 ## 2026-10-17 02:08 ET: Eight music loops for a listening test (build 20261017-0208)
 
 - What changed and why: The eight SuperGrok loops are in `MUSIC`. Trial Hall leaders play `trial`, Rook plays `rival` (before the Glimmerwell check, and a Rook fight does not set `music.glimmer_fought`), the two Trial Hall rooms play `hall`, the RegenX floors and the Heights yard play `lab`, and dream rooms play `dream`. `harbour`, `route3`, and `episode_end` have no map yet and play from the debug Music row. The other loops are unchanged. Save `v` stays 2.
