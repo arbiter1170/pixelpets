@@ -123,6 +123,10 @@ test('a first run walks the tour and the care buttons are real', async ({ page }
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('WALKLINGS lists');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await expect(page.locator('#tutLine')).toContainText('This compass lists everyone you meet');
+  expectLayout(await layout(page));
+  await shot390(page, 'tutorial-t12r');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText("That's the tour!");
   await expect(page.locator('#tutSkip')).toBeHidden();
   expectLayout(await layout(page));
@@ -239,7 +243,7 @@ test('Settings replay highlights care and does not spend it', async ({ page }) =
   await expect(page.locator('#tutActs button', { hasText: 'NEXT' })).toBeVisible();
   expectLayout(await layout(page));
   await shot390(page, 'tutorial-replay-t5');
-  for (let n = 0; n < 12 && await page.locator('#tutLayer').isVisible(); n++) {
+  for (let n = 0; n < 14 && await page.locator('#tutLayer').isVisible(); n++) {
     const text = await page.locator('#tutLine').textContent();
     if (text && text.indexOf('Tap WALK') >= 0) {
       await page.locator('#tabs button[data-tab="walk"]').click();

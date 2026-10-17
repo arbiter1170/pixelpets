@@ -33,7 +33,7 @@ Evening (Build 3, supersede the morning notes):
 
 ## 0. Where the build stands
 
-Live stamp is `version.json`. Flat 5B on this branch is 18 by 16, with Buddy at home after you meet Lizzy. The leak in 5B is a side quest. The unlock tips are the next packet on the same branch.
+Live stamp is `version.json`. Flat 5B on this branch is 18 by 16, with Buddy at home after you meet Lizzy. The leak in 5B is a side quest. The compass tour step and the unlock tips are in the game on this branch.
 
 Playable end to end on the **Keepers** path: Hearthmoor opening, starter, Rook #1, Route 1 (three trainers), Fernbrook (Glimmer stand, Faded Fuzzwick, orchard crates, Trial Hall #1 / Fernbrook Seal), Route 2 + Wickerglen, Cobblecrest + quarry (Rook #2, Trial Hall #2 / Cobblecrest Seal). After `story.cobble_end`, the Lantern Council plays in Sky-Dock Command, then the end card. Brinewick, Hall #3, and Seal 3 stay closed.
 

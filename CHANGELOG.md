@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 08:28 ET: Compass tour step and unlock tips (build 20261017-0828)
+
+- What changed and why: The opening tour points at the compass before the last card. A save already on that last card skips it. Nine later tips (trust, the phone, a side, a side quest, a big choice, switching sides, a letter, a Lantern, and growing up) each show once, 600 ms after the walk screen is quiet. SKIP or a tap outside puts one away. Settings has Tips on/off and Replay tips. Save `v` stays 2.
+- Files touched: `game.js`, `save.js`, `quests.js`, `index.html`, `style.css`, `tests/unlock.spec.js`, `tests/tutorial.spec.js`, `tests/quest_multi.spec.js`, `tests/reputation.spec.js`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0828.
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375 and 390. PP_TEST RESULT: PASS exit=0 passed=1092 failed=0 flaky=0 skipped=12 time=1864s. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D180, already settled. No new id. Design still adds the T12r row to `design/specs/TUTORIAL.md` (that file is not in this repo).
+- Anything left unfinished: none on this packet.
+
 ## 2026-10-17 08:17 ET: The leak in 5B, one moral choice (build 20261017-0817)
 
 - What changed and why: Inspecting the bucket starts "The leak in 5B". Lizzy asks you to talk to Mr. Gristle. Take it to the Keepers, make him fix it, or leave it. That choice grants Standing and trust once, through `data/moral_quests.json`. The court path is Clerk Wynn, then Constable Rue. Both endings pay Hearty Snack ×2 and stop the drip. Save `v` stays 2.

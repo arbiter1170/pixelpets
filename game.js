@@ -339,7 +339,7 @@ function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG))
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
-  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderControlsRows(); renderBuild(); renderDebugGate();
+  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderControlsRows(); renderTipsRow(); renderBuild(); renderDebugGate();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
   $('#setClose').focus({ preventScroll: true });
 }
@@ -590,7 +590,8 @@ function showTab(name){
   tutSawTab(name);
 }
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
-let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false };
+let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
+let unlock = { q: [], on: false, id: null, since: 0, holes: [] };
 const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || tut.on;
 
 /* integer-scale canvases to fit their container */
@@ -661,7 +662,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
   }
   refitSceneBox();
 }
-window.addEventListener('resize', () => { fitAll(); if (tut.on) tutPlace(); });
+window.addEventListener('resize', () => { fitAll(); if (tut.on || unlock.on) tutPlace(); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
 
 const BAR_LABEL = { barHunger: 'Food', barHappy: 'Joy', barEnergy: 'Energy', wBarEnergy: 'Energy', stripFood: 'Food', stripJoy: 'Joy', stripNrg: 'Energy', barXp: 'Growth' };
@@ -817,9 +818,10 @@ const TUT_COPY = {
   T10j:['Drag the stick to walk. Tap people to talk.', 'next', 'joy'],
   T11: ["QUEST shows what's next. BAG holds snacks and treats. MAP shows where you are.", 'next', 'qbm'],
   T12: ['WALKLINGS lists every friend you meet. Your TEAM is who walks with you.', 'next', 'list'],
+  T12r: ['This compass lists everyone you meet. Tap a face to see how much they trust you.', 'next', 'rep'],
   T13: ["That's the tour! You can replay it any time from Settings, under the gear.", 'go', 'gear']
 };
-const TUT_AFTER = { T0: 'T1', T0r: 'T1', T1: 'T2', T2: 'T3', T3: 'T4', T4: 'T5', T5: 'T6', T6: 'T7', T7: 'T8', T8: 'T9', T8b: 'T9', T9: 'T10', T10a: 'T11', T10m: 'T11', T10j: 'T11', T11: 'T12', T12: 'T13' };
+const TUT_AFTER = { T0: 'T1', T0r: 'T1', T1: 'T2', T2: 'T3', T3: 'T4', T4: 'T5', T5: 'T6', T6: 'T7', T7: 'T8', T8: 'T9', T8b: 'T9', T9: 'T10', T10a: 'T11', T10m: 'T11', T10j: 'T11', T11: 'T12', T12: 'T12r', T12r: 'T13' };
 function tutFill(s){ const p = pet(); return String(s).replace(/\{pet\}/g, p ? petName(p) : 'your partner'); }
 // D154 paints the care glow on #petFloat (HEART_ALERT, syncCareAlert), modern controls only. Arcade has no heart
 // button, so it keeps the shorter T8b line.
@@ -882,6 +884,7 @@ function tutTargets(key){
   if (key === 'qbm') return tutUnion(['#questBtn', '#walkBagBtn', '#mapBtn'].map(s => tutBox($(s))).filter(Boolean));
   if (key === 'list') return one(modern ? '#colFloat' : '#tabs button[data-tab="col"]');
   if (key === 'gear') return one(modern ? '#gearFloat' : '#settingsBtn');
+  if (key === 'rep') return one('#repBtn');
   return [];
 }
 function tutCareBlocked(act){
@@ -896,8 +899,10 @@ function tutClearHit(){
   if (tut.hit) { tut.hit.classList.remove('tut-hit'); tut.hit.removeAttribute('aria-describedby'); tut.hit = null; }
 }
 function tutPlace(){
-  if (!tut.on) return;
-  const holes = tut.holes, h = holes.length ? holes[tut.hi % holes.length] : null;
+  const mode = tut.on ? 'tut' : (unlock.on ? 'unlock' : null);
+  if (!mode) return;
+  const holes = mode === 'tut' ? tut.holes : unlock.holes, hi = mode === 'tut' ? tut.hi : 0;
+  const h = holes.length ? holes[hi % holes.length] : null;
   const dims = ['#tutD1', '#tutD2', '#tutD3', '#tutD4'].map(s => $(s));
   const ring = $('#tutRing'), block = $('#tutBlock');
   const vw = window.innerWidth, vh = window.innerHeight;
@@ -914,14 +919,16 @@ function tutPlace(){
     ring.hidden = false;
     ring.style.left = (x - 6) + 'px'; ring.style.top = (y - 6) + 'px';
     ring.style.width = (w + 12) + 'px'; ring.style.height = (hh + 12) + 'px';
-    const pass = tut.adv === 'tap';
+    const pass = mode === 'unlock' || tut.adv === 'tap';
     block.hidden = pass;
     if (!pass) { block.style.left = x + 'px'; block.style.top = y + 'px'; block.style.width = w + 'px'; block.style.height = hh + 'px'; }
     void vw; void vh;
   }
-  tutClearHit();
-  if (h && tut.adv === 'tap' && h.el) { tut.hit = h.el; h.el.classList.add('tut-hit'); h.el.setAttribute('aria-describedby', 'tutLine'); }
-  const card = $('#tutCard'); if (!card || card.hidden) return;
+  if (mode === 'tut') {
+    tutClearHit();
+    if (h && tut.adv === 'tap' && h.el) { tut.hit = h.el; h.el.classList.add('tut-hit'); h.el.setAttribute('aria-describedby', 'tutLine'); }
+  }
+  const card = $(mode === 'tut' ? '#tutCard' : '#unlockCard'); if (!card || card.hidden) return;
   const cw = card.offsetWidth, ch = card.offsetHeight;
   let left = Math.max(6, (vw - cw) / 2), top;
   if (!h) top = Math.max(6, (vh - ch) / 2);
@@ -957,7 +964,11 @@ function tutShow(id){
   if (focus) focus.focus({ preventScroll: true });
   const layer = $('#tutLayer'); if (layer) layer.dataset.step = id;
 }
-function tutAdvance(){ const n = TUT_AFTER[tut.id]; if (!n) tutClose(true); else tutShow(n); }
+function tutAdvance(){
+  let n = TUT_AFTER[tut.id];
+  if (tut.id === 'T12' && tut.skipT12r) n = 'T13';
+  if (!n) tutClose(true); else tutShow(n);
+}
 function tutSawTab(name){ if (tut.on && tut.adv === 'tap' && tutAllowsTab(name)) tutAdvance(); }
 function tutSawAct(act){
   if (!tut.on || tut.replay || tut.adv !== 'tap' || tut.act !== act) return;
@@ -993,6 +1004,7 @@ function runTutorial(opts){
   if (!S || !pet() || tut.on) return;
   opts = opts || {};
   tut.on = true; tut.replay = !!opts.replay; tut.fromScene = false;
+  tut.skipT12r = !opts.replay && !!(S && S.flags['story.tutorial_step'] === 'T13');
   const layer = $('#tutLayer'); if (!layer) { tut.on = false; return; }
   layer.hidden = false; document.body.classList.add('tut-on');
   clearMoves(); lockTabs(true);
@@ -1021,6 +1033,162 @@ function replayTutorial(){
   closeSettings();
   runTutorial({ replay: true });
 }
+/* Unlock tips (D180). One card on #tutLayer, after WALK has been quiet for 600 ms. story.unlock_<id> is set when the card is shown. */
+const UNLOCKS = {
+  rep: { title: 'Trust changed', body: 'What you do changes how people feel about you. Check the compass to see who trusts you.', sel: '#repBtn' },
+  phone: { title: 'Your phone', body: 'Your phone has your contacts, Ribbit and the town board. Tap it any time.', sel: '#phoneBtn' },
+  sides: { title: 'Your side', body: 'You joined a side. STANDING shows how each side sees you. The other side trusts you a bit less now.', sel: '#questTabStanding', show(){ if (typeof openQuest === 'function') openQuest(); if (typeof questTabTo === 'function') questTabTo('standing'); } },
+  quests: { title: 'Side quests', body: 'You took on a side quest. It is in your quest list. Do it whenever you like.', sel: '#questBtn' },
+  moral: { title: 'Big choices', body: 'Some choices help one side and annoy the other. There is no wrong answer, only yours.', sel: '#sbChoices' },
+  switch: { title: 'Switching sides', body: 'Rook can help you switch sides. People on the side you leave will trust you less.', box: 'rook' },
+  letter: { title: 'A letter', body: 'Letters open new places. Show it to people you know. Their answer depends on how they feel about you.', sel: '#questBtn' },
+  lantern: { title: 'Lanterns', body: 'Rest at a Lantern to heal your team. If you lose a battle, you come back here.', box: 'lantern' },
+  growup: { title: 'Growing up', body: '{pet} is ready to grow up. You choose when.', sel: '#evolveBtn', show(){ showTab('pet'); } },
+};
+function tipsOn(){ return !S || !S.settings || S.settings.tips !== false; }
+function unlockOffer(id){
+  if (!S || !UNLOCKS[id] || !tipsOn()) return;
+  if (S.flags['story.unlock_' + id]) return;
+  if (unlock.id === id || unlock.q.indexOf(id) >= 0) return;
+  unlock.q.push(id);
+}
+function unlockSeen(id){ return !!(S && S.flags['story.unlock_' + id]); }
+function sideQuestAccepted(){
+  if (!S || !S.flags) return false;
+  return Object.keys(S.flags).some(k => k.indexOf('story.') === 0 && /_yes$/.test(k) && S.flags[k]);
+}
+function unlockScan(){
+  if (!S || !tipsOn()) return;
+  if (S.flags['unlock.rep']) unlockOffer('rep');
+  if (S.flags['story.phone_got']) unlockOffer('phone');
+  if (S.flags['story.side_pick_done']) unlockOffer('sides');
+  if (sideQuestAccepted()) unlockOffer('quests');
+  if (S.flags['unlock.moral']) unlockOffer('moral');
+  if (S.flags['story.rc_climax']) unlockOffer('switch');
+  if (S.flags['story.hc_invite']) unlockOffer('letter');
+  if (S.flags['unlock.lantern']) unlockOffer('lantern');
+  if ((S.party || []).some(q => canEvolve(q))) unlockOffer('growup');
+}
+function tileBox(tx, ty){
+  const c = $('#mapCanvas'); if (!c || !walk || !walk.cam) return null;
+  const r = c.getBoundingClientRect(); if (r.width < 2 || !c.width) return null;
+  const k = r.width / c.width, x = tx * TS - walk.cam.x, y = ty * TS - walk.cam.y;
+  if (x < -TS || y < -TS || x > c.width || y > c.height) return null;
+  return { x: r.left + x * k, y: r.top + y * k, w: TS * k, h: TS * k, el: c };
+}
+function mapMark(kind){
+  if (!CUR || !CUR.objs) return null;
+  return CUR.objs.find(o => {
+    if (!o) return false;
+    const id = String(o.id || ''), name = String(o.name || '');
+    if (kind === 'rook') return /rook/i.test(name) || /rook/i.test(id);
+    return o.panel === 'lantern' || /lantern/i.test(id) || /lantern/i.test(String(o.sprite || ''));
+  }) || null;
+}
+function unlockHoles(id){
+  const row = UNLOCKS[id]; if (!row) return [];
+  if (row.box) { const o = mapMark(row.box); const b = o ? tileBox(o.x, o.y) : null; return b ? [b] : []; }
+  const b = row.sel ? tutBox($(row.sel)) : null;
+  return b ? [b] : [];
+}
+function unlockOpen(id){
+  const row = UNLOCKS[id]; if (!row || !S || unlock.on || tut.on) return;
+  const layer = $('#tutLayer'); if (!layer) return;
+  unlock.on = true; unlock.id = id; unlock.holes = unlockHoles(id);
+  S.flags['story.unlock_' + id] = true; save();
+  const tutCard = $('#tutCard'); if (tutCard) tutCard.hidden = true;
+  const title = $('#unlockTitle'), body = $('#unlockBody'), card = $('#unlockCard');
+  if (title) title.textContent = row.title;
+  if (body) body.textContent = tutFill(row.body);
+  if (card) card.hidden = false;
+  layer.hidden = false; layer.classList.add('unlock-on'); layer.dataset.unlock = id;
+  tutPlace();
+  const btn = $('#unlockShow'); if (btn) btn.focus({ preventScroll: true });
+}
+function unlockClose(){
+  if (!unlock.on) return;
+  unlock.on = false; unlock.id = null; unlock.holes = []; unlock.since = 0;
+  const card = $('#unlockCard'); if (card) card.hidden = true;
+  const layer = $('#tutLayer');
+  if (layer && !tut.on) { layer.hidden = true; layer.classList.remove('unlock-on'); delete layer.dataset.unlock; }
+  const ring = $('#tutRing'); if (ring && !tut.on) ring.hidden = true;
+}
+function unlockShowMe(){
+  if (!unlock.on) return;
+  const row = UNLOCKS[unlock.id];
+  if (row && row.show) row.show();
+  unlock.holes = unlockHoles(unlock.id);
+  tutPlace();
+}
+function unlockPump(t){
+  if (!S || unlock.on || tut.on) return;
+  if (!tipsOn()) { unlock.q = []; unlock.since = 0; if (unlock.on) unlockClose(); return; }
+  if (!unlock.q.length) { unlock.since = 0; return; }
+  const calm = screen === 'walk' && !scene && !(battle && battle.on) && !overlayOpen() && !fade.busy && !(walk && walk.intro);
+  if (!calm) { unlock.since = 0; return; }
+  if (!unlock.since) unlock.since = t;
+  if (t - unlock.since < 600) return;
+  const id = unlock.q.shift();
+  unlock.since = 0;
+  if (!id || unlockSeen(id)) return;
+  unlockOpen(id);
+}
+function unlockWatch(t){
+  unlockScan();
+  if (unlock.on && unlock.id && !unlock.holes.length) {
+    const next = unlockHoles(unlock.id);
+    if (next.length) { unlock.holes = next; tutPlace(); }
+  }
+  unlockPump(t);
+}
+function noteLanternRest(){
+  if (!S) return;
+  if (!S.flags['unlock.lantern']) S.flags['unlock.lantern'] = true;
+  unlockOffer('lantern');
+}
+function atLantern(){
+  if (!CUR) return false;
+  if (String(CUR.id || '').indexOf('lantern') >= 0) return true;
+  return !!(CUR.objs && CUR.objs.some(o => o && o.panel === 'lantern'));
+}
+function choiceAligned(opts){
+  const list = (MD.moral_quests && MD.moral_quests.quests) || [];
+  const walkNode = node => {
+    if (!Array.isArray(node)) return false;
+    if (node[0] === 'moral') {
+      const q = list.find(x => x && x.id === node[1]);
+      const o = q && q.choice && (q.choice.options || []).find(x => x.id === node[2]);
+      return !!(o && o.align && o.align !== 'none');
+    }
+    return node.some(walkNode);
+  };
+  return (opts || []).some(walkNode);
+}
+function noteMoralChoice(opts){
+  if (!S || !choiceAligned(opts)) return;
+  if (!S.flags['unlock.moral']) S.flags['unlock.moral'] = true;
+  unlockOffer('moral');
+}
+function renderTipsRow(){
+  const on = tipsOn(), b = $('#setTips');
+  if (!b) return;
+  b.setAttribute('aria-pressed', String(on));
+  const v = $('#setTipsVal'); if (v) v.textContent = on ? 'ON' : 'OFF';
+}
+function toggleTips(){
+  if (!S) return;
+  S.settings.tips = S.settings.tips === false;
+  renderTipsRow(); save(); sfx('tap');
+  if (!tipsOn()) { unlock.q = []; unlockClose(); }
+}
+function replayTips(){
+  if (!S) return;
+  Object.keys(S.flags).forEach(k => { if (k.indexOf('story.unlock_') === 0) delete S.flags[k]; });
+  unlock.q = []; unlock.since = 0;
+  save(); sfx('tap'); toast('Tips will show again.');
+  unlockScan();
+}
+window.PPRepUnlock = function () { unlockOffer('rep'); };
 /* CARE_LOOP E, cheap slice: bond. Stored as points on the Walkling (p.bond, only ever goes up), shown as 5 hearts in the PARTNER
    scene: Bond 1-5 at 0 / 20 / 60 / 120 / 200 points. Only the partner earns it. Sources (eng notes §3.1, Design's defaults):
    first care of the day +3, the hello +1, pats +1 (max 5 a day), each walk find +2, every 100 steps together +1 (max 3 a day),
@@ -4082,6 +4250,7 @@ async function execStep(st){
       sc.skip = false;
       const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
       if (!opts.length) return;
+      noteMoralChoice(opts);
       const pick = await choiceBox(expand(a), opts.map(o => o[0]));
       const opt = opts[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
       $('#sbEcho').textContent = '\u203a ' + opt[0];
@@ -4170,10 +4339,10 @@ async function execStep(st){
     // Lantern rest only (home naps stay on `rest`, free). Heals the whole party. A hurt party pays LANTERN_REST_COST;
     // a shortfall is covered so a wipe at 0 Acorns cannot trap you. Sets scene.view flag lantern.rest for the next line.
     case 'payRest': {
-      if (!partyNeedsLanternRest()) { sc.view.flags['lantern.rest'] = 'full'; setRestDue(false); sfx('rest'); return; }
+      if (!partyNeedsLanternRest()) { sc.view.flags['lantern.rest'] = 'full'; setRestDue(false); sfx('rest'); noteLanternRest(); return; }
       if ((S.money | 0) >= LANTERN_REST_COST) { S.money = (S.money | 0) - LANTERN_REST_COST; sc.view.flags['lantern.rest'] = 'paid'; }
       else sc.view.flags['lantern.rest'] = 'covered';
-      S.party.forEach(q => restPet(q, 'full')); setRestDue(false); sfx('rest'); return;
+      S.party.forEach(q => restPet(q, 'full')); setRestDue(false); sfx('rest'); noteLanternRest(); return;
     }
     case 'lookPick': {
       sc.skip = false;
@@ -4194,7 +4363,7 @@ async function execStep(st){
       await execStep(['say', '', 'You can change this any time under the gear.']);   /* D70 */
       return;
     }
-    case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); return;
+    case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
     case 'if': await execSteps(cond(a, true) ? b : c); return;
     case 'push': {
@@ -8800,6 +8969,16 @@ function bindInput(){
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
   const setTut = $('#setTutorial'); if (setTut) setTut.addEventListener('click', () => { sfx('tap'); replayTutorial(); });
+  const setTips = $('#setTips'); if (setTips) setTips.addEventListener('click', () => toggleTips());
+  const setTipsReplay = $('#setTipsReplay'); if (setTipsReplay) setTipsReplay.addEventListener('click', () => replayTips());
+  const unlockShow = $('#unlockShow'); if (unlockShow) unlockShow.addEventListener('click', () => { sfx('tap'); unlockShowMe(); });
+  const unlockSkip = $('#unlockSkip'); if (unlockSkip) unlockSkip.addEventListener('click', () => { sfx('tap'); unlockClose(); });
+  document.addEventListener('pointerdown', e => {
+    if (!unlock.on) return;
+    const el = e.target && e.target.closest ? e.target : (e.target && e.target.parentElement);
+    if (el && el.closest && el.closest('#unlockCard')) return;
+    unlockClose();
+  }, true);
   const tutSkipBtn = $('#tutSkip'); if (tutSkipBtn) tutSkipBtn.addEventListener('click', () => skipTutorial());
   bindDebugUi();
   // scene text box (MAPS_SLICE §8): tap anywhere on the box or the map advances; SKIP jumps to the next interactive step
@@ -9063,6 +9242,7 @@ function frame(t){
     drawMap(t);
   }
   if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncSide(); syncWalkTip(); }
+  if (S) unlockWatch(t);
   if (!$('#ovMap').hidden) drawRegionMap(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
