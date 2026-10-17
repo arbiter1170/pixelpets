@@ -3039,32 +3039,62 @@ function drawHqGlow(g, cx, cy){
 }
 // Interior wall kit (D151–D153). `#` and `W` pick a part from the map shape. Windows and doors are per-map lists.
 // A skin with no `wall` block never comes through here, so its odd-column windows stay.
+// Lab `V` / `n` on the face row become kit face, or a window where the list says. `L` / `E` / `S` in wall.doors are face doors.
+// An hc `Y` on the cap row keeps its pilaster unless that column has a window. Side-wall doors get jamb_n / jamb_s.
+// Bottom jambs sit beside `m` or beside a warp/door in the opening.
+function wallTileName(part, x, m){
+  if (!part) return null;
+  const east = (part === 'jamb_n' || part === 'jamb_s') && x === m.w - 1;
+  return m.skin + '__' + (east ? part + '_e' : part);
+}
 function wallPart(x, y, m){
   m = m || CUR;
   if (!m || y < 0 || x < 0 || y >= m.h || x >= m.w) return null;
   const ch = m.cells[y][x], w = m.w, h = m.h, list = m.wall || {};
+  const wins = list.windows || [], doors = list.doors || [];
+  if (ch === 'Y' && y === 0 && wins.indexOf(x) >= 0) return x === 0 ? 'cap_nw' : x === w - 1 ? 'cap_ne' : 'cap_n';
   if (ch === '#') {
     if (y === 0) return x === 0 ? 'cap_nw' : x === w - 1 ? 'cap_ne' : 'cap_n';
     if (y === h - 1) {
       const row = m.cells[y];
-      if (row[x + 1] === 'm') return 'jamb_l';
-      if (row[x - 1] === 'm') return 'jamb_r';
+      // A bottom gap is the mat `m`, or a warp/door sitting in the opening (the observatory uses `.`).
+      const gap = (gx) => {
+        if (gx < 0 || gx >= w) return false;
+        if (row[gx] === 'm') return true;
+        const objs = m.objs || [];
+        for (let i = 0; i < objs.length; i++) {
+          const o = objs[i];
+          if (o.x === gx && o.y === y && (o.kind === 'warp' || o.kind === 'door')) return true;
+        }
+        return false;
+      };
+      if (gap(x + 1)) return 'jamb_l';
+      if (gap(x - 1)) return 'jamb_r';
       if (x === 0) return 'cap_sw';
       if (x === w - 1) return 'cap_se';
       return 'cap_s';
     }
-    if (x === 0) return 'side_w';
-    if (x === w - 1) return 'side_e';
+    if (x === 0 || x === w - 1) {
+      if (y + 1 < h && m.cells[y + 1][x] === 'm') return 'jamb_n';
+      if (y > 0 && m.cells[y - 1][x] === 'm') return 'jamb_s';
+      return x === 0 ? 'side_w' : 'side_e';
+    }
     return 'cap_n';
   }
   if (ch === 'W') {
-    const wins = list.windows || [], doors = list.doors || [];
     if (wins.indexOf(x) >= 0) return 'face_win';
     if (doors.indexOf(x) >= 0) return 'face_door';
     if (x === 1) return 'face_l';
     if (x === w - 2) return 'face_r';
     return 'face';
   }
+  if (y === 1 && (ch === 'V' || ch === 'n')) {
+    if (wins.indexOf(x) >= 0) return 'face_win';
+    if (x === 1) return 'face_l';
+    if (x === w - 2) return 'face_r';
+    return 'face';
+  }
+  if (y === 1 && doors.indexOf(x) >= 0 && (ch === 'L' || ch === 'E' || ch === 'S')) return 'face_door';
   return null;
 }
 function shadowPart(x, y, m){
@@ -3072,10 +3102,13 @@ function shadowPart(x, y, m){
   const sk = m && m.skin && SKINS[m.skin];
   if (!sk || !sk.wall || y < 0 || x < 0 || y >= m.h || x >= m.w) return null;
   const ch = m.cells[y][x];
-  if (ch === '#' || ch === 'W' || ch === 'm') return null;
-  const under = y > 0 && m.cells[y - 1][x] === 'W';
-  const sideW = x > 0 && wallPart(x - 1, y, m) === 'side_w';
-  const sideE = x + 1 < m.w && wallPart(x + 1, y, m) === 'side_e';
+  if (ch === 'm' || wallPart(x, y, m)) return null;
+  const above = y > 0 ? wallPart(x, y - 1, m) : null;
+  const under = above === 'face' || above === 'face_l' || above === 'face_r' || above === 'face_win' || above === 'face_door';
+  const left = x > 0 ? wallPart(x - 1, y, m) : null;
+  const right = x + 1 < m.w ? wallPart(x + 1, y, m) : null;
+  const sideW = left === 'side_w' || left === 'jamb_n' || left === 'jamb_s';
+  const sideE = right === 'side_e' || right === 'jamb_n' || right === 'jamb_s';
   if (under && sideW) return 'shadow_nw';
   if (under && sideE) return 'shadow_ne';
   if (under) return 'shadow_n';
@@ -3115,19 +3148,20 @@ function drawMap(t){
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
       const ch = MAP[ty][tx];
-      const skEarly = CUR.skin && CUR.skin !== 'lab' && SKINS[CUR.skin];
-      const kit = !!(skEarly && skEarly.wall && (ch === '#' || ch === 'W'));
-      let img = ch === 'w' ? TILES.w[wf] : (!kit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
+      const skEarly = CUR.skin && SKINS[CUR.skin];
+      const hasKit = !!(skEarly && skEarly.wall);
+      const part = hasKit ? wallPart(tx, ty) : null;
+      let img = ch === 'w' ? TILES.w[wf] : (!hasKit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
       let decal = null;
-      if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
+      if (part) {   // shared wall kit. Windows come from the map list, not the odd column.
+        const nm = wallTileName(part, tx, CUR);
+        if (TILES[nm]) img = TILES[nm];
+      } else if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
         const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
         const nm = labTileName(dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
-      } else if (kit) {   // shared wall kit. Windows come from the map list, not the odd column.
-        const part = wallPart(tx, ty), nm = CUR.skin + '__' + part;
-        if (TILES[nm]) img = TILES[nm];
-      } else if (skEarly) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
+      } else if (skEarly && CUR.skin !== 'lab') {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
         const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skEarly.decal && skEarly.decal[k];
         const nm = skinTileName(skEarly, dk ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
@@ -8935,16 +8969,16 @@ function boot(){
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
     enc, walk,
     care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
-    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab keeps its old tile name (raw char, not W2).
+    tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab floor keeps its old tile name.
       const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
-      const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part: null, shade: shadowPart(x, y) };
-      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }); }
       const sk = CUR.skin && SKINS[CUR.skin];
+      const part = sk && sk.wall ? wallPart(x, y) : null;
+      const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part, shade: shadowPart(x, y) };
+      if (part) return Object.assign(base, { tile: wallTileName(part, x, CUR), decal: null });
+      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }); }
       if (sk) {
-        const kit = !!(sk.wall && (ch === '#' || ch === 'W'));
-        const k = kit ? ch : (ch === 'W' && x % 2 ? 'W2' : ch), dk = sk.decal && sk.decal[k];
-        const part = kit ? wallPart(x, y) : null;
-        return Object.assign(base, { part, tile: part ? CUR.skin + '__' + part : skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null });
+        const k = ch === 'W' && x % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
+        return Object.assign(base, { tile: skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null });
       }
       const mark = CUR.objs.find(o => o.kind === 'decal' && o.x === x && o.y === y && present(o));   // outdoor decal objects (map pass B4)
       return Object.assign(base, { tile: CUR.variants ? labTileName(ch, x, y) : ch, decal: (mark && mark.sprite) || null }); },

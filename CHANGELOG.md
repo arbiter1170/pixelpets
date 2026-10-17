@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 02:19 ET: Interior wall kit on every room (build 20261017-0219)
+
+- What changed and why: Every interior now uses the shared two-tile wall kit, in that skin's own colours. Your Home already had it. The other 39 rooms gain the cap, face, trim, baseboard, corners, folds, windows, door jambs, and the floor shadow. Floors, grids, warps, props, and walkability stay as they are. Save `v` stays 2.
+- Files touched: `sprites.js`, `game.js`, `data/detail_b5.json`, `data/detail_b6.json`, `data/detail_b7.json`, `data/detail_lizzy.json`, `data/fernbrook_rooms.json`, `data/heights.json`, `data/mapdata.js`, `tests/interior_walls.spec.js`, `tests/house_reskin.spec.js`, `tests/lantern_palette.spec.js`, `tests/obs_fix.spec.js`, `tests/maps_b2.spec.js`, `tests/maps_b3.spec.js`, `tests/maps_b5.spec.js`, `tests/maps_b7.spec.js`, `tests/maps_b8.spec.js`, `README.md`, `tests/README.md`, `NEXT_PLAN.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0219.
+- Tests run and result (widths, checks): `PP_TEST RESULT: PASS exit=0 passed=990 failed=0 flaky=0 skipped=12 time=1469s` at 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. Interior-wall checker: `PASS (39 PR 2 rooms, 33 skins, 40 interiors)`.
+- Decisions made (colour + reasoning): green. D151, D152, and D153 stay settled. No new id. No id was renumbered. The next free id stays D168.
+- Anything left unfinished: none from this kit. Next work stays Q19, town boards.
+
 ## 2026-10-16 16:12 ET: Lantern House test follows D127 (build 20261016-1612)
 
 - What changed and why: `tests/maps_b8.spec.js` (from PR #78) still expected Amos to offer "Pledge desk" to a Glimmerwell player. D127 removed the desks, so the test now checks the desk is absent. `tests/README.md` says the same.

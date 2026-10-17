@@ -9,7 +9,7 @@
   "slicePatch": {
     "maps": {
       "hc_airport_in": {
-        "set": {"skin": "hc_airport", "variants": true},
+        "set": {"skin": "hc_airport", "variants": true, "wall": {"windows": [3, 6]}},
         "gridRows": {
           "0": "####Y####",
           "2": "#uvuvuvu#",
@@ -23,7 +23,7 @@
         ]
       },
       "hc_command_in": {
-        "set": {"skin": "hc_command", "variants": true},
+        "set": {"skin": "hc_command", "variants": true, "wall": {"windows": [3]}},
         "gridRows": {
           "0": "####Y####",
           "2": "#uvuvuvu#",
@@ -36,7 +36,7 @@
         ]
       },
       "hc_barracks_in": {
-        "set": {"skin": "hc_barracks", "variants": true},
+        "set": {"skin": "hc_barracks", "variants": true, "wall": {"windows": [3]}},
         "gridRows": {
           "0": "####Y####",
           "2": "#uvuvuvu#",
@@ -50,7 +50,7 @@
         ]
       },
       "hc_marina_in": {
-        "set": {"skin": "hc_marina", "variants": true},
+        "set": {"skin": "hc_marina", "variants": true, "wall": {"windows": [3, 6]}},
         "gridRows": {
           "0": "####Y####",
           "2": "#uvuvuvu#",
@@ -63,7 +63,7 @@
         ]
       },
       "hc_school_in": {
-        "set": {"skin": "hc_school", "variants": true},
+        "set": {"skin": "hc_school", "variants": true, "wall": {"windows": [3, 6]}},
         "gridRows": {
           "0": "####Y####",
           "2": "#uvuvuvu#",
@@ -76,7 +76,7 @@
         ]
       },
       "hc_bank_in": {
-        "set": {"skin": "hc_bank", "variants": true},
+        "set": {"skin": "hc_bank", "variants": true, "wall": {"windows": [3]}},
         "gridRows": {
           "0": "####Y####",
           "2": "#uvuvuvu#",
@@ -88,7 +88,7 @@
         ]
       },
       "hc_gym_in": {
-        "set": {"skin": "hc_gym", "variants": true},
+        "set": {"skin": "hc_gym", "variants": true, "wall": {"windows": [3, 6]}},
         "gridRows": {
           "0": "####Y####",
           "2": "#uvuvuvu#",
@@ -102,7 +102,7 @@
         ]
       },
       "hc_lantern_in": {
-        "set": {"skin": "hc_lantern", "variants": true},
+        "set": {"skin": "hc_lantern", "variants": true, "wall": {"windows": [4]}},
         "gridRows": {
           "0": "####Y####",
           "2": "#uvuvuvu#",
@@ -114,7 +114,7 @@
         ]
       },
       "hc_church_in": {
-        "set": {"skin": "hc_church", "variants": true},
+        "set": {"skin": "hc_church", "variants": true, "wall": {"windows": [4, 7]}},
         "gridRows": {
           "0": "#####Y#####",
           "2": "#uvuvuvuvu#",
@@ -130,7 +130,7 @@
         ]
       },
       "hc_hall_in": {
-        "set": {"skin": "hc_hall", "variants": true},
+        "set": {"skin": "hc_hall", "variants": true, "wall": {"windows": [4, 7]}},
         "gridRows": {
           "0": "#####Y#####",
           "2": "#uvuvuvuvu#",
@@ -143,7 +143,7 @@
         ]
       },
       "hc_arena_in": {
-        "set": {"skin": "hc_arena", "variants": true},
+        "set": {"skin": "hc_arena", "variants": true, "wall": {"windows": [4, 7]}},
         "gridRows": {
           "0": "#####Y#####",
           "2": "#uvuvuvuvu#",
@@ -158,7 +158,7 @@
         ]
       },
       "hc_apt_in": {
-        "set": {"skin": "hc_apt", "variants": true},
+        "set": {"skin": "hc_apt", "variants": true, "wall": {"windows": [3]}},
         "gridRows": {
           "0": "###Y###",
           "2": "#uvuvu#",
@@ -170,7 +170,7 @@
         ]
       },
       "hc_mall_1": {
-        "set": {"skin": "hc_mall", "variants": true},
+        "set": {"skin": "hc_mall", "variants": true, "wall": {"windows": [4, 7]}},
         "gridRows": {
           "0": "#####Y#####",
           "2": "#uvuvuvuvu#",
@@ -188,7 +188,7 @@
         ]
       },
       "hc_mall_2": {
-        "set": {"skin": "hc_mall_up", "variants": true},
+        "set": {"skin": "hc_mall_up", "variants": true, "wall": {"windows": [4, 8]}},
         "gridRows": {
           "0": "#####Y#####",
           "2": "#uvuvuvuvu#",

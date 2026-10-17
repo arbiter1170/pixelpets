@@ -147,8 +147,9 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap', a
   expect(floors.size).toBe(ROOMS.length - 2);
   expect(walls.size).toBe(ROOMS.length - 2);
   for (const row of report.out.filter(r => r.id === 'hm_hq_f1' || r.id === 'hm_hq_f2')) {
-    expect(row.wall, row.id).toBe('wall_keep');
-    expect(row.face, row.id).toBe('wall_keep_face');
+    const prefix = row.id === 'hm_hq_f2' ? 'house_hq_up__' : 'house_hq__';
+    expect(row.wall.startsWith(prefix), row.id + ' ' + row.wall).toBe(true);
+    expect(row.face, row.id).toBe(prefix + 'face');
     expect(row.floor.startsWith('floor_keep'), row.id + ' ' + row.floor).toBe(true);
     expect(floors.has(row.floor), row.id).toBe(false);
     expect(walls.has(row.wall + '|' + row.face), row.id).toBe(false);

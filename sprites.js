@@ -1247,57 +1247,62 @@ function buildTiles(){
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
-const LAB_SKIN = {"remap":{"#":"lab_wall","W":"lab_wall_face","W2":"lab_wall_win",".":"lab_floor","=":"lab_runner","m":"lab_mat","V":"lab_wall_win","L":"lab_door_locked",",":"lab_floor_scuff","~":"lab_floor_cable","o":"lab_floor_drain","|":"lab_guide_v","-":"lab_guide_h","+":"lab_guide_x","x":"lab_hazard","D":"lab_dais","g":"lab_glass","i":"lab_inlay_mint","b":"lab_stripe_blue","y":"lab_stripe_amber","n":"lab_wall_panel","^":"lab_stair"},"override":{"rx_f2":{".":"lab_floor_focus"},"rx_f3":{".":"lab_floor_records"},"rx_f4":{".":"lab_floor_bay"}},"walk":{"V":0,"L":0,",":1,"~":1,"o":1,"|":1,"-":1,"+":1,"x":0,"D":1,"g":0,"i":1,"b":1,"y":1,"n":0,"^":1},"decal":{"~":"lab_floor_cable","o":"lab_floor_drain","|":"lab_guide_v","-":"lab_guide_h","+":"lab_guide_x"},"variants":{"lab_floor_bay":[["lab_floor_scuff",0.14]],"lab_floor":[["lab_floor_scuff",0.14],["lab_floor_glint",0.12],["lab_floor_stain",0.10]],"lab_floor_focus":[["lab_focus_scuff",0.18],["lab_focus_glint",0.16]],"lab_floor_records":[["lab_records_scuff",0.18],["lab_records_glint",0.16]]}};   // FERNBROOK_HEIGHTS §3: house char -> lab tile, plus per-map overrides
+const LAB_SKIN = {"remap":{"#":"lab_wall","W":"lab_wall_face","W2":"lab_wall_win",".":"lab_floor","=":"lab_runner","m":"lab_mat","V":"lab_wall_win","L":"lab_door_locked",",":"lab_floor_scuff","~":"lab_floor_cable","o":"lab_floor_drain","|":"lab_guide_v","-":"lab_guide_h","+":"lab_guide_x","x":"lab_hazard","D":"lab_dais","g":"lab_glass","i":"lab_inlay_mint","b":"lab_stripe_blue","y":"lab_stripe_amber","n":"lab_wall_panel","^":"lab_stair"},"override":{"rx_f2":{".":"lab_floor_focus"},"rx_f3":{".":"lab_floor_records"},"rx_f4":{".":"lab_floor_bay"}},"walk":{"V":0,"L":0,",":1,"~":1,"o":1,"|":1,"-":1,"+":1,"x":0,"D":1,"g":0,"i":1,"b":1,"y":1,"n":0,"^":1},"decal":{"~":"lab_floor_cable","o":"lab_floor_drain","|":"lab_guide_v","-":"lab_guide_h","+":"lab_guide_x"},"variants":{"lab_floor_bay":[["lab_floor_scuff",0.14]],"lab_floor":[["lab_floor_scuff",0.14],["lab_floor_glint",0.12],["lab_floor_stain",0.10]],"lab_floor_focus":[["lab_focus_scuff",0.18],["lab_focus_glint",0.16]],"lab_floor_records":[["lab_records_scuff",0.18],["lab_records_glint",0.16]]},"wall":{"c":"h","C":"w","L":"m","f":"w","F":"h","T":"l","B":"d","S":"m","R":"m","G":"c","W":"s","D":"h"}};   // FERNBROOK_HEIGHTS §3: house char -> lab tile, plus per-map overrides. wall is the shared kit (INTERIOR_WALLS).
 // B5. One skin per room: floor, wall face, baseboard. `v` is the wall-shadow decal, `u` the window light (it carries the same shadow band).
 // A later batch can add a skin with SKINS.tunnel = TUNNEL_SKIN or SKINS[name] = HOUSE_SKINS[name] = { remap, decal, walk, variants }.
 const houseVar = (base, b, c) => ({ [base]: [[b, 0.18], [c, 0.16]] });
+// INTERIOR_WALLS role order: c cap, C highlight, L lip, f face, F face shade, T trim, B baseboard, S shadow, R frame, G glass, W shine, D door.
+const wallRow = s => ({ c: s[0], C: s[1], L: s[2], f: s[3], F: s[4], T: s[5], B: s[6], S: s[7], R: s[8], G: s[9], W: s[10], D: s[11] });
 // B6. New keys only. `Y` is the shared keeper pilaster. `j` is that room's floor scuff. `q` is a painted line where the skin asks for one.
 const hcSkin = (floor, wall, mat, extra) => {
   extra = extra || {};
-  return {
+  const skin = {
     remap: Object.assign({ '#': wall, Y: 'wall_mark', W: wall + '_face', W2: wall + '_win', '.': floor, m: mat, j: floor + '_b' }, extra.remap || {}),
     decal: Object.assign({ v: 'wall_shadow', u: 'window_light' }, extra.decal || {}),
     walk: Object.assign({ v: 1, u: 1, j: 1, Y: 0 }, extra.walk || {}),
     variants: houseVar(floor, floor + '_b', floor + '_c'),
   };
+  if (extra.wall) skin.wall = extra.wall;
+  return skin;
 };
 const HOUSE_SKINS = {
-  // D153: one role table. Cap G, face w, so the top of the wall reads apart from the face. Other skins keep their own tiles until they opt in.
+  // D153: one role table per skin. Cap differs from the face. Every interior skin opts in; the old wall tiles stay for exteriors.
   house_home: { remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'house_floor_a', '=':'rug_rag', m:'mat_home', '^':'stair_home' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_floor_a', 'house_floor_b', 'house_honey_c'), wall: { c:'G', C:'y', L:'F', f:'w', F:'h', T:'G', B:'B', S:'F', R:'G', G:'c', W:'s', D:'B' } },
-  house_loft: { remap: { '#':'wall_cream', W:'wall_cream_face', W2:'wall_cream_win', '.':'house_loft', '=':'rug_loft', m:'mat_loft', '^':'stair_loft' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_loft', 'house_loft_b', 'house_loft_c') },
-  house_lodge: { remap: { '#':'wall_warden', W:'wall_warden_face', W2:'wall_warden_win', '.':'floor_warden', '=':'rug_warden', m:'mat_warden' }, decal: { v:'wall_shadow_warden', u:'window_light_warden' }, walk: { v:1, u:1 }, variants: houseVar('floor_warden', 'floor_warden_b', 'floor_warden_c') },
-  house_lantern: { remap: { '#':'wall_lantern', W:'wall_lantern_face', W2:'wall_lantern_win', '.':'floor_lantern', '=':'rug_lantern', m:'mat_lantern_warm' }, decal: { v:'wall_shadow_warm', u:'window_light_warm' }, walk: { v:1, u:1 }, variants: houseVar('floor_lantern', 'floor_lantern_b', 'floor_lantern_c') },
-  house_rook: { remap: { '#':'wall_rose', W:'wall_rose_face', W2:'wall_rose_win', '.':'floor_honey', '=':'rug_calloway', m:'mat_calloway' }, decal: { v:'wall_shadow_rose', u:'window_light_rose' }, walk: { v:1, u:1 }, variants: houseVar('floor_honey', 'floor_honey_b', 'floor_honey_c') },
+  house_loft: { remap: { '#':'wall_cream', W:'wall_cream_face', W2:'wall_cream_win', '.':'house_loft', '=':'rug_loft', m:'mat_loft', '^':'stair_loft' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('house_loft', 'house_loft_b', 'house_loft_c'), wall: wallRow('GyFCGoFFocsF') },
+  house_lodge: { remap: { '#':'wall_warden', W:'wall_warden_face', W2:'wall_warden_win', '.':'floor_warden', '=':'rug_warden', m:'mat_warden' }, decal: { v:'wall_shadow_warden', u:'window_light_warden' }, walk: { v:1, u:1 }, variants: houseVar('floor_warden', 'floor_warden_b', 'floor_warden_c'), wall: wallRow('FGdCIJJFJcsF') },
+  house_lantern: { remap: { '#':'wall_lantern', W:'wall_lantern_face', W2:'wall_lantern_win', '.':'floor_lantern', '=':'rug_lantern', m:'mat_lantern_warm' }, decal: { v:'wall_shadow_warm', u:'window_light_warm' }, walk: { v:1, u:1 }, variants: houseVar('floor_lantern', 'floor_lantern_b', 'floor_lantern_c'), wall: wallRow('BGFCDEEFEswF') },
+  house_rook: { remap: { '#':'wall_rose', W:'wall_rose_face', W2:'wall_rose_win', '.':'floor_honey', '=':'rug_calloway', m:'mat_calloway' }, decal: { v:'wall_shadow_rose', u:'window_light_rose' }, walk: { v:1, u:1 }, variants: houseVar('floor_honey', 'floor_honey_b', 'floor_honey_c'), wall: wallRow('BHFHBGFFGcsF') },
   // Both Keeper House floors share this skin (D149). The old stone and ink tiles stay defined for anything that still names them.
-  house_hq: { remap: { '#':'wall_keep', W:'wall_keep_face', W2:'wall_keep_win', '.':'floor_keep', '=':'rug_keep', m:'mat_keep', ',':'floor_keep_tile', ';':'floor_keep_ops', i:'floor_keep_carpet' }, decal: { v:'wall_shadow_keep', u:'window_light_keep' }, walk: { v:1, u:1, ',':1, ';':1, i:1 }, variants: houseVar('floor_keep', 'floor_keep_b', 'floor_keep_c') },
-  house_hq_up: { remap: { '#':'wall_keep', W:'wall_keep_face', W2:'wall_keep_win', '.':'floor_keep', '=':'rug_keep', m:'mat_keep', ',':'floor_keep_tile', ';':'floor_keep_ops', i:'floor_keep_carpet' }, decal: { v:'wall_shadow_keep', u:'window_light_keep' }, walk: { v:1, u:1, ',':1, ';':1, i:1 }, variants: houseVar('floor_keep', 'floor_keep_b', 'floor_keep_c') },
-  house_cc_lantern: { remap: { '#':'wall_rough', W:'wall_rough_face', W2:'wall_rough_win', '.':'floor_cobble', '=':'rug_cobble', m:'mat_cobble' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_cobble', 'floor_cobble_b', 'floor_cobble_c') },
-  house_hall: { remap: { '#':'wall_slate', W:'wall_slate_face', W2:'wall_slate_win', '.':'floor_hall', ':':'floor_hall', i:'floor_slab', '=':'rug_hall', m:'mat_hall' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1, i:1 }, variants: { floor_hall: [['floor_hall_b', 0.22], ['floor_hall_c', 0.18]] } },
-  hc_airport: hcSkin('floor_pad', 'wall_hangar', 'mat_pad', { decal: { q: 'pad_stripe' }, walk: { q: 1 } }),
-  hc_command: hcSkin('floor_deck', 'wall_band', 'mat_deck'),
-  hc_barracks: hcSkin('floor_bunk', 'wall_olive', 'mat_bunk'),
-  hc_marina: hcSkin('floor_dock', 'wall_boat', 'mat_dock'),
-  hc_school: hcSkin('floor_lesson', 'wall_chalk', 'mat_lesson'),
-  hc_bank: hcSkin('floor_marble', 'wall_vault', 'mat_marble'),
-  hc_gym: hcSkin('floor_court', 'wall_arch', 'mat_court', { decal: { q: 'court_stripe' }, walk: { q: 1 } }),
-  hc_lantern: hcSkin('floor_clinic_warm', 'wall_sage', 'mat_clinic_warm', { decal: { v: 'wall_shadow_warm', u: 'window_light_warm' } }),
-  hc_church: hcSkin('floor_nave', 'wall_chapel', 'mat_nave', { remap: { '=': 'rug_nave' } }),
-  hc_hall: hcSkin('floor_parquet', 'wall_civic', 'mat_parquet'),
-  hc_arena: hcSkin('floor_sand', 'wall_drum', 'mat_sand'),
-  hc_apt: hcSkin('floor_room', 'wall_peach', 'mat_room', { remap: { '=': 'rug_room' } }),
-  hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop'),
-  hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz'),
+  house_hq: { remap: { '#':'wall_keep', W:'wall_keep_face', W2:'wall_keep_win', '.':'floor_keep', '=':'rug_keep', m:'mat_keep', ',':'floor_keep_tile', ';':'floor_keep_ops', i:'floor_keep_carpet' }, decal: { v:'wall_shadow_keep', u:'window_light_keep' }, walk: { v:1, u:1, ',':1, ';':1, i:1 }, variants: houseVar('floor_keep', 'floor_keep_b', 'floor_keep_c'), wall: wallRow('nydCGynnncsn') },
+  house_hq_up: { remap: { '#':'wall_keep', W:'wall_keep_face', W2:'wall_keep_win', '.':'floor_keep', '=':'rug_keep', m:'mat_keep', ',':'floor_keep_tile', ';':'floor_keep_ops', i:'floor_keep_carpet' }, decal: { v:'wall_shadow_keep', u:'window_light_keep' }, walk: { v:1, u:1, ',':1, ';':1, i:1 }, variants: houseVar('floor_keep', 'floor_keep_b', 'floor_keep_c'), wall: wallRow('nydCGynnncsn') },
+  house_cc_lantern: { remap: { '#':'wall_rough', W:'wall_rough_face', W2:'wall_rough_win', '.':'floor_cobble', '=':'rug_cobble', m:'mat_cobble' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_cobble', 'floor_cobble_b', 'floor_cobble_c'), wall: wallRow('mhdnmhmnmcsF') },
+  house_hall: { remap: { '#':'wall_slate', W:'wall_slate_face', W2:'wall_slate_win', '.':'floor_hall', ':':'floor_hall', i:'floor_slab', '=':'rug_hall', m:'mat_hall' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1, i:1 }, variants: { floor_hall: [['floor_hall_b', 0.22], ['floor_hall_c', 0.18]] }, wall: wallRow('hwdmdhdndcsn') },
+  hc_airport: hcSkin('floor_pad', 'wall_hangar', 'mat_pad', { decal: { q: 'pad_stripe' }, walk: { q: 1 }, wall: wallRow('nhdbnhmdnswn') }),
+  hc_command: hcSkin('floor_deck', 'wall_band', 'mat_deck', { wall: wallRow('bcdndcbddswd') }),
+  hc_barracks: hcSkin('floor_bunk', 'wall_olive', 'mat_bunk', { wall: wallRow('dlntdgddmcsd') }),
+  hc_marina: hcSkin('floor_dock', 'wall_boat', 'mat_dock', { wall: wallRow('bsncbsdnwswn') }),
+  hc_school: hcSkin('floor_lesson', 'wall_chalk', 'mat_lesson', { wall: wallRow('oyFyGonFncwG') }),
+  hc_bank: hcSkin('floor_marble', 'wall_vault', 'mat_marble', { wall: wallRow('hwmwhymmycsy') }),
+  hc_gym: hcSkin('floor_court', 'wall_arch', 'mat_court', { decal: { q: 'court_stripe' }, walk: { q: 1 }, wall: wallRow('rowhorrmrcsp') }),
+  hc_lantern: hcSkin('floor_clinic_warm', 'wall_sage', 'mat_clinic_warm', { decal: { v: 'wall_shadow_warm', u: 'window_light_warm' }, wall: wallRow('EDFDEtEFtswF') }),
+  hc_church: hcSkin('floor_nave', 'wall_chapel', 'mat_nave', { remap: { '=': 'rug_nave' }, wall: wallRow('ywGwhoGFGcsB') }),
+  hc_hall: hcSkin('floor_parquet', 'wall_civic', 'mat_parquet', { wall: wallRow('nbdbnyndycsn') }),
+  hc_arena: hcSkin('floor_sand', 'wall_drum', 'mat_sand', { wall: wallRow('oyprpodpoywp') }),
+  hc_apt: hcSkin('floor_room', 'wall_peach', 'mat_room', { remap: { '=': 'rug_room' }, wall: wallRow('mhdpdomdocsm') }),
+  hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop', { wall: wallRow('swbcbwmmbswh') }),
+  hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz', { wall: wallRow('rypwhbdmncsr') }),
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
-  obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_obs' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_obs', 'floor_obs_b', 'floor_obs_c') },
-  dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c') },
-  dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {} },
-  dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c') },
+  obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_obs' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: houseVar('floor_obs', 'floor_obs_b', 'floor_obs_c'), wall: wallRow('FGdGFyFFynsF') },
+  dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mem', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: houseVar('floor_mem', 'floor_mem_b', 'floor_mem_c'), wall: wallRow('mhnhmcndmcwb') },
+  dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {}, wall: wallRow('oyryocddrcwr') },
+  dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c'), wall: wallRow('mhdndmddmywd') },
   // B8. Fernbrook's two new rooms. Calm cream planks and a moss hall. Neither reuses a lantern, Calloway, Lodge, observatory or Keeper floor.
   fb_lantern: {
     remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_orchard', '=':'rug_orchard', m:'mat_orchard', ',':'runner_orchard', h:'hearth_orchard' },
     decal: { v:'wall_shadow_orchard', u:'window_light_orchard', q:'leaf_orchard', j:'apple_speck' },
     walk: { v:1, u:1, q:1, j:1, ',':1, h:1 },
     variants: Object.assign({}, houseVar('floor_orchard', 'floor_orchard_b', 'floor_orchard_c'), houseVar('wall_orchard', 'wall_orchard_b', 'wall_orchard_c')),
+    wall: wallRow('GyFAFEgFFcwB'),
   },
   fb_hall: {
     remap: { '#':'wall_bloom', W:'wall_bloom_face', W2:'wall_bloom_win', '.':'floor_moss', ':':'floor_moss', f:'floor_bloom', T:'hedge_bloom', '=':'rug_bloom', m:'mat_bloom' },
@@ -1307,6 +1312,7 @@ const HOUSE_SKINS = {
       hedge_bloom: [['hedge_bloom_b', 0.34], ['hedge_bloom_c', 0.33]],
       wall_bloom: [['wall_bloom_b', 0.34], ['wall_bloom_c', 0.33]],
     }),
+    wall: wallRow('DCECDpgEEcsJ'),
   }
 };
 // Shared indoor wall kit (D151). Role letters, not PAL keys. `.` is empty. Mirrors are the other corner, the other side, and the other shadow.
@@ -1320,6 +1326,9 @@ const WALL_KIT = (() => {
   const capS = ['LLLLLLLLLLLLLLLL', 'CCCCCCCCCCCCCCCC'].concat(Array(14).fill(C16));
   const capSw = ['ccccccccccccccLL', 'cccccccccccccCCC'].concat(Array(14).fill(SIDE_W));
   const jambL = ['LLLLLLLLLLLLLLLL', 'CCCCCCCCCCCCCCCL'].concat(Array(14).fill('ccccccccccccccCL'));
+  // Side-wall door: the lip turns along the gap. West wall; _e is the mirror.
+  const jambN = Array(13).fill(SIDE_W).concat(['cccccccccccccCCL', 'ccccccccccccLLLL', 'ccccccccccccLLLL']);
+  const jambS = ['ccccccccccccLLLL', 'ccccccccccccLLLL', 'cccccccccccccCCL'].concat(Array(13).fill(SIDE_W));
   const face = ['FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF'].concat(Array(7).fill(F16), ['TTTTTTTTTTTTTTTT'], Array(3).fill(F16), ['BBBBBBBBBBBBBBBB', 'BBBBBBBBBBBBBBBB', 'FFFFFFFFFFFFFFFF']);
   const faceBody = 'FFffffffffffffff';
   const faceL = ['FFFFFFFFFFFFFFFF', 'FFFFFFFFFFFFFFFF'].concat(Array(7).fill(faceBody), ['FFTTTTTTTTTTTTTT'], Array(3).fill(faceBody), ['FFBBBBBBBBBBBBBB', 'FFBBBBBBBBBBBBBB', 'FFFFFFFFFFFFFFFF']);
@@ -1343,6 +1352,7 @@ const WALL_KIT = (() => {
     cap_s: capS, cap_sw: capSw, cap_se: mirrorRows(capSw),
     side_w: sideW, side_e: mirrorRows(sideW),
     jamb_l: jambL, jamb_r: mirrorRows(jambL),
+    jamb_n: jambN, jamb_s: jambS, jamb_n_e: mirrorRows(jambN), jamb_s_e: mirrorRows(jambS),
     face, face_l: faceL, face_r: mirrorRows(faceL), face_win: faceWin, face_door: faceDoor,
     shadow_n: shadowN, shadow_w: shadowW, shadow_e: mirrorRows(shadowW), shadow_nw: shadowNw, shadow_ne: mirrorRows(shadowNw),
   };
@@ -1364,11 +1374,11 @@ function buildWallKit(skinId, wall){
 }
 // D87: # wall, W face, . floor. Floor variants are gravel (b) and damp (c). Wall variants use the same mix so a rock row is not one stamp.
 // Y is a walkable sky decal (the yard patch). ~ is a walkable drip. = is the den rug. Odd W columns stay the rock face (no house window).
-const TUNNEL_SKIN = {"remap":{"#":"tunnel_wall","W":"tunnel_wall_face","W2":"tunnel_wall_face",".":"tunnel_floor","=":"tunnel_rug","m":"tunnel_mat"},"override":{},"walk":{"Y":1,"~":1},"decal":{"Y":"tunnel_sky","~":"tunnel_puddle"},"variants":{"tunnel_floor":[["tunnel_floor_b",0.34],["tunnel_floor_c",0.33]],"tunnel_wall":[["tunnel_wall_b",0.34],["tunnel_wall_c",0.33]],"tunnel_wall_face":[["tunnel_wall_face_b",0.34],["tunnel_wall_face_c",0.33]]}};
+const TUNNEL_SKIN = {"remap":{"#":"tunnel_wall","W":"tunnel_wall_face","W2":"tunnel_wall_face",".":"tunnel_floor","=":"tunnel_rug","m":"tunnel_mat"},"override":{},"walk":{"Y":1,"~":1},"decal":{"Y":"tunnel_sky","~":"tunnel_puddle"},"variants":{"tunnel_floor":[["tunnel_floor_b",0.34],["tunnel_floor_c",0.33]],"tunnel_wall":[["tunnel_wall_b",0.34],["tunnel_wall_c",0.33]],"tunnel_wall_face":[["tunnel_wall_face_b",0.34],["tunnel_wall_face_c",0.33]]},"wall":{"c":"d","C":"m","L":"n","f":"m","F":"d","T":"h","B":"n","S":"n","R":"d","G":"n","W":"h","D":"F"}};
 const SKINS = Object.assign({ lab: LAB_SKIN, tunnel: TUNNEL_SKIN }, HOUSE_SKINS);
-SKINS.school = HOUSE_SKINS.school = {"remap": {"#": "wall_wainscot_t", "W": "wall_wainscot_t_face", "W2": "wall_wainscot_t_win", ":": "floor_school_check", ",": "floor_school_tile", ".": "floor_school_lino", "=": "runner_school", "~": "rug_reading", "m": "mat_school"}, "decal": {}, "walk": {":": 1, ",": 1, "~": 1}};
-SKINS.flats_lobby = HOUSE_SKINS.flats_lobby = {"remap": {"#": "wall_wainscot_n", "W": "wall_wainscot_n_face", "W2": "wall_wainscot_n_win", ",": "floor_lobby_tile", ".": "floor_lobby_terrazzo", "=": "rug_lobby", "E": "lift_doors", "S": "stairs_up", "m": "mat_lobby"}, "decal": {}, "walk": {",": 1, "E": 1, "S": 0}};
-SKINS.flats_home = HOUSE_SKINS.flats_home = {"remap": {"#": "wall_home_5b", "W": "wall_home_5b_face", "W2": "wall_home_5b_win", ",": "floor_terracotta", ".": "floor_honey", "=": "rug_kitchen", "~": "runner_hall", "_": "carpet_navy", "m": "mat_home_5b"}, "decal": {}, "walk": {",": 1, "~": 1, "_": 1}};
+SKINS.school = HOUSE_SKINS.school = {"remap": {"#": "wall_wainscot_t", "W": "wall_wainscot_t_face", "W2": "wall_wainscot_t_win", ":": "floor_school_check", ",": "floor_school_tile", ".": "floor_school_lino", "=": "runner_school", "~": "rug_reading", "m": "mat_school"}, "decal": {}, "walk": {":": 1, ",": 1, "~": 1}, "wall": wallRow('tcnwhtndtcsn')};
+SKINS.flats_lobby = HOUSE_SKINS.flats_lobby = {"remap": {"#": "wall_wainscot_n", "W": "wall_wainscot_n_face", "W2": "wall_wainscot_n_win", ",": "floor_lobby_tile", ".": "floor_lobby_terrazzo", "=": "rug_lobby", "E": "lift_doors", "S": "stairs_up", "m": "mat_lobby"}, "decal": {}, "walk": {",": 1, "E": 1, "S": 0}, "wall": wallRow('nbdwhnddncsb')};
+SKINS.flats_home = HOUSE_SKINS.flats_home = {"remap": {"#": "wall_home_5b", "W": "wall_home_5b_face", "W2": "wall_home_5b_win", ",": "floor_terracotta", ".": "floor_honey", "=": "rug_kitchen", "~": "runner_hall", "_": "carpet_navy", "m": "mat_home_5b"}, "decal": {}, "walk": {",": 1, "~": 1, "_": 1}, "wall": wallRow('oypyopdFpcwp')};
 function buildWorldArt(){
   const A = {}, oval = (g, cx, cy, rx, ry, col) => { for (let y=0;y<16;y++) for (let x=0;x<16;x++) if (((x-cx)/rx)**2 + ((y-cy)/ry)**2 <= 1) px(g,col,x,y); };
   A.door = mkTile(g => { px(g,PAL.d,3,2,10,14); px(g,PAL.o,4,3,8,13); px(g,PAL.d,7,4,1,12); px(g,PAL.y,10,9,1,2); px(g,PAL.d,4,2,8,1); });
