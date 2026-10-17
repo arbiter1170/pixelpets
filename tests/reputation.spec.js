@@ -326,7 +326,12 @@ test('letter lines follow the effective tier', async ({ page }) => {
     const keepers = { tier: PixelPets.repTier('Captain Lumen'), line: PixelPets.npcLine('hq_lumen') };
     PixelPets.state.flags['story.side'] = 'glimmer';
     const glimmer = { tier: PixelPets.repTier('Captain Lumen'), line: PixelPets.npcLine('hq_lumen') };
-    return { plain, got, keepers, glimmer, v: PixelPets.state.v };
+    PixelPets.state.flags['story.side'] = 'keepers';
+    PixelPets.state.flags['story.cobble_end'] = true;
+    const councilBefore = PixelPets.npcLine('hc_lumen');
+    PixelPets.state.flags['story.hc_council_done'] = true;
+    const councilAfter = PixelPets.npcLine('hc_lumen');
+    return { plain, got, keepers, glimmer, councilBefore, councilAfter, v: PixelPets.state.v };
   });
   expect(r.plain.school).toBe('Class is out! Want to help me wipe the board? Buddy already tried. Now it\'s muddy.');
   expect(r.plain.lumen).toBe('Citizen. Hats off. Then you may speak.');
@@ -341,5 +346,7 @@ test('letter lines follow the effective tier', async ({ page }) => {
   expect(r.keepers.line).toBe(r.got['Captain Lumen'].warm.sample);
   expect(r.glimmer.tier).toBe('neutral');
   expect(r.glimmer.line).toBe(r.got['Captain Lumen'].neutral.sample);
+  expect(r.councilBefore).toBe('@hc_council');
+  expect(r.councilAfter).toBe('That road stays dark. Ships still fly.');
   expect(r.v).toBe(2);
 });

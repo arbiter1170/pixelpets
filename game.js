@@ -2016,27 +2016,31 @@ const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
 // Letter lines (D174). The design JSON stays verbatim. Samples live in data/reputation.json and are gated on story.hc_invite.
-// Intro keys (!story.met_* and lines that start a scene) stay first. The letter sits above else.
+// The letter goes in front of everyday chatter (else, standing., story.side) and behind a later story flag or a scene pointer.
 (function spliceRepLetters(){
   const samples = MD.reputation && MD.reputation.letter_quests && MD.reputation.letter_quests.samples;
   if (!samples) return;
   const tiers = ['close', 'warm', 'neutral', 'cool', 'hostile'];
-  const introKey = (k, v) => (typeof k === 'string' && k.startsWith('!story.met_')) || (typeof v === 'string' && v.charAt(0) === '@');
+  const chatter = k => k === 'else' || k.startsWith('standing.') || k.startsWith('story.side');
   for (const m of Object.values(WORLD)) for (const o of m.objs || []) {
     if (!o || o.pet || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
     const name = objName(o), bag = samples[name];
     if (!bag || typeof bag !== 'object') continue;
-    const intro = [], rest = [];
-    for (const [k, v] of Object.entries(o.lines || {})) (introKey(k, v) ? intro : rest).push([k, v]);
-    const lines = {};
-    for (const [k, v] of intro) lines[k] = v;
+    const add = [];
     for (const tier of tiers) {
       const text = bag[tier];
       if (typeof text !== 'string') continue;
       const key = 'story.hc_invite&reptier=' + tier;
-      if (!(key in lines)) lines[key] = text;
+      if (!o.lines || !(key in o.lines)) add.push([key, text]);
     }
-    for (const [k, v] of rest) if (!(k in lines)) lines[k] = v;
+    if (!add.length) continue;
+    const lines = {};
+    let placed = false;
+    for (const [k, v] of Object.entries(o.lines || {})) {
+      if (!placed && chatter(k)) { for (const pair of add) lines[pair[0]] = pair[1]; placed = true; }
+      lines[k] = v;
+    }
+    if (!placed) for (const pair of add) lines[pair[0]] = pair[1];
     o.lines = lines;
   }
 })();
