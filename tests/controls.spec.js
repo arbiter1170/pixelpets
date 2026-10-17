@@ -275,10 +275,12 @@ test('green copy: the Settings rows toast the approved lines', async ({ page }) 
   await page.locator('#settingsBtn').click();
   await page.locator('#setControls').click();
   await expect(page.locator('#toast')).toHaveText('Modern controls. Tap to walk or talk.');
-  await page.waitForTimeout(2600);
+  await expect(page.locator('#toast')).not.toHaveClass(/\bshow\b/);   // the previous toast has gone
+  await page.locator('#setJoystick').click({ trial: true });   // wait until the row can be clicked
   await page.locator('#setJoystick').click();
   await expect(page.locator('#toast')).toHaveText('Joystick on.');
-  await page.waitForTimeout(2600);
+  await expect(page.locator('#toast')).not.toHaveClass(/\bshow\b/);   // the previous toast has gone
+  await page.locator('#setControls').click({ trial: true });   // wait until the row can be clicked
   await page.locator('#setControls').click();
   await expect(page.locator('#toast')).toHaveText('Arcade controls. Pad and Talk button.');
 });
@@ -350,12 +352,16 @@ test('modern quest button marks a main step in gold and a side quest in blue', a
   expect(p.sideFill).toEqual(PIP.c);
   await page.evaluate(() => PixelPets.setFlag('story.dream_study', true));
   await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'main');
+  // The mark changes before the button is redrawn, so wait for the dots to repaint before reading them.
+  await expect.poll(async () => { const q = await questPips(page); return [String(q.mainFill) === String(PIP.y), q.sideFill]; }).toEqual([true, PIP.b]);
   p = await questPips(page);
   expect(p.label).toBe('QUEST, main story');
   expect(p.mainFill).toEqual(PIP.y);
   expect(p.sideFill).toEqual(PIP.b);
   await page.evaluate(() => { PixelPets.setFlag('story.phone_got', null); PixelPets.setFlag('story.dream_study', null); PixelPets.setFlag('story.hc_council_done', true); });
   await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'side');
+  // The mark changes before the button is redrawn, so wait for the dots to repaint before reading them.
+  await expect.poll(async () => { const q = await questPips(page); return [String(q.mainFill) === String(PIP.y), q.sideFill]; }).toEqual([false, PIP.c]);
   p = await questPips(page);
   expect(p.q).toBe('end');
   expect(p.label).toBe('QUEST, side quest');
@@ -363,6 +369,8 @@ test('modern quest button marks a main step in gold and a side quest in blue', a
   expect(p.mainFill).not.toEqual(PIP.y);
   await page.evaluate(() => { PixelPets.setFlag('story.phone_got', true); PixelPets.setFlag('story.dream_study', true); });
   await page.waitForFunction(() => !document.querySelector('#questBtn').dataset.questMark);
+  // The mark changes before the button is redrawn, so wait for the dots to repaint before reading them.
+  await expect.poll(async () => { const q = await questPips(page); return [String(q.mainFill) === String(PIP.y), q.sideFill]; }).toEqual([false, PIP.b]);
   p = await questPips(page);
   expect(p.label).toBe('QUEST');
   expect(p.mainFill).not.toEqual(PIP.y);

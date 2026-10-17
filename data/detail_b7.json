@@ -9,7 +9,7 @@
   "slicePatch": {
     "maps": {
       "mahopac_obs": {
-        "set": {"skin": "obs", "variants": true},
+        "set": {"skin": "obs", "variants": true, "wall": {"windows": [3, 6]}},
         "gridRows": {
           "2": "#uvuvuvu#",
           "3": "#z..z..z#",
@@ -25,7 +25,7 @@
         ]
       },
       "dream_2004": {
-        "set": {"skin": "dream_2004", "variants": true, "noPartner": true},
+        "set": {"skin": "dream_2004", "variants": true, "noPartner": true, "wall": {"windows": [4, 8]}},
         "gridRows": {"2": "#uvuvuvuvuvu#"},
         "addObjs": [
           {"kind": "prop", "id": "dream_blocks", "x": 1, "y": 6, "sprite": "dream_blocks", "lines": {"else": "Wooden blocks, stacked and still."}},
@@ -35,7 +35,7 @@
         ]
       },
       "dream_party": {
-        "set": {"skin": "dream_party"},
+        "set": {"skin": "dream_party", "wall": {"windows": [4, 7]}},
         "gridRows": {
           "2": "#uvuvuvuvu#",
           "3": "#ppqppqppp#",
@@ -45,7 +45,7 @@
         }
       },
       "dream_drive": {
-        "set": {"skin": "dream_drive", "variants": true},
+        "set": {"skin": "dream_drive", "variants": true, "wall": {"windows": [3, 6]}},
         "gridRows": {
           "2": "#uvuvuvu#",
           "3": "#..j..j.#",

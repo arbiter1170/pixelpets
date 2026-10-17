@@ -6,18 +6,18 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 const ROOMS = [
-  { id: 'mahopac_obs', w: 9, h: 7, ax: 4, ay: 5, safe: [4, 5], floor: '.', wall: 'wall_obs_dome', face: 'wall_obs_face',
+  { id: 'mahopac_obs', w: 9, h: 7, ax: 4, ay: 5, safe: [4, 5], floor: '.', skin: 'obs', wall: 'obs__', face: 'obs__face',
     variants: true, dream: null,
     old: ['obs_out', 'obs_scope'],
     exit: { x: 4, y: 5, dir: 'down', to: 'mahopac', tx: 5, ty: 8 } },
   { id: 'dream_2004', w: 13, h: 9,   // widened for the kitchen and TV corner (Mom and Dad)
-    ax: 4, ay: 6, safe: [4, 6], floor: '.', wall: 'wall_mist', face: 'wall_mist_face',
+    ax: 4, ay: 6, safe: [4, 6], floor: '.', skin: 'dream_2004', wall: 'dream_2004__', face: 'dream_2004__face',
     variants: true, dream: 'young',
     old: ['pop_toy', 'dream_toy_sign'] },
-  { id: 'dream_party', w: 11, h: 8, ax: 5, ay: 6, safe: [5, 6], floor: '.', wall: 'wall_fest', face: 'wall_fest_face',
+  { id: 'dream_party', w: 11, h: 8, ax: 5, ay: 6, safe: [5, 6], floor: '.', skin: 'dream_party', wall: 'dream_party__', face: 'dream_party__face',
     variants: false, dream: 'child',
     old: ['pins', 'balloon_red', 'balloon_yellow', 'balloon_blue', 'dream_party_sign'] },
-  { id: 'dream_drive', w: 9, h: 7, ax: 5, ay: 3, safe: [5, 3], floor: '.', wall: 'wall_night', face: 'wall_night_face',
+  { id: 'dream_drive', w: 9, h: 7, ax: 5, ay: 3, safe: [5, 3], floor: '.', skin: 'dream_drive', wall: 'dream_drive__', face: 'dream_drive__face',
     variants: true, dream: 'child',
     old: ['dream_dad', 'fry_tray'] },
 ];
@@ -139,7 +139,7 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap', a
     expect(row.edge, row.id).toBeGreaterThan(0);
     expect(row.art, row.id).toEqual([]);
     expect(row.safe, row.id).toEqual([false, false]);
-    expect(row.wall, row.id).toBe(room.wall);
+    expect(row.wall.startsWith(room.wall), row.id + ' ' + row.wall).toBe(true);
     expect(row.face, row.id).toBe(room.face);
     floors.add(row.floor); walls.add(row.wall + '|' + row.face);
   }

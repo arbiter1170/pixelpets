@@ -91,7 +91,7 @@ test('the four rooms keep 18x12, old ids, rock tiles, and a floor under 70%', as
   expect(lab.share.walk).toBe(216);
   expect(lab.share.share).toBeLessThanOrEqual(0.7);
   expect(lab.scuff).toBe('lab_floor_scuff');
-  expect(lab.win).toBe('lab_wall_face');
+  expect(lab.win).toBe('lab__face_l');
 
   for (const id of ROOMS) {
     const r = await page.evaluate((id) => {
@@ -119,17 +119,23 @@ test('the four rooms keep 18x12, old ids, rock tiles, and a floor under 70%', as
         const row = [];
         for (let x = 0; x < 18; x++) {
           const t = PixelPets.tileInfo(x, y);
-          row.push(t.decal || t.tile);
-          if (!String(t.decal || t.tile).startsWith('tunnel_')) bad = (t.decal || t.tile) + ' @' + x + ',' + y;
-          if (t.ch === '.' || t.ch === 'Y' || t.ch === '~' || t.ch === '=' || t.ch === 'm') names.push(t.decal || t.tile);
+          const name = t.decal || t.tile;
+          row.push(t.solid ? 'wall' : name);
+          if (!String(name).startsWith('tunnel_')) bad = name + ' @' + x + ',' + y;
+          if (t.ch === '.' || t.ch === 'Y' || t.ch === '~' || t.ch === '=' || t.ch === 'm') names.push(name);
         }
         vis.push(row);
       }
       const scan = (cells) => {
-        let n = 1;
-        for (let i = 1; i <= cells.length; i++) {
-          if (i < cells.length && cells[i] === cells[i - 1]) n++;
-          else { if (n > 6) runs.push(n + ' ' + cells[i - 1]); n = 1; }
+        let n = 0, prev = null;
+        for (let i = 0; i <= cells.length; i++) {
+          const c = i < cells.length && cells[i] !== 'wall' ? cells[i] : null;
+          if (c && c === prev) n++;
+          else {
+            if (n > 6) runs.push(n + ' ' + prev);
+            n = c ? 1 : 0;
+            prev = c;
+          }
         }
       };
       vis.forEach(scan);

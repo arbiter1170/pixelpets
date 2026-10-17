@@ -6,8 +6,8 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 - What changed and why: Hearthmoor grows from 24 by 20 to 24 by 24. Rows 0-18 stay put, and so does every door, warp, sign, respawn, and prop. The new path is School Lane. Lizzy stands at (9, 20) facing up, and Buddy stands at (10, 20) facing up. You walk down the lane and talk to her from the grass above. The intro box does not cover her. Save `v` stays 2.
 - Files touched: `data/maps_slice.json`, `data/mapdata.js`, `data/detail_lizzy.json`, `tests/lizzy.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
-- Commit(s) + build id: build 20261017-0304, restamped 20261017-0306 after merging the music loops from main.
-- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390 after merging main. PP_TEST RESULT: PASS exit=0 passed=1029 failed=0 flaky=0 skipped=12 time=1475s. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Commit(s) + build id: build 20261017-0304, restamped 20261017-0306 after merging the music loops from main, and 20261017-0404 after merging main with the interior wall kit (PR #89).
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390 after merging the music loops: PP_TEST RESULT: PASS exit=0 passed=1029 failed=0 flaky=0 skipped=12 time=1475s. After merging main with PR #89 (build 20261017-0404): PP_TEST RESULT: FAIL exit=1 passed=1030 failed=2 flaky=0 skipped=12 time=3125s. Both failures were 30 s timeouts in an unusually slow run (about twice the usual time), recorded as flakes: `[320] maps_b5.spec.js:159` (the door reaches every person) and `[390] group_battle.spec.js:77` (one turn). Each passed 5 of 5 when rerun alone at that width, and `node tools/pp_test.js tests/maps_b5.spec.js` at 320, 375, and 390 gave PP_TEST RESULT: PASS exit=0 passed=12 failed=0 flaky=0 skipped=0 time=46s. `python3 tools/bump_build.py --check` exit 0.
 - Decisions made (colour + reasoning): D170 red, settled by Vincent Oct 17, 2026. Reshapes an Act 1 town, the exception to D81. No new id. No id was renumbered.
 - Anything left unfinished: the other Lizzy packets are not this PR.
 
@@ -28,6 +28,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/lizzy.spec.js` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=18 failed=0 flaky=0 skipped=0. No console errors.
 - Decisions made (colour + reasoning): D172 green, settled by Vincent Oct 17, 2026. D162–D167 and D170–D182 recorded as settled. No new id. D168–D169 left for the music build. No id was renumbered.
 - Anything left unfinished: the dialog-box rule (D171) and the Hearthmoor south rows (D170) are the next commits on this branch. The other Lizzy packets are not this PR.
+
+## 2026-10-17 02:19 ET: Interior wall kit on every room (build 20261017-0352)
+
+- What changed and why: Every interior now uses the shared two-tile wall kit, in that skin's own colours. Your Home already had it. The other 39 rooms gain the cap, face, trim, baseboard, corners, folds, windows, door jambs, and the floor shadow. Floors, grids, warps, props, and walkability stay as they are. Save `v` stays 2.
+- Files touched: `sprites.js`, `game.js`, `data/detail_b5.json`, `data/detail_b6.json`, `data/detail_b7.json`, `data/detail_lizzy.json`, `data/fernbrook_rooms.json`, `data/heights.json`, `data/mapdata.js`, `tests/interior_walls.spec.js`, `tests/house_reskin.spec.js`, `tests/lantern_palette.spec.js`, `tests/obs_fix.spec.js`, `tests/maps_b2.spec.js`, `tests/maps_b3.spec.js`, `tests/maps_b5.spec.js`, `tests/maps_b7.spec.js`, `tests/maps_b8.spec.js`, `tests/controls.spec.js`, `README.md`, `tests/README.md`, `NEXT_PLAN.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0352 (first stamped 20261017-0219; restamped after merging main with PR #88 and fixing two test races).
+- Tests run and result (widths, checks): before the main merge, `PP_TEST RESULT: PASS exit=0 passed=990 failed=0 flaky=0 skipped=12 time=1469s` at 320, 375, and 390. After merging main with PR #88 (0183fa1): `PP_TEST RESULT: FAIL exit=1 passed=1004 failed=1 flaky=0 skipped=12 time=1647s`; the one failure was a race in `tests/controls.spec.js` (the quest-button dots were read before the button redrew). Two test-only fixes in `tests/controls.spec.js`: the quest-button test now polls until the dots repaint before reading them, and the green-copy Settings test waits until the previous toast is gone and the row can be clicked instead of fixed 2.6 s waits. Every check is kept. `tests/controls.spec.js` at 320, 375, and 390, three runs each: 9 of 9 runs pass (189 passed, 0 failed). `python3 tools/bump_build.py --check` exit 0. Interior-wall checker: `PASS (39 PR 2 rooms, 33 skins, 40 interiors)`.
+- Decisions made (colour + reasoning): green. D151, D152, and D153 stay settled. No new id. No id was renumbered. The next free id is D170 (D168–D169 are the music test calls from PR #88).
+- Anything left unfinished: none from this kit. Next work stays Q19, town boards.
 
 ## 2026-10-17 02:08 ET: Eight music loops for a listening test (build 20261017-0208)
 

@@ -121,7 +121,7 @@ test('each floor is walkable, under the floor cap, and its accent is its own', a
   expect(r.rx_f1.panel).toBeNull();
   expect(r.rx_f2.blue).toBe('lab_stripe_blue');
   expect(r.rx_f2.mint).toBeNull();
-  expect(r.rx_f2.panel[0]).toBe('lab_wall_panel');
+  expect(r.rx_f2.panel[0]).toBe('lab__face');
   expect(r.rx_f2.panel[1]).toBe(true);
   expect(r.rx_f3.amber).toBe('lab_stripe_amber');
   expect(r.rx_f3.blue).toBeNull();
