@@ -16,7 +16,7 @@
   },
   "maps": {
     "hearthmoor": {
-      "name": "Hearthmoor", "backdrop": "town", "w": 24, "h": 20, "spawns": null, "respawn": {"x": 16, "y": 13, "facing": "down"}, "start": {"x": 3, "y": 5, "facing": "down"}, "safe": {"x": 3, "y": 6},
+      "name": "Hearthmoor", "backdrop": "town", "w": 24, "h": 24, "spawns": null, "respawn": {"x": 16, "y": 13, "facing": "down"}, "start": {"x": 3, "y": 5, "facing": "down"}, "safe": {"x": 3, "y": 6},
       "zones": [],
       "grid": [
         "TTTTTTTTTTTTTTTTTTTTTTTT",
@@ -38,6 +38,10 @@
         "TggggggggsssssgggTggTTTT",
         "TTgggfggggggfgggggTgTTTT",
         "TgTggggggggggggggggTTTTT",
+        "TggpppppppppppppppggTTTT",
+        "TgfggggggggggggggfggTTTT",
+        "TggggfggggggggggfgggTTTT",
+        "TTggggggggggggggggTTTTTT",
         "TTTTTTTTTTTTTTTTTTTTTTTT"
       ],
       "objs": [

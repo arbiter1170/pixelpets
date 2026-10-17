@@ -489,6 +489,9 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .scene-ov{position:fixed;inset:0;z-index:9;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;max-width:480px;margin:0 auto;
   padding:0 8px calc(var(--tabs-h, 66px) + 12px);box-sizing:border-box;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 .scene-ov[hidden]{display:none}
+/* D171: the box moves under the top HUD when the bottom box would cover the speaker. Arcade pad has no top row. */
+.scene-ov.top{justify-content:flex-start;padding-top:8px}
+body.ctl-modern .scene-ov.top{padding-top:56px}
 .sbox{position:relative;min-height:96px;box-sizing:border-box;padding:24px 12px 10px;background:var(--w);color:var(--k);
   box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);cursor:pointer}
 .sb-who{position:absolute;left:8px;top:-14px;padding:2px 8px;background:var(--k);color:var(--y);font-size:18px;line-height:1.1;box-shadow:0 0 0 2px var(--d)}

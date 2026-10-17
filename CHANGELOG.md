@@ -2,6 +2,33 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 03:04 ET: Hearthmoor grows south to School Lane (D170)
+
+- What changed and why: Hearthmoor grows from 24 by 20 to 24 by 24. Rows 0-18 stay put, and so does every door, warp, sign, respawn, and prop. The new path is School Lane. Lizzy stands at (9, 20) facing up, and Buddy stands at (10, 20) facing up. You walk down the lane and talk to her from the grass above. The intro box does not cover her. Save `v` stays 2.
+- Files touched: `data/maps_slice.json`, `data/mapdata.js`, `data/detail_lizzy.json`, `tests/lizzy.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0304, restamped 20261017-0306 after merging the music loops from main, and 20261017-0404 after merging main with the interior wall kit (PR #89).
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390 after merging the music loops: PP_TEST RESULT: PASS exit=0 passed=1029 failed=0 flaky=0 skipped=12 time=1475s. After merging main with PR #89 (build 20261017-0404): PP_TEST RESULT: FAIL exit=1 passed=1030 failed=2 flaky=0 skipped=12 time=3125s. Both failures were 30 s timeouts in an unusually slow run (about twice the usual time), recorded as flakes: `[320] maps_b5.spec.js:159` (the door reaches every person) and `[390] group_battle.spec.js:77` (one turn). Each passed 5 of 5 when rerun alone at that width, and `node tools/pp_test.js tests/maps_b5.spec.js` at 320, 375, and 390 gave PP_TEST RESULT: PASS exit=0 passed=12 failed=0 flaky=0 skipped=0 time=46s. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D170 red, settled by Vincent Oct 17, 2026. Reshapes an Act 1 town, the exception to D81. No new id. No id was renumbered.
+- Anything left unfinished: the other Lizzy packets are not this PR.
+
+## 2026-10-17 02:57 ET: Dialog box clears the speaker (D171)
+
+- What changed and why: When a person on the map would stand under the text box, the box moves to the top. If the top would cover them too, the view eases over 150 ms so they sit in the top of the screen, clamped to the map. Reduced motion jumps. Narration, the phone, and a letter overlay stay at the bottom. A say step can force `{"box":"top"|"bottom"}`. The choice stays put for a run of lines from the same speaker. Save `v` stays 2.
+- Files touched: `game.js`, `style.css`, `tests/dialog_clear.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0257.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/dialog_clear.spec.js` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=24 failed=0 flaky=0 skipped=0 time=34s. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D171 red, settled by Vincent Oct 17, 2026. No new id. No id was renumbered.
+- Anything left unfinished: the Hearthmoor south rows (D170) are the next commit on this branch. The other Lizzy packets are not this PR.
+
+## 2026-10-17 02:40 ET: Lizzy speaks English (D172)
+
+- What changed and why: Lizzy understands Spanish and answers in English. Four lines in her intro change: the greeting, "kiddo", "Oh, he is.", and the snack line. Her sisters' Spanish is unchanged. The other nine rewrites are story lines that are not in the game. Save `v` stays 2. Settled rows D162–D167 and D170–D182 are recorded. The next free id is D183. D168–D169 stay reserved for the music test build.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `tests/lizzy.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0240.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/lizzy.spec.js` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=18 failed=0 flaky=0 skipped=0. No console errors.
+- Decisions made (colour + reasoning): D172 green, settled by Vincent Oct 17, 2026. D162–D167 and D170–D182 recorded as settled. No new id. D168–D169 left for the music build. No id was renumbered.
+- Anything left unfinished: the dialog-box rule (D171) and the Hearthmoor south rows (D170) are the next commits on this branch. The other Lizzy packets are not this PR.
+
 ## 2026-10-17 02:19 ET: Interior wall kit on every room (build 20261017-0352)
 
 - What changed and why: Every interior now uses the shared two-tile wall kit, in that skin's own colours. Your Home already had it. The other 39 rooms gain the cap, face, trim, baseboard, corners, folds, windows, door jambs, and the floor shadow. Floors, grids, warps, props, and walkability stay as they are. Save `v` stays 2.

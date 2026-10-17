@@ -36,7 +36,15 @@ function phoneShots(page) {
   return w === 320 || w === 390;
 }
 
-test('Hearthmoor keeps its size, moves five props, and adds two buildings', async ({ page }) => {
+async function tap(page, key, x, y) {
+  await page.keyboard.press(key);
+  await page.waitForFunction(({ x, y }) => {
+    const k = PixelPets.keeper;
+    return k.x === x && k.y === y && !k.moving;
+  }, { x, y });
+}
+
+test('Hearthmoor grows to 24 by 24, moves five props, and adds two buildings', async ({ page }) => {
   await boot(page, save());
   const r = await page.evaluate(({ before, after }) => {
     const m = MAPDATA.maps_slice.maps.hearthmoor;
@@ -70,7 +78,7 @@ test('Hearthmoor keeps its size, moves five props, and adds two buildings', asyn
     const school = roofs.school, flats = roofs.flats;
     const door = id => info.objs.find(o => o.id === id);
     return {
-      w: info.w, h: info.h, v: live.state.v,
+      w: info.w, h: info.h, v: live.state.v, grid,
       changed, rows: Object.keys(rows).sort(),
       rowMatch: [15, 16, 17].every(y => grid[y] === after[y]),
       otherSame: grid.every((row, y) => y === 15 || y === 16 || y === 17 || row.length === m.grid[y].length),
@@ -84,7 +92,15 @@ test('Hearthmoor keeps its size, moves five props, and adds two buildings', asyn
   }, { before: BEFORE, after: AFTER });
   expect(r.v).toBe(2);
   expect(r.w).toBe(24);
-  expect(r.h).toBe(20);
+  expect(r.h).toBe(24);
+  expect(r.grid[18]).toBe('TgTggggggggggggggggTTTTT');
+  expect(r.grid.slice(19)).toEqual([
+    'TggpppppppppppppppggTTTT',
+    'TgfggggggggggggggfggTTTT',
+    'TggggfggggggggggfgggTTTT',
+    'TTggggggggggggggggTTTTTT',
+    'TTTTTTTTTTTTTTTTTTTTTTTT',
+  ]);
   expect(r.changed).toBe(24);
   expect(r.rows).toEqual(['15', '16', '17']);
   expect(r.rowMatch).toBe(true);
@@ -236,17 +252,24 @@ test('the lift stays shut until Lizzy has met you', async ({ page }) => {
 });
 
 test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page }) => {
-  await boot(page, save({}, { map: 'hearthmoor', x: 8, y: 18, facing: 'left' }));
+  const s = save({ 'story.early_done': true }, { map: 'hearthmoor', x: 8, y: 18, facing: 'left' });
+  s.settings.controls = 'modern';
+  await boot(page, s);
   const before = await page.evaluate(() => {
     const steps = MAPDATA.detail_lizzy.scenes.lizzy_intro;
     const blob = JSON.stringify(steps);
     const objs = PixelPets.mapInfo.objs.filter(o => o.id === 'hm_lizzy' || o.id === 'hm_buddy');
+    const at = id => PixelPets.objPos(id);
     return {
       present: objs.map(o => o.id).sort(),
+      h: PixelPets.mapInfo.h,
+      lizzyAt: { x: at('hm_lizzy').x, y: at('hm_lizzy').y, facing: at('hm_lizzy').facing },
+      buddyAt: { x: at('hm_buddy').x, y: at('hm_buddy').y, facing: at('hm_buddy').facing },
       v: PixelPets.state.v,
       mira: blob.includes('¡Mira quién es!'),
       heart: blob.includes('corazón'),
       road: blob.includes("Pa' que no pases hambre"),
+      english: blob.includes('Look who it is!'),
       place: /puerto rico/i.test(blob),
       buddyLook: PixelPets.spriteLook('hm_buddy'),
       lizzy: PixelPets.spriteLook('hm_lizzy'),
@@ -255,10 +278,14 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
     };
   });
   expect(before.present).toEqual(['hm_buddy', 'hm_lizzy']);
+  expect(before.h).toBe(24);
+  expect(before.lizzyAt).toEqual({ x: 9, y: 20, facing: 'up' });
+  expect(before.buddyAt).toEqual({ x: 10, y: 20, facing: 'up' });
   expect(before.v).toBe(2);
-  expect(before.mira).toBe(true);
-  expect(before.heart).toBe(true);
-  expect(before.road).toBe(true);
+  expect(before.mira).toBe(false);
+  expect(before.heart).toBe(false);
+  expect(before.road).toBe(false);
+  expect(before.english).toBe(true);
   expect(before.place).toBe(false);
   expect(before.buddyLook).toBe(null);
   expect(before.lizzy.accessory).toBe('flower_clip');
@@ -266,11 +293,32 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
   expect(before.picker).toEqual(['none', 'glasses', 'bow', 'cap', 'scarf']);
   expect(before.clip).toBe(true);
 
-  await page.keyboard.press('ArrowLeft');
+  await tap(page, 'ArrowDown', 8, 19);
+  await tap(page, 'ArrowRight', 9, 19);
+  await page.keyboard.press('ArrowDown');
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'lizzy_intro' && PixelPets.scene.full);
   const first = await page.evaluate(() => PixelPets.scene.text);
-  expect(first).toContain('¡Mira quién es!');
-  if (phoneShots(page)) await shot(page, 'lizzy-scene');
+  expect(first).toContain('Look who it is!');
+  const clear = await page.evaluate(() => {
+    const c = document.querySelector('#mapCanvas');
+    const cr = c.getBoundingClientRect();
+    const k = cr.width / c.width;
+    const cam = PixelPets.walk.cam;
+    const o = PixelPets.mapInfo.objs.find(q => q.id === 'hm_lizzy');
+    const tileX = o.x * 16 - cam.x, tileY = o.y * 16 - cam.y;
+    const margin = 8, head = 6;
+    const left = cr.left + (tileX - margin) * k;
+    const top = cr.top + (tileY - margin - head) * k;
+    const width = (16 + margin * 2) * k;
+    const height = (16 + margin * 2 + head) * k;
+    const box = document.querySelector('#sbox').getBoundingClientRect();
+    const hit = left < box.right && left + width > box.left && top < box.bottom && top + height > box.top;
+    return { hit, v: PixelPets.state.v, y: PixelPets.keeper.y };
+  });
+  expect(clear.v).toBe(2);
+  expect(clear.y).toBe(19);
+  expect(clear.hit).toBe(false);
+  if (page.viewportSize().width === 390) await shot(page, 'lizzy-school-lane');
   await playScene(page, ['Hi, Lizzy!', "He's so annoying."]);
   const after = await page.evaluate(() => ({
     met: PixelPets.state.flags['story.lizzy_met'],
@@ -323,10 +371,67 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
       const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has((o.x + dx) + ',' + (o.y + dy)));
       return { id, ok: open ? seen.has(spot) : near };
     });
-    return { doors, warps };
+    const open = (x, y) => !PixelPets.tileInfo(x, y).solid;
+    const seenSouth = new Set(), qSouth = [];
+    for (let x = 0; x < W; x++) if (open(x, 18)) { seenSouth.add(x + ',18'); qSouth.push([x, 18]); }
+    while (qSouth.length) {
+      const [x, y] = qSouth.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, k = nx + ',' + ny;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H || seenSouth.has(k) || !open(nx, ny)) continue;
+        seenSouth.add(k); qSouth.push([nx, ny]);
+      }
+    }
+    return { doors, warps, lane: seenSouth.has('9,20') };
   });
   expect(reach.doors.filter(d => !d.ok).map(d => d.id)).toEqual([]);
   expect(reach.warps.filter(w => !w.ok)).toEqual([]);
+  expect(reach.lane).toBe(true);
+});
+
+test('every Lizzy line on main is English and within 110 characters', async ({ page }) => {
+  await boot(page, save());
+  const lines = await page.evaluate(() => {
+    const out = [];
+    const walk = (n) => {
+      if (!Array.isArray(n)) return;
+      if (n[0] === 'say' && n[1] === 'Lizzy' && typeof n[2] === 'string') out.push(n[2]);
+      n.forEach(walk);
+    };
+    const takeObj = (o) => {
+      if (!o || o.name !== 'Lizzy' || !o.lines) return;
+      for (const v of Object.values(o.lines)) if (typeof v === 'string' && v[0] !== '@') out.push(v);
+    };
+    for (const src of Object.values(MAPDATA)) {
+      if (!src || typeof src !== 'object') continue;
+      if (src.scenes) for (const steps of Object.values(src.scenes)) walk(steps);
+      const maps = Object.assign({}, src.maps || {}, (src.slicePatch && src.slicePatch.maps) || {});
+      for (const m of Object.values(maps)) {
+        for (const o of [].concat(m.objs || [], m.addObjs || [], m.replaceObjs || [])) takeObj(o);
+      }
+    }
+    return { lines: out, v: PixelPets.state.v };
+  });
+  expect(lines.v).toBe(2);
+  expect(lines.lines.length).toBeGreaterThan(0);
+  const words = ['corazón', 'corazon', 'mira', 'bendito', 'provecho', 'wepa', 'gracias', "pa'", 'ay', 'fuera', 'buenas', 'noches'];
+  const hasWord = (line, word) => {
+    const s = line.toLowerCase(), w = word.toLowerCase();
+    let i = 0;
+    while ((i = s.indexOf(w, i)) >= 0) {
+      const before = i === 0 || !/[a-záéíóúñ]/i.test(s[i - 1]);
+      const after = i + w.length >= s.length || !/[a-záéíóúñ]/i.test(s[i + w.length]);
+      if (before && after) return true;
+      i += w.length;
+    }
+    return false;
+  };
+  const marks = /[¡¿ñáéíóúÑÁÉÍÓÚ]/;
+  for (const line of lines.lines) {
+    for (const word of words) expect(hasWord(line, word), line + ' / ' + word).toBe(false);
+    expect(line, line).not.toMatch(marks);
+    expect(Array.from(line).length, line).toBeLessThanOrEqual(110);
+  }
 });
 
 async function saidLines(page, choices) {
@@ -360,7 +465,12 @@ async function saidLines(page, choices) {
 
 test('the intro branches on Rook, and Buddy is not a battle', async ({ page }) => {
   await boot(page, save({ 'story.rival1_done': true, 'story.rival1_result': 'won' }, { map: 'hearthmoor', x: 5, y: 18, facing: 'right' }));
-  await page.keyboard.press('ArrowRight');
+  await tap(page, 'ArrowRight', 6, 18);
+  await tap(page, 'ArrowRight', 7, 18);
+  await tap(page, 'ArrowRight', 8, 18);
+  await tap(page, 'ArrowDown', 8, 19);
+  await tap(page, 'ArrowRight', 9, 19);
+  await page.keyboard.press('ArrowDown');
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
   const lines = await saidLines(page, ['Hug Buddy', 'Is Rook okay?']);
   const flags = await page.evaluate(() => ({

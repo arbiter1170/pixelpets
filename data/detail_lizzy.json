@@ -134,9 +134,9 @@
       "id": "hm_lizzy",
       "name": "Lizzy",
       "look": "lizzy",
-      "x": 6,
-      "y": 18,
-      "facing": "left",
+      "x": 9,
+      "y": 20,
+      "facing": "up",
       "when": [
        "story.starter_received",
        "!story.lizzy_met"
@@ -148,9 +148,9 @@
       "id": "hm_buddy",
       "name": "Buddy",
       "pet": "fetch/1",
-      "x": 7,
-      "y": 18,
-      "facing": "left",
+      "x": 10,
+      "y": 20,
+      "facing": "up",
       "when": [
        "story.starter_received",
        "!story.lizzy_met"
@@ -809,7 +809,7 @@
    [
     "say",
     "Lizzy",
-    "{name}! ¡Mira quién es! Come here, let me look at you."
+    "{name}! Look who it is! Come here, let me look at you."
    ],
    [
     "say",
@@ -851,7 +851,7 @@
        [
         "say",
         "Lizzy",
-        "Hi yourself, corazón. You grew a whole head since summer."
+        "Hi yourself, kiddo. You grew a whole head since summer."
        ]
       ]
      ]
@@ -923,7 +923,7 @@
        [
         "say",
         "Lizzy",
-        "Ay, he is. And he'd still walk through a storm for you. Remember that."
+        "Oh, he is. And he'd still walk through a storm for you. Remember that."
        ]
       ]
      ]
@@ -942,7 +942,7 @@
    [
     "say",
     "Lizzy",
-    "For the road. Pa' que no pases hambre. And if anyone gives you trouble, you tell me."
+    "For the road, so you don't go hungry. And if anyone gives you trouble, you tell me."
    ],
    [
     "setFlag",
