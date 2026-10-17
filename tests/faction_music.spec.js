@@ -39,9 +39,9 @@ test('wild loops cycle, and a Keeper hears Glimmerwell as the dark theme', async
   expect(battles.first).toBe('glimmer_first');
   expect(battles.later).toBe('glimmer_battle');
   expect(battles.lead).toBe('glimmer_battle');
-  expect(battles.keeperTrial).toBe('battle');
+  expect(battles.keeperTrial).toBe('trial');
   expect(battles.asCompany).toBe('battle');
-  expect(battles.rook).toBe('battle');
+  expect(battles.rook).toBe('rival');
 });
 
 test('keeper and Glimmerwell lines follow pledge and standing', async ({ page }) => {

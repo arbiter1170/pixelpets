@@ -54,6 +54,7 @@
     "fb_hall_in": {
       "name": "Bloom Trial Hall",
       "kind": "interior",
+      "music": "hall",
       "outdoor": "fernbrook",
       "door": "fb_hall",
       "backdrop": "town",

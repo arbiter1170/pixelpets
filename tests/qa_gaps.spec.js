@@ -141,12 +141,12 @@ test('map loops follow town, route, dream, charity, chapel, and arcade', async (
   expect(got.tracks.fernbrook).toBe('town');
   expect(got.tracks.cobblecrest).toBe('town');
   expect(got.tracks.hm_home_in).toBe('town');
-  expect(got.tracks.cc_hall_in).toBe('town');
+  expect(got.tracks.cc_hall_in).toBe('hall');
   expect(got.tracks.route2).toBe('route');
   expect(got.meadow).toBe('meadow');
   expect(got.tracks.proto).toBe('route');
   expect(got.dream).toEqual({ kind: 'interior', backdrop: 'town', dream: 'young', music: null });
-  expect(got.tracks.dream_2004).toBe('route');
+  expect(got.tracks.dream_2004).toBe('dream');
   expect(got.tracks.highcharity).toBe('charity');
   expect(got.air).toEqual({ kind: 'interior', backdrop: 'town', music: 'charity' });
   expect(got.tracks.hc_airport_in).toBe('charity');

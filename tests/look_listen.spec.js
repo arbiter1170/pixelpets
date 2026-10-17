@@ -32,7 +32,7 @@ test('glimmer towns, the quarry, and the grove pick their own loops', async ({ p
     route2_glen: 'grove',
     highcharity: 'charity',
     hc_church_in: 'chapel',
-    dream_2004: 'route',
+    dream_2004: 'dream',
     route2: 'route',
   });
   expect(got.glimmer).toEqual({
@@ -42,7 +42,7 @@ test('glimmer towns, the quarry, and the grove pick their own loops', async ({ p
     route2_glen: 'grove',
     highcharity: 'charity',
     hc_church_in: 'chapel',
-    dream_2004: 'route',
+    dream_2004: 'dream',
     route2: 'route',
   });
 });

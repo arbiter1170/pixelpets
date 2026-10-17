@@ -5,6 +5,14 @@ window.PP_DEBUG_HTML = `
   <div class="ov-inner dbg-inner" role="dialog" aria-modal="true" aria-labelledby="dbgTitle">
     <div class="ov-title" id="dbgTitle">Debug</div>
     <p id="dbgLive" class="dbg-live" hidden></p>
+    <section class="dbg-sec" id="dbgMusic">
+      <div class="dbg-h">Music</div>
+      <select id="dbgMusicId" aria-label="Music loop"></select>
+      <div class="dbg-row">
+        <button id="dbgMusicPlay" class="btn sm" type="button">PLAY</button>
+        <button id="dbgMusicBack" class="btn sm" type="button">BACK</button>
+      </div>
+    </section>
     <div id="dbgBattleHp" hidden>
       <div class="dbg-row">
         <input id="dbgFoeHp" type="number" min="0" inputmode="numeric" aria-label="Foe HP">

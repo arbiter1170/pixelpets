@@ -1854,33 +1854,44 @@ function useMap(id){
   wallMaskOf(CUR);
 }
 const isRoom = () => CUR.kind === 'interior';
-// Explicit map.music wins (High Charity). Otherwise: quarry and grove have their own loops, dreams stay on
-// route, and a Glimmerwell pledge swaps the shared town loop for town_glimmer. Keepers towns stay on town.
+// Explicit map.music wins (High Charity, the Trial Halls, the lab). Otherwise: quarry and grove have their
+// own loops, dream rooms play dream, and a Glimmerwell pledge swaps the shared town loop for town_glimmer.
+// Keepers towns stay on town.
 function trackFor(map){
   if (!map) return null;
   if (map.music && PPSound.musicIds().includes(map.music)) return map.music;
   if (map.id === 'cobble_quarry') return 'quarry';
-  if (map.dream) return 'route';
+  if (map.dream) return 'dream';
   if (map.backdrop === 'grove') return 'grove';
   const townish = map.kind === 'interior' || map.backdrop === 'town';
   if (townish) return side() === 'glimmer' ? 'town_glimmer' : 'town';
   if (map.backdrop === 'route' || map.backdrop === 'meadow') return 'route';
   return null;
 }
-// Wild fights cycle three cheerful loops. Glimmerwell fights, while pledged to the Keepers, use the dark loops:
-// the first one is the slow sting, later ones the driving minor theme. Keeper trials and route kids stay on `battle`.
+// Wild fights cycle three cheerful loops. Rook fights play rival on either pledge, and that check is before
+// the Glimmerwell one so a Rook fight does not open, or use up, the first Glimmerwell sting. Trial Hall
+// leaders (the glimmer variants merge over the same ids) play trial. Other Glimmerwell fights, while pledged
+// to the Keepers, use the dark loops: the first one is the slow sting, later ones the driving minor theme.
+// Keeper trials outside the two Halls, and route kids, stay on battle. r2_lead is a route leader, not a Hall leader.
 const WILD_TRACKS = ['wild_skip', 'wild_romp', 'wild_spark'];
+const RIVAL_IDS = ['rival1_rook', 'rival2_rook', 'rival3_rook'];
 let wildTune = 0;
+function trainerMusicId(id){ return String(id || '').split('@')[0]; }
 function battleTrack(kind, trainerId){
   if (kind === 'wild') return WILD_TRACKS[wildTune % WILD_TRACKS.length];
-  if (kind === 'trainer' && trainerFaction(trainerId) === 'glimmer' && side() !== 'glimmer')
+  const base = trainerMusicId(trainerId);
+  if (kind === 'trainer' && RIVAL_IDS.indexOf(base) >= 0) return 'rival';
+  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale')) return 'trial';
+  if (kind === 'trainer' && trainerFaction(base) === 'glimmer' && side() !== 'glimmer')
     return (S && S.flags['music.glimmer_fought']) ? 'glimmer_battle' : 'glimmer_first';
   return 'battle';
 }
 function takeBattleTrack(kind, trainerId){
   const id = battleTrack(kind, trainerId);
   if (kind === 'wild') wildTune++;
-  if (kind === 'trainer' && trainerFaction(trainerId) === 'glimmer' && side() !== 'glimmer' && S) S.flags['music.glimmer_fought'] = true;
+  const base = trainerMusicId(trainerId);
+  if (kind === 'trainer' && RIVAL_IDS.indexOf(base) < 0 && trainerFaction(base) === 'glimmer' && side() !== 'glimmer' && S)
+    S.flags['music.glimmer_fought'] = true;
   return id;
 }
 const outdoorId = () => isRoom() ? CUR.outdoor : CUR.id;
@@ -7751,6 +7762,13 @@ function friendCode(){
 // A save that already has Walklings keeps story.intro_seen and story.starter_received: a reload would put them back.
 // Main checkpoints do not touch the Mom / Mahopac side chain. Side checkpoints do not rewind the main story.
 // Extras only add the flags that open that place (High Charity).
+// The eight new loops are listed first so a listening test can reach them without scrolling the older set.
+const DEBUG_MUSIC_FIRST = ['trial', 'rival', 'hall', 'harbour', 'route3', 'lab', 'dream', 'episode_end'];
+function debugMusicIds(){
+  const ids = PPSound.musicIds();
+  const first = DEBUG_MUSIC_FIRST.filter(id => ids.includes(id));
+  return first.concat(ids.filter(id => first.indexOf(id) < 0));
+}
 const DEBUG_EXTRAS = {
   hc_plaza: { place: 'High Charity plaza', text: 'Keeper capital. The invite is open.', map: 'highcharity', x: 32, y: 20, facing: 'down',
     flags: ['story.intro_seen', 'story.starter_received', 'story.side_pick_done', 'story.hc_invite'] },
@@ -8148,6 +8166,7 @@ function buildDebugUi(){
   fillSelect($('#dbgTextSpeed'), [{ value: 'slow', label: 'Slow' }, { value: 'normal', label: 'Normal' }, { value: 'fast', label: 'Fast' }]);
   const booths = (window.PPMinigames && PPMinigames.RULE) ? Object.keys(PPMinigames.RULE) : [];
   fillSelect($('#dbgBooth'), booths.map(id => ({ value: id, label: id })));
+  fillSelect($('#dbgMusicId'), debugMusicIds().map(id => ({ value: id, label: id })));
   $('#dbgLevel').value = '5';
   $('#dbgItemN').value = '1';
   $('#dbgPetLevel').value = '5';
@@ -8198,6 +8217,16 @@ function bindDebugUi(){
 // The debug panel's own controls: bound once, right after debug_ui.js's markup is put in the page (debug sessions only).
 function bindDebugPanel(){
   $('#dbgClose').addEventListener('click', () => { sfx('tap'); closeDebug(); });
+  $('#dbgMusicPlay').addEventListener('click', () => {
+    const id = $('#dbgMusicId').value;
+    const ok = PPSound.music(id, { fadeOut: 180, fadeIn: 180 });
+    debugOut(ok ? 'Playing ' + id + '.' : 'No loop.');
+  });
+  $('#dbgMusicBack').addEventListener('click', () => {
+    const id = trackFor(CUR);
+    if (id) PPSound.music(id, { fadeOut: 180, fadeIn: 180 });
+    debugOut(id ? 'Back to ' + id + '.' : 'This place has no loop.');
+  });
   $('#ovDebug').addEventListener('click', e => { if (e.target === e.currentTarget) closeDebug(); });
   $('#dbgLock').addEventListener('click', () => { setDebugEnabled(false); closeDebug(); toast('Debug mode off.'); });
   $('#dbgGoCheckpoint').addEventListener('click', () => {

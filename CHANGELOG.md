@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 02:08 ET: Eight music loops for a listening test (build 20261017-0208)
+
+- What changed and why: The eight SuperGrok loops are in `MUSIC`. Trial Hall leaders play `trial`, Rook plays `rival` (before the Glimmerwell check, and a Rook fight does not set `music.glimmer_fought`), the two Trial Hall rooms play `hall`, the RegenX floors and the Heights yard play `lab`, and dream rooms play `dream`. `harbour`, `route3`, and `episode_end` have no map yet and play from the debug Music row. The other loops are unchanged. Save `v` stays 2.
+- Files touched: `sfx.js`, `game.js`, `debug_ui.js`, `data/cobblecrest.json`, `data/fernbrook_rooms.json`, `data/heights.json`, `data/mapdata.js`, `tests/music_tracks.spec.js`, `tests/faction_music.spec.js`, `tests/qa_gaps.spec.js`, `tests/look_listen.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0208.
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=1002 failed=0 flaky=0 skipped=12 time=1428s. `python3 tools/bump_build.py --check` exit 0. The suite's console-error check passed.
+- Decisions made (colour + reasoning): D168 and D169 are yellow, built for Vincent's listening test. He settles them after he listens. No id was renumbered. Next free id is D170.
+- Anything left unfinished: Brinewick, Route 3, and the Episode 1 card are not built, so `harbour`, `route3`, and `episode_end` have no map slot. `town` and `wild_skip` already shared a drum set on main; that pair was left as it was.
+
 ## 2026-10-16 16:12 ET: Lantern House test follows D127 (build 20261016-1612)
 
 - What changed and why: `tests/maps_b8.spec.js` (from PR #78) still expected Amos to offer "Pledge desk" to a Glimmerwell player. D127 removed the desks, so the test now checks the desk is absent. `tests/README.md` says the same.
