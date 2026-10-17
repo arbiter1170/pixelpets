@@ -364,8 +364,12 @@ heal, tired, win, move learned). Default volume is low. The AudioContext is only
 created on the first tap/key press (iOS and Chrome autoplay rules) and resumed after interruptions;
 muted means no audio nodes at all, and browsers without WebAudio just stay silent. Loops play from the same
 voices after the first tap: town, route, and battle, plus High Charity, the chapel, and the arcade, the wild
-fight cycle, and the two Glimmerwell battle themes. A Glimmerwell pledge swaps the town loop for `town_glimmer`.
-The quarry and a grove backdrop have their own loops. An explicit `map.music` still wins. Music on/off is
+fight cycle, and the two Glimmerwell battle themes. Trial Hall leader fights play `trial`. Rook fights play
+`rival`, and that fight does not count as the first Glimmerwell theme. The two Trial Hall rooms play `hall`.
+The RegenX floors and the Heights yard play `lab`. Dream rooms play `dream`. A Glimmerwell pledge swaps the
+town loop for `town_glimmer`. The quarry and a grove backdrop have their own loops. `harbour`, `route3`, and
+`episode_end` are in the catalog for a listening test and play from the debug Music row. An explicit `map.music`
+still wins. Music on/off is
 `settings.music` (default on) and is separate from the sound-effects mute. The Vol slider beside Music writes
 `settings.musicVol` (0 to 1, default 0.5). A volume of 0 is silent and leaves Music on. The iPhone silent switch mutes both.
 

@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 03:08 ET: Merged the music loops into the reputation branch (build 20261017-0308)
+
+- What changed and why: Merged `main` (the eight music loops, build 20261017-0208) and kept the reputation work. `data/mapdata.js` was regenerated. Save `v` stays 2. This restamp is the build on the branch.
+- Files touched: merge of `main`. Conflicts: `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`, `data/mapdata.js` (regenerated).
+- Commit(s) + build id: build 20261017-0308.
+- Tests run and result (widths, checks): full `npm run test:agent` after the merge.
+- Decisions made (colour + reasoning): kept both sides. No decision file edited. The next free id stays D170, as on `main`.
+- Anything left unfinished: none on this branch. Q19 stays the queue.
+
 ## 2026-10-17 03:07 ET: Letter lines by trust (build 20261017-0307)
 
 - What changed and why: Once the High Charity letter is open, Lizzy, Rook, and Captain Lumen answer it from how much they trust you (D174). The five lines are the samples in `data/reputation.json`. Captain Lumen at 55 is warm for the Keepers and neutral for Glimmerwell. Lines you have not reached yet stay in front of the letter. The map files are unchanged. Save `v` stays 2.
@@ -37,6 +46,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/reputation.spec.js --project=390` — PP_TEST RESULT: PASS exit=0 passed=5 failed=0 flaky=0 skipped=0 time=3s.
 - Decisions made (colour + reasoning): builds settled D174, D175, D178. No decision file edited. Twenty-one map contacts missing from the cast table were added as faction none, base 50, so the startup check can pass without inventing a side.
 - Anything left unfinished: the compass, PEOPLE list, acorn chip, and letter lines are the next packets on this branch.
+
+## 2026-10-17 02:08 ET: Eight music loops for a listening test (build 20261017-0208)
+
+- What changed and why: The eight SuperGrok loops are in `MUSIC`. Trial Hall leaders play `trial`, Rook plays `rival` (before the Glimmerwell check, and a Rook fight does not set `music.glimmer_fought`), the two Trial Hall rooms play `hall`, the RegenX floors and the Heights yard play `lab`, and dream rooms play `dream`. `harbour`, `route3`, and `episode_end` have no map yet and play from the debug Music row. The other loops are unchanged. Save `v` stays 2.
+- Files touched: `sfx.js`, `game.js`, `debug_ui.js`, `data/cobblecrest.json`, `data/fernbrook_rooms.json`, `data/heights.json`, `data/mapdata.js`, `tests/music_tracks.spec.js`, `tests/faction_music.spec.js`, `tests/qa_gaps.spec.js`, `tests/look_listen.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0208.
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=1002 failed=0 flaky=0 skipped=12 time=1428s. `python3 tools/bump_build.py --check` exit 0. The suite's console-error check passed.
+- Decisions made (colour + reasoning): D168 and D169 are yellow, built for Vincent's listening test. He settles them after he listens. No id was renumbered. Next free id is D170.
+- Anything left unfinished: Brinewick, Route 3, and the Episode 1 card are not built, so `harbour`, `route3`, and `episode_end` have no map slot. `town` and `wild_skip` already shared a drum set on main; that pair was left as it was.
 
 ## 2026-10-16 16:12 ET: Lantern House test follows D127 (build 20261016-1612)
 
