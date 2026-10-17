@@ -264,6 +264,7 @@
     "cc_hall_in": {
       "name": "Cobblecrest Trial Hall",
       "kind": "interior",
+      "music": "hall",
       "outdoor": "cobblecrest",
       "door": "cc_hall",
       "backdrop": "town",

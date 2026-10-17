@@ -6,8 +6,8 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 - What changed and why: Hearthmoor grows from 24 by 20 to 24 by 24. Rows 0-18 stay put, and so does every door, warp, sign, respawn, and prop. The new path is School Lane. Lizzy stands at (9, 20) facing up, and Buddy stands at (10, 20) facing up. You walk down the lane and talk to her from the grass above. The intro box does not cover her. Save `v` stays 2.
 - Files touched: `data/maps_slice.json`, `data/mapdata.js`, `data/detail_lizzy.json`, `tests/lizzy.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
-- Commit(s) + build id: build 20261017-0304.
-- Tests run and result (widths, checks): full suite result is filled in after `npm run test:agent`. `node tools/pp_test.js tests/lizzy.spec.js tests/maps_b4.spec.js` already passed: PP_TEST RESULT: PASS exit=0 passed=51 failed=0 flaky=0 skipped=0 time=61s. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Commit(s) + build id: build 20261017-0304, restamped 20261017-0306 after merging the music loops from main.
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390 after merging main. PP_TEST RESULT: PASS exit=0 passed=1029 failed=0 flaky=0 skipped=12 time=1475s. No console errors. `python3 tools/bump_build.py --check` exit 0.
 - Decisions made (colour + reasoning): D170 red, settled by Vincent Oct 17, 2026. Reshapes an Act 1 town, the exception to D81. No new id. No id was renumbered.
 - Anything left unfinished: the other Lizzy packets are not this PR.
 
@@ -28,6 +28,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/lizzy.spec.js` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=18 failed=0 flaky=0 skipped=0. No console errors.
 - Decisions made (colour + reasoning): D172 green, settled by Vincent Oct 17, 2026. D162–D167 and D170–D182 recorded as settled. No new id. D168–D169 left for the music build. No id was renumbered.
 - Anything left unfinished: the dialog-box rule (D171) and the Hearthmoor south rows (D170) are the next commits on this branch. The other Lizzy packets are not this PR.
+
+## 2026-10-17 02:08 ET: Eight music loops for a listening test (build 20261017-0208)
+
+- What changed and why: The eight SuperGrok loops are in `MUSIC`. Trial Hall leaders play `trial`, Rook plays `rival` (before the Glimmerwell check, and a Rook fight does not set `music.glimmer_fought`), the two Trial Hall rooms play `hall`, the RegenX floors and the Heights yard play `lab`, and dream rooms play `dream`. `harbour`, `route3`, and `episode_end` have no map yet and play from the debug Music row. The other loops are unchanged. Save `v` stays 2.
+- Files touched: `sfx.js`, `game.js`, `debug_ui.js`, `data/cobblecrest.json`, `data/fernbrook_rooms.json`, `data/heights.json`, `data/mapdata.js`, `tests/music_tracks.spec.js`, `tests/faction_music.spec.js`, `tests/qa_gaps.spec.js`, `tests/look_listen.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0208.
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=1002 failed=0 flaky=0 skipped=12 time=1428s. `python3 tools/bump_build.py --check` exit 0. The suite's console-error check passed.
+- Decisions made (colour + reasoning): D168 and D169 are yellow, built for Vincent's listening test. He settles them after he listens. No id was renumbered. Next free id is D170.
+- Anything left unfinished: Brinewick, Route 3, and the Episode 1 card are not built, so `harbour`, `route3`, and `episode_end` have no map slot. `town` and `wild_skip` already shared a drum set on main; that pair was left as it was.
 
 ## 2026-10-16 16:12 ET: Lantern House test follows D127 (build 20261016-1612)
 
