@@ -133,7 +133,7 @@ test('the three rooms have their own skins, stay under the floor cap, and connec
     const rooms = [
       { id: 'hm_school_in', props: 13, npcs: ['Pip', 'Wren', 'Lizzy'] },
       { id: 'hm_flats_lobby', props: 5, signs: 1, npcs: ['Mr. Gristle'] },
-      { id: 'hm_flats_5', props: 11, npcs: ['Lizzy', 'Ossabell', 'Morelou'] },
+      { id: 'hm_flats_5', props: 19, npcs: ['Lizzy', 'Ossabell', 'Morelou'] },
     ];
     const out = [];
     const remaps = {};
@@ -193,7 +193,7 @@ test('the three rooms have their own skins, stay under the floor cap, and connec
   const byId = Object.fromEntries(r.out.map(row => [row.id, row]));
   expect(byId.hm_school_in).toMatchObject({ w: 16, h: 14, skin: 'school', props: 13 });
   expect(byId.hm_flats_lobby).toMatchObject({ w: 10, h: 12, skin: 'flats_lobby', props: 5, signs: 1 });
-  expect(byId.hm_flats_5).toMatchObject({ w: 14, h: 12, skin: 'flats_home', props: 11 });
+  expect(byId.hm_flats_5).toMatchObject({ w: 18, h: 16, skin: 'flats_home', props: 19 });
   for (const row of r.out) {
     expect(row.share, row.id + ' ' + row.tile).toBeLessThanOrEqual(0.7);
     expect(row.missingArt, row.id).toEqual([]);
@@ -493,4 +493,88 @@ test('the intro branches on Rook, and Buddy is not a battle', async ({ page }) =
   expect(kids.wren.hair).toBe('pony');
   expect(kids.morolow.hair).toBe('short');
   expect(kids.landlord.outfit).toBe('coat');
+});
+
+test('flat 5B keeps Buddy home after you meet Lizzy, and a pat lands once a day', async ({ page }) => {
+  await boot(page, save());
+  const hidden = await page.evaluate(() => {
+    PixelPets.goto('hm_flats_5', 15, 4, 'right');
+    const ids = PixelPets.mapInfo.objs.map(o => o.id);
+    return {
+      buddy: ids.includes('f5_buddy'),
+      lizzy: ids.includes('f5_lizzy'),
+      school: (() => { PixelPets.goto('hm_school_in'); return PixelPets.mapInfo.objs.some(o => o.id === 'school_buddy'); })(),
+    };
+  });
+  expect(hidden).toEqual({ buddy: false, lizzy: false, school: false });
+
+  await boot(page, save({ 'story.lizzy_met': true }));
+  const shown = await page.evaluate(() => {
+    PixelPets.goto('hm_flats_5', 15, 4, 'right');
+    const ids = PixelPets.mapInfo.objs.map(o => o.id);
+    const props = PixelPets.mapInfo.objs.filter(o => o.kind === 'prop').map(o => o.id);
+    const dataProps = MAPDATA.detail_lizzy.maps.hm_flats_5.objs.filter(o => o.kind === 'prop').length;
+    return {
+      buddy: ids.includes('f5_buddy'),
+      lizzy: ids.includes('f5_lizzy'),
+      morolow: ids.includes('f5_morolow'),
+      drip: ids.includes('f5_drip'),
+      pipe: ids.includes('f5_pipe_new'),
+      leak: ids.includes('f5_leak'),
+      props: props.length,
+      dataProps,
+      home: JSON.stringify(MAPDATA.detail_lizzy.scenes.buddy_home),
+      bond: PixelPets.state.party[0].bond || 0,
+    };
+  });
+  expect(shown.buddy).toBe(true);
+  expect(shown.lizzy).toBe(true);
+  expect(shown.morolow).toBe(true);
+  expect(shown.drip).toBe(true);
+  expect(shown.pipe).toBe(false);
+  expect(shown.leak).toBe(true);
+  expect(shown.props).toBe(19);
+  expect(shown.dataProps).toBe(20);
+  expect(shown.home).toContain('pet');
+  expect(shown.home).toContain('Buddy thumps his tail');
+
+  const sample = () => page.evaluate(() => {
+    const c = document.querySelector('#mapCanvas');
+    const g = c.getContext('2d');
+    const cam = PixelPets.walk.cam;
+    const x = Math.round(10 * 16 - cam.x), y = Math.round(2 * 16 - cam.y);
+    return Array.from(g.getImageData(Math.max(0, x), Math.max(0, y), 16, 16).data);
+  });
+  await page.waitForTimeout(200);
+  const a = await sample();
+  await page.waitForTimeout(500);
+  const b = await sample();
+  expect(a.join(',')).not.toBe(b.join(','));
+
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => !PixelPets.scene);
+  const once = await page.evaluate(() => ({
+    bond: PixelPets.state.party[0].bond || 0,
+    pat: !!PixelPets.state.flags['story.buddy_pat_today'],
+  }));
+  expect(once.pat).toBe(true);
+  expect(once.bond).toBe(shown.bond + 1);
+
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => !PixelPets.scene);
+  const twice = await page.evaluate(() => PixelPets.state.party[0].bond || 0);
+  expect(twice).toBe(once.bond);
+
+  const fixed = await page.evaluate(() => {
+    PixelPets.state.flags['story.leak_fixed'] = true;
+    PixelPets.goto('hm_flats_5', 15, 4, 'right');
+    const ids = PixelPets.mapInfo.objs.map(o => o.id);
+    const props = PixelPets.mapInfo.objs.filter(o => o.kind === 'prop');
+    return { drip: ids.includes('f5_drip'), pipe: ids.includes('f5_pipe_new'), leak: ids.includes('f5_leak'), props: props.length };
+  });
+  expect(fixed).toEqual({ drip: false, pipe: true, leak: false, props: 19 });
 });

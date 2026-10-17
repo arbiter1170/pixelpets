@@ -60,7 +60,7 @@ const PPSave = (() => {
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
       dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: startWorld(),
       bag: {}, money: 0, seals: {}, flags: {}, standing: { keepers: 0, glimmer: 0 }, board: { lastTown: '' }, phoneBook: { met: {}, fav: {} }, eggs: { incubators: [{ egg: null }], held: [] },
-      settings: { textSpeed: 'normal', battleAnims: true, follower: true, music: true, musicVol: 0.5 },
+      settings: { textSpeed: 'normal', battleAnims: true, follower: true, music: true, musicVol: 0.5, tips: true },
       player: { name: null, look: null },
       meta: { migratedFrom: null, migratedAt: null, backup: null, legacy: {} } };
   }
@@ -303,6 +303,7 @@ const PPSave = (() => {
     fill(s.settings, 'musicVol', x => typeof x === 'number' && x >= 0 && x <= 1, 0.5); // Settings volume slider: 0 to 1, default half
     fill(s.settings, 'controls', x => x === 'arcade' || x === 'modern', 'arcade');      // Q26: missing or bad = arcade, so an old save keeps the pad
     fill(s.settings, 'joystick', x => typeof x === 'boolean', false);                 // Q26 / D63: modern joystick, default off
+    fill(s.settings, 'tips', x => typeof x === 'boolean', true);                      // D180: unlock tips, default on, additive
     fill(s, 'mapSeen', isObj, {});
     // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
     if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;

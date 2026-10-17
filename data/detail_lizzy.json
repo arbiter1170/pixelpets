@@ -20,6 +20,26 @@
   "S": {
    "name": "stairs (scenery)",
    "walk": false
+  },
+  "e": {
+   "name": "bath tile",
+   "walk": true
+  },
+  "a": {
+   "name": "sunflower rug",
+   "walk": true
+  },
+  "n": {
+   "name": "fern rug",
+   "walk": true
+  },
+  "r": {
+   "name": "domino rug",
+   "walk": true
+  },
+  "k": {
+   "name": "paint plank",
+   "walk": true
   }
  },
  "looks": {
@@ -269,7 +289,12 @@
    "door": "hm_school",
    "backdrop": "town",
    "skin": "school",
-   "wall": {"windows": [3, 7]},
+   "wall": {
+    "windows": [
+     3,
+     7
+    ]
+   },
    "w": 16,
    "h": 14,
    "spawns": null,
@@ -473,6 +498,18 @@
      "lines": {
       "else": "Class is out! Want to help me wipe the board? Buddy already tried. Now it's muddy."
      }
+    },
+    {
+     "kind": "npc",
+     "id": "school_buddy",
+     "name": "Buddy",
+     "pet": "fetch/1",
+     "x": 9,
+     "y": 3,
+     "facing": "right",
+     "when": [
+      "story.lizzy_met"
+     ]
     }
    ]
   },
@@ -483,7 +520,15 @@
    "door": "hm_flats",
    "backdrop": "town",
    "skin": "flats_lobby",
-   "wall": {"windows": [], "doors": [3, 4, 7, 8]},
+   "wall": {
+    "windows": [],
+    "doors": [
+     3,
+     4,
+     7,
+     8
+    ]
+   },
    "w": 10,
    "h": 12,
    "spawns": null,
@@ -610,6 +655,9 @@
       "story.lizzy_met"
      ],
      "lines": {
+      "story.leak5b_yes&!story.moral_leak5b": "@leak_gristle",
+      "story.moral_leak5b=force": "Pipe's fixed. Now go away. Please.",
+      "story.moral_leak5b=court": "Pipe's fixed. The Keepers can stop looking at me.",
       "else": "Visitor? Wipe your boots. Walkling hair is extra. Everything is extra."
      }
     }
@@ -621,9 +669,15 @@
    "outdoor": "hearthmoor",
    "backdrop": "town",
    "skin": "flats_home",
-   "wall": {"windows": [3, 9]},
-   "w": 14,
-   "h": 12,
+   "wall": {
+    "windows": [
+     3,
+     9,
+     15
+    ]
+   },
+   "w": 18,
+   "h": 16,
    "spawns": null,
    "zones": [],
    "safe": {
@@ -631,18 +685,22 @@
     "y": 6
    },
    "grid": [
-    "##############",
-    "#WWWWW#WWWWWW#",
-    "#,,,,,#......#",
-    "#,,,,,#..==..#",
-    "#,,,,,#..==..#",
-    "##,#####.#####",
-    "m~~~~~~~~~~~~#",
-    "##.#####_#####",
-    "#....#_______#",
-    "#.==.#_______#",
-    "#....#_______#",
-    "##############"
+    "##################",
+    "#WWWWWW#WWWW#WWWW#",
+    "#,,,,,,#eeee#....#",
+    "#,,==,,#eeee#.aa.#",
+    "#,,==,,#eeee#.aa.#",
+    "###,#####e####.###",
+    "m~~~~~~~~~~~~~~~~#",
+    "##.#####_#####k###",
+    "#W.WW#WW_WWW#WkWW#",
+    "#....#______#kkkk#",
+    "#.nn.#_rr___#kkkk#",
+    "#.nn.#_rr___#kkkk#",
+    "#....#______#kkkk#",
+    "#....#______#kkkk#",
+    "#....#______#kkkk#",
+    "##################"
    ],
    "objs": [
     {
@@ -678,7 +736,7 @@
     {
      "kind": "prop",
      "id": "f5_radio",
-     "x": 5,
+     "x": 6,
      "y": 2,
      "sprite": "radio",
      "lines": {
@@ -686,19 +744,89 @@
      }
     },
     {
-     "kind": "prop",
-     "id": "f5_bed_lizzy",
-     "x": 11,
-     "y": 2,
-     "sprite": "bed_quilt_o",
+     "kind": "npc",
+     "id": "f5_ossabell",
+     "name": "Ossabell",
+     "x": 5,
+     "y": 4,
+     "facing": "left",
      "lines": {
-      "else": "Lizzy's bed, coral quilt. A big golden dent where Buddy sleeps."
+      "else": "You're the one Lizzy won't stop talking about. Sit. Eat. You look thin."
+     },
+     "look": "ossabell"
+    },
+    {
+     "kind": "prop",
+     "id": "f5_tub",
+     "x": 8,
+     "y": 2,
+     "sprite": "tub_clawfoot",
+     "lines": {
+      "else": "A clawfoot tub. The drip lands just past its rim."
      }
     },
     {
      "kind": "prop",
-     "id": "f5_desk_lizzy",
-     "x": 7,
+     "id": "f5_sink",
+     "x": 11,
+     "y": 2,
+     "sprite": "sink_pedestal",
+     "lines": {
+      "else": "A pedestal sink. The tap is dry. The ceiling is not."
+     }
+    },
+    {
+     "kind": "decal",
+     "id": "f5_drip",
+     "x": 10,
+     "y": 2,
+     "sprite": "leak_drip",
+     "when": [
+      "!story.leak_fixed"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "f5_puddle",
+     "x": 10,
+     "y": 3,
+     "sprite": "leak_puddle",
+     "when": [
+      "!story.leak_fixed"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "f5_leak",
+     "x": 11,
+     "y": 4,
+     "sprite": "bucket_drip",
+     "lines": {
+      "story.moral_leak5b": "The bucket is still here. So is the drip. Somebody is on it.",
+      "!story.lizzy_met": "Drip. Drip. Drip.",
+      "else": "@leak_look"
+     },
+     "when": [
+      "!story.leak_fixed"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "f5_pipe_new",
+     "x": 10,
+     "y": 2,
+     "sprite": "pipe_shiny",
+     "lines": {
+      "else": "A new pipe. Dry. For now."
+     },
+     "when": [
+      "story.leak_fixed"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "f5_desk",
+     "x": 13,
      "y": 2,
      "sprite": "desk_small",
      "lines": {
@@ -707,19 +835,90 @@
     },
     {
      "kind": "prop",
-     "id": "f5_bunk",
-     "x": 1,
-     "y": 8,
-     "sprite": "bunk",
+     "id": "f5_bed_lizzy",
+     "x": 16,
+     "y": 2,
+     "sprite": "bed_quilt_o",
      "lines": {
-      "else": "A bunk bed. Top: Ossabell. Bottom: Morelou. Morolow sleeps on the trundle."
+      "else": "Lizzy's bed, coral quilt. A big golden dent where Buddy sleeps."
+     }
+    },
+    {
+     "kind": "decal",
+     "id": "f5_dogbed",
+     "x": 16,
+     "y": 4,
+     "sprite": "dog_bed_big"
+    },
+    {
+     "kind": "npc",
+     "id": "f5_lizzy",
+     "name": "Lizzy",
+     "x": 13,
+     "y": 3,
+     "facing": "right",
+     "lines": {
+      "story.leak_fixed&story.moral_leak5b=court": "@leak_after_court",
+      "story.leak_fixed&story.moral_leak5b=force": "@leak_after_force",
+      "story.leak5b_seen&!story.leak5b_yes": "@leak_ask",
+      "else": "Welcome to 5B! Shoes by the door, please. Buddy, no, the shoes stay by the door."
+     },
+     "look": "lizzy",
+     "when": [
+      "story.lizzy_met"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "f5_buddy",
+     "name": "Buddy",
+     "x": 16,
+     "y": 4,
+     "facing": "left",
+     "lines": {
+      "story.moral_leak5b=force": "@buddy_watch",
+      "else": "@buddy_home"
+     },
+     "when": [
+      "story.lizzy_met"
+     ],
+     "pet": "fetch/1"
+    },
+    {
+     "kind": "prop",
+     "id": "f5_bed_oss",
+     "x": 1,
+     "y": 9,
+     "sprite": "bed_single_g",
+     "lines": {
+      "else": "A single bed with a green quilt. Folded tight."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_wardrobe",
+     "x": 4,
+     "y": 9,
+     "sprite": "wardrobe",
+     "lines": {
+      "else": "A wardrobe. Four coats and one very small raincoat."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_plants",
+     "x": 4,
+     "y": 13,
+     "sprite": "planter_small",
+     "lines": {
+      "else": "A fern in a pot. Ossabell talks to it. It looks fine."
      }
     },
     {
      "kind": "prop",
      "id": "f5_photo",
-     "x": 4,
-     "y": 8,
+     "x": 3,
+     "y": 9,
      "sprite": "photo_wall",
      "lines": {
       "else": "A photo: four sisters, an abuela, and a much smaller Buddy in a party hat."
@@ -727,9 +926,19 @@
     },
     {
      "kind": "prop",
-     "id": "f5_tv",
-     "x": 9,
-     "y": 8,
+     "id": "f5_bed_mlu",
+     "x": 6,
+     "y": 9,
+     "sprite": "bed_single_p",
+     "lines": {
+      "else": "A single bed. A game controller is tucked under the pillow."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_screen",
+     "x": 10,
+     "y": 9,
      "sprite": "game_screen",
      "lines": {
       "else": "The game room screen. A sticky note: 'LIZZY STILL OWES ME A REMATCH. -M'"
@@ -737,19 +946,9 @@
     },
     {
      "kind": "prop",
-     "id": "f5_dominoes",
-     "x": 7,
-     "y": 10,
-     "sprite": "domino_table",
-     "lines": {
-      "else": "A domino table mid-game. Nobody touch it. The sisters mean it."
-     }
-    },
-    {
-     "kind": "prop",
      "id": "f5_beanbag",
-     "x": 12,
-     "y": 10,
+     "x": 10,
+     "y": 11,
      "sprite": "beanbag",
      "lines": {
       "else": "A squashed beanbag. Buddy's, by the amount of fur."
@@ -757,49 +956,91 @@
     },
     {
      "kind": "prop",
-     "id": "f5_leak",
-     "x": 12,
-     "y": 8,
-     "sprite": "bucket_drip",
+     "id": "f5_dominoes",
+     "x": 7,
+     "y": 13,
+     "sprite": "domino_table",
      "lines": {
-      "else": "A bucket under a ceiling drip. Third one this month. The landlord 'will look at it'."
-     }
-    },
-    {
-     "kind": "npc",
-     "id": "f5_lizzy",
-     "name": "Lizzy",
-     "look": "lizzy",
-     "x": 9,
-     "y": 6,
-     "facing": "left",
-     "lines": {
-      "else": "Welcome to 5B! Shoes by the door, please. Buddy, no, the shoes stay by the door."
-     }
-    },
-    {
-     "kind": "npc",
-     "id": "f5_ossabell",
-     "name": "Ossabell",
-     "look": "ossabell",
-     "x": 4,
-     "y": 4,
-     "facing": "up",
-     "lines": {
-      "else": "You're the one Lizzy won't stop talking about. Sit. Eat. You look thin."
+      "else": "A domino table mid-game. Nobody touch it. The sisters mean it."
      }
     },
     {
      "kind": "npc",
      "id": "f5_morelou",
      "name": "Morelou",
-     "look": "morelou",
-     "x": 10,
-     "y": 9,
-     "facing": "left",
+     "x": 9,
+     "y": 12,
+     "facing": "down",
      "lines": {
       "else": "Want to play? Winner picks the music. Loser does the dishes. I never lose."
+     },
+     "look": "morelou"
+    },
+    {
+     "kind": "prop",
+     "id": "f5_bed_mlw",
+     "x": 13,
+     "y": 9,
+     "sprite": "bed_single_b",
+     "lines": {
+      "else": "A single bed. Paint on the blanket, on purpose."
      }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_easel",
+     "x": 16,
+     "y": 10,
+     "sprite": "easel",
+     "lines": {
+      "else": "An easel. The canvas is one drip, over and over."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "f5_paints",
+     "x": 16,
+     "y": 14,
+     "sprite": "paint_crate",
+     "lines": {
+      "else": "A crate of paints. The blue is almost gone."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "f5_morolow",
+     "name": "Morolow",
+     "x": 15,
+     "y": 11,
+     "facing": "right",
+     "lines": {
+      "else": "Shh. I am painting the drip. It is my best model. It never moves."
+     },
+     "look": "morolow",
+     "when": [
+      "story.lizzy_met"
+     ]
+    },
+    {
+     "kind": "decal",
+     "id": "f5_lamp_oss",
+     "x": 2,
+     "y": 12,
+     "sprite": "lamp_stand"
+    },
+    {
+     "kind": "decal",
+     "id": "f5_lamp_mlu",
+     "x": 8,
+     "y": 10,
+     "sprite": "lamp_stand"
+    },
+    {
+     "kind": "decal",
+     "id": "f5_lamp_mlw",
+     "x": 14,
+     "y": 13,
+     "sprite": "lamp_stand"
     }
    ]
   }
@@ -948,6 +1189,269 @@
     "setFlag",
     "story.lizzy_met",
     true
+   ]
+  ],
+  "buddy_home": [
+   [
+    "sfx",
+    "pet"
+   ],
+   [
+    "say",
+    "",
+    "Buddy thumps his tail. Thump. Thump."
+   ],
+   [
+    "if",
+    "!story.buddy_pat_today",
+    [
+     [
+      "bond",
+      1
+     ],
+     [
+      "setFlag",
+      "story.buddy_pat_today",
+      true
+     ]
+    ],
+    []
+   ]
+  ],
+  "buddy_watch": [
+   [
+    "say",
+    "",
+    "Buddy watches the bucket. Then you. Then the bucket."
+   ]
+  ],
+  "leak_look": [
+   [
+    "say",
+    "",
+    "Water runs down the wall into the bucket. The puddle keeps growing."
+   ],
+   [
+    "setFlag",
+    "story.leak5b_seen",
+    true
+   ],
+   [
+    "say",
+    "",
+    "Lizzy is in her room. Maybe she knows about this."
+   ]
+  ],
+  "leak_ask": [
+   [
+    "say",
+    "Ossabell",
+    "¿Otra vez el baño? Lizzy, dile algo al viejo."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "I know, I know. I told him twice. He said the drip is \"character.\""
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Mr. Gristle won't fix it. Would you talk to him? He listens to people who aren't me."
+   ],
+   [
+    "choice",
+    "Help Lizzy?",
+    [
+     [
+      "I'll talk to him",
+      [
+       [
+        "setFlag",
+        "story.leak5b_yes",
+        true
+       ],
+       [
+        "say",
+        "Lizzy",
+        "Thank you. Be polite. Mostly."
+       ]
+      ]
+     ],
+     [
+      "Not right now",
+      [
+       [
+        "say",
+        "Lizzy",
+        "That's okay. The bucket isn't going anywhere. Sadly."
+       ]
+      ]
+     ]
+    ]
+   ]
+  ],
+  "leak_gristle": [
+   [
+    "say",
+    "Mr. Gristle",
+    "The drip in 5B? That's not a leak. That's a water feature."
+   ],
+   [
+    "say",
+    "Mr. Gristle",
+    "Glimmerwell keeps offering to buy this whole building. \"Glimmer Home.\" Maybe I let them."
+   ],
+   [
+    "choice",
+    "How do you fix this?",
+    [
+     [
+      "Take it to the Keepers",
+      [
+       [
+        "moral",
+        "leak5b",
+        "court"
+       ],
+       [
+        "run",
+        "leak_court"
+       ]
+      ]
+     ],
+     [
+      "Make him fix it",
+      [
+       [
+        "moral",
+        "leak5b",
+        "force"
+       ],
+       [
+        "run",
+        "leak_force"
+       ]
+      ]
+     ],
+     [
+      "Not now",
+      [
+       [
+        "say",
+        "Mr. Gristle",
+        "Good. Wipe your boots on the way out."
+       ]
+      ]
+     ]
+    ],
+    ""
+   ]
+  ],
+  "leak_court": [
+   [
+    "say",
+    "",
+    "You tell him the Keepers take housing claims. He goes a little pale."
+   ],
+   [
+    "say",
+    "Mr. Gristle",
+    "Forms. Stamps. Fine. Go file your little claim."
+   ]
+  ],
+  "leak_file": [
+   [
+    "say",
+    "Clerk Wynn",
+    "A landlord claim. Name, floor, nature of drip. Sign here. Wait."
+   ],
+   [
+    "setFlag",
+    "story.leak5b_filed",
+    true
+   ],
+   [
+    "say",
+    "Clerk Wynn",
+    "Stamped. Constable Rue serves notices. Tell her I sent you."
+   ]
+  ],
+  "leak_serve": [
+   [
+    "say",
+    "Constable Rue",
+    "A stamped claim from Hearthmoor? He has until sundown. I'll walk it over myself."
+   ],
+   [
+    "setFlag",
+    "story.leak5b_served",
+    true
+   ],
+   [
+    "setFlag",
+    "story.leak_fixed",
+    true
+   ],
+   [
+    "give",
+    "hearty_snack",
+    2
+   ],
+   [
+    "say",
+    "",
+    "The drip in 5B stopped."
+   ]
+  ],
+  "leak_force": [
+   [
+    "say",
+    "",
+    "{pet} plants its feet and stares at Mr. Gristle. You knock his ledger off the desk."
+   ],
+   [
+    "say",
+    "Mr. Gristle",
+    "Okay! Okay. I'll fix it today. Call off the hairball."
+   ],
+   [
+    "say",
+    "",
+    "That's how Glimmerwell gets things done. Fast. Nobody says thank you."
+   ],
+   [
+    "setFlag",
+    "story.leak_fixed",
+    true
+   ],
+   [
+    "give",
+    "hearty_snack",
+    2
+   ],
+   [
+    "say",
+    "",
+    "The drip in 5B stopped."
+   ]
+  ],
+  "leak_after_court": [
+   [
+    "say",
+    "Lizzy",
+    "He fixed it! A real pipe! You did it the right way, kiddo."
+   ]
+  ],
+  "leak_after_force": [
+   [
+    "say",
+    "Lizzy",
+    "It's fixed. Thank you. Mr. Gristle won't look at me in the lift now, though."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Next time, let's try asking nicely first. Deal?"
    ]
   ]
  },

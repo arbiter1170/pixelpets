@@ -40,7 +40,10 @@
     'story.switch_via',
     'story.met_bram', 'story.met_mo', 'story.met_wynn', 'story.met_lumen', 'story.met_rue',
     // Lizzy in Hearthmoor: the meet, the hug, and the Rook hook. Sister scenes and the landlord quests are a later build.
-    'story.lizzy_met', 'story.lizzy_hug', 'story.lizzy_rook'];
+    'story.lizzy_met', 'story.lizzy_hug', 'story.lizzy_rook',
+    'story.buddy_pat_today', 'story.leak5b_seen',
+    'story.unlock_rep', 'story.unlock_phone', 'story.unlock_sides', 'story.unlock_quests', 'story.unlock_moral',
+    'story.unlock_switch', 'story.unlock_letter', 'story.unlock_lantern', 'story.unlock_growup'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -197,6 +200,24 @@
       { id: 'rc_wrap_juniper', when: ['story.rc_climax', 'story.rc_end=shipped'], done: ['story.rc_done'],
         text: "Juniper is on the quarry's south path. Hand in the count.", place: 'Quarry, south path',
         target: { map: 'cobble_quarry', x: 14, y: 17 } },
+    ],
+    // The leak in 5B (D177, D182). Standing moves only through the moral step, not these rows.
+    [
+      { id: 'leak_ask', label: 'The leak in 5B', when: ['story.leak5b_seen'], done: ['story.leak5b_yes'],
+        text: 'Tell Lizzy about the leak', place: 'hm_flats_5',
+        target: { map: 'hm_flats_5', x: 13, y: 3 } },
+      { id: 'leak_gristle', when: ['story.leak5b_yes'], done: ['story.moral_leak5b'],
+        text: 'Talk to Mr. Gristle', place: 'hm_flats_lobby',
+        target: { map: 'hm_flats_lobby', x: 7, y: 9 } },
+      { id: 'leak_file', when: ['story.moral_leak5b=court'], done: ['story.leak5b_filed'],
+        text: 'File a claim with Clerk Wynn', place: 'hm_hq_f1',
+        target: { map: 'hm_hq_f1', x: 3, y: 10 } },
+      { id: 'leak_serve', when: ['story.leak5b_filed'], done: ['story.leak5b_served'],
+        text: 'Ask Constable Rue to serve it', place: 'fernbrook',
+        target: { map: 'fernbrook', x: 4, y: 9 } },
+      { id: 'leak_done', when: ['story.moral_leak5b'], done: ['story.leak_fixed'],
+        text: 'Check the bathroom in 5B', place: 'hm_flats_5',
+        target: { map: 'hm_flats_5', x: 11, y: 4 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();

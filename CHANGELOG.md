@@ -2,6 +2,42 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 09:44 ET: The leak choice is narration (build 20261017-0944)
+
+- What changed and why: "How do you fix this?" no longer wears Mr. Gristle's name. The three answers stay the same, including "Make him fix it", so the prompt is narration. Standing and trust are unchanged. Save `v` stays 2.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `game.js`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0944.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/leak5b.spec.js` at 320, 375 and 390. PP_TEST RESULT: PASS exit=0 passed=12 failed=0 flaky=0 skipped=0 time=39s. Other choices do not pass a speaker, so their nameplates are unchanged.
+- Decisions made (colour + reasoning): no new id. The spec prompt stays "How do you fix this?"; only the speaker nameplate is cleared.
+- Anything left unfinished: none.
+
+## 2026-10-17 08:28 ET: Compass tour step and unlock tips (build 20261017-0828)
+
+- What changed and why: The opening tour points at the compass before the last card. A save already on that last card skips it. Nine later tips (trust, the phone, a side, a side quest, a big choice, switching sides, a letter, a Lantern, and growing up) each show once, 600 ms after the walk screen is quiet. SKIP or a tap outside puts one away. Settings has Tips on/off and Replay tips. Save `v` stays 2.
+- Files touched: `game.js`, `save.js`, `quests.js`, `index.html`, `style.css`, `tests/unlock.spec.js`, `tests/tutorial.spec.js`, `tests/quest_multi.spec.js`, `tests/reputation.spec.js`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261017-0828.
+- Tests run and result (widths, checks): `npm run test:agent` at 320, 375 and 390. PP_TEST RESULT: PASS exit=0 passed=1092 failed=0 flaky=0 skipped=12 time=1864s. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D180, already settled. No new id. Design still adds the T12r row to `design/specs/TUTORIAL.md` (that file is not in this repo).
+- Anything left unfinished: none on this packet.
+
+## 2026-10-17 08:17 ET: The leak in 5B, one moral choice (build 20261017-0817)
+
+- What changed and why: Inspecting the bucket starts "The leak in 5B". Lizzy asks you to talk to Mr. Gristle. Take it to the Keepers, make him fix it, or leave it. That choice grants Standing and trust once, through `data/moral_quests.json`. The court path is Clerk Wynn, then Constable Rue. Both endings pay Hearty Snack ×2 and stop the drip. Save `v` stays 2.
+- Files touched: `data/moral_quests.json`, `data/detail_lizzy.json`, `data/civic.json`, `data/reputation.json`, `data/mapdata.js`, `tools/gen_mapdata.py`, `game.js`, `quests.js`, `tests/leak5b.spec.js`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0817.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/leak5b.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=4 failed=0 flaky=0 skipped=0 time=13s. Widths 320 and 375 follow with the last packet.
+- Decisions made (colour + reasoning): D177 (red, the one Standing grant from a quest, only through `moral_quests.json`) and D182, both already settled. No new id.
+- Anything left unfinished: the compass tour step and the unlock tips.
+
+## 2026-10-17 08:10 ET: Flat 5B is 18 by 16, and Buddy is home (build 20261017-0810)
+
+- What changed and why: Amberhill Flats 5B grows from 14 by 12 to 18 by 16. The bathroom, the three bedrooms, the drip, and Buddy's bed are in. Lizzy and Buddy are home only after you have met her, and Buddy also sits beside her desk at school. Patting him plays a short pet sound and gives 1 bond once a day. Windows sit on the face row at columns 3, 9 and 15. Morolow's floor is redrawn as calm planks (7 px boards, a dark groove, a few paint flecks) because the supplied tile broke the plank rule. Lizzy's room and Ossabell's room keep the honey floor. Save `v` stays 2.
+- Files touched: `data/detail_lizzy.json`, `data/mapdata.js`, `sprites.js`, `game.js`, `sfx.js`, `quests.js`, `tests/lizzy.spec.js`, `tests/interior_walls.spec.js`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0810.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/lizzy.spec.js tests/interior_walls.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0 skipped=0 time=17s. The other two widths follow with the later packets. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D173 and D181, settled earlier, built here. D184's plank rule applied to `floor_paint_plank` only. No new decision id. D177, D180 and D182 stay for the next commits on this branch.
+- Anything left unfinished: the leak quest, the moral step, and the unlock tips.
+
 ## 2026-10-17 06:48 ET: Merged the reputation work (PR #91) into the floor fix (build 20261017-0648)
 
 - What changed and why: Merged `main` (Lizzy B, the reputation work, build 20261017-0510) and kept the calm floors. `data/mapdata.js` was regenerated. Floors only: flat 5B (`hm_flats_5`) still uses `floor_honey`. Save `v` stays 2.

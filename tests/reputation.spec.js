@@ -242,13 +242,6 @@ test('PEOPLE is empty until someone is met, then Lizzy opens a card', async ({ p
   await row.locator('.rep-face-btn').click();
   await expect(page.locator('#repCard .rep-num')).toHaveText('50');
   await expect(page.locator('#repCard .rep-tier')).toHaveText('neutral');
-  await page.evaluate(() => {
-    MAPDATA.reputation.sources.push({
-      who: 'Lizzy', flag: 'story.moral_leak5b', eq: 'court', delta: 10,
-      line: 'You took the leak to the Keepers', open: 'Help with a leak?',
-    });
-  });
-  await page.evaluate(() => { window.__repCard = true; });
   await page.locator('#repBack').click();
   await page.locator('.rep-row', { hasText: 'Lizzy' }).locator('.rep-face-btn').click();
   await expect(page.locator('#repCard .rep-src')).toHaveText('? Help with a leak?');

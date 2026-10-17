@@ -1078,6 +1078,8 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 /* Opening tour (D157–D160). Dim is k at 60%. The ring is 2 px, 4 px outside the target. */
 #tutLayer{position:fixed;inset:0;z-index:15;pointer-events:none}
 #tutLayer[hidden]{display:none}
+#tutLayer.unlock-on .tut-dim,#tutLayer.unlock-on .tut-block{pointer-events:none}
+#unlockCard .unlock-title{font-weight:bold}
 .tut-dim{position:fixed;background:rgba(26,28,44,.6);pointer-events:auto}
 .tut-block{position:fixed;pointer-events:auto;background:transparent}
 .tut-ring{position:fixed;box-sizing:border-box;border:2px solid var(--y);pointer-events:none}
