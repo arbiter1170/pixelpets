@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-17 02:57 ET: Dialog box clears the speaker (D171)
+
+- What changed and why: When a person on the map would stand under the text box, the box moves to the top. If the top would cover them too, the view eases over 150 ms so they sit in the top of the screen, clamped to the map. Reduced motion jumps. Narration, the phone, and a letter overlay stay at the bottom. A say step can force `{"box":"top"|"bottom"}`. The choice stays put for a run of lines from the same speaker. Save `v` stays 2.
+- Files touched: `game.js`, `style.css`, `tests/dialog_clear.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261017-0257.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/dialog_clear.spec.js` at 320, 375, and 390. PP_TEST RESULT: PASS exit=0 passed=24 failed=0 flaky=0 skipped=0 time=34s. No console errors. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D171 red, settled by Vincent Oct 17, 2026. No new id. No id was renumbered.
+- Anything left unfinished: the Hearthmoor south rows (D170) are the next commit on this branch. The other Lizzy packets are not this PR.
+
 ## 2026-10-17 02:40 ET: Lizzy speaks English (D172)
 
 - What changed and why: Lizzy understands Spanish and answers in English. Four lines in her intro change: the greeting, "kiddo", "Oh, he is.", and the snack line. Her sisters' Spanish is unchanged. The other nine rewrites are story lines that are not in the game. Save `v` stays 2. Settled rows D162–D167 and D170–D182 are recorded. The next free id is D183. D168–D169 stay reserved for the music test build.
