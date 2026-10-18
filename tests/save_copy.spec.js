@@ -5,11 +5,6 @@ const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./hel
 
 trackErrors(test, expect);
 
-function dayStamp() {
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-}
-
 async function bootRoundTrip(page) {
   const save = starterSave();
   save.flags['story.side'] = 'glimmer';
@@ -104,9 +99,7 @@ test('a copy survives Start over and comes back as the same game', async ({ page
 test('a bad file is refused and the current game stays', async ({ page }) => {
   const save = starterSave();
   save.flags['story.side'] = 'keepers';
-  save.flags['daily.hello'] = dayStamp();
-  save.flags['daily.warm_bowl'] = dayStamp();
-  await installSave(page.context(), save, { quietDay: false });
+  await installSave(page.context(), save, { quietDay: true });
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets.state && window.PixelPets.state.party.length === 1);
   await page.locator('#settingsBtn').click();

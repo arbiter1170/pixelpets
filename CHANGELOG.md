@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-18 04:53 ET: Engineering gaps (build 20261018-0453)
+
+- What changed and why: Upstairs, the school, and both flats rooms stay on the Hearthmoor node, and the map check fails if that link breaks. Full-run waits no longer depend on the typewriter frame or a wall-clock hop timer. Tour shots go to `PP_ART` or a temp directory. Daily explore XP and the bad-save check use the browser's own day. Save `v` stays 2. No new rooms and no new art.
+- Files touched: `game.js`, `minigames.js`, `tests/helpers.js`, `tests/map.spec.js`, `tests/maps_b2.spec.js`, `tests/maps_b5.spec.js`, `tests/maps_b8.spec.js`, `tests/rx_f4_pilot.spec.js`, `tests/highcharity.spec.js`, `tests/group_battle.spec.js`, `tests/ios_reload.spec.js`, `tests/tutorial.spec.js`, `tests/unlock.spec.js`, `tests/stat_display.spec.js`, `tests/save_copy.spec.js`, `tests/look_keys.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261018-0453.
+- Tests run and result (widths, checks): scoped specs at 320, 375 and 390. `TZ=UTC` and `TZ=America/New_York` both passed `stat_display` and `save_copy`. Full suite, twice: PP_TEST RESULT: PASS exit=0 passed=1101 failed=0 flaky=0 skipped=12 time=1519s. PP_TEST RESULT: PASS exit=0 passed=1101 failed=0 flaky=0 skipped=12 time=1514s. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): D168 and D169 settled. Vincent, Oct 18, 2026, approved as shipped. No new id. Next free stays D187.
+- Anything left unfinished: D80, the D104 overlap, and D142–D147 stay open and unrenumbered. `dream_2004` and `fb_lantern_in` were not edited.
+
 ## 2026-10-17 09:44 ET: The leak choice is narration (build 20261017-0944)
 
 - What changed and why: "How do you fix this?" no longer wears Mr. Gristle's name. The three answers stay the same, including "Make him fix it", so the prompt is narration. Standing and trust are unchanged. Save `v` stays 2.

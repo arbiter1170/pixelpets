@@ -81,11 +81,19 @@ async function boot(page, s) {
 }
 
 async function say(page) {
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
+  await expect.poll(() => page.evaluate(() => {
+    if (PixelPets.fading) return false;
+    if (PixelPets.scene) return true;
+    const w = PixelPets.state.world;
+    const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[w.facing] || [0, 1];
+    return PixelPets.mapObjs.some(o => o.x === w.x + d[0] && o.y === w.y + d[1]);
+  })).toBe(true);
+  if (!(await page.evaluate(() => !!PixelPets.scene))) await page.keyboard.press('Space');
+  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).not.toBe('');
   const text = await page.evaluate(() => PixelPets.scene.text);
+  if (await page.evaluate(() => PixelPets.scene && !PixelPets.scene.full)) await page.keyboard.press('Space');
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => !PixelPets.scene);
+  await expect.poll(() => page.evaluate(() => !PixelPets.scene)).toBe(true);
   return text;
 }
 
@@ -220,8 +228,7 @@ test('the door reaches every person, and each new prop says its line', async ({ 
   }
   await page.evaluate(() => PixelPets.goto('hm_lantern_in', 1, 3, 'up'));
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
-  expect(await page.evaluate(() => PixelPets.scene.text)).toBe('Three soft beds under a warm lantern.');
+  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).toBe('Three soft beds under a warm lantern.');
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
 

@@ -5731,7 +5731,7 @@ const REGION_MAP = {
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
            cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'] },
-  interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
+  interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
@@ -5915,6 +5915,19 @@ function mapDevCheck(){
   if (mapHold('hearthmoor', {}) !== 'keepers' || mapHold('highcharity', {}) !== 'keepers' || mapHold('route1', {}) !== 'keepers') bad.push('keepers');
   if (mapHold('proto', {}) !== 'wild' || mapHold('mahopac', {}) !== 'wild') bad.push('wild');
   if (REGION_MAP.nodes.highcharity.link !== 'coach') bad.push('coach');
+  // Every interior resolves to an outdoor node. A listed room must agree with that node.
+  // Upstairs is not its own parchment node. A test map with outdoor set still resolves.
+  for (const id of Object.keys(WORLD)) {
+    const m = WORLD[id];
+    if (!m || m.kind !== 'interior') continue;
+    const node = nodeOf(id);
+    if (!node || !REGION_MAP.nodes[node]) bad.push(id + ': interior');
+    const want = REGION_MAP.interiors[id];
+    if (want && want !== node) bad.push(id + ': node');
+  }
+  for (const id of ['hm_home_in', 'hm_home_up', 'hm_school_in', 'hm_flats_lobby', 'hm_flats_5']) {
+    if (REGION_MAP.interiors[id] !== 'hearthmoor' || nodeOf(id) !== 'hearthmoor') bad.push(id);
+  }
   return bad;
 }
 function drawRegionMap(t){

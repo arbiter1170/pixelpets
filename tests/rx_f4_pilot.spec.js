@@ -19,14 +19,26 @@ async function boot(page, save, q = '?debug=1') {
 }
 async function at(page, x, y, facing = 'up') {
   await page.evaluate(([x, y, f]) => { PixelPets.goto('rx_f4', x, y, f); if (PixelPets.clearWild) PixelPets.clearWild(); }, [x, y, facing]);
-  await page.waitForTimeout(80);
+  await expect.poll(() => page.evaluate(() => ({
+    map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y,
+    facing: PixelPets.state.world.facing, scene: !!PixelPets.scene, fading: !!PixelPets.fading,
+  }))).toEqual({ map: 'rx_f4', x, y, facing, scene: false, fading: false });
 }
 async function talk(page) {
-  await expect.poll(() => page.evaluate(() => document.querySelector('#talkBtn').classList.contains('ready'))).toBe(true);
-  await page.locator('#talkBtn').click();
-  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.full ? PixelPets.scene.text : null), { timeout: 5000 }).not.toBeNull();
+  // The Talk button's ready class waits on a frame. Facing and the line text do not.
+  await expect.poll(() => page.evaluate(() => {
+    if (PixelPets.fading) return null;
+    if (PixelPets.scene && PixelPets.scene.text) return PixelPets.scene.text;
+    const w = PixelPets.state.world;
+    const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[w.facing] || [0, 1];
+    if (!PixelPets.mapObjs.some(o => o.x === w.x + d[0] && o.y === w.y + d[1])) return null;
+    const btn = document.querySelector('#talkBtn');
+    if (btn) btn.click();
+    return PixelPets.scene && PixelPets.scene.text ? PixelPets.scene.text : null;
+  })).not.toBeNull();
   const t = await page.evaluate(() => PixelPets.scene.text);
-  for (let i = 0; i < 12 && await page.evaluate(() => !!PixelPets.scene); i++) { await page.keyboard.press('Space'); await page.waitForTimeout(80); }
+  for (let i = 0; i < 12 && await page.evaluate(() => !!PixelPets.scene); i++) await page.keyboard.press('Space');
+  await expect.poll(() => page.evaluate(() => !PixelPets.scene)).toBe(true);
   return t;
 }
 const pos = page => page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, facing: PixelPets.state.world.facing }));
@@ -194,20 +206,44 @@ test('QA 7: Quinn and Bitlet keep their ids, flags and scenes', async ({ page })
 });
 
 test('QA 9 / A7: tanks hold frame 0 under reduced motion and animate in step otherwise', async ({ page }) => {
-  const sample = async () => page.evaluate(() => {
-    const c = document.querySelector('#mapCanvas'), g = c.getContext('2d'), cx = PixelPets.walk.cam.x, cy = PixelPets.walk.cam.y;
-    return [[10, 10], [11, 10], [10, 12], [11, 12]].map(([x, y]) => Array.from(g.getImageData(x * 16 - cx, y * 16 - cy, 16, 16).data).join(',').length + ':' + Array.from(g.getImageData(x * 16 - cx, y * 16 - cy, 16, 16).data).reduce((a, v, i) => (a * 31 + v * (i + 1)) % 1000003, 7));
-  });
+  // Read after a paint, and let the game clock move. A wall-clock pause can land mid-frame when the suite is busy.
+  const watch = () => page.evaluate(() => new Promise((resolve) => {
+    const cells = () => {
+      const c = document.querySelector('#mapCanvas'), g = c.getContext('2d');
+      const cx = PixelPets.walk.cam.x, cy = PixelPets.walk.cam.y;
+      return [[10, 10], [11, 10], [10, 12], [11, 12]].map(([x, y]) => {
+        const px = x * 16 - cx, py = y * 16 - cy;
+        if (px < 0 || py < 0 || px + 16 > c.width || py + 16 > c.height) return 'off';
+        const data = g.getImageData(px, py, 16, 16).data;
+        let h = 7;
+        for (let i = 0; i < data.length; i++) h = (h * 31 + data[i] * (i + 1)) % 1000003;
+        return data.length + ':' + h;
+      });
+    };
+    const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let first = null, last = null, t0 = 0;
+    const step = (t) => {
+      if (!first) { first = cells(); t0 = t; }
+      last = cells();
+      if (t - t0 < 700) requestAnimationFrame(step);
+      else resolve({ first, last, reduce: reduce(), dt: t - t0 });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(step));
+  }));
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await boot(page, labSave());
   await at(page, 6, 11);
-  const a = await sample(); await page.waitForTimeout(650); const b = await sample();
-  expect(b).toEqual(a);
+  await expect.poll(() => page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  const held = await watch();
+  expect(held.reduce).toBe(true);
+  expect(held.first.includes('off')).toBe(false);
+  expect(held.last).toEqual(held.first);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  let moved = false, inStep = true;
-  for (let i = 0; i < 6 && !moved; i++) { await page.waitForTimeout(170); const c = await sample(); if (c.join() !== a.join()) { moved = true; inStep = c.every((v, j) => v !== a[j]); /* one clock: all four flip together */ } }
-  expect(moved).toBe(true);
-  expect(inStep).toBe(true);
+  await expect.poll(() => page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(false);
+  const moved = await watch();
+  expect(moved.reduce).toBe(false);
+  expect(moved.last.join()).not.toBe(moved.first.join());
+  expect(moved.last.every((v, j) => v !== moved.first[j])).toBe(true);
 });
 
 test('QA 10 / E5: floor variants are seeded (same after reload), hand-placed chars win, base tile <= 70 % (D88)', async ({ page }) => {

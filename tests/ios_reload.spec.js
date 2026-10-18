@@ -47,6 +47,8 @@ test.describe('open game', () => {
     let loads = 0;
     page.on('load', () => { loads++; });
     await gotoGame(page, '?debug=1');
+    // 'commit' returns before the document load event. Count only loads after that event.
+    await page.waitForLoadState('load');
     loads = 0;
     const here = page.url();
     await page.route('**/version.json*', (route) => route.fulfill({

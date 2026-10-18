@@ -11,7 +11,22 @@ const RECTS = {
 const SEL = { strip: '#statStrip', nrgL: '.ss-nrg-l', nrgB: '.ss-nrg-b', nrgV: '.ss-nrg-v', growL: '.ss-grow-l', growB: '.ss-grow-b', growV: '.ss-grow-v', ex: '.ss-ex' };
 async function boot(page, extra = {}, settings = {}) {
   const s = starterSave(); Object.assign(s.party[0], { energy: 72, xp: 140 }, extra); Object.assign(s.settings, settings); s.steps = 340;
+  const pinToday = s.party[0].ex && s.party[0].ex.d === 'TODAY';
+  if (pinToday) s.party[0].ex.d = 'PENDING';
   await installSave(page.context(), s, { quietDay: true });
+  if (pinToday) {
+    // The day key is the browser's local date. A stamp from the test runner can be the day before.
+    await page.addInitScript(() => {
+      const raw = localStorage.getItem('pixelpets.save.v2');
+      if (!raw) return;
+      const save = JSON.parse(raw);
+      const pet = save.party && save.party[0];
+      if (!pet || !pet.ex || pet.ex.d !== 'PENDING') return;
+      const d = new Date();
+      pet.ex.d = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      localStorage.setItem('pixelpets.save.v2', JSON.stringify(save));
+    });
+  }
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state);
 }
@@ -61,8 +76,7 @@ test('criteria 6-7: no new save fields, maxed counter turns lime, nothing wraps 
   await page.waitForTimeout(5500);
   const after = await page.evaluate(() => (o => JSON.stringify(Object.keys(o).sort()) + JSON.stringify(Object.keys(o.party[0]).sort()))(JSON.parse(localStorage.getItem('pixelpets.save.v2'))));
   expect(after).toBe(before);
-  const d = new Date(), k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  await boot(page, { ex: { d: k, xp: 30 } });
+  await boot(page, { ex: { d: 'TODAY', xp: 30 } });
   await page.evaluate(() => PixelPets.showTab('walk'));
   await expect(page.locator('#ssExp')).toHaveText('30/30');
   await expect(page.locator('#ssExp')).toHaveClass(/maxed/);
