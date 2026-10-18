@@ -34,3 +34,61 @@ test('a look key defined in two data files is reported', () => {
   const files = [['a.json', { looks: { cal: { hair: 'buzz' }, _note: 'x' } }], ['b.json', { looks: { cal: { hair: 'short' } } }]];
   expect(lookKeyClashes(files)).toEqual(['cal: a.json and b.json']);
 });
+
+function duplicateObjectKeys(text) {
+  const dups = [];
+  let i = 0;
+  const n = text.length;
+  const frames = [];
+  while (i < n) {
+    const c = text[i];
+    if (c === '"') {
+      i++;
+      let s = '';
+      while (i < n) {
+        if (text[i] === '\\') { i += 2; continue; }
+        if (text[i] === '"') { i++; break; }
+        s += text[i++];
+      }
+      let j = i;
+      while (j < n && /\s/.test(text[j])) j++;
+      const frame = frames[frames.length - 1];
+      if (frame && frame.keys && frame.expect === 'key' && text[j] === ':') {
+        if (frame.keys.has(s)) dups.push(s);
+        else frame.keys.add(s);
+        frame.expect = 'colon';
+        i = j;
+      }
+      continue;
+    }
+    if (c === '{') { frames.push({ keys: new Set(), expect: 'key' }); i++; continue; }
+    if (c === '}') { frames.pop(); i++; continue; }
+    if (c === '[') { frames.push({ keys: null, expect: 'arr' }); i++; continue; }
+    if (c === ']') { frames.pop(); i++; continue; }
+    if (c === ':') {
+      const frame = frames[frames.length - 1];
+      if (frame && frame.expect === 'colon') frame.expect = 'value';
+      i++; continue;
+    }
+    if (c === ',') {
+      const frame = frames[frames.length - 1];
+      if (frame && frame.keys) frame.expect = 'key';
+      i++; continue;
+    }
+    i++;
+  }
+  return dups;
+}
+
+test('no data file defines the same object key twice', () => {
+  const hits = [];
+  for (const file of fs.readdirSync(DATA).filter(f => f.endsWith('.json')).sort()) {
+    const dups = duplicateObjectKeys(fs.readFileSync(path.join(DATA, file), 'utf8'));
+    if (dups.length) hits.push(file + ': ' + dups.join(', '));
+  }
+  expect(hits).toEqual([]);
+});
+
+test('a repeated object key is reported', () => {
+  expect(duplicateObjectKeys('{ "a": 1, "b": { "a": 2 }, "a": 3 }')).toEqual(['a']);
+});

@@ -776,5 +776,5 @@
     return true;
   }
 
-  root.PPMinigames = { IDS, RULE, CLEAR, FAIL, finish, play, stop, press, keyDown, keyUp, devCheck, bind };
+  root.PPMinigames = { IDS, RULE, CLEAR, FAIL, finish, play, stop, press, keyDown, keyUp, devCheck, bind, clock: () => (active && active.t) || 0 };
 })(typeof window !== 'undefined' ? window : globalThis);

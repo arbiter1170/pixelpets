@@ -1,12 +1,17 @@
 /* Unlock tips (D180) and tour step T12r. */
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
 
 trackErrors(test, expect);
 
-const ART = process.env.PP_ART || '/opt/cursor/artifacts/screenshots';
+function tourArtDir() {
+  if (process.env.PP_ART) return process.env.PP_ART;
+  if (!tourArtDir._tmp) tourArtDir._tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'walklings-tour-'));
+  return tourArtDir._tmp;
+}
 
 function tourSave(step) {
   const s = starterSave();
@@ -23,8 +28,9 @@ function tourSave(step) {
 
 async function shot390(page, name) {
   if (!page.viewportSize() || page.viewportSize().width !== 390) return;
-  fs.mkdirSync(ART, { recursive: true });
-  await page.screenshot({ path: path.join(ART, name + '.png') });
+  const dir = tourArtDir();
+  fs.mkdirSync(dir, { recursive: true });
+  await page.screenshot({ path: path.join(dir, name + '.png') });
 }
 
 async function openTour(page, save) {

@@ -71,8 +71,10 @@ function trackErrors(test, expect) {
 }
 
 async function gotoGame(page, search = '') {
-  await page.goto('/' + search, { waitUntil: 'load', timeout: 20000 });
-  await page.waitForFunction(() => window.PixelPets && window.BUILD, null, { timeout: 20000 });
+  // 'commit' returns once the document starts. The app wait uses the test's own time,
+  // so a slow script parse is not failed by a shorter navigation cap.
+  await page.goto('/' + search, { waitUntil: 'commit' });
+  await page.waitForFunction(() => window.PixelPets && window.BUILD);
 }
 
 // Map-pass fixtures: adds `overlay` to MAPDATA as one more data/detail_*.json before the game boots.
@@ -109,7 +111,8 @@ async function playScene(page, choices = [], onChoice = null, onSeal = null) {
     const sealUp = await page.locator('#ovBattle.seal-only').isVisible().catch(() => false);
     if (sealUp) { if (onSeal) await onSeal(); await page.locator('#btOk').click(); await page.waitForTimeout(40); continue; }
     if (sc.mode === 'choice') {
-      if (!sc.full) { await page.waitForTimeout(40); continue; }
+      // A tap completes the line without waiting for the frame loop, then the buttons answer.
+      if (!sc.full) { await page.keyboard.press('Space'); continue; }
       await page.waitForFunction(() => window.PixelPets.optionsReady === true);
       const label = left.shift();
       if (label == null) throw new Error('scene asked "' + sc.text + '" but the test had no answer left');

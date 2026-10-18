@@ -4,6 +4,16 @@ const { starterSave, installSave, trackErrors, gotoGame, shot, playScene } = req
 
 trackErrors(test, expect);
 
+// The line is stored at once. Completing it does not wait for the typewriter frame.
+async function finishSay(page) {
+  await expect.poll(() => page.evaluate(() => {
+    const s = window.PixelPets.scene;
+    return !!(s && s.mode === 'say' && s.text && s.waiting);
+  })).toBe(true);
+  if (await page.evaluate(() => window.PixelPets.scene && !window.PixelPets.scene.full)) await page.keyboard.press('Space');
+  await page.keyboard.press('Space');
+}
+
 function citySave(flags, world) {
   const save = starterSave();
   Object.assign(save.flags, {
@@ -223,15 +233,16 @@ test('Brin offers the two-keeper games and a tired one stays off the list', asyn
   expect(await page.evaluate(() => PixelPets.charityCheck())).toEqual([]);
 
   expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
-  await page.waitForFunction(() => {
+  await expect.poll(() => page.evaluate(() => {
     const s = window.PixelPets.scene;
-    return s && s.mode === 'say' && s.full && s.waiting && /Pass the phone/.test(s.text);
-  });
+    return !!(s && s.mode === 'say' && s.waiting && /Pass the phone/.test(s.text));
+  })).toBe(true);
+  if (await page.evaluate(() => PixelPets.scene && !PixelPets.scene.full)) await page.keyboard.press('Space');
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => {
+  await expect.poll(() => page.evaluate(() => {
     const s = window.PixelPets.scene;
-    return s && s.mode === 'choice' && s.full && window.PixelPets.optionsReady;
-  });
+    return !!(s && s.mode === 'choice' && window.PixelPets.optionsReady);
+  })).toBe(true);
   expect(await page.locator('#sbChoices button').allTextContents()).toEqual(['Rope Hop', 'Flag Relay', 'Sniff Seek', 'Not now']);
   await page.locator('#sbChoices button', { hasText: 'Not now' }).click();
   await playScene(page, []);
@@ -243,31 +254,19 @@ test('Brin offers the two-keeper games and a tired one stays off the list', asyn
     PixelPets.state.care.mg.seek = 3;
   });
   expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
-  await page.waitForFunction(() => {
+  await expect.poll(() => page.evaluate(() => {
     const s = window.PixelPets.scene;
-    return s && s.mode === 'say' && s.full && /two-keeper booth is tired/.test(s.text);
-  });
+    return !!(s && s.mode === 'say' && /two-keeper booth is tired/.test(s.text));
+  })).toBe(true);
 });
 
 test('Rope Hop jumps with both Walklings and pays outside the five-game quest', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, citySave());
   await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hc_hall_in', 5, 9, 'up'); });
-  await page.evaluate(() => {
-    const orig = PPMinigames.play.bind(PPMinigames);
-    PPMinigames.play = (id, hooks) => {
-      const pending = orig(id, hooks);
-      window.__playT0 = performance.now();
-      return pending;
-    };
-  });
   expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
-  await page.waitForFunction(() => {
-    const s = window.PixelPets.scene;
-    return s && s.mode === 'say' && s.full && s.waiting;
-  });
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady);
+  await finishSay(page);
+  await expect.poll(() => page.evaluate(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady)).toBeTruthy();
   await page.locator('#sbChoices button', { hasText: 'Rope Hop' }).click();
   await page.waitForSelector('#playPads:not([hidden])');
   const pads = await page.evaluate(() => ({
@@ -279,14 +278,22 @@ test('Rope Hop jumps with both Walklings and pays outside the five-game quest', 
   expect(pads.p2).toBe('Nib');
   expect(pads.rule.length).toBeLessThanOrEqual(110);
   if (page.viewportSize().width === 390) await shot(page, 'highcharity-hop');
-  await page.evaluate(() => new Promise(resolve => {
-    const t0 = window.__playT0;
-    const now = performance.now();
-    for (let i = 0; i < 12; i++) {
-      const delay = t0 + i * 1000 + 480 - now;
-      setTimeout(() => { PPMinigames.press(0); PPMinigames.press(1); }, Math.max(0, delay));
-    }
-    setTimeout(resolve, 13500);
+  // Jump on the game clock. A wall-clock timer misses the beat when frames run late.
+  await page.evaluate(() => new Promise((resolve) => {
+    const hit = new Set();
+    const step = () => {
+      const pads = document.getElementById('playPads');
+      if (!pads || pads.hidden) { resolve('closed'); return; }
+      const t = window.PPMinigames.clock();
+      const beat = Math.floor(t / 1000);
+      if (beat < 12 && !hit.has(beat) && Math.abs((t % 1000) - 500) < 80) {
+        hit.add(beat);
+        window.PPMinigames.press(0);
+        window.PPMinigames.press(1);
+      }
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   }));
   await page.waitForFunction(() => {
     const s = window.PixelPets.scene;
@@ -342,9 +349,8 @@ test('Flag Relay and Sniff Seek pay the host and stay off the five-game count', 
 
   await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hc_hall_in', 5, 9, 'up'); });
   expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
-  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'say' && window.PixelPets.scene.full && window.PixelPets.scene.waiting);
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady);
+  await finishSay(page);
+  await expect.poll(() => page.evaluate(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady)).toBeTruthy();
   await page.locator('#sbChoices button', { hasText: 'Flag Relay' }).click();
   await page.waitForSelector('#playPads:not([hidden])');
   await page.dispatchEvent('#playP1', 'pointerdown');
@@ -355,9 +361,8 @@ test('Flag Relay and Sniff Seek pay the host and stay off the five-game count', 
   await playScene(page, []);
 
   expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
-  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'say' && window.PixelPets.scene.full && window.PixelPets.scene.waiting);
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady);
+  await finishSay(page);
+  await expect.poll(() => page.evaluate(() => window.PixelPets.scene && window.PixelPets.scene.mode === 'choice' && window.PixelPets.optionsReady)).toBeTruthy();
   await page.locator('#sbChoices button', { hasText: 'Sniff Seek' }).click();
   await page.waitForSelector('#ovPlay:not([hidden])');
   expect(await page.locator('#playPads').isHidden()).toBe(true);

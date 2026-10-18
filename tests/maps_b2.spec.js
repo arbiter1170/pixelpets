@@ -28,14 +28,26 @@ async function boot(page, save) {
 }
 async function at(page, map, x, y, facing = 'up') {
   await page.evaluate(([map, x, y, f]) => PixelPets.goto(map, x, y, f), [map, x, y, facing]);
-  await page.waitForTimeout(80);
+  await expect.poll(() => page.evaluate(() => ({
+    map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y,
+    facing: PixelPets.state.world.facing, scene: !!PixelPets.scene, fading: !!PixelPets.fading,
+  }))).toEqual({ map, x, y, facing, scene: false, fading: false });
 }
 async function talk(page) {
-  await expect.poll(() => page.evaluate(() => document.querySelector('#talkBtn').classList.contains('ready'))).toBe(true);
-  await page.locator('#talkBtn').click();
-  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.full ? PixelPets.scene.text : null), { timeout: 5000 }).not.toBeNull();
+  // The Talk button's ready class waits on a frame. Facing and the line text do not.
+  await expect.poll(() => page.evaluate(() => {
+    if (PixelPets.fading) return null;
+    if (PixelPets.scene && PixelPets.scene.text) return PixelPets.scene.text;
+    const w = PixelPets.state.world;
+    const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[w.facing] || [0, 1];
+    if (!PixelPets.mapObjs.some(o => o.x === w.x + d[0] && o.y === w.y + d[1])) return null;
+    const btn = document.querySelector('#talkBtn');
+    if (btn) btn.click();
+    return PixelPets.scene && PixelPets.scene.text ? PixelPets.scene.text : null;
+  })).not.toBeNull();
   const t = await page.evaluate(() => PixelPets.scene.text);
-  for (let i = 0; i < 8 && await page.evaluate(() => !!PixelPets.scene); i++) { await page.keyboard.press('Space'); await page.waitForTimeout(40); }
+  for (let i = 0; i < 8 && await page.evaluate(() => !!PixelPets.scene); i++) await page.keyboard.press('Space');
+  await expect.poll(() => page.evaluate(() => !PixelPets.scene)).toBe(true);
   return t;
 }
 const pos = page => page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, facing: PixelPets.state.world.facing }));
@@ -174,9 +186,20 @@ test('signature props say their lines, and a locked stair stays shut', async ({ 
 test('the climb lands on each south mat, and the lobby mat leaves for the Heights', async ({ page }) => {
   await boot(page, labSave());
   const clickDoor = async () => {
+    // The camera catches up on the next frame. Click only once the stair is inside the canvas.
+    await expect.poll(() => page.evaluate(() => {
+      const c = document.querySelector('#mapCanvas');
+      if (!c || !c.width) return false;
+      const r = c.getBoundingClientRect(), k = r.width / c.width;
+      const door = PixelPets.mapInfo.objs.find(o => o.kind === 'door' && o.y < 8);
+      if (!door) return false;
+      const x = r.left + (door.x * 16 + 8 - PixelPets.walk.cam.x) * k;
+      const y = r.top + (door.y * 16 + 8 - PixelPets.walk.cam.y) * k;
+      return x >= r.left && y >= r.top && x <= r.right && y <= r.bottom;
+    })).toBe(true);
     const pt = await page.evaluate(() => {
       const c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width;
-      const door = PixelPets.mapInfo.objs.find(o => o.kind === 'door');
+      const door = PixelPets.mapInfo.objs.find(o => o.kind === 'door' && o.y < 8);
       return { x: r.left + (door.x * 16 + 8 - PixelPets.walk.cam.x) * k, y: r.top + (door.y * 16 + 8 - PixelPets.walk.cam.y) * k };
     });
     await page.mouse.click(pt.x, pt.y);

@@ -162,3 +162,16 @@ test('the card names the room you are standing in', async ({ page }) => {
   await page.keyboard.press('Escape');
   await page.waitForSelector('#ovMap', { state: 'hidden' });
 });
+
+test('upstairs shares the Hearthmoor node and the card names that room', async ({ page }) => {
+  await boot(page, walkedSave(), '?debug=1');
+  expect(await page.evaluate(() => PixelPets.mapCheck())).toEqual([]);
+  await page.evaluate(() => PixelPets.goto('hm_home_up', 4, 5, 'down'));
+  await openMap(page);
+  const name = await page.locator('#mapPlaceName').textContent();
+  expect(name).toContain('HEARTHMOOR');
+  expect(name).toContain('UPSTAIRS');
+  expect(await page.locator('#mapHold').getAttribute('data-hold')).toBe('keepers');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#ovMap', { state: 'hidden' });
+});

@@ -51,12 +51,29 @@ async function boot(page, s) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
+async function advanceSay(page) {
+  await expect.poll(() => page.evaluate(() => {
+    const s = PixelPets.scene;
+    return !!(s && s.text && s.waiting);
+  })).toBe(true);
+  if (await page.evaluate(() => PixelPets.scene && !PixelPets.scene.full)) await page.keyboard.press('Space');
+  await page.keyboard.press('Space');
+}
+
 async function say(page) {
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
+  await expect.poll(() => page.evaluate(() => {
+    if (PixelPets.fading) return false;
+    if (PixelPets.scene) return true;
+    const w = PixelPets.state.world;
+    const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[w.facing] || [0, 1];
+    return PixelPets.mapObjs.some(o => o.x === w.x + d[0] && o.y === w.y + d[1]);
+  })).toBe(true);
+  if (!(await page.evaluate(() => !!PixelPets.scene))) await page.keyboard.press('Space');
+  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).not.toBe('');
   const text = await page.evaluate(() => PixelPets.scene.text);
+  if (await page.evaluate(() => PixelPets.scene && !PixelPets.scene.full)) await page.keyboard.press('Space');
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => !PixelPets.scene);
+  await expect.poll(() => page.evaluate(() => !PixelPets.scene)).toBe(true);
   return text;
 }
 
@@ -236,10 +253,10 @@ test('doors warp in and back, and the hall stays latched until the orchard is cl
   await boot(page);
   await page.evaluate(() => PixelPets.goto('fernbrook', 22, 6, 'up'));
   await page.keyboard.press('ArrowUp');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
-  expect(await page.evaluate(() => PixelPets.scene.text)).toContain('latched');
+  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).toContain('latched');
+  if (await page.evaluate(() => PixelPets.scene && !PixelPets.scene.full)) await page.keyboard.press('Space');
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => !PixelPets.scene);
+  await expect.poll(() => page.evaluate(() => !PixelPets.scene)).toBe(true);
   expect(await page.evaluate(() => PixelPets.mapInfo.id)).toBe('fernbrook');
 
   await page.evaluate(() => PixelPets.setFlag('story.orchard_cleared', true));
@@ -266,9 +283,8 @@ test('Amos rests the party and Fen starts the trial', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.goto('fb_lantern_in', 6, 4, 'up'));
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.waiting);
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice');
+  await advanceSay(page);
+  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.mode === 'choice')).toBeTruthy();
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   const amos = await page.locator('#sbChoices button').allTextContents();
   expect(amos).toContain('Rest a while');
@@ -277,9 +293,8 @@ test('Amos rests the party and Fen starts the trial', async ({ page }) => {
 
   await page.evaluate(() => { PixelPets.setFlag('story.side_pick_done', true); PixelPets.setSide('glimmer'); PixelPets.goto('fb_lantern_in', 6, 4, 'up'); });
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.waiting);
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice');
+  await advanceSay(page);
+  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.mode === 'choice')).toBeTruthy();
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   const desk = await page.locator('#sbChoices button').allTextContents();
   expect(desk).toContain('Rest a while');
@@ -289,10 +304,10 @@ test('Amos rests the party and Fen starts the trial', async ({ page }) => {
 
   await page.evaluate(() => PixelPets.goto('fb_lantern_in', 1, 7, 'up'));
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
-  expect(await page.evaluate(() => PixelPets.scene.text)).toContain('beds');
+  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).toContain('beds');
+  if (await page.evaluate(() => PixelPets.scene && !PixelPets.scene.full)) await page.keyboard.press('Space');
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice');
+  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.mode === 'choice')).toBeTruthy();
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   await page.locator('#sbChoices button', { hasText: 'Not now' }).click();
   await page.waitForFunction(() => !PixelPets.scene);
@@ -302,9 +317,8 @@ test('Amos rests the party and Fen starts the trial', async ({ page }) => {
 
   await page.evaluate(() => { PixelPets.setFlag('story.heights_done', true); PixelPets.setSide('keepers'); PixelPets.goto('fb_hall_in', 7, 5, 'up'); });
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.waiting);
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice');
+  await advanceSay(page);
+  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.mode === 'choice')).toBeTruthy();
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   const fen = await page.locator('#sbChoices button').allTextContents();
   expect(fen).toContain('Begin trial');

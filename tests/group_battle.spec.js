@@ -22,22 +22,34 @@ async function openGroup(page, id) {
 
 async function playTurn(page) {
   const turn = await page.evaluate(() => PixelPets.battle.turn);
-  await page.locator('[data-bact="fight"]').click();
-  await page.locator('#btMoves button').first().click();
-  await page.waitForFunction((n) => {
+  // Fight and the move list are ready as soon as the panel says so. A stability wait on the button
+  // can spend the whole test while the HP bar is still easing.
+  await expect.poll(() => page.evaluate(() => {
+    const B = PixelPets.battle;
+    const fight = document.querySelector('[data-bact="fight"]');
+    return !!(B && B.state === 'CHOOSE' && B.panel === 'acts' && fight && !fight.disabled && fight.offsetWidth);
+  })).toBe(true);
+  await page.locator('[data-bact="fight"]').click({ force: true });
+  await expect.poll(() => page.evaluate(() => {
+    const B = PixelPets.battle;
+    const mv = document.querySelector('#btMoves button:not([disabled])');
+    return !!(B && B.state === 'CHOOSE' && B.panel === 'fight' && mv);
+  })).toBe(true);
+  await page.locator('#btMoves button:not([disabled])').first().click({ force: true });
+  await expect.poll(() => page.evaluate((n) => {
     const B = window.PixelPets.battle;
-    return B.turn > n || B.result;
-  }, turn);
+    return B.turn > n || B.state !== 'CHOOSE';
+  }, turn)).toBe(true);
   for (let i = 0; i < 40; i++) {
     const st = await page.evaluate(() => {
       const B = PixelPets.battle;
-      return { state: B.state, on: B.on, result: B.result };
+      return { state: B.state, on: B.on, result: B.result, panel: B.panel };
     });
-    if (!st.on || st.result || st.state === 'CHOOSE') return st;
-    await page.locator('#btMsg').click();
-    await page.waitForTimeout(15);
+    // result is set before the win flag. The end panel means those lines have been written.
+    if (!st.on || st.state === 'CHOOSE' || st.panel === 'end') return st;
+    await page.locator('#btMsg').click({ force: true });
   }
-  return page.evaluate(() => ({ state: PixelPets.battle.state, on: PixelPets.battle.on, result: PixelPets.battle.result }));
+  return page.evaluate(() => ({ state: PixelPets.battle.state, on: PixelPets.battle.on, result: PixelPets.battle.result, panel: PixelPets.battle.panel }));
 }
 
 test('a normal trainer is not a group battle', async ({ page }) => {
@@ -150,8 +162,14 @@ test('a loss does not mark the group trainer beaten', async ({ page }) => {
   });
   await page.waitForFunction(() => PixelPets.battle && PixelPets.battle.state === 'CHOOSE');
   await page.evaluate(() => PixelPets.setHp('me', 1));
-  await page.locator('[data-bact="fight"]').click();
-  await page.locator('#btMoves button').first().click();
+  await expect.poll(() => page.evaluate(() => {
+    const B = PixelPets.battle;
+    const fight = document.querySelector('[data-bact="fight"]');
+    return !!(B && B.state === 'CHOOSE' && B.panel === 'acts' && fight && !fight.disabled);
+  })).toBe(true);
+  await page.locator('[data-bact="fight"]').click({ force: true });
+  await expect.poll(() => page.evaluate(() => PixelPets.battle.panel === 'fight' && !!document.querySelector('#btMoves button:not([disabled])'))).toBe(true);
+  await page.locator('#btMoves button:not([disabled])').first().click({ force: true });
   await page.waitForFunction(() => PixelPets.battle.result === 'tired' || PixelPets.battle.state === 'IDLE');
   const end = await page.evaluate(() => ({
     result: PixelPets.battle.result,
