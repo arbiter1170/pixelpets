@@ -43,7 +43,9 @@
     'story.lizzy_met', 'story.lizzy_hug', 'story.lizzy_rook',
     'story.buddy_pat_today', 'story.leak5b_seen',
     'story.unlock_rep', 'story.unlock_phone', 'story.unlock_sides', 'story.unlock_quests', 'story.unlock_moral',
-    'story.unlock_switch', 'story.unlock_letter', 'story.unlock_lantern', 'story.unlock_growup'];
+    'story.unlock_switch', 'story.unlock_letter', 'story.unlock_lantern', 'story.unlock_growup',
+    // TB-3: the posting sets the pin only. It is not a step. Yes, the sign, and the report live on BOARD.
+    'story.board_gate_pinned'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -222,6 +224,22 @@
   ];
   const SIDE = SIDE_CHAINS.flat();
 
+  // Town-board slips (D40). Not SIDE_CHAINS: a pin must not hide Mom. At most three. The map draws the latest.
+  // The posting sets story.board_<id>_pinned only. The NPC's yes is the only accept.
+  const BOARD = [
+    [
+      { id: 'gate', label: 'Gate count', when: ['story.board_gate_pinned'], done: ['story.board_gate_yes'],
+        text: 'Officer Cald wants a word about the east sign.', place: 'Hearthmoor',
+        target: { map: 'hearthmoor', x: 17, y: 7 } },
+      { id: 'gate_look', when: ['story.board_gate_yes'], done: ['story.board_gate_sign'],
+        text: 'Look at the east sign. See if it is still standing.', place: 'Hearthmoor, east sign',
+        target: { map: 'hearthmoor', x: 19, y: 10 } },
+      { id: 'gate_tell', when: ['story.board_gate_sign'], done: ['story.board_gate_done'],
+        text: 'Tell Officer Cald the east sign is still standing.', place: 'Hearthmoor',
+        target: { map: 'hearthmoor', x: 17, y: 7 } },
+    ],
+  ];
+
   function evalCond(c, st){
     if (c === 'else') return true;
     let neg = false; if (c[0] === '!') { neg = true; c = c.slice(1); }
@@ -261,6 +279,16 @@
     return out;
   }
   function sideCurrent(st){ const a = sideActive(st); return a.length ? a[0].step : null; }
+  // One current step per pinned slip, in catalog order. The last entry is the latest pin.
+  function boardActive(st){
+    const out = [];
+    for (const chain of BOARD) {
+      const m = chain.map(e => ownDone(e, st));
+      for (let i = m.length - 2; i >= 0; i--) m[i] = m[i] || m[i + 1];
+      for (let i = 0; i < chain.length; i++) if (!m[i] && eligible(chain[i], st)) { out.push({ chain: chain[0].id, label: chain[0].label || chain[0].id, step: resolve(chain[i], st) }); break; }
+    }
+    return out;
+  }
 
   // The current objective, or null when nothing applies (never happens with the chain above: `end` has no done).
   function current(st){
@@ -295,7 +323,8 @@
     const scanPatch = p => { if (!p) return; scanScenes(p.scenes); for (const pt of Object.values(p.maps || {})) for (const o of [].concat(pt.addObjs || [], pt.replaceObjs || [])) if (typeof o.setFlag === 'string') written.add(o.setFlag); };
     for (const src of Object.values(MD || {})) { if (!src) continue; scanScenes(src.scenes); scanMaps(src.maps); scanMaps(src.rooms); scanPatch(src.slicePatch); scanPatch(src.route2Patch); }
     const doneFlags = new Set();
-    for (const e of CHAIN.concat(SIDE)) for (const c of e.done) doneFlags.add(c.replace(/^!/, '').split('=')[0]);
+    const boardFlat = BOARD.flat();
+    for (const e of CHAIN.concat(SIDE, boardFlat)) for (const c of e.done) doneFlags.add(c.replace(/^!/, '').split('=')[0]);
     for (const f of written) if (f.startsWith('story.') && !doneFlags.has(f) && !NOT_STEPS.includes(f)) bad.push('flag not on the chain: ' + f);
     const ids = new Set();
     const copyOk = (e, tag) => {
@@ -318,10 +347,17 @@
       if (e.glimmer) copyOk(e.glimmer, 'side ' + e.id + '@glimmer');
       if (e.target && !(typeof e.target.map === 'string' && Number.isInteger(e.target.x) && Number.isInteger(e.target.y))) bad.push('bad target: ' + e.id);
     }
+    for (const chain of BOARD) { const l = chain[0].label; if (typeof l !== 'string' || !l || Array.from(l).length > LABEL_MAX) bad.push('board label missing or over ' + LABEL_MAX + ': ' + chain[0].id); }
+    for (const e of boardFlat) {
+      if (sideIds.has(e.id) || ids.has(e.id)) bad.push('duplicate id: ' + e.id); sideIds.add(e.id);
+      copyOk(e, 'board ' + e.id);
+      if (e.glimmer) copyOk(e.glimmer, 'board ' + e.id + '@glimmer');
+      if (e.target && !(typeof e.target.map === 'string' && Number.isInteger(e.target.x) && Number.isInteger(e.target.y))) bad.push('bad target: ' + e.id);
+    }
     return bad;
   }
 
-  const api = { CHAIN, SIDE, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, sideCurrent, sideActive, SIDE_CHAINS, LABEL_MAX, completed, byId, resolve, devCheck };
+  const api = { CHAIN, SIDE, BOARD, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, sideCurrent, sideActive, boardActive, SIDE_CHAINS, LABEL_MAX, completed, byId, resolve, devCheck };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PPQuests = api;
 })(typeof window !== 'undefined' ? window : globalThis);

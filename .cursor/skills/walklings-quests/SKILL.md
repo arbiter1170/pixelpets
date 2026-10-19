@@ -14,7 +14,7 @@ Side quests, town-board slips and bounties hang off `SIDE_CHAINS`; the main `CHA
 ## Before writing
 - Read `quests.js` (through `devCheck`), the matching `data/*.json`, `OPEN_DECISIONS.md` (next free id is in its header; D37 is used twice, never renumber), and `TOWN_BOARD.md` for board work.
 - Copy Mom (`mom` in `data/interiors.json`, `mom_hello` in `data/mahopac.json`) for a new accept. Accepts are conversations, never walk triggers (Ness's `catch` is the one shipped exception).
-- Don't wire a slip, bounty or square while its blocking D-row is open. TB-3 (one slip, Cald's gate count) is the first real slip; no Mahopac slip in that pass.
+- Don't wire a slip, bounty or square while its blocking D-row is open. TB-3 (one slip, Cald's gate count) is on this branch. Do not add a second slip or a Mahopac slip in that pass.
 
 ## Must hold
 - Save stays `pixelpets.save.v2`, `v: 2`; new flags are `story.<snake_case>` keys on `S.flags`, each listed in the file's `flags` map and a `done` flag or a `NOT_STEPS` entry, or `devCheck` fails boot.

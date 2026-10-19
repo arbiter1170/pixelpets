@@ -483,6 +483,10 @@ function engineLines(items) {
     addLine(items, 'quest', 'side ' + e.id, e.text, []);
     if (e.glimmer) addLine(items, 'quest', 'side ' + e.id + ' glimmer', e.glimmer.text, []);
   }
+  for (const e of (quests.BOARD || []).flat()) {
+    addLine(items, 'quest', 'board ' + e.id, e.text, []);
+    if (e.glimmer) addLine(items, 'quest', 'board ' + e.id + ' glimmer', e.glimmer.text, []);
+  }
   quests.STUCK.forEach((text, i) => addLine(items, 'quest', 'stuck ' + i, text, []));
 
   const battle = loadScript('moves.js', ['BATTLE_TEXT', 'BEFRIEND_WARY_LINES', 'TRAINERS']);

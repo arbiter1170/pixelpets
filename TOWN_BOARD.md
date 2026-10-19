@@ -1,6 +1,6 @@
 # Town boards
 
-Scope for a bulletin board in each town, and a Town Board app on the Keeper1. TB-1 (empty boards, live reports, the phone app) and the Hearthmoor and Fernbrook squares are in the game on main. TB-3 is not built. Vincent settled the town-list D37 and D38–D49 on Oct 14, 2026. The region-map row that also uses D37 is still open and does not gate this file. Do not renumber either D37.
+Scope for a bulletin board in each town, and a Town Board app on the Keeper1. TB-1 (empty boards, live reports, the phone app) and the Hearthmoor and Fernbrook squares are in the game on main. TB-3, Cald's gate count, is on this branch. Vincent settled the town-list D37 and D38–D49 on Oct 14, 2026. The region-map row that also uses D37 is still open and does not gate this file. Do not renumber either D37.
 
 Q17 (the box screen) and Q18 (the installable app) are already in the game. This document does not rebuild them.
 
@@ -158,7 +158,7 @@ Fernbrook and Cobblecrest also have spawn tables. A report may name one species 
 
 ## Slips and bounties, unwired
 
-The first build shows the headings and the empty lines: "No slips are pinned up." and "No creature is named today." The catalog below is what a later pass can hang on the pins. Each one is a proposal. None of these flags exist. Do not add them while D39 is open.
+The first build shows the headings and the empty lines: "No slips are pinned up." and "No creature is named today." The catalog below is what a later pass can hang on the pins. Each row except Gate count is still a proposal. Gate count is wired on this branch. D39 is settled.
 
 Taking a slip, once jobs exist, sets a pin flag only (`story.board_<id>_pinned`). The blue marker targets the NPC tile. The NPC scene is a `choice`. The yes branch is the only writer of `story.board_<id>_yes`. The decline branch writes nothing, so the marker stays. Rewards, when someone writes them, are Acorns, a snack, bond, or a journal line.
 
@@ -168,7 +168,7 @@ Taking a slip, once jobs exist, sets a pin flag only (`story.board_<id>_pinned`)
 |---|---|---|
 | Shy crabs | Hattie, by the south fence | Walk the Route 1 stream and come back with the color of glass the crabs liked. A watch, not a battle. |
 | The other glove | Mrs. Calloway, in Rook's house | Rook left a glove on the east path. She will not say which bush until you are in the room. |
-| Gate count | Officer Cald | Look at the east sign after Rook's battle and tell Cald it is still standing. A one-step lesson in the loop. |
+| Gate count | Officer Cald | Wired on this branch. Look at the east sign after Rook's battle and tell Cald it is still standing. The pin, the talk, the yes, and the decline. Other catalog rows stay proposals. |
 
 ### Fernbrook
 
@@ -221,7 +221,7 @@ The app and the prop call one renderer, so the lists cannot drift.
 
 `S.board.lastTown` is the memory. It is an additive object in `normalizeV2`, same pattern as `S.standing`. No version bump.
 
-The button on a slip, once slips exist, says "Go see them." It pins the marker. It does not say Accept. D39 is the call if the phone tap should instead be required before the NPC will ask.
+The button on a slip says "Go see them." Gate count uses that button on this branch. It pins the marker. It does not say Accept. D39 is settled: the NPC's yes is the accept.
 
 ## How the blue marker fits the quest log
 
@@ -233,9 +233,9 @@ Settled draw (D40):
 - A pinned slip draws with the same blue chevron.
 - When both would sit on one tile, the slip's chevron shifts 7px, which is the offset the side chevron already uses against the yellow one.
 - At most three pins. The map shows the latest. The phone lists all three.
-- `devCheck` still requires every new `story.*` flag on `SIDE`, on `CHAIN`, or in `NOT_STEPS`. Pin flags that are not steps go in `NOT_STEPS` with a reason. The yes-flag is the `done` of a side entry that lives in the board list, not in `SIDE_CHAINS`, once that list exists.
+- `devCheck` counts `CHAIN`, `SIDE`, and `BOARD` done flags, plus `NOT_STEPS`. The pin flag is in `NOT_STEPS`. The yes, sign, and done flags are `done` on `BOARD` steps. Those steps stay out of `SIDE_CHAINS`.
 
-v1 adds no flags and no `SIDE` rows. The marker code does not need an edit until the first slip.
+TB-3 adds `story.board_gate_pinned` (`NOT_STEPS`) and the yes, sign, and done flags as `BOARD` steps. They do not enter `SIDE_CHAINS`.
 
 ## Work, in build order
 
@@ -259,7 +259,7 @@ D45 and D38 are settled. The Hearthmoor and Fernbrook row strings above are in t
 
 ### TB-3 — First real slip
 
-D39, D40, and D47 are settled. It still waits on TB-1. One slip only, the Gate count for Cald, because it teaches the pin, the talk, the yes, and the decline. Author it with the quest skill. A second PR can add the rest of the catalog. Mahopac gets no slip in that pass. Bounties wait on the battle-end hook. The heading still ships empty.
+D39, D40, and D47 are settled. One slip only, the Gate count for Cald, is wired on this branch. It teaches the pin, the talk, the yes, and the decline. A later PR can add the rest of the catalog. Mahopac gets no slip. Bounties wait on the battle-end hook. That heading stays empty.
 
 ### Art and writing for the designer
 
