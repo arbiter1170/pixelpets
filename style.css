@@ -718,6 +718,9 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 .q-rows[hidden],.q-more[hidden],.q-done-toggle[hidden],.q-done[hidden],.q-done-wrap .q-kicker[hidden]{display:none}
 .q-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;height:44px;padding:0 0 0 8px;background:var(--k);box-shadow:0 0 0 2px var(--d);min-width:0;flex:0 0 auto}
 .q-row-label{flex:1 1 auto;min-width:0;font-size:16px;color:var(--h);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* D194: the step line has to wrap, so this row grows. Same .q-row colours. No TRACK. */
+#questBoardRows .q-row{height:auto;flex-direction:column;align-items:stretch;justify-content:center;gap:2px;padding:6px 8px}
+#questBoardRows .q-row .q-text{min-width:0;white-space:normal}
 .q-track{flex:0 0 80px;width:80px;height:44px;padding:0;margin:0;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--font)}
 .q-track span{display:flex;align-items:center;justify-content:center;width:76px;height:36px;background:var(--c);color:var(--k);font-size:15px;letter-spacing:.5px}
 .q-track:active span{transform:translateY(1px)}

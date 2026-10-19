@@ -3856,6 +3856,11 @@ const boardActiveList = () => {
   return PPQuests.boardActive(questState());
 };
 function boardCueStep(){ const A = boardActiveList(); return A.length ? A[A.length - 1].step : null; }
+// D194: an accepted slip (NPC yes), not a pin. Done chains drop out of boardActiveList. Decline never sets _yes.
+function acceptedBoardList(){
+  if (!S) return [];
+  return boardActiveList().filter(a => S.flags['story.board_' + a.chain + '_yes']);
+}
 function boardPointOnMap(){ return pointOnMap(boardCueStep()); }
 // NAV_MODERN §4 (settled G4): in modern, edge arrows stay in the free rect between the button clusters, and a cue whose tile
 // sits under a button is drawn as an edge arrow instead. Rects are canvas pixels, refreshed at most every 250 ms.
@@ -6838,7 +6843,9 @@ function syncQuestBtn(){
   b.classList.toggle('off', !on);
   syncSideTrack();
   const seen = (S.ui && Array.isArray(S.ui.sideSeen)) ? S.ui.sideSeen : [];
-  const newSide = on && sideActiveList().some(a => !seen.includes(a.chain));   // D106-C: a side chain not yet seen on the panel
+  const fresh = a => !seen.includes(a.chain);
+  // D106-C: a side chain not yet seen. D194: an accepted board slip counts the same way. A pin does not.
+  const newSide = on && (sideActiveList().some(fresh) || acceptedBoardList().some(fresh));
   b.classList.toggle('pulse', (!!q && S.questSeen !== q.id) || newSide);
   const m = questMarks();
   const label = questMarkLabel(m);
@@ -6936,7 +6943,8 @@ function openQuest(){
   const q = questCurrent(); if (!q) return;
   clearMoves();
   if (S.questSeen !== q.id) { S.questSeen = q.id; save(); }
-  { const ui = sideUi(), seen = Array.isArray(ui.sideSeen) ? ui.sideSeen : [], add = sideActiveList().map(a => a.chain).filter(c => !seen.includes(c));
+  { const ui = sideUi(), seen = Array.isArray(ui.sideSeen) ? ui.sideSeen : [];
+    const add = sideActiveList().map(a => a.chain).concat(acceptedBoardList().map(a => a.chain)).filter(c => !seen.includes(c));
     if (add.length) { ui.sideSeen = seen.concat(add); save(); } }
   questMoreOpen = false; questDoneOpen = false;
   questTab = 'next'; renderQuest(q);
@@ -6967,8 +6975,11 @@ function renderQuest(q){
   }
   const sideStatus = $('#questSideStatus');
   if (sideStatus) sideStatus.textContent = many ? 'TRACKED' : 'ACTIVE';
-  if (sl) sl.textContent = many ? 'SIDE \u00b7 ' + A.length : 'SIDE';
+  // D194: accepted slips count in SIDE · N. TRACKED and the folded DONE list stay on side chains only.
+  const boards = acceptedBoardList(), sideN = A.length + boards.length;
+  if (sl) sl.textContent = sideN >= 2 ? 'SIDE \u00b7 ' + sideN : 'SIDE';
   renderSideRows(A, tr);
+  renderBoardRows(boards);
   const list = $('#questDone'); list.textContent = '';
   const done = PPQuests.completed(questState(), 3);
   const wrap = $('#questDoneWrap');
@@ -7001,6 +7012,18 @@ function renderSideRows(A, tr){
   }
   box.hidden = !shown.length;
   if (more) { more.hidden = extra <= 0; more.textContent = questMoreOpen ? 'Show less' : '+' + extra + ' more'; more.setAttribute('aria-expanded', String(!!questMoreOpen)); }
+}
+// D194: read-only. No TRACK. The map already draws the latest pin's chevron.
+function renderBoardRows(rows){
+  const box = $('#questBoardRows'); if (!box) return;
+  box.textContent = '';
+  for (const a of rows) {
+    const row = document.createElement('div'); row.className = 'q-row'; row.dataset.chain = a.chain;
+    const lab = document.createElement('span'); lab.className = 'q-row-label'; lab.textContent = a.label;
+    const tx = document.createElement('span'); tx.className = 'q-text'; tx.textContent = a.step.text;
+    row.append(lab, tx); box.append(row);
+  }
+  box.hidden = !rows.length;
 }
 function questTrack(chain){
   if (!sideActiveList().some(a => a.chain === chain)) return;
@@ -9942,6 +9965,10 @@ function boot(){
   Object.defineProperty(api, 'townBoard', { enumerable: true, get(){ return townBoardView(); } });
   Object.defineProperty(api, 'boardPins', { enumerable: true, get(){
     return boardActiveList().map(a => ({ id: a.chain, label: a.label, step: a.step.id, text: a.step.text, place: a.step.place, target: a.step.target ? { ...a.step.target } : null, point: pointOnMap(a.step) }));
+  } });
+  // D194: the QUEST rows an accepted slip would show. Empty on a pin or a decline, gone once _done drops the chain.
+  Object.defineProperty(api, 'questBoard', { enumerable: true, get(){
+    return acceptedBoardList().map(a => ({ chain: a.chain, label: a.label, text: a.step.text }));
   } });
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse'), navMark: ($('#questBtn') && $('#questBtn').dataset.questMark) || '' }; } });
