@@ -29,6 +29,23 @@ if (chk.status !== 0) {
   fs.writeFileSync(sumPath, msg); process.stdout.write(msg); process.exit(chk.status || 1);
 }
 
+// 1b. RTDB rules against the local database emulator (never the live project).
+const rules = spawnSync(process.execPath, ['tools/rtdb_rules_test.js'], { stdio: ['ignore', log, log] });
+const rulesText = strip(fs.readFileSync(logPath, 'utf8'));
+const rulesLine = (rulesText.split('\n').filter(l => l.startsWith('RTDB_RULES RESULT')).pop()) || `RTDB_RULES RESULT: FAIL exit=${rules.status}`;
+if (rules.status !== 0) {
+  const tail = rulesText.split('\n').filter(l => l.trim() && !l.startsWith('[WebServer]')).slice(-errLines);
+  const msg = [
+    `PP_TEST RESULT: FAIL exit=${rules.status || 1} stage=rtdb-rules`,
+    rulesLine,
+    'LAST LOG LINES:',
+    ...tail.map(l => '  ' + l),
+    `LOG: ${logPath}`,
+    '',
+  ].join('\n');
+  fs.writeFileSync(sumPath, msg); process.stdout.write(msg); process.exit(rules.status || 1);
+}
+
 // 2. playwright, everything to the log; json report to file
 const pw = spawnSync('npx', ['playwright', 'test', '--reporter=line,json', ...process.argv.slice(2)], {
   stdio: ['ignore', log, log],
@@ -80,6 +97,7 @@ if (!report) {
   if (flaky.length) out.push(`WARN: ${flaky.length} flaky test(s) passed only on retry; not a failure, but report them`);
   flaky.slice(0, maxFails).forEach(f => out.push(`FLAKY ${f.where} :: ${f.title} (passed on retry ${f.results.length - 1})`));
 }
+out.push(rulesLine);
 out.push(`LOG: ${logPath}  JSON: ${jsonPath}`);
 const text = out.join('\n') + '\n';
 fs.writeFileSync(sumPath, text);
