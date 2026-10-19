@@ -117,7 +117,7 @@ Counts are rough budgets so the work can be scoped. A "line" is one `say` of <= 
 
 ### 4b. The Fernbrook pick (WP-B, phase B0/B1) — **shipped in Build 3**
 
-Scenes below are in `data/glimmer_path.json`. Left: Tour stop copy (recipients, slogans, Comfort Check, Census board, stage photo). The counter is `story.tour_unease` (D193). Do not rewrite the engine steps.
+Scenes below are in `data/glimmer_path.json`. Tour stop copy (recipients, slogans, Comfort Check, Census board, stage photo) is the final D26 copy. The counter is `story.tour_unease` (D193). Do not rewrite the engine steps.
 | Scene id | Beat | Lines | Branching |
 |---|---|---|---|
 | `side_pick` | After both camps are met: Fen asks for help at the crates, Juniper and Tobin offer a Junior Bright trial lanyard. Ends in a choice plus a "Really?" confirm. Must say the player can change course later at a cost | 14-18 + choice + confirm | Sets the side |
@@ -152,7 +152,7 @@ Desk copy moved to Rook (`STANDING_CFG.switch.rook`). Do not write Pledge desk s
 | `cobble_arrive@glimmer` | Arrival with Rook as a fellow Junior Bright (reads `rook_pact`) | 5-6 |
 | `quarry_buyout@glimmer` | The player on stage beside Dorian; Hale loses; Rook's private objection ("units") | 18-24 |
 | `rival2_rook` lines, glimmer | Rook's intro / win / lose when the player is pledged to Glimmerwell | 3 |
-| Hall slot #2, glimmer | **Arbiter Testing is on the game branch (D24).** One chip, or the free quota, or Hale's review. Do not add a second Tour. The Testing MIDI is still owed (D164) | done |
+| Hall slot #2, glimmer | **Arbiter Testing is on the game branch (D24).** One chip, or the free quota, or Hale's review. Do not add a second Tour. The Testing music row is the D164 v2b literal | done |
 | `seam_a`, `seam_b` | Shared; check they still read correctly for a glimmer player | 0-2 |
 
 ### 4f. Rook's tree (WP-B, phases B2 to B4)
@@ -190,12 +190,12 @@ Intro / win / lose lines for each trainer whose framing changes (Tobin, Fen as h
 3. **Sound specs** as a short table (notes, timings, voices) like the STINGERS v0.1 table.
 4. **Check your own lines**: <= 110 chars, no leftover tokens, speakers all mapped, every flag in `flags`.
 5. **Approval**: Vincent approves per phase, as with Route 2 and Cobblecrest (`status` records the approval).
-6. Deliver per phase so the build is never blocked on all of it. **Now:** Tour stop copy (4b leftover) and desk copy (4c). Arbiter Testing (D24) is settled and is on the game branch; the Testing MIDI is still owed (D164). Route 2, Cobblecrest, and R5 (4d–4f) already have implementer scenes on `main`. Replace that prose. Do not write a second set.
+6. Deliver per phase so the build is never blocked on all of it. **Now:** desk copy (4c). Tour stop copy (4b) is the final D26 copy on this branch. Arbiter Testing (D24) is settled and is on the game branch; the Testing music row is the D164 v2b literal. Route 2, Cobblecrest, and R5 (4d–4f) already have implementer scenes on `main`. Replace that prose. Do not write a second set.
 
 ## 6. Open design questions where the designer is needed
 
-1. **Tour stop copy (D26).** Recipients, slogans, Comfort Check lines, Census-board lines, and the stage photo stay placeholders. The counter is `story.tour_unease` (D193). The four-stop Tour engine is already in Fernbrook.
-2. **Arbiter Testing (D24).** Settled Oct 19, 2026. Slot 2 chips one Walkling. Quota and Face the review still grant the seal with no chip. Design still owes the Testing MIDI (D164). Do not write a second Hall loop. Slot 1 (Tour) is done.
+1. **Tour stop copy (D26).** Recipients, slogans, Comfort Check lines, Census-board lines, and the stage photo are the final D26 copy on this branch. The counter is `story.tour_unease` (D193). The four-stop Tour engine is already in Fernbrook. Do not rewrite those lines.
+2. **Arbiter Testing (D24).** Settled Oct 19, 2026. Slot 2 chips one Walkling. Quota and Face the review still grant the seal with no chip. The Testing music row is the D164 v2b literal. Do not write a second Hall loop. Slot 1 (Tour) is done.
 3. **Standing tiers and what they unlock.** Working names shipped. What each unlocks (lines, shop entries, titles) is still open. Nothing story-critical may be gated on Standing.
 4. **Switch-desk copy (D19).** Engine is in. Write the letter, review, welcome, and "think about it" lines.
 5. **Rook after R5 (D25).** Settled Oct 19, 2026. Keepers: `"ally"` and quit `"r5"`. Glimmer stay at R6 keeps the lanyard and does not set `rook_quit`. Accepting the crate offer writes `"offer"`. Frostmere is the Keepers-path raid and is not built. Glimmer Act 2 is still TBD.

@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 16:43 ET: Arbiter Test music and final tour copy (build 20261019-1643)
+
+- What changed and why: `MUSIC.arbiter_test` is the Design-approved v2b literal (D164 / D189): B phrygian, 68 BPM, 8 bars, 16 steps per bar, triangle lead at 0.18, square bass at 0.065. It was generated with `tools/midi2music.py` and matches the approved JSON. The Bright Pavilion Tour stops, the wait line, and the stage photo use the final D26 lines, spoken by Associate Juniper. The placeholder keys for those lines are gone. Save `v` stays 2.
+- Files touched: `sfx.js`, `data/glimmer_path.json`, `data/mapdata.js`, `tests/arbiter_test.spec.js`, `tests/glimmer_fernbrook.spec.js`, `review-arbiter-swap/`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `tests/README.md`, `DESIGNER_PROMPT.md`, `DESIGN_HANDOFF.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261019-1643.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/arbiter_test.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0 skipped=0 time=14s. `npm run test:agent -- tests/glimmer_fernbrook.spec.js tests/music_tracks.spec.js tests/smoke.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=18 failed=0 flaky=0 skipped=0 time=41s. `npm run test:agent -- tests/glimmer_fernbrook.spec.js --project=320 --project=375` PP_TEST RESULT: PASS exit=0 passed=12 failed=0 flaky=0 skipped=0 time=55s. The 390 tour shots were refreshed after the Fernbrook save: PP_TEST RESULT: PASS exit=0 passed=1 failed=0 flaky=0 skipped=0 time=8s. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): no new id. D26 copy is final (yellow, already settled). D164 delivered the `arbiter_test` row (already settled). Next free stays D194.
+- Anything left unfinished: Frostmere is not built. Glimmer Act 2 is still TBD.
+
 ## 2026-10-19 13:54 ET: Testing choice speaker, lock buttons, collection toast (build 20261019-1354)
 
 - What changed and why: The Hall review choice "How do you close the review?" is spoken by Associate Quinn. Rook still has only the chip aside, and the click line stays narration. A locked Walkling's TO WALKLING-BOX and RELEASE are greyed, and the slot says they stay. The lock mark sits on a yellow plate and beside the name. On WALKLINGS the stay toast sits above the tab bar, under the collection title. Save `v` stays 2.

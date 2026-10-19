@@ -179,7 +179,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   element on a `choice` option (`when`, a condition or a list) hides it until earned. When a story beat (a scene that sets
   a `story.*` flag) finishes, `story.beat.<scene>` records which side played it (first play wins). Build 3 replaces the
   Fernbrook glimmer dialog and the Hall #1 audit stub with the Bright Pavilion Tour (four stops on the existing map:
-  lantern stand, crate Comfort Check, Hall slideshow, optional Fen match). The Hall panel still reads `panel` off the
+  lantern stand, crate Comfort Check, Hall slideshow, optional Fen match). Those stops, the wait line, and the stage photo use the final D26 lines, spoken by Associate Juniper. The Hall panel still reads `panel` off the
   side-merged `hall1_fen`. Keepers still battle Fen for the Fernbrook Seal. The glimmer win or the skip stores
   `seals.seal_glim_1` ("Bright Tier 1 Lanyard", delivered art) and runs `seal1@glimmer`. A loss wakes you at the Lantern
   House and the tour resumes at stop 4. "Think about it" sets nothing; stepping off the gate toasts one walk-away line

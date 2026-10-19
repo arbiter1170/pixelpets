@@ -184,7 +184,7 @@ Known interaction to design around: a foe knocked to 0 HP "wanders off" and cann
 
 ## WP-B. "Pick a side" in the second area: Keepers vs Glimmerwell (L, phased)
 
-**Status: B0 through B4 are on `main`.** Do not rebuild them. The Sacrifice is a stub (D24). Tour stop copy is still placeholder (D26). Section 3 is the live queue.
+**Status: B0 through B4 are on `main`.** Do not rebuild them. Hall slot 2 is Arbiter Testing (D24) on this branch. Tour stop copy is the final D26 lines on this branch. The Testing music row is the D164 v2b literal on this branch. Section 3 is the live queue.
 
 ### Playtest request
 After the player has a Walkling, the second area (Fernbrook) lets them pick between:
@@ -320,7 +320,7 @@ Edge cases to test: switching in the middle of Route 2 with `glen_cleared` unset
 
 ### Hall replacement: design spike (sacrifices / tours)
 
-**Status (D3):** slot 1 is the Bright Pavilion Tour (on `main`, Build 3; Tour stop *copy* is still placeholder). Slot 2 is the Sacrifice, Quota as the free floor. The stub is on `main`. The Keepers path keeps the Trial Halls. The one-page Sacrifice loop replaces that stub. It does not block the box screen.
+**Status (D3):** slot 1 is the Bright Pavilion Tour (on `main`, Build 3; Tour stop copy is the final D26 lines on this branch). Slot 2 is Arbiter Testing on this branch. The Keepers path keeps the Trial Halls. It does not block the box screen.
 
 Constraints any answer must satisfy:
 - Must set the shared progression flag for its slot (`story.seal1` for slot #1, `story.seal2` for #2) so the gates stay shared.
@@ -347,7 +347,7 @@ Deliverable left: a one-page Sacrifice loop for Cobblecrest slot 2 (5–10 minut
 | B0 | Engine, `side_pick`, placeholder orchard / Hall stub | M | **Shipped** (PR #3) |
 | BS | Standing, switch desks, STANDING tab | M | **Shipped** (Build 2, PR #8). Numbers open |
 | BH | Hall replacement design | design | **Slot 1 called** (D3). **Slot 2 is Arbiter Testing** (D24, on this branch) |
-| B1 | Fernbrook glimmer: orchard, Tour, teaser, lanyard tier 1 | M | **Shipped** (Build 3, PR #9). Tour stop copy still placeholder |
+| B1 | Fernbrook glimmer: orchard, Tour, teaser, lanyard tier 1 | M | **Shipped** (Build 3, PR #9). Tour stop copy is the final D26 lines on this branch |
 | B2 | Route 2 + Wickerglen glimmer, Rook R3 | M | **On `main`.** Do not rewrite |
 | B3 | Cobblecrest glimmer, Hall slot 2, Rook R4 | M | **Testing on this branch** (D24). Do not rebuild |
 | B4 | Rook R5 on the Brinewick road (D23, no bond fork) | M | **On `main`** (`ally` / `stays`) |
@@ -685,7 +685,7 @@ Quest-unlocked Walkling adornments (D75) are not started. The five current ones 
 
 ### Parallel, does not unblock Q19
 
-Designer: Tour slogans and recipients stay placeholders (D26). The counter is `story.tour_unease` (D193). Arbiter Testing (D24) is on this branch and replaces the stub. Design still owes the Testing MIDI (D164). The switch letter, review, and welcome are Rook's (D19 closed). Tier-2 lanyard art, Imogen, Hollis, and Rook's lanyard are in the game (Q20). D13 is the player look picker, which still has no lanyard. Route 2, Cobblecrest, and R5 already have implementer copy on `main`. Replace that copy. Do not write a second set.
+Designer: Tour slogans and recipients are the final D26 lines on this branch. The counter is `story.tour_unease` (D193). Arbiter Testing (D24) is on this branch and replaces the stub. The Testing music row is the D164 v2b literal on this branch. The switch letter, review, and welcome are Rook's (D19 closed). Tier-2 lanyard art, Imogen, Hollis, and Rook's lanyard are in the game (Q20). D13 is the player look picker, which still has no lanyard. Route 2, Cobblecrest, and R5 already have implementer copy on `main`. Replace that copy. Do not write a second set.
 
 Vincent: Standing numbers D14–D17 are settled (Oct 15) as the Build 2 defaults. Daily earning is wanted and slow, and D18 still needs a cap before it is built. The 5-Acorn rest (D28) and the Firebase project plus the privacy line are also open. The town-list rows are settled. The open-table D37 is the region-map claim list, already in the game, and it shares that number. Do not renumber it.
 
@@ -759,7 +759,7 @@ Remaining:
 4. **Capture extras (D6–D8):** quarry width 0.18 vs target 0.22 left as is; WARY/FAIR/GOOD shown; no Easier toggle, no miss-shrink, no KO mitigation.
 5. **Quest pointer:** tile chevron plus edge arrow. Settings toggle to turn pointing off? Default: on. Side-task count not built (D12).
 6. **Glimmer-only mechanics:** calmed-by-lamps capture bonus and glimmer shop items. Default: text only for v1.
-7. **Tour stop copy (D2 / D26).** Settled for the counter only. `story.tour_unease` replaces the stand-in name (D193). Slogans, recipients, Comfort Check lines, Census-board lines, and the stage-photo line stay `PLACEHOLDER`.
+7. **Tour stop copy (D2 / D26).** Settled. `story.tour_unease` replaces the stand-in name (D193). Slogans, recipients, Comfort Check lines, Census-board lines, and the stage-photo line are the final D26 copy on this branch. The Testing music row is the D164 v2b literal on this branch.
 8. **Rook paths (D25).** Settled Oct 19, 2026 and on this branch. Keepers `"ally"` and quit `"r5"`. Glimmer stay at R6 leaves `rook_quit` unset (lanyard on, chip-nerves beat). Accepting `rook_offer` writes `"offer"`. Climax stay still battles `rival3_rook`. Frostmere is the Keepers-path raid and is not built. Glimmer Act 2 is still TBD.
 9. **Town boards (town-list D37, D38–D49).** Settled Oct 14, 2026. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3, Cald's gate count, is on this branch. The other slips are not started. The region-map claim list uses the same D37, is already in the game, and is still open. Do not renumber either row. The next free id is D194. D24–D26 and D187–D193 settled Oct 19, 2026 (Vincent, YES TO ALL). D184–D186: FLOOR_FIX (settled Oct 17, 2026). D168 and D169 (music loops) are settled (Vincent, Oct 18, 2026, approved as shipped). D170–D182 are the LIZZY_REP calls (settled Oct 17, 2026; built across the Lizzy A/B/C PRs). (D162–D167 are settled asset-handoff calls, D127–D136 are settled for Rook's Crossroads, D161 is the open end-game switch note, D137 is used, and D138–D141 are the settled Lizzy calls). D151–D153 are the INTERIOR_WALLS calls (settled, PR #84; the kit now covers every interior) and D157–D160 are the first-time tour calls (PR #85). D148, D149 and D150 are settled and must not be reused. D154, D155 and D156 are settled and must not be reused. D92–D103 stay reserved for the Q28 map pass and are not renumbered. D104 stays reserved for Lizzy (Oct 19, 2026, Supervisor) and is not a free id for new map work. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. D70 is the modern and arcade control copy. D71 is the joystick default. D72 is landscape. Daily Standing (D18) is yes and slow, with no cap yet.
 10. **Capital Partnership Briefing (Q22).** Not built. The Keepers council is Q21 and is in the game. Do not add a second grant on `r5_g`.
