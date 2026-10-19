@@ -165,7 +165,7 @@
         target: { map: 'mahopac_obs', x: 4, y: 2 } },
       { id: 'dream_toy', when: ['story.dream_started'], done: ['story.dream_toy'],
         text: 'You are small again. Push the popping toy around the rug.', place: 'A dream, 2004',
-        target: { map: 'dream_2004', x: 3, y: 3 },
+        target: { map: 'dream_2004', x: 3, y: 3 }, follow: 'pop_toy',   // pointOnMap tracks objPos while it rolls
         via: { map: 'mahopac_obs', x: 4, y: 2 } },
       { id: 'dream_party', when: ['story.dream_toy'], done: ['story.dream_party'],
         text: 'Pop the balloons at your seventh birthday.', place: 'A bowling alley',
