@@ -31,8 +31,8 @@
   },
   "spec": "TOWN_BOARD",
   "version": "1",
-  "status": "TB-1 empty boards and live reports. Hearthmoor and Fernbrook squares. No slips.",
-  "_about": "Ours, not a design copy. Applied last, after civic. Props face up. The player reads a board from the tile south of it. Report lines are TEMP copy (see _placeholders) until the designer signs them (D49). Slips and bounties stay empty. Sprites are copied from data/town_board_art.json.",
+  "status": "TB-1 empty boards and live reports. Hearthmoor and Fernbrook squares. TB-3: one Hearthmoor slip, Cald's gate count. No other slips. Bounties empty.",
+  "_about": "Ours, not a design copy. Applied last, after civic. Props face up. The player reads a board from the tile south of it. Report lines are TEMP copy (see _placeholders) until the designer signs them (D49). Hearthmoor has one slip, Cald's gate count, after Rook's battle. Other towns have no slips. Bounties stay empty. Sprites are copied from data/town_board_art.json.",
   "away": "You are between towns.",
   "empty": {
     "slips": "No slips are pinned up.",
@@ -89,6 +89,19 @@
           "when": [
             "story.side=glimmer"
           ]
+        }
+      ],
+      "slips": [
+        {
+          "id": "gate",
+          "title": "Gate count",
+          "who": "Officer Cald",
+          "text": "Look at the east sign after Rook's battle and tell Cald it is still standing.",
+          "when": [
+            "story.rival1_done"
+          ],
+          "done": "story.board_gate_done",
+          "pin": "story.board_gate_pinned"
         }
       ]
     },
