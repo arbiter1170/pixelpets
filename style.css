@@ -226,7 +226,9 @@ body:not(.ctl-modern) .env-badge{border-top:8px solid transparent;border-bottom:
 .pet-row .slot-main{display:flex;align-items:center;gap:8px;min-height:44px;width:100%;margin:0;padding:2px 4px;border:0;background:transparent;color:inherit;font-family:var(--font);font-weight:bold;text-align:left;cursor:pointer}
 .pet-row .slot-main canvas{width:40px;height:40px;background:var(--n);flex:0 0 auto}
 .pet-row .slot-copy{min-width:0;flex:1 1 auto}
-.pet-row .slot-nm{font-size:18px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pet-row .slot-nm{display:flex;align-items:center;gap:6px;font-size:18px;line-height:1.15;min-width:0}
+.pet-row .slot-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pet-row .slot-lock{width:24px;height:24px;flex:0 0 auto;background:var(--y);box-shadow:0 0 0 2px var(--k)}
 .pet-row .slot-sub{font-size:14px;line-height:1.15;color:var(--h)}
 .pet-row .partner-tag{color:var(--y);margin-left:6px;font-size:14px}
 .slot-acts{display:flex;flex-wrap:wrap;gap:4px}
@@ -378,6 +380,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translateX(-50%);z-index:20;background:var(--k);color:var(--y);
   padding:10px 14px;font-size:18px;box-shadow:0 0 0 3px var(--y);opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 #toast.show{opacity:1}
+/* The collection title sits where the walk toast does. On WALKLINGS the toast sits above the tab bar. */
+body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-bottom))}
 .flash{animation:flash .5s steps(2) 2}
 @keyframes flash{50%{filter:brightness(3)}}
 

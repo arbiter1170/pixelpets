@@ -1936,8 +1936,15 @@ function paintMark(c, rows, colors){
   const g = ctx(c), x0 = c.width - 8, y0 = 0;
   rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) { const col = colors[row[x]]; if (!col) continue; g.fillStyle = col; g.fillRect(x0 + x, y0 + y, 1, 1); } });
 }
-function paintLockGlyph(c){
-  paintMark(c, ['..mmmm..', '.m....m.', '.m....m.', 'kkkkkkkk', 'kmmmmmmk', 'km.mm.mk', 'kmmmmmmk', 'kkkkkkkk'], { k: PAL.k, m: PAL.m });
+function paintLockGlyph(c, scale){
+  scale = scale || 1;
+  const g = ctx(c);
+  const rows = ['..mmmm..', '.m....m.', '.m....m.', 'kkkkkkkk', 'kmmmmmmk', 'km.mm.mk', 'kmmmmmmk', 'kkkkkkkk'];
+  const colors = { k: PAL.k, m: PAL.m };
+  const x0 = c.width - 8 * scale, y0 = 0;
+  g.fillStyle = PAL.y;
+  g.fillRect(x0, y0, 8 * scale, 8 * scale);
+  rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) { const col = colors[row[x]]; if (!col) continue; g.fillStyle = col; g.fillRect(x0 + x * scale, y0 + y * scale, scale, scale); } });
 }
 function paintChipIcon(c){
   paintMark(c, ['.ssssss.', 's......s', 's.yyyy.s', 's.yyyy.s', 's.yyyy.s', 's.yyyy.s', 's......s', '.ssssss.'], { s: PAL.s, y: PAL.y });
@@ -7932,7 +7939,7 @@ function renderWalklingActions(p){
     sec('MOVE');
     box.appendChild(sheetBtn('UP', '', () => shiftParty(p.id, -1), { aria: 'Party up', disabled: pi <= 0 }));
     box.appendChild(sheetBtn('DOWN', '', () => shiftParty(p.id, 1), { aria: 'Party down', disabled: pi >= S.party.length - 1 }));
-    box.appendChild(sheetBtn('TO WALKLING-BOX', '', () => { depositFromSheet(p.id); }, { span: true }));
+    box.appendChild(sheetBtn('TO WALKLING-BOX', '', () => { depositFromSheet(p.id); }, { span: true, disabled: chipLocked(p) }));
   } else box.appendChild(sheetBtn('TO TEAM', 'btn-play', () => { withdrawFromSheet(p.id); }, { span: true }));
 }
 function renderWalklingMoves(p){
@@ -7977,7 +7984,7 @@ function renderWalklingUse(p){
 function renderWalklingRelease(p){
   const box = $('#wlRelease'); box.textContent = '';
   if (typeof releasePet !== 'function') return;
-  box.appendChild(sheetBtn('RELEASE', 'btn-danger', () => { releaseFromSheet(p.id); }, { span: true }));
+  box.appendChild(sheetBtn('RELEASE', 'btn-danger', () => { releaseFromSheet(p.id); }, { span: true, disabled: chipLocked(p) }));
 }
 function renderWalklingExtras(p){
   const box = $('#wlExtras'); if (!box) return; box.textContent = '';
@@ -8421,8 +8428,13 @@ function boardReorder(id, to){
 }
 function slotCopy(p){
   const info = document.createElement('div'); info.className = 'slot-copy';
-  const nm = document.createElement('div'); nm.className = 'slot-nm'; nm.textContent = petName(p);
+  const nm = document.createElement('div'); nm.className = 'slot-nm';
+  const label = document.createElement('span'); label.className = 'slot-name'; label.textContent = petName(p); nm.append(label);
   if (p.id === S.partnerId) { const t = document.createElement('span'); t.className = 'partner-tag'; t.textContent = 'PARTNER'; nm.append(t); }
+  if (chipLocked(p)) {
+    const lock = document.createElement('canvas'); lock.className = 'slot-lock'; lock.width = lock.height = 16;
+    lock.setAttribute('aria-hidden', 'true'); paintLockGlyph(lock, 2); nm.append(lock);
+  }
   const sub = document.createElement('div'); sub.className = 'slot-sub';
   sub.textContent = 'Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   const hb = hpBadge(p);
@@ -8443,10 +8455,16 @@ function slotMain(p){
 function partyActs(p){
   const acts = boardActs();
   acts.append(boardButton('MOVE', 'move', () => boardMove(p.id)));
-  acts.append(boardButton('TO WALKLING-BOX', 'box', () => boardDepositAsk(p.id)));
+  const box = boardButton('TO WALKLING-BOX', 'box', () => boardDepositAsk(p.id));
   const partner = boardButton('PARTNER', 'partner', () => boardPartner(p.id));
   if (p.id === S.partnerId) { partner.disabled = true; partner.setAttribute('aria-pressed', 'true'); }
-  acts.append(partner, boardButton('RELEASE', 'release', () => boardReleaseAsk(p.id), 'act-danger'));
+  const release = boardButton('RELEASE', 'release', () => boardReleaseAsk(p.id), 'act-danger');
+  if (chipLocked(p)) {
+    const why = lockStayMsg(p);
+    box.disabled = true; release.disabled = true;
+    box.setAttribute('aria-label', why); release.setAttribute('aria-label', why);
+  }
+  acts.append(box, partner, release);
   return acts;
 }
 function movePanel(p, index){
@@ -8520,7 +8538,10 @@ function partySlot(p, index){
   if (ui && ui.kind === 'deposit') row.append(depositPanel(p));
   else if (ui && ui.kind === 'release') row.append(releasePanel(p));
   else if (ui && ui.kind === 'move') row.append(movePanel(p, index));
-  else row.append(partyActs(p));
+  else {
+    if (chipLocked(p)) row.append(boardNote(lockStayMsg(p)));
+    row.append(partyActs(p));
+  }
   if (boardUi && boardUi.kind === 'withdraw') {
     const extra = boardActs();
     const into = boardButton('SWAP', 'into', () => boardWithdraw(boardUi.id, index));

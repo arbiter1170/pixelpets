@@ -384,7 +384,7 @@ Saves (format v2, `save.js`):
   **box** (no limit). A 7th befriended Walkling asks which unlocked party Walkling goes to the box, then joins the party. If every party Walkling is locked, the catch is refused. The WALKLINGS tab
   is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 45; unmet forms stay silhouettes).
   MOVE reorders the party. TO BOX / TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling.
-  A chipped Walkling stays in the party. Box, release, and a later trade toast "{name} stays with you now." The party slot shows a lock mark. Locked Walklings are not listed in the box.
+  A chipped Walkling stays in the party. TO WALKLING-BOX and RELEASE on that slot are greyed, and the slot says "{name} stays with you now." The same line toasts if a box, release, or later trade still tries, under the collection title. The party slot shows a lock mark beside the name. Locked Walklings are not listed in the box.
   Those labels stay while the WALKLINGS tab is open.
   LEFT BEHIND shows each orphan's reason and the raw data. Hunger pauses in the box.
   A battle SWAP lists the party only. The sheet on a Walkling can use a field snack, rename them, reorder moves,

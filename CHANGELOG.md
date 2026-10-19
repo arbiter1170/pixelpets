@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 13:54 ET: Testing choice speaker, lock buttons, collection toast (build 20261019-1354)
+
+- What changed and why: The Hall review choice "How do you close the review?" is spoken by Associate Quinn. Rook still has only the chip aside, and the click line stays narration. A locked Walkling's TO WALKLING-BOX and RELEASE are greyed, and the slot says they stay. The lock mark sits on a yellow plate and beside the name. On WALKLINGS the stay toast sits above the tab bar, under the collection title. Save `v` stays 2.
+- Files touched: `data/glimmer_path.json`, `data/mapdata.js`, `game.js`, `style.css`, `tests/arbiter_test.spec.js`, `README.md`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261019-1354.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/arbiter_test.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=7 failed=0 flaky=0 skipped=0 time=7s. Full suite: PP_TEST RESULT: FAIL exit=1 passed=1123 failed=1 flaky=0 skipped=16 time=1873s. The one failure was `[320] tests/group_battle.spec.js:134` (a 10s wait for the win). Rerun: `npm run test:agent -- tests/group_battle.spec.js --project=320` PP_TEST RESULT: PASS exit=0 passed=7 failed=0 flaky=0 skipped=0 time=5s. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): no new id. D188 already locks box, release, and trade. This makes the party slot show that. Next free stays D194.
+- Anything left unfinished: Design still owes the Testing MIDI (D164). Tour slogans stay placeholders. Frostmere is not built. Glimmer Act 2 is still TBD.
+
 ## 2026-10-19 13:16 ET: Arbiter Testing and holder wording (build 20261019-1316)
 
 - What changed and why: Hall slot 2 on the Glimmer path is Arbiter Testing. One chosen Walkling is chipped, locked in the party, and starts at align 50. Quota and Face the review still grant the seal with no chip. PARTNER shows ALIGN under NRG only when the partner is chipped. Glimmer stay at R6 leaves Rook's quit unset and keeps the lanyard. Accepting his crate offer writes `story.rook_quit` `"offer"`. Player-facing copy says holder. Code ids stay. Save `v` stays 2. `tour.doubt` is read once into `story.tour_unease` and the old key stays on disk.

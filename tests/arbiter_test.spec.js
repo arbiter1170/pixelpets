@@ -99,7 +99,7 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
   for (let i = 0; i < 220; i++) {
     const sc = await page.evaluate(() => {
       const s = window.PixelPets.scene;
-      return s && { mode: s.mode, full: s.full, waiting: s.waiting, text: s.text };
+      return s && { mode: s.mode, full: s.full, waiting: s.waiting, who: s.who, text: s.text };
     });
     if (!sc) break;
     const sealUp = await page.locator('#ovBattle.seal-only').isVisible().catch(() => false);
@@ -107,6 +107,8 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
     if (sc.mode === 'choice' && sc.full) {
       await page.waitForFunction(() => window.PixelPets.optionsReady === true);
       if (page.viewportSize().width === 390 && sc.text.indexOf('review') >= 0) await shot(page, 'testing-choice');
+      expect(sc.text).toContain('How do you close the review?');
+      expect(sc.who).toBe('Associate Quinn');
       const label = choices.shift();
       if (label == null) throw new Error('unexpected choice ' + sc.text);
       await page.locator('#sbChoices button', { hasText: label }).first().click();
@@ -114,7 +116,7 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
       continue;
     }
     if (sc.mode === 'say' && sc.waiting) {
-      if (sc.full) said.push(sc.text);
+      if (sc.full && (!said.length || said[said.length - 1].text !== sc.text)) said.push({ who: sc.who || '', text: sc.text });
       if (sc.full && sc.text.indexOf('soft click') >= 0) {
         tint = await page.evaluate(() => ({
           on: document.body.classList.contains('arbiter-test'),
@@ -129,8 +131,17 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
     await page.waitForTimeout(40);
   }
   expect(await page.evaluate(() => PixelPets.scene)).toBeFalsy();
-  expect(said.some((s) => s.indexOf('flutter') >= 0)).toBe(true);
-  expect(said.some((s) => s.indexOf('A chip?') >= 0)).toBe(true);
+  const speakers = [
+    ['Associate Quinn', 'Before the cord, one more kindness. A Tuning. Your Walkling hears us a little clearer after.'],
+    ['Associate Quinn', 'Some holders feel a flutter. We call it increasing the bond. Nothing sharp. Nothing cold.'],
+    ['Rook', "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."],
+    ['', 'A soft click under the fur. The Hall lights dim. Somewhere below, something vast exhales.'],
+    ['Associate Quinn', 'There. Tuned. Keep them close, holder. The box is for the others now.'],
+    ['Associate Quinn', 'Review closed. Bright Tier 2 Lanyard. Two marks, one cord.'],
+    ['Associate Quinn', 'Same care package Hale gives his friends. We can be generous.'],
+    ['Associate Quinn', 'Brinewick is down the coast. The cart goes whether you ride it or not.'],
+  ];
+  expect(said.map((s) => [s.who, s.text])).toEqual(speakers);
   expect(tint && tint.on).toBe(true);
   expect(tint.music).toBe('arbiter_test');
   const after = await page.evaluate(() => {
@@ -183,14 +194,32 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
 
   await page.evaluate(() => PixelPets.showTab('col'));
   const locked = await page.evaluate(() => {
-    const row = document.querySelector('#partyBoard .party-slot[data-locked="1"] canvas');
+    const row = document.querySelector('#partyBoard .party-slot[data-locked="1"]');
+    const canvas = row && row.querySelector('canvas');
     const box = document.querySelector('#boxList').textContent;
-    if (!row) return null;
-    const d = row.getContext('2d').getImageData(row.width - 2, 3, 1, 1).data;
-    return { rgba: [d[0], d[1], d[2], d[3]], box };
+    if (!canvas) return null;
+    const d = canvas.getContext('2d').getImageData(canvas.width - 2, 3, 1, 1).data;
+    const toast = document.querySelector('#toast').getBoundingClientRect();
+    const title = document.querySelector('#scr-col h2').getBoundingClientRect();
+    const boxBtn = row.querySelector('[data-act="box"]');
+    const relBtn = row.querySelector('[data-act="release"]');
+    return {
+      rgba: [d[0], d[1], d[2], d[3]],
+      box,
+      boxOff: !!(boxBtn && boxBtn.disabled),
+      relOff: !!(relBtn && relBtn.disabled),
+      lock: !!row.querySelector('.slot-lock'),
+      note: row.textContent,
+      toastBelow: toast.top >= title.bottom - 1,
+    };
   });
   expect(locked.rgba[3]).toBeGreaterThan(0);
   expect(locked.box).toContain('empty');
+  expect(locked.boxOff).toBe(true);
+  expect(locked.relOff).toBe(true);
+  expect(locked.lock).toBe(true);
+  expect(locked.note).toContain('stays with you now.');
+  expect(locked.toastBelow).toBe(true);
   if (page.viewportSize().width === 390) await shot(page, 'lock-glyph');
 
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
