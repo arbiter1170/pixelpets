@@ -3139,6 +3139,11 @@ function tickPatrol(dt){
     const path = o.patrol;
     if (!path || !path.length || !present(o)) continue;
     const cur = mapRT.pos[o.id] || { x: o.x, y: o.y };
+    const near = Math.abs(cur.x - S.world.x) + Math.abs(cur.y - S.world.y);
+    if (near <= 2) {                        // the keeper is close: wait, so a walker never steps into the keeper's way (face them when adjacent)
+      if (near === 1) { const f = dirName(S.world.x - cur.x, S.world.y - cur.y); mapRT.face[o.id] = f; if (mapRT.pos[o.id]) mapRT.pos[o.id].facing = f; }
+      continue;
+    }
     const slot = (o._pi || 0) % path.length, dest = path[slot];
     if (cur.x === dest[0] && cur.y === dest[1]) { o._pi = slot + 1; continue; }
     const sx = Math.sign(dest[0] - cur.x), sy = Math.sign(dest[1] - cur.y);
