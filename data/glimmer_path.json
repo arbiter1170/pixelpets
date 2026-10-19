@@ -9,35 +9,6 @@
     "hall_slot_2": "Sacrifice stub (Build 5). Quota is the free floor: three names spoken aloud. Setting a snack down is narrative only (the item stays in the bag, so the review cannot soft-lock). Face the review battles hall2_hale@glimmer and onWin runs seal2. Real cost is still D24.",
     "rook_r5": "Built (Build 6). Keepers brinewick_hook sets story.rook_end ally. Glimmerwell brinewick_hook@glimmer sets stays. Both set story.cobble_end. Not bond-gated. Tone confirmation is still D25."
   },
-  "_placeholders": {
-    "note": "TEMP copy Oct 15, 2026, replace via D26",
-    "paths": [
-      "scenes.tour1_s1[0][2]",
-      "scenes.tour1_s1[1][1]",
-      "scenes.tour1_s1[1][2][0][1][0][2]",
-      "scenes.tour1_s1[2][1]",
-      "scenes.tour1_s1[2][2][0][1][0][2]",
-      "scenes.tour1_s1[3][1]",
-      "scenes.tour1_s1[3][2][0][1][0][2]",
-      "scenes.tour1_s2[0][2]",
-      "scenes.tour1_s2[1][1]",
-      "scenes.tour1_s2[1][2][0][1][0][2]",
-      "scenes.tour1_s2[1][2][1][1][0][2]",
-      "scenes.tour1_s2[1][2][2][1][0][2]",
-      "scenes.tour1_s3[0][2]",
-      "scenes.tour1_s3[1][1]",
-      "scenes.tour1_s3[1][2][0][1][0][2]",
-      "scenes.tour1_s3[1][2][1][1][0][2]",
-      "scenes.tour1_s4[0][2]",
-      "scenes.tour1_s4[1][1]",
-      "scenes.tour1_wait[0][2]",
-      "scenes.seal1@glimmer[7][2]",
-      "placeholders[0]"
-    ]
-  },
-  "placeholders": [
-    "tour1_s1, tour1_s2, tour1_s3, tour1_s4, tour1_wait, and the stage-photo line in seal1@glimmer used marked placeholder copy (now TEMP, see _placeholders). Missing: lantern recipients, slogan text, Comfort Check deflections, Census-board lines, and stage-photo presentation. The unease counter is story.tour_unease (D193). An old save may still hold tour.doubt; normalize reads it once and does not delete it."
-  ],
   "slicePatch": {
     "maps": {
       "fernbrook": {
@@ -544,7 +515,7 @@
       [
         "say",
         "",
-        "A flash! Your stage photo goes up on the board. Everyone is smiling. Everyone..."
+        "A flash! Your photo goes up on the board, pinned right beside the list of crates bound for the Sanctuary."
       ],
       [
         "inc",
@@ -592,11 +563,11 @@
       [
         "say",
         "Associate Juniper",
-        "Welcome to stop one, {name}! Every lantern we hand out is a little more comfort for Fernbrook."
+        "First stop, {name}! Today we're gifting free Comfort Lamps to Fernbrook. It's a partnership!"
       ],
       [
         "choice",
-        "A farmer squints at the stall. Offer a Comfort Lamp?",
+        "An orchard worker steps up, rubbing tired eyes. Hand over a Comfort Lamp?",
         [
           [
             "Hand a lantern",
@@ -604,7 +575,7 @@
               [
                 "say",
                 "",
-                "The farmer takes the lamp. Its glow is warm. Very warm..."
+                "The worker takes the lamp. Inside the glass, the pale light pulses like a slow heartbeat."
               ]
             ]
           ]
@@ -612,7 +583,7 @@
       ],
       [
         "choice",
-        "A kid with a wild Walkling peeks at the stand.",
+        "A child steps up to the table, clutching a nervous Walkling. Offer a lamp?",
         [
           [
             "Hand a lantern",
@@ -620,7 +591,7 @@
               [
                 "say",
                 "",
-                "The kid beams. The Walkling stays close, blinking at the light."
+                "The child smiles, though their Walkling flattens its ears at the lantern's steady hum."
               ]
             ]
           ]
@@ -628,7 +599,7 @@
       ],
       [
         "choice",
-        "One lamp left. An old keeper watches from the fence.",
+        "One lamp left. An elderly holder watches quietly from the orchard gate.",
         [
           [
             "Hand a lantern",
@@ -636,7 +607,7 @@
               [
                 "say",
                 "",
-                "The keeper takes it without a word, and looks at it a long time."
+                "The elder accepts it with a nod, and whispers an apology to the glass."
               ]
             ]
           ]
@@ -652,11 +623,11 @@
       [
         "say",
         "Associate Juniper",
-        "Stop two: a Comfort Check! These units are relocating to the Comfort Sanctuary. So cozy in there."
+        "Stop two: a quick Comfort Check! These units are off to the Comfort Sanctuary for a long rest."
       ],
       [
         "choice",
-        "The crates hum softly. Something inside shifts. What do you do?",
+        "The graphite crates vibrate with a low thrum. Something scratches lightly inside. What do you do?",
         [
           [
             "Praise them",
@@ -664,7 +635,7 @@
               [
                 "say",
                 "Associate Juniper",
-                "Right? Clean energy, happy units. It's a partnership!"
+                "Exactly! Clean energy starts with calm units. It's a partnership that powers us all!"
               ]
             ]
           ],
@@ -674,7 +645,7 @@
               [
                 "say",
                 "Associate Juniper",
-                "Great question! The crates are just... resting. They'll be fine. Probably. Totally fine!"
+                "The scratch? Just settling in! Units get so eager to give back, they forget to sit still. Ha... ha!"
               ],
               [
                 "inc",
@@ -688,7 +659,7 @@
               [
                 "say",
                 "",
-                "The crate is warm. Something inside taps back, very gently."
+                "The metal is hot to the touch. From within, a small weight leans tiredly against your palm."
               ]
             ]
           ]
@@ -704,29 +675,29 @@
       [
         "say",
         "Associate Juniper",
-        "Stop three! We rented the whole Hall for this. Quarterly targets look so bright up there!"
+        "Inside the Trial Hall for stop three! Nothing beats seeing our clean energy goals on the big screen."
       ],
       [
         "choice",
-        "The slideshow pauses. Juniper asks which slogan you like best.",
+        "The projector hums on a mint-green slide. Juniper asks which campaign slogan grabs you.",
         [
           [
-            "First slogan",
+            "Brighter by nature.",
             [
               [
                 "say",
                 "Associate Juniper",
-                "Brighter by nature! A classic. Honestly, I say it in my sleep..."
+                "\"Brighter by nature.\" A classic! Because a Walkling's glow really belongs to the whole town, right?"
               ]
             ]
           ],
           [
-            "Second slogan",
+            "It's a partnership!",
             [
               [
                 "say",
                 "Associate Juniper",
-                "Glow for everyone! Well, everyone who signs up. That's everyone, eventually."
+                "\"It's a partnership!\" Spot on. You bring the bond, and we bring out the glow. Everyone shines!"
               ]
             ]
           ]
@@ -742,11 +713,11 @@
       [
         "say",
         "Associate Juniper",
-        "Last stop: the Glow Census board! Fernbrook's numbers are up. Fancy a demo match with Fen?"
+        "Last stop, Junior Bright! The Glow Census is thriving. Want to test your bond against Master Fen?"
       ],
       [
         "choice",
-        "The Census board flickers. A demo match vs Fen is optional.",
+        "The Glow Census board tallies local output. Step up for a friendly demo match with Master Fen?",
         [
           [
             "Begin review",
@@ -773,7 +744,7 @@
       [
         "say",
         "Associate Juniper",
-        "The Census board needs a moment to update. Come back when you're ready, Junior Bright!"
+        "The board is still tallying Fernbrook's units! Take your time, {name}. Have a bright day!"
       ]
     ],
     "lead_intro@glimmer": [

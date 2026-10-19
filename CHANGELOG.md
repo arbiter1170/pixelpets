@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 17:22 ET: Arbiter Test music and final tour copy (build 20261019-1722)
+
+- What changed and why: `MUSIC.arbiter_test` is the Design-approved v2b literal (D164 / D189): B phrygian, 68 BPM, 8 bars, 16 steps per bar, triangle lead at 0.18, square bass at 0.065. It was generated with `tools/midi2music.py` and matches the approved JSON. The Bright Pavilion Tour stops, the wait line, and the stage photo use the final D26 lines, spoken by Associate Juniper. The placeholder keys for those lines are gone. Main's D194 QUEST board rows are kept. Save `v` stays 2.
+- Files touched: `sfx.js`, `data/glimmer_path.json`, `data/mapdata.js`, `game.js`, `style.css`, `tests/arbiter_test.spec.js`, `tests/glimmer_fernbrook.spec.js`, `tests/maps_b8.spec.js`, `tests/town_board_gate.spec.js`, `review-arbiter-swap/`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `tests/README.md`, `TOWN_BOARD.md`, `DESIGNER_PROMPT.md`, `DESIGN_HANDOFF.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261019-1722.
+- Tests run and result (widths, checks): Full suite after the main merge: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1130 failed=0 flaky=0 skipped=16 time=1624s. Widths 320, 375, and 390. The earlier failures in `tests/maps_b8.spec.js` (the Glow Census wait line) and `tests/town_board_gate.spec.js` (the QUEST board rows) were fixed and rerun: `npm run test:agent -- tests/maps_b8.spec.js tests/town_board_gate.spec.js` PP_TEST RESULT: PASS exit=0 passed=20 failed=0 flaky=0 skipped=4 time=35s. No known timing flake failed, so none was rerun alone. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): no new id. D26 copy is final (yellow, already settled). D164 delivered the `arbiter_test` row (already settled). D194 stays the settled QUEST-tab row from main. The next free id is D195.
+- Anything left unfinished: Frostmere is not built. Glimmer Act 2 is still TBD.
+
 ## 2026-10-19 16:17 ET: Accepted board slips on the QUEST tab (build 20261019-1617)
 
 - What changed and why: An accepted town-board slip is a read-only row on the QUEST tab after the side rows, once the player says yes (`story.board_<chain>_yes`). A pin alone stays off the panel. The row shows the slip name and the current step, and it leaves when `_done` is set. Decline never lists it. Those rows count in the SIDE heading and in the QUEST pulse. Pins stay out of `SIDE_CHAINS`. The pin list and the map chevron are unchanged. Save `v` stays 2. No new flags.
