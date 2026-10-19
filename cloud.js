@@ -1,5 +1,7 @@
 /* Walklings online saves, Phase 1: anonymous sign-in + one private cloud backup per player (design ONLINE_SAVES_SCOPE.md).
    OFF unless cloud_config.js holds a real config (or, on localhost only, ?cloud=emu for the Firebase Local Emulator Suite).
+   An automated browser (navigator.webdriver) stays OFF too, so the test suite never signs in or writes to the live project.
+   ?cloud=off forces that same null path. ?cloud=block is the suite's opt-in for a stubbed or unreachable SDK.
    When OFF: no Firebase SDK is loaded, no network call is made, no UI is added; every hook below is a no-op.
    When ON:
    - localStorage (pixelpets.save.v2) stays the main and offline copy. Boot never waits for the network; the SDK loads
@@ -18,11 +20,17 @@ const PPCloud = (() => {
   const LABEL = 'This browser only: link Google to keep it safe';
   const q = (() => { try { return new URLSearchParams(location.search); } catch(e) { return new URLSearchParams(''); } })();
   const LOCAL = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
-  const EMU = LOCAL && q.get('cloud') === 'emu';
-  const CFG = EMU ? { apiKey: 'demo-key', authDomain: 'demo-walklings.firebaseapp.com', projectId: 'demo-walklings', appId: 'demo-walklings' }
-    : (window.PP_CLOUD_CONFIG && typeof window.PP_CLOUD_CONFIG === 'object' && window.PP_CLOUD_CONFIG.apiKey && window.PP_CLOUD_CONFIG.projectId ? window.PP_CLOUD_CONFIG : null);
+  const qCloud = q.get('cloud');
+  const EMU = LOCAL && qCloud === 'emu';
+  // Playwright sets navigator.webdriver. Default automated pages must not touch walklings-4cc89.
+  const automated = (() => { try { return navigator.webdriver === true; } catch (e) { return false; } })();
+  const blockLive = qCloud === 'off' || (automated && qCloud !== 'emu' && qCloud !== 'block');
+  const liveCfg = window.PP_CLOUD_CONFIG && typeof window.PP_CLOUD_CONFIG === 'object' && window.PP_CLOUD_CONFIG.apiKey && window.PP_CLOUD_CONFIG.projectId ? window.PP_CLOUD_CONFIG : null;
+  const CFG = blockLive ? null
+    : EMU ? { apiKey: 'demo-key', authDomain: 'demo-walklings.firebaseapp.com', projectId: 'demo-walklings', appId: 'demo-walklings' }
+    : liveCfg;
   const noop = () => {};
-  if (!CFG) return Object.freeze({ enabled: false, CLOUD_KEY, BACKUP_KEY, start: noop, overlayOpen: () => false, startOver: wipe => { wipe(); return Promise.resolve(true); }, info: () => ({ enabled: false }) });
+  if (!CFG) return Object.freeze({ enabled: false, CLOUD_KEY, BACKUP_KEY, start: noop, overlayOpen: () => false, startOver: wipe => { wipe(); return Promise.resolve(true); }, info: () => ({ enabled: false, blocked: blockLive }) });
 
   const num = (k, d) => { const v = +q.get(k); return EMU && Number.isFinite(v) && v > 0 ? v : d; };   // test knobs, emulator only
   const GAP = num('cloudGap', 60000), TICK = num('cloudTick', 10000), NET_WAIT = num('cloudWait', 10000), LOAD_WAIT = 20000;

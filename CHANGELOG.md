@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 17:18 ET: Online saves Phase 1 on (build 20261019-1718)
+
+- What changed and why: Phase 1 is ON. `cloud_config.js` holds the public web config for project `walklings-4cc89`. Anonymous sign-in backs up `saves/{uid}`. The Settings row reads "This browser only: link Google to keep it safe". `database.rules.json` locks the Realtime Database until a later multiplayer phase. Automated tests ignore that config when `navigator.webdriver` is set and cannot resolve the Firebase hosts, so they never create users or write documents. Save `v` stays 2.
+- Files touched: `cloud_config.js`, `cloud.js`, `database.rules.json`, `firebase.json`, `playwright.config.js`, `tests/cloud_off.spec.js`, `index.html`, `version.json`, `AGENTS.md`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `review-cloud-on/`.
+- Commit(s) + build id: build 20261019-1718.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/cloud_off.spec.js` PP_TEST RESULT: PASS exit=0 passed=15 failed=0 flaky=0 skipped=0 time=6s (320, 375, 390). `npm run test:agent -- tests/smoke.spec.js tests/save_copy.spec.js` PP_TEST RESULT: PASS exit=0 passed=27 failed=0 flaky=0 skipped=0 time=42s. Full suite: PP_TEST RESULT: PASS exit=0 passed=1139 failed=0 flaky=0 skipped=16 time=1592s. `python3 tools/bump_build.py --check` exit 0. One live smoke from localhost in a throwaway profile: anonymous sign-in, `saves/{uid}` rev 1 then rev 2, a write to another uid denied, the Settings row read "This browser only: link Google to keep it safe", and Delete cloud save removed the doc. Shots: `review-cloud-on/` at 390×844.
+- Decisions made (colour + reasoning): no new id. Phase 1 shipped quietly was already settled (Vincent, Oct 8, 2026). Next free stays D195. Green: the suite forces the live project off.
+- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database stays locked.
+
 ## 2026-10-19 16:17 ET: Accepted board slips on the QUEST tab (build 20261019-1617)
 
 - What changed and why: An accepted town-board slip is a read-only row on the QUEST tab after the side rows, once the player says yes (`story.board_<chain>_yes`). A pin alone stays off the panel. The row shows the slip name and the current step, and it leaves when `_done` is set. Decline never lists it. Those rows count in the SIDE heading and in the QUEST pulse. Pins stay out of `SIDE_CHAINS`. The pin list and the map chevron are unchanged. Save `v` stays 2. No new flags.
