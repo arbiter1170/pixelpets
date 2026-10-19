@@ -377,7 +377,7 @@ test('the east gate is open and a keeper stands beside it', async ({ page }) => 
       quest: PixelPets.quest && PixelPets.quest.id,
       point: PixelPets.quest && PixelPets.quest.point,
       sign, cald,
-      brenPatrol: !!(bren && bren.x >= 4),
+      brenPatrol: !!(bren && bren.x === 1 && bren.y === 8),   // the short west-yard route, off the road
     };
   });
   expect(gate.quest).toBe('first_wild');
