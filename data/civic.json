@@ -38,7 +38,9 @@
           "10": "TggggggggfHHHHpRRRRgTTTT"
         },
         "replaceObjs": [
-          {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 10, "text": "HEARTHMOOR · Hill village of keepers. East: Route 1."}
+          {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 10, "text": "HEARTHMOOR · Hill village of keepers. East: Route 1.", "lines": {
+          "story.board_gate_yes&!story.board_gate_sign": "@gate_look"
+        }}
         ],
         "addObjs": [
           {"kind": "door", "id": "hm_hq", "x": 11, "y": 11, "to": "hm_hq_f1", "tx": 6, "ty": 14, "facing": "up"},
@@ -51,6 +53,9 @@
             "else": "Citizen. Say your piece, then step back."
           }},
           {"kind": "npc", "id": "hm_cald", "name": "Officer Cald", "look": "officer", "x": 17, "y": 7, "facing": "down", "lines": {
+            "story.board_gate_sign&!story.board_gate_done": "@gate_tell",
+            "story.board_gate_yes&!story.board_gate_sign": "The east sign. Look, then come back.",
+            "story.board_gate_pinned&!story.board_gate_yes": "@gate_ask",
             "story.side=glimmer": "Mint on the east path. Keep walking.",
             "standing.keepers>=3": "East gate is yours. Walk easy.",
             "standing.keepers>=1": "A keeper at the gate. Good.",
@@ -445,6 +450,30 @@
         ["say", "Operator Rue", "Wynn copies the notes. I hear the quiet rooms. Lumen says who sits here."],
         ["setFlag", "story.met_rue", true]
       ]]
+    ],
+    "gate_ask": [
+      ["say", "Officer Cald", "Rook's battle is done. Is the east sign still standing?"],
+      ["say", "Officer Cald", "Look at it, then tell me. That is the gate count."],
+      ["choice", "Count the east sign?", [
+        ["I'll look", [
+          ["say", "Officer Cald", "Good. It stands east of here, by the path."],
+          ["setFlag", "story.board_gate_yes", true]
+        ]],
+        ["Not now", [
+          ["say", "Officer Cald", "The sign will wait. So will I."]
+        ]]
+      ]]
+    ],
+    "gate_look": [
+      ["say", "", "HEARTHMOOR · Hill village of keepers. East: Route 1."],
+      ["say", "", "The post is still standing. Officer Cald wants that count."],
+      ["setFlag", "story.board_gate_sign", true]
+    ],
+    "gate_tell": [
+      ["say", "Officer Cald", "Still standing. The gate count holds."],
+      ["say", "", "{pet} leans in, glad the post is still there."],
+      ["bond", 2],
+      ["setFlag", "story.board_gate_done", true]
     ]
   },
   "flags": {
@@ -453,6 +482,10 @@
     "story.met_mo": "Archivist Mo's first talk.",
     "story.met_wynn": "Clerk Wynn's first talk.",
     "story.met_lumen": "Captain Lumen's first talk.",
-    "story.met_rue": "Operator Rue's first talk."
+    "story.met_rue": "Operator Rue's first talk.",
+    "story.board_gate_pinned": "TB-3. The Hearthmoor posting sets this pin only. Not a quest step.",
+    "story.board_gate_yes": "TB-3. Officer Cald's yes. The only accept for the gate count.",
+    "story.board_gate_sign": "TB-3. The east sign was read after Cald said yes.",
+    "story.board_gate_done": "TB-3. Cald heard that the east sign is still standing."
   }
 }

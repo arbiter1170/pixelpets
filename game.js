@@ -3843,6 +3843,13 @@ function syncSideTrack(){
   else if (ui.sideTracked != null) { delete ui.sideTracked; save(); }
 }
 function sidePointOnMap(){ return pointOnMap(sideQuest()); }
+// TB-3: pinned slips are a separate blue list. The map draws the latest. They do not enter SIDE_CHAINS.
+const boardActiveList = () => {
+  if (!S || typeof PPQuests === 'undefined' || !PPQuests.boardActive) return [];
+  return PPQuests.boardActive(questState());
+};
+function boardCueStep(){ const A = boardActiveList(); return A.length ? A[A.length - 1].step : null; }
+function boardPointOnMap(){ return pointOnMap(boardCueStep()); }
 // NAV_MODERN §4 (settled G4): in modern, edge arrows stay in the free rect between the button clusters, and a cue whose tile
 // sits under a button is drawn as an edge arrow instead. Rects are canvas pixels, refreshed at most every 250 ms.
 const cueZone = { t: -1e9, z: null };
@@ -3891,11 +3898,16 @@ function drawObjectiveCue(g, cx, cy, t){
   if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
   const c = $('#mapCanvas'), VW = c.width, VH = c.height;
   if (lanternHold()) { drawCuePoint(g, restBedCue(), PAL.y, cx, cy, t, VW, VH, 0); return; }   // a wipe points at a bed, not the way out
-  const main = questPointOnMap(), side = sidePointOnMap();
+  const main = questPointOnMap(), side = sidePointOnMap(), board = boardPointOnMap();
   drawCuePoint(g, main, PAL.y, cx, cy, t, VW, VH, 0);
-  if (!side) return;
-  const same = main && side.x === main.x && side.y === main.y;
-  drawCuePoint(g, side, PAL.c, cx, cy, t, VW, VH, same ? 7 : 0);
+  if (side) {
+    const same = main && side.x === main.x && side.y === main.y;
+    drawCuePoint(g, side, PAL.c, cx, cy, t, VW, VH, same ? 7 : 0);
+  }
+  if (board) {
+    const same = (main && board.x === main.x && board.y === main.y) || (side && board.x === side.x && board.y === side.y);
+    drawCuePoint(g, board, PAL.c, cx, cy, t, VW, VH, same ? 7 : 0);
+  }
 }
 const WART = buildWorldArt();
 addExteriorArt(TILES, WART);
@@ -4178,7 +4190,11 @@ function interact(o){
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
   if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
-  if (o.kind === 'sign') return runSteps([['say', '', o.text]], ctx);
+  if (o.kind === 'sign') {
+    const line = linesFor(o);
+    if (typeof line === 'string' && line.charAt(0) === '@') return runScene(line.slice(1), ctx);
+    return runSteps([['say', '', o.text || '']], ctx);
+  }
   if (o.board) return openTownBoard();
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
   if (o.kind === 'wild') return o.scene ? runScene(o.scene, ctx) : undefined;
@@ -6271,6 +6287,55 @@ function boardCopy(id){
   if (sky && sky.text && (!sky.when || !sky.when.length || sky.when.every(boardCond))) reports.push(String(sky.text));
   return { masthead, slogan, reports };
 }
+function boardSlipShown(s){
+  if (!s || typeof s.id !== 'string') return false;
+  if (s.when && s.when.length && !s.when.every(boardCond)) return false;
+  if (typeof s.done === 'string' && boardCond(s.done)) return false;
+  return true;
+}
+function boardSlipById(id){
+  const towns = (MD.town_board && MD.town_board.towns) || {};
+  for (const town of Object.values(towns)) for (const s of (town && town.slips) || []) if (s && s.id === id) return s;
+  return null;
+}
+function boardSlipsFor(map){
+  const town = boardTownKnown(map) ? MD.town_board.towns[map] : null;
+  if (!town || !Array.isArray(town.slips)) return [];
+  const active = boardActiveList();
+  const out = [];
+  for (const s of town.slips) {
+    if (!boardSlipShown(s)) continue;
+    const hit = active.find(a => a.chain === s.id);
+    out.push(Object.freeze({
+      id: s.id,
+      title: String(s.title || ''),
+      who: String(s.who || ''),
+      text: String(s.text || ''),
+      pinned: !!(s.pin && S && S.flags && S.flags[s.pin]),
+      step: hit ? String(hit.step.text || '') : '',
+    }));
+  }
+  return out;
+}
+function pinnedSlipCount(){
+  let n = 0;
+  const towns = (MD.town_board && MD.town_board.towns) || {};
+  for (const town of Object.values(towns)) for (const s of (town && town.slips) || []) if (s && s.pin && S.flags[s.pin]) n++;
+  return n;
+}
+// The posting and the phone row set the pin only. Cald's yes is the accept.
+function pinBoardSlip(id){
+  if (!S || scene) return;
+  const s = boardSlipById(id);
+  if (!s || typeof s.pin !== 'string' || !/^story\.board_[a-z0-9_]+_pinned$/.test(s.pin)) return;
+  if (!boardSlipShown(s) || S.flags[s.pin]) return;
+  if (pinnedSlipCount() >= 3) { toast('Three slips are already pinned.'); return; }
+  S.flags[s.pin] = true;
+  save();
+  sfx('tap');
+  const body = $('#phoneBody');
+  if (body && body.querySelector('.board-pile')) { body.textContent = ''; renderTownBoard(body); }
+}
 function townBoardView(){
   const blank = Object.freeze({ map: '', masthead: '', slogan: '', reports: Object.freeze([]), slips: Object.freeze([]), bounties: Object.freeze([]), lastTown: '' });
   if (!S) return blank;
@@ -6281,7 +6346,7 @@ function townBoardView(){
   return Object.freeze({
     map, masthead: copy.masthead, slogan: copy.slogan,
     reports: Object.freeze(copy.reports.slice()),
-    slips: Object.freeze([]), bounties: Object.freeze([]), lastTown: last,
+    slips: Object.freeze(boardSlipsFor(map)), bounties: Object.freeze([]), lastTown: last,
   });
 }
 function renderTownBoard(body){
@@ -6293,7 +6358,37 @@ function renderTownBoard(body){
   add('board-slogan', view.slogan);
   view.reports.forEach(text => add('board-report', text));
   add('board-pile', 'Slips');
-  add('board-empty', empty.slips || 'No slips are pinned up.');
+  if (!view.slips.length) add('board-empty', empty.slips || 'No slips are pinned up.');
+  view.slips.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'board-slip';
+    card.dataset.slip = s.id;
+    const title = document.createElement('p');
+    title.className = 'board-slip-title';
+    title.textContent = s.title;
+    const who = document.createElement('p');
+    who.className = 'board-slip-who';
+    who.textContent = s.who;
+    const text = document.createElement('p');
+    text.className = 'board-slip-text';
+    text.textContent = s.text;
+    card.append(title, who, text);
+    if (s.pinned) {
+      if (s.step) { const st = document.createElement('p'); st.className = 'board-slip-step'; st.textContent = s.step; card.appendChild(st); }
+      const pin = document.createElement('p');
+      pin.className = 'board-pinned';
+      pin.textContent = 'Pinned.';
+      card.appendChild(pin);
+    } else {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn board-go';
+      btn.textContent = 'Go see them.';
+      btn.addEventListener('click', () => pinBoardSlip(s.id));
+      card.appendChild(btn);
+    }
+    body.appendChild(card);
+  });
   add('board-pile', 'Bounties');
   add('board-empty', empty.bounties || 'No creature is named today.');
 }
@@ -9824,6 +9919,9 @@ function boot(){
   Object.defineProperty(api, 'bumpHint', { enumerable: true, get(){ return $('#bumpHint').hidden ? null : $('#bumpHint').textContent; } });
   // WP-C: the current objective (read-only), the point the cue draws on this map, and the chain's dev check.
   Object.defineProperty(api, 'townBoard', { enumerable: true, get(){ return townBoardView(); } });
+  Object.defineProperty(api, 'boardPins', { enumerable: true, get(){
+    return boardActiveList().map(a => ({ id: a.chain, label: a.label, step: a.step.id, text: a.step.text, place: a.step.place, target: a.step.target ? { ...a.step.target } : null, point: pointOnMap(a.step) }));
+  } });
   Object.defineProperty(api, 'quest', { enumerable: true, get(){ const q = questCurrent(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null,
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse'), navMark: ($('#questBtn') && $('#questBtn').dataset.questMark) || '' }; } });
   // D106: sideQuest is the tracked step; sideActive lists every active chain in unlock order.

@@ -783,6 +783,12 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 #ovPhone.board-post #phoneFoot{display:none}
 #ovPhone:not(.hack) #phoneBody .board-mast{color:#6a3a0c;font-weight:700;letter-spacing:.4px}
 #ovPhone.hack #phoneBody .board-mast{color:#9dffc0;font-weight:700;letter-spacing:.4px}
+#ovPhone #phoneBody .board-slip{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:8px}
+#ovPhone #phoneBody .board-slip .btn{width:100%;min-height:44px;margin:0;font-size:16px}
+#ovPhone:not(.hack) #phoneBody .board-slip{background:#fff9ec;box-shadow:0 0 0 2px #6a3a0c}
+#ovPhone:not(.hack) #phoneBody .board-slip-title{font-weight:700;color:#6a3a0c}
+#ovPhone.hack #phoneBody .board-slip{background:#07140e;box-shadow:0 0 0 2px #5ee08a}
+#ovPhone.hack #phoneBody .board-slip-title{font-weight:700;color:#9dffc0}
 #ovPhone #phoneBody .who{color:var(--y)}
 #ovPhone #phoneFriends{flex:1 1 auto;min-width:0;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #ovPhone #phoneFriends .panel{min-width:0;max-width:100%;margin:0 0 8px}
