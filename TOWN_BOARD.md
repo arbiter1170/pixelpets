@@ -225,11 +225,11 @@ The button on a slip says "Go see them." Gate count uses that button on this bra
 
 ## How the blue marker fits the quest log
 
-`sideCurrent()` in `quests.js` returns one step: the phone chain until `story.phone_got`, then Mom's dream, and nothing else. A new chain pushed in front would hide Mom. A chain pushed after the dream would stay invisible until Mahopac is over. Board pins are a third list.
+`sideActive()` in `quests.js` lists every open side chain. The SIDE card shows the tracked one: phone, then Mom. Board pins stay a separate list and do not enter `SIDE_CHAINS`. D194 narrows D40: an accepted slip (`story.board_<chain>_yes`) is a read-only row on the QUEST panel after the side rows. A pin alone is not on the panel. The row leaves when `_done` is set. Decline never sets `_yes`, so it never lists the slip.
 
-Settled draw (D40):
+Settled draw (D40, narrowed by D194):
 
-- The quest panel's side row keeps phone, then Mom.
+- The quest panel's side card keeps phone, then Mom. Accepted slips are read-only rows after those side rows. Pins stay off the panel.
 - A pinned slip draws with the same blue chevron.
 - When both would sit on one tile, the slip's chevron shifts 7px, which is the offset the side chevron already uses against the yellow one.
 - At most three pins. The map shows the latest. The phone lists all three.

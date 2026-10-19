@@ -331,7 +331,7 @@ test('Amos rests the party and Fen starts the trial', async ({ page }) => {
 
   await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.goto('fb_hall_in', 7, 5, 'up'); });
   const glimmer = await say(page);
-  expect(glimmer).toContain('Census');
+  expect(glimmer).toContain('tallying Fernbrook');
   expect(glimmer).not.toContain('Begin trial');
 });
 
