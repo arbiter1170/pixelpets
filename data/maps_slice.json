@@ -197,7 +197,7 @@
       ["say", "Warden Ilse", "There you are. Come in. The baskets do not all stay still."],
       ["if", "!has:name", [["nameEntry", "player", "First things first. What do folk call you?", "Wayfarer", 10]]],
       ["say", "Warden Ilse", "{name}. The road will test that name."],
-      ["say", "Warden Ilse", "The Keepers give each young trainer a Walkling, so you can learn to defend yourself."],
+      ["say", "Warden Ilse", "The Keepers give each young holder a Walkling, so you can learn to defend yourself."],
       ["choice", "A storm catches you on the hill path. What do you do?", [["Race it home!", [["say", "Warden Ilse", "Ha! Quick feet. You will need them."]], "ember"], ["Splash in the puddles", [["say", "Warden Ilse", "Rain hides worse than puddles. Laugh if you can."]], "tide"], ["Wait under a tree", [["say", "Warden Ilse", "Patient. The wild waits for the ones who stay."]], "bloom"]]],
       ["choice", "And a shy Walkling hides from you in the grass?", [["Make it laugh", [], "ember"], ["Sit down and wait", [], "tide"], ["Leave a snack, step back", [], "bloom"]]],
       ["say", "Warden Ilse", "Then I think {suggest} would suit you. Any of them can stand with you. You choose."],

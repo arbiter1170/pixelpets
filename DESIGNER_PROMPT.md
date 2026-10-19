@@ -16,9 +16,9 @@ Read these before you write. Do not edit the files marked verbatim.
 |---|---|
 | `DESIGN_HANDOFF.md` | Voice guide, art sizes, the older request list. This prompt overrides it where the engine has since shipped (see "Engine today"). |
 | `NEXT_PLAN.md` | WP-B content inventory, Rook's tree, Standing proposal, Hall spike constraints. Sections "Glimmer-path content inventory", "Rook: always converts", "Standing and switching", "Hall replacement: design spike". |
-| `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D24 (Sacrifice cost), D25 (R5 tone), D26 (Tour copy), and D19 (desk copy) are yours. D13 is the player look picker, which still has no lanyard. The seal-card art is delivered. Do not redraw `seal_glim_2`. D3 / D5 / D10 / D23 are settled. D6, D7, D8 are not (numbers and optional battle features; leave them). D37 is used twice. Leave both rows alone. |
+| `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D24, D25, and D26 are settled (Oct 19, 2026). Tour slogans stay placeholders. D19 (desk copy) is closed. D13 is the player look picker, which still has no lanyard. The seal-card art is delivered. Do not redraw `seal_glim_2`. D3 / D5 / D10 / D23 are settled. D6, D7, D8 are not (numbers and optional battle features; leave them). D37 is used twice. Leave both rows alone. |
 | `data/cobblecrest.json` | The shape of a finished hand-off: `scenes`, `trainers`, `looks`, `speakers`, `artRequests`, `newNames`, `decisions`, `flags`. |
-| `data/glimmer_path.json` | **Your file.** Fernbrook, Route 2, Cobblecrest, the Sacrifice stub, and R5 are on `main`. Replace Tour stop copy, and replace the Sacrifice cost only after the one-pager. Do not add a second set of those scenes. Keep every existing `setFlag`, `give`, `run`, and `battle` step, and the flag names. |
+| `data/glimmer_path.json` | **Your file.** Fernbrook, Route 2, Cobblecrest, and R5 are on `main`. Hall slot 2 is Arbiter Testing on the game branch (D24). Replace Tour stop copy only. Do not replace the Testing scene and do not add a second set. Keep every existing `setFlag`, `give`, `run`, and `battle` step, and the flag names. |
 | `data/maps_slice.json` scenes `glimmer1`, `fen_intro`, `orchard`, `seal1`, `teaser` | The Keepers-path beats you are mirroring. **Verbatim. Do not edit.** |
 | `data/act1_route2.json` scenes `lead_intro`, `glen_cleared`, `faded2`, `route2_end` | Same. **Verbatim.** Decision `4_tone`: the lamp drain is only hinted at. |
 | `data/cobblecrest.json` scenes `quarry_buyout`, `hale_trial`, `seal2`, `brinewick_hook` and trainer `rival2_rook` | Same. **Verbatim.** |
@@ -49,7 +49,7 @@ Already in the game:
 
 Settled, do not reopen:
 
-- Hall slot 1 = Tour (built). Hall slot 2 = Sacrifice stub (built). The real cost is D24. Do not add a second Tour.
+- Hall slot 1 = Tour (built). Hall slot 2 = Arbiter Testing (D24, on the game branch). Do not add a second Tour.
 - Rook: Keepers path he converts; Glimmerwell path he stays. No bond fork. No follow-or-stay.
 
 ## Rules for every line
@@ -127,7 +127,7 @@ Deliver in `data/glimmer_path.json` under `newNames` and a `glossary` object.
 
 ## Phase F. Fernbrook, the pick and Hall slot 1 — **scenes shipped (Build 3)**
 
-`side_pick`, `orchard@glimmer`, `seal1@glimmer`, `teaser@glimmer`, and the Tour engine (`tour1_s1`..`tour1_s4`) are in. **Left: replace the `PLACEHOLDER` lines** in those Tour stops, `tour1_wait`, and the stage-photo line in `seal1@glimmer`. Keep every `setFlag` / `standing` / `run` step. `tour.doubt` is a stand-in name; put the real name in `decisions` (D26).
+`side_pick`, `orchard@glimmer`, `seal1@glimmer`, `teaser@glimmer`, and the Tour engine (`tour1_s1`..`tour1_s4`) are in. **Left: replace the `PLACEHOLDER` lines** in those Tour stops, `tour1_wait`, and the stage-photo line in `seal1@glimmer`. Keep every `setFlag` / `standing` / `run` step. The counter is `story.tour_unease` (D193, settled). Slogans and recipients stay placeholders (D26). Do not invent that copy.
 
 Do not rewrite the pick, the orchard, or `teaser@glimmer`. The original brief follows only so the flag list stays visible.
 
@@ -153,7 +153,7 @@ Display names go in `newNames` as `seal_glim_1` and `seal_glim_2`. Earned lanyar
 
 ## Phase H. Hall replacement (design only)
 
-**Slot 1 is done** (Bright Pavilion Tour, Build 3). **Slot 2's stub is in the game** (snack stays in the bag, three spoken names, optional Hale review). Write `data/hall_spike.md` for **Cobblecrest only**: the real cost, the floor, how Quota substitutes, what it grants, how it ends. Then replace the stub. Do not reopen slot 1 and do not add a second Tour.
+**Slot 1 is done** (Bright Pavilion Tour, Build 3). **Slot 2 is Arbiter Testing** on the game branch (D24): one chosen Walkling is chipped, or the player meets the quota, or they face Hale. Do not write `data/hall_spike.md` and do not replace that scene. Do not reopen slot 1 and do not add a second Tour. The Testing MIDI is still owed (D164).
 
 Every answer must:
 
@@ -165,7 +165,7 @@ Every answer must:
 
 Candidates already on the table: a Tour (stops with a scene and a choice, sometimes a battle), a Sacrifice (give Acorns, an item, or a day's XP, with a floor so the player cannot soft-lock), a Quota (befriend or win N times), or the Audit battle that is already the stub. Say which you pick per slot and why. The Keepers Halls stay as they are unless you and Vincent say otherwise.
 
-Do not draw new Hall props until the Sacrifice page is approved. Slot 1 needs copy, not new props.
+Do not draw new Hall props. Slot 1 needs copy, not new props. Slot 2 is already Testing.
 
 ## Phase S. Switch desks (copy only)
 

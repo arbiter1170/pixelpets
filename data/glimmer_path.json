@@ -36,7 +36,7 @@
     ]
   },
   "placeholders": [
-    "tour1_s1, tour1_s2, tour1_s3, tour1_s4, tour1_wait, and the stage-photo line in seal1@glimmer used marked placeholder copy (now TEMP, see _placeholders). Missing: lantern recipients, slogan text, Comfort Check deflections, Census-board lines, stage-photo presentation, and the hidden-doubt flag name (tour.doubt is a stand-in nothing reads yet)."
+    "tour1_s1, tour1_s2, tour1_s3, tour1_s4, tour1_wait, and the stage-photo line in seal1@glimmer used marked placeholder copy (now TEMP, see _placeholders). Missing: lantern recipients, slogan text, Comfort Check deflections, Census-board lines, and stage-photo presentation. The unease counter is story.tour_unease (D193). An old save may still hold tour.doubt; normalize reads it once and does not delete it."
   ],
   "slicePatch": {
     "maps": {
@@ -547,6 +547,10 @@
         "A flash! Your stage photo goes up on the board. Everyone is smiling. Everyone..."
       ],
       [
+        "inc",
+        "story.tour_unease"
+      ],
+      [
         "say",
         "Associate Juniper",
         "Have a bright day!"
@@ -674,7 +678,7 @@
               ],
               [
                 "inc",
-                "tour.doubt"
+                "story.tour_unease"
               ]
             ]
           ],
@@ -1170,58 +1174,111 @@
         ],
         [
           [
-            "say",
-            "Associate Quinn",
-            "Second review. A Sacrifice. You set something down, or you meet the quota."
-          ],
-          [
-            "say",
-            "Associate Quinn",
-            "The quota is free: three names from the seam, spoken aloud. No one is locked out."
-          ],
-          [
-            "choice",
-            "How do you close the review?",
+            "if",
+            "story.arbiter_test_done",
             [
               [
-                "Set a snack down",
-                [
-                  [
-                    "say",
-                    "",
-                    "You set a Heal Snack on the desk. Quinn does not eat it. The cost is that you offered."
-                  ],
-                  [
-                    "run",
-                    "seal2"
-                  ]
-                ]
+                "say",
+                "Associate Quinn",
+                "Tier 2 is on file. The cradle can wait. Have a bright day!"
+              ]
+            ],
+            [
+              [
+                "setFlag",
+                "story.arbiter_test_seen",
+                true
               ],
               [
-                "Meet the quota",
+                "say",
+                "Associate Quinn",
+                "Before the cord, one more kindness. A Tuning. Your Walkling hears us a little clearer after."
+              ],
+              [
+                "if",
+                "story.tour_unease>=2",
                 [
                   [
                     "say",
                     "Associate Quinn",
-                    "Three names. Say them. The seam heard you. Quota met, no fee."
+                    "Some holders feel a flutter. We call it increasing the bond. Nothing sharp. Nothing cold."
                   ],
                   [
-                    "run",
-                    "seal2"
+                    "say",
+                    "Rook",
+                    "A chip? That's... a lot. But our Walklings will keep getting stronger. I want that. I do."
                   ]
-                ]
-              ],
-              [
-                "Face the review",
+                ],
                 [
                   [
                     "say",
                     "Associate Quinn",
-                    "Then Hale's floor, our rules. Win or lose, you can still take the quota after."
+                    "We call it increasing the bond between a holder and their Walkling. Nothing sharp. Nothing cold."
+                  ]
+                ]
+              ],
+              [
+                "choice",
+                "How do you close the review?",
+                [
+                  [
+                    "Tune my partner",
+                    [
+                      [
+                        "setFlag",
+                        "story.arbiter_test_active",
+                        true
+                      ],
+                      [
+                        "tune"
+                      ]
+                    ]
                   ],
                   [
-                    "battle",
-                    "hall2_hale"
+                    "Pick another Walkling",
+                    [
+                      [
+                        "setFlag",
+                        "story.arbiter_test_active",
+                        true
+                      ],
+                      [
+                        "tune",
+                        "pick"
+                      ]
+                    ]
+                  ],
+                  [
+                    "Not today",
+                    []
+                  ],
+                  [
+                    "Meet the quota instead",
+                    [
+                      [
+                        "say",
+                        "Associate Quinn",
+                        "Three names. Say them. The seam heard you. Quota met, no fee."
+                      ],
+                      [
+                        "run",
+                        "seal2"
+                      ]
+                    ]
+                  ],
+                  [
+                    "Face the review",
+                    [
+                      [
+                        "say",
+                        "Associate Quinn",
+                        "Then Hale's floor, our rules. Win or lose, you can still take the quota after."
+                      ],
+                      [
+                        "battle",
+                        "hall2_hale"
+                      ]
+                    ]
                   ]
                 ]
               ]
@@ -1441,7 +1498,10 @@
     "story.tour1_s1": "Bright Pavilion Tour stop 1 done (lantern stand). Not a quest step.",
     "story.tour1_s2": "Tour stop 2 done (Comfort Check at the crates). Not a quest step.",
     "story.tour1_s3": "Tour stop 3 done (Hall slideshow). Not a quest step. Stop 4 stays open until story.seal1.",
-    "tour.doubt": "PLACEHOLDER name. +1 when the Comfort Check question is chosen. Nothing reads it yet. Vincent still needs the real flag name.",
+    "story.tour_unease": "D193. +1 on the Comfort Check question and on the stage-photo flinch. At 2 or more, Testing softens Quinn's second line and Rook speaks once. Old saves may still have tour.doubt; that key is read once and left on disk.",
+    "story.arbiter_test_seen": "Quinn offered Testing at least once.",
+    "story.arbiter_test_done": "One Walkling was chipped. A second Testing offer is refused.",
+    "story.arbiter_test_active": "True during the Tuning beat. Cool tint and arbiter_test music. Cleared when the chip is in.",
     "standing.got.<id>": "A one-shot Standing grant already made.",
     "standing.top.<side>": "The highest tier whose toast has shown for that side.",
     "seals.seal_glim_1": "Bright Tier 1 lanyard. Set by the seal step in seal1@glimmer (and by a Hall win). story.seal1 is set by that same scene.",

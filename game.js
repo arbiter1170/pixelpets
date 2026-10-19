@@ -577,6 +577,7 @@ function showTab(name){
   if (overlayOpen() && !tutAllowsTab(name)) return;
   screen = name;
   document.body.dataset.screen = name;
+  if (S) updateHUD();
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
   $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   clearMoves();
@@ -678,13 +679,14 @@ function ariaBar(fill, now, max, label){
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); ariaBar(el, clamp(v, 0, 100), 100, BAR_LABEL[el.id] || null); }
 function updateHUD(){
   document.body.classList.toggle('no-pets', !allPets().length);
+  syncArbiterTest();
   syncBagBtns();
   syncJournalBtn();
   syncQuestBtn();
   syncSide();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
-  if (!p) { syncCareAlert(); return; }
+  if (!p) { document.body.classList.remove('align-on'); syncCareAlert(); return; }
   const st = SPECIES[spi(p)].stages[p.stage];
   $('#hdrName').textContent = cleanNick(p.nick) || st.name;
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
@@ -693,6 +695,14 @@ function updateHUD(){
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
   setBar($('#barEnergy'), p.energy); $('#valEnergy').textContent = Math.round(p.energy);
+  const alignOn = chipOn(p);
+  document.body.classList.toggle('align-on', alignOn);
+  const alignBar = $('#barAlign'), alignVal = $('#valAlign');
+  if (alignBar && alignVal && alignOn) {
+    const n = clamp(Math.round(Number(p.align) || 0), 0, 100);
+    setBar(alignBar, n); alignVal.textContent = String(n);
+    ariaBar(alignBar, n, 100, 'Alignment');
+  }
   updatePetStrip(p);
   syncCareAlert();   // HEART_ALERT: same 1 s stat tick as the strip
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
@@ -1401,6 +1411,7 @@ function doAction(act){
     }
     queueEmote(act === 'rest' ? 'emote_sleep' : 'emote_heart', act === 'rest' ? 200 : 500);
   }
+  noteAlignPet(p, side() === 'keepers' ? 'keepers' : 'glimmer', 2);
   toast(msg);
   updateHUD(); save();
   tutSawAct(act);
@@ -1754,7 +1765,8 @@ function glimmerDevCheck(){
       walkSteps('scene ' + id, steps);
       const at = id.indexOf('@'); if (at < 0) continue;
       const base = SCENES[id.slice(0, at)]; if (!base) { bad.push('scene ' + id + ': no base scene'); continue; }
-      const want = story(base), got = story(steps); for (const f of want) if (!got.has(f)) bad.push('scene ' + id + ': does not set ' + f);
+      const want = story(base), got = story(steps);
+      for (const f of want) if (!got.has(f) && !(id === 'rook_road@glimmer' && f === 'story.rook_quit')) bad.push('scene ' + id + ': does not set ' + f);
     }
     for (const [id, t] of Object.entries(RC.trainers || {})) {
       for (const [k, v] of Object.entries(t.lines || {})) line('trainer ' + id + '.' + k, v);
@@ -1766,7 +1778,7 @@ function glimmerDevCheck(){
     return c.split('&').every(part => {
       if (!part || part === 'else' || part === 'talked' || part === 'has:name') return !!part;
       const s = part[0] === '!' ? part.slice(1) : part;
-      return s === 'talked' || s === 'has:name' || s.startsWith('seal:') || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
+      return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s.startsWith('seal:') || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
     });
   };
   for (const [id, bag] of Object.entries(loy.npcs || {})) {
@@ -1834,6 +1846,7 @@ function setStanding(sd, pts){
   if (!S.standing || typeof S.standing !== 'object') S.standing = { keepers: 0, glimmer: 0 };
   const before = S.standing[sd] | 0, after = PPStanding.clampPts(pts);
   S.standing[sd] = after;
+  if (after !== before) noteAlignAct(sd, Math.abs(after - before));
   const t1 = PPStanding.tierOf(after), topKey = 'standing.top.' + sd;
   if (t1 > PPStanding.tierOf(before) && t1 > (+S.flags[topKey] || 0)) {
     S.flags[topKey] = t1;
@@ -1843,6 +1856,109 @@ function setStanding(sd, pts){
   return after;
 }
 const addStanding = (sd, n) => setStanding(sd, standingOf(sd, false) + (Number(n) || 0));
+// D187–D190. One chipped Walkling carries align 0–100. Absent chip and align mean unchipped. v stays 2.
+let alignQuiet = null;
+function chipOn(p){ return !!(p && p.chip && p.chip.on); }
+function chipLocked(p){ return !!(p && p.chip && p.chip.locked); }
+function chippedPets(){ return (S && S.party || []).filter(chipOn); }
+function alignBand(n){
+  const v = clamp(Math.round(Number(n) || 0), 0, 100);
+  if (v <= 24) return 'Strain';
+  if (v <= 49) return 'Uneasy';
+  if (v <= 74) return 'Tuned';
+  return 'Bright-linked';
+}
+function alignSign(){ return side() === 'keepers' ? -1 : 1; }
+function alignStep(amount){ return clamp(Math.abs(Number(amount) || 0), 2, 5); }
+function nudgeAlign(p, signed){
+  if (!chipOn(p) || alignQuiet === p.id) return;
+  const before = clamp(Math.round(Number(p.align) || 0), 0, 100);
+  const after = clamp(before + signed, 0, 100);
+  if (after === before) return;
+  p.align = after;
+  const b0 = alignBand(before), b1 = alignBand(after);
+  if (b0 !== b1) { const msg = b1 + '.'; if (scene) scene.toasts.push(msg); else toast(msg); }
+}
+function noteAlignAct(kind, amount){
+  if (alignQuiet || !S) return;
+  const step = alignStep(amount), signed = (kind === 'keepers' ? -step : step) * alignSign();
+  for (const p of chippedPets()) nudgeAlign(p, signed);
+}
+function noteAlignPet(p, kind, amount){
+  if (!chipOn(p) || alignQuiet === p.id) return;
+  const step = alignStep(amount), signed = (kind === 'keepers' ? -step : step) * alignSign();
+  nudgeAlign(p, signed);
+}
+function chipPet(p){
+  if (!p || chipOn(p)) return false;
+  p.chip = { on: true, at: Date.now(), locked: true };
+  p.align = 50;
+  return true;
+}
+function lockStayMsg(p){ return petName(p) + ' stays with you now.'; }
+function arbiterTestOn(){
+  if (scene && scene.view && Object.prototype.hasOwnProperty.call(scene.view.flags, 'story.arbiter_test_active'))
+    return !!scene.view.flags['story.arbiter_test_active'];
+  return !!(S && S.flags && S.flags['story.arbiter_test_active']);
+}
+function syncArbiterTest(){ document.body.classList.toggle('arbiter-test', arbiterTestOn()); }
+function syncArbiterCue(on){
+  syncArbiterTest();
+  if (!scene) return;
+  if (on) {
+    const cue = trackFor(CUR);
+    if (cue) { scene.musicCue = cue; try { PPSound.music(cue, { fadeOut: 180, fadeIn: 140 }); } catch (e) {} }
+  } else if (scene.musicCue === 'arbiter_test' || PPSound.musicWant === 'arbiter_test') {
+    const back = trackFor(CUR);
+    if (back) { scene.musicCue = back; try { PPSound.music(back, { fadeOut: 180, fadeIn: 140 }); } catch (e) {} }
+  }
+}
+function alignGlowOnArrive(mapId){
+  if (!S) return;
+  const node = nodeOf(mapId);
+  if (mapHold(node, S.flags) !== 'glimmer') return;
+  const day = dayKey(Date.now());
+  if (S.flags['daily.align_glow'] === day) return;
+  let healed = false;
+  for (const p of S.party) {
+    if (!chipOn(p) || alignBand(p.align) !== 'Bright-linked') continue;
+    const max = maxHpOf(p), cur = hpOf(p);
+    if (cur >= max) continue;
+    const next = Math.min(max, cur + Math.ceil(0.25 * max));
+    if (next >= max) delete p.hpNow; else p.hpNow = next;
+    healed = true;
+  }
+  if (!healed) return;
+  S.flags['daily.align_glow'] = day;
+  toast('A soft glow mends them.');
+}
+function paintMark(c, rows, colors){
+  const g = ctx(c), x0 = c.width - 8, y0 = 0;
+  rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) { const col = colors[row[x]]; if (!col) continue; g.fillStyle = col; g.fillRect(x0 + x, y0 + y, 1, 1); } });
+}
+function paintLockGlyph(c){
+  paintMark(c, ['..mmmm..', '.m....m.', '.m....m.', 'kkkkkkkk', 'kmmmmmmk', 'km.mm.mk', 'kmmmmmmk', 'kkkkkkkk'], { k: PAL.k, m: PAL.m });
+}
+function paintChipIcon(c){
+  paintMark(c, ['.ssssss.', 's......s', 's.yyyy.s', 's.yyyy.s', 's.yyyy.s', 's.yyyy.s', 's......s', '.ssssss.'], { s: PAL.s, y: PAL.y });
+}
+async function makeRoomFor(np){
+  if (S.party.length < PPSave.PARTY_MAX) { S.party.push(np); return 'party'; }
+  const free = S.party.filter(p => !chipLocked(p));
+  if (!free.length) return null;
+  const pick = await openSheet('Who goes to the box?', free.map(p => ({ label: petName(p) + '  Lv ' + levelOf(p), value: p.id })));
+  const i = S.party.findIndex(p => p.id === pick);
+  if (i < 0 || chipLocked(S.party[i])) return null;
+  const out = S.party[i];
+  if (out.id === S.partnerId) {
+    const stay = S.party.find(q => q.id !== out.id);
+    S.partnerId = stay ? stay.id : np.id;
+  }
+  S.box.unshift(S.party.splice(i, 1)[0]);
+  S.party.push(np);
+  toast(petName(out) + ' went to your Walkling-box.');
+  return 'swapped';
+}
 // One line for a moral choice. The rising side, then whether Lizzy trusts you more or less.
 function moralToast(opt){
   const st = opt.standing || {}, rp = opt.rep || {};
@@ -2077,6 +2193,11 @@ const isRoom = () => CUR.kind === 'interior';
 // own loops, dream rooms play dream, and a Glimmerwell pledge swaps the shared town loop for town_glimmer.
 // Keepers towns stay on town.
 function trackFor(map){
+  if (arbiterTestOn()) {
+    const ids = PPSound.musicIds();
+    if (ids.includes('arbiter_test')) return 'arbiter_test';
+    if (ids.includes('lab')) return 'lab';
+  }
   if (!map) return null;
   if (map.music && PPSound.musicIds().includes(map.music)) return map.music;
   if (map.id === 'cobble_quarry') return 'quarry';
@@ -2185,6 +2306,8 @@ function cond(c, live, o){
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
   else if (c === 'talked') v = !!(o && mapRT.talked.has(o.id));
+  else if (c === 'chip:partner') v = chipOn(pet());
+  else if (c === 'chip:any') v = chippedPets().length > 0;
   else if (c.startsWith('rep:') || c.startsWith('reptier')) v = repCond(c, o);
   else {
     const m = /^(.*?)(>=|<=|>|<|=)(.*)$/.exec(c);
@@ -3058,7 +3181,7 @@ function arriveAt(at){
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
-  placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); save();
+  placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
 }
 function enterDoor(dr){
@@ -4270,6 +4393,7 @@ async function execStep(st){
       // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
       const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
       sc.view.flags[a] = v; pend(() => { S.flags[a] = v; if (a === 'story.buddy_pat_today' && v) S.flags['daily.buddy_pat'] = dayKey(Date.now()); if (joinSnap) noteRepJoin(joinSnap); });
+      if (a === 'story.arbiter_test_active') syncArbiterCue(!!v);
       // D135: freeing or walking away always credits the Keepers meter. Shipping credits Glimmerwell. Once each.
       if (a === 'story.rc_end' && (v === 'freed' || v === 'walked')) await execStep(['standing', 'keepers', null, 'rc_freed_k']);
       if (a === 'story.rc_end' && v === 'shipped') await execStep(['standing', 'glimmer', null, 'rc_shipped_g']);
@@ -4320,6 +4444,40 @@ async function execStep(st){
     }
     // BS: ["pledge", side, free?]: switch the pledge to `side` (the Pledge desk's Yes). Buffered; later lines see the new side.
     case 'pledge': { if (!PPStanding.isSide(a)) return; sc.view.flags['story.side'] = a; pend(() => { switchSide(a, { free: !!b }); }); return; }
+    case 'tune': {
+      sc.skip = false;
+      const refuse = async () => {
+        if (flagOf('story.arbiter_test_active', true)) await execStep(['setFlag', 'story.arbiter_test_active', false]);
+      };
+      if (flagOf('story.arbiter_test_done', true) || chippedPets().length) {
+        if (chippedPets().length && !flagOf('story.arbiter_test_done', true)) await execStep(['setFlag', 'story.arbiter_test_done', true]);
+        await refuse(); await sayBox('Associate Quinn', 'Tier 2 is on file. The cradle can wait. Have a bright day!'); return;
+      }
+      let target = null;
+      if (a === 'pick') {
+        const opts = (S.party || []).filter(p => !chipLocked(p));
+        if (!opts.length) { await refuse(); await sayBox('', 'The party is full of ones who stay.'); return; }
+        const id = await openSheet('Who hears us clearer?', opts.map(p => ({ label: petName(p) + '  Lv ' + levelOf(p), value: p.id })), 'BACK');
+        if (!scene) return;
+        if (!id) { await refuse(); return; }
+        target = petById(id);
+      } else target = pet();
+      if (!target || chipOn(target)) { await refuse(); await sayBox('Associate Quinn', 'Tier 2 is on file. The cradle can wait. Have a bright day!'); return; }
+      await sayBox('', 'A soft click under the fur. The Hall lights dim. Somewhere below, something vast exhales.');
+      if (!scene) return;
+      chipPet(target);
+      alignQuiet = target.id;
+      await execStep(['setFlag', 'story.arbiter_test_done', true]);
+      if (!scene) return;
+      await execStep(['setFlag', 'story.arbiter_test_active', false]);
+      if (!scene) return;
+      await sayBox('Associate Quinn', 'There. Tuned. Keep them close, holder. The box is for the others now.');
+      if (!scene) return;
+      await execSteps([['run', 'seal2']]);
+      const tuned = target;
+      pend(() => { if (tuned && tuned.chip && tuned.chip.on) tuned.align = 50; alignQuiet = null; });
+      return;
+    }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
     case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity') S.world.respawn = r; }); return; }
     case 'play': {
@@ -5539,10 +5697,11 @@ async function befriendTry(id){
     const firstWild = !S.flags['story.first_wild_met'];
     S.flags['story.first_wild_met'] = true;
     if (journalNew) B.journalNew = { si: f.si, stage: f.stage, id: np.id, firstWild };
-    const toBox = S.party.length >= PPSave.PARTY_MAX; (toBox ? S.box : S.party).push(np);
+    const room = await makeRoomFor(np);
+    if (!room) { sfx('denied'); await say('The party is full.', id); return false; }
     sfx('stinger_befriend'); xpChimeDelay = 0.75;
     const gx = grantExploreXp(pet(), BEFRIEND_XP); xpChimeDelay = 0; pet().happy = clamp(pet().happy + 5, 0, 100);
-    B.newId = np.id; B.lastGx = gx; B.toBox = toBox; if (toBox) toast(nameOf(f.si, f.stage) + ' went to your Walkling-box.');
+    B.newId = np.id; B.lastGx = gx; B.toBox = false;
     B.fx.push({ who: 'foe', kind: 'hearts', t0: now(), dur: 1500 });
     awardFoe(B.fi); save();
     await finish('befriended', id); return true;
@@ -7239,7 +7398,9 @@ function befriendZoneWidth(){
     if (p.deploy && p.deploy.call === 'greet') extra += 0.04;
     if (p.held === 'kin_ribbon') extra += 0.04;
   }
-  return Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus + extra);
+  let w = Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus + extra);
+  if (chipOn(p) && alignBand(p.align) === 'Strain') w *= 0.9;
+  return w;
 }
 let waryTurn = 0;   // which of the three wary lines the next untouched foe gets
 const oddsLabel = w => w < 0.15 ? { t: 'WARY', c: 'r' } : w < 0.25 ? { t: 'FAIR', c: 'y' } : { t: 'GOOD', c: 'l' };
@@ -7587,6 +7748,7 @@ function fillWalklingExtras(container, pet){
 function paintStatsInto(prefix, p, opt){
   const si = spi(p), sp = SPECIES[si], L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
   spriteCanvas($('#' + prefix + 'Icon'), si, p.stage, 'n', isFaded(p), p.accessory);
+  if (chipOn(p)) paintChipIcon($('#' + prefix + 'Icon'));
   $('#' + prefix + 'Name').textContent = petName(p);
   const species = nameOf(si, p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
   $('#' + prefix + 'Species').textContent = ((opt && opt.alwaysSpecies) || cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
@@ -7794,6 +7956,7 @@ async function depositFromSheet(id){
   if (walklingSheet.busy || $('#ovWalkling').hidden) return;
   const p = petById(id);
   if (!p || !S.party.some(q => q.id === id)) return;
+  if (chipLocked(p)) { sfx('denied'); toast(lockStayMsg(p)); return; }
   if (typeof depositPet !== 'function' && S.party.length < 2) { sfx('denied'); toast('The party needs one Walkling.'); return; }
   walklingSheet.busy = true;
   try {
@@ -7839,6 +8002,7 @@ async function withdrawFromSheet(id){
 async function releaseFromSheet(id){
   if (walklingSheet.busy || typeof releasePet !== 'function' || $('#ovWalkling').hidden) return;
   const p = petById(id); if (!p) return;
+  if (chipLocked(p)) { sfx('denied'); toast(lockStayMsg(p)); return; }
   walklingSheet.busy = true;
   try {
     const yes = await openSheet('Release ' + petName(p) + '?', [{ label: 'RELEASE', value: 'yes' }], 'BACK');
@@ -8017,7 +8181,9 @@ function reorderParty(id, toIndex){
 function depositPet(id, newPartnerId){
   if (!partyField()) return false;
   const i = S.party.findIndex(p => p.id === id);
-  if (i < 0 || S.party.length + S.box.length <= 1 || S.party.length <= 1) return false;
+  if (i < 0) return false;
+  if (chipLocked(S.party[i])) { toast(lockStayMsg(S.party[i])); return false; }
+  if (S.party.length + S.box.length <= 1 || S.party.length <= 1) return false;
   if (S.partnerId === id) {
     if (typeof newPartnerId !== 'string' || newPartnerId === id || !S.party.some(p => p.id === newPartnerId)) return false;
   }
@@ -8037,6 +8203,7 @@ function withdrawPet(id, slotIndex){
     S.party.push(S.box.splice(bi, 1)[0]);
     return true;
   }
+  if (chipLocked(S.party[slotIndex])) return false;
   const [p] = S.box.splice(bi, 1), occ = S.party[slotIndex];
   S.party[slotIndex] = p;
   S.box.splice(bi, 0, occ);
@@ -8045,11 +8212,12 @@ function withdrawPet(id, slotIndex){
 }
 function releasePet(id){
   if (!partyField()) return false;
-  if (S.party.length + S.box.length <= 1) return false;
   const pi = S.party.findIndex(p => p.id === id);
   const bi = pi < 0 ? S.box.findIndex(p => p.id === id) : -1;
   if (pi < 0 && bi < 0) return false;
   const p = pi >= 0 ? S.party[pi] : S.box[bi], wasPartner = S.partnerId === id;
+  if (chipLocked(p)) { toast(lockStayMsg(p)); return false; }
+  if (S.party.length + S.box.length <= 1) return false;
   if (typeof p.held === 'string') {
     const it = ITEMS[p.held];
     if (!it || itemCount(p.held) >= it.cap || !grantItem(p.held, 1).added) return false;
@@ -8102,7 +8270,9 @@ function boardMove(id){
 }
 function boardDepositAsk(id){
   if (!partyField()) return denyBoard('Finish the battle first.');
+  const who = petById(id);
   if (!S.party.some(p => p.id === id)) return;
+  if (chipLocked(who)) return denyBoard(lockStayMsg(who));
   if (S.party.length + S.box.length <= 1 || S.party.length <= 1) return denyBoard('Keep at least one Walkling with you.');
   openBoard({ kind: 'deposit', id });
 }
@@ -8121,12 +8291,16 @@ function boardWithdrawAsk(id){
 }
 function boardWithdraw(id, slot){
   const p = petById(id);
+  const occ = S.party[slot];
+  if (occ && chipLocked(occ)) return denyBoard(lockStayMsg(occ));
   if (!withdrawPet(id, slot)) return denyBoard('That slot is full.');
   refreshBoard((p ? petName(p) : 'They') + ' joined the party.');
 }
 function boardReleaseAsk(id){
   if (!partyField()) return denyBoard('Finish the battle first.');
-  if (!petById(id)) return;
+  const who = petById(id);
+  if (!who) return;
+  if (chipLocked(who)) return denyBoard(lockStayMsg(who));
   if (S.party.length + S.box.length <= 1) return denyBoard("You can't let your only Walkling go.");
   openBoard({ kind: 'release', id });
 }
@@ -8166,6 +8340,7 @@ function slotMain(p){
   b.setAttribute('aria-label', petName(p) + ', open');
   const cv = document.createElement('canvas'); cv.width = cv.height = 18;
   spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), p.accessory);
+  if (chipOn(p)) { if (S.box.some(q => q.id === p.id)) paintChipIcon(cv); else paintLockGlyph(cv); }
   b.append(cv, slotCopy(p));
   b.addEventListener('click', () => openBoardPet(p.id));
   return b;
@@ -8244,6 +8419,7 @@ function withdrawWait(){
 function partySlot(p, index){
   const row = document.createElement('div'); row.className = 'pet-row party-slot';
   row.dataset.slot = String(index); row.dataset.id = p.id;
+  if (chipLocked(p)) row.dataset.locked = '1';
   row.append(slotMain(p));
   const ui = boardUi && boardUi.id === p.id ? boardUi : null;
   if (ui && ui.kind === 'deposit') row.append(depositPanel(p));
@@ -8285,10 +8461,11 @@ function renderCollection(){
   const board = document.createElement('div'); board.id = 'partyBoard'; board.className = 'party-board';
   for (let i = 0; i < PPSave.PARTY_MAX; i++) board.append(S.party[i] ? partySlot(S.party[i], i) : emptySlot(i));
   list.append(board);
-  label('WALKLING-BOX ' + S.box.length);
+  const boxed = S.box.filter(p => !chipLocked(p));
+  label('WALKLING-BOX ' + boxed.length);
   const box = document.createElement('div'); box.id = 'boxList'; box.className = 'box-list';
-  if (!S.box.length) { const e = document.createElement('div'); e.className = 'box-empty'; e.textContent = 'The box is empty.'; box.append(e); }
-  else S.box.forEach(p => box.append(boxRow(p)));
+  if (!boxed.length) { const e = document.createElement('div'); e.className = 'box-empty'; e.textContent = 'The box is empty.'; box.append(e); }
+  else boxed.forEach(p => box.append(boxRow(p)));
   list.append(box);
   if (S.orphans && S.orphans.length) {
     const wrap = document.createElement('div'); wrap.id = 'orphanRow'; wrap.className = 'orphan-row';
@@ -8346,7 +8523,16 @@ function makePartner(id){
   if (bi >= 0) {
     const [p] = S.box.splice(bi, 1);
     if (S.party.length >= PPSave.PARTY_MAX) {
-      for (let i = S.party.length - 1; i >= 0; i--) if (S.party[i].id !== S.partnerId) { S.box.unshift(S.party.splice(i, 1)[0]); break; }
+      let freed = -1;
+      for (let i = S.party.length - 1; i >= 0; i--) if (S.party[i].id !== S.partnerId && !chipLocked(S.party[i])) { freed = i; break; }
+      if (freed < 0) {
+        S.box.splice(bi, 0, p);
+        sfx('denied');
+        const stay = S.party.find(chipLocked) || S.party[0];
+        if (stay) toast(lockStayMsg(stay));
+        return;
+      }
+      S.box.unshift(S.party.splice(freed, 1)[0]);
     }
     S.party.push(p);
   }
@@ -9561,6 +9747,15 @@ function boot(){
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
+    fillParty: () => { while (S.party.length < PPSave.PARTY_MAX) S.party.push(newPet(SP_INDEX.ember, 0, 'wild', 5)); save(); return S.party.length; },
+    offerCatchRoom: async () => {
+      const np = newPet(SP_INDEX.tide, 0, 'wild', 5);
+      const where = await makeRoomFor(np);
+      if (!where) { sfx('denied'); toast('The party is full.'); return null; }
+      updateHUD(); save(); if (screen === 'col') renderCollection();
+      return { id: np.id, where };
+    },
+    zoneWidth: () => (battle && battle.on) ? befriendZoneWidth() : null,
     setFlag: (k, v = true) => {
       const wasPick = !!S.flags['story.side_pick_done'];
       if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v;

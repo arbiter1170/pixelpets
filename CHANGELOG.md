@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 13:14 ET: Arbiter Testing and holder wording (build 20261019-1314)
+
+- What changed and why: Hall slot 2 on the Glimmer path is Arbiter Testing. One chosen Walkling is chipped, locked in the party, and starts at align 50. Quota and Face the review still grant the seal with no chip. PARTNER shows ALIGN under NRG only when the partner is chipped. Glimmer stay at R6 leaves Rook's quit unset and keeps the lanyard. Accepting his crate offer writes `story.rook_quit` `"offer"`. Player-facing copy says holder. Code ids stay. Save `v` stays 2. `tour.doubt` is read once into `story.tour_unease` and the old key stays on disk.
+- Files touched: `data/glimmer_path.json`, `data/rook_crossroads.json`, `data/maps_slice.json`, `data/civic.json`, `data/mapdata.js`, `game.js`, `save.js`, `sfx.js`, `quests.js`, `index.html`, `style.css`, `tests/arbiter_test.spec.js`, `tests/glimmer_cobble.spec.js`, `tests/glimmer_fernbrook.spec.js`, `tests/rook_crossroads.spec.js`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `README.md`, `tests/README.md`, `DESIGNER_PROMPT.md`, `DESIGN_HANDOFF.md`, `version.json`.
+- Commit(s) + build id: build 20261019-1314.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/arbiter_test.spec.js tests/glimmer_cobble.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=15 failed=0 flaky=0 skipped=0 time=17s. `npm run test:agent -- tests/glimmer_fernbrook.spec.js tests/rook_crossroads.spec.js tests/stat_display.spec.js tests/music_tracks.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=19 failed=0 flaky=0 skipped=0 time=60s. `npm run test:agent -- tests/party_qa.spec.js tests/standing.spec.js` PP_TEST RESULT: PASS exit=0 passed=51 failed=0 flaky=0 skipped=0 time=58s. Full suite follows the merge of Cald's gate count.
+- Decisions made (colour + reasoning): D24, D25, D187, D188, D189, and D191 are red. D26, D190, D192, and D193 are yellow. Vincent, Oct 19, 2026, YES TO ALL. No new id. Next free stays D194. D127 and D130 keep their numbers. D25 supersedes the Episode 1 always-quit clause.
+- Anything left unfinished: Design still owes the Testing MIDI (D164). The row in the game is a stub in that shape. Tour slogans and recipients stay placeholders. Frostmere is not built. Glimmer Act 2 is still TBD. Cald's gate count is on main and is merged into this branch. D73, D80, D104, and D142–D147 stay as that build settled them.
+
 ## 2026-10-18 04:53 ET: Engineering gaps (build 20261018-0453)
 
 - What changed and why: Upstairs, the school, and both flats rooms stay on the Hearthmoor node, and the map check fails if that link breaks. Full-run waits no longer depend on the typewriter frame or a wall-clock hop timer. Tour shots go to `PP_ART` or a temp directory. Daily explore XP and the bad-save check use the browser's own day. Save `v` stays 2. No new rooms and no new art.

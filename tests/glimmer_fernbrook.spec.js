@@ -178,7 +178,8 @@ test('glimmer path: orchard, tour stops, skippable match, lanyard, teaser', asyn
     quest: PixelPets.quest && PixelPets.quest.id,
     rubble: PixelPets.mapObjs.some((o) => o.id === 'fb_rubble'),
     east: PixelPets.mapObjs.some((o) => o.id === 'fb_east'),
-    doubt: PixelPets.state.flags['tour.doubt'],
+    doubt: PixelPets.state.flags['story.tour_unease'],
+    oldDoubt: PixelPets.state.flags['tour.doubt'],
   }));
   expect(done.flags['story.tour1_s1']).toBe(true);
   expect(done.flags['story.tour1_s2']).toBe(true);
@@ -190,7 +191,8 @@ test('glimmer path: orchard, tour stops, skippable match, lanyard, teaser', asyn
   expect(done.got).toBe(true);
   expect(done.match).toBeUndefined();
   expect(done.points).toBe(cfg.grants.sp_pick + 2 + cfg.grants.orchard_g + cfg.grants.seal1_g);
-  expect(done.doubt).toBe(1);
+  expect(done.doubt).toBe(2);
+  expect(done.oldDoubt).toBeUndefined();
   expect(done.rubble).toBe(false);
   expect(done.east).toBe(true);
   expect(done.quest).toBe('route2');

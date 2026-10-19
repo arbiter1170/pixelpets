@@ -76,32 +76,22 @@
       [
         "say",
         "",
-        "Rook stands by the BRINEWICK ROAD sign. His mint lanyard is in his fist, not round his neck."
+        "Rook stands by the BRINEWICK ROAD sign. His mint lanyard is on. He won't meet your eye at first."
       ],
       [
         "say",
         "Rook",
-        "{name}. I got off the cart at the first bend and walked back."
+        "{name}. Quinn's Tuning put a chip under the fur. I keep saying our Walklings get stronger."
       ],
       [
         "say",
         "Rook",
-        "That crate hummed the whole way. I peeked. A Pebblit, asleep. From the Old Seam."
+        "I want that. I do. I'm still Junior Bright. I'm not walking away from the cord."
       ],
       [
         "say",
         "Rook",
-        "So I quit. Exploring other opportunities, they'd call it. I call it going home."
-      ],
-      [
-        "setFlag",
-        "story.rook_quit",
-        "r6"
-      ],
-      [
-        "say",
-        "Rook",
-        "Three more crates sit in the quarry yard. Tobin wants them stamped for Brinewick."
+        "Three crates sit in the quarry yard. Tobin wants them stamped for Brinewick."
       ],
       [
         "choice",
@@ -118,12 +108,12 @@
               [
                 "say",
                 "Rook",
-                "Okay. I won't stop you. I'll just be at the gate when you're done."
+                "Okay. Stamp clean. I'll be at the gate when you're done."
               ]
             ]
           ],
           [
-            "Why tell me?",
+            "You sound unsure",
             [
               [
                 "setFlag",
@@ -138,7 +128,7 @@
               [
                 "say",
                 "Rook",
-                "Because it's you. And because there's a way out, if you ever want one."
+                "Maybe. Don't tell Tobin I said that."
               ]
             ]
           ],
@@ -318,17 +308,17 @@
                       [
                         "say",
                         "",
-                        "Rook steps between you and the crates. No lanyard. Hands deep in his hoodie pocket."
+                        "Rook steps between you and the crates. His mint lanyard still hangs. Hands shake once."
                       ],
                       [
                         "say",
                         "Rook",
-                        "I quit, Tobin. And I'm not letting these go without asking {name} one thing."
+                        "Tobin, wait. {name} and I need one minute before those lids leave."
                       ],
                       [
                         "say",
                         "Rook",
-                        "{name}. You can walk away with me, right now. They'd go home to the seam."
+                        "{name}. Walk away with me, right now. The Pebblits go home to the seam."
                       ],
                       [
                         "say",
@@ -350,6 +340,11 @@
                                 "if",
                                 "story.side=keepers",
                                 [
+                                  [
+                                    "setFlag",
+                                    "story.rook_quit",
+                                    "offer"
+                                  ],
                                   [
                                     "say",
                                     "Rook",
@@ -1024,7 +1019,7 @@
     }
   },
   "flags": {
-    "story.rook_quit": "\"r5\" (Keepers, he left at the cart) or \"r6\" (Glimmerwell, he leaves at rook_road@glimmer). Written once; never removed.",
+    "story.rook_quit": "Path-conditional (D25, Oct 19, 2026). \"r5\" on Keepers (left at the cart, or backfill on rook_road). Unset on Glimmer unless the player accepts rook_offer (then \"offer\"). Never written by rook_road@glimmer.",
     "story.rc_start": "Quest accepted at rook_road / rook_road@glimmer.",
     "story.rc_c1": "Crate 1 handled.",
     "story.rc_c2": "Crate 2 handled.",
