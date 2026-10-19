@@ -372,8 +372,8 @@
     "phone_grant": [
       ["say", "", "Officer Ness bumps into you and blocks the path."],
       ["say", "Officer Ness", "Hold. You are required to carry a Keeper1 before the wilds will have you."],
-      ["say", "Officer Ness", "It is free. The Keeper High Court mandates one for every trainer."],
-      ["say", "Officer Ness", "Take it. A trainer without one does not enter the wilds."],
+      ["say", "Officer Ness", "It is free. The Keeper High Court mandates one for every holder."],
+      ["say", "Officer Ness", "Take it. A holder without one does not enter the wilds."],
       ["give", "keeper1", 1],
       ["setFlag", "story.phone_got", true]
     ],

@@ -104,7 +104,7 @@ h2 small{color:var(--h);font-size:17px}
 .stat b{text-align:right;color:var(--h)}
 .bar{height:16px;background:var(--d);position:relative}
 .bar i{position:absolute;left:0;top:0;bottom:0;width:50%;transition:width .3s steps(6)}
-.c-food{background:var(--o)}.c-joy{background:var(--r)}.c-nrg{background:var(--s)}.c-xp{background:var(--y)}
+.c-food{background:var(--o)}.c-joy{background:var(--r)}.c-nrg{background:var(--s)}.c-xp{background:var(--y)}.c-align{background:var(--c)}
 .bar i.low{animation:blink .6s steps(2) infinite}
 @keyframes blink{50%{opacity:.35}}
 
@@ -150,7 +150,15 @@ body.ctl-modern[data-screen="walk"] #statStrip{display:none}   /* modern walk: t
 #statStrip .ss-grow-l{left:calc(54px + var(--bw) + 44px);width:40px}
 #statStrip .ss-grow-b{right:52px}
 #statStrip .ss-grow-v{right:12px;width:36px}
+#statStrip .ss-align{display:none}
 #statStrip .ss-ex,#statStrip .ss-slot{top:32px;height:20px;line-height:20px;width:calc(50% - 20px);font-size:16px;color:var(--h)}
+body.align-on[data-screen="pet"] #statStrip{flex-basis:78px;height:78px}
+body.align-on[data-screen="pet"] #statStrip .ss-align{display:block}
+body.align-on[data-screen="pet"] #statStrip .ss-align-l{top:32px;left:12px;width:58px;font-size:16px}
+body.align-on[data-screen="pet"] #statStrip .ss-align-b{top:36px;left:74px;width:calc(100% - 122px)}
+body.align-on[data-screen="pet"] #statStrip .ss-align-v{top:32px;right:12px;left:auto;width:32px}
+body.align-on[data-screen="pet"] #statStrip .ss-ex,body.align-on[data-screen="pet"] #statStrip .ss-slot{top:54px}
+body.arbiter-test #mapWrap{filter:grayscale(0.55) brightness(0.82) hue-rotate(190deg)}
 #statStrip .ss-ex{left:12px}
 #statStrip .ss-slot{right:12px;text-align:right}
 #statStrip .ss-ex b,#statStrip .ss-slot b{color:var(--w)}
@@ -218,7 +226,9 @@ body:not(.ctl-modern) .env-badge{border-top:8px solid transparent;border-bottom:
 .pet-row .slot-main{display:flex;align-items:center;gap:8px;min-height:44px;width:100%;margin:0;padding:2px 4px;border:0;background:transparent;color:inherit;font-family:var(--font);font-weight:bold;text-align:left;cursor:pointer}
 .pet-row .slot-main canvas{width:40px;height:40px;background:var(--n);flex:0 0 auto}
 .pet-row .slot-copy{min-width:0;flex:1 1 auto}
-.pet-row .slot-nm{font-size:18px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pet-row .slot-nm{display:flex;align-items:center;gap:6px;font-size:18px;line-height:1.15;min-width:0}
+.pet-row .slot-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pet-row .slot-lock{width:24px;height:24px;flex:0 0 auto;background:var(--y);box-shadow:0 0 0 2px var(--k)}
 .pet-row .slot-sub{font-size:14px;line-height:1.15;color:var(--h)}
 .pet-row .partner-tag{color:var(--y);margin-left:6px;font-size:14px}
 .slot-acts{display:flex;flex-wrap:wrap;gap:4px}
@@ -370,6 +380,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translateX(-50%);z-index:20;background:var(--k);color:var(--y);
   padding:10px 14px;font-size:18px;box-shadow:0 0 0 3px var(--y);opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 #toast.show{opacity:1}
+/* The collection title sits where the walk toast does. On WALKLINGS the toast sits above the tab bar. */
+body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-bottom))}
 .flash{animation:flash .5s steps(2) 2}
 @keyframes flash{50%{filter:brightness(3)}}
 

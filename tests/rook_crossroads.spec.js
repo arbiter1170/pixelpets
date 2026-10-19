@@ -219,9 +219,9 @@ test('a Glimmerwell player can walk away with Rook and the score is halved', asy
     end: PixelPets.state.flags['story.rook_end'],
     look: PixelPets.spriteLook('rook').accessory,
   }));
-  expect(quit.quit).toBe('r6');
+  expect(quit.quit).toBeUndefined();
   expect(quit.end).toBe('stays');
-  expect(quit.look).toBe('none');
+  expect(quit.look).toBe('lanyard');
   for (const id of ['rc_crate_1', 'rc_crate_2', 'rc_crate_3']) {
     expect(await page.evaluate(n => PixelPets.runScene(n), id)).toBe(true);
     await playLog(page, ['Stamp: BRINEWICK']);
@@ -238,6 +238,7 @@ test('a Glimmerwell player can walk away with Rook and the score is halved', asy
     glimmer: PixelPets.standing.glimmer.points,
     keepers: PixelPets.standing.keepers.points,
     end: PixelPets.state.flags['story.rc_end'],
+    quit: PixelPets.state.flags['story.rook_quit'],
     rook: PixelPets.state.flags['story.rook_end'],
     quest: PixelPets.quest.id,
     wrap: (PixelPets.sideActive.find(a => a.id === 'rc_wrap_hale') || {}).text || '',
@@ -250,6 +251,7 @@ test('a Glimmerwell player can walk away with Rook and the score is halved', asy
   expect(after.glimmer).toBe(15);
   expect(after.keepers).toBe(10);
   expect(after.end).toBe('walked');
+  expect(after.quit).toBe('offer');
   expect(after.rook).toBe('stays');
   expect(after.quest).toBe('hc_council');
   expect(after.wrap).toContain('Master Hale');

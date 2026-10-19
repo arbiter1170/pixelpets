@@ -292,7 +292,7 @@ const COPY = {
   cobble_arrive: ["Rook is waiting just inside Cobblecrest's west gate.", 'Cobblecrest, west gate'],
   quarry: ["There's an open house at the quarry, up the north road.", 'Cobblecrest, north road'],
   buyout: ["Walk up to the stage. Rook's supervisor is about to speak.", 'Quarry stage', 'Join Dorian Pell on the stage. Big day for the quarry!', 'Quarry stage'],
-  hall2: ["Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", 'Cobblecrest Hall', 'Your second review is a Sacrifice. The free quota still closes it.', 'Cobblecrest Hall'],
+  hall2: ["Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", 'Cobblecrest Hall', 'Your second review is a Tuning. The free quota still closes it.', 'Cobblecrest Hall'],
   hook: ['Rook is outside the Hall with news from the quarry.', "Outside Hale's Hall", 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', "Outside Hale's Hall"],
   hc_council: ['High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', 'High Charity, sky-dock'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],

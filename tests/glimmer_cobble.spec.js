@@ -98,7 +98,7 @@ test('the Sacrifice quota grants Tier 2 without a battle', async ({ page }) => {
   await boot(page, cobbleSave({ 'story.quarry_bought': true }));
   expect(await page.evaluate(() => PixelPets.sceneFor('hale_trial'))).toBe('hale_trial@glimmer');
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
-  await playScene(page, ['Meet the quota']);
+  await playScene(page, ['Meet the quota instead']);
   const after = await page.evaluate(() => ({
     seal2: PixelPets.state.flags['story.seal2'],
     lanyard: PixelPets.state.seals.seal_glim_2,
@@ -107,33 +107,48 @@ test('the Sacrifice quota grants Tier 2 without a battle', async ({ page }) => {
     points: PixelPets.standing.glimmer.points,
     keepers: PixelPets.standing.keepers.points,
     hale: PixelPets.trainerFor('hall2_hale').seal,
+    chip: PixelPets.state.party[0].chip || null,
   }));
   expect(after.seal2).toBe(true);
   expect(after.lanyard).toBeTruthy();
   expect(after.snacks).toBe(2);
   expect(after.tonic).toBe(1);
   expect(after.points).toBe(5);
+  expect(after.chip).toBe(null);
   expect(after.keepers).toBe(0);
   expect(after.hale).toBe('seal_glim_2');
   await page.evaluate(() => PixelPets.setSide('keepers'));
   expect(await page.evaluate(() => PixelPets.trainerFor('hall2_hale').seal)).toBe('seal_cobblecrest');
 });
 
-test('setting a snack down does not take the snack', async ({ page }) => {
+test('tuning the partner chips them and still grants Tier 2', async ({ page }) => {
   test.setTimeout(60000);
   const save = cobbleSave({ 'story.quarry_bought': true });
   save.bag = { heal_snack: 2 };
   await boot(page, save);
   expect(await page.evaluate(() => PixelPets.runScene('hale_trial'))).toBe(true);
-  await playScene(page, ['Set a snack down']);
-  const after = await page.evaluate(() => ({
-    snacks: PixelPets.state.bag.heal_snack || 0,
-    seal2: PixelPets.state.flags['story.seal2'],
-    lanyard: !!PixelPets.state.seals.seal_glim_2,
-  }));
+  await playScene(page, ['Tune my partner']);
+  const after = await page.evaluate(() => {
+    const p = PixelPets.state.party[0];
+    return {
+      snacks: PixelPets.state.bag.heal_snack || 0,
+      seal2: PixelPets.state.flags['story.seal2'],
+      lanyard: !!PixelPets.state.seals.seal_glim_2,
+      done: PixelPets.state.flags['story.arbiter_test_done'],
+      active: PixelPets.state.flags['story.arbiter_test_active'],
+      align: p.align,
+      locked: !!(p.chip && p.chip.locked && p.chip.on),
+      v: PixelPets.state.v,
+    };
+  });
   expect(after.snacks).toBe(2);
   expect(after.seal2).toBe(true);
   expect(after.lanyard).toBe(true);
+  expect(after.done).toBe(true);
+  expect(after.active).toBe(false);
+  expect(after.align).toBe(50);
+  expect(after.locked).toBe(true);
+  expect(after.v).toBe(2);
 });
 
 test('facing the review still grants Tier 2', async ({ page }) => {
@@ -146,10 +161,12 @@ test('facing the review still grants Tier 2', async ({ page }) => {
     seal2: PixelPets.state.flags['story.seal2'],
     lanyard: !!PixelPets.state.seals.seal_glim_2,
     points: PixelPets.standing.glimmer.points,
+    chip: PixelPets.state.party[0].chip || null,
   }));
   expect(after.seal2).toBe(true);
   expect(after.lanyard).toBe(true);
   expect(after.points).toBe(5);
+  expect(after.chip).toBe(null);
 });
 
 test('the buyout still sets the quarry flag after the match', async ({ page }) => {

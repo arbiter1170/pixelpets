@@ -2,9 +2,9 @@
 
 For the designer. The paste-ready assignment for a designer bot is [DESIGNER_PROMPT.md](DESIGNER_PROMPT.md) (what to produce, where to look, and the engine that has shipped since this file was written). This file is the background: voice, sizes, and the request list. Read `NEXT_PLAN.md` WP-B for the engineering detail behind a request.
 
-What is being built, in one paragraph: (1) a **Quest button** next to the D-pad (shipped); (2) **harder, level-scaled befriending** (shipped); (3) a **side pick at Fernbrook** between the **Keepers** and **Glimmerwell Co.**, with **Standing**, **switch desks**, and a **glimmer-path version** of the remaining Act 1 story. Fernbrook glimmer and the Bright Pavilion Tour are shipped (Build 3). Route 2, Cobblecrest, the Sacrifice stub, and Rook's R5 are in the game as implementer copy. The open writing is the Sacrifice one-pager, Tour stop copy, and the pledge-desk copy (section 6). **Rook stays with Glimmerwell if the player does; he converts only on the Keepers path** (D23).
+What is being built, in one paragraph: (1) a **Quest button** next to the D-pad (shipped); (2) **harder, level-scaled befriending** (shipped); (3) a **side pick at Fernbrook** between the **Keepers** and **Glimmerwell Co.**, with **Standing**, **switch desks**, and a **glimmer-path version** of the remaining Act 1 story. Fernbrook glimmer and the Bright Pavilion Tour are shipped (Build 3). Route 2, Cobblecrest, and Rook's R5 are in the game as implementer copy. Hall slot 2 is Arbiter Testing on the game branch (D24). The open writing is Tour stop copy. Desk copy is Rook's (D19 closed). **Rook stays with Glimmerwell at R6 unless he accepts the crate offer; he converts on the Keepers path** (D23, D25).
 
-Decisions already made (Vincent, Oct 13, evening): the pick is at Fernbrook and is switchable later; Standing tracks regard per faction; Hall slot 1 is the Bright Pavilion Tour (built); Hall slot 2 is the Sacrifice stub with Quota as the free floor (the stub is in the game; the real cost is still the one-pager, D24); Rook stays if the player is Glimmerwell and converts if the player is Keepers. The morning "Rook always leaves" / "Halls undefined" notes are superseded. Section 6 now asks for the Sacrifice one-pager and Tour stop copy, not a from-scratch Hall spike.
+Decisions already made (Vincent, Oct 13, evening, and the Oct 19 Testing call): the pick is at Fernbrook and is switchable later; Standing tracks regard per faction; Hall slot 1 is the Bright Pavilion Tour (built); Hall slot 2 is Arbiter Testing (D24, on the game branch). Quota and Face the review still grant the seal with no chip. Rook stays at R6 on the Glimmer path unless he accepts the crate offer, and he converts on the Keepers path (D25). Section 6 asks for Tour stop copy, not a second Hall loop.
 
 ## 1. Reference examples in this repo
 
@@ -117,7 +117,7 @@ Counts are rough budgets so the work can be scoped. A "line" is one `say` of <= 
 
 ### 4b. The Fernbrook pick (WP-B, phase B0/B1) — **shipped in Build 3**
 
-Scenes below are in `data/glimmer_path.json`. Left: Tour stop copy (recipients, slogans, Comfort Check, Census board, stage photo) and the real name of `tour.doubt`. Do not rewrite the engine steps.
+Scenes below are in `data/glimmer_path.json`. Left: Tour stop copy (recipients, slogans, Comfort Check, Census board, stage photo). The counter is `story.tour_unease` (D193). Do not rewrite the engine steps.
 | Scene id | Beat | Lines | Branching |
 |---|---|---|---|
 | `side_pick` | After both camps are met: Fen asks for help at the crates, Juniper and Tobin offer a Junior Bright trial lanyard. Ends in a choice plus a "Really?" confirm. Must say the player can change course later at a cost | 14-18 + choice + confirm | Sets the side |
@@ -146,13 +146,13 @@ Desk copy moved to Rook (`STANDING_CFG.switch.rook`). Do not write Pledge desk s
 | `glen_cleared@glimmer` | The lamps click off when `{pet}` bumps the stand; Imogen praises the player; Rook's doubts show; 3 Befriend Treats | 12-16 | `rook_bond` choice |
 | `route2_end@glimmer` | The gate and the Cobblecrest invitation. Keep the `together` / `race` choice and its flags | 8-10 | `story.rook_pact` |
 
-### 4e. Cobblecrest, glimmer variants (phase B3) — **stub is on main; the one-pager replaces it**
+### 4e. Cobblecrest, glimmer variants (phase B3) — **Testing is on the game branch (D24). Do not replace it.**
 | Scene id | Beat | Lines |
 |---|---|---|
 | `cobble_arrive@glimmer` | Arrival with Rook as a fellow Junior Bright (reads `rook_pact`) | 5-6 |
 | `quarry_buyout@glimmer` | The player on stage beside Dorian; Hale loses; Rook's private objection ("units") | 18-24 |
 | `rival2_rook` lines, glimmer | Rook's intro / win / lose when the player is pledged to Glimmerwell | 3 |
-| Hall slot #2, glimmer | **Sacrifice stub is in the game.** Write the one-pager for the real cost (D24), then replace the stub. Do not add a second Tour | TBD |
+| Hall slot #2, glimmer | **Arbiter Testing is on the game branch (D24).** One chip, or the free quota, or Hale's review. Do not add a second Tour. The Testing MIDI is still owed (D164) | done |
 | `seam_a`, `seam_b` | Shared; check they still read correctly for a glimmer player | 0-2 |
 
 ### 4f. Rook's tree (WP-B, phases B2 to B4)
@@ -190,13 +190,13 @@ Intro / win / lose lines for each trainer whose framing changes (Tobin, Fen as h
 3. **Sound specs** as a short table (notes, timings, voices) like the STINGERS v0.1 table.
 4. **Check your own lines**: <= 110 chars, no leftover tokens, speakers all mapped, every flag in `flags`.
 5. **Approval**: Vincent approves per phase, as with Route 2 and Cobblecrest (`status` records the approval).
-6. Deliver per phase so the build is never blocked on all of it. **Now:** Tour stop copy (4b leftover), the Sacrifice one-pager, and desk copy (4c). Route 2, Cobblecrest, and R5 (4d–4f) already have implementer scenes on `main`. Replace that prose. Do not write a second set.
+6. Deliver per phase so the build is never blocked on all of it. **Now:** Tour stop copy (4b leftover) and desk copy (4c). Arbiter Testing (D24) is settled and is on the game branch; the Testing MIDI is still owed (D164). Route 2, Cobblecrest, and R5 (4d–4f) already have implementer scenes on `main`. Replace that prose. Do not write a second set.
 
 ## 6. Open design questions where the designer is needed
 
-1. **Tour stop copy (D26).** Recipients, slogans, Comfort Check lines, Census-board lines, the stage photo, and the real name of `tour.doubt`. The four-stop Tour engine is already in Fernbrook.
-2. **Cobblecrest Sacrifice one-pager (D24).** Slot 2 is Sacrifice, Quota as the free floor. One page: what the player gives up in 5–10 minutes, the floor so they cannot soft-lock, how Quota substitutes, what it grants (`story.seal2`, `seals.seal_glim_2`, Standing). Cheerful-and-sinister; completable with a tired party. Then write the scenes. Slot 1 (Tour) is done.
+1. **Tour stop copy (D26).** Recipients, slogans, Comfort Check lines, Census-board lines, and the stage photo stay placeholders. The counter is `story.tour_unease` (D193). The four-stop Tour engine is already in Fernbrook.
+2. **Arbiter Testing (D24).** Settled Oct 19, 2026. Slot 2 chips one Walkling. Quota and Face the review still grant the seal with no chip. Design still owes the Testing MIDI (D164). Do not write a second Hall loop. Slot 1 (Tour) is done.
 3. **Standing tiers and what they unlock.** Working names shipped. What each unlocks (lines, shop entries, titles) is still open. Nothing story-critical may be gated on Standing.
 4. **Switch-desk copy (D19).** Engine is in. Write the letter, review, welcome, and "think about it" lines.
-5. **Rook after R5 (D25).** Keepers convert: ally or parted, and how much of him do we see later? Glimmer stay: colleague lines only, no quit.
+5. **Rook after R5 (D25).** Settled Oct 19, 2026. Keepers: `"ally"` and quit `"r5"`. Glimmer stay at R6 keeps the lanyard and does not set `rook_quit`. Accepting the crate offer writes `"offer"`. Frostmere is the Keepers-path raid and is not built. Glimmer Act 2 is still TBD.
 6. **Completionists.** After switching, can the player also complete the other faction's trials and hold both kinds of seals? Proposal: yes, optional.

@@ -128,6 +128,15 @@ const PPSave = (() => {
     else if (q.bx > BX_CAP) q.bx = BX_CAP;
     // TYPES_STATS §7: current HP, optional (absent = full). Bad values or full HP -> absent.
     if (has(q, 'hpNow') && (!fin(q.hpNow) || q.hpNow < 0 || q.hpNow >= maxHpOf(q))) delete q.hpNow;
+    // D190: optional chip and align. Absent means unchipped. No version bump.
+    if (has(q, 'chip')) {
+      const okChip = isObj(q.chip) && q.chip.on === true;
+      if (!okChip) { delete q.chip; if (has(q, 'align')) delete q.align; }
+      else {
+        q.chip = { on: true, at: fin(q.chip.at) && q.chip.at > 0 ? q.chip.at : created, locked: q.chip.locked !== false };
+        q.align = fin(q.align) ? clamp(Math.round(q.align), 0, 100) : 50;
+      }
+    } else if (has(q, 'align')) delete q.align;
     // BATTLE v0.3 §7.2 / SAVE_V2 §3.2: the faint nap stamp. Bad -> delete; > 20 min ahead -> now + 20 min; no hpNow -> delete.
     if (has(q, 'faintUntil')) {
       const nap = (typeof STAT_RULES === 'object' && STAT_RULES.FAINT ? STAT_RULES.FAINT.minutes : 20) * 60000, t = Date.now();
@@ -236,6 +245,9 @@ const PPSave = (() => {
     // Only when the key is absent and a switch was already counted. Never overwrites. v stays 2.
     if ((+s.flags['story.switches'] || 0) > 0 && (s.flags['story.switch_via'] == null || s.flags['story.switch_via'] === ''))
       s.flags['story.switch_via'] = 'desk';
+    // D193: read the old tour.doubt key once. Leave it on disk. Do not copy over a saved story.tour_unease.
+    if (s.flags['story.tour_unease'] == null && fin(s.flags['tour.doubt']))
+      s.flags['story.tour_unease'] = Math.max(0, Math.floor(Number(s.flags['tour.doubt']) || 0));
     // INVENTORY §7: bag counts are ints >= 1 (drop anything else); unknown item ids are kept; caps apply on grant, not on load.
     for (const k of Object.keys(s.bag)) if (!Number.isInteger(s.bag[k]) || s.bag[k] < 1) delete s.bag[k];
     fill(s, 'money', x => Number.isInteger(x) && x >= 0, 0);
@@ -345,6 +357,20 @@ const PPSave = (() => {
       return true;
     });
     if (s.party.length > PARTY_MAX) s.box.push(...s.party.splice(PARTY_MAX));
+    // D188: a locked Walkling stays in the party. Evict a free party slot first. Never box the locked one to make room.
+    {
+      const locked = q => !!(q && q.chip && q.chip.locked);
+      const held = s.box.filter(locked);
+      s.box = s.box.filter(q => !locked(q));
+      for (const q of held) {
+        while (s.party.length >= PARTY_MAX) {
+          const i = s.party.findIndex(p => !locked(p));
+          if (i < 0) break;
+          s.box.unshift(s.party.splice(i, 1)[0]);
+        }
+        s.party.push(q);
+      }
+    }
     if (!s.party.length && s.box.length) s.party.push(s.box.shift());
     if (!s.party.some(p => p.id === s.partnerId)) s.partnerId = s.party[0] ? s.party[0].id : null;
     keepOneRelief(s);
