@@ -16,7 +16,7 @@ Read these before you write. Do not edit the files marked verbatim.
 |---|---|
 | `DESIGN_HANDOFF.md` | Voice guide, art sizes, the older request list. This prompt overrides it where the engine has since shipped (see "Engine today"). |
 | `NEXT_PLAN.md` | WP-B content inventory, Rook's tree, Standing proposal, Hall spike constraints. Sections "Glimmer-path content inventory", "Rook: always converts", "Standing and switching", "Hall replacement: design spike". |
-| `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D24, D25, and D26 are settled (Oct 19, 2026). Tour slogans stay placeholders. D19 (desk copy) is closed. D13 is the player look picker, which still has no lanyard. The seal-card art is delivered. Do not redraw `seal_glim_2`. D3 / D5 / D10 / D23 are settled. D6, D7, D8 are not (numbers and optional battle features; leave them). D37 is used twice. Leave both rows alone. |
+| `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D24, D25, and D26 are settled (Oct 19, 2026). Tour lines are the final D26 copy. The Testing music row is the D164 v2b literal. D19 (desk copy) is closed. D13 is the player look picker, which still has no lanyard. The seal-card art is delivered. Do not redraw `seal_glim_2`. D3 / D5 / D10 / D23 are settled. D6, D7, D8 are not (numbers and optional battle features; leave them). D37 is used twice. Leave both rows alone. |
 | `data/cobblecrest.json` | The shape of a finished hand-off: `scenes`, `trainers`, `looks`, `speakers`, `artRequests`, `newNames`, `decisions`, `flags`. |
 | `data/glimmer_path.json` | **Your file.** Fernbrook, Route 2, Cobblecrest, and R5 are on `main`. Hall slot 2 is Arbiter Testing on the game branch (D24). Replace Tour stop copy only. Do not replace the Testing scene and do not add a second set. Keep every existing `setFlag`, `give`, `run`, and `battle` step, and the flag names. |
 | `data/maps_slice.json` scenes `glimmer1`, `fen_intro`, `orchard`, `seal1`, `teaser` | The Keepers-path beats you are mirroring. **Verbatim. Do not edit.** |
@@ -127,7 +127,7 @@ Deliver in `data/glimmer_path.json` under `newNames` and a `glossary` object.
 
 ## Phase F. Fernbrook, the pick and Hall slot 1 — **scenes shipped (Build 3)**
 
-`side_pick`, `orchard@glimmer`, `seal1@glimmer`, `teaser@glimmer`, and the Tour engine (`tour1_s1`..`tour1_s4`) are in. **Left: replace the `PLACEHOLDER` lines** in those Tour stops, `tour1_wait`, and the stage-photo line in `seal1@glimmer`. Keep every `setFlag` / `standing` / `run` step. The counter is `story.tour_unease` (D193, settled). Slogans and recipients stay placeholders (D26). Do not invent that copy.
+`side_pick`, `orchard@glimmer`, `seal1@glimmer`, `teaser@glimmer`, and the Tour engine (`tour1_s1`..`tour1_s4`) are in. The Tour stops, `tour1_wait`, and the stage-photo line in `seal1@glimmer` are the final D26 copy (Associate Juniper). Keep every `setFlag` / `standing` / `run` step. The counter is `story.tour_unease` (D193, settled). Do not rewrite those lines.
 
 Do not rewrite the pick, the orchard, or `teaser@glimmer`. The original brief follows only so the flag list stays visible.
 
@@ -153,7 +153,7 @@ Display names go in `newNames` as `seal_glim_1` and `seal_glim_2`. Earned lanyar
 
 ## Phase H. Hall replacement (design only)
 
-**Slot 1 is done** (Bright Pavilion Tour, Build 3). **Slot 2 is Arbiter Testing** on the game branch (D24): one chosen Walkling is chipped, or the player meets the quota, or they face Hale. Do not write `data/hall_spike.md` and do not replace that scene. Do not reopen slot 1 and do not add a second Tour. The Testing MIDI is still owed (D164).
+**Slot 1 is done** (Bright Pavilion Tour, Build 3). **Slot 2 is Arbiter Testing** on the game branch (D24): one chosen Walkling is chipped, or the player meets the quota, or they face Hale. Do not write `data/hall_spike.md` and do not replace that scene. Do not reopen slot 1 and do not add a second Tour. The Testing music row is the D164 v2b literal. Do not replace it by hand.
 
 Every answer must:
 

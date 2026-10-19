@@ -55,11 +55,30 @@ test('player-facing lines say holder, and the Testing loop is in the music table
     ids: PPSound.musicIds(),
     check: PPSound.musicCheck(),
     glimmer: PixelPets.glimmerCheck,
+    spec: PPSound.musicSpec('arbiter_test'),
     partner: PixelPets.cond ? undefined : null,
   }));
   expect(music.ids).toContain('arbiter_test');
   expect(music.check).toEqual([]);
   expect(music.glimmer).toEqual([]);
+  const row = music.spec;
+  const stepSum = (notes) => notes.reduce((sum, note) => sum + note[1], 0);
+  expect(row.stepsPerBar).toBe(16);
+  expect(row.bars).toBe(8);
+  expect(row.bpm).toBe(68);
+  expect(row.key).toBe('B phrygian');
+  expect(row.gate).toBe(0.95);
+  expect(row.perc).toBe(0.2);
+  expect(row.lead.wave).toBe('triangle');
+  expect(row.lead.gain).toBe(0.18);
+  expect(row.bass.wave).toBe('square');
+  expect(row.bass.gain).toBe(0.065);
+  expect(stepSum(row.lead.notes)).toBe(128);
+  expect(stepSum(row.bass.notes)).toBe(128);
+  expect(row.lead.notes.every((note) => note[0] === 0 || (note[0] >= 36 && note[0] <= 96))).toBe(true);
+  expect(row.bass.notes.every((note) => note[0] === 0 || (note[0] >= 36 && note[0] <= 96))).toBe(true);
+  expect(row.drums).toHaveLength(8);
+  expect(row.drums.every((bar) => bar.length === 16 && /^[ksh.]+$/.test(bar))).toBe(true);
   const cond = await page.evaluate(() => {
     const p = PixelPets.state.party[0];
     const before = { partner: false };
@@ -338,4 +357,237 @@ test('Glimmer Rook stays, keeps the lanyard, and quits only if the offer is acce
   expect(flags.quit).toBeUndefined();
   expect(flags.end).toBe('stays');
   expect(flags.look).toBe('lanyard');
+});
+
+/* FINAL D26 copy (ARBITER_TEST.md §6.1). Verbatim. Speakers and {name} stay. */
+const D26 = [
+  { slot: 'S1.intro', path: 'scenes.tour1_s1[0][2]', speaker: 'Associate Juniper', line: `First stop, {name}! Today we're gifting free Comfort Lamps to Fernbrook. It's a partnership!` },
+  { slot: 'S1.r1.prompt', path: 'scenes.tour1_s1[1][1]', speaker: '(prompt)', line: `An orchard worker steps up, rubbing tired eyes. Hand over a Comfort Lamp?` },
+  { slot: 'S1.r1.result', path: 'scenes.tour1_s1[1][2][0][1][0][2]', speaker: '(narrator)', line: `The worker takes the lamp. Inside the glass, the pale light pulses like a slow heartbeat.` },
+  { slot: 'S1.r2.prompt', path: 'scenes.tour1_s1[2][1]', speaker: '(prompt)', line: `A child steps up to the table, clutching a nervous Walkling. Offer a lamp?` },
+  { slot: 'S1.r2.result', path: 'scenes.tour1_s1[2][2][0][1][0][2]', speaker: '(narrator)', line: `The child smiles, though their Walkling flattens its ears at the lantern's steady hum.` },
+  { slot: 'S1.r3.prompt', path: 'scenes.tour1_s1[3][1]', speaker: '(prompt)', line: `One lamp left. An elderly holder watches quietly from the orchard gate.` },
+  { slot: 'S1.r3.result', path: 'scenes.tour1_s1[3][2][0][1][0][2]', speaker: '(narrator)', line: `The elder accepts it with a nod, and whispers an apology to the glass.` },
+  { slot: 'S2.intro', path: 'scenes.tour1_s2[0][2]', speaker: 'Associate Juniper', line: `Stop two: a quick Comfort Check! These units are off to the Comfort Sanctuary for a long rest.` },
+  { slot: 'S2.prompt', path: 'scenes.tour1_s2[1][1]', speaker: '(prompt)', line: `The graphite crates vibrate with a low thrum. Something scratches lightly inside. What do you do?` },
+  { slot: 'S2.praise', path: 'scenes.tour1_s2[1][2][0][1][0][2]', speaker: 'Associate Juniper', line: `Exactly! Clean energy starts with calm units. It's a partnership that powers us all!` },
+  { slot: 'S2.question', path: 'scenes.tour1_s2[1][2][1][1][0][2]', speaker: 'Associate Juniper', line: `The scratch? Just settling in! Units get so eager to give back, they forget to sit still. Ha... ha!` },
+  { slot: 'S2.pat', path: 'scenes.tour1_s2[1][2][2][1][0][2]', speaker: '(narrator)', line: `The metal is hot to the touch. From within, a small weight leans tiredly against your palm.` },
+  { slot: 'S3.intro', path: 'scenes.tour1_s3[0][2]', speaker: 'Associate Juniper', line: `Inside the Trial Hall for stop three! Nothing beats seeing our clean energy goals on the big screen.` },
+  { slot: 'S3.prompt', path: 'scenes.tour1_s3[1][1]', speaker: '(prompt)', line: `The projector hums on a mint-green slide. Juniper asks which campaign slogan grabs you.` },
+  { slot: 'S3.L1', path: 'scenes.tour1_s3[1][2][0][0]', speaker: '(label)', line: `Brighter by nature.` },
+  { slot: 'S3.L2', path: 'scenes.tour1_s3[1][2][1][0]', speaker: '(label)', line: `It's a partnership!` },
+  { slot: 'S3.slogan1', path: 'scenes.tour1_s3[1][2][0][1][0][2]', speaker: 'Associate Juniper', line: `"Brighter by nature." A classic! Because a Walkling's glow really belongs to the whole town, right?` },
+  { slot: 'S3.slogan2', path: 'scenes.tour1_s3[1][2][1][1][0][2]', speaker: 'Associate Juniper', line: `"It's a partnership!" Spot on. You bring the bond, and we bring out the glow. Everyone shines!` },
+  { slot: 'S4.intro', path: 'scenes.tour1_s4[0][2]', speaker: 'Associate Juniper', line: `Last stop, Junior Bright! The Glow Census is thriving. Want to test your bond against Master Fen?` },
+  { slot: 'S4.prompt', path: 'scenes.tour1_s4[1][1]', speaker: '(prompt)', line: `The Glow Census board tallies local output. Step up for a friendly demo match with Master Fen?` },
+  { slot: 'S4.wait', path: 'scenes.tour1_wait[0][2]', speaker: 'Associate Juniper', line: `The board is still tallying Fernbrook's units! Take your time, {name}. Have a bright day!` },
+  { slot: 'P.photo', path: 'scenes.seal1@glimmer[7][2]', speaker: '(narrator)', line: `A flash! Your photo goes up on the board, pinned right beside the list of crates bound for the Sanctuary.` },
+];
+
+const OLD_TOUR = [
+  'Welcome to stop one, {name}!',
+  'A farmer squints at the stall.',
+  'Very warm...',
+  'A kid with a wild Walkling',
+  'The kid beams.',
+  'An old keeper watches',
+  'looks at it a long time.',
+  'So cozy in there.',
+  'The crates hum softly.',
+  'happy units.',
+  'just... resting.',
+  'taps back, very gently.',
+  'We rented the whole Hall',
+  'which slogan you like best.',
+  'First slogan',
+  'Second slogan',
+  'I say it in my sleep',
+  'Glow for everyone!',
+  'Fancy a demo match',
+  'A demo match vs Fen is optional.',
+  'needs a moment to update',
+  'Your stage photo goes up',
+];
+
+function atPath(root, specPath) {
+  const match = specPath.match(/^([A-Za-z0-9_.@]+)((?:\[\d+\])*)$/);
+  let cur = root;
+  for (const part of match[1].split('.')) cur = cur[part];
+  for (const idx of match[2].matchAll(/\[(\d+)\]/g)) cur = cur[Number(idx[1])];
+  return cur;
+}
+
+function collectStrings(node, bag) {
+  if (typeof node === 'string') bag.push(node);
+  else if (Array.isArray(node)) node.forEach((child) => collectStrings(child, bag));
+}
+
+test('every final D26 tour line is in the game data, with no placeholder left', async ({ page }) => {
+  const raw = fs.readFileSync(path.join('data', 'glimmer_path.json'), 'utf8');
+  const data = JSON.parse(raw);
+  const mapdata = fs.readFileSync(path.join('data', 'mapdata.js'), 'utf8');
+  expect(data._placeholders).toBeUndefined();
+  expect(data.placeholders).toBeUndefined();
+  expect(raw).not.toContain('TEMP copy');
+  expect(raw).not.toContain('PLACEHOLDER');
+  expect(D26).toHaveLength(22);
+  for (const row of D26) {
+    expect(atPath(data, row.path), row.slot).toBe(row.line);
+    expect(mapdata, row.slot).toContain(JSON.stringify(row.line).slice(1, -1));
+    if (row.speaker === '(label)') expect(Array.from(row.line).length, row.slot).toBeLessThanOrEqual(30);
+    if (row.speaker === 'Associate Juniper' || row.speaker === '(narrator)') {
+      const step = atPath(data, row.path.slice(0, row.path.lastIndexOf('[')));
+      expect(step[0], row.slot).toBe('say');
+      expect(step[1], row.slot).toBe(row.speaker === '(narrator)' ? '' : 'Associate Juniper');
+    }
+    if (row.speaker === '(prompt)') expect(atPath(data, row.path.slice(0, row.path.lastIndexOf('[')))[0], row.slot).toBe('choice');
+  }
+  const bag = [];
+  for (const id of ['tour1_s1', 'tour1_s2', 'tour1_s3', 'tour1_s4', 'tour1_wait']) collectStrings(data.scenes[id], bag);
+  collectStrings(data.scenes['seal1@glimmer'][7], bag);
+  const joined = bag.join('\n');
+  expect(joined).not.toMatch(/PLACEHOLDER|TODO|TEMP copy/);
+  for (const old of OLD_TOUR) expect(joined, old).not.toContain(old);
+  expect(data.scenes.tour1_s2[1][2][1][1].some((step) => step[0] === 'inc' && step[1] === 'story.tour_unease')).toBe(true);
+  expect(data.scenes['seal1@glimmer'][8][0]).toBe('inc');
+  expect(data.scenes['seal1@glimmer'][8][1]).toBe('story.tour_unease');
+  await boot(page, cobbleSave());
+  const live = await page.evaluate((lines) => {
+    const g = MAPDATA.glimmer_path;
+    const walk = (node, bag) => {
+      if (typeof node === 'string') bag.push(node);
+      else if (Array.isArray(node)) node.forEach((child) => walk(child, bag));
+    };
+    const bag = [];
+    for (const id of ['tour1_s1', 'tour1_s2', 'tour1_s3', 'tour1_s4', 'tour1_wait']) walk(g.scenes[id], bag);
+    walk(g.scenes['seal1@glimmer'][7], bag);
+    return {
+      missing: lines.filter((line) => !bag.includes(line)),
+      placeholders: !!g._placeholders || !!g.placeholders,
+      v: PixelPets.state.v,
+    };
+  }, D26.map((row) => row.line));
+  expect(live.missing).toEqual([]);
+  expect(live.placeholders).toBe(false);
+  expect(live.v).toBe(2);
+});
+
+async function hideToast(page) {
+  await page.evaluate(() => {
+    const toast = document.querySelector('#toast');
+    if (!toast) return;
+    toast.classList.remove('show');
+    toast.style.transition = 'none';
+  });
+}
+
+async function reviewShot(page, name) {
+  if (page.viewportSize().width !== 390) return;
+  const dir = path.join('review-arbiter-swap');
+  fs.mkdirSync(dir, { recursive: true });
+  await page.screenshot({ path: path.join(dir, name + '-390.png') });
+}
+
+test('stop 2, the slogan choice, and the stage photo show the final lines', async ({ page }) => {
+  test.setTimeout(60000);
+  const save = cobbleSave();
+  save.world = { map: 'fernbrook', x: 9, y: 9, facing: 'down', respawn: 'fernbrook' };
+  await boot(page, save);
+  const question = D26.find((row) => row.slot === 'S2.question').line;
+  const prompt = D26.find((row) => row.slot === 'S3.prompt').line;
+  const photo = D26.find((row) => row.slot === 'P.photo').line;
+  expect(await page.evaluate(() => PixelPets.runScene('tour1_s2'))).toBe(true);
+  let sawQuestion = false;
+  for (let i = 0; i < 80; i++) {
+    const sealUp = await page.locator('#ovBattle.seal-only').isVisible().catch(() => false);
+    if (sealUp) { await page.locator('#btOk').click(); await page.waitForTimeout(40); continue; }
+    const sc = await page.evaluate(() => {
+      const scene = window.PixelPets.scene;
+      return scene && { mode: scene.mode, full: scene.full, waiting: scene.waiting, who: scene.who, text: scene.text };
+    });
+    if (!sc) break;
+    if (sc.mode === 'choice' && sc.full) {
+      await page.waitForFunction(() => window.PixelPets.optionsReady === true);
+      await page.locator('#sbChoices button', { hasText: 'Question it' }).click();
+      await page.waitForTimeout(40);
+      continue;
+    }
+    if (sc.mode === 'say' && sc.waiting && sc.full) {
+      if (sc.text === question) {
+        expect(sc.who).toBe('Associate Juniper');
+        await hideToast(page);
+        await reviewShot(page, 's2-question');
+        sawQuestion = true;
+      }
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(40);
+      continue;
+    }
+    await page.waitForTimeout(40);
+  }
+  expect(sawQuestion).toBe(true);
+
+  expect(await page.evaluate(() => PixelPets.runScene('tour1_s3'))).toBe(true);
+  let sawChoice = false;
+  for (let i = 0; i < 80; i++) {
+    const sc = await page.evaluate(() => {
+      const scene = window.PixelPets.scene;
+      return scene && { mode: scene.mode, full: scene.full, waiting: scene.waiting, text: scene.text };
+    });
+    if (!sc) break;
+    if (sc.mode === 'choice' && sc.full) {
+      await page.waitForFunction(() => window.PixelPets.optionsReady === true);
+      expect(sc.text).toBe(prompt);
+      const buttons = await page.locator('#sbChoices button').evaluateAll((nodes) => nodes.map((node) => ({
+        text: node.textContent,
+        h: node.getBoundingClientRect().height,
+        w: node.getBoundingClientRect().width,
+      })));
+      expect(buttons.map((button) => button.text)).toEqual(['Brighter by nature.', "It's a partnership!"]);
+      for (const button of buttons) {
+        expect(button.h).toBeGreaterThanOrEqual(44);
+        expect(button.w).toBeGreaterThanOrEqual(44);
+      }
+      await hideToast(page);
+      await reviewShot(page, 's3-choice');
+      sawChoice = true;
+      await page.locator('#sbChoices button', { hasText: 'Brighter by nature.' }).click();
+      await page.waitForTimeout(40);
+      continue;
+    }
+    if (sc.mode === 'say' && sc.waiting) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(40);
+      continue;
+    }
+    await page.waitForTimeout(40);
+  }
+  expect(sawChoice).toBe(true);
+
+  expect(await page.evaluate(() => PixelPets.runScene('seal1'))).toBe(true);
+  let sawPhoto = false;
+  for (let i = 0; i < 120; i++) {
+    const sealUp = await page.locator('#ovBattle.seal-only').isVisible().catch(() => false);
+    if (sealUp) { await page.locator('#btOk').click(); await page.waitForTimeout(40); continue; }
+    const sc = await page.evaluate(() => {
+      const scene = window.PixelPets.scene;
+      return scene && { mode: scene.mode, full: scene.full, waiting: scene.waiting, who: scene.who, text: scene.text };
+    });
+    if (!sc) break;
+    if (sc.mode === 'say' && sc.waiting && sc.full) {
+      if (sc.text === photo) {
+        expect(sc.who).toBe('');
+        await hideToast(page);
+        await reviewShot(page, 'p-photo');
+        sawPhoto = true;
+      }
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(40);
+      continue;
+    }
+    await page.waitForTimeout(40);
+  }
+  expect(sawPhoto).toBe(true);
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });

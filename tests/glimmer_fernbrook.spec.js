@@ -146,7 +146,7 @@ test('glimmer path: orchard, tour stops, skippable match, lanyard, teaser', asyn
   await runAndShot(page, 'tour1_s2', 'tour_stop2');
   await playScene(page, ['Question it']);
   await runAndShot(page, 'tour1_s3', 'tour_stop3');
-  await playScene(page, ['First slogan']);
+  await playScene(page, ['Brighter by nature.']);
   await runAndShot(page, 'tour1_s4', 'tour_stop4');
   let sealed = false;
   await playScene(page, ['Skip the match'], null, async () => {
