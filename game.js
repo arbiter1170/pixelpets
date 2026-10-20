@@ -2423,7 +2423,92 @@ function npcLook(o){
   if (key === 'rook') return rookWithLanyard(look);
   return look;
 }
-const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && (!!o.lines || !!o.board)));
+// A roll prop (the 2004 popping toy; it is the only one) counts, so a Modern tap walks up and pushes
+// and Arcade TALK pushes too. It has no lines, so the push never opens a text box.
+const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && (!!o.lines || !!o.board || !!o.roll)));
+// What a tap should do. Walk-on kinds (pickup, warp, trigger) stay off this list: the tap walks onto
+// their tile and the step handler fires. Scene-only and shop-only props (birthday balloons, the Heights
+// crate) are not talkable, so Arcade TALK and a d-pad bump stay as they are.
+function objectAct(o){
+  if (!o || o.kind === 'decal') return null;
+  if (o.kind === 'pickup') return 'pickup';
+  if (o.kind === 'warp') return 'warp';
+  if (o.kind === 'trigger') return 'trigger';
+  if (o.kind === 'door') return 'door';
+  if (o.booth) return 'booth';
+  if (o.roll) return 'roll';
+  if (o.panel === 'lantern' || o.panel === 'hall1') return 'panel';
+  if (o.kind === 'sign') return 'sign';
+  if (o.board) return 'board';
+  if (o.shop) return 'shop';
+  if (o.kind === 'trainer') return 'trainer';
+  if (o.kind === 'wild') return 'wild';
+  if (o.scene) return 'scene';
+  if (o.lines || o.kind === 'npc') return 'talk';
+  return null;
+}
+const WALK_ON_ACT = { pickup: 1, warp: 1, trigger: 1 };
+const tappable = o => { const a = objectAct(o); return !!a && !WALK_ON_ACT[a]; };
+// Debug audit: every authored interactable, and whether a tap can reach the tile that fires it.
+// Object taps need a free neighbour on the safe tile's walk region. Walk-on taps need that tile itself.
+function auditTapReport(){
+  const mapWalk = (m, x, y) => {
+    const row = m.grid && m.grid[y];
+    if (!row || x < 0 || x >= row.length) return false;
+    const ch = row[x], sk = m.skin && SKINS[m.skin];
+    return (sk && sk.walk && sk.walk[ch] != null) ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk;
+  };
+  const standsOf = (m, o) => {
+    if (o.kind === 'door') {
+      const onWall = m.grid[o.y] && m.grid[o.y][o.x] === 'H';
+      return [{ x: o.x, y: onWall ? o.y + 1 : o.y }];
+    }
+    if (o.kind === 'trigger') {
+      const r = o.r || 0, out = [];
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (Math.abs(dx) + Math.abs(dy) <= r) out.push({ x: o.x + dx, y: o.y + dy });
+      return out;
+    }
+    if (WALK_ON_ACT[objectAct(o)]) return [{ x: o.x, y: o.y }];
+    return [[0, -1], [0, 1], [-1, 0], [1, 0]].map(([dx, dy]) => ({ x: o.x + dx, y: o.y + dy }));
+  };
+  const rows = [], predicateGaps = [], reachGaps = [], counts = {};
+  for (const [mid, m] of Object.entries(WORLD)) {
+    if (!m || !m.grid) continue;
+    const block = new Set();
+    for (const o of m.objs || []) if (o && BLOCK_KINDS[o.kind]) block.add(o.x + ',' + o.y);
+    const free = (x, y) => mapWalk(m, x, y) && !block.has(x + ',' + y);
+    const seen = new Set(), q = [];
+    const seed = (x, y) => { const k = x + ',' + y; if (seen.has(k) || !free(x, y)) return; seen.add(k); q.push([x, y]); };
+    for (const s of [m.safe, m.start, m.respawn]) if (s) seed(s.x, s.y);
+    for (const o of m.objs || []) if (o && (o.kind === 'warp' || o.kind === 'door')) {
+      for (const c of standsOf(m, o)) seed(c.x, c.y);
+    }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) seed(x + dx, y + dy);
+    }
+    for (const o of m.objs || []) {
+      const act = objectAct(o);
+      if (!act) continue;
+      counts[act] = (counts[act] || 0) + 1;
+      const open = standsOf(m, o).filter(c => WALK_ON_ACT[act] ? (mapWalk(m, c.x, c.y) && !block.has(c.x + ',' + c.y)) : free(c.x, c.y));
+      const reached = open.filter(c => seen.has(c.x + ',' + c.y)).length;
+      const row = { map: mid, id: o.id, kind: o.kind, act, tappable: tappable(o), talkable: !!talkable(o), stands: open.length, reached };
+      rows.push(row);
+      const tag = mid + ':' + o.id;
+      if (WALK_ON_ACT[act]) {
+        if (row.tappable) predicateGaps.push(tag + ' walk-on is selected as a tap object');
+        if (!open.length) reachGaps.push(tag + ' walk-on tile is solid or blocked');
+        else if (!reached) reachGaps.push(tag + ' walk-on tile is off the safe region');
+      } else {
+        if (!row.tappable) predicateGaps.push(tag + ' tap does not select it');
+        if (!open.length) reachGaps.push(tag + ' has no free neighbour');
+        else if (!reached) reachGaps.push(tag + ' neighbour is off the safe region');
+      }
+    }
+  }
+  return { counts, predicateGaps, reachGaps, n: rows.length, rows };
+}
 // A saved position that is off the map, solid, on a warp or under a blocker loads on the map's safe tile (§3).
 function safeSpot(){
   const w = S.world;
@@ -3829,13 +3914,20 @@ function routeExit(from, to){
   }
   routeCache.set(key, found); return found;
 }
+// A live cue: the first-wild guide's grass tile, or a named prop's current tile (the 2004 toy via objPos / rollSpot).
+function followSpot(q){
+  if (!q || !q.follow) return null;
+  if (q.follow === 'guide') return wild.list.find(w => w.guide) || null;
+  if (!CUR) return null;
+  const o = CUR.objs.find(x => x.id === q.follow && present(x));
+  return o ? objPos(o) : null;
+}
 // Where an objective is on this map: its tile, or the exit toward it; null when nothing points anywhere.
-// The first-wild guide picks its own grass tile.
 function pointOnMap(q){
   if (!q || !q.target) return null;
   if (q.target.map === CUR.id) {
-    const gw = q.follow === 'guide' ? wild.list.find(w => w.guide) : null;
-    return gw ? { x: gw.x, y: gw.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
+    const live = followSpot(q);
+    return live ? { x: live.x, y: live.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
   }
   const ex = routeExit(CUR.id, q.target.map); if (ex) return { x: ex.x, y: ex.y, here: false };
   if (q.via) { if (q.via.map === CUR.id) return { x: q.via.x, y: q.via.y, here: true }; const vx = routeExit(CUR.id, q.via.map); if (vx) return { x: vx.x, y: vx.y, here: false }; }
@@ -9520,7 +9612,7 @@ function bindInput(){
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
       walk.hit = { x: tx, y: ty };
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
-      const o = objAt(tx, ty, q => talkable(q) || q.kind === 'door') || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
+      const o = objAt(tx, ty, tappable) || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
       if (scene || fade.busy) { /* nothing */ }
       else if (w && pet()) { if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
       else if (followerAt(tx, ty)) { clearMoves(); openStatsCard(pet().id); }                                      // tap the follower: its stats card (K.4)
@@ -9963,7 +10055,7 @@ function boot(){
     setTextSpeed: v => debugSetTextSpeed(v),
     clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
-    enc, walk,
+    enc, walk, auditTaps: () => auditTapReport(),
     care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
     tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab floor keeps its old tile name.
       const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
