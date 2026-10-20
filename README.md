@@ -143,7 +143,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
   Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
-  then the summon lines); after that only a bump starts a rematch until you win. Master Fen's Bloom Trial Hall in Fernbrook
+  then the summon lines). After a whole-party wipe and a Lantern House rest, walking through that line starts the battle again. The first two steps after you arrive, or after the rest, do not. A win ends it. Talking still starts it. Neighbour Rook does not come back for another battle. Master Fen's Bloom Trial Hall in Fernbrook
   opens once the orchard is cleared. Talk to him on the dais: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
   Seal #1 opens Route 2 (the creek, Wickerglen, and the Glow Census). Past the quarry gate is Cobblecrest: Dottie's
   stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. Cobblecrest's roofs, windows and
@@ -264,7 +264,8 @@ no version bump; `normalizeLook()` fixes old or bad looks on load, e.g. the v0.4
   it first ("WHO ARE YOU?", no CANCEL), then the starter picker; nothing is saved until DONE. DONE stays on the screen while the rows scroll. The name field stays hidden; Ilse asks the name in the Lodge. Later, Change look in
   Settings (the header gear) opens it with CANCEL. Names: trimmed, spaces collapsed, `< > { }` and control characters dropped,
   10 characters max, empty = "Wayfarer". Friends live in the phone (FRIENDS app). The tab reads HOLDER and YOUR HOLDER CODE, with twelve slots. ADD stays off until a room code is set and the shared walk is on. Friends see your name. Others see a made-up one. The Pet scene shows a small "HOLDER name"
-  label in its top-right corner ("Wayfarer" until named). The accessible name is "Holder {name}".
+  label in its top-right corner ("Wayfarer" until named). The bond hearts stay clear of that badge. The accessible name is "Holder {name}".
+  FEED, PLAY and REST show their icon on the same line as the word.
 
 Play together (D195–D208, on this branch): with a room code, holders on the same code see each other on Hearthmoor and Route 1. SAY opens a wheel of emotes and set phrases. Tap a holder for their card (WAVE, MUTE, BLOCK). SOLO and interiors drop your spot. Nothing in a room node is free text. Trading is not in this build (D198). Save `v` stays 2. The only new save field is optional `settings.showOthers` (`on`, `friends`, or `solo`; missing loads as `on`). The device key `pixelpets.net` holds the room code, mutes, and blocks, and Start over clears it. Live rules are not published from this branch. The deploy command, for the Supervisor, is `firebase deploy --only database --project walklings-4cc89`.
 - With no Walkling yet the keeper still walks (no energy, food or XP, no wild creatures).
@@ -385,6 +386,7 @@ Saves (format v2, `save.js`):
 - `pixelpets.save.v2` is the save. Walklings live in a **party** (up to 6, the partner is always in it) and a
   **box** (no limit). A 7th befriended Walkling asks which unlocked party Walkling goes to the box, then joins the party. If every party Walkling is locked, the catch is refused. The WALKLINGS tab
   is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 45; unmet forms stay silhouettes).
+  Each TEAM and WALKLING-BOX row shows six tiny bars to the right of the name: HP, NRG, FOOD, JOY, GROW and XP. A worn-out row shows RESTING and an empty red HP bar. Tapping the row still opens the Walkling.
   MOVE reorders the party. TO BOX / TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling.
   A chipped Walkling stays in the party. TO WALKLING-BOX and RELEASE on that slot are greyed, and the slot says "{name} stays with you now." The same line toasts if a box, release, or later trade still tries, under the collection title. The party slot shows a lock mark beside the name. Locked Walklings are not listed in the box.
   Those labels stay while the WALKLINGS tab is open.

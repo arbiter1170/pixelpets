@@ -43,7 +43,7 @@ test('a Walkling you already have can be renamed, and the species name clears it
   }));
   expect(named.nick).toBe('Nib 2');
   expect(named.v).toBe(2);
-  expect(named.card).toBe('Nib 2, open');
+  expect(named.card).toMatch(/^Nib 2, Lv \d+\. HP \d+ of \d+, energy \d+, food \d+, joy \d+, grow \d+ of \d+, XP \d+ of \d+\. Open\.$/);
 
   // rejected (every character filtered out) and blank with no nickname... here a nickname exists, so test rejected first
   await openNameEditor(page);

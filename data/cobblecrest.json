@@ -365,7 +365,7 @@
         {"form": "stone/2", "level": 23, "moves": ["brace_rock", "pebble_flick", "tumble_charge", "flick_flame"]}
       ],
       "money": null,
-      "lines": {"intro": "Stone stands firm. Show me how a keeper moves it.", "win": "Ha! You moved the hill, {player}. Gently, too.", "lose": "Stone's patient. So am I. Rest, and come back."}
+      "lines": {"intro": "Stone stands firm. Show me how a Keeper moves it.", "win": "Ha! You moved the hill, {player}. Gently, too.", "lose": "Stone's patient. So am I. Rest, and come back."}
     },
     "rival2_rook": {
       "name": "Rook",
