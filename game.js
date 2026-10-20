@@ -616,6 +616,7 @@ function showTab(name){
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
   $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   clearMoves();
+  if (name !== 'pet') closePartnerGear();
   if (name === 'col') {
     if (S && !S.flags['story.journal_opened']) { S.flags['story.journal_opened'] = true; save(); }
     renderCollection();
@@ -628,7 +629,7 @@ function showTab(name){
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [] };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -701,7 +702,10 @@ function roomZoomFor(W, H, s){
   const Heff = ctlMode() === 'modern' ? H - ROOM_ZOOM_HUD : H;
   const denomW = (MW - slack) * TS, denomH = MH * TS;
   if (!(denomW > 0) || !(denomH > 0) || !(Heff > 0) || !(W > 0)) return s;
-  const S = Math.max(s, Math.min(ROOM_ZOOM_CAP * s, Math.floor(W / denomW), Math.floor(Heff / denomH)));
+  let S = Math.max(s, Math.min(ROOM_ZOOM_CAP * s, Math.floor(W / denomW), Math.floor(Heff / denomH)));
+  // Your Room is 7 wide and both edges are wall, so the slack formula is scale 3 at 320.
+  // That puts the left round-button column over the wall and the bed corner. Cap it at 2 there.
+  if (CUR.id === 'hc_apt_in' && ctlMode() === 'modern' && window.innerWidth <= 320) S = Math.min(S, Math.max(s, 2));
   return S > 0 ? S : s;
 }
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
@@ -781,8 +785,8 @@ function updateHUD(){
   updatePetStrip(p);
   syncCareAlert();   // HEART_ALERT: same 1 s stat tick as the strip
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
-  const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
-  const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
+  const base = 0;   // D248: the bar is total over goal. 40 of 120 fills a third. Fully grown stays full.
+  const xpPct = p.stage < 2 ? (goal > base ? (p.xp - base) / (goal - base) * 100 : 100) : 100;
   $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = p.xp;
   $('#wSteps').textContent = S.steps;   // STAT_DISPLAY: the WALK slot of the shared strip
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
@@ -1366,7 +1370,10 @@ function updateCareButtons(){
     if (!BTN_LABEL[act]) return;
     const left = cdLeft(p, act), cd = left ? fmtCd(left) : '';
     if (b.dataset.cd !== cd) {               // label on top, countdown on a small second line (fits 320px phones)
-      b.dataset.cd = cd; b.textContent = BTN_LABEL[act];
+      b.dataset.cd = cd;
+      const bolt = b.querySelector('.ico-bolt');   // REST keeps the D245 bolt; textContent would drop it
+      b.textContent = BTN_LABEL[act];
+      if (bolt) b.prepend(bolt);
       if (cd) { const sm = document.createElement('small'); sm.className = 'cdt'; sm.textContent = cd; b.append(sm); }
       b.setAttribute('aria-label', cd ? BTN_LABEL[act] + ', ready in ' + cd : BTN_LABEL[act]);
     }
@@ -4283,9 +4290,9 @@ function cleanPlayerName(v){                   // nameEntry rules: drop control 
 const playerName = () => (S && S.player && typeof S.player.name === 'string' && S.player.name.trim()) || DEFAULT_PLAYER_NAME;   // BATTLE §7.1 {player}
 function renderKeeperName(){
   $('#keeperName').textContent = playerName();
-  const k = $('#petKeeper'); if (!k) return;                  // Pet scene label (MAPS_SLICE K.2 v0.4.7): "KEEPER  Mo", textContent only
-  k.textContent = ''; const b = document.createElement('b'); b.textContent = 'KEEPER'; k.append(b, document.createTextNode(playerName()));
-  k.setAttribute('aria-label', 'Keeper ' + playerName());
+  const k = $('#petKeeper'); if (!k) return;                  // D256: same rect, same ids. The title is HOLDER.
+  k.textContent = ''; const b = document.createElement('b'); b.textContent = 'HOLDER'; k.append(b, document.createTextNode(playerName()));
+  k.setAttribute('aria-label', 'Holder ' + playerName());
 }
 const LOOK_ROWS = [['skin', '#lookSkin', 'Skin'], ['hair', '#lookHair', 'Hair'], ['hairCol', '#lookHairCol', 'Hair colour'],
   ['outfit', '#lookOutfit', 'Outfit'], ['outfitCol', '#lookOutfitCol', 'Outfit colour'], ['accent', '#lookAccent', 'Accent'],
@@ -6464,6 +6471,31 @@ function drawRegionMap(t){
 let bagSel = 0;
 function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
 function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'star', 0, 0); }
+function glyphDrawable(name){
+  const gl = GLYPH[name];
+  if (!gl || !gl.length || !gl[0]) return false;
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) {
+    const ch = gl[j][i];
+    if (ch !== '.' && PAL[ch]) return true;
+  }
+  return false;
+}
+function paintGlyphBox(c, name, fallback){
+  if (!c || !c.getContext) return;
+  const use = glyphDrawable(name) ? name : (fallback && glyphDrawable(fallback) ? fallback : null);
+  if (!use) return;
+  const gl = GLYPH[use];
+  c.width = gl[0].length; c.height = gl.length;
+  const g = ctx(c); g.clearRect(0, 0, c.width, c.height); drawGlyph(g, use, 0, 0);
+  c.dataset.glyph = use;
+}
+// D245: apple on FOOD, heart on JOY, star on GROW, cyan bolt on NRG and REST. Bolt falls back to z.
+function paintStatIcons(){
+  $$('.ico-food').forEach(c => paintGlyphBox(c, 'apple7'));
+  $$('.ico-joy').forEach(c => paintGlyphBox(c, 'heart'));
+  $$('.ico-grow').forEach(c => paintGlyphBox(c, 'star'));
+  $$('.ico-bolt').forEach(c => paintGlyphBox(c, 'bolt', 'z'));
+}
 function paintRepIcon(){
   const c = $('#repIcon'); const grid = navArt() && navArt().buttons.rep && navArt().buttons.rep.normal;
   if (!c || !grid) return;
@@ -6474,6 +6506,7 @@ function paintRepIcon(){
   }
 }
 function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon")); paintRepIcon();
+  paintStatIcons();
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {
@@ -8001,21 +8034,45 @@ function setRelief(p, on){
 }
 function renderKit(){
   const p = pet(); if (!p) { closeKit(); return; }
-  spriteCanvas($('#kitIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
-  $('#kitWho').textContent = petName(p);
+  const icon = $('#kitIcon'), who = $('#kitWho'), speciesEl = $('#kitSpecies'), box = $('#kitBox');
+  if (!box) return;
+  if (icon) spriteCanvas(icon, spi(p), p.stage, 'n', isFaded(p), p.accessory);
+  if (who) who.textContent = petName(p);
   const species = nameOf(spi(p), p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
-  $('#kitSpecies').textContent = (cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
-  const box = $('#kitBox'); box.textContent = ''; fillWalklingExtras(box, p);
+  if (speciesEl) speciesEl.textContent = (cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
+  box.textContent = ''; fillWalklingExtras(box, p);
 }
 function openKit(){
+  const el = $('#ovKit'); if (!el) return false;
   const p = pet(); if (!p || overlayOpen()) return false;
-  clearMoves(); $('#ovKit').hidden = false; lockTabs(true); renderKit(); sfx('tap');
-  $('#kitClose').focus({ preventScroll: true });
+  clearMoves(); el.hidden = false; lockTabs(true); renderKit(); sfx('tap');
+  if ($('#kitClose')) $('#kitClose').focus({ preventScroll: true });
   return true;
 }
 function closeKit(){
   const el = $('#ovKit'); if (!el || el.hidden) return;
   el.hidden = true; lockTabs(false); updateHUD();
+}
+// PARTNER_UI: GEAR lives on the PARTNER screen. #ovKit is retired. Tabs stay unlocked (uiReturn R4).
+function renderPartnerGear(){
+  const box = $('#petGear'); if (!box || box.hidden) return;
+  const p = pet(); if (!p) { closePartnerGear(); return; }
+  box.textContent = ''; fillWalklingExtras(box, p);
+}
+function closePartnerGear(){
+  const box = $('#petGear'); if (!box || box.hidden) return;
+  box.hidden = true; box.textContent = '';
+  const b = $('#petKitBtn'); if (b) b.setAttribute('aria-pressed', 'false');
+}
+function togglePartnerGear(){
+  const box = $('#petGear'); if (!box || !pet()) return false;
+  const open = box.hidden;
+  box.hidden = !open;
+  const b = $('#petKitBtn'); if (b) b.setAttribute('aria-pressed', open ? 'true' : 'false');
+  if (open) renderPartnerGear();
+  else box.textContent = '';
+  sfx('tap');
+  return true;
 }
 function commitGear(id, opts){
   save(); updateHUD();
@@ -8023,8 +8080,10 @@ function commitGear(id, opts){
   if (typeof renderCollection === 'function') renderCollection();
   const kit = $('#ovKit');
   if (kit && !kit.hidden && !(opts && opts.keep) && pet() && pet().id === id) renderKit();
+  const gear = $('#petGear');
+  if (gear && !gear.hidden && !(opts && opts.keep) && pet() && pet().id === id) renderPartnerGear();
   if (opts && opts.keep) return;
-  if ($('#ovStats').hidden || statsCard.id !== id || !statsCard.gear) return;
+  if (!$('#ovStats') || $('#ovStats').hidden || statsCard.id !== id || !statsCard.gear) return;
   const p = petById(id), box = $('#scGearBox');
   renderStatsCard();
   if (p && box) { box.textContent = ''; fillWalklingExtras(box, p); box.hidden = false; }
@@ -9566,9 +9625,10 @@ function bindInput(){
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
   $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
-  $('#petKitBtn').addEventListener('click', () => openKit());
-  $('#kitClose').addEventListener('click', () => { sfx('tap'); closeKit(); });
-  $('#ovKit').addEventListener('click', e => { if (e.target === e.currentTarget) closeKit(); });
+  const petGearBtn = $('#petKitBtn');
+  if (petGearBtn) petGearBtn.addEventListener('click', () => { if ($('#petGear')) togglePartnerGear(); else openKit(); });
+  const kitClose = $('#kitClose'); if (kitClose) kitClose.addEventListener('click', () => { sfx('tap'); closeKit(); });
+  const ovKit = $('#ovKit'); if (ovKit) ovKit.addEventListener('click', e => { if (e.target === e.currentTarget) closeKit(); });
   $('#petCanvas').addEventListener('pointerdown', e => { if (screen === 'pet' && !overlayOpen() && petHit(e.clientX, e.clientY)) { e.preventDefault(); patPet(); } });   // CARE_LOOP A: pats
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#phoneBtn').addEventListener('click', openPhone);
@@ -9748,8 +9808,9 @@ function bindInput(){
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sceneKeyEat = true; if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
-    if (e.key === 'Escape' && !$('#ovStats').hidden) { if (!$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
-    if (e.key === 'Escape' && !$('#ovKit').hidden) { closeKit(); return; }
+    if (e.key === 'Escape' && $('#ovStats') && !$('#ovStats').hidden) { if ($('#scNick') && !$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
+    if (e.key === 'Escape' && $('#ovKit') && !$('#ovKit').hidden) { closeKit(); return; }
+    if (e.key === 'Escape' && $('#petGear') && !$('#petGear').hidden && !overlayOpen()) { closePartnerGear(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
     if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
     if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
@@ -10097,6 +10158,7 @@ function boot(){
       moving: !!fol.to, id: p ? p.id : null, tired: !!(p && isTired(p)), fainted: !!(p && isFainted(p)), bob: followerBob(now()), droop: p && isFainted(p) ? 1 : 0, under: fol.x === S.world.x && fol.y === S.world.y }; },
   };
   const cheats = {
+    repaintStats(){ paintStatIcons(); return true; },   // ?debug=1: redraw FOOD / JOY / GROW / NRG icons (D245 fallback)
     runSteps: steps => { showTab('walk'); if (overlayOpen()) return false; runSteps(steps); return true; },   // debug: play ad-hoc scene steps (STINGERS test 14)
     forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
     forceBattle: (form, level) => {

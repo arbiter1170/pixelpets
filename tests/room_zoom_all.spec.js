@@ -59,7 +59,9 @@ test('every interior uses the room scale, and every door can be framed', async (
       const slack = !info.fitWidth && solid ? 1 : 0;
       const byW = Math.floor(W / ((info.w - slack) * 16));
       const byH = Math.floor((H - 112) / (info.h * 16));
-      const expected = info.fitWidth ? null : Math.max(s, Math.min(2 * s, byW, byH));
+      let expected = info.fitWidth ? null : Math.max(s, Math.min(2 * s, byW, byH));
+      // Your Room at 320: scale 3 covers the left buttons. The cap is 2, and never under the outdoor scale.
+      if (!info.fitWidth && id === 'hc_apt_in' && window.innerWidth <= 320) expected = Math.min(expected, Math.max(s, 2));
       const VW = mc.width, VH = mc.height, mapW = info.w * 16, mapH = info.h * 16;
       const here = PixelPets.state.world;
       const pred = camAt(here.x, here.y, mapW, mapH, VW, VH);

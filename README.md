@@ -101,7 +101,7 @@ Levels, types and stats (`stats.js`):
   "RESTING 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
   (and not worn out) a Walkling shows **TIRED**. The badge (RESTING, else TIRED, else GLOWING) shows on the stats card,
   the Pet scene and the Pets tab.
-- Stats card: tap STATS (above FEED, same button chrome as FEED / PLAY / REST) or the follower. KIT, beside STATS, opens Customize & Gear for the partner. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats and the same gear. It shows the type badge, Level,
+- Stats card: tap STATS (above FEED, same button chrome as FEED / PLAY / REST) or the follower. GEAR, beside STATS, opens the partner's gear on the PARTNER screen and does not lock the tabs. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats and the same gear. It shows the type badge, Level,
   GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
   scaled to the highest value of that stat among the 45 forms a keeper can meet, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
@@ -327,7 +327,7 @@ baskets, and the journal, so the journal still counts 45. A keeper cannot meet o
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
-the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`. STATS → RENAME, and the
+the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`. STATS → INTERACT, and the
 NAME field on the Walkling sheet, change a name you already gave. Leave that field empty, or type the species name,
 and the species name shows again. Save `v` stays 2.
 Save `v` stays 2.
@@ -391,7 +391,7 @@ Saves (format v2, `save.js`):
   LEFT BEHIND shows each orphan's reason and the raw data. Hunger pauses in the box.
   A battle SWAP lists the party only. The sheet on a Walkling can use a field snack, rename them, reorder moves,
   hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an adornment (Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, or Amber star), and set a call (Charge, Brace, Dart, or Greet).
-  The five adornment ids stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body so they sit on every Walkling. More adornments unlock from quests later; that list is not built (D75). The partner button is KIT.
+  The five adornment ids stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body so they sit on every Walkling. More adornments unlock from quests later; that list is not built (D75). The partner button is GEAR.
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
   `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`, then `byte`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
   The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 45 form ids) is append-only: new lines are added at the end

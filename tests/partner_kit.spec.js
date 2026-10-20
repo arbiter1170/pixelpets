@@ -51,8 +51,8 @@ test('STATS and KIT sit above FEED, and the partner tab has no bag', async ({ pa
   expect(lay.chrome).toBe(true);
   expect(lay.notScene).toBe(true);
   expect(lay.bag).toBe(false);
-  expect(lay.label).toBe('Customize and gear');
-  expect(lay.text).toBe('KIT');
+  expect(lay.label).toBe('Gear');
+  expect(lay.text).toBe('GEAR');
   await saveShot(page, 'partner');
 
   await page.locator('#tabs button[data-tab="walk"]').click();
@@ -63,21 +63,21 @@ test('STATS and KIT sit above FEED, and the partner tab has no bag', async ({ pa
   await expect(page.locator('#ovBag')).toBeHidden();
 });
 
-test('KIT opens Customize & Gear and a Lodge bell stays on the save', async ({ page }) => {
+test('GEAR opens on the partner screen and a Lodge bell stays on the save', async ({ page }) => {
   await boot(page);
+  expect(await page.locator('#ovKit').count()).toBe(0);
   await page.locator('#petKitBtn').click();
-  await expect(page.locator('#ovKit')).toBeVisible();
-  await expect(page.locator('#kitTitle')).toHaveText('Customize & Gear');
-  await expect(page.locator('#tabs')).toHaveClass(/locked/);
-  const names = await page.locator('#kitBox [data-acc]').allTextContents();
+  await expect(page.locator('#petGear')).toBeVisible();
+  await expect(page.locator('#tabs')).not.toHaveClass(/locked/);
+  const names = await page.locator('#petGear [data-acc]').allTextContents();
   expect(names).toEqual(['None', 'Lodge bell', 'Hall ribbon', 'Hearth scarf', 'Orchard sprig', 'Amber star']);
   const wide = await page.evaluate(() => {
-    const ov = document.querySelector('#ovKit .ov-inner');
-    return ov.scrollWidth <= ov.clientWidth + 1;
+    const box = document.querySelector('#petGear');
+    return box.scrollWidth <= box.clientWidth + 1;
   });
   expect(wide).toBe(true);
   await saveShot(page, 'kit');
-  await page.locator('#kitBox [data-acc="bell"]').click();
+  await page.locator('#petGear [data-acc="bell"]').click();
   await expect(page.locator('#toast')).toHaveText('Pipkit wears the Lodge bell.');
   const saved = await page.evaluate(() => ({
     v: PixelPets.state.v,
@@ -86,7 +86,8 @@ test('KIT opens Customize & Gear and a Lodge bell stays on the save', async ({ p
   expect(saved.v).toBe(2);
   expect(saved.accessory).toBe('bell');
   await page.keyboard.press('Escape');
-  await expect(page.locator('#ovKit')).toBeHidden();
+  await expect(page.locator('#petGear')).toBeHidden();
+  await expect(page.locator('#scr-pet')).toBeVisible();
   await expect(page.locator('#tabs')).not.toHaveClass(/locked/);
 });
 

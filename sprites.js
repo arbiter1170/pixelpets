@@ -493,8 +493,12 @@ const GLYPH = {
   ],
   heart:['.r.r.','rrrrr','rrrrr','.rrr.','..r..'],
   apple:['..t..','.rrr.','rrrwr','rrrrr','.rrr.'],
+  // PARTNER_UI D245. 7x7 apple for the FOOD label. The 5x5 apple above stays the feed particle.
+  apple7:['..t....','.rrrr..','rrrrrr.','rrwwrr.','rrrrrr.','.rrrr..','..rr...'],
+  // 5x5 cyan bolt for NRG and REST. PAL.s is the ice key the NRG bar already uses.
+  bolt:['ssss.','.ss..','sssss','..ss.','.ssss'],
   z:['www','..w','.w.','w..','www'],
-  // HEART_ALERT v0.2 badges (D156). 5x5, PAL only. Bowl for food, z for rest.
+  // HEART_ALERT v0.2 badges (D156). 5x5, PAL only. Bowl for food, z for rest. Not the D245 icons.
   badge_food: ['.....','y.y.y','ooooo','.ooo.','..o..'],
   badge_rest: ['wwww.','..w..','.w...','wwww.','.....'],
   spark:['.y.','yww','.y.'],

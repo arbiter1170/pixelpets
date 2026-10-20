@@ -100,7 +100,13 @@ h2 small{color:var(--h);font-size:17px}
 
 /* stats */
 .stats{display:flex;flex-direction:column;gap:8px;padding:4px 6px}
-.stat{display:grid;grid-template-columns:48px 1fr 36px;align-items:center;gap:8px;font-size:18px}
+.stat{display:grid;grid-template-columns:70px 1fr 36px;align-items:center;gap:8px;font-size:18px}
+.stat-lab{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.ico-food,.ico-joy,.ico-bolt,.ico-grow{image-rendering:pixelated;image-rendering:crisp-edges;vertical-align:middle;pointer-events:none;flex:0 0 auto}
+.ico-food{width:14px;height:14px}
+.ico-joy,.btn .ico-bolt{width:10px;height:10px}
+#statStrip .ss-ico-nrg{left:1px;top:13px;width:10px;height:10px}
+#statStrip .ss-ico-grow{left:calc(54px + var(--bw) + 33px);top:12px;width:8px;height:8px}
 .stat b{text-align:right;color:var(--h)}
 .bar{height:16px;background:var(--d);position:relative}
 .bar i{position:absolute;left:0;top:0;bottom:0;width:50%;transition:width .3s steps(6)}
@@ -134,6 +140,7 @@ h2 small{color:var(--h);font-size:17px}
 #scr-pet.pet-tight .actions{padding-top:0;padding-bottom:0}
 #scr-pet.pet-tight .actions .btn{margin:0}
 .actions.two{grid-template-columns:2fr 1fr}
+.actions.two-even.one{grid-template-columns:1fr}
 
 /* walk */
 /* STAT_DISPLAY §3: one strip under the header, 56 px; rects at 320 and 390 (bars share the leftover width). */
