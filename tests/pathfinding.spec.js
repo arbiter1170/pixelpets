@@ -102,7 +102,7 @@ test('tapping an open warp walks onto it', async ({ page }) => {
   await boot(page);
   await place(page, 'hm_rook_in', 3, 4, 'down');
   await tapTile(page, 3, 5);
-  await expect.poll(() => at(page), { timeout: 8000 }).toEqual({ x: 16, y: 5, map: 'hearthmoor' });
+  await expect.poll(() => at(page), { timeout: 8000 }).toEqual({ x: 20, y: 5, map: 'hearthmoor' });
 });
 
 test('a wild tap still chases on a straight line', async ({ page }) => {

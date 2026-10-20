@@ -46,7 +46,11 @@
     'story.unlock_rep', 'story.unlock_phone', 'story.unlock_sides', 'story.unlock_quests', 'story.unlock_moral',
     'story.unlock_switch', 'story.unlock_letter', 'story.unlock_lantern', 'story.unlock_growup',
     // TB-3: the posting sets the pin only. It is not a step. Yes, the sign, and the report live on BOARD.
-    'story.board_gate_pinned'];
+    'story.board_gate_pinned',
+    // The Signal Review (GLIMMER_NEXT_QUEST). Done flags live on the four CHAIN rows. These are branches and one-shots.
+    'story.gb_escort', 'story.gb_loan', 'story.gb_relay_let', 'story.gb_relay_back',
+    'story.gb_hollis_kept', 'story.gb_hollis_told', 'story.gb_read', 'story.gb_stand', 'story.gb_hold',
+    'story.gb_tune_asked', 'story.gb_tobin', 'story.gb_imogen_done', 'story.gb_imogen_result'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -131,9 +135,21 @@
       text: 'Rook is outside the Hall with news from the quarry.', place: "Outside Hale's Hall",
       glimmer: { text: 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', place: "Outside Hale's Hall" },
       target: { map: 'cobblecrest', x: 25, y: 7 } },
-    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'],
+    { id: 'hc_council', when: ['!story.side=glimmer'], done: ['story.hc_council_done'], noImply: true,
       text: 'High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', place: 'High Charity, sky-dock',
       target: { map: 'hc_command_in', x: 2, y: 3 } },
+    { id: 'gb_invite', when: ['story.side=glimmer'], done: ['story.gb_invited'],
+      text: 'Dorian Pell is back on the quarry stage. Glimmerwell has news.', place: 'Quarry stage',
+      target: { map: 'cobble_quarry', x: 16, y: 4 } },
+    { id: 'gb_relay', when: ['story.side=glimmer'], done: ['story.gb_relay_done'],
+      text: 'Field Lead Imogen is testing relays at the Wickerglen lamps.', place: 'Wickerglen, the lamps',
+      target: { map: 'route2_glen', x: 12, y: 5 } },
+    { id: 'gb_hollis', when: ['story.side=glimmer'], done: ['story.gb_hollis'],
+      text: 'Associate Hollis is waiting on Route 2. He wants a quiet word.', place: 'Route 2, the Census',
+      target: { map: 'route2', x: 25, y: 1 } },
+    { id: 'gb_briefing', when: ['story.side=glimmer'], done: ['story.gb_done'],
+      text: 'The Capital Partnership Briefing is in the Arbiter Bay.', place: 'Heights, top bay',
+      target: { map: 'rx_f4', x: 6, y: 4 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];
@@ -159,7 +175,7 @@
         target: { map: 'hm_home_up', x: 5, y: 3 } },
       { id: 'mahopac', when: ['story.mom_sent'], done: ['story.reached_mahopac'],
         text: 'Take your Walkling up the north trail to Mahopac.', place: 'Hearthmoor, north trail',
-        target: { map: 'hearthmoor', x: 9, y: 0 } },
+        target: { map: 'hearthmoor', x: 9, y: 2 } },
       { id: 'observatory', when: ['story.reached_mahopac'], done: ['story.dream_started'],
         text: 'Step into Breckenridge Observatory. The lens is waiting.', place: 'Mahopac observatory',
         target: { map: 'mahopac_obs', x: 4, y: 2 } },

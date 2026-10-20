@@ -512,8 +512,11 @@ function updatePetStrip(p){
     grow.style.width = pct + '%';
     grow.classList.remove('low');
   }
+  // D384–D385: HP is the first bar. Width is hp / max. PAL r under 25%. No .low blink. No digits on the card.
+  const hp = hpOf(p), mx = maxHpOf(p), e = $('#stripHp');
+  if (e) { e.style.width = clamp(hp / mx * 100, 0, 100) + '%'; e.classList.toggle('warn', hp / mx < 0.25); e.classList.remove('low'); }
   const goalTxt = unknown ? '???' : (p.stage >= 2 ? 'fully grown' : (p.xp + ' of ' + EVO_XP[p.stage]));
-  $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
+  $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. HP ' + hp + ' of ' + mx + ', Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
 }
 
 // Nav button art (NAV_MODERN v0.2 §7, data/nav_art.js copied from Design's nav_art.json). Modern only: arcade keeps its old
@@ -1547,7 +1550,7 @@ function doAction(act){
   if (act === 'feed') {
     if (p.hunger >= 98) { sfx('denied'); tutMiss(act); return toast('Too full to eat!'); }
     const bowl = bowlReady();
-    p.hunger = clamp(p.hunger + careGain(FEED_FOOD, p.hunger, FEED_BANDS) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + (bowl ? BOWL.joy : 3), 0, 100);
+    p.hunger = clamp(p.hunger + careGain(FEED_FOOD, p.hunger, FEED_BANDS) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + careJoy(p, bowl ? BOWL.joy : 3), 0, 100);
     if (bowl) { S.flags[BOWL.flag] = dayKey(Date.now()); queueEmote('emote_hearts', 600, 1500); }   // two-hearts balloon (ICONS_SEALS Q6), on the emote queue
     addPart('apple', pp.x + 6, pp.y - 4, 0, 4, 0.9);
     setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
@@ -1555,7 +1558,7 @@ function doAction(act){
   } else if (act === 'play') {
     if (isFainted(p)) { sfx('denied'); tutMiss(act); return toast(petName(p) + ' is worn out and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
     if (p.energy < 10) { sfx('denied'); tutMiss(act); return toast('Too tired to play. REST first!'); }
-    p.happy = clamp(p.happy + careGain(20, p.happy), 0, 100); p.energy = clamp(p.energy - 8, 0, 100); p.hunger = clamp(p.hunger - 4, 0, 100);
+    p.happy = clamp(p.happy + careJoy(p, careGain(20, p.happy)), 0, 100); p.energy = clamp(p.energy - 8, 0, 100); p.hunger = clamp(p.hunger - 4, 0, 100);
     anim.jumpUntil = t + 1200; anim.busyUntil = t + 1200;
     for (let i=0;i<4;i++) addPart(i%2 ? 'heart' : 'spark', pp.x + 1 + i*4, pp.y + 2, (i-1.5)*6, -14);
     msg = 'Wheee! +JOY';
@@ -1615,7 +1618,7 @@ function patPet(){
     touch.taps = []; touch.awayFrom = t; touch.awayUntil = t + PAT.awayMs; sfx(chirpName(p), 0); return say(name + ' hops away for a moment.');
   }
   const r = patRec(p); r.n++;
-  if (r.joy < PAT.joyDay) { r.joy++; p.happy = clamp(p.happy + 1, 0, 100); }
+  if (r.joy < PAT.joyDay) { r.joy++; p.happy = clamp(p.happy + careJoy(p, 1), 0, 100); }
   patBond(p, r);
   const recent = touch.taps.filter(x => t - x <= PAT.tickleMs).length;
   if (recent >= PAT.tickleN && t >= touch.rollUntil) {   // tickle fit: giggle + a roll
@@ -1767,6 +1770,11 @@ function drawPetScene(t, dt){
 // Verbatim JSON via data/mapdata.js. Merge order matches the checkers: maps_slice, interiors slicePatch,
 // act1_route2 slicePatch then its maps, interiors rooms, cobblecrest route2Patch then its maps and rooms.
 const MD = MAPDATA, TS = 16;
+// {chip} is the chipped party Walkling's name (GLIMMER_NEXT_QUEST D311). The verbatim interiors file stays untouched.
+if (MD.interiors && MD.interiors.dialog) {
+  const tok = MD.interiors.dialog.tokenLen || (MD.interiors.dialog.tokenLen = {});
+  if (tok.chip == null) tok.chip = 10;
+}
 // Map-pass overlays (handoff/maps): data/detail_*.json, ours, one file per batch, so the verbatim design copies stay untouched.
 // Each may carry `tiles` (new map chars only, never a redefinition) and a `slicePatch`, applied after every other patch.
 const DETAIL_KEYS = Object.keys(MD).filter(k => k.startsWith('detail_')).sort();
@@ -1837,6 +1845,7 @@ if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
 SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
 for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+for (const k of DETAIL_KEYS) if (MD[k].trainers) for (const [id, t] of Object.entries(MD[k].trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
@@ -1844,7 +1853,7 @@ if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x:
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 // Glimmerwell is the company faction. A Keeper hears them as the dark side: first meeting and their battles use the sinister loops.
-const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers' };
+const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers' };
 for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
@@ -2028,12 +2037,12 @@ function standingOf(sd, live){
   if (live && scene && scene.view.standing && sd in scene.view.standing) return scene.view.standing[sd];
   return S && S.standing ? (S.standing[sd] | 0) : 0;
 }
-function setStanding(sd, pts){
+function setStanding(sd, pts, opts){
   if (!PPStanding.isSide(sd)) return null;
   if (!S.standing || typeof S.standing !== 'object') S.standing = { keepers: 0, glimmer: 0 };
   const before = S.standing[sd] | 0, after = PPStanding.clampPts(pts);
   S.standing[sd] = after;
-  if (after !== before) noteAlignAct(sd, Math.abs(after - before));
+  if (after !== before && !(opts && opts.muteAlign)) noteAlignAct(sd, Math.abs(after - before));
   const t1 = PPStanding.tierOf(after), topKey = 'standing.top.' + sd;
   if (t1 > PPStanding.tierOf(before) && t1 > (+S.flags[topKey] || 0)) {
     S.flags[topKey] = t1;
@@ -2042,7 +2051,9 @@ function setStanding(sd, pts){
   }
   return after;
 }
-const addStanding = (sd, n) => setStanding(sd, standingOf(sd, false) + (Number(n) || 0));
+const addStanding = (sd, n, opts) => setStanding(sd, standingOf(sd, false) + (Number(n) || 0), opts);
+// The Signal Review grants move Standing only. ALIGN stays on the four choice points (GLIMMER_NEXT_QUEST §3).
+const ALIGN_MUTE_GRANTS = new Set(['gb_relay_g', 'gb_callback_k', 'gb_brief_g']);
 // D187–D190. One chipped Walkling carries align 0–100. Absent chip and align mean unchipped. v stays 2.
 let alignQuiet = null;
 function chipOn(p){ return !!(p && p.chip && p.chip.on); }
@@ -2055,6 +2066,10 @@ function alignBand(n){
   if (v <= 74) return 'Tuned';
   return 'Bright-linked';
 }
+// GLIMMER_NEXT_QUEST §3. One place for the chip's battle and care numbers.
+const SIGNAL_CFG = Object.freeze({ surge: 1.10, battleJoy: 2, readJoy: 10, joyFloor: 20, choice: 5, strainJoy: 0.5 });
+function careJoy(p, n){ return (chipOn(p) && alignBand(p.align) === 'Strain') ? n * SIGNAL_CFG.strainJoy : n; }
+function signalOn(p){ return !!(chipOn(p) && alignBand(p.align) === 'Bright-linked'); }
 function alignSign(){ return side() === 'keepers' ? -1 : 1; }
 function alignStep(amount){ return clamp(Math.abs(Number(amount) || 0), 2, 5); }
 function nudgeAlign(p, signed){
@@ -2218,7 +2233,7 @@ function rookOfferSteps(to){
   if (from === dest) return [['say', 'Rook', R.wait]];
   const can = PPStanding.canSwitch(S.flags, S.standing, from, dest);
   if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : R.notYet]];
-  const pts = standingOf(from, false);
+  const pts = standingOf(from, true);
   const costLine = PPStanding.fill(W.costLine, { side: SC_STANDING.sides[from].short, from: pts, to: PPStanding.switchCost(pts) });
   return [
     ['say', 'Rook', R.letter[dest]],
@@ -2316,6 +2331,21 @@ for (const k of DETAIL_KEYS) for (const [n, v] of Object.entries(MD[k].looks || 
     if (id.startsWith('_') || !Array.isArray(steps) || !SCENES[id]) continue;
     SCENES[id].unshift(...steps);
   }
+})();
+// The Signal Review: Hollis's quiet word uses the NPC already at Route 2 25,1. After he is told on, he leaves that tile.
+(function wireHollisQuest(){
+  let o = null;
+  for (const m of Object.values(WORLD)) {
+    o = (m.objs || []).find(x => x.id === 'hollis_aside');
+    if (o) break;
+  }
+  if (!o) return;
+  const key = 'story.side=glimmer&story.gb_relay_done&!story.gb_hollis&!story.gb_hollis_told';
+  const lines = {};
+  lines[key] = '@gb_hollis';
+  for (const [k, v] of Object.entries(o.lines || {})) if (!(k in lines)) lines[k] = v;
+  o.lines = lines;
+  if (!(o.when || []).includes('!story.gb_hollis_told')) o.when = (o.when || []).concat(['!story.gb_hollis_told']);
 })();
 function trainerLine(id, key){
   syncSide();
@@ -2585,6 +2615,13 @@ function cond(c, live, o){
   }
   return neg ? !v : v;
 }
+// The Signal Review escort opens the lab door and the three RegenX stairs for the day. Staff battles stay as built.
+const ESCORT_STAIRS = { 'story.heights_path=lab': 1, 'story.rx_f1': 1, 'story.rx_f2': 1, 'story.rx_f3': 1 };
+function needMet(need){
+  if (!need) return true;
+  if (cond(need, false)) return true;
+  return !!(S && S.flags['story.gb_escort'] && ESCORT_STAIRS[need]);
+}
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
 function present(o){
   if (o.when && !o.when.every(c => cond(c, false))) return false;
@@ -2850,7 +2887,7 @@ function startTapWalk(tx, ty, soft){
   walk.path = path; walk.aim = { x: tx, y: ty, soft: !!soft };
 }
 const dirName = (dx, dy) => dx > 0 ? 'right' : dx < 0 ? 'left' : dy < 0 ? 'up' : 'down';
-function warpBlocked(x, y){ const wp = warpAt(x, y); return !!(wp && wp.need && !cond(wp.need, false)); }
+function warpBlocked(x, y){ const wp = warpAt(x, y); return !!(wp && wp.need && !needMet(wp.need)); }
 function tryStep(d){
   if (fade.busy || scene) return;
   const p = pet();                           // the keeper walks with or without a partner (MAPS_SLICE K.1)
@@ -2910,7 +2947,7 @@ function onLand(){
   if (S.steps % 50 === 0 && !found) toast(S.steps + ' steps! Nice walk.');   // a find says more than the step count
   const x = S.world.x, y = S.world.y;
   const wp = warpAt(x, y);
-  if (wp && !(wp.need && !cond(wp.need, false))) {
+  if (wp && needMet(wp.need)) {
     if (lanternHold() && LANTERN_ROOMS[CUR.id]) { blockLanternExit(); return; }   // the mat stays shut until the party rests
     if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return;
   }
@@ -3549,7 +3586,7 @@ function arriveAt(at){
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
 }
 function enterDoor(dr){
-  if (dr.need && !cond(dr.need, false)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
+  if (dr.need && !needMet(dr.need)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
   if (dr.to && WORLD[dr.to]) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
 }
@@ -4359,9 +4396,16 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     }
     g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
-  else if (o.kind === 'prop') { const a = WART[o.sprite]; if (a) drawArt(g, artFrame(a, t), X, Y); }
+  else if (o.kind === 'prop') {
+    const key = (o.id === 'rx4_side' && S && S.flags['story.gb_escort'] && !S.flags['story.gb_done'] && S.flags['story.side'] === 'glimmer') ? 'capital_screen' : o.sprite;
+    const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y);
+  }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
-  else if (o.kind === 'wild') { const [line, st] = String(o.form || '').split('/'); g.drawImage(sprFor(line, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
+  else if (o.kind === 'wild') {
+    if (o.relay && WART.relay_ring) { const ring = artFrame(WART.relay_ring, t); if (ring) g.drawImage(ring, X, Y); }
+    const [line, st] = String(o.form || '').split('/');
+    g.drawImage(sprFor(line, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2));
+  }
 }
 
 /* ---------- keeper (player) sprite: MAPS_SLICE K.1 ---------- */
@@ -4593,6 +4637,12 @@ function interact(o){
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
+    if (o.id === 'rc_tobin' && S.flags['story.gb_hollis_told'] && !S.flags['story.gb_tobin']) {
+      return runSteps([
+        ['say', t.name, 'Hollis is on the quarry count now. He asked. Have a bright day!'],
+        ['setFlag', 'story.gb_tobin', true],
+      ], ctx);
+    }
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
   if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
@@ -4773,9 +4823,97 @@ function viewPetName(){
 function expand(text){
   const p = viewPet(), sp = p ? SPECIES[spi(p)] : null, v = scene ? scene.vars : {};
   const line = (v && v.line) || flagOf('story.starter_line', true), rv = COUNTER[line] && SPECIES[SP_INDEX[COUNTER[line]]];
-  const vals = { name: curName(true) || DEFAULT_PLAYER_NAME, player: curName(true) || DEFAULT_PLAYER_NAME, pet: viewPetName(), species: p ? nameOf(spi(p), p.stage) : '',
+  const vals = { name: curName(true) || DEFAULT_PLAYER_NAME, player: curName(true) || DEFAULT_PLAYER_NAME, pet: viewPetName(), chip: chipLabel(), species: p ? nameOf(spi(p), p.stage) : '',
     type: sp ? sp.type : '', suggest: SPECIES[SP_INDEX[suggestLine(v)]].stages[0].name, rival: rv ? rv.stages[0].name : '', rivalType: rv ? rv.type : '' };
-  return String(text).replace(/\{(name|player|pet|species|type|suggest|rival|rivalType)\}/g, (m, k) => vals[k]);
+  return String(text).replace(/\{(name|player|pet|chip|species|type|suggest|rival|rivalType)\}/g, (m, k) => vals[k]);
+}
+function chipLabel(){
+  const list = chippedPets();
+  if (list.length) return petName(list[0]);
+  return viewPetName();
+}
+function signalCastFast(){ return prefersReduced() || !!window.PP_SIGNAL_FAST; }
+function pushCast(o){
+  if (!CUR) return null;
+  CUR.objs.push(o);
+  if (scene) (scene.cast = scene.cast || []).push({ objs: CUR.objs, o });
+  return o;
+}
+function dropCastIds(ids){
+  const set = new Set(ids);
+  if (CUR) for (let i = CUR.objs.length - 1; i >= 0; i--) if (set.has(CUR.objs[i].id)) CUR.objs.splice(i, 1);
+  if (scene && scene.cast) scene.cast = scene.cast.filter(c => !set.has(c.o.id));
+  for (const id of ids) delete mapRT.pos[id];
+}
+async function glideCast(moves, ms){
+  const from = {};
+  for (const m of moves) {
+    const o = CUR && CUR.objs.find(x => x.id === m.id);
+    const q = o ? objPos(o) : { x: m.x, y: m.y };
+    from[m.id] = { x: q.x, y: q.y };
+    mapRT.pos[m.id] = { x: m.x, y: m.y, fx: q.x, fy: q.y, moving: ms > 0, facing: dirName(m.x - q.x, m.y - q.y) };
+  }
+  if (!(ms > 0)) {
+    for (const m of moves) { const P = mapRT.pos[m.id]; if (P) { P.fx = m.x; P.fy = m.y; P.moving = false; } }
+    return;
+  }
+  await new Promise(res => {
+    const t0 = now();
+    (function tick(){
+      const k = Math.min(1, (now() - t0) / ms);
+      for (const m of moves) {
+        const P = mapRT.pos[m.id], a0 = from[m.id];
+        if (!P || !a0) continue;
+        P.fx = a0.x + (m.x - a0.x) * k; P.fy = a0.y + (m.y - a0.y) * k;
+      }
+      if (k < 1 && scene) requestAnimationFrame(tick); else res();
+    })();
+  });
+}
+async function walkCast(paths){
+  if (!paths.length) return;
+  const ms = signalCastFast() ? 0 : 120, n = Math.max.apply(null, paths.map(p => p.steps.length));
+  const box = $('#ovScene'); if (box) box.hidden = true;
+  for (let i = 0; i < n; i++) {
+    if (!scene) return;
+    await glideCast(paths.map(p => { const step = p.steps[Math.min(i, p.steps.length - 1)]; return { id: p.id, x: step[0], y: step[1] }; }), ms);
+  }
+  if (scene && box) { box.hidden = false; sbRender('', ''); }
+}
+async function relayStart(){
+  if (!CUR || CUR.id !== 'route2_glen') return;
+  const specs = [
+    { id: 'gb_cast_a', form: 'moth/0', steps: [[8, 5], [8, 6], [9, 6], [10, 6], [11, 6], [13, 7], [15, 7], [16, 7]] },
+    { id: 'gb_cast_b', form: 'crab/0', steps: [[12, 3], [12, 4], [11, 4], [11, 6], [13, 6], [15, 6], [16, 6]] },
+    { id: 'gb_cast_c', form: 'volt/0', steps: [[16, 5], [16, 6], [17, 6]] },
+  ];
+  for (const s of specs) {
+    if (CUR.objs.some(o => o.id === s.id)) continue;
+    pushCast({ kind: 'wild', id: s.id, form: s.form, x: s.steps[0][0], y: s.steps[0][1], relay: true, level: 1 });
+  }
+  await walkCast(specs);
+}
+async function relayEnd(kind){
+  const ids = ['gb_cast_a', 'gb_cast_b', 'gb_cast_c'];
+  if (CUR && CUR.id === 'route2_glen' && kind === 'scatter') {
+    await walkCast([
+      { id: 'gb_cast_a', steps: [[14, 8], [10, 9]] },
+      { id: 'gb_cast_b', steps: [[14, 5], [18, 4]] },
+      { id: 'gb_cast_c', steps: [[18, 6], [20, 5]] },
+    ]);
+  }
+  dropCastIds(ids);
+}
+async function readWalk(dir){
+  if (!CUR || CUR.id !== 'rx_f4') return;
+  if (!CUR.objs.some(o => o.id === 'gb_read_pet')) {
+    const p = chippedPets()[0];
+    const form = p ? p.species + '/' + (p.stage || 0) : 'stone/0';
+    pushCast({ kind: 'wild', id: 'gb_read_pet', form: form, x: 6, y: 6, relay: true, level: 1 });
+  }
+  const steps = dir === 'back' ? [[6, 5], [6, 6]] : [[6, 5], [6, 4]];
+  await walkCast([{ id: 'gb_read_pet', steps: steps }]);
+  if (dir === 'back') dropCastIds(['gb_read_pet']);
 }
 async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene;
@@ -4798,9 +4936,9 @@ async function execStep(st){
       const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
       if (!opts.length) return;
       noteMoralChoice(opts);
-      const pick = await choiceBox(expand(a), opts.map(o => o[0]));
+      const pick = await choiceBox(expand(a), opts.map(o => expand(o[0])));
       const opt = opts[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
-      $('#sbEcho').textContent = '\u203a ' + opt[0];
+      $('#sbEcho').textContent = '\u203a ' + expand(opt[0]);
       await execSteps(opt[1]); return;
     }
     case 'nameEntry': { sc.skip = false; await nameBox(a, expand(b), c, d); return; }
@@ -4836,7 +4974,7 @@ async function execStep(st){
       if (!n || (got && flagOf(got, true))) return;
       if (got) sc.view.flags[got] = true;
       sc.view.standing = sc.view.standing || {}; sc.view.standing[a] = PPStanding.clampPts(standingOf(a, true) + n);
-      pend(() => { if (got) { if (S.flags[got]) return; S.flags[got] = true; } addStanding(a, n); });
+      pend(() => { if (got) { if (S.flags[got]) return; S.flags[got] = true; } addStanding(a, n, { muteAlign: !!(c && ALIGN_MUTE_GRANTS.has(c)) }); });
       return;
     }
     // LR5 (D174): ["rep", Name, n]. Fixed names no-op inside repAdd. Not buffered, so a later cond in this scene sees it.
@@ -4972,6 +5110,45 @@ async function execStep(st){
     case 'bond': { const n = Number(a) || 0; if (n) pend(() => { const p = pet(); if (p) addBond(p, n); }); return; }
     case 'sfx': { if (a) sfx(a); return; }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
+    case 'align': { pend(() => noteAlignAct(a === 'keepers' ? 'keepers' : 'glimmer', Number(b) || SIGNAL_CFG.choice)); return; }
+    case 'relay': { if (a === 'start') await relayStart(); else await relayEnd(a); return; }
+    case 'readWalk': { await readWalk(a); return; }
+    case 'readJoy': {
+      if (flagOf('story.gb_read', true)) return;
+      const petRef = chippedPets()[0]; if (!petRef) return;
+      sc.view.flags['story.gb_read'] = true;
+      pend(() => {
+        if (S.flags['story.gb_read']) return;
+        S.flags['story.gb_read'] = true;
+        if (chipOn(petRef)) petRef.happy = Math.max(SIGNAL_CFG.joyFloor, petRef.happy - SIGNAL_CFG.readJoy);
+      });
+      return;
+    }
+    case 'rookOut': {
+      const from = side(), dest = from === 'glimmer' ? 'keepers' : 'glimmer';
+      const can = PPStanding.canSwitch(S.flags, S.standing, from, dest);
+      if (can.ok) await playScene('rook_offer');
+      else await execStep(['say', 'Rook', 'Not here. Find me by the Brinewick road sign. We finish the crates first.']);
+      return;
+    }
+    case 'chipOffer': {
+      sc.skip = false;
+      if (chippedPets().length || flagOf('story.arbiter_test_done', true)) return;
+      const opts = (S.party || []).filter(p => !chipOn(p) && !chipLocked(p));
+      if (!opts.length) { await execStep(['setFlag', 'story.gb_tune_asked', true]); return; }
+      const id = await openSheet('Who hears us clearer?', opts.map(p => ({ label: petName(p) + '  Lv ' + levelOf(p), value: p.id })), 'BACK');
+      if (!scene) return;
+      if (!id) { await execStep(['setFlag', 'story.gb_tune_asked', true]); return; }
+      const target = petById(id);
+      if (!target || chipOn(target)) return;
+      await execStep(['say', '', 'A soft click under the fur. The Hall lights dim. Somewhere below, something vast exhales.']);
+      if (!scene) return;
+      chipPet(target);
+      await execStep(['setFlag', 'story.arbiter_test_done', true]);
+      if (!scene) return;
+      await execStep(['say', 'Associate Quinn', 'There. Tuned. Keep them close, holder. The box is for the others now.']);
+      return;
+    }
     case 'warp': {
       if (!a || !WORLD[a]) return;
       commitPending();   // the position save inside the warp must not outrun this scene's flags
@@ -5640,6 +5817,7 @@ function myBattler(){
   const p = activePet(), b = battlerOf(p), st = battle.me.stages;
   b.mood = battle.me.mood || b.mood;
   b.atk *= STAGE_MULT[st.atk]; b.def *= STAGE_MULT[st.def]; b.spd *= STAGE_MULT[st.spd]; b.hp = hpOf(p);
+  if (signalOn(p)) b.signal = SIGNAL_CFG.surge;
   return b;
 }
 function foeBattler(f){
@@ -5837,7 +6015,7 @@ function blockLanternExit(){
   runSteps(lanternBedSteps(), { id: 'lantern_rest' }).then(() => {
     if (scene || fade.busy || !S || CUR.id !== map || lanternHold()) return;
     const wp = warpAt(S.world.x, S.world.y);
-    if (wp && !(wp.need && !cond(wp.need, false))) warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing });
+    if (wp && needMet(wp.need)) warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing });
   });
 }
 // The design JSON still says the rest is free. Players read the cost, so the signs are patched here.
@@ -5916,7 +6094,7 @@ function renderBattleCards(){
   $('#btMeHpTxt').textContent = hp + '/' + mhp;
   const m = B.me.mood || moodOf(p), chips = [];
   if (m.hungry) chips.push('HUNGRY'); if (m.sulky) chips.push('SULKY'); if (m.drowsy) chips.push('DROWSY');
-  if (m.spirited) chips.push('SPIRITED'); if (m.glowing) chips.push('GLOWING');
+  if (m.spirited) chips.push('SPIRITED'); if (m.glowing) chips.push('GLOWING'); if (signalOn(p)) chips.push('SIGNAL');
   $('#btMood').textContent = [stageText(B.me.stages), chips.join(' ')].filter(Boolean).join(' ');
   const row = $('#btFoe2Row');
   if (row) {
@@ -6677,7 +6855,7 @@ function mapLayerWalks(m, ch){
 }
 function layerWhen(o){
   if (!o) return false;
-  if (o.need && !cond(o.need, false)) return false;
+  if (o.need && !needMet(o.need)) return false;
   if (!o.when) return true;
   const list = Array.isArray(o.when) ? o.when : [o.when];
   return list.every(c => cond(c, false));
@@ -6839,6 +7017,8 @@ function outdoorLayout(m){
   const exits = [];
   (m.objs || []).forEach(o => {
     if (o.kind !== 'warp' || !WORLD[o.to]) return;
+    // D381: the trail mouth is three warps. The town map lists the middle tile once, like an in-map exit.
+    if (o.id === 'hm_north_w' || o.id === 'hm_north_e') return;
     const edge = o.x === 0 ? 'west' : o.x === w - 1 ? 'east' : o.y === 0 ? 'north' : o.y === h - 1 ? 'south' : 'mark';
     const node = nodeOf(o.to);
     exits.push({
@@ -7472,6 +7652,7 @@ function paintGlyphBox(c, name, fallback){
 }
 // D245: apple, heart, bolt and star. Painted once at boot. The heart-button bowl and z stay on their own canvases.
 function paintStatIcons(){
+  $$('.ico-hp').forEach(c => paintGlyphBox(c, 'ico_hp'));
   $$('.ico-food').forEach(c => paintGlyphBox(c, 'ico_food'));
   $$('.ico-joy').forEach(c => paintGlyphBox(c, 'ico_joy'));
   $$('.ico-grow').forEach(c => paintGlyphBox(c, 'ico_grow'));
@@ -8549,7 +8730,11 @@ async function finish(result, id){
 async function results(result, id){
   const B = battle, t = tr(), won = result === 'win' || result === 'befriended';
   const parts = new Set(); B.participants.forEach(s => s.forEach(x => parts.add(x)));
-  parts.forEach(pid => { const p = petById(pid); if (p) applyBattleCosts(p, { tired: B.fainted.has(pid), won }); });   // once, clamp 0..100
+  parts.forEach(pid => {
+    const p = petById(pid); if (!p) return;
+    applyBattleCosts(p, { tired: B.fainted.has(pid), won });
+    if (signalOn(p)) p.happy = Math.max(SIGNAL_CFG.joyFloor, p.happy - SIGNAL_CFG.battleJoy);
+  });
   if (won && parts.has(S.partnerId)) { const cday = careDay(); if (cday.battleBond < BOND.battleDay) { cday.battleBond++; addBond(pet(), BOND.battle); } }   // bond: won / befriended together
   if (result === 'win' && t) {
     const money = t.money != null ? t.money : 10 * Math.max(...trainerTeam(t).map(m => m.level)) * (t.hall ? 3 : 1);
@@ -9212,10 +9397,15 @@ function paintStatsInto(prefix, p, opt){
   tb.textContent = typeName; tb.className = 'type-badge' + (sp && sp.type ? ' t-' + sp.type : '');
   $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
   const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
-  const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), badge = hpBadge(p), glowing = !badge && moodOf(p).glowing;   // FAINTED > TIRED > GLOWING
+  const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), badge = hpBadge(p), glowing = !badge && moodOf(p).glowing;
+  const signal = signalOn(p);
   $('#' + prefix + 'Hp').textContent = hp + '/' + mhp;
   const hb = $('#' + prefix + 'HpBar'); hb.style.width = (100 * hp / mhp) + '%'; hb.classList.toggle('warn', hp / mhp < 0.25); ariaBar(hb, hp, mhp, 'HP');
-  const tag = $('#' + prefix + 'Tag'); tag.hidden = !(badge || glowing); tag.textContent = badge || 'GLOWING';
+  const tag = $('#' + prefix + 'Tag');
+  const bits = [];
+  if (badge) bits.push(badge); else if (glowing) bits.push('GLOWING');
+  if (signal) bits.push('SIGNAL');
+  tag.hidden = !bits.length; tag.textContent = bits.join(' ');
   tag.className = 'sc-tag ' + (badge ? (badge === 'TIRED' ? 'tired' : 'fainted') : 'glowing');
   const box = $('#' + prefix + 'Stats'); box.innerHTML = '';
   for (const [key, label] of STAT_KEYS) {
@@ -11435,6 +11625,9 @@ function boot(){
     runScene: id => { if (!sceneSteps(id) || scene) return false; showTab('walk'); runScene(id); return true; },
     // BS debug: set one meter outright (tier-up toasts fire as in play), switch the pledge directly (free = no cost), or open a desk's steps.
     setStanding: (sd, n) => { const r = setStanding(sd, n); if (r != null) { save(); if (!$('#ovQuest').hidden) renderQuestTabs(); } return r; },
+    alignNudge: (kind, n) => { noteAlignAct(kind === 'keepers' ? 'keepers' : 'glimmer', n == null ? SIGNAL_CFG.choice : n); const p = chippedPets()[0]; return p ? p.align : null; },
+    signalOf: id => { const p = (id && petById(id)) || pet(); return signalOn(p) ? SIGNAL_CFG.surge : 1; },
+    careAct: act => { doAction(act); const p = pet(); return p ? { happy: p.happy, hunger: p.hunger, energy: p.energy } : null; },
     repAdd: (name, n, why) => { const r = window.PPRep ? PPRep.repAdd(name, n, why || 'debug') : 0; save(); return r; },
     switchSide: (to, free) => switchSide(to, { free: !!free }),
     rookOffer: to => { if (!S || scene || overlayOpen() || (battle && battle.on)) return false; showTab('walk'); runSteps(rookOfferSteps(to)); return true; },

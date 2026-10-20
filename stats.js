@@ -138,7 +138,9 @@ function damage({ power, moveType, att, def, rng = Math.random }){
   const crit = rng() < (att.mood && att.mood.spirited ? R.CRIT.spiritedChance : R.CRIT.chance);
   const rand = R.RAND[0] + (R.RAND[1] - R.RAND[0]) * rng();
   const glow = att.mood && att.mood.glowing ? R.GLOW : 1;
-  return { dmg: Math.max(1, Math.floor(base * mult * same * (crit ? R.CRIT.mult : 1) * glow * rand)), mult, crit };
+  const surge = att.signal > 1 ? att.signal : 1;
+  const boost = Math.max(glow, surge);
+  return { dmg: Math.max(1, Math.floor(base * mult * same * (crit ? R.CRIT.mult : 1) * boost * rand)), mult, crit };
 }
 
 // §7. HP comes back at 10% of max per 10 real minutes out of battle (full in 100 min). Separate from care decay.

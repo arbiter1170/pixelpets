@@ -1604,6 +1604,21 @@ function buildWorldArt(){
     px(g,PAL.l,4,2,1,1); px(g,PAL.l,11,3,1,1); px(g,PAL.l,3,6,1,1); px(g,PAL.l,12,5,1,1);
     px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.l,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
   }));
+  // The Signal Review. Mint relay ring, the Capital screen face, and the loaned crate. PAL only.
+  A.relay_ring = [0, 1, 2].map(f => mkTile(g => {
+    const y = 12 - f;
+    px(g, PAL.s, 2, y, 12, 1); px(g, PAL.s, 1, y - 1, 1, 2); px(g, PAL.s, 14, y - 1, 1, 2);
+    px(g, PAL.l, 4, y, 2, 1); px(g, PAL.l, 10, y, 2, 1);
+  }));
+  A.capital_screen = mkTile(g => {
+    px(g, PAL.d, 1, 1, 14, 14); px(g, PAL.k, 2, 2, 12, 12); px(g, PAL.s, 3, 3, 10, 8);
+    px(g, PAL.k, 5, 5, 2, 2); px(g, PAL.k, 9, 5, 2, 2); px(g, PAL.l, 6, 9, 4, 1);
+    px(g, PAL.m, 2, 12, 12, 2);
+  });
+  A.loan_crate = mkTile(g => {
+    px(g, PAL.d, 1, 3, 14, 13); px(g, PAL.o, 2, 4, 12, 11); px(g, PAL.s, 2, 8, 12, 2);
+    px(g, PAL.m, 5, 5, 6, 4); px(g, PAL.k, 6, 6, 1, 1); px(g, PAL.k, 9, 6, 1, 1); px(g, PAL.h, 7, 8, 2, 1);
+  });
   A.census_tent = mkTile(g => {
     px(g,PAL.d,7,1,2,14); px(g,PAL.w,2,4,12,8); px(g,PAL.l,2,4,12,2); px(g,PAL.l,2,8,12,1);
     px(g,PAL.d,3,6,4,4); px(g,PAL.k,3,6,4,1); px(g,PAL.h,4,12,8,2);

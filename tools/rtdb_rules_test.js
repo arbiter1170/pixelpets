@@ -505,6 +505,13 @@ async function main() {
       await deny('deny 19: host member missing', R('A', P).set({ cv: 1, host: 'A', made: TS, area: 'route1', members: { B: member() } }));
       await deny('deny 19: cv 2', R('A', P).set(Object.assign(party(), { cv: 2 })));
       await deny('deny 19: area outside rung 2', R('A', P).set(Object.assign(party(), { area: 'fernbrook' })));
+      const forgedPath = 'parties/' + PCODE + '/pK7QX2N';
+      const forged = () => ({ cv: 1, host: 'A', made: TS, area: 'route1', guest: 'E', members: { A: member(), E: member() } });
+      await deny('deny 19: forged single-write party with an uninvited guest', R('A', forgedPath).set(forged()));
+      const seated = forged();
+      seated.invites = { E: TS };
+      await allow('deny 19 allow: host create seats a guest who is invited in the same write', R('A', forgedPath).set(seated));
+      await allow('deny 19 allow: host deletes that party', R('A', forgedPath).remove());
       await allow('deny 19 allow: A makes the party', R('A', P).set(party()));
       await deny('deny 19: signed-out read', R(null, P).once('value'));
       await deny('deny 19: B reads before an invite', R('B', P).once('value'));

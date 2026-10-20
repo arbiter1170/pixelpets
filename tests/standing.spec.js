@@ -295,6 +295,10 @@ const COPY = {
   hall2: ["Hale's Hall is open. Challenge Master Hale for the Cobblecrest Seal.", 'Cobblecrest Hall', 'Your second review is a Tuning. The free quota still closes it.', 'Cobblecrest Hall'],
   hook: ['Rook is outside the Hall with news from the quarry.', "Outside Hale's Hall", 'Rook is by the Brinewick cart. He is staying with Glimmerwell.', "Outside Hale's Hall"],
   hc_council: ['High Charity called a Lantern Council. Bring both Seals to Sky-Dock Command.', 'High Charity, sky-dock'],
+  gb_invite: ['Dorian Pell is back on the quarry stage. Glimmerwell has news.', 'Quarry stage'],
+  gb_relay: ['Field Lead Imogen is testing relays at the Wickerglen lamps.', 'Wickerglen, the lamps'],
+  gb_hollis: ['Associate Hollis is waiting on Route 2. He wants a quiet word.', 'Route 2, the Census'],
+  gb_briefing: ['The Capital Partnership Briefing is in the Arbiter Bay.', 'Heights, top bay'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -323,14 +327,29 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
   let overrides = 0;
   for (const [id, row] of Object.entries(COPY)) {
     const r = seen.rows[id];
-    expect(r.kid, id).toBe(id);
-    expect(r.ktext, id).toBe(row[0]);
-    expect(r.kplace, id).toBe(row[1]);
     if (id === 'hc_council') {
+      expect(r.kid, id).toBe(id);
+      expect(r.ktext, id).toBe(row[0]);
+      expect(r.kplace, id).toBe(row[1]);
+      expect(r.gid, id).toBe('gb_invite');
+      expect(r.gtext).toBe(COPY.gb_invite[0]);
+      expect(r.gplace).toBe(COPY.gb_invite[1]);
+    } else if (id === 'gb_invite' || id.indexOf('gb_') === 0) {
+      expect(r.kid, id).toBe(id);
+      expect(r.ktext, id).toBe(row[0]);
+      expect(r.kplace, id).toBe(row[1]);
+      expect(r.gid, id).toBe(id);
+      expect(r.gtext, id + '@glimmer').toBe(row[0]);
+      expect(r.gplace, id + '@glimmer').toBe(row[1]);
+    } else if (id === 'end') {
+      expect(r.kid, id).toBe('hc_council');
       expect(r.gid, id).toBe('end');
-      expect(r.gtext).toBe(COPY.end[0]);
-      expect(r.gplace).toBe(COPY.end[1]);
+      expect(r.gtext).toBe(row[0]);
+      expect(r.gplace).toBe(row[1]);
     } else {
+      expect(r.kid, id).toBe(id);
+      expect(r.ktext, id).toBe(row[0]);
+      expect(r.kplace, id).toBe(row[1]);
       expect(r.gid, id).toBe(id);
       expect(r.gtext, id + '@glimmer').toBe(row[2] || row[0]);
       expect(r.gplace, id + '@glimmer').toBe(row[3] || row[1]);

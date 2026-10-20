@@ -46,7 +46,8 @@
     // One-shot grants (spec engineAsks.standingGrants). A `["standing", side, null, id]` step takes its amount from here;
     // `standing.got.<id>` guards each one so a replayed scene never grants twice.
     grants: { sp_pick: 10, orchard_k: 5, orchard_g: 5, seal1_k: 10, seal1_g: 10, tour1_match: 5, hc_council_k: 10,
-      rc_stamp1: 2, rc_stamp2: 2, rc_stamp3: 2, rc_loose: 2, rc_freed_k: 10, rc_shipped_g: 10 },
+      rc_stamp1: 2, rc_stamp2: 2, rc_stamp3: 2, rc_loose: 2, rc_freed_k: 10, rc_shipped_g: 10,
+      gb_relay_g: 2, gb_callback_k: 2, gb_brief_g: 10 },
     // Switching (D15, D127, D131): the side you leave keeps floor(points / costDiv); the side you join is unchanged.
     // Only Rook offers it, and only after story.rc_climax. A debug switchSide may skip the cost; the scene never does.
     switch: {
