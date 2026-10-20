@@ -1,6 +1,6 @@
 /* ROOM_ZOOM v0.1 (D231–D239). Modern interiors use a whole-number scale. Tap-to-walk hits the tile under the finger. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -49,12 +49,15 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
       const t = document.querySelector('#toast');
       if (t) t.classList.remove('show');
     }, id);
-    if (page.viewportSize().width === 390) await shot(page, 'room-zoom-' + id);
     const report = await page.evaluate(async (id) => {
       const info = PixelPets.mapInfo;
       const mc = document.querySelector('#mapCanvas');
       const wrap = document.querySelector('#mapWrap').getBoundingClientRect();
+      const cr = mc.getBoundingClientRect();
       const g = mc.getContext('2d');
+      const cam0 = PixelPets.walk.cam;
+      const px = g.getImageData(0, 0, 1, 1).data;
+      const voidPx = cam0.y < 0 ? [px[0], px[1], px[2]] : null;
       const bad = [];
       const stand = { x: PixelPets.state.world.x, y: PixelPets.state.world.y };
       for (let y = 0; y < info.h; y++) for (let x = 0; x < info.w; x++) {
@@ -77,7 +80,7 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
       const gear = document.querySelector('#gearFloat').getBoundingClientRect();
       return {
         id: info.id, w: info.w, h: info.h, scale: info.scale, baseScale: info.baseScale, slack: info.slack,
-        edge: info.edge, fitWidth: info.fitWidth, W: wrap.width, H: wrap.height, bad, n: bad.length ? 0 : null,
+        edge: info.edge, fitWidth: info.fitWidth, W: wrap.width, H: wrap.height, cssH: cr.height, topGap: cr.top - wrap.top, voidPx, bad, n: bad.length ? 0 : null,
         walked: { w: info.w, h: info.h }, smooth: g.imageSmoothingEnabled, gearH: gear.height,
         stand, v: PixelPets.state.v,
         count: (() => { let n = 0; for (let y = 0; y < info.h; y++) for (let x = 0; x < info.w; x++) if (PixelPets.tileInfo(x, y).walk) n++; return n; })(),
@@ -87,7 +90,10 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
     expect(report.count).toBeGreaterThan(8);
     expect(report.fitWidth).toBe(false);
     expect(report.slack).toBe(1);
-    expect(report.edge).toBeTruthy();
+    expect(report.edge).toBe(null);
+    expect(report.voidPx).toEqual([0x1a, 0x1c, 0x2c]);
+    expect(report.cssH).toBeLessThanOrEqual(report.H - 112 + 1);
+    expect(report.topGap).toBeLessThanOrEqual(2);
     expect(report.smooth).toBe(false);
     expect(report.gearH).toBeGreaterThanOrEqual(44);
     expect(report.gearH).toBeLessThan(80);
@@ -110,5 +116,4 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
   expect(wide.edge).toBe(null);
   expect(wide.scale).toBeCloseTo(wide.W / (wide.w * 16), 4);
   expect(wide.css).toBeCloseTo(wide.W, 0);
-  if (page.viewportSize().width === 390) await shot(page, 'room-zoom-rx_f4');
 });

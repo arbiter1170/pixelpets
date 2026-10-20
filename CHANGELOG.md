@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 21:31 ET: Room zoom void and every interior (build 20261019-2131)
+
+- What changed and why: Vincent's playtest (Oct 19, 9:13 PM ET) put leftover room edges back to the black void. That overrides D236. No new decision id. The next free id stays D258. Small interiors still zoom in whole steps, up to twice the outdoor scale, in the band above the buttons and the partner strip, so a bottom door is not hidden under that strip. A keeper pilaster counts as wall for the one-tile width slack. Flat 5B keeps slack 0: a walkable mat sits on the edge. Fit-width rooms, including the Arbiter Bay, are unchanged. The scale still snaps at the black midpoint of the warp, including stairs and the walk back outside, and outdoors returns to the outdoor scale. Save `v` stays 2.
+- Files touched: `game.js`, `tests/room_zoom.spec.js`, `tests/room_zoom_all.spec.js`, `index.html`, `version.json`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261019-2131.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/room_zoom_all.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=1 failed=0 flaky=0 skipped=0 time=5s. `node tools/pp_test.js tests/room_zoom.spec.js tests/interior_walls.spec.js tests/maps_b5.spec.js tests/maps_b8.spec.js tests/pathfinding.spec.js tests/rx_f4_pilot.spec.js tests/house_reskin.spec.js tests/controls.spec.js` PP_TEST RESULT: PASS exit=0 passed=171 failed=0 flaky=0 skipped=0 time=200s. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1190 failed=0 flaky=0 skipped=16 time=1715s. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): no new id. D236 stays the settled row. Vincent overrode it Oct 19, 2026, 9:13 PM ET: black void. The next free id stays D258.
+- Anything left unfinished: PR #104 (play together) is still open and also edits `game.js`. It was not on `main`, so it is not in this branch.
+
 ## 2026-10-19 20:09 ET: Merge main (online saves Phase 1) into Hearthmoor movement polish (build 20261019-2009)
 
 - What changed and why: Merged `origin/main` at `f17b830` (PR #99, online saves Phase 1, build 20261019-1759) into this branch and kept both sides. CHANGELOG keeps both entries. `index.html` and `version.json` take main's side and the new stamp 20261019-2009, later than 1759. `python3 tools/gen_mapdata.py` made no further change. Save `v` stays 2.
