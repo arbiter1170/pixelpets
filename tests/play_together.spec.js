@@ -84,10 +84,10 @@ async function onWalk(page){
     if (window.PixelPets.clearWild) window.PixelPets.clearWild();
   });
 }
-async function boot(page, save){
+async function boot(page, save, search){
   await installSave(page.context(), save, { quietDay: true });
   watchErrors(page);
-  await gotoGame(page, '?cloud=emu&debug=1');
+  await gotoGame(page, search || '?cloud=emu&debug=1');
   await onWalk(page);
 }
 const PHONES = { 320: { width: 320, height: 568 }, 375: { width: 375, height: 667 }, 390: { width: 390, height: 844 } };
@@ -882,6 +882,44 @@ test.describe('Play together', () => {
     });
     expect(delta, 'idle reads in 60 s').toBeGreaterThan(0);
     expect(delta, 'idle reads in 60 s').toBeLessThanOrEqual(12);
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  });
+
+  test('43 co-op defaults on with no coop param', async ({ page }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    await boot(page, saveFor('coopDef', 'Tester'));
+    expect(await page.evaluate(() => new URLSearchParams(location.search).get('coop'))).toBe(null);
+    expect(await page.evaluate(() => window.PPNet.coop.cfg.on)).toBe(true);
+    await joinRoom(page);
+    await rootSet('config/coop/on', true);
+    await page.waitForFunction(() => window.PPNet.coopOn() === true);
+    await rootSet('config/coop/on', null);
+    await page.waitForFunction(() => window.PPNet.coopOn() === false);
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  });
+
+  test('44 ?coop=0 turns co-op off', async ({ page }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    await rootSet('config/coop/on', true);
+    await boot(page, saveFor('coopOff', 'Tester'), '?cloud=emu&debug=1&coop=0');
+    expect(await page.evaluate(() => new URLSearchParams(location.search).get('coop'))).toBe('0');
+    expect(await page.evaluate(() => window.PPNet.coop.cfg.on)).toBe(false);
+    await joinRoom(page);
+    expect(await page.evaluate(() => window.PPNet.coopOn())).toBe(false);
+    await rootSet('config/coop/on', null);
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  });
+
+  test('45 server flag false means co-op is off', async ({ page }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    await boot(page, saveFor('coopSrv', 'Tester'));
+    expect(await page.evaluate(() => window.PPNet.coop.cfg.on)).toBe(true);
+    await joinRoom(page);
+    await rootSet('config/coop/on', true);
+    await page.waitForFunction(() => window.PPNet.coopOn() === true);
+    await rootSet('config/coop/on', false);
+    await page.waitForFunction(() => window.PPNet.coopOn() === false);
+    await rootSet('config/coop/on', null);
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
   });
 });
