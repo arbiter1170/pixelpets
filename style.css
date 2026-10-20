@@ -47,7 +47,7 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .set-vol .set-val{color:var(--y);min-width:3.2ch;text-align:right}
 .set-row.set-danger{border-color:var(--r);color:var(--h)}
 .set-row.set-danger .set-val{color:var(--r)}
-.settings-inner > .btn{width:100%;min-height:44px}
+.settings-inner > .btn{flex:0 0 auto;width:calc(100% - 6px);min-height:44px}
 /* A fresh game (no Walklings yet) can still reach the gear under the opening scene, so a wiped save can be read back. */
 body.no-pets #settingsBtn{position:relative;z-index:12}
 #ovSettings,#ovReset,#ovCopy{z-index:16}
@@ -581,7 +581,7 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 .sb-portrait[hidden]{display:none}
 
 /* Settings: the build id (tools/bump_build.py writes window.BUILD), small and dim at the bottom */
-.set-build{margin:6px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-build{flex:0 0 auto;margin:4px 0 0;text-align:center;font-size:12px;line-height:14px;color:var(--dim,#94b0c2);opacity:.85;user-select:text;white-space:normal;overflow-wrap:anywhere}
 .sh-item.sh-pre{box-shadow:inset 0 0 0 3px var(--y)}
 
 /* INVENTORY §6 Bag overlay + BAG chrome; ICONS_SEALS HUD icons */
