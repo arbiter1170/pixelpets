@@ -47,7 +47,7 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .set-vol .set-val{color:var(--y);min-width:3.2ch;text-align:right}
 .set-row.set-danger{border-color:var(--r);color:var(--h)}
 .set-row.set-danger .set-val{color:var(--r)}
-.settings-inner > .btn{width:100%;min-height:44px}
+.settings-inner > .btn{flex:0 0 auto;width:calc(100% - 6px);min-height:44px}
 /* A fresh game (no Walklings yet) can still reach the gear under the opening scene, so a wiped save can be read back. */
 body.no-pets #settingsBtn{position:relative;z-index:12}
 #ovSettings,#ovReset,#ovCopy{z-index:16}
@@ -581,7 +581,7 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 .sb-portrait[hidden]{display:none}
 
 /* Settings: the build id (tools/bump_build.py writes window.BUILD), small and dim at the bottom */
-.set-build{margin:6px 0 0;text-align:center;font-size:10px;line-height:1.2;color:var(--dim,#94b0c2);opacity:.7;user-select:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.set-build{flex:0 0 auto;margin:4px 0 0;text-align:center;font-size:12px;line-height:14px;color:var(--dim,#94b0c2);opacity:.85;user-select:text;white-space:normal;overflow-wrap:anywhere}
 .sh-item.sh-pre{box-shadow:inset 0 0 0 3px var(--y)}
 
 /* INVENTORY §6 Bag overlay + BAG chrome; ICONS_SEALS HUD icons */
@@ -1198,8 +1198,22 @@ body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-loc
 .net-pips{display:flex;gap:3px}
 .net-pips i{width:14px;height:14px;background:var(--d);display:block}
 .net-pips i.on{background:var(--y)}
-.net-acts{display:flex;gap:6px}
-.net-act{flex:1;min-height:52px;font-size:16px}
+.net-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.net-act{min-width:44px;min-height:52px;font-size:16px;letter-spacing:0;padding:0 4px}
+.net-acts .net-act:only-child{grid-column:1 / -1}
+.net-walk{background:var(--b);color:var(--w)}
+#coopStrip{position:absolute;top:4px;left:4px;z-index:5;display:flex;flex-direction:column;gap:4px;background:var(--n);color:var(--y);border:3px solid var(--y);padding:4px 6px;max-width:calc(100% - 80px);pointer-events:auto}
+#coopStrip[hidden]{display:none}
+.coop-head{font-size:16px;letter-spacing:1px;line-height:1.1}
+.coop-heads{display:flex;gap:4px}
+.coop-head-btn{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:3px solid var(--y);background:var(--k);position:relative;cursor:pointer}
+.coop-head-btn canvas{width:36px;height:36px;image-rendering:pixelated}
+.coop-head-btn.away canvas{filter:grayscale(1);opacity:.55}
+.coop-count{position:absolute;right:1px;bottom:0;color:var(--w);font-size:12px;line-height:1}
+body.ctl-modern #coopStrip{top:56px;left:56px}
+#coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}
+#coopJoin{background:var(--g);color:var(--k)}
+#coopNotNow{background:var(--m);color:var(--w)}
 .net-block{box-shadow:inset 0 0 0 3px var(--r)}
 .net-close{min-height:58px;width:100%}
 .net-code-lab{color:var(--h);font-size:14px}

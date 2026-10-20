@@ -793,6 +793,7 @@ function ariaBar(fill, now, max, label){
 }
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); ariaBar(el, clamp(v, 0, 100), 100, BAR_LABEL[el.id] || null); }
 function updateHUD(){
+  if (window.PPNet && PPNet.coop && PPNet.coop.renderStrip) PPNet.coop.renderStrip();
   document.body.classList.toggle('no-pets', !allPets().length);
   syncArbiterTest();
   syncBagBtns();
@@ -11231,6 +11232,34 @@ function startCloud(){
     showOthers: () => (S && S.settings && (S.settings.showOthers === 'friends' || S.settings.showOthers === 'solo') ? S.settings.showOthers : 'on'),
     setShow: m => { if (!S) return; S.settings.showOthers = m; save(); },
     friendCode: () => friendCode(),
+    coopPet: () => {
+      const p = pet();
+      if (!p) return { form: 'ember/0', level: 1, hp: 1, mv: 'wobble', mood: 0, chip: 0 };
+      const mood = moodOf(p);
+      let bits = 0;
+      if (mood.hungry) bits |= 1;
+      if (mood.sulky) bits |= 2;
+      if (mood.drowsy) bits |= 4;
+      if (mood.spirited) bits |= 8;
+      if (mood.glowing) bits |= 16;
+      const bands = ['Strain', 'Uneasy', 'Tuned', 'Bright-linked'];
+      const chip = chipOn(p) ? Math.max(0, bands.indexOf(alignBand(p.align))) : 0;
+      const ids = (Array.isArray(p.moves) ? p.moves : []).filter(id => typeof id === 'string' && /^[a-z_]{2,24}$/.test(id)).slice(0, 4);
+      const stage = Math.max(0, Math.min(9, p.stage | 0));
+      const sp = String(p.species || 'ember').toLowerCase().replace(/[^a-z]/g, '').slice(0, 16) || 'ember';
+      return {
+        form: sp + '/' + stage,
+        level: Math.max(1, Math.min(60, levelOf(p) | 0)),
+        hp: Math.max(0, Math.min(999, Math.round(hpOf(p)))),
+        mv: ids.length ? ids.join(',') : 'wobble',
+        mood: bits,
+        chip,
+      };
+    },
+    coopBattle: () => !!(typeof battle !== 'undefined' && battle && battle.on && battle.coop),
+    coopAct: () => {},
+    coopLog: () => {},
+    coopEnd: () => {},
   });
 }
 
