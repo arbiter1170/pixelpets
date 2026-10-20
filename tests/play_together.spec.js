@@ -8,6 +8,25 @@ const { starterSave, installSave, gotoGame } = require('./helpers');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
 const SHOTS = 'review-play-together';
+const LOCK = require('path').join(__dirname, '..', 'test-logs', 'rtdb-play.lock');
+async function lockEmu(){
+  fs.mkdirSync(require('path').dirname(LOCK), { recursive: true });
+  for (let i = 0; i < 240; i++) {
+    try { fs.writeFileSync(LOCK, String(process.pid), { flag: 'wx' }); return; }
+    catch (e) {
+      let owner = 0;
+      try { owner = parseInt(fs.readFileSync(LOCK, 'utf8'), 10); } catch (e2) {}
+      let alive = false;
+      if (owner) { try { process.kill(owner, 0); alive = true; } catch (e3) {} }
+      if (!alive) { try { fs.unlinkSync(LOCK); } catch (e4) {} continue; }
+      await new Promise(r => setTimeout(r, 500));
+    }
+  }
+  throw new Error('emulator lock');
+}
+function unlockEmu(){
+  try { if (fs.existsSync(LOCK) && fs.readFileSync(LOCK, 'utf8') === String(process.pid)) fs.unlinkSync(LOCK); } catch (e) {}
+}
 const BASE = 'http://127.0.0.1:' + (process.env.PP_PORT || '8080');
 let emu = null, emuStarted = false, env = null;
 
@@ -50,7 +69,7 @@ async function rootGet(path){
   return out;
 }
 async function wipe(){
-  for (const p of ['rooms', 'config', 'friends', 'blocks', 'hidden', 'codes', 'friendInfo']) await rootSet(p, null);
+  for (const p of ['rooms', 'config', 'friends', 'blocks', 'hidden', 'codes', 'friendInfo', 'parties']) await rootSet(p, null);
   await rootSet('roomCodes/AMB4RQ', { on: true });
 }
 function watchErrors(page){
@@ -127,6 +146,7 @@ test.describe('Play together', () => {
   // would run beside it on the same emulator and room code. 320 and 375 run inside 34 and 40 instead.
   test.beforeAll(async ({}, info) => {
     test.skip(info.project.name !== '390', 'runs in the 390 project; other widths run inside it');
+    await lockEmu();
     const ready = await portOpen(9000) && await portOpen(9099) && await portOpen(8180);
     if (!ready) {
       emu = spawn('npx', ['firebase', 'emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings'], { detached: true, stdio: 'ignore' });
@@ -143,6 +163,7 @@ test.describe('Play together', () => {
   test.afterAll(async () => {
     if (env) await env.cleanup();
     if (emuStarted && emu && emu.pid) { try { process.kill(-emu.pid, 'SIGTERM'); } catch (e) { try { emu.kill('SIGTERM'); } catch (e2) {} } }
+    unlockEmu();
   });
   test.beforeEach(async ({}, info) => { if (info.project.name === '390' || info.project.name === '320') await wipe(); });
 

@@ -208,7 +208,7 @@
       ["say", "", "Mint lamps hum on tall stands. Walklings doze under them, their colours washed out."],
       ["say", "Field Lead Imogen", "Oh, {name}! Welcome to the Glow Census. Isn't it peaceful?"],
       ["say", "Field Lead Imogen", "Our Comfort Lamps help wild Walklings relax. We just collect a little extra glow."],
-      ["choice", "Any questions? Quick ones, please.", [["They look exhausted.", [["say", "Field Lead Imogen", "That's relaxation! It photographs beautifully."]]], ["Turn the lamps off.", [["say", "Field Lead Imogen", "Off? We're on a schedule, sweetie. Quarterly targets."]]]]],
+      ["choice", "Any questions? Quick ones, please.", [["They look exhausted.", [["say", "Field Lead Imogen", "That's relaxation! It photographs beautifully."]]], ["Turn the lamps off.", [["say", "Field Lead Imogen", "Off? We're on a schedule, partner. Quarterly targets."]]]]],
       ["setFlag", "story.met_lead", true]
     ],
     "faded2": [

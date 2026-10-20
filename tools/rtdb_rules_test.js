@@ -480,6 +480,104 @@ async function main() {
       if (await read(a, room(a)) != null) bad('delete own', 'node remained');
     }
 
+    // deny 19-24: parties (COOP_R2 §4.4). Creates and updates need config/coop/on. Deletes stay open.
+    {
+      const before = fails.length;
+      const PCODE = 'AMB4RQ', PID = 'pK7QX2M', P = 'parties/' + PCODE + '/' + PID;
+      const PPET = { form: 'gust/0', level: 6, hp: 21, mv: 'bump,gust_puff', mood: 9, chip: 1 };
+      const member = extra => Object.assign({ joined: TS, seen: TS, away: 0, ready: 1, pet: Object.assign({}, PPET) }, extra || {});
+      const party = () => ({ cv: 1, host: 'A', made: TS, area: 'route1', members: { A: member() } });
+      const battle = (id, turn) => ({ id, seed: 2918334, kind: 'wild', foes: { 0: { form: 'ember/0', level: 5 } }, turn, deadline: Date.now() + 30000 });
+      await env.withSecurityRulesDisabled(async c => {
+        await c.database().ref().set({
+          config: { coop: { on: true }, net: { pv: 1 } },
+          roomCodes: { AMB4RQ: { on: true }, ZZZZZZ: { on: false } },
+          friends: { A: { B: true, C: true, D: true, E: true }, B: { A: true }, D: { A: true }, E: { A: true } },
+          blocks: { D: { A: Date.now() - 1000 } },
+        });
+      });
+      const R = (uid, p) => refOf(uid, p);
+
+      // deny 19 party node
+      await deny('deny 19: B makes a party with host A', R('B', P).set(party()));
+      await deny('deny 19: bad party id', R('A', 'parties/' + PCODE + '/pBAD1').set(party()));
+      await deny('deny 19: room code that is off', R('A', 'parties/ZZZZZZ/' + PID).set(party()));
+      await deny('deny 19: host member missing', R('A', P).set({ cv: 1, host: 'A', made: TS, area: 'route1', members: { B: member() } }));
+      await deny('deny 19: cv 2', R('A', P).set(Object.assign(party(), { cv: 2 })));
+      await deny('deny 19: area outside rung 2', R('A', P).set(Object.assign(party(), { area: 'fernbrook' })));
+      await allow('deny 19 allow: A makes the party', R('A', P).set(party()));
+      await deny('deny 19: signed-out read', R(null, P).once('value'));
+      await deny('deny 19: B reads before an invite', R('B', P).once('value'));
+      await deny('deny 19: nobody lists parties in a code', R('A', 'parties/' + PCODE).once('value'));
+      await deny('deny 19: A changes host', R('A', P + '/host').set('B'));
+      await deny('deny 19: scene in rung 2', R('A', P + '/scene').set({ id: 'x' }));
+      await deny('deny 19: unknown key', R('A', P + '/chat').set('hi'));
+
+      // deny 20 invites and inbox
+      await deny('deny 20: invite a one-way friend (C)', R('A', P + '/invites/C').set(TS));
+      await deny('deny 20: invite a holder who blocked you (D)', R('A', P + '/invites/D').set(TS));
+      await deny('deny 20: guest invites', R('B', P + '/invites/E').set(TS));
+      await allow('deny 20 allow: A invites mutual friend B', R('A', P + '/invites/B').set(TS));
+      await allow('deny 20 allow: A invites mutual friend E', R('A', P + '/invites/E').set(TS));
+      await deny('deny 20: inbox note forged by C', R('C', 'parties/' + PCODE + '/inbox/B/A').set({ pid: PID, at: TS }));
+      await deny('deny 20: inbox note for an uninvited holder', R('A', 'parties/' + PCODE + '/inbox/C/A').set({ pid: PID, at: TS }));
+      await allow('deny 20 allow: A leaves B an inbox note', R('A', 'parties/' + PCODE + '/inbox/B/A').set({ pid: PID, at: TS }));
+      await allow('deny 20 allow: B reads own inbox', R('B', 'parties/' + PCODE + '/inbox/B').once('value'));
+      await deny('deny 20: C reads B inbox', R('C', 'parties/' + PCODE + '/inbox/B').once('value'));
+      await allow('deny 20 allow: B (invited) reads the party', R('B', P).once('value'));
+      await deny('deny 20: C (not invited) reads the party', R('C', P).once('value'));
+
+      // deny 21 join and seat
+      await deny('deny 21: B joins without taking the seat', R('B', P + '/members/B').set(member()));
+      await deny('deny 21: C takes the seat uninvited', R('C', P + '/guest').set('C'));
+      await allow('deny 21 allow: B joins (seat + member in one update)', R('B', P).update({ guest: 'B', 'members/B': member() }));
+      await deny('deny 21: E takes a full seat', R('E', P).update({ guest: 'E', 'members/E': member() }));
+      await deny('deny 21: E writes a member node', R('E', P + '/members/E').set(member()));
+      await deny('deny 21: B writes A member node', R('B', P + '/members/A/away').set(1));
+      await allow('deny 21 allow: B marks away', R('B', P + '/members/B').update({ away: 1, awayAt: TS }));
+      await allow('deny 21 allow: B back', R('B', P + '/members/B').update({ away: 0, seen: TS }));
+      await deny('deny 21: bad move list in pet', R('B', P + '/members/B/pet/mv').set('bump,<b>'));
+      await deny('deny 21: level 99', R('B', P + '/members/B/pet/level').set(99));
+      await allow('deny 21 allow: E clears own invite (NOT NOW)', R('E', P + '/invites/E').remove());
+
+      // deny 22 battle
+      await deny('deny 22: guest writes battle', R('B', P + '/battle').set(battle(1, 1)));
+      await allow('deny 22 allow: host opens battle turn 1', R('A', P + '/battle').set(battle(1, 1)));
+      await deny('deny 22: deadline 2 min out', R('A', P + '/battle/deadline').set(Date.now() + 120000));
+      await allow('deny 22 allow: B acts on turn 1', R('B', P + '/battle/act/1/B').set({ k: 'move', id: 'bump', aim: 0 }));
+      await deny('deny 22: B acts twice on turn 1', R('B', P + '/battle/act/1/B').set({ k: 'move', id: 'gust_puff', aim: 0 }));
+      await deny('deny 22: B acts on turn 2 early', R('B', P + '/battle/act/2/B').set({ k: 'move', id: 'bump', aim: 0 }));
+      await deny('deny 22: B acts for A', R('B', P + '/battle/act/1/A').set({ k: 'move', id: 'bump', aim: 0 }));
+      await deny('deny 22: B writes the log', R('B', P + '/battle/log/1').set('[]'));
+      await deny('deny 22: act kind befriend', R('A', P + '/battle/act/1/A').set({ k: 'befriend' }));
+      await allow('deny 22 allow: host logs turn 1', R('A', P + '/battle/log/1').set('[["s","Wild Ember tries Bump!"]]'));
+      await deny('deny 22: log over 2000 chars', R('A', P + '/battle/log/1').set('x'.repeat(2001)));
+      await allow('deny 22 allow: host turn 1 to 2', R('A', P + '/battle/turn').set(2));
+      await deny('deny 22: host turn 2 to 1 (same battle)', R('A', P + '/battle/turn').set(1));
+      await allow('deny 22 allow: B acts on turn 2', R('B', P + '/battle/act/2/B').set({ k: 'swap', id: 'pet3', aim: 0 }));
+      await allow('deny 22 allow: host ends', R('A', P + '/battle/end').set({ how: 'win', at: TS }));
+      await allow('deny 22 allow: new battle id resets turn to 1', R('A', P + '/battle').set(battle(2, 1)));
+
+      // deny 23 kill switch
+      await deny('deny 23: holder flips the kill switch', R('A', 'config/coop/on').set(true));
+      await allow('deny 23 allow: holder reads the kill switch', R('B', 'config/coop/on').once('value'));
+      await env.withSecurityRulesDisabled(c => c.database().ref('config/coop/on').set(false));
+      await deny('deny 23: off, new party', R('A', 'parties/' + PCODE + '/pAAAAAA').set(party()));
+      await deny('deny 23: off, member update', R('B', P + '/members/B/seen').set(TS));
+      await deny('deny 23: off, act', R('B', P + '/battle/act/1/B').set({ k: 'move', id: 'bump', aim: 0 }));
+      await deny('deny 23: off, host battle write', R('A', P + '/battle/turn').set(2));
+
+      // deny 24 deletes stay open when off
+      await allow('deny 24 allow: host clears battle', R('A', P + '/battle').remove());
+      await allow('deny 24 allow: B leaves (member + seat)', R('B', P).update({ guest: null, 'members/B': null }));
+      await allow('deny 24 allow: A clears inbox note', R('A', 'parties/' + PCODE + '/inbox/B/A').remove());
+      await deny('deny 24: guest deletes party', R('B', P).remove());
+      await allow('deny 24 allow: host deletes party', R('A', P).remove());
+
+      if (fails.length === before) ok('deny 19-24: parties');
+    }
+
+
     if (fails.length) {
       process.stdout.write('\nRTDB_RULES RESULT: FAIL (' + fails.length + ')\n');
       fails.forEach(f => process.stdout.write('  ' + f + '\n'));
