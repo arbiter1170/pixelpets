@@ -1,0 +1,543 @@
+{
+  "spec": "STAIR_MARKER.md",
+  "note": "Way-in markers. Verbatim design JSON stays untouched. D220-D230. Up openings use PAL.k, a refinement of D222. The Flats step stays on the doorstep (15,18), off the polish sign (14,18) and the lantern post (18,19).",
+  "slicePatch": {
+    "maps": {
+      "hm_home_in": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_home_stairs",
+            "x": 1,
+            "y": 5,
+            "sprite": "wayin_glint_up",
+            "wayin": "hm_home_up"
+          }
+        ]
+      },
+      "hm_home_up": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_home_stairs_down",
+            "x": 1,
+            "y": 5,
+            "sprite": "wayin_glint_down",
+            "wayin": "hm_home_in"
+          }
+        ]
+      },
+      "hm_hq_f1": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_hq_up",
+            "x": 12,
+            "y": 3,
+            "sprite": "step_up"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hq_up_glint",
+            "x": 12,
+            "y": 3,
+            "sprite": "wayin_glint_up",
+            "wayin": "hm_hq_f2"
+          }
+        ]
+      },
+      "hm_hq_f2": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_hq_down",
+            "x": 10,
+            "y": 3,
+            "sprite": "step_down"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hq_down_glint",
+            "x": 10,
+            "y": 3,
+            "sprite": "wayin_glint_down",
+            "wayin": "hm_hq_f1"
+          }
+        ]
+      },
+      "hm_flats_lobby": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_flats_lift",
+            "x": 3,
+            "y": 2,
+            "sprite": "door_step"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_flats_lift_b",
+            "x": 4,
+            "y": 2,
+            "sprite": "door_step"
+          }
+        ]
+      },
+      "hc_mall_1": {
+        "replaceObjs": [
+          {
+            "kind": "decal",
+            "id": "hc_stair_art",
+            "x": 9,
+            "y": 5,
+            "sprite": "step_up"
+          }
+        ],
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_hc_mall_up_glint",
+            "x": 9,
+            "y": 5,
+            "sprite": "wayin_glint_up",
+            "wayin": "hc_mall_2"
+          }
+        ]
+      },
+      "hc_mall_2": {
+        "replaceObjs": [
+          {
+            "kind": "decal",
+            "id": "hc_stair_art_up",
+            "x": 9,
+            "y": 5,
+            "sprite": "step_down"
+          }
+        ],
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_hc_mall_down_glint",
+            "x": 9,
+            "y": 5,
+            "sprite": "wayin_glint_down",
+            "wayin": "hc_mall_1"
+          }
+        ]
+      },
+      "rx_f1": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_rx1_up",
+            "x": 6,
+            "y": 2,
+            "sprite": "wayin_glint_up",
+            "wayin": "rx_f2"
+          }
+        ]
+      },
+      "rx_f2": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_rx2_up",
+            "x": 6,
+            "y": 2,
+            "sprite": "wayin_glint_up",
+            "wayin": "rx_f3"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_rx2_down",
+            "x": 6,
+            "y": 20,
+            "sprite": "step_down"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_rx2_down_glint",
+            "x": 6,
+            "y": 20,
+            "sprite": "wayin_glint_down",
+            "wayin": "rx_f1"
+          }
+        ],
+        "gridRows": {
+          "20": "#............#"
+        }
+      },
+      "rx_f3": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_rx3_up",
+            "x": 6,
+            "y": 2,
+            "sprite": "wayin_glint_up",
+            "wayin": "rx_f4"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_rx3_down",
+            "x": 6,
+            "y": 20,
+            "sprite": "step_down"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_rx3_down_glint",
+            "x": 6,
+            "y": 20,
+            "sprite": "wayin_glint_down",
+            "wayin": "rx_f2"
+          }
+        ],
+        "gridRows": {
+          "20": "#............#"
+        }
+      },
+      "rx_f4": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_rx4_down",
+            "x": 6,
+            "y": 20,
+            "sprite": "step_down"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_rx4_down_glint",
+            "x": 6,
+            "y": 20,
+            "sprite": "wayin_glint_down",
+            "wayin": "rx_f3"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_rx4_down_b",
+            "x": 7,
+            "y": 20,
+            "sprite": "step_down"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_rx4_down_b_glint",
+            "x": 7,
+            "y": 20,
+            "sprite": "wayin_glint_down",
+            "wayin": "rx_f3"
+          }
+        ],
+        "gridRows": {
+          "20": "#............#"
+        }
+      },
+      "sm_tunnel": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_smt_up",
+            "x": 9,
+            "y": 10,
+            "sprite": "step_up"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_smt_up_glint",
+            "x": 9,
+            "y": 10,
+            "sprite": "wayin_glint_up",
+            "wayin": "sm_yard"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_smt_on",
+            "x": 14,
+            "y": 3,
+            "sprite": "door_step"
+          }
+        ],
+        "gridRows": {
+          "10": "#.....~..........#"
+        }
+      },
+      "sm_yard": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_smy_down",
+            "x": 9,
+            "y": 3,
+            "sprite": "step_down"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_smy_down_glint",
+            "x": 9,
+            "y": 3,
+            "sprite": "wayin_glint_down",
+            "wayin": "sm_tunnel"
+          }
+        ]
+      },
+      "sm_hold": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_smh_den",
+            "x": 14,
+            "y": 3,
+            "sprite": "door_step"
+          }
+        ]
+      },
+      "hearthmoor": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_hm_home",
+            "x": 3,
+            "y": 5,
+            "sprite": "door_step",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hm_rook",
+            "x": 16,
+            "y": 5,
+            "sprite": "door_step",
+            "doorRead": "weak"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hm_lodge",
+            "x": 11,
+            "y": 6,
+            "sprite": "door_step",
+            "doorRead": "weak"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hm_hq",
+            "x": 11,
+            "y": 11,
+            "sprite": "door_step",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hm_lantern",
+            "x": 16,
+            "y": 13,
+            "sprite": "door_step",
+            "doorRead": "poor"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hm_school",
+            "x": 4,
+            "y": 18,
+            "sprite": "door_step",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hm_flats",
+            "x": 15,
+            "y": 18,
+            "sprite": "door_step",
+            "doorRead": "poor"
+          }
+        ]
+      },
+      "cobblecrest": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_cc_lantern",
+            "x": 5,
+            "y": 5,
+            "sprite": "door_step",
+            "doorRead": "poor"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_cc_hall",
+            "x": 24,
+            "y": 6,
+            "sprite": "door_step",
+            "doorRead": "fine"
+          }
+        ]
+      },
+      "fb_heights": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_ht_lab",
+            "x": 4,
+            "y": 5,
+            "sprite": "door_step",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_ht_tunnel",
+            "x": 16,
+            "y": 5,
+            "sprite": "door_step",
+            "doorRead": "fine"
+          }
+        ]
+      },
+      "fernbrook": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_fb_lantern",
+            "x": 5,
+            "y": 5,
+            "sprite": "door_step",
+            "doorRead": "weak"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_fb_hall",
+            "x": 22,
+            "y": 6,
+            "sprite": "door_step",
+            "doorRead": "fine"
+          }
+        ]
+      },
+      "highcharity": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_hc_airport",
+            "x": 32,
+            "y": 4,
+            "sprite": "door_step_warm",
+            "doorRead": "poor"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_command",
+            "x": 32,
+            "y": 9,
+            "sprite": "door_step_warm",
+            "doorRead": "poor"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_church",
+            "x": 52,
+            "y": 9,
+            "sprite": "door_step_warm",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_barracks",
+            "x": 9,
+            "y": 11,
+            "sprite": "door_step_warm",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_gym",
+            "x": 22,
+            "y": 13,
+            "sprite": "door_step_warm",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_arena",
+            "x": 45,
+            "y": 15,
+            "sprite": "door_step_warm",
+            "doorRead": "weak"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_marina",
+            "x": 18,
+            "y": 17,
+            "sprite": "door_step_warm",
+            "doorRead": "weak"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_apt",
+            "x": 8,
+            "y": 25,
+            "sprite": "door_step_warm",
+            "doorRead": "poor"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_school",
+            "x": 11,
+            "y": 29,
+            "sprite": "door_step_warm",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_hall",
+            "x": 32,
+            "y": 29,
+            "sprite": "door_step_warm",
+            "doorRead": "poor"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_bank",
+            "x": 49,
+            "y": 29,
+            "sprite": "door_step_warm",
+            "doorRead": "weak"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_lantern",
+            "x": 22,
+            "y": 34,
+            "sprite": "door_step_warm",
+            "doorRead": "fine"
+          },
+          {
+            "kind": "decal",
+            "id": "wayin_hc_mall",
+            "x": 55,
+            "y": 35,
+            "sprite": "door_step_warm",
+            "doorRead": "poor"
+          }
+        ]
+      },
+      "mahopac": {
+        "addObjs": [
+          {
+            "kind": "decal",
+            "id": "wayin_mah_obs",
+            "x": 5,
+            "y": 7,
+            "sprite": "door_step",
+            "doorRead": "fine"
+          }
+        ]
+      },
+      "mahopac_obs": {
+        "gridRows": {
+          "6": "####m####"
+        }
+      }
+    }
+  }
+}
