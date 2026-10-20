@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-20 11:49 ET: Settings build line no longer clips (build 20261020-1149)
+
+- What changed and why: PLAYTEST_FIX_1020 item D380 (green, design 9510519). The Settings build line wraps instead of clipping, and the CLOSE button keeps its height. Save stays `pixelpets.save.v2` with `v` 2. No new key. D380 had no open row, so no decision file changed. No id was renumbered. D380–D389 stay reserved.
+- Files touched: `style.css`, `tests/settings_build_line.spec.js`, `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261020-1149. The Supervisor merged main (#117, build 20261020-1137) into it and restamped it 20261020-1155.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/smoke.spec.js tests/settings_build_line.spec.js` PP_TEST RESULT: PASS exit=0 passed=24 failed=0 flaky=0 skipped=0 time=33s. RTDB_RULES RESULT: PASS. Widths 320x568, 375x667, and 390x664. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): D380 is green (design 9510519). No row was added.
+- Anything left unfinished: none from this build.
+
 ## 2026-10-20 11:37 ET: Decision ids after HUSHWATER, and D306–D310 settled (build 20261020-1137)
 
 - What changed and why: Supervisor docs fix during the PR #117 review. The next free decision id is D363, not D346. D346–D362 are reserved for HUSHWATER (design b01136b): D346–D347 are red, waiting for Vincent; D348–D353 are yellow, a team vote closing Thu Oct 22, 2026, about 11:25 AM ET; D354–D362 are green, settled by Design. D380–D389 are reserved for PLAYTEST_FIX_1020. D306–D310 (GLIMMER_NEXT_QUEST) are recorded as settled by Vincent, 10:42 AM ET Oct 20, 2026, on defaults (design 512809c). No code change. Save `v` stays 2.

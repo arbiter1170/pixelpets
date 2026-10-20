@@ -44,6 +44,8 @@ A console message of type `error`, or any uncaught page error, fails the test.
 
 `tests/coop_r2.spec.js` (serial, `?cloud=emu&debug=1`, the local emulators, 390 project; 320 runs inside it): COOP_R2 Build 1. Mutual friends form a walk group with WALK TOGETHER and JOIN, and both strips read GROUP 2/2. A one-way friend, SOLO, another room code, and a block do not show WALK TOGETHER. A third holder cannot take the seat. Three NOT NOWs mute that holder until reload. LEAVE GROUP and Block end the group, and the host leaving deletes the party node. A hidden partner greys with a countdown and drops after a 60 s clock skew (WebKit, `isMobile`). `/config/coop/on` false shows Solo for now and denies a new party write. An interior drops the room node and keeps the connection. One holder idle for 60 s with 2 mutual friends and 2 other holders does at most 14 reads (`debug().reads`). Save `v` stays 2 and gains no key. Shots in `review-coop-r2/` at 320 and 390. A `pv` 2 node is ignored. Shots in `review-play-together/` at 390: `room_code_390.png`, `route1_two_390.png`, and `friends_390.png`.
 
+`tests/settings_build_line.spec.js` (D380): Settings at 320x568, 375x667, and 390x664. `#setBuild` and `#setReload` are each 14 px tall and `offsetHeight` equals `scrollHeight`. `.settings-inner` does not scroll sideways. CLOSE sits inside the panel. Save `v` stays 2.
+
 `tests/smoke.spec.js`:
 
 | Test | Brief check | What it asserts |
