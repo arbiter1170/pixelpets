@@ -642,6 +642,30 @@ function fitPetScene(){
   ps.classList.remove('pet-tight');
   if (!pick()) { ps.classList.add('pet-tight'); pick(); }
 }
+// ROOM_ZOOM v0.1 (D231–D239). Interiors only, and not fitWidth rooms. S never drops below the outdoor scale s and never
+// passes 2s. Whole numbers come from floor. A room that fits stays centred; a larger one follows and clamps (syncWalkCam).
+const ROOM_ZOOM_CAP = 2, ROOM_ZOOM_HUD = 112;
+let mapZoom = 1, mapBase = 1;
+function roomEdgeSlack(m){
+  if (!m || m.kind !== 'interior' || m.fitWidth || !m.cells || !(m.w >= 3) || !(m.h >= 1)) return 0;
+  const solidCol = x => { for (let y = 0; y < m.h; y++) if (!wallPart(x, y, m)) return false; return true; };
+  return solidCol(0) && solidCol(m.w - 1) ? 1 : 0;   // D233: one tile of width, and only when both edge columns are solid wall
+}
+function roomZoomFor(W, H, s){
+  if (!isRoom() || !CUR || CUR.fitWidth || !(MW > 0) || !(MH > 0) || !(s > 0)) return s;
+  const slack = roomEdgeSlack(CUR);
+  const Heff = ctlMode() === 'modern' ? H - ROOM_ZOOM_HUD : H;
+  const denomW = (MW - slack) * TS, denomH = MH * TS;
+  if (!(denomW > 0) || !(denomH > 0) || !(Heff > 0) || !(W > 0)) return s;
+  const S = Math.max(s, Math.min(ROOM_ZOOM_CAP * s, Math.floor(W / denomW), Math.floor(Heff / denomH)));
+  return S > 0 ? S : s;
+}
+function roomEdgeColor(){
+  if (!isRoom() || !CUR || CUR.fitWidth) return null;   // fitWidth rooms keep the void bars they already have
+  const sk = CUR.skin && SKINS[CUR.skin];
+  if (!sk || !sk.wall || !PAL[sk.wall.c]) return null;   // D236: no wall table keeps the void
+  return PAL[sk.wall.c];
+}
 function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
@@ -652,14 +676,21 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     const c = $('#mapCanvas'), W = mw.clientWidth, H = mw.clientHeight;
     const modern = ctlMode() === 'modern';         // NAV_MODERN §2 (NM-Y2): modern is 2x at every width with a 24x36 cap; arcade unchanged
     const s = modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
-    c.width = Math.min(24 * 16, Math.floor(W / s)); c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / s)));
+    mapBase = s;
     cueZone.t = -1e9;
     // E1: an interior with "fitWidth": true (the rx_f4 pilot) is shown at its full width (scale = view width / map width), so the
     // camera only scrolls vertically. Every interior bigger than the view follows the keeper and clamps at the edges (drawMap);
-    // smaller ones stay centred. Opt-in so no other map changes look. Same in arcade and modern.
-    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); c.width = MW * 16; c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
+    // smaller ones stay centred. Opt-in so no other map changes look. Same in arcade and modern. ROOM_ZOOM does not touch these.
+    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); mapZoom = f; c.width = MW * 16; c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
       c.style.width = W + 'px'; c.style.height = Math.round(c.height * f) + 'px'; }
-    else { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; }
+    else {
+      const zoom = roomZoomFor(W, H, s);   // snapped when arriveAt calls fitAll, at the black midpoint of the 250 ms warp (D235)
+      mapZoom = zoom;
+      c.width = Math.min(24 * 16, Math.floor(W / zoom)); c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / zoom)));
+      c.style.width = (c.width * zoom) + 'px'; c.style.height = (c.height * zoom) + 'px';
+    }
+    const edge = roomEdgeColor();
+    mw.style.backgroundColor = edge || '';   // D236: leftover wrap pixels use the wall cap; void stays the stylesheet black
   }
   refitSceneBox();
 }
@@ -3685,7 +3716,7 @@ function drawMap(t){
   const VW = c.width, VH = c.height;
   const px_ = walk.fx * TS, py_ = walk.fy * TS;
   const cx = walk.cam.x, cy = walk.cam.y, wf = Math.floor(t / 500) % 2;
-  g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH);
+  g.fillStyle = roomEdgeColor() || PAL.k; g.fillRect(0,0,VW,VH);   // D236: cap colour in the centred margin; void when the skin has no wall table
   for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
@@ -9576,8 +9607,10 @@ function bindInput(){
     if (!ptr || e.pointerId !== ptr.id) return;
     if (!ptr.dragged && e.type === 'pointerup') {
       const r = mc.getBoundingClientRect();
+      // Canvas CSS pixels map onto the bitmap, then the camera. The integer room scale changes both together, so the tile stays put (D239).
       const x = (e.clientX - r.left) / r.width * mc.width + walk.cam.x, y = (e.clientY - r.top) / r.height * mc.height + walk.cam.y;
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
+      walk.hit = { x: tx, y: ty };
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
       const o = objAt(tx, ty, tappable) || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
       if (scene || fade.busy) { /* nothing */ }
@@ -10002,7 +10035,7 @@ function boot(){
     rookOffer: to => { if (!S || scene || overlayOpen() || (battle && battle.on)) return false; showTab('walk'); runSteps(rookOfferSteps(to)); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
     rollWildTrack: () => takeBattleTrack('wild'),
-    endScene: () => { if (!scene) return false; scene.skip = true; return true; },
+    endScene: () => { if (!scene) return false; scene.skip = true; endScene(); return true; },
     // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
     expandText: (text, vars, viewPetObj) => { const keep = scene;
       if (!keep) scene = { vars: Object.assign({ tags: [], line: null, suggest: null }, vars || {}), view: { flags: {}, name: undefined, pet: viewPetObj || null, nick: undefined }, pending: [] };
@@ -10041,6 +10074,7 @@ function boot(){
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
   Object.defineProperty(api, 'mapInfo', { enumerable: true, get(){ return { id: CUR.id, w: MW, h: MH, room: isRoom(), outdoor: outdoorId(), backdrop: backdropName(), dream: CUR.dream || null,
+    scale: mapZoom, baseScale: mapBase, slack: (isRoom() && CUR && !CUR.fitWidth) ? roomEdgeSlack(CUR) : 0, edge: roomEdgeColor(), fitWidth: !!(CUR && CUR.fitWidth),
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
     typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });
