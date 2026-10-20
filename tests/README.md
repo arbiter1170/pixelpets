@@ -12,7 +12,7 @@ npx playwright install chromium
 npm test
 ```
 
-`npm test` runs `python3 tools/bump_build.py --check` (must exit 0) and then Playwright. Chromium only, one width at a time, against a local static server (`python3 -m http.server`, port 8080). Set `PP_URL` to point at another origin instead, for example the live site:
+`npm test` runs `python3 tools/bump_build.py --check` (must exit 0) and then Playwright. Chromium only, one width at a time, against a local static server (`python3 -m http.server`, port 8080). The browser is launched with Firebase hosts mapped to an address that does not resolve, and `cloud.js` ignores the live config while `navigator.webdriver` is set, so the suite never signs in or writes to project `walklings-4cc89`. Set `PP_URL` to point at another origin instead, for example the live site:
 
 ```
 PP_URL=https://arbiter1170.github.io/pixelpets/ npm test
@@ -35,6 +35,8 @@ Shared helpers are in `tests/helpers.js`: `starterSave()` (the v2 seed used belo
 A console message of type `error`, or any uncaught page error, fails the test.
 
 ## What each check covers
+
+`tests/cloud_off.spec.js` (online saves, all three widths): `database.rules.json` is locked (`.read` and `.write` false) and `firebase.json` points at it. With the real `walklings-4cc89` config on disk, an automated boot and `?cloud=off` leave `PPCloud` off, add no Settings row, and make no request to Firebase. `?cloud=block` with the SDK aborted shows "Offline, will back up later" and never calls a Google API. A stubbed SDK whose read fails offline keeps the local save at `v` 2 and the same `uid`. Save `v` stays 2.
 
 `tests/smoke.spec.js`:
 

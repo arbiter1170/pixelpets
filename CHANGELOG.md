@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 20:09 ET: Merge main (online saves Phase 1) into Hearthmoor movement polish (build 20261019-2009)
+
+- What changed and why: Merged `origin/main` at `f17b830` (PR #99, online saves Phase 1, build 20261019-1759) into this branch and kept both sides. CHANGELOG keeps both entries. `index.html` and `version.json` take main's side and the new stamp 20261019-2009, later than 1759. `python3 tools/gen_mapdata.py` made no further change. Save `v` stays 2.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: merge commit on `cursor/hearthmoor-movement-polish`, build 20261019-2009.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Full suite after the merge: `npm run test:agent` PP_TEST RESULT: FAIL exit=1 passed=1156 failed=1 flaky=0 skipped=16 time=1699s. The one failure was `[320] tests/rx_f4_pilot.spec.js:208` (tank frames). On main `f17b830` on the same box, `npm run test:agent -- tests/rx_f4_pilot.spec.js -g "tanks hold"` gives PP_TEST RESULT: FAIL exit=1 passed=0 failed=3 at all three widths, so that failure is already on main.
+- Decisions made (colour + reasoning): no new id. Next free stays D195.
+- Anything left unfinished: none from the merge.
+
 ## 2026-10-19 18:56 ET: Hearthmoor movement polish (build 20261019-1856)
 
 - What changed and why: Vincent's playtest found column 18 outside Amberhill Flats read as one clipped stack, and Officer Bren kept walking into the keeper. The lantern post moves from (18,18) to (18,19). The Flats sign moves from (18,16) to (14,18), in front of the Flats wall left of the door, so it reads from the School Lane path at (14,19) and from the door step. Before, it could only be read from (18,14) on the Lantern House strip. The leaf litter stays at (18,15). Bren's beat was the whole main road, (4,8) to (18,8). It is now (1,7) to (1,9) in the west yard, off every path, door front and sign tile. `tickPatrol` makes a patrolling NPC wait while the keeper is within 2 tiles, and face the keeper when beside them. Walk toasts were checked: none sets an input lock (toasts are `pointer-events:none`, and no toast calls `clearMoves`). The stop came from walking into Bren, which is bump-to-talk. A new spec holds the walk through the "Nice walk" toast. Save `v` stays 2. No new flags. No new player copy.
@@ -11,6 +20,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): green, cleared by the Supervisor. No new id. Next free stays D195.
 - Anything left unfinished: `hm_board` (8,7) sits on the row 7 path tiles, but that plaza is from `town_board.json`, and the row 8 road beside it stays open, so it was left. `hm_bush_w` (1,10) seals a 5-cell dead-end strip at x 1, rows 11 to 15. No walking line goes there, so it was left.
 
+## 2026-10-19 17:59 ET: Merge main into online saves Phase 1 (build 20261019-1759)
+
+- What changed and why: Merged `origin/main` (PR #98, Arbiter Test music and the final tour copy, build 20261019-1722) into the Phase 1 branch and kept both sides. The stamp is 20261019-1759, later than 20261019-1722. `data/glimmer_path.json` arrived with main's `data/mapdata.js`; regenerating mapdata made no further change. Save `v` stays 2. The next free id stays D195.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261019-1759.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Full suite: PP_TEST RESULT: PASS exit=0 passed=1145 failed=0 flaky=0 skipped=16 time=1605s. Widths 320, 375, and 390.
+- Decisions made (colour + reasoning): no new id. Next free stays D195.
+- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database stays locked.
+
 ## 2026-10-19 17:22 ET: Arbiter Test music and final tour copy (build 20261019-1722)
 
 - What changed and why: `MUSIC.arbiter_test` is the Design-approved v2b literal (D164 / D189): B phrygian, 68 BPM, 8 bars, 16 steps per bar, triangle lead at 0.18, square bass at 0.065. It was generated with `tools/midi2music.py` and matches the approved JSON. The Bright Pavilion Tour stops, the wait line, and the stage photo use the final D26 lines, spoken by Associate Juniper. The placeholder keys for those lines are gone. Main's D194 QUEST board rows are kept. Save `v` stays 2.
@@ -19,6 +37,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): Full suite after the main merge: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1130 failed=0 flaky=0 skipped=16 time=1624s. Widths 320, 375, and 390. The earlier failures in `tests/maps_b8.spec.js` (the Glow Census wait line) and `tests/town_board_gate.spec.js` (the QUEST board rows) were fixed and rerun: `npm run test:agent -- tests/maps_b8.spec.js tests/town_board_gate.spec.js` PP_TEST RESULT: PASS exit=0 passed=20 failed=0 flaky=0 skipped=4 time=35s. No known timing flake failed, so none was rerun alone. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): no new id. D26 copy is final (yellow, already settled). D164 delivered the `arbiter_test` row (already settled). D194 stays the settled QUEST-tab row from main. The next free id is D195.
 - Anything left unfinished: Frostmere is not built. Glimmer Act 2 is still TBD.
+
+## 2026-10-19 17:18 ET: Online saves Phase 1 on (build 20261019-1718)
+
+- What changed and why: Phase 1 is ON. `cloud_config.js` holds the public web config for project `walklings-4cc89`. Anonymous sign-in backs up `saves/{uid}`. The Settings row reads "This browser only: link Google to keep it safe". `database.rules.json` locks the Realtime Database until a later multiplayer phase. Automated tests ignore that config when `navigator.webdriver` is set and cannot resolve the Firebase hosts, so they never create users or write documents. Save `v` stays 2.
+- Files touched: `cloud_config.js`, `cloud.js`, `database.rules.json`, `firebase.json`, `playwright.config.js`, `tests/cloud_off.spec.js`, `index.html`, `version.json`, `AGENTS.md`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `review-cloud-on/`.
+- Commit(s) + build id: build 20261019-1718.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/cloud_off.spec.js` PP_TEST RESULT: PASS exit=0 passed=15 failed=0 flaky=0 skipped=0 time=6s (320, 375, 390). `npm run test:agent -- tests/smoke.spec.js tests/save_copy.spec.js` PP_TEST RESULT: PASS exit=0 passed=27 failed=0 flaky=0 skipped=0 time=42s. Full suite: PP_TEST RESULT: PASS exit=0 passed=1139 failed=0 flaky=0 skipped=16 time=1592s. `python3 tools/bump_build.py --check` exit 0. One live smoke from localhost in a throwaway profile: anonymous sign-in, `saves/{uid}` rev 1 then rev 2, a write to another uid denied, the Settings row read "This browser only: link Google to keep it safe", and Delete cloud save removed the doc. Shots: `review-cloud-on/` at 390×844.
+- Decisions made (colour + reasoning): no new id. Phase 1 shipped quietly was already settled (Vincent, Oct 8, 2026). Next free stays D195. Green: the suite forces the live project off.
+- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database stays locked.
 
 ## 2026-10-19 16:17 ET: Accepted board slips on the QUEST tab (build 20261019-1617)
 
