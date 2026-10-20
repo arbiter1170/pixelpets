@@ -8,6 +8,20 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D195 (Oct 19, 2026, Vincent, red, ~5:06 PM ET).** PLAY_TOGETHER Q1 goes ahead. Phase 1 is an invite-only test on top of online saves Phase 1. Presence is under `/rooms/{code}/{area}/{shard}/{uid}`. No free text in a room node.
+- **D196 (Oct 19, 2026, green, settled on the default).** Friends share a room past 20. Friends first, hard cap 24 (`NET_CFG.roomHardMax`).
+- **D197 (Oct 19, 2026, green, settled on the default).** Show other holders defaults to ON, with FRIENDS and SOLO. Saved as `settings.showOthers`. Save `v` stays 2.
+- **D198 (Oct 19, 2026, Vincent, red, with Q1).** No trading in the playtest. Snack gifts later. Trades only after the server move.
+- **D199 (Oct 19, 2026, Vincent, red, with Q1).** Lantern Festival first. Raids after Episode 1's story. Not this build.
+- **D200 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** Mutual friends see nicknames. Strangers see the form name. `NET_CFG.friendNick` stays true.
+- **D201 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** New player-facing copy says holder card and Show other holders. The Friends tab reads HOLDER and YOUR HOLDER CODE. Element ids `#keeperName` and `#friendCode` stay. The Pet scene KEEPER label is left for the D191 copy pass.
+- **D202 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** The room code is a console-made playtest gate. No code means solo. Six characters, shown as XXX-XXX, one per device. `NET_CFG.needCode` stays true.
+- **D203 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** Minimal mutual add by WLK- code, 12 slots, no search, inbox, or Join. `NET_CFG.friendSlots` stays 12. Old PXP- codes are accepted and stored as WLK-.
+- **D204 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** A friend's own name lives at `/friendInfo/{uid}`, readable only by holders that owner added. 1–10 safe characters, else the generated name. `NET_CFG.shareName` stays true.
+- **D205 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** The card shows no faction and no one else's code. Eight progress titles, the highest earned, sent as `title` 0–7. `NET_CFG.cardFaction` stays false.
+- **D206 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** No Report button in the invite playtest. Required before open rooms or free text. `NET_CFG.report` stays false.
+- **D207 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** Emotes, phrases, generated names, titles, and the Play together copy are the packet lists. `NET_TEXT`.
+- **D208 (Oct 19, 2026, green, Design tech defaults).** Send at most every 400 ms, heartbeat 20 s, stale 60 s, protocol `pv` not the build id, room cap 20 and hard cap 24, drop the node in interiors and on a hidden tab, kill switch `/config/net`. `NET_CFG`.
 - **D220 (Oct 19, 2026, green, SETTLED with the packet).** Name and scope stay STAIR_MARKER. Doors are the same family. Three shapes: stairs (floor change), sill (a door or same-level doorway), mat (way out, unchanged).
 - **D221 (Oct 19, 2026, Vincent, yellow, 7:14 PM ET, on the default).** Redraw plus marker. `stair_home`, `stair_loft`, and `lab_stair` are full-tile flights. Floor warps with no stair art get `step_up` / `step_down`. The marker is the soft glint on the far tread.
 - **D222 (Oct 19, 2026, green, SETTLED).** Up and down differ by value only. Up treads lighten toward the far edge. Down treads darken into a well under a lit rim. No arrows, no text. Refinement the same evening (Lissett, CCO, via Vincent, 7:21 PM ET, no new id): the top of every up flight is solid PAL.k, the darkest existing key, so the flight reads into another room. The narrowing corners stay clear. The glint sits on the tread just under that opening. Down wells stay as specced.

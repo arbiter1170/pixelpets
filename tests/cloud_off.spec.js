@@ -21,11 +21,12 @@ function liveWrites(hits) {
   return hits.filter((url) => /googleapis\.com|firebaseio\.com|firebaseapp\.com|firebasestorage\.app/.test(url));
 }
 
-test('realtime database rules are locked', async () => {
+test('realtime database root stays locked', async () => {
   const rules = JSON.parse(fs.readFileSync('database.rules.json', 'utf8'));
   expect(rules.rules['.read']).toBe(false);
   expect(rules.rules['.write']).toBe(false);
-  expect(Object.keys(rules.rules).sort()).toEqual(['.read', '.write']);
+  expect(rules.rules.rooms).toBeTruthy();
+  expect(rules.rules.hidden.$target['.read']).toBe(false);
   const fb = JSON.parse(fs.readFileSync('firebase.json', 'utf8'));
   expect(fb.database.rules).toBe('database.rules.json');
   expect(fb.firestore.rules).toBe('firestore.rules');

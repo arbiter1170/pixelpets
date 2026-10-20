@@ -8,7 +8,8 @@ const external = process.env.PP_URL;
 // The suite must never reach the live Firebase project. cloud.js also ignores the real config when
 // navigator.webdriver is set. These hosts fail closed if a test opts in with ?cloud=block and forgets to stub.
 const CLOUD_BLOCK = [
-  'www.gstatic.com',
+  // www.gstatic.com stays reachable: ?cloud=emu loads the pinned Firebase SDK from there.
+  // Live project hosts below still fail closed.
   'identitytoolkit.googleapis.com',
   'securetoken.googleapis.com',
   'firestore.googleapis.com',
