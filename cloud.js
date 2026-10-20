@@ -100,7 +100,9 @@ const PPCloud = (() => {
     if (!user || inflight || conflict || status === 'newer') return;
     const d = readDev();
     if (d.pendingErase) { await erase(); return; }
-    if (!compared) { await compare(); return; }
+    // A late compare (first try timed out, or a stale-rev retry) can adopt the cloud copy, which reloads the page.
+    // Never run it under a battle, scene or overlay; the next tick retries once play is at a safe point.
+    if (!compared) { if (H.busy()) return; await compare(); return; }
     const S = H.getState();
     if (!S || d.paused) return;
     const h = hashOf(S);

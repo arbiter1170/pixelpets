@@ -269,6 +269,40 @@ let saveTimer = 0, readOnly = false;              // a save from a newer build: 
 // Once Start over has begun, nothing on this page may write again (pagehide / hidden / the 5 s timer fire while it reloads).
 let resetting = false, gameReplaced = false;
 function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); if (DEBUG) S.debugSave = true; PPSave.writeV2(S); }   // a debug session marks the save (additive; shown in Settings)
+/* ---------- reload breadcrumb (diagnostics; plain localStorage keys outside the save, so the save stays v2) ----------
+   Every path that reloads or replaces the page first writes pp_reload {reason, at, battleOn, build}. pagehide/beforeunload
+   with no reason writes reason 'unknown' (a Safari refresh, a close). pp_alive is set while the page is visible and cleared
+   on hide/pagehide, so a boot that finds pp_alive but no pp_reload means the last page died while on screen: likely a crash.
+   Boot moves the entry into pp_reload_last (last 5) and Settings shows the newest one. */
+const RELOAD_KEY = 'pp_reload', RELOAD_LAST = 'pp_reload_last', ALIVE_KEY = 'pp_alive', RELOAD_KEEP = 5;
+function lsJson(k){ try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function lsPut(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function lsDrop(k){ try { localStorage.removeItem(k); } catch (e) {} }
+function inBattleNow(){ try { return !!battle.on; } catch (e) { return false; } }   // battle is declared further down
+function markReload(reason){ lsPut(RELOAD_KEY, { reason, at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); lsDrop(ALIVE_KEY); }
+function markUnload(){ if (!lsJson(RELOAD_KEY)) lsPut(RELOAD_KEY, { reason: 'unknown', at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); lsDrop(ALIVE_KEY); }
+function markAlive(){ if (document.hidden) return; lsPut(ALIVE_KEY, { at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); }
+function takeReloadCrumb(){
+  const crumb = lsJson(RELOAD_KEY), alive = lsJson(ALIVE_KEY);
+  const entry = crumb && typeof crumb === 'object' ? crumb
+    : alive && typeof alive === 'object' ? { reason: 'crash', at: alive.at, battleOn: !!alive.battleOn, build: alive.build || '' } : null;
+  if (entry) { const old = lsJson(RELOAD_LAST); lsPut(RELOAD_LAST, (Array.isArray(old) ? old : []).concat([entry]).slice(-RELOAD_KEEP)); }
+  lsDrop(RELOAD_KEY); markAlive();
+}
+function watchReloads(){
+  window.addEventListener('pagehide', markUnload);
+  window.addEventListener('beforeunload', markUnload);
+  window.addEventListener('pageshow', e => { if (e.persisted && !resetting) { lsDrop(RELOAD_KEY); markAlive(); } });   // back/forward cache restore: not a reload
+  document.addEventListener('visibilitychange', () => { if (document.hidden) lsDrop(ALIVE_KEY); else markAlive(); });   // a kill in the background is not a crash
+  setInterval(markAlive, 5000);
+}
+const RELOAD_LABEL = { cloud: 'cloud', build: 'new build', boot: 'boot retry', startover: 'start over', copy: 'save copy', bfcache: 'save changed', newer: 'newer save', unknown: 'unknown', crash: 'crash?' };
+function lastReloadText(){
+  const list = lsJson(RELOAD_LAST), e = Array.isArray(list) && list[list.length - 1];
+  if (!e || typeof e !== 'object' || !Number.isFinite(e.at)) return '';
+  let t = ''; try { t = new Date(e.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (err) {}
+  return 'Last reload: ' + (RELOAD_LABEL[e.reason] || 'unknown') + (t ? ', ' + t : '') + (e.battleOn ? ', in battle' : '');
+}
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
 const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
@@ -335,7 +369,8 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
-function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d; }
+function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d;
+  const rl = $('#setReload'); if (rl) { const r = lastReloadText(); rl.textContent = r; rl.hidden = !r; } }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
@@ -995,13 +1030,14 @@ function tutShow(id){
   const addBtn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = label; b.addEventListener('click', fn); acts.append(b); return b; };
   if (row[1] === 'choice') { addBtn('SHOW ME', () => tutShow('T1')); addBtn('SKIP', () => tutClose(true)); }
   else if (tut.adv === 'next') addBtn(id === 'T13' ? "LET'S GO" : 'NEXT', () => (id === 'T13' ? tutClose(true) : tutAdvance()));
+  tutDisarmSkip();
   const skip = $('#tutSkip'); skip.hidden = row[1] === 'choice' || id === 'T13';
   const card = $('#tutCard'); card.hidden = false;
   tut.holes = tut.key ? tutTargets(tut.key) : []; tut.hi = 0;
   clearInterval(tut.cycle); tut.cycle = 0;
   if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
   tutPlace();
-  const focus = acts.querySelector('button') || (skip.hidden ? null : skip);
+  const focus = acts.querySelector('button') || tut.hit;   // never park focus on SKIP TOUR: on tap steps it looked like the main button
   if (focus) focus.focus({ preventScroll: true });
   const layer = $('#tutLayer'); if (layer) layer.dataset.step = id;
 }
@@ -1068,7 +1104,14 @@ function tutorialKnock(allow){
   if (toastUp || busy || (welcome.due && screen === 'pet')) { tut.wait = setTimeout(() => tutorialKnock(true), 200); return; }
   runTutorial({ replay: false, resume: !!S.flags['story.tutorial_step'] });
 }
-function skipTutorial(){ if (tut.on && tut.id !== 'T13') tutClose('skip'); }
+// SKIP TOUR ends the tour for good, so a stray tap only arms it. A second tap within 3 s (or Escape) skips.
+function tutDisarmSkip(){ clearTimeout(tut.skipArm); tut.skipArm = 0; const b = $('#tutSkip'); if (b) { delete b.dataset.arm; b.textContent = 'SKIP TOUR'; } }
+function skipTutorial(now){
+  if (!tut.on || tut.id === 'T13') return;
+  const b = $('#tutSkip');
+  if (!now && b && !b.dataset.arm) { b.dataset.arm = '1'; b.textContent = 'TAP AGAIN TO SKIP'; clearTimeout(tut.skipArm); tut.skipArm = setTimeout(tutDisarmSkip, 3000); return; }
+  tutDisarmSkip(); tutClose('skip');
+}
 function replayTutorial(){
   if (!S || !pet() || scene || (battle && battle.on) || tut.on) return;
   closeSettings();
@@ -1076,16 +1119,19 @@ function replayTutorial(){
 }
 /* Unlock tips (D180). One card on #tutLayer, after WALK has been quiet for 600 ms. story.unlock_<id> is set when the card is shown. */
 const UNLOCKS = {
-  rep: { title: 'Trust changed', body: 'What you do changes how people feel about you. Check the compass to see who trusts you.', sel: '#repBtn' },
-  phone: { title: 'Your phone', body: 'Your phone has your contacts, Ribbit and the town board. Tap it any time.', sel: '#phoneBtn' },
+  rep: { title: 'Trust changed', body: 'What you do changes how people feel about you. Check the compass to see who trusts you.', sel: '#repBtn', show(){ if (typeof openRep === 'function') openRep(); } },
+  phone: { title: 'Your phone', body: 'Your phone has your contacts, Ribbit and the town board. Tap it any time.', sel: '#phoneBtn', show(){ if (typeof openPhone === 'function') openPhone(); } },
   sides: { title: 'Your side', body: 'You joined a side. STANDING shows how each side sees you. The other side trusts you a bit less now.', sel: '#questTabStanding', show(){ if (typeof openQuest === 'function') openQuest(); if (typeof questTabTo === 'function') questTabTo('standing'); } },
-  quests: { title: 'Side quests', body: 'You took on a side quest. It is in your quest list. Do it whenever you like.', sel: '#questBtn' },
+  quests: { title: 'Side quests', body: 'You took on a side quest. It is in your quest list. Do it whenever you like.', sel: '#questBtn', show(){ if (typeof openQuest === 'function') openQuest(); } },
   moral: { title: 'Big choices', body: 'Some choices help one side and annoy the other. There is no wrong answer, only yours.', sel: '#sbChoices' },
   switch: { title: 'Switching sides', body: 'Rook can help you switch sides. People on the side you leave will trust you less.', box: 'rook' },
-  letter: { title: 'A letter', body: 'Letters open new places. Show it to people you know. Their answer depends on how they feel about you.', sel: '#questBtn' },
-  lantern: { title: 'Lanterns', body: 'Rest at a Lantern to heal your team. If you lose a battle, you come back here.', box: 'lantern' },
+  letter: { title: 'A letter', body: 'Letters open new places. Show it to people you know. Their answer depends on how they feel about you.', sel: '#questBtn', show(){ if (typeof openQuest === 'function') openQuest(); } },
+  // Healed already: nothing to do, so GOT IT only. Hurt: SHOW ME walks to a bed (and asks to rest) or to the Lantern House door; no Lantern here opens MAP.
+  lantern: { title: 'Lanterns', body: 'Rest at a Lantern to heal your team. If you lose a battle, you come back here.', box: 'lantern', got(){ return !partyNeedsLanternRest(); }, show(){ const o = CUR && lanternMark(); if (o) { unlockClose(); if (!tapObject(o)) cantReach(); } else if (typeof openMap === 'function') openMap(); } },
   growup: { title: 'Growing up', body: '{pet} is ready to grow up. You choose when.', sel: '#evolveBtn', show(){ showTab('pet'); } },
 };
+// A tip with nothing to point at shows one GOT IT button instead of SHOW ME / SKIP.
+function unlockGotOnly(id){ const row = UNLOCKS[id]; return !row || !row.show && !unlockHoles(id).length || (!!row.got && row.got()); }
 function tipsOn(){ return !S || !S.settings || S.settings.tips !== false; }
 function unlockOffer(id){
   if (!S || !UNLOCKS[id] || !tipsOn()) return;
@@ -1125,8 +1171,13 @@ function mapMark(kind){
     if (!o) return false;
     const id = String(o.id || ''), name = String(o.name || '');
     if (kind === 'rook') return /rook/i.test(name) || /rook/i.test(id);
-    return o.panel === 'lantern' || /lantern/i.test(id) || /lantern/i.test(String(o.sprite || ''));
-  }) || null;
+    return false;
+  }) || (kind === 'lantern' ? lanternMark() : null);
+}
+// Where to rest: a bed in a Lantern House, else the Lantern House door or keeper. Never the exit mat (its id says "lantern" too).
+function lanternMark(){
+  const objs = CUR.objs.filter(o => o && present(o));
+  return objs.find(o => o.lines && o.lines.else === '@lantern_rest') || objs.find(o => o.kind === 'door' && (o.panel === 'lantern' || /lantern/i.test(String(o.to || '')))) || objs.find(o => o.panel === 'lantern') || null;
 }
 function unlockHoles(id){
   const row = UNLOCKS[id]; if (!row) return [];
@@ -1143,10 +1194,13 @@ function unlockOpen(id){
   const title = $('#unlockTitle'), body = $('#unlockBody'), card = $('#unlockCard');
   if (title) title.textContent = row.title;
   if (body) body.textContent = tutFill(row.body);
+  const got = unlockGotOnly(id), show = $('#unlockShow'), skip = $('#unlockSkip');
+  if (show) show.hidden = got;
+  if (skip) skip.textContent = got ? 'GOT IT' : 'SKIP';
   if (card) card.hidden = false;
   layer.hidden = false; layer.classList.add('unlock-on'); layer.dataset.unlock = id;
   tutPlace();
-  const btn = $('#unlockShow'); if (btn) btn.focus({ preventScroll: true });
+  const btn = got ? skip : show; if (btn) btn.focus({ preventScroll: true });
 }
 function unlockClose(){
   if (!unlock.on) return;
@@ -3311,6 +3365,11 @@ function warpTo(at, after){
 let musicHold = false;   // closeBattle plays the return loop itself (after stingers); a wipe's arriveAt must not start it early
 function arriveAt(at){
   useMap(at.map); fitAll();   // E1: the canvas may change shape per map
+  // D224: a visited interior stops that stair's glint. The art stays. Absent until the first room.
+  if (CUR.kind === 'interior') {
+    if (!S.floorSeen || typeof S.floorSeen !== 'object' || Array.isArray(S.floorSeen)) S.floorSeen = {};
+    S.floorSeen[CUR.id] = 1;
+  }
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
@@ -3519,7 +3578,7 @@ function drawTileExtras(g, ch, tx, ty, X, Y){
 // debug/tests (?debug=1 only): what map `id`'s styled buildings, props and decals resolve to, and how cell (x, y) of the current map is painted
 function exteriorView(id){
   id = id || CUR.id; const m = WORLD[id]; if (!m) return null;
-  const dim = a => a ? [a.width, a.height] : null, bs = buildingsOf(m);
+  const dim = a => { const img = Array.isArray(a) ? a[0] : a; return img && img.width ? [img.width, img.height] : null; }, bs = buildingsOf(m);
   const tiles = new Set(Object.keys(EXTERIOR_ART.tiles)), wart = new Set(Object.keys(EXTERIOR_ART.art).concat(Object.keys(EXTERIOR_ART.big)));
   bs.forEach(b => { [b.roof, b.wall].forEach(n => n && tiles.add(n)); [b.door].concat(b.win).forEach(n => n && wart.add(n)); });
   const list = kind => m.objs.filter(o => o.kind === kind).map(o => ({ id: o.id, x: o.x, y: o.y, sprite: o.sprite || null, art: dim(WART[o.sprite]) }));
@@ -3717,6 +3776,8 @@ function tickCamBias(t){
   b.y = b.from + (b.to - b.from) * e;
   if (k >= 1) { b.y = b.to; b.ease = false; }
 }
+const WAYIN_DIM_AFTER_VISIT = true; // D224: glint stays on frame 0 after the destination floor is seen
+const WAYIN_DOORS = 'all'; // D227: 'all', or 'poor' (poor and weak stay, fine is skipped)
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -3755,6 +3816,12 @@ function drawMap(t){
       }
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       if (CUR.roofs && (ch === 'R' || ch === 'H')) img = buildingTile(ch, tx, ty, img);
+      if (ch === '^') {   // STAIR_MARKER: clear corners show the room floor under the flight
+        let floorImg = TILES['.'] || TILES.g;
+        if (CUR.skin === 'lab') { const nm = labTileName('.', tx, ty); if (nm && TILES[nm]) floorImg = TILES[nm]; }
+        else if (skEarly) { const nm = skinTileName(skEarly, '.', tx, ty); if (nm && TILES[nm]) floorImg = TILES[nm]; }
+        g.drawImage(floorImg, tx*TS - cx, ty*TS - cy);
+      }
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
       if (decal) g.drawImage(decal, tx*TS - cx, ty*TS - cy);
       drawTileExtras(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
@@ -3767,8 +3834,23 @@ function drawMap(t){
     }
   const shade = wallMaskOf(CUR);   // floor contact shadow, under props and actors
   if (shade) g.drawImage(shade, -cx, -cy);
+  // Up flights redraw over the contact shadow so the black opening still reads as a room beyond.
+  for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
+    for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
+      if (tx<0||ty<0||tx>=MW||ty>=MH || MAP[ty][tx] !== '^') continue;
+      const skStair = CUR.skin && SKINS[CUR.skin];
+      let stair = TILES['^'] || TILES.g;
+      if (CUR.skin === 'lab') { const nm = labTileName('^', tx, ty); if (nm && TILES[nm]) stair = TILES[nm]; }
+      else if (skStair) { const nm = skinTileName(skStair, '^', tx, ty); if (nm && TILES[nm]) stair = TILES[nm]; }
+      g.drawImage(stair, tx*TS - cx, ty*TS - cy);
+    }
   for (const o of CUR.objs) if (o.kind === 'door' && present(o) && (tileAt(o.x, o.y - 1) === 'H' || tileAt(o.x, o.y) === 'H')) drawDoor(g, o, cx, cy);
-  for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) { const fr = artFrame(WART[o.sprite], t); if (fr) g.drawImage(fr, o.x*TS - cx, o.y*TS - cy); }   // wall/floor decals: drawn, never block, never talk
+  for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) {
+    if (o.doorRead && WAYIN_DOORS === 'poor' && o.doorRead === 'fine') continue;   // D227 switch: poor keeps poor and weak
+    let art = WART[o.sprite];
+    if (o.wayin && WAYIN_DIM_AFTER_VISIT && S.floorSeen && S.floorSeen[o.wayin]) art = Array.isArray(art) ? art[0] : art;   // D224: glint stays on the blank frame
+    const fr = artFrame(art, t); if (fr) g.drawImage(fr, o.x*TS - cx, o.y*TS - cy);
+  }   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
     g.fillStyle = canSpot(o) ? 'rgba(244,80,80,.35)' : 'rgba(160,160,160,.3)'; sightLine(o).forEach(c => g.fillRect(c.x*TS - cx, c.y*TS - cy, TS, TS)); }
@@ -5398,6 +5480,8 @@ function applySoftBerry(p, before){
 
 /* --- open / close --- */
 function openBattle(o){
+  { const bb = $('#buildBar'); if (bb) bb.hidden = true; }   // hide the new-build bar at once, not on the next 500 ms poll
+  markAlive();                                                // the crash marker notes this page is now in a battle
   const lead = leadPet();
   if (!lead) { noBattleToast(); return false; }
   clearMoves(); closeSheet(null);
@@ -8314,9 +8398,9 @@ function holdStop(){ if (resetting) return; cancelAnimationFrame(hold.raf); hold
 function startOver(){
   if (resetting) return; resetting = true;      // save() is a no-op from here on, whatever fires before the page goes
   clearMoves(); clearInterval(saveTimer);
-  if (PPCloud.enabled) { $('#resetHint').textContent = 'Erasing your cloud backup...'; PPCloud.startOver(() => PPSave.startOver()).then(() => location.reload()); return; }
+  if (PPCloud.enabled) { $('#resetHint').textContent = 'Erasing your cloud backup...'; PPCloud.startOver(() => PPSave.startOver()).then(() => { markReload('startover'); location.reload(); }); return; }
   PPSave.startOver();
-  location.reload();
+  markReload('startover'); location.reload();
 }
 
 /* ---------- save copy (v2 JSON file; v stays 2) ---------- */
@@ -8367,7 +8451,7 @@ function confirmCopy(){
   const state = copyPending; copyPending = null;
   resetting = true; clearMoves(); clearInterval(saveTimer);
   if (!PPSave.installCopy(state)) { resetting = false; toast(COPY_WHY.storage); return; }
-  location.reload();
+  markReload('copy'); location.reload();
 }
 
 /* ---------- collection / journal album ---------- */
@@ -9647,7 +9731,7 @@ function bindInput(){
   let sceneKeyEat = false;
   window.addEventListener('keyup', e => { if (sceneKeyEat && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sceneKeyEat = false; } });
   window.addEventListener('keydown', e => {
-    if (tut.on && !(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && (e.key === 'Escape' || e.key === 'Backspace')) { e.preventDefault(); skipTutorial(); return; }
+    if (tut.on && !(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && (e.key === 'Escape' || e.key === 'Backspace')) { e.preventDefault(); skipTutorial(true); return; }
     if (tut.on && KEYS[e.key]) { e.preventDefault(); return; }
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
@@ -9697,7 +9781,7 @@ function bindInput(){
   window.addEventListener('pageshow', e => {
     if (!e.persisted || !S || resetting) return;
     let o = null; try { o = JSON.parse(localStorage.getItem(PPSave.V2_KEY)); } catch(err) {}
-    if (!o || o.uid !== S.uid) { resetting = true; location.reload(); }
+    if (!o || o.uid !== S.uid) { resetting = true; markReload('bfcache'); location.reload(); }
   });
 }
 
@@ -9786,11 +9870,12 @@ function startCloud(){
     getState: () => (readOnly || resetting) ? null : S,
     save, toast, sfx, summary: cloudSummary,
     drawPet: (cv, sp, st) => spriteCanvas(cv, sp, st, 'n'),
-    busy: () => overlayOpen(),
+    busy: () => overlayOpen() || !!(battle && battle.on),
     beforeOverlay: () => { clearMoves(); lockTabs(true); },
     afterOverlay: () => lockTabs(!$('#ovSettings').hidden),
     // adopt a cloud save: this page stops writing, the v2 key gets the cloud copy as-is (its `last` keeps away-time decay), reload
-    adopt: raw => { if (resetting) return; resetting = true; clearMoves(); clearInterval(saveTimer); try { localStorage.setItem(PPSave.V2_KEY, raw); } catch(e) {} location.reload(); },
+    adopt: raw => { if (resetting) return; if (overlayOpen() || (battle && battle.on)) return;   // belt and braces: never reload under a battle or overlay (cloud retries)
+      resetting = true; clearMoves(); clearInterval(saveTimer); try { localStorage.setItem(PPSave.V2_KEY, raw); } catch(e) {} markReload('cloud'); location.reload(); },
   });
   if (window.PPNet) PPNet.start({
     debug: () => DEBUG,
@@ -9840,7 +9925,7 @@ function checkBuild(force){
 }
 function pumpBuildBar(){
   const el = $('#buildBar'); if (!el) return;
-  const show = !!buildChk.ready && !readOnly && !overlayOpen();
+  const show = !!buildChk.ready && !readOnly && !overlayOpen() && !(battle && battle.on);   // battle.on: the intro wipe runs before #ovBattle is shown
   if (el.hidden === show) el.hidden = !show;
 }
 // Reload URL that skips the Pages cache for index.html: same path, a fresh b= first (an old b= dropped), every other param
@@ -9857,7 +9942,8 @@ function dropBuildParam(){
 }
 function startBuildCheck(){
   const el = $('#buildBar'); if (!el) return;
-  $('#buildGo').addEventListener('click', () => { save(); location.replace(freshUrl(buildChk.ready)); });
+  // The bar can still be on screen for up to 500 ms after a battle or scene opens (pumpBuildBar is polled). A tap then must not reload.
+  $('#buildGo').addEventListener('click', () => { if (overlayOpen() || (battle && battle.on) || !buildChk.ready) { pumpBuildBar(); return; } save(); markReload('build'); location.replace(freshUrl(buildChk.ready)); });
   dropBuildParam();
   $('#buildX').addEventListener('click', () => { buildChk.gone = buildChk.ready; buildChk.ready = null; pumpBuildBar(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkBuild(); });
@@ -9870,7 +9956,7 @@ function startBuildCheck(){
 function bootReadOnly(){
   readOnly = true; S = null;
   $('#ovNewer').hidden = false; $('#tabs').classList.add('locked'); document.body.classList.add('nav-locked');
-  $('#newerReload').addEventListener('click', () => location.reload());
+  $('#newerReload').addEventListener('click', () => { markReload('newer'); location.reload(); });
   window.PixelPets = Object.freeze({ readOnly: true, get debug(){ return DEBUG; }, get state(){ return null; } });
 }
 function highCharityDevCheck(){
@@ -10321,13 +10407,14 @@ function bootRetried(){
   } catch (e) {}
   try { return sessionStorage.getItem(BOOT_RETRY_KEY) === '1'; } catch (e) { return true; }
 }
+try { takeReloadCrumb(); watchReloads(); } catch (e) {}   // before boot, so a throwing boot still keeps the last entry
 try {
   boot();
   try { sessionStorage.removeItem(BOOT_RETRY_KEY); } catch (e) {}
 } catch (err) {
   if (!bootRetried() && !resetting) {
     try { sessionStorage.setItem(BOOT_RETRY_KEY, '1'); } catch (e) {}
-    resetting = true; try { clearInterval(saveTimer); } catch (e) {} location.replace(freshUrl('boot'));
+    resetting = true; try { clearInterval(saveTimer); } catch (e) {} markReload('boot'); location.replace(freshUrl('boot'));
   }
   throw err;
 }

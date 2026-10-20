@@ -1108,8 +1108,9 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 .tut-card{position:fixed;box-sizing:border-box;width:calc(100vw - 24px);max-width:360px;padding:12px;background:var(--n);color:var(--w);box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);pointer-events:auto;display:flex;flex-direction:column;gap:8px}
 .tut-card p{margin:0;font-size:17px;line-height:1.25;font-weight:normal}
 .tut-acts{display:flex;gap:8px}
+#unlockActs .btn[hidden]{display:none}
 .tut-acts .btn{flex:1;min-height:44px;height:44px;font-size:20px}
-.tut-skip{min-height:44px;height:44px;border:0;background:transparent;color:var(--h);font-size:14px;cursor:pointer;padding:0}
+.tut-skip{align-self:flex-start;min-height:44px;height:44px;border:0;background:transparent;color:var(--h);font-size:14px;cursor:pointer;padding:0 12px}
 .tut-skip[hidden],.tut-card[hidden],.tut-block[hidden],.tut-ring[hidden]{display:none}
 body.tut-on #tabs.locked{opacity:1}
 body.nav-locked .tut-hit{pointer-events:auto;opacity:1}
