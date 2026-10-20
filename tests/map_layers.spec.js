@@ -1,4 +1,4 @@
-/* MAP_LAYERS acceptance 1-13 and 17. ROOM and TOWN are generated. REGION stays parchment unless the backdrop flag is forced. */
+/* MAP_LAYERS acceptance 1-13 and 17. ROOM and TOWN are generated. REGION draws the backdrop unless the flag is forced off. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -46,7 +46,7 @@ function near(rgb, hex) {
   return rgb.every((v, i) => Math.abs(v - n[i]) <= 2);
 }
 
-test('acceptance 1: outdoors opens on TOWN, ROOM is denied, REGION parchment is unchanged', async ({ page }) => {
+test('acceptance 1: outdoors opens on TOWN, ROOM is denied, REGION draws the backdrop', async ({ page }) => {
   await boot(page);
   await openMap(page);
   const town = await page.evaluate(() => PixelPets.mapLayer());
@@ -55,7 +55,7 @@ test('acceptance 1: outdoors opens on TOWN, ROOM is denied, REGION parchment is 
   expect(town.title).toBe('HEARTHMOOR');
   expect(town.blurb).toBe('Hill village of the Keepers. Home.');
   expect(town.roomOff).toBe(true);
-  expect(town.backdrop).toBe(false);
+  expect(town.backdrop).toBe(true);
   const room = page.locator('#mapLevelRoom');
   expect(await room.getAttribute('aria-disabled')).toBe('true');
   expect(await room.getAttribute('disabled')).toBeNull();
@@ -68,10 +68,18 @@ test('acceptance 1: outdoors opens on TOWN, ROOM is denied, REGION parchment is 
   expect(await page.evaluate(() => PixelPets.setRegionBackdrop(true))).toBe(false);
   await page.locator('#mapLevelRegion').click();
   await page.waitForFunction(() => PixelPets.mapLayer().level === 'region');
+  await page.waitForFunction(() => {
+    const c = document.querySelector('#regionCanvas');
+    if (!c) return false;
+    const g = c.getContext('2d'), k = c.width / 320;
+    const d = g.getImageData(Math.floor(150.5 * k), Math.floor(30.5 * k), 1, 1).data;
+    return d[0] === 0x2f && d[1] === 0x5a && d[2] === 0x3e;
+  });
   const hill = await sample(page, 150, 30);
   const field = await sample(page, 70, 4);
-  expect(near(hill, '#ef7d57'), 'hill tick ' + hill).toBe(true);
-  expect(near(field, '#ffcd75'), 'parchment ' + field).toBe(true);
+  expect(near(hill, '#2f5a3e'), 'backdrop ' + hill).toBe(true);
+  expect(near(field, '#2f5a3e'), 'backdrop ' + field).toBe(true);
+  expect(await page.locator('#mapPlaceName').textContent()).toBe('HEARTHMOOR');
 });
 
 test('acceptance 2 and 9: home ROOM, town door ring, SEE INSIDE only after entering', async ({ page }) => {
@@ -322,14 +330,56 @@ test('acceptance 12 and 13: no pan, and every layout fits with the spec tile siz
   }
 });
 
-test('acceptance 17: backdrop draws only when the flag is forced, and ??? stays', async ({ page }) => {
+function hitBox(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+test('edge rings stay clear of the LIFT tag and the east exit label', async ({ page }) => {
+  await boot(page, walked(), '?debug=1');
+  await page.evaluate(() => PixelPets.goto('hm_flats_5', 0, 6, 'right'));
+  await openMap(page);
+  await page.evaluate(() => PixelPets.mapBlinkAt(performance.now()));
+  const room = await page.evaluate(() => {
+    const layer = PixelPets.mapLayer();
+    return { level: layer.level, shown: layer.shown, you: layer.you, quest: layer.quest, labels: layer.labels, rings: layer.rings };
+  });
+  expect(room.level).toBe('room');
+  expect(room.shown).toBe('hm_flats_5');
+  expect(room.you).toEqual({ x: 0, y: 6 });
+  expect(room.quest).toEqual({ x: 0, y: 6 });
+  const lift = room.labels.find((l) => l.text === 'LIFT');
+  expect(lift).toBeTruthy();
+  expect(room.rings.map((r) => r.kind)).toEqual(expect.arrayContaining(['you', 'quest']));
+  for (const ring of room.rings) expect(hitBox(lift, ring), ring.kind + ' ' + JSON.stringify({ lift, ring })).toBe(false);
+
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 23, 8, 'left'));
+  await page.locator('#mapClose').click();
+  await openMap(page);
+  await page.evaluate(() => PixelPets.mapBlinkAt(performance.now()));
+  const town = await page.evaluate(() => {
+    const layer = PixelPets.mapLayer();
+    return {
+      level: layer.level, shown: layer.shown, you: layer.you, quest: layer.quest,
+      labels: layer.labels, rings: layer.rings,
+      exit: layer.exits.find((e) => e.edge === 'east'),
+    };
+  });
+  expect(town.level).toBe('town');
+  expect(town.shown).toBe('hearthmoor');
+  expect(town.you).toEqual({ x: 23, y: 8 });
+  expect(town.quest).toEqual({ x: 22, y: 8 });
+  expect(town.exit.shown).toBe('???');
+  const east = town.labels.find((l) => l.text === '???' && l.edge === 'east');
+  expect(east).toBeTruthy();
+  expect(town.rings.map((r) => r.kind)).toEqual(expect.arrayContaining(['you', 'quest']));
+  for (const ring of town.rings) expect(hitBox(east, ring), ring.kind + ' ' + JSON.stringify({ east, ring })).toBe(false);
+});
+
+test('acceptance 17: the backdrop is on, ??? stays, and the parchment returns when the flag is forced off', async ({ page }) => {
   await boot(page, walked(), '?debug=1');
   await page.waitForFunction(() => PixelPets.regionBackdropReady());
   await openMap(page);
   await page.locator('#mapLevelRegion').click();
-  const off = await sample(page, 150, 30);
-  expect(near(off, '#ef7d57'), 'flag off ' + off).toBe(true);
-  expect(await page.evaluate(() => PixelPets.setRegionBackdrop(true))).toBe(true);
   await page.waitForFunction(() => {
     const c = document.querySelector('#regionCanvas');
     if (!c) return false;
@@ -339,10 +389,21 @@ test('acceptance 17: backdrop draws only when the flag is forced, and ??? stays'
   });
   const on = await sample(page, 70, 4);
   expect(near(on, '#2f5a3e'), 'forest ' + on).toBe(true);
+  expect(await page.evaluate(() => PixelPets.mapLayer().backdrop)).toBe(true);
   const box = await page.locator('#regionCanvas').boundingBox();
   await page.mouse.click(box.x + (40 / 320) * box.width, box.y + (56 / 192) * box.height);
   expect(await page.locator('#mapPlaceName').textContent()).toBe('???');
   expect(await page.evaluate(() => PixelPets.setRegionBackdrop(false))).toBe(true);
-  const back = await sample(page, 150, 30);
-  expect(near(back, '#ef7d57'), 'flag off again ' + back).toBe(true);
+  const off = await sample(page, 150, 30);
+  const field = await sample(page, 70, 4);
+  expect(near(off, '#ef7d57'), 'parchment hill ' + off).toBe(true);
+  expect(near(field, '#ffcd75'), 'parchment ' + field).toBe(true);
+  expect(await page.evaluate(() => PixelPets.setRegionBackdrop(true))).toBe(true);
+  await page.waitForFunction(() => {
+    const c = document.querySelector('#regionCanvas');
+    if (!c) return false;
+    const g = c.getContext('2d'), k = c.width / 320;
+    const d = g.getImageData(Math.floor(150.5 * k), Math.floor(30.5 * k), 1, 1).data;
+    return d[0] === 0x2f && d[1] === 0x5a && d[2] === 0x3e;
+  });
 });

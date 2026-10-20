@@ -441,7 +441,7 @@
       ["say", "Dorian Pell", "Splendid show, both of you! Paperwork waits for no one. Have a bright day!"],
       ["say", "", "Dorian strolls off. The Associates bolt a shiny gate across the Old Seam."],
       ["say", "Rook", "He called the Pebblits units. ...He'll explain later. He always explains."],
-      ["say", "Master Hale", "My Trial Hall's open, {name}. Come show me how a keeper moves stone."],
+      ["say", "Master Hale", "My Trial Hall's open, {name}. Come show me how a Keeper moves stone."],
       ["setFlag", "story.quarry_bought", true]
     ],
     "seam_a": [

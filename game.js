@@ -6499,6 +6499,7 @@ function mapDevCheck(){
   return bad;
 }
 function drawRegionMap(t){
+  mapLayerMarks = { rings: [], labels: [] };
   const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, N = REGION_MAP.nodes, cur = mapUI.cur;
   g.setTransform(k, 0, 0, k, 0, 0); g.imageSmoothingEnabled = false;
   const R = (x, y, w, h, col) => { g.fillStyle = PAL[col]; g.fillRect(Math.round(x), Math.round(y), w, h); };
@@ -6617,9 +6618,9 @@ function drawRegionMap(t){
   g.setTransform(1, 0, 0, 1, 0, 0);
 }
 
-// MAP_LAYERS (D258–D275). ROOM and TOWN are drawn from WORLD. REGION stays the parchment.
-// D271's painted backdrop ships in the draw path but stays off until the open red is answered.
-const REGION_BACKDROP = false;
+// MAP_LAYERS (D258–D275). ROOM and TOWN are drawn from WORLD.
+// D271, Vincent Oct 20, 2026, 7:35 AM ET: the script-built backdrop (MAP_LAYERS §9, option b) is on.
+const REGION_BACKDROP = true;
 const ML_SECTION = {
   hm_school_in: { '1,2': 'CLASSROOM', '12,2': 'CUBBIES', '1,8': 'HALL' },
   hm_flats_5: { '1,2': 'KITCHEN', '8,2': 'BATH', '13,2': 'LIZZY', '0,6': 'HALL', '1,9': 'OSSABELL', '6,9': 'MORELOU', '13,9': 'MOROLOW' },
@@ -6630,8 +6631,9 @@ const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A'
 const mapLayers = { ready: false, byId: {}, byFloor: {} };
 let regionBackdropImg = null;
 let mapPinSig = '';
+let mapLayerMarks = { rings: [], labels: [] };
 
-function regionBackdropOn(){ return REGION_BACKDROP || !!(DEBUG && window.PP_REGION_BACKDROP); }
+function regionBackdropOn(){ return (DEBUG && typeof window.PP_REGION_BACKDROP === 'boolean') ? window.PP_REGION_BACKDROP : REGION_BACKDROP; }
 function ensureRegionBackdrop(){
   if (regionBackdropImg) return regionBackdropImg;
   regionBackdropImg = new Image();
@@ -7088,6 +7090,64 @@ function plateText(g, x, y, s, sz, col, align){
   g.fillStyle = PAL[col] || PAL.w; g.fillText(s, Math.round(x), Math.round(y));
   return w;
 }
+function ringAabb(cx, cy, r){
+  const x0 = Math.floor(cx - r) - 1, y0 = Math.floor(cy - r) - 1;
+  const x1 = Math.ceil(cx + r) + 1, y1 = Math.ceil(cy + r) + 1;
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+function layerRingBoxes(L, p){
+  const rings = [], q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
+  const qr = L.level === 'room' ? Math.max(p * 0.8, 10) : Math.max(p, 10);
+  if (q) rings.push(Object.assign({ kind: 'quest' }, ringAabb(q.x * p + p / 2, q.y * p + p / 2, qr)));
+  if (side) rings.push(Object.assign({ kind: 'side' }, ringAabb(side.x * p + p / 2, side.y * p + p / 2, qr + 3)));
+  if (you) {
+    const cx = you.x * p + p / 2, cy = you.y * p + p / 2, rad = Math.max(p * 0.65, 9);
+    const box = ringAabb(cx, cy, rad);
+    const top = Math.floor(cy - rad - 8), ax0 = Math.floor(cx - 3), ax1 = Math.ceil(cx + 4);
+    if (top < box.y) { box.h += box.y - top; box.y = top; }
+    if (ax0 < box.x) { box.w += box.x - ax0; box.x = ax0; }
+    if (ax1 > box.x + box.w) box.w = ax1 - box.x;
+    rings.push(Object.assign({ kind: 'you' }, box));
+  }
+  return rings;
+}
+function boxesHit(a, b){ return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
+function clearOfRings(box, rings, W, H){
+  const clamp = () => {
+    box.x = Math.max(0, Math.min(Math.max(0, W - box.w), box.x));
+    box.y = Math.max(0, Math.min(Math.max(0, H - box.h), box.y));
+  };
+  for (let n = 0; n < 8; n++) {
+    let hit = null;
+    for (const r of rings) if (boxesHit(box, r)) { hit = r; break; }
+    if (!hit) break;
+    const ox = Math.min(box.x + box.w, hit.x + hit.w) - Math.max(box.x, hit.x);
+    const oy = Math.min(box.y + box.h, hit.y + hit.h) - Math.max(box.y, hit.y);
+    const bcx = box.x + box.w / 2, bcy = box.y + box.h / 2, rcx = hit.x + hit.w / 2, rcy = hit.y + hit.h / 2;
+    const before = box.x + ',' + box.y;
+    if (ox <= oy) box.x += (bcx >= rcx ? 1 : -1) * (ox + 1);
+    else box.y += (bcy >= rcy ? 1 : -1) * (oy + 1);
+    clamp();
+    if (box.x + ',' + box.y === before) {
+      if (ox <= oy) box.y += (bcy >= rcy ? 1 : -1) * (oy + 1);
+      else box.x += (bcx >= rcx ? 1 : -1) * (ox + 1);
+      clamp();
+    }
+  }
+  return box;
+}
+function placePlate(g, x, y, s, sz, col, align, rings, W, H, edge){
+  mapFont(g, sz);
+  const tw = g.measureText(s).width, h = sz;
+  let left = x - tw / 2;
+  if (align === 'left') left = x; else if (align === 'right') left = x - tw;
+  const box = { x: Math.round(left - 2), y: Math.round(y - h / 2 - 1), w: Math.ceil(tw + 4), h: Math.ceil(h + 2), sz };
+  if (rings && rings.length) clearOfRings(box, rings, W, H);
+  mapFont(g, sz); g.textAlign = 'left'; g.textBaseline = 'middle';
+  g.fillStyle = PAL.k; g.fillRect(box.x, box.y, box.w, box.h);
+  g.fillStyle = PAL[col] || PAL.w; g.fillText(s, box.x + 2, Math.round(box.y + box.h / 2));
+  mapLayerMarks.labels.push({ text: s, x: box.x, y: box.y, w: box.w, h: box.h, edge: edge || null });
+}
 function fillTri(R, pts, col){
   const ys = pts.map(p => p[1]);
   const y0 = Math.ceil(Math.min.apply(null, ys)), y1 = Math.floor(Math.max.apply(null, ys));
@@ -7142,9 +7202,12 @@ function drawMapLayer(t){
 }
 function drawRoomLayer(g, R, L, p, fog, blink){
   const W = L.w * p, H = L.h * p;
+  const rings = layerRingBoxes(L, p);
+  mapLayerMarks = { rings, labels: [] };
   R(0, 0, W, H, 'k');
   const wallSet = new Set(L.walls.map(c => c[0] + ',' + c[1]));
   if (fog) {
+    mapLayerMarks = { rings: [], labels: [] };
     L.walls.forEach(([x, y]) => {
       const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
         const nx = x + dx, ny = y + dy;
@@ -7193,8 +7256,12 @@ function drawRoomLayer(g, R, L, p, fog, blink){
     const key = wy.tag + '>' + wy.to; if (tagged.has(key)) return; tagged.add(key);
     const sz = p >= 16 ? 13 : 11;
     let X = wy.x * p + p / 2, Y = wy.y * p, ty = wy.y > L.h / 2 ? Y - 3 : Y + p + 3, align = 'center';
-    if (wy.x === 0) { X = p + 3; align = 'left'; ty = Y + p / 2; }
-    plateText(g, X, ty, wy.tag, sz, 'w', align);
+    let edge = null;
+    if (wy.x === 0) { X = p + 3; align = 'left'; ty = Y + p / 2; edge = 'west'; }
+    else if (wy.x === L.w - 1) edge = 'east';
+    else if (wy.y === 0) edge = 'north';
+    else if (wy.y === L.h - 1) edge = 'south';
+    placePlate(g, X, ty, wy.tag, sz, 'w', align, rings, W, H, edge);
   });
   L.sections.forEach(s => { if (s.label) plateText(g, s.anchor[0] * p + p / 2, s.anchor[1] * p + p / 2, s.label, p >= 18 ? 14 : 12, 'w', 'center'); });
   const q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
@@ -7205,7 +7272,9 @@ function drawRoomLayer(g, R, L, p, fog, blink){
   if (sel) whiteBrackets(R, sel.x * p + p / 2, sel.y * p + p / 2, Math.max(p, 14));
 }
 function drawTownLayer(g, R, box, L, p, blink){
-  const grid = L.grid;
+  const grid = L.grid, W = L.w * p, H = L.h * p;
+  const rings = layerRingBoxes(L, p);
+  mapLayerMarks = { rings, labels: [] };
   for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) {
     const ch = grid[y][x];
     R(x * p, y * p, p, p, (ch === 'R' || ch === 'H') ? 'B' : (ML_TOWN[ch] || 'g'));
@@ -7235,11 +7304,13 @@ function drawTownLayer(g, R, box, L, p, blink){
     const known = !e.node || mapVisited(e.node, mapUI.cur);
     const lab = known ? e.label : '???';
     const a = Math.max(5, Math.floor(p / 2) + 2);
-    if (e.edge === 'east') { fillTri(R, [[X - a, Y - a], [X - a, Y + a], [X + a / 2 + 1, Y]], 'y'); plateText(g, X - a - 4, Y, lab, 12, 'w', 'right'); }
-    else if (e.edge === 'west') { fillTri(R, [[X + a, Y - a], [X + a, Y + a], [X - a / 2 - 1, Y]], 'y'); plateText(g, X + a + 4, Y, lab, 12, 'w', 'left'); }
-    else if (e.edge === 'north') { fillTri(R, [[X - a, Y + a], [X + a, Y + a], [X, Y - a / 2 - 1]], 'y'); plateText(g, X, Y + a + 4, lab, 12, 'w', 'center'); }
-    else if (e.edge === 'south') { fillTri(R, [[X - a, Y - a], [X + a, Y - a], [X, Y + a / 2 + 1]], 'y'); plateText(g, X, Y - a - 4, lab, 12, 'w', 'center'); }
-    else { R(X - a, Y - a / 2, a * 2, a, 'g'); box(X - a, Y - a / 2, a * 2, a, 'k'); plateText(g, X, Y > L.h * p * 0.8 ? Y - a - 3 : Y + a + 3, lab, 12, 'w', 'center'); }
+    let ax = X, ay = Y, align = 'center';
+    if (e.edge === 'east') { fillTri(R, [[X - a, Y - a], [X - a, Y + a], [X + a / 2 + 1, Y]], 'y'); ax = X - a - 4; align = 'right'; }
+    else if (e.edge === 'west') { fillTri(R, [[X + a, Y - a], [X + a, Y + a], [X - a / 2 - 1, Y]], 'y'); ax = X + a + 4; align = 'left'; }
+    else if (e.edge === 'north') { fillTri(R, [[X - a, Y + a], [X + a, Y + a], [X, Y - a / 2 - 1]], 'y'); ay = Y + a + 4; }
+    else if (e.edge === 'south') { fillTri(R, [[X - a, Y - a], [X + a, Y - a], [X, Y + a / 2 + 1]], 'y'); ay = Y - a - 4; }
+    else { R(X - a, Y - a / 2, a * 2, a, 'g'); box(X - a, Y - a / 2, a * 2, a, 'k'); ay = Y > H * 0.8 ? Y - a - 3 : Y + a + 3; }
+    placePlate(g, ax, ay, lab, 12, 'w', align, rings, W, H, e.edge);
   });
   labels.forEach(([cx, cy, s, sz, ent]) => plateText(g, cx, cy, s, sz, ent ? 'w' : 'h', 'center'));
   paintPins(pins);
@@ -7328,6 +7399,8 @@ function mapLayerSnap(){
     fog: layerFog(), you: youOnLayer(), quest: L && !layerFog() ? objectiveOn(L.id, questCurrent()) : null,
     side: L && !layerFog() ? objectiveOn(L.id, sideQuest()) : null, denies: mapUI.denies | 0,
     backdrop: regionBackdropOn(),
+    rings: (mapLayerMarks.rings || []).map(r => ({ kind: r.kind, x: r.x, y: r.y, w: r.w, h: r.h })),
+    labels: (mapLayerMarks.labels || []).map(l => ({ text: l.text, x: l.x, y: l.y, w: l.w, h: l.h, edge: l.edge || null })),
     ways: L && L.ways ? L.ways.map(w => ({ tag: w.tag, x: w.x, y: w.y, kind: w.kind, to: w.to })) : [],
     openings: L && L.openings ? L.openings.length : 0,
     sections: L && L.sections ? L.sections.filter(s => s.label).map(s => s.label) : [],
