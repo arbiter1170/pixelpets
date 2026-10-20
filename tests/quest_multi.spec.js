@@ -46,6 +46,7 @@ const panel = (page) => page.evaluate(() => ({
 async function openMap(page) {
   await page.locator('#mapBtn').click();
   await page.waitForSelector('#ovMap:not([hidden])');
+  await page.locator('#mapLevelRegion').click();
   await page.waitForFunction(() => PixelPets.regionMapMarks);
 }
 const sideText = (page, id) => page.evaluate((id) => PPQuests.SIDE.find((e) => e.id === id).text, id);

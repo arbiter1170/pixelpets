@@ -6267,7 +6267,7 @@ const MAP_HOLD_LINE = {
 const REGION_MAP = {
   title: 'THE AMBERWILD', unknownLabel: '???', unknownBlurb: "You haven't been here yet.",
   nodes: {
-    hearthmoor:    { kind: 'town',  col: 2,  row: 6, label: 'HEARTHMOOR',  labelAt: 'below', blurb: 'Hill village of keepers. Home.',
+    hearthmoor:    { kind: 'town',  col: 2,  row: 6, label: 'HEARTHMOOR',  labelAt: 'below', blurb: 'Hill village of the Keepers. Home.',
       hold: [{ id: 'keepers', line: 'Home. The Keepers hold this town.' }] },
     route1:        { kind: 'route', col: 6,  row: 7, label: 'ROUTE 1',     labelAt: 'below', blurb: 'Hearthmoor to Fernbrook, by the stream.', path: [[2, 6], [4, 7], [8, 7], [10, 6]],
       hold: [{ id: 'keepers', line: 'The Keeper watch holds this road.' }] },
@@ -6322,7 +6322,7 @@ function mapVisited(id, cur){
 const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy && !tabsGuarded() && !(battle && battle.on);
 let mapOffShown = null;
 function syncMapBtn(){ const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false'); }
-const mapUI = { t0: 0, cur: null, sel: null };
+const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null };
 let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
 // First matching rule wins. `flags` lets the dev check try a save without touching S. Unvisited places stay ??? on the parchment.
 function matchHold(id, flags){
@@ -6400,13 +6400,16 @@ function paintPlaceCard(){
     ms.hidden = !(same && window.innerWidth >= 360); ms.textContent = ms.hidden ? '' : 'Side: ' + tsd.label; }
   const heard = (id === mapUI.cur ? 'You are in ' : '') + name + '. ' + blurb + (known ? ' ' + holdLine(id) : '');
   $('#mapSr').textContent = heard;
+  syncMapActs();
 }
-function openMap(){
+function openMap(opts){
   if (!mapReady()) { sfx('denied'); return; }
   clearMoves(); markMapSeen();
   mapUI.cur = nodeOf(S.world.map); mapUI.sel = mapUI.cur; mapUI.t0 = performance.now();
-  paintPlaceCard();
-  fitRegionMap(); $('#ovMap').hidden = false; lockTabs(true); sfx('tap'); drawRegionMap(performance.now());
+  const indoor = !!(CUR && CUR.kind === 'interior');
+  const level = (opts && opts.level) || (indoor ? 'room' : 'town');
+  showMapLevel(level, opts && opts.id);
+  $('#ovMap').hidden = false; lockTabs(true); sfx('tap'); drawMapOverlay(performance.now());
 }
 function closeMap(){ if ($('#ovMap').hidden) return; $('#ovMap').hidden = true; lockTabs(false); sfx('tap'); }
 function selectMapNode(id){
@@ -6429,6 +6432,7 @@ function mapNodeAt(px, py){
   return best;
 }
 function mapNudge(dir){
+  if (mapUI.level && mapUI.level !== 'region') { nudgeLayer(dir); return; }
   const from = REGION_MAP.nodes[mapUI.sel || mapUI.cur]; if (!from) return;
   let best = null, bestD = 1e9;
   for (const id in REGION_MAP.nodes) {
@@ -6445,6 +6449,7 @@ function mapNudge(dir){
   if (best) selectMapNode(best);
 }
 function fitRegionMap(){                                           // whole-number scale only: 2x if there's room for 640 px, else 1x (§2)
+  if (mapUI.level && mapUI.level !== 'region') { fitLayerCanvas(); return; }
   const c = $('#regionCanvas'), k = Math.min(window.innerWidth, 480) >= 640 ? 2 : 1, dpr = Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
   c.style.width = 320 * k + 'px'; c.style.height = 192 * k + 'px';
   if (c.width !== 320 * dpr) { c.width = 320 * dpr; c.height = 192 * dpr; }
@@ -6497,8 +6502,12 @@ function drawRegionMap(t){
   const c = $('#regionCanvas'), g = ctx(c), k = c.width / 320, N = REGION_MAP.nodes, cur = mapUI.cur;
   g.setTransform(k, 0, 0, k, 0, 0); g.imageSmoothingEnabled = false;
   const R = (x, y, w, h, col) => { g.fillStyle = PAL[col]; g.fillRect(Math.round(x), Math.round(y), w, h); };
-  R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');                                 // parchment, 2 px orange edge
-  [[30, 40], [70, 150], [150, 30], [200, 140], [255, 45], [290, 160], [120, 100]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });   // faint hill ticks (decoration)
+  const backdrop = regionBackdropOn() ? ensureRegionBackdrop() : null;
+  if (backdrop && backdrop.complete && backdrop.naturalWidth === 640) g.drawImage(backdrop, 0, 0, 320, 192);
+  else {
+    R(0, 0, 320, 192, 'o'); R(2, 2, 316, 188, 'y');                                 // parchment, 2 px orange edge
+    [[30, 40], [70, 150], [150, 30], [200, 140], [255, 45], [290, 160], [120, 100]].forEach(([x, y]) => { R(x, y, 4, 1, 'o'); R(x + 1, y - 1, 2, 1, 'o'); });   // hill ticks (decoration)
+  }
   const P = ([cc, rr]) => [cc * 16 + 8, rr * 16 + 8];
   const seg = (a, b, col, dashed) => {                                              // 3 px pixel line between grid points (no anti-aliasing)
     const [x0, y0] = P(a), [x1, y1] = P(b), n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
@@ -6606,6 +6615,734 @@ function drawRegionMap(t){
     dotRects: [...dots].map(n => { const [x, y] = P([N[n].col, N[n].row]); return { node: n, x: x + 8 - dh, y: y - 12 - dh }; }) };
   if (mapUI.sel && N[mapUI.sel] && mapUI.sel !== cur) { const [x, y] = P([N[mapUI.sel].col, N[mapUI.sel].row]); brackets(x, y, 16); }
   g.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+// MAP_LAYERS (D258–D275). ROOM and TOWN are drawn from WORLD. REGION stays the parchment.
+// D271's painted backdrop ships in the draw path but stays off until the open red is answered.
+const REGION_BACKDROP = false;
+const ML_SECTION = {
+  hm_school_in: { '1,2': 'CLASSROOM', '12,2': 'CUBBIES', '1,8': 'HALL' },
+  hm_flats_5: { '1,2': 'KITCHEN', '8,2': 'BATH', '13,2': 'LIZZY', '0,6': 'HALL', '1,9': 'OSSABELL', '6,9': 'MORELOU', '13,9': 'MOROLOW' },
+};
+const ML_CHIPS = { hm_flats_lobby: 'LOBBY', hm_flats_5: '5B', sm_yard: 'YARD', sm_tunnel: 'TUNNEL', sm_hold: 'HOLD', sm_den: 'DEN' };
+const ML_LABEL = { hc_gym_in: 'TRIAL HALL' };
+const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K' };
+const mapLayers = { ready: false, byId: {}, byFloor: {} };
+let regionBackdropImg = null;
+let mapPinSig = '';
+
+function regionBackdropOn(){ return REGION_BACKDROP || !!(DEBUG && window.PP_REGION_BACKDROP); }
+function ensureRegionBackdrop(){
+  if (regionBackdropImg) return regionBackdropImg;
+  regionBackdropImg = new Image();
+  regionBackdropImg.src = 'region_backdrop.png?v=' + (window.BUILD || '');
+  return regionBackdropImg;
+}
+function regionBackdropReady(){ const img = ensureRegionBackdrop(); return !!(img.complete && img.naturalWidth === 640); }
+function mapLayerWalks(m, ch){
+  const sk = m.skin && SKINS[m.skin];
+  return (sk && sk.walk && sk.walk[ch] != null) ? !!sk.walk[ch] : !!((TILE_DEF[ch] || {}).walk);
+}
+function layerWhen(o){
+  if (!o) return false;
+  if (o.need && !cond(o.need, false)) return false;
+  if (!o.when) return true;
+  const list = Array.isArray(o.when) ? o.when : [o.when];
+  return list.every(c => cond(c, false));
+}
+function mapTilePxFor(w, h, W, H, level, chips){
+  const fw = Math.min(W - 12, 468);
+  const y0 = 6 + 44 + 6 + 44 + 6;
+  let hc = H - y0 - 6 - 74 - 6 - 20 - 10;
+  if (chips) hc -= 44 + 6;
+  const cap = level === 'room' ? 24 : 16;
+  return Math.max(1, Math.min(cap, Math.floor(fw / w), Math.floor(hc / h)));
+}
+function mapShortLabel(id){
+  if (ML_LABEL[id]) return ML_LABEL[id];
+  const m = WORLD[id]; if (!m) return '';
+  let n = String(m.name || '').split(',')[0];
+  const towns = Object.keys(WORLD).filter(k => WORLD[k] && WORLD[k].kind !== 'interior').map(k => WORLD[k].name).sort((a, b) => b.length - a.length);
+  for (const tn of towns) if (n.startsWith(tn + ' ') && n.length > tn.length + 1) { n = n.slice(tn.length + 1); break; }
+  return n.toUpperCase();
+}
+function mapWayKind(m, o){
+  const t = WORLD[o.to];
+  if (!t || t.kind !== 'interior') return 'exit';
+  const nearSign = (mm, x, y) => (mm.objs || []).some(s => s.kind === 'sign' && String(s.text || '').toUpperCase().startsWith('STAIRS') && Math.abs(s.x - x) <= 2 && Math.abs(s.y - y) <= 2);
+  const back = (t.objs || []).filter(b => (b.kind === 'warp' || b.kind === 'door') && b.to === m.id);
+  const ends = [[m, o.x, o.y]].concat(back.map(b => [t, b.x, b.y]));
+  const tiles = ends.map(([mm, x, y]) => (mm.grid[y] && mm.grid[y][x]) || '');
+  if (tiles.indexOf('E') >= 0) return 'lift';
+  if (tiles.some(c => c === '^' || c === 'S') || ends.some(([mm, x, y]) => nearSign(mm, x, y)) || (String(t.name) + String(m.name)).toLowerCase().indexOf('upstairs') >= 0) return 'stairs';
+  return 'door';
+}
+function interiorLayout(m){
+  const g = m.grid, h = g.length, w = g[0].length, lab = m.skin === 'lab';
+  const wayCells = new Set();
+  (m.objs || []).forEach(o => { if ((o.kind === 'warp' || o.kind === 'door') && o.to) wayCells.add(o.x + ',' + o.y); });
+  const at = (x, y) => (x >= 0 && y >= 0 && x < w && y < h) ? g[y][x] : '#';
+  const wall = (x, y) => {
+    if (x < 0 || y < 0 || x >= w || y >= h) return true;
+    if (wayCells.has(x + ',' + y)) return false;
+    const ch = g[y][x];
+    if (ch === '#' || ch === 'W' || ch === 'V' || (lab && ch === 'n') || ch === 'S') return true;
+    if ((x === 0 || x === w - 1 || y === 0 || y === h - 1) && !mapLayerWalks(m, ch)) return true;
+    return false;
+  };
+  const candH = (x, y) => !wall(x, y) && wall(x - 1, y) && wall(x + 1, y) && wall(x - 2, y) && wall(x + 2, y) && !wall(x, y - 1) && !wall(x, y + 1) && y > 0 && y < h - 1;
+  const candV = (x, y) => !wall(x, y) && wall(x, y - 1) && wall(x, y + 1) && wall(x, y - 2) && wall(x, y + 2) && !wall(x - 1, y) && !wall(x + 1, y) && x > 0 && x < w - 1;
+  const acrossH = (x, y) => !wall(x, y) && wall(x - 1, y) && wall(x + 1, y);
+  const acrossV = (x, y) => !wall(x, y) && wall(x, y - 1) && wall(x, y + 1);
+  const openings = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (wayCells.has(x + ',' + y)) continue;
+    if (candH(x, y) && [y - 1, y + 1].every(yy => !acrossH(x, yy) || candH(x, yy))) openings.push({ x, y, axis: 'h' });
+    else if (candV(x, y) && [x - 1, x + 1].every(xx => !acrossV(xx, y) || candV(xx, y))) openings.push({ x, y, axis: 'v' });
+  }
+  const ops = new Set(openings.map(o => o.x + ',' + o.y));
+  const seen = new Set(), secs = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const key = x + ',' + y;
+    if (seen.has(key) || ops.has(key) || wall(x, y) || (wayCells.has(key) && (x === 0 || x === w - 1 || y === 0 || y === h - 1))) continue;
+    const st = [[x, y]]; seen.add(key); const cells = [];
+    while (st.length) {
+      const [a, b] = st.pop(); cells.push([a, b]);
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+        const nx = a + dx, ny = b + dy, nk = nx + ',' + ny;
+        if (seen.has(nk) || ops.has(nk) || wall(nx, ny)) return;
+        seen.add(nk); st.push([nx, ny]);
+      });
+    }
+    cells.sort((p, q) => p[1] - q[1] || p[0] - q[0]); secs.push(cells);
+  }
+  const labels = ML_SECTION[m.id] || {};
+  const sections = [];
+  secs.filter(c => c.length >= 4).forEach(cells => {
+    const first = [cells[0][0], cells[0][1]];
+    const cx = cells.reduce((s, c) => s + c[0], 0) / cells.length, cy = cells.reduce((s, c) => s + c[1], 0) / cells.length;
+    const anchor = cells.reduce((best, c) => {
+      const d = (c[0] - cx) ** 2 + (c[1] - cy) ** 2, bd = (best[0] - cx) ** 2 + (best[1] - cy) ** 2;
+      return d < bd ? c : best;
+    }, cells[0]);
+    sections.push({ first, tiles: cells.length, anchor: [anchor[0], anchor[1]], label: labels[first[0] + ',' + first[1]] || null, cells });
+  });
+  const fixtures = [], walls = [], stairs = [];
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (wall(x, y)) walls.push([x, y]);
+    else if (!mapLayerWalks(m, g[y][x]) && !wayCells.has(x + ',' + y)) fixtures.push([x, y]);
+    if (g[y][x] === 'S') stairs.push([x, y]);
+  }
+  return { sections, openings, fixtures, walls, scenery: stairs, w, h };
+}
+function buildMapGroups(){
+  const inter = Object.keys(WORLD).filter(k => WORLD[k] && WORLD[k].kind === 'interior');
+  const adj = {}; inter.forEach(k => { adj[k] = new Set(); });
+  inter.forEach(k => (WORLD[k].objs || []).forEach(o => {
+    if ((o.kind === 'warp' || o.kind === 'door') && adj[o.to]) { adj[k].add(o.to); adj[o.to].add(k); }
+  }));
+  const groups = [], done = new Set();
+  inter.forEach(k => {
+    if (done.has(k)) return;
+    const st = [k], comp = [];
+    while (st.length) {
+      const a = st.pop(); if (done.has(a)) continue;
+      done.add(a); comp.push(a); adj[a].forEach(b => st.push(b));
+    }
+    const street = comp.filter(c => (WORLD[c].objs || []).some(o => (o.kind === 'warp' || o.kind === 'door') && o.to && WORLD[o.to] && WORLD[o.to].kind !== 'interior'));
+    const start = street[0] || comp.slice().sort()[0];
+    const depth = { [start]: 0 }, q = [start];
+    while (q.length) {
+      const a = q.shift();
+      Array.from(adj[a]).sort().forEach(b => { if (!(b in depth)) { depth[b] = depth[a] + 1; q.push(b); } });
+    }
+    const floors = comp.slice().sort((a, b) => depth[a] - depth[b] || (a < b ? -1 : a > b ? 1 : 0));
+    const chips = floors.length > 1 ? floors.map(c => ML_CHIPS[c] || ('F' + (depth[c] + 1))) : [];
+    const group = { id: start, floors, depth, chips };
+    groups.push(group);
+    floors.forEach(f => { mapLayers.byFloor[f] = group; });
+  });
+}
+function outdoorLayout(m){
+  const g = m.grid, h = g.length, w = g[0].length;
+  const at = (x, y) => (y >= 0 && x >= 0 && y < h && x < w) ? g[y][x] : '';
+  const buildings = [], used = new Set();
+  (m.objs || []).forEach(o => {
+    if (o.kind !== 'door') return;
+    let sx = o.x, sy = o.y;
+    if (at(sx, sy) !== 'R' && at(sx, sy) !== 'H') sy = o.y - 1;
+    const cells = new Set();
+    if (at(sx, sy) === 'R' || at(sx, sy) === 'H') {
+      const st = [[sx, sy]];
+      while (st.length) {
+        const [a, b] = st.pop(), k = a + ',' + b, ch = at(a, b);
+        if (cells.has(k) || (ch !== 'R' && ch !== 'H')) continue;
+        cells.add(k); st.push([a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]);
+      }
+    }
+    cells.forEach(k => used.add(k));
+    const xs = [], ys = [];
+    cells.forEach(k => { const p = k.split(','); xs.push(+p[0]); ys.push(+p[1]); });
+    if (!xs.length) { xs.push(o.x); ys.push(o.y); }
+    const to = o.to && WORLD[o.to] ? o.to : null;
+    buildings.push({
+      door: o.id, door_xy: [o.x, o.y], to, label: to ? mapShortLabel(to) : null,
+      rect: [Math.min.apply(null, xs), Math.min.apply(null, ys), Math.max.apply(null, xs), Math.max.apply(null, ys)],
+      locked: !to, when: o.when || null, need: o.need || null,
+    });
+  });
+  const plain = [], seen = new Set(used);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const key = x + ',' + y;
+    if (seen.has(key) || (at(x, y) !== 'R' && at(x, y) !== 'H')) continue;
+    const st = [[x, y]], cells = [];
+    while (st.length) {
+      const [a, b] = st.pop(), k = a + ',' + b, ch = at(a, b);
+      if (seen.has(k) || (ch !== 'R' && ch !== 'H')) continue;
+      seen.add(k); cells.push([a, b]); st.push([a + 1, b], [a - 1, b], [a, b + 1], [a, b - 1]);
+    }
+    const xs = cells.map(c => c[0]), ys = cells.map(c => c[1]);
+    plain.push([Math.min.apply(null, xs), Math.min.apply(null, ys), Math.max.apply(null, xs), Math.max.apply(null, ys)]);
+  }
+  const exits = [];
+  (m.objs || []).forEach(o => {
+    if (o.kind !== 'warp' || !WORLD[o.to]) return;
+    const edge = o.x === 0 ? 'west' : o.x === w - 1 ? 'east' : o.y === 0 ? 'north' : o.y === h - 1 ? 'south' : 'mark';
+    const node = nodeOf(o.to);
+    exits.push({
+      id: o.id, xy: [o.x, o.y], to: o.to, edge, node, coach: edge === 'mark',
+      label: node && REGION_MAP.nodes[node] ? REGION_MAP.nodes[node].label : WORLD[o.to].name.toUpperCase(),
+      when: o.when || null, need: o.need || null,
+    });
+  });
+  return { buildings, plain, exits, w, h };
+}
+function ensureMapLayers(){
+  if (mapLayers.ready) return mapLayers;
+  buildMapGroups();
+  const vps = [{ id: '390', W: 390, H: 844 }, { id: '375', W: 375, H: 667 }, { id: '320', W: 320, H: 568 }];
+  Object.keys(WORLD).forEach(id => {
+    const m = WORLD[id]; if (!m || !m.grid) return;
+    const room = m.kind === 'interior';
+    const e = room ? interiorLayout(m) : outdoorLayout(m);
+    e.id = id; e.name = m.name; e.level = room ? 'room' : 'town'; e.dream = !!m.dream; e.outdoor = m.outdoor || null;
+    e.grid = m.grid;
+    if (room) {
+      const group = mapLayers.byFloor[id];
+      e.ways = (m.objs || []).filter(o => (o.kind === 'warp' || o.kind === 'door') && o.to && WORLD[o.to]).map(o => {
+        const kind = mapWayKind(m, o);
+        let tag = 'DOOR';
+        if (kind === 'exit') tag = 'OUT';
+        else if (kind === 'lift') tag = 'LIFT';
+        else if (kind === 'stairs') tag = (group && group.depth[o.to] > group.depth[id]) ? 'UP' : 'DOWN';
+        return { id: o.id, x: o.x, y: o.y, to: o.to, kind, tag, need: o.need || null, when: o.when || null };
+      });
+      e.title = ML_LABEL[id] ? mapShortLabel(id) : String(m.name || '').toUpperCase();
+      e.group = group || null;
+    } else e.title = String(m.name || '').toUpperCase();
+    const chips = !!(room && e.group && e.group.floors.length > 1);
+    e.px = {};
+    vps.forEach(vp => { e.px[vp.id] = mapTilePxFor(e.w, e.h, vp.W, vp.H, e.level, chips); });
+    mapLayers.byId[id] = e;
+  });
+  mapLayers.ready = true;
+  return mapLayers;
+}
+function floorVisited(id){
+  if (!id) return false;
+  if (S && S.world && S.world.map === id) return true;
+  return !!(S && S.floorSeen && S.floorSeen[id] === 1);
+}
+function buildingEntered(to){
+  if (!to) return false;
+  const g = mapLayers.byFloor[to];
+  if (!g) return floorVisited(to);
+  return g.floors.some(floorVisited);
+}
+function atTown(){
+  if (!CUR || CUR.dream) return null;
+  if (CUR.kind !== 'interior') return CUR.id;
+  return CUR.outdoor || nodeOf(CUR.id) || null;
+}
+function townShownDefault(){
+  if (!CUR) return 'hearthmoor';
+  if (CUR.dream) return 'mahopac';
+  if (CUR.kind !== 'interior') return CUR.id;
+  return CUR.outdoor || nodeOf(CUR.id) || 'hearthmoor';
+}
+function roomSelectable(){
+  if (CUR && CUR.kind === 'interior') return true;
+  return !!(mapUI.level === 'room' && mapUI.shown && WORLD[mapUI.shown] && WORLD[mapUI.shown].kind === 'interior');
+}
+function mapPlaceKnown(id){
+  const n = nodeOf(id);
+  if (n && !mapVisited(n, mapUI.cur)) return null;
+  if (WORLD[id]) return WORLD[id].name;
+  return n && REGION_MAP.nodes[n] ? REGION_MAP.nodes[n].label : null;
+}
+function wayLead(wy){
+  const named = WORLD[wy.to] ? WORLD[wy.to].name : '???';
+  const k = wy.kindWay || wy.kind;
+  if (k === 'exit') { const known = mapPlaceKnown(wy.to); return 'Out to ' + (known || '???'); }
+  if (k === 'lift') return 'Lift to ' + named;
+  if (k === 'stairs') return (wy.tag === 'UP' ? 'Up to ' : 'Down to ') + named;
+  return 'Door to ' + named;
+}
+function objectiveOn(mapId, q){
+  if (!q || !q.target || !mapId || !WORLD[mapId]) return null;
+  if (q.target.map === mapId) {
+    if (CUR && CUR.id === mapId) { const live = followSpot(q); if (live) return { x: live.x, y: live.y }; }
+    return { x: q.target.x, y: q.target.y };
+  }
+  const ex = routeExit(mapId, q.target.map);
+  return ex ? { x: ex.x, y: ex.y } : null;
+}
+function youOnLayer(){
+  const level = mapUI.level, id = mapUI.shown;
+  if (level === 'room') {
+    if (!CUR || CUR.id !== id) return null;
+    return { x: S.world.x, y: S.world.y };
+  }
+  if (level === 'town') {
+    if (atTown() !== id) return null;
+    if (CUR.kind === 'interior') {
+      const L = mapLayers.byId[id];
+      const b = L && L.buildings.find(bb => bb.to && mapLayers.byFloor[bb.to] && mapLayers.byFloor[bb.to].floors.indexOf(CUR.id) >= 0);
+      return b ? { x: b.door_xy[0], y: b.door_xy[1] } : null;
+    }
+    return { x: S.world.x, y: S.world.y };
+  }
+  return null;
+}
+function layerFog(){
+  return !!(mapUI.level === 'room' && mapUI.shown && !floorVisited(mapUI.shown));
+}
+function syncMapActs(){
+  const see = $('#mapSee'), back = $('#mapBack'); if (!see || !back) return;
+  const level = mapUI.level || 'region';
+  if (level === 'region') {
+    const id = mapUI.sel, known = !!(id && nodeGeom(id) && nodeGeom(id).known && WORLD[id]);
+    see.hidden = !known; see.textContent = 'SEE MAP'; back.hidden = true;
+  } else if (level === 'town') {
+    const p = mapUI.pick;
+    const can = !!(p && p.kind === 'building' && p.to && !p.locked && buildingEntered(p.to));
+    see.hidden = !can; see.textContent = 'SEE INSIDE'; back.hidden = !mapUI.browse;
+  } else {
+    see.hidden = true; back.hidden = !mapUI.browse;
+  }
+}
+function paintLayerKey(level){
+  const el = $('#mapLayerKey'); if (!el) return;
+  const row = (sw, text) => '<li><span class="sw ' + sw + '" aria-hidden="true"></span>' + text + '</li>';
+  if (level === 'room') el.innerHTML = '<section class="map-key-g"><p class="map-key-h">ROOM</p><ul class="map-key-list">' + row('sw-exit', 'Way out') + row('sw-lift', 'Lift') + row('sw-stairs', 'Stairs') + row('sw-you', 'You') + '</ul></section>';
+  else if (level === 'town') el.innerHTML = '<section class="map-key-g"><p class="map-key-h">TOWN</p><ul class="map-key-list">' + row('sw-you', 'You') + row('sw-next', 'Next step') + row('sw-in', 'Been inside') + row('sw-yet', 'Not yet') + '</ul></section>';
+}
+function paintChips(){
+  const box = $('#mapChips'); if (!box) return;
+  const g = mapUI.level === 'room' && mapLayers.byFloor[mapUI.shown];
+  if (!g || g.floors.length < 2) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false; box.innerHTML = '';
+  g.floors.forEach((fid, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'map-chip' + (fid === mapUI.shown ? ' on' : '') + (floorVisited(fid) ? '' : ' fog');
+    b.textContent = floorVisited(fid) ? g.chips[i] : '???';
+    b.addEventListener('click', () => { showMapLevel('room', fid); sfx('tap'); });
+    box.appendChild(b);
+  });
+}
+function paintPins(pins){
+  const box = $('#mapPins'); if (!box) return;
+  const sig = pins.map(p => p.n + ':' + p.label).join('|');
+  if (sig === mapPinSig) return;
+  mapPinSig = sig; mapUI.pins = pins;
+  if (!pins.length) { box.hidden = true; box.innerHTML = ''; return; }
+  box.hidden = false; box.innerHTML = '';
+  pins.forEach(p => {
+    const row = document.createElement('div'); row.className = 'map-pin';
+    const n = document.createElement('b'); n.textContent = String(p.n);
+    const s = document.createElement('span'); s.textContent = p.label;
+    row.appendChild(n); row.appendChild(s); box.appendChild(row);
+  });
+}
+function paintLayerCard(){
+  const L = mapLayers.byId[mapUI.shown]; if (!L) return;
+  const fog = layerFog();
+  let name = L.title, blurb = '', you = false;
+  const outdoor = L.outdoor && WORLD[L.outdoor] ? WORLD[L.outdoor].name : (nodeOf(L.id) && REGION_MAP.nodes[nodeOf(L.id)] ? REGION_MAP.nodes[nodeOf(L.id)].label : '');
+  if (L.level === 'room') {
+    if (fog) { name = '???'; blurb = "You haven't been up here yet."; }
+    else {
+      const p = mapUI.pick;
+      if (p && p.kind === 'way') { name = p.tag; blurb = wayLead(p); }
+      else if (p && p.kind === 'section' && p.label) { name = p.label; blurb = L.name; }
+      else { name = L.title; blurb = outdoor; }
+      you = !!(CUR && CUR.id === L.id);
+    }
+  } else {
+    const node = REGION_MAP.nodes[L.id];
+    name = node ? node.label : L.title;
+    blurb = node ? node.blurb : '';
+    you = L.id === atTown();
+    const p = mapUI.pick;
+    if (p && p.kind === 'building') {
+      name = p.label || name;
+      blurb = (p.locked || !buildingEntered(p.to)) ? 'Not been inside yet.' : (WORLD[p.to] ? WORLD[p.to].name : blurb);
+    } else if (p && p.kind === 'exit') {
+      const known = p.node ? mapVisited(p.node, mapUI.cur) : true;
+      name = known ? p.label : '???';
+      blurb = known ? ('Out to ' + (WORLD[p.to] ? WORLD[p.to].name : p.label)) : REGION_MAP.unknownBlurb;
+    }
+  }
+  $('#mapTitle').textContent = fog ? '???' : L.title;
+  $('#mapPlaceName').textContent = name;
+  $('#mapPlaceBlurb').textContent = blurb;
+  const here = $('#mapHere'); if (here) here.hidden = !you;
+  const hold = $('#mapHold'); if (hold) hold.hidden = true;
+  $('#mapSr').textContent = (you ? 'You are in ' : '') + name + '. ' + blurb;
+  syncMapActs();
+}
+function syncMapChrome(){
+  const level = mapUI.level || 'region';
+  const mark = (id, on) => { const b = $(id); if (!b) return; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); };
+  mark('#mapLevelRoom', level === 'room'); mark('#mapLevelTown', level === 'town'); mark('#mapLevelRegion', level === 'region');
+  const rb = $('#mapLevelRoom'), off = !roomSelectable();
+  if (rb) { rb.classList.toggle('off', off); rb.setAttribute('aria-disabled', off ? 'true' : 'false'); }
+  const region = level === 'region';
+  const key = $('#mapKey'); if (key) key.hidden = !region;
+  const lk = $('#mapLayerKey'); if (lk) lk.hidden = region;
+  ['#mapQuest', '#mapSide', '#mapPledge'].forEach(id => { const e = $(id); if (e && !region) e.hidden = true; });
+  if (!region) { const hold = $('#mapHold'); if (hold) hold.hidden = true; paintLayerKey(level); }
+  if (level !== 'room') { const box = $('#mapChips'); if (box) { box.hidden = true; box.innerHTML = ''; } }
+  else paintChips();
+  if (region) { mapPinSig = ''; mapUI.pins = []; const pins = $('#mapPins'); if (pins) { pins.hidden = true; pins.innerHTML = ''; } }
+  syncMapActs();
+}
+function showMapLevel(level, id){
+  ensureMapLayers();
+  mapUI.level = level;
+  mapUI.pick = null;
+  mapPinSig = '';
+  if (level === 'region') {
+    mapUI.shown = null; mapUI.browse = false;
+    if (!mapUI.sel) mapUI.sel = mapUI.cur;
+    paintPlaceCard();
+  } else if (level === 'town') {
+    const tid = (id && WORLD[id] && WORLD[id].kind !== 'interior') ? id : townShownDefault();
+    mapUI.shown = WORLD[tid] ? tid : 'hearthmoor';
+    mapUI.browse = mapUI.shown !== atTown();
+    paintLayerCard();
+  } else {
+    let rid = id;
+    if (!rid && CUR && CUR.kind === 'interior') rid = CUR.id;
+    if (!rid || !WORLD[rid] || WORLD[rid].kind !== 'interior') { mapUI.level = 'town'; return showMapLevel('town'); }
+    mapUI.shown = rid;
+    mapUI.browse = !(CUR && CUR.id === rid);
+    paintLayerCard();
+  }
+  syncMapChrome();
+  fitRegionMap();
+  if (!$('#ovMap').hidden) drawMapOverlay(performance.now());
+}
+function chooseMapLevel(level){
+  if (level === 'room' && !roomSelectable()) { mapUI.denies = (mapUI.denies | 0) + 1; sfx('denied'); return; }
+  if (mapUI.level === level) return;
+  showMapLevel(level); sfx('tap');
+}
+function mapSee(){
+  if ((mapUI.level || 'region') === 'region') {
+    const id = mapUI.sel;
+    if (!id || !nodeGeom(id) || !nodeGeom(id).known || !WORLD[id] || WORLD[id].kind === 'interior') return;
+    showMapLevel('town', id); sfx('tap'); return;
+  }
+  const p = mapUI.pick;
+  if (mapUI.level === 'town' && p && p.kind === 'building' && p.to && buildingEntered(p.to)) {
+    const g = mapLayers.byFloor[p.to];
+    showMapLevel('room', g ? g.floors[0] : p.to); sfx('tap');
+  }
+}
+function mapBack(){
+  if (CUR && CUR.kind === 'interior') showMapLevel('room', CUR.id);
+  else showMapLevel('town', CUR ? CUR.id : townShownDefault());
+  sfx('tap');
+}
+function fitLayerCanvas(){
+  const L = mapLayers.byId[mapUI.shown]; const c = $('#regionCanvas'); if (!c || !L) return;
+  const chips = mapUI.level === 'room' && mapLayers.byFloor[L.id] && mapLayers.byFloor[L.id].floors.length > 1;
+  const p = mapTilePxFor(L.w, L.h, window.innerWidth, window.innerHeight, L.level, chips);
+  mapUI.px = p;
+  const dpr = Math.max(1, Math.min(3, Math.round(window.devicePixelRatio || 1)));
+  c.style.width = (L.w * p) + 'px'; c.style.height = (L.h * p) + 'px';
+  const bw = Math.round(L.w * p * dpr), bh = Math.round(L.h * p * dpr);
+  if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; }
+}
+function mapFont(g, sz){
+  const fam = getComputedStyle(document.documentElement).getPropertyValue('--font') || 'sans-serif';
+  g.font = sz + 'px ' + fam; g.textBaseline = 'middle';
+}
+function plateText(g, x, y, s, sz, col, align){
+  mapFont(g, sz); g.textAlign = align || 'center';
+  const w = g.measureText(s).width, h = sz;
+  let left = x - w / 2;
+  if (align === 'left') left = x; else if (align === 'right') left = x - w;
+  g.fillStyle = PAL.k; g.fillRect(Math.round(left - 2), Math.round(y - h / 2 - 1), Math.ceil(w + 4), Math.ceil(h + 2));
+  g.fillStyle = PAL[col] || PAL.w; g.fillText(s, Math.round(x), Math.round(y));
+  return w;
+}
+function fillTri(R, pts, col){
+  const ys = pts.map(p => p[1]);
+  const y0 = Math.ceil(Math.min.apply(null, ys)), y1 = Math.floor(Math.max.apply(null, ys));
+  for (let y = y0; y <= y1; y++) {
+    const xs = [];
+    for (let i = 0; i < pts.length; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length];
+      if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y)) xs.push(a[0] + (b[0] - a[0]) * ((y - a[1]) / (b[1] - a[1])));
+    }
+    if (xs.length >= 2) {
+      const L = Math.round(Math.min.apply(null, xs)), Rr = Math.round(Math.max.apply(null, xs));
+      if (Rr >= L) R(L, y, Rr - L + 1, 1, col);
+    }
+  }
+}
+function ringBox(R, cx, cy, r, col){
+  for (let a = 0; a < 360; a += 4) {
+    const x = Math.round(cx + r * Math.cos(a * Math.PI / 180)), y = Math.round(cy + r * Math.sin(a * Math.PI / 180));
+    R(x - 1, y - 1, 2, 2, col);
+  }
+}
+function youMarker(R, cx, cy, rad){
+  ringBox(R, cx, cy, rad, 'b'); ringBox(R, cx, cy, Math.max(1, rad - 1), 'b');
+  R(cx - 1, cy - rad - 8, 3, 3, 'r');
+  for (let i = 0; i < 4; i++) R(cx - 3 + i, cy - rad - 5 + i, 7 - 2 * i, 1, 'r');
+}
+function whiteBrackets(R, cx, cy, r){
+  const L = 4;
+  [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => {
+    const x = Math.round(cx + sx * r), y = Math.round(cy + sy * r);
+    R(Math.min(x, x - sx * L), y, L, 2, 'w');
+    R(x - (sx < 0 ? 0 : 1), Math.min(y, y - sy * L), 2, L, 'w');
+  });
+}
+function stairsIcon(R, x, y, p, dim){
+  const n = 3, st = Math.max(2, Math.floor((p - 4) / n)), col = dim ? 'm' : 'y';
+  for (let i = 0; i < n; i++) R(x + 2, y + 2 + i * st, p - 4 - i * Math.floor(st / 2), Math.max(1, st - 1), col);
+}
+function drawMapLayer(t){
+  ensureMapLayers();
+  const L = mapLayers.byId[mapUI.shown]; const c = $('#regionCanvas'); if (!L || !c) return;
+  const g = ctx(c), p = mapUI.px || 8, dpr = c.width / Math.max(1, L.w * p);
+  g.setTransform(dpr, 0, 0, dpr, 0, 0); g.imageSmoothingEnabled = false;
+  const R = (x, y, w, h, col) => { if (w <= 0 || h <= 0) return; g.fillStyle = PAL[col] || PAL.k; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
+  const box = (x, y, w, h, col) => { R(x, y, w, 1, col); R(x, y + h - 1, w, 1, col); R(x, y, 1, h, col); R(x + w - 1, y, 1, h, col); };
+  const fog = layerFog();
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const blink = reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0;
+  if (L.level === 'room') drawRoomLayer(g, R, L, p, fog, blink);
+  else drawTownLayer(g, R, box, L, p, blink);
+  g.setTransform(1, 0, 0, 1, 0, 0);
+}
+function drawRoomLayer(g, R, L, p, fog, blink){
+  const W = L.w * p, H = L.h * p;
+  R(0, 0, W, H, 'k');
+  const wallSet = new Set(L.walls.map(c => c[0] + ',' + c[1]));
+  if (fog) {
+    L.walls.forEach(([x, y]) => {
+      const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
+        const nx = x + dx, ny = y + dy;
+        return nx >= 0 && ny >= 0 && nx < L.w && ny < L.h && !wallSet.has(nx + ',' + ny);
+      });
+      if (edge) R(x * p, y * p, p, p, 'd');
+    });
+    plateText(g, W / 2, H / 2, '???', Math.max(14, p), 'h', 'center');
+    return;
+  }
+  const secOf = {};
+  L.sections.forEach((s, i) => s.cells.forEach(c => { secOf[c[0] + ',' + c[1]] = i; }));
+  const floor = {};
+  Object.keys(secOf).forEach(k => { floor[k] = secOf[k] % 2 === 0 ? 'd' : 'n'; });
+  L.openings.forEach(o => {
+    const nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => secOf[(o.x + dx) + ',' + (o.y + dy)]).filter(n => n != null);
+    floor[o.x + ',' + o.y] = (nb.length ? nb[0] : 0) % 2 === 0 ? 'd' : 'n';
+  });
+  L.ways.forEach(wy => { const k = wy.x + ',' + wy.y; if (!floor[k]) floor[k] = 'd'; });
+  Object.keys(floor).forEach(k => { const xy = k.split(','); R(+xy[0] * p, +xy[1] * p, p, p, floor[k]); });
+  L.fixtures.forEach(([x, y]) => R(x * p + 1, y * p + 1, Math.max(1, p - 2), Math.max(1, p - 2), 'm'));
+  const lw = Math.max(2, Math.floor(p / 6));
+  Object.keys(floor).forEach(k => {
+    const x = +k.split(',')[0], y = +k.split(',')[1];
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+      const nx = x + dx, ny = y + dy, outside = nx < 0 || ny < 0 || nx >= L.w || ny >= L.h;
+      if (!outside && !wallSet.has(nx + ',' + ny)) return;
+      if (dx === 1) R((x + 1) * p - lw, y * p, lw, p, 'h');
+      if (dx === -1) R(x * p, y * p, lw, p, 'h');
+      if (dy === 1) R(x * p, (y + 1) * p - lw, p, lw, 'h');
+      if (dy === -1) R(x * p, y * p, p, lw, 'h');
+    });
+  });
+  L.scenery.forEach(([x, y]) => stairsIcon(R, x * p, y * p, p, true));
+  L.ways.forEach(wy => {
+    if (!layerWhen(wy)) return;
+    const X = wy.x * p, Y = wy.y * p;
+    if (wy.kind === 'exit') R(X + 2, Y + Math.floor(p / 3), p - 4, Math.max(2, p - 2 * Math.floor(p / 3)), 'o');
+    else if (wy.kind === 'stairs') stairsIcon(R, X, Y, p, false);
+    else if (wy.kind === 'lift') { R(X + 2, Y + 2, p - 4, p - 4, 's'); R(X + Math.floor(p / 2), Y + 3, Math.max(1, Math.floor(p / 12)), p - 6, 'k'); }
+    else R(X + 2, Y + 2, p - 4, p - 4, 'g');
+  });
+  const tagged = new Set();
+  L.ways.forEach(wy => {
+    if (!layerWhen(wy)) return;
+    const key = wy.tag + '>' + wy.to; if (tagged.has(key)) return; tagged.add(key);
+    const sz = p >= 16 ? 13 : 11;
+    let X = wy.x * p + p / 2, Y = wy.y * p, ty = wy.y > L.h / 2 ? Y - 3 : Y + p + 3, align = 'center';
+    if (wy.x === 0) { X = p + 3; align = 'left'; ty = Y + p / 2; }
+    plateText(g, X, ty, wy.tag, sz, 'w', align);
+  });
+  L.sections.forEach(s => { if (s.label) plateText(g, s.anchor[0] * p + p / 2, s.anchor[1] * p + p / 2, s.label, p >= 18 ? 14 : 12, 'w', 'center'); });
+  const q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
+  if (q && blink) ringBox(R, q.x * p + p / 2, q.y * p + p / 2, Math.max(p * 0.8, 10), 'r');
+  if (side) ringBox(R, side.x * p + p / 2, side.y * p + p / 2, Math.max(p * 0.8, 10) + 3, 'c');
+  if (you && blink) youMarker(R, you.x * p + p / 2, you.y * p + p / 2, Math.max(p * 0.65, 9));
+  const sel = mapUI.pick;
+  if (sel) whiteBrackets(R, sel.x * p + p / 2, sel.y * p + p / 2, Math.max(p, 14));
+}
+function drawTownLayer(g, R, box, L, p, blink){
+  const grid = L.grid;
+  for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) {
+    const ch = grid[y][x];
+    R(x * p, y * p, p, p, (ch === 'R' || ch === 'H') ? 'B' : (ML_TOWN[ch] || 'g'));
+  }
+  L.plain.forEach(r => { R(r[0] * p, r[1] * p, (r[2] - r[0] + 1) * p, (r[3] - r[1] + 1) * p, 'B'); box(r[0] * p, r[1] * p, (r[2] - r[0] + 1) * p, (r[3] - r[1] + 1) * p, 'k'); });
+  const labels = [], pins = [];
+  L.buildings.forEach(b => {
+    const x0 = b.rect[0], y0 = b.rect[1], x1 = b.rect[2], y1 = b.rect[3];
+    const ent = !b.locked && buildingEntered(b.to);
+    const face = b.locked ? 'B' : ent ? 'r' : 'm';
+    const bw = (x1 - x0 + 1) * p, bh = (y1 - y0 + 1) * p;
+    R(x0 * p, y0 * p, bw, bh, face); box(x0 * p, y0 * p, bw, bh, 'k');
+    if (!b.locked) R(x0 * p + 1, y0 * p + 1, bw - 2, Math.max(2, Math.floor(p / 3)), ent ? 'o' : 'h');
+    const dx = b.door_xy[0], dy = b.door_xy[1], dw = Math.max(3, Math.floor(p / 2));
+    R(dx * p + Math.floor((p - dw) / 2), dy * p + Math.floor(p / 3), dw, p - Math.floor(p / 3), b.locked ? 'm' : 'k');
+    if (b.label) {
+      const cx = (x0 + x1 + 1) * p / 2, cy = (y0 + y1 + 1) * p / 2;
+      const sz = p >= 10 ? 13 : 12;
+      mapFont(g, sz);
+      if (g.measureText(b.label).width <= bw + 2 * p) labels.push([cx, cy, b.label, sz, ent]);
+      else { const n = pins.length + 1; pins.push({ n, label: b.label }); labels.push([cx, cy, String(n), 12, ent]); }
+    }
+  });
+  L.exits.forEach(e => {
+    if (!layerWhen(e)) return;
+    const x = e.xy[0], y = e.xy[1], X = x * p + p / 2, Y = y * p + p / 2;
+    const known = !e.node || mapVisited(e.node, mapUI.cur);
+    const lab = known ? e.label : '???';
+    const a = Math.max(5, Math.floor(p / 2) + 2);
+    if (e.edge === 'east') { fillTri(R, [[X - a, Y - a], [X - a, Y + a], [X + a / 2 + 1, Y]], 'y'); plateText(g, X - a - 4, Y, lab, 12, 'w', 'right'); }
+    else if (e.edge === 'west') { fillTri(R, [[X + a, Y - a], [X + a, Y + a], [X - a / 2 - 1, Y]], 'y'); plateText(g, X + a + 4, Y, lab, 12, 'w', 'left'); }
+    else if (e.edge === 'north') { fillTri(R, [[X - a, Y + a], [X + a, Y + a], [X, Y - a / 2 - 1]], 'y'); plateText(g, X, Y + a + 4, lab, 12, 'w', 'center'); }
+    else if (e.edge === 'south') { fillTri(R, [[X - a, Y - a], [X + a, Y - a], [X, Y + a / 2 + 1]], 'y'); plateText(g, X, Y - a - 4, lab, 12, 'w', 'center'); }
+    else { R(X - a, Y - a / 2, a * 2, a, 'g'); box(X - a, Y - a / 2, a * 2, a, 'k'); plateText(g, X, Y > L.h * p * 0.8 ? Y - a - 3 : Y + a + 3, lab, 12, 'w', 'center'); }
+  });
+  labels.forEach(([cx, cy, s, sz, ent]) => plateText(g, cx, cy, s, sz, ent ? 'w' : 'h', 'center'));
+  paintPins(pins);
+  const q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
+  if (q && blink) ringBox(R, q.x * p + p / 2, q.y * p + p / 2, Math.max(p, 10), 'r');
+  if (side) ringBox(R, side.x * p + p / 2, side.y * p + p / 2, Math.max(p, 10) + 3, 'c');
+  if (you && blink) youMarker(R, you.x * p + p / 2, you.y * p + p / 2, Math.max(p * 0.65, 9));
+  const sel = mapUI.pick;
+  if (sel) whiteBrackets(R, sel.x * p + p / 2, sel.y * p + p / 2, Math.max(p, 14));
+}
+function layerTargets(){
+  const L = mapLayers.byId[mapUI.shown]; if (!L || layerFog()) return [];
+  if (L.level === 'room') {
+    const t = [];
+    L.ways.forEach(w => { if (layerWhen(w)) t.push({ kind: 'way', x: w.x, y: w.y, id: w.id, to: w.to, tag: w.tag, ref: w }); });
+    L.sections.forEach(s => { if (s.label) t.push({ kind: 'section', x: s.anchor[0], y: s.anchor[1], id: s.label, label: s.label, ref: s }); });
+    return t;
+  }
+  const t = [];
+  L.buildings.forEach(b => t.push({ kind: 'building', x: b.door_xy[0], y: b.door_xy[1], id: b.door, to: b.to, label: b.label, locked: b.locked, ref: b }));
+  L.exits.forEach(e => { if (layerWhen(e)) t.push({ kind: 'exit', x: e.xy[0], y: e.xy[1], id: e.id, to: e.to, label: e.label, node: e.node, ref: e }); });
+  return t;
+}
+function mapLayerHit(px, py){
+  const L = mapLayers.byId[mapUI.shown]; if (!L || layerFog()) return null;
+  const p = mapUI.px || 8;
+  let best = null, bestD = 22, bestP = 9;
+  const take = (d, pri, hit) => { if (d <= 22 && (d < bestD - 0.01 || (Math.abs(d - bestD) < 0.01 && pri < bestP))) { bestD = d; bestP = pri; best = hit; } };
+  if (L.level === 'room') {
+    L.ways.forEach(w => {
+      if (!layerWhen(w)) return;
+      const d = Math.hypot(px - (w.x + 0.5) * p, py - (w.y + 0.5) * p);
+      take(d, 0, { kind: 'way', x: w.x, y: w.y, id: w.id, to: w.to, tag: w.tag, kindWay: w.kind });
+    });
+    L.sections.forEach(s => {
+      if (!s.label) return;
+      const inside = s.cells.some(c => px >= c[0] * p && py >= c[1] * p && px < (c[0] + 1) * p && py < (c[1] + 1) * p);
+      const d = inside ? 0 : Math.hypot(px - (s.anchor[0] + 0.5) * p, py - (s.anchor[1] + 0.5) * p);
+      take(d, 3, { kind: 'section', x: s.anchor[0], y: s.anchor[1], id: s.label, label: s.label });
+    });
+  } else {
+    L.buildings.forEach(b => {
+      const Lft = b.rect[0] * p, top = b.rect[1] * p, rt = (b.rect[2] + 1) * p, bot = (b.rect[3] + 1) * p;
+      const dx = px < Lft ? Lft - px : px > rt ? px - rt : 0, dy = py < top ? top - py : py > bot ? py - bot : 0;
+      take(Math.hypot(dx, dy), 1, { kind: 'building', x: b.door_xy[0], y: b.door_xy[1], id: b.door, to: b.to, label: b.label, locked: b.locked });
+    });
+    L.exits.forEach(e => {
+      if (!layerWhen(e)) return;
+      const d = Math.hypot(px - (e.xy[0] + 0.5) * p, py - (e.xy[1] + 0.5) * p);
+      take(d, 2, { kind: 'exit', x: e.xy[0], y: e.xy[1], id: e.id, to: e.to, label: e.label, node: e.node });
+    });
+  }
+  return best;
+}
+function samePick(a, b){ return !!(a && b && a.kind === b.kind && a.x === b.x && a.y === b.y && a.id === b.id); }
+function selectLayerHit(hit){
+  if (samePick(mapUI.pick, hit)) return;
+  mapUI.pick = hit; paintLayerCard(); sfx('tap');
+}
+function nudgeLayer(dir){
+  const targets = layerTargets(); if (!targets.length) return;
+  const from = mapUI.pick || youOnLayer() || { x: 0, y: 0 };
+  let best = null, bestD = 1e9;
+  targets.forEach(t => {
+    if (mapUI.pick && t.x === mapUI.pick.x && t.y === mapUI.pick.y && t.kind === mapUI.pick.kind) return;
+    const dx = t.x - from.x, dy = t.y - from.y;
+    const ok = dir === 'left' ? dx < 0 : dir === 'right' ? dx > 0 : dir === 'up' ? dy < 0 : dy > 0;
+    if (!ok) return;
+    const d = Math.hypot(dx, dy);
+    if (d < bestD) { bestD = d; best = t; }
+  });
+  if (best) selectLayerHit(best.kind === 'way' ? Object.assign({ kindWay: best.ref.kind }, best.ref, { kind: 'way' }) : best.kind === 'section' ? { kind: 'section', x: best.x, y: best.y, id: best.id, label: best.label } : best.kind === 'building' ? { kind: 'building', x: best.ref.door_xy[0], y: best.ref.door_xy[1], id: best.ref.door, to: best.ref.to, label: best.ref.label, locked: best.ref.locked } : { kind: 'exit', x: best.ref.xy[0], y: best.ref.xy[1], id: best.ref.id, to: best.ref.to, label: best.ref.label, node: best.ref.node });
+}
+function drawMapOverlay(t){
+  if (!mapUI.level || mapUI.level === 'region') drawRegionMap(t);
+  else drawMapLayer(t);
+}
+function mapLayerSnap(){
+  ensureMapLayers();
+  const level = mapUI.level || null;
+  const L = level && level !== 'region' ? mapLayers.byId[mapUI.shown] : null;
+  const see = $('#mapSee'), back = $('#mapBack');
+  const g = L && L.level === 'room' ? mapLayers.byFloor[L.id] : null;
+  return {
+    level, shown: mapUI.shown || null, browse: !!mapUI.browse, px: L ? (mapUI.px || null) : null,
+    fog: layerFog(), you: youOnLayer(), quest: L && !layerFog() ? objectiveOn(L.id, questCurrent()) : null,
+    side: L && !layerFog() ? objectiveOn(L.id, sideQuest()) : null, denies: mapUI.denies | 0,
+    backdrop: regionBackdropOn(),
+    ways: L && L.ways ? L.ways.map(w => ({ tag: w.tag, x: w.x, y: w.y, kind: w.kind, to: w.to })) : [],
+    openings: L && L.openings ? L.openings.length : 0,
+    sections: L && L.sections ? L.sections.filter(s => s.label).map(s => s.label) : [],
+    chips: g && g.floors.length > 1 ? g.floors.map((fid, i) => ({ id: fid, label: floorVisited(fid) ? g.chips[i] : '???', on: fid === mapUI.shown })) : [],
+    buildings: L && L.buildings ? L.buildings.map(b => ({ door: b.door, label: b.label, xy: b.door_xy, rect: b.rect, entered: !b.locked && buildingEntered(b.to), locked: !!b.locked, to: b.to })) : [],
+    exits: L && L.exits ? L.exits.filter(layerWhen).map(e => ({ label: e.label, xy: e.xy, edge: e.edge, coach: !!e.coach, shown: (!e.node || mapVisited(e.node, mapUI.cur)) ? e.label : '???' })) : [],
+    pins: (mapUI.pins || []).map(p => ({ n: p.n, label: p.label })),
+    title: $('#mapTitle') ? $('#mapTitle').textContent : '',
+    name: $('#mapPlaceName') ? $('#mapPlaceName').textContent : '',
+    blurb: $('#mapPlaceBlurb') ? $('#mapPlaceBlurb').textContent : '',
+    see: !!(see && !see.hidden), seeLabel: see ? see.textContent : '',
+    back: !!(back && !back.hidden),
+    roomOff: !!( $('#mapLevelRoom') && $('#mapLevelRoom').classList.contains('off')),
+    here: !!( $('#mapHere') && !$('#mapHere').hidden),
+  };
 }
 
 /* ---------- Bag overlay (INVENTORY §6) ---------- */
@@ -7480,7 +8217,7 @@ function renderStanding(){
   }
 }
 function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
-function questShowOnMap(){ closeQuest(); if (mapReady()) openMap(); }
+function questShowOnMap(){ closeQuest(); if (mapReady()) openMap({ level: 'region' }); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
 /* D70: modern default tip. The quest line is the same in both layouts. */
 const WALK_TIP_MODERN = 'Tap the ground to walk. Tap someone to talk.';
@@ -9908,9 +10645,23 @@ function bindInput(){
   $('#ovMap').addEventListener('click', e => { if (e.target === e.currentTarget) closeMap(); });   // the dark margin closes; the parchment stays up so a place can be read
   $('#regionCanvas').addEventListener('click', e => {
     const r = e.currentTarget.getBoundingClientRect();
-    const id = mapNodeAt((e.clientX - r.left) * 320 / r.width, (e.clientY - r.top) * 192 / r.height);
-    if (id) selectMapNode(id);
+    if (!mapUI.level || mapUI.level === 'region') {
+      const id = mapNodeAt((e.clientX - r.left) * 320 / r.width, (e.clientY - r.top) * 192 / r.height);
+      if (id) selectMapNode(id);
+      return;
+    }
+    const hit = mapLayerHit(e.clientX - r.left, e.clientY - r.top);
+    if (hit) selectLayerHit(hit);
   });
+  $('#regionCanvas').addEventListener('touchmove', e => { if (!$('#ovMap').hidden) e.preventDefault(); }, { passive: false });
+  $('#regionCanvas').addEventListener('wheel', e => { if (!$('#ovMap').hidden) e.preventDefault(); }, { passive: false });
+  const roomLv = $('#mapLevelRoom'), townLv = $('#mapLevelTown'), regLv = $('#mapLevelRegion');
+  if (roomLv) roomLv.addEventListener('click', () => chooseMapLevel('room'));
+  if (townLv) townLv.addEventListener('click', () => chooseMapLevel('town'));
+  if (regLv) regLv.addEventListener('click', () => chooseMapLevel('region'));
+  const mapSeeBtn = $('#mapSee'), mapBackBtn = $('#mapBack');
+  if (mapSeeBtn) mapSeeBtn.addEventListener('click', mapSee);
+  if (mapBackBtn) mapBackBtn.addEventListener('click', mapBack);
   $('#bagClose').addEventListener('click', () => closeBag());
   $('#ovBag').addEventListener('click', e => { if (e.target === e.currentTarget) closeBag(); });
   $('#shopClose').addEventListener('click', () => closeShop());
@@ -10128,7 +10879,7 @@ function frame(t){
   }
   if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncSide(); syncWalkTip(); }
   if (S) unlockWatch(t);
-  if (!$('#ovMap').hidden) drawRegionMap(t);
+  if (!$('#ovMap').hidden) drawMapOverlay(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if (scene) sbTick();
   if (p) {
@@ -10355,6 +11106,11 @@ function boot(){
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen(); noteBoardTown();
+  // D224: the room a save wakes in counts as seen. Same floorSeen object, no new key.
+  if (CUR && CUR.kind === 'interior') {
+    if (!S.floorSeen || typeof S.floorSeen !== 'object' || Array.isArray(S.floorSeen)) S.floorSeen = {};
+    S.floorSeen[CUR.id] = 1;
+  }
   walk.fx = S.world.x; walk.fy = S.world.y;
   bindInput();
   placeFollower(); placeGuide(); renderFollowerBtn(); renderKeeperName();
@@ -10577,6 +11333,23 @@ function boot(){
   api.mapHold = (id, flags) => mapHold(id, flags);
   api.mapClaimsDrawn = () => mapUI.claims || 0;   // MAP_LEGEND tests: halos drawn on the last region-map frame
   api.mapNodeCenter = id => { const n = REGION_MAP.nodes[id]; return n ? [n.col * 16 + 8, n.row * 16 + 8] : null; };   // region-map logical px
+  api.mapLayer = () => mapLayerSnap();
+  api.mapTilePx = id => { ensureMapLayers(); const L = mapLayers.byId[id]; return L ? Object.assign({}, L.px) : null; };
+  api.regionBackdropReady = () => regionBackdropReady();
+  api.previewMap = (level, id) => {
+    if (!DEBUG) return false;
+    if ($('#ovMap').hidden) { if (!mapReady()) return false; openMap({ level: level || 'town', id: id || null }); return true; }
+    showMapLevel(level || mapUI.level || 'town', id || null); drawMapOverlay(performance.now()); return true;
+  };
+  api.setRegionBackdrop = on => {
+    if (!DEBUG) return false;
+    window.PP_REGION_BACKDROP = !!on;
+    const img = ensureRegionBackdrop();
+    const kick = () => { if (!$('#ovMap').hidden) drawMapOverlay(performance.now()); };
+    if (img.complete) kick(); else img.addEventListener('load', kick, { once: true });
+    return true;
+  };
+  api.mapBlinkAt = t0 => { if (!DEBUG) return false; mapUI.t0 = t0; if (!$('#ovMap').hidden) drawMapOverlay(t0 + ((performance.now() - t0))); return true; };
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
   api.contacts = () => contactEntries().map(p => ({ name: p.name, quest: !!p.quest, fav: !!phoneBook().fav[p.key], place: contactPlace(p) }));

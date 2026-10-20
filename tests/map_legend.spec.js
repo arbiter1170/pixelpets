@@ -17,6 +17,7 @@ async function openWith(page, flags = {}, seals = null) {
   await page.waitForFunction(() => !document.querySelector('#mapBtn').classList.contains('off'));
   await page.locator('#mapBtn').click();
   await page.waitForSelector('#ovMap:not([hidden])');
+  await page.locator('#mapLevelRegion').click();
   await page.waitForTimeout(250);
   return page.evaluate(() => {
     const vis = e => !!(e && e.getClientRects().length);

@@ -8,6 +8,24 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D258 (Oct 19, 2026, green, SETTLED).** The MAP overlay has ROOM, TOWN and REGION, each a 44 px button. Outdoors, ROOM is greyed and a tap plays the denied blip. TOWN is the outdoor map that holds you. REGION is THE AMBERWILD.
+- **D259 (Oct 19, 2026, Vincent, yellow, 9:52 PM ET, on the default).** MAP opens on ROOM indoors and TOWN outdoors. It does not remember the last level. SHOW ON MAP opens REGION.
+- **D260 (Oct 19, 2026, Vincent, yellow, 9:52 PM ET, on the default).** The middle button stays TOWN on a route or a side place. The title bar names the place.
+- **D261 (Oct 19, 2026, green, SETTLED).** ROOM draws the floor, a thin PAL h wall, openings, flat PAL m fixtures, and OUT, UP, DOWN, LIFT and DOOR. No furniture, people or Walklings.
+- **D262 (Oct 19, 2026, Vincent, yellow, 9:52 PM ET, on the default).** A building with more than one map gets floor chips. An unvisited floor's chip reads ???, the view is the outline, and the card says "You haven't been up here yet." It uses `floorSeen` (D224).
+- **D263 (Oct 19, 2026, green, SETTLED).** A single-section room shows its name in the title bar. Multi-section rooms use the design labels. `hc_gym_in` shows TRIAL HALL and the room name is Trial Hall. The id stays.
+- **D264 (Oct 19, 2026, green, SETTLED).** TOWN draws terrain, roof blocks, door notches, names on buildings that have a door, and edge exits. A label that does not fit becomes a numbered pin.
+- **D265 (Oct 19, 2026, Vincent, yellow, 9:52 PM ET, on the default).** No tile fog. Unvisited REGION places stay ???. A building never entered keeps a grey roof and its name. An exit to an unvisited place reads ???.
+- **D266 (Oct 19, 2026, Vincent, yellow, 9:52 PM ET, on the default).** View only. A visited REGION place offers SEE MAP. An entered building offers SEE INSIDE. BACK TO ME returns. No fast travel.
+- **D267 (Oct 19, 2026, green, SETTLED).** ROOM and TOWN mark your tile with a 2 px blue ring and a small red arrow, blinking about once a second, steady when motion is reduced. A browsed map has no marker.
+- **D268 (Oct 19, 2026, green, SETTLED).** Single taps only. The nearest target within 22 CSS px fills the card. Nothing in the map pans.
+- **D269 (Oct 19, 2026, green, SETTLED).** Tile sizes follow the tables: room cap 24, town cap 16, at 320, 375 and 390.
+- **D270 (Oct 19, 2026, green, SETTLED).** The main quest tile on the map shown gets the red ring. The side task gets the solid side-blue ring.
+- **D271 (Oct 19, 2026, Vincent, red, 9:52 PM ET, YES).** v1 gets the cleaned Amberwild picture for REGION, drawn under the places, paths, rings and labels. The picture is always fully shown. Fog and ??? stay. This branch ships the file and the draw path, and keeps `REGION_BACKDROP` false so REGION still draws today's parchment and hill ticks until that constant is turned on.
+- **D272 (Oct 19, 2026, Vincent, red, 9:52 PM ET, on the default with the Prompt 1 carve-out).** Only the cleaned region backdrop PNG may ship. Every other generated picture stays reference only.
+- **D273 (Oct 19, 2026, green, SETTLED).** Save stays `pixelpets.save.v2` with `v` 2. No new key. `floorSeen` is the D224 map.
+- **D274 (Oct 19, 2026, green, SETTLED).** A dream shows ROOM for that dream. TOWN and REGION stay on Mahopac, with no town marker. Doors with no target draw as locked doors with no label.
+- **D275 (Oct 19, 2026, green, SETTLED).** ROOM and TOWN are generated from the live maps. REGION keeps the hand-placed node grid.
 - **D276 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** A battle NPC that is not a one-shot, and that wore the team out, is marked `rematch.<id>`. It re-arms when `S.world.restDue` clears. The wipe respawns at a Lantern House, and the next visit puts the NPC back on its home tile.
 - **D277 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** A re-armed NPC spots like the first time: notice, "!" for 600 ms, then `spotWalk`. Talking also starts the rematch.
 - **D278 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** The rematch says `lines.rematch` instead of `intro`, then the summon line. A missing line uses the type pattern. Win, lose and onWin stay. The lines live in `game.js` because the map JSON stays verbatim.
