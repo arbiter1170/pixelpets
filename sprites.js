@@ -312,6 +312,27 @@ const SPECIES = [
   ]}
 ];
 
+// HUSHWATER B0: one fallback stage for a species id this client does not know.
+// Not a SPECIES row (that table stays append-only). One 16x16 grid, PAL keys only, not mirrored.
+const UNKNOWN = { id: 'unknown', name: '???', stages: [{ name: '???', grid: [
+  '................',
+  '................',
+  '....hhhhhhh.....',
+  '...hh.....hh....',
+  '...hh.....hh....',
+  '..........hh....',
+  '.........hh.....',
+  '........hh......',
+  '.......hh.......',
+  '.......hh.......',
+  '................',
+  '.......hh.......',
+  '.......hh.......',
+  '................',
+  '................',
+  '................',
+]}] };
+
 /* Build an 18x18 canvas (16x16 + 1px outline border). mode: 'normal' | 'blink' | solid colour string.
    A half is 8 columns and mirrored. A grid longer than 8 is a full 16x16 of PAL keys and is not mirrored. */
 function buildSprite(half, col, mode){

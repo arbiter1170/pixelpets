@@ -6,10 +6,19 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 - What changed and why: The Hearthmoor lodge sign `hm_sign_lodge` now says "New holders, knock and come in." Design settled this green copy fix with no new decision id. Save stays `pixelpets.save.v2` with `v` 2. No new key.
 - Files touched: `data/maps_slice.json`, `data/detail_wayup.json`, `data/mapdata.js`, `tests/wording_guard.spec.js`, `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: this branch, build 20261020-1451.
+- Commit(s) + build id: beec157, build 20261020-1451. The Supervisor merged main (#122 build 20261020-1433) into it and restamped it 20261020-1459.
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/wording_guard.spec.js tests/smoke.spec.js tests/data_integrity.spec.js` PP_TEST RESULT: PASS exit=0 passed=93 failed=0 flaky=0 skipped=6 time=30s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. `git grep -n "New keepers"` returns nothing. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): green, settled by Design. No new id. No id was renumbered.
 - Anything left unfinished: none from this build.
+
+## 2026-10-20 14:33 ET: Unknown species stays in the party and the box (build 20261020-1433)
+
+- What changed and why: HUSHWATER B0 (design tip 64764b0, acceptance 11). A species id this client does not know stays in the party or the box, keeps its moves and journal keys, and draws a fallback picture. The journal names it ???. It is not battle-ready: it cannot lead, and SWAP skips it. Save stays `pixelpets.save.v2` with `v` 2. No new field. A v1 unknown index and an already-orphaned row still stay in orphans. B1, E1–E4 and B2 are not in this build. Out there stays 45. Merged origin/main (PRs #119, #120 and #121) and kept both sides.
+- Files touched: `save.js`, `sprites.js`, `stats.js`, `game.js`, `tests/hushwater_b0.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261020-1433. Merge of origin/main at f1cccdc.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/hushwater_b0.spec.js tests/smoke.spec.js tests/wording_guard.spec.js tests/data_integrity.spec.js tests/save_copy.spec.js tests/box_app.spec.js tests/party_board.spec.js tests/party_qa.spec.js tests/unlock.spec.js tests/partner_ui.spec.js` PP_TEST RESULT: PASS exit=0 passed=210 failed=0 flaky=0 skipped=12 time=142s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. `node tools/pp_test.js tests/play_together.spec.js` on its own PP_TEST RESULT: PASS exit=0 passed=27 failed=0 flaky=0 skipped=54 time=271s. RTDB_RULES RESULT: PASS. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error). `python3` hushwater_check.py FAIL: packet files missing (detail_hushwater.json is not in the packet copy). It exits before the row checks. Rows outside B0 were not built.
+- Decisions made (colour + reasoning): D347 was settled by Vincent at 11:34 AM ET Oct 20, 2026, on the defaults. D357 is green. No new id. No id was renumbered. D346–D362 stay reserved for HUSHWATER. D380–D389 shipped on main in #121 and stay those ids. Next free id is D363, then D390.
+- Anything left unfinished: B1, E1–E4 and the 12 forms (B2) are not built.
 
 ## 2026-10-20 13:22 ET: North lane, HP bar, and a light phone tile (build 20261020-1322)
 
