@@ -80,7 +80,7 @@ test('a Keepers save at the end of Act 1 is pointed at Sky-Dock Command', async 
 test('Glimmerwell does not get the council row, and the games pointer waits', async ({ page }) => {
   await boot(page, ready({ 'story.side': 'glimmer' }));
   const glim = await page.evaluate(() => PixelPets.quest.id);
-  expect(glim).toBe('end');
+  expect(glim).toBe('gb_invite');
   await boot(page, ready({ 'story.hc_invite': true }));
   const waiting = await page.evaluate(() => PixelPets.quest.id);
   expect(waiting).toBe('hc_council');

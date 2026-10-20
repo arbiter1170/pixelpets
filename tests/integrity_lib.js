@@ -11,12 +11,12 @@ const STAT_KEYS = ['hp', 'atk', 'def', 'spd'];
 // Stage 0 and stage 1 are the stage-2 line times 0.6 and 0.8, largest remainder.
 const STAGE_TOTAL = [192, 256, 320];
 const STAGE_RATIO = [0.6, 0.8, 1];
-const DIALOG_TOKENS = ['name', 'player', 'pet', 'species', 'type', 'suggest', 'rival', 'rivalType'];
+const DIALOG_TOKENS = ['name', 'player', 'pet', 'chip', 'species', 'type', 'suggest', 'rival', 'rivalType'];
 const BATTLE_TOKENS = DIALOG_TOKENS.concat(['trainer', 'foe', 'title']);
 const STANDING_TOKENS = ['name', 'side', 'from', 'to', 'faction'];
 const TOAST_TOKENS = ['name', 'player', 'pet'];
 const TOKEN_W = {
-  name: 10, player: 10, pet: 10, species: 9, type: 5, suggest: 9, rival: 9, rivalType: 5,
+  name: 10, player: 10, pet: 10, chip: 10, species: 9, type: 5, suggest: 9, rival: 9, rivalType: 5,
   trainer: 16, foe: 12, title: 16, side: 12, from: 3, to: 3, faction: 16,
 };
 const SAY_MAX = 110;
