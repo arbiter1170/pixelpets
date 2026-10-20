@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 21:43 ET: Tour SKIP TOUR and tip SHOW ME fixes (build 20261019-2143)
+
+- What changed and why: Vincent's Oct 19 playtest. (1) After SHOW ME, a tap that missed PARTNER, or landed low on the partner-screen card, ended the whole tour. SKIP TOUR was an invisible full-width 336x44 strip (flex stretch, no border) and the only button on tap steps, so it also took focus. SKIP TOUR is now a small left-aligned target, focus goes to the ringed button, and a mid-tour skip needs a second tap within 3 s ("TAP AGAIN TO SKIP"). Escape still skips at once. (2) The Lanterns tip SHOW ME did nothing (no action, and the ring sat on the exit mat because its id says "lantern"). A healed party now sees GOT IT only. A hurt party's SHOW ME walks to a Lantern bed (rest prompt) or the Lantern House door, or opens MAP when no Lantern is on the map. (3) SHOW ME audit: rep, phone, quests and letter now open the compass, the phone and QUEST. moral and switch (nothing to ring) show GOT IT only. sides and growup unchanged. Save `v` stays 2. No new flags.
+- Files touched: `game.js`, `style.css`, `tests/tutorial.spec.js`, `tests/unlock.spec.js`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: branch `fix/tutorial-skip-showme`, build 20261019-2143.
+- Tests run and result (widths, checks): see the PR. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green, approved by Vincent. No new id.
+- Anything left unfinished: none.
+
 ## 2026-10-19 20:09 ET: Merge main (online saves Phase 1) into Hearthmoor movement polish (build 20261019-2009)
 
 - What changed and why: Merged `origin/main` at `f17b830` (PR #99, online saves Phase 1, build 20261019-1759) into this branch and kept both sides. CHANGELOG keeps both entries. `index.html` and `version.json` take main's side and the new stamp 20261019-2009, later than 1759. `python3 tools/gen_mapdata.py` made no further change. Save `v` stays 2.

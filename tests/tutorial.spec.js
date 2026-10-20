@@ -210,6 +210,9 @@ test('SKIP and SKIP TOUR mark the tour done', async ({ page }) => {
   const mid = await layout(page);
   expect(mid.buttons.every(b => b.h >= 44)).toBe(true);
   await page.locator('#tutSkip').click();
+  await expect(page.locator('#tutSkip')).toHaveText('TAP AGAIN TO SKIP');
+  await expect(page.locator('#tutLayer')).toBeVisible();
+  await page.locator('#tutSkip').click();
   await expect(page.locator('#tutLayer')).toBeHidden();
   const midDone = await page.evaluate(() => ({
     v: PixelPets.state.v,
@@ -343,5 +346,41 @@ test('modern replay names the heart glow on the hearts step (D154 shipped)', asy
   expectLayout(await layout(page));
   await shot390(page, 'tutorial-t8-modern');
   await page.locator('#tutSkip').click();
+  await page.locator('#tutSkip').click();
   await expect(page.locator('#tutLayer')).toBeHidden();
+});
+
+// Oct 19 playtest: after SHOW ME, a tap that missed PARTNER (T1) or landed low on the T2 card hit the full-width
+// SKIP TOUR strip and ended the whole tour. One stray tap must not end it; the tour stays on its step.
+test('a stray tap on the card after SHOW ME does not end the tour (modern)', async ({ page }) => {
+  const s = tourSave();
+  s.settings = Object.assign({}, s.settings, { controls: 'modern' });
+  await openTour(page, s);
+  await page.locator('#tutActs button', { hasText: 'SHOW ME' }).click();
+  await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
+  const focused = await page.evaluate(() => document.activeElement && document.activeElement.id);
+  expect(focused).not.toBe('tutSkip');
+  const tapLow = async () => {
+    const c = await page.locator('#tutCard').boundingBox();
+    const k = await page.locator('#tutSkip').boundingBox();
+    expect(k.width).toBeLessThan(c.width / 2);
+    await page.touchscreen.tap(c.x + c.width - 20, c.y + c.height - 8);
+    await page.touchscreen.tap(c.x + c.width - 20, k.y + k.height / 2);
+  };
+  await tapLow();
+  await expect(page.locator('#tutLayer')).toBeVisible();
+  await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
+  await page.locator('#petFloat').click();
+  await expect(page.locator('#tutLine')).toContainText('FOOD drops');
+  await tapLow();
+  await page.locator('#tutSkip').click();   // one deliberate tap only arms it
+  await expect(page.locator('#tutSkip')).toHaveText('TAP AGAIN TO SKIP');
+  await page.waitForTimeout(3200);
+  await expect(page.locator('#tutSkip')).toHaveText('SKIP TOUR');
+  const st = await page.evaluate(() => ({
+    on: PixelPets.tutorial.on, id: PixelPets.tutorial.id,
+    done: PixelPets.state.flags['story.tutorial_done'] === true,
+    step: PixelPets.state.flags['story.tutorial_step'] || null,
+  }));
+  expect(st).toEqual({ on: true, id: 'T2', done: false, step: 'T2' });
 });
