@@ -269,6 +269,40 @@ let saveTimer = 0, readOnly = false;              // a save from a newer build: 
 // Once Start over has begun, nothing on this page may write again (pagehide / hidden / the 5 s timer fire while it reloads).
 let resetting = false, gameReplaced = false;
 function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); if (DEBUG) S.debugSave = true; PPSave.writeV2(S); }   // a debug session marks the save (additive; shown in Settings)
+/* ---------- reload breadcrumb (diagnostics; plain localStorage keys outside the save, so the save stays v2) ----------
+   Every path that reloads or replaces the page first writes pp_reload {reason, at, battleOn, build}. pagehide/beforeunload
+   with no reason writes reason 'unknown' (a Safari refresh, a close). pp_alive is set while the page is visible and cleared
+   on hide/pagehide, so a boot that finds pp_alive but no pp_reload means the last page died while on screen: likely a crash.
+   Boot moves the entry into pp_reload_last (last 5) and Settings shows the newest one. */
+const RELOAD_KEY = 'pp_reload', RELOAD_LAST = 'pp_reload_last', ALIVE_KEY = 'pp_alive', RELOAD_KEEP = 5;
+function lsJson(k){ try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+function lsPut(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function lsDrop(k){ try { localStorage.removeItem(k); } catch (e) {} }
+function inBattleNow(){ try { return !!battle.on; } catch (e) { return false; } }   // battle is declared further down
+function markReload(reason){ lsPut(RELOAD_KEY, { reason, at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); lsDrop(ALIVE_KEY); }
+function markUnload(){ if (!lsJson(RELOAD_KEY)) lsPut(RELOAD_KEY, { reason: 'unknown', at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); lsDrop(ALIVE_KEY); }
+function markAlive(){ if (document.hidden) return; lsPut(ALIVE_KEY, { at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); }
+function takeReloadCrumb(){
+  const crumb = lsJson(RELOAD_KEY), alive = lsJson(ALIVE_KEY);
+  const entry = crumb && typeof crumb === 'object' ? crumb
+    : alive && typeof alive === 'object' ? { reason: 'crash', at: alive.at, battleOn: !!alive.battleOn, build: alive.build || '' } : null;
+  if (entry) { const old = lsJson(RELOAD_LAST); lsPut(RELOAD_LAST, (Array.isArray(old) ? old : []).concat([entry]).slice(-RELOAD_KEEP)); }
+  lsDrop(RELOAD_KEY); markAlive();
+}
+function watchReloads(){
+  window.addEventListener('pagehide', markUnload);
+  window.addEventListener('beforeunload', markUnload);
+  window.addEventListener('pageshow', e => { if (e.persisted && !resetting) { lsDrop(RELOAD_KEY); markAlive(); } });   // back/forward cache restore: not a reload
+  document.addEventListener('visibilitychange', () => { if (document.hidden) lsDrop(ALIVE_KEY); else markAlive(); });   // a kill in the background is not a crash
+  setInterval(markAlive, 5000);
+}
+const RELOAD_LABEL = { cloud: 'cloud', build: 'new build', boot: 'boot retry', startover: 'start over', copy: 'save copy', bfcache: 'save changed', newer: 'newer save', unknown: 'unknown', crash: 'crash?' };
+function lastReloadText(){
+  const list = lsJson(RELOAD_LAST), e = Array.isArray(list) && list[list.length - 1];
+  if (!e || typeof e !== 'object' || !Number.isFinite(e.at)) return '';
+  let t = ''; try { t = new Date(e.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (err) {}
+  return 'Last reload: ' + (RELOAD_LABEL[e.reason] || 'unknown') + (t ? ', ' + t : '') + (e.battleOn ? ', in battle' : '');
+}
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
 const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
@@ -335,7 +369,8 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
-function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d; }
+function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d;
+  const rl = $('#setReload'); if (rl) { const r = lastReloadText(); rl.textContent = r; rl.hidden = !r; } }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
@@ -5415,6 +5450,8 @@ function applySoftBerry(p, before){
 
 /* --- open / close --- */
 function openBattle(o){
+  { const bb = $('#buildBar'); if (bb) bb.hidden = true; }   // hide the new-build bar at once, not on the next 500 ms poll
+  markAlive();                                                // the crash marker notes this page is now in a battle
   const lead = leadPet();
   if (!lead) { noBattleToast(); return false; }
   clearMoves(); closeSheet(null);
@@ -8330,9 +8367,9 @@ function holdStop(){ if (resetting) return; cancelAnimationFrame(hold.raf); hold
 function startOver(){
   if (resetting) return; resetting = true;      // save() is a no-op from here on, whatever fires before the page goes
   clearMoves(); clearInterval(saveTimer);
-  if (PPCloud.enabled) { $('#resetHint').textContent = 'Erasing your cloud backup...'; PPCloud.startOver(() => PPSave.startOver()).then(() => location.reload()); return; }
+  if (PPCloud.enabled) { $('#resetHint').textContent = 'Erasing your cloud backup...'; PPCloud.startOver(() => PPSave.startOver()).then(() => { markReload('startover'); location.reload(); }); return; }
   PPSave.startOver();
-  location.reload();
+  markReload('startover'); location.reload();
 }
 
 /* ---------- save copy (v2 JSON file; v stays 2) ---------- */
@@ -8383,7 +8420,7 @@ function confirmCopy(){
   const state = copyPending; copyPending = null;
   resetting = true; clearMoves(); clearInterval(saveTimer);
   if (!PPSave.installCopy(state)) { resetting = false; toast(COPY_WHY.storage); return; }
-  location.reload();
+  markReload('copy'); location.reload();
 }
 
 /* ---------- collection / journal album ---------- */
@@ -9712,7 +9749,7 @@ function bindInput(){
   window.addEventListener('pageshow', e => {
     if (!e.persisted || !S || resetting) return;
     let o = null; try { o = JSON.parse(localStorage.getItem(PPSave.V2_KEY)); } catch(err) {}
-    if (!o || o.uid !== S.uid) { resetting = true; location.reload(); }
+    if (!o || o.uid !== S.uid) { resetting = true; markReload('bfcache'); location.reload(); }
   });
 }
 
@@ -9801,11 +9838,12 @@ function startCloud(){
     getState: () => (readOnly || resetting) ? null : S,
     save, toast, sfx, summary: cloudSummary,
     drawPet: (cv, sp, st) => spriteCanvas(cv, sp, st, 'n'),
-    busy: () => overlayOpen(),
+    busy: () => overlayOpen() || !!(battle && battle.on),
     beforeOverlay: () => { clearMoves(); lockTabs(true); },
     afterOverlay: () => lockTabs(!$('#ovSettings').hidden),
     // adopt a cloud save: this page stops writing, the v2 key gets the cloud copy as-is (its `last` keeps away-time decay), reload
-    adopt: raw => { if (resetting) return; resetting = true; clearMoves(); clearInterval(saveTimer); try { localStorage.setItem(PPSave.V2_KEY, raw); } catch(e) {} location.reload(); },
+    adopt: raw => { if (resetting) return; if (overlayOpen() || (battle && battle.on)) return;   // belt and braces: never reload under a battle or overlay (cloud retries)
+      resetting = true; clearMoves(); clearInterval(saveTimer); try { localStorage.setItem(PPSave.V2_KEY, raw); } catch(e) {} markReload('cloud'); location.reload(); },
   });
 }
 
@@ -9827,7 +9865,7 @@ function checkBuild(force){
 }
 function pumpBuildBar(){
   const el = $('#buildBar'); if (!el) return;
-  const show = !!buildChk.ready && !readOnly && !overlayOpen();
+  const show = !!buildChk.ready && !readOnly && !overlayOpen() && !(battle && battle.on);   // battle.on: the intro wipe runs before #ovBattle is shown
   if (el.hidden === show) el.hidden = !show;
 }
 // Reload URL that skips the Pages cache for index.html: same path, a fresh b= first (an old b= dropped), every other param
@@ -9844,7 +9882,8 @@ function dropBuildParam(){
 }
 function startBuildCheck(){
   const el = $('#buildBar'); if (!el) return;
-  $('#buildGo').addEventListener('click', () => { save(); location.replace(freshUrl(buildChk.ready)); });
+  // The bar can still be on screen for up to 500 ms after a battle or scene opens (pumpBuildBar is polled). A tap then must not reload.
+  $('#buildGo').addEventListener('click', () => { if (overlayOpen() || (battle && battle.on) || !buildChk.ready) { pumpBuildBar(); return; } save(); markReload('build'); location.replace(freshUrl(buildChk.ready)); });
   dropBuildParam();
   $('#buildX').addEventListener('click', () => { buildChk.gone = buildChk.ready; buildChk.ready = null; pumpBuildBar(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkBuild(); });
@@ -9857,7 +9896,7 @@ function startBuildCheck(){
 function bootReadOnly(){
   readOnly = true; S = null;
   $('#ovNewer').hidden = false; $('#tabs').classList.add('locked'); document.body.classList.add('nav-locked');
-  $('#newerReload').addEventListener('click', () => location.reload());
+  $('#newerReload').addEventListener('click', () => { markReload('newer'); location.reload(); });
   window.PixelPets = Object.freeze({ readOnly: true, get debug(){ return DEBUG; }, get state(){ return null; } });
 }
 function highCharityDevCheck(){
@@ -10307,13 +10346,14 @@ function bootRetried(){
   } catch (e) {}
   try { return sessionStorage.getItem(BOOT_RETRY_KEY) === '1'; } catch (e) { return true; }
 }
+try { takeReloadCrumb(); watchReloads(); } catch (e) {}   // before boot, so a throwing boot still keeps the last entry
 try {
   boot();
   try { sessionStorage.removeItem(BOOT_RETRY_KEY); } catch (e) {}
 } catch (err) {
   if (!bootRetried() && !resetting) {
     try { sessionStorage.setItem(BOOT_RETRY_KEY, '1'); } catch (e) {}
-    resetting = true; try { clearInterval(saveTimer); } catch (e) {} location.replace(freshUrl('boot'));
+    resetting = true; try { clearInterval(saveTimer); } catch (e) {} markReload('boot'); location.replace(freshUrl('boot'));
   }
   throw err;
 }

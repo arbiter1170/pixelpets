@@ -2,14 +2,22 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-19 21:43 ET: Tour SKIP TOUR and tip SHOW ME fixes (build 20261019-2143)
+## 2026-10-19 21:43 ET: Tour SKIP TOUR and tip SHOW ME fixes (build 20261019-2150)
 
 - What changed and why: Vincent's Oct 19 playtest. (1) After SHOW ME, a tap that missed PARTNER, or landed low on the partner-screen card, ended the whole tour. SKIP TOUR was an invisible full-width 336x44 strip (flex stretch, no border) and the only button on tap steps, so it also took focus. SKIP TOUR is now a small left-aligned target, focus goes to the ringed button, and a mid-tour skip needs a second tap within 3 s ("TAP AGAIN TO SKIP"). Escape still skips at once. (2) The Lanterns tip SHOW ME did nothing (no action, and the ring sat on the exit mat because its id says "lantern"). A healed party now sees GOT IT only. A hurt party's SHOW ME walks to a Lantern bed (rest prompt) or the Lantern House door, or opens MAP when no Lantern is on the map. (3) SHOW ME audit: rep, phone, quests and letter now open the compass, the phone and QUEST. moral and switch (nothing to ring) show GOT IT only. sides and growup unchanged. Save `v` stays 2. No new flags.
 - Files touched: `game.js`, `style.css`, `tests/tutorial.spec.js`, `tests/unlock.spec.js`, `CHANGELOG.md`, `index.html`, `version.json`.
-- Commit(s) + build id: branch `fix/tutorial-skip-showme`, build 20261019-2143.
+- Commit(s) + build id: branch `fix/tutorial-skip-showme`, first stamped 20261019-2143 (same id as PR #106, so restamped after merging main with #106), build 20261019-2150.
 - Tests run and result (widths, checks): see the PR. `python3 tools/bump_build.py --check` exit 0.
 - Decisions made (colour + reasoning): green, approved by Vincent. No new id.
 - Anything left unfinished: none.
+## 2026-10-19 21:43 ET: P0 hotfix: nothing reloads the page under a battle, plus a reload breadcrumb (build 20261019-2143)
+
+- What changed and why: Vincent (iPhone Safari, 21:27 ET): "During battles, I've had safari refresh three times, making trainer battles impossible to progress through." A battle is never saved mid-fight, so any reload restarts a trainer. Two code paths could reload under a battle. (1) Cloud adopt (PR #99, live since 17:53 ET): when the first cloud compare timed out, `cloud.js` retried it every 10 s with no battle check, and a quiet adopt called `location.reload()` straight away (`game.js` startCloud `adopt`). Now `sync()` skips the compare while `busy()` (any overlay or `battle.on`), and `adopt` itself refuses under an overlay or battle. The next tick after the battle compares, so local changes from the battle become the existing "which game to keep" prompt and are never thrown away. (2) The "New build ready" bar was polled every 500 ms, so it stayed over the first ≤500 ms of a battle (over the foe card) and a tap reloaded. `openBattle` now hides it at once, `pumpBuildBar` also checks `battle.on`, and `#buildGo` ignores taps under an overlay or battle. Diagnostics: every reload or replace path writes localStorage `pp_reload` {reason, at, battleOn, build} first (cloud, build, boot, startover, copy, bfcache, newer); pagehide/beforeunload with none writes 'unknown'. `pp_alive` is set while visible and cleared on hide, so a boot with `pp_alive` but no `pp_reload` logs 'crash'. Boot moves the entry to `pp_reload_last` (last 5) and Settings shows "Last reload: cloud, 9:22 PM, in battle" under the build line. Measured: 12 battles in a row at 390 show flat heap (5.5 -> 6.1 MB), DOM, canvases, intervals and rAF, so a memory kill is unlikely. Save `v` stays 2 (the new keys are outside the save).
+- Files touched: `game.js`, `cloud.js`, `index.html`, `tests/battle_no_reload.spec.js` (new), `tests/README.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: branch `hotfix/battle-no-reload`, build 20261019-2143.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/battle_no_reload.spec.js tests/p0_trainer_win.spec.js tests/group_battle.spec.js tests/cloud_off.spec.js tests/ios_reload.spec.js tests/save_copy.spec.js tests/smoke.spec.js` PP_TEST RESULT: PASS exit=0 passed=85 failed=0 flaky=0 skipped=2 time=138s (widths 320, 375, 390; the 2 skips are the cloud timing check at 320/375, run at 390 only). The cloud check fails on the unguarded code (a compare ran under the battle). `python3 tools/bump_build.py --check` exit 0. Console errors: none.
+- Decisions made (colour + reasoning): green, P0 hotfix approved by the Supervisor. No new id.
+- Anything left unfinished: no mid-battle checkpoint (a reload still restarts the fight; now nothing in the game triggers one under a battle).
 
 ## 2026-10-19 20:09 ET: Merge main (online saves Phase 1) into Hearthmoor movement polish (build 20261019-2009)
 
