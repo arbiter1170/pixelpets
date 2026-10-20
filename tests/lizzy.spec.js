@@ -247,7 +247,7 @@ test('the lift stays shut until Lizzy has met you', async ({ page }) => {
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
   const text = await page.evaluate(() => PixelPets.scene.text);
   expect(text).toContain('1 2 3 4 5 6');
-  expect(text).toContain("You don't know anyone up there yet.");
+  expect(text).toContain("You haven't been up in ages.");
   await page.keyboard.press('Space');
 });
 

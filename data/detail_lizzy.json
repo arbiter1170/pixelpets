@@ -592,7 +592,7 @@
      "y": 1,
      "sprite": "lift_panel",
      "lines": {
-      "!story.lizzy_met": "LIFT: 1 2 3 4 5 6. Floor 5 has a sticker: a gold paw. You don't know anyone up there yet.",
+      "!story.lizzy_met": "LIFT: 1 2 3 4 5 6. Floor 5 has a sticker: a gold paw. You haven't been up in ages.",
       "else": "LIFT: 1 2 3 4 5 6. Only 5 lights up for you. Floor 3 hums with a trumpet."
      }
     },
@@ -751,7 +751,7 @@
      "y": 4,
      "facing": "left",
      "lines": {
-      "else": "You're the one Lizzy won't stop talking about. Sit. Eat. You look thin."
+      "else": "Look who finally came up! Where've you been hiding? Sit. Your chair missed you."
      },
      "look": "ossabell"
     },
@@ -861,7 +861,7 @@
       "story.leak_fixed&story.moral_leak5b=court": "@leak_after_court",
       "story.leak_fixed&story.moral_leak5b=force": "@leak_after_force",
       "story.leak5b_seen&!story.leak5b_yes": "@leak_ask",
-      "else": "Welcome to 5B! Shoes by the door, please. Buddy, no, the shoes stay by the door."
+      "else": "Finally, you're in 5B! Shoes by the door. Buddy, no, the shoes stay by the door."
      },
      "look": "lizzy",
      "when": [
@@ -972,7 +972,7 @@
      "y": 12,
      "facing": "down",
      "lines": {
-      "else": "Want to play? Winner picks the music. Loser does the dishes. I never lose."
+      "else": "Back at last! Rematch? Winner picks the music. Loser does dishes. I never lose."
      },
      "look": "morelou"
     },
@@ -1014,7 +1014,7 @@
      "y": 11,
      "facing": "right",
      "lines": {
-      "else": "Shh. I am painting the drip. It is my best model. It never moves."
+      "else": "...Oh. You came back. Shh, I'm painting the drip. It's my best model."
      },
      "look": "morolow",
      "when": [
@@ -1050,12 +1050,12 @@
    [
     "say",
     "Lizzy",
-    "{name}! Look who it is! Come here, let me look at you."
+    "{name}! Look who it is! Where have you been? It's been forever."
    ],
    [
     "say",
     "Lizzy",
-    "Your mom said Ilse gave you a partner today. And this must be {pet}. Hi, {pet}!"
+    "Word is Ilse gave you a partner today. And this must be {pet}. Hi, {pet}!"
    ],
    [
     "say",
@@ -1065,7 +1065,7 @@
    [
     "say",
     "Lizzy",
-    "That's Buddy. He's been with me since I was about your age. He likes you already."
+    "You remember Buddy. He's been with me since we were small. He missed you."
    ],
    [
     "choice",
@@ -1092,7 +1092,7 @@
        [
         "say",
         "Lizzy",
-        "Hi yourself, kiddo. You grew a whole head since summer."
+        "Hi yourself, stranger. Since summer? I was starting to think you moved."
        ]
       ]
      ]
@@ -1101,7 +1101,7 @@
    [
     "say",
     "Lizzy",
-    "I teach at the new schoolhouse now. Fundamentals, and how to use Walklings for good."
+    "So, news: I teach at the new schoolhouse now. Fundamentals, and Walklings for good."
    ],
    [
     "if",
@@ -1149,7 +1149,7 @@
        [
         "say",
         "Lizzy",
-        "He's Rook. Big heart, loud mouth. I keep an eye on him. You keep the other one."
+        "He's Rook. Big heart, loud mouth. Lately he hums a jingle he won't explain. Ask him?"
        ],
        [
         "setFlag",
@@ -1164,7 +1164,7 @@
        [
         "say",
         "Lizzy",
-        "Oh, he is. And he'd still walk through a storm for you. Remember that."
+        "Oh, he is. He'd still walk through a storm for you. Ask him about the mint sticker."
        ]
       ]
      ]
@@ -1173,7 +1173,7 @@
    [
     "say",
     "Lizzy",
-    "We're in the Flats, floor five. My sisters cook more than we can eat. Come by anytime."
+    "We're in the Flats now, floor five. My sisters keep asking where you vanished to. Come by."
    ],
    [
     "give",
@@ -1183,7 +1183,7 @@
    [
     "say",
     "Lizzy",
-    "For the road, so you don't go hungry. And if anyone gives you trouble, you tell me."
+    "Here, two snacks. You owe me lunch. Anyone gives you trouble, they deal with both of us."
    ],
    [
     "setFlag",
@@ -1439,7 +1439,7 @@
    [
     "say",
     "Lizzy",
-    "He fixed it! A real pipe! You did it the right way, kiddo."
+    "He fixed it! A real pipe! You did it the right way. I owe you big."
    ]
   ],
   "leak_after_force": [

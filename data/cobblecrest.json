@@ -114,7 +114,7 @@
           "y": 6,
           "facing": "down",
           "shop": ["heal_snack", "hearty_snack", "wake_tonic", "befriend_treat", "energy_sip", "joy_crumb"],
-          "lines": {"else": "Welcome to Cairnside Supplies! Snacks for the road, dear."}
+          "lines": {"else": "Welcome to Cairnside Supplies! Snacks for the road, friend."}
         },
         {"kind": "npc", "id": "rook_cc", "name": "Rook", "x": 3, "y": 7, "facing": "left", "when": ["!story.cobble_arrived"], "scene": "cobble_arrive"},
         {"kind": "trigger", "id": "cc_arrive", "x": 2, "y": 8, "r": 0, "when": ["!story.cobble_arrived"], "scene": "cobble_arrive"},
