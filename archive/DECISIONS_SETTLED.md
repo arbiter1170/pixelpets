@@ -38,7 +38,7 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 - **D233 (Oct 19, 2026, Vincent, yellow, 7:38 PM ET, default).** One tile of width slack, and only when both edge columns are solid wall. Otherwise slack is 0.
 - **D234 (Oct 19, 2026, ROOM_ZOOM v0.1, settled).** Camera logic is unchanged. A room that fits in the view is centred. A larger room follows the holder and clamps at the edges.
 - **D235 (Oct 19, 2026, ROOM_ZOOM v0.1, settled).** The new scale snaps at the black midpoint of the existing 250 ms warp fade, when arrival calls the fit.
-- **D236 (Oct 19, 2026, Vincent, yellow, 7:38 PM ET, default).** Leftover edges use the skin's wall cap colour. A skin with no wall table keeps the void. A `fitWidth` room keeps its void bars.
+- **D236 (Oct 19, 2026, Vincent, yellow, 7:38 PM ET, default).** Leftover edges use the skin's wall cap colour. A skin with no wall table keeps the void. A `fitWidth` room keeps its void bars. Overridden by Vincent Oct 19, 9:13 PM ET: black void.
 - **D237 (Oct 19, 2026, ROOM_ZOOM v0.1, settled).** The HUD, buttons, d-pad, dialogs and toasts stay screen-space. They do not scale with the room.
 - **D238 (Oct 19, 2026, ROOM_ZOOM v0.1, settled).** World-space art stays crisp. Smoothing stays off, and the canvas CSS size is an integer multiple of the bitmap.
 - **D239 (Oct 19, 2026, ROOM_ZOOM v0.1, settled).** A tap hit-tests in canvas bitmap pixels plus the camera, at the room scale.

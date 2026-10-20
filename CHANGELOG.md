@@ -2,6 +2,41 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 23:29 ET: Merge main (play together) into the room-zoom void fix (build 20261019-2329)
+
+- What changed and why: Merged `origin/main` at `388723a` (PR #104, play together, build 20261019-2246) and kept both sides. Holders on one room code can still see each other. The black void, the room canvas, and the pilaster slack stay. `index.html` and `version.json` take the new stamp 20261019-2329, later than 2246. Save `v` stays 2. D276–D296 stay reserved. The next free id is D297.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`, `BACKLOG.md`, `NEXT_PLAN.md`.
+- Commit(s) + build id: merge commit on `cursor/room-zoom-void-audit-6434`, build 20261019-2329.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/room_zoom.spec.js tests/room_zoom_all.spec.js tests/play_together.spec.js` PP_TEST RESULT: PASS exit=0 passed=28 failed=0 flaky=0 skipped=44 time=273s. RTDB_RULES RESULT: PASS. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1234 failed=0 flaky=0 skipped=62 time=1105s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): no new id. D236 stays overridden (black void). D276–D296 stay reserved for REMATCH_PARTY_STATS. The next free id is D297.
+- Anything left unfinished: none from this merge.
+
+## 2026-10-19 23:12 ET: Merge main (tour skip, group-battle wait, tank window) into the room-zoom void fix (build 20261019-2312)
+
+- What changed and why: Merged `origin/main` at `4afcb69` (PR #107 tour SKIP TOUR and tip SHOW ME, PR #108 group-battle wait, PR #109 tank window and 2 workers) and kept both sides. The black void, the room canvas, and the pilaster slack stay. `index.html` and `version.json` take the new stamp 20261019-2312, later than 2202. Save `v` stays 2.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: merge commit on `cursor/room-zoom-void-audit-6434`, build 20261019-2312.
+- Tests run and result (widths, checks): Full suite after the merge: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1212 failed=0 flaky=0 skipped=18 time=955s. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): no new id. D236 stays overridden (black void). D258–D275 stay reserved for MAP_LAYERS. The next free id is D276.
+- Anything left unfinished: PR #104 (play together) is still open and also edits `game.js`. It was not on `main`.
+
+## 2026-10-19 22:01 ET: Merge main (stair flights, battle no-reload) into the room-zoom void fix (build 20261019-2201)
+
+- What changed and why: Merged `origin/main` at `786c0ea` (PR #105 stair flights, build 20261019-2157, and PR #106 battle no-reload, build 20261019-2143) and kept both sides. The room canvas, the black void, and the pilaster slack stay. Stair art and the battle reload guard stay. `index.html` and `version.json` take the new stamp 20261019-2201, later than 2157. Save `v` stays 2.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`, `BACKLOG.md`, `NEXT_PLAN.md`.
+- Commit(s) + build id: merge commit on `cursor/room-zoom-void-audit-6434`, build 20261019-2201.
+- Tests run and result (widths, checks): After the merge, `node tools/pp_test.js tests/room_zoom.spec.js tests/room_zoom_all.spec.js tests/stair_marker.spec.js tests/battle_no_reload.spec.js` PP_TEST RESULT: PASS exit=0 passed=22 failed=0 flaky=0 skipped=2 time=100s (the 2 skips are the cloud timing check at 320 and 375). Full suite: `npm run test:agent` PP_TEST RESULT: FAIL exit=1 passed=1205 failed=1 flaky=0 skipped=18 time=1838s. The one failure was `[375] tests/group_battle.spec.js:134` (a 10s wait for the win). The same test passed at 320 and 390 in that run. Rerun: `node tools/pp_test.js tests/group_battle.spec.js` PP_TEST RESULT: PASS exit=0 passed=21 failed=0 flaky=0 skipped=0 time=13s. Stair glint still passes on screen with the room scale (home is 3 at 390). `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error). Widths 320, 375, and 390.
+- Decisions made (colour + reasoning): no new id. D236 stays overridden (black void). D258–D275 stay reserved for MAP_LAYERS. The next free id is D276.
+- Anything left unfinished: PR #104 (play together) is still open and also edits `game.js`. It was not on `main`.
+
+## 2026-10-19 21:31 ET: Room zoom void and every interior (build 20261019-2131)
+
+- What changed and why: Vincent's playtest (Oct 19, 9:13 PM ET) put leftover room edges back to the black void. That overrides D236. No new decision id. Main later reserved D258–D275 for MAP_LAYERS, so the next free id is D276. Small interiors still zoom in whole steps, up to twice the outdoor scale, in the band above the buttons and the partner strip, so a bottom door is not hidden under that strip. A keeper pilaster counts as wall for the one-tile width slack. Flat 5B keeps slack 0: a walkable mat sits on the edge. Fit-width rooms, including the Arbiter Bay, are unchanged. The scale still snaps at the black midpoint of the warp, including stairs and the walk back outside, and outdoors returns to the outdoor scale. Save `v` stays 2.
+- Files touched: `game.js`, `tests/room_zoom.spec.js`, `tests/room_zoom_all.spec.js`, `index.html`, `version.json`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261019-2131.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/room_zoom_all.spec.js --project=390` PP_TEST RESULT: PASS exit=0 passed=1 failed=0 flaky=0 skipped=0 time=5s. `node tools/pp_test.js tests/room_zoom.spec.js tests/interior_walls.spec.js tests/maps_b5.spec.js tests/maps_b8.spec.js tests/pathfinding.spec.js tests/rx_f4_pilot.spec.js tests/house_reskin.spec.js tests/controls.spec.js` PP_TEST RESULT: PASS exit=0 passed=171 failed=0 flaky=0 skipped=0 time=200s. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1190 failed=0 flaky=0 skipped=16 time=1715s. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): no new id. D236 stays the settled row. Vincent overrode it Oct 19, 2026, 9:13 PM ET: black void. D258–D275 stay reserved for MAP_LAYERS. The next free id is D276.
+- Anything left unfinished: PR #104 (play together) is still open and also edits `game.js`. It was not on `main`, so it is not in this branch.
 ## 2026-10-19 22:46 ET: Play together review fixes (build 20261019-2246)
 
 - What changed and why: Supervisor review of PR #104. The emote-rate test loads `database.rules.json` into the `demo-walklings` namespace in `beforeAll`; the emulator only applied the rules to `demo-walklings-default-rtdb`, so the game's namespace ran open. "Joined. Say hi!" now shows once the holder is placed; before, `paintChrome()` hid it straight after it appeared. Settings: Show other holders sits with its ON / FRIENDS / SOLO switch, below Room code and Blocked holders. After merging main's `workers: 2` (PR #109), `tests/play_together.spec.js` runs only in the 390 project: two workers had run the 320/375 and 390 copies side by side on one emulator and room code, and one copy's teardown stopped the emulator under the other (34 failed at 320). 34 and 40 open their own 320 and 375 pages. BACKLOG logs a P2: recreating your own holder node skips the 2 s emote gap and the `pt` throttle (modified client only; invite-only playtest).
