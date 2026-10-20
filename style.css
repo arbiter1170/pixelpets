@@ -100,7 +100,13 @@ h2 small{color:var(--h);font-size:17px}
 
 /* stats */
 .stats{display:flex;flex-direction:column;gap:8px;padding:4px 6px}
-.stat{display:grid;grid-template-columns:48px 1fr 36px;align-items:center;gap:8px;font-size:18px}
+.stat{display:grid;grid-template-columns:62px 1fr 36px;align-items:center;gap:8px;font-size:18px}
+.stat-lab{display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.ico-food,.ico-joy,.ico-nrg,.ico-grow,.ico-pencil,.ico-bolt{image-rendering:pixelated;image-rendering:crisp-edges;vertical-align:middle;pointer-events:none;flex:0 0 auto}
+.ico-food{width:14px;height:14px}
+.ico-joy,.ico-nrg,.ico-grow,.ico-pencil,.btn .ico-bolt{width:10px;height:10px}
+#statStrip .ss-ico-nrg{left:12px;top:13px;width:10px;height:10px}
+#statStrip .ss-ico-grow{left:calc(66px + var(--bw) + 44px);top:13px;width:10px;height:10px}
 .stat b{text-align:right;color:var(--h)}
 .bar{height:16px;background:var(--d);position:relative}
 .bar i{position:absolute;left:0;top:0;bottom:0;width:50%;transition:width .3s steps(6)}
@@ -134,20 +140,21 @@ h2 small{color:var(--h);font-size:17px}
 #scr-pet.pet-tight .actions{padding-top:0;padding-bottom:0}
 #scr-pet.pet-tight .actions .btn{margin:0}
 .actions.two{grid-template-columns:2fr 1fr}
+.actions.two-even.one{grid-template-columns:1fr}
 
 /* walk */
 /* STAT_DISPLAY §3: one strip under the header, 56 px; rects at 320 and 390 (bars share the leftover width). */
-#statStrip{display:none;position:relative;flex:0 0 56px;height:56px;--bw:calc((100% - 196px) / 2);font-size:17px;white-space:nowrap}
+#statStrip{display:none;position:relative;flex:0 0 56px;height:56px;--bw:calc((100% - 220px) / 2);font-size:17px;white-space:nowrap}
 body[data-screen="pet"] #statStrip,body[data-screen="walk"] #statStrip{display:block}
 body.ctl-modern[data-screen="walk"] #statStrip{display:none}   /* modern walk: the partner strip covers it (NAV_MODERN) */
 #statStrip > *{position:absolute;box-sizing:border-box}
 #statStrip .ss-lab{top:6px;height:24px;line-height:24px;font-size:18px}
-#statStrip .ss-nrg-l{left:12px;width:36px}
+#statStrip .ss-nrg-l{left:24px;width:36px}
 #statStrip .ss-bar{top:10px;height:16px;width:var(--bw)}
-#statStrip .ss-nrg-b{left:54px}
+#statStrip .ss-nrg-b{left:66px}
 #statStrip .ss-val{top:6px;height:24px;line-height:24px;text-align:right;color:var(--h);font-size:18px}
-#statStrip .ss-nrg-v{left:calc(54px + var(--bw) + 4px);width:28px}
-#statStrip .ss-grow-l{left:calc(54px + var(--bw) + 44px);width:40px}
+#statStrip .ss-nrg-v{left:calc(66px + var(--bw) + 4px);width:28px}
+#statStrip .ss-grow-l{left:calc(66px + var(--bw) + 56px);width:40px}
 #statStrip .ss-grow-b{right:52px}
 #statStrip .ss-grow-v{right:12px;width:36px}
 #statStrip .ss-align{display:none}
@@ -310,9 +317,12 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 /* stats card */
 .stats-card{gap:10px}
 .sc-head{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center}
-.sc-head canvas{width:54px;height:54px;background:var(--d);box-shadow:0 0 0 3px var(--k)}
+.sc-head canvas:not(.ico-pencil){width:54px;height:54px;background:var(--d);box-shadow:0 0 0 3px var(--k)}
 .sc-who{min-width:0}
-.sc-name{font-size:25px;color:var(--y);text-shadow:2px 2px 0 var(--k);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-name-line{display:flex;align-items:center;gap:4px;min-width:0}
+.sc-pencil{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sc-pencil canvas{width:10px;height:10px;background:none;box-shadow:none}
+.sc-name{font-size:25px;color:var(--y);text-shadow:2px 2px 0 var(--k);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
 .sc-species{font-size:16px;color:var(--h);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .type-badge{font-size:17px;padding:4px 8px;color:var(--k);background:var(--h);box-shadow:0 0 0 2px var(--k);white-space:nowrap}
 .type-badge.t-EMBER{background:var(--o)}.type-badge.t-TIDE{background:var(--c)}.type-badge.t-BLOOM{background:var(--l)}
@@ -348,7 +358,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sc-gear select,.sc-gear input[type="text"]{width:100%;box-sizing:border-box;min-height:44px;font-family:var(--font);font-size:16px;background:var(--k);color:var(--w);border:0;box-shadow:0 0 0 3px var(--k),0 0 0 5px var(--d);padding:4px 8px}
 .gear-check{display:flex;align-items:center;gap:8px;min-height:44px;font-size:18px;color:var(--w)}
 .gear-check input{width:22px;height:22px}
-#scGear{min-height:44px;font-size:18px}
+.sc-name-btn{width:100%;box-sizing:border-box;margin:0;display:flex;align-items:center;justify-content:center;gap:8px}
 .kit-card{gap:8px}
 .kit-card .ov-title{font-size:22px}
 .kit-card .sc-gear{padding-top:0}
@@ -977,12 +987,14 @@ body.ctl-modern .fc-top .env-badge > .frame-art{top:8px;height:28px}
 .fc-br{display:flex;flex-direction:row;gap:6px;flex:0 0 auto}
 .pet-strip{flex:1 1 auto;min-width:0;height:44px;display:flex;align-items:center;gap:6px;padding:2px 6px;border:0;background:rgba(26,28,44,.88);
   color:var(--w);box-shadow:0 0 0 2px var(--m);text-align:left;cursor:pointer}
-.pet-strip canvas{width:36px;height:36px;flex:0 0 auto}
+.pet-strip > canvas{width:36px;height:36px;flex:0 0 auto}
 .ps-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
 .ps-top{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--y)}
 .ps-top b{color:var(--w)}
-.ps-bars{display:flex;gap:4px}
-.ps-bar{flex:1;height:6px;background:var(--d);position:relative;display:block}
+.ps-bars{display:flex;align-items:center;width:100%;min-width:0}
+.ps-bars .ps-ico{flex:0 0 auto;margin:0 2px 0 0}
+.ps-bar{flex:1 1 0;min-width:0;height:6px;margin:0 4px 0 0;background:var(--d);position:relative;display:block}
+.ps-bars .ps-bar:last-child{margin-right:0}
 .ps-bar i{position:absolute;left:0;top:0;bottom:0;width:50%;display:block}
 .ps-bar i.low{animation:blink .6s steps(2) infinite}
 body.no-pets .pet-strip,body.no-pets #colFloat,body.no-pets #petFloat{display:none}

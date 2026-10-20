@@ -5,8 +5,8 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 const RECTS = {
-  320: { strip: [0, 52, 320, 56], nrgL: [12, 58, 36, 24], nrgB: [54, 62, 62, 16], nrgV: [120, 58, 28, 24], growL: [160, 58, 40, 24], growB: [206, 62, 62, 16], growV: [272, 58, 36, 24], ex: [12, 84, 140, 20], slot: [168, 84, 140, 20] },
-  390: { strip: [0, 52, 390, 56], nrgL: [12, 58, 36, 24], nrgB: [54, 62, 97, 16], nrgV: [155, 58, 28, 24], growL: [195, 58, 40, 24], growB: [241, 62, 97, 16], growV: [342, 58, 36, 24], ex: [12, 84, 180, 20], slot: [198, 84, 180, 20] },
+  320: { strip: [0, 52, 320, 56], nrgL: [24, 58, 36, 24], nrgB: [66, 62, 50, 16], nrgV: [120, 58, 28, 24], growL: [172, 58, 40, 24], growB: [218, 62, 50, 16], growV: [272, 58, 36, 24], ex: [12, 84, 140, 20], slot: [168, 84, 140, 20] },
+  390: { strip: [0, 52, 390, 56], nrgL: [24, 58, 36, 24], nrgB: [66, 62, 85, 16], nrgV: [155, 58, 28, 24], growL: [207, 58, 40, 24], growB: [253, 62, 85, 16], growV: [342, 58, 36, 24], ex: [12, 84, 180, 20], slot: [198, 84, 180, 20] },
 };
 const SEL = { strip: '#statStrip', nrgL: '.ss-nrg-l', nrgB: '.ss-nrg-b', nrgV: '.ss-nrg-v', growL: '.ss-grow-l', growB: '.ss-grow-b', growV: '.ss-grow-v', ex: '.ss-ex' };
 async function boot(page, extra = {}, settings = {}) {

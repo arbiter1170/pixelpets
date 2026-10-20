@@ -472,10 +472,21 @@ function bindJoystick(){
 function updatePetStrip(p){
   if (!p || !$('#petStrip')) return;
   const st = SPECIES[spi(p)].stages[p.stage];
-  $('#stripName').textContent = cleanNick(p.nick) || st.name;
+  const name = cleanNick(p.nick) || st.name;
+  $('#stripName').textContent = name;
   $('#stripLv').textContent = 'Lv ' + levelOf(p);
   spriteCanvas($('#stripIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
   setBar($('#stripFood'), p.hunger); setBar($('#stripJoy'), p.happy); setBar($('#stripNrg'), p.energy);
+  const grow = $('#stripGrow');
+  if (grow) {
+    const full = p.stage >= 2;
+    const goal = EVO_XP[p.stage];
+    const pct = full || !goal ? 100 : clamp(p.xp / goal * 100, 0, 100);
+    grow.style.width = pct + '%';
+    grow.classList.remove('low');
+  }
+  const goalTxt = p.stage >= 2 ? 'fully grown' : (p.xp + ' of ' + EVO_XP[p.stage]);
+  $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
 }
 
 // Nav button art (NAV_MODERN v0.2 §7, data/nav_art.js copied from Design's nav_art.json). Modern only: arcade keeps its old
@@ -608,6 +619,14 @@ function tipBandTick(){
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { tipBandKey = ''; try { syncTipBand(); } catch (e) {} });
 
 let screen = 'pet';
+// PARTNER_UI D254. One in-memory return point. Never saved.
+let uiReturn = null;
+function clearUiReturn(){ uiReturn = null; }
+function setPartnerId(id){
+  if (!S) return;
+  if (S.partnerId !== id) clearUiReturn();
+  S.partnerId = id;
+}
 function showTab(name){
   if (overlayOpen() && !tutAllowsTab(name)) return;
   screen = name;
@@ -616,6 +635,7 @@ function showTab(name){
   $$('.screen').forEach(s => s.classList.toggle('active', s.id === 'scr-' + name));
   $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   clearMoves();
+  if (name !== 'pet') clearUiReturn();
   if (name === 'col') {
     if (S && !S.flags['story.journal_opened']) { S.flags['story.journal_opened'] = true; save(); }
     renderCollection();
@@ -628,7 +648,7 @@ function showTab(name){
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [] };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -701,8 +721,27 @@ function roomZoomFor(W, H, s){
   const Heff = ctlMode() === 'modern' ? H - ROOM_ZOOM_HUD : H;
   const denomW = (MW - slack) * TS, denomH = MH * TS;
   if (!(denomW > 0) || !(denomH > 0) || !(Heff > 0) || !(W > 0)) return s;
-  const S = Math.max(s, Math.min(ROOM_ZOOM_CAP * s, Math.floor(W / denomW), Math.floor(Heff / denomH)));
+  let S = Math.max(s, Math.min(ROOM_ZOOM_CAP * s, Math.floor(W / denomW), Math.floor(Heff / denomH)));
+  // Your Room is 7 wide and both edges are wall, so the slack formula is scale 3 at 320.
+  // That puts the left round-button column over the wall and the bed corner. Cap it at 2 there.
+  if (CUR.id === 'hc_apt_in' && ctlMode() === 'modern' && window.innerWidth <= 320) S = Math.min(S, Math.max(s, 2));
   return S > 0 ? S : s;
+}
+// Extra camera inset, in bitmap px, so hc_apt_in's left wall clears #fcTL at 320. 0 everywhere else.
+let roomSideNudge = 0;
+function applyRoomSideNudge(){
+  roomSideNudge = 0;
+  if (!(CUR && CUR.id === 'hc_apt_in' && ctlMode() === 'modern' && window.innerWidth <= 320)) return;
+  const c = $('#mapCanvas'), col = $('#fcTL');
+  if (!c || !c.width || !col || !walk) return;
+  syncWalkCam();
+  const cr = c.getBoundingClientRect(), br = col.getBoundingClientRect();
+  const scale = cr.width / c.width;
+  if (!(scale > 0)) return;
+  const wallLeft = cr.left + (0 - walk.cam.x) * scale;
+  const need = br.right - wallLeft;
+  if (need > 0.5) roomSideNudge = Math.ceil((need + 1) / scale);
+  if (roomSideNudge) syncWalkCam();
 }
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
 function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
@@ -735,6 +774,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     }
     mw.style.alignItems = (modern && roomZoom) ? 'flex-start' : '';
     mw.style.backgroundColor = '';   // D236 overridden: the wrap stays the stylesheet void
+    applyRoomSideNudge();
   }
   refitSceneBox();
 }
@@ -780,9 +820,11 @@ function updateHUD(){
   }
   updatePetStrip(p);
   syncCareAlert();   // HEART_ALERT: same 1 s stat tick as the strip
+  const kitBtn = $('#petKitBtn');
+  if (kitBtn) kitBtn.setAttribute('aria-label', 'Gear for ' + petName(p));
   const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
-  const base = p.stage === 0 ? 0 : EVO_XP[p.stage-1];
-  const xpPct = p.stage < 2 ? (p.xp - base) / (goal - base) * 100 : 100;
+  const base = 0;   // D248: the bar is total over goal. 40 of 120 fills a third. Fully grown stays full.
+  const xpPct = p.stage < 2 ? (goal > base ? (p.xp - base) / (goal - base) * 100 : 100) : 100;
   $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = p.xp;
   $('#wSteps').textContent = S.steps;   // STAT_DISPLAY: the WALK slot of the shared strip
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
@@ -1090,6 +1132,7 @@ function runTutorial(opts){
   if (!S || !pet() || tut.on) return;
   opts = opts || {};
   tut.on = true; tut.replay = !!opts.replay; tut.fromScene = false;
+  clearUiReturn();
   tut.skipT12r = !opts.replay && !!(S && S.flags['story.tutorial_step'] === 'T13');
   const layer = $('#tutLayer'); if (!layer) { tut.on = false; return; }
   layer.hidden = false; document.body.classList.add('tut-on');
@@ -1366,7 +1409,10 @@ function updateCareButtons(){
     if (!BTN_LABEL[act]) return;
     const left = cdLeft(p, act), cd = left ? fmtCd(left) : '';
     if (b.dataset.cd !== cd) {               // label on top, countdown on a small second line (fits 320px phones)
-      b.dataset.cd = cd; b.textContent = BTN_LABEL[act];
+      b.dataset.cd = cd;
+      const icon = b.querySelector('canvas');   // FEED / PLAY / REST keep their stat icon; textContent would drop it
+      b.textContent = BTN_LABEL[act];
+      if (icon) b.prepend(icon);
       if (cd) { const sm = document.createElement('small'); sm.className = 'cdt'; sm.textContent = cd; b.append(sm); }
       b.setAttribute('aria-label', cd ? BTN_LABEL[act] + ', ready in ' + cd : BTN_LABEL[act]);
     }
@@ -2058,7 +2104,7 @@ async function makeRoomFor(np){
   const out = S.party[i];
   if (out.id === S.partnerId) {
     const stay = S.party.find(q => q.id !== out.id);
-    S.partnerId = stay ? stay.id : np.id;
+    setPartnerId(stay ? stay.id : np.id);
   }
   S.box.unshift(S.party.splice(i, 1)[0]);
   S.party.push(np);
@@ -4283,9 +4329,9 @@ function cleanPlayerName(v){                   // nameEntry rules: drop control 
 const playerName = () => (S && S.player && typeof S.player.name === 'string' && S.player.name.trim()) || DEFAULT_PLAYER_NAME;   // BATTLE §7.1 {player}
 function renderKeeperName(){
   $('#keeperName').textContent = playerName();
-  const k = $('#petKeeper'); if (!k) return;                  // Pet scene label (MAPS_SLICE K.2 v0.4.7): "KEEPER  Mo", textContent only
-  k.textContent = ''; const b = document.createElement('b'); b.textContent = 'KEEPER'; k.append(b, document.createTextNode(playerName()));
-  k.setAttribute('aria-label', 'Keeper ' + playerName());
+  const k = $('#petKeeper'); if (!k) return;                  // D256: same rect, same ids. The title is HOLDER.
+  k.textContent = ''; const b = document.createElement('b'); b.textContent = 'HOLDER'; k.append(b, document.createTextNode(playerName()));
+  k.setAttribute('aria-label', 'Holder ' + playerName());
 }
 const LOOK_ROWS = [['skin', '#lookSkin', 'Skin'], ['hair', '#lookHair', 'Hair'], ['hairCol', '#lookHairCol', 'Hair colour'],
   ['outfit', '#lookOutfit', 'Outfit'], ['outfitCol', '#lookOutfitCol', 'Outfit colour'], ['accent', '#lookAccent', 'Accent'],
@@ -4516,6 +4562,7 @@ const ABORT = { abort: true };
 function runScene(id, ctx){ const steps = sceneSteps(id); if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id, beat: id }, ctx || {})); }
 async function runSteps(steps, ctx = {}){
   if (scene || !S) return;
+  clearUiReturn();
   scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: ctx.viewPet || null, nick: undefined },
     vars: { tags: [], line: null, suggest: null }, skip: false, deferRespawn: false, toasts: [], boxes: 0 };
   walk.target = walk.path = walk.arrive = walk.queued = null; dropAim(); wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
@@ -4639,7 +4686,7 @@ async function execStep(st){
     case 'givePet': {
       const id = a === '$line' ? sc.vars.line : a, si = SP_INDEX[id]; if (si == null) return;
       const np = newPet(si, 0, 'starter'); np.metPlace = 'Hearthmoor'; sc.view.pet = np; sc.view.nick = undefined;
-      pend(() => { S.party.push(np); S.partnerId = np.id; markCaught(si, 0); scene && scene.toasts.push((cleanNick(scene.view.pet === np && scene.view.nick) || petName(np)) + ' joined you!'); });   // the nickname given later in the same scene, else the species
+      pend(() => { S.party.push(np); setPartnerId(np.id); markCaught(si, 0); scene && scene.toasts.push((cleanNick(scene.view.pet === np && scene.view.nick) || petName(np)) + ' joined you!'); });   // the nickname given later in the same scene, else the species
       return;
     }
     case 'setFlag': {
@@ -4966,6 +5013,8 @@ function syncWalkCam(t){
   const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
   walk.cam.x = MW * TS <= VW ? -Math.floor((VW - MW * TS) / 2) : Math.round(clamp(px_ + 8 - VW/2 + bx, 0, MW*TS - VW));
   walk.cam.y = MH * TS <= VH ? -Math.floor((VH - MH * TS) / 2) : Math.round(clamp(py_ + 8 - VH/2 + by, 0, MH*TS - VH));
+  // Your Room at 320: the centred room still tucks its left wall under the round-button column. Nudge it right. Scale stays.
+  if (roomSideNudge && CUR && CUR.id === 'hc_apt_in' && MW * TS <= VW) walk.cam.x -= roomSideNudge;
 }
 function chooseSceneBox(who){
   const o = findSpeaker(who), ov = $('#ovScene');
@@ -5493,6 +5542,7 @@ function openBattle(o){
   markAlive();                                                // the crash marker notes this page is now in a battle
   const lead = leadPet();
   if (!lead) { noBattleToast(); return false; }
+  clearUiReturn();
   clearMoves(); closeSheet(null);
   const B = battle; B.id++;
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
@@ -6464,6 +6514,32 @@ function drawRegionMap(t){
 let bagSel = 0;
 function paintAcorn(c){ if (!c) return; const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'acorn', 0, 0); }
 function paintStar(c){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); drawGlyph(g, 'star', 0, 0); }
+function glyphDrawable(name){
+  const gl = GLYPH[name];
+  if (!gl || !gl.length || !gl[0]) return false;
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) {
+    const ch = gl[j][i];
+    if (ch !== '.' && PAL[ch]) return true;
+  }
+  return false;
+}
+function paintGlyphBox(c, name, fallback){
+  if (!c || !c.getContext) return;
+  const use = glyphDrawable(name) ? name : (fallback && glyphDrawable(fallback) ? fallback : null);
+  if (!use) return;
+  const gl = GLYPH[use];
+  c.width = gl[0].length; c.height = gl.length;
+  const g = ctx(c); g.clearRect(0, 0, c.width, c.height); drawGlyph(g, use, 0, 0);
+  c.dataset.glyph = use;
+}
+// D245: apple, heart, bolt and star. Painted once at boot. The heart-button bowl and z stay on their own canvases.
+function paintStatIcons(){
+  $$('.ico-food').forEach(c => paintGlyphBox(c, 'ico_food'));
+  $$('.ico-joy').forEach(c => paintGlyphBox(c, 'ico_joy'));
+  $$('.ico-grow').forEach(c => paintGlyphBox(c, 'ico_grow'));
+  $$('.ico-nrg').forEach(c => paintGlyphBox(c, 'ico_nrg'));
+  $$('.ico-pencil').forEach(c => paintGlyphBox(c, 'ico_pencil'));
+}
 function paintRepIcon(){
   const c = $('#repIcon'); const grid = navArt() && navArt().buttons.rep && navArt().buttons.rep.normal;
   if (!c || !grid) return;
@@ -6474,6 +6550,7 @@ function paintRepIcon(){
   }
 }
 function paintUiIcons(){ paintAcorn($("#hdrAcornIcon")); paintAcorn($("#fcAcornIcon")); paintRepIcon();
+  paintStatIcons();
   $$('.ico-star').forEach(paintStar);
   $$('.ico-dp').forEach(c => iconCanvas(c, ICONS[c.dataset.icon], PAL.w));
   $$('.ico-hud').forEach(c => {
@@ -7842,6 +7919,7 @@ function startEvolution(force){
   const p = pet(); if (!p || p.stage >= 2) { toast('Already fully grown!'); return; }
   if (!force && !canEvolve(p)) return;
   if (overlayOpen()) return;
+  clearUiReturn();
   clearMoves();
   Object.assign(evo, { active: true, t0: now(), sp: spi(p), from: p.stage, to: p.stage + 1, done: false });
   $('#evoTitle').textContent = 'Oh? ' + petName(p) + ' is growing up!';
@@ -7935,6 +8013,7 @@ function openStatsCard(id){
   if (overlayOpen()) return false;
   clearMoves(); statsCard.id = p.id; statsCard.t = 0; renderStatsCard();
   $('#ovStats').hidden = false; lockTabs(true); sfx('tap');
+  const inner = $('#ovStats .ov-inner'); if (inner) inner.scrollTop = 0;
   $('#scClose').focus({ preventScroll: true });
   return true;
 }
@@ -8001,21 +8080,97 @@ function setRelief(p, on){
 }
 function renderKit(){
   const p = pet(); if (!p) { closeKit(); return; }
-  spriteCanvas($('#kitIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
-  $('#kitWho').textContent = petName(p);
+  const icon = $('#kitIcon'), who = $('#kitWho'), speciesEl = $('#kitSpecies'), box = $('#kitBox');
+  if (!box) return;
+  if (icon) spriteCanvas(icon, spi(p), p.stage, 'n', isFaded(p), p.accessory);
+  if (who) who.textContent = petName(p);
   const species = nameOf(spi(p), p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
-  $('#kitSpecies').textContent = (cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
-  const box = $('#kitBox'); box.textContent = ''; fillWalklingExtras(box, p);
+  if (speciesEl) speciesEl.textContent = (cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
+  box.textContent = ''; fillWalklingExtras(box, p);
 }
 function openKit(){
+  const el = $('#ovKit'); if (!el) return false;
   const p = pet(); if (!p || overlayOpen()) return false;
-  clearMoves(); $('#ovKit').hidden = false; lockTabs(true); renderKit(); sfx('tap');
-  $('#kitClose').focus({ preventScroll: true });
+  clearMoves(); el.hidden = false; lockTabs(true); renderKit(); sfx('tap');
+  if ($('#kitClose')) $('#kitClose').focus({ preventScroll: true });
   return true;
 }
 function closeKit(){
   const el = $('#ovKit'); if (!el || el.hidden) return;
   el.hidden = true; lockTabs(false); updateHUD();
+}
+// PARTNER_UI D252. NAME is the first row of the stats gear box only. The Walkling sheet keeps its own NAME field.
+function fillGearView(box, p){
+  if (!box || !p) return;
+  box.textContent = '';
+  const lab = document.createElement('div'); lab.className = 'gear-lab'; lab.textContent = 'NAME';
+  const btn = document.createElement('button');
+  btn.type = 'button'; btn.id = 'scNameBtn'; btn.className = 'btn sc-name-btn';
+  const nm = petName(p);
+  btn.setAttribute('aria-label', 'Rename ' + nm);
+  btn.append(document.createTextNode(nm));
+  const cv = document.createElement('canvas');
+  cv.className = 'ico-pencil'; cv.width = 5; cv.height = 5; cv.setAttribute('aria-hidden', 'true');
+  btn.append(cv);
+  paintGlyphBox(cv, 'ico_pencil');
+  btn.addEventListener('click', () => { sfx('tap'); openNickEdit(); });
+  box.append(lab, btn);
+  fillWalklingExtras(box, p);
+}
+function showGearBox(p, scroll){
+  const box = $('#scGearBox'), b = $('#scGear');
+  statsCard.gear = true;
+  if (b) b.setAttribute('aria-pressed', 'true');
+  if (!box || !p) return;
+  box.hidden = false;
+  fillGearView(box, p);
+  if (scroll) requestAnimationFrame(() => box.scrollIntoView({ block: 'start', inline: 'nearest' }));
+}
+// Other overlays, the tour, and a guarded tab deny INTERACT. The open stats card itself does not.
+function statsLeaveBlocked(){
+  if (tabsGuarded() || tut.on || !allPets().length) return true;
+  const el = $('#ovStats'); if (!el) return true;
+  const was = el.hidden;
+  el.hidden = true;
+  let blocked = false;
+  try { blocked = overlayOpen(); } finally { el.hidden = was; }
+  return blocked;
+}
+function interactFromStats(){
+  if ($('#ovStats').hidden || !statsCard.id) return;
+  if (statsLeaveBlocked()) { sfx('denied'); return; }
+  const inner = $('#ovStats .ov-inner');
+  uiReturn = { id: statsCard.id, gear: !!statsCard.gear, scrollTop: inner ? inner.scrollTop : 0 };
+  closeStatsCard();
+  showTab('pet');
+  sfx('tap');
+}
+function openGearView(id){
+  clearUiReturn();
+  const pid = id || (S && S.partnerId);
+  if (!openStatsCard(pid)) { sfx('denied'); return false; }
+  const p = petById(pid) || pet();
+  if (p) showGearBox(p, true);
+  return true;
+}
+function openPartnerStats(){
+  const p = pet();
+  if (uiReturn && p && uiReturn.id === S.partnerId && uiReturn.id === p.id) {
+    const back = uiReturn;
+    if (!openStatsCard(back.id)) { sfx('denied'); return false; }
+    clearUiReturn();
+    if (back.gear) showGearBox(petById(back.id), false);
+    const inner = $('#ovStats .ov-inner');
+    if (inner) {
+      const y = back.scrollTop || 0;
+      const put = () => { inner.scrollTop = y; };
+      put();
+      requestAnimationFrame(() => { put(); requestAnimationFrame(put); });
+    }
+    return true;
+  }
+  clearUiReturn();
+  return openStatsCard(S && S.partnerId);
 }
 function commitGear(id, opts){
   save(); updateHUD();
@@ -8024,10 +8179,10 @@ function commitGear(id, opts){
   const kit = $('#ovKit');
   if (kit && !kit.hidden && !(opts && opts.keep) && pet() && pet().id === id) renderKit();
   if (opts && opts.keep) return;
-  if ($('#ovStats').hidden || statsCard.id !== id || !statsCard.gear) return;
+  if (!$('#ovStats') || $('#ovStats').hidden || statsCard.id !== id || !statsCard.gear) return;
   const p = petById(id), box = $('#scGearBox');
   renderStatsCard();
-  if (p && box) { box.textContent = ''; fillWalklingExtras(box, p); box.hidden = false; }
+  if (p && box) { fillGearView(box, p); box.hidden = false; }
 }
 function fillWalklingExtras(container, pet){
   if (!container || !pet) return;
@@ -8133,6 +8288,15 @@ function paintStatsInto(prefix, p, opt){
 function renderStatsCard(){
   const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
   paintStatsInto('sc', p);
+  const mine = !!(S && p.id === S.partnerId);
+  const interact = $('#scRename'), acts = $('#scActs');
+  if (interact) {
+    interact.hidden = !mine;
+    interact.setAttribute('aria-label', 'Care for ' + petName(p));
+  }
+  if (acts) acts.classList.toggle('one', !mine);
+  const edit = $('#scNameEdit');
+  if (edit) edit.setAttribute('aria-label', 'Rename ' + petName(p));
   const gbtn = $('#scGear'), gbox = $('#scGearBox');
   if (gbtn) gbtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
   if (gbox) gbox.hidden = !statsCard.gear;
@@ -8163,10 +8327,10 @@ function depositPetLocal(id, nextId){
   if (i < 0) return false;
   if (id === S.partnerId) {
     if (!nextId || !S.party.some(q => q.id === nextId && q.id !== id)) return false;
-    S.partnerId = nextId;
+    setPartnerId(nextId);
   }
   S.box.unshift(S.party.splice(i, 1)[0]);
-  if (!S.party.some(q => q.id === S.partnerId) && S.party[0]) S.partnerId = S.party[0].id;
+  if (!S.party.some(q => q.id === S.partnerId) && S.party[0]) setPartnerId(S.party[0].id);
   return true;
 }
 function withdrawPetLocal(id){
@@ -8546,7 +8710,7 @@ function depositPet(id, newPartnerId){
   }
   const [p] = S.party.splice(i, 1);
   S.box.unshift(p);
-  if (S.partnerId === id) S.partnerId = newPartnerId;
+  if (S.partnerId === id) setPartnerId(newPartnerId);
   return true;
 }
 function withdrawPet(id, slotIndex){
@@ -8564,7 +8728,7 @@ function withdrawPet(id, slotIndex){
   const [p] = S.box.splice(bi, 1), occ = S.party[slotIndex];
   S.party[slotIndex] = p;
   S.box.splice(bi, 0, occ);
-  if (occ.id === S.partnerId) S.partnerId = p.id;
+  if (occ.id === S.partnerId) setPartnerId(p.id);
   return true;
 }
 function releasePet(id){
@@ -8582,7 +8746,7 @@ function releasePet(id){
   if (pi >= 0) S.party.splice(pi, 1); else S.box.splice(bi, 1);
   if (!S.party.length && S.box.length) S.party.push(S.box.shift());
   if (S.party.length && (wasPartner || !S.party.some(q => q.id === S.partnerId))) {
-    S.partnerId = S.party[pi >= 0 ? Math.min(pi, S.party.length - 1) : 0].id;
+    setPartnerId(S.party[pi >= 0 ? Math.min(pi, S.party.length - 1) : 0].id);
   }
   return true;
 }
@@ -8907,7 +9071,7 @@ function makePartner(id){
     }
     S.party.push(p);
   }
-  if (S.party.some(p => p.id === id)) S.partnerId = id;
+  if (S.party.some(p => p.id === id)) setPartnerId(id);
 }
 
 /* ---------- friends (stub) ---------- */
@@ -9055,8 +9219,8 @@ function ensureDebugStarter(){
     const line = (typeof S.flags['story.starter_line'] === 'string' && SP_INDEX[S.flags['story.starter_line']] != null) ? S.flags['story.starter_line'] : 'ember';
     S.flags['story.starter_line'] = line;
     const p = newPet(SP_INDEX[line], 0, 'starter', STAT_RULES.STARTER_LEVEL);
-    S.party.push(p); S.partnerId = p.id; markCaught(SP_INDEX[line], 0);
-  } else if (!S.party.some(p => p.id === S.partnerId)) S.partnerId = S.party[0].id;
+    S.party.push(p); setPartnerId(p.id); markCaught(SP_INDEX[line], 0);
+  } else if (!S.party.some(p => p.id === S.partnerId)) setPartnerId(S.party[0].id);
   return pet();
 }
 function readyParty(){
@@ -9565,10 +9729,11 @@ function bindInput(){
   $$('#scr-pet .actions [data-act]').forEach(b => b.addEventListener('click', () => doAction(b.dataset.act)));
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
-  $('#petStatsBtn').addEventListener('click', () => openStatsCard(S.partnerId));
-  $('#petKitBtn').addEventListener('click', () => openKit());
-  $('#kitClose').addEventListener('click', () => { sfx('tap'); closeKit(); });
-  $('#ovKit').addEventListener('click', e => { if (e.target === e.currentTarget) closeKit(); });
+  $('#petStatsBtn').addEventListener('click', () => openPartnerStats());
+  const petGearBtn = $('#petKitBtn');
+  if (petGearBtn) petGearBtn.addEventListener('click', () => { if ($('#ovStats')) openGearView(S.partnerId); else openKit(); });
+  const kitClose = $('#kitClose'); if (kitClose) kitClose.addEventListener('click', () => { sfx('tap'); closeKit(); });
+  const ovKit = $('#ovKit'); if (ovKit) ovKit.addEventListener('click', e => { if (e.target === e.currentTarget) closeKit(); });
   $('#petCanvas').addEventListener('pointerdown', e => { if (screen === 'pet' && !overlayOpen() && petHit(e.clientX, e.clientY)) { e.preventDefault(); patPet(); } });   // CARE_LOOP A: pats
   $('#walkBagBtn').addEventListener('click', () => openBag());
   $('#phoneBtn').addEventListener('click', openPhone);
@@ -9646,7 +9811,9 @@ function bindInput(){
     }
   });
   $('#scClose').addEventListener('click', () => { sfx('tap'); closeStatsCard(); });
-  $('#scRename').addEventListener('click', () => { sfx('tap'); openNickEdit(); });
+  $('#scRename').addEventListener('click', () => interactFromStats());
+  const scName = $('#scName'); if (scName) scName.addEventListener('click', () => { sfx('tap'); openNickEdit(); });
+  const scNameEdit = $('#scNameEdit'); if (scNameEdit) scNameEdit.addEventListener('click', () => { sfx('tap'); openNickEdit(); });
   $('#scNickCancel').addEventListener('click', () => { sfx('tap'); hideNickEdit(); });
   $('#scNickOk').addEventListener('click', () => { sfx('tap'); applyNick(); });
   $('#scNickIn').addEventListener('keydown', e => {
@@ -9661,7 +9828,7 @@ function bindInput(){
     gearBtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
     const box = $('#scGearBox'); if (!box) return;
     box.hidden = !statsCard.gear; box.textContent = '';
-    if (statsCard.gear) fillWalklingExtras(box, p);
+    if (statsCard.gear) { fillGearView(box, p); requestAnimationFrame(() => box.scrollIntoView({ block: 'start', inline: 'nearest' })); }
   });
   $('#ovStats').addEventListener('click', e => { if (e.target === e.currentTarget) closeStatsCard(); });   // tap outside the card
   $('#wlClose').addEventListener('click', () => { sfx('tap'); closeWalklingSheet(); });
@@ -9748,8 +9915,8 @@ function bindInput(){
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sceneKeyEat = true; if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
-    if (e.key === 'Escape' && !$('#ovStats').hidden) { if (!$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
-    if (e.key === 'Escape' && !$('#ovKit').hidden) { closeKit(); return; }
+    if (e.key === 'Escape' && $('#ovStats') && !$('#ovStats').hidden) { if ($('#scNick') && !$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
+    if (e.key === 'Escape' && $('#ovKit') && !$('#ovKit').hidden) { closeKit(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
     if (e.key === 'Escape' && !$('#ovPhone').hidden) { closePhone(); return; }
     if (e.key === 'Escape' && !$('#ovCopy').hidden) { closeCopy(); return; }
@@ -10097,6 +10264,7 @@ function boot(){
       moving: !!fol.to, id: p ? p.id : null, tired: !!(p && isTired(p)), fainted: !!(p && isFainted(p)), bob: followerBob(now()), droop: p && isFainted(p) ? 1 : 0, under: fol.x === S.world.x && fol.y === S.world.y }; },
   };
   const cheats = {
+    repaintStats(){ paintStatIcons(); return true; },   // ?debug=1: redraw the stat icons
     runSteps: steps => { showTab('walk'); if (overlayOpen()) return false; runSteps(steps); return true; },   // debug: play ad-hoc scene steps (STINGERS test 14)
     forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
     forceBattle: (form, level) => {
