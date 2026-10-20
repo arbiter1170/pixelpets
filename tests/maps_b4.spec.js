@@ -267,9 +267,12 @@ test('phase 2: puddles and leaf litter are flat decals: drawn, walkable, never t
       }
       for (const d of v.decals) {
         const t = PixelPets.tileInfo(d.x, d.y);
-        if (d.sprite !== 'puddle' && d.sprite !== 'leaf_litter' && d.sprite !== 'hopscotch') bad.push(d.id + ' sprite ' + d.sprite);
+        const flat = d.sprite === 'puddle' || d.sprite === 'leaf_litter' || d.sprite === 'hopscotch';
+        const step = d.sprite === 'door_step' || d.sprite === 'door_step_warm';
+        if (!flat && !step) bad.push(d.id + ' sprite ' + d.sprite);
         if (!d.art || d.art[0] !== 16 || d.art[1] !== 16) bad.push(d.id + ' art');
         if (t.blocked || t.solid || t.decal !== d.sprite) bad.push(d.id + ' ' + JSON.stringify(t));
+        if (!flat) continue;   // a door step sits on the door front, on purpose
         if (ground.indexOf(t.ch) < 0) bad.push(d.id + ' on ' + t.ch);
         if (keep.has(key(d.x, d.y))) bad.push(d.id + ' on an exit, door front, object or the safe tile');
       }
@@ -281,7 +284,7 @@ test('phase 2: puddles and leaf litter are flat decals: drawn, walkable, never t
   }
 
   await page.evaluate(() => PixelPets.goto('mahopac', 9, 9, 'down'));
-  const d = await page.evaluate(() => PixelPets.exteriors('mahopac').decals.find(d => !PixelPets.tileInfo(d.x - 1, d.y).blocked));
+  const d = await page.evaluate(() => PixelPets.exteriors('mahopac').decals.find(d => (d.sprite === 'puddle' || d.sprite === 'leaf_litter') && !PixelPets.tileInfo(d.x - 1, d.y).blocked));
   expect(d).toBeTruthy();
   await page.evaluate(([x, y]) => { PixelPets.goto('mahopac', x, y, 'right'); if (PixelPets.clearWild) PixelPets.clearWild(); }, [d.x - 1, d.y]);
   await page.waitForTimeout(300);
