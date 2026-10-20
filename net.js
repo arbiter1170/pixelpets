@@ -32,6 +32,7 @@ const PPNet = (() => {
     try { asked = new URLSearchParams(location.search).get('coop') === '1'; } catch (e) {}
     return asked || !!(typeof PPCloud !== 'undefined' && PPCloud.emu);
   })() };
+  Object.freeze(COOP_CFG);
   const NET_TEXT = {
     card_title: 'HOLDER', friend_tag: 'FRIEND', btn_wave: 'WAVE', btn_mute: 'MUTE', btn_unmute: 'UNMUTE',
     btn_block: 'BLOCK', btn_close: 'CLOSE', toast_blocked: 'Blocked. UNDO', toast_muted: 'Muted.',
@@ -271,7 +272,8 @@ const PPNet = (() => {
     if (coop.unsub) { try { coop.unsub(); } catch (e) {} coop.unsub = null; }
     coopFlag = false;
   }
-  function coopOn(){ return coopFlag === true; }
+  // Both halves: the client switch (?coop=1 or the emulator) and /config/coop/on === true.
+  function coopOn(){ return COOP_CFG.on === true && coopFlag === true; }
   function onForeground(){
     if (!db || !rtdb || document.hidden || !me) return;
     const bounce = !placed.ref && link === 'up';
