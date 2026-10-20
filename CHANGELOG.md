@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 20:16 ET: Merge online saves into Play together (build 20261019-2016)
+
+- What changed and why: Merged `origin/main` (PR #99, online saves Phase 1, build 20261019-1759) and kept both sides. Anonymous cloud backup stays on. The Realtime Database root stays locked, and the Play together child rules replace that branch's full lock. `?cloud=emu` still loads the pinned SDK. Live Firebase hosts stay unroutable in the suite. Save `v` stays 2. The next free id stays D209.
+- Files touched: merge of `main`, `cloud.js`, `cloud_config.js`, `database.rules.json`, `firebase.json`, `playwright.config.js`, `tests/cloud_off.spec.js`, `index.html`, `version.json`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261019-2016.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/cloud_off.spec.js tests/play_together.spec.js` PP_TEST RESULT: PASS exit=0 passed=36 failed=0 flaky=0 skipped=39 time=252s, plus RTDB_RULES RESULT: PASS. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1166 failed=0 flaky=0 skipped=55 time=1817s, plus RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. Console errors: none (the specs fail the run on a console error). `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): no new id. D195–D208 stay settled. Next free stays D209.
+- Anything left unfinished: the Supervisor still publishes the rules (`firebase deploy --only database --project walklings-4cc89`). Online saves Phase 2 is not this build.
+
 ## 2026-10-19 19:33 ET: Play together, see each other (build 20261019-1933)
 
 - What changed and why: Holders with the same room code see each other on Hearthmoor and Route 1. SAY sends a set emote or phrase. A tap opens a holder card (WAVE, MUTE, BLOCK). Settings gains Play together when the shared walk is on: Show other holders (ON, FRIENDS, SOLO), the room code, and Blocked holders. Friends is twelve slots and a mutual add by WLK- code (old PXP- codes are accepted). No free text is stored in a room node. Trading is not in this build (D198). Save `v` stays 2. The only new save field is optional `settings.showOthers`. The device key `pixelpets.net` holds the room code, mutes, and blocks, and Start over clears it. The parent `/hidden/{target}` list is not readable. A holder can read only a known `/hidden/{target}/{blocker}` child. Rules are in the repo and are not deployed from this branch.
@@ -9,7 +18,16 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: build 20261019-1933.
 - Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Design packet checker `PLAY_TOGETHER_P1 check: PASS`. Scoped run before the stamp: `npm run test:agent -- tests/play_together.spec.js` PP_TEST RESULT: PASS exit=0 passed=21 failed=0 flaky=0 skipped=39 time=247s, plus RTDB_RULES RESULT: PASS. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1151 failed=0 flaky=0 skipped=55 time=2335s, plus RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. The layout check also ran at 320. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): D195–D199 settled with Q1 (Vincent, Oct 19, 2026, ~5:06 PM ET). D200–D207 were yellow and Vincent approved each packet default at about 6:21 PM ET. D208 is the green tech default. No id was renumbered. The next free id is D209. Yellow rows stay behind `NET_CFG` and `NET_TEXT`.
-- Anything left unfinished: the Supervisor still publishes the rules (`firebase deploy --only database --project walklings-4cc89`). Online saves Phase 1 (PR #99) is a separate branch. Friends as Phone contacts, preset-phrase mail, and a Phone unread badge are reserved on the device key and are not built. Trading stays out (D198). Frostmere is not built. Glimmer Act 2 is still TBD.
+- Anything left unfinished: the Supervisor still publishes the rules (`firebase deploy --only database --project walklings-4cc89`). Friends as Phone contacts, preset-phrase mail, and a Phone unread badge are reserved on the device key and are not built. Trading stays out (D198). Frostmere is not built. Glimmer Act 2 is still TBD. Online saves Phase 2 (Link Google) is not this build.
+
+## 2026-10-19 17:59 ET: Merge main into online saves Phase 1 (build 20261019-1759)
+
+- What changed and why: Merged `origin/main` (PR #98, Arbiter Test music and the final tour copy, build 20261019-1722) into the Phase 1 branch and kept both sides. The stamp is 20261019-1759, later than 20261019-1722. `data/glimmer_path.json` arrived with main's `data/mapdata.js`; regenerating mapdata made no further change. Save `v` stays 2. The next free id stays D195.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261019-1759.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Full suite: PP_TEST RESULT: PASS exit=0 passed=1145 failed=0 flaky=0 skipped=16 time=1605s. Widths 320, 375, and 390.
+- Decisions made (colour + reasoning): no new id. Next free stays D195.
+- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database lock on that branch is replaced by the Play together rules on this branch.
 
 ## 2026-10-19 17:22 ET: Arbiter Test music and final tour copy (build 20261019-1722)
 
@@ -19,6 +37,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): Full suite after the main merge: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1130 failed=0 flaky=0 skipped=16 time=1624s. Widths 320, 375, and 390. The earlier failures in `tests/maps_b8.spec.js` (the Glow Census wait line) and `tests/town_board_gate.spec.js` (the QUEST board rows) were fixed and rerun: `npm run test:agent -- tests/maps_b8.spec.js tests/town_board_gate.spec.js` PP_TEST RESULT: PASS exit=0 passed=20 failed=0 flaky=0 skipped=4 time=35s. No known timing flake failed, so none was rerun alone. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): no new id. D26 copy is final (yellow, already settled). D164 delivered the `arbiter_test` row (already settled). D194 stays the settled QUEST-tab row from main. The next free id is D195.
 - Anything left unfinished: Frostmere is not built. Glimmer Act 2 is still TBD.
+
+## 2026-10-19 17:18 ET: Online saves Phase 1 on (build 20261019-1718)
+
+- What changed and why: Phase 1 is ON. `cloud_config.js` holds the public web config for project `walklings-4cc89`. Anonymous sign-in backs up `saves/{uid}`. The Settings row reads "This browser only: link Google to keep it safe". `database.rules.json` locks the Realtime Database until a later multiplayer phase. Automated tests ignore that config when `navigator.webdriver` is set and cannot resolve the Firebase hosts, so they never create users or write documents. Save `v` stays 2.
+- Files touched: `cloud_config.js`, `cloud.js`, `database.rules.json`, `firebase.json`, `playwright.config.js`, `tests/cloud_off.spec.js`, `index.html`, `version.json`, `AGENTS.md`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `review-cloud-on/`.
+- Commit(s) + build id: build 20261019-1718.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/cloud_off.spec.js` PP_TEST RESULT: PASS exit=0 passed=15 failed=0 flaky=0 skipped=0 time=6s (320, 375, 390). `npm run test:agent -- tests/smoke.spec.js tests/save_copy.spec.js` PP_TEST RESULT: PASS exit=0 passed=27 failed=0 flaky=0 skipped=0 time=42s. Full suite: PP_TEST RESULT: PASS exit=0 passed=1139 failed=0 flaky=0 skipped=16 time=1592s. `python3 tools/bump_build.py --check` exit 0. One live smoke from localhost in a throwaway profile: anonymous sign-in, `saves/{uid}` rev 1 then rev 2, a write to another uid denied, the Settings row read "This browser only: link Google to keep it safe", and Delete cloud save removed the doc. Shots: `review-cloud-on/` at 390×844.
+- Decisions made (colour + reasoning): no new id. Phase 1 shipped quietly was already settled (Vincent, Oct 8, 2026). Next free stays D195. Green: the suite forces the live project off.
+- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database stays locked.
 
 ## 2026-10-19 16:17 ET: Accepted board slips on the QUEST tab (build 20261019-1617)
 

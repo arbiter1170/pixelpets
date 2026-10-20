@@ -43,7 +43,7 @@ Also on `main` since the Oct 13 handoff: Glimmerwell and wild battle music plus 
 
 On `main` with this landing: Fernbrook Heights, glimmer Route 2, the Sacrifice stub, Rook's closer, the save copy before Start over, the Keeper House with the Keeper1 phone, Ribbit, and the open east gate. Those had lived on `origin/cursor/keeper-hq-phone-0bb2` (tip `46113b2`; the documented Q16 commit was `d43dde7`). GitHub had marked PRs #11, #12, #13, #14, and #16 merged because each merged into the previous feature branch, not into `main`. The provenance log is `BRANCH_LOG.md`.
 
-Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Rook's offer (Pledge desks retired, D127), sound/music/stingers, save v2 (additive fields), cloud save Phase 1 (off). Playwright smokes live in `tests/` (no CI workflow yet).
+Systems done: care loop and bond, real-time stat decay, battles (types, moves, learnsets, AI tiers, faint nap), level-scaled befriend bar, stats card, journal, bag/shop, Lantern House respawns, region map, QUEST / NEXT STEP, Standing meters and Rook's offer (Pledge desks retired, D127), sound/music/stingers, save v2 (additive fields), cloud save Phase 1 (on). Playwright smokes live in `tests/` (no CI workflow yet). Online saves Phase 2 is next.
 
 Story shape today: **Glimmerwell Co. is the antagonist** on the Keepers path and a cheerful employer on the glimmer path. Rook is a Junior Bright colleague on glimmer Fernbrook (`teaser@glimmer` does not say he leaves). The Keepers path (Fen, Hale, the Halls, the Lantern Houses) is still the default for any save that never picked a side.
 
@@ -66,7 +66,7 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 | Item | State | Size |
 |---|---|---|
 | Friends v1: offline trade code, then backend + visit, then live trades | Stub, no backend (3a/3b/3c) | L |
-| Online saves Phase 2 (Link Google, sign out, multi-device) | Phase 1 built with `cloud_config.js` = null. Blocked on Vincent: Firebase project, web config, privacy wording | L |
+| Online saves Phase 2 (Link Google, sign out, multi-device) | Phase 1 is ON. Phase 2 is next. Privacy wording for Google link still waits on Vincent | L |
 | Eggs | `eggs` save section exists, empty; no game code | M |
 | Box screen: reorder, release, proper UI; orphan recovery UI | Built (Q17). WALKLINGS tab: UP/DOWN, RELEASE, LEFT BEHIND | M |
 | Rename an existing Walkling | Built (Q23). STATS → RENAME and the Walkling sheet. Empty or the species name clears `nick` (D57). A faded Walkling with no nick is also asked when its colour returns | S |
@@ -449,9 +449,13 @@ See section 4 (pointer strength, Settings toggle).
 
 ---
 
+## ONLINE_SAVES status
+
+Phase 1 is ON on this branch. `cloud_config.js` holds the public web config for project `walklings-4cc89` (Spark, anonymous auth, Firestore in us-east1). The game signs in quietly and backs up one private `saves/{uid}` document. The Settings row reads "This browser only: link Google to keep it safe". Delete cloud save removes that document and keeps the game on this device. Start over erases the cloud copy too. The Realtime Database root stays locked (`.read` and `.write` false). Play together child rules live under that lock in `database.rules.json`, and `firebase.json` points at it. Those rules are not deployed from this branch. Automated tests force the cloud path off when `navigator.webdriver` is set, and Playwright maps the live Firebase hosts to an address that does not resolve. The pinned SDK host stays reachable so `?cloud=emu` can load it. The suite does not create anonymous users on the live project or write live documents. `?cloud=block` is the only opt-in for a stubbed SDK, and those checks stub or abort it. Phase 2 (Link Google, sign out, a second device, the privacy line) is the next online-saves build. No new decision id. The next free id is D209.
+
 ## 3. Oct 14 queue
 
-Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. The NPC-only Fetchling line (`fetch`) is in the game on this branch and is not the next queue item. The first-time tour (D157–D160) is built on this branch and is not the next queue item. Next scoped work is Q19, town boards. Q26, modern and arcade controls, is built (PR #48, D70 and D71 settled); landscape (D72) is still open. The town-list D37 and D38–D49 are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3, Cald's gate count, is on this branch. The other slips are not started. The open-table D37 is the region-map claim list and shares that number. Q22, the Capital Partnership Briefing, is not built. The RegenX lab pass and the VOLT line Bitlet are in the game on this branch (D74). A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
+Online saves Phase 1 is ON. Phase 2 is the next online-saves build. Q16 is done. Q17, Q18, Q20, Q21, Q23, Q24, and Q25 are shipped. The NPC-only Fetchling line (`fetch`) is in the game on this branch and is not the next queue item. The first-time tour (D157–D160) is built on this branch and is not the next queue item. Next scoped work is Q19, town boards. Q26, modern and arcade controls, is built (PR #48, D70 and D71 settled); landscape (D72) is still open. The town-list D37 and D38–D49 are settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3, Cald's gate count, is on this branch. The other slips are not started. The open-table D37 is the region-map claim list and shares that number. Q22, the Capital Partnership Briefing, is not built. The RegenX lab pass and the VOLT line Bitlet are in the game on this branch (D74). A code PR stamps with `python3 tools/bump_build.py`, runs Playwright at 320 / 375 / 390, and updates BACKLOG / README / OPEN_DECISIONS / CHANGELOG / this file in the same PR. Status-doc edits follow `.cursor/skills/walklings-docs/SKILL.md`.
 
 ### Q28 — Map pass (`handoff/maps/`) — **in progress**
 

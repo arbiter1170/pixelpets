@@ -5,6 +5,22 @@ const { defineConfig } = require('@playwright/test');
 
 const port = process.env.PP_PORT || '8080';
 const external = process.env.PP_URL;
+// The suite must never reach the live Firebase project. cloud.js also ignores the real config when
+// navigator.webdriver is set. These hosts fail closed if a test opts in with ?cloud=block and forgets to stub.
+const CLOUD_BLOCK = [
+  // www.gstatic.com stays reachable: ?cloud=emu loads the pinned Firebase SDK from there.
+  // Live project hosts below still fail closed.
+  'identitytoolkit.googleapis.com',
+  'securetoken.googleapis.com',
+  'firestore.googleapis.com',
+  'firebase.googleapis.com',
+  'firebaseinstallations.googleapis.com',
+  'content-firebaseappcheck.googleapis.com',
+  'www.googleapis.com',
+  'walklings-4cc89.firebaseapp.com',
+  'walklings-4cc89.firebasestorage.app',
+  'walklings-4cc89-default-rtdb.firebaseio.com',
+].map((host) => 'MAP ' + host + ' ~NOTFOUND').join(', ');
 
 module.exports = defineConfig({
   testDir: 'tests',
@@ -18,6 +34,7 @@ module.exports = defineConfig({
   use: {
     baseURL: external || ('http://127.0.0.1:' + port),
     browserName: 'chromium',
+    launchOptions: { args: ['--host-resolver-rules=' + CLOUD_BLOCK] },
   },
   webServer: external ? undefined : {
     command: 'python3 -m http.server ' + port + ' --bind 127.0.0.1',
