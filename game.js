@@ -109,16 +109,10 @@ function fadedStage(st){
 }
 const FADED_SPR = {};
 function sprSet(si, stage, faded){
-  if (!faded) return SPR[si][stage];
-  const k = si + '/' + stage;
-  if (!FADED_SPR[k]) {
-    const st = SPECIES[si].stages[stage], art = fadedStage(st), n = buildSprite(art.src, art.col, 'normal');
-    FADED_SPR[k] = { n, b: buildSprite(art.src, art.col, 'blink'), w: SPR[si][stage].w, s: SPR[si][stage].s, u: SPECIES[si].uiHalo ? haloSprite(n, PAL.h) : null };
-  }
-  return FADED_SPR[k];
+  return sprFor(si, stage, faded);
 }
 const isFaded = p => !!p && (+p.faded || 0) > 0;
-const petSpr = p => sprSet(spi(p), p.stage, isFaded(p));
+const petSpr = p => sprFor(p && p.species, p && p.stage, isFaded(p));
 
 function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return g; }
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
@@ -260,6 +254,38 @@ const JOURNAL_FORMS = SPECIES.reduce((n, sp) => n + (sp.npcOnly ? 0 : sp.stages.
 const formNpcOnly = form => { const sp = SPECIES[SP_INDEX[String(form || '').split('/')[0]]]; return !!(sp && sp.npcOnly); };
 const spIndex = id => SP_INDEX[id];
 const spi = p => SP_INDEX[p.species];
+// HUSHWATER B0: one picture when the species id, or that stage, is not on this client.
+let UNKNOWN_SET = null, UNKNOWN_FADED = null;
+function unknownSet(faded){
+  const st = UNKNOWN.stages[0];
+  if (faded) {
+    if (!UNKNOWN_FADED) {
+      const art = fadedStage(st), n = buildSprite(art.src, art.col, 'normal');
+      UNKNOWN_FADED = { n, b: buildSprite(art.src, art.col, 'blink'), w: buildSprite(art.src, art.col, PAL.w), s: buildSprite(art.src, art.col, PAL.m), u: haloSprite(n, PAL.h) };
+    }
+    return UNKNOWN_FADED;
+  }
+  if (!UNKNOWN_SET) {
+    const src = stageSrc(st), col = stageCol(st), n = buildSprite(src, col, 'normal');
+    UNKNOWN_SET = { n, b: buildSprite(src, col, 'blink'), w: buildSprite(src, col, PAL.w), s: buildSprite(src, col, PAL.m), u: haloSprite(n, PAL.h) };
+  }
+  return UNKNOWN_SET;
+}
+// species is a species id or a SPECIES index (wild creatures and the grow scene pass an index).
+function sprFor(species, stage, faded){
+  const sp = typeof species === 'number' ? (SPECIES[species] && SPECIES[species].id) : species;
+  const si = SP_INDEX[sp];
+  const stg = stage | 0;
+  const known = si != null && SPR[si] && SPR[si][stg];
+  if (!known) return unknownSet(!!faded);
+  if (!faded) return SPR[si][stg];
+  const k = si + '/' + stg;
+  if (!FADED_SPR[k]) {
+    const st = SPECIES[si].stages[stg], art = fadedStage(st), n = buildSprite(art.src, art.col, 'normal');
+    FADED_SPR[k] = { n, b: buildSprite(art.src, art.col, 'blink'), w: SPR[si][stg].w, s: SPR[si][stg].s, u: SPECIES[si].uiHalo ? haloSprite(n, PAL.h) : null };
+  }
+  return FADED_SPR[k];
+}
 // lv = starting Level (battle XP): starters Lv 5, befriended wild creatures their own level.
 function newPet(sp, stage=0, origin='wild', lv=STAT_RULES.STARTER_LEVEL){   // BATTLE §3.3: moves = defaultMoves(form, lv), evoMoves = [1..stage]
   return { id: rid(8), species: SPECIES[sp].id, stage, nick: null, origin, xp: stage ? EVO_XP[stage-1] : 0, bx: STAT_RULES.bxForLevel(lv), hunger: 80, happy: 80, energy: 90, met: Date.now(),
@@ -305,14 +331,15 @@ function lastReloadText(){
 }
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
-const nameOf = (sp, st) => SPECIES[sp].stages[st].name;
+const nameOf = (sp, st) => { const row = SPECIES[sp], stage = row && row.stages && row.stages[st]; return stage && stage.name ? stage.name : '???'; };
+const starLine = stage => { const n = Math.max(0, Math.min(2, stage | 0)); return '\u2605'.repeat(n + 1) + '\u2606'.repeat(2 - n); };
 // Nicknames (CREATURES_SLICE §6): optional, offered after a befriend. Cleaned for display only; the saved string is never rewritten.
 const NICK_MAX = 10;
 const cleanNick = v => typeof v === 'string' ? v.normalize('NFKC').replace(/[^A-Za-z0-9 '.!?-]/g, '').replace(/\s+/g, ' ').trim().slice(0, NICK_MAX).trim() : '';
 const petName = p => cleanNick(p.nick) || nameOf(spi(p), p.stage);
 // Level comes from battle XP (p.bx, stats.js levelOf); growth XP (p.xp) only drives evolution.
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
-const canEvolve = p => !isFaded(p) && p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_CARE[p.stage];
+const canEvolve = p => { const si = spi(p); return si != null && !!(SPECIES[si].stages[p.stage + 1]) && !isFaded(p) && p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_CARE[p.stage]; };
 const formOf = (sp, st) => SPECIES[sp].id + '/' + st;
 const markSeen = (sp, st) => { S.dex.seen[formOf(sp, st)] = true; };
 const markCaught = (sp, st) => { S.dex.seen[formOf(sp, st)] = S.dex.caught[formOf(sp, st)] = true; };
@@ -471,16 +498,16 @@ function bindJoystick(){
 }
 function updatePetStrip(p){
   if (!p || !$('#petStrip')) return;
-  const st = SPECIES[spi(p)].stages[p.stage];
-  const name = cleanNick(p.nick) || st.name;
+  const unknown = spi(p) == null;
+  const name = petName(p);
   $('#stripName').textContent = name;
   $('#stripLv').textContent = 'Lv ' + levelOf(p);
   spriteCanvas($('#stripIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
   setBar($('#stripFood'), p.hunger); setBar($('#stripJoy'), p.happy); setBar($('#stripNrg'), p.energy);
   const grow = $('#stripGrow');
   if (grow) {
-    const full = p.stage >= 2;
-    const goal = EVO_XP[p.stage];
+    const full = unknown || p.stage >= 2;
+    const goal = full ? 0 : EVO_XP[p.stage];
     const pct = full || !goal ? 100 : clamp(p.xp / goal * 100, 0, 100);
     grow.style.width = pct + '%';
     grow.classList.remove('low');
@@ -488,7 +515,7 @@ function updatePetStrip(p){
   // D384–D385: HP is the first bar. Width is hp / max. PAL r under 25%. No .low blink. No digits on the card.
   const hp = hpOf(p), mx = maxHpOf(p), e = $('#stripHp');
   if (e) { e.style.width = clamp(hp / mx * 100, 0, 100) + '%'; e.classList.toggle('warn', hp / mx < 0.25); e.classList.remove('low'); }
-  const goalTxt = p.stage >= 2 ? 'fully grown' : (p.xp + ' of ' + EVO_XP[p.stage]);
+  const goalTxt = unknown ? '???' : (p.stage >= 2 ? 'fully grown' : (p.xp + ' of ' + EVO_XP[p.stage]));
   $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. HP ' + hp + ' of ' + mx + ', Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
 }
 
@@ -806,10 +833,9 @@ function updateHUD(){
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
   if (!p) { document.body.classList.remove('align-on'); syncCareAlert(); return; }
-  const st = SPECIES[spi(p)].stages[p.stage];
-  $('#hdrName').textContent = cleanNick(p.nick) || st.name;
+  $('#hdrName').textContent = petName(p);
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
-  $('#hdrStage').textContent = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  $('#hdrStage').textContent = starLine(p.stage);
   spriteCanvas($('#hdrIcon'), spi(p), p.stage, 'n', isFaded(p), p.accessory);
   setBar($('#barHunger'), p.hunger); $('#valHunger').textContent = Math.round(p.hunger);
   setBar($('#barHappy'), p.happy);   $('#valHappy').textContent = Math.round(p.happy);
@@ -835,7 +861,8 @@ function updateHUD(){
   const setCount = (el, v, cap) => { if (!el) return; const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
   setCount($('#ssCare'), cx, CARE_XP_DAILY_CAP); setCount($('#ssExp'), ex, EXPLORE_XP_DAILY_CAP);   // EXPLORE once (STAT_DISPLAY §4)
   const hint = $('#evoHint'), btn = $('#evolveBtn');
-  if (p.stage >= 2) { hint.textContent = 'Fully grown! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
+  if (spi(p) == null) { hint.textContent = '???'; hint.classList.remove('ready'); btn.hidden = true; }
+  else if (p.stage >= 2) { hint.textContent = 'Fully grown! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (isFaded(p)) { hint.textContent = 'Faded: ' + p.faded + ' good-care day' + (p.faded > 1 ? 's' : '') + ' to go (care 60+).'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (canEvolve(p)) { hint.textContent = petName(p) + ' is ready to grow up!'; hint.classList.add('ready'); btn.hidden = false; }
   else { hint.textContent = 'Next form: GROW ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
@@ -4354,8 +4381,10 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
   if (o.kind === 'npc' || o.kind === 'trainer') {
     if (o.pet && (o.id === 'f5_buddy' || o.id === 'school_buddy') && WART.buddy_sit) { drawBuddy(g, X, Y, t); return; }
-    if (o.pet) { const [ln, st] = String(o.pet).split('/'), si = SP_INDEX[ln];
-      if (si != null) { g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2); g.drawImage(sprSet(si, +(o.stage != null ? o.stage : st) || 0, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2)); }
+    if (o.pet) { const [ln, st] = String(o.pet).split('/');
+      const stage = +(o.stage != null ? o.stage : st) || 0;
+      g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
+      g.drawImage(sprFor(ln, stage, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2));
       return; }
     const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
@@ -4374,7 +4403,8 @@ function drawObj(g, o, cx, cy, VW, VH, t){
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
   else if (o.kind === 'wild') {
     if (o.relay && WART.relay_ring) { const ring = artFrame(WART.relay_ring, t); if (ring) g.drawImage(ring, X, Y); }
-    const [line, st] = String(o.form).split('/'), si = SP_INDEX[line]; if (si != null) g.drawImage(sprSet(si, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2));
+    const [line, st] = String(o.form || '').split('/');
+    g.drawImage(sprFor(line, +st || 0, (+o.faded || 0) > 0)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2));
   }
 }
 
@@ -5552,7 +5582,7 @@ function drawWild(g, w, cx, cy, VW, VH, t){
   const age = wild.clock - w.born;
   g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(x + 3, Math.round(w.fy*TS - cy) + 14, 12, 2);
   if (age < 400) g.globalAlpha = age / 400;                              // fade in on spawn
-  g.drawImage(SPR[w.sp][w.stage][(tt % 2800) < 120 ? 'b' : 'n'], x, y0 - bob);
+  g.drawImage(sprFor(w.sp, w.stage, false)[(tt % 2800) < 120 ? 'b' : 'n'], x, y0 - bob);
   g.globalAlpha = 1;
   if (w.guide) drawGlyph(g, 'spark', x + 4, y0 - 7 - (Math.floor(tt / 280) % 2));
   const gx = Math.round(w.fx), gy = Math.round(w.fy);
@@ -5711,7 +5741,7 @@ const ablePet = p => canBattle(p);
 // Mid-battle the bench can step in with HP left and no faint nap. NRG under 10 still blocks *starting* a battle
 // (canBattle), but it must not: a playtest had the starter faint and the rest of the party, still standing, skipped,
 // with the loss line saying the whole party had fainted.
-const canStepIn = p => !!p && !isFainted(p) && hpOf(p) > 0;
+const canStepIn = p => !!p && !!statsAt(formIdOf(p), levelOf(p)) && !isFainted(p) && hpOf(p) > 0;
 // Lead = the partner if able, else the party member marked relief if able, else the first able party member.
 function leadPet(){
   const p = pet();
@@ -6059,7 +6089,7 @@ function renderBattleCards(){
   const fh = $('#btFoeHp'); fh.style.width = (100 * f.hp / f.maxHp) + '%'; fh.classList.toggle('warn', f.hp / f.maxHp < 0.25); ariaBar(fh, Math.ceil(f.hp), f.maxHp, foeName(f) + ' HP');
   $('#btFoeStages').textContent = stageText(f.stages);
   const sp = SPECIES[spi(p)], hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p);
-  $('#btMeName').textContent = petName(p); $('#btMeLv').textContent = 'Lv ' + levelOf(p); typeChip($('#btMeType'), sp.type);
+  $('#btMeName').textContent = petName(p); $('#btMeLv').textContent = 'Lv ' + levelOf(p); typeChip($('#btMeType'), (sp && sp.type) || '???');
   const mh = $('#btMeHp'); mh.style.width = (100 * hp / mhp) + '%'; mh.classList.toggle('warn', hp / mhp < 0.25); ariaBar(mh, hp, mhp, petName(p) + ' HP');
   $('#btMeHpTxt').textContent = hp + '/' + mhp;
   const m = B.me.mood || moodOf(p), chips = [];
@@ -8828,7 +8858,8 @@ const sealName = id => SEAL_NAMES[id] || id.replace(/^seal_/, '').replace(/^./, 
 /* --- learning moves (§3): after RESULTS, after evolving, and the §3.4 sheet --- */
 // Learnset entries (all stages up to the current one) with from < lv <= to, one per level, not yet known.
 function levelMoves(p, from, to){
-  const form = SPECIES[spi(p)].id + '/' + p.stage, seen = new Set();
+  const row = SPECIES[spi(p)]; if (!row) return [];
+  const form = row.id + '/' + p.stage, seen = new Set();
   return learnset(form).filter(e => e.lv > from && e.lv <= to && e.lv >= 1 && !(p.moves || []).includes(e.id) && !seen.has(e.lv) && seen.add(e.lv));
 }
 // Teach `mid`: a free slot learns it at once; full slots open the replace sheet ("Skip it" allowed). `tell` shows a line.
@@ -8849,8 +8880,8 @@ const infoSheet = text => openSheet(text, [{ label: 'OK', value: 'ok' }], null);
 // Level-ups outside battle (debug giveBx) and the §3.4 evolution-move offer run from here when no overlay is open.
 const learnQ = [];
 let learnBusy = false;
-function pendingEvoStage(p){ const have = Array.isArray(p.evoMoves) ? p.evoMoves : []; for (let k = 1; k <= p.stage; k++) if (!have.includes(k)) return k; return 0; }
-function evoMoveOf(p, k){ const e = (LEARNSETS[SPECIES[spi(p)].id + '/' + k] || []).find(x => x[0] === 0); return e ? e[1] : null; }
+function pendingEvoStage(p){ if (!p || spi(p) == null) return 0; const have = Array.isArray(p.evoMoves) ? p.evoMoves : []; for (let k = 1; k <= p.stage; k++) if (!have.includes(k)) return k; return 0; }
+function evoMoveOf(p, k){ const row = SPECIES[spi(p)]; if (!row) return null; const e = (LEARNSETS[row.id + '/' + k] || []).find(x => x[0] === 0); return e ? e[1] : null; }
 async function pumpLearn(){
   if (learnBusy || !S || overlayOpen() || walk.intro) return;
   const p = [...S.party, ...S.box].find(q => pendingEvoStage(q));
@@ -9011,7 +9042,8 @@ function drawBattle(t, dt){
 /* ---------- evolution ---------- */
 const evo = { active: false, t0: 0, sp: 0, from: 0, to: 1, done: false };
 function startEvolution(force){
-  const p = pet(); if (!p || p.stage >= 2) { toast('Already fully grown!'); return; }
+  const p = pet(); if (!p || spi(p) == null) return;
+  if (p.stage >= 2) { toast('Already fully grown!'); return; }
   if (!force && !canEvolve(p)) return;
   if (overlayOpen()) return;
   clearUiReturn();
@@ -9056,15 +9088,15 @@ function drawEvolution(t){
   const c = $('#evoCanvas'), g = ctx(c), e = t - evo.t0;
   g.fillStyle = PAL.k; g.fillRect(0,0,56,44);
   for (let i=0;i<8;i++){ g.fillStyle = i % 2 ? PAL.n : PAL.p; const r = ((e/30 + i*8) % 64); g.fillRect(28 - r/2|0, 22 - r/3|0, r|0, 1); g.fillRect(28 - r/2|0, 22 + r/3|0, r|0, 1); }
-  const x = 19, y = 13, S_ = SPR[evo.sp];
+  const x = 19, y = 13, fromSet = sprFor(evo.sp, evo.from, false), toSet = sprFor(evo.sp, evo.to, false);
   if (e < 3200) {
     const period = Math.max(50, 420 - e / 8);
     const showNew = Math.floor(e / period) % 2 === 1;
-    g.drawImage(showNew ? S_[evo.to].w : S_[evo.from].w, x, y);
+    g.drawImage(showNew ? toSet.w : fromSet.w, x, y);
     for (let i=0;i<8;i++){ const a = e/300 + i * Math.PI/4, r = 22 - e/200; drawGlyph(g, 'spark', 27 + Math.cos(a)*r, 21 + Math.sin(a)*r*0.8); }
   } else {
     if (!evo.done) finishEvolution();
-    g.drawImage(S_[evo.to][(t % 2800) < 130 ? 'b' : 'n'], x, y + Math.floor(t/400)%2);
+    g.drawImage(toSet[(t % 2800) < 130 ? 'b' : 'n'], x, y + Math.floor(t/400)%2);
     for (let i=0;i<6;i++){ const a = t/600 + i*Math.PI/3; if ((Math.floor(t/200)+i)%3) drawGlyph(g, 'spark', 27 + Math.cos(a)*20, 21 + Math.sin(a)*15); }
     if (e < 3800) { g.fillStyle = 'rgba(244,244,244,' + (1 - (e - 3200) / 600) + ')'; g.fillRect(0,0,56,44); }
   }
@@ -9088,6 +9120,7 @@ function chartLine(type){
   return { strong, weak };
 }
 function growText(p){
+  if (spi(p) == null) return { text: '???', ready: false };
   if (p.stage >= 2) return { text: 'Fully grown', ready: false };
   const left = Math.max(0, EVO_XP[p.stage] - p.xp);
   if (left > 0) return { text: 'GROW ' + left + ' to next form', ready: false };
@@ -9179,7 +9212,7 @@ function renderKit(){
   if (!box) return;
   if (icon) spriteCanvas(icon, spi(p), p.stage, 'n', isFaded(p), p.accessory);
   if (who) who.textContent = petName(p);
-  const species = nameOf(spi(p), p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  const species = nameOf(spi(p), p.stage), stars = starLine(p.stage);
   if (speciesEl) speciesEl.textContent = (cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
   box.textContent = ''; fillWalklingExtras(box, p);
 }
@@ -9353,14 +9386,15 @@ function fillWalklingExtras(container, pet){
   field('note', 'NOTE');
 }
 function paintStatsInto(prefix, p, opt){
-  const si = spi(p), sp = SPECIES[si], L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
+  const si = spi(p), sp = si != null ? SPECIES[si] : null, L = levelOf(p), st = statsAt(formIdOf(p), L) || { hp: 1, atk: 1, def: 1, spd: 1 }, max = statMaxAt(L);
   spriteCanvas($('#' + prefix + 'Icon'), si, p.stage, 'n', isFaded(p), p.accessory);
   if (chipOn(p)) paintChipIcon($('#' + prefix + 'Icon'));
   $('#' + prefix + 'Name').textContent = petName(p);
-  const species = nameOf(si, p.stage), stars = '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  const species = nameOf(si, p.stage), stars = starLine(p.stage);
   $('#' + prefix + 'Species').textContent = ((opt && opt.alwaysSpecies) || cleanNick(p.nick) ? species + ' \u00b7 ' : '') + stars;
   $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of ' + JOURNAL_FORMS + ' forms';
-  const tb = $('#' + prefix + 'Type'); tb.textContent = sp.type; tb.className = 'type-badge t-' + sp.type;
+  const tb = $('#' + prefix + 'Type'), typeName = sp && sp.type ? sp.type : '???';
+  tb.textContent = typeName; tb.className = 'type-badge' + (sp && sp.type ? ' t-' + sp.type : '');
   $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
   const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
   const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), badge = hpBadge(p), glowing = !badge && moodOf(p).glowing;
@@ -9381,7 +9415,7 @@ function paintStatsInto(prefix, p, opt){
     row.querySelector('i').style.width = (100 * st[key] / max[key]).toFixed(1) + '%';
     box.append(row);
   }
-  const ch = chartLine(sp.type), el = $('#' + prefix + 'Chart'); el.innerHTML = '';
+  const ch = sp && sp.type ? chartLine(sp.type) : { strong: ['???'], weak: ['???'] }, el = $('#' + prefix + 'Chart'); el.innerHTML = '';
   const part = (lab, list) => { const s = document.createElement('span'); s.className = 'seg'; s.append(lab + ' '); const e = document.createElement('em'); e.textContent = list.join(', '); s.append(e); return s; };
   el.append(part('Strong vs', ch.strong), ' \u00b7 ', part('Weak to', ch.weak));
 }
@@ -9767,7 +9801,7 @@ function openJournalEntry(o){
   const p = o.id ? petById(o.id) : journalPet(o.si, o.stage);
   spriteCanvas($('#jnIcon'), o.si, o.stage, 'n', !!(p && isFaded(p)), p && p.accessory);
   $('#jnTitle').textContent = st.name;
-  $('#jnStars').textContent = '\u2605'.repeat(o.stage + 1) + '\u2606'.repeat(2 - o.stage);
+  $('#jnStars').textContent = starLine(o.stage);
   const chip = $('#jnType'); chip.textContent = sp.type; chip.className = 'type-badge t-' + sp.type;
   $('#jnBlurb').textContent = sp.blurb || '';
   const lore = LORE[sp.id] || '';
@@ -9784,6 +9818,39 @@ function openJournalEntry(o){
 function closeJournal(){
   if ($('#ovJournal').hidden) return;
   $('#ovJournal').hidden = true; lockTabs(false); sfx('tap');
+}
+function openUnknownJournal(u){
+  if (!$('#ovJournal').hidden) return;
+  if (overlayOpen()) return;
+  const stage = u.stage | 0, form = u.species + '/' + stage;
+  const p = allPets().find(q => q.species === u.species && (q.stage | 0) === stage) || null;
+  spriteCanvas($('#jnIcon'), null, stage, 'n', !!(p && isFaded(p)), p && p.accessory);
+  $('#jnTitle').textContent = '???';
+  $('#jnStars').textContent = starLine(stage);
+  const chip = $('#jnType'); chip.textContent = '???'; chip.className = 'type-badge';
+  $('#jnBlurb').textContent = '';
+  $('#jnLore').hidden = true; $('#jnLore').textContent = '';
+  const caught = !!((S.dex.caught && S.dex.caught[form]) || p);
+  $('#jnMet').textContent = caught ? metLine(p) : "You've seen one. It hasn't joined you yet.";
+  $('#jnKicker').hidden = true;
+  $('#jnClose').textContent = 'CLOSE';
+  $('#ovJournal').hidden = false; lockTabs(true); sfx('tap');
+  $('#jnClose').focus({ preventScroll: true });
+}
+function unknownForms(){
+  const forms = new Map();
+  const add = (species, stage, own) => {
+    if (typeof species !== 'string' || SP_INDEX[species] != null) return;
+    const st = stage | 0, f = species + '/' + st;
+    const cur = forms.get(f) || { species, stage: st, own: false };
+    if (own) cur.own = true;
+    forms.set(f, cur);
+  };
+  allPets().forEach(p => { if (p) add(p.species, p.stage, true); });
+  const seen = (S.dex && S.dex.seen) || {}, caught = (S.dex && S.dex.caught) || {};
+  Object.keys(seen).forEach(k => { if (!seen[k]) return; const parts = String(k).split('/'); add(parts[0], +parts[1] || 0, false); });
+  Object.keys(caught).forEach(k => { if (!caught[k]) return; const parts = String(k).split('/'); add(parts[0], +parts[1] || 0, true); });
+  return [...forms.values()].sort((a, b) => a.species < b.species ? -1 : a.species > b.species ? 1 : a.stage - b.stage);
 }
 // Party board on the WALKLINGS tab (field only). Pets move as the same object, so HP, moves, bond,
 // faint and any unknown fields stay put. The partner stays in the party (makePartner). Hunger in the
@@ -9955,7 +10022,7 @@ function slotCopy(p){
     lock.setAttribute('aria-hidden', 'true'); paintLockGlyph(lock, 2); nm.append(lock);
   }
   const sub = document.createElement('div'); sub.className = 'slot-sub';
-  sub.textContent = 'Lv ' + levelOf(p) + '  ' + '\u2605'.repeat(p.stage + 1) + '\u2606'.repeat(2 - p.stage);
+  sub.textContent = 'Lv ' + levelOf(p) + '  ' + starLine(p.stage);
   const hb = hpBadge(p);
   if (hb) { const b = document.createElement('span'); b.className = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted'); b.textContent = hb; sub.append(b); }
   info.append(nm, sub);
@@ -10171,7 +10238,8 @@ function renderDexGrid(){
   const dex = $('#dexGrid'); dex.innerHTML = '';
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
   const seen = (S.dex && S.dex.seen) || {}, caught = (S.dex && S.dex.caught) || {};
-  const joined = Object.keys(caught).filter(k => caught[k] && !formNpcOnly(k)).length;
+  const speciesKnown = k => SP_INDEX[String(k).split('/')[0]] != null;
+  const joined = Object.keys(caught).filter(k => caught[k] && speciesKnown(k) && !formNpcOnly(k)).length;
   let met = 0;
   SPECIES.forEach((sp, si) => { if (sp.npcOnly) return; sp.stages.forEach((st, k) => {
     const f = formOf(si, k), flagCaught = !!caught[f], flagSeen = !!seen[f], owns = owned.has(f);
@@ -10193,6 +10261,20 @@ function renderDexGrid(){
     const lb = document.createElement('div'); lb.textContent = known ? st.name : '???'; if (!known) lb.className = 'unk';
     cell.append(cv, lb); dex.append(cell);
   }); });
+  unknownForms().forEach(u => {
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'cell dex-cell';
+    cell.dataset.form = u.species + '/' + u.stage;
+    cell.dataset.state = u.own ? 'joined' : 'met';
+    cell.setAttribute('aria-label', '???, journal page');
+    cell.addEventListener('click', () => openUnknownJournal(u));
+    const who = allPets().find(q => q.species === u.species && (q.stage | 0) === u.stage) || null;
+    const cv = document.createElement('canvas'); cv.width = cv.height = 18;
+    spriteCanvas(cv, null, u.stage, 'n', !!(who && isFaded(who)), who && who.accessory);
+    const lb = document.createElement('div'); lb.className = 'unk'; lb.textContent = '???';
+    cell.append(cv, lb); dex.append(cell);
+  });
   $('#dexCount').textContent = 'Joined ' + joined + ' · Met ' + met + ' · Out there ' + JOURNAL_FORMS;
 }
 // Partner = the pet on the Pet tab; it must be in the party. A box pet joins the party first; if the party is full,
@@ -11223,7 +11305,7 @@ function startCloud(){
     follower: () => fol.x != null ? { x: fol.fx, y: fol.fy } : null,
     look: () => (S && S.player && S.player.look) || null,
     partner: () => { const p = pet(); return p ? { species: p.species, stage: p.stage || 0, level: levelOf(p), nick: p.nick || '' } : null; },
-    formName: (sp, st) => { const si = SP_INDEX[sp]; return si == null ? '' : nameOf(si, st || 0); },
+    formName: (sp, st) => { const si = SP_INDEX[sp]; return si == null ? '???' : nameOf(si, st || 0); },
     playerName: () => playerName(),
     bond: () => { const p = pet(); return p ? bondLevel(p) : 0; },
     seenCount: () => (S && S.dex && S.dex.seen) ? Object.keys(S.dex.seen).filter(k => S.dex.seen[k]).length : 0,
@@ -11232,7 +11314,7 @@ function startCloud(){
     reduced: () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } },
     stepMs: () => STEP_MS,
     keeper: (look, facing, frame) => { const pack = keeperFrames(look); return pack && pack[facing] ? pack[facing][frame] || pack[facing][0] : null; },
-    spr: (sp, st, hop) => { const si = SP_INDEX[sp]; if (si == null) return null; const set = sprSet(si, st | 0, false); return set ? set[hop ? 'b' : 'n'] : null; },
+    spr: (sp, st, hop) => { const si = SP_INDEX[sp]; const set = sprFor(si == null ? sp : si, st | 0, false); return set ? set[hop ? 'b' : 'n'] : null; },
     glyph: (g, name, x, y) => drawGlyph(g, name, x, y),
     toast, save,
     showOthers: () => (S && S.settings && (S.settings.showOthers === 'friends' || S.settings.showOthers === 'solo') ? S.settings.showOthers : 'on'),

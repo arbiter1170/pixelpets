@@ -113,6 +113,12 @@ const PPSave = (() => {
   // §5 step 2.4: field fixes for one pet (also used by normalizeV2). `used` = ids already taken.
   // Later specs add their per-pet defaults here (additive fields, no version bump).
   function fixPet(q, used, created, originDefault){
+    // HUSHWATER B0 (D347, D357): a species id this client does not know stays byte for byte.
+    // No stage clamp, no defaultMoves refill, and no invented id. A string id is reserved so a known pet cannot take it.
+    if (!isSpecies(q.species)) {
+      if (typeof q.id === 'string' && q.id) used.add(q.id);
+      return q;
+    }
     if (!(typeof q.id === 'string' && q.id && !used.has(q.id))) q.id = rid(8);
     while (used.has(q.id)) q.id = rid(8);
     used.add(q.id);
@@ -363,7 +369,8 @@ const PPSave = (() => {
     const used = new Set();
     const keep = (list, name) => list.filter((p, i) => {
       if (!isObj(p)) { s.orphans.push({ reason: 'not-object', from: 'v2.' + name + '[' + i + ']', at: now, raw: p }); return false; }
-      if (!isSpecies(p.species)) { s.orphans.push({ reason: 'unknown-species', from: 'v2.' + name + '[' + i + ']', at: now, raw: p }); return false; }
+      // HUSHWATER B0 (D347, D357): keep the pet in party or box. v1 unknown indexes still use reason: 'unknown-species'.
+      if (!isSpecies(p.species)) { fixPet(p, used, s.created, 'v1'); return true; }
       fixPet(p, used, s.created, 'v1'); return true;
     });
     s.party = keep(s.party, 'party'); s.box = keep(s.box, 'box');
