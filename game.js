@@ -1108,7 +1108,9 @@ function unlockScan(){
   if (S.flags['story.rc_climax']) unlockOffer('switch');
   if (S.flags['story.hc_invite']) unlockOffer('letter');
   if (S.flags['unlock.lantern']) unlockOffer('lantern');
-  if ((S.party || []).some(q => canEvolve(q))) unlockOffer('growup');
+  // The GROW UP button, the card, and the grow-up scene all use the partner only.
+  const lead = pet();
+  if (lead && canEvolve(lead)) unlockOffer('growup');
 }
 function tileBox(tx, ty){
   const c = $('#mapCanvas'); if (!c || !walk || !walk.cam) return null;
@@ -1164,6 +1166,9 @@ function unlockShowMe(){
 function unlockPump(t){
   if (!S || unlock.on || tut.on) return;
   if (!tipsOn()) { unlock.q = []; unlock.since = 0; if (unlock.on) unlockClose(); return; }
+  // Drop a queued grow-up tip once the partner can no longer grow up (already grown, or never the partner).
+  const lead = pet();
+  if (!(lead && canEvolve(lead))) unlock.q = unlock.q.filter(id => id !== 'growup');
   if (!unlock.q.length) { unlock.since = 0; return; }
   const calm = screen === 'walk' && !scene && !(battle && battle.on) && !overlayOpen() && !fade.busy && !(walk && walk.intro);
   if (!calm) { unlock.since = 0; return; }
@@ -7753,6 +7758,9 @@ function finishEvolution(){
   evo.pid = p.id; evo.evoStage = evo.to;
   evo.queue = [...rows.filter(e => e[0] === 0), ...rows.filter(e => e[0] >= 1 && e[0] <= L).sort((x, y) => x[0] - y[0])].map(e => ({ id: e[1], evo: e[0] === 0 }));
   if (!evo.queue.some(e => e.evo)) markEvoStage(p, evo.to);
+  // Seen, even if the card never opened. A later return to WALK must not show a stale tip.
+  S.flags['story.unlock_growup'] = true;
+  unlock.q = unlock.q.filter(id => id !== 'growup');
   $('#evoOk').hidden = false; updateHUD(); save();
 }
 function markEvoStage(p, k){ if (!Array.isArray(p.evoMoves)) p.evoMoves = []; if (!p.evoMoves.includes(k)) p.evoMoves.push(k); save(); }
