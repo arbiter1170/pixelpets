@@ -1039,13 +1039,14 @@ function tutShow(id){
   const addBtn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = label; b.addEventListener('click', fn); acts.append(b); return b; };
   if (row[1] === 'choice') { addBtn('SHOW ME', () => tutShow('T1')); addBtn('SKIP', () => tutClose(true)); }
   else if (tut.adv === 'next') addBtn(id === 'T13' ? "LET'S GO" : 'NEXT', () => (id === 'T13' ? tutClose(true) : tutAdvance()));
+  tutDisarmSkip();
   const skip = $('#tutSkip'); skip.hidden = row[1] === 'choice' || id === 'T13';
   const card = $('#tutCard'); card.hidden = false;
   tut.holes = tut.key ? tutTargets(tut.key) : []; tut.hi = 0;
   clearInterval(tut.cycle); tut.cycle = 0;
   if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
   tutPlace();
-  const focus = acts.querySelector('button') || (skip.hidden ? null : skip);
+  const focus = acts.querySelector('button') || tut.hit;   // never park focus on SKIP TOUR: on tap steps it looked like the main button
   if (focus) focus.focus({ preventScroll: true });
   const layer = $('#tutLayer'); if (layer) layer.dataset.step = id;
 }
@@ -1112,7 +1113,14 @@ function tutorialKnock(allow){
   if (toastUp || busy || (welcome.due && screen === 'pet')) { tut.wait = setTimeout(() => tutorialKnock(true), 200); return; }
   runTutorial({ replay: false, resume: !!S.flags['story.tutorial_step'] });
 }
-function skipTutorial(){ if (tut.on && tut.id !== 'T13') tutClose('skip'); }
+// SKIP TOUR ends the tour for good, so a stray tap only arms it. A second tap within 3 s (or Escape) skips.
+function tutDisarmSkip(){ clearTimeout(tut.skipArm); tut.skipArm = 0; const b = $('#tutSkip'); if (b) { delete b.dataset.arm; b.textContent = 'SKIP TOUR'; } }
+function skipTutorial(now){
+  if (!tut.on || tut.id === 'T13') return;
+  const b = $('#tutSkip');
+  if (!now && b && !b.dataset.arm) { b.dataset.arm = '1'; b.textContent = 'TAP AGAIN TO SKIP'; clearTimeout(tut.skipArm); tut.skipArm = setTimeout(tutDisarmSkip, 3000); return; }
+  tutDisarmSkip(); tutClose('skip');
+}
 function replayTutorial(){
   if (!S || !pet() || scene || (battle && battle.on) || tut.on) return;
   closeSettings();
@@ -1120,16 +1128,19 @@ function replayTutorial(){
 }
 /* Unlock tips (D180). One card on #tutLayer, after WALK has been quiet for 600 ms. story.unlock_<id> is set when the card is shown. */
 const UNLOCKS = {
-  rep: { title: 'Trust changed', body: 'What you do changes how people feel about you. Check the compass to see who trusts you.', sel: '#repBtn' },
-  phone: { title: 'Your phone', body: 'Your phone has your contacts, Ribbit and the town board. Tap it any time.', sel: '#phoneBtn' },
+  rep: { title: 'Trust changed', body: 'What you do changes how people feel about you. Check the compass to see who trusts you.', sel: '#repBtn', show(){ if (typeof openRep === 'function') openRep(); } },
+  phone: { title: 'Your phone', body: 'Your phone has your contacts, Ribbit and the town board. Tap it any time.', sel: '#phoneBtn', show(){ if (typeof openPhone === 'function') openPhone(); } },
   sides: { title: 'Your side', body: 'You joined a side. STANDING shows how each side sees you. The other side trusts you a bit less now.', sel: '#questTabStanding', show(){ if (typeof openQuest === 'function') openQuest(); if (typeof questTabTo === 'function') questTabTo('standing'); } },
-  quests: { title: 'Side quests', body: 'You took on a side quest. It is in your quest list. Do it whenever you like.', sel: '#questBtn' },
+  quests: { title: 'Side quests', body: 'You took on a side quest. It is in your quest list. Do it whenever you like.', sel: '#questBtn', show(){ if (typeof openQuest === 'function') openQuest(); } },
   moral: { title: 'Big choices', body: 'Some choices help one side and annoy the other. There is no wrong answer, only yours.', sel: '#sbChoices' },
   switch: { title: 'Switching sides', body: 'Rook can help you switch sides. People on the side you leave will trust you less.', box: 'rook' },
-  letter: { title: 'A letter', body: 'Letters open new places. Show it to people you know. Their answer depends on how they feel about you.', sel: '#questBtn' },
-  lantern: { title: 'Lanterns', body: 'Rest at a Lantern to heal your team. If you lose a battle, you come back here.', box: 'lantern' },
+  letter: { title: 'A letter', body: 'Letters open new places. Show it to people you know. Their answer depends on how they feel about you.', sel: '#questBtn', show(){ if (typeof openQuest === 'function') openQuest(); } },
+  // Healed already: nothing to do, so GOT IT only. Hurt: SHOW ME walks to a bed (and asks to rest) or to the Lantern House door; no Lantern here opens MAP.
+  lantern: { title: 'Lanterns', body: 'Rest at a Lantern to heal your team. If you lose a battle, you come back here.', box: 'lantern', got(){ return !partyNeedsLanternRest(); }, show(){ const o = CUR && lanternMark(); if (o) { unlockClose(); if (!tapObject(o)) cantReach(); } else if (typeof openMap === 'function') openMap(); } },
   growup: { title: 'Growing up', body: '{pet} is ready to grow up. You choose when.', sel: '#evolveBtn', show(){ showTab('pet'); } },
 };
+// A tip with nothing to point at shows one GOT IT button instead of SHOW ME / SKIP.
+function unlockGotOnly(id){ const row = UNLOCKS[id]; return !row || !row.show && !unlockHoles(id).length || (!!row.got && row.got()); }
 function tipsOn(){ return !S || !S.settings || S.settings.tips !== false; }
 function unlockOffer(id){
   if (!S || !UNLOCKS[id] || !tipsOn()) return;
@@ -1169,8 +1180,13 @@ function mapMark(kind){
     if (!o) return false;
     const id = String(o.id || ''), name = String(o.name || '');
     if (kind === 'rook') return /rook/i.test(name) || /rook/i.test(id);
-    return o.panel === 'lantern' || /lantern/i.test(id) || /lantern/i.test(String(o.sprite || ''));
-  }) || null;
+    return false;
+  }) || (kind === 'lantern' ? lanternMark() : null);
+}
+// Where to rest: a bed in a Lantern House, else the Lantern House door or keeper. Never the exit mat (its id says "lantern" too).
+function lanternMark(){
+  const objs = CUR.objs.filter(o => o && present(o));
+  return objs.find(o => o.lines && o.lines.else === '@lantern_rest') || objs.find(o => o.kind === 'door' && (o.panel === 'lantern' || /lantern/i.test(String(o.to || '')))) || objs.find(o => o.panel === 'lantern') || null;
 }
 function unlockHoles(id){
   const row = UNLOCKS[id]; if (!row) return [];
@@ -1187,10 +1203,13 @@ function unlockOpen(id){
   const title = $('#unlockTitle'), body = $('#unlockBody'), card = $('#unlockCard');
   if (title) title.textContent = row.title;
   if (body) body.textContent = tutFill(row.body);
+  const got = unlockGotOnly(id), show = $('#unlockShow'), skip = $('#unlockSkip');
+  if (show) show.hidden = got;
+  if (skip) skip.textContent = got ? 'GOT IT' : 'SKIP';
   if (card) card.hidden = false;
   layer.hidden = false; layer.classList.add('unlock-on'); layer.dataset.unlock = id;
   tutPlace();
-  const btn = $('#unlockShow'); if (btn) btn.focus({ preventScroll: true });
+  const btn = got ? skip : show; if (btn) btn.focus({ preventScroll: true });
 }
 function unlockClose(){
   if (!unlock.on) return;
@@ -9717,7 +9736,7 @@ function bindInput(){
   let sceneKeyEat = false;
   window.addEventListener('keyup', e => { if (sceneKeyEat && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sceneKeyEat = false; } });
   window.addEventListener('keydown', e => {
-    if (tut.on && !(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && (e.key === 'Escape' || e.key === 'Backspace')) { e.preventDefault(); skipTutorial(); return; }
+    if (tut.on && !(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && (e.key === 'Escape' || e.key === 'Backspace')) { e.preventDefault(); skipTutorial(true); return; }
     if (tut.on && KEYS[e.key]) { e.preventDefault(); return; }
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }

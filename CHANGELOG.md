@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 23:12 ET: Merge main (tour skip, group-battle wait, tank window) into the room-zoom void fix (build 20261019-2312)
+
+- What changed and why: Merged `origin/main` at `4afcb69` (PR #107 tour SKIP TOUR and tip SHOW ME, PR #108 group-battle wait, PR #109 tank window and 2 workers) and kept both sides. The black void, the room canvas, and the pilaster slack stay. `index.html` and `version.json` take the new stamp 20261019-2312, later than 2202. Save `v` stays 2.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: merge commit on `cursor/room-zoom-void-audit-6434`, build 20261019-2312.
+- Tests run and result (widths, checks): Full suite after the merge: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1212 failed=0 flaky=0 skipped=18 time=955s. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): no new id. D236 stays overridden (black void). D258–D275 stay reserved for MAP_LAYERS. The next free id is D276.
+- Anything left unfinished: PR #104 (play together) is still open and also edits `game.js`. It was not on `main`.
+
 ## 2026-10-19 22:01 ET: Merge main (stair flights, battle no-reload) into the room-zoom void fix (build 20261019-2201)
 
 - What changed and why: Merged `origin/main` at `786c0ea` (PR #105 stair flights, build 20261019-2157, and PR #106 battle no-reload, build 20261019-2143) and kept both sides. The room canvas, the black void, and the pilaster slack stay. Stair art and the battle reload guard stay. `index.html` and `version.json` take the new stamp 20261019-2201, later than 2157. Save `v` stays 2.
@@ -20,6 +29,32 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): no new id. D236 stays the settled row. Vincent overrode it Oct 19, 2026, 9:13 PM ET: black void. D258–D275 stay reserved for MAP_LAYERS. The next free id is D276.
 - Anything left unfinished: PR #104 (play together) is still open and also edits `game.js`. It was not on `main`, so it is not in this branch.
 
+## 2026-10-19 22:31 ET: rx_f4 tank test samples the full window; suite runs 2 workers (test and config only, no build)
+
+- What changed and why: `tests/rx_f4_pilot.spec.js:208` (QA 9 / A7, tank frames) failed on main at all widths. The test compared only the first and last samples of a 700 ms window, but the tanks flip every 600 ms (`A.lab_tank`, 2 frames, `ms 600`). A window starting in the last 100 ms of a frame spans two flips and reads the same frame, and boot timing landed there almost every time. The game is fine. The watch now samples every animation frame for at least 1300 ms, more than two periods, and asserts exactly 1 distinct frame per tank cell under reduced motion, and exactly 2 per cell otherwise, flipping in step. `playwright.config.js` goes from `workers: 1` to `workers: 2` (`fullyParallel` stays false). The full suite takes about 890 s on 2 workers against about 1700 s on 1. No game code. Save `v` stays 2.
+- Files touched: `tests/rx_f4_pilot.spec.js`, `playwright.config.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: branch `test/rx-f4-window-2workers`. No build stamp: nothing deployed changes, and `python3 tools/bump_build.py --check` exits 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/rx_f4_pilot.spec.js` 5 of 5 PASS (passed=39 each, 320, 375, 390, 30–32 s). Full `npm run test:agent` (2 workers from the config): PP_TEST RESULT: PASS exit=0 passed=1209 failed=0 flaky=0 skipped=18 time=965s. Earlier 2-worker full runs on the group_battle branch: 891, 890 and 889 s, no group_battle flakes.
+- Decisions made (colour + reasoning): no new id. Green, test and config only.
+- Anything left unfinished: none.
+
+## 2026-10-19 22:09 ET: group_battle test waits on the real battle state (test only, no build)
+
+- What changed and why: `tests/group_battle.spec.js:134` ("clearing both foes wins…") failed about half the time under `--workers=2` (3 of 6 runs before the fix, 0 of 3 with 1 worker). It timed out in `playTurn` waiting for the action panel. After turn 1 the state was CHOOSE but `PixelPets.battle.panel` was already `fight`, because the last forced `#btMsg` tap of the previous turn landed on FIGHT once the panel swapped back under it. `playTurn` now accepts the move list already open and clicks FIGHT only when the panel is `acts`. The win loop waits for the real CHOOSE state with `waitForFunction` before `setHp('foe', 1)`, instead of skipping the HP drop when the state was not there yet. No fixed sleeps. No game code. `playwright.config.js` stays at `workers: 1`. Save `v` stays 2.
+- Files touched: `tests/group_battle.spec.js`, `CHANGELOG.md`.
+- Commit(s) + build id: branch `test/group-battle-wait`. No build stamp: test only, nothing deployed changes, and `python3 tools/bump_build.py --check` exit 0 on build 20261019-2157.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/group_battle.spec.js --workers=2` 10 of 10 PASS (21 tests each, 10–13 s), 1 worker 5 of 5 PASS (14–15 s), no flakes. Full `npm run test:agent -- --workers=2` on 71502f1 plus the fix: PASS passed=1187 failed=0 flaky=0 skipped=16 891 s; PASS passed=1187 failed=0 flaky=0 skipped=16 890 s; FAIL passed=1186 failed=1 flaky=0 skipped=16 889 s, the one failure `[320] rx_f4_pilot.spec.js:208` (tank frames), which also fails on main and is not from this change. One more run was thrown out because its local http.server on 8804 died mid-run (connection refused). After merging `origin/main` 786c0ea: group_battle with `--workers=2` 3 of 3 PASS, and `battle_no_reload.spec.js` plus `group_battle.spec.js` with 1 worker PASS passed=28 skipped=2.
+- Decisions made (colour + reasoning): no new id. Green, test only.
+- Anything left unfinished: `rx_f4_pilot.spec.js:208` is triaged separately (sampling-window bug in the test), not fixed here.
+
+## 2026-10-19 22:02 ET: Tour SKIP TOUR and tip SHOW ME fixes (build 20261019-2202)
+
+- What changed and why: Vincent's Oct 19 playtest. (1) After SHOW ME, a tap that missed PARTNER, or landed low on the partner-screen card, ended the whole tour. SKIP TOUR was an invisible full-width 336x44 strip (flex stretch, no border) and the only button on tap steps, so it also took focus. SKIP TOUR is now a small left-aligned target, focus goes to the ringed button, and a mid-tour skip needs a second tap within 3 s ("TAP AGAIN TO SKIP"). Escape still skips at once. (2) The Lanterns tip SHOW ME did nothing (no action, and the ring sat on the exit mat because its id says "lantern"). A healed party now sees GOT IT only. A hurt party's SHOW ME walks to a Lantern bed (rest prompt) or the Lantern House door, or opens MAP when no Lantern is on the map. (3) SHOW ME audit: rep, phone, quests and letter now open the compass, the phone and QUEST. moral and switch (nothing to ring) show GOT IT only. sides and growup unchanged. Save `v` stays 2. No new flags.
+- Files touched: `game.js`, `style.css`, `tests/tutorial.spec.js`, `tests/unlock.spec.js`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: branch `fix/tutorial-skip-showme`, first stamped 20261019-2143 (same id as PR #106, so restamped after merging main with #106 and #105), build 20261019-2202.
+- Tests run and result (widths, checks): see the PR. `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green, approved by Vincent. No new id.
+- Anything left unfinished: none.
 ## 2026-10-19 21:57 ET: Up flights open into three rows of PAL.k (design d106bca) (build 20261019-2157)
 
 - What changed and why: Supervisor review of PR #105 held the merge. The acceptance is solid black across rows 0–2 of every up flight, and the art had rows 0–1. Per design d106bca, `stair_home`, `lab_stair` and `step_up` now have PAL.k on rows 0–2 at the same x span (2–13; the narrowing corners stay clear). The light tread edge moves from row 2 to row 3, so the top tread face is row 4 and the riser stays on row 5. The glint art is unchanged on rows 3–4, just under the opening (D222 refinement). Down wells are unchanged. Save `v` stays 2.
