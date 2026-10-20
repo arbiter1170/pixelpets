@@ -636,7 +636,8 @@ function buildTiles(){
     LAB_TILES.lab_stripe_amber = band(LAB_TILES.lab_floor_records, 'y'.repeat(16), 'y' + 'h'.repeat(14) + 'y');
     const foam = ['wsssssshsssssssw', 'wscscschscscscsw', 'wsssssshsssssssw', 'wswswswhwswswsww', 'wsssssshsssssssw'];
     LAB_TILES.lab_wall_panel = LAB_TILES.lab_wall_face.map((r, y) => (y >= 1 && y <= 5) ? foam[y - 1] : r);
-    LAB_TILES.lab_stair = ['mmmmmmmmmmmmmmmm', 'wwwwwwwwwwwwwwww', 'llllllllllllllll', 'hwwwwwwwwwwwwwwh', 'mmmmmmmmmmmmmmmm', 'wwwwwwwwwwwwwwww', 'llllllllllllllll', 'hwwwwwwwwwwwwwwh', 'mmmmmmmmmmmmmmmm', 'wwwwwwwwwwwwwwww', 'llllllllllllllll', 'hwwwwwwwwwwwwwwh', 'dddddddddddddddd', 'wwwwwwwwwwwwwwww', 'llllllllllllllll', 'hhhhhhhhhhhhhhhh'];
+    // STAIR_MARKER: full-tile flight. The top two rows are PAL.k (D222 refinement) so the flight reads into the next room. Corners stay clear.
+    LAB_TILES.lab_stair = ['..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..', '..lwwwwwwwwwwl..', '..dhhhhhhhhhhd..', '..dhhhhhhhhhhd..', '..dmmmmmmmmmmd..', '.lwwwwwwwwwwwwl.', '.dhhhhhhhhhhhhd.', '.dhhhhhhhhhhhhd.', '.dmmmmmmmmmmmmd.', 'lwwwwwwwwwwwwwwl', 'dmmmmmmmmmmmmmmd', 'dmmmmmmmmmmmmmmd', 'dmmmmmmmmmmmmmmd', 'dmmmmmmmmmmmmmmd', 'dmmmmmmmmmmmmmmd'];
   }
   for (const [k, rows] of Object.entries(LAB_TILES)) T[k] = mkTile(g => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   // E4 decal layer: a decal tile is drawn over the floor (and its seeded variant) as only the pixels that differ from lab_floor_bay.
@@ -863,8 +864,11 @@ function buildTiles(){
   T.mat_ink = doormat('n', 'c');
   T.mat_cobble = doormat('m', 'o');
   T.mat_hall = doormat('d', 'h');
-  T.stair_home = mkTile(g => { px(g, PAL.y, 0, 0, 16, 16); [4, 9, 14].forEach(y => px(g, PAL.o, 0, y, 16, 1)); px(g, PAL.d, 2, 12, 12, 2); px(g, PAL.o, 3, 12, 10, 1); px(g, PAL.d, 4, 8, 8, 2); px(g, PAL.w, 5, 8, 6, 1); px(g, PAL.d, 6, 4, 4, 2); px(g, PAL.y, 7, 4, 2, 1); });
-  T.stair_loft = mkTile(g => { px(g, PAL.w, 0, 0, 16, 16); [4, 9, 14].forEach(y => px(g, PAL.h, 0, y, 16, 1)); px(g, PAL.d, 2, 12, 12, 2); px(g, PAL.y, 3, 12, 10, 1); px(g, PAL.d, 4, 8, 8, 2); px(g, PAL.w, 5, 8, 6, 1); px(g, PAL.d, 6, 4, 4, 2); px(g, PAL.h, 7, 4, 2, 1); });
+  T.mat_dusk = doormat('F', 'P');   // D230: observatory exit mat
+  function gridTile(rows){ return mkTile(g => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }))); }
+  // STAIR_MARKER flights. Up opens into PAL.k (D222 refinement, Lissett via Vincent): solid black at the top, narrowing corners stay clear so the floor shows. Down keeps its dark well.
+  T.stair_home = gridTile(['..kkkkkkkkkkkk..','..kkkkkkkkkkkk..','..GwwwwwwwwwwG..','..FyyyyyyyyyyF..','..FyyyyyyyyyyF..','..FBBBBBBBBBBF..','.GwwwwwwwwwwwwG.','.FAAAAAAAAAAAAF.','.FAAAAAAAAAAAAF.','.FBBBBBBBBBBBBF.','GwwwwwwwwwwwwwwG','FGGGGGGGGGGGGGGF','FGGGGGGGGGGGGGGF','FGGGGGGGGGGGGGGF','FGGGGGGGGGGGGGGF','FBBBBBBBBBBBBBBF']);
+  T.stair_loft = gridTile(['GwwwwwwwwwwwwwwG','FCCCCCCCCCCCCCCF','FCCCCCCCCCCCCCCF','FCCCCCCCCCCCCCCF','FFFFFFFFFFFFFFFF','.GwwwwwwwwwwwwG.','.FGGGGGGGGGGGGF.','.FGGGGGGGGGGGGF.','.FFFFFFFFFFFFFF.','..GwwwwwwwwwwG..','..FBBBBBBBBBBF..','..FBBBBBBBBBBF..','..FFFFFFFFFFFF..','..FFFFFFFFFFFF..','..FFFFFFFFFFFF..','..FFFFFFFFFFFF..']);
   T.wall_shadow = mkTile(g => { px(g, PAL.d, 0, 0, 16, 1); px(g, PAL.m, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.d, x, 2, 1, 1); });
   T.window_light = mkTile(g => { px(g, PAL.d, 0, 0, 16, 1); px(g, PAL.m, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.d, x, 2, 1, 1); px(g, PAL.y, 4, 6, 8, 5); px(g, PAL.w, 6, 7, 4, 3); });
   T.wall_shadow_warm = mkTile(g => { px(g, PAL.F, 0, 0, 16, 1); px(g, PAL.G, 0, 1, 16, 1); for (let x = 0; x < 16; x += 2) px(g, PAL.F, x, 2, 1, 1); });
@@ -1355,7 +1359,7 @@ const HOUSE_SKINS = {
   hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop', { wall: wallRow('swbcbwmmbswh') }),
   hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz', { wall: wallRow('rypwhbdmncsr') }),
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
-  obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_dusk' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: floorFixVar('floor_dusk'), wall: wallRow('FGdGFyFFynsF') },
+  obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_dusk', m:'mat_dusk' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: floorFixVar('floor_dusk'), wall: wallRow('FGdGFyFFynsF') },
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mist', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: floorFixVar('floor_mist'), wall: wallRow('mhnhmcndmcwb') },
   dream_party: { remap: { '#':'wall_fest', W:'wall_fest_face', W2:'wall_fest_win', '.':'floor_party', p:'floor_lane' }, decal: { v:'wall_shadow', u:'window_light', q:'streamer' }, walk: { v:1, u:1, q:1 }, variants: {}, wall: wallRow('oyryocddrcwr') },
   dream_drive: { remap: { '#':'wall_night', W:'wall_night_face', W2:'wall_night_win', '.':'floor_asphalt' }, decal: { v:'wall_shadow', u:'window_light', j:'lane_paint' }, walk: { v:1, u:1, j:1 }, variants: houseVar('floor_asphalt', 'floor_asphalt_b', 'floor_asphalt_c'), wall: wallRow('mhdndmddmywd') },
@@ -2094,6 +2098,13 @@ const EXTERIOR_ART = {
     signpost: ["................","................",".......do.......","..yyyyyyyyyy....",".oooooooooooo...","..oooooooooo....",".......do.......",".....yyyyyyyyyy.","....oooooooooooo",".....oooooooooo.",".......do.......",".......do.......",".......do.......",".......do.......",".....dddddd.....",".....dddddd....."],
     hay_bale: ["................","................","................","................","................","................","................","..wwwwwwwwwwww..","..yyyoyyyyoyyy..","..yyooyyoyoyyo..","..yyyoyyyyoyyy..","..yyyoyyyyoyyy..","..yyyoyyyyoyyy..","..yyooyoyyoyyy..","..oooooooooooo..","................"],
     flower_clump: ["................","................","................","................","................","................","................",".......y........","...y...ww..w....","...rr......yy...","....gylllllg....","..gglpplllylgg..","..ggllllllrrgg..","..gggllllllggg..","....gggggggg....","................"],
+    // STAIR_MARKER decals. step_up's top two rows are PAL.k (D222 refinement). The glint sits on the tread below that opening.
+    step_up: ["..kkkkkkkkkkkk..","..kkkkkkkkkkkk..","..hwwwwwwwwwwh..","..dhhhhhhhhhhd..","..dhhhhhhhhhhd..","..dddddddddddd..",".hwwwwwwwwwwwwh.",".dhhhhhhhhhhhhd.",".dhhhhhhhhhhhhd.",".dddddddddddddd.","hwwwwwwwwwwwwwwh","dmmmmmmmmmmmmmmd","dmmmmmmmmmmmmmmd","dmmmmmmmmmmmmmmd","dmmmmmmmmmmmmmmd","dddddddddddddddd"],
+    step_down: ["hwwwwwwwwwwwwwwh","dhhhhhhhhhhhhhhd","dhhhhhhhhhhhhhhd","dhhhhhhhhhhhhhhd","dkkkkkkkkkkkkkkd",".hwwwwwwwwwwwwh.",".dmmmmmmmmmmmmd.",".dmmmmmmmmmmmmd.",".dkkkkkkkkkkkkd.","..hwwwwwwwwwwh..","..dddddddddddd..","..dddddddddddd..","..dkkkkkkkkkkd..","..dkkkkkkkkkkd..","..dkkkkkkkkkkd..","..dkkkkkkkkkkd.."],
+    door_step: ["..wwwwwwwwwwww..",".mhhhhhhhhhhhhm.",".mhhhhhhhhhhhhm.",".mmmmmmmmmmmmmm.","...d.d.d.d.d.d..","................","................","................","................","................","................","................","................","................","................","................"],
+    door_step_warm: ["..wwwwwwwwwwww..",".GCCCCCCCCCCCCG.",".GCCCCCCCCCCCCG.",".GGGGGGGGGGGGGG.","...F.F.F.F.F.F..","................","................","................","................","................","................","................","................","................","................","................"],
+    wayin_glint_up: ["................","................","................",".....wwwwww.....",".....wwwwww.....","................","................","................","................","................","................","................","................","................","................","................"],
+    wayin_glint_down: ["................",".....wwwwww.....",".....wwwwww.....","................","................","................","................","................","................","................","................","................","................","................","................","................"],
   },
   big: {
     lm_lantern_post: ["............dddddddd............","..........dddddddddddd..........","..........dddddddddddd..........","...........dyyyooyyyd...........","...........dywwooyyyd...........","...........dywwooyyyd...........","...........dyyyooyyyd...........","...........dyyyooyyyd...........",".........dddddddddddddd.........","...........dddddddddd...........",".............dddmddd............","...............dd...............","...............dm...............","...............dm...............","...............dm...............","...............dm...............","..............dddd..............","...............dm...............","...............dm...............","...............dm...............","..............dddd..............","...............dm...............","...............dm...............","...............dm...............","...............dm...............",".............mmmmmm.............","............mmmmmmmm............","..........ggddddddddgg..........","........rllyddddddddwllr........",".......gyllolyllllolyllyg.......","........gggllllllllllggg........","..........gggggggggggg.........."],
@@ -2209,6 +2220,15 @@ function addExteriorArt(T, A){
   const frames = (ids, ms) => { const a = ids.map(id => A[id]); a.ms = ms; return a; };
   if (A.leak_drip_0) A.leak_drip = frames(['leak_drip_0', 'leak_drip_1', 'leak_drip_2'], 450);
   if (A.leak_puddle_0) A.leak_puddle = frames(['leak_puddle_0', 'leak_puddle_1'], 900);
+  // D223: blank x4, glint x2, 500 ms. Frame 0 is blank, so reduced motion (artFrame) stays dark.
+  if (A.wayin_glint_up && A.wayin_glint_down) {
+    A.wayin_glint_up_on = A.wayin_glint_up;
+    A.wayin_glint_down_on = A.wayin_glint_down;
+    A.wayin_blank = paint(Array.from({ length: 16 }, () => '................'));
+    const blank4 = ['wayin_blank', 'wayin_blank', 'wayin_blank', 'wayin_blank'];
+    A.wayin_glint_up = frames(blank4.concat(['wayin_glint_up_on', 'wayin_glint_up_on']), 500);
+    A.wayin_glint_down = frames(blank4.concat(['wayin_glint_down_on', 'wayin_glint_down_on']), 500);
+  }
   // Blink is the sit grid with the two dark eye pixels closed. Design did not ship a blink grid.
   if (LIZZY_ART.art.buddy_sit) A.buddy_blink = paint(LIZZY_ART.art.buddy_sit.map(r => r.replace(/k/g, 'y')));
   for (const k of ['puddle', 'leaf_litter']) if (!A[k]) A[k] = T[k];   // `kind: "decal"` objects draw from WART

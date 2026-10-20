@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 19:50 ET: Stair flights, door steps, and a black up-opening (build 20261019-1950)
+
+- What changed and why: Stairs read as flights. `stair_home`, `stair_loft`, and `lab_stair` are full tiles. Other floor changes use `step_up` or `step_down`. A soft glint sits on the far tread (blank four frames, lit two, 500 ms) and stays on the blank frame after that floor is in optional `floorSeen`. Up flights open into PAL.k so they read into the next room. Down flights keep the dark well. Every enterable door gets a stone step on the doorstep. The Flats step stays at (15, 18), off the sign and the lantern post, including the polish cells (14, 18) and (18, 19). Bren's beat (1, 7)–(1, 9) has no marker. The observatory exit is `mat_dusk`. Save `v` stays 2. Online saves Phase 1 from main stays on.
+- Files touched: `sprites.js`, `game.js`, `save.js`, `data/detail_wayin.json`, `data/mapdata.js`, `tests/stair_marker.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261019-1950.
+- Tests run and result (widths, checks): `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1154 failed=0 flaky=0 skipped=16 time=1645s. Widths 320, 375, and 390. An earlier full run failed `maps_b4` (the glint frames were sized as a list, and door steps were counted as puddles) and `obs_fix` (the dusk mat was missing from the skin remap). Those checks now keep the puddle rules and expect `mat_dusk`. Rerun: `npm run test:agent -- tests/maps_b4.spec.js tests/obs_fix.spec.js tests/stair_marker.spec.js` PP_TEST RESULT: PASS exit=0 passed=48 failed=0 flaky=0 skipped=0 time=67s. `python3 tools/bump_build.py --check` exit 0. Console errors: none. A solo tank-frame check also passed: PP_TEST RESULT: PASS exit=0 passed=1 failed=0 flaky=0 skipped=0 time=3s.
+- Decisions made (colour + reasoning): D220–D230 settled by Vincent, Oct 19, 2026, 7:14 PM ET, on the defaults. A refinement of D222 (Lissett, CCO, via Vincent, 7:21 PM ET, no new id): the top of every up flight is solid PAL.k. No new id. The next free id is D231. D195–D219 stay with in-flight builds.
+- Anything left unfinished: Frostmere is not built. Glimmer Act 2 is still TBD. Online saves Phase 2 is still next. The Hearthmoor polish branch had not merged when this was stamped.
+
 ## 2026-10-19 17:59 ET: Merge main into online saves Phase 1 (build 20261019-1759)
 
 - What changed and why: Merged `origin/main` (PR #98, Arbiter Test music and the final tour copy, build 20261019-1722) into the Phase 1 branch and kept both sides. The stamp is 20261019-1759, later than 20261019-1722. `data/glimmer_path.json` arrived with main's `data/mapdata.js`; regenerating mapdata made no further change. Save `v` stays 2. The next free id stays D195.
