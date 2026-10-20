@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 19:54 ET: Modern taps push the toy and pop balloons (build 20261019-1954)
+
+- What changed and why: A Modern tap on the popping toy only walked up beside it, and Arcade TALK stayed off. A roll prop now counts as talkable, so the tap walks up and pushes, and TALK pushes too. The dream_toy marker follows the toy. Birthday balloons are scene-only props, so the same tap skipped them. A Modern tap now selects any object with an interaction (scene, shop, booth, panel, and the kinds that already talked). The balloon tap walks up and pops it. The Heights supply crate is the only shop with no lines, and a tap opens it. Arcade TALK and d-pad bumps are unchanged for those scene-only and shop-only props. Progress stays in the existing story flags. Save `v` stays 2. Merged `origin/main` (PR #99, online saves Phase 1) after that stamp.
+- Files touched: `game.js`, `quests.js`, `tests/dream_toy.spec.js`, `tests/tap_interact.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261019-1954, after merging PR #99. The earlier stamp on this branch was 20261019-1925.
+- Tests run and result (widths, checks): after merging PR #99, `npm run test:agent` PP_TEST RESULT: FAIL exit=1 passed=1159 failed=1 flaky=0 skipped=16 time=1638s. Widths 320, 375, and 390. The one failure was `[320] tests/group_battle.spec.js:134` (a 10s wait for the win). The same check passed at 375 and 390 in that run. Rerun: `npm run test:agent -- tests/group_battle.spec.js --project=320` PP_TEST RESULT: PASS exit=0 passed=7 failed=0 flaky=0 skipped=0 time=5s. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): green. The toy fix was settled by the Supervisor. Vincent, Oct 19, 2026, 7:17 PM ET, added the balloon and the interactable audit. No new decision id. `OPEN_DECISIONS.md` on this branch still names D195 as the next free id.
+- Anything left unfinished: a few older tiles still have no free stand (listed in the PR). Arcade still does not pop a balloon by bumping it or with TALK. That behaviour was already the case.
+
 ## 2026-10-19 17:59 ET: Merge main into online saves Phase 1 (build 20261019-1759)
 
 - What changed and why: Merged `origin/main` (PR #98, Arbiter Test music and the final tour copy, build 20261019-1722) into the Phase 1 branch and kept both sides. The stamp is 20261019-1759, later than 20261019-1722. `data/glimmer_path.json` arrived with main's `data/mapdata.js`; regenerating mapdata made no further change. Save `v` stays 2. The next free id stays D195.
