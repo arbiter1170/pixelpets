@@ -316,6 +316,7 @@ const PPSave = (() => {
     fill(s.settings, 'controls', x => x === 'arcade' || x === 'modern', 'arcade');      // Q26: missing or bad = arcade, so an old save keeps the pad
     fill(s.settings, 'joystick', x => typeof x === 'boolean', false);                 // Q26 / D63: modern joystick, default off
     fill(s.settings, 'tips', x => typeof x === 'boolean', true);                      // D180: unlock tips, default on, additive
+    fill(s.settings, 'showOthers', x => x === 'on' || x === 'friends' || x === 'solo', 'on');   // PLAY_TOGETHER_P1, additive, v stays 2
     fill(s, 'mapSeen', isObj, {});
     // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
     if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;
@@ -441,7 +442,7 @@ const PPSave = (() => {
   // Start over (Friends tab): erase the game (v2, v1 and its .bak so migration can't bring old pets back, plus the corrupt-save
   // record) and stop this page from saving; the caller reloads. Device prefs (mute, geo, env, fast, debug) are kept.
   const GAME_KEYS = [V2_KEY, V1_KEY, BAK_KEY, CORRUPT_KEY];
-  const CLOUD_KEYS = ['pixelpets.cloud', 'pixelpets.cloud.backup'];   // ONLINE_SAVES: device sync bookkeeping + the "game not kept" backup
+  const CLOUD_KEYS = ['pixelpets.cloud', 'pixelpets.cloud.backup', 'pixelpets.net'];   // ONLINE_SAVES bookkeeping, plus Play together device key
   function startOver(){
     detached = true;
     GAME_KEYS.concat(CLOUD_KEYS).forEach(k => { try { localStorage.removeItem(k); } catch(e) {} });
