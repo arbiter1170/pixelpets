@@ -27,12 +27,40 @@ const PPNet = (() => {
     hiddenPollMs: 30000, socialPollMs: 60000,
   };
   // Client half of the co-op switch (COOP_R2 §2.2). Ships off unless ?coop=1 or the local emulator.
-  const COOP_CFG = { on: (() => {
-    let asked = false;
-    try { asked = new URLSearchParams(location.search).get('coop') === '1'; } catch (e) {}
-    return asked || !!(typeof PPCloud !== 'undefined' && PPCloud.emu);
-  })() };
+  // COOP_CFG.on stays that computed flag. B1 does not set it true.
+  const COOP_CFG = {
+    cv: 1,
+    on: (() => {
+      let asked = false;
+      try { asked = new URLSearchParams(location.search).get('coop') === '1'; } catch (e) {}
+      return asked || !!(typeof PPCloud !== 'undefined' && PPCloud.emu);
+    })(),
+    graceMs: 60000, joinTiles: 6, joinBubbleMs: 8000, inviteMs: 30000, replaySlackMs: 3000,
+    areas: ['hearthmoor', 'route1'],
+  };
+  Object.freeze(COOP_CFG.areas);
   Object.freeze(COOP_CFG);
+  // Yellows D326–D333. A vote result is a one-line change here. D332 is rung 3 and is not in this object.
+  const COOP_VOTE = {
+    label: 'GROUP', // [PENDING VOTE D326] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
+    maxMembers: 2, // [PENDING VOTE D327] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
+    invite: { mutual: true, sameCode: true, notSolo: true, notNowMute: 3, blockEnds: true }, // [PENDING VOTE D328] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
+    wild: '2v1', holder: '2v1-in-order', tag: false, // [PENDING VOTE D329] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
+    turnMs: 30000, autoPick: 'last-then-first', // [PENDING VOTE D330] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
+    reward: { guestXp: true, guestCosts: true, befriend: 'host', cheerWidth: 0.05, acorns: 'host', trainerFlag: 'host' }, // [PENDING VOTE D331] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
+    rejoin: true, idleMs: 300000, // [PENDING VOTE D333] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
+  };
+  Object.freeze(COOP_VOTE.invite);
+  Object.freeze(COOP_VOTE.reward);
+  Object.freeze(COOP_VOTE);
+  const COOP_TEXT = {
+    walk: 'WALK TOGETHER', join: 'JOIN', notNow: 'NOT NOW', leave: 'LEAVE GROUP', rejoin: 'REJOIN',
+    ask: holder => 'Walk with ' + holder + '?',
+    together: "You're walking together!",
+    joined: holder => holder + ' joined the group.',
+    home: holder => holder + ' headed home.',
+    away: holder => holder + ' is away.',
+  };
   const NET_TEXT = {
     card_title: 'HOLDER', friend_tag: 'FRIEND', btn_wave: 'WAVE', btn_mute: 'MUTE', btn_unmute: 'UNMUTE',
     btn_block: 'BLOCK', btn_close: 'CLOSE', toast_blocked: 'Blocked. UNDO', toast_muted: 'Muted.',
@@ -79,7 +107,13 @@ const PPNet = (() => {
   let retryTimer = 0, offTimer = 0, repairAt = 0, pumping = false, pumpAgain = false;
   let cfgUnsub = null, coopFlag = false, pollAt = 0, socialAt = 0;
   let mineList = {};
-  const coop = { cfg: COOP_CFG, unsub: null };
+  const coop = { cfg: COOP_CFG, vote: COOP_VOTE, unsub: null };
+  const party = {
+    code: null, pid: null, host: null, at: 0, role: null, data: null, ref: null,
+    unsub: null, inboxUnsub: null, inboxPath: '', offsetUnsub: null, offset: 0, offsetSet: false,
+    ask: null, askTimer: 0, notNow: {}, muted: {}, known: {}, wasAway: {}, knownNote: {},
+    leaving: false, solo: false, dropping: {}, saw: false, recentDrop: 0,
+  };
   let page = 0, wheelOn = false, cardOn = false, codeOn = false, blockOn = false;
   let undoTimer = 0, undoUid = null, undoFriend = false, hiTimer = 0, hiPending = false;
   let writeQ = Promise.resolve();
@@ -98,7 +132,11 @@ const PPNet = (() => {
     d.blocks = d.blocks && typeof d.blocks === 'object' ? d.blocks : {};
     d.lastRoom = d.lastRoom && typeof d.lastRoom === 'object' ? d.lastRoom : {};
     d.later = Object.assign({ contacts: null, mail: null, phoneBadge: null }, d.later || {});
+    d.party = partyOk(d.party) ? { code: d.party.code, pid: d.party.pid, host: d.party.host, at: d.party.at } : null;
     return d;
+  }
+  function partyOk(p){
+    return !!(p && typeof p === 'object' && ALPHA.test(p.code) && /^p[A-HJ-NP-Z2-9]{6}$/.test(p.pid) && /^[A-Za-z0-9]{1,128}$/.test(String(p.host || '')) && typeof p.at === 'number');
   }
   function writeDev(){ try { localStorage.setItem(NET_KEY, JSON.stringify(dev)); } catch (e) {} }
   function setStatus(s){ dev.status = s; writeDev(); paintStatus(); }
@@ -170,9 +208,18 @@ const PPNet = (() => {
     wireFriends();
     const note = document.querySelector('#frNote');
     if (note) note.textContent = NET_TEXT.fr_note;
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) onForeground(); pump(); });
-    window.addEventListener('pageshow', () => { if (!document.hidden) onForeground(); pump(); });
-    window.addEventListener('pagehide', () => { if (placed.ref && rtdb) { try { rtdb.remove(placed.ref); } catch (e) {} } });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) markAwayNow();
+      else { markBack(); onForeground(); }
+      pump();
+    });
+    window.addEventListener('pageshow', () => { if (!document.hidden) { markBack(); onForeground(); } pump(); });
+    window.addEventListener('pagehide', () => {
+      markAwayNow();
+      if (placed.ref && rtdb) { try { rtdb.remove(placed.ref); } catch (e) {} }
+    });
+    wireAsk();
+    // Read a saved party. B1 does not rejoin; Build 3 owns REJOIN.
     PPCloud.onReady(user => { me = user && user.uid; ready = !!me; pump(); });
     setInterval(tick, 100);
     paintChrome();
@@ -187,10 +234,15 @@ const PPNet = (() => {
     link = 'up';
     armCfg();
     armCoop();
+    armOffset();
+    if (inParty()) { watchParty(); syncInbox(); }
   }
   function offline(){
     disarmCfg();
     disarmCoop();
+    disarmInbox();
+    unwatchParty();
+    disarmOffset();
     if (db && rtdb) { try { rtdb.goOffline(db); } catch (e) {} }
     link = 'down';
   }
@@ -264,8 +316,17 @@ const PPNet = (() => {
   }
   function armCoop(){
     if (coop.unsub || !db) return;
+    // seen stays on this subscription. disarmCoop (tab foreground) must not look like the kill switch.
+    let seen = false;
     coop.unsub = rtdb.onValue(ref('config/coop/on'), snap => {
-      try { coopFlag = snap.val() === true; } catch (e) { coopFlag = false; }
+      try {
+        const next = snap.val() === true;
+        if (seen && coopFlag && !next && (inParty() || party.ask)) onSwitchOff();
+        coopFlag = next;
+        seen = true;
+        if (next) flushHeld();
+        renderStrip();
+      } catch (e) { coopFlag = false; }
     }, () => { coopFlag = false; });
   }
   function disarmCoop(){
@@ -415,6 +476,7 @@ const PPNet = (() => {
     unsubs.push(rtdb.onChildChanged(parent, snap => upsert(snap.key, snap.val())));
     unsubs.push(rtdb.onChildRemoved(parent, snap => { others.delete(snap.key); }));
     paintChrome();
+    syncInbox();
     // "Joined" shows once the holder is placed; paintChrome() hides it while not in a room.
     if (hiPending) { hiPending = false; showHi(); }
   }
@@ -530,8 +592,16 @@ const PPNet = (() => {
           }
         } catch (e) { await fail(); }
       } else if (st === 'hidden' || st === 'interior') {
-        if (placed.ref) await dropNode();
-        if (!offTimer) armOff(st === 'hidden' ? cfg.hiddenOfflineMs : cfg.interiorOfflineMs);
+        const shared = !!(H.coopBattle && H.coopBattle());
+        if (st === 'hidden' && inParty()) markAwayNow();
+        if (st === 'hidden' && inParty() && shared) {
+          if (!offTimer) armOff(COOP_CFG.graceMs);
+        } else {
+          if (placed.ref) await dropNode();
+          if (st === 'interior' && inParty()) clearOff();
+          else if (!offTimer) armOff(st === 'hidden' ? cfg.hiddenOfflineMs : cfg.interiorOfflineMs);
+        }
+        if (inParty()) syncInbox();
         setStatus('solo');
       } else {
         if (placed.ref) await dropNode();
@@ -600,7 +670,7 @@ const PPNet = (() => {
     const t = Date.now();
     if (t - busyTick > 400) { busyTick = t; applyBusy(); }
     // Position writes stay on this tick. config and the co-op switch are listeners. Hidden and friends poll.
-    if (t - beatTick > 1000) { beatTick = t; heartbeat(); pollHidden(); pollSocial(); if (t - repairAt > 1000) { repairAt = t; repair(); } }
+    if (t - beatTick > 1000) { beatTick = t; heartbeat(); pollHidden(); pollSocial(); graceCheck(); renderStrip(); if (t - repairAt > 1000) { repairAt = t; repair(); } }
     flushPos();
     const sig = [dev.code || '', mode(), H.mapId(), H.interior() ? 1 : 0, document.hidden ? 1 : 0, H.busy() ? 1 : 0].join('|');
     if (sig !== tick.sig) {
@@ -785,7 +855,7 @@ const PPNet = (() => {
     return false;
   }
 
-  function overlayOpen(){ return wheelOn || cardOn || codeOn || blockOn; }
+  function overlayOpen(){ return wheelOn || cardOn || codeOn || blockOn || askOpen(); }
 
   function buildSay(){
     const wrap = document.querySelector('#mapWrap');
@@ -912,10 +982,22 @@ const PPNet = (() => {
     if (self) {
       body.append(el('div', 'net-code-lab', NET_TEXT.fr_code));
       body.append(el('div', 'net-code', H.friendCode()));
+      if (inParty() && COOP_CFG.on) {
+        const acts = el('div', 'net-acts');
+        const leave = el('button', 'btn net-act', COOP_TEXT.leave); leave.type = 'button';
+        leave.addEventListener('click', () => { closeCard(); leaveGroup(); });
+        acts.append(leave); body.append(acts);
+      }
     } else {
       const acts = el('div', 'net-acts');
       const wave = el('button', 'btn net-act', NET_TEXT.btn_wave); wave.type = 'button';
       wave.addEventListener('click', () => send('e_wave'));
+      acts.append(wave);
+      if (canInvite(uid)) {
+        const walk = el('button', 'btn net-act net-walk', COOP_TEXT.walk); walk.type = 'button';
+        walk.addEventListener('click', () => invite(uid));
+        acts.append(walk);
+      }
       const mute = el('button', 'btn net-act', dev.mutes[uid] ? NET_TEXT.btn_unmute : NET_TEXT.btn_mute); mute.type = 'button';
       mute.addEventListener('click', () => {
         if (dev.mutes[uid]) delete dev.mutes[uid]; else { dev.mutes[uid] = Date.now(); H.toast(NET_TEXT.toast_muted); }
@@ -923,7 +1005,7 @@ const PPNet = (() => {
       });
       const block = el('button', 'btn net-act net-block', NET_TEXT.btn_block); block.type = 'button';
       block.addEventListener('click', () => doBlock(uid));
-      acts.append(wave, mute, block); body.append(acts);
+      acts.append(mute, block); body.append(acts);
       body.append(el('p', 'net-foot', NET_TEXT.card_footer));
     }
     const close = el('button', 'btn btn-play net-close', NET_TEXT.btn_close); close.type = 'button';
@@ -933,6 +1015,7 @@ const PPNet = (() => {
 
   async function doBlock(uid){
     if (!db) return;
+    if (COOP_VOTE.invite.blockEnds && inParty()) { try { await leaveGroup(); } catch (e) {} }
     undoFriend = !!mutual[uid]; undoUid = uid;
     try {
       await connect();
@@ -1204,7 +1287,7 @@ const PPNet = (() => {
       });
     });
     return {
-      others: list, room: placed.shard, area: placed.area, stats: { writes, reads }, nameFor, status: dev.status, uid: me,
+      others: list, room: placed.shard, area: placed.area, reads, stats: { writes, reads }, nameFor, status: dev.status, uid: me,
       connected: link === 'up', nextRetryMs, retryMs: NET_CFG.retryMs.slice(), here: hereCount(),
       cam: H.cam(), pos: H.pos(), code: dev.code, advancePolls,
       rawWrite: async id => {
@@ -1218,6 +1301,380 @@ const PPNet = (() => {
       },
     };
   }
+
+  /* --- co-op (COOP_R2 Build 1) --- */
+  const PID_SAFE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  function inParty(){ return !!(party.code && party.pid && party.host); }
+  function newPid(){
+    let s = 'p';
+    for (let i = 0; i < 6; i++) s += PID_SAFE[Math.floor(Math.random() * PID_SAFE.length)];
+    return s;
+  }
+  function clampName(s){ return Array.from(String(s || '')).slice(0, 18).join(''); }
+  function holderName(uid){
+    if (!uid) return '';
+    if (uid === me && H) return H.playerName();
+    if (mutual[uid] && names[uid] && names[uid].name) return names[uid].name;
+    const o = others.get(uid);
+    if (o && H) return displayName(uid, o.joined);
+    return nameFor(uid);
+  }
+  function memberCount(){
+    const members = (party.data && party.data.members) || {};
+    return Object.keys(members).length;
+  }
+  function groupFull(){ return inParty() && memberCount() >= COOP_VOTE.maxMembers; }
+  function canInvite(uid){
+    if (!coopOn() || !H || !uid || uid === me) return false;
+    if (COOP_VOTE.invite.notSolo && mode() === 'solo') return false;
+    if (COOP_VOTE.invite.mutual && !mutual[uid]) return false;
+    if (COOP_VOTE.invite.sameCode && !inRoom()) return false;
+    if (blocks[uid] || hidden[uid]) return false;
+    if (party.muted[uid]) return false;
+    if (groupFull()) return false;
+    if (inParty() && party.host !== me) return false;
+    return true;
+  }
+  function petPayload(){
+    let pet = null;
+    try { pet = H && H.coopPet && H.coopPet(); } catch (e) { pet = null; }
+    if (!pet || typeof pet.form !== 'string') pet = { form: 'ember/0', level: 1, hp: 1, mv: 'wobble', mood: 0, chip: 0 };
+    return {
+      form: pet.form, level: pet.level | 0, hp: pet.hp | 0, mv: pet.mv || 'wobble',
+      mood: pet.mood | 0, chip: pet.chip | 0,
+    };
+  }
+  function memberBody(){
+    return { joined: TS(), seen: TS(), away: 0, ready: 1, pet: petPayload() };
+  }
+  function partyPath(){ return 'parties/' + party.code + '/' + party.pid; }
+  function rememberParty(){
+    dev.party = { code: party.code, pid: party.pid, host: party.host, at: party.at || Date.now() };
+    writeDev();
+  }
+  function unwatchParty(){
+    if (party.unsub) { try { party.unsub(); } catch (e) {} party.unsub = null; }
+  }
+  function clearPartyLocal(keepSolo){
+    unwatchParty();
+    party.code = null; party.pid = null; party.host = null; party.at = 0; party.role = null;
+    party.data = null; party.ref = null; party.known = {}; party.wasAway = {}; party.dropping = {}; party.leaving = false;
+    party.solo = !!keepSolo; party.saw = false; party.recentDrop = 0;
+    if (dev.party) { dev.party = null; writeDev(); }
+  }
+  function armMemberDisc(node){
+    if (!node || !rtdb) return;
+    try { rtdb.onDisconnect(node).update({ away: 1, awayAt: TS() }); } catch (e) {}
+  }
+  function watchParty(){
+    if (!db || !rtdb || !inParty()) return;
+    if (party.unsub) return;
+    party.unsub = rtdb.onValue(ref(partyPath()), snap => { onParty(snap); }, () => {
+      // A deleted party is no longer readable, so the listener errors instead of delivering null.
+      noteRemoteEnd();
+    });
+  }
+  function noteRemoteEnd(){
+    if (!inParty()) return;
+    const hostLeft = !party.leaving && party.host && party.host !== me;
+    if (hostLeft && H) {
+      if (coopFlag) H.toast(COOP_TEXT.home(clampName(holderName(party.host))));
+      else { party.solo = true; H.toast(NET_TEXT.solo_status); }
+    }
+    clearPartyLocal(party.solo || (hostLeft && !coopFlag));
+    // The host delete can land before this phone sees the switch go false. Remember it briefly.
+    if (hostLeft && coopFlag) party.recentDrop = Date.now();
+    renderStrip();
+  }
+  function onParty(snap){
+    const val = snap.val();
+    if (!val || !val.members || !val.members[me]) {
+      if (!party.saw && !party.leaving) return;
+      noteRemoteEnd();
+      return;
+    }
+    const prev = party.data;
+    party.saw = true;
+    party.data = val;
+    if (val.host) party.host = val.host;
+    noteJoins(prev, val);
+    Object.keys(val.members || {}).forEach(uid => {
+      const m = val.members[uid];
+      if (!m || uid === me) return;
+      if (m.away === 1 && !party.wasAway[uid]) { party.wasAway[uid] = true; if (H) H.toast(COOP_TEXT.away(clampName(holderName(uid)))); }
+      else if (m.away !== 1) delete party.wasAway[uid];
+    });
+    graceCheck();
+    renderStrip();
+  }
+  function noteJoins(prev, val){
+    const members = (val && val.members) || {};
+    const first = !prev;
+    Object.keys(members).forEach(uid => {
+      if (uid === me) { party.known[uid] = true; return; }
+      if (!party.known[uid] && !first && party.role === 'host') H.toast(COOP_TEXT.joined(clampName(holderName(uid))));
+      party.known[uid] = true;
+    });
+    Object.keys(party.known).forEach(uid => {
+      if (members[uid] || uid === me) return;
+      if (!party.leaving && !party.dropping[uid]) H.toast(COOP_TEXT.home(clampName(holderName(uid))));
+      delete party.known[uid];
+    });
+  }
+  function serverNow(){ return Date.now() + (party.offset || 0); }
+  function awayLeft(m){
+    if (!m || m.away !== 1 || typeof m.awayAt !== 'number') return 0;
+    return Math.max(0, Math.ceil((COOP_CFG.graceMs - (serverNow() - m.awayAt)) / 1000));
+  }
+  function graceCheck(){
+    if (!inParty() || !party.data || !coopOn() || !rtdb || party.leaving) return;
+    const members = party.data.members || {};
+    const now = serverNow();
+    Object.keys(members).forEach(uid => {
+      const m = members[uid];
+      if (!m || m.away !== 1 || typeof m.awayAt !== 'number') return;
+      if (now - m.awayAt <= COOP_CFG.graceMs) return;
+      if (uid === me) return;
+      if (party.role === 'host' || party.host === me) {
+        if (party.dropping[uid]) return;
+        party.dropping[uid] = true;
+        const patch = {};
+        patch['members/' + uid] = null;
+        if (party.data.guest === uid) patch.guest = null;
+        rtdb.update(ref(partyPath()), patch).catch(() => { delete party.dropping[uid]; });
+      } else if (uid === party.host) {
+        H.toast(COOP_TEXT.home(clampName(holderName(uid))));
+        clearPartyLocal();
+        renderStrip();
+      }
+    });
+  }
+  function markAwayNow(){
+    if (!inParty() || !party.ref || !rtdb) return;
+    try { rtdb.update(party.ref, { away: 1, awayAt: TS() }); } catch (e) {}
+  }
+  function markBack(){
+    if (!inParty() || !party.ref || !rtdb || document.hidden) return;
+    try { rtdb.update(party.ref, { away: 0, seen: TS(), awayAt: null }); } catch (e) {}
+  }
+  function armOffset(){
+    if (party.offsetUnsub || !db || !rtdb) return;
+    party.offsetUnsub = rtdb.onValue(ref('.info/serverTimeOffset'), snap => {
+      const v = snap.val();
+      if (typeof v !== 'number' || party.offsetSet) return;
+      party.offset = v;
+      party.offsetSet = true;
+    }, () => {});
+  }
+  function disarmOffset(){
+    if (party.offsetUnsub) { try { party.offsetUnsub(); } catch (e) {} party.offsetUnsub = null; }
+  }
+  function disarmInbox(){
+    if (party.inboxUnsub) { try { party.inboxUnsub(); } catch (e) {} party.inboxUnsub = null; }
+    party.inboxPath = '';
+  }
+  function syncInbox(){
+    if (!db || !rtdb || !me) return;
+    const code = (inParty() && party.code) || dev.code;
+    if ((!inRoom() && !inParty()) || !code) { disarmInbox(); return; }
+    const path = 'parties/' + code + '/inbox/' + me;
+    if (party.inboxUnsub && party.inboxPath === path) return;
+    disarmInbox();
+    party.inboxPath = path;
+    party.inboxUnsub = rtdb.onChildAdded(ref(path), snap => onInbox(snap.key, snap.val()), () => {});
+  }
+  function onInbox(from, note){
+    if (!from || !note || typeof note.pid !== 'string') return;
+    // A note that arrives before the switch snapshot must stay pending. Marking it seen would drop the invite.
+    if (!coopOn()) { party.held = party.held || []; party.held.push({ from, note }); return; }
+    const stamp = note.at == null ? '' : String(note.at);
+    const key = from + ':' + note.pid + ':' + stamp;
+    if (party.knownNote && party.knownNote[key]) return;
+    if (!party.knownNote) party.knownNote = {};
+    party.knownNote[key] = true;
+    const code = (inParty() && party.code) || dev.code;
+    const drop = () => { try { rtdb.remove(ref('parties/' + code + '/inbox/' + me + '/' + from)); } catch (e) {} };
+    if (party.muted[from]) { drop(); return; }
+    if (inParty() || party.ask) { if (inParty()) drop(); return; }
+    openAsk(from, note);
+  }
+  function flushHeld(){
+    const held = party.held || [];
+    if (!held.length || !coopOn()) return;
+    party.held = [];
+    held.forEach(n => onInbox(n.from, n.note));
+  }
+  function askOpen(){ const ov = document.querySelector('#coopAsk'); return !!(ov && !ov.hidden); }
+  function openAsk(from, note){
+    party.ask = { from, pid: note.pid, at: note.at };
+    const line = COOP_TEXT.ask(clampName(holderName(from)));
+    if (H) H.toast(line);
+    const title = document.querySelector('#coopAskTitle');
+    if (title) title.textContent = line;
+    const ov = document.querySelector('#coopAsk');
+    if (ov) ov.hidden = false;
+    clearTimeout(party.askTimer);
+    party.askTimer = setTimeout(() => closeAsk(), COOP_CFG.inviteMs);
+  }
+  function closeAsk(){
+    clearTimeout(party.askTimer); party.askTimer = 0;
+    party.ask = null;
+    const ov = document.querySelector('#coopAsk');
+    if (ov) ov.hidden = true;
+  }
+  function wireAsk(){
+    const joinBtn = document.querySelector('#coopJoin');
+    const noBtn = document.querySelector('#coopNotNow');
+    if (joinBtn && !joinBtn.dataset.coop) { joinBtn.dataset.coop = '1'; joinBtn.addEventListener('click', () => joinGroup()); }
+    if (noBtn && !noBtn.dataset.coop) { noBtn.dataset.coop = '1'; noBtn.addEventListener('click', () => notNow()); }
+  }
+  async function invite(uid){
+    if (!canInvite(uid) || !dev.code || !me || !rtdb) return;
+    closeCard();
+    try {
+      await connect();
+      if (!inParty()) {
+        const pid = newPid();
+        const area = (H && COOP_CFG.areas.indexOf(H.mapId()) >= 0) ? H.mapId() : 'hearthmoor';
+        const path = 'parties/' + dev.code + '/' + pid;
+        await rtdb.set(ref(path), {
+          cv: COOP_CFG.cv, host: me, made: TS(), area,
+          members: { [me]: memberBody() },
+        });
+        writes++;
+        party.code = dev.code; party.pid = pid; party.host = me; party.at = Date.now(); party.role = 'host';
+        party.ref = ref(path + '/members/' + me);
+        party.known = {}; party.known[me] = true; party.saw = false;
+        rememberParty();
+        armMemberDisc(party.ref);
+        watchParty();
+      }
+      await rtdb.set(ref(partyPath() + '/invites/' + uid), TS());
+      writes++;
+      await rtdb.set(ref('parties/' + party.code + '/inbox/' + uid + '/' + me), { pid: party.pid, at: TS() });
+      writes++;
+      syncInbox();
+    } catch (e) { /* rules are the backstop */ }
+    renderStrip();
+  }
+  async function joinGroup(){
+    const ask = party.ask;
+    if (!ask || !me || !dev.code || !rtdb) { closeAsk(); return; }
+    const from = ask.from, pid = ask.pid;
+    closeAsk();
+    try {
+      await connect();
+      const path = 'parties/' + dev.code + '/' + pid;
+      await rtdb.update(ref(path), { guest: me, ['members/' + me]: memberBody() });
+      writes++;
+      try { await rtdb.remove(ref('parties/' + dev.code + '/inbox/' + me + '/' + from)); } catch (e) {}
+      party.code = dev.code; party.pid = pid; party.host = from; party.at = Date.now(); party.role = 'guest';
+      party.ref = ref(path + '/members/' + me);
+      party.solo = false; party.saw = false;
+      rememberParty();
+      armMemberDisc(party.ref);
+      watchParty();
+      syncInbox();
+      if (H) H.toast(COOP_TEXT.together);
+    } catch (e) { /* a full seat or a forged invite stays denied */ }
+    renderStrip();
+  }
+  async function notNow(){
+    const ask = party.ask;
+    if (!ask || !me || !dev.code) { closeAsk(); return; }
+    const from = ask.from, pid = ask.pid;
+    closeAsk();
+    party.notNow[from] = (party.notNow[from] || 0) + 1;
+    if (party.notNow[from] >= (COOP_VOTE.invite.notNowMute || 3)) party.muted[from] = true;
+    try {
+      await rtdb.remove(ref('parties/' + dev.code + '/' + pid + '/invites/' + me));
+      await rtdb.remove(ref('parties/' + dev.code + '/inbox/' + me + '/' + from));
+    } catch (e) {}
+  }
+  async function leaveGroup(){
+    if (!inParty() || !me || !rtdb) return;
+    party.leaving = true;
+    const code = party.code, pid = party.pid, host = party.host, node = party.ref;
+    try {
+      if (node) { try { await rtdb.onDisconnect(node).cancel(); } catch (e) {} }
+      if (host === me) await rtdb.remove(ref('parties/' + code + '/' + pid));
+      else await rtdb.update(ref('parties/' + code + '/' + pid), { guest: null, ['members/' + me]: null });
+      writes++;
+    } catch (e) {}
+    clearPartyLocal();
+    renderStrip();
+  }
+  function onSwitchOff(){
+    const freshDrop = party.recentDrop && Date.now() - party.recentDrop < 2000;
+    if (!(inParty() || party.ask || freshDrop)) return;
+    party.leaving = true;
+    party.recentDrop = 0;
+    closeAsk();
+    if (inParty() && party.host === me && party.code && party.pid && rtdb) {
+      const path = partyPath();
+      try { rtdb.remove(ref(path)).catch(() => {}); } catch (e) {}
+    }
+    clearPartyLocal(true);
+    if (H) H.toast(NET_TEXT.solo_status);
+    renderStrip();
+  }
+  function renderStrip(){
+    const strip = document.querySelector('#coopStrip');
+    if (!strip || !H) return;
+    const head = strip.querySelector('.coop-head');
+    const box = strip.querySelector('.coop-heads');
+    if (party.solo && !inParty()) {
+      strip.hidden = false;
+      if (head) head.textContent = NET_TEXT.solo_status;
+      if (box) { box.textContent = ''; box.dataset.sig = ''; }
+      return;
+    }
+    if (!inParty() || !COOP_CFG.on) { strip.hidden = true; return; }
+    const members = (party.data && party.data.members) || {};
+    const ids = Object.keys(members);
+    if (!ids.length) { strip.hidden = true; return; }
+    ids.sort((a, b) => (a === me ? -1 : b === me ? 1 : (a < b ? -1 : 1)));
+    if (head) head.textContent = COOP_VOTE.label + ' ' + ids.length + '/' + COOP_VOTE.maxMembers;
+    if (!box) { strip.hidden = false; return; }
+    const sig = ids.map(uid => {
+      const m = members[uid] || {};
+      return uid + ':' + (m.away ? 1 : 0) + ':' + awayLeft(m) + ':' + ((m.pet && m.pet.form) || '');
+    }).join('|');
+    strip.hidden = false;
+    if (box.dataset.sig === sig) return;
+    box.dataset.sig = sig;
+    box.textContent = '';
+    ids.forEach(uid => {
+      const m = members[uid] || {};
+      const b = el('button', 'coop-head-btn' + (m.away === 1 ? ' away' : ''));
+      b.type = 'button';
+      const who = clampName(holderName(uid));
+      b.setAttribute('aria-label', who);
+      const cv = el('canvas'); cv.width = cv.height = 18;
+      const form = (m.pet && m.pet.form) || '';
+      const bits = form.split('/');
+      const spr = bits[0] && H.spr ? H.spr(bits[0], +bits[1] || 0, 0) : null;
+      if (spr) { const g = cv.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(spr, 0, 0); }
+      b.append(cv);
+      if (m.away === 1) b.append(el('span', 'coop-count', String(awayLeft(m))));
+      b.addEventListener('click', () => openHead(uid));
+      box.append(b);
+    });
+  }
+  function openHead(uid){
+    if (uid === me) { openCard(null); return; }
+    const live = others.get(uid);
+    if (live) { openCard(live); return; }
+    const m = party.data && party.data.members && party.data.members[uid];
+    const form = (m && m.pet && m.pet.form) || '';
+    const bits = form.split('/');
+    openCard({ uid, pet: { sp: bits[0] || '', st: +bits[1] || 0, lv: (m && m.pet && m.pet.level) || 1 }, title: 0, seals: 0 });
+  }
+  coop.invite = invite;
+  coop.join = joinGroup;
+  coop.notNow = notNow;
+  coop.leave = leaveGroup;
+  coop.renderStrip = renderStrip;
 
   const api = Object.freeze({
     enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, coopOn, coop, debug,
