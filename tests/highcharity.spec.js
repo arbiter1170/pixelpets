@@ -172,8 +172,9 @@ test('the side quest replaces only the idle end card', async ({ page }) => {
   expect(side.text.length).toBeLessThanOrEqual(110);
 
   await boot(page, citySave({ 'story.side': 'glimmer' }));
-  const glim = await page.evaluate(() => PixelPets.quest.text);
-  expect(glim).toMatch(/Ilse wrote anyway/);
+  const glim = await page.evaluate(() => ({ id: PixelPets.quest.id, text: PixelPets.quest.text }));
+  expect(glim.id).toBe('gb_invite');
+  expect(glim.text).toMatch(/quarry stage/);
 
   const done = citySave();
   for (const id of ['lantern', 'shells', 'chirp', 'dash', 'pairs']) done.flags['story.hc_clear_' + id] = true;

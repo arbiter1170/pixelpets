@@ -211,7 +211,7 @@ test('a Glimmerwell player can walk away with Rook and the score is halved', asy
   expect(before.scene).toBe('rook_road@glimmer');
   expect(before.look).toBe('lanyard');
   expect(before.row.text).toContain('lanyard');
-  expect(before.quest).toBe('end');
+  expect(before.quest).toBe('gb_invite');
   expect(await page.evaluate(() => PixelPets.runScene('rook_road'))).toBe(true);
   await playLog(page, ["I'll do my job"]);
   const quit = await page.evaluate(() => ({
