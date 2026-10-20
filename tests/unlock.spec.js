@@ -297,3 +297,35 @@ test('an eligible partner on WALK gets the grow up tip and SHOW ME rings GROW UP
   expect(ringed.dh).toBeLessThan(2);
   expect(ringed.v).toBe(2);
 });
+
+// Oct 19 playtest: the Lanterns tip pointed at the exit mat and SHOW ME did nothing. Healed: GOT IT only.
+// Hurt in a Lantern House: SHOW ME walks to a bed and asks to rest.
+test('Lanterns tip: GOT IT when healed, SHOW ME walks to a bed when hurt', async ({ page }) => {
+  const base = () => {
+    const s = starterSave();
+    s.settings = Object.assign({}, s.settings, { controls: 'modern' });
+    s.world = { map: 'hm_lantern_in', x: 2, y: 3, facing: 'up', respawn: 'hearthmoor' };
+    s.flags['unlock.lantern'] = true;
+    return s;
+  };
+  await bootSave(page, base());
+  await walkQuiet(page);
+  await expect(page.locator('#unlockTitle')).toHaveText('Lanterns');
+  await expect(page.locator('#unlockShow')).toBeHidden();
+  await expect(page.locator('#unlockSkip')).toHaveText('GOT IT');
+  await page.locator('#unlockSkip').click();
+  await expect(page.locator('#unlockCard')).toBeHidden();
+
+  const hurt = base();
+  hurt.party[0].hpNow = 0;
+  hurt.world.restDue = true;
+  await bootSave(page, hurt);
+  await walkQuiet(page);
+  await expect(page.locator('#unlockTitle')).toHaveText('Lanterns');
+  await expect(page.locator('#unlockShow')).toBeVisible();
+  await expect(page.locator('#unlockSkip')).toHaveText('SKIP');
+  await page.locator('#unlockShow').click();
+  await expect(page.locator('#unlockCard')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text), { timeout: 5000 })
+    .toContain('These beds rest everyone');
+});
