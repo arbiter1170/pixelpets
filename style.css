@@ -1170,6 +1170,9 @@ body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-loc
 .net-pill{flex:1;min-height:44px;border:3px solid var(--d);background:var(--k);color:var(--w);font-size:16px;cursor:pointer}
 .net-pill[aria-pressed="true"]{background:var(--y);color:var(--k);border-color:var(--y)}
 .net-status{margin:0;color:var(--h);font-size:14px}
+.net-hi{position:fixed;left:50%;top:46%;transform:translate(-50%,-50%);z-index:12;background:var(--k);color:var(--y);
+  padding:10px 14px;font-size:18px;box-shadow:0 0 0 3px var(--y);pointer-events:none;max-width:90vw;text-align:center}
+.net-hi[hidden]{display:none}
 .net-input{min-height:44px;width:100%;box-sizing:border-box;background:var(--k);color:var(--w);border:3px solid var(--d);font-family:var(--font);font-size:20px;padding:0 8px}
 .net-blocked{display:flex;flex-direction:column;gap:6px}
 .net-brow{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}

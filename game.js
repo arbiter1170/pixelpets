@@ -642,6 +642,30 @@ function fitPetScene(){
   ps.classList.remove('pet-tight');
   if (!pick()) { ps.classList.add('pet-tight'); pick(); }
 }
+// ROOM_ZOOM v0.1 (D231–D239). Interiors only, and not fitWidth rooms. S never drops below the outdoor scale s and never
+// passes 2s. Whole numbers come from floor. A room that fits stays centred; a larger one follows and clamps (syncWalkCam).
+const ROOM_ZOOM_CAP = 2, ROOM_ZOOM_HUD = 112;
+let mapZoom = 1, mapBase = 1;
+function roomEdgeSlack(m){
+  if (!m || m.kind !== 'interior' || m.fitWidth || !m.cells || !(m.w >= 3) || !(m.h >= 1)) return 0;
+  const solidCol = x => { for (let y = 0; y < m.h; y++) if (!wallPart(x, y, m)) return false; return true; };
+  return solidCol(0) && solidCol(m.w - 1) ? 1 : 0;   // D233: one tile of width, and only when both edge columns are solid wall
+}
+function roomZoomFor(W, H, s){
+  if (!isRoom() || !CUR || CUR.fitWidth || !(MW > 0) || !(MH > 0) || !(s > 0)) return s;
+  const slack = roomEdgeSlack(CUR);
+  const Heff = ctlMode() === 'modern' ? H - ROOM_ZOOM_HUD : H;
+  const denomW = (MW - slack) * TS, denomH = MH * TS;
+  if (!(denomW > 0) || !(denomH > 0) || !(Heff > 0) || !(W > 0)) return s;
+  const S = Math.max(s, Math.min(ROOM_ZOOM_CAP * s, Math.floor(W / denomW), Math.floor(Heff / denomH)));
+  return S > 0 ? S : s;
+}
+function roomEdgeColor(){
+  if (!isRoom() || !CUR || CUR.fitWidth) return null;   // fitWidth rooms keep the void bars they already have
+  const sk = CUR.skin && SKINS[CUR.skin];
+  if (!sk || !sk.wall || !PAL[sk.wall.c]) return null;   // D236: no wall table keeps the void
+  return PAL[sk.wall.c];
+}
 function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
@@ -652,14 +676,21 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     const c = $('#mapCanvas'), W = mw.clientWidth, H = mw.clientHeight;
     const modern = ctlMode() === 'modern';         // NAV_MODERN §2 (NM-Y2): modern is 2x at every width with a 24x36 cap; arcade unchanged
     const s = modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
-    c.width = Math.min(24 * 16, Math.floor(W / s)); c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / s)));
+    mapBase = s;
     cueZone.t = -1e9;
     // E1: an interior with "fitWidth": true (the rx_f4 pilot) is shown at its full width (scale = view width / map width), so the
     // camera only scrolls vertically. Every interior bigger than the view follows the keeper and clamps at the edges (drawMap);
-    // smaller ones stay centred. Opt-in so no other map changes look. Same in arcade and modern.
-    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); c.width = MW * 16; c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
+    // smaller ones stay centred. Opt-in so no other map changes look. Same in arcade and modern. ROOM_ZOOM does not touch these.
+    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); mapZoom = f; c.width = MW * 16; c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
       c.style.width = W + 'px'; c.style.height = Math.round(c.height * f) + 'px'; }
-    else { c.style.width = (c.width * s) + 'px'; c.style.height = (c.height * s) + 'px'; }
+    else {
+      const zoom = roomZoomFor(W, H, s);   // snapped when arriveAt calls fitAll, at the black midpoint of the 250 ms warp (D235)
+      mapZoom = zoom;
+      c.width = Math.min(24 * 16, Math.floor(W / zoom)); c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / zoom)));
+      c.style.width = (c.width * zoom) + 'px'; c.style.height = (c.height * zoom) + 'px';
+    }
+    const edge = roomEdgeColor();
+    mw.style.backgroundColor = edge || '';   // D236: leftover wrap pixels use the wall cap; void stays the stylesheet black
   }
   refitSceneBox();
 }
@@ -1077,7 +1108,9 @@ function unlockScan(){
   if (S.flags['story.rc_climax']) unlockOffer('switch');
   if (S.flags['story.hc_invite']) unlockOffer('letter');
   if (S.flags['unlock.lantern']) unlockOffer('lantern');
-  if ((S.party || []).some(q => canEvolve(q))) unlockOffer('growup');
+  // The GROW UP button, the card, and the grow-up scene all use the partner only.
+  const lead = pet();
+  if (lead && canEvolve(lead)) unlockOffer('growup');
 }
 function tileBox(tx, ty){
   const c = $('#mapCanvas'); if (!c || !walk || !walk.cam) return null;
@@ -1133,6 +1166,9 @@ function unlockShowMe(){
 function unlockPump(t){
   if (!S || unlock.on || tut.on) return;
   if (!tipsOn()) { unlock.q = []; unlock.since = 0; if (unlock.on) unlockClose(); return; }
+  // Drop a queued grow-up tip once the partner can no longer grow up (already grown, or never the partner).
+  const lead = pet();
+  if (!(lead && canEvolve(lead))) unlock.q = unlock.q.filter(id => id !== 'growup');
   if (!unlock.q.length) { unlock.since = 0; return; }
   const calm = screen === 'walk' && !scene && !(battle && battle.on) && !overlayOpen() && !fade.busy && !(walk && walk.intro);
   if (!calm) { unlock.since = 0; return; }
@@ -2392,7 +2428,92 @@ function npcLook(o){
   if (key === 'rook') return rookWithLanyard(look);
   return look;
 }
-const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && (!!o.lines || !!o.board)));
+// A roll prop (the 2004 popping toy; it is the only one) counts, so a Modern tap walks up and pushes
+// and Arcade TALK pushes too. It has no lines, so the push never opens a text box.
+const talkable = o => !!o && (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'wild' || (o.kind === 'prop' && (!!o.lines || !!o.board || !!o.roll)));
+// What a tap should do. Walk-on kinds (pickup, warp, trigger) stay off this list: the tap walks onto
+// their tile and the step handler fires. Scene-only and shop-only props (birthday balloons, the Heights
+// crate) are not talkable, so Arcade TALK and a d-pad bump stay as they are.
+function objectAct(o){
+  if (!o || o.kind === 'decal') return null;
+  if (o.kind === 'pickup') return 'pickup';
+  if (o.kind === 'warp') return 'warp';
+  if (o.kind === 'trigger') return 'trigger';
+  if (o.kind === 'door') return 'door';
+  if (o.booth) return 'booth';
+  if (o.roll) return 'roll';
+  if (o.panel === 'lantern' || o.panel === 'hall1') return 'panel';
+  if (o.kind === 'sign') return 'sign';
+  if (o.board) return 'board';
+  if (o.shop) return 'shop';
+  if (o.kind === 'trainer') return 'trainer';
+  if (o.kind === 'wild') return 'wild';
+  if (o.scene) return 'scene';
+  if (o.lines || o.kind === 'npc') return 'talk';
+  return null;
+}
+const WALK_ON_ACT = { pickup: 1, warp: 1, trigger: 1 };
+const tappable = o => { const a = objectAct(o); return !!a && !WALK_ON_ACT[a]; };
+// Debug audit: every authored interactable, and whether a tap can reach the tile that fires it.
+// Object taps need a free neighbour on the safe tile's walk region. Walk-on taps need that tile itself.
+function auditTapReport(){
+  const mapWalk = (m, x, y) => {
+    const row = m.grid && m.grid[y];
+    if (!row || x < 0 || x >= row.length) return false;
+    const ch = row[x], sk = m.skin && SKINS[m.skin];
+    return (sk && sk.walk && sk.walk[ch] != null) ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk;
+  };
+  const standsOf = (m, o) => {
+    if (o.kind === 'door') {
+      const onWall = m.grid[o.y] && m.grid[o.y][o.x] === 'H';
+      return [{ x: o.x, y: onWall ? o.y + 1 : o.y }];
+    }
+    if (o.kind === 'trigger') {
+      const r = o.r || 0, out = [];
+      for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (Math.abs(dx) + Math.abs(dy) <= r) out.push({ x: o.x + dx, y: o.y + dy });
+      return out;
+    }
+    if (WALK_ON_ACT[objectAct(o)]) return [{ x: o.x, y: o.y }];
+    return [[0, -1], [0, 1], [-1, 0], [1, 0]].map(([dx, dy]) => ({ x: o.x + dx, y: o.y + dy }));
+  };
+  const rows = [], predicateGaps = [], reachGaps = [], counts = {};
+  for (const [mid, m] of Object.entries(WORLD)) {
+    if (!m || !m.grid) continue;
+    const block = new Set();
+    for (const o of m.objs || []) if (o && BLOCK_KINDS[o.kind]) block.add(o.x + ',' + o.y);
+    const free = (x, y) => mapWalk(m, x, y) && !block.has(x + ',' + y);
+    const seen = new Set(), q = [];
+    const seed = (x, y) => { const k = x + ',' + y; if (seen.has(k) || !free(x, y)) return; seen.add(k); q.push([x, y]); };
+    for (const s of [m.safe, m.start, m.respawn]) if (s) seed(s.x, s.y);
+    for (const o of m.objs || []) if (o && (o.kind === 'warp' || o.kind === 'door')) {
+      for (const c of standsOf(m, o)) seed(c.x, c.y);
+    }
+    while (q.length) {
+      const [x, y] = q.shift();
+      for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) seed(x + dx, y + dy);
+    }
+    for (const o of m.objs || []) {
+      const act = objectAct(o);
+      if (!act) continue;
+      counts[act] = (counts[act] || 0) + 1;
+      const open = standsOf(m, o).filter(c => WALK_ON_ACT[act] ? (mapWalk(m, c.x, c.y) && !block.has(c.x + ',' + c.y)) : free(c.x, c.y));
+      const reached = open.filter(c => seen.has(c.x + ',' + c.y)).length;
+      const row = { map: mid, id: o.id, kind: o.kind, act, tappable: tappable(o), talkable: !!talkable(o), stands: open.length, reached };
+      rows.push(row);
+      const tag = mid + ':' + o.id;
+      if (WALK_ON_ACT[act]) {
+        if (row.tappable) predicateGaps.push(tag + ' walk-on is selected as a tap object');
+        if (!open.length) reachGaps.push(tag + ' walk-on tile is solid or blocked');
+        else if (!reached) reachGaps.push(tag + ' walk-on tile is off the safe region');
+      } else {
+        if (!row.tappable) predicateGaps.push(tag + ' tap does not select it');
+        if (!open.length) reachGaps.push(tag + ' has no free neighbour');
+        else if (!reached) reachGaps.push(tag + ' neighbour is off the safe region');
+      }
+    }
+  }
+  return { counts, predicateGaps, reachGaps, n: rows.length, rows };
+}
 // A saved position that is off the map, solid, on a warp or under a blocker loads on the map's safe tile (§3).
 function safeSpot(){
   const w = S.world;
@@ -3139,6 +3260,11 @@ function tickPatrol(dt){
     const path = o.patrol;
     if (!path || !path.length || !present(o)) continue;
     const cur = mapRT.pos[o.id] || { x: o.x, y: o.y };
+    const near = Math.abs(cur.x - S.world.x) + Math.abs(cur.y - S.world.y);
+    if (near <= 2) {                        // the keeper is close: wait, so a walker never steps into the keeper's way (face them when adjacent)
+      if (near === 1) { const f = dirName(S.world.x - cur.x, S.world.y - cur.y); mapRT.face[o.id] = f; if (mapRT.pos[o.id]) mapRT.pos[o.id].facing = f; }
+      continue;
+    }
     const slot = (o._pi || 0) % path.length, dest = path[slot];
     if (cur.x === dest[0] && cur.y === dest[1]) { o._pi = slot + 1; continue; }
     const sx = Math.sign(dest[0] - cur.x), sy = Math.sign(dest[1] - cur.y);
@@ -3600,7 +3726,7 @@ function drawMap(t){
   const VW = c.width, VH = c.height;
   const px_ = walk.fx * TS, py_ = walk.fy * TS;
   const cx = walk.cam.x, cy = walk.cam.y, wf = Math.floor(t / 500) % 2;
-  g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH);
+  g.fillStyle = roomEdgeColor() || PAL.k; g.fillRect(0,0,VW,VH);   // D236: cap colour in the centred margin; void when the skin has no wall table
   for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
     for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
@@ -3800,13 +3926,20 @@ function routeExit(from, to){
   }
   routeCache.set(key, found); return found;
 }
+// A live cue: the first-wild guide's grass tile, or a named prop's current tile (the 2004 toy via objPos / rollSpot).
+function followSpot(q){
+  if (!q || !q.follow) return null;
+  if (q.follow === 'guide') return wild.list.find(w => w.guide) || null;
+  if (!CUR) return null;
+  const o = CUR.objs.find(x => x.id === q.follow && present(x));
+  return o ? objPos(o) : null;
+}
 // Where an objective is on this map: its tile, or the exit toward it; null when nothing points anywhere.
-// The first-wild guide picks its own grass tile.
 function pointOnMap(q){
   if (!q || !q.target) return null;
   if (q.target.map === CUR.id) {
-    const gw = q.follow === 'guide' ? wild.list.find(w => w.guide) : null;
-    return gw ? { x: gw.x, y: gw.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
+    const live = followSpot(q);
+    return live ? { x: live.x, y: live.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
   }
   const ex = routeExit(CUR.id, q.target.map); if (ex) return { x: ex.x, y: ex.y, here: false };
   if (q.via) { if (q.via.map === CUR.id) return { x: q.via.x, y: q.via.y, here: true }; const vx = routeExit(CUR.id, q.via.map); if (vx) return { x: vx.x, y: vx.y, here: false }; }
@@ -7633,6 +7766,9 @@ function finishEvolution(){
   evo.pid = p.id; evo.evoStage = evo.to;
   evo.queue = [...rows.filter(e => e[0] === 0), ...rows.filter(e => e[0] >= 1 && e[0] <= L).sort((x, y) => x[0] - y[0])].map(e => ({ id: e[1], evo: e[0] === 0 }));
   if (!evo.queue.some(e => e.evo)) markEvoStage(p, evo.to);
+  // Seen, even if the card never opened. A later return to WALK must not show a stale tip.
+  S.flags['story.unlock_growup'] = true;
+  unlock.q = unlock.q.filter(id => id !== 'growup');
   $('#evoOk').hidden = false; updateHUD(); save();
 }
 function markEvoStage(p, k){ if (!Array.isArray(p.evoMoves)) p.evoMoves = []; if (!p.evoMoves.includes(k)) p.evoMoves.push(k); save(); }
@@ -9487,10 +9623,12 @@ function bindInput(){
     if (!ptr || e.pointerId !== ptr.id) return;
     if (!ptr.dragged && e.type === 'pointerup') {
       const r = mc.getBoundingClientRect();
+      // Canvas CSS pixels map onto the bitmap, then the camera. The integer room scale changes both together, so the tile stays put (D239).
       const x = (e.clientX - r.left) / r.width * mc.width + walk.cam.x, y = (e.clientY - r.top) / r.height * mc.height + walk.cam.y;
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
+      walk.hit = { x: tx, y: ty };
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
-      const o = objAt(tx, ty, q => talkable(q) || q.kind === 'door') || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
+      const o = objAt(tx, ty, tappable) || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
       if (scene || fade.busy) { /* nothing */ }
       else if (window.PPNet && PPNet.tapTile(tx, ty)) { wild.chase = null; }
       else if (w && pet()) { if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
@@ -9942,7 +10080,7 @@ function boot(){
     rookOffer: to => { if (!S || scene || overlayOpen() || (battle && battle.on)) return false; showTab('walk'); runSteps(rookOfferSteps(to)); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
     rollWildTrack: () => takeBattleTrack('wild'),
-    endScene: () => { if (!scene) return false; scene.skip = true; return true; },
+    endScene: () => { if (!scene) return false; scene.skip = true; endScene(); return true; },
     // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
     expandText: (text, vars, viewPetObj) => { const keep = scene;
       if (!keep) scene = { vars: Object.assign({ tags: [], line: null, suggest: null }, vars || {}), view: { flags: {}, name: undefined, pet: viewPetObj || null, nick: undefined }, pending: [] };
@@ -9962,7 +10100,7 @@ function boot(){
     setTextSpeed: v => debugSetTextSpeed(v),
     clearHold: () => debugHeal(),
     checkBuild: () => checkBuild(true),          // debug/tests: fetch version.json now (skips the 60 s throttle); resolves to its build id or null
-    enc, walk,
+    enc, walk, auditTaps: () => auditTapReport(),
     care: () => ({ food: anim.care.food || 0, rest: anim.care.rest || 0 }),   // HEART_ALERT debug hook; inert without ?debug=1
     tileInfo: (x, y) => { const ch = tileAt(x, y);   // debug: char, walk, drawn tile and decal. A kit wall reports `part`. Lab floor keeps its old tile name.
       const walk = x >= 0 && y >= 0 && x < MW && y < MH && tileWalks(ch);
@@ -9981,6 +10119,7 @@ function boot(){
   };
   // read-only map / scene / hint views (tests and the console); they can't change the game
   Object.defineProperty(api, 'mapInfo', { enumerable: true, get(){ return { id: CUR.id, w: MW, h: MH, room: isRoom(), outdoor: outdoorId(), backdrop: backdropName(), dream: CUR.dream || null,
+    scale: mapZoom, baseScale: mapBase, slack: (isRoom() && CUR && !CUR.fitWidth) ? roomEdgeSlack(CUR) : 0, edge: roomEdgeColor(), fitWidth: !!(CUR && CUR.fitWidth),
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
     typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });

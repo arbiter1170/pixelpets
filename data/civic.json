@@ -45,7 +45,7 @@
         "addObjs": [
           {"kind": "door", "id": "hm_hq", "x": 11, "y": 11, "to": "hm_hq_f1", "tx": 6, "ty": 14, "facing": "up"},
           {"kind": "sign", "id": "hm_hq_sign", "x": 9, "y": 11, "text": "KEEPER HOUSE · Hearthmoor watch. The lantern's law."},
-          {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 4, "y": 8, "facing": "right", "patrol": [[4, 8], [8, 8], [12, 8], [16, 8], [18, 8], [16, 8], [12, 8], [8, 8]], "lines": {
+          {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 1, "y": 8, "facing": "down", "patrol": [[1, 7], [1, 9]], "lines": {
             "story.side=glimmer": "Mint vest. Not welcome on this road.",
             "standing.keepers>=3": "Name's on the good list. Walk easy.",
             "standing.keepers>=1": "A keeper on the road. Glad you are out.",

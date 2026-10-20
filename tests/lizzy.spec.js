@@ -66,7 +66,7 @@ test('Hearthmoor grows to 24 by 24, moves five props, and adds two buildings', a
     const moved = [
       ['hm_big_tree', 1, 16, 'lm_big_tree'],
       ['hm_flowers', 11, 17, 'flower_clump'],
-      ['hm_lantern_post', 18, 18, 'lm_lantern_post'],
+      ['hm_lantern_post', 18, 19, 'lm_lantern_post'],
       ['hm_puddle_6_16', 9, 18, 'puddle'],
       ['hm_leaf_17_15', 18, 15, 'leaf_litter'],
     ].map(([id, x, y, sprite]) => {

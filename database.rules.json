@@ -21,7 +21,7 @@
           "$shard": {
             "$uid": {
               ".write": "auth != null && auth.uid === $uid && $code.matches(/^[A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9]$/) && root.child('roomCodes/' + $code + '/on').val() === true && $shard.matches(/^r[1-9][0-9]?$/) && ($area === 'hearthmoor' || $area === 'route1')",
-              ".validate": "newData.hasChildren(['pv', 'x', 'y', 'f', 'look', 'pet', 'seals', 'title', 'vis', 'joined', 'seen', 'pt'])",
+              ".validate": "newData.hasChildren(['pv', 'x', 'y', 'f', 'look', 'pet', 'seals', 'title', 'vis', 'joined', 'seen', 'pt']) && (!data.child('lastEmoteAt').exists() || (newData.child('lastEmoteAt').exists() && newData.child('lastEmoteAt').val() >= data.child('lastEmoteAt').val())) && (!data.exists() || (newData.child('x').val() === data.child('x').val() && newData.child('y').val() === data.child('y').val() && newData.child('f').val() === data.child('f').val() && newData.child('mv').val() === data.child('mv').val()) || (newData.child('pt').isNumber() && newData.child('pt').val() <= now && newData.child('pt').val() >= data.child('pt').val() + 350))",
               "pv": {
                 ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 9"
               },
@@ -94,13 +94,16 @@
               "vis": {
                 ".validate": "newData.isString() && newData.val().matches(/^(a|f)$/)"
               },
+              "lastEmoteAt": {
+                ".validate": "newData.isNumber() && newData.val() <= now && (!data.exists() || newData.val() === data.val() || (newData.val() === now && newData.val() >= data.val() + 2000))"
+              },
               "emote": {
                 ".validate": "newData.hasChildren(['id', 't'])",
                 "id": {
                   ".validate": "newData.isString() && newData.val().matches(/^(e_wave|e_heart|e_bang|e_ask|e_laugh|e_dots|e_zz|e_clap|e_trick|p_hi|p_nice|p_follow|p_over|p_thanks|p_luck|p_brb|p_bye|p_snack|p_glow|p_seal|p_wild|p_lantern|p_route|p_cozy|p_walk)$/)"
                 },
                 "t": {
-                  ".validate": "newData.isNumber() && newData.val() === now && (!data.exists() || newData.val() >= data.val() + 2000)"
+                  ".validate": "newData.isNumber() && newData.val() === now && newData.val() === newData.parent().parent().child('lastEmoteAt').val()"
                 },
                 "$other": {
                   ".validate": "false"
@@ -123,17 +126,25 @@
     "codes": {
       "$fcode": {
         ".read": "auth != null",
-        ".write": "auth != null && (!data.exists() || data.val() === auth.uid) && (!newData.exists() || newData.val() === auth.uid)",
+        ".write": "auth != null && (!data.exists() || data.val() === auth.uid) && (!newData.exists() || newData.val() === auth.uid) && root.child('codeOwner/' + auth.uid).val() === $fcode",
         ".validate": "$fcode.matches(/^WLK-[A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9]-[A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9]$/) && newData.isString() && newData.val() === auth.uid"
+      }
+    },
+    "codeOwner": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && !data.exists() && newData.exists()",
+        ".validate": "newData.isString() && newData.val().matches(/^WLK-[A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9]-[A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9][A-HJ-NP-Z2-9]$/)"
       }
     },
     "friends": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren()",
         "$other": {
           ".read": "auth != null && auth.uid === $other",
-          ".validate": "newData.isBoolean() && newData.val() === true && $other !== $uid"
+          ".validate": "newData.isBoolean() && newData.val() === true && $other !== $uid && $other.matches(/^[A-Za-z0-9]{1,128}$/)"
         }
       }
     },
@@ -141,11 +152,12 @@
       "$uid": {
         ".read": "auth != null && (auth.uid === $uid || root.child('friends/' + $uid + '/' + auth.uid).val() === true)",
         ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren()",
         "name": {
-          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9][A-Za-z0-9 '.-]*$/) && newData.val().length <= 10"
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10 && newData.val().matches(/^[A-Za-z0-9][A-Za-z0-9 '.-]*$/)"
         },
         "pet": {
-          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9][A-Za-z0-9 '.-]*$/) && newData.val().length <= 10"
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 10 && newData.val().matches(/^[A-Za-z0-9][A-Za-z0-9 '.-]*$/)"
         },
         "$other": {
           ".validate": "false"
@@ -156,18 +168,20 @@
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren()",
         "$other": {
-          ".validate": "newData.isNumber() && newData.val() <= now && $other !== $uid"
+          ".validate": "newData.isNumber() && newData.val() <= now && $other !== $uid && $other.matches(/^[A-Za-z0-9]{1,128}$/)"
         }
       }
     },
     "hidden": {
       "$target": {
         ".read": false,
+        ".validate": "newData.hasChildren()",
         "$blocker": {
           ".read": "auth != null && auth.uid === $target",
           ".write": "auth != null && auth.uid === $blocker",
-          ".validate": "newData.isNumber() && newData.val() <= now && $blocker !== $target"
+          ".validate": "newData.isNumber() && newData.val() <= now && $blocker !== $target && $blocker.matches(/^[A-Za-z0-9]{1,128}$/)"
         }
       }
     }

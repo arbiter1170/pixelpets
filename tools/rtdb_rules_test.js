@@ -238,9 +238,9 @@ async function main() {
       const a = 'alice';
       await refOf(a, room(a)).set(presence());
       const checks = [
-        () => deny('9 hello', refOf(a, room(a) + '/emote').set({ id: 'hello', t: TS })),
-        () => deny('9 sentence', refOf(a, room(a) + '/emote').set({ id: 'Hi there friend', t: TS })),
-        () => allow('9 wave', refOf(a, room(a) + '/emote').set({ id: 'e_wave', t: TS })),
+        () => deny('9 hello', refOf(a, room(a)).update({ emote: { id: 'hello', t: TS }, lastEmoteAt: TS })),
+        () => deny('9 sentence', refOf(a, room(a)).update({ emote: { id: 'Hi there friend', t: TS }, lastEmoteAt: TS })),
+        () => allow('9 wave', refOf(a, room(a)).update({ emote: { id: 'e_wave', t: TS }, lastEmoteAt: TS })),
       ];
       if (await seq(checks)) ok('deny 9: emote id outside the list');
     }
@@ -255,10 +255,12 @@ async function main() {
         () => deny('10 future', refOf(a, room(a) + '/emote').set({ id: 'p_hi', t: now() + 60000 })),
       ];
       if (!await seq(early)) throw new Error('emote time precheck');
-      if (!await allow('10 first', refOf(a, room(a) + '/emote').set({ id: 'p_hi', t: TS }))) throw new Error('first emote');
-      if (!await deny('10 gap', refOf(a, room(a) + '/emote').set({ id: 'e_heart', t: TS }))) throw new Error('gap');
+      if (!await allow('10 first', refOf(a, room(a)).update({ emote: { id: 'p_hi', t: TS }, lastEmoteAt: TS }))) throw new Error('first emote');
+      if (!await deny('10 gap', refOf(a, room(a)).update({ emote: { id: 'e_heart', t: TS }, lastEmoteAt: TS }))) throw new Error('gap');
+      if (!await allow('10 delete emote', refOf(a, room(a) + '/emote').set(null))) throw new Error('delete emote');
+      if (!await deny('10 gap after delete', refOf(a, room(a)).update({ emote: { id: 'e_heart', t: TS }, lastEmoteAt: TS }))) throw new Error('gap after delete');
       await sleep(2100);
-      if (!await allow('10 after gap', refOf(a, room(a) + '/emote').set({ id: 'e_heart', t: TS }))) throw new Error('after gap');
+      if (!await allow('10 after gap', refOf(a, room(a)).update({ emote: { id: 'e_heart', t: TS }, lastEmoteAt: TS }))) throw new Error('after gap');
       ok('deny 10: emote server time and 2 s gap');
     }
 
@@ -320,7 +322,11 @@ async function main() {
       await seed();
       const good = 'WLK-ABCD-2345';
       const checks = [
+        () => deny('14 code before owner', refOf('alice', 'codes/' + good).set('alice')),
+        () => allow('14 owner', refOf('alice', 'codeOwner/alice').set(good)),
         () => allow('14 claim', refOf('alice', 'codes/' + good).set('alice')),
+        () => deny('14 second code', refOf('alice', 'codeOwner/alice').set('WLK-WXYZ-6789')),
+        () => deny('14 second claim', refOf('alice', 'codes/WLK-WXYZ-6789').set('alice')),
         () => deny('14 second', refOf('bob', 'codes/' + good).set('bob')),
         () => deny('14 value', refOf('alice', 'codes/WLK-WXYZ-6789').set('bob')),
         () => deny('14 pxp', refOf('alice', 'codes/PXP-ABCD-2345').set('alice')),
@@ -393,6 +399,44 @@ async function main() {
         () => allow('17 unblock mirror', refOf('alice', 'blocks/alice/bob').set(null)),
       ];
       if (await seq(checks)) ok('deny 17: blocks and hidden (list stays closed)');
+    }
+
+    // 18. shape, caps, one code, position throttle, emote gap that survives a delete
+    {
+      await seed();
+      const blob = 'x'.repeat(200000);
+      const shape = [
+        () => deny('18 friend string', refOf('alice', 'friends/alice').set(blob)),
+        () => deny('18 info string', refOf('alice', 'friendInfo/alice').set(blob)),
+        () => deny('18 block string', refOf('alice', 'blocks/alice').set(blob)),
+        () => deny('18 info extra', refOf('alice', 'friendInfo/alice').set({ name: 'Amber', code: 'WLK-ABCD-2345' })),
+        () => deny('18 root key', refOf('alice', 'nope').set(1)),
+      ];
+      if (!await seq(shape)) throw new Error('shape');
+      // RTDB rules have no child count, so the 12-slot cap stays in the client.
+      // Each key is the other holder's uid: 1-128 letters or digits. A string node and a wild key are refused.
+      const t = now();
+      const keys = [
+        () => allow('18 friend key', refOf('alice', 'friends/alice/bob').set(true)),
+        () => deny('18 friend long', refOf('alice', 'friends/alice/' + 'b'.repeat(129)).set(true)),
+        () => deny('18 friend mark', refOf('alice', 'friends/alice/bob!').set(true)),
+        () => allow('18 block key', refOf('alice', 'blocks/alice/bob').set(t)),
+        () => deny('18 block long', refOf('alice', 'blocks/alice/' + 'b'.repeat(129)).set(t)),
+        () => deny('18 block mark', refOf('alice', 'blocks/alice/bob!').set(t)),
+      ];
+      if (!await seq(keys)) throw new Error('keys');
+      const a = 'alice';
+      await refOf(a, room(a)).set(presence());
+      let xDenied = 0;
+      for (let i = 0; i < 20; i++) {
+        if (await deny('18 x ' + i, refOf(a, room(a)).update({ x: i % 11 }))) xDenied++;
+      }
+      if (xDenied !== 20) throw new Error('x-only ' + xDenied + ' of 20');
+      if (!await allow('18 wave', refOf(a, room(a)).update({ emote: { id: 'e_wave', t: TS }, lastEmoteAt: TS }))) throw new Error('wave');
+      if (!await deny('18 drop timer', refOf(a, room(a) + '/lastEmoteAt').set(null))) throw new Error('drop timer');
+      if (!await allow('18 clear emote', refOf(a, room(a) + '/emote').set(null))) throw new Error('clear emote');
+      if (!await deny('18 emote after clear', refOf(a, room(a)).update({ emote: { id: 'e_heart', t: TS }, lastEmoteAt: TS }))) throw new Error('emote after clear');
+      ok('deny 18: shape, caps, throttle, emote gap');
     }
 
     // Allows: own node create / update / delete, shard read, heartbeat, onDisconnect

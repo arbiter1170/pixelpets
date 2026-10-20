@@ -103,9 +103,11 @@ async function tapUid(page, uid){
   }, uid);
   await page.mouse.click(pt.x, pt.y);
 }
-async function shot(page, name){
+async function shot(page, name, sel){
   fs.mkdirSync(SHOTS, { recursive: true });
-  await page.screenshot({ path: SHOTS + '/' + name, animations: 'disabled', scale: 'css' });
+  const opts = { path: SHOTS + '/' + name, animations: 'disabled', scale: 'css' };
+  if (sel) await page.locator(sel).screenshot(opts);
+  else await page.screenshot(opts);
 }
 
 test.describe('Play together', () => {
@@ -154,6 +156,10 @@ test.describe('Play together', () => {
     await page.locator('#settingsBtn').click();
     await expect(page.locator('#playTogether')).toBeVisible();
     await expect(page.locator('#setRoomCode .set-val')).toHaveText(/ENTER/);
+    await page.locator('#setRoomCode').click();
+    await expect(page.locator('#roomCodeOv')).toBeVisible();
+    await shot(page, 'room_code_390.png', '#roomCodeOv .ov-inner');
+    await page.locator('#roomCodeOv button', { hasText: 'CLOSE' }).click();
     expect(await page.locator('#sayBtn').isVisible()).toBe(false);
     expect(socks, 'check 2 no RTDB socket').toEqual([]);
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
@@ -178,7 +184,6 @@ test.describe('Play together', () => {
     const bUid = await b.evaluate(() => window.PixelPets.net.uid);
     await a.waitForFunction(sees, bUid, { timeout: 3000 });
     await b.waitForFunction(sees, aUid, { timeout: 3000 });
-    await shot(a, 'two_stranger_390.png');
     const look = await b.evaluate(uid => {
       const o = window.PixelPets.net.others.find(x => x.uid === uid);
       return { look: o.look, pet: o.pet };
@@ -237,6 +242,17 @@ test.describe('Play together', () => {
     await b.waitForFunction(() => window.PixelPets.state.world.map === 'hm_lodge_in', null, { timeout: 3000 });
     await b.keyboard.up('ArrowUp');
     expect(await b.evaluate(() => !!window.PixelPets.scene || (window.PixelPets.battle && window.PixelPets.battle.on))).toBe(false);
+    await a.evaluate(() => window.PixelPets.goto('route1', 10, 8, 'down'));
+    await b.evaluate(() => window.PixelPets.goto('route1', 10, 8, 'left'));
+    await a.waitForFunction(uid => {
+      const o = window.PixelPets.net.others.find(z => z.uid === uid);
+      return o && o.drawn && Math.round(o.fx) === 10 && Math.round(o.fy) === 8;
+    }, bUid, { timeout: 3000 });
+    await b.waitForFunction(uid => {
+      const o = window.PixelPets.net.others.find(z => z.uid === uid);
+      return o && o.drawn && Math.round(o.fx) === 10 && Math.round(o.fy) === 8;
+    }, aUid, { timeout: 3000 });
+    await shot(a, 'route1_two_390.png', '#mapWrap');
     expect(a.ppErrors, a.ppErrors.join('\n')).toEqual([]);
     expect(b.ppErrors, b.ppErrors.join('\n')).toEqual([]);
     await b.context().close();
@@ -388,7 +404,6 @@ test.describe('Play together', () => {
     const aUid = await a.evaluate(() => window.PixelPets.net.uid);
     await b.waitForFunction(sees, aUid);
     await a.locator('#sayBtn').click();
-    await shot(a, 'wheel_390.png');
     await a.locator('#sayEmotes button', { hasText: 'Wave' }).click();
     await b.waitForFunction(uid => {
       const o = window.PixelPets.net.others.find(x => x.uid === uid);
@@ -435,7 +450,6 @@ test.describe('Play together', () => {
     await b.waitForFunction(sees, aUid);
     await tapUid(b, aUid);
     await expect(b.locator('#holderCard')).toBeVisible();
-    await shot(b, 'holder_card_friend_390.png');
     const friendCard = await b.locator('#holderCard').innerText();
     expect(friendCard).toContain('Tester');
     expect(friendCard).toContain('FRIEND');
@@ -498,7 +512,6 @@ test.describe('Play together', () => {
     await rootSet('friends/' + bUid + '/' + aUid, true);
     await b.locator('#settingsBtn').click();
     await b.locator('.net-pill', { hasText: 'SOLO' }).click();
-    await shot(b, 'solo_390.png');
     await expect.poll(async () => rootGet('rooms/AMB4RQ/hearthmoor'), { timeout: 1000 }).not.toBeNull();
     await expect.poll(async () => {
       const tree = await rootGet('rooms/AMB4RQ/hearthmoor');
@@ -558,7 +571,6 @@ test.describe('Play together', () => {
     expect(card).not.toContain('WLK-');
     expect(card.toLowerCase()).not.toContain('keeper');
     expect(card.toLowerCase()).not.toContain('trainer');
-    await shot(page, 'holder_card_390.png');
     await page.locator('#holderCard button', { hasText: 'CLOSE' }).click();
     const self = await page.evaluate(() => {
       const n = window.PixelPets.net, c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect();
@@ -639,7 +651,7 @@ test.describe('Play together', () => {
     expect(state.show).toBe('on');
     expect(state.q).toEqual([]);
     const tree = await rootGet('rooms');
-    const allowed = new Set(['pv','x','y','f','mv','look','pet','seals','title','vis','emote','joined','seen','pt','busy']);
+    const allowed = new Set(['pv','x','y','f','mv','look','pet','seals','title','vis','emote','lastEmoteAt','joined','seen','pt','busy']);
     const lookOk = new Set(['sk','hr','hc','of','oc','ac','ax']);
     const petOk = new Set(['sp','st','lv']);
     const walk = (node, path) => {
@@ -678,7 +690,7 @@ test.describe('Play together', () => {
     cardBtns.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
     await page.locator('#holderCard button', { hasText: 'CLOSE' }).click();
     await page.locator('#settingsBtn').click();
-    await shot(page, info.project.name === '390' ? 'settings_390.png' : 'settings_320.png');
+    if (info.project.name === '390') await expect(page.locator('.net-status')).toHaveText(/^Room \d+ · \d+ here$/);
     const rows = await page.locator('#playTogether button').evaluateAll(els => els.map(e => e.getBoundingClientRect().height));
     rows.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
@@ -721,6 +733,19 @@ test.describe('Play together', () => {
     const text = await page.locator('#phoneFriends').innerText();
     expect(text).toContain('HOLDER');
     expect(text).toContain('YOUR HOLDER CODE');
+    await expect(page.locator('#friendList li')).toHaveCount(12);
+    await page.locator('#phoneFriends').evaluate(el => {
+      let n = el;
+      while (n && n.id !== 'ovPhone') {
+        n.style.overflow = 'visible';
+        n.style.maxHeight = 'none';
+        n.style.height = 'auto';
+        n.style.flex = '0 0 auto';
+        n = n.parentElement;
+      }
+      el.style.height = el.scrollHeight + 'px';
+    });
+    await shot(page, 'friends_390.png', '#phoneFriends');
     expect(text.toLowerCase()).not.toContain('keeper');
     expect(text.toLowerCase()).not.toContain('trainer');
     await page.keyboard.press('Escape');

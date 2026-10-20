@@ -68,7 +68,8 @@ const PPNet = (() => {
   let writes = 0, coolUntil = 0, localEmote = null, infoOnce = false, retries = 0, giveUp = false, nextRetryMs = 0;
   let retryTimer = 0, offTimer = 0, pollAt = 0, repairAt = 0, pumping = false, pumpAgain = false;
   let page = 0, wheelOn = false, cardOn = false, codeOn = false, blockOn = false;
-  let undoTimer = 0, undoUid = null, undoFriend = false;
+  let undoTimer = 0, undoUid = null, undoFriend = false, hiTimer = 0;
+  let writeQ = Promise.resolve();
   const others = new Map();
   let mutual = {}, names = {}, blocks = {}, hidden = {};
   let unsubs = [];
@@ -229,10 +230,28 @@ const PPNet = (() => {
     }
     return cfg.on;
   }
+  function enqueue(fn){
+    const run = writeQ.then(fn, fn);
+    writeQ = run.then(() => {}, () => {});
+    return run;
+  }
+  function emotePatch(id){
+    return { emote: { id, t: TS() }, lastEmoteAt: TS(), seen: TS() };
+  }
   async function ensureIdentity(){
     const code = H.friendCode();
-    const cur = await rtdb.get(ref('codes/' + code));
-    if (!cur.exists()) await rtdb.set(ref('codes/' + code), me);
+    const owner = ref('codeOwner/' + me);
+    const owned = await rtdb.get(owner);
+    if (!owned.exists()) {
+      try { await rtdb.set(owner, code); } catch (e) {}
+    }
+    const use = (await rtdb.get(owner)).val();
+    if (use === code) {
+      const cur = await rtdb.get(ref('codes/' + code));
+      if (!cur.exists()) {
+        try { await rtdb.set(ref('codes/' + code), me); } catch (e) {}
+      }
+    }
     if (!NET_CFG.shareName) return;
     const info = {};
     const name = safeText(H.playerName());
@@ -613,12 +632,25 @@ const PPNet = (() => {
     if (tag) {
       g.font = '10px "Jersey 15", monospace';
       const w = Math.ceil(g.measureText(tag).width) + 2;
-      let x = Math.round(o.fx * 16 - cx + 8 - w / 2), y = Math.round(o.fy * 16 - cy) - 8;
+      const slot = plateSlot(o);
+      let x = Math.round(o.fx * 16 - cx + 8 - w / 2), y = Math.round(o.fy * 16 - cy) - 8 - slot * 11;
       const c = document.querySelector('#mapCanvas');
-      if (c) { x = Math.max(0, Math.min(c.width - w, x)); y = Math.max(8, y); }
+      if (c) { x = Math.max(0, Math.min(c.width - w, x)); y = Math.max(8 + slot * 11, y); }
       g.fillStyle = 'rgba(26,28,44,.8)'; g.fillRect(x - 1, y - 8, w + 2, 10);
       g.fillStyle = '#ffcd75'; g.fillText(tag, x, y);
     }
+  }
+  function plateSlot(o){
+    const tx = Math.round(o.fx), ty = Math.round(o.fy), here = [];
+    others.forEach(p => {
+      if (!p.drawn) return;
+      if (Math.round(p.fx) === tx && Math.round(p.fy) === ty) here.push(p);
+    });
+    const pos = H.pos();
+    if (pos && (pos.x | 0) === tx && (pos.y | 0) === ty) here.push({ uid: me, joined: placed.joined || 0 });
+    here.sort((a, b) => (a.joined - b.joined) || (a.uid < b.uid ? -1 : a.uid > b.uid ? 1 : 0));
+    const i = here.findIndex(p => p.uid === o.uid);
+    return i < 0 ? 0 : i;
   }
   function friendTag(o){ return mutual[o.uid] ? displayName(o.uid) : ''; }
   function strangerTag(o){
@@ -765,10 +797,11 @@ const PPNet = (() => {
     coolUntil = Date.now() + cfg.emoteGapMs;
     localEmote = { id, at: Date.now() };
     closeWheel(); paintWheel();
+    const node = placed.ref;
     try {
-      await rtdb.update(placed.ref, { emote: { id, t: TS() }, seen: TS() });
+      await enqueue(() => rtdb.update(node, emotePatch(id)));
       writes++; sent.at = Date.now();
-    } catch (e) {}
+    } catch (e) { /* the wheel already shows the gap; the rules are the backstop */ }
   }
 
   function openCard(o){
@@ -885,9 +918,7 @@ const PPNet = (() => {
     if (!look || document.querySelector('#playTogether')) return;
     const box = el('div', 'play-together'); box.id = 'playTogether';
     box.append(el('div', 'net-sec', NET_TEXT.set_section));
-    const show = el('button', 'set-row'); show.id = 'setShowOthers'; show.type = 'button';
-    show.append(el('span', 'set-lab', NET_TEXT.set_show), el('span', 'set-val', NET_TEXT.val_on));
-    show.addEventListener('click', () => { const order = ['on', 'friends', 'solo']; const i = order.indexOf(mode()); H.setShow(order[(i + 1) % 3]); paintChrome(); pump(); });
+    const show = el('div', 'net-lab'); show.id = 'setShowOthers'; show.textContent = NET_TEXT.set_show;
     const code = el('button', 'set-row'); code.id = 'setRoomCode'; code.type = 'button';
     code.append(el('span', 'set-lab', NET_TEXT.set_code), el('span', 'set-val', NET_TEXT.set_enter + ' ›'));
     code.addEventListener('click', openCode);
@@ -933,6 +964,26 @@ const PPNet = (() => {
     }
   }
   function openCode(){ codeOn = true; const ov = document.querySelector('#roomCodeOv'); if (!ov) return; ov.hidden = false; const input = document.querySelector('#roomCodeInput'); if (input) input.value = dev.code ? showCode(dev.code) : ''; }
+  function hideHi(){
+    clearTimeout(hiTimer); hiTimer = 0;
+    const n = document.querySelector('#netHi');
+    if (!n) return;
+    n.classList.remove('show');
+    n.hidden = true;
+  }
+  function showHi(){
+    if (mode() === 'solo') return;
+    let n = document.querySelector('#netHi');
+    if (!n) {
+      n = el('div', 'net-hi'); n.id = 'netHi'; n.setAttribute('role', 'status');
+      document.body.appendChild(n);
+    }
+    n.textContent = NET_TEXT.code_ok;
+    n.hidden = false;
+    n.classList.add('show');
+    clearTimeout(hiTimer);
+    hiTimer = setTimeout(hideHi, 1600);
+  }
   async function submitCode(raw){
     const code = normRoom(raw);
     if (!code) { H.toast(NET_TEXT.code_bad); return; }
@@ -947,7 +998,7 @@ const PPNet = (() => {
     } catch (e) { noteInfo(); setStatus('fail'); H.toast ? null : null; return; }
     dev.code = code; writeDev();
     codeOn = false; const ov = document.querySelector('#roomCodeOv'); if (ov) ov.hidden = true;
-    H.toast(NET_TEXT.code_ok);
+    showHi();
     giveUp = false; retries = 0;
     paintChrome(); pump();
   }
@@ -972,9 +1023,7 @@ const PPNet = (() => {
   }
   function paintStatus(){
     const box = document.querySelector('#playTogether'); if (!box) return;
-    const show = box.querySelector('#setShowOthers .set-val');
-    const label = mode() === 'friends' ? NET_TEXT.val_friends : mode() === 'solo' ? NET_TEXT.val_solo : NET_TEXT.val_on;
-    if (show) show.textContent = label;
+    if (mode() === 'solo' || !inRoom()) hideHi();
     box.querySelectorAll('.net-pill').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === mode())));
     const code = box.querySelector('#setRoomCode .set-val');
     if (code) code.textContent = dev.code ? showCode(dev.code) + ' ›' : NET_TEXT.set_enter + ' ›';
@@ -984,7 +1033,7 @@ const PPNet = (() => {
     if (!st) return;
     if (inRoom() && mode() !== 'solo' && dev.status !== 'fail') {
       let n = 1; others.forEach(o => { if (o.drawn || shown(o)) n++; });
-      st.textContent = 'room ' + placed.shard.slice(1) + ' · ' + n + ' here';
+      st.textContent = 'Room ' + placed.shard.slice(1) + ' · ' + n + ' here';
     } else st.textContent = NET_TEXT.solo_status;
   }
   function paintChrome(){
@@ -1006,20 +1055,9 @@ const PPNet = (() => {
     }
     renderFriends();
   }
-  async function renderFriends(){
-    const list = document.querySelector('#friendList'); if (!list || !H) return;
+  function paintFriendRows(rows){
+    const list = document.querySelector('#friendList'); if (!list) return;
     list.textContent = '';
-    let rows = [];
-    if (ready && dev.code && link === 'up') {
-      try { await refreshSocial(); } catch (e) {}
-      const mine = {};
-      try {
-        const snap = await rtdb.get(ref('friends/' + me));
-        const val = snap.val() || {};
-        Object.keys(val).forEach(uid => { if (val[uid] === true) mine[uid] = true; });
-      } catch (e) {}
-      rows = Object.keys(mine);
-    }
     for (let i = 0; i < NET_CFG.friendSlots; i++) {
       const uid = rows[i];
       const li = el('li');
@@ -1039,6 +1077,22 @@ const PPNet = (() => {
       }
       list.append(li);
     }
+  }
+  async function renderFriends(){
+    const list = document.querySelector('#friendList'); if (!list || !H) return;
+    paintFriendRows([]);
+    let rows = [];
+    if (ready && dev.code && link === 'up') {
+      try { await refreshSocial(); } catch (e) {}
+      const mine = {};
+      try {
+        const snap = await rtdb.get(ref('friends/' + me));
+        const val = snap.val() || {};
+        Object.keys(val).forEach(uid => { if (val[uid] === true) mine[uid] = true; });
+      } catch (e) {}
+      rows = Object.keys(mine);
+    }
+    paintFriendRows(rows);
     paintChrome();
   }
   async function addFriend(raw){
@@ -1089,8 +1143,12 @@ const PPNet = (() => {
       cam: H.cam(), pos: H.pos(), code: dev.code,
       rawWrite: async id => {
         if (!placed.ref) return 'no-room';
-        try { await rtdb.update(placed.ref, { emote: { id, t: TS() } }); writes++; return 'ok'; }
-        catch (e) { return String((e && (e.code || e.message)) || 'denied'); }
+        const node = placed.ref;
+        try {
+          await enqueue(() => rtdb.update(node, emotePatch(id)));
+          writes++;
+          return 'ok';
+        } catch (e) { return String((e && (e.code || e.message)) || 'denied'); }
       },
     };
   }
