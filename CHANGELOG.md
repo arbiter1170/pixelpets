@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 20:05 ET: Grow-up tip stays away after the partner grows up (build 20261019-2005)
+
+- What changed and why: The growing up tip (D180) could open on WALK after the partner had already grown up, and SHOW ME landed on the Pet tab with no GROW UP button. The tip is offered only when the partner is ready. Growing up marks `story.unlock_growup` and drops the queued tip. An older save whose starter has already grown up (on the team or in the box) is marked seen on load. A wild Walkling does not count. Replay tips still clears the flag and can show the card again while the partner is ready. Save `v` stays 2. No new decision id.
+- Files touched: `game.js`, `save.js`, `tests/unlock.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`, `review-growup-tip/walk-after-growup-390.png`.
+- Commit(s) + build id: build 20261019-2005.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/unlock.spec.js` PP_TEST RESULT: PASS exit=0 passed=24 failed=0 flaky=0 skipped=0 time=104s (320, 375, 390). Full suite: PP_TEST RESULT: PASS exit=0 passed=1157 failed=0 flaky=0 skipped=16 time=1661s. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error). Shot: `review-growup-tip/walk-after-growup-390.png`.
+- Decisions made (colour + reasoning): no new id. D180 stays settled. Green bug fix.
+- Anything left unfinished: none.
+
 ## 2026-10-19 17:59 ET: Merge main into online saves Phase 1 (build 20261019-1759)
 
 - What changed and why: Merged `origin/main` (PR #98, Arbiter Test music and the final tour copy, build 20261019-1722) into the Phase 1 branch and kept both sides. The stamp is 20261019-1759, later than 20261019-1722. `data/glimmer_path.json` arrived with main's `data/mapdata.js`; regenerating mapdata made no further change. Save `v` stays 2. The next free id stays D195.
