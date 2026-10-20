@@ -387,6 +387,11 @@ const PPSave = (() => {
     const past = f['story.early_done'] === true || f['story.rival1_done'] === true || (Number.isInteger(s.steps) && s.steps > 16);
     if (f['story.starter_received'] === true && past) f['story.tutorial_done'] = true;
     if (f['story.tutorial_done'] === true) delete f['story.tutorial_step'];
+    // D180: a starter who has already grown up has had their grow-up moment. Mark the tip seen on load
+    // so it does not pop up afterwards. Wild catches are left out (their move list is filled in ahead of time).
+    // Replay tips still clears story.unlock_* and can show the card again while the partner is ready.
+    const roster = (s.party || []).concat(s.box || []);
+    if (roster.some(p => p && p.origin === 'starter' && p.stage >= 1)) f['story.unlock_growup'] = true;
   }
 
   // §4. Returns { state, readOnly, notice }.
