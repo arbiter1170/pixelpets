@@ -1,0 +1,297 @@
+{
+  "spec": "GLIMMER_NEXT_QUEST.md",
+  "note": "The Signal Review. Objects and scenes only. Verbatim design JSON stays untouched. Save v stays 2. New keys are story.gb_* flags.",
+  "flags": {
+    "story.gb_invited": "gb_invite done",
+    "story.gb_relay_done": "gb_relay done",
+    "story.gb_hollis": "gb_hollis done",
+    "story.gb_done": "gb_briefing done",
+    "story.gb_escort": "stairs open for the day",
+    "story.gb_loan": "loaned relay crate",
+    "story.gb_relay_let": "let the hum run",
+    "story.gb_relay_back": "called the hum back",
+    "story.gb_hollis_kept": "kept Hollis's count",
+    "story.gb_hollis_told": "Hollis moved to the quarry count",
+    "story.gb_read": "the cradle read ran once",
+    "story.gb_stand": "stood with Glimmerwell",
+    "story.gb_hold": "held the chipped Walkling close",
+    "story.gb_tune_asked": "declined the Tuning re-offer",
+    "story.gb_tobin": "Tobin's one quarry line",
+    "story.gb_imogen_done": "one-shot review result",
+    "story.gb_imogen_result": "won or lost the review"
+  },
+  "slicePatch": {
+    "maps": {
+      "cobble_quarry": {
+        "addObjs": [
+          {
+            "kind": "npc",
+            "id": "gb_dorian",
+            "name": "Dorian Pell",
+            "look": "associate",
+            "x": 16,
+            "y": 4,
+            "facing": "down",
+            "when": ["story.side=glimmer", "story.cobble_end", "!story.gb_invited"],
+            "scene": "gb_invite"
+          }
+        ]
+      },
+      "route2_glen": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "gb_lamp_w",
+            "x": 8,
+            "y": 4,
+            "sprite": "comfort_lamp",
+            "when": ["story.side=glimmer", "story.gb_invited", "!story.gb_relay_done"]
+          },
+          {
+            "kind": "prop",
+            "id": "gb_lamp_n",
+            "x": 12,
+            "y": 2,
+            "sprite": "comfort_lamp",
+            "when": ["story.side=glimmer", "story.gb_invited", "!story.gb_relay_done"]
+          },
+          {
+            "kind": "prop",
+            "id": "gb_lamp_e",
+            "x": 16,
+            "y": 4,
+            "sprite": "comfort_lamp",
+            "when": ["story.side=glimmer", "story.gb_invited", "!story.gb_relay_done"]
+          },
+          {
+            "kind": "prop",
+            "id": "gb_crate_a",
+            "x": 17,
+            "y": 7,
+            "sprite": "crate",
+            "when": ["story.side=glimmer", "story.gb_invited", "!story.gb_relay_done"]
+          },
+          {
+            "kind": "prop",
+            "id": "gb_crate_b",
+            "x": 18,
+            "y": 7,
+            "sprite": "crate",
+            "when": ["story.side=glimmer", "story.gb_invited", "!story.gb_relay_done"]
+          },
+          {
+            "kind": "prop",
+            "id": "gb_loan_crate",
+            "name": "loaned relay",
+            "x": 7,
+            "y": 6,
+            "sprite": "loan_crate",
+            "when": ["story.side=glimmer", "story.gb_loan", "!story.gb_relay_done"]
+          },
+          {
+            "kind": "npc",
+            "id": "gb_imogen_npc",
+            "name": "Imogen",
+            "look": "associate",
+            "x": 12,
+            "y": 5,
+            "facing": "down",
+            "when": ["story.side=glimmer", "story.gb_invited", "!story.gb_relay_done"],
+            "scene": "gb_relay"
+          }
+        ]
+      },
+      "fb_heights": {
+        "addObjs": [
+          {
+            "kind": "npc",
+            "id": "gb_juniper",
+            "name": "Associate Juniper",
+            "look": "associate",
+            "x": 5,
+            "y": 6,
+            "facing": "left",
+            "when": ["story.side=glimmer", "story.gb_hollis", "!story.gb_escort"],
+            "scene": "gb_escort"
+          },
+          {
+            "kind": "trigger",
+            "id": "gb_escort_trig",
+            "x": 4,
+            "y": 6,
+            "r": 0,
+            "when": ["story.side=glimmer", "story.gb_hollis", "!story.gb_escort"],
+            "scene": "gb_escort"
+          }
+        ]
+      },
+      "rx_f4": {
+        "addObjs": [
+          {
+            "kind": "npc",
+            "id": "gb_dorian_bay",
+            "name": "Dorian Pell",
+            "look": "associate",
+            "x": 4,
+            "y": 7,
+            "facing": "up",
+            "when": ["story.side=glimmer", "story.gb_escort", "!story.gb_done"],
+            "scene": "gb_briefing"
+          },
+          {
+            "kind": "npc",
+            "id": "gb_rook_bay",
+            "name": "Rook",
+            "look": "rook",
+            "x": 10,
+            "y": 7,
+            "facing": "up",
+            "when": ["story.side=glimmer", "story.gb_escort", "!story.gb_done"],
+            "scene": "gb_briefing"
+          },
+          {
+            "kind": "trigger",
+            "id": "gb_brief_trig",
+            "x": 6,
+            "y": 5,
+            "r": 0,
+            "when": ["story.side=glimmer", "story.gb_escort", "!story.gb_done"],
+            "scene": "gb_briefing"
+          }
+        ]
+      }
+    }
+  },
+  "trainers": {
+    "gb_imogen": {
+      "name": "Imogen",
+      "title": "Glimmerwell Field Lead",
+      "map": "route2_glen",
+      "x": 12,
+      "y": 5,
+      "facing": "down",
+      "sight": 0,
+      "ai": "leader",
+      "oneShot": "story.gb_imogen",
+      "team": [
+        {"form": "moth/2", "level": 22, "moves": ["updraft", "arc_bolt", "puff_shot", "lantern_waltz"]},
+        {"form": "crab/2", "level": 23, "moves": ["brace_rock", "ripple_jab", "tumble_charge", "pebble_flick"]},
+        {"form": "volt/2", "level": 24, "moves": ["neon_flash", "arc_bolt", "puff_shot", "whisker_spark"]}
+      ],
+      "money": null,
+      "lines": {
+        "intro": "Quarterly review, sweetie. Show me the relay.",
+        "win": "Logged. The numbers love you. Have a bright day.",
+        "lose": "Logged. We'll brighten the next one. Have a bright day."
+      }
+    }
+  },
+  "scenes": {
+    "gb_invite": [
+      ["say", "Dorian Pell", "Junior Bright! The Capital wants a word. A Partnership Briefing, up in the Heights."],
+      ["if", "chip:any", [
+        ["say", "Dorian Pell", "{chip} is a relay now. It carries the signal so other Walklings can read it. Isn't that lovely?"],
+        ["say", "Dorian Pell", "Next quarter, holder lanyards with a little listening built in. But that's next quarter!"],
+        ["setFlag", "story.gb_invited", true]
+      ], [
+        ["say", "Dorian Pell", "No relay yet? Then borrow ours. This crate is on loan. Bring it back humming."],
+        ["say", "Dorian Pell", "Next quarter, holder lanyards with a little listening built in. But that's next quarter!"],
+        ["setFlag", "story.gb_loan", true],
+        ["setFlag", "story.gb_invited", true]
+      ]]
+    ],
+    "gb_relay": [
+      ["say", "Field Lead Imogen", "Relay mode, on. Stand {chip} by the lamps, sweetie. Quarterly targets."],
+      ["say", "", "{chip} starts to hum. Three sleepy Walklings get up and walk toward the open crates."],
+      ["relay", "start"],
+      ["choice", "", [
+        ["Let it hum", [
+          ["relay", "ship"],
+          ["say", "", "The lids close. The crates hum along with {chip} all the way down the road."],
+          ["standing", "glimmer", null, "gb_relay_g"],
+          ["align", "glimmer", 5],
+          ["setFlag", "story.gb_relay_let", true]
+        ]],
+        ["Call it back", [
+          ["relay", "scatter"],
+          ["say", "", "{chip} stops. The three blink, shake off the lamp light and scatter into the roots."],
+          ["say", "Field Lead Imogen", "I'll log that as a minor outage. Again. Have a bright day."],
+          ["standing", "keepers", null, "gb_callback_k"],
+          ["align", "keepers", 5],
+          ["setFlag", "story.gb_relay_back", true]
+        ]]
+      ]],
+      ["battle", "gb_imogen"],
+      ["setFlag", "story.gb_relay_done", true]
+    ],
+    "gb_hollis": [
+      ["say", "Associate Hollis", "I counted, {name}. The lamps don't count glow. They count Walklings."],
+      ["say", "Associate Hollis", "Nobody's taken a chip out. Nobody's tried. I asked."],
+      ["choice", "", [
+        ["Keep it between us", [
+          ["say", "Associate Hollis", "Then it stays here. I will not write it down."],
+          ["align", "keepers", 5],
+          ["setFlag", "story.gb_hollis_kept", true],
+          ["setFlag", "story.gb_hollis", true]
+        ]],
+        ["Tell Imogen", [
+          ["say", "Associate Hollis", "Then I'll take the quarry count. No harm. Just a move."],
+          ["align", "glimmer", 5],
+          ["setFlag", "story.gb_hollis_told", true],
+          ["setFlag", "story.gb_hollis", true]
+        ]]
+      ]]
+    ],
+    "gb_escort": [
+      ["say", "Associate Juniper", "Partner! Smile, and mean it. The stairs are open for you today."],
+      ["setFlag", "story.gb_escort", true]
+    ],
+    "gb_read": [
+      ["setFlag", "story.arbiter_test_active", true],
+      ["readWalk", "to"],
+      ["say", "", "{chip} walks to the cradle on its own. You say its name. It does not turn around."],
+      ["say", "", "Mint light runs along its fur, then back down into the floor."],
+      ["readWalk", "back"],
+      ["say", "", "{chip} blinks, finds you, and comes back. A little slower than it left."],
+      ["if", "story.rx_bitlet", [
+        ["say", "", "Bitlet's cursor flickers. COUNT. GATHER. LISTEN. Then, smaller: IT IS NOT SAYING HELLO."]
+      ], [
+        ["say", "", "The terminal cursor flickers. COUNT. GATHER. LISTEN. Then, smaller: IT IS NOT SAYING HELLO."]
+      ]],
+      ["readJoy"],
+      ["setFlag", "story.arbiter_test_active", false]
+    ],
+    "gb_briefing": [
+      ["standing", "glimmer", null, "gb_brief_g"],
+      ["if", "!chip:any", [
+        ["if", "!story.gb_tune_asked", [
+          ["say", "Associate Quinn", "The Tuning is still open, once. A relay of your own. Not today is fine."],
+          ["choice", "", [
+            ["Hear the Tuning", [["chipOffer"]]],
+            ["Not today", [["setFlag", "story.gb_tune_asked", true]]]
+          ]]
+        ], []]
+      ], []],
+      ["say", "Capital Partner", "Quarter Three. Relay coverage is our proudest number. Thank you, holder."],
+      ["say", "Capital Partner", "Every team carries one relay. That's policy now. Policy is kindness, written down."],
+      ["say", "Associate Quinn", "The cradle reads relays once a quarter. It only takes a moment. Nothing sharp. Nothing cold."],
+      ["say", "Associate Quinn", "Every kindness you give it, it passes along. Isn't that a partnership?"],
+      ["run", "gb_read"],
+      ["say", "Rook", "{name}. It walked to that thing without you."],
+      ["say", "Rook", "My offer's real. Half your score. It gets bigger every bright day you wait."],
+      ["choice", "", [
+        ["Stand with Glimmerwell", [
+          ["align", "glimmer", 5],
+          ["setFlag", "story.gb_stand", true]
+        ]],
+        ["Hold {chip} close", [
+          ["align", "keepers", 5],
+          ["setFlag", "story.gb_hold", true]
+        ]],
+        ["I want out", [["rookOut"]]]
+      ]],
+      ["say", "", "COMING LATER · Glimmerwell's next quarter. Thanks for playing!"],
+      ["setFlag", "story.gb_done", true]
+    ]
+  }
+}
