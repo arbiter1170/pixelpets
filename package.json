@@ -8,6 +8,9 @@
     "test:agent": "node tools/pp_test.js"
   },
   "devDependencies": {
-    "@playwright/test": "^1.64.0"
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@playwright/test": "^1.64.0",
+    "firebase": "^12.19.0",
+    "firebase-tools": "^15.34.0"
   }
 }

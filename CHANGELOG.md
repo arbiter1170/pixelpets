@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 22:46 ET: Play together review fixes (build 20261019-2246)
+
+- What changed and why: Supervisor review of PR #104. The emote-rate test loads `database.rules.json` into the `demo-walklings` namespace in `beforeAll`; the emulator only applied the rules to `demo-walklings-default-rtdb`, so the game's namespace ran open. "Joined. Say hi!" now shows once the holder is placed; before, `paintChrome()` hid it straight after it appeared. Settings: Show other holders sits with its ON / FRIENDS / SOLO switch, below Room code and Blocked holders. After merging main's `workers: 2` (PR #109), `tests/play_together.spec.js` runs only in the 390 project: two workers had run the 320/375 and 390 copies side by side on one emulator and room code, and one copy's teardown stopped the emulator under the other (34 failed at 320). 34 and 40 open their own 320 and 375 pages. BACKLOG logs a P2: recreating your own holder node skips the 2 s emote gap and the `pt` throttle (modified client only; invite-only playtest).
+- Files touched: `net.js`, `tests/play_together.spec.js`, `tests/README.md`, `BACKLOG.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: on `cursor/play-together-p1-3c2a`, build 20261019-2246.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. `tests/play_together.spec.js`, `tests/cloud_off.spec.js`, `tests/smoke.spec.js` and the RTDB rules check; see the PR body.
+- Decisions made (colour + reasoning): no new id. D276–D296 reserved: REMATCH_PARTY_STATS, next free D297.
+- Anything left unfinished: the rules are not deployed from this branch.
+
 ## 2026-10-19 22:31 ET: rx_f4 tank test samples the full window; suite runs 2 workers (test and config only, no build)
 
 - What changed and why: `tests/rx_f4_pilot.spec.js:208` (QA 9 / A7, tank frames) failed on main at all widths. The test compared only the first and last samples of a 700 ms window, but the tanks flip every 600 ms (`A.lab_tank`, 2 frames, `ms 600`). A window starting in the last 100 ms of a frame spans two flips and reads the same frame, and boot timing landed there almost every time. The game is fine. The watch now samples every animation frame for at least 1300 ms, more than two periods, and asserts exactly 1 distinct frame per tank cell under reduced motion, and exactly 2 per cell otherwise, flipping in step. `playwright.config.js` goes from `workers: 1` to `workers: 2` (`fullyParallel` stays false). The full suite takes about 890 s on 2 workers against about 1700 s on 1. No game code. Save `v` stays 2.
@@ -10,6 +19,24 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/rx_f4_pilot.spec.js` 5 of 5 PASS (passed=39 each, 320, 375, 390, 30–32 s). Full `npm run test:agent` (2 workers from the config): PP_TEST RESULT: PASS exit=0 passed=1209 failed=0 flaky=0 skipped=18 time=965s. Earlier 2-worker full runs on the group_battle branch: 891, 890 and 889 s, no group_battle flakes.
 - Decisions made (colour + reasoning): no new id. Green, test and config only.
 - Anything left unfinished: none.
+
+## 2026-10-19 22:14 ET: Merge main (PR #105 stair flights, #106 battle no-reload, #107 tour fix) into Play together (build 20261019-2214)
+
+- What changed and why: Supervisor catch-up of PR #104. Merged `origin/main` at `89b146d` (live 20261019-2202) and kept both sides. `game.js`, `cloud.js`, `save.js`, `sprites.js`, `style.css`, `README.md` and `tests/README.md` auto-merged. `index.html` and `version.json` (stamps only) keep this branch's script list, with `net.js`, and the new stamp. CHANGELOG keeps both sides' entries. `archive/DECISIONS_SETTLED.md` and the Settled list in `OPEN_DECISIONS.md` keep D195–D208 and D220–D230. The id headers take main's line: D258–D275 reserved for MAP_LAYERS, next free D276, plus D195–D208 (Play together) settled. `python3 tools/gen_mapdata.py` made no change beyond main's.
+- Files touched: merge of `main`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `NEXT_PLAN.md`, `BACKLOG.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: merge commit on `cursor/play-together-p1-3c2a`, build 20261019-2214.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Scoped specs: see the PR comment.
+- Decisions made (colour + reasoning): no new id. Next free D276. This PR uses no D258+ id.
+- Anything left unfinished: the rules are not deployed from this branch (`firebase deploy --only database --project walklings-4cc89` after merge).
+
+## 2026-10-19 22:11 ET: Play together hold fixes (build 20261019-2211)
+
+- What changed and why: Merged current `origin/main` and kept both sides. A second emote inside 2 s is refused: the send and the direct write share one queue, and `lastEmoteAt` keeps the gap after the emote is cleared. Rules reject a string in place of a friend, info, or block map, a key longer than 128 characters, a second WLK- code for one holder, and a move that writes only `x`. Realtime Database rules have no child count, so the 12 friend slots stay in the client and each key is a uid. "Joined. Say hi!" clears itself and stays hidden in SOLO. Nameplates stack when two holders share a tile. Settings shows the ON / FRIENDS / SOLO switch once, and the status line reads Room 1 · 1 here. Save `v` stays 2. The next free id stays D258. D195–D208 stay the Play together rows.
+- Files touched: `database.rules.json`, `net.js`, `style.css`, `tools/rtdb_rules_test.js`, `tests/play_together.spec.js`, `review-play-together/`, `index.html`, `version.json`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `tests/README.md`, `CHANGELOG.md`, plus the merge of `main`.
+- Commit(s) + build id: build 20261019-2211.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Scoped: `npm run test:agent -- tests/play_together.spec.js --project=390 -g "17 to 20 emote"` PP_TEST RESULT: PASS exit=0 passed=1 failed=0 flaky=0 skipped=0 time=12s, plus RTDB_RULES RESULT: PASS. `npm run test:agent -- tests/play_together.spec.js --project=390 --project=320` then failed one friends-list race; after the fix, `npm run test:agent -- tests/play_together.spec.js --project=390 -g "4 to 8 see|38 wording"` PP_TEST RESULT: PASS exit=0 passed=2 failed=0 flaky=0 skipped=0 time=20s, plus RTDB_RULES RESULT: PASS. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1208 failed=0 flaky=0 skipped=55 time=1909s, plus RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. The layout check also ran at 320. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): no new id. D195–D208 stay settled. The next free id stays D258.
+- Anything left unfinished: the Supervisor still publishes the rules (`firebase deploy --only database --project walklings-4cc89`). This commit does not deploy them.
 
 ## 2026-10-19 22:09 ET: group_battle test waits on the real battle state (test only, no build)
 
@@ -28,6 +55,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): see the PR. `python3 tools/bump_build.py --check` exit 0.
 - Decisions made (colour + reasoning): green, approved by Vincent. No new id.
 - Anything left unfinished: none.
+
 ## 2026-10-19 21:57 ET: Up flights open into three rows of PAL.k (design d106bca) (build 20261019-2157)
 
 - What changed and why: Supervisor review of PR #105 held the merge. The acceptance is solid black across rows 0–2 of every up flight, and the art had rows 0–1. Per design d106bca, `stair_home`, `lab_stair` and `step_up` now have PAL.k on rows 0–2 at the same x span (2–13; the narrowing corners stay clear). The light tread edge moves from row 2 to row 3, so the top tread face is row 4 and the riser stays on row 5. The glint art is unchanged on rows 3–4, just under the opening (D222 refinement). Down wells are unchanged. Save `v` stays 2.
@@ -63,6 +91,25 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): After merging main, focused overlap specs `npm run test:agent -- tests/stair_marker.spec.js tests/hearthmoor_polish.spec.js tests/lizzy.spec.js tests/civic.spec.js tests/obs_fix.spec.js tests/room_zoom.spec.js tests/unlock.spec.js tests/dream_toy.spec.js tests/tap_interact.spec.js tests/cloud_off.spec.js` PP_TEST RESULT: PASS exit=0 passed=153 failed=0 flaky=0 skipped=0 time=340s. Full suite: `npm run test:agent` PP_TEST RESULT: FAIL exit=1 passed=1195 failed=1 flaky=0 skipped=16 time=1764s. Widths 320, 375, and 390. The one failure was `[375] tests/group_battle.spec.js:134` (a 10s wait for the win). Rerun: `npm run test:agent -- tests/group_battle.spec.js` PP_TEST RESULT: PASS exit=0 passed=21 failed=0 flaky=0 skipped=0 time=13s. An earlier full run on this branch, before room zoom and polish, failed `maps_b4` (glint frames sized as a list, door steps counted as puddles) and `obs_fix` (the dusk mat missing from the skin remap). Those checks now keep the puddle rules and expect `mat_dusk`. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): D220–D230 settled by Vincent, Oct 19, 2026, 7:14 PM ET, on the defaults. A refinement of D222 (Lissett, CCO, via Vincent, 7:21 PM ET, no new id): the top of every up flight is solid PAL.k. No new id. D231–D239 stay with ROOM_ZOOM on main. The next free id is D258.
 - Anything left unfinished: Frostmere is not built. Glimmer Act 2 is still TBD. Online saves Phase 2 is still next. Hearthmoor polish (PR #100) is merged. The Flats sign stays at (14, 18) and the lantern post at (18, 19). The door step stays at (15, 18), a walkable cell, so the sign still reads from the door step. No marker sits on the sign, the lantern, or Bren's beat (1, 7)–(1, 9).
+
+## 2026-10-19 20:16 ET: Merge online saves into Play together (build 20261019-2016)
+
+- What changed and why: Merged `origin/main` (PR #99, online saves Phase 1, build 20261019-1759) and kept both sides. Anonymous cloud backup stays on. The Realtime Database root stays locked, and the Play together child rules replace that branch's full lock. `?cloud=emu` still loads the pinned SDK. Live Firebase hosts stay unroutable in the suite. Save `v` stays 2.
+- Files touched: merge of `main`, `cloud.js`, `cloud_config.js`, `database.rules.json`, `firebase.json`, `playwright.config.js`, `tests/cloud_off.spec.js`, `index.html`, `version.json`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261019-2016.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/cloud_off.spec.js tests/play_together.spec.js` PP_TEST RESULT: PASS exit=0 passed=36 failed=0 flaky=0 skipped=39 time=252s, plus RTDB_RULES RESULT: PASS. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1166 failed=0 flaky=0 skipped=55 time=1817s, plus RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. Console errors: none (the specs fail the run on a console error). `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): no new id. D195–D208 stay settled.
+- Anything left unfinished: the Supervisor still publishes the rules (`firebase deploy --only database --project walklings-4cc89`). Online saves Phase 2 is not this build.
+
+## 2026-10-19 19:33 ET: Play together, see each other (build 20261019-1933)
+
+- What changed and why: Holders with the same room code see each other on Hearthmoor and Route 1. SAY sends a set emote or phrase. A tap opens a holder card (WAVE, MUTE, BLOCK). Settings gains Play together when the shared walk is on: Show other holders (ON, FRIENDS, SOLO), the room code, and Blocked holders. Friends is twelve slots and a mutual add by WLK- code (old PXP- codes are accepted). No free text is stored in a room node. Trading is not in this build (D198). Save `v` stays 2. The only new save field is optional `settings.showOthers`. The device key `pixelpets.net` holds the room code, mutes, and blocks, and Start over clears it. The parent `/hidden/{target}` list is not readable. A holder can read only a known `/hidden/{target}/{blocker}` child. Rules are in the repo and are not deployed from this branch.
+- Files touched: `database.rules.json`, `firebase.json`, `tools/rtdb_rules_test.js`, `tools/pp_test.js`, `package.json`, `cloud.js`, `net.js`, `game.js`, `save.js`, `sprites.js`, `style.css`, `index.html`, `tests/play_together.spec.js`, `review-play-together/`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `tests/README.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261019-1933.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Design packet checker `PLAY_TOGETHER_P1 check: PASS`. Scoped run before the stamp: `npm run test:agent -- tests/play_together.spec.js` PP_TEST RESULT: PASS exit=0 passed=21 failed=0 flaky=0 skipped=39 time=247s, plus RTDB_RULES RESULT: PASS. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1151 failed=0 flaky=0 skipped=55 time=2335s, plus RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. The layout check also ran at 320. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): D195–D199 settled with Q1 (Vincent, Oct 19, 2026, ~5:06 PM ET). D200–D207 were yellow and Vincent approved each packet default at about 6:21 PM ET. D208 is the green tech default. No id was renumbered. The next free id stays D258. Yellow rows stay behind `NET_CFG` and `NET_TEXT`.
+- Anything left unfinished: the Supervisor still publishes the rules (`firebase deploy --only database --project walklings-4cc89`). Friends as Phone contacts, preset-phrase mail, and a Phone unread badge are reserved on the device key and are not built. Trading stays out (D198). Frostmere is not built. Glimmer Act 2 is still TBD. Online saves Phase 2 (Link Google) is not this build.
+
 ## 2026-10-19 20:09 ET: Merge main (online saves Phase 1) into Hearthmoor movement polish (build 20261019-2009)
 
 - What changed and why: Merged `origin/main` at `f17b830` (PR #99, online saves Phase 1, build 20261019-1759) into this branch and kept both sides. CHANGELOG keeps both entries. `index.html` and `version.json` take main's side and the new stamp 20261019-2009, later than 1759. `python3 tools/gen_mapdata.py` made no further change. Save `v` stays 2.
@@ -115,7 +162,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: build 20261019-1759.
 - Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Full suite: PP_TEST RESULT: PASS exit=0 passed=1145 failed=0 flaky=0 skipped=16 time=1605s. Widths 320, 375, and 390.
 - Decisions made (colour + reasoning): no new id. Next free stays D195.
-- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database stays locked.
+- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database lock on that branch is replaced by the Play together rules on this branch.
 
 ## 2026-10-19 17:22 ET: Arbiter Test music and final tour copy (build 20261019-1722)
 

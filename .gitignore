@@ -1,6 +1,9 @@
 design/
 docs/
 node_modules
+database-debug.log
+firebase-debug.log
+*-debug.log
 test-results/
 playwright-report/
 test-logs/

@@ -628,7 +628,7 @@ function showTab(name){
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [] };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || tut.on;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || !$('#ovKit').hidden || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -3880,7 +3880,9 @@ function drawMap(t){
   }
   if (fol.x != null && p) ents.push({ y: fol.fy, draw: drawFollower });
   ents.push({ y: walk.fy + 0.01, draw: drawPlayer });
+  if (window.PPNet && PPNet.mapEnts) PPNet.mapEnts(g, cx, cy).forEach(e => ents.push(e));
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
+  if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
   drawHqGlow(g, cx, cy);
   wild.poofs = wild.poofs.filter(f => wild.clock - f.t < 500);
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
@@ -7000,6 +7002,7 @@ function phoneApp(id){
     renderRibbit(body);
   } else if (id === 'friends') {
     $('#friendCode').textContent = friendCode(); renderKeeperName();
+    if (window.PPNet && PPNet.renderFriends) PPNet.renderFriends();
   }
   $('#phoneHome').hidden = true; $('#phonePane').hidden = false;
   sfx('tap');
@@ -9711,6 +9714,7 @@ function bindInput(){
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
       const o = objAt(tx, ty, tappable) || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
       if (scene || fade.busy) { /* nothing */ }
+      else if (window.PPNet && PPNet.tapTile(tx, ty)) { wild.chase = null; }
       else if (w && pet()) { if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
       else if (followerAt(tx, ty)) { clearMoves(); openStatsCard(pet().id); }                                      // tap the follower: its stats card (K.4)
       else if (o) { wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
@@ -9872,6 +9876,34 @@ function startCloud(){
     // adopt a cloud save: this page stops writing, the v2 key gets the cloud copy as-is (its `last` keeps away-time decay), reload
     adopt: raw => { if (resetting) return; if (overlayOpen() || (battle && battle.on)) return;   // belt and braces: never reload under a battle or overlay (cloud retries)
       resetting = true; clearMoves(); clearInterval(saveTimer); try { localStorage.setItem(PPSave.V2_KEY, raw); } catch(e) {} markReload('cloud'); location.reload(); },
+  });
+  if (window.PPNet) PPNet.start({
+    debug: () => DEBUG,
+    mapId: () => CUR && CUR.id,
+    interior: () => isRoom(),
+    walking: () => !!(walk.to || walk.dpad),
+    busy: () => !!scene || !!(battle && battle.on),
+    pos: () => S && { x: S.world.x | 0, y: S.world.y | 0, facing: S.world.facing },
+    fx: () => ({ x: walk.fx, y: walk.fy }),
+    cam: () => ({ x: walk.cam.x, y: walk.cam.y }),
+    follower: () => fol.x != null ? { x: fol.fx, y: fol.fy } : null,
+    look: () => (S && S.player && S.player.look) || null,
+    partner: () => { const p = pet(); return p ? { species: p.species, stage: p.stage || 0, level: levelOf(p), nick: p.nick || '' } : null; },
+    formName: (sp, st) => { const si = SP_INDEX[sp]; return si == null ? '' : nameOf(si, st || 0); },
+    playerName: () => playerName(),
+    bond: () => { const p = pet(); return p ? bondLevel(p) : 0; },
+    seenCount: () => (S && S.dex && S.dex.seen) ? Object.keys(S.dex.seen).filter(k => S.dex.seen[k]).length : 0,
+    befriended: () => allPets().length,
+    seals: () => (S && S.seals) ? Object.values(S.seals).filter(Boolean).length : 0,
+    reduced: () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } },
+    stepMs: () => STEP_MS,
+    keeper: (look, facing, frame) => { const pack = keeperFrames(look); return pack && pack[facing] ? pack[facing][frame] || pack[facing][0] : null; },
+    spr: (sp, st, hop) => { const si = SP_INDEX[sp]; if (si == null) return null; const set = sprSet(si, st | 0, false); return set ? set[hop ? 'b' : 'n'] : null; },
+    glyph: (g, name, x, y) => drawGlyph(g, name, x, y),
+    toast, save,
+    showOthers: () => (S && S.settings && (S.settings.showOthers === 'friends' || S.settings.showOthers === 'solo') ? S.settings.showOthers : 'on'),
+    setShow: m => { if (!S) return; S.settings.showOthers = m; save(); },
+    friendCode: () => friendCode(),
   });
 }
 
@@ -10355,6 +10387,7 @@ function boot(){
     });
     return true;
   };
+  Object.defineProperty(api, 'net', { get(){ return (DEBUG && window.PPNet && PPNet.debug) ? PPNet.debug() : null; } });
   window.PixelPets = Object.freeze(api);
   window.holdItem = holdItem;
   window.unholdItem = unholdItem;

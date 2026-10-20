@@ -27,14 +27,20 @@ const PPCloud = (() => {
   const blockLive = qCloud === 'off' || (automated && qCloud !== 'emu' && qCloud !== 'block');
   const liveCfg = window.PP_CLOUD_CONFIG && typeof window.PP_CLOUD_CONFIG === 'object' && window.PP_CLOUD_CONFIG.apiKey && window.PP_CLOUD_CONFIG.projectId ? window.PP_CLOUD_CONFIG : null;
   const CFG = blockLive ? null
-    : EMU ? { apiKey: 'demo-key', authDomain: 'demo-walklings.firebaseapp.com', projectId: 'demo-walklings', appId: 'demo-walklings' }
+    : EMU ? { apiKey: 'demo-key', authDomain: 'demo-walklings.firebaseapp.com', projectId: 'demo-walklings', appId: 'demo-walklings', databaseURL: 'http://127.0.0.1:' + ((+q.get('dbPort') > 0) ? +q.get('dbPort') : 9000) + '?ns=demo-walklings' }
     : liveCfg;
   const noop = () => {};
-  if (!CFG) return Object.freeze({ enabled: false, CLOUD_KEY, BACKUP_KEY, start: noop, overlayOpen: () => false, startOver: wipe => { wipe(); return Promise.resolve(true); }, info: () => ({ enabled: false, blocked: blockLive }) });
+  const offApi = Object.freeze({
+    enabled: false, emu: false, CLOUD_KEY, BACKUP_KEY, SDK_VERSION, CDN,
+    start: noop, overlayOpen: () => false, startOver: wipe => { wipe(); return Promise.resolve(true); },
+    info: () => ({ enabled: false, blocked: blockLive }),
+    app: () => null, uid: () => null, onReady: noop,
+  });
+  if (!CFG) return offApi;
 
   const num = (k, d) => { const v = +q.get(k); return EMU && Number.isFinite(v) && v > 0 ? v : d; };   // test knobs, emulator only
   const GAP = num('cloudGap', 60000), TICK = num('cloudTick', 10000), NET_WAIT = num('cloudWait', 10000), LOAD_WAIT = 20000;
-  const EMU_AUTH = 'http://127.0.0.1:' + num('authPort', 9099), EMU_FS_PORT = num('fsPort', 8080);
+  const EMU_AUTH = 'http://127.0.0.1:' + num('authPort', 9099), EMU_FS_PORT = num('fsPort', 8180), EMU_DB_PORT = num('dbPort', 9000);
 
   /* ---------- device key ---------- */
   const DEV0 = () => ({ fbUid: null, syncedRev: 0, syncedHash: null, pending: null, pendingErase: false, paused: false, lastSyncAt: 0, adopted: false });
@@ -54,7 +60,9 @@ const PPCloud = (() => {
   const petsIn = s => !!s && ((Array.isArray(s.party) && s.party.length) || (Array.isArray(s.box) && s.box.length));
 
   /* ---------- state ---------- */
-  let H = null, fb = null, auth = null, db = null, user = null;
+  let H = null, fb = null, auth = null, db = null, user = null, firebaseApp = null;
+  const readyFns = [];
+  function pokeReady(){ const fns = readyFns.splice(0); fns.forEach(fn => { try { fn(user); } catch (e) {} }); }
   let status = 'starting', compared = false, inflight = null, lastUpload = 0, lastSeen = null, conflict = null, lastErr = null;
   const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error('timeout'), { code: 'timeout' })), ms))]);
   const ref = () => fb.fs.doc(db, 'saves', user.uid);
@@ -64,11 +72,12 @@ const PPCloud = (() => {
   async function loadSdk(){
     const [app, au, fs] = await withTimeout(Promise.all(['firebase-app.js', 'firebase-auth.js', 'firebase-firestore.js'].map(f => import(CDN + f))), LOAD_WAIT);
     fb = { app, au, fs };
-    const a = app.initializeApp(CFG, 'walklings');
-    auth = au.getAuth(a); db = fs.getFirestore(a);
+    firebaseApp = app.initializeApp(CFG, 'walklings');
+    auth = au.getAuth(firebaseApp); db = fs.getFirestore(firebaseApp);
     if (EMU) { au.connectAuthEmulator(auth, EMU_AUTH, { disableWarnings: true }); fs.connectFirestoreEmulator(db, '127.0.0.1', EMU_FS_PORT); }
     user = await new Promise(res => { const off = au.onAuthStateChanged(auth, u => { off(); res(u); }); });
     if (!user) user = (await withTimeout(au.signInAnonymously(auth), NET_WAIT)).user;
+    pokeReady();
   }
 
   async function start(hooks){
@@ -289,5 +298,10 @@ const PPCloud = (() => {
   }
 
   const info = () => ({ enabled: true, emu: EMU, sdk: SDK_VERSION, status, compared, conflict: !!conflict, inflight: !!inflight, fbUid: user && user.uid, dev: readDev(), lastErr, gap: GAP, row: row ? row.querySelector('.set-sub').textContent : null, state: stateLine() });
-  return Object.freeze({ enabled: true, emu: EMU, CLOUD_KEY, BACKUP_KEY, LABEL, start, overlayOpen: isOpen, startOver, info, syncNow: () => sync(true), hashOf });
+  return Object.freeze({
+    enabled: true, emu: EMU, CLOUD_KEY, BACKUP_KEY, LABEL, SDK_VERSION, CDN, EMU_DB_PORT,
+    start, overlayOpen: isOpen, startOver, info, syncNow: () => sync(true), hashOf,
+    app: () => firebaseApp, uid: () => user && user.uid,
+    onReady: fn => { if (user) fn(user); else readyFns.push(fn); },
+  });
 })();
