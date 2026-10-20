@@ -2,6 +2,24 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 20:09 ET: Merge main (online saves Phase 1) into Hearthmoor movement polish (build 20261019-2009)
+
+- What changed and why: Merged `origin/main` at `f17b830` (PR #99, online saves Phase 1, build 20261019-1759) into this branch and kept both sides. CHANGELOG keeps both entries. `index.html` and `version.json` take main's side and the new stamp 20261019-2009, later than 1759. `python3 tools/gen_mapdata.py` made no further change. Save `v` stays 2.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: merge commit on `cursor/hearthmoor-movement-polish`, build 20261019-2009.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Full suite after the merge: `npm run test:agent` PP_TEST RESULT: FAIL exit=1 passed=1156 failed=1 flaky=0 skipped=16 time=1699s. The one failure was `[320] tests/rx_f4_pilot.spec.js:208` (tank frames). On main `f17b830` on the same box, `npm run test:agent -- tests/rx_f4_pilot.spec.js -g "tanks hold"` gives PP_TEST RESULT: FAIL exit=1 passed=0 failed=3 at all three widths, so that failure is already on main.
+- Decisions made (colour + reasoning): no new id. Next free stays D195.
+- Anything left unfinished: none from the merge.
+
+## 2026-10-19 18:56 ET: Hearthmoor movement polish (build 20261019-1856)
+
+- What changed and why: Vincent's playtest found column 18 outside Amberhill Flats read as one clipped stack, and Officer Bren kept walking into the keeper. The lantern post moves from (18,18) to (18,19). The Flats sign moves from (18,16) to (14,18), in front of the Flats wall left of the door, so it reads from the School Lane path at (14,19) and from the door step. Before, it could only be read from (18,14) on the Lantern House strip. The leaf litter stays at (18,15). Bren's beat was the whole main road, (4,8) to (18,8). It is now (1,7) to (1,9) in the west yard, off every path, door front and sign tile. `tickPatrol` makes a patrolling NPC wait while the keeper is within 2 tiles, and face the keeper when beside them. Walk toasts were checked: none sets an input lock (toasts are `pointer-events:none`, and no toast calls `clearMoves`). The stop came from walking into Bren, which is bump-to-talk. A new spec holds the walk through the "Nice walk" toast. Save `v` stays 2. No new flags. No new player copy.
+- Files touched: `data/detail_lizzy.json`, `data/civic.json`, `data/mapdata.js`, `game.js`, `tests/hearthmoor_polish.spec.js` (new), `tests/lizzy.spec.js`, `tests/maps_b4.spec.js`, `tests/civic.spec.js`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: build 20261019-1856.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/hearthmoor_polish.spec.js tests/civic.spec.js tests/lizzy.spec.js tests/maps_b4.spec.js` PP_TEST RESULT: PASS exit=0 passed=108 failed=0 flaky=0 skipped=0 time=172s. Full suite: PP_TEST RESULT: FAIL exit=1 passed=1140 failed=2 flaky=0 skipped=16 time=1702s. The only failure was `[375,390] tests/rx_f4_pilot.spec.js:208` (tank frames). It also fails on unchanged main (build 20261019-1722) at all three widths on this box, so it is not from this change. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error). Hearthmoor reachable cells (BFS from (3,6), blocked tiles excluded, rival and side flags set): 255 on main, 256 here.
+- Decisions made (colour + reasoning): green, cleared by the Supervisor. No new id. Next free stays D195.
+- Anything left unfinished: `hm_board` (8,7) sits on the row 7 path tiles, but that plaza is from `town_board.json`, and the row 8 road beside it stays open, so it was left. `hm_bush_w` (1,10) seals a 5-cell dead-end strip at x 1, rows 11 to 15. No walking line goes there, so it was left.
+
 ## 2026-10-19 20:05 ET: Grow-up tip stays away after the partner grows up (build 20261019-2005)
 
 - What changed and why: The growing up tip (D180) could open on WALK after the partner had already grown up, and SHOW ME landed on the Pet tab with no GROW UP button. The tip is offered only when the partner is ready. Growing up marks `story.unlock_growup` and drops the queued tip. An older save whose starter has already grown up (on the team or in the box) is marked seen on load. A wild Walkling does not count. Replay tips still clears the flag and can show the card again while the partner is ready. Save `v` stays 2. No new decision id.
