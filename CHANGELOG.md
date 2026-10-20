@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-20 14:15 ET: Unknown species stays in the party and the box (build 20261020-1415)
+
+- What changed and why: HUSHWATER B0 (design tip 64764b0, acceptance 11). A species id this client does not know stays in the party or the box, keeps its moves and journal keys, and draws a fallback picture. The journal names it ???. It is not battle-ready: it cannot lead, and SWAP skips it. Save stays `pixelpets.save.v2` with `v` 2. No new field. A v1 unknown index and an already-orphaned row still stay in orphans. B1, E1–E4 and B2 are not in this build. Out there stays 45.
+- Files touched: `save.js`, `sprites.js`, `stats.js`, `game.js`, `tests/hushwater_b0.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261020-1415.
+- Tests run and result (widths, checks): filled in after the suite.
+- Decisions made (colour + reasoning): D347 was settled by Vincent at 11:34 AM ET Oct 20, 2026, on the defaults. D357 is green. No new id. No id was renumbered. D346–D362 stay reserved for HUSHWATER. D380–D389 stay reserved for PLAYTEST_FIX. Next free id is D363, then D390.
+- Anything left unfinished: B1, E1–E4 and the 12 forms (B2) are not built.
+
 ## 2026-10-20 11:49 ET: Settings build line no longer clips (build 20261020-1149)
 
 - What changed and why: PLAYTEST_FIX_1020 item D380 (green, design 9510519). The Settings build line wraps instead of clipping, and the CLOSE button keeps its height. Save stays `pixelpets.save.v2` with `v` 2. No new key. D380 had no open row, so no decision file changed. No id was renumbered. D380–D389 stay reserved.

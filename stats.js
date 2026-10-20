@@ -119,8 +119,9 @@ function wakeIfRested(p, now = Date.now()){
 }
 // The TIRED badge test (v1.1): awake but under 25% of max HP. The follower droop keys off isFainted.
 const isTired = p => !!p && !isFainted(p) && hpOf(p) < FAINT_RULES.tiredBelow * maxHpOf(p);
-// §7. Can start a battle: not Fainted, has HP and NRG >= 10. A battle already underway can send anyone with HP (game.js canStepIn).
-const canBattle = (p, now = Date.now()) => !!p && !isFainted(p, now) && hpOf(p) > 0 && p.energy >= STAT_RULES.MOOD.minBattleNrg;
+// §7. Can start a battle: a known form, not worn out, has HP and NRG >= 10.
+// statsAt null (a species this client does not know) stays on screen and cannot lead.
+const canBattle = (p, now = Date.now()) => !!p && !!statsAt(formIdOf(p), levelOf(p)) && !isFainted(p, now) && hpOf(p) > 0 && p.energy >= STAT_RULES.MOOD.minBattleNrg;
 // A battle-ready snapshot of a pet: {form, species, stage, type, level, maxHp, hp, atk, def, spd, mood}.
 function battlerOf(p){
   const form = formIdOf(p), level = levelOf(p), s = statsAt(form, level) || { hp: 1, atk: 1, def: 1, spd: 1 };

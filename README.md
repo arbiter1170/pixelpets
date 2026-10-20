@@ -397,13 +397,13 @@ Saves (format v2, `save.js`):
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
   `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`, then `byte`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
   The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 45 form ids) is append-only: new lines are added at the end
-  of `SPECIES` and of the table without a new save version, and a dev check reports any reorder. A Walkling whose
-  species an older build didn't know sits in `orphans` there and comes back to the box once the species exists.
-  Unknown fields are kept on load and save.
+  of `SPECIES` and of the table without a new save version, and a dev check reports any reorder. A v2 Walkling whose
+  species id this build does not know stays in the party or the box. Its moves and journal keys stay. The picture is a plain fallback, and the journal names it ???. It is not battle-ready, so it cannot lead and a SWAP skips it. A row already in `orphans`, and a v1 pet whose index this build cannot read, still stays in `orphans` and comes back to the box only when the species is known.
+  Unknown fields are kept on load and save. Save `v` stays 2. B0 adds no field.
 - An old `pixelpets.save.v1` is migrated once, on the first load of this version: every Walkling and its
   cooldown/daily-cap/step fields carry over, away-time decay still applies, the friend code stays the same.
   The v1 key is never changed or deleted (except by Start over), and its raw text is copied once to `pixelpets.save.v1.bak`.
-  Walklings that can't be read (unknown species) are kept aside in the save's `orphans` list, not dropped.
+  A v1 Walkling whose species index cannot be read is kept aside in the save's `orphans` list, not dropped. A v2 pet with an unknown species id stays in the party or the box.
 - A save that can't be read is copied to `pixelpets.save.corrupt` before anything else happens. A v2 save
   that can't be read falls back to migrating the v1 save again (with a notice). A save from a newer version
   shows "This save is from a newer version of Walklings. Reload to update." and is never overwritten.
