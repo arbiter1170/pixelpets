@@ -1,5 +1,5 @@
 /* STAIR_MARKER: flights, sills, glint, and the visited dim.
-   Up openings are PAL.k. Down wells stay as specced. Save v stays 2. */
+   Up openings are PAL.k across rows 0-2 (design d106bca); the tread edge and glint start at row 3. Down wells stay as specced. Save v stays 2. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -132,7 +132,7 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
       const d = cell(1, 5);
       if (!d) { home.push('offscreen'); break; }
       let on = false;
-      for (let y = 3; y <= 4; y++) for (let x = 5; x <= 10; x++) {
+      for (let y = 4; y <= 4; y++) for (let x = 5; x <= 10; x++) {   // glint rows 3-4; row 3 is the white tread edge, so read the face row
         if (hexOf(d, (y * 16 + x) * 4) === '#f4f4f4') on = true;
       }
       if (on) sawOn = true; else sawOff = true;
@@ -149,7 +149,7 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
     const black = cell(1, 5);
     let opening = true, corners = true;
     if (black) {
-      for (let y = 0; y <= 1; y++) for (let x = 2; x <= 13; x++) if (hexOf(black, (y * 16 + x) * 4) !== K) opening = false;
+      for (let y = 0; y <= 2; y++) for (let x = 2; x <= 13; x++) if (hexOf(black, (y * 16 + x) * 4) !== K) opening = false;
       for (const [x, y] of [[0, 0], [1, 0], [14, 0], [15, 0], [0, 1], [15, 1]]) if (hexOf(black, (y * 16 + x) * 4) === K) corners = false;
     } else opening = false;
     const rows = [];
@@ -174,7 +174,17 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
     let hqBlack = false;
     if (hq) {
       hqBlack = true;
-      for (let y = 0; y <= 1; y++) for (let x = 2; x <= 13; x++) if (hexOf(hq, (y * 16 + x) * 4) !== K) hqBlack = false;
+      for (let y = 0; y <= 2; y++) for (let x = 2; x <= 13; x++) if (hexOf(hq, (y * 16 + x) * 4) !== K) hqBlack = false;
+    }
+    // d106bca: every up flight the spec covers opens into rows 0-2 of solid PAL.k, on screen (keeper two rows below).
+    const upOpen = [];
+    for (const m of marks.filter((mk) => (mk.sprites || []).includes('wayin_glint_up'))) {
+      PixelPets.goto(m.map, m.x, Math.min(m.y + 2, PixelPets.mapInfo.h - 1), 'up');
+      await settle();
+      const d = cell(m.x, m.y);
+      let ok = !!d;
+      if (d) for (let y = 0; y <= 2; y++) for (let x = 2; x <= 13; x++) if (hexOf(d, (y * 16 + x) * 4) !== K) ok = false;
+      upOpen.push(m.map + ' ' + m.x + ',' + m.y + (ok ? ' black' : ' NOT black'));
     }
     PixelPets.goto('hm_home_up', 4, 5, 'down');
     await settle();
@@ -185,8 +195,8 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
     for (let n = 0; n < 16; n++) {
       const d = cell(1, 5);
       if (!d) { dimBlack.opening = false; break; }
-      for (let y = 3; y <= 4; y++) for (let x = 5; x <= 10; x++) if (hexOf(d, (y * 16 + x) * 4) === '#f4f4f4') dimLit = true;
-      for (let y = 0; y <= 1; y++) for (let x = 2; x <= 13; x++) if (hexOf(d, (y * 16 + x) * 4) !== K) dimBlack.opening = false;
+      for (let y = 4; y <= 4; y++) for (let x = 5; x <= 10; x++) if (hexOf(d, (y * 16 + x) * 4) === '#f4f4f4') dimLit = true;
+      for (let y = 0; y <= 2; y++) for (let x = 2; x <= 13; x++) if (hexOf(d, (y * 16 + x) * 4) !== K) dimBlack.opening = false;
       await sleep(100);
     }
     const seen = PixelPets.state.floorSeen || null;
@@ -224,10 +234,10 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
     const f5 = (() => { PixelPets.goto('hm_flats_5', 1, 6, 'up'); return PixelPets.tileInfo(0, 6).ch; })();
     return {
       art: {
-        home: art.stair_home.rows.slice(0, 2),
+        home: art.stair_home.rows.slice(0, 4),
         loft0: art.stair_loft.rows[0],
-        lab: art.lab_stair.rows.slice(0, 2),
-        up: art.step_up.rows.slice(0, 2),
+        lab: art.lab_stair.rows.slice(0, 4),
+        up: art.step_up.rows.slice(0, 4),
         down0: art.step_down.rows[0],
         downWell: art.step_down.rows[15],
         corners: art.stair_home.rows[0][0] + art.step_up.rows[0][0] + art.lab_stair.rows[0][0],
@@ -236,7 +246,7 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
         glintMs: A.wayin_glint_up && A.wayin_glint_up.ms,
         stepAnim: Array.isArray(A.step_up) || Array.isArray(A.door_step) || Array.isArray(A.door_step_warm),
       },
-      rows, home, sawOn, sawOff, outsideGlint: outsideGlint.length, opening, corners, hqBlack,
+      rows, home, sawOn, sawOff, outsideGlint: outsideGlint.length, opening, corners, hqBlack, upOpen,
       dimLit, dimOpening: dimBlack.opening,
       seen, v: PixelPets.state.v,
       junk: { v: junk.v, floorSeen: junk.floorSeen },
@@ -246,9 +256,12 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
   }, MARKS);
 
   expect(report.art.outside).toEqual([]);
-  expect(report.art.home).toEqual(['..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..']);
-  expect(report.art.lab).toEqual(['..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..']);
-  expect(report.art.up).toEqual(['..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..']);
+  expect(report.art.home.slice(0, 3), 'home: rows 0-2 PAL.k (d106bca)').toEqual(['..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..']);
+  expect(report.art.home[3].includes('k'), 'home: the tread edge starts at row 3').toBe(false);
+  expect(report.art.lab.slice(0, 3), 'lab: rows 0-2 PAL.k (d106bca)').toEqual(['..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..']);
+  expect(report.art.lab[3].includes('k'), 'lab: the tread edge starts at row 3').toBe(false);
+  expect(report.art.up.slice(0, 3), 'up: rows 0-2 PAL.k (d106bca)').toEqual(['..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..', '..kkkkkkkkkkkk..']);
+  expect(report.art.up[3].includes('k'), 'up: the tread edge starts at row 3').toBe(false);
   expect(report.art.corners).toBe('...');
   expect(report.art.loft0.startsWith('k')).toBe(false);
   expect(report.art.down0.includes('k')).toBe(false);
@@ -273,6 +286,8 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
   expect(report.opening).toBe(true);
   expect(report.corners).toBe(true);
   expect(report.hqBlack).toBe(true);
+  expect(report.upOpen.length).toBe(7);   // hm_home_in, hm_hq_f1, hc_mall_1, rx_f1, rx_f2, rx_f3, sm_tunnel
+  for (const line of report.upOpen) expect(line, 'rows 0-2 PAL.k').toMatch(/ black$/);
   expect(report.dimLit).toBe(false);
   expect(report.dimOpening).toBe(true);
   expect(report.seen.hm_home_up).toBe(1);

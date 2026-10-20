@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 21:57 ET: Up flights open into three rows of PAL.k (design d106bca) (build 20261019-2157)
+
+- What changed and why: Supervisor review of PR #105 held the merge. The acceptance is solid black across rows 0–2 of every up flight, and the art had rows 0–1. Per design d106bca, `stair_home`, `lab_stair` and `step_up` now have PAL.k on rows 0–2 at the same x span (2–13; the narrowing corners stay clear). The light tread edge moves from row 2 to row 3, so the top tread face is row 4 and the riser stays on row 5. The glint art is unchanged on rows 3–4, just under the opening (D222 refinement). Down wells are unchanged. Save `v` stays 2.
+- Files touched: `sprites.js`, `tests/stair_marker.spec.js`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: `cursor/stair-marker-2d51`, build 20261019-2157.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/stair_marker.spec.js tests/hearthmoor_polish.spec.js tests/maps_b4.spec.js tests/smoke.spec.js` PP_TEST RESULT: PASS exit=0 passed=75 failed=0 flaky=0 skipped=0 time=128s (320/375/390). `stair_marker` asserts rows 0–2 PAL.k in the tile art and on screen at `hm_home_in` (1,5) and `hm_hq_f1` (12,3), and on every other up flight it covers (`hc_mall_1`, `rx_f1`, `rx_f2`, `rx_f3`, `sm_tunnel`). The lit-glint read moves to row 4, because row 3 is the white tread edge. On the old art the spec fails ("home: rows 0-2 PAL.k"). `python3 tools/bump_build.py --check` exit 0.
+- Decisions made (colour + reasoning): green, design d106bca. No new id. Next free D276.
+- Anything left unfinished: none.
+
 ## 2026-10-19 21:49 ET: Merge main (P0 battle no-reload hotfix, PR #106) into Stair flights; MAP_LAYERS ids reserved (build 20261019-2149)
 
 - What changed and why: Merged `origin/main` at `8128377` (PR #106, build 20261019-2143) into `cursor/stair-marker-2d51`. `game.js`, `cloud.js` and `tests/README.md` auto-merged. `index.html` and `version.json` (stamps only) take main's side and the new stamp. CHANGELOG keeps both entries. `python3 tools/gen_mapdata.py` made no change. Header-only id note (Supervisor): D258–D275 reserved for MAP_LAYERS (design 57dee5a). The next free id is D276, in `OPEN_DECISIONS.md`, `NEXT_PLAN.md` and `BACKLOG.md`. No rows added. Save `v` stays 2.
