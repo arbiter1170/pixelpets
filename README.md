@@ -20,7 +20,7 @@ Touch: bottom tabs (PARTNER / WALK / WALKLINGS / QUEST); FEED / PLAY / REST; Wal
 walk into a wild creature (or tap it and your keeper walks over) to meet it. Tap your partner (the follower) for its stats card.
 Keyboard (bonus): Arrows/WASD walk, 1-4 tabs. In a battle: 1-5 or F/B/S/R = Fight / Befriend / Swap / Bag / Run,
 Space or Enter skips a message, Space = Befriend on the timing bar, Escape = back.
-Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), a Vol slider beside Music (0–100, saved as `settings.musicVol` from 0 to 1), Follower on/off, Change look, Tutorial (REPLAY), Tips on/off (`settings.tips`, default on), Replay tips, Save a copy, Read a copy, Start over, and Debug.
+Sound: the settings gear in the header opens Sound on/off (remembered in `pixelpets.mute`), Music on/off (saved with the game), a Vol slider beside Music (0–100, saved as `settings.musicVol` from 0 to 1), Follower on/off, Change look, Tutorial (REPLAY), Tips on/off (`settings.tips`, default on), Replay tips, Save a copy, Read a copy, Start over, Cloud save, and Debug. Cloud save is on for anonymous backup. The row reads "This browser only: link Google to keep it safe" while this browser holds the backup. The panel can delete the cloud copy and leave the game on this device. Linking Google is Phase 2.
 
 First tour: when the starter scene ends, a short tour points out the screen, then FEED, PLAY and REST. SKIP on the first card, or SKIP TOUR on a later card, closes it. Those three buttons really feed, play and rest the first time. Settings → Tutorial → REPLAY runs the same cards again and only highlights them. The compass card sits just before the last one. A save that was already on that last card skips the compass. An older save that has already walked past the opening is marked done and does not see it. The daily hello waits until the next day. Save `v` stays 2 (`story.tutorial_done`, and `story.tutorial_step` only while a tour is open). Later tips (the phone, a side, a side quest, a big choice, switching sides, a letter, a Lantern, and growing up) each show once on the walk screen. SKIP, or a tap outside the card, puts it away. Settings → Tips turns them all off. Replay tips lets them show again.
 
@@ -410,7 +410,7 @@ Saves (format v2, `save.js`):
   `localStorage.setItem('pixelpets.save.v1', localStorage.getItem('pixelpets.save.v1.bak'))`.
 
 Start over: Settings → Start over (no debug needed) asks
-"Start over? Your Walklings will be gone for good." SAVE A COPY downloads `walklings-save.json` first (the same
+"Start over? Your Walklings will be gone for good." With cloud save on, that line adds "on this device and in your cloud backup", and the hold also erases the cloud copy. SAVE A COPY downloads `walklings-save.json` first (the same
 v2 object the game stores; Settings → Save a copy does it any time). Press and hold the red START OVER for 1.5 s (touch, mouse, or
 Space/Enter); a bar fills while you hold and letting go early cancels. It removes `pixelpets.save.v2`,
 `pixelpets.save.v1`, `pixelpets.save.v1.bak` and `pixelpets.save.corrupt` (so migration can't bring old Walklings
@@ -418,6 +418,7 @@ back), then reloads into the new-player path (look picker, then the starter choi
 once it sees the save gone or replaced by a different game (a different `uid`), with a "reset in another tab"
 toast, so it can't write the old game back. Per-device keys are kept, never part of the save or the file: `pixelpets.geo`,
 `pixelpets.env`, `pixelpets.envOverride` for location, `pixelpets.mute`, `pixelpets.debug`, `pixelpets.fast`.
+Start over also clears `pixelpets.cloud` and `pixelpets.cloud.backup`. Save `v` stays 2.
 Read a copy (Settings) takes that JSON file back. It must be save `v` 2. The game normalizes it, replaces the
 game on this device, and reloads. With no Walklings yet, the gear stays tappable under the opening scene so you
 can read the file without finishing the intro. Console: `PixelPets.exportSave()` (the JSON string) and

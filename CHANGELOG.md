@@ -2,14 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-19 19:25 ET: Modern taps push the toy and pop balloons (build 20261019-1925)
+## 2026-10-19 19:54 ET: Modern taps push the toy and pop balloons (build 20261019-1954)
 
-- What changed and why: A Modern tap on the popping toy only walked up beside it, and Arcade TALK stayed off. A roll prop now counts as talkable, so the tap walks up and pushes, and TALK pushes too. The dream_toy marker follows the toy. Birthday balloons are scene-only props, so the same tap skipped them. A Modern tap now selects any object with an interaction (scene, shop, booth, panel, and the kinds that already talked). The balloon tap walks up and pops it. The Heights supply crate is the only shop with no lines, and a tap opens it. Arcade TALK and d-pad bumps are unchanged for those scene-only and shop-only props. Progress stays in the existing story flags. Save `v` stays 2.
+- What changed and why: A Modern tap on the popping toy only walked up beside it, and Arcade TALK stayed off. A roll prop now counts as talkable, so the tap walks up and pushes, and TALK pushes too. The dream_toy marker follows the toy. Birthday balloons are scene-only props, so the same tap skipped them. A Modern tap now selects any object with an interaction (scene, shop, booth, panel, and the kinds that already talked). The balloon tap walks up and pops it. The Heights supply crate is the only shop with no lines, and a tap opens it. Arcade TALK and d-pad bumps are unchanged for those scene-only and shop-only props. Progress stays in the existing story flags. Save `v` stays 2. Merged `origin/main` (PR #99, online saves Phase 1) after that stamp.
 - Files touched: `game.js`, `quests.js`, `tests/dream_toy.spec.js`, `tests/tap_interact.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
-- Commit(s) + build id: build 20261019-1925.
-- Tests run and result (widths, checks): `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1145 failed=0 flaky=0 skipped=16 time=1601s. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. Console errors: none (a console error fails the suite).
+- Commit(s) + build id: build 20261019-1954, after merging PR #99. The earlier stamp on this branch was 20261019-1925.
+- Tests run and result (widths, checks): after merging PR #99, `npm run test:agent` PP_TEST RESULT: FAIL exit=1 passed=1159 failed=1 flaky=0 skipped=16 time=1638s. Widths 320, 375, and 390. The one failure was `[320] tests/group_battle.spec.js:134` (a 10s wait for the win). The same check passed at 375 and 390 in that run. Rerun: `npm run test:agent -- tests/group_battle.spec.js --project=320` PP_TEST RESULT: PASS exit=0 passed=7 failed=0 flaky=0 skipped=0 time=5s. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): green. The toy fix was settled by the Supervisor. Vincent, Oct 19, 2026, 7:17 PM ET, added the balloon and the interactable audit. No new decision id. `OPEN_DECISIONS.md` on this branch still names D195 as the next free id.
 - Anything left unfinished: a few older tiles still have no free stand (listed in the PR). Arcade still does not pop a balloon by bumping it or with TALK. That behaviour was already the case.
+
+## 2026-10-19 17:59 ET: Merge main into online saves Phase 1 (build 20261019-1759)
+
+- What changed and why: Merged `origin/main` (PR #98, Arbiter Test music and the final tour copy, build 20261019-1722) into the Phase 1 branch and kept both sides. The stamp is 20261019-1759, later than 20261019-1722. `data/glimmer_path.json` arrived with main's `data/mapdata.js`; regenerating mapdata made no further change. Save `v` stays 2. The next free id stays D195.
+- Files touched: merge of `main`, restamp of `index.html` and `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: build 20261019-1759.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Full suite: PP_TEST RESULT: PASS exit=0 passed=1145 failed=0 flaky=0 skipped=16 time=1605s. Widths 320, 375, and 390.
+- Decisions made (colour + reasoning): no new id. Next free stays D195.
+- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database stays locked.
 
 ## 2026-10-19 17:22 ET: Arbiter Test music and final tour copy (build 20261019-1722)
 
@@ -19,6 +28,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): Full suite after the main merge: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1130 failed=0 flaky=0 skipped=16 time=1624s. Widths 320, 375, and 390. The earlier failures in `tests/maps_b8.spec.js` (the Glow Census wait line) and `tests/town_board_gate.spec.js` (the QUEST board rows) were fixed and rerun: `npm run test:agent -- tests/maps_b8.spec.js tests/town_board_gate.spec.js` PP_TEST RESULT: PASS exit=0 passed=20 failed=0 flaky=0 skipped=4 time=35s. No known timing flake failed, so none was rerun alone. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): no new id. D26 copy is final (yellow, already settled). D164 delivered the `arbiter_test` row (already settled). D194 stays the settled QUEST-tab row from main. The next free id is D195.
 - Anything left unfinished: Frostmere is not built. Glimmer Act 2 is still TBD.
+
+## 2026-10-19 17:18 ET: Online saves Phase 1 on (build 20261019-1718)
+
+- What changed and why: Phase 1 is ON. `cloud_config.js` holds the public web config for project `walklings-4cc89`. Anonymous sign-in backs up `saves/{uid}`. The Settings row reads "This browser only: link Google to keep it safe". `database.rules.json` locks the Realtime Database until a later multiplayer phase. Automated tests ignore that config when `navigator.webdriver` is set and cannot resolve the Firebase hosts, so they never create users or write documents. Save `v` stays 2.
+- Files touched: `cloud_config.js`, `cloud.js`, `database.rules.json`, `firebase.json`, `playwright.config.js`, `tests/cloud_off.spec.js`, `index.html`, `version.json`, `AGENTS.md`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `review-cloud-on/`.
+- Commit(s) + build id: build 20261019-1718.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/cloud_off.spec.js` PP_TEST RESULT: PASS exit=0 passed=15 failed=0 flaky=0 skipped=0 time=6s (320, 375, 390). `npm run test:agent -- tests/smoke.spec.js tests/save_copy.spec.js` PP_TEST RESULT: PASS exit=0 passed=27 failed=0 flaky=0 skipped=0 time=42s. Full suite: PP_TEST RESULT: PASS exit=0 passed=1139 failed=0 flaky=0 skipped=16 time=1592s. `python3 tools/bump_build.py --check` exit 0. One live smoke from localhost in a throwaway profile: anonymous sign-in, `saves/{uid}` rev 1 then rev 2, a write to another uid denied, the Settings row read "This browser only: link Google to keep it safe", and Delete cloud save removed the doc. Shots: `review-cloud-on/` at 390×844.
+- Decisions made (colour + reasoning): no new id. Phase 1 shipped quietly was already settled (Vincent, Oct 8, 2026). Next free stays D195. Green: the suite forces the live project off.
+- Anything left unfinished: Phase 2 (Link Google, sign out, a second device, the privacy line). The Realtime Database stays locked.
 
 ## 2026-10-19 16:17 ET: Accepted board slips on the QUEST tab (build 20261019-1617)
 
