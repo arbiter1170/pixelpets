@@ -1381,7 +1381,7 @@
   "trainers": {
     "fern_associate": {
       "lines": {
-        "intro": "Oh! A keeper. These little ones are going somewhere comfy. It's a partnership!",
+        "intro": "Oh! A Keeper. These little ones are going somewhere comfy. It's a partnership!",
         "win": "Wow, okay! I'll... check with my manager. Have a bright day!",
         "lose": "See? They're happier with us. Have a bright day!"
       },

@@ -8,6 +8,27 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D276 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** A battle NPC that is not a one-shot, and that wore the team out, is marked `rematch.<id>`. It re-arms when `S.world.restDue` clears. The wipe respawns at a Lantern House, and the next visit puts the NPC back on its home tile.
+- **D277 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** A re-armed NPC spots like the first time: notice, "!" for 600 ms, then `spotWalk`. Talking also starts the rematch.
+- **D278 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** The rematch says `lines.rematch` instead of `intro`, then the summon line. A missing line uses the type pattern. Win, lose and onWin stay. The lines live in `game.js` because the map JSON stays verbatim.
+- **D279 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** `rematch.<id>` is one flag key inside the existing flags map. Set on a wipe, deleted on the win. Save stays `pixelpets.save.v2` with `v` 2. No new top-level key.
+- **D280 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** `REMATCH_GRACE_STEPS` is 2, runtime only in `mapRT`. It is set on every map arrival and when `restDue` clears. Each completed step lowers it by 1. Fresh NPCs still spot on the first completed step.
+- **D281 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** No respawn tile, Lantern door or Lantern room sits inside a sight line. A later map that breaks that is fixed in the map, not by a longer grace.
+- **D282 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** One NPC spots per completed step, first in object order. The next spot needs a new completed step.
+- **D283 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** A wipe does not move a quest. `onWin`, `story.*` and the quest panel change only on a win. A wipe inside a scene still defers the respawn until the scene ends.
+- **D284 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** Acorns, a Seal and `trainer.<id>` come only on the first win. A loss gives none. Battle XP for a knock-out before a wipe stays, and a rematch can award it again. Each wipe still costs the 5-Acorn rest.
+- **D285 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** Walking around a sight line avoids the rematch. No wider cone and no chase. An NPC that blocks a path still blocks it.
+- **D286 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** Fen, Hale, the Heights groups and Clerk Nia stay walk-up. After a loss they open with the rematch line before BEGIN TRIAL or "Begin the trial?". No new sight lines.
+- **D287 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** Neighbour Rook #1–#3 and Associate Tobin at the crossroads stay one-shots. A loss is a story result. No `rematch.<id>`.
+- **D288 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** Cass and Bix re-arm like route NPCs. A wipe in the Trial Hall respawns at the Cobblecrest Lantern House. They spot again after the 2-step grace.
+- **D289 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** FOOD and JOY are two stats. The row shows HP, NRG, FOOD, JOY, GROW and XP.
+- **D290 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** The apple, bolt, heart and star are the PARTNER_UI glyphs. HP is a new lime square with a white plus. XP is three rising bars. PAL keys only.
+- **D291 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** Each stat is an icon and a 6 px bar. No digits on the card. The numbers are in the button's aria-label. The bars do not blink.
+- **D292 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** A 3 by 2 block sits to the right of the name. Bar widths are 26, 21 and 14 px at 390, 375 and 320. Names are not truncated. The PARTNER tag wraps when the name and the tag do not fit.
+- **D293 (Oct 19, 2026, Vincent, yellow, 10:39 PM ET, on the default).** WALKLING-BOX rows use the same block. A boxed Walkling's FOOD bar holds still.
+- **D294 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** The block is aria-hidden and ignores taps. The card's one tap still opens the Walkling. No new tap target.
+- **D295 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** HP is `hpOf / maxHpOf`, red under 25%, empty while worn out. GROW is total `p.xp` over the goal. XP is progress inside the current level.
+- **D296 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** The party bars save nothing. Save stays `pixelpets.save.v2`.
 - **D195 (Oct 19, 2026, Vincent, red, ~5:06 PM ET).** PLAY_TOGETHER Q1 goes ahead. Phase 1 is an invite-only test on top of online saves Phase 1. Presence is under `/rooms/{code}/{area}/{shard}/{uid}`. No free text in a room node.
 - **D196 (Oct 19, 2026, green, settled on the default).** Friends share a room past 20. Friends first, hard cap 24 (`NET_CFG.roomHardMax`).
 - **D197 (Oct 19, 2026, green, settled on the default).** Show other holders defaults to ON, with FRIENDS and SOLO. Saved as `settings.showOthers`. Save `v` stays 2.

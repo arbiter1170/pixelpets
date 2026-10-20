@@ -130,6 +130,8 @@ h2 small{color:var(--h);font-size:17px}
 .btn .cdt{display:block;font-size:17px;letter-spacing:0}
 .btn.cooldown:active{transform:none}
 .btn-feed{background:var(--o)}.btn-play{background:var(--l)}.btn-rest{background:var(--c)}
+/* The global canvas{display:block} was dropping FEED / PLAY / REST icons onto their own line. */
+.actions .btn > canvas{display:inline-block;vertical-align:middle}
 .btn-evo{background:var(--y);animation:pulse .8s steps(2) infinite;font-size:25px}
 @keyframes pulse{50%{background:var(--w)}}
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:auto;padding:4px 3px}
@@ -231,10 +233,17 @@ body:not(.ctl-modern) .env-badge{border-top:8px solid transparent;border-bottom:
 .party-board,.box-list{display:flex;flex-direction:column;gap:6px;min-width:0}
 .pet-row{background:var(--d);padding:4px;box-shadow:0 0 0 3px var(--k);display:flex;flex-direction:column;gap:4px;min-width:0}
 .pet-row .slot-main{display:flex;align-items:center;gap:8px;min-height:44px;width:100%;margin:0;padding:2px 4px;border:0;background:transparent;color:inherit;font-family:var(--font);font-weight:bold;text-align:left;cursor:pointer}
-.pet-row .slot-main canvas{width:40px;height:40px;background:var(--n);flex:0 0 auto}
+.pet-row .slot-main > canvas{width:40px;height:40px;background:var(--n);flex:0 0 auto}
 .pet-row .slot-copy{min-width:0;flex:1 1 auto}
-.pet-row .slot-nm{display:flex;align-items:center;gap:6px;font-size:18px;line-height:1.15;min-width:0}
-.pet-row .slot-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pet-row .slot-nm{display:flex;align-items:center;gap:6px;flex-wrap:wrap;row-gap:0;font-size:18px;line-height:1.15;min-width:0}
+.pet-row .slot-name{flex:0 0 auto;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pet-row .slot-stats{--bw:clamp(14px, calc((100vw - 312px) / 3), 28px);flex:0 0 auto;display:grid;grid-template-columns:repeat(3, calc(16px + var(--bw)));column-gap:4px;row-gap:4px;pointer-events:none;align-self:center}
+.pet-row .ss-cell{display:flex;align-items:center;gap:2px;height:14px}
+.pet-row .ss-ico{flex:0 0 14px;width:14px;height:14px;display:flex;align-items:center;justify-content:center}
+.pet-row .ss-ico canvas{image-rendering:pixelated;image-rendering:crisp-edges;background:none;flex:0 0 auto;display:block}
+.pet-row .ss-cell .ps-bar{flex:0 0 var(--bw);width:var(--bw);height:6px;margin:0;background:var(--k)}
+.pet-row .ss-cell .ps-bar i{animation:none}
+.c-lv{background:var(--c)}
 .pet-row .slot-lock{width:24px;height:24px;flex:0 0 auto;background:var(--y);box-shadow:0 0 0 2px var(--k)}
 .pet-row .slot-sub{font-size:14px;line-height:1.15;color:var(--h)}
 .pet-row .partner-tag{color:var(--y);margin-left:6px;font-size:14px}

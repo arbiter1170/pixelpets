@@ -1676,6 +1676,20 @@ function drawParticles(g, dt){
     else if (pt.life > 0.15 || (pt.life*20|0) % 2) drawGlyph(g, pt.type, pt.x, pt.y);
   }
 }
+// Five 5px hearts on a stride of 6. The HOLDER badge rect stays where PARTNER_UI put it; the row slides left until the fifth heart clears it.
+function bondHeartOrigin(c){
+  let hx = Math.round(c.width / 2) - 14;
+  const badge = $('#petKeeper');
+  if (badge) {
+    const cr = c.getBoundingClientRect(), br = badge.getBoundingClientRect();
+    if (cr.width > 1 && br.width > 1) {
+      const left = (br.left - cr.left) / (cr.width / c.width);
+      while (hx + 29 > left - 2 && hx > 1) hx--;
+    }
+  }
+  c.dataset.hearts = hx + ',' + (hx + 29);
+  return hx;
+}
 function drawPetScene(t, dt){
   const c = $('#petCanvas'), g = ctx(c), p = pet(); if (!p) return;
   const W = c.width, H = c.height, mode = skyMode();
@@ -1713,7 +1727,7 @@ function drawPetScene(t, dt){
     if (Math.random() < dt * 2.5) addPart('z', x + 12, y, 3, -6, 1.4);
   }
   drawParticles(g, dt);
-  const lv = bondLevel(p), hx = Math.round(W / 2) - 14;   // bond: 5 small hearts, top centre (the keeper badge sits at the right)
+  const lv = bondLevel(p), hx = bondHeartOrigin(c);   // bond: 5 small hearts, top centre, shifted clear of the HOLDER badge
   for (let i = 0; i < 5; i++) { const gl = GLYPH.heart; for (let j = 0; j < gl.length; j++) for (let k = 0; k < 5; k++) if (gl[j][k] !== '.') { g.fillStyle = i < lv ? PAL.r : PAL.k; g.globalAlpha = i < lv ? 1 : 0.35; g.fillRect(hx + i * 6 + k, 2 + j, 1, 1); } }
   g.globalAlpha = 1;
   if (c.dataset.bond !== String(lv)) { c.dataset.bond = String(lv); c.setAttribute('role', 'img'); c.setAttribute('aria-label', petName(p) + ', bond ' + lv + ' of 5'); }
@@ -2286,6 +2300,77 @@ function trainerLine(id, key){
   const line = t && t.lines && t.lines[key];
   return typeof line === 'string' ? line : '';
 }
+// REMATCH_PARTY_STATS D276–D288. A non-one-shot battle NPC that wears the team out is marked rematch.<id>.
+// The line replaces intro. A missing line falls back to the type pattern. One-shots are not in this table.
+const REMATCH_GRACE_STEPS = 2;
+const REMATCH_PATTERNS = {
+  route: "Rested up, {player}? Good. Same spot, same team. Let's go again!",
+  glimmer: 'Back already, {player}? Glimmerwell loves a repeat visit. Have a bright rematch!',
+  hall: 'The Trial Hall stays open, {player}. Again, from the top.',
+  leader: 'You came back, {player}. Good. The trial is the same; you may not be.',
+  heights: "You again. Rested, at least. Let's finish this properly.",
+  arena: 'Welcome back to the ring, {player}! My team still bows first.',
+};
+const REMATCH_KIND = {
+  fern_associate: 'glimmer', h2_builder: 'hall', h2_sweeper: 'hall', q_mason: 'route', q_sketcher: 'route',
+  r2_associate: 'glimmer', r2_lead: 'glimmer', r2_rockhound: 'route', r2_skipper: 'route', r2_stargazer: 'route',
+  route1_ollie: 'route', route1_pia: 'route', route1_tam: 'route', hall1_fen: 'leader', hall2_hale: 'leader',
+  rx_wardens: 'heights', rx_techs: 'heights', rx_records: 'heights', rx_quinn: 'heights',
+  sm_lookouts: 'heights', sm_haulers: 'heights', sm_mara: 'heights', hc_tourney: 'arena',
+};
+const REMATCH_LINES = {
+  fern_associate: "You're back! The little ones are still going somewhere comfy. Rematch?",
+  h2_builder: "Rested? Good. The cairn's rebuilt. Knock it down properly this time.",
+  h2_sweeper: "Steadier now? Show me. Hale's watching from the back.",
+  q_mason: 'Still cutting stone, {player}. Let\'s lay a second course.',
+  q_sketcher: "You're back! Hold still... no, battle. Battle's more fun.",
+  r2_associate: "The glen's still closed, {player}. Recount? Have a bright rematch!",
+  r2_lead: "A second meeting. Fine. Let's keep it brief this time too.",
+  r2_rockhound: "Rested up? My favourite rocks were hoping you'd walk by again.",
+  r2_skipper: 'Round two! Seven skips, and this time you skip too.',
+  r2_stargazer: 'Still grumpy. Still bright out. Battle me again!',
+  route1_ollie: 'Shh. The moths came back. So did you. One more quick battle.',
+  route1_pia: 'Back for more? My kites are still up, {player}!',
+  route1_tam: 'Still no blue glass for you. Rested crabs, rested you. Again?',
+  hall1_fen: 'The orchard grows back, {player}. So can you. Shall we try again?',
+  hall2_hale: "You came back, {player}. Stone's patient. Begin again?",
+  rx_wardens: REMATCH_PATTERNS.heights, rx_techs: REMATCH_PATTERNS.heights, rx_records: REMATCH_PATTERNS.heights, rx_quinn: REMATCH_PATTERNS.heights,
+  sm_lookouts: REMATCH_PATTERNS.heights, sm_haulers: REMATCH_PATTERNS.heights, sm_mara: REMATCH_PATTERNS.heights,
+  hc_tourney: REMATCH_PATTERNS.arena,
+};
+for (const [id, line] of Object.entries(REMATCH_LINES)) {
+  const t = TRAINERS[id]; if (!t) continue;
+  t.lines = Object.assign({}, t.lines, { rematch: line });
+}
+const rematchId = id => trainerMusicId(id);
+function rematchPending(id){ return !!(S && S.flags && S.flags['rematch.' + rematchId(id)]); }
+function battleGreeting(id){
+  const base = rematchId(id);
+  if (rematchPending(base)) {
+    const own = trainerLine(base, 'rematch');
+    if (own) return own;
+    const kind = REMATCH_KIND[base];
+    if (kind && REMATCH_PATTERNS[kind]) return REMATCH_PATTERNS[kind];
+  }
+  return trainerLine(base, 'intro');
+}
+// Hale's trial is a scene, not a sight line (D286). A pending rematch opens with his line, then "Begin the trial?".
+(function wireHaleRematch(){
+  const line = REMATCH_LINES.hall2_hale;
+  const choice = ['choice', 'Begin the trial?', [['Begin trial', [['battle', 'hall2_hale']]], ['Leave', []]]];
+  const walk = steps => {
+    if (!Array.isArray(steps)) return;
+    for (const st of steps) {
+      if (!Array.isArray(st)) continue;
+      if (st[0] === 'if' && st[1] === 'seal:seal_cobblecrest' && Array.isArray(st[3]) && st[3][0] !== 'if') {
+        const usual = st[3];
+        // The else arm is a list of steps. A bare if-step would be read as four steps and never say the line.
+        st[3] = [['if', 'rematch.hall2_hale', [['say', 'Master Hale', line], choice], usual]];
+      } else walk(st);
+    }
+  };
+  walk(SCENES.hale_trial);
+})();
 function objById(id){
   for (const m of Object.values(WORLD)) { const o = (m.objs || []).find(x => x.id === id); if (o) return o; }
   return null;
@@ -2333,10 +2418,10 @@ const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', rival3_rook: 'r
   sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
-let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {} };   // per map visit, never saved
+let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };   // per map visit, never saved
 function useMap(id){
   CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
-  mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {} };
+  mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };
   patrolClock = 0;
   wallMaskOf(CUR);
 }
@@ -2808,8 +2893,10 @@ function onLand(){
     if (r.lost) setTimeout(() => toast(BAG_FULL_MSG), r.added ? 1900 : 0);
     save();
   }
-  if (checkTriggers()) return;
-  if (checkSight()) return;
+  if (checkTriggers()) { if (mapRT.grace > 0) mapRT.grace--; return; }
+  const spottedNow = checkSight();   // grace is read first, then this step spends one (D280: step 3 is the first that can re-arm)
+  if (mapRT.grace > 0) mapRT.grace--;
+  if (spottedNow) return;
   if (checkCatch()) return;
   checkChatter();
 }
@@ -3226,7 +3313,8 @@ function checkTriggers(){
 }
 // Trainer sight lines (§6.1): 1..sight tiles in `facing` from the trainer, stopping before the first tile that isn't walkable or
 // holds a present blocker (roaming creatures and the follower don't block). Checked only after a completed step (onLand), never on
-// warp arrival, respawn, push or LEAVE; a trainer spots once (`spotted.<id>`) and only while unbeaten.
+// warp arrival, respawn, push or LEAVE. A trainer spots once (`spotted.<id>`) while unbeaten. A non-one-shot wipe sets
+// `rematch.<id>`; once the party is rested and the 2-step grace is spent, that sight line spots again (D276, D280).
 const SPOT_BANG_MS = 600, SPOT_STEP_MS = STEP_MS * 1.5;
 const spot = { id: null, bang: false };
 let sightShown = false;
@@ -3240,7 +3328,8 @@ function sightLine(o){
   }
   return out;
 }
-const canSpot = o => o.kind === 'trainer' && present(o) && !!TRAINERS[o.id] && !S.flags['trainer.' + o.id] && !S.flags['spotted.' + o.id];
+const canSpot = o => o.kind === 'trainer' && present(o) && !!TRAINERS[o.id] && !S.flags['trainer.' + o.id]
+  && (!S.flags['spotted.' + o.id] || (S.flags['rematch.' + o.id] && !S.world.restDue && mapRT.grace === 0));
 function checkSight(){
   if (scene || fade.busy || walk.intro || overlayOpen() || !pet()) return false;
   const x = S.world.x, y = S.world.y;
@@ -3481,7 +3570,10 @@ function placeSteps(dr){
     if (!trialReady()) return sceneSteps('trial_wait') || [['say', 'Master Fen', 'The trial can wait. Walk the Heights first.']];
     if (side() === 'glimmer') return glimmerHallSteps(t, pn);
     if (t && ((t.seal && S.seals[t.seal]) || S.flags['trainer.hall1_fen'])) return [['say', pn.who || 'Master Fen', pn.again || 'Come back any time. The orchard remembers its friends.']];
-    return [['say', pn.who || 'Master Fen', pn.greet || trainerLine('hall1_fen', 'intro') || 'Roots first, then blossoms. Show me yours.'],
+    const greet = rematchPending('hall1_fen')
+      ? (battleGreeting('hall1_fen') || 'Roots first, then blossoms. Show me yours.')
+      : (pn.greet || trainerLine('hall1_fen', 'intro') || 'Roots first, then blossoms. Show me yours.');
+    return [['say', pn.who || 'Master Fen', greet],
       ['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
   }
   return [['say', '', 'Closed for now. Come back soon!']];
@@ -4879,7 +4971,7 @@ async function sceneBattle(id){
   commitPending(); save();
   const team = trainerTeam(t), f0 = team[0], [ln, st] = f0.form.split('/');
   const sub = s => String(s).replace(/\{(player|name)\}/g, playerName());
-  const intro = trainerLine(id, 'intro');
+  const intro = battleGreeting(id);
   if (scene.lastSay !== sub(intro)) await sayBox(t.name, sub(intro));   // the Hall panel already opened with it
   await sayBox('', battleLine('trainerSummon', { trainer: t.name, foe: nameOf(SP_INDEX[ln], +st) }));
   $('#ovScene').hidden = true;
@@ -5613,7 +5705,7 @@ async function battleIntro(id){
   sendOutFx('foe');
   if (B.kind === 'trainer') {
     if (!B.mapIntro) {                                                       // debug forceTrainer only: no map text box to say them in
-      await say(t.name + ': ' + trLine(trainerLine(B.trainerId, 'intro')), id);   // MAPS_SLICE §6.1 summon sequence
+      await say(t.name + ': ' + trLine(battleGreeting(B.trainerId)), id);   // MAPS_SLICE §6.1 summon sequence; a pending rematch uses lines.rematch
       if (!alive(id)) return; await say(btLine('trainerSummon'), id); if (!alive(id)) return;
     }
     await say(btLine('trainerIntro'), id);
@@ -5665,7 +5757,13 @@ function closeBattle(){
 const LANTERN_REST_COST = 5;
 const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1 };
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
-function setRestDue(on){ if (!S || !S.world) return; if (on) S.world.restDue = true; else delete S.world.restDue; }
+function setRestDue(on){
+  if (!S || !S.world) return;
+  if (on) { S.world.restDue = true; return; }
+  const was = S.world.restDue === true;
+  delete S.world.restDue;
+  if (was) mapRT.grace = REMATCH_GRACE_STEPS;   // the heal re-arms sight, after 2 steps (D276, D280)
+}
 // After a wipe, the party has to rest before leaving. Clears itself once nobody is hurt (regen, a debug heal).
 function lanternHold(){
   if (!S || !S.world || S.world.restDue !== true) return false;
@@ -7617,11 +7715,13 @@ async function results(result, id){
     const money = t.money != null ? t.money : 10 * Math.max(...trainerTeam(t).map(m => m.level)) * (t.hall ? 3 : 1);
     if (money > 0) S.money = (S.money || 0) + money;
     S.flags['trainer.' + B.trainerId] = true;
+    delete S.flags['rematch.' + trainerMusicId(B.trainerId)];
     if (t.hall && t.seal) { S.seals[t.seal] = Date.now(); }
     save();
     if (money > 0) { await say(playerName() + ' got ' + acorns(money) + '!', id); if (!alive(id)) return; }
     if (t.hall && t.seal) { showSealCard(t.seal); sfx('stinger_seal'); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
   }
+  if (result === 'tired' && t && !t.oneShot) S.flags['rematch.' + trainerMusicId(B.trainerId)] = true;   // D279: a wipe marks the NPC; one-shots stay story results
   if (t && t.oneShot && (result === 'win' || result === 'tired')) {      // true = Rook #1; a string prefix is a later one-shot (Rook #2)
     const prefix = t.oneShot === true ? 'story.rival1' : t.oneShot;
     S.flags[prefix + '_done'] = true; S.flags[prefix + '_result'] = result === 'win' ? 'won' : 'lost'; save();
@@ -8861,13 +8961,57 @@ function slotCopy(p){
   info.append(nm, sub);
   return info;
 }
+const SLOT_STATS = [
+  ['hp', 'ico_hp', 'c-hp'], ['nrg', 'ico_nrg', 'c-nrg'], ['food', 'ico_food', 'c-food'],
+  ['joy', 'ico_joy', 'c-joy'], ['grow', 'ico_grow', 'c-xp'], ['xp', 'ico_xp', 'c-lv'],
+];
+function statFrac(p, key){
+  if (key === 'hp') { const m = maxHpOf(p); return m ? hpOf(p) / m : 0; }
+  if (key === 'nrg') return (Number(p.energy) || 0) / 100;
+  if (key === 'food') return (Number(p.hunger) || 0) / 100;
+  if (key === 'joy') return (Number(p.happy) || 0) / 100;
+  if (key === 'grow') return p.stage >= 2 ? 1 : (EVO_XP[p.stage] ? (Number(p.xp) || 0) / EVO_XP[p.stage] : 1);
+  const L = levelOf(p), bx = Number.isFinite(p.bx) ? p.bx : 0;
+  if (L >= STAT_RULES.LEVEL_CAP) return 1;
+  const a = STAT_RULES.bxForLevel(L), b = STAT_RULES.bxForLevel(L + 1);
+  return b > a ? (bx - a) / (b - a) : 1;
+}
+function slotStatIcon(name){
+  const c = document.createElement('canvas');
+  paintGlyphBox(c, name);
+  c.style.width = (2 * c.width) + 'px'; c.style.height = (2 * c.height) + 'px';
+  c.setAttribute('aria-hidden', 'true');
+  return c;
+}
+function slotAria(p){
+  const L = levelOf(p), bx = Number.isFinite(p.bx) ? p.bx : 0, a = STAT_RULES.bxForLevel(L);
+  const b = L >= STAT_RULES.LEVEL_CAP ? a : STAT_RULES.bxForLevel(L + 1);
+  const goal = p.stage >= 2 ? p.xp : EVO_XP[p.stage];
+  return petName(p) + ', Lv ' + L + '. HP ' + hpOf(p) + ' of ' + maxHpOf(p)
+    + ', energy ' + Math.round(p.energy) + ', food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy)
+    + ', grow ' + p.xp + ' of ' + goal + ', XP ' + (bx - a) + ' of ' + (b - a) + '. Open.';
+}
+function slotStats(p){
+  const box = document.createElement('span'); box.className = 'slot-stats'; box.setAttribute('aria-hidden', 'true');
+  for (const [key, icon, cls] of SLOT_STATS) {
+    const cell = document.createElement('span'); cell.className = 'ss-cell'; cell.dataset.stat = key;
+    const ic = document.createElement('span'); ic.className = 'ss-ico'; ic.append(slotStatIcon(icon));
+    const bar = document.createElement('i'); bar.className = 'ps-bar';
+    const fill = document.createElement('i');
+    const v = clamp(statFrac(p, key), 0, 1);
+    fill.className = cls + (key === 'hp' && v < STAT_RULES.FAINT.tiredBelow ? ' warn' : '');
+    fill.style.width = (100 * v) + '%';
+    bar.append(fill); cell.append(ic, bar); box.append(cell);
+  }
+  return box;
+}
 function slotMain(p){
   const b = document.createElement('button'); b.type = 'button'; b.className = 'slot-main';
-  b.setAttribute('aria-label', petName(p) + ', open');
+  b.setAttribute('aria-label', slotAria(p));
   const cv = document.createElement('canvas'); cv.width = cv.height = 18;
   spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), p.accessory);
   if (chipOn(p)) { if (S.box.some(q => q.id === p.id)) paintChipIcon(cv); else paintLockGlyph(cv); }
-  b.append(cv, slotCopy(p));
+  b.append(cv, slotCopy(p), slotStats(p));
   b.addEventListener('click', () => openBoardPet(p.id));
   return b;
 }
@@ -9257,7 +9401,7 @@ function syncDebugSeals(){
   }
 }
 function syncDebugTrainers(){
-  for (const k of Object.keys(S.flags)) if (k.startsWith('trainer.') || k.startsWith('spotted.')) delete S.flags[k];
+  for (const k of Object.keys(S.flags)) if (k.startsWith('trainer.') || k.startsWith('spotted.') || k.startsWith('rematch.')) delete S.flags[k];
   for (const [flag, tid] of DEBUG_TRAINER_GATES) if (S.flags[flag]) S.flags['trainer.' + tid] = true;
 }
 function debugCheckpointList(){
@@ -10319,6 +10463,20 @@ function boot(){
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
+    // One completed step with no timer: tryStep, then onLand. A bump that opens a scene does not count as a step.
+    walkStep: dir => {
+      showTab('walk');
+      if (scene || (battle && battle.on) || fade.busy || !S) return { ok: false, scene: !!scene, battle: !!(battle && battle.on), grace: mapRT.grace };
+      const d = DIRS[dir];
+      if (!d) return { ok: false, grace: mapRT.grace };
+      tryStep(d);
+      if (walk.to) {
+        walk.fx = walk.to.x; walk.fy = walk.to.y; walk.prog = 1; walk.to = null;
+        if (fol.to) { fol.fx = fol.x; fol.fy = fol.y; fol.to = null; }
+        onLand();
+      }
+      return { ok: true, x: S.world.x, y: S.world.y, facing: S.world.facing, map: S.world.map, scene: !!scene, battle: !!(battle && battle.on), grace: mapRT.grace, text: (scene && sbox.text) || '' };
+    },
     fillParty: () => { while (S.party.length < PPSave.PARTY_MAX) S.party.push(newPet(SP_INDEX.ember, 0, 'wild', 5)); save(); return S.party.length; },
     offerCatchRoom: async () => {
       const np = newPet(SP_INDEX.tide, 0, 'wild', 5);

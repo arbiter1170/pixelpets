@@ -499,6 +499,9 @@ const GLYPH = {
   ico_nrg:['...ss','..ss.','.ssss','..ss.','.s...'],
   ico_grow:['..y..','.yyy.','yyyyy','.yyy.','.y.y.'],
   ico_pencil:['....r','...yr','..yy.','.yy..','h....'],
+  // REMATCH_PARTY_STATS D290. 5x5 PAL. HP is a lime square with a white plus. XP is three rising bars.
+  ico_hp:['lllll','llwll','lwwwl','llwll','lllll'],
+  ico_xp:['....c','..c.c','..c.c','c.c.c','c.c.c'],
   z:['www','..w','.w.','w..','www'],
   // HEART_ALERT v0.2 badges (D156). 5x5, PAL only. Bowl for food, z for rest. Not the D245 icons.
   badge_food: ['.....','y.y.y','ooooo','.ooo.','..o..'],
