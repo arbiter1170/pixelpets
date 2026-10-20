@@ -104,6 +104,16 @@ async function tapUid(page, uid){
   }, uid);
   await page.mouse.click(pt.x, pt.y);
 }
+async function advanceClock(page, ms){
+  await page.evaluate(async (ms) => {
+    const real = Date.now.bind(Date);
+    let extra = 0;
+    Date.now = () => real() + extra;
+    extra += ms;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    Date.now = real;
+  }, ms);
+}
 async function shot(page, name, sel){
   fs.mkdirSync(SHOTS, { recursive: true });
   const opts = { path: SHOTS + '/' + name, animations: 'disabled', scale: 'css' };
@@ -480,6 +490,8 @@ test.describe('Play together', () => {
     await expect(b.locator('#netUndo')).toContainText('Blocked. UNDO');
     await expect(b.locator('#friendList')).not.toContainText('Tester');
     await expect.poll(async () => b.evaluate(sees, aUid), { timeout: 3000 }).toBe(false);
+    // The other holder learns a block on the 30 s hidden poll (COOP_R2 §2.4).
+    await advanceClock(a, 30000);
     await expect.poll(async () => a.evaluate(sees, bUid), { timeout: 3000 }).toBe(false);
     expect(await rootGet('blocks/' + bUid + '/' + aUid)).toBeTruthy();
     expect(await rootGet('hidden/' + aUid + '/' + bUid)).toBeTruthy();
@@ -532,6 +544,8 @@ test.describe('Play together', () => {
     await b.waitForFunction(sees, aUid, { timeout: 3000 });
     expect(await b.evaluate(sees, cUid)).toBe(false);
     expect(await c.evaluate(sees, bUid)).toBe(false);
+    // Friends poll every 60 s. Run that poll now so the check does not wait out the minute.
+    await a.evaluate(() => window.PPNet.debug().advancePolls());
     await a.waitForFunction(sees, bUid, { timeout: 3000 });
     expect(b.ppErrors, b.ppErrors.join('\n')).toEqual([]);
     await a.context().close(); await c.context().close();
@@ -609,6 +623,7 @@ test.describe('Play together', () => {
     await b.locator('#friendInput').fill(codeA);
     await b.locator('#friendAdd').click();
     await expect(b.locator('#toast')).toHaveText('You are friends now!');
+    await a.evaluate(() => window.PPNet.debug().advancePolls());
     await expect(a.locator('#friendList')).toContainText('Birch');
     const uid = await a.evaluate(() => window.PixelPets.net.uid);
     for (let i = 0; i < 12; i++) await rootSet('friends/' + uid + '/full' + i, true);

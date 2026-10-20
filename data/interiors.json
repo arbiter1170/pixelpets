@@ -163,7 +163,7 @@
         {"kind": "npc", "id": "mrs_calloway", "name": "Mrs. Calloway", "x": 1, "y": 3, "facing": "right",
           "look": "calloway",
           "lines": {
-            "!talked": "Oh! Hello, dear. Rook's out, as usual. Mind the kite string on the floor.",
+            "!talked": "Oh! Hello again. Rook's out, as usual. Mind the kite string on the floor.",
             "!story.starter_received": "Rook bolted out at sunrise. That boy runs everywhere. Ilse's handing out partners today!",
             "story.slice_end": "Rook says he's a \"Junior Bright\" now. Sounds very shiny. I just hope they feed him.",
             "else": "If you see Rook on the road, tell him supper keeps. And to wipe his boots."}},

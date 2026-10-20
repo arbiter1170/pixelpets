@@ -342,7 +342,13 @@ const PPNet = (() => {
   }
   function pollSocial(){
     if (link !== 'up' || !me || Date.now() - socialAt < cfg.socialPollMs) return;
-    refreshSocial().catch(() => {});
+    return refreshSocial().catch(() => {});
+  }
+  async function advancePolls(){
+    socialAt = Date.now() - cfg.socialPollMs;
+    pollAt = Date.now() - cfg.hiddenPollMs;
+    await pollHidden();
+    await pollSocial();
   }
   async function pollHidden(){
     if (link !== 'up' || !me || !inRoom() || Date.now() - pollAt < cfg.hiddenPollMs) return;
@@ -1198,7 +1204,7 @@ const PPNet = (() => {
     return {
       others: list, room: placed.shard, area: placed.area, stats: { writes, reads }, nameFor, status: dev.status, uid: me,
       connected: link === 'up', nextRetryMs, retryMs: NET_CFG.retryMs.slice(), here: hereCount(),
-      cam: H.cam(), pos: H.pos(), code: dev.code,
+      cam: H.cam(), pos: H.pos(), code: dev.code, advancePolls,
       rawWrite: async id => {
         if (!placed.ref) return 'no-room';
         const node = placed.ref;
