@@ -21,7 +21,7 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 - **D268 (Oct 19, 2026, green, SETTLED).** Single taps only. The nearest target within 22 CSS px fills the card. Nothing in the map pans.
 - **D269 (Oct 19, 2026, green, SETTLED).** Tile sizes follow the tables: room cap 24, town cap 16, at 320, 375 and 390.
 - **D270 (Oct 19, 2026, green, SETTLED).** The main quest tile on the map shown gets the red ring. The side task gets the solid side-blue ring.
-- **D271 (Oct 19, 2026, Vincent, red, 9:52 PM ET, YES).** v1 gets the cleaned Amberwild picture for REGION, drawn under the places, paths, rings and labels. The picture is always fully shown. Fog and ??? stay. This branch ships the file and the draw path, and keeps `REGION_BACKDROP` false so REGION still draws today's parchment and hill ticks until that constant is turned on.
+- **D271 (Oct 19, 2026, Vincent, red, 9:52 PM ET, YES).** v1 gets the cleaned Amberwild picture for REGION, drawn under the places, paths, rings and labels. The picture is always fully shown. Fog and ??? stay. The draw path and the file shipped with `REGION_BACKDROP` false. **Approved to ship (Oct 20, 2026, Vincent, 7:35 AM ET, MAP_LAYERS §9, option (b)).** The script-built region backdrop is on. `REGION_BACKDROP` is true. Fog and ??? stay. A debug force-off restores the parchment.
 - **D272 (Oct 19, 2026, Vincent, red, 9:52 PM ET, on the default with the Prompt 1 carve-out).** Only the cleaned region backdrop PNG may ship. Every other generated picture stays reference only.
 - **D273 (Oct 19, 2026, green, SETTLED).** Save stays `pixelpets.save.v2` with `v` 2. No new key. `floorSeen` is the D224 map.
 - **D274 (Oct 19, 2026, green, SETTLED).** A dream shows ROOM for that dream. TOWN and REGION stay on Mahopac, with no town marker. Doors with no target draw as locked doors with no label.
@@ -47,6 +47,7 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 - **D294 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** The block is aria-hidden and ignores taps. The card's one tap still opens the Walkling. No new tap target.
 - **D295 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** HP is `hpOf / maxHpOf`, red under 25%, empty while worn out. GROW is total `p.xp` over the goal. XP is progress inside the current level.
 - **D296 (Oct 19, 2026, Vincent, green, 10:39 PM ET).** The party bars save nothing. Save stays `pixelpets.save.v2`.
+- **D297 (Oct 20, 2026, green, Design, 7:46 AM ET).** The Hearthmoor sign gets its "East: Route 1" hint back. The town sign and the first line of `gate_look` read "HEARTHMOOR · Hill village of the Keepers. Home. East: Route 1." The MAP blurb stays "Hill village of the Keepers. Home."
 - **D195 (Oct 19, 2026, Vincent, red, ~5:06 PM ET).** PLAY_TOGETHER Q1 goes ahead. Phase 1 is an invite-only test on top of online saves Phase 1. Presence is under `/rooms/{code}/{area}/{shard}/{uid}`. No free text in a room node.
 - **D196 (Oct 19, 2026, green, settled on the default).** Friends share a room past 20. Friends first, hard cap 24 (`NET_CFG.roomHardMax`).
 - **D197 (Oct 19, 2026, green, settled on the default).** Show other holders defaults to ON, with FRIENDS and SOLO. Saved as `settings.showOthers`. Save `v` stays 2.
@@ -61,6 +62,9 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 - **D206 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** No Report button in the invite playtest. Required before open rooms or free text. `NET_CFG.report` stays false.
 - **D207 (Oct 19, 2026, Vincent, yellow, ~6:21 PM ET, packet default).** Emotes, phrases, generated names, titles, and the Play together copy are the packet lists. `NET_TEXT`.
 - **D208 (Oct 19, 2026, green, Design tech defaults).** Send at most every 400 ms, heartbeat 20 s, stale 60 s, protocol `pv` not the build id, room cap 20 and hard cap 24, drop the node in interiors and on a hidden tab, kill switch `/config/net`. `NET_CFG`.
+- **D211 (Oct 20, 2026, Vincent, 7:37 AM ET, SETTLED BY VINCENT).** Presets only, no typed messages.
+- **D218 (Oct 20, 2026, Vincent, 7:37 AM ET, SETTLED BY VINCENT).** No web push.
+- **D244 (Oct 20, 2026, Vincent, 7:37 AM ET, SETTLED BY VINCENT).** No grow-up level gate.
 - **D220 (Oct 19, 2026, green, SETTLED with the packet).** Name and scope stay STAIR_MARKER. Doors are the same family. Three shapes: stairs (floor change), sill (a door or same-level doorway), mat (way out, unchanged).
 - **D221 (Oct 19, 2026, Vincent, yellow, 7:14 PM ET, on the default).** Redraw plus marker. `stair_home`, `stair_loft`, and `lab_stair` are full-tile flights. Floor warps with no stair art get `step_up` / `step_down`. The marker is the soft glint on the far tread.
 - **D222 (Oct 19, 2026, green, SETTLED).** Up and down differ by value only. Up treads lighten toward the far edge. Down treads darken into a well under a lit rim. No arrows, no text. Refinement the same evening (Lissett, CCO, via Vincent, 7:21 PM ET, no new id): the top of every up flight is solid PAL.k, the darkest existing key, so the flight reads into another room. The narrowing corners stay clear. The glint sits on the tread just under that opening. Down wells stay as specced.
