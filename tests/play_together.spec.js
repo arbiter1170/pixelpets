@@ -123,7 +123,7 @@ test.describe('Play together', () => {
       }
     }
     if (!(await portOpen(9000))) throw new Error('database emulator did not start');
-    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000 } });
+    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await rootSet('roomCodes/AMB4RQ', { on: true });
   });
   test.afterAll(async () => {
@@ -752,6 +752,45 @@ test.describe('Play together', () => {
     const set = await page.locator('#settingsBtn').click().then(() => page.locator('#playTogether').innerText());
     expect(set.toLowerCase()).not.toContain('keeper');
     expect(set.toLowerCase()).not.toContain('trainer');
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  });
+
+  test('39 joined note shows after placement, then clears', async ({ page }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    await boot(page, saveFor('hi1', 'Tester'));
+    await enterCode(page, 'AMB-4RQ');
+    const hi = page.locator('#netHi');
+    await expect(hi).toBeVisible({ timeout: 15000 });
+    await expect(hi).toHaveText('Joined. Say hi!');
+    expect(await page.evaluate(() => !!window.PixelPets.net.room), 'shown only once placed').toBe(true);
+    await expect(hi).toBeHidden({ timeout: 4000 });
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  });
+
+  test('40 settings: show label sits with its switch', async ({ page }, info) => {
+    await boot(page, saveFor('lay' + info.project.name, 'Tester'));
+    await page.locator('#settingsBtn').click();
+    await expect(page.locator('#playTogether')).toBeVisible();
+    const g = await page.evaluate(() => {
+      const box = document.querySelector('#playTogether'), kids = [...box.children];
+      const r = s => box.querySelector(s).getBoundingClientRect();
+      return {
+        iLab: kids.indexOf(box.querySelector('#setShowOthers')),
+        iPills: kids.indexOf(box.querySelector('.net-pills')),
+        iBlk: kids.indexOf(box.querySelector('#setBlocked')),
+        labTop: r('#setShowOthers').top, labBot: r('#setShowOthers').bottom,
+        pillsTop: r('.net-pills').top, blkBot: r('#setBlocked').bottom,
+        labelled: box.querySelector('.net-pills').getAttribute('aria-labelledby'),
+      };
+    });
+    expect(g.iLab, 'label after Room code and Blocked').toBeGreaterThan(g.iBlk);
+    expect(g.iPills - g.iLab, 'label right before its switch').toBeLessThanOrEqual(2);
+    expect(g.labTop).toBeGreaterThanOrEqual(g.blkBot);
+    expect(g.pillsTop - g.labBot, 'label near its switch').toBeLessThanOrEqual(40);
+    expect(g.labelled).toBe('setShowOthers');
+    const sizes = await page.locator('#playTogether button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
+    expect(sizes.length).toBeGreaterThanOrEqual(5);
+    sizes.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
   });
 });

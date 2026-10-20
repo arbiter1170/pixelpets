@@ -68,7 +68,7 @@ const PPNet = (() => {
   let writes = 0, coolUntil = 0, localEmote = null, infoOnce = false, retries = 0, giveUp = false, nextRetryMs = 0;
   let retryTimer = 0, offTimer = 0, pollAt = 0, repairAt = 0, pumping = false, pumpAgain = false;
   let page = 0, wheelOn = false, cardOn = false, codeOn = false, blockOn = false;
-  let undoTimer = 0, undoUid = null, undoFriend = false, hiTimer = 0;
+  let undoTimer = 0, undoUid = null, undoFriend = false, hiTimer = 0, hiPending = false;
   let writeQ = Promise.resolve();
   const others = new Map();
   let mutual = {}, names = {}, blocks = {}, hidden = {};
@@ -334,6 +334,8 @@ const PPNet = (() => {
     unsubs.push(rtdb.onChildChanged(parent, snap => upsert(snap.key, snap.val())));
     unsubs.push(rtdb.onChildRemoved(parent, snap => others.delete(snap.key)));
     paintChrome();
+    // "Joined" shows once the holder is placed; paintChrome() hides it while not in a room.
+    if (hiPending) { hiPending = false; showHi(); }
   }
 
   async function join(area){
@@ -925,10 +927,12 @@ const PPNet = (() => {
     const blk = el('button', 'set-row'); blk.id = 'setBlocked'; blk.type = 'button';
     blk.append(el('span', 'set-lab', NET_TEXT.set_blocked), el('span', 'set-val', '0 ›'));
     blk.addEventListener('click', openBlocked);
-    box.append(show, code, blk);
+    box.append(code, blk);
     box.append(el('p', 'set-hint', NET_TEXT.set_hint));
+    // The label sits with its switch, not above the Room code and Blocked rows.
+    box.append(show);
     box.append(el('p', 'set-hint', NET_TEXT.tap_switch));
-    const pills = el('div', 'net-pills');
+    const pills = el('div', 'net-pills'); pills.setAttribute('role', 'group'); pills.setAttribute('aria-labelledby', 'setShowOthers');
     [['on', NET_TEXT.val_on], ['friends', NET_TEXT.val_friends], ['solo', NET_TEXT.val_solo]].forEach(([id, label]) => {
       const b = el('button', 'net-pill', label); b.type = 'button'; b.dataset.mode = id;
       b.addEventListener('click', () => { H.setShow(id); paintChrome(); pump(); });
@@ -998,11 +1002,12 @@ const PPNet = (() => {
     } catch (e) { noteInfo(); setStatus('fail'); H.toast ? null : null; return; }
     dev.code = code; writeDev();
     codeOn = false; const ov = document.querySelector('#roomCodeOv'); if (ov) ov.hidden = true;
-    showHi();
+    hiPending = true;
     giveUp = false; retries = 0;
     paintChrome(); pump();
   }
   async function leaveCode(){
+    hiPending = false;
     dev.code = null; writeDev();
     codeOn = false; const ov = document.querySelector('#roomCodeOv'); if (ov) ov.hidden = true;
     await dropNode(); offline(); setStatus('off'); paintChrome();

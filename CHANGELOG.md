@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 22:46 ET: Play together review fixes (build 20261019-2246)
+
+- What changed and why: Supervisor review of PR #104. The emote-rate test loads `database.rules.json` into the `demo-walklings` namespace in `beforeAll`; the emulator only applied the rules to `demo-walklings-default-rtdb`, so the game's namespace ran open. "Joined. Say hi!" now shows once the holder is placed; before, `paintChrome()` hid it straight after it appeared. Settings: Show other holders sits with its ON / FRIENDS / SOLO switch, below Room code and Blocked holders. BACKLOG logs a P2: recreating your own holder node skips the 2 s emote gap and the `pt` throttle (modified client only; invite-only playtest).
+- Files touched: `net.js`, `tests/play_together.spec.js`, `tests/README.md`, `BACKLOG.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: on `cursor/play-together-p1-3c2a`, build 20261019-2246.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. `tests/play_together.spec.js`, `tests/cloud_off.spec.js`, `tests/smoke.spec.js` and the RTDB rules check; see the PR body.
+- Decisions made (colour + reasoning): no new id. D276–D296 reserved: REMATCH_PARTY_STATS, next free D297.
+- Anything left unfinished: the rules are not deployed from this branch.
+
 ## 2026-10-19 22:14 ET: Merge main (PR #105 stair flights, #106 battle no-reload, #107 tour fix) into Play together (build 20261019-2214)
 
 - What changed and why: Supervisor catch-up of PR #104. Merged `origin/main` at `89b146d` (live 20261019-2202) and kept both sides. `game.js`, `cloud.js`, `save.js`, `sprites.js`, `style.css`, `README.md` and `tests/README.md` auto-merged. `index.html` and `version.json` (stamps only) keep this branch's script list, with `net.js`, and the new stamp. CHANGELOG keeps both sides' entries. `archive/DECISIONS_SETTLED.md` and the Settled list in `OPEN_DECISIONS.md` keep D195–D208 and D220–D230. The id headers take main's line: D258–D275 reserved for MAP_LAYERS, next free D276, plus D195–D208 (Play together) settled. `python3 tools/gen_mapdata.py` made no change beyond main's.
