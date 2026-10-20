@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 22:31 ET: rx_f4 tank test samples the full window; suite runs 2 workers (test and config only, no build)
+
+- What changed and why: `tests/rx_f4_pilot.spec.js:208` (QA 9 / A7, tank frames) failed on main at all widths. The test compared only the first and last samples of a 700 ms window, but the tanks flip every 600 ms (`A.lab_tank`, 2 frames, `ms 600`). A window starting in the last 100 ms of a frame spans two flips and reads the same frame, and boot timing landed there almost every time. The game is fine. The watch now samples every animation frame for at least 1300 ms, more than two periods, and asserts exactly 1 distinct frame per tank cell under reduced motion, and exactly 2 per cell otherwise, flipping in step. `playwright.config.js` goes from `workers: 1` to `workers: 2` (`fullyParallel` stays false). The full suite takes about 890 s on 2 workers against about 1700 s on 1. No game code. Save `v` stays 2.
+- Files touched: `tests/rx_f4_pilot.spec.js`, `playwright.config.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: branch `test/rx-f4-window-2workers`. No build stamp: nothing deployed changes, and `python3 tools/bump_build.py --check` exits 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/rx_f4_pilot.spec.js` 5 of 5 PASS (passed=39 each, 320, 375, 390, 30–32 s). Full `npm run test:agent` (2 workers from the config): PP_TEST RESULT: PASS exit=0 passed=1209 failed=0 flaky=0 skipped=18 time=965s. Earlier 2-worker full runs on the group_battle branch: 891, 890 and 889 s, no group_battle flakes.
+- Decisions made (colour + reasoning): no new id. Green, test and config only.
+- Anything left unfinished: none.
+
 ## 2026-10-19 22:09 ET: group_battle test waits on the real battle state (test only, no build)
 
 - What changed and why: `tests/group_battle.spec.js:134` ("clearing both foes wins…") failed about half the time under `--workers=2` (3 of 6 runs before the fix, 0 of 3 with 1 worker). It timed out in `playTurn` waiting for the action panel. After turn 1 the state was CHOOSE but `PixelPets.battle.panel` was already `fight`, because the last forced `#btMsg` tap of the previous turn landed on FIGHT once the panel swapped back under it. `playTurn` now accepts the move list already open and clicks FIGHT only when the panel is `acts`. The win loop waits for the real CHOOSE state with `waitForFunction` before `setHp('foe', 1)`, instead of skipping the HP drop when the state was not there yet. No fixed sleeps. No game code. `playwright.config.js` stays at `workers: 1`. Save `v` stays 2.
