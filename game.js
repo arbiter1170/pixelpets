@@ -3346,6 +3346,11 @@ function warpTo(at, after){
 let musicHold = false;   // closeBattle plays the return loop itself (after stingers); a wipe's arriveAt must not start it early
 function arriveAt(at){
   useMap(at.map); fitAll();   // E1: the canvas may change shape per map
+  // D224: a visited interior stops that stair's glint. The art stays. Absent until the first room.
+  if (CUR.kind === 'interior') {
+    if (!S.floorSeen || typeof S.floorSeen !== 'object' || Array.isArray(S.floorSeen)) S.floorSeen = {};
+    S.floorSeen[CUR.id] = 1;
+  }
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
@@ -3554,7 +3559,7 @@ function drawTileExtras(g, ch, tx, ty, X, Y){
 // debug/tests (?debug=1 only): what map `id`'s styled buildings, props and decals resolve to, and how cell (x, y) of the current map is painted
 function exteriorView(id){
   id = id || CUR.id; const m = WORLD[id]; if (!m) return null;
-  const dim = a => a ? [a.width, a.height] : null, bs = buildingsOf(m);
+  const dim = a => { const img = Array.isArray(a) ? a[0] : a; return img && img.width ? [img.width, img.height] : null; }, bs = buildingsOf(m);
   const tiles = new Set(Object.keys(EXTERIOR_ART.tiles)), wart = new Set(Object.keys(EXTERIOR_ART.art).concat(Object.keys(EXTERIOR_ART.big)));
   bs.forEach(b => { [b.roof, b.wall].forEach(n => n && tiles.add(n)); [b.door].concat(b.win).forEach(n => n && wart.add(n)); });
   const list = kind => m.objs.filter(o => o.kind === kind).map(o => ({ id: o.id, x: o.x, y: o.y, sprite: o.sprite || null, art: dim(WART[o.sprite]) }));
@@ -3752,6 +3757,8 @@ function tickCamBias(t){
   b.y = b.from + (b.to - b.from) * e;
   if (k >= 1) { b.y = b.to; b.ease = false; }
 }
+const WAYIN_DIM_AFTER_VISIT = true; // D224: glint stays on frame 0 after the destination floor is seen
+const WAYIN_DOORS = 'all'; // D227: 'all', or 'poor' (poor and weak stay, fine is skipped)
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -3790,6 +3797,12 @@ function drawMap(t){
       }
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       if (CUR.roofs && (ch === 'R' || ch === 'H')) img = buildingTile(ch, tx, ty, img);
+      if (ch === '^') {   // STAIR_MARKER: clear corners show the room floor under the flight
+        let floorImg = TILES['.'] || TILES.g;
+        if (CUR.skin === 'lab') { const nm = labTileName('.', tx, ty); if (nm && TILES[nm]) floorImg = TILES[nm]; }
+        else if (skEarly) { const nm = skinTileName(skEarly, '.', tx, ty); if (nm && TILES[nm]) floorImg = TILES[nm]; }
+        g.drawImage(floorImg, tx*TS - cx, ty*TS - cy);
+      }
       g.drawImage(img, tx*TS - cx, ty*TS - cy);
       if (decal) g.drawImage(decal, tx*TS - cx, ty*TS - cy);
       drawTileExtras(g, ch, tx, ty, tx*TS - cx, ty*TS - cy);
@@ -3802,8 +3815,23 @@ function drawMap(t){
     }
   const shade = wallMaskOf(CUR);   // floor contact shadow, under props and actors
   if (shade) g.drawImage(shade, -cx, -cy);
+  // Up flights redraw over the contact shadow so the black opening still reads as a room beyond.
+  for (let ty = Math.floor(cy/TS); ty <= Math.floor((cy+VH)/TS); ty++)
+    for (let tx = Math.floor(cx/TS); tx <= Math.floor((cx+VW)/TS); tx++){
+      if (tx<0||ty<0||tx>=MW||ty>=MH || MAP[ty][tx] !== '^') continue;
+      const skStair = CUR.skin && SKINS[CUR.skin];
+      let stair = TILES['^'] || TILES.g;
+      if (CUR.skin === 'lab') { const nm = labTileName('^', tx, ty); if (nm && TILES[nm]) stair = TILES[nm]; }
+      else if (skStair) { const nm = skinTileName(skStair, '^', tx, ty); if (nm && TILES[nm]) stair = TILES[nm]; }
+      g.drawImage(stair, tx*TS - cx, ty*TS - cy);
+    }
   for (const o of CUR.objs) if (o.kind === 'door' && present(o) && (tileAt(o.x, o.y - 1) === 'H' || tileAt(o.x, o.y) === 'H')) drawDoor(g, o, cx, cy);
-  for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) { const fr = artFrame(WART[o.sprite], t); if (fr) g.drawImage(fr, o.x*TS - cx, o.y*TS - cy); }   // wall/floor decals: drawn, never block, never talk
+  for (const o of CUR.objs) if (o.kind === 'decal' && present(o) && WART[o.sprite]) {
+    if (o.doorRead && WAYIN_DOORS === 'poor' && o.doorRead === 'fine') continue;   // D227 switch: poor keeps poor and weak
+    let art = WART[o.sprite];
+    if (o.wayin && WAYIN_DIM_AFTER_VISIT && S.floorSeen && S.floorSeen[o.wayin]) art = Array.isArray(art) ? art[0] : art;   // D224: glint stays on the blank frame
+    const fr = artFrame(art, t); if (fr) g.drawImage(fr, o.x*TS - cx, o.y*TS - cy);
+  }   // wall/floor decals: drawn, never block, never talk
   drawCobbleTrim(g, cx, cy, t);
   if (sightShown) for (const o of CUR.objs) if (o.kind === 'trainer' && present(o)) {   // debug showSight(): tint every sight line
     g.fillStyle = canSpot(o) ? 'rgba(244,80,80,.35)' : 'rgba(160,160,160,.3)'; sightLine(o).forEach(c => g.fillRect(c.x*TS - cx, c.y*TS - cy, TS, TS)); }
