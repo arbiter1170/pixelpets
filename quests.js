@@ -175,7 +175,7 @@
         target: { map: 'hm_home_up', x: 5, y: 3 } },
       { id: 'mahopac', when: ['story.mom_sent'], done: ['story.reached_mahopac'],
         text: 'Take your Walkling up the north trail to Mahopac.', place: 'Hearthmoor, north trail',
-        target: { map: 'hearthmoor', x: 9, y: 0 } },
+        target: { map: 'hearthmoor', x: 9, y: 2 } },
       { id: 'observatory', when: ['story.reached_mahopac'], done: ['story.dream_started'],
         text: 'Step into Breckenridge Observatory. The lens is waiting.', place: 'Mahopac observatory',
         target: { map: 'mahopac_obs', x: 4, y: 2 } },

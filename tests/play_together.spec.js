@@ -271,8 +271,8 @@ test.describe('Play together', () => {
     await b.waitForFunction(() => window.PixelPets.state.world.x >= 12, null, { timeout: 4000 });
     await b.keyboard.up('ArrowRight');
     expect(await b.evaluate(() => window.PixelPets.scene)).toBeFalsy();
-    await a.evaluate(() => window.PixelPets.goto('hearthmoor', 11, 6, 'down'));
-    await b.evaluate(() => window.PixelPets.goto('hearthmoor', 11, 7, 'up'));
+    await a.evaluate(() => window.PixelPets.goto('hearthmoor', 15, 6, 'down'));
+    await b.evaluate(() => window.PixelPets.goto('hearthmoor', 15, 7, 'up'));
     await b.keyboard.down('ArrowUp');
     await b.waitForFunction(() => window.PixelPets.state.world.map === 'hm_lodge_in', null, { timeout: 3000 });
     await b.keyboard.up('ArrowUp');

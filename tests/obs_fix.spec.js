@@ -85,8 +85,8 @@ test('the marker shows on the telescope, and after leaving a dream early', async
     const midIn = { here: snap(), cyan: cue(4, 2) };
     const town = await stand('mahopac', 5, 9);
     town.cyan = cue(5, 7);
-    const trail = await stand('hearthmoor', 9, 3);
-    trail.cyan = cue(9, 0);
+    const trail = await stand('hearthmoor', 9, 5);
+    trail.cyan = cue(9, 2);
     PixelPets.setFlag('story.dream_study', true);
     PixelPets.setFlag('story.phone_got', true);
     const done = await stand('mahopac_obs', 4, 5);
@@ -113,7 +113,7 @@ test('the marker shows on the telescope, and after leaving a dream early', async
   expect(seen.midIn.cyan).toBeGreaterThanOrEqual(18);
   expect(seen.town.here).toMatchObject({ id: 'dream_toy', point: { x: 5, y: 7, here: false } });
   expect(seen.town.cyan).toBeGreaterThanOrEqual(18);
-  expect(seen.trail.here).toMatchObject({ id: 'dream_toy', point: { x: 9, y: 0, here: false } });
+  expect(seen.trail.here).toMatchObject({ id: 'dream_toy', point: { x: 9, y: 2, here: false } });
   expect(seen.trail.cyan).toBeGreaterThanOrEqual(18);
   expect(seen.done.here).toBeNull();
   expect(seen.done.cyan).toBeLessThan(8);

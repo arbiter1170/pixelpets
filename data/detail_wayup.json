@@ -1,0 +1,265 @@
+{
+ "spec": "PLAYTEST_FIX_1020",
+ "version": "0.1",
+ "_about": "Hearthmoor north lane to Mahopac (D381-D383). Map-pass overlay, ours; sorts after detail_wayin so it applies last. replaceObjs entries are verbatim copies from game origin/main with only x/y (or tx/ty) changed.",
+ "slicePatch": {
+  "maps": {
+   "hearthmoor": {
+    "gridRows": {
+     "1": "TTTTTTTTpppTTTTgggggTTTT",
+     "2": "TgRRRRggpppgRRRRRRgRRRRT",
+     "3": "TgRRRRgggpggRRRRRRgRRRRT",
+     "4": "TgHHHHgggpggRRRRRRgHHHHT",
+     "5": "TggpgggggpggHHHHHHggpggT",
+     "6": "TfgpgggggpgggggpggggpggT",
+     "7": "TggpggppppgggfgpggggpggT"
+    },
+    "addRoofs": {
+     "lodge": {
+      "x0": 12,
+      "y0": 2,
+      "x1": 17,
+      "y1": 4,
+      "roof": "roof_shingle_g",
+      "wall": "wall_log",
+      "door": "door_double",
+      "win": "win_shutter",
+      "trim": "d",
+      "shape": "steep",
+      "porch": [
+       "hm_lodge_sign",
+       "hm_lodge_fence"
+      ]
+     },
+     "rook": {
+      "x0": 19,
+      "y0": 2,
+      "x1": 22,
+      "y1": 3,
+      "roof": "roof_tile_o",
+      "wall": "wall_brick",
+      "win": "win_square",
+      "trim": "p",
+      "shape": "+chimney",
+      "porch": [
+       "hm_rook_cart"
+      ]
+     }
+    },
+    "replaceObjs": [
+     {
+      "kind": "warp",
+      "id": "hm_north",
+      "x": 9,
+      "y": 2,
+      "to": "mahopac",
+      "tx": 9,
+      "ty": 14,
+      "facing": "up",
+      "need": "story.mom_sent",
+      "setFlag": "story.reached_mahopac"
+     },
+     {
+      "kind": "sign",
+      "id": "hm_north_closed",
+      "x": 11,
+      "y": 2,
+      "when": [
+       "!story.mom_sent"
+      ],
+      "text": "A north trail. Mom says it can wait."
+     },
+     {
+      "kind": "sign",
+      "id": "hm_north_open",
+      "x": 11,
+      "y": 2,
+      "when": [
+       "story.mom_sent"
+      ],
+      "text": "North trail to Mahopac. Time feels thick up there."
+     },
+     {
+      "kind": "trigger",
+      "id": "hm_north_wait",
+      "x": 9,
+      "y": 3,
+      "when": [
+       "!story.mom_sent"
+      ],
+      "scene": "north_closed"
+     },
+     {
+      "kind": "door",
+      "id": "hm_lodge",
+      "x": 15,
+      "y": 6,
+      "to": "hm_lodge_in",
+      "tx": 5,
+      "ty": 7,
+      "facing": "up"
+     },
+     {
+      "kind": "decal",
+      "id": "wayin_hm_lodge",
+      "x": 15,
+      "y": 6,
+      "sprite": "door_step",
+      "doorRead": "weak"
+     },
+     {
+      "kind": "sign",
+      "id": "hm_sign_lodge",
+      "x": 16,
+      "y": 7,
+      "text": "WARDEN'S LODGE · Warden Ilse Marrow. New keepers, knock and come in."
+     },
+     {
+      "kind": "prop",
+      "id": "hm_lodge_sign",
+      "x": 13,
+      "y": 6,
+      "sprite": "sign_lodge"
+     },
+     {
+      "kind": "prop",
+      "id": "hm_lodge_fence",
+      "x": 17,
+      "y": 6,
+      "sprite": "fence_post"
+     },
+     {
+      "kind": "door",
+      "id": "hm_rook",
+      "x": 20,
+      "y": 5,
+      "to": "hm_rook_in",
+      "tx": 3,
+      "ty": 4,
+      "facing": "up"
+     },
+     {
+      "kind": "decal",
+      "id": "wayin_hm_rook",
+      "x": 20,
+      "y": 5,
+      "sprite": "door_step",
+      "doorRead": "weak"
+     },
+     {
+      "kind": "npc",
+      "id": "rook_home",
+      "name": "Rook",
+      "x": 21,
+      "y": 6,
+      "when": [
+       "!story.starter_received"
+      ],
+      "lines": {
+       "else": "Ilse's handing out partners today! Bet I get mine first. Just... warming up."
+      },
+      "chatter": {
+       "else": "Hup, hup! Warming up!"
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "hm_rook_cart",
+      "x": 22,
+      "y": 5,
+      "sprite": "cart_prop"
+     },
+     {
+      "kind": "decal",
+      "id": "hm_puddle_14_3",
+      "x": 11,
+      "y": 4,
+      "sprite": "puddle"
+     },
+     {
+      "kind": "decal",
+      "id": "hm_puddle_15_7",
+      "x": 18,
+      "y": 6,
+      "sprite": "puddle"
+     },
+     {
+      "kind": "decal",
+      "id": "hm_leaf_19_4",
+      "x": 18,
+      "y": 4,
+      "sprite": "leaf_litter"
+     }
+    ],
+    "addObjs": [
+     {
+      "kind": "warp",
+      "id": "hm_north_w",
+      "x": 8,
+      "y": 2,
+      "to": "mahopac",
+      "tx": 9,
+      "ty": 14,
+      "facing": "up",
+      "need": "story.mom_sent",
+      "setFlag": "story.reached_mahopac"
+     },
+     {
+      "kind": "warp",
+      "id": "hm_north_e",
+      "x": 10,
+      "y": 2,
+      "to": "mahopac",
+      "tx": 9,
+      "ty": 14,
+      "facing": "up",
+      "need": "story.mom_sent",
+      "setFlag": "story.reached_mahopac"
+     }
+    ]
+   },
+   "mahopac": {
+    "replaceObjs": [
+     {
+      "kind": "warp",
+      "id": "mah_south",
+      "x": 9,
+      "y": 15,
+      "to": "hearthmoor",
+      "tx": 9,
+      "ty": 3,
+      "facing": "down"
+     }
+    ]
+   },
+   "hm_lodge_in": {
+    "replaceObjs": [
+     {
+      "kind": "warp",
+      "id": "lodge_mat",
+      "x": 5,
+      "y": 8,
+      "to": "hearthmoor",
+      "tx": 15,
+      "ty": 6,
+      "facing": "down"
+     }
+    ]
+   },
+   "hm_rook_in": {
+    "replaceObjs": [
+     {
+      "kind": "warp",
+      "id": "rook_mat",
+      "x": 3,
+      "y": 5,
+      "to": "hearthmoor",
+      "tx": 20,
+      "ty": 5,
+      "facing": "down"
+     }
+    ]
+   }
+  }
+ }
+}

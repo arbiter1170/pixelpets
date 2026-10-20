@@ -31,20 +31,23 @@ function near(got, want, tol) {
   return Math.abs(got - want) <= tol;
 }
 
-test('lower card has four bars, the spec icons, and the card rects', async ({ page }) => {
+test('lower card has five bars, the spec icons, and the card rects', async ({ page }) => {
   await boot(page, { hunger: 78, happy: 99, energy: 85, xp: 40, stage: 1 });
   const W = page.viewportSize().width;
+  const keys = ['hp', 'food', 'joy', 'nrg', 'grow'];
   const card = {
-    320: { food: [54, 70, 22.5], joy: [96.5, 108.5, 22.5], nrg: [135, 147, 22.5], grow: [173.5, 185.5, 22.5] },
-    390: { food: [54, 70, 40], joy: [114, 126, 40], nrg: [170, 182, 40], grow: [226, 238, 40] },
+    320: { hp: [54, 66, 14.8], food: [84.8, 100.8, 14.8], joy: [119.6, 131.6, 14.8], nrg: [150.4, 162.4, 14.8], grow: [181.2, 193.2, 14.8] },
+    390: { hp: [54, 66, 28.8], food: [98.8, 114.8, 28.8], joy: [147.6, 159.6, 28.8], nrg: [192.4, 204.4, 28.8], grow: [237.2, 249.2, 28.8] },
   }[W];
   const lay = await page.evaluate(() => {
     const strip = document.querySelector('#petStrip');
     const r = el => { const b = el.getBoundingClientRect(); return { x: b.x, y: b.y, w: b.width, h: b.height }; };
-    const bars = ['food', 'joy', 'nrg', 'grow'].map(k => {
+    const keys = ['hp', 'food', 'joy', 'nrg', 'grow'];
+    const bars = keys.map(k => {
       const icon = strip.querySelector('.ico-' + k);
-      const bar = strip.querySelectorAll('.ps-bar')[['food', 'joy', 'nrg', 'grow'].indexOf(k)];
-      return { icon: r(icon), bar: r(bar), low: bar.querySelector('i').classList.contains('low') };
+      const bar = strip.querySelectorAll('.ps-bar')[keys.indexOf(k)];
+      const fill = bar.querySelector('i');
+      return { icon: r(icon), bar: r(bar), low: fill.classList.contains('low'), warn: fill.classList.contains('warn') };
     });
     const name = strip.querySelector('.ps-top');
     const pet = document.querySelector('#petFloat').getBoundingClientRect();
@@ -65,27 +68,33 @@ test('lower card has four bars, the spec icons, and the card rects', async ({ pa
   expect(Math.abs(lay.rightGap - 6)).toBeLessThanOrEqual(1);
   expect(lay.overflow).toBe(false);
   expect(lay.nameH).toBeLessThan(24);
-  expect(lay.aria).toBe('Partner Emberfox, Lv 5. Food 78, joy 99, energy 85, grow 40 of 120.');
+  expect(lay.aria).toBe('Partner Emberfox, Lv 5. HP 37 of 37, Food 78, joy 99, energy 85, grow 40 of 120.');
   expect(parseFloat(lay.growW)).toBeCloseTo(100 * 40 / 120, 2);
   expect(parseFloat(lay.foodW)).toBeCloseTo(78, 2);
   expect(lay.iconsBlink).toBe(false);
   lay.bars.forEach(b => expect(b.low).toBe(false));
   if (card) {
-    const keys = ['food', 'joy', 'nrg', 'grow'];
     keys.forEach((k, i) => {
       const [ix, bx, bw] = card[k];
-      expect(near(lay.bars[i].icon.x, ix, 1), k + ' icon x').toBe(true);
-      expect(near(lay.bars[i].bar.x, bx, 1), k + ' bar x').toBe(true);
+      expect(near(lay.bars[i].icon.x, ix, 1), k + ' icon x ' + lay.bars[i].icon.x).toBe(true);
+      expect(near(lay.bars[i].bar.x, bx, 1), k + ' bar x ' + lay.bars[i].bar.x).toBe(true);
       expect(near(lay.bars[i].bar.w, bw, 1), k + ' bar w ' + lay.bars[i].bar.w).toBe(true);
-      expect(lay.bars[i].bar.w).toBeGreaterThanOrEqual(20);
+      expect(lay.bars[i].bar.w).toBeGreaterThanOrEqual(14);
       expect(near(lay.bars[i].icon.w, k === 'food' ? 14 : 10, 0.5)).toBe(true);
+      expect(lay.bars[i].low).toBe(false);
     });
+    expect(lay.bars[0].warn).toBe(false);
+    expect(lay.bars[0].icon.x).toBeLessThan(lay.bars[1].icon.x);
   }
+  const hpMark = await rgbAt(page, '#petStrip .ico-hp', 0, 0);
+  const hpCore = await rgbAt(page, '#petStrip .ico-hp', 2, 2);
   const food = await rgbAt(page, '#petStrip .ico-food', 3, 0);
   const leaf = await rgbAt(page, '#petStrip .ico-food', 4, 0);
   const joy = await rgbAt(page, '#petStrip .ico-joy', 1, 0);
   const nrg = await rgbAt(page, '#petStrip .ico-nrg', 3, 0);
   const grow = await rgbAt(page, '#petStrip .ico-grow', 2, 0);
+  expect(hpMark).toMatchObject({ w: 5, h: 5, glyph: 'ico_hp', rgb: [167, 240, 112, 255] });
+  expect(hpCore.rgb).toEqual([244, 244, 244, 255]);
   expect(food).toMatchObject({ w: 7, h: 7, glyph: 'ico_food', rgb: [86, 108, 134, 255] });
   expect(leaf.rgb).toEqual([56, 183, 100, 255]);
   expect(joy).toMatchObject({ w: 5, h: 5, glyph: 'ico_joy', rgb: [177, 62, 83, 255] });
@@ -96,7 +105,7 @@ test('lower card has four bars, the spec icons, and the card rects', async ({ pa
 });
 
 test('a low FOOD bar blinks and GROW does not, and one tap opens STATS', async ({ page }) => {
-  await boot(page, { hunger: 10, happy: 10, energy: 10, xp: 10, stage: 0 });
+  await boot(page, { hunger: 10, happy: 10, energy: 10, xp: 10, stage: 0, hpNow: 1 });
   await page.locator('#petStrip').click();
   await expect(page.locator('#ovStats')).toBeVisible();
   const low = await page.evaluate(() => ({
@@ -104,10 +113,14 @@ test('a low FOOD bar blinks and GROW does not, and one tap opens STATS', async (
     joy: document.querySelector('#stripJoy').classList.contains('low'),
     nrg: document.querySelector('#stripNrg').classList.contains('low'),
     grow: document.querySelector('#stripGrow').classList.contains('low'),
+    hpWarn: document.querySelector('#stripHp').classList.contains('warn'),
+    hpLow: document.querySelector('#stripHp').classList.contains('low'),
     screen: document.body.dataset.screen,
   }));
   expect(low.food && low.joy && low.nrg).toBe(true);
   expect(low.grow).toBe(false);
+  expect(low.hpWarn).toBe(true);
+  expect(low.hpLow).toBe(false);
   expect(low.screen).toBe('walk');
 });
 

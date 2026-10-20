@@ -45,7 +45,7 @@ Trigger radius is Manhattan (`checkTriggers`). Fernbrook's `fb_glimmer` trigger 
 
 ### Hearthmoor — Lantern Square
 
-Map stays 24×20. Warps stay put, including the north trail at (9, 0) and the east gate at (23, 8). Officer Bren keeps patrolling row 8. The board is one tile north of that patrol, so he does not walk through the wood.
+Officer Bren keeps patrolling row 8. The board is one tile north of that patrol, so he does not walk through the wood. The board stays at (8, 7). D381 (Oct 20, 2026) rewrote Hearthmoor rows 1–7: the north trail is a three-tile mouth at (8–10, 2), and the east gate stays at (23, 8). The grid table below is the earlier board-pass plan.
 
 Replace two rows (civic already replaces row 9; this replacement includes the Keeper House roof):
 
