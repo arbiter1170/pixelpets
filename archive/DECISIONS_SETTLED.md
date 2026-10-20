@@ -8,6 +8,17 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D220 (Oct 19, 2026, green, SETTLED with the packet).** Name and scope stay STAIR_MARKER. Doors are the same family. Three shapes: stairs (floor change), sill (a door or same-level doorway), mat (way out, unchanged).
+- **D221 (Oct 19, 2026, Vincent, yellow, 7:14 PM ET, on the default).** Redraw plus marker. `stair_home`, `stair_loft`, and `lab_stair` are full-tile flights. Floor warps with no stair art get `step_up` / `step_down`. The marker is the soft glint on the far tread.
+- **D222 (Oct 19, 2026, green, SETTLED).** Up and down differ by value only. Up treads lighten toward the far edge. Down treads darken into a well under a lit rim. No arrows, no text. Refinement the same evening (Lissett, CCO, via Vincent, 7:21 PM ET, no new id): the top of every up flight is solid PAL.k, the darkest existing key, so the flight reads into another room. The narrowing corners stay clear. The glint sits on the tread just under that opening. Down wells stay as specced.
+- **D223 (Oct 19, 2026, green, SETTLED).** One glint, 6 by 2, six frames at 500 ms: blank four times, then the glint twice. Nothing moves. Reduced motion stays on frame 0.
+- **D224 (Oct 19, 2026, Vincent, yellow, 7:14 PM ET, on the default).** The glint stops (frame 0) once the destination map id is in optional `floorSeen`. Stairs and sills never hide. `floorSeen` is `{ mapId: 1 }`. Save `v` stays 2. Doors never glint. `WAYIN_DIM_AFTER_VISIT` stays true.
+- **D225 (Oct 19, 2026, green, SETTLED).** Mats mean way out and stay. A floor-change warp is drawn as stairs, including the south lab mats and the tunnel mat. `f5_lift` keeps its mat.
+- **D226 (Oct 19, 2026, green, SETTLED).** Enterable doors get a stone threshold on the doorstep cell.
+- **D227 (Oct 19, 2026, Vincent, yellow, 7:14 PM ET, on the default).** Every enterable door gets the step (27). `hc_apt_b` and `hc_apt_c` get none. Gated doors keep the step and the deny line. `WAYIN_DOORS` stays `'all'`.
+- **D228 (Oct 19, 2026, green, SETTLED).** `door_step` on warm ground. `door_step_warm` on grey stone (plaza and cobble).
+- **D229 (Oct 19, 2026, green, SETTLED).** The tunnel and hold inner doors, and the Flats lift, get the same sill. Static, like every door.
+- **D230 (Oct 19, 2026, green, SETTLED).** Observatory exit `(4,6)` is `mat_dusk` (`doormat('F','P')`) on cell `m`, skin remap `m: mat_dusk`. It still leaves to Mahopac.
 - **D231 (Oct 19, 2026, ROOM_ZOOM v0.1, settled).** Interiors only. A room with `fitWidth` keeps the width-fit camera and the void bars. Outdoors stay at the outdoor scale.
 - **D232 (Oct 19, 2026, ROOM_ZOOM v0.1, settled).** The interior scale is a whole number. S = max(s, min(2s, floor(W / ((MW − slack) × 16)), floor(H_eff / (MH × 16)))). In modern, H_eff is the map-wrap height minus 112. In arcade, H_eff is the map-wrap height. S never drops below the outdoor scale s and never passes 2s.
 - **D233 (Oct 19, 2026, Vincent, yellow, 7:38 PM ET, default).** One tile of width slack, and only when both edge columns are solid wall. Otherwise slack is 0.

@@ -29,6 +29,16 @@ const PPSave = (() => {
     if (pm) for (const [id, pt] of Object.entries(pm)) if (MAP_SIZE[id] && pt && pt.set && pt.set.w && pt.set.h) MAP_SIZE[id] = [pt.set.w, pt.set.h];
   }
   const MAPS = Object.keys(MAP_SIZE);
+  // D224: floorSeen keys are real map ids. Detail overlays can add rooms that MAPS has not sized yet.
+  const FLOOR_SEEN_IDS = new Set(MAPS);
+  if (MD) for (const bag of Object.values(MD)) {
+    if (!bag || typeof bag !== 'object') continue;
+    for (const key of ['maps', 'rooms']) {
+      const group = bag[key];
+      if (!group || typeof group !== 'object') continue;
+      for (const [id, m] of Object.entries(group)) if (m && m.w && m.h) FLOOR_SEEN_IDS.add(id);
+    }
+  }
   const MAP_W = 24, MAP_H = 20;                 // v1 positions were on the 24x20 proto map
   const NEW_GAME = MD ? MD.interiors.newGame : { map: 'proto', x: 3, y: 3, facing: 'down' };
   const LODGE_STEP = { map: 'hearthmoor', x: 11, y: 6, facing: 'up' };          // mid-starter resume (MAPS_SLICE §10)
@@ -317,6 +327,11 @@ const PPSave = (() => {
     fill(s.settings, 'joystick', x => typeof x === 'boolean', false);                 // Q26 / D63: modern joystick, default off
     fill(s.settings, 'tips', x => typeof x === 'boolean', true);                      // D180: unlock tips, default on, additive
     fill(s, 'mapSeen', isObj, {});
+    // D224: optional floorSeen { mapId: 1 }. Absent stays absent. Junk (non-object, non-1, unknown id) is dropped. v stays 2.
+    if (has(s, 'floorSeen')) {
+      if (!isObj(s.floorSeen)) delete s.floorSeen;
+      else for (const k of Object.keys(s.floorSeen)) if (!FLOOR_SEEN_IDS.has(k) || s.floorSeen[k] !== 1) delete s.floorSeen[k];
+    }
     // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
     if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;
     // CARE_LOOP cheap slice: today's player care record { d, steps, finds, stepBond, battleBond, firstCare } (additive; bad -> dropped).
