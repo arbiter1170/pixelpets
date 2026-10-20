@@ -485,8 +485,11 @@ function updatePetStrip(p){
     grow.style.width = pct + '%';
     grow.classList.remove('low');
   }
+  // D384–D385: HP is the first bar. Width is hp / max. PAL r under 25%. No .low blink. No digits on the card.
+  const hp = hpOf(p), mx = maxHpOf(p), e = $('#stripHp');
+  if (e) { e.style.width = clamp(hp / mx * 100, 0, 100) + '%'; e.classList.toggle('warn', hp / mx < 0.25); e.classList.remove('low'); }
   const goalTxt = p.stage >= 2 ? 'fully grown' : (p.xp + ' of ' + EVO_XP[p.stage]);
-  $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
+  $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. HP ' + hp + ' of ' + mx + ', Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
 }
 
 // Nav button art (NAV_MODERN v0.2 §7, data/nav_art.js copied from Design's nav_art.json). Modern only: arcade keeps its old
@@ -6810,6 +6813,8 @@ function outdoorLayout(m){
   const exits = [];
   (m.objs || []).forEach(o => {
     if (o.kind !== 'warp' || !WORLD[o.to]) return;
+    // D381: the trail mouth is three warps. The town map lists the middle tile once, like an in-map exit.
+    if (o.id === 'hm_north_w' || o.id === 'hm_north_e') return;
     const edge = o.x === 0 ? 'west' : o.x === w - 1 ? 'east' : o.y === 0 ? 'north' : o.y === h - 1 ? 'south' : 'mark';
     const node = nodeOf(o.to);
     exits.push({
@@ -7443,6 +7448,7 @@ function paintGlyphBox(c, name, fallback){
 }
 // D245: apple, heart, bolt and star. Painted once at boot. The heart-button bowl and z stay on their own canvases.
 function paintStatIcons(){
+  $$('.ico-hp').forEach(c => paintGlyphBox(c, 'ico_hp'));
   $$('.ico-food').forEach(c => paintGlyphBox(c, 'ico_food'));
   $$('.ico-joy').forEach(c => paintGlyphBox(c, 'ico_joy'));
   $$('.ico-grow').forEach(c => paintGlyphBox(c, 'ico_grow'));

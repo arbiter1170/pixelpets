@@ -165,7 +165,7 @@ test('E7 path edges and E11 painted cells: grass fringe on paths, faction ridge 
       if (rows.length !== n || rows.some(row => row.length !== n || [...row].some(ch => !allow.has(ch)))) bad.push(k);
       if (!size || size[0] !== n || size[1] !== n) bad.push('registry ' + k);
     }
-    const out = { bad, edge: c(3, 6), mid: c(8, 8), grass: c(1, 1), rook: c(15, 2), home, lodgeWall: c(9, 5), lodgeDoor: c(lodgeDoor.x, lodgeDoor.y).doorArt,
+    const out = { bad, edge: c(3, 6), mid: c(8, 8), grass: c(1, 1), rook: c(19, 2), home, lodgeWall: c(13, 5), lodgeDoor: c(lodgeDoor.x, lodgeDoor.y).doorArt,
       y: PAL.y, big: ['lm_lantern_post', 'lm_well', 'lm_statue', 'lm_signal_mast', 'lm_big_tree', 'regenx_facade', 'tunnel_mouth'].map(k => v.wart[k]),
       phase2: ['grass_b', 'grass_c', 'flower_patch', 'puddle', 'leaf_litter'].map(k => v.tiles[k]) };
     PixelPets.goto('fb_heights', null, null, 'down');

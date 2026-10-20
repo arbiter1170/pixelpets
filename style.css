@@ -102,9 +102,9 @@ h2 small{color:var(--h);font-size:17px}
 .stats{display:flex;flex-direction:column;gap:8px;padding:4px 6px}
 .stat{display:grid;grid-template-columns:62px 1fr 36px;align-items:center;gap:8px;font-size:18px}
 .stat-lab{display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
-.ico-food,.ico-joy,.ico-nrg,.ico-grow,.ico-pencil,.ico-bolt{image-rendering:pixelated;image-rendering:crisp-edges;vertical-align:middle;pointer-events:none;flex:0 0 auto}
+.ico-food,.ico-joy,.ico-nrg,.ico-grow,.ico-hp,.ico-pencil,.ico-bolt{image-rendering:pixelated;image-rendering:crisp-edges;vertical-align:middle;pointer-events:none;flex:0 0 auto}
 .ico-food{width:14px;height:14px}
-.ico-joy,.ico-nrg,.ico-grow,.ico-pencil,.btn .ico-bolt{width:10px;height:10px}
+.ico-joy,.ico-nrg,.ico-grow,.ico-hp,.ico-pencil,.btn .ico-bolt{width:10px;height:10px}
 #statStrip .ss-ico-nrg{left:12px;top:13px;width:10px;height:10px}
 #statStrip .ss-ico-grow{left:calc(66px + var(--bw) + 44px);top:13px;width:10px;height:10px}
 .stat b{text-align:right;color:var(--h)}

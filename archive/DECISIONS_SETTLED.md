@@ -8,6 +8,18 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D380 (Oct 20, 2026, green, SETTLED).** PLAYTEST_FIX_1020 (design 0b0c3dc). The Settings build line wraps, and CLOSE keeps its height. Shipped in #118 (build 20261020-1149, restamped 20261020-1155). This build leaves that CSS as it is.
+- **D381 (Oct 20, 2026, Vincent, 11:47 AM ET, yellow, SETTLED BY VINCENT, on the default).** PLAYTEST_FIX_1020 (design 0b0c3dc). Hearthmoor stays 24 by 24. The north trail is a three-tile mouth at (8, 2), (9, 2) and (10, 2). The lane is x 8–10 down to the row 7 path. Warden's Lodge and Rook's House sit 4 tiles east.
+- **D382 (Oct 20, 2026, green, SETTLED).** PLAYTEST_FIX_1020. The three mouth warps share `hm_north`'s fields. Coming back from Mahopac lands at (9, 3). The Lodge mat lands at (15, 6) and Rook's mat at (20, 5). The Mahopac quest step points at (9, 2).
+- **D383 (Oct 20, 2026, green, SETTLED).** PLAYTEST_FIX_1020. Mahopac tiles, objects and the observatory stay. No sight line was added on Hearthmoor.
+- **D384 (Oct 20, 2026, Vincent, 11:47 AM ET, yellow, SETTLED BY VINCENT, on the default).** PLAYTEST_FIX_1020 (design 0b0c3dc). Option A: the lower card leads with an HP bar and shows no numbers.
+- **D385 (Oct 20, 2026, green, SETTLED).** PLAYTEST_FIX_1020. The HP bar width is current HP over max HP. Under a quarter it uses PAL r and does not blink. The card's aria-label says HP, then the two counts, after the level.
+- **D386 (Oct 20, 2026, Vincent, 11:47 AM ET, yellow, SETTLED BY VINCENT, on the default).** PLAYTEST_FIX_1020 (design 0b0c3dc). The Keepers phone tile plate is PAL w.
+- **D387 (Oct 20, 2026, green, SETTLED).** PLAYTEST_FIX_1020. The Glimmerwell phone tile keeps its dark plate.
+- **D388 (Oct 20, 2026, green, SETTLED).** PLAYTEST_FIX_1020. `tests/mahopac_lane.spec.js` and the seven updated specs cover the lane.
+- **D389 (Oct 20, 2026, green, SETTLED, spare).** PLAYTEST_FIX_1020. Held unused. Nothing was built for it.
+- **D346 (Oct 20, 2026, Vincent, 11:34 AM ET, red, SETTLED BY VINCENT).** HUSHWATER (design b01136b). The per-id line stays in Design's packet and is not restated here. Not built on this branch.
+- **D347 (Oct 20, 2026, Vincent, 11:34 AM ET, red, SETTLED BY VINCENT).** HUSHWATER (design b01136b). The per-id line stays in Design's packet and is not restated here. Not built on this branch.
 - **D298–D305 (Oct 20, 2026, Vincent, 7:55 AM ET, SETTLED BY VINCENT, on defaults).** GLIMMER_NEXT_QUEST (design d116af5). Vincent settled these on the packet defaults. The per-id lines stay in Design's packet and are not restated here.
 - **D306–D310 (Oct 20, 2026, Vincent, 10:42 AM ET, SETTLED BY VINCENT, on defaults).** GLIMMER_NEXT_QUEST (design d116af5; design 512809c records the settlement). The team vote was a unanimous yes, and Vincent settled it early, so the Thu Oct 22, 2026, 7:50 AM ET close was removed. The per-id lines stay in Design's packet and are not restated here.
 - **D311–D315 (Oct 20, 2026, green, SETTLED).** GLIMMER_NEXT_QUEST (design d116af5). Settled green. The per-id lines stay in Design's packet and are not restated here.

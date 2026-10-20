@@ -200,10 +200,10 @@ test('the north trail sign leaves the exit walkable, and the gate still holds', 
   await gotoDebug(page);
 
   const placed = await page.evaluate(() => {
-    PixelPets.goto('hearthmoor', 7, 1, 'right');
+    PixelPets.goto('hearthmoor', 7, 3, 'right');
     const objs = PixelPets.mapInfo.objs;
-    const tile = PixelPets.tileInfo(10, 1);
-    const here = objs.filter((o) => o.x === 10 && o.y === 1).map((o) => o.id);
+    const tile = PixelPets.tileInfo(11, 2);
+    const here = objs.filter((o) => o.x === 11 && o.y === 2).map((o) => o.id);
     const raw = MAPDATA.mahopac.slicePatch.maps.hearthmoor.addObjs.filter((o) => o.id === 'hm_north_closed' || o.id === 'hm_north_open' || o.id === 'hm_north' || o.id === 'hm_north_wait');
     return {
       tile, here,
@@ -216,7 +216,7 @@ test('the north trail sign leaves the exit walkable, and the gate still holds', 
   });
   expect(placed.tile).toMatchObject({ ch: 'g', solid: false });
   expect(placed.here).toEqual(['hm_north_closed']);
-  expect(placed.closed).toMatchObject({ x: 10, y: 1, block: true });
+  expect(placed.closed).toMatchObject({ x: 11, y: 2, block: true });
   expect(placed.open).toBeNull();
   expect(placed.raw.find((o) => o.id === 'hm_north_closed')).toMatchObject({
     x: 10, y: 1, when: ['!story.mom_sent'], text: 'A north trail. Mom says it can wait.',
@@ -230,9 +230,9 @@ test('the north trail sign leaves the exit walkable, and the gate still holds', 
   expect(placed.quest).toEqual([]);
 
   const approach = await step(page, 'right');
-  expect(approach).toMatchObject({ map: 'hearthmoor', x: 8, y: 1, v: 2 });
+  expect(approach).toMatchObject({ map: 'hearthmoor', x: 8, y: 3, v: 2 });
   const doorstep = await step(page, 'right');
-  expect(doorstep).toMatchObject({ map: 'hearthmoor', x: 9, y: 1, v: 2 });
+  expect(doorstep).toMatchObject({ map: 'hearthmoor', x: 9, y: 3, v: 2 });
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.id === 'north_closed' && PixelPets.scene.full);
   const heldLine = await page.evaluate(() => PixelPets.scene.text);
   expect(heldLine).toBe('The trees lean in. Not today, says a voice that sounds like Mom.');
@@ -250,7 +250,7 @@ test('the north trail sign leaves the exit walkable, and the gate still holds', 
     fading: PixelPets.fading,
     v: PixelPets.state.v,
   }));
-  expect(gated).toMatchObject({ map: 'hearthmoor', x: 9, y: 1, reached: false, scene: null, fading: false, v: 2 });
+  expect(gated).toMatchObject({ map: 'hearthmoor', x: 9, y: 3, reached: false, scene: null, fading: false, v: 2 });
 
   const opened = await page.evaluate(() => {
     PixelPets.setFlag('story.mom_sent', true);
@@ -263,7 +263,7 @@ test('the north trail sign leaves the exit walkable, and the gate still holds', 
   });
   expect(opened.closed).toBeNull();
   expect(opened.wait).toBeNull();
-  expect(opened.open).toMatchObject({ x: 10, y: 1, block: true });
+  expect(opened.open).toMatchObject({ x: 11, y: 2, block: true });
 
   const warped = await step(page, 'up');
   expect(warped).toMatchObject({ map: 'mahopac', x: 9, y: 14, facing: 'up', v: 2 });
