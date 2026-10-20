@@ -23,13 +23,14 @@ async function openGroup(page, id) {
 async function playTurn(page) {
   const turn = await page.evaluate(() => PixelPets.battle.turn);
   // Fight and the move list are ready as soon as the panel says so. A stability wait on the button
-  // can spend the whole test while the HP bar is still easing.
+  // can spend the whole test while the HP bar is still easing. The last message tap of the previous
+  // turn can land on FIGHT once the panel swaps back under it, so the move list may already be open.
   await expect.poll(() => page.evaluate(() => {
     const B = PixelPets.battle;
     const fight = document.querySelector('[data-bact="fight"]');
-    return !!(B && B.state === 'CHOOSE' && B.panel === 'acts' && fight && !fight.disabled && fight.offsetWidth);
+    return !!(B && B.state === 'CHOOSE' && (B.panel === 'fight' || (B.panel === 'acts' && fight && !fight.disabled && fight.offsetWidth)));
   })).toBe(true);
-  await page.locator('[data-bact="fight"]').click({ force: true });
+  if (await page.evaluate(() => PixelPets.battle.panel === 'acts')) await page.locator('[data-bact="fight"]').click({ force: true });
   await expect.poll(() => page.evaluate(() => {
     const B = PixelPets.battle;
     const mv = document.querySelector('#btMoves button:not([disabled])');
@@ -136,7 +137,9 @@ test('clearing both foes wins and does not set the story flag from a debug battl
   await gotoDebug(page);
   await openGroup(page, 'rx_wardens');
   for (let n = 0; n < 2; n++) {
-    await page.evaluate(() => { if (PixelPets.battle.on && PixelPets.battle.state === 'CHOOSE') PixelPets.setHp('foe', 1); });
+    // Wait for the real choice state, so the HP drop is never skipped.
+    await page.waitForFunction(() => PixelPets.battle.on && PixelPets.battle.state === 'CHOOSE');
+    await page.evaluate(() => PixelPets.setHp('foe', 1));
     await playTurn(page);
   }
   await page.waitForFunction(() => !PixelPets.battle.on || PixelPets.battle.result === 'win');
