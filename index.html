@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261020-1149">
+<meta name="kw-build" content="20261020-1155">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
@@ -12,10 +12,10 @@
 <meta name="application-name" content="Walklings">
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
-<link rel="icon" href="icons/icon-192.png?v=20261020-1149">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261020-1149">
-<link rel="manifest" href="manifest.json?v=20261020-1149">
-<link rel="stylesheet" href="style.css?v=20261020-1149">
+<link rel="icon" href="icons/icon-192.png?v=20261020-1155">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261020-1155">
+<link rel="manifest" href="manifest.json?v=20261020-1155">
+<link rel="stylesheet" href="style.css?v=20261020-1155">
 </head>
 <body>
 <div id="app">
@@ -66,6 +66,7 @@
     <section id="scr-walk" class="screen">
       <button id="envBadge" class="env-badge" type="button"><span id="envText">Meadow</span><small id="envSrc"></small></button>
       <div class="map-wrap" id="mapWrap"><canvas id="mapCanvas" role="img" aria-label="The walk map" width="176" height="176"></canvas>
+        <div id="coopStrip" class="coop-strip" hidden><div class="coop-head">GROUP 0/2</div><div class="coop-heads"></div></div>
         <div id="chatBubble" class="chat-bubble" hidden></div>
         <div id="bumpHint" class="bump-hint" role="status" hidden></div>
         <!-- Q26 modern controls: empty in arcade. applyControls() moves QUEST, BAG, MAP, PHONE, the area name and the tip in here. -->
@@ -661,28 +662,37 @@
     </div>
   </div>
 </div>
+<div id="coopAsk" class="overlay sheet net-sheet" hidden>
+  <div class="ov-inner net-ask" role="dialog" aria-modal="true" aria-labelledby="coopAskTitle">
+    <div id="coopAskTitle" class="ov-title"></div>
+    <div class="net-acts">
+      <button id="coopJoin" class="btn net-act" type="button">JOIN</button>
+      <button id="coopNotNow" class="btn net-act" type="button">NOT NOW</button>
+    </div>
+  </div>
+</div>
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261020-1149";</script>
-<script src="sprites.js?v=20261020-1149"></script>
-<script src="keeper.js?v=20261020-1149"></script>
-<script src="stats.js?v=20261020-1149"></script>
-<script src="moves.js?v=20261020-1149"></script>
-<script src="data/mapdata.js?v=20261020-1149"></script>
-<script src="quests.js?v=20261020-1149"></script>
-<script src="standing.js?v=20261020-1149"></script>
-<script src="rep.js?v=20261020-1149"></script>
-<script src="save.js?v=20261020-1149"></script>
-<script src="env.js?v=20261020-1149"></script>
-<script src="sfx.js?v=20261020-1149"></script>
-<script src="minigames.js?v=20261020-1149"></script>
-<script src="ribbit.js?v=20261020-1149"></script>
-<script src="cloud_config.js?v=20261020-1149"></script>
-<script src="cloud.js?v=20261020-1149"></script>
-<script src="net.js?v=20261020-1149"></script>
-<script src="debug_ui.js?v=20261020-1149"></script>
-<script src="data/nav_art.js?v=20261020-1149"></script>
-<script src="game.js?v=20261020-1149"></script>
+<script>window.BUILD = "20261020-1155";</script>
+<script src="sprites.js?v=20261020-1155"></script>
+<script src="keeper.js?v=20261020-1155"></script>
+<script src="stats.js?v=20261020-1155"></script>
+<script src="moves.js?v=20261020-1155"></script>
+<script src="data/mapdata.js?v=20261020-1155"></script>
+<script src="quests.js?v=20261020-1155"></script>
+<script src="standing.js?v=20261020-1155"></script>
+<script src="rep.js?v=20261020-1155"></script>
+<script src="save.js?v=20261020-1155"></script>
+<script src="env.js?v=20261020-1155"></script>
+<script src="sfx.js?v=20261020-1155"></script>
+<script src="minigames.js?v=20261020-1155"></script>
+<script src="ribbit.js?v=20261020-1155"></script>
+<script src="cloud_config.js?v=20261020-1155"></script>
+<script src="cloud.js?v=20261020-1155"></script>
+<script src="net.js?v=20261020-1155"></script>
+<script src="debug_ui.js?v=20261020-1155"></script>
+<script src="data/nav_art.js?v=20261020-1155"></script>
+<script src="game.js?v=20261020-1155"></script>
 </body>
 </html>

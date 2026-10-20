@@ -6,10 +6,28 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 - What changed and why: PLAYTEST_FIX_1020 item D380 (green, design 9510519). The Settings build line wraps instead of clipping, and the CLOSE button keeps its height. Save stays `pixelpets.save.v2` with `v` 2. No new key. D380 had no open row, so no decision file changed. No id was renumbered. D380–D389 stay reserved.
 - Files touched: `style.css`, `tests/settings_build_line.spec.js`, `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: this branch, build 20261020-1149.
+- Commit(s) + build id: this branch, build 20261020-1149. The Supervisor merged main (#117, build 20261020-1137) into it and restamped it 20261020-1155.
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/smoke.spec.js tests/settings_build_line.spec.js` PP_TEST RESULT: PASS exit=0 passed=24 failed=0 flaky=0 skipped=0 time=33s. RTDB_RULES RESULT: PASS. Widths 320x568, 375x667, and 390x664. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): D380 is green (design 9510519). No row was added.
 - Anything left unfinished: none from this build.
+
+## 2026-10-20 11:37 ET: Decision ids after HUSHWATER, and D306–D310 settled (build 20261020-1137)
+
+- What changed and why: Supervisor docs fix during the PR #117 review. The next free decision id is D363, not D346. D346–D362 are reserved for HUSHWATER (design b01136b): D346–D347 are red, waiting for Vincent; D348–D353 are yellow, a team vote closing Thu Oct 22, 2026, about 11:25 AM ET; D354–D362 are green, settled by Design. D380–D389 are reserved for PLAYTEST_FIX_1020. D306–D310 (GLIMMER_NEXT_QUEST) are recorded as settled by Vincent, 10:42 AM ET Oct 20, 2026, on defaults (design 512809c). No code change. Save `v` stays 2.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html` and `version.json` (stamp only).
+- Commit(s) + build id: this branch, build 20261020-1137.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Affected specs rerun with `node tools/pp_test.js` (coop_r2, play_together, smoke, cloud_off, lizzy, data_integrity, wording_guard); result in the PR comment.
+- Decisions made (colour + reasoning): no new id from this PR. Reservations copied from the design repo. No id was renumbered. Next free id D363.
+- Anything left unfinished: none.
+
+## 2026-10-20 11:09 ET: Walk group groundwork behind the co-op switch (build 20261020-1109)
+
+- What changed and why: COOP_R2 Build 1 adds the parties rules, WALK TOGETHER, the JOIN / NOT NOW sheet, LEAVE GROUP, the GROUP n/max strip, and the 60 s grace window. Creates and updates under `parties` need `/config/coop/on`. Deletes stay open. `COOP_CFG.on` stays false unless `?coop=1` or the emulator, and `PPNet.coopOn()` still needs both that flag and the server switch. Yellows D326–D333 sit in `COOP_VOTE` until the vote closes Thu Oct 22, 2026, 8:00 AM ET. The device key `pixelpets.net` may hold `party`. Save stays `pixelpets.save.v2` with `v` 2. No new save field. Field Lead Imogen's route schedule line says partner. D339–D341 settled Oct 20, 2026 (Vincent, 8:40 AM ET, on defaults, design bfe356a) and nothing was built for them.
+- Files touched: `net.js`, `game.js`, `index.html`, `style.css`, `database.rules.json`, `tools/rtdb_rules_test.js`, `tests/coop_r2.spec.js`, `tests/play_together.spec.js`, `tests/README.md`, `data/act1_route2.json`, `data/mapdata.js`, `version.json`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261020-1109.
+- Tests run and result (widths, checks): `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1326 failed=0 flaky=0 skipped=108 time=1157s. RTDB_RULES RESULT: PASS. `PASS: COOP_R2 party rules 63/63`. Widths 320, 375, and 390. On the 390 project, 10 coop_r2 tests ran and 24 play_together tests ran. The 320 and 375 projects skip those two files. The 320 width is inside the coop_r2 390 run. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): D326–D333 stay yellow, built on the packet defaults in `COOP_VOTE`. D334–D337 are green, settled by Design. D339–D341 are red, settled by Vincent on the defaults, and not built. D342 and D345 stay green. D343 and D344 stay yellow until Thu Oct 22, 2026, about 8:15 AM ET. No new id. No id was renumbered. The next free id is D346.
+- Anything left unfinished: team-up battle, REJOIN, and the ROOK foreshadow scenes. The Supervisor publishes `database.rules.json` after merge. The idle-read budget in the spec says 12; this build asserts 14 for 2 friends and 2 other holders.
 
 ## 2026-10-20 09:04 ET: 30 s and 60 s presence polls, and the co-op kill switch (build 20261020-0904)
 
