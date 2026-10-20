@@ -1,5 +1,5 @@
 /* PLAY_TOGETHER_P1. Two holders on the local Firebase emulators only. Never the live project.
-   Heavy cases run at 390. Layout also runs at 320. */
+   Every case runs in the 390 project (one worker, one emulator). Layout checks open their own 320 and 375 pages. */
 const { test, expect } = require('@playwright/test');
 const { spawn } = require('child_process');
 const net = require('net');
@@ -71,8 +71,9 @@ async function boot(page, save){
   await gotoGame(page, '?cloud=emu&debug=1');
   await onWalk(page);
 }
-async function bootNew(browser, save){
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, baseURL: BASE });
+const PHONES = { 320: { width: 320, height: 568 }, 375: { width: 375, height: 667 }, 390: { width: 390, height: 844 } };
+async function bootNew(browser, save, w){
+  const ctx = await browser.newContext({ viewport: PHONES[w || 390], deviceScaleFactor: 2, isMobile: true, hasTouch: true, baseURL: BASE });
   const page = await ctx.newPage();
   await boot(page, save);
   return page;
@@ -112,7 +113,10 @@ async function shot(page, name, sel){
 
 test.describe('Play together', () => {
   test.describe.configure({ mode: 'serial', timeout: 120000 });
-  test.beforeAll(async () => {
+  // The whole file runs in the 390 project. With `workers: 2`, a 320 or 375 copy of this serial group
+  // would run beside it on the same emulator and room code. 320 and 375 run inside 34 and 40 instead.
+  test.beforeAll(async ({}, info) => {
+    test.skip(info.project.name !== '390', 'runs in the 390 project; other widths run inside it');
     const ready = await portOpen(9000) && await portOpen(9099) && await portOpen(8180);
     if (!ready) {
       emu = spawn('npx', ['firebase', 'emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings'], { detached: true, stdio: 'ignore' });
@@ -667,33 +671,36 @@ test.describe('Play together', () => {
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
   });
 
-  test('34 phone width', async ({ page }, info) => {
-    test.skip(info.project.name === '375', '320 and 390');
-    await boot(page, saveFor('wide' + info.project.name, 'Tester'));
-    await joinRoom(page);
-    await page.locator('#sayBtn').click();
-    const wheel = page.locator('#sayWheel .net-wheel');
-    const fit = await wheel.evaluate(el => el.scrollHeight <= el.clientHeight + 1);
-    expect(fit, 'wheel fits').toBe(true);
-    const btns = await page.locator('#sayWheel button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
-    btns.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
-    await page.locator('#sayClose').click();
-    const self = await page.evaluate(() => {
-      const n = window.PixelPets.net, c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect();
-      return { x: (n.pos.x * 16 - n.cam.x + 8) / c.width * r.width + r.left, y: (n.pos.y * 16 - n.cam.y + 8) / c.height * r.height + r.top };
-    });
-    await page.mouse.click(self.x, self.y);
-    await expect(page.locator('#holderCard')).toBeVisible();
-    const cardFit = await page.locator('#holderCard .net-card').evaluate(el => el.scrollHeight <= el.clientHeight + 1);
-    expect(cardFit, 'card fits').toBe(true);
-    const cardBtns = await page.locator('#holderCard button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
-    cardBtns.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
-    await page.locator('#holderCard button', { hasText: 'CLOSE' }).click();
-    await page.locator('#settingsBtn').click();
-    if (info.project.name === '390') await expect(page.locator('.net-status')).toHaveText(/^Room \d+ · \d+ here$/);
-    const rows = await page.locator('#playTogether button').evaluateAll(els => els.map(e => e.getBoundingClientRect().height));
-    rows.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
-    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  test('34 phone width', async ({ browser }, info) => {
+    test.skip(info.project.name !== '390', '390 project runs 320 and 390');
+    for (const w of [320, 390]) {
+      const page = await bootNew(browser, saveFor('wide' + w, 'Tester'), w);
+      await joinRoom(page);
+      await page.locator('#sayBtn').click();
+      const wheel = page.locator('#sayWheel .net-wheel');
+      const fit = await wheel.evaluate(el => el.scrollHeight <= el.clientHeight + 1);
+      expect(fit, 'wheel fits').toBe(true);
+      const btns = await page.locator('#sayWheel button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
+      btns.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
+      await page.locator('#sayClose').click();
+      const self = await page.evaluate(() => {
+        const n = window.PixelPets.net, c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect();
+        return { x: (n.pos.x * 16 - n.cam.x + 8) / c.width * r.width + r.left, y: (n.pos.y * 16 - n.cam.y + 8) / c.height * r.height + r.top };
+      });
+      await page.mouse.click(self.x, self.y);
+      await expect(page.locator('#holderCard')).toBeVisible();
+      const cardFit = await page.locator('#holderCard .net-card').evaluate(el => el.scrollHeight <= el.clientHeight + 1);
+      expect(cardFit, 'card fits').toBe(true);
+      const cardBtns = await page.locator('#holderCard button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
+      cardBtns.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
+      await page.locator('#holderCard button', { hasText: 'CLOSE' }).click();
+      await page.locator('#settingsBtn').click();
+      if (w === 390) await expect(page.locator('.net-status')).toHaveText(/^Room \d+ · \d+ here$/);
+      const rows = await page.locator('#playTogether button').evaluateAll(els => els.map(e => e.getBoundingClientRect().height));
+      rows.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
+      expect(page.ppErrors, w + ': ' + page.ppErrors.join('\n')).toEqual([]);
+      await page.context().close();
+    }
   });
 
   test('36 hidden tab', async ({ page }, info) => {
@@ -767,30 +774,34 @@ test.describe('Play together', () => {
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
   });
 
-  test('40 settings: show label sits with its switch', async ({ page }, info) => {
-    await boot(page, saveFor('lay' + info.project.name, 'Tester'));
-    await page.locator('#settingsBtn').click();
-    await expect(page.locator('#playTogether')).toBeVisible();
-    const g = await page.evaluate(() => {
-      const box = document.querySelector('#playTogether'), kids = [...box.children];
-      const r = s => box.querySelector(s).getBoundingClientRect();
-      return {
-        iLab: kids.indexOf(box.querySelector('#setShowOthers')),
-        iPills: kids.indexOf(box.querySelector('.net-pills')),
-        iBlk: kids.indexOf(box.querySelector('#setBlocked')),
-        labTop: r('#setShowOthers').top, labBot: r('#setShowOthers').bottom,
-        pillsTop: r('.net-pills').top, blkBot: r('#setBlocked').bottom,
-        labelled: box.querySelector('.net-pills').getAttribute('aria-labelledby'),
-      };
-    });
-    expect(g.iLab, 'label after Room code and Blocked').toBeGreaterThan(g.iBlk);
-    expect(g.iPills - g.iLab, 'label right before its switch').toBeLessThanOrEqual(2);
-    expect(g.labTop).toBeGreaterThanOrEqual(g.blkBot);
-    expect(g.pillsTop - g.labBot, 'label near its switch').toBeLessThanOrEqual(40);
-    expect(g.labelled).toBe('setShowOthers');
-    const sizes = await page.locator('#playTogether button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
-    expect(sizes.length).toBeGreaterThanOrEqual(5);
-    sizes.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
-    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  test('40 settings: show label sits with its switch', async ({ browser }, info) => {
+    test.skip(info.project.name !== '390', '390 project runs 320, 375 and 390');
+    for (const w of [320, 375, 390]) {
+      const page = await bootNew(browser, saveFor('lay' + w, 'Tester'), w);
+      await page.locator('#settingsBtn').click();
+      await expect(page.locator('#playTogether')).toBeVisible();
+      const g = await page.evaluate(() => {
+        const box = document.querySelector('#playTogether'), kids = [...box.children];
+        const r = s => box.querySelector(s).getBoundingClientRect();
+        return {
+          iLab: kids.indexOf(box.querySelector('#setShowOthers')),
+          iPills: kids.indexOf(box.querySelector('.net-pills')),
+          iBlk: kids.indexOf(box.querySelector('#setBlocked')),
+          labTop: r('#setShowOthers').top, labBot: r('#setShowOthers').bottom,
+          pillsTop: r('.net-pills').top, blkBot: r('#setBlocked').bottom,
+          labelled: box.querySelector('.net-pills').getAttribute('aria-labelledby'),
+        };
+      });
+      expect(g.iLab, 'label after Room code and Blocked').toBeGreaterThan(g.iBlk);
+      expect(g.iPills - g.iLab, 'label right before its switch').toBeLessThanOrEqual(2);
+      expect(g.labTop).toBeGreaterThanOrEqual(g.blkBot);
+      expect(g.pillsTop - g.labBot, 'label near its switch').toBeLessThanOrEqual(40);
+      expect(g.labelled).toBe('setShowOthers');
+      const sizes = await page.locator('#playTogether button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
+      expect(sizes.length).toBeGreaterThanOrEqual(5);
+      sizes.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
+      expect(page.ppErrors, w + ': ' + page.ppErrors.join('\n')).toEqual([]);
+      await page.context().close();
+    }
   });
 });
