@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-19 22:09 ET: group_battle test waits on the real battle state (test only, no build)
+
+- What changed and why: `tests/group_battle.spec.js:134` ("clearing both foes wins…") failed about half the time under `--workers=2` (3 of 6 runs before the fix, 0 of 3 with 1 worker). It timed out in `playTurn` waiting for the action panel. After turn 1 the state was CHOOSE but `PixelPets.battle.panel` was already `fight`, because the last forced `#btMsg` tap of the previous turn landed on FIGHT once the panel swapped back under it. `playTurn` now accepts the move list already open and clicks FIGHT only when the panel is `acts`. The win loop waits for the real CHOOSE state with `waitForFunction` before `setHp('foe', 1)`, instead of skipping the HP drop when the state was not there yet. No fixed sleeps. No game code. `playwright.config.js` stays at `workers: 1`. Save `v` stays 2.
+- Files touched: `tests/group_battle.spec.js`, `CHANGELOG.md`.
+- Commit(s) + build id: branch `test/group-battle-wait`. No build stamp: test only, nothing deployed changes, and `python3 tools/bump_build.py --check` exit 0 on build 20261019-2157.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/group_battle.spec.js --workers=2` 10 of 10 PASS (21 tests each, 10–13 s), 1 worker 5 of 5 PASS (14–15 s), no flakes. Full `npm run test:agent -- --workers=2` on 71502f1 plus the fix: PASS passed=1187 failed=0 flaky=0 skipped=16 891 s; PASS passed=1187 failed=0 flaky=0 skipped=16 890 s; FAIL passed=1186 failed=1 flaky=0 skipped=16 889 s, the one failure `[320] rx_f4_pilot.spec.js:208` (tank frames), which also fails on main and is not from this change. One more run was thrown out because its local http.server on 8804 died mid-run (connection refused). After merging `origin/main` 786c0ea: group_battle with `--workers=2` 3 of 3 PASS, and `battle_no_reload.spec.js` plus `group_battle.spec.js` with 1 worker PASS passed=28 skipped=2.
+- Decisions made (colour + reasoning): no new id. Green, test only.
+- Anything left unfinished: `rx_f4_pilot.spec.js:208` is triaged separately (sampling-window bug in the test), not fixed here.
+
 ## 2026-10-19 21:57 ET: Up flights open into three rows of PAL.k (design d106bca) (build 20261019-2157)
 
 - What changed and why: Supervisor review of PR #105 held the merge. The acceptance is solid black across rows 0–2 of every up flight, and the art had rows 0–1. Per design d106bca, `stair_home`, `lab_stair` and `step_up` now have PAL.k on rows 0–2 at the same x span (2–13; the narrowing corners stay clear). The light tread edge moves from row 2 to row 3, so the top tread face is row 4 and the riser stays on row 5. The glint art is unchanged on rows 3–4, just under the opening (D222 refinement). Down wells are unchanged. Save `v` stays 2.
