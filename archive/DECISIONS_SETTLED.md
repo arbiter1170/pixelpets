@@ -9,6 +9,7 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 ## Settled
 
 - **D298–D305 (Oct 20, 2026, Vincent, 7:55 AM ET, SETTLED BY VINCENT, on defaults).** GLIMMER_NEXT_QUEST (design d116af5). Vincent settled these on the packet defaults. The per-id lines stay in Design's packet and are not restated here.
+- **D306–D310 (Oct 20, 2026, Vincent, 10:42 AM ET, SETTLED BY VINCENT, on defaults).** GLIMMER_NEXT_QUEST (design d116af5; design 512809c records the settlement). The team vote was a unanimous yes, and Vincent settled it early, so the Thu Oct 22, 2026, 7:50 AM ET close was removed. The per-id lines stay in Design's packet and are not restated here.
 - **D311–D315 (Oct 20, 2026, green, SETTLED).** GLIMMER_NEXT_QUEST (design d116af5). Settled green. The per-id lines stay in Design's packet and are not restated here.
 - **D316 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. The plan is rung 2, a team-up battle, for an invite-only playtest. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
 - **D317 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.

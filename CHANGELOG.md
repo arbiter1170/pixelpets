@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-20 11:37 ET: Decision ids after HUSHWATER, and D306–D310 settled (build 20261020-1137)
+
+- What changed and why: Supervisor docs fix during the PR #117 review. The next free decision id is D363, not D346. D346–D362 are reserved for HUSHWATER (design b01136b): D346–D347 are red, waiting for Vincent; D348–D353 are yellow, a team vote closing Thu Oct 22, 2026, about 11:25 AM ET; D354–D362 are green, settled by Design. D380–D389 are reserved for PLAYTEST_FIX_1020. D306–D310 (GLIMMER_NEXT_QUEST) are recorded as settled by Vincent, 10:42 AM ET Oct 20, 2026, on defaults (design 512809c). No code change. Save `v` stays 2.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `index.html` and `version.json` (stamp only).
+- Commit(s) + build id: this branch, build 20261020-1137.
+- Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Affected specs rerun with `node tools/pp_test.js` (coop_r2, play_together, smoke, cloud_off, lizzy, data_integrity, wording_guard); result in the PR comment.
+- Decisions made (colour + reasoning): no new id from this PR. Reservations copied from the design repo. No id was renumbered. Next free id D363.
+- Anything left unfinished: none.
+
 ## 2026-10-20 11:09 ET: Walk group groundwork behind the co-op switch (build 20261020-1109)
 
 - What changed and why: COOP_R2 Build 1 adds the parties rules, WALK TOGETHER, the JOIN / NOT NOW sheet, LEAVE GROUP, the GROUP n/max strip, and the 60 s grace window. Creates and updates under `parties` need `/config/coop/on`. Deletes stay open. `COOP_CFG.on` stays false unless `?coop=1` or the emulator, and `PPNet.coopOn()` still needs both that flag and the server switch. Yellows D326–D333 sit in `COOP_VOTE` until the vote closes Thu Oct 22, 2026, 8:00 AM ET. The device key `pixelpets.net` may hold `party`. Save stays `pixelpets.save.v2` with `v` 2. No new save field. Field Lead Imogen's route schedule line says partner. D339–D341 settled Oct 20, 2026 (Vincent, 8:40 AM ET, on defaults, design bfe356a) and nothing was built for them.
