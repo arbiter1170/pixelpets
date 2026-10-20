@@ -11,6 +11,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): no new id. D276–D296 reserved: REMATCH_PARTY_STATS, next free D297.
 - Anything left unfinished: the rules are not deployed from this branch.
 
+## 2026-10-19 22:31 ET: rx_f4 tank test samples the full window; suite runs 2 workers (test and config only, no build)
+
+- What changed and why: `tests/rx_f4_pilot.spec.js:208` (QA 9 / A7, tank frames) failed on main at all widths. The test compared only the first and last samples of a 700 ms window, but the tanks flip every 600 ms (`A.lab_tank`, 2 frames, `ms 600`). A window starting in the last 100 ms of a frame spans two flips and reads the same frame, and boot timing landed there almost every time. The game is fine. The watch now samples every animation frame for at least 1300 ms, more than two periods, and asserts exactly 1 distinct frame per tank cell under reduced motion, and exactly 2 per cell otherwise, flipping in step. `playwright.config.js` goes from `workers: 1` to `workers: 2` (`fullyParallel` stays false). The full suite takes about 890 s on 2 workers against about 1700 s on 1. No game code. Save `v` stays 2.
+- Files touched: `tests/rx_f4_pilot.spec.js`, `playwright.config.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: branch `test/rx-f4-window-2workers`. No build stamp: nothing deployed changes, and `python3 tools/bump_build.py --check` exits 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/rx_f4_pilot.spec.js` 5 of 5 PASS (passed=39 each, 320, 375, 390, 30–32 s). Full `npm run test:agent` (2 workers from the config): PP_TEST RESULT: PASS exit=0 passed=1209 failed=0 flaky=0 skipped=18 time=965s. Earlier 2-worker full runs on the group_battle branch: 891, 890 and 889 s, no group_battle flakes.
+- Decisions made (colour + reasoning): no new id. Green, test and config only.
+- Anything left unfinished: none.
+
 ## 2026-10-19 22:14 ET: Merge main (PR #105 stair flights, #106 battle no-reload, #107 tour fix) into Play together (build 20261019-2214)
 
 - What changed and why: Supervisor catch-up of PR #104. Merged `origin/main` at `89b146d` (live 20261019-2202) and kept both sides. `game.js`, `cloud.js`, `save.js`, `sprites.js`, `style.css`, `README.md` and `tests/README.md` auto-merged. `index.html` and `version.json` (stamps only) keep this branch's script list, with `net.js`, and the new stamp. CHANGELOG keeps both sides' entries. `archive/DECISIONS_SETTLED.md` and the Settled list in `OPEN_DECISIONS.md` keep D195–D208 and D220–D230. The id headers take main's line: D258–D275 reserved for MAP_LAYERS, next free D276, plus D195–D208 (Play together) settled. `python3 tools/gen_mapdata.py` made no change beyond main's.
@@ -28,6 +37,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `python3 tools/bump_build.py --check` exit 0. Scoped: `npm run test:agent -- tests/play_together.spec.js --project=390 -g "17 to 20 emote"` PP_TEST RESULT: PASS exit=0 passed=1 failed=0 flaky=0 skipped=0 time=12s, plus RTDB_RULES RESULT: PASS. `npm run test:agent -- tests/play_together.spec.js --project=390 --project=320` then failed one friends-list race; after the fix, `npm run test:agent -- tests/play_together.spec.js --project=390 -g "4 to 8 see|38 wording"` PP_TEST RESULT: PASS exit=0 passed=2 failed=0 flaky=0 skipped=0 time=20s, plus RTDB_RULES RESULT: PASS. Full suite: `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1208 failed=0 flaky=0 skipped=55 time=1909s, plus RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. The layout check also ran at 320. Console errors: none (the specs fail the run on a console error).
 - Decisions made (colour + reasoning): no new id. D195–D208 stay settled. The next free id stays D258.
 - Anything left unfinished: the Supervisor still publishes the rules (`firebase deploy --only database --project walklings-4cc89`). This commit does not deploy them.
+
+## 2026-10-19 22:09 ET: group_battle test waits on the real battle state (test only, no build)
+
+- What changed and why: `tests/group_battle.spec.js:134` ("clearing both foes wins…") failed about half the time under `--workers=2` (3 of 6 runs before the fix, 0 of 3 with 1 worker). It timed out in `playTurn` waiting for the action panel. After turn 1 the state was CHOOSE but `PixelPets.battle.panel` was already `fight`, because the last forced `#btMsg` tap of the previous turn landed on FIGHT once the panel swapped back under it. `playTurn` now accepts the move list already open and clicks FIGHT only when the panel is `acts`. The win loop waits for the real CHOOSE state with `waitForFunction` before `setHp('foe', 1)`, instead of skipping the HP drop when the state was not there yet. No fixed sleeps. No game code. `playwright.config.js` stays at `workers: 1`. Save `v` stays 2.
+- Files touched: `tests/group_battle.spec.js`, `CHANGELOG.md`.
+- Commit(s) + build id: branch `test/group-battle-wait`. No build stamp: test only, nothing deployed changes, and `python3 tools/bump_build.py --check` exit 0 on build 20261019-2157.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/group_battle.spec.js --workers=2` 10 of 10 PASS (21 tests each, 10–13 s), 1 worker 5 of 5 PASS (14–15 s), no flakes. Full `npm run test:agent -- --workers=2` on 71502f1 plus the fix: PASS passed=1187 failed=0 flaky=0 skipped=16 891 s; PASS passed=1187 failed=0 flaky=0 skipped=16 890 s; FAIL passed=1186 failed=1 flaky=0 skipped=16 889 s, the one failure `[320] rx_f4_pilot.spec.js:208` (tank frames), which also fails on main and is not from this change. One more run was thrown out because its local http.server on 8804 died mid-run (connection refused). After merging `origin/main` 786c0ea: group_battle with `--workers=2` 3 of 3 PASS, and `battle_no_reload.spec.js` plus `group_battle.spec.js` with 1 worker PASS passed=28 skipped=2.
+- Decisions made (colour + reasoning): no new id. Green, test only.
+- Anything left unfinished: `rx_f4_pilot.spec.js:208` is triaged separately (sampling-window bug in the test), not fixed here.
 
 ## 2026-10-19 22:02 ET: Tour SKIP TOUR and tip SHOW ME fixes (build 20261019-2202)
 

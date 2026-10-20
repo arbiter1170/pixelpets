@@ -221,12 +221,20 @@ test('QA 9 / A7: tanks hold frame 0 under reduced motion and animate in step oth
       });
     };
     const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let first = null, last = null, t0 = 0;
+    // Sample every frame for more than two 600 ms tank periods. Two samples 700 ms apart can span
+    // two flips and read the same frame, so a short window fails by start phase, not by game state.
+    const samples = [];
+    let t0 = null;
     const step = (t) => {
-      if (!first) { first = cells(); t0 = t; }
-      last = cells();
-      if (t - t0 < 700) requestAnimationFrame(step);
-      else resolve({ first, last, reduce: reduce(), dt: t - t0 });
+      if (t0 === null) t0 = t;
+      samples.push(cells());
+      if (t - t0 < 1300) requestAnimationFrame(step);
+      else {
+        const seen = [0, 1, 2, 3].map((j) => [...new Set(samples.map((s) => s[j]))]);
+        // In step: every cell flips on the same sample, so each cell's frame index sequence matches.
+        const seq = [0, 1, 2, 3].map((j) => samples.map((s) => seen[j].indexOf(s[j])).join(''));
+        resolve({ first: samples[0], distinct: seen.map((v) => v.length), inStep: seq.every((q) => q === seq[0]), reduce: reduce(), dt: t - t0, n: samples.length });
+      }
     };
     requestAnimationFrame(() => requestAnimationFrame(step));
   }));
@@ -237,13 +245,16 @@ test('QA 9 / A7: tanks hold frame 0 under reduced motion and animate in step oth
   const held = await watch();
   expect(held.reduce).toBe(true);
   expect(held.first.includes('off')).toBe(false);
-  expect(held.last).toEqual(held.first);
+  expect(held.dt).toBeGreaterThanOrEqual(1300);
+  expect(held.distinct).toEqual([1, 1, 1, 1]);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await expect.poll(() => page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(false);
   const moved = await watch();
   expect(moved.reduce).toBe(false);
-  expect(moved.last.join()).not.toBe(moved.first.join());
-  expect(moved.last.every((v, j) => v !== moved.first[j])).toBe(true);
+  expect(moved.first.includes('off')).toBe(false);
+  expect(moved.dt).toBeGreaterThanOrEqual(1300);
+  expect(moved.distinct).toEqual([2, 2, 2, 2]);
+  expect(moved.inStep).toBe(true);
 });
 
 test('QA 10 / E5: floor variants are seeded (same after reload), hand-placed chars win, base tile <= 70 % (D88)', async ({ page }) => {

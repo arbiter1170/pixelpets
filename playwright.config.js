@@ -25,7 +25,7 @@ const CLOUD_BLOCK = [
 module.exports = defineConfig({
   testDir: 'tests',
   fullyParallel: false,
-  workers: 1,
+  workers: 2,
   timeout: 30000,
   expect: { timeout: 10000 },
   // Humans get 'list'. Agents run `npm run test:agent` (tools/pp_test.js), which passes
