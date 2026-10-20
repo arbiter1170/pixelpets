@@ -12,6 +12,7 @@ const PPNet = (() => {
     drawFx() {},
     renderFriends() {},
     coopOn() { return false; },
+    coop: null,
     debug() { return null; },
   });
   // PPCloud is a script binding, not a window property. enabled is false unless a config or ?cloud=emu is on.
@@ -23,7 +24,14 @@ const PPNet = (() => {
     roomMax: 20, roomHardMax: 24, emoteGapMs: 2000, bubbleMs: 4000, balloonMs: 3000,
     interiorOfflineMs: 30000, hiddenOfflineMs: 60000, retryMs: [30000, 120000, 600000],
     friendNick: true, needCode: true, friendSlots: 12, shareName: true, cardFaction: false, report: false,
+    hiddenPollMs: 30000, socialPollMs: 60000,
   };
+  // Client half of the co-op switch (COOP_R2 §2.2). Ships off unless ?coop=1 or the local emulator.
+  const COOP_CFG = { on: (() => {
+    let asked = false;
+    try { asked = new URLSearchParams(location.search).get('coop') === '1'; } catch (e) {}
+    return asked || !!(typeof PPCloud !== 'undefined' && PPCloud.emu);
+  })() };
   const NET_TEXT = {
     card_title: 'HOLDER', friend_tag: 'FRIEND', btn_wave: 'WAVE', btn_mute: 'MUTE', btn_unmute: 'UNMUTE',
     btn_block: 'BLOCK', btn_close: 'CLOSE', toast_blocked: 'Blocked. UNDO', toast_muted: 'Muted.',
@@ -66,13 +74,11 @@ const PPNet = (() => {
 
   let H = null, rtdb = null, db = null, me = null, ready = false, link = 'down';
   let cfg = Object.assign({ on: true }, NET_CFG);
-  let writes = 0, coolUntil = 0, localEmote = null, infoOnce = false, retries = 0, giveUp = false, nextRetryMs = 0;
+  let writes = 0, reads = 0, coolUntil = 0, localEmote = null, infoOnce = false, retries = 0, giveUp = false, nextRetryMs = 0;
   let retryTimer = 0, offTimer = 0, repairAt = 0, pumping = false, pumpAgain = false;
-  let cfgUnsub = null, coopUnsub = null, coopFlag = false, socialArmed = false;
-  let mineMap = {}, backMap = {}, infoMap = {}, blocksMap = {};
-  let socialUnsubs = [];
-  const friendListen = new Map();
-  const hiddenListen = new Map();
+  let cfgUnsub = null, coopFlag = false, pollAt = 0, socialAt = 0;
+  let mineList = {};
+  const coop = { cfg: COOP_CFG, unsub: null };
   let page = 0, wheelOn = false, cardOn = false, codeOn = false, blockOn = false;
   let undoTimer = 0, undoUid = null, undoFriend = false, hiTimer = 0, hiPending = false;
   let writeQ = Promise.resolve();
@@ -178,15 +184,18 @@ const PPNet = (() => {
     }
     rtdb.goOnline(db);
     link = 'up';
-    armListen();
+    armCfg();
+    armCoop();
   }
   function offline(){
-    disarmListen();
+    disarmCfg();
+    disarmCoop();
     if (db && rtdb) { try { rtdb.goOffline(db); } catch (e) {} }
     link = 'down';
   }
   function TS(){ return rtdb.serverTimestamp(); }
   function ref(path){ return rtdb.ref(db, path); }
+  function dbGet(node){ reads++; return rtdb.get(node); }
 
   function clearOff(){ if (offTimer) { clearTimeout(offTimer); offTimer = 0; } }
   function armOff(ms){
@@ -199,7 +208,6 @@ const PPNet = (() => {
   }
   async function dropNode(){
     await unlisten();
-    disarmHidden();
     const node = placed.ref;
     placed.ref = null; placed.path = ''; placed.area = null; placed.shard = null; placed.pinned = false;
     others.clear();
@@ -234,12 +242,12 @@ const PPNet = (() => {
     cfg = Object.assign({ on: true }, NET_CFG);
     if (v && typeof v === 'object') {
       cfg.on = v.on !== false;
-      ['sendMs', 'roomMax', 'roomHardMax', 'staleMs', 'pv'].forEach(k => { if (typeof v[k] === 'number' && v[k] > 0) cfg[k] = v[k]; });
+      ['sendMs', 'roomMax', 'roomHardMax', 'staleMs', 'pv', 'hiddenPollMs', 'socialPollMs'].forEach(k => { if (typeof v[k] === 'number' && v[k] > 0) cfg[k] = v[k]; });
     }
     return cfg.on;
   }
   async function loadCfg(){
-    const snap = await rtdb.get(ref('config/net'));
+    const snap = await dbGet(ref('config/net'));
     return applyCfg(snap.val());
   }
   function armCfg(){
@@ -250,146 +258,33 @@ const PPNet = (() => {
       } catch (e) {}
     }, () => { if (inRoom()) fail(); });
   }
+  function disarmCfg(){
+    if (cfgUnsub) { try { cfgUnsub(); } catch (e) {} cfgUnsub = null; }
+  }
   function armCoop(){
-    if (coopUnsub || !db) return;
-    coopUnsub = rtdb.onValue(ref('config/coop/on'), snap => {
+    if (coop.unsub || !db) return;
+    coop.unsub = rtdb.onValue(ref('config/coop/on'), snap => {
       try { coopFlag = snap.val() === true; } catch (e) { coopFlag = false; }
     }, () => { coopFlag = false; });
   }
-  function coopOn(){ return coopFlag === true; }
-  function recomputeSocial(){
-    const next = {}, info = {};
-    Object.keys(mineMap).forEach(uid => {
-      if (mineMap[uid] !== true || backMap[uid] !== true) return;
-      next[uid] = true;
-      if (infoMap[uid]) info[uid] = infoMap[uid];
-    });
-    mutual = next;
-    names = info;
-    blocks = Object.assign({}, blocksMap && typeof blocksMap === 'object' ? blocksMap : {});
-    dev.blocks = Object.assign({}, blocks);
-    writeDev();
-    const fr = document.querySelector('#phoneFriends');
-    if (fr && !fr.hidden) paintFriendRows(Object.keys(mineMap).filter(uid => mineMap[uid] === true));
-  }
-  function syncFriendListens(){
-    const want = new Set(Object.keys(mineMap).filter(uid => mineMap[uid] === true));
-    friendListen.forEach((rec, uid) => {
-      if (want.has(uid)) return;
-      try { rec.back(); } catch (e) {}
-      if (rec.info) try { rec.info(); } catch (e) {}
-      friendListen.delete(uid);
-      delete backMap[uid];
-      delete infoMap[uid];
-    });
-    want.forEach(uid => {
-      if (friendListen.has(uid) || !db) return;
-      const rec = { back: null, info: null };
-      const dropInfo = () => {
-        if (!rec.info) return;
-        try { rec.info(); } catch (e) {}
-        rec.info = null;
-        delete infoMap[uid];
-      };
-      const armInfo = () => {
-        if (rec.info || !NET_CFG.shareName) return;
-        rec.info = rtdb.onValue(ref('friendInfo/' + uid), snap => {
-          try {
-            if (!socialArmed) return;
-            if (snap.exists() && snap.val()) infoMap[uid] = snap.val();
-            else delete infoMap[uid];
-            recomputeSocial();
-          } catch (e) {}
-        }, () => { delete infoMap[uid]; if (socialArmed) recomputeSocial(); });
-      };
-      rec.back = rtdb.onValue(ref('friends/' + uid + '/' + me), snap => {
-        try {
-          if (!socialArmed) return;
-          if (snap.val() === true) { backMap[uid] = true; armInfo(); }
-          else { delete backMap[uid]; dropInfo(); }
-          recomputeSocial();
-        } catch (e) {}
-      }, () => { delete backMap[uid]; dropInfo(); if (socialArmed) recomputeSocial(); });
-      friendListen.set(uid, rec);
-    });
-  }
-  function armSocial(){
-    if (socialArmed || !db || !me) return;
-    socialArmed = true;
-    socialUnsubs.push(rtdb.onValue(ref('friends/' + me), snap => {
-      try {
-        if (!socialArmed) return;
-        const val = snap.val() || {};
-        const next = {};
-        Object.keys(val).forEach(uid => { if (val[uid] === true) next[uid] = true; });
-        mineMap = next;
-        syncFriendListens();
-        recomputeSocial();
-      } catch (e) {}
-    }, () => {}));
-    socialUnsubs.push(rtdb.onValue(ref('blocks/' + me), snap => {
-      try {
-        if (!socialArmed) return;
-        const val = snap.val() || {};
-        blocksMap = val && typeof val === 'object' ? val : {};
-        recomputeSocial();
-      } catch (e) {}
-    }, () => {}));
-  }
-  function disarmSocial(){
-    socialArmed = false;
-    socialUnsubs.forEach(fn => { try { fn(); } catch (e) {} });
-    socialUnsubs = [];
-    friendListen.forEach(rec => {
-      try { rec.back(); } catch (e) {}
-      if (rec.info) try { rec.info(); } catch (e) {}
-    });
-    friendListen.clear();
-  }
-  function ensureHiddenListen(uid){
-    if (!db || !me || !uid || uid === me || hiddenListen.has(uid) || link !== 'up') return;
-    const unsub = rtdb.onValue(ref('hidden/' + me + '/' + uid), snap => {
-      try {
-        if (snap.exists()) hidden[uid] = true;
-        else delete hidden[uid];
-      } catch (e) {}
-    }, () => {});
-    hiddenListen.set(uid, unsub);
-  }
-  function dropHiddenListen(uid){
-    const unsub = hiddenListen.get(uid);
-    if (!unsub) return;
-    try { unsub(); } catch (e) {}
-    hiddenListen.delete(uid);
-  }
-  function disarmHidden(){
-    hiddenListen.forEach(fn => { try { fn(); } catch (e) {} });
-    hiddenListen.clear();
-  }
-  function armListen(){
-    if (link !== 'up' || !db || !me) return;
-    armCfg();
-    armCoop();
-    armSocial();
-  }
-  function disarmListen(){
-    if (cfgUnsub) { try { cfgUnsub(); } catch (e) {} cfgUnsub = null; }
-    if (coopUnsub) { try { coopUnsub(); } catch (e) {} coopUnsub = null; }
+  function disarmCoop(){
+    if (coop.unsub) { try { coop.unsub(); } catch (e) {} coop.unsub = null; }
     coopFlag = false;
-    disarmSocial();
-    disarmHidden();
   }
+  function coopOn(){ return coopFlag === true; }
   function onForeground(){
     if (!db || !rtdb || document.hidden || !me) return;
     const bounce = !placed.ref && link === 'up';
-    disarmListen();
+    disarmCfg();
+    disarmCoop();
     if (bounce) {
       try { rtdb.goOffline(db); } catch (e) {}
       try { rtdb.goOnline(db); } catch (e) {}
     }
     if (link !== 'up') return;
-    armListen();
-    others.forEach((_, uid) => ensureHiddenListen(uid));
+    armCfg();
+    armCoop();
+    refreshSocial().catch(() => {});
   }
   function enqueue(fn){
     const run = writeQ.then(fn, fn);
@@ -402,13 +297,13 @@ const PPNet = (() => {
   async function ensureIdentity(){
     const code = H.friendCode();
     const owner = ref('codeOwner/' + me);
-    const owned = await rtdb.get(owner);
+    const owned = await dbGet(owner);
     if (!owned.exists()) {
       try { await rtdb.set(owner, code); } catch (e) {}
     }
-    const use = (await rtdb.get(owner)).val();
+    const use = (await dbGet(owner)).val();
     if (use === code) {
-      const cur = await rtdb.get(ref('codes/' + code));
+      const cur = await dbGet(ref('codes/' + code));
       if (!cur.exists()) {
         try { await rtdb.set(ref('codes/' + code), me); } catch (e) {}
       }
@@ -422,25 +317,40 @@ const PPNet = (() => {
     if (name || nick) await rtdb.update(ref('friendInfo/' + me), info);
   }
   async function refreshSocial(){
-    const mine = (await rtdb.get(ref('friends/' + me))).val() || {};
-    const nextMine = {}, nextBack = {}, info = {};
-    Object.keys(mine).forEach(uid => { if (mine[uid] === true) nextMine[uid] = true; });
-    await Promise.all(Object.keys(nextMine).map(async uid => {
-      const back = await rtdb.get(ref('friends/' + uid + '/' + me));
+    socialAt = Date.now();
+    const mine = (await dbGet(ref('friends/' + me))).val() || {};
+    const listed = {}, next = {}, info = {};
+    Object.keys(mine).forEach(uid => { if (mine[uid] === true) listed[uid] = true; });
+    await Promise.all(Object.keys(listed).map(async uid => {
+      const back = await dbGet(ref('friends/' + uid + '/' + me));
       if (back.val() !== true) return;
-      nextBack[uid] = true;
+      next[uid] = true;
       if (NET_CFG.shareName) {
-        const snap = await rtdb.get(ref('friendInfo/' + uid));
+        const snap = await dbGet(ref('friendInfo/' + uid));
         if (snap.exists() && snap.val()) info[uid] = snap.val();
       }
     }));
-    mineMap = nextMine;
-    backMap = nextBack;
-    infoMap = info;
-    const blk = (await rtdb.get(ref('blocks/' + me))).val() || {};
-    blocksMap = blk && typeof blk === 'object' ? blk : {};
-    recomputeSocial();
-    if (socialArmed) syncFriendListens();
+    mineList = listed;
+    mutual = next;
+    names = info;
+    const blk = (await dbGet(ref('blocks/' + me))).val() || {};
+    blocks = blk && typeof blk === 'object' ? blk : {};
+    dev.blocks = Object.assign({}, blocks);
+    writeDev();
+    const fr = document.querySelector('#phoneFriends');
+    if (fr && !fr.hidden) paintFriendRows(Object.keys(mineList));
+  }
+  function pollSocial(){
+    if (link !== 'up' || !me || Date.now() - socialAt < cfg.socialPollMs) return;
+    refreshSocial().catch(() => {});
+  }
+  async function pollHidden(){
+    if (link !== 'up' || !me || !inRoom() || Date.now() - pollAt < cfg.hiddenPollMs) return;
+    pollAt = Date.now();
+    const ids = [];
+    others.forEach((_, uid) => ids.push(uid));
+    const hid = await probeHidden(ids);
+    ids.forEach(uid => { if (hid[uid]) hidden[uid] = true; else delete hidden[uid]; });
   }
 
   function countLive(tree, skip){
@@ -484,7 +394,7 @@ const PPNet = (() => {
     await rtdb.onDisconnect(node).remove();
     await rtdb.set(node, body({ joined: TS() }));
     writes++;
-    const got = await rtdb.get(node);
+    const got = await dbGet(node);
     const val = got.val() || {};
     placed.ref = node; placed.path = path; placed.area = area; placed.shard = choice.shard;
     placed.pinned = !!choice.pinned; placed.joined = val.joined || Date.now(); placed.code = code;
@@ -495,7 +405,7 @@ const PPNet = (() => {
     const parent = ref('rooms/' + code + '/' + area + '/' + choice.shard);
     unsubs.push(rtdb.onChildAdded(parent, snap => upsert(snap.key, snap.val())));
     unsubs.push(rtdb.onChildChanged(parent, snap => upsert(snap.key, snap.val())));
-    unsubs.push(rtdb.onChildRemoved(parent, snap => { others.delete(snap.key); dropHiddenListen(snap.key); }));
+    unsubs.push(rtdb.onChildRemoved(parent, snap => { others.delete(snap.key); }));
     paintChrome();
     // "Joined" shows once the holder is placed; paintChrome() hides it while not in a room.
     if (hiPending) { hiPending = false; showHi(); }
@@ -504,15 +414,16 @@ const PPNet = (() => {
   async function join(area){
     const code = dev.code;
     await connect();
-    const open = await rtdb.get(ref('roomCodes/' + code + '/on'));
+    const open = await dbGet(ref('roomCodes/' + code + '/on'));
     if (open.val() !== true) { await dropNode(); offline(); setStatus('solo'); return; }
     const on = await loadCfg();
     if (!on) { await fail('kill'); return; }
     await ensureIdentity();
     await refreshSocial();
-    const tree = (await rtdb.get(ref('rooms/' + code + '/' + area))).val() || {};
+    const tree = (await dbGet(ref('rooms/' + code + '/' + area))).val() || {};
     const counted = countLive(tree, {});
     const hid = await probeHidden(counted.nowIds);
+    pollAt = Date.now();
     Object.assign(hidden, hid);
     const again = countLive(tree, hidden);
     const choice = pickShard(again.by);
@@ -528,7 +439,7 @@ const PPNet = (() => {
     const out = {};
     await Promise.all(uids.filter(uid => uid !== me).map(async uid => {
       try {
-        const snap = await rtdb.get(ref('hidden/' + me + '/' + uid));
+        const snap = await dbGet(ref('hidden/' + me + '/' + uid));
         if (snap.exists()) out[uid] = true;
       } catch (e) {}
     }));
@@ -541,6 +452,7 @@ const PPNet = (() => {
     // Keep blocked and friends-only holders in memory so an undo or a new friendship can show them
     // without waiting for another position write. shown() is what hides them.
     let o = others.get(uid);
+    const isNew = !o;
     if (!o) { o = { uid, fx: val.x, fy: val.y, tx: val.x, ty: val.y, gx: val.x, gy: val.y }; others.set(uid, o); }
     const dist = Math.abs((val.x | 0) - o.fx) + Math.abs((val.y | 0) - o.fy);
     o.tx = val.x | 0; o.ty = val.y | 0;
@@ -550,7 +462,15 @@ const PPNet = (() => {
     o.busy = val.busy ? 1 : 0; o.emote = val.emote || null; o.seen = val.seen; o.joined = val.joined || 0;
     o.seals = val.seals | 0; o.title = val.title | 0;
     if (!fresh(o.seen) || o.busy) o.list = false;
-    ensureHiddenListen(uid);
+    if (isNew) probeOne(uid);
+  }
+  async function probeOne(uid){
+    if (!db || link !== 'up' || !uid || uid === me) return;
+    try {
+      const snap = await dbGet(ref('hidden/' + me + '/' + uid));
+      if (snap.exists()) hidden[uid] = true;
+      else delete hidden[uid];
+    } catch (e) {}
   }
 
   async function fail(){
@@ -658,7 +578,7 @@ const PPNet = (() => {
     rows.sort((a, b) => (a.joined - b.joined) || (a.uid < b.uid ? -1 : a.uid > b.uid ? 1 : 0));
     if (!rows.slice(cfg.roomMax).some(r => r.uid === me)) return;
     const area = placed.area, shard = placed.shard;
-    const tree = (await rtdb.get(ref('rooms/' + dev.code + '/' + area))).val() || {};
+    const tree = (await dbGet(ref('rooms/' + dev.code + '/' + area))).val() || {};
     const counted = countLive(tree, hidden);
     const choice = pickShard(counted.by, { exclude: shard, noPin: true });
     if (!choice.shard || choice.shard === shard) return;
@@ -671,8 +591,8 @@ const PPNet = (() => {
     if (!H || !ready) return;
     const t = Date.now();
     if (t - busyTick > 400) { busyTick = t; applyBusy(); }
-    // Position writes stay on this tick. config, friends and hidden are listeners, not a 1s poll.
-    if (t - beatTick > 1000) { beatTick = t; heartbeat(); if (t - repairAt > 1000) { repairAt = t; repair(); } }
+    // Position writes stay on this tick. config and the co-op switch are listeners. Hidden and friends poll.
+    if (t - beatTick > 1000) { beatTick = t; heartbeat(); pollHidden(); pollSocial(); if (t - repairAt > 1000) { repairAt = t; repair(); } }
     flushPos();
     const sig = [dev.code || '', mode(), H.mapId(), H.interior() ? 1 : 0, document.hidden ? 1 : 0, H.busy() ? 1 : 0].join('|');
     if (sig !== tick.sig) {
@@ -686,7 +606,7 @@ const PPNet = (() => {
   }
   function sweep(){
     others.forEach((o, uid) => {
-      if (!fresh(o.seen) || o.pv !== cfg.pv) { others.delete(uid); dropHiddenListen(uid); }
+      if (!fresh(o.seen) || o.pv !== cfg.pv) others.delete(uid);
     });
   }
 
@@ -943,6 +863,7 @@ const PPNet = (() => {
 
   function openCard(o){
     cardOn = true;
+    if (link === 'up' && me) refreshSocial().catch(() => {});
     const ov = document.querySelector('#holderCard'), body = document.querySelector('#holderCardBody');
     if (!ov || !body) return;
     ov.hidden = false; body.textContent = '';
@@ -1128,7 +1049,7 @@ const PPNet = (() => {
     if (!code) { H.toast(NET_TEXT.code_bad); return; }
     try {
       await connect();
-      const on = await rtdb.get(ref('roomCodes/' + code + '/on'));
+      const on = await dbGet(ref('roomCodes/' + code + '/on'));
       if (on.val() !== true) {
         H.toast(NET_TEXT.code_bad);
         if (!dev.code) offline();
@@ -1221,13 +1142,10 @@ const PPNet = (() => {
   async function renderFriends(){
     const list = document.querySelector('#friendList'); if (!list || !H) return;
     paintFriendRows([]);
-    let rows = [];
-    if (socialArmed) rows = Object.keys(mineMap).filter(uid => mineMap[uid] === true);
-    else if (ready && dev.code && link === 'up') {
+    if (ready && dev.code && link === 'up') {
       try { await refreshSocial(); } catch (e) {}
-      rows = Object.keys(mineMap).filter(uid => mineMap[uid] === true);
     }
-    paintFriendRows(rows);
+    paintFriendRows(Object.keys(mineList));
     paintChrome();
   }
   async function addFriend(raw){
@@ -1235,15 +1153,15 @@ const PPNet = (() => {
     if (!code || !me) { H.toast(NET_TEXT.friend_none); return; }
     try {
       await connect();
-      const snap = await rtdb.get(ref('codes/' + code));
+      const snap = await dbGet(ref('codes/' + code));
       const uid = snap.val();
       if (!uid || uid === me) { H.toast(NET_TEXT.friend_none); if (mode() === 'solo' || !inRoom()) offline(); return; }
-      const mine = (await rtdb.get(ref('friends/' + me))).val() || {};
+      const mine = (await dbGet(ref('friends/' + me))).val() || {};
       const have = Object.keys(mine).filter(k => mine[k] === true);
       if (have.includes(uid)) { H.toast(mine && mutual[uid] ? NET_TEXT.friend_mutual : NET_TEXT.friend_added); return; }
       if (have.length >= NET_CFG.friendSlots) { H.toast(NET_TEXT.friend_full); return; }
       await rtdb.set(ref('friends/' + me + '/' + uid), true);
-      const back = await rtdb.get(ref('friends/' + uid + '/' + me));
+      const back = await dbGet(ref('friends/' + uid + '/' + me));
       H.toast(back.val() === true ? NET_TEXT.friend_mutual : NET_TEXT.friend_added);
       await refreshSocial();
     } catch (e) { noteInfo(); }
@@ -1251,8 +1169,13 @@ const PPNet = (() => {
     renderFriends();
   }
   async function removeFriend(uid){
-    try { await connect(); await rtdb.remove(ref('friends/' + me + '/' + uid)); } catch (e) {}
+    try {
+      await connect();
+      await rtdb.remove(ref('friends/' + me + '/' + uid));
+      await refreshSocial();
+    } catch (e) {}
     delete mutual[uid];
+    delete mineList[uid];
     if (placeState() !== 'in' && placeState() !== 'busy') offline();
     renderFriends();
   }
@@ -1273,7 +1196,7 @@ const PPNet = (() => {
       });
     });
     return {
-      others: list, room: placed.shard, area: placed.area, stats: { writes }, nameFor, status: dev.status, uid: me,
+      others: list, room: placed.shard, area: placed.area, stats: { writes, reads }, nameFor, status: dev.status, uid: me,
       connected: link === 'up', nextRetryMs, retryMs: NET_CFG.retryMs.slice(), here: hereCount(),
       cam: H.cam(), pos: H.pos(), code: dev.code,
       rawWrite: async id => {
@@ -1289,7 +1212,7 @@ const PPNet = (() => {
   }
 
   const api = Object.freeze({
-    enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, coopOn, debug,
+    enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, coopOn, coop, debug,
   });
   window.PPNet = api;
   return api;

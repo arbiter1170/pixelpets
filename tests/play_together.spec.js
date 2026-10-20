@@ -819,4 +819,33 @@ test.describe('Play together', () => {
     expect(await page.locator('#playTogether').count()).toBe(1);
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
   });
+
+  test('42 idle minute stays within 12 reads', async ({ page }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    await boot(page, saveFor('idle1', 'Tester'));
+    const uid = await page.evaluate(() => window.PixelPets.net.uid);
+    const seen = Date.now() + 180000;
+    for (const id of ['idleA', 'idleB']) {
+      await rootSet('rooms/AMB4RQ/hearthmoor/r1/' + id, presence({ x: id === 'idleA' ? 6 : 10, y: 12, seen, pt: seen, joined: seen - 20000 }));
+      await rootSet('friends/' + uid + '/' + id, true);
+      await rootSet('friends/' + id + '/' + uid, true);
+      await rootSet('friendInfo/' + id, { name: id === 'idleA' ? 'Fern' : 'Moss', pet: 'Pip' });
+    }
+    await joinRoom(page);
+    await page.waitForFunction(() => window.PixelPets.net && window.PixelPets.net.others.length >= 2, null, { timeout: 8000 });
+    const delta = await page.evaluate(async () => {
+      const before = window.PPNet.debug().stats.reads;
+      const real = Date.now.bind(Date);
+      let skew = 0;
+      Date.now = () => real() + skew;
+      const step = ms => new Promise(resolve => { skew += ms; setTimeout(resolve, 300); });
+      await step(30000);
+      await step(30000);
+      Date.now = real;
+      return window.PPNet.debug().stats.reads - before;
+    });
+    expect(delta, 'idle reads in 60 s').toBeGreaterThan(0);
+    expect(delta, 'idle reads in 60 s').toBeLessThanOrEqual(12);
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  });
 });

@@ -4,15 +4,7 @@
     ".write": false,
     "config": {
       ".read": "auth != null",
-      ".write": false,
-      "coop": {
-        ".read": "auth != null",
-        ".write": false,
-        "on": {
-          ".read": "auth != null",
-          ".write": false
-        }
-      }
+      ".write": false
     },
     "roomCodes": {
       ".read": false,
