@@ -26,29 +26,30 @@ const PPNet = (() => {
     friendNick: true, needCode: true, friendSlots: 12, shareName: true, cardFaction: false, report: false,
     hiddenPollMs: 30000, socialPollMs: 60000,
   };
-  // Client half of the co-op switch (COOP_R2 §2.2). Ships off unless ?coop=1 or the local emulator.
-  // COOP_CFG.on stays that computed flag. B1 does not set it true.
+  // Client half of the co-op switch (COOP_R2 §2.2). Defaults on for everyone.
+  // ?coop=0 is an off override and wins, including on the local emulator.
+  // COOP_CFG.on stays that computed flag.
   const COOP_CFG = {
     cv: 1,
     on: (() => {
-      let asked = false;
-      try { asked = new URLSearchParams(location.search).get('coop') === '1'; } catch (e) {}
-      return asked || !!(typeof PPCloud !== 'undefined' && PPCloud.emu);
+      try { if (new URLSearchParams(location.search).get('coop') === '0') return false; } catch (e) {}
+      // On for everyone. The local emulator stays on the same way, unless ?coop=0 already won.
+      return true;
     })(),
     graceMs: 60000, joinTiles: 6, joinBubbleMs: 8000, inviteMs: 30000, replaySlackMs: 3000,
     areas: ['hearthmoor', 'route1'],
   };
   Object.freeze(COOP_CFG.areas);
   Object.freeze(COOP_CFG);
-  // Yellows D326–D333. A vote result is a one-line change here. D332 is rung 3 and is not in this object.
+  // D326–D333 settled by Vincent on Oct 20, 2026, 12:55 PM ET, on the defaults ("Turn on for everyone"). D332 is rung 3 and is not in this object.
   const COOP_VOTE = {
-    label: 'GROUP', // [PENDING VOTE D326] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
-    maxMembers: 2, // [PENDING VOTE D327] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
-    invite: { mutual: true, sameCode: true, notSolo: true, notNowMute: 3, blockEnds: true }, // [PENDING VOTE D328] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
-    wild: '2v1', holder: '2v1-in-order', tag: false, // [PENDING VOTE D329] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
-    turnMs: 30000, autoPick: 'last-then-first', // [PENDING VOTE D330] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
-    reward: { guestXp: true, guestCosts: true, befriend: 'host', cheerWidth: 0.05, acorns: 'host', trainerFlag: 'host' }, // [PENDING VOTE D331] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
-    rejoin: true, idleMs: 300000, // [PENDING VOTE D333] (default), vote closes Thu Oct 22, 2026, 8:00 AM ET
+    label: 'GROUP',
+    maxMembers: 2,
+    invite: { mutual: true, sameCode: true, notSolo: true, notNowMute: 3, blockEnds: true },
+    wild: '2v1', holder: '2v1-in-order', tag: false,
+    turnMs: 30000, autoPick: 'last-then-first',
+    reward: { guestXp: true, guestCosts: true, befriend: 'host', cheerWidth: 0.05, acorns: 'host', trainerFlag: 'host' },
+    rejoin: true, idleMs: 300000,
   };
   Object.freeze(COOP_VOTE.invite);
   Object.freeze(COOP_VOTE.reward);
@@ -333,7 +334,7 @@ const PPNet = (() => {
     if (coop.unsub) { try { coop.unsub(); } catch (e) {} coop.unsub = null; }
     coopFlag = false;
   }
-  // Both halves: the client switch (?coop=1 or the emulator) and /config/coop/on === true.
+  // Both halves: the client half (on unless ?coop=0) and /config/coop/on === true.
   function coopOn(){ return COOP_CFG.on === true && coopFlag === true; }
   function onForeground(){
     if (!db || !rtdb || document.hidden || !me) return;

@@ -224,7 +224,7 @@
           },
           "guest": {
             ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid && root.child('config/coop/on').val() === true && root.child('parties/' + $code + '/' + $pid + '/invites/' + auth.uid).exists()) || (data.exists() && !newData.exists() && (data.val() === auth.uid || auth.uid === root.child('parties/' + $code + '/' + $pid + '/host').val())))",
-            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{1,128}$/) && newData.val() !== newData.parent().child('host').val()"
+            ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9]{1,128}$/) && newData.val() !== newData.parent().child('host').val() && (newData.parent().child('invites').child(newData.val()).exists() || root.child('parties/' + $code + '/' + $pid + '/invites/' + newData.val()).exists()) && root.child('friends/' + newData.parent().child('host').val() + '/' + newData.val()).val() === true && root.child('friends/' + newData.val() + '/' + newData.parent().child('host').val()).val() === true && !root.child('blocks/' + newData.val() + '/' + newData.parent().child('host').val()).exists() && !root.child('blocks/' + newData.parent().child('host').val() + '/' + newData.val()).exists()"
           },
           "invites": {
             "$uid": {
