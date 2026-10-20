@@ -104,6 +104,16 @@ async function tapUid(page, uid){
   }, uid);
   await page.mouse.click(pt.x, pt.y);
 }
+async function advanceClock(page, ms){
+  await page.evaluate(async (ms) => {
+    const real = Date.now.bind(Date);
+    let extra = 0;
+    Date.now = () => real() + extra;
+    extra += ms;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    Date.now = real;
+  }, ms);
+}
 async function shot(page, name, sel){
   fs.mkdirSync(SHOTS, { recursive: true });
   const opts = { path: SHOTS + '/' + name, animations: 'disabled', scale: 'css' };
@@ -480,6 +490,8 @@ test.describe('Play together', () => {
     await expect(b.locator('#netUndo')).toContainText('Blocked. UNDO');
     await expect(b.locator('#friendList')).not.toContainText('Tester');
     await expect.poll(async () => b.evaluate(sees, aUid), { timeout: 3000 }).toBe(false);
+    // The other holder learns a block on the 30 s hidden poll (COOP_R2 §2.4).
+    await advanceClock(a, 30000);
     await expect.poll(async () => a.evaluate(sees, bUid), { timeout: 3000 }).toBe(false);
     expect(await rootGet('blocks/' + bUid + '/' + aUid)).toBeTruthy();
     expect(await rootGet('hidden/' + aUid + '/' + bUid)).toBeTruthy();
@@ -532,6 +544,8 @@ test.describe('Play together', () => {
     await b.waitForFunction(sees, aUid, { timeout: 3000 });
     expect(await b.evaluate(sees, cUid)).toBe(false);
     expect(await c.evaluate(sees, bUid)).toBe(false);
+    // Friends poll every 60 s. Run that poll now so the check does not wait out the minute.
+    await a.evaluate(() => window.PPNet.debug().advancePolls());
     await a.waitForFunction(sees, bUid, { timeout: 3000 });
     expect(b.ppErrors, b.ppErrors.join('\n')).toEqual([]);
     await a.context().close(); await c.context().close();
@@ -609,6 +623,7 @@ test.describe('Play together', () => {
     await b.locator('#friendInput').fill(codeA);
     await b.locator('#friendAdd').click();
     await expect(b.locator('#toast')).toHaveText('You are friends now!');
+    await a.evaluate(() => window.PPNet.debug().advancePolls());
     await expect(a.locator('#friendList')).toContainText('Birch');
     const uid = await a.evaluate(() => window.PixelPets.net.uid);
     for (let i = 0; i < 12; i++) await rootSet('friends/' + uid + '/full' + i, true);
@@ -803,5 +818,49 @@ test.describe('Play together', () => {
       expect(page.ppErrors, w + ': ' + page.ppErrors.join('\n')).toEqual([]);
       await page.context().close();
     }
+  });
+
+  test('41 coop switch is off when missing', async ({ page }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    await boot(page, saveFor('coop1', 'Tester'));
+    expect(await page.evaluate(() => window.PPNet.coopOn())).toBe(false);
+    await joinRoom(page);
+    await page.waitForFunction(() => window.PPNet.coopOn() === false);
+    expect(await rootGet('config/coop/on')).toBeFalsy();
+    await rootSet('config/coop/on', true);
+    await page.waitForFunction(() => window.PPNet.coopOn() === true);
+    await rootSet('config/coop/on', null);
+    await page.waitForFunction(() => window.PPNet.coopOn() === false);
+    expect(await page.locator('#playTogether').count()).toBe(1);
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  });
+
+  test('42 idle minute stays within 12 reads', async ({ page }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    await boot(page, saveFor('idle1', 'Tester'));
+    const uid = await page.evaluate(() => window.PixelPets.net.uid);
+    const seen = Date.now() + 180000;
+    for (const id of ['idleA', 'idleB']) {
+      await rootSet('rooms/AMB4RQ/hearthmoor/r1/' + id, presence({ x: id === 'idleA' ? 6 : 10, y: 12, seen, pt: seen, joined: seen - 20000 }));
+      await rootSet('friends/' + uid + '/' + id, true);
+      await rootSet('friends/' + id + '/' + uid, true);
+      await rootSet('friendInfo/' + id, { name: id === 'idleA' ? 'Fern' : 'Moss', pet: 'Pip' });
+    }
+    await joinRoom(page);
+    await page.waitForFunction(() => window.PixelPets.net && window.PixelPets.net.others.length >= 2, null, { timeout: 8000 });
+    const delta = await page.evaluate(async () => {
+      const before = window.PPNet.debug().stats.reads;
+      const real = Date.now.bind(Date);
+      let skew = 0;
+      Date.now = () => real() + skew;
+      const step = ms => new Promise(resolve => { skew += ms; setTimeout(resolve, 300); });
+      await step(30000);
+      await step(30000);
+      Date.now = real;
+      return window.PPNet.debug().stats.reads - before;
+    });
+    expect(delta, 'idle reads in 60 s').toBeGreaterThan(0);
+    expect(delta, 'idle reads in 60 s').toBeLessThanOrEqual(12);
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
   });
 });

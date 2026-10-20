@@ -120,6 +120,8 @@ async function main() {
         () => deny('1 read code', refOf(anon, 'roomCodes/' + CODE).once('value')),
         () => deny('1 write room', refOf(anon, room('alice')).set(presence())),
         () => deny('1 write config', refOf(anon, 'config/net/on').set(false)),
+        () => deny('1 read coop', refOf(anon, 'config/coop/on').once('value')),
+        () => deny('1 write coop', refOf(anon, 'config/coop/on').set(true)),
         () => deny('1 write friends', refOf(anon, 'friends/alice/bob').set(true)),
       ];
       if (await seq(checks)) ok('deny 1: no auth');
@@ -146,9 +148,12 @@ async function main() {
       const checks = [
         () => deny('3 config', refOf(a, 'config/net').set({ on: false })),
         () => deny('3 config child', refOf(a, 'config/net/on').set(false)),
+        () => deny('3 coop', refOf(a, 'config/coop').set({ on: true })),
+        () => deny('3 coop child', refOf(a, 'config/coop/on').set(true)),
         () => deny('3 roomCodes', refOf(a, 'roomCodes/ZZZZZZ').set({ on: true })),
         () => deny('3 roomCodes child', refOf(a, 'roomCodes/' + CODE + '/on').set(false)),
         () => allow('3 read config', refOf(a, 'config/net').once('value')),
+        () => allow('3 read coop', refOf(a, 'config/coop/on').once('value')),
       ];
       if (await seq(checks)) ok('deny 3: config and roomCodes are console-only');
     }

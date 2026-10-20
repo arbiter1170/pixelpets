@@ -8,6 +8,19 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D298–D305 (Oct 20, 2026, Vincent, 7:55 AM ET, SETTLED BY VINCENT, on defaults).** GLIMMER_NEXT_QUEST (design d116af5). Vincent settled these on the packet defaults. The per-id lines stay in Design's packet and are not restated here.
+- **D311–D315 (Oct 20, 2026, green, SETTLED).** GLIMMER_NEXT_QUEST (design d116af5). Settled green. The per-id lines stay in Design's packet and are not restated here.
+- **D316 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. The plan is rung 2, a team-up battle, for an invite-only playtest. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D317 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D318 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D319 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D320 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D321 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D322 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D323 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D324 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built.
+- **D325 (Oct 20, 2026, Vincent, 8:14 AM ET, red, SETTLED BY VINCENT, on the default).** Co-op. Settled on the packet default. The question line stays in Design's packet and is not restated here. Not built. The precondition in the game is a 30 s hidden poll and a 60 s friends poll, plus listeners on `/config/net` and `/config/coop/on`. The live config rule already covers the switch. This build does not change the rules.
+- **D338 (Oct 20, 2026, Vincent's direction, 8:08 AM ET, SETTLED, LIZZY_PEER_PASS).** The holder, Lizzy and Rook grew up together, the same age. No numeric age in game text. Nothing on main changes. No scene line was edited for this row.
 - **D258 (Oct 19, 2026, green, SETTLED).** The MAP overlay has ROOM, TOWN and REGION, each a 44 px button. Outdoors, ROOM is greyed and a tap plays the denied blip. TOWN is the outdoor map that holds you. REGION is THE AMBERWILD.
 - **D259 (Oct 19, 2026, Vincent, yellow, 9:52 PM ET, on the default).** MAP opens on ROOM indoors and TOWN outdoors. It does not remember the last level. SHOW ON MAP opens REGION.
 - **D260 (Oct 19, 2026, Vincent, yellow, 9:52 PM ET, on the default).** The middle button stays TOWN on a route or a side place. The title bar names the place.
