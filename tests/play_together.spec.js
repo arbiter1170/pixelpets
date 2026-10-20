@@ -804,4 +804,19 @@ test.describe('Play together', () => {
       await page.context().close();
     }
   });
+
+  test('41 coop switch is off when missing', async ({ page }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    await boot(page, saveFor('coop1', 'Tester'));
+    expect(await page.evaluate(() => window.PPNet.coopOn())).toBe(false);
+    await joinRoom(page);
+    await page.waitForFunction(() => window.PPNet.coopOn() === false);
+    expect(await rootGet('config/coop/on')).toBeFalsy();
+    await rootSet('config/coop/on', true);
+    await page.waitForFunction(() => window.PPNet.coopOn() === true);
+    await rootSet('config/coop/on', null);
+    await page.waitForFunction(() => window.PPNet.coopOn() === false);
+    expect(await page.locator('#playTogether').count()).toBe(1);
+    expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
+  });
 });

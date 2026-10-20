@@ -11,6 +11,7 @@ const PPNet = (() => {
     mapEnts() { return []; },
     drawFx() {},
     renderFriends() {},
+    coopOn() { return false; },
     debug() { return null; },
   });
   // PPCloud is a script binding, not a window property. enabled is false unless a config or ?cloud=emu is on.
@@ -66,7 +67,12 @@ const PPNet = (() => {
   let H = null, rtdb = null, db = null, me = null, ready = false, link = 'down';
   let cfg = Object.assign({ on: true }, NET_CFG);
   let writes = 0, coolUntil = 0, localEmote = null, infoOnce = false, retries = 0, giveUp = false, nextRetryMs = 0;
-  let retryTimer = 0, offTimer = 0, pollAt = 0, repairAt = 0, pumping = false, pumpAgain = false;
+  let retryTimer = 0, offTimer = 0, repairAt = 0, pumping = false, pumpAgain = false;
+  let cfgUnsub = null, coopUnsub = null, coopFlag = false, socialArmed = false;
+  let mineMap = {}, backMap = {}, infoMap = {}, blocksMap = {};
+  let socialUnsubs = [];
+  const friendListen = new Map();
+  const hiddenListen = new Map();
   let page = 0, wheelOn = false, cardOn = false, codeOn = false, blockOn = false;
   let undoTimer = 0, undoUid = null, undoFriend = false, hiTimer = 0, hiPending = false;
   let writeQ = Promise.resolve();
@@ -157,7 +163,8 @@ const PPNet = (() => {
     wireFriends();
     const note = document.querySelector('#frNote');
     if (note) note.textContent = NET_TEXT.fr_note;
-    document.addEventListener('visibilitychange', () => pump());
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) onForeground(); pump(); });
+    window.addEventListener('pageshow', () => { if (!document.hidden) onForeground(); pump(); });
     window.addEventListener('pagehide', () => { if (placed.ref && rtdb) { try { rtdb.remove(placed.ref); } catch (e) {} } });
     PPCloud.onReady(user => { me = user && user.uid; ready = !!me; pump(); });
     setInterval(tick, 100);
@@ -171,8 +178,10 @@ const PPNet = (() => {
     }
     rtdb.goOnline(db);
     link = 'up';
+    armListen();
   }
   function offline(){
+    disarmListen();
     if (db && rtdb) { try { rtdb.goOffline(db); } catch (e) {} }
     link = 'down';
   }
@@ -190,6 +199,7 @@ const PPNet = (() => {
   }
   async function dropNode(){
     await unlisten();
+    disarmHidden();
     const node = placed.ref;
     placed.ref = null; placed.path = ''; placed.area = null; placed.shard = null; placed.pinned = false;
     others.clear();
@@ -220,15 +230,166 @@ const PPNet = (() => {
     return a && x >= 0 && y >= 0 && x < a.w && y < a.h;
   }
 
-  async function loadCfg(){
-    const snap = await rtdb.get(ref('config/net'));
-    const v = snap.val();
+  function applyCfg(v){
     cfg = Object.assign({ on: true }, NET_CFG);
     if (v && typeof v === 'object') {
       cfg.on = v.on !== false;
       ['sendMs', 'roomMax', 'roomHardMax', 'staleMs', 'pv'].forEach(k => { if (typeof v[k] === 'number' && v[k] > 0) cfg[k] = v[k]; });
     }
     return cfg.on;
+  }
+  async function loadCfg(){
+    const snap = await rtdb.get(ref('config/net'));
+    return applyCfg(snap.val());
+  }
+  function armCfg(){
+    if (cfgUnsub || !db) return;
+    cfgUnsub = rtdb.onValue(ref('config/net'), snap => {
+      try {
+        if (!applyCfg(snap.val()) && inRoom()) fail();
+      } catch (e) {}
+    }, () => { if (inRoom()) fail(); });
+  }
+  function armCoop(){
+    if (coopUnsub || !db) return;
+    coopUnsub = rtdb.onValue(ref('config/coop/on'), snap => {
+      try { coopFlag = snap.val() === true; } catch (e) { coopFlag = false; }
+    }, () => { coopFlag = false; });
+  }
+  function coopOn(){ return coopFlag === true; }
+  function recomputeSocial(){
+    const next = {}, info = {};
+    Object.keys(mineMap).forEach(uid => {
+      if (mineMap[uid] !== true || backMap[uid] !== true) return;
+      next[uid] = true;
+      if (infoMap[uid]) info[uid] = infoMap[uid];
+    });
+    mutual = next;
+    names = info;
+    blocks = Object.assign({}, blocksMap && typeof blocksMap === 'object' ? blocksMap : {});
+    dev.blocks = Object.assign({}, blocks);
+    writeDev();
+    const fr = document.querySelector('#phoneFriends');
+    if (fr && !fr.hidden) paintFriendRows(Object.keys(mineMap).filter(uid => mineMap[uid] === true));
+  }
+  function syncFriendListens(){
+    const want = new Set(Object.keys(mineMap).filter(uid => mineMap[uid] === true));
+    friendListen.forEach((rec, uid) => {
+      if (want.has(uid)) return;
+      try { rec.back(); } catch (e) {}
+      if (rec.info) try { rec.info(); } catch (e) {}
+      friendListen.delete(uid);
+      delete backMap[uid];
+      delete infoMap[uid];
+    });
+    want.forEach(uid => {
+      if (friendListen.has(uid) || !db) return;
+      const rec = { back: null, info: null };
+      const dropInfo = () => {
+        if (!rec.info) return;
+        try { rec.info(); } catch (e) {}
+        rec.info = null;
+        delete infoMap[uid];
+      };
+      const armInfo = () => {
+        if (rec.info || !NET_CFG.shareName) return;
+        rec.info = rtdb.onValue(ref('friendInfo/' + uid), snap => {
+          try {
+            if (!socialArmed) return;
+            if (snap.exists() && snap.val()) infoMap[uid] = snap.val();
+            else delete infoMap[uid];
+            recomputeSocial();
+          } catch (e) {}
+        }, () => { delete infoMap[uid]; if (socialArmed) recomputeSocial(); });
+      };
+      rec.back = rtdb.onValue(ref('friends/' + uid + '/' + me), snap => {
+        try {
+          if (!socialArmed) return;
+          if (snap.val() === true) { backMap[uid] = true; armInfo(); }
+          else { delete backMap[uid]; dropInfo(); }
+          recomputeSocial();
+        } catch (e) {}
+      }, () => { delete backMap[uid]; dropInfo(); if (socialArmed) recomputeSocial(); });
+      friendListen.set(uid, rec);
+    });
+  }
+  function armSocial(){
+    if (socialArmed || !db || !me) return;
+    socialArmed = true;
+    socialUnsubs.push(rtdb.onValue(ref('friends/' + me), snap => {
+      try {
+        if (!socialArmed) return;
+        const val = snap.val() || {};
+        const next = {};
+        Object.keys(val).forEach(uid => { if (val[uid] === true) next[uid] = true; });
+        mineMap = next;
+        syncFriendListens();
+        recomputeSocial();
+      } catch (e) {}
+    }, () => {}));
+    socialUnsubs.push(rtdb.onValue(ref('blocks/' + me), snap => {
+      try {
+        if (!socialArmed) return;
+        const val = snap.val() || {};
+        blocksMap = val && typeof val === 'object' ? val : {};
+        recomputeSocial();
+      } catch (e) {}
+    }, () => {}));
+  }
+  function disarmSocial(){
+    socialArmed = false;
+    socialUnsubs.forEach(fn => { try { fn(); } catch (e) {} });
+    socialUnsubs = [];
+    friendListen.forEach(rec => {
+      try { rec.back(); } catch (e) {}
+      if (rec.info) try { rec.info(); } catch (e) {}
+    });
+    friendListen.clear();
+  }
+  function ensureHiddenListen(uid){
+    if (!db || !me || !uid || uid === me || hiddenListen.has(uid) || link !== 'up') return;
+    const unsub = rtdb.onValue(ref('hidden/' + me + '/' + uid), snap => {
+      try {
+        if (snap.exists()) hidden[uid] = true;
+        else delete hidden[uid];
+      } catch (e) {}
+    }, () => {});
+    hiddenListen.set(uid, unsub);
+  }
+  function dropHiddenListen(uid){
+    const unsub = hiddenListen.get(uid);
+    if (!unsub) return;
+    try { unsub(); } catch (e) {}
+    hiddenListen.delete(uid);
+  }
+  function disarmHidden(){
+    hiddenListen.forEach(fn => { try { fn(); } catch (e) {} });
+    hiddenListen.clear();
+  }
+  function armListen(){
+    if (link !== 'up' || !db || !me) return;
+    armCfg();
+    armCoop();
+    armSocial();
+  }
+  function disarmListen(){
+    if (cfgUnsub) { try { cfgUnsub(); } catch (e) {} cfgUnsub = null; }
+    if (coopUnsub) { try { coopUnsub(); } catch (e) {} coopUnsub = null; }
+    coopFlag = false;
+    disarmSocial();
+    disarmHidden();
+  }
+  function onForeground(){
+    if (!db || !rtdb || document.hidden || !me) return;
+    const bounce = !placed.ref && link === 'up';
+    disarmListen();
+    if (bounce) {
+      try { rtdb.goOffline(db); } catch (e) {}
+      try { rtdb.goOnline(db); } catch (e) {}
+    }
+    if (link !== 'up') return;
+    armListen();
+    others.forEach((_, uid) => ensureHiddenListen(uid));
   }
   function enqueue(fn){
     const run = writeQ.then(fn, fn);
@@ -262,22 +423,24 @@ const PPNet = (() => {
   }
   async function refreshSocial(){
     const mine = (await rtdb.get(ref('friends/' + me))).val() || {};
-    const next = {}, info = {};
-    await Promise.all(Object.keys(mine).map(async uid => {
-      if (mine[uid] !== true) return;
+    const nextMine = {}, nextBack = {}, info = {};
+    Object.keys(mine).forEach(uid => { if (mine[uid] === true) nextMine[uid] = true; });
+    await Promise.all(Object.keys(nextMine).map(async uid => {
       const back = await rtdb.get(ref('friends/' + uid + '/' + me));
       if (back.val() !== true) return;
-      next[uid] = true;
+      nextBack[uid] = true;
       if (NET_CFG.shareName) {
         const snap = await rtdb.get(ref('friendInfo/' + uid));
         if (snap.exists() && snap.val()) info[uid] = snap.val();
       }
     }));
-    mutual = next; names = info;
+    mineMap = nextMine;
+    backMap = nextBack;
+    infoMap = info;
     const blk = (await rtdb.get(ref('blocks/' + me))).val() || {};
-    blocks = blk && typeof blk === 'object' ? blk : {};
-    dev.blocks = Object.assign({}, blocks);
-    writeDev();
+    blocksMap = blk && typeof blk === 'object' ? blk : {};
+    recomputeSocial();
+    if (socialArmed) syncFriendListens();
   }
 
   function countLive(tree, skip){
@@ -332,7 +495,7 @@ const PPNet = (() => {
     const parent = ref('rooms/' + code + '/' + area + '/' + choice.shard);
     unsubs.push(rtdb.onChildAdded(parent, snap => upsert(snap.key, snap.val())));
     unsubs.push(rtdb.onChildChanged(parent, snap => upsert(snap.key, snap.val())));
-    unsubs.push(rtdb.onChildRemoved(parent, snap => others.delete(snap.key)));
+    unsubs.push(rtdb.onChildRemoved(parent, snap => { others.delete(snap.key); dropHiddenListen(snap.key); }));
     paintChrome();
     // "Joined" shows once the holder is placed; paintChrome() hides it while not in a room.
     if (hiPending) { hiPending = false; showHi(); }
@@ -387,15 +550,7 @@ const PPNet = (() => {
     o.busy = val.busy ? 1 : 0; o.emote = val.emote || null; o.seen = val.seen; o.joined = val.joined || 0;
     o.seals = val.seals | 0; o.title = val.title | 0;
     if (!fresh(o.seen) || o.busy) o.list = false;
-    probeOne(uid);
-  }
-  async function probeOne(uid){
-    if (!db || link !== 'up') return;
-    try {
-      const snap = await rtdb.get(ref('hidden/' + me + '/' + uid));
-      if (snap.exists()) hidden[uid] = true;
-      else delete hidden[uid];
-    } catch (e) {}
+    ensureHiddenListen(uid);
   }
 
   async function fail(){
@@ -475,13 +630,6 @@ const PPNet = (() => {
       sent.x = p.x | 0; sent.y = p.y | 0; sent.f = f; sent.mv = mv; sent.at = Date.now();
     } catch (e) { /* the rules throttle is the backstop; the next tick tries again */ }
   }
-  async function watchCfg(){
-    if (link !== 'up' || !db || !inRoom()) return;
-    try {
-      const on = await loadCfg();
-      if (!on) await fail();
-    } catch (e) { await fail(); }
-  }
   let failing = false;
   async function heartbeat(){
     if (!placed.ref || link !== 'up') return;
@@ -523,7 +671,8 @@ const PPNet = (() => {
     if (!H || !ready) return;
     const t = Date.now();
     if (t - busyTick > 400) { busyTick = t; applyBusy(); }
-    if (t - beatTick > 1000) { beatTick = t; heartbeat(); pollHidden(); pollSocial(); watchCfg(); if (t - repairAt > 1000) { repairAt = t; repair(); } }
+    // Position writes stay on this tick. config, friends and hidden are listeners, not a 1s poll.
+    if (t - beatTick > 1000) { beatTick = t; heartbeat(); if (t - repairAt > 1000) { repairAt = t; repair(); } }
     flushPos();
     const sig = [dev.code || '', mode(), H.mapId(), H.interior() ? 1 : 0, document.hidden ? 1 : 0, H.busy() ? 1 : 0].join('|');
     if (sig !== tick.sig) {
@@ -535,24 +684,10 @@ const PPNet = (() => {
     sweep();
     paintChrome();
   }
-  async function pollHidden(){
-    if (link !== 'up' || !me || Date.now() - pollAt < 1000) return;
-    pollAt = Date.now();
-    const ids = [];
-    others.forEach((_, uid) => ids.push(uid));
-    const hid = await probeHidden(ids);
-    ids.forEach(uid => { if (hid[uid]) hidden[uid] = true; else delete hidden[uid]; });
-  }
   function sweep(){
-    others.forEach((o, uid) => { if (!fresh(o.seen) || o.pv !== cfg.pv) others.delete(uid); });
-  }
-  let socialAt = 0;
-  async function pollSocial(){
-    if (link !== 'up' || !me || Date.now() - socialAt < 1000) return;
-    socialAt = Date.now();
-    try { await refreshSocial(); } catch (e) {}
-    const fr = document.querySelector('#phoneFriends');
-    if (fr && !fr.hidden) renderFriends();
+    others.forEach((o, uid) => {
+      if (!fresh(o.seen) || o.pv !== cfg.pv) { others.delete(uid); dropHiddenListen(uid); }
+    });
   }
 
   function stepGlide(o, now){
@@ -1087,15 +1222,10 @@ const PPNet = (() => {
     const list = document.querySelector('#friendList'); if (!list || !H) return;
     paintFriendRows([]);
     let rows = [];
-    if (ready && dev.code && link === 'up') {
+    if (socialArmed) rows = Object.keys(mineMap).filter(uid => mineMap[uid] === true);
+    else if (ready && dev.code && link === 'up') {
       try { await refreshSocial(); } catch (e) {}
-      const mine = {};
-      try {
-        const snap = await rtdb.get(ref('friends/' + me));
-        const val = snap.val() || {};
-        Object.keys(val).forEach(uid => { if (val[uid] === true) mine[uid] = true; });
-      } catch (e) {}
-      rows = Object.keys(mine);
+      rows = Object.keys(mineMap).filter(uid => mineMap[uid] === true);
     }
     paintFriendRows(rows);
     paintChrome();
@@ -1159,7 +1289,7 @@ const PPNet = (() => {
   }
 
   const api = Object.freeze({
-    enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, debug,
+    enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, coopOn, debug,
   });
   window.PPNet = api;
   return api;
