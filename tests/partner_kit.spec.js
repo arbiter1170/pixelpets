@@ -51,7 +51,7 @@ test('STATS and KIT sit above FEED, and the partner tab has no bag', async ({ pa
   expect(lay.chrome).toBe(true);
   expect(lay.notScene).toBe(true);
   expect(lay.bag).toBe(false);
-  expect(lay.label).toBe('Gear');
+  expect(lay.label).toBe('Gear for Pipkit');
   expect(lay.text).toBe('GEAR');
   await saveShot(page, 'partner');
 
@@ -67,17 +67,20 @@ test('GEAR opens on the partner screen and a Lodge bell stays on the save', asyn
   await boot(page);
   expect(await page.locator('#ovKit').count()).toBe(0);
   await page.locator('#petKitBtn').click();
-  await expect(page.locator('#petGear')).toBeVisible();
-  await expect(page.locator('#tabs')).not.toHaveClass(/locked/);
-  const names = await page.locator('#petGear [data-acc]').allTextContents();
+  await expect(page.locator('#ovStats')).toBeVisible();
+  await expect(page.locator('#scGearBox')).toBeVisible();
+  await expect(page.locator('#scNameBtn')).toBeVisible();
+  const names = await page.locator('#scGearBox [data-acc]').allTextContents();
   expect(names).toEqual(['None', 'Lodge bell', 'Hall ribbon', 'Hearth scarf', 'Orchard sprig', 'Amber star']);
   const wide = await page.evaluate(() => {
-    const box = document.querySelector('#petGear');
-    return box.scrollWidth <= box.clientWidth + 1;
+    const box = document.querySelector('#scGearBox');
+    const top = box.getBoundingClientRect().top;
+    const view = document.querySelector('#ovStats .ov-inner').getBoundingClientRect();
+    return box.scrollWidth <= box.clientWidth + 1 && top >= view.top - 1;
   });
   expect(wide).toBe(true);
   await saveShot(page, 'kit');
-  await page.locator('#petGear [data-acc="bell"]').click();
+  await page.locator('#scGearBox [data-acc="bell"]').click();
   await expect(page.locator('#toast')).toHaveText('Pipkit wears the Lodge bell.');
   const saved = await page.evaluate(() => ({
     v: PixelPets.state.v,
@@ -86,7 +89,7 @@ test('GEAR opens on the partner screen and a Lodge bell stays on the save', asyn
   expect(saved.v).toBe(2);
   expect(saved.accessory).toBe('bell');
   await page.keyboard.press('Escape');
-  await expect(page.locator('#petGear')).toBeHidden();
+  await expect(page.locator('#ovStats')).toBeHidden();
   await expect(page.locator('#scr-pet')).toBeVisible();
   await expect(page.locator('#tabs')).not.toHaveClass(/locked/);
 });

@@ -493,10 +493,12 @@ const GLYPH = {
   ],
   heart:['.r.r.','rrrrr','rrrrr','.rrr.','..r..'],
   apple:['..t..','.rrr.','rrrwr','rrrrr','.rrr.'],
-  // PARTNER_UI D245. 7x7 apple for the FOOD label. The 5x5 apple above stays the feed particle.
-  apple7:['..t....','.rrrr..','rrrrrr.','rrwwrr.','rrrrrr.','.rrrr..','..rr...'],
-  // 5x5 cyan bolt for NRG and REST. PAL.s is the ice key the NRG bar already uses.
-  bolt:['ssss.','.ss..','sssss','..ss.','.ssss'],
+  // PARTNER_UI D245. New glyphs. The 5x5 apple above stays the feed particle. The 8x8 star stays the GROW UP mark.
+  ico_food:['...mgg.','...m...','.rr.rr.','rwrrrrr','rwrrrrr','rrrrrrr','.rr.rr.'],
+  ico_joy:['.r.r.','rwrrr','rrrrr','.rrr.','..r..'],
+  ico_nrg:['...ss','..ss.','.ssss','..ss.','.s...'],
+  ico_grow:['..y..','.yyy.','yyyyy','.yyy.','.y.y.'],
+  ico_pencil:['....r','...yr','..yy.','.yy..','h....'],
   z:['www','..w','.w.','w..','www'],
   // HEART_ALERT v0.2 badges (D156). 5x5, PAL only. Bowl for food, z for rest. Not the D245 icons.
   badge_food: ['.....','y.y.y','ooooo','.ooo.','..o..'],

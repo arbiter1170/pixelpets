@@ -14,6 +14,13 @@ function saveShot(page, name) {
 
 trackErrors(test, expect);
 
+async function openNameEditor(page) {
+  await page.locator('#scGear').click();
+  await page.locator('#scNameBtn').scrollIntoViewIfNeeded();
+  await page.locator('#scNameBtn').click();
+  await expect(page.locator('#scNick')).toBeVisible();
+}
+
 test('a Walkling you already have can be renamed, and the species name clears it', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
@@ -21,8 +28,7 @@ test('a Walkling you already have can be renamed, and the species name clears it
   await page.locator('#petStatsBtn').click();
   await expect(page.locator('#ovStats')).toBeVisible();
   await expect(page.locator('#scName')).toHaveText('Pipkit');
-  await page.locator('#scRename').scrollIntoViewIfNeeded();
-  await page.locator('#scRename').click();
+  await openNameEditor(page);
   await expect(page.locator('#scNick')).toBeVisible();
   await page.locator('#scNickIn').fill('N<ib>  2');
   await saveShot(page, 'rename');
@@ -40,7 +46,7 @@ test('a Walkling you already have can be renamed, and the species name clears it
   expect(named.card).toBe('Nib 2, open');
 
   // rejected (every character filtered out) and blank with no nickname... here a nickname exists, so test rejected first
-  await page.locator('#scRename').click();
+  await openNameEditor(page);
   await page.locator('#scNickIn').fill('<>{}');
   await page.locator('#scNickOk').click();
   await expect(page.locator('#toast')).toHaveText('Pick a name first.');
@@ -48,14 +54,14 @@ test('a Walkling you already have can be renamed, and the species name clears it
   expect(await page.evaluate(() => PixelPets.state.party[0].nick)).toBe('Nib 2');
   await page.locator('#scNickIn').press('Escape');
 
-  await page.locator('#scRename').click();
+  await openNameEditor(page);
   await page.locator('#scNickIn').fill('Nope');
   await page.locator('#scNickIn').press('Escape');
   await expect(page.locator('#scNick')).toBeHidden();
   await expect(page.locator('#ovStats')).toBeVisible();
   expect(await page.evaluate(() => PixelPets.state.party[0].nick)).toBe('Nib 2');
 
-  await page.locator('#scRename').click();
+  await openNameEditor(page);
   await page.locator('#scNickIn').fill('Pipkit');
   await page.locator('#scNickOk').click();
   await expect(page.locator('#toast')).toHaveText('Pipkit is back to its own name.');   // the species name typed in clears the nickname
@@ -68,19 +74,19 @@ test('a Walkling you already have can be renamed, and the species name clears it
   await expect(page.locator('#scName')).toHaveText('Pipkit');
   // a blank box clears a nickname back to the species name (D57) with Design's line
   await page.waitForTimeout(2600);
-  await page.locator('#scRename').click();
+  await openNameEditor(page);
   await page.locator('#scNickIn').fill('Nib 3');
   await page.locator('#scNickOk').click();
   await expect(page.locator('#toast')).toHaveText('Nib 3 likes the new name!');
   await page.waitForTimeout(2600);
-  await page.locator('#scRename').click();
+  await openNameEditor(page);
   await page.locator('#scNickIn').fill('');
   await page.locator('#scNickOk').click();
   await expect(page.locator('#toast')).toHaveText('Pipkit is back to its own name.');
   expect(await page.evaluate(() => PixelPets.state.party[0].nick)).toBeNull();
   // blank with no nickname left to clear: ask for a name, nothing changes
   await page.waitForTimeout(2600);
-  await page.locator('#scRename').click();
+  await openNameEditor(page);
   await page.locator('#scNickIn').fill('   ');
   await page.locator('#scNickOk').click();
   await expect(page.locator('#toast')).toHaveText('Pick a name first.');

@@ -69,7 +69,7 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 | Online saves Phase 2 (Link Google, sign out, multi-device) | Phase 1 is ON. Phase 2 is next. Privacy wording for Google link still waits on Vincent | L |
 | Eggs | `eggs` save section exists, empty; no game code | M |
 | Box screen: reorder, release, proper UI; orphan recovery UI | Built (Q17). WALKLINGS tab: UP/DOWN, RELEASE, LEFT BEHIND | M |
-| Rename an existing Walkling | Built (Q23). STATS → INTERACT and the Walkling sheet. Empty or the species name clears `nick` (D57). A faded Walkling with no nick is also asked when its colour returns | S |
+| Rename an existing Walkling | Built (Q23). STATS → GEAR → NAME and the Walkling sheet. Empty or the species name clears `nick` (D57). A faded Walkling with no nick is also asked when its colour returns | S |
 | Installable app (manifest + service worker, offline) | Built (Q18). `manifest.json` and `sw.js` | S-M |
 | Export/backup before Start over | Built (Build 7). Save a copy / Read a copy | S |
 | Music volume slider, iPhone listen-through; MUSIC Q1 (iOS silent switch) | Slider built (Q24). `settings.musicVol` is 0 to 1. The iPhone listen-through is still open | S |
@@ -550,7 +550,7 @@ The glimmer counterpart after Cobblecrest. Not in the game. Do not stack another
 
 ### Q23 — Rename a Walkling you already have — S — **shipped**
 
-STATS → INTERACT, and the Walkling sheet NAME field. Both use the same cleaning: 10 characters, letters, digits, spaces, and ' . ! ? -. An empty field, or the species name, stores `nick` as null (D57). Escape or CANCEL on the stats card leaves the old name. The sheet writes the same value without the toast. Save `v` stays 2.
+STATS → GEAR → NAME, the pencil beside the header name, and the Walkling sheet NAME field. All three use the same cleaning: 10 characters, letters, digits, spaces, and ' . ! ? -. An empty field, or the species name, stores `nick` as null (D57). Escape or CANCEL on the name editor leaves the old name. The sheet writes the same value without the toast. Save `v` stays 2.
 
 ### Q24 — Music volume — S — **shipped**
 

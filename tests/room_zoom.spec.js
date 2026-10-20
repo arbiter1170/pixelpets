@@ -141,17 +141,20 @@ test('Your Room at 320 stays scale 2 so the left buttons clear the bed', async (
     });
     const col = document.querySelector('#fcTL').getBoundingClientRect();
     const bed = tile(1, 2);
+    const wall = tile(0, 0);
     const hit = (a, b) => a.left < b.right - 0.5 && a.right > b.left + 0.5 && a.top < b.bottom - 0.5 && a.bottom > b.top + 0.5;
     return {
       id: info.id, scale: info.scale, base: info.baseScale, slack: info.slack, v: PixelPets.state.v,
       bedClear: !hit(bed, col),
-      bedLeft: bed.left, colRight: col.right, colH: col.height,
+      wallClear: wall.left >= col.right - 0.5,
+      bedLeft: bed.left, wallLeft: wall.left, colRight: col.right, colH: col.height,
     };
   });
   expect(report.id).toBe('hc_apt_in');
   expect(report.scale).toBe(2);
   expect(report.scale).toBeGreaterThanOrEqual(report.base);
   expect(report.bedClear).toBe(true);
+  expect(report.wallClear).toBe(true);
   expect(report.bedLeft).toBeGreaterThan(report.colRight - 1);
   expect(report.colH).toBeGreaterThanOrEqual(44);
   expect(report.v).toBe(2);
