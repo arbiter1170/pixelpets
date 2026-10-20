@@ -55,9 +55,9 @@ test('the B4 overlay lands: roofs, variants, new props and decals are on the mer
   expect(r.props).toBeGreaterThan(300);
   expect(r.decals).toBeGreaterThan(200);
 
-  await page.evaluate(() => PixelPets.goto('hearthmoor', 17, 18, 'right'));
-  const lp = await page.evaluate(() => ({ obj: PixelPets.mapObjs.find(o => o.id === 'hm_lantern_post'), at: PixelPets.tileInfo(18, 18) }));
-  expect(lp.obj).toMatchObject({ kind: 'prop', x: 18, y: 18, sprite: 'lm_lantern_post', art: true });
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 17, 19, 'right'));
+  const lp = await page.evaluate(() => ({ obj: PixelPets.mapObjs.find(o => o.id === 'hm_lantern_post'), at: PixelPets.tileInfo(18, 19) }));
+  expect(lp.obj).toMatchObject({ kind: 'prop', x: 18, y: 19, sprite: 'lm_lantern_post', art: true });
   expect(lp.at).toMatchObject({ solid: false, blocked: true });
 
   const keep = await page.evaluate(() => ({ hall: PixelPets.exteriors('cobblecrest').roofs.hall,
