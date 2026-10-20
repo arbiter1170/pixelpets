@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-20 14:51 ET: Warden lodge sign says holders (build 20261020-1451)
+
+- What changed and why: The Hearthmoor lodge sign `hm_sign_lodge` now says "New holders, knock and come in." Design settled this green copy fix with no new decision id. Save stays `pixelpets.save.v2` with `v` 2. No new key.
+- Files touched: `data/maps_slice.json`, `data/detail_wayup.json`, `data/mapdata.js`, `tests/wording_guard.spec.js`, `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261020-1451.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/wording_guard.spec.js tests/smoke.spec.js tests/data_integrity.spec.js` PP_TEST RESULT: PASS exit=0 passed=93 failed=0 flaky=0 skipped=6 time=30s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. `git grep -n "New keepers"` returns nothing. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): green, settled by Design. No new id. No id was renumbered.
+- Anything left unfinished: none from this build.
+
 ## 2026-10-20 13:22 ET: North lane, HP bar, and a light phone tile (build 20261020-1322)
 
 - What changed and why: PLAYTEST_FIX_1020 (design 0b0c3dc, tip 64764b0). Hearthmoor stays 24 by 24. The north trail is a three-tile mouth at (8, 2), (9, 2) and (10, 2), with a grass lane on x 8–10 down to the row 7 path. Warden's Lodge door is (15, 6) and Rook's House door is (20, 5). Coming back from Mahopac lands at (9, 3). The Mahopac quest step points at (9, 2). Mahopac tiles and sight lines stay. The partner card leads with an HP bar and shows no numbers. Under a quarter the bar uses PAL r and does not blink. The card's aria-label says HP and the two counts after the level. The Keepers phone tile plate is PAL w. The Glimmerwell phone tile stays dark. D380 (the Settings build line) already shipped in #118 and this build does not change that CSS. Save stays `pixelpets.save.v2` with `v` 2. No new key.
