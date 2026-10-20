@@ -38,7 +38,7 @@
           "10": "TggggggggfHHHHpRRRRgTTTT"
         },
         "replaceObjs": [
-          {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 10, "text": "HEARTHMOOR · Hill village of keepers. East: Route 1.", "lines": {
+          {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 10, "text": "HEARTHMOOR · Hill village of the Keepers. Home.", "lines": {
           "story.board_gate_yes&!story.board_gate_sign": "@gate_look"
         }}
         ],
@@ -465,7 +465,7 @@
       ]]
     ],
     "gate_look": [
-      ["say", "", "HEARTHMOOR · Hill village of keepers. East: Route 1."],
+      ["say", "", "HEARTHMOOR · Hill village of the Keepers. Home."],
       ["say", "", "The post is still standing. Officer Cald wants that count."],
       ["setFlag", "story.board_gate_sign", true]
     ],

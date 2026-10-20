@@ -21,6 +21,7 @@ async function boot(page, save, search) {
 async function openMap(page) {
   await page.locator('#mapBtn').click();
   await page.waitForSelector('#ovMap:not([hidden])');
+  await page.locator('#mapLevelRegion').click();
 }
 
 test('the key names factions, and a new place stays hidden', async ({ page }) => {

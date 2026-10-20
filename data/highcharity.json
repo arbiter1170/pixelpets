@@ -928,7 +928,7 @@
       ]
     },
     "hc_gym_in": {
-      "name": "Trial Gym",
+      "name": "Trial Hall",
       "kind": "interior",
       "outdoor": "highcharity",
       "door": "hc_gym",
