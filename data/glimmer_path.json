@@ -783,7 +783,7 @@
               [
                 "say",
                 "Field Lead Imogen",
-                "Why? Because relaxed units count faster, sweetie."
+                "Why? Because relaxed units count faster, partner."
               ]
             ]
           ],
@@ -1648,7 +1648,7 @@
       },
       "r2_lead": {
         "intro": {
-          "story.side=glimmer&standing.glimmer>=3": "Sweetie, a Bright Lead doesn't need the speech. Let's be brief.",
+          "story.side=glimmer&standing.glimmer>=3": "Partner, a Bright Lead doesn't need the speech. Let's be brief.",
           "story.side=glimmer&standing.glimmer>=1": "Let's keep this friendly, partner. I have a report due.",
           "!story.side=glimmer&standing.keepers>=3": "A Hall Friend. Let's keep this brief. I have a report due, {player}.",
           "!story.side=glimmer&standing.keepers>=1": "A Keeper, and a friend. Brief, please. The report is due.",
