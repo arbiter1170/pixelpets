@@ -7,6 +7,26 @@ function problems() {
   return lib.repoWordingProblems();
 }
 
+const LODGE = "WARDEN'S LODGE · Warden Ilse Marrow. New holders, knock and come in.";
+
+test("the Warden lodge sign says holders", () => {
+  const vm = require('vm');
+  const ctx = { console, window: {} };
+  ctx.globalThis = ctx;
+  ctx.window = ctx;
+  vm.createContext(ctx);
+  vm.runInContext(lib.read('data/mapdata.js') + '\n;try { globalThis.MAPDATA = MAPDATA; } catch (e) {}', ctx, { filename: 'data/mapdata.js' });
+  const hits = [];
+  (function walk(node) {
+    if (!node || typeof node !== 'object') return;
+    if (node.id === 'hm_sign_lodge' && typeof node.text === 'string') hits.push(node.text);
+    for (const v of Object.values(node)) walk(v);
+  })(ctx.MAPDATA);
+  expect(hits.length).toBeGreaterThan(0);
+  expect(hits.every((t) => t === LODGE)).toBe(true);
+  expect(hits.some((t) => t.indexOf('keepers') >= 0)).toBe(false);
+});
+
 test('player-visible lines pass the wording guard', () => {
   const bad = problems().filter(p => p.indexOf('hc_sign_bank') < 0);
   expect(bad).toEqual([]);

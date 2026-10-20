@@ -223,7 +223,7 @@ With debug already on (`?debug=1`):
 
 `tests/look_keys.spec.js` does not boot the game. It fails when two `data/*.json` files define the same NPC look key (game.js merges them into one table, so a repeat silently redraws another file's characters), and a fixture shows a clash is reported. It also fails when one data file writes the same object key twice.
 
-`tests/wording_guard.spec.js` checks player-visible say lines, choice labels, signs, toasts and blurbs: the banned-word list, the toy-brand pattern (built from character codes), say and sign and quest lines at most 110 after token widths, choice labels at most 30, no double space, and no unknown `{token}`. The ids `isFainted` and `dexGrid` are exempt. The Civic Bank sign is `test.fixme`.
+`tests/wording_guard.spec.js` checks player-visible say lines, choice labels, signs, toasts and blurbs: the banned-word list, the toy-brand pattern (built from character codes), say and sign and quest lines at most 110 after token widths, choice labels at most 30, no double space, and no unknown `{token}`. The ids `isFainted` and `dexGrid` are exempt. The Civic Bank sign is `test.fixme`. The Warden lodge sign `hm_sign_lodge` reads "New holders, knock and come in."
 
 `tests/sfx_minigames.spec.js` loads a seeded save with sound off and reduced motion on, at 320, 375 and 390. `PPSound.play('step')` stays silent. Each minigame opens and closes with no console error. Screenshot: `minigame-<width>.png`.
 
