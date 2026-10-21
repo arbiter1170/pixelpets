@@ -37,7 +37,7 @@ Run `npm run test:agent [spec] [--project=390]`, not bare `npm test`; it prints 
 ## Status docs
 `BACKLOG.md` (current work), `OPEN_DECISIONS.md` (open items only), `NEXT_PLAN.md`, `TOWN_BOARD.md`, `DESIGNER_PROMPT.md` (designer bot), `CHANGELOG.md` (recent), `handoff/maps/` (map upgrade packets). History: `archive/`.
 
-Search headings (`rg -n '^## |^### ' FILE`) and read only the section the task needs. Do not read `OPEN_DECISIONS.md`, `CHANGELOG.md`, `README.md`, `NEXT_PLAN.md`, or `BACKLOG.md` whole. Settled calls live in `archive/DECISIONS_SETTLED.md`. Search that file for one id instead of reading it. Open rows: `rg -n -A40 '^## Open' OPEN_DECISIONS.md`. The usual sections are Backlog "Next work", `NEXT_PLAN.md` §3, and the top `CHANGELOG.md` entry.
+Search headings (`rg -n '^## |^### ' FILE`) and read only the section the task needs, through the next `## ` heading. Do not read `OPEN_DECISIONS.md`, `CHANGELOG.md`, `README.md`, `NEXT_PLAN.md`, or `BACKLOG.md` whole. Settled calls live in `archive/DECISIONS_SETTLED.md`. Search that file for one id instead of reading it. Open rows: `awk '/^## Open/{f=1;print;next} /^## /{f=0} f' OPEN_DECISIONS.md`. Backlog "Next work": `awk '/^## Next work/{f=1;print;next} /^## /{f=0} f' BACKLOG.md`. `NEXT_PLAN.md` §3: `awk '/^## 3\. /{f=1;print;next} /^## /{f=0} f' NEXT_PLAN.md`. The top `CHANGELOG.md` entry is the first `## ` block.
 
 ## Cloud agents
 If any uploads/ file a launch prompt names is missing, stop and report which one. Don't search the filesystem and don't guess.

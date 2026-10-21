@@ -12,7 +12,7 @@ description: |
 Side quests, town-board slips and bounties hang off `SIDE_CHAINS`; the main `CHAIN` is shipped and stays untouched. Full detail (step shapes, conditions, line limits, D ids, slip rules, test recipe): `REFERENCE.md` in this folder. Status docs: `walklings-docs`.
 
 ## Before writing
-- Read `quests.js` (through `devCheck`), the matching `data/*.json`, `OPEN_DECISIONS.md` (see the OPEN_DECISIONS.md header; D37 is used twice, never renumber), and `TOWN_BOARD.md` for board work.
+- Read `quests.js` (through `devCheck`), the matching `data/*.json`, `OPEN_DECISIONS.md` (the next free D id is named in the OPEN_DECISIONS.md header; D37 is used twice, never renumber), and `TOWN_BOARD.md` for board work.
 - Copy Mom (`mom` in `data/interiors.json`, `mom_hello` in `data/mahopac.json`) for a new accept. Accepts are conversations, never walk triggers (Ness's `catch` is the one shipped exception).
 - Don't wire a slip, bounty or square while its blocking D-row is open. TB-3 (one slip, Cald's gate count) is on this branch. Do not add a second slip or a Mahopac slip in that pass.
 
