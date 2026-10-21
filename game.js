@@ -5384,7 +5384,7 @@ function interact(o){
     const steps = [];
     if (typeof line === 'string' && line.charAt(0) !== '@') steps.push(['say', objName(o), line]);
     const opts = o.meals.map(m => [m.name + ' (' + m.price + ')', [['meal', m.id]]]);
-    if (bowlReady()) opts.push(['Warm Bowl', [['meal', 'warm_bowl']]]);
+    if (bowlReady() && !o.stallSnack) opts.push(['Warm Bowl', [['meal', 'warm_bowl']]]);
     steps.push(['choice', 'What will they eat?', opts]);
     return runSteps(steps, ctx);
   }
@@ -9431,7 +9431,7 @@ function shopHeading(o){
 }
 function openShop(ids, title, flavour){
   if (!S || overlayOpen()) return;
-  clearMoves(); shopIds = (ids || ITEM_ORDER).filter(k => ITEMS[k]); shopSel = 0;
+  clearMoves(); shopIds = (ids || ITEM_ORDER).filter(k => ITEMS[k] || WARDROBE[k]); shopSel = 0;
   $('#shopTitle').textContent = title || 'Travel Shelf';
   const flav = $('#shopFlavour');
   if (flav) flav.textContent = flavour || (title && title !== 'Travel Shelf' ? 'Snacks for the road.' : 'Leave Acorns, take a snack. \u2014 I.');
@@ -9443,6 +9443,7 @@ function renderShop(){
   paintAcorn($('#shopAcorn')); $('#shopMoney').textContent = String(S.money | 0);
   const list = $('#shopList'); list.textContent = '';
   shopIds.forEach((id, i) => {
+    if (!ITEMS[id]) { list.appendChild(shopWardRow(id, i)); return; }
     const it = ITEMS[id];
     const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
     const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
@@ -9471,12 +9472,40 @@ function buyItem(id){
   if (!$('#ovShop').hidden) renderShop();
   return { ok: true, msg };
 }
+// P4: a store can sell a P3 wardrobe item. Same name, price, flag and toast as BUY at Stitch & Lantern; an owned one reads OWNED.
+function shopWardRow(id, i){
+  const wr = WARDROBE[id], own = ownsLook(id);
+  const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
+  const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
+  if (wr.tab === 'walkling') { const p = pet(); if (p) spriteCanvas(ico, spi(p), p.stage, 'n', isFaded(p), id); }
+  else { const look = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {}); look.accessory = id; ctx(ico).drawImage(keeperFrames(look).down[0], 0, 0); }
+  const meta = document.createElement('div'); meta.className = 'bag-meta';
+  const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = wr.name;
+  const sub = document.createElement('div'); sub.className = 'bag-blurb shop-own'; sub.textContent = own ? 'Yours' : wr.line;
+  meta.append(nm, sub);
+  const pr = document.createElement('div'); pr.className = 'shop-price'; pr.textContent = own ? '' : String(wr.price);
+  const buy = document.createElement('button'); buy.type = 'button'; buy.className = 'btn bag-use shop-buy'; buy.textContent = own ? 'OWNED' : 'BUY'; buy.disabled = own;
+  buy.addEventListener('click', e => { e.stopPropagation(); shopSel = i; buyWardFromShop(id); });
+  row.addEventListener('click', () => { shopSel = i; $$('.shop-row').forEach((r, j) => r.classList.toggle('sel', j === shopSel)); });
+  row.append(ico, meta, pr, buy); return row;
+}
+function buyWardFromShop(id){
+  const wr = WARDROBE[id]; if (!wr || !S) return { ok: false, msg: '' };
+  let msg = null;
+  if (ownsLook(id)) msg = 'Already yours.';
+  else if ((S.money | 0) < wr.price) msg = 'Not enough Acorns.';
+  if (msg) { sfx('denied'); toast(msg); return { ok: false, msg }; }
+  S.money = (S.money | 0) - wr.price; S.flags[wr.flag] = true;
+  sfx('tap'); msg = wr.name + ' is yours.'; toast(msg); save();
+  if (!$('#ovShop').hidden) renderShop();
+  return { ok: true, msg };
+}
 function shopKey(e){
   if ($('#ovShop').hidden) return false;
   if (e.key === 'Escape') { closeShop(); return true; }
   if (e.key === 'ArrowDown') { shopSel = Math.min(shopIds.length - 1, shopSel + 1); renderShop(); return true; }
   if (e.key === 'ArrowUp') { shopSel = Math.max(0, shopSel - 1); renderShop(); return true; }
-  if (e.key === 'Enter') { if (!e.repeat && shopIds[shopSel]) buyItem(shopIds[shopSel]); return true; }
+  if (e.key === 'Enter') { if (!e.repeat && shopIds[shopSel]) (ITEMS[shopIds[shopSel]] ? buyItem : buyWardFromShop)(shopIds[shopSel]); return true; }
   return false;
 }
 

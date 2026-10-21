@@ -1,0 +1,644 @@
+{
+ "spec": "WORLD_CLOCK_TOWN P4 Stores (design section 10). Sorts after detail_zz_market, so hm_store exists when its replaceObjs run.",
+ "friendSlots": {
+  "ROUTE_VENDOR": "Keeper Halvard",
+  "MEADOW_FARMER": "Farmer Tibbet",
+  "ORCHARD_STALL": "Wynne",
+  "WATCH_HATCH": "Watch Saffie",
+  "GLEN_WEAVER": "Weaver Ilka",
+  "QUARRY_TOOLS": "Toolwright Brannoch",
+  "WARDEN_POST": "Warden Teodor"
+ },
+ "looks": {
+  "r1_halvard": {
+   "skin": "4",
+   "hair": "short",
+   "hairCol": "d",
+   "outfit": "coat",
+   "outfitCol": "g",
+   "accent": "y"
+  },
+  "om_tibbet": {
+   "skin": "2",
+   "hair": "curls",
+   "hairCol": "o",
+   "outfit": "sweater",
+   "outfitCol": "n",
+   "accent": "y"
+  },
+  "fb_wynne": {
+   "skin": "3",
+   "hair": "bun",
+   "hairCol": "r",
+   "outfit": "tunic",
+   "outfitCol": "g",
+   "accent": "y"
+  },
+  "r2_saffie": {
+   "skin": "5",
+   "hair": "long",
+   "hairCol": "b",
+   "outfit": "coat",
+   "outfitCol": "b",
+   "accent": "w"
+  },
+  "glen_ilka": {
+   "skin": "1",
+   "hair": "long",
+   "hairCol": "y",
+   "outfit": "sweater",
+   "outfitCol": "p",
+   "accent": "l"
+  },
+  "q_brannoch": {
+   "skin": "6",
+   "hair": "short",
+   "hairCol": "h",
+   "outfit": "vest",
+   "outfitCol": "m",
+   "accent": "o",
+   "accessory": "goggles"
+  },
+  "hw_teodor": {
+   "skin": "4",
+   "hair": "spiky",
+   "hairCol": "n",
+   "outfit": "coat",
+   "outfitCol": "t",
+   "accent": "c"
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "hm_store": {
+    "replaceObjs": [
+     {
+      "kind": "prop",
+      "id": "store_counter",
+      "x": 2,
+      "y": 3,
+      "sprite": "kitchen_counter",
+      "shopTitle": "Lamplight Provisions",
+      "shopFlavour": "Lantern stays lit. What do you need?",
+      "lines": {
+       "else": "Lamplight Provisions. Lantern stays lit. What do you need?"
+      },
+      "shop": [
+       "heal_snack",
+       "hearty_snack",
+       "wake_tonic",
+       "befriend_treat",
+       "energy_sip",
+       "joy_crumb",
+       "soft_berry",
+       "kin_ribbon",
+       "wick_charm"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "store_cooler",
+      "x": 10,
+      "y": 3,
+      "sprite": "mr_cooler",
+      "lines": {
+       "else": "A cool box. The drinks stay cold."
+      },
+      "meals": [
+       {
+        "id": "lantern_fizz",
+        "name": "Lantern Fizz",
+        "food": 10,
+        "joy": 10,
+        "price": 30
+       }
+      ],
+      "stallSnack": true
+     }
+    ]
+   },
+   "route1": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "r1_halvard",
+      "name": "Keeper Halvard",
+      "look": "r1_halvard",
+      "x": 5,
+      "y": 7,
+      "facing": "down",
+      "friendSlot": "ROUTE_VENDOR",
+      "shop": [
+       "heal_snack",
+       "energy_sip",
+       "befriend_treat",
+       "pin_badge"
+      ],
+      "shopTitle": "Waymark Cart",
+      "shopFlavour": "Waymark Cart. Keeper stock for the road, at town prices.",
+      "lines": {
+       "else": "Waymark Cart. Keeper stock for the road, at town prices."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "r1_waymark_l",
+      "x": 6,
+      "y": 7,
+      "sprite": "waymark_cart_l",
+      "name": "Waymark Cart",
+      "meals": [
+       {
+        "id": "waymark_oatcake",
+        "name": "Waymark Oatcake",
+        "food": 25,
+        "joy": 3,
+        "price": 30
+       }
+      ],
+      "stallSnack": true,
+      "lines": {
+       "else": "Oatcakes in a cloth, still warm."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "r1_waymark_r",
+      "x": 7,
+      "y": 7,
+      "sprite": "waymark_cart_r",
+      "name": "Waymark Cart",
+      "lines": {
+       "else": "Bedrolls, a lantern and a map tube."
+      }
+     }
+    ]
+   },
+   "proto": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "om_tibbet",
+      "name": "Farmer Tibbet",
+      "look": "om_tibbet",
+      "x": 5,
+      "y": 8,
+      "facing": "down",
+      "friendSlot": "MEADOW_FARMER",
+      "when": [
+       "phase:dawn"
+      ],
+      "lines": {
+       "else": "Restocking at first light. The box is open all day."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "om_honesty_l",
+      "x": 6,
+      "y": 8,
+      "sprite": "honesty_box_l",
+      "name": "Meadow Honesty Box",
+      "shop": [
+       "joy_crumb",
+       "soft_berry",
+       "clover_crown"
+      ],
+      "shopTitle": "Meadow Honesty Box",
+      "shopFlavour": "Take what you need. Leave the Acorns in the tin. - T.",
+      "lines": {
+       "else": "Take what you need. Leave the Acorns in the tin. - T."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "om_honesty_r",
+      "x": 7,
+      "y": 8,
+      "sprite": "honesty_box_r",
+      "name": "Meadow Honesty Box",
+      "meals": [
+       {
+        "id": "clover_honeycomb",
+        "name": "Clover Honeycomb",
+        "food": 15,
+        "joy": 8,
+        "price": 30
+       }
+      ],
+      "stallSnack": true,
+      "lines": {
+       "else": "A jar of clover honeycomb. Same tin."
+      }
+     }
+    ]
+   },
+   "fernbrook": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "fb_wynne",
+      "name": "Wynne",
+      "look": "fb_wynne",
+      "x": 25,
+      "y": 7,
+      "facing": "down",
+      "friendSlot": "ORCHARD_STALL",
+      "shop": [
+       "soft_berry",
+       "joy_crumb",
+       "hearty_snack",
+       "fern_scarf"
+      ],
+      "shopTitle": "Orchard Stall",
+      "shopFlavour": "Orchard Stall. Picked this morning, every one.",
+      "lines": {
+       "else": "Orchard Stall. Picked this morning, every one."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_orchard_l",
+      "x": 26,
+      "y": 7,
+      "sprite": "orchard_stall_l",
+      "name": "Orchard Stall",
+      "meals": [
+       {
+        "id": "apple_slices",
+        "name": "Apple Slices",
+        "food": 20,
+        "joy": 6,
+        "price": 30
+       }
+      ],
+      "stallSnack": true,
+      "lines": {
+       "else": "Apple slices in a paper cone."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fb_orchard_r",
+      "x": 27,
+      "y": 7,
+      "sprite": "orchard_stall_r",
+      "name": "Orchard Stall",
+      "lines": {
+       "else": "Apples stacked in threes, and a crate of pears."
+      }
+     }
+    ]
+   },
+   "fb_heights": {
+    "addObjs": [
+     {
+      "kind": "prop",
+      "id": "ht_tin",
+      "x": 14,
+      "y": 10,
+      "sprite": "heights_tin",
+      "name": "Heights Supply Crate",
+      "meals": [
+       {
+        "id": "cliff_flapjack",
+        "name": "Cliff Flapjack",
+        "food": 30,
+        "joy": 4,
+        "price": 40
+       }
+      ],
+      "stallSnack": true,
+      "lines": {
+       "else": "A tin of cliff flapjacks. Kit bakes them."
+      }
+     }
+    ]
+   },
+   "route2": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "r2_saffie",
+      "name": "Watch Saffie",
+      "look": "r2_saffie",
+      "x": 5,
+      "y": 7,
+      "facing": "down",
+      "friendSlot": "WATCH_HATCH",
+      "shop": [
+       "energy_sip",
+       "bracer_band",
+       "heal_snack"
+      ],
+      "shopTitle": "Watchpost Hatch",
+      "shopFlavour": "Watchpost Hatch. Long road ahead? Stock up here.",
+      "lines": {
+       "else": "Watchpost Hatch. Long road ahead? Stock up here."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "r2_watch_l",
+      "x": 6,
+      "y": 7,
+      "sprite": "watch_hatch_l",
+      "name": "Watchpost Hatch",
+      "meals": [
+       {
+        "id": "watch_rusk",
+        "name": "Watch Rusk",
+        "food": 20,
+        "joy": 4,
+        "price": 30
+       }
+      ],
+      "stallSnack": true,
+      "lines": {
+       "else": "A tin of Watch rusks by the kettle."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "r2_watch_r",
+      "x": 7,
+      "y": 7,
+      "sprite": "watch_hatch_r",
+      "name": "Watchpost Hatch",
+      "lines": {
+       "else": "Mugs on hooks. The kettle is always warm."
+      }
+     }
+    ]
+   },
+   "route2_glen": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "glen_ilka",
+      "name": "Weaver Ilka",
+      "look": "glen_ilka",
+      "x": 13,
+      "y": 7,
+      "facing": "down",
+      "friendSlot": "GLEN_WEAVER",
+      "shop": [
+       "kin_ribbon",
+       "joy_crumb",
+       "willow_crown",
+       "satchel"
+      ],
+      "shopTitle": "Wicker & Willow",
+      "shopFlavour": "Wicker & Willow. Everything here was woven in the glen.",
+      "lines": {
+       "else": "Wicker & Willow. Everything here was woven in the glen."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "glen_wicker_l",
+      "x": 14,
+      "y": 7,
+      "sprite": "wicker_stall_l",
+      "name": "Wicker & Willow",
+      "meals": [
+       {
+        "id": "glen_berry_cup",
+        "name": "Glen Berry Cup",
+        "food": 15,
+        "joy": 9,
+        "price": 30
+       }
+      ],
+      "stallSnack": true,
+      "lines": {
+       "else": "Berries in a little woven cup."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "glen_wicker_r",
+      "x": 15,
+      "y": 7,
+      "sprite": "wicker_stall_r",
+      "name": "Wicker & Willow",
+      "lines": {
+       "else": "Baskets, and a willow hoop on a peg."
+      }
+     }
+    ]
+   },
+   "cobblecrest": {
+    "replaceObjs": [
+     {
+      "kind": "prop",
+      "id": "cc_stall_l",
+      "x": 11,
+      "y": 6,
+      "sprite": "stall_counter",
+      "lines": {
+       "else": "Jars of snacks and a tin marked ACORNS, PLEASE."
+      },
+      "name": "Cairnside Supplies",
+      "meals": [
+       {
+        "id": "miners_pasty",
+        "name": "Miner's Pasty",
+        "food": 40,
+        "joy": 4,
+        "price": 50
+       }
+      ],
+      "stallSnack": true
+     },
+     {
+      "kind": "prop",
+      "id": "cc_stall_r",
+      "x": 13,
+      "y": 6,
+      "sprite": "stall_counter",
+      "lines": {
+       "else": "Lamp-oil Counter. Lamp oil, wicks, and a cap with its own light."
+      },
+      "name": "Lamp-oil Counter",
+      "shop": [
+       "wake_tonic",
+       "bracer_band",
+       "lamp_cap"
+      ],
+      "shopTitle": "Lamp-oil Counter",
+      "shopFlavour": "Lamp oil, wicks, and a cap with its own light."
+     }
+    ]
+   },
+   "cobble_quarry": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "q_brannoch",
+      "name": "Toolwright Brannoch",
+      "look": "q_brannoch",
+      "x": 17,
+      "y": 16,
+      "facing": "down",
+      "friendSlot": "QUARRY_TOOLS",
+      "shop": [
+       "bracer_band",
+       "energy_sip",
+       "wake_tonic",
+       "goggles"
+      ],
+      "shopTitle": "Seam-side Tool Cart",
+      "shopFlavour": "Seam-side Tool Cart. Mind the grit, and mind your Walkling.",
+      "lines": {
+       "else": "Seam-side Tool Cart. Mind the grit, and mind your Walkling."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "q_toolcart_l",
+      "x": 18,
+      "y": 16,
+      "sprite": "tool_cart_l",
+      "name": "Seam-side Tool Cart",
+      "meals": [
+       {
+        "id": "seam_biscuit",
+        "name": "Seam Biscuit",
+        "food": 25,
+        "joy": 3,
+        "price": 30
+       }
+      ],
+      "stallSnack": true,
+      "lines": {
+       "else": "Seam biscuits, wrapped against the dust."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "q_toolcart_r",
+      "x": 19,
+      "y": 16,
+      "sprite": "tool_cart_r",
+      "name": "Seam-side Tool Cart",
+      "lines": {
+       "else": "Pick heads, a rope coil and a spare lamp."
+      }
+     }
+    ]
+   },
+   "highcharity": {
+    "replaceObjs": [
+     {
+      "kind": "npc",
+      "id": "hc_shop",
+      "name": "Mira",
+      "look": "mira",
+      "x": 30,
+      "y": 22,
+      "facing": "down",
+      "shop": [
+       "heal_snack",
+       "hearty_snack",
+       "wake_tonic",
+       "befriend_treat",
+       "energy_sip",
+       "joy_crumb",
+       "sash"
+      ],
+      "lines": {
+       "else": "Welcome to Lantern Market!"
+      },
+      "chatter": {
+       "story.side=glimmer": "We sell to guests. Have a seat.",
+       "else": "Warm buns in the back, holder."
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "hc_baker",
+      "name": "Baker Cole",
+      "look": "cole",
+      "x": 36,
+      "y": 23,
+      "facing": "down",
+      "lines": {
+       "story.side=glimmer": "Same buns for guests. Sit if you like.",
+       "else": "The glaze is amber, same as the wild."
+      },
+      "chatter": {
+       "else": "Warm buns. Mind the glaze."
+      },
+      "meals": [
+       {
+        "id": "amber_glaze_bun",
+        "name": "Amber Glaze Bun",
+        "food": 30,
+        "joy": 8,
+        "price": 50
+       }
+      ],
+      "stallSnack": true
+     }
+    ]
+   },
+   "hw_cut": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "hw_teodor",
+      "name": "Warden Teodor",
+      "look": "hw_teodor",
+      "x": 4,
+      "y": 4,
+      "facing": "down",
+      "friendSlot": "WARDEN_POST",
+      "shop": [
+       "heal_snack",
+       "wake_tonic",
+       "energy_sip"
+      ],
+      "shopTitle": "Fallstair Supply Post",
+      "shopFlavour": "Fallstair Supply Post. Quiet water, full packs.",
+      "lines": {
+       "else": "Fallstair Supply Post. Quiet water, full packs."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "hw_fallstair_l",
+      "x": 5,
+      "y": 4,
+      "sprite": "supply_post_l",
+      "name": "Fallstair Supply Post",
+      "meals": [
+       {
+        "id": "stream_cress_roll",
+        "name": "Stream Cress Roll",
+        "food": 20,
+        "joy": 6,
+        "price": 30
+       }
+      ],
+      "stallSnack": true,
+      "lines": {
+       "else": "Cress rolls from the stream bank."
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "hw_fallstair_r",
+      "x": 6,
+      "y": 4,
+      "sprite": "supply_post_r",
+      "name": "Fallstair Supply Post",
+      "lines": {
+       "else": "Rope, a cress basket and a lantern hook."
+      }
+     }
+    ]
+   }
+  }
+ }
+}

@@ -222,7 +222,7 @@ add({'kind': 'npc', 'id': 'hc_moss', 'name': 'Keeper Moss', 'look': 'moss', 'x':
 add({'kind': 'npc', 'id': 'hc_shop', 'name': 'Mira', 'look': 'mira', 'x': 30, 'y': 22, 'facing': 'down',
      'shop': ['heal_snack', 'hearty_snack', 'wake_tonic', 'befriend_treat', 'energy_sip', 'joy_crumb'],
      'lines': {'else': 'Welcome to Lantern Market!'},
-     'chatter': {'story.side=glimmer': 'We sell to guests. Have a seat.', 'else': 'Warm buns in the back, keeper.'}})
+     'chatter': {'story.side=glimmer': 'We sell to guests. Have a seat.', 'else': 'Warm buns in the back, holder.'}})
 add({'kind': 'prop', 'id': 'hc_stall_l', 'x': 29, 'y': 23, 'sprite': 'stall_counter',
      'lines': {'else': 'Jars of snacks and a tin marked ACORNS, PLEASE.'}})
 add({'kind': 'prop', 'id': 'hc_stall_r', 'x': 31, 'y': 23, 'sprite': 'hall_booth',
