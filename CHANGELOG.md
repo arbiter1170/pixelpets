@@ -2,6 +2,8 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 12:59 ET: Ribbit feed lines say holder or Keeper, and the Civic Bank sign says Acorns (build 20261021-1259). Save stays pixelpets.save.v2 with v 2.
+
 ## 2026-10-21 11:39 ET: Lowercase keeper to holder or Keeper (build 20261021-1139)
 
 - What changed and why: Green copy fix from design tip 02f8185. Player lines that said a lowercase keeper now say holder, Keeper, or a short reword. Thirty-eight of the forty rows were still the old sentence on d942f29 and were replaced. Rows 27 and 33 ("Warm buns in the back, holder.") were already that sentence from #132, so they were left as they were. `data/mapdata.js` was regenerated. Save stays `pixelpets.save.v2` with `v` 2. No new flag.

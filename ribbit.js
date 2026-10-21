@@ -26,7 +26,7 @@
     { id: 'bn-census', kind: 'block', when: ['!story.glen_cleared'], text: 'Route 2 bulletin: the Glow Census is counting. Comfort Lamps are still lit.' },
     { id: 'bn-mint', kind: 'block', when: ['story.side=glimmer'], text: "Fernbrook note: the mint stand is open. Smiles are free. Chairs are Fen's." },
 
-    { id: 'ch-bowl', kind: 'chirp', pin: true, text: 'A keeper and a Walkling shared a Warm Bowl on the hill. Nobody filed a form.' },
+    { id: 'ch-bowl', kind: 'chirp', pin: true, text: 'A holder and a Walkling shared a Warm Bowl on the hill. Nobody filed a form.' },
     { id: 'ch-fen', kind: 'chirp', text: 'Fen was talking to a blossom in the orchard. The blossom kept the secret.' },
     { id: 'ch-bren', kind: 'chirp', text: 'Officer Bren walked the Hearthmoor road again. The lantern waved, probably.' },
     { id: 'ch-seam', kind: 'chirp', when: ['story.quarry_bought'], text: 'The quarry seam has a new owner. Hale still packs a lunch. Kids are asking.' },
@@ -34,10 +34,10 @@
     { id: 'ch-rook', kind: 'chirp', when: ['story.rook_end'], text: "Rook's cart left Cobblecrest. Someone waved from the road. The board is up." },
     { id: 'ch-ridge', kind: 'chirp', when: ['story.heights_done'], text: 'RegenX closed the bright rooms. A Walkling hopped the ridge and looked pleased.' },
 
-    { id: 'hm-tea', kind: 'local', region: 'hearthmoor', name: 'Hill keeper', handle: 'hillkeeper', desk: 'Hill keeper', text: 'Lantern Hill is bright. Keeper House smells like tea and paper.' },
-    { id: 'hm-bren', kind: 'local', region: 'hearthmoor', name: 'Road keeper', handle: 'roadmoss', desk: 'Road keeper', text: 'Officer Bren took the long road. The lantern stayed lit behind him.' },
-    { id: 'hm-step', kind: 'local', region: 'hearthmoor', name: 'Porch keeper', handle: 'porchsit', desk: 'Porch keeper', text: 'A Walkling sat on the lodge step. A keeper shared the sunny half.' },
-    { id: 'hm-door', kind: 'local', region: 'hearthmoor', name: 'Lantern keeper', handle: 'paperlantern', desk: 'Lantern keeper', text: 'Keeper House asked citizens to step back. They asked nicely.' },
+    { id: 'hm-tea', kind: 'local', region: 'hearthmoor', name: 'Hill Keeper', handle: 'lanternhill', desk: 'Hill Keeper', text: 'Lantern Hill is bright. Keeper House smells like tea and paper.' },
+    { id: 'hm-bren', kind: 'local', region: 'hearthmoor', name: 'Road walker', handle: 'roadmoss', desk: 'Road walker', text: 'Officer Bren took the long road. The lantern stayed lit behind him.' },
+    { id: 'hm-step', kind: 'local', region: 'hearthmoor', name: 'Porch sitter', handle: 'porchsit', desk: 'Porch sitter', text: 'A Walkling sat on the lodge step. A holder shared the sunny half.' },
+    { id: 'hm-door', kind: 'local', region: 'hearthmoor', name: 'Lantern Keeper', handle: 'paperlantern', desk: 'Lantern Keeper', text: 'Keeper House asked citizens to step back. They asked nicely.' },
 
     { id: 'r1-grass', kind: 'local', region: 'route1', name: 'Route walker', handle: 'grassline', desk: 'Route walker', text: 'Wild grass on Route 1 is full of small noses. I stepped around them.' },
     { id: 'r1-free', kind: 'local', region: 'route1', name: 'Route walker', handle: 'freepoles', desk: 'Route walker', when: ['story.phone_got'], text: 'The Keeper1 was free. The poles stay with the Keepers.' },
@@ -253,7 +253,7 @@
     if (!POSTS.some(p => p.kind === 'chirp' && p.pin && !p.when)) bad.push('missing an open Chirp pin');
     const demo = feed({ flags: { 'story.phone_got': true }, side: 'keepers', map: 'hearthmoor', uid: 'demo', day: '2026-04-01' });
     if (!demo.posts.some(p => p.handle === 'blocknews' && /Hearthmoor/.test(p.text))) bad.push('demo missing Hearthmoor news');
-    if (!demo.posts.some(p => p.handle === 'chirpworld' && /keeper/i.test(p.text) && /Walkling/.test(p.text))) bad.push('demo missing the keeper and Walkling chirp');
+    if (!demo.posts.some(p => p.handle === 'chirpworld' && /holder/i.test(p.text) && /Walkling/.test(p.text))) bad.push('demo missing the holder and Walkling chirp');
     if (demo.trending.length !== 3) bad.push('demo trending should be 3');
     const home = ['#LanternHill', '#Route1', '#Orchard', '#Hearthmoor', '#KeeperHouse', '#WildGrass', '#Walkling', '#Amberwild', '#GlowCensus', '#ComfortLamps'];
     demo.trending.forEach(t => { if (home.indexOf(t.tag) === -1) bad.push('demo tag out of the early set: ' + t.tag); });
