@@ -169,7 +169,7 @@ test('with no Acorns the keeper still rests the party', async ({ page }) => {
   await gotoDebug(page);
   await wipeParty(page);
   const seen = await playCollect(page, [/^Rest \(5 Acorns\)$/]);
-  expect(seen.says.join(' ')).toContain('keeper covers the fee');
+  expect(seen.says.join(' ')).toContain('Keeper covers the fee');
   const after = await page.evaluate(() => ({
     map: PixelPets.mapInfo.id, money: PixelPets.state.money, rest: PixelPets.lanternRest,
     party: PixelPets.state.party.map((p) => ({ hp: p.hpNow, faint: !!p.faintUntil })),

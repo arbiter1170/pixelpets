@@ -486,7 +486,7 @@
           "id": "hc_sign_arena",
           "x": 46,
           "y": 16,
-          "text": "CHARITY ARENA · Fair matches and a seat for every keeper. Leave grudges at the rope."
+          "text": "CHARITY ARENA · Fair matches and a seat for every holder. Leave grudges at the rope."
         },
         {
           "kind": "sign",
@@ -528,7 +528,7 @@
           "id": "hc_sign_apt",
           "x": 7,
           "y": 25,
-          "text": "KEEPER APARTMENTS · Rooms for keepers new to the city. The landlord keeps the spare keys."
+          "text": "KEEPER APARTMENTS · Rooms for holders new to the city. The landlord keeps the spare keys."
         },
         {
           "kind": "sign",
@@ -1321,7 +1321,7 @@
           "id": "hc_hall_note",
           "x": 2,
           "y": 8,
-          "text": "EVENT HALL · Solo booths up top. Two-keeper games with Brin."
+          "text": "EVENT HALL · Solo booths up top. Games for two with Brin."
         }
       ]
     },
@@ -1715,7 +1715,7 @@
           [
             "say",
             "Keeper Moss",
-            "Welcome home, keeper. The lanterns know your step."
+            "Welcome home, holder. The lanterns know your step."
           ]
         ]
       ],

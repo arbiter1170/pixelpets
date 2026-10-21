@@ -157,7 +157,7 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 
 `PixelPets.befriendOdds(foeLv, hpFrac, opts)` returns `{ width, chance, speed, label }`. `width` and `chance` are numbers rounded to 3 decimal places. Defaults: stage 0, joy 60, no treat, lead level equal to the foe, engaged when `hpFrac < 1`, bonus 0.
 
-`tests/lantern_rest.spec.js` (all with `?debug=1`): after a wipe the Hearthmoor Lantern House offers a 5 Acorn rest for the whole party, "Not yet" leaves the door mat shut, resting pays and then lets you out, and the outdoor sign states the cost. With 0 Acorns the keeper covers the fee and still heals the party. Fernbrook's lantern door will not let a wiped party walk off until that rest. A home nap stays free, a hurt party pays 5 Acorns at the beds, and a party already at full HP rests without paying.
+`tests/lantern_rest.spec.js` (all with `?debug=1`): after a wipe the Hearthmoor Lantern House offers a 5 Acorn rest for the whole party, "Not yet" leaves the door mat shut, resting pays and then lets you out, and the outdoor sign states the cost. With 0 Acorns the Keeper covers the fee and still heals the party. Fernbrook's lantern door will not let a wiped party walk off until that rest. A home nap stays free, a hurt party pays 5 Acorns at the beds, and a party already at full HP rests without paying.
 
 `PixelPets.lanternRest` (getter) returns `{ cost, due, hurt }`. `cost` is the Acorn price. `due` is true after a wipe until the party no longer needs a rest. `hurt` is true when any party Walkling is missing HP.
 

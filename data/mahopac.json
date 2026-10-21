@@ -198,7 +198,7 @@
       ["say", "Mom", "A bond grows in small jobs. Clear the crumbs downstairs, so {pet} can sit with us."],
       ["choice", "Help Mom?", [
         ["I'll clear the table", [
-          ["say", "Mom", "That's my keeper. The mug can stay. The crumbs cannot."],
+          ["say", "Mom", "That's my helper. The mug can stay. The crumbs cannot."],
           ["setFlag", "story.mom_met", true]
         ]],
         ["In a little bit", [

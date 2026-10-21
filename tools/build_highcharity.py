@@ -246,13 +246,13 @@ SIGNS = {
     'hc_church': 'HIGH CHARITY CHAPEL · The doors stay open. Come in quiet, and leave a little warmer.',
     'hc_school': 'LANTERN SCHOOL · Lessons at the big table. Walklings may sit in, if they can sit still.',
     'hc_bank': 'CIVIC BANK · Your coins are counted and kept. Withdrawals until dusk. Kindness has no fee.',
-    'hc_arena': 'CHARITY ARENA · Fair matches and a seat for every keeper. Leave grudges at the rope.',
+    'hc_arena': 'CHARITY ARENA · Fair matches and a seat for every holder. Leave grudges at the rope.',
     'hc_barracks': 'KEEPER BARRACKS · Lamps, maps, and the night watch. Sign the book, then mind the banners.',
     'hc_command': 'SKY-DOCK COMMAND · Lantern airships berth here. Read the board before you step on a pad.',
     'hc_airport': 'AIRSHIP FIELD · They lift when the wind is kind. Hold your hat, and your Walkling.',
     'hc_marina': 'CANAL MARINA · Tie up gently. The buoys mark the deep water. Wave if you need a hand.',
     'hc_mall': 'TWO-FLOOR MALL · Coats upstairs, crumbs downstairs. Walk your Walkling between the benches.',
-    'hc_apt': 'KEEPER APARTMENTS · Rooms for keepers new to the city. The landlord keeps the spare keys.',
+    'hc_apt': 'KEEPER APARTMENTS · Rooms for holders new to the city. The landlord keeps the spare keys.',
     'hc_gym': 'TRIAL GYM · Practice before a real Hall. Stones, tides, and blooms are all welcome.',
     'hc_lantern': 'LANTERN HOUSE · Rest is free. The beds stay warm, and nobody asks why you are tired.',
     'hc_hall': 'EVENT HALL · Five booths, one evening. Play kindly. The prizes are small on purpose.',
@@ -407,7 +407,7 @@ rooms['hc_hall_in'] = room('hc_hall_in', 'Event Hall', 11, 11, 'arcade', 'hc_hal
     {'kind': 'prop', 'id': 'hc_booth_d', 'x': 8, 'y': 5, 'sprite': 'hall_booth',
      'lines': {'else': 'PLAZA DASH · Mind the puddles. The plaza is for everyone.'}},
     {'kind': 'sign', 'id': 'hc_hall_note', 'x': 2, 'y': 8,
-     'text': 'EVENT HALL · Solo booths up top. Two-keeper games with Brin.'},
+     'text': 'EVENT HALL · Solo booths up top. Games for two with Brin.'},
 ])
 
 rooms['hc_arena_in'] = room('hc_arena_in', 'Charity Arena', 11, 9, 'charity', 'hc_arena', [
@@ -496,7 +496,7 @@ scenes = {
         ['if', 'story.side=glimmer', [
             ['say', 'Keeper Moss', 'Welcome. We keep the lanterns lit for guests, too.'],
         ], [
-            ['say', 'Keeper Moss', 'Welcome home, keeper. The lanterns know your step.'],
+            ['say', 'Keeper Moss', 'Welcome home, holder. The lanterns know your step.'],
         ]],
         ['if', '!story.hc_invite', [
             ['say', 'Keeper Moss', "The Event Hall booths stay covered until Ilse's letter arrives."],

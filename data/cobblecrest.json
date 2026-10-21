@@ -278,7 +278,7 @@
         {"kind": "warp", "id": "cc_hall_mat", "x": 5, "y": 12, "to": "cobblecrest", "tx": 24, "ty": 6, "facing": "down"},
         {"kind": "npc", "id": "hale", "name": "Master Hale", "x": 5, "y": 2, "facing": "down", "look": "hale", "scene": "hale_trial"},
         {"kind": "prop", "id": "h2_lamp_l", "x": 3, "y": 2, "sprite": "wall_lantern", "lines": {"else": "A brass lantern. Hale keeps it lit for the Pebblits, not for himself."}},
-        {"kind": "prop", "id": "h2_cairn", "x": 7, "y": 2, "sprite": "cairn", "lines": {"else": "A little cairn of cobbles, one for every keeper who earned a Seal here."}},
+        {"kind": "prop", "id": "h2_cairn", "x": 7, "y": 2, "sprite": "cairn", "lines": {"else": "A little cairn of cobbles, one for every holder who earned a Seal here."}},
         {"kind": "prop", "id": "h2_seam_b", "x": 5, "y": 4, "sprite": "seam_stone", "when": ["!story.h2_seam_b"], "lines": {"else": "@seam_b"}},
         {"kind": "trainer", "id": "h2_sweeper", "x": 1, "y": 6},
         {"kind": "prop", "id": "h2_seam_a", "x": 5, "y": 7, "sprite": "seam_stone", "when": ["!story.h2_seam_a"], "lines": {"else": "@seam_a"}},
