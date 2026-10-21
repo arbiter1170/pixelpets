@@ -89,6 +89,8 @@ function decisionsFixtures() {
   const bullet = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-dbullet-'));
   const restate = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-drestate-'));
   const archHigh = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-darch-'));
+  const range = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-drange-'));
+  const closed = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-dclosed-'));
   const row = '| D{id} | a | b | c | d |';
   const head = '| # | Area | Decision needed | What the build does today | Where to change it |\n|---|---|---|---|---|';
   function openFile(dir, body) {
@@ -198,7 +200,29 @@ function decisionsFixtures() {
     head,
     row.replace('{id}', '8'),
   ].join('\n'));
-  return { dup, wrong, missing, clean, split, bullet, restate, archHigh };
+  openFile(range, [
+    '# Open decisions',
+    '',
+    NF + 'D10.',
+    '',
+    '## Open',
+    '',
+    head,
+    row.replace('{id}', '8'),
+  ].join('\n'));
+  archFile(range, '- **D8\u2013D9 (range head).**\n');
+  openFile(closed, [
+    '# Open decisions',
+    '',
+    NF + 'D3.',
+    '',
+    '## Open',
+    '',
+    head,
+    row.replace('{id}', '1'),
+  ].join('\n'));
+  archFile(closed, '- **D2 (note).** Closed by D1.\n');
+  return { dup, wrong, missing, clean, split, bullet, restate, archHigh, range, closed };
 }
 
 function git(dir, args) {
@@ -233,12 +257,22 @@ function symlinkFixtures() {
   return { bad, clean, notRepo };
 }
 
+function mapFixtures() {
+  const stale = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-mstale-'));
+  writeTree(stale, {
+    'game.js': 'function alpha(){\n  return 1;\n}\n',
+    'tools/GAMEJS_MAP.txt': 'stale\n',
+  });
+  return { stale };
+}
+
 function rm(dir) { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {} }
 
 function main() {
   const w = wordingFixtures();
   const d = decisionsFixtures();
   let s = null;
+  let m = null;
   try {
     const badW = run(w.bad, 'wording');
     show('wording bad', badW);
@@ -286,9 +320,9 @@ function main() {
     check(splitD.stdout.indexOf('SCAN FAIL decisions: archive/DECISIONS_SETTLED.md:5 duplicate D5') >= 0, 'split line\n' + splitD.stdout);
 
     const bulletD = run(d.bullet, 'decisions');
-    show('decisions bullet is not a definition', bulletD);
-    check(bulletD.status === 0, 'bullet exit ' + bulletD.status + '\n' + bulletD.stdout);
-    check(bulletD.stdout.trim() === 'SCAN PASS decisions', 'bullet output');
+    show('decisions duplicate archive bullet', bulletD);
+    check(bulletD.status === 1, 'archive bullet exit ' + bulletD.status + '\n' + bulletD.stdout);
+    check(bulletD.stdout.indexOf('SCAN FAIL decisions: archive/DECISIONS_SETTLED.md:1 duplicate D6') >= 0, 'archive bullet line\n' + bulletD.stdout);
 
     const restateD = run(d.restate, 'decisions');
     show('decisions restatement', restateD);
@@ -299,6 +333,22 @@ function main() {
     show('decisions archive highest', archD);
     check(archD.status === 0, 'archive highest exit ' + archD.status + '\n' + archD.stdout);
     check(archD.stdout.trim() === 'SCAN PASS decisions', 'archive highest output');
+
+    const rangeD = run(d.range, 'decisions');
+    show('decisions range head', rangeD);
+    check(rangeD.status === 0, 'range exit ' + rangeD.status + '\n' + rangeD.stdout);
+    check(rangeD.stdout.trim() === 'SCAN PASS decisions', 'range output');
+
+    const closedD = run(d.closed, 'decisions');
+    show('decisions closed-by reference', closedD);
+    check(closedD.status === 0, 'closed-by exit ' + closedD.status + '\n' + closedD.stdout);
+    check(closedD.stdout.trim() === 'SCAN PASS decisions', 'closed-by output');
+
+    m = mapFixtures();
+    const staleM = run(m.stale, 'gamejs_map');
+    show('gamejs map stale', staleM);
+    check(staleM.status === 1, 'stale map exit ' + staleM.status + '\n' + staleM.stdout + (staleM.stderr || ''));
+    check(staleM.stdout.indexOf('run python3 tools/gen_gamejs_map.py') >= 0, 'stale map message\n' + staleM.stdout);
 
     s = symlinkFixtures();
     const badS = run(s.bad, 'symlinks');
@@ -319,6 +369,7 @@ function main() {
     for (const dir of Object.values(w)) rm(dir);
     for (const dir of Object.values(d)) rm(dir);
     if (s) for (const dir of Object.values(s)) rm(dir);
+    if (m) for (const dir of Object.values(m)) rm(dir);
   }
   if (failed) {
     console.error('SELFTEST FAIL count=' + failed);
