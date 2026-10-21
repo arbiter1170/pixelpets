@@ -257,7 +257,7 @@ test('Brin offers the two-keeper games and a tired one stays off the list', asyn
   expect(await page.evaluate(() => PixelPets.openBooth('duo'))).toBe(true);
   await expect.poll(() => page.evaluate(() => {
     const s = window.PixelPets.scene;
-    return !!(s && s.mode === 'say' && /two-keeper booth is tired/.test(s.text));
+    return !!(s && s.mode === 'say' && /booth for two is tired/.test(s.text));
   })).toBe(true);
 });
 

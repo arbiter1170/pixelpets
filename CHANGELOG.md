@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 11:39 ET: Lowercase keeper to holder or Keeper (build 20261021-1139)
+
+- What changed and why: Green copy fix from design tip 02f8185. Player lines that said a lowercase keeper now say holder, Keeper, or a short reword. Thirty-eight of the forty rows were still the old sentence on d942f29 and were replaced. Rows 27 and 33 ("Warm buns in the back, holder.") were already that sentence from #132, so they were left as they were. `data/mapdata.js` was regenerated. Save stays `pixelpets.save.v2` with `v` 2. No new flag.
+- Files touched: `data/civic.json`, `data/cobblecrest.json`, `data/glimmer_path.json`, `data/highcharity.json`, `data/interiors.json`, `data/mahopac.json`, `data/maps_slice.json`, `data/mapdata.js`, `game.js`, `tools/build_highcharity.py`, `tests/highcharity.spec.js`, `tests/lantern_rest.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `TOWN_BOARD.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261021-1139. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `npm run test:agent`. PP_TEST RESULT: PASS exit=0 passed=1489 failed=0 flaky=0 skipped=128 time=1320s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): Green copy fix. No D id. The §2 defaults stand: holder for Amos, Moss and Captain Lumen; capital-K Keeper for the standing greetings, Odile, the pledged lines, and the Lantern House fee. No id was renumbered. Next free id stays D399.
+- Anything left unfinished: `ribbit.js` and the design-repo copies are out of this sweep. The private checker was not run here.
+
 ## 2026-10-21 10:42 ET: Holder line matches design tip 96042fc (build 20261021-1042)
 
 - What changed and why: Design tip 96042fc sets the packet overlay chatter to "Warm buns in the back, holder." That sentence is holder in all three copies: `data/detail_zz_stores.json`, Mira's chatter in `data/highcharity.json`, and `tools/build_highcharity.py`. The overlay matches the packet. It is not a deviation. Other lowercase keeper lines on main stay as they are. Save stays `pixelpets.save.v2` with `v` 2. No new flag.

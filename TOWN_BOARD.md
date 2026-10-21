@@ -65,7 +65,7 @@ Map stays 32×20. The orchard fence starts at row 10, so the square grows north 
 | 6 | `TggggpppppfgggggggggggpggggggggT` |
 | 7 | `TggggpppppgggggggfggggpggggfgggT` |
 
-Path at x=6–9 on rows 6 and 7 (x=5 was already the lantern path). The flower at (10, 6) stays. Board prop at (8, 6), read from (8, 7) or from the street at (8, 8). Rue stays at (4, 9). His line "A keeper in the square" starts being true of a place.
+Path at x=6–9 on rows 6 and 7 (x=5 was already the lantern path). The flower at (10, 6) stays. Board prop at (8, 6), read from (8, 7) or from the street at (8, 8). Rue stays at (4, 9). His line "A Keeper in the square" starts being true of a place.
 
 ### Cobblecrest and High Charity
 

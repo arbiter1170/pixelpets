@@ -5990,7 +5990,7 @@ function openDuo(o){
   if (!pet()) return runSteps([['say', who, 'Come back with your Walkling.']], { npc: o });
   const c = careDay();
   const games = [['Rope Hop', 'hop'], ['Flag Relay', 'relay'], ['Sniff Seek', 'seek']].filter(([, id]) => (c.mg[id] || 0) < 3);
-  if (!games.length) return runSteps([['say', who, 'The two-keeper booth is tired. Come back tomorrow.']], { npc: o });
+  if (!games.length) return runSteps([['say', who, 'The booth for two is tired. Come back tomorrow.']], { npc: o });
   return runSteps([
     ['say', who, 'Pass the phone. Your Walkling takes the left. A friend takes the right.'],
     ['choice', 'Which game?', games.map(([label, id]) => [label, [['play', id]]]).concat([['Not now', [['say', who, "We'll keep your seat."]]]])],
@@ -6787,7 +6787,7 @@ function lanternRestOption(){
     ['if', 'lantern.rest=paid',
       [['say', '', 'You leave ' + LANTERN_REST_COST + ' Acorns. You all doze in the lantern glow. Your team is rested.']],
       [['if', 'lantern.rest=covered',
-        [['say', '', "You're short on Acorns. The keeper covers the fee, and everyone wakes up rested."]],
+        [['say', '', "You're short on Acorns. The Keeper covers the fee, and everyone wakes up rested."]],
         [['say', '', 'Your team is already rested. This Lantern House will remember you.']]]]],
   ]];
 }
@@ -9314,7 +9314,7 @@ function walkTipText(){
   if (DEBUG && typeof window.PP_TIP_TEST === 'string') return window.PP_TIP_TEST;   // tests only (debug): a fixed tip line
   if (!S || !S.flags['story.starter_received']) return walkTipDefault();
   if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
-  if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
+  if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the Keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return ctlMode() === 'modern' ? WALK_EARLY_MODERN : WALK_EARLY_ARCADE;
   const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
@@ -10596,7 +10596,7 @@ function confirmCopy(){
 const LORE = {
   ember: 'Pipkits nap beside warm hearths and wake up ready to chase.',
   tide: 'Drizzlets keep to quiet water and hum when the rain starts.',
-  bloom: 'Sproutbuns hide in tall grass until a patient keeper sits down.',
+  bloom: 'Sproutbuns hide in tall grass until a patient holder sits down.',
   stone: 'Pebblits nap on cobbles and show miners where the seam is kind.',
   volt: 'Zipmites gather under lanterns and street lamps after dark.',
   frost: 'Chillbits drift in with the first snow and leave a small hum behind.',

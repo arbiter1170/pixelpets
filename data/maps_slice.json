@@ -217,7 +217,7 @@
       ["setFlag", "story.starter_received", true]
     ],
     "ask_name": [
-      ["say", "Warden Ilse", "Ah, {pet}'s keeper! I never did write your name in my ledger."],
+      ["say", "Warden Ilse", "Ah, {pet}'s holder! I never did write your name in my ledger."],
       ["nameEntry", "player", "What do folk call you?", "Wayfarer", 10],
       ["say", "Warden Ilse", "{name}. There, it's in the book. Off you go, the Amberwild is awake."]
     ],

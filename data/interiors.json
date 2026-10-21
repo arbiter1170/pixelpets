@@ -120,8 +120,8 @@
         {"kind": "prop", "id": "lodge_empty_c", "x": 7, "y": 2, "sprite": "basket_empty", "when": ["story.starter_received"], "lines": {
           "else": "Empty. Ilse has tucked the last little one in by the fire."}},
         {"kind": "prop", "id": "lodge_ledger", "x": 9, "y": 2, "sprite": "bookshelf", "lines": {
-          "!has:name": "Ilse's ledger: keepers old and new, in careful ink. The newest line is still blank.",
-          "else": "Ilse's ledger: keepers old and new, in careful ink. Near the end, freshly written: {player}."}}
+          "!has:name": "Ilse's ledger: holders old and new, in careful ink. The newest line is still blank.",
+          "else": "Ilse's ledger: holders old and new, in careful ink. Near the end, freshly written: {player}."}}
       ]
     },
     "hm_lantern_in": {

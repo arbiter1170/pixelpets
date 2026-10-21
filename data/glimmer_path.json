@@ -157,7 +157,7 @@
       [
         "say",
         "Master Fen",
-        "No lanterns, no lanyards. Just a keeper's hands and a little patience."
+        "No lanterns, no lanyards. Just steady hands and a little patience."
       ],
       [
         "say",
@@ -227,7 +227,7 @@
                       [
                         "say",
                         "Master Fen",
-                        "Then we grow together. Tobin won't listen to me. He might listen to a keeper with a strong team."
+                        "Then we grow together. Tobin won't listen to me. He might listen to a holder with a strong team."
                       ],
                       [
                         "say",
@@ -413,7 +413,7 @@
       [
         "say",
         "Master Fen",
-        "These trees will blossom without them this spring. I hoped a keeper's hands would know better."
+        "These trees will blossom without them this spring. I hoped your hands would know better."
       ],
       [
         "choice",
@@ -486,7 +486,7 @@
       [
         "say",
         "Associate Juniper",
-        "Welcome snacks, too! Units and keepers both run better on snacks."
+        "Welcome snacks, too! Units and holders both run better on snacks."
       ],
       [
         "say",
@@ -1445,7 +1445,7 @@
     },
     "amos": {
       "story.side=glimmer": "Beds are beds. Rest up, mint-vest.",
-      "!story.side=glimmer": "Rest well, keeper. Roots need sleep."
+      "!story.side=glimmer": "Rest well, holder. Roots need sleep."
     },
     "fen_after": {
       "story.side=glimmer": "The trees still know your step.",
@@ -1505,7 +1505,7 @@
       },
       "odile": {
         "!story.side=glimmer&standing.keepers>=4": "Warden's Ally. The windfalls are yours.",
-        "!story.side=glimmer&standing.keepers>=2": "Fen's trees like a trusted keeper.",
+        "!story.side=glimmer&standing.keepers>=2": "Fen's trees like a trusted Keeper.",
         "story.side=glimmer&standing.keepers>=2": "Mint coat. The orchard still knows you.",
         "story.side=glimmer&standing.glimmer>=2": "Mint's a bold colour. The trees cope."
       },
@@ -1547,7 +1547,7 @@
       "hm_patrol": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The road is yours.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. I'll walk you through.",
-        "story.side=keepers&standing.keepers>=1": "A pledged keeper. Evening, friend.",
+        "story.side=keepers&standing.keepers>=1": "A pledged Keeper. Evening, friend.",
         "story.side=glimmer": "Mint coat. Keep your hands shown."
       },
       "hm_ness": {
@@ -1571,7 +1571,7 @@
       "hq_mo": {
         "story.side=keepers&standing.keepers>=4": "Ally. The ledger has your page.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. I saved you a shelf.",
-        "story.side=keepers&standing.keepers>=1": "Pledged keeper. Ask, and I'll look.",
+        "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Ask, and I'll look.",
         "story.side=glimmer": "Those files are not for mint coats."
       },
       "hq_wynn": {
@@ -1589,28 +1589,28 @@
       "hq_rue": {
         "story.side=keepers&standing.keepers>=4": "Ally. The lamps know your step.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. Quiet night, thanks to you.",
-        "story.side=keepers&standing.keepers>=1": "Pledged keeper. I'll log you in.",
+        "story.side=keepers&standing.keepers>=1": "Pledged Keeper. I'll log you in.",
         "story.side=glimmer": "Company signal. I am not taking it."
       },
       "fb_constable": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. Fernbrook is quiet.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. The orchard is watched.",
-        "story.side=keepers&standing.keepers>=1": "Pledged keeper. Evening, friend.",
+        "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Evening, friend.",
         "story.side=glimmer": "Mint coats don't get the orchard key."
       },
       "r2_watch": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The glen is watched.",
-        "story.side=keepers&standing.keepers>=1": "Pledged keeper. Mind the lamps.",
+        "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Mind the lamps.",
         "story.side=glimmer": "Company lamps. I am counting them too."
       },
       "glen_watch": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The glen is watched.",
-        "story.side=keepers&standing.keepers>=1": "Pledged keeper. The trees are fine.",
+        "story.side=keepers&standing.keepers>=1": "Pledged Keeper. The trees are fine.",
         "story.side=glimmer": "Those lamps stay off while I am here."
       },
       "cc_watch": {
         "story.side=keepers&standing.keepers>=4": "Warden's Ally. The cairn knows you.",
-        "story.side=keepers&standing.keepers>=1": "Pledged keeper. Stone stands firm.",
+        "story.side=keepers&standing.keepers>=1": "Pledged Keeper. Stone stands firm.",
         "story.side=glimmer": "Mint coats don't move this cairn."
       },
       "cc_mint": {

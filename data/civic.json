@@ -48,7 +48,7 @@
           {"kind": "npc", "id": "hm_patrol", "name": "Officer Bren", "look": "officer", "x": 1, "y": 8, "facing": "down", "patrol": [[1, 7], [1, 9]], "lines": {
             "story.side=glimmer": "Mint vest. Not welcome on this road.",
             "standing.keepers>=3": "Name's on the good list. Walk easy.",
-            "standing.keepers>=1": "A keeper on the road. Glad you are out.",
+            "standing.keepers>=1": "A Keeper on the road. Glad you are out.",
             "story.side=keepers": "New pledge. The lantern still knows you.",
             "else": "Citizen. Say your piece, then step back."
           }},
@@ -58,14 +58,14 @@
             "story.board_gate_pinned&!story.board_gate_yes": "@gate_ask",
             "story.side=glimmer": "Mint on the east path. Keep walking.",
             "standing.keepers>=3": "East gate is yours. Walk easy.",
-            "standing.keepers>=1": "A keeper at the gate. Good.",
+            "standing.keepers>=1": "A Keeper at the gate. Good.",
             "story.side=keepers": "New pledge. The gate stays open.",
             "else": "Citizen. East is Route 1. Stay kind."
           }},
           {"kind": "npc", "id": "hm_ness", "name": "Officer Ness", "look": "officer", "x": 8, "y": 11, "facing": "down", "lines": {
             "story.side=glimmer": "The House is ours. Look. Do not sit.",
             "standing.keepers>=3": "Captain Lumen asked after you today.",
-            "standing.keepers>=1": "Door's open for a keeper. Come through.",
+            "standing.keepers>=1": "Door's open for a Keeper. Come through.",
             "story.side=keepers": "New to the coat? Bram will sign you in.",
             "else": "Citizen. The House is for the watch."
           }}
@@ -87,7 +87,7 @@
             "story.leak5b_filed&!story.leak5b_served": "@leak_serve",
             "story.side=glimmer": "Mint in the orchard. I am not smiling.",
             "standing.keepers>=3": "Fernbrook is glad of you. Truly.",
-            "standing.keepers>=1": "A keeper in the square. Welcome.",
+            "standing.keepers>=1": "A Keeper in the square. Welcome.",
             "story.side=keepers": "New pledge. The trees still count you.",
             "else": "Citizen. Orchard rules still apply."
           }}
@@ -114,7 +114,7 @@
         "addObjs": [
           {"kind": "npc", "id": "cc_watch", "name": "Watch Ivo", "look": "officer", "x": 4, "y": 9, "facing": "up", "lines": {
             "story.side=glimmer": "You sold the seam. I remember the vote.",
-            "standing.keepers>=1": "Stone town, keeper heart. Hello.",
+            "standing.keepers>=1": "Stone town, Keeper heart. Hello.",
             "else": "Citizen. The quarry road is watched."
           }},
           {"kind": "npc", "id": "cc_mint", "name": "Clerk Mint", "look": "glimclerk", "x": 12, "y": 9, "facing": "down", "when": ["story.quarry_bought"], "lines": {
@@ -197,7 +197,7 @@
             "!story.met_bram": "@hq_bram",
             "story.side=glimmer": "Doorway only. You do not sit here.",
             "standing.keepers>=3": "Your name is on the good list. Come in.",
-            "standing.keepers>=1": "A keeper on the step. You may come in.",
+            "standing.keepers>=1": "A Keeper on the step. You may come in.",
             "story.side=keepers": "New pledge. The lantern still knows you.",
             "else": "Citizen. Say your piece, then step back."
           }
@@ -213,7 +213,7 @@
           "lines": {
             "!story.met_mo": "@hq_mo",
             "story.side=glimmer": "I note the mint. The books will too.",
-            "standing.keepers>=1": "The shelf is open to a keeper. Read.",
+            "standing.keepers>=1": "The shelf is open to a Keeper. Read.",
             "else": "Citizen. Old books stay on the shelf."
           }
         },
@@ -431,7 +431,7 @@
         ["setFlag", "story.met_lumen", true]
       ], [
         ["say", "Captain Lumen", "Captain Lumen. The watch is mine. The town is the lantern's."],
-        ["say", "Captain Lumen", "A citizen waits in the doorway. A keeper is offered a chair."],
+        ["say", "Captain Lumen", "A citizen waits in the doorway. A holder is offered a chair."],
         ["say", "Captain Lumen", "A mint vest is asked to leave. Rank is not a secret here."],
         ["say", "Captain Lumen", "KeeperUAV will list jobs when the desk is ready. The board is blank."],
         ["say", "Captain Lumen", "Rue holds the radio. Every Keeper1 on our wires checks in with her."],
