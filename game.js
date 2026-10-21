@@ -5169,11 +5169,15 @@ function wardPress(card){
   wardUI.preview = card.id;
   renderWardrobe();
 }
-// The finger that closes a line is already down when the overlay appears. Only a pointerdown or
-// touchstart that lands inside `el` after that open may pointerup, touchend or click. A held finger
-// is swallowed however long it stays down. A keyboard click (detail 0) still activates a button.
+// The finger that closes a line, or the tap that opens a panel, is already down when the new
+// buttons appear. Only a pointerdown or touchstart that lands inside `el` after that open may
+// pointerup, touchend or click. A held finger is swallowed however long it stays down. A keyboard
+// click (detail 0) still activates a button. opts.usesOptArm also keeps the 500 ms option window
+// (choices, the name buttons, the basket, the look picker, the quest panel). opts.manual skips the
+// hidden watcher; armOptions() arms those when the buttons are drawn.
 const guardPointers = new Map();
 let guardPointersOn = false;
+const optGuards = [];
 function watchGuardPointers(){
   if (guardPointersOn) return;
   guardPointersOn = true;
@@ -5184,8 +5188,9 @@ function watchGuardPointers(){
   document.addEventListener('touchend', e => { for (const t of e.changedTouches) guardPointers.delete('t' + t.identifier); }, true);
   document.addEventListener('touchcancel', e => { for (const t of e.changedTouches) guardPointers.delete('t' + t.identifier); }, true);
 }
-function guardOverlayOpen(el){
+function guardOverlayOpen(el, opts){
   if (!el) return;
+  const opt = opts || {};
   const marked = guardOverlayOpen.done || (guardOverlayOpen.done = new WeakSet());
   if (marked.has(el)) return;
   marked.add(el);
@@ -5193,13 +5198,17 @@ function guardOverlayOpen(el){
   let openedAt = 0, freshClick = false;
   const fresh = new Set(), carried = new Set();
   const swallow = e => { e.preventDefault(); e.stopPropagation(); };
+  const inWindow = () => !!(opt.usesOptArm && performance.now() < optArmAt);
   const arm = () => {
     openedAt = performance.now(); fresh.clear(); freshClick = false; carried.clear();
     guardPointers.forEach((type, id) => { if (type === 'touch') carried.add(id); });
   };
   const live = () => !el.hidden && openedAt > 0;
-  new MutationObserver(() => { if (el.hidden) { openedAt = 0; fresh.clear(); freshClick = false; carried.clear(); } else arm(); })
-    .observe(el, { attributes: true, attributeFilter: ['hidden'] });
+  if (!opt.manual) {
+    new MutationObserver(() => { if (el.hidden) { openedAt = 0; fresh.clear(); freshClick = false; carried.clear(); } else arm(); })
+      .observe(el, { attributes: true, attributeFilter: ['hidden'] });
+  }
+  if (opt.usesOptArm) optGuards.push(arm);
   el.addEventListener('pointerdown', e => {
     if (!live()) return;
     if (e.timeStamp < openedAt || carried.has(e.pointerId) || (e.pointerType === 'mouse' && carried.size)) { swallow(e); return; }
@@ -5216,18 +5225,31 @@ function guardOverlayOpen(el){
     if (!started) { swallow(e); return; }
     freshClick = true;
   }, true);
-  el.addEventListener('pointerup', e => { if (live() && !fresh.has(e.pointerId)) swallow(e); }, true);
+  el.addEventListener('pointerup', e => { if (live() && (!fresh.has(e.pointerId) || inWindow())) swallow(e); }, true);
   el.addEventListener('touchend', e => {
     if (!live()) return;
+    if (inWindow()) { swallow(e); return; }
     for (const t of e.changedTouches) if (fresh.has('t' + t.identifier)) return;
     swallow(e);
   }, true);
   el.addEventListener('click', e => {
     if (!live() || e.detail === 0) return;
-    if (!freshClick) { swallow(e); carried.clear(); return; }
+    if (!freshClick || inWindow()) { swallow(e); carried.clear(); freshClick = false; return; }
     freshClick = false; fresh.clear(); carried.clear();
   }, true);
 }
+// Every panel a dialog line or a button tap can open. Choice and name buttons are not overlays;
+// they share the helper so the line that reveals them cannot press them. Called again after the
+// net sheets exist. A second call on the same element does nothing.
+function bindOpenGuards(){
+  ['ovWardrobe', 'ovGeo', 'ovSheet', 'ovMap', 'ovRep', 'ovBag', 'ovPlay', 'ovShop', 'ovJournal', 'ovStats', 'ovWalkling', 'ovPhone', 'ovSettings', 'ovReset', 'ovCopy', 'ovEvolve', 'ovBattle', 'ovClock', 'ovEnv', 'ovKit', 'sayWheel', 'holderCard', 'roomCodeOv', 'blockedOv', 'ovCloud', 'coopAsk'].forEach(id => guardOverlayOpen($('#' + id)));
+  guardOverlayOpen($('#ovLook'), { usesOptArm: true });
+  guardOverlayOpen($('#ovBasket'), { usesOptArm: true });
+  guardOverlayOpen($('#ovQuest'), { usesOptArm: true });
+  guardOverlayOpen($('#sbName'), { usesOptArm: true });
+  guardOverlayOpen($('#sbChoices'), { usesOptArm: true, manual: true });
+}
+window.guardOverlayOpen = guardOverlayOpen;
 function openWardrobe(){
   if (!S || !$('#ovWardrobe')) return;
   clearMoves();
@@ -6122,11 +6144,12 @@ function sbTick(){                          // typewriter (from the frame loop; 
 }
 function sbFull(){ sbox.full = true; $('#sbText').textContent = sbox.text; $('#sbNext').hidden = sbox.mode !== 'say'; if (sbox.onFull) { const f = sbox.onFull; sbox.onFull = null; f(); } }
 // Tap safety (Vincent's iPhone playtest, Design): while a scene is open a full-screen layer takes every tap (tabs + gear can't be
-// hit); a plain line advances on a tap anywhere; choices, name fields, baskets and the look picker answer only with their own
-// buttons, which ignore taps for OPT_ARM_MS after they appear; after a scene closes, tab/gear taps are ignored for TAB_GUARD_MS.
+// hit); a plain line advances on a tap anywhere; choices, name fields, baskets, the look picker and the quest panel answer only
+// with their own buttons, which ignore taps for OPT_ARM_MS after they appear and ignore a finger that was already down
+// (guardOverlayOpen). After a scene closes, tab/gear taps are ignored for TAB_GUARD_MS.
 const OPT_ARM_MS = 500, TAB_GUARD_MS = 500;
 let optArmAt = 0, tabGuardUntil = 0;
-const armOptions = () => { optArmAt = performance.now() + OPT_ARM_MS; };
+const armOptions = () => { optArmAt = performance.now() + OPT_ARM_MS; optGuards.forEach(fn => fn()); };
 const tabsGuarded = () => !!scene || performance.now() < tabGuardUntil;
 function sceneTap(){
   if (!scene || !sbox.resolve) return;
@@ -11176,6 +11199,7 @@ function ensureDebugDom(){
   const ref = $('#ovReset'); ref.parentNode.insertBefore(t.content, ref);
   debugUiBuilt = false; debugPanelBound = false;
   bindDebugPanel(); debugPanelBound = true;
+  guardOverlayOpen($('#ovDebug'));
   return true;
 }
 function dropDebugDom(){ const el = $('#ovDebug'); if (!el) return; el.remove(); debugUiBuilt = false; debugPanelBound = false; }
@@ -11698,10 +11722,6 @@ function bindInput(){
   $$('.scr-back').forEach(b => b.addEventListener('click', () => { if (overlayOpen() && !tutAllowsTab('walk')) return; sfx('tap'); showTab('walk'); }));
   $('#petStrip').addEventListener('click', () => { if (S && pet()) openStatsCard(S.partnerId); });
   bindJoystick();
-  // option buttons that just appeared ignore taps (capture phase, before their own handlers)
-  for (const ev of ['click', 'pointerup']) document.addEventListener(ev, e => {
-    if (performance.now() < optArmAt && e.target.closest && e.target.closest('#sbChoices button, #sbName button, #ovBasket button, #ovLook button, #ovQuest button')) { e.stopPropagation(); e.preventDefault(); }
-  }, true);
   $('#setClose').addEventListener('click', () => { sfx('tap'); closeSettings(); });
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
   $('#setSound').addEventListener('click', () => { const m = PPSound.toggle(); renderSoundRow(); if (!m) sfx('tap'); toast(m ? 'Sound off' : 'Sound on'); });
@@ -11809,7 +11829,7 @@ function bindInput(){
   }));
   const wardDoneBtn = $('#wardDone');
   if (wardDoneBtn) wardDoneBtn.addEventListener('click', () => { sfx('tap'); closeWardrobe(); });
-  guardOverlayOpen($('#ovWardrobe'));
+  bindOpenGuards();
   $('#lookCancel').addEventListener('click', () => { sfx('tap'); closeLook(); });
   const ln = $('#lookName');
   ln.addEventListener('input', () => { const v = ln.value.replace(BAD_NAME_CH, ''); if (v !== ln.value) ln.value = v; });   // `<b>` can't be typed
@@ -12152,6 +12172,7 @@ function startCloud(){
     coopLog: () => {},
     coopEnd: () => {},
   });
+  bindOpenGuards();
 }
 
 /* ---------- new-build check ---------- */

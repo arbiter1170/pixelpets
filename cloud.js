@@ -222,6 +222,7 @@ const PPCloud = (() => {
     ov = el('div', 'overlay cloud-ov'); ov.id = 'ovCloud'; ov.hidden = true;
     const inner = el('div', 'ov-inner cloud-inner'); inner.setAttribute('role', 'dialog'); inner.setAttribute('aria-modal', 'true');
     ov.append(inner); document.body.append(ov);
+    if (typeof window.guardOverlayOpen === 'function') window.guardOverlayOpen(ov);
     ov.addEventListener('click', e => { if (e.target === ov && panelMode !== 'conflict') closeOverlay(); });
     window.addEventListener('keydown', e => { if (e.key === 'Escape' && !ov.hidden && panelMode !== 'conflict') { e.stopImmediatePropagation(); closeOverlay(); } }, true);
     return ov;

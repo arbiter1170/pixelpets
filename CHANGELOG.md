@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 08:51 ET: Shared overlay open-guard (build 20261021-0851)
+
+- What changed and why: The tap that closes a line could still press a button in the location card or the tune sheet when those open on that same tap. `guardOverlayOpen` is now the one shared helper. It accepts a tap only when that tap's pointerdown or touchstart landed inside the panel after it opened. A lift with no such start is ignored however long the finger was held. The wardrobe picker, the location card, every sheet, and the other panels a line or a button can open use it. Choices, the name buttons, the basket, the look picker and the quest panel keep their 500 ms window and also ignore a finger that was already down. Keyboard Space and Enter still work. Save stays `pixelpets.save.v2` with `v` 2. Green bug fix. No new id.
+- Files touched: `game.js`, `cloud.js`, `tests/tap_guard.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261021-0851. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js` on tap_guard, wardrobe, tap_interact, walkling_sheet, arbiter_test, glimmer_briefing, look_keys, look_listen, mahopac, qa_play, controls, smoke, hushwater_b0, deploy_held, qa_gaps, market_row, quest_multi, and civic. PP_TEST RESULT: PASS exit=0 passed=369 failed=0 flaky=0 skipped=12 time=283s. RTDB_RULES RESULT: PASS. The new touch checks run at 390. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): Green. No new id. No id was renumbered. Next free id stays D397.
+- Anything left unfinished: P4 stores are not started. Database rules are not deployed. The client is not deployed.
+
 ## 2026-10-21 07:33 ET: Wardrobe gesture guard (build 20261021-0733)
 
 - What changed and why: A finger already down when Stitch & Lantern opens was still buying if it lifted after 350ms. The picker now takes a tap only when that tap's pointerdown or touchstart landed inside it after it opened. A lift with no such start is ignored however long it was held. Keyboard Space and Enter still work. The check is `guardOverlayOpen`, so other overlays can use it later. Save stays `pixelpets.save.v2` with `v` 2. Green bug fix. No new id.
