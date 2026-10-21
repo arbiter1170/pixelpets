@@ -529,6 +529,41 @@
       "name": "Wren",
       "faction": "none",
       "base": 50
+    },
+    {
+      "name": "Keeper Halvard",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Farmer Tibbet",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Wynne",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Watch Saffie",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Weaver Ilka",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Toolwright Brannoch",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Warden Teodor",
+      "faction": "keepers",
+      "base": 50
     }
   ],
   "tiers": [

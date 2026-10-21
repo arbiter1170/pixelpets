@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 09:38 ET: A store on every map (build 20261021-0938)
+
+- What changed and why: WORLD_CLOCK_TOWN P4. Every outdoor map except Mahopac has a store. New stalls and carts sell the usual snacks plus one P3 accessory under the same `wardrobe.<id>` flag. An owned accessory reads OWNED. A stall snack is eaten on the spot and does not offer the Warm Bowl. Farmer Tibbet stands by the Meadow Honesty Box at dawn. The box sells all day. Save stays `pixelpets.save.v2` with `v` 2. No new flag.
+- Files touched: `data/detail_zz_stores.json`, `data/mapdata.js`, `data/reputation.json`, `sprites.js`, `game.js`, `tests/stores_p4.spec.js`, `tests/tap_interact.spec.js`, `launch/world_clock_p4/`, `index.html`, `version.json`, `README.md`, `tests/README.md`, `CHANGELOG.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `OPEN_DECISIONS.md`.
+- Commit(s) + build id: this branch, build 20261021-0938. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js`. PP_TEST RESULT: PASS exit=0 passed=1489 failed=0 flaky=0 skipped=128 time=1601s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): D397 and D398 settled green, on Design's defaults. P4 accessories are the P3 items. A local snack is a meal, not a bag item, and a stall does not offer the Warm Bowl. No id was renumbered. Next free id is D399.
+- Anything left unfinished: Meadow ribbon dye, Climbing rope belt, Watch whistle badge, City cap and Spray cap wait, because they have no P3 art. Database rules are not deployed. The client is not deployed.
+
 ## 2026-10-21 08:51 ET: Shared overlay open-guard (build 20261021-0851)
 
 - What changed and why: The tap that closes a line could still press a button in the location card or the tune sheet when those open on that same tap. `guardOverlayOpen` is now the one shared helper. It accepts a tap only when that tap's pointerdown or touchstart landed inside the panel after it opened. A lift with no such start is ignored however long the finger was held. The wardrobe picker, the location card, every sheet, and the other panels a line or a button can open use it. Choices, the name buttons, the basket, the look picker and the quest panel keep their 500 ms window and also ignore a finger that was already down. Keyboard Space and Enter still work. Save stays `pixelpets.save.v2` with `v` 2. Green bug fix. No new id.
