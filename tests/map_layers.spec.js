@@ -127,7 +127,7 @@ test('acceptance 2 and 9: home ROOM, town door ring, SEE INSIDE only after enter
   expect(backIn.shown).toBe('hm_home_in');
 });
 
-test('acceptance 3: SHOW ON MAP opens REGION', async ({ page }) => {
+test('acceptance 3: SHOW ON MAP opens REGION @w1', async ({ page }) => {
   await boot(page);
   await page.locator('#questBtn').click();
   await page.waitForSelector('#ovQuest:not([hidden])');
@@ -138,7 +138,7 @@ test('acceptance 3: SHOW ON MAP opens REGION', async ({ page }) => {
   expect(await page.evaluate(() => PixelPets.mapLayer().level)).toBe('region');
 });
 
-test('acceptance 4 and 5: flats sections and fogged floor that sticks', async ({ page }) => {
+test('acceptance 4 and 5: flats sections and fogged floor that sticks @w1', async ({ page }) => {
   await boot(page, walked({}, { map: 'hm_hq_f1', x: 6, y: 13, facing: 'up', respawn: 'hearthmoor' }), '?debug=1');
   await openMap(page);
   const f1 = await page.evaluate(() => PixelPets.mapLayer());
@@ -334,7 +334,7 @@ function hitBox(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }
 
-test('edge rings stay clear of the LIFT tag and the east exit label', async ({ page }) => {
+test('edge rings stay clear of the LIFT tag and the east exit label @w1', async ({ page }) => {
   await boot(page, walked(), '?debug=1');
   await page.evaluate(() => PixelPets.goto('hm_flats_5', 0, 6, 'right'));
   await openMap(page);

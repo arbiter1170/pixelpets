@@ -9,7 +9,7 @@ async function gotoDebug(page) {
   await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.runScene === 'function');
 }
 
-test('keepers offer points at the Heights tunnels and holds the trial', async ({ page }) => {
+test('keepers offer points at the Heights tunnels and holds the trial @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   expect(await page.evaluate(() => PixelPets.heightsCheck.concat(PixelPets.questCheck))).toEqual([]);
@@ -29,7 +29,7 @@ test('keepers offer points at the Heights tunnels and holds the trial', async ({
   expect(await page.evaluate(() => PixelPets.trialReady)).toBe(true);
 });
 
-test('glimmer offer points at the RegenX lab', async ({ page }) => {
+test('glimmer offer points at the RegenX lab @w1', async ({ page }) => {
   test.setTimeout(60000);
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
@@ -49,7 +49,7 @@ test('glimmer offer points at the RegenX lab', async ({ page }) => {
   expect(after.trial).toBe(false);
 });
 
-test('a group battle fields two foes and a target control', async ({ page }) => {
+test('a group battle fields two foes and a target control @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   expect(await page.evaluate(() => PixelPets.forceTrainer('rx_wardens'))).toBe(true);
@@ -133,7 +133,7 @@ test('a Bitlet floats in the RegenX bay and stays out of the wild', async ({ pag
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
 
-test('an old Seal still opens the trial without the Heights quest', async ({ page }) => {
+test('an old Seal still opens the trial without the Heights quest @w1', async ({ page }) => {
   const save = starterSave();
   save.flags['story.seal1'] = true;
   save.flags['story.side_pick_done'] = true;

@@ -53,7 +53,7 @@ async function playTurn(page) {
   return page.evaluate(() => ({ state: PixelPets.battle.state, on: PixelPets.battle.on, result: PixelPets.battle.result, panel: PixelPets.battle.panel }));
 }
 
-test('a normal trainer is not a group battle', async ({ page }) => {
+test('a normal trainer is not a group battle @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   await openGroup(page, 'route1_pia');
@@ -153,7 +153,7 @@ test('clearing both foes wins and does not set the story flag from a debug battl
   expect(end.floor).toBeUndefined();
 });
 
-test('a loss does not mark the group trainer beaten', async ({ page }) => {
+test('a loss does not mark the group trainer beaten @w1', async ({ page }) => {
   const save = starterSave();
   save.party[0].hpNow = 1;
   await installSave(page.context(), save, { quietDay: true });
@@ -184,7 +184,7 @@ test('a loss does not mark the group trainer beaten', async ({ page }) => {
   expect(end.yard).toBeUndefined();
 });
 
-test('Heights beats grant Standing once, and only to that faction', async ({ page }) => {
+test('Heights beats grant Standing once, and only to that faction @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   await page.evaluate(() => PixelPets.setSide('keepers'));

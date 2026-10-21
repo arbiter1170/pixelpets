@@ -51,7 +51,7 @@ async function advance(page, until, arg) {
   throw new Error('advance: gave up waiting');
 }
 
-test('Quinn still fights from the bay; the win plays rx_done and sets its flags', async ({ page }) => {
+test('Quinn still fights from the bay; the win plays rx_done and sets its flags @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, labSave({ 'story.saw_arbiter': true }));
   await page.evaluate(() => PixelPets.healTeam());
@@ -69,7 +69,7 @@ test('Quinn still fights from the bay; the win plays rx_done and sets its flags'
   expect(flags).toEqual({ done: true, heights: true, map: 'rx_f4' });
 });
 
-test("Bitlet's scene plays from the bay and befriending it sets story.rx_bitlet", async ({ page }) => {
+test("Bitlet's scene plays from the bay and befriending it sets story.rx_bitlet @w1", async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, labSave({ 'story.saw_arbiter': true }));
   await page.evaluate(() => PixelPets.healTeam());
@@ -87,7 +87,7 @@ test("Bitlet's scene plays from the bay and befriending it sets story.rx_bitlet"
   expect(after).toEqual({ flag: true, byte: true, onMap: false, v: 2 });
 });
 
-test('the Arbiter keeps its four lines by flag', async ({ page }) => {
+test('the Arbiter keeps its four lines by flag @w1', async ({ page }) => {
   const s = labSave(); delete s.flags['story.rx_f1'];
   await boot(page, s);
   const said = [];
@@ -99,7 +99,7 @@ test('the Arbiter keeps its four lines by flag', async ({ page }) => {
   expect(said).toEqual(['It emits slowly. The screen is dark.', 'The hum was here before you.', 'A cursor answers the hum.', 'Still emitting. Slow. Unnamed.']);
 });
 
-test('floor variants are the same on a second device', async ({ page, browser }) => {
+test('floor variants are the same on a second device @w1', async ({ page, browser }) => {
   const read = p => p.evaluate(() => { const out = []; for (let y = 0; y < 22; y++) for (let x = 0; x < 14; x++) out.push(PixelPets.tileInfo(x, y).tile); return out; });
   await boot(page, labSave());
   const one = await read(page);
@@ -135,7 +135,7 @@ test('E1 in modern controls: whole width visible, centred when the bay fits the 
   }
 });
 
-test('E2: a map resized by a data/detail_*.json overlay keeps a saved spot past its old size', async ({ page }) => {
+test('E2: a map resized by a data/detail_*.json overlay keeps a saved spot past its old size @w1', async ({ page }) => {
   const old = await (await page.request.get('/data/heights.json')).json();
   const f2 = old.maps.rx_f2, last = f2.grid.length - 1, floor = '#' + '.'.repeat(f2.w - 2) + '#';
   const grid = f2.grid.slice(0, last).concat(Array(8).fill(floor), [f2.grid[last]]);

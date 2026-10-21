@@ -17,7 +17,7 @@ async function runSteps(page, steps) {
   await page.waitForFunction(() => !window.PixelPets.scene);
 }
 
-test('installSave without rep gives defaults and v stays 2', async ({ page }) => {
+test('installSave without rep gives defaults and v stays 2 @w1', async ({ page }) => {
   await boot(page, starterSave());
   const r = await page.evaluate(() => ({
     v: PixelPets.state.v,
@@ -59,7 +59,7 @@ test('installSave without rep gives defaults and v stays 2', async ({ page }) =>
   expect(r.lumen[0]).toBe(50);
 });
 
-test('setting side_pick_done moves Associate Hollis to 40 and a reload keeps 40', async ({ page }) => {
+test('setting side_pick_done moves Associate Hollis to 40 and a reload keeps 40 @w1', async ({ page }) => {
   const save = starterSave();
   save.phoneBook = { met: { 'Associate Hollis': true }, fav: {} };
   await boot(page, save);
@@ -83,7 +83,7 @@ test('setting side_pick_done moves Associate Hollis to 40 and a reload keeps 40'
   expect(again.v).toBe(2);
 });
 
-test('["rep","Mom",-30] is a no-op', async ({ page }) => {
+test('["rep","Mom",-30] is a no-op @w1', async ({ page }) => {
   await boot(page, starterSave());
   await runSteps(page, [['rep', 'Mom', -30]]);
   const r = await page.evaluate(() => ({
@@ -98,7 +98,7 @@ test('["rep","Mom",-30] is a no-op', async ({ page }) => {
   expect(r.v).toBe(2);
 });
 
-test('reptier: condition branches a test scene', async ({ page }) => {
+test('reptier: condition branches a test scene @w1', async ({ page }) => {
   await boot(page, starterSave());
   await runSteps(page, [
     ['if', 'reptier:Lizzy=neutral', [['setFlag', 'test.reptier0', 'neutral']], [['setFlag', 'test.reptier0', 'miss']]],
@@ -289,7 +289,7 @@ test('the acorn chip is a 44 px plate and flashes only on a gain', async ({ page
   expect(wide.cells).toBeLessThanOrEqual(48);
 });
 
-test('letter lines follow the effective tier', async ({ page }) => {
+test('letter lines follow the effective tier @w1', async ({ page }) => {
   await boot(page, starterSave());
   const r = await page.evaluate(() => {
     const samples = MAPDATA.reputation.letter_quests.samples;

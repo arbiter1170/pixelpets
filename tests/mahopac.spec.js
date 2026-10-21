@@ -9,7 +9,7 @@ async function gotoDebug(page) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
-test('look picker offers more hair, clothes, and accessories', async ({ page }) => {
+test('look picker offers more hair, clothes, and accessories @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const counts = await page.evaluate(() => {
@@ -60,7 +60,7 @@ test('look picker offers more hair, clothes, and accessories', async ({ page }) 
   expect(look.outfit).toBe('dress');
 });
 
-test('Mom is upstairs, and the side quest shows beside the main step', async ({ page }) => {
+test('Mom is upstairs, and the side quest shows beside the main step @w1', async ({ page }) => {
   const save = starterSave();
   save.flags['story.phone_got'] = true;
   await installSave(page.context(), save, { quietDay: true });
@@ -92,7 +92,7 @@ test('Mom is upstairs, and the side quest shows beside the main step', async ({ 
   expect(after.side).toBe('mom_sent');
 });
 
-test('Mahopac is quiet, and the dream toy pops into the next memory', async ({ page }) => {
+test('Mahopac is quiet, and the dream toy pops into the next memory @w1', async ({ page }) => {
   test.setTimeout(60000);
   const save = starterSave();
   save.flags['story.phone_got'] = true;
@@ -194,7 +194,7 @@ async function step(page, dir) {
   });
 }
 
-test('the north trail sign leaves the exit walkable, and the gate still holds', async ({ page }) => {
+test('the north trail sign leaves the exit walkable, and the gate still holds @w1', async ({ page }) => {
   const save = starterSave();
   await installSave(page.context(), save, { quietDay: true });
   await gotoDebug(page);

@@ -11,7 +11,7 @@ function modernSave(extra = {}) {
   return s;
 }
 
-test('a save with no settings.controls stays arcade', async ({ page }) => {
+test('a save with no settings.controls stays arcade @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
@@ -56,7 +56,7 @@ test('modern fills the screen and every floating button works', async ({ page })
   await expect(page.locator('#scr-walk')).toHaveClass(/active/);
 });
 
-test('Settings switches both ways, survives a reload, and puts nodes home', async ({ page }) => {
+test('Settings switches both ways, survives a reload, and puts nodes home @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
@@ -149,7 +149,7 @@ for (const joystick of [false, true]) {
 }
 
 // QA Oct 15 (PR #48) fixes.
-test('arcade hides the WALK back button on PARTNER and WALKLINGS', async ({ page }) => {
+test('arcade hides the WALK back button on PARTNER and WALKLINGS @w1', async ({ page }) => {
   const s = starterSave(); s.settings = Object.assign(s.settings || {}, { controls: 'arcade' });
   await installSave(page.context(), s, { quietDay: true });
   await gotoGame(page);

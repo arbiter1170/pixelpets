@@ -318,7 +318,7 @@ test('a stall snack is eaten on the spot and skips the Warm Bowl', async ({ page
   await page.evaluate(() => PixelPets.endScene());
 });
 
-test('Farmer Tibbet stands by the honesty box at dawn, and the box sells at noon', async ({ page }) => {
+test('Farmer Tibbet stands by the honesty box at dawn, and the box sells at noon @w1', async ({ page }) => {
   await boot(page);
   await at(page, 'tue', 6, 0);
   await stand(page, 'proto', 'om_tibbet');
@@ -351,7 +351,7 @@ test('Farmer Tibbet stands by the honesty box at dawn, and the box sells at noon
   expect(after.v).toBe(2);
 });
 
-test('Kit, Odile, Watch Ivo, Imogen and the Old Miner keep their lines', async ({ page }) => {
+test('Kit, Odile, Watch Ivo, Imogen and the Old Miner keep their lines @w1', async ({ page }) => {
   await boot(page);
   await at(page, 'tue', 12, 0);
   const people = [

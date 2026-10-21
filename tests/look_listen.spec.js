@@ -11,7 +11,7 @@ async function gotoDebug(page) {
   await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.spriteLook === 'function');
 }
 
-test('glimmer towns, the quarry, and the grove pick their own loops', async ({ page }) => {
+test('glimmer towns, the quarry, and the grove pick their own loops @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const got = await page.evaluate(() => {
@@ -47,7 +47,7 @@ test('glimmer towns, the quarry, and the grove pick their own loops', async ({ p
   });
 });
 
-test('the tier-2 lanyard is a second mark on the tier-1 badge', async ({ page }) => {
+test('the tier-2 lanyard is a second mark on the tier-1 badge @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   const art = await page.evaluate(() => {
@@ -76,7 +76,7 @@ test('the tier-2 lanyard is a second mark on the tier-1 badge', async ({ page })
   expect(art.name).toBe('Bright Tier 2 Lanyard');
 });
 
-test('Imogen and Hollis are not the generic associate, and Rook\'s lanyard follows the pledge', async ({ page }) => {
+test('Imogen and Hollis are not the generic associate, and Rook\'s lanyard follows the pledge @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const got = await page.evaluate(() => {

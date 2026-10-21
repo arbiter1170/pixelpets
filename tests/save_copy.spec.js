@@ -96,7 +96,7 @@ test('a copy survives Start over and comes back as the same game', async ({ page
   expect(restored.mute).toBe('1');
 });
 
-test('a bad file is refused and the current game stays', async ({ page }) => {
+test('a bad file is refused and the current game stays @w1', async ({ page }) => {
   const save = starterSave();
   save.flags['story.side'] = 'keepers';
   await installSave(page.context(), save, { quietDay: true });

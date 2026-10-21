@@ -44,7 +44,7 @@ async function runAndShot(page, id, name) {
   if (page.viewportSize().width !== 375) await shot(page, name);
 }
 
-test('keepers pick leaves Fernbrook on the old path', async ({ page }) => {
+test('keepers pick leaves Fernbrook on the old path @w1', async ({ page }) => {
   await installSave(page.context(), fernSave(), { quietDay: true });
   await gotoDebug(page);
   expect(await page.evaluate(() => PixelPets.runScene('side_pick'))).toBe(true);
@@ -69,7 +69,7 @@ test('keepers pick leaves Fernbrook on the old path', async ({ page }) => {
   expect(after.checks).toEqual([]);
 });
 
-test('an old save past the orchard never sees the side pick', async ({ page }) => {
+test('an old save past the orchard never sees the side pick @w1', async ({ page }) => {
   await installSave(page.context(), fernSave(
     { 'story.orchard_cleared': true, 'story.side': 'keepers' },
     { map: 'fernbrook', x: 9, y: 10, facing: 'down', respawn: 'fernbrook' },
@@ -80,7 +80,7 @@ test('an old save past the orchard never sees the side pick', async ({ page }) =
   expect(await page.evaluate(() => PixelPets.scene)).toBeFalsy();
 });
 
-test('Think about it sets nothing, and stepping off the gate toasts once', async ({ page }) => {
+test('Think about it sets nothing, and stepping off the gate toasts once @w1', async ({ page }) => {
   await installSave(page.context(), fernSave(), { quietDay: true });
   await gotoDebug(page);
   await page.locator('#tabs button[data-tab="walk"]').click();
@@ -198,7 +198,7 @@ test('glimmer path: orchard, tour stops, skippable match, lanyard, teaser', asyn
   expect(done.quest).toBe('route2');
 });
 
-test('a worn-out party can skip the tour match, and a loss resumes at stop 4', async ({ page }) => {
+test('a worn-out party can skip the tour match, and a loss resumes at stop 4 @w1', async ({ page }) => {
   test.setTimeout(90000);
   const save = fernSave({
     'story.side': 'glimmer',
@@ -291,7 +291,7 @@ test('a worn-out party can skip the tour match, and a loss resumes at stop 4', a
   expect(resumed.match).toBeUndefined();
 });
 
-test('winning the optional match grants the bonus once', async ({ page }) => {
+test('winning the optional match grants the bonus once @w1', async ({ page }) => {
   test.setTimeout(60000);
   const save = fernSave({
     'story.side': 'glimmer',

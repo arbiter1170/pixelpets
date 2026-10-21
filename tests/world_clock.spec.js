@@ -36,7 +36,7 @@ async function face(page, map, x, y, facing) {
   return page.evaluate(() => ({ id: PixelPets.scene.id, text: PixelPets.scene.text }));
 }
 
-test('the clock math, the debug hook, and the save stay put', async ({ page }) => {
+test('the clock math, the debug hook, and the save stay put @w1', async ({ page }) => {
   await boot(page, save());
   const math = await page.evaluate(() => {
     const C = window.PPClock, ep = C.EPOCH, ms = C.MS;
@@ -119,7 +119,7 @@ test('the clock math, the debug hook, and the save stay put', async ({ page }) =
   expect(cleared.gone).toBe(true);
 });
 
-test('schedules, away notes, the school door, and the quest pointer', async ({ page }) => {
+test('schedules, away notes, the school door, and the quest pointer @w1', async ({ page }) => {
   const s = save({ 'story.lizzy_met': true });
   s.ui = { sideTracked: 'leak_ask' };
   await boot(page, s);
@@ -320,7 +320,7 @@ test('dawn and dusk tint the outdoor map, and night stays the dark wash', async 
   expect(tags).toContain('night');
 });
 
-test('Wait until skips ahead, stays out of the save, and is hidden in a party', async ({ page }) => {
+test('Wait until skips ahead, stays out of the save, and is hidden in a party @w1', async ({ page }) => {
   const s = save({ 'story.lizzy_met': true, 'story.leak5b_seen': true });
   s.ui = { sideTracked: 'leak_ask' };
   await boot(page, s);
@@ -368,7 +368,7 @@ test('Wait until skips ahead, stays out of the save, and is hidden in a party', 
   expect(await playScene(page, [])).toEqual([]);
 });
 
-test('a clock in the address is ignored unless debug is on', async ({ page }) => {
+test('a clock in the address is ignored unless debug is on @w1', async ({ page }) => {
   await page.context().addInitScript(() => {
     localStorage.setItem('pixelpets.clockDebug', JSON.stringify(86400000 * 40));
   });
@@ -388,7 +388,7 @@ test('a clock in the address is ignored unless debug is on', async ({ page }) =>
   expect(live.clear).toBeUndefined();
 });
 
-test('?debug=1&clock=tue-0830 opens on Tuesday morning', async ({ page }) => {
+test('?debug=1&clock=tue-0830 opens on Tuesday morning @w1', async ({ page }) => {
   await boot(page, save(), '?debug=1&clock=tue-0830');
   const n = await page.evaluate(() => PixelPets.clock.now());
   expect(n.day).toBe('tue');

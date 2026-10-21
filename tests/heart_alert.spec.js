@@ -231,7 +231,7 @@ test('arcade, a missing starter, and another Walkling do not light the heart', a
   expect(party.cls).not.toMatch(/care-food|care-rest/);
 });
 
-test('the care hook is inert without debug', async ({ page }) => {
+test('the care hook is inert without debug @w1', async ({ page }) => {
   await installSave(page.context(), modernSave({ hunger: 10 }), { quietDay: true });
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state);

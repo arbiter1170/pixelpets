@@ -32,7 +32,7 @@ async function face(page, map, x, y, facing) {
   return page.evaluate(() => ({ id: PixelPets.scene.id, text: PixelPets.scene.text, who: PixelPets.scene.who }));
 }
 
-test('the row opens south and the three rooms use the wall kit', async ({ page }) => {
+test('the row opens south and the three rooms use the wall kit @w1', async ({ page }) => {
   await boot(page);
   const report = await page.evaluate(() => {
     const patch = MAPDATA.detail_zz_market.slicePatch.maps.hearthmoor;
@@ -82,7 +82,7 @@ test('the row opens south and the three rooms use the wall kit', async ({ page }
   expect(report.v).toBe(2);
 });
 
-test('the store sells the usual snacks, and the night clerk takes the counter', async ({ page }) => {
+test('the store sells the usual snacks, and the night clerk takes the counter @w1', async ({ page }) => {
   await boot(page);
   await at(page, 'tue', 12, 0);
   const day = await page.evaluate(() => {
@@ -122,7 +122,7 @@ test('the store sells the usual snacks, and the night clerk takes the counter', 
   expect(night).not.toContain('hm_teague');
 });
 
-test('Marigold opens Stitch & Lantern after her line', async ({ page }) => {
+test('Marigold opens Stitch & Lantern after her line @w1', async ({ page }) => {
   await boot(page);
   const line = await face(page, 'hm_wardrobe', 9, 3, 'up');
   expect(line.text).toBe('Stitch & Lantern. Try anything on. Your Walkling too.');
@@ -136,7 +136,7 @@ test('Marigold opens Stitch & Lantern after her line', async ({ page }) => {
   await expect(page.locator('#ovWardrobe')).toBeHidden();
 });
 
-test('the diner serves priced meals, refuses a full Walkling, and keeps the Warm Bowl', async ({ page }) => {
+test('the diner serves priced meals, refuses a full Walkling, and keeps the Warm Bowl @w1', async ({ page }) => {
   const s = save();
   s.party[0].hunger = 20;
   s.money = 100;
@@ -212,7 +212,7 @@ test('the diner serves priced meals, refuses a full Walkling, and keeps the Warm
   expect(fed.v).toBe(2);
 });
 
-test('the court shot is a line, and the schedules land on the row', async ({ page }) => {
+test('the court shot is a line, and the schedules land on the row @w1', async ({ page }) => {
   await boot(page);
   await at(page, 'sat', 10, 0);
   const shot = await face(page, 'hearthmoor', 12, 31, 'up');
@@ -293,7 +293,7 @@ async function stepOnce(page, key) {
   await page.waitForFunction(() => !PixelPets.keeper.moving && !PixelPets.fading, null, { timeout: 5000 });
 }
 
-test('the Parked Coach has a two-row roof_coach barrel roof, and its door at (4,31) goes in and back out (WORLD_CLOCK_TOWN 9)', async ({ page }) => {
+test('the Parked Coach has a two-row roof_coach barrel roof, and its door at (4,31) goes in and back out (WORLD_CLOCK_TOWN 9) @w1', async ({ page }) => {
   await boot(page);
   await at(page, 'tue', 12, 0);
   const roof = await page.evaluate(() => {

@@ -109,7 +109,7 @@ async function knockOutLead(page, kind, mode) {
   });
 }
 
-test('map loops follow town, route, dream, charity, chapel, and arcade', async ({ page }) => {
+test('map loops follow town, route, dream, charity, chapel, and arcade @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   const got = await page.evaluate(() => {
@@ -159,7 +159,7 @@ test('map loops follow town, route, dream, charity, chapel, and arcade', async (
   expect(got.tracks['no-such-map']).toBeNull();
 });
 
-test('story.cobble_end opens the Lantern Council, and Mahopac stays a side objective', async ({ page }) => {
+test('story.cobble_end opens the Lantern Council, and Mahopac stays a side objective @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const got = await page.evaluate(() => {
@@ -199,7 +199,7 @@ test('story.cobble_end opens the Lantern Council, and Mahopac stays a side objec
   expect(got.savedV).toBe(2);
 });
 
-test('a glimmer pledge at the Fernbrook hall step shows the glimmer hall line', async ({ page }) => {
+test('a glimmer pledge at the Fernbrook hall step shows the glimmer hall line @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const keepers = await page.evaluate(() => {
@@ -217,7 +217,7 @@ test('a glimmer pledge at the Fernbrook hall step shows the glimmer hall line', 
 });
 
 for (const kind of ['wild', 'trainer']) {
-  test(`a fainted lead keeps a ${kind} battle going while the bench still has HP`, async ({ page }) => {
+  test(`a fainted lead keeps a ${kind} battle going while the bench still has HP @w1`, async ({ page }) => {
     await bootBench(page);
     const snap = await knockOutLead(page, kind, 'up');
     expect(snap.kind).toBe(kind);
@@ -245,7 +245,7 @@ for (const kind of ['wild', 'trainer']) {
   });
 }
 
-test('a fainted lead ends the battle when every other party member is already down', async ({ page }) => {
+test('a fainted lead ends the battle when every other party member is already down @w1', async ({ page }) => {
   await bootBench(page);
   const snap = await knockOutLead(page, 'wild', 'down');
   expect(snap.kind).toBe('wild');
@@ -266,7 +266,7 @@ test('a fainted lead ends the battle when every other party member is already do
   expect(snap.log.some((line) => /whole team is worn out/.test(line))).toBe(true);
 });
 
-test('the minigame dev check is empty', async ({ page }) => {
+test('the minigame dev check is empty @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   const problems = await page.evaluate(() => window.PPMinigames.devCheck());

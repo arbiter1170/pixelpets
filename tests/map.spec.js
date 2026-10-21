@@ -152,7 +152,7 @@ test('claims follow the story, and the capital wears Keeper colors', async ({ pa
   await shot(page, 'region-map-key');
 });
 
-test('the card names the room you are standing in', async ({ page }) => {
+test('the card names the room you are standing in @w1', async ({ page }) => {
   await boot(page, walkedSave(), '?debug=1');
   await page.evaluate(() => PixelPets.goto('hm_home_in', 4, 6, 'up'));
   await openMap(page);
@@ -164,7 +164,7 @@ test('the card names the room you are standing in', async ({ page }) => {
   await page.waitForSelector('#ovMap', { state: 'hidden' });
 });
 
-test('upstairs shares the Hearthmoor node and the card names that room', async ({ page }) => {
+test('upstairs shares the Hearthmoor node and the card names that room @w1', async ({ page }) => {
   await boot(page, walkedSave(), '?debug=1');
   expect(await page.evaluate(() => PixelPets.mapCheck())).toEqual([]);
   await page.evaluate(() => PixelPets.goto('hm_home_up', 4, 5, 'down'));

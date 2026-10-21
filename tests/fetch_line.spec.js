@@ -164,7 +164,7 @@ function fetchSave() {
   return save;
 }
 
-test('a Fetchling grows up into Harvestail and Hearthound', async ({ page }) => {
+test('a Fetchling grows up into Harvestail and Hearthound @w1', async ({ page }) => {
   test.setTimeout(60000);
   await installSave(page.context(), fetchSave(), { quietDay: true });
   await gotoDebug(page);

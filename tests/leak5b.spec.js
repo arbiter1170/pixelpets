@@ -55,7 +55,7 @@ function read(page) {
   }));
 }
 
-test('before you have met Lizzy the bucket only drips', async ({ page }) => {
+test('before you have met Lizzy the bucket only drips @w1', async ({ page }) => {
   await boot(page, save());
   await page.evaluate(() => PixelPets.goto('hm_flats_5', 10, 4, 'right'));
   await page.keyboard.press('Space');
@@ -70,7 +70,7 @@ test('before you have met Lizzy the bucket only drips', async ({ page }) => {
   expect(r.check).toEqual([]);
 });
 
-test('the court path files the claim, serves it, and grants once', async ({ page }) => {
+test('the court path files the claim, serves it, and grants once @w1', async ({ page }) => {
   const s = save({ 'story.lizzy_met': true });
   s.standing = { keepers: 0, glimmer: 10 };
   await boot(page, s);
@@ -120,7 +120,7 @@ test('the court path files the claim, serves it, and grants once', async ({ page
   expect(r.check).toEqual([]);
 });
 
-test('the force path drops Mr. Gristle to 30 and does not grant twice', async ({ page }) => {
+test('the force path drops Mr. Gristle to 30 and does not grant twice @w1', async ({ page }) => {
   const s = save({ 'story.lizzy_met': true, 'story.leak5b_seen': true, 'story.leak5b_yes': true });
   s.standing = { keepers: 10, glimmer: 0 };
   await boot(page, s);
@@ -144,7 +144,7 @@ test('the force path drops Mr. Gristle to 30 and does not grant twice', async ({
   expect(r.gristle).toBe(30);
 });
 
-test('Not now sets nothing', async ({ page }) => {
+test('Not now sets nothing @w1', async ({ page }) => {
   await boot(page, save({ 'story.lizzy_met': true, 'story.leak5b_seen': true, 'story.leak5b_yes': true }));
   await at(page, 'tue', 10, 0);
   await talk(page, 'hm_flats_lobby', 8, 9, 'left', ['Not now']);

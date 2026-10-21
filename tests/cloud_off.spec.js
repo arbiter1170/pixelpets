@@ -21,7 +21,7 @@ function liveWrites(hits) {
   return hits.filter((url) => /googleapis\.com|firebaseio\.com|firebaseapp\.com|firebasestorage\.app/.test(url));
 }
 
-test('realtime database root stays locked', async () => {
+test('realtime database root stays locked @w1', async () => {
   const rules = JSON.parse(fs.readFileSync('database.rules.json', 'utf8'));
   expect(rules.rules['.read']).toBe(false);
   expect(rules.rules['.write']).toBe(false);
@@ -62,11 +62,11 @@ test.describe('null config', () => {
     expect(hits).toEqual([]);
   }
 
-  test('an automated boot ignores the live config', async ({ page }) => {
+  test('an automated boot ignores the live config @w1', async ({ page }) => {
     await bootOff(page, '');
   });
 
-  test('?cloud=off forces the null config', async ({ page }) => {
+  test('?cloud=off forces the null config @w1', async ({ page }) => {
     await bootOff(page, '?cloud=off');
   });
 });

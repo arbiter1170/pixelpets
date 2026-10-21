@@ -60,7 +60,7 @@ test.describe('town board', () => {
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 
-  test('at 320, Cobblecrest, Mahopac, High Charity, and the roads follow the town list', async ({ page }) => {
+  test('at 320, Cobblecrest, Mahopac, High Charity, and the roads follow the town list @w1', async ({ page }) => {
     await boot(page);
 
     let board = await hop(page, 'cobblecrest', 5, 6);

@@ -78,7 +78,7 @@ async function holdTouch(page, x, y, ms) {
   await client.detach();
 }
 
-test('every form wears each new accessory', async ({ page }) => {
+test('every form wears each new accessory @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.adornCheck())).toEqual([]);
 });
@@ -175,7 +175,7 @@ test('BUY refuses 119 Acorns and takes 120 for the Wick charm', async ({ page })
   }
 });
 
-test('a paid Walkling item moves to the next wearer', async ({ page }) => {
+test('a paid Walkling item moves to the next wearer @w1', async ({ page }) => {
   const s = secondPet(save());
   s.flags['wardrobe.fern_scarf'] = true;
   s.party[0].accessory = 'fern_scarf';
@@ -191,7 +191,7 @@ test('a paid Walkling item moves to the next wearer', async ({ page }) => {
   expect(worn).toEqual({ a: 'none', b: 'fern_scarf' });
 });
 
-test('release puts a paid item back on the rack and keeps the flag', async ({ page }) => {
+test('release puts a paid item back on the rack and keeps the flag @w1', async ({ page }) => {
   const s = secondPet(save());
   s.money = 40;
   s.flags['wardrobe.clover_crown'] = true;
@@ -216,7 +216,7 @@ test('release puts a paid item back on the rack and keeps the flag', async ({ pa
   expect(await page.evaluate(() => PixelPets.state.party[0].accessory)).toBe('clover_crown');
 });
 
-test('CHANGE LOOK, shuffle and GEAR hide an unowned paid item', async ({ page }) => {
+test('CHANGE LOOK, shuffle and GEAR hide an unowned paid item @w1', async ({ page }) => {
   await boot(page);
   const refused = await page.evaluate(() => setAccessory(PixelPets.state.party[0].id, 'wick_charm'));
   expect(refused).toEqual({ ok: false });
@@ -352,7 +352,7 @@ test('a held touch that closes Marigold does not press the picker', async ({ pag
   }
 });
 
-test('the six prop lines are the P3 copy', async ({ page }) => {
+test('the six prop lines are the P3 copy @w1', async ({ page }) => {
   await boot(page);
   const lines = await page.evaluate(() => {
     const objs = MAPDATA.detail_zz_market.maps.hm_wardrobe.objs;

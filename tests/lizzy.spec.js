@@ -236,7 +236,7 @@ test('the three rooms have their own skins, stay under the floor cap, and connec
   expect(await page.evaluate(() => [PixelPets.state.world.x, PixelPets.state.world.y, PixelPets.state.v])).toEqual([3, 2, 2]);
 });
 
-test('the lift stays shut until Lizzy has met you', async ({ page }) => {
+test('the lift stays shut until Lizzy has met you @w1', async ({ page }) => {
   await boot(page, save());
   await page.evaluate(() => PixelPets.goto('hm_flats_lobby', 3, 2, 'up'));
   await page.keyboard.press('ArrowUp');
@@ -390,7 +390,7 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
   expect(reach.lane).toBe(true);
 });
 
-test('every Lizzy line on main is English and within 110 characters', async ({ page }) => {
+test('every Lizzy line on main is English and within 110 characters @w1', async ({ page }) => {
   await boot(page, save());
   const lines = await page.evaluate(() => {
     const out = [];
@@ -464,7 +464,7 @@ async function saidLines(page, choices) {
   throw new Error('scene did not end');
 }
 
-test('the intro branches on Rook, and Buddy is not a battle', async ({ page }) => {
+test('the intro branches on Rook, and Buddy is not a battle @w1', async ({ page }) => {
   await boot(page, save({ 'story.rival1_done': true, 'story.rival1_result': 'won' }, { map: 'hearthmoor', x: 5, y: 18, facing: 'right' }));
   await tap(page, 'ArrowRight', 6, 18);
   await tap(page, 'ArrowRight', 7, 18);

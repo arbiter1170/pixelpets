@@ -39,7 +39,7 @@ async function boot(page, save) {
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
 }
 
-test('the city stays shut until a side is picked', async ({ page }) => {
+test('the city stays shut until a side is picked @w1', async ({ page }) => {
   const save = starterSave();
   save.world = { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' };
   await boot(page, save);
@@ -69,7 +69,7 @@ test('the coach appears after the pledge and the city is the large map', async (
   if (page.viewportSize().width === 390) await shot(page, 'highcharity-plaza');
 });
 
-test('clears pay once, then the replay, and bond stops at 3', async ({ page }) => {
+test('clears pay once, then the replay, and bond stops at 3 @w1', async ({ page }) => {
   await boot(page, citySave());
   const first = await page.evaluate(() => {
     const lines = PixelPets.applyPlay('lantern', { clear: true, score: 12 });
@@ -149,7 +149,7 @@ test('clears pay once, then the replay, and bond stops at 3', async ({ page }) =
   expect(replay.bond).toBe(3);
 });
 
-test('a quit spends nothing', async ({ page }) => {
+test('a quit spends nothing @w1', async ({ page }) => {
   await boot(page, citySave());
   const r = await page.evaluate(() => {
     const lines = PixelPets.applyPlay('dash', { quit: true, clear: true, score: 20 });
@@ -160,7 +160,7 @@ test('a quit spends nothing', async ({ page }) => {
   expect(r.lines[0][1]).toMatch(/seat/);
 });
 
-test('the side quest replaces only the idle end card', async ({ page }) => {
+test('the side quest replaces only the idle end card @w1', async ({ page }) => {
   await boot(page, citySave({ 'story.cobble_end': false }));
   const early = await page.evaluate(() => PixelPets.quest.id);
   expect(early).not.toBe('hc_games');
@@ -182,7 +182,7 @@ test('the side quest replaces only the idle end card', async ({ page }) => {
   expect(await page.evaluate(() => PixelPets.quest.id)).toBe('end');
 });
 
-test('week prize key is the local Monday', async ({ page }) => {
+test('week prize key is the local Monday @w1', async ({ page }) => {
   await boot(page, citySave());
   const key = await page.evaluate(() => PixelPets.weekKey(new Date(2026, 9, 14, 12).getTime()));
   expect(key).toBe('2026-10-12');
@@ -226,7 +226,7 @@ test('a booth opens Lantern Catch and Stop puts the seat back', async ({ page })
   expect(after.bond).toBe(0);
 });
 
-test('Brin offers the two-keeper games and a tired one stays off the list', async ({ page }) => {
+test('Brin offers the two-keeper games and a tired one stays off the list @w1', async ({ page }) => {
   await boot(page, citySave());
   await page.evaluate(() => PixelPets.goto('hc_hall_in', 5, 9, 'up'));
   const brin = await page.evaluate(() => PixelPets.mapObjs.find(o => o.id === 'hc_brin'));

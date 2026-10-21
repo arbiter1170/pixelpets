@@ -7,7 +7,7 @@ const { SHOTS, starterSave, installSave, trackErrors, gotoGame, boxesOverlap } =
 
 trackErrors(test, expect);
 
-test('boot, build stamp, and dev checks', async ({ page }) => {
+test('boot, build stamp, and dev checks @w1', async ({ page }) => {
   await gotoGame(page);
   await page.waitForFunction(() => {
     const s = window.PixelPets.scene;
@@ -41,7 +41,7 @@ test('boot, build stamp, and dev checks', async ({ page }) => {
   expect(report.heights, 'heightsCheck').toEqual([]);
 });
 
-test('befriend odds stay inside the tuning range', async ({ page }) => {
+test('befriend odds stay inside the tuning range @w1', async ({ page }) => {
   await gotoGame(page);
   const odds = await page.evaluate(() => ({
     early: PixelPets.befriendOdds(3, 1),
@@ -139,7 +139,7 @@ test('befriend bar opens and BACK returns to the battle menu', async ({ page }) 
   });
 });
 
-test('glimmer side swaps the orchard scene and restores keepers', async ({ page }) => {
+test('glimmer side swaps the orchard scene and restores keepers @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.setSide === 'function');
@@ -226,7 +226,7 @@ test('settings can save a copy, and cancel does not wipe the game', async ({ pag
   expect(kept.v).toBe(2);
 });
 
-test('a minimal v2 save without faction or quest fields still loads as v2', async ({ page }) => {
+test('a minimal v2 save without faction or quest fields still loads as v2 @w1', async ({ page }) => {
   await page.context().addInitScript(() => {
     localStorage.setItem('pixelpets.save.v2', JSON.stringify({ v: 2 }));
   });

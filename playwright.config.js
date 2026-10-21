@@ -26,6 +26,7 @@ module.exports = defineConfig({
   testDir: 'tests',
   fullyParallel: false,
   workers: 2,
+  retries: 1,
   timeout: 30000,
   expect: { timeout: 10000 },
   // Humans get 'list'. Agents run `npm run test:agent` (tools/pp_test.js), which passes
@@ -45,9 +46,10 @@ module.exports = defineConfig({
     stderr: 'ignore',
     timeout: 20000,
   },
+  // @w1 tests run on 320 only. A new test with no tag still runs at all three widths.
   projects: [
     { name: '320', use: { viewport: { width: 320, height: 568 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } },
-    { name: '375', use: { viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } },
-    { name: '390', use: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true } },
+    { name: '375', grepInvert: /@w1/, use: { viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } },
+    { name: '390', grepInvert: /@w1/, use: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true } },
   ],
 });

@@ -162,7 +162,7 @@ test('a wipe keeps the party inside until they rest, and the rest costs 5 Acorns
   expect(sign).not.toContain('Free');
 });
 
-test('with no Acorns the keeper still rests the party', async ({ page }) => {
+test('with no Acorns the keeper still rests the party @w1', async ({ page }) => {
   const save = partySave();
   save.money = 0;
   await installSave(page.context(), save, { quietDay: true });
@@ -180,7 +180,7 @@ test('with no Acorns the keeper still rests the party', async ({ page }) => {
   expect(after.party.every((p) => p.hp == null && !p.faint)).toBe(true);
 });
 
-test('Fernbrook will not let a wiped party walk away from the lantern door', async ({ page }) => {
+test('Fernbrook will not let a wiped party walk away from the lantern door @w1', async ({ page }) => {
   const save = partySave();
   save.money = 12;
   save.world = { map: 'fernbrook', x: 8, y: 8, facing: 'down', respawn: 'fernbrook' };
@@ -214,7 +214,7 @@ test('Fernbrook will not let a wiped party walk away from the lantern door', asy
   expect(free.due).toBe(false);
 });
 
-test('a home nap is free, and only a hurt lantern rest costs Acorns', async ({ page }) => {
+test('a home nap is free, and only a hurt lantern rest costs Acorns @w1', async ({ page }) => {
   const save = starterSave();
   save.money = 20;
   save.flags['story.early_done'] = true;

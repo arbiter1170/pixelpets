@@ -20,7 +20,7 @@ async function boot(page, world) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
-test('the B4 overlay lands: roofs, variants, new props and decals are on the merged maps, nothing else is patched', async ({ page }) => {
+test('the B4 overlay lands: roofs, variants, new props and decals are on the merged maps, nothing else is patched @w1', async ({ page }) => {
   await boot(page);
   const r = await page.evaluate(() => {
     const P = MAPDATA.detail_b4.slicePatch.maps, out = { maps: Object.keys(P).sort(), bad: [], props: 0, decals: 0 };
@@ -146,7 +146,7 @@ test('every outdoor map loads clean, and the new props cut nobody off from the a
   await shot(page, 'b4-mahopac');
 });
 
-test('an old save standing where a new prop now stands loads on the map safe tile', async ({ page }) => {
+test('an old save standing where a new prop now stands loads on the map safe tile @w1', async ({ page }) => {
   await boot(page, { map: 'mahopac', x: 9, y: 5 });
   const w = await page.evaluate(() => ({ map: PixelPets.state.world.map, x: PixelPets.state.world.x, y: PixelPets.state.world.y, v: PixelPets.state.v }));
   expect(w).toEqual({ map: 'mahopac', x: 9, y: 14, v: 2 });
@@ -207,7 +207,7 @@ const readGrass = page => page.evaluate(([ids, GRASS]) => ids.map(id => {
   return { id: info.id, n, bad, sig };
 }), [OUTDOOR, GRASS]);
 
-test('phase 2: outdoor maps take seeded grass, the same after a reload; hand-placed tiles never vary and nothing is saved', async ({ page }) => {
+test('phase 2: outdoor maps take seeded grass, the same after a reload; hand-placed tiles never vary and nothing is saved @w1', async ({ page }) => {
   await boot(page);
   const first = await readGrass(page);
   for (const m of first) {
@@ -227,7 +227,7 @@ test('phase 2: outdoor maps take seeded grass, the same after a reload; hand-pla
   expect(saved.raw).not.toMatch(/grass_b|grass_c|flower_patch|puddle|leaf_litter|variants/);
 });
 
-test('phase 2: the 70 % floor check covers the outdoor maps; Mahopac and Fernbrook Heights pass, the lab bay is unchanged', async ({ page }) => {
+test('phase 2: the 70 % floor check covers the outdoor maps; Mahopac and Fernbrook Heights pass, the lab bay is unchanged @w1', async ({ page }) => {
   await boot(page);
   const r = await page.evaluate((ids) => {
     const plain = id => {   // the share plain `g` would have without variants
@@ -300,7 +300,7 @@ test('phase 2: puddles and leaf litter are flat decals: drawn, walkable, never t
 });
 
 const SHORT = { highcharity: 2, route2: 4 };   // 320 screens with no free cell left off paths, zones, sight lines and door fronts
-test('phase 2: props reach 6 per 320 screen (10 x 17 tiles) where a free cell is left, and no B4 object shortens a sight line', async ({ page }) => {
+test('phase 2: props reach 6 per 320 screen (10 x 17 tiles) where a free cell is left, and no B4 object shortens a sight line @w1', async ({ page }) => {
   await boot(page);
   for (const id of OUTDOOR) {
     const r = await page.evaluate((id) => {
@@ -335,7 +335,7 @@ test('phase 2: props reach 6 per 320 screen (10 x 17 tiles) where a free cell is
   }
 });
 
-test('phase 2: ground under a cut roof takes the same seeded grass as the map around it', async ({ page }) => {
+test('phase 2: ground under a cut roof takes the same seeded grass as the map around it @w1', async ({ page }) => {
   await boot(page);
   const r = await page.evaluate((towns) => towns.map(id => {
     PixelPets.goto(id, null, null, 'down');
@@ -355,7 +355,7 @@ test('phase 2: ground under a cut roof takes the same seeded grass as the map ar
   expect(all.grass_b + all.grass_c).toBeGreaterThan(20);
 });
 
-test('the B4 debug views stay inert without ?debug=1', async ({ page }) => {
+test('the B4 debug views stay inert without ?debug=1 @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state);

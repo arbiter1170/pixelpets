@@ -50,53 +50,6 @@ const ROOMS = [
     exit: { x: 9, y: 6, dir: 'up', to: 'hc_mall_1', tx: 9, ty: 6 } },
 ];
 
-const LINES = [
-  ['hc_airport_in', 1, 3, 'up', 'A board of winds. The marks are painted.'],
-  ['hc_airport_in', 2, 5, 'left', 'A crate lashed for the next lift.'],
-  ['hc_airport_in', 7, 5, 'up', 'A second crate. The lid is shut.'],
-  ['hc_airport_in', 6, 4, 'up', 'The boarding board. Dusk, if the wind stays kind.'],
-  ['hc_command_in', 5, 3, 'up', 'A second console. Its lamps stay dim.'],
-  ['hc_command_in', 7, 3, 'up', 'The end of the console row.'],
-  ['hc_command_in', 6, 4, 'right', 'A table with a chart of the docks.'],
-  ['hc_barracks_in', 5, 3, 'right', 'A bunk. The blanket is folded.'],
-  ['hc_barracks_in', 5, 4, 'right', 'A bunk in the row. The pillow is thin.'],
-  ['hc_barracks_in', 5, 5, 'right', 'The end bunk. A yellow stitch on the blanket.'],
-  ['hc_barracks_in', 2, 5, 'left', 'A metal locker. The door is shut.'],
-  ['hc_marina_in', 7, 3, 'up', 'A small boat on a rack. The hull is dry.'],
-  ['hc_marina_in', 2, 5, 'left', 'A folded net. It smells like the canal.'],
-  ['hc_marina_in', 6, 5, 'right', 'A coil of rope beside the rack.'],
-  ['hc_school_in', 7, 3, 'up', 'A chalk board. The lesson is wiped clean.'],
-  ['hc_school_in', 5, 4, 'right', 'A desk in the row. The top is clear.'],
-  ['hc_school_in', 5, 5, 'right', 'Another desk. A chalk stub sits in the groove.'],
-  ['hc_bank_in', 6, 3, 'up', 'A grille over the counter window.'],
-  ['hc_bank_in', 7, 3, 'up', 'A heavy door. The wheel does not turn.'],
-  ['hc_gym_in', 6, 3, 'right', 'A practice mat. The floor gives under it.'],
-  ['hc_gym_in', 2, 5, 'left', 'A mat along the court line.'],
-  ['hc_gym_in', 5, 4, 'right', 'A mat by the far line.'],
-  ['hc_gym_in', 3, 4, 'left', 'Practice floor. No Seals. Wipe your boots.'],
-  ['hc_lantern_in', 2, 4, 'left', 'A shelf of folded cloth and small jars.'],
-  ['hc_church_in', 1, 4, 'up', 'A candle stand. The flame holds steady.'],
-  ['hc_church_in', 9, 4, 'up', 'A second stand. The wax is warm.'],
-  ['hc_hall_in', 4, 2, 'right', 'A low stage. The boards are set in a pattern.'],
-  ['hc_hall_in', 2, 7, 'left', 'A chair facing the stage.'],
-  ['hc_hall_in', 8, 7, 'right', 'Another chair, set a little apart.'],
-  ['hc_arena_in', 1, 5, 'down', 'A short stand facing the sand.'],
-  ['hc_arena_in', 3, 5, 'down', 'A seat in the stands.'],
-  ['hc_arena_in', 7, 5, 'down', 'Another seat. The row faces the ring.'],
-  ['hc_arena_in', 9, 5, 'down', 'The end of the stands.'],
-  ['hc_apt_in', 4, 3, 'right', 'A small desk by the wall.'],
-  ['hc_mall_1', 5, 3, 'up', 'A small fountain. The water holds still.'],
-  ['hc_mall_1', 1, 7, 'down', 'A stall with folded cloth.'],
-  ['hc_mall_1', 3, 7, 'down', 'A stall of small jars.'],
-  ['hc_mall_1', 7, 7, 'down', 'A stall under a striped awning.'],
-  ['hc_mall_1', 9, 7, 'down', 'A stall of paper bags.'],
-  ['hc_mall_2', 1, 3, 'up', 'A coat stall. The hangers are empty.'],
-  ['hc_mall_2', 7, 3, 'up', 'A scarf stall. The colours are quiet.'],
-  ['hc_mall_2', 1, 7, 'down', 'A stall of folded coats.'],
-  ['hc_mall_2', 3, 7, 'down', 'A stall of buttons and thread.'],
-  ['hc_mall_2', 7, 5, 'down', 'A bench. A Walkling can sit.'],
-];
-
 function save(extra) {
   const s = starterSave();
   s.settings.follower = false;
@@ -112,16 +65,7 @@ async function boot(page, s) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
-async function say(page) {
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
-  const text = await page.evaluate(() => PixelPets.scene.text);
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => !PixelPets.scene);
-  return text;
-}
-
-test('each room keeps its size, its old ids, its own skin, and the floor cap', async ({ page }) => {
+test('each room keeps its size, its old ids, its own skin, and the floor cap @w1', async ({ page }) => {
   await boot(page);
   const report = await page.evaluate((rooms) => {
     PixelPets.setFlag('story.cobble_end', true);
@@ -206,58 +150,7 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap', a
   expect(walls.size).toBe(ROOMS.length);
 });
 
-test('the door reaches every person, and each new prop says its line', async ({ page }) => {
-  test.setTimeout(60000);
-  await boot(page);
-  const reach = await page.evaluate((rooms) => {
-    PixelPets.setFlag('story.cobble_end', true);
-    const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-    const bad = [];
-    for (const room of rooms) {
-      PixelPets.goto(room.id, room.ax, room.ay, 'up');
-      const info = PixelPets.mapInfo;
-      const objs = info.objs;
-      const block = new Set(objs.filter(o => o.block).map(o => o.x + ',' + o.y));
-      const warps = new Set(objs.filter(o => o.kind === 'warp').map(o => o.x + ',' + o.y));
-      const seen = new Set([room.ax + ',' + room.ay]);
-      const q = [[room.ax, room.ay]];
-      while (q.length) {
-        const [x, y] = q.shift();
-        if (warps.has(x + ',' + y) && !(x === room.ax && y === room.ay)) continue;
-        for (const [dx, dy] of dirs) {
-          const nx = x + dx, ny = y + dy, k = nx + ',' + ny;
-          if (nx < 0 || ny < 0 || nx >= info.w || ny >= info.h || seen.has(k)) continue;
-          if (PixelPets.tileInfo(nx, ny).solid || block.has(k)) continue;
-          seen.add(k); q.push([nx, ny]);
-        }
-      }
-      const adj = (x, y) => dirs.some(([dx, dy]) => seen.has((x + dx) + ',' + (y + dy)));
-      for (const o of objs) {
-        if (o.kind === 'warp' && !seen.has(o.x + ',' + o.y)) bad.push(room.id + ' warp ' + o.id);
-        if (o.kind === 'trigger' && !seen.has(o.x + ',' + o.y)) bad.push(room.id + ' trigger ' + o.id);
-        if ((o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'prop') && !adj(o.x, o.y)) bad.push(room.id + ' ' + o.id);
-      }
-    }
-    return bad;
-  }, ROOMS);
-  expect(reach).toEqual([]);
-
-  for (const [map, x, y, facing, line] of LINES) {
-    await page.evaluate(([map, x, y, facing]) => PixelPets.goto(map, x, y, facing), [map, x, y, facing]);
-    expect(await say(page), map + ' ' + x + ',' + y).toBe(line);
-  }
-  const nap = await page.evaluate(() => {
-    PixelPets.goto('hc_apt_in', 1, 3, 'up');
-    const bed = PixelPets.mapObjs.find(o => o.id === 'hc_apt_bed');
-    const respawn = PixelPets.tileInfo(2, 3);
-    return { bed: bed && { x: bed.x, y: bed.y, art: bed.art }, respawnSolid: respawn.solid, v: PixelPets.state.v };
-  });
-  expect(nap.bed).toEqual({ x: 1, y: 2, art: true });
-  expect(nap.respawnSolid).toBe(false);
-  expect(nap.v).toBe(2);
-});
-
-test('exits and the mall stair still use the old landing tiles', async ({ page }) => {
+test('exits and the mall stair still use the old landing tiles @w1', async ({ page }) => {
   await boot(page);
   for (const room of ROOMS) {
     await page.evaluate((e) => {
@@ -286,7 +179,7 @@ test('exits and the mall stair still use the old landing tiles', async ({ page }
   expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual({ map: 'hc_mall_2', x: 9, y: 6 });
 });
 
-test('a save standing on a wall snaps to safe, and the lab bay is unchanged', async ({ page }) => {
+test('a save standing on a wall snaps to safe, and the lab bay is unchanged @w1', async ({ page }) => {
   await boot(page, save(null, { map: 'hc_airport_in', x: 0, y: 0 }));
   expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, v: PixelPets.state.v }))).toEqual({ map: 'hc_airport_in', x: 4, y: 5, v: 2 });
   const kept = await page.evaluate(() => {

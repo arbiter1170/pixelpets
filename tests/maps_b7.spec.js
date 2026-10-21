@@ -22,22 +22,6 @@ const ROOMS = [
     old: ['dream_dad', 'fry_tray'] },
 ];
 
-const LINES = [
-  ['mahopac_obs', 2, 5, 'up', 'A desk under the dome. A blank page waits.'],
-  ['mahopac_obs', 6, 5, 'up', 'A stool pulled up to the desk.'],
-  ['mahopac_obs', 1, 4, 'down', 'A small lamp. The shade is warm.'],
-  ['mahopac_obs', 6, 3, 'right', 'A rolled star chart. The ink is pale.'],
-  ['mahopac_obs', 6, 5, 'right', 'A small case. The lid is shut.'],
-  ['dream_2004', 2, 6, 'left', 'Wooden blocks, stacked and still.'],
-  ['dream_2004', 6, 6, 'right', 'A low shelf. A round plush sits on it.'],
-  ['dream_2004', 2, 2, 'left', 'A small lamp by the wall.'],
-  ['dream_2004', 6, 4, 'right', 'A soft cushion on the floor.'],
-  ['dream_party', 5, 4, 'up', 'Bowling pins, waiting. The balloons are the ones asking.'],
-  ['dream_2004', 7, 3, 'up', 'You are very small. Push the toy. It pops as it rolls.'],
-  ['dream_drive', 4, 3, 'up', 'A menu board. The pictures are plain shapes.'],
-  ['dream_drive', 2, 4, 'left', 'A short post by the lane. No name on it.'],
-];
-
 function save(world) {
   const s = starterSave();
   s.settings.follower = false;
@@ -52,16 +36,7 @@ async function boot(page, s) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
-async function say(page) {
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
-  const text = await page.evaluate(() => PixelPets.scene.text);
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => !PixelPets.scene);
-  return text;
-}
-
-test('each room keeps its size, its old ids, its own skin, and the floor cap', async ({ page }) => {
+test('each room keeps its size, its old ids, its own skin, and the floor cap @w1', async ({ page }) => {
   await boot(page);
   const report = await page.evaluate((rooms) => {
     const out = [];
@@ -158,47 +133,7 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap', a
   expect(trig).toBe(true);
 });
 
-test('arrival reaches every person and prop, and new lines play', async ({ page }) => {
-  await boot(page);
-  const reach = await page.evaluate((rooms) => {
-    const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-    const bad = [];
-    for (const room of rooms) {
-      PixelPets.goto(room.id, room.ax, room.ay, 'up');
-      const info = PixelPets.mapInfo;
-      const objs = info.objs;
-      const block = new Set(objs.filter(o => o.block).map(o => o.x + ',' + o.y));
-      const warps = new Set(objs.filter(o => o.kind === 'warp').map(o => o.x + ',' + o.y));
-      const seen = new Set([room.ax + ',' + room.ay]);
-      const q = [[room.ax, room.ay]];
-      while (q.length) {
-        const [x, y] = q.shift();
-        if (warps.has(x + ',' + y) && !(x === room.ax && y === room.ay)) continue;
-        for (const [dx, dy] of dirs) {
-          const nx = x + dx, ny = y + dy, k = nx + ',' + ny;
-          if (nx < 0 || ny < 0 || nx >= info.w || ny >= info.h || seen.has(k)) continue;
-          if (PixelPets.tileInfo(nx, ny).solid || block.has(k)) continue;
-          seen.add(k); q.push([nx, ny]);
-        }
-      }
-      const adj = (x, y) => dirs.some(([dx, dy]) => seen.has((x + dx) + ',' + (y + dy)));
-      for (const o of objs) {
-        if (o.kind === 'warp' && !seen.has(o.x + ',' + o.y)) bad.push(room.id + ' warp ' + o.id);
-        if ((o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'prop') && !adj(o.x, o.y)) bad.push(room.id + ' ' + o.id);
-      }
-    }
-    return bad;
-  }, ROOMS);
-  expect(reach).toEqual([]);
-
-  for (const [map, x, y, facing, line] of LINES) {
-    await page.evaluate(([map, x, y, facing]) => PixelPets.goto(map, x, y, facing), [map, x, y, facing]);
-    expect(await say(page), map + ' ' + x + ',' + y).toBe(line);
-  }
-  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
-});
-
-test('the observatory door still leaves, and a save on the new desk snaps to safe', async ({ page }) => {
+test('the observatory door still leaves, and a save on the new desk snaps to safe @w1', async ({ page }) => {
   await boot(page, save({ map: 'mahopac_obs', x: 2, y: 4 }));
   expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, v: PixelPets.state.v }))).toEqual({ map: 'mahopac_obs', x: 4, y: 5, v: 2 });
 

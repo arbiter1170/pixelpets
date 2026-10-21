@@ -87,7 +87,7 @@ test('release asks first, and an orphan row shows the raw data', async ({ page }
   expect(after.buttons).toBe(0);
 });
 
-test('releasing the partner promotes the next Walkling, then the box', async ({ page }) => {
+test('releasing the partner promotes the next Walkling, then the box @w1', async ({ page }) => {
   await openList(page, boxSave());
   const release = async (id) => {
     const row = page.locator('[data-id="' + id + '"]');
@@ -112,7 +112,7 @@ test('releasing the partner promotes the next Walkling, then the box', async ({ 
   expect(after.v).toBe(2);
 });
 
-test('the game can be installed and opened offline', async ({ page }) => {
+test('the game can be installed and opened offline @w1', async ({ page }) => {
   await gotoGame(page);
   const linked = await page.evaluate(() => {
     const bare = href => (href || '').split('?')[0];

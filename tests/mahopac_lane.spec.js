@@ -44,7 +44,7 @@ test('one tap on the trail mouth walks from the town square into Mahopac', async
   expect(w).toEqual({ x: 9, y: 14, v: 2, f: true });
 });
 
-test('the way back from Mahopac lands on the lane, below the exits', async ({ page }) => {
+test('the way back from Mahopac lands on the lane, below the exits @w1', async ({ page }) => {
   await boot(page, { 'story.reached_mahopac': true });
   await page.evaluate(() => PixelPets.goto('mahopac', 9, 14, 'down'));
   await page.evaluate(() => { PixelPets.walk.queued = [0, 1]; });
@@ -52,7 +52,7 @@ test('the way back from Mahopac lands on the lane, below the exits', async ({ pa
   expect(await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual({ x: 9, y: 3 });
 });
 
-test('every lane start finds a short path, and the lane is 3 tiles wide', async ({ page }) => {
+test('every lane start finds a short path, and the lane is 3 tiles wide @w1', async ({ page }) => {
   await boot(page);
   const r = await page.evaluate(() => {
     const out = {};
@@ -68,7 +68,7 @@ test('every lane start finds a short path, and the lane is 3 tiles wide', async 
   for (const n of r.open.slice(0, 4)) expect(n).toBe(3);   // rows 3-6; row 7 has the town board at (8,7)
 });
 
-test('before Mom says go, the gate still holds at the trail mouth', async ({ page }) => {
+test('before Mom says go, the gate still holds at the trail mouth @w1', async ({ page }) => {
   await boot(page, { 'story.mom_sent': false });
   await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 4, 'up'));
   await page.evaluate(() => { PixelPets.walk.queued = [0, -1]; });

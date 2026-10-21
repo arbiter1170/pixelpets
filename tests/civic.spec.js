@@ -20,7 +20,7 @@ async function boot(page, save) {
   await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.runScene === 'function');
 }
 
-test('the phone is a side quest until the officers issue it', async ({ page }) => {
+test('the phone is a side quest until the officers issue it @w1', async ({ page }) => {
   await boot(page);
   const before = await page.evaluate(() => ({
     id: PixelPets.sideQuest && PixelPets.sideQuest.id,
@@ -61,7 +61,7 @@ test('the phone is a side quest until the officers issue it', async ({ page }) =
   await expect(page.locator('#ovPhone')).toBeHidden();
 });
 
-test('a cracked handset turns the phone into the thin one', async ({ page }) => {
+test('a cracked handset turns the phone into the thin one @w1', async ({ page }) => {
   await boot(page, readySave({ 'story.phone_got': true, 'story.side': 'keepers', 'story.side_pick_done': true }));
   await page.evaluate(() => { PixelPets.giveItem('keeper1', 1); PixelPets.setSide('glimmer'); PixelPets.showTab('walk'); });
   await page.waitForFunction(() => !document.querySelector('#phoneBtn').hidden);
@@ -74,7 +74,7 @@ test('a cracked handset turns the phone into the thin one', async ({ page }) => 
   expect(bag).toBe(1);
 });
 
-test('Keeper House talk depends on the pledge', async ({ page }) => {
+test('Keeper House talk depends on the pledge @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.goto('hm_hq_f1', 4, 6, 'up'))).toMatchObject({ map: 'hm_hq_f1' });
   expect(await page.evaluate(() => PixelPets.mapInfo.id)).toBe('hm_hq_f1');
@@ -89,7 +89,7 @@ test('Keeper House talk depends on the pledge', async ({ page }) => {
   expect(cold).toContain('doorway');
 });
 
-test('the road officer actually walks', async ({ page }) => {
+test('the road officer actually walks @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => { PixelPets.clock.set('tue', 10, 0); PixelPets.showTab('walk'); });
   const seen = new Set();
@@ -130,7 +130,7 @@ async function sayFacing(page) {
   return text;
 }
 
-test('the Keeper House door opens on the floor and the way out is clear', async ({ page }) => {
+test('the Keeper House door opens on the floor and the way out is clear @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hearthmoor', 11, 11, 'up'); });
   const inside = await step(page, 'up');
@@ -146,7 +146,7 @@ test('the Keeper House door opens on the floor and the way out is clear', async 
   expect(south).toMatchObject({ map: 'hearthmoor', x: 11, y: 12, blocked: [] });
 });
 
-test('stairs down do not drop you inside the stair sign', async ({ page }) => {
+test('stairs down do not drop you inside the stair sign @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hm_hq_f1', 12, 4, 'up'); });
   const up = await step(page, 'up');
@@ -155,7 +155,7 @@ test('stairs down do not drop you inside the stair sign', async ({ page }) => {
   expect(down).toMatchObject({ map: 'hm_hq_f1', x: 12, y: 4, blocked: [] });
 });
 
-test('town officers answer by pledge', async ({ page }) => {
+test('town officers answer by pledge @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => { PixelPets.showTab('walk'); PixelPets.goto('hearthmoor', 8, 12, 'up'); });
   await page.locator('#tabs button[data-tab="walk"]').click();
@@ -188,7 +188,7 @@ test('town officers answer by pledge', async ({ page }) => {
   expect(bram).not.toContain('come in');
 });
 
-test('Officer Ness is on Route 1 before anyone steps on the marker', async ({ page }) => {
+test('Officer Ness is on Route 1 before anyone steps on the marker @w1', async ({ page }) => {
   await boot(page);
   const there = await page.evaluate(() => {
     PixelPets.showTab('walk');
@@ -227,7 +227,7 @@ test('Officer Ness is on Route 1 before anyone steps on the marker', async ({ pa
   expect(lines.phone).not.toMatch(/calls, notes/i);
 });
 
-test('walking into Officer Ness, or past him, issues the Keeper1', async ({ page }) => {
+test('walking into Officer Ness, or past him, issues the Keeper1 @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
     PixelPets.showTab('walk');
@@ -297,7 +297,7 @@ test('walking past Officer Ness makes him stop you', async ({ page }) => {
   expect(boxesOverlap(boxes.phone, boxes.quest)).toBe(false);
 });
 
-test('a story glimmer pledge cracks the handset in that same session', async ({ page }) => {
+test('a story glimmer pledge cracks the handset in that same session @w1', async ({ page }) => {
   await boot(page, readySave({ 'story.phone_got': true }));
   expect(await page.evaluate(() => PixelPets.runSteps([
     ['give', 'keeper1', 1],
@@ -320,7 +320,7 @@ test('a story glimmer pledge cracks the handset in that same session', async ({ 
   expect(got).toEqual({ title: 'CRACK//HAND', jobs: 'BOTNET', cracked: 1, hack: true, side: 'glimmer' });
 });
 
-test('the quest tab opens the next step without leaving the walk map', async ({ page }) => {
+test('the quest tab opens the next step without leaving the walk map @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.locator('#questBtn').click();
@@ -360,7 +360,7 @@ test('the quest tab opens the next step without leaving the walk map', async ({ 
   expect(await page.evaluate(() => [...document.querySelectorAll('.screen.active')].map((s) => s.id))).toEqual(['scr-walk']);
 });
 
-test('the east gate is open and a keeper stands beside it', async ({ page }) => {
+test('the east gate is open and a keeper stands beside it @w1', async ({ page }) => {
   const save = readySave({ 'story.rival1_done': true });
   delete save.flags['story.reached_route1'];
   await boot(page, save);
@@ -411,7 +411,7 @@ test('the east gate is open and a keeper stands beside it', async ({ page }) => 
   expect(out.blocked).toEqual([]);
 });
 
-test('town paint and the glimmer body follow the pledge', async ({ page }) => {
+test('town paint and the glimmer body follow the pledge @w1', async ({ page }) => {
   await boot(page, readySave({ 'story.phone_got': true }));
   const fac = await page.evaluate(() => {
     const bought = () => {

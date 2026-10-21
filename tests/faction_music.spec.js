@@ -9,7 +9,7 @@ async function gotoDebug(page) {
   await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.setStanding === 'function');
 }
 
-test('wild loops cycle, and a Keeper hears Glimmerwell as the dark theme', async ({ page }) => {
+test('wild loops cycle, and a Keeper hears Glimmerwell as the dark theme @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const music = await page.evaluate(() => ({
@@ -44,7 +44,7 @@ test('wild loops cycle, and a Keeper hears Glimmerwell as the dark theme', async
   expect(battles.rook).toBe('rival');
 });
 
-test('keeper and Glimmerwell lines follow pledge and standing', async ({ page }) => {
+test('keeper and Glimmerwell lines follow pledge and standing @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const lines = await page.evaluate(() => {

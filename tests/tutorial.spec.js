@@ -283,7 +283,7 @@ test('Settings replay highlights care and does not spend it', async ({ page }) =
   expect(after.care).toBeNull();
 });
 
-test('an older save is marked done and does not see the tour', async ({ browser }) => {
+test('an older save is marked done and does not see the tour @w1', async ({ browser }) => {
   const cases = [
     s => { s.steps = 17; },
     s => { s.flags['story.early_done'] = true; },
@@ -315,7 +315,7 @@ test('an older save is marked done and does not see the tour', async ({ browser 
   }
 });
 
-test('closing mid-tour offers to finish once', async ({ page }) => {
+test('closing mid-tour offers to finish once @w1', async ({ page }) => {
   const s = tourSave();
   s.flags['story.tutorial_step'] = 'T6';
   await installSave(page.context(), s, { quietDay: true });
