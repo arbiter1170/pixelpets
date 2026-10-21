@@ -111,6 +111,16 @@
       "base": 50
     },
     {
+      "name": "Cook Hesper",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Court Regular",
+      "faction": "none",
+      "base": 50
+    },
+    {
       "name": "Crate Haulers",
       "faction": "none",
       "base": 50
@@ -120,6 +130,11 @@
       "faction": "none",
       "base": 50,
       "fixed": 100
+    },
+    {
+      "name": "Diner Regular",
+      "faction": "none",
+      "base": 50
     },
     {
       "name": "Dockhand Ness",
@@ -187,6 +202,11 @@
       "base": 50
     },
     {
+      "name": "Keeper Marigold",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
       "name": "Keeper Moss",
       "faction": "keepers",
       "base": 50
@@ -197,12 +217,27 @@
       "base": 50
     },
     {
+      "name": "Keeper Quill",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Keeper Teague",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
       "name": "Keeper Scout",
       "faction": "keepers",
       "base": 50
     },
     {
       "name": "Keeper Vesper",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Keeper cadet Arlo",
       "faction": "keepers",
       "base": 50
     },

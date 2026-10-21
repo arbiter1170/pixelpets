@@ -2691,7 +2691,7 @@ const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : 
 // WORLD_CLOCK_TOWN P1 (D374, D375, D378). Optional schedule rows on a detail NPC. First match wins.
 // A row whose map is missing, or whose tile is out of bounds or solid, is skipped so a quest NPC stays reachable.
 // Greens: Pip stands at (3,4) and Wren at (6,4) because (2,4) is one desk. Ossabell's (0,0) means her 5B spot.
-// Mr. Gristle's closed tile (9,9) is the lobby wall, so he stands at (6,9). The diner and the court are P2.
+// Mr. Gristle's closed tile (9,9) is the lobby wall, so he stands at (6,9). Market Row is P2.
 const SCHED = {};
 const CLOCK_SKIP = { hm_lizzy: 1, hm_buddy: 1 };
 const CLOCK_NUDGE = {
@@ -2702,6 +2702,7 @@ const CLOCK_NUDGE = {
 };
 const CLOCK_PLACE = {
   hm_school_in: 'Schoolhouse', hm_flats_5: 'home, 5B', hm_flats_lobby: 'the lobby',
+  hm_store: 'Lamplight Provisions', hm_wardrobe: 'Stitch & Lantern',
   hm_diner: 'the diner', hearthmoor: 'Lanternball Court',
 };
 function mapIdOf(o){
@@ -2846,6 +2847,13 @@ function wireSchedules(){
   if (window.PPClock) PPClock.setOnChange(clockBump);
 }
 wireSchedules();
+// Officer Bren keeps his patrol. At lunch he is in the diner, so the road body steps aside. No schedule,
+// because a schedule tile would freeze the patrol beat.
+(function brenLunch(){
+  const town = WORLD.hearthmoor;
+  const bren = town && (town.objs || []).find(o => o.id === 'hm_patrol');
+  if (bren && !bren.when) bren.when = ['!time:1200-1300'];
+})();
 function liveStep(step){
   if (!step || step.id !== 'leak_ask') return step;
   const spot = placedRow('Lizzy');
@@ -2954,7 +2962,20 @@ function openClockCard(){
   sfx('tap');
 }
 function closeClockCard(){ if ($('#ovClock').hidden) return; $('#ovClock').hidden = true; lockTabs(false); }
+const shotFx = [];
+function drawShotFx(g, cx, cy){
+  const t = now();
+  for (let i = shotFx.length - 1; i >= 0; i--) {
+    const f = shotFx[i], k = (t - f.t0) / 420;
+    if (k >= 1) { shotFx.splice(i, 1); continue; }
+    drawGlyph(g, 'spark', f.x * TS - cx + 4, f.y * TS - cy - 6 - k * 8);
+    drawGlyph(g, 'spark', f.x * TS - cx + 10, f.y * TS - cy - 2 - k * 4);
+  }
+}
 function drawLampLights(g, cx, cy, VW, VH){
+  // D376: dawn, dusk and the night overlay live in drawWeather, which stays outdoors.
+  // The lamp disc was also painting interiors and tinting floor pixels (the lodge shade).
+  if (isRoom()) return;
   if (!window.PPClock || !PPClock.lampsOn()) return;
   g.save();
   g.globalCompositeOperation = 'lighter';
@@ -4410,6 +4431,7 @@ function drawMap(t){
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
   drawHqGlow(g, cx, cy);
   drawLampLights(g, cx, cy, VW, VH);
+  drawShotFx(g, cx, cy);
   wild.poofs = wild.poofs.filter(f => wild.clock - f.t < 500);
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
@@ -4966,7 +4988,25 @@ function interact(o){
     return runSteps([['say', '', o.text || '']], ctx);
   }
   if (o.board) return openTownBoard();
-  if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
+  if (o.shop) {
+    if (o.id === 'travel_shelf' && !S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx);
+    openShop(o.shop, shopHeading(o), o.shopFlavour || null);
+    return;
+  }
+  if (o.meals) {
+    const line = linesFor(o);
+    const steps = [];
+    if (typeof line === 'string' && line.charAt(0) !== '@') steps.push(['say', objName(o), line]);
+    const opts = o.meals.map(m => [m.name + ' (' + m.price + ')', [['meal', m.id]]]);
+    if (bowlReady()) opts.push(['Warm Bowl', [['meal', 'warm_bowl']]]);
+    steps.push(['choice', 'What will they eat?', opts]);
+    return runSteps(steps, ctx);
+  }
+  if (o.shot) {
+    if (!prefersReduced()) shotFx.push({ x: o.x, y: o.y, t0: now() });
+    const line = linesFor(o);
+    return runSteps([['say', '', typeof line === 'string' ? line : 'Take a shot.']], ctx);
+  }
   if (o.kind === 'wild') return o.scene ? runScene(o.scene, ctx) : undefined;
   if (o.scene && !scenePlayed(o.scene)) return runScene(o.scene, ctx);
   if (o.id === 'school_lizzy' && S && S.flags['story.lizzy_met'] && !S.flags['story.leak5b_seen'] && clockAt('Lizzy', 'hm_school_in')) {
@@ -5270,6 +5310,29 @@ async function execStep(st){
     }
     case 'waitUntil': {
       await execStep(['say', '', applyWait(a)]);
+      return;
+    }
+    case 'meal': {
+      const p = pet();
+      if (!p) { await execStep(['say', '', 'Bring your Walkling.']); return; }
+      if (p.hunger >= 98) { await execStep(['say', '', 'Too full.']); return; }
+      if (a === 'warm_bowl') {
+        if (!bowlReady()) { await execStep(['say', '', 'The bowl is claimed today.']); return; }
+        p.hunger = clamp(p.hunger + BOWL.food, 0, 100);
+        p.happy = clamp(p.happy + careJoy(p, BOWL.joy), 0, 100);
+        S.flags[BOWL.flag] = dayKey(Date.now());
+        save(); updateHUD();
+        await execStep(['say', '', 'Warm Bowl, on the house.']);
+        return;
+      }
+      const meal = ((sc.npc && sc.npc.meals) || []).find(m => m.id === a);
+      if (!meal) return;
+      if ((S.money | 0) < meal.price) { sfx('denied'); toast('Not enough Acorns.'); return; }
+      S.money = (S.money | 0) - meal.price;
+      p.hunger = clamp(p.hunger + careGain(meal.food, p.hunger, FEED_BANDS), 0, 100);
+      p.happy = clamp(p.happy + careJoy(p, meal.joy), 0, 100);
+      save(); updateHUD();
+      await execStep(['say', '', meal.name + ' is gone.']);
       return;
     }
     case 'nameEntry': { sc.skip = false; await nameBox(a, expand(b), c, d); return; }
@@ -6849,7 +6912,7 @@ const REGION_MAP = {
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
            cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'] },
-  interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
+  interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', hm_store: 'hearthmoor', hm_wardrobe: 'hearthmoor', hm_diner: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
@@ -8971,16 +9034,17 @@ const SHELF_EMPTY = "Empty for now. Ilse restocks once you've a partner.";
 let shopIds = [], shopSel = 0;
 // The Travel Shelf keeps its fixed title. A stall whose welcome line names the shop (Dottie's "Welcome to Cairnside Supplies!") uses that name.
 function shopHeading(o){
+  if (o && o.shopTitle) return o.shopTitle;
   const line = o && o.lines && o.lines.else;
   const m = typeof line === 'string' && /^Welcome to ([^!]+)!/.exec(line);
   return m ? m[1] : 'Travel Shelf';
 }
-function openShop(ids, title){
+function openShop(ids, title, flavour){
   if (!S || overlayOpen()) return;
   clearMoves(); shopIds = (ids || ITEM_ORDER).filter(k => ITEMS[k]); shopSel = 0;
   $('#shopTitle').textContent = title || 'Travel Shelf';
   const flav = $('#shopFlavour');
-  if (flav) flav.textContent = title && title !== 'Travel Shelf' ? 'Snacks for the road.' : 'Leave Acorns, take a snack. \u2014 I.';
+  if (flav) flav.textContent = flavour || (title && title !== 'Travel Shelf' ? 'Snacks for the road.' : 'Leave Acorns, take a snack. \u2014 I.');
   renderShop(); $('#ovShop').hidden = false; lockTabs(true); sfx('tap');
 }
 function closeShop(){ if ($('#ovShop').hidden) return; $('#ovShop').hidden = true; lockTabs(false); updateHUD(); }

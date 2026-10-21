@@ -491,7 +491,7 @@
      "look": "wren",
      "schedule": [
       {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 2, "y": 4, "facing": "left", "lines": "at desks"},
-      {"when": "day:weekday & win:after_school", "map": "hearthmoor", "x": 16, "y": 31, "lines": "court"},
+      {"when": "day:weekday & win:after_school", "map": "hearthmoor", "x": 17, "y": 31, "lines": "court"},
       {"map": null, "x": 0, "y": 0, "lines": "home off-map"}
      ]
     },

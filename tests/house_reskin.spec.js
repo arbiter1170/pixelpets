@@ -226,3 +226,38 @@ test('Rook\'s House and the Warden\'s Lodge render their new floors', async ({ p
   expect(up.face).toBe('house_hq_up__face');
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
+
+test('the lodge shade stays the timber brown at day and at night', async ({ page }) => {
+  await installSave(page.context(), save(), { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  const shades = await page.evaluate(async () => {
+    const hexOf = (data) => '#' + [data[0], data[1], data[2]].map(n => n.toString(16).padStart(2, '0')).join('');
+    const settle = () => new Promise(r => {
+      const tick = () => {
+        if (PixelPets.fading) requestAnimationFrame(tick);
+        else requestAnimationFrame(() => requestAnimationFrame(r));
+      };
+      tick();
+    });
+    const sample = async (day, hh) => {
+      PixelPets.clock.set(day, hh, 0);
+      PixelPets.goto('hm_lodge_in', 5, 4, 'up');
+      await settle();
+      const c = document.querySelector('#mapCanvas');
+      const d = c.getContext('2d').getImageData(2 * 16 - PixelPets.walk.cam.x, 2 * 16 - PixelPets.walk.cam.y, 1, 1).data;
+      return { phase: PixelPets.clock.now().phase, lamps: window.PPClock.lampsOn(), shade: hexOf(d), room: PixelPets.mapInfo.room };
+    };
+    return { day: await sample('tue', 12), night: await sample('sun', 21) };
+  });
+  expect(shades.day.phase).toBe('day');
+  expect(shades.day.lamps).toBe(false);
+  expect(shades.day.room).toBe(true);
+  expect(shades.day.shade).toBe(WARM.F);
+  expect(shades.night.phase).toBe('night');
+  expect(shades.night.lamps).toBe(true);
+  expect(shades.night.room).toBe(true);
+  expect(shades.night.shade).toBe(WARM.F);
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
+});

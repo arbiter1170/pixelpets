@@ -313,7 +313,8 @@ Which species appear depends on where you are and the weather there:
   (OpenStreetMap features within 350 m; city = several urban landuse areas or 40+ buildings),
   meadow (none of those), rain / snow / storm / fog (current weather code), hot (>= 28 °C),
   cold (<= 3 °C), windy (>= 30 km/h), night (the in-game clock, 20:00-05:00).
-- The header clock chip shows the in-game day and time, for example TUE 8:30, with a sun, a half-sun, or a moon. One in-game day is 42 real minutes. Tap the chip for the weekday, the time, and who is about. Dawn and dusk lay a still colour wash on outdoor maps. Night keeps the same dark overlay. Lamps and lit windows are on from 19:00 to 06:00. Daily care, the Warm Bowl, and the daily hello stay on the real calendar. The clock is not stored in the save.
+- The header clock chip shows the in-game day and time, for example TUE 8:30, with a sun, a half-sun, or a moon. One in-game day is 42 real minutes. Tap the chip for the weekday, the time, and who is about. Dawn and dusk lay a still colour wash on outdoor maps. Night keeps the same dark overlay. Lamps and lit windows are on from 19:00 to 06:00. Interiors stay unwashed. Daily care, the Warm Bowl, and the daily hello stay on the real calendar. The clock is not stored in the save.
+- Hearthmoor is 24 by 34. South of the old tree line is Market Row: Lamplight Provisions, Stitch & Lantern, the Parked Coach, and Lanternball Court. The store sells the usual snacks. Keeper Teague has the day shift and Keeper Quill the night shift. The diner serves Coach Stew (30), Berry Stack (40) and Hearth Plate (70), and the day's Warm Bowl. Keeper Marigold says the racks are still going up. Nothing there is for sale yet. On a weekday after school, Pip and Wren stand on separate court tiles.
 - The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
 

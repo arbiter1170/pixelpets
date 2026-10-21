@@ -1434,6 +1434,35 @@ function buildTiles(){
   }
   // FLOOR_FIX: paint the calm floors the same way as addExteriorArt (PAL key to px). Old names stay.
   for (const [k, rows] of Object.entries(FLOOR_FIX_TILES)) if (!T[k]) T[k] = mkTile(g => paintGrid(g, rows));
+  // Market Row rooms. Store is a 2x2 grey-and-sky check (no white). Wardrobe is rose herringbone. Diner is a small black-and-butter check.
+  const blockCheck = (a, b, shift) => {
+    const rows = [];
+    for (let y = 0; y < 16; y++) {
+      let s = '';
+      for (let x = 0; x < 16; x++) s += ((Math.floor((x + shift) / 2) + Math.floor(y / 2)) % 2) ? b : a;
+      rows.push(s);
+    }
+    return rows;
+  };
+  const herring = shift => {
+    const rows = [];
+    for (let y = 0; y < 16; y++) {
+      let s = '';
+      const off = ((Math.floor(y / 4) + shift) % 2) * 2;
+      for (let x = 0; x < 16; x++) s += ((x + off) % 4 === 3) ? 'G' : 'H';
+      rows.push(s);
+    }
+    return rows;
+  };
+  const marketFloors = {
+    floor_aisle: blockCheck('h', 'c', 0), floor_aisle_b: blockCheck('h', 'c', 2), floor_aisle_c: blockCheck('c', 'h', 1),
+    floor_herring: herring(0), floor_herring_b: herring(1), floor_herring_c: herring(2),
+    floor_diner: blockCheck('k', 'y', 0), floor_diner_b: blockCheck('k', 'y', 2), floor_diner_c: blockCheck('y', 'k', 1),
+    mat_aisle: ['bbbbbbbbbbbbbbbb','bhhhhhhhhhhhhhhb','bhhhhhhhhhhhhhhb','bhhhhhhhhhhhhhhb','bhhccccccccccchb','bhhccccccccccchb','bhhccccccccccchb','bhhccccccccccchb','bhhccccccccccchb','bhhccccccccccchb','bhhccccccccccchb','bhhccccccccccchb','bhhhhhhhhhhhhhhb','bhhhhhhhhhhhhhhb','bhhhhhhhhhhhhhhb','bbbbbbbbbbbbbbbb'],
+    mat_herring: ['JJJJJJJJJJJJJJJJ','JHHHHHHHHHHHHHHJ','JHHHHHHHHHHHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHGGGGGGHHHHJ','JHHHHHHHHHHHHHHJ','JHHHHHHHHHHHHHHJ','JHHHHHHHHHHHHHHJ','JJJJJJJJJJJJJJJJ'],
+    mat_diner: ['rrrrrrrrrrrrrrrr','ryyyyyyyyyyyyyr','ryyyyyyyyyyyyyr','ryykkkkkkkkkkyyr','ryykkkkkkkkkkyyr','ryykkkkkkkkkkyyr','ryykkkkkkkkkkyyr','ryykkkkkkkkkkyyr','ryykkkkkkkkkkyyr','ryykkkkkkkkkkyyr','ryykkkkkkkkkkyyr','ryykkkkkkkkkkyyr','ryyyyyyyyyyyyyr','ryyyyyyyyyyyyyr','ryyyyyyyyyyyyyr','rrrrrrrrrrrrrrrr'],
+  };
+  for (const [k, rows] of Object.entries(marketFloors)) T[k] = mkTile(g => paintGrid(g, rows));
   return T;
 }
 // World sprites (MAPS_SLICE §2/§4 doors, signs, props, pickups; INTERIORS §2.2 furniture), 16x16, PAL only.
@@ -1506,7 +1535,26 @@ const HOUSE_SKINS = {
       wall_bloom: [['wall_bloom_b', 0.34], ['wall_bloom_c', 0.33]],
     }),
     wall: wallRow('DCECDpgEEcsJ'),
-  }
+  },
+  // Market Row (D391). Cap differs from the face. No brick floors. No new PAL keys. k stays off the wall roles.
+  house_store: {
+    remap: { '#':'wall_plaster', W:'wall_plaster_face', W2:'wall_plaster_win', '.':'floor_aisle', m:'mat_aisle' },
+    decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 },
+    variants: { floor_aisle: [['floor_aisle_b', 0.22], ['floor_aisle_c', 0.18]] },
+    wall: wallRow('ncbhnynFbcyr'),
+  },
+  house_wardrobe: {
+    remap: { '#':'wall_cream', W:'wall_cream_face', W2:'wall_cream_win', '.':'floor_herring', m:'mat_herring' },
+    decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 },
+    variants: { floor_herring: [['floor_herring_b', 0.22], ['floor_herring_c', 0.18]] },
+    wall: wallRow('JHJCGJJFJyHp'),
+  },
+  house_diner: {
+    remap: { '#':'wall_log', W:'wall_log_face', W2:'wall_log_win', '.':'floor_diner', m:'mat_diner' },
+    decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 },
+    variants: { floor_diner: [['floor_diner_b', 0.22], ['floor_diner_c', 0.18]] },
+    wall: wallRow('FyornwCFryyo'),
+  },
 };
 // Shared indoor wall kit (D151). Role letters, not PAL keys. `.` is empty. Mirrors are the other corner, the other side, and the other shadow.
 // A skin opts in with `wall` (role -> PAL key). buildWallKit bakes `<skin>__<part>` once.
@@ -2044,6 +2092,35 @@ function buildWorldArt(){
   A.order_post = mkTile(g => {
     px(g, PAL.m, 6, 3, 4, 8); px(g, PAL.h, 7, 4, 2, 2); px(g, PAL.d, 5, 2, 6, 2); px(g, PAL.n, 6, 8, 4, 3); px(g, PAL.y, 7, 9, 1, 1); px(g, PAL.d, 4, 14, 8, 2);
   });
+  // Market Row props. PAL only. The hoop ring holds a lantern; the bell hangs over the shop door.
+  A.mr_cooler = mkTile(g => {
+    px(g, PAL.n, 2, 2, 12, 13); px(g, PAL.h, 3, 3, 10, 8); px(g, PAL.c, 4, 4, 8, 6); px(g, PAL.s, 4, 4, 3, 2);
+    px(g, PAL.b, 3, 12, 10, 2); px(g, PAL.y, 7, 12, 2, 1); px(g, PAL.d, 2, 15, 12, 1);
+  });
+  A.mr_bell = mkTile(g => {
+    px(g, PAL.d, 7, 1, 2, 3); px(g, PAL.y, 5, 4, 6, 5); px(g, PAL.o, 6, 5, 4, 3); px(g, PAL.d, 7, 9, 2, 2); px(g, PAL.y, 6, 11, 4, 1);
+  });
+  A.mr_rack = mkTile(g => {
+    px(g, PAL.d, 2, 2, 12, 2); px(g, PAL.o, 3, 4, 2, 10); px(g, PAL.o, 11, 4, 2, 10);
+    px(g, PAL.r, 5, 5, 2, 7); px(g, PAL.b, 7, 6, 2, 6); px(g, PAL.g, 9, 5, 2, 8); px(g, PAL.d, 2, 14, 12, 1);
+  });
+  A.mr_curtain = mkTile(g => {
+    px(g, PAL.d, 1, 1, 14, 2); px(g, PAL.p, 2, 3, 5, 12); px(g, PAL.r, 9, 3, 5, 12); px(g, PAL.C, 7, 4, 2, 10); px(g, PAL.d, 1, 15, 14, 1);
+  });
+  A.mr_hat = mkTile(g => {
+    px(g, PAL.d, 7, 8, 2, 7); px(g, PAL.o, 4, 14, 8, 1); px(g, PAL.J, 4, 4, 8, 3); px(g, PAL.p, 3, 6, 10, 2); px(g, PAL.y, 7, 5, 2, 1);
+  });
+  A.mr_stove = mkTile(g => {
+    px(g, PAL.n, 2, 4, 12, 11); px(g, PAL.d, 3, 5, 10, 6); px(g, PAL.k, 4, 6, 3, 3); px(g, PAL.k, 9, 6, 3, 3);
+    px(g, PAL.o, 4, 11, 8, 2); px(g, PAL.r, 11, 2, 2, 2); px(g, PAL.y, 11, 2, 1, 1);
+  });
+  A.mr_bowl = mkTile(g => {
+    px(g, PAL.o, 3, 8, 10, 5); px(g, PAL.y, 4, 9, 8, 3); px(g, PAL.r, 6, 9, 4, 2); px(g, PAL.d, 3, 13, 10, 1);
+  });
+  A.mr_hoop = mkTile(g => {
+    px(g, PAL.d, 7, 1, 2, 14); px(g, PAL.o, 3, 3, 10, 8); px(g, PAL.h, 5, 5, 6, 4); px(g, PAL.y, 6, 6, 4, 2); px(g, PAL.n, 4, 11, 8, 1);
+  });
+  A.mr_chalk = mkTile(g => { px(g, PAL.w, 0, 7, 16, 1); px(g, PAL.w, 7, 0, 1, 16); px(g, PAL.y, 2, 8, 1, 1); });
   return A;
 }
 /* ---------- map pass B4: building exteriors, path edges, outdoor props, landmarks ---------- */

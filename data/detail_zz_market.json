@@ -1,0 +1,235 @@
+{
+ "spec": "WORLD_CLOCK_TOWN P2 Market Row. Overlay sorts after detail_wayup so the north lane stays. Rows 0-22 are not in this patch.",
+ "friendSlots": {
+  "STORE_CLERK": "Keeper Teague / Keeper Quill",
+  "TAILOR": "Keeper Marigold",
+  "DINER_COOK": "Cook Hesper",
+  "DINER_REGULAR": "Diner Regular",
+  "COURT_REGULAR": "Court Regular",
+  "ROUTE_VENDOR": "P4. Not built."
+ },
+ "looks": {
+  "hm_quill": {"skin": "2", "hair": "bun", "hairCol": "n", "outfit": "coat", "outfitCol": "b", "accent": "y"},
+  "hm_teague": {"skin": "4", "hair": "short", "hairCol": "o", "outfit": "tunic", "outfitCol": "g", "accent": "l"},
+  "hm_marigold": {"skin": "3", "hair": "long", "hairCol": "p", "outfit": "coat", "outfitCol": "r", "accent": "y"},
+  "hm_hesper": {"skin": "5", "hair": "bun", "hairCol": "h", "outfit": "coat", "outfitCol": "o", "accent": "n"},
+  "hm_arlo": {"skin": "3", "hair": "spiky", "hairCol": "y", "outfit": "tunic", "outfitCol": "b", "accent": "y"},
+  "hm_diner_regular": {"skin": "4", "hair": "short", "hairCol": "d", "outfit": "hoodie", "outfitCol": "n", "accent": "o"},
+  "hm_court_regular": {"skin": "2", "hair": "short", "hairCol": "m", "outfit": "hoodie", "outfitCol": "g", "accent": "c"}
+ },
+ "maps": {
+  "hm_store": {
+   "name": "Lamplight Provisions",
+   "kind": "interior",
+   "outdoor": "hearthmoor",
+   "door": "hm_store",
+   "backdrop": "town",
+   "w": 12,
+   "h": 10,
+   "spawns": null,
+   "zones": [],
+   "safe": {"x": 6, "y": 8},
+   "skin": "house_store",
+   "variants": true,
+   "wall": {"windows": [3, 8]},
+   "grid": [
+    "############",
+    "#WWWWWWWWWW#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "######m#####"
+   ],
+   "objs": [
+    {"kind": "warp", "id": "store_mat", "x": 6, "y": 9, "to": "hearthmoor", "tx": 4, "ty": 27, "facing": "down"},
+    {"kind": "npc", "id": "hm_teague", "name": "Keeper Teague", "look": "hm_teague", "x": 3, "y": 2, "facing": "down", "friendSlot": "STORE_CLERK",
+     "lines": {"else": "Lamplight Provisions. Lantern stays lit. What do you need?"},
+     "schedule": [
+      {"when": "!phase:night", "map": "hm_store", "x": 3, "y": 2, "facing": "down"},
+      {"map": null, "x": 0, "y": 0}
+     ]},
+    {"kind": "npc", "id": "hm_quill", "name": "Keeper Quill", "look": "hm_quill", "x": 3, "y": 2, "facing": "down", "friendSlot": "STORE_CLERK",
+     "lines": {"else": "Lamplight Provisions. Lantern stays lit. What do you need?"},
+     "schedule": [
+      {"when": "phase:night", "map": "hm_store", "x": 3, "y": 2, "facing": "down"},
+      {"map": null, "x": 0, "y": 0}
+     ]},
+    {"kind": "prop", "id": "store_counter", "x": 2, "y": 3, "sprite": "kitchen_counter", "shopTitle": "Lamplight Provisions", "shopFlavour": "Lantern stays lit. What do you need?",
+     "lines": {"else": "Lamplight Provisions. Lantern stays lit. What do you need?"},
+     "shop": ["heal_snack", "hearty_snack", "wake_tonic", "befriend_treat", "energy_sip", "joy_crumb", "soft_berry", "kin_ribbon"]},
+    {"kind": "prop", "id": "store_counter_b", "x": 3, "y": 3, "sprite": "kitchen_counter"},
+    {"kind": "prop", "id": "store_counter_c", "x": 4, "y": 3, "sprite": "kitchen_counter"},
+    {"kind": "prop", "id": "store_shelf_a", "x": 6, "y": 4, "sprite": "bookshelf", "lines": {"else": "Jars, tins, and a lantern that never goes out."}},
+    {"kind": "prop", "id": "store_shelf_a2", "x": 7, "y": 4, "sprite": "bookshelf"},
+    {"kind": "prop", "id": "store_shelf_a3", "x": 8, "y": 4, "sprite": "bookshelf"},
+    {"kind": "prop", "id": "store_shelf_a4", "x": 9, "y": 4, "sprite": "bookshelf"},
+    {"kind": "prop", "id": "store_shelf_b", "x": 6, "y": 6, "sprite": "travel_shelf", "lines": {"else": "Snacks for the road. The prices are the usual ones."}},
+    {"kind": "prop", "id": "store_shelf_b2", "x": 7, "y": 6, "sprite": "travel_shelf"},
+    {"kind": "prop", "id": "store_shelf_b3", "x": 8, "y": 6, "sprite": "travel_shelf"},
+    {"kind": "prop", "id": "store_shelf_b4", "x": 9, "y": 6, "sprite": "travel_shelf"},
+    {"kind": "prop", "id": "store_cooler", "x": 10, "y": 3, "sprite": "mr_cooler", "lines": {"else": "A cool box. The drinks stay cold."}},
+    {"kind": "prop", "id": "store_lantern", "x": 1, "y": 6, "sprite": "floor_lantern", "lines": {"else": "The case lantern. It stays lit all night."}},
+    {"kind": "decal", "id": "store_bell", "x": 6, "y": 2, "sprite": "mr_bell"},
+    {"kind": "prop", "id": "store_board", "x": 10, "y": 7, "sprite": "menu_board", "lines": {"else": "A board of what is in today. Nothing new, nothing missing."}}
+   ]
+  },
+  "hm_wardrobe": {
+   "name": "Stitch & Lantern",
+   "kind": "interior",
+   "outdoor": "hearthmoor",
+   "door": "hm_wardrobe",
+   "backdrop": "town",
+   "w": 12,
+   "h": 10,
+   "spawns": null,
+   "zones": [],
+   "safe": {"x": 6, "y": 8},
+   "skin": "house_wardrobe",
+   "variants": true,
+   "wall": {"windows": [2, 9]},
+   "grid": [
+    "############",
+    "#WWWWWWWWWW#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "######m#####"
+   ],
+   "objs": [
+    {"kind": "warp", "id": "wardrobe_mat", "x": 6, "y": 9, "to": "hearthmoor", "tx": 15, "ty": 27, "facing": "down"},
+    {"kind": "npc", "id": "hm_marigold", "name": "Keeper Marigold", "look": "hm_marigold", "x": 9, "y": 2, "facing": "down", "friendSlot": "TAILOR",
+     "lines": {"else": "Racks are still going up. Come back soon, and bring your Walkling."}},
+    {"kind": "prop", "id": "ward_counter", "x": 8, "y": 3, "sprite": "kitchen_counter", "lines": {"else": "A cutting table. The sash cloth is still in bolts."}},
+    {"kind": "prop", "id": "ward_counter_b", "x": 9, "y": 3, "sprite": "kitchen_counter"},
+    {"kind": "prop", "id": "ward_counter_c", "x": 10, "y": 3, "sprite": "kitchen_counter"},
+    {"kind": "prop", "id": "ward_rack_a", "x": 1, "y": 4, "sprite": "mr_rack", "lines": {"else": "Empty hangers. The racks are still going up."}},
+    {"kind": "prop", "id": "ward_rack_a2", "x": 2, "y": 4, "sprite": "mr_rack"},
+    {"kind": "prop", "id": "ward_rack_a3", "x": 3, "y": 4, "sprite": "mr_rack"},
+    {"kind": "prop", "id": "ward_rack_b", "x": 1, "y": 7, "sprite": "mr_rack", "lines": {"else": "Scarves, waiting on their Walklings."}},
+    {"kind": "prop", "id": "ward_rack_b2", "x": 2, "y": 7, "sprite": "mr_rack"},
+    {"kind": "prop", "id": "ward_rack_b3", "x": 3, "y": 7, "sprite": "mr_rack"},
+    {"kind": "prop", "id": "ward_mirror", "x": 6, "y": 2, "sprite": "mirror", "lines": {"else": "A tall mirror. Nothing to try on yet."}},
+    {"kind": "prop", "id": "ward_curtain", "x": 10, "y": 6, "sprite": "mr_curtain", "lines": {"else": "A fitting curtain. The other half is still pinned."}},
+    {"kind": "prop", "id": "ward_curtain_b", "x": 9, "y": 6, "sprite": "mr_curtain"},
+    {"kind": "prop", "id": "ward_sash", "x": 5, "y": 5, "sprite": "table_small", "lines": {"else": "Sash thread in Keeper green and gold."}},
+    {"kind": "prop", "id": "ward_sash_b", "x": 6, "y": 5, "sprite": "table_small"},
+    {"kind": "prop", "id": "ward_hat", "x": 5, "y": 8, "sprite": "mr_hat", "lines": {"else": "A hat stand. One bare peg."}}
+   ]
+  },
+  "hm_diner": {
+   "name": "The Parked Coach",
+   "kind": "interior",
+   "outdoor": "hearthmoor",
+   "door": "hm_diner",
+   "backdrop": "town",
+   "w": 11,
+   "h": 8,
+   "spawns": null,
+   "zones": [],
+   "safe": {"x": 5, "y": 6},
+   "skin": "house_diner",
+   "variants": true,
+   "wall": {"windows": [2, 5, 8]},
+   "grid": [
+    "###########",
+    "#WWWWWWWWW#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#.........#",
+    "#####m#####"
+   ],
+   "objs": [
+    {"kind": "warp", "id": "diner_mat", "x": 5, "y": 7, "to": "hearthmoor", "tx": 4, "ty": 31, "facing": "down"},
+    {"kind": "npc", "id": "hm_hesper", "name": "Cook Hesper", "look": "hm_hesper", "x": 3, "y": 2, "facing": "down", "friendSlot": "DINER_COOK",
+     "lines": {"else": "Sit anywhere. The stew is always on."},
+     "meals": [
+      {"id": "coach_stew", "name": "Coach Stew", "food": 30, "joy": 3, "price": 30},
+      {"id": "berry_stack", "name": "Berry Stack", "food": 20, "joy": 8, "price": 40},
+      {"id": "hearth_plate", "name": "Hearth Plate", "food": 50, "joy": 5, "price": 70}
+     ],
+     "schedule": [
+      {"when": "time:0500-2300", "map": "hm_diner", "x": 3, "y": 2, "facing": "down"},
+      {"map": null, "x": 0, "y": 0}
+     ]},
+    {"kind": "sign", "id": "diner_night", "x": 3, "y": 2, "text": "Opens at 5. The stew stays on.", "when": ["away:Cook Hesper"]},
+    {"kind": "npc", "id": "diner_regular", "name": "Diner Regular", "look": "hm_diner_regular", "x": 2, "y": 5, "facing": "right", "friendSlot": "DINER_REGULAR",
+     "lines": {"else": "FRIEND SLOT. Diner Regular says hi. One short line, written with the friend."}},
+    {"kind": "npc", "id": "diner_lizzy", "name": "Lizzy", "look": "lizzy", "x": 9, "y": 4, "facing": "left", "when": ["story.lizzy_met"],
+     "lines": {"else": "Board night. Pull up a crate."}},
+    {"kind": "npc", "id": "diner_ossabell", "name": "Ossabell", "look": "ossabell", "x": 1, "y": 4, "facing": "right",
+     "lines": {"else": "Dawn shift's over. The stew is hot."}},
+    {"kind": "npc", "id": "diner_bren", "name": "Officer Bren", "look": "officer", "x": 8, "y": 5, "facing": "left", "when": ["time:1200-1300"],
+     "lines": {"else": "Lunch break. The stew is worth the walk."}},
+    {"kind": "prop", "id": "diner_counter", "x": 5, "y": 3, "sprite": "kitchen_counter", "lines": {"else": "One long counter. The stew pot never leaves the heat."}},
+    {"kind": "prop", "id": "diner_counter_b", "x": 2, "y": 3, "sprite": "kitchen_counter"},
+    {"kind": "prop", "id": "diner_counter_c", "x": 4, "y": 3, "sprite": "kitchen_counter"},
+    {"kind": "prop", "id": "diner_stove", "x": 8, "y": 2, "sprite": "mr_stove", "lines": {"else": "The coach stove. It rode every night run."}},
+    {"kind": "prop", "id": "diner_menu", "x": 9, "y": 2, "sprite": "menu_board", "lines": {"else": "Coach Stew, Berry Stack, Hearth Plate."}},
+    {"kind": "prop", "id": "diner_bowl", "x": 4, "y": 5, "sprite": "mr_bowl", "lines": {"else": "The warm-bowl spot. One a day, same as home."}},
+    {"kind": "prop", "id": "diner_crate_a", "x": 2, "y": 6, "sprite": "crate", "lines": {"else": "A crate for a chair. Sit if you like."}},
+    {"kind": "prop", "id": "diner_crate_b", "x": 1, "y": 6, "sprite": "crate"},
+    {"kind": "prop", "id": "diner_crate_c", "x": 9, "y": 6, "sprite": "crate"}
+   ]
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "hearthmoor": {
+    "set": {"w": 24, "h": 34},
+    "gridRows": {
+     "23": "TTTTTTTTTppTTTTTTTTTTTTT",
+     "24": "TgRRRRRggppggRRRRRggfTTT",
+     "25": "TgRRRRRggppggRRRRRgggTTT",
+     "26": "TgHHHHHggppggHHHHHgfgTTT",
+     "27": "TgggpggggppggggpggggggTT",
+     "28": "TgppppppppppppppppppppgT",
+     "29": "TgRRRRRggppgcccccccccggT",
+     "30": "TgHHHHHggppgcccccccccggT",
+     "31": "TgggpgfggppgcccccccccgfT",
+     "32": "TgfgggggggggcccccccccggT",
+     "33": "TTTTTTTTTTTTTTTTTTTTTTTT"
+    },
+    "addRoofs": {
+     "store": {"x0": 2, "y0": 24, "x1": 6, "y1": 25, "roof": "roof_hip_t", "wall": "wall_batten_w", "door": "door_double_r", "win": "win_tall_pane", "trim": "y", "shape": "gable", "porch": ["hm_store_planter"]},
+     "wardrobe": {"x0": 13, "y0": 24, "x1": 17, "y1": 25, "roof": "roof_thatch_y", "wall": "wall_log", "win": "win_square", "trim": "p", "shape": "gable", "porch": ["hm_wardrobe_bed"]},
+     "diner": {"x0": 2, "y0": 29, "x1": 6, "y1": 29, "roof": "roof_turf", "wall": "wall_brick", "win": "win_shutter", "trim": "o", "shape": "flat", "porch": ["hm_diner_barrel"]}
+    },
+    "addObjs": [
+     {"kind": "door", "id": "hm_store", "x": 4, "y": 26, "to": "hm_store", "tx": 6, "ty": 8, "facing": "up"},
+     {"kind": "door", "id": "hm_wardrobe", "x": 15, "y": 26, "to": "hm_wardrobe", "tx": 6, "ty": 8, "facing": "up"},
+     {"kind": "door", "id": "hm_diner", "x": 4, "y": 30, "to": "hm_diner", "tx": 5, "ty": 6, "facing": "up"},
+     {"kind": "prop", "id": "hm_store_planter", "x": 1, "y": 27, "sprite": "planter_box"},
+     {"kind": "prop", "id": "hm_wardrobe_bed", "x": 18, "y": 27, "sprite": "flowerbed"},
+     {"kind": "prop", "id": "hm_diner_barrel", "x": 1, "y": 31, "sprite": "barrel"},
+     {"kind": "sign", "id": "hm_market_sign", "x": 1, "y": 28, "text": "MARKET ROW. Lamplight, Stitch & Lantern, the Parked Coach."},
+     {"kind": "sign", "id": "hm_court_sign", "x": 11, "y": 32, "text": "LANTERNBALL COURT. First to five. Always open."},
+     {"kind": "npc", "id": "hm_arlo", "name": "Keeper cadet Arlo", "look": "hm_arlo", "x": 18, "y": 30, "facing": "down",
+      "lines": {"else": "Next game is first to five. You in?"}},
+     {"kind": "npc", "id": "court_regular", "name": "Court Regular", "look": "hm_court_regular", "x": 13, "y": 31, "facing": "right", "friendSlot": "COURT_REGULAR",
+      "lines": {"else": "FRIEND SLOT. Court Regular says hi. One short line, written with the friend."}},
+     {"kind": "prop", "id": "court_hoop_w", "x": 12, "y": 30, "sprite": "mr_hoop", "shot": true, "lines": {"else": "Take a shot. The hoop lantern flares."}},
+     {"kind": "prop", "id": "court_hoop_e", "x": 20, "y": 30, "sprite": "mr_hoop", "shot": true, "lines": {"else": "Take a shot. The hoop lantern flares."}},
+     {"kind": "decal", "id": "court_chalk_a", "x": 15, "y": 30, "sprite": "mr_chalk"},
+     {"kind": "decal", "id": "court_chalk_b", "x": 17, "y": 30, "sprite": "mr_chalk"},
+     {"kind": "decal", "id": "court_chalk_c", "x": 15, "y": 32, "sprite": "mr_chalk"},
+     {"kind": "npc", "id": "court_lizzy", "name": "Lizzy", "look": "lizzy", "x": 14, "y": 31, "facing": "down", "when": ["story.lizzy_met"],
+      "lines": {"else": "Saturday hoops. First to five."}},
+     {"kind": "npc", "id": "court_pip", "name": "Pip", "look": "pip", "x": 16, "y": 31, "facing": "down",
+      "lines": {"else": "After school we shoot hoops."}},
+     {"kind": "npc", "id": "court_wren", "name": "Wren", "look": "wren", "x": 17, "y": 31, "facing": "up",
+      "lines": {"else": "I call the next shot."}}
+    ]
+   }
+  }
+ }
+}
