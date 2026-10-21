@@ -338,7 +338,8 @@ and the species name shows again. Save `v` stays 2.
 Save `v` stays 2.
 
 Location and privacy: on the first visit to Walk a card asks "Use your location so local creatures
-appear? ..." with Allow / Not now. Only Allow calls the browser's Geolocation API; the answer is
+appear? ..." with Allow / Not now. The tap that closes the line before that card does not press
+Allow or Not now, even if the finger stays down. Only Allow calls the browser's Geolocation API; the answer is
 remembered (`pixelpets.geo`) and you can change it from the badge card (USE MY LOCATION).
 Coordinates are rounded to 2 decimals (about 1 km) before any request, and only the rounded
 values are sent. Nothing is sent anywhere else and the save never holds location.
