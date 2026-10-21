@@ -28,12 +28,11 @@ test("the Warden lodge sign says holders @w1", () => {
 });
 
 test('player-visible lines pass the wording guard @w1', () => {
-  const bad = problems().filter(p => p.indexOf('hc_sign_bank') < 0);
-  expect(bad).toEqual([]);
+  expect(problems()).toEqual([]);
 });
 
-// High Charity's Civic Bank sign still uses a banned word. The sign stays; this records it.
-test.fixme('the Civic Bank sign passes the wording guard @w1', () => {
+// The Civic Bank sign now says Acorns (main, build 20261021-1259).
+test('the Civic Bank sign passes the wording guard @w1', () => {
   const bad = problems().filter(p => p.indexOf('hc_sign_bank') >= 0);
   expect(bad).toEqual([]);
 });

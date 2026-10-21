@@ -201,7 +201,7 @@ test('doors and warps still connect the four rooms, and a shut door keeps its li
   await expect.poll(() => pos(page)).toMatchObject({ map: 'sm_hold', x: 14, y: 4 });
 });
 
-test('an old save on a prop snaps to safe', async ({ page }) => {
+test('an old save on a prop snaps to safe @w1', async ({ page }) => {
   await boot(page, tunnelSave({ map: 'sm_yard', x: 6, y: 2 }));
   expect(await pos(page)).toMatchObject({ map: 'sm_yard', x: 9, y: 8 });
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);

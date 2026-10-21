@@ -2,14 +2,16 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-21 13:37 ET: Test suite runs layout-free checks at 320 only (build 20261021-1337)
+## 2026-10-21 13:56 ET: Test suite runs layout-free checks at 320 only (build 20261021-1356)
 
 - What changed and why: Width-free tests are tagged `@w1` and run on the 320 project only. 375 and 390 use `grepInvert: /@w1/`, so a new untagged test still runs at all three widths. Suite `retries` is 1. A pass on the retry stays flaky, exit 0, with the count and names in the summary. The walk-to-every-person and prop lines from the RegenX floors, the tunnel rooms, the house interiors, High Charity, the observatory and dream rooms, Fernbrook, and both Keeper House floors now run as one shared sweep at 320, with a literal person, sign, prop and warp count per map. Three skill copies match the box text. Save stays `pixelpets.save.v2` with `v` 2. No player text and no game behaviour change.
-- Files touched: `playwright.config.js`, `tests/map_reach_sweep.spec.js`, the map specs that used to speak those lines, other specs tagged `@w1`, `tests/README.md`, `.cursor/skills/walklings-pr-handback/SKILL.md`, `.cursor/skills/walklings-handoff-log/SKILL.md`, `.cursor/skills/walklings-design-commit/SKILL.md`, `.cursor/skills/walklings-qa-run/SKILL.md`, `CHANGELOG.md`, `index.html`, `version.json`.
-- Commit(s) + build id: this branch, build 20261021-1337. `python3 tools/bump_build.py --check` exit 0.
-- Tests run and result (widths, checks): `npm run test:agent` on this branch before merging main. PP_TEST RESULT: PASS exit=0 passed=927 failed=0 flaky=0 skipped=122 time=960s. RTDB_RULES RESULT: PASS. Scheduled runs 1049 (320: 537, 375: 256, 390: 256). `@w1` is 320 only. Console errors: none (a spec fails the run on a console error). A re-run follows the main merge.
+- Files touched: `playwright.config.js`, `tests/map_reach_sweep.spec.js`, the map specs that used to speak those lines, other specs tagged `@w1`, `tests/README.md`, `.cursor/skills/walklings-pr-handback/SKILL.md`, `.cursor/skills/walklings-handoff-log/SKILL.md`, `.cursor/skills/walklings-design-commit/SKILL.md`, `.cursor/skills/walklings-qa-run/SKILL.md`, `CHANGELOG.md`, `index.html`, `version.json`. Merged main's Ribbit wording (`ribbit.js`, `data/highcharity.json`, `data/mapdata.js`, `tools/build_highcharity.py`).
+- Commit(s) + build id: this branch, build 20261021-1356. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `npm run test:agent` after merging main. PP_TEST RESULT: PASS exit=0 passed=926 failed=0 flaky=0 skipped=121 time=966s. RTDB_RULES RESULT: PASS. Scheduled runs 1047 (was 1617). `@w1` is 320 only. Console errors: none (a spec fails the run on a console error).
 - Decisions made (colour + reasoning): Vincent approved this test-infrastructure packet on Oct 21, 2026. No new D id. No id was renumbered. Next free id stays D399.
 - Anything left unfinished: the Supervisor merges. Database rules are not deployed. The client is not deployed.
+
+## 2026-10-21 12:59 ET: Ribbit feed lines say holder or Keeper, and the Civic Bank sign says Acorns (build 20261021-1259). Save stays pixelpets.save.v2 with v 2.
 
 ## 2026-10-21 11:39 ET: Lowercase keeper to holder or Keeper (build 20261021-1139)
 
