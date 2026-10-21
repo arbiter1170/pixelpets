@@ -25,6 +25,9 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 #top .who{display:flex;align-items:center;gap:8px;font-size:23px;text-transform:uppercase;min-width:0}
 #hdrName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .hdr-right{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.clock-chip{box-sizing:border-box;display:flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;height:44px;padding:0 6px;border:0;background:transparent;color:var(--y);font-size:14px;font-family:inherit;line-height:1;white-space:nowrap;cursor:pointer;flex:0 0 auto}
+.clock-chip canvas{width:16px;height:16px;image-rendering:pixelated;image-rendering:crisp-edges}
+#clockCard{white-space:pre-line}
 .icon-btn{width:44px;height:44px;margin-right:-6px;border:0;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
 .icon-btn canvas{width:24px;height:24px}
 .icon-btn:active{background:var(--d)}
@@ -1006,6 +1009,8 @@ body.ctl-modern.scene-on .float-ctl .fc-tr{pointer-events:none}
 /* NAV_MODERN G2: one lock for every nav button */
 body.nav-locked #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,body.nav-locked .scr-back{pointer-events:none;opacity:.5}
 .fc-top{position:absolute;top:calc(6px + var(--sa-t));left:calc(56px + var(--sa-l));right:calc(56px + var(--sa-r));box-sizing:border-box;padding-right:var(--chip-w, 0px);height:44px;display:flex;justify-content:center}
+body.ctl-modern .fc-clock{position:absolute;top:calc(52px + var(--sa-t));left:50%;transform:translateX(-50%);z-index:4;display:flex;pointer-events:auto}
+body.ctl-modern .fc-clock .clock-chip{background:rgba(26,28,44,.88);box-shadow:0 0 0 2px var(--m);padding:0 8px}
 .fc-top .env-badge{margin:0;max-width:100%;min-height:44px;height:44px;align-self:auto;background-clip:content-box}   /* QA Oct 15: 44 px tap target; the band art stays 28 px */
 body.ctl-modern .fc-top .env-badge > .frame-art{top:8px;height:28px}
 .fc-tip{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(56px + var(--sa-b));height:var(--tip-h,28px)}

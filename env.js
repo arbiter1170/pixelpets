@@ -53,7 +53,10 @@ const PPEnv = (() => {
     if (code >= 2) return 'cloudy';
     return 'clear';
   }
-  const clockNight = (ms = Date.now()) => { const h = new Date(ms).getHours(); return h >= 20 || h < 6; };
+  const clockNight = (ms = Date.now()) => {
+    if (typeof PPClock !== 'undefined' && PPClock.phase) return PPClock.phase(ms) === 'night';
+    const h = new Date(ms).getHours(); return h >= 20 || h < 6;
+  };
 
   async function fetchWeather(lat, lon){
     const j = await getJson(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day,wind_speed_10m`, 9000);
@@ -124,8 +127,8 @@ const PPEnv = (() => {
       if (weather.temp >= 28) tags.add('hot');
       if (weather.temp <= 3) tags.add('cold');
       if (weather.wind >= 30) tags.add('windy');
-      if (weather.isDay === 0) tags.add('night');
-    } else if (clockNight(now)) tags.add('night');
+    }
+    if (clockNight(now)) tags.add('night');
     return ALL_TAGS.filter(t => tags.has(t));
   }
   function labelFor(tags, temp, place){
@@ -238,9 +241,21 @@ const PPEnv = (() => {
     else if (typeof x === 'object') ls.set(OVERRIDE_KEY, JSON.stringify({ tags: x.tags || [], temp: x.temp }));
     env = overrideEnv(); emit(); return env;
   }
-  // Recompute time-dependent bits (device-clock night for the fallback) without any network.
-  function tick(){ if (env && env.source === 'default') { const e = fallback(env.status); if (e.label !== env.label) { env = e; emit(); } } }
+  // Recompute time-dependent bits without any network. Night follows the in-game clock (D376).
+  function syncClock(){
+    if (!env || env.source === 'manual') return env;
+    const night = clockNight();
+    const set = new Set(env.tags);
+    if (night) set.add('night'); else set.delete('night');
+    const ordered = ALL_TAGS.filter(t => set.has(t));
+    if (ordered.join() === env.tags.join()) return env;
+    env = build(ordered, { source: env.source, status: env.status, temp: env.temp, coords: env.coords, place: env.place, placeLabel: env.placeLabel, preset: env.preset, detail: env.detail, updated: env.updated });
+    emit();
+    return env;
+  }
+  function tick(){ syncClock(); }
 
-  return { init, refresh, setOverride, allowOverride, tick, geoPref, setGeoPref, get current(){ return env; },
+  return { init, refresh, setOverride, allowOverride, tick, syncClock, geoPref, setGeoPref, get current(){ return env; },
     PRESETS, ALL_TAGS, deriveTags, labelFor, wmo, round2, overpassQuery, WEATHER_TTL, TERRAIN_TTL };
 })();
+if (typeof window !== 'undefined') window.PPEnv = PPEnv;
