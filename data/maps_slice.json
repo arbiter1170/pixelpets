@@ -54,7 +54,7 @@
         {"kind": "sign", "id": "hm_sign_lodge", "x": 12, "y": 7, "text": "WARDEN'S LODGE · Warden Ilse Marrow. New holders, knock and come in."},
         {"kind": "sign", "id": "hm_sign_lantern", "x": 17, "y": 13, "text": "LANTERN HOUSE · Rest and recover. Free, always."},
         {"kind": "npc", "id": "hattie", "name": "Hattie", "x": 4, "y": 13, "lines": {"!story.starter_received": "Off to see Ilse? She's been fussing over three baskets since dawn.", "else": "Route 1 has shy crabs by the stream. On rainy days they come right out."}},
-        {"kind": "npc", "id": "rook_home", "name": "Rook", "x": 17, "y": 6, "when": ["!story.starter_received"], "lines": {"else": "Ilse's handing out partners today! Bet I get mine first. Just... warming up."}},
+        {"kind": "npc", "id": "rook_home", "name": "Rook", "x": 17, "y": 6, "when": ["!story.starter_received"], "lines": {"else": "Ilse's handing out partners today! Bet I get mine first. Somebody says I've got potential."}},
         {"kind": "npc", "id": "rook_gate", "name": "Rook", "x": 22, "y": 8, "when": ["story.starter_received", "!story.rival1_done"], "scene": "rival1"},
         {"kind": "trigger", "id": "hm_gate", "x": 21, "y": 8, "r": 0, "when": ["!story.starter_received"], "scene": "gate_home"},
         {"kind": "trigger", "id": "hm_rival1", "x": 21, "y": 8, "r": 0, "when": ["story.starter_received", "!story.rival1_done"], "scene": "rival1"}
@@ -206,7 +206,7 @@
       ["say", "", "{species} hops out of the basket and sniffs your boots."],
       ["nameEntry", "partner", "Give it a name?", null, 10],
       ["say", "Warden Ilse", "{pet} and {name}. Learn each other. The road will not wait."],
-      ["if", "!story.starter_received", [["say", "", "The door bangs open. Rook skids in, out of breath."], ["say", "Rook", "Did I miss it? Aw, you picked already! Then I'll take... that one!"], ["say", "", "Rook scoops up the {rival} basket and grins at you."], ["say", "Rook", "{rivalType} beats {type}, everybody knows that. Meet me at the east gate!"],       ["say", "Warden Ilse", "That boy. Now you each have someone who can stand in the dark with you."]]],
+      ["if", "!story.starter_received", [["say", "", "The door bangs open. Rook skids in, out of breath."], ["say", "Rook", "Did I miss it? I got held up. Don't ask. Aw, you picked! Then I'll take... that one!"], ["say", "", "Rook scoops up the {rival} basket and grins at you."], ["say", "Rook", "{rivalType} beats {type}, everybody knows that. Meet me at the east gate!"],       ["say", "Warden Ilse", "That boy. Now you each have someone who can stand in the dark with you."]]],
       ["say", "Warden Ilse", "Feed them. Let them rest. Out there, that trust is the only armour you have."],
       ["give", "heal_snack", 2],
       ["give", "befriend_treat", 3],
@@ -231,9 +231,9 @@
       ["push", -1, 0]
     ],
     "rival1": [
-      ["say", "Rook", "Hey, wait up! Me and {rival} have been practising. For ten whole minutes."],
+      ["say", "Rook", "Hey, wait up! Me and {rival} have been practising. Ten whole minutes. I had a coach."],
       ["battle", "rival1_rook"],
-      ["if", "story.rival1_result=won", [["say", "Rook", "Okay, okay, you two are good. Race you to Fernbrook!"]], [["say", "Rook", "Ha! Don't sweat it, the Lantern House fixes everyone up."], ["say", "Rook", "Race you to Fernbrook! Last one there feeds the other one's Walkling!"]]]
+      ["if", "story.rival1_result=won", [["say", "Rook", "Okay, okay, you're good. Race you to Fernbrook! Somebody's waiting for me."]], [["say", "Rook", "Ha! Don't sweat it, the Lantern House fixes everyone up."], ["say", "Rook", "Race you to Fernbrook! I'm meeting someone. Last one there feeds the other's Walkling!"]]]
     ],
     "glimmer1": [
       ["say", "Associate Juniper", "Hi there! Free Glimmer lantern? Brighter by nature!"],
