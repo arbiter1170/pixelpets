@@ -80,6 +80,24 @@ test('species stage totals follow 192, 256 and 320', () => {
   expect(lib.repoStageProblems()).toEqual([]);
 });
 
+test('the save form table and the journal count the Hushwater lines', () => {
+  const spr = lib.read('sprites.js');
+  const block = spr.slice(spr.indexOf('const SPECIES'), spr.indexOf('const GLYPH'));
+  const ids = [...block.matchAll(/\bid:'([a-z0-9_]+)'/g)].map(m => m[1]);
+  const npc = (block.match(/npcOnly:true/g) || []).length;
+  expect(ids.slice(-5)).toEqual(['fetch', 'skink', 'otter', 'owl', 'snail']);
+  expect(ids).toHaveLength(20);
+  expect(npc).toBe(1);
+  expect((ids.length - npc) * 3).toBe(57);
+  expect(ids.length * 3).toBe(60);
+  const save = lib.read('save.js');
+  const row = save.match(/const SPECIES_IDS = Object\.freeze\(\[\.\.\.V1_SPECIES, ([^\]]+)\]\)/);
+  expect(row).toBeTruthy();
+  const saved = row[1].split(',').map(s => s.trim().replace(/'/g, ''));
+  expect(saved).toEqual(ids.slice(8));
+  expect(save).toContain('pixelpets.save.v2');
+});
+
 test('a stage total that breaks the rule is reported', () => {
   const line = { hp: 1, atk: 1, def: 1, spd: 1 };
   const bad = lib.stageProblems({ 'spark/0': line, 'spark/1': line, 'spark/2': line }, ['spark']);

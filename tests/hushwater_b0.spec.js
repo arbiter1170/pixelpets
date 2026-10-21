@@ -177,9 +177,9 @@ test('unknown species stays, draws a fallback, and cannot lead', async ({ page }
       cellW: cellBox.width,
     };
   });
-  expect(grid.known).toBe(45);
-  expect(grid.n).toBe(47);
-  expect(grid.header).toContain('Out there 45');
+  expect(grid.known).toBe(57);
+  expect(grid.n).toBe(59);
+  expect(grid.header).toContain('Out there 57');
   expect(grid.header).toContain('Joined ' + grid.joinedKnown);
   expect(grid.label).toContain('???');
   expect(grid.other).toContain('???');

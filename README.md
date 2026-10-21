@@ -103,7 +103,7 @@ Levels, types and stats (`stats.js`):
   the Pet scene and the Pets tab.
 - Stats card: tap STATS (above FEED, same button chrome as FEED / PLAY / REST), the follower, or the modern partner strip. The popup row is INTERACT (grey) and GEAR (lime, full care-button size). INTERACT shows only for the partner, closes the popup, and opens PARTNER. GEAR opens the gear section in the same popup. The first gear row is NAME, and the pencil beside the header name opens the same editor. On PARTNER the button beside STATS is GEAR and opens that gear view. The kit overlay is not on the new page. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats, the same gear, and its own NAME field. It shows the type badge, Level,
   GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
-  scaled to the highest value of that stat among the 45 forms a keeper can meet, and one type-chart line
+  scaled to the highest value of that stat among the 57 forms a keeper can meet, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
   tap outside it or Escape closes it. Any tab can open it with a Walkling id (`openStatsCard(id)` in `game.js`).
 
@@ -316,7 +316,7 @@ Which species appear depends on where you are and the weather there:
 - The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
 
-Creatures: 16 lines of 3 forms. The WALKLING JOURNAL lists the 45 forms a keeper can meet. Every line a keeper
+Creatures: 20 lines of 3 forms. The WALKLING JOURNAL lists the 57 forms a keeper can meet. Every line a keeper
 can meet grows up the same way (growth XP 40 / 120 plus care, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
 Pomlet → Pomshell → Orchardon (BLOOM beetle), Loamlet → Burrowbloom → Hedgewarden (BLOOM mole),
 Clinkit → Shardpincer → Mosaicrab (TIDE crab), Fuzzwick → Filamoth → Halowatt (VOLT moth),
@@ -324,7 +324,9 @@ Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lull
 Bitlet → Hoverbyte → Archivolt (VOLT `byte`) is a floating computer. It is `labOnly`: the Arbiter bay is where you meet it,
 and it is never part of the habitat roll or the 8% any-species roll.
 Fetchling → Harvestail → Hearthound (BLOOM `fetch`) is NPC-only. `npcOnly` keeps it out of the wild roll, the starter
-baskets, and the journal, so the journal still counts 45. A keeper cannot meet one. Save `v` stays 2.
+baskets, and the journal. A keeper cannot meet one. Hushwater adds four lines a keeper can meet: Tindlet → Cinderskink → Kilncrest (EMBER skink),
+Rimelet → Frostrill → Spraymane (FROST otter), Hushlet → Quillhush → Vesperowl (SHADE owl) and Lichlet → Screeback → Cairnshell (STONE snail).
+Wild levels on the stream are 19–23. Save `v` stays 2.
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
@@ -385,7 +387,7 @@ with Courier New / monospace as fallback; ★ ♥ and the arrow symbols come fro
 Saves (format v2, `save.js`):
 - `pixelpets.save.v2` is the save. Walklings live in a **party** (up to 6, the partner is always in it) and a
   **box** (no limit). A 7th befriended Walkling asks which unlocked party Walkling goes to the box, then joins the party. If every party Walkling is locked, the catch is refused. The WALKLINGS tab
-  is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 45; unmet forms stay silhouettes).
+  is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 57; unmet forms stay silhouettes).
   Each TEAM and WALKLING-BOX row shows six tiny bars to the right of the name: HP, NRG, FOOD, JOY, GROW and XP. A worn-out row shows RESTING and an empty red HP bar. Tapping the row still opens the Walkling.
   MOVE reorders the party. TO BOX / TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling.
   A chipped Walkling stays in the party. TO WALKLING-BOX and RELEASE on that slot are greyed, and the slot says "{name} stays with you now." The same line toasts if a box, release, or later trade still tries, under the collection title. The party slot shows a lock mark beside the name. Locked Walklings are not listed in the box.
@@ -395,8 +397,8 @@ Saves (format v2, `save.js`):
   hold a Soft Berry, Bracer Band, or Kin Ribbon, pick an adornment (Lodge bell, Hall ribbon, Hearth scarf, Orchard sprig, or Amber star), and set a call (Charge, Brace, Dart, or Greet).
   The five adornment ids stay `bell`, `ribbon`, `scarf`, `leaf`, and `star`. They are drawn on the body so they sit on every Walkling. More adornments unlock from quests later; that list is not built (D75). The partner button is GEAR.
   Walklings name their species by a permanent id (`ember`, `tide`, `bloom`, `stone`, `volt`, `frost`, `gust`,
-  `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`, then `byte`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
-  The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 45 form ids) is append-only: new lines are added at the end
+  `shade`, then `beetle`, `mole`, `crab`, `moth`, `vane`, `dormouse`, then `byte`, then `fetch`, then `skink`, `otter`, `owl`, `snail`); the WALKLING JOURNAL is keyed by form id (`ember/1`).
+  The id table (`PPSave.SPECIES_IDS` / `FORM_IDS`, 60 form ids) is append-only: new lines are added at the end
   of `SPECIES` and of the table without a new save version, and a dev check reports any reorder. A v2 Walkling whose
   species id this build does not know stays in the party or the box. Its moves and journal keys stay. The picture is a plain fallback, and the journal names it ???. It is not battle-ready, so it cannot lead and a SWAP skips it. If that pet's id matches another pet, it gets a new id. Every other field stays. The pet is not dropped. Ids stay unique across the party and the box. Save v stays 2. No new top-level key and no new pet field. A row already in `orphans`, and a v1 pet whose index this build cannot read, still stays in `orphans` and comes back to the box only when the species is known.
   Unknown fields are kept on load and save. Save `v` stays 2. B0 adds no field.

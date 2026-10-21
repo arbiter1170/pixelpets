@@ -60,6 +60,7 @@ test('walkling sheet opens from the collection, heals, renames, reorders moves, 
   expect(api.snacks).toBe(1);
 
   await page.locator('#tabs button[data-tab="col"]').click();
+  await expect(page.locator('#dexCount')).toContainText('Out there 57');
   await page.locator('#partyBoard .slot-main').first().click();
   await expect(page.locator('#ovWalkling')).toBeVisible();
   await expect(page.locator('#ovStats')).toBeHidden();
