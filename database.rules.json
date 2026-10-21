@@ -63,7 +63,7 @@
                   ".validate": "newData.isString() && newData.val().matches(/^(k|p|r|o|y|l|g|t|n|b|c|s|w|h|m|d)$/)"
                 },
                 "ax": {
-                  ".validate": "newData.isString() && newData.val().matches(/^(none|glasses|bow|cap|scarf)$/)"
+                  ".validate": "newData.isString() && newData.val().matches(/^(none|glasses|bow|cap|scarf|sash|satchel|goggles|beanie)$/)"
                 },
                 "$other": {
                   ".validate": "false"
@@ -73,7 +73,7 @@
               "pet": {
                 ".validate": "newData.hasChildren(['sp', 'st', 'lv'])",
                 "sp": {
-                  ".validate": "newData.isString() && newData.val().matches(/^(ember|tide|bloom|stone|volt|frost|gust|shade|beetle|mole|crab|moth|vane|dormouse|byte|fetch)$/)"
+                  ".validate": "newData.isString() && newData.val().matches(/^(ember|tide|bloom|stone|volt|frost|gust|shade|beetle|mole|crab|moth|vane|dormouse|byte|fetch|skink|otter|owl|snail)$/)"
                 },
                 "st": {
                   ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 2"

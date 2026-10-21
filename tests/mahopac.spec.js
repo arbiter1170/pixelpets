@@ -35,7 +35,7 @@ test('look picker offers more hair, clothes, and accessories', async ({ page }) 
   expect(counts.hair).toBeGreaterThanOrEqual(8);
   expect(counts.hairCol).toBeGreaterThanOrEqual(14);
   expect(counts.outfit).toBeGreaterThanOrEqual(6);
-  expect(counts.accessory).toBe(5);
+  expect(counts.accessory).toBe(9);
   expect(counts.migrated).toBe(true);
   expect(counts.gridsOk).toBe(true);
 

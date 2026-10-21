@@ -2,6 +2,42 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 07:33 ET: Wardrobe gesture guard (build 20261021-0733)
+
+- What changed and why: A finger already down when Stitch & Lantern opens was still buying if it lifted after 350ms. The picker now takes a tap only when that tap's pointerdown or touchstart landed inside it after it opened. A lift with no such start is ignored however long it was held. Keyboard Space and Enter still work. The check is `guardOverlayOpen`, so other overlays can use it later. Save stays `pixelpets.save.v2` with `v` 2. Green bug fix. No new id.
+- Files touched: `game.js`, `tests/wardrobe.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261021-0733. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js` on wardrobe, market_row, tap_interact, and smoke. PP_TEST RESULT: PASS exit=0 passed=68 failed=0 flaky=0 skipped=4 time=71s. RTDB_RULES RESULT: PASS. The touch checks run at 390. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): Green. No new id. No id was renumbered. Next free id stays D397.
+- Anything left unfinished: `#ovGeo` can still open on the same closing tap when location is unset. A scene step that opens `#ovSheet` on that same turn (the tune pick) can too. Those are noted and not changed. P4 stores are not started. Database rules are not deployed. The client is not deployed.
+
+## 2026-10-21 07:21 ET: Wardrobe ghost tap (build 20261021-0721)
+
+- What changed and why: The tap that closes Keeper Marigold's line was also clicking the wardrobe card underneath. The picker now ignores pointer, touch and click for 350ms after it opens. Keyboard Space and Enter are left alone. Save stays `pixelpets.save.v2` with `v` 2. Green bug fix. No new id.
+- Files touched: `game.js`, `tests/wardrobe.spec.js`, `tests/market_row.spec.js`, `tests/coop_r2.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261021-0721. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js` on wardrobe, market_row, tap_interact, and smoke. PP_TEST RESULT: PASS exit=0 passed=67 failed=0 flaky=0 skipped=2 time=61s. RTDB_RULES RESULT: PASS. The ghost-tap check runs at 390. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): Green. No new id. No id was renumbered. Next free id stays D397.
+- Anything left unfinished: `#ovGeo` can still open on the same closing tap when location is unset. A scene step that opens `#ovSheet` on that same turn (the tune pick) can too. Those are noted and not changed. P4 stores are not started. Database rules are not deployed. The client is not deployed.
+
+## 2026-10-21 07:00 ET: Parked Coach roof merge and holder label (build 20261021-0700)
+
+- What changed and why: Merged `origin/main` (Parked Coach barrel roof, #129, fc7b020) into wardrobe v1. Kept the `roof_coach` tile, diner rows 29-32, the door at (4, 31) and the mat landing `ty` 32, plus every P3 wardrobe change. `data/mapdata.js` was regenerated from the merged JSON. The look picker preview label is now "Your holder". Lowercase keeper is banned. Green wording fix. No new id. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `data/detail_zz_market.json`, `data/mapdata.js`, `sprites.js`, `tests/market_row.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: merge of fc7b020, build 20261021-0700. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js` on wardrobe, market_row, world_clock, house_reskin, map_layers, interior_walls, look_keys, look_listen, mahopac, lizzy, and smoke. PP_TEST RESULT: PASS exit=0 passed=192 failed=0 flaky=0 skipped=0 time=123s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): Green. No new id. No id was renumbered. Next free id stays D397.
+- Anything left unfinished: P4 stores are not started. Database rules are not deployed. The client is not deployed. Rules for project walklings-4cc89 go out before the client merge.
+
+## 2026-10-21 06:33 ET: Wardrobe v1 (build 20261021-0633)
+
+- What changed and why: WORLD_CLOCK_TOWN P3. Keeper Marigold opens Stitch & Lantern. Six Walkling adornments and four holder pieces are for sale, and four outfit colours (Sky, Yellow, Lime, White) cost 60 Acorns. The seven outfit colours already in the game stay free. A paid Walkling item has one wearer. Releasing that Walkling puts the item back on the rack and keeps the flag. CHANGE LOOK, the intro mirror, shuffle and GEAR ADORN list free and owned items only. Closing the picker writes the holder look once when you are in a shared room. The room rules also let skink, otter, owl and snail join. Save stays `pixelpets.save.v2` with `v` 2. The only new data are `wardrobe.*` flags.
+- Files touched: `game.js`, `keeper.js`, `save.js`, `net.js`, `database.rules.json`, `index.html`, `style.css`, `data/detail_zz_market.json`, `data/mapdata.js`, `tools/rtdb_rules_test.js`, `tests/wardrobe.spec.js`, `tests/coop_r2.spec.js`, `tests/market_row.spec.js`, `tests/mahopac.spec.js`, `tests/lizzy.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`, `screenshots/partner/adornments-320.png`.
+- Commit(s) + build id: this branch, build 20261021-0633. `data/mapdata.js` was regenerated. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `npm run test:agent` PP_TEST RESULT: PASS exit=0 passed=1465 failed=0 flaky=0 skipped=116 time=1277s. RTDB_RULES RESULT: PASS. `tests/coop_r2.spec.js` and `tests/play_together.spec.js` were also run in separate processes before that (PASS, 11 and 27). Widths 320, 375 and 390. `python3 tools/bump_build.py --check` exit 0. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): D395 and D396 are SETTLED, green, on Design's defaults, by the Supervisor on Oct 21, 2026. D363-D379 and D390-D396 stay reserved. Next free id is D397. No id was renumbered. D75 stays open. The six shop adornments are not that quest list.
+- Anything left unfinished: P4 stores are not started. Database rules are not deployed. The client is not deployed. Rules for project walklings-4cc89 go out before the client merge.
+
 ## 2026-10-21 03:52 ET: Keeper Teague, hm_ looks, and Undertow (build 20261021-0352)
 
 - What changed and why: Design tip bb5b716. The Lamplight day clerk is Keeper Teague (`hm_teague`), with look `hm_teague` and a cast row of their own beside Keeper Quill. High Charity's Keeper Rowan stays, including the `sorrel` portrait and the old reputation row. Market Row look keys now use the `hm_` prefix: `hm_quill`, `hm_teague`, `hm_marigold`, `hm_hesper`, `hm_arlo`, `hm_diner_regular`, `hm_court_regular`. The diner regular and court regular ids stay. Lichlet (`snail/0`) learns Undertow at level 12 instead of Boulder Drop, so a wild Screeback does not learn Boulder Drop twice. Screeback (`snail/1`) still learns Boulder Drop at level 0. Wren stays at (17, 31). The busy store and diner floors stay. Save stays `pixelpets.save.v2` with `v` 2. No new save key.

@@ -117,11 +117,26 @@ const petSpr = p => sprFor(p && p.species, p && p.stage, isFaded(p));
 function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return g; }
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
   grid.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === '#') g.fillRect(x,y,1,1); })); }
-// Cosmetic Walkling adornments. Not keeper slots. The five ids stay free.
-// More unlock from quests later; that list is not built (D75).
+// Cosmetic Walkling adornments. Not keeper slots. The first five ids stay free.
+// Six more are sold at Stitch & Lantern (wardrobe flags). Quest unlocks are still not built (D75).
 // Each one is measured onto the sprite's body so the same art sits on every Walkling.
-const PET_ACC_IDS = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
-const PET_ACC_LABEL = { bell: 'Lodge bell', ribbon: 'Hall ribbon', scarf: 'Hearth scarf', leaf: 'Orchard sprig', star: 'Amber star' };
+const PET_ACC_IDS = ['bell', 'ribbon', 'scarf', 'leaf', 'star', 'wick_charm', 'pin_badge', 'fern_scarf', 'clover_crown', 'willow_crown', 'lamp_cap'];
+const PET_ACC_LABEL = { bell: 'Lodge bell', ribbon: 'Hall ribbon', scarf: 'Hearth scarf', leaf: 'Orchard sprig', star: 'Amber star', wick_charm: 'Wick charm', pin_badge: 'Trail pin badge', fern_scarf: 'Fern scarf', clover_crown: 'Clover crown', willow_crown: 'Willow crown', lamp_cap: "Miner's lamp cap" };
+// P3 art, copied from the packet. Pixels are [dx, dy, PAL key] from the slot anchor.
+const PET_ACC_ART = {
+  wick_charm: { slot: 'neck', px: [[-2, 0, 'F'], [-1, 0, 'F'], [0, 0, 'F'], [1, 0, 'F'], [2, 0, 'F'], [0, 1, 'G'], [-1, 2, 'G'], [0, 2, 'y'], [1, 2, 'G'], [-1, 3, 'G'], [0, 3, 'o'], [1, 3, 'G'], [0, 4, 'G']] },
+  pin_badge: { slot: 'chest', px: [[-1, 0, 'y'], [0, 0, 'y'], [1, 0, 'y'], [-1, 1, 'y'], [0, 1, 'b'], [1, 1, 'y'], [-1, 2, 'y'], [0, 2, 'y'], [1, 2, 'y'], [-1, 3, 'b'], [1, 3, 'b']] },
+  fern_scarf: { slot: 'neck', px: [[-2, 0, 'g'], [-1, 0, 'l'], [0, 0, 'g'], [1, 0, 'l'], [2, 0, 'g'], [1, 1, 'g'], [2, 1, 'l'], [2, 2, 'g'], [3, 2, 'l'], [2, 3, 'l']] },
+  clover_crown: { slot: 'crown', px: [[0, -3, 'l'], [-2, -2, 'w'], [-1, -2, 'l'], [0, -2, 'g'], [1, -2, 'l'], [2, -2, 'w'], [-2, -1, 'g'], [-1, -1, 'g'], [0, -1, 'g'], [1, -1, 'g'], [2, -1, 'g']] },
+  willow_crown: { slot: 'crown', px: [[-1, -2, 'l'], [1, -2, 'l'], [-2, -1, 'g'], [-1, -1, 'g'], [0, -1, 't'], [1, -1, 'g'], [2, -1, 'g'], [-3, 0, 'l'], [3, 0, 'l'], [-3, 1, 'g'], [3, 1, 'g']] },
+  lamp_cap: { slot: 'crown', px: [[-1, -3, 'm'], [0, -3, 'h'], [1, -3, 'm'], [-2, -2, 'm'], [-1, -2, 'm'], [0, -2, 'y'], [1, -2, 'm'], [2, -2, 'm'], [-3, -1, 'd'], [-2, -1, 'd'], [-1, -1, 'd'], [0, -1, 'd'], [1, -1, 'd'], [2, -1, 'd'], [3, -1, 'd']] },
+};
+// P3_ANCHOR_RULE: crown (crownX, minY), neck (cx, neck), chest (cx, neck + 2).
+function p3Anchor(slot, box){
+  if (slot === 'crown') return { x: box.crownX, y: box.minY };
+  if (slot === 'chest') return { x: box.cx, y: box.neck + 2 };
+  return { x: box.cx, y: box.neck };
+}
 const accBodyCache = new WeakMap();
 function accBodyOf(img){
   if (!img || !img.getContext) return null;
@@ -221,6 +236,11 @@ function accPixels(name, box){
       { x: cx - 1, y: top + 1, c: 'y' }, { x: cx, y: top + 1, c: 'y' }, { x: cx + 1, y: top + 1, c: 'y' },
       { x: cx - 1, y: top + 2, c: 'y' }, { x: cx + 1, y: top + 2, c: 'y' },
     ];
+  }
+  const art = PET_ACC_ART[name];
+  if (art) {
+    const a = p3Anchor(art.slot, box);
+    return art.px.map(p => ({ x: a.x + p[0], y: a.y + p[1], c: p[2] }));
   }
   return [];
 }
@@ -678,7 +698,7 @@ function showTab(name){
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [] };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -3671,13 +3691,53 @@ function unholdItem(petId){
   delete p.held;
   return { ok: true, msg: 'Took back ' + (it ? it.name : id) + '.' };
 }
+// Stitch & Lantern (P3). One row per paid item. Free looks have no row. ownsLook is true for those.
+const WARDROBE_LIST = [
+  { id: 'wick_charm', tab: 'walkling', name: 'Wick charm', price: 120, flag: 'wardrobe.wick_charm', line: 'A tiny lantern on a cord.' },
+  { id: 'pin_badge', tab: 'walkling', name: 'Trail pin badge', price: 120, flag: 'wardrobe.pin_badge', line: 'A gold pin for trail walkers.' },
+  { id: 'fern_scarf', tab: 'walkling', name: 'Fern scarf', price: 150, flag: 'wardrobe.fern_scarf', line: 'Knit green, with a fern tail.' },
+  { id: 'clover_crown', tab: 'walkling', name: 'Clover crown', price: 180, flag: 'wardrobe.clover_crown', line: 'Clover and two white blooms.' },
+  { id: 'willow_crown', tab: 'walkling', name: 'Willow crown', price: 200, flag: 'wardrobe.willow_crown', line: 'Willow strands that sway.' },
+  { id: 'lamp_cap', tab: 'walkling', name: "Miner's lamp cap", price: 220, flag: 'wardrobe.lamp_cap', line: 'A little lamp for dark tunnels.' },
+  { id: 'beanie', tab: 'holder', name: 'Knit beanie', price: 150, flag: 'wardrobe.beanie', line: 'Soft knit with a bobble.' },
+  { id: 'goggles', tab: 'holder', name: 'Dust goggles', price: 200, flag: 'wardrobe.goggles', line: 'Pushed up, ready for dust.' },
+  { id: 'satchel', tab: 'holder', name: 'Woven satchel', price: 250, flag: 'wardrobe.satchel', line: 'Woven, with room for snacks.' },
+  { id: 'sash', tab: 'holder', name: 'Keeper sash', price: 300, flag: 'wardrobe.sash', line: 'Keeper green, with a gold pin.' },
+  { id: 'col_sky', key: 'c', tab: 'colours', name: 'Sky', price: 60, flag: 'wardrobe.col_sky', line: 'A new outfit colour.' },
+  { id: 'col_yellow', key: 'y', tab: 'colours', name: 'Yellow', price: 60, flag: 'wardrobe.col_yellow', line: 'A new outfit colour.' },
+  { id: 'col_lime', key: 'l', tab: 'colours', name: 'Lime', price: 60, flag: 'wardrobe.col_lime', line: 'A new outfit colour.' },
+  { id: 'col_white', key: 'w', tab: 'colours', name: 'White', price: 60, flag: 'wardrobe.col_white', line: 'A new outfit colour.' },
+];
+const WARDROBE = Object.fromEntries(WARDROBE_LIST.map(r => [r.id, r]));
+function wardrobeRow(id, slot){
+  if (!id || id === 'none') return null;
+  if (WARDROBE[id]) return WARDROBE[id];
+  // Sky, Yellow, Lime and White share PAL keys with hair and accent. Those slots stay free.
+  if (slot && slot !== 'outfitCol') return null;
+  for (const row of WARDROBE_LIST) if (row.key === id) return row;
+  return null;
+}
+function ownsLook(id, slot){
+  const row = wardrobeRow(id, slot);
+  if (!row) return true;
+  return !!(S && S.flags && S.flags[row.flag] === true);
+}
+function lookChoices(slot){ return KEEPER_LOOKS[slot].filter(opt => ownsLook(opt, slot)); }
 function setAccessory(petId, name){
   const p = petById(petId);
   if (!p) return { ok: false, msg: 'No Walkling.' };
   if (name == null || name === 'none' || name === '') { delete p.accessory; return { ok: true, msg: petName(p) + ' wears nothing.' }; }
   if (!PET_ACC_IDS.includes(name)) return { ok: false, msg: "That isn't an accessory." };
+  if (!ownsLook(name)) return { ok: false };
+  let moved = false;
+  const row = wardrobeRow(name);
+  if (row && row.tab === 'walkling') {
+    for (const q of allPets()) if (q.id !== p.id && q.accessory === name) { delete q.accessory; moved = true; }
+  }
   p.accessory = name;
-  return { ok: true, msg: petName(p) + ' wears the ' + (PET_ACC_LABEL[name] || name) + '.' };
+  const label = PET_ACC_LABEL[name] || name;
+  if (moved) return { ok: true, moved: true, msg: label + ' moved to ' + petName(p) + '.' };
+  return { ok: true, msg: petName(p) + ' wears the ' + label + '.' };
 }
 // Triggers (§4): fire when a step ends within Manhattan r; once until the keeper ends a step outside the area (or the map changes).
 let walkAwayI = 0;   // which gate toast to show next; not saved (one line each time you step off after "Think about it")
@@ -4865,7 +4925,7 @@ function renderLook(){
   const d = lookUI.draft;
   for (const [slot, sel, label] of LOOK_ROWS) {
     const box = $(sel); box.innerHTML = '';
-    for (const opt of KEEPER_LOOKS[slot]) {
+    for (const opt of lookChoices(slot)) {
       const b = document.createElement('button'); b.type = 'button'; b.dataset.opt = opt;
       const on = d[slot] === opt; b.className = (slot === 'hair' || slot === 'outfit' || slot === 'accessory' ? 'preview' : 'swatch') + (on ? ' on' : '');
       b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', label + ': ' + (COLOUR_NAMES[opt] || opt));
@@ -4889,7 +4949,10 @@ function drawLookPreview(t){                   // the big keeper turns through t
 }
 function shuffleLook(){
   const pick = a => a[Math.random() * a.length | 0];
-  for (const slot of KEEPER_LOOKS.slots) lookUI.draft[slot] = pick(KEEPER_LOOKS[slot]);
+  for (const slot of KEEPER_LOOKS.slots) {
+    const opts = lookChoices(slot);
+    if (opts.length) lookUI.draft[slot] = pick(opts);
+  }
   sfx('tap'); renderLook(); drawLookPreview(now());
 }
 function lookDone(){
@@ -4897,6 +4960,299 @@ function lookDone(){
   sfx('befriend');
   if (lookUI.resolve) { closeLook(lk); return; }          // inside a scene: the scene commits it at its end
   S.player.look = lk; closeLook(); save(); toast('Looking good, ' + playerName() + '!');
+}
+
+/* ---------- Stitch & Lantern wardrobe (#ovWardrobe) ---------- */
+const WARD_FREE_HOLDER = [
+  { id: 'glasses', name: 'Glasses' },
+  { id: 'bow', name: 'Bow' },
+  { id: 'cap', name: 'Cap' },
+  { id: 'scarf', name: 'Scarf' },
+];
+const WARD_FREE_COLOUR = [
+  { id: 't', name: 'Teal' }, { id: 'b', name: 'Blue' }, { id: 'g', name: 'Green' }, { id: 'p', name: 'Plum' },
+  { id: 'n', name: 'Navy' }, { id: 'r', name: 'Red' }, { id: 'm', name: 'Slate' },
+];
+const wardUI = { tab: 'walkling', petId: null, preview: 'none', snap: '', cool: {} };
+function wardLookSig(){
+  const L = Object.assign({}, KEEPER_LOOKS.defaults, (S && S.player && S.player.look) || {});
+  return (L.accessory || 'none') + '|' + (L.outfitCol || 't');
+}
+function wardPet(){
+  const list = (S && S.party) || [];
+  return list.find(p => p.id === wardUI.petId) || list.find(p => p.id === S.partnerId) || list[0] || null;
+}
+function wardCards(){
+  if (wardUI.tab === 'walkling') {
+    const paid = WARDROBE_LIST.filter(r => r.tab === 'walkling');
+    const free = PET_ACC_IDS.filter(id => !wardrobeRow(id)).map(id => ({ id, name: PET_ACC_LABEL[id] || id, price: 0, tab: 'walkling' }));
+    return [{ id: 'none', name: 'Nothing', price: 0, tab: 'walkling' }].concat(paid, free);
+  }
+  if (wardUI.tab === 'holder') {
+    const paid = WARDROBE_LIST.filter(r => r.tab === 'holder');
+    return [{ id: 'none', name: 'Nothing', price: 0, tab: 'holder' }].concat(paid, WARD_FREE_HOLDER);
+  }
+  return WARD_FREE_COLOUR.concat(WARDROBE_LIST.filter(r => r.tab === 'colours').map(r => ({ id: r.key, name: r.name, price: r.price, flag: r.flag, tab: 'colours', line: r.line })));
+}
+function wardWorn(card){
+  if (wardUI.tab === 'walkling') {
+    const p = wardPet();
+    return ((p && p.accessory) || 'none') === card.id;
+  }
+  if (wardUI.tab === 'holder') {
+    const cur = (S.player && S.player.look && S.player.look.accessory) || 'none';
+    return cur === card.id;
+  }
+  const cur = (S.player && S.player.look && S.player.look.outfitCol) || 't';
+  return cur === card.id;
+}
+function wardState(card){
+  if (card.id === 'none') return 'Free';
+  const row = wardrobeRow(card.id);
+  if (!row) return 'Free';
+  if (!ownsLook(card.id)) return row.price + ' Acorns';
+  if (wardUI.tab === 'walkling') {
+    const mine = wardPet();
+    const other = allPets().find(p => p.accessory === card.id && (!mine || p.id !== mine.id));
+    if (other) return 'On ' + petName(other);
+  }
+  return 'Yours';
+}
+function wardBtn(card){
+  if (wardrobeRow(card.id) && !ownsLook(card.id)) return 'BUY';
+  if (wardWorn(card)) return 'WORN';
+  return 'WEAR';
+}
+function paintWardSprite(cv, card){
+  cv.width = cv.height = 18;
+  if (wardUI.tab === 'walkling') {
+    const p = wardPet();
+    if (!p) return;
+    spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), card.id === 'none' ? null : card.id);
+    return;
+  }
+  const look = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {});
+  if (wardUI.tab === 'holder') look.accessory = card.id;
+  else look.outfitCol = card.id;
+  ctx(cv).drawImage(keeperFrames(look).down[0], 0, 0);
+}
+function drawWardPreview(t){
+  const c = $('#wardPreview');
+  if (!c || !$('#ovWardrobe') || $('#ovWardrobe').hidden) return;
+  if (wardUI.tab === 'walkling') {
+    const p = wardPet();
+    if (!p) { ctx(c).clearRect(0, 0, 18, 18); return; }
+    spriteCanvas(c, spi(p), p.stage, 'n', isFaded(p), wardUI.preview === 'none' ? null : wardUI.preview);
+    return;
+  }
+  const look = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {});
+  if (wardUI.tab === 'holder') look.accessory = wardUI.preview === 'none' ? 'none' : wardUI.preview;
+  else look.outfitCol = wardUI.preview || look.outfitCol;
+  const turn = prefersReduced() ? 0 : Math.floor((t || 0) / 1000) % 4;
+  const fr = prefersReduced() ? 0 : Math.floor((t || 0) / 250) % 2;
+  const g = ctx(c); g.clearRect(0, 0, 18, 18);
+  g.drawImage(keeperFrames(look)[LOOK_TURN[turn]][fr], 0, 0);
+}
+function renderWardrobe(){
+  if (!S) return;
+  $('#wardMoney').textContent = (S.money | 0) + ' Acorns';
+  $$('#ovWardrobe .ward-tabs button').forEach(b => {
+    const on = b.dataset.tab === wardUI.tab;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  const who = $('#wardWho');
+  who.hidden = wardUI.tab !== 'walkling';
+  const chips = $('#wardChips');
+  chips.textContent = '';
+  if (wardUI.tab === 'walkling') {
+    (S.party || []).forEach(p => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ward-chip' + (wardPet() && wardPet().id === p.id ? ' on' : '');
+      b.textContent = petName(p);
+      b.setAttribute('aria-pressed', wardPet() && wardPet().id === p.id ? 'true' : 'false');
+      b.addEventListener('click', () => {
+        wardUI.petId = p.id;
+        wardUI.preview = p.accessory || 'none';
+        sfx('tap');
+        renderWardrobe();
+        drawWardPreview(now());
+      });
+      chips.append(b);
+    });
+  }
+  const grid = $('#wardGrid');
+  grid.textContent = '';
+  wardCards().forEach(card => {
+    const item = document.createElement('div');
+    item.className = 'ward-item' + (wardUI.preview === card.id ? ' on' : '');
+    item.dataset.id = card.id;
+    const art = document.createElement('button');
+    art.type = 'button';
+    art.className = 'ward-art';
+    art.setAttribute('aria-label', card.name);
+    const cv = document.createElement('canvas');
+    paintWardSprite(cv, card);
+    const nm = document.createElement('span');
+    nm.className = 'ward-name';
+    nm.textContent = card.name;
+    art.append(cv, nm);
+    art.addEventListener('click', () => {
+      wardUI.preview = card.id;
+      sfx('tap');
+      renderWardrobe();
+      drawWardPreview(now());
+    });
+    const st = document.createElement('div');
+    st.className = 'ward-state';
+    st.textContent = wardState(card);
+    const act = document.createElement('button');
+    act.type = 'button';
+    const kind = wardBtn(card);
+    act.className = 'ward-act ' + kind.toLowerCase();
+    act.textContent = kind;
+    act.addEventListener('click', () => wardPress(card));
+    item.append(art, st, act);
+    grid.append(item);
+  });
+  drawWardPreview(now());
+}
+function wardPress(card){
+  if (performance.now() < (wardUI.cool[card.id] || 0)) return;
+  const kind = wardBtn(card);
+  if (kind === 'WORN') return;
+  if (kind === 'BUY') {
+    const row = wardrobeRow(card.id);
+    if (!row || !S) return;
+    if ((S.money | 0) < row.price) { sfx('denied'); toast('Not enough Acorns.'); return; }
+    S.money = (S.money | 0) - row.price;
+    S.flags[row.flag] = true;
+    save();
+    sfx('tap');
+    toast(row.name + ' is yours.');
+    wardUI.cool[card.id] = performance.now() + 400;
+    renderWardrobe();
+    return;
+  }
+  if (wardUI.tab === 'walkling') {
+    const p = wardPet();
+    if (!p) { sfx('denied'); return; }
+    const r = setAccessory(p.id, card.id === 'none' ? 'none' : card.id);
+    if (!r || r.ok === false) { sfx('denied'); return; }
+    save();
+    sfx('tap');
+    if (r.msg) toast(r.msg);
+    wardUI.preview = card.id;
+    renderWardrobe();
+    return;
+  }
+  const look = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {});
+  if (wardUI.tab === 'holder') {
+    const id = card.id === 'none' ? 'none' : card.id;
+    if (id !== 'none' && !ownsLook(id)) { sfx('denied'); return; }
+    look.accessory = id;
+    S.player.look = look;
+    save();
+    sfx('tap');
+    toast(id === 'none' ? 'Wearing nothing extra.' : 'Wearing the ' + card.name + '.');
+    wardUI.preview = id;
+    renderWardrobe();
+    return;
+  }
+  if (!ownsLook(card.id)) { sfx('denied'); return; }
+  look.outfitCol = card.id;
+  S.player.look = look;
+  save();
+  sfx('tap');
+  toast('Outfit colour: ' + card.name + '.');
+  wardUI.preview = card.id;
+  renderWardrobe();
+}
+// The finger that closes a line is already down when the overlay appears. Only a pointerdown or
+// touchstart that lands inside `el` after that open may pointerup, touchend or click. A held finger
+// is swallowed however long it stays down. A keyboard click (detail 0) still activates a button.
+const guardPointers = new Map();
+let guardPointersOn = false;
+function watchGuardPointers(){
+  if (guardPointersOn) return;
+  guardPointersOn = true;
+  document.addEventListener('pointerdown', e => guardPointers.set(e.pointerId, e.pointerType || 'mouse'), true);
+  document.addEventListener('pointerup', e => guardPointers.delete(e.pointerId), true);
+  document.addEventListener('pointercancel', e => guardPointers.delete(e.pointerId), true);
+  document.addEventListener('touchstart', e => { for (const t of e.changedTouches) guardPointers.set('t' + t.identifier, 'touch'); }, true);
+  document.addEventListener('touchend', e => { for (const t of e.changedTouches) guardPointers.delete('t' + t.identifier); }, true);
+  document.addEventListener('touchcancel', e => { for (const t of e.changedTouches) guardPointers.delete('t' + t.identifier); }, true);
+}
+function guardOverlayOpen(el){
+  if (!el) return;
+  const marked = guardOverlayOpen.done || (guardOverlayOpen.done = new WeakSet());
+  if (marked.has(el)) return;
+  marked.add(el);
+  watchGuardPointers();
+  let openedAt = 0, freshClick = false;
+  const fresh = new Set(), carried = new Set();
+  const swallow = e => { e.preventDefault(); e.stopPropagation(); };
+  const arm = () => {
+    openedAt = performance.now(); fresh.clear(); freshClick = false; carried.clear();
+    guardPointers.forEach((type, id) => { if (type === 'touch') carried.add(id); });
+  };
+  const live = () => !el.hidden && openedAt > 0;
+  new MutationObserver(() => { if (el.hidden) { openedAt = 0; fresh.clear(); freshClick = false; carried.clear(); } else arm(); })
+    .observe(el, { attributes: true, attributeFilter: ['hidden'] });
+  el.addEventListener('pointerdown', e => {
+    if (!live()) return;
+    if (e.timeStamp < openedAt || carried.has(e.pointerId) || (e.pointerType === 'mouse' && carried.size)) { swallow(e); return; }
+    fresh.add(e.pointerId); freshClick = true;
+  }, true);
+  el.addEventListener('touchstart', e => {
+    if (!live()) return;
+    let started = false;
+    for (const t of e.changedTouches) {
+      const id = 't' + t.identifier;
+      if (e.timeStamp < openedAt || carried.has(id)) continue;
+      fresh.add(id); started = true;
+    }
+    if (!started) { swallow(e); return; }
+    freshClick = true;
+  }, true);
+  el.addEventListener('pointerup', e => { if (live() && !fresh.has(e.pointerId)) swallow(e); }, true);
+  el.addEventListener('touchend', e => {
+    if (!live()) return;
+    for (const t of e.changedTouches) if (fresh.has('t' + t.identifier)) return;
+    swallow(e);
+  }, true);
+  el.addEventListener('click', e => {
+    if (!live() || e.detail === 0) return;
+    if (!freshClick) { swallow(e); carried.clear(); return; }
+    freshClick = false; fresh.clear(); carried.clear();
+  }, true);
+}
+function openWardrobe(){
+  if (!S || !$('#ovWardrobe')) return;
+  clearMoves();
+  wardUI.tab = 'walkling';
+  wardUI.petId = S.partnerId;
+  wardUI.cool = {};
+  const p = wardPet();
+  wardUI.preview = (p && p.accessory) || 'none';
+  wardUI.snap = wardLookSig();
+  renderWardrobe();
+  $('#ovWardrobe').hidden = false;
+  lockTabs(true);
+  const inner = $('#ovWardrobe .ov-inner');
+  if (inner) inner.scrollTop = 0;
+  const grid = $('#wardGrid');
+  if (grid) grid.scrollTop = 0;
+  sfx('tap');
+}
+function closeWardrobe(){
+  const el = $('#ovWardrobe');
+  if (!el || el.hidden) return;
+  const changed = wardLookSig() !== wardUI.snap;
+  el.hidden = true;
+  lockTabs(false);
+  if (changed && window.PPNet && typeof PPNet.syncLook === 'function') PPNet.syncLook();
 }
 
 /* ---------- talk, bump hint, chatter (MAPS_SLICE §4/§4.1, INTERIORS §4.2) ---------- */
@@ -4992,6 +5348,14 @@ function interact(o){
     if (o.id === 'travel_shelf' && !S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx);
     openShop(o.shop, shopHeading(o), o.shopFlavour || null);
     return;
+  }
+  if (o.wardrobe) {
+    mapRT.talked.add(o.id);
+    const line = linesFor(o);
+    const steps = [];
+    if (typeof line === 'string' && line && line.charAt(0) !== '@') steps.push(['say', objName(o), line]);
+    steps.push(['wardrobeOpen']);
+    return runSteps(steps, ctx);
   }
   if (o.meals) {
     const line = linesFor(o);
@@ -5134,6 +5498,7 @@ function commitPending(){ const P = scene.pending; scene.pending = []; for (cons
 function endScene(){
   const sc = scene; if (!sc) return;
   const cue = sc.musicCue;
+  const openWard = !!sc.openWardrobe;
   commitPending();
   clearCast(sc);
   if (sc.npc) delete mapRT.face[sc.npc.id];
@@ -5147,7 +5512,8 @@ function endScene(){
   if (sc.deferRespawn) respawnAfterWipe();
   else {
     checkArriveTriggers();   // only triggers marked arrive (a dream warp landing on the next scene)
-    if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
+    if (openWard) openWardrobe();
+    else if (allPets().length && !PPEnv.geoPref() && screen === 'walk') openGeoAsk();   // first walk with a partner: ask about location (once)
   }
   if (sc.id === 'rival1') placeGuide();
   if (cue && !(battle && battle.on) && PPSound.musicWant === cue) {
@@ -5465,6 +5831,7 @@ async function execStep(st){
       if (sc.id === 'intro') await execStep(['controlPick']);   // Q26 (D76): asked right after the mirror, before the door note
       return;
     }
+    case 'wardrobeOpen': { sc.openWardrobe = true; return; }
     // Q26: Arcade or Modern, in the house before the exit mat. Not a story flag; writes S.settings.controls at once.
     case 'controlPick': {
       sc.skip = false;
@@ -9738,7 +10105,7 @@ function fillWalklingExtras(container, pet){
 
   container.appendChild(lab('ADORN'));
   const accs = row();
-  [['none', 'None']].concat(PET_ACC_IDS.map(id => [id, PET_ACC_LABEL[id] || id])).forEach(([id, name]) => {
+  [['none', 'None']].concat(PET_ACC_IDS.filter(ownsLook).map(id => [id, PET_ACC_LABEL[id] || id])).forEach(([id, name]) => {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm'; b.dataset.acc = id; b.textContent = name;
     press(b, (pet.accessory || 'none') === id);
     b.addEventListener('click', () => after(setAccessory(live().id, id)));
@@ -10322,11 +10689,14 @@ function releasePet(id){
     const it = ITEMS[p.held];
     if (!it || itemCount(p.held) >= it.cap || !grantItem(p.held, 1).added) return false;
   }
+  const rack = wardrobeRow(p.accessory);
+  const rackName = rack && rack.tab === 'walkling' ? rack.name : '';
   if (pi >= 0) S.party.splice(pi, 1); else S.box.splice(bi, 1);
   if (!S.party.length && S.box.length) S.party.push(S.box.shift());
   if (S.party.length && (wasPartner || !S.party.some(q => q.id === S.partnerId))) {
     setPartnerId(S.party[pi >= 0 ? Math.min(pi, S.party.length - 1) : 0].id);
   }
+  if (rackName) toast(rackName + ' is back on the rack.');
   return true;
 }
 window.reorderParty = reorderParty;
@@ -10406,12 +10776,13 @@ function boardReleaseAsk(id){
 }
 function boardRelease(id){
   const p = petById(id), name = p ? petName(p) : 'They';
+  const rack = p && wardrobeRow(p.accessory) && wardrobeRow(p.accessory).tab === 'walkling';
   if (!releasePet(id)) {
     const it = p && ITEMS[p.held];
     if (it && itemCount(p.held) >= it.cap) return denyBoard("Bag can't hold the " + it.name + '.');
     return denyBoard("You can't let your only Walkling go.");
   }
-  refreshBoard(name + ' headed off on their own.');
+  refreshBoard(rack ? null : name + ' headed off on their own.');
 }
 function boardPartner(id){
   if (!partyField()) return denyBoard('Finish the battle first.');
@@ -10828,6 +11199,7 @@ function openDebug(){
   const c = $('#dbgClose'); if (c) c.focus({ preventScroll: true });
 }
 function dismissForDebug(){
+  closeWardrobe();
   for (const id of ['ovDebug', 'ovSettings', 'ovQuest', 'ovMap', 'ovBag', 'ovShop', 'ovStats', 'ovJournal', 'ovEnv', 'ovGeo', 'ovBasket', 'ovPhone', 'ovCopy', 'ovPlay']) {
     const el = $('#' + id); if (el) el.hidden = true;
   }
@@ -11425,6 +11797,19 @@ function bindInput(){
   $('#ovShop').addEventListener('click', e => { if (e.target === e.currentTarget) closeShop(); });
   $('#lookShuffle').addEventListener('click', shuffleLook);
   $('#lookDone').addEventListener('click', lookDone);
+  $$('#ovWardrobe .ward-tabs button').forEach(b => b.addEventListener('click', () => {
+    if (!S || wardUI.tab === b.dataset.tab) return;
+    wardUI.tab = b.dataset.tab;
+    if (wardUI.tab === 'walkling') wardUI.preview = (wardPet() && wardPet().accessory) || 'none';
+    else if (wardUI.tab === 'holder') wardUI.preview = (S.player.look && S.player.look.accessory) || 'none';
+    else wardUI.preview = (S.player.look && S.player.look.outfitCol) || 't';
+    sfx('tap');
+    renderWardrobe();
+    drawWardPreview(now());
+  }));
+  const wardDoneBtn = $('#wardDone');
+  if (wardDoneBtn) wardDoneBtn.addEventListener('click', () => { sfx('tap'); closeWardrobe(); });
+  guardOverlayOpen($('#ovWardrobe'));
   $('#lookCancel').addEventListener('click', () => { sfx('tap'); closeLook(); });
   const ln = $('#lookName');
   ln.addEventListener('input', () => { const v = ln.value.replace(BAD_NAME_CH, ''); if (v !== ln.value) ln.value = v; });   // `<b>` can't be typed
@@ -11578,6 +11963,7 @@ function bindInput(){
     if (e.key === 'Escape' && debugOpen()) { closeDebug(); return; }
     if (e.key === 'Escape' && !$('#ovSettings').hidden) { closeSettings(); return; }
     if (e.key === 'Escape' && !$('#ovLook').hidden && !lookUI.newPlayer) { closeLook(); return; }
+    if (e.key === 'Escape' && $('#ovWardrobe') && !$('#ovWardrobe').hidden) { e.preventDefault(); closeWardrobe(); return; }
     if (!$('#ovMap').hidden && KEYS[e.key]) { e.preventDefault(); if (!e.repeat) mapNudge(KEYS[e.key]); return; }   // arrows read the parchment; they must not walk the keeper underneath
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
     if (e.key === 'Escape' && !$('#ovQuest').hidden) { e.preventDefault(); closeQuest(); return; }
@@ -11642,6 +12028,7 @@ function frame(t){
   if (S) unlockWatch(t);
   if (!$('#ovMap').hidden) drawMapOverlay(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
+  if ($('#ovWardrobe') && !$('#ovWardrobe').hidden) drawWardPreview(t);
   if (scene) sbTick();
   if (p) {
     if (screen === 'pet') { pumpHello(); pumpWelcome(); pumpBondUp(); drawPetScene(t, dt); updateCareButtons(); }
@@ -12270,7 +12657,7 @@ function boot(){
     SPECIES.forEach((sp, si) => sp.stages.forEach((st, stage) => forms.push([si, stage, st.name])));
     const sheet = document.getElementById('accSheet') || document.createElement('canvas');
     sheet.id = 'accSheet';
-    sheet.width = label + 6 * cell;
+    sheet.width = label + (PET_ACC_IDS.length + 1) * cell;
     sheet.height = forms.length * cell;
     sheet.style.cssText = 'position:fixed;left:0;top:0;z-index:40;background:#1a1c2c;image-rendering:pixelated';
     if (!sheet.parentNode) document.body.appendChild(sheet);
@@ -12301,6 +12688,9 @@ function boot(){
   window.holdItem = holdItem;
   window.unholdItem = unholdItem;
   window.setAccessory = setAccessory;
+  window.ownsLook = ownsLook;
+  window.lookChoices = lookChoices;
+  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; }
   window.fillWalklingExtras = fillWalklingExtras;
 }
 // P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()

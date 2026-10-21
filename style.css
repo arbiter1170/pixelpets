@@ -444,6 +444,35 @@ body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-b
 #ovLook .look-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #lookNameRow[hidden]{display:none}
 
+/* Stitch & Lantern. DONE stays on screen. The card grid scrolls. */
+#ovWardrobe .ward-card{height:100%;max-height:100%;overflow:hidden;background:var(--k)}
+#ovWardrobe .ward-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto}
+#ovWardrobe .ward-head .ov-title{text-align:left;font-size:22px}
+#ovWardrobe .ward-money{color:var(--y);font-size:20px;white-space:nowrap}
+#ovWardrobe .ward-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:0 0 auto}
+#ovWardrobe .ward-tabs button{min-height:44px;min-width:44px;border:0;background:var(--d);color:var(--m);font-size:16px;cursor:pointer}
+#ovWardrobe .ward-tabs button.on{background:var(--n);color:var(--y);box-shadow:inset 0 -3px 0 var(--y)}
+#ovWardrobe .ward-stage{display:flex;justify-content:center;align-items:center;background:#e7d3a1;padding:8px;flex:0 0 auto}
+#ovWardrobe .ward-stage canvas{width:72px;height:72px;image-rendering:pixelated}
+#ovWardrobe .ward-who{flex:0 0 auto}
+#ovWardrobe .ward-who[hidden]{display:none}
+#ovWardrobe .ward-who-lab{font-size:16px;color:var(--h)}
+#ovWardrobe .ward-chips{display:flex;flex-wrap:wrap;gap:6px}
+#ovWardrobe .ward-chip{min-height:44px;min-width:44px;padding:0 10px;border:0;background:var(--d);color:var(--w);cursor:pointer}
+#ovWardrobe .ward-chip.on{background:var(--y);color:var(--k)}
+#ovWardrobe .ward-grid{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;align-content:start}
+#ovWardrobe .ward-item{background:var(--n);box-shadow:0 0 0 2px var(--k);padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+#ovWardrobe .ward-item.on{box-shadow:0 0 0 2px var(--k),0 0 0 5px var(--y)}
+#ovWardrobe .ward-art{min-height:44px;width:100%;border:0;background:transparent;color:var(--w);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 2px}
+#ovWardrobe .ward-art canvas{width:54px;height:54px}
+#ovWardrobe .ward-name{font-size:14px;text-align:center;line-height:1.15}
+#ovWardrobe .ward-state{font-size:14px;color:var(--h);min-height:18px;text-align:center}
+#ovWardrobe .ward-act{min-height:44px;min-width:44px;width:100%;border:0;cursor:pointer;font-size:16px}
+#ovWardrobe .ward-act.buy{background:var(--g);color:var(--k)}
+#ovWardrobe .ward-act.wear{background:var(--b);color:var(--w)}
+#ovWardrobe .ward-act.worn{background:var(--m);color:var(--k)}
+#wardDone{flex:0 0 auto;min-height:44px;width:100%;margin:0}
+
 /* ---------- Pet scene labels (MAPS_SLICE K.2 v0.4.7; BATTLE §7 badges) ---------- */
 .scene-keeper{position:absolute;right:8px;top:8px;z-index:1;pointer-events:none;line-height:1;padding:3px 6px;background:rgba(26,28,44,.72);color:var(--w);
   font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(50% - 16px);box-shadow:0 0 0 2px var(--k)}

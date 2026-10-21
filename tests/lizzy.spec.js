@@ -291,7 +291,7 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
   expect(before.buddyLook).toBe(null);
   expect(before.lizzy.accessory).toBe('flower_clip');
   expect(before.lizzy.hair).toBe('curls');
-  expect(before.picker).toEqual(['none', 'glasses', 'bow', 'cap', 'scarf']);
+  expect(before.picker).toEqual(['none', 'glasses', 'bow', 'cap', 'scarf', 'sash', 'satchel', 'goggles', 'beanie']);
   expect(before.clip).toBe(true);
 
   await tap(page, 'ArrowDown', 8, 19);
