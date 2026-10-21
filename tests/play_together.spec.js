@@ -4,6 +4,7 @@ const { test, expect } = require('@playwright/test');
 const { spawn } = require('child_process');
 const net = require('net');
 const fs = require('fs');
+const http = require('http');
 const { starterSave, installSave, gotoGame } = require('./helpers');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
@@ -57,11 +58,48 @@ function saveFor(uid, name){
   s.party[0].nick = name === 'Tester' ? 'Pomlet' : null;
   return s;
 }
-async function rootSet(path, val){
-  await env.withSecurityRulesDisabled(async ctx => {
-    const r = ctx.database().ref(path);
-    if (val == null) await r.remove(); else await r.set(val);
+function emulatorAnswers(){
+  return new Promise(resolve => {
+    const req = http.get('http://127.0.0.1:9000/.json?ns=demo-walklings', res => { res.resume(); resolve(true); });
+    req.on('error', () => resolve(false));
+    req.setTimeout(800, () => { req.destroy(); resolve(false); });
   });
+}
+let emuReady = null;
+function waitForEmulator(){
+  if (emuReady) return emuReady;
+  emuReady = (async () => {
+    for (let i = 0; i < 40; i++) {
+      if (await emulatorAnswers()) return;
+      await new Promise(r => setTimeout(r, 250));
+    }
+    throw new Error('database emulator did not answer');
+  })();
+  return emuReady;
+}
+function isFetchFail(err, depth){
+  if (!err || depth > 4) return false;
+  if (String(err.message || err).indexOf('fetch failed') >= 0) return true;
+  return isFetchFail(err.cause, (depth || 0) + 1);
+}
+async function rootSet(path, val){
+  await waitForEmulator();
+  const backoff = [250, 500, 1000];
+  let last;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      await env.withSecurityRulesDisabled(async ctx => {
+        const r = ctx.database().ref(path);
+        if (val == null) await r.remove(); else await r.set(val);
+      });
+      return;
+    } catch (e) {
+      last = e;
+      if (!isFetchFail(e) || attempt === 3) throw e;
+      await new Promise(r => setTimeout(r, backoff[attempt]));
+    }
+  }
+  throw last;
 }
 async function rootGet(path){
   let out = null;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* tools/pp_test.js
    Agent-friendly wrapper for the Walklings Playwright suite.
-   - Runs the build check, then `playwright test` with the line + json reporters.
+   - Runs the fail-closed scans, the build check, then `playwright test` with the line + json reporters.
    - All raw output goes to a log file; stdout gets a short summary only.
    - Exits with Playwright's real exit code (no pipe masking).
    Usage: node tools/pp_test.js [any playwright args, e.g. tests/smoke.spec.js --project=390]
@@ -21,6 +21,31 @@ for (const p of [jsonPath, sumPath]) { try { fs.unlinkSync(p); } catch (e) {} }
 const log = fs.openSync(logPath, 'w');
 const strip = s => String(s || '').replace(/\x1b\[[0-9;]*[A-Za-z]/g, '');
 const t0 = Date.now();
+
+// 0. Fail-closed scans, then their synthetic proof. Playwright does not start
+// if either step fails.
+function stopForScan(child, stage) {
+  const out = strip((child.stdout || '') + (child.stderr || ''));
+  const names = [...out.matchAll(/^SCAN FAIL ([^:\s]+):/gm)].map(m => m[1]);
+  const uniq = [...new Set(names)];
+  const code = child.status === null ? 2 : (child.status || 1);
+  const named = stage === 'scans' ? (' scan=' + (uniq.join(',') || 'unknown')) : '';
+  const msg = [
+    out.trimEnd(),
+    `PP_TEST RESULT: FAIL exit=${code} stage=${stage}${named}`,
+    `LOG: ${logPath}`,
+    '',
+  ].join('\n');
+  fs.writeFileSync(sumPath, msg);
+  process.stdout.write(msg);
+  process.exit(code);
+}
+const scans = spawnSync(process.execPath, ['tools/scans/run.js'], { encoding: 'utf8' });
+try { fs.writeSync(log, scans.stdout || ''); fs.writeSync(log, scans.stderr || ''); } catch (e) {}
+if (scans.status !== 0) stopForScan(scans, 'scans');
+const selftest = spawnSync(process.execPath, ['tools/scans/selftest.js'], { encoding: 'utf8' });
+try { fs.writeSync(log, selftest.stdout || ''); fs.writeSync(log, selftest.stderr || ''); } catch (e) {}
+if (selftest.status !== 0) stopForScan(selftest, 'scan-selftest');
 
 // 1. build stamp check (same as `npm test` step 1)
 const chk = spawnSync('python3', ['tools/bump_build.py', '--check'], { stdio: ['ignore', log, log] });
