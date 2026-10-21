@@ -149,7 +149,7 @@
     "#####m#####"
    ],
    "objs": [
-    {"kind": "warp", "id": "diner_mat", "x": 5, "y": 7, "to": "hearthmoor", "tx": 4, "ty": 31, "facing": "down"},
+    {"kind": "warp", "id": "diner_mat", "x": 5, "y": 7, "to": "hearthmoor", "tx": 4, "ty": 32, "facing": "down"},
     {"kind": "npc", "id": "hm_hesper", "name": "Cook Hesper", "look": "hm_hesper", "x": 3, "y": 2, "facing": "down", "friendSlot": "DINER_COOK",
      "lines": {"else": "Sit anywhere. The stew is always on."},
      "meals": [
@@ -194,20 +194,20 @@
      "27": "TgggpggggppggggpggggggTT",
      "28": "TgppppppppppppppppppppgT",
      "29": "TgRRRRRggppgcccccccccggT",
-     "30": "TgHHHHHggppgcccccccccggT",
-     "31": "TgggpgfggppgcccccccccgfT",
-     "32": "TgfgggggggggcccccccccggT",
+     "30": "TgRRRRRggppgcccccccccggT",
+     "31": "TgHHHHHggppgcccccccccgfT",
+     "32": "TgfgpgggggggcccccccccggT",
      "33": "TTTTTTTTTTTTTTTTTTTTTTTT"
     },
     "addRoofs": {
      "store": {"x0": 2, "y0": 24, "x1": 6, "y1": 25, "roof": "roof_hip_t", "wall": "wall_batten_w", "door": "door_double_r", "win": "win_tall_pane", "trim": "y", "shape": "gable", "porch": ["hm_store_planter"]},
      "wardrobe": {"x0": 13, "y0": 24, "x1": 17, "y1": 25, "roof": "roof_thatch_y", "wall": "wall_log", "win": "win_square", "trim": "p", "shape": "gable", "porch": ["hm_wardrobe_bed"]},
-     "diner": {"x0": 2, "y0": 29, "x1": 6, "y1": 29, "roof": "roof_turf", "wall": "wall_brick", "win": "win_shutter", "trim": "o", "shape": "flat", "porch": ["hm_diner_barrel"]}
+     "diner": {"x0": 2, "y0": 29, "x1": 6, "y1": 30, "roof": "roof_coach", "wall": "wall_brick", "win": "win_shutter", "trim": "C", "shape": "arch+chimney", "porch": ["hm_diner_barrel"]}
     },
     "addObjs": [
      {"kind": "door", "id": "hm_store", "x": 4, "y": 26, "to": "hm_store", "tx": 6, "ty": 8, "facing": "up"},
      {"kind": "door", "id": "hm_wardrobe", "x": 15, "y": 26, "to": "hm_wardrobe", "tx": 6, "ty": 8, "facing": "up"},
-     {"kind": "door", "id": "hm_diner", "x": 4, "y": 30, "to": "hm_diner", "tx": 5, "ty": 6, "facing": "up"},
+     {"kind": "door", "id": "hm_diner", "x": 4, "y": 31, "to": "hm_diner", "tx": 5, "ty": 6, "facing": "up"},
      {"kind": "prop", "id": "hm_store_planter", "x": 1, "y": 27, "sprite": "planter_box"},
      {"kind": "prop", "id": "hm_wardrobe_bed", "x": 18, "y": 27, "sprite": "flowerbed"},
      {"kind": "prop", "id": "hm_diner_barrel", "x": 1, "y": 31, "sprite": "barrel"},
