@@ -23,7 +23,7 @@ async function boot(page, save) {
   await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.runScene === 'function');
 }
 
-test('the quiet Census log gives Rook one bond and opens the glen', async ({ page }) => {
+test('the quiet Census log gives Rook one bond and opens the glen @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.glimmerCheck)).toEqual([]);
   expect(await page.evaluate(() => PixelPets.sceneFor('lead_intro'))).toBe('lead_intro@glimmer');
@@ -37,7 +37,7 @@ test('the quiet Census log gives Rook one bond and opens the glen', async ({ pag
   expect(after.bond).toBe(1);
 });
 
-test('Wickerglen still gives three treats and the same gates', async ({ page }) => {
+test('Wickerglen still gives three treats and the same gates @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.runScene('glen_cleared'))).toBe(true);
   await playScene(page, []);
@@ -55,7 +55,7 @@ test('Wickerglen still gives three treats and the same gates', async ({ page }) 
   expect(after.points).toBe(5);
 });
 
-test('going along does not give Rook a bond point', async ({ page }) => {
+test('going along does not give Rook a bond point @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.runScene('lead_intro'))).toBe(true);
   await playScene(page, ['Go along']);
@@ -67,7 +67,7 @@ test('going along does not give Rook a bond point', async ({ page }) => {
   expect(after.bond).toBe(0);
 });
 
-test('the grey Pebblit scene is the glimmer framing', async ({ page }) => {
+test('the grey Pebblit scene is the glimmer framing @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.sceneFor('faded2'))).toBe('faded2@glimmer');
   expect(await page.evaluate(() => PixelPets.runScene('faded2'))).toBe(true);
@@ -77,7 +77,7 @@ test('the grey Pebblit scene is the glimmer framing', async ({ page }) => {
   expect(line.toLowerCase()).toContain('census');
 });
 
-test('the gate still writes together or race', async ({ page }) => {
+test('the gate still writes together or race @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.runScene('route2_end'))).toBe(true);
   await playScene(page, ['Together.']);
@@ -89,7 +89,7 @@ test('the gate still writes together or race', async ({ page }) => {
   expect(after.pact).toBe('together');
 });
 
-test('the race choice still writes race', async ({ page }) => {
+test('the race choice still writes race @w1', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.runScene('route2_end'))).toBe(true);
   await playScene(page, ['Race you!']);
@@ -97,7 +97,7 @@ test('the race choice still writes race', async ({ page }) => {
   expect(await page.evaluate(() => PixelPets.state.flags['story.route2_end'])).toBe(true);
 });
 
-test('keepers Route 2 does not use the glimmer scenes', async ({ page }) => {
+test('keepers Route 2 does not use the glimmer scenes @w1', async ({ page }) => {
   const save = routeSave();
   save.flags['story.side'] = 'keepers';
   await boot(page, save);

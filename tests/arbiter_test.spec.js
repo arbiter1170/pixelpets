@@ -40,7 +40,7 @@ function talkStrings(node, bag, inLines) {
   }
 }
 
-test('player-facing lines say holder, and the Testing loop is in the music table', async ({ page }) => {
+test('player-facing lines say holder, and the Testing loop is in the music table @w1', async ({ page }) => {
   const bag = [];
   for (const name of fs.readdirSync('data')) {
     if (!name.endsWith('.json')) continue;
@@ -90,7 +90,7 @@ test('player-facing lines say holder, and the Testing loop is in the music table
   expect(cond.align).toBe(50);
 });
 
-test('an old tour.doubt value is read once and the key stays', async ({ page }) => {
+test('an old tour.doubt value is read once and the key stays @w1', async ({ page }) => {
   const save = cobbleSave();
   save.flags['tour.doubt'] = 1;
   await boot(page, save);
@@ -249,7 +249,7 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
   expect(still).toBe(1);
 });
 
-test('a full party boxes someone who is not locked', async ({ page }) => {
+test('a full party boxes someone who is not locked @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, cobbleSave());
   const opened = page.evaluate(() => {
@@ -275,7 +275,7 @@ test('a full party boxes someone who is not locked', async ({ page }) => {
   expect(placed.boxedLocked).toBe(0);
 });
 
-test('Strain narrows the live befriend zone only', async ({ page }) => {
+test('Strain narrows the live befriend zone only @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, cobbleSave());
   const zone = await page.evaluate(() => {
@@ -294,7 +294,7 @@ test('Strain narrows the live befriend zone only', async ({ page }) => {
   expect(zone.odds).toBe(await page.evaluate(() => PixelPets.befriendOdds(8, 0.5).width));
 });
 
-test('Bright-linked mends once on a Glimmer map', async ({ page }) => {
+test('Bright-linked mends once on a Glimmer map @w1', async ({ page }) => {
   await boot(page, cobbleSave());
   const glow = await page.evaluate(() => {
     const p = PixelPets.state.party[0];

@@ -385,7 +385,7 @@ test('Rook offers the switch once per Seal, and an old desk save is marked desk'
   await ctx.close();
 });
 
-test('a save with no crate flags still loads at v2', async ({ page }) => {
+test('a save with no crate flags still loads at v2 @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   const r = await page.evaluate(() => ({

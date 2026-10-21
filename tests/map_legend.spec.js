@@ -27,20 +27,20 @@ async function openWith(page, flags = {}, seals = null) {
   });
 }
 
-test('criteria 1-2: a new save shows PLACES (5) and QUESTS without Seal; no SIDES, no halos, no hold line', async ({ page }) => {
+test('criteria 1-2: a new save shows PLACES (5) and QUESTS without Seal; no SIDES, no halos, no hold line @w1', async ({ page }) => {
   const r = await openWith(page);
   expect(r.groups).toEqual([{ h: 'PLACES', items: PLACES }, { h: 'QUESTS', items: QUESTS.slice(0, 3) }]);
   expect(r.hold).toBe(false); expect(r.note).toBe(false); expect(r.claims).toBe(0);
 });
 
-test('criterion 3: after the pledge SIDES (4), the note, halos and the hold line show', async ({ page }) => {
+test('criterion 3: after the pledge SIDES (4), the note, halos and the hold line show @w1', async ({ page }) => {
   const r = await openWith(page, { 'story.side_pick_done': true });
   expect(r.groups.map(g => g.h)).toEqual(['PLACES', 'QUESTS', 'SIDES']);
   expect(r.groups[2].items).toEqual(SIDES);
   expect(r.hold).toBe(true); expect(r.note).toBe(true); expect(r.claims).toBeGreaterThan(0);
 });
 
-test('criterion 4: any seal flag or seal shows the Seal pill', async ({ page }) => {
+test('criterion 4: any seal flag or seal shows the Seal pill @w1', async ({ page }) => {
   for (const [flags, seals] of [[{ 'story.seal1': true }, null], [{ 'story.seal2': true }, null], [{}, { seal_fernbrook: true }], [{}, { seal_glim_1: true }], [{}, { seal_cobblecrest: true }], [{}, { seal_glim_2: true }]]) {
     const r = await openWith(page, flags, seals);
     expect(r.groups[1].items, JSON.stringify([flags, seals])).toEqual(QUESTS);
@@ -74,7 +74,7 @@ test('criterion 5: rects per §4 (±2), and no pill wraps or clips', async ({ pa
   }
 });
 
-test('criterion 6-7: mapDevCheck stays clean and nothing new is saved', async ({ page }) => {
+test('criterion 6-7: mapDevCheck stays clean and nothing new is saved @w1', async ({ page }) => {
   await openWith(page, { 'story.side_pick_done': true });
   expect(await page.evaluate(() => PixelPets.mapDevCheck ? PixelPets.mapDevCheck() : [])).toEqual([]);
 });

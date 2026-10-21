@@ -45,7 +45,7 @@ const pos = page => page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPe
 const GRID = ['##############', '#WVWWWWWWWWVL#', '#.,..DDDD..xx#', '#..,.DDDD..xx#', '#~~~~DDDD~~~~#', '#o....||....o#', '#.....||.....#', '#..,..||..,..#', '#-----++-----#',
   '#.....||.....#', '#.,...||...,.#', '#.....||.....#', '#..o..||..o..#', '#.....||.....#', '#-----++-----#', '#.,...||.....#', '#.....||..,..#', '#gggg.||.gggg#', '#.....||.....#', '#..,..||..,..#', '#.....mm.....#', '##############'];
 
-test('E2 + A1: rx_f4 is 14x22 with the pilot grid; ids kept; other RegenX floors are 14x22 (QA 12)', async ({ page }) => {
+test('E2 + A1: rx_f4 is 14x22 with the pilot grid; ids kept; other RegenX floors are 14x22 (QA 12) @w1', async ({ page }) => {
   await boot(page, labSave());
   const r = await page.evaluate(() => {
     const m = MAPDATA.heights.maps, f4 = m.rx_f4, up = m.rx_f3.objs.find(o => o.id === 'rx3_up');
@@ -117,7 +117,7 @@ test('QA 2 / E1: the camera follows, clamps top and bottom, never shows outside 
   if (small.mw * 16 < small.w) expect(small.x).toBeLessThan(0);
 });
 
-test('QA 3 / A4: the aisle and both corridors connect mat, dais foot and the side bays; every talkable has a walkable neighbour', async ({ page }) => {
+test('QA 3 / A4: the aisle and both corridors connect mat, dais foot and the side bays; every talkable has a walkable neighbour @w1', async ({ page }) => {
   await boot(page, labSave());
   await at(page, 6, 19);
   const r = await page.evaluate(() => {
@@ -132,7 +132,7 @@ test('QA 3 / A4: the aisle and both corridors connect mat, dais foot and the sid
   expect(r.lonely).toEqual([]);
 });
 
-test('QA 4: props, scanners, glass and hazard block; decals walk', async ({ page }) => {
+test('QA 4: props, scanners, glass and hazard block; decals walk @w1', async ({ page }) => {
   await boot(page, labSave());
   await at(page, 6, 19);
   const r = await page.evaluate(() => {
@@ -158,7 +158,7 @@ test('QA 4: props, scanners, glass and hazard block; decals walk', async ({ page
   expect(await pos(page)).toMatchObject({ x: 5, y: 18 });          // the scanner blocks
 });
 
-test('QA 5 / QA 6: every talkable shows its line; the staff door says its line and never opens', async ({ page }) => {
+test('QA 5 / QA 6: every talkable shows its line; the staff door says its line and never opens @w1', async ({ page }) => {
   test.setTimeout(90000);
   await boot(page, labSave());
   const cases = [
@@ -175,7 +175,7 @@ test('QA 5 / QA 6: every talkable shows its line; the staff door says its line a
   expect(await pos(page)).toMatchObject({ map: 'rx_f4', x: 12, y: 4 });   // the staff door never opens
 });
 
-test('QA 8: the night tech has three lines by flag, no battle, and joins Contacts', async ({ page }) => {
+test('QA 8: the night tech has three lines by flag, no battle, and joins Contacts @w1', async ({ page }) => {
   await boot(page, labSave());
   const lines = {};
   for (const [k, flags] of [['else', {}], ['saw', { 'story.saw_arbiter': true }], ['done', { 'story.saw_arbiter': true, 'story.heights_done': true }]]) {
@@ -191,7 +191,7 @@ test('QA 8: the night tech has three lines by flag, no battle, and joins Contact
   expect(await page.evaluate(() => !!PixelPets.state.phoneBook.met['Night Tech'])).toBe(true);
 });
 
-test('QA 7: Quinn and Bitlet keep their ids, flags and scenes', async ({ page }) => {
+test('QA 7: Quinn and Bitlet keep their ids, flags and scenes @w1', async ({ page }) => {
   await boot(page, labSave());
   await at(page, 6, 19);
   const r = await page.evaluate(() => {
@@ -257,7 +257,7 @@ test('QA 9 / A7: tanks hold frame 0 under reduced motion and animate in step oth
   expect(moved.inStep).toBe(true);
 });
 
-test('QA 10 / E5: floor variants are seeded (same after reload), hand-placed chars win, base tile <= 70 % (D88)', async ({ page }) => {
+test('QA 10 / E5: floor variants are seeded (same after reload), hand-placed chars win, base tile <= 70 % (D88) @w1', async ({ page }) => {
   await boot(page, labSave());
   await at(page, 6, 19);
   const read = () => page.evaluate(() => { const out = []; for (let y = 0; y < 22; y++) for (let x = 0; x < 14; x++) out.push(PixelPets.tileInfo(x, y).tile); return out; });
@@ -273,7 +273,7 @@ test('QA 10 / E5: floor variants are seeded (same after reload), hand-placed cha
   expect(await page.evaluate(() => JSON.stringify(PixelPets.state).includes('lab_floor_scuff'))).toBe(false);   // nothing saved
 });
 
-test('QA 11 / A6: an old 18x12 save loads on a walkable tile; a blocked one snaps to (6,19)', async ({ page }) => {
+test('QA 11 / A6: an old 18x12 save loads on a walkable tile; a blocked one snaps to (6,19) @w1', async ({ page }) => {
   await boot(page, labSave({}, { map: 'rx_f4', x: 15, y: 9 }));
   expect(await pos(page)).toMatchObject({ map: 'rx_f4', x: 6, y: 19 });
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);

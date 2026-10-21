@@ -72,7 +72,7 @@ async function playThrough(page, choices) {
   throw new Error('scene did not finish');
 }
 
-test('arrival still reads the race pact', async ({ page }) => {
+test('arrival still reads the race pact @w1', async ({ page }) => {
   await boot(page, cobbleSave());
   expect(await page.evaluate(() => PixelPets.sceneFor('cobble_arrive'))).toBe('cobble_arrive@glimmer');
   expect(await page.evaluate(() => PixelPets.runScene('cobble_arrive'))).toBe(true);
@@ -85,7 +85,7 @@ test('arrival still reads the race pact', async ({ page }) => {
   expect(after.respawn).toBe('cobblecrest');
 });
 
-test('Rook battle lines change and the quarry flag is the same', async ({ page }) => {
+test('Rook battle lines change and the quarry flag is the same @w1', async ({ page }) => {
   await boot(page, cobbleSave());
   const lines = await page.evaluate(() => PixelPets.trainerFor('rival2_rook').lines);
   expect(lines.intro).toContain('Colleague');
@@ -93,7 +93,7 @@ test('Rook battle lines change and the quarry flag is the same', async ({ page }
   expect(lines.lose).toContain('Junior Bright');
 });
 
-test('the Sacrifice quota grants Tier 2 without a battle', async ({ page }) => {
+test('the Sacrifice quota grants Tier 2 without a battle @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, cobbleSave({ 'story.quarry_bought': true }));
   expect(await page.evaluate(() => PixelPets.sceneFor('hale_trial'))).toBe('hale_trial@glimmer');
@@ -121,7 +121,7 @@ test('the Sacrifice quota grants Tier 2 without a battle', async ({ page }) => {
   expect(await page.evaluate(() => PixelPets.trainerFor('hall2_hale').seal)).toBe('seal_cobblecrest');
 });
 
-test('tuning the partner chips them and still grants Tier 2', async ({ page }) => {
+test('tuning the partner chips them and still grants Tier 2 @w1', async ({ page }) => {
   test.setTimeout(60000);
   const save = cobbleSave({ 'story.quarry_bought': true });
   save.bag = { heal_snack: 2 };
@@ -151,7 +151,7 @@ test('tuning the partner chips them and still grants Tier 2', async ({ page }) =
   expect(after.v).toBe(2);
 });
 
-test('facing the review still grants Tier 2', async ({ page }) => {
+test('facing the review still grants Tier 2 @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, cobbleSave({ 'story.quarry_bought': true }));
   expect(await page.evaluate(() => PixelPets.trainerFor('hall2_hale').onWin)).toBe('seal2');
@@ -169,7 +169,7 @@ test('facing the review still grants Tier 2', async ({ page }) => {
   expect(after.chip).toBe(null);
 });
 
-test('the buyout still sets the quarry flag after the match', async ({ page }) => {
+test('the buyout still sets the quarry flag after the match @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, cobbleSave());
   expect(await page.evaluate(() => PixelPets.runScene('quarry_buyout'))).toBe(true);
@@ -184,7 +184,7 @@ test('the buyout still sets the quarry flag after the match', async ({ page }) =
   expect(after.points).toBe(5);
 });
 
-test('keepers Rook leaves and glimmer Rook stays', async ({ page }) => {
+test('keepers Rook leaves and glimmer Rook stays @w1', async ({ page }) => {
   const save = cobbleSave({ 'story.side': 'keepers', 'story.seal2': true });
   await boot(page, save);
   expect(await page.evaluate(() => PixelPets.sceneFor('brinewick_hook'))).toBe('brinewick_hook');
@@ -228,7 +228,7 @@ test('keepers Rook leaves and glimmer Rook stays', async ({ page }) => {
   expect(glimmer.points).toBe(5);
 });
 
-test('a high bond does not change the Glimmerwell closer', async ({ page }) => {
+test('a high bond does not change the Glimmerwell closer @w1', async ({ page }) => {
   const save = cobbleSave({ 'story.seal2': true, 'story.rook_bond': 3 });
   await boot(page, save);
   expect(await page.evaluate(() => PixelPets.runScene('brinewick_hook'))).toBe(true);

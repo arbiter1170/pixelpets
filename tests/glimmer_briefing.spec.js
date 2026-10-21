@@ -81,7 +81,7 @@ async function playThrough(page, choices, prompts, says) {
   throw new Error('scene did not finish');
 }
 
-test('a Glimmerwell save is pointed at the quarry, and Keepers still see the council', async ({ page }) => {
+test('a Glimmerwell save is pointed at the quarry, and Keepers still see the council @w1', async ({ page }) => {
   await boot(page, reviewSave());
   const start = await page.evaluate(() => ({
     quest: PixelPets.quest.id,
@@ -171,7 +171,7 @@ test('the chipped path moves ALIGN by five at each choice and the grants stay qu
   expect(after.signal).toBe(1);
 });
 
-test('calling it back and holding close pull ALIGN the other way', async ({ page }) => {
+test('calling it back and holding close pull ALIGN the other way @w1', async ({ page }) => {
   test.setTimeout(90000);
   await boot(page, reviewSave({ 'story.gb_invited': true }, chipped(50, 60)));
   expect(await page.evaluate(() => PixelPets.goto('route2_glen', 12, 6, 'up') && PixelPets.runScene('gb_relay'))).toBe(true);
@@ -242,7 +242,7 @@ test('an unchipped save borrows a crate, and Not today still finishes', async ({
   expect(once.v).toBe(2);
 });
 
-test('I want out shows the real Standing cost, and the road sign line when Rook is not ready', async ({ page }) => {
+test('I want out shows the real Standing cost, and the road sign line when Rook is not ready @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, reviewSave({
     'story.gb_invited': true, 'story.gb_relay_done': true, 'story.gb_hollis': true, 'story.gb_escort': true,
@@ -271,7 +271,7 @@ test('I want out shows the real Standing cost, and the road sign line when Rook 
   expect(stayed.align).toBe(50);
 });
 
-test('ALIGN stays inside 0 to 100, surge does not stack on GLOW, and JOY holds at 20', async ({ page }) => {
+test('ALIGN stays inside 0 to 100, surge does not stack on GLOW, and JOY holds at 20 @w1', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, reviewSave({}, chipped(50, 60)));
   const cap = await page.evaluate(() => {

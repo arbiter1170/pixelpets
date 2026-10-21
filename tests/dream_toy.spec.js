@@ -116,7 +116,7 @@ const tilePoint = (page, tx, ty) => page.evaluate(([tx, ty]) => {
 }, [tx, ty]);
 const SHOTS = '/opt/cursor/artifacts/screenshots';
 
-test('the only roll prop is the popping toy', () => {
+test('the only roll prop is the popping toy @w1', () => {
   const dir = path.join(__dirname, '..', 'data');
   const hits = [];
   const walk = (node) => {

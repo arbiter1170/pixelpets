@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 13:37 ET: Test suite runs layout-free checks at 320 only (build 20261021-1337)
+
+- What changed and why: Width-free tests are tagged `@w1` and run on the 320 project only. 375 and 390 use `grepInvert: /@w1/`, so a new untagged test still runs at all three widths. Suite `retries` is 1. A pass on the retry stays flaky, exit 0, with the count and names in the summary. The walk-to-every-person and prop lines from the RegenX floors, the tunnel rooms, the house interiors, High Charity, the observatory and dream rooms, Fernbrook, and both Keeper House floors now run as one shared sweep at 320, with a literal person, sign, prop and warp count per map. Three skill copies match the box text. Save stays `pixelpets.save.v2` with `v` 2. No player text and no game behaviour change.
+- Files touched: `playwright.config.js`, `tests/map_reach_sweep.spec.js`, the map specs that used to speak those lines, other specs tagged `@w1`, `tests/README.md`, `.cursor/skills/walklings-pr-handback/SKILL.md`, `.cursor/skills/walklings-handoff-log/SKILL.md`, `.cursor/skills/walklings-design-commit/SKILL.md`, `.cursor/skills/walklings-qa-run/SKILL.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261021-1337. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): filled in after the full `npm run test:agent` run. Widths 320, 375 and 390. `@w1` is 320 only.
+- Decisions made (colour + reasoning): Vincent approved this test-infrastructure packet on Oct 21, 2026. No new D id. No id was renumbered. Next free id stays D399.
+- Anything left unfinished: the Supervisor merges. Database rules are not deployed. The client is not deployed.
+
 ## 2026-10-21 11:39 ET: Lowercase keeper to holder or Keeper (build 20261021-1139)
 
 - What changed and why: Green copy fix from design tip 02f8185. Player lines that said a lowercase keeper now say holder, Keeper, or a short reword. Thirty-eight of the forty rows were still the old sentence on d942f29 and were replaced. Rows 27 and 33 ("Warm buns in the back, holder.") were already that sentence from #132, so they were left as they were. `data/mapdata.js` was regenerated. Save stays `pixelpets.save.v2` with `v` 2. No new flag.

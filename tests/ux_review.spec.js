@@ -39,7 +39,7 @@ for (const mode of ['arcade', 'modern']) {
   });
 }
 
-test('FOOD / JOY / NRG / GROW / HP bars are progressbars that follow the values', async ({ page }) => {
+test('FOOD / JOY / NRG / GROW / HP bars are progressbars that follow the values @w1', async ({ page }) => {
   await boot(page, starterSave(), '?debug=1');
   await page.evaluate(() => PixelPets.showTab('pet'));
   const read = () => page.evaluate(() => Object.fromEntries(['barHunger', 'barHappy', 'barEnergy', 'barXp'].map(id => { const b = document.getElementById(id).parentNode;
@@ -58,7 +58,7 @@ test('FOOD / JOY / NRG / GROW / HP bars are progressbars that follow the values'
   expect(hp[1][0]).toBe('progressbar'); expect(hp[1][4]).toBe('Pipkit HP');
 });
 
-test('the overworld, care and encounter canvases describe what they show', async ({ page }) => {
+test('the overworld, care and encounter canvases describe what they show @w1', async ({ page }) => {
   await boot(page, starterSave(), '?debug=1');
   await page.evaluate(() => PixelPets.showTab('walk'));
   await expect(page.locator('#mapCanvas')).toHaveAttribute('role', 'img');
@@ -70,7 +70,7 @@ test('the overworld, care and encounter canvases describe what they show', async
   await expect(page.locator('#battleCanvas')).toHaveAttribute('aria-label', /^Wild Bitlet, Lv 5, HP (\d+) of \1\. Pipkit, HP \d+ of \d+\.$/);
 });
 
-test('the debug panel is not in the player DOM; it appears only in a debug session and leaves when debug is turned off', async ({ page }) => {
+test('the debug panel is not in the player DOM; it appears only in a debug session and leaves when debug is turned off @w1', async ({ page }) => {
   await boot(page, starterSave());
   const plain = await page.evaluate(() => ({ ov: !!document.querySelector('#ovDebug'), agent: document.body.innerHTML.includes('Agent tools'), ids: document.querySelectorAll('[id^="dbg"]').length, tag: document.querySelector('#dbgTag').hidden }));
   expect(plain.ov).toBe(false); expect(plain.agent).toBe(false); expect(plain.tag).toBe(true);

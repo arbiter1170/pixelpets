@@ -41,7 +41,7 @@ async function winBattle(page, beforeClose) {
   await page.waitForFunction(() => !PixelPets.battle.on, null, { timeout: 15000 });
 }
 
-test('the new-build bar never shows over a trainer battle and its tap cannot reload one', async ({ page }) => {
+test('the new-build bar never shows over a trainer battle and its tap cannot reload one @w1', async ({ page }) => {
   await bootWithBar(page);
   let loads = 0; page.on('load', () => { loads++; });
   expect(await page.evaluate(() => { PixelPets.showTab('walk'); return PixelPets.forceTrainer('route1_pia'); })).toBe(true);

@@ -35,36 +35,6 @@ const ROOMS = [
     exit: { x: 5, y: 11, dir: 'down', to: 'cobblecrest', tx: 24, ty: 6 } },
 ];
 
-const LINES = [
-  ['hm_home_in', 6, 6, 'right', 'A pot of leaves sits by the wall.'],
-  ['hm_home_up', 6, 3, 'up', 'A wooden chest. The lid is shut.'],
-  ['hm_home_up', 2, 6, 'left', 'A small pot of leaves.'],
-  ['hm_home_up', 6, 4, 'right', 'A low stool beside the bed.'],
-  ['hm_home_up', 6, 6, 'right', 'A small lamp by the bed.'],
-  ['hm_lodge_in', 1, 5, 'up', 'The hearth is lit. The flame stays low.'],
-  ['hm_lodge_in', 9, 7, 'up', 'A broad table with a folded map.'],
-  ['hm_lantern_in', 2, 5, 'left', 'A short bench along the wall.'],
-  ['hm_rook_in', 2, 2, 'left', 'A small stove and a kettle.'],
-  ['hm_rook_in', 5, 3, 'down', 'A shelf of small cups and ribbons.'],
-  ['hm_rook_in', 3, 4, 'right', 'A pot of leaves on the floor.'],
-  ['hm_rook_in', 3, 4, 'left', 'A stool by the wall.'],
-  ['hm_hq_f1', 1, 6, 'up', 'A notice board. The slips are pinned in a row.'],
-  ['hm_hq_f1', 5, 13, 'down', 'A row of hooks. One coat hangs here.'],
-  ['hm_hq_f1', 10, 9, 'up', 'A standing lamp. The shade is warm.'],
-  ['hm_hq_f1', 1, 12, 'down', 'A bench under the window.'],
-  ['hm_hq_f1', 4, 8, 'up', 'A wooden crate.'],
-  ['hm_hq_f2', 1, 3, 'up', 'The radio set. A small lamp glows on the dial.'],
-  ['hm_hq_f2', 7, 9, 'down', 'A table with a chart of the roads.'],
-  ['hm_hq_f2', 7, 12, 'up', 'A stool by the wall.'],
-  ['hm_hq_f2', 6, 4, 'up', 'A lamp by the stair.'],
-  ['hm_hq_f2', 10, 8, 'up', 'A pot of leaves by the chart.'],
-  ['cc_lantern_in', 6, 3, 'up', 'A pick hangs on the wall.'],
-  ['cc_lantern_in', 2, 5, 'left', 'A stool by the beds.'],
-  ['cc_hall_in', 2, 9, 'up', 'A stone plinth. The top is empty.'],
-  ['cc_hall_in', 8, 9, 'up', 'A stone plinth, the same cut as the pillars.'],
-  ['cc_hall_in', 7, 10, 'right', 'A low stone plinth along the aisle.'],
-];
-
 function save(extra) {
   const s = starterSave();
   s.settings.follower = false;
@@ -80,24 +50,7 @@ async function boot(page, s) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
-async function say(page) {
-  await expect.poll(() => page.evaluate(() => {
-    if (PixelPets.fading) return false;
-    if (PixelPets.scene) return true;
-    const w = PixelPets.state.world;
-    const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[w.facing] || [0, 1];
-    return PixelPets.mapObjs.some(o => o.x === w.x + d[0] && o.y === w.y + d[1]);
-  })).toBe(true);
-  if (!(await page.evaluate(() => !!PixelPets.scene))) await page.keyboard.press('Space');
-  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).not.toBe('');
-  const text = await page.evaluate(() => PixelPets.scene.text);
-  if (await page.evaluate(() => PixelPets.scene && !PixelPets.scene.full)) await page.keyboard.press('Space');
-  await page.keyboard.press('Space');
-  await expect.poll(() => page.evaluate(() => !PixelPets.scene)).toBe(true);
-  return text;
-}
-
-test('each room keeps its size, its old ids, its own skin, and the floor cap', async ({ page }) => {
+test('each room keeps its size, its old ids, its own skin, and the floor cap @w1', async ({ page }) => {
   await boot(page);
   const report = await page.evaluate((rooms) => {
     const out = [];
@@ -164,75 +117,7 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap', a
   }
 });
 
-test('the door reaches every person, and each new prop says its line', async ({ page }) => {
-  await boot(page);
-  const reach = await page.evaluate((rooms) => {
-    const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-    const bad = [];
-    for (const room of rooms) {
-      PixelPets.goto(room.id, room.ax, room.ay, 'up');
-      const info = PixelPets.mapInfo;
-      const objs = info.objs;
-      const block = new Set(objs.filter(o => o.block).map(o => o.x + ',' + o.y));
-      const warps = new Set(objs.filter(o => o.kind === 'warp').map(o => o.x + ',' + o.y));
-      const seen = new Set([room.ax + ',' + room.ay]);
-      const q = [[room.ax, room.ay]];
-      while (q.length) {
-        const [x, y] = q.shift();
-        if (warps.has(x + ',' + y) && !(x === room.ax && y === room.ay)) continue;
-        for (const [dx, dy] of dirs) {
-          const nx = x + dx, ny = y + dy, k = nx + ',' + ny;
-          if (nx < 0 || ny < 0 || nx >= info.w || ny >= info.h || seen.has(k)) continue;
-          if (PixelPets.tileInfo(nx, ny).solid || block.has(k)) continue;
-          seen.add(k); q.push([nx, ny]);
-        }
-      }
-      const adj = (x, y) => dirs.some(([dx, dy]) => seen.has((x + dx) + ',' + (y + dy)));
-      for (const o of objs) {
-        if (o.kind === 'warp' && !seen.has(o.x + ',' + o.y)) bad.push(room.id + ' warp ' + o.id);
-        if ((o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'prop') && !adj(o.x, o.y)) bad.push(room.id + ' ' + o.id);
-      }
-    }
-    return bad;
-  }, ROOMS.filter(r => r.id !== 'cc_hall_in' && r.id !== 'hm_hq_f1' && r.id !== 'hm_hq_f2'));
-  expect(reach).toEqual([]);
-
-  // The hall's seam stones block the only gap in each pillar row. That gate is already in the room.
-  // With both seams cleared, Hale, the trainers and the new plinths are all reachable.
-  const hall = await page.evaluate(() => {
-    PixelPets.setFlag('story.h2_seam_a', true);
-    PixelPets.setFlag('story.h2_seam_b', true);
-    PixelPets.goto('cc_hall_in', 5, 11, 'up');
-    const info = PixelPets.mapInfo, dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-    const objs = info.objs;
-    const block = new Set(objs.filter(o => o.block).map(o => o.x + ',' + o.y));
-    const warps = new Set(objs.filter(o => o.kind === 'warp').map(o => o.x + ',' + o.y));
-    const seen = new Set(['5,11']); const q = [[5, 11]];
-    while (q.length) {
-      const [x, y] = q.shift();
-      if (warps.has(x + ',' + y) && !(x === 5 && y === 11)) continue;
-      for (const [dx, dy] of dirs) {
-        const nx = x + dx, ny = y + dy, k = nx + ',' + ny;
-        if (seen.has(k) || PixelPets.tileInfo(nx, ny).solid || block.has(k)) continue;
-        seen.add(k); q.push([nx, ny]);
-      }
-    }
-    const adj = (x, y) => dirs.some(([dx, dy]) => seen.has((x + dx) + ',' + (y + dy)));
-    return objs.filter(o => (o.kind === 'npc' || o.kind === 'trainer' || o.kind === 'sign' || o.kind === 'prop' || o.kind === 'warp') && !(o.kind === 'warp' ? seen.has(o.x + ',' + o.y) : adj(o.x, o.y))).map(o => o.id);
-  });
-  expect(hall).toEqual([]);
-
-  for (const [map, x, y, facing, line] of LINES) {
-    await page.evaluate(([map, x, y, facing]) => PixelPets.goto(map, x, y, facing), [map, x, y, facing]);
-    expect(await say(page), map + ' ' + x + ',' + y).toBe(line);
-  }
-  await page.evaluate(() => PixelPets.goto('hm_lantern_in', 1, 3, 'up'));
-  await page.keyboard.press('Space');
-  await expect.poll(() => page.evaluate(() => (PixelPets.scene && PixelPets.scene.text) || '')).toBe('Three soft beds under a warm lantern.');
-  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
-});
-
-test('exits still use the old landing tiles', async ({ page }) => {
+test('exits still use the old landing tiles @w1', async ({ page }) => {
   await boot(page);
   for (const room of ROOMS) {
     await page.evaluate((e) => {
@@ -253,7 +138,7 @@ test('exits still use the old landing tiles', async ({ page }) => {
   }
 });
 
-test('a save standing on a wall snaps to safe, and the lab bay is unchanged', async ({ page }) => {
+test('a save standing on a wall snaps to safe, and the lab bay is unchanged @w1', async ({ page }) => {
   await boot(page, save(null, { map: 'hm_home_in', x: 0, y: 0 }));
   expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, v: PixelPets.state.v }))).toEqual({ map: 'hm_home_in', x: 4, y: 6, v: 2 });
   const lab = await page.evaluate(() => {

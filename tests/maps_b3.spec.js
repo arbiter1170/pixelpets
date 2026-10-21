@@ -61,7 +61,7 @@ async function talk(page) {
   return t;
 }
 
-test('the four rooms keep 18x12, old ids, rock tiles, and a floor under 70%', async ({ page }) => {
+test('the four rooms keep 18x12, old ids, rock tiles, and a floor under 70% @w1', async ({ page }) => {
   await boot(page, tunnelSave({ map: 'sm_yard', x: 9, y: 9 }, { 'story.sm_freed': true, 'story.sm_look': true, 'story.met_jed': true, 'story.sm_haul': true }));
   const data = await page.evaluate(() => {
     const out = {};
@@ -201,26 +201,11 @@ test('doors and warps still connect the four rooms, and a shut door keeps its li
   await expect.poll(() => pos(page)).toMatchObject({ map: 'sm_hold', x: 14, y: 4 });
 });
 
-test('each new prop says its line, and an old save on a prop snaps to safe', async ({ page }) => {
-  test.setTimeout(60000);
+test('an old save on a prop snaps to safe', async ({ page }) => {
   await boot(page, tunnelSave({ map: 'sm_yard', x: 6, y: 2 }));
   expect(await pos(page)).toMatchObject({ map: 'sm_yard', x: 9, y: 8 });
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   await boot(page, tunnelSave({ map: 'sm_yard', x: 9, y: 9 }));
   expect(await pos(page)).toMatchObject({ map: 'sm_yard', x: 9, y: 9 });
-  const spots = [
-    ['sm_yard', 6, 8, 'up', 'A wooden cart. Nothing in it.'],
-    ['sm_yard', 6, 3, 'up', 'Crates stacked against the rock.'],
-    ['sm_tunnel', 4, 5, 'up', 'A sealed barrel.'],
-    ['sm_tunnel', 1, 6, 'up', 'A coil of rope.'],
-    ['sm_tunnel', 2, 3, 'up', 'A timber brace in the rock.'],
-    ['sm_yard', 1, 3, 'up', 'An empty lantern hook.'],
-    ['sm_den', 8, 5, 'up', 'A plain desk.'],
-    ['sm_den', 9, 5, 'up', 'A shut ledger.'],
-    ['sm_den', 10, 5, 'up', 'A small lamp. The flame is still.'],
-  ];
-  for (const [map, x, y, f, line] of spots) {
-    await page.evaluate(([map, x, y, f]) => PixelPets.goto(map, x, y, f), [map, x, y, f]);
-    expect(await talk(page), line).toBe(line);
-  }
+
 });

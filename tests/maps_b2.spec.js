@@ -52,7 +52,7 @@ async function talk(page) {
 }
 const pos = page => page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, facing: PixelPets.state.world.facing }));
 
-test('the three floors are 14x22, old ids stay, and the stair landings match', async ({ page }) => {
+test('the three floors are 14x22, old ids stay, and the stair landings match @w1', async ({ page }) => {
   await boot(page, labSave());
   const r = await page.evaluate(() => {
     const m = MAPDATA.heights.maps;
@@ -151,27 +151,7 @@ test('each floor is walkable, under the floor cap, and its accent is its own', a
   }
 });
 
-test('signature props say their lines, and a locked stair stays shut', async ({ page }) => {
-  test.setTimeout(60000);
-  await boot(page, labSave());
-  const cases = [
-    ['rx_f1', 2, 12, 'up', 'A white bench.'],
-    ['rx_f1', 1, 4, 'up', 'A white planter.'],
-    ['rx_f1', 10, 7, 'up', 'A visitor screen.'],
-    ['rx_f1', 11, 6, 'up', 'REGENX LOBBY.'],
-    ['rx_f2', 10, 6, 'up', 'A whiteboard.'],
-    ['rx_f2', 2, 13, 'up', 'A quiet booth.'],
-    ['rx_f2', 2, 6, 'up', 'FOCUS WING.'],
-    ['rx_f3', 4, 11, 'up', 'A sorting table.'],
-    ['rx_f3', 1, 15, 'up', 'A file cart.'],
-    ['rx_f3', 8, 9, 'up', 'A dim lamp.'],
-    ['rx_f3', 1, 10, 'up', 'A shelf of folders.'],
-    ['rx_f3', 2, 5, 'up', 'RECORDS.'],
-  ];
-  for (const [map, x, y, f, line] of cases) {
-    await at(page, map, x, y, f);
-    expect(await talk(page), map + ' ' + x + ',' + y).toContain(line);
-  }
+test('a locked stair stays shut', async ({ page }) => {
   await boot(page, labSave({ 'story.rx_f1': false }));
   await at(page, 'rx_f1', 6, 3, 'up');
   const pt = await page.evaluate(() => {
@@ -223,7 +203,7 @@ test('the climb lands on each south mat, and the lobby mat leaves for the Height
   await expect.poll(() => pos(page)).toMatchObject({ map: 'fb_heights', x: 4, y: 6, facing: 'down' });
 });
 
-test('floor variants stay seeded, and an old save on a solid tile snaps to safe', async ({ page }) => {
+test('floor variants stay seeded, and an old save on a solid tile snaps to safe @w1', async ({ page }) => {
   await boot(page, labSave({}, { map: 'rx_f1', x: 7, y: 19 }));
   const read = () => page.evaluate(() => {
     const out = [];

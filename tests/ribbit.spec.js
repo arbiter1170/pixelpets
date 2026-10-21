@@ -20,7 +20,7 @@ async function boot(page, save) {
   await page.waitForFunction(() => window.PixelPets.debug === true && window.PPRibbit && typeof window.PPRibbit.feed === 'function');
 }
 
-test('feed is stable, and the quarry sale has its own line', async ({ page }) => {
+test('feed is stable, and the quarry sale has its own line @w1', async ({ page }) => {
   await boot(page);
   const out = await page.evaluate(() => {
     const base = {

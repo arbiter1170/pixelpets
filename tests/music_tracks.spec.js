@@ -15,7 +15,7 @@ async function boot(page, search) {
   await page.waitForFunction(() => window.PixelPets && window.BUILD);
 }
 
-test('the eight loops are in the catalog and musicCheck is clean', async ({ page }) => {
+test('the eight loops are in the catalog and musicCheck is clean @w1', async ({ page }) => {
   await boot(page, '');
   const got = await page.evaluate((ids) => ({
     check: PixelPets.musicCheck(),
@@ -27,7 +27,7 @@ test('the eight loops are in the catalog and musicCheck is clean', async ({ page
   for (const id of NEW) expect(got.ids).toContain(id);
 });
 
-test('each new loop loads', async ({ page }) => {
+test('each new loop loads @w1', async ({ page }) => {
   await boot(page, '');
   // The boot save is muted, and unlock ignores a tap while muted. Unmute first, then tap a visible control.
   await page.evaluate(() => { PPSound.setMuted(false); PPSound.setMusic(true, true); });
@@ -43,7 +43,7 @@ test('each new loop loads', async ({ page }) => {
   }
 });
 
-test('each new loop has eight bars, in-range notes, and drum letters', async ({ page }) => {
+test('each new loop has eight bars, in-range notes, and drum letters @w1', async ({ page }) => {
   await boot(page, '');
   const rows = await page.evaluate((ids) => {
     const sum = (notes) => notes.reduce((s, n) => s + n[1], 0);
@@ -74,7 +74,7 @@ test('each new loop has eight bars, in-range notes, and drum letters', async ({ 
   }
 });
 
-test('Hall leaders, Rook, the halls, the lab, and the dream rooms take the new loops', async ({ page }) => {
+test('Hall leaders, Rook, the halls, the lab, and the dream rooms take the new loops @w1', async ({ page }) => {
   await boot(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets.debug === true);
   const got = await page.evaluate(() => {

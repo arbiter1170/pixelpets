@@ -10,7 +10,7 @@ const { starterSave, installSave } = require('./helpers');
 
 const OLD_PAGE = fs.readFileSync(path.join(__dirname, 'fixtures', 'index_1158.html'), 'utf8');
 
-test('an old cached index.html with new scripts still boots the saved partner (P0 stale page)', async ({ page }) => {
+test('an old cached index.html with new scripts still boots the saved partner (P0 stale page) @w1', async ({ page }) => {
   const save = starterSave();
   save.party[0].xp = 300;
   await installSave(page.context(), save, { quietDay: true });

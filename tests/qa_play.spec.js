@@ -84,7 +84,7 @@ test('the bag shows both handsets, and the walk tip follows Heights', async ({ p
   expect(end.quest).toEqual([]);
 });
 
-test('Fen does not replay her intro after she has asked', async ({ page }) => {
+test('Fen does not replay her intro after she has asked @w1', async ({ page }) => {
   const save = glimmerSave();
   delete save.flags['story.orchard_cleared'];
   save.world = { map: 'fernbrook', x: 10, y: 10, facing: 'up', respawn: 'fernbrook' };

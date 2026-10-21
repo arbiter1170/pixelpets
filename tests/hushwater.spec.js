@@ -144,7 +144,7 @@ async function walkTo(page, x, y) {
   return world(page);
 }
 
-test('gates stay shut until Cobblecrest ends, then the stream walks both ways', async ({ page }) => {
+test('gates stay shut until Cobblecrest ends, then the stream walks both ways @w1', async ({ page }) => {
   test.setTimeout(120000);
   await boot(page);
   const glenStay = await page.evaluate(() => {
@@ -359,7 +359,7 @@ test('the first step in plays once, the rope stays, and the three holders appear
   }
 });
 
-test('spawn tables roll the Hushwater lines at Lv 19-23', async ({ page }) => {
+test('spawn tables roll the Hushwater lines at Lv 19-23 @w1', async ({ page }) => {
   await boot(page);
   const tables = await page.evaluate(() => {
     const all = PixelPets.spawnTables();
@@ -400,7 +400,7 @@ test('spawn tables roll the Hushwater lines at Lv 19-23', async ({ page }) => {
   }
 });
 
-test('a reload inside Hushwater stays in hw_cut', async ({ page }) => {
+test('a reload inside Hushwater stays in hw_cut @w1', async ({ page }) => {
   const save = fieldSave();
   save.world = { map: 'hw_cut', x: 37, y: 12, facing: 'left', respawn: 'hearthmoor' };
   await boot(page, save, '?debug=1');
@@ -416,7 +416,7 @@ test('a reload inside Hushwater stays in hw_cut', async ({ page }) => {
   expect(here).toMatchObject({ map: 'hw_cut', x: 37, y: 12, v: 2, cut: [40, 16], falls: [24, 16], rim: [24, 16] });
 });
 
-test('an unknown pet with a taken id gets a fresh id and stays', async ({ page }) => {
+test('an unknown pet with a taken id gets a fresh id and stays @w1', async ({ page }) => {
   await boot(page);
   const report = await page.evaluate(() => {
     const known = {

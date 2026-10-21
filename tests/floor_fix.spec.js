@@ -14,7 +14,7 @@ function save() {
   return s;
 }
 
-test('the 18 calm floors match the grids, stay under the cap, and leave walk and 5B alone', async ({ page }) => {
+test('the 18 calm floors match the grids, stay under the cap, and leave walk and 5B alone @w1', async ({ page }) => {
   await installSave(page.context(), save(), { quietDay: true });
   await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);

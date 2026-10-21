@@ -111,7 +111,7 @@ test('checkpoint, item, faction and standing work from the panel', async ({ page
   expect(standing.now.name).toBe(standing.name);
 });
 
-test('encounter preview stats match the battle that starts', async ({ page }) => {
+test('encounter preview stats match the battle that starts @w1', async ({ page }) => {
   await boot(page, '?debug=1');
   await page.waitForFunction(() => typeof window.PixelPets.encounterPreview === 'function');
   await openDebugPanel(page);
@@ -139,7 +139,7 @@ test('encounter preview stats match the battle that starts', async ({ page }) =>
   expect(foe.spd).toBe(preview.spd);
 });
 
-test('catalog, side checkpoint, kit and dev checks are there for later work', async ({ page }) => {
+test('catalog, side checkpoint, kit and dev checks are there for later work @w1', async ({ page }) => {
   await boot(page, '?debug=1');
   await page.waitForFunction(() => typeof window.PixelPets.debugCatalog === 'function');
   const catalog = await page.evaluate(() => window.PixelPets.debugCatalog());

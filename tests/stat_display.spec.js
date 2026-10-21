@@ -57,7 +57,7 @@ test('criteria 1-4: one strip on PARTNER and WALK at the spec rects; NRG/GROW on
   }
 });
 
-test('criterion 5: hidden on WALKLINGS and QUEST, and on WALK in modern; shown on PARTNER in modern', async ({ page }) => {
+test('criterion 5: hidden on WALKLINGS and QUEST, and on WALK in modern; shown on PARTNER in modern @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.showTab('col')); await expect(page.locator('#statStrip')).toBeHidden();
   await page.locator('#tabs button[data-tab="walk"]').click(); await expect(page.locator('#statStrip')).toBeVisible();

@@ -42,7 +42,7 @@ function noteRange(track) {
   return notes;
 }
 
-test('palette png round-trips with zero unknown colours', () => {
+test('palette png round-trips with zero unknown colours @w1', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'walklings-assets-'));
   const tile = run(['tools/png2grid.py', '--tile', '--id', 'tile_ok', path.join(FIX, 'tile_ok.png')]);
   expect(tile.status, tile.stderr).toBe(0);
@@ -148,7 +148,7 @@ test('palette png round-trips with zero unknown colours', () => {
   expect(badMirror.stderr).toContain('not mirror-symmetric');
 });
 
-test('music literal matches musicCheck and stays in midi 36-96', () => {
+test('music literal matches musicCheck and stays in midi 36-96 @w1', () => {
   const converted = run([
     'tools/midi2music.py', '--json', '--id', 'loop_ok', '--steps-per-bar', '8',
     path.join(FIX, 'loop_ok.mid'),

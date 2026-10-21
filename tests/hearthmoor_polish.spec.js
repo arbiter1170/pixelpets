@@ -37,7 +37,7 @@ const REACH = `(extra) => {
   return [...seen];
 }`;
 
-test('Officer Bren keeps a short beat off paths, doorways and sign tiles, and never boxes the keeper in', async ({ page }) => {
+test('Officer Bren keeps a short beat off paths, doorways and sign tiles, and never boxes the keeper in @w1', async ({ page }) => {
   await boot(page, { map: 'hearthmoor', x: 12, y: 19 });
   const r = await page.evaluate(([route, src]) => {
     const reach = eval(src), info = PixelPets.mapInfo;
@@ -72,7 +72,7 @@ test('Officer Bren keeps a short beat off paths, doorways and sign tiles, and ne
   for (const k of seen) expect(ROUTE.map(([x, y]) => x + ',' + y)).toContain(k);
 });
 
-test('Officer Bren waits and faces the keeper when the keeper is beside him', async ({ page }) => {
+test('Officer Bren waits and faces the keeper when the keeper is beside him @w1', async ({ page }) => {
   await boot(page, { map: 'hearthmoor', x: 12, y: 19 });
   await page.waitForFunction(() => { const p = PixelPets.objPos('hm_patrol'); return p.x === 1 && p.y === 8; }, null, { timeout: 8000 });
   await page.evaluate(() => PixelPets.goto('hearthmoor', 2, 8, 'left'));
@@ -86,7 +86,7 @@ test('Officer Bren waits and faces the keeper when the keeper is beside him', as
   expect(moved).toBe(true);
 });
 
-test('the Flats sign and lantern post sit apart, and every Hearthmoor sign reads from a reachable tile', async ({ page }) => {
+test('the Flats sign and lantern post sit apart, and every Hearthmoor sign reads from a reachable tile @w1', async ({ page }) => {
   await boot(page, { map: 'hearthmoor', x: 12, y: 19 });
   const r = await page.evaluate((src) => {
     const reach = new Set(eval(src)([])), info = PixelPets.mapInfo;
@@ -112,7 +112,7 @@ test('the Flats sign and lantern post sit apart, and every Hearthmoor sign reads
   await page.waitForFunction(() => !PixelPets.scene);
 });
 
-test('walk toasts show while a held walk keeps going: no dialog and no stop', async ({ page }) => {
+test('walk toasts show while a held walk keeps going: no dialog and no stop @w1', async ({ page }) => {
   await boot(page, { map: 'hearthmoor', x: 3, y: 19, facing: 'right' });
   await page.evaluate(() => { PixelPets.goto('hearthmoor', 3, 19, 'right'); if (PixelPets.clearWild) PixelPets.clearWild(); PixelPets.state.steps = 48; });
   await page.waitForTimeout(200);

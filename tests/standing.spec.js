@@ -14,7 +14,7 @@ async function gotoDebug(page) {
   await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.setStanding === 'function');
 }
 
-test('fresh save: both meters 0, tier 0, v stays 2; old save without standing loads the same', async ({ page }) => {
+test('fresh save: both meters 0, tier 0, v stays 2; old save without standing loads the same @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   const r = await page.evaluate(() => ({ st: PixelPets.standing, cfg: PixelPets.standingCfg(), check: PixelPets.standingCheck(), v: PixelPets.state.v, saved: PixelPets.state.standing }));
@@ -55,7 +55,7 @@ test('a saved standing is clamped to the range; a non-object becomes 0/0', async
   await ctx.close();
 });
 
-test('thresholds and tier-up toasts come from the config, once per tier', async ({ page }) => {
+test('thresholds and tier-up toasts come from the config, once per tier @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
@@ -87,7 +87,7 @@ test('thresholds and tier-up toasts come from the config, once per tier', async 
   expect(flags.g3).toBe('no');
 });
 
-test('side_pick Yes (keepers) grants once; a replay does not grant again', async ({ page }) => {
+test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', async ({ page }) => {
   const save = starterSave(); Object.assign(save.flags, { 'story.reached_fernbrook': true, 'story.met_glimmerwell': true });
   save.world = { map: 'fernbrook', x: 9, y: 9, facing: 'down', respawn: 'fernbrook' };
   await installSave(page.context(), save, { quietDay: true });
@@ -109,7 +109,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again', async
   expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
-test('switching halves the side you leave and stays shut until the next Seal', async ({ page }) => {
+test('switching halves the side you leave and stays shut until the next Seal @w1', async ({ page }) => {
   const save = starterSave(); Object.assign(save.flags, SIDE_PICK_FLAGS, { 'story.side': 'keepers', 'story.orchard_cleared': true, 'story.rook_bond': 2, 'story.rc_climax': true });
   save.standing = { keepers: 30, glimmer: 12 };
   save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'down', respawn: 'fernbrook' };
@@ -159,7 +159,7 @@ test('switching halves the side you leave and stays shut until the next Seal', a
   expect(back.st.glimmer.points).toBe(12);
 });
 
-test('Pledge desks are gone; Rook says not yet until the crates, and a battle blocks the offer', async ({ page }) => {
+test('Pledge desks are gone; Rook says not yet until the crates, and a battle blocks the offer @w1', async ({ page }) => {
   const save = starterSave();
   save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'up', respawn: 'fernbrook' };
   await installSave(page.context(), save, { quietDay: true });

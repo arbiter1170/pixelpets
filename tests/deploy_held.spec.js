@@ -25,7 +25,7 @@ async function boot(page, save, search) {
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state && window.PixelPets.state.party.length > 0);
 }
 
-test('a v2 save without the new fields loads them absent', async ({ page }) => {
+test('a v2 save without the new fields loads them absent @w1', async ({ page }) => {
   const save = starterSave();
   save.party[0].keepsake = 'pebble';
   await boot(page, save);
@@ -43,7 +43,7 @@ test('a v2 save without the new fields loads them absent', async ({ page }) => {
   expect(view.deploy).toBeUndefined();
 });
 
-test('invalid held, accessory, and deploy values are dropped and only one relief remains', async ({ page }) => {
+test('invalid held, accessory, and deploy values are dropped and only one relief remains @w1', async ({ page }) => {
   const save = starterSave();
   save.party = [
     pet({
@@ -83,7 +83,7 @@ test('invalid held, accessory, and deploy values are dropped and only one relief
   expect(view.box[0].deploy).toEqual({ call: 'greet' });
 });
 
-test('holdItem moves one from the bag and unhold at the cap leaves it held', async ({ page }) => {
+test('holdItem moves one from the bag and unhold at the cap leaves it held @w1', async ({ page }) => {
   const save = starterSave();
   save.bag = { soft_berry: 1 };
   await boot(page, save, '?debug=1');
@@ -114,7 +114,7 @@ test('holdItem moves one from the bag and unhold at the cap leaves it held', asy
   expect(back.bag).toBe(10);
 });
 
-test('GEAR sets call, relief, accessory, opener, and note', async ({ page }) => {
+test('GEAR sets call, relief, accessory, opener, and note @w1', async ({ page }) => {
   const save = starterSave();
   save.bag = { soft_berry: 1 };
   save.party.push(pet({ id: 'petsmoke2', species: 'tide', moves: ['bump', 'ripple_jab'] }));
@@ -152,7 +152,7 @@ test('GEAR sets call, relief, accessory, opener, and note', async ({ page }) => 
   expect(view.lead.deploy == null || view.lead.deploy.relief !== true).toBe(true);
 });
 
-test('relief leads, a bracer doubles Dart, and the swap sheet stays the party', async ({ page }) => {
+test('relief leads, a bracer doubles Dart, and the swap sheet stays the party @w1', async ({ page }) => {
   const save = starterSave();
   save.party.push(pet({ id: 'petsmoke2', species: 'tide' }));
   save.box = [pet({ id: 'petsmoke3', species: 'bloom', energy: 90 })];
@@ -192,7 +192,7 @@ test('relief leads, a bracer doubles Dart, and the swap sheet stays the party', 
   expect(rows.map((r) => r.sub).join(' | ')).toContain('ready');
 });
 
-test('a custom call line, opener, and Soft Berry heal in battle', async ({ page }) => {
+test('a custom call line, opener, and Soft Berry heal in battle @w1', async ({ page }) => {
   const save = starterSave();
   save.party[0].moves = ['bump', 'stoke_up', 'flick_flame'];
   save.party[0].evoMoves = [];

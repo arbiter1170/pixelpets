@@ -11,7 +11,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 const MAPS = ['hearthmoor', 'route1', 'fernbrook', 'route2', 'cobblecrest'];
 
-test('the worker does not take over an open page and does not return a manual redirect', async ({ request }) => {
+test('the worker does not take over an open page and does not return a manual redirect @w1', async ({ request }) => {
   const sw = await (await request.get('/sw.js')).text();
   expect(sw).not.toMatch(/\.skipWaiting\s*\(/);
   expect(sw).not.toMatch(/redirect:\s*['"]manual['"]/);
@@ -19,7 +19,7 @@ test('the worker does not take over an open page and does not return a manual re
   expect(sw).toMatch(/stripRedirect/);
 });
 
-test('a boot failure reloads once even when sessionStorage is wiped', async ({ page }) => {
+test('a boot failure reloads once even when sessionStorage is wiped @w1', async ({ page }) => {
   await page.addInitScript(() => { try { sessionStorage.removeItem('pixelpets.bootRetry'); } catch (e) {} });
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8')
     .replace('id="envPick"', 'id="envPickGone"');
@@ -41,7 +41,7 @@ test('a boot failure reloads once even when sessionStorage is wiped', async ({ p
 test.describe('open game', () => {
   trackErrors(test, expect);
 
-  test('a newer version.json and a controller change do not reload the open game', async ({ page }) => {
+  test('a newer version.json and a controller change do not reload the open game @w1', async ({ page }) => {
     const save = starterSave();
     await installSave(page.context(), save, { quietDay: true });
     let loads = 0;
@@ -71,7 +71,7 @@ test.describe('open game', () => {
     expect(loads).toBe(0);
   });
 
-  test('music nodes stay flat, and map changes do not keep making canvases', async ({ page }) => {
+  test('music nodes stay flat, and map changes do not keep making canvases @w1', async ({ page }) => {
     const save = starterSave();
     save.settings.music = true;
     save.settings.musicVol = 0.2;

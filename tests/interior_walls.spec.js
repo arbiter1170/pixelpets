@@ -257,7 +257,7 @@ const ROOMS = [
   { id: 'hm_diner', skin: 'house_diner', windows: [2, 5, 8], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },
 ];
 
-test('every interior uses its own wall row, windows, doors and jambs', async ({ page }) => {
+test('every interior uses its own wall row, windows, doors and jambs @w1', async ({ page }) => {
   test.setTimeout(120000);
   await boot(page);
   const report = await page.evaluate((rooms) => {

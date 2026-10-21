@@ -110,7 +110,7 @@ test('setting phone_got on WALK shows the phone tip once', async ({ page }) => {
   await expect(page.locator('#unlockCard')).toBeHidden();
 });
 
-test('Tips OFF shows nothing', async ({ page }) => {
+test('Tips OFF shows nothing @w1', async ({ page }) => {
   const s = starterSave();
   s.settings.tips = false;
   s.flags['story.phone_got'] = true;
@@ -137,7 +137,7 @@ test('a cleared tour reaches T12r before T13', async ({ page }) => {
   if (page.viewportSize() && page.viewportSize().width === 390) await shot390(page, 'tutorial-t12r-end');
 });
 
-test('a save already on T13 skips the compass step', async ({ page }) => {
+test('a save already on T13 skips the compass step @w1', async ({ page }) => {
   test.setTimeout(60000);
   await openTour(page, tourSave('T13'));
   const compass = await walkTour(page);
@@ -214,7 +214,7 @@ test('growing up on the Pet tab does not show the tip back on WALK', async ({ pa
   }
 });
 
-test('a team Walkling who is not the partner does not open the grow up tip', async ({ page }) => {
+test('a team Walkling who is not the partner does not open the grow up tip @w1', async ({ page }) => {
   const s = starterSave();
   s.party = [
     carePet('petsmoke1', 'ember', { origin: 'starter', xp: 10 }),
@@ -233,7 +233,7 @@ test('a team Walkling who is not the partner does not open the grow up tip', asy
   expect(st).toEqual({ v: 2, flag: false, partnerReady: false, mateXp: 40 });
 });
 
-test('an older save with a grown starter marks the grow up tip seen', async ({ page }) => {
+test('an older save with a grown starter marks the grow up tip seen @w1', async ({ page }) => {
   test.setTimeout(60000);
   const s = starterSave();
   s.party = [carePet('petlead', 'tide', { origin: 'wild', xp: 40 })];
@@ -300,7 +300,7 @@ test('an eligible partner on WALK gets the grow up tip and SHOW ME rings GROW UP
 
 // Oct 19 playtest: the Lanterns tip pointed at the exit mat and SHOW ME did nothing. Healed: GOT IT only.
 // Hurt in a Lantern House: SHOW ME walks to a bed and asks to rest.
-test('Lanterns tip: GOT IT when healed, SHOW ME walks to a bed when hurt', async ({ page }) => {
+test('Lanterns tip: GOT IT when healed, SHOW ME walks to a bed when hurt @w1', async ({ page }) => {
   const base = () => {
     const s = starterSave();
     s.settings = Object.assign({}, s.settings, { controls: 'modern' });

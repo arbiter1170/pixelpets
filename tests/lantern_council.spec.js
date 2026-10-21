@@ -42,7 +42,7 @@ async function readScene(page) {
   throw new Error('scene did not end: ' + lines.join(' | '));
 }
 
-test('a Keepers save at the end of Act 1 is pointed at Sky-Dock Command', async ({ page }) => {
+test('a Keepers save at the end of Act 1 is pointed at Sky-Dock Command @w1', async ({ page }) => {
   await boot(page, ready());
   const q = await page.evaluate(() => {
     const pets = PixelPets.state.party.length;
@@ -77,7 +77,7 @@ test('a Keepers save at the end of Act 1 is pointed at Sky-Dock Command', async 
   expect(q.mom).toBe('phone');
 });
 
-test('Glimmerwell does not get the council row, and the games pointer waits', async ({ page }) => {
+test('Glimmerwell does not get the council row, and the games pointer waits @w1', async ({ page }) => {
   await boot(page, ready({ 'story.side': 'glimmer' }));
   const glim = await page.evaluate(() => PixelPets.quest.id);
   expect(glim).toBe('gb_invite');
@@ -89,7 +89,7 @@ test('Glimmerwell does not get the council row, and the games pointer waits', as
   expect(games).toBe('hc_games');
 });
 
-test('the council names both Seals, grants once, and the road stays closed', async ({ page }) => {
+test('the council names both Seals, grants once, and the road stays closed @w1', async ({ page }) => {
   await boot(page, ready({ 'story.hc_invite': true }));
   const before = await page.evaluate(() => ({
     line: PixelPets.npcLine('hc_lumen'),

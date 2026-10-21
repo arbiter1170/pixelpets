@@ -53,7 +53,7 @@ const sideText = (page, id) => page.evaluate((id) => PPQuests.SIDE.find((e) => e
 const mainSnap = (page) => page.evaluate(() => { const q = PixelPets.quest; return { id: q.id, text: q.text, place: q.place, point: q.point, seen: q.seen }; });
 
 for (const mode of MODES) {
-  test(`AC1 + AC2 (${mode}): two side chains, TRACK switches, survives reload`, async ({ page }) => {
+  test(`AC1 + AC2 (${mode}): two side chains, TRACK switches, survives reload @w1`, async ({ page }) => {
     await boot(page, save({}, mode));
     await openPanel(page);
     let p = await panel(page);
@@ -99,7 +99,7 @@ for (const mode of MODES) {
   });
 }
 
-test('AC3: talking to Mom first still starts her chain, and her step advances on the card', async ({ page }) => {
+test('AC3: talking to Mom first still starts her chain, and her step advances on the card @w1', async ({ page }) => {
   await boot(page, save());
   await page.evaluate(() => PixelPets.runScene('mom_hello'));
   await playScene(page, ["I'll clear the table"]);
@@ -112,7 +112,7 @@ test('AC3: talking to Mom first still starts her chain, and her step advances on
   expect(await page.evaluate(() => PixelPets.state.ui.sideTracked)).toBe('mom');
 });
 
-test('AC4: finishing the tracked phone chain auto-tracks Mom with a toast', async ({ page }) => {
+test('AC4: finishing the tracked phone chain auto-tracks Mom with a toast @w1', async ({ page }) => {
   await boot(page, save());
   await page.waitForTimeout(100);
   await page.evaluate(() => PixelPets.setFlag('story.phone_got', true));
@@ -128,7 +128,7 @@ test('AC4: finishing the tracked phone chain auto-tracks Mom with a toast', asyn
   expect(p.doneToggle).toBeNull();
 });
 
-test('AC5: an old save without ui loads, phone tracked, nothing written until TRACK', async ({ page }) => {
+test('AC5: an old save without ui loads, phone tracked, nothing written until TRACK @w1', async ({ page }) => {
   const s = save(); delete s.ui;
   await boot(page, s);
   const st = await page.evaluate(() => ({ ui: PixelPets.state.ui, sq: PixelPets.sideQuest.id, v: PixelPets.state.v, stored: JSON.parse(localStorage.getItem('pixelpets.save.v2')).ui }));
@@ -211,7 +211,7 @@ test('AC8: with two side chains DONE folds into one row that toggles', async ({ 
   expect((await panel(page)).doneListHidden).toBe(true);
 });
 
-test('AC9: no side quest, no SIDE card; Side task stays in the map key (D110 MAP_LEGEND)', async ({ page }) => {
+test('AC9: no side quest, no SIDE card; Side task stays in the map key (D110 MAP_LEGEND) @w1', async ({ page }) => {
   await boot(page, save({ 'story.phone_got': true, 'story.dream_study': true }));
   await openPanel(page);
   const p = await panel(page);
@@ -226,13 +226,13 @@ test('AC9: no side quest, no SIDE card; Side task stays in the map key (D110 MAP
   expect(marks.dots).toEqual([]);
 });
 
-test('AC9b: the Side task key entry is always visible (D110)', async ({ page }) => {
+test('AC9b: the Side task key entry is always visible (D110) @w1', async ({ page }) => {
   await boot(page, save());
   await openMap(page);
   expect(await page.locator('#keySideTask').isVisible()).toBe(true);
 });
 
-test('AC10: QUEST pulses once when Mom\'s chain first becomes active', async ({ page }) => {
+test('AC10: QUEST pulses once when Mom\'s chain first becomes active @w1', async ({ page }) => {
   await boot(page, save({}, 'arcade', (s) => { s.questSeen = 'rival1'; s.ui = { sideSeen: ['phone'] }; }));
   expect(await page.evaluate(() => PixelPets.quest.id)).toBe('rival1');
   await page.waitForFunction(() => document.querySelector('#questBtn').classList.contains('pulse'));
@@ -243,7 +243,7 @@ test('AC10: QUEST pulses once when Mom\'s chain first becomes active', async ({ 
   expect(await page.evaluate(() => PixelPets.state.ui.sideSeen)).toEqual(['phone', 'mom']);
 });
 
-test('AC11: the main card, main cue, red ring and NEXT line do not change with tracking', async ({ page }) => {
+test('AC11: the main card, main cue, red ring and NEXT line do not change with tracking @w1', async ({ page }) => {
   await boot(page, save());
   const grab = async () => {
     await openPanel(page);
@@ -261,7 +261,7 @@ test('AC11: the main card, main cue, red ring and NEXT line do not change with t
   await page.evaluate(() => PixelPets.debugSideChains(null));
 });
 
-test('AC12: devCheck passes, chains carry labels, sideQuest is the tracked step, sideActive lists all', async ({ page }) => {
+test('AC12: devCheck passes, chains carry labels, sideQuest is the tracked step, sideActive lists all @w1', async ({ page }) => {
   await boot(page, save());
   const r = await page.evaluate(() => ({
     check: PixelPets.questCheck,
@@ -280,7 +280,7 @@ test('AC12: devCheck passes, chains carry labels, sideQuest is the tracked step,
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
 
-test('debug hooks stay inert without ?debug=1', async ({ page }) => {
+test('debug hooks stay inert without ?debug=1 @w1', async ({ page }) => {
   await installSave(page.context(), save(), { quietDay: true });
   await gotoGame(page, '');
   const r = await page.evaluate(() => ({ a: PixelPets.debugSideChains && PixelPets.debugSideChains([]), b: PixelPets.trackSide && PixelPets.trackSide('mom') }));

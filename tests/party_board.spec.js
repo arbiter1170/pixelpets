@@ -118,7 +118,7 @@ test('journal grid, six slots, and the quiet orphan row', async ({ page }) => {
   await expect(page.locator('#ovJournal')).toBeHidden();
 });
 
-test('reorder, deposit, withdraw, and release keep the pet and the journal', async ({ page }) => {
+test('reorder, deposit, withdraw, and release keep the pet and the journal @w1', async ({ page }) => {
   await openCol(page, boardSave());
   const report = await page.evaluate(() => {
     const ids = () => PixelPets.state.party.map((p) => p.id);
@@ -214,7 +214,7 @@ test('reorder, deposit, withdraw, and release keep the pet and the journal', asy
   expect(report.stoneState).toBe('joined');
 });
 
-test('a full party cannot gain a seventh Walkling', async ({ page }) => {
+test('a full party cannot gain a seventh Walkling @w1', async ({ page }) => {
   await openCol(page, fullSave());
   const report = await page.evaluate(() => {
     const before = PixelPets.state.party.map((p) => p.id);
@@ -269,7 +269,7 @@ test('box and release confirms are thumb buttons', async ({ page }) => {
   await expect(page.locator('#ovWalkling')).toBeHidden();
 });
 
-test('party actions stay labeled after the care timer', async ({ page }) => {
+test('party actions stay labeled after the care timer @w1', async ({ page }) => {
   await openCol(page, boardSave());
   await page.waitForFunction(() => document.querySelector('#scr-pet [data-act="feed"]').dataset.cd === '');
   const labels = await page.evaluate(() => ({

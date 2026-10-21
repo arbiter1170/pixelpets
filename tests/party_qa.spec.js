@@ -83,7 +83,7 @@ test('journal counts and silhouettes stay on the WALKLINGS tab', async ({ page }
   await shot(page, 'qa-journal');
 });
 
-test('deposit, withdraw, release, and a full-party partner swap keep the partner in the party', async ({ page }) => {
+test('deposit, withdraw, release, and a full-party partner swap keep the partner in the party @w1', async ({ page }) => {
   const party = ['ember', 'tide', 'bloom', 'stone', 'volt', 'frost'].map((species, i) => pet('p' + i, species, { origin: i ? 'wild' : 'starter', keepsake: 'k' + i }));
   const save = saveWith(party, { box: [pet('pbox', 'beetle', { keepsake: 'boxy' })] });
   await boot(page, save, '?debug=1');
@@ -127,7 +127,7 @@ test('deposit, withdraw, release, and a full-party partner swap keep the partner
   expect(moved.spareGone).toBe(true);
 });
 
-test('a full bag keeps the held item and the Walkling', async ({ page }) => {
+test('a full bag keeps the held item and the Walkling @w1', async ({ page }) => {
   const save = saveWith([
     pet('pember', 'ember', { origin: 'starter' }),
     pet('pstone', 'stone', { held: 'soft_berry' }),
@@ -210,7 +210,7 @@ test('the bag will not use up a holdable item', async ({ page }) => {
   await shot(page, 'qa-bag');
 });
 
-test('hold swaps back, and a boxed relief cannot lead', async ({ page }) => {
+test('hold swaps back, and a boxed relief cannot lead @w1', async ({ page }) => {
   const save = saveWith([
     pet('pember', 'ember', { origin: 'starter', energy: 0 }),
     pet('ptide', 'tide', { energy: 90 }),
@@ -307,7 +307,7 @@ test('battle swap stays in the party, resets stages, and skips a boxed id', asyn
   await shot(page, 'qa-swap');
 });
 
-test('greet and the kin ribbon widen only a wild battle, and a berry ignores a hit that is already under half', async ({ page }) => {
+test('greet and the kin ribbon widen only a wild battle, and a berry ignores a hit that is already under half @w1', async ({ page }) => {
   const save = saveWith([
     pet('pember', 'ember', { origin: 'starter', happy: 60, held: 'soft_berry' }),
   ]);

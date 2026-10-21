@@ -6,7 +6,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-test('beating a trainer keeps the save and partner (P0 trainer win)', async ({ page }) => {
+test('beating a trainer keeps the save and partner (P0 trainer win) @w1', async ({ page }) => {
   const save = starterSave();
   save.party[0].xp = 120;
   await installSave(page.context(), save, { quietDay: true });

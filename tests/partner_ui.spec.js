@@ -104,7 +104,7 @@ test('lower card has five bars, the spec icons, and the card rects', async ({ pa
   if (W === 390) await page.locator('#petStrip').screenshot({ path: '/opt/cursor/artifacts/partner_lower_card_390.png' });
 });
 
-test('a low FOOD bar blinks and GROW does not, and one tap opens STATS', async ({ page }) => {
+test('a low FOOD bar blinks and GROW does not, and one tap opens STATS @w1', async ({ page }) => {
   await boot(page, { hunger: 10, happy: 10, energy: 10, xp: 10, stage: 0, hpNow: 1 });
   await page.locator('#petStrip').click();
   await expect(page.locator('#ovStats')).toBeVisible();
@@ -124,7 +124,7 @@ test('a low FOOD bar blinks and GROW does not, and one tap opens STATS', async (
   expect(low.screen).toBe('walk');
 });
 
-test('icons match the grids, and the alert badges stay off the card and PARTNER', async ({ page }) => {
+test('icons match the grids, and the alert badges stay off the card and PARTNER @w1', async ({ page }) => {
   await boot(page);
   const glyphs = await page.evaluate(() => ({
     food: GLYPH.ico_food.slice(),
@@ -428,7 +428,7 @@ test('a guarded tab denies INTERACT and leaves the popup open', async ({ page })
   expect(denied.screen).toBe('walk');
 });
 
-test('HOLDER badge, Friends wording, and the save stay as they are', async ({ page }) => {
+test('HOLDER badge, Friends wording, and the save stay as they are @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.showTab('pet'));
   const badge = await page.evaluate(() => {

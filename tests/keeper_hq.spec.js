@@ -24,16 +24,7 @@ async function boot(page, s) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
-async function say(page) {
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
-  const text = await page.evaluate(() => PixelPets.scene.text);
-  await page.keyboard.press('Space');
-  await page.waitForFunction(() => !PixelPets.scene);
-  return text;
-}
-
-test('both floors keep their ids, their cap, and a path to every person', async ({ page }) => {
+test('both floors keep their ids, their cap, and a path to every person @w1', async ({ page }) => {
   await boot(page);
   const report = await page.evaluate(({ art, enclosed }) => {
     const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -99,24 +90,7 @@ test('both floors keep their ids, their cap, and a path to every person', async 
   expect(report.out[0].share.share).toBeLessThanOrEqual(0.55);
   expect(report.out[1].share.share).toBeLessThanOrEqual(0.55);
 
-  const lines = [
-    ['hm_hq_f1', 10, 6, 'right', 'Every box has a tag. Every tag has a date. That is the job.'],
-    ['hm_hq_f1', 10, 13, 'right', 'First week. I polish boots and learn the roster.'],
-    ['hm_hq_f2', 4, 3, 'down', 'Three check-ins this hour. The quiet ones always call last.'],
-    ['hm_hq_f2', 10, 10, 'left', 'I mark the roads we walk. The map is never quite done.'],
-    ['hm_hq_f1', 11, 3, 'up', 'STAIRS · Captain Lumen and the radio, upstairs.'],
-    ['hm_hq_f2', 4, 3, 'up', 'RADIO · Every Keeper1 checks in. Even the quiet ones.'],
-  ];
-  for (const [map, x, y, facing, line] of lines) {
-    await page.evaluate(([map, x, y, facing]) => PixelPets.goto(map, x, y, facing), [map, x, y, facing]);
-    expect(await say(page), map + ' ' + facing).toBe(line);
-  }
-  await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.goto('hm_hq_f1', 10, 6, 'right'); });
-  expect(await say(page)).toBe('Hands where I can see them. Thank you.');
-  await page.evaluate(() => { PixelPets.setSide('keepers'); PixelPets.setStanding('keepers', 10); PixelPets.goto('hm_hq_f1', 10, 13, 'right'); });
-  expect(await say(page)).toBe('You are on the board! I am only on the tea rota.');
-  await page.evaluate(() => { PixelPets.setFlag('story.reached_mahopac', true); PixelPets.goto('hm_hq_f2', 10, 10, 'left'); });
-  expect(await say(page)).toBe('You walked the north trail? Draw me what you saw.');
+
 });
 
 test('a lamp glow holds still, and an old save on a blocked tile snaps to safe', async ({ page }) => {

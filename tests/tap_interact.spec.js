@@ -6,7 +6,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-test('every interactable tap resolves to its action', async ({ page }) => {
+test('every interactable tap resolves to its action @w1', async ({ page }) => {
   test.setTimeout(60000);
   const s = starterSave();
   s.settings.controls = 'modern';

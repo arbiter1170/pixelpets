@@ -127,7 +127,7 @@ test('a wild tap still chases on a straight line', async ({ page }) => {
   expect(got.target).toEqual({ x: 5, y: 4 });
 });
 
-test('a blocked next step is walked around', async ({ page }) => {
+test('a blocked next step is walked around @w1', async ({ page }) => {
   await boot(page);
   // Upstairs floor, clear of the new props. A wild on (5, 4) blocks the straight steps to (6, 4).
   await place(page, 'hm_home_up', 3, 4, 'right');
@@ -154,7 +154,7 @@ test('a blocked next step is walked around', async ({ page }) => {
   expect(seen.some(p => p.battle)).toBe(false);
 });
 
-test('findPath stays inert without debug', async ({ page }) => {
+test('findPath stays inert without debug @w1', async ({ page }) => {
   await installSave(page.context(), pathSave(), { quietDay: true });
   await gotoGame(page);
   const got = await page.evaluate(() => ({ v: PixelPets.state.v, path: PixelPets.findPath([{ x: 1, y: 2 }]) }));

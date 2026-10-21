@@ -26,7 +26,7 @@ function dataFiles() {
     .map(f => [f, JSON.parse(fs.readFileSync(path.join(DATA, f), 'utf8'))]);
 }
 
-test('no look key is defined in two data files', () => {
+test('no look key is defined in two data files @w1', () => {
   expect(lookKeyClashes(dataFiles())).toEqual([]);
 });
 
@@ -44,16 +44,16 @@ function paletteKeyClashes(files) {
   return clashes;
 }
 
-test('no palette key is defined in two data files', () => {
+test('no palette key is defined in two data files @w1', () => {
   expect(paletteKeyClashes(dataFiles())).toEqual([]);
 });
 
-test('a palette key defined in two data files is reported', () => {
+test('a palette key defined in two data files is reported @w1', () => {
   const files = [['a.json', { palette: { r: '#b13e53' } }], ['b.json', { palette: { r: '#b13e53' } }]];
   expect(paletteKeyClashes(files)).toEqual(['r: a.json and b.json']);
 });
 
-test('a look key defined in two data files is reported', () => {
+test('a look key defined in two data files is reported @w1', () => {
   const files = [['a.json', { looks: { cal: { hair: 'buzz' }, _note: 'x' } }], ['b.json', { looks: { cal: { hair: 'short' } } }]];
   expect(lookKeyClashes(files)).toEqual(['cal: a.json and b.json']);
 });
@@ -103,7 +103,7 @@ function duplicateObjectKeys(text) {
   return dups;
 }
 
-test('no data file defines the same object key twice', () => {
+test('no data file defines the same object key twice @w1', () => {
   const hits = [];
   for (const file of fs.readdirSync(DATA).filter(f => f.endsWith('.json')).sort()) {
     const dups = duplicateObjectKeys(fs.readFileSync(path.join(DATA, file), 'utf8'));
@@ -112,6 +112,6 @@ test('no data file defines the same object key twice', () => {
   expect(hits).toEqual([]);
 });
 
-test('a repeated object key is reported', () => {
+test('a repeated object key is reported @w1', () => {
   expect(duplicateObjectKeys('{ "a": 1, "b": { "a": 2 }, "a": 3 }')).toEqual(['a']);
 });
