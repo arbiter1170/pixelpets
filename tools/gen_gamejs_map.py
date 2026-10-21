@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """Line map of column-0 declarations in the root scripts.
 
-Usage:
+After editing a root .js file, run:
     python3 tools/gen_gamejs_map.py
+Check without writing:
     python3 tools/gen_gamejs_map.py --check
 rg NAME tools/GAMEJS_MAP.txt, then read only that range.
+
+Exit codes:
+    0  wrote the map, or --check found it current
+    1  --check: the map is missing or stale
+    2  usage error, or the generator crashed
 """
 import pathlib
 import sys
@@ -288,4 +294,10 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except SystemExit:
+        raise
+    except Exception as exc:
+        print('gen_gamejs_map.py: %s: %s' % (type(exc).__name__, exc), file=sys.stderr)
+        sys.exit(2)

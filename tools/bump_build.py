@@ -6,7 +6,7 @@ Settings panel reads for its "Build ..." line, so the label always matches the ?
     python3 tools/bump_build.py          # new id from the current time (America/New_York), e.g. 20261008-1124
     python3 tools/bump_build.py --check  # exit 1 if any local tag is missing the current id
 """
-import re, sys, json, datetime, pathlib, subprocess
+import re, sys, json, datetime, pathlib
 try:
     from zoneinfo import ZoneInfo; TZ = ZoneInfo('America/New_York')
 except Exception:
@@ -46,6 +46,3 @@ if __name__ == '__main__':
     bid = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('-') else datetime.datetime.now(TZ).strftime('%Y%m%d-%H%M')
     if bid == current(html): bid += 'b'
     HTML.write_text(stamp(html, bid)); VERSION.write_text(json.dumps({'build': bid}, separators=(',', ':')) + '\n'); print('build', bid, '->', len(tags(stamp(html, bid))), 'local tags stamped')
-    gen = pathlib.Path(__file__).resolve().parent / 'gen_gamejs_map.py'
-    rc = subprocess.call([sys.executable, str(gen)])
-    if rc != 0: sys.exit(rc)

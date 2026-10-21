@@ -39,7 +39,7 @@ Run `npm run test:agent [spec] [--project=390]`, not bare `npm test`; it prints 
 
 Search headings (`rg -n '^## |^### ' FILE`) and read only the section the task needs, through the next `## ` heading. Do not read `OPEN_DECISIONS.md`, `CHANGELOG.md`, `README.md`, `NEXT_PLAN.md`, or `BACKLOG.md` whole. Settled calls live in `archive/DECISIONS_SETTLED.md`. Search that file for one id instead of reading it. Open rows: `awk '/^## Open/{f=1;print;next} /^## /{f=0} f' OPEN_DECISIONS.md`. Backlog "Next work": `awk '/^## Next work/{f=1;print;next} /^## /{f=0} f' BACKLOG.md`. `NEXT_PLAN.md` §3: `awk '/^## 3\. /{f=1;print;next} /^## /{f=0} f' NEXT_PLAN.md`. The top `CHANGELOG.md` entry is the first `## ` block.
 
-`game.js` is large: use `rg NAME tools/GAMEJS_MAP.txt` to find a range, then read only that range. Do not read `game.js` whole.
+`game.js` is large: use `rg NAME tools/GAMEJS_MAP.txt` to find a range, then read only that range, and do not read `game.js` whole. After editing a root .js file, run `python3 tools/gen_gamejs_map.py`.
 
 ## Cloud agents
 If any uploads/ file a launch prompt names is missing, stop and report which one. Don't search the filesystem and don't guess.

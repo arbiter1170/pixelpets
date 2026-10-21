@@ -258,12 +258,24 @@ function symlinkFixtures() {
 }
 
 function mapFixtures() {
+  const js = 'function alpha(){\n  return 1;\n}\n';
   const stale = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-mstale-'));
   writeTree(stale, {
-    'game.js': 'function alpha(){\n  return 1;\n}\n',
+    'game.js': js,
     'tools/GAMEJS_MAP.txt': 'stale\n',
   });
-  return { stale };
+  const crash = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-mcrash-'));
+  writeTree(crash, {
+    'game.js': js,
+    'tools/GAMEJS_MAP.txt': 'ignored\n',
+    'tools/gen_gamejs_map.py': 'import sys\nsys.stderr.write("map generator blew up\\n")\nsys.exit(2)\n',
+  });
+  const fresh = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-mfresh-'));
+  writeTree(fresh, { 'game.js': js });
+  const gen = path.join(__dirname, '..', 'gen_gamejs_map.py');
+  const wrote = spawnSync('python3', [gen, '--root', fresh], { encoding: 'utf8' });
+  if (wrote.status !== 0) throw new Error('fresh map ' + (wrote.stderr || wrote.stdout));
+  return { stale, crash, fresh };
 }
 
 function rm(dir) { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {} }
@@ -348,7 +360,20 @@ function main() {
     const staleM = run(m.stale, 'gamejs_map');
     show('gamejs map stale', staleM);
     check(staleM.status === 1, 'stale map exit ' + staleM.status + '\n' + staleM.stdout + (staleM.stderr || ''));
-    check(staleM.stdout.indexOf('run python3 tools/gen_gamejs_map.py') >= 0, 'stale map message\n' + staleM.stdout);
+    check(staleM.stdout.indexOf('GAMEJS_MAP stale: run python3 tools/gen_gamejs_map.py') >= 0, 'stale map message\n' + staleM.stdout);
+    check(staleM.stdout.indexOf('crashed') < 0, 'stale map must not say crashed\n' + staleM.stdout);
+
+    const crashM = run(m.crash, 'gamejs_map');
+    show('gamejs map crash', crashM);
+    check(crashM.status === 1, 'crash map exit ' + crashM.status + '\n' + crashM.stdout + (crashM.stderr || ''));
+    check(crashM.stdout.indexOf('gen_gamejs_map.py crashed (exit 2)') >= 0, 'crash message\n' + crashM.stdout);
+    check(crashM.stdout.indexOf('map generator blew up') >= 0, 'crash error text\n' + crashM.stdout);
+    check(crashM.stdout.indexOf('run python3 tools/gen_gamejs_map.py') < 0, 'crash must not give the stale advice\n' + crashM.stdout);
+
+    const freshM = run(m.fresh, 'gamejs_map');
+    show('gamejs map fresh', freshM);
+    check(freshM.status === 0, 'fresh map exit ' + freshM.status + '\n' + freshM.stdout + (freshM.stderr || ''));
+    check(freshM.stdout.trim() === 'SCAN PASS gamejs_map', 'fresh map output\n' + freshM.stdout);
 
     s = symlinkFixtures();
     const badS = run(s.bad, 'symlinks');
