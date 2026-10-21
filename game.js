@@ -4973,8 +4973,7 @@ const WARD_FREE_COLOUR = [
   { id: 't', name: 'Teal' }, { id: 'b', name: 'Blue' }, { id: 'g', name: 'Green' }, { id: 'p', name: 'Plum' },
   { id: 'n', name: 'Navy' }, { id: 'r', name: 'Red' }, { id: 'm', name: 'Slate' },
 ];
-const WARD_ARM_MS = 350;   // the tap that closes Marigold's line also clicks the card it just uncovered
-const wardUI = { tab: 'walkling', petId: null, preview: 'none', snap: '', cool: {}, openedAt: 0 };
+const wardUI = { tab: 'walkling', petId: null, preview: 'none', snap: '', cool: {} };
 function wardLookSig(){
   const L = Object.assign({}, KEEPER_LOOKS.defaults, (S && S.player && S.player.look) || {});
   return (L.accessory || 'none') + '|' + (L.outfitCol || 't');
@@ -5170,6 +5169,65 @@ function wardPress(card){
   wardUI.preview = card.id;
   renderWardrobe();
 }
+// The finger that closes a line is already down when the overlay appears. Only a pointerdown or
+// touchstart that lands inside `el` after that open may pointerup, touchend or click. A held finger
+// is swallowed however long it stays down. A keyboard click (detail 0) still activates a button.
+const guardPointers = new Map();
+let guardPointersOn = false;
+function watchGuardPointers(){
+  if (guardPointersOn) return;
+  guardPointersOn = true;
+  document.addEventListener('pointerdown', e => guardPointers.set(e.pointerId, e.pointerType || 'mouse'), true);
+  document.addEventListener('pointerup', e => guardPointers.delete(e.pointerId), true);
+  document.addEventListener('pointercancel', e => guardPointers.delete(e.pointerId), true);
+  document.addEventListener('touchstart', e => { for (const t of e.changedTouches) guardPointers.set('t' + t.identifier, 'touch'); }, true);
+  document.addEventListener('touchend', e => { for (const t of e.changedTouches) guardPointers.delete('t' + t.identifier); }, true);
+  document.addEventListener('touchcancel', e => { for (const t of e.changedTouches) guardPointers.delete('t' + t.identifier); }, true);
+}
+function guardOverlayOpen(el){
+  if (!el) return;
+  const marked = guardOverlayOpen.done || (guardOverlayOpen.done = new WeakSet());
+  if (marked.has(el)) return;
+  marked.add(el);
+  watchGuardPointers();
+  let openedAt = 0, freshClick = false;
+  const fresh = new Set(), carried = new Set();
+  const swallow = e => { e.preventDefault(); e.stopPropagation(); };
+  const arm = () => {
+    openedAt = performance.now(); fresh.clear(); freshClick = false; carried.clear();
+    guardPointers.forEach((type, id) => { if (type === 'touch') carried.add(id); });
+  };
+  const live = () => !el.hidden && openedAt > 0;
+  new MutationObserver(() => { if (el.hidden) { openedAt = 0; fresh.clear(); freshClick = false; carried.clear(); } else arm(); })
+    .observe(el, { attributes: true, attributeFilter: ['hidden'] });
+  el.addEventListener('pointerdown', e => {
+    if (!live()) return;
+    if (e.timeStamp < openedAt || carried.has(e.pointerId) || (e.pointerType === 'mouse' && carried.size)) { swallow(e); return; }
+    fresh.add(e.pointerId); freshClick = true;
+  }, true);
+  el.addEventListener('touchstart', e => {
+    if (!live()) return;
+    let started = false;
+    for (const t of e.changedTouches) {
+      const id = 't' + t.identifier;
+      if (e.timeStamp < openedAt || carried.has(id)) continue;
+      fresh.add(id); started = true;
+    }
+    if (!started) { swallow(e); return; }
+    freshClick = true;
+  }, true);
+  el.addEventListener('pointerup', e => { if (live() && !fresh.has(e.pointerId)) swallow(e); }, true);
+  el.addEventListener('touchend', e => {
+    if (!live()) return;
+    for (const t of e.changedTouches) if (fresh.has('t' + t.identifier)) return;
+    swallow(e);
+  }, true);
+  el.addEventListener('click', e => {
+    if (!live() || e.detail === 0) return;
+    if (!freshClick) { swallow(e); carried.clear(); return; }
+    freshClick = false; fresh.clear(); carried.clear();
+  }, true);
+}
 function openWardrobe(){
   if (!S || !$('#ovWardrobe')) return;
   clearMoves();
@@ -5179,7 +5237,6 @@ function openWardrobe(){
   const p = wardPet();
   wardUI.preview = (p && p.accessory) || 'none';
   wardUI.snap = wardLookSig();
-  wardUI.openedAt = performance.now();
   renderWardrobe();
   $('#ovWardrobe').hidden = false;
   lockTabs(true);
@@ -11752,16 +11809,7 @@ function bindInput(){
   }));
   const wardDoneBtn = $('#wardDone');
   if (wardDoneBtn) wardDoneBtn.addEventListener('click', () => { sfx('tap'); closeWardrobe(); });
-  const wardOv = $('#ovWardrobe');
-  if (wardOv) {
-    for (const ev of ['pointerdown', 'pointerup', 'click', 'touchstart', 'touchend']) {
-      wardOv.addEventListener(ev, e => {
-        if (wardOv.hidden || performance.now() >= wardUI.openedAt + WARD_ARM_MS) return;
-        e.preventDefault();
-        e.stopPropagation();
-      }, true);
-    }
-  }
+  guardOverlayOpen($('#ovWardrobe'));
   $('#lookCancel').addEventListener('click', () => { sfx('tap'); closeLook(); });
   const ln = $('#lookName');
   ln.addEventListener('input', () => { const v = ln.value.replace(BAD_NAME_CH, ''); if (v !== ln.value) ln.value = v; });   // `<b>` can't be typed

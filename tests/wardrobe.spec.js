@@ -62,6 +62,22 @@ async function dialogPoint(page, where) {
   return { x, y };
 }
 
+async function holdTouch(page, x, y, ms) {
+  const client = await page.context().newCDPSession(page);
+  await client.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x, y, radiusX: 1, radiusY: 1, id: 1 }],
+    modifiers: 0,
+  });
+  await page.waitForTimeout(ms);
+  await client.send('Input.dispatchTouchEvent', {
+    type: 'touchEnd',
+    touchPoints: [],
+    modifiers: 0,
+  });
+  await client.detach();
+}
+
 test('every form wears each new accessory', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.adornCheck())).toEqual([]);
@@ -303,6 +319,37 @@ test('a touch tap that closes Marigold does not press the picker', async ({ page
   expect(bought.flags).toEqual(['wardrobe.wick_charm=true']);
   expect(bought.acc).toEqual(['Pipkit=none']);
   expect(bought.v).toBe(2);
+});
+
+test('a held touch that closes Marigold does not press the picker', async ({ page }, info) => {
+  test.skip(info.project.name !== '390', '390 touch');
+  test.setTimeout(60000);
+  const s = save();
+  s.money = 1000;
+  await boot(page, s);
+  await page.evaluate(() => PixelPets.goto('hm_wardrobe', 9, 3, 'up'));
+  const before = await wardSnap(page);
+  expect(before).toMatchObject({ money: 1000, flags: [], acc: ['Pipkit=none'], v: 2, open: false });
+
+  for (const where of ['left', 'centre', 'right']) {
+    for (const ms of [150, 400, 600]) {
+      await page.keyboard.press('Space');
+      await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.mode === 'say');
+      const pt = await dialogPoint(page, where);
+      await holdTouch(page, pt.x, pt.y, ms);
+      await page.waitForSelector('#ovWardrobe:not([hidden])');
+      await page.waitForTimeout(50);
+      const after = await wardSnap(page);
+      const label = where + ' ' + ms;
+      expect(after.money, label).toBe(before.money);
+      expect(after.flags, label).toEqual(before.flags);
+      expect(after.acc, label).toEqual(before.acc);
+      expect(after.open, label).toBe(true);
+      expect(after.v, label).toBe(2);
+      await page.keyboard.press('Escape');
+      await expect(page.locator('#ovWardrobe')).toBeHidden();
+    }
+  }
 });
 
 test('the six prop lines are the P3 copy', async ({ page }) => {
