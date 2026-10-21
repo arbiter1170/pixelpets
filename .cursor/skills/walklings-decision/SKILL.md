@@ -15,7 +15,7 @@ Tag every open question **green, yellow or red**, with your suggested default an
 - The 48-hour clock runs from when a question is posted in Project Puxel. On a non-red item with no answer from Vincent, the Supervisor runs a team vote and breaks ties. Red items always wait for Vincent, however long that takes.
 
 ## Ids and records
-1. New ids: take the "next free id" named in the header of `OPEN_DECISIONS.md`, then bump that line. Never renumber or reuse a D or Q id (D37 is used twice on purpose).
+1. New ids: the next free D id is named in the OPEN_DECISIONS.md header. Bump that line. Never renumber or reuse a D or Q id (D37 is used twice on purpose).
 2. Add a row to the Open table: what the build does today and where to change it.
 3. When settled: move the row to `archive/DECISIONS_SETTLED.md` with the date and the call, update code or plan if it changed, and mark the spec APPROVED / DECIDED / SETTLED with the date the same day.
 4. Board item: `walklings-board`.
