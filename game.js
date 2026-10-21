@@ -2807,20 +2807,35 @@ function wireSchedules(){
     if (!o || o.kind !== 'npc' || !o.name || CLOCK_SKIP[o.id]) continue;
     named.push([id, o]);
   }
-  const scheduled = new Set();
-  for (const pair of named) if (Array.isArray(pair[1].schedule)) scheduled.add(pair[1].name);
-  if (scheduled.has('Lizzy')) scheduled.add('Buddy');
+  // A shared name is not enough. Overlay maps reuse Pip and Wren; only the body that carries the
+  // rows, and bodies that stand on a row's map (Buddy follows Lizzy's maps), join the schedule.
+  const rowsOf = {}, mapsOf = {};
   for (const [mapId, o] of named) {
-    if (!scheduled.has(o.name)) continue;
+    if (!Array.isArray(o.schedule)) continue;
+    rowsOf[o.name] = o.schedule.map(r => ({
+      when: r.when || '', map: r.map || null, x: r.x | 0, y: r.y | 0, facing: r.facing || null,
+      notDrawn: !r.map,
+    }));
+    const maps = mapsOf[o.name] || (mapsOf[o.name] = new Set());
+    const n = CLOCK_NUDGE[o.id];
+    for (const r of o.schedule) {
+      let map = r.map || null;
+      if (n && map && n.key === map + ':' + (r.x | 0) + ',' + (r.y | 0) && n.map) map = n.map;
+      if (map) maps.add(map);
+    }
+    maps.add(mapId);
+  }
+  if (mapsOf.Lizzy) mapsOf.Buddy = new Set(mapsOf.Lizzy);
+  for (const [mapId, o] of named) {
+    const maps = mapsOf[o.name];
+    if (!maps) continue;
+    if (!Array.isArray(o.schedule) && !maps.has(mapId)) continue;
     const bag = SCHED[o.name] || (SCHED[o.name] = { rows: null, sourceId: null, onMap: {}, byId: {}, hold: null, follow: null });
     bag.onMap[mapId] = o;
     bag.byId[o.id] = o;
     if (Array.isArray(o.schedule) && !bag.rows) {
       bag.sourceId = o.id;
-      bag.rows = o.schedule.map(r => ({
-        when: r.when || '', map: r.map || null, x: r.x | 0, y: r.y | 0, facing: r.facing || null,
-        notDrawn: !r.map,
-      }));
+      bag.rows = rowsOf[o.name];
     }
   }
   if (SCHED.Lizzy && SCHED.Buddy) SCHED.Buddy.follow = 'Lizzy';
