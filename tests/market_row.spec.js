@@ -77,7 +77,7 @@ test('the row opens south and the three rooms use the wall kit', async ({ page }
     expect(wall.k, wall.id).toBe(false);
   }
   expect(report.shop).toBe(false);
-  expect(report.wear).toBe(false);
+  expect(report.wear).toBe(true);
   expect(report.size).toEqual([24, 34]);
   expect(report.v).toBe(2);
 });
@@ -122,20 +122,17 @@ test('the store sells the usual snacks, and the night clerk takes the counter', 
   expect(night).not.toContain('hm_teague');
 });
 
-test('Marigold keeps the P2 line and offers nothing to buy', async ({ page }) => {
+test('Marigold opens Stitch & Lantern after her line', async ({ page }) => {
   await boot(page);
   const line = await face(page, 'hm_wardrobe', 9, 3, 'up');
-  expect(line.text).toBe('Racks are still going up. Come back soon, and bring your Walkling.');
-  const prompts = await playScene(page, []);
-  expect(prompts).toEqual([]);
-  const shop = await page.evaluate(() => ({
-    open: !document.getElementById('ovShop').hidden,
-    buy: document.body.innerText.indexOf('BUY') >= 0 && !document.getElementById('ovShop').hidden,
-    flags: Object.keys(PixelPets.state.flags).filter(k => k.indexOf('wardrobe') >= 0 || k.indexOf('cloth') >= 0),
-  }));
-  expect(shop.open).toBe(false);
-  expect(shop.buy).toBe(false);
-  expect(shop.flags).toEqual([]);
+  expect(line.text).toBe('Stitch & Lantern. Try anything on. Your Walkling too.');
+  await page.keyboard.press('Space');
+  await page.waitForSelector('#ovWardrobe:not([hidden])');
+  await expect(page.locator('#wardTitle')).toHaveText('STITCH & LANTERN');
+  const shop = await page.evaluate(() => document.getElementById('ovShop').hidden);
+  expect(shop).toBe(true);
+  await page.locator('#wardDone').click();
+  await expect(page.locator('#ovWardrobe')).toBeHidden();
 });
 
 test('the diner serves priced meals, refuses a full Walkling, and keeps the Warm Bowl', async ({ page }) => {

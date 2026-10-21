@@ -105,23 +105,23 @@
    ],
    "objs": [
     {"kind": "warp", "id": "wardrobe_mat", "x": 6, "y": 9, "to": "hearthmoor", "tx": 15, "ty": 27, "facing": "down"},
-    {"kind": "npc", "id": "hm_marigold", "name": "Keeper Marigold", "look": "hm_marigold", "x": 9, "y": 2, "facing": "down", "friendSlot": "TAILOR",
-     "lines": {"else": "Racks are still going up. Come back soon, and bring your Walkling."}},
-    {"kind": "prop", "id": "ward_counter", "x": 8, "y": 3, "sprite": "kitchen_counter", "lines": {"else": "A cutting table. The sash cloth is still in bolts."}},
+    {"kind": "npc", "id": "hm_marigold", "name": "Keeper Marigold", "look": "hm_marigold", "x": 9, "y": 2, "facing": "down", "friendSlot": "TAILOR", "wardrobe": true,
+     "lines": {"else": "Stitch & Lantern. Try anything on. Your Walkling too."}},
+    {"kind": "prop", "id": "ward_counter", "x": 8, "y": 3, "sprite": "kitchen_counter", "lines": {"else": "A cutting table, deep in Keeper green sash cloth."}},
     {"kind": "prop", "id": "ward_counter_b", "x": 9, "y": 3, "sprite": "kitchen_counter"},
     {"kind": "prop", "id": "ward_counter_c", "x": 10, "y": 3, "sprite": "kitchen_counter"},
-    {"kind": "prop", "id": "ward_rack_a", "x": 1, "y": 4, "sprite": "mr_rack", "lines": {"else": "Empty hangers. The racks are still going up."}},
+    {"kind": "prop", "id": "ward_rack_a", "x": 1, "y": 4, "sprite": "mr_rack", "lines": {"else": "Sashes, satchels and beanies, all in your size."}},
     {"kind": "prop", "id": "ward_rack_a2", "x": 2, "y": 4, "sprite": "mr_rack"},
     {"kind": "prop", "id": "ward_rack_a3", "x": 3, "y": 4, "sprite": "mr_rack"},
-    {"kind": "prop", "id": "ward_rack_b", "x": 1, "y": 7, "sprite": "mr_rack", "lines": {"else": "Scarves, waiting on their Walklings."}},
+    {"kind": "prop", "id": "ward_rack_b", "x": 1, "y": 7, "sprite": "mr_rack", "lines": {"else": "Scarves and crowns, sized for Walklings."}},
     {"kind": "prop", "id": "ward_rack_b2", "x": 2, "y": 7, "sprite": "mr_rack"},
     {"kind": "prop", "id": "ward_rack_b3", "x": 3, "y": 7, "sprite": "mr_rack"},
-    {"kind": "prop", "id": "ward_mirror", "x": 6, "y": 2, "sprite": "mirror", "lines": {"else": "A tall mirror. Nothing to try on yet."}},
-    {"kind": "prop", "id": "ward_curtain", "x": 10, "y": 6, "sprite": "mr_curtain", "lines": {"else": "A fitting curtain. The other half is still pinned."}},
+    {"kind": "prop", "id": "ward_mirror", "x": 6, "y": 2, "sprite": "mirror", "lines": {"else": "A tall mirror. Keeper Marigold does the fittings."}},
+    {"kind": "prop", "id": "ward_curtain", "x": 10, "y": 6, "sprite": "mr_curtain", "lines": {"else": "A fitting curtain, both halves hung now."}},
     {"kind": "prop", "id": "ward_curtain_b", "x": 9, "y": 6, "sprite": "mr_curtain"},
     {"kind": "prop", "id": "ward_sash", "x": 5, "y": 5, "sprite": "table_small", "lines": {"else": "Sash thread in Keeper green and gold."}},
     {"kind": "prop", "id": "ward_sash_b", "x": 6, "y": 5, "sprite": "table_small"},
-    {"kind": "prop", "id": "ward_hat", "x": 5, "y": 8, "sprite": "mr_hat", "lines": {"else": "A hat stand. One bare peg."}}
+    {"kind": "prop", "id": "ward_hat", "x": 5, "y": 8, "sprite": "mr_hat", "lines": {"else": "A hat stand. Goggles and a lamp cap on the pegs."}}
    ]
   },
   "hm_diner": {

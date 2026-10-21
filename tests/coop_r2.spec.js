@@ -442,6 +442,50 @@ test.describe('B1', () => {
     expect(page.ppErrors, page.ppErrors.join('\n')).toEqual([]);
   });
 
+  test('closing the wardrobe writes the holder look once and reads nothing', async ({ browser }, info) => {
+    test.skip(info.project.name !== '390', '390 only');
+    const a = await bootNew(browser, saveFor('wardA', 'Mia'));
+    const b = await bootNew(browser, saveFor('wardB', 'Juno'));
+    await a.evaluate(() => { PixelPets.state.money = 400; });
+    const aUid = await a.evaluate(() => window.PixelPets.net.uid);
+    await joinRoom(a); await joinRoom(b);
+    await b.waitForFunction(uid => {
+      const n = window.PixelPets.net;
+      return !!(n && n.others.some(o => o.uid === uid));
+    }, aUid, { timeout: 8000 });
+    await a.evaluate(() => window.openWardrobe());
+    await a.locator('#ovWardrobe .ward-tabs button[data-tab="holder"]').click();
+    await a.locator('.ward-item[data-id="sash"] .ward-act').click();
+    await expect(a.locator('#toast')).toHaveText('Keeper sash is yours.');
+    await a.waitForTimeout(450);
+    await a.locator('.ward-item[data-id="sash"] .ward-act').click();
+    await expect(a.locator('#toast')).toHaveText('Wearing the Keeper sash.');
+    await a.locator('#ovWardrobe .ward-tabs button[data-tab="colours"]').click();
+    await a.locator('.ward-item[data-id="c"] .ward-act').click();
+    await expect(a.locator('#toast')).toHaveText('Sky is yours.');
+    await a.waitForTimeout(450);
+    await a.locator('.ward-item[data-id="c"] .ward-act').click();
+    await expect(a.locator('#toast')).toHaveText('Outfit colour: Sky.');
+    const before = await a.evaluate(() => ({ reads: window.PPNet.debug().reads, writes: window.PPNet.debug().stats.writes }));
+    await a.locator('#wardDone').click();
+    const shard = await a.evaluate(() => window.PixelPets.net.room);
+    await expect.poll(async () => {
+      const look = await rootGet('rooms/AMB4RQ/hearthmoor/' + shard + '/' + aUid + '/look');
+      return look && look.ax + '/' + look.oc;
+    }, { timeout: 8000 }).toBe('sash/c');
+    await b.waitForFunction(uid => {
+      const n = window.PixelPets.net;
+      const o = n && n.others.find(x => x.uid === uid);
+      return !!(o && o.look && o.look.ax === 'sash' && o.look.oc === 'c');
+    }, aUid, { timeout: 8000 });
+    const after = await a.evaluate(() => ({ reads: window.PPNet.debug().reads, writes: window.PPNet.debug().stats.writes }));
+    expect(after.reads - before.reads).toBe(0);
+    expect(after.writes - before.writes).toBe(1);
+    expect(a.ppErrors, a.ppErrors.join('\n')).toEqual([]);
+    expect(b.ppErrors, b.ppErrors.join('\n')).toEqual([]);
+    await a.context().close(); await b.context().close();
+  });
+
   test('strip and sheet fit at 320 and 390', async ({ browser }, info) => {
     test.skip(info.project.name !== '390', '390 only');
     for (const w of [320, 390]) {

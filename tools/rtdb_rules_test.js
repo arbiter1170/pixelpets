@@ -304,6 +304,19 @@ async function main() {
         () => deny('12 colour', refOf(a, room(a)).set(badLook(['hc', 'q']))),
       ];
       if (await seq(checks)) ok('deny 12: pet, seals, title, look');
+      const goodPet = sp => { const P = Object.assign({}, PET); P.sp = sp; return presence({ pet: P }); };
+      const goodAx = ax => { const L = Object.assign({}, LOOK); L.ax = ax; return presence({ look: L }); };
+      const allows = [
+        () => allow('12 skink', refOf('skink', room('skink')).set(goodPet('skink'))),
+        () => allow('12 otter', refOf('otter', room('otter')).set(goodPet('otter'))),
+        () => allow('12 owl', refOf('owl', room('owl')).set(goodPet('owl'))),
+        () => allow('12 snail', refOf('snail', room('snail')).set(goodPet('snail'))),
+        () => allow('12 sash', refOf('sash', room('sash')).set(goodAx('sash'))),
+        () => allow('12 satchel', refOf('satchel', room('satchel')).set(goodAx('satchel'))),
+        () => allow('12 goggles', refOf('goggles', room('goggles')).set(goodAx('goggles'))),
+        () => allow('12 beanie', refOf('beanie', room('beanie')).set(goodAx('beanie'))),
+      ];
+      if (!await seq(allows)) throw new Error('allow 12: hushwater species and wardrobe accessories');
     }
 
     // 13. joined is write-once; seen must be fresh server time

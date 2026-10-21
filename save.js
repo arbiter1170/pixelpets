@@ -80,7 +80,7 @@ const PPSave = (() => {
   // Held item, cosmetic accessory, and battle deploy (additive, save stays v2).
   // Invalid values are deleted. Unknown keys on the pet stay. Relief is unique across party then box (keepOneRelief).
   const DEPLOY_CALLS = ['charge', 'brace', 'dart', 'greet'];
-  const PET_ACCESSORIES = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
+  const PET_ACCESSORIES = ['bell', 'ribbon', 'scarf', 'leaf', 'star', 'wick_charm', 'pin_badge', 'fern_scarf', 'clover_crown', 'willow_crown', 'lamp_cap'];
   const cleanDeployText = v => typeof v === 'string' ? v.replace(/[<>{}]/g, '').trim().slice(0, 40) : '';
   const shortId = v => typeof v === 'string' && v.length >= 1 && v.length <= 24 && /^[a-z0-9_]+$/.test(v);
   function fixHeldAccessoryDeploy(q){

@@ -122,6 +122,7 @@ const PPNet = (() => {
   let mutual = {}, names = {}, blocks = {}, hidden = {};
   let unsubs = [];
   const placed = { ref: null, path: '', area: null, shard: null, pinned: false, joined: 0, code: null };
+  let wiredLook = '';
   const sent = { x: null, y: null, f: null, mv: null, at: 0 };
   let dev = readDev();
 
@@ -263,6 +264,7 @@ const PPNet = (() => {
   async function dropNode(){
     await unlisten();
     const node = placed.ref;
+    wiredLook = '';
     placed.ref = null; placed.path = ''; placed.area = null; placed.shard = null; placed.pinned = false;
     others.clear();
     if (node && rtdb) {
@@ -467,6 +469,7 @@ const PPNet = (() => {
     const got = await dbGet(node);
     const val = got.val() || {};
     placed.ref = node; placed.path = path; placed.area = area; placed.shard = choice.shard;
+    wiredLook = JSON.stringify(clampLook(H.look()));
     placed.pinned = !!choice.pinned; placed.joined = val.joined || Date.now(); placed.code = code;
     placed.vis = mode() === 'friends' ? 'f' : 'a'; placed.busy = 0;
     sent.x = p.x | 0; sent.y = p.y | 0; sent.f = FACE[p.facing] || 'd'; sent.mv = H.walking() ? 1 : 0; sent.at = Date.now();
@@ -1272,6 +1275,16 @@ const PPNet = (() => {
     renderFriends();
   }
 
+  async function syncLook(){
+    if (!placed.ref || link !== 'up' || !rtdb) return;
+    const next = clampLook(H.look());
+    const sig = JSON.stringify(next);
+    if (sig === wiredLook) return;
+    await rtdb.update(placed.ref, { look: next, seen: TS() });
+    writes++;
+    wiredLook = sig;
+  }
+
   function hereCount(){
     let n = inRoom() ? 1 : 0;
     others.forEach(o => { if (shown(o)) n++; });
@@ -1678,7 +1691,7 @@ const PPNet = (() => {
   coop.renderStrip = renderStrip;
 
   const api = Object.freeze({
-    enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, coopOn, coop, debug,
+    enabled: true, start, overlayOpen, tapTile, mapEnts, drawFx, renderFriends, coopOn, coop, debug, syncLook,
   });
   window.PPNet = api;
   return api;
