@@ -192,6 +192,11 @@
       "base": 50
     },
     {
+      "name": "Keeper Scout",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
       "name": "Keeper Vesper",
       "faction": "keepers",
       "base": 50

@@ -1845,7 +1845,8 @@ if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
 SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
 for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
 for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
-for (const k of DETAIL_KEYS) if (MD[k].trainers) for (const [id, t] of Object.entries(MD[k].trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+// HUSHWATER E2: detail holders whose team uses a form this client does not know stay out of TRAINERS (Fenna, Nils, Ottilie until B2).
+for (const k of DETAIL_KEYS) if (MD[k].trainers) for (const [id, t] of Object.entries(MD[k].trainers)) { if (t && Array.isArray(t.team) && t.team.some(m => !BASE_STATS[m && m.form])) continue; TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t); }
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
@@ -2626,6 +2627,7 @@ const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
 function present(o){
   if (o.when && !o.when.every(c => cond(c, false))) return false;
   if (o.kind === 'pickup' && S.flags['item.' + o.id]) return false;
+  if (o.kind === 'trainer' && !TRAINERS[o.id]) return false;   // HUSHWATER E2: a holder with no TRAINERS row stays hidden
   return true;
 }
 // A pushed dream prop that was left mid-circuit (reload, resume) starts where it stopped, not back at its first tile.
@@ -5464,7 +5466,8 @@ const SPAWNS = {
   fernbrook: { stage2: 0.05, table: [['beetle', 30, 6, 9], ['mole', 25, 7, 10], ['moth', 10, 6, 9], ['dormouse', 10, 7, 10],
                ['crab', 8, 7, 9], ['frost', 3, 7, 9], ['shade', 5, 7, 9], ['vane', 7, 7, 9]] },
 };
-for (const src of [MD.act1_route2, MD.cobblecrest]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = v;
+// HUSHWATER E1: detail spawn tables join the same loop. Rows whose species is not in SPECIES are skipped until B2.
+for (const src of [MD.act1_route2, MD.cobblecrest, ...DETAIL_KEYS.map(k => MD[k])]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = (src === MD.act1_route2 || src === MD.cobblecrest) ? v : Object.assign({}, v, { table: (v.table || []).filter(row => SP_INDEX[row[0]] != null) });
 const spawnKey = () => (CUR && CUR.spawns) || 'proto';
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
 function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
@@ -6487,6 +6490,8 @@ const REGION_MAP = {
       hold: [{ id: 'split', line: 'Keepers keep the road. Glimmerwell runs the Census.' }] },
     route2_glen:   { kind: 'side',  col: 12, row: 2, label: 'WICKERGLEN',  labelAt: 'above', blurb: 'A sleepy hollow between the roots.', path: [[12, 5], [12, 2]],
       hold: [{ id: 'glimmer', line: 'Glimmerwell holds the glen.' }] },
+    hw_cut:        { kind: 'side',  col: 15, row: 3, label: 'HUSHWATER',   labelAt: 'below', blurb: 'A quiet stream, quarry to glen.', path: [[12, 2], [15, 3], [17, 3]],
+      hold: [{ id: 'wild' }] },
     cobblecrest:   { kind: 'town',  col: 17, row: 6, label: 'COBBLECREST', labelAt: 'below', blurb: 'Quarry town. Stone Trial Hall.',
       hold: [{ id: 'glimmer', when: ['story.quarry_bought'], line: 'Glimmerwell holds the town. The vote passed.' }, { id: 'keepers', line: 'The Keepers hold the town.' }] },
     cobble_quarry: { kind: 'side',  col: 17, row: 3, label: 'QUARRY',      labelAt: 'above', blurb: 'Pebblits nap in the old seam.', path: [[17, 6], [17, 3]],
@@ -6501,13 +6506,14 @@ const REGION_MAP = {
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
-    rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights' },
+    rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
+    hw_rim: 'hw_cut', hw_falls: 'hw_cut' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy

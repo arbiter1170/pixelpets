@@ -25,6 +25,7 @@ const PPSave = (() => {
   else MAP_SIZE.proto = [24, 20];
   // Map-pass overlays (data/detail_*.json, applied last in game.js) may resize a map with `slicePatch.maps[id].set.w/h`.
   if (MD) for (const k of Object.keys(MD).filter(k => k.startsWith('detail_')).sort()) {
+    addMaps(MD[k] && MD[k].maps);   // HUSHWATER E3: hw_* sizes, so a reload inside Hushwater stays there
     const pm = MD[k] && MD[k].slicePatch && MD[k].slicePatch.maps;
     if (pm) for (const [id, pt] of Object.entries(pm)) if (MAP_SIZE[id] && pt && pt.set && pt.set.w && pt.set.h) MAP_SIZE[id] = [pt.set.w, pt.set.h];
   }
@@ -113,9 +114,14 @@ const PPSave = (() => {
   // §5 step 2.4: field fixes for one pet (also used by normalizeV2). `used` = ids already taken.
   // Later specs add their per-pet defaults here (additive fields, no version bump).
   function fixPet(q, used, created, originDefault){
-    // HUSHWATER B0 (D347, D357): a species id this client does not know stays byte for byte.
-    // No stage clamp, no defaultMoves refill, and no invented id. A string id is reserved so a known pet cannot take it.
+    // HUSHWATER B0 (D347, D357): a species id this client does not know stays in place.
+    // No stage clamp and no defaultMoves refill. A free string id is reserved so a known pet cannot take it.
+    // HUSHWATER B1: if that id is already taken, give this pet a fresh rid(8). Every other field stays. The pet stays.
     if (!isSpecies(q.species)) {
+      if (typeof q.id === 'string' && q.id && used.has(q.id)) {
+        q.id = rid(8);
+        while (used.has(q.id)) q.id = rid(8);
+      }
       if (typeof q.id === 'string' && q.id) used.add(q.id);
       return q;
     }

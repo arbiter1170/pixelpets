@@ -1,0 +1,919 @@
+{
+ "spec": "design specs/HUSHWATER.md (HUSHWATER v0.1, the wild approach). Copy verbatim to data/detail_hushwater.json, then python3 tools/gen_mapdata.py.",
+ "note": "Three new outdoor maps (hw_rim, hw_cut, hw_falls); edge patches on route2_glen row 4 and cobble_quarry row 17 only; spawnTables and trainers need build rows E1/E2.",
+ "maps": {
+  "hw_rim": {
+   "name": "Hushwater Rim",
+   "backdrop": "route",
+   "variants": true,
+   "w": 24,
+   "h": 16,
+   "spawns": "hw_rim",
+   "respawn": null,
+   "safe": {
+    "x": 21,
+    "y": 12
+   },
+   "zones": [
+    {
+     "x": 2,
+     "y": 3,
+     "w": 4,
+     "h": 3
+    },
+    {
+     "x": 18,
+     "y": 1,
+     "w": 4,
+     "h": 4
+    },
+    {
+     "x": 2,
+     "y": 10,
+     "w": 6,
+     "h": 4
+    },
+    {
+     "x": 10,
+     "y": 6,
+     "w": 12,
+     "h": 3
+    }
+   ],
+   "grid": [
+    "KKKKKKKKKKKKKKKKKKKKKKKK",
+    "KKccccKKKKKKKKKKKKttttKK",
+    "KccccccccKKKKKKcccttttKK",
+    "KcccttccccKKKcccccttttcK",
+    "KcctttcccccccccccctttccK",
+    "KcctttccccKKccccccccccKK",
+    "KKcccccccKKKKccgggggccKK",
+    "KKKccccccKKggggsssgggcKK",
+    "ppppccccpppppgswwsggccKK",
+    "KKKcccccKKgggswwwsgggcKK",
+    "KKttttccKKggggsssggpppKK",
+    "KKtttttcKKgfggggggpgggKK",
+    "KKttttttccggggppppgggppp",
+    "KKKttttccccggpgggggtttKK",
+    "KKKKccccccccgpggggttttKK",
+    "KKKKKKKKKKKKKKKKKKKKKKKK"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "hw_rim_east",
+     "x": 23,
+     "y": 12,
+     "to": "cobble_quarry",
+     "tx": 1,
+     "ty": 17,
+     "facing": "right",
+     "when": [
+      "story.cobble_end"
+     ]
+    },
+    {
+     "kind": "warp",
+     "id": "hw_rim_west",
+     "x": 0,
+     "y": 8,
+     "to": "hw_cut",
+     "tx": 38,
+     "ty": 12,
+     "facing": "left",
+     "when": [
+      "story.cobble_end"
+     ]
+    },
+    {
+     "kind": "trigger",
+     "id": "hw_arrive_e",
+     "x": 21,
+     "y": 12,
+     "r": 0,
+     "when": [
+      "!story.hw_reached"
+     ],
+     "scene": "hw_arrive"
+    },
+    {
+     "kind": "sign",
+     "id": "hw_sign_rim",
+     "x": 20,
+     "y": 11,
+     "text": "HUSHWATER RIM · Spring below, falls to the west. Quiet steps, please."
+    },
+    {
+     "kind": "prop",
+     "id": "hw_spring_stone",
+     "x": 14,
+     "y": 7,
+     "sprite": "seam_stone",
+     "lines": {
+      "else": "The Seam Spring. Cold water slips out of the quarry rock without a sound."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hw_bask_rock",
+     "x": 4,
+     "y": 2,
+     "sprite": "rock_big",
+     "lines": {
+      "else": "A flat rock, warm all day. Little scorch marks where something likes to nap."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hw_bask_pebble",
+     "x": 7,
+     "y": 3,
+     "sprite": "rock_small"
+    },
+    {
+     "kind": "prop",
+     "id": "hw_rim_tent",
+     "x": 19,
+     "y": 6,
+     "sprite": "census_tent",
+     "when": [
+      "story.quarry_bought"
+     ],
+     "lines": {
+      "else": "A Glimmerwell survey tent. The flap reads: WATER RIGHTS PENDING."
+     }
+    },
+    {
+     "kind": "trainer",
+     "id": "hw_climber",
+     "x": 6,
+     "y": 4
+    },
+    {
+     "kind": "pickup",
+     "id": "hw_rim_snack",
+     "x": 3,
+     "y": 12,
+     "item": "hearty_snack",
+     "n": 1
+    }
+   ]
+  },
+  "hw_cut": {
+   "name": "Hushwater Cut",
+   "backdrop": "route",
+   "variants": true,
+   "w": 40,
+   "h": 16,
+   "spawns": "hw_cut",
+   "respawn": null,
+   "safe": {
+    "x": 37,
+    "y": 12
+   },
+   "zones": [
+    {
+     "x": 2,
+     "y": 1,
+     "w": 9,
+     "h": 3
+    },
+    {
+     "x": 15,
+     "y": 1,
+     "w": 9,
+     "h": 2
+    },
+    {
+     "x": 28,
+     "y": 1,
+     "w": 10,
+     "h": 3
+    },
+    {
+     "x": 2,
+     "y": 11,
+     "w": 16,
+     "h": 3
+    },
+    {
+     "x": 22,
+     "y": 11,
+     "w": 12,
+     "h": 3
+    }
+   ],
+   "grid": [
+    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+    "KKTTttttggTTKKKKttttggggKKKKKTTggttttKKK",
+    "KTTtttttgggTTKKgttttgggggKKKggggttttttKK",
+    "KTggttgggggggfggggggggggggggggggtttttTKK",
+    "KgggggggggggggggggppppgggggggfgggggggggK",
+    "ppggggggggggggggggpggpggggggggggggggggKK",
+    "KggggfggggggggggggggggggggggggggggggfggK",
+    "KssssssspsssssssssssBBsssssssssspsssssKK",
+    "KwwwwwwwBwwwwwwwwwwwBBwwwwwwwwwwBwwwwwwK",
+    "KwwwwwwwBwwwwwwwwwwwBBwwwwwwwwwwBwwwwwwK",
+    "KssssssspsssssssssssBBsssssssssspsssssKK",
+    "KgggttttggggggttttggggggttttggggggggggKK",
+    "KgTtttttgggfggtttttggggggttttTggggggpppp",
+    "KggtttttgggggggttttgggfgggtttttggggggggK",
+    "KKKggggggKKKKggggggKKKKggggggKKKgggggKKK",
+    "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "hw_cut_east",
+     "x": 39,
+     "y": 12,
+     "to": "hw_rim",
+     "tx": 1,
+     "ty": 8,
+     "facing": "right",
+     "when": [
+      "story.cobble_end"
+     ]
+    },
+    {
+     "kind": "warp",
+     "id": "hw_cut_west",
+     "x": 0,
+     "y": 5,
+     "to": "hw_falls",
+     "tx": 22,
+     "ty": 6,
+     "facing": "left",
+     "when": [
+      "story.cobble_end"
+     ]
+    },
+    {
+     "kind": "trigger",
+     "id": "hw_arrive_m",
+     "x": 37,
+     "y": 12,
+     "r": 0,
+     "when": [
+      "!story.hw_reached"
+     ],
+     "scene": "hw_arrive"
+    },
+    {
+     "kind": "sign",
+     "id": "hw_sign_weir",
+     "x": 19,
+     "y": 6,
+     "text": "THE OLD WEIR · Built by Cobblecrest miners. Cross on the stones, not the water."
+    },
+    {
+     "kind": "prop",
+     "id": "hw_weir_n",
+     "x": 22,
+     "y": 7,
+     "sprite": "stone_marker",
+     "lines": {
+      "else": "Weir stones, worn smooth. The water hums under them, very softly."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hw_weir_s",
+     "x": 19,
+     "y": 10,
+     "sprite": "stone_marker"
+    },
+    {
+     "kind": "prop",
+     "id": "hw_camp_table",
+     "x": 21,
+     "y": 3,
+     "sprite": "keep_maptable",
+     "when": [
+      "!story.side=glimmer",
+      "story.hc_council_done"
+     ],
+     "lines": {
+      "else": "A Keeper map of the ravine. Pins along the stream. One pin at the Fallstair."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hw_camp_lamp",
+     "x": 17,
+     "y": 3,
+     "sprite": "keep_lamp",
+     "when": [
+      "!story.side=glimmer",
+      "story.hc_council_done"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "hw_camp_banner",
+     "x": 24,
+     "y": 3,
+     "sprite": "banner_keeper",
+     "when": [
+      "!story.side=glimmer",
+      "story.hc_council_done"
+     ]
+    },
+    {
+     "kind": "prop",
+     "id": "hw_camp_crate",
+     "x": 25,
+     "y": 4,
+     "sprite": "keep_crate",
+     "when": [
+      "!story.side=glimmer",
+      "story.hc_council_done"
+     ]
+    },
+    {
+     "kind": "npc",
+     "id": "hw_scout",
+     "name": "Keeper Scout",
+     "x": 22,
+     "y": 4,
+     "facing": "down",
+     "when": [
+      "!story.side=glimmer",
+      "story.hc_council_done"
+     ],
+     "friendSlot": "KEEPER_SCOUT",
+     "optional": true,
+     "lines": {
+      "else": "FRIEND SLOT · Keeper Scout says hi! (One short line, written with the friend.)"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hw_relay_lamp_a",
+     "x": 12,
+     "y": 11,
+     "sprite": "comfort_lamp",
+     "when": [
+      "story.side=glimmer",
+      "story.gb_invited",
+      "!story.gb_relay_done"
+     ],
+     "lines": {
+      "else": "A Comfort Lamp on a stake, set to RELAY. It points west, toward Wickerglen."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hw_relay_lamp_b",
+     "x": 27,
+     "y": 11,
+     "sprite": "comfort_lamp",
+     "when": [
+      "story.side=glimmer",
+      "story.gb_invited",
+      "!story.gb_relay_done"
+     ],
+     "lines": {
+      "else": "Another relay lamp. Someone has counted the Walklings here already."
+     }
+    },
+    {
+     "kind": "trainer",
+     "id": "hw_angler",
+     "x": 30,
+     "y": 11
+    },
+    {
+     "kind": "pickup",
+     "id": "hw_cut_treat",
+     "x": 3,
+     "y": 2,
+     "item": "befriend_treat",
+     "n": 1
+    }
+   ]
+  },
+  "hw_falls": {
+   "name": "Hushwater Falls",
+   "backdrop": "grove",
+   "variants": true,
+   "w": 24,
+   "h": 16,
+   "spawns": "hw_falls",
+   "respawn": null,
+   "safe": {
+    "x": 1,
+    "y": 10
+   },
+   "zones": [
+    {
+     "x": 2,
+     "y": 2,
+     "w": 6,
+     "h": 7
+    },
+    {
+     "x": 2,
+     "y": 11,
+     "w": 6,
+     "h": 3
+    },
+    {
+     "x": 19,
+     "y": 2,
+     "w": 4,
+     "h": 3
+    },
+    {
+     "x": 20,
+     "y": 9,
+     "w": 3,
+     "h": 5
+    }
+   ],
+   "grid": [
+    "KKKKKKKKKKKpKKKKKKKKKKKK",
+    "KKTTTKKKKKcpcKKwwKKTTTKK",
+    "KTTtttTKKccpccKwwKKtttTK",
+    "KTtttttttgcpcgsswwsttttK",
+    "KTtttttfggppggswwwwsgttK",
+    "KTttttttgpggggswwwwsgggK",
+    "KTtttttggpggggsswwssgggp",
+    "KTTtttfggpgggggsswsggggK",
+    "KTTttttggppgggggswsgfggK",
+    "KKtttttgggppggggswsggttK",
+    "pggggggggggpppgssBssgttK",
+    "KTttttgggggggpgswwsgtttK",
+    "KTTttttfgggggpsswsgttttK",
+    "KKTtttttggggggswwsgttTKK",
+    "KKKTTttttgggggswsKKTTTKK",
+    "KKKKKKKKKKKKKKKKKKKKKKKK"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "hw_falls_east",
+     "x": 23,
+     "y": 6,
+     "to": "hw_cut",
+     "tx": 1,
+     "ty": 5,
+     "facing": "right",
+     "when": [
+      "story.cobble_end"
+     ]
+    },
+    {
+     "kind": "warp",
+     "id": "hw_falls_west",
+     "x": 0,
+     "y": 10,
+     "to": "route2_glen",
+     "tx": 22,
+     "ty": 4,
+     "facing": "left",
+     "when": [
+      "story.cobble_end"
+     ]
+    },
+    {
+     "kind": "trigger",
+     "id": "hw_arrive_w",
+     "x": 1,
+     "y": 10,
+     "r": 0,
+     "when": [
+      "!story.hw_reached"
+     ],
+     "scene": "hw_arrive"
+    },
+    {
+     "kind": "sign",
+     "id": "hw_sign_falls",
+     "x": 2,
+     "y": 9,
+     "text": "HUSHWATER FALLS · East to the Rim and the quarry. West to Wickerglen."
+    },
+    {
+     "kind": "prop",
+     "id": "hw_stair_rope",
+     "x": 11,
+     "y": 1,
+     "sprite": "rope_coil",
+     "when": [
+      "!story.hw_stair_open"
+     ],
+     "lines": {
+      "story.side=glimmer": "A rope across the Fallstair. A mint tag: SURVEY AREA. A Keeper tag under it.",
+      "else": "A rope across the Fallstair. A Keeper tag: CLOSED FOR SURVEY."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hw_roost_oak",
+     "x": 21,
+     "y": 8,
+     "sprite": "lm_big_tree",
+     "lines": {
+      "else": "The Roost Oak. Pale feathers in the bark. Something up there is listening."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hw_fern_stump",
+     "x": 7,
+     "y": 7,
+     "sprite": "stump"
+    },
+    {
+     "kind": "trainer",
+     "id": "hw_owlwatch",
+     "x": 20,
+     "y": 10
+    },
+    {
+     "kind": "pickup",
+     "id": "hw_falls_sip",
+     "x": 3,
+     "y": 12,
+     "item": "energy_sip",
+     "n": 1
+    }
+   ]
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "route2_glen": {
+    "gridRows": {
+     "4": "Tgggggggggggggggggttttgp"
+    },
+    "addObjs": [
+     {
+      "kind": "warp",
+      "id": "glen_east",
+      "x": 23,
+      "y": 4,
+      "to": "hw_falls",
+      "tx": 1,
+      "ty": 10,
+      "facing": "right",
+      "when": [
+       "story.cobble_end"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "glen_east_log",
+      "x": 22,
+      "y": 4,
+      "sprite": "log",
+      "when": [
+       "!story.cobble_end"
+      ],
+      "lines": {
+       "else": "A fallen trunk across a narrow way east. Water sounds behind it."
+      }
+     }
+    ]
+   },
+   "cobble_quarry": {
+    "gridRows": {
+     "17": "ppggggggggccccccccccccggggggggKK"
+    },
+    "addObjs": [
+     {
+      "kind": "warp",
+      "id": "q_west",
+      "x": 0,
+      "y": 17,
+      "to": "hw_rim",
+      "tx": 22,
+      "ty": 12,
+      "facing": "left",
+      "when": [
+       "story.cobble_end"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "q_west_rubble",
+      "x": 1,
+      "y": 17,
+      "sprite": "rubble",
+      "when": [
+       "!story.cobble_end"
+      ],
+      "lines": {
+       "else": "Loose rock over an old miners' path west. Not today."
+      }
+     }
+    ]
+   }
+  }
+ },
+ "scenes": {
+  "hw_arrive": [
+   [
+    "say",
+    "",
+    "The stream runs quiet here. Even the wild Walklings walk softly."
+   ],
+   [
+    "setFlag",
+    "story.hw_reached",
+    true
+   ]
+  ]
+ },
+ "spawnTables": {
+  "_note": "HUSHWATER rows [speciesId, baseWeight, minLv, maxLv] (CREATURES_SLICE §3). Read only once game.js merges spawnTables from data/detail_*.json (build row E1).",
+  "hw_rim": {
+   "stage2": 0.1,
+   "table": [
+    [
+     "snail",
+     22,
+     19,
+     21
+    ],
+    [
+     "skink",
+     14,
+     19,
+     22
+    ],
+    [
+     "stone",
+     12,
+     19,
+     22
+    ],
+    [
+     "mole",
+     8,
+     19,
+     21
+    ],
+    [
+     "gust",
+     6,
+     20,
+     22
+    ],
+    [
+     "vane",
+     3,
+     20,
+     22
+    ],
+    [
+     "owl",
+     2,
+     21,
+     23
+    ]
+   ]
+  },
+  "hw_cut": {
+   "stage2": 0.1,
+   "table": [
+    [
+     "otter",
+     20,
+     19,
+     22
+    ],
+    [
+     "snail",
+     14,
+     19,
+     21
+    ],
+    [
+     "crab",
+     12,
+     19,
+     22
+    ],
+    [
+     "dormouse",
+     8,
+     19,
+     22
+    ],
+    [
+     "moth",
+     8,
+     19,
+     21
+    ],
+    [
+     "skink",
+     6,
+     20,
+     22
+    ],
+    [
+     "frost",
+     4,
+     20,
+     22
+    ],
+    [
+     "owl",
+     3,
+     21,
+     23
+    ]
+   ]
+  },
+  "hw_falls": {
+   "stage2": 0.1,
+   "table": [
+    [
+     "otter",
+     18,
+     20,
+     22
+    ],
+    [
+     "dormouse",
+     10,
+     20,
+     22
+    ],
+    [
+     "beetle",
+     10,
+     19,
+     21
+    ],
+    [
+     "snail",
+     8,
+     20,
+     22
+    ],
+    [
+     "shade",
+     6,
+     20,
+     23
+    ],
+    [
+     "frost",
+     5,
+     20,
+     22
+    ],
+    [
+     "owl",
+     4,
+     21,
+     23
+    ]
+   ]
+  }
+ },
+ "trainers": {
+  "hw_climber": {
+   "name": "Fenna",
+   "title": "Ledge Climber",
+   "map": "hw_rim",
+   "x": 6,
+   "y": 4,
+   "facing": "down",
+   "sight": 3,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "skink/0",
+     "level": 21,
+     "moves": [
+      "tumble_charge",
+      "kiln_rush",
+      "pebble_flick",
+      "kindle_burst"
+     ]
+    },
+    {
+     "form": "skink/1",
+     "level": 22,
+     "moves": [
+      "pebble_flick",
+      "kindle_burst",
+      "boulder_drop",
+      "cinder_pounce"
+     ]
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Warm rocks, good grip, better company. Battle on the ledge?",
+    "win": "You found your footing, {player}. Nice and steady.",
+    "lose": "Slipped, huh? Rest a bit and climb back up."
+   }
+  },
+  "hw_angler": {
+   "name": "Nils",
+   "title": "Rill Angler",
+   "map": "hw_cut",
+   "x": 30,
+   "y": 11,
+   "facing": "left",
+   "sight": 3,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "otter/0",
+     "level": 21,
+     "moves": [
+      "ripple_jab",
+      "sleet_pelt",
+      "cold_snap",
+      "rime_rush"
+     ]
+    },
+    {
+     "form": "otter/1",
+     "level": 22,
+     "moves": [
+      "cold_snap",
+      "rime_rush",
+      "puddle_stomp",
+      "flurry_fluff"
+     ]
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Nothing bites in quiet water. Except my team. Ready?",
+    "win": "Reeled right in, {player}. Fair catch.",
+    "lose": "The stream wins again. Dry off and come back."
+   }
+  },
+  "hw_owlwatch": {
+   "name": "Ottilie",
+   "title": "Owl Watcher",
+   "map": "hw_falls",
+   "x": 20,
+   "y": 10,
+   "facing": "left",
+   "sight": 2,
+   "ai": "basic",
+   "team": [
+    {
+     "form": "owl/0",
+     "level": 22,
+     "moves": [
+      "puff_shot",
+      "dusk_fang",
+      "updraft",
+      "nightfall"
+     ]
+    },
+    {
+     "form": "snail/1",
+     "level": 22,
+     "moves": [
+      "sap_sip",
+      "quarry_crash",
+      "scree_slide",
+      "shell_roll"
+     ]
+    },
+    {
+     "form": "otter/1",
+     "level": 23,
+     "moves": [
+      "cold_snap",
+      "rime_rush",
+      "puddle_stomp",
+      "flurry_fluff"
+     ]
+    }
+   ],
+   "money": null,
+   "lines": {
+    "intro": "Shh. The owls are listening. Let us give them something worth hearing.",
+    "win": "Even the Roost Oak went quiet for that one, {player}.",
+    "lose": "The owls saw that coming. Rest, then try again softly."
+   }
+  }
+ },
+ "flags": {
+  "story.hw_reached": "hw_arrive trigger (first step into Hushwater, either end)",
+  "story.hw_stair_open": "RESERVED for the Keepers' next quest (D352); nothing in this packet sets it",
+  "story.hw_lizzy_met": "RESERVED for the Lizzy slot (D346); not built",
+  "trainer.hw_climber": "auto",
+  "trainer.hw_angler": "auto",
+  "trainer.hw_owlwatch": "auto",
+  "spotted.hw_climber": "auto",
+  "spotted.hw_angler": "auto",
+  "spotted.hw_owlwatch": "auto",
+  "item.hw_rim_snack": "auto (pickup)",
+  "item.hw_cut_treat": "auto (pickup)",
+  "item.hw_falls_sip": "auto (pickup)"
+ }
+}

@@ -50,7 +50,9 @@
     // The Signal Review (GLIMMER_NEXT_QUEST). Done flags live on the four CHAIN rows. These are branches and one-shots.
     'story.gb_escort', 'story.gb_loan', 'story.gb_relay_let', 'story.gb_relay_back',
     'story.gb_hollis_kept', 'story.gb_hollis_told', 'story.gb_read', 'story.gb_stand', 'story.gb_hold',
-    'story.gb_tune_asked', 'story.gb_tobin', 'story.gb_imogen_done', 'story.gb_imogen_result'];
+    'story.gb_tune_asked', 'story.gb_tobin', 'story.gb_imogen_done', 'story.gb_imogen_result',
+    // HUSHWATER: first step in. Not a chain step (no CHAIN row). The stair and Lizzy flags are not written here.
+    'story.hw_reached'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
