@@ -177,7 +177,7 @@
       [
         "say",
         "Tobin",
-        "Rook got one. Just saying."
+        "A fast kid from your town said yes. Just saying."
       ],
       [
         "say",
@@ -537,6 +537,16 @@
         "say",
         "Rook",
         "You got your Tier 1? Took you long enough. I'm going for Bright of the Month."
+      ],
+      [
+        "say",
+        "Rook",
+        "Yeah, I'm in too. Since spring. Partner day, the jingle, the sticker: all them."
+      ],
+      [
+        "say",
+        "Rook",
+        "Tobin's fast kid from your town? Me. I wanted to tell you myself. Too late, huh?"
       ],
       [
         "say",

@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-20 22:01 ET: Rook hint lines and the doorstep reveal (build 20261020-2201)
+
+- What changed and why: ROOK_FORESHADOW (design bfe356a, status stamp 9835ccb). Rook hints at the sign-up before the Trial Hall doorstep, and both paths hear the reveal there. Tobin no longer names him at the pledge. Save stays `pixelpets.save.v2` with `v` 2. No new key. Lizzy's lines are not edited.
+- Files touched: `data/interiors.json`, `data/maps_slice.json`, `data/glimmer_path.json`, `data/act1_route2.json`, `data/detail_wayup.json`, `data/mapdata.js`, `tests/rook_foreshadow.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261020-2201.
+- Tests run and result (widths, checks): `node tools/pp_test.js` on rook_foreshadow, glimmer_fernbrook, standing, smoke, rook_crossroads, wording_guard, data_integrity, lizzy, reputation, heights, glimmer_route2, debug_mode, controls, quest_multi, town_board_gate, faction_music, look_listen, house_reskin, heart_alert, fetch_line, civic, arbiter_test, and maps_b4. PP_TEST RESULT: PASS exit=0 passed=524 failed=0 flaky=0 skipped=10 time=369s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. At 320x568 each new line fit one dialog page. `python3 tools/bump_build.py --check` exit 0. Console errors: none (the specs fail the run on a console error).
+- Decisions made (colour + reasoning): D339–D341 were already settled by Vincent at 8:40 AM ET on Oct 20, 2026, on the defaults. D342 is green and already shipped with Lizzy. D343 and D344 were settled by Vincent at 9:49 PM ET on Oct 20, 2026, early, on the defaults. D345 is green (Design). No new id. No id was renumbered. Next free id is D363, then D390. Syncing Rook's two lines in `detail_wayup.json` is green: that overlay copies the whole NPC and applies last, so the settled lines would not play otherwise.
+- Anything left unfinished: the design checker runs after merge. The post-reveal arc is unchanged.
+
 ## 2026-10-20 14:51 ET: Warden lodge sign says holders (build 20261020-1451)
 
 - What changed and why: The Hearthmoor lodge sign `hm_sign_lodge` now says "New holders, knock and come in." Design settled this green copy fix with no new decision id. Save stays `pixelpets.save.v2` with `v` 2. No new key.
