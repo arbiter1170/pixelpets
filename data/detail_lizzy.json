@@ -337,6 +337,7 @@
      "y": 1,
      "sprite": "slate_board",
      "lines": {
+      "away:Lizzy": "Back at 3. - L.",
       "else": "BE KIND. FEED FIRST. ASK BEFORE YOU PET. Written in Lizzy's round chalk letters."
      }
     },
@@ -470,7 +471,12 @@
      "facing": "right",
      "lines": {
       "else": "I'm a junior Keeper! I can tie a sash AND feed a Walkling. At the same time."
-     }
+     },
+     "schedule": [
+      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 2, "y": 4, "facing": "left", "lines": "at desks"},
+      {"when": "day:weekday & win:after_school", "map": "hearthmoor", "x": 16, "y": 31, "lines": "court"},
+      {"map": null, "x": 0, "y": 0, "lines": "home off-map"}
+     ]
     },
     {
      "kind": "npc",
@@ -482,7 +488,12 @@
      "lines": {
       "else": "Ms. Lizzy says glow grows when you share it. I'm sharing my lunch with Moss."
      },
-     "look": "wren"
+     "look": "wren",
+     "schedule": [
+      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 2, "y": 4, "facing": "left", "lines": "at desks"},
+      {"when": "day:weekday & win:after_school", "map": "hearthmoor", "x": 16, "y": 31, "lines": "court"},
+      {"map": null, "x": 0, "y": 0, "lines": "home off-map"}
+     ]
     },
     {
      "kind": "npc",
@@ -496,8 +507,15 @@
       "story.lizzy_met"
      ],
      "lines": {
+      "story.leak5b_seen&!story.leak5b_yes": "@leak_ask",
       "else": "Class is out! Want to help me wipe the board? Buddy already tried. Now it's muddy."
-     }
+     },
+     "schedule": [
+      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 10, "y": 3, "facing": "down", "lines": "teaching"},
+      {"when": "day:tue,thu & time:1700-1900", "map": "hm_diner", "x": 6, "y": 3, "lines": "board-game night at the diner"},
+      {"when": "day:sat & time:0900-1300", "map": "hearthmoor", "x": 14, "y": 31, "lines": "shooting hoops on the court"},
+      {"map": "hm_flats_5", "x": 13, "y": 3, "facing": "right", "note": "Back at 3. - L."}
+     ]
     },
     {
      "kind": "npc",
@@ -659,7 +677,11 @@
       "story.moral_leak5b=force": "Pipe's fixed. Now go away. Please.",
       "story.moral_leak5b=court": "Pipe's fixed. The Keepers can stop looking at me.",
       "else": "Visitor? Wipe your boots. Walkling hair is extra. Everything is extra."
-     }
+     },
+     "schedule": [
+      {"when": "day:weekday & win:office", "map": "hm_flats_lobby", "x": 7, "y": 9, "facing": "left", "lines": "office"},
+      {"map": "hm_flats_lobby", "x": 9, "y": 9, "facing": "left", "lines": "Office is closed. Knock anyway."}
+     ]
     }
    ]
   },
@@ -753,7 +775,11 @@
      "lines": {
       "else": "Look who finally came up! Where've you been hiding? Sit. Your chair missed you."
      },
-     "look": "ossabell"
+     "look": "ossabell",
+     "schedule": [
+      {"when": "phase:dawn", "map": "hm_diner", "x": 3, "y": 3, "lines": "breakfast after the night shift"},
+      {"map": "hm_lantern_in", "x": 0, "y": 0, "lines": "her current spot"}
+     ]
     },
     {
      "kind": "prop",
@@ -1224,6 +1250,11 @@
     "",
     "Buddy watches the bucket. Then you. Then the bucket."
    ]
+  ],
+  "leak_school": [
+   ["say", "Lizzy", "The bathroom in 5B has a drip. It hits the bucket and keeps going."],
+   ["setFlag", "story.leak5b_seen", true],
+   ["say", "Lizzy", "I'm here until 3 on school days. Evenings, I'm home in 5B."]
   ],
   "leak_look": [
    [

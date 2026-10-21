@@ -225,7 +225,7 @@
     // The leak in 5B (D177, D182). Standing moves only through the moral step, not these rows.
     [
       { id: 'leak_ask', label: 'The leak in 5B', when: ['story.leak5b_seen'], done: ['story.leak5b_yes'],
-        text: 'Tell Lizzy about the leak', place: 'hm_flats_5',
+        text: 'Find Lizzy: Schoolhouse (MON-FRI, day) or home, 5B (evenings)', place: 'School or 5B',
         target: { map: 'hm_flats_5', x: 13, y: 3 } },
       { id: 'leak_gristle', when: ['story.leak5b_yes'], done: ['story.moral_leak5b'],
         text: 'Talk to Mr. Gristle', place: 'hm_flats_lobby',

@@ -50,7 +50,7 @@
         {"kind": "door", "id": "hm_lantern", "x": 16, "y": 13, "panel": "lantern"},
         {"kind": "door", "id": "hm_rook", "x": 16, "y": 5, "panel": "rook_house"},
         {"kind": "warp", "id": "hm_east", "x": 23, "y": 8, "to": "route1", "tx": 1, "ty": 8, "facing": "right", "need": "story.starter_received"},
-        {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 9, "text": "HEARTHMOOR · Hill village of keepers. East: Route 1."},
+        {"kind": "sign", "id": "hm_sign_town", "x": 19, "y": 9, "text": "HEARTHMOOR · Hill village of holders. East: Route 1."},
         {"kind": "sign", "id": "hm_sign_lodge", "x": 12, "y": 7, "text": "WARDEN'S LODGE · Warden Ilse Marrow. New holders, knock and come in."},
         {"kind": "sign", "id": "hm_sign_lantern", "x": 17, "y": 13, "text": "LANTERN HOUSE · Rest and recover. Free, always."},
         {"kind": "npc", "id": "hattie", "name": "Hattie", "x": 4, "y": 13, "lines": {"!story.starter_received": "Off to see Ilse? She's been fussing over three baskets since dawn.", "else": "Route 1 has shy crabs by the stream. On rainy days they come right out."}},
@@ -173,7 +173,7 @@
       ],
       "objs": [
         {"kind": "warp", "id": "om_north", "x": 3, "y": 0, "to": "route1", "tx": 6, "ty": 18, "facing": "up"},
-        {"kind": "sign", "id": "om_sign", "x": 4, "y": 1, "text": "OLD MEADOW · Where many keepers took their very first walk."}
+        {"kind": "sign", "id": "om_sign", "x": 4, "y": 1, "text": "OLD MEADOW · Where many holders took their very first walk."}
       ]
     }
   },

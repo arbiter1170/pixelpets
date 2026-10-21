@@ -433,7 +433,7 @@ function setFast(on, quiet){
 /* ---------- Q26: modern and arcade controls (NEXT_PLAN §3 Q26) ----------
    Arcade is the layout the game always had. Modern adds body.ctl-modern and re-parents a few nodes into #floatCtl, so one id
    keeps one handler, and arcade comes back by moving them home. No node is created or destroyed on a switch. */
-const CTL_MOVES = [['#repBtn', '#fcTL'], ['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip']];
+const CTL_MOVES = [['#repBtn', '#fcTL'], ['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip'], ['#clockChip', '#fcClock']];
 const ctlHome = {};
 const ctlMode = () => (S && S.settings && S.settings.controls === 'modern') ? 'modern' : 'arcade';
 const joyOn = () => ctlMode() === 'modern' && !!(S && S.settings.joystick);
@@ -678,7 +678,7 @@ function showTab(name){
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [] };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -2595,9 +2595,19 @@ function repCond(c, o){
   return op === '>=' ? a >= b : op === '<=' ? a <= b : op === '>' ? a > b : a < b;
 }
 function cond(c, live, o){
-  if (typeof c === 'string' && c.includes('&')) return c.split('&').every(part => part && cond(part, live, o));
+  if (typeof c === 'string' && c.includes('&')) return c.split('&').every(part => part && cond(part.trim(), live, o));
   if (c === 'else') return true;
   let neg = false; if (c[0] === '!') { neg = true; c = c.slice(1); }
+  if (typeof c === 'string' && window.PPClock) {
+    const bit = PPClock.match(c);
+    if (bit !== null) return neg ? !bit : bit;
+  }
+  if (typeof c === 'string' && c.indexOf('away:') === 0) {
+    const spot = clockSpot(c.slice(5));
+    const mid = mapIdOf(o);
+    const v = !(spot && mid && spot.map === mid);
+    return neg ? !v : v;
+  }
   let v;
   if (c === 'has:name') v = !!curName(live);
   else if (c.startsWith('seal:')) v = !!S.seals[c.slice(5)];
@@ -2625,14 +2635,19 @@ function needMet(need){
 }
 const BLOCK_KINDS = { npc: 1, trainer: 1, sign: 1, prop: 1, wild: 1 };
 function present(o){
-  if (o.when && !o.when.every(c => cond(c, false))) return false;
+  if (o.when && !o.when.every(c => cond(c, false, String(c).indexOf('away:') >= 0 ? o : undefined))) return false;
+  if (!schedHere(o)) return false;
   if (o.kind === 'pickup' && S.flags['item.' + o.id]) return false;
   if (o.kind === 'trainer' && !TRAINERS[o.id]) return false;   // HUSHWATER E2: a holder with no TRAINERS row stays hidden
   return true;
 }
 // A pushed dream prop that was left mid-circuit (reload, resume) starts where it stopped, not back at its first tile.
 const rollSpot = o => { const st = +S.flags[o.rollFlag] || 0, c = o.circuit[st % o.circuit.length]; return st && c ? { x: c[0], y: c[1] } : o; };
-const objPos = o => mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
+function objPos(o){
+  const sched = schedPos(o);
+  if (sched) return sched;
+  return mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
+}
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
 const blockerAt = (x, y) => objAt(x, y, o => BLOCK_KINDS[o.kind]);
 const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
@@ -2673,6 +2688,301 @@ const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : 
     o.lines = lines;
   }
 })();
+// WORLD_CLOCK_TOWN P1 (D374, D375, D378). Optional schedule rows on a detail NPC. First match wins.
+// A row whose map is missing, or whose tile is out of bounds or solid, is skipped so a quest NPC stays reachable.
+// Greens: Pip stands at (3,4) and Wren at (6,4) because (2,4) is one desk. Ossabell's (0,0) means her 5B spot.
+// Mr. Gristle's closed tile (9,9) is the lobby wall, so he stands at (6,9). The diner and the court are P2.
+const SCHED = {};
+const CLOCK_SKIP = { hm_lizzy: 1, hm_buddy: 1 };
+const CLOCK_NUDGE = {
+  school_kid_a: { key: 'hm_school_in:2,4', x: 3, y: 4, facing: 'left' },
+  school_kid_b: { key: 'hm_school_in:2,4', x: 6, y: 4, facing: 'left' },
+  flats_landlord: { key: 'hm_flats_lobby:9,9', x: 6, y: 9, facing: 'left' },
+  f5_ossabell: { key: 'hm_lantern_in:0,0', map: 'hm_flats_5', x: 5, y: 4, facing: 'left' },
+};
+const CLOCK_PLACE = {
+  hm_school_in: 'Schoolhouse', hm_flats_5: 'home, 5B', hm_flats_lobby: 'the lobby',
+  hm_diner: 'the diner', hearthmoor: 'Lanternball Court',
+};
+function mapIdOf(o){
+  if (!o) return null;
+  if (o._mapId) return o._mapId;
+  for (const [id, m] of Object.entries(WORLD)) if (m.objs && m.objs.indexOf(o) >= 0) return o._mapId = id;
+  return null;
+}
+function tileOk(mapId, x, y, selfId){
+  const m = WORLD[mapId];
+  if (!m || !m.grid || y < 0 || x < 0 || y >= m.grid.length || x >= m.grid[y].length) return false;
+  const ch = m.grid[y][x];
+  const sk = m.skin && SKINS[m.skin];
+  const walks = (sk && sk.walk && sk.walk[ch] != null) ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk;
+  if (!walks) return false;
+  return !(m.objs || []).some(o => BLOCK_KINDS[o.kind] && o.x === x && o.y === y && o.id !== selfId && !SCHED[o.name]
+    && !(o.when && [].concat(o.when).some(c => String(c).indexOf('away:') >= 0)));
+}
+function standRow(bag, row){
+  let map = row.map, x = row.x, y = row.y, facing = row.facing || 'down';
+  const n = CLOCK_NUDGE[bag.sourceId];
+  if (n && n.key === map + ':' + x + ',' + y) { map = n.map || map; x = n.x; y = n.y; if (n.facing) facing = n.facing; }
+  if (!map) return null;
+  const body = bag.onMap[map];
+  if (!body) return null;
+  if (!tileOk(map, x, y, body.id)) return null;
+  return { map, x, y, facing, bodyId: body.id, rawMap: row.map, rawX: row.x, rawY: row.y };
+}
+function rowWhen(row){ return !row.when || cond(row.when, false); }
+function pickRow(bag){
+  const rows = bag.rows;
+  if (!rows) return null;
+  for (let i = 0; i < rows.length; i++) {
+    const last = i === rows.length - 1, row = rows[i];
+    if (!last && !rowWhen(row)) continue;
+    if (row.notDrawn) return null;
+    const stood = standRow(bag, row);
+    if (stood) return stood;
+    if (last) return null;
+  }
+  return null;
+}
+function spotOnScreen(row){
+  if (!row || !CUR || !S || row.map !== CUR.id) return false;
+  const c = $('#mapCanvas');
+  if (!c || !c.width) return false;
+  const x = row.x * TS - walk.cam.x, y = row.y * TS - walk.cam.y;
+  return x > -TS && y > -TS && x < c.width && y < c.height && Math.abs(row.x - S.world.x) + Math.abs(row.y - S.world.y) <= 8;
+}
+function bodyShown(body){
+  return !!body && (!body.when || body.when.every(c => cond(c, false)));
+}
+function placedRow(name, predict){
+  const bag = SCHED[name];
+  if (!bag) return null;
+  if (bag.follow) {
+    const lead = placedRow(bag.follow, predict);
+    if (!lead) return null;
+    const body = bag.onMap[lead.map];
+    if (!bodyShown(body)) return null;
+    return { map: lead.map, x: body.x, y: body.y, facing: body.facing || 'down', bodyId: body.id };
+  }
+  if (!predict && bag.hold && spotOnScreen(bag.hold) && bodyShown(bag.byId[bag.hold.bodyId])) return bag.hold;
+  let row = pickRow(bag);
+  if (row && !bodyShown(bag.byId[row.bodyId])) row = null;
+  if (!predict) bag.hold = row;
+  return row;
+}
+function intentRow(name){
+  const bag = SCHED[name];
+  if (!bag || !bag.rows) return bag && bag.follow ? intentRow(bag.follow) : null;
+  if (bag.follow) return intentRow(bag.follow);
+  for (let i = 0; i < bag.rows.length; i++) {
+    const last = i === bag.rows.length - 1, row = bag.rows[i];
+    if (!last && !rowWhen(row)) continue;
+    return row;
+  }
+  return bag.rows[bag.rows.length - 1] || null;
+}
+function clockSpot(name){ return placedRow(name); }
+function schedHere(o){
+  const bag = o && SCHED[o.name];
+  if (!bag || !bag.byId[o.id]) return true;
+  const row = placedRow(o.name);
+  return !!(row && row.bodyId === o.id);
+}
+function schedPos(o){
+  const bag = o && SCHED[o.name];
+  if (!bag || !bag.byId[o.id]) return null;
+  const row = placedRow(o.name);
+  if (!row || row.bodyId !== o.id) return null;
+  return { x: row.x, y: row.y, facing: row.facing };
+}
+function clockAt(name, mapId){ const row = placedRow(name); return !!(row && row.map === mapId); }
+function clockBump(){
+  for (const bag of Object.values(SCHED)) bag.hold = null;
+  if (PPEnv.syncClock) PPEnv.syncClock();
+  renderClockChip();
+}
+function wireSchedules(){
+  const named = [];
+  for (const [id, m] of Object.entries(WORLD)) for (const o of m.objs || []) {
+    if (!o || o.kind !== 'npc' || !o.name || CLOCK_SKIP[o.id]) continue;
+    named.push([id, o]);
+  }
+  // A shared name is not enough. Overlay maps reuse Pip and Wren; only the body that carries the
+  // rows, and bodies that stand on a row's map (Buddy follows Lizzy's maps), join the schedule.
+  const rowsOf = {}, mapsOf = {};
+  for (const [mapId, o] of named) {
+    if (!Array.isArray(o.schedule)) continue;
+    rowsOf[o.name] = o.schedule.map(r => ({
+      when: r.when || '', map: r.map || null, x: r.x | 0, y: r.y | 0, facing: r.facing || null,
+      notDrawn: !r.map,
+    }));
+    const maps = mapsOf[o.name] || (mapsOf[o.name] = new Set());
+    const n = CLOCK_NUDGE[o.id];
+    for (const r of o.schedule) {
+      let map = r.map || null;
+      if (n && map && n.key === map + ':' + (r.x | 0) + ',' + (r.y | 0) && n.map) map = n.map;
+      if (map) maps.add(map);
+    }
+    maps.add(mapId);
+  }
+  if (mapsOf.Lizzy) mapsOf.Buddy = new Set(mapsOf.Lizzy);
+  for (const [mapId, o] of named) {
+    const maps = mapsOf[o.name];
+    if (!maps) continue;
+    if (!Array.isArray(o.schedule) && !maps.has(mapId)) continue;
+    const bag = SCHED[o.name] || (SCHED[o.name] = { rows: null, sourceId: null, onMap: {}, byId: {}, hold: null, follow: null });
+    bag.onMap[mapId] = o;
+    bag.byId[o.id] = o;
+    if (Array.isArray(o.schedule) && !bag.rows) {
+      bag.sourceId = o.id;
+      bag.rows = rowsOf[o.name];
+    }
+  }
+  if (SCHED.Lizzy && SCHED.Buddy) SCHED.Buddy.follow = 'Lizzy';
+  const home = WORLD.hm_flats_5;
+  if (home && !(home.objs || []).some(o => o.id === 'f5_lizzy_away')) {
+    home.objs.push({ kind: 'sign', id: 'f5_lizzy_away', x: 13, y: 3, text: 'Back at 3. - L.', when: ['story.lizzy_met', 'away:Lizzy'] });
+  }
+  if (window.PPClock) PPClock.setOnChange(clockBump);
+}
+wireSchedules();
+function liveStep(step){
+  if (!step || step.id !== 'leak_ask') return step;
+  const spot = placedRow('Lizzy');
+  if (!spot) return step;
+  return Object.assign({}, step, { target: { map: spot.map, x: spot.x, y: spot.y } });
+}
+function clockParty(){
+  try {
+    const o = JSON.parse(localStorage.getItem('pixelpets.net') || 'null');
+    return !!(o && o.party);
+  } catch (e) { return false; }
+}
+function nextOnMap(name, mapId){
+  if (!window.PPClock || !SCHED[name] || !mapId) return null;
+  const start = PPClock.gameMinute();
+  for (let i = 1; i <= 7 * 1440; i++) {
+    const row = PPClock.withMinute(start + i, () => placedRow(name, true));
+    if (row && row.map === mapId) {
+      const at = PPClock.atMinute(start + i);
+      return { minute: start + i, label: at.label + ' ' + at.hh + ':' + String(at.mm).padStart(2, '0') };
+    }
+  }
+  return null;
+}
+function waitOffer(){
+  if (clockParty() || !S || !CUR || !window.PPClock) return null;
+  const step = sideQuest();
+  const name = step && step.id === 'leak_ask' ? 'Lizzy' : step && step.id === 'leak_gristle' ? 'Mr. Gristle' : null;
+  if (!name || !SCHED[name]) return null;
+  const row = placedRow(name);
+  if (row && row.map === CUR.id) return null;
+  const hit = nextOnMap(name, CUR.id);
+  return hit ? { name, label: hit.label } : null;
+}
+function applyWait(name){
+  const hit = nextOnMap(name, CUR && CUR.id);
+  if (!hit || !window.PPClock) return 'You wait. Nobody comes by.';
+  PPClock.skipToMinute(hit.minute);
+  return 'You wait. It is ' + hit.label + '.';
+}
+function pushWait(opts){
+  const w = waitOffer();
+  if (w) opts.push(['Wait until...', [['waitUntil', w.name]]]);
+  return opts;
+}
+function isRestSpot(o){
+  if (!o || o.kind === 'door') return false;
+  if (o.panel === 'lantern') return true;
+  if (o.lines && Object.values(o.lines).some(v => v === '@lantern_rest')) return true;
+  return /bed|bench/i.test(o.sprite || '');
+}
+function publicClock(){
+  const r = PPClock.now();
+  return { day: r.day, hh: r.hh, mm: r.mm, phase: r.phase, windows: r.windows.slice(), week: r.week, offsetMs: r.offsetMs, weather: null };
+}
+function clockPublicPlace(name){
+  const row = placedRow(name);
+  return row ? { map: row.map, x: row.x, y: row.y, id: row.bodyId } : null;
+}
+function clockPublicIntent(name){
+  const row = intentRow(name);
+  if (!row) return null;
+  return { map: row.map || null, x: row.x | 0, y: row.y | 0, when: row.when || '' };
+}
+const clockGlyphs = {
+  day: ['..yyyy..', '.yyyyyy.', 'yyyyyyyy', 'yyyyyyyy', 'yyyyyyyy', 'yyyyyyyy', '.yyyyyy.', '..yyyy..'],
+  half: ['..yyyy..', '.yyykk..', 'yyyykkkk', 'yyyykkkk', 'yyyykkkk', 'yyyykkkk', '.yyykk..', '..yyyy..'],
+  night: ['..wwww..', '.wwwwk..', 'wwwwkkkk', 'wwwwkkkk', 'wwwwkkkk', 'wwwwkkkk', '.wwwwk..', '..wwww..'],
+};
+let clockPaint = '';
+function renderClockChip(){
+  const btn = $('#clockChip'), lab = $('#clockLabel');
+  if (!btn || !lab || !window.PPClock) return;
+  const r = PPClock.now();
+  const txt = r.label + ' ' + r.hh + ':' + String(r.mm).padStart(2, '0');
+  if (lab.textContent !== txt) lab.textContent = txt;
+  const aria = r.name + ', ' + r.hh + ':' + String(r.mm).padStart(2, '0') + ', ' + r.phase;
+  if (btn.getAttribute('aria-label') !== aria) btn.setAttribute('aria-label', aria);
+  if (renderClockChip.phase !== r.phase) {
+    renderClockChip.phase = r.phase;
+    if (PPEnv.syncClock) PPEnv.syncClock();
+  }
+  const kind = r.phase === 'night' ? 'night' : r.phase === 'day' ? 'day' : 'half';
+  if (clockPaint !== kind) {
+    clockPaint = kind;
+    const c = $('#clockGlyph');
+    if (c) {
+      const g = c.getContext('2d'), rows = clockGlyphs[kind];
+      g.clearRect(0, 0, 8, 8);
+      rows.forEach((row, y) => { for (let x = 0; x < 8; x++) if (row[x] !== '.' && PAL[row[x]]) { g.fillStyle = PAL[row[x]]; g.fillRect(x, y, 1, 1); } });
+    }
+  }
+}
+function openClockCard(){
+  if (!window.PPClock || (overlayOpen() && $('#ovClock').hidden)) return;
+  const r = PPClock.now();
+  const lines = [r.name, r.hh + ':' + String(r.mm).padStart(2, '0') + ', ' + r.phase];
+  for (const name of ['Lizzy', 'Pip', 'Wren', 'Ossabell', 'Mr. Gristle']) {
+    const row = placedRow(name);
+    const where = row ? (CLOCK_PLACE[row.map] || row.map) : 'away';
+    lines.push(name + ', ' + where);
+  }
+  $('#clockCard').textContent = lines.join('\n');
+  $('#ovClock').hidden = false;
+  lockTabs(true);
+  sfx('tap');
+}
+function closeClockCard(){ if ($('#ovClock').hidden) return; $('#ovClock').hidden = true; lockTabs(false); }
+function drawLampLights(g, cx, cy, VW, VH){
+  if (!window.PPClock || !PPClock.lampsOn()) return;
+  g.save();
+  g.globalCompositeOperation = 'lighter';
+  for (const o of CUR.objs) {
+    if (!present(o) || !o.sprite) continue;
+    if (o.sprite === 'keep_lamp' || o.sprite === 'keep_lamp_wall') continue;
+    if (o.sprite.indexOf('lantern') < 0 && o.sprite.indexOf('lamp') < 0) continue;
+    const q = objPos(o);
+    g.fillStyle = 'rgba(255,205,117,0.35)';
+    g.beginPath();
+    g.arc(q.x * TS + 8 - cx, q.y * TS + 6 - cy, 12, 0, Math.PI * 2);
+    g.fill();
+  }
+  if (CUR.skin && SKINS[CUR.skin] && SKINS[CUR.skin].wall) {
+    g.fillStyle = 'rgba(255,205,117,0.9)';
+    for (let ty = Math.floor(cy / TS); ty <= Math.floor((cy + VH) / TS); ty++)
+      for (let tx = Math.floor(cx / TS); tx <= Math.floor((cx + VW) / TS); tx++)
+        if (wallPart(tx, ty) === 'face_win') g.fillRect(tx * TS - cx + 6, ty * TS - cy + 5, 4, 4);
+  }
+  g.fillStyle = 'rgba(255,220,140,0.95)';
+  for (const b of buildingsOf(CUR)) {
+    const y = b.ry1 + 1;
+    if (y > b.y1) continue;
+    const mid = Math.round((b.x0 + b.x1) / 2);
+    if (tileAt(mid, y) === 'H') g.fillRect(mid * TS - cx + 6, y * TS - cy + 4, 4, 3);
+  }
+  g.restore();
+}
 // Rook wears a Junior Bright lanyard once Glimmerwell has claimed him: on the glimmer path from the side
 // pick, and on either path after Fernbrook (story.slice_end) or the quarry sale. It comes off when he
 // converts (rook_end ally) or when he quits (story.rook_quit, D136).
@@ -3620,6 +3930,7 @@ function placeSteps(dr){
     opts.push(hold
       ? ['Not yet', [['say', who, 'The door stays shut until the party is rested.']]]
       : ['Leave', []]);
+    pushWait(opts);
     const greet = hold
       ? 'Your team is worn out. A rest costs ' + LANTERN_REST_COST + ' Acorns and heals everyone.'
       : lanternGreet(who);
@@ -4098,6 +4409,7 @@ function drawMap(t){
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
   drawHqGlow(g, cx, cy);
+  drawLampLights(g, cx, cy, VW, VH);
   wild.poofs = wild.poofs.filter(f => wild.clock - f.t < 500);
   for (const f of wild.poofs) { const k = (wild.clock - f.t) / 500, x = f.x*TS - cx, y = f.y*TS - cy;
     [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([dx,dy]) => drawGlyph(g, 'spark', x + 6 + dx*(3 + k*6), y + 6 + dy*(3 + k*6))); }
@@ -4266,7 +4578,7 @@ function trackedSide(){
   const id = S.ui && S.ui.sideTracked;
   return A.find(a => a.chain === id) || A[0];
 }
-const sideQuest = () => { const t = S ? trackedSide() : null; return t ? t.step : null; };
+const sideQuest = () => { const t = S ? trackedSide() : null; return t ? liveStep(t.step) : null; };
 // D106-D: when the tracked chain finishes, track the next active chain and say so. A step inside the chain keeps tracking.
 let sideTrackLast = null;   // { chain, ids } from the previous check; null until the first check after load
 function syncSideTrack(){
@@ -4657,10 +4969,23 @@ function interact(o){
   if (o.shop) { if (!S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx); openShop(o.shop, shopHeading(o)); return; }
   if (o.kind === 'wild') return o.scene ? runScene(o.scene, ctx) : undefined;
   if (o.scene && !scenePlayed(o.scene)) return runScene(o.scene, ctx);
+  if (o.id === 'school_lizzy' && S && S.flags['story.lizzy_met'] && !S.flags['story.leak5b_seen'] && clockAt('Lizzy', 'hm_school_in')) {
+    mapRT.talked.add(o.id);
+    return runScene('leak_school', ctx);
+  }
   const line = linesFor(o);
   if (line == null) return o.scene ? runScene(o.scene, ctx) : undefined;
   mapRT.talked.add(o.id);
   if (line[0] === '@') return runScene(line.slice(1), ctx);
+  if (o.id === 'flats_landlord' && line === (o.lines && o.lines.else) && window.PPClock && !PPClock.inWindow('office'))
+    return runSteps([['say', objName(o), 'Office is closed. Knock anyway.']], ctx);
+  if (isRestSpot(o)) {
+    const w = waitOffer();
+    if (w) return runSteps([
+      ['say', o.kind === 'prop' ? '' : objName(o), line],
+      ['choice', 'Wait here?', [['Wait until...', [['waitUntil', w.name]]], ['Not now', []]]],
+    ], ctx);
+  }
   return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line]], ctx);
 }
 // What the keeper faces: a talkable object on the next tile, or the door of the doorstep you stand on (facing up).
@@ -4942,6 +5267,10 @@ async function execStep(st){
       const opt = opts[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
       $('#sbEcho').textContent = '\u203a ' + expand(opt[0]);
       await execSteps(opt[1]); return;
+    }
+    case 'waitUntil': {
+      await execStep(['say', '', applyWait(a)]);
+      return;
     }
     case 'nameEntry': { sc.skip = false; await nameBox(a, expand(b), c, d); return; }
     case 'showBasket': { sc.skip = false; sc.vars.suggest = suggestLine(sc.vars); sc.vars.line = await basketPick(a, sc.vars.suggest); sfx('befriend'); return; }
@@ -5611,6 +5940,18 @@ function drawDream(g, VW, VH, t){
 const WX_RND = Array.from({ length: 360 }, (_, i) => { const v = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); });
 function drawWeather(g, VW, VH, t, density = 1){   // density scales the drop/flake count (the Pet tab canvas is small)
   const tags = envTags(), has = k => tags.includes(k);
+  if (window.PPClock) {
+    const r = PPClock.now(), mins = r.hh * 60 + r.mm;
+    if (r.phase === 'dawn') {
+      const k = 1 - (mins - 5 * 60) / 120;
+      g.fillStyle = 'rgba(232,164,132,' + (0.2 * clamp(k, 0, 1)).toFixed(3) + ')';
+      g.fillRect(0, 0, VW, VH);
+    } else if (r.phase === 'dusk') {
+      const k = (mins - 18 * 60) / 120;
+      g.fillStyle = 'rgba(214,140,48,' + (0.25 * clamp(k, 0, 1)).toFixed(3) + ')';
+      g.fillRect(0, 0, VW, VH);
+    }
+  }
   if (has('night')) { g.fillStyle = 'rgba(16,18,52,.42)'; g.fillRect(0, 0, VW, VH); }
   if (has('fog')) { g.fillStyle = 'rgba(244,244,244,.18)'; g.fillRect(0, 0, VW, VH); }
   if (has('rain') || has('storm')) {
@@ -6002,6 +6343,7 @@ function lanternBedSteps(){
   const opts = [lanternRestOption(), hold
     ? ['Not yet', [['say', '', 'The door stays shut until the party is rested. Face a bed and talk to it.']]]
     : ['Not now', []]];
+  pushWait(opts);
   return [
     ['say', '', hold
       ? 'Your team is worn out. These beds rest everyone, for ' + LANTERN_REST_COST + ' Acorns.'
@@ -8389,7 +8731,7 @@ function closeQuest(){
 function renderQuest(q){
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
-  const A = sideActiveList(), tr = trackedSide(), sideQ = tr ? tr.step : null, many = A.length >= 2;
+  const A = sideActiveList(), tr = trackedSide(), sideQ = tr ? liveStep(tr.step) : null, many = A.length >= 2;
   const card = $('#questSideCard');
   const sl = $('#questSideLabel'), stx = $('#questSide'), sp = $('#questSidePlace');
   if (card) card.hidden = !sideQ;
@@ -11099,6 +11441,8 @@ function bindInput(){
   $('#geoAllow').addEventListener('click', () => { closeGeoAsk(); useLocation(); });
   $('#geoLater').addEventListener('click', () => { PPEnv.setGeoPref('deny'); closeGeoAsk(); toast('OK! A meadow for now. Tap the area badge to change.'); });
   $('#envBadge').addEventListener('click', openEnvCard);
+  const clockBtn = $('#clockChip'); if (clockBtn) clockBtn.addEventListener('click', openClockCard);
+  const clockShut = $('#clockClose'); if (clockShut) clockShut.addEventListener('click', () => { sfx('tap'); closeClockCard(); });
   $('#envUseLoc').addEventListener('click', () => { closeEnvCard(); useLocation(); });
   $('#envClose').addEventListener('click', closeEnvCard);
   buildPresetButtons();
@@ -11173,6 +11517,7 @@ function bindInput(){
     if (!$('#ovMap').hidden && KEYS[e.key]) { e.preventDefault(); if (!e.repeat) mapNudge(KEYS[e.key]); return; }   // arrows read the parchment; they must not walk the keeper underneath
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
     if (e.key === 'Escape' && !$('#ovQuest').hidden) { e.preventDefault(); closeQuest(); return; }
+    if (e.key === 'Escape' && $('#ovClock') && !$('#ovClock').hidden) { e.preventDefault(); closeClockCard(); return; }
     if (e.key === 'Escape' && !$('#ovRep').hidden) { e.preventDefault(); closeRep(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
     if (shopKey(e)) { e.preventDefault(); return; }
@@ -11229,6 +11574,7 @@ function frame(t){
     drawMap(t);
   }
   if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncSide(); syncWalkTip(); }
+  if (S && window.PPClock) renderClockChip();
   if (S) unlockWatch(t);
   if (!$('#ovMap').hidden) drawMapOverlay(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
@@ -11500,7 +11846,7 @@ function boot(){
   if (!allPets().length) { updateHUD(); showTab('walk'); lockTabs(false); if (newGame) setTimeout(() => runScene('intro'), 60); else setTimeout(() => toast('Ilse is waiting inside.'), late); }
   else {
     updateHUD(); hello.quietUntil = now() + (!S.player.look || L.notice === 'recovered' ? 4600 : 1400); bowlHint(!S.player.look || L.notice === 'recovered' ? 4600 : 1200);
-    if (!S.player.look) setTimeout(() => toast("New: pick your keeper's look under the gear (Change look)."), late);   // after the recovery notice, never over it
+    if (!S.player.look) setTimeout(() => toast("New: change your holder's look (gear)"), late);   // after the recovery notice, never over it
     else if (!S.player.name && S.world.map === 'hearthmoor') setTimeout(() => toast('Warden Ilse would like a word at the Lodge.'), late);
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
@@ -11878,6 +12224,15 @@ function boot(){
     return true;
   };
   Object.defineProperty(api, 'net', { get(){ return (DEBUG && window.PPNet && PPNet.debug) ? PPNet.debug() : null; } });
+  api.clock = Object.freeze({
+    now: () => publicClock(),
+    weatherAt: m => (window.PPClock ? PPClock.weatherAt(m) : null),
+    set: (d, h, m) => (DEBUG && window.PPClock ? (PPClock.set(d, h, m), publicClock()) : undefined),
+    freeze: on => (DEBUG && window.PPClock ? (PPClock.freeze(on), publicClock()) : undefined),
+    clear: () => (DEBUG && window.PPClock ? (PPClock.clear(), publicClock()) : undefined),
+    place: name => clockPublicPlace(name),
+    intent: name => clockPublicIntent(name),
+  });
   window.PixelPets = Object.freeze(api);
   window.holdItem = holdItem;
   window.unholdItem = unholdItem;

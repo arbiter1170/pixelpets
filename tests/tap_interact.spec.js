@@ -16,7 +16,8 @@ test('every interactable tap resolves to its action', async ({ page }) => {
   const audit = await page.evaluate(() => PixelPets.auditTaps());
   expect(audit.predicateGaps).toEqual([]);
   expect(audit.counts).toEqual({
-    door: 35, warp: 73, sign: 73, talk: 513, scene: 36, trigger: 31, board: 6,
+    // sign is 74: the authored signs plus the runtime "Back at 3. - L." note on 5B.
+    door: 35, warp: 73, sign: 74, talk: 513, scene: 36, trigger: 31, board: 6,
     trainer: 23, pickup: 17, wild: 3, shop: 4, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.

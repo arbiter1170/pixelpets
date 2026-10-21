@@ -129,6 +129,7 @@ test('Hearthmoor grows to 24 by 24, moves five props, and adds two buildings', a
 test('the three rooms have their own skins, stay under the floor cap, and connect', async ({ page }) => {
   await boot(page, save({ 'story.lizzy_met': true, 'story.side_pick_done': true }));
   const r = await page.evaluate(() => {
+    PixelPets.clock.set('sun', 21, 0);
     const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
     const rooms = [
       { id: 'hm_school_in', props: 13, npcs: ['Pip', 'Wren', 'Lizzy'] },
@@ -510,6 +511,7 @@ test('flat 5B keeps Buddy home after you meet Lizzy, and a pat lands once a day'
 
   await boot(page, save({ 'story.lizzy_met': true }));
   const shown = await page.evaluate(() => {
+    PixelPets.clock.set('sun', 21, 0);
     PixelPets.goto('hm_flats_5', 15, 4, 'right');
     const ids = PixelPets.mapInfo.objs.map(o => o.id);
     const props = PixelPets.mapInfo.objs.filter(o => o.kind === 'prop').map(o => o.id);

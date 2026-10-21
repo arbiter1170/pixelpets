@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261021-0011"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta http-equiv="Cache-Control" content="no-cache">
+<meta name="kw-build" content="20261021-0101"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -11,15 +10,15 @@
 <meta name="application-name" content="Walklings">
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
-<link rel="icon" href="icons/icon-192.png?v=20261021-0011">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261021-0011">
-<link rel="manifest" href="manifest.json?v=20261021-0011">
-<link rel="stylesheet" href="style.css?v=20261021-0011"></head>
-<body>
+<link rel="icon" href="icons/icon-192.png?v=20261021-0101">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261021-0101">
+<link rel="manifest" href="manifest.json?v=20261021-0101">
+<link rel="stylesheet" href="style.css?v=20261021-0101"></head><body>
 <div id="app">
   <header id="top">
     <div class="who"><button id="repBtn" class="icon-btn" type="button" aria-label="People"><canvas id="repIcon" width="12" height="12" aria-hidden="true"></canvas></button><canvas id="hdrIcon" width="18" height="18"></canvas><span id="hdrName">Walklings</span><span id="fastTag" class="fast-tag" title="Debug fast decay is on" hidden>FAST</span><button id="dbgTag" class="fast-tag dbg-tag" type="button" title="Debug tools" aria-label="Debug tools" hidden>DBG</button></div>
     <div class="hdr-right">
+      <button id="clockChip" class="clock-chip" type="button" aria-label="The hour"><canvas id="clockGlyph" width="8" height="8" aria-hidden="true"></canvas><span id="clockLabel">MON 0:00</span></button>
       <div id="hdrAcorns" class="hdr-acorns" role="status" aria-label="0 Acorns"><canvas id="hdrAcornIcon" width="8" height="8" aria-hidden="true"></canvas><b id="hdrAcornN" aria-hidden="true">0</b></div>
       <div class="lv"><span id="hdrLv">Lv 1</span><span id="hdrStage" class="stagedots"></span></div>
       <button id="settingsBtn" class="icon-btn" type="button" aria-label="Settings"><canvas id="settingsIcon" width="8" height="8"></canvas></button>
@@ -71,6 +70,7 @@
         <div id="floatCtl" class="float-ctl">
           <div id="fcTL" class="fc-col fc-tl"></div>
           <div id="fcTop" class="fc-top"></div>
+          <div id="fcClock" class="fc-clock"></div>
           <div id="fcAcorns" class="fc-acorns hdr-acorns" aria-label="0 Acorns"><b id="fcAcornN" aria-hidden="true">0</b></div>
           <div id="fcTR" class="fc-col fc-tr"><button id="gearFloat" class="dpc fbtn icon-only" type="button" aria-label="Settings" title="Settings"><canvas id="gearFloatIcon" class="ico-hud" data-nav="gear" width="8" height="8" aria-hidden="true"></canvas></button></div>
           <div id="joyRing" class="joy" aria-hidden="true" hidden><i id="joyKnob" class="joy-knob"></i></div>
@@ -613,6 +613,15 @@
   </div>
 </div>
 
+<!-- World clock (D376). Tap the header chip. -->
+<div id="ovClock" class="overlay" hidden>
+  <div class="ov-inner">
+    <div class="ov-title">THE HOUR</div>
+    <p id="clockCard" class="geo-text"></p>
+    <button id="clockClose" class="btn">CLOSE</button>
+  </div>
+</div>
+
 <!-- Wild area details + place picker -->
 <div id="ovEnv" class="overlay" hidden>
   <div class="ov-inner">
@@ -672,24 +681,24 @@
 <div id="toast" aria-live="polite"></div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261021-0011";</script>
-<script src="sprites.js?v=20261021-0011"></script>
-<script src="keeper.js?v=20261021-0011"></script>
-<script src="stats.js?v=20261021-0011"></script>
-<script src="moves.js?v=20261021-0011"></script>
-<script src="data/mapdata.js?v=20261021-0011"></script>
-<script src="quests.js?v=20261021-0011"></script>
-<script src="standing.js?v=20261021-0011"></script>
-<script src="rep.js?v=20261021-0011"></script>
-<script src="save.js?v=20261021-0011"></script>
-<script src="env.js?v=20261021-0011"></script>
-<script src="sfx.js?v=20261021-0011"></script>
-<script src="minigames.js?v=20261021-0011"></script>
-<script src="ribbit.js?v=20261021-0011"></script>
-<script src="cloud_config.js?v=20261021-0011"></script>
-<script src="cloud.js?v=20261021-0011"></script>
-<script src="net.js?v=20261021-0011"></script>
-<script src="debug_ui.js?v=20261021-0011"></script>
-<script src="data/nav_art.js?v=20261021-0011"></script>
-<script src="game.js?v=20261021-0011"></script></body>
-</html>
+<script>window.BUILD = "20261021-0101";</script>
+<script src="sprites.js?v=20261021-0101"></script>
+<script src="keeper.js?v=20261021-0101"></script>
+<script src="stats.js?v=20261021-0101"></script>
+<script src="moves.js?v=20261021-0101"></script>
+<script src="data/mapdata.js?v=20261021-0101"></script>
+<script src="quests.js?v=20261021-0101"></script>
+<script src="standing.js?v=20261021-0101"></script>
+<script src="rep.js?v=20261021-0101"></script>
+<script src="save.js?v=20261021-0101"></script>
+<script src="clock.js?v=20261021-0101"></script>
+<script src="env.js?v=20261021-0101"></script>
+<script src="sfx.js?v=20261021-0101"></script>
+<script src="minigames.js?v=20261021-0101"></script>
+<script src="ribbit.js?v=20261021-0101"></script>
+<script src="cloud_config.js?v=20261021-0101"></script>
+<script src="cloud.js?v=20261021-0101"></script>
+<script src="net.js?v=20261021-0101"></script>
+<script src="debug_ui.js?v=20261021-0101"></script>
+<script src="data/nav_art.js?v=20261021-0101"></script>
+<script src="game.js?v=20261021-0101"></script></body></html>

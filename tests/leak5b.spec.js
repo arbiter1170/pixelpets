@@ -19,6 +19,10 @@ async function boot(page, s) {
   await page.evaluate(() => PixelPets.showTab('walk'));
 }
 
+async function at(page, day, hh, mm) {
+  await page.evaluate(({ day, hh, mm }) => PixelPets.clock.set(day, hh, mm), { day, hh, mm });
+}
+
 async function talk(page, map, x, y, facing, choices) {
   await page.evaluate(({ map, x, y, facing }) => PixelPets.goto(map, x, y, facing), { map, x, y, facing });
   await page.keyboard.press('Space');
@@ -75,11 +79,13 @@ test('the court path files the claim, serves it, and grants once', async ({ page
   expect(r.seen).toBe(true);
   expect(r.step).toBe('leak_ask');
 
+  await at(page, 'sun', 21, 0);
   await talk(page, 'hm_flats_5', 14, 3, 'left', ["I'll talk to him"]);
   r = await read(page);
   expect(r.yes).toBe(true);
   expect(r.step).toBe('leak_gristle');
 
+  await at(page, 'tue', 10, 0);
   await talk(page, 'hm_flats_lobby', 8, 9, 'left', ['Take it to the Keepers']);
   r = await read(page);
   expect(r.flag).toBe('court');
@@ -118,6 +124,7 @@ test('the force path drops Mr. Gristle to 30 and does not grant twice', async ({
   const s = save({ 'story.lizzy_met': true, 'story.leak5b_seen': true, 'story.leak5b_yes': true });
   s.standing = { keepers: 10, glimmer: 0 };
   await boot(page, s);
+  await at(page, 'tue', 10, 0);
   await talk(page, 'hm_flats_lobby', 8, 9, 'left', ['Make him fix it']);
   let r = await read(page);
   expect(r.flag).toBe('force');
@@ -139,6 +146,7 @@ test('the force path drops Mr. Gristle to 30 and does not grant twice', async ({
 
 test('Not now sets nothing', async ({ page }) => {
   await boot(page, save({ 'story.lizzy_met': true, 'story.leak5b_seen': true, 'story.leak5b_yes': true }));
+  await at(page, 'tue', 10, 0);
   await talk(page, 'hm_flats_lobby', 8, 9, 'left', ['Not now']);
   const r = await read(page);
   expect(r.flag).toBe(null);

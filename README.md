@@ -312,7 +312,8 @@ Which species appear depends on where you are and the weather there:
 - Tags: mountain (elevation >= 800 m or >= 150 m relief within ~1 km), water / city / forest / park
   (OpenStreetMap features within 350 m; city = several urban landuse areas or 40+ buildings),
   meadow (none of those), rain / snow / storm / fog (current weather code), hot (>= 28 °C),
-  cold (<= 3 °C), windy (>= 30 km/h), night (sun down there; device clock 20:00-06:00 as fallback).
+  cold (<= 3 °C), windy (>= 30 km/h), night (the in-game clock, 20:00-05:00).
+- The header clock chip shows the in-game day and time, for example TUE 8:30, with a sun, a half-sun, or a moon. One in-game day is 42 real minutes. Tap the chip for the weekday, the time, and who is about. Dawn and dusk lay a still colour wash on outdoor maps. Night keeps the same dark overlay. Lamps and lit windows are on from 19:00 to 06:00. Daily care, the Warm Bowl, and the daily hello stay on the real calendar. The clock is not stored in the save.
 - The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
 
@@ -350,7 +351,7 @@ Data sources (all free, no API key, CORS-enabled):
   in big cities) or busy; then Nominatim reverse geocoding (OpenStreetMap) decides city vs not.
 Results are cached in `pixelpets.env` (separate from the save) per rounded location: weather for
 30 minutes, terrain for 7 days (30 minutes if only partly loaded). Denied, unsupported, offline or
-failed lookups fall back to a plain meadow (plus night from the device clock); play is never
+failed lookups fall back to a plain meadow (plus night from the in-game clock); play is never
 blocked and the badge shows NO GPS / OFFLINE / DEFAULT.
 
 Pick a place (debug mode only): the badge card has preset buttons (Meadow, City, City rain, Mountain, Lake,
