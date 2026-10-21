@@ -1,6 +1,6 @@
 # Open decisions
 
-Things that were built on a best guess, deviate from a plan, or need a person (Vincent or the designer) to confirm. Each row says what the code does today, so a decision can be made without reading the diff. When one is settled, move it to "Settled" with the date and the call, and update the code or plan if it changed.
+Things that were built on a best guess, deviate from a plan, or need a person (Vincent or the designer) to confirm. Each row says what the code does today, so a decision can be made without reading the diff. When one is settled, move it to archive/DECISIONS_SETTLED.md with the date and the call, and update the code or plan if it changed.
 
 Settled calls are in archive/DECISIONS_SETTLED.md.
 

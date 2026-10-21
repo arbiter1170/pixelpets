@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 /* Run the fail-closed scans. Exit 0 only when every requested scan passes.
-   Usage: node tools/scans/run.js [--root DIR] [--only wording|decisions|symlinks] */
+   Usage: node tools/scans/run.js [--root DIR] [--only wording|decisions|symlinks|gamejs_map] */
 const { scanWording } = require('./wording');
 const { scanDecisions } = require('./decisions');
 const { scanSymlinks } = require('./symlinks');
+const { scanGamejsMap } = require('./gamejs_map');
 
 const ALL = [
   ['wording', scanWording],
   ['decisions', scanDecisions],
   ['symlinks', scanSymlinks],
+  ['gamejs_map', scanGamejsMap],
 ];
 
 function parseArgs(argv) {

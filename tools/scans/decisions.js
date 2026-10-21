@@ -1,10 +1,11 @@
 /* Decision-id scan. Node built-ins.
-   A defining row is a table head: | Dnnn | or | Qnnn | in the # column.
-   Decision bullets and "- Restatement of ..." bullets are not defining
-   rows, so a restatement cannot duplicate the canonical row.
-   Duplicate table ids across OPEN_DECISIONS.md and
-   archive/DECISIONS_SETTLED.md fail, except D37.
-   OPEN_DECISIONS.md header: "D37 is used twice. Do not renumber either row."
+   A defining row is a table head (| Dnnn | or | Qnnn | in the # column)
+   in OPEN_DECISIONS.md or archive/DECISIONS_SETTLED.md.
+   An archive bullet at the start of a line, "- **Dnnn" or "- **Qnnn",
+   is also a definition, so a duplicate written as an archive bullet fails.
+   Not definitions: a "Restatement of Dn" bullet, a range head such as
+   "- **D220–D230", and a "Closed by Dn" reference later in the line.
+   D37 may repeat. OPEN_DECISIONS.md header: "D37 is used twice. Do not renumber either row."
    The header's single next-free sentence must be one past the highest
    D id used or reserved in either file. A missing OPEN_DECISIONS.md is
    a failure, not a skip. A missing archive means no settled rows. */
@@ -70,6 +71,29 @@ function definingRows(text) {
   return rows;
 }
 
+function isRestatement(line) {
+  return /^-\s+(?:\*\*)?Restatement of\s+[DQ]\d+\b/i.test(line);
+}
+
+function isRangeHead(line) {
+  return /^-\s+\*\*[DQ]\d+\s*[-\u2013\u2014]\s*[DQ]\d+\b/.test(line);
+}
+
+// Archive bullets only. A range head is not a definition of either id.
+// "Closed by Dn" sits after the head id, so it is not a second definition.
+function archiveBulletDefs(text) {
+  const rows = [];
+  const lines = text.split('\n');
+  const head = /^-\s+\*\*([DQ]\d+)\b/;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isRestatement(line) || isRangeHead(line)) continue;
+    const m = head.exec(line);
+    if (m) rows.push({ id: m[1], line: i + 1 });
+  }
+  return rows;
+}
+
 function readFile(root, rel) {
   try { return fs.readFileSync(path.join(root, rel), 'utf8'); }
   catch (e) { return null; }
@@ -100,7 +124,9 @@ function scanDecisions(root) {
   const sources = [{ file, text }];
   if (arch != null) sources.push({ file: archRel, text: arch });
   for (const src of sources) {
-    for (const row of definingRows(src.text)) {
+    const defs = definingRows(src.text);
+    if (src.file === archRel) defs.push.apply(defs, archiveBulletDefs(src.text));
+    for (const row of defs) {
       const n = (seen.get(row.id) || 0) + 1;
       seen.set(row.id, n);
       if (n > 1 && !DUP_ALLOW.has(row.id)) {
@@ -135,4 +161,4 @@ function scanDecisions(root) {
   return { ok: fails.length === 0, fails };
 }
 
-module.exports = { scanDecisions, DUP_ALLOW, definingRows };
+module.exports = { scanDecisions, DUP_ALLOW, definingRows, archiveBulletDefs };

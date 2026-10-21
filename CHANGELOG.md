@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 17:26 ET: game.js line map, and the decision scan counts archive bullets
+
+- What changed and why: `tools/GAMEJS_MAP.txt` lists each column-0 declaration in the root scripts so an agent can `rg` a name and read only that range. After editing a root .js file, run `python3 tools/gen_gamejs_map.py`. A stale map fails the scan with that command. A generator crash fails with the exit code and the generator's own output. Archive bullets that start with `- **Dn` or `- **Qn` count as decision definitions. A restatement bullet, a range head, and a "Closed by Dn" reference do not. Save stays `pixelpets.save.v2` with `v` 2. No player text and no game behaviour change.
+- Files touched: `tools/gen_gamejs_map.py`, `tools/GAMEJS_MAP.txt`, `tools/scans/gamejs_map.js`, `tools/scans/run.js`, `tools/scans/decisions.js`, `tools/scans/selftest.js`, `AGENTS.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: no build stamp. `version.json` stays 20261021-1356. Tools and docs only.
+- Tests run and result (widths, checks): `node tools/scans/run.js` PASS. `node tools/scans/selftest.js` PASS, including a stale map, a crashing generator, and an up-to-date map. `python3 tools/gen_gamejs_map.py --check` exit 0. `node tools/pp_test.js tests/smoke.spec.js`: PP_TEST RESULT: PASS exit=0 passed=13 failed=0 flaky=0 skipped=0 time=21s. RTDB_RULES RESULT: PASS. No layout change, so no 320/375/390 screenshots.
+- Decisions made (colour + reasoning): Supervisor cleared Infra B on Oct 21, 2026. No new D id. No id was renumbered. Next free id stays D399. D37 may still repeat.
+- Anything left unfinished: the Supervisor merges. The live site is not deployed.
+
 ## 2026-10-21 13:56 ET: Test suite runs layout-free checks at 320 only (build 20261021-1356)
 
 - What changed and why: Width-free tests are tagged `@w1` and run on the 320 project only. 375 and 390 use `grepInvert: /@w1/`, so a new untagged test still runs at all three widths. Suite `retries` is 1. A pass on the retry stays flaky, exit 0, with the count and names in the summary. The walk-to-every-person and prop lines from the RegenX floors, the tunnel rooms, the house interiors, High Charity, the observatory and dream rooms, Fernbrook, and both Keeper House floors now run as one shared sweep at 320, with a literal person, sign, prop and warp count per map. Three skill copies match the box text. Save stays `pixelpets.save.v2` with `v` 2. No player text and no game behaviour change.
