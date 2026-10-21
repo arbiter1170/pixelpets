@@ -17,7 +17,7 @@ async function boot(page, world) {
   await installSave(page.context(), s, { quietDay: true });
   await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
-  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.evaluate(() => { PixelPets.clock.set('tue', 10, 0); PixelPets.showTab('walk'); });
 }
 
 // Reachable cells from the arrival tile, with `extra` cells treated as blocked and Bren's own tile treated as open.

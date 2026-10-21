@@ -1503,7 +1503,7 @@ const LEARNSETS = {
   "owl/1": [[0, "lullaby_hum"], [22, "gloam_swipe"]],
   "owl/2": [[0, "moon_cloak"], [27, "full_tilt"]],
   "snail/0": [[1, "bump"], [3, "brace_rock"], [5, "pebble_flick"], [9, "tumble_charge"], [12, "boulder_drop"], [15, "sap_sip"], [20, "quarry_crash"], [25, "mist_veil"], [30, "thorn_lash"]],
-  "snail/1": [[0, "shell_roll"], [22, "scree_slide"]],
+  "snail/1": [[0, "boulder_drop"], [22, "scree_slide"]],
   "snail/2": [[0, "summit_slam"], [27, "full_tilt"]]
 };
 

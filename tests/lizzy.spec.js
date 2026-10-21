@@ -44,7 +44,7 @@ async function tap(page, key, x, y) {
   }, { x, y });
 }
 
-test('Hearthmoor grows to 24 by 24, moves five props, and adds two buildings', async ({ page }) => {
+test('Hearthmoor keeps the Lizzy rows at 24 wide, and the live map is 24 by 34', async ({ page }) => {
   await boot(page, save());
   const r = await page.evaluate(({ before, after }) => {
     const m = MAPDATA.maps_slice.maps.hearthmoor;
@@ -81,7 +81,7 @@ test('Hearthmoor grows to 24 by 24, moves five props, and adds two buildings', a
       w: info.w, h: info.h, v: live.state.v, grid,
       changed, rows: Object.keys(rows).sort(),
       rowMatch: [15, 16, 17].every(y => grid[y] === after[y]),
-      otherSame: grid.every((row, y) => y === 15 || y === 16 || y === 17 || row.length === m.grid[y].length),
+      otherSame: grid.every((row, y) => y >= m.grid.length ? row.length === m.w : (y === 15 || y === 16 || y === 17 || row.length === m.grid[y].length)),
       moved,
       b4kept: b4.every(k => roofs[k]),
       school, flats,
@@ -92,15 +92,15 @@ test('Hearthmoor grows to 24 by 24, moves five props, and adds two buildings', a
   }, { before: BEFORE, after: AFTER });
   expect(r.v).toBe(2);
   expect(r.w).toBe(24);
-  expect(r.h).toBe(24);
+  expect(r.h).toBe(34);
   expect(r.grid[18]).toBe('TgTggggggggggggggggTTTTT');
-  expect(r.grid.slice(19)).toEqual([
+  expect(r.grid.slice(19, 23)).toEqual([
     'TggpppppppppppppppggTTTT',
     'TgfggggggggggggggfggTTTT',
     'TggggfggggggggggfgggTTTT',
     'TTggggggggggggggggTTTTTT',
-    'TTTTTTTTTTTTTTTTTTTTTTTT',
   ]);
+  expect(r.grid[23]).toBe('TTTTTTTTTppTTTTTTTTTTTTT');
   expect(r.changed).toBe(24);
   expect(r.rows).toEqual(['15', '16', '17']);
   expect(r.rowMatch).toBe(true);
@@ -279,7 +279,7 @@ test('lizzy_intro plays once, covers Rook, and gives two snacks', async ({ page 
     };
   });
   expect(before.present).toEqual(['hm_buddy', 'hm_lizzy']);
-  expect(before.h).toBe(24);
+  expect(before.h).toBe(34);
   expect(before.lizzyAt).toEqual({ x: 9, y: 20, facing: 'up' });
   expect(before.buddyAt).toEqual({ x: 10, y: 20, facing: 'up' });
   expect(before.v).toBe(2);

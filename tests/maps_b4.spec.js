@@ -8,7 +8,7 @@ const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./hel
 
 trackErrors(test, expect);
 
-const TOWNS = { hearthmoor: 7, fernbrook: 2, cobblecrest: 4, highcharity: 15, mahopac: 1, fb_heights: 2 };
+const TOWNS = { hearthmoor: 10, fernbrook: 2, cobblecrest: 4, highcharity: 15, mahopac: 1, fb_heights: 2 };
 const OUTDOOR = Object.keys(TOWNS).concat(['route1', 'route2', 'route2_glen', 'proto', 'cobble_quarry']);
 
 async function boot(page, world) {
@@ -267,13 +267,14 @@ test('phase 2: puddles and leaf litter are flat decals: drawn, walkable, never t
       }
       for (const d of v.decals) {
         const t = PixelPets.tileInfo(d.x, d.y);
-        const flat = d.sprite === 'puddle' || d.sprite === 'leaf_litter' || d.sprite === 'hopscotch';
+        const flat = d.sprite === 'puddle' || d.sprite === 'leaf_litter' || d.sprite === 'hopscotch' || d.sprite === 'mr_chalk';
         const step = d.sprite === 'door_step' || d.sprite === 'door_step_warm';
         if (!flat && !step) bad.push(d.id + ' sprite ' + d.sprite);
         if (!d.art || d.art[0] !== 16 || d.art[1] !== 16) bad.push(d.id + ' art');
         if (t.blocked || t.solid || t.decal !== d.sprite) bad.push(d.id + ' ' + JSON.stringify(t));
         if (!flat) continue;   // a door step sits on the door front, on purpose
-        if (ground.indexOf(t.ch) < 0) bad.push(d.id + ' on ' + t.ch);
+        const pad = d.sprite === 'mr_chalk' ? 'c' : ground;   // court chalk sits on the gravel, not the grass
+        if (pad.indexOf(t.ch) < 0) bad.push(d.id + ' on ' + t.ch);
         if (keep.has(key(d.x, d.y))) bad.push(d.id + ' on an exit, door front, object or the safe tile');
       }
       return { id: info.id, n: v.decals.length, kinds: [...new Set(v.decals.map(d => d.sprite))].sort(), bad };
@@ -307,7 +308,9 @@ test('phase 2: props reach 6 per 320 screen (10 x 17 tiles) where a free cell is
       const info = PixelPets.mapInfo, v = PixelPets.exteriors(id);
       const things = v.props.concat(info.objs.filter(o => o.kind === 'sign' || o.kind === 'pickup'));
       const vw = Math.min(10, info.w), vh = Math.min(17, info.h), counts = [];
-      for (let y = 0; y + vh <= info.h; y++) for (let x = 0; x + vw <= info.w; x++)
+      // Market Row (rows 23-33) is a later phase. A 10x17 window that reaches it is not a B4 fill screen.
+      const yLimit = id === 'hearthmoor' ? Math.min(info.h, 24) : info.h;
+      for (let y = 0; y + vh <= yLimit; y++) for (let x = 0; x + vw <= info.w; x++)
         counts.push(things.filter(o => o.x >= x && o.x < x + vw && o.y >= y && o.y < y + vh).length);
       const moved = {};
       for (const k of Object.keys(MAPDATA).filter(k => k.startsWith('detail_') && k > 'detail_b4').sort()) {

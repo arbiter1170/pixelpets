@@ -91,7 +91,7 @@ test('Keeper House talk depends on the pledge', async ({ page }) => {
 
 test('the road officer actually walks', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.evaluate(() => { PixelPets.clock.set('tue', 10, 0); PixelPets.showTab('walk'); });
   const seen = new Set();
   for (let i = 0; i < 8; i++) {
     const pos = await page.evaluate(() => PixelPets.objPos('hm_patrol'));
@@ -365,6 +365,7 @@ test('the east gate is open and a keeper stands beside it', async ({ page }) => 
   delete save.flags['story.reached_route1'];
   await boot(page, save);
   await page.evaluate(() => {
+    PixelPets.clock.set('tue', 10, 0);   // lunch (12:00-13:00) takes him off the road
     PixelPets.showTab('walk');
     PixelPets.goto('hearthmoor', 16, 8, 'right');
   });

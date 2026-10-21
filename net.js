@@ -93,7 +93,7 @@ const PPNet = (() => {
     { id: 'p_snack', text: 'Snack break!' }, { id: 'p_glow', text: 'Look at that glow!' }, { id: 'p_seal', text: 'I got a Seal!' }, { id: 'p_wild', text: 'Wilds are busy today.' },
     { id: 'p_lantern', text: 'Meet at the lanterns!' }, { id: 'p_route', text: 'Off to Route 1!' }, { id: 'p_cozy', text: 'So cozy here.' }, { id: 'p_walk', text: 'What a walk!' },
   ];
-  const AREAS = { hearthmoor: { w: 24, h: 24 }, route1: { w: 48, h: 20 } };
+  const AREAS = { hearthmoor: { w: 24, h: 34 }, route1: { w: 48, h: 20 } };
   const FACE = { up: 'u', down: 'd', left: 'l', right: 'r' };
   const FACE_BACK = { u: 'up', d: 'down', l: 'left', r: 'right' };
   const BEHIND = { u: [0, 1], d: [0, -1], l: [1, 0], r: [-1, 0] };

@@ -162,7 +162,7 @@ test('schedules, away notes, the school door, and the quest pointer', async ({ p
     place: PixelPets.clock.place('Lizzy'),
   }));
   expect(diner.intent.map).toBe('hm_diner');
-  expect(diner.place).toMatchObject({ map: 'hm_flats_5', x: 13, y: 3, id: 'f5_lizzy' });
+  expect(diner.place).toMatchObject({ map: 'hm_diner', x: 6, y: 3, id: 'diner_lizzy' });
 
   await at(page, 'sat', 10, 0);
   const court = await page.evaluate(() => ({
@@ -171,7 +171,7 @@ test('schedules, away notes, the school door, and the quest pointer', async ({ p
     pip: PixelPets.clock.place('Pip'),
   }));
   expect(court.intent).toMatchObject({ map: 'hearthmoor', x: 14, y: 31 });
-  expect(court.place).toMatchObject({ map: 'hm_flats_5', id: 'f5_lizzy' });
+  expect(court.place).toMatchObject({ map: 'hearthmoor', x: 14, y: 31, id: 'court_lizzy' });
   expect(court.pip).toBe(null);
 
   await at(page, 'mon', 5, 30);
@@ -182,7 +182,7 @@ test('schedules, away notes, the school door, and the quest pointer', async ({ p
   }));
   expect(dawn.phase).toBe('dawn');
   expect(dawn.intent.map).toBe('hm_diner');
-  expect(dawn.place).toMatchObject({ map: 'hm_flats_5', x: 5, y: 4, id: 'f5_ossabell' });
+  expect(dawn.place).toMatchObject({ map: 'hm_diner', x: 3, y: 3, id: 'diner_ossabell' });
 
   await at(page, 'sun', 21, 0);
   const night = await page.evaluate(() => {

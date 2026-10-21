@@ -36,7 +36,7 @@ const HOLDERS = {
     name: 'Ottilie', title: 'Owl Watcher', map: 'hw_falls',
     team: [
       { form: 'owl/0', level: 22, moves: ['puff_shot', 'dusk_fang', 'updraft', 'nightfall'] },
-      { form: 'snail/1', level: 22, moves: ['sap_sip', 'quarry_crash', 'scree_slide', 'shell_roll'] },
+      { form: 'snail/1', level: 22, moves: ['sap_sip', 'quarry_crash', 'scree_slide', 'boulder_drop'] },
       { form: 'otter/1', level: 23, moves: ['cold_snap', 'rime_rush', 'puddle_stomp', 'flurry_fluff'] },
     ],
     intro: 'Shh. The owls are listening. Let us give them something worth hearing.',
