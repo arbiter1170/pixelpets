@@ -1,4 +1,4 @@
-/* HUSHWATER B1: maps, gates, E1-E4 skips, reload in hw_cut, and the duplicate-id guard. */
+/* HUSHWATER B1 maps plus B2: the 12 forms, full spawn tables, the three holders, and the west arrive step. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
@@ -6,10 +6,43 @@ const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('
 
 trackErrors(test, expect);
 
-const KNOWN = {
-  hw_rim: ['stone', 'mole', 'gust', 'vane'],
-  hw_cut: ['crab', 'dormouse', 'moth', 'frost'],
-  hw_falls: ['dormouse', 'beetle', 'shade', 'frost'],
+const TABLES = {
+  hw_rim: [['snail', 22, 19, 21], ['skink', 14, 19, 22], ['stone', 12, 19, 22], ['mole', 8, 19, 21], ['gust', 6, 20, 22], ['vane', 3, 20, 22], ['owl', 2, 21, 23]],
+  hw_cut: [['otter', 20, 19, 22], ['snail', 14, 19, 21], ['crab', 12, 19, 22], ['dormouse', 8, 19, 22], ['moth', 8, 19, 21], ['skink', 6, 20, 22], ['frost', 4, 20, 22], ['owl', 3, 21, 23]],
+  hw_falls: [['otter', 18, 20, 22], ['dormouse', 10, 20, 22], ['beetle', 10, 19, 21], ['snail', 8, 20, 22], ['shade', 6, 20, 23], ['frost', 5, 20, 22], ['owl', 4, 21, 23]],
+};
+const HOLDERS = {
+  hw_climber: {
+    name: 'Fenna', title: 'Ledge Climber', map: 'hw_rim',
+    team: [
+      { form: 'skink/0', level: 21, moves: ['tumble_charge', 'kiln_rush', 'pebble_flick', 'kindle_burst'] },
+      { form: 'skink/1', level: 22, moves: ['pebble_flick', 'kindle_burst', 'boulder_drop', 'cinder_pounce'] },
+    ],
+    intro: 'Warm rocks, good grip, better company. Battle on the ledge?',
+    win: 'You found your footing, {player}. Nice and steady.',
+    lose: 'Slipped, huh? Rest a bit and climb back up.',
+  },
+  hw_angler: {
+    name: 'Nils', title: 'Rill Angler', map: 'hw_cut',
+    team: [
+      { form: 'otter/0', level: 21, moves: ['ripple_jab', 'sleet_pelt', 'cold_snap', 'rime_rush'] },
+      { form: 'otter/1', level: 22, moves: ['cold_snap', 'rime_rush', 'puddle_stomp', 'flurry_fluff'] },
+    ],
+    intro: 'Nothing bites in quiet water. Except my team. Ready?',
+    win: 'Reeled right in, {player}. Fair catch.',
+    lose: 'The stream wins again. Dry off and come back.',
+  },
+  hw_owlwatch: {
+    name: 'Ottilie', title: 'Owl Watcher', map: 'hw_falls',
+    team: [
+      { form: 'owl/0', level: 22, moves: ['puff_shot', 'dusk_fang', 'updraft', 'nightfall'] },
+      { form: 'snail/1', level: 22, moves: ['sap_sip', 'quarry_crash', 'scree_slide', 'shell_roll'] },
+      { form: 'otter/1', level: 23, moves: ['cold_snap', 'rime_rush', 'puddle_stomp', 'flurry_fluff'] },
+    ],
+    intro: 'Shh. The owls are listening. Let us give them something worth hearing.',
+    win: 'Even the Roost Oak went quiet for that one, {player}.',
+    lose: 'The owls saw that coming. Rest, then try again softly.',
+  },
 };
 const NEW_IDS = ['skink', 'otter', 'owl', 'snail'];
 const STARTERS = ['ember', 'tide', 'bloom'];
@@ -152,6 +185,8 @@ test('gates stay shut until Cobblecrest ends, then the stream walks both ways', 
   await page.evaluate(() => {
     PixelPets.setFlag('story.cobble_end', true);
     PixelPets.setFlag('story.hw_reached', true);
+    // Fenna, Nils and Ottilie stand on these paths. A beaten holder does not spot, so the route check stays a walk.
+    for (const id of ['hw_climber', 'hw_angler', 'hw_owlwatch']) PixelPets.setFlag('trainer.' + id, true);
   });
   await jump(page, 'cobble_quarry', 1, 17, 'left');
   ids = await page.evaluate(() => PixelPets.mapObjs.map((o) => o.id));
@@ -180,7 +215,7 @@ test('gates stay shut until Cobblecrest ends, then the stream walks both ways', 
   expect(here).toMatchObject({ map: 'cobble_quarry', x: 1, y: 17 });
 });
 
-test('the first step in plays once, the rope stays, and holders stay hidden', async ({ page }) => {
+test('the first step in plays once, the rope stays, and the three holders appear', async ({ page }) => {
   test.setTimeout(90000);
   await boot(page, fieldSave({ 'story.cobble_end': true }));
   await jump(page, 'hw_rim', 22, 12, 'left');
@@ -198,9 +233,10 @@ test('the first step in plays once, the rope stays, and holders stay hidden', as
   let here = await walkTo(page, 23, 4);
   expect(here).toMatchObject({ map: 'hw_falls', x: 1, y: 10 });
   expect(await page.evaluate(() => PixelPets.scene)).toBeNull();
-  await page.evaluate(() => PixelPets.walkStep('right'));
-  const back = await page.evaluate(() => PixelPets.walkStep('left'));
-  expect(back.scene).toBe(true);
+  const first = await page.evaluate(() => PixelPets.walkStep('right'));
+  expect(first.scene).toBe(true);
+  expect(first).toMatchObject({ map: 'hw_falls', x: 2, y: 10 });
+  expect(first.text).toBe('The stream runs quiet here. Even the wild Walklings walk softly.');
   await playScene(page);
   expect(await page.evaluate(() => PixelPets.state.flags['story.hw_reached'])).toBe(true);
 
@@ -213,17 +249,32 @@ test('the first step in plays once, the rope stays, and holders stay hidden', as
   rope = await page.evaluate(() => PixelPets.mapObjs.map((o) => o.id));
   expect(rope).not.toContain('hw_stair_rope');
 
-  const hidden = await page.evaluate(() => {
-    const trainers = PixelPets.debugCatalog().trainers.filter((id) => id.startsWith('hw_'));
+  const shown = await page.evaluate((want) => {
+    const trainers = PixelPets.debugCatalog().trainers.filter((id) => id.startsWith('hw_')).sort();
     const scenes = PixelPets.debugCatalog().scenes.filter((id) => id.includes('lizzy') && id.startsWith('hw_'));
-    return { trainers, scenes };
-  });
-  expect(hidden.trainers).toEqual([]);
-  expect(hidden.scenes).toEqual([]);
-  for (const map of ['hw_rim', 'hw_cut', 'hw_falls']) {
+    const rows = {};
+    for (const id of Object.keys(want)) {
+      const t = TRAINERS[id];
+      rows[id] = t && {
+        name: t.name, title: t.title,
+        team: t.team.map((m) => ({ form: m.form, level: m.level, moves: m.moves.slice() })),
+        intro: t.lines.intro, win: t.lines.win, lose: t.lines.lose,
+      };
+    }
+    return { trainers, scenes, rows };
+  }, HOLDERS);
+  expect(shown.trainers).toEqual(['hw_angler', 'hw_climber', 'hw_owlwatch']);
+  expect(shown.scenes).toEqual([]);
+  for (const [id, want] of Object.entries(HOLDERS)) {
+    expect(shown.rows[id], id).toEqual({
+      name: want.name, title: want.title, team: want.team, intro: want.intro, win: want.win, lose: want.lose,
+    });
+  }
+  for (const [id, want] of Object.entries(HOLDERS)) {
+    const map = want.map;
     await jump(page, map, map === 'hw_cut' ? 37 : map === 'hw_rim' ? 21 : 2, map === 'hw_falls' ? 10 : 12, 'down');
     const objs = await page.evaluate(() => PixelPets.mapObjs);
-    expect(objs.filter((o) => o.kind === 'trainer').map((o) => o.id), map).toEqual([]);
+    expect(objs.filter((o) => o.kind === 'trainer').map((o) => o.id), map).toEqual([id]);
     expect(objs.some((o) => /lizzy/i.test(o.id)), map).toBe(false);
   }
 
@@ -308,24 +359,21 @@ test('the first step in plays once, the rope stays, and holders stay hidden', as
   }
 });
 
-test('spawn tables roll only known species at Lv 19-23', async ({ page }) => {
+test('spawn tables roll the Hushwater lines at Lv 19-23', async ({ page }) => {
   await boot(page);
-  const tables = await page.evaluate((newIds) => {
+  const tables = await page.evaluate(() => {
     const all = PixelPets.spawnTables();
     const out = {};
     for (const key of ['hw_rim', 'hw_cut', 'hw_falls']) {
       const t = all[key];
-      out[key] = {
-        stage2: t.stage2,
-        rows: t.table.map((row) => ({ id: row[0], w: row[1], min: row[2], max: row[3] })),
-      };
+      out[key] = { stage2: t.stage2, rows: t.table.map((row) => row.slice()) };
     }
     const species = PixelPets.debugCatalog().species;
     const rolls = {};
     for (const key of Object.keys(out)) {
       const seen = new Set();
       const levels = [];
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 80; i++) {
         const idx = PixelPets.pickSpecies([], key);
         const id = species[idx] && species[idx].id;
         seen.add(id);
@@ -335,20 +383,16 @@ test('spawn tables roll only known species at Lv 19-23', async ({ page }) => {
       rolls[key] = { seen: [...seen], levels };
     }
     return { out, rolls, route2: (all.route2 && all.route2.table || []).length };
-  }, NEW_IDS);
+  });
   expect(tables.route2).toBeGreaterThan(3);
-  for (const key of Object.keys(KNOWN)) {
+  for (const key of Object.keys(TABLES)) {
     const rows = tables.out[key].rows;
-    expect(rows.map((r) => r.id).sort()).toEqual(KNOWN[key].slice().sort());
-    expect(rows.length).toBeGreaterThanOrEqual(3);
+    expect(rows).toEqual(TABLES[key]);
     expect(tables.out[key].stage2).toBe(0.1);
-    for (const row of rows) {
-      expect(NEW_IDS).not.toContain(row.id);
-      expect(STARTERS).not.toContain(row.id);
-      expect(row.min).toBeGreaterThanOrEqual(19);
-      expect(row.max).toBeLessThanOrEqual(23);
-    }
-    for (const id of tables.rolls[key].seen) expect(KNOWN[key]).toContain(id);
+    const ids = rows.map((row) => row[0]);
+    for (const id of NEW_IDS) if (TABLES[key].some((row) => row[0] === id)) expect(ids).toContain(id);
+    for (const row of rows) expect(STARTERS).not.toContain(row[0]);
+    for (const id of tables.rolls[key].seen) expect(ids).toContain(id);
     for (const lv of tables.rolls[key].levels) {
       expect(lv).toBeGreaterThanOrEqual(19);
       expect(lv).toBeLessThanOrEqual(23);
@@ -440,4 +484,125 @@ test('an unknown pet with a taken id gets a fresh id and stays', async ({ page }
   expect(report.uniqSame).toBe(true);
   expect(report.uniqueIds).toBe(true);
   expect(report.stable).toBe(true);
+});
+
+const LINES = {
+  skink: { type: 'EMBER', tiles: 'grass', names: ['Tindlet', 'Cinderskink', 'Kilncrest'], halo: false,
+    base: { 'skink/0': { hp: 39, atk: 60, def: 42, spd: 51 }, 'skink/1': { hp: 52, atk: 80, def: 56, spd: 68 }, 'skink/2': { hp: 65, atk: 100, def: 70, spd: 85 } } },
+  otter: { type: 'FROST', tiles: 'shore', names: ['Rimelet', 'Frostrill', 'Spraymane'], halo: false,
+    base: { 'otter/0': { hp: 48, atk: 51, def: 42, spd: 51 }, 'otter/1': { hp: 64, atk: 68, def: 56, spd: 68 }, 'otter/2': { hp: 80, atk: 85, def: 70, spd: 85 } } },
+  owl: { type: 'SHADE', tiles: 'woods', names: ['Hushlet', 'Quillhush', 'Vesperowl'], halo: true,
+    base: { 'owl/0': { hp: 45, atk: 48, def: 36, spd: 63 }, 'owl/1': { hp: 60, atk: 64, def: 48, spd: 84 }, 'owl/2': { hp: 75, atk: 80, def: 60, spd: 105 } } },
+  snail: { type: 'STONE', tiles: 'woods', names: ['Lichlet', 'Screeback', 'Cairnshell'], halo: false,
+    base: { 'snail/0': { hp: 57, atk: 42, def: 63, spd: 30 }, 'snail/1': { hp: 76, atk: 56, def: 84, spd: 40 }, 'snail/2': { hp: 95, atk: 70, def: 105, spd: 50 } } },
+};
+
+test('twelve Hushwater forms join the journal and a holder battle names Tindlet', async ({ page }) => {
+  await boot(page, fieldSave({ 'story.cobble_end': true, 'story.hw_reached': true }));
+  const info = await page.evaluate((lines) => {
+    const ids = PPSave.SPECIES_IDS.slice();
+    const journal = SPECIES.reduce((n, sp) => n + (sp.npcOnly ? 0 : sp.stages.length), 0);
+    const forms = {};
+    for (const id of Object.keys(lines)) {
+      const sp = SPECIES.find((s) => s.id === id);
+      forms[id] = {
+        type: sp.type, tiles: sp.tiles, halo: !!sp.uiHalo,
+        names: sp.stages.map((st) => st.name),
+        base: Object.fromEntries([0, 1, 2].map((k) => [id + '/' + k, BASE_STATS[id + '/' + k]])),
+        learn: [0, 1, 2].map((k) => (LEARNSETS[id + '/' + k] || []).map((row) => row.slice())),
+        halves: sp.stages.map((st) => st.half && st.half.length === 16 && st.half.every((row) => row.length === 8)),
+      };
+    }
+    return {
+      v: PixelPets.state.v,
+      ids, last: ids[ids.length - 1], forms: PPSave.FORM_IDS.length, journal,
+      fetchAt: ids.indexOf('fetch'), formsOut: forms,
+      rope: (MAPDATA.detail_hushwater.maps.hw_falls.objs.find((o) => o.id === 'hw_stair_rope') || {}).x,
+      arrive: (MAPDATA.detail_hushwater.maps.hw_falls.objs.find((o) => o.id === 'hw_arrive_w') || {}).x,
+    };
+  }, LINES);
+  expect(info.v).toBe(2);
+  expect(info.ids).toHaveLength(20);
+  expect(info.fetchAt).toBe(15);
+  expect(info.last).toBe('snail');
+  expect(info.ids.slice(-4)).toEqual(['skink', 'otter', 'owl', 'snail']);
+  expect(info.forms).toBe(60);
+  expect(info.journal).toBe(57);
+  expect(info.arrive).toBe(2);
+  expect(info.rope).toBe(11);
+  for (const [id, want] of Object.entries(LINES)) {
+    expect(info.formsOut[id].type, id).toBe(want.type);
+    expect(info.formsOut[id].tiles, id).toBe(want.tiles);
+    expect(info.formsOut[id].halo, id).toBe(want.halo);
+    expect(info.formsOut[id].names, id).toEqual(want.names);
+    expect(info.formsOut[id].base, id).toEqual(want.base);
+    expect(info.formsOut[id].halves, id).toEqual([true, true, true]);
+    expect(info.formsOut[id].learn[0], id).toHaveLength(9);
+    expect(info.formsOut[id].learn[1].length, id).toBeGreaterThan(0);
+    expect(info.formsOut[id].learn[2][1], id).toEqual([27, 'full_tilt']);
+  }
+
+  if (page.viewportSize().width === 390) {
+    const dir = '/opt/cursor/artifacts/screenshots';
+    fs.mkdirSync(dir, { recursive: true });
+    await page.evaluate(() => PixelPets.setFlag('story.unlock_phone', true));
+    if (await page.locator('#unlockCard').isVisible()) await page.locator('#unlockSkip').click();
+    await expect(page.locator('#unlockCard')).toBeHidden();
+    await page.evaluate(() => {
+      const c = document.createElement('canvas');
+      c.id = 'hwSpecies';
+      c.width = 390;
+      c.height = 312;
+      c.style.cssText = 'position:fixed;left:0;top:0;z-index:99999;width:390px;height:312px;background:#1a1c2c';
+      const g = c.getContext('2d');
+      g.fillStyle = '#1a1c2c';
+      g.fillRect(0, 0, 390, 312);
+      g.font = '12px sans-serif';
+      g.textAlign = 'center';
+      const ring = (src) => {
+        const c = document.createElement('canvas');
+        c.width = c.height = 18;
+        const cg = c.getContext('2d');
+        const d = src.getContext('2d').getImageData(0, 0, 18, 18).data;
+        const A = (x, y) => x >= 0 && y >= 0 && x < 18 && y < 18 && d[(y * 18 + x) * 4 + 3] > 0;
+        cg.fillStyle = PAL.h;
+        for (let y = 0; y < 18; y++) for (let x = 0; x < 18; x++) {
+          if (!A(x, y) && (A(x - 1, y) || A(x + 1, y) || A(x, y - 1) || A(x, y + 1))) cg.fillRect(x, y, 1, 1);
+        }
+        cg.drawImage(src, 0, 0);
+        return c;
+      };
+      ['skink', 'otter', 'owl', 'snail'].forEach((id, row) => {
+        const sp = SPECIES.find((s) => s.id === id);
+        for (let st = 0; st < 3; st++) {
+          const stage = sp.stages[st];
+          let img = buildSprite(stage.half, stage.col, 'normal');
+          if (sp.uiHalo) img = ring(img);
+          const x = 28 + st * 124;
+          const y = 10 + row * 76;
+          g.imageSmoothingEnabled = false;
+          g.drawImage(img, x, y, 54, 54);
+          g.fillStyle = '#f4f4f4';
+          g.fillText(stage.name, x + 27, y + 68);
+        }
+      });
+      document.body.appendChild(c);
+    });
+    await page.locator('#hwSpecies').screenshot({ path: path.join(dir, 'hushwater-species-390.png') });
+    await page.evaluate(() => document.querySelector('#hwSpecies').remove());
+    expect(await page.evaluate(() => {
+      PixelPets.goto('hw_rim', 21, 12, 'down');
+      PixelPets.clearWild();
+      PixelPets.battle.textMs = 1;
+      return PixelPets.forceTrainer('hw_climber');
+    })).toBe(true);
+    await page.waitForFunction(() => {
+      const b = PixelPets.debugSnapshot().battle;
+      const name = document.querySelector('#btFoeName') && document.querySelector('#btFoeName').textContent;
+      return !!(b && b.state === 'CHOOSE' && name && name.includes('Tindlet'));
+    });
+    await expect(page.locator('#btFoeName')).toContainText('Tindlet');
+    await page.locator('#ovBattle .bt-inner').screenshot({ path: path.join(dir, 'hushwater-battle-390.png') });
+    await page.evaluate(() => PixelPets.winBattle());
+  }
 });

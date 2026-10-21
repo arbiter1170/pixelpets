@@ -479,7 +479,7 @@
     {
      "kind": "trigger",
      "id": "hw_arrive_w",
-     "x": 1,
+     "x": 2,
      "y": 10,
      "r": 0,
      "when": [

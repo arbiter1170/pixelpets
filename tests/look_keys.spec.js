@@ -30,6 +30,29 @@ test('no look key is defined in two data files', () => {
   expect(lookKeyClashes(dataFiles())).toEqual([]);
 });
 
+function paletteKeyClashes(files) {
+  const owner = {}, clashes = [];
+  for (const [file, data] of files) {
+    const pal = data && data.palette;
+    if (!pal || typeof pal !== 'object') continue;
+    for (const [k, v] of Object.entries(pal)) {
+      if (k.startsWith('_') || v == null) continue;
+      if (owner[k] && owner[k] !== file) clashes.push(`${k}: ${owner[k]} and ${file}`);
+      else owner[k] = file;
+    }
+  }
+  return clashes;
+}
+
+test('no palette key is defined in two data files', () => {
+  expect(paletteKeyClashes(dataFiles())).toEqual([]);
+});
+
+test('a palette key defined in two data files is reported', () => {
+  const files = [['a.json', { palette: { r: '#b13e53' } }], ['b.json', { palette: { r: '#b13e53' } }]];
+  expect(paletteKeyClashes(files)).toEqual(['r: a.json and b.json']);
+});
+
 test('a look key defined in two data files is reported', () => {
   const files = [['a.json', { looks: { cal: { hair: 'buzz' }, _note: 'x' } }], ['b.json', { looks: { cal: { hair: 'short' } } }]];
   expect(lookKeyClashes(files)).toEqual(['cal: a.json and b.json']);

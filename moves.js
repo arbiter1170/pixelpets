@@ -1491,7 +1491,20 @@ const LEARNSETS = {
   "fetch/2": [
     [0, "steadfast_paw"],
     [27, "full_tilt"]
-  ]
+  ],
+  // HUSHWATER B2 (D356): existing moves only. Stage 0 at 1/3/5/9/12/15/20/25/30; stage 1 is the signature plus 22; stage 2 is the signature plus 27.
+  "skink/0": [[1, "bump"], [3, "stoke_up"], [5, "flick_flame"], [9, "tumble_charge"], [12, "kiln_rush"], [15, "pebble_flick"], [20, "kindle_burst"], [25, "brace_rock"], [30, "scree_slide"]],
+  "skink/1": [[0, "cinder_pounce"], [22, "boulder_drop"]],
+  "skink/2": [[0, "torch_tail"], [27, "full_tilt"]],
+  "otter/0": [[1, "bump"], [3, "mist_veil"], [5, "frost_nip"], [9, "ripple_jab"], [12, "sleet_pelt"], [15, "cold_snap"], [20, "rime_rush"], [25, "undertow"], [30, "breaker_wave"]],
+  "otter/1": [[0, "flurry_fluff"], [22, "puddle_stomp"]],
+  "otter/2": [[0, "glacier_press"], [27, "full_tilt"]],
+  "owl/0": [[1, "bump"], [3, "night_veil"], [5, "gloom_poke"], [9, "puff_shot"], [12, "dusk_fang"], [15, "updraft"], [20, "nightfall"], [25, "gale_slice"], [30, "kite_swoop"]],
+  "owl/1": [[0, "lullaby_hum"], [22, "gloam_swipe"]],
+  "owl/2": [[0, "moon_cloak"], [27, "full_tilt"]],
+  "snail/0": [[1, "bump"], [3, "brace_rock"], [5, "pebble_flick"], [9, "tumble_charge"], [12, "boulder_drop"], [15, "sap_sip"], [20, "quarry_crash"], [25, "mist_veil"], [30, "thorn_lash"]],
+  "snail/1": [[0, "shell_roll"], [22, "scree_slide"]],
+  "snail/2": [[0, "summit_slam"], [27, "full_tilt"]]
 };
 
 const TRAINERS = {
