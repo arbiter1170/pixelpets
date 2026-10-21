@@ -2,14 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 10:42 ET: Holder line matches design tip 96042fc (build 20261021-1042)
+
+- What changed and why: Design tip 96042fc sets the packet overlay chatter to "Warm buns in the back, holder." That sentence is holder in all three copies: `data/detail_zz_stores.json`, Mira's chatter in `data/highcharity.json`, and `tools/build_highcharity.py`. The overlay matches the packet. It is not a deviation. Other lowercase keeper lines on main stay as they are. Save stays `pixelpets.save.v2` with `v` 2. No new flag.
+- Files touched: `data/highcharity.json`, `data/mapdata.js`, `tools/build_highcharity.py`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261021-1042. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/stores_p4.spec.js tests/tap_interact.spec.js tests/smoke.spec.js`. PP_TEST RESULT: PASS exit=0 passed=39 failed=0 flaky=0 skipped=0 time=39s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): Green wording fix. No new id. No id was renumbered. Next free id stays D399.
+- Anything left unfinished: Meadow ribbon dye, Climbing rope belt, Watch whistle badge, City cap and Spray cap still wait. Database rules are not deployed. The client is not deployed.
+
 ## 2026-10-21 10:36 ET: Holder line, preview shots out (build 20261021-1036)
 
-- What changed and why: Mira's Lantern Market chatter else line now says "Warm buns in the back, holder." Lowercase keeper is banned in player-visible text. That one string is the only departure from `p4.overlay`. Capital-K titles stay, including Keeper Halvard and "Keeper stock". Faction `keepers` and `keeper.js` stay. The three preview PNGs under `launch/world_clock_p4/` are removed. Uploads are not repo files. Save stays `pixelpets.save.v2` with `v` 2. No new flag.
+- What changed and why: Mira's Lantern Market chatter else line now says "Warm buns in the back, holder." Lowercase keeper is banned in player-visible text. Capital-K titles stay, including Keeper Halvard and "Keeper stock". Faction `keepers` and `keeper.js` stay. The three preview PNGs under `launch/world_clock_p4/` are removed. Uploads are not repo files. Save stays `pixelpets.save.v2` with `v` 2. No new flag.
 - Files touched: `data/detail_zz_stores.json`, `data/mapdata.js`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`. Removed `launch/world_clock_p4/p4_route1_390.png`, `launch/world_clock_p4/p4_store_menu_390.png`, `launch/world_clock_p4/p4_snack_menu_390.png`.
 - Commit(s) + build id: this branch, build 20261021-1036. `python3 tools/bump_build.py --check` exit 0.
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/stores_p4.spec.js tests/tap_interact.spec.js tests/smoke.spec.js`. PP_TEST RESULT: PASS exit=0 passed=39 failed=0 flaky=0 skipped=0 time=40s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
 - Decisions made (colour + reasoning): Green wording fix. No new id. No id was renumbered. Next free id stays D399.
-- Anything left unfinished: The packet checker compares `data/detail_zz_stores.json` to `p4.overlay` byte for byte, so rule 12 can fail on this one string. Meadow ribbon dye, Climbing rope belt, Watch whistle badge, City cap and Spray cap still wait. Database rules are not deployed. The client is not deployed.
+- Anything left unfinished: Design tip 96042fc now uses the same holder line, so this overlay is not a deviation. The base High Charity copy and the builder are updated in the 10:42 entry. Meadow ribbon dye, Climbing rope belt, Watch whistle badge, City cap and Spray cap still wait. Database rules are not deployed. The client is not deployed.
 
 ## 2026-10-21 09:38 ET: A store on every map (build 20261021-0938)
 
