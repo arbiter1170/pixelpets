@@ -156,10 +156,10 @@
        "!story.starter_received"
       ],
       "lines": {
-       "else": "Ilse's handing out partners today! Bet I get mine first. Just... warming up."
+       "else": "Ilse's handing out partners today! Bet I get mine first. Somebody says I've got potential."
       },
       "chatter": {
-       "else": "Hup, hup! Warming up!"
+       "else": "Hup, hup! Brighter by... warming up!"
       }
      },
      {

@@ -145,7 +145,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
   then the summon lines). After a whole-party wipe and a Lantern House rest, walking through that line starts the battle again. The first two steps after you arrive, or after the rest, do not. A win ends it. Talking still starts it. Neighbour Rook does not come back for another battle. Master Fen's Bloom Trial Hall in Fernbrook
   opens once the orchard is cleared. Talk to him on the dais: "Begin trial", and a win earns the Fernbrook Seal (Seal card, 420 Acorns, 2 Heal Snacks).
-  Seal #1 opens Route 2 (the creek, Wickerglen, and the Glow Census). Past the quarry gate is Cobblecrest: Dottie's
+  Seal #1 opens Route 2 (the creek, Wickerglen, and the Glow Census). On the Trial Hall doorstep, Rook says he said yes to Junior Bright on partner day. On the Glimmerwell path he says he is the fast kid from your town. Past the quarry gate is Cobblecrest: Dottie's
   stall, the buyout, Rook's second battle, and Master Hale's Stone Hall. Cobblecrest's roofs, windows and
   rooms get their own trim. A loss after you arrive wakes you in the
   Cobblecrest Lantern House.

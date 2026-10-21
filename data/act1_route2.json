@@ -288,7 +288,9 @@
     "scenes": {
       "teaser": [
         ["say", "Rook", "You beat Fen? Me too! Well... almost."],
-        ["say", "Rook", "Look: Glimmerwell picked me for \"Junior Bright\". Clean energy, {name}!"],
+        ["say", "Rook", "So. Being late on partner day. The jingle. The mint sticker. That was all one thing."],
+        ["say", "Rook", "Glimmerwell picked me for \"Junior Bright\". They asked in spring. I said yes that morning."],
+        ["say", "Rook", "Don't make the Lizzy face. It's clean energy, {name}. It's a real chance for me."],
         ["say", "Rook", "And their crews cleared the rockslide overnight. Race you up Route 2!"],
         ["say", "", "East of town, the Route 2 path is open."],
         ["setFlag", "story.slice_end", true]

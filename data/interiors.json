@@ -166,7 +166,7 @@
             "!talked": "Oh! Hello again. Rook's out, as usual. Mind the kite string on the floor.",
             "!story.starter_received": "Rook bolted out at sunrise. That boy runs everywhere. Ilse's handing out partners today!",
             "story.slice_end": "Rook says he's a \"Junior Bright\" now. Sounds very shiny. I just hope they feed him.",
-            "else": "If you see Rook on the road, tell him supper keeps. And to wipe his boots."}},
+            "else": "If you see Rook, tell him supper keeps. And that his friend in mint called again."}},
         {"kind": "prop", "id": "rook_table", "x": 4, "y": 2, "sprite": "table_small", "lines": {
           "else": "Toast crumbs and a half-drawn kite plan labelled \"FASTEST KITE EVER (MINE)\"."}},
         {"kind": "prop", "id": "rook_shelf", "x": 5, "y": 2, "sprite": "bookshelf", "lines": {
@@ -187,8 +187,8 @@
           {"kind": "door", "id": "hm_rook", "x": 16, "y": 5, "to": "hm_rook_in", "tx": 3, "ty": 4, "facing": "up"},
           {"kind": "npc", "id": "hattie", "name": "Hattie", "x": 4, "y": 13, "lines": {"!story.starter_received": "Off to see Ilse? She's been fussing over three baskets since dawn.", "else": "Route 1 has shy crabs by the stream. On rainy days they come right out."},
             "chatter": {"!story.starter_received": "Ilse's baskets are wriggling again!", "else": "Mind the crabs by the stream!"}},
-          {"kind": "npc", "id": "rook_home", "name": "Rook", "x": 17, "y": 6, "when": ["!story.starter_received"], "lines": {"else": "Ilse's handing out partners today! Bet I get mine first. Just... warming up."},
-            "chatter": {"else": "Hup, hup! Warming up!"}}
+          {"kind": "npc", "id": "rook_home", "name": "Rook", "x": 17, "y": 6, "when": ["!story.starter_received"], "lines": {"else": "Ilse's handing out partners today! Bet I get mine first. Somebody says I've got potential."},
+            "chatter": {"else": "Hup, hup! Brighter by... warming up!"}}
         ]
       }
     }
