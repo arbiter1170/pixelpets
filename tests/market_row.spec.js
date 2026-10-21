@@ -279,3 +279,58 @@ test('the court shot is a line, and the schedules land on the row', async ({ pag
   const closed = await face(page, 'hm_diner', 3, 3, 'up');
   expect(closed.text).toBe('Opens at 5. The stew stays on.');
 });
+
+async function stepOnce(page, key) {
+  const before = await page.evaluate(() => ({ x: PixelPets.keeper.x, y: PixelPets.keeper.y, map: PixelPets.mapInfo.id }));
+  await page.keyboard.down(key);
+  await page.waitForTimeout(50);
+  await page.keyboard.up(key);
+  await page.waitForFunction(b => {
+    const k = PixelPets.keeper;
+    return k.x !== b.x || k.y !== b.y || PixelPets.mapInfo.id !== b.map || !!PixelPets.scene;
+  }, before, { timeout: 5000 });
+  await page.waitForFunction(() => !PixelPets.keeper.moving && !PixelPets.fading, null, { timeout: 5000 });
+}
+
+test('the Parked Coach has a two-row roof_coach barrel roof, and its door at (4,31) goes in and back out (WORLD_CLOCK_TOWN 9)', async ({ page }) => {
+  await boot(page);
+  await at(page, 'tue', 12, 0);
+  const roof = await page.evaluate(() => {
+    PixelPets.goto('hearthmoor', 4, 32, 'up');
+    const v = PixelPets.exteriors('hearthmoor');
+    const diner = v.buildings.find(b => b.name === 'diner');
+    const cells = [];
+    for (let y = 29; y <= 30; y++) for (let x = 2; x <= 6; x++) {
+      const owner = v.buildings.find(b => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.ry1);
+      cells.push({ x, y, ch: PixelPets.tileInfo(x, y).ch, roof: owner ? owner.roof : null });
+    }
+    const wall = [];
+    for (let x = 2; x <= 6; x++) wall.push(PixelPets.tileInfo(x, 31).ch);
+    return { diner, cells, wall: wall.join(''), step: PixelPets.tileInfo(4, 32), door: PixelPets.mapInfo.objs.find(o => o.id === 'hm_diner'),
+      turf: v.buildings.filter(b => b.roof === 'roof_turf' && b.x0 <= 6 && b.x1 >= 2 && b.y0 <= 30 && b.ry1 >= 29).map(b => b.name),
+      tile: v.tiles.roof_coach };
+  });
+  expect(roof.diner).toMatchObject({ x0: 2, y0: 29, x1: 6, ry1: 30, y1: 31, roof: 'roof_coach', trim: 'C', shape: 'arch', feats: ['chimney'] });
+  expect(roof.diner.doors).toEqual([{ id: 'hm_diner', x: 4, y: 31 }]);
+  for (const c of roof.cells) {
+    expect(c.ch, c.x + ',' + c.y).toBe('R');
+    expect(c.roof, c.x + ',' + c.y).toBe('roof_coach');
+    expect(c.roof, c.x + ',' + c.y).not.toBe('roof_turf');
+  }
+  expect(roof.turf).toEqual([]);
+  expect(roof.tile).toEqual([16, 16]);
+  expect(roof.wall).toBe('HHHHH');
+  expect(roof.door).toMatchObject({ kind: 'door', x: 4, y: 31 });
+  expect(roof.step.walk).toBe(true);
+
+  await stepOnce(page, 'ArrowUp');
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'hm_diner' && !PixelPets.fading);
+  const inside = await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y }));
+  expect(inside).toEqual({ map: 'hm_diner', x: 5, y: 6 });
+
+  await stepOnce(page, 'ArrowDown');
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'hearthmoor' && !PixelPets.fading);
+  const out = await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y, ch: PixelPets.tileInfo(4, 32).ch }));
+  expect(out).toMatchObject({ map: 'hearthmoor', x: 4, y: 32 });
+  expect(out.ch).not.toBe('H');
+});

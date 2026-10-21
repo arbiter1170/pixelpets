@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 07:00 ET: Parked Coach roof merge and holder label (build 20261021-0700)
+
+- What changed and why: Merged `origin/main` (Parked Coach barrel roof, #129, fc7b020) into wardrobe v1. Kept the `roof_coach` tile, diner rows 29-32, the door at (4, 31) and the mat landing `ty` 32, plus every P3 wardrobe change. `data/mapdata.js` was regenerated from the merged JSON. The look picker preview label is now "Your holder". Lowercase keeper is banned. Green wording fix. No new id. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `data/detail_zz_market.json`, `data/mapdata.js`, `sprites.js`, `tests/market_row.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: merge of fc7b020, build 20261021-0700. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js` on wardrobe, market_row, world_clock, house_reskin, map_layers, interior_walls, look_keys, look_listen, mahopac, lizzy, and smoke. PP_TEST RESULT: PASS exit=0 passed=192 failed=0 flaky=0 skipped=0 time=123s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): Green. No new id. No id was renumbered. Next free id stays D397.
+- Anything left unfinished: P4 stores are not started. Database rules are not deployed. The client is not deployed. Rules for project walklings-4cc89 go out before the client merge.
+
 ## 2026-10-21 06:33 ET: Wardrobe v1 (build 20261021-0633)
 
 - What changed and why: WORLD_CLOCK_TOWN P3. Keeper Marigold opens Stitch & Lantern. Six Walkling adornments and four holder pieces are for sale, and four outfit colours (Sky, Yellow, Lime, White) cost 60 Acorns. The seven outfit colours already in the game stay free. A paid Walkling item has one wearer. Releasing that Walkling puts the item back on the rack and keeps the flag. CHANGE LOOK, the intro mirror, shuffle and GEAR ADORN list free and owned items only. Closing the picker writes the holder look once when you are in a shared room. The room rules also let skink, otter, owl and snail join. Save stays `pixelpets.save.v2` with `v` 2. The only new data are `wardrobe.*` flags.
