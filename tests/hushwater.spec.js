@@ -541,6 +541,8 @@ test('twelve Hushwater forms join the journal and a holder battle names Tindlet'
     expect(info.formsOut[id].learn[1].length, id).toBeGreaterThan(0);
     expect(info.formsOut[id].learn[2][1], id).toEqual([27, 'full_tilt']);
   }
+  expect(info.formsOut.snail.learn[0][4]).toEqual([12, 'undertow']);
+  expect(info.formsOut.snail.learn[1][0]).toEqual([0, 'boulder_drop']);
 
   if (page.viewportSize().width === 390) {
     const dir = '/opt/cursor/artifacts/screenshots';

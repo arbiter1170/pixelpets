@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 03:52 ET: Keeper Teague, hm_ looks, and Undertow (build 20261021-0352)
+
+- What changed and why: Design tip bb5b716. The Lamplight day clerk is Keeper Teague (`hm_teague`), with look `hm_teague` and a cast row of their own beside Keeper Quill. High Charity's Keeper Rowan stays, including the `sorrel` portrait and the old reputation row. Market Row look keys now use the `hm_` prefix: `hm_quill`, `hm_teague`, `hm_marigold`, `hm_hesper`, `hm_arlo`, `hm_diner_regular`, `hm_court_regular`. The diner regular and court regular ids stay. Lichlet (`snail/0`) learns Undertow at level 12 instead of Boulder Drop, so a wild Screeback does not learn Boulder Drop twice. Screeback (`snail/1`) still learns Boulder Drop at level 0. Wren stays at (17, 31). The busy store and diner floors stay. Save stays `pixelpets.save.v2` with `v` 2. No new save key.
+- Files touched: `data/detail_zz_market.json`, `data/reputation.json`, `data/mapdata.js`, `moves.js`, `tests/market_row.spec.js`, `tests/hushwater.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261021-0352. `origin/main` was already contained (a9f187f). No merge commit. `data/mapdata.js` was regenerated.
+- Tests run and result (widths, checks): `node tools/pp_test.js` on market_row, world_clock, house_reskin, interior_walls, hushwater, look_keys, reputation, and highcharity. PP_TEST RESULT: PASS exit=0 passed=147 failed=0 flaky=0 skipped=0 time=105s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. `python3 tools/bump_build.py --check` exit 0. Console errors: none (a spec fails the run on a console error). High Charity's Keeper Rowan still resolves to `sorrel`.
+- Decisions made (colour + reasoning): No new id. No id was renumbered. Next free id is D395. The name, the `hm_` prefix, and Undertow follow design tip bb5b716. D391 busy floors stay.
+- Anything left unfinished: P3 wardrobe and P4 stores are not started. The clock card still lists Lizzy, Pip, Wren, Ossabell, and Mr. Gristle. The clerk was not on that card.
+
 ## 2026-10-21 03:44 ET: Market Row court tiles and look keys (build 20261021-0344)
 
 - What changed and why: Green fixes on the Market Row branch. On a weekday after school, Pip stays on court tile (16, 31) and Wren stands on (17, 31), so both show. The Market Row look keys are namespaced `mr_quill`, `mr_rowan`, `mr_marigold`, `mr_hesper`, `mr_arlo`, `mr_diner_regular` and `mr_court_regular`. Each is defined once. The busy store and diner floors stay as D391 approved them. Save stays `pixelpets.save.v2` with `v` 2. No new save key.

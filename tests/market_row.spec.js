@@ -87,10 +87,19 @@ test('the store sells the usual snacks, and the night clerk takes the counter', 
   await at(page, 'tue', 12, 0);
   const day = await page.evaluate(() => {
     PixelPets.goto('hm_store', 2, 4, 'up');
-    return PixelPets.mapInfo.objs.map(o => o.id);
+    const clerk = MAPDATA.detail_zz_market.maps.hm_store.objs.find(o => o.id === 'hm_teague');
+    return {
+      ids: PixelPets.mapInfo.objs.map(o => o.id),
+      name: clerk && clerk.name,
+      look: clerk && clerk.look,
+      slot: MAPDATA.detail_zz_market.friendSlots.STORE_CLERK,
+    };
   });
-  expect(day).toContain('hm_rowan');
-  expect(day).not.toContain('hm_quill');
+  expect(day.ids).toContain('hm_teague');
+  expect(day.ids).not.toContain('hm_quill');
+  expect(day.name).toBe('Keeper Teague');
+  expect(day.look).toBe('hm_teague');
+  expect(day.slot).toBe('Keeper Teague / Keeper Quill');
   await page.keyboard.press('Space');
   await expect(page.locator('#ovShop')).toBeVisible();
   expect(await page.locator('#shopTitle').textContent()).toBe('Lamplight Provisions');
@@ -110,7 +119,7 @@ test('the store sells the usual snacks, and the night clerk takes the counter', 
     return PixelPets.mapInfo.objs.map(o => o.id);
   });
   expect(night).toContain('hm_quill');
-  expect(night).not.toContain('hm_rowan');
+  expect(night).not.toContain('hm_teague');
 });
 
 test('Marigold keeps the P2 line and offers nothing to buy', async ({ page }) => {
@@ -251,11 +260,11 @@ test('the court shot is a line, and the schedules land on the row', async ({ pag
   expect(after.onMap.wren).toMatchObject({ x: 17, y: 31 });
   expect(after.onMap.pip.x + ',' + after.onMap.pip.y).not.toBe(after.onMap.wren.x + ',' + after.onMap.wren.y);
   expect(after.keys).toEqual([
-    'mr_arlo', 'mr_court_regular', 'mr_diner_regular', 'mr_hesper', 'mr_marigold', 'mr_quill', 'mr_rowan',
+    'hm_arlo', 'hm_court_regular', 'hm_diner_regular', 'hm_hesper', 'hm_marigold', 'hm_quill', 'hm_teague',
   ]);
   expect(after.worn).toMatchObject({
-    hm_rowan: 'mr_rowan', hm_quill: 'mr_quill', hm_marigold: 'mr_marigold', hm_hesper: 'mr_hesper',
-    diner_regular: 'mr_diner_regular', hm_arlo: 'mr_arlo', court_regular: 'mr_court_regular',
+    hm_teague: 'hm_teague', hm_quill: 'hm_quill', hm_marigold: 'hm_marigold', hm_hesper: 'hm_hesper',
+    diner_regular: 'hm_diner_regular', hm_arlo: 'hm_arlo', court_regular: 'hm_court_regular',
   });
 
   await at(page, 'tue', 12, 0);

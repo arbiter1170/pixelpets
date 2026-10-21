@@ -222,6 +222,11 @@
       "base": 50
     },
     {
+      "name": "Keeper Teague",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
       "name": "Keeper Scout",
       "faction": "keepers",
       "base": 50
