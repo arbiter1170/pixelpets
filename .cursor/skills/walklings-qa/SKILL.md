@@ -24,7 +24,7 @@ Use this after a feature is in the game, and when a session is asked to play fro
 
 When a break is fixed, add the assertion to `tests/qa_play.spec.js` or the spec that already owns that screen. Use `starterSave`, `installSave`, `gotoGame(page, '?debug=1')`, and `trackErrors`. Assert `PixelPets.state.v === 2`. Assert `PixelPets.questCheck` is `[]` when the change touched quest flags. One width is enough unless the layout changed; the look picker and the phone shell are checked at every project width.
 
-Name the new row in `tests/README.md`. A player-visible fix also updates the README section that already describes that screen, `CHANGELOG.md`, and `OPEN_DECISIONS.md` when the words are still a guess. The next free decision id is one past the highest row. Do not reuse D60 or D61.
+Name the new row in `tests/README.md`. A player-visible fix also updates the README section that already describes that screen, `CHANGELOG.md`, and `OPEN_DECISIONS.md` when the words are still a guess. see the OPEN_DECISIONS.md header. Do not reuse D60 or D61.
 
 ## What to watch
 

@@ -7,7 +7,7 @@ Skills for this repo live here, one folder per skill. Each folder has a `SKILL.m
 | `walklings-quests` | [walklings-quests/SKILL.md](walklings-quests/SKILL.md) | Adding or changing a side quest, town-board slip, bounty, or phone job pointer |
 | `walklings-docs` | [walklings-docs/SKILL.md](walklings-docs/SKILL.md) | Updating status docs after a change, or checking that those docs still match the code |
 | `walklings-qa` | [walklings-qa/SKILL.md](walklings-qa/SKILL.md) | Playing a new feature on a phone width, and adding the Playwright check that keeps the fix |
-| `walklings-qa-run` | [walklings-qa-run/SKILL.md](walklings-qa-run/SKILL.md) | A scoped QA run on a named build (extends walklings-qa) |
+| `walklings-qa-run` | [walklings-qa-run/SKILL.md](walklings-qa-run/SKILL.md) | A scoped QA run on a named build (extends walklings-qa), including the @w1 tag, retries, scans, and the full run |
 | `walklings-deploy` | [walklings-deploy/SKILL.md](walklings-deploy/SKILL.md) | Stamping, shipping and checking a deploy |
 | `walklings-pr-handback` | [walklings-pr-handback/SKILL.md](walklings-pr-handback/SKILL.md) | Opening or rebasing a PR and writing the hand-back |
 | `walklings-decision` | [walklings-decision/SKILL.md](walklings-decision/SKILL.md) | Raising, routing or settling a decision |

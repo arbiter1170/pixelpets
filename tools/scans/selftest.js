@@ -80,16 +80,29 @@ function wordingFixtures() {
 function decisionFile(body) { return body.endsWith('\n') ? body : body + '\n'; }
 
 function decisionsFixtures() {
+  const NF = 'Next ' + 'free id is ';
   const dup = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-ddup-'));
   const wrong = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-dwrong-'));
   const missing = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-dmiss-'));
   const clean = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-dclean-'));
+  const split = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-dsplit-'));
+  const bullet = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-dbullet-'));
+  const restate = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-drestate-'));
+  const archHigh = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-darch-'));
   const row = '| D{id} | a | b | c | d |';
   const head = '| # | Area | Decision needed | What the build does today | Where to change it |\n|---|---|---|---|---|';
-  fs.writeFileSync(path.join(dup, 'OPEN_DECISIONS.md'), decisionFile([
+  function openFile(dir, body) {
+    fs.writeFileSync(path.join(dir, 'OPEN_DECISIONS.md'), decisionFile(body));
+  }
+  function archFile(dir, body) {
+    const folder = path.join(dir, 'archive');
+    fs.mkdirSync(folder, { recursive: true });
+    fs.writeFileSync(path.join(folder, 'DECISIONS_SETTLED.md'), decisionFile(body));
+  }
+  openFile(dup, [
     '# Open decisions',
     '',
-    'Next free id is D3.',
+    NF + 'D3.',
     '',
     '## Open',
     '',
@@ -97,19 +110,19 @@ function decisionsFixtures() {
     row.replace('{id}', '1'),
     row.replace('{id}', '2'),
     row.replace('{id}', '1'),
-  ].join('\n')));
-  fs.writeFileSync(path.join(wrong, 'OPEN_DECISIONS.md'), decisionFile([
+  ].join('\n'));
+  openFile(wrong, [
     '# Open decisions',
     '',
-    'Next free id is D9.',
+    NF + 'D9.',
     '',
     '## Open',
     '',
     head,
     row.replace('{id}', '1'),
     row.replace('{id}', '2'),
-  ].join('\n')));
-  fs.writeFileSync(path.join(missing, 'OPEN_DECISIONS.md'), decisionFile([
+  ].join('\n'));
+  openFile(missing, [
     '# Open decisions',
     '',
     'No next-free sentence here.',
@@ -118,11 +131,11 @@ function decisionsFixtures() {
     '',
     head,
     row.replace('{id}', '1'),
-  ].join('\n')));
-  fs.writeFileSync(path.join(clean, 'OPEN_DECISIONS.md'), decisionFile([
+  ].join('\n'));
+  openFile(clean, [
     '# Open decisions',
     '',
-    'D37 is used twice. Do not renumber either row. D4-D6 are reserved. Next free id is D38.',
+    'D37 is used twice. Do not renumber either row. D4-D6 are reserved. ' + NF + 'D38.',
     '',
     '## Open',
     '',
@@ -130,8 +143,62 @@ function decisionsFixtures() {
     row.replace('{id}', '1'),
     row.replace('{id}', '37'),
     row.replace('{id}', '37'),
-  ].join('\n')));
-  return { dup, wrong, missing, clean };
+  ].join('\n'));
+  openFile(split, [
+    '# Open decisions',
+    '',
+    NF + 'D6.',
+    '',
+    '## Open',
+    '',
+    head,
+    row.replace('{id}', '5'),
+  ].join('\n'));
+  archFile(split, [
+    '# Settled',
+    '',
+    head,
+    row.replace('{id}', '5'),
+  ].join('\n'));
+  openFile(bullet, [
+    '# Open decisions',
+    '',
+    NF + 'D7.',
+    '',
+    '## Open',
+    '',
+    head,
+    row.replace('{id}', '6'),
+  ].join('\n'));
+  archFile(bullet, '- **D6 kept call.**\n');
+  openFile(restate, [
+    '# Open decisions',
+    '',
+    NF + 'D2.',
+    '',
+    '## Open',
+    '',
+    head,
+    row.replace('{id}', '1'),
+  ].join('\n'));
+  archFile(restate, '- Restatement of D1 (was in OPEN_DECISIONS Settled): - **D1 (old).** pipes kept | a | b |\n');
+  openFile(archHigh, [
+    '# Open decisions',
+    '',
+    NF + 'D9.',
+    '',
+    '## Open',
+    '',
+    head,
+    row.replace('{id}', '1'),
+  ].join('\n'));
+  archFile(archHigh, [
+    '# Settled',
+    '',
+    head,
+    row.replace('{id}', '8'),
+  ].join('\n'));
+  return { dup, wrong, missing, clean, split, bullet, restate, archHigh };
 }
 
 function git(dir, args) {
@@ -200,8 +267,6 @@ function main() {
     const wrong = run(d.wrong, 'decisions');
     show('decisions wrong next-free', wrong);
     check(wrong.status === 1, 'wrong exit');
-    check(wrong.stdout.indexOf('SCAN FAIL decisions: OPEN_DECISIONS.md:3 next free is D9, highest used or reserved is D2') >= 0, 'wrong line\n' + wrong.stdout);
-
     const missing = run(d.missing, 'decisions');
     show('decisions missing next-free', missing);
     check(missing.status === 1, 'missing exit');
@@ -211,6 +276,29 @@ function main() {
     show('decisions clean', cleanD);
     check(cleanD.status === 0, 'decisions clean exit ' + cleanD.status + '\n' + cleanD.stdout);
     check(cleanD.stdout.trim() === 'SCAN PASS decisions', 'decisions clean output');
+
+    const stated = 'next ' + 'free is ';
+    check(wrong.stdout.indexOf('SCAN FAIL decisions: OPEN_DECISIONS.md:3 ' + stated + 'D9, highest used or reserved is D2') >= 0, 'wrong line\n' + wrong.stdout);
+
+    const splitD = run(d.split, 'decisions');
+    show('decisions split-file duplicate', splitD);
+    check(splitD.status === 1, 'split exit');
+    check(splitD.stdout.indexOf('SCAN FAIL decisions: archive/DECISIONS_SETTLED.md:5 duplicate D5') >= 0, 'split line\n' + splitD.stdout);
+
+    const bulletD = run(d.bullet, 'decisions');
+    show('decisions bullet is not a definition', bulletD);
+    check(bulletD.status === 0, 'bullet exit ' + bulletD.status + '\n' + bulletD.stdout);
+    check(bulletD.stdout.trim() === 'SCAN PASS decisions', 'bullet output');
+
+    const restateD = run(d.restate, 'decisions');
+    show('decisions restatement', restateD);
+    check(restateD.status === 0, 'restatement exit ' + restateD.status + '\n' + restateD.stdout);
+    check(restateD.stdout.trim() === 'SCAN PASS decisions', 'restatement output');
+
+    const archD = run(d.archHigh, 'decisions');
+    show('decisions archive highest', archD);
+    check(archD.status === 0, 'archive highest exit ' + archD.status + '\n' + archD.stdout);
+    check(archD.stdout.trim() === 'SCAN PASS decisions', 'archive highest output');
 
     s = symlinkFixtures();
     const badS = run(s.bad, 'symlinks');

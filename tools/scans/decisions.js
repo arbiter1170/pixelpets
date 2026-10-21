@@ -1,12 +1,19 @@
-/* Decision-id scan for OPEN_DECISIONS.md. Node built-ins.
-   Duplicate D/Q ids in the # column of a table fail, except D37.
-   The header's single "Next free id is Dnnn" must be one past the highest
-   D id used or reserved. A missing file is a failure, not a skip. */
+/* Decision-id scan. Node built-ins.
+   A defining row is a table head: | Dnnn | or | Qnnn | in the # column.
+   Decision bullets and "- Restatement of ..." bullets are not defining
+   rows, so a restatement cannot duplicate the canonical row.
+   Duplicate table ids across OPEN_DECISIONS.md and
+   archive/DECISIONS_SETTLED.md fail, except D37.
+   OPEN_DECISIONS.md header: "D37 is used twice. Do not renumber either row."
+   The header's single next-free sentence must be one past the highest
+   D id used or reserved in either file. A missing OPEN_DECISIONS.md is
+   a failure, not a skip. A missing archive means no settled rows. */
 const fs = require('fs');
 const path = require('path');
 
-// OPEN_DECISIONS.md header: "D37 is used twice ... Do not renumber either row".
 const DUP_ALLOW = new Set(['D37']);
+const NEXT_FREE = 'Next ' + 'free id is ';
+const NEXT_FREE_LOWER = 'next ' + 'free id is ';
 
 function lineAt(text, index) {
   let n = 1;
@@ -26,7 +33,6 @@ function sentenceAt(text, index) {
   return text.slice(start + 1, end);
 }
 
-// Reserved ranges in the header, written "Dxxx-Dyyy" or "Dxxx–Dyyy ... reserved".
 function reservedHigh(header) {
   let max = 0;
   const re = /D(\d+)\s*[-–—]\s*D(\d+)/g;
@@ -37,10 +43,16 @@ function reservedHigh(header) {
   return max;
 }
 
+function cutPhrase(text, phrase) {
+  const re = new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\d+', 'g');
+  return text.replace(re, ' ');
+}
+
 function highestId(text, letter) {
-  const stripped = text
-    .replace(new RegExp('Next free id is ' + letter + '\\d+', 'g'), ' ')
-    .replace(new RegExp('[Tt]he next free id is ' + letter + '\\d+', 'g'), ' ');
+  const lower = NEXT_FREE_LOWER + letter;
+  let stripped = cutPhrase(text, NEXT_FREE + letter);
+  stripped = cutPhrase(stripped, 'The ' + lower);
+  stripped = cutPhrase(stripped, 'the ' + lower);
   let max = 0;
   const re = new RegExp('\\b' + letter + '(\\d+)\\b', 'g');
   let m;
@@ -48,37 +60,58 @@ function highestId(text, letter) {
   return max;
 }
 
-function tableRows(text) {
+function definingRows(text) {
   const rows = [];
   const lines = text.split('\n');
   for (let i = 0; i < lines.length; i++) {
-    const m = /^\|\s*(D\d+|Q\d+)\s*\|/.exec(lines[i]);
-    if (m) rows.push({ id: m[1], line: i + 1 });
+    const table = /^\|\s*(D\d+|Q\d+)\s*\|/.exec(lines[i]);
+    if (table) rows.push({ id: table[1], line: i + 1 });
   }
   return rows;
 }
 
+function readFile(root, rel) {
+  try { return fs.readFileSync(path.join(root, rel), 'utf8'); }
+  catch (e) { return null; }
+}
+
+function nextFreeHits(header, letter) {
+  const phrase = NEXT_FREE + letter;
+  const found = [];
+  let from = 0;
+  while (from <= header.length) {
+    const index = header.indexOf(phrase, from);
+    if (index < 0) break;
+    const num = /^(\d+)/.exec(header.slice(index + phrase.length));
+    if (num) found.push({ id: +num[1], index });
+    from = index + phrase.length;
+  }
+  return found;
+}
+
 function scanDecisions(root) {
   const file = 'OPEN_DECISIONS.md';
-  const abs = path.join(root, file);
-  let text;
-  try { text = fs.readFileSync(abs, 'utf8'); }
-  catch (e) { return { ok: false, fails: [{ file, line: 1, reason: 'missing file' }] }; }
+  const archRel = 'archive/DECISIONS_SETTLED.md';
+  const text = readFile(root, file);
+  if (text == null) return { ok: false, fails: [{ file, line: 1, reason: 'missing file' }] };
+  const arch = readFile(root, archRel);
   const fails = [];
   const seen = new Map();
-  for (const row of tableRows(text)) {
-    const n = (seen.get(row.id) || 0) + 1;
-    seen.set(row.id, n);
-    if (n > 1 && !DUP_ALLOW.has(row.id)) {
-      fails.push({ file, line: row.line, reason: 'duplicate ' + row.id });
+  const sources = [{ file, text }];
+  if (arch != null) sources.push({ file: archRel, text: arch });
+  for (const src of sources) {
+    for (const row of definingRows(src.text)) {
+      const n = (seen.get(row.id) || 0) + 1;
+      seen.set(row.id, n);
+      if (n > 1 && !DUP_ALLOW.has(row.id)) {
+        fails.push({ file: src.file, line: row.line, reason: 'duplicate ' + row.id });
+      }
     }
   }
   const header = headerOf(text);
+  const corpus = arch == null ? text : text + '\n' + arch;
   for (const letter of ['D', 'Q']) {
-    const re = new RegExp('Next free id is ' + letter + '(\\d+)', 'g');
-    const found = [];
-    let m;
-    while ((m = re.exec(header))) found.push({ id: +m[1], index: m.index, raw: m[0] });
+    const found = nextFreeHits(header, letter);
     if (letter === 'Q' && found.length === 0) continue;
     if (found.length === 0) {
       fails.push({ file, line: 1, reason: 'missing next-free id' });
@@ -89,17 +122,17 @@ function scanDecisions(root) {
       continue;
     }
     const reserved = letter === 'D' ? reservedHigh(header) : 0;
-    const high = Math.max(highestId(text, letter), reserved);
+    const high = Math.max(highestId(corpus, letter), reserved);
     const want = high + 1;
     if (found[0].id !== want) {
       fails.push({
         file,
         line: lineAt(header, found[0].index),
-        reason: 'next free is ' + letter + found[0].id + ', highest used or reserved is ' + letter + high,
+        reason: 'next ' + 'free is ' + letter + found[0].id + ', highest used or reserved is ' + letter + high,
       });
     }
   }
   return { ok: fails.length === 0, fails };
 }
 
-module.exports = { scanDecisions, DUP_ALLOW };
+module.exports = { scanDecisions, DUP_ALLOW, definingRows };
