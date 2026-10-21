@@ -41,6 +41,25 @@ async function openFromMarigold(page) {
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
   await page.keyboard.press('Space');
   await page.waitForSelector('#ovWardrobe:not([hidden])');
+  await page.waitForTimeout(400);
+}
+
+function wardSnap(page) {
+  return page.evaluate(() => ({
+    money: PixelPets.state.money | 0,
+    flags: Object.keys(PixelPets.state.flags).filter(k => k.startsWith('wardrobe.')).sort()
+      .map(k => k + '=' + (PixelPets.state.flags[k] === true)),
+    acc: (PixelPets.state.party || []).map(p => (p.nick || p.id) + '=' + (p.accessory || 'none')),
+    v: PixelPets.state.v,
+    open: !document.querySelector('#ovWardrobe').hidden,
+  }));
+}
+
+async function dialogPoint(page, where) {
+  const box = await page.locator('#sbox').boundingBox();
+  const y = box.y + box.height * 0.72;
+  const x = where === 'left' ? box.x + 28 : where === 'right' ? box.x + box.width - 28 : box.x + box.width / 2;
+  return { x, y };
 }
 
 test('every form wears each new accessory', async ({ page }) => {
@@ -240,6 +259,50 @@ test('the picker fits a phone and keeps 44px targets', async ({ page }) => {
   expect(fit.scrolls).toBe(true);
   expect(fit.small).toEqual([]);
   expect(fit.v).toBe(2);
+});
+
+test('a touch tap that closes Marigold does not press the picker', async ({ page }, info) => {
+  test.skip(info.project.name !== '390', '390 touch');
+  const s = save();
+  s.money = 1000;
+  await boot(page, s);
+  await page.evaluate(() => PixelPets.goto('hm_wardrobe', 9, 3, 'up'));
+  const before = await wardSnap(page);
+  expect(before).toMatchObject({ money: 1000, flags: [], acc: ['Pipkit=none'], v: 2, open: false });
+
+  for (const where of ['left', 'centre', 'right']) {
+    await page.keyboard.press('Space');
+    await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.mode === 'say');
+    const pt = await dialogPoint(page, where);
+    await page.touchscreen.tap(pt.x, pt.y);
+    await page.waitForSelector('#ovWardrobe:not([hidden])');
+    await page.waitForTimeout(400);
+    const after = await wardSnap(page);
+    expect(after.money, where).toBe(before.money);
+    expect(after.flags, where).toEqual(before.flags);
+    expect(after.acc, where).toEqual(before.acc);
+    expect(after.open, where).toBe(true);
+    expect(after.v, where).toBe(2);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#ovWardrobe')).toBeHidden();
+  }
+
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.mode === 'say');
+  const close = await dialogPoint(page, 'centre');
+  await page.touchscreen.tap(close.x, close.y);
+  await page.waitForSelector('#ovWardrobe:not([hidden])');
+  await page.waitForTimeout(400);
+  const btn = page.locator('.ward-item[data-id="wick_charm"] .ward-act');
+  await btn.scrollIntoViewIfNeeded();
+  const bb = await btn.boundingBox();
+  await page.touchscreen.tap(bb.x + bb.width / 2, bb.y + bb.height / 2);
+  await expect(page.locator('#toast')).toHaveText('Wick charm is yours.');
+  const bought = await wardSnap(page);
+  expect(bought.money).toBe(880);
+  expect(bought.flags).toEqual(['wardrobe.wick_charm=true']);
+  expect(bought.acc).toEqual(['Pipkit=none']);
+  expect(bought.v).toBe(2);
 });
 
 test('the six prop lines are the P3 copy', async ({ page }) => {

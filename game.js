@@ -4973,7 +4973,8 @@ const WARD_FREE_COLOUR = [
   { id: 't', name: 'Teal' }, { id: 'b', name: 'Blue' }, { id: 'g', name: 'Green' }, { id: 'p', name: 'Plum' },
   { id: 'n', name: 'Navy' }, { id: 'r', name: 'Red' }, { id: 'm', name: 'Slate' },
 ];
-const wardUI = { tab: 'walkling', petId: null, preview: 'none', snap: '', cool: {} };
+const WARD_ARM_MS = 350;   // the tap that closes Marigold's line also clicks the card it just uncovered
+const wardUI = { tab: 'walkling', petId: null, preview: 'none', snap: '', cool: {}, openedAt: 0 };
 function wardLookSig(){
   const L = Object.assign({}, KEEPER_LOOKS.defaults, (S && S.player && S.player.look) || {});
   return (L.accessory || 'none') + '|' + (L.outfitCol || 't');
@@ -5178,6 +5179,7 @@ function openWardrobe(){
   const p = wardPet();
   wardUI.preview = (p && p.accessory) || 'none';
   wardUI.snap = wardLookSig();
+  wardUI.openedAt = performance.now();
   renderWardrobe();
   $('#ovWardrobe').hidden = false;
   lockTabs(true);
@@ -11750,6 +11752,16 @@ function bindInput(){
   }));
   const wardDoneBtn = $('#wardDone');
   if (wardDoneBtn) wardDoneBtn.addEventListener('click', () => { sfx('tap'); closeWardrobe(); });
+  const wardOv = $('#ovWardrobe');
+  if (wardOv) {
+    for (const ev of ['pointerdown', 'pointerup', 'click', 'touchstart', 'touchend']) {
+      wardOv.addEventListener(ev, e => {
+        if (wardOv.hidden || performance.now() >= wardUI.openedAt + WARD_ARM_MS) return;
+        e.preventDefault();
+        e.stopPropagation();
+      }, true);
+    }
+  }
   $('#lookCancel').addEventListener('click', () => { sfx('tap'); closeLook(); });
   const ln = $('#lookName');
   ln.addEventListener('input', () => { const v = ln.value.replace(BAD_NAME_CH, ''); if (v !== ln.value) ln.value = v; });   // `<b>` can't be typed

@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-21 07:21 ET: Wardrobe ghost tap (build 20261021-0721)
+
+- What changed and why: The tap that closes Keeper Marigold's line was also clicking the wardrobe card underneath. The picker now ignores pointer, touch and click for 350ms after it opens. Keyboard Space and Enter are left alone. Save stays `pixelpets.save.v2` with `v` 2. Green bug fix. No new id.
+- Files touched: `game.js`, `tests/wardrobe.spec.js`, `tests/market_row.spec.js`, `tests/coop_r2.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch, build 20261021-0721. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js` on wardrobe, market_row, tap_interact, and smoke. PP_TEST RESULT: PASS exit=0 passed=67 failed=0 flaky=0 skipped=2 time=61s. RTDB_RULES RESULT: PASS. The ghost-tap check runs at 390. Widths 320, 375 and 390. Console errors: none (a spec fails the run on a console error).
+- Decisions made (colour + reasoning): Green. No new id. No id was renumbered. Next free id stays D397.
+- Anything left unfinished: `#ovGeo` can still open on the same closing tap when location is unset. A scene step that opens `#ovSheet` on that same turn (the tune pick) can too. Those are noted and not changed. P4 stores are not started. Database rules are not deployed. The client is not deployed.
+
 ## 2026-10-21 07:00 ET: Parked Coach roof merge and holder label (build 20261021-0700)
 
 - What changed and why: Merged `origin/main` (Parked Coach barrel roof, #129, fc7b020) into wardrobe v1. Kept the `roof_coach` tile, diner rows 29-32, the door at (4, 31) and the mat landing `ty` 32, plus every P3 wardrobe change. `data/mapdata.js` was regenerated from the merged JSON. The look picker preview label is now "Your holder". Lowercase keeper is banned. Green wording fix. No new id. Save stays `pixelpets.save.v2` with `v` 2.

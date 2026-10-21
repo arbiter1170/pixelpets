@@ -128,6 +128,7 @@ test('Marigold opens Stitch & Lantern after her line', async ({ page }) => {
   expect(line.text).toBe('Stitch & Lantern. Try anything on. Your Walkling too.');
   await page.keyboard.press('Space');
   await page.waitForSelector('#ovWardrobe:not([hidden])');
+  await page.waitForTimeout(400);
   await expect(page.locator('#wardTitle')).toHaveText('STITCH & LANTERN');
   const shop = await page.evaluate(() => document.getElementById('ovShop').hidden);
   expect(shop).toBe(true);

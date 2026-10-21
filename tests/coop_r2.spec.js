@@ -454,6 +454,7 @@ test.describe('B1', () => {
       return !!(n && n.others.some(o => o.uid === uid));
     }, aUid, { timeout: 8000 });
     await a.evaluate(() => window.openWardrobe());
+    await a.waitForTimeout(400);
     await a.locator('#ovWardrobe .ward-tabs button[data-tab="holder"]').click();
     await a.locator('.ward-item[data-id="sash"] .ward-act').click();
     await expect(a.locator('#toast')).toHaveText('Keeper sash is yours.');
