@@ -245,7 +245,7 @@ add({'kind': 'pickup', 'id': 'hc_snack', 'x': 16, 'y': 36, 'item': 'heal_snack',
 SIGNS = {
     'hc_church': 'HIGH CHARITY CHAPEL · The doors stay open. Come in quiet, and leave a little warmer.',
     'hc_school': 'LANTERN SCHOOL · Lessons at the big table. Walklings may sit in, if they can sit still.',
-    'hc_bank': 'CIVIC BANK · Your coins are counted and kept. Withdrawals until dusk. Kindness has no fee.',
+    'hc_bank': 'CIVIC BANK · Your Acorns are counted and kept. Withdrawals until dusk. Kindness has no fee.',
     'hc_arena': 'CHARITY ARENA · Fair matches and a seat for every holder. Leave grudges at the rope.',
     'hc_barracks': 'KEEPER BARRACKS · Lamps, maps, and the night watch. Sign the book, then mind the banners.',
     'hc_command': 'SKY-DOCK COMMAND · Lantern airships berth here. Read the board before you step on a pad.',
