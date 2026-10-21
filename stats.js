@@ -40,6 +40,11 @@ const BASE_STATS = {               // key = form id "<speciesId>/<stage>" (save 
   'byte/0': { hp: 33, atk: 54, def: 30, spd: 75 }, 'byte/1': { hp: 44, atk: 72, def: 40, spd: 100 }, 'byte/2': { hp: 55, atk: 90, def: 50, spd: 125 },
   // fetch: NPC-only steady guardian. Totals 192 / 256 / 320.
   'fetch/0': { hp: 54, atk: 48, def: 48, spd: 42 }, 'fetch/1': { hp: 72, atk: 64, def: 64, spd: 56 }, 'fetch/2': { hp: 90, atk: 80, def: 80, spd: 70 },
+  // HUSHWATER B2 (D355): totals 192 / 256 / 320. Stage 0 and 1 are the final line times 0.6 and 0.8, largest remainder.
+  'skink/0': { hp: 39, atk: 60, def: 42, spd: 51 }, 'skink/1': { hp: 52, atk: 80, def: 56, spd: 68 }, 'skink/2': { hp: 65, atk: 100, def: 70, spd: 85 },
+  'otter/0': { hp: 48, atk: 51, def: 42, spd: 51 }, 'otter/1': { hp: 64, atk: 68, def: 56, spd: 68 }, 'otter/2': { hp: 80, atk: 85, def: 70, spd: 85 },
+  'owl/0':   { hp: 45, atk: 48, def: 36, spd: 63 }, 'owl/1':   { hp: 60, atk: 64, def: 48, spd: 84 }, 'owl/2':   { hp: 75, atk: 80, def: 60, spd: 105 },
+  'snail/0': { hp: 57, atk: 42, def: 63, spd: 30 }, 'snail/1': { hp: 76, atk: 56, def: 84, spd: 40 }, 'snail/2': { hp: 95, atk: 70, def: 105, spd: 50 },
 };
 const STAT_RULES = {
   LEVEL_CAP: 50, STARTER_LEVEL: 5, MIGRATED_LEVEL_MIN: 5, MIGRATED_LEVEL_MAX: 10,

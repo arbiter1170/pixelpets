@@ -309,7 +309,32 @@ const SPECIES = [
       '..oyy.oyy.oyy...',
       '..www.www.www...',
       '................']}
-  ]}
+  ]},
+  /* HUSHWATER B2: append-only. Signed-off halves from the A1 art pass, verbatim. */
+  { id:'skink', habitat:{hot:6, mountain:3, meadow:1}, tiles:'grass',
+    type:'EMBER', blurb:'A warm-rock skink. Basks all day.', stages:[
+    { name:'Tindlet', col:{a:PAL.r,b:PAL.o,c:PAL.p,d:PAL.y,x:PAL.p}, half:['........','........','........','........','........','........','.......c','....aaaa','...aaaaa','...aieaa','...aeeaa','...aaxxx','....abbb','...aabbb','....abbb','....aa.c']},
+    { name:'Cinderskink', col:{a:PAL.r,b:PAL.o,c:PAL.p,d:PAL.y,x:PAL.p}, half:['........','........','.......c','......cc','.....ccc','...aaacc','..aaaaaa','..aieaaa','..aeeaaa','..aaxxxx','...aaaaa','...abbbb','..aabbdd','...abbdd','...aabbb','..aa..dd']},
+    { name:'Kilncrest', col:{a:PAL.r,b:PAL.o,c:PAL.p,d:PAL.y,x:PAL.w}, half:['...d..d.','..dd.ddd','..ddddda','.aaaaaaa','aaaaaaaa','aieaaaaa','aeeaaaaa','aaaaccca','.aaaaaaa','..aaabbb','xaaaabbb','xa.aabbb','...aabbb','..aaaabb','.aaa..ac','.xx....c']}
+  ]},
+  { id:'otter', habitat:{water:6, cold:4, snow:3, rain:2}, tiles:'shore',
+    type:'FROST', blurb:'A spray otter with frosty whiskers.', stages:[
+    { name:'Rimelet', col:{a:PAL.s,b:PAL.w,c:PAL.b,d:PAL.h,x:PAL.d}, half:['........','........','........','........','........','........','........','...a....','...aaaaa','...aieaa','..daeeaa','..aaaaax','..aabbbb','..aabbbb','....aaaa','...cc...']},
+    { name:'Frostrill', col:{a:PAL.s,b:PAL.w,c:PAL.b,d:PAL.w,x:PAL.d}, half:['........','........','..d.....','..ad....','..aaaaaa','.aaaaaaa','.aaieaaa','.aaeeaaa','.daaaaax','.cdcdcdc','..aabbbb','.aaabbbb','.aaabbbb','..aabbbb','..aaaaaa','..cc..cc']},
+    { name:'Spraymane', col:{a:PAL.c,b:PAL.w,c:PAL.b,d:PAL.s,x:PAL.n}, half:['..aa....','.aaaaaaa','.aaaaaaa','daieaaaa','daeeaaaa','dd.aaaax','bddbbbbb','dbbdbbbb','bdbbbbbb','.dbbbdbb','..aabbbb','.aaabbbb','aaaabbbb','.aaabbbb','.aaaaaaa','.cccc.cc']}
+  ]},
+  { id:'owl', habitat:{night:7, fog:5, forest:2}, tiles:'woods', uiHalo:true,
+    type:'SHADE', blurb:'A hush owl. It hears the stream.', stages:[
+    { name:'Hushlet', col:{a:PAL.p,b:PAL.w,c:PAL.n,d:PAL.y,x:PAL.h}, half:['........','........','........','........','........','..a.....','..aaaaaa','..abbbbb','..beebbb','..beebbb','..abbbbx','..caaaaa','..ccaaaa','...caaaa','....d.d.','........']},
+    { name:'Quillhush', col:{a:PAL.p,b:PAL.w,c:PAL.n,d:PAL.y,x:PAL.h}, half:['........','........','.aa.....','..aa....','..aaaaaa','.abeeebb','.abeiebb','.abeeebb','.abbbbbx','.caabbbb','ccaaaaaa','ccaaxaaa','ccaaaaxa','.caaaaaa','....dd.d','........']},
+    { name:'Vesperowl', col:{a:PAL.p,b:PAL.w,c:PAL.n,d:PAL.y,x:PAL.h}, half:['aa......','.aa.....','.aaaaaaa','aabbbbbb','abeeeebb','abeieebb','abeeeebb','aabbbbbx','caabbbbx','ccaaaaaa','ccaxaaxa','ccaaaaaa','ccaaxaax','cc.aaaaa','...dd.dd','........']}
+  ]},
+  { id:'snail', habitat:{mountain:5, rain:4, forest:2, fog:1}, tiles:'woods',
+    type:'STONE', blurb:'A lichen snail with a mossy shell.', stages:[
+    { name:'Lichlet', col:{a:PAL.h,b:PAL.m,c:PAL.d,d:PAL.g,x:PAL.l}, half:['........','........','........','......aa','.....aax','....cccc','...aadaa','...aieaa','...aeeaa','...aabaa','..bbbbbb','..bbbbbc','.bbbbbbb','.ccccccc','cccccccc','........']},
+    { name:'Screeback', col:{a:PAL.h,b:PAL.m,c:PAL.d,d:PAL.g,x:PAL.l}, half:['........','........','.....axa','.....ccc','....aaaa','....adaa','...ccccc','..aaaaxa','..daieaa','..aaeeaa','..aaabaa','.bbbbbbb','.bbbbbbc','bbbbbbbb','cccccccc','cccccccc']},
+    { name:'Cairnshell', col:{a:PAL.h,b:PAL.m,c:PAL.d,d:PAL.g,x:PAL.l}, half:['......aa','.....aax','.....ccc','....aaaa','....xdaa','...ccccc','...aaaaa','..aadaax','..cccccc','.aaaieaa','.adaeeax','.aaaabaa','bbbbbbbb','bbbbbbbc','cccccccc','cccccccc']}
+  ]},
 ];
 
 // HUSHWATER B0: one fallback stage for a species id this client does not know.

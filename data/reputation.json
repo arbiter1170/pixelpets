@@ -137,6 +137,11 @@
       "base": 50
     },
     {
+      "name": "Fenna",
+      "faction": "none",
+      "base": 50
+    },
+    {
       "name": "Floor Keeper Sol",
       "faction": "keepers",
       "base": 50
@@ -298,6 +303,11 @@
       "base": 50
     },
     {
+      "name": "Nils",
+      "faction": "none",
+      "base": 50
+    },
+    {
       "name": "Nim",
       "faction": "none",
       "base": 50
@@ -344,6 +354,11 @@
     },
     {
       "name": "Ossabell",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Ottilie",
       "faction": "none",
       "base": 50
     },
