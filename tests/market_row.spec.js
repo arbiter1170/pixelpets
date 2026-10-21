@@ -223,12 +223,40 @@ test('the court shot is a line, and the schedules land on the row', async ({ pag
   expect(cast.v).toBe(2);
 
   await at(page, 'tue', 16, 0);
-  const after = await page.evaluate(() => ({
-    pip: PixelPets.clock.place('Pip'),
-    wren: PixelPets.clock.place('Wren'),
-  }));
+  const after = await page.evaluate(() => {
+    PixelPets.goto('hearthmoor', 16, 32, 'up');
+    const objs = PixelPets.mapInfo.objs;
+    const file = MAPDATA.detail_zz_market;
+    const looks = file.looks;
+    const worn = {};
+    for (const m of Object.values(file.maps || {})) {
+      for (const o of m.objs || []) if (o.look) worn[o.id] = o.look;
+    }
+    const added = file.slicePatch && file.slicePatch.maps && file.slicePatch.maps.hearthmoor;
+    for (const o of (added && added.addObjs) || []) if (o.look) worn[o.id] = o.look;
+    return {
+      pip: PixelPets.clock.place('Pip'),
+      wren: PixelPets.clock.place('Wren'),
+      onMap: {
+        pip: objs.find(o => o.id === 'court_pip'),
+        wren: objs.find(o => o.id === 'court_wren'),
+      },
+      keys: Object.keys(looks).filter(k => !k.startsWith('_')).sort(),
+      worn,
+    };
+  });
   expect(after.pip).toMatchObject({ map: 'hearthmoor', x: 16, y: 31, id: 'court_pip' });
-  expect(after.wren).toMatchObject({ map: 'hearthmoor', x: 16, y: 31, id: 'court_wren' });
+  expect(after.wren).toMatchObject({ map: 'hearthmoor', x: 17, y: 31, id: 'court_wren' });
+  expect(after.onMap.pip).toMatchObject({ x: 16, y: 31 });
+  expect(after.onMap.wren).toMatchObject({ x: 17, y: 31 });
+  expect(after.onMap.pip.x + ',' + after.onMap.pip.y).not.toBe(after.onMap.wren.x + ',' + after.onMap.wren.y);
+  expect(after.keys).toEqual([
+    'mr_arlo', 'mr_court_regular', 'mr_diner_regular', 'mr_hesper', 'mr_marigold', 'mr_quill', 'mr_rowan',
+  ]);
+  expect(after.worn).toMatchObject({
+    hm_rowan: 'mr_rowan', hm_quill: 'mr_quill', hm_marigold: 'mr_marigold', hm_hesper: 'mr_hesper',
+    diner_regular: 'mr_diner_regular', hm_arlo: 'mr_arlo', court_regular: 'mr_court_regular',
+  });
 
   await at(page, 'tue', 12, 0);
   const lunch = await page.evaluate(() => {

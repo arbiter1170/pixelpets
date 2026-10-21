@@ -9,13 +9,13 @@
   "ROUTE_VENDOR": "P4. Not built."
  },
  "looks": {
-  "quill": {"skin": "2", "hair": "bun", "hairCol": "n", "outfit": "coat", "outfitCol": "b", "accent": "y"},
-  "rowan": {"skin": "4", "hair": "short", "hairCol": "o", "outfit": "tunic", "outfitCol": "g", "accent": "l"},
-  "marigold": {"skin": "3", "hair": "long", "hairCol": "p", "outfit": "coat", "outfitCol": "r", "accent": "y"},
-  "hesper": {"skin": "5", "hair": "bun", "hairCol": "h", "outfit": "coat", "outfitCol": "o", "accent": "n"},
-  "arlo": {"skin": "3", "hair": "spiky", "hairCol": "y", "outfit": "tunic", "outfitCol": "b", "accent": "y"},
-  "diner_regular": {"skin": "4", "hair": "short", "hairCol": "d", "outfit": "hoodie", "outfitCol": "n", "accent": "o"},
-  "court_regular": {"skin": "2", "hair": "short", "hairCol": "m", "outfit": "hoodie", "outfitCol": "g", "accent": "c"}
+  "mr_quill": {"skin": "2", "hair": "bun", "hairCol": "n", "outfit": "coat", "outfitCol": "b", "accent": "y"},
+  "mr_rowan": {"skin": "4", "hair": "short", "hairCol": "o", "outfit": "tunic", "outfitCol": "g", "accent": "l"},
+  "mr_marigold": {"skin": "3", "hair": "long", "hairCol": "p", "outfit": "coat", "outfitCol": "r", "accent": "y"},
+  "mr_hesper": {"skin": "5", "hair": "bun", "hairCol": "h", "outfit": "coat", "outfitCol": "o", "accent": "n"},
+  "mr_arlo": {"skin": "3", "hair": "spiky", "hairCol": "y", "outfit": "tunic", "outfitCol": "b", "accent": "y"},
+  "mr_diner_regular": {"skin": "4", "hair": "short", "hairCol": "d", "outfit": "hoodie", "outfitCol": "n", "accent": "o"},
+  "mr_court_regular": {"skin": "2", "hair": "short", "hairCol": "m", "outfit": "hoodie", "outfitCol": "g", "accent": "c"}
  },
  "maps": {
   "hm_store": {
@@ -46,13 +46,13 @@
    ],
    "objs": [
     {"kind": "warp", "id": "store_mat", "x": 6, "y": 9, "to": "hearthmoor", "tx": 4, "ty": 27, "facing": "down"},
-    {"kind": "npc", "id": "hm_rowan", "name": "Keeper Rowan", "look": "rowan", "x": 3, "y": 2, "facing": "down", "friendSlot": "STORE_CLERK",
+    {"kind": "npc", "id": "hm_rowan", "name": "Keeper Rowan", "look": "mr_rowan", "x": 3, "y": 2, "facing": "down", "friendSlot": "STORE_CLERK",
      "lines": {"else": "Lamplight Provisions. Lantern stays lit. What do you need?"},
      "schedule": [
       {"when": "!phase:night", "map": "hm_store", "x": 3, "y": 2, "facing": "down"},
       {"map": null, "x": 0, "y": 0}
      ]},
-    {"kind": "npc", "id": "hm_quill", "name": "Keeper Quill", "look": "quill", "x": 3, "y": 2, "facing": "down", "friendSlot": "STORE_CLERK",
+    {"kind": "npc", "id": "hm_quill", "name": "Keeper Quill", "look": "mr_quill", "x": 3, "y": 2, "facing": "down", "friendSlot": "STORE_CLERK",
      "lines": {"else": "Lamplight Provisions. Lantern stays lit. What do you need?"},
      "schedule": [
       {"when": "phase:night", "map": "hm_store", "x": 3, "y": 2, "facing": "down"},
@@ -105,7 +105,7 @@
    ],
    "objs": [
     {"kind": "warp", "id": "wardrobe_mat", "x": 6, "y": 9, "to": "hearthmoor", "tx": 15, "ty": 27, "facing": "down"},
-    {"kind": "npc", "id": "hm_marigold", "name": "Keeper Marigold", "look": "marigold", "x": 9, "y": 2, "facing": "down", "friendSlot": "TAILOR",
+    {"kind": "npc", "id": "hm_marigold", "name": "Keeper Marigold", "look": "mr_marigold", "x": 9, "y": 2, "facing": "down", "friendSlot": "TAILOR",
      "lines": {"else": "Racks are still going up. Come back soon, and bring your Walkling."}},
     {"kind": "prop", "id": "ward_counter", "x": 8, "y": 3, "sprite": "kitchen_counter", "lines": {"else": "A cutting table. The sash cloth is still in bolts."}},
     {"kind": "prop", "id": "ward_counter_b", "x": 9, "y": 3, "sprite": "kitchen_counter"},
@@ -150,7 +150,7 @@
    ],
    "objs": [
     {"kind": "warp", "id": "diner_mat", "x": 5, "y": 7, "to": "hearthmoor", "tx": 4, "ty": 31, "facing": "down"},
-    {"kind": "npc", "id": "hm_hesper", "name": "Cook Hesper", "look": "hesper", "x": 3, "y": 2, "facing": "down", "friendSlot": "DINER_COOK",
+    {"kind": "npc", "id": "hm_hesper", "name": "Cook Hesper", "look": "mr_hesper", "x": 3, "y": 2, "facing": "down", "friendSlot": "DINER_COOK",
      "lines": {"else": "Sit anywhere. The stew is always on."},
      "meals": [
       {"id": "coach_stew", "name": "Coach Stew", "food": 30, "joy": 3, "price": 30},
@@ -162,7 +162,7 @@
       {"map": null, "x": 0, "y": 0}
      ]},
     {"kind": "sign", "id": "diner_night", "x": 3, "y": 2, "text": "Opens at 5. The stew stays on.", "when": ["away:Cook Hesper"]},
-    {"kind": "npc", "id": "diner_regular", "name": "Diner Regular", "look": "diner_regular", "x": 2, "y": 5, "facing": "right", "friendSlot": "DINER_REGULAR",
+    {"kind": "npc", "id": "diner_regular", "name": "Diner Regular", "look": "mr_diner_regular", "x": 2, "y": 5, "facing": "right", "friendSlot": "DINER_REGULAR",
      "lines": {"else": "FRIEND SLOT. Diner Regular says hi. One short line, written with the friend."}},
     {"kind": "npc", "id": "diner_lizzy", "name": "Lizzy", "look": "lizzy", "x": 9, "y": 4, "facing": "left", "when": ["story.lizzy_met"],
      "lines": {"else": "Board night. Pull up a crate."}},
@@ -213,9 +213,9 @@
      {"kind": "prop", "id": "hm_diner_barrel", "x": 1, "y": 31, "sprite": "barrel"},
      {"kind": "sign", "id": "hm_market_sign", "x": 1, "y": 28, "text": "MARKET ROW. Lamplight, Stitch & Lantern, the Parked Coach."},
      {"kind": "sign", "id": "hm_court_sign", "x": 11, "y": 32, "text": "LANTERNBALL COURT. First to five. Always open."},
-     {"kind": "npc", "id": "hm_arlo", "name": "Keeper cadet Arlo", "look": "arlo", "x": 18, "y": 30, "facing": "down",
+     {"kind": "npc", "id": "hm_arlo", "name": "Keeper cadet Arlo", "look": "mr_arlo", "x": 18, "y": 30, "facing": "down",
       "lines": {"else": "Next game is first to five. You in?"}},
-     {"kind": "npc", "id": "court_regular", "name": "Court Regular", "look": "court_regular", "x": 13, "y": 31, "facing": "right", "friendSlot": "COURT_REGULAR",
+     {"kind": "npc", "id": "court_regular", "name": "Court Regular", "look": "mr_court_regular", "x": 13, "y": 31, "facing": "right", "friendSlot": "COURT_REGULAR",
       "lines": {"else": "FRIEND SLOT. Court Regular says hi. One short line, written with the friend."}},
      {"kind": "prop", "id": "court_hoop_w", "x": 12, "y": 30, "sprite": "mr_hoop", "shot": true, "lines": {"else": "Take a shot. The hoop lantern flares."}},
      {"kind": "prop", "id": "court_hoop_e", "x": 20, "y": 30, "sprite": "mr_hoop", "shot": true, "lines": {"else": "Take a shot. The hoop lantern flares."}},
@@ -226,7 +226,7 @@
       "lines": {"else": "Saturday hoops. First to five."}},
      {"kind": "npc", "id": "court_pip", "name": "Pip", "look": "pip", "x": 16, "y": 31, "facing": "down",
       "lines": {"else": "After school we shoot hoops."}},
-     {"kind": "npc", "id": "court_wren", "name": "Wren", "look": "wren", "x": 16, "y": 31, "facing": "up",
+     {"kind": "npc", "id": "court_wren", "name": "Wren", "look": "wren", "x": 17, "y": 31, "facing": "up",
       "lines": {"else": "I call the next shot."}}
     ]
    }
