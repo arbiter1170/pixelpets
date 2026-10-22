@@ -364,7 +364,8 @@
             "wake_tonic",
             "befriend_treat",
             "energy_sip",
-            "joy_crumb"
+            "joy_crumb",
+            "lanternfly"
           ],
           "lines": {
             "else": "Welcome to Lantern Market!"

@@ -81,6 +81,7 @@ const PPSave = (() => {
   // Invalid values are deleted. Unknown keys on the pet stay. Relief is unique across party then box (keepOneRelief).
   const DEPLOY_CALLS = ['charge', 'brace', 'dart', 'greet'];
   const PET_ACCESSORIES = ['bell', 'ribbon', 'scarf', 'leaf', 'star', 'wick_charm', 'pin_badge', 'fern_scarf', 'clover_crown', 'willow_crown', 'lamp_cap'];
+  const PET_AURAS = ['emberwake', 'kilnsmoke', 'lanternfly'];
   const cleanDeployText = v => typeof v === 'string' ? v.replace(/[<>{}]/g, '').trim().slice(0, 40) : '';
   const shortId = v => typeof v === 'string' && v.length >= 1 && v.length <= 24 && /^[a-z0-9_]+$/.test(v);
   function fixHeldAccessoryDeploy(q){
@@ -90,6 +91,7 @@ const PPSave = (() => {
       } else if (!shortId(q.held)) delete q.held;
     }
     if (has(q, 'accessory') && !PET_ACCESSORIES.includes(q.accessory)) delete q.accessory;
+    if (has(q, 'aura') && !PET_AURAS.includes(q.aura)) delete q.aura;
     if (!has(q, 'deploy')) return;
     if (!isObj(q.deploy)) { delete q.deploy; return; }
     const d = q.deploy, next = {};
@@ -334,6 +336,10 @@ const PPSave = (() => {
     fill(s, 'debugSave', x => typeof x === 'boolean', false);                          // set once a debug session has saved; never cleared
     fill(s.settings, 'textSpeed', x => TEXT_SPEEDS.includes(x), 'normal'); fill(s.settings, 'battleAnims', x => typeof x === 'boolean', true);
     fill(s.settings, 'follower', x => typeof x === 'boolean', true);                 // MAPS_SLICE K.3, additive
+    fill(s.settings, 'effects', x => x === 'full' || x === 'calm' || x === 'off', (function () {
+      try { if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return 'calm'; } catch (e) {}
+      return 'full';
+    })());                                                                          // P3a D424: full, or calm when the phone asks for reduced motion
     fill(s.settings, 'music', x => typeof x === 'boolean', true);                    // MUSIC v0.1 Q2: in the save, default on
     fill(s.settings, 'musicVol', x => typeof x === 'number' && x >= 0 && x <= 1, 0.5); // Settings volume slider: 0 to 1, default half
     fill(s.settings, 'controls', x => x === 'arcade' || x === 'modern', 'arcade');      // Q26: missing or bad = arcade, so an old save keeps the pad

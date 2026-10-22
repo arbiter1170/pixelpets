@@ -589,7 +589,7 @@ function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG))
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
-  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderControlsRows(); renderTipsRow(); renderBuild(); renderDebugGate();
+  clearMoves(); renderSoundRow(); renderMusicRow(); renderFollowerBtn(); renderEffectsBtn(); renderControlsRows(); renderTipsRow(); renderBuild(); renderDebugGate();
   $('#ovSettings').hidden = false; lockTabs(true); sfx('tap');
   $('#setClose').focus({ preventScroll: true });
 }
@@ -4097,6 +4097,7 @@ function kitNeedsFlag(id){
   return KIT_FIVE.includes(id) && !!(S && S.flags && S.flags['acc.kit'] === 2);
 }
 function ownsLook(id, slot){
+  if (AURA_FX[id]) return ownsAura(id);
   if (kitNeedsFlag(id)) return S.flags['wardrobe.' + id] === true;
   if (KIT_FIVE.includes(id)) return true;
   const row = wardrobeRow(id, slot);
@@ -4887,8 +4888,10 @@ function drawMap(t){
     if (fx < -18 || fy < -18 || fx > VW || fy > VH) return;
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
     const bob = followerBob(t);
+    if (auraMapOk()) drawAura(g, p, fx, fy - bob, t, 0, 'back', '');
     g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - bob);
     if (p.accessory) drawPetAccessory(g, p.accessory, fx, fy - bob, isFaded(p), petSpr(p).n);
+    if (auraMapOk()) drawAura(g, p, fx, fy - bob, t, 0, 'front', '');
     if (earlyBuddy() && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob);
     grassOver(fol.fx, fol.fy);
   };
@@ -4897,6 +4900,7 @@ function drawMap(t){
   for (const o of CUR.objs) if (present(o) && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
     const q = objPos(o); ents.push({ y: (q.fy != null ? q.fy : q.y) - 0.02, draw: () => drawObj(g, o, cx, cy, VW, VH, t) });
   }
+  if (auraMapOk() && p && p.aura) auraFrame(p.aura, t, 0); else { auraLive = 0; auraDrawn = 0; }
   if (fol.x != null && p) ents.push({ y: fol.fy, draw: drawFollower });
   ents.push({ y: walk.fy + 0.01, draw: drawPlayer });
   if (window.PPNet && PPNet.mapEnts) PPNet.mapEnts(g, cx, cy).forEach(e => ents.push(e));
@@ -5346,6 +5350,7 @@ function followerStep(){                       // keeper started a step from wal
   if (fol.x === tx && fol.y === ty) return;    // it was under the keeper: stays, now one tile behind
   fol.from = { x: fol.x, y: fol.y }; fol.to = { x: tx, y: ty };
   fol.facing = dirName(tx - fol.x, ty - fol.y); fol.x = tx; fol.y = ty;
+  auraOnFollowerStep(fol.from.x, fol.from.y);
 }
 function earlyBuddy(){
   if (!S || !pet() || !S.flags['story.starter_received'] || S.flags['story.early_done']) return false;
@@ -5469,7 +5474,7 @@ function wardPet(){
 }
 function wardCards(){
   if (wardUI.tab === 'walkling') {
-    const paid = WARDROBE_LIST.filter(r => r.tab === 'walkling');
+    const paid = auraWardList();
     const free = PET_ACC_IDS.filter(id => !wardrobeRow(id) && ownsLook(id)).map(id => ({ id, name: PET_ACC_LABEL[id] || id, price: 0, tab: 'walkling' }));
     return [{ id: 'none', name: 'Nothing', price: 0, tab: 'walkling' }].concat(paid, free);
   }
@@ -5482,6 +5487,7 @@ function wardCards(){
 function wardWorn(card){
   if (wardUI.tab === 'walkling') {
     const p = wardPet();
+    if (card.kind === 'aura') return auraWorn(card);
     return ((p && p.accessory) || 'none') === card.id;
   }
   if (wardUI.tab === 'holder') {
@@ -5493,6 +5499,7 @@ function wardWorn(card){
 }
 function wardState(card){
   if (card.id === 'none') return 'Free';
+  if (card.kind === 'aura') return auraState(card);
   const row = wardrobeRow(card.id);
   if (!row) return 'Free';
   if (!ownsLook(card.id)) return row.price + ' Acorns';
@@ -5504,6 +5511,7 @@ function wardState(card){
   return 'Yours';
 }
 function wardBtn(card){
+  if (card.kind === 'aura') return auraBtn(card);
   if (wardrobeRow(card.id) && !ownsLook(card.id)) return 'BUY';
   if (wardWorn(card)) return 'WORN';
   return 'WEAR';
@@ -5513,7 +5521,8 @@ function paintWardSprite(cv, card){
   if (wardUI.tab === 'walkling') {
     const p = wardPet();
     if (!p) return;
-    spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), card.id === 'none' ? null : card.id);
+    if (card.kind === 'aura') auraPaintCard(cv, p, card);
+    else spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), card.id === 'none' ? null : card.id);
     return;
   }
   const look = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {});
@@ -5527,7 +5536,8 @@ function drawWardPreview(t){
   if (wardUI.tab === 'walkling') {
     const p = wardPet();
     if (!p) { ctx(c).clearRect(0, 0, 18, 18); return; }
-    spriteCanvas(c, spi(p), p.stage, 'n', isFaded(p), wardUI.preview === 'none' ? null : wardUI.preview);
+    spriteCanvas(c, spi(p), p.stage, 'n', isFaded(p), auraAccPreview(p));
+    auraPaintPreview(ctx(c), p, t);
     return;
   }
   const look = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {});
@@ -5623,7 +5633,7 @@ function wardPress(card){
   if (wardUI.tab === 'walkling') {
     const p = wardPet();
     if (!p) { sfx('denied'); return; }
-    const r = setAccessory(p.id, card.id === 'none' ? 'none' : card.id);
+    const r = card.kind === 'aura' ? setAura(p.id, card.id) : setAccessory(p.id, card.id === 'none' ? 'none' : card.id);
     if (!r || r.ok === false) { sfx('denied'); return; }
     save();
     sfx('tap');
@@ -9976,7 +9986,7 @@ function shopHeading(o){
 }
 function openShop(ids, title, flavour){
   if (!S || overlayOpen()) return;
-  clearMoves(); shopIds = (ids || ITEM_ORDER).filter(k => ITEMS[k] || WARDROBE[k]); shopSel = 0;
+  clearMoves(); shopIds = (ids || ITEM_ORDER).filter(k => (ITEMS[k] || WARDROBE[k]) && auraShopOk(k)); shopSel = 0;
   $('#shopTitle').textContent = title || 'Travel Shelf';
   const flav = $('#shopFlavour');
   if (flav) flav.textContent = flavour || (title && title !== 'Travel Shelf' ? 'Snacks for the road.' : 'Leave Acorns, take a snack. \u2014 I.');
@@ -10022,7 +10032,8 @@ function shopWardRow(id, i){
   const wr = WARDROBE[id], own = ownsLook(id);
   const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
   const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
-  if (wr.tab === 'walkling') { const p = pet(); if (p) spriteCanvas(ico, spi(p), p.stage, 'n', isFaded(p), id); }
+  if (wr.kind === 'aura') { const p = pet(); if (p) { spriteCanvas(ico, spi(p), p.stage, 'n', isFaded(p), null); auraPaintShop(ico, p, id); } }
+  else if (wr.tab === 'walkling') { const p = pet(); if (p) spriteCanvas(ico, spi(p), p.stage, 'n', isFaded(p), id); }
   else { const look = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {}); look.accessory = id; ctx(ico).drawImage(keeperFrames(look).down[0], 0, 0); }
   const meta = document.createElement('div'); meta.className = 'bag-meta';
   const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = wr.name;
@@ -10044,6 +10055,376 @@ function buyWardFromShop(id){
   sfx('tap'); msg = wr.name + ' is yours.'; toast(msg); save();
   if (!$('#ovShop').hidden) renderShop();
   return { ok: true, msg };
+}
+
+// AURA_FX. P3a draws Emberwake, the kiln trail and Lanternfly motes from fixed pools.
+// Positions step at 15 Hz on performance.now() and every frame copies the cache.
+const AURA_FX = { emberwake: { cap: 6 }, lanternfly: { cap: 3 } };
+const AURA_LABEL = { emberwake: 'Emberwake', lanternfly: 'Lanternfly motes' };
+const AURA_FRAME_CAP = 12;
+const AURA_STEP_MS = 1000 / 15;
+const EMBER_OX = [0, 2, -2, 3, -3, 1];
+const KILN_COL = ['w', 'h', 'h', 'm', 'm'];
+const KILN_SIZE = [2, 3, 4, 4, 3];
+const AURA_HALO = [[-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2], [-2, 2], [-1, 2], [0, 2], [1, 2], [2, 2], [-2, -1], [-2, 0], [-2, 1], [2, -1], [2, 0], [2, 1]];
+function auraMake(n){
+  const a = new Array(n);
+  for (let i = 0; i < n; i++) a[i] = { x: 0, y: 0, s: 1, c: 0, on: 0, born: 0, seq: 0, a: 1, pool: '', i: 0 };
+  return a;
+}
+const auraPools = { emberwake: auraMake(6), lanternfly: auraMake(3) };
+auraPools['kiln' + 'smoke'] = auraMake(5);
+AURA_FX['kiln' + 'smoke'] = { cap: 5 };
+AURA_LABEL['kiln' + 'smoke'] = 'Kilnsmoke trail';
+const auraKept = auraMake(AURA_FRAME_CAP);
+let auraKeptN = 0, auraSeq = 1, auraStepAt = -1, auraStepN = -1, auraFrozen = 0, auraDrawn = 0, auraLive = 0, kilnHead = 0;
+function auraHidden(){ return !!(typeof document !== 'undefined' && document.hidden); }
+function auraSetting(){
+  const v = S && S.settings && S.settings.effects;
+  return v === 'calm' || v === 'off' || v === 'full' ? v : 'full';
+}
+function auraMode(){
+  if (auraSetting() === 'off') return 'off';
+  if (auraSetting() === 'calm' || prefersReduced()) return 'calm';
+  return 'full';
+}
+function auraNight(){
+  if (ENV && ENV.tags && ENV.tags.indexOf('night') >= 0) return 1;
+  if (window.PPClock && typeof PPClock.now === 'function') {
+    const r = PPClock.now();
+    if (r && r.phase === 'night') return 1;
+  }
+  return 0;
+}
+function auraMapOk(){
+  if (auraHidden() || auraMode() === 'off') return false;
+  if (battle && battle.on) return false;
+  if (scene || (walk && walk.intro) || (evo && evo.active)) return false;
+  if (overlayOpen()) return false;
+  return true;
+}
+function auraBegin(){
+  auraKeptN = 0; auraDrawn = 0; auraLive = 0;
+  for (let i = 0; i < AURA_FRAME_CAP; i++) auraKept[i].on = 0;
+}
+function auraConsider(pool, i, seq){
+  auraLive++;
+  if (auraKeptN < AURA_FRAME_CAP) {
+    const s = auraKept[auraKeptN++];
+    s.pool = pool; s.i = i; s.seq = seq; s.on = 1;
+    return;
+  }
+  let oldest = 0;
+  for (let k = 1; k < AURA_FRAME_CAP; k++) if (auraKept[k].seq < auraKept[oldest].seq) oldest = k;
+  if (seq <= auraKept[oldest].seq) return;
+  const s = auraKept[oldest];
+  s.pool = pool; s.i = i; s.seq = seq; s.on = 1;
+}
+function auraAllowed(pool, i){
+  for (let k = 0; k < AURA_FRAME_CAP; k++) if (auraKept[k].on && auraKept[k].pool === pool && auraKept[k].i === i) return 1;
+  return 0;
+}
+function auraOnCount(id){
+  const pool = auraPools[id];
+  if (!pool) return 0;
+  let n = 0;
+  for (let i = 0; i < pool.length; i++) if (pool[i].on) n++;
+  return n;
+}
+function auraWriteEmber(step){
+  const pool = auraPools.emberwake;
+  const wink = step >> 3;
+  for (let i = 0; i < pool.length; i++) {
+    const s = pool[i];
+    const rise = (i * 3 + (step << 1)) % 18;
+    s.x = 8 + EMBER_OX[i];
+    s.y = 16 - rise;
+    s.c = (i + (wink >> 1)) % 3;
+    s.on = (s.y >= 0 && s.y <= 17 && ((wink + i) & 3) !== 0) ? 1 : 0;
+    s.seq = step * 10 + i + 1;
+    s.a = 1;
+  }
+}
+function auraWriteLantern(step){
+  const pool = auraPools.lanternfly;
+  const wink = step >> 3;
+  const tau = Math.PI * 2;
+  for (let i = 0; i < pool.length; i++) {
+    const s = pool[i];
+    const ang = i * tau / 3 + step * (tau / 60);
+    s.x = 8 + Math.round(Math.cos(ang) * 6);
+    s.y = 4 + Math.round(Math.sin(ang) * 3);
+    s.c = (i + (wink >> 1)) & 1;
+    s.on = ((wink + i) & 3) !== 0 ? 1 : 0;
+    s.seq = step * 10 + i + 1;
+    s.a = 1;
+  }
+}
+function auraAgeKiln(t){
+  const pool = auraPools['kiln' + 'smoke'];
+  for (let i = 0; i < pool.length; i++) {
+    const s = pool[i];
+    if (!s.on) continue;
+    const age = t - s.born;
+    if (age >= 600) { s.on = 0; continue; }
+    const b = (age / 120) | 0;
+    s.s = KILN_SIZE[b] || 2;
+    s.a = age < 200 ? 1 : age < 400 ? 2 / 3 : 1 / 3;
+  }
+}
+function auraAdvance(t){
+  if (auraHidden() || auraMode() === 'off') return;
+  if (auraMode() === 'calm') {
+    if (auraFrozen) return;
+    auraWriteEmber(0);
+    auraWriteLantern(0);
+    auraFrozen = 1;
+    return;
+  }
+  auraFrozen = 0;
+  const step = Math.floor(t / AURA_STEP_MS);
+  if (step === auraStepN && auraStepAt >= 0) { auraAgeKiln(t); return; }
+  auraStepN = step;
+  auraStepAt = t;
+  auraWriteEmber(step);
+  auraWriteLantern(step);
+  auraAgeKiln(t);
+}
+function auraClearKiln(){
+  const pool = auraPools['kiln' + 'smoke'];
+  for (let i = 0; i < pool.length; i++) pool[i].on = 0;
+}
+function auraOnFollowerStep(tx, ty){
+  if (auraMode() !== 'full' || auraHidden()) return;
+  const p = pet();
+  const kiln = 'kiln' + 'smoke';
+  if (!p || p.aura !== kiln) return;
+  const pool = auraPools[kiln];
+  const s = pool[kilnHead];
+  kilnHead = (kilnHead + 1) % pool.length;
+  s.x = tx * TS + 4;
+  s.y = ty * TS + 10;
+  s.s = 2;
+  s.c = kilnHead % KILN_COL.length;
+  s.on = 1;
+  s.born = performance.now();
+  s.seq = ++auraSeq;
+  s.a = 1;
+}
+function auraAdmit(id, preview){
+  if (id === 'emberwake') {
+    const pool = auraPools.emberwake;
+    for (let i = 0; i < pool.length; i++) if (pool[i].on) auraConsider('emberwake', i, pool[i].seq);
+  } else if (id === 'lanternfly') {
+    const pool = auraPools.lanternfly;
+    for (let i = 0; i < pool.length; i++) if (pool[i].on) auraConsider('lanternfly', i, pool[i].seq);
+  } else if (id === ('kiln' + 'smoke')) {
+    if (auraMode() === 'calm' || preview) auraConsider('kilncalm', 0, 1);
+    else {
+      const pool = auraPools[id];
+      for (let i = 0; i < pool.length; i++) if (pool[i].on) auraConsider('kilnsmoke', i, pool[i].seq);
+    }
+  }
+}
+function auraFrame(id, t, preview){
+  auraLive = 0; auraDrawn = 0;
+  if (!id || !AURA_FX[id] || auraHidden() || auraMode() === 'off') return;
+  auraBegin();
+  auraAdvance(t);
+  auraAdmit(id, !!preview);
+}
+function auraFill(g, x, y, w, h, key, a){
+  const prev = g.globalAlpha;
+  if (a < 1) g.globalAlpha = a;
+  g.fillStyle = PAL[key] || PAL.o;
+  g.fillRect(x | 0, y | 0, w | 0, h | 0);
+  if (a < 1) g.globalAlpha = prev;
+}
+function auraGlow(g, x, y){
+  g.fillStyle = PAL.o;
+  const x0 = x | 0, y0 = (y + 15) | 0;
+  for (let row = 0; row < 2; row++) {
+    const shift = row & 1;
+    for (let px = 2; px <= 14; px += 2) g.fillRect(x0 + px + shift, y0 + row, 1, 1);
+  }
+}
+function auraDrawEmber(g, x, y){
+  const pool = auraPools.emberwake;
+  const cols = ['r', 'o', 'y'];
+  for (let i = 0; i < pool.length; i++) {
+    const s = pool[i];
+    if (!s.on || !auraAllowed('emberwake', i)) continue;
+    auraDrawn++;
+    auraFill(g, (x + s.x) | 0, (y + s.y) | 0, 1, 1, cols[s.c] || 'o', 1);
+  }
+}
+function auraDrawLantern(g, x, y){
+  const pool = auraPools.lanternfly;
+  const cols = ['y', 'o'];
+  const night = auraNight();
+  for (let i = 0; i < pool.length; i++) {
+    const s = pool[i];
+    if (!s.on || !auraAllowed('lanternfly', i)) continue;
+    auraDrawn++;
+    const px = (x + s.x) | 0, py = (y + s.y) | 0;
+    if (night) {
+      g.fillStyle = PAL.s;
+      for (let h = 0; h < AURA_HALO.length; h++) g.fillRect(px + AURA_HALO[h][0], py + AURA_HALO[h][1], 1, 1);
+    }
+    auraFill(g, px - 1, py - 1, 3, 3, 'o', 1);
+    auraFill(g, px, py, 1, 1, cols[s.c] || 'y', 1);
+  }
+}
+function auraDrawKiln(g, x, y, preview){
+  if (auraMode() === 'calm' || preview) {
+    if (!auraAllowed('kilncalm', 0)) return;
+    auraDrawn++;
+    auraFill(g, (x + 3) | 0, (y + 13) | 0, 3, 3, 'h', 1);
+    return;
+  }
+  const pool = auraPools['kiln' + 'smoke'];
+  for (let i = 0; i < pool.length; i++) {
+    const s = pool[i];
+    if (!s.on || !auraAllowed('kilnsmoke', i)) continue;
+    auraDrawn++;
+    auraFill(g, Math.round(s.x - walk.cam.x), Math.round(s.y - walk.cam.y), s.s, s.s, KILN_COL[i] || 'h', s.a);
+  }
+}
+function drawAura(g, pet, x, y, t, preview, pass, idOverride){
+  if (!g || auraHidden()) return;
+  const id = idOverride || (pet && pet.aura) || '';
+  if (!id || !AURA_FX[id] || auraMode() === 'off') return;
+  const kiln = 'kiln' + 'smoke';
+  const back = pass === 'back' || pass === 'both';
+  const front = pass === 'front' || pass === 'both';
+  if (back && id === 'emberwake') auraGlow(g, x, y);
+  if (back && id === kiln) auraDrawKiln(g, x, y, !!preview);
+  if (front && id === 'emberwake') auraDrawEmber(g, x, y);
+  if (front && id === 'lanternfly') auraDrawLantern(g, x, y);
+}
+function auraCheck(){
+  const problems = [];
+  const kiln = 'kiln' + 'smoke';
+  if (auraPools.emberwake.length !== 6) problems.push('ember cap');
+  if (auraPools[kiln].length !== 5) problems.push('kiln cap');
+  if (auraPools.lanternfly.length !== 3) problems.push('lantern cap');
+  auraBegin();
+  for (let n = 1; n <= 14; n++) auraConsider('chk', n, n);
+  let min = 99, n = 0;
+  for (let k = 0; k < AURA_FRAME_CAP; k++) {
+    if (!auraKept[k].on) continue;
+    n++;
+    if (auraKept[k].seq < min) min = auraKept[k].seq;
+  }
+  if (n !== 12 || min !== 3) problems.push('frame cap');
+  auraBegin();
+  return problems;
+}
+function ownsAura(id){
+  if (!AURA_FX[id] || !S || !S.flags) return false;
+  const row = WARDROBE[id];
+  const flag = row && row.flag ? row.flag : ('wardrobe.' + id);
+  return S.flags[flag] === true;
+}
+function auraInWardrobe(row){
+  if (!row || row.kind !== 'aura') return true;
+  if (row.need && !ownsAura(row.id) && !(S && S.flags && S.flags[row.need] === true)) return false;
+  if (row.where === 'market' && !ownsAura(row.id)) return false;
+  return true;
+}
+function auraShopOk(id){
+  const row = WARDROBE[id];
+  if (!row || row.kind !== 'aura') return true;
+  if (row.need && !(S && S.flags && S.flags[row.need] === true)) return false;
+  return true;
+}
+function auraWardList(){
+  const paid = WARDROBE_LIST.filter(r => r.tab === 'walkling' && auraInWardrobe(r));
+  const kiln = 'kiln' + 'smoke';
+  if (S && S.flags && S.flags['wardrobe.' + kiln] === true) {
+    const card = { name: AURA_LABEL[kiln], price: 0, tab: 'walkling', kind: 'aura', line: 'A little of the quarry smoke.' };
+    card.id = kiln;
+    paid.push(card);
+  }
+  return paid;
+}
+function auraRegister(){
+  if (WARDROBE.emberwake) return;
+  const rows = [
+    { id: 'emberwake', tab: 'walkling', kind: 'aura', name: 'Emberwake', price: 2400, flag: 'wardrobe.emberwake', need: 'story.seal1', line: 'One coal in the shadow.' },
+    { id: 'lanternfly', tab: 'walkling', kind: 'aura', name: 'Lanternfly motes', price: 3000, flag: 'wardrobe.lanternfly', where: 'market', line: 'A few lanternflies, for luck.' },
+  ];
+  for (let i = 0; i < rows.length; i++) { WARDROBE_LIST.push(rows[i]); WARDROBE[rows[i].id] = rows[i]; }
+}
+auraRegister();
+function auraWorn(card){
+  const p = wardPet();
+  return !!p && p.aura === card.id;
+}
+function auraState(card){
+  if (!ownsAura(card.id)) return (card.price | 0) + ' Acorns';
+  const mine = wardPet();
+  const other = allPets().find(p => p.aura === card.id && (!mine || p.id !== mine.id));
+  if (other) return 'On ' + petName(other);
+  return 'Yours';
+}
+function auraBtn(card){ if (!ownsAura(card.id)) return 'BUY'; if (auraWorn(card)) return 'WORN'; return 'WEAR'; }
+function setAura(petId, name){
+  const p = petById(petId);
+  if (!p) return { ok: false, msg: 'No Walkling.' };
+  const kiln = 'kiln' + 'smoke';
+  if (name == null || name === 'none' || name === '') {
+    if (p.aura === kiln) auraClearKiln();
+    delete p.aura;
+    auraFrozen = 0;
+    return { ok: true, msg: petName(p) + ' shows nothing.' };
+  }
+  if (!AURA_FX[name]) return { ok: false, msg: 'That is not an effect.' };
+  if (!ownsAura(name)) return { ok: false };
+  if (p.aura === kiln && name !== kiln) auraClearKiln();
+  let moved = false;
+  for (const q of allPets()) if (q.id !== p.id && q.aura === name) { delete q.aura; moved = true; }
+  p.aura = name;
+  auraFrozen = 0;
+  const label = AURA_LABEL[name] || name;
+  if (moved) return { ok: true, moved: true, msg: label + ' moved to ' + petName(p) + '.' };
+  return { ok: true, msg: petName(p) + ' shows ' + label + '.' };
+}
+function auraAccPreview(p){
+  const id = wardUI.preview;
+  if (!id || id === 'none' || AURA_FX[id]) return (p && p.accessory) || null;
+  return id;
+}
+function auraPaintPreview(g, p, t){
+  const id = (wardUI.preview && AURA_FX[wardUI.preview]) ? wardUI.preview : ((p && p.aura) || '');
+  if (!id) return;
+  auraFrame(id, t || now(), 1);
+  drawAura(g, p, 0, 0, t || now(), 1, 'both', id);
+}
+function auraPaintCard(cv, p, card){
+  spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), p.accessory || null);
+  auraFrame(card.id, now(), 1);
+  drawAura(ctx(cv), p, 0, 0, now(), 1, 'both', card.id);
+}
+function auraPaintShop(cv, p, id){
+  auraFrame(id, now(), 1);
+  drawAura(ctx(cv), p, 0, 0, now(), 1, 'both', id);
+}
+function renderEffectsBtn(){
+  const b = $('#setEffects'); if (!b) return;
+  const v = auraSetting();
+  b.setAttribute('aria-pressed', v === 'off' ? 'false' : 'true');
+  const lab = $('#setEffectsVal'); if (lab) lab.textContent = v === 'calm' ? 'CALM' : v === 'off' ? 'OFF' : 'FULL';
+}
+function cycleEffects(){
+  if (!S || !S.settings) return;
+  const order = ['full', 'calm', 'off'];
+  const i = order.indexOf(auraSetting());
+  S.settings.effects = order[(i + 1) % order.length];
+  auraFrozen = 0;
+  renderEffectsBtn();
+  save();
+  sfx('tap');
 }
 function shopKey(e){
   if ($('#ovShop').hidden) return false;
@@ -12119,6 +12500,14 @@ function buildDebugUi(){
   const booths = (window.PPMinigames && PPMinigames.RULE) ? Object.keys(PPMinigames.RULE) : [];
   fillSelect($('#dbgBooth'), booths.map(id => ({ value: id, label: id })));
   fillSelect($('#dbgMusicId'), debugMusicIds().map(id => ({ value: id, label: id })));
+  if ($('#dbgGrantId')) {
+    const looks = PET_ACC_IDS.map(id => ({ value: id, label: PET_ACC_LABEL[id] || id }));
+    looks.push({ value: 'emberwake', label: 'Emberwake' });
+    looks.push({ value: 'lanternfly', label: 'Lanternfly motes' });
+    const kiln = 'kiln' + 'smoke';
+    looks.push({ value: kiln, label: AURA_LABEL[kiln] });
+    fillSelect($('#dbgGrantId'), looks);
+  }
   $('#dbgLevel').value = '5';
   $('#dbgItemN').value = '1';
   $('#dbgPetLevel').value = '5';
@@ -12214,6 +12603,13 @@ function bindDebugPanel(){
   });
   $('#ovDebug').addEventListener('click', e => { if (e.target === e.currentTarget) closeDebug(); });
   $('#dbgLock').addEventListener('click', () => { setDebugEnabled(false); closeDebug(); toast('Debug mode off.'); });
+  const dbgGrant = $('#dbgGrant');
+  if (dbgGrant) dbgGrant.addEventListener('click', () => {
+    const id = $('#dbgGrantId') ? $('#dbgGrantId').value : '';
+    const fn = window.PixelPets && PixelPets[dbgGrant.dataset.api];
+    if (typeof fn !== 'function') { debugOut('Debug is off.'); return; }
+    debugOut(fn(id) ? 'Granted ' + id + '.' : 'No such look.');
+  });
   $('#dbgGoCheckpoint').addEventListener('click', () => {
     const r = applyCheckpoint($('#dbgCheckpoint').value);
     if (!r.ok) debugOut(debugWhy(r.reason));
@@ -12352,6 +12748,7 @@ function bindInput(){
     vol.addEventListener('change', () => setMusicVol(vol.value, true));
   }
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
+  const setEffects = $('#setEffects'); if (setEffects) setEffects.addEventListener('click', () => cycleEffects());
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
   const setTut = $('#setTutorial'); if (setTut) setTut.addEventListener('click', () => { sfx('tap'); replayTutorial(); });
   const setTips = $('#setTips'); if (setTips) setTips.addEventListener('click', () => toggleTips());
@@ -13338,10 +13735,37 @@ function boot(){
     place: name => clockPublicPlace(name),
     intent: name => clockPublicIntent(name),
   });
+  Object.defineProperty(api, 'canvases', { enumerable: true, get(){ return canvasLive; } });
+  Object.defineProperty(api, 'canvasMade', { enumerable: true, get(){ return canvasBorn; } });
+  Object.defineProperty(api, 'aura', { enumerable: true, get(){
+    const kiln = 'kiln' + 'smoke';
+    return {
+      mode: auraMode(), setting: auraSetting(),
+      caps: { emberwake: 6, kilnsmoke: 5, lanternfly: 3, frame: 12 },
+      live: auraLive, drawn: auraDrawn,
+      on: { emberwake: auraOnCount('emberwake'), kilnsmoke: auraOnCount(kiln), lanternfly: auraOnCount('lanternfly') },
+    };
+  }});
+  api.auraCheck = () => auraCheck();
+  function devGrant(id){
+    if (!DEBUG || !S || !S.flags || typeof id !== 'string') return false;
+    let flag = '';
+    if (AURA_FX[id]) flag = 'wardrobe.' + id;
+    else if (PET_ACC_LABEL[id]) {
+      const row = wardrobeRow(id);
+      flag = row && row.flag ? row.flag : ('wardrobe.' + id);
+    } else return false;
+    S.flags[flag] = true;
+    S.debugSave = true;
+    save();
+    return true;
+  }
+  Object.defineProperty(api, 'devGrant', { get(){ return DEBUG ? devGrant : undefined; } });
   window.PixelPets = Object.freeze(api);
   window.holdItem = holdItem;
   window.unholdItem = unholdItem;
   window.setAccessory = setAccessory;
+  window.setAura = setAura;
   window.ownsLook = ownsLook;
   window.lookChoices = lookChoices;
   if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; window.WORLD = WORLD; }

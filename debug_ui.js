@@ -134,6 +134,11 @@ window.PP_DEBUG_HTML = `
       <ol id="dbgErrorList" class="dbg-errors"></ol>
     </section>
     <p id="dbgOut" class="dbg-out" hidden></p>
+    <section class="dbg-sec">
+      <div class="dbg-h">Wardrobe</div>
+      <select id="dbgGrantId" aria-label="Walkling look"></select>
+      <button id="dbgGrant" class="btn sm" type="button" data-api="devGrant">GRANT</button>
+    </section>
     <button id="dbgLock" class="btn sm btn-danger" type="button">LOCK DEBUG</button>
     <button id="dbgClose" class="btn btn-play" type="button">CLOSE</button>
   </div>
