@@ -38,6 +38,25 @@ function nameFor(uid){ const h = fnv(String(uid)); return ADJ[h % 32] + ' ' + NO
 function portOpen(port){
   return new Promise(res => { const s = net.connect({ port, host: '127.0.0.1' }, () => { s.end(); res(true); }); s.on('error', () => res(false)); });
 }
+async function emuPorts(which){
+  const db = await portOpen(9000), auth = await portOpen(9099), store = await portOpen(8180);
+  return which === 'all' ? db && auth && store : db || auth || store;
+}
+async function waitUntil(pred, ms, err){
+  const t0 = Date.now();
+  while (!(await pred())) {
+    if (Date.now() - t0 > ms) throw new Error(err);
+    await new Promise(r => setTimeout(r, 200));
+  }
+}
+// TCP open is not enough: a rules upload to an emulator that is still starting, or still exiting, fails with ECONNRESET.
+function dbAnswers(){
+  return new Promise(res => {
+    const req = http.get({ host: '127.0.0.1', port: 9000, path: '/.json?ns=demo-walklings', timeout: 1000 }, (r) => { r.resume(); res(true); });
+    req.on('error', () => res(false));
+    req.on('timeout', () => { req.destroy(); res(false); });
+  });
+}
 function presence(extra){
   const now = Date.now();
   return Object.assign({
@@ -185,22 +204,25 @@ test.describe('Play together', () => {
   test.beforeAll(async ({}, info) => {
     test.skip(info.project.name !== '390', 'runs in the 390 project; other widths run inside it');
     await lockEmu();
-    const ready = await portOpen(9000) && await portOpen(9099) && await portOpen(8180);
-    if (!ready) {
+    // repeat-each gives each repeat its own worker. Hold the lock until the emulator
+    // this worker started has actually exited, so the next repeat does not upload rules
+    // to a process that is still shutting down.
+    if (!(await emuPorts('all')) && (await emuPorts('any'))) await waitUntil(async () => !(await emuPorts('any')), 20000, 'previous emulator did not exit');
+    if (!(await emuPorts('all'))) {
       emu = spawn('npx', ['firebase', 'emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings'], { detached: true, stdio: 'ignore' });
       emuStarted = true;
-      for (let i = 0; i < 80; i++) {
-        if (await portOpen(9000) && await portOpen(9099) && await portOpen(8180)) break;
-        await new Promise(r => setTimeout(r, 500));
-      }
+      await waitUntil(() => emuPorts('all'), 40000, 'database emulator did not start');
     }
-    if (!(await portOpen(9000))) throw new Error('database emulator did not start');
+    await waitUntil(dbAnswers, 10000, 'database emulator did not answer');
     env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await rootSet('roomCodes/AMB4RQ', { on: true });
   });
   test.afterAll(async () => {
-    if (env) await env.cleanup();
-    if (emuStarted && emu && emu.pid) { try { process.kill(-emu.pid, 'SIGTERM'); } catch (e) { try { emu.kill('SIGTERM'); } catch (e2) {} } }
+    try { if (env) await env.cleanup(); } catch (e) {}
+    if (emuStarted && emu && emu.pid) {
+      try { process.kill(-emu.pid, 'SIGTERM'); } catch (e) { try { emu.kill('SIGTERM'); } catch (e2) {} }
+      try { await waitUntil(async () => !(await emuPorts('any')), 20000, 'emulator ports stayed open'); } catch (e) {}
+    }
     unlockEmu();
   });
   test.beforeEach(async ({}, info) => { if (info.project.name === '390' || info.project.name === '320') await wipe(); });
@@ -750,12 +772,37 @@ test.describe('Play together', () => {
     for (const w of [320, 390]) {
       const page = await bootNew(browser, saveFor('wide' + w, 'Tester'), w);
       await joinRoom(page);
-      await page.locator('#sayBtn').click();
-      const wheel = page.locator('#sayWheel .net-wheel');
-      const fit = await wheel.evaluate(el => el.scrollHeight <= el.clientHeight + 1);
-      expect(fit, 'wheel fits').toBe(true);
-      const btns = await page.locator('#sayWheel button').evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return Math.min(r.width, r.height); }));
-      btns.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
+      const say = page.locator('#sayBtn');
+      await expect(say).toBeVisible();
+      // Press and release in one turn. The default click sends them together, so pointerup
+      // can run first and leave the 450 ms hold timer running. That timer sends a wave and
+      // hides the sheet, and a button in the hidden sheet measures 0. Then wait until the
+      // wheel is open, painted, and laid out before reading sizes.
+      await say.evaluate((btn) => {
+        const fire = (type) => btn.dispatchEvent(new PointerEvent(type, {
+          bubbles: true, cancelable: true, pointerId: 1, pointerType: 'touch', isPrimary: true,
+        }));
+        fire('pointerdown');
+        fire('pointerup');
+      });
+      await expect(page.locator('#sayWheel')).toBeVisible();
+      // Read fit and sizes in one turn. A later hold or repaint can hide the sheet;
+      // a button inside a hidden sheet measures 0, and a hidden wheel still "fits".
+      const snap = await page.waitForFunction(() => {
+        const ov = document.querySelector('#sayWheel');
+        if (!ov || ov.hidden) return null;
+        const wheel = ov.querySelector('.net-wheel');
+        if (!wheel || !ov.querySelector('#sayEmotes button') || !ov.querySelector('#sayPhrases button')) return null;
+        const sizes = [...ov.querySelectorAll('button')].map((el) => {
+          const r = el.getBoundingClientRect();
+          return Math.min(r.width, r.height);
+        });
+        if (!sizes.length || sizes.some((n) => n <= 0)) return null;
+        return { fit: wheel.scrollHeight <= wheel.clientHeight + 1, sizes };
+      });
+      const laid = await snap.jsonValue();
+      expect(laid.fit, 'wheel fits').toBe(true);
+      laid.sizes.forEach(n => expect(n).toBeGreaterThanOrEqual(44));
       await page.locator('#sayClose').click();
       const self = await page.evaluate(() => {
         const n = window.PixelPets.net, c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect();

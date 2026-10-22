@@ -6,9 +6,9 @@ Settled calls are in archive/DECISIONS_SETTLED.md.
 
 D37 is used twice. Do not renumber either row. Q28 owns D92–D103.
 
-D104 stays reserved for Lizzy. D363-D379 and D390-D411 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11). D397 and D398 are settled.
+D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D397, D398, D399 and D412 are settled.
 
-Next free id is D412.
+Next free id is D416.
 
 ## Open
 
