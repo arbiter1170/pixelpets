@@ -294,7 +294,8 @@
       "story.hc_council_done"
      ],
      "lines": {
-      "else": "A Keeper map of the ravine. Pins along the stream. One pin at the Fallstair."
+      "story.hw_stair_open": "A Keeper map of the ravine. Pins along the stream. One pin at the Fallstair.",
+      "else": "A Keeper map of the ravine. Pins along the stream. The Fallstair pin is tagged: closed for now."
      }
     },
     {
@@ -344,7 +345,7 @@
      "friendSlot": "KEEPER_SCOUT",
      "optional": true,
      "lines": {
-      "else": "FRIEND SLOT · Keeper Scout says hi! (One short line, written with the friend.)"
+      "else": "Captain Lumen sent us to map the stream. The Fallstair stays roped till we know it's safe."
      }
     },
     {

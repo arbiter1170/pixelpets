@@ -1155,6 +1155,7 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 .map-side[hidden]{display:none}
 /* PEOPLE (D176). The compass is a 44 px target. Fixed people get a lock with no extra word. */
 .rep-list{display:flex;flex-direction:column;gap:8px;min-width:0}
+.rep-list[hidden],.rep-card[hidden]{display:none}
 .rep-empty{margin:0;font-size:18px;line-height:1.35;color:var(--h)}
 .rep-row{display:flex;align-items:center;gap:8px;min-height:44px;min-width:0}
 .rep-face-btn{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:0;background:var(--k);display:flex;align-items:center;justify-content:center;cursor:pointer}

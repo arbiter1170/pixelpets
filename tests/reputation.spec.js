@@ -240,6 +240,14 @@ test('PEOPLE is empty until someone is met, then Lizzy opens a card', async ({ p
   expect(tap.width).toBeGreaterThanOrEqual(44);
   expect(tap.height).toBeGreaterThanOrEqual(44);
   await row.locator('.rep-face-btn').click();
+  await expect(page.locator('#repList')).toBeHidden();
+  const card = page.locator('#repCard');
+  await expect(card).toBeVisible();
+  const cardBox = await card.boundingBox();
+  const vp = page.viewportSize();
+  expect(cardBox.y).toBeGreaterThanOrEqual(0);
+  expect(cardBox.y).toBeLessThan(vp.height);
+  expect(cardBox.y + Math.min(cardBox.height, 44)).toBeLessThanOrEqual(vp.height);
   await expect(page.locator('#repCard .rep-num')).toHaveText('50');
   await expect(page.locator('#repCard .rep-tier')).toHaveText('neutral');
   await page.locator('#repBack').click();

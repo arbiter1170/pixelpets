@@ -9,7 +9,7 @@
   "join_penalty": 10,
   "cast": [
     {
-      "name": "Ally A",
+      "name": "Cobble Neighbour",
       "faction": "none",
       "base": 50
     },

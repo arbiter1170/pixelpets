@@ -229,7 +229,9 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
         .concat(lantern ? wayinAt(lantern.x, lantern.y) : ['missing-post']),
     };
     const flatsDoor = MAPDATA.detail_lizzy.slicePatch.maps.hearthmoor.addRoofs.flats.door;
-    const blue = MAPDATA.detail_b4.slicePatch.maps.highcharity.set.roofs.apt_c.door;
+    const roofs = MAPDATA.detail_b4.slicePatch.maps.highcharity.set.roofs;
+    const shut = roofs.apt_c.door;
+    const shutB = roofs.apt_b.door;
     const cap = PixelPets.devChecks().floorCap;
     const f5 = (() => { PixelPets.goto('hm_flats_5', 1, 6, 'up'); return PixelPets.tileInfo(0, 6).ch; })();
     return {
@@ -251,7 +253,7 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
       seen, v: PixelPets.state.v,
       junk: { v: junk.v, floorSeen: junk.floorSeen },
       bare: { v: bare.v, has: Object.prototype.hasOwnProperty.call(bare, 'floorSeen') },
-      apt, lizzy, flatsDoor, blue, cap, f5,
+      apt, lizzy, flatsDoor, shut, shutB, cap, f5,
     };
   }, MARKS);
 
@@ -306,7 +308,8 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
   expect(report.lizzy.share).toEqual([]);
   expect(report.lizzy.band.join(' ')).not.toContain('wayin');
   expect(report.flatsDoor).toBe('door_glass_awning');
-  expect(report.blue).toBe('door_blue');
+  expect(report.shut).toBe('door_blue');
+  expect(report.shutB).toBe('door_blue');
   expect(report.cap).toEqual([]);
   expect(report.f5).toBe('m');
 });

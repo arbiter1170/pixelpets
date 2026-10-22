@@ -31,12 +31,11 @@ test('a drifted data file is reported as mapdata out of date @w1', () => {
 });
 
 test('warps, doors, safe tiles and object ids hold on the composed world @w1', () => {
-  const bad = lib.repoMapProblems().filter(p => p.indexOf('hc_south') < 0);
-  expect(bad).toEqual([]);
+  expect(lib.repoMapProblems()).toEqual([]);
 });
 
-// civic's grid rows put a house wall on hearthmoor (12, 10). The High Charity south warp still aims there.
-test.fixme('hc_south lands on a walkable tile @w1', () => {
+// hc_south arrives on the east-west path at hearthmoor (12, 8), facing up, north of the coach (D122).
+test('hc_south lands on a walkable tile @w1', () => {
   const bad = lib.repoMapProblems().filter(p => p.indexOf('hc_south') >= 0);
   expect(bad).toEqual([]);
 });
@@ -111,4 +110,83 @@ test('every service-worker shell file exists @w1', () => {
 
 test('a missing shell file is reported @w1', () => {
   expect(lib.shellProblems(['./missing.js'], () => false)).toEqual(['shell file missing ./missing.js']);
+});
+
+// A look key loaded later silently replaces an earlier one. Same bytes may repeat. Different bytes must name both files.
+function literalAfter(src, marker) {
+  const at = src.indexOf(marker);
+  if (at < 0) return null;
+  const brace = src.indexOf('{', at);
+  let depth = 0, quote = '', esc = false;
+  for (let i = brace; i < src.length; i++) {
+    const c = src[i];
+    if (quote) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === quote) quote = '';
+      continue;
+    }
+    if (c === '"' || c === "'") { quote = c; continue; }
+    if (c === '/' && src[i + 1] === '/') { i = src.indexOf('\n', i); if (i < 0) break; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) return src.slice(brace, i + 1);
+    }
+  }
+  return null;
+}
+function canon(v) {
+  if (Array.isArray(v)) return v.map(canon);
+  if (v && typeof v === 'object') {
+    const o = {};
+    Object.keys(v).sort().forEach(k => { o[k] = canon(v[k]); });
+    return o;
+  }
+  return v;
+}
+function sameLook(a, b) { return JSON.stringify(canon(a)) === JSON.stringify(canon(b)); }
+function walkLooks(node, file, out) {
+  if (!node || typeof node !== 'object') return;
+  if (Array.isArray(node)) { node.forEach(v => walkLooks(v, file, out)); return; }
+  if (node.looks && typeof node.looks === 'object' && !Array.isArray(node.looks)) {
+    Object.entries(node.looks).forEach(([k, v]) => {
+      if (k.startsWith('_') || !v || typeof v !== 'object' || Array.isArray(v)) return;
+      out.push({ file, key: k, value: v });
+    });
+  }
+  Object.entries(node).forEach(([k, v]) => { if (k !== 'looks') walkLooks(v, file, out); });
+}
+
+test('a look key is defined once when the bytes differ, and holder is the route look @w1', () => {
+  const hits = [];
+  const swaps = literalAfter(lib.read('keeper.js'), 'const KEEPER_SWAPS = ');
+  expect(swaps).toBeTruthy();
+  Object.entries(eval('(' + swaps + ')')).forEach(([k, v]) => hits.push({ file: 'keeper.js', key: k, value: v }));
+  fs.readdirSync(path.join(process.cwd(), 'data')).filter(n => n.endsWith('.json')).sort().forEach(n => {
+    walkLooks(JSON.parse(lib.read(path.join('data', n))), 'data/' + n, hits);
+  });
+  const game = lib.read('game.js');
+  const overlay = /NPC_LOOKS\.([A-Za-z0-9_]+)\s*=\s*(\{[^;]*\});/g;
+  let m;
+  while ((m = overlay.exec(game))) hits.push({ file: 'game.js', key: m[1], value: eval('(' + m[2] + ')') });
+  const byKey = {};
+  hits.forEach(h => { (byKey[h.key] = byKey[h.key] || []).push(h); });
+  const clashes = [];
+  Object.entries(byKey).forEach(([key, rows]) => {
+    for (let i = 1; i < rows.length; i++) {
+      if (!sameLook(rows[0].value, rows[i].value)) clashes.push(key + ': ' + rows[0].file + ' and ' + rows[i].file);
+    }
+  });
+  expect(clashes).toEqual([]);
+  expect((byKey.holder || []).map(h => h.file)).toEqual(['keeper.js']);
+  expect(byKey.trainer || []).toEqual([]);
+  const pal = literalAfter(lib.read('sprites.js'), 'const PAL = ');
+  const skin = literalAfter(lib.read('keeper.js'), 'const KEEPER_SKIN_PAL = ');
+  const palKeys = Object.keys(eval('(' + pal + ')'));
+  const skinKeys = Object.keys(eval('(' + skin + ')'));
+  expect(palKeys).not.toContain('holder');
+  expect(palKeys).not.toContain('trainer');
+  expect(skinKeys).not.toContain('holder');
+  expect(skinKeys).not.toContain('trainer');
 });

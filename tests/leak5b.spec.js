@@ -109,7 +109,13 @@ test('the court path files the claim, serves it, and grants once @w1', async ({ 
   expect(r.step).toBe('leak_serve');
 
   await talk(page, 'fernbrook', 4, 10, 'up');
-  await page.evaluate(() => PixelPets.goto('hm_flats_5', 10, 4, 'right'));
+  r = await read(page);
+  expect(r.served).toBe(true);
+  expect(r.fixed).toBe(false);
+  expect(r.snacks).toBe(0);
+  expect(r.step).toBe('leak_done');
+
+  await talk(page, 'hm_flats_5', 10, 4, 'right');
   r = await read(page);
   expect(r.fixed).toBe(true);
   expect(r.served).toBe(true);
@@ -132,10 +138,18 @@ test('the force path drops Mr. Gristle to 30 and does not grant twice @w1', asyn
   expect(r.keepers).toBe(8);
   expect(r.gristle).toBe(30);
   expect(r.lizzy).toBe(45);
-  expect(r.fixed).toBe(true);
-  expect(r.snacks).toBe(2);
+  expect(r.fixed).toBe(false);
+  expect(r.snacks).toBe(0);
+  expect(r.step).toBe('leak_done');
   expect(r.v).toBe(2);
   expect(r.check).toEqual([]);
+
+  await talk(page, 'hm_flats_5', 10, 4, 'right');
+  r = await read(page);
+  expect(r.fixed).toBe(true);
+  expect(r.snacks).toBe(2);
+  expect(r.drip).toBe(false);
+  expect(r.step).toBe(null);
 
   await page.evaluate(() => PixelPets.runScene('leak_gristle'));
   await playScene(page, ['Make him fix it']);

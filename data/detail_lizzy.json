@@ -828,6 +828,8 @@
      "y": 4,
      "sprite": "bucket_drip",
      "lines": {
+      "story.moral_leak5b=force": "@leak_check",
+      "story.leak5b_served": "@leak_check",
       "story.moral_leak5b": "The bucket is still here. So is the drip. Somebody is on it.",
       "!story.lizzy_met": "Drip. Drip. Drip.",
       "else": "@leak_look"
@@ -1419,19 +1421,9 @@
     true
    ],
    [
-    "setFlag",
-    "story.leak_fixed",
-    true
-   ],
-   [
-    "give",
-    "hearty_snack",
-    2
-   ],
-   [
     "say",
     "",
-    "The drip in 5B stopped."
+    "Rue tucks the claim in her coat. Check the bathroom in 5B."
    ]
   ],
   "leak_force": [
@@ -1449,6 +1441,18 @@
     "say",
     "",
     "That's how Glimmerwell gets things done. Fast. Nobody says thank you."
+   ],
+   [
+    "say",
+    "",
+    "Mr. Gristle grabs his toolbox. Check the bathroom in 5B."
+   ]
+  ],
+  "leak_check": [
+   [
+    "say",
+    "",
+    "A new pipe shines over the tub. Someone left a wrench on the rim."
    ],
    [
     "setFlag",

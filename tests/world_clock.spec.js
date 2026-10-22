@@ -242,10 +242,18 @@ test('schedules, away notes, the school door, and the quest pointer @w1', async 
     return { id: q.id, text: q.text, place: q.place, atSchool, home };
   });
   expect(quest.id).toBe('leak_ask');
-  expect(quest.text).toBe('Find Lizzy: Schoolhouse (MON-FRI, day) or home, 5B (evenings)');
-  expect(quest.place).toBe('School or 5B');
+  expect(quest.text).toBe('Find Lizzy. Weekdays 8 to 3 she teaches at the Schoolhouse. Other times, try home in 5B.');
+  // This read is still TUE 08:30, so the place line is the classroom, not the home place.
+  expect(quest.place).toBe('Hearthmoor Schoolhouse');
   expect(quest.atSchool).toMatchObject({ map: 'hm_school_in', x: 10, y: 3 });
   expect(quest.home).toMatchObject({ map: 'hm_flats_5', x: 13, y: 3 });
+  const afternoon = await page.evaluate(() => {
+    PixelPets.clock.set('tue', 17, 30);
+    const q = PixelPets.sideQuest;
+    return { place: q.place, target: q.target };
+  });
+  expect(afternoon.place).toBe('Amberhill Flats, 5B');
+  expect(afternoon.target).toMatchObject({ map: 'hm_flats_5', x: 13, y: 3 });
 });
 
 test('the header chip stays tappable and names who is about', async ({ page }) => {

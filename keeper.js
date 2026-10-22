@@ -1374,7 +1374,7 @@ const KEEPER_SWAPS = {
   ilse:      { skin:'2', hair:'bun',   hairCol:'h', outfit:'coat',   outfitCol:'p', accent:'y', extra:{ o:'g' } }, // grey bun, plum coat, green satchel
   rook:      { skin:'3', hair:'spiky', hairCol:'o', outfit:'hoodie', outfitCol:'b', accent:'w' },                    // "your friend with the spiky hair"
   villager:  { skin:'4', hair:'short', hairCol:'d', outfit:'tunic',  outfitCol:'g', accent:'y' },                    // Hattie, Odile, Mrs. Calloway, Amos
-  trainer:   { skin:'2', hair:'short', hairCol:'m', outfit:'hoodie', outfitCol:'c', accent:'o' },                    // route trainers
+  holder:    { skin:'2', hair:'short', hairCol:'m', outfit:'hoodie', outfitCol:'c', accent:'o' },                    // route holders
   associate: { skin:'5', hair:'short', hairCol:'d', outfit:'coat',   outfitCol:'l', accent:'w', extra:{ o:'w' } }, // Glimmerwell mint coat, white scarf + cradle bag
   fen:       { skin:'4', hair:'long',  hairCol:'w', outfit:'tunic',  outfitCol:'g', accent:'l' },                    // Master Fen, orchard keeper
 };

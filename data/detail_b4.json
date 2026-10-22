@@ -219,7 +219,7 @@
         "marina": {"x0": 14, "y0": 14, "x1": 22, "y1": 15, "roof": "roof_board_t", "wall": "wall_piles", "door": "door_dutch", "win": "win_porthole", "trim": "w", "shape": "gable", "porch": ["hc_rope_coil"]},
         "arena": {"x0": 40, "y0": 12, "x1": 50, "y1": 13, "roof": "roof_canvas", "wall": "wall_drum", "door": "door_gate", "win": "win_slit", "trim": "r", "shape": "drum", "porch": ["hc_flag_w", "hc_flag_e"]},
         "apt_a": {"x0": 4, "y0": 22, "x1": 12, "y1": 23, "roof": "roof_flat_d", "wall": "wall_stucco_o", "win": "balcony_plant", "trim": "w", "shape": "flat", "porch": ["hc_apt_planter"]},
-        "apt_b": {"x0": 14, "y0": 22, "x1": 20, "y1": 23, "roof": "roof_flat_d", "wall": "wall_stucco_o", "win": "laundry_line", "trim": "w", "shape": "flat", "porch": ["hc_apt_basket"]},
+        "apt_b": {"x0": 14, "y0": 22, "x1": 20, "y1": 23, "roof": "roof_flat_d", "wall": "wall_stucco_o", "door": "door_blue", "win": "laundry_line", "trim": "w", "shape": "flat", "porch": ["hc_apt_basket"]},
         "apt_c": {"x0": 22, "y0": 22, "x1": 28, "y1": 23, "roof": "roof_flat_d", "wall": "wall_stucco_o", "door": "door_blue", "win": "win_square", "trim": "w", "shape": "flat", "porch": ["hc_apt_bike"]},
         "school": {"x0": 6, "y0": 26, "x1": 16, "y1": 27, "roof": "roof_shingle_p", "wall": "wall_yellow", "door": "door_red", "win": "win_shutter", "trim": "o", "shape": "gable+clock", "porch": ["hc_slate_board"]},
         "hall": {"x0": 26, "y0": 26, "x1": 38, "y1": 27, "col": "b", "wall": "wall_civic", "door": "door_glass", "win": "win_arch", "trim": "y", "shape": "+bunting", "porch": ["hc_poster"]},

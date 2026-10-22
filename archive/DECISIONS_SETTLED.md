@@ -297,6 +297,8 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 
 - **D412 (Oct 22, 2026, red, SETTLED BY VINCENT, 12:42 AM ET).** Visible town routines: No. D378 stays: a schedule move never shows on screen, and the only on-screen walk is Lizzy's holder-triggered walk home (D399, D407). Nothing on main changes.
 
+- **D122 (Oct 22, 2026, green, settled by the Supervisor, 12:56 AM ET).** The High Charity south arrival (hc_south) moves from hearthmoor (12,10), a Keeper HQ wall tile, to the path at (12,8), facing up.
+
 - **D109 map legend SIDES gate (Oct 15, 2026, Vincent).** Design's default is approved: the SIDES key group, the claim halos and the place-card hold line wait for `story.side_pick_done` (`sidesShown()` in `game.js`; design/specs/MAP_LEGEND.md §3, where it was D94).
 
 - **D110 map legend Side task pill (Oct 15, 2026, green).** Always shown in the QUESTS key group (MAP_LEGEND). Supersedes the QUEST_MULTI note that gated it on `sideQuest().target`.

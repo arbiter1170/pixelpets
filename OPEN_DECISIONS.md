@@ -6,9 +6,9 @@ Settled calls are in archive/DECISIONS_SETTLED.md.
 
 D37 is used twice. Do not renumber either row. Q28 owns D92–D103.
 
-D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D397, D398, D399 and D412 are settled.
+D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D416-D434 are reserved: STORES_AND_TOWN_LIFE (settled in the design repo; the first STORES build records them). D397, D398, D399 and D412 are settled.
 
-Next free id is D416.
+Next free id is D435.
 
 ## Open
 
@@ -49,7 +49,6 @@ Next free id is D416.
 | D102 | Observatory and dreams (green) | What should the new room props say? | Neutral stand-in lines, so each new prop can be talked to. The props are the desk, stool, lamp, star chart and case in the observatory; the blocks, shelf, lamp and cushion in the 2004 memory; and the menu board and lane post in the drive-through. They live in `data/detail_b7.json`. The birthday room adds streamer decals only. Real copy can replace the lines. | `addObjs` lines in `data/detail_b7.json` |
 | D103 | Fernbrook rooms (green) | What should the new Lantern House and Bloom Trial Hall props say? | Neutral stand-in lines, so each new prop can be talked to. The props are the heal counter, herb rack, lamp, quilt beds, apple crates, table, jug, stool and basket in the Lantern House, and the dais lamps, ribbon stands, hedge planters, urn, pot, bowls, basket, benches, jar, stool and cushion in the hall. They live in `data/fernbrook_rooms.json`. Real copy can replace the lines. The doors still heal with Keeper Amos and still start the trial with Master Fen. | prop lines in `data/fernbrook_rooms.json` |
 | D121 | Fetchling journal | Should the NPC-only Fetchling line be left out of the journal grid and the stats-card "best of" count, as well as the Out there number? | Green. Left out of the journal grid, the Out there count, and the stats-card best-of set, so a keeper still sees 45 forms. The line is appended on the save form-id table. Wild rolls and starter baskets cannot produce it. Steadfast Paw uses the existing self DEF +1 effect, the same shape as Mist Veil. | `renderDexGrid` and `statMaxAt` in `game.js` |
-| D122 | Map exits | Should the High Charity south warp move off the house wall it now lands on? | Green default: leave the warp. `hc_south` still targets hearthmoor (12, 10). The civic grid rows turned that tile into a house wall. `tests/data_integrity.spec.js` records it as `test.fixme`. No map data was changed. | `hc_south` in `data/highcharity.json` |
 | D123 | Bank sign | Should the Civic Bank sign in High Charity drop its banned word? | Green default: leave the sign. The wording guard records `hc_sign_bank` as `test.fixme`. No sign text was changed. | `hc_sign_bank` in `data/highcharity.json` |
 | D124 | Wording guard lengths | Should toasts and blurbs also fail this guard at 40 characters? | Green default: no. Say, sign and quest lines use 110 after token widths. Choice labels use 30. Toasts and blurbs are checked for bans, double spaces and unknown tokens only. Standing toasts and ambient lines already have their own 40-character checks. | `wordingProblems` in `tests/integrity_lib.js` |
 | D125 | Tap-to-walk debug | Expose `findPath` for tests? | Green. `PixelPets.findPath(goals)` is read-only on the existing cheat surface. It returns the step list, or null. It does not move the keeper. Without `?debug=1` the call returns `undefined`, same as the other cheat hooks. Tests also tap the map. | `findPath` in the debug cheats in `game.js` |
