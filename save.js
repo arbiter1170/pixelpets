@@ -424,6 +424,13 @@ const PPSave = (() => {
     if (roster.some(p => p && p.origin === 'starter' && p.stage >= 1)) f['story.unlock_growup'] = true;
   }
 
+  // D420. A brand-new game earns the first five adornments. An old save has no acc.kit flag and keeps them.
+  function newGameState(now){
+    const s = defaultStateV2(now);
+    s.flags['acc.kit'] = 2;
+    return s;
+  }
+
   // §4. Returns { state, readOnly, notice }.
   function loadSave(now = Date.now()){
     let notice = null;
@@ -435,12 +442,12 @@ const PPSave = (() => {
       else { owned = true; lastWritten = raw2; return { state: normalizeV2(o, now), readOnly: false, notice }; }
     }
     const raw1 = ls.get(V1_KEY);
-    if (raw1 === null) return { state: defaultStateV2(now), readOnly: false, notice };
+    if (raw1 === null) return { state: newGameState(now), readOnly: false, notice };
     let o = null; try { o = JSON.parse(raw1); } catch(e) { o = null; }
     if (!isObj(o) || o.v !== 1 || !Array.isArray(o.pets)) {
       writeCorrupt(V1_KEY, raw1);
       if (ls.get(BAK_KEY) === null) ls.set(BAK_KEY, raw1);
-      return { state: defaultStateV2(now), readOnly: false, notice };
+      return { state: newGameState(now), readOnly: false, notice };
     }
     let backup;
     if (ls.get(BAK_KEY) === null) backup = ls.set(BAK_KEY, raw1) ? 'ok' : 'failed'; else backup = 'existing';
