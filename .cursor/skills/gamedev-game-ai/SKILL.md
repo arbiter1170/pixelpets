@@ -53,7 +53,8 @@ function scheduledSpot(rows, day, hour) {
 
 When the holder sets it off (for example sending Lizzy home to 5B), the NPC may walk on screen and the quest marker follows her. The rules:
 - The walk lives **in memory only**. Nothing about it is saved.
-- On a map change, or if the route is blocked, she **snaps to the destination**.
+- **Map change (D411):** if the holder follows her through a door, she carries on along her route on the next map; she snaps to the destination only when the holder goes somewhere off her route.
+- **Blocked:** if her next tile is blocked, wait and re-route after 2 blocked steps; snap to the destination only when no route exists.
 - It **pauses** during scenes and battles and resumes after.
 - A **reload resets** it: she is placed by the schedule or quest state as usual.
 - The marker reads her live tile each frame (including an edge arrow when she is off-screen); it stores nothing.
@@ -63,19 +64,28 @@ let walk = null;   // { npc, path, dest } in memory only; never written to S
 function startWalk(npc, destTile) {
   const path = findPath(npc.tile, destTile);
   if (!path) return snapTo(npc, destTile);          // blocked from the start
-  walk = { npc, path, dest: destTile };
+  walk = { npc, path, dest: destTile, blocked: 0 };
   questMarker.follow(npc);
 }
 function tickWalk(dt) {
   if (!walk || sceneOpen() || inBattle()) return;    // paused, not cancelled
   if (!followPath(walk.npc, dt, walk.path)) {
-    if (isBlocked(nextTile(walk.npc))) return finishWalk(true);
+    if (isBlocked(nextTile(walk.npc))) {
+      if (++walk.blocked < 2) return;                    // wait a step
+      const p = findPath(walk.npc.tile, walk.dest);      // re-route after 2 blocked steps
+      if (!p) return finishWalk(true);                   // no route at all: snap
+      walk.path = p; walk.blocked = 0;
+    }
     return;
   }
   finishWalk(false);
 }
 function finishWalk(snap) { if (snap) snapTo(walk.npc, walk.dest); questMarker.stop(); walk = null; }
-onMapChange(() => { if (walk) finishWalk(true); });  // reload: walk is simply gone
+onMapChange((map) => {                                  // D411: follow across maps
+  if (!walk) return;
+  if (routeContinuesOn(walk, map)) placeOnRouteEntry(walk, map);
+  else finishWalk(true);                               // holder left her route: snap
+});                                                    // reload: walk is simply gone
 ```
 
 ## Patterns

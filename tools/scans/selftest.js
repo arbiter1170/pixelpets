@@ -243,10 +243,15 @@ function symlinkFixtures() {
   const bad = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-sbad-'));
   const clean = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-sclean-'));
   const notRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-snorepo-'));
+  const loose = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-sloose-'));
+  const ignored = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-signored-'));
   fs.writeFileSync(path.join(clean, 'a.txt'), 'hi\n');
   git(clean, ['init']);
   git(clean, ['add', 'a.txt']);
   git(clean, ['commit', '-m', 'a']);
+  fs.mkdirSync(path.join(clean, 'node_modules'));
+  fs.writeFileSync(path.join(clean, 'node_modules', 'keep.txt'), 'x\n');
+  fs.symlinkSync('keep.txt', path.join(clean, 'node_modules', 'inside'));
   fs.writeFileSync(path.join(bad, 'a.txt'), 'hi\n');
   git(bad, ['init']);
   git(bad, ['add', 'a.txt']);
@@ -254,7 +259,18 @@ function symlinkFixtures() {
   fs.symlinkSync('a.txt', path.join(bad, 'link.txt'));
   git(bad, ['add', 'link.txt']);
   git(bad, ['commit', '-m', 'link']);
-  return { bad, clean, notRepo };
+  fs.writeFileSync(path.join(loose, 'a.txt'), 'hi\n');
+  git(loose, ['init']);
+  git(loose, ['add', 'a.txt']);
+  git(loose, ['commit', '-m', 'a']);
+  fs.symlinkSync('node_modules', path.join(loose, 'to_modules'));
+  fs.writeFileSync(path.join(ignored, 'a.txt'), 'hi\n');
+  fs.writeFileSync(path.join(ignored, '.gitignore'), 'skip-me\n');
+  git(ignored, ['init']);
+  git(ignored, ['add', 'a.txt', '.gitignore']);
+  git(ignored, ['commit', '-m', 'a']);
+  fs.symlinkSync('a.txt', path.join(ignored, 'skip-me'));
+  return { bad, clean, notRepo, loose, ignored };
 }
 
 function mapFixtures() {
@@ -390,6 +406,16 @@ function main() {
     show('symlinks not a repo', none);
     check(none.status === 1, 'not a repo exit');
     check(none.stdout.indexOf('SCAN FAIL symlinks: .:1 not a git repository') >= 0, 'not a repo line');
+
+    const looseS = run(s.loose, 'symlinks');
+    show('symlinks untracked', looseS);
+    check(looseS.status === 1, 'untracked symlink exit ' + looseS.status);
+    check(looseS.stdout.indexOf('SCAN FAIL symlinks: to_modules:1 symlink (mode 120000)') >= 0, 'untracked symlink line\n' + looseS.stdout);
+
+    const ignS = run(s.ignored, 'symlinks');
+    show('symlinks ignored', ignS);
+    check(ignS.status === 1, 'ignored symlink exit ' + ignS.status);
+    check(ignS.stdout.indexOf('SCAN FAIL symlinks: skip-me:1 symlink (mode 120000)') >= 0, 'ignored symlink line\n' + ignS.stdout);
   } finally {
     for (const dir of Object.values(w)) rm(dir);
     for (const dir of Object.values(d)) rm(dir);

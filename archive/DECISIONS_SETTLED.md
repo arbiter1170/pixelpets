@@ -293,6 +293,10 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 
 - **D398 (Oct 21, 2026, green, SETTLED, on Design's default).** A local snack is a meal eaten on the spot. It is never a bag item. Each costs 30-50 Acorns. FOOD per Acorn is at most 1.0 and JOY at most 10. Stall snacks do not offer the Warm Bowl. The Warm Bowl stays at the diner.
 
+- **D399 (Oct 21, 2026, red, SETTLED BY VINCENT, 10:26 PM ET, default kept).** Lizzy's week against "home at night and on weekends": D374 stays as built on main. That's school MON-FRI 08-15, board night at the diner TUE/THU 17-19, hoops SAT 09-13, and home otherwise, so both outings stay. Vincent also asked for a way to send Lizzy home to start the landlord quest, with the quest marker following her path; that is section 11.j, D407-D411, still open.
+
+- **D412 (Oct 22, 2026, red, SETTLED BY VINCENT, 12:42 AM ET).** Visible town routines: No. D378 stays: a schedule move never shows on screen, and the only on-screen walk is Lizzy's holder-triggered walk home (D399, D407). Nothing on main changes.
+
 - **D109 map legend SIDES gate (Oct 15, 2026, Vincent).** Design's default is approved: the SIDES key group, the claim halos and the place-card hold line wait for `story.side_pick_done` (`sidesShown()` in `game.js`; design/specs/MAP_LEGEND.md §3, where it was D94).
 
 - **D110 map legend Side task pill (Oct 15, 2026, green).** Always shown in the QUESTS key group (MAP_LEGEND). Supersedes the QUEST_MULTI note that gated it on `sideQuest().target`.

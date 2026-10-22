@@ -54,7 +54,11 @@ test('walk from the spawn to the toy, push it from the near side, and finish the
   expect(s.toy).toEqual([4, 3]);
   expect(s.at[1]).toBe(3); expect(s.at[0]).toBeLessThanOrEqual(3);   // swapped onto the toy's old tile (a held key may walk on)
   expect(s.fol.shown).toBe(false);
-  if (info.project.name === '390') await page.screenshot({ path: '/workspace/shots/dream_toy_push_390.png' });
+  if (info.project.name === '390') {
+    const dir = path.join(__dirname, '..', 'test-results', 'shots');
+    fs.mkdirSync(dir, { recursive: true });
+    await page.screenshot({ path: path.join(dir, 'dream_toy_push_390.png') });
+  }
 
   // Leaving and coming back keeps the toy where it stopped.
   await page.evaluate(() => PixelPets.goto('dream_2004', 4, 6, 'up'));
@@ -99,7 +103,11 @@ test('Mom cooks, Dad watches TV, and the whole room fits', async ({ page }, info
   expect(room.dad).toMatchObject({ x: 10, y: 6 });
   expect(room.tv).toMatchObject({ x: 10, y: 5 });
   expect(room.couch).toMatchObject({ x: 10, y: 7 });
-  if (info.project.name === '390') await page.screenshot({ path: '/workspace/shots/dream_room_390.png' });
+  if (info.project.name === '390') {
+    const dir = path.join(__dirname, '..', 'test-results', 'shots');
+    fs.mkdirSync(dir, { recursive: true });
+    await page.screenshot({ path: path.join(dir, 'dream_room_390.png') });
+  }
   expect(await talk(page, 10, 4, 'up')).toContain('Dinner');
   expect(await talk(page, 11, 6, 'left')).toContain('toy');
   // Outside the memory the partner walks again.

@@ -331,9 +331,20 @@ rooms['hc_airport_in'] = room('hc_airport_in', 'Airship Field', 9, 7, 'charity',
 ])
 rooms['hc_command_in'] = room('hc_command_in', 'Sky-Dock Command', 9, 7, 'charity', 'hc_command', [
     {'kind': 'npc', 'id': 'hc_lumen', 'name': 'Captain Lumen', 'look': 'petra', 'x': 2, 'y': 3, 'facing': 'down',
-     'lines': line_pair('Lantern ships. No thunder, no guns.', "The dock is open. Please don't touch the lines.")},
+     'lines': {
+         'story.hc_council_done': 'That road stays dark. Ships still fly.',
+         'story.cobble_end&!story.side=glimmer': '@hc_council',
+         'story.side=glimmer': "The dock is open. Please don't touch the lines.",
+         'else': 'Lantern ships. No thunder, no guns.',
+     }},
+    {'kind': 'trigger', 'id': 'hc_council_trig', 'x': 2, 'y': 4, 'r': 1,
+     'when': ['story.cobble_end', '!story.hc_council_done', '!story.side=glimmer'],
+     'scene': 'hc_council'},
     {'kind': 'prop', 'id': 'hc_console', 'x': 6, 'y': 2, 'sprite': 'skydock_console',
-     'lines': {'else': 'A board of little lights. Each one is a ship, not a weapon.'}},
+     'lines': {
+         'story.hc_council_done': 'Brinewick is marked. Its light is dark.',
+         'else': 'A board of little lights. Each one is a ship, not a weapon.',
+     }},
 ])
 rooms['hc_barracks_in'] = room('hc_barracks_in', 'Keeper Barracks', 9, 7, 'charity', 'hc_barracks', [
     {'kind': 'npc', 'id': 'hc_rowan', 'name': 'Keeper Rowan', 'look': 'sorrel', 'x': 2, 'y': 3, 'facing': 'down',
@@ -359,7 +370,7 @@ rooms['hc_bank_in'] = room('hc_bank_in', 'Civic Bank', 9, 7, 'charity', 'hc_bank
     {'kind': 'prop', 'id': 'hc_counter', 'x': 5, 'y': 2, 'sprite': 'bank_counter',
      'lines': {'else': 'The counter is polished. Your Acorns never leave your bag.'}},
 ])
-rooms['hc_gym_in'] = room('hc_gym_in', 'Trial Gym', 9, 7, 'charity', 'hc_gym', [
+rooms['hc_gym_in'] = room('hc_gym_in', 'Trial Hall', 9, 7, 'charity', 'hc_gym', [
     {'kind': 'npc', 'id': 'hc_sol', 'name': 'Floor Keeper Sol', 'look': 'sol', 'x': 4, 'y': 3, 'facing': 'down',
      'lines': line_pair('No Seal here. Fen and Hale keep those.', 'No trial today. The floor is just clean.')},
     {'kind': 'sign', 'id': 'hc_gym_note', 'x': 2, 'y': 4, 'text': 'Practice floor. No Seals. Wipe your boots.'},
@@ -468,6 +479,16 @@ for rid, rm in rooms.items():
 
 # ---- scenes, trainers, looks ----
 scenes = {
+    'hc_council': [
+        ['say', 'Captain Lumen', 'Both Seals are here. Fernbrook first, then Cobblecrest. The lanterns watched you walk.'],
+        ['if', 'story.hc_invite', [
+            ['say', 'Captain Lumen', "Ilse's letter arrived ahead of you. She said the Seals would."],
+        ]],
+        ['say', 'Captain Lumen', 'The coastal road to Brinewick is on the board. We are not opening it.'],
+        ['say', '', 'The chart names the road. The light beside it stays dark.'],
+        ['standing', 'keepers', None, 'hc_council_k'],
+        ['setFlag', 'story.hc_council_done', True],
+    ],
     'hc_invite': [
         ['if', '!story.side_pick_done', [
             ['say', 'Warden Ilse', 'Choose a side in Fernbrook first. Then I can send you.'],
@@ -716,6 +737,43 @@ for o in doc['slicePatch']['maps']['hearthmoor']['addObjs']:
     if o.get('text'):
         check_text(o['id'], o['text'], 110)
 
+def sheet_text(doc):
+    """json.dumps, then the two council spots the sheet keeps on one line each.
+    The steps stay the data above. This only matches the checked-in line breaks."""
+    text = json.dumps(doc, indent=2, ensure_ascii=False) + '\n'
+    when_expanded = '\n'.join([
+        '          "when": [',
+        '            "story.cobble_end",',
+        '            "!story.hc_council_done",',
+        '            "!story.side=glimmer"',
+        '          ],',
+    ])
+    when_compact = '          "when": ["story.cobble_end", "!story.hc_council_done", "!story.side=glimmer"],'
+    if text.count(when_expanded) != 1:
+        raise SystemExit('council trigger list is not the one expanded block')
+    text = text.replace(when_expanded, when_compact, 1)
+    steps = doc['scenes']['hc_council']
+    lines = ['    "hc_council": [']
+    for i, step in enumerate(steps):
+        comma = ',' if i < len(steps) - 1 else ''
+        if step and step[0] == 'if' and len(step) == 3 and len(step[2]) == 1:
+            lines.append('      [%s, %s, [' % (json.dumps(step[0]), json.dumps(step[1], ensure_ascii=False)))
+            lines.append('        %s' % json.dumps(step[2][0], ensure_ascii=False))
+            lines.append('      ]]%s' % comma)
+        else:
+            lines.append('      %s%s' % (json.dumps(step, ensure_ascii=False), comma))
+    lines.append('    ],')
+    lines.append('')
+    compact = '\n'.join(lines)
+    parsed = json.loads('{' + compact.rstrip().rstrip(',') + '}')
+    if parsed['hc_council'] != doc['scenes']['hc_council']:
+        raise SystemExit('compact council scene does not match the data')
+    start = text.find('    "hc_council": [')
+    end = text.find('    "hc_invite": [')
+    if start < 0 or end < 0 or end < start:
+        raise SystemExit('council scene block missing')
+    return text[:start] + compact + text[end:]
+
 out = root / 'data' / 'highcharity.json'
-out.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + '\n')
+out.write_text(sheet_text(doc))
 print('wrote', out, 'tiles', W * H, 'objs', len(objs), 'rooms', len(rooms), 'reachable', len(seen))
