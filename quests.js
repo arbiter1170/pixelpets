@@ -173,7 +173,7 @@
         target: { map: 'route1', x: 3, y: 7 } },
     ],
     [
-      { id: 'mom', label: "Mom's trip", givers: ['mom'], when: ['story.starter_received'], done: ['story.mom_met'],
+      { id: 'mom', label: "Mom's trip", when: ['story.starter_received'], givers: ['mom'], done: ['story.mom_met'],
         text: 'Mom is upstairs. She wants to meet your Walkling.', place: 'Your home, upstairs',
         target: { map: 'hm_home_up', x: 5, y: 3 } },
       { id: 'mom_chore', when: ['story.mom_met'], done: ['story.mom_chore'],
@@ -210,7 +210,7 @@
     // Rook's Crossroads. Off the main chain. Accepting is talking to Rook at the Brinewick road sign.
     // The chain id the phone shows is the first entry's id (rc_meet). The label is "The last crates".
     [
-      { id: 'rc_meet', label: 'The last crates', givers: ['rook_road', 'rook_gate', 'rook_after'], when: ['story.cobble_end'], done: ['story.rc_start'],
+      { id: 'rc_meet', label: 'The last crates', when: ['story.cobble_end'], givers: ['rook_road', 'rook_gate', 'rook_after'], done: ['story.rc_start'],
         text: 'Rook is sitting by the Brinewick road sign. He wants a word.', place: 'Cobblecrest, east road',
         glimmer: { text: 'Rook is by the Brinewick road sign. His mint lanyard is still on.', place: 'Cobblecrest, east road' },
         target: { map: 'cobblecrest', x: 28, y: 7 } },
@@ -231,7 +231,7 @@
     ],
     // The leak in 5B (D177, D182). Standing moves only through the moral step, not these rows.
     [
-      { id: 'leak_ask', label: 'The leak in 5B', givers: ['school_lizzy', 'f5_lizzy', 'diner_lizzy', 'court_lizzy'], when: ['story.leak5b_seen'], done: ['story.leak5b_yes'],
+      { id: 'leak_ask', label: 'The leak in 5B', when: ['story.leak5b_seen'], givers: ['school_lizzy', 'f5_lizzy', 'diner_lizzy', 'court_lizzy'], done: ['story.leak5b_yes'],
         text: 'Find Lizzy. Weekdays 8 to 3 she teaches at the Schoolhouse. Other times, try home in 5B.', place: 'Amberhill Flats, 5B',
         target: { map: 'hm_flats_5', x: 13, y: 3 }, atSchool: { place: 'Hearthmoor Schoolhouse' } },
       { id: 'leak_gristle', when: ['story.leak5b_yes'], done: ['story.moral_leak5b'],
