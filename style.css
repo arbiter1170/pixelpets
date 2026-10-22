@@ -81,6 +81,7 @@ button.dbg-tag{border:0;cursor:pointer;font-family:inherit;font-weight:bold;min-
 .dbg-inner .btn,.dbg-inner .btn.sm{min-height:44px;font-size:18px}
 .dbg-inner .btn[aria-pressed="true"]{background:var(--y);color:var(--k)}
 .dbg-sec{display:flex;flex-direction:column;gap:8px;border:3px solid var(--d);background:var(--k);padding:8px;min-width:0}
+.dbg-sec[hidden]{display:none}
 .dbg-h{color:var(--y);font-size:18px;min-height:28px}
 .dbg-sec summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
 .dbg-sec summary::-webkit-details-marker{display:none}
@@ -90,6 +91,7 @@ button.dbg-tag{border:0;cursor:pointer;font-family:inherit;font-weight:bold;min-
 .dbg-grid{display:flex;flex-wrap:wrap;gap:8px}
 .dbg-grid .btn{flex:1 1 42%;min-width:0}
 .dbg-live,.dbg-out{margin:0;font-size:16px;line-height:1.35;color:var(--s);white-space:pre-wrap}
+.dbg-errors{margin:0;padding-left:18px;font-size:14px;line-height:1.35;color:var(--s);max-height:140px;overflow:auto}
 .dbg-out{color:var(--h);max-height:140px;overflow:auto;user-select:text;-webkit-user-select:text}
 .dbg-check{display:flex;align-items:center;gap:8px;min-height:44px;font-size:16px;color:var(--h)}
 .dbg-check input{width:22px;height:22px;min-height:22px;padding:0;flex:none}

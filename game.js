@@ -1,6 +1,24 @@
 /* Walklings - game logic. No dependencies. (Identifiers keep the old name: window.PixelPets, pixelpets.* storage keys.) */
 (() => {
 'use strict';
+// Canvas pressure for the reload breadcrumb. One wrap, not a DOM walk on the 5 s beat.
+// live drops when a canvas is collected. made is the count since the previous beat.
+let canvasBorn = 0, canvasLive = 0, canvasMark = 0;
+function watchCanvasCount(){
+  try {
+    const orig = Document.prototype.createElement;
+    const fin = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(() => { if (canvasLive > 0) canvasLive--; }) : null;
+    Document.prototype.createElement = function (tag) {
+      const el = orig.apply(this, arguments);
+      if (typeof tag === 'string' && tag.toLowerCase() === 'canvas') {
+        canvasBorn++; canvasLive++;
+        if (fin) try { fin.register(el, 0); } catch (e) {}
+      }
+      return el;
+    };
+  } catch (e) {}
+}
+watchCanvasCount();
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
@@ -318,36 +336,184 @@ function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); i
 /* ---------- reload breadcrumb (diagnostics; plain localStorage keys outside the save, so the save stays v2) ----------
    Every path that reloads or replaces the page first writes pp_reload {reason, at, battleOn, build}. pagehide/beforeunload
    with no reason writes reason 'unknown' (a Safari refresh, a close). pp_alive is set while the page is visible and cleared
-   on hide/pagehide, so a boot that finds pp_alive but no pp_reload means the last page died while on screen: likely a crash.
-   Boot moves the entry into pp_reload_last (last 5) and Settings shows the newest one. */
-const RELOAD_KEY = 'pp_reload', RELOAD_LAST = 'pp_reload_last', ALIVE_KEY = 'pp_alive', RELOAD_KEEP = 5;
+   on hide/pagehide, so a boot that finds pp_alive but no pp_reload means the last page died with no unload.
+   pp_hidden {at} is written on hide and pagehide and cleared when the page is visible again. A death that still has
+   pp_alive and also pp_hidden is a background kill (the hide-time clear of pp_alive never reached storage). With no
+   pp_hidden it stays crash?. Boot copies nav, standalone, sw, gap, hid and wasDiscarded onto the stored entry.
+   A crash or background kill also copies the last heartbeat: screen, battle phase, live canvas count, portrait-cache
+   size, canvases made since the previous beat. Boot moves the entry into pp_reload_last (last 5). Settings shows one
+   short line. The field list is only on a ?debug=1 page. Script errors go to pp_errors (last 5), their own key. */
+const RELOAD_KEY = 'pp_reload', RELOAD_LAST = 'pp_reload_last', ALIVE_KEY = 'pp_alive', HIDDEN_KEY = 'pp_hidden', RELOAD_KEEP = 5;
 function lsJson(k){ try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 function lsPut(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function lsDrop(k){ try { localStorage.removeItem(k); } catch (e) {} }
 function inBattleNow(){ try { return !!battle.on; } catch (e) { return false; } }   // battle is declared further down
+function screenName(){
+  try {
+    const on = id => { const el = document.getElementById(id); return !!(el && !el.hidden); };
+    if (on('ovRep')) return 'People';
+    if (on('ovPhone')) {
+      const home = document.getElementById('phoneHome');
+      if (!home || !home.hidden) return 'Phone';
+      const friends = document.getElementById('phoneFriends');
+      if (friends && !friends.hidden) return 'Friends';
+      const title = document.getElementById('phonePaneTitle');
+      if (title && !title.hidden) return 'Board';
+      const body = document.getElementById('phoneBody');
+      if (body && !body.hidden) {
+        if (body.querySelector('.contact-filters, .contact-card, .contact-empty')) return 'Contacts';
+        if (body.querySelector('.ribbit-trend')) return 'Ribbit';
+      }
+      return 'Phone';
+    }
+    if (on('ovSettings')) return 'Settings';
+    if (on('ovQuest')) {
+      const st = document.getElementById('questTabStanding');
+      if (st && st.getAttribute('aria-selected') === 'true') return 'Standing';
+      return 'Quest';
+    }
+    if (on('ovBag')) return 'Bag';
+    if (on('ovShop')) return 'Shop';
+    if (on('ovMap')) return 'Map';
+    if (on('ovJournal')) return 'Journal';
+    if (on('ovStats')) return 'Stats';
+    if (on('ovWalkling')) return 'Walkling';
+    if (on('ovLook')) return 'Look';
+    if (on('ovWardrobe')) return 'Wardrobe';
+    if (on('ovPlay')) return 'Play';
+    if (on('ovBattle') || inBattleNow()) return 'Battle';
+    if (on('ovScene')) return 'Talk';
+    if (on('ovEvolve')) return 'Grow';
+    if (on('ovSheet')) return 'Sheet';
+    if (on('ovReset')) return 'Start over';
+    if (on('ovCopy')) return 'Save copy';
+    if (on('ovBasket')) return 'Basket';
+    if (on('ovGeo')) return 'Place';
+    if (on('ovClock')) return 'Clock';
+    if (on('ovEnv')) return 'Sky';
+    if (on('ovNewer')) return 'Newer save';
+    if (on('ovDebug')) return 'Debug';
+    const tab = (document.body && document.body.dataset.screen) || '';
+    if (tab === 'pet') return 'Partner';
+    if (tab === 'col') return 'Journal';
+    if (tab === 'friends') return 'Friends';
+    if (tab === 'walk') return 'Walk';
+    return 'Walk';
+  } catch (e) { return ''; }
+}
 function markReload(reason){ lsPut(RELOAD_KEY, { reason, at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); lsDrop(ALIVE_KEY); }
 function markUnload(){ if (!lsJson(RELOAD_KEY)) lsPut(RELOAD_KEY, { reason: 'unknown', at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); lsDrop(ALIVE_KEY); }
-function markAlive(){ if (document.hidden) return; lsPut(ALIVE_KEY, { at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); }
+function markHidden(){ if (resetting) return; lsPut(HIDDEN_KEY, { at: Date.now() }); }
+function battlePhase(){
+  try {
+    if (!battle.on) return '';
+    if (battle.panel === 'end') return 'end';
+    if (battle.state === 'RESOLVE') return 'hit';
+    return String(battle.panel || '');
+  } catch (e) { return ''; }
+}
+function markAlive(){
+  if (document.hidden || resetting) return;
+  let portraits = 0;
+  try { portraits = faceCache.size; } catch (e) {}
+  const made = Math.max(0, canvasBorn - canvasMark);
+  canvasMark = canvasBorn;
+  const entry = { at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || ''), screen: screenName(), live: canvasLive, portraits, made };
+  const phase = battlePhase();
+  if (phase) entry.phase = phase;
+  lsPut(ALIVE_KEY, entry);
+}
+function bootFacts(alive, hidden){
+  const facts = { standalone: false, sw: false, hid: false };
+  try {
+    const navs = performance.getEntriesByType('navigation');
+    const nav = navs && navs[0] && navs[0].type;
+    if (typeof nav === 'string' && nav) facts.nav = nav;
+  } catch (e) {}
+  try { facts.standalone = !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches)); } catch (e) {}
+  try { facts.sw = !!(navigator.serviceWorker && navigator.serviceWorker.controller); } catch (e) {}
+  if (alive && typeof alive === 'object' && Number.isFinite(alive.at)) facts.gap = Math.max(0, Date.now() - alive.at);
+  if (hidden && typeof hidden === 'object') {
+    facts.hid = true;
+    if (Number.isFinite(hidden.at)) facts.hidAge = Math.max(0, Date.now() - hidden.at);
+  }
+  try { if ('wasDiscarded' in document) facts.wasDiscarded = !!document.wasDiscarded; } catch (e) {}
+  return facts;
+}
 function takeReloadCrumb(){
-  const crumb = lsJson(RELOAD_KEY), alive = lsJson(ALIVE_KEY);
-  const entry = crumb && typeof crumb === 'object' ? crumb
-    : alive && typeof alive === 'object' ? { reason: 'crash', at: alive.at, battleOn: !!alive.battleOn, build: alive.build || '' } : null;
-  if (entry) { const old = lsJson(RELOAD_LAST); lsPut(RELOAD_LAST, (Array.isArray(old) ? old : []).concat([entry]).slice(-RELOAD_KEEP)); }
-  lsDrop(RELOAD_KEY); markAlive();
+  const crumb = lsJson(RELOAD_KEY), alive = lsJson(ALIVE_KEY), hidden = lsJson(HIDDEN_KEY);
+  let entry = null;
+  if (crumb && typeof crumb === 'object') entry = Object.assign({}, crumb);
+  else if (alive && typeof alive === 'object') {
+    const background = !!(hidden && typeof hidden === 'object' && Number.isFinite(hidden.at));
+    entry = { reason: background ? 'background' : 'crash', at: alive.at, battleOn: !!alive.battleOn, build: alive.build || '', screen: typeof alive.screen === 'string' ? alive.screen : '' };
+    if (typeof alive.phase === 'string' && alive.phase) entry.phase = alive.phase;
+    if (Number.isFinite(alive.live)) entry.live = Math.max(0, Math.round(alive.live));
+    if (Number.isFinite(alive.portraits)) entry.portraits = Math.max(0, Math.round(alive.portraits));
+    if (Number.isFinite(alive.made)) entry.made = Math.max(0, Math.round(alive.made));
+  }
+  if (entry) {
+    Object.assign(entry, bootFacts(alive, hidden));
+    const old = lsJson(RELOAD_LAST);
+    lsPut(RELOAD_LAST, (Array.isArray(old) ? old : []).concat([entry]).slice(-RELOAD_KEEP));
+  }
+  lsDrop(RELOAD_KEY); lsDrop(HIDDEN_KEY);
+  if (document.hidden) markHidden(); else markAlive();
 }
 function watchReloads(){
-  window.addEventListener('pagehide', markUnload);
+  window.addEventListener('pagehide', () => { markHidden(); markUnload(); });
   window.addEventListener('beforeunload', markUnload);
-  window.addEventListener('pageshow', e => { if (e.persisted && !resetting) { lsDrop(RELOAD_KEY); markAlive(); } });   // back/forward cache restore: not a reload
-  document.addEventListener('visibilitychange', () => { if (document.hidden) lsDrop(ALIVE_KEY); else markAlive(); });   // a kill in the background is not a crash
+  window.addEventListener('pageshow', e => { if (e.persisted && !resetting) { lsDrop(RELOAD_KEY); lsDrop(HIDDEN_KEY); markAlive(); } });   // back/forward cache restore: not a reload
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { markHidden(); lsDrop(ALIVE_KEY); } else { lsDrop(HIDDEN_KEY); markAlive(); } });
   setInterval(markAlive, 5000);
 }
-const RELOAD_LABEL = { cloud: 'cloud', build: 'new build', boot: 'boot retry', startover: 'start over', copy: 'save copy', bfcache: 'save changed', newer: 'newer save', unknown: 'unknown', crash: 'crash?' };
+const RELOAD_LABEL = { cloud: 'cloud', build: 'new build', boot: 'boot retry', startover: 'start over', copy: 'save copy', bfcache: 'save changed', newer: 'newer save', unknown: 'unknown', crash: 'crash?', background: 'background kill' };
 function lastReloadText(){
   const list = lsJson(RELOAD_LAST), e = Array.isArray(list) && list[list.length - 1];
   if (!e || typeof e !== 'object' || !Number.isFinite(e.at)) return '';
   let t = ''; try { t = new Date(e.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (err) {}
-  return 'Last reload: ' + (RELOAD_LABEL[e.reason] || 'unknown') + (t ? ', ' + t : '') + (e.battleOn ? ', in battle' : '');
+  let where = '';
+  if (e.battleOn) where = ', in battle';
+  else if (typeof e.screen === 'string' && e.screen) where = ', on ' + e.screen;
+  return 'Last reload: ' + (RELOAD_LABEL[e.reason] || 'unknown') + (t ? ', ' + t : '') + where;
+}
+const ERROR_KEY = 'pp_errors', ERROR_KEEP = 5;
+function errorLog(){ const list = lsJson(ERROR_KEY); return Array.isArray(list) ? list.filter(e => e && typeof e === 'object') : []; }
+function noteError(message, stack){
+  try {
+    const msg = String(message == null ? 'error' : message).replace(/\s+/g, ' ').slice(0, 180);
+    let first = '';
+    try { first = (String(stack || '').split('\n').map(s => s.trim()).filter(Boolean)[0] || '').slice(0, 180); } catch (e) {}
+    const entry = { at: Date.now(), build: String(window.BUILD || ''), message: msg, stack: first, screen: screenName() };
+    lsPut(ERROR_KEY, errorLog().concat([entry]).slice(-ERROR_KEEP));
+    try { renderBuild(); } catch (e) {}
+    try { fillErrorList(); } catch (e) {}
+  } catch (e) {}
+}
+function lastErrorText(){
+  const list = errorLog(), e = list[list.length - 1];
+  if (!e || !Number.isFinite(e.at)) return '';
+  let t = ''; try { t = new Date(e.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (err) {}
+  const where = typeof e.screen === 'string' && e.screen ? ', on ' + e.screen : '';
+  return 'Last error: ' + (t || 'just now') + where;
+}
+function debugQueryOn(){ try { return new URLSearchParams(location.search).get('debug') === '1'; } catch (e) { return false; } }
+function watchErrors(){
+  try {
+    const prevErr = window.onerror, prevRej = window.onunhandledrejection;
+    window.onerror = function (message, source, lineno, colno, error) {
+      try { noteError(message, (error && error.stack) || (source ? String(source) + ':' + lineno : '')); } catch (e) {}
+      try { if (typeof prevErr === 'function') return prevErr.apply(this, arguments); } catch (e) {}
+    };
+    window.onunhandledrejection = function (ev) {
+      try {
+        const r = ev && ev.reason;
+        const msg = r && r.message ? r.message : (r == null ? 'unhandled rejection' : String(r));
+        noteError(msg, r && r.stack);
+      } catch (e) {}
+      try { if (typeof prevRej === 'function') return prevRej.apply(this, arguments); } catch (e) {}
+    };
+  } catch (e) {}
 }
 const allPets = () => [...S.party, ...S.box];
 const pet = () => S.party.find(p => p.id === S.partnerId);
@@ -417,7 +583,8 @@ function renderFollowerBtn(){
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
 function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d;
-  const rl = $('#setReload'); if (rl) { const r = lastReloadText(); rl.textContent = r; rl.hidden = !r; } }
+  const rl = $('#setReload'); if (rl) { const r = lastReloadText(); rl.textContent = r; rl.hidden = !r; }
+  const er = $('#setError'); if (er) { const t = lastErrorText(); er.textContent = t; er.hidden = !t; } }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
   if (!$('#ovSettings').hidden) return;
@@ -694,6 +861,7 @@ function showTab(name){
   fitAll();
   if (name === 'walk' && !PPEnv.geoPref() && allPets().length) openGeoAsk();     // first Walk visit with a partner: ask about location (once)
   tutSawTab(name);
+  try { markAlive(); } catch (e) {}
 }
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
@@ -4822,7 +4990,11 @@ function shownLook(){
   return L;
 }
 const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|') + (f.extra ? JSON.stringify(f.extra) : ''); };
+const KEEPER_CAP = 128;
 const keeperCache = new Map(); let keeperBuilds = 0;
+const faceCache = new Map();
+function cacheUse(map, key, value){ map.delete(key); map.set(key, value); }
+function cacheTrim(map, cap){ while (map.size >= cap) map.delete(map.keys().next().value); }
 function keeperCanvas(grid){
   const c = document.createElement('canvas'); c.width = c.height = 18; const g = c.getContext('2d');
   const filled = (x, y) => x >= 0 && y >= 0 && x < 16 && y < 16 && grid[y][x] !== '.';
@@ -4834,10 +5006,20 @@ function keeperCanvas(grid){
 }
 function keeperFrames(look){
   const key = lookKey(look); let f = keeperCache.get(key);
-  if (f) return f;
-  if (keeperCache.size > 48) keeperCache.delete(keeperCache.keys().next().value);   // picker previews make new looks; keep it small
+  if (f) { cacheUse(keeperCache, key, f); return f; }
+  cacheTrim(keeperCache, KEEPER_CAP);
   f = {}; for (const dir of ['down', 'up', 'right', 'left']) f[dir] = [0, 1].map(i => keeperCanvas(keeperGrid(look, dir, i)));
   keeperBuilds++; keeperCache.set(key, f); return f;
+}
+// People and Contacts lists need the front frame only: one canvas per look, not all eight.
+function keeperFace(look){
+  const key = lookKey(look); let c = faceCache.get(key);
+  if (c) { cacheUse(faceCache, key, c); return c; }
+  const full = keeperCache.get(key);
+  if (full && full.down && full.down[0]) { cacheUse(keeperCache, key, full); c = full.down[0]; }
+  else c = keeperCanvas(keeperGrid(look, 'down', 0));
+  cacheTrim(faceCache, KEEPER_CAP);
+  faceCache.set(key, c); return c;
 }
 const keeperFrame = () => walk.to ? Math.floor(walk.prog * 2) % 2 : 0;    // idle = frame 0
 
@@ -6454,7 +6636,8 @@ function onEnvChange(e){
 }
 // Tabs stay locked until the starter is received (Phase M: the opening is played on the WALK tab), and while anything is open.
 function lockTabs(on){ const l = !!on || (!!S && !allPets().length) || (!on && (!!scene || (typeof overlayOpen === 'function' && overlayOpen())));
-  $('#tabs').classList.toggle('locked', l); document.body.classList.toggle('nav-locked', l); }   // NAV_MODERN G2: one class locks every nav button, wherever it lives
+  $('#tabs').classList.toggle('locked', l); document.body.classList.toggle('nav-locked', l);   // NAV_MODERN G2: one class locks every nav button, wherever it lives
+  try { markAlive(); } catch (e) {} }
 function openGeoAsk(){ if (overlayOpen()) return; clearMoves(); $('#ovGeo').hidden = false; lockTabs(true); }
 function closeGeoAsk(){ $('#ovGeo').hidden = true; lockTabs(false); }
 function useLocation(){
@@ -6872,6 +7055,7 @@ function setPanel(name){
   $('#btActs').hidden = name !== 'acts'; $('#btFight').hidden = name !== 'fight'; $('#btBef').hidden = name !== 'bef'; $('#btEnd').hidden = name !== 'end';
   $('#btBusy').hidden = name !== 'busy';
   if (name === 'acts') renderActs(); if (name === 'fight') renderFight();
+  try { markAlive(); } catch (e) {}
 }
 function renderActs(){
   const wildB = battle.kind === 'wild';
@@ -8795,7 +8979,20 @@ function paintContactFace(canvas, person){
   const spot = person.spots.find(s => present(s.o)) || person.spots[0];
   const g = ctx(canvas);
   g.clearRect(0, 0, canvas.width, canvas.height);
-  try { g.drawImage(keeperFrames(npcLook(spot.o)).down[0], 0, 0); } catch (e) {}
+  try { g.drawImage(keeperFace(npcLook(spot.o)), 0, 0); } catch (e) {}
+}
+const listFaceEls = new Map();
+function listFaceEl(person, className){
+  let face = person && listFaceEls.get(person.key);
+  if (!face) {
+    face = document.createElement('canvas');
+    face.width = face.height = 18;
+    face.setAttribute('aria-hidden', 'true');
+    if (person) listFaceEls.set(person.key, face);
+  }
+  face.className = className;
+  paintContactFace(face, person);
+  return face;
 }
 let contactFilter = 'all', contactOpen = '';
 function toggleContactFav(name){
@@ -8810,9 +9007,7 @@ function renderContactCard(body, person, fav){
   card.className = 'contact-card';
   card.dataset.who = person.key;
   card.dataset.quest = person.quest ? '1' : '0';
-  const face = document.createElement('canvas');
-  face.width = face.height = 18; face.className = 'contact-face contact-face-lg'; face.setAttribute('aria-hidden', 'true');
-  paintContactFace(face, person);
+  const face = listFaceEl(person, 'contact-face contact-face-lg');
   const nm = document.createElement('h3'); nm.className = 'contact-card-name'; nm.textContent = person.name;
   const place = document.createElement('p'); place.className = 'contact-place'; place.textContent = contactPlace(person);
   card.append(face, nm, place);
@@ -8865,9 +9060,7 @@ function renderContacts(){
     row.setAttribute('role', 'listitem');
     const main = document.createElement('button');
     main.type = 'button'; main.className = 'contact-main'; main.dataset.who = person.key;
-    const face = document.createElement('canvas');
-    face.width = face.height = 18; face.className = 'contact-face'; face.setAttribute('aria-hidden', 'true');
-    paintContactFace(face, person);
+    const face = listFaceEl(person, 'contact-face');
     const meta = document.createElement('span'); meta.className = 'contact-meta';
     const nm = document.createElement('b'); nm.className = 'contact-name'; nm.textContent = person.name;
     const place = document.createElement('small'); place.className = 'contact-place'; place.textContent = contactPlace(person);
@@ -9011,7 +9204,7 @@ function phoneApp(id){
     if (window.PPNet && PPNet.renderFriends) PPNet.renderFriends();
   }
   $('#phoneHome').hidden = true; $('#phonePane').hidden = false;
-  sfx('tap');
+  sfx('tap'); try { markAlive(); } catch (e) {}
 }
 function openJournalTab(){ openPhone(); }
 /* ---------- QUEST button + NEXT STEP panel (NEXT_PLAN WP-C) ---------- */
@@ -9123,9 +9316,7 @@ function renderRep(){
     list.hidden = true; card.hidden = false; card.replaceChildren();
     const person = contactPeople().get(repWho);
     if (!person) { repWho = ''; renderRep(); return; }
-    const face = document.createElement('canvas');
-    face.width = face.height = 18; face.className = 'rep-face'; face.setAttribute('aria-hidden', 'true');
-    paintContactFace(face, person);
+    const face = listFaceEl(person, 'rep-face');
     const nm = document.createElement('h3'); nm.className = 'rep-name'; nm.textContent = person.name;
     const num = document.createElement('p'); num.className = 'rep-num'; num.textContent = String(PPRep.repGet(person.name));
     const tier = document.createElement('p'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
@@ -9140,9 +9331,7 @@ function renderRep(){
     const row = document.createElement('div'); row.className = 'rep-row';
     const btn = document.createElement('button');
     btn.type = 'button'; btn.className = 'rep-face-btn'; btn.dataset.rep = person.key; btn.setAttribute('aria-label', person.name);
-    const face = document.createElement('canvas');
-    face.width = face.height = 18; face.className = 'rep-face'; face.setAttribute('aria-hidden', 'true');
-    paintContactFace(face, person); btn.appendChild(face);
+    const face = listFaceEl(person, 'rep-face'); btn.appendChild(face);
     const meta = document.createElement('div'); meta.className = 'rep-meta';
     const nm = document.createElement('span'); nm.className = 'rep-name'; nm.textContent = person.name;
     const raw = PPRep.repGet(person.name);
@@ -9276,6 +9465,18 @@ function renderQuestTabs(){
   mapBtn.parentElement.classList.toggle('one', mapBtn.hidden);   // CLOSE alone spans the row
   if (st) renderStanding();
 }
+const standingEmblems = new Map();
+function standingEmblem(k){
+  let em = standingEmblems.get(k);
+  if (!em) {
+    em = document.createElement('canvas'); em.width = em.height = 8; em.setAttribute('aria-hidden', 'true');
+    standingEmblems.set(k, em);
+  }
+  em.className = 'st-emblem';
+  const g = ctx(em); g.clearRect(0, 0, 8, 8);
+  (SC_STANDING.art['emblem_' + k] || []).forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
+  return em;
+}
 function renderStanding(){
   const T = SC_STANDING.tab, sd = side(), rows = $('#stRows'); rows.textContent = '';
   const quiet = PPStanding.SIDES.every(k => standingOf(k, false) <= SC_STANDING.min);
@@ -9284,8 +9485,7 @@ function renderStanding(){
   for (const k of PPStanding.SIDES) {
     const i = PPStanding.tierInfo(k, standingOf(k, false)), F = SC_STANDING.sides[k], pledged = k === sd;
     const row = document.createElement('div'); row.className = 'st-row' + (pledged ? ' pledged' : ''); row.dataset.side = k;
-    const em = document.createElement('canvas'); em.className = 'st-emblem'; em.width = em.height = 8; em.setAttribute('aria-hidden', 'true');
-    const g = ctx(em); (SC_STANDING.art['emblem_' + k] || []).forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
+    const em = standingEmblem(k);
     const body = document.createElement('div');
     const head = document.createElement('div'); head.className = 'st-head';
     const sideEl = document.createElement('span'); sideEl.className = 'st-side'; sideEl.textContent = F.short.toUpperCase();
@@ -11596,6 +11796,39 @@ function renderDebugPanel(){
     if (p) $('#dbgMyHp').value = String(Math.ceil(hpOf(p)));
   } else { live.hidden = true; hpBox.hidden = true; }
   renderEncPreview();
+  fillErrorList();
+  fillReloadList();
+}
+function fillErrorList(){
+  const box = $('#dbgErrors'); if (!box) return;
+  const show = debugQueryOn();
+  box.hidden = !show;
+  const ol = $('#dbgErrorList'); if (!ol) return;
+  ol.textContent = '';
+  if (!show) return;
+  for (const e of errorLog()) {
+    const li = document.createElement('li');
+    let when = ''; try { when = new Date(e.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (err) {}
+    const where = e.screen ? 'on ' + e.screen : '';
+    li.textContent = [when, e.build || '', where, e.message || '', e.stack || ''].filter(Boolean).join(' · ');
+    ol.appendChild(li);
+  }
+}
+function fillReloadList(){
+  const box = $('#dbgReloads'); if (!box) return;
+  const show = debugQueryOn();
+  box.hidden = !show;
+  const ol = $('#dbgReloadList'); if (!ol) return;
+  ol.textContent = '';
+  if (!show) return;
+  const list = lsJson(RELOAD_LAST);
+  if (!Array.isArray(list)) return;
+  for (const e of list) {
+    if (!e || typeof e !== 'object') continue;
+    const li = document.createElement('li');
+    li.textContent = Object.keys(e).map(k => k + ' ' + (typeof e[k] === 'boolean' ? (e[k] ? 'yes' : 'no') : String(e[k]))).join(' · ');
+    ol.appendChild(li);
+  }
 }
 function bindDebugUi(){
   $('#setDebug').addEventListener('click', () => {
@@ -12740,7 +12973,7 @@ function boot(){
   window.setAccessory = setAccessory;
   window.ownsLook = ownsLook;
   window.lookChoices = lookChoices;
-  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; }
+  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; }
   window.fillWalklingExtras = fillWalklingExtras;
 }
 // P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()
@@ -12756,7 +12989,7 @@ function bootRetried(){
   } catch (e) {}
   try { return sessionStorage.getItem(BOOT_RETRY_KEY) === '1'; } catch (e) { return true; }
 }
-try { takeReloadCrumb(); watchReloads(); } catch (e) {}   // before boot, so a throwing boot still keeps the last entry
+try { takeReloadCrumb(); watchReloads(); watchErrors(); } catch (e) {}   // before boot, so a throwing boot still keeps the last entry
 try {
   boot();
   try { sessionStorage.removeItem(BOOT_RETRY_KEY); } catch (e) {}
