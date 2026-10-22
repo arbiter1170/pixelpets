@@ -69,6 +69,11 @@ test.describe('effects', () => {
     expect(src).toMatch(/function devGrant\(id\)\{/);
     expect(src).not.toMatch(/api\.devGrant\s*=/);
     expect(src).not.toMatch(/window\.devGrant/);
+    expect(src).not.toMatch(/'dev' \+ 'Grant'/);
+    expect(src).toContain('PixelPets[dbgGrant.dataset.api]');
+    const dbg = fs.readFileSync(path.join(__dirname, '..', 'debug_ui.js'), 'utf8');
+    expect(dbg).toContain('data-api="devGrant"');
+    expect(dbg.match(/devGrant/g)).toEqual(['devGrant']);
     const fnAt = src.indexOf('function devGrant(id){');
     const fn = src.slice(fnAt, src.indexOf('\n  }', fnAt) + 4);
     expect(fn).not.toMatch(/localhost|127\.0\.0\.1|github\.io/);

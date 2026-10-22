@@ -12606,7 +12606,7 @@ function bindDebugPanel(){
   const dbgGrant = $('#dbgGrant');
   if (dbgGrant) dbgGrant.addEventListener('click', () => {
     const id = $('#dbgGrantId') ? $('#dbgGrantId').value : '';
-    const fn = window.PixelPets && PixelPets['dev' + 'Grant'];
+    const fn = window.PixelPets && PixelPets[dbgGrant.dataset.api];
     if (typeof fn !== 'function') { debugOut('Debug is off.'); return; }
     debugOut(fn(id) ? 'Granted ' + id + '.' : 'No such look.');
   });

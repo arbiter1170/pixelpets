@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-22 10:53 ET: The debug grant button names the API (build 20261022-1053)
+
+- What changed and why: The GRANT button in the debug panel carries `data-api="devGrant"`. The click handler reads that attribute. `game.js` still mentions the grant only in the function and the DEBUG getter. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `debug_ui.js`, `game.js`, `tests/aura_fx.spec.js`, `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of `71ed966` and main `ae25102`. Build `20261022-1053`.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/aura_fx.spec.js --project=320 --project=390`. PP_TEST RESULT: PASS exit=0 passed=16 failed=0 flaky=0 skipped=0 time=29s. RTDB_RULES RESULT: PASS. Widths 320 and 390. Scans and the scan selftest passed inside that run. Design checker on this commit: PASS: stores_and_town_life_check (21 ok, 0 failed).
+- Decisions made (colour + reasoning): No new D or Q id. This is the d31ffe0 button check. Next free id stays D435.
+- Anything left unfinished: the Supervisor merges. P2b, P3b and P4 through P6 are not started.
+
 ## 2026-10-22 10:31 ET: Debug grant is the DEBUG getter (build 20261022-1031)
 
 - What changed and why: Design d31ffe0 updates D425 and spec 5.c. The Walkling look grant is a getter on the debug API: it returns the grant function when debug is on, and nothing otherwise. There is no hostname check. The button stays in the debug panel. Save stays `pixelpets.save.v2` with `v` 2.
