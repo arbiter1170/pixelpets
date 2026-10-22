@@ -165,13 +165,15 @@ test('PARTNER strip icons and body icons, and 320 fits without scrolling', async
       return { h: b.height, t: parseFloat(getComputedStyle(el).fontSize), on: b.bottom <= scr.getBoundingClientRect().bottom + 1 && b.top >= scr.getBoundingClientRect().top - 1 };
     });
     return {
-      nrg: r(document.querySelector('#statStrip .ss-ico-nrg')),
-      grow: r(document.querySelector('#statStrip .ss-ico-grow')),
+      stripHidden: getComputedStyle(document.querySelector('#statStrip')).display === 'none',
+      nrg: r(document.querySelector('#scr-pet .stat:has(#barEnergyPet) .ico-nrg')),
+      grow: r(document.querySelector('#scr-pet .stat:has(#barXpPet) .ico-grow')),
       food: document.querySelector('.stats .ico-food').dataset.glyph,
       joy: document.querySelector('.stats .ico-joy').dataset.glyph,
       feed: document.querySelector('[data-act="feed"] canvas').dataset.glyph,
       play: document.querySelector('[data-act="play"] canvas').dataset.glyph,
       rest: document.querySelector('[data-act="rest"] canvas').dataset.glyph,
+      heal: document.querySelector('[data-act="heal"] canvas').dataset.glyph,
       scroll: scr.scrollHeight - scr.clientHeight,
       btns,
       hint: document.querySelector('#evoHint').textContent,
@@ -186,29 +188,23 @@ test('PARTNER strip icons and body icons, and 320 fits without scrolling', async
   expect(info.feed).toBe('ico_food');
   expect(info.play).toBe('ico_joy');
   expect(info.rest).toBe('ico_nrg');
+  expect(info.heal).toBe('ico_hp');
   expect(info.xp).toBe('40');
   expect(parseFloat(info.bar)).toBeCloseTo(33.33, 1);
   expect(info.hint).toContain('GROW 40/120');
   expect(info.gear).toBe('GEAR');
   expect(info.gearAria).toBe('Gear for Emberfox');
   expect(info.scroll).toBeLessThanOrEqual(1);
+  expect(info.stripHidden).toBe(true);
   info.btns.forEach(b => { expect(b.h).toBeGreaterThanOrEqual(44); expect(b.on).toBe(true); });
-  if (W === 320 || W === 390) {
-    const bw = W === 320 ? 50 : 85;
-    const growX = W === 320 ? 160 : 195;
-    expect(info.nrg[0]).toBe(12);
-    expect(info.nrg[1]).toBe(65);
-    expect(info.nrg[2]).toBe(10);
-    expect(info.grow[0]).toBe(growX);
-    expect(info.grow[1]).toBe(65);
-    expect(bw).toBeGreaterThan(0);
-  }
+  expect(info.nrg[2]).toBeGreaterThanOrEqual(8);
+  expect(info.grow[2]).toBeGreaterThanOrEqual(8);
   if (W === 390) {
-    const strip = await page.locator('#statStrip').boundingBox();
-    const care = await page.locator('#scr-pet .actions').last().boundingBox();
+    const block = await page.locator('#scr-pet .care-block').boundingBox();
+    const care = await page.locator('#scr-pet .actions.care4').boundingBox();
     await page.screenshot({
       path: '/opt/cursor/artifacts/partner_screen_390.png',
-      clip: { x: 0, y: strip.y, width: 390, height: Math.min(care.y + care.height - strip.y, 844 - strip.y) },
+      clip: { x: 0, y: block.y, width: 390, height: Math.min(care.y + care.height - block.y, 844 - block.y) },
     });
   }
 });
@@ -218,11 +214,11 @@ test('arcade PARTNER at 320 keeps the care row on screen', async ({ page }) => {
   await boot(page, null, '', { controls: 'arcade' });
   await page.evaluate(() => PixelPets.showTab('pet'));
   const fit = await page.evaluate(() => {
-    const ids = ['#statStrip', '#barHunger', '#barHappy', '#petStatsBtn', '#petKitBtn', '[data-act="feed"]', '[data-act="play"]', '[data-act="rest"]'];
+    const ids = ['#barHpPet', '#barHunger', '#barHappy', '#petStatsBtn', '#petKitBtn', '[data-act="feed"]', '[data-act="play"]', '[data-act="rest"]', '[data-act="heal"]'];
     return {
       scroll: document.querySelector('#scr-pet').scrollHeight - document.querySelector('#scr-pet').clientHeight,
       on: ids.every(s => { const b = document.querySelector(s).getBoundingClientRect(); return b.height >= 16 && b.top >= -1 && b.bottom <= window.innerHeight + 1; }),
-      tall: ['#petStatsBtn', '#petKitBtn', '[data-act="feed"]', '[data-act="play"]', '[data-act="rest"]'].every(s => document.querySelector(s).getBoundingClientRect().height >= 44),
+      tall: ['#petStatsBtn', '#petKitBtn', '[data-act="feed"]', '[data-act="play"]', '[data-act="rest"]', '[data-act="heal"]'].every(s => document.querySelector(s).getBoundingClientRect().height >= 44),
     };
   });
   expect(fit.scroll).toBeLessThanOrEqual(1);

@@ -2,14 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-22 04:49 ET: Care screen shows one stat block, an HP bar, and HEAL (build 20261022-0449)
+
+- What changed and why: PARTNER puts HP, FOOD, JOY, NRG, ALIGN (only when chipped) and GROW in one block under the scene. HP is a bar with no digits. EXPLORE and CARE sit on the line under that block. The top strip stays on WALK and is hidden on PARTNER. HEAL is the fourth care button. It opens the bag's Heal Snack, Hearty Snack and Wake Tonic and uses the existing item rules. It has no cooldown, no care XP, no bond and no CARE count. Full HP shows FULL and toasts the existing refusal. An empty bag names the store from the map. HP read-aloud labels use the same whole number the battle card already shows. Save stays `pixelpets.save.v2` with `v` 2. No new save field.
+- Files touched: `game.js`, `index.html`, `style.css`, `tools/GAMEJS_MAP.txt`, `tests/care_screen_heal.spec.js`, `tests/stat_display.spec.js`, `tests/partner_ui.spec.js`, `tests/arbiter_test.spec.js`, `tests/heart_alert.spec.js`, `tests/README.md`, `README.md`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of main `e4c8835`. Build `20261022-0449`. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `npm run test:agent`. PP_TEST RESULT: PASS exit=0 passed=960 failed=0 flaky=0 skipped=122 time=956s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. The 390 fit check uses a 664px-tall page. Console errors: none (a spec fails the run on a console error). `node tools/scans/run.js` and `node tools/scans/selftest.js` PASS inside that run.
+- Decisions made (colour + reasoning): Green. The note has no new D id. D120, D384 and D385 stay as they are. The Supervisor's fractional-HP label pass uses the same whole-number rounding the battle card already uses. No id was renumbered. Next free id stays D435. D416-D434 stay reserved for STORES_AND_TOWN_LIFE.
+- Anything left unfinished: the Supervisor merges. The live site is not deployed.
+
 ## 2026-10-22 03:56 ET: High Charity flat doors use the residential door (build 20261022-0356)
 
 - What changed and why: `door_office_shut` reads as an office door, so the two High Charity flats that never open use `door_blue` instead. Both still never open, and neither has a step marker (D227). The open-decisions header now says `Next free id: D435`. Item f is unchanged. Save stays `pixelpets.save.v2` with `v` 2.
 - Files touched: `data/detail_b4.json`, `data/mapdata.js`, `tests/stair_marker.spec.js`, `OPEN_DECISIONS.md`, `index.html`, `version.json`, `CHANGELOG.md`.
 - Commit(s) + build id: this branch, build `20261022-0356`. `python3 tools/bump_build.py --check` exit 0.
-- Tests run and result (widths, checks): `npx playwright test` on stair_marker, data_integrity, modern_hud_rows, rest_spot, maps_b4, and smoke: 67 passed, 0 failed, widths 320, 375 and 390. `node tools/scans/run.js` prints `SCAN FAIL decisions: OPEN_DECISIONS.md:1 missing next-free id` and exits 1. `node tools/scans/selftest.js` PASS.
+- Tests run and result (widths, checks): `npx playwright test` on stair_marker, data_integrity, modern_hud_rows, rest_spot, maps_b4, and smoke: 67 passed, 0 failed, widths 320, 375 and 390. `node tools/scans/run.js` and `node tools/scans/selftest.js` PASS. All four scans pass (wording, decisions, symlinks, gamejs_map). The header reads "Next free id is D435.", with D416-D434 reserved for STORES_AND_TOWN_LIFE.
 - Decisions made (colour + reasoning): Supervisor review. Both flats keep `door_blue` because it sits in flat B's wall at 390. `tools/build_highcharity.py` does not store those door keys. Supervisor green for item f: keep the top 50 px area chip clear in Modern outdoor, per D406. The header line is the one the review asked for. No id was renumbered. No new row.
-- Anything left unfinished: the decisions scan does not read `Next free id: D435` as a next-free sentence. The live site is not deployed.
+- Anything left unfinished: The live site is not deployed.
 
 ## 2026-10-22 03:11 ET: Polish the spoken lines, and keep the last outdoor row above the strip (build 20261022-0311)
 

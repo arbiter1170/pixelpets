@@ -182,14 +182,15 @@ test('Testing chips the partner, shows ALIGN on PARTNER only, and refuses the bo
   expect(after.seal).toBe(true);
 
   await page.evaluate(() => PixelPets.showTab('pet'));
-  await expect(page.locator('#barAlign')).toBeVisible();
+  await expect(page.locator('#barAlignPet')).toBeVisible();
+  await expect(page.locator('#statStrip')).toBeHidden();
   const strip = await page.evaluate(() => {
-    const row = document.querySelector('#statStrip');
-    const walkHidden = document.body.dataset.screen;
-    return { h: row.getBoundingClientRect().height, screen: walkHidden, on: document.body.classList.contains('align-on') };
+    const row = document.querySelector('#scr-pet .stat.st-align');
+    return { h: row.getBoundingClientRect().height, screen: document.body.dataset.screen, on: document.body.classList.contains('align-on') };
   });
   expect(strip.on).toBe(true);
-  expect(strip.h).toBeGreaterThan(70);
+  expect(strip.screen).toBe('pet');
+  expect(strip.h).toBeGreaterThan(10);
   if (page.viewportSize().width === 390) await shot(page, 'align-bar');
   await page.evaluate(() => PixelPets.showTab('walk'));
   const onWalk = await page.evaluate(() => {

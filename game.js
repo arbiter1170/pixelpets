@@ -703,7 +703,7 @@ function updatePetStrip(p){
   const hp = hpOf(p), mx = maxHpOf(p), e = $('#stripHp');
   if (e) { e.style.width = clamp(hp / mx * 100, 0, 100) + '%'; e.classList.toggle('warn', hp / mx < 0.25); e.classList.remove('low'); }
   const goalTxt = unknown ? '???' : (p.stage >= 2 ? 'fully grown' : (p.xp + ' of ' + EVO_XP[p.stage]));
-  $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. HP ' + hp + ' of ' + mx + ', Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
+  $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. HP ' + Math.ceil(hp) + ' of ' + mx + ', Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
 }
 
 // Nav button art (NAV_MODERN v0.2 §7, data/nav_art.js copied from Design's nav_art.json). Modern only: arcade keeps its old
@@ -884,6 +884,51 @@ function setPetCanvas(s, H){
   if (pc.width !== W || pc.height !== H) { pc.width = W; pc.height = H; }
   pc.style.width = (W * s) + 'px'; pc.style.height = (H * s) + 'px';
 }
+// CARE_SCREEN_HEAL. HEAL on the care screen: existing items and rules only (useItem / itemRefusal). No care XP, no cooldown, no bond.
+const healItemIds = () => ITEM_ORDER.filter(k => !ITEMS[k].hold && (ITEMS[k].heal || k === 'wake_tonic'));   // heal_snack, hearty_snack, wake_tonic
+const healStoreName = () => (WORLD.hm_store && WORLD.hm_store.name) || 'The general store';   // name key: a store rename flows through
+const healFull = p => !isFainted(p) && hpOf(p) >= maxHpOf(p);
+function syncCareBlock(){
+  const p = pet(); if (!p || !$('#barHpPet')) return;
+  // NRG / ALIGN / GROW mirror the strip bars that updateHUD just set (one source of truth, same setBar rules).
+  [['barEnergy', 'barEnergyPet'], ['barAlign', 'barAlignPet'], ['barXp', 'barXpPet']].forEach(([a, b]) => {
+    const s = document.getElementById(a), d = document.getElementById(b); if (!s || !d) return;
+    d.style.width = s.style.width; d.className = s.className;
+    const sb = s.parentElement, db = d.parentElement;
+    ['role', 'aria-label', 'aria-valuenow', 'aria-valuemin', 'aria-valuemax'].forEach(k => { const v = sb.getAttribute(k); if (v != null) db.setAttribute(k, v); });
+  });
+  [['valEnergy', 'valEnergyPet'], ['valAlign', 'valAlignPet'], ['valXp', 'valXpPet'], ['ssExp', 'petExp'], ['ssCare', 'petCare']].forEach(([a, b]) => {
+    const s = document.getElementById(a), d = document.getElementById(b); if (s && d) { d.textContent = s.textContent; d.className = s.className; }
+  });
+  // D384-D385: HP bar, no digits. Width hp / max. PAL r under 25%. No .low blink. The digits live in the aria label only.
+  const hp = hpOf(p), mx = maxHpOf(p), e = $('#barHpPet');
+  e.style.width = clamp(hp / mx * 100, 0, 100) + '%'; e.classList.toggle('warn', hp / mx < 0.25); e.classList.remove('low');
+  $('#careHp').setAttribute('aria-label', 'HP ' + Math.floor(hp) + ' of ' + mx);   // hpNow can carry regen fractions
+  syncHealBtn(p);
+}
+function syncHealBtn(p){
+  const b = $('#scr-pet [data-act="heal"]'); if (!b) return;
+  const full = healFull(p), st = full ? 'full' : 'ok';
+  if (b.dataset.st !== st) {
+    b.dataset.st = st; const icon = b.querySelector('canvas'); b.textContent = 'HEAL'; if (icon) b.prepend(icon);
+    if (full) { const sm = document.createElement('small'); sm.className = 'cdt'; sm.textContent = 'FULL'; b.append(sm); }
+  }
+  b.setAttribute('aria-label', full ? 'Heal, ' + petName(p) + ' is at full HP' : 'Heal ' + petName(p));
+  b.classList.toggle('cooldown', full); b.setAttribute('aria-disabled', full ? 'true' : 'false');
+}
+async function healTap(){
+  const p = pet(); if (!p || now() < anim.busyUntil || !$('#ovSheet').hidden) return;
+  if (healFull(p)) { sfx('denied'); return toast(itemRefusal('heal_snack', p, 'field')); }   // "<name> is already at full HP."
+  const ids = healItemIds().filter(k => itemCount(k) > 0);
+  const rows = ids.length
+    ? ids.map(k => { const no = itemRefusal(k, p, 'field'); return { label: ITEMS[k].name + ' x' + itemCount(k), sub: no || ITEMS[k].blurb, value: k, art: k, disabled: !!no }; })
+    : [{ label: 'No healing items.', sub: healStoreName() + ' sells them.', value: null, disabled: true }];
+  const pick = await openSheet('Heal ' + petName(p), rows, 'BACK');
+  if (!pick) return;                                   // BACK (or Escape): nothing is used
+  const r = useItem(pick, p.id, 'field');
+  sfx(r.ok ? 'heal' : 'denied'); toast(r.msg); if (r.ok) save();
+  updateHUD();
+}
 function fitPetScene(){
   const ps = $('#scr-pet'), wrap = $('.pet-scene');
   const frameW = Math.max(56, (wrap && wrap.clientWidth) || (Math.min(window.innerWidth, 480) - 12));
@@ -915,6 +960,13 @@ function fitPetScene(){
   ps.classList.remove('pet-tight');
   if (!pick()) { ps.classList.add('pet-tight'); pick(); }
 }
+// Fractional HP in every HP aria label uses Math.ceil, the same whole number the battle card already shows.
+// The care-bar row above keeps the spec text; this pass replaces the floor so 1.6 reads 2.
+syncCareBlock = (base => function syncCareBlock(){
+  base();
+  const p = pet(), bar = $('#careHp'); if (!p || !bar) return;
+  bar.setAttribute('aria-label', 'HP ' + Math.ceil(hpOf(p)) + ' of ' + maxHpOf(p));
+})(syncCareBlock);
 // ROOM_ZOOM v0.1 (D231–D239). Interiors only, and not fitWidth rooms. S never drops below the outdoor scale s and never
 // passes 2s. Whole numbers come from floor. A room that fits stays centred; a larger one follows and clamps (syncWalkCam).
 const ROOM_ZOOM_CAP = 2, ROOM_ZOOM_HUD = 112;
@@ -1014,6 +1066,7 @@ function ariaBar(fill, now, max, label){
 }
 function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.toggle('low', v < 25); ariaBar(el, clamp(v, 0, 100), 100, BAR_LABEL[el.id] || null); }
 function updateHUD(){
+  queueMicrotask(syncCareBlock);   // CARE_SCREEN_HEAL: the care block follows every HUD update
   if (window.PPNet && PPNet.coop && PPNet.coop.renderStrip) PPNet.coop.renderStrip();
   document.body.classList.toggle('no-pets', !allPets().length);
   syncArbiterTest();
@@ -1217,9 +1270,9 @@ function tutHearts(){
 function tutTargets(key){
   const modern = ctlMode() === 'modern', one = sel => { const b = tutBox($(sel)); return b ? [b] : []; };
   if (key === 'partner') return one(modern ? '#petFloat' : '#tabs button[data-tab="pet"]');
-  if (key === 'foodjoy') return one('#scr-pet .stats');
-  if (key === 'nrg') return tutJoin(['.ss-nrg-l', '.ss-nrg-b', '.ss-nrg-v']);
-  if (key === 'grow') return tutJoin(['.ss-grow-l', '.ss-grow-b', '.ss-grow-v']);
+  if (key === 'foodjoy') return screen === 'pet' ? tutJoin(['#scr-pet .stat:has(#barHunger)', '#scr-pet .stat:has(#barHappy)']) : one('#scr-pet .stats');
+  if (key === 'nrg') return screen === 'pet' ? one('#scr-pet .stat:has(#barEnergyPet)') : tutJoin(['.ss-nrg-l', '.ss-nrg-b', '.ss-nrg-v']);
+  if (key === 'grow') return screen === 'pet' ? one('#scr-pet .stat:has(#barXpPet)') : tutJoin(['.ss-grow-l', '.ss-grow-b', '.ss-grow-v']);
   if (key === 'feed' || key === 'play' || key === 'rest') return one('#scr-pet [data-act="' + key + '"]');
   if (key === 'hearts') return tutHearts();
   if (key === 'walk') return one(modern ? '#scr-pet .scr-back' : '#tabs button[data-tab="walk"]');
@@ -11110,7 +11163,7 @@ function slotAria(p){
   const L = levelOf(p), bx = Number.isFinite(p.bx) ? p.bx : 0, a = STAT_RULES.bxForLevel(L);
   const b = L >= STAT_RULES.LEVEL_CAP ? a : STAT_RULES.bxForLevel(L + 1);
   const goal = p.stage >= 2 ? p.xp : EVO_XP[p.stage];
-  return petName(p) + ', Lv ' + L + '. HP ' + hpOf(p) + ' of ' + maxHpOf(p)
+  return petName(p) + ', Lv ' + L + '. HP ' + Math.ceil(hpOf(p)) + ' of ' + maxHpOf(p)
     + ', energy ' + Math.round(p.energy) + ', food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy)
     + ', grow ' + p.xp + ' of ' + goal + ', XP ' + (bx - a) + ' of ' + (b - a) + '. Open.';
 }
@@ -12039,7 +12092,7 @@ function bindInput(){
   si.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (sbox.nameDone) sbox.nameDone(false); } });
   $('#talkBtn').addEventListener('click', () => { if (!overlayOpen() && talkFacing()) sfx('tap'); });
   ['#evoOk', '#geoAllow', '#geoLater', '#envBadge', '#envUseLoc', '#envClose', '#copyCode'].forEach(id => $(id).addEventListener('click', () => sfx('tap')));
-  $$('#scr-pet .actions [data-act]').forEach(b => b.addEventListener('click', () => doAction(b.dataset.act)));
+  $$('#scr-pet .actions [data-act]').forEach(b => b.addEventListener('click', () => b.dataset.act === 'heal' ? healTap() : doAction(b.dataset.act)));   // CARE_SCREEN_HEAL
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
   $('#petStatsBtn').addEventListener('click', () => openPartnerStats());
@@ -12995,7 +13048,7 @@ function boot(){
   window.setAccessory = setAccessory;
   window.ownsLook = ownsLook;
   window.lookChoices = lookChoices;
-  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; }
+  if (DEBUG) { window.openWardrobe = openWardrobe; window.closeWardrobe = closeWardrobe; window.keeperFrames = keeperFrames; window.keeperFace = keeperFace; window.WORLD = WORLD; }
   window.fillWalklingExtras = fillWalklingExtras;
 }
 // P0 (build 20261015-1305): GitHub Pages ignores ?v=, so a cached older index.html can load the newest scripts. Then boot()

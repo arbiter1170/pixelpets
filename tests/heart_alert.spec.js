@@ -86,6 +86,9 @@ test('low food, low rest, both, and one FEED or one REST clears it', async ({ pa
 
   await page.locator('#petFloat').click();
   await expect(page.locator('#scr-pet')).toHaveClass(/active/);
+  const rows = await page.evaluate(() => [...document.querySelectorAll('#scr-pet .care-block .stat-lab')].map(e => e.textContent.trim()));
+  expect(rows[1]).toBe('FOOD');
+  expect(rows[2]).toBe('JOY');
   await page.locator('button[data-act="feed"]').click();
   // FEED keeps the care row busy for a little over a second. A REST tap in that window is ignored.
   await page.waitForTimeout(1600);

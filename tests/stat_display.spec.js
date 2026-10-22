@@ -32,45 +32,57 @@ async function boot(page, extra = {}, settings = {}) {
 }
 const box = (page, sel) => page.evaluate(sel => { const e = document.querySelector(sel); if (!e || !e.offsetWidth) return null; const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(Math.round); }, sel);
 
-test('criteria 1-4: one strip on PARTNER and WALK at the spec rects; NRG/GROW once; EXPLORE once; CARE on PARTNER, STEPS on WALK', async ({ page }) => {
+test('criteria 1-4: the strip stays on WALK; PARTNER hides it and mirrors NRG, GROW, EXPLORE and CARE', async ({ page }) => {
   await boot(page);
   const W = page.viewportSize().width, want = RECTS[W];
-  for (const tab of ['pet', 'walk']) {
-    await page.evaluate(t => PixelPets.showTab(t), tab); await page.waitForTimeout(150);
-    expect(await page.evaluate(() => document.querySelectorAll('#statStrip').length)).toBe(1);
-    if (want) {
-      for (const [k, sel] of Object.entries(SEL)) { const b = await box(page, '#statStrip ' + (k === 'strip' ? '' : sel)).catch(() => null) || await box(page, sel);
-        b.forEach((v, i) => expect(Math.abs(v - want[k][i]), `${tab} ${k} [${i}] ${b} vs ${want[k]}`).toBeLessThanOrEqual(1)); }
-      const slot = await box(page, tab === 'pet' ? '.ss-care' : '.ss-steps');
-      slot.forEach((v, i) => expect(Math.abs(v - want.slot[i]), `${tab} slot`).toBeLessThanOrEqual(1));
-      const main = await box(page, 'main'); expect(main[1]).toBe(108);
-    }
-    const r = await page.evaluate(() => ({ nrg: document.querySelector('#valEnergy').textContent, grow: document.querySelector('#valXp').textContent,
-      bars: document.querySelectorAll('.c-nrg').length, ex: [...document.querySelectorAll('body *')].filter(e => e.offsetWidth && e.children.length <= 1 && /EXPLORE|TODAY|explore XP/i.test(e.textContent) && !e.querySelector('span')).length,
-      care: !!document.querySelector('.ss-care').offsetWidth, steps: !!document.querySelector('.ss-steps').offsetWidth, exTxt: document.querySelector('.ss-ex').textContent, slotTxt: (document.querySelector('.ss-care').offsetWidth ? document.querySelector('.ss-care') : document.querySelector('.ss-steps')).textContent,
-      gone: ['#dExp', '#wExp', '#dailyXp', '.walk-hud', '#wXp', '#wBarEnergy'].filter(s => document.querySelector(s)) }));
-    expect(r.nrg).toBe('72'); expect(r.grow).toBe('140');
-    expect(r.ex).toBe(1); expect(r.exTxt).toMatch(/^EXPLORE \d+\/30$/);
-    expect(r.gone).toEqual([]);
-    expect([r.care, r.steps]).toEqual(tab === 'pet' ? [true, false] : [false, true]);
-    expect(r.slotTxt).toBe(tab === 'pet' ? 'CARE 0/25' : 'STEPS 340');
+  expect(await page.evaluate(() => document.querySelectorAll('#statStrip').length)).toBe(1);
+  await page.evaluate(() => PixelPets.showTab('walk')); await page.waitForTimeout(150);
+  if (want) {
+    for (const [k, sel] of Object.entries(SEL)) { const b = await box(page, '#statStrip ' + (k === 'strip' ? '' : sel)).catch(() => null) || await box(page, sel);
+      b.forEach((v, i) => expect(Math.abs(v - want[k][i]), `walk ${k} [${i}] ${b} vs ${want[k]}`).toBeLessThanOrEqual(1)); }
+    const slot = await box(page, '.ss-steps');
+    slot.forEach((v, i) => expect(Math.abs(v - want.slot[i]), 'walk slot').toBeLessThanOrEqual(1));
+    const main = await box(page, 'main'); expect(main[1]).toBe(108);
   }
+  const walk = await page.evaluate(() => ({ nrg: document.querySelector('#valEnergy').textContent, grow: document.querySelector('#valXp').textContent,
+    ex: [...document.querySelectorAll('body *')].filter(e => e.offsetWidth && e.children.length <= 1 && /EXPLORE|TODAY|explore XP/i.test(e.textContent) && !e.querySelector('span')).length,
+    care: !!document.querySelector('.ss-care').offsetWidth, steps: !!document.querySelector('.ss-steps').offsetWidth, exTxt: document.querySelector('.ss-ex').textContent,
+    slotTxt: document.querySelector('.ss-steps').textContent,
+    gone: ['#dExp', '#wExp', '#dailyXp', '.walk-hud', '#wXp', '#wBarEnergy'].filter(s => document.querySelector(s)) }));
+  expect(walk.nrg).toBe('72'); expect(walk.grow).toBe('140');
+  expect(walk.ex).toBe(1); expect(walk.exTxt).toMatch(/^EXPLORE \d+\/30$/);
+  expect(walk.gone).toEqual([]);
+  expect([walk.care, walk.steps]).toEqual([false, true]);
+  expect(walk.slotTxt).toBe('STEPS 340');
+
+  await page.evaluate(() => PixelPets.showTab('pet')); await page.waitForTimeout(150);
+  await expect(page.locator('#statStrip')).toBeHidden();
+  const pet = await page.evaluate(() => ({
+    nrg: document.querySelector('#valEnergyPet').textContent,
+    grow: document.querySelector('#valXpPet').textContent,
+    ex: document.querySelector('#petExp').textContent,
+    care: document.querySelector('#petCare').textContent,
+    strip: document.querySelector('#statStrip').offsetWidth,
+  }));
+  expect(pet.nrg).toBe('72'); expect(pet.grow).toBe('140');
+  expect(pet.ex).toMatch(/^\d+\/30$/); expect(pet.care).toBe('0/25');
+  expect(pet.strip).toBe(0);
 });
 
-test('criterion 5: hidden on WALKLINGS and QUEST, and on WALK in modern; shown on PARTNER in modern @w1', async ({ page }) => {
+test('criterion 5: hidden on WALKLINGS, on PARTNER, and on WALK in modern; shown on arcade WALK @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.showTab('col')); await expect(page.locator('#statStrip')).toBeHidden();
   await page.locator('#tabs button[data-tab="walk"]').click(); await expect(page.locator('#statStrip')).toBeVisible();
   await boot(page, {}, { controls: 'modern' });
   await page.evaluate(() => PixelPets.showTab('walk')); await expect(page.locator('#statStrip')).toBeHidden();
-  await page.evaluate(() => PixelPets.showTab('pet')); await expect(page.locator('#statStrip')).toBeVisible();
+  await page.evaluate(() => PixelPets.showTab('pet')); await expect(page.locator('#statStrip')).toBeHidden();
 });
 
 test('criteria 6-7: no new save fields, maxed counter turns lime, nothing wraps at this width', async ({ page }) => {
   await boot(page);
   await page.waitForTimeout(5500);
   const before = await page.evaluate(() => (o => JSON.stringify(Object.keys(o).sort()) + JSON.stringify(Object.keys(o.party[0]).sort()))(JSON.parse(localStorage.getItem('pixelpets.save.v2'))));
-  await page.evaluate(() => PixelPets.showTab('pet'));
+  await page.evaluate(() => PixelPets.showTab('walk'));
   const fit = await page.evaluate(() => [...document.querySelectorAll('#statStrip > span, #statStrip > b')].filter(e => e.offsetWidth).map(e => [e.className, e.scrollWidth <= e.clientWidth + 1, e.getBoundingClientRect().height <= 25]));
   for (const f of fit) expect(f.slice(1), f[0]).toEqual([true, true]);
   await page.waitForTimeout(5500);
