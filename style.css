@@ -147,6 +147,17 @@ h2 small{color:var(--h);font-size:17px}
 @keyframes pulse{50%{background:var(--w)}}
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:auto;padding:4px 3px}
 .actions.partner-row{grid-template-columns:1fr 1fr}
+/* CARE_SCREEN_HEAL: every partner bar sits in one block under the scene; the top strip stays for WALK only (D120). */
+body[data-screen="pet"] #statStrip.stat-strip{display:none}   /* beats the D120 show rule below */
+#scr-pet .stat.st-align{display:none}
+body.align-on #scr-pet .stat.st-align{display:grid}
+.care-block{gap:7px}
+#scr-pet.pet-tight .care-block{gap:3px;padding-top:2px;padding-bottom:2px}   /* 320 x 568 with ALIGN */
+.care-counts{display:flex;justify-content:space-between;gap:8px;padding:0 6px;margin-top:-4px;font-size:16px;color:var(--h);flex:0 0 auto}
+.care-counts b{color:var(--w)}.care-counts b.maxed{color:var(--l)}
+#scr-pet .actions.care4{grid-template-columns:repeat(4,1fr);gap:6px}
+#scr-pet .actions.care4 .btn{font-size:19px;padding-left:2px;padding-right:2px;min-width:44px}
+.btn-heal{background:var(--w)}
 .partner-row + .actions{margin-top:0}
 /* Short phones: the extra KIT row needs the scene gaps pulled in so FEED stays on screen. */
 #scr-pet.pet-tight{gap:6px}

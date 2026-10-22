@@ -61,6 +61,7 @@ While you're away (closed app or background tab) the same rates apply with no ti
 Away-time stops FOOD and JOY at 20, and NRG at 10.
 Come back after 14 hours and the partner tab says your Walkling waited. A shorter gap adds no extra line.
 When the partner is chipped, PARTNER shows ALIGN under NRG (Strain, Uneasy, Tuned, or Bright-linked). WALK hides that row. An unchipped partner has no ALIGN row.
+PARTNER shows HP, FOOD, JOY, NRG, ALIGN (only when chipped) and GROW in one block under the scene. EXPLORE and CARE sit on the line under that block. The top strip stays on WALK. HEAL, next to REST, opens the healing snacks and Wake Tonic already in the bag. It follows those item rules, gives no care XP, and shows FULL when HP is already full.
 
 Care balance: each Walkling has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 15 min),
 saved with the Walkling so reloading doesn't reset it. A button on cooldown greys out and shows the time
@@ -76,8 +77,8 @@ Daily XP caps (per Walkling, reset at local midnight):
 - Walking cost: each step costs the partner 0.15 FOOD (`STEP_FOOD` in `game.js`); NRG is not drained by walking
   (`STEP_NRG` = 0), so you can keep exploring even when energy is low. FOOD still drops 15 per 100 steps.
 So a Walkling can earn at most 55 XP a day: stage 2 (40 XP) on day 1 and stage 3 (120 XP) around day 3
-for a player who maxes both caps, or day 2 and day 5 with care only. The Pet tab shows
-"Today: care XP 12/25 · explore XP 8/30"; the Walk tab shows the same explore count as TODAY 8/30.
+for a player who maxes both caps, or day 2 and day 5 with care only. The partner screen shows
+EXPLORE n/30 and CARE n/25 under the bars. WALK shows EXPLORE and STEPS on the strip.
 A counter turns green when maxed.
 
 Levels, types and stats (`stats.js`):
