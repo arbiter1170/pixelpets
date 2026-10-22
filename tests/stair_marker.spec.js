@@ -308,8 +308,8 @@ test('marked tiles, black up-openings, glint, and floorSeen', async ({ page }) =
   expect(report.lizzy.share).toEqual([]);
   expect(report.lizzy.band.join(' ')).not.toContain('wayin');
   expect(report.flatsDoor).toBe('door_glass_awning');
-  expect(report.shut).toBe('door_office_shut');
-  expect(report.shutB).toBe('door_office_shut');
+  expect(report.shut).toBe('door_blue');
+  expect(report.shutB).toBe('door_blue');
   expect(report.cap).toEqual([]);
   expect(report.f5).toBe('m');
 });

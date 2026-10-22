@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-22 03:56 ET: High Charity flat doors use the residential door (build 20261022-0356)
+
+- What changed and why: `door_office_shut` reads as an office door, so the two High Charity flats that never open use `door_blue` instead. Both still never open, and neither has a step marker (D227). The open-decisions header now says `Next free id: D435`. Item f is unchanged. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `data/detail_b4.json`, `data/mapdata.js`, `tests/stair_marker.spec.js`, `OPEN_DECISIONS.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build `20261022-0356`. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `npx playwright test` on stair_marker, data_integrity, modern_hud_rows, rest_spot, maps_b4, and smoke: 67 passed, 0 failed, widths 320, 375 and 390. `node tools/scans/run.js` prints `SCAN FAIL decisions: OPEN_DECISIONS.md:1 missing next-free id` and exits 1. `node tools/scans/selftest.js` PASS.
+- Decisions made (colour + reasoning): Supervisor review. Both flats keep `door_blue` because it sits in flat B's wall at 390. `tools/build_highcharity.py` does not store those door keys. Supervisor green for item f: keep the top 50 px area chip clear in Modern outdoor, per D406. The header line is the one the review asked for. No id was renumbered. No new row.
+- Anything left unfinished: the decisions scan does not read `Next free id: D435` as a next-free sentence. The live site is not deployed.
+
 ## 2026-10-22 03:11 ET: Polish the spoken lines, and keep the last outdoor row above the strip (build 20261022-0311)
 
 - What changed and why: The Keepers council ends on a coming-later card. Four friend-slot greetings are real one-liners, and Ally A speaks as Cobble Neighbour. Hale points at the Master on the east road. The Keepers jobs page no longer lists two jobs that cannot be taken. The leak steps name real places. The marker follows Lizzy only while she is in class, and the drip in 5B stops when you check the bucket, which is also when the two snacks are given. The Hushwater camp table says the Fallstair pin is closed for now. The two High Charity flat doors that never open use the existing shut door art. The south arrival from High Charity lands on the path at hearthmoor (12, 8). The route look key is holder. On an outdoor map in modern controls the camera keeps the last walkable row above the partner strip, and centres in the open band under the area name so the north trail stays tappable. A face card replaces the people list. A flowerbed is not a rest spot. Save stays `pixelpets.save.v2` with `v` 2. No migrator.
