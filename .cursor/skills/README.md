@@ -15,6 +15,21 @@ Skills for this repo live here, one folder per skill. Each folder has a `SKILL.m
 | `walklings-design-commit` | [walklings-design-commit/SKILL.md](walklings-design-commit/SKILL.md) | Checking and committing design specs |
 | `walklings-wording-check` | [walklings-wording-check/SKILL.md](walklings-wording-check/SKILL.md) | Checking text for franchise or banned wording |
 | `walklings-handoff-log` | [walklings-handoff-log/SKILL.md](walklings-handoff-log/SKILL.md) | Ending a session or handing off |
+| `walklings-cloud-launch` | [walklings-cloud-launch/SKILL.md](walklings-cloud-launch/SKILL.md) | Launching a cloud agent to build an approved Design packet or spec |
+| `gamedev-camera-systems` | [gamedev-camera-systems/SKILL.md](gamedev-camera-systems/SKILL.md) | Building or fixing the top-down map camera (follow, deadzone, edges, door transitions, shake) |
+| `gamedev-create-game-assets` | [gamedev-create-game-assets/SKILL.md](gamedev-create-game-assets/SKILL.md) | Planning, making, sourcing or checking pixel-art sprites, tiles, icons or UI art |
+| `gamedev-dialogue-systems` | [gamedev-dialogue-systems/SKILL.md](gamedev-dialogue-systems/SKILL.md) | Designing or debugging NPC conversations, branching choices or dialog flags |
+| `gamedev-game-ai` | [gamedev-game-ai/SKILL.md](gamedev-game-ai/SKILL.md) | Building NPC routines, wandering creatures, followers, battle opponent move choice or tile pathfinding |
+| `gamedev-game-feel` | [gamedev-game-feel/SKILL.md](gamedev-game-feel/SKILL.md) | When an action works but feels flat; adding juice without touching game rules |
+| `gamedev-game-ui-ux` | [gamedev-game-ui-ux/SKILL.md](gamedev-game-ui-ux/SKILL.md) | Building or fixing HUD, menus, overlays, phone apps or dialog boxes at phone widths |
+| `gamedev-level-design` | [gamedev-level-design/SKILL.md](gamedev-level-design/SKILL.md) | Planning a town, route or interior layout, its pacing, gating or critical path |
+| `gamedev-npc-decisions` | [gamedev-npc-decisions/SKILL.md](gamedev-npc-decisions/SKILL.md) | Choosing what an NPC, wandering creature or battle opponent does next |
+| `gamedev-performance-optimization` | [gamedev-performance-optimization/SKILL.md](gamedev-performance-optimization/SKILL.md) | When the game drops frames, stutters, drains battery or loads slowly on phones |
+| `gamedev-rpg-systems` | [gamedev-rpg-systems/SKILL.md](gamedev-rpg-systems/SKILL.md) | Designing or tuning pet stats, leveling, battle damage, items or reward pacing |
+| `gamedev-save-systems` | [gamedev-save-systems/SKILL.md](gamedev-save-systems/SKILL.md) | Touching save/load, autosave timing, Firestore save writes or corrupt-save handling |
+| `gamedev-town-chatter` | [gamedev-town-chatter/SKILL.md](gamedev-town-chatter/SKILL.md) | Adding or debugging town chatter and NPC barks picked by matching facts against rules |
+
+The gamedev-* skills are reference only, adapted from an Apache-2.0 collection (license and notice files in this folder), and walklings-* skills and AGENTS.md win on any conflict. They never widen a packet's scope, and their code samples are illustrations, not drop-in code.
 
 A new skill is a new folder under `.cursor/skills/` with a `SKILL.md`. Add a row to this table in the same change. Do not put skills outside this directory.
 
