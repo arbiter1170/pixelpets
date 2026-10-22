@@ -1007,6 +1007,9 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 #ovPhone.hack .contact-star[aria-pressed="true"]{background:#9dffc0;color:#07140e}
 #ovPhone .contact-empty,#ovPhone .contact-line{margin:0;font-size:16px;line-height:1.35}
 #ovPhone .contact-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+#ovPhone .contact-card .where-line{align-self:stretch;font-size:16px;line-height:1.25;opacity:1}
+#ovPhone:not(.hack) .contact-card .where-line{color:#3d4a36}
+#ovPhone.hack .contact-card .where-line,#ovPhone.hack #phoneBody .where-line{color:#d7ffc8;background:transparent}
 #ovPhone .contact-card-name{margin:0;font-size:22px;line-height:1.1}
 #ovPhone .contact-card-acts{display:flex;gap:8px;width:100%}
 #ovPhone .contact-card-acts .btn{flex:1 1 0;min-height:44px;margin:0}
@@ -1181,6 +1184,11 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 .rep-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
 .rep-card .rep-tier{font-size:20px}
 .rep-src{margin:0;font-size:16px;line-height:1.35}
+.where-line{display:flex;align-items:flex-start;gap:4px;margin:0;max-width:100%;min-width:0;font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+.where-icon{width:16px;height:16px;flex:0 0 16px;margin-top:2px;image-rendering:pixelated;image-rendering:crisp-edges}
+.where-text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.rep-card .where-line{align-self:stretch}
+.rep-foot{margin:8px 0 0;font-size:16px;line-height:1.35;color:var(--h)}
 .rep-lock{width:14px;height:16px;flex:0 0 auto;position:relative}
 .rep-lock:before{content:"";position:absolute;left:2px;top:0;width:8px;height:6px;border:2px solid var(--h);border-bottom:0;border-radius:6px 6px 0 0}
 .rep-lock:after{content:"";position:absolute;left:0;top:6px;width:14px;height:10px;background:var(--y)}

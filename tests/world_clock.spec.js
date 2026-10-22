@@ -256,7 +256,7 @@ test('schedules, away notes, the school door, and the quest pointer @w1', async 
   expect(afternoon.target).toMatchObject({ map: 'hm_flats_5', x: 13, y: 3 });
 });
 
-test('the header chip stays tappable and names who is about', async ({ page }) => {
+test('the header chip stays tappable and points at the compass', async ({ page }) => {
   await boot(page, save({ 'story.lizzy_met': true }));
   await at(page, 'tue', 8, 30);
   await page.evaluate(() => PixelPets.goto('hearthmoor', 8, 8, 'down'));
@@ -276,11 +276,12 @@ test('the header chip stays tappable and names who is about', async ({ page }) =
   const card = await page.locator('#clockCard').innerText();
   expect(card).toContain('Tuesday');
   expect(card).toContain('8:30, day');
-  expect(card).toContain('Lizzy, Schoolhouse');
-  expect(card).toContain('Pip, Schoolhouse');
-  expect(card).toContain('Wren, Schoolhouse');
-  expect(card).toContain('Ossabell, home, 5B');
-  expect(card).toContain('Mr. Gristle, the lobby');
+  expect(card).toContain("Who's where: tap the compass, or a contact.");
+  expect(card).not.toContain('Lizzy');
+  expect(card).not.toContain('Pip');
+  expect(card).not.toContain('Wren');
+  expect(card).not.toContain('Ossabell');
+  expect(card).not.toContain('Mr. Gristle');
   const close = await page.locator('#clockClose').boundingBox();
   expect(close.height).toBeGreaterThanOrEqual(44);
   await page.locator('#clockClose').click();

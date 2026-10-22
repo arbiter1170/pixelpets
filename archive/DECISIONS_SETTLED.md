@@ -366,7 +366,7 @@ Recorded from the design spec, section 12, without renumbering. D406 stays green
 
 - **D429 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** Order up (daily) and the Night Run tin (side quest). Order up: 8 Acorns a plate, 3 a game day. The Night Run tin: Coach ticket + 40 Acorns, once. Not built in P0.
 
-- **D430 (Oct 22, 2026, red, SETTLED BY VINCENT, yes on the default: no rename, 2:01 AM ET).** Rename Lamplight Provisions? No rename: keep "Lamplight Provisions" and add GENERAL STORE to the sign, the menu header, the first-visit line, the phone hint and the TOWN map label. The alternative name, if one is wanted, is "Lamplight General Store". Not built in P0.
+- **D430 (Oct 22, 2026, red, SETTLED BY VINCENT, yes on the default: no rename, 2:01 AM ET).** Rename Lamplight Provisions? No rename: keep "Lamplight Provisions" and add GENERAL STORE to the sign, the menu header, the first-visit line, the phone hint and the TOWN map label. The alternative name, if Vincent wants one, is "Lamplight General Store". Not built in P0.
 
 - **D431 (Oct 22, 2026, green, SETTLED by the Supervisor, about 2:00 AM ET, on the default).** Lamplight clarity copy and sign. The sign, first-visit line, menu header, phone hint and map label in the spec. No rename. Not built in P0.
 

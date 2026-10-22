@@ -110,13 +110,15 @@ test('modern edge arrows sit on the rail, on the map, with a capped tile count',
   expect(seen.size, 'ring blink ' + [...seen].join(' | ')).toBe(2);
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect.poll(() => page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
   const still = new Set();
   const t1 = Date.now();
-  while (Date.now() - t1 < 1400 && still.size < 2) {
+  while (Date.now() - t1 < 1400) {
     still.add((await readChip(page)).ring);
     await page.waitForTimeout(70);
   }
-  expect(still.size, 'ring still blinks in reduced motion ' + [...still].join(' | ')).toBe(2);
+  expect(still.size, 'ring stays steady in reduced motion ' + [...still].join(' | ')).toBe(1);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
 
   await page.locator('#gearFloat').click();

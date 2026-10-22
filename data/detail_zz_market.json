@@ -49,14 +49,15 @@
     {"kind": "npc", "id": "hm_teague", "name": "Keeper Teague", "look": "hm_teague", "x": 3, "y": 2, "facing": "down", "friendSlot": "STORE_CLERK",
      "lines": {"else": "Lamplight Provisions. Lantern stays lit. What do you need?"},
      "schedule": [
-      {"when": "!phase:night", "map": "hm_store", "x": 3, "y": 2, "facing": "down"},
-      {"map": null, "x": 0, "y": 0}
+      {"when": "!phase:night", "map": "hm_store", "x": 3, "y": 2, "facing": "down", "state": "work", "place": "Lamplight Provisions"},
+      {"map": null, "x": 0, "y": 0, "state": "home", "place": "home (off the map)"}
      ]},
     {"kind": "npc", "id": "hm_quill", "name": "Keeper Quill", "look": "hm_quill", "x": 3, "y": 2, "facing": "down", "friendSlot": "STORE_CLERK",
      "lines": {"else": "Lamplight Provisions. Lantern stays lit. What do you need?"},
+     "sleepWhen": "phase:day",
      "schedule": [
-      {"when": "phase:night", "map": "hm_store", "x": 3, "y": 2, "facing": "down"},
-      {"map": null, "x": 0, "y": 0}
+      {"when": "phase:night", "map": "hm_store", "x": 3, "y": 2, "facing": "down", "state": "work", "place": "Lamplight Provisions"},
+      {"map": null, "x": 0, "y": 0, "state": "home", "place": "home (off the map)"}
      ]},
     {"kind": "prop", "id": "store_counter", "x": 2, "y": 3, "sprite": "kitchen_counter", "shopTitle": "Lamplight Provisions", "shopFlavour": "Lantern stays lit. What do you need?",
      "lines": {"else": "Lamplight Provisions. Lantern stays lit. What do you need?"},
@@ -158,8 +159,8 @@
       {"id": "hearth_plate", "name": "Hearth Plate", "food": 50, "joy": 5, "price": 70}
      ],
      "schedule": [
-      {"when": "time:0500-2300", "map": "hm_diner", "x": 3, "y": 2, "facing": "down"},
-      {"map": null, "x": 0, "y": 0}
+      {"when": "time:0500-2300", "map": "hm_diner", "x": 3, "y": 2, "facing": "down", "state": "work", "place": "the diner"},
+      {"map": null, "x": 0, "y": 0, "state": "home", "place": "home (off the map)"}
      ]},
     {"kind": "sign", "id": "diner_night", "x": 3, "y": 2, "text": "Opens at 5. The stew stays on.", "when": ["away:Cook Hesper"]},
     {"kind": "npc", "id": "diner_regular", "name": "Diner Regular", "look": "hm_diner_regular", "x": 2, "y": 5, "facing": "right", "friendSlot": "DINER_REGULAR",
