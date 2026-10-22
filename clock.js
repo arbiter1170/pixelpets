@@ -51,6 +51,7 @@ const PPClock = (() => {
   function dayOk(spec, idx){
     return spec.split(',').some(part => {
       const p = part.trim();
+      if (p === 'all') return true;
       if (p === 'weekday') return idx <= 4;
       if (p === 'weekend') return idx >= 5;
       if (p.indexOf('-') > 0) {

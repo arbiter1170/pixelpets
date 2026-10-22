@@ -2972,7 +2972,7 @@ function standRow(bag, row){
   const body = bag.onMap[map];
   if (!body) return null;
   if (!tileOk(map, x, y, body.id)) return null;
-  return { map, x, y, facing, bodyId: body.id, rawMap: row.map, rawX: row.x, rawY: row.y };
+  return { map, x, y, facing, bodyId: body.id, rawMap: row.map, rawX: row.x, rawY: row.y, state: row.state || null, place: row.place || null };
 }
 function rowWhen(row){ return !row.when || cond(row.when, false); }
 function pickRow(bag){
@@ -3040,10 +3040,13 @@ function schedPos(o){
   return { x: row.x, y: row.y, facing: row.facing };
 }
 function clockAt(name, mapId){ const row = placedRow(name); return !!(row && row.map === mapId); }
+let whereMinute = null;
 function clockBump(){
   for (const bag of Object.values(SCHED)) bag.hold = null;
   if (PPEnv.syncClock) PPEnv.syncClock();
   renderClockChip();
+  if (window.PPClock) whereMinute = PPClock.gameMinute();
+  refreshWhereabouts();
 }
 function wireSchedules(){
   const named = [];
@@ -3058,7 +3061,7 @@ function wireSchedules(){
     if (!Array.isArray(o.schedule)) continue;
     rowsOf[o.name] = o.schedule.map(r => ({
       when: r.when || '', map: r.map || null, x: r.x | 0, y: r.y | 0, facing: r.facing || null,
-      notDrawn: !r.map,
+      notDrawn: !r.map, state: r.state || null, place: typeof r.place === 'string' ? r.place : null,
     }));
     const maps = mapsOf[o.name] || (mapsOf[o.name] = new Set());
     const n = CLOCK_NUDGE[o.id];
@@ -3080,6 +3083,7 @@ function wireSchedules(){
     if (Array.isArray(o.schedule) && !bag.rows) {
       bag.sourceId = o.id;
       bag.rows = rowsOf[o.name];
+      bag.sleepWhen = o.sleepWhen || null;
     }
   }
   if (SCHED.Lizzy && SCHED.Buddy) SCHED.Buddy.follow = 'Lizzy';
@@ -3194,16 +3198,120 @@ function renderClockChip(){
     }
   }
 }
+// P1 whereabouts (D418, D419). Copy and the seven states live here. Nothing is saved.
+// One 8x8 canvas per state icon, built on first use and kept (at most seven). Rows and cards reuse its data URL.
+const WHEREABOUTS_STATES = {
+  asleep: { label: 'ASLEEP', icon: 'moon' },
+  home: { label: 'AT HOME', icon: 'house' },
+  work: { label: 'AT WORK', icon: 'lantern' },
+  school: { label: 'AT SCHOOL', icon: 'book' },
+  diner: { label: 'AT THE DINER', icon: 'bowl' },
+  out: { label: 'OUT AND ABOUT', icon: 'boot' },
+  private: { label: 'PRIVATE', icon: 'lock' },
+};
+const WHEREABOUTS_GLYPH = {
+  moon: ['...bbb..', '..bb...w', '.bb.....', '.bb.....', '.bb.....', '.bb.....', '..bb....', '...bbb..'],
+  house: ['...oo...', '..oooo..', '.oooooo.', 'oooooooo', '.yyyyyy.', '.yy..yy.', '.yy..yy.', '.yyyyyy.'],
+  lantern: ['...oo...', '..o..o..', '..oooo..', '.oyyyyo.', '.oyyyyo.', '.oyyyyo.', '..oooo..', '...oo...'],
+  book: ['........', '.cccccc.', '.cwwwwc.', '.cwccwc.', '.cwwwwc.', '.cwccwc.', '.cccccc.', '........'],
+  bowl: ['..w.w...', '...w.w..', '........', 'rrrrrrrr', '.rwwwwr.', '.rrrrrr.', '..rrrr..', '........'],
+  boot: ['..gg....', '..gg....', '..gg....', '..gg....', '..gggg..', '..ggggg.', '..llllll', '........'],
+  lock: ['..mmmm..', '.m....m.', '.m....m.', 'hhhhhhhh', 'hhhmmhhh', 'hhhmmhhh', 'hhhhhhhh', '........'],
+};
+const WHEREABOUTS_COPY = {
+  row: '{place} · {STATE}',
+  card: 'Now: {place} · {STATE}',
+  private: 'Keeps to themself.',
+  foot: 'Only people who trust you share where they are.',
+  hour: "Who's where: tap the compass, or a contact.",
+};
+const whereGlyphs = {};
+let holderWalk = null;
+function fillWhere(tmpl, place, label){ return tmpl.replace('{place}', place).replace('{STATE}', label); }
+function whereIcon(icon){
+  if (whereGlyphs[icon]) return whereGlyphs[icon];
+  const rows = WHEREABOUTS_GLYPH[icon];
+  if (!rows) return null;
+  const c = document.createElement('canvas');
+  c.width = c.height = 8;
+  const g = c.getContext('2d');
+  rows.forEach((row, y) => { for (let x = 0; x < 8; x++) if (row[x] !== '.' && PAL[row[x]]) { g.fillStyle = PAL[row[x]]; g.fillRect(x, y, 1, 1); } });
+  return (whereGlyphs[icon] = { canvas: c, url: c.toDataURL() });
+}
+function whereFromRow(row, bag, source){
+  if (!row || !row.state || !WHEREABOUTS_STATES[row.state]) return null;
+  let state = row.state;
+  const place = row.place || (row.map && CLOCK_PLACE[row.map]) || (row.map ? row.map : 'home (off the map)');
+  if (state === 'home' && cond((bag && bag.sleepWhen) || 'win:late')) state = 'asleep';
+  const def = WHEREABOUTS_STATES[state];
+  if (!def) return null;
+  return { state, place, label: def.label, line: fillWhere(WHEREABOUTS_COPY.row, place, def.label), now: fillWhere(WHEREABOUTS_COPY.card, place, def.label), source: source || '' };
+}
+function wherePrivate(){
+  return { state: 'private', place: null, label: WHEREABOUTS_STATES.private.label, line: WHEREABOUTS_COPY.private, now: WHEREABOUTS_COPY.private, source: 'private' };
+}
+function whereNow(name){
+  if (!name || !window.PPRep) return null;
+  const tier = PPRep.repTier(name);
+  if (tier === 'cool' || tier === 'hostile') return wherePrivate();
+  if (holderWalk && holderWalk.name === name) {
+    const place = holderWalk.place || 'on the way to 5B';
+    const def = WHEREABOUTS_STATES.out;
+    return { state: 'out', place, label: def.label, line: fillWhere(WHEREABOUTS_COPY.row, place, def.label), now: fillWhere(WHEREABOUTS_COPY.card, place, def.label), source: 'walk' };
+  }
+  const bag = SCHED[name];
+  if (!bag || !bag.rows) return null;
+  const placed = placedRow(name);
+  if (placed && CUR && placed.map === CUR.id && placed.state) return whereFromRow(placed, bag, 'placed');
+  return whereFromRow(intentRow(name), bag, 'intent');
+}
+function whereLineEl(info, card){
+  if (!info) return null;
+  const p = document.createElement('p');
+  p.className = 'where-line';
+  const icon = WHEREABOUTS_STATES[info.state] && WHEREABOUTS_STATES[info.state].icon;
+  const art = icon && whereIcon(icon);
+  if (art) {
+    const img = document.createElement('img');
+    img.className = 'where-icon'; img.alt = ''; img.setAttribute('aria-hidden', 'true'); img.src = art.url;
+    p.appendChild(img);
+  }
+  const span = document.createElement('span');
+  span.className = 'where-text';
+  span.textContent = card ? info.now : info.line;
+  p.appendChild(span);
+  return p;
+}
+function paintRepFoot(){
+  const foot = $('#repFoot');
+  if (!foot) return;
+  if (foot.textContent !== WHEREABOUTS_COPY.foot) foot.textContent = WHEREABOUTS_COPY.foot;
+}
+function paintClockCard(){
+  if (!window.PPClock) return;
+  const r = PPClock.now();
+  const lines = [r.name, r.hh + ':' + String(r.mm).padStart(2, '0') + ', ' + r.phase, WHEREABOUTS_COPY.hour];
+  const card = $('#clockCard');
+  if (card && card.textContent !== lines.join('\n')) card.textContent = lines.join('\n');
+}
+function refreshWhereabouts(){
+  const rep = $('#ovRep');
+  if (rep && !rep.hidden) renderRep();
+  const phone = $('#ovPhone');
+  if (phone && !phone.hidden && contactOpen) renderContacts();
+  const clock = $('#ovClock');
+  if (clock && !clock.hidden) paintClockCard();
+}
+function noteWhereMinute(){
+  if (!window.PPClock) return;
+  const m = PPClock.gameMinute();
+  if (m === whereMinute) return;
+  whereMinute = m;
+  refreshWhereabouts();
+}
 function openClockCard(){
   if (!window.PPClock || (overlayOpen() && $('#ovClock').hidden)) return;
-  const r = PPClock.now();
-  const lines = [r.name, r.hh + ':' + String(r.mm).padStart(2, '0') + ', ' + r.phase];
-  for (const name of ['Lizzy', 'Pip', 'Wren', 'Ossabell', 'Mr. Gristle']) {
-    const row = placedRow(name);
-    const where = row ? (CLOCK_PLACE[row.map] || row.map) : 'away';
-    lines.push(name + ', ' + where);
-  }
-  $('#clockCard').textContent = lines.join('\n');
+  paintClockCard();
   $('#ovClock').hidden = false;
   lockTabs(true);
   sfx('tap');
@@ -4948,9 +5056,10 @@ function modernCueZone(){
   return (cueZone.z = { x0, y0, x1, y1, tx0, tx1, ty, bx0, by, btns, rail: { x0: rx0, y0: ry0, x1: rx1, y1: ry1, h: half * k }, avoid });
 }
 // Dark round chip (PAL.k at 85%), a 1 px ring in the cue colour, the arrow, and the tile count in 3x5 digits.
-// The ring blinks white every 560 ms, including when the phone asks for reduced motion (D416). Draw-only.
+// The ring blinks white every 560 ms. Reduced motion keeps the cue colour steady (no white blink). Draw-only.
 function drawCueChip(g, cx, cy, col, t, shown, dir){
-  const ring = Math.floor(t / 560) % 2 ? col : PAL.w;
+  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ring = reduce ? col : (Math.floor(t / 560) % 2 ? col : PAL.w);
   g.fillStyle = CUE_CHIP_FILL; g.fillRect(cx - 7, cy - 8, 15, 17); g.fillRect(cx - 8, cy - 7, 17, 15);
   g.fillStyle = ring; g.fillRect(cx - 6, cy - 8, 13, 1); g.fillRect(cx - 6, cy + 8, 13, 1); g.fillRect(cx - 8, cy - 6, 1, 13); g.fillRect(cx + 8, cy - 6, 1, 13);
   drawArrow(g, ARROW[dir], cx - 3, cy - 5, col);
@@ -9142,7 +9251,9 @@ function renderContactCard(body, person, fav){
   card.dataset.quest = person.quest ? '1' : '0';
   const face = listFaceEl(person, 'contact-face contact-face-lg');
   const nm = document.createElement('h3'); nm.className = 'contact-card-name'; nm.textContent = person.name;
-  const place = document.createElement('p'); place.className = 'contact-place'; place.textContent = contactPlace(person);
+  const info = whereNow(person.name);
+  const place = info ? whereLineEl(info, true) : document.createElement('p');
+  if (!info) { place.className = 'contact-place'; place.textContent = contactPlace(person); }
   card.append(face, nm, place);
   if (person.quest) { const chip = document.createElement('p'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; card.appendChild(chip); }
   const line = document.createElement('p'); line.className = 'contact-line'; line.textContent = contactBlurb(person);
@@ -9443,6 +9554,7 @@ function repSourceLines(name){
 }
 function renderRep(){
   const list = $('#repList'), card = $('#repCard'); if (!list || !card) return;
+  paintRepFoot();
   if (repWho) {
     list.hidden = true; card.hidden = false; card.replaceChildren();
     const person = contactPeople().get(repWho);
@@ -9452,6 +9564,8 @@ function renderRep(){
     const num = document.createElement('p'); num.className = 'rep-num'; num.textContent = String(PPRep.repGet(person.name));
     const tier = document.createElement('p'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
     card.append(face, nm, num, tier);
+    const info = whereLineEl(whereNow(person.name), true);
+    if (info) card.appendChild(info);
     for (const text of repSourceLines(person.name)) { const p = document.createElement('p'); p.className = 'rep-src'; p.textContent = text; card.appendChild(p); }
     return;
   }
@@ -9471,7 +9585,10 @@ function renderRep(){
     bar.setAttribute('aria-label', person.name + ' ' + raw);
     const fill = document.createElement('i'); fill.style.width = raw + '%'; bar.appendChild(fill);
     const tier = document.createElement('span'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
-    meta.append(nm, bar, tier); row.append(btn, meta);
+    meta.append(nm, bar, tier);
+    const info = whereLineEl(whereNow(person.name), false);
+    if (info) meta.appendChild(info);
+    row.append(btn, meta);
     if (PPRep.isFixed(person.name)) { const lock = document.createElement('span'); lock.className = 'rep-lock'; lock.setAttribute('aria-hidden', 'true'); row.appendChild(lock); }
     list.appendChild(row);
   }
@@ -12445,7 +12562,7 @@ function frame(t){
     drawMap(t);
   }
   if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncSide(); syncWalkTip(); }
-  if (S && window.PPClock) renderClockChip();
+  if (S && window.PPClock) { renderClockChip(); noteWhereMinute(); }
   if (S) unlockWatch(t);
   if (!$('#ovMap').hidden) drawMapOverlay(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
@@ -13101,6 +13218,13 @@ function boot(){
     return true;
   };
   Object.defineProperty(api, 'net', { get(){ return (DEBUG && window.PPNet && PPNet.debug) ? PPNet.debug() : null; } });
+  api.whereNow = name => whereNow(name);
+  api.lizzyWalk = on => {
+    if (!DEBUG) return undefined;
+    holderWalk = on ? { name: 'Lizzy', place: 'on the way to 5B' } : null;
+    refreshWhereabouts();
+    return holderWalk ? { name: holderWalk.name, place: holderWalk.place } : null;
+  };
   api.clock = Object.freeze({
     now: () => publicClock(),
     weatherAt: m => (window.PPClock ? PPClock.weatherAt(m) : null),

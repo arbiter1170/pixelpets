@@ -473,9 +473,9 @@
       "else": "I'm a junior Keeper! I can tie a sash AND feed a Walkling. At the same time."
      },
      "schedule": [
-      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 2, "y": 4, "facing": "left", "lines": "at desks"},
-      {"when": "day:weekday & win:after_school", "map": "hearthmoor", "x": 16, "y": 31, "lines": "court"},
-      {"map": null, "x": 0, "y": 0, "lines": "home off-map"}
+      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 2, "y": 4, "facing": "left", "lines": "at desks", "state": "school", "place": "Schoolhouse"},
+      {"when": "day:weekday & win:after_school", "map": "hearthmoor", "x": 16, "y": 31, "lines": "court", "state": "out", "place": "Lanternball Court"},
+      {"map": null, "x": 0, "y": 0, "lines": "home off-map", "state": "home", "place": "home (off the map)"}
      ]
     },
     {
@@ -490,9 +490,9 @@
      },
      "look": "wren",
      "schedule": [
-      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 2, "y": 4, "facing": "left", "lines": "at desks"},
-      {"when": "day:weekday & win:after_school", "map": "hearthmoor", "x": 17, "y": 31, "lines": "court"},
-      {"map": null, "x": 0, "y": 0, "lines": "home off-map"}
+      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 2, "y": 4, "facing": "left", "lines": "at desks", "state": "school", "place": "Schoolhouse"},
+      {"when": "day:weekday & win:after_school", "map": "hearthmoor", "x": 17, "y": 31, "lines": "court", "state": "out", "place": "Lanternball Court"},
+      {"map": null, "x": 0, "y": 0, "lines": "home off-map", "state": "home", "place": "home (off the map)"}
      ]
     },
     {
@@ -511,10 +511,10 @@
       "else": "Class is out! Want to help me wipe the board? Buddy already tried. Now it's muddy."
      },
      "schedule": [
-      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 10, "y": 3, "facing": "down", "lines": "teaching"},
-      {"when": "day:tue,thu & time:1700-1900", "map": "hm_diner", "x": 6, "y": 3, "lines": "board-game night at the diner"},
-      {"when": "day:sat & time:0900-1300", "map": "hearthmoor", "x": 14, "y": 31, "lines": "shooting hoops on the court"},
-      {"map": "hm_flats_5", "x": 13, "y": 3, "facing": "right", "note": "Back at 3. - L."}
+      {"when": "day:weekday & win:school", "map": "hm_school_in", "x": 10, "y": 3, "facing": "down", "lines": "teaching", "state": "work", "place": "Schoolhouse"},
+      {"when": "day:tue,thu & time:1700-1900", "map": "hm_diner", "x": 6, "y": 3, "lines": "board-game night at the diner", "state": "diner", "place": "the diner"},
+      {"when": "day:sat & time:0900-1300", "map": "hearthmoor", "x": 14, "y": 31, "lines": "shooting hoops on the court", "state": "out", "place": "Lanternball Court"},
+      {"map": "hm_flats_5", "x": 13, "y": 3, "facing": "right", "note": "Back at 3. - L.", "state": "home", "place": "home, 5B"}
      ]
     },
     {
@@ -679,8 +679,8 @@
       "else": "Visitor? Wipe your boots. Walkling hair is extra. Everything is extra."
      },
      "schedule": [
-      {"when": "day:weekday & win:office", "map": "hm_flats_lobby", "x": 7, "y": 9, "facing": "left", "lines": "office"},
-      {"map": "hm_flats_lobby", "x": 9, "y": 9, "facing": "left", "lines": "Office is closed. Knock anyway."}
+      {"when": "day:weekday & win:office", "map": "hm_flats_lobby", "x": 7, "y": 9, "facing": "left", "lines": "office", "state": "work", "place": "the lobby"},
+      {"map": "hm_flats_lobby", "x": 9, "y": 9, "facing": "left", "lines": "Office is closed. Knock anyway.", "state": "home", "place": "the lobby"}
      ]
     }
    ]
@@ -776,9 +776,10 @@
       "else": "Look who finally came up! Where've you been hiding? Sit. Your chair missed you."
      },
      "look": "ossabell",
+     "sleepWhen": "phase:day",
      "schedule": [
-      {"when": "phase:dawn", "map": "hm_diner", "x": 3, "y": 3, "lines": "breakfast after the night shift"},
-      {"map": "hm_lantern_in", "x": 0, "y": 0, "lines": "her current spot"}
+      {"when": "phase:dawn", "map": "hm_diner", "x": 3, "y": 3, "lines": "breakfast after the night shift", "state": "diner", "place": "the diner"},
+      {"map": "hm_lantern_in", "x": 0, "y": 0, "lines": "her current spot", "state": "home", "place": "home, 5B"}
      ]
     },
     {
