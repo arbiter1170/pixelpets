@@ -57,20 +57,23 @@ test.describe('effects', () => {
   test('devGrant is absent without the debug flag', async ({ page }) => {
     await boot(page, save(), '');
     expect(await page.evaluate(() => PixelPets.devGrant)).toBeUndefined();
+    expect(await page.evaluate(() => window.devGrant)).toBeUndefined();
     expect(await page.evaluate(() => document.documentElement.innerHTML.indexOf('devGrant') >= 0)).toBe(false);
   });
 
   test('the debug grant sets a Walkling look and marks the save @w1', async ({ page }) => {
     const src = fs.readFileSync(path.join(__dirname, '..', 'game.js'), 'utf8');
-    const hits = src.match(/devGrant/g) || [];
-    expect(hits).toEqual(['devGrant']);
-    const line = src.split('\n').find(l => l.indexOf('devGrant') >= 0);
-    expect(line).toMatch(/DEBUG/);
-    const at = src.indexOf('devGrant');
-    const prev = src.slice(Math.max(0, at - 600), at);
-    expect(prev).not.toMatch(/localhost|127\.0\.0\.1/);
+    const getter = "Object.defineProperty(api, 'devGrant', { get(){ return DEBUG ? devGrant : undefined; } })";
+    expect(src).toContain(getter);
+    expect(src.match(/devGrant/g)).toEqual(['devGrant', 'devGrant', 'devGrant']);
+    expect(src).toMatch(/function devGrant\(id\)\{/);
+    expect(src).not.toMatch(/api\.devGrant\s*=/);
+    expect(src).not.toMatch(/window\.devGrant/);
+    const fnAt = src.indexOf('function devGrant(id){');
+    const fn = src.slice(fnAt, src.indexOf('\n  }', fnAt) + 4);
+    expect(fn).not.toMatch(/localhost|127\.0\.0\.1|github\.io/);
+    expect(getter).not.toMatch(/localhost|127\.0\.0\.1|github\.io/);
     expect(src).toMatch(/AURA_FX/);
-    expect(src).toMatch(/'127\.0\.0\.1'/);
     expect(src).not.toMatch(/id: 'kilnsmoke'/);
     const fol = src.slice(src.indexOf('const drawFollower = () =>'), src.indexOf('const ents = wild.list'));
     expect(fol.indexOf('drawAura')).toBeGreaterThan(fol.indexOf('fx < -18'));
@@ -98,6 +101,7 @@ test.describe('effects', () => {
         },
         debugSave: PixelPets.state.debugSave === true,
         v: PixelPets.state.v,
+        onWindow: window.devGrant,
       };
     });
     expect(granted.ember).toBe(true);
@@ -107,6 +111,7 @@ test.describe('effects', () => {
     expect(granted.fly).toBe(true);
     expect(granted.flags).toEqual({ ember: true, bell: true, kiln: true, fly: true, beanie: false });
     expect(granted.debugSave).toBe(true);
+    expect(granted.onWindow).toBeUndefined();
     expect(granted.v).toBe(2);
   });
 

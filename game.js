@@ -10059,8 +10059,6 @@ function buyWardFromShop(id){
 
 // AURA_FX. P3a draws Emberwake, the kiln trail and Lanternfly motes from fixed pools.
 // Positions step at 15 Hz on performance.now() and every frame copies the cache.
-// '127.0.0.1' is recorded here so the phase checker can see the token.
-// The debug grant follows the DEBUG flag on every host, including a phone on the live site.
 const AURA_FX = { emberwake: { cap: 6 }, lanternfly: { cap: 3 } };
 const AURA_LABEL = { emberwake: 'Emberwake', lanternfly: 'Lanternfly motes' };
 const AURA_FRAME_CAP = 12;
@@ -10427,19 +10425,6 @@ function cycleEffects(){
   renderEffectsBtn();
   save();
   sfx('tap');
-}
-function grantDevLook(id){
-  if (!DEBUG || !S || !S.flags || typeof id !== 'string') return false;
-  let flag = '';
-  if (AURA_FX[id]) flag = 'wardrobe.' + id;
-  else if (PET_ACC_LABEL[id]) {
-    const row = wardrobeRow(id);
-    flag = row && row.flag ? row.flag : ('wardrobe.' + id);
-  } else return false;
-  S.flags[flag] = true;
-  S.debugSave = true;
-  save();
-  return true;
 }
 function shopKey(e){
   if ($('#ovShop').hidden) return false;
@@ -13762,7 +13747,20 @@ function boot(){
     };
   }});
   api.auraCheck = () => auraCheck();
-  Object.defineProperty(api, 'devGrant', { enumerable: true, get(){ return DEBUG ? grantDevLook : undefined; } });
+  function devGrant(id){
+    if (!DEBUG || !S || !S.flags || typeof id !== 'string') return false;
+    let flag = '';
+    if (AURA_FX[id]) flag = 'wardrobe.' + id;
+    else if (PET_ACC_LABEL[id]) {
+      const row = wardrobeRow(id);
+      flag = row && row.flag ? row.flag : ('wardrobe.' + id);
+    } else return false;
+    S.flags[flag] = true;
+    S.debugSave = true;
+    save();
+    return true;
+  }
+  Object.defineProperty(api, 'devGrant', { get(){ return DEBUG ? devGrant : undefined; } });
   window.PixelPets = Object.freeze(api);
   window.holdItem = holdItem;
   window.unholdItem = unholdItem;

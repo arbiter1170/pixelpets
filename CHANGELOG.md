@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-22 10:31 ET: Debug grant is the DEBUG getter (build 20261022-1031)
+
+- What changed and why: Design d31ffe0 updates D425 and spec 5.c. The Walkling look grant is a getter on the debug API: it returns the grant function when debug is on, and nothing otherwise. There is no hostname check. The button stays in the debug panel. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `game.js`, `tests/aura_fx.spec.js`, `tests/README.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of `86ca7c5` and main `ae25102`. Build `20261022-1031`.
+- Tests run and result (widths, checks): `npm run test:agent`. PP_TEST RESULT: PASS exit=0 passed=1014 failed=0 flaky=1 skipped=124 time=1028s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. The flaky check is the Market Row budget at 390: first sample loop delta 0.682 ms, retry loop delta -0.119 ms (budget 0.3 ms). Both samples drew the friend and Emberwake. Effects spec at 320 and 390: PP_TEST RESULT: PASS exit=0 passed=16 failed=0 flaky=0 skipped=0 time=30s.
+- Decisions made (colour + reasoning): No new D or Q id. D425 is the updated design text in d31ffe0. Next free id stays D435.
+- Anything left unfinished: the Supervisor merges. P2b, P3b and P4 through P6 are not started. Shake and hit-stop were not added.
+
 ## 2026-10-22 09:54 ET: Walk-map and wardrobe effects (build 20261022-0954)
 
 - What changed and why: A Walkling can wear one effect in a new pet field `aura`, separate from its adornment. Emberwake (2,400 Acorns at Stitch & Lantern, once `story.seal1` is set) lifts a few warm motes and a short glow. Lanternfly motes (3,000 Acorns at the Lantern Market) circle at head height, and at night they gain a small halo. Kilnsmoke leaves a puff when the partner steps, and has no shop until a later build. Settings → Effects cycles FULL, CALM and OFF. A phone that asks for reduced motion starts on CALM and stays calm while that request is on. Effects draw on the partner on the walk map and in the wardrobe preview. They are off in battle, in scenes, and while a panel is open. With `?debug=1`, the debug panel can grant a Walkling adornment or effect and marks the save. Save stays `pixelpets.save.v2` with `v` 2. The new fields are additive. No migrator.
