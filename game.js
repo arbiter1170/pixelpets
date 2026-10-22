@@ -5058,8 +5058,7 @@ function modernCueZone(){
 // Dark round chip (PAL.k at 85%), a 1 px ring in the cue colour, the arrow, and the tile count in 3x5 digits.
 // The ring blinks white every 560 ms. Reduced motion keeps the cue colour steady (no white blink). Draw-only.
 function drawCueChip(g, cx, cy, col, t, shown, dir){
-  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ring = reduce ? col : (Math.floor(t / 560) % 2 ? col : PAL.w);
+  const ring = prefersReduced() || Math.floor(t / 560) % 2 ? col : PAL.w;
   g.fillStyle = CUE_CHIP_FILL; g.fillRect(cx - 7, cy - 8, 15, 17); g.fillRect(cx - 8, cy - 7, 17, 15);
   g.fillStyle = ring; g.fillRect(cx - 6, cy - 8, 13, 1); g.fillRect(cx - 6, cy + 8, 13, 1); g.fillRect(cx - 8, cy - 6, 1, 13); g.fillRect(cx + 8, cy - 6, 1, 13);
   drawArrow(g, ARROW[dir], cx - 3, cy - 5, col);

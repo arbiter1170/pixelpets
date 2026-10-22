@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-22 07:37 ET: Cue ring uses prefersReduced (build 20261022-0737)
+
+- What changed and why: `drawCueChip` now uses the existing `prefersReduced` helper. Reduced motion still keeps the cue colour, and the ring still blinks white otherwise. The check is no longer a `matchMedia` call on every draw. Save stays `pixelpets.save.v2` with `v` 2. No new save field.
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of `1c65e4c`. Build `20261022-0737`. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/cue_rail.spec.js tests/whereabouts.spec.js tests/smoke.spec.js`. PP_TEST RESULT: PASS exit=0 passed=23 failed=0 flaky=0 skipped=0 time=30s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. The full suite was not rerun.
+- Decisions made (colour + reasoning): No new D or Q id. Next free id stays D435.
+- Anything left unfinished: the Supervisor merges. The live site is not deployed. The 320 top-bar squeeze is still queued. P2 through P6 are not started.
+
 ## 2026-10-22 06:55 ET: Whereabouts on PEOPLE and contact cards (build 20261022-0655)
 
 - What changed and why: PEOPLE shows an icon and where someone is under each tier, and a contact card shows the same as a Now line. Neutral, warm and close share the live place and state. Cool or hostile shows Keeps to themself. and never a place. Mom and Dad stay on the list once met, with no invented place. Unmet people stay off the list. THE HOUR keeps the day and the time and one pointer to the compass or a contact. The line follows the in-game minute and refreshes when the panel opens. On your map it reads the row they are standing on. Elsewhere it reads the current row. Lizzy's walk home reads OUT AND ABOUT, on the way to 5B, and a reload clears it. The seven state icons are drawn once into a shared cache and reused. The cue ring stays the cue colour when motion is reduced, and still blinks white otherwise. The clock windows named for every day (late and evening) now match. Save stays `pixelpets.save.v2` with `v` 2. No new save field. P2 through P6 are not started.
