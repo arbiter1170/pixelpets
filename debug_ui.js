@@ -125,6 +125,14 @@ window.PP_DEBUG_HTML = `
         <button id="dbgSnap" class="btn sm" type="button">SNAPSHOT</button>
       </div>
     </details>
+    <section class="dbg-sec" id="dbgReloads" hidden>
+      <div class="dbg-h">Last reloads</div>
+      <ol id="dbgReloadList" class="dbg-errors"></ol>
+    </section>
+    <section class="dbg-sec" id="dbgErrors" hidden>
+      <div class="dbg-h">Last errors</div>
+      <ol id="dbgErrorList" class="dbg-errors"></ol>
+    </section>
     <p id="dbgOut" class="dbg-out" hidden></p>
     <button id="dbgLock" class="btn sm btn-danger" type="button">LOCK DEBUG</button>
     <button id="dbgClose" class="btn btn-play" type="button">CLOSE</button>

@@ -210,6 +210,7 @@ const PPSound = (() => {
       : tone(n, t0 + ms / 1000, d / 1000, w, v, sl, bus));
     const end = t0 + stLen(id);
     live.push({ id, bus, nodes, t0, end });
+    try { const tick = ac.createBufferSource(); tick.buffer = ac.createBuffer(1, 1, ac.sampleRate); tick.connect(bus); tick.onended = () => { try { tick.disconnect(); bus.disconnect(); } catch (e) {} }; tick.start(end); } catch (e) {}
     duckMusic(t0, end);
     return true;
   }
