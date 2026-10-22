@@ -135,7 +135,8 @@ const petSpr = p => sprFor(p && p.species, p && p.stage, isFaded(p));
 function ctx(c){ const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return g; }
 function iconCanvas(c, grid, color){ const g = ctx(c); g.clearRect(0,0,c.width,c.height); g.fillStyle = color;
   grid.forEach((row,y) => [...row].forEach((ch,x) => { if (ch === '#') g.fillRect(x,y,1,1); })); }
-// Cosmetic Walkling adornments. Not keeper slots. The first five ids stay free.
+// Cosmetic Walkling adornments. Not keeper slots.
+// A save with no acc.kit flag still owns the first five. A new save sets that flag to 2 (D420).
 // Six more are sold at Stitch & Lantern (wardrobe flags). Quest unlocks are still not built (D75).
 // Each one is measured onto the sprite's body so the same art sits on every Walkling.
 const PET_ACC_IDS = ['bell', 'ribbon', 'scarf', 'leaf', 'star', 'wick_charm', 'pin_badge', 'fern_scarf', 'clover_crown', 'willow_crown', 'lamp_cap'];
@@ -1395,10 +1396,12 @@ function tutClose(mark){
   const card = $('#tutCard'); if (card) card.hidden = false;
   lockTabs(false);
   if (S && (mark === true || skipping) && (!replay || skipping)) {
+    const firstEnd = S.flags['story.tutorial_done'] !== true;
     S.flags['story.tutorial_done'] = true;
     delete S.flags['story.tutorial_step'];
     S.flags[HELLO_FLAG] = dayKey(Date.now());
     save();
+    if (firstEnd) grantKit('bell');
   }
   if (screen === 'walk' && S && !PPEnv.geoPref() && allPets().length) openGeoAsk();
 }
@@ -3250,7 +3253,42 @@ function whereFromRow(row, bag, source){
 function wherePrivate(){
   return { state: 'private', place: null, label: WHEREABOUTS_STATES.private.label, line: WHEREABOUTS_COPY.private, now: WHEREABOUTS_COPY.private, source: 'private' };
 }
+function wherePack(state, place, source){
+  const def = WHEREABOUTS_STATES[state];
+  if (!def) return null;
+  return { state, place, label: def.label, line: fillWhere(WHEREABOUTS_COPY.row, place, def.label), now: fillWhere(WHEREABOUTS_COPY.card, place, def.label), source: source || '' };
+}
+function contactPerson(name){
+  return contactPeople().get(contactKey(name)) || null;
+}
+// The spot contactPlace() would name when one is on screen. Null when none of their spots is present.
+function liveContactSpot(name){
+  const person = contactPerson(name);
+  if (!person) return null;
+  const here = CUR && person.spots.find(s => s.map === CUR.id && present(s.o));
+  if (here) return here;
+  return person.spots.find(s => present(s.o)) || null;
+}
 function whereNow(name){
+  if (name === 'Mom' || name === 'Dad') return wherePack('home', 'home', 'fixed');
+  if (name === 'Warden Ilse' || name === 'Officer Ness' || name === 'Rook') {
+    if (window.PPRep) {
+      const tier = PPRep.repTier(name);
+      if (tier === 'cool' || tier === 'hostile') return wherePrivate();
+    }
+    if (name === 'Warden Ilse') {
+      const lodge = WORLD.hm_lodge_in;
+      return wherePack('work', (lodge && lodge.name) || "Warden's Lodge", 'fixed');
+    }
+    if (name === 'Officer Ness') {
+      const person = contactPerson(name);
+      const place = person && person.spots.length ? contactPlace(person) : 'Hearthmoor';
+      return wherePack('work', place, 'post');
+    }
+    const spot = liveContactSpot('Rook');
+    if (spot) return wherePack('out', spot.mapName, 'story');
+    return wherePack(cond('win:late') ? 'asleep' : 'home', 'home (off the map)', 'between');
+  }
   if (!name || !window.PPRep) return null;
   const tier = PPRep.repTier(name);
   if (tier === 'cool' || tier === 'hostile') return wherePrivate();
@@ -4034,6 +4072,7 @@ const WARDROBE_LIST = [
   { id: 'clover_crown', tab: 'walkling', name: 'Clover crown', price: 180, flag: 'wardrobe.clover_crown', line: 'Clover and two white blooms.' },
   { id: 'willow_crown', tab: 'walkling', name: 'Willow crown', price: 200, flag: 'wardrobe.willow_crown', line: 'Willow strands that sway.' },
   { id: 'lamp_cap', tab: 'walkling', name: "Miner's lamp cap", price: 220, flag: 'wardrobe.lamp_cap', line: 'A little lamp for dark tunnels.' },
+  { id: 'star', tab: 'walkling', name: 'Amber star', price: 90, flag: 'wardrobe.star', line: 'A small gold star.' },
   { id: 'beanie', tab: 'holder', name: 'Knit beanie', price: 150, flag: 'wardrobe.beanie', line: 'Soft knit with a bobble.' },
   { id: 'goggles', tab: 'holder', name: 'Dust goggles', price: 200, flag: 'wardrobe.goggles', line: 'Pushed up, ready for dust.' },
   { id: 'satchel', tab: 'holder', name: 'Woven satchel', price: 250, flag: 'wardrobe.satchel', line: 'Woven, with room for snacks.' },
@@ -4052,10 +4091,49 @@ function wardrobeRow(id, slot){
   for (const row of WARDROBE_LIST) if (row.key === id) return row;
   return null;
 }
+// D420. These five stay owned unless a new save set acc.kit to 2. Then each needs wardrobe.<id>.
+const KIT_FIVE = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
+function kitNeedsFlag(id){
+  return KIT_FIVE.includes(id) && !!(S && S.flags && S.flags['acc.kit'] === 2);
+}
 function ownsLook(id, slot){
+  if (kitNeedsFlag(id)) return S.flags['wardrobe.' + id] === true;
+  if (KIT_FIVE.includes(id)) return true;
   const row = wardrobeRow(id, slot);
   if (!row) return true;
   return !!(S && S.flags && S.flags[row.flag] === true);
+}
+function grantKit(id){
+  if (!PET_ACC_LABEL[id] || !S || !S.flags) return '';
+  if (KIT_FIVE.includes(id) && !kitNeedsFlag(id)) return '';
+  const flag = 'wardrobe.' + id;
+  if (S.flags[flag] === true) return '';
+  S.flags[flag] = true;
+  const msg = 'New adornment: ' + PET_ACC_LABEL[id] + '.';
+  toast(msg);
+  save();
+  return msg;
+}
+// D422. One row per first-win cosmetic. P2b adds Trial rosette, Holder's token and Kilnsmoke trail, one row each.
+const WIN_COSMETICS = [
+  { id: 'ribbon', trainer: 'hall1_fen' },
+];
+function winCosmeticDue(row, trainerId){
+  if (row.trainer) return row.trainer === trainerId;
+  const ids = row.trainers || [];
+  if (!ids.includes(trainerId)) return false;
+  if (!row.all) return true;
+  return ids.every(tid => tid === trainerId || !!(S.flags && S.flags['trainer.' + tid]));
+}
+function grantWinCosmetics(trainerId, firstWin){
+  const lines = [];
+  if (!firstWin || !trainerId) return lines;
+  for (const row of WIN_COSMETICS) {
+    if (!winCosmeticDue(row, trainerId)) continue;
+    const msg = grantKit(row.id);
+    if (msg) lines.push(msg);
+  }
+  return lines;
 }
 function lookChoices(slot){ return KEEPER_LOOKS[slot].filter(opt => ownsLook(opt, slot)); }
 function setAccessory(petId, name){
@@ -5392,7 +5470,7 @@ function wardPet(){
 function wardCards(){
   if (wardUI.tab === 'walkling') {
     const paid = WARDROBE_LIST.filter(r => r.tab === 'walkling');
-    const free = PET_ACC_IDS.filter(id => !wardrobeRow(id)).map(id => ({ id, name: PET_ACC_LABEL[id] || id, price: 0, tab: 'walkling' }));
+    const free = PET_ACC_IDS.filter(id => !wardrobeRow(id) && ownsLook(id)).map(id => ({ id, name: PET_ACC_LABEL[id] || id, price: 0, tab: 'walkling' }));
     return [{ id: 'none', name: 'Nothing', price: 0, tab: 'walkling' }].concat(paid, free);
   }
   if (wardUI.tab === 'holder') {
@@ -5801,7 +5879,11 @@ function interact(o){
     return runSteps([['say', '', typeof line === 'string' ? line : 'Take a shot.']], ctx);
   }
   if (o.kind === 'wild') return o.scene ? runScene(o.scene, ctx) : undefined;
-  if (o.scene && !scenePlayed(o.scene)) return runScene(o.scene, ctx);
+  if (o.scene && !scenePlayed(o.scene)) {
+    if (objName(o) === 'Mom' && S && S.flags['story.rival1_done']) grantKit('scarf');
+    return runScene(o.scene, ctx);
+  }
+  if (objName(o) === 'Mom' && S && S.flags['story.rival1_done']) grantKit('scarf');
   if (o.id === 'school_lizzy' && S && S.flags['story.lizzy_met'] && !S.flags['story.leak5b_seen'] && clockAt('Lizzy', 'hm_school_in')) {
     mapRT.talked.add(o.id);
     return runScene('leak_school', ctx);
@@ -6142,7 +6224,13 @@ async function execStep(st){
       const v = b === '$line' ? sc.vars.line : b;
       // D178: snapshot who is already met. People the rest of this scene introduces are not back-dated.
       const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
-      sc.view.flags[a] = v; pend(() => { S.flags[a] = v; if (a === 'story.buddy_pat_today' && v) S.flags['daily.buddy_pat'] = dayKey(Date.now()); if (joinSnap) noteRepJoin(joinSnap); });
+      sc.view.flags[a] = v; pend(() => {
+        const was = S.flags[a];
+        S.flags[a] = v;
+        if (a === 'story.orchard_cleared' && v && !was) grantKit('leaf');
+        if (a === 'story.buddy_pat_today' && v) S.flags['daily.buddy_pat'] = dayKey(Date.now());
+        if (joinSnap) noteRepJoin(joinSnap);
+      });
       if (a === 'story.arbiter_test_active') syncArbiterCue(!!v);
       // D135: freeing or walking away always credits the Keepers meter. Shipping credits Glimmerwell. Once each.
       if (a === 'story.rc_end' && (v === 'freed' || v === 'walked')) await execStep(['standing', 'keepers', null, 'rc_freed_k']);
@@ -7066,8 +7154,9 @@ function openBattle(o){
   clearUiReturn();
   clearMoves(); closeSheet(null);
   const B = battle; B.id++;
+  paintWinCosmetic([]);
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
-    fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null,
+    fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null, cosmeticLines: [], cosmeticFirst: false,
     fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false,
     group: false, slots: null, aim: 0, bench: 0, ally: null, allyName: '' });
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
@@ -7155,6 +7244,7 @@ async function battleIntro(id){
 }
 function closeBattle(){
   const B = battle; if (!B.on) return;
+  paintWinCosmetic([]);
   if (B.result === 'befriended' && B.newId && !$('#encName').hidden) {   // optional nickname (skip = species name); never read while the row is hidden (a faded one is named later)
     const p = petById(B.newId), nk = cleanNick($('#encNick').value);
     if (p && nk && nk !== nameOf(spi(p), p.stage)) { p.nick = nk; toast(RENAME_OK.replace('{name}', nk)); }
@@ -9988,6 +10078,13 @@ async function bagSheet(){
 }
 
 /* --- end of battle: lines, RESULTS (§7), CLOSE --- */
+function paintWinCosmetic(lines){
+  const el = $('#btEndLine');
+  if (!el) return;
+  const text = (lines || []).filter(Boolean).join('\n');
+  el.textContent = text;
+  el.hidden = !text;
+}
 async function finish(result, id){
   const B = battle, t = tr(); B.result = result; B.state = 'END'; setPanel('busy');
   if (result === 'run') { /* toast on close */ }
@@ -10009,12 +10106,15 @@ async function finish(result, id){
   // END panel: OK (and the optional nickname after a befriend).
   if (result === 'run') { closeBattle(); return; }
   $('#btEndTitle').textContent = { win: 'You won!', befriended: foeName(curFoe()) + ' befriended!', fled: 'It wandered off...', tired: 'Your team is worn out...' }[result] || '';
+  paintWinCosmetic(result === 'win' ? battle.cosmeticLines : []);
   if (result === 'befriended' && !battle.faded) { $('#encNick').value = ''; $('#encNick').placeholder = foeName(curFoe()); $('#encName').hidden = false; }   // a faded one is named when its colour returns (§6)
   $('#btOk').textContent = result === 'befriended' ? 'YAY!' : 'OK';
   setPanel('end'); fitBattle();
 }
 async function results(result, id){
   const B = battle, t = tr(), won = result === 'win' || result === 'befriended';
+  B.cosmeticLines = [];
+  B.cosmeticFirst = false;
   const parts = new Set(); B.participants.forEach(s => s.forEach(x => parts.add(x)));
   parts.forEach(pid => {
     const p = petById(pid); if (!p) return;
@@ -10023,6 +10123,7 @@ async function results(result, id){
   });
   if (won && parts.has(S.partnerId)) { const cday = careDay(); if (cday.battleBond < BOND.battleDay) { cday.battleBond++; addBond(pet(), BOND.battle); } }   // bond: won / befriended together
   if (result === 'win' && t) {
+    B.cosmeticFirst = S.flags['trainer.' + B.trainerId] !== true;
     const money = t.money != null ? t.money : 10 * Math.max(...trainerTeam(t).map(m => m.level)) * (t.hall ? 3 : 1);
     if (money > 0) S.money = (S.money || 0) + money;
     S.flags['trainer.' + B.trainerId] = true;
@@ -10042,6 +10143,7 @@ async function results(result, id){
     sfx('stinger_levelup'); await say(petName(p) + ' reached Lv ' + lu.to + '!', id); if (!alive(id)) return;
     for (const e of levelMoves(p, lu.from, lu.to)) { await teachMove(p, e.id, s => say(s, id)); if (!alive(id)) return; }
   }
+  if (result === 'win' && t) B.cosmeticLines = grantWinCosmetics(B.trainerId, B.cosmeticFirst);
   B.levelUps = []; save(); updateHUD();
 }
 // The Seal card (BATTLE §7 Trial Hall): the Seal's sprite plus its name, over the battle stage until the battle closes.
@@ -10131,6 +10233,7 @@ async function presentFieldSeal(id){
   const ov = $('#ovBattle');
   ov.classList.add('seal-only'); ov.hidden = false;
   $('#encName').hidden = true;
+  paintWinCosmetic([]);
   $('#btEndTitle').textContent = 'You earned the ' + sealName(id) + '!';
   $('#btOk').textContent = 'OK';
   setPanel('end'); fitBattle();
@@ -12891,6 +12994,8 @@ function boot(){
     showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
     objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
     forceTrainer: id => { if (!TRAINERS[id] || S.flags['trainer.' + id]) return false; showTab('walk'); if (overlayOpen()) return; return openBattle({ kind: 'trainer', trainerId: id }); },
+    openTrainer: id => { if (!TRAINERS[id] || scene || (battle && battle.on) || overlayOpen()) return false; showTab('walk'); return openBattle({ kind: 'trainer', trainerId: id }); },
+    replayTour: () => { replayTutorial(); return !!tut.on; },
     setHp: (who, n) => debugSetHp(who, n),
     fadeTick: sample => fadeTick(!!sample), spriteColors: (form, faded) => { const [l, st] = form.split('/'), c = sprSet(SP_INDEX[l], +st, !!faded).n, d = c.getContext('2d').getImageData(0, 0, 18, 18).data, o = new Set();
       for (let i = 0; i < d.length; i += 4) if (d[i + 3]) o.add('#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('')); return [...o]; }, get fadeQueue(){ return fadeQ.slice(); },
