@@ -184,8 +184,8 @@ test('the slip stays off until Rook\'s battle, and a pin does not accept it', as
   await page.locator('#phoneBtn').click();
   await page.locator('#phoneHome [data-app="jobs"]').click();
   const jobs = await page.locator('#phoneBody').innerText();
-  expect(jobs).toContain('Lantern check, Fernbrook. Reward later.');
-  expect(jobs).toContain('Count the Route 2 lamps. Not live yet.');
+  expect(jobs).not.toContain('Lantern check, Fernbrook. Reward later.');
+  expect(jobs).not.toContain('Count the Route 2 lamps. Not live yet.');
   expect(jobs).toContain('No jobs are open. The desk is warming up.');
   await page.locator('#phoneClose').click();
 

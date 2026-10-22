@@ -1,5 +1,7 @@
 /* D171: the dialog box never covers the speaker. A test map puts Cass on the bottom row,
-   Pip in the top third, and Wren in the middle for the camera nudge. All three names are in data/reputation.json, so the strict cast check stays quiet. Save v stays 2. */
+   Pip in the top third, and Wren in the middle for the camera nudge. Wren stands at y 16
+   so both boxes still cover her once an outdoor Modern camera sits above the partner strip.
+   All three names are in data/reputation.json, so the strict cast check stays quiet. Save v stays 2. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, withOverlay, shot } = require('./helpers');
 
@@ -26,7 +28,7 @@ const overlay = {
       objs: [
         { kind: 'npc', id: 'zz_fern', name: 'Cass', x: 8, y: 28, facing: 'up' },
         { kind: 'npc', id: 'zz_pip', name: 'Pip', x: 8, y: 2, facing: 'down' },
-        { kind: 'npc', id: 'zz_wren', name: 'Wren', x: 8, y: 15, facing: 'down' },
+        { kind: 'npc', id: 'zz_wren', name: 'Wren', x: 8, y: 16, facing: 'down' },
       ],
     },
   },

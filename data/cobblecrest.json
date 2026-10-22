@@ -153,14 +153,14 @@
         {
           "kind": "npc",
           "id": "ally_a",
-          "name": "Ally A",
+          "name": "Cobble Neighbour",
           "x": 27,
           "y": 14,
           "facing": "left",
           "when": ["story.quarry_bought"],
           "friendSlot": "ALLY_A",
           "optional": true,
-          "lines": {"else": "FRIEND SLOT · Ally A says hi! (One short line, written with the friend.)"}
+          "lines": {"else": "Glimmerwell bought the quarry, not the town. We still wave at every Pebblit. You should too."}
         },
         {"kind": "pickup", "id": "cc_snack", "x": 2, "y": 14, "item": "heal_snack", "n": 2},
         {"kind": "npc", "id": "rook_hook", "name": "Rook", "x": 25, "y": 7, "facing": "left", "when": ["story.seal2", "!story.cobble_end"], "scene": "brinewick_hook"},
@@ -485,7 +485,7 @@
       ["give", "hearty_snack", 2],
       ["give", "wake_tonic", 1],
       ["say", "Master Hale", "A Wake Tonic, too. For the day a friend needs picking up off the ground."],
-      ["say", "Master Hale", "Next Hall's Brinewick, down on the coast. Marisol runs it. Tell her old Hale says hello."],
+      ["say", "Master Hale", "Next Hall's Brinewick, down the east road to the coast. Tell the Master there old Hale says hello."],
       ["setFlag", "story.seal2", true]
     ],
     "brinewick_hook": [
@@ -550,7 +550,7 @@
     "Associate Tobin": "associate",
     "Old Miner": "villager",
     "Pim": "villager",
-    "Ally A": "villager"
+    "Cobble Neighbour": "villager"
   },
   "newSteps": [],
   "pacingStart": {"solo": 22, "shared": 20},

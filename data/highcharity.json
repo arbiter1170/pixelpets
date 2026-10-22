@@ -322,7 +322,7 @@
           "y": 38,
           "to": "hearthmoor",
           "tx": 12,
-          "ty": 10,
+          "ty": 8,
           "facing": "up"
         },
         {
@@ -1622,6 +1622,7 @@
       ["say", "Captain Lumen", "The coastal road to Brinewick is on the board. We are not opening it."],
       ["say", "", "The chart names the road. The light beside it stays dark."],
       ["standing", "keepers", null, "hc_council_k"],
+      ["say", "", "COMING LATER · The Keepers' next lantern. Thanks for playing!"],
       ["setFlag", "story.hc_council_done", true]
     ],
     "hc_invite": [

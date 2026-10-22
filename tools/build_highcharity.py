@@ -213,7 +213,7 @@ outdoor_door('hc_bank', 'hc_bank_in', (4, 5))
 outdoor_door('hc_lantern', 'hc_lantern_in', (4, 5))
 outdoor_door('hc_mall', 'hc_mall_1', (5, 9))
 
-add({'kind': 'warp', 'id': 'hc_south', 'x': 32, 'y': 38, 'to': 'hearthmoor', 'tx': 12, 'ty': 10, 'facing': 'up'})
+add({'kind': 'warp', 'id': 'hc_south', 'x': 32, 'y': 38, 'to': 'hearthmoor', 'tx': 12, 'ty': 8, 'facing': 'up'})
 add({'kind': 'trigger', 'id': 'hc_gate', 'x': 32, 'y': 36, 'r': 0, 'when': ['!story.hc_greeted'], 'scene': 'hc_gate'})
 add({'kind': 'npc', 'id': 'hc_moss', 'name': 'Keeper Moss', 'look': 'moss', 'x': 30, 'y': 36, 'facing': 'right',
      'scene': 'hc_gate',
@@ -487,6 +487,7 @@ scenes = {
         ['say', 'Captain Lumen', 'The coastal road to Brinewick is on the board. We are not opening it.'],
         ['say', '', 'The chart names the road. The light beside it stays dark.'],
         ['standing', 'keepers', None, 'hc_council_k'],
+        ['say', '', "COMING LATER · The Keepers' next lantern. Thanks for playing!"],
         ['setFlag', 'story.hc_council_done', True],
     ],
     'hc_invite': [

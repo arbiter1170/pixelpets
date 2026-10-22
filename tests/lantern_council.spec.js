@@ -107,6 +107,7 @@ test('the council names both Seals, grants once, and the road stays closed @w1',
   expect(lines.some((s) => /Ilse's letter/.test(s))).toBe(true);
   expect(lines.some((s) => /Brinewick/.test(s) && /not opening/.test(s))).toBe(true);
   expect(lines.some((s) => /stays dark/.test(s))).toBe(true);
+  expect(lines[lines.length - 1]).toBe("COMING LATER · The Keepers' next lantern. Thanks for playing!");
   const after = await page.evaluate(() => ({
     flag: PixelPets.state.flags['story.hc_council_done'],
     got: PixelPets.state.flags['standing.got.hc_council_k'],

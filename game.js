@@ -918,6 +918,9 @@ function fitPetScene(){
 // ROOM_ZOOM v0.1 (D231–D239). Interiors only, and not fitWidth rooms. S never drops below the outdoor scale s and never
 // passes 2s. Whole numbers come from floor. A room that fits stays centred; a larger one follows and clamps (syncWalkCam).
 const ROOM_ZOOM_CAP = 2, ROOM_ZOOM_HUD = 112;
+// The modern area chip is 6px from the top of the map plus a 44px target (style.css .fc-top). Outdoor follow
+// uses this so a north trail is not scrolled under the chip. Rooms do not.
+const OUTDOOR_TOP_CHROME = 50;
 let mapZoom = 1, mapBase = 1;
 function roomEdgeSlack(m){
   if (!m || m.kind !== 'interior' || m.fitWidth || !m.cells || !(m.w >= 3) || !(m.h >= 1)) return 0;
@@ -3045,8 +3048,8 @@ wireSchedules();
 function liveStep(step){
   if (!step || step.id !== 'leak_ask') return step;
   const spot = placedRow('Lizzy');
-  if (!spot) return step;
-  return Object.assign({}, step, { target: { map: spot.map, x: spot.x, y: spot.y } });
+  if (!spot || spot.map !== 'hm_school_in') return step;
+  return Object.assign({}, step, { target: { map: spot.map, x: spot.x, y: spot.y }, place: (step.atSchool && step.atSchool.place) || step.place });
 }
 function clockParty(){
   try {
@@ -3087,11 +3090,15 @@ function pushWait(opts){
   if (w) opts.push(['Wait until...', [['waitUntil', w.name]]]);
   return opts;
 }
+// Exact art keys from the sprite tables. A name that only contains those letters (a flowerbed) is not a rest spot.
+const REST_BEDS = ['apt_bed', 'bed', 'bed_quilt_o', 'bed_single_b', 'bed_single_g', 'bed_single_p', 'rest_bed'];
+const REST_BENCHES = ['bench_long', 'bench_short', 'bloom_bench', 'keep_bench', 'lab_bench_wait', 'mall_bench'];
 function isRestSpot(o){
   if (!o || o.kind === 'door') return false;
   if (o.panel === 'lantern') return true;
   if (o.lines && Object.values(o.lines).some(v => v === '@lantern_rest')) return true;
-  return /bed|bench/i.test(o.sprite || '');
+  const sprite = o.sprite || '';
+  return REST_BEDS.indexOf(sprite) >= 0 || REST_BENCHES.indexOf(sprite) >= 0;
 }
 function publicClock(){
   const r = PPClock.now();
@@ -3203,7 +3210,7 @@ function rookWithLanyard(look){
   return Object.assign({}, look, { accent: 'l', accessory: 'lanyard' });
 }
 function npcLook(o){
-  const key = o.look || (o.kind === 'trainer' ? (TRAINER_LOOK[o.id] || 'trainer') : LOOK_OF_NAME[o.name]) || 'villager';
+  const key = o.look || (o.kind === 'trainer' ? (TRAINER_LOOK[o.id] || 'holder') : LOOK_OF_NAME[o.name]) || 'villager';
   const look = NPC_LOOKS[key] || KEEPER_SWAPS.villager;
   if (key === 'rook') return rookWithLanyard(look);
   return look;
@@ -6265,9 +6272,21 @@ function sboxScreenRect(){
   const r = $('#sbox').getBoundingClientRect();
   return { x: r.left, y: r.top, width: r.width, height: r.height, right: r.right, bottom: r.bottom };
 }
+// Modern outdoor: the partner strip covers the bottom ROOM_ZOOM_HUD px and the area chip covers the top.
+// Returns the open band in canvas px. Arcade and rooms use the full canvas (hudPad 0).
+function outdoorViewBand(VH){
+  const modernOut = ctlMode() === 'modern' && !isRoom();
+  const hudPad = modernOut ? Math.ceil(ROOM_ZOOM_HUD / (mapZoom || 1)) : 0;
+  const VHe = VH - hudPad;
+  const topPad = hudPad ? Math.ceil(OUTDOOR_TOP_CHROME / (mapZoom || 1)) : 0;
+  const open = VHe - topPad;
+  if (!(open > 0)) return { hudPad, VHe, topPad: 0, mid: VHe / 2, span: VHe };
+  return { hudPad, VHe, topPad, mid: topPad + open / 2, span: open };
+}
 function biasForSpeaker(o){
   const VH = $('#mapCanvas').height; if (!VH) return 0;
-  const q = objPos(o), feet = (q.y + 1) * TS, target = feet - 0.4 * VH, base = walk.fy * TS + 8 - VH / 2;
+  const band = outdoorViewBand(VH);
+  const q = objPos(o), feet = (q.y + 1) * TS, target = feet - (band.topPad + 0.4 * band.span), base = walk.fy * TS + 8 - band.mid;
   return target - base;
 }
 function syncWalkCam(t){
@@ -6275,8 +6294,12 @@ function syncWalkCam(t){
   tickCamBias(t == null ? performance.now() : t);
   const VW = c.width, VH = c.height, px_ = walk.fx * TS, py_ = walk.fy * TS;
   const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
+  // Clamp to the band above the partner strip. Centre in the open band under the area chip, so a north
+  // trail stays tappable. A map shorter than that band is centred in it. Rooms and arcade stay on the full
+  // canvas. The void past the map stays black (D236).
+  const band = outdoorViewBand(VH);
   walk.cam.x = MW * TS <= VW ? -Math.floor((VW - MW * TS) / 2) : Math.round(clamp(px_ + 8 - VW/2 + bx, 0, MW*TS - VW));
-  walk.cam.y = MH * TS <= VH ? -Math.floor((VH - MH * TS) / 2) : Math.round(clamp(py_ + 8 - VH/2 + by, 0, MH*TS - VH));
+  walk.cam.y = MH * TS <= band.VHe ? -Math.floor((band.VHe - MH * TS) / 2) : Math.round(clamp(py_ + 8 - band.mid + by, 0, MH*TS - band.VHe));
   // Your Room at 320: the centred room still tucks its left wall under the round-button column. Nudge it right. Scale stays.
   if (roomSideNudge && CUR && CUR.id === 'hc_apt_in' && MW * TS <= VW) walk.cam.x -= roomSideNudge;
 }
@@ -9193,8 +9216,6 @@ function phoneApp(id){
       add('BOTNET', 'Augment slot: empty. The leak is not a menu.');
       add('BOTNET', 'Jobs: none posted. Come back later.');
     } else {
-      add('KEEPERUAV', 'Lantern check, Fernbrook. Reward later.');
-      add('KEEPERUAV', 'Count the Route 2 lamps. Not live yet.');
       add('KEEPERUAV', 'No jobs are open. The desk is warming up.');
     }
   } else if (id === 'ribbit') {
@@ -12814,6 +12835,7 @@ function boot(){
   api.mapBlinkAt = t0 => { if (!DEBUG) return false; mapUI.t0 = t0; if (!$('#ovMap').hidden) drawMapOverlay(t0 + ((performance.now() - t0))); return true; };
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
+  api.isRestSpot = o => isRestSpot(o);
   api.contacts = () => contactEntries().map(p => ({ name: p.name, quest: !!p.quest, fav: !!phoneBook().fav[p.key], place: contactPlace(p) }));
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
   Object.defineProperty(api, 'lanternRest', { enumerable: true, get(){
