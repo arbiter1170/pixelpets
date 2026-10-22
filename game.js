@@ -764,7 +764,8 @@ function syncNavArt(force){
     const art = key === 'phone' && S && side() === 'glimmer' ? 'phone_glimmer' : key;   // nav_art.json swaps.phone
     const st = navStateOf(b, key);
     const mark = key === 'quest' && st !== 'locked' && st !== 'disabled' ? questMarkTag() : '';
-    const tag = key === 'partner' ? art + ':' + st + ':' + careArtTag() : art + ':' + st + (mark ? ':' + mark : '');
+    const qExtra = key === 'quest' ? ':' + questSideCount() + ':' + trackPick() : '';   // D437: the count and the tracked quest repaint the badge
+    const tag = key === 'partner' ? art + ':' + st + ':' + careArtTag() : art + ':' + st + (mark ? ':' + mark : '') + qExtra;
     if (!force && navPaint.get(c) === tag) return;
     navPaint.set(c, tag); const g = ctx(c); g.clearRect(0, 0, 44, 44);
     const grid = (A.buttons[art] || {})[st] || (A.buttons[art] || {}).normal; if (grid) paintGrid(g, grid, 2, 0, 0);
@@ -3292,6 +3293,8 @@ function whereNow(name){
   if (!name || !window.PPRep) return null;
   const tier = PPRep.repTier(name);
   if (tier === 'cool' || tier === 'hostile') return wherePrivate();
+  // D444: Keeper Marigold (FRIEND SLOT: TAILOR) has no schedule; she is always at her counter in Stitch & Lantern.
+  if (name === 'Keeper Marigold') return wherePack('work', (WORLD.hm_wardrobe && WORLD.hm_wardrobe.name) || 'Stitch & Lantern', 'fixed');
   if (holderWalk && holderWalk.name === name) {
     const place = holderWalk.place || 'on the way to 5B';
     const def = WHEREABOUTS_STATES.out;
@@ -4096,7 +4099,12 @@ const KIT_FIVE = ['bell', 'ribbon', 'scarf', 'leaf', 'star'];
 function kitNeedsFlag(id){
   return KIT_FIVE.includes(id) && !!(S && S.flags && S.flags['acc.kit'] === 2);
 }
+// D443: the Junior Bright lanyard is worn while pledged to Glimmerwell. A Keepers holder never sees it; a saved lanyard draws as
+// none and stays in the save, so a switch back puts it on again. No new save field.
+const lanyardOwned = () => !!(S && S.flags && S.flags['story.side'] === 'glimmer' && S.flags['story.side_pick_done']);
+const maskLook = l => (l && l.accessory === 'lanyard' && !lanyardOwned() ? Object.assign({}, l, { accessory: 'none' }) : l);
 function ownsLook(id, slot){
+  if (id === 'lanyard' && (!slot || slot === 'accessory')) return lanyardOwned();
   if (AURA_FX[id]) return ownsAura(id);
   if (kitNeedsFlag(id)) return S.flags['wardrobe.' + id] === true;
   if (KIT_FIVE.includes(id)) return true;
@@ -5071,11 +5079,33 @@ const sideActiveList = () => {
   return PPQuests.sideActive(questState(), sideTestChains ? PPQuests.SIDE_CHAINS.concat(sideTestChains) : null);
 };
 const sideUi = () => (S.ui && typeof S.ui === 'object') ? S.ui : (S.ui = {});
-// Tracked = the stored chain if it is active, else the first active by unlock order. Never writes the save by itself.
-function trackedSide(){
+// D439 (Vincent, Oct 22, 2026; supersedes D106's always-tracked rule): at most one quest is tracked, the main story or a side
+// quest, or none. S.ui.sideTracked (save v2, a string): a side chain id, 'main' or 'none'. Unset keeps main's fallback: the
+// first active side chain, else nothing (the main chip stays gold until the holder taps TRACK on it). No new field, no migrator.
+const TRACK_MAIN = 'main', TRACK_NONE = 'none';
+const TRACKED_KEY = 'l', TRACKED_INK = 'k';   // D436 (revised): the tracked quest's PAL key on every map surface; its arrow and pennant ink
+// The SIDE card's chain: the stored chain if it is active, else the first active by unlock order. Never writes the save by itself.
+function sideFocus(){
   const A = sideActiveList(); if (!A.length) return null;
   const id = S.ui && S.ui.sideTracked;
   return A.find(a => a.chain === id) || A[0];
+}
+function trackPick(){ const id = S && S.ui && S.ui.sideTracked; return id === TRACK_MAIN || id === TRACK_NONE ? id : (sideActiveList().length ? 'side' : TRACK_NONE); }
+// The tracked side chain, or null while the holder tracks the main story or nothing (every side marker reads this).
+function trackedSide(){ return S && trackPick() === 'side' ? sideFocus() : null; }
+// { kind: 'main', label } | { kind: 'side', chain, label, step } | null (nothing tracked, or the main story is over). Read only.
+function trackedQuest(){
+  if (!S) return null;
+  const k = trackPick();
+  if (k === 'side') { const a = sideFocus(); return a ? Object.assign({ kind: 'side' }, a) : null; }
+  const q = k === TRACK_MAIN ? questCurrent() : null;
+  return q && q.id !== 'end' ? { kind: 'main', label: 'the main story' } : null;
+}
+const mainTracked = () => { const t = trackedQuest(); return !!(t && t.kind === 'main'); };
+// One write path for the quest screen and the giver: a side chain id, TRACK_MAIN or TRACK_NONE.
+function setTracked(id){
+  sideUi().sideTracked = id; const t = trackedSide();
+  sideTrackLast = { chain: t ? t.chain : null, ids: sideActiveList().map(a => a.chain) }; save();
 }
 const sideQuest = () => { const t = S ? trackedSide() : null; return t ? liveStep(t.step) : null; };
 // D106-D: when the tracked chain finishes, track the next active chain and say so. A step inside the chain keeps tracking.
@@ -5114,7 +5144,9 @@ let cueZoneStamp = 0;
 const cueZone = { stamp: -1, z: null };
 function invalidateCueZone(){ cueZoneStamp++; }
 let cueForce = null;     // ?debug=1 only (PixelPets.cueForce): a stand-in cue tile. Never saved.
+let cueLayout = null;    // ?debug=1 only (PixelPets.cueLayout): forced main, side and slip tiles. Never saved.
 let cueChipLast = null;  // last modern edge chip this frame, for the same debug read
+let cueChipAll = [];     // every rail chip this frame; debug read only. Never saved.
 function modernCueZone(){
   if (ctlMode() !== 'modern') return null;
   if (cueZone.z && cueZone.stamp === cueZoneStamp) return cueZone.z;
@@ -5139,11 +5171,20 @@ function modernCueZone(){
 }
 // Dark round chip (PAL.k at 85%), a 1 px ring in the cue colour, the arrow, and the tile count in 3x5 digits.
 // The ring blinks white every 560 ms. Reduced motion keeps the cue colour steady (no white blink). Draw-only.
-function drawCueChip(g, cx, cy, col, t, shown, dir){
+// POLISH_BUILD2 P1 (D435, D436 revised): the tracked quest's chip, main or side, is the same chip filled in PAL[TRACKED_KEY], with
+// the arrow and a 3x3 pennant in PAL[TRACKED_INK] and a PAL k rim that blinks white like the others (steady with reduce motion).
+// CUE_SLOT steps a chip one slot along the rail when it, or its tile count, would touch a chip already drawn this frame or the
+// avoid list. The main chip is drawn first.
+const CUE_TRACKED = { rim: 'k', pennant: [[5, -6], [6, -6], [7, -6], [5, -5], [6, -5], [5, -4]] };
+const CUE_SLOT = { w: 19, h: 27, tries: [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8] };
+const cueChips = [];   // chips drawn this frame (view space), reset at the top of drawObjectiveCue; never saved
+function drawCueChip(g, cx, cy, col, t, shown, dir, tracked){
   const ring = prefersReduced() || Math.floor(t / 560) % 2 ? col : PAL.w;
-  g.fillStyle = CUE_CHIP_FILL; g.fillRect(cx - 7, cy - 8, 15, 17); g.fillRect(cx - 8, cy - 7, 17, 15);
-  g.fillStyle = ring; g.fillRect(cx - 6, cy - 8, 13, 1); g.fillRect(cx - 6, cy + 8, 13, 1); g.fillRect(cx - 8, cy - 6, 1, 13); g.fillRect(cx + 8, cy - 6, 1, 13);
-  drawArrow(g, ARROW[dir], cx - 3, cy - 5, col);
+  const rim = tracked && ring === col ? PAL[CUE_TRACKED.rim] : ring;
+  g.fillStyle = tracked ? PAL[TRACKED_KEY] : CUE_CHIP_FILL; g.fillRect(cx - 7, cy - 8, 15, 17); g.fillRect(cx - 8, cy - 7, 17, 15);
+  g.fillStyle = rim; g.fillRect(cx - 6, cy - 8, 13, 1); g.fillRect(cx - 6, cy + 8, 13, 1); g.fillRect(cx - 8, cy - 6, 1, 13); g.fillRect(cx + 8, cy - 6, 1, 13);
+  drawArrow(g, ARROW[dir], cx - 3, cy - 5, tracked ? PAL[TRACKED_INK] : col);
+  if (tracked) { g.fillStyle = PAL[TRACKED_INK]; for (const [px, py] of CUE_TRACKED.pennant) g.fillRect(cx + px, cy + py, 1, 1); }
   const s = String(shown); let x = cx - ((s.length * 4 - 1) / 2 | 0); const y = cy + 10;
   g.fillStyle = CUE_CHIP_FILL; g.fillRect(x - 1, y - 1, s.length * 4 + 1, 7);
   g.fillStyle = PAL.w;
@@ -5153,7 +5194,7 @@ function drawCueChip(g, cx, cy, col, t, shown, dir){
     x += 4;
   }
 }
-function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift){
+function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift, tracked){
   if (!pt) return;
   const zone = modernCueZone();
   if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;
@@ -5188,11 +5229,29 @@ function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift){
       }
     }
     ex = clamp(ex, Rl.x0, Rl.x1); ey = clamp(ey, Rl.y0, Rl.y1);
+    // D435: the chip and its tile count (x-8..x+9, y-8..y+17 in map px) must clear the avoid list and every chip drawn this frame;
+    // if not, try one slot along the rail, then the other way, and so on (up to eight slots; the rail is at most 6.5 slots long). The first chip moves only to clear the avoid list.
+    // The avoid test uses the pixel drawCueChip will paint. Checking the unrounded slot, then rounding toward the clock, left the count 5 CSS px from the pill once the hour grew a digit. Slot spacing stays on the slot centre so rounding cannot stack two chips.
+    const hitsAvoid = (x, y) => zone.avoid.some(b => x - 8 < b[2] && x + 9 > b[0] && y - 8 < b[3] && y + 17 > b[1]);
+    const drawnAt = (x, y) => [Math.round(x), Math.round(y)];
+    if (cueChips.length || hitsAvoid(...drawnAt(ex, ey))) {
+      const along = dir === 'up' || dir === 'down';
+      const free = (x, y) => {
+        const [px, py] = drawnAt(x, y);
+        return x >= Rl.x0 && x <= Rl.x1 && y >= Rl.y0 && y <= Rl.y1 && !hitsAvoid(px, py)
+          && !cueChips.some(c => Math.abs(c.sx - x) < CUE_SLOT.w && Math.abs(c.sy - y) < CUE_SLOT.h);
+      };
+      for (const n of CUE_SLOT.tries) {
+        const x = along ? ex + n * CUE_SLOT.w : ex, y = along ? ey : ey + n * CUE_SLOT.h;
+        if (free(x, y)) { ex = x; ey = y; break; }
+      }
+    }
     const dist = Math.abs(pt.x - Math.round(walk.fx)) + Math.abs(pt.y - Math.round(walk.fy));
     const shown = dist > 99 ? 99 : dist;
     const gx = Math.round(ex), gy = Math.round(ey);
-    drawCueChip(g, gx, gy, col, t, shown, dir);
-    if (DEBUG) cueChipLast = { x: gx, y: gy, dir: dir, dist: dist, shown: shown };
+    cueChips.push({ x: gx, y: gy, sx: ex, sy: ey, tracked: !!tracked });
+    drawCueChip(g, gx, gy, col, t, shown, dir, tracked);
+    if (DEBUG) { cueChipLast = { x: gx, y: gy, dir: dir, dist: dist, shown: shown, tracked: !!tracked }; cueChipAll.push(cueChipLast); }
     return;
   }
   if (zone) {                                    // keep the arrow out from under the floating buttons (NAV_MODERN §4)
@@ -5204,17 +5263,20 @@ function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift){
   drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox + shift), Math.round(ey - gr.length / 2 + oy), col);
 }
 function drawObjectiveCue(g, cx, cy, t){
-  if (DEBUG) cueChipLast = null;
+  cueChips.length = 0;
+  if (DEBUG) { cueChipLast = null; cueChipAll.length = 0; }
   if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
-  const forced = DEBUG && cueForce;
+  const layout = DEBUG && cueLayout;
+  const forced = DEBUG && cueForce && !layout;
   const c = $('#mapCanvas'), VW = c.width, VH = c.height;
-  if (!forced && lanternHold()) { drawCuePoint(g, restBedCue(), PAL.y, cx, cy, t, VW, VH, 0); return; }   // a wipe points at a bed, not the way out
-  const main = forced ? { x: cueForce.x, y: cueForce.y, here: true } : questPointOnMap();
-  const side = forced ? null : sidePointOnMap(), board = forced ? null : boardPointOnMap();
-  drawCuePoint(g, main, PAL.y, cx, cy, t, VW, VH, 0);
-  if (side) {
+  if (!forced && !layout && lanternHold()) { drawCuePoint(g, restBedCue(), PAL.y, cx, cy, t, VW, VH, 0); return; }   // a wipe points at a bed, not the way out
+  const main = layout ? layout.main : (forced ? { x: cueForce.x, y: cueForce.y, here: true } : questPointOnMap());
+  const side = layout ? layout.side : (forced ? null : sidePointOnMap()), board = layout ? layout.board : (forced ? null : boardPointOnMap());
+  const mt = layout ? !!layout.mainTracked : (!forced && mainTracked());   // D439: the main story can be the tracked quest (gold when it is not)
+  drawCuePoint(g, main, mt ? PAL[TRACKED_KEY] : PAL.y, cx, cy, t, VW, VH, 0, mt);
+  if (side) {   // only the tracked side chain has a walk cue (sidePointOnMap reads trackedSide(); D106-E)
     const same = main && side.x === main.x && side.y === main.y;
-    drawCuePoint(g, side, PAL.c, cx, cy, t, VW, VH, same ? 7 : 0);
+    drawCuePoint(g, side, PAL[TRACKED_KEY], cx, cy, t, VW, VH, same ? 7 : 0, true);
   }
   if (board) {
     const same = (main && board.x === main.x && board.y === main.y) || (side && board.x === side.x && board.y === side.y);
@@ -5282,7 +5344,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
 /* ---------- keeper (player) sprite: MAPS_SLICE K.1 ---------- */
 // keeper.js composes 16x16 frames (keeperGrid); here they become 18x18 canvases with a 1px PAL.k outline like buildSprite,
 // built once per look and cached (the Walk map only looks them up).
-const lookOf = () => (S && S.player && S.player.look) || null;           // null = the default look
+const lookOf = () => maskLook((S && S.player && S.player.look) || null);           // null = the default look
 // Glimmerwell standing shows on the body: the Arbiter's emission has been in that bloodline a long time.
 // Tier 0 is unchanged. Higher tiers pick up silver and mint. The save's look is not rewritten.
 function shownLook(){
@@ -5458,6 +5520,7 @@ const WARD_FREE_HOLDER = [
   { id: 'bow', name: 'Bow' },
   { id: 'cap', name: 'Cap' },
   { id: 'scarf', name: 'Scarf' },
+  { id: 'lanyard', name: 'Junior Bright lanyard' },
 ];
 const WARD_FREE_COLOUR = [
   { id: 't', name: 'Teal' }, { id: 'b', name: 'Blue' }, { id: 'g', name: 'Green' }, { id: 'p', name: 'Plum' },
@@ -5480,7 +5543,7 @@ function wardCards(){
   }
   if (wardUI.tab === 'holder') {
     const paid = WARDROBE_LIST.filter(r => r.tab === 'holder');
-    return [{ id: 'none', name: 'Nothing', price: 0, tab: 'holder' }].concat(paid, WARD_FREE_HOLDER);
+    return [{ id: 'none', name: 'Nothing', price: 0, tab: 'holder' }].concat(paid, WARD_FREE_HOLDER.filter(c => ownsLook(c.id, 'accessory')));
   }
   return WARD_FREE_COLOUR.concat(WARDROBE_LIST.filter(r => r.tab === 'colours').map(r => ({ id: r.key, name: r.name, price: r.price, flag: r.flag, tab: 'colours', line: r.line })));
 }
@@ -5911,6 +5974,8 @@ function interact(o){
       ['choice', 'Wait here?', [['Wait until...', [['waitUntil', w.name]]], ['Not now', []]]],
     ], ctx);
   }
+  const offer = o.kind === 'npc' ? trackOffer(o) : null;
+  if (offer) return runSteps([['say', objName(o), line], ['choice', offer.prompt, [['Track it', [['trackSide', offer.chain]]], ['Not now', []]]]], ctx);
   return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line]], ctx);
 }
 // What the keeper faces: a talkable object on the next tile, or the door of the doorstep you stand on (facing up).
@@ -6238,6 +6303,7 @@ async function execStep(st){
         const was = S.flags[a];
         S.flags[a] = v;
         if (a === 'story.orchard_cleared' && v && !was) grantKit('leaf');
+        if (a === 'story.side_pick_done' && v && !was && S.flags['story.side'] === 'glimmer') toast('New look: Junior Bright lanyard.');
         if (a === 'story.buddy_pat_today' && v) S.flags['daily.buddy_pat'] = dayKey(Date.now());
         if (joinSnap) noteRepJoin(joinSnap);
       });
@@ -6359,6 +6425,7 @@ async function execStep(st){
       return;
     }
     case 'wardrobeOpen': { sc.openWardrobe = true; return; }
+    case 'trackSide': { pend(() => { const a2 = sideActiveList().find(x => x.chain === a); if (!a2) return; setTracked(a); toast('Now tracking: ' + a2.label); }); return; }
     // Q26: Arcade or Modern, in the house before the exit mat. Not a story flag; writes S.settings.controls at once.
     case 'controlPick': {
       sc.skip = false;
@@ -8127,6 +8194,10 @@ function drawRegionMap(t){
   // WP-C: the objective's node gets a red ring on the same blink (wider when it shares the node with the blue "you are here").
   const q = questCurrent(), qn = q && q.target ? nodeOf(q.target.map) : null;
   if (qn && N[qn] && blink) { const [x, y] = P([N[qn].col, N[qn].row]); ring(x, y, qn === cur ? 15 : 12, 'r'); }
+  // D436 (revised; D270 amended): the tracked quest's ring is PAL[TRACKED_KEY], 2 px, solid (no blink), with a PAL k edge just outside.
+  // When the main story is the tracked one, its red blink ring stays and the tracked ring sits 3 px outside it.
+  const trackRing = (x, y, r) => { ring(x, y, r + 2, 'k'); ring(x, y, r, TRACKED_KEY); ring(x, y, r + 1, TRACKED_KEY); };
+  if (qn && N[qn] && mainTracked()) { const [x, y] = P([N[qn].col, N[qn].row]); trackRing(x, y, (qn === cur ? 15 : 12) + 3); }
   // D106: the tracked side chain gets a solid side-blue ring (no blink); every other active chain a dim dot. One dot per node.
   const sq = sideQuest(), sn = sq && sq.target ? nodeOf(sq.target.map) : null;
   const dots = new Set();
@@ -8134,8 +8205,8 @@ function drawRegionMap(t){
   let ringR = null;
   if (sn && N[sn]) {
     const [x, y] = P([N[sn].col, N[sn].row]), r = sn === cur ? 15 : 12;
-    if (sn !== qn) { ring(x, y, r, 'c'); ring(x, y, r + 1, 'c'); ringR = r; }
-    else { ring(x, y, r + 3, 'c'); ringR = r + 3; }
+    if (sn !== qn) { trackRing(x, y, r); ringR = r; }
+    else { trackRing(x, y, r + 3); ringR = r + 3; }
   }
   const trk = trackedSide();
   for (const a of sideActiveList()) { if (trk && a.chain === trk.chain) continue; const n = a.step.target ? nodeOf(a.step.target.map) : null; if (n && N[n] && n !== sn) dots.add(n); }   // no dot where a side ring already is
@@ -8146,7 +8217,7 @@ function drawRegionMap(t){
     R(dx - 1, dy - 1, ds + 2, 1, 'k'); R(dx - 1, dy + ds, ds + 2, 1, 'k'); R(dx - 1, dy, 1, ds, 'k'); R(dx + ds, dy, 1, ds, 'k');
     g.globalAlpha = 0.5; R(dx, dy, ds, ds, 'c'); g.globalAlpha = 1;
   }
-  regionMapMarks = { ring: sn && N[sn] ? sn : null, ringR, ringShared: !!(sn && sn === qn), mainR: qn && N[qn] ? (qn === cur ? 15 : 12) : null, dots: [...dots], dotSize: ds, dotOutline: 'k',
+  regionMapMarks = { ring: sn && N[sn] ? sn : null, ringR, ringShared: !!(sn && sn === qn), mainR: qn && N[qn] ? (qn === cur ? 15 : 12) : null, tracked: mainTracked() ? 'main' : (sn ? 'side' : null), dots: [...dots], dotSize: ds, dotOutline: 'k',
     dotRects: [...dots].map(n => { const [x, y] = P([N[n].col, N[n].row]); return { node: n, x: x + 8 - dh, y: y - 12 - dh }; }) };
   if (mapUI.sel && N[mapUI.sel] && mapUI.sel !== cur) { const [x, y] = P([N[mapUI.sel].col, N[mapUI.sel].row]); brackets(x, y, 16); }
   g.setTransform(1, 0, 0, 1, 0, 0);
@@ -8635,7 +8706,8 @@ function layerRingBoxes(L, p){
   const rings = [], q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
   const qr = L.level === 'room' ? Math.max(p * 0.8, 10) : Math.max(p, 10);
   if (q) rings.push(Object.assign({ kind: 'quest' }, ringAabb(q.x * p + p / 2, q.y * p + p / 2, qr)));
-  if (side) rings.push(Object.assign({ kind: 'side' }, ringAabb(side.x * p + p / 2, side.y * p + p / 2, qr + 3)));
+  const tq = mainTracked() ? q : side;   // plates keep clear of the tracked ring (3 px out, plus its 2 px edge)
+  if (tq) rings.push(Object.assign({ kind: tq === q ? 'tracked_main' : 'side' }, ringAabb(tq.x * p + p / 2, tq.y * p + p / 2, qr + 5)));
   if (you) {
     const cx = you.x * p + p / 2, cy = you.y * p + p / 2, rad = Math.max(p * 0.65, 9);
     const box = ringAabb(cx, cy, rad);
@@ -8699,6 +8771,8 @@ function fillTri(R, pts, col){
     }
   }
 }
+// D436 (revised): the tracked quest on a room or town layer: two PAL[TRACKED_KEY] rings, solid, and a PAL k edge outside.
+function trackBox(R, cx, cy, r){ ringBox(R, cx, cy, r + 2, 'k'); ringBox(R, cx, cy, r, TRACKED_KEY); ringBox(R, cx, cy, r + 1, TRACKED_KEY); }
 function ringBox(R, cx, cy, r, col){
   for (let a = 0; a < 360; a += 4) {
     const x = Math.round(cx + r * Math.cos(a * Math.PI / 180)), y = Math.round(cy + r * Math.sin(a * Math.PI / 180));
@@ -8802,7 +8876,8 @@ function drawRoomLayer(g, R, L, p, fog, blink){
   L.sections.forEach(s => { if (s.label) plateText(g, s.anchor[0] * p + p / 2, s.anchor[1] * p + p / 2, s.label, p >= 18 ? 14 : 12, 'w', 'center'); });
   const q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
   if (q && blink) ringBox(R, q.x * p + p / 2, q.y * p + p / 2, Math.max(p * 0.8, 10), 'r');
-  if (side) ringBox(R, side.x * p + p / 2, side.y * p + p / 2, Math.max(p * 0.8, 10) + 3, 'c');
+  const tq = mainTracked() ? q : side;   // the tracked quest, main or side; the main red blink ring above stays
+  if (tq) trackBox(R, tq.x * p + p / 2, tq.y * p + p / 2, Math.max(p * 0.8, 10) + 3);
   if (you && blink) youMarker(R, you.x * p + p / 2, you.y * p + p / 2, Math.max(p * 0.65, 9));
   const sel = mapUI.pick;
   if (sel) whiteBrackets(R, sel.x * p + p / 2, sel.y * p + p / 2, Math.max(p, 14));
@@ -8852,7 +8927,8 @@ function drawTownLayer(g, R, box, L, p, blink){
   paintPins(pins);
   const q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
   if (q && blink) ringBox(R, q.x * p + p / 2, q.y * p + p / 2, Math.max(p, 10), 'r');
-  if (side) ringBox(R, side.x * p + p / 2, side.y * p + p / 2, Math.max(p, 10) + 3, 'c');
+  const tq = mainTracked() ? q : side;
+  if (tq) trackBox(R, tq.x * p + p / 2, tq.y * p + p / 2, Math.max(p, 10) + 3);
   if (you && blink) youMarker(R, you.x * p + p / 2, you.y * p + p / 2, Math.max(p * 0.65, 9));
   const sel = mapUI.pick;
   if (sel) whiteBrackets(R, sel.x * p + p / 2, sel.y * p + p / 2, Math.max(p, 14));
@@ -9525,7 +9601,7 @@ function phoneApp(id){
   } else if (id === 'notes') {
     if (hack) {
       add('Handset', 'The crest phone copies every note. This one too, probably.');
-      add('Handset', 'Jobs and parts will list here when the board wakes up.');
+      add('Handset', 'Jobs and parts live under BOTNET, not here.');   // D442: the old line promised a board that nothing wakes
     } else {
       add('Lantern desk', 'Your Keeper1 is active. We can read this. That is the service.');
       add('Lantern desk', 'Free handset. The poles stay with the Keepers.');
@@ -9573,7 +9649,7 @@ function questPip(){
 function questMarks(){
   if (!questVisible()) return { main: false, side: false };
   const q = questCurrent();
-  return { main: !!(q && q.id !== 'end'), side: !!sideQuest() };
+  return { main: !!(q && q.id !== 'end'), side: sideActiveList().length > 0 };   // D439: the side pip shows whether or not a side quest is tracked
 }
 function questMarkTag(){ const m = questMarks(); return (m.main ? 'm' : '') + (m.side ? 's' : ''); }
 function questMarkLabel(m){
@@ -9582,19 +9658,31 @@ function questMarkLabel(m){
   if (m.side) return 'QUEST, side quest';
   return 'QUEST';
 }
-function stampQuestPip(g, mirror, shift, fill){
+function stampQuestPip(g, mirror, shift, fill, edge){
   for (const [x, y, k] of questPip()) {
     const gx = mirror ? 21 - x : x, gy = y + shift;
     if (gx < 0 || gy < 0 || gx > 21 || gy > 21) continue;
-    g.fillStyle = PAL[k === 'f' ? fill : k];
+    g.fillStyle = PAL[k === 'f' ? fill : k === 'k' && edge ? edge : k];   // edge: the tracked quest's outline
     g.fillRect(gx * 2, gy * 2, 2, 2);
   }
+}
+// D437: the SIDE · N count (side chains + accepted slips, as renderQuest counts) on the 22x22 button grid, top left where the
+// side pip sits: a 7x9-cell frame (PAL k, or the tracked colour), PAL c fill, one 3x5 digit (CUE_DIGITS) in PAL k. 9 is the cap.
+const QUEST_COUNT = { x: 0, y: 0, w: 7, h: 9, cap: 9 };
+function questSideCount(){ return sideActiveList().length + acceptedBoardList().length; }
+function stampQuestCount(g, n, shift, edge){
+  const B = QUEST_COUNT, d = CUE_DIGITS[Math.min(B.cap, n)], y = B.y + shift;
+  g.fillStyle = PAL[edge || 'k']; g.fillRect(B.x * 2, y * 2, B.w * 2, B.h * 2);
+  g.fillStyle = PAL.c; g.fillRect((B.x + 1) * 2, (y + 1) * 2, (B.w - 2) * 2, (B.h - 2) * 2);
+  g.fillStyle = PAL.k; for (let i = 0; i < 15; i++) if (d.charCodeAt(i) === 49) g.fillRect((B.x + 2 + i % 3) * 2, (y + 2 + ((i / 3) | 0)) * 2, 2, 2);
 }
 function paintQuestMarks(g, st){
   const m = questMarks(); if (!m.main && !m.side) return;
   const shift = st === 'pressed' ? 2 : 0;
-  if (m.main) stampQuestPip(g, false, shift, 'y');
-  if (m.side) stampQuestPip(g, true, shift, 'c');
+  const T = trackedQuest(), te = k => (T && T.kind === k ? TRACKED_KEY : null);   // D436: the tracked quest's pip or badge is outlined in the tracked colour
+  if (m.main) stampQuestPip(g, false, shift, 'y', te('main'));
+  const n = questSideCount();   // D437: with two or more, the blue side pip becomes a blue count badge (SIDE · N)
+  if (m.side && n >= 2) stampQuestCount(g, n, shift, te('side')); else if (m.side) stampQuestPip(g, true, shift, 'c', te('side'));
 }
 let questBtnSig = '';
 function syncQuestBtn(){
@@ -9613,7 +9701,7 @@ function syncQuestBtn(){
   if (b.title !== label) b.title = label;
   const mark = [m.main ? 'main' : '', m.side ? 'side' : ''].filter(Boolean).join(' ');
   if (mark) b.dataset.questMark = mark; else delete b.dataset.questMark;
-  const sig = (on ? '1' : '0') + (b.classList.contains('pulse') ? 'p' : '') + mark;
+  const sig = (on ? '1' : '0') + (b.classList.contains('pulse') ? 'p' : '') + mark + questSideCount() + trackPick();   // repaint on a count or tracking change
   if (sig !== questBtnSig) { questBtnSig = sig; try { syncNavArt(false); } catch (e) {} }
 }
 // PEOPLE (D176). The set is the met contacts. Sort is recent first, then people met only through a scene, then fixed names with a lock.
@@ -9709,6 +9797,7 @@ function openQuest(){
     const add = sideActiveList().map(a => a.chain).concat(acceptedBoardList().map(a => a.chain)).filter(c => !seen.includes(c));
     if (add.length) { ui.sideSeen = seen.concat(add); save(); } }
   questMoreOpen = false; questDoneOpen = false;
+  questOpenRun = questOpenRun.id === q.id ? { id: q.id, n: questOpenRun.n + 1 } : { id: q.id, n: 1 };
   questTab = 'next'; renderQuest(q);
   $('#ovQuest').hidden = false; lockTabs(true); armOptions(); sfx('tap'); syncQuestBtn();
   $('#questClose').focus({ preventScroll: true });
@@ -9720,7 +9809,7 @@ function closeQuest(){
 function renderQuest(q){
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
-  const A = sideActiveList(), tr = trackedSide(), sideQ = tr ? liveStep(tr.step) : null, many = A.length >= 2;
+  const A = sideActiveList(), tr = sideFocus(), sideQ = tr ? liveStep(tr.step) : null, many = A.length >= 2, T = trackedQuest();
   const card = $('#questSideCard');
   const sl = $('#questSideLabel'), stx = $('#questSide'), sp = $('#questSidePlace');
   if (card) card.hidden = !sideQ;
@@ -9729,14 +9818,18 @@ function renderQuest(q){
   if (sp) { sp.hidden = !sideQ; sp.textContent = sideQ ? (sideQ.place || '') : ''; }
   // Stuck-state guard: after a loss the objective stays put; say what to do first when nobody can battle (spec questStuck[0]).
   const stuck = S.party.length > 0 && !leadPet();
-  const note = $('#questNote'); note.hidden = !stuck; note.textContent = stuck ? PPQuests.STUCK[0] : '';
+  const hint = stuck ? 0 : (q.target && questOpenRun.id === q.id && questOpenRun.n >= STUCK_AFTER_OPENS ? ((questPointOnMap() || {}).here ? 2 : 1) : -1);
+  const note = $('#questNote'); note.hidden = hint < 0; note.textContent = hint >= 0 ? PPQuests.STUCK[hint] : '';
+  const tasks = $('#questTasks'), tn = sideTasksHere(); if (tasks) { tasks.hidden = !tn; tasks.textContent = tn ? PPQuests.sideTaskLine(tn) : ''; }
   const status = $('#questStatus');
   if (status) {
     status.textContent = stuck ? 'BLOCKED' : (q.id === 'end' ? 'OPEN' : 'ACTIVE');
     status.classList.toggle('blocked', stuck);
   }
   const sideStatus = $('#questSideStatus');
-  if (sideStatus) sideStatus.textContent = many ? 'TRACKED' : 'ACTIVE';
+  if (sideStatus) sideStatus.textContent = 'ACTIVE';   // D439: TRACKED moves to the card's own button
+  questTrackBtn($('#questMainTrack'), q.id === 'end' ? null : TRACK_MAIN, !!(T && T.kind === 'main'), 'the main story');
+  questTrackBtn($('#questSideTrack'), tr ? tr.chain : null, !!(T && T.kind === 'side'), tr ? tr.label : '');
   // D194: accepted slips count in SIDE · N. TRACKED and the folded DONE list stay on side chains only.
   const boards = acceptedBoardList(), sideN = A.length + boards.length;
   if (sl) sl.textContent = sideN >= 2 ? 'SIDE \u00b7 ' + sideN : 'SIDE';
@@ -9787,10 +9880,36 @@ function renderBoardRows(rows){
   }
   box.hidden = !rows.length;
 }
+// D439: one button per card. TRACK tracks this quest (and stops tracking any other); TRACKED (PAL[TRACKED_KEY], pennant) stops
+// tracking, so nothing is tracked. One tap each, 44 px tall.
+function questTrackBtn(b, id, on, label){
+  if (!b) return; b.hidden = !id; if (!id) return;
+  b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', (on ? 'Stop tracking ' : 'Track ') + label);
+  b.firstElementChild.textContent = on ? 'TRACKED' : 'TRACK'; b.onclick = () => questTrack(on ? TRACK_NONE : id);
+}
+// D441: side tasks on the holder's map whose object is placed (its `when` holds) and not done. Read only.
+function sideTasksHere(){
+  if (!S || !CUR || !PPQuests.SIDE_TASKS) return 0;
+  return PPQuests.SIDE_TASKS.filter(t => t.map === CUR.id && !S.flags[t.done] && CUR.objs.some(o => o.id === t.obj && present(o))).length;
+}
+// D440: STUCK[1] and STUCK[2] show from the third time the panel opens on the same step this session (memory only, not saved):
+// [1] while the holder is off the step's map, [2] while on it. [0] (nobody can battle) still wins and still says BLOCKED.
+const STUCK_AFTER_OPENS = 3;
+let questOpenRun = { id: '', n: 0 };
+// D438 (revised, settled by Vincent, Oct 22, 2026): after a plain line from the person who gave an active side quest that is not
+// the tracked one, one choice offers to track it. Nothing tracked: Track "<label>"? Something else tracked: the prompt names it
+// first, so the holder is warned before the offer replaces it. One tap; Not now changes nothing.
+function trackOffer(o){
+  if (!o || !o.id) return null;
+  const T = trackedQuest(), head = c => (PPQuests.SIDE_CHAINS.find(ch => ch[0].id === c) || [{}])[0];
+  const a = sideActiveList().find(x => (head(x.chain).givers || []).includes(o.id));
+  if (!a || (T && T.kind === 'side' && T.chain === a.chain)) return null;
+  const now = T ? (T.kind === 'main' ? T.label : '"' + T.label + '"') : null;
+  return { chain: a.chain, label: a.label, prompt: now ? "You're tracking " + now + '. Track "' + a.label + '" instead?' : 'Track "' + a.label + '"?' };
+}
 function questTrack(chain){
-  if (!sideActiveList().some(a => a.chain === chain)) return;
-  sideUi().sideTracked = chain; save(); sfx('tap');
-  sideTrackLast = { chain, ids: sideActiveList().map(a => a.chain) };
+  if (chain !== TRACK_MAIN && chain !== TRACK_NONE && !sideActiveList().some(a => a.chain === chain)) return;
+  setTracked(chain); sfx('tap');
   const q = questCurrent(); if (q) renderQuest(q);
   const h = $('#questSideLabel'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); }
 }
@@ -10073,9 +10192,9 @@ function auraMake(n){
   return a;
 }
 const auraPools = { emberwake: auraMake(6), lanternfly: auraMake(3) };
-auraPools['kiln' + 'smoke'] = auraMake(5);
-AURA_FX['kiln' + 'smoke'] = { cap: 5 };
-AURA_LABEL['kiln' + 'smoke'] = 'Kilnsmoke trail';
+auraPools['kilnsmoke'] = auraMake(5);
+AURA_FX['kilnsmoke'] = { cap: 5 };
+AURA_LABEL['kilnsmoke'] = 'Kilnsmoke trail';
 const auraKept = auraMake(AURA_FRAME_CAP);
 let auraKeptN = 0, auraSeq = 1, auraStepAt = -1, auraStepN = -1, auraFrozen = 0, auraDrawn = 0, auraLive = 0, kilnHead = 0;
 function auraHidden(){ return !!(typeof document !== 'undefined' && document.hidden); }
@@ -10161,7 +10280,7 @@ function auraWriteLantern(step){
   }
 }
 function auraAgeKiln(t){
-  const pool = auraPools['kiln' + 'smoke'];
+  const pool = auraPools['kilnsmoke'];
   for (let i = 0; i < pool.length; i++) {
     const s = pool[i];
     if (!s.on) continue;
@@ -10191,13 +10310,13 @@ function auraAdvance(t){
   auraAgeKiln(t);
 }
 function auraClearKiln(){
-  const pool = auraPools['kiln' + 'smoke'];
+  const pool = auraPools['kilnsmoke'];
   for (let i = 0; i < pool.length; i++) pool[i].on = 0;
 }
 function auraOnFollowerStep(tx, ty){
   if (auraMode() !== 'full' || auraHidden()) return;
   const p = pet();
-  const kiln = 'kiln' + 'smoke';
+  const kiln = 'kilnsmoke';
   if (!p || p.aura !== kiln) return;
   const pool = auraPools[kiln];
   const s = pool[kilnHead];
@@ -10218,7 +10337,7 @@ function auraAdmit(id, preview){
   } else if (id === 'lanternfly') {
     const pool = auraPools.lanternfly;
     for (let i = 0; i < pool.length; i++) if (pool[i].on) auraConsider('lanternfly', i, pool[i].seq);
-  } else if (id === ('kiln' + 'smoke')) {
+  } else if (id === ('kilnsmoke')) {
     if (auraMode() === 'calm' || preview) auraConsider('kilncalm', 0, 1);
     else {
       const pool = auraPools[id];
@@ -10282,7 +10401,7 @@ function auraDrawKiln(g, x, y, preview){
     auraFill(g, (x + 3) | 0, (y + 13) | 0, 3, 3, 'h', 1);
     return;
   }
-  const pool = auraPools['kiln' + 'smoke'];
+  const pool = auraPools['kilnsmoke'];
   for (let i = 0; i < pool.length; i++) {
     const s = pool[i];
     if (!s.on || !auraAllowed('kilnsmoke', i)) continue;
@@ -10294,7 +10413,7 @@ function drawAura(g, pet, x, y, t, preview, pass, idOverride){
   if (!g || auraHidden()) return;
   const id = idOverride || (pet && pet.aura) || '';
   if (!id || !AURA_FX[id] || auraMode() === 'off') return;
-  const kiln = 'kiln' + 'smoke';
+  const kiln = 'kilnsmoke';
   const back = pass === 'back' || pass === 'both';
   const front = pass === 'front' || pass === 'both';
   if (back && id === 'emberwake') auraGlow(g, x, y);
@@ -10304,7 +10423,7 @@ function drawAura(g, pet, x, y, t, preview, pass, idOverride){
 }
 function auraCheck(){
   const problems = [];
-  const kiln = 'kiln' + 'smoke';
+  const kiln = 'kilnsmoke';
   if (auraPools.emberwake.length !== 6) problems.push('ember cap');
   if (auraPools[kiln].length !== 5) problems.push('kiln cap');
   if (auraPools.lanternfly.length !== 3) problems.push('lantern cap');
@@ -10340,7 +10459,7 @@ function auraShopOk(id){
 }
 function auraWardList(){
   const paid = WARDROBE_LIST.filter(r => r.tab === 'walkling' && auraInWardrobe(r));
-  const kiln = 'kiln' + 'smoke';
+  const kiln = 'kilnsmoke';
   if (S && S.flags && S.flags['wardrobe.' + kiln] === true) {
     const card = { name: AURA_LABEL[kiln], price: 0, tab: 'walkling', kind: 'aura', line: 'A little of the quarry smoke.' };
     card.id = kiln;
@@ -10372,7 +10491,7 @@ function auraBtn(card){ if (!ownsAura(card.id)) return 'BUY'; if (auraWorn(card)
 function setAura(petId, name){
   const p = petById(petId);
   if (!p) return { ok: false, msg: 'No Walkling.' };
-  const kiln = 'kiln' + 'smoke';
+  const kiln = 'kilnsmoke';
   if (name == null || name === 'none' || name === '') {
     if (p.aura === kiln) auraClearKiln();
     delete p.aura;
@@ -12504,7 +12623,7 @@ function buildDebugUi(){
     const looks = PET_ACC_IDS.map(id => ({ value: id, label: PET_ACC_LABEL[id] || id }));
     looks.push({ value: 'emberwake', label: 'Emberwake' });
     looks.push({ value: 'lanternfly', label: 'Lanternfly motes' });
-    const kiln = 'kiln' + 'smoke';
+    const kiln = 'kilnsmoke';
     looks.push({ value: kiln, label: AURA_LABEL[kiln] });
     fillSelect($('#dbgGrantId'), looks);
   }
@@ -13541,13 +13660,24 @@ function boot(){
     seen: S.questSeen === q.id, point: questPointOnMap(), done: PPQuests.completed(questState(), 3).map(e => e.id), pulse: $('#questBtn').classList.contains('pulse'), navMark: ($('#questBtn') && $('#questBtn').dataset.questMark) || '' }; } });
   // D106: sideQuest is the tracked step; sideActive lists every active chain in unlock order.
   Object.defineProperty(api, 'sideActive', { enumerable: true, get(){ const t = trackedSide(); return sideActiveList().map(a => ({ chain: a.chain, label: a.label, id: a.step.id, text: a.step.text, place: a.step.place, target: a.step.target ? { ...a.step.target } : null, tracked: !!(t && t.chain === a.chain) })); } });
-  Object.defineProperty(api, 'regionMapMarks', { enumerable: true, get(){ return regionMapMarks && { ring: regionMapMarks.ring, ringR: regionMapMarks.ringR, ringShared: regionMapMarks.ringShared, mainR: regionMapMarks.mainR, dots: regionMapMarks.dots.slice(), dotSize: regionMapMarks.dotSize, dotOutline: regionMapMarks.dotOutline, dotRects: regionMapMarks.dotRects.map(r => ({ ...r })) }; } });
+  Object.defineProperty(api, 'regionMapMarks', { enumerable: true, get(){ return regionMapMarks && { ring: regionMapMarks.ring, ringR: regionMapMarks.ringR, ringShared: regionMapMarks.ringShared, mainR: regionMapMarks.mainR, tracked: regionMapMarks.tracked || null, dots: regionMapMarks.dots.slice(), dotSize: regionMapMarks.dotSize, dotOutline: regionMapMarks.dotOutline, dotRects: regionMapMarks.dotRects.map(r => ({ ...r })) }; } });
   api.trackSide = chain => DEBUG ? (questTrack(chain), !!(S.ui && S.ui.sideTracked === chain)) : false;
   // ?debug=1 only: extra side chains (same shape as PPQuests.SIDE_CHAINS rows) for the row-cap layout tests. Never saved.
   api.debugSideChains = chains => { if (!DEBUG) return false; sideTestChains = Array.isArray(chains) && chains.length ? chains : null; sideTrackLast = null; return true; };
   // D416: stand-in cue tile, and the last edge chip (canvas px, tile count, 99 cap). Inert without ?debug=1. Nothing is saved.
-  api.cueForce = pt => { if (!DEBUG) return undefined; cueForce = pt && pt.x != null && pt.y != null ? { x: +pt.x, y: +pt.y } : null; return cueForce ? { x: cueForce.x, y: cueForce.y } : null; };
-  api.cueChip = () => DEBUG ? (cueChipLast ? { x: cueChipLast.x, y: cueChipLast.y, dir: cueChipLast.dir, dist: cueChipLast.dist, shown: cueChipLast.shown } : null) : undefined;
+  api.cueForce = pt => { if (!DEBUG) return undefined; cueLayout = null; cueForce = pt && pt.x != null && pt.y != null ? { x: +pt.x, y: +pt.y } : null; return cueForce ? { x: cueForce.x, y: cueForce.y } : null; };
+  api.cueLayout = spec => {
+    if (!DEBUG) return undefined;
+    if (!spec) { cueLayout = null; return null; }
+    const pt = p => (p && p.x != null && p.y != null) ? { x: +p.x, y: +p.y, here: true } : null;
+    cueForce = null;
+    cueLayout = { main: pt(spec.main), side: pt(spec.side), board: pt(spec.board), mainTracked: !!spec.mainTracked };
+    return { main: !!cueLayout.main, side: !!cueLayout.side, board: !!cueLayout.board, mainTracked: cueLayout.mainTracked };
+  };
+  api.cueChip = () => DEBUG ? (cueChipLast ? { x: cueChipLast.x, y: cueChipLast.y, dir: cueChipLast.dir, dist: cueChipLast.dist, shown: cueChipLast.shown, tracked: !!cueChipLast.tracked } : null) : undefined;
+  api.cueChips = () => DEBUG ? cueChipAll.map(c => ({ x: c.x, y: c.y, dir: c.dir, dist: c.dist, shown: c.shown, tracked: !!c.tracked })) : undefined;
+  api.holderDrawn = () => DEBUG ? (((shownLook() || {}).accessory) || 'none') : undefined;
+  api.talkTo = id => { if (!DEBUG) return undefined; const o = objById(id); if (!o || scene) return false; interact(o); return true; };
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map
@@ -13738,7 +13868,7 @@ function boot(){
   Object.defineProperty(api, 'canvases', { enumerable: true, get(){ return canvasLive; } });
   Object.defineProperty(api, 'canvasMade', { enumerable: true, get(){ return canvasBorn; } });
   Object.defineProperty(api, 'aura', { enumerable: true, get(){
-    const kiln = 'kiln' + 'smoke';
+    const kiln = 'kilnsmoke';
     return {
       mode: auraMode(), setting: auraSetting(),
       caps: { emberwake: 6, kilnsmoke: 5, lanternfly: 3, frame: 12 },

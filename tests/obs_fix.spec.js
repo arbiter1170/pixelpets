@@ -38,7 +38,7 @@ async function boot(page) {
 test('the marker shows on the telescope, and after leaving a dream early', async ({ page }) => {
   await boot(page);
   const seen = await page.evaluate(async () => {
-    const CYAN = [0x41, 0xa6, 0xf6];
+    const CYAN = [0xa7, 0xf0, 0x70];   // D436: the tracked side cue is lime
     const settle = () => new Promise(r => {
       const tick = () => {
         if (PixelPets.fading) requestAnimationFrame(tick);

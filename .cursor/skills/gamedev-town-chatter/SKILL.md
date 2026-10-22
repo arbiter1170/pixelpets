@@ -17,7 +17,7 @@ description: >-
 - "Keeper" is the faction and is always written with a capital K. Never write it in lowercase.
 - Money is Acorns. Never use the banned currency word from walklings-wording-check.
 - Design's packets, walklings-* skills and `AGENTS.md` win on any conflict with this skill.
-- Core-mechanic ideas this skill inspires are welcome, but raise them as a red decision to Vincent (walklings-decision) and build nothing before he approves.
+- Core-mechanic ideas this skill inspires are welcome, but raise them as a red decision to the PixelPets Supervisor, who takes it to Vincent (walklings-decision), and build nothing before he approves.
 
 **This skill defers on format.** walklings-quests owns the step format (`say`, `choice`, `if`, `setFlag`, `inc`, `give`, `bond`, `sfx`), the line limits and the test recipe. gamedev-dialogue-systems owns authored, branching conversations. Chatter is the light layer on top: short one-off lines an NPC says when tapped or when the holder walks by. When a chatter rule needs more than one line, it hands off to an existing scene in the walklings-quests format; it never invents a step type.
 

@@ -22,6 +22,13 @@
   ]);
 
   // Story flags written by the design data that are deliberately not chain steps (branch inputs, puzzle bits, values).
+  // D441 (D12): optional finds counted on the NEXT STEP panel as "N side tasks nearby" while the holder is on their map. Not steps,
+  // no marker, no chain row. `obj` is the map object; `done` is the flag its scene writes.
+  const SIDE_TASKS = Object.freeze([
+    Object.freeze({ id: 'faded_fuzzwick', map: 'fernbrook', obj: 'faded_fuzzwick', done: 'story.faded_fuzzwick' }),
+    Object.freeze({ id: 'faded_pebblit', map: 'route2_glen', obj: 'faded_pebblit', done: 'story.faded_pebblit' }),
+  ]);
+  const sideTaskLine = n => (n === 1 ? '1 side task nearby' : n + ' side tasks nearby');
   const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
@@ -166,7 +173,7 @@
         target: { map: 'route1', x: 3, y: 7 } },
     ],
     [
-      { id: 'mom', label: "Mom's trip", when: ['story.starter_received'], done: ['story.mom_met'],
+      { id: 'mom', label: "Mom's trip", when: ['story.starter_received'], givers: ['mom'], done: ['story.mom_met'],
         text: 'Mom is upstairs. She wants to meet your Walkling.', place: 'Your home, upstairs',
         target: { map: 'hm_home_up', x: 5, y: 3 } },
       { id: 'mom_chore', when: ['story.mom_met'], done: ['story.mom_chore'],
@@ -203,7 +210,7 @@
     // Rook's Crossroads. Off the main chain. Accepting is talking to Rook at the Brinewick road sign.
     // The chain id the phone shows is the first entry's id (rc_meet). The label is "The last crates".
     [
-      { id: 'rc_meet', label: 'The last crates', when: ['story.cobble_end'], done: ['story.rc_start'],
+      { id: 'rc_meet', label: 'The last crates', when: ['story.cobble_end'], givers: ['rook_road', 'rook_gate', 'rook_after'], done: ['story.rc_start'],
         text: 'Rook is sitting by the Brinewick road sign. He wants a word.', place: 'Cobblecrest, east road',
         glimmer: { text: 'Rook is by the Brinewick road sign. His mint lanyard is still on.', place: 'Cobblecrest, east road' },
         target: { map: 'cobblecrest', x: 28, y: 7 } },
@@ -224,7 +231,7 @@
     ],
     // The leak in 5B (D177, D182). Standing moves only through the moral step, not these rows.
     [
-      { id: 'leak_ask', label: 'The leak in 5B', when: ['story.leak5b_seen'], done: ['story.leak5b_yes'],
+      { id: 'leak_ask', label: 'The leak in 5B', when: ['story.leak5b_seen'], givers: ['school_lizzy', 'f5_lizzy', 'diner_lizzy', 'court_lizzy'], done: ['story.leak5b_yes'],
         text: 'Find Lizzy. Weekdays 8 to 3 she teaches at the Schoolhouse. Other times, try home in 5B.', place: 'Amberhill Flats, 5B',
         target: { map: 'hm_flats_5', x: 13, y: 3 }, atSchool: { place: 'Hearthmoor Schoolhouse' } },
       { id: 'leak_gristle', when: ['story.leak5b_yes'], done: ['story.moral_leak5b'],
@@ -376,7 +383,7 @@
     return bad;
   }
 
-  const api = { CHAIN, SIDE, BOARD, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, sideCurrent, sideActive, boardActive, SIDE_CHAINS, LABEL_MAX, completed, byId, resolve, devCheck };
+  const api = { SIDE_TASKS, sideTaskLine, CHAIN, SIDE, BOARD, NOT_STEPS, LINE_MAX, PLACE_MAX, STUCK, evalCond, current, sideCurrent, sideActive, boardActive, SIDE_CHAINS, LABEL_MAX, completed, byId, resolve, devCheck };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PPQuests = api;
 })(typeof window !== 'undefined' ? window : globalThis);

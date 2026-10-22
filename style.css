@@ -1298,3 +1298,13 @@ body.ctl-modern #coopStrip{top:56px;left:56px}
 .net-brow{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px}
 .net-remove{min-height:44px;min-width:44px;font-size:14px;padding:0 8px}
 .net-fname{color:var(--w)}
+
+/* POLISH_BUILD2: tracked button, pennant, side-task line */
+.q-card-h .q-status{margin-left:auto}
+.q-card-h .q-track[hidden]{display:none}
+.q-track-main span{background:var(--y)}
+.q-track.on{flex-basis:104px;width:104px}
+.q-track.on span{width:100px;background:var(--l);color:var(--k)}
+.q-track.on span::before{content:'';display:inline-block;width:6px;height:6px;margin-right:4px;background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAYAAABWKLW/AAAAGUlEQVR4nGOUktH5zwAFTDDGsydXGBmQZQBokgVlYQfH7QAAAABJRU5ErkJggg==) 0 0/6px 6px no-repeat;image-rendering:pixelated}
+.q-tasks{margin:0;font-size:13px;color:var(--c);line-height:1.3}
+.q-tasks[hidden]{display:none}

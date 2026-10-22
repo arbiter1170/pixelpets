@@ -16,6 +16,7 @@ Skills for this repo live here, one folder per skill. Each folder has a `SKILL.m
 | `walklings-wording-check` | [walklings-wording-check/SKILL.md](walklings-wording-check/SKILL.md) | Checking text for franchise or banned wording |
 | `walklings-handoff-log` | [walklings-handoff-log/SKILL.md](walklings-handoff-log/SKILL.md) | Ending a session or handing off |
 | `walklings-cloud-launch` | [walklings-cloud-launch/SKILL.md](walklings-cloud-launch/SKILL.md) | Launching a cloud agent to build an approved Design packet or spec |
+| `walklings-skill-sync` | [walklings-skill-sync/SKILL.md](walklings-skill-sync/SKILL.md) | Copying a Walklings skill between the box library and this repo so the newer copy wins |
 | `gamedev-camera-systems` | [gamedev-camera-systems/SKILL.md](gamedev-camera-systems/SKILL.md) | Building or fixing the top-down map camera (follow, deadzone, edges, door transitions, shake) |
 | `gamedev-create-game-assets` | [gamedev-create-game-assets/SKILL.md](gamedev-create-game-assets/SKILL.md) | Planning, making, sourcing or checking pixel-art sprites, tiles, icons or UI art |
 | `gamedev-dialogue-systems` | [gamedev-dialogue-systems/SKILL.md](gamedev-dialogue-systems/SKILL.md) | Designing or debugging NPC conversations, branching choices or dialog flags |

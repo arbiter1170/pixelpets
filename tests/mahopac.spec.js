@@ -35,7 +35,7 @@ test('look picker offers more hair, clothes, and accessories @w1', async ({ page
   expect(counts.hair).toBeGreaterThanOrEqual(8);
   expect(counts.hairCol).toBeGreaterThanOrEqual(14);
   expect(counts.outfit).toBeGreaterThanOrEqual(6);
-  expect(counts.accessory).toBe(9);
+  expect(counts.accessory).toBe(10);   // D443 adds the lanyard id; the picker hides it until a Glimmerwell pledge
   expect(counts.migrated).toBe(true);
   expect(counts.gridsOk).toBe(true);
 

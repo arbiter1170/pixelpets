@@ -68,7 +68,7 @@ async function readChip(page) {
     }
     const ring = c.getContext('2d').getImageData(chip.x + 8, chip.y, 1, 1).data;
     return {
-      chip, sx: Math.round(sx), sy: Math.round(sy), hits, gaps, digitsOk, v: PixelPets.state.v,
+      chip, sx: Math.round(sx), sy: Math.round(sy), hits, gaps, digitsOk, v: PixelPets.state.v, k,
       ring: ring[0] + ',' + ring[1] + ',' + ring[2],
     };
   }, { hud: HUD, digits: DIGITS });
@@ -90,7 +90,14 @@ test('modern edge arrows sit on the rail, on the map, with a capped tile count',
     expect(got.gaps[0].gap, cue.name + ' nearest ' + (got.gaps[0] && got.gaps[0].id)).toBeGreaterThanOrEqual(6);
     expect(got.digitsOk, cue.name + ' digits ' + cue.dist).toBe(true);
     if (cue.name === 'nw' || cue.name === 'w') expect(Math.abs(got.sx - 73), cue.name + ' x ' + got.sx).toBeLessThanOrEqual(2);
-    if (cue.name === 'ne' || cue.name === 'e') expect(Math.abs(got.sx - (width - 73)), cue.name + ' x ' + got.sx).toBeLessThanOrEqual(2);
+    if (cue.name === 'e') expect(Math.abs(got.sx - (width - 73)), cue.name + ' x ' + got.sx).toBeLessThanOrEqual(2);
+    // D435: the top-right chip steps left until its tile count clears the clock pill. One slot is 19 map px.
+    // A two-digit hour widens the pill, so the drawn pixel can need a second slot; the gap check above still requires 6 CSS px.
+    if (cue.name === 'ne') {
+      const end = width - 73, slot = Math.round(19 * got.k);
+      const clear = [0, 1, 2].some(n => Math.abs(got.sx - (end - n * slot)) <= 2);
+      expect(clear, cue.name + ' x ' + got.sx).toBe(true);
+    }
     if (cue.name === 'nw' || cue.name === 'ne') expect(Math.abs(got.sy - 73), cue.name + ' y ' + got.sy).toBeLessThanOrEqual(2);
   }
   await place(page, 12 + 80, 27 + 40);

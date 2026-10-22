@@ -1354,7 +1354,7 @@ const KEEPER_LOOKS = {
   outfit:    ['coat', 'hoodie', 'tunic', 'vest', 'sweater', 'dress'],
   outfitCol: ['t', 'b', 'g', 'p', 'n', 'r', 'm', 'c', 'y', 'l', 'w'],
   accent:    ['r', 'y', 'c', 'l', 'w', 'o', 'p'],
-  accessory: ['none', 'glasses', 'bow', 'cap', 'scarf', 'sash', 'satchel', 'goggles', 'beanie'],
+  accessory: ['none', 'glasses', 'bow', 'cap', 'scarf', 'sash', 'satchel', 'goggles', 'beanie', 'lanyard'],   // lanyard: D443, Glimmerwell pledge only
   legacySkin: { y:'2', o:'4', r:'5' },                       // v0.4 skin swatches -> nearest new tone
   examples: [                                                // shown in keeper_preview.png and used by K.7
     { skin:'3', hair:'short', hairCol:'p', outfit:'coat',   outfitCol:'t', accent:'r' },   // the default

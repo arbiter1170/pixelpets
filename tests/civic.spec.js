@@ -348,7 +348,7 @@ test('the quest tab opens the next step without leaving the walk map @w1', async
   expect(shown.objective).toBe('Objective');
   expect(shown.sideObjective).toBe('Objective');
   expect(shown.status).toBe('ACTIVE');
-  expect(shown.sideStatus).toBe('TRACKED');
+  expect(shown.sideStatus).toBe('ACTIVE');   // D439: TRACKED moved onto the card button; the pill stays ACTIVE
   expect(shown.sideText).toBe('The wild past the east gate is open. Go and explore.');
   expect(shown.sidePlace).toBe('Route 1, west end');
   expect(shown.sideText).not.toMatch(/handset|Keeper1|phone/i);

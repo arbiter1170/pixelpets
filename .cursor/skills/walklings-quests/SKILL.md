@@ -21,7 +21,7 @@ Side quests, town-board slips and bounties hang off `SIDE_CHAINS`; the main `CHA
 - Only the NPC's yes branch sets `story.board_<id>_yes`; a posting or phone row sets `_pinned` only. Rewards: Acorns, a snack, bond or a journal line; no Standing grants, no invented faction/KeeperUAV/Botnet jobs.
 - Lines: `say` <= 110, chatter/toasts <= 40, choice labels <= 30, quest `text` <= 110, `place` <= 24, no tokens in quest text. Run `walklings-wording-check`.
 - Single tap only (Vincent's rule, D268): accepting, advancing each line, picking a choice and opening a phone or board pointer each take one tap. Nothing needs a hold, drag, swipe, pinch or double-tap. Choice buttons stay at least 44 px tall at 320, 375 and 390, and a decline such as "Not right now" leaves the step open, with no dead end.
-- `@glimmer` variants set every flag the base scene sets. Chevron colours (main `PAL.y`, side/board `PAL.c`) unchanged.
+- `@glimmer` variants set every flag the base scene sets. An untracked main cue stays `PAL.y` (`#ffcd75`). A slip stays `PAL.c` (`#41a6f6`). The tracked quest, main or side, is `PAL.l` (`#a7f070`) with a `PAL.k` edge and pennant (D436). Untracked chains stay dim blue.
 - After any `data/*.json` edit: `python3 tools/gen_mapdata.py` (new files join its `names` tuple); never hand-edit `data/mapdata.js`.
 
 ## Done

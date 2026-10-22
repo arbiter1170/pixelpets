@@ -11,7 +11,7 @@ Town boards are scoped in `TOWN_BOARD.md`. Vincent settled the town-list D37 and
 2. `OPEN_DECISIONS.md`. The next free D id is named in the OPEN_DECISIONS.md header. D37 is already used twice (the region-map row, and the town-board list). D50–D55 are the Lantern Council. D56 is the welcome-back line. D57 is clearing a nickname. D58 is Ilse's lodge speech. D59 is the Route 1 explore line and the Keeper1 stop. D60 is Fen's second talk. D61 is the Hall line against the Heights quest after a Glimmerwell pledge. Do not insert a new row under an existing number. Settled rows move to Settled with the date and the call.
 3. `TOWN_BOARD.md` if the work touches a board, a square, the Town Board app, a slip, or a bounty.
 4. One real side quest before inventing a shape. Phone grant: `data/civic.json` `phone_grant`. Officer Ness stands on Route 1 and the scene runs when you talk to him, or after a few steps that do not close the distance (`catch` on `r1_ness`). Mom: `mom` in `data/interiors.json` and `mom_hello` in `data/mahopac.json`. Copy Mom for a new accept. Ness's catch is the shipped exception. New accepts are conversations.
-5. `game.js` `execStep` and `drawObjectiveCue`. A quest does not need edits there. Main chevron is `PAL.y` (`#ffcd75`). Side and board chevrons are `PAL.c` (`#41a6f6`). Same tile shifts 7px.
+5. `game.js` `execStep` and `drawObjectiveCue`. A quest does not need edits there. An untracked main chevron is `PAL.y` (`#ffcd75`). A slip chevron is `PAL.c` (`#41a6f6`). The tracked quest, main or side, is `PAL.l` (`#a7f070`) with a `PAL.k` edge and pennant (D436). Untracked chains stay dim blue. Same tile shifts 7px.
 6. `tests/README.md`, `tests/helpers.js` (`starterSave`, `installSave`, `playScene`, `trackErrors`), and `tests/civic.spec.js` or `tests/mahopac.spec.js`.
 7. `tools/gen_mapdata.py`. After any `data/*.json` edit, run `python3 tools/gen_mapdata.py`. Do not hand-edit `data/mapdata.js`. A new JSON file joins the `names` tuple or the game never sees it. Merge order is maps_slice, interiors, act1_route2, cobblecrest, glimmer_path, mahopac, highcharity, heights, civic. A town-board file, when it exists, is last.
 8. `save.js`. Format stays `pixelpets.save.v2` with `v: 2`. New story flags are keys on `S.flags`. `normalizeV2` keeps them. Do not add a migrator or a new localStorage key. `tools/bump_build.py` stamps the site cache id, which is not the save. `npm test` runs `bump_build.py --check`. A JSON-and-spec quest does not need a new build id unless `index.html` or a script tag changed.
@@ -66,7 +66,7 @@ Add `tests/<feature>.spec.js`. `trackErrors(test, expect)`. Seed with `starterSa
 
 - Every new `story.*` flag is in the data file's `flags` map, and is a `done` condition or a `NOT_STEPS` entry with a reason.
 - `PixelPets.questCheck` is `[]` after `python3 tools/gen_mapdata.py`.
-- The yellow and blue chevrons are unchanged in color.
+- An untracked main cue stays gold. A slip stays sky blue. The tracked quest is lime with a dark edge and pennant (D436). Untracked chains stay dim blue.
 - Acceptance is the NPC's yes. A sign, a phone row, or a board posting does not set the yes-flag.
 - KeeperUAV's jobs pane still ends with "No jobs are open. The desk is warming up." The two lines above it stay the Fernbrook lantern check and the Route 2 lamp count. Botnet still says the shelf is empty, the augment slot is empty, and "Jobs: none posted. Come back later." `hq_lumen` still says KeeperUAV's board is blank.
 - `CHAIN` ids, order, `done` flags, glimmer overrides, and `end.done === []` are unchanged.

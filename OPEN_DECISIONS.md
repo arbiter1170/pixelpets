@@ -6,9 +6,9 @@ Settled calls are in archive/DECISIONS_SETTLED.md.
 
 D37 is used twice. Do not renumber either row. Q28 owns D92–D103.
 
-D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D416-D434 are reserved: STORES_AND_TOWN_LIFE (recorded in the archive, settled Oct 22, 2026). D397, D398, D399 and D412 are settled.
+D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D416-D434 are reserved: STORES_AND_TOWN_LIFE (recorded in the archive, settled Oct 22, 2026). D435-D444 are reserved: POLISH_BUILD2 (recorded in the archive, settled Oct 22, 2026, design eb50602). D397, D398, D399 and D412 are settled.
 
-Next free id is D435.
+Next free id is D445.
 
 ## Open
 
@@ -20,10 +20,7 @@ Next free id is D435.
 | D6 | WP-A numbers | Quarry Lv 18 at 25% HP befriend width is 0.18, the plan's target is 0.22. `PixelPets.befriendOdds(18, 0.25).width` is 0.181 (rounds to 0.18; lead the same level, joy 60). The quarry is Lv 16-19: at 25% HP the same call is 0.196 at Lv 16 (rounds to 0.20) and 0.174 at Lv 19 (rounds to 0.17). Everything else is within about 0.02 of the plan table | Left as is. A one-knob change that reaches 0.22 also lifts Route 2 at half HP by about 0.02, further from that row's target, so it was not applied. The formula and `BEFRIEND_TUNE` were not changed; the 0.18 figure is the measured hook width rounded to 2 decimal places | `BEFRIEND_TUNE` in `moves.js` |
 | D7 | WP-A | Show the WARY / FAIR / GOOD label (the plan called it optional)? Thresholds are 0.15 / 0.25 | Shown under the hearts | `oddsLabel` in `game.js` |
 | D8 | WP-A | Optional extras not built: wary-shrink on a miss, a Settings "Easier befriending" toggle, KO mitigation. Build any? | None built. The plan's own defaults: the toggle is no for now (section 4); the miss-shrink only if width and speed feel too soft after play; KO mitigation is flagged, not required | NEXT_PLAN WP-A |
-| D12 | WP-C scope | Side-task count (Faded Fuzzwick etc.) is not built. Per-side objective text landed in Build 2 and grew with Heights, the Tuning line, and Rook's cart (10 glimmer overrides) | Side tasks not built; per-side text done | NEXT_PLAN WP-C; `glimmer:` entries in `CHAIN` (`quests.js`) |
-| D13 | Art | The player look picker still has no Junior Bright lanyard. The seal card does | `seal_glim_2` is `LANYARD_TIER2`. Rook wears the lanyard accessory when Glimmerwell has claimed him. The picker list is still `none`, glasses, bow, cap, scarf | `KEEPER_LOOKS.accessory` in `keeper.js`; `rookWithLanyard` in `game.js` |
 | D21 | STANDING tab wording | "Pledged to {faction}" uses the long faction name ("Pledged to The Keepers", "Pledged to Glimmerwell Co."). The tab stays hidden until the side pick, and the empty line "Nobody knows you yet. Go say hello!" shows only when both meters are 0 | As stated. When Standing jumps more than one tier in one grant, only the highest tier's toast plays | `STANDING_CFG.tab`; `renderStanding`, `setStanding` in `game.js` |
-| D22 | WP-C copy | The spec's place lines use a comma ("Hearthmoor, home"); the old build used a middle dot. Keep the comma? The stuck lines 2 and 3 ("Lost? Open the map...", "No rush. A walk...") are kept as data only; the panel always shows line 1 | Comma shipped; `PPQuests.STUCK[0]` shown | `CHAIN` and `STUCK` in `quests.js` |
 | D28 | Lantern rest | What should a Lantern House rest cost, and what happens with fewer Acorns than that? | 5 Acorns (`LANTERN_REST_COST`) heals the whole party and clears the post-wipe door hold. A full party still rests free, and that rest still sets the respawn. Home naps stay free. If you cannot pay 5, the Keeper covers the fee so a wipe at 0 Acorns cannot trap you inside | `LANTERN_REST_COST` and `payRest` in `game.js` |
 | D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
 | D33 | Good-path plot | The good-quest note stopped after "underground smuggling ring" | Built as Fen's tunnel investigation: Jed the clerk, Mara Quill, crates opened, Walklings hop home. Revise if the rest of that note arrives. This was D28 on the keeper-hq branch | `data/heights.json` scenes `sm_*` |
@@ -73,3 +70,5 @@ Next free id is D435.
 Settled calls are in archive/DECISIONS_SETTLED.md.
 
 STORES_AND_TOWN_LIFE D416-D434 are recorded in the archive (Oct 22, 2026). D416, D425 and D431 are green (Supervisor, about 2:00 AM ET). D418, D422 and D430 are red, settled by Vincent (2:01 AM ET): whereabouts gated by Standing; cosmetics from a battle win on the first win only; keep the name Lamplight Provisions with a GENERAL STORE sub-sign. The yellows settled on their defaults (Vincent, Design and PixelPets, 2:03 AM ET). D434 is dropped. D406 stays green: the Modern camera clears the HUD. P0, the edge-arrow rail, the chip and the tile count, is on this branch. P1-P6 are not started.
+
+POLISH_BUILD2 D435-D444 are recorded in the archive (Oct 22, 2026, design eb50602). D439 is red, approved by Vincent (11:36 AM ET), and supersedes D106's always-tracked rule. D436 and D438 were revised and settled by Vincent. D435, D437 and D443 settled on their defaults (Vincent and a unanimous vote). D440, D441, D442 and D444 are green. D12 is settled by D441. D13 is settled by D443. D22's stuck-line half is settled by D440; the comma in place lines was already shipped. The work is on this branch, not on main.

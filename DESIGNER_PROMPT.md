@@ -16,7 +16,7 @@ Read these before you write. Do not edit the files marked verbatim.
 |---|---|
 | `DESIGN_HANDOFF.md` | Voice guide, art sizes, the older request list. This prompt overrides it where the engine has since shipped (see "Engine today"). |
 | `NEXT_PLAN.md` | WP-B content inventory, Rook's tree, Standing proposal, Hall spike constraints. Sections "Glimmer-path content inventory", "Rook: always converts", "Standing and switching", "Hall replacement: design spike". |
-| `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D24, D25, and D26 are settled (Oct 19, 2026). Tour lines are the final D26 copy. The Testing music row is the D164 v2b literal. D19 (desk copy) is closed. D13 is the player look picker, which still has no lanyard. The seal-card art is delivered. Do not redraw `seal_glim_2`. D3 / D5 / D10 / D23 are settled. D6, D7, D8 are not (numbers and optional battle features; leave them). D37 is used twice. Leave both rows alone. |
+| `OPEN_DECISIONS.md` | What the coding bot already decided or left open. D24, D25, and D26 are settled (Oct 19, 2026). Tour lines are the final D26 copy. The Testing music row is the D164 v2b literal. D19 (desk copy) is closed. D13 is settled by D443: a Glimmerwell holder sees the Junior Bright lanyard after the pledge. Do not redraw it. The seal-card art is delivered. Do not redraw `seal_glim_2`. D3 / D5 / D10 / D23 are settled. D6, D7, D8 are not (numbers and optional battle features; leave them). D37 is used twice. Leave both rows alone. |
 | `data/cobblecrest.json` | The shape of a finished hand-off: `scenes`, `trainers`, `looks`, `speakers`, `artRequests`, `newNames`, `decisions`, `flags`. |
 | `data/glimmer_path.json` | **Your file.** Fernbrook, Route 2, Cobblecrest, and R5 are on `main`. Hall slot 2 is Arbiter Testing on the game branch (D24). Replace Tour stop copy only. Do not replace the Testing scene and do not add a second set. Keep every existing `setFlag`, `give`, `run`, and `battle` step, and the flag names. |
 | `data/maps_slice.json` scenes `glimmer1`, `fen_intro`, `orchard`, `seal1`, `teaser` | The Keepers-path beats you are mirroring. **Verbatim. Do not edit.** |
@@ -237,7 +237,7 @@ Every variant must still set whatever `story.*` flags `brinewick_hook` sets toda
 
 The rejected morning tree (four bond-gated variants, glimmer quit + fork) is not the plan. Do not write it.
 
-Rook's lanyard is in the game. It comes off when `story.rook_end` is `"ally"` or when `story.rook_quit` is set (D136). Do not redraw it unless you are replacing that look. The player picker still has no lanyard (D13). Optional `lanyard_overlay` for the player while `story.side=glimmer` is still not built. Priority should, not must.
+Rook's lanyard is in the game. It comes off when `story.rook_end` is `"ally"` or when `story.rook_quit` is set (D136). Do not redraw it unless you are replacing that look. The Junior Bright lanyard is on the wardrobe HOLDER tab for a Glimmerwell holder after the pledge (D443). Do not redraw it. Priority should, not must.
 
 ## Art you should not draw yet
 
