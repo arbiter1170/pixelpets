@@ -903,7 +903,6 @@ function syncCareBlock(){
   // D384-D385: HP bar, no digits. Width hp / max. PAL r under 25%. No .low blink. The digits live in the aria label only.
   const hp = hpOf(p), mx = maxHpOf(p), e = $('#barHpPet');
   e.style.width = clamp(hp / mx * 100, 0, 100) + '%'; e.classList.toggle('warn', hp / mx < 0.25); e.classList.remove('low');
-  $('#careHp').setAttribute('aria-label', 'HP ' + Math.floor(hp) + ' of ' + mx);   // hpNow can carry regen fractions
   syncHealBtn(p);
 }
 function syncHealBtn(p){
@@ -960,8 +959,7 @@ function fitPetScene(){
   ps.classList.remove('pet-tight');
   if (!pick()) { ps.classList.add('pet-tight'); pick(); }
 }
-// Fractional HP in every HP aria label uses Math.ceil, the same whole number the battle card already shows.
-// The care-bar row above keeps the spec text; this pass replaces the floor so 1.6 reads 2.
+// Fractional HP in every HP aria label uses Math.ceil, the same whole number the battle card already shows, so 1.6 reads 2.
 syncCareBlock = (base => function syncCareBlock(){
   base();
   const p = pet(), bar = $('#careHp'); if (!p || !bar) return;
@@ -1028,7 +1026,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     const modern = ctlMode() === 'modern';         // NAV_MODERN §2 (NM-Y2): modern is 2x at every width with a 24x36 cap; arcade unchanged
     const s = modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
     mapBase = s;
-    cueZone.t = -1e9;
+    invalidateCueZone();
     // E1: an interior with "fitWidth": true (the rx_f4 pilot) is shown at its full width (scale = view width / map width), so the
     // camera only scrolls vertically. Every interior bigger than the view follows the keeper and clamps at the edges (drawMap);
     // smaller ones stay centred. Opt-in so no other map changes look. Same in arcade and modern. ROOM_ZOOM does not touch these.
@@ -1052,6 +1050,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
   refitSceneBox();
 }
 window.addEventListener('resize', () => { fitAll(); if (tut.on || unlock.on) tutPlace(); });
+window.addEventListener('orientationchange', () => invalidateCueZone());
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
 
 const BAR_LABEL = { barHunger: 'Food', barHappy: 'Joy', barEnergy: 'Energy', wBarEnergy: 'Energy', stripFood: 'Food', stripJoy: 'Joy', stripNrg: 'Energy', barXp: 'Growth' };
@@ -3177,7 +3176,7 @@ function renderClockChip(){
   if (!btn || !lab || !window.PPClock) return;
   const r = PPClock.now();
   const txt = r.label + ' ' + r.hh + ':' + String(r.mm).padStart(2, '0');
-  if (lab.textContent !== txt) lab.textContent = txt;
+  if (lab.textContent !== txt) { lab.textContent = txt; invalidateCueZone(); }
   const aria = r.name + ', ' + r.hh + ':' + String(r.mm).padStart(2, '0') + ', ' + r.phase;
   if (btn.getAttribute('aria-label') !== aria) btn.setAttribute('aria-label', aria);
   if (renderClockChip.phase !== r.phase) {
@@ -4916,23 +4915,53 @@ function acceptedBoardList(){
 }
 function boardPointOnMap(){ return pointOnMap(boardCueStep()); }
 // NAV_MODERN §4 (settled G4): in modern, edge arrows stay in the free rect between the button clusters, and a cue whose tile
-// sits under a button is drawn as an edge arrow instead. Rects are canvas pixels, refreshed at most every 250 ms.
-const cueZone = { t: -1e9, z: null };
+// sits under a button is drawn as an edge arrow instead. D416: that edge arrow rides CUE_RAIL (view space, after follow
+// and clamp). The zone is measured from the live HUD and cached until resize, orientation change or a HUD show/hide.
+const CUE_RAIL = { inset: 56, top: 56, aboveTip: 6, chipHalf: 17, margin: 6 };
+const CUE_DIGITS = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111', '111100111101111', '111001001001001', '111101111101111', '111101111001111'];
+const CUE_CHIP_FILL = (() => { const n = parseInt(PAL.k.slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',.85)'; })();
+let cueZoneStamp = 0;
+const cueZone = { stamp: -1, z: null };
+function invalidateCueZone(){ cueZoneStamp++; }
+let cueForce = null;     // ?debug=1 only (PixelPets.cueForce): a stand-in cue tile. Never saved.
+let cueChipLast = null;  // last modern edge chip this frame, for the same debug read
 function modernCueZone(){
   if (ctlMode() !== 'modern') return null;
-  const nowT = performance.now(); if (nowT - cueZone.t < 250) return cueZone.z;
-  cueZone.t = nowT;
-  const c = $('#mapCanvas'), cr = c.getBoundingClientRect(); if (!cr.width) return (cueZone.z = null);
+  if (cueZone.z && cueZone.stamp === cueZoneStamp) return cueZone.z;
+  const c = $('#mapCanvas'), cr = c.getBoundingClientRect(); if (!cr.width) return null;
+  cueZone.stamp = cueZoneStamp;
   const k = c.width / cr.width, mw = $('#mapWrap').getBoundingClientRect();
   const toC = (x, y) => [(x - cr.left) * k, (y - cr.top) * k];
   const tip = $('#walkTip'), tr = tip && tip.offsetParent ? tip.getBoundingClientRect() : null, joy = $('#joyRing');
   const tipTop = tr && tr.height ? tr.top : mw.bottom - 90;
   const jOn = joy && !joy.hidden;
+  const half = CUE_RAIL.chipHalf, margin = CUE_RAIL.margin;
   const [x0, y0] = toC(mw.left + 8, mw.top + 160), [x1, y1] = toC(mw.right - 8, tipTop - 8);
   const [tx0, ty] = toC(mw.left + 56, mw.top + 48), [tx1] = toC(mw.right - 56, 0);
   const [bx0, by] = toC(mw.left + (jOn ? 116 : 8), tipTop - 32);
   const btns = [...$$('#floatCtl button, #joyRing')].filter(b => !b.hidden && b.offsetParent).map(b => { const r = b.getBoundingClientRect(); const a = toC(r.left, r.top), z = toC(r.right, r.bottom); return [a[0], a[1], z[0], z[1]]; });
-  return (cueZone.z = { x0, y0, x1, y1, tx0, tx1, ty, bx0, by, btns });
+  const [rx0, ry0] = toC(mw.left + CUE_RAIL.inset + half, mw.top + CUE_RAIL.top + half);
+  const [rx1, ry1] = toC(mw.right - CUE_RAIL.inset - half, tipTop - CUE_RAIL.aboveTip - half);
+  const avoid = [...$$('#clockChip, #joyRing')].filter(b => !b.hidden && b.offsetParent).map(b => {
+    const r = b.getBoundingClientRect(); const a = toC(r.left - margin, r.top - margin), z = toC(r.right + margin, r.bottom + margin); return [a[0], a[1], z[0], z[1]];
+  });
+  return (cueZone.z = { x0, y0, x1, y1, tx0, tx1, ty, bx0, by, btns, rail: { x0: rx0, y0: ry0, x1: rx1, y1: ry1, h: half * k }, avoid });
+}
+// Dark round chip (PAL.k at 85%), a 1 px ring in the cue colour, the arrow, and the tile count in 3x5 digits.
+// The ring blinks white every 560 ms, including when the phone asks for reduced motion (D416). Draw-only.
+function drawCueChip(g, cx, cy, col, t, shown, dir){
+  const ring = Math.floor(t / 560) % 2 ? col : PAL.w;
+  g.fillStyle = CUE_CHIP_FILL; g.fillRect(cx - 7, cy - 8, 15, 17); g.fillRect(cx - 8, cy - 7, 17, 15);
+  g.fillStyle = ring; g.fillRect(cx - 6, cy - 8, 13, 1); g.fillRect(cx - 6, cy + 8, 13, 1); g.fillRect(cx - 8, cy - 6, 1, 13); g.fillRect(cx + 8, cy - 6, 1, 13);
+  drawArrow(g, ARROW[dir], cx - 3, cy - 5, col);
+  const s = String(shown); let x = cx - ((s.length * 4 - 1) / 2 | 0); const y = cy + 10;
+  g.fillStyle = CUE_CHIP_FILL; g.fillRect(x - 1, y - 1, s.length * 4 + 1, 7);
+  g.fillStyle = PAL.w;
+  for (let ci = 0; ci < s.length; ci++) {
+    const d = CUE_DIGITS[s.charCodeAt(ci) - 48];
+    for (let i = 0; i < 15; i++) if (d.charCodeAt(i) === 49) g.fillRect(x + (i % 3), y + ((i / 3) | 0), 1, 1);
+    x += 4;
+  }
 }
 function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift){
   if (!pt) return;
@@ -4951,6 +4980,31 @@ function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift){
   const m = 6, kx = dx ? ((dx > 0 ? VW - m : m) - px) / dx : Infinity, ky = dy ? ((dy > 0 ? VH - m : m) - py) / dy : Infinity;
   const k = Math.min(kx, ky); let ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
   const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'), gr = ARROW[dir];
+  if (zone && zone.rail) {                       // CUE_RAIL: one rail inside the HUD, then step past the clock pill and the joystick
+    const Rl = zone.rail;
+    ex = clamp(ex, Rl.x0, Rl.x1); ey = clamp(ey, Rl.y0, Rl.y1);
+    if (dir === 'up') ey = Rl.y0; else if (dir === 'down') ey = Rl.y1; else if (dir === 'left') ex = Rl.x0; else ex = Rl.x1;
+    if (shift) {
+      if (dir === 'up' || dir === 'down') ex += shift; else ey += shift;
+      ex = clamp(ex, Rl.x0, Rl.x1); ey = clamp(ey, Rl.y0, Rl.y1);
+    }
+    for (const b of zone.avoid) if (ex > b[0] - Rl.h && ex < b[2] + Rl.h && ey > b[1] - Rl.h && ey < b[3] + Rl.h) {
+      if (dir === 'left' || dir === 'right') {
+        const below = b[3] + Rl.h, above = b[1] - Rl.h;
+        ey = below <= Rl.y1 ? below : above;
+      } else {
+        const left = b[0] - Rl.h, right = b[2] + Rl.h;
+        ex = left >= Rl.x0 ? left : right;
+      }
+    }
+    ex = clamp(ex, Rl.x0, Rl.x1); ey = clamp(ey, Rl.y0, Rl.y1);
+    const dist = Math.abs(pt.x - Math.round(walk.fx)) + Math.abs(pt.y - Math.round(walk.fy));
+    const shown = dist > 99 ? 99 : dist;
+    const gx = Math.round(ex), gy = Math.round(ey);
+    drawCueChip(g, gx, gy, col, t, shown, dir);
+    if (DEBUG) cueChipLast = { x: gx, y: gy, dir: dir, dist: dist, shown: shown };
+    return;
+  }
   if (zone) {                                    // keep the arrow out from under the floating buttons (NAV_MODERN §4)
     if (dir === 'up') { ex = clamp(ex, zone.tx0, zone.tx1); ey = zone.ty; }
     else if (dir === 'down') { ex = clamp(ex, zone.bx0, zone.x1); ey = zone.by; }
@@ -4960,10 +5014,13 @@ function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift){
   drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox + shift), Math.round(ey - gr.length / 2 + oy), col);
 }
 function drawObjectiveCue(g, cx, cy, t){
+  if (DEBUG) cueChipLast = null;
   if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
+  const forced = DEBUG && cueForce;
   const c = $('#mapCanvas'), VW = c.width, VH = c.height;
-  if (lanternHold()) { drawCuePoint(g, restBedCue(), PAL.y, cx, cy, t, VW, VH, 0); return; }   // a wipe points at a bed, not the way out
-  const main = questPointOnMap(), side = sidePointOnMap(), board = boardPointOnMap();
+  if (!forced && lanternHold()) { drawCuePoint(g, restBedCue(), PAL.y, cx, cy, t, VW, VH, 0); return; }   // a wipe points at a bed, not the way out
+  const main = forced ? { x: cueForce.x, y: cueForce.y, here: true } : questPointOnMap();
+  const side = forced ? null : sidePointOnMap(), board = forced ? null : boardPointOnMap();
   drawCuePoint(g, main, PAL.y, cx, cy, t, VW, VH, 0);
   if (side) {
     const same = main && side.x === main.x && side.y === main.y;
@@ -9607,15 +9664,23 @@ function syncWalkTip(){
 // clamped with an ellipsis. It grows up from the partner strip; the joystick (8 px above it) and the toasts move with it.
 function syncTipBand(){
   const box = $('#fcTip'), el = $('#walkTip'), st = document.body.style;
-  const joy = $('#joyRing'); st.setProperty('--joy-h', joy && !joy.hidden && ctlMode() === 'modern' ? '104px' : '0px');
-  if (!box || !el || ctlMode() !== 'modern' || !el.offsetWidth) return;
+  const joy = $('#joyRing');
+  const joyH = joy && !joy.hidden && ctlMode() === 'modern' ? '104px' : '0px';
+  const joyWas = st.getPropertyValue('--joy-h');
+  const tipBefore = st.getPropertyValue('--tip-h');
+  const wasTwo = !!(box && box.classList.contains('two'));
+  st.setProperty('--joy-h', joyH);
+  if (!box || !el || ctlMode() !== 'modern' || !el.offsetWidth) { if (joyWas !== joyH) invalidateCueZone(); return; }
   box.classList.remove('two'); st.setProperty('--tip-h', '28px');
   // Measure the text alone (the frame-art canvas inside the band would inflate scrollWidth).
   const cs = getComputedStyle(el), avail = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   const rg = document.createRange(); let w = 0;
   el.childNodes.forEach(n => { if (n.nodeName === 'CANVAS') return; rg.selectNodeContents(n); w += rg.getBoundingClientRect().width; });
   const two = w > avail + 0.5;
-  box.classList.toggle('two', two); st.setProperty('--tip-h', two ? '44px' : '28px');
+  const tipH = two ? '44px' : '28px';
+  box.classList.toggle('two', two); st.setProperty('--tip-h', tipH);
+  // The rail reads this band. Recompute only when the band or the joystick actually moves, never every frame.
+  if (joyWas !== joyH || wasTwo !== two || tipBefore !== tipH) invalidateCueZone();
 }
 function syncBagBtns(){
   const on = bagVisible() && !(battle && battle.on);
@@ -12862,6 +12927,9 @@ function boot(){
   api.trackSide = chain => DEBUG ? (questTrack(chain), !!(S.ui && S.ui.sideTracked === chain)) : false;
   // ?debug=1 only: extra side chains (same shape as PPQuests.SIDE_CHAINS rows) for the row-cap layout tests. Never saved.
   api.debugSideChains = chains => { if (!DEBUG) return false; sideTestChains = Array.isArray(chains) && chains.length ? chains : null; sideTrackLast = null; return true; };
+  // D416: stand-in cue tile, and the last edge chip (canvas px, tile count, 99 cap). Inert without ?debug=1. Nothing is saved.
+  api.cueForce = pt => { if (!DEBUG) return undefined; cueForce = pt && pt.x != null && pt.y != null ? { x: +pt.x, y: +pt.y } : null; return cueForce ? { x: cueForce.x, y: cueForce.y } : null; };
+  api.cueChip = () => DEBUG ? (cueChipLast ? { x: cueChipLast.x, y: cueChipLast.y, dir: cueChipLast.dir, dist: cueChipLast.dist, shown: cueChipLast.shown } : null) : undefined;
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
   api.townFaction = id => factionOfMap(id || (CUR && CUR.id));
   api.exteriors = id => DEBUG ? exteriorView(id) : null;            // map pass B4: E11 buildings, props and art sizes of a map

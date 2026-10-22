@@ -334,6 +334,48 @@ D37 is used twice. The row still in the open table is the region-map claim list,
 
 - **D106 several active side quests (QUEST_MULTI, Oct 15, 2026, red, Vincent approved to spec; design 3e528c7).** `PPQuests.sideActive()` lists every active side chain in unlock order; `S.ui.sideTracked` (additive, save v2) picks the SIDE card, the walk cue and the solid region-map ring; other chains get a TRACK row and a dim map dot. Sub-calls on Design's defaults: **D106-A** 2 rows under 360 px wide, 3 at 360 and up, then `+N more` / `Show less` (not saved); **D106-B** rows show a per-chain `label` ("Explore Route 1", "Mom's trip"); **D106-C** QUEST pulses once per new chain (`S.ui.sideSeen`), no badge; **D106-D** "Now tracking: <label>" toast on auto-track only; **D106-E** untracked chains get no walk cue. **D110** (map key Side task) settled by the same spec: shown only while a side quest has a target. Green (Design, Oct 15): a tracked side quest in the main step's area gets an outer 2 px ring 3 px outside the main ring, not a dot; `Side: <label>` under NEXT on the map card at 360 px and up (skipped at 320); dim dots 6x6 at 390+ / 4x4 below with a 1 px navy outline. Mom's gating unchanged. Built in `quests.js`, `save.js`, `game.js`, `index.html`, `style.css`; test `tests/quest_multi.spec.js`.
 
+## STORES_AND_TOWN_LIFE (settled Oct 22, 2026)
+
+Recorded from the design spec, section 12, without renumbering. D406 stays green: the Modern camera clears the HUD, and the P0 rail does not move it. P0 (the edge-arrow rail, the chip and the tile count) is on this branch. P1-P6 are not started. Nothing here is open.
+
+- **D416 (Oct 22, 2026, green, SETTLED by the Supervisor, about 2:00 AM ET, on the default).** P0 edge-arrow rail and chip. Modern only: the off-screen cue rides a rail measured from the HUD (56 px in from both button columns, 56 px below the top band, 6 px above the tip band), steps past the clock pill and the joystick, and sits on a dark round chip with a 1 px ring in the cue colour that blinks white every 560 ms (still in reduce motion). Arcade unchanged. On-screen cues unchanged. Built in `modernCueZone` and `drawCuePoint` (`CUE_RAIL`).
+
+- **D417 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** Tile count under the edge arrow. Yes: the tile count to the cue tile on this map (the door tile when the goal is on another map), capped at 99, in a 3x5 pixel digit font under the chip.
+
+- **D418 (Oct 22, 2026, red, SETTLED BY VINCENT, yes on the default, 2:01 AM ET).** Whereabouts gated by Standing. Each person's own Standing (the reputation tier the compass shows as trust): neutral, warm or close shows their live place and state; cool or hostile shows PRIVATE and never a place. People you have not met are not listed. Mom and Dad (fixed) always show. Not built in P0.
+
+- **D419 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET; placement restated by Vincent, 2:04 AM ET).** Whereabouts states, icons and where they show. The seven states in the spec with their icons, shown in the Standing screen (PEOPLE, the compass) under each person's tier and on their contact card; THE HOUR keeps only a one-line pointer; night workers (Ossabell, Keeper Quill) sleep by day. In the Standing screen and each contact card, not THE HOUR. Not built in P0.
+
+- **D420 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** New saves start with no Walkling accessories. Yes, new saves only: a new-save flag acc.kit = 2 makes the five free adornments need their wardrobe flag; saves without the flag keep all five. The five become early rewards. Save stays v2, no migrator. Not built in P0.
+
+- **D421 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET; gated on Sprites art).** Eight new Walkling accessories, sources and prices. The spec table: four sold (140-180 Acorns), four earned (Trial Hall, holders, two quests). Cosmetic only, no stats. Not built in P0.
+
+- **D422 (Oct 22, 2026, red, SETTLED BY VINCENT, yes on the default, 2:01 AM ET).** Battle wins grant cosmetics. First win only: Cobblecrest Trial Hall (Trial rosette + Kilnsmoke trail), Fernbrook Trial Hall (Hall ribbon), all three Route 1 holders (Holder's token). Cosmetic only; rematches give nothing extra; the win screen adds one line. Not built in P0.
+
+- **D423 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET; PixelPets' condition kept).** Three effects, their price or rarity, and the aura slot. Emberwake 2,400 Acorns (Stitch & Lantern, after the first Trial Hall seal), Kilnsmoke trail (Cobblecrest Trial Hall first win only), Lanternfly motes 3,000 Acorns (Lantern Market). One effect per Walkling in a new additive pet field `aura`; off in battle. Not built in P0.
+
+- **D424 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** EFFECTS setting (FULL / CALM / OFF). One Settings row; default FULL, or CALM when the phone asks for reduced motion. Not built in P0.
+
+- **D425 (Oct 22, 2026, green, SETTLED by the Supervisor, about 2:00 AM ET, on the default).** Dev-only grant cheat gate. PixelPets.devGrant exists only when DEBUG is on AND the page is on localhost or 127.0.0.1; the button lives in debug_ui.js; it marks the save as a debug save. Not built in P0.
+
+- **D426 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** Stitch & Lantern pass: layout, two FRIEND SLOT people, chatter. The spec layout; Stitch Apprentice and Fitting Regular as FRIEND SLOTs with the schedules and placeholder chatter shown; Keeper Marigold keeps her spot and lines. Not built in P0.
+
+- **D427 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** Thread run (daily, Stitch & Lantern). 15 Acorns once per game day; the fifth run gives the Thimble crown. Not built in P0.
+
+- **D428 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** Parked Coach pass: booths, stools, kitchen pass, two FRIEND SLOT people. The spec layout, keeping the section 9 roof and door and every NPC spot on main; Coach Server and Night Regular as FRIEND SLOTs. Not built in P0.
+
+- **D429 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** Order up (daily) and the Night Run tin (side quest). Order up: 8 Acorns a plate, 3 a game day. The Night Run tin: Coach ticket + 40 Acorns, once. Not built in P0.
+
+- **D430 (Oct 22, 2026, red, SETTLED BY VINCENT, yes on the default: no rename, 2:01 AM ET).** Rename Lamplight Provisions? No rename: keep "Lamplight Provisions" and add GENERAL STORE to the sign, the menu header, the first-visit line, the phone hint and the TOWN map label. The alternative name, if one is wanted, is "Lamplight General Store". Not built in P0.
+
+- **D431 (Oct 22, 2026, green, SETTLED by the Supervisor, about 2:00 AM ET, on the default).** Lamplight clarity copy and sign. The sign, first-visit line, menu header, phone hint and map label in the spec. No rename. Not built in P0.
+
+- **D432 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET; gated on Sprites art).** Exterior identity for the three buildings. Awnings from main (store awning_y, Stitch & Lantern awning_b, diner awning_r), a signboard each, a window display each, PAL keys only; the diner keeps its section 9 roof and door. Ten new art pieces. Not built in P0.
+
+- **D433 (Oct 22, 2026, yellow, SETTLED BY VINCENT, yes on the default; Design and PixelPets also yes, 2:03 AM ET).** Which is the fourth building. Market Row has three buildings on main; the fourth is read as the Lanternball Court (the fourth Market Row piece). It gets fence posts, a lamp post and a chalk scoreboard, all from main. Not built in P0.
+
+- **D434 (Oct 22, 2026, yellow, DROPPED).** Court: extend Hearthmoor south by three tree rows. Dropped: the Build 1 f Modern camera clears the HUD on outdoor maps, which covers row 32 here and on the other 10 outdoor maps. PixelPets voted no. Nothing was built.
+
 ## Restatements moved from OPEN_DECISIONS (Oct 21, 2026)
 
 - Restatement of D347 (was in OPEN_DECISIONS Settled): - **D347 (Oct 20, 2026, Vincent, 11:34 AM ET, SETTLED BY VINCENT, on the defaults).** HUSHWATER species roster. B0 is built on this branch: a species id this client does not know stays in the party or the box, keeps its moves and journal keys, and draws a fallback picture. The journal names it ???. It cannot lead a battle and SWAP skips it. The 12 forms are in this build: skink, otter, owl, and snail, three stages each. Out there is 57. The save form table ends at snail (60 form ids). D357 is green (Design): save stays `pixelpets.save.v2` with `v` 2. No new pet field. B1 and E1–E4 are built on this branch. B2 is built on this branch. D346 stays the Lizzy placeholder, settled and not built. D355, D356 and D362 are green and settled. D363-D379 and D390-D398 are reserved: WORLD_CLOCK_TOWN (design). D397 and D398 are settled green. Next free id is D399. P1 world clock v1 is on this branch. P2 Market Row is on this branch. P3 wardrobe v1 is on this branch. P4 stores are on this branch.

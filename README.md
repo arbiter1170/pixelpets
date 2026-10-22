@@ -165,7 +165,10 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   In modern controls the same button adds the approved corner pip: gold at the top right while a main step is open (the idle "that's all for now" step stays unmarked), and tide blue at the top left while a side quest is open. Both can show at once. The pip stays after you open the panel. The button still pulses until you open a new main step.
   On the Walk map a yellow arrow bobs above the target tile (a map's top row gets it from below, pointing up); when the
   target is off-screen an arrow sits at the viewport edge; when it is on another map the arrow points at the exit that
-  starts the shortest route there (warps and doors). The tip under the d-pad repeats the objective once the first-steps
+  starts the shortest route there (warps and doors). In modern controls that off-screen arrow is a dark round chip on a
+  rail clear of the buttons, the Acorn chip and the clock, with a gold ring for the main step and a sky ring for a side
+  or board step. The ring blinks white. A tile count sits under the chip, and it stops at 99. The chip is drawn on the
+  map, so a tap still lands on the map. Arcade keeps the plain edge arrow. The tip under the d-pad repeats the objective once the first-steps
   tips are done. The chain lives in `quests.js` and is derived from story flags only (nothing to migrate: old saves land
   on the right step; a later flag counts the earlier steps as done). Console: `PixelPets.quest` (read-only),
   `PixelPets.questCheck` (every story flag the data writes is a step or on the not-a-step list; also run at boot).

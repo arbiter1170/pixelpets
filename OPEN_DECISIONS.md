@@ -6,7 +6,7 @@ Settled calls are in archive/DECISIONS_SETTLED.md.
 
 D37 is used twice. Do not renumber either row. Q28 owns D92–D103.
 
-D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D416-D434 are reserved: STORES_AND_TOWN_LIFE (settled in the design repo; the first STORES build records them). D397, D398, D399 and D412 are settled.
+D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D416-D434 are reserved: STORES_AND_TOWN_LIFE (recorded in the archive, settled Oct 22, 2026). D397, D398, D399 and D412 are settled.
 
 Next free id is D435.
 
@@ -71,3 +71,5 @@ Next free id is D435.
 ## Settled
 
 Settled calls are in archive/DECISIONS_SETTLED.md.
+
+STORES_AND_TOWN_LIFE D416-D434 are recorded in the archive (Oct 22, 2026). D416, D425 and D431 are green (Supervisor, about 2:00 AM ET). D418, D422 and D430 are red, settled by Vincent (2:01 AM ET): whereabouts gated by Standing; cosmetics from a battle win on the first win only; keep the name Lamplight Provisions with a GENERAL STORE sub-sign. The yellows settled on their defaults (Vincent, Design and PixelPets, 2:03 AM ET). D434 is dropped. D406 stays green: the Modern camera clears the HUD. P0, the edge-arrow rail, the chip and the tile count, is on this branch. P1-P6 are not started.
