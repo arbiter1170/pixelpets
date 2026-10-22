@@ -17,7 +17,7 @@ description: >-
 - "Keeper" is the faction and is always written with a capital K. Never write it in lowercase.
 - Money is Acorns. Never use the banned currency word from walklings-wording-check.
 - Design's packets, walklings-* skills and `AGENTS.md` win on any conflict with this skill.
-- Core-mechanic ideas this skill inspires are welcome, but raise them as a red decision to Vincent (walklings-decision) and build nothing before he approves.
+- Core-mechanic ideas this skill inspires are welcome, but raise them as a red decision to the PixelPets Supervisor, who takes it to Vincent (walklings-decision), and build nothing before he approves.
 
 This skill is the decide layer from gamedev-game-ai, built out. gamedev-game-ai says *which* model to use and owns pathfinding, movement and schedule rules. Read this one when a state machine stops being enough and you need graded choices ("how much does this creature want to nap vs. follow the holder?") or a short priority list with steps that take several ticks.
 

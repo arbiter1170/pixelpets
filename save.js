@@ -322,8 +322,9 @@ const PPSave = (() => {
       }
     }
     fill(s, 'repJoins', x => Number.isInteger(x) && x >= 0, 0);
-    // QUEST_MULTI (D106): UI state, additive. ui.sideTracked = tracked side chain id (absent = not chosen); ui.sideSeen = chain
-    // ids already shown on the NEXT STEP panel. Unknown keys under ui survive. No version bump.
+    // D439: ui.sideTracked stays a string (a side chain id, 'main', or 'none'; absent = not chosen, so the first active
+    // side chain is tracked until the holder picks). ui.sideSeen = chain ids already shown on the NEXT STEP panel.
+    // Unknown keys under ui survive. No version bump, no migrator, no new field.
     fill(s, 'ui', isObj, {});
     if (has(s.ui, 'sideTracked') && typeof s.ui.sideTracked !== 'string') delete s.ui.sideTracked;
     if (has(s.ui, 'sideSeen')) { if (Array.isArray(s.ui.sideSeen)) s.ui.sideSeen = s.ui.sideSeen.filter(x => typeof x === 'string'); else delete s.ui.sideSeen; }

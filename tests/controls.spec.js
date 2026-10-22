@@ -284,7 +284,7 @@ test('green copy: the Settings rows toast the approved lines', async ({ page }) 
   await page.locator('#setControls').click();
   await expect(page.locator('#toast')).toHaveText('Arcade controls. Pad and Talk button.');
 });
-const PIP = { y: [255, 205, 117, 255], c: [65, 166, 246, 255], k: [26, 28, 44, 255], w: [244, 244, 244, 255], b: [59, 93, 201, 255] };
+const PIP = { y: [255, 205, 117, 255], c: [65, 166, 246, 255], k: [26, 28, 44, 255], w: [244, 244, 244, 255], b: [59, 93, 201, 255], l: [167, 240, 112, 255] };
 async function questPips(page) {
   return page.evaluate(() => {
     const b = document.querySelector('#questBtn'), c = b.querySelector('.nav-art');
@@ -319,7 +319,7 @@ test('modern quest button marks a main step in gold and a side quest in blue', a
   expect(p.mainEdge).toEqual(PIP.k);
   expect(p.mainShine).toEqual(PIP.w);
   expect(p.sideFill).toEqual(PIP.c);
-  expect(p.sideEdge).toEqual(PIP.k);
+  expect(p.sideEdge).toEqual(PIP.l);   // D437: the phone quest is the tracked one, so its outline is lime
   expect(p.sideShine).toEqual(PIP.w);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.waitForTimeout(250);
@@ -358,7 +358,7 @@ test('modern quest button marks a main step in gold and a side quest in blue', a
   expect(p.label).toBe('QUEST, main story');
   expect(p.mainFill).toEqual(PIP.y);
   expect(p.sideFill).toEqual(PIP.b);
-  await page.evaluate(() => { PixelPets.setFlag('story.phone_got', null); PixelPets.setFlag('story.dream_study', null); PixelPets.setFlag('story.hc_council_done', true); });
+  await page.evaluate(() => { PixelPets.setFlag('story.phone_got', null); PixelPets.setFlag('story.hc_council_done', true); });
   await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'side');
   // The mark changes before the button is redrawn, so wait for the dots to repaint before reading them.
   await expect.poll(async () => { const q = await questPips(page); return [String(q.mainFill) === String(PIP.y), q.sideFill]; }).toEqual([false, PIP.c]);

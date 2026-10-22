@@ -33,6 +33,7 @@ Run `npm run test:agent [spec] [--project=390]`, not bare `npm test`; it prints 
 - `walklings-qa`: play a new path at phone width and add the Playwright check.
 - `walklings-qa-run`: scoped QA run on a named build (seeded saves, pp_verify, bug write-up).
 - `walklings-quests`: side quests, town-board slips, bounties, phone job pointers.
+- `walklings-skill-sync`: copy a skill between the box library and this repo so the newer copy wins.
 
 ## Status docs
 `BACKLOG.md` (current work), `OPEN_DECISIONS.md` (open items only), `NEXT_PLAN.md`, `TOWN_BOARD.md`, `DESIGNER_PROMPT.md` (designer bot), `CHANGELOG.md` (recent), `handoff/maps/` (map upgrade packets). History: `archive/`.

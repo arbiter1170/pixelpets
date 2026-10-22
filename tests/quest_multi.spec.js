@@ -58,7 +58,7 @@ for (const mode of MODES) {
     await openPanel(page);
     let p = await panel(page);
     expect(p.kicker).toBe('SIDE \u00b7 2');
-    expect(p.status).toBe('TRACKED');
+    expect(p.status).toBe('ACTIVE');   // D439: the pill stays ACTIVE; TRACKED is the card button
     expect(p.side).toBe(await sideText(page, 'phone'));
     expect(p.rows).toEqual(["Mom's trip"]);
     expect(p.track).toEqual(['TRACK']);
@@ -320,7 +320,7 @@ test('tracked side in the main area: two rings on one centre, no dot there, Side
   expect(a.m.ringR).toBe(a.m.mainR + 3);
   expect(a.m.dots).not.toContain('hearthmoor');
   expect(a.m.dots).toContain('route1');
-  // Solid, no blink: the side-blue pixel at the outer radius is there on several frames.
+  // Solid, no blink: the lime tracked ring (D436) at the outer radius is there on several frames.
   const samples = [];
   for (let i = 0; i < 4; i++) {
     samples.push(await page.evaluate(() => {
@@ -332,7 +332,7 @@ test('tracked side in the main area: two rings on one centre, no dot there, Side
     }));
     await page.waitForTimeout(260);
   }
-  for (const px of samples) expect(px).toEqual([0x41, 0xa6, 0xf6]);
+  for (const px of samples) expect(px).toEqual([0xa7, 0xf0, 0x70]);
   const W = page.viewportSize().width;
   const side = await page.evaluate(() => ({ h: document.querySelector('#mapSide').hidden, t: document.querySelector('#mapSide').textContent }));
   if (W >= 360) expect(side).toEqual({ h: false, t: "Side: Mom's trip" });

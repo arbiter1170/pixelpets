@@ -17,7 +17,7 @@ description: >-
 - "Keeper" is the faction and is always written with a capital K. Never write it in lowercase.
 - Money is Acorns. Never use the banned currency word from walklings-wording-check.
 - Design's packets, walklings-* skills and `AGENTS.md` win on any conflict with this skill.
-- Core-mechanic ideas this skill inspires are welcome, but raise them as a red decision to Vincent (walklings-decision) and build nothing before he approves.
+- Core-mechanic ideas this skill inspires are welcome, but raise them as a red decision to the PixelPets Supervisor, who takes it to Vincent (walklings-decision), and build nothing before he approves.
 
 Keep three layers separate:
 - **decide** what to do (state machine or scoring; see gamedev-npc-decisions for utility scoring and small trees)
