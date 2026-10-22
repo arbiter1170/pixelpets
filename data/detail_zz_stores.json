@@ -545,7 +545,8 @@
        "befriend_treat",
        "energy_sip",
        "joy_crumb",
-       "sash"
+       "sash",
+       "lanternfly"
       ],
       "lines": {
        "else": "Welcome to Lantern Market!"
