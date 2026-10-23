@@ -122,6 +122,7 @@
           "x": 13,
           "y": 10,
           "sprite": "crate",
+          "shopTitle": "Heights Supply Crate",
           "shop": [
             "heal_snack",
             "wake_tonic",

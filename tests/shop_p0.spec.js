@@ -83,8 +83,10 @@ async function chipBox(page) {
     const chip = document.querySelector('#fcAcorns');
     const cs = getComputedStyle(chip);
     const cr = chip.getBoundingClientRect();
+    const sheetOn = document.querySelector('#ovShop') && !document.querySelector('#ovShop').hidden;
+    const sheet = sheetOn ? document.querySelector('#ovShop .shop-sheet').getBoundingClientRect() : null;
     const box = document.querySelector('#sbox').getBoundingClientRect();
-    const buttons = [...document.querySelectorAll('#sbChoices button')].map((b) => {
+    const buttons = [...document.querySelectorAll(sheetOn ? '#ovShop .shop-buy' : '#sbChoices button')].map((b) => {
       const r = b.getBoundingClientRect();
       return { x: r.x, y: r.y, width: r.width, height: r.height, text: b.textContent };
     });
@@ -102,7 +104,7 @@ async function chipBox(page) {
       hdrLabel: hdr.getAttribute('aria-label'),
       hdr: { display: hs.display, opacity: Number(hs.opacity), x: hr.x, y: hr.y, width: hr.width, height: hr.height },
       chip: { x: cr.x, y: cr.y, width: cr.width, height: cr.height },
-      box: { x: box.x, y: box.y, width: box.width, height: box.height },
+      box: sheet || { x: box.x, y: box.y, width: box.width, height: box.height },
       buttons,
     };
   });
@@ -151,7 +153,7 @@ test('priced prompts keep the Acorn chip, and a buy shows the new total before t
   if (w === 320 || w === 390) {
     await page.screenshot({ path: path.join(artifactsDir('shop-p0'), 'hesper-menu-' + w + '.png') });
   }
-  await page.locator('#sbChoices button', { hasText: 'Coach Stew (30)' }).click();
+  await page.locator('#shopList .shop-row', { has: page.locator('.shop-name', { hasText: 'Coach Stew' }) }).locator('.shop-buy').click();
   await page.waitForFunction(() => {
     const s = window.PixelPets.scene;
     return s && s.mode === 'say' && s.text === 'Coach Stew is gone.' && document.querySelector('#fcAcornN').textContent === '25';
@@ -217,7 +219,7 @@ test('reduced motion snaps the Acorn count, with no number in between', async ({
     window.__acornSamples = samples;
     window.__acornRaf = requestAnimationFrame(rec);
   });
-  await page.locator('#sbChoices button', { hasText: 'Coach Stew (30)' }).click();
+  await page.locator('#shopList .shop-row', { has: page.locator('.shop-name', { hasText: 'Coach Stew' }) }).locator('.shop-buy').click();
   await page.waitForFunction(() => {
     const s = window.PixelPets.scene;
     return s && s.text === 'Coach Stew is gone.' && document.querySelector('#fcAcornN').textContent === '25';

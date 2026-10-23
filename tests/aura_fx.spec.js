@@ -199,7 +199,7 @@ test.describe('effects', () => {
     const act = await page.locator('.ward-item[data-id="emberwake"] .ward-act').boundingBox();
     expect(act.height).toBeGreaterThanOrEqual(44);
     expect(act.width).toBeGreaterThanOrEqual(44);
-    await expect(page.locator('.ward-item[data-id="emberwake"] .ward-state')).toHaveText('2400 Acorns');
+    await expect(page.locator('.ward-item[data-id="emberwake"] .ward-state')).toHaveText('Need 2300 more');
     await page.locator('.ward-item[data-id="emberwake"] .ward-act').click();
     await expect(page.locator('#toast')).toHaveText('Not enough Acorns.');
     expect(await page.evaluate(() => PixelPets.state.flags['wardrobe.emberwake'] === true)).toBe(false);
