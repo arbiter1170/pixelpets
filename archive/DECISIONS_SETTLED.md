@@ -471,6 +471,25 @@ Recorded from design SHOP_LAYOUT v0.2, section 5, without renumbering. D482-D495
 - **D494 (Oct 22, 2026, green, SETTLED).** SHOP_LAYOUT. Order: P0 alone (SHOP P0), then the sheet and the rollout; Save stays v2.
 - **D495 (Oct 22, 2026, Vincent, red, SETTLED NO).** SHOP_LAYOUT. No confirm before big buys: buying stays one tap.
 
+## PARTNER_CARE (calls settled Oct 22–23, 2026)
+
+Recorded from design PARTNER_CARE v0.2 (design commit 1a98ea8), without renumbering. D534–D547 were reserved. Save stays `pixelpets.save.v2` with `v` 2. No new saved field. `save.js` is untouched.
+
+- **D534 (Oct 22, 2026, green, SETTLED as written).** PARTNER_CARE. A food balloon over the partner on the walk, from today's food alert.
+- **D535 (Oct 22, 2026, yellow, SETTLED on the default; unanimous yes, QA, PixelPets and Design).** PARTNER_CARE. Hurt and tired balloons too.
+- **D536 (Oct 22, 2026, green, SETTLED as written).** PARTNER_CARE. One balloon at a time: worn-out Zz, then level 2, then level 1; within a level, food, then hurt, then tired.
+- **D537 (Oct 22, 2026, yellow, SETTLED on the default; unanimous yes, QA, PixelPets and Design).** PARTNER_CARE. Hurt shows below 25% of max HP and is very below 10%.
+- **D538 (Oct 22, 2026, green, SETTLED as written).** PARTNER_CARE. Drawn after the quest cue. Avoid the arrow, the rail chips, the "!" balloon and the talk marker. Shift 10 px or hide for that frame.
+- **D539 (Oct 22, 2026, yellow, SETTLED on the default; unanimous yes, QA, PixelPets and Design).** PARTNER_CARE. The balloon stays up while the need holds, does not bob, and skips the 2 px rise when motion is reduced.
+- **D540 (Oct 22, 2026, yellow, SETTLED on the default; unanimous yes, QA, PixelPets and Design).** PARTNER_CARE. The early-buddy heart is skipped while a need balloon shows.
+- **D541 (Oct 23, 2026, Vincent, red, SETTLED YES).** PARTNER_CARE. Vincent: "The partner strip opens the new care tray (D541 yes)". The strip tap opens the care tray. STATS stays on the tray.
+- **D542 (Oct 22, 2026, yellow, SETTLED on the default; unanimous yes, QA, PixelPets and Design).** PARTNER_CARE. A follower tap opens the tray only while the holder stands still. While moving, the tap walks.
+- **D543 (Oct 22, 2026, green, SETTLED as written).** PARTNER_CARE. A slot tap runs makePartner, shows the existing partner toast, and leaves the tray open.
+- **D544 (Oct 22, 2026, green, SETTLED as written).** PARTNER_CARE. Tray FEED, PLAY, REST and HEAL run today's code on the partner.
+- **D545 (Oct 23, 2026, Vincent, red, SETTLED NO).** PARTNER_CARE. Vincent: "D545 no, keep today's care rules and partner only". No shared cooldown, no skipped cooldown, no auto-feed, and no care for a Walkling who is not the partner.
+- **D546 (Oct 22, 2026, yellow, SETTLED on the default; unanimous yes, QA, PixelPets and Design).** PARTNER_CARE. Care replies show over the follower: a heart, Zz, two sparks, and a hop on PLAY.
+- **D547 (Oct 22, 2026, green, SETTLED as written).** PARTNER_CARE. On a wide window the tray stays inside the game frame, clear of PARTNER and WALKLINGS, with no new key.
+
 ## Restatements moved from OPEN_DECISIONS (Oct 21, 2026)
 
 - Restatement of D347 (was in OPEN_DECISIONS Settled): - **D347 (Oct 20, 2026, Vincent, 11:34 AM ET, SETTLED BY VINCENT, on the defaults).** HUSHWATER species roster. B0 is built on this branch: a species id this client does not know stays in the party or the box, keeps its moves and journal keys, and draws a fallback picture. The journal names it ???. It cannot lead a battle and SWAP skips it. The 12 forms are in this build: skink, otter, owl, and snail, three stages each. Out there is 57. The save form table ends at snail (60 form ids). D357 is green (Design): save stays `pixelpets.save.v2` with `v` 2. No new pet field. B1 and E1–E4 are built on this branch. B2 is built on this branch. D346 stays the Lizzy placeholder, settled and not built. D355, D356 and D362 are green and settled. D363-D379 and D390-D398 are reserved: WORLD_CLOCK_TOWN (design). D397 and D398 are settled green. Next free id is D399. P1 world clock v1 is on this branch. P2 Market Row is on this branch. P3 wardrobe v1 is on this branch. P4 stores are on this branch.

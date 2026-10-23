@@ -36,7 +36,7 @@ test('modern fills the screen and every floating button works', async ({ page })
   boxes.push(await page.locator('#envBadge').boundingBox(), await page.locator('#walkTip').boundingBox());
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) expect(boxesOverlap(boxes[i], boxes[j])).toBe(false);
   const pairs = [['#questBtn', '#ovQuest', '#questClose'], ['#walkBagBtn', '#ovBag', '#bagClose'], ['#mapBtn', '#ovMap', '#mapClose'],
-    ['#gearFloat', '#ovSettings', '#setClose'], ['#phoneBtn', '#ovPhone', '#phoneClose'], ['#petStrip', '#ovStats', '#scClose']];
+    ['#gearFloat', '#ovSettings', '#setClose'], ['#phoneBtn', '#ovPhone', '#phoneClose'], ['#petStrip', '#careTray', '#ctClose']];
   for (const [btn, ov, close] of pairs) {
     await page.locator(btn).click();
     await expect(page.locator(ov)).toBeVisible();
