@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-22 23:53 ET: The Acorn chip stays up on a priced prompt (build 20261022-2353)
+
+- What changed and why: Vincent reported at 9:48 PM ET Oct 22, 2026 that the current Acorn count disappears when buying or in a store. The Supervisor cleared SHOP P0 (SHOP_LAYOUT section 1) about 10:09 PM ET. On modern controls the walk chip stays visible during a meal menu and during a hurt-party Lantern House rest, at the Keeper door and at a bed. A plain talk and a free rest still fade the chip. A spend counts the shown number down over 320 ms in about 8 whole-number steps. The last frame is the new value, and the spoken label updates at once. Reduced motion snaps to the new number. The header count does the same. Arcade looks the same apart from that count. The shop balance still updates at once. There is no confirm step. Sections 2 through 4 are not in this build. Save stays `pixelpets.save.v2` with `v` 2. No new keys.
+- Files touched: `game.js`, `style.css`, `tests/shop_p0.spec.js`, `tests/README.md`, `README.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of main `a528d87`. Build `20261022-2353`. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `npm run test:agent`. PP_TEST RESULT: PASS exit=0 passed=1092 failed=0 flaky=0 skipped=126 time=1093s. RTDB_RULES RESULT: PASS. `tests/shop_p0.spec.js` passed at 320, 375 and 390 inside that run. Console errors: a spec fails the run on a console error. Scans passed inside that run.
+- Decisions made (colour + reasoning): Green. Vincent reported the bug; the Supervisor cleared SHOP P0. No new D or Q id. D482–D495 were already settled in the spec. D495 stays no: one tap, no confirm. Sections 2 through 4 are not built.
+- Anything left unfinished: the Supervisor merges. Sections 2 through 4 (the shop sheet, row content, and the store rollout) wait for the SHOP_LAYOUT slot.
+
 ## 2026-10-22 22:59 ET: The first look swatch keeps its ring (build 20261022-2259)
 
 - What changed and why: Review of #150. The no-hat picture in the test was read from `git show HEAD`, which becomes this branch after merge and would fail every later run. The baseline is now `tests/fixtures/keeper_130f118.js`, an exact copy of `keeper.js` at main `130f118`. The first column of swatches and look tiles sat on the edge of the scrolling list, so the selected ring was cut off. The look list now has 6 px of padding on every side. The 8 px label gaps stay. Swatches stay 44 px. Nothing outside Change look moved. Save stays `pixelpets.save.v2` with `v` 2.

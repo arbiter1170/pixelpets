@@ -1042,8 +1042,8 @@ body.ctl-modern .float-ctl{display:block;position:absolute;inset:0;pointer-event
 /* scenes: everything fades and drops taps except the gear (NAV_MODERN G3) */
 body.ctl-modern.scene-on .float-ctl > *:not(.fc-tr){opacity:0}
 body.ctl-modern.scene-on .float-ctl > *:not(.fc-tr) *{pointer-events:none!important}
-body.ctl-modern.scene-on #phoneBtn{opacity:0;pointer-events:none}
-body.ctl-modern.scene-on #gearFloat{position:relative;z-index:12}
+body.ctl-modern.scene-on.price-on .float-ctl > .fc-acorns{opacity:1}
+body.ctl-modern.scene-on #phoneBtn{opacity:0;pointer-events:none} body.ctl-modern.scene-on #gearFloat{position:relative;z-index:12}
 body.ctl-modern.scene-on .float-ctl{z-index:12}
 body.ctl-modern.scene-on .float-ctl .fc-tr{pointer-events:none}
 @media (prefers-reduced-motion: reduce){ .float-ctl > *{transition:none} }
