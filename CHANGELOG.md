@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 18:26 ET: Caleb and Marilou on the text box, and a still moves card (build 20261023-1826)
+
+- What changed and why: In flat 5B, the gamer shows as Marilou and the painter shows as Caleb, Marilou's partner (he/him). The names on the text box, the phone, the PEOPLE list, and the room map use a display label. The save keys, rep keys, NPC ids, and looks stay Morelou and Morolow. Save stays `pixelpets.save.v2` with `v` 2 and no new field. The M1 and M2 moves cards sit above the partner panel on every beat so they stop hopping and the wild Walkling stays in view at 390.
+- Files touched: `game.js`, `data/reputation.json`, `data/detail_lizzy.json`, `data/mapdata.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `README.md`, `archive/DECISIONS_SETTLED.md`, `tests/lizzy.spec.js`, `tests/map_layers.spec.js`, `tests/tutorials_care_moves.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of 75e9f61. Build `20261023-1826`.
+- Tests run and result (widths, checks): `tests/lizzy.spec.js`, `tests/map_layers.spec.js`, `tests/tutorials_care_moves.spec.js`, and the related phone, whereabouts, reputation, leak, look, and data specs at 320, 375, and 390. The full `npm run test:agent` line is in the PR. Console errors fail the run.
+- Decisions made (colour + reasoning): Vincent's call, cleared green by the Supervisor on Oct 23, 2026: "caleb is the partner of marilou and is a dude". No new D or Q id. D114 and D143 are amended in the archive. D143's onstage rule stays.
+- Anything left unfinished: none.
+
 ## 2026-10-23 16:52 ET: Care walk, moves lesson, and a type chart (build 20261023-1652)
 
 - What changed and why: The first time a new holder leaves the Lodge, the partner acts hungry and a care walk shows FEED, PLAY, REST and HEAL on the tray. The first wild battles show types, moods and what a hard or soft hit means, only when the battle step queue is empty. Settings → Tutorial opens a chooser for the opening tour, the care walk, the moves lesson and a type chart. Save stays `pixelpets.save.v2` with `v` 2. The new flags are `story.tut_care`, `story.tut_care_step`, `story.tut_moves`, `story.tut_moves_hit` and `story.tut_moves_n`.

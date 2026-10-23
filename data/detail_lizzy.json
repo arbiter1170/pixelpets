@@ -76,7 +76,7 @@
    "outfit": "hoodie",
    "outfitCol": "y",
    "accent": "n",
-   "_note": "third sister (D114); offstage in v0.1, look reserved"
+   "_note": "Caleb (he/him), Marilou's partner and the painter in 5B. Shown as Caleb by the label in reputation.json; the look key, NPC id and rep key stay morolow (Vincent, Oct 23, 2026; overrides D114)."
   },
   "landlord": {
    "skin": "2",
@@ -408,7 +408,7 @@
      "y": 2,
      "sprite": "desk_teacher",
      "lines": {
-      "else": "Lizzy's desk. A mug that says MAESTRA and a photo of four sisters laughing."
+      "else": "Lizzy's desk. A mug that says MAESTRA and a photo of three sisters laughing."
      }
     },
     {
@@ -628,7 +628,7 @@
      "y": 2,
      "sprite": "mailbox_wall",
      "lines": {
-      "else": "Mailboxes. 5B has four names on tape: Lizzy, Ossabell, Morelou, Morolow, and a paw doodle."
+      "else": "Mailboxes. 5B has four names on tape: Lizzy, Ossabell, Marilou, Caleb, and a paw doodle."
      }
     },
     {
@@ -752,7 +752,7 @@
      "y": 3,
      "sprite": "table_kitchen",
      "lines": {
-      "else": "A kitchen table with five chairs: four sisters and one always for a guest."
+      "else": "A kitchen table with five chairs: four for the family, one always for a guest."
      }
     },
     {
@@ -950,7 +950,7 @@
      "y": 9,
      "sprite": "photo_wall",
      "lines": {
-      "else": "A photo: four sisters, an abuela, and a much smaller Buddy in a party hat."
+      "else": "A photo: three sisters, an abuela, and a much smaller Buddy in a party hat."
      }
     },
     {
@@ -990,7 +990,7 @@
      "y": 13,
      "sprite": "domino_table",
      "lines": {
-      "else": "A domino table mid-game. Nobody touch it. The sisters mean it."
+      "else": "A domino table mid-game. Nobody touch it. Marilou and Caleb mean it."
      }
     },
     {

@@ -1,7 +1,8 @@
 /* Lizzy part B (packet P3 v2): Hearthmoor Schoolhouse, Amberhill Flats, and the intro on the south grass.
    D111 placement A. D118 six floors on the panel, only 5B is a map. D119 names. Save v stays 2. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene, shot } = require('./helpers');
+const path = require('path');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, shot, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -579,4 +580,128 @@ test('flat 5B keeps Buddy home after you meet Lizzy, and a pat lands once a day'
     return { drip: ids.includes('f5_drip'), pipe: ids.includes('f5_pipe_new'), leak: ids.includes('f5_leak'), props: props.length };
   });
   expect(fixed).toEqual({ drip: false, pipe: true, leak: false, props: 19 });
+});
+
+async function endTalk(page) {
+  for (let i = 0; i < 24; i++) {
+    const open = await page.evaluate(() => !!PixelPets.scene);
+    if (!open) return;
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(40);
+  }
+  throw new Error('talk did not end');
+}
+
+test('flat 5B shows Caleb and Marilou, and the save keys stay Morolow and Morelou', async ({ page }) => {
+  const s = save({ 'story.lizzy_met': true, 'story.phone_got': true });
+  await boot(page, s);
+  await page.evaluate(() => {
+    PixelPets.goto('hm_flats_5', 2, 6, 'down');
+    PixelPets.setFlag('story.lizzy_met', true);
+  });
+  const beforeKeys = await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('pixelpets.save.v2'))).sort());
+
+  expect(await page.evaluate(() => PixelPets.talkTo('f5_morolow'))).toBe(true);
+  await page.waitForFunction(() => document.querySelector('#sbWho').textContent === 'Caleb');
+  expect(await page.evaluate(() => PixelPets.scene.who)).toBe('Morolow');
+  if (page.viewportSize().width === 390) {
+    const dir = artifactsDir('caleb-fix');
+    const clip = await page.evaluate(() => {
+      const a = document.querySelector('#sbWho').getBoundingClientRect();
+      const b = document.querySelector('#sbox').getBoundingClientRect();
+      const x = Math.max(0, Math.min(a.left, b.left) - 4);
+      const y = Math.max(0, Math.min(a.top, b.top) - 4);
+      const right = Math.min(window.innerWidth, Math.max(a.right, b.right) + 4);
+      const bottom = Math.min(window.innerHeight, Math.max(a.bottom, b.bottom) + 4);
+      return { x, y, width: right - x, height: bottom - y };
+    });
+    await page.screenshot({ path: path.join(dir, 'caleb-textbox-390.png'), clip });
+  }
+  await endTalk(page);
+
+  expect(await page.evaluate(() => PixelPets.talkTo('f5_morelou'))).toBe(true);
+  await page.waitForFunction(() => document.querySelector('#sbWho').textContent === 'Marilou');
+  expect(await page.evaluate(() => PixelPets.scene.who)).toBe('Morelou');
+  await endTalk(page);
+
+  const rep = await page.evaluate(() => {
+    const n = PixelPets.repAdd('Morolow', 5);
+    const raw = JSON.parse(localStorage.getItem('pixelpets.save.v2'));
+    return {
+      n,
+      morolow: PixelPets.repGet('Morolow'),
+      caleb: PixelPets.repGet('Caleb'),
+      base: MAPDATA.reputation.base,
+      keys: Object.keys(PixelPets.state.rep || {}),
+      v: raw.v,
+      top: Object.keys(raw).sort(),
+      saved: raw.rep,
+    };
+  });
+  expect(rep.n).toBe(55);
+  expect(rep.morolow).toBe(55);
+  expect(rep.caleb).toBe(rep.base);
+  expect(rep.keys).toContain('Morolow');
+  expect(rep.keys).not.toContain('Caleb');
+  expect(rep.saved.Morolow).toBe(55);
+  expect(rep.saved.Caleb).toBeUndefined();
+  expect(rep.v).toBe(2);
+  const added = rep.top.filter(k => beforeKeys.indexOf(k) < 0);
+  expect(added.filter(k => ['phoneBook', 'rep', 'repJoins', 'phoneOpened', 'debugSave'].indexOf(k) < 0)).toEqual([]);
+
+  await page.locator('#repBtn').click();
+  await expect(page.locator('#ovRep')).toBeVisible();
+  const people = await page.evaluate(() => [...document.querySelectorAll('#repList .rep-name')].map(n => n.textContent));
+  expect(people).toContain('Caleb');
+  expect(people).toContain('Marilou');
+  expect(people).not.toContain('Morolow');
+  expect(people).not.toContain('Morelou');
+  if (page.viewportSize().width === 390) {
+    const dir = artifactsDir('caleb-fix');
+    const clip = await page.evaluate(() => {
+      const rows = [...document.querySelectorAll('#repList .rep-row')].filter(r => {
+        const n = r.querySelector('.rep-name').textContent;
+        return n === 'Marilou' || n === 'Caleb';
+      });
+      rows.forEach(r => r.scrollIntoView({ block: 'center' }));
+      const boxes = rows.map(r => r.getBoundingClientRect());
+      const top = Math.max(0, Math.min(...boxes.map(b => b.top)));
+      const bottom = Math.min(window.innerHeight, Math.max(...boxes.map(b => b.bottom)));
+      const left = Math.max(0, Math.min(...boxes.map(b => b.left)));
+      const right = Math.min(window.innerWidth, Math.max(...boxes.map(b => b.right)));
+      return { x: left, y: top, width: Math.max(1, right - left), height: Math.max(1, bottom - top) };
+    });
+    await page.screenshot({ path: path.join(dir, 'people-marilou-caleb-390.png'), clip });
+  }
+  await page.locator('#repBack').click();
+
+  await page.locator('#phoneBtn').click();
+  await page.locator('.phone-app[data-app="contacts"]').click();
+  const contacts = await page.evaluate(() => [...document.querySelectorAll('.contact-name')].map(n => n.textContent));
+  expect(contacts).toContain('Caleb');
+  expect(contacts).toContain('Marilou');
+  expect(contacts).not.toContain('Morolow');
+  expect(contacts).not.toContain('Morelou');
+  expect(contacts.indexOf('Caleb')).toBeLessThan(contacts.indexOf('Marilou'));
+
+  const lines = await page.evaluate(() => {
+    const line = (map, id) => {
+      const o = MAPDATA.detail_lizzy.maps[map].objs.find(q => q.id === id);
+      return o && o.lines && o.lines.else;
+    };
+    return [
+      line('hm_school_in', 'school_teacher_desk'),
+      line('hm_flats_lobby', 'flats_mailboxes'),
+      line('hm_flats_5', 'f5_table'),
+      line('hm_flats_5', 'f5_photo'),
+      line('hm_flats_5', 'f5_dominoes'),
+    ];
+  });
+  expect(lines).toEqual([
+    "Lizzy's desk. A mug that says MAESTRA and a photo of three sisters laughing.",
+    'Mailboxes. 5B has four names on tape: Lizzy, Ossabell, Marilou, Caleb, and a paw doodle.',
+    'A kitchen table with five chairs: four for the family, one always for a guest.',
+    'A photo: three sisters, an abuela, and a much smaller Buddy in a party hat.',
+    'A domino table mid-game. Nobody touch it. Marilou and Caleb mean it.',
+  ]);
 });

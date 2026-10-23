@@ -299,11 +299,13 @@
     },
     {
       "name": "Morelou",
+      "label": "Marilou",
       "faction": "none",
       "base": 50
     },
     {
       "name": "Morolow",
+      "label": "Caleb",
       "faction": "none",
       "base": 50
     },
