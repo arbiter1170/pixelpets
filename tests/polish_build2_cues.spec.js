@@ -1,7 +1,7 @@
 /* QUEST_CUE QA clearance (D467, D469). Edge boxes stay off the joystick, the d-pad and a slip chip. */
 const { test, expect } = require('@playwright/test');
-const fs = require('fs');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const path = require('path');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -111,8 +111,7 @@ test('edge boxes clear the joystick, the d-pad and a slip chip', async ({ page }
   expect(off.d435.gap, 'slip').toBeGreaterThanOrEqual(6);
   expect(off.joy).toBeNull();
   if (testInfo.project.name === '390' || testInfo.project.name === '320') {
-    fs.mkdirSync('/opt/cursor/artifacts', { recursive: true });
-    await page.locator('#mapCanvas').screenshot({ path: '/opt/cursor/artifacts/quest-cue-edge-' + testInfo.project.name + '.png' });
+    await page.locator('#mapCanvas').screenshot({ path: path.join(artifactsDir(), 'quest-cue-edge-' + testInfo.project.name + '.png') });
   }
 
   await openSettings(page);
