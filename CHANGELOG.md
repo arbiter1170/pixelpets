@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 09:15 ET: D576 is reserved for town chatter
+
+- What changed and why: The Supervisor reserved D576 for TOWN_CHATTER. It is red, default No for v1, and it waits until after Episode 1. Deadline Sun Oct 25, 9:15 AM ET. Design 656d101. It is not settled and it is not in the archive. The next free id is D577.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, after the care-tray commit. Build stays `20261023-0847`. Docs only, so the stamp is unchanged.
+- Tests run and result (widths, checks): `node tools/scans/run.js` after this commit. No game code changed.
+- Decisions made (colour + reasoning): D576 is reserved, not settled. Red, default No for v1. No other id moved.
+- Anything left unfinished: TOWN_CHATTER is not built.
+
 ## 2026-10-23 08:47 ET: A need balloon and a care tray on the walk (build 20261023-0847)
 
 - What changed and why: PARTNER_CARE sections 1–5 (design 1a98ea8, D534–D547). One balloon over the partner on the walk shows hungry, hurt, or tired. Worn out still shows Zz alone. Level 2 uses the red rim. The balloon stays up, does not bob, rises 2 px when it first appears, and skips that rise when motion is reduced. It steps aside from the quest arrow, the rail chips, the "!" balloon, and the talk marker. The early heart waits while a need would show. The modern partner strip opens a care tray. STATS on that tray opens the stats card. A tap on the follower opens the tray only while you stand still; while you are walking, that tap walks. A slot tap switches the partner and leaves the tray open. FEED, PLAY, REST, and HEAL run today's rules on the partner only. A heart, Zz, two sparks, and a PLAY hop answer over the follower. On a wide window the tray stays inside the game frame and clear of PARTNER and WALKLINGS. A nameless cooler hides its title. Cook Hesper's sheet still shows her name. A free Lantern rest treats energy as the HUD does, with Math.round. Save stays `pixelpets.save.v2` with `v` 2. No new saved field. `save.js` is untouched.
