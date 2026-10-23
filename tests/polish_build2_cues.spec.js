@@ -1,143 +1,160 @@
-/* POLISH_BUILD2 P1 (D435, D436). Modern rail chips at 320, 375 and 390.
-   Holder stands at (12, 27) on Hearthmoor. cueLayout forces the main, tracked and slip tiles. */
+/* QUEST_CUE QA clearance (D467, D469). Edge boxes stay off the joystick, the d-pad and a slip chip. */
 const { test, expect } = require('@playwright/test');
+const fs = require('fs');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
 trackErrors(test, expect);
 
+const HUD = '#floatCtl button, #clockChip, #envBadge, #fcAcorns, #joyRing, #walkTip, #petStrip, #dpad';
 const LIME = [167, 240, 112];
-const INK = [26, 28, 44];
-const HUD = '#floatCtl button, #clockChip, #envBadge, #fcAcorns, #walkTip, #petStrip';
-const CASES = {
-  north: { main: { x: 11, y: 0 }, side: { x: 12, y: 0 }, board: { x: 13, y: 0 }, n: 3 },
-  same_tile: { main: { x: 11, y: 0 }, side: { x: 11, y: 0 }, board: null, n: 2 },
-  ne_corner: { main: { x: 23, y: 1 }, side: { x: 22, y: 0 }, board: { x: 23, y: 0 }, n: 3 },
-  west: { main: { x: 0, y: 26 }, side: { x: 0, y: 27 }, board: { x: 0, y: 25 }, n: 3 },
-  east: { main: { x: 23, y: 26 }, side: { x: 23, y: 27 }, board: { x: 23, y: 25 }, n: 3 },
-  apart: { main: { x: 12, y: 0 }, side: { x: 0, y: 27 }, board: { x: 23, y: 27 }, n: 3 },
-};
+const LOW_LEFT = { main: { x: 0, y: 48 }, side: { x: 1, y: 46 }, board: { x: 0, y: 20 }, mainTracked: false };
 
-function modernSave() {
+function modernSave(extra) {
   const s = starterSave();
   s.settings.controls = 'modern';
   s.settings.follower = false;
+  s.settings.joystick = !!(extra && extra.joystick);
+  Object.assign(s.flags, { 'story.mom_sent': true, 'story.early_done': true });
   return s;
 }
 
-async function boot(page) {
-  await installSave(page.context(), modernSave(), { quietDay: true });
+async function frame(page) {
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+}
+
+async function openSettings(page) {
+  const gear = page.locator('#gearFloat');
+  if (await gear.isVisible()) await gear.click();
+  else await page.locator('#settingsBtn').click();
+  await expect(page.locator('#ovSettings')).toBeVisible();
+}
+
+async function boot(page, save) {
+  await installSave(page.context(), save, { quietDay: true });
   await gotoGame(page, '?debug=1');
   await page.evaluate(() => {
     PixelPets.showTab('walk');
     PixelPets.goto('hearthmoor', 12, 27, 'down');
   });
-  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await frame(page);
 }
 
-async function layout(page, spec, mainTracked) {
-  await page.evaluate(({ spec, mainTracked }) => {
-    PixelPets.cueLayout({ main: spec.main, side: spec.side, board: spec.board, mainTracked: !!mainTracked });
-  }, { spec, mainTracked });
-  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+async function layout(page, spec) {
+  await page.evaluate((spec) => {
+    PixelPets.cueLayout({ main: spec.main, side: spec.side, board: spec.board, mainTracked: !!spec.mainTracked });
+  }, spec);
+  await frame(page);
 }
 
-async function readChips(page) {
+async function read(page) {
   return page.evaluate((hud) => {
     const chips = PixelPets.cueChips() || [];
     const c = document.querySelector('#mapCanvas');
     const r = c.getBoundingClientRect();
-    const k = r.width / c.width;
-    const g = c.getContext('2d');
-    const hudRects = [...document.querySelectorAll(hud)].filter(e => !e.hidden && e.offsetParent).map(e => {
+    const scale = r.width / c.width;
+    const live = (sel) => [...document.querySelectorAll(sel)].filter(e => !e.hidden && e.offsetParent).map(e => {
       const b = e.getBoundingClientRect();
-      return [e.id || e.className, b.left, b.top, b.right, b.bottom];
+      return { id: e.id || e.className, l: b.left, t: b.top, r: b.right, b: b.bottom };
     });
-    const eq = (px, rgb) => px[0] === rgb[0] && px[1] === rgb[1] && px[2] === rgb[2];
-    const out = chips.map(ch => {
-      const L = r.left + (ch.x - 8) * k, T = r.top + (ch.y - 8) * k, R = r.left + (ch.x + 9) * k, B = r.top + (ch.y + 17) * k;
-      const pts = [[ch.x, ch.y], [ch.x - 7, ch.y - 7], [ch.x + 7, ch.y - 7], [ch.x - 7, ch.y + 7], [ch.x + 7, ch.y + 7], [ch.x, ch.y + 13]];
-      const hits = pts.map(([x, y]) => {
-        let el = document.elementFromPoint(r.left + x * k, r.top + y * k);
-        while (el && !el.id) el = el.parentElement;
-        return el ? el.id : null;
-      });
-      const gaps = hudRects.map(([id, l, t, rr, b]) => {
-        const dx = Math.max(l - R, 0, L - rr), dy = Math.max(t - B, 0, T - b);
-        return { id, gap: Math.round(dx + dy > 0 ? Math.hypot(dx, dy) : 0) };
-      }).sort((a, b) => a.gap - b.gap);
-      const fill = g.getImageData(ch.x - 5, ch.y, 1, 1).data;
-      const rim = g.getImageData(ch.x + 8, ch.y, 1, 1).data;
-      return {
-        x: ch.x, y: ch.y, tracked: !!ch.tracked, hits, nearest: gaps[0] || null,
-        lime: eq(fill, [167, 240, 112]), inkRim: eq(rim, [26, 28, 44]),
-        rim: rim[0] + ',' + rim[1] + ',' + rim[2],
-        css: [Math.round(L), Math.round(T), Math.round(R), Math.round(B)],
-      };
-    });
-    let minGap = null;
-    for (let i = 0; i < out.length; i++) for (let j = i + 1; j < out.length; j++) {
-      const [l1, t1, r1, b1] = out[i].css, [l2, t2, r2, b2] = out[j].css;
-      const dx = Math.max(l2 - r1, l1 - r2), dy = Math.max(t2 - b1, t1 - b2);
-      const gap = Math.max(dx, dy);
-      if (minGap == null || gap < minGap) minGap = gap;
+    const sep = (a, b) => Math.max(Math.max(b.l - a.r, a.l - b.r), Math.max(b.t - a.b, a.t - b.b));
+    const edges = chips.filter(ch => ch.box).map(ch => ({
+      tracked: !!ch.tracked,
+      box: { l: r.left + ch.box.x, t: r.top + ch.box.y, r: r.left + ch.box.x + ch.box.w, b: r.top + ch.box.y + ch.box.h },
+      w: ch.box.w, h: ch.box.h,
+      inside: ch.box.x >= -0.01 && ch.box.y >= -0.01 && ch.box.x + ch.box.w <= r.width + 0.01 && ch.box.y + ch.box.h <= r.height + 0.01,
+    }));
+    const rails = chips.filter(ch => !ch.box).map(ch => ({
+      l: r.left + (ch.x - 8) * scale, t: r.top + (ch.y - 8) * scale,
+      r: r.left + (ch.x + 10) * scale, b: r.top + (ch.y + 18) * scale,
+    }));
+    let pair = null;
+    for (let i = 0; i < edges.length; i++) for (let j = i + 1; j < edges.length; j++) {
+      const g = sep(edges[i].box, edges[j].box);
+      if (pair == null || g < pair) pair = g;
     }
-    return { chips: out, minGap, v: PixelPets.state.v };
+    const nearest = (rects) => {
+      let best = null;
+      for (const edge of edges) for (const h of rects) {
+        const g = sep(edge.box, h);
+        if (!best || g < best.gap) best = { id: h.id, gap: g };
+      }
+      return best;
+    };
+    const g = c.getContext('2d');
+    const face = chips.filter(ch => ch.tracked).map(ch => {
+      const d = g.getImageData(ch.x - 5, ch.y, 1, 1).data;
+      return [d[0], d[1], d[2]];
+    });
+    return {
+      n: edges.length, rails: rails.length, pair, inside: edges.every(e => e.inside),
+      size: edges.map(e => [e.w, e.h]),
+      hud: nearest(live(hud)),
+      joy: nearest(live('#joyRing')),
+      dpad: nearest(live('#dpad')),
+      d435: nearest(rails.map((h, i) => Object.assign({ id: 'd435-' + i }, h))),
+      face, v: PixelPets.state.v,
+    };
   }, HUD);
 }
 
-test('main, tracked and slip chips clear each other and the HUD', async ({ page }) => {
-  await boot(page);
-  // One-digit and two-digit hours change the clock pill width. Both have to clear (D435).
-  for (const clock of [['thu', 9, 30], ['wed', 10, 30]]) {
-    await page.evaluate((c) => PixelPets.clock.set(c[0], c[1], c[2]), clock);
-    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-    const label = await page.locator('#clockLabel').textContent();
-    for (const [name, spec] of Object.entries(CASES)) {
-      await layout(page, spec, false);
-      const got = await readChips(page);
-      const tag = label + ' ' + name;
-      expect(got.v, tag).toBe(2);
-      expect(got.chips.length, tag).toBe(spec.n);
-      const tracked = got.chips.filter(c => c.tracked);
-      expect(tracked.length, tag + ' tracked').toBe(1);
-      expect(tracked[0].lime, tag + ' PAL l').toBe(true);
-      for (const ch of got.chips) {
-        expect(ch.hits, tag + ' hits').toEqual(['mapCanvas', 'mapCanvas', 'mapCanvas', 'mapCanvas', 'mapCanvas', 'mapCanvas']);
-        expect(ch.nearest && ch.nearest.gap, tag + ' HUD ' + (ch.nearest && ch.nearest.id)).toBeGreaterThanOrEqual(6);
-      }
-      if (got.chips.length > 1) expect(got.minGap, tag + ' chip gap').toBeGreaterThanOrEqual(1);
-    }
+test('edge boxes clear the joystick, the d-pad and a slip chip', async ({ page }, testInfo) => {
+  await boot(page, modernSave());
+  await layout(page, LOW_LEFT);
+  const off = await read(page);
+  expect(off.v).toBe(2);
+  expect(off.n).toBe(2);
+  expect(off.rails).toBeGreaterThan(0);
+  expect(off.pair).toBeGreaterThanOrEqual(4);
+  expect(off.inside).toBe(true);
+  expect(off.size).toEqual([[44, 44], [44, 44]]);
+  expect(off.hud.gap, 'hud ' + off.hud.id).toBeGreaterThanOrEqual(6);
+  expect(off.d435.gap, 'slip').toBeGreaterThanOrEqual(6);
+  expect(off.joy).toBeNull();
+  if (testInfo.project.name === '390' || testInfo.project.name === '320') {
+    fs.mkdirSync('/opt/cursor/artifacts', { recursive: true });
+    await page.locator('#mapCanvas').screenshot({ path: '/opt/cursor/artifacts/quest-cue-edge-' + testInfo.project.name + '.png' });
   }
+
+  await openSettings(page);
+  await page.locator('#setJoystick').click();
+  await page.locator('#setClose').click();
+  await expect(page.locator('#ovSettings')).toBeHidden();
+  await expect(page.locator('#joyRing')).toBeVisible();
+  await frame(page);
+  const joy = await read(page);
+  expect(joy.n).toBe(2);
+  expect(joy.inside).toBe(true);
+  expect(joy.pair).toBeGreaterThanOrEqual(4);
+  expect(joy.joy.gap, 'joy').toBeGreaterThanOrEqual(6);
+  expect(joy.hud.gap).toBeGreaterThanOrEqual(6);
+  expect(joy.d435.gap, 'slip with joystick').toBeGreaterThanOrEqual(6);
+  expect(joy.dpad).toBeNull();
+
+  await openSettings(page);
+  await page.locator('#setControls').click();
+  await page.locator('#setClose').click();
+  await expect(page.locator('#ovSettings')).toBeHidden();
+  await frame(page);
+  const arcade = await read(page);
+  expect(arcade.n).toBe(2);
+  expect(arcade.rails).toBe(0);
+  expect(arcade.inside).toBe(true);
+  expect(arcade.pair).toBeGreaterThanOrEqual(4);
+  expect(arcade.size).toEqual([[44, 44], [44, 44]]);
+  expect(arcade.hud.gap, 'arcade hud ' + arcade.hud.id).toBeGreaterThanOrEqual(6);
+  expect(arcade.dpad.gap, 'dpad').toBeGreaterThanOrEqual(6);
+  expect(arcade.d435).toBeNull();
+  expect(arcade.joy).toBeNull();
 });
 
 test('a tracked main story is lime and draws no side cue', async ({ page }) => {
-  await boot(page);
-  await layout(page, { main: { x: 11, y: 0 }, side: null, board: null }, true);
-  const got = await readChips(page);
-  expect(got.chips.length).toBe(1);
-  expect(got.chips[0].tracked).toBe(true);
-  expect(got.chips[0].lime).toBe(true);
-  expect(got.chips[0].hits.every(id => id === 'mapCanvas')).toBe(true);
+  await boot(page, modernSave());
+  await layout(page, { main: { x: 11, y: 0 }, side: null, board: null, mainTracked: true });
+  const got = await read(page);
+  expect(got.n).toBe(1);
+  expect(got.face.length).toBe(1);
+  expect(got.face[0]).toEqual(LIME);
+  expect(got.inside).toBe(true);
+  expect(got.size).toEqual([[44, 44]]);
   expect(got.v).toBe(2);
-});
-
-test('reduced motion keeps the tracked rim steady', async ({ page }) => {
-  await boot(page);
-  await layout(page, CASES.west, false);
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect.poll(() => page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
-  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  const seen = new Set();
-  const t0 = Date.now();
-  while (Date.now() - t0 < 1400) {
-    const got = await readChips(page);
-    const rim = got.chips.find(c => c.tracked);
-    expect(rim, 'tracked chip').toBeTruthy();
-    expect(rim.inkRim, 'rim ' + rim.rim).toBe(true);
-    seen.add(rim.rim);
-    await page.waitForTimeout(70);
-  }
-  expect(seen.size, [...seen].join(' | ')).toBe(1);
-  expect([...seen][0]).toBe(INK.join(','));
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
 });

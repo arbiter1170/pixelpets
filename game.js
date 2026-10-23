@@ -4987,10 +4987,11 @@ function drawCobbleTrim(g, cx, cy, t){
     g.restore();
   }
 }
-/* ---------- next-step cue (NEXT_PLAN WP-C): replaces the Hearthmoor-only exit chevron ---------- */
-// The objective comes from quests.js (flags only, nothing saved). On the current map a yellow arrow bobs above the target
-// tile; off-screen it becomes an arrow at the viewport edge; on another map it points at the exit that starts the
-// shortest route there (BFS over warps and doors). Hidden during scenes, battles and the walk-in flash.
+/* ---------- next-step cue (NEXT_PLAN WP-C; QUEST_CUE D461-D469) ---------- */
+// The objective comes from quests.js (flags only, nothing saved). On screen, today's small arrow bobs 1 px above the
+// target tile. Off screen, the same arrow sits at the edge in 8 directions, with the distance pill and a 44 px tap that
+// opens QUEST. A board slip keeps the rail chip. No ground ring. On another map the cue points at the exit that starts
+// the shortest route there (BFS over warps and doors). Hidden during scenes, battles and the walk-in flash.
 const questState = () => ({ flags: S.flags, seals: S.seals, pets: allPets().length });
 const HC_CLEAR_FLAGS = ['story.hc_clear_lantern', 'story.hc_clear_shells', 'story.hc_clear_chirp', 'story.hc_clear_dash', 'story.hc_clear_pairs'];
 const HC_QUEST = {
@@ -5027,6 +5028,24 @@ function drawArrow(g, grid, x, y, col){
     if (!filled(gx, gy) && (filled(gx - 1, gy) || filled(gx + 1, gy) || filled(gx, gy - 1) || filled(gx, gy + 1))) g.fillRect(x + gx, y + gy, 1, 1);
   g.fillStyle = col;
   for (let gy = 0; gy < grid.length; gy++) for (let gx = 0; gx < grid[0].length; gx++) if (grid[gy][gx] === '#') g.fillRect(x + gx, y + gy, 1, 1);
+}
+// D462: four diagonal grids in the same 7x7 style, drawn once. Down-right is the source; the other three are its mirrors.
+const ARROW_DOWN_RIGHT = ['##.....', '###....', '.###..#', '..#####', '...####', '...####', '..#####'];
+const arrowMirrorX = gr => gr.map(row => row.split('').reverse().join(''));
+const arrowMirrorY = gr => gr.slice().reverse();
+const ARROW_DIAG = {
+  downRight: ARROW_DOWN_RIGHT,
+  downLeft: arrowMirrorX(ARROW_DOWN_RIGHT),
+  upRight: arrowMirrorY(ARROW_DOWN_RIGHT),
+  upLeft: arrowMirrorY(arrowMirrorX(ARROW_DOWN_RIGHT)),
+};
+const ARROW_SECTOR = [
+  [ARROW.right, 'right'], [ARROW_DIAG.downRight, 'downRight'], [ARROW.down, 'down'], [ARROW_DIAG.downLeft, 'downLeft'],
+  [ARROW.left, 'left'], [ARROW_DIAG.upLeft, 'upLeft'], [ARROW.up, 'up'], [ARROW_DIAG.upRight, 'upRight'],
+];
+function arrowForAngle(ang){
+  const q = Math.round(ang / (Math.PI / 4)) & 7, pair = ARROW_SECTOR[q];
+  return { grid: pair[0], dir: pair[1] };
 }
 // Shortest route between maps over warps and doors (gating ignored: the chain's flags open the way). Cached; the graph is static.
 const routeCache = new Map();
@@ -5145,8 +5164,10 @@ const cueZone = { stamp: -1, z: null };
 function invalidateCueZone(){ cueZoneStamp++; }
 let cueForce = null;     // ?debug=1 only (PixelPets.cueForce): a stand-in cue tile. Never saved.
 let cueLayout = null;    // ?debug=1 only (PixelPets.cueLayout): forced main, side and slip tiles. Never saved.
-let cueChipLast = null;  // last modern edge chip this frame, for the same debug read
-let cueChipAll = [];     // every rail chip this frame; debug read only. Never saved.
+let cueChipLast = null;  // last edge cue or slip chip this frame, for the same debug read
+let cueChipAll = [];     // every edge cue and slip chip this frame; debug read only. Never saved.
+let cueTapBoxes = [];    // off-screen edge tap boxes this frame, view px. Never saved.
+let cuePassLast = null;  // last on-screen arrow this frame (pass-through). Debug read only. Never saved.
 function modernCueZone(){
   if (ctlMode() !== 'modern') return null;
   if (cueZone.z && cueZone.stamp === cueZoneStamp) return cueZone.z;
@@ -5169,22 +5190,143 @@ function modernCueZone(){
   });
   return (cueZone.z = { x0, y0, x1, y1, tx0, tx1, ty, bx0, by, btns, rail: { x0: rx0, y0: ry0, x1: rx1, y1: ry1, h: half * k }, avoid });
 }
-// Dark round chip (PAL.k at 85%), a 1 px ring in the cue colour, the arrow, and the tile count in 3x5 digits.
-// The ring blinks white every 560 ms. Reduced motion keeps the cue colour steady (no white blink). Draw-only.
-// POLISH_BUILD2 P1 (D435, D436 revised): the tracked quest's chip, main or side, is the same chip filled in PAL[TRACKED_KEY], with
-// the arrow and a 3x3 pennant in PAL[TRACKED_INK] and a PAL k rim that blinks white like the others (steady with reduce motion).
-// CUE_SLOT steps a chip one slot along the rail when it, or its tile count, would touch a chip already drawn this frame or the
-// avoid list. The main chip is drawn first.
-const CUE_TRACKED = { rim: 'k', pennant: [[5, -6], [6, -6], [7, -6], [5, -5], [6, -5], [5, -4]] };
+// CUE_SLOT still steps a board-slip chip along the rail (D435). Main and side use CUE_EDGE. The white rim blink is gone.
 const CUE_SLOT = { w: 19, h: 27, tries: [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8] };
 const cueChips = [];   // chips drawn this frame (view space), reset at the top of drawObjectiveCue; never saved
-function drawCueChip(g, cx, cy, col, t, shown, dir, tracked){
-  const ring = prefersReduced() || Math.floor(t / 560) % 2 ? col : PAL.w;
-  const rim = tracked && ring === col ? PAL[CUE_TRACKED.rim] : ring;
-  g.fillStyle = tracked ? PAL[TRACKED_KEY] : CUE_CHIP_FILL; g.fillRect(cx - 7, cy - 8, 15, 17); g.fillRect(cx - 8, cy - 7, 17, 15);
-  g.fillStyle = rim; g.fillRect(cx - 6, cy - 8, 13, 1); g.fillRect(cx - 6, cy + 8, 13, 1); g.fillRect(cx - 8, cy - 6, 1, 13); g.fillRect(cx + 8, cy - 6, 1, 13);
-  drawArrow(g, ARROW[dir], cx - 3, cy - 5, tracked ? PAL[TRACKED_INK] : col);
-  if (tracked) { g.fillStyle = PAL[TRACKED_INK]; for (const [px, py] of CUE_TRACKED.pennant) g.fillRect(cx + px, cy + py, 1, 1); }
+// QUEST_CUE (D461-D469). Main and side cues use today's small arrow. Off screen it turns in 8 directions,
+// carries the distance pill, and sits in a 44 CSS px tap box (CUE_EDGE). A board slip keeps the rail chip.
+// D464: no ground ring. D465: no rim blink; 1 px motion on 1400 ms; still under reduced motion.
+const CUE_EDGE = { edge: 4, inset: 56, gap: 4, margin: 6, box: 44 };
+const CUE_AVOID = '#floatCtl button, #joyRing, #clockChip, #envBadge, #fcAcorns, #walkTip, #petStrip, #dpad';
+const CUE_PENNANT = [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2]];
+const CUE_SHADOW = (() => {
+  const n = parseInt(PAL.k.slice(1), 16);
+  const rgba = a => 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+  return { near: rgba(0.38), far: rgba(0.22) };
+})();
+function cuePhase(t){
+  if (prefersReduced()) return 0;
+  return (((t % 1400) + 1400) % 1400) / 1400;
+}
+function cueBob(t){
+  if (prefersReduced()) return 0;
+  return Math.round(Math.sin(cuePhase(t) * Math.PI * 2) * 1.2);
+}
+function cueNudge(t){
+  if (prefersReduced()) return 0;
+  return Math.round(Math.max(0, Math.sin(cuePhase(t) * Math.PI * 2)));
+}
+// The debug read samples one face pixel. (x - 5, y) is that pixel, and a neighbour sits in the 8x12 window beside it.
+function cueSampleAnchor(grid, ax, ay){
+  const H = grid.length, W = grid[0].length;
+  const face = (gx, gy) => gy >= 0 && gy < H && gx >= 0 && gx < W && grid[gy][gx] === '#';
+  let pick = null;
+  for (let gy = 0; gy < H; gy++) for (let gx = 0; gx < W; gx++) {
+    if (!face(gx, gy)) continue;
+    const fx = ax + gx, fy = ay + gy;
+    let mate = false;
+    for (let dy = -6; dy <= 5 && !mate; dy++) for (let dx = 1; dx <= 8; dx++) if (face(gx + dx, gy + dy)) mate = true;
+    if (mate) return { x: fx + 5, y: fy };
+    if (!pick) pick = { x: fx + 5, y: fy };
+  }
+  return pick || { x: ax + 5, y: ay };
+}
+function drawCuePill(g, cx, cy, shown, face, tracked){
+  const s = String(shown);
+  const w = s.length * 4 - 1 + 4 + (tracked ? 4 : 0) + 2, h = 9;
+  const x = Math.round(cx - w / 2), y = Math.round(cy - h / 2);
+  g.fillStyle = CUE_SHADOW.far; g.fillRect(x + 1, y + h + 1, w - 2, 1);
+  g.fillStyle = CUE_SHADOW.near; g.fillRect(x + 1, y + h, w - 2, 1);
+  g.fillStyle = PAL.k; g.fillRect(x + 1, y, w - 2, h); g.fillRect(x, y + 1, w, h - 2);
+  g.fillStyle = face; g.fillRect(x + 1, y + 1, w - 2, h - 2); g.fillRect(x + 2, y + 1, w - 4, h - 2);
+  let tx = x + 3;
+  if (tracked) { g.fillStyle = PAL.k; for (const [a, b] of CUE_PENNANT) g.fillRect(tx + a, y + 2 + b, 1, 1); tx += 4; }
+  g.fillStyle = PAL.k;
+  for (let ci = 0; ci < s.length; ci++) {
+    const d = CUE_DIGITS[s.charCodeAt(ci) - 48];
+    for (let i = 0; i < 15; i++) if (d.charCodeAt(i) === 49) g.fillRect(tx + (i % 3), y + 2 + ((i / 3) | 0), 1, 1);
+    tx += 4;
+  }
+}
+// D467: slide along the edge band until the 44 px box clears every obstacle by 6 CSS px and every earlier box by 4.
+// If the edge band has no room, the 56 px inset band is the fallback. Map px; k is map px per CSS px.
+function placeCueEdge(VW, bottom, px, py, dx, dy, rects, placed, k){
+  const MARGIN = CUE_EDGE.margin * k, HALF = (CUE_EDGE.box / 2) * k, GAP = CUE_EDGE.gap * k;
+  const EDGE = CUE_EDGE.edge * k, INSET = CUE_EDGE.inset * k;
+  const bands = [
+    { x0: EDGE + HALF, y0: EDGE + HALF, x1: VW - EDGE - HALF, y1: bottom - EDGE - HALF, cost: 0 },
+    { x0: INSET + HALF, y0: INSET + HALF, x1: VW - INSET - HALF, y1: bottom - 2 * EDGE - HALF, cost: 60 * HALF / 22 },
+  ];
+  const clear = (x, y) => !rects.some(r => x - HALF < r.x1 + MARGIN && x + HALF > r.x0 - MARGIN && y - HALF < r.y1 + MARGIN && y + HALF > r.y0 - MARGIN)
+    && !placed.some(b => Math.abs(b.x - x) < 2 * HALF + GAP && Math.abs(b.y - y) < 2 * HALF + GAP);
+  let best = null;
+  for (const B of bands) {
+    if (!(B.x1 > B.x0) || !(B.y1 > B.y0)) continue;
+    const kx = dx ? ((dx > 0 ? B.x1 : B.x0) - px) / dx : Infinity;
+    const ky = dy ? ((dy > 0 ? B.y1 : B.y0) - py) / dy : Infinity;
+    const kk = Math.min(kx, ky);
+    const travel = Number.isFinite(kk) ? kk : 0;
+    const ix = Math.max(B.x0, Math.min(B.x1, px + dx * travel));
+    const iy = Math.max(B.y0, Math.min(B.y1, py + dy * travel));
+    const W = B.x1 - B.x0, H = B.y1 - B.y0, per = 2 * (W + H);
+    if (!(per > 0)) continue;
+    const sOf = (x, y) => y <= B.y0 + 0.01 ? x - B.x0 : x >= B.x1 - 0.01 ? W + (y - B.y0) : y >= B.y1 - 0.01 ? W + H + (B.x1 - x) : 2 * W + H + (B.y1 - y);
+    const at = s => {
+      s = ((s % per) + per) % per;
+      if (s < W) return [B.x0 + s, B.y0];
+      s -= W;
+      if (s < H) return [B.x1, B.y0 + s];
+      s -= H;
+      if (s < W) return [B.x1 - s, B.y1];
+      s -= W;
+      return [B.x0, B.y1 - s];
+    };
+    const s0 = sOf(ix, iy);
+    const limit = 240 * HALF / 22;
+    for (let d = 0; d <= limit; d += 1) {
+      let hit = null;
+      for (const sg of [1, -1]) {
+        const spot = at(s0 + sg * d);
+        if (clear(spot[0], spot[1])) { hit = spot; break; }
+      }
+      if (hit) {
+        const cost = d + B.cost;
+        if (!best || cost < best.c) best = { x: hit[0], y: hit[1], c: cost };
+        break;
+      }
+    }
+  }
+  return best;
+}
+function cueView(c){
+  const cr = c.getBoundingClientRect();
+  if (!cr.width || !c.width) return null;
+  const k = c.width / cr.width, margin = CUE_EDGE.margin * k;
+  const rects = [...$$(CUE_AVOID)].filter(e => !e.hidden && e.offsetParent && getComputedStyle(e).visibility !== 'hidden').map(e => {
+    const r = e.getBoundingClientRect();
+    return { x0: (r.left - cr.left) * k, y0: (r.top - cr.top) * k, x1: (r.right - cr.left) * k, y1: (r.bottom - cr.top) * k };
+  });
+  for (const ch of cueChipAll) if (ch.rail) rects.push({ x0: ch.x - 8, y0: ch.y - 8, x1: ch.x + 10, y1: ch.y + 18 });
+  const tip = $('#walkTip'), tr = tip && tip.offsetParent ? tip.getBoundingClientRect() : null;
+  const bottom = Math.min(c.height, tr ? (tr.top - cr.top) * k - margin : c.height);
+  return { k: k, rects: rects, bottom: bottom };
+}
+function noteCue(rec){
+  cueChipLast = rec;
+  cueChipAll.push(rec);
+}
+function cueEdgeTap(vx, vy){
+  for (let i = cueTapBoxes.length - 1; i >= 0; i--) {
+    const b = cueTapBoxes[i];
+    if (vx >= b.x0 && vx < b.x1 && vy >= b.y0 && vy < b.y1) return true;
+  }
+  return false;
+}
+// A board slip's square chip. Steady rim: the white blink is gone (D465). Draw-only.
+function drawSlipChip(g, cx, cy, col, shown, dir){
+  g.fillStyle = CUE_CHIP_FILL; g.fillRect(cx - 7, cy - 8, 15, 17); g.fillRect(cx - 8, cy - 7, 17, 15);
+  g.fillStyle = col; g.fillRect(cx - 6, cy - 8, 13, 1); g.fillRect(cx - 6, cy + 8, 13, 1); g.fillRect(cx - 8, cy - 6, 1, 13); g.fillRect(cx + 8, cy - 6, 1, 13);
+  drawArrow(g, ARROW[dir], cx - 3, cy - 5, col);
   const s = String(shown); let x = cx - ((s.length * 4 - 1) / 2 | 0); const y = cy + 10;
   g.fillStyle = CUE_CHIP_FILL; g.fillRect(x - 1, y - 1, s.length * 4 + 1, 7);
   g.fillStyle = PAL.w;
@@ -5194,24 +5336,29 @@ function drawCueChip(g, cx, cy, col, t, shown, dir, tracked){
     x += 4;
   }
 }
-function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift, tracked){
+// Board slip only. Modern off-screen stays on CUE_RAIL (D435). Main and side do not call this.
+function drawSlipCue(g, pt, col, cx, cy, t, VW, VH, shift){
   if (!pt) return;
   const zone = modernCueZone();
   if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;
-  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const bob = reduce ? 0 : (Math.floor(t / 280) % 2 ? 0 : 2);
+  const bob = cueBob(t);
   const X = pt.x * TS - cx, Y = pt.y * TS - cy;
   const under = zone && zone.btns.some(b => X < b[2] && X + TS > b[0] && Y < b[3] && Y + TS > b[1]);
   if (X > -TS && Y > -TS && X < VW && Y < VH && !under) {
-    if (Y - 13 >= 0) drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
-    else drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
+    if (Y - 13 >= 0) {
+      drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
+      cuePassLast = { dir: 'down', x: X + 5 + shift, y: Y - 12 - bob };
+    } else {
+      drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
+      cuePassLast = { dir: 'up', x: X + 5 + shift, y: Y + TS + 1 + bob };
+    }
     return;
   }
   const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
   const m = 6, kx = dx ? ((dx > 0 ? VW - m : m) - px) / dx : Infinity, ky = dy ? ((dy > 0 ? VH - m : m) - py) / dy : Infinity;
-  const k = Math.min(kx, ky); let ex = clamp(px + dx * k, m, VW - m), ey = clamp(py + dy * k, m, VH - m);
+  const kk = Math.min(kx, ky); let ex = clamp(px + dx * (Number.isFinite(kk) ? kk : 0), m, VW - m), ey = clamp(py + dy * (Number.isFinite(kk) ? kk : 0), m, VH - m);
   const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'), gr = ARROW[dir];
-  if (zone && zone.rail) {                       // CUE_RAIL: one rail inside the HUD, then step past the clock pill and the joystick
+  if (zone && zone.rail) {
     const Rl = zone.rail;
     ex = clamp(ex, Rl.x0, Rl.x1); ey = clamp(ey, Rl.y0, Rl.y1);
     if (dir === 'up') ey = Rl.y0; else if (dir === 'down') ey = Rl.y1; else if (dir === 'left') ex = Rl.x0; else ex = Rl.x1;
@@ -5229,16 +5376,14 @@ function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift, tracked){
       }
     }
     ex = clamp(ex, Rl.x0, Rl.x1); ey = clamp(ey, Rl.y0, Rl.y1);
-    // D435: the chip and its tile count (x-8..x+9, y-8..y+17 in map px) must clear the avoid list and every chip drawn this frame;
-    // if not, try one slot along the rail, then the other way, and so on (up to eight slots; the rail is at most 6.5 slots long). The first chip moves only to clear the avoid list.
-    // The avoid test uses the pixel drawCueChip will paint. Checking the unrounded slot, then rounding toward the clock, left the count 5 CSS px from the pill once the hour grew a digit. Slot spacing stays on the slot centre so rounding cannot stack two chips.
+    // D435: the chip and its tile count (x-8..x+9, y-8..y+17 in map px) clear the avoid list. Slot spacing stays on the slot centre.
     const hitsAvoid = (x, y) => zone.avoid.some(b => x - 8 < b[2] && x + 9 > b[0] && y - 8 < b[3] && y + 17 > b[1]);
     const drawnAt = (x, y) => [Math.round(x), Math.round(y)];
     if (cueChips.length || hitsAvoid(...drawnAt(ex, ey))) {
       const along = dir === 'up' || dir === 'down';
       const free = (x, y) => {
-        const [px, py] = drawnAt(x, y);
-        return x >= Rl.x0 && x <= Rl.x1 && y >= Rl.y0 && y <= Rl.y1 && !hitsAvoid(px, py)
+        const at = drawnAt(x, y);
+        return x >= Rl.x0 && x <= Rl.x1 && y >= Rl.y0 && y <= Rl.y1 && !hitsAvoid(at[0], at[1])
           && !cueChips.some(c => Math.abs(c.sx - x) < CUE_SLOT.w && Math.abs(c.sy - y) < CUE_SLOT.h);
       };
       for (const n of CUE_SLOT.tries) {
@@ -5249,38 +5394,84 @@ function drawCuePoint(g, pt, col, cx, cy, t, VW, VH, shift, tracked){
     const dist = Math.abs(pt.x - Math.round(walk.fx)) + Math.abs(pt.y - Math.round(walk.fy));
     const shown = dist > 99 ? 99 : dist;
     const gx = Math.round(ex), gy = Math.round(ey);
-    cueChips.push({ x: gx, y: gy, sx: ex, sy: ey, tracked: !!tracked });
-    drawCueChip(g, gx, gy, col, t, shown, dir, tracked);
-    if (DEBUG) { cueChipLast = { x: gx, y: gy, dir: dir, dist: dist, shown: shown, tracked: !!tracked }; cueChipAll.push(cueChipLast); }
+    cueChips.push({ x: gx, y: gy, sx: ex, sy: ey, tracked: false });
+    noteCue({ x: gx, y: gy, dir: dir, dist: dist, shown: shown, tracked: false, box: null, rail: true });
+    drawSlipChip(g, gx, gy, col, shown, dir);
     return;
   }
-  if (zone) {                                    // keep the arrow out from under the floating buttons (NAV_MODERN §4)
-    if (dir === 'up') { ex = clamp(ex, zone.tx0, zone.tx1); ey = zone.ty; }
-    else if (dir === 'down') { ex = clamp(ex, zone.bx0, zone.x1); ey = zone.by; }
-    else { ex = clamp(ex, zone.x0, zone.x1); ey = clamp(ey, zone.y0, zone.y1); }
-  }
-  const nudge = reduce ? 0 : bob, ox = dir === 'right' ? nudge : dir === 'left' ? -nudge : 0, oy = dir === 'down' ? nudge : dir === 'up' ? -nudge : 0;
+  const nud = cueNudge(t);
+  const ox = dir === 'right' ? nud : dir === 'left' ? -nud : 0, oy = dir === 'down' ? nud : dir === 'up' ? -nud : 0;
   drawArrow(g, gr, Math.round(ex - gr[0].length / 2 + ox + shift), Math.round(ey - gr.length / 2 + oy), col);
+}
+// Main story, tracked side quest, and the lantern bed cue. On screen is today's arrow. Off screen is CUE_EDGE.
+function drawEdgeCue(g, pt, col, cx, cy, t, VW, VH, shift, tracked, placed){
+  if (!pt) return;
+  const zone = modernCueZone();
+  if (pt.x === Math.round(walk.fx) && pt.y === Math.round(walk.fy)) return;
+  const X = pt.x * TS - cx, Y = pt.y * TS - cy;
+  const under = zone && zone.btns.some(b => X < b[2] && X + TS > b[0] && Y < b[3] && Y + TS > b[1]);
+  const bob = cueBob(t);
+  if (X > -TS && Y > -TS && X < VW && Y < VH && !under) {
+    if (Y - 13 >= 0) {
+      drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
+      cuePassLast = { dir: 'down', x: X + 5 + shift, y: Y - 12 - bob };
+    } else {
+      drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
+      cuePassLast = { dir: 'up', x: X + 5 + shift, y: Y + TS + 1 + bob };
+    }
+    return;
+  }
+  const view = cueView($('#mapCanvas'));
+  if (!view) return;
+  const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
+  // A tile whose centre is already on the canvas stays tappable. The edge box slides off it
+  // (the north trail at 320) and still opens QUEST when the box itself is tapped.
+  const rects = view.rects.slice();
+  const tcx = X + 8, tcy = Y + 8;
+  if (tcx >= 0 && tcy >= 0 && tcx < VW && tcy < VH) rects.push({ x0: X, y0: Y, x1: X + TS, y1: Y + TS });
+  const pos = placeCueEdge(VW, view.bottom, px, py, dx, dy, rects, placed, view.k);
+  if (!pos) return;
+  placed.push({ x: pos.x, y: pos.y });
+  const a2 = Math.atan2(Y + 8 - pos.y, X + 8 - pos.x);
+  const turned = arrowForAngle(a2);
+  const nud = cueNudge(t);
+  const ux = Math.round(Math.cos(a2) * 1.4), uy = Math.round(Math.sin(a2) * 1.4);
+  const ax = Math.round(pos.x - 3 + ux * nud), ay = Math.round(pos.y - 9 + uy * nud);
+  drawArrow(g, turned.grid, ax, ay, col);
+  const dist = Math.abs(pt.x - Math.round(walk.fx)) + Math.abs(pt.y - Math.round(walk.fy));
+  const shown = dist > 99 ? 99 : dist;
+  drawCuePill(g, pos.x, pos.y + 4, shown, col, tracked);
+  const anchor = cueSampleAnchor(turned.grid, ax, ay);
+  const half = (CUE_EDGE.box / 2) * view.k, css = 1 / view.k;
+  cueTapBoxes.push({ x0: pos.x - half, y0: pos.y - half, x1: pos.x + half, y1: pos.y + half });
+  noteCue({
+    x: anchor.x, y: anchor.y, dir: turned.dir, dist: dist, shown: shown, tracked: !!tracked, rail: false,
+    box: { x: (pos.x - half) * css, y: (pos.y - half) * css, w: CUE_EDGE.box, h: CUE_EDGE.box },
+  });
 }
 function drawObjectiveCue(g, cx, cy, t){
   cueChips.length = 0;
-  if (DEBUG) { cueChipLast = null; cueChipAll.length = 0; }
+  cueChipAll.length = 0;
+  cueTapBoxes.length = 0;
+  cueChipLast = null;
+  cuePassLast = null;
   if (!S || scene || walk.intro || (battle && battle.on) || fade.busy) return;
   const layout = DEBUG && cueLayout;
   const forced = DEBUG && cueForce && !layout;
   const c = $('#mapCanvas'), VW = c.width, VH = c.height;
-  if (!forced && !layout && lanternHold()) { drawCuePoint(g, restBedCue(), PAL.y, cx, cy, t, VW, VH, 0); return; }   // a wipe points at a bed, not the way out
+  if (!forced && !layout && lanternHold()) { drawEdgeCue(g, restBedCue(), PAL.y, cx, cy, t, VW, VH, 0, false, []); return; }
   const main = layout ? layout.main : (forced ? { x: cueForce.x, y: cueForce.y, here: true } : questPointOnMap());
   const side = layout ? layout.side : (forced ? null : sidePointOnMap()), board = layout ? layout.board : (forced ? null : boardPointOnMap());
-  const mt = layout ? !!layout.mainTracked : (!forced && mainTracked());   // D439: the main story can be the tracked quest (gold when it is not)
-  drawCuePoint(g, main, mt ? PAL[TRACKED_KEY] : PAL.y, cx, cy, t, VW, VH, 0, mt);
-  if (side) {   // only the tracked side chain has a walk cue (sidePointOnMap reads trackedSide(); D106-E)
-    const same = main && side.x === main.x && side.y === main.y;
-    drawCuePoint(g, side, PAL[TRACKED_KEY], cx, cy, t, VW, VH, same ? 7 : 0, true);
-  }
+  const mt = layout ? !!layout.mainTracked : (!forced && mainTracked());
+  const placed = [];
   if (board) {
     const same = (main && board.x === main.x && board.y === main.y) || (side && board.x === side.x && board.y === side.y);
-    drawCuePoint(g, board, PAL.c, cx, cy, t, VW, VH, same ? 7 : 0);
+    drawSlipCue(g, board, PAL.c, cx, cy, t, VW, VH, same ? 7 : 0);
+  }
+  drawEdgeCue(g, main, mt ? PAL[TRACKED_KEY] : PAL.y, cx, cy, t, VW, VH, 0, mt, placed);
+  if (side) {
+    const same = main && side.x === main.x && side.y === main.y;
+    drawEdgeCue(g, side, PAL[TRACKED_KEY], cx, cy, t, VW, VH, same ? 7 : 0, true, placed);
   }
 }
 const WART = buildWorldArt();
@@ -13121,7 +13312,10 @@ function bindInput(){
     if (!ptr.dragged && e.type === 'pointerup') {
       const r = mc.getBoundingClientRect();
       // Canvas CSS pixels map onto the bitmap, then the camera. The integer room scale changes both together, so the tile stays put (D239).
-      const x = (e.clientX - r.left) / r.width * mc.width + walk.cam.x, y = (e.clientY - r.top) / r.height * mc.height + walk.cam.y;
+      const vx = (e.clientX - r.left) / r.width * mc.width, vy = (e.clientY - r.top) / r.height * mc.height;
+      if (!(scene || fade.busy) && cueEdgeTap(vx, vy)) { openQuest(); }
+      else {
+      const x = vx + walk.cam.x, y = vy + walk.cam.y;
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
       walk.hit = { x: tx, y: ty };
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
@@ -13133,6 +13327,7 @@ function bindInput(){
       else if (o) { wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
       else if (!solid(tx, ty) && warpBlocked(tx, ty)) { wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: tx, y: ty }; }   // gated warp: same deny as before, never step on it
       else startTapWalk(tx, ty, solid(tx, ty));
+      }
     }
     walk.drag = null; ptr = null;
   };
@@ -13731,8 +13926,9 @@ function boot(){
     cueLayout = { main: pt(spec.main), side: pt(spec.side), board: pt(spec.board), mainTracked: !!spec.mainTracked };
     return { main: !!cueLayout.main, side: !!cueLayout.side, board: !!cueLayout.board, mainTracked: cueLayout.mainTracked };
   };
-  api.cueChip = () => DEBUG ? (cueChipLast ? { x: cueChipLast.x, y: cueChipLast.y, dir: cueChipLast.dir, dist: cueChipLast.dist, shown: cueChipLast.shown, tracked: !!cueChipLast.tracked } : null) : undefined;
-  api.cueChips = () => DEBUG ? cueChipAll.map(c => ({ x: c.x, y: c.y, dir: c.dir, dist: c.dist, shown: c.shown, tracked: !!c.tracked })) : undefined;
+  api.cueChip = () => DEBUG ? (cueChipLast ? { x: cueChipLast.x, y: cueChipLast.y, dir: cueChipLast.dir, dist: cueChipLast.dist, shown: cueChipLast.shown, tracked: !!cueChipLast.tracked, box: cueChipLast.box || null } : null) : undefined;
+  api.cueChips = () => DEBUG ? cueChipAll.map(c => ({ x: c.x, y: c.y, dir: c.dir, dist: c.dist, shown: c.shown, tracked: !!c.tracked, box: c.box || null })) : undefined;
+  api.cuePass = () => DEBUG ? (cuePassLast ? { dir: cuePassLast.dir, x: cuePassLast.x, y: cuePassLast.y } : null) : undefined;
   api.holderDrawn = () => DEBUG ? (((shownLook() || {}).accessory) || 'none') : undefined;
   api.talkTo = id => { if (!DEBUG) return undefined; const o = objById(id); if (!o || scene) return false; interact(o); return true; };
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });
