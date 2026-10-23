@@ -520,7 +520,7 @@ const PPSound = (() => {
       bass: { wave: 'triangle', gain: 0.28, notes: [[43,2],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,4],[50,2],[47,2],[43,2]] },
       drums: ['k...s.h.','k.h.s...','k...s.h.','k.h.s...','k...s.h.','k.h.s...','k...s.h.','k.hks...'] },
     // STARTER_MOMENT D470: a new F-major loop, not a variation of town. 132 bpm, 8 bars, 14.545 s.
-    starter_pick: { key: 'F major', bpm: 132, bars: 8, stepsPerBar: 8, gate: 0.8, perc: 0.8,
+    starter_pick: {key: 'F major', bpm: 132, bars: 8, stepsPerBar: 8, gate: 0.8, perc: 0.8,
       lead: { wave: 'square', gain: 0.055, notes: [
         [69,1],[72,1],[77,2],[81,1],[79,1],[77,2],
         [74,1],[77,1],[81,2],[79,2],[77,1],[74,1],

@@ -2,11 +2,11 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-23 03:42 ET: Picking a Walkling plays a short moment (build 20261023-0342)
+## 2026-10-23 03:46 ET: Picking a Walkling plays a short moment (build 20261023-0346)
 
 - What changed and why: STARTER_MOMENT (D470–D481, design dfe55f6). In the Warden's Lodge, choosing a Walkling starts an upbeat loop, shows that Walkling on a card above the talk, and asks a first hello that saves nothing. They then stand beside you before the scene ends, and Rook's pick stands beside him for the same stretch. A short stinger plays at the pick only. The town loop returns when the scene ends. Reduced motion, and Effects calm or off, skip the hop, the lid pop, and the motes. The sound stays. SKIP still stops at the quiz, the baskets, the hello, and the name. Save stays `pixelpets.save.v2` with `v` 2. No new saved field and no new flag.
 - Files touched: `game.js`, `sfx.js`, `index.html`, `style.css`, `data/starter_moment.json`, `data/mapdata.js`, `tools/gen_mapdata.py`, `tools/GAMEJS_MAP.txt`, `tests/starter_moment.spec.js`, `tests/civic.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
-- Commit(s) + build id: this branch, on top of main `643dd23`. Build `20261023-0342`. `python3 tools/bump_build.py --check` exit 0.
+- Commit(s) + build id: this branch, on top of main `643dd23`. Build `20261023-0346`. `python3 tools/bump_build.py --check` exit 0.
 - Tests run and result (widths, checks): `node tools/pp_test.js tests/starter_moment.spec.js` at 320, 375 and 390. PP_TEST RESULT: PASS exit=0 passed=12 failed=0 flaky=0 skipped=0 time=59s. The full `npm run test:agent` line is in the pull request.
 - Decisions made (colour + reasoning): D470–D481 were settled Oct 22, 2026. Vincent cleared the build. Yellow calls (the loop, when it starts, the card, the hello, and the copy) settled on the defaults. Green calls (the hand-off, the stinger, the casts, the emote, the reduced version, SKIP, and the tests) settled as written. No new D or Q id. No Open rows. The header names the next free id.
 - Anything left unfinished: the Supervisor merges.
