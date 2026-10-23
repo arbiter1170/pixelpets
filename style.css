@@ -439,8 +439,10 @@ body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-b
 /* keeper previews sit on a light backdrop that matches none of the look colours (hair 'd' = --d vanished on the old dark one) */
 .look-top canvas{width:108px;height:108px;background:#c7cfdd;box-shadow:0 0 0 3px var(--k)}
 .look-top .btn{min-height:44px;font-size:18px}
-.look-row{display:flex;flex-direction:column;gap:4px}
-.look-lb{font-size:16px;color:var(--h);letter-spacing:1px}
+/* The swatch ring is drawn outside the 44px target. Space above each label keeps that ring off the letters. */
+.look-row{display:flex;flex-direction:column;gap:8px}
+.look-row + .look-row{margin-top:8px}
+.look-lb{font-size:16px;line-height:22px;padding-top:2px;color:var(--h);letter-spacing:1px}
 .look-row input{font-family:var(--font);font-size:20px;min-height:44px;padding:0 10px;background:var(--k);color:var(--w);border:2px solid var(--m)}
 .swatches{display:grid;grid-template-columns:repeat(auto-fill,44px);gap:6px}
 .swatch{width:44px;height:44px;border:0;padding:0;box-shadow:0 0 0 2px var(--k);cursor:pointer}
@@ -452,9 +454,10 @@ body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-b
 .q-side{color:var(--w)}
 .look-btns{margin-top:6px;flex:0 0 auto}
 .look-btns.one{grid-template-columns:1fr}
-/* The intro picker is taller than a phone. DONE stays on screen. The name row is hidden until a later screen asks. */
+/* The intro picker is taller than a phone. DONE stays on screen. The name row is hidden until a later screen asks.
+   The selected ring is 5px outside the 44px target. Padding keeps that ring inside the scroll, on every side. */
 #ovLook .look-card{height:100%;max-height:100%;overflow:hidden}
-#ovLook .look-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#ovLook .look-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px}
 #lookNameRow[hidden]{display:none}
 
 /* Stitch & Lantern. DONE stays on screen. The card grid scrolls. */

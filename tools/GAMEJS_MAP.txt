@@ -1512,11 +1512,11 @@
 9-62  const KEEPER_ART
 63-489  const KEEPER_HAIR
 490-811  const KEEPER_OUTFITS
-812-1346  const KEEPER_ACCESSORIES
-1347-1371  const KEEPER_LOOKS
-1372-1383  const KEEPER_SWAPS
-1384-1396  function normalizeLook
-1397-1415  function keeperGrid
+812-1349  const KEEPER_ACCESSORIES
+1350-1374  const KEEPER_LOOKS
+1375-1386  const KEEPER_SWAPS
+1387-1399  function normalizeLook
+1400-1425  function keeperGrid
 
 # moves.js
 5-643  const MOVES
