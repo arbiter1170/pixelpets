@@ -282,3 +282,145 @@ test('cue hooks stay inert without debug @w1', async ({ page }) => {
   }));
   expect(got).toEqual({ v: 2, force: undefined, chip: undefined, chips: undefined, pass: undefined, debug: false });
 });
+
+function trailSave(extra) {
+  const s = modernSave();
+  s.flags['story.phone_got'] = true;
+  s.flags['story.mom_met'] = true;
+  s.flags['story.mom_chore'] = true;
+  s.flags['story.mom_sent'] = true;
+  if (extra && extra.joystick) s.settings.joystick = true;
+  if (extra && extra.arcade) s.settings.controls = 'arcade';
+  return s;
+}
+
+async function bootTrail(page, extra) {
+  await installSave(page.context(), trailSave(extra), { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.evaluate(() => {
+    PixelPets.showTab('walk');
+    PixelPets.goto('hearthmoor', 9, 8, 'up');
+    PixelPets.cueLayout({ main: null, side: { x: -6, y: 1 }, board: null });
+  });
+  await frame(page);
+}
+
+async function tileCss(page, tx, ty) {
+  return page.evaluate(({ tx, ty }) => {
+    const c = document.querySelector('#mapCanvas');
+    const cam = PixelPets.walk.cam;
+    const k = c.getBoundingClientRect().width / c.width;
+    return { x: (tx * 16 - cam.x + 8) * k, y: (ty * 16 - cam.y + 8) * k, w: c.getBoundingClientRect().width, h: c.getBoundingClientRect().height };
+  }, { tx, ty });
+}
+
+async function tapTile(page, tx, ty) {
+  const spot = await tileCss(page, tx, ty);
+  expect(spot.x).toBeGreaterThan(2);
+  expect(spot.y).toBeGreaterThan(2);
+  expect(spot.x).toBeLessThan(spot.w - 2);
+  expect(spot.y).toBeLessThan(spot.h - 2);
+  await page.locator('#mapCanvas').click({ position: { x: spot.x, y: spot.y } });
+}
+
+async function edgeClear(page) {
+  return page.evaluate(() => {
+    const c = document.querySelector('#mapCanvas');
+    const cam = PixelPets.walk.cam;
+    const k = c.getBoundingClientRect().width / c.width;
+    const chips = (PixelPets.cueChips() || []).filter((ch) => ch.box);
+    const dest = (PixelPets.mapInfo.objs || []).filter((o) => o.kind === 'warp' || o.kind === 'door');
+    const hit = [];
+    for (const o of dest) {
+      const cx = (o.x * 16 - cam.x + 8) * k;
+      const cy = (o.y * 16 - cam.y + 8) * k;
+      if (cx < 0 || cy < 0 || cx > c.getBoundingClientRect().width || cy > c.getBoundingClientRect().height) continue;
+      for (const ch of chips) {
+        const b = ch.box;
+        if (cx >= b.x && cx <= b.x + b.w && cy >= b.y && cy <= b.y + b.h) hit.push(o.id);
+      }
+    }
+    return { hit, n: chips.length };
+  });
+}
+
+test('the north trail and the Lodge door stay tappable beside an edge box', async ({ page }) => {
+  await bootTrail(page);
+  const clear = await edgeClear(page);
+  expect(clear.n).toBeGreaterThan(0);
+  expect(clear.hit).toEqual([]);
+  await tapTile(page, 10, 2);
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'mahopac' && !PixelPets.fading);
+  expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y, quest: document.querySelector('#ovQuest').hidden }))).toEqual({ map: 'mahopac', x: 9, y: 14, quest: true });
+
+  await page.evaluate(() => {
+    PixelPets.goto('hearthmoor', 9, 8, 'up');
+    PixelPets.cueLayout({ main: null, side: { x: -6, y: 1 }, board: null });
+  });
+  await frame(page);
+  await tapTile(page, 9, 2);
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'mahopac' && !PixelPets.fading);
+  expect(await page.locator('#ovQuest').isHidden()).toBe(true);
+
+  await page.evaluate(() => {
+    PixelPets.goto('hearthmoor', 9, 8, 'up');
+    PixelPets.cueLayout({ main: null, side: { x: -6, y: 1 }, board: null });
+  });
+  await frame(page);
+  await tapTile(page, 8, 2);
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'mahopac' && !PixelPets.fading);
+  expect(await page.locator('#ovQuest').isHidden()).toBe(true);
+
+  await page.evaluate(() => {
+    PixelPets.goto('hearthmoor', 12, 6, 'right');
+    PixelPets.cueLayout({ main: null, side: { x: -6, y: 1 }, board: null });
+  });
+  await frame(page);
+  const door = await page.evaluate(() => {
+    const o = PixelPets.mapInfo.objs.find((q) => q.id === 'hm_lodge');
+    return o && { x: o.x, y: o.y };
+  });
+  expect(door).toEqual({ x: 15, y: 6 });
+  expect((await edgeClear(page)).hit).toEqual([]);
+  await tapTile(page, door.x, door.y);
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'hm_lodge_in' || (PixelPets.keeper.x === 15 && PixelPets.keeper.y === 6));
+  expect(await page.locator('#ovQuest').isHidden()).toBe(true);
+  expect(await page.evaluate(() => PixelPets.mapInfo.id === 'hm_lodge_in' || (PixelPets.keeper.x === 15 && PixelPets.keeper.y === 6))).toBe(true);
+});
+
+test('edge boxes keep their clearance and still miss warp and door centres', async ({ page }) => {
+  await bootTrail(page);
+  const modes = [
+    { arcade: false, joystick: false },
+    { arcade: false, joystick: true },
+    { arcade: true, joystick: false },
+  ];
+  for (const mode of modes) {
+    await page.evaluate((mode) => {
+      PixelPets.applyCtl(mode.arcade ? 'arcade' : 'modern', !!mode.joystick);
+      PixelPets.showTab('walk');
+      PixelPets.goto('hearthmoor', 9, 8, 'up');
+      PixelPets.cueLayout({ main: { x: 0, y: 40 }, side: { x: 23, y: 2 }, board: null, mainTracked: false });
+    }, mode);
+    await frame(page);
+    const laid = await readEdges(page);
+    expect(laid.edges.length, JSON.stringify(mode)).toBe(2);
+    expect(laid.pair).toBeGreaterThanOrEqual(4);
+    for (const edge of laid.edges) {
+      expect(edge.w).toBe(44);
+      expect(edge.h).toBe(44);
+      expect(edge.inside).toBe(true);
+      expect(edge.gaps[0].gap).toBeGreaterThanOrEqual(6);
+    }
+    expect((await edgeClear(page)).hit).toEqual([]);
+    const spot = await page.evaluate(() => {
+      const ch = (PixelPets.cueChips() || []).find((c) => c.box);
+      return { x: ch.box.x + ch.box.w / 2, y: ch.box.y + ch.box.h / 2 };
+    });
+    await page.locator('#mapCanvas').click({ position: spot });
+    await expect(page.locator('#ovQuest')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => PixelPets.optionsReady)).toBe(true);
+    await page.locator('#questClose').click();
+    await expect(page.locator('#ovQuest')).toBeHidden();
+  }
+});

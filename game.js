@@ -867,7 +867,7 @@ function showTab(name){
 }
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
-let unlock = { q: [], on: false, id: null, since: 0, holes: [] };
+let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
 const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
 
 /* integer-scale canvases to fit their container */
@@ -1220,12 +1220,17 @@ const TUT_COPY = {
   T10m:['Tap the map to walk. Tap people to talk.', 'next', 'mapwalk'],
   T10j:['Drag the stick to walk. Tap people to talk.', 'next', 'joy'],
   T11: ["QUEST shows what's next. BAG holds snacks and treats. MAP shows where you are.", 'next', 'qbm'],
-  T12: ['WALKLINGS lists every friend you meet. Your TEAM is who walks with you.', 'next', 'list'],
+  T12: ['WALKLINGS opens your Party, the team that walks with you. Extra friends wait in the WALKLING-BOX.', 'next', 'list'],
   T12r: ['This compass lists everyone you meet. Tap a face to see how much they trust you.', 'next', 'rep'],
   T13: ["That's the tour! You can replay it any time from Settings, under the gear.", 'go', 'gear']
 };
 const TUT_AFTER = { T0: 'T1', T0r: 'T1', T1: 'T2', T2: 'T3', T3: 'T4', T4: 'T5', T5: 'T6', T6: 'T7', T7: 'T8', T8: 'T9', T8b: 'T9', T9: 'T10', T10a: 'T11', T10m: 'T11', T10j: 'T11', T11: 'T12', T12: 'T12r', T12r: 'T13' };
-function tutFill(s){ const p = pet(); return String(s).replace(/\{pet\}/g, p ? petName(p) : 'your partner'); }
+function tutFill(s){
+  const p = pet();
+  const n = (S && S.party) ? S.party.length : 0;
+  const named = (S && S.party && S.party[1]) ? petName(S.party[1]) : '';
+  return String(s).replace(/\{pet\}/g, p ? petName(p) : 'your partner').replace(/\{n\}/g, String(n)).replace(/\{name\}/g, named);
+}
 // D154 paints the care glow on #petFloat (HEART_ALERT, syncCareAlert), modern controls only. Arcade has no heart
 // button, so it keeps the shorter T8b line.
 function heartGlowShipped(){
@@ -1457,8 +1462,28 @@ const UNLOCKS = {
   switch: { title: 'Switching sides', body: 'Rook can help you switch sides. People on the side you leave will trust you less.', box: 'rook' },
   letter: { title: 'A letter', body: 'Letters open new places. Show it to people you know. Their answer depends on how they feel about you.', sel: '#questBtn', show(){ if (typeof openQuest === 'function') openQuest(); } },
   // Healed already: nothing to do, so GOT IT only. Hurt: SHOW ME walks to a bed (and asks to rest) or to the Lantern House door; no Lantern here opens MAP.
-  lantern: { title: 'Lanterns', body: 'Rest at a Lantern to heal your team. If you lose a battle, you come back here.', box: 'lantern', got(){ return !partyNeedsLanternRest(); }, show(){ const o = CUR && lanternMark(); if (o) { unlockClose(); if (!tapObject(o)) cantReach(); } else if (typeof openMap === 'function') openMap(); } },
+  lantern: { title: 'Lanterns', body: 'Rest at a Lantern to heal your team. Lose a battle and you wake at the closest Lantern House.', box: 'lantern', got(){ return !partyNeedsLanternRest(); }, show(){ const o = CUR && lanternMark(); if (o) { unlockClose(); if (!tapObject(o)) cantReach(); } else if (typeof openMap === 'function') openMap(); } },
   growup: { title: 'Growing up', body: '{pet} is ready to grow up. You choose when.', sel: '#evolveBtn', show(){ showTab('pet'); } },
+  party: {
+    title: 'Your Party',
+    body: 'You have {n} Walklings now. Tap WALKLINGS to see your Party.',
+    sel(){ return ctlMode() === 'modern' ? '#colFloat' : '#tabs button[data-tab="col"]'; },
+    then: 'party_moves',
+    show(){ showTab('col'); },
+  },
+  party_moves: {
+    title: 'View moves',
+    body: 'Tap a Walkling to open its card. MOVES lists what it can do in battle.',
+    sel: '#partyBoard .party-slot[data-slot="1"] .slot-main',
+    then: 'party_order',
+    show(){ if (S && S.party && S.party[1]) openWalklingSheet(S.party[1].id); },
+  },
+  party_order: {
+    title: 'Move up',
+    body: 'Under MOVE, tap UP to move {name} up your Party. Battle lists use this order.',
+    sel: '#wlActions [aria-label="Party up"]',
+    got(){ return true; },
+  },
 };
 // A tip with nothing to point at shows one GOT IT button instead of SHOW ME / SKIP.
 function unlockGotOnly(id){ const row = UNLOCKS[id]; return !row || !row.show && !unlockHoles(id).length || (!!row.got && row.got()); }
@@ -1484,6 +1509,7 @@ function unlockScan(){
   if (S.flags['story.rc_climax']) unlockOffer('switch');
   if (S.flags['story.hc_invite']) unlockOffer('letter');
   if (S.flags['unlock.lantern']) unlockOffer('lantern');
+  if (S.party && S.party.length >= 2) unlockOffer('party');
   // The GROW UP button, the card, and the grow-up scene all use the partner only.
   const lead = pet();
   if (lead && canEvolve(lead)) unlockOffer('growup');
@@ -1512,14 +1538,18 @@ function lanternMark(){
 function unlockHoles(id){
   const row = UNLOCKS[id]; if (!row) return [];
   if (row.box) { const o = mapMark(row.box); const b = o ? tileBox(o.x, o.y) : null; return b ? [b] : []; }
-  const b = row.sel ? tutBox($(row.sel)) : null;
+  const sel = typeof row.sel === 'function' ? row.sel() : row.sel;
+  const b = sel ? tutBox($(sel)) : null;
   return b ? [b] : [];
 }
 function unlockOpen(id){
   const row = UNLOCKS[id]; if (!row || !S || unlock.on || tut.on) return;
   const layer = $('#tutLayer'); if (!layer) return;
   unlock.on = true; unlock.id = id; unlock.holes = unlockHoles(id);
-  S.flags['story.unlock_' + id] = true; save();
+  const flag = 'story.unlock_' + id;
+  const seen = !!S.flags[flag];
+  S.flags[flag] = true;
+  if (!seen) save();
   const tutCard = $('#tutCard'); if (tutCard) tutCard.hidden = true;
   const title = $('#unlockTitle'), body = $('#unlockBody'), card = $('#unlockCard');
   if (title) title.textContent = row.title;
@@ -1540,24 +1570,50 @@ function unlockClose(){
   if (layer && !tut.on) { layer.hidden = true; layer.classList.remove('unlock-on'); delete layer.dataset.unlock; }
   const ring = $('#tutRing'); if (ring && !tut.on) ring.hidden = true;
 }
+const PARTY_TIPS = ['party', 'party_moves', 'party_order'];
+function unlockDismiss(){
+  if (S && unlock.on && PARTY_TIPS.indexOf(unlock.id) >= 0) {
+    let dirty = false;
+    for (const id of PARTY_TIPS) {
+      const k = 'story.unlock_' + id;
+      if (!S.flags[k]) { S.flags[k] = true; dirty = true; }
+    }
+    unlock.q = unlock.q.filter(id => PARTY_TIPS.indexOf(id) < 0);
+    unlock.held = null;
+    if (dirty) save();
+  }
+  unlockClose();
+}
 function unlockShowMe(){
   if (!unlock.on) return;
   const row = UNLOCKS[unlock.id];
+  const next = row && row.then;
   if (row && row.show) row.show();
+  if (next) { unlockClose(); unlockOpen(next); return; }
   unlock.holes = unlockHoles(unlock.id);
   tutPlace();
 }
+function unlockCalm(t){
+  const calm = screen === 'walk' && !scene && !(battle && battle.on) && !overlayOpen() && !fade.busy && !(walk && walk.intro);
+  if (!calm) { unlock.since = 0; return false; }
+  if (!unlock.since) unlock.since = t;
+  return t - unlock.since >= 600;
+}
 function unlockPump(t){
   if (!S || unlock.on || tut.on) return;
-  if (!tipsOn()) { unlock.q = []; unlock.since = 0; if (unlock.on) unlockClose(); return; }
+  if (!tipsOn()) { unlock.q = []; unlock.held = null; unlock.since = 0; return; }
   // Drop a queued grow-up tip once the partner can no longer grow up (already grown, or never the partner).
   const lead = pet();
   if (!(lead && canEvolve(lead))) unlock.q = unlock.q.filter(id => id !== 'growup');
+  if (unlock.held) {
+    if (!unlockCalm(t)) return;
+    const id = unlock.held;
+    unlock.held = null; unlock.since = 0;
+    unlockOpen(id);
+    return;
+  }
   if (!unlock.q.length) { unlock.since = 0; return; }
-  const calm = screen === 'walk' && !scene && !(battle && battle.on) && !overlayOpen() && !fade.busy && !(walk && walk.intro);
-  if (!calm) { unlock.since = 0; return; }
-  if (!unlock.since) unlock.since = t;
-  if (t - unlock.since < 600) return;
+  if (!unlockCalm(t)) return;
   const id = unlock.q.shift();
   unlock.since = 0;
   if (!id || unlockSeen(id)) return;
@@ -1609,12 +1665,12 @@ function toggleTips(){
   if (!S) return;
   S.settings.tips = S.settings.tips === false;
   renderTipsRow(); save(); sfx('tap');
-  if (!tipsOn()) { unlock.q = []; unlockClose(); }
+  if (!tipsOn()) { unlock.q = []; unlock.held = null; unlockClose(); }
 }
 function replayTips(){
   if (!S) return;
   Object.keys(S.flags).forEach(k => { if (k.indexOf('story.unlock_') === 0) delete S.flags[k]; });
-  unlock.q = []; unlock.since = 0;
+  unlock.q = []; unlock.held = null; unlock.since = 0;
   save(); sfx('tap'); toast('Tips will show again.');
   unlockScan();
 }
@@ -2403,7 +2459,7 @@ async function makeRoomFor(np){
   if (S.party.length < PPSave.PARTY_MAX) { S.party.push(np); return 'party'; }
   const free = S.party.filter(p => !chipLocked(p));
   if (!free.length) return null;
-  const pick = await openSheet('Who goes to the box?', free.map(p => ({ label: petName(p) + '  Lv ' + levelOf(p), value: p.id })));
+  const pick = await openSheet('Who goes to the box?', free.map(p => ({ label: petName(p) + '  Lv ' + levelOf(p), value: p.id, pet: p })));
   const i = S.party.findIndex(p => p.id === pick);
   if (i < 0 || chipLocked(S.party[i])) return null;
   const out = S.party[i];
@@ -5428,11 +5484,19 @@ function drawEdgeCue(g, pt, col, cx, cy, t, VW, VH, shift, tracked, placed){
   const view = cueView($('#mapCanvas'));
   if (!view) return;
   const px = walk.fx * TS + 8 - cx, py = walk.fy * TS + 8 - cy, dx = X + 8 - px, dy = Y + 8 - py;
-  // A tile whose centre is already on the canvas stays tappable. The edge box slides off it
-  // (the north trail at 320) and still opens QUEST when the box itself is tapped.
+  // A destination tile whose centre is on the canvas stays tappable. Warps, doors and this
+  // cue's own target each push a rect, so the box slides off them and still opens QUEST.
   const rects = view.rects.slice();
-  const tcx = X + 8, tcy = Y + 8;
-  if (tcx >= 0 && tcy >= 0 && tcx < VW && tcy < VH) rects.push({ x0: X, y0: Y, x1: X + TS, y1: Y + TS });
+  const pushTile = (tx, ty) => {
+    const ox = tx * TS - cx, oy = ty * TS - cy, tcx = ox + 8, tcy = oy + 8;
+    if (tcx >= 0 && tcy >= 0 && tcx < VW && tcy < VH) rects.push({ x0: ox, y0: oy, x1: ox + TS, y1: oy + TS });
+  };
+  pushTile(pt.x, pt.y);
+  if (CUR && CUR.objs) for (const o of CUR.objs) {
+    if (!o || !present(o) || (o.kind !== 'warp' && o.kind !== 'door')) continue;
+    const at = objPos(o);
+    pushTile(at.x, at.y);
+  }
   const pos = placeCueEdge(VW, view.bottom, px, py, dx, dy, rects, placed, view.k);
   if (!pos) return;
   placed.push({ x: pos.x, y: pos.y });
@@ -6256,6 +6320,7 @@ async function runSteps(steps, ctx = {}){
   clearUiReturn();
   scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: ctx.viewPet || null, nick: undefined },
     vars: { tags: [], line: null, suggest: null }, skip: false, deferRespawn: false, toasts: [], boxes: 0 };
+  if (unlock.on && unlock.id) { unlock.held = unlock.id; unlockClose(); }
   walk.target = walk.path = walk.arrive = walk.queued = null; dropAim(); wild.chase = null;   // held d-pad/keys survive (§4.1 "holding into it after")
   hideBumpHint(); $('#chatBubble').hidden = true; lockTabs(true);
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
@@ -6619,10 +6684,14 @@ async function execStep(st){
     // Lantern rest only (home naps stay on `rest`, free). Heals the whole party. A hurt party pays LANTERN_REST_COST;
     // a shortfall is covered so a wipe at 0 Acorns cannot trap you. Sets scene.view flag lantern.rest for the next line.
     case 'payRest': {
-      if (!partyNeedsLanternRest()) { sc.view.flags['lantern.rest'] = 'full'; setRestDue(false); sfx('rest'); noteLanternRest(); return; }
+      if (!partyNeedsLanternRest()) {
+        sc.view.flags['lantern.rest'] = 'full'; setRestDue(false);
+        S.party.forEach(q => { q.energy = 100; });
+        sfx('rest'); noteLanternRest(); return;
+      }
       if ((S.money | 0) >= LANTERN_REST_COST) { S.money = (S.money | 0) - LANTERN_REST_COST; sc.view.flags['lantern.rest'] = 'paid'; }
       else sc.view.flags['lantern.rest'] = 'covered';
-      S.party.forEach(q => restPet(q, 'full')); setRestDue(false); sfx('rest'); noteLanternRest(); return;
+      S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); setRestDue(false); sfx('rest'); noteLanternRest(); return;
     }
     case 'lookPick': {
       sc.skip = false;
@@ -6645,7 +6714,7 @@ async function execStep(st){
       await execStep(['say', '', 'You can change this any time under the gear.']);   /* D70 */
       return;
     }
-    case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => restPet(q, 'full')); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
+    case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
     case 'if': await execSteps(cond(a, true) ? b : c); return;
     case 'push': {
@@ -7177,9 +7246,11 @@ function hideReveal(){
   const g = $('#rvGlyph'); if (g) g.hidden = true;
   reveal.phase = null;
 }
-function closeReveal(instant){
+let namePopWait = null;
+function closeRevealNow(instant){
   const el = $('#ovReveal');
   if (!el) return Promise.resolve();
+  namePopWait = null;
   fxStop();
   if (revealCloseT) { clearTimeout(revealCloseT); revealCloseT = null; }
   if (instant || el.hidden) { hideReveal(); return Promise.resolve(); }
@@ -7188,6 +7259,15 @@ function closeReveal(instant){
   return new Promise(res => {
     revealCloseT = setTimeout(() => { revealCloseT = null; hideReveal(); res(); }, 150);
   });
+}
+function closeReveal(instant){
+  const el = $('#ovReveal');
+  if (!el) return Promise.resolve();
+  if (!instant && namePopWait) {
+    const wait = namePopWait;
+    return wait.then(() => closeRevealNow(false));
+  }
+  return closeRevealNow(instant);
 }
 function openReveal(sc){
   const line = sc && sc.vars && sc.vars.line;
@@ -7226,6 +7306,7 @@ function openReveal(sc){
 function nameReveal(sc){
   const el = $('#ovReveal'); if (!el || el.hidden) return;
   reveal.phase = 'name';
+  namePopWait = null;
   const ban = $('#rvBanner'); if (!ban) return;
   ban.textContent = (viewPetName() || 'Walkling') + '!';
   ban.hidden = false;
@@ -7234,10 +7315,13 @@ function nameReveal(sc){
   setTimeout(() => revealChirp(), 160);
   if (revealCalm() || (sc && sc.skip)) { ban.style.transform = 'scale(1)'; return; }
   ban.style.transform = 'scale(0)';
-  fxTween(260, k => {
-    const s = k < 0.65 ? 1.15 * easeOutBack(k / 0.65) : 1.15 + (1 - 1.15) * ((k - 0.65) / 0.35);
-    ban.style.transform = 'scale(' + s.toFixed(3) + ')';
-  }, () => { ban.style.transform = 'scale(1)'; });
+  namePopWait = new Promise(res => {
+    const rec = fxTween(260, k => {
+      const s = k < 0.65 ? 1.15 * easeOutBack(k / 0.65) : 1.15 + (1 - 1.15) * ((k - 0.65) / 0.35);
+      ban.style.transform = 'scale(' + s.toFixed(3) + ')';
+    }, () => { ban.style.transform = 'scale(1)'; res(); });
+    rec.settle = () => res();
+  });
 }
 function basketYes(done){
   const big = $('#bkBig'), pop = $('#bkPop');
@@ -7938,15 +8022,44 @@ function blockLanternExit(){
   put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
   put('fb_lantern_in', 'fb_lantern_note', 'A note by the shelf: "Rest the whole party. ' + n + ' Acorns. — Amos"');
 })();
-// §7.2 team wipe: back to world.respawn's Lantern House (Hearthmoor: inside, by the beds; INTERIORS slicePatch respawnIn).
-// Nothing lost. Nobody is healed until they rest the whole party, and the way out stays shut until they do.
+// Region to Lantern towns, nearest first. Nothing saved. A tier is a tie; later tiers are farther.
+const LANTERN_NEAR = {
+  hearthmoor: [['hearthmoor']],
+  route1: [['hearthmoor', 'fernbrook']],
+  proto: [['hearthmoor', 'fernbrook']],
+  fernbrook: [['fernbrook']],
+  route2: [['fernbrook', 'cobblecrest']],
+  route2_glen: [['fernbrook', 'cobblecrest']],
+  hw_cut: [['cobblecrest'], ['fernbrook']],
+  cobblecrest: [['cobblecrest']],
+  cobble_quarry: [['cobblecrest'], ['fernbrook']],
+  mahopac: [['hearthmoor']],
+  highcharity: [['highcharity']],
+  fb_heights: [['fernbrook']],
+};
+const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1 };
+function respawnTown(){
+  const cur = nodeOf(S.world.map);
+  const tiers = (cur && LANTERN_NEAR[cur]) || [];
+  for (const tier of tiers) {
+    const visited = tier.filter(t => mapVisited(t, cur));
+    if (!visited.length) continue;
+    if (visited.length === 1) return visited[0];
+    if (visited.indexOf(S.world.respawn) >= 0) return S.world.respawn;
+    return visited[0];
+  }
+  const last = S.world.respawn;
+  if (last && LANTERN_TOWNS[last] && WORLD[last]) return last;
+  return 'hearthmoor';
+}
+// A lost battle wakes the holder at this region's Lantern House. The team is healed. The exit stays open. No Acorns.
 function respawnAfterWipe(){
-  const id = WORLD[S.world.respawn] ? S.world.respawn : 'hearthmoor', m = WORLD[id];
+  const id = respawnTown(), m = WORLD[id];
   const at = m.respawnIn ? m.respawnIn : Object.assign({ map: id }, m.respawn || m.safe);
-  setRestDue(true); clearMoves(); arriveAt(at);
+  lanternRest(); clearMoves(); arriveAt(at);
+  toast('Back at the ' + m.name + ' Lantern House.');
   const door = lanternDoorHere();
-  if (door) openPlace(door);
-  else runSteps(lanternBedSteps(), { id: 'lantern_rest' });
+  if (door && door.to && WORLD[door.to]) warpTo({ map: door.to, x: door.tx, y: door.ty, facing: door.facing || 'up' });
 }
 // Lantern House REST / interior `rest` step (Phase M calls this): every party pet to full HP, naps cleared.
 function lanternRest(){ S.party.forEach(q => restPet(q, 'full')); updateHUD(); save(); }
@@ -11365,6 +11478,7 @@ function openSheet(title, items, cancel){
     items.forEach(it => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sh-item' + (it.cls ? ' ' + it.cls : ''); b.disabled = !!it.disabled;
       if (it.art && ITEM_ART[it.art]) { const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico'; ctx(ico).drawImage(keeperCanvas(ITEM_ART[it.art]), 0, 0); b.appendChild(ico); b.classList.add('has-ico'); }
+      else if (it.pet) { const p = it.pet, ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico'; spriteCanvas(ico, spi(p), p.stage, 'n', isFaded(p), p.accessory); b.appendChild(ico); b.classList.add('has-ico'); }
       const l = document.createElement('span'); l.className = 'sh-l'; l.textContent = it.label; b.appendChild(l);
       if (it.sub) { const s2 = document.createElement('span'); s2.className = 'sh-s'; s2.textContent = it.sub; b.appendChild(s2); }
       if (it.hp != null) { const bar = document.createElement('span'); bar.className = 'sh-hp'; const i = document.createElement('i'); i.style.width = clamp(it.hp * 100, 0, 100) + '%'; if (it.hp < 0.25) i.className = 'warn'; bar.appendChild(i); b.appendChild(bar); }
@@ -12660,7 +12774,7 @@ function renderCollection(){
   const list = $('#ownedList'); list.innerHTML = '';
   $('#ownedCount').textContent = '(' + allPets().length + ')';
   const label = txt => { const d = document.createElement('div'); d.className = 'group-label'; d.textContent = txt; list.append(d); };
-  label('TEAM ' + S.party.length + '/' + PPSave.PARTY_MAX);
+  label('Party ' + S.party.length + '/' + PPSave.PARTY_MAX);
   const board = document.createElement('div'); board.id = 'partyBoard'; board.className = 'party-board';
   for (let i = 0; i < PPSave.PARTY_MAX; i++) board.append(S.party[i] ? partySlot(S.party[i], i) : emptySlot(i));
   list.append(board);
@@ -13438,11 +13552,12 @@ function bindInput(){
   const setTips = $('#setTips'); if (setTips) setTips.addEventListener('click', () => toggleTips());
   const setTipsReplay = $('#setTipsReplay'); if (setTipsReplay) setTipsReplay.addEventListener('click', () => replayTips());
   const unlockShow = $('#unlockShow'); if (unlockShow) unlockShow.addEventListener('click', () => { sfx('tap'); unlockShowMe(); });
-  const unlockSkip = $('#unlockSkip'); if (unlockSkip) unlockSkip.addEventListener('click', () => { sfx('tap'); unlockClose(); });
+  const unlockSkip = $('#unlockSkip'); if (unlockSkip) unlockSkip.addEventListener('click', () => { sfx('tap'); unlockDismiss(); });
   document.addEventListener('pointerdown', e => {
     if (!unlock.on) return;
     const el = e.target && e.target.closest ? e.target : (e.target && e.target.parentElement);
     if (el && el.closest && el.closest('#unlockCard')) return;
+    if (el && unlock.holes.some(h => h.el && (h.el === el || (h.el.contains && h.el.contains(el))))) return;
     unlockClose();
   }, true);
   const tutSkipBtn = $('#tutSkip'); if (tutSkipBtn) tutSkipBtn.addEventListener('click', () => skipTutorial());
@@ -14108,6 +14223,13 @@ function boot(){
     buyItem: id => buyItem(id),
     openShop: () => openShop(),
     setMoney: n => { S.money = Math.max(0, n | 0); save(); return S.money; },
+    // ?debug=1: switch arcade/modern and the joystick without the Settings rows (those ids hide the functions).
+    applyCtl: (mode, joy) => {
+      const m = mode === 'arcade' ? 'arcade' : 'modern';
+      setControls(m, true);
+      if (m === 'modern') setJoystick(!!joy, true);
+      return { mode: ctlMode(), joystick: joyOn() };
+    },
     battle,
     setMoves: ids => { const p = pet(); if (!p) return; p.moves = (ids || []).filter(id => MOVES[id]).slice(0, 4); save(); return p.moves.slice(); },
     aiPick: () => battle.on ? aiPick() : null,   // tests: the AI's pick for the current turn (same rng as the battle)

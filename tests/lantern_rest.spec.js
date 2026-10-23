@@ -1,5 +1,5 @@
-/* After a party wipe the Lantern House has to rest the whole party before anyone leaves.
-   A rest costs a few Acorns. A home nap stays free. See tests/README.md. */
+/* A party wipe wakes you at this region's Lantern House, healed, with the way out open.
+   A hurt party still pays 5 Acorns to rest at the beds. A home nap stays free. See tests/README.md. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
 
@@ -75,8 +75,8 @@ async function wipeParty(page) {
   await page.waitForFunction(() => window.PixelPets.battle && window.PixelPets.battle.panel === 'end', null, { timeout: 15000 });
   await page.locator('#btOk').click();
   await page.waitForFunction(() => {
-    const s = window.PixelPets.scene;
-    return s && s.full && (s.mode === 'say' || s.mode === 'choice');
+    const b = window.PixelPets.battle;
+    return b && !b.on && !window.PixelPets.fading;
   }, null, { timeout: 15000 });
 }
 
@@ -96,80 +96,43 @@ async function stepOnce(page, dir) {
   await page.waitForFunction(() => !window.PixelPets.keeper.moving && !window.PixelPets.fading, null, { timeout: 5000 });
 }
 
-test('a wipe keeps the party inside until they rest, and the rest costs 5 Acorns', async ({ page }) => {
+test('a wipe heals the party at the Lantern House and leaves the way out open', async ({ page }) => {
   await installSave(page.context(), partySave(), { quietDay: true });
   await gotoDebug(page);
+  const money = await page.evaluate(() => PixelPets.state.money | 0);
   await wipeParty(page);
+  await page.evaluate(() => { if (PixelPets.scene) PixelPets.endScene(); });
+  await page.waitForFunction(() => !PixelPets.scene && !PixelPets.fading && PixelPets.mapInfo.id === 'hm_lantern_in');
   await shot(page, 'lantern-rest-due');
-  const woke = await playCollect(page, [/^Not yet$/]);
-  expect(woke.says.join(' ')).toContain('5 Acorns');
-  expect(woke.says.join(' ')).toContain('beds');
-  expect(woke.prompts).toContain('Rest the whole party?');
-  expect(woke.says.join(' ')).toContain('door stays shut');
-
-  const held = await page.evaluate(() => ({
+  const woke = await page.evaluate(() => ({
     map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y,
     rest: PixelPets.lanternRest, money: PixelPets.state.money,
-    party: PixelPets.state.party.map((p) => ({ id: p.id, hp: p.hpNow, faint: !!p.faintUntil })),
-    tip: document.querySelector('#walkTip').textContent,
-    stuck: window.PPQuests.STUCK[0],
-  }));
-  expect(held.map).toBe('hm_lantern_in');
-  expect(held.x).toBe(2);
-  expect(held.y).toBe(3);
-  expect(held.rest).toEqual({ cost: 5, due: true, hurt: true });
-  expect(held.money).toBe(20);
-  expect(held.party.every((p) => p.faint && p.hp < 15)).toBe(true);
-  expect(held.tip).toContain('Face a bed');
-  expect(held.tip).toContain('5 Acorns');
-  expect(held.stuck).toContain('few Acorns');
-
-  await stepOnce(page, 'right');
-  await stepOnce(page, 'right');
-  await stepOnce(page, 'down');
-  await stepOnce(page, 'down');
-  await stepOnce(page, 'down');
-  const blocked = await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y }));
-  expect(blocked).toEqual({ map: 'hm_lantern_in', x: 4, y: 6 });
-  let labels = [];
-  const left = await playCollect(page, [/^Rest \(5 Acorns\)$/], async () => {
-    labels = await page.locator('#sbChoices button').allTextContents();
-  });
-  expect(labels).toContain('Rest (5 Acorns)');
-  expect(labels).not.toContain('Leave');
-  expect(left.says.join(' ')).toContain('You leave 5 Acorns');
-  await page.waitForFunction(() => PixelPets.mapInfo.id === 'hearthmoor' && !PixelPets.fading);
-  const out = await page.evaluate(() => ({
-    map: PixelPets.mapInfo.id, money: PixelPets.state.money, rest: PixelPets.lanternRest,
+    respawn: PixelPets.state.world.respawn,
     party: PixelPets.state.party.map((p) => ({ hp: Number.isFinite(p.hpNow) ? p.hpNow : null, faint: !!p.faintUntil })),
-    box: PixelPets.state.box.map((p) => ({ hp: p.hpNow, faint: !!p.faintUntil })),
+    toast: document.querySelector('#toast').textContent,
   }));
-  expect(out.map).toBe('hearthmoor');
-  expect(out.money).toBe(15);
-  expect(out.rest.due).toBe(false);
-  expect(out.rest.hurt).toBe(false);
-  expect(out.party).toEqual([{ hp: null, faint: false }, { hp: null, faint: false }]);
-  expect(out.box[0].faint).toBe(true);
-  expect(out.box[0].hp).toBeLessThan(15);
-
-  await stepOnce(page, 'right');
-  await page.waitForFunction(() => {
-    const s = window.PixelPets.scene;
-    return s && s.full && s.mode === 'say';
-  });
-  const sign = await page.evaluate(() => PixelPets.scene.text);
-  expect(sign).toContain('5 Acorns');
-  expect(sign).not.toContain('Free');
+  expect(woke.map).toBe('hm_lantern_in');
+  expect(woke.x).toBe(2);
+  expect(woke.y).toBe(3);
+  expect(woke.rest).toEqual({ cost: 5, due: false, hurt: false });
+  expect(woke.money).toBe(money);
+  expect(woke.respawn).toBe('hearthmoor');
+  expect(woke.party).toEqual([{ hp: null, faint: false }, { hp: null, faint: false }]);
+  expect(woke.toast).toContain('Back at the Hearthmoor Lantern House.');
+  await page.evaluate(() => PixelPets.goto('hm_lantern_in', 4, 5, 'down'));
+  await page.evaluate(() => PixelPets.walkStep('down'));
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'hearthmoor' && !PixelPets.fading);
+  expect(await page.evaluate(() => PixelPets.state.money)).toBe(money);
 });
 
-test('with no Acorns the keeper still rests the party @w1', async ({ page }) => {
+test('with no Acorns a wipe still heals the party and charges nothing @w1', async ({ page }) => {
   const save = partySave();
   save.money = 0;
   await installSave(page.context(), save, { quietDay: true });
   await gotoDebug(page);
   await wipeParty(page);
-  const seen = await playCollect(page, [/^Rest \(5 Acorns\)$/]);
-  expect(seen.says.join(' ')).toContain('Keeper covers the fee');
+  await page.evaluate(() => { if (PixelPets.scene) PixelPets.endScene(); });
+  await page.waitForFunction(() => !PixelPets.scene && !PixelPets.fading);
   const after = await page.evaluate(() => ({
     map: PixelPets.mapInfo.id, money: PixelPets.state.money, rest: PixelPets.lanternRest,
     party: PixelPets.state.party.map((p) => ({ hp: p.hpNow, faint: !!p.faintUntil })),
@@ -180,38 +143,25 @@ test('with no Acorns the keeper still rests the party @w1', async ({ page }) => 
   expect(after.party.every((p) => p.hp == null && !p.faint)).toBe(true);
 });
 
-test('Fernbrook will not let a wiped party walk away from the lantern door @w1', async ({ page }) => {
+test('a Fernbrook wipe wakes the party inside the Lantern House @w1', async ({ page }) => {
   const save = partySave();
   save.money = 12;
   save.world = { map: 'fernbrook', x: 8, y: 8, facing: 'down', respawn: 'fernbrook' };
+  save.flags['story.reached_fernbrook'] = true;
   await installSave(page.context(), save, { quietDay: true });
   await gotoDebug(page);
   await wipeParty(page);
-  const at = await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y }));
-  expect(at).toEqual({ map: 'fernbrook', x: 5, y: 5 });
-  const woke = await playCollect(page, [/^Not yet$/]);
-  expect(woke.says.join(' ')).toContain('5 Acorns');
-  expect(woke.says.join(' ')).toContain('door stays shut');
-  await page.evaluate(() => PixelPets.clearWild());
-  await stepOnce(page, 'down');
-  const stuckAt = await page.evaluate(() => ({ x: PixelPets.keeper.x, y: PixelPets.keeper.y }));
-  expect(stuckAt).toEqual({ x: 5, y: 5 });
-  let stuckLabels = [];
-  const paid = await playCollect(page, [/^Rest \(5 Acorns\)$/], async () => {
-    stuckLabels = await page.locator('#sbChoices button').allTextContents();
-  });
-  expect(stuckLabels).toContain('Rest (5 Acorns)');
-  expect(stuckLabels).not.toContain('Leave');
-  expect(paid.says.join(' ')).toContain('You leave 5 Acorns');
-  await page.evaluate(() => PixelPets.clearWild());
-  await stepOnce(page, 'down');
-  const free = await page.evaluate(() => ({
-    x: PixelPets.keeper.x, y: PixelPets.keeper.y, money: PixelPets.state.money, due: PixelPets.lanternRest.due,
+  await page.evaluate(() => { if (PixelPets.scene) PixelPets.endScene(); });
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'fb_lantern_in' && !PixelPets.fading && !PixelPets.scene);
+  const at = await page.evaluate(() => ({
+    map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y,
+    money: PixelPets.state.money, due: PixelPets.lanternRest.due,
+    hurt: PixelPets.state.party.some((p) => Number.isFinite(p.hpNow)),
   }));
-  expect(free.x).toBe(5);
-  expect(free.y).toBe(6);
-  expect(free.money).toBe(7);
-  expect(free.due).toBe(false);
+  expect(at).toEqual({ map: 'fb_lantern_in', x: 5, y: 14, money: 12, due: false, hurt: false });
+  await page.evaluate(() => PixelPets.walkStep('down'));
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'fernbrook' && !PixelPets.fading);
+  expect(await page.evaluate(() => PixelPets.state.money)).toBe(12);
 });
 
 test('a home nap is free, and only a hurt lantern rest costs Acorns @w1', async ({ page }) => {

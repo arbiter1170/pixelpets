@@ -223,14 +223,15 @@ test('a team Walkling who is not the partner does not open the grow up tip @w1',
   s.partnerId = 'petsmoke1';
   await bootSave(page, s);
   await walkQuiet(page);
-  await expect(page.locator('#unlockCard')).toBeHidden();
+  await expect(page.locator('#unlockTitle')).toHaveText('Your Party');
   const st = await page.evaluate(() => ({
     v: PixelPets.state.v,
     flag: PixelPets.state.flags['story.unlock_growup'] === true,
+    party: PixelPets.state.flags['story.unlock_party'] === true,
     partnerReady: PixelPets.state.party[0].xp >= 40,
     mateXp: PixelPets.state.party[1].xp,
   }));
-  expect(st).toEqual({ v: 2, flag: false, partnerReady: false, mateXp: 40 });
+  expect(st).toEqual({ v: 2, flag: false, party: true, partnerReady: false, mateXp: 40 });
 });
 
 test('an older save with a grown starter marks the grow up tip seen @w1', async ({ page }) => {

@@ -265,6 +265,132 @@ test('effects off draws no motes and no sprite transform @w1', async ({ page }) 
   expect(still.transform === 'none' || still.transform === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true);
 });
 
+function scaleOf(tr) {
+  if (!tr || tr === 'none') return 1;
+  const m = /matrix\(([^)]+)\)/.exec(tr);
+  if (m) return parseFloat(m[1].split(',')[0]);
+  const s = /scale\(([^)]+)\)/.exec(tr);
+  return s ? parseFloat(s[1]) : null;
+}
+
+async function armBanner(page) {
+  await page.evaluate(() => {
+    window.__ban = { frames: [], done: false, visibleMs: 0 };
+    const ban = document.querySelector('#rvBanner');
+    const ov = document.querySelector('#ovReveal');
+    const t0 = performance.now();
+    let visAt = null;
+    let fadeAt = null;
+    const tick = () => {
+      const shown = !!(ban && !ban.hidden);
+      const op = ov ? parseFloat(getComputedStyle(ov).opacity) : 0;
+      const faded = !ov || ov.hidden || op < 0.99;
+      if (shown && visAt == null) visAt = performance.now();
+      if (visAt != null && fadeAt == null && faded) fadeAt = performance.now();
+      window.__ban.frames.push({
+        shown, ovHidden: !ov || ov.hidden, op, tr: ban ? getComputedStyle(ban).transform : 'none', text: ban ? ban.textContent : '',
+      });
+      if (visAt != null && ov && ov.hidden) {
+        window.__ban.done = true;
+        window.__ban.visibleMs = (fadeAt || performance.now()) - visAt;
+        return;
+      }
+      if (performance.now() - t0 > 5000) { window.__ban.done = true; window.__ban.timeout = true; return; }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+async function bannerReport(page) {
+  await page.waitForFunction(() => window.__ban && window.__ban.done, null, { timeout: 8000 });
+  const raw = await page.evaluate(() => window.__ban);
+  const frames = raw.frames.filter((f) => f.shown && !f.ovHidden);
+  const scales = frames.map((f) => scaleOf(f.tr));
+  return {
+    text: (frames.find((f) => f.text) || {}).text || '',
+    hitFull: scales.some((a) => a != null && Math.abs(a - 1) < 0.06),
+    stuck: scales.length > 0 && scales.every((a) => a != null && a < 0.2),
+    visibleMs: raw.visibleMs,
+    timeout: !!raw.timeout,
+  };
+}
+
+test('the name banner reaches full size before the card closes', async ({ page }) => {
+  test.setTimeout(90000);
+  await bootLodge(page);
+  let armed = false;
+  await playStarter(page, {
+    onBeat: async (p, sc) => {
+      if (armed || !sc.name) return;
+      armed = true;
+      await armBanner(p);
+    },
+  });
+  const ban = await bannerReport(page);
+  expect(ban.timeout).toBe(false);
+  expect(ban.text.endsWith('!')).toBe(true);
+  expect(ban.stuck).toBe(false);
+  expect(ban.hitFull).toBe(true);
+  expect(ban.visibleMs).toBeGreaterThanOrEqual(250);
+  expect(ban.visibleMs).toBeLessThan(500);
+});
+
+test('effects off shows the name banner at full size, then closes', async ({ page }) => {
+  test.setTimeout(90000);
+  await bootLodge(page, { effects: 'off' });
+  let armed = false;
+  await playStarter(page, {
+    onBeat: async (p, sc) => {
+      if (armed || !sc.name) return;
+      armed = true;
+      await armBanner(p);
+    },
+  });
+  const ban = await bannerReport(page);
+  expect(ban.hitFull).toBe(true);
+  expect(ban.stuck).toBe(false);
+  expect(ban.visibleMs).toBeLessThan(220);
+});
+
+test('reduced motion shows the name banner at full size, then closes', async ({ page }) => {
+  test.setTimeout(90000);
+  await bootLodge(page, { reduced: true });
+  let armed = false;
+  await playStarter(page, {
+    onBeat: async (p, sc) => {
+      if (armed || !sc.name) return;
+      armed = true;
+      await armBanner(p);
+    },
+  });
+  const ban = await bannerReport(page);
+  expect(ban.hitFull).toBe(true);
+  expect(ban.visibleMs).toBeLessThan(220);
+});
+
+test('SKIP still stops at the name, and the banner is full size before the card closes', async ({ page }) => {
+  test.setTimeout(90000);
+  await bootLodge(page);
+  let armed = false;
+  let skipHidden = false;
+  const stops = await playStarter(page, {
+    skip: true,
+    onBeat: async (p, sc) => {
+      if (armed || !sc.name) return;
+      armed = true;
+      skipHidden = await p.locator('#sbSkip').isHidden();
+      await armBanner(p);
+    },
+  });
+  expect(beatKinds(stops)).toContain('name');
+  expect(skipHidden).toBe(true);
+  const ban = await bannerReport(page);
+  expect(ban.hitFull).toBe(true);
+  expect(ban.stuck).toBe(false);
+  expect(ban.visibleMs).toBeLessThan(500);
+});
+
 for (const hello of [
   ['Hold out a hand', 'bumps its head into your palm'],
   ['Crouch down low', 'nose to nose'],

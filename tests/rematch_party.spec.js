@@ -229,12 +229,13 @@ test('Pia re-arms after a rest, and a win pays once', async ({ page }) => {
   await advanceUntil(page, () => !!(PixelPets.battle && PixelPets.battle.on));
   const before = await page.evaluate(() => PixelPets.state.money | 0);
   await wearOutAndLose(page);
-  await page.waitForFunction(() => PixelPets.state.world.map === 'hm_lantern_in' && PixelPets.state.world.restDue === true);
+  await page.waitForFunction(() => PixelPets.state.world.map === 'hm_lantern_in' && PixelPets.state.world.restDue !== true && !PixelPets.fading);
   const lost = await page.evaluate(() => ({
     rematch: PixelPets.state.flags['rematch.route1_pia'] === true,
     trainer: !!PixelPets.state.flags['trainer.route1_pia'],
     spotted: !!PixelPets.state.flags['spotted.route1_pia'],
     hold: PixelPets.state.world.restDue === true,
+    hurt: PixelPets.state.party.some((p) => Number.isFinite(p.hpNow)),
     map: PixelPets.state.world.map,
     v: PixelPets.state.v,
     top: Object.keys(PixelPets.state).includes('rematch'),
@@ -242,26 +243,11 @@ test('Pia re-arms after a rest, and a win pays once', async ({ page }) => {
   expect(lost.rematch).toBe(true);
   expect(lost.trainer).toBe(false);
   expect(lost.spotted).toBe(true);
-  expect(lost.hold).toBe(true);
+  expect(lost.hold).toBe(false);
+  expect(lost.hurt).toBe(false);
   expect(lost.map).toBe('hm_lantern_in');
   expect(lost.v).toBe(2);
   expect(lost.top).toBe(false);
-
-  await page.evaluate(() => { if (PixelPets.scene) PixelPets.endScene(); });
-  const stuck = await page.evaluate(() => {
-    const map = PixelPets.state.world.map;
-    for (let i = 0; i < 8; i++) {
-      for (const d of ['up', 'down', 'left', 'right']) {
-        if (PixelPets.scene) return { map: PixelPets.state.world.map, left: false };
-        PixelPets.walkStep(d);
-        if (PixelPets.state.world.map !== map) return { map: PixelPets.state.world.map, left: true };
-        if (PixelPets.scene) return { map: PixelPets.state.world.map, left: false };
-      }
-    }
-    return { map: PixelPets.state.world.map, left: false };
-  });
-  expect(stuck.map).toBe('hm_lantern_in');
-  expect(stuck.left).toBe(false);
 
   await page.evaluate(() => {
     if (PixelPets.scene) PixelPets.endScene();
@@ -364,6 +350,7 @@ test('Tobin does not move the orchard step on a loss, and the win runs it once',
   expect(mid.cleared).toBe(false);
   expect(mid.rematch).toBe(true);
   await page.evaluate(() => { if (PixelPets.scene) PixelPets.endScene(); PixelPets.clearHold(); });
+  await page.waitForFunction(() => !PixelPets.fading && !PixelPets.scene);
   const again = await page.evaluate(() => {
     if (PixelPets.scene) PixelPets.endScene();
     PixelPets.goto('fernbrook', 9, 18, 'up');
