@@ -464,7 +464,7 @@ body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-b
 #ovWardrobe .ward-card{height:100%;max-height:100%;overflow:hidden;background:var(--k)}
 #ovWardrobe .ward-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto}
 #ovWardrobe .ward-head .ov-title{text-align:left;font-size:22px}
-#ovWardrobe .ward-money{color:var(--y);font-size:20px;white-space:nowrap}
+#ovWardrobe .ward-money{color:var(--y);font-size:16px;white-space:nowrap;background:var(--k);box-shadow:0 0 0 2px var(--d);padding:4px 8px;line-height:1.2}
 #ovWardrobe .ward-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;flex:0 0 auto}
 #ovWardrobe .ward-tabs button{min-height:44px;min-width:44px;border:0;background:var(--d);color:var(--m);font-size:16px;cursor:pointer}
 #ovWardrobe .ward-tabs button.on{background:var(--n);color:var(--y);box-shadow:inset 0 -3px 0 var(--y)}
@@ -485,6 +485,7 @@ body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-b
 #ovWardrobe .ward-state{font-size:14px;color:var(--h);min-height:18px;text-align:center}
 #ovWardrobe .ward-act{min-height:44px;min-width:44px;width:100%;border:0;cursor:pointer;font-size:16px}
 #ovWardrobe .ward-act.buy{background:var(--g);color:var(--k)}
+#ovWardrobe .ward-act.buy.muted{background:var(--m);color:var(--h)}
 #ovWardrobe .ward-act.wear{background:var(--b);color:var(--w)}
 #ovWardrobe .ward-act.worn{background:var(--m);color:var(--k)}
 #wardDone{flex:0 0 auto;min-height:44px;width:100%;margin:0}
@@ -698,11 +699,38 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 .sh-item .bag-ico{position:absolute;left:8px;top:50%;transform:translateY(-50%)}
 .sh-item.has-ico{position:relative;padding-left:54px}
 
-.shop-flavour{font-size:12px;color:var(--h);line-height:1.2;margin-top:2px;max-width:220px}
-.shop-price{flex:0 0 auto;min-width:36px;text-align:right;color:var(--y);font-size:18px}
-.shop-row .bag-meta{flex:1 1 auto}
-.overlay.shop .bag-head{align-items:flex-start}
-.overlay.shop .bag-head .bag-money{margin-top:4px}
+/* SHOP_LAYOUT sheet (D485–D489). Bottom gap 8px. List scrolls. Header and X stay put. */
+#ovShop.overlay{background:transparent;align-items:flex-end;justify-content:center;padding:0 8px 8px;z-index:11}
+#ovShop .shop-sheet{width:100%;max-width:464px;max-height:55vh;box-sizing:border-box;margin:0;background:var(--n);border:2px solid var(--k);box-shadow:inset 0 0 0 2px var(--d);padding:8px;display:flex;flex-direction:column;gap:8px;pointer-events:auto;overflow:hidden}
+#ovShop .shop-head{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;min-height:60px;flex:0 0 auto}
+#ovShop .shop-copy{min-width:0;display:flex;flex-direction:column;gap:4px}
+#ovShop .shop-who{align-self:flex-start;padding:2px 8px;background:var(--k);color:var(--y);font-size:18px;line-height:1.1;box-shadow:0 0 0 2px var(--d);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ovShop .shop-prompt{margin:0;color:var(--w);font-size:18px;line-height:1.25}
+#ovShop .shop-pill{display:flex;align-items:center;gap:4px;background:var(--k);box-shadow:0 0 0 2px var(--d);color:var(--y);padding:4px 8px;min-height:32px;font-size:18px}
+#ovShop .shop-pill canvas{width:16px;height:16px;image-rendering:pixelated;image-rendering:crisp-edges}
+#ovShop .shop-x{width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:0;background:var(--h);color:var(--k);font-size:20px;line-height:44px;cursor:pointer}
+#ovShop .shop-list{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:8px}
+#ovShop .shop-row{display:flex;align-items:center;gap:8px;min-height:56px;padding:6px 8px;box-sizing:border-box;background:var(--d);color:var(--w);flex:0 0 auto}
+#ovShop .shop-row.sel{box-shadow:inset 0 0 0 2px var(--y)}
+#ovShop .shop-row.dim .bag-ico{opacity:.5}
+#ovShop .bag-ico{width:36px;height:36px;flex:0 0 auto;image-rendering:pixelated;image-rendering:crisp-edges}
+#ovShop .shop-meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+#ovShop .shop-name-line{display:flex;align-items:baseline;gap:6px;min-width:0}
+#ovShop .shop-name{font-size:18px;line-height:1.1;color:var(--w);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ovShop .shop-count{flex:0 0 auto;color:var(--h);font-size:18px;line-height:1.1}
+#ovShop .shop-own{font-size:14px;line-height:1.15;color:var(--h);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ovShop .shop-own.state{color:var(--w)}
+#ovShop .shop-need{display:flex;align-items:center;gap:4px;color:var(--w);font-size:14px;line-height:1.15;min-width:0}
+#ovShop .shop-need i{width:8px;height:8px;flex:0 0 auto;background:var(--o)}
+#ovShop .shop-need b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:normal}
+#ovShop .shop-price{flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;gap:4px;min-width:36px;color:var(--y);font-size:16px}
+#ovShop .shop-price.muted{color:var(--h)}
+#ovShop .shop-price canvas{width:12px;height:12px;image-rendering:pixelated;image-rendering:crisp-edges}
+#ovShop .shop-buy{width:64px;min-width:64px;height:44px;min-height:44px;padding:0;border:0;flex:0 0 auto;background:var(--y);color:var(--k);box-shadow:inset 0 -4px 0 var(--o);font-size:16px;cursor:pointer}
+#ovShop .shop-buy.muted,#ovShop .shop-buy.full,#ovShop .shop-buy:disabled{background:var(--m);color:var(--h);box-shadow:none}
+#ovShop .shop-buy:disabled{cursor:default}
+#ovShop .shop-empty{margin:0;color:var(--h);font-size:16px;line-height:1.35;padding:8px 4px}
+body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 /* ONLINE_SAVES: Settings row, panel and the "which game to keep" choice (only built when the cloud path is on) */
 .set-row.set-cloud{padding:8px 14px}
 .set-cloud .set-lab{display:flex;flex-direction:column;gap:3px}

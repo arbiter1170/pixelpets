@@ -125,7 +125,15 @@ async function playScene(page, choices = [], onChoice = null, onSeal = null) {
       if (label == null) throw new Error('scene asked "' + sc.text + '" but the test had no answer left');
       prompts.push(sc.text);
       if (onChoice) await onChoice(sc.text, prompts.length - 1);
-      await page.locator('#sbChoices button', { hasText: label }).first().click();
+      const shop = await page.locator('#ovShop').isVisible().catch(() => false);
+      if (shop) {
+        if (label === 'Not now') await page.locator('#shopClose').click();
+        else {
+          const name = label.replace(/\s+\(\d+\)\s*$/, '');
+          const row = page.locator('#shopList .shop-row').filter({ has: page.locator('.shop-name', { hasText: name }) });
+          await row.locator('.shop-buy').click();
+        }
+      } else await page.locator('#sbChoices button', { hasText: label }).first().click();
       await page.waitForTimeout(40);
       continue;
     }

@@ -1349,7 +1349,23 @@ function tutPlace(){
   }
   left = Math.max(6, Math.min(left, vw - cw - 6));
   top = Math.max(6, Math.min(top, vh - ch - 6));
+  // QA-4: arcade TALK sits under a bottom tip card at 320. Lift the card clear of a ready TALK. Modern is unchanged.
+  if (mode === 'unlock') top = tutClearTalk(left, top, cw, ch);
   card.style.left = left + 'px'; card.style.top = top + 'px';
+}
+function tutClearTalk(left, top, cw, ch){
+  if (ctlMode() === 'modern') return top;
+  const tb = $('#talkBtn');
+  if (!tb || tb.hidden || !tb.classList.contains('ready')) return top;
+  const tr = tb.getBoundingClientRect();
+  if (tr.width < 2 || tr.height < 2) return top;
+  const gap = 8;
+  if (!(top < tr.bottom && top + ch > tr.top && left < tr.right && left + cw > tr.left)) return top;
+  const above = tr.top - gap - ch;
+  if (above >= 6) return above;
+  const below = tr.bottom + gap;
+  if (below + ch <= window.innerHeight - 6) return below;
+  return top;
 }
 function tutShow(id){
   id = tutResolve(id);
@@ -5830,7 +5846,11 @@ function wardState(card){
   if (card.kind === 'aura') return auraState(card);
   const row = wardrobeRow(card.id);
   if (!row) return 'Free';
-  if (!ownsLook(card.id)) return row.price + ' Acorns';
+  if (!ownsLook(card.id)) {
+    const gap = (row.price | 0) - (S.money | 0);
+    if (gap > 0) return 'Need ' + gap + ' more';
+    return row.price + ' Acorns';
+  }
   if (wardUI.tab === 'walkling') {
     const mine = wardPet();
     const other = allPets().find(p => p.accessory === card.id && (!mine || p.id !== mine.id));
@@ -5934,6 +5954,10 @@ function renderWardrobe(){
     act.type = 'button';
     const kind = wardBtn(card);
     act.className = 'ward-act ' + kind.toLowerCase();
+    if (kind === 'BUY') {
+      const priceRow = wardrobeRow(card.id) || (card.price != null ? card : null);
+      if (priceRow && (S.money | 0) < (priceRow.price | 0)) act.classList.add('muted');
+    }
     act.textContent = kind;
     act.addEventListener('click', () => wardPress(card));
     item.append(art, st, act);
@@ -6190,7 +6214,10 @@ function interact(o){
   }
   if (o.board) return openTownBoard();
   if (o.shop) {
-    if (o.id === 'travel_shelf' && !S.flags['story.starter_received']) return runSteps([['say', '', SHELF_EMPTY]], ctx);
+    if (o.id === 'travel_shelf' && !S.flags['story.starter_received']) {
+      openShop([], 'Travel Shelf', 'Leave Acorns, take a snack. \u2014 I.');
+      return;
+    }
     openShop(o.shop, shopHeading(o), o.shopFlavour || null);
     return;
   }
@@ -6208,6 +6235,7 @@ function interact(o){
     if (typeof line === 'string' && line.charAt(0) !== '@') steps.push(['say', objName(o), line]);
     const opts = o.meals.map(m => [m.name + ' (' + m.price + ')', [['meal', m.id]]]);
     if (bowlReady() && !o.stallSnack) opts.push(['Warm Bowl', [['meal', 'warm_bowl']]]);
+    opts.push(['Not now', []]);
     steps.push(['priceOn']); steps.push(['choice', 'What will they eat?', opts]);
     return runSteps(steps, ctx);
   }
@@ -6349,6 +6377,7 @@ async function execSteps(steps){ for (const st of steps || []) { if (!scene) ret
 async function playScene(id){ const steps = sceneSteps(id); if (!steps) return; const n = storyWrites(); await execSteps(steps); noteBeat(id, n); }   // nested: `run` steps, onWin
 function commitPending(){ const P = scene.pending; scene.pending = []; for (const f of P) f(); if (S && S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); syncSide(); }
 function endScene(){
+  if (shopMeal) closeMealSheet(-1);
   const sc = scene; if (!sc) return;
   const cue = sc.musicCue;
   const openWard = !!sc.openWardrobe;
@@ -6527,7 +6556,9 @@ async function execStep(st){
       const opts = b.filter(o => o[3] == null || [].concat(o[3]).every(x => cond(x, true)));   // WP-B0: optional 4th element `when` hides an option until earned
       if (!opts.length) return;
       noteMoralChoice(opts);
-      const pick = await choiceBox(expand(a), opts.map(o => expand(o[0])));
+      const mealMenu = !!(sc.npc && sc.npc.meals && a === 'What will they eat?');
+      const pick = mealMenu ? await shopMealBox(expand(a), opts) : await choiceBox(expand(a), opts.map(o => expand(o[0])));
+      if (!scene || pick == null || pick < 0 || !opts[pick]) return;
       const opt = opts[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
       $('#sbEcho').textContent = '\u203a ' + expand(opt[0]);
       await execSteps(opt[1]); return;
@@ -6553,6 +6584,7 @@ async function execStep(st){
       if (!meal) return;
       if ((S.money | 0) < meal.price) { sfx('denied'); toast('Not enough Acorns.'); return; }
       S.money = (S.money | 0) - meal.price;
+      syncHdrAcorns();
       p.hunger = clamp(p.hunger + careGain(meal.food, p.hunger, FEED_BANDS), 0, 100);
       p.happy = clamp(p.happy + careJoy(p, meal.joy), 0, 100);
       save(); updateHUD();
@@ -6685,7 +6717,8 @@ async function execStep(st){
     // a shortfall is covered so a wipe at 0 Acorns cannot trap you. Sets scene.view flag lantern.rest for the next line.
     case 'payRest': {
       if (!partyNeedsLanternRest()) {
-        sc.view.flags['lantern.rest'] = 'full'; setRestDue(false);
+        const refill = S.party.some(q => (Number(q.energy) || 0) < 100);
+        sc.view.flags['lantern.rest'] = refill ? 'refill' : 'full'; setRestDue(false);
         S.party.forEach(q => { q.energy = 100; });
         sfx('rest'); noteLanternRest(); return;
       }
@@ -6961,11 +6994,50 @@ function biasForSpeaker(o){
   const q = objPos(o), feet = (q.y + 1) * TS, target = feet - (band.topPad + 0.4 * band.span), base = walk.fy * TS + 8 - band.mid;
   return target - base;
 }
+// D490: while the shop sheet is open in a room, centre the room in the band from the 56 px top row
+// to the sheet top minus 6. A taller room follows the holder inside that band. Zoom stays put.
+const shopCam = { on: false, y: 0, from: 0, to: 0, t0: 0 };
+function shopBandCanvas(){
+  if (!isRoom() || !walk) return null;
+  const ov = $('#ovShop'); if (!ov || ov.hidden) return null;
+  const sheet = ov.querySelector('.shop-sheet');
+  const c = $('#mapCanvas');
+  if (!sheet || !c || !c.width) return null;
+  const cr = c.getBoundingClientRect(), sr = sheet.getBoundingClientRect(), z = mapZoom || 1;
+  if (!(z > 0) || sr.height < 8 || cr.height < 8) return null;
+  const topScreen = ctlMode() === 'modern' ? 56 : 8;
+  const topC = (topScreen - cr.top) / z, botC = (sr.top - 6 - cr.top) / z;
+  if (!(botC > topC + 1)) return null;
+  return { top: topC, bot: botC, span: botC - topC };
+}
+function shopCamTarget(band){
+  const roomH = MH * TS, py = walk.fy * TS;
+  if (roomH <= band.span) return -(band.top + (band.span - roomH) / 2);
+  const mid = band.top + band.span / 2, want = (py + 8) - mid;
+  const lo = -band.top, hi = roomH - band.bot;
+  return clamp(want, Math.min(lo, hi), Math.max(lo, hi));
+}
+function applyShopCam(t, prevY){
+  const band = shopBandCanvas();
+  if (!band) { shopCam.on = false; return false; }
+  const target = shopCamTarget(band), nowt = t == null ? performance.now() : t;
+  if (!shopCam.on) { shopCam.on = true; shopCam.y = shopCam.from = prevY; shopCam.to = target; shopCam.t0 = nowt; }
+  else if (Math.abs(shopCam.to - target) > 0.5) { shopCam.from = shopCam.y; shopCam.to = target; shopCam.t0 = nowt; }
+  if (prefersReduced()) shopCam.y = target;
+  else {
+    const k = Math.min(1, (nowt - shopCam.t0) / 160), e = 1 - (1 - k) * (1 - k);
+    shopCam.y = shopCam.from + (shopCam.to - shopCam.from) * e;
+    if (k >= 1) shopCam.y = target;
+  }
+  walk.cam.y = shopCam.y;
+  return true;
+}
 function syncWalkCam(t){
   const c = $('#mapCanvas'); if (!c || !c.width || !walk) return;
   tickCamBias(t == null ? performance.now() : t);
   const VW = c.width, VH = c.height, px_ = walk.fx * TS, py_ = walk.fy * TS;
   const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
+  const prevY = walk.cam.y;
   // Clamp to the band above the partner strip. Centre in the open band under the area chip, so a north
   // trail stays tappable. A map shorter than that band is centred in it. Rooms and arcade stay on the full
   // canvas. The void past the map stays black (D236).
@@ -6974,6 +7046,7 @@ function syncWalkCam(t){
   walk.cam.y = MH * TS <= band.VHe ? -Math.floor((band.VHe - MH * TS) / 2) : Math.round(clamp(py_ + 8 - band.mid + by, 0, MH*TS - band.VHe));
   // Your Room at 320: the centred room still tucks its left wall under the round-button column. Nudge it right. Scale stays.
   if (roomSideNudge && CUR && CUR.id === 'hc_apt_in' && MW * TS <= VW) walk.cam.x -= roomSideNudge;
+  applyShopCam(t, prevY);
 }
 function chooseSceneBox(who){
   const o = findSpeaker(who), ov = $('#ovScene');
@@ -7985,7 +8058,9 @@ function lanternRestOption(){
       [['say', '', 'You leave ' + LANTERN_REST_COST + ' Acorns. You all doze in the lantern glow. Your team is rested.']],
       [['if', 'lantern.rest=covered',
         [['say', '', "You're short on Acorns. The Keeper covers the fee, and everyone wakes up rested."]],
-        [['say', '', 'Your team is already rested. This Lantern House will remember you.']]]]],
+        [['if', 'lantern.rest=refill',
+          [['say', '', 'Your team rests up and feels full of energy. This Lantern House will remember you.']],
+          [['say', '', 'Your team is already rested. This Lantern House will remember you.']]]]]]],
   ]];
 }
 function lanternBedSteps(){
@@ -10734,10 +10809,11 @@ function bagKey(e){
   return false;
 }
 
-/* ---------- Travel Shelf shop (INVENTORY §5) ---------- */
+/* ---------- Shared shop sheet (SHOP_LAYOUT D485) ---------- */
 const SHELF_LINE = 'Travel Shelf \u00b7 Leave Acorns, take a snack. \u2014 I.';
 const SHELF_EMPTY = "Empty for now. Ilse restocks once you've a partner.";
-let shopIds = [], shopSel = 0;
+const SHOP_EMPTY = 'Nothing on the shelf today.';
+let shopIds = [], shopSel = 0, shopMeal = null;
 // The Travel Shelf keeps its fixed title. A stall whose welcome line names the shop (Dottie's "Welcome to Cairnside Supplies!") uses that name.
 function shopHeading(o){
   if (o && o.shopTitle) return o.shopTitle;
@@ -10745,36 +10821,103 @@ function shopHeading(o){
   const m = typeof line === 'string' && /^Welcome to ([^!]+)!/.exec(line);
   return m ? m[1] : 'Travel Shelf';
 }
+function paintShopMoney(){
+  paintAcorn($('#shopAcorn'));
+  const el = $('#shopMoney'); if (!el) return;
+  const v = acornShownNow();
+  el.textContent = String(Number.isFinite(v) ? v : (S ? (S.money | 0) : 0));
+}
+function shopPriceEl(text, muted){
+  const pr = document.createElement('div');
+  pr.className = 'shop-price' + (muted ? ' muted' : '');
+  if (text == null || text === '') return pr;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 8; cv.setAttribute('aria-hidden', 'true');
+  paintAcorn(cv); pr.append(cv, document.createTextNode(String(text)));
+  return pr;
+}
+function shopSubEl(text, state){
+  if (state === 'need') {
+    const sub = document.createElement('div'); sub.className = 'shop-own shop-need';
+    const sq = document.createElement('i'); sq.setAttribute('aria-hidden', 'true');
+    const b = document.createElement('b'); b.textContent = text;
+    sub.append(sq, b); return sub;
+  }
+  const sub = document.createElement('div');
+  sub.className = 'shop-own' + (state && state !== 'ok' ? ' state' : '');
+  sub.textContent = text;
+  return sub;
+}
+function paintShopSel(){
+  $$('#shopList .shop-row').forEach((r, j) => r.classList.toggle('sel', j === shopSel));
+  const sel = $('#shopList') && $('#shopList').children[shopSel];
+  if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest' });
+}
+function shopIcon(){
+  const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
+  return ico;
+}
+function paintMealIcon(cv){
+  const g = ctx(cv); g.clearRect(0, 0, 18, 18);
+  drawGlyph(g, 'apple', 6, 6);
+}
 function openShop(ids, title, flavour){
   if (!S || overlayOpen()) return;
-  clearMoves(); shopIds = (ids || ITEM_ORDER).filter(k => (ITEMS[k] || WARDROBE[k]) && auraShopOk(k)); shopSel = 0;
+  clearMoves(); shopMeal = null; shopIds = (ids || ITEM_ORDER).filter(k => (ITEMS[k] || WARDROBE[k]) && auraShopOk(k)); shopSel = 0;
   $('#shopTitle').textContent = title || 'Travel Shelf';
   const flav = $('#shopFlavour');
   if (flav) flav.textContent = flavour || (title && title !== 'Travel Shelf' ? 'Snacks for the road.' : 'Leave Acorns, take a snack. \u2014 I.');
   renderShop(); $('#ovShop').hidden = false; lockTabs(true); sfx('tap');
 }
-function closeShop(){ if ($('#ovShop').hidden) return; $('#ovShop').hidden = true; lockTabs(false); updateHUD(); }
+function closeShop(){
+  if (shopMeal) { closeMealSheet(shopMeal.notNow); return; }
+  if ($('#ovShop').hidden) return;
+  $('#ovShop').hidden = true; shopCam.on = false; lockTabs(false); updateHUD();
+}
+function closeMealSheet(code){
+  const meal = shopMeal; if (!meal) return;
+  shopMeal = null;
+  $('#ovShop').hidden = true;
+  document.body.classList.remove('shop-meal');
+  shopCam.on = false;
+  sbox.resolve = null;
+  meal.res(code);
+}
 function renderShop(){
   if (!S) return;
-  paintAcorn($('#shopAcorn')); $('#shopMoney').textContent = String(S.money | 0);
+  paintShopMoney();
   const list = $('#shopList'); list.textContent = '';
+  if (!shopIds.length) {
+    const p = document.createElement('p'); p.className = 'shop-empty';
+    p.textContent = $('#shopTitle').textContent === 'Travel Shelf' ? SHELF_EMPTY : SHOP_EMPTY;
+    list.appendChild(p); return;
+  }
   shopIds.forEach((id, i) => {
     if (!ITEMS[id]) { list.appendChild(shopWardRow(id, i)); return; }
-    const it = ITEMS[id];
-    const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
-    const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
-    drawItemIcon(ico, id);
-    const meta = document.createElement('div'); meta.className = 'bag-meta';
-    const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = it.name;
-    const own = document.createElement('div'); own.className = 'bag-blurb shop-own'; own.textContent = '\u00d7' + itemCount(id) + ' owned';
-    meta.append(nm, own);
-    const pr = document.createElement('div'); pr.className = 'shop-price'; pr.textContent = String(it.price);
-    const buy = document.createElement('button'); buy.type = 'button'; buy.className = 'btn bag-use shop-buy'; buy.textContent = 'BUY';
-    buy.addEventListener('click', e => { e.stopPropagation(); shopSel = i; buyItem(id); });
-    row.addEventListener('click', () => { shopSel = i; $$('.shop-row').forEach((r, j) => r.classList.toggle('sel', j === shopSel)); });
-    row.append(ico, meta, pr, buy); list.appendChild(row);
+    list.appendChild(shopItemRow(id, i));
   });
-  const sel = list.children[shopSel]; if (sel) sel.scrollIntoView({ block: 'nearest' });
+  paintShopSel();
+}
+function shopItemRow(id, i){
+  const it = ITEMS[id], n = itemCount(id), money = S.money | 0;
+  const full = n >= it.cap, need = !full && money < it.price;
+  const row = document.createElement('div');
+  row.className = 'shop-row' + (i === shopSel ? ' sel' : '') + (full || need ? ' dim' : '');
+  row.dataset.id = id;
+  const ico = shopIcon(); drawItemIcon(ico, id);
+  const meta = document.createElement('div'); meta.className = 'shop-meta';
+  const line = document.createElement('div'); line.className = 'shop-name-line';
+  const nm = document.createElement('div'); nm.className = 'shop-name'; nm.textContent = it.name;
+  const ct = document.createElement('span'); ct.className = 'shop-count'; ct.textContent = '\u00d7' + n;
+  line.append(nm, ct);
+  const sub = full ? shopSubEl('Bag full', 'full') : need ? shopSubEl('Need ' + (it.price - money) + ' more', 'need') : shopSubEl(it.blurb, 'ok');
+  meta.append(line, sub);
+  const buy = document.createElement('button'); buy.type = 'button';
+  buy.className = 'shop-buy' + (full ? ' full' : need ? ' muted' : '');
+  buy.textContent = full ? 'FULL' : 'BUY';
+  buy.addEventListener('click', e => { e.stopPropagation(); shopSel = i; buyItem(id); });
+  row.addEventListener('click', () => { shopSel = i; paintShopSel(); });
+  row.append(ico, meta, shopPriceEl(String(it.price), full || need), buy);
+  return row;
 }
 // One BUY = one item. Bag full first (it's the clearer reason), then Acorns; a refusal changes nothing.
 function buyItem(id){
@@ -10784,27 +10927,31 @@ function buyItem(id){
   else if ((S.money | 0) < it.price) msg = 'Not enough Acorns.';
   if (msg) { sfx('denied'); toast(msg); return { ok: false, msg }; }
   S.money = (S.money | 0) - it.price; S.bag[id] = itemCount(id) + 1;
-  sfx('tap'); msg = '+1 ' + it.name; toast(msg); save();
-  if (!$('#ovShop').hidden) renderShop();
+  sfx('tap'); msg = '+1 ' + it.name; toast(msg); save(); syncHdrAcorns();
+  if (!$('#ovShop').hidden && !shopMeal) renderShop();
   return { ok: true, msg };
 }
 // P4: a store can sell a P3 wardrobe item. Same name, price, flag and toast as BUY at Stitch & Lantern; an owned one reads OWNED.
 function shopWardRow(id, i){
-  const wr = WARDROBE[id], own = ownsLook(id);
-  const row = document.createElement('div'); row.className = 'bag-row shop-row' + (i === shopSel ? ' sel' : ''); row.dataset.id = id;
-  const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico';
+  const wr = WARDROBE[id], own = ownsLook(id), money = S.money | 0, need = !own && money < wr.price;
+  const row = document.createElement('div');
+  row.className = 'shop-row' + (i === shopSel ? ' sel' : '') + (need ? ' dim' : '');
+  row.dataset.id = id;
+  const ico = shopIcon();
   if (wr.kind === 'aura') { const p = pet(); if (p) { spriteCanvas(ico, spi(p), p.stage, 'n', isFaded(p), null); auraPaintShop(ico, p, id); } }
   else if (wr.tab === 'walkling') { const p = pet(); if (p) spriteCanvas(ico, spi(p), p.stage, 'n', isFaded(p), id); }
   else { const look = Object.assign({}, KEEPER_LOOKS.defaults, normalizeLook(S.player.look) || {}); look.accessory = id; ctx(ico).drawImage(keeperFrames(look).down[0], 0, 0); }
-  const meta = document.createElement('div'); meta.className = 'bag-meta';
-  const nm = document.createElement('div'); nm.className = 'bag-name'; nm.textContent = wr.name;
-  const sub = document.createElement('div'); sub.className = 'bag-blurb shop-own'; sub.textContent = own ? 'Yours' : wr.line;
+  const meta = document.createElement('div'); meta.className = 'shop-meta';
+  const nm = document.createElement('div'); nm.className = 'shop-name'; nm.textContent = wr.name;
+  const sub = own ? shopSubEl('Yours', 'owned') : need ? shopSubEl('Need ' + (wr.price - money) + ' more', 'need') : shopSubEl(wr.line, 'ok');
   meta.append(nm, sub);
-  const pr = document.createElement('div'); pr.className = 'shop-price'; pr.textContent = own ? '' : String(wr.price);
-  const buy = document.createElement('button'); buy.type = 'button'; buy.className = 'btn bag-use shop-buy'; buy.textContent = own ? 'OWNED' : 'BUY'; buy.disabled = own;
+  const buy = document.createElement('button'); buy.type = 'button';
+  buy.className = 'shop-buy' + (need ? ' muted' : '');
+  buy.textContent = own ? 'OWNED' : 'BUY'; buy.disabled = own;
   buy.addEventListener('click', e => { e.stopPropagation(); shopSel = i; buyWardFromShop(id); });
-  row.addEventListener('click', () => { shopSel = i; $$('.shop-row').forEach((r, j) => r.classList.toggle('sel', j === shopSel)); });
-  row.append(ico, meta, pr, buy); return row;
+  row.addEventListener('click', () => { shopSel = i; paintShopSel(); });
+  row.append(ico, meta, shopPriceEl(own ? '' : String(wr.price), need), buy);
+  return row;
 }
 function buyWardFromShop(id){
   const wr = WARDROBE[id]; if (!wr || !S) return { ok: false, msg: '' };
@@ -10813,9 +10960,70 @@ function buyWardFromShop(id){
   else if ((S.money | 0) < wr.price) msg = 'Not enough Acorns.';
   if (msg) { sfx('denied'); toast(msg); return { ok: false, msg }; }
   S.money = (S.money | 0) - wr.price; S.flags[wr.flag] = true;
-  sfx('tap'); msg = wr.name + ' is yours.'; toast(msg); save();
-  if (!$('#ovShop').hidden) renderShop();
+  sfx('tap'); msg = wr.name + ' is yours.'; toast(msg); save(); syncHdrAcorns();
+  if (!$('#ovShop').hidden && !shopMeal) renderShop();
   return { ok: true, msg };
+}
+function mealOfferOf(opt){
+  const step = (opt[1] || []).find(st => st && st[0] === 'meal');
+  if (!step) return null;
+  if (step[1] === 'warm_bowl') return { id: 'warm_bowl', name: 'Warm Bowl', free: true };
+  const meal = ((scene && scene.npc && scene.npc.meals) || []).find(m => m.id === step[1]);
+  return meal ? { id: meal.id, name: meal.name, meal: meal } : { id: step[1], name: opt[0], meal: null };
+}
+function mealRowView(offer){
+  const p = pet(), money = S.money | 0;
+  if (p && p.hunger >= 98) return { sub: 'Too full right now', state: 'full', muted: true, dim: true, price: offer.free ? 'Free' : String(offer.meal ? offer.meal.price : 0) };
+  if (!offer.free && offer.meal && money < offer.meal.price) return { sub: 'Need ' + (offer.meal.price - money) + ' more', state: 'need', muted: true, dim: true, price: String(offer.meal.price) };
+  if (offer.free) return { sub: 'Once a day', state: 'ok', muted: false, dim: false, price: 'Free' };
+  const food = Math.round(careGain(offer.meal.food, p ? p.hunger : 0, FEED_BANDS));
+  const joy = Math.round(careJoy(p || { align: 0 }, offer.meal.joy));
+  return { sub: 'Food +' + food + ', Joy +' + joy, state: 'ok', muted: false, dim: false, price: String(offer.meal.price) };
+}
+function renderMealShop(){
+  if (!shopMeal) return;
+  paintShopMoney();
+  const list = $('#shopList'); list.textContent = '';
+  shopMeal.rows.forEach((entry, i) => {
+    const offer = mealOfferOf(entry.opt), view = mealRowView(offer || { free: false, meal: { price: 0, food: 0, joy: 0 } });
+    const row = document.createElement('div');
+    row.className = 'shop-row' + (i === shopSel ? ' sel' : '') + (view.dim ? ' dim' : '');
+    row.dataset.id = offer ? offer.id : ('m' + entry.i);
+    const ico = shopIcon(); paintMealIcon(ico);
+    const meta = document.createElement('div'); meta.className = 'shop-meta';
+    const nm = document.createElement('div'); nm.className = 'shop-name'; nm.textContent = offer ? offer.name : entry.opt[0];
+    meta.append(nm, shopSubEl(view.sub, view.state));
+    const buy = document.createElement('button'); buy.type = 'button';
+    buy.className = 'shop-buy' + (view.muted ? ' muted' : '');
+    buy.textContent = 'BUY';
+    buy.addEventListener('click', e => {
+      e.stopPropagation();
+      if (performance.now() < optArmAt) return;
+      shopSel = i; closeMealSheet(entry.i);
+    });
+    row.addEventListener('click', () => { shopSel = i; paintShopSel(); });
+    row.append(ico, meta, shopPriceEl(view.price, view.muted), buy);
+    list.appendChild(row);
+  });
+  paintShopSel();
+}
+function shopMealBox(prompt, opts){
+  return new Promise(res => {
+    if (scene) scene.boxes++;
+    const rows = [];
+    let notNow = -1;
+    opts.forEach((opt, i) => { if (opt[0] === 'Not now') notNow = i; else rows.push({ opt: opt, i: i }); });
+    shopMeal = { rows: rows, notNow: notNow, res: res };
+    shopIds = rows.map(r => 'm' + r.i); shopSel = 0;
+    const who = (scene && (scene.who || (scene.npc && objName(scene.npc)))) || '';
+    $('#shopTitle').textContent = who;
+    const flav = $('#shopFlavour'); if (flav) flav.textContent = prompt;
+    document.body.classList.add('shop-meal');
+    sbox.text = prompt; sbox.t0 = now(); sbox.full = true; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.mode = 'choice'; sbox.resolve = () => {};
+    renderMealShop();
+    $('#ovShop').hidden = false;
+    armOptions();
+  });
 }
 
 // AURA_FX. P3a draws Emberwake, the kiln trail and Lanternfly motes from fixed pools.
@@ -11123,7 +11331,11 @@ function auraWorn(card){
   return !!p && p.aura === card.id;
 }
 function auraState(card){
-  if (!ownsAura(card.id)) return (card.price | 0) + ' Acorns';
+  if (!ownsAura(card.id)) {
+    const gap = (card.price | 0) - (S.money | 0);
+    if (gap > 0) return 'Need ' + gap + ' more';
+    return (card.price | 0) + ' Acorns';
+  }
   const mine = wardPet();
   const other = allPets().find(p => p.aura === card.id && (!mine || p.id !== mine.id));
   if (other) return 'On ' + petName(other);
@@ -11189,10 +11401,22 @@ function cycleEffects(){
 }
 function shopKey(e){
   if ($('#ovShop').hidden) return false;
-  if (e.key === 'Escape') { closeShop(); return true; }
-  if (e.key === 'ArrowDown') { shopSel = Math.min(shopIds.length - 1, shopSel + 1); renderShop(); return true; }
-  if (e.key === 'ArrowUp') { shopSel = Math.max(0, shopSel - 1); renderShop(); return true; }
-  if (e.key === 'Enter') { if (!e.repeat && shopIds[shopSel]) (ITEMS[shopIds[shopSel]] ? buyItem : buyWardFromShop)(shopIds[shopSel]); return true; }
+  if (e.key === 'Escape') {
+    if (shopMeal && performance.now() < optArmAt) return true;
+    closeShop(); return true;
+  }
+  if (e.key === 'ArrowDown') { if (shopIds.length) { shopSel = Math.min(shopIds.length - 1, shopSel + 1); shopMeal ? renderMealShop() : renderShop(); } return true; }
+  if (e.key === 'ArrowUp') { if (shopIds.length) { shopSel = Math.max(0, shopSel - 1); shopMeal ? renderMealShop() : renderShop(); } return true; }
+  if (e.key === 'Enter') {
+    if (e.repeat) return true;
+    if (shopMeal) {
+      if (performance.now() < optArmAt) return true;
+      const entry = shopMeal.rows[shopSel]; if (entry) closeMealSheet(entry.i);
+      return true;
+    }
+    if (shopIds[shopSel]) (ITEMS[shopIds[shopSel]] ? buyItem : buyWardFromShop)(shopIds[shopSel]);
+    return true;
+  }
   return false;
 }
 
@@ -11297,9 +11521,10 @@ function stopAcornTick(){
   acornTickJob = null;
 }
 function paintAcornCount(n){
-  const s = String(n | 0), h = $('#hdrAcornN'), f = $('#fcAcornN');
+  const s = String(n | 0), h = $('#hdrAcornN'), f = $('#fcAcornN'), m = $('#shopMoney');
   if (h && h.textContent !== s) h.textContent = s;
   if (f && f.textContent !== s) f.textContent = s;
+  if (m && !$('#ovShop').hidden && m.textContent !== s) m.textContent = s;
 }
 function acornShownNow(){
   const el = $('#fcAcornN') || $('#hdrAcornN');
@@ -13557,6 +13782,8 @@ function bindInput(){
     if (!unlock.on) return;
     const el = e.target && e.target.closest ? e.target : (e.target && e.target.parentElement);
     if (el && el.closest && el.closest('#unlockCard')) return;
+    // QA-4: TALK is the way into the talk. Leave the card up so runSteps can hold it and bring it back.
+    if (el && el.closest && el.closest('#talkBtn')) return;
     if (el && unlock.holes.some(h => h.el && (h.el === el || (h.el.contains && h.el.contains(el))))) return;
     unlockClose();
   }, true);
@@ -13629,8 +13856,11 @@ function bindInput(){
   if (mapBackBtn) mapBackBtn.addEventListener('click', mapBack);
   $('#bagClose').addEventListener('click', () => closeBag());
   $('#ovBag').addEventListener('click', e => { if (e.target === e.currentTarget) closeBag(); });
-  $('#shopClose').addEventListener('click', () => closeShop());
-  $('#ovShop').addEventListener('click', e => { if (e.target === e.currentTarget) closeShop(); });
+  $('#shopClose').addEventListener('click', () => {
+    if (shopMeal && performance.now() < optArmAt) return;
+    closeShop();
+  });
+  $('#ovShop').addEventListener('click', e => { if (e.target === e.currentTarget && !shopMeal) closeShop(); });
   $('#lookShuffle').addEventListener('click', shuffleLook);
   $('#lookDone').addEventListener('click', lookDone);
   $$('#ovWardrobe .ward-tabs button').forEach(b => b.addEventListener('click', () => {
@@ -13795,6 +14025,7 @@ function bindInput(){
     if (tut.on && !(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && (e.key === 'Escape' || e.key === 'Backspace')) { e.preventDefault(); skipTutorial(true); return; }
     if (tut.on && KEYS[e.key]) { e.preventDefault(); return; }
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if (shopKey(e)) { e.preventDefault(); return; }
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
     if (scene && sbox.resolve && $('#ovCopy').hidden && $('#ovSettings').hidden && $('#ovReset').hidden && !debugOpen() && $('#ovPhone').hidden) {                  // Space / Enter advance the text box; Escape does nothing during a choice
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sceneKeyEat = true; if (!e.repeat) sceneTap(); return; }
@@ -13821,7 +14052,6 @@ function bindInput(){
     if (e.key === 'Escape' && $('#ovClock') && !$('#ovClock').hidden) { e.preventDefault(); closeClockCard(); return; }
     if (e.key === 'Escape' && !$('#ovRep').hidden) { e.preventDefault(); closeRep(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
-    if (shopKey(e)) { e.preventDefault(); return; }
     // Battle owns the keyboard, including F and S, before walk keys and the debug keys.
     if (!$('#ovBattle').hidden) {
       if (!$('#ovSheet').hidden) { if (e.key === 'Escape' && !$('#shCancel').hidden) closeSheet(null); return; }

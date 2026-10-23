@@ -1,16 +1,14 @@
 /* Unlock tips (D180) and tour step T12r. */
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
 function tourArtDir() {
   if (process.env.PP_ART) return process.env.PP_ART;
-  if (!tourArtDir._tmp) tourArtDir._tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'walklings-tour-'));
-  return tourArtDir._tmp;
+  return artifactsDir('walklings-tour');
 }
 
 function tourSave(step) {
@@ -208,7 +206,7 @@ test('growing up on the Pet tab does not show the tip back on WALK', async ({ pa
   }));
   expect(st).toEqual({ v: 2, flag: true, stage: 1, card: false });
   if (page.viewportSize() && page.viewportSize().width === 390) {
-    const dir = process.env.PP_ART || path.join('review-growup-tip');
+    const dir = process.env.PP_ART || artifactsDir('review-growup-tip');
     fs.mkdirSync(dir, { recursive: true });
     await page.screenshot({ path: path.join(dir, 'walk-after-growup-390.png') });
   }

@@ -273,8 +273,8 @@ test('a stall snack is eaten on the spot and skips the Warm Bowl', async ({ page
   expect(await page.evaluate(() => PixelPets.scene.text)).toBe('Oatcakes in a cloth, still warm.');
   await page.keyboard.press('Space');
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice' && PixelPets.optionsReady === true);
-  const labels = await page.locator('#sbChoices button').allTextContents();
-  expect(labels).toEqual(['Waymark Oatcake (30)']);
+  const labels = await page.locator('#shopList .shop-name').allTextContents();
+  expect(labels).toEqual(['Waymark Oatcake']);
   if (page.viewportSize().width === 390) {
     fs.mkdirSync(SHOTS, { recursive: true });
     await page.screenshot({ path: SHOTS + '/p4_snack_menu_390.png' });
@@ -296,7 +296,7 @@ test('a stall snack is eaten on the spot and skips the Warm Bowl', async ({ page
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
   await page.keyboard.press('Space');
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice' && PixelPets.optionsReady === true);
-  await page.locator('#sbChoices button', { hasText: 'Waymark Oatcake (30)' }).click();
+  await page.locator('#shopList .shop-row', { has: page.locator('.shop-name', { hasText: 'Waymark Oatcake' }) }).locator('.shop-buy').click();
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.text === 'Too full.');
   const full = await page.evaluate(() => ({
     hunger: PixelPets.state.party[0].hunger,
@@ -313,7 +313,7 @@ test('a stall snack is eaten on the spot and skips the Warm Bowl', async ({ page
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full);
   await page.keyboard.press('Space');
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice' && PixelPets.optionsReady === true);
-  const diner = await page.locator('#sbChoices button').allTextContents();
+  const diner = await page.locator('#shopList .shop-name').allTextContents();
   expect(diner).toContain('Warm Bowl');
   await page.evaluate(() => PixelPets.endScene());
 });

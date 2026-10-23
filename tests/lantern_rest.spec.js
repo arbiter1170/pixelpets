@@ -185,6 +185,6 @@ test('a home nap is free, and only a hurt lantern rest costs Acorns @w1', async 
 
   expect(await page.evaluate(() => PixelPets.runScene('lantern_rest'))).toBe(true);
   const free = await playCollect(page, [/^Rest a while$/]);
-  expect(free.says.join(' ')).toContain('already rested');
+  expect(free.says.join(' ')).toContain('full of energy');
   expect(await page.evaluate(() => PixelPets.state.money)).toBe(15);
 });

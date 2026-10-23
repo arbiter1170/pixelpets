@@ -1,8 +1,7 @@
 /* HEART_ALERT v0.2 (D154–D156): the modern heart button pulses when food or rest is low. */
-const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -28,8 +27,7 @@ async function shot(page, name) {
   });
   const shadow = await handle.jsonValue();
   if (page.viewportSize().width === 390) {
-    const dir = path.join('screenshots', 'heart');
-    fs.mkdirSync(dir, { recursive: true });
+    const dir = artifactsDir('screenshots/heart');
     await page.screenshot({ path: path.join(dir, name + '-390.png') });
   }
   return shadow;

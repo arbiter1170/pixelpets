@@ -158,7 +158,7 @@ test('the diner serves priced meals, refuses a full Walkling, and keeps the Warm
   expect(full.text).toBe('Sit anywhere. The stew is always on.');
   await page.keyboard.press('Space');
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice' && PixelPets.optionsReady === true);
-  await page.locator('#sbChoices button', { hasText: 'Berry Stack (40)' }).click();
+  await page.locator('#shopList .shop-row', { has: page.locator('.shop-name', { hasText: 'Berry Stack' }) }).locator('.shop-buy').click();
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.text === 'Too full.');
   const held = await page.evaluate(() => ({
     hunger: PixelPets.state.party[0].hunger,

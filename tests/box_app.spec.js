@@ -1,14 +1,12 @@
 /* Box screen (reorder, release, orphans) and the installable app shell. */
-const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 function saveShot(page, name) {
   const w = page.viewportSize().width;
   if (w === 375) return Promise.resolve();
-  const dir = path.join('screenshots', 'box');
-  fs.mkdirSync(dir, { recursive: true });
+  const dir = artifactsDir('screenshots/box');
   return page.screenshot({ path: path.join(dir, name + '-' + w + '.png') });
 }
 

@@ -1,4 +1,4 @@
-/* PLAYTEST_FIXES_3: bed NRG, Lantern respawn, picker icon, party tips. QA-2 lives here too. */
+/* PLAYTEST_FIXES_3: bed NRG, Lantern respawn, picker icon, party tips. QA-2 and QA-4 live here too. */
 const path = require('path');
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
@@ -143,6 +143,109 @@ test('the Lanterns card waits out the rest prompt and comes back in the same pla
   await reloadSaved(page);
   await page.waitForTimeout(1200);
   await expect(page.locator('#unlockCard')).toBeHidden();
+});
+
+function lanternPaidSave(controls) {
+  const save = starterSave();
+  save.money = 55;
+  save.party[0].hpNow = 4;
+  save.settings.controls = controls;
+  save.settings.tips = true;
+  save.world = { map: 'hm_lantern_in', x: 1, y: 3, facing: 'up', respawn: 'hearthmoor' };
+  return save;
+}
+
+async function paidLanternRest(page, controls) {
+  await boot(page, lanternPaidSave(controls));
+  await page.keyboard.press('Space');
+  await playScene(page, ['Rest (5 Acorns)']);
+  await expect(page.locator('#unlockTitle')).toHaveText('Lanterns', { timeout: 4000 });
+  expect(await page.evaluate(() => PixelPets.state.money | 0)).toBe(50);
+}
+
+async function hitAt(page, sel) {
+  return page.evaluate((sel) => {
+    const b = document.querySelector(sel);
+    if (!b) return { ok: false, id: null };
+    const r = b.getBoundingClientRect();
+    const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { ok: el === b || !!(el && b.contains(el)), id: el && (el.id || (el.closest && el.closest('[id]') && el.closest('[id]').id)) };
+  }, sel);
+}
+
+test('QA-4: the Lanterns card never covers TALK in arcade at 320', async ({ page }) => {
+  test.setTimeout(90000);
+  const width = page.viewportSize().width;
+  if (width === 320) {
+    await paidLanternRest(page, 'arcade');
+    await expect(page.locator('#unlockBody')).toHaveText('Rest at a Lantern to heal your team. Lose a battle and you wake at the closest Lantern House.');
+    await expect(page.locator('#unlockSkip')).toHaveText('GOT IT');
+    const talk = await hitAt(page, '#talkBtn');
+    expect(talk).toEqual({ ok: true, id: 'talkBtn' });
+    const clear = await page.evaluate(() => {
+      const card = document.querySelector('#unlockCard').getBoundingClientRect();
+      const talk = document.querySelector('#talkBtn').getBoundingClientRect();
+      const gap = Math.min(card.right, talk.right) - Math.max(card.left, talk.left);
+      const overlap = gap > 0 && card.bottom > talk.top && card.top < talk.bottom;
+      return { overlap, w: document.querySelector('#unlockCard').offsetWidth, h: document.querySelector('#unlockCard').offsetHeight };
+    });
+    expect(clear.overlap).toBe(false);
+    expect(clear.w).toBeGreaterThanOrEqual(280);
+    const before = clear;
+    await page.locator('#talkBtn').click();
+    await page.waitForFunction(() => PixelPets.scene);
+    for (let i = 0; i < 6; i++) {
+      const mode = await page.evaluate(() => PixelPets.scene && PixelPets.scene.mode);
+      if (mode === 'choice') break;
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(50);
+    }
+    await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice' && PixelPets.optionsReady === true);
+    await expect(page.locator('#sbText')).toContainText('Let your team rest?');
+    for (const label of ['Rest a while', 'Not now']) {
+      const hit = await page.evaluate((label) => {
+        const b = [...document.querySelectorAll('#sbChoices button')].find((el) => el.textContent === label);
+        const r = b.getBoundingClientRect();
+        const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return { ok: el === b || b.contains(el), text: b.textContent };
+      }, label);
+      expect(hit).toEqual({ ok: true, text: label });
+    }
+    await page.locator('#sbChoices button', { hasText: 'Not now' }).click();
+    await page.waitForFunction(() => !PixelPets.scene);
+    await expect(page.locator('#unlockCard')).toBeVisible({ timeout: 4000 });
+    await expect(page.locator('#unlockTitle')).toHaveText('Lanterns');
+    const again = await page.evaluate(() => {
+      const card = document.querySelector('#unlockCard');
+      return { w: card.offsetWidth, h: card.offsetHeight };
+    });
+    expect(again).toEqual({ w: before.w, h: before.h });
+    const back = await hitAt(page, '#talkBtn');
+    expect(back.ok).toBe(true);
+    await page.locator('#unlockSkip').click();
+    await expect(page.locator('#unlockCard')).toBeHidden();
+    await reloadSaved(page);
+    await page.waitForTimeout(1200);
+    await expect(page.locator('#unlockCard')).toBeHidden();
+    expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
+
+    await paidLanternRest(page, 'modern');
+    await expect(page.locator('#talkBtn')).toBeHidden();
+    await expect(page.locator('#unlockSkip')).toHaveText('GOT IT');
+    await expect(page.locator('#unlockBody')).toHaveText('Rest at a Lantern to heal your team. Lose a battle and you wake at the closest Lantern House.');
+    return;
+  }
+
+  await paidLanternRest(page, 'arcade');
+  await expect(page.locator('#unlockSkip')).toHaveText('GOT IT');
+  const talk = await hitAt(page, '#talkBtn');
+  expect(talk).toEqual({ ok: true, id: 'talkBtn' });
+  const overlap = await page.evaluate(() => {
+    const card = document.querySelector('#unlockCard').getBoundingClientRect();
+    const talk = document.querySelector('#talkBtn').getBoundingClientRect();
+    return card.bottom > talk.top && card.top < talk.bottom && card.right > talk.left && card.left < talk.right;
+  });
+  expect(overlap).toBe(false);
 });
 
 test('a loss wakes the team at the nearest Lantern House with no Acorn cost', async ({ page }) => {

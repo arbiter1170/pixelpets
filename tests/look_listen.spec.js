@@ -1,8 +1,7 @@
 /* Look and listen: glimmer town loop, quarry and grove loops, tier-2 lanyard, Imogen, Hollis, Rook's lanyard. */
-const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -126,8 +125,7 @@ test('the badge and the new faces read as separate pictures', async ({ page }) =
     return PixelPets.paintPreview();
   });
   expect(painted).toBe(true);
-  const dir = path.join('screenshots', 'look_listen');
-  fs.mkdirSync(dir, { recursive: true });
+  const dir = artifactsDir('screenshots/look_listen');
   await page.locator('#artSheet').screenshot({ path: path.join(dir, 'sheet.png') });
   const box = await page.locator('#artSheet').boundingBox();
   expect(box.width).toBeGreaterThan(400);

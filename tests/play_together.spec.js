@@ -5,10 +5,10 @@ const { spawn } = require('child_process');
 const net = require('net');
 const fs = require('fs');
 const http = require('http');
-const { starterSave, installSave, gotoGame } = require('./helpers');
+const { starterSave, installSave, gotoGame, artifactsDir } = require('./helpers');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
-const SHOTS = 'review-play-together';
+const SHOTS = artifactsDir('review-play-together');
 const LOCK = require('path').join(__dirname, '..', 'test-logs', 'rtdb-play.lock');
 async function lockEmu(){
   fs.mkdirSync(require('path').dirname(LOCK), { recursive: true });
