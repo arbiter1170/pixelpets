@@ -141,6 +141,19 @@ test('a late cloud compare never adopts (reloads) under a battle', async ({ page
   await page.route('**/firebase-firestore.js*', fulfill(fsMod));
   await page.route(/googleapis\.com|firebaseio\.com|firebaseapp\.com|firebasestorage\.app/, (route) => route.abort('failed'));
   await installSave(page.context(), starterSave(), { quietDay: true });
+  await page.addInitScript(() => {
+    const real = window.setInterval.bind(window);
+    window.__ppCloudTicks = 0;
+    window.setInterval = function(fn, ms) {
+      if (ms === 10000 && String(fn).indexOf('busy') >= 0) {
+        return real(function() {
+          window.__ppCloudTicks++;
+          return fn.apply(this, arguments);
+        }, ms);
+      }
+      return real.apply(this, arguments);
+    };
+  });
   await gotoGame(page, '?cloud=block&debug=1');
   await page.waitForFunction(() => typeof PPCloud !== 'undefined' && PPCloud.info().status === 'offline' && window.__compares >= 1);
   // This device last synced rev 3 and has not changed since; the cloud now holds rev 5 from elsewhere -> quiet adopt.
@@ -153,7 +166,7 @@ test('a late cloud compare never adopts (reloads) under a battle', async ({ page
     window.__comparesAtBattle = window.__compares;
   }, JSON.stringify(cloudSave));
   let loads = 0; page.on('load', () => { loads++; });
-  await page.waitForTimeout(12500);                        // more than one cloud tick
+  await expect.poll(async () => page.evaluate(() => window.__ppCloudTicks || 0), { timeout: 15000 }).toBeGreaterThanOrEqual(1);
   const mid = await page.evaluate(() => ({ on: PixelPets.battle.on, compares: window.__compares - window.__comparesAtBattle }));
   expect(mid.on).toBe(true);
   expect(mid.compares, 'no compare under the battle').toBe(0);

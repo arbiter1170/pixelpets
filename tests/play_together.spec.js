@@ -1,62 +1,20 @@
 /* PLAY_TOGETHER_P1. Two holders on the local Firebase emulators only. Never the live project.
    Every case runs in the 390 project (one worker, one emulator). Layout checks open their own 320 and 375 pages. */
 const { test, expect } = require('@playwright/test');
-const { spawn } = require('child_process');
-const net = require('net');
 const fs = require('fs');
 const http = require('http');
 const { starterSave, installSave, gotoGame, artifactsDir } = require('./helpers');
+const { ensureEmulator, releaseEmulator } = require('./emu_shared');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
 const SHOTS = artifactsDir('review-play-together');
-const LOCK = require('path').join(__dirname, '..', 'test-logs', 'rtdb-play.lock');
-async function lockEmu(){
-  fs.mkdirSync(require('path').dirname(LOCK), { recursive: true });
-  for (let i = 0; i < 240; i++) {
-    try { fs.writeFileSync(LOCK, String(process.pid), { flag: 'wx' }); return; }
-    catch (e) {
-      let owner = 0;
-      try { owner = parseInt(fs.readFileSync(LOCK, 'utf8'), 10); } catch (e2) {}
-      let alive = false;
-      if (owner) { try { process.kill(owner, 0); alive = true; } catch (e3) {} }
-      if (!alive) { try { fs.unlinkSync(LOCK); } catch (e4) {} continue; }
-      await new Promise(r => setTimeout(r, 500));
-    }
-  }
-  throw new Error('emulator lock');
-}
-function unlockEmu(){
-  try { if (fs.existsSync(LOCK) && fs.readFileSync(LOCK, 'utf8') === String(process.pid)) fs.unlinkSync(LOCK); } catch (e) {}
-}
 const BASE = 'http://127.0.0.1:' + (process.env.PP_PORT || '8080');
-let emu = null, emuStarted = false, env = null;
+let env = null;
 
 const ADJ = ['Mossy','Amber','Sunny','Misty','Quiet','Brave','Cozy','Dewy','Ferny','Pebbly','Breezy','Starry','Rosy','Hazy','Mellow','Nimble','Plucky','Gentle','Cheery','Rustly','Twinkly','Snug','Merry','Clover','Maple','Hazel','Thistle','Puddly','Leafy','Drowsy','Bouncy','Woolly'];
 const NOUN = ['Rambler','Wanderer','Strider','Hiker','Rover','Roamer','Trekker','Stroller','Forager','Drifter','Pathfinder','Tracker','Ambler','Voyager','Sprout','Pinecone','Acorn','Sparrow','Otter','Badger','Wren','Finch','Hedgehog','Moth','Toadstool','Puffin','Squirrel','Robin','Beetle','Lark','Newt','Fawn'];
 function fnv(s){ let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; }
 function nameFor(uid){ const h = fnv(String(uid)); return ADJ[h % 32] + ' ' + NOUN[(h >>> 8) % 32]; }
-function portOpen(port){
-  return new Promise(res => { const s = net.connect({ port, host: '127.0.0.1' }, () => { s.end(); res(true); }); s.on('error', () => res(false)); });
-}
-async function emuPorts(which){
-  const db = await portOpen(9000), auth = await portOpen(9099), store = await portOpen(8180);
-  return which === 'all' ? db && auth && store : db || auth || store;
-}
-async function waitUntil(pred, ms, err){
-  const t0 = Date.now();
-  while (!(await pred())) {
-    if (Date.now() - t0 > ms) throw new Error(err);
-    await new Promise(r => setTimeout(r, 200));
-  }
-}
-// TCP open is not enough: a rules upload to an emulator that is still starting, or still exiting, fails with ECONNRESET.
-function dbAnswers(){
-  return new Promise(res => {
-    const req = http.get({ host: '127.0.0.1', port: 9000, path: '/.json?ns=demo-walklings', timeout: 1000 }, (r) => { r.resume(); res(true); });
-    req.on('error', () => res(false));
-    req.on('timeout', () => { req.destroy(); res(false); });
-  });
-}
 function presence(extra){
   const now = Date.now();
   return Object.assign({
@@ -203,27 +161,14 @@ test.describe('Play together', () => {
   // would run beside it on the same emulator and room code. 320 and 375 run inside 34 and 40 instead.
   test.beforeAll(async ({}, info) => {
     test.skip(info.project.name !== '390', 'runs in the 390 project; other widths run inside it');
-    await lockEmu();
-    // repeat-each gives each repeat its own worker. Hold the lock until the emulator
-    // this worker started has actually exited, so the next repeat does not upload rules
-    // to a process that is still shutting down.
-    if (!(await emuPorts('all')) && (await emuPorts('any'))) await waitUntil(async () => !(await emuPorts('any')), 20000, 'previous emulator did not exit');
-    if (!(await emuPorts('all'))) {
-      emu = spawn('npx', ['firebase', 'emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings'], { detached: true, stdio: 'ignore' });
-      emuStarted = true;
-      await waitUntil(() => emuPorts('all'), 40000, 'database emulator did not start');
-    }
-    await waitUntil(dbAnswers, 10000, 'database emulator did not answer');
+    test.setTimeout(600000);
+    await ensureEmulator();
     env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await rootSet('roomCodes/AMB4RQ', { on: true });
   });
   test.afterAll(async () => {
     try { if (env) await env.cleanup(); } catch (e) {}
-    if (emuStarted && emu && emu.pid) {
-      try { process.kill(-emu.pid, 'SIGTERM'); } catch (e) { try { emu.kill('SIGTERM'); } catch (e2) {} }
-      try { await waitUntil(async () => !(await emuPorts('any')), 20000, 'emulator ports stayed open'); } catch (e) {}
-    }
-    unlockEmu();
+    releaseEmulator();
   });
   test.beforeEach(async ({}, info) => { if (info.project.name === '390' || info.project.name === '320') await wipe(); });
 
@@ -361,7 +306,9 @@ test.describe('Play together', () => {
     const uid = await page.evaluate(() => window.PixelPets.net.uid);
     const w0 = await page.evaluate(() => window.PixelPets.net.stats.writes);
     const node0 = await rootGet('rooms/AMB4RQ/hearthmoor');
-    await page.waitForTimeout(22000);
+    // heartbeatMs is 20s of Date.now. Jump the clock the way test 42 does, then wait for that one write.
+    await advanceClock(page, 22000);
+    await expect.poll(async () => page.evaluate(() => window.PixelPets.net.stats.writes), { timeout: 8000 }).toBe(w0 + 1);
     const w1 = await page.evaluate(() => window.PixelPets.net.stats.writes);
     const node1 = await rootGet('rooms/AMB4RQ/hearthmoor');
     expect(w1 - w0, 'check 9 one heartbeat').toBe(1);
@@ -373,7 +320,7 @@ test.describe('Play together', () => {
 
   test('10 leave and stale', async ({ page, browser }, info) => {
     test.skip(info.project.name !== '390', '390 only');
-    test.setTimeout(90000);
+    test.setTimeout(30000);
     const a = page, b = await bootNew(browser, saveFor('staleB', 'Birch'));
     await boot(a, saveFor('staleA', 'Tester'));
     await joinRoom(a); await joinRoom(b);
@@ -384,8 +331,15 @@ test.describe('Play together', () => {
     const fake = 'staleFake';
     await rootSet('rooms/AMB4RQ/hearthmoor/r1/' + fake, presence({ seen: Date.now(), joined: Date.now() - 5000 }));
     await b.waitForFunction(sees, fake, { timeout: 3000 });
-    await b.waitForTimeout(65000);
-    expect(await b.evaluate(sees, fake)).toBe(false);
+    // staleMs is 60s of Date.now. Hold the clock forward until sweep drops the fake holder.
+    await b.evaluate(() => {
+      const real = Date.now.bind(Date);
+      window.__ppRealNow = real;
+      const extra = 65000;
+      Date.now = () => real() + extra;
+    });
+    await expect.poll(async () => b.evaluate(sees, fake), { timeout: 3000 }).toBe(false);
+    await b.evaluate(() => { Date.now = window.__ppRealNow; });
     expect(b.ppErrors, b.ppErrors.join('\n')).toEqual([]);
     await b.context().close();
   });
@@ -434,7 +388,7 @@ test.describe('Play together', () => {
 
   test('14 area and 15 interior', async ({ page, browser }, info) => {
     test.skip(info.project.name !== '390', '390 only');
-    test.setTimeout(50000);
+    test.setTimeout(20000);
     const a = page, b = await bootNew(browser, saveFor('areaB', 'Birch'));
     await boot(a, saveFor('areaA', 'Tester'));
     await joinRoom(a); await joinRoom(b);
@@ -457,8 +411,29 @@ test.describe('Play together', () => {
     expect(await a.evaluate(() => window.PixelPets.net.others.length)).toBe(0);
     await a.evaluate(() => window.PixelPets.goto('hearthmoor', 8, 12, 'down'));
     await b.waitForFunction(sees, aUid, { timeout: 3000 });
+    // interiorOfflineMs is a 30s setTimeout. Record that timer, then run its callback.
+    // Test 36 still waits out the real hidden-offline timer.
+    await a.evaluate(() => {
+      const real = window.setTimeout.bind(window);
+      const realClear = window.clearTimeout.bind(window);
+      window.__ppOff = [];
+      window.setTimeout = function(fn, ms) {
+        const id = real(fn, ms);
+        if (ms === 30000) window.__ppOff.push({ id: id, fn: fn });
+        return id;
+      };
+      window.clearTimeout = function(id) {
+        window.__ppOff = window.__ppOff.filter(t => t.id !== id);
+        return realClear(id);
+      };
+    });
     await a.evaluate(() => window.PixelPets.goto('hm_lodge_in', 4, 4, 'up'));
-    await a.waitForTimeout(31000);
+    await expect.poll(async () => a.evaluate(() => window.__ppOff.length), { timeout: 3000 }).toBeGreaterThan(0);
+    await a.evaluate(() => {
+      const t = window.__ppOff[window.__ppOff.length - 1];
+      window.clearTimeout(t.id);
+      t.fn();
+    });
     expect(await a.evaluate(() => window.PixelPets.net.connected)).toBe(false);
     expect(a.ppErrors, a.ppErrors.join('\n')).toEqual([]);
     await b.context().close();
@@ -827,6 +802,7 @@ test.describe('Play together', () => {
   test('36 hidden tab', async ({ page }, info) => {
     test.skip(info.project.name !== '390', '390 only');
     test.setTimeout(90000);
+    // The one real-time check in this file. hiddenOfflineMs stays on a real 60s timer.
     await boot(page, saveFor('hide1', 'Tester'));
     await joinRoom(page);
     const uid = await page.evaluate(() => window.PixelPets.net.uid);

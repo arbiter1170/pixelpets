@@ -1,40 +1,17 @@
 /* COOP_R2 Build 1. Two holders on the local Firebase emulators only. Never the live project.
-   The file runs in the 390 project. 320 runs inside it. A lock keeps this off the Play together emulator. */
+   The file runs in the 390 project. 320 runs inside it. It shares one local emulator
+   with Play together and the effect-budget check. The lock keeps those files
+   from using the room at the same time. */
 const { test, expect } = require('@playwright/test');
 const { webkit } = require('playwright');
-const { spawn } = require('child_process');
-const net = require('net');
 const fs = require('fs');
-const path = require('path');
 const { starterSave, installSave, gotoGame, artifactsDir } = require('./helpers');
+const { ensureEmulator, releaseEmulator } = require('./emu_shared');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
 const SHOTS = artifactsDir('review-coop-r2');
 const BASE = 'http://127.0.0.1:' + (process.env.PP_PORT || '8080');
-const LOCK = path.join(__dirname, '..', 'test-logs', 'rtdb-play.lock');
-let emu = null, emuStarted = false, env = null;
-
-function portOpen(port){
-  return new Promise(res => { const s = net.connect({ port, host: '127.0.0.1' }, () => { s.end(); res(true); }); s.on('error', () => res(false)); });
-}
-async function lockEmu(){
-  fs.mkdirSync(path.dirname(LOCK), { recursive: true });
-  for (let i = 0; i < 240; i++) {
-    try { fs.writeFileSync(LOCK, String(process.pid), { flag: 'wx' }); return; }
-    catch (e) {
-      let owner = 0;
-      try { owner = parseInt(fs.readFileSync(LOCK, 'utf8'), 10); } catch (e2) {}
-      let alive = false;
-      if (owner) { try { process.kill(owner, 0); alive = true; } catch (e3) {} }
-      if (!alive) { try { fs.unlinkSync(LOCK); } catch (e4) {} continue; }
-      await new Promise(r => setTimeout(r, 500));
-    }
-  }
-  throw new Error('emulator lock');
-}
-function unlockEmu(){
-  try { if (fs.existsSync(LOCK) && fs.readFileSync(LOCK, 'utf8') === String(process.pid)) fs.unlinkSync(LOCK); } catch (e) {}
-}
+let env = null;
 function saveFor(uid, name){
   const s = starterSave();
   s.uid = uid; s.created = 1700000000000 + uid.length;
@@ -159,25 +136,15 @@ test.describe('B1', () => {
   test.describe.configure({ mode: 'serial', timeout: 180000 });
   test.beforeAll(async ({}, info) => {
     test.skip(info.project.name !== '390', 'runs in the 390 project; 320 runs inside it');
-    await lockEmu();
-    const ready = await portOpen(9000) && await portOpen(9099) && await portOpen(8180);
-    if (!ready) {
-      emu = spawn('npx', ['firebase', 'emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings'], { detached: true, stdio: 'ignore' });
-      emuStarted = true;
-      for (let i = 0; i < 80; i++) {
-        if (await portOpen(9000) && await portOpen(9099) && await portOpen(8180)) break;
-        await new Promise(r => setTimeout(r, 500));
-      }
-    }
-    if (!(await portOpen(9000))) throw new Error('database emulator did not start');
+    test.setTimeout(600000);
+    await ensureEmulator();
     env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await rootSet('roomCodes/AMB4RQ', { on: true });
     await rootSet('config/coop/on', true);
   });
   test.afterAll(async () => {
     if (env) await env.cleanup();
-    if (emuStarted && emu && emu.pid) { try { process.kill(-emu.pid, 'SIGTERM'); } catch (e) { try { emu.kill('SIGTERM'); } catch (e2) {} } }
-    unlockEmu();
+    releaseEmulator();
   });
   test.beforeEach(async ({}, info) => { if (info.project.name === '390') await wipe(); });
 
