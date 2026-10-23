@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Synthetic proof for the three scans. Builds temp inputs and checks file:line.
+/* Synthetic proof for the scans. Builds temp inputs and checks file:line.
    The toy brand is built from char codes, never written in this file. */
 const { spawnSync } = require('child_process');
 const fs = require('fs');
@@ -273,6 +273,28 @@ function symlinkFixtures() {
   return { bad, clean, notRepo, loose, ignored };
 }
 
+function mistakeFixtures() {
+  const bad = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-mbad-'));
+  const clean = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-mclean-'));
+  const badBody = [
+    "const shot = '/opt/cursor/artifacts/x.png';",
+    "execSync('git show HEAD:keeper.js');",
+    "spawnSync('git', ['show', 'HEAD~1:keeper.js']);",
+    "execSync(\"git show 'HEAD:keeper.js'\");",
+    '',
+  ].join('\n');
+  const cleanBody = [
+    '// /opt/cursor/artifacts and git show HEAD: belong in this comment',
+    "const dir = artifactsDir(); // scan-ok: test-mistakes",
+    "const fallback = '/opt/cursor/artifacts'; // scan-ok: test-mistakes",
+    'expect(1).toBe(1);',
+    '',
+  ].join('\n');
+  writeTree(bad, { 'tests/bad.spec.js': badBody });
+  writeTree(clean, { 'tests/ok.spec.js': cleanBody, 'tests/helpers.js': cleanBody });
+  return { bad, clean };
+}
+
 function mapFixtures() {
   const js = 'function alpha(){\n  return 1;\n}\n';
   const stale = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-mstale-'));
@@ -299,6 +321,7 @@ function rm(dir) { try { fs.rmSync(dir, { recursive: true, force: true }); } cat
 function main() {
   const w = wordingFixtures();
   const d = decisionsFixtures();
+  const tm = mistakeFixtures();
   let s = null;
   let m = null;
   try {
@@ -412,6 +435,21 @@ function main() {
     check(looseS.status === 1, 'untracked symlink exit ' + looseS.status);
     check(looseS.stdout.indexOf('SCAN FAIL symlinks: to_modules:1 symlink (mode 120000)') >= 0, 'untracked symlink line\n' + looseS.stdout);
 
+    const badT = run(tm.bad, 'test_mistakes');
+    show('test_mistakes bad', badT);
+    check(badT.status === 1, 'test_mistakes bad exit ' + badT.status);
+    check(badT.stdout.indexOf('SCAN FAIL test_mistakes: tests/bad.spec.js:1 hardcoded /opt/cursor/artifacts') >= 0, 'artifacts line\n' + badT.stdout);
+    check(badT.stdout.indexOf('SCAN FAIL test_mistakes: tests/bad.spec.js:2 git show HEAD baseline') >= 0, 'git show HEAD: line\n' + badT.stdout);
+    check(badT.stdout.indexOf('SCAN FAIL test_mistakes: tests/bad.spec.js:3 git show HEAD baseline') >= 0, 'git show HEAD~ line\n' + badT.stdout);
+    check(badT.stdout.indexOf('SCAN FAIL test_mistakes: tests/bad.spec.js:4 git show HEAD baseline') >= 0, 'quoted HEAD: line\n' + badT.stdout);
+    check(badT.stdout.indexOf('SCAN FAIL test_mistakes (4)') >= 0, 'test_mistakes count\n' + badT.stdout);
+    check(badT.stdout.indexOf('SCAN PASS test_mistakes') < 0, 'test_mistakes bad must not pass');
+
+    const cleanT = run(tm.clean, 'test_mistakes');
+    show('test_mistakes clean', cleanT);
+    check(cleanT.status === 0, 'test_mistakes clean exit ' + cleanT.status + '\n' + cleanT.stdout);
+    check(cleanT.stdout.trim() === 'SCAN PASS test_mistakes', 'test_mistakes clean output');
+
     const ignS = run(s.ignored, 'symlinks');
     show('symlinks ignored', ignS);
     check(ignS.status === 1, 'ignored symlink exit ' + ignS.status);
@@ -419,6 +457,7 @@ function main() {
   } finally {
     for (const dir of Object.values(w)) rm(dir);
     for (const dir of Object.values(d)) rm(dir);
+    for (const dir of Object.values(tm)) rm(dir);
     if (s) for (const dir of Object.values(s)) rm(dir);
     if (m) for (const dir of Object.values(m)) rm(dir);
   }

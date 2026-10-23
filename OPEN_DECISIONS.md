@@ -10,7 +10,7 @@ D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK
 
 HUSHWATER B1 merged in #125 and HUSHWATER B2 merged in #126. Both are on main.
 
-Next free id is D577.
+Next free id is D578.
 
 ## Open
 
@@ -70,6 +70,8 @@ Next free id is D577.
 ## Settled
 
 Settled calls are in archive/DECISIONS_SETTLED.md.
+
+D577 Market Row frame-budget test (red): Vincent, Oct 23, 2026, 10:23 AM ET: move it to an opt-in slow lane, out of the main run; 0.3 ms budget unchanged.
 
 STORES_AND_TOWN_LIFE D416-D434 are recorded in the archive (Oct 22, 2026). D416, D425 and D431 are green (Supervisor, about 2:00 AM ET). D418, D422 and D430 are red, settled by Vincent (2:01 AM ET): whereabouts gated by Standing; cosmetics from a battle win on the first win only; keep the name Lamplight Provisions with a GENERAL STORE sub-sign. The yellows settled on their defaults (Vincent, Design and PixelPets, 2:03 AM ET). D434 is dropped. D406 stays green: the Modern camera clears the HUD. P0, the edge-arrow rail, the chip and the tile count, is on this branch. P1-P6 are not started.
 

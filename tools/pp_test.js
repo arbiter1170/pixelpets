@@ -5,6 +5,7 @@
    - All raw output goes to a log file; stdout gets a short summary only.
    - Exits with Playwright's real exit code (no pipe masking).
    Usage: node tools/pp_test.js [any playwright args, e.g. tests/smoke.spec.js --project=390]
+          node tools/pp_test.js --slow   (only @slow tests, 390 Chromium)
    Env: PP_TEST_DIR (default test-logs; NOT under test-results/, which Playwright wipes at start), PP_TEST_MAX_FAILS (10), PP_TEST_ERR_LINES (12). */
 const { spawnSync } = require('child_process');
 const fs = require('fs');
@@ -72,9 +73,20 @@ if (rules.status !== 0) {
 }
 
 // 2. playwright, everything to the log; json report to file
-const pw = spawnSync('npx', ['playwright', 'test', '--reporter=line,json', ...process.argv.slice(2)], {
+// --slow is opt-in (D577): only @slow tests, 390 Chromium, with PP_SLOW so the
+// config stops inverting @slow. The flag is not a Playwright argument.
+const rawArgs = process.argv.slice(2);
+const slowLane = rawArgs.indexOf('--slow') >= 0;
+const pwArgs = rawArgs.filter(a => a !== '--slow');
+if (slowLane) {
+  const hasProject = pwArgs.some(a => a === '--project' || a.startsWith('--project='));
+  const hasGrep = pwArgs.some(a => a === '--grep' || a.startsWith('--grep='));
+  if (!hasProject) pwArgs.push('--project=390');
+  if (!hasGrep) pwArgs.push('--grep', '@slow');
+}
+const pw = spawnSync('npx', ['playwright', 'test', '--reporter=line,json', ...pwArgs], {
   stdio: ['ignore', log, log],
-  env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_NAME: jsonPath, FORCE_COLOR: '0' },
+  env: { ...process.env, PP_SLOW: slowLane ? '1' : (process.env.PP_SLOW || ''), PLAYWRIGHT_JSON_OUTPUT_NAME: jsonPath, FORCE_COLOR: '0' },
 });
 const code = pw.status === null ? 2 : pw.status;
 const secs = Math.round((Date.now() - t0) / 1000);

@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 11:28 ET: Test scans, a slow lane, and shorter waits
+
+- What changed and why: Tools, tests, skills, and docs only. A scan fails the suite when a test hardcodes an artifacts path or takes a baseline from `git show HEAD:`. The Market Row frame-budget check stays at 0.3 ms and moves to an opt-in slow lane (D577). Nine skills match the box copies. Long sleeps in the play-together checks use a faked clock, except one real 60 s hidden-tab check. Three specs share one local emulator. Cloud and autosave checks poll the real condition. Save stays `pixelpets.save.v2` with `v` 2. No game code.
+- Files touched: `tools/scans/test_mistakes.js`, `tools/scans/run.js`, `tools/scans/selftest.js`, `tools/pp_test.js`, `tools/GAMEJS_MAP.txt`, `playwright.config.js`, `package.json`, `tests/helpers.js`, `tests/aura_perf.spec.js`, `tests/battle_no_reload.spec.js`, `tests/coop_r2.spec.js`, `tests/play_together.spec.js`, `tests/stat_display.spec.js`, `tests/emu_shared.js`, `tests/emu_teardown.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `.cursor/skills/README.md`, nine `SKILL.md` files, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of main `fb485ec`. Build stays `20261023-0847`. No stamp. `python3 tools/bump_build.py` was not run.
+- Tests run and result (widths, checks): `npm run test:agent` — PP_TEST RESULT: PASS exit=0 passed=1204 failed=0 flaky=1 skipped=133 time=1451s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. Market Row did not run. The one flaky test is hushwater "the first step in plays once" at 390 (passed on retry). `npm run test:slow` — PP_TEST RESULT: PASS exit=0 passed=0 failed=0 flaky=1 skipped=0 time=30s (Market Row deltaLoopMs 0.6673, then -0.3286 on retry). At 390, play_together went from 269 s to 139.1 s. Console errors fail the run.
+- Decisions made (colour + reasoning): D577 is red and settled by Vincent (Oct 23, 2026, 10:23 AM ET): the Market Row frame-budget test moves to an opt-in slow lane, and the 0.3 ms budget stays. Next free id is D578.
+- Anything left unfinished: none of this packet. The Supervisor merges. If main later carries a higher next-free id, this branch keeps that header and does not lower it.
+
 ## 2026-10-23 10:20 ET: Older care clicks stay on the Partner tab
 
 - What changed and why: The care tray keeps its own FEED, REST, and HEAL. Older checks that clicked an unscoped care button now click the Partner tab button. A free Lantern rest right after a hurt rest says the already-rested line, because Math.round treats a crumb under 100 as full. The refill line and the cost are unchanged.
