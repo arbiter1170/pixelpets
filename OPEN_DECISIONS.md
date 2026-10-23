@@ -6,11 +6,11 @@ Settled calls are in archive/DECISIONS_SETTLED.md.
 
 D37 is used twice. Do not renumber either row. Q28 owns D92–D103.
 
-D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D416-D434 are reserved: STORES_AND_TOWN_LIFE (recorded in the archive, settled Oct 22, 2026). D435-D444 are reserved: POLISH_BUILD2 (recorded in the archive, settled Oct 22, 2026, design eb50602). D445-D460 are reserved: DESKTOP_FRAME. D461-D469 are reserved: QUEST_CUE_REDESIGN. D470-D481 are reserved: STARTER_MOMENT. D482-D495 are reserved: SHOP_LAYOUT. D496-D507 are reserved: PHONE_SHELL. D508-D521 are reserved: PLAYTEST_FIXES_3. D522-D533 are reserved: MOVES_V2. D534-D547 are reserved: PARTNER_CARE. D548-D559 are reserved: ART_PASS. D560-D563 are reserved: ART_PASS v0.2. D564-D569 are reserved: MOVES_V2 v0.2. D570-D575 are reserved: MOTION_POLISH. D576 TOWN_CHATTER (red) — Vincent: yes, spec now (Oct 23, 2026, 10:18 AM ET, via the Supervisor); design 656d101. D577 is reserved: Market Row slow-lane call (tooling PR bc-26099578). D578 is settled: QA-1 follower second tap closes the care tray (green, ART_PASS PR). D579-D583 are reserved: TOWN_CHATTER v0.1. D397, D398, D399 and D412 are settled.
+D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK_TOWN (D399-D411 are its section 11 and D412-D415 its section 12). D416-D434 are reserved: STORES_AND_TOWN_LIFE (recorded in the archive, settled Oct 22, 2026). D435-D444 are reserved: POLISH_BUILD2 (recorded in the archive, settled Oct 22, 2026, design eb50602). D445-D460 are reserved: DESKTOP_FRAME. D461-D469 are reserved: QUEST_CUE_REDESIGN. D470-D481 are reserved: STARTER_MOMENT. D482-D495 are reserved: SHOP_LAYOUT. D496-D507 are reserved: PHONE_SHELL. D508-D521 are reserved: PLAYTEST_FIXES_3. D522-D533 are reserved: MOVES_V2. D534-D547 are reserved: PARTNER_CARE. D548-D559 are reserved: ART_PASS. D560-D563 are reserved: ART_PASS v0.2. D564-D569 are reserved: MOVES_V2 v0.2. D570-D575 are reserved: MOTION_POLISH. D576 TOWN_CHATTER (red) — Vincent: yes, spec now (Oct 23, 2026, 10:18 AM ET, via the Supervisor); design 656d101. D577 is reserved: Market Row slow-lane call (tooling PR bc-26099578). D578 is settled: QA-1 follower second tap closes the care tray (green, ART_PASS PR). D579-D583 are reserved: TOWN_CHATTER v0.1. D584-D598 are reserved: TUTORIALS_CARE_MOVES v0.1. D599-D604 are reserved: POLISH_3 v0.1. D605-D609 are reserved: ROOM_UNIQUE v0.1 (plan). D397, D398, D399 and D412 are settled.
 
 HUSHWATER B1 merged in #125 and HUSHWATER B2 merged in #126. Both are on main.
 
-Next free id is D584.
+Next free id is D610.
 
 ## Open
 
