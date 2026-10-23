@@ -516,6 +516,29 @@ Recorded from design ART_PASS v0.2 (design commit fd76cb9), without renumbering.
 
 - **D576 (Oct 23, 2026, 10:18 AM ET, Vincent, red, SETTLED YES).** TOWN_CHATTER. Vincent: yes, spec now. Design 656d101. Nothing is built yet.
 
+## MOVES_V2 (calls settled Oct 23, 2026)
+
+Recorded from design MOVES_V2 v0.2.5 (design commit 0422a16), without renumbering. D522-D533 and D564-D569 were reserved. Save stays `pixelpets.save.v2` with `v` 2; the only new saved data is the additive `sig_offer.<id>` flag (D527).
+
+- **D522 (Oct 23, 2026, red, SETTLED YES as drafted (Vincent)).** MOVES_V2. Every Walkling starts with 3 moves (signature, type jab, type status). Lv 1-8 know exactly 3. Bump leaves every learnset. The `bump` id stays.
+- **D523 (Oct 23, 2026, red, SETTLED YES as drafted (Vincent)).** MOVES_V2. Hybrid: one signature per line (20), kept for life, plus a type pool (Lv 9 rider, Lv 18 utility). VOLT lines get a PLAIN or GUST signature.
+- **D524 (Oct 23, 2026, red, SETTLED YES as drafted (Vincent)).** MOVES_V2. 4 slots, at most one new move per level. A free slot takes it. A full set opens today's replace sheet without the signature. No relearning.
+- **D525 (Oct 23, 2026, red, SETTLED YES as drafted (Vincent)).** MOVES_V2. Per-type move animations (GO and HIT on the battle canvas, PAL only, 9 storyboards). FULL plays them. CALM and reduced motion show one static mark. OFF keeps today's fx.
+- **D526 (Oct 23, 2026, yellow, SETTLED YES (unanimous QA, PixelPets, Design)).** MOVES_V2. `topUpMoves` runs in `normalizeV2` on the existing `moves` field. Nothing is removed or reordered. Save v2, no new field.
+- **D527 (Oct 23, 2026, yellow, SETTLED YES (QA's one-time signature offer; Vincent did not object)).** MOVES_V2. A 4-move Walkling without its signature is offered it once from `pumpLearn`. Flag `sig_offer.<id>` is saved before the sheet. Skip is final.
+- **D528 (Oct 23, 2026, yellow, SETTLED YES (unanimous)).** MOVES_V2. `aiPick` adds +6 for an uncapped damaging stat move and x1.5 on a wild foe's signature. Same seeded rng.
+- **D529 (Oct 23, 2026, yellow, SETTLED YES (unanimous)).** MOVES_V2. The numbers of the 36 new moves are the section 5 tables.
+- **D530 (Oct 23, 2026, 8:50 AM ET, green, SETTLED by the Supervisor, on the default).** MOVES_V2. No NRG cost per move. Moves keep per-battle uses.
+- **D531 (Oct 23, 2026, 8:50 AM ET, green, SETTLED by the Supervisor, on the default).** MOVES_V2. Reuse sounds only (`chirp_<type>` at GO, `notice` for signatures, today's hit sounds). No stinger.
+- **D532 (Oct 23, 2026, 8:50 AM ET, green, SETTLED by the Supervisor, on the default).** MOVES_V2. A 4 px PAL `y` FIGHT stripe. The sheet sub line reads "TYPE  PWR n  SIGNATURE". The replace sheet does not list it.
+- **D533 (Oct 23, 2026, 8:50 AM ET, green, SETTLED by the Supervisor, on the default).** MOVES_V2. `bump` and `tumble_charge` stay in MOVES. TRAINERS keep their lists. BATTLE.md v0.4 sync.
+- **D564 (Oct 23, 2026, 8:39 AM ET, yellow, SETTLED by Vincent, on the default (unanimous QA and PixelPets)).** MOVES_V2. Per-type punch as the 7.6 table (wind-up, contact at 140 ms, hit-stop 60-120 ms, shake cap 4 px, knockback, squash, 24-slot pool, every hit ends by 700 ms).
+- **D565 (Oct 23, 2026, 8:39 AM ET, yellow, SETTLED by Vincent, on the default (unanimous QA and PixelPets)).** MOVES_V2. CALM and reduced motion: no wind-up, shake, knockback, squash or white frame; 40 ms stop; one fading tint; static number; ghost holds 300 ms then snaps. OFF keeps today's timings.
+- **D566 (Oct 23, 2026, 8:39 AM ET, yellow, SETTLED by Vincent, on the default (unanimous QA and PixelPets)).** MOVES_V2. Today's 6 Hz super-effective blink is replaced in every mode by one white frame (FULL and OFF 80 ms; CALM the tint).
+- **D567 (Oct 23, 2026, 8:39 AM ET, green, SETTLED by Vincent, on the default (unanimous QA and PixelPets)).** MOVES_V2. Flash budget: at most one white frame per hit, at least 334 ms between onsets screen-wide, blinking shapes hold 170 ms.
+- **D568 (Oct 23, 2026, 8:39 AM ET, yellow, SETTLED by Vincent, on the default (unanimous QA and PixelPets)).** MOVES_V2. Battle step queue: HP lands at contact + hit-stop, ghost bar 250 ms + 300 ms ease, one tap skips to the next text. No rule, roll or outcome change.
+- **D569 (Oct 23, 2026, 8:39 AM ET, yellow, SETTLED by Vincent, on the default (unanimous QA and PixelPets)).** MOVES_V2. Floating damage numbers with `CUE_DIGITS` on the canvas only (the HP card stays digit-free). OFF: none.
+
 ## Market Row frame budget (settled Oct 23, 2026)
 
 - **D577 (Oct 23, 2026, 10:23 AM ET, Vincent, red, SETTLED).** Market Row frame-budget test. Vincent, Oct 23, 2026, 10:23 AM ET: move it to an opt-in slow lane, out of the main run; 0.3 ms budget unchanged.

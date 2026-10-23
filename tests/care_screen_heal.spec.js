@@ -255,6 +255,7 @@ test('fractional HP aria labels are whole numbers and the save keeps the fractio
   const started = await page.evaluate(() => {
     const p = PixelPets.state.party[0];
     p.hpNow = 1.6;
+    PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0;
     return PixelPets.forceBattle('byte/0', 5);
   });
   expect(started).toBe(true);

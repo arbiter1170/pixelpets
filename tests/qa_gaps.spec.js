@@ -35,7 +35,7 @@ async function bootBench(page) {
 // either asks who goes next or shows the end card. `mode` is 'up' (bench has HP, low energy) or 'down'.
 async function knockOutLead(page, kind, mode) {
   const opened = await page.evaluate((kind) => {
-    PixelPets.battle.textMs = 1;
+    PixelPets.battle.textMs = 1; PixelPets.battle.animMs = 0;
     PixelPets.showTab('walk');
     if (kind === 'trainer') return PixelPets.forceTrainer('route1_pia');
     return PixelPets.forceBattle('tide/0', 3);

@@ -10,7 +10,7 @@ const BASE = {
   'fetch/2': { hp: 90, atk: 80, def: 80, spd: 70 },
 };
 const LEARN = {
-  'fetch/0': [[1, 'bump'], [3, 'sap_sip'], [5, 'seed_toss'], [9, 'tumble_charge'], [12, 'thorn_lash'], [15, 'mist_veil'], [20, 'briar_volley'], [25, 'stoke_up'], [30, 'undertow']],
+  'fetch/0': [[1, 'seed_fetch'], [1, 'seed_toss'], [1, 'sap_sip'], [9, 'clover_swat'], [12, 'thorn_lash'], [15, 'mist_veil'], [18, 'burr_tangle'], [20, 'briar_volley'], [25, 'stoke_up'], [30, 'undertow']],
   'fetch/1': [[0, 'fetch_dash'], [22, 'pebble_flick']],
   'fetch/2': [[0, 'steadfast_paw'], [27, 'full_tilt']],
 };
@@ -196,6 +196,8 @@ test('a Fetchling grows up into Harvestail and Hearthound @w1', async ({ page })
   await page.locator('#evolveBtn').click();
   await expect(page.locator('#evoMsg')).toContainText('Hearthound', { timeout: 8000 });
   await page.locator('#evoOk').click();
+  await expect(page.locator('#ovSheet')).toBeVisible();
+  await page.locator('#shList button:not(.skip)').first().click();
   await expect(page.locator('#evoMsg')).toContainText('Steadfast Paw');
   await page.locator('#evoOk').click();
   await expect(page.locator('#ovEvolve')).toBeHidden();

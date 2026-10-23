@@ -123,6 +123,7 @@ async function openChoose(page) {
   const opened = await page.evaluate(() => {
     PixelPets.setMoves(['bump']);
     PixelPets.battle.textMs = 0;
+    PixelPets.battle.animMs = 0;
     PixelPets.healTeam();
     return PixelPets.forceBattle('tide/0', 4);
   });
@@ -132,8 +133,15 @@ async function openChoose(page) {
     return !!(b && b.on && b.state === 'CHOOSE' && b.panel === 'acts');
   }, null, { timeout: 15000 });
   await page.evaluate(() => {
-    const f = PixelPets.battle.foes && PixelPets.battle.foes[0];
-    if (f) { f.hp = 999; f.maxHp = 999; }
+    const b = PixelPets.battle;
+    const f = b.foes && b.foes[0];
+    if (f) {
+      f.hp = 999; f.maxHp = 999; f.stats.atk = 1;
+      f.moves = [{ id: 'bump', uses: 40 }];
+    }
+    b.foePlan = { move: 'bump' };
+    b.animMs = 0;
+    b.textMs = 0;
   });
 }
 

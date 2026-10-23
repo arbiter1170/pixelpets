@@ -535,7 +535,7 @@ test('twelve Hushwater forms join the journal and a holder battle names Tindlet'
     expect(info.formsOut[id].names, id).toEqual(want.names);
     expect(info.formsOut[id].base, id).toEqual(want.base);
     expect(info.formsOut[id].halves, id).toEqual([true, true, true]);
-    expect(info.formsOut[id].learn[0], id).toHaveLength(9);
+    expect(info.formsOut[id].learn[0], id).toHaveLength(10);
     expect(info.formsOut[id].learn[1].length, id).toBeGreaterThan(0);
     expect(info.formsOut[id].learn[2][1], id).toEqual([27, 'full_tilt']);
   }

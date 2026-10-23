@@ -14,6 +14,7 @@ async function openGroup(page, id) {
     PixelPets.giveBx(500);
     PixelPets.healTeam();
     PixelPets.battle.textMs = 0;
+    PixelPets.battle.animMs = 0;
     PixelPets.battle.rng = () => 0.5;
     PixelPets.forceTrainer(trainerId);
   }, id);
@@ -93,6 +94,8 @@ test('one turn: you hit the aim, then both foes swing', async ({ page }) => {
   await openGroup(page, 'rx_wardens');
   const before = await page.evaluate(() => {
     const B = PixelPets.battle;
+    PixelPets.setMoves(['bump']);
+    B.foes.forEach((f) => { f.hp = 400; f.maxHp = 400; });
     return {
       me: PixelPets.state.party[0].hpNow || null,
       max: null,
@@ -160,6 +163,7 @@ test('a loss does not mark the group trainer beaten @w1', async ({ page }) => {
   await gotoDebug(page);
   await page.evaluate(() => {
     PixelPets.battle.textMs = 0;
+    PixelPets.battle.animMs = 0;
     PixelPets.battle.rng = () => 0.5;
     PixelPets.forceTrainer('sm_lookouts');
   });

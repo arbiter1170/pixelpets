@@ -177,7 +177,7 @@ test('reorder, deposit, withdraw, and release keep the pet and the journal @w1',
   expect(report.after).toEqual(['ptide', 'pember', 'pbloom']);
   expect(report.moved).toEqual(report.snap);
   expect(report.snap.mark).toBe('ember');
-  expect(report.snap.moves).toEqual(['bump', 'flick_flame']);
+  expect(report.snap.moves).toEqual(['bump', 'flick_flame', 'foxfire_flick']);
   expect(report.snap.bond).toBe(2);
   expect(report.partner).toBe('pember');
   expect(report.badId).toBe(false);
