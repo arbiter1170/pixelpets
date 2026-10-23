@@ -1,8 +1,7 @@
 /* HUSHWATER B0: a species id this client does not know stays in the party and the box. */
 const { test, expect } = require('@playwright/test');
-const fs = require('fs');
 const path = require('path');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -195,8 +194,7 @@ test('unknown species stays, draws a fallback, and cannot lead', async ({ page }
   expect(grid.cellW).toBeGreaterThanOrEqual(44);
 
   if (page.viewportSize().width === 390) {
-    const dir = '/opt/cursor/artifacts/screenshots';
-    fs.mkdirSync(dir, { recursive: true });
+    const dir = artifactsDir('screenshots');
     await page.locator('#partyBoard [data-id="petzz1"]').screenshot({ path: path.join(dir, 'hushwater-b0-party.png') });
     await page.locator('#dexGrid [data-form="zzfuture/4"]').screenshot({ path: path.join(dir, 'hushwater-b0-journal-cell.png') });
   }
@@ -205,7 +203,7 @@ test('unknown species stays, draws a fallback, and cannot lead', async ({ page }
   await expect(page.locator('#jnTitle')).toHaveText('???');
   await expect(page.locator('#jnType')).toHaveText('???');
   if (page.viewportSize().width === 390) {
-    await page.locator('#ovJournal .ov-inner').screenshot({ path: '/opt/cursor/artifacts/screenshots/hushwater-b0-journal.png' });
+    await page.locator('#ovJournal .ov-inner').screenshot({ path: path.join(artifactsDir('screenshots'), 'hushwater-b0-journal.png') });
   }
   await page.locator('#jnClose').tap({ timeout: 8000 });
   await expect(page.locator('#ovJournal')).toBeHidden();

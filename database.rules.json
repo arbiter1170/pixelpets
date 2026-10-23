@@ -63,7 +63,7 @@
                   ".validate": "newData.isString() && newData.val().matches(/^(k|p|r|o|y|l|g|t|n|b|c|s|w|h|m|d)$/)"
                 },
                 "ax": {
-                  ".validate": "newData.isString() && newData.val().matches(/^(none|glasses|bow|cap|scarf|sash|satchel|goggles|beanie)$/)"
+                  ".validate": "newData.isString() && newData.val().matches(/^(none|glasses|bow|cap|scarf|sash|satchel|goggles|beanie|lanyard)$/)"
                 },
                 "$other": {
                   ".validate": "false"

@@ -1,6 +1,7 @@
 /* PARTNER_UI D245–D257. Acceptance in the settled packet, sections 1–20. */
+const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -101,7 +102,7 @@ test('lower card has five bars, the spec icons, and the card rects', async ({ pa
   expect(nrg).toMatchObject({ w: 5, h: 5, glyph: 'ico_nrg', rgb: [115, 239, 247, 255] });
   expect(grow).toMatchObject({ w: 5, h: 5, glyph: 'ico_grow' });
   expect(grow.rgb[3]).toBe(255);
-  if (W === 390) await page.locator('#petStrip').screenshot({ path: '/opt/cursor/artifacts/partner_lower_card_390.png' });
+  if (W === 390) await page.locator('#petStrip').screenshot({ path: path.join(artifactsDir(), 'partner_lower_card_390.png') });
 });
 
 test('a low FOOD bar blinks and GROW does not, and one tap opens STATS @w1', async ({ page }) => {
@@ -203,7 +204,7 @@ test('PARTNER strip icons and body icons, and 320 fits without scrolling', async
     const block = await page.locator('#scr-pet .care-block').boundingBox();
     const care = await page.locator('#scr-pet .actions.care4').boundingBox();
     await page.screenshot({
-      path: '/opt/cursor/artifacts/partner_screen_390.png',
+      path: path.join(artifactsDir(), 'partner_screen_390.png'),
       clip: { x: 0, y: block.y, width: 390, height: Math.min(care.y + care.height - block.y, 844 - block.y) },
     });
   }
@@ -255,7 +256,7 @@ test('STATS popup is INTERACT and GEAR, and INTERACT returns to PARTNER', async 
   expect(row.rename).toBe(false);
   expect(row.screen).toBe('walk');
   if (page.viewportSize().width === 390) {
-    await page.locator('#ovStats .ov-inner').screenshot({ path: '/opt/cursor/artifacts/partner_stats_popup_390.png' });
+    await page.locator('#ovStats .ov-inner').screenshot({ path: path.join(artifactsDir(), 'partner_stats_popup_390.png') });
   }
   await page.locator('#scRename').click();
   await expect(page.locator('#ovStats')).toBeHidden();

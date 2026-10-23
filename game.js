@@ -7434,12 +7434,19 @@ function dismissSealCard(){ if (!sealWait) return false; const f = sealWait; sea
 function battleKey(e){
   if (sealWait && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sfx('tap'); dismissSealCard(); return; }
   if (skipMsg() && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); return; }
-  if (e.key === 'Escape') {
+  if (e.key === 'Escape' || (e.key === 'Backspace' && battle.panel === 'fight')) {
     if (!$('#ovSheet').hidden && !$('#shCancel').hidden) { closeSheet(null); return; }
-    if (battle.panel === 'fight') { setPanel('acts'); return; }
-    if (battle.panel === 'bef') { leaveBefriendBar(); return; }
+    if (battle.panel === 'fight') { e.preventDefault(); setPanel('acts'); return; }
+    if (e.key === 'Escape' && battle.panel === 'bef') { leaveBefriendBar(); return; }
   }
   if (e.key === ' ' && battle.panel === 'bef' && battle.state === 'CHOOSE') { e.preventDefault(); encounterPress(); return; }
+  // FIGHT list: 1-4 pick that move button. An empty or spent slot is disabled, so the click does nothing.
+  if (battle.state === 'CHOOSE' && battle.panel === 'fight' && (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4')) {
+    e.preventDefault();
+    const btn = $$('#btMoves button')[+e.key - 1];
+    if (btn && !btn.disabled) btn.click();
+    return;
+  }
   if (battle.state !== 'CHOOSE' || battle.panel !== 'acts') return;
   const map = { '1':'fight', '2':'befriend', '3':'swap', '4':'bag', '5':'run', f:'fight', b:'befriend', s:'swap', r:'run', F:'fight', B:'befriend', S:'swap', R:'run' };
   if (map[e.key]) { e.preventDefault(); battleAct(map[e.key]); }
@@ -13095,6 +13102,12 @@ function bindInput(){
     walk.drag = null; ptr = null;
   };
   mc.addEventListener('pointerup', end); mc.addEventListener('pointercancel', end);
+  // A pointer click leaves the button focused, and a later Space or Enter would press it again. Blur it once the click has run.
+  document.addEventListener('click', e => {
+    const t = e.target;
+    const b = t && t.closest ? t.closest('button') : null;
+    if (b && document.activeElement === b) b.blur();
+  });
   // Keyboard (bonus)
   const KEYS = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right', w:'up', s:'down', a:'left', d:'right', W:'up', S:'down', A:'left', D:'right' };
   // A focused button (TALK, QUEST...) fires its click on Space keyup. When the keydown advanced a text box, eat that keyup,
@@ -13110,6 +13123,11 @@ function bindInput(){
       if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); sceneKeyEat = true; if (!e.repeat) sceneTap(); return; }
     }
     if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen() && !e.repeat) { if (talkFacing()) { e.preventDefault(); return; } }
+    // Walk screen, nothing open: Space and Enter must not fall through to a button that still has focus.
+    if ((e.key === ' ' || e.key === 'Enter') && screen === 'walk' && !overlayOpen()) {
+      const ae = document.activeElement;
+      if (ae && ae.tagName === 'BUTTON') { e.preventDefault(); return; }
+    }
     if (e.key === 'Escape' && $('#ovStats') && !$('#ovStats').hidden) { if ($('#scNick') && !$('#scNick').hidden) { hideNickEdit(); return; } closeStatsCard(); return; }
     if (e.key === 'Escape' && $('#ovKit') && !$('#ovKit').hidden) { closeKit(); return; }
     if (e.key === 'Escape' && !$('#ovJournal').hidden) { closeJournal(); return; }
@@ -13127,8 +13145,13 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovRep').hidden) { e.preventDefault(); closeRep(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
     if (shopKey(e)) { e.preventDefault(); return; }
+    // Battle owns the keyboard, including F and S, before walk keys and the debug keys.
+    if (!$('#ovBattle').hidden) {
+      if (!$('#ovSheet').hidden) { if (e.key === 'Escape' && !$('#shCancel').hidden) closeSheet(null); return; }
+      battleKey(e); return;
+    }
     if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
-    if (DEBUG) {                                 // debug keys only with ?debug=1
+    if (DEBUG) {                                 // debug keys only with ?debug=1, and never while a battle is open
       if (e.key === 'e' || e.key === 'E') { startEvolution(true); return; }          // force evolve
       if (e.key === 'g' || e.key === 'G') { if (!overlayOpen()) { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); } return; } // force encounter (spawn-weighted species)
       if (e.key === 'f' || e.key === 'F') { setFast(!fastMode); return; }          // toggle fast decay
@@ -13136,7 +13159,6 @@ function bindInput(){
     }
     if (!$('#ovSheet').hidden) { if (e.key === 'Escape' && !$('#shCancel').hidden) closeSheet(null); return; }
     if (e.key === 'Escape' && !$('#ovWalkling').hidden) { closeWalklingSheet(); return; }
-    if (!$('#ovBattle').hidden) { battleKey(e); return; }
     if ('123'.includes(e.key)) showTab(['pet','walk','col'][+e.key - 1]);
     if (e.key === '4') { openQuest(); return; }
   });

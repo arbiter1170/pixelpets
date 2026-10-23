@@ -96,6 +96,13 @@ async function shot(page, name) {
   await page.screenshot({ path: path.join(SHOTS, name + '-' + page.viewportSize().width + '.png') });
 }
 
+// Review shots. PP_ARTIFACTS points at a writable folder when the default directory cannot be created.
+function artifactsDir(sub) {
+  const dir = path.join(process.env.PP_ARTIFACTS || '/opt/cursor/artifacts', sub || '');
+  fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
 // Plays an open scene to its end. Plain lines advance with Space (a first press completes the typing, a second one moves
 // on); a choice box answers with the next label in `choices` (an exact button text), after the 500 ms tap guard.
 // Returns the choice prompts seen, in order, so a test can check a confirm line. `onChoice(prompt, i)` runs before each answer.
@@ -133,4 +140,4 @@ async function playScene(page, choices = [], onChoice = null, onSeal = null) {
   throw new Error('scene did not end');
 }
 
-module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, withOverlay, boxesOverlap, shot, playScene };
+module.exports = { SHOTS, starterSave, installSave, trackErrors, gotoGame, withOverlay, boxesOverlap, shot, artifactsDir, playScene };

@@ -1,9 +1,8 @@
 /* STORES_AND_TOWN_LIFE P1. Whereabouts on PEOPLE and on a contact card.
    The in-game clock only. Nothing is written to the save. */
-const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -51,8 +50,7 @@ function alive(page) {
 
 async function snap(page, locator, name) {
   if (page.viewportSize().width !== 390) return;
-  const dir = '/opt/cursor/artifacts/p1';
-  fs.mkdirSync(dir, { recursive: true });
+  const dir = artifactsDir('p1');
   await locator.screenshot({ path: path.join(dir, name + '.png') });
 }
 
@@ -103,8 +101,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   expect(icons.ness).toBe(icons.teague);
   expect(icons.mom).not.toBe(icons.teague);
   if (page.viewportSize().width === 390) {
-    const dir = '/opt/cursor/artifacts/p2a';
-    fs.mkdirSync(dir, { recursive: true });
+    const dir = artifactsDir('p2a');
     await page.locator('.rep-row', { hasText: 'Mom' }).screenshot({ path: path.join(dir, 'mom_people_row.png') });
   }
 
