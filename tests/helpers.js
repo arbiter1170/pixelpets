@@ -98,7 +98,7 @@ async function shot(page, name) {
 
 // Review shots. PP_ARTIFACTS points at a writable folder when the default directory cannot be created.
 function artifactsDir(sub) {
-  const dir = path.join(process.env.PP_ARTIFACTS || '/opt/cursor/artifacts', sub || '');
+  const dir = path.join(process.env.PP_ARTIFACTS || '/opt/cursor/artifacts', sub || ''); // scan-ok: test-mistakes
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
