@@ -176,6 +176,7 @@ const PPSave = (() => {
       const ok = Array.isArray(q.moves) && q.moves.length >= 1 && q.moves.length <= 4 && q.moves.every(m => typeof m === 'string' && MOVES[m] && !MOVES[m].fallback) && new Set(q.moves).size === q.moves.length;
       const filled = !ok;
       if (filled) q.moves = defaultMoves(formId(q.species, q.stage), levelOf(q));
+      else if (typeof topUpMoves === 'function') q.moves = topUpMoves(q.moves, formId(q.species, q.stage), levelOf(q));
       const ev = q.evoMoves;
       if (!(Array.isArray(ev) && ev.every(k => k === 1 || k === 2))) q.evoMoves = filled ? Array.from({ length: q.stage }, (_, i) => i + 1) : [];
       q.evoMoves = [...new Set(q.evoMoves)].filter(k => k <= q.stage).sort();

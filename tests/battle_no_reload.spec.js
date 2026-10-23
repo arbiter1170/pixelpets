@@ -27,7 +27,7 @@ async function winBattle(page, beforeClose) {
     await page.waitForFunction(() => { const b = PixelPets.battle; return !b.on || b.panel === 'end' || (b.state === 'CHOOSE' && b.panel === 'acts'); }, null, { timeout: 15000 });
     const st = await page.evaluate(() => {
       const b = PixelPets.battle; if (!b.on || b.panel === 'end') return 'end';
-      b.textMs = 1; b.rng = () => 0.99; b.foePlan = { move: 'wobble' };
+      b.textMs = 1; b.animMs = 0; b.rng = () => 0.99; b.foePlan = { move: 'wobble' };
       PixelPets.setHp('foe', 1); PixelPets.setHp('me', 999);
       document.querySelector('[data-bact="fight"]').click();
       [...document.querySelectorAll('#btMoves button[data-move]')].find((el) => !el.disabled).click();

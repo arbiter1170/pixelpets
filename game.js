@@ -5370,6 +5370,7 @@ function boardPointOnMap(){ return pointOnMap(boardCueStep()); }
 // and clamp). The zone is measured from the live HUD and cached until resize, orientation change or a HUD show/hide.
 const CUE_RAIL = { inset: 56, top: 56, aboveTip: 6, chipHalf: 17, margin: 6 };
 const CUE_DIGITS = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111', '111100111101111', '111001001001001', '111101111101111', '111101111001111'];
+globalThis.CUE_DIGITS = CUE_DIGITS;
 const CUE_CHIP_FILL = (() => { const n = parseInt(PAL.k.slice(1), 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',.85)'; })();
 let cueZoneStamp = 0;
 const cueZone = { stamp: -1, z: null };
@@ -7992,7 +7993,9 @@ function openEncounter(){                                  // the intro flash en
 
 const battle = { on: false, id: 0, kind: 'wild', trainerId: null, wid: null, foes: [], fi: 0, me: null, uses: {}, participants: [],
   fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'IDLE', panel: 'busy', treat: false, result: null,
-  newId: null, rng: Math.random, textMs: null, fx: [], levelUps: [], foeHealUsed: false, log: [] };
+  newId: null, rng: Math.random, textMs: null, animMs: null, fx: [], levelUps: [], foeHealUsed: false, log: [],
+  q: [], ff: false, hold: 0, holdT: 0, shake: null, shown: null, hpShow: null, punch: null, white: null, calm: null,
+  flashAt: null, whites: [], view: null, fxLog: [] };
 let msgSkip = null;
 const alive = id => battle.on && battle.id === id;
 function curFoe(){
@@ -8069,7 +8072,10 @@ function openBattle(o){
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
     fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null, cosmeticLines: [], cosmeticFirst: false,
     fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false,
-    group: false, slots: null, aim: 0, bench: 0, ally: null, allyName: '' });
+    group: false, slots: null, aim: 0, bench: 0, ally: null, allyName: '',
+    q: [], ff: false, hold: 0, holdT: 0, shake: null, shown: null, hpShow: null, punch: null, white: null, calm: null,
+    flashAt: null, whites: [], whiteOn: 0, view: null, fxLog: [] });
+  if (typeof mvPoolReset === 'function') { mvPoolReset(); mvNumClear(); }
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
   else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
@@ -8163,7 +8169,7 @@ function closeBattle(){
   $('#encName').hidden = true; $('#encNick').value = ''; $('#encNick').blur(); $('#btSeal').hidden = true;   // no nickname carries over to the next befriend
   const f2 = $('#btFoe2Row'), al = $('#btAllyRow'), aim = $('#btAim');
   if (f2) f2.hidden = true; if (al) al.hidden = true; if (aim) aim.hidden = true;
-  B.on = false; B.state = 'IDLE'; msgSkip = null; closeSheet(null);
+  B.on = false; B.state = 'IDLE'; cancelQueue(); msgSkip = null; closeSheet(null);
   $('#ovBattle').hidden = true; lockTabs(false);
   const w = B.wid && wild.list.find(o => o.id === B.wid);
   if (w) {
@@ -8317,8 +8323,8 @@ function battleKey(e){
   if (map[e.key]) { e.preventDefault(); battleAct(map[e.key]); }
 }
 
-/* --- messages --- */
-function say(text, id = battle.id){
+/* --- messages and the battle step queue (D568) --- */
+function sayNow(text, id = battle.id){
   return new Promise(res => {
     if (!alive(id)) return res();
     $('#btMsg').textContent = text; battle.log.push(text);
@@ -8327,7 +8333,226 @@ function say(text, id = battle.id){
     const tm = setTimeout(fin, ms); msgSkip = fin;
   });
 }
+function step(k, o){ battle.q.push(Object.assign({ k: k }, o || {})); }
+function stepMs(s, mode){
+  if (s.k !== 'windup' && s.k !== 'stop') return 0;
+  if (battle.animMs != null) return battle.animMs;
+  if (s.k === 'windup') return mode === 'full' ? 140 : 0;
+  if (mode === 'calm') return 40;
+  if (mode === 'off') return 0;
+  return s.ms || 0;
+}
+function stepWait(ms){
+  return new Promise(res => {
+    let done = false;
+    const fin = (fromTap) => {
+      if (done) return; done = true; clearTimeout(tm);
+      if (msgSkip === tap) msgSkip = null;
+      battle.waitKind = null;
+      if (fromTap && !battle.skipQuiet) { battle.ff = true; snapAnim(); }
+      res();
+    };
+    const tap = () => fin(true);
+    const tm = setTimeout(() => fin(false), ms);
+    battle.waitKind = 'anim';
+    msgSkip = tap;
+  });
+}
 function skipMsg(){ if (msgSkip) { msgSkip(); return true; } return false; }
+function barWho(f){
+  const i = battle.foes.indexOf(f);
+  return 'foe:' + (i < 0 ? battle.fi : i);
+}
+function hpEls(who){
+  if (who === 'me') return { ghost: $('#btMeGhost'), fill: $('#btMeHp') };
+  return { ghost: $('#btFoeGhost'), fill: $('#btFoeHp') };
+}
+let ghostToken = 0;
+function clearGhost(who){
+  ghostToken++;
+  const el = hpEls(who || 'foe:0');
+  if (!el.ghost) return;
+  el.ghost.style.transition = 'none';
+  el.ghost.style.width = '0';
+}
+function startGhost(who, snap, mode){
+  const el = hpEls(who);
+  if (!el.ghost || !el.fill || !snap || !snap.max) return;
+  const from = (100 * snap.hpFrom / snap.max) + '%';
+  const to = (100 * snap.hpTo / snap.max) + '%';
+  const token = ++ghostToken;
+  if (mode === 'off' || battle.ff || battle.animMs === 0) {
+    el.ghost.style.transition = 'none';
+    el.ghost.style.width = '0';
+    el.fill.style.transition = 'width .4s linear';
+    el.fill.style.width = to;
+    return;
+  }
+  el.ghost.style.transition = 'none';
+  el.ghost.style.width = from;
+  if (mode === 'calm') {
+    el.fill.style.transition = 'none';
+    el.fill.style.width = to;
+    setTimeout(() => { if (token !== ghostToken) return; el.ghost.style.width = '0'; }, 300);
+  } else {
+    el.fill.style.transition = 'width .3s steps(6, end)';
+    el.fill.style.width = to;
+    setTimeout(() => {
+      if (token !== ghostToken) return;
+      el.ghost.style.transition = 'width .3s ease-out';
+      el.ghost.style.width = to;
+    }, 250);
+  }
+}
+function snapAnim(){
+  const B = battle, t = now();
+  if (B.punch && typeof mvEndMs === 'function') {
+    const end = mvEndMs(B.punch.type, B.punch.variant, B.punch.mode === 'calm' ? 'calm' : 'full');
+    if (t - B.punch.t0 < end) B.punch.t0 = t - end - 1;
+  }
+  if (B.white && B.white.until > t) {
+    B.white.until = t;
+    if (B.whites && B.whites[B.white.i]) B.whites[B.white.i].until = t;
+  }
+  B.hold = 0; B.shake = null;
+}
+function noteWhite(who, t0, until){
+  const B = battle;
+  if (!B.whites) B.whites = [];
+  B.whites.push({ t0: t0, until: until, who: who });
+  B.white = { who: who, t0: t0, until: until, i: B.whites.length - 1 };
+}
+function show(s, mode){
+  const B = battle, t = now();
+  if (!s || s.k === 'text') return;
+  if (s.k === 'go') {
+    if (mode !== 'full') return;
+    B.fx.push({ who: s.who, kind: 'mvGo', type: s.type, sig: !!s.sig, status: !!s.status, effect: s.effect || null, t0: t, dur: s.status ? 420 : 400 });
+    B.fxLog.push('mvGo');
+    sfx('chirp_' + String(s.type || 'PLAIN').toLowerCase(), 0.04);
+    if (s.sig) sfx('notice');
+    return;
+  }
+  if (s.k === 'lunge') { B.fx.push({ who: s.who, kind: 'lunge', t0: t, dur: 300 }); B.fxLog.push('lunge'); return; }
+  if (s.k === 'windup') {
+    B.punch = { who: s.who, tgt: s.tgt, type: s.type, variant: s.variant || 'normal', mode: mode, t0: t };
+    B.calm = null;
+    if (B.ff) snapAnim();
+    return;
+  }
+  if (s.k === 'contact') {
+    const typ = s.type || 'PLAIN', variant = s.variant || 'normal';
+    if (!B.punch) B.punch = { who: s.atk || 'me', tgt: s.who, type: typ, variant: variant, mode: mode, t0: t - 140 };
+    B.punch.tgt = s.who; B.punch.type = typ; B.punch.variant = variant; B.punch.contactAt = t; B.punch.mode = mode;
+    const tgtMon = (s.who || '').indexOf('me') === 0 ? 'me' : 'foe';
+    if (mode === 'full') {
+      B.fx.push({ who: tgtMon, kind: 'mvHit', type: typ, variant: variant, t0: t, dur: 420 });
+      B.fxLog.push('mvHit');
+      const sc = typeof mvScaled === 'function' ? mvScaled(typ, variant) : { shake: 1, white: 50 };
+      const ty = typeof mvPunchType === 'function' ? mvPunchType(typ) : { shake: { axis: 'x', ms: 160 } };
+      B.shake = sc.shake ? { px: Math.min(4, sc.shake), axis: ty.shake.axis, t0: t, ms: ty.shake.ms } : null;
+      if (B.shake) B.fxLog.push('shake');
+      const whiteMs = variant.indexOf('super') >= 0 ? 80 : sc.white;
+      if (whiteMs > 0 && typeof mvFlashOk === 'function' && mvFlashOk(B, t)) noteWhite(tgtMon, t, t + whiteMs);
+      else B.white = null;
+    } else if (mode === 'calm') {
+      B.fx.push({ who: tgtMon, kind: 'mvMark', type: typ, t0: t, dur: 240 });
+      B.fxLog.push('mvMark');
+      B.calm = { who: tgtMon, type: typ, t0: t, ms: 240 };
+      B.shake = null; B.white = null;
+    } else if (s.mult > 1) {
+      B.fx.push({ who: tgtMon, kind: 'flash', t0: t, dur: 400 });
+      if (typeof mvFlashOk === 'function' && mvFlashOk(B, t)) noteWhite(tgtMon, t, t + 80);
+    } else {
+      B.fx.push({ who: tgtMon, kind: 'shake', t0: t, dur: 400 });
+    B.fxLog.push('shake');
+      B.white = null;
+    }
+    if (B.ff) snapAnim();
+    return;
+  }
+  if (s.k === 'stop') {
+    const ms = stepMs(s, mode);
+    if (ms > 0 && !B.ff) { B.hold = t + ms; B.holdT = t; }
+    else B.hold = 0;
+    return;
+  }
+  if (s.k === 'hp') {
+    const snap = B.shown && B.shown.who === s.who ? B.shown : null;
+    if (snap) B.hpShow = snap;
+    if (B.shown && B.shown.who === s.who) B.shown = null;
+    if (snap) startGhost(s.who, snap, mode);
+    renderBattleCards();
+    return;
+  }
+  if (s.k === 'num') {
+    if (mode === 'off' || typeof mvNumTake !== 'function') return;
+    const look = mode === 'calm' ? 'calm' : (s.look || 'normal');
+    const back = B.ff ? (look === 'calm' ? 599 : 439) : 0;
+    mvNumTake(s.who, s.n, look, t - back);
+    B.fxLog.push('num');
+    return;
+  }
+  if (s.k === 'knock') return;
+  if (s.k === 'fx') { B.fx.push({ who: s.who, kind: s.kind, t0: t, dur: s.dur || 400 }); return; }
+  if (s.k === 'sfx') { sfx(s.name, s.delay); return; }
+}
+let playP = null;
+async function play(id){
+  if (playP) return playP;
+  const run = (async () => {
+    const mode = auraMode();
+    while (battle.q.length && alive(id)) {
+      const s = battle.q.shift();
+      const ms = stepMs(s, mode);
+      show(s, mode);
+      if (!alive(id)) break;
+      if (s.k === 'text') await sayNow(s.s, id);
+      else if (ms > 0 && !battle.ff) await stepWait(ms);
+    }
+    if (alive(id)) { battle.q.length = 0; battle.ff = false; }
+  })();
+  playP = run.finally(() => { playP = null; });
+  return playP;
+}
+function say(text, id = battle.id){ step('text', { s: text }); return play(id); }
+function snapQueue(){
+  const B = battle;
+  const mode = auraMode();
+  const keep = [];
+  B.ff = true;
+  while (B.q.length) {
+    const s = B.q.shift();
+    if (s.k === 'text') { keep.push(s); continue; }
+    show(s, mode);
+  }
+  for (let i = keep.length - 1; i >= 0; i--) B.q.unshift(keep[i]);
+  B.hold = 0; B.shake = null; B.punch = null; B.white = null; B.calm = null;
+  if (typeof mvNumClear === 'function') mvNumClear();
+  if (B.shown) { B.hpShow = B.shown; const who = B.shown.who; B.shown = null; renderBattleCards(); clearGhost(who); }
+  else if (B.hpShow) clearGhost(B.hpShow.who);
+  B.ff = false;
+  if (msgSkip && B.waitKind === 'anim') {
+    const f = msgSkip; B.waitKind = null; B.skipQuiet = true;
+    try { f(); } finally { B.skipQuiet = false; }
+  }
+}
+function cancelQueue(){
+  snapQueue();
+  battle.q.length = 0;
+  battle.ff = false;
+  battle.hold = 0;
+  battle.shake = null;
+  battle.shown = null;
+  battle.punch = null;
+  battle.white = null;
+  battle.calm = null;
+  battle.fx.length = 0;
+  if (typeof mvNumClear === 'function') mvNumClear();
+  if (typeof mvPoolReset === 'function') mvPoolReset();
+  if (msgSkip) { const f = msgSkip; msgSkip = null; battle.waitKind = null; f(); }
+}
+battle.step = step; battle.play = play; battle.cancelQueue = cancelQueue; battle.snapQueue = snapQueue; battle.close = closeBattle;
 
 /* --- panels & cards --- */
 function setPanel(name){
@@ -8345,12 +8570,18 @@ function renderActs(){
   $('#btActs').classList.toggle('trainer', !wildB);
 }
 function typeChip(el, type){ el.textContent = type; el.className = 'type-chip t-' + type.toLowerCase(); }
+function shownRead(who, live, max){
+  const B = battle, snap = (B.shown && B.shown.who === who) ? B.shown : (B.hpShow && B.hpShow.who === who ? B.hpShow : null);
+  if (!snap) return { hp: live, max: max };
+  return { hp: B.shown && B.shown.who === who ? snap.hpFrom : snap.hpTo, max: snap.max };
+}
 function renderBattleCards(){
   const B = battle, f = curFoe(), p = activePet(); if (!f || !p) return;
   $('#btFoeName').textContent = foeName(f); $('#btFoeLv').textContent = 'Lv ' + f.level; typeChip($('#btFoeType'), f.type);
-  const fh = $('#btFoeHp'); fh.style.width = (100 * f.hp / f.maxHp) + '%'; fh.classList.toggle('warn', f.hp / f.maxHp < 0.25); ariaBar(fh, Math.ceil(f.hp), f.maxHp, foeName(f) + ' HP');
+  const fr = shownRead(barWho(f), f.hp, f.maxHp);
+  const fh = $('#btFoeHp'); fh.style.width = (100 * fr.hp / fr.max) + '%'; fh.classList.toggle('warn', fr.hp / fr.max < 0.25); ariaBar(fh, Math.ceil(fr.hp), fr.max, foeName(f) + ' HP');
   $('#btFoeStages').textContent = stageText(f.stages);
-  const sp = SPECIES[spi(p)], hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p);
+  const sp = SPECIES[spi(p)], mr = shownRead('me', hpOf(p), maxHpOf(p)), hp = Math.ceil(mr.hp), mhp = mr.max;
   $('#btMeName').textContent = petName(p); $('#btMeLv').textContent = 'Lv ' + levelOf(p); typeChip($('#btMeType'), (sp && sp.type) || '???');
   const mh = $('#btMeHp'); mh.style.width = (100 * hp / mhp) + '%'; mh.classList.toggle('warn', hp / mhp < 0.25); ariaBar(mh, hp, mhp, petName(p) + ' HP');
   $('#btMeHpTxt').textContent = hp + '/' + mhp;
@@ -8388,8 +8619,11 @@ function renderFight(){
   if (opener) ids = [opener].concat(ids.filter(id => id !== opener));
   const out = ids.every(id => !(u[id] > 0));
   const list = out ? ['wobble'] : ids;
+  const sig = typeof SIGNATURES !== 'undefined' ? SIGNATURES[(SPECIES[spi(p)] || {}).id] : null;
   for (let i = 0; i < 4; i++) {
-    const id = list[i], b = document.createElement('button'); b.className = 'btn bt-move' + (opener && id === opener && !out ? ' mv-open' : ''); b.type = 'button';
+    const id = list[i], b = document.createElement('button');
+    b.className = 'btn bt-move' + (opener && id === opener && !out ? ' mv-open' : '') + (sig && id === sig ? ' mv-sig' : '');
+    b.type = 'button';
     if (!id) { b.disabled = true; b.textContent = '-'; box.appendChild(b); continue; }
     const mv = MOVES[id], left = id === 'wobble' ? null : u[id];
     b.dataset.move = id; b.disabled = id !== 'wobble' && !(left > 0);
@@ -8407,6 +8641,7 @@ function renderFight(){
 }
 function toChoose(){
   const B = battle; if (!B.on) return;
+  B.ff = false; B.shown = null; B.hpShow = null;
   B.state = 'CHOOSE';
   const p = activePet(); B.me.mood = moodOf(p);              // mood is read at the start of each turn
   B.foePlan = aiPick();                                       // the AI decides before (and without seeing) the player's action
@@ -8430,7 +8665,16 @@ function aiPick(){
   const statusOk = kind !== 'leader' || B.turn + 1 <= 2;
   const score = m => {
     const mv = MOVES[m.id];
-    if (mv.power > 0) return mv.power * mv.acc / 100 * typeMult(mv.type, me.type) * (mv.type === f.type ? 1.25 : 1);
+    if (mv.power > 0) {
+      let s = mv.power * mv.acc / 100 * typeMult(mv.type, me.type) * (mv.type === f.type ? 1.25 : 1);
+      const eff = mv.effect;
+      if (eff && eff.stat) {
+        const stg = eff.target === 'self' ? f.stages : B.me.stages, cur = stg[eff.stat] || 0;
+        if (!((eff.stages > 0 && cur >= 3) || (eff.stages < 0 && cur <= -3))) s += (typeof AI_V2 !== 'undefined' ? AI_V2.effect_bonus : 6);
+      }
+      if (kind === 'wild' && typeof SIGNATURES !== 'undefined' && SIGNATURES[f.species] === m.id) s *= (typeof AI_V2 !== 'undefined' ? AI_V2.wild_signature_weight : 1.5);
+      return s;
+    }
     if (!statusOk) return 0;
     const e = mv.effect || {};
     if (e.heal) return f.hp > 0.6 * f.maxHp ? 0 : 20;
@@ -8592,30 +8836,48 @@ async function doMove(side, mid, id){
   if (mine ? hpOf(p) <= 0 : f.hp <= 0) return;             // a Fainted user skips
   if (mid !== 'wobble') { if (mine) usesOf(p)[mid]--; else { const m = f.moves.find(x => x.id === mid); if (m) m.uses--; } }
   const uName = mine ? petName(p) : foeLabel(f), tName = mine ? foeLabel(f) : petName(p);
-  B.fx.push({ who: side, kind: 'lunge', t0: now(), dur: 300 });
-  await say(uName + ' tries ' + mv.name + '!', id); if (!alive(id)) return;
+  const mode = auraMode();
+  const line = mine ? (SPECIES[spi(p)] || {}).id : f.species;
+  const sig = typeof SIGNATURES !== 'undefined' && SIGNATURES[line] === mid;
+  const typ = mv.type || 'PLAIN';
+  if (mode === 'full') step('go', { who: side, type: typ, sig: sig, status: mv.power === 0, effect: mv.effect || null });
+  else step('lunge', { who: side });
+  step('text', { s: uName + ' tries ' + mv.name + '!' });
+  await play(id); if (!alive(id)) return;
   const e = mv.effect || null, selfOnly = mv.power === 0 && e && e.target === 'self';
-  if (!selfOnly && !(B.rng() < mv.acc / 100)) { sfx('miss'); await say(uName + ' just misses!', id); return; }
+  if (!selfOnly && !(B.rng() < mv.acc / 100)) { step('sfx', { name: 'miss' }); step('text', { s: uName + ' just misses!' }); await play(id); return; }
   if (mv.power > 0) {
     const att = mine ? myBattler() : foeBattler(f), def = mine ? foeBattler(f) : myBattler();
     const r = damage({ power: mv.power, moveType: mv.type, att, def, rng: B.rng });
     const key = mid + '>' + def.type; if (S.dex.hits[key] !== r.mult) { S.dex.hits[key] = r.mult; }   // type hint seen
-    if (r.mult === 0) { sfx('hitWeak'); await say("It didn't do a thing to " + tName + '...', id); return; }
+    if (r.mult === 0) { step('sfx', { name: 'hitWeak' }); step('text', { s: "It didn't do a thing to " + tName + '...' }); await play(id); return; }
     let berry = false;
+    const whoKey = mine ? barWho(f) : 'me';
+    const hpFrom = mine ? f.hp : hpOf(p);
+    const max = mine ? f.maxHp : maxHpOf(p);
     if (mine) f.hp = Math.max(0, f.hp - r.dmg);
     else {
       const before = hpOf(p);
       setMyHp(p, before - r.dmg);
       berry = applySoftBerry(p, before);
     }
-    B.fx.push({ who: mine ? 'foe' : 'me', kind: r.mult > 1 ? 'flash' : 'shake', t0: now(), dur: 400 });
-    sfx(r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit');
-    if (berry && battle.on) sfx('heal');
+    const hpTo = mine ? f.hp : hpOf(p);
+    B.shown = { who: whoKey, hpFrom: hpFrom, hpTo: hpTo, max: max };
     renderBattleCards(); if (!mine) save();
-    if (r.crit) { await say('A lucky hit!', id); if (!alive(id)) return; }
-    if (r.mult > 1) await say("That hit hard!", id); else if (r.mult < 1) await say("It barely felt that...", id);
-    if (!alive(id)) return;
-    if (berry) { await say(petName(p) + "'s Soft Berry eases the hit!", id); if (!alive(id)) return; }
+    const variant = typeof mvVariant === 'function' ? mvVariant(r.mult, r.crit) : (r.mult > 1 ? 'super' : r.mult < 1 ? 'weak' : 'normal');
+    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey });
+    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant });
+    step('sfx', { name: r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit' });
+    const stopMs = mode === 'full' && typeof mvScaled === 'function' ? mvScaled(typ, variant).stop : 0;
+    step('stop', { ms: stopMs });
+    step('hp', { who: whoKey });
+    if (mode !== 'off') step('num', { who: whoKey, n: r.dmg, look: r.crit ? 'lucky' : r.mult > 1 ? 'super' : r.mult < 1 ? 'weak' : 'normal' });
+    if (mode === 'full') step('knock', { who: whoKey });
+    if (berry) step('sfx', { name: 'heal' });
+    if (r.crit) step('text', { s: 'A lucky hit!' });
+    if (r.mult > 1) step('text', { s: 'That hit hard!' }); else if (r.mult < 1) step('text', { s: 'It barely felt that...' });
+    if (berry) step('text', { s: petName(p) + "'s Soft Berry eases the hit!" });
+    await play(id); if (!alive(id)) return;
     const tgtDown = mine ? f.hp <= 0 : hpOf(p) <= 0;
     if (e) {
       if (e.heal) await healUser(side, e.heal, id);
@@ -8637,15 +8899,17 @@ async function healUser(side, frac, id){
   if (cur >= max) { await say(nm + ' is already full of energy!', id); return; }
   const h = Math.ceil(frac * max);
   if (mine) setMyHp(p, Math.min(max, cur + h)); else f.hp = Math.min(max, cur + h);
-  sfx('heal'); renderBattleCards(); if (mine) save();
+  step('sfx', { name: 'heal' }); renderBattleCards(); if (mine) save();
   await say(nm + ' feels a little better!', id);
 }
 async function applyStage(side, e, id){
   const B = battle, mine = side === 'me', st = mine ? B.me.stages : curFoe().stages, nm = mine ? petName(activePet()) : foeLabel(curFoe());
   const cur = st[e.stat] || 0, nx = clamp(cur + e.stages, -3, 3), S_ = e.stat.toUpperCase();
-  if (nx === cur) { sfx('denied'); await say(nm + "'s " + S_ + " can't get any " + (e.stages > 0 ? 'higher' : 'lower') + '!', id); return; }
-  st[e.stat] = nx; B.fx.push({ who: side, kind: e.stages > 0 ? 'up' : 'down', t0: now(), dur: 700 });
-  sfx(e.stages > 0 ? 'statUp' : 'statDown'); renderBattleCards();
+  if (nx === cur) { step('sfx', { name: 'denied' }); await say(nm + "'s " + S_ + " can't get any " + (e.stages > 0 ? 'higher' : 'lower') + '!', id); return; }
+  st[e.stat] = nx;
+  step('fx', { who: side, kind: e.stages > 0 ? 'up' : 'down', dur: 700 });
+  step('sfx', { name: e.stages > 0 ? 'statUp' : 'statDown' });
+  renderBattleCards();
   const d = Math.abs(nx - cur);
   await say(nm + "'s " + S_ + (e.stages > 0 ? (d > 1 ? ' went way up!' : ' went up!') : (d > 1 ? ' dropped a lot!' : ' dropped!')), id);
 }
@@ -8658,14 +8922,14 @@ async function knockOut(side, id){
   if (side === 'me') {
     const p = activePet(); if (B.fainted.has(p.id)) return;
     faintPet(p); B.fainted.add(p.id); save();                 // §7.2: hpNow 0 + the 20-minute nap, written right away
-    B.fx.push({ who: 'me', kind: 'faint', t0: now(), dur: 400 }); sfx('tired'); renderBattleCards();
+    step('fx', { who: 'me', kind: 'faint', dur: 400 }); step('sfx', { name: 'tired' }); renderBattleCards();
     await say(btLine('petFainted', { pet: petName(p) }), id);
   } else {
     const f = curFoe(); if (f.down) return; f.down = true;
-    B.fx.push({ who: 'foe', kind: B.kind === 'wild' ? 'flee' : 'faint', t0: now(), dur: 600 });
+    step('fx', { who: 'foe', kind: B.kind === 'wild' ? 'flee' : 'faint', dur: 600 });
     awardFoe(Math.max(0, B.foes.indexOf(f)));
-    if (B.kind === 'wild') { sfx('flee'); await say(foeName(f) + ' is worn out and wanders off to rest.', id); }
-    else { sfx('tired'); await say(btLine('foeFainted'), id); }
+    if (B.kind === 'wild') { step('sfx', { name: 'flee' }); await say(foeName(f) + ' is worn out and wanders off to rest.', id); }
+    else { step('sfx', { name: 'tired' }); await say(btLine('foeFainted'), id); }
   }
 }
 // Battle XP (§7) for a defeated or befriended foe: every participant that is still able (not Fainted, HP > 0) gets the award.
@@ -8695,6 +8959,7 @@ async function endCheck(id){
   if (hpOf(activePet()) <= 0) {
     const next = S.party.filter(q => q.id !== B.me.petId && canStepIn(q));
     if (!next.length) { await finish('tired', id); return; }
+    if (battle.q.length) await play(id); if (!alive(id)) return;
     const pick = await swapSheet(true); if (!alive(id)) return;
     const q = petById(pick) || next[0];
     B.me = { petId: q.id, stages: { atk: 0, def: 0, spd: 0 }, mood: moodOf(q) }; B.participants[B.fi].add(q.id);
@@ -11610,8 +11875,9 @@ function paintWinCosmetic(lines){
 }
 async function finish(result, id){
   const B = battle, t = tr(); B.result = result; B.state = 'END'; setPanel('busy');
+  if (B.q.length && alive(id)) await play(id);
   if (result === 'run') { /* toast on close */ }
-  else if (result === 'fled') { B.fx.push({ who: 'foe', kind: 'flee', t0: now(), dur: 600 }); await say('It wandered off...', id); }
+  else if (result === 'fled') { step('fx', { who: 'foe', kind: 'flee', dur: 600 }); await say('It wandered off...', id); }
   else if (result === 'befriended') {
     const nm = foeName(curFoe());
     await say(nm + ' befriended!', id); if (!alive(id)) return;
@@ -11812,12 +12078,15 @@ function levelMoves(p, from, to){
 }
 // Teach `mid`: a free slot learns it at once; full slots open the replace sheet ("Skip it" allowed). `tell` shows a line.
 async function teachMove(p, mid, tell){
+  if (battle.on && battle.q.length) await play(battle.id);
   if (!MOVES[mid] || mid === 'wobble') return 'none';
   if (!Array.isArray(p.moves)) p.moves = [];
   if (p.moves.includes(mid)) return 'known';
   const nm = petName(p), mv = moveName(mid);
   if (p.moves.length < 4) { p.moves.push(mid); save(); sfx('learn'); await tell(nm + ' picked up ' + mv + '!'); return 'learned'; }
-  const items = p.moves.map((x, i) => ({ label: moveName(x), sub: MOVES[x].type + '  ' + (MOVES[x].power ? 'PWR ' + MOVES[x].power : 'STATUS'), value: 'slot' + i }));
+  const sig = typeof SIGNATURES !== 'undefined' ? SIGNATURES[(SPECIES[spi(p)] || {}).id] : null;
+  const items = [];
+  p.moves.forEach((x, i) => { if (x === sig) return; items.push({ label: moveName(x), sub: MOVES[x].type + '  ' + (MOVES[x].power ? 'PWR ' + MOVES[x].power : 'STATUS'), value: 'slot' + i }); });
   items.push({ label: "Skip it", value: 'skip', cls: 'skip' });
   const v = await openSheet(nm + ' wants to pick up ' + mv + ' (' + MOVES[mid].type + (MOVES[mid].power ? ', PWR ' + MOVES[mid].power : '') + '). Replace which move?', items, null);
   if (!v || v === 'skip') { sfx('tap'); await tell(nm + " didn't pick up " + mv + '.'); return 'declined'; }
@@ -11847,6 +12116,16 @@ async function pumpLearn(){
   if (learnQ.length) {
     learnBusy = true;
     try { const j = learnQ.shift(), q = petById(j.id); if (q) await teachMove(q, j.mid, infoSheet); } finally { learnBusy = false; }
+    return;
+  }
+  const due = S.party.find(q => typeof sigOfferDue === 'function' && sigOfferDue(q, (SPECIES[spi(q)] || {}).id, S.flags));
+  if (due) {
+    learnBusy = true;
+    try {
+      const sig = sigOfferDue(due, SPECIES[spi(due)].id, S.flags);
+      S.flags[SIG_OFFER(due.id)] = true; save();
+      await teachMove(due, sig, infoSheet);
+    } finally { learnBusy = false; }
   }
 }
 
@@ -11943,36 +12222,81 @@ function fitBattle(){
   c.style.width = (lw * s) + 'px'; c.style.height = (lh * s) + 'px';
 }
 let btParts = [];
+function battleVis(c){
+  const box = $('#btStage');
+  if (!box || !c.height) return [0, 0, c.width, c.height];
+  const cssH = parseFloat(c.style.height) || box.clientHeight, cssW = parseFloat(c.style.width) || box.clientWidth;
+  const scale = cssH / c.height || 1;
+  const topCut = Math.max(0, (cssH - box.clientHeight) / 2), leftCut = Math.max(0, (cssW - box.clientWidth) / 2);
+  return [Math.floor(leftCut / scale), Math.floor(topCut / scale), Math.ceil((leftCut + box.clientWidth) / scale), Math.ceil((topCut + box.clientHeight) / scale)];
+}
 function drawBattle(t, dt){
   const B = battle, c = $('#battleCanvas'), g = ctx(c), W = c.width, H = c.height, f = curFoe(), p = activePet(); if (!f || !p) return;
   g.drawImage(makeBackdrop(backdropName(), H, skyMode(), W), 0, 0); drawWeather(g, W, H, t);
-  // befriend marker
   if (enc.open && t >= enc.freezeUntil) enc.mark = (Math.sin((t - enc.t0) * enc.speed) + 1) / 2;
   $('#tmark').style.left = (enc.mark * 100) + '%';
-  // grass pads
   const fx0 = W - 26, fy0 = Math.max(4, Math.round(H * 0.18)), mx0 = 6, my0 = H - 14 - 14;
+  const fxT = (B.hold && t < B.hold) ? (B.holdT || t) : t;
+  let wri = 0;
+  for (let i = 0; i < B.fx.length; i++) {
+    const e = B.fx[i];
+    if (fxT - e.t0 < e.dur || e.kind === 'faint' || e.kind === 'flee') B.fx[wri++] = e;
+  }
+  B.fx.length = wri;
+  let shx = 0, shy = 0, meDx = 0, foeDx = 0, meSq = [0, 0], foeSq = [0, 0], tintA = 0;
+  const punch = B.punch;
+  if (punch && typeof mvState === 'function' && punch.mode === 'full') {
+    let ms = t - punch.t0;
+    const end = mvEndMs(punch.type, punch.variant, 'full');
+    if (B.ff) ms = end + 1;
+    const st = mvState(punch.type, ms, punch.variant, 'full');
+    const dir = punch.who === 'me' ? 1 : -1;
+    if (punch.who === 'me') { meDx = st.me_dx * dir; meSq = st.me_sq; foeDx = st.foe_dx * dir; foeSq = st.foe_sq; }
+    else { foeDx = st.me_dx * dir; foeSq = st.me_sq; meDx = st.foe_dx * dir; meSq = st.foe_sq; }
+    shx = st.shake[0]; shy = st.shake[1];
+    if (shx > 4) shx = 4; else if (shx < -4) shx = -4;
+    if (shy > 4) shy = 4; else if (shy < -4) shy = -4;
+    if (ms > end) B.punch = null;
+  } else if (punch && punch.mode !== 'full' && t - punch.t0 > 700) B.punch = null;
+  if (auraMode() !== 'full') { shx = 0; shy = 0; meDx = 0; foeDx = 0; }
+  g.save();
+  if (shx || shy) g.translate(shx, shy);
   g.fillStyle = PAL.t; g.fillRect(fx0 - 2, fy0 + 15, 22, 3); g.fillRect(mx0 - 2, my0 + 15, 22, 3);
-  B.fx = B.fx.filter(e => t - e.t0 < e.dur || e.kind === 'faint' || e.kind === 'flee');
   const drawMon = (who, si, stage, x0, y0, mirror, faded) => {
-    let x = x0, y = y0, mode = (t % 2600) < 130 ? 'b' : 'n', hide = false;
-    y += Math.floor(t / 450) % 2;
-    for (const e of B.fx) {
-      if (e.who !== who) continue; const k = clamp((t - e.t0) / e.dur, 0, 1);
+    let x = x0, y = y0, mode = (fxT % 2600) < 130 ? 'b' : 'n', hide = false;
+    y += Math.floor(fxT / 450) % 2;
+    const sq = who === 'me' ? meSq : who === 'foe' ? foeSq : [0, 0];
+    for (let i = 0; i < B.fx.length; i++) {
+      const e = B.fx[i];
+      if (e.who !== who) continue; const k = clamp((fxT - e.t0) / e.dur, 0, 1);
       if (e.kind === 'lunge') x += Math.round(Math.sin(k * Math.PI) * 6) * (who === 'me' ? 1 : -1);
-      if (e.kind === 'shake') x += (Math.floor(t / 60) % 2) * 2 - 1;
-      if (e.kind === 'flash') { x += (Math.floor(t / 60) % 2) * 2 - 1; if (Math.floor(t / 80) % 2 === 0) mode = 'w'; }
+      if (e.kind === 'shake') x += (Math.floor(fxT / 60) % 2) * 2 - 1;
+      if (e.kind === 'flash') x += (Math.floor(fxT / 60) % 2) ? 1 : -1;
       if (e.kind === 'faint') { y += Math.round(k * 4); mode = 's'; }
-      if (e.kind === 'flee') { x += Math.round((t - e.t0) / 20); if (x > W) hide = true; }
+      if (e.kind === 'flee') { x += Math.round((fxT - e.t0) / 20); if (x > W) hide = true; }
       if (e.kind === 'pop' && k < 1) { if (k < 0.3) hide = true; else y -= Math.round(Math.sin((k - 0.3) / 0.7 * Math.PI) * 3); }
       if ((e.kind === 'up' || e.kind === 'down') && k < 1) { g.fillStyle = e.kind === 'up' ? PAL.y : PAL.b; const ay = y0 - 4 - Math.round(k * 3) * (e.kind === 'up' ? 1 : -1);
-        for (let i = 0; i < 3; i++) g.fillRect(x0 + 15 - (e.kind === 'up' ? i : 2 - i), ay + i, 1 + 2 * (e.kind === 'up' ? i : 2 - i), 1); }
+        for (let n = 0; n < 3; n++) g.fillRect(x0 + 15 - (e.kind === 'up' ? n : 2 - n), ay + n, 1 + 2 * (e.kind === 'up' ? n : 2 - n), 1); }
       if (e.kind === 'hearts' && Math.random() < dt * 8) btParts.push({ type: Math.random() < .5 ? 'heart' : 'spark', x: x0 + Math.random() * 16, y: y0 + 6, vy: -12, life: 1 });
     }
+    if (B.white && B.white.who === who && t >= B.white.t0 && t < B.white.until) mode = 'w';
     if (who === 'me' && !B.meShown) hide = true;
-    if (hide) return;
+    if (hide) return null;
     const img = sprSet(si, stage, faded)[mode];
-    if (mirror) { g.save(); g.translate(x + 18, y); g.scale(-1, 1); g.drawImage(img, 0, 0); g.restore(); } else g.drawImage(img, x, y);
-    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, x, y, !!faded, sprSet(si, stage, faded).n);
+    const dw = Math.max(1, 18 + (sq[0] || 0)), dh = Math.max(1, 18 + (sq[1] || 0));
+    const ox = Math.round(x - (dw - 18) / 2), oy = Math.round(y - (dh - 18) / 2);
+    if (mirror) { g.save(); g.translate(ox + dw, oy); g.scale(-1, 1); g.drawImage(img, 0, 0, dw, dh); g.restore(); }
+    else g.drawImage(img, ox, oy, dw, dh);
+    if (who === 'me' && mode !== 's' && p && p.accessory) drawPetAccessory(g, p.accessory, ox, oy, !!faded, sprSet(si, stage, faded).n);
+    if (B.calm && B.calm.who === who) {
+      const age = t - B.calm.t0;
+      if (age >= 0 && age < B.calm.ms) {
+        tintA = 0.35 * (1 - age / B.calm.ms);
+        g.globalAlpha = tintA; g.fillStyle = PAL[typeof mvLight === 'function' ? mvLight(B.calm.type) : 'w'];
+        g.fillRect(ox, oy, dw, dh); g.globalAlpha = 1;
+      }
+    }
+    return [ox, oy];
   };
   if (B.group && B.slots) {
     let other = null;
@@ -11980,12 +12304,69 @@ function drawBattle(t, dt){
     if (other) drawMon('foe2', other.si, other.stage, Math.max(0, fx0 - 18), fy0 + 4, false, !!other.faded);
     if (B.ally && B.ally.hp > 0) drawMon('ally', B.ally.si, B.ally.stage, mx0 + 18, my0 + 2, true, false);
   }
-  drawMon('foe', f.si, f.stage, fx0, fy0, false, !!f.faded);
-  if (B.kind === 'wild' && f.stage > 0 && Math.floor(t / 350) % 5 === 0) drawGlyph(g, 'spark', fx0 + 14, fy0 - 2);   // rare form twinkle
-  drawMon('me', spi(p), p.stage, mx0, my0, true, isFaded(p));             // back view = mirrored
-  if (B.fx.some(e => e.kind === 'hearts' && t - e.t0 < e.dur)) drawGlyph(g, 'emote_heart', fx0 + 5, Math.max(0, fy0 - 13));   // befriend success (ICONS_SEALS Q6)
-  btParts = btParts.filter(pt => (pt.life -= dt) > 0);
-  btParts.forEach(pt => { pt.y += pt.vy * dt; drawGlyph(g, pt.type, pt.x, pt.y); });
+  const foeAt = drawMon('foe', f.si, f.stage, fx0 + foeDx, fy0, false, !!f.faded);
+  if (B.kind === 'wild' && f.stage > 0 && Math.floor(t / 350) % 5 === 0) drawGlyph(g, 'spark', fx0 + foeDx + 14, fy0 - 2);
+  const meAt = drawMon('me', spi(p), p.stage, mx0 + meDx, my0, true, isFaded(p));
+  const Sc = meAt ? [meAt[0] + 9, meAt[1] + 9] : [mx0 + 9, my0 + 9];
+  const Tc = foeAt ? [foeAt[0] + 9, foeAt[1] + 9] : [fx0 + 9, fy0 + 9];
+  if (typeof mvPoolReset === 'function') {
+    mvPoolReset();
+    const put = (x, y, w, h, col) => mvPoolPut(x, y, w, h, col);
+    for (let i = 0; i < B.fx.length; i++) {
+      const e = B.fx[i], age = t - e.t0;
+      if (age < 0 || age >= e.dur) continue;
+      const user = e.who === 'me' ? Sc : Tc, tgt = e.who === 'me' ? Tc : Sc;
+      if (e.kind === 'mvGo') {
+        if (e.sig && age < 80) mvShape({ shape: 'sparkle', col: 'y', at: 'user', ms: [0, 80] }, 1, age, user, tgt, put);
+        if (e.status) {
+          const row = mvStatusRow(e.effect);
+          const seg = { shape: row.shape, n: row.n, col: row.col || mvAnim(e.type).pal, ms: row.ms, at: 'user', b: 1 };
+          const k = mvSegK(seg, age);
+          const at = e.effect && e.effect.target === 'foe' && !e.effect.heal ? tgt : user;
+          if (k >= 0) mvShape(seg, k, age, at, at, put);
+        } else {
+          const segs = mvAnim(e.type).go || [];
+          for (let s = 0; s < segs.length; s++) { const k = mvSegK(segs[s], age); if (k >= 0) mvShape(segs[s], k, age, user, tgt, put); }
+        }
+      } else if (e.kind === 'mvHit') {
+        const rows = mvPunchType(e.type).hit_v2 || [];
+        const hitUser = e.who === 'me' ? Tc : Sc, hitT = e.who === 'me' ? Sc : Tc;
+        for (let s = 0; s < rows.length; s++) { const k = mvSegK(rows[s], age); if (k >= 0) mvShape(rows[s], k, age, hitUser, hitT, put); }
+        if (e.variant && e.variant.indexOf('super') >= 0 && age < 200) {
+          const rk = age / 200, rr = 6 + 12 * rk;
+          mvShape({ shape: 'ring', r: [rr, rr], col: mvLight(e.type), ms: [0, 200], b: 1, at: 'target' }, rk, age, hitUser, hitT, put);
+        }
+        if (e.variant && e.variant.indexOf('crit') >= 0 && age < 240) drawGlyph(g, 'spark', hitT[0], hitT[1] - 14);
+      } else if (e.kind === 'mvMark') {
+        const m = mvAnim(e.type).mark;
+        if (m) {
+          const seg = { shape: m.shape, r: m.r, n: m.n, col: m.col, ms: [0, 240], b: 2, at: 'target' };
+          const at = e.who === 'me' ? Sc : Tc;
+          mvShape(seg, Math.min(1, age / 240), age, at, at, put);
+        }
+      }
+    }
+    mvPoolDraw(g);
+    const centres = {};
+    centres.me = Sc; centres.foe = Tc;
+    if (B.shown) centres[B.shown.who] = (B.shown.who === 'me' ? Sc : Tc);
+    if (B.hpShow) centres[B.hpShow.who] = (B.hpShow.who === 'me' ? Sc : Tc);
+    mvNumDraw(g, W, H, battleVis(c), centres, t);
+    if (typeof mvNumBoxes === 'function') mvNumBoxes().forEach((b) => { b.ox = shx; b.oy = shy; });
+  }
+  let hearts = false;
+  for (let i = 0; i < B.fx.length; i++) if (B.fx[i].kind === 'hearts' && fxT - B.fx[i].t0 < B.fx[i].dur) hearts = true;
+  if (hearts) drawGlyph(g, 'emote_heart', fx0 + 5, Math.max(0, fy0 - 13));
+  let pw = 0;
+  for (let i = 0; i < btParts.length; i++) {
+    const pt = btParts[i]; pt.life -= dt;
+    if (pt.life > 0) { pt.y += pt.vy * dt; btParts[pw++] = pt; }
+  }
+  btParts.length = pw;
+  for (let i = 0; i < pw; i++) drawGlyph(g, btParts[i].type, btParts[i].x, btParts[i].y);
+  g.restore();
+  B.view = { t: t, shakeX: shx, shakeY: shy, white: !!(B.white && t >= B.white.t0 && t < B.white.until), tint: tintA,
+    meX: mx0 + meDx, foeX: fx0 + foeDx, meRest: mx0, foeRest: fx0, pool: typeof mvPoolCount === 'function' ? mvPoolCount() : 0 };
 }
 
 /* ---------- evolution ---------- */
@@ -12454,7 +12835,9 @@ function renderWalklingMoves(p){
     const row = document.createElement('div'); row.className = 'wl-mv';
     const meta = document.createElement('div'); meta.className = 'meta';
     const nm = document.createElement('b'); nm.textContent = mv.name;
-    const sub = document.createElement('span'); sub.textContent = (mv.type || '') + '  PWR ' + (mv.power || 0);
+    const line = (SPECIES[spi(p)] || {}).id;
+    const sig = typeof SIGNATURES !== 'undefined' && SIGNATURES[line] === mid;
+    const sub = document.createElement('span'); sub.textContent = (mv.type || '') + '  PWR ' + (mv.power || 0) + (sig ? '  SIGNATURE' : '');
     meta.append(nm, sub);
     const up = sheetBtn('UP', '', () => swapWalklingMove(p.id, i, i - 1), { aria: 'Move ' + mv.name + ' up', disabled: i === 0 });
     const down = sheetBtn('DOWN', '', () => swapWalklingMove(p.id, i, i + 1), { aria: 'Move ' + mv.name + ' down', disabled: i === moves.length - 1 });
@@ -14303,8 +14686,8 @@ function bindInput(){
   window.addEventListener('blur', clearMoves);
   document.addEventListener('gesturestart', e => e.preventDefault());
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { save(); PPSound.pauseMusic(); } else PPSound.resumeMusic(); });
-  window.addEventListener('pagehide', save);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { if (battle.on) snapQueue(); save(); PPSound.pauseMusic(); } else PPSound.resumeMusic(); });
+  window.addEventListener('pagehide', () => { if (battle.on) snapQueue(); save(); });
   // Back/forward cache: a page restored with an old game in memory reloads if its save was erased or replaced meanwhile.
   window.addEventListener('pageshow', e => {
     if (!e.persisted || !S || resetting) return;
@@ -14688,6 +15071,7 @@ function boot(){
       return { mode: ctlMode(), joystick: joyOn() };
     },
     battle,
+    enc,
     setMoves: ids => { const p = pet(); if (!p) return; p.moves = (ids || []).filter(id => MOVES[id]).slice(0, 4); save(); return p.moves.slice(); },
     aiPick: () => battle.on ? aiPick() : null,   // tests: the AI's pick for the current turn (same rng as the battle)
     clearEvoMoves: () => { const p = pet(); if (!p) return; p.evoMoves = []; save(); },

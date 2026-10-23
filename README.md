@@ -111,7 +111,14 @@ Levels, types and stats (`stats.js`):
 Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text in `moves.js`):
 - Bump into a wild creature (or tap it) and a turn-based battle opens: "A wild X wanders out!", "You're up, <partner>!".
   Your partner leads (or the first party Walkling that can battle). Each turn pick FIGHT (up to 4 moves with limited
-  uses; with none left a Walkling uses Wobble), BEFRIEND, SWAP, BAG (any battle item you carry) or RUN. Faster Walklings act
+  uses; with none left a Walkling uses Wobble), BEFRIEND, SWAP, BAG (any battle item you carry) or RUN. A new Walkling
+  starts with three moves: a signature, a type jab and a type status move. The signature button has a gold stripe, and
+  the Walkling sheet sub line ends with SIGNATURE. A free slot takes the next move ("picked up"). A full set opens the
+  replace sheet, which leaves the signature off the list. A full set that is missing its signature is offered it once.
+  Skip is final. Old saves keep every move they already have and gain the signature when a slot is free. Save stays
+  `pixelpets.save.v2` with `v` 2. The only new saved flag is `sig_offer.<id>`. Effects FULL plays a per-type punch
+  (wind-up, hit-stop, a ghost HP bar and a canvas number). CALM and reduced motion show one mark. OFF keeps today's
+  timings, with one white frame on a strong hit. Faster Walklings act
   first; damage uses ATK/DEF, level, type, same-type bonus, mood, stat stages (-2..+2) and rare critical hits.
 - Bag (INVENTORY v1): the Walk map corner opens the Bag overlay. The partner tab has no BAG. Travel Shelf sells snacks in the Lantern House.
 - Items (INVENTORY v1): Heal Snack (+40% HP), Hearty Snack (+75% HP), Wake Tonic (wakes a napping Walkling early at 25% HP),
