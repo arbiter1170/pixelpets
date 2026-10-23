@@ -968,6 +968,7 @@ const KEEPER_ACCESSORIES = {
       '................  ................',
       '................  ................',
       '................  ................'),
+    hatLine: { down: [4, 4], right: [4, 4], up: [4, 4] },
   },
   scarf: { // accent colour, a tail that sways
     down: F2(
@@ -1287,30 +1288,14 @@ const KEEPER_ACCESSORIES = {
       '................  ................',
       '................  ................')
   },
+  // Beanie v5 (Vincent, 12:54 AM ET Oct 22, 2026). Dome follows the accent (r); cuff and pom follow the outfit (t).
   beanie: {
     down: F2(
-      '.......ww.......  ........ww......',
-      '.....bbbbbb.....  .....bbbbbb.....',
-      '....bcbbbbcb....  ....bcbbbbcb....',
-      '...bbbbbbbbbb...  ...bbbbbbbbbb...',
-      '...hhhhhhhhhh...  ...hhhhhhhhhh...',
+      '.......tt.......  .......tt.......',
+      '.....rrrrrr.....  .....rrrrrr.....',
+      '....rrrrrrrr....  ....rrrrrrrr....',
+      '...tttttttttt...  ...tttttttttt...',
       '................  ................',
-      '................  ................',
-      '................  ................',
-      '................  ................',
-      '................  ................',
-      '................  ................',
-      '................  ................',
-      '................  ................',
-      '................  ................',
-      '................  ................',
-      '................  ................'),
-    up: F2(
-      '.......ww.......  ........ww......',
-      '.....bbbbbb.....  .....bbbbbb.....',
-      '....bcbbbbcb....  ....bcbbbbcb....',
-      '...bbbbbbbbbb...  ...bbbbbbbbbb...',
-      '...hhhhhhhhhh...  ...hhhhhhhhhh...',
       '................  ................',
       '................  ................',
       '................  ................',
@@ -1323,11 +1308,10 @@ const KEEPER_ACCESSORIES = {
       '................  ................',
       '................  ................'),
     right: F2(
-      '......ww........  .....ww.........',
-      '.....bbbbbb.....  .....bbbbbb.....',
-      '....bbbbbcbb....  ....bbbbbcbb....',
-      '...bbbbbbbbbb...  ...bbbbbbbbbb...',
-      '...hhhhhhhhhhh..  ...hhhhhhhhhhh..',
+      '....tt..........  ....tt..........',
+      '....rrrrrr......  ....rrrrrr......',
+      '...rrrrrrttt....  ...rrrrrrttt....',
+      '...tttttt.......  ...tttttt.......',
       '................  ................',
       '................  ................',
       '................  ................',
@@ -1338,7 +1322,26 @@ const KEEPER_ACCESSORIES = {
       '................  ................',
       '................  ................',
       '................  ................',
-      '................  ................')
+      '................  ................',
+      '................  ................'),
+    up: F2(
+      '.......tt.......  .......tt.......',
+      '.....rrrrrr.....  .....rrrrrr.....',
+      '....rrrrrrrr....  ....rrrrrrrr....',
+      '...tttttttttt...  ...tttttttttt...',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................'),
+    hatLine: { down: [3, 3], right: [3, 3], up: [3, 3] }
   },
 };
 
@@ -1397,16 +1400,23 @@ function normalizeLook(v) {
 function keeperGrid(look, facing, frame) {
   const L = Object.assign({}, KEEPER_LOOKS.defaults, look || {}), B = KEEPER_LOOKS.base;
   const f = facing === 'left' ? 'right' : facing;
-  const layers = [KEEPER_ART[f][frame], KEEPER_OUTFITS[L.outfit][f][frame], KEEPER_HAIR[L.hair][f][frame]];
+  const hair = KEEPER_HAIR[L.hair][f][frame];
+  const layers = [KEEPER_ART[f][frame], KEEPER_OUTFITS[L.outfit][f][frame], hair];
   const acc = L.accessory && L.accessory !== 'none' ? KEEPER_ACCESSORIES[L.accessory] : null;
   if (acc) layers.push(acc[f][frame]);
   const sw = Object.assign({}, L.extra || {}, { [B.skin]:L.skin, [B.hairCol]:L.hairCol, [B.outfitCol]:L.outfitCol, [B.accent]:L.accent });
+  // A hat stores hatLine on the right-facing art. Left uses that line, then the finished grid mirrors.
+  const line = acc && acc.hatLine && acc.hatLine[f];
+  const brim = line ? line[frame] : null;
   const rows = [];
   for (let y = 0; y < 16; y++) {
     let r = '';
     for (let x = 0; x < 16; x++) {
       let c = '.';
-      for (const g of layers) if (g[y][x] !== '.') c = g[y][x];
+      for (const g of layers) {
+        if (brim != null && g === hair && y < brim) continue;
+        if (g[y][x] !== '.') c = g[y][x];
+      }
       r += c === '.' ? '.' : (sw[c] || c);
     }
     rows.push(facing === 'left' ? r.split('').reverse().join('') : r);
