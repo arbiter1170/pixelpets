@@ -402,6 +402,20 @@ Recorded from design eb50602, section 9, without renumbering. D435-D444 were res
 
 - **9.d (Oct 22, 2026, green, Supervisor, 12:18 PM ET, no new id).** With no stored choice, the first active side quest is tracked. With no side quest active, nothing is tracked and the main chip stays gold until TRACK. Lizzy's wait offer runs only while the leak is the tracked quest. The QUEST side pip shows whenever any side quest is active.
 
+## QUEST_CUE_REDESIGN (calls settled Oct 22, 2026)
+
+Recorded from design QUEST_CUE_REDESIGN v0.2, section 8, without renumbering. D461-D469 were reserved. Save stays `pixelpets.save.v2` with `v` 2. No new saved field.
+
+- **D461 (Oct 22, 2026, Vincent, 9:40 PM ET, red, SETTLED).** QUEST_CUE_REDESIGN. The square cue chip goes; quest cues use today's small arrow (`ARROW`, `drawArrow`) on screen as today and at the screen edge in 8 directions, with the distance pill and a 44 x 44 tap box; no ground ring.
+- **D462 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent has it).** QUEST_CUE_REDESIGN. The edge arrow turns in 8 directions: the four `ARROW` grids plus four diagonal grids in the same style.
+- **D463 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent has it).** QUEST_CUE_REDESIGN. The tile number stays: across plus down, capped at 99, bare, in the pill, off-screen only.
+- **D464 (Oct 22, 2026, Vincent, 9:40 PM ET, yellow, CHANGED to off).** QUEST_CUE_REDESIGN. No ground ring under a target in view; the arrow alone, as today.
+- **D465 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent has it).** QUEST_CUE_REDESIGN. No rim blink; edge arrow nudge 1 px and on-screen bob 1 px on 1400 ms; steady under reduce motion.
+- **D466 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent has it).** QUEST_CUE_REDESIGN. One tap on an edge cue opens QUEST and does not walk; the on-screen arrow stays pass-through.
+- **D467 (Oct 22, 2026, green, SETTLED; amended with QA's rule).** QUEST_CUE_REDESIGN. `CUE_EDGE` placement with the wider avoid list; the joystick ring, the d-pad and any D435 chip that frame are obstacles (6 px), boxes 4 px apart, inside the canvas.
+- **D468 (Oct 22, 2026, green, SETTLED).** QUEST_CUE_REDESIGN. Colours: tracked PAL l with PAL k ink and the pennant, main PAL y, slip PAL c, shadow PAL k; no new PAL key.
+- **D469 (Oct 22, 2026, green, SETTLED; amended with QA's test).** QUEST_CUE_REDESIGN. `cueChips()` adds the tap box; cue tests at 320 / 375 / 390 with QA's clearance case.
+
 ## Restatements moved from OPEN_DECISIONS (Oct 21, 2026)
 
 - Restatement of D347 (was in OPEN_DECISIONS Settled): - **D347 (Oct 20, 2026, Vincent, 11:34 AM ET, SETTLED BY VINCENT, on the defaults).** HUSHWATER species roster. B0 is built on this branch: a species id this client does not know stays in the party or the box, keeps its moves and journal keys, and draws a fallback picture. The journal names it ???. It cannot lead a battle and SWAP skips it. The 12 forms are in this build: skink, otter, owl, and snail, three stages each. Out there is 57. The save form table ends at snail (60 form ids). D357 is green (Design): save stays `pixelpets.save.v2` with `v` 2. No new pet field. B1 and E1–E4 are built on this branch. B2 is built on this branch. D346 stays the Lizzy placeholder, settled and not built. D355, D356 and D362 are green and settled. D363-D379 and D390-D398 are reserved: WORLD_CLOCK_TOWN (design). D397 and D398 are settled green. Next free id is D399. P1 world clock v1 is on this branch. P2 Market Row is on this branch. P3 wardrobe v1 is on this branch. P4 stores are on this branch.

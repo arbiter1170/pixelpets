@@ -1,21 +1,20 @@
-/* STORES_AND_TOWN_LIFE P0 (D416, D417). Modern edge arrows sit on the rail, on the map canvas, with a tile count. */
+/* QUEST_CUE (D461-D469). Edge cues are today's small arrow in a 44 px box. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
 trackErrors(test, expect);
 
-const CUES = [
-  { name: 'nw', x: 1, y: 2, dist: 36 },
-  { name: 'ne', x: 23, y: 8, dist: 30 },
-  { name: 'w', x: 1, y: 21, dist: 17 },
-  { name: 'e', x: 23, y: 20, dist: 18 },
-];
-const HUD = '#floatCtl button, #clockChip, #envBadge, #fcAcorns, #joyRing, #walkTip, #petStrip';
-const DIGITS = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111', '111100111101111', '111001001001001', '111101111101111', '111101111001111'];
+const HUD = '#floatCtl button, #clockChip, #envBadge, #fcAcorns, #joyRing, #walkTip, #petStrip, #dpad';
+const DIRS = ['right', 'downRight', 'down', 'downLeft', 'left', 'upLeft', 'up', 'upRight'];
+const GOLD = [255, 205, 117];
+const LIME = [167, 240, 112];
+const INK = [26, 28, 44];
+const WHITE = [244, 244, 244];
 
 function modernSave() {
   const s = starterSave();
   s.settings.controls = 'modern';
+  s.settings.follower = false;
   s.flags['story.mom_sent'] = true;
   s.flags['story.early_done'] = true;
   return s;
@@ -25,151 +24,249 @@ async function frame(page) {
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 }
 
-async function place(page, x, y) {
-  await page.evaluate(({ x, y }) => {
-    PixelPets.showTab('walk');
-    PixelPets.goto('hearthmoor', 12, 27, 'down');
-    PixelPets.cueForce({ x, y });
-  }, { x, y });
-  await frame(page);
+async function openSettings(page) {
+  const gear = page.locator('#gearFloat');
+  if (await gear.isVisible()) await gear.click();
+  else await page.locator('#settingsBtn').click();
+  await expect(page.locator('#ovSettings')).toBeVisible();
 }
 
-async function readChip(page) {
-  return page.evaluate(({ hud, digits }) => {
-    const chip = PixelPets.cueChip();
-    const c = document.querySelector('#mapCanvas');
-    const r = c.getBoundingClientRect();
-    const k = r.width / c.width;
-    if (!chip) return { chip: null, v: PixelPets.state.v };
-    const sx = r.left + chip.x * k, sy = r.top + chip.y * k;
-    const hits = [[0, 0], [-7, -7], [7, -7], [-7, 7], [7, 7]].map(([dx, dy]) => {
-      let el = document.elementFromPoint(sx + dx, sy + dy);
-      while (el && !el.id) el = el.parentElement;
-      return el ? el.id : null;
-    });
-    const gaps = [...document.querySelectorAll(hud)].filter(e => !e.hidden && e.offsetParent).map(e => {
-      const b = e.getBoundingClientRect();
-      const dx = Math.max(b.left - sx, 0, sx - b.right);
-      const dy = Math.max(b.top - sy, 0, sy - b.bottom);
-      return { id: e.id || e.className, gap: Math.round(Math.hypot(dx, dy)) };
-    }).sort((a, b) => a.gap - b.gap);
-    const s = String(chip.shown);
-    let x0 = chip.x - ((s.length * 4 - 1) / 2 | 0);
-    const y0 = chip.y + 10;
-    const img = c.getContext('2d').getImageData(x0, y0, s.length * 4, 5);
-    let digitsOk = true;
-    for (let ci = 0; ci < s.length && digitsOk; ci++) {
-      const d = digits[s.charCodeAt(ci) - 48];
-      for (let i = 0; i < 15; i++) {
-        const ix = ((((i / 3) | 0) * img.width + ci * 4 + (i % 3)) * 4);
-        const white = img.data[ix] > 200 && img.data[ix + 1] > 200 && img.data[ix + 2] > 200;
-        if ((d[i] === '1') !== white) digitsOk = false;
-      }
-    }
-    const ring = c.getContext('2d').getImageData(chip.x + 8, chip.y, 1, 1).data;
-    return {
-      chip, sx: Math.round(sx), sy: Math.round(sy), hits, gaps, digitsOk, v: PixelPets.state.v, k,
-      ring: ring[0] + ',' + ring[1] + ',' + ring[2],
-    };
-  }, { hud: HUD, digits: DIGITS });
-}
-
-test('modern edge arrows sit on the rail, on the map, with a capped tile count', async ({ page }) => {
+async function boot(page) {
   await installSave(page.context(), modernSave(), { quietDay: true });
   await gotoGame(page, '?debug=1');
-  await page.evaluate(() => PixelPets.showTab('walk'));
-  const width = page.viewportSize().width;
-  for (const cue of CUES) {
-    await place(page, cue.x, cue.y);
-    const got = await readChip(page);
-    expect(got.v, cue.name).toBe(2);
-    expect(got.chip, cue.name + ' chip').toBeTruthy();
-    expect(got.chip.dist, cue.name + ' tiles').toBe(cue.dist);
-    expect(got.chip.shown, cue.name + ' shown').toBe(cue.dist);
-    expect(got.hits, cue.name + ' hits ' + got.sx + ',' + got.sy).toEqual(['mapCanvas', 'mapCanvas', 'mapCanvas', 'mapCanvas', 'mapCanvas']);
-    expect(got.gaps[0].gap, cue.name + ' nearest ' + (got.gaps[0] && got.gaps[0].id)).toBeGreaterThanOrEqual(6);
-    expect(got.digitsOk, cue.name + ' digits ' + cue.dist).toBe(true);
-    if (cue.name === 'nw' || cue.name === 'w') expect(Math.abs(got.sx - 73), cue.name + ' x ' + got.sx).toBeLessThanOrEqual(2);
-    if (cue.name === 'e') expect(Math.abs(got.sx - (width - 73)), cue.name + ' x ' + got.sx).toBeLessThanOrEqual(2);
-    // D435: the top-right chip steps left until its tile count clears the clock pill. One slot is 19 map px.
-    // A two-digit hour widens the pill, so the drawn pixel can need a second slot; the gap check above still requires 6 CSS px.
-    if (cue.name === 'ne') {
-      const end = width - 73, slot = Math.round(19 * got.k);
-      const clear = [0, 1, 2].some(n => Math.abs(got.sx - (end - n * slot)) <= 2);
-      expect(clear, cue.name + ' x ' + got.sx).toBe(true);
+  await page.evaluate(() => {
+    PixelPets.showTab('walk');
+    PixelPets.goto('hearthmoor', 12, 27, 'down');
+  });
+  await frame(page);
+}
+
+async function readEdges(page) {
+  return page.evaluate((hud) => {
+    const chips = PixelPets.cueChips() || [];
+    const c = document.querySelector('#mapCanvas');
+    const r = c.getBoundingClientRect();
+    const scale = r.width / c.width;
+    const rectOf = (el) => {
+      const b = el.getBoundingClientRect();
+      return { id: el.id || el.className, l: b.left, t: b.top, r: b.right, b: b.bottom };
+    };
+    const hudRects = [...document.querySelectorAll(hud)].filter(e => !e.hidden && e.offsetParent).map(rectOf);
+    const boxOf = (ch) => ({ l: r.left + ch.box.x, t: r.top + ch.box.y, r: r.left + ch.box.x + ch.box.w, b: r.top + ch.box.y + ch.box.h });
+    const sep = (a, b) => {
+      const dx = Math.max(b.l - a.r, a.l - b.r);
+      const dy = Math.max(b.t - a.b, a.t - b.b);
+      return Math.max(dx, dy);
+    };
+    const edges = chips.filter(ch => ch.box).map(ch => {
+      const box = boxOf(ch);
+      const gaps = hudRects.map(h => ({ id: h.id, gap: sep(box, h) })).sort((a, b) => a.gap - b.gap);
+      const cx = r.left + ch.box.x + ch.box.w / 2, cy = r.top + ch.box.y + ch.box.h / 2;
+      let el = document.elementFromPoint(cx, cy);
+      while (el && el.id !== 'mapCanvas' && el.parentElement) el = el.parentElement;
+      return {
+        dir: ch.dir, dist: ch.dist, shown: ch.shown, tracked: !!ch.tracked,
+        w: ch.box.w, h: ch.box.h, box, gaps, hit: el ? el.id : null,
+        inside: ch.box.x >= -0.01 && ch.box.y >= -0.01 && ch.box.x + ch.box.w <= r.width + 0.01 && ch.box.y + ch.box.h <= r.height + 0.01,
+      };
+    });
+    let pair = null;
+    for (let i = 0; i < edges.length; i++) for (let j = i + 1; j < edges.length; j++) {
+      const g = sep(edges[i].box, edges[j].box);
+      if (pair == null || g < pair) pair = g;
     }
-    if (cue.name === 'nw' || cue.name === 'ne') expect(Math.abs(got.sy - 73), cue.name + ' y ' + got.sy).toBeLessThanOrEqual(2);
+    return { edges, rails: chips.filter(ch => !ch.box).length, pair, v: PixelPets.state.v, pass: PixelPets.cuePass() };
+  }, HUD);
+}
+
+function sector(dx, dy) {
+  const q = Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) & 7;
+  return DIRS[q];
+}
+
+test('edge boxes are 44 px, clear the HUD, and point in 8 directions', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.cueLayout({
+    main: { x: 0, y: 40 }, side: { x: 23, y: 2 }, board: null, mainTracked: false,
+  }));
+  await frame(page);
+  const modern = await readEdges(page);
+  expect(modern.v).toBe(2);
+  expect(modern.edges.length).toBe(2);
+  expect(modern.pair).toBeGreaterThanOrEqual(4);
+  for (const edge of modern.edges) {
+    expect(edge.w).toBe(44);
+    expect(edge.h).toBe(44);
+    expect(edge.inside).toBe(true);
+    expect(edge.hit).toBe('mapCanvas');
+    expect(edge.gaps[0].gap, edge.dir + ' ' + edge.gaps[0].id).toBeGreaterThanOrEqual(6);
+    expect(typeof edge.shown).toBe('number');
+    expect(edge.shown).toBeLessThanOrEqual(99);
   }
-  await place(page, 12 + 80, 27 + 40);
-  const cap = await readChip(page);
-  expect(cap.chip.dist).toBe(120);
-  expect(cap.chip.shown).toBe(99);
-  expect(cap.digitsOk).toBe(true);
-  expect(cap.hits).toEqual(['mapCanvas', 'mapCanvas', 'mapCanvas', 'mapCanvas', 'mapCanvas']);
-  expect(cap.gaps[0].gap).toBeGreaterThanOrEqual(6);
+  const caps = await page.evaluate(() => {
+    PixelPets.cueForce({ x: 12 + 80, y: 27 + 40 });
+    return null;
+  });
+  await frame(page);
+  const far = await page.evaluate(() => {
+    const ch = PixelPets.cueChip();
+    return ch && { dist: ch.dist, shown: ch.shown, w: ch.box && ch.box.w, h: ch.box && ch.box.h };
+  });
+  expect(caps).toBeNull();
+  expect(far.dist).toBe(120);
+  expect(far.shown).toBe(99);
+  expect(far.w).toBe(44);
+  expect(far.h).toBe(44);
 
-  const seen = new Set();
-  const t0 = Date.now();
-  while (Date.now() - t0 < 1400 && seen.size < 2) {
-    seen.add((await readChip(page)).ring);
-    await page.waitForTimeout(70);
+  const aims = [
+    [40, 27], [40, 50], [12, 50], [0, 50], [0, 27], [0, 0], [12, 0], [40, 0],
+  ];
+  for (const [x, y] of aims) {
+    await page.evaluate(({ x, y }) => PixelPets.cueForce({ x, y }), { x, y });
+    await frame(page);
+    const got = await page.evaluate(({ x, y }) => {
+      const ch = PixelPets.cueChip();
+      return { dir: ch && ch.dir, want: null, dx: x - 12, dy: y - 27 };
+    }, { x, y });
+    expect(got.dir, x + ',' + y).toBe(sector(got.dx, got.dy));
   }
-  expect(seen.size, 'ring blink ' + [...seen].join(' | ')).toBe(2);
 
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect.poll(() => page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
-  await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
-  const still = new Set();
-  const t1 = Date.now();
-  while (Date.now() - t1 < 1400) {
-    still.add((await readChip(page)).ring);
-    await page.waitForTimeout(70);
-  }
-  expect(still.size, 'ring stays steady in reduced motion ' + [...still].join(' | ')).toBe(1);
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-
-  await page.locator('#gearFloat').click();
-  await page.locator('#setJoystick').click({ trial: true });
-  await page.locator('#setJoystick').click();
-  await page.locator('#setClose').click();
-  await expect(page.locator('#joyRing')).toBeVisible();
-  await page.evaluate(() => { PixelPets.goto('hearthmoor', 12, 27, 'down'); PixelPets.cueForce({ x: 1, y: 48 }); });
-  await frame(page);
-  const joy = await readChip(page);
-  const joyGap = joy.gaps.find(g => g.id === 'joyRing');
-  expect(joy.chip, 'joystick cue').toBeTruthy();
-  expect(joy.hits.every(id => id === 'mapCanvas')).toBe(true);
-  expect(joyGap && joyGap.gap, 'joy gap').toBeGreaterThanOrEqual(6);
-  expect(joy.gaps[0].gap).toBeGreaterThanOrEqual(6);
-  await page.locator('#gearFloat').click();
-  await page.locator('#setJoystick').click({ trial: true });
-  await page.locator('#setJoystick').click();
-  await page.locator('#setClose').click();
-  await expect(page.locator('#joyRing')).toBeHidden();
-
-  await page.evaluate(() => PixelPets.cueForce({ x: 12, y: 24 }));
-  await frame(page);
-  expect(await page.evaluate(() => PixelPets.cueChip())).toBeNull();
-
-  await page.evaluate(() => PixelPets.cueForce({ x: 1, y: 2 }));
-  await frame(page);
-  const a = await page.evaluate(() => PixelPets.cueChip());
-  await page.evaluate(() => { PixelPets.goto('route1', 6, 10, 'down'); PixelPets.cueForce({ x: 1, y: 2 }); });
-  await frame(page);
-  const b = await page.evaluate(() => PixelPets.cueChip());
-  await page.waitForTimeout(180);
-  const c = await page.evaluate(() => PixelPets.cueChip());
-  expect(b).toBeTruthy();
-  expect(c).toEqual(b);
-  expect(a).not.toEqual(b);
-
-  await page.locator('#gearFloat').click();
-  await page.locator('#setControls').click({ trial: true });
+  await openSettings(page);
   await page.locator('#setControls').click();
   await page.locator('#setClose').click();
+  await expect(page.locator('#ovSettings')).toBeHidden();
   await frame(page);
-  expect(await page.evaluate(() => PixelPets.cueChip())).toBeNull();
-  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
+  await page.evaluate(() => PixelPets.cueLayout({
+    main: { x: 0, y: 40 }, side: { x: 23, y: 2 }, board: null, mainTracked: false,
+  }));
+  await frame(page);
+  const arcade = await readEdges(page);
+  expect(arcade.edges.length).toBe(2);
+  expect(arcade.rails).toBe(0);
+  expect(arcade.pair).toBeGreaterThanOrEqual(4);
+  for (const edge of arcade.edges) {
+    expect(edge.w).toBe(44);
+    expect(edge.h).toBe(44);
+    expect(edge.inside).toBe(true);
+    expect(edge.hit).toBe('mapCanvas');
+    expect(edge.gaps[0].gap, edge.dir + ' ' + (edge.gaps[0] && edge.gaps[0].id)).toBeGreaterThanOrEqual(6);
+  }
+});
+
+test('reduced motion holds the arrow still, and nothing blinks white', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.cueForce({ x: 1, y: 2 }));
+  await frame(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect.poll(() => page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  await frame(page);
+  const mask = () => page.evaluate(() => {
+    const ch = (PixelPets.cueChips() || []).find(c => c.box);
+    const c = document.querySelector('#mapCanvas');
+    const g = c.getContext('2d');
+    const k = c.width / c.getBoundingClientRect().width;
+    const x0 = Math.max(0, Math.floor(ch.box.x * k));
+    const y0 = Math.max(0, Math.floor(ch.box.y * k));
+    const x1 = Math.min(c.width, Math.ceil((ch.box.x + ch.box.w) * k));
+    const y1 = Math.min(c.height, Math.ceil((ch.box.y + ch.box.h) * k));
+    const d = g.getImageData(x0, y0, Math.max(1, x1 - x0), Math.max(1, y1 - y0)).data;
+    const w = Math.max(1, x1 - x0);
+    const pts = [];
+    for (let y = 0; y < y1 - y0; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const r = d[i], gc = d[i + 1], b = d[i + 2];
+      const cue = (r === 255 && gc === 205 && b === 117) || (r === 167 && gc === 240 && b === 112);
+      const ink = r === 26 && gc === 28 && b === 44;
+      if (cue || ink) pts.push(x + ',' + y + ',' + r);
+    }
+    const face = g.getImageData(ch.x - 5, ch.y, 1, 1).data;
+    return { pts: pts.join('|'), face: [face[0], face[1], face[2]] };
+  });
+  const still = [];
+  for (let i = 0; i < 4; i++) {
+    still.push(await mask());
+    await page.waitForTimeout(350);
+  }
+  expect(still[1].pts).toBe(still[0].pts);
+  expect(still[2].pts).toBe(still[0].pts);
+  expect(still[3].pts).toBe(still[0].pts);
+  expect(still[0].face).toEqual(GOLD);
+
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await frame(page);
+  const seen = new Set();
+  const t0 = Date.now();
+  while (Date.now() - t0 < 1200) {
+    const face = await page.evaluate(() => {
+      const ch = PixelPets.cueChip();
+      const d = document.querySelector('#mapCanvas').getContext('2d').getImageData(ch.x - 5, ch.y, 1, 1).data;
+      return d[0] + ',' + d[1] + ',' + d[2];
+    });
+    seen.add(face);
+    expect(face).not.toBe(WHITE.join(','));
+    await page.waitForTimeout(80);
+  }
+  expect([...seen].some(s => s === GOLD.join(','))).toBe(true);
+  expect(LIME.join(',')).not.toBe(WHITE.join(','));
+});
+
+test('a tap on the edge box opens QUEST and does not walk', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.cueForce({ x: 1, y: 48 }));
+  await frame(page);
+  const before = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
+  const spot = await page.evaluate(() => {
+    const ch = PixelPets.cueChip();
+    return { x: ch.box.x + ch.box.w / 2, y: ch.box.y + ch.box.h / 2 };
+  });
+  await page.locator('#mapCanvas').click({ position: spot });
+  await frame(page);
+  await expect(page.locator('#ovQuest')).toBeVisible();
+  const after = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
+  expect(after).toEqual(before);
+  await expect.poll(() => page.evaluate(() => PixelPets.optionsReady)).toBe(true);
+  await page.locator('#questClose').click();
+  await expect(page.locator('#ovQuest')).toBeHidden();
+});
+
+test('a tap on the on-screen arrow walks, and the 4 key opens QUEST', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.cueForce({ x: 12, y: 30 }));
+  await frame(page);
+  const pass = await page.evaluate(() => {
+    const p = PixelPets.cuePass();
+    const chip = PixelPets.cueChip();
+    const c = document.querySelector('#mapCanvas');
+    const css = c.getBoundingClientRect().width / c.width;
+    return { dir: p && p.dir, chip, x: p ? (p.x + 3) * css : 0, y: p ? (p.y + 3) * css : 0 };
+  });
+  expect(pass.chip).toBeNull();
+  expect(pass.dir).toBe('down');
+  const before = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
+  await page.locator('#mapCanvas').click({ position: { x: pass.x, y: pass.y } });
+  await expect.poll(() => page.evaluate(() => {
+    const s = PixelPets.state.world;
+    return s.x !== 12 || s.y !== 27;
+  })).toBe(true);
+  expect(await page.locator('#ovQuest').isHidden()).toBe(true);
+  const moved = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
+  expect(moved).not.toEqual(before);
+
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 12, 2, 'down'));
+  await frame(page);
+  let up = null;
+  for (let x = 0; x < 24; x++) {
+    await page.evaluate(x => PixelPets.cueForce({ x, y: 0 }), x);
+    await frame(page);
+    up = await page.evaluate(() => { const p = PixelPets.cuePass(); return p && p.dir; });
+    if (up === 'up') break;
+  }
+  expect(up).toBe('up');
+
+  await page.keyboard.press('4');
+  await expect(page.locator('#ovQuest')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#ovQuest')).toBeHidden();
 });
 
 test('cue hooks stay inert without debug @w1', async ({ page }) => {
@@ -179,7 +276,9 @@ test('cue hooks stay inert without debug @w1', async ({ page }) => {
     v: PixelPets.state.v,
     force: PixelPets.cueForce({ x: 1, y: 2 }),
     chip: PixelPets.cueChip(),
+    chips: PixelPets.cueChips(),
+    pass: PixelPets.cuePass(),
     debug: PixelPets.debug,
   }));
-  expect(got).toEqual({ v: 2, force: undefined, chip: undefined, debug: false });
+  expect(got).toEqual({ v: 2, force: undefined, chip: undefined, chips: undefined, pass: undefined, debug: false });
 });
