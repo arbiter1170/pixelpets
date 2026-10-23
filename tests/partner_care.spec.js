@@ -310,6 +310,18 @@ test('tap-to-walk, the edge cue, and a standing partner tap', async ({ page }) =
   expect(stayed).toEqual({ x: fol.sx, y: fol.sy, path: null });
 });
 
+test('a second follower tap closes the open care tray', async ({ page }) => {
+  test.skip(page.viewportSize().width !== 390, '390 modern only');
+  await boot(page);
+  await frame(page);
+  expect(await page.evaluate(() => PixelPets.standingStill())).toBe(true);
+  const fol = await page.evaluate(() => ({ x: PixelPets.follower.x, y: PixelPets.follower.y }));
+  await tapTile(page, fol.x, fol.y);
+  await expect(page.locator('#careTray')).toBeVisible();
+  await tapTile(page, fol.x, fol.y);
+  await expect(page.locator('#careTray')).toBeHidden();
+});
+
 test('a moving tap on the follower walks, and an edge box over the partner opens QUEST', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page);

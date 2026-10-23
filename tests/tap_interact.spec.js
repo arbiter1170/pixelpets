@@ -18,7 +18,8 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
   expect(audit.counts).toEqual({
     // sign is 74: the authored signs plus the runtime "Back at 3. - L." note on 5B.
     // P4 adds eight shops and fourteen stall lines. The lamp-oil counter moves from talk to shop.
-    door: 38, warp: 76, sign: 77, talk: 559, scene: 36, trigger: 31, board: 6,
+    // talk is 565: the Bloom Trial Hall adds six terrace props.
+    door: 38, warp: 76, sign: 77, talk: 565, scene: 36, trigger: 31, board: 6,
     trainer: 23, pickup: 17, wild: 3, shop: 13, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.

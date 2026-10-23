@@ -5,6 +5,8 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
+ART_PASS (D548–D563) is on this branch: the Bloom Trial Hall is garden terraces with a one-way hop down the centre, and the Parked Coach floor is coach planks, a kitchen tile zone, and two booth rugs. A second tap on the follower closes the open care tray (D578).
+
 PARTNER_CARE (D534–D547) is on this branch: one need balloon over the partner, a care tray from the strip and from a standing partner, and two shop follow-ups (a nameless cooler hides its title, and a free Lantern rest uses the rounded energy check). Care rules stay as they are, and the tray acts on the partner only.
 
 SHOP_LAYOUT (D482–D495) is on this branch: one bottom sheet for stores, meal menus and the Travel Shelf, the room band above that sheet, and the free Lantern rest line. Buying stays one tap.

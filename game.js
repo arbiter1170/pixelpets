@@ -3006,6 +3006,15 @@ const tileAt = (x, y) => (MAP[y] && MAP[y][x]) || 'T';
 const tileWalks = ch => { const sk = CUR.skin && SKINS[CUR.skin]; return (sk && sk.walk && sk.walk[ch] != null) ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk; };
 const solidTile = (x, y) => x < 0 || y < 0 || x >= MW || y >= MH || !tileWalks(MAP[y][x]);
 const solid = (x, y) => solidTile(x, y) || !!blockerAt(x, y);
+// ART_PASS v0.2 (D560): a hop ledge. A skin's `hop` table names solid chars that may be crossed one way only: a step that
+// way onto the ledge lands on the cell beyond it. Collision, the room map and NPC paths still see a solid tile.
+const HOP_MS = Math.round(STEP_MS * 1.5);
+function hopLanding(x, y, dx, dy){
+  const sk = CUR.skin && SKINS[CUR.skin], d = sk && sk.hop && sk.hop[tileAt(x, y)];
+  if (!d || !DIRS[d] || DIRS[d][0] !== dx || DIRS[d][1] !== dy) return null;
+  const lx = x + dx, ly = y + dy;
+  return (solid(lx, ly) || wildAt(lx, ly) || warpAt(lx, ly)) ? null : { x: lx, y: ly };
+}
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
@@ -3614,7 +3623,7 @@ function safeSpot(){
 
 /* ---------- walk / map ---------- */
 const DIRS = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
-const walk = { fx: 3, fy: 3, from: null, to: null, prog: 0, dpad: null, drag: null, key: null, queued: null, target: null,
+const walk = { fx: 3, fy: 3, from: null, to: null, prog: 0, hop: false, dpad: null, drag: null, key: null, queued: null, target: null,
   intro: 0, cam: { x: 0, y: 0 }, camBias: { x: 0, y: 0, from: 0, to: 0, t0: 0, ease: false, jumped: false }, path: null, arrive: null, aim: null, repath: null };
 function clearMoves(){ walk.dpad = walk.drag = walk.key = walk.queued = walk.target = null; walk.path = walk.arrive = walk.aim = walk.repath = null; wild.chase = null; $$('.dp').forEach(b => b.classList.remove('on')); }
 const moveHeld = () => !!(walk.dpad || walk.key || walk.drag);
@@ -3633,6 +3642,10 @@ function cantReach(){
 // One cardinal step from the keeper onto `cell`, or null when the cell is not a neighbour.
 function unitStep(cell){
   const dx = cell.x - S.world.x, dy = cell.y - S.world.y;
+  if (Math.abs(dx) + Math.abs(dy) === 2 && (!dx || !dy)) {   // across a hop ledge (D560)
+    const sx = Math.sign(dx), sy = Math.sign(dy);
+    return hopLanding(S.world.x + sx, S.world.y + sy, sx, sy) ? [sx, sy] : null;
+  }
   if (Math.abs(dx) + Math.abs(dy) !== 1) return null;
   return [dx, dy];
 }
@@ -3682,7 +3695,7 @@ function targetDir(){
   const dx = tg.x - S.world.x, dy = tg.y - S.world.y;
   if (!dx && !dy) { walk.target = null; return null; }
   const opts = Math.abs(dx) >= Math.abs(dy) ? [[Math.sign(dx),0],[0,Math.sign(dy)]] : [[0,Math.sign(dy)],[Math.sign(dx),0]];
-  for (const [ox,oy] of opts) if ((ox||oy) && !solid(S.world.x+ox, S.world.y+oy) && !warpBlocked(S.world.x+ox, S.world.y+oy)) return [ox,oy];
+  for (const [ox,oy] of opts) if ((ox||oy) && ((!solid(S.world.x+ox, S.world.y+oy) && !warpBlocked(S.world.x+ox, S.world.y+oy)) || hopLanding(S.world.x+ox, S.world.y+oy, ox, oy))) return [ox,oy];
   walk.target = null; return null;
 }
 // 4-dir BFS to the nearest of `goals`. High Charity is 64×40, so the key is "x,y" (y*64+x collides past x 63).
@@ -3699,7 +3712,8 @@ function findPath(goals){
     const [x, y] = q.shift();
     visits++;
     for (const [dx, dy] of Object.values(DIRS)) {
-      const nx = x + dx, ny = y + dy, k = key(nx, ny);
+      const hop = hopLanding(x + dx, y + dy, dx, dy);   // a hop ledge is one edge, one way (D560)
+      const nx = hop ? hop.x : x + dx, ny = hop ? hop.y : y + dy, k = key(nx, ny);
       if (prev.has(k) || solid(nx, ny) || wildAt(nx, ny) || warpBlocked(nx, ny) || (warpAt(nx, ny) && !isGoal(nx, ny))) continue;
       prev.set(k, [x, y]);
       if (isGoal(nx, ny)) { const out = []; let c = [nx, ny]; while (c && !(c[0] === sx && c[1] === sy)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); } return out; }
@@ -3724,6 +3738,9 @@ function tryStep(d){
   if (fade.busy || scene) return;
   const p = pet();                           // the keeper walks with or without a partner (MAPS_SLICE K.1)
   const nx = S.world.x + d[0], ny = S.world.y + d[1], dn = dirName(d[0], d[1]);
+  const hop = hopLanding(nx, ny, d[0], d[1]);   // D560: one step, lands one cell beyond the ledge
+  if (hop) { walk.from = { x: S.world.x, y: S.world.y }; walk.to = hop; walk.prog = 0; walk.hop = true;
+    S.world.facing = dn; S.world.x = hop.x; S.world.y = hop.y; followerStep(); closePartnerTray(); return; }
   const o = blockerAt(nx, ny);
   if (o) { const turned = S.world.facing !== dn; S.world.facing = dn; bumpObj(o, d, turned); return; }
   if (solidTile(nx, ny)) {
@@ -3741,7 +3758,7 @@ function tryStep(d){
   if (warpBlocked(nx, ny)) { S.world.facing = dn; return; }   // the gate trigger one tile earlier tells you why
   const w = wildAt(nx, ny);
   if (w) { if (p && w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
-  walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0; closePartnerTray();
+  walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0; walk.hop = false; closePartnerTray();
   S.world.facing = dn;
   S.world.x = nx; S.world.y = ny;
   followerStep();
@@ -4459,8 +4476,8 @@ function tickPatrol(dt){
 function updateWalk(dt, t){
   if (walk.intro) { if (t - walk.intro > 700) { walk.intro = 0; openEncounter(); } return; }
   if (walk.to) {
-    walk.prog += dt * 1000 / STEP_MS;
-    if (walk.prog >= 1) { walk.fx = walk.to.x; walk.fy = walk.to.y; walk.to = null; if (fol.to) { fol.fx = fol.x; fol.fy = fol.y; fol.to = null; } onLand(); }
+    walk.prog += dt * 1000 / (walk.hop ? HOP_MS : STEP_MS);
+    if (walk.prog >= 1) { walk.fx = walk.to.x; walk.fy = walk.to.y; walk.to = null; walk.hop = false; if (fol.to) { fol.fx = fol.x; fol.fy = fol.y; fol.to = null; } onLand(); }
     else { walk.fx = walk.from.x + (walk.to.x - walk.from.x) * walk.prog; walk.fy = walk.from.y + (walk.to.y - walk.from.y) * walk.prog;
       if (fol.to) { fol.fx = fol.from.x + (fol.to.x - fol.from.x) * walk.prog; fol.fy = fol.from.y + (fol.to.y - fol.from.y) * walk.prog; } }
   }
@@ -4484,8 +4501,18 @@ function updateWalk(dt, t){
 /* --- warps, doors and the fade (MAPS_SLICE §3, INTERIORS §3.1): 250 ms, input locked, save right after --- */
 const FADE_MS = 250;
 const fade = { busy: false, t0: 0 };
+let hopSettling = false;
+function settleHop(){
+  if (hopSettling || !walk.hop || !walk.to) return;
+  hopSettling = true;
+  walk.fx = walk.to.x; walk.fy = walk.to.y;
+  if (fol.to) { fol.fx = fol.x; fol.fy = fol.y; fol.to = null; }
+  walk.to = null; walk.hop = false;
+  onLand();
+  hopSettling = false;
+}
 function warpTo(at, after){
-  if (fade.busy) return; fade.busy = true; fade.t0 = now(); clearMoves();
+  if (fade.busy) return; fade.busy = true; fade.t0 = now(); settleHop(); clearMoves();
   setTimeout(() => { arriveAt(at); }, FADE_MS / 2);
   setTimeout(() => { fade.busy = false; if (after) after(); }, FADE_MS);
 }
@@ -4498,7 +4525,7 @@ function arriveAt(at){
     S.floorSeen[CUR.id] = 1;
   }
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
-  walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null;
+  walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null; walk.hop = false;
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
   placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
@@ -4989,7 +5016,7 @@ function drawMap(t){
   const grassOver = (fx, fy) => { const gx = Math.round(fx), gy = Math.round(fy); if (MAP[gy] && MAP[gy][gx] === 't') g.drawImage(TILES.t, 0, 10, 16, 6, gx*TS - cx, gy*TS - cy + 10, 16, 6); };
   const drawPlayer = () => {                 // the keeper (MAPS_SLICE K.1): 2 walk frames, 1px bob only while moving
     const fr = keeperFrame(), sc = CUR.dream === 'young' ? 12 : CUR.dream === 'child' ? 15 : 18;
-    const sx = Math.round(px_ - cx) - 1 + (18 - sc) / 2, sy = Math.round(py_ - cy) - 2 - fr + (18 - sc);
+    const sx = Math.round(px_ - cx) - 1 + (18 - sc) / 2, sy = Math.round(py_ - cy) - 2 - fr + (18 - sc) - (walk.hop && walk.to ? Math.round(Math.sin(walk.prog * Math.PI) * 4) : 0);
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(sx + 3, Math.round(py_ - cy) + 14, Math.max(8, sc - 6), 2);
     g.drawImage(keeperFrames(shownLook())[S.world.facing][fr], sx, sy, sc, sc);
     grassOver(walk.fx, walk.fy);
@@ -14199,7 +14226,7 @@ function bindInput(){
       if (scene || fade.busy) { /* nothing */ }
       else if (window.PPNet && PPNet.tapTile(tx, ty)) { closePartnerTray(); wild.chase = null; }
       else if (w && pet()) { closePartnerTray(); if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
-      else if (standingStill() && followerAt(tx, ty)) { clearMoves(); openPartnerTray(); }                                      // standing still: the care tray (D542)
+      else if (standingStill() && followerAt(tx, ty)) { clearMoves(); if (trayOpen()) closePartnerTray(); else openPartnerTray(); }   // standing still: the care tray toggles (D542, D578)
       else if (o) { closePartnerTray(); wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
       else if (!solid(tx, ty) && warpBlocked(tx, ty)) { closePartnerTray(); wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: tx, y: ty }; }   // gated warp: same deny as before, never step on it
       else { closePartnerTray(); startTapWalk(tx, ty, solid(tx, ty)); }
@@ -14303,6 +14330,7 @@ function frame(t){
   }
   if (p && $('#ovBattle').hidden) regenAll(dt);          // out of battle only
   if (S && screen === 'walk') {                  // the keeper walks with or without a partner; wild creatures only come with one
+    if (walk.hop && walk.to && (overlayOpen() || fade.busy)) settleHop();
     if (!overlayOpen() || walk.intro) updateWalk(dt, t);
     if (p && !overlayOpen() && !walk.intro) updateWild(dt);
     drawMap(t);
@@ -14698,7 +14726,7 @@ function boot(){
       if (!d) return { ok: false, grace: mapRT.grace };
       tryStep(d);
       if (walk.to) {
-        walk.fx = walk.to.x; walk.fy = walk.to.y; walk.prog = 1; walk.to = null;
+        walk.fx = walk.to.x; walk.fy = walk.to.y; walk.prog = 1; walk.to = null; walk.hop = false;
         if (fol.to) { fol.fx = fol.x; fol.fy = fol.y; fol.to = null; }
         onLand();
       }

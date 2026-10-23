@@ -97,11 +97,13 @@ test('each room has its own skin, the floor cap, and a clear path @w1', async ({
         }
         painted.push(row);
       }
+      // ART_PASS: hall_step and hall_dais_lip are one tile on purpose (no variants in the settled set).
+      const stripeBreak = (cell) => cell === 'wall' || (room.id === 'fb_hall_in' && (cell.startsWith('hall_step|') || cell.startsWith('hall_dais_lip|')));
       const runs = [];
       for (let y = 0; y < info.h; y++) {
         let run = 1;
         for (let x = 1; x < info.w; x++) {
-          if (painted[y][x] === 'wall' || painted[y][x - 1] === 'wall') { run = 1; continue; }
+          if (stripeBreak(painted[y][x]) || stripeBreak(painted[y][x - 1])) { run = 1; continue; }
           if (painted[y][x] === painted[y][x - 1]) { run++; if (run > 6) runs.push(room.id + ' h ' + x + ',' + y); }
           else run = 1;
         }
@@ -109,7 +111,7 @@ test('each room has its own skin, the floor cap, and a clear path @w1', async ({
       for (let x = 0; x < info.w; x++) {
         let run = 1;
         for (let y = 1; y < info.h; y++) {
-          if (painted[y][x] === 'wall' || painted[y - 1][x] === 'wall') { run = 1; continue; }
+          if (stripeBreak(painted[y][x]) || stripeBreak(painted[y - 1][x])) { run = 1; continue; }
           if (painted[y][x] === painted[y - 1][x]) { run++; if (run > 6) runs.push(room.id + ' v ' + x + ',' + y); }
           else run = 1;
         }
@@ -218,7 +220,7 @@ test('each room has its own skin, the floor cap, and a clear path @w1', async ({
     expect(row.runs, row.id).toEqual([]);
     expect(row.wall.startsWith(room.wall), row.id + ' ' + row.wall).toBe(true);
     expect(row.face, row.id).toBe(room.face);
-    expect(row.floor.startsWith(room.id === 'fb_hall_in' ? 'floor_moss' : 'floor_orchard'), row.id + ' ' + row.floor).toBe(true);
+    expect(row.floor.startsWith(room.id === 'fb_hall_in' ? 'hall_moss' : 'floor_orchard'), row.id + ' ' + row.floor).toBe(true);
   }
   expect(report.out[0].pair).not.toBe(report.out[1].pair);
   for (const [id, pair] of Object.entries(report.pairs)) {
