@@ -213,13 +213,16 @@ test('Officer Ness is on Route 1 before anyone steps on the marker @w1', async (
     return {
       ilse: say(MAPDATA.maps_slice.scenes.starter).join(' '),
       phone: say(MAPDATA.civic.scenes.phone_grant).join(' '),
-      tail: (PixelPets.storyTails().starter || []).map((s) => s[2]).join(' '),
+      tail: JSON.stringify(PixelPets.sceneScript('starter')),
+      tails: PixelPets.storyTails().starter,
     };
   });
   expect(lines.ilse).toContain('learn to defend yourself');
   expect(lines.ilse).toContain('join the Keepers');
   expect(lines.ilse).toContain('for good');
   expect(lines.tail).toContain('The wild starts past the gate');
+  expect(lines.tail).toContain('Hearthmoor will want to meet');
+  expect(lines.tails.length).toBe(2);
   expect(lines.phone).toContain('bumps into you');
   expect(lines.phone).toContain('required');
   expect(lines.phone).toContain('Keeper High Court');

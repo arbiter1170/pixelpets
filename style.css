@@ -634,6 +634,33 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 .chat-bubble{position:absolute;transform:translate(-50%,-100%);max-width:180px;padding:3px 8px;background:var(--w);color:var(--k);font-size:15px;line-height:1.15;
   box-shadow:0 0 0 2px var(--k);pointer-events:none;text-align:center}
 .sb-portrait[hidden]{display:none}
+/* STARTER_MOMENT reveal card. PAL only. Taps pass through to the scene layer. */
+#ovReveal{position:fixed;left:50%;transform:translateX(-50%);top:70px;z-index:10;width:min(300px,calc(100vw - 24px));box-sizing:border-box;
+  background:var(--d);border:3px solid var(--k);box-shadow:0 0 0 2px var(--m);padding:12px 12px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:var(--w);pointer-events:none;transition:opacity 120ms linear}
+#ovReveal[hidden]{display:none}
+#ovReveal.still{transition-duration:150ms}
+#ovReveal .rv-stage{position:relative;width:132px;height:124px;background:var(--n);box-shadow:0 0 0 3px var(--k);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+#ovReveal .rv-pet{width:108px;height:108px;image-rendering:pixelated;image-rendering:crisp-edges;transform-origin:50% 100%;margin-bottom:6px}
+#ovReveal .rv-glyph{position:absolute;width:32px;height:32px;image-rendering:pixelated;image-rendering:crisp-edges;top:2px;right:6px}
+#ovReveal .rv-glyph[hidden]{display:none}
+#ovReveal .rv-motes{position:absolute;inset:0;overflow:visible;pointer-events:none}
+#ovReveal .rv-mote{position:absolute;width:4px;height:4px}
+#ovReveal .rv-plate{display:flex;gap:8px;align-items:center;font-size:20px;line-height:1.1;color:var(--w)}
+#ovReveal .rv-cap{margin:0;font-size:15px;line-height:1.2;color:var(--h);text-align:center;min-height:36px}
+#ovReveal.choosing .rv-cap{display:none}
+#ovReveal .rv-banner{font-size:26px;line-height:1;color:var(--y);text-shadow:2px 2px 0 var(--k);transform-origin:50% 80%}
+#ovReveal .rv-banner[hidden]{display:none}
+@media (max-height:700px){
+  #ovReveal{top:58px;padding:8px 10px 8px;gap:4px}
+  #ovReveal .rv-stage{width:96px;height:88px}
+  #ovReveal .rv-pet{width:72px;height:72px;margin-bottom:4px}
+  #ovReveal .rv-glyph{width:24px;height:24px}
+}
+.bk-card{position:relative}
+.bk-pop{position:absolute;left:calc(50% + 28px);top:-4px;font-size:20px;line-height:1;color:var(--y);text-shadow:2px 2px 0 var(--k);pointer-events:none;z-index:2;white-space:nowrap}
+.bk-pop[hidden]{display:none}
+.bk-card canvas{transform-origin:50% 70%}
 
 /* Settings: the build id (tools/bump_build.py writes window.BUILD), small and dim at the bottom */
 .set-build{flex:0 0 auto;margin:4px 0 0;text-align:center;font-size:12px;line-height:14px;color:var(--dim,#94b0c2);opacity:.85;user-select:text;white-space:normal;overflow-wrap:anywhere}
