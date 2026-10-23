@@ -87,7 +87,7 @@ test('low food, low rest, both, and one FEED or one REST clears it', async ({ pa
   const rows = await page.evaluate(() => [...document.querySelectorAll('#scr-pet .care-block .stat-lab')].map(e => e.textContent.trim()));
   expect(rows[1]).toBe('FOOD');
   expect(rows[2]).toBe('JOY');
-  await page.locator('button[data-act="feed"]').click();
+  await page.locator('#scr-pet button[data-act="feed"]').click();
   // FEED keeps the care row busy for a little over a second. A REST tap in that window is ignored.
   await page.waitForTimeout(1600);
   await expect.poll(() => page.evaluate(() => PixelPets.state.party[0].hunger)).toBeGreaterThanOrEqual(25);
@@ -111,7 +111,7 @@ test('low food, low rest, both, and one FEED or one REST clears it', async ({ pa
 
   await page.locator('#petFloat').click();
   await expect(page.locator('#scr-pet')).toHaveClass(/active/);
-  await page.locator('button[data-act="rest"]').click();
+  await page.locator('#scr-pet button[data-act="rest"]').click();
   await expect.poll(() => page.evaluate(() => PixelPets.state.party[0].energy)).toBeGreaterThanOrEqual(25);
   await expect(page.locator('#petFloat')).not.toHaveClass(/care-rest/);
   expect(await page.evaluate(() => PixelPets.state.party[0].hunger)).toBeGreaterThanOrEqual(25);
@@ -175,7 +175,7 @@ test('very low rest and a nap, and one REST clears the nap', async ({ page }) =>
   await shot(page, 'napping');
 
   await page.locator('#petFloat').click();
-  await page.locator('button[data-act="rest"]').click();
+  await page.locator('#scr-pet button[data-act="rest"]').click();
   await expect.poll(() => page.evaluate(() => PixelPets.state.party[0].faintUntil || 0)).toBe(0);
   await expect(page.locator('#petFloat')).not.toHaveClass(/care-rest|care-very/);
   expect(await page.locator('#petFloat').getAttribute('aria-label')).toBe('Partner');
@@ -185,7 +185,7 @@ test('very low rest and a nap, and one REST clears the nap', async ({ page }) =>
 test('a REST that leaves food low holds the ring still', async ({ page }) => {
   await boot(page, { hunger: 20, energy: 80 });
   await page.locator('#petFloat').click();
-  await page.locator('button[data-act="rest"]').click();
+  await page.locator('#scr-pet button[data-act="rest"]').click();
   const f = await face(page);
   expect(f.hunger).toBeLessThanOrEqual(20);
   expect(f.cls).toMatch(/care-hold/);

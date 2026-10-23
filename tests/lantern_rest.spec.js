@@ -185,6 +185,7 @@ test('a home nap is free, and only a hurt lantern rest costs Acorns @w1', async 
 
   expect(await page.evaluate(() => PixelPets.runScene('lantern_rest'))).toBe(true);
   const free = await playCollect(page, [/^Rest a while$/]);
-  expect(free.says.join(' ')).toContain('full of energy');
+  // The hurt rest just filled energy. Math.round treats a crumb under 100 as full, so the line is the already-rested one.
+  expect(free.says.join(' ')).toContain('already rested');
   expect(await page.evaluate(() => PixelPets.state.money)).toBe(15);
 });

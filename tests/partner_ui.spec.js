@@ -105,9 +105,11 @@ test('lower card has five bars, the spec icons, and the card rects', async ({ pa
   if (W === 390) await page.locator('#petStrip').screenshot({ path: path.join(artifactsDir(), 'partner_lower_card_390.png') });
 });
 
-test('a low FOOD bar blinks and GROW does not, and one tap opens STATS @w1', async ({ page }) => {
+test('a low FOOD bar blinks and GROW does not, and the strip opens the care tray @w1', async ({ page }) => {
   await boot(page, { hunger: 10, happy: 10, energy: 10, xp: 10, stage: 0, hpNow: 1 });
   await page.locator('#petStrip').click();
+  await expect(page.locator('#careTray')).toBeVisible();
+  await page.locator('#ctStats').click();
   await expect(page.locator('#ovStats')).toBeVisible();
   const low = await page.evaluate(() => ({
     food: document.querySelector('#stripFood').classList.contains('low'),
@@ -230,6 +232,7 @@ test('arcade PARTNER at 320 keeps the care row on screen', async ({ page }) => {
 test('STATS popup is INTERACT and GEAR, and INTERACT returns to PARTNER', async ({ page }) => {
   await boot(page);
   await page.locator('#petStrip').click();
+  await page.locator('#ctStats').click();
   const row = await page.evaluate(() => {
     const a = document.querySelector('#scRename');
     const g = document.querySelector('#scGear');
@@ -329,6 +332,7 @@ test('PARTNER GEAR opens the gear view, and CLOSE stays on the current screen', 
 test('WALK, the lower card, INTERACT, then STATS restores gear and scroll once', async ({ page }) => {
   await boot(page);
   await page.locator('#petStrip').click();
+  await page.locator('#ctStats').click();
   await page.locator('#scGear').click();
   await expect(page.locator('#scGearBox')).toBeVisible();
   await page.waitForTimeout(50);
@@ -370,6 +374,7 @@ test('leaving PARTNER, a scene, a battle, a grow up, or a partner change opens S
   const arm = async () => {
     await page.evaluate(() => PixelPets.showTab('walk'));
     await page.locator('#petStrip').click();
+    await page.locator('#ctStats').click();
     await page.locator('#scGear').click();
     await page.evaluate(() => document.querySelector('#scRename').click());
     if (await page.locator('#ovStats').isVisible()) {

@@ -2,6 +2,42 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 10:20 ET: Older care clicks stay on the Partner tab
+
+- What changed and why: The care tray keeps its own FEED, REST, and HEAL. Older checks that clicked an unscoped care button now click the Partner tab button. A free Lantern rest right after a hurt rest says the already-rested line, because Math.round treats a crumb under 100 as full. The refill line and the cost are unchanged.
+- Files touched: `tests/heart_alert.spec.js`, `tests/care_screen_heal.spec.js`, `tests/lantern_rest.spec.js`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch. Build stays `20261023-0847`. Tests only, so the stamp is unchanged.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/heart_alert.spec.js tests/care_screen_heal.spec.js tests/lantern_rest.spec.js` — PP_TEST RESULT: PASS exit=0 passed=38 failed=0 flaky=0 skipped=0 time=40s. `npm run test:agent` — PP_TEST RESULT: PASS exit=0 passed=1205 failed=0 flaky=1 skipped=135 time=1280s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. The hidden-tab check passed in that run after WebKit and its libraries were installed. An earlier isolated rerun passed: PP_TEST RESULT: PASS exit=0 passed=1 failed=0 flaky=0 skipped=2 time=24s. Market Row at 17:30 on 390 was flaky in the full run and passed on retry. Isolated rerun: PP_TEST RESULT: PASS exit=0 passed=0 failed=0 flaky=1 skipped=2 time=38s (passed on retry 1). Console errors fail the run. Scans passed inside that run.
+- Decisions made (colour + reasoning): No new D or Q id. The Lantern line follows section 5(b). Next free id stays D577.
+- Anything left unfinished: the packet checker cites the pre-build line numbers, so a run on this HEAD fails for that cite drift. The result line is in the PR. The Supervisor merges.
+
+## 2026-10-23 10:18 ET: D576 town chatter is settled yes
+
+- What changed and why: Vincent settled D576 TOWN_CHATTER (red) yes on Oct 23, 2026 at 10:18 AM ET. Spec it now. Nothing is built yet. Design 656d101. The next free id stays D577.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, after the reservation commit. Build stays `20261023-0847`. Docs only, so the stamp is unchanged.
+- Tests run and result (widths, checks): `node tools/scans/run.js` after this commit. No game code changed.
+- Decisions made (colour + reasoning): D576 is red and settled yes by Vincent. It is not an Open row. No other id moved.
+- Anything left unfinished: TOWN_CHATTER is not built.
+
+## 2026-10-23 09:15 ET: D576 is reserved for town chatter
+
+- What changed and why: The Supervisor reserved D576 for TOWN_CHATTER. It is red, default No for v1, and it waits until after Episode 1. Deadline Sun Oct 25, 9:15 AM ET. Design 656d101. It is not settled and it is not in the archive. The next free id is D577.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, after the care-tray commit. Build stays `20261023-0847`. Docs only, so the stamp is unchanged.
+- Tests run and result (widths, checks): `node tools/scans/run.js` after this commit. No game code changed.
+- Decisions made (colour + reasoning): D576 is reserved, not settled. Red, default No for v1. No other id moved.
+- Anything left unfinished: TOWN_CHATTER is not built.
+
+## 2026-10-23 08:47 ET: A need balloon and a care tray on the walk (build 20261023-0847)
+
+- What changed and why: PARTNER_CARE sections 1–5 (design 1a98ea8, D534–D547). One balloon over the partner on the walk shows hungry, hurt, or tired. Worn out still shows Zz alone. Level 2 uses the red rim. The balloon stays up, does not bob, rises 2 px when it first appears, and skips that rise when motion is reduced. It steps aside from the quest arrow, the rail chips, the "!" balloon, and the talk marker. The early heart waits while a need would show. The modern partner strip opens a care tray. STATS on that tray opens the stats card. A tap on the follower opens the tray only while you stand still; while you are walking, that tap walks. A slot tap switches the partner and leaves the tray open. FEED, PLAY, REST, and HEAL run today's rules on the partner only. A heart, Zz, two sparks, and a PLAY hop answer over the follower. On a wide window the tray stays inside the game frame and clear of PARTNER and WALKLINGS. A nameless cooler hides its title. Cook Hesper's sheet still shows her name. A free Lantern rest treats energy as the HUD does, with Math.round. Save stays `pixelpets.save.v2` with `v` 2. No new saved field. `save.js` is untouched.
+- Files touched: `game.js`, `sprites.js`, `style.css`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/partner_care.spec.js`, `tests/controls.spec.js`, `tests/partner_ui.spec.js`, `README.md`, `tests/README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of main `e898fb3`. Build `20261023-0847`. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/partner_care.spec.js` — PP_TEST RESULT: PASS exit=0 passed=36 failed=0 flaky=0 skipped=9 time=64s. `node tools/pp_test.js tests/controls.spec.js tests/partner_ui.spec.js` — PP_TEST RESULT: PASS exit=0 passed=84 failed=0 flaky=0 skipped=6 time=80s. RTDB_RULES RESULT: PASS. Widths 320, 375, and 390. Nine skips in the new spec are the width-gated rows (desktop, arcade 390, cooler, and the Lantern rest). No page errors. The full suite result is in the 10:20 ET entry.
+- Decisions made (colour + reasoning): D534–D547 were settled. Greens D534, D536, D538, D543, D544, and D547 settled as written. Yellows D535, D537, D539, D540, D542, and D546 settled on their defaults by a unanimous yes from QA, PixelPets, and Design on Oct 22. D541 is yes (Vincent, Oct 23): the strip opens the care tray. D545 is no (Vincent, Oct 23): today's care rules, partner only. The two shop follow-ups are green and carry no new id. No new D or Q id in this commit. The 14 archive rows are added. The reserved line in OPEN_DECISIONS.md is unchanged in this commit.
+- Anything left unfinished: the packet checker cites the pre-build line numbers, so a run on this HEAD fails for that cite drift. The result line is in the PR. The Supervisor merges.
+
 ## 2026-10-23 07:05 ET: Stores and meals share one shop sheet (build 20261023-0705)
 
 - What changed and why: SHOP_LAYOUT sections 2-4 (design 6a34eb1, D485–D495) and the free Lantern rest line (section 2.8, green, no new id). Stores, stall meals, Cook Hesper, Baker Cole, and the Travel Shelf open as one bottom sheet. The header and X stay put. The list scrolls inside, at most 55 percent of the screen height. Each row shows an icon, the name with how many you own, a sub line, the price with an acorn, and BUY at 64 by 44. One tap buys one. There is no confirm. A row you cannot afford, or that is full, stays tappable and uses today's toast. Meals have an X and Not now. While the sheet is open the room sits in the band between the top row and the sheet. Zoom is unchanged. Reduced motion jumps; otherwise the camera eases. The wardrobe keeps its grid. A card you cannot afford says "Need N more" and its BUY is muted, and it still takes a tap. The Heights crate is headed Heights Supply Crate. A free Lantern rest says the refill line when any energy is below 100, and the old line when the team is already at 100. A hurt rest stays a yes-or-no prompt with the chip. Save stays `pixelpets.save.v2` with `v` 2. No new saved field. `save.js` is untouched. QA-4, the Lanterns card clear of arcade TALK, is the previous entry.

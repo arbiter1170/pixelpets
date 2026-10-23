@@ -848,6 +848,7 @@ function setPartnerId(id){
 }
 function showTab(name){
   if (overlayOpen() && !tutAllowsTab(name)) return;
+  if (name !== 'walk') closePartnerTray();
   screen = name;
   document.body.dataset.screen = name;
   if (S) updateHUD();
@@ -908,14 +909,15 @@ function syncCareBlock(){
   syncHealBtn(p);
 }
 function syncHealBtn(p){
-  const b = $('#scr-pet [data-act="heal"]'); if (!b) return;
   const full = healFull(p), st = full ? 'full' : 'ok';
-  if (b.dataset.st !== st) {
-    b.dataset.st = st; const icon = b.querySelector('canvas'); b.textContent = 'HEAL'; if (icon) b.prepend(icon);
-    if (full) { const sm = document.createElement('small'); sm.className = 'cdt'; sm.textContent = 'FULL'; b.append(sm); }
-  }
-  b.setAttribute('aria-label', full ? 'Heal, ' + petName(p) + ' is at full HP' : 'Heal ' + petName(p));
-  b.classList.toggle('cooldown', full); b.setAttribute('aria-disabled', full ? 'true' : 'false');
+  $$('#scr-pet [data-act="heal"], #careTray [data-act="heal"]').forEach(b => {
+    if (b.dataset.st !== st) {
+      b.dataset.st = st; const icon = b.querySelector('canvas'); b.textContent = 'HEAL'; if (icon) b.prepend(icon);
+      if (full) { const sm = document.createElement('small'); sm.className = 'cdt'; sm.textContent = 'FULL'; b.append(sm); }
+    }
+    b.setAttribute('aria-label', full ? 'Heal, ' + petName(p) + ' is at full HP' : 'Heal ' + petName(p));
+    b.classList.toggle('cooldown', full); b.setAttribute('aria-disabled', full ? 'true' : 'false');
+  });
 }
 async function healTap(){
   const p = pet(); if (!p || now() < anim.busyUntil || !$('#ovSheet').hidden) return;
@@ -927,7 +929,7 @@ async function healTap(){
   const pick = await openSheet('Heal ' + petName(p), rows, 'BACK');
   if (!pick) return;                                   // BACK (or Escape): nothing is used
   const r = useItem(pick, p.id, 'field');
-  sfx(r.ok ? 'heal' : 'denied'); toast(r.msg); if (r.ok) save();
+  sfx(r.ok ? 'heal' : 'denied'); toast(r.msg); if (r.ok) { save(); if (screen === 'walk') noteMapCare('heal'); }
   updateHUD();
 }
 function fitPetScene(){
@@ -1077,7 +1079,7 @@ function updateHUD(){
   syncSide();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
-  if (!p) { document.body.classList.remove('align-on'); syncCareAlert(); return; }
+  if (!p) { document.body.classList.remove('align-on'); syncCareAlert(); closePartnerTray(); return; }
   $('#hdrName').textContent = petName(p);
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
   $('#hdrStage').textContent = starLine(p.stage);
@@ -1112,6 +1114,7 @@ function updateHUD(){
   else if (canEvolve(p)) { hint.textContent = petName(p) + ' is ready to grow up!'; hint.classList.add('ready'); btn.hidden = false; }
   else { hint.textContent = 'Next form: GROW ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
   updateCareButtons(); renderPetBadge(p);
+  if (trayOpen()) renderPartnerTray();
 }
 // FAINTED 12m / TIRED on the Pet tab (BATTLE §7 badges); GLOWING stays on the stats card.
 function renderPetBadge(p){
@@ -1754,7 +1757,7 @@ function updateCareButtons(){
   const p = pet(); if (!p) return;
   // Only the PARTNER care row. Party-board buttons also use data-act, and a page-wide
   // query wiped their labels about a second after the WALKLINGS tab opened.
-  $$('#scr-pet .actions [data-act]').forEach(b => {
+  $$('#scr-pet .actions [data-act], #careTray .ct-care [data-act]').forEach(b => {
     const act = b.dataset.act;
     if (!BTN_LABEL[act]) return;
     const left = cdLeft(p, act), cd = left ? fmtCd(left) : '';
@@ -1772,12 +1775,35 @@ function updateCareButtons(){
 
 /* ---------- pet care ---------- */
 const anim = { busyUntil: 0, jumpUntil: 0, sleepUntil: 0, parts: [], emotes: [], care: { food: 0, rest: 0 } };
+// PARTNER_CARE D546. Map reply over the follower. Not saved.
+const careReply = { until: 0, glyph: '', hop: false, sparks: false };
+let needBubbleLast = null, needHeartSkipped = false;
+const needShow = { key: '', t0: 0 };
 // HEART_ALERT v0.2 (D154–D156): levels for the partner only. 0 none, 1 low, 2 very low.
 function careAlert(p){
   if (!p) return { food: 0, rest: 0 };
   const food = p.hunger <= FOOD_RULES.floor ? 2 : p.hunger < FOOD_RULES.hungry ? 1 : 0;
   const rest = (isFainted(p) || p.energy < 10) ? 2 : p.energy < 25 ? 1 : 0;
   return { food, rest };
+}
+// PARTNER_CARE D537. One constant each. 25% matches the HP bar warn; 10% is the very rim.
+const HURT_SHOW = 0.25, HURT_VERY = 0.10;
+const NEED_ORD = { food: 0, hurt: 1, tired: 2 };
+const NEED_GLYPH = { food: 'emote_hungry', hurt: 'emote_hurt', tired: 'emote_tired' };
+function partnerNeed(p){
+  if (!p || isFainted(p)) return null;
+  const c = careAlert(p), hits = [];
+  if (c.food) hits.push({ kind: 'food', level: c.food });
+  const mx = maxHpOf(p);
+  if (mx > 0) {
+    const ratio = hpOf(p) / mx;
+    if (ratio < HURT_VERY) hits.push({ kind: 'hurt', level: 2 });
+    else if (ratio < HURT_SHOW) hits.push({ kind: 'hurt', level: 1 });
+  }
+  if (c.rest) hits.push({ kind: 'tired', level: c.rest });
+  if (!hits.length) return null;
+  hits.sort((a, b) => b.level - a.level || NEED_ORD[a.kind] - NEED_ORD[b.kind]);
+  return hits[0];
 }
 function careWords(p, c){
   if (!p || !c || (!c.food && !c.rest)) return '';
@@ -1907,6 +1933,7 @@ function doAction(act){
     queueEmote(act === 'rest' ? 'emote_sleep' : 'emote_heart', act === 'rest' ? 200 : 500);
   }
   noteAlignPet(p, side() === 'keepers' ? 'keepers' : 'glimmer', 2);
+  if (screen === 'walk') noteMapCare(act);
   toast(msg);
   updateHUD(); save();
   tutSawAct(act);
@@ -3689,7 +3716,7 @@ function startTapWalk(tx, ty, soft){
   const path = goals.length ? findPath(goals) : null;
   if (!path) { cantReach(); return; }
   if (!path.length) { walk.path = null; dropAim(); return; }
-  walk.path = path; walk.aim = { x: tx, y: ty, soft: !!soft };
+  walk.path = path; walk.aim = { x: tx, y: ty, soft: !!soft }; closePartnerTray();
 }
 const dirName = (dx, dy) => dx > 0 ? 'right' : dx < 0 ? 'left' : dy < 0 ? 'up' : 'down';
 function warpBlocked(x, y){ const wp = warpAt(x, y); return !!(wp && wp.need && !needMet(wp.need)); }
@@ -3714,7 +3741,7 @@ function tryStep(d){
   if (warpBlocked(nx, ny)) { S.world.facing = dn; return; }   // the gate trigger one tile earlier tells you why
   const w = wildAt(nx, ny);
   if (w) { if (p && w.x === nx && w.y === ny) meetWild(w); return; }   // bump = encounter; a creature just leaving that tile blocks briefly
-  walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0;
+  walk.from = { x: S.world.x, y: S.world.y }; walk.to = { x: nx, y: ny }; walk.prog = 0; closePartnerTray();
   S.world.facing = dn;
   S.world.x = nx; S.world.y = ny;
   followerStep();
@@ -4970,13 +4997,16 @@ function drawMap(t){
   const drawFollower = () => {               // the partner, one tile behind (K.3); Tired = slower, lower bob
     const fx = Math.round(fol.fx * TS - cx) - 1, fy = Math.round(fol.fy * TS - cy) - 2 + (isFainted(p) ? 1 : 0);
     if (fx < -18 || fy < -18 || fx > VW || fy > VH) return;
+    const hop = careHop(t);
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
     const bob = followerBob(t);
-    if (auraMapOk()) drawAura(g, p, fx, fy - bob, t, 0, 'back', '');
-    g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - bob);
-    if (p.accessory) drawPetAccessory(g, p.accessory, fx, fy - bob, isFaded(p), petSpr(p).n);
-    if (auraMapOk()) drawAura(g, p, fx, fy - bob, t, 0, 'front', '');
-    if (earlyBuddy() && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob);
+    if (auraMapOk()) drawAura(g, p, fx, fy - bob - hop, t, 0, 'back', '');
+    g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - bob - hop);
+    if (p.accessory) drawPetAccessory(g, p.accessory, fx, fy - bob - hop, isFaded(p), petSpr(p).n);
+    if (auraMapOk()) drawAura(g, p, fx, fy - bob - hop, t, 0, 'front', '');
+    const needUp = !!(partnerNeed(p) && !scene && !(battle && battle.on));
+    if (earlyBuddy() && (needUp || t < careReply.until)) needHeartSkipped = true;
+    if (earlyBuddy() && !needHeartSkipped && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob - hop);
     grassOver(fol.fx, fol.fy);
   };
   // y-sorted so objects, creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
@@ -4988,6 +5018,7 @@ function drawMap(t){
   if (fol.x != null && p) ents.push({ y: fol.fy, draw: drawFollower });
   ents.push({ y: walk.fy + 0.01, draw: drawPlayer });
   if (window.PPNet && PPNet.mapEnts) PPNet.mapEnts(g, cx, cy).forEach(e => ents.push(e));
+  needHeartSkipped = false;
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
   drawHqGlow(g, cx, cy);
@@ -5000,8 +5031,86 @@ function drawMap(t){
   if (!isRoom()) drawWeather(g, VW, VH, t);   // weather tint is skipped indoors (INTERIORS §2.1)
   drawDream(g, VW, VH, t);
   drawObjectiveCue(g, cx, cy, t);
+  drawNeedBubble(g, cx, cy, t);
   if (walk.intro) { const k = Math.floor((t - walk.intro) / 120) % 2; if (k) { g.fillStyle = PAL.w; g.fillRect(0,0,VW,VH); } }
   if (fade.busy) { const e = (now() - fade.t0) / (FADE_MS / 2); g.globalAlpha = clamp(e <= 1 ? e : 2 - e, 0, 1); g.fillStyle = PAL.k; g.fillRect(0,0,VW,VH); g.globalAlpha = 1; }
+}
+function noteMapCare(act){
+  const t = now();
+  if (act === 'feed' || act === 'play') {
+    careReply.glyph = 'emote_heart'; careReply.hop = act === 'play'; careReply.sparks = false; careReply.until = t + 900;
+  } else if (act === 'rest') {
+    careReply.glyph = 'emote_sleep'; careReply.hop = false; careReply.sparks = false; careReply.until = anim.sleepUntil;
+  } else if (act === 'heal') {
+    careReply.glyph = ''; careReply.hop = false; careReply.sparks = true; careReply.until = t + 300;
+  }
+}
+function careHop(t){
+  if (!careReply.hop || t >= careReply.until || prefersReduced()) return 0;
+  const k = clamp((t - (careReply.until - 900)) / 900, 0, 1);
+  return Math.round(Math.sin(k * Math.PI) * 2);
+}
+function noteCueArrow(grid, x, y){
+  cueArrows.push({ x: x - 1, y: y - 1, w: grid[0].length + 2, h: grid.length + 2 });
+}
+function needBoxesOverlap(a, b){
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+function needBlocked(box){
+  if (cueArrows.some(r => needBoxesOverlap(box, r))) return true;
+  if (cueChips.some(c => needBoxesOverlap(box, { x: c.x - 8, y: c.y - 8, w: 17, h: 25 }))) return true;
+  return bubbleBoxes.some(r => needBoxesOverlap(box, r));
+}
+function drawGlyphRim(g, name, x, y, rim){
+  const gl = GLYPH[name]; if (!gl) return;
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) {
+    let ch = gl[j][i]; if (ch === '.') continue;
+    if (rim && ch === 'k') ch = rim;
+    if (!PAL[ch]) continue;
+    g.fillStyle = PAL[ch]; g.fillRect((x | 0) + i, (y | 0) + j, 1, 1);
+  }
+}
+function drawSparkW(g, x, y){
+  const gl = GLYPH.spark; if (!gl) return;
+  for (let j = 0; j < gl.length; j++) for (let i = 0; i < gl[j].length; i++) {
+    if (gl[j][i] === '.') continue;
+    g.fillStyle = PAL.w; g.fillRect((x | 0) + i, (y | 0) + j, 1, 1);
+  }
+}
+function needEase(k){ k = clamp(k, 0, 1); return 1 - (1 - k) * (1 - k); }
+// PARTNER_CARE D534-D540. One balloon in the Zz spot, after the quest cue, so the cue always wins.
+function drawNeedBubble(g, cx, cy, t){
+  needBubbleLast = null;
+  const p = pet();
+  if (!p || !followerOn() || fol.x == null || scene || (battle && battle.on)) { needShow.key = ''; return; }
+  const cnv = $('#mapCanvas'), VW = cnv.width, VH = cnv.height;
+  const fx = Math.round(fol.fx * TS - cx) - 1, fy = Math.round(fol.fy * TS - cy) - 2 + (isFainted(p) ? 1 : 0);
+  if (fx < -18 || fy < -18 || fx > VW || fy > VH) { needShow.key = ''; return; }
+  const bx = Math.round(fol.fx * TS - cx) + 4, by = Math.round(fol.fy * TS - cy) - 15;
+  const hop = careHop(t);
+  if (t < careReply.until) {
+    if (careReply.glyph) drawGlyph(g, careReply.glyph, bx, by - hop);
+    if (careReply.sparks && !prefersReduced()) { drawSparkW(g, bx - 2, by + 2); drawSparkW(g, bx + 8, by - 2); }
+    needBubbleLast = { shown: false, reply: careReply.glyph || (careReply.sparks ? 'spark' : ''), x: bx, y: by - hop, hop: hop, shift: 0 };
+    return;
+  }
+  const need = partnerNeed(p);
+  if (!need) { needShow.key = ''; return; }
+  const key = need.kind + need.level;
+  if (needShow.key !== key) { needShow.key = key; needShow.t0 = t; }
+  const rise = prefersReduced() ? 0 : Math.round(2 * (1 - needEase((t - needShow.t0) / 160)));
+  const homeY = by + rise;
+  let placed = null;
+  for (const dx of [0, -10, 10]) {
+    const box = { x: bx + dx, y: homeY, w: 9, h: 12 };
+    if (!needBlocked(box)) { placed = { x: box.x, y: box.y, shift: dx }; break; }
+  }
+  const glyph = NEED_GLYPH[need.kind];
+  if (placed) drawGlyphRim(g, glyph, placed.x, placed.y, need.level === 2 ? 'r' : '');
+  needBubbleLast = {
+    shown: !!placed, glyph: glyph, level: need.level, kind: need.kind,
+    x: placed ? placed.x : bx, y: placed ? placed.y : homeY, shift: placed ? placed.shift : 0, homeX: bx, homeY: by,
+  };
 }
 // Cobblecrest only: ridge, chimney, windows and corner stones outside; banners, warm light and flagstone flecks inside.
 // Shared roof and wall tiles also draw Hearthmoor and Fernbrook, so this pass never edits those sprites.
@@ -5269,6 +5378,8 @@ function modernCueZone(){
 // CUE_SLOT still steps a board-slip chip along the rail (D435). Main and side use CUE_EDGE. The white rim blink is gone.
 const CUE_SLOT = { w: 19, h: 27, tries: [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8] };
 const cueChips = [];   // chips drawn this frame (view space), reset at the top of drawObjectiveCue; never saved
+const cueArrows = [];  // on-screen quest and board-slip arrows this frame (view space); never saved
+const bubbleBoxes = []; // "!" balloon and the talk marker this frame; never saved
 // QUEST_CUE (D461-D469). Main and side cues use today's small arrow. Off screen it turns in 8 directions,
 // carries the distance pill, and sits in a 44 CSS px tap box (CUE_EDGE). A board slip keeps the rail chip.
 // D464: no ground ring. D465: no rim blink; 1 px motion on 1400 ms; still under reduced motion.
@@ -5423,9 +5534,11 @@ function drawSlipCue(g, pt, col, cx, cy, t, VW, VH, shift){
   if (X > -TS && Y > -TS && X < VW && Y < VH && !under) {
     if (Y - 13 >= 0) {
       drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
+      noteCueArrow(ARROW.down, X + 5 + shift, Y - 12 - bob);
       cuePassLast = { dir: 'down', x: X + 5 + shift, y: Y - 12 - bob };
     } else {
       drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
+      noteCueArrow(ARROW.up, X + 5 + shift, Y + TS + 1 + bob);
       cuePassLast = { dir: 'up', x: X + 5 + shift, y: Y + TS + 1 + bob };
     }
     return;
@@ -5490,9 +5603,11 @@ function drawEdgeCue(g, pt, col, cx, cy, t, VW, VH, shift, tracked, placed){
   if (X > -TS && Y > -TS && X < VW && Y < VH && !under) {
     if (Y - 13 >= 0) {
       drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
+      noteCueArrow(ARROW.down, X + 5 + shift, Y - 12 - bob);
       cuePassLast = { dir: 'down', x: X + 5 + shift, y: Y - 12 - bob };
     } else {
       drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
+      noteCueArrow(ARROW.up, X + 5 + shift, Y + TS + 1 + bob);
       cuePassLast = { dir: 'up', x: X + 5 + shift, y: Y + TS + 1 + bob };
     }
     return;
@@ -5535,6 +5650,7 @@ function drawEdgeCue(g, pt, col, cx, cy, t, VW, VH, shift, tracked, placed){
 }
 function drawObjectiveCue(g, cx, cy, t){
   cueChips.length = 0;
+  cueArrows.length = 0;
   cueChipAll.length = 0;
   cueTapBoxes.length = 0;
   cueChipLast = null;
@@ -5709,6 +5825,10 @@ function followerBob(t){                       // normal: twice per step / every
   return b;
 }
 const followerAt = (tx, ty) => fol.x != null && followerOn() && ((fol.x === tx && fol.y === ty) || (Math.round(fol.fx) === tx && Math.round(fol.fy) === ty));
+function standingStill(){
+  return !walk.to && !fol.to && !walk.path && !walk.target && !walk.queued && !walk.dpad && !walk.drag && !walk.key
+    && !wild.chase && !scene && !fade.busy;
+}
 function toggleFollower(){
   S.settings.follower = S.settings.follower === false; placeFollower(); renderFollowerBtn(); save(); sfx('tap');
   toast(S.settings.follower ? 'Your partner walks with you.' : 'Your partner waits on the Partner tab.');
@@ -6311,15 +6431,21 @@ function checkChatter(){
   }
 }
 function drawBubbles(g, cx, cy, t){
+  bubbleBoxes.length = 0;
   drawSceneEmotes(g, cx, cy);
   if (spot.bang && spot.id) {                          // §6.1 "!" bubble, 2px above the trainer's head
     const o = CUR.objs.find(x => x.id === spot.id);
-    if (o) { const q = objPos(o); drawGlyph(g, 'emote_bang', Math.round(q.x * TS - cx) + 4, Math.round(q.y * TS - cy) - 15); }
+    if (o) {
+      const q = objPos(o), bx = Math.round(q.x * TS - cx) + 4, by = Math.round(q.y * TS - cy) - 15;
+      drawGlyph(g, 'emote_bang', bx, by);
+      bubbleBoxes.push({ x: bx, y: by, w: 9, h: 12 });
+    }
   }
   const fp = pet();                                    // Zz over a napping (Fainted) follower (ICONS_SEALS Q6)
   if (fol.x != null && fp && followerOn() && isFainted(fp) && !scene) drawGlyph(g, 'emote_sleep', Math.round(fol.fx * TS - cx) + 4, Math.round(fol.fy * TS - cy) - 15);
   const ft = !moveHeld() && !walk.to && facingTarget();
   if (ft && ft.kind !== 'door') { const q = objPos(ft); const X = q.x * TS - cx + 4, Y = q.y * TS - cy - 11 - (Math.floor(t / 400) % 2);
+    bubbleBoxes.push({ x: X, y: Y, w: 8, h: 8 });
     WART.talk.forEach((r, j) => { for (let i = 0; i < 8; i++) if (r[i] !== '.') { g.fillStyle = PAL[r[i]]; g.fillRect(X + i, Y + j, 1, 1); } }); }
   const el = $('#chatBubble');
   if (!el.hidden) {
@@ -6345,6 +6471,7 @@ const ABORT = { abort: true };
 function runScene(id, ctx){ const steps = sceneSteps(id); if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id, beat: id }, ctx || {})); }
 async function runSteps(steps, ctx = {}){
   if (scene || !S) return;
+  closePartnerTray();
   clearUiReturn();
   scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: ctx.viewPet || null, nick: undefined },
     vars: { tags: [], line: null, suggest: null }, skip: false, deferRespawn: false, toasts: [], boxes: 0 };
@@ -6717,7 +6844,7 @@ async function execStep(st){
     // a shortfall is covered so a wipe at 0 Acorns cannot trap you. Sets scene.view flag lantern.rest for the next line.
     case 'payRest': {
       if (!partyNeedsLanternRest()) {
-        const refill = S.party.some(q => (Number(q.energy) || 0) < 100);
+        const refill = S.party.some(q => Math.round(q.energy) < 100);
         sc.view.flags['lantern.rest'] = refill ? 'refill' : 'full'; setRestDue(false);
         S.party.forEach(q => { q.energy = 100; });
         sfx('rest'); noteLanternRest(); return;
@@ -7907,6 +8034,7 @@ function openBattle(o){
   markAlive();                                                // the crash marker notes this page is now in a battle
   const lead = leadPet();
   if (!lead) { noBattleToast(); return false; }
+  closePartnerTray();
   clearUiReturn();
   clearMoves(); closeSheet(null);
   const B = battle; B.id++;
@@ -10863,6 +10991,7 @@ function paintMealIcon(cv){
 function openShop(ids, title, flavour){
   if (!S || overlayOpen()) return;
   clearMoves(); shopMeal = null; shopIds = (ids || ITEM_ORDER).filter(k => (ITEMS[k] || WARDROBE[k]) && auraShopOk(k)); shopSel = 0;
+  $('#shopTitle').hidden = false;
   $('#shopTitle').textContent = title || 'Travel Shelf';
   const flav = $('#shopFlavour');
   if (flav) flav.textContent = flavour || (title && title !== 'Travel Shelf' ? 'Snacks for the road.' : 'Leave Acorns, take a snack. \u2014 I.');
@@ -11017,6 +11146,7 @@ function shopMealBox(prompt, opts){
     shopIds = rows.map(r => 'm' + r.i); shopSel = 0;
     const who = (scene && (scene.who || (scene.npc && objName(scene.npc)))) || '';
     $('#shopTitle').textContent = who;
+    $('#shopTitle').hidden = !who;
     const flav = $('#shopFlavour'); if (flav) flav.textContent = prompt;
     document.body.classList.add('shop-meal');
     sbox.text = prompt; sbox.t0 = now(); sbox.full = true; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.mode = 'choice'; sbox.resolve = () => {};
@@ -13739,9 +13869,75 @@ function bindDebugPanel(){
   });
 }
 
+/* ---------- partner tray (PARTNER_CARE D541-D547) ---------- */
+let trayPartyKey = '';
+const trayOpen = () => { const el = $('#careTray'); return !!(el && !el.hidden); };
+function closePartnerTray(){
+  const el = $('#careTray'); if (!el || el.hidden) return;
+  el.hidden = true; document.body.classList.remove('ct-open');
+}
+function paintTrayBadge(c, q){
+  const g = ctx(c); g.clearRect(0, 0, 5, 5);
+  let glyph = '';
+  if (isFainted(q)) glyph = 'z';
+  else {
+    const n = partnerNeed(q);
+    if (n) glyph = n.kind === 'food' ? 'badge_food' : n.kind === 'hurt' ? 'ico_hp' : 'ico_nrg';
+  }
+  c.hidden = !glyph;
+  c.dataset.need = glyph;
+  if (glyph) drawGlyph(g, glyph, 0, 0);
+}
+function renderPartnerTray(){
+  const el = $('#careTray'); if (!el || el.hidden || !S) return;
+  const p = pet(); if (!p) { closePartnerTray(); return; }
+  const name = $('#ctName'), label = petName(p) + ' Lv ' + levelOf(p);
+  if (name && name.textContent !== label) name.textContent = label;
+  const row = $('#ctParty'); if (!row) return;
+  if (S.party.length < 2) { row.hidden = true; row.textContent = ''; trayPartyKey = ''; return; }
+  row.hidden = false;
+  const key = S.party.map(q => q.id).join(',');
+  if (key !== trayPartyKey) {
+    trayPartyKey = key; row.textContent = '';
+    S.party.forEach(q => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ct-slot'; b.dataset.id = q.id;
+      const cv = document.createElement('canvas'); cv.width = cv.height = 18;
+      const badge = document.createElement('canvas'); badge.width = badge.height = 5; badge.className = 'ct-badge'; badge.hidden = true;
+      b.append(cv, badge);
+      b.addEventListener('click', () => trayPick(q.id));
+      row.appendChild(b);
+    });
+  }
+  [...row.children].forEach(b => {
+    const q = S.party.find(x => x.id === b.dataset.id); if (!q) return;
+    const on = q.id === p.id;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-label', on ? petName(q) + ', your partner' : 'Make ' + petName(q) + ' your partner');
+    spriteCanvas(b.querySelector('canvas'), spi(q), q.stage, 'n', isFaded(q), q.accessory);
+    paintTrayBadge(b.querySelector('.ct-badge'), q);
+  });
+}
+function openPartnerTray(){
+  if (!S || !pet() || !$('#careTray')) return;
+  $('#careTray').hidden = false;
+  document.body.classList.add('ct-open');
+  renderPartnerTray();
+}
+function trayPick(id){
+  const before = pet();
+  makePartner(id);
+  const p = pet();
+  if (!p || p.id !== id) { renderPartnerTray(); return; }
+  if (!before || before.id !== id) sfx('tap');
+  toast(petName(p) + ' is your partner now!');
+  save(); updateHUD();
+  renderPartnerTray();
+}
+
 /* ---------- input ---------- */
 function bindInput(){
   $$('#tabs button').forEach(b => b.addEventListener('click', () => {
+    closePartnerTray();
     if (tabsGuarded() && !tutAllowsTab(b.dataset.tab)) return;
     if (b.dataset.tab === 'quest') { openQuest(); return; }
     if (b.dataset.tab !== screen) sfx('tap');
@@ -13759,7 +13955,10 @@ function bindInput(){
   $('#colFloat').addEventListener('click', () => floatTab('col'));
   $('#petFloat').addEventListener('click', () => floatTab('pet'));
   $$('.scr-back').forEach(b => b.addEventListener('click', () => { if (overlayOpen() && !tutAllowsTab('walk')) return; sfx('tap'); showTab('walk'); }));
-  $('#petStrip').addEventListener('click', () => { if (S && pet()) openStatsCard(S.partnerId); });
+  $('#petStrip').addEventListener('click', () => { if (S && pet()) openPartnerTray(); });
+  const ctStats = $('#ctStats'), ctClose = $('#ctClose');
+  if (ctStats) ctStats.addEventListener('click', () => { if (pet()) openStatsCard(pet().id); });
+  if (ctClose) ctClose.addEventListener('click', () => { sfx('tap'); closePartnerTray(); });
   bindJoystick();
   $('#setClose').addEventListener('click', () => { sfx('tap'); closeSettings(); });
   $('#ovSettings').addEventListener('click', e => { if (e.target === e.currentTarget) closeSettings(); });
@@ -13799,7 +13998,7 @@ function bindInput(){
   si.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (sbox.nameDone) sbox.nameDone(false); } });
   $('#talkBtn').addEventListener('click', () => { if (!overlayOpen() && talkFacing()) sfx('tap'); });
   ['#evoOk', '#geoAllow', '#geoLater', '#envBadge', '#envUseLoc', '#envClose', '#copyCode'].forEach(id => $(id).addEventListener('click', () => sfx('tap')));
-  $$('#scr-pet .actions [data-act]').forEach(b => b.addEventListener('click', () => b.dataset.act === 'heal' ? healTap() : doAction(b.dataset.act)));   // CARE_SCREEN_HEAL
+  $$('#scr-pet .actions [data-act], #careTray .ct-care [data-act]').forEach(b => b.addEventListener('click', () => b.dataset.act === 'heal' ? healTap() : doAction(b.dataset.act)));   // CARE_SCREEN_HEAL
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
   $('#petStatsBtn').addEventListener('click', () => openPartnerStats());
@@ -13970,7 +14169,7 @@ function bindInput(){
   // D-pad: press & hold. A quick tap still moves one tile.
   $$('.dp[data-dir]').forEach(b => {
     const dir = b.dataset.dir;
-    const down = e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch(_) {} walk.dpad = dir; walk.queued = DIRS[dir]; b.classList.add('on'); hideBumpHint(); };
+    const down = e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch(_) {} walk.dpad = dir; walk.queued = DIRS[dir]; b.classList.add('on'); hideBumpHint(); closePartnerTray(); };
     const up = e => { if (walk.dpad === dir) walk.dpad = null; b.classList.remove('on'); };
     b.addEventListener('pointerdown', down);
     ['pointerup','pointercancel','lostpointercapture'].forEach(ev => b.addEventListener(ev, up));
@@ -13982,7 +14181,7 @@ function bindInput(){
   mc.addEventListener('pointermove', e => {
     if (!ptr || e.pointerId !== ptr.id) return;
     const dx = e.clientX - ptr.x, dy = e.clientY - ptr.y;
-    if (Math.hypot(dx, dy) > 18) { ptr.dragged = true; walk.drag = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); }
+    if (Math.hypot(dx, dy) > 18) { ptr.dragged = true; walk.drag = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'); closePartnerTray(); }
   });
   const end = e => {
     if (!ptr || e.pointerId !== ptr.id) return;
@@ -13990,7 +14189,7 @@ function bindInput(){
       const r = mc.getBoundingClientRect();
       // Canvas CSS pixels map onto the bitmap, then the camera. The integer room scale changes both together, so the tile stays put (D239).
       const vx = (e.clientX - r.left) / r.width * mc.width, vy = (e.clientY - r.top) / r.height * mc.height;
-      if (!(scene || fade.busy) && cueEdgeTap(vx, vy)) { openQuest(); }
+      if (!(scene || fade.busy) && cueEdgeTap(vx, vy)) { closePartnerTray(); openQuest(); }
       else {
       const x = vx + walk.cam.x, y = vy + walk.cam.y;
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
@@ -13998,12 +14197,12 @@ function bindInput(){
       const w = wild.list.find(o => (o.x === tx && o.y === ty) || (Math.round(o.fx) === tx && Math.round(o.fy) === ty));
       const o = objAt(tx, ty, tappable) || (tileAt(tx, ty) === 'H' && doorAt(tx, ty + 1));   // a door: its tile or the wall above it
       if (scene || fade.busy) { /* nothing */ }
-      else if (window.PPNet && PPNet.tapTile(tx, ty)) { wild.chase = null; }
-      else if (w && pet()) { if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
-      else if (followerAt(tx, ty)) { clearMoves(); openStatsCard(pet().id); }                                      // tap the follower: its stats card (K.4)
-      else if (o) { wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
-      else if (!solid(tx, ty) && warpBlocked(tx, ty)) { wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: tx, y: ty }; }   // gated warp: same deny as before, never step on it
-      else startTapWalk(tx, ty, solid(tx, ty));
+      else if (window.PPNet && PPNet.tapTile(tx, ty)) { closePartnerTray(); wild.chase = null; }
+      else if (w && pet()) { closePartnerTray(); if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
+      else if (standingStill() && followerAt(tx, ty)) { clearMoves(); openPartnerTray(); }                                      // standing still: the care tray (D542)
+      else if (o) { closePartnerTray(); wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
+      else if (!solid(tx, ty) && warpBlocked(tx, ty)) { closePartnerTray(); wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: tx, y: ty }; }   // gated warp: same deny as before, never step on it
+      else { closePartnerTray(); startTapWalk(tx, ty, solid(tx, ty)); }
       }
     }
     walk.drag = null; ptr = null;
@@ -14057,7 +14256,7 @@ function bindInput(){
       if (!$('#ovSheet').hidden) { if (e.key === 'Escape' && !$('#shCancel').hidden) closeSheet(null); return; }
       battleKey(e); return;
     }
-    if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
+    if (KEYS[e.key] && screen === 'walk') { e.preventDefault(); closePartnerTray(); if (walk.key !== KEYS[e.key]) { walk.queued = DIRS[KEYS[e.key]]; hideBumpHint(); } walk.key = KEYS[e.key]; return; }
     if (DEBUG) {                                 // debug keys only with ?debug=1, and never while a battle is open
       if (e.key === 'e' || e.key === 'E') { startEvolution(true); return; }          // force evolve
       if (e.key === 'g' || e.key === 'G') { if (!overlayOpen()) { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); } return; } // force encounter (spawn-weighted species)
@@ -14621,6 +14820,10 @@ function boot(){
   api.cueChip = () => DEBUG ? (cueChipLast ? { x: cueChipLast.x, y: cueChipLast.y, dir: cueChipLast.dir, dist: cueChipLast.dist, shown: cueChipLast.shown, tracked: !!cueChipLast.tracked, box: cueChipLast.box || null } : null) : undefined;
   api.cueChips = () => DEBUG ? cueChipAll.map(c => ({ x: c.x, y: c.y, dir: c.dir, dist: c.dist, shown: c.shown, tracked: !!c.tracked, box: c.box || null })) : undefined;
   api.cuePass = () => DEBUG ? (cuePassLast ? { dir: cuePassLast.dir, x: cuePassLast.x, y: cuePassLast.y } : null) : undefined;
+  api.needBubble = () => DEBUG ? { bubble: needBubbleLast ? Object.assign({}, needBubbleLast) : null, heartSkipped: !!needHeartSkipped } : undefined;
+  api.careReply = () => DEBUG ? { glyph: careReply.glyph, hop: !!careReply.hop, sparks: !!careReply.sparks, left: Math.max(0, careReply.until - now()) } : undefined;
+  api.standingStill = () => DEBUG ? standingStill() : undefined;
+  api.lanternRestFlag = () => DEBUG && scene && scene.view ? (scene.view.flags['lantern.rest'] || null) : undefined;
   api.holderDrawn = () => DEBUG ? (((shownLook() || {}).accessory) || 'none') : undefined;
   api.talkTo = id => { if (!DEBUG) return undefined; const o = objById(id); if (!o || scene) return false; interact(o); return true; };
   Object.defineProperty(api, 'sideQuest', { enumerable: true, get(){ const q = sideQuest(); return q && { id: q.id, text: q.text, place: q.place, target: q.target ? { ...q.target } : null, point: sidePointOnMap() }; } });

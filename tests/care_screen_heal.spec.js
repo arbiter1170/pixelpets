@@ -95,7 +95,7 @@ test('HEAL lists the bag, greys a refusal, and BACK uses nothing @w1', async ({ 
     bond: PixelPets.state.party[0].bond || 0,
     hp: PixelPets.state.party[0].hpNow,
   }));
-  await page.locator('[data-act="heal"]').click();
+  await page.locator('#scr-pet [data-act="heal"]').click();
   await expect(page.locator('#ovSheet')).toBeVisible();
   await expect(page.locator('#shTitle')).toHaveText(/^Heal /);
   const rows = await page.evaluate(() => [...document.querySelectorAll('#shList .sh-item')].map(b => ({
@@ -135,7 +135,7 @@ test('a Heal Snack closes the picker, toasts, and adds no care XP @w1', async ({
     const p = PixelPets.state.party[0];
     return { cx: JSON.stringify(p.cx || null), hp: p.hpNow, max: maxHpOf(p) };
   });
-  await page.locator('[data-act="heal"]').click();
+  await page.locator('#scr-pet [data-act="heal"]').click();
   await page.locator('#shList .sh-item', { hasText: 'Heal Snack' }).click();
   await expect(page.locator('#ovSheet')).toBeHidden();
   await expect(page.locator('#toast')).toContainText('ate a Heal Snack and feels better!');
@@ -156,7 +156,7 @@ test('a Heal Snack closes the picker, toasts, and adds no care XP @w1', async ({
 
 test('an empty bag names the store from the map, and a renamed store follows @w1', async ({ page }) => {
   await boot(page, { hpNow: 8 }, {}, '?debug=1');
-  await page.locator('[data-act="heal"]').click();
+  await page.locator('#scr-pet [data-act="heal"]').click();
   const live = await page.evaluate(() => WORLD.hm_store.name);
   const row = page.locator('#shList .sh-item');
   await expect(row).toHaveCount(1);
@@ -165,13 +165,13 @@ test('an empty bag names the store from the map, and a renamed store follows @w1
   await expect(row).toBeDisabled();
   await page.evaluate(() => { WORLD.hm_store.name = 'North Lantern Shop'; });
   await page.locator('#shCancel').click();
-  await page.locator('[data-act="heal"]').click();
+  await page.locator('#scr-pet [data-act="heal"]').click();
   await expect(page.locator('#shList .sh-s')).toHaveText('North Lantern Shop sells them.');
 });
 
 test('full HP shows FULL, stays tappable, and does not open the picker @w1', async ({ page }) => {
   await boot(page, {}, BAG);
-  const btn = page.locator('[data-act="heal"]');
+  const btn = page.locator('#scr-pet [data-act="heal"]');
   await expect(btn).toContainText('FULL');
   await expect(btn).toHaveClass(/cooldown/);
   await expect(btn).toHaveAttribute('aria-label', /is at full HP$/);
@@ -184,7 +184,7 @@ test('full HP shows FULL, stays tappable, and does not open the picker @w1', asy
 test('a nap greys the snacks and a Wake Tonic ends it @w1', async ({ page }) => {
   await boot(page, { hpNow: 0, faintUntil: Date.now() + 14 * 60000 }, BAG);
   await expect(page.locator('#petBadge')).toContainText(/RESTING/);
-  await page.locator('[data-act="heal"]').click();
+  await page.locator('#scr-pet [data-act="heal"]').click();
   const rows = await page.evaluate(() => [...document.querySelectorAll('#shList .sh-item')].map(b => ({
     label: b.querySelector('.sh-l').textContent,
     sub: b.querySelector('.sh-s').textContent,
