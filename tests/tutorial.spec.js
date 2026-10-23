@@ -241,6 +241,7 @@ test('Settings replay highlights care and does not spend it', async ({ page }) =
     return { hunger: p.hunger, happy: p.happy, energy: p.energy, xp: p.xp, cd: p.cd || null, care: PixelPets.state.flags['story.care_feed'] || null };
   });
   await page.locator('#setTutorial').click();
+  await page.locator('#shList .sh-item', { hasText: 'Opening tour' }).click();
   await expect(page.locator('#ovSettings')).toBeHidden();
   await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
   await expect(page.locator('#tutLine')).not.toContainText('Want a quick tour');
@@ -337,6 +338,7 @@ test('modern replay names the heart glow on the hearts step (D154 shipped)', asy
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.locator('#gearFloat').click();
   await page.locator('#setTutorial').click();
+  await page.locator('#shList .sh-item', { hasText: 'Opening tour' }).click();
   await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
   await page.locator('#petFloat').click();
   for (let i = 0; i < 6; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
