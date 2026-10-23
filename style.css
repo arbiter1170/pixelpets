@@ -526,7 +526,7 @@ body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-b
 .bt-me .bt-row:first-child{justify-content:flex-end}
 .type-chip{font-size:12px;line-height:1;padding:2px 4px;color:var(--k);background:var(--h);letter-spacing:1px;box-shadow:0 0 0 1px var(--k);flex:0 0 auto}
 .t-plain{background:var(--h)}.t-ember{background:var(--o)}.t-tide{background:var(--c)}.t-bloom{background:var(--l)}
-.t-volt{background:var(--y)}.t-stone{background:#c2a878}.t-gale{background:var(--s)}.t-shade{background:var(--p);color:var(--w)}
+.t-volt{background:var(--y)}.t-stone{background:#c2a878}.t-gale{background:var(--s)}.t-frost{background:var(--s)}.t-gust{background:var(--w)}.t-shade{background:var(--p);color:var(--w)}
 .bt-stage{flex:1 1 0;min-height:96px;display:flex;justify-content:center;align-items:center;overflow:hidden;background:var(--k);box-shadow:0 0 0 3px var(--d);line-height:0;position:relative}
 /* the Seal card (BATTLE §7 Trial Hall): sprite + name over the stage */
 .bt-seal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 18px 10px;background:var(--w);color:var(--k);box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--y);line-height:1.2}
@@ -1265,6 +1265,9 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 /* Opening tour (D157–D160). Dim is k at 60%. The ring is 2 px, 4 px outside the target. */
 #tutLayer{position:fixed;inset:0;z-index:15;pointer-events:none}
 #tutLayer[hidden]{display:none}
+#tutLayer.soft .tut-dim,#tutLayer.soft .tut-block{display:none;pointer-events:none}
+#tutLayer.lesson .tut-card{animation:tutSlide .18s ease-out}
+@keyframes tutSlide{from{transform:translateY(12px)}to{transform:none}}
 #tutLayer.unlock-on .tut-dim,#tutLayer.unlock-on .tut-block{pointer-events:none}
 #unlockCard .unlock-title{font-weight:bold}
 .tut-dim{position:fixed;background:rgba(26,28,44,.6);pointer-events:auto}
@@ -1276,7 +1279,7 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 .tut-acts{display:flex;gap:8px}
 #unlockActs .btn[hidden]{display:none}
 .tut-acts .btn{flex:1;min-height:44px;height:44px;font-size:20px}
-.tut-skip{align-self:flex-start;min-height:44px;height:44px;border:0;background:transparent;color:var(--h);font-size:14px;cursor:pointer;padding:0 12px}
+.tut-skip{align-self:flex-start;min-height:44px;height:44px;min-width:44px;border:0;background:transparent;color:var(--h);font-size:14px;cursor:pointer;padding:0 12px}
 .tut-skip[hidden],.tut-card[hidden],.tut-block[hidden],.tut-ring[hidden]{display:none}
 body.tut-on #tabs.locked{opacity:1}
 body.nav-locked .tut-hit{pointer-events:auto;opacity:1}
@@ -1285,6 +1288,7 @@ body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-loc
 @media (prefers-reduced-motion:reduce){
   .tut-ring:not([hidden]){animation:none}
   .tut-card{transition:none}
+  #tutLayer.lesson .tut-card{animation:none}
 }
 /* Play together (PLAY_TOGETHER_P1). Existing palette only. */
 .say-btn{position:absolute;right:4px;bottom:4px;z-index:4;width:64px;height:52px;min-width:64px;min-height:52px;padding:0;border:3px solid var(--y);background:var(--n);color:var(--y);font-size:20px;cursor:pointer}

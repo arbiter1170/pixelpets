@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 16:52 ET: Care walk, moves lesson, and a type chart (build 20261023-1652)
+
+- What changed and why: The first time a new holder leaves the Lodge, the partner acts hungry and a care walk shows FEED, PLAY, REST and HEAL on the tray. The first wild battles show types, moods and what a hard or soft hit means, only when the battle step queue is empty. Settings → Tutorial opens a chooser for the opening tour, the care walk, the moves lesson and a type chart. Save stays `pixelpets.save.v2` with `v` 2. The new flags are `story.tut_care`, `story.tut_care_step`, `story.tut_moves`, `story.tut_moves_hit` and `story.tut_moves_n`.
+- Files touched: `game.js`, `style.css`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/tutorials_care_moves.spec.js`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of the header commit and the decisions commit. Build `20261023-1652`.
+- Tests run and result (widths, checks): `tests/tutorials_care_moves.spec.js` at 320, 375 and 390, plus desk 1440. The full `npm run test:agent` and `npm run test:slow` lines are in the PR. Console errors fail the run.
+- Decisions made (colour + reasoning): D584–D598 were already settled and are archived from design 6a6fc26. No new id. Next free id stays D626.
+- Anything left unfinished: QA is on hold. The live Lodge door is Hearthmoor 15,6 because a map replace moved it from the interiors cite of 11,6. A reload between a qualifying hit and the hit card treats that card as already shown.
+
 ## 2026-10-23 14:47 ET: Three-move start sets and a per-type punch (build 20261023-1447)
 
 - What changed and why: Every Walkling starts with three moves: a signature, a type jab, and a type status move. A free slot takes the next move. A full set opens the replace sheet without the signature, and a full set missing its signature is offered it once. Old saves keep their moves and gain the signature when a slot is free. A hit plays a per-type punch on the battle canvas. Effects FULL uses wind-up, hit-stop, a ghost HP bar, and a canvas number. CALM and reduced motion show one mark. OFF keeps today's timings, with one white frame on a strong hit. Save stays `pixelpets.save.v2` with `v` 2. The only new saved flag is `sig_offer.<id>`.
