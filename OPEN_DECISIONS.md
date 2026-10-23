@@ -76,6 +76,8 @@ Next free id is D584.
 
 Settled calls are in archive/DECISIONS_SETTLED.md.
 
+D577 Market Row frame-budget test (red): Vincent, Oct 23, 2026, 10:23 AM ET: move it to an opt-in slow lane, out of the main run; 0.3 ms budget unchanged.
+
 STORES_AND_TOWN_LIFE D416-D434 are recorded in the archive (Oct 22, 2026). D416, D425 and D431 are green (Supervisor, about 2:00 AM ET). D418, D422 and D430 are red, settled by Vincent (2:01 AM ET): whereabouts gated by Standing; cosmetics from a battle win on the first win only; keep the name Lamplight Provisions with a GENERAL STORE sub-sign. The yellows settled on their defaults (Vincent, Design and PixelPets, 2:03 AM ET). D434 is dropped. D406 stays green: the Modern camera clears the HUD. P0, the edge-arrow rail, the chip and the tile count, is on this branch. P1-P6 are not started.
 
 POLISH_BUILD2 D435-D444 are recorded in the archive (Oct 22, 2026, design eb50602). D439 is red, approved by Vincent (11:36 AM ET), and supersedes D106's always-tracked rule. D436 and D438 were revised and settled by Vincent. D435, D437 and D443 settled on their defaults (Vincent and a unanimous vote). D440, D441, D442 and D444 are green. D12 is settled by D441. D13 is settled by D443. D22's stuck-line half is settled by D440; the comma in place lines was already shipped. The work is on this branch, not on main. Corrected Oct 22, 2026: POLISH_BUILD2 merged in #148 (a3b74d4, build 20261022-1413) and is on main.

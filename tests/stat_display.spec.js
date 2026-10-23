@@ -31,6 +31,17 @@ async function boot(page, extra = {}, settings = {}) {
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state);
 }
 const box = (page, sel) => page.evaluate(sel => { const e = document.querySelector(sel); if (!e || !e.offsetWidth) return null; const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map(Math.round); }, sel);
+async function waitForSave(page) {
+  const last = await page.evaluate(() => {
+    const raw = localStorage.getItem('pixelpets.save.v2');
+    return raw ? (JSON.parse(raw).last || 0) : 0;
+  });
+  await page.waitForFunction(prev => {
+    const raw = localStorage.getItem('pixelpets.save.v2');
+    if (!raw) return false;
+    return (JSON.parse(raw).last || 0) > prev;
+  }, last, { timeout: 8000 });
+}
 
 test('criteria 1-4: the strip stays on WALK; PARTNER hides it and mirrors NRG, GROW, EXPLORE and CARE', async ({ page }) => {
   await boot(page);
@@ -80,12 +91,12 @@ test('criterion 5: hidden on WALKLINGS, on PARTNER, and on WALK in modern; shown
 
 test('criteria 6-7: no new save fields, maxed counter turns lime, nothing wraps at this width', async ({ page }) => {
   await boot(page);
-  await page.waitForTimeout(5500);
+  await waitForSave(page);
   const before = await page.evaluate(() => (o => JSON.stringify(Object.keys(o).sort()) + JSON.stringify(Object.keys(o.party[0]).sort()))(JSON.parse(localStorage.getItem('pixelpets.save.v2'))));
   await page.evaluate(() => PixelPets.showTab('walk'));
   const fit = await page.evaluate(() => [...document.querySelectorAll('#statStrip > span, #statStrip > b')].filter(e => e.offsetWidth).map(e => [e.className, e.scrollWidth <= e.clientWidth + 1, e.getBoundingClientRect().height <= 25]));
   for (const f of fit) expect(f.slice(1), f[0]).toEqual([true, true]);
-  await page.waitForTimeout(5500);
+  await waitForSave(page);
   const after = await page.evaluate(() => (o => JSON.stringify(Object.keys(o).sort()) + JSON.stringify(Object.keys(o.party[0]).sort()))(JSON.parse(localStorage.getItem('pixelpets.save.v2'))));
   expect(after).toBe(before);
   await boot(page, { ex: { d: 'TODAY', xp: 30 } });

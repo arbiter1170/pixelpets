@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 /* Run the fail-closed scans. Exit 0 only when every requested scan passes.
-   Usage: node tools/scans/run.js [--root DIR] [--only wording|decisions|symlinks|gamejs_map] */
+   Usage: node tools/scans/run.js [--root DIR] [--only wording|decisions|symlinks|gamejs_map|test_mistakes] */
 const { scanWording } = require('./wording');
 const { scanDecisions } = require('./decisions');
 const { scanSymlinks } = require('./symlinks');
 const { scanGamejsMap } = require('./gamejs_map');
+const { scanTestMistakes } = require('./test_mistakes');
 
 const ALL = [
   ['wording', scanWording],
   ['decisions', scanDecisions],
   ['symlinks', scanSymlinks],
   ['gamejs_map', scanGamejsMap],
+  ['test_mistakes', scanTestMistakes],
 ];
 
 function parseArgs(argv) {
@@ -31,7 +33,9 @@ function linesFor(name, result) {
   if (!result || result.ok !== true) {
     const fails = (result && result.fails) || [{ file: '.', line: 1, reason: 'scan error' }];
     if (!fails.length) return ['SCAN FAIL ' + name + ': .:1 scan error'];
-    return fails.map(f => 'SCAN FAIL ' + name + ': ' + f.file + ':' + f.line + ' ' + f.reason);
+    const lines = fails.map(f => 'SCAN FAIL ' + name + ': ' + f.file + ':' + f.line + ' ' + f.reason);
+    if (name === 'test_mistakes') lines.push('SCAN FAIL ' + name + ' (' + fails.length + ')');
+    return lines;
   }
   return ['SCAN PASS ' + name];
 }

@@ -24,7 +24,7 @@ Use this after a feature is in the game, and when a session is asked to play fro
 
 When a break is fixed, add the assertion to `tests/qa_play.spec.js` or the spec that already owns that screen. Use `starterSave`, `installSave`, `gotoGame(page, '?debug=1')`, and `trackErrors`. Assert `PixelPets.state.v === 2`. Assert `PixelPets.questCheck` is `[]` when the change touched quest flags. One width is enough unless the layout changed; the look picker and the phone shell are checked at every project width.
 
-Name the new row in `tests/README.md`. A player-visible fix also updates the README section that already describes that screen, `CHANGELOG.md`, and `OPEN_DECISIONS.md` when the words are still a guess. The next free D id is named in the OPEN_DECISIONS.md header. Do not reuse D60 or D61.
+Name the new row in `tests/README.md`. A player-visible fix also updates the README section that already describes that screen, `CHANGELOG.md`, and `OPEN_DECISIONS.md` when the words are still a guess. Pick new decision ids with `walklings-decision-ids`. Do not reuse D60 or D61.
 
 ## What to watch
 
@@ -37,7 +37,7 @@ Name the new row in `tests/README.md`. A player-visible fix also updates the REA
 | Look picker | DONE is on screen at 320×568. The name row stays hidden. Ilse asks the name. |
 | Glimmer pledge | `know_us@glimmer` runs the orchard in the same scene. Tobin then points at the Hall. The Hall says the tour waits. The quest points at the Heights. That split is D61. Do not rewrite it in a QA pass. |
 | Fen | A second talk before the orchard is cleared is one line, not her intro again. The line is D60. |
-| Art | RegenX lobby is a bare brick room. Tour stops and board reports are still marked placeholder (D26, D49). Phone icons for the two handsets are stand-in grids. |
+| Art | Tour stops and board reports are still marked placeholder (D26, D49). Phone icons for the two handsets are stand-in grids. |
 
 ## Done
 
