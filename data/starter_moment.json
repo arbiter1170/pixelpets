@@ -1,0 +1,176 @@
+{
+  "spec": "STARTER_MOMENT",
+  "version": "0.1",
+  "captions": {
+    "ember": "Warm nose. Quick paws. Already wants to play.",
+    "tide": "Cool and calm. Blows one small bubble at you.",
+    "bloom": "Ears up, then down, then up. It has decided: you."
+  },
+  "inserts": [
+    {
+      "before": [
+        "say",
+        "",
+        "{species} hops out of the basket and sniffs your boots."
+      ],
+      "steps": [
+        [
+          "reveal",
+          "open"
+        ]
+      ]
+    },
+    {
+      "after": [
+        "say",
+        "",
+        "{species} hops out of the basket and sniffs your boots."
+      ],
+      "steps": [
+        [
+          "choice",
+          "{species} looks up at you. Say hello?",
+          [
+            [
+              "Hold out a hand",
+              [
+                [
+                  "emote",
+                  "card",
+                  "emote_hearts"
+                ],
+                [
+                  "chirp"
+                ],
+                [
+                  "say",
+                  "",
+                  "{species} bumps its head into your palm. Warm!"
+                ]
+              ]
+            ],
+            [
+              "Crouch down low",
+              [
+                [
+                  "emote",
+                  "card",
+                  "emote_laugh"
+                ],
+                [
+                  "chirp"
+                ],
+                [
+                  "say",
+                  "",
+                  "{species} copies you, nose to nose, then sneezes. You both laugh."
+                ]
+              ]
+            ],
+            [
+              "Share a crumb",
+              [
+                [
+                  "emote",
+                  "card",
+                  "emote_heart"
+                ],
+                [
+                  "chirp"
+                ],
+                [
+                  "say",
+                  "",
+                  "{species} takes the crumb very politely, then looks for more."
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "after": [
+        "nameEntry",
+        "partner",
+        "Give it a name?",
+        null,
+        10
+      ],
+      "steps": [
+        [
+          "reveal",
+          "name"
+        ],
+        [
+          "reveal",
+          "close"
+        ],
+        [
+          "castPartner",
+          "holder"
+        ],
+        [
+          "emote",
+          "ilse_lodge_any",
+          "emote_clap"
+        ]
+      ]
+    },
+    {
+      "after": [
+        "say",
+        "",
+        "The door bangs open. Rook skids in, out of breath."
+      ],
+      "steps": [
+        [
+          "emote",
+          "rook_lodge",
+          "emote_bang"
+        ],
+        [
+          "emote",
+          "partner",
+          "emote_ask"
+        ]
+      ]
+    },
+    {
+      "after": [
+        "say",
+        "",
+        "Rook scoops up the {rival} basket and grins at you."
+      ],
+      "steps": [
+        [
+          "castPartner",
+          "rival"
+        ],
+        [
+          "emote",
+          "rival_pet",
+          "emote_laugh"
+        ]
+      ]
+    },
+    {
+      "end": true,
+      "steps": [
+        [
+          "emote",
+          "partner",
+          "emote_hearts"
+        ],
+        [
+          "chirp"
+        ],
+        [
+          "say",
+          "Warden Ilse",
+          "Go on, you two. Hearthmoor will want to meet {pet}."
+        ]
+      ]
+    }
+  ]
+}

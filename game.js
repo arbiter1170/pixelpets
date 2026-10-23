@@ -2712,6 +2712,10 @@ function loyaltyBagLine(id){
 if (SCENES.starter) SCENES.starter.push(
   ['say', 'Warden Ilse', 'When you step outside, take the east path. The wild starts past the gate.'],
   ['say', 'Warden Ilse', 'Wild Walklings wander in the grass. Walk up to one, and it may come with you.']);
+// STARTER_MOMENT: the beats after the pick. The design JSON stays verbatim; a missing anchor is skipped.
+const starterMomentMiss = [];
+if (SCENES.starter && MD.starter_moment && MD.starter_moment.inserts)
+  applyStarterInserts(SCENES.starter, MD.starter_moment.inserts, starterMomentMiss);
 if (SCENES.rival1) SCENES.rival1.push(
   ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
   ['say', '', 'A wild Walkling waits in the grass, just off the path.']);
@@ -5588,9 +5592,15 @@ const fol = { x: null, y: null, fx: 0, fy: 0, from: null, to: null, facing: 'dow
 // A memory from before the keeper had a partner (map flag noPartner, e.g. dream_2004) hides the follower there only.
 const followerOn = () => !!(S && S.settings && S.settings.follower !== false && pet() && !(CUR && CUR.noPartner));
 // Load rule: the tile behind the keeper (opposite facing) if walkable, else the keeper's own tile (drawn underneath).
-function placeFollower(){
+function placeFollower(prefer){
   fol.from = fol.to = null;
   if (!followerOn()) { fol.x = fol.y = null; return; }
+  if (prefer && !solid(prefer.x, prefer.y) && !(prefer.x === S.world.x && prefer.y === S.world.y)) {
+    fol.x = fol.fx = prefer.x; fol.y = fol.fy = prefer.y;
+    const dx = S.world.x - prefer.x, dy = S.world.y - prefer.y;
+    fol.facing = Math.abs(dx) >= Math.abs(dy) && dx ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+    return;
+  }
   const [dx, dy] = DIRS[S.world.facing] || DIRS.down;
   let x = S.world.x - dx, y = S.world.y - dy;
   if (solid(x, y)) { x = S.world.x; y = S.world.y; }
@@ -6209,6 +6219,7 @@ function checkChatter(){
   }
 }
 function drawBubbles(g, cx, cy, t){
+  drawSceneEmotes(g, cx, cy);
   if (spot.bang && spot.id) {                          // §6.1 "!" bubble, 2px above the trainer's head
     const o = CUR.objs.find(x => x.id === spot.id);
     if (o) { const q = objPos(o); drawGlyph(g, 'emote_bang', Math.round(q.x * TS - cx) + 4, Math.round(q.y * TS - cy) - 15); }
@@ -6276,6 +6287,9 @@ function endScene(){
   const sc = scene; if (!sc) return;
   const cue = sc.musicCue;
   const openWard = !!sc.openWardrobe;
+  const partnerAt = castTileOf(sc, 'partner');
+  closeReveal(true);
+  clearSceneEmotes();
   commitPending();
   clearCast(sc);
   if (sc.npc) delete mapRT.face[sc.npc.id];
@@ -6283,7 +6297,7 @@ function endScene(){
   scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
   $('#ovScene').hidden = true; $('#ovScene').classList.remove('top'); document.body.classList.remove('scene-on'); document.body.classList.remove('price-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
   clearCamBias();
-  lockTabs(false); placeFollower(); renderKeeperName(); updateHUD(); save();
+  lockTabs(false); placeFollower(partnerAt); renderKeeperName(); updateHUD(); save();
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
   for (const o of CUR.objs) if (o.kind === 'trigger' && !(Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y) <= (o.r || 0))) delete mapRT.trig[o.id];
   if (sc.deferRespawn) respawnAfterWipe();
@@ -6429,7 +6443,9 @@ async function execStep(st){
   const [k, a, b, c, d] = st, sc = scene; if (k === 'priceOn') { document.body.classList.add('price-on'); return; }
   switch (k) {
     case 'say': {
-      noteContact(a); if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx);
+      noteContact(a);
+      if (sc.skip) { castOnSay(a, expand(b)); return; }   // SKIP still places a cast the line names (Rook), then moves on
+      sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx);
       // D135: Juniper's bonus line pays 300 Acorns once per scene view. The got-line uses the usual Acorn wording.
       if (a === 'Associate Juniper' && b === 'Bonus Acorns are on the way. Have a bright day!' && !sc.view.flags['rc.acorns']) {
         sc.view.flags['rc.acorns'] = true;
@@ -6479,7 +6495,7 @@ async function execStep(st){
       return;
     }
     case 'nameEntry': { sc.skip = false; await nameBox(a, expand(b), c, d); return; }
-    case 'showBasket': { sc.skip = false; sc.vars.suggest = suggestLine(sc.vars); sc.vars.line = await basketPick(a, sc.vars.suggest); sfx('befriend'); return; }
+    case 'showBasket': { sc.skip = false; sc.vars.suggest = suggestLine(sc.vars); sc.musicCue = 'starter_pick'; PPSound.music('starter_pick', { fadeOut: 300, fadeIn: 250 }); sc.vars.line = await basketPick(a, sc.vars.suggest, () => sfx('stinger_starter')); return; }
     case 'givePet': {
       const id = a === '$line' ? sc.vars.line : a, si = SP_INDEX[id]; if (si == null) return;
       const np = newPet(si, 0, 'starter'); np.metPlace = 'Hearthmoor'; sc.view.pet = np; sc.view.nick = undefined;
@@ -6656,6 +6672,18 @@ async function execStep(st){
     case 'bond': { const n = Number(a) || 0; if (n) pend(() => { const p = pet(); if (p) addBond(p, n); }); return; }
     case 'sfx': { if (a) sfx(a); return; }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
+    case 'reveal': {
+      if (a === 'open') openReveal(sc);
+      else if (a === 'name') nameReveal(sc);
+      else if (a === 'close') await closeReveal(!!sc.skip);
+      return;
+    }
+    case 'castPartner': { castPartner(sc, a); return; }
+    case 'emote': {
+      if (sc.skip) return;
+      sceneEmote(a, b, (c | 0) || 1200);
+      return;
+    }
     case 'align': { pend(() => noteAlignAct(a === 'keepers' ? 'keepers' : 'glimmer', Number(b) || SIGNAL_CFG.choice)); return; }
     case 'relay': { if (a === 'start') await relayStart(); else await relayEnd(a); return; }
     case 'readWalk': { await readWalk(a); return; }
@@ -6803,6 +6831,7 @@ function sayBox(who, text, box){
   return new Promise(res => {
     if (scene) { scene.boxes++; scene.who = who || ''; }
     $('#sbEcho').textContent = ''; $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+    const rev = $('#ovReveal'); if (rev) rev.classList.remove('choosing');
     sbRender(who, text, box);   // full text, so the box height used for D171 is the finished line
     $('#sbText').textContent = '';
     sbox.text = text; sbox.t0 = now(); sbox.full = false; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.resolve = res; sbox.mode = 'say';
@@ -6932,17 +6961,20 @@ const armOptions = () => { optArmAt = performance.now() + OPT_ARM_MS; optGuards.
 const tabsGuarded = () => !!scene || performance.now() < tabGuardUntil;
 function sceneTap(){
   if (!scene || !sbox.resolve) return;
+  snapReveal();
   if (!sbox.full) { sbFull(); return; }
   if (sbox.mode !== 'say') return;          // choices / name entry answer with their buttons
   const r = sbox.resolve; sbox.resolve = null; r();
 }
 function sceneSkip(){
   if (!scene || sbox.mode !== 'say' || !sbox.resolve) return;
+  snapReveal();
   scene.skip = true; sfx('tap'); const r = sbox.resolve; sbox.resolve = null; r();
 }
 function choiceBox(prompt, labels){
   return new Promise(res => {
     if (scene) scene.boxes++;
+    const rev = $('#ovReveal'); if (rev) rev.classList.add('choosing');
     sbRender(scene.who, ''); $('#sbEcho').textContent = ''; $('#sbName').hidden = true; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
     sbox.text = prompt; sbox.t0 = now(); sbox.full = false; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.mode = 'choice'; sbox.resolve = () => {};
     const box = $('#sbChoices'); box.innerHTML = ''; armOptions();
@@ -6957,6 +6989,7 @@ function nameBox(target, prompt, def, max){
   return new Promise(res => {
     if (scene) scene.boxes++;
     const p = viewPet(), species = p ? nameOf(spi(p), p.stage) : '';
+    const rev = $('#ovReveal'); if (rev) rev.classList.remove('choosing');
     sbRender(scene.who, prompt); sbox.text = prompt; sbox.full = true; sbox.mode = 'name'; sbox.resolve = () => {}; armOptions();
     $('#sbEcho').textContent = ''; $('#sbChoices').innerHTML = ''; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
     const inp = $('#sbInput'); inp.maxLength = max || 10;
@@ -6978,15 +7011,17 @@ function nameBox(target, prompt, def, max){
   });
 }
 /* --- showBasket (#ovBasket): three lantern baskets, Ilse's pick glows; any basket can be chosen (§8) --- */
-function basketPick(lines, suggest){
+function basketPick(lines, suggest, onYes){
   return new Promise(res => {
     const ov = $('#ovBasket'), row = $('#bkRow'), card = $('#bkCard');
     const show = which => { armOptions();     // the card's YES / NOT YET and the basket row each ignore taps for 500 ms when drawn
       row.hidden = !!which; card.hidden = !which; $('#bkTitle').hidden = !!which;
+      const pop = $('#bkPop'); if (pop) pop.hidden = true;
+      const big = $('#bkBig'); if (big) big.style.transform = '';
       if (!which) return;
       const si = SP_INDEX[which], sp = SPECIES[si];
       spriteCanvas($('#bkBig'), si, 0); $('#bkName').textContent = sp.stages[0].name; typeChip($('#bkType'), sp.type); $('#bkLine').textContent = lines[which];
-      $('#bkYes').onclick = () => { ov.hidden = true; res(which); };
+      $('#bkYes').onclick = () => { basketYes(() => { if (onYes) onYes(); ov.hidden = true; res(which); }); };
       $('#bkNo').onclick = () => { sfx('tap'); show(null); };
     };
     row.innerHTML = '';
@@ -7000,6 +7035,302 @@ function basketPick(lines, suggest){
     }
     show(null); ov.hidden = false;
   });
+}
+
+/* ---------- STARTER_MOMENT: reveal card, partner cast, scene emotes ---------- */
+const revealFx = [];
+const sceneEmotes = [];
+const reveal = { phase: null, line: null };
+let revealCloseT = null;
+const MOTE_COL = { ember: ['y', 'o'], tide: ['c', 's'], bloom: ['l', 'g'] };
+const easeOutBack = x => 1 + 2.70158 * (x - 1) ** 3 + 1.70158 * (x - 1) ** 2;
+function revealCalm(){ return auraMode() !== 'full'; }
+function fxStop(){
+  for (const r of revealFx) { r.dead = true; if (r.t) clearTimeout(r.t); if (r.settle) r.settle(); }
+  revealFx.length = 0;
+}
+function fxTween(ms, step, done){
+  const rec = { dead: false }, t0 = now();
+  revealFx.push(rec);
+  (function tick(){
+    if (rec.dead) return;
+    const k = Math.min(1, ms > 0 ? (now() - t0) / ms : 1);
+    step(k);
+    if (k < 1) requestAnimationFrame(tick);
+    else if (done) done();
+  })();
+  return rec;
+}
+function fxLater(ms, fn){
+  const rec = { dead: false };
+  rec.t = setTimeout(() => { if (!rec.dead) fn(); }, ms);
+  revealFx.push(rec);
+  return rec;
+}
+function clearSceneEmotes(){ sceneEmotes.length = 0; }
+function stepEqual(a, b){ return JSON.stringify(a) === JSON.stringify(b); }
+function findAnchor(list, anchor){
+  if (!Array.isArray(list)) return null;
+  for (let i = 0; i < list.length; i++) {
+    const st = list[i];
+    if (stepEqual(st, anchor)) return { list, index: i };
+    if (st && st[0] === 'if') { const h = findAnchor(st[2], anchor) || findAnchor(st[3], anchor); if (h) return h; }
+    if (st && st[0] === 'choice') for (const o of st[2] || []) { const h = findAnchor(o[1], anchor); if (h) return h; }
+  }
+  return null;
+}
+function applyStarterInserts(steps, inserts, misses){
+  if (!steps || !inserts) return;
+  for (const ins of inserts) {
+    if (ins.end) { steps.push.apply(steps, JSON.parse(JSON.stringify(ins.steps || []))); continue; }
+    const anchor = ins.before || ins.after;
+    const hit = findAnchor(steps, anchor);
+    if (!hit) {
+      const label = JSON.stringify(anchor);
+      console.warn('starter moment: anchor not found ' + label);
+      if (misses) misses.push(label);
+      continue;
+    }
+    const at = ins.before ? hit.index : hit.index + 1;
+    const add = JSON.parse(JSON.stringify(ins.steps || []));
+    hit.list.splice.apply(hit.list, [at, 0].concat(add));
+  }
+}
+function revealChirp(){
+  const p = viewPet();
+  if (p) { sfx(chirpName(p)); return; }
+  const sp = reveal.line && SPECIES[SP_INDEX[reveal.line]];
+  if (sp) sfx('chirp_' + String(sp.type || 'PLAIN').toLowerCase());
+}
+function showCardGlyph(name){
+  const c = $('#rvGlyph'); if (!c) return;
+  if (!name || !GLYPH[name]) { c.hidden = true; return; }
+  const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height);
+  drawGlyph(g, name, 0, 0);
+  c.hidden = false;
+}
+function revealMotes(line){
+  const box = $('#rvMotes'); if (!box) return;
+  box.innerHTML = '';
+  const cols = MOTE_COL[line] || MOTE_COL.ember;
+  const compact = window.innerHeight <= 700;
+  const cx = compact ? 48 : 66, cy = compact ? 46 : 66;
+  for (let i = 0; i < 12; i++) {
+    const m = document.createElement('div');
+    m.className = 'rv-mote';
+    const ang = i / 12 * Math.PI * 2, rad = (40 + (i % 3) * 8) * (compact ? 0.72 : 1);
+    const x1 = cx + Math.cos(ang) * rad - 2, y1 = cy + Math.sin(ang) * rad * 0.8 - 2;
+    m.style.background = PAL[cols[i % 2]] || PAL.y;
+    m.style.left = Math.round(cx) + 'px';
+    m.style.top = Math.round(cy) + 'px';
+    m.style.opacity = '1';
+    box.append(m);
+    fxTween(600, k => {
+      m.style.left = Math.round(cx + (x1 - cx) * k) + 'px';
+      m.style.top = Math.round(cy + (y1 - cy) * k) + 'px';
+      m.style.opacity = String(1 - k);
+    });
+  }
+}
+function revealHop(){
+  const pet = $('#rvPet'); if (!pet) return;
+  const up = 140, down = 100;
+  fxTween(380, k => {
+    const t = k * 380;
+    let y, sx, sy;
+    if (t < up) {
+      const u = t / up;
+      y = Math.round(-14 * u); sx = 1 + (0.9 - 1) * u; sy = 1 + (1.12 - 1) * u;
+    } else if (t < up + down) {
+      const u = (t - up) / down;
+      y = Math.round(-14 * (1 - u)); sx = 0.9 + (1.3 - 0.9) * u; sy = 1.12 + (0.7 - 1.12) * u;
+    } else {
+      const u = easeOutBack((t - up - down) / 140);
+      y = 0; sx = 1.3 + (1 - 1.3) * u; sy = 0.7 + (1 - 0.7) * u;
+    }
+    pet.style.transform = 'translateY(' + y + 'px) scale(' + sx.toFixed(3) + ',' + sy.toFixed(3) + ')';
+  }, () => { pet.style.transform = ''; });
+  fxLater(up + down, () => { if (reveal.phase === 'open') revealChirp(); });
+}
+function cardHop(){
+  const pet = $('#rvPet'); if (!pet || revealCalm()) return;
+  fxTween(280, k => {
+    const y = k < 0.5 ? Math.round(-14 * (k / 0.5)) : Math.round(-14 * (1 - (k - 0.5) / 0.5));
+    pet.style.transform = 'translateY(' + y + 'px)';
+  }, () => { pet.style.transform = ''; });
+}
+function snapReveal(){
+  fxStop();
+  const pet = $('#rvPet'); if (pet) pet.style.transform = '';
+  const motes = $('#rvMotes'); if (motes) motes.innerHTML = '';
+  const ban = $('#rvBanner'); if (ban && !ban.hidden) ban.style.transform = 'scale(1)';
+  const el = $('#ovReveal'); if (el && !el.hidden) el.style.opacity = '1';
+  if (reveal.phase === 'open') showCardGlyph('emote_heart');
+  if (reveal.phase === 'name') showCardGlyph('emote_hearts');
+}
+function hideReveal(){
+  const el = $('#ovReveal'); if (!el) return;
+  el.hidden = true; el.style.opacity = ''; el.classList.remove('still', 'choosing');
+  const motes = $('#rvMotes'); if (motes) motes.innerHTML = '';
+  const pet = $('#rvPet'); if (pet) pet.style.transform = '';
+  const ban = $('#rvBanner'); if (ban) { ban.hidden = true; ban.style.transform = ''; }
+  const g = $('#rvGlyph'); if (g) g.hidden = true;
+  reveal.phase = null;
+}
+function closeReveal(instant){
+  const el = $('#ovReveal');
+  if (!el) return Promise.resolve();
+  fxStop();
+  if (revealCloseT) { clearTimeout(revealCloseT); revealCloseT = null; }
+  if (instant || el.hidden) { hideReveal(); return Promise.resolve(); }
+  el.classList.add('still');
+  el.style.opacity = '0';
+  return new Promise(res => {
+    revealCloseT = setTimeout(() => { revealCloseT = null; hideReveal(); res(); }, 150);
+  });
+}
+function openReveal(sc){
+  const line = sc && sc.vars && sc.vars.line;
+  const si = line != null ? SP_INDEX[line] : null;
+  const el = $('#ovReveal'); if (si == null || !el) return;
+  const sp = SPECIES[si];
+  fxStop();
+  if (revealCloseT) { clearTimeout(revealCloseT); revealCloseT = null; }
+  reveal.phase = 'open'; reveal.line = line;
+  spriteCanvas($('#rvPet'), si, 0);
+  const pet = $('#rvPet'); if (pet) pet.style.transform = '';
+  $('#rvName').textContent = sp.stages[0].name;
+  typeChip($('#rvType'), sp.type);
+  const caps = (MD.starter_moment && MD.starter_moment.captions) || {};
+  $('#rvCap').textContent = caps[line] || '';
+  const ban = $('#rvBanner'); if (ban) { ban.hidden = true; ban.style.transform = ''; }
+  const motes = $('#rvMotes'); if (motes) motes.innerHTML = '';
+  const calm = revealCalm(), skip = !!(sc && sc.skip);
+  el.classList.toggle('still', calm || skip);
+  el.hidden = false;
+  el.style.opacity = '1';
+  if (skip) { showCardGlyph('emote_heart'); revealChirp(); return; }
+  if (calm) {
+    showCardGlyph('emote_ask');
+    fxLater(900, () => { if (reveal.phase === 'open') showCardGlyph('emote_heart'); });
+    revealChirp();
+    return;
+  }
+  el.style.opacity = '0';
+  requestAnimationFrame(() => { if (!el.hidden && reveal.phase === 'open') el.style.opacity = '1'; });
+  showCardGlyph('emote_ask');
+  fxLater(900, () => { if (reveal.phase === 'open') showCardGlyph('emote_heart'); });
+  revealMotes(line);
+  revealHop();
+}
+function nameReveal(sc){
+  const el = $('#ovReveal'); if (!el || el.hidden) return;
+  reveal.phase = 'name';
+  const ban = $('#rvBanner'); if (!ban) return;
+  ban.textContent = (viewPetName() || 'Walkling') + '!';
+  ban.hidden = false;
+  showCardGlyph('emote_hearts');
+  revealChirp();
+  setTimeout(() => revealChirp(), 160);
+  if (revealCalm() || (sc && sc.skip)) { ban.style.transform = 'scale(1)'; return; }
+  ban.style.transform = 'scale(0)';
+  fxTween(260, k => {
+    const s = k < 0.65 ? 1.15 * easeOutBack(k / 0.65) : 1.15 + (1 - 1.15) * ((k - 0.65) / 0.35);
+    ban.style.transform = 'scale(' + s.toFixed(3) + ')';
+  }, () => { ban.style.transform = 'scale(1)'; });
+}
+function basketYes(done){
+  const big = $('#bkBig'), pop = $('#bkPop');
+  if (revealCalm()) { if (done) done(); return; }
+  const frames = [-8, 6, -3, 0];
+  let i = 0;
+  const wob = () => {
+    if (!big) { if (done) done(); return; }
+    big.style.transform = 'rotate(' + frames[i] + 'deg)';
+    i++;
+    if (i < frames.length) setTimeout(wob, 60);
+    else {
+      big.style.transform = '';
+      if (pop) pop.hidden = false;
+      setTimeout(() => { if (done) done(); }, 120);
+    }
+  };
+  wob();
+}
+function freeBeside(origin){
+  if (!origin) return null;
+  const taken = (x, y) => solid(x, y) || (S && S.world && x === S.world.x && y === S.world.y) || (fol.x === x && fol.y === y);
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, 1]]) {
+    const x = origin.x + dx, y = origin.y + dy;
+    if (!taken(x, y)) return { x, y };
+  }
+  return null;
+}
+function castTileOf(sc, id){
+  const hit = ((sc && sc.cast) || []).find(c => c.o && c.o.id === id);
+  if (!hit) return null;
+  const q = objPos(hit.o);
+  return q ? { x: q.x, y: q.y } : null;
+}
+function faceOf(from, to){
+  const dx = (to ? to.x : 0) - from.x, dy = (to ? to.y : 0) - from.y;
+  return Math.abs(dx) >= Math.abs(dy) && dx ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+}
+function castPartner(sc, who){
+  if (!CUR || !sc) return;
+  const line = (sc.vars && sc.vars.line) || flagOf('story.starter_line', true);
+  const id = who === 'rival' ? COUNTER[line] : line;
+  if (!id || SP_INDEX[id] == null) return;
+  const castId = who === 'rival' ? 'rival_pet' : 'partner';
+  if (CUR.objs.some(o => o.id === castId)) return;
+  const rook = CUR.objs.find(o => o.id === 'rook_lodge');
+  const origin = who === 'rival' && rook ? objPos(rook) : (S && S.world);
+  const at = freeBeside(origin) || castSpot();
+  if (!at) return;
+  const facing = faceOf(at, who === 'rival' && rook ? objPos(rook) : (S && S.world));
+  const o = pushCast({ kind: 'wild', id: castId, form: id + '/0', relay: true, x: at.x, y: at.y, facing, level: 1 });
+  if (!o) return;
+  const settle = () => {
+    const P = mapRT.pos[castId];
+    if (P) { P.fx = at.x; P.fy = at.y; P.moving = false; P.facing = facing; }
+  };
+  if (sc.skip || revealCalm()) {
+    mapRT.pos[castId] = { x: at.x, y: at.y, fx: at.x, fy: at.y, moving: false, facing };
+    return;
+  }
+  mapRT.pos[castId] = { x: at.x, y: at.y, fx: at.x, fy: at.y, moving: true, facing };
+  const rec = { dead: false, settle };
+  revealFx.push(rec);
+  const t0 = now();
+  (function tick(){
+    if (rec.dead) { settle(); return; }
+    const k = Math.min(1, (now() - t0) / 280);
+    const P = mapRT.pos[castId];
+    if (P) P.fy = at.y - Math.sin(k * Math.PI) * 0.55;
+    if (k < 1) requestAnimationFrame(tick); else settle();
+  })();
+}
+function emoteTarget(who){
+  if (!CUR) return null;
+  if (who === 'ilse_lodge_any') {
+    return CUR.objs.find(o => present(o) && String(o.id || '').indexOf('ilse_lodge') === 0)
+      || CUR.objs.find(o => present(o) && o.name === 'Warden Ilse') || null;
+  }
+  return CUR.objs.find(o => o.id === who) || null;
+}
+function sceneEmote(who, glyph, ms){
+  if (!glyph || !GLYPH[glyph]) return;
+  if (who === 'card') { showCardGlyph(glyph); cardHop(); return; }
+  sceneEmotes.push({ who, glyph, until: now() + (ms || 1200) });
+}
+function drawSceneEmotes(g, cx, cy){
+  const t = now();
+  for (let i = sceneEmotes.length - 1; i >= 0; i--) if (sceneEmotes[i].until <= t) sceneEmotes.splice(i, 1);
+  for (const e of sceneEmotes) {
+    const o = emoteTarget(e.who); if (!o || !GLYPH[e.glyph]) continue;
+    const q = objPos(o);
+    drawGlyph(g, e.glyph, Math.round(q.x * TS - cx) + 4, Math.round(q.y * TS - cy) - 15);
+  }
 }
 
 /* ---------- wild creatures: visible on the map, species chosen from the real-world environment ---------- */
@@ -12801,6 +13132,7 @@ function devChecks(){
     befriend: befriendDevCheck(),
     charity: highCharityDevCheck(),
     music: PPSound.musicCheck(),
+    starterMoment: starterMomentMiss.slice(),
     minigames: (window.PPMinigames && PPMinigames.devCheck) ? PPMinigames.devCheck() : [],
     heights: heightsDevCheck(),
     ribbit: (window.PPRibbit && PPRibbit.devCheck) ? PPRibbit.devCheck() : ['PPRibbit missing'],
@@ -13683,6 +14015,7 @@ function boot(){
   { const hcb = highCharityDevCheck(); if (hcb.length) console.error('Walklings: high charity check failed:', hcb.join('; ')); }
   { const rb = window.PPRibbit && PPRibbit.devCheck ? PPRibbit.devCheck() : ['PPRibbit missing']; if (rb.length) console.error('Walklings: ribbit check failed:', rb.join('; ')); }
   { const mb = mapDevCheck(); if (mb.length) console.error('Walklings: map check failed:', mb.join('; ')); }
+  if (starterMomentMiss.length) console.error('Walklings: starter moment anchor missing:', starterMomentMiss.join('; '));
   window.ITEMS = ITEMS;   // save.js validates pet.held against the catalog; ITEMS lives in this file
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
@@ -13846,6 +14179,13 @@ function boot(){
     switchSide: (to, free) => switchSide(to, { free: !!free }),
     rookOffer: to => { if (!S || scene || overlayOpen() || (battle && battle.on)) return false; showTab('walk'); runSteps(rookOfferSteps(to)); return true; },
     storyTails: () => ({ starter: (SCENES.starter || []).slice(-2), rival1: (SCENES.rival1 || []).slice(-2) }),
+    sceneScript: id => JSON.parse(JSON.stringify(sceneSteps(id) || [])),
+    spliceStarter: (steps, inserts) => {
+      const misses = [], copy = JSON.parse(JSON.stringify(steps || []));
+      applyStarterInserts(copy, inserts || [], misses);
+      return { steps: copy, misses };
+    },
+    starterMoment: () => ({ misses: starterMomentMiss.slice() }),
     rollWildTrack: () => takeBattleTrack('wild'),
     endScene: () => { if (!scene) return false; scene.skip = true; endScene(); return true; },
     // tests: expand a scene/dialog string the way a text box would; vars = scene vars (tags, line, suggest), pet = viewed pet
@@ -14144,6 +14484,11 @@ function boot(){
     return true;
   }
   Object.defineProperty(api, 'devGrant', { get(){ return DEBUG ? devGrant : undefined; } });
+  api.probeScene = steps => {
+    if (!DEBUG || !S || scene) return false;
+    runSteps(JSON.parse(JSON.stringify(steps || [])), { id: 'probe' });
+    return true;
+  };
   window.PixelPets = Object.freeze(api);
   window.holdItem = holdItem;
   window.unholdItem = unholdItem;

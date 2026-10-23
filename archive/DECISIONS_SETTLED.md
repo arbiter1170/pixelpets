@@ -416,6 +416,23 @@ Recorded from design QUEST_CUE_REDESIGN v0.2, section 8, without renumbering. D4
 - **D468 (Oct 22, 2026, green, SETTLED).** QUEST_CUE_REDESIGN. Colours: tracked PAL l with PAL k ink and the pennant, main PAL y, slip PAL c, shadow PAL k; no new PAL key.
 - **D469 (Oct 22, 2026, green, SETTLED; amended with QA's test).** QUEST_CUE_REDESIGN. `cueChips()` adds the tap box; cue tests at 320 / 375 / 390 with QA's clearance case.
 
+## STARTER_MOMENT (calls settled Oct 22, 2026)
+
+Recorded from design STARTER_MOMENT v0.2, section 7, without renumbering. D470-D481 were reserved. Save stays `pixelpets.save.v2` with `v` 2. No new saved field, no new flag.
+
+- **D470 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent cleared the build, ~10:00 PM ET).** STARTER_MOMENT. New loop `starter_pick` (F major, 132 bpm, 8 bars, 14.545 s), not a variation of `town`.
+- **D471 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent cleared the build, ~10:00 PM ET).** STARTER_MOMENT. The loop starts when `showBasket` opens: `town` fades out in 300 ms, `starter_pick` in over 250 ms.
+- **D472 (Oct 22, 2026, green, SETTLED).** STARTER_MOMENT. The loop runs to the scene's end; the existing `musicCue` path in `endScene` fades back to `town` (400/500 ms).
+- **D473 (Oct 22, 2026, green, SETTLED).** STARTER_MOMENT. `stinger_starter` (1.41 s) replaces the `befriend` SFX at the pick only and ducks the loop; the wild `befriend` sounds are unchanged.
+- **D474 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent cleared the build, ~10:00 PM ET).** STARTER_MOMENT. Reveal card `#ovReveal` over the map, above the say box, taps pass through; compact at 700 px tall or less.
+- **D475 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent cleared the build, ~10:00 PM ET).** STARTER_MOMENT. First hello choice: three cosmetic answers with a reaction line and an emote each; no tag, no flag, nothing saved.
+- **D476 (Oct 22, 2026, green, SETTLED).** STARTER_MOMENT. `castPartner`: the new Walkling beside the holder and Rook's pick beside Rook as scene casts; the follower takes over at the end.
+- **D477 (Oct 22, 2026, green, SETTLED).** STARTER_MOMENT. `emote` step: the nine existing glyphs over a cast, an npc or the card; does not wait.
+- **D478 (Oct 22, 2026, green, SETTLED).** STARTER_MOMENT. Reduced version under `prefersReduced()` or Effects calm/off: no motion, 150 ms fades, still emotes, same sound.
+- **D479 (Oct 22, 2026, green, SETTLED).** STARTER_MOMENT. Single tap completes, then advances; SKIP jumps visuals to their end and stops at the hello choice and the name entry.
+- **D480 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent cleared the build, ~10:00 PM ET).** STARTER_MOMENT. The new copy of section 4.b as written: three captions, the hello prompt, three answers, three reactions, the send-off line.
+- **D481 (Oct 22, 2026, green, SETTLED).** STARTER_MOMENT. Tests of section 5 and `specs/starter_moment_check.py`.
+
 ## Restatements moved from OPEN_DECISIONS (Oct 21, 2026)
 
 - Restatement of D347 (was in OPEN_DECISIONS Settled): - **D347 (Oct 20, 2026, Vincent, 11:34 AM ET, SETTLED BY VINCENT, on the defaults).** HUSHWATER species roster. B0 is built on this branch: a species id this client does not know stays in the party or the box, keeps its moves and journal keys, and draws a fallback picture. The journal names it ???. It cannot lead a battle and SWAP skips it. The 12 forms are in this build: skink, otter, owl, and snail, three stages each. Out there is 57. The save form table ends at snail (60 form ids). D357 is green (Design): save stays `pixelpets.save.v2` with `v` 2. No new pet field. B1 and E1–E4 are built on this branch. B2 is built on this branch. D346 stays the Lizzy placeholder, settled and not built. D355, D356 and D362 are green and settled. D363-D379 and D390-D398 are reserved: WORLD_CLOCK_TOWN (design). D397 and D398 are settled green. Next free id is D399. P1 world clock v1 is on this branch. P2 Market Row is on this branch. P3 wardrobe v1 is on this branch. P4 stores are on this branch.
