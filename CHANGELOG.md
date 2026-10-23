@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 10:18 ET: D576 town chatter is settled yes
+
+- What changed and why: Vincent settled D576 TOWN_CHATTER (red) yes on Oct 23, 2026 at 10:18 AM ET. Spec it now. Nothing is built yet. Design 656d101. The next free id stays D577.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, after the reservation commit. Build stays `20261023-0847`. Docs only, so the stamp is unchanged.
+- Tests run and result (widths, checks): `node tools/scans/run.js` after this commit. No game code changed.
+- Decisions made (colour + reasoning): D576 is red and settled yes by Vincent. It is not an Open row. No other id moved.
+- Anything left unfinished: TOWN_CHATTER is not built.
+
 ## 2026-10-23 09:15 ET: D576 is reserved for town chatter
 
 - What changed and why: The Supervisor reserved D576 for TOWN_CHATTER. It is red, default No for v1, and it waits until after Episode 1. Deadline Sun Oct 25, 9:15 AM ET. Design 656d101. It is not settled and it is not in the archive. The next free id is D577.
