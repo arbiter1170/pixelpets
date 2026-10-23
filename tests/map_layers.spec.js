@@ -154,7 +154,7 @@ test('acceptance 4 and 5: flats sections and fogged floor that sticks @w1', asyn
   const flats = await page.evaluate(() => PixelPets.mapLayer());
   expect(flats.shown).toBe('hm_flats_5');
   expect(flats.openings).toBe(9);
-  expect(flats.sections).toEqual(['KITCHEN', 'BATH', 'LIZZY', 'HALL', 'OSSABELL', 'MORELOU', 'MOROLOW']);
+  expect(flats.sections).toEqual(['KITCHEN', 'BATH', 'LIZZY', 'HALL', 'OSSABELL', 'MARILOU', 'CALEB']);
   expect(flats.ways).toEqual([expect.objectContaining({ tag: 'LIFT', x: 0, y: 6 })]);
   expect(flats.chips.map((c) => c.label)).toEqual(['LOBBY', '5B']);
   expect(flats.title).toBe('AMBERHILL FLATS, 5B');

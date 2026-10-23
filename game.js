@@ -1392,6 +1392,7 @@ function tutPlace(){
     else if (tabs) { const tr = tabs.getBoundingClientRect(); if (tr.height > 2) limit = Math.min(limit, tr.top - 8); }
     top = Math.max(6, Math.min(top, limit - ch));
   }
+  if (tut.lesson === 'moves' && /^M[12]/.test(tut.id || '')) { const mr = $('.bt-me') && $('.bt-me').getBoundingClientRect(); if (mr && mr.height > 2 && mr.top - 8 - ch >= 6) top = mr.top - 8 - ch; }   // CALEB_FIX part 2: type cards sit above the partner panel; the wild Walkling stays in view
   if (tut.lesson === 'moves') top = lessonClearMsg(left, top, cw, ch);
   if (tut.lesson === 'care' && !tut.soft) {
     const cb = $('#ctClose');
@@ -3512,6 +3513,7 @@ function hopLanding(x, y, dx, dy){
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
+const shownName = n => (window.PPRep && (PPRep.entry(n) || {}).label) || n;   // CALEB_FIX: display label only; keys, S.rep and lookups keep the raw name
 // Letter lines (D174). The design JSON stays verbatim. Samples live in data/reputation.json and are gated on story.hc_invite.
 // The letter goes in front of everyday chatter (else, standing., story.side) and behind a later story flag or a scene pointer.
 (function spliceRepLetters(){
@@ -6839,7 +6841,7 @@ function showBumpHint(o){
   if (scene || overlayOpen() || bump.held || now() - bump.at < BUMP_HINT_MS) return;
   bump.at = now(); bump.held = true; bump.hideAt = now() + HINT_LIFE_MS; sfx('denied');
   const nm = objName(o), el = $('#bumpHint');
-  el.textContent = "You can't walk through " + (nm || 'this') + '.'; el.hidden = false;
+  el.textContent = "You can't walk through " + (shownName(nm) || 'this') + '.'; el.hidden = false;
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };
@@ -7593,7 +7595,7 @@ const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['sto
 function sbRender(who, text, box){
   const key = who && LOOK_OF_NAME[who];
   const look = key ? npcLook({ look: key, name: who }) : null;
-  $('#sbWho').textContent = who || ''; $('#sbWho').hidden = !who;
+  $('#sbWho').textContent = shownName(who) || ''; $('#sbWho').hidden = !who;
   $('#sbText').textContent = text; $('#sbText').classList.toggle('narr', !who);
   const pc = $('#sbPortrait'), showP = !!look && window.innerWidth >= 360;
   pc.hidden = !showP; $('#sbox').classList.toggle('has-p', showP);
@@ -9890,7 +9892,7 @@ function drawRegionMap(t){
 const REGION_BACKDROP = true;
 const ML_SECTION = {
   hm_school_in: { '1,2': 'CLASSROOM', '12,2': 'CUBBIES', '1,8': 'HALL' },
-  hm_flats_5: { '1,2': 'KITCHEN', '8,2': 'BATH', '13,2': 'LIZZY', '0,6': 'HALL', '1,9': 'OSSABELL', '6,9': 'MORELOU', '13,9': 'MOROLOW' },
+  hm_flats_5: { '1,2': 'KITCHEN', '8,2': 'BATH', '13,2': 'LIZZY', '0,6': 'HALL', '1,9': 'OSSABELL', '6,9': 'MARILOU', '13,9': 'CALEB' },
 };
 const ML_CHIPS = { hm_flats_lobby: 'LOBBY', hm_flats_5: '5B', sm_yard: 'YARD', sm_tunnel: 'TUNNEL', sm_hold: 'HOLD', sm_den: 'DEN' };
 const ML_LABEL = { hc_gym_in: 'TRIAL HALL' };
@@ -11026,7 +11028,7 @@ function contactEntries(){
   rows.sort((a, b) => {
     const fa = book.fav[a.key] ? 0 : 1, fb = book.fav[b.key] ? 0 : 1;
     if (fa !== fb) return fa - fb;
-    return a.name.localeCompare(b.name);
+    return shownName(a.name).localeCompare(shownName(b.name));
   });
   return rows;
 }
@@ -11087,7 +11089,7 @@ function renderContactCard(body, person, fav){
   card.dataset.who = person.key;
   card.dataset.quest = person.quest ? '1' : '0';
   const face = listFaceEl(person, 'contact-face contact-face-lg');
-  const nm = document.createElement('h3'); nm.className = 'contact-card-name'; nm.textContent = person.name;
+  const nm = document.createElement('h3'); nm.className = 'contact-card-name'; nm.textContent = shownName(person.name);
   const info = whereNow(person.name);
   const place = info ? whereLineEl(info, true) : document.createElement('p');
   if (!info) { place.className = 'contact-place'; place.textContent = contactPlace(person); }
@@ -11098,7 +11100,7 @@ function renderContactCard(body, person, fav){
   const star = document.createElement('button');
   star.type = 'button'; star.className = 'btn contact-star'; star.dataset.fav = person.key; star.textContent = fav ? 'ON' : 'FAV';
   star.setAttribute('aria-pressed', fav ? 'true' : 'false');
-  star.setAttribute('aria-label', (fav ? 'Unfavorite ' : 'Favorite ') + person.name);
+  star.setAttribute('aria-label', (fav ? 'Unfavorite ' : 'Favorite ') + shownName(person.name));
   const back = document.createElement('button');
   back.type = 'button'; back.className = 'btn'; back.dataset.contactBack = '1'; back.textContent = 'LIST';
   acts.append(star, back);
@@ -11143,7 +11145,7 @@ function renderContacts(){
     main.type = 'button'; main.className = 'contact-main'; main.dataset.who = person.key;
     const face = listFaceEl(person, 'contact-face');
     const meta = document.createElement('span'); meta.className = 'contact-meta';
-    const nm = document.createElement('b'); nm.className = 'contact-name'; nm.textContent = person.name;
+    const nm = document.createElement('b'); nm.className = 'contact-name'; nm.textContent = shownName(person.name);
     const place = document.createElement('small'); place.className = 'contact-place'; place.textContent = contactPlace(person);
     meta.append(nm, place);
     if (person.quest) { const chip = document.createElement('span'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; meta.appendChild(chip); }
@@ -11151,7 +11153,7 @@ function renderContacts(){
     const star = document.createElement('button');
     star.type = 'button'; star.className = 'btn contact-star'; star.dataset.fav = person.key; star.textContent = fav ? 'ON' : 'FAV';
     star.setAttribute('aria-pressed', fav ? 'true' : 'false');
-    star.setAttribute('aria-label', (fav ? 'Unfavorite ' : 'Favorite ') + person.name);
+    star.setAttribute('aria-label', (fav ? 'Unfavorite ' : 'Favorite ') + shownName(person.name));
     row.append(main, star);
     list.appendChild(row);
   }
@@ -11379,7 +11381,7 @@ function repRows(){
     const fb = window.PPRep && PPRep.isFixed(b.name) ? 1 : 0;
     if (fa !== fb) return fa - fb;
     const ia = idx.has(a.key) ? idx.get(a.key) : -1, ib = idx.has(b.key) ? idx.get(b.key) : -1;
-    if (ia < 0 && ib < 0) return a.name.localeCompare(b.name);
+    if (ia < 0 && ib < 0) return shownName(a.name).localeCompare(shownName(b.name));
     if (ia < 0) return 1;
     if (ib < 0) return -1;
     return ib - ia;
@@ -11409,7 +11411,7 @@ function renderRep(){
     const person = contactPeople().get(repWho);
     if (!person) { repWho = ''; renderRep(); return; }
     const face = listFaceEl(person, 'rep-face');
-    const nm = document.createElement('h3'); nm.className = 'rep-name'; nm.textContent = person.name;
+    const nm = document.createElement('h3'); nm.className = 'rep-name'; nm.textContent = shownName(person.name);
     const num = document.createElement('p'); num.className = 'rep-num'; num.textContent = String(PPRep.repGet(person.name));
     const tier = document.createElement('p'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
     card.append(face, nm, num, tier);
@@ -11424,14 +11426,14 @@ function renderRep(){
   for (const person of rows) {
     const row = document.createElement('div'); row.className = 'rep-row';
     const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'rep-face-btn'; btn.dataset.rep = person.key; btn.setAttribute('aria-label', person.name);
+    btn.type = 'button'; btn.className = 'rep-face-btn'; btn.dataset.rep = person.key; btn.setAttribute('aria-label', shownName(person.name));
     const face = listFaceEl(person, 'rep-face'); btn.appendChild(face);
     const meta = document.createElement('div'); meta.className = 'rep-meta';
-    const nm = document.createElement('span'); nm.className = 'rep-name'; nm.textContent = person.name;
+    const nm = document.createElement('span'); nm.className = 'rep-name'; nm.textContent = shownName(person.name);
     const raw = PPRep.repGet(person.name);
     const bar = document.createElement('span'); bar.className = 'rep-bar'; bar.setAttribute('role', 'progressbar');
     bar.setAttribute('aria-valuemin', '0'); bar.setAttribute('aria-valuemax', '100'); bar.setAttribute('aria-valuenow', String(raw));
-    bar.setAttribute('aria-label', person.name + ' ' + raw);
+    bar.setAttribute('aria-label', shownName(person.name) + ' ' + raw);
     const fill = document.createElement('i'); fill.style.width = raw + '%'; bar.appendChild(fill);
     const tier = document.createElement('span'); tier.className = 'rep-tier'; tier.textContent = PPRep.repTier(person.name);
     meta.append(nm, bar, tier);
@@ -11962,7 +11964,7 @@ function shopMealBox(prompt, opts){
     shopMeal = { rows: rows, notNow: notNow, res: res };
     shopIds = rows.map(r => 'm' + r.i); shopSel = 0;
     const who = (scene && (scene.who || (scene.npc && objName(scene.npc)))) || '';
-    $('#shopTitle').textContent = who;
+    $('#shopTitle').textContent = shownName(who);
     $('#shopTitle').hidden = !who;
     const flav = $('#shopFlavour'); if (flav) flav.textContent = prompt;
     document.body.classList.add('shop-meal');

@@ -778,6 +778,109 @@ test('T-M9 befriending early leaves the result panel', async ({ page }) => {
   await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
 });
 
+async function sampleTypeCard(page, width) {
+  await page.waitForTimeout(250);
+  const samples = [];
+  for (let i = 0; i < 3; i++) {
+    samples.push(await page.evaluate(() => {
+      const box = el => {
+        const r = el.getBoundingClientRect();
+        return { top: r.top, left: r.left, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
+      };
+      const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      const card = box(document.querySelector('#tutCard'));
+      const me = box(document.querySelector('.bt-me'));
+      const stage = box(document.querySelector('#btStage'));
+      const next = box(document.querySelector('#tutActs button'));
+      const skip = box(document.querySelector('#tutSkip'));
+      return {
+        top: card.top,
+        clearMe: card.bottom <= me.top - 4,
+        foe: !hit(card, box(document.querySelector('#btFoeType'))),
+        meType: !hit(card, box(document.querySelector('#btMeType'))),
+        msg: !hit(card, box(document.querySelector('#btMsg'))),
+        nextW: next.width, nextH: next.height, skipW: skip.width, skipH: skip.height,
+        foeHalf: card.top >= stage.top + stage.height / 2,
+      };
+    }));
+    if (i < 2) await page.waitForTimeout(650);
+  }
+  const tops = samples.map(s => Math.round(s.top));
+  expect(new Set(tops).size).toBe(1);
+  for (const s of samples) {
+    expect(s.clearMe).toBe(true);
+    expect(s.foe).toBe(true);
+    expect(s.meType).toBe(true);
+    expect(s.msg).toBe(true);
+    expect(s.nextW).toBeGreaterThanOrEqual(44);
+    expect(s.nextH).toBeGreaterThanOrEqual(44);
+    expect(s.skipW).toBeGreaterThanOrEqual(44);
+    expect(s.skipH).toBeGreaterThanOrEqual(44);
+    if (width === 390) expect(s.foeHalf).toBe(true);
+  }
+}
+
+test('T-M16 M1 and M2 stay above the partner panel', async ({ page }) => {
+  test.setTimeout(90000);
+  const width = page.viewportSize().width;
+  const dir = artifactsDir('caleb-fix');
+  for (const ctl of ['modern', 'arcade']) {
+    await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
+    await page.evaluate(mode => PixelPets.applyCtl(mode, false), ctl);
+    await openWild(page, 'tide/0', 3);
+    await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+    if (ctl === 'modern') {
+      await page.screenshot({ path: path.join(dir, 'm1-battle-' + width + '.png') });
+      await page.locator('#tutCard').screenshot({ path: path.join(dir, 'm1-card-' + width + '.png') });
+    }
+    await sampleTypeCard(page, width);
+    await clickCard(page, 'NEXT');
+    await page.waitForFunction(() => /^M2/.test(PixelPets.lesson().card || ''));
+    await sampleTypeCard(page, width);
+    await clickCard(page, 'NEXT');
+    await page.waitForFunction(() => PixelPets.lesson().card === 'M3');
+    await page.waitForTimeout(300);
+    const placed = await page.evaluate(() => {
+      const card = document.querySelector('#tutCard');
+      const cw = card.offsetWidth, ch = card.offsetHeight;
+      const fight = document.querySelector('[data-bact="fight"]').getBoundingClientRect();
+      const me = document.querySelector('.bt-me').getBoundingClientRect();
+      const msg = document.querySelector('#btMsg').getBoundingClientRect();
+      const vw = window.innerWidth, vh = window.innerHeight;
+      let hx = fight.left, hy = fight.top, hw = fight.width, hh = fight.height;
+      if (hw < 44 || hh < 44) {
+        const w = Math.max(44, hw), h = Math.max(44, hh);
+        hx = fight.left + hw / 2 - w / 2;
+        hy = fight.top + hh / 2 - h / 2;
+        hw = w; hh = h;
+      }
+      let left = Math.max(6, (vw - cw) / 2);
+      const below = hy + hh + 12, above = hy - 12 - ch;
+      let top = (hy + hh / 2) < vh / 2 ? below : above;
+      const fits = yy => yy >= 6 && yy + ch <= vh - 6;
+      const hits = yy => yy < hy + hh + 4 && yy + ch > hy - 4 && left < hx + hw && left + cw > hx;
+      if (!fits(top) || hits(top)) {
+        const alt = top === below ? above : below;
+        if (fits(alt) && !hits(alt)) top = alt;
+      }
+      left = Math.max(6, Math.min(left, vw - cw - 6));
+      top = Math.max(6, Math.min(top, vh - ch - 6));
+      if (top < msg.bottom && top + ch > msg.top && left < msg.right && left + cw > msg.left) {
+        const up = msg.top - 8 - ch;
+        if (up >= 6) top = up;
+        else top = Math.min(top, Math.max(6, msg.top - 8 - ch));
+      }
+      const pin = me.top - 8 - ch;
+      const styleTop = parseFloat(card.style.top);
+      return { styleTop, expected: top, delta: Math.abs(styleTop - top), pinDelta: Math.abs(styleTop - pin) };
+    });
+    expect(placed.delta, JSON.stringify(placed)).toBeLessThanOrEqual(2);
+    expect(placed.pinDelta).toBeGreaterThan(2);
+    await page.evaluate(() => PixelPets.battle.close());
+    await page.waitForFunction(() => !PixelPets.battle.on);
+  }
+});
+
 test('tray feed shot at 320', async ({ page }) => {
   test.skip(page.viewportSize().width !== 320, 'shot is 320');
   await boot(page, saveAt({ 'story.tut_care': 'wait', 'story.tut_care_step': 'C2' }));
