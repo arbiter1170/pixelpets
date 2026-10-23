@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 06:29 ET: The Lanterns card stays off TALK in arcade (build 20261023-0629)
+
+- What changed and why: QA-4 (green, no new D or Q id). At 320 in arcade, the Lanterns tip sat on the TALK button after the first paid rest, so a tap hit the card. The card keeps its copy, size and look. In arcade it lifts clear of a ready TALK. A tap on TALK starts the talk, the tip steps aside, and it comes back after the talk through the same hold as QA-2. Modern controls are unchanged. Save stays `pixelpets.save.v2` with `v` 2. No new saved field. `save.js` is untouched.
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `tests/playtest_fixes_3.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of main `00ab935`. Build `20261023-0629`. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `node tools/pp_test.js tests/playtest_fixes_3.spec.js -g "QA-4|waits out the rest"`. PP_TEST RESULT: PASS exit=0 passed=6 failed=0 flaky=0 skipped=0 time=24s. RTDB_RULES RESULT: PASS. Widths 320, 375 and 390. The 320 run also checks modern controls. No page errors.
+- Decisions made (colour + reasoning): QA-4 is green, Supervisor's call. No new D or Q id. Next free id stays D576.
+- Anything left unfinished: the shared shop sheet (SHOP_LAYOUT sections 2-4) is still to land on this branch.
+
 ## 2026-10-23 05:12 ET: Beds fill NRG, a loss wakes you healed, and the party tips land (build 20261023-0512)
 
 - What changed and why: PLAYTEST_FIXES_3 (design 2e853ab, QA-3 from 24f784a). A nap at home, in High Charity, or at a Lantern House fills every party NRG to 100. A hurt Lantern rest still costs 5 Acorns. A free rest and a home nap stay free. PARTNER REST is unchanged. A lost battle wakes the team at the closest Lantern House they have been to, healed, with the way out open and no Acorn cost. The last rest place changes only when you rest. The toast reads "Back at the {town} Lantern House." The Lantern tip tells you a loss wakes you at the closest Lantern House. The post-capture picker shows each Walkling's picture. The battle swap sheet is unchanged. The WALKLINGS tour line names your Party, and three tips follow: the party, its moves, and moving one up. The header reads Party n/6. QA-1: an edge cue box slides off every on-canvas warp, door, and quest tile, and a tap on the box still opens QUEST. QA-2: a tip that is up when a talk starts steps aside and comes back after the talk. QA-3: after you name your Walkling, the name banner finishes its pop before the card fades. SKIP and a tap still stop the card the way they did. Effects off and reduced motion still show the banner at full size. Save stays `pixelpets.save.v2` with `v` 2. No new saved field. Desktop nav (D520) is not in this build.

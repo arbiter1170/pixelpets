@@ -1349,7 +1349,23 @@ function tutPlace(){
   }
   left = Math.max(6, Math.min(left, vw - cw - 6));
   top = Math.max(6, Math.min(top, vh - ch - 6));
+  // QA-4: arcade TALK sits under a bottom tip card at 320. Lift the card clear of a ready TALK. Modern is unchanged.
+  if (mode === 'unlock') top = tutClearTalk(left, top, cw, ch);
   card.style.left = left + 'px'; card.style.top = top + 'px';
+}
+function tutClearTalk(left, top, cw, ch){
+  if (ctlMode() === 'modern') return top;
+  const tb = $('#talkBtn');
+  if (!tb || tb.hidden || !tb.classList.contains('ready')) return top;
+  const tr = tb.getBoundingClientRect();
+  if (tr.width < 2 || tr.height < 2) return top;
+  const gap = 8;
+  if (!(top < tr.bottom && top + ch > tr.top && left < tr.right && left + cw > tr.left)) return top;
+  const above = tr.top - gap - ch;
+  if (above >= 6) return above;
+  const below = tr.bottom + gap;
+  if (below + ch <= window.innerHeight - 6) return below;
+  return top;
 }
 function tutShow(id){
   id = tutResolve(id);
@@ -13557,6 +13573,8 @@ function bindInput(){
     if (!unlock.on) return;
     const el = e.target && e.target.closest ? e.target : (e.target && e.target.parentElement);
     if (el && el.closest && el.closest('#unlockCard')) return;
+    // QA-4: TALK is the way into the talk. Leave the card up so runSteps can hold it and bring it back.
+    if (el && el.closest && el.closest('#talkBtn')) return;
     if (el && unlock.holes.some(h => h.el && (h.el === el || (h.el.contains && h.el.contains(el))))) return;
     unlockClose();
   }, true);
