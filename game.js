@@ -598,7 +598,10 @@ function closeSettings(){
   $('#ovSettings').hidden = true; lockTabs(false);
 }
 let toastT = 0;
-function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
+function toast(msg){
+  if (careLes.holdEarly) { careLes.held.push(msg); return; }
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800);
+}
 
 /* ---------- debug fast mode (?fast=1, F key, PixelPets.setFast) ---------- */
 function readFastPref(){
@@ -847,6 +850,7 @@ function setPartnerId(id){
   S.partnerId = id;
 }
 function showTab(name){
+  if (typeof careFallback === 'function' && careLes.phase === 'c1' && name !== screen) careFallback('tab');
   if (overlayOpen() && !tutAllowsTab(name)) return;
   if (name !== 'walk') closePartnerTray();
   screen = name;
@@ -867,9 +871,12 @@ function showTab(name){
   try { markAlive(); } catch (e) {}
 }
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
-let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false };
+let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false, soft: false, lesson: null, pass: false, skipFn: null };
+let careLes = { phase: '', t0: 0, calm: 0, steps0: 0, nudged1: false, nudged2: false, balloon: false, balloonUntil: 0, nudgeAt: 0, door: false, replay: false, replayStep: 'C2', held: [], fell: false, holdEarly: false };
+let movesLes = { hitDue: false, m7done: false, chooseN: 0, p1At: -1, m7At: -1, plain: '' };
+let lessonDraw = { hop: 0, y: 0 };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || tut.on;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -1317,10 +1324,36 @@ function tutPlace(){
   const dims = ['#tutD1', '#tutD2', '#tutD3', '#tutD4'].map(s => $(s));
   const ring = $('#tutRing'), block = $('#tutBlock');
   const vw = window.innerWidth, vh = window.innerHeight;
-  if (!h) {
+  const trayEl = $('#careTray');
+  const closePass = (tut.on && tut.lesson === 'care' && !tut.soft && trayEl && !trayEl.hidden) ? tutBox($('#ctClose')) : null;
+  if (tut.on && tut.soft) {
+    dims.forEach(d => { if (d) d.style.cssText = 'display:none'; });
+    block.hidden = true;
+    if (!h) ring.hidden = true;
+    else {
+      ring.hidden = false;
+      ring.style.left = (h.x - 6) + 'px'; ring.style.top = (h.y - 6) + 'px';
+      ring.style.width = (h.w + 12) + 'px'; ring.style.height = (h.h + 12) + 'px';
+    }
+  } else if (!h) {
     dims[0].style.cssText = 'left:0;top:0;width:100%;height:100%';
     for (let i = 1; i < 4; i++) dims[i].style.cssText = 'display:none';
     ring.hidden = true; block.hidden = true;
+  } else if (h && closePass && (Math.abs(closePass.x - h.x) > 4 || Math.abs(closePass.y - h.y) > 4)) {
+    // One dim with two holes: the lesson target, and CLOSE, so the tray can shut mid-step.
+    let d = 'M0 0H' + vw + 'V' + vh + 'H0Z';
+    [h, closePass].forEach(r => {
+      const x = Math.max(0, Math.round(r.x)), y = Math.max(0, Math.round(r.y));
+      d += 'M' + x + ' ' + y + 'H' + (x + Math.round(r.w)) + 'V' + (y + Math.round(r.h)) + 'H' + x + 'Z';
+    });
+    dims[0].style.cssText = 'left:0;top:0;width:100%;height:100%;clip-path:path(evenodd,"' + d + '")';
+    for (let i = 1; i < 4; i++) dims[i].style.cssText = 'display:none';
+    ring.hidden = false;
+    ring.style.left = (h.x - 6) + 'px'; ring.style.top = (h.y - 6) + 'px';
+    ring.style.width = (h.w + 12) + 'px'; ring.style.height = (h.h + 12) + 'px';
+    const pass = tut.adv === 'tap' || tut.pass;
+    block.hidden = pass;
+    if (!pass) { block.style.left = h.x + 'px'; block.style.top = h.y + 'px'; block.style.width = h.w + 'px'; block.style.height = h.h + 'px'; }
   } else {
     const x = h.x, y = h.y, w = h.w, hh = h.h;
     dims[0].style.cssText = 'left:0;top:0;width:100%;height:' + Math.max(0, y) + 'px';
@@ -1330,7 +1363,7 @@ function tutPlace(){
     ring.hidden = false;
     ring.style.left = (x - 6) + 'px'; ring.style.top = (y - 6) + 'px';
     ring.style.width = (w + 12) + 'px'; ring.style.height = (hh + 12) + 'px';
-    const pass = mode === 'unlock' || tut.adv === 'tap';
+    const pass = mode === 'unlock' || tut.adv === 'tap' || tut.pass;
     block.hidden = pass;
     if (!pass) { block.style.left = x + 'px'; block.style.top = y + 'px'; block.style.width = w + 'px'; block.style.height = hh + 'px'; }
     void vw; void vh;
@@ -1352,6 +1385,24 @@ function tutPlace(){
   }
   left = Math.max(6, Math.min(left, vw - cw - 6));
   top = Math.max(6, Math.min(top, vh - ch - 6));
+  if (tut.on && tut.soft && tut.lesson === 'care') {
+    const strip = $('#petStrip'), tabs = $('#tabs');
+    let limit = vh - 6;
+    if (ctlMode() === 'modern' && strip) { const sr = strip.getBoundingClientRect(); if (sr.height > 2 && sr.top > 80) limit = Math.min(limit, sr.top - 8); }
+    else if (tabs) { const tr = tabs.getBoundingClientRect(); if (tr.height > 2) limit = Math.min(limit, tr.top - 8); }
+    top = Math.max(6, Math.min(top, limit - ch));
+  }
+  if (tut.lesson === 'moves') top = lessonClearMsg(left, top, cw, ch);
+  if (tut.lesson === 'care' && !tut.soft) {
+    const cb = $('#ctClose');
+    if (cb && !cb.hidden) {
+      const cr = cb.getBoundingClientRect();
+      if (cr.height > 2 && top < cr.bottom && top + ch > cr.top && left < cr.right && left + cw > cr.left) {
+        const above = cr.top - 8 - ch;
+        if (above >= 6) top = above;
+      }
+    }
+  }
   // QA-4: arcade TALK sits under a bottom tip card at 320. Lift the card clear of a ready TALK. Modern is unchanged.
   if (mode === 'unlock') top = tutClearTalk(left, top, cw, ch);
   card.style.left = left + 'px'; card.style.top = top + 'px';
@@ -1375,6 +1426,7 @@ function tutShow(id){
   const row = TUT_COPY[id]; if (!row) { tutClose(true); return; }
   tut.id = id; tut.key = row[2]; tut.adv = row[1] === 'tap' ? 'tap' : 'next'; tut.act = (id === 'T5' || id === 'T6' || id === 'T7') ? tut.key : null;
   if (tut.act && tutCareBlocked(tut.act)) tut.adv = 'next';
+  if (!tut.replay && S && S.flags['story.tut_care'] === 'armed' && (id === 'T5' || id === 'T6' || id === 'T7')) { tut.adv = 'next'; tut.act = null; }
   if (!tut.replay && S) { S.flags['story.tutorial_step'] = id === 'T0r' ? 'T0' : id.replace(/[abmj]$/, '').replace('T8b', 'T8'); save(); }
   const line = $('#tutLine'); line.textContent = tutFill(row[0]);
   const acts = $('#tutActs'); acts.textContent = '';
@@ -1399,6 +1451,7 @@ function tutAdvance(){
 }
 function tutSawTab(name){ if (tut.on && tut.adv === 'tap' && tutAllowsTab(name)) tutAdvance(); }
 function tutSawAct(act){
+  if (tut.lesson === 'care') { careSawAct(act); return; }
   if (!tut.on || tut.replay || tut.adv !== 'tap' || tut.act !== act) return;
   const card = $('#tutCard'); if (card) card.hidden = true;
   const step = act;
@@ -1410,13 +1463,13 @@ function tutSawAct(act){
   };
   clearTimeout(tut.wait); tut.wait = setTimeout(go, 120);
 }
-function tutMiss(act){ if (!tut.on || tut.act !== act || tut.adv !== 'tap') return; tut.adv = 'next'; tutShow(tut.id); }
+function tutMiss(act){ if (tut.lesson === 'care') { careMiss(act); return; } if (!tut.on || tut.act !== act || tut.adv !== 'tap') return; tut.adv = 'next'; tutShow(tut.id); }
 function tutClose(mark){
   const replay = tut.replay, skipping = mark === 'skip';
   clearTimeout(tut.wait); clearInterval(tut.cycle); tut.cycle = 0;
   tutClearHit();
-  tut.on = false; tut.replay = false; tut.id = null; tut.adv = null; tut.key = null; tut.act = null; tut.holes = []; tut.fromScene = false;
-  const layer = $('#tutLayer'); if (layer) { layer.hidden = true; delete layer.dataset.step; }
+  tut.on = false; tut.replay = false; tut.id = null; tut.adv = null; tut.key = null; tut.act = null; tut.holes = []; tut.fromScene = false; tut.soft = false; tut.lesson = null; tut.pass = false;
+  const layer = $('#tutLayer'); if (layer) { layer.hidden = true; layer.classList.remove('soft'); delete layer.dataset.step; }
   document.body.classList.remove('tut-on');
   const card = $('#tutCard'); if (card) card.hidden = false;
   lockTabs(false);
@@ -1433,7 +1486,7 @@ function tutClose(mark){
 function runTutorial(opts){
   if (!S || !pet() || tut.on) return;
   opts = opts || {};
-  tut.on = true; tut.replay = !!opts.replay; tut.fromScene = false;
+  tut.on = true; tut.replay = !!opts.replay; tut.fromScene = false; tut.soft = false; tut.lesson = null; tut.pass = false;
   clearUiReturn();
   tut.skipT12r = !opts.replay && !!(S && S.flags['story.tutorial_step'] === 'T13');
   const layer = $('#tutLayer'); if (!layer) { tut.on = false; return; }
@@ -1462,6 +1515,7 @@ function tutorialKnock(allow){
 function tutDisarmSkip(){ clearTimeout(tut.skipArm); tut.skipArm = 0; const b = $('#tutSkip'); if (b) { delete b.dataset.arm; b.textContent = 'SKIP TOUR'; } }
 function skipTutorial(now){
   if (!tut.on || tut.id === 'T13') return;
+  if (tut.lesson) { lessonSkip(!!now); return; }
   const b = $('#tutSkip');
   if (!now && b && !b.dataset.arm) { b.dataset.arm = '1'; b.textContent = 'TAP AGAIN TO SKIP'; clearTimeout(tut.skipArm); tut.skipArm = setTimeout(tutDisarmSkip, 3000); return; }
   tutDisarmSkip(); tutClose('skip');
@@ -1470,6 +1524,444 @@ function replayTutorial(){
   if (!S || !pet() || scene || (battle && battle.on) || tut.on) return;
   closeSettings();
   runTutorial({ replay: true });
+}
+/* TUTORIALS_CARE_MOVES (D584-D598). Care walk and moves lesson. Copy is the section 6 block, byte for byte. */
+const TCM = {
+  C1: '{pet} sniffs your bag and its tummy rumbles. Tap {pet} to open the care tray.',
+  C1n: '{pet} is still eyeing your bag. Stand still, then tap {pet}.',
+  C2: 'This is the care tray. Tap FEED to fill FOOD. A fed Walkling fights at full strength.',
+  C2x: 'FEED fills FOOD. {pet} ate a little while ago, so FEED is resting for now.',
+  C3: 'Tap PLAY for JOY. A happy Walkling keeps up its pace. PLAY costs a little NRG.',
+  C3x: 'PLAY fills JOY. It needs a little NRG, so it waits while {pet} is tired.',
+  C4: 'Tap REST so {pet} can sleep. A nap brings NRG back and helps after a battle.',
+  C4x: 'REST is a nap that brings NRG back. {pet} isn\'t sleepy yet, so save it for later.',
+  C5: 'HEAL uses a snack from your BAG when {pet} is hurt. Warden Ilse gave you some.',
+  C6: 'STATS shows {pet}\'s numbers. CLOSE puts the tray away. Tap {pet} to bring it back.',
+  C7: 'That\'s care on the go! When a balloon pops up over {pet}, tap {pet} and help out.',
+  CF: 'Tap {pet} any time to care for it.',
+  M1: 'Every Walkling has a type. {pet} is {type}. This wild {foe} is {foeType}.',
+  M2h: '{type} moves hit {foeType} hard, about double. Use them to finish fast.',
+  M2s: '{type} moves barely hurt {foeType}, about half as much. Try another kind of move.',
+  M2e: '{type} and {foeType} are even. Every move lands the usual way.',
+  M2z: '{type} moves can\'t touch {foeType} at all. Pick a move of another type.',
+  M3: 'Tap MOVES. Every move shows its type, and STATUS moves show no power.',
+  M4p: 'PLAIN moves like {plain} hit every type evenly. Once tried, a move keeps a 2x or \u00bd mark.',
+  M4n: 'Once you\'ve tried a move on a type, it keeps a 2x or \u00bd mark here. Now pick a move!',
+  M5: 'STATUS moves don\'t hurt. They raise or drop ATK, DEF or SPD, and arrows show it here.',
+  M6: 'Care counts too. HUNGRY, SULKY or DROWSY Walklings fight a little weaker.',
+  M7: '"That hit hard!" means about double. "It barely felt that..." means about half.',
+  MR: 'Moves lesson in your next wild battle.',
+  CH: 'TYPE CHART',
+  CHP: 'Even against every type.',
+  SET: 'Tutorial',
+  SO1: 'Opening tour', SO2: 'Care walk', SO3: 'Moves and types', SO4: 'Type chart',
+  SS1: 'The first tour, look only.',
+  SS2: 'Feed, play, rest and heal, look only.',
+  SS3: 'Shows in your next wild battle.',
+  SS4: 'Every type at a glance.',
+  B1: 'NEXT', B2: 'GOT IT', B3: 'CHART', B4: 'SKIP', B5: 'TAP AGAIN TO SKIP'
+};
+function lessonTok(s){
+  const p = pet();
+  const foe = (battle && battle.on && curFoe()) ? foeName(curFoe()) : '';
+  const sp = p ? SPECIES[spi(p)] : null;
+  const typ = (sp && sp.type) || '';
+  const ft = (battle && battle.on && curFoe()) ? (curFoe().type || '') : '';
+  return String(s).split('{pet}').join(p ? petName(p) : 'your partner').split('{foe}').join(foe).split('{type}').join(typ).split('{foeType}').join(ft).split('{plain}').join(movesLes.plain || '');
+}
+function careCardUp(){ return !!(tut.on && tut.lesson === 'care'); }
+function lessonBalloon(t){ return !!(careLes.balloon && (!careLes.balloonUntil || t < careLes.balloonUntil)); }
+function lessonHop(t){
+  if (prefersReduced() || !careLes.t0) return 0;
+  const age = t - careLes.t0;
+  let k = -1;
+  if (age >= 200 && age < 1100) k = (age - 200) / 900;
+  else if (age >= 1400 && age < 2300) k = (age - 1400) / 900;
+  else if (careLes.nudgeAt && t >= careLes.nudgeAt && t < careLes.nudgeAt + 900) k = (t - careLes.nudgeAt) / 900;
+  if (k < 0) return 0;
+  return Math.round(Math.sin(Math.min(1, k) * Math.PI) * 2);
+}
+function lessonClearMsg(left, top, cw, ch){
+  const m = $('#btMsg'); if (!m) return top;
+  const mr = m.getBoundingClientRect(); if (mr.height < 2) return top;
+  if (!(top < mr.bottom && top + ch > mr.top && left < mr.right && left + cw > mr.left)) return top;
+  const above = mr.top - 8 - ch;
+  if (above >= 6) return above;
+  return Math.min(top, Math.max(6, mr.top - 8 - ch));
+}
+function flushCareToasts(){
+  const held = careLes.held.splice(0);
+  held.forEach((m, i) => setTimeout(() => toast(m), 1900 + i * 1900));
+}
+function lessonHide(){
+  if (!tut.lesson) return;
+  clearTimeout(tut.wait); clearInterval(tut.cycle); tut.cycle = 0;
+  tutClearHit();
+  tut.on = false; tut.soft = false; tut.lesson = null; tut.pass = false; tut.adv = null; tut.act = null; tut.holes = []; tut.id = null; tut.key = null; tut.skipFn = null;
+  const layer = $('#tutLayer');
+  if (layer && !unlock.on) { layer.hidden = true; layer.classList.remove('soft', 'lesson'); delete layer.dataset.step; }
+  else if (layer) { layer.classList.remove('soft', 'lesson'); delete layer.dataset.step; }
+  document.body.classList.remove('tut-on');
+  const card = $('#tutCard'); if (card) card.hidden = false;
+  lockTabs(false);
+  flushCareToasts();
+}
+function lessonPad(b){
+  if (!b) return null;
+  if (b.w >= 44 && b.h >= 44) return b;
+  const w = Math.max(44, b.w), h = Math.max(44, b.h);
+  return { x: b.x + b.w / 2 - w / 2, y: b.y + b.h / 2 - h / 2, w: w, h: h, el: b.el };
+}
+function lessonCard(o){
+  if (tut.on && !tut.lesson) return;
+  if (unlock.on) return;
+  const layer = $('#tutLayer'); if (!layer) return;
+  tut.on = true; tut.lesson = o.lesson; tut.soft = !!o.soft; tut.pass = !!o.pass; tut.adv = o.adv || 'next'; tut.act = o.act || null; tut.id = o.id; tut.key = null; tut.replay = false;
+  tut.holes = (o.holes || []).map(lessonPad).filter(Boolean); tut.hi = 0; tut.skipFn = o.skip || null;
+  layer.hidden = false; layer.classList.toggle('soft', !!o.soft); layer.classList.add('lesson'); layer.dataset.step = o.id;
+  document.body.classList.add('tut-on');
+  if (!o.soft) lockTabs(true); else lockTabs(false);
+  const line = $('#tutLine'); if (line) line.textContent = lessonTok(o.text);
+  const acts = $('#tutActs'); if (acts) acts.textContent = '';
+  const addBtn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = label; b.addEventListener('click', fn); acts.append(b); return b; };
+  (o.buttons || []).forEach(b => addBtn(b[0], b[1]));
+  const skip = $('#tutSkip');
+  if (skip) { skip.hidden = !o.skip; delete skip.dataset.arm; skip.textContent = TCM.B4; }
+  const card = $('#tutCard'); if (card) card.hidden = false;
+  const unlockCard = $('#unlockCard'); if (unlockCard) unlockCard.hidden = true;
+  clearInterval(tut.cycle); tut.cycle = 0;
+  if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
+  tutPlace();
+  const focus = acts && acts.querySelector('button'); if (focus) focus.focus({ preventScroll: true });
+}
+function lessonSkip(now){
+  const b = $('#tutSkip');
+  if (!now && b && !b.dataset.arm) {
+    b.dataset.arm = '1'; b.textContent = TCM.B5;
+    clearTimeout(tut.skipArm); tut.skipArm = setTimeout(() => { if (b) { delete b.dataset.arm; b.textContent = TCM.B4; } }, 3000);
+    return;
+  }
+  clearTimeout(tut.skipArm);
+  if (tut.skipFn) tut.skipFn();
+}
+function careDoorLand(){
+  if (!S || S.flags['story.tut_care'] !== 'armed' || careLes.phase) return;
+  careLes.phase = 'calm'; careLes.calm = 0;
+}
+function careStartAct(t){
+  careLes.phase = 'act'; careLes.t0 = t; careLes.c1At = 0; careLes.balloon = true; careLes.balloonUntil = 0;
+  careLes.nudged1 = false; careLes.nudged2 = false; careLes.nudgeAt = 0; careLes.steps0 = 0; careLes.fell = false;
+}
+function careC1Holes(){
+  const holes = [];
+  if (fol.x != null) { const b = tileBox(Math.round(fol.fx), Math.round(fol.fy)); if (b) holes.push(b); }
+  if (ctlMode() === 'modern') { const s = tutBox($('#petStrip')); if (s) holes.push(s); }
+  return holes;
+}
+function careShowC1(which){
+  careLes.phase = 'c1';
+  if (!careLes.c1At) careLes.c1At = now();
+  if (!careLes.steps0) careLes.steps0 = S.steps;
+  lessonCard({ lesson: 'care', id: which || 'C1', text: TCM[which || 'C1'], soft: true, pass: true, adv: 'next', holes: careC1Holes(), buttons: [], skip: careSkip });
+}
+function careStepBlocked(act){
+  if (careLes.replay) return false;
+  const p = pet(); if (!p || cdLeft(p, act)) return true;
+  if (act === 'feed') return p.hunger >= 98;
+  if (act === 'play') return isFainted(p) || p.energy < 10;
+  if (act === 'rest') return p.energy >= 98 && !(Number.isFinite(p.hpNow) || isFainted(p));
+  return false;
+}
+const CARE_NEXT = { C2: 'C3', C2x: 'C3', C3: 'C4', C3x: 'C4', C4: 'C5', C4x: 'C5', C5: 'C6', C6: 'C7' };
+function careShowStep(id){
+  if (!S) return;
+  const base = String(id || 'C2').replace(/x$/, '');
+  if (!careLes.replay) { S.flags['story.tut_care_step'] = base; if (S.flags['story.tut_care'] === 'armed') { /* stay armed until done; wait stays wait */ } save(); }
+  else careLes.replayStep = base;
+  careLes.phase = 'tray';
+  const act = base === 'C2' ? 'feed' : base === 'C3' ? 'play' : base === 'C4' ? 'rest' : null;
+  const blocked = act && careStepBlocked(act);
+  const line = blocked ? base + 'x' : base;
+  if (careLes.replay && base === 'C2') careLes.balloon = false;
+  const sel = act ? '#careTray [data-act="' + act + '"]' : (base === 'C5' ? '#careTray [data-act="heal"]' : '');
+  let holes = [];
+  if (base === 'C6') holes = [tutBox($('#ctStats')), tutBox($('#ctClose'))].filter(Boolean);
+  else if (sel) { const b = tutBox($(sel)); if (b) holes = [b]; }
+  const look = careLes.replay || !act || blocked || base === 'C5' || base === 'C6' || base === 'C7';
+  const buttons = [];
+  if (base === 'C7') buttons.push([TCM.B2, () => careFinish('done')]);
+  else if (look) buttons.push([TCM.B1, () => careAdvance()]);
+  lessonCard({
+    lesson: 'care', id: line, text: TCM[line], soft: false, pass: !look && !!act, adv: (!look && act) ? 'tap' : 'next', act: (!look && act) ? act : null,
+    holes: holes, buttons: buttons, skip: careSkip
+  });
+}
+function careAdvance(){
+  const id = String(tut.id || '');
+  const n = CARE_NEXT[id];
+  if (!n) { careFinish('done'); return; }
+  if (id === 'C2' || id === 'C2x') careLes.balloon = false;
+  careShowStep(n);
+}
+function careFinish(how){
+  if (!S) return;
+  if (careLes.replay) { careLes.replay = false; careLes.phase = ''; lessonHide(); return; }
+  S.flags['story.tut_care'] = how;
+  delete S.flags['story.tut_care_step'];
+  careLes.phase = ''; careLes.balloon = false; careLes.balloonUntil = 0; careLes.replay = false;
+  save();
+  lessonHide();
+}
+function careSkip(){
+  careLes.balloon = false;
+  careFinish('skipped');
+}
+function careFallback(){
+  if (!S || careLes.fell) return;
+  if (careLes.phase !== 'c1' && careLes.phase !== 'act') return;
+  if (S.flags['story.tut_care'] !== 'armed') return;
+  careLes.fell = true;
+  S.flags['story.tut_care'] = 'wait';
+  save();
+  careLes.phase = '';
+  if (tut.lesson === 'care') lessonHide();
+  toast(lessonTok(TCM.CF));
+  if (careLes.balloon) careLes.balloonUntil = now() + 3000;
+}
+function careSawAct(act){
+  if (!tut.on || tut.lesson !== 'care' || careLes.replay || tut.act !== act) return;
+  if (act === 'feed') careLes.balloon = false;
+  const go = () => {
+    if (!tut.on || tut.lesson !== 'care' || tut.act !== act) return;
+    const nap = act === 'rest' && now() < anim.sleepUntil;
+    if ($('#toast').classList.contains('show') || nap) { tut.wait = setTimeout(go, 120); return; }
+    careAdvance();
+  };
+  clearTimeout(tut.wait); tut.wait = setTimeout(go, 120);
+}
+function careMiss(act){
+  if (tut.lesson !== 'care' || careLes.replay) return;
+  const id = act === 'feed' ? 'C2' : act === 'play' ? 'C3' : act === 'rest' ? 'C4' : '';
+  if (!id || tut.id === id + 'x') return;
+  careShowStep(id);
+}
+function careOnTrayOpen(){
+  if (!S || (tut.on && tut.lesson !== 'care') || unlock.on) return;
+  if (careLes.replay) { if (!(tut.on && tut.lesson === 'care')) careShowStep(careLes.replayStep || 'C2'); return; }
+  const st = S.flags['story.tut_care'];
+  if (st !== 'armed' && st !== 'wait') return;
+  if (careLes.phase === 'c1') { careShowStep('C2'); return; }
+  if (st === 'wait' || S.flags['story.tut_care_step']) {
+    if (tut.on && tut.lesson === 'care') return;
+    careShowStep(S.flags['story.tut_care_step'] || 'C2');
+  }
+}
+function carePump(t){
+  if (!S) return;
+  if (careLes.balloonUntil && t >= careLes.balloonUntil) { careLes.balloon = false; careLes.balloonUntil = 0; }
+  if (careLes.phase === 'calm') {
+    const calm = screen === 'walk' && !scene && !(battle && battle.on) && !overlayOpen() && !fade.busy && !(walk && walk.intro) && !tut.on && !unlock.on;
+    if (!calm) { careLes.calm = 0; return; }
+    if (!careLes.calm) careLes.calm = t;
+    if (t - careLes.calm < 600) return;
+    careStartAct(t);
+  }
+  if (careLes.phase === 'act') {
+    if (t - careLes.t0 >= 2400) {
+      if (!tipsOn()) {
+        careLes.phase = '';
+        S.flags['story.tut_care'] = 'quiet';
+        save();
+        toast(lessonTok(TCM.CF));
+        careLes.balloonUntil = t + 3000;
+        return;
+      }
+      if (!tut.on && !unlock.on) careShowC1('C1');
+    }
+    return;
+  }
+  if (careLes.phase !== 'c1') return;
+  tut.holes = careC1Holes();
+  tutPlace();
+  const age = t - (careLes.c1At || careLes.t0);
+  if (!careLes.nudged1 && age >= 8000 && standingStill()) {
+    careLes.nudged1 = true;
+    if (!prefersReduced()) careLes.nudgeAt = t;
+    const line = $('#tutLine'); if (line) line.textContent = lessonTok(TCM.C1n);
+    if (tut.id) tut.id = 'C1n';
+    const layer = $('#tutLayer'); if (layer) layer.dataset.step = 'C1n';
+  }
+  if (careLes.nudged1 && !careLes.nudged2 && age >= 20000) {
+    careLes.nudged2 = true;
+    tut.holes = careC1Holes(); tut.hi = 0; tutPlace();
+    const ring = $('#tutRing');
+    if (ring) { ring.style.animation = 'none'; void ring.offsetWidth; ring.style.animation = ''; }
+  }
+  if (age >= 45000) careFallback('time');
+  else if (careLes.steps0 && (S.steps - careLes.steps0) >= 24) careFallback('steps');
+}
+function noteMovesBattle(){
+  if (!S) return;
+  const st = S.flags['story.tut_moves'];
+  if (st !== 'armed' && st !== 'p1' && st !== 'p2') return;
+  const n = +S.flags['story.tut_moves_n'] || 0;
+  if (n >= 4) { S.flags['story.tut_moves'] = 'done'; save(); return; }
+  S.flags['story.tut_moves_n'] = n + 1;
+  save();
+}
+function noteMovesCap(){
+  if (!S || !battle || battle.kind !== 'wild') return;
+  const st = S.flags['story.tut_moves'];
+  const n = +S.flags['story.tut_moves_n'] || 0;
+  if (n >= 4 && (st === 'armed' || st === 'p1' || st === 'p2')) { S.flags['story.tut_moves'] = 'done'; save(); }
+}
+function noteMovesHit(mult){
+  if (!S || !battle || !battle.on || battle.kind !== 'wild' || battle.coop) return;
+  const st = S.flags['story.tut_moves'];
+  if (st !== 'armed' && st !== 'p1' && st !== 'p2') return;
+  if (S.flags['story.tut_moves_hit']) return;
+  if (!(mult === 0 || mult > 1 || mult < 1)) return;
+  S.flags['story.tut_moves_hit'] = true;
+  movesLes.hitDue = true;
+  save();
+}
+function plainPowerMove(){
+  const p = pet(); if (!p || !Array.isArray(p.moves)) return null;
+  for (let i = 0; i < p.moves.length; i++) {
+    const mv = MOVES[p.moves[i]];
+    if (mv && mv.type === 'PLAIN' && mv.power > 0) return mv;
+  }
+  return null;
+}
+function movesM2(){
+  const f = curFoe();
+  const m = typeMult((SPECIES[spi(pet())] || {}).type || 'PLAIN', f ? f.type : 'PLAIN');
+  if (m === 0) return 'M2z';
+  if (m > 1) return 'M2h';
+  if (m < 1) return 'M2s';
+  return 'M2e';
+}
+function movesHoles(id){
+  const one = sel => { const b = tutBox($(sel)); return b ? [b] : []; };
+  if (id === 'M1' || id === 'M2h' || id === 'M2s' || id === 'M2e' || id === 'M2z') return [tutBox($('#btFoeType')), tutBox($('#btMeType'))].filter(Boolean);
+  if (id === 'M3') return one('[data-bact="fight"]');
+  if (id === 'M4' || id === 'M4p' || id === 'M4n') return one('#btMoves');
+  if (id === 'M5') return [tutBox($('#btMood')), tutBox($('#btFoeStages'))].filter(Boolean);
+  if (id === 'M6') return one('#btMood');
+  if (id === 'M7') {
+    const badge = $('#btMoves .mv-hint');
+    const b = badge ? tutBox(badge) : null;
+    return b ? [b] : [];
+  }
+  return [];
+}
+function movesMarkP1(){
+  if (!S || S.flags['story.tut_moves'] === 'skipped' || S.flags['story.tut_moves'] === 'done' || S.flags['story.tut_moves'] === 'quiet') return;
+  if (S.flags['story.tut_moves'] === 'armed') S.flags['story.tut_moves'] = 'p1';
+  movesLes.p1At = movesLes.chooseN;
+  save();
+}
+function movesMarkP2(){
+  if (!S) return;
+  if (movesLes.m7done) { S.flags['story.tut_moves'] = 'done'; }
+  else if (S.flags['story.tut_moves'] !== 'done' && S.flags['story.tut_moves'] !== 'skipped') S.flags['story.tut_moves'] = 'p2';
+  save();
+}
+function movesMarkP3(){
+  movesLes.hitDue = false; movesLes.m7done = true;
+  if (!S) return;
+  S.flags['story.tut_moves_hit'] = true;
+  if (S.flags['story.tut_moves'] === 'p2') S.flags['story.tut_moves'] = 'done';
+  save();
+}
+function movesSkip(){
+  if (!S) return;
+  S.flags['story.tut_moves'] = 'skipped';
+  movesLes.hitDue = false;
+  save();
+  lessonHide();
+}
+function movesShow(id){
+  let line = id;
+  if (id === 'M2') line = movesM2();
+  if (id === 'M4') {
+    const mv = plainPowerMove();
+    movesLes.plain = mv ? mv.name : '';
+    line = mv ? 'M4p' : 'M4n';
+  }
+  const holes = movesHoles(line === 'M4p' || line === 'M4n' ? 'M4' : line);
+  const buttons = [];
+  if (line === 'M4p' || line === 'M4n') buttons.push([TCM.B2, () => { movesMarkP1(); lessonHide(); }]);
+  else if (line === 'M6' || line === 'M7') {
+    buttons.push([TCM.B2, () => { if (line === 'M6') movesMarkP2(); else movesMarkP3(); lessonHide(); }]);
+    buttons.push([TCM.B3, () => openTypeChart()]);
+  } else if (line === 'M5') buttons.push([TCM.B1, () => movesShow('M6')]);
+  else if (line === 'M1') buttons.push([TCM.B1, () => movesShow('M2')]);
+  else if (line !== 'M3') buttons.push([TCM.B1, () => movesShow('M3')]);
+  const pass = line === 'M3' || line === 'M4p' || line === 'M4n';
+  lessonCard({ lesson: 'moves', id: line, text: TCM[line], soft: false, pass: pass, adv: pass ? 'tap' : 'next', holes: holes, buttons: buttons, skip: movesSkip });
+  if (line === 'M7') movesLes.m7At = movesLes.chooseN;
+}
+function maybeMovesLesson(){
+  if (!S || !battle || !battle.on || battle.kind !== 'wild' || battle.coop) return;
+  if (battle.state !== 'CHOOSE') return;
+  if (battle.q && battle.q.length) return;
+  if (tut.on || unlock.on) return;
+  const st = S.flags['story.tut_moves'];
+  if (!tipsOn()) {
+    if (st === 'armed' || st === 'p1' || st === 'p2') { S.flags['story.tut_moves'] = 'quiet'; save(); }
+    return;
+  }
+  if (st !== 'armed' && st !== 'p1' && st !== 'p2') return;
+  if (S.flags['story.tut_moves_hit'] && !movesLes.hitDue) movesLes.m7done = true;
+  const later = movesLes.p1At !== movesLes.chooseN && movesLes.m7At !== movesLes.chooseN;
+  if ((st === 'p1' || st === 'p2') && movesLes.hitDue && !movesLes.m7done && later) { movesShow('M7'); return; }
+  if (st === 'armed') { movesShow('M1'); return; }
+  if (st === 'p1' && later) { movesShow('M5'); return; }
+  if (st === 'p2' && movesLes.hitDue && !movesLes.m7done && later) { movesShow('M7'); return; }
+}
+function typeChartSub(atk){
+  const d = TYPE_CHART[atk] || {}, two = [], half = [], zero = [];
+  Object.keys(d).forEach(k => { if (d[k] === 2) two.push(k); else if (d[k] === 0.5) half.push(k); else if (d[k] === 0) zero.push(k); });
+  let s = '2x ' + two.join(', ') + ' / \u00bd ' + half.join(', ');
+  if (zero.length) s += ' / 0 ' + zero.join(', ');
+  return s;
+}
+function openTypeChart(){
+  const items = Object.keys(TYPE_CHART).map(atk => ({ label: atk, sub: typeChartSub(atk), type: atk, hold: true, value: atk }));
+  items.push({ label: 'PLAIN', sub: TCM.CHP, type: 'PLAIN', hold: true, value: 'PLAIN' });
+  return openSheet(TCM.CH, items, 'BACK');
+}
+function openTutorialChooser(){
+  if (!S) return;
+  openSheet(TCM.SET, [
+    { label: TCM.SO1, sub: TCM.SS1, value: 'tour' },
+    { label: TCM.SO2, sub: TCM.SS2, value: 'care' },
+    { label: TCM.SO3, sub: TCM.SS3, value: 'moves' },
+    { label: TCM.SO4, sub: TCM.SS4, value: 'chart' }
+  ], 'BACK').then(v => {
+    if (v === 'tour') replayTutorial();
+    else if (v === 'care') replayCareWalk();
+    else if (v === 'moves') replayMovesLesson();
+    else if (v === 'chart') openTypeChart();
+  });
+}
+function replayCareWalk(){
+  if (!S || !pet() || scene || (battle && battle.on) || tut.on) return;
+  if (unlock.on && unlock.id) { unlock.held = unlock.id; unlockClose(); }
+  closeSettings();
+  showTab('walk');
+  careLes.replay = true; careLes.replayStep = 'C2'; careLes.phase = 'paused';
+  if (!trayOpen()) openPartnerTray(); else careOnTrayOpen();
+}
+function replayMovesLesson(){
+  if (!S) return;
+  S.flags['story.tut_moves'] = 'armed';
+  delete S.flags['story.tut_moves_hit'];
+  delete S.flags['story.tut_moves_n'];
+  movesLes.hitDue = false; movesLes.m7done = false; movesLes.p1At = -1; movesLes.m7At = -1; movesLes.plain = '';
+  save();
+  toast(TCM.MR);
 }
 /* Unlock tips (D180). One card on #tutLayer, after WALK has been quiet for 600 ms. story.unlock_<id> is set when the card is shown. */
 const UNLOCKS = {
@@ -1620,6 +2112,8 @@ function unlockCalm(t){
 }
 function unlockPump(t){
   if (!S || unlock.on || tut.on) return;
+  // The care walk owns the layer from the moment it is armed until the door act leaves that state.
+  if (S.flags['story.tut_care'] === 'armed') return;
   if (!tipsOn()) { unlock.q = []; unlock.held = null; unlock.since = 0; return; }
   // Drop a queued grow-up tip once the partner can no longer grow up (already grown, or never the partner).
   const lead = pet();
@@ -3770,9 +4264,11 @@ function earlyWalk(){
   const n = (+S.flags['story.early_steps'] || 0) + 1;
   S.flags['story.early_steps'] = n;
   const nm = petName(p);
+  careLes.holdEarly = careCardUp();
   if (n === 1) toast(nm + ' trots along. The east path leads out of town.');
   else if (n === 8) toast('Keep walking. Wild Walklings hide in the grass.');   /* Design's approved green copy (Oct 15), both layouts */
   else if (n === 16 && !S.flags['story.rival1_done']) toast('Rook is waiting by the east gate.');
+  careLes.holdEarly = false;
   if (n >= 16) S.flags['story.early_done'] = true;
   if (n === 1 || n === 8 || n === 16) save();
 }
@@ -3798,6 +4294,7 @@ function onLand(){
   const wp = warpAt(x, y);
   if (wp && needMet(wp.need)) {
     if (lanternHold() && LANTERN_ROOMS[CUR.id]) { blockLanternExit(); return; }   // the mat stays shut until the party rests
+    if (wp.id === 'lodge_mat' && CUR && CUR.id === 'hm_lodge_in' && S.flags['story.tut_care'] === 'armed') careLes.door = true;
     if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return;
   }
   const pk = objAt(x, y, o => o.kind === 'pickup');
@@ -4512,9 +5009,12 @@ function settleHop(){
   hopSettling = false;
 }
 function warpTo(at, after){
-  if (fade.busy) return; fade.busy = true; fade.t0 = now(); settleHop(); clearMoves();
+  if (fade.busy) return;
+  const door = careLes.door; careLes.door = false;
+  if ((careLes.phase === 'c1' || careLes.phase === 'act') && !door) careFallback('warp');
+  fade.busy = true; fade.t0 = now(); settleHop(); clearMoves();
   setTimeout(() => { arriveAt(at); }, FADE_MS / 2);
-  setTimeout(() => { fade.busy = false; if (after) after(); }, FADE_MS);
+  setTimeout(() => { fade.busy = false; if (after) after(); if (door) careDoorLand(); }, FADE_MS);
 }
 let musicHold = false;   // closeBattle plays the return loop itself (after stingers); a wipe's arriveAt must not start it early
 function arriveAt(at){
@@ -4531,6 +5031,7 @@ function arriveAt(at){
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
 }
 function enterDoor(dr){
+  if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
   if (dr.need && !needMet(dr.need)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
   if (dr.to && WORLD[dr.to]) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
@@ -5024,15 +5525,16 @@ function drawMap(t){
   const drawFollower = () => {               // the partner, one tile behind (K.3); Tired = slower, lower bob
     const fx = Math.round(fol.fx * TS - cx) - 1, fy = Math.round(fol.fy * TS - cy) - 2 + (isFainted(p) ? 1 : 0);
     if (fx < -18 || fy < -18 || fx > VW || fy > VH) return;
-    const hop = careHop(t);
+    const hop = careHop(t) + lessonHop(t);
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(fx + 3, Math.round(fol.fy * TS - cy) + 14, 12, 2);
     const bob = followerBob(t);
+    lessonDraw.hop = hop; lessonDraw.y = fy - bob - hop;
     if (auraMapOk()) drawAura(g, p, fx, fy - bob - hop, t, 0, 'back', '');
     g.drawImage(petSpr(p)[(t % 3000) < 120 ? 'b' : 'n'], fx, fy - bob - hop);
     if (p.accessory) drawPetAccessory(g, p.accessory, fx, fy - bob - hop, isFaded(p), petSpr(p).n);
     if (auraMapOk()) drawAura(g, p, fx, fy - bob - hop, t, 0, 'front', '');
     const needUp = !!(partnerNeed(p) && !scene && !(battle && battle.on));
-    if (earlyBuddy() && (needUp || t < careReply.until)) needHeartSkipped = true;
+    if (earlyBuddy() && (needUp || t < careReply.until || lessonBalloon(t))) needHeartSkipped = true;
     if (earlyBuddy() && !needHeartSkipped && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob - hop);
     grassOver(fol.fx, fol.fy);
   };
@@ -5119,6 +5621,14 @@ function drawNeedBubble(g, cx, cy, t){
     if (careReply.glyph) drawGlyph(g, careReply.glyph, bx, by - hop);
     if (careReply.sparks && !prefersReduced()) { drawSparkW(g, bx - 2, by + 2); drawSparkW(g, bx + 8, by - 2); }
     needBubbleLast = { shown: false, reply: careReply.glyph || (careReply.sparks ? 'spark' : ''), x: bx, y: by - hop, hop: hop, shift: 0 };
+    return;
+  }
+  if (lessonBalloon(t)) {
+    const age = t - careLes.t0;
+    const rise = prefersReduced() || age >= 160 ? 0 : Math.round(2 * (1 - needEase(age / 160)));
+    const gy = by + rise;
+    drawGlyphRim(g, 'emote_hungry', bx, gy, '');
+    needBubbleLast = { shown: true, glyph: 'emote_hungry', level: 1, kind: 'food', x: bx, y: gy, shift: 0, homeX: bx, homeY: by, staged: true, hop: lessonHop(t) };
     return;
   }
   const need = partnerNeed(p);
@@ -6499,6 +7009,7 @@ const ABORT = { abort: true };
 function runScene(id, ctx){ const steps = sceneSteps(id); if (!steps) return Promise.resolve(); return runSteps(steps, Object.assign({ id, beat: id }, ctx || {})); }
 async function runSteps(steps, ctx = {}){
   if (scene || !S) return;
+  if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('scene');
   closePartnerTray();
   clearUiReturn();
   scene = { id: ctx.id || '', npc: ctx.npc || null, who: '', pending: [], view: { flags: {}, name: undefined, pet: ctx.viewPet || null, nick: undefined },
@@ -6546,7 +7057,12 @@ function endScene(){
   scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
   $('#ovScene').hidden = true; $('#ovScene').classList.remove('top'); document.body.classList.remove('scene-on'); document.body.classList.remove('price-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
   clearCamBias();
-  lockTabs(false); placeFollower(partnerAt); renderKeeperName(); updateHUD(); save();
+  lockTabs(false); placeFollower(partnerAt); renderKeeperName(); updateHUD();
+  if (sc.id === 'starter' && S && S.flags['story.starter_received'] && !S.flags['story.tut_care']) {
+    S.flags['story.tut_care'] = 'armed';
+    S.flags['story.tut_moves'] = 'armed';
+  }
+  save();
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
   for (const o of CUR.objs) if (o.kind === 'trigger' && !(Math.abs(o.x - S.world.x) + Math.abs(o.y - S.world.y) <= (o.r || 0))) delete mapRT.trig[o.id];
   if (sc.deferRespawn) respawnAfterWipe();
@@ -8065,6 +8581,8 @@ function openBattle(o){
   const lead = leadPet();
   if (!lead) { noBattleToast(); return false; }
   closePartnerTray();
+  if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('battle');
+  if (o.kind === 'wild' && !o.coop) noteMovesBattle();
   clearUiReturn();
   clearMoves(); closeSheet(null);
   const B = battle; B.id++;
@@ -8161,6 +8679,8 @@ async function battleIntro(id){
 }
 function closeBattle(){
   const B = battle; if (!B.on) return;
+  if (tut.lesson === 'moves') lessonHide();
+  noteMovesCap();
   paintWinCosmetic([]);
   if (B.result === 'befriended' && B.newId && !$('#encName').hidden) {   // optional nickname (skip = species name); never read while the row is hidden (a faded one is named later)
     const p = petById(B.newId), nk = cleanNick($('#encNick').value);
@@ -8647,6 +9167,8 @@ function toChoose(){
   B.foePlan = aiPick();                                       // the AI decides before (and without seeing) the player's action
   $('#btMsg').textContent = 'What should ' + petName(p) + ' do?';
   renderBattleCards(); setPanel('acts');
+  movesLes.chooseN = (movesLes.chooseN || 0) + 1;
+  maybeMovesLesson();
 }
 
 /* --- AI (§6) --- */
@@ -8692,6 +9214,8 @@ function aiPick(){
 /* --- turn resolution (§1) --- */
 async function resolveTurn(action){
   const B = battle, id = B.id; if (B.state !== 'CHOOSE') return;
+  if (tut.lesson === 'moves' && tut.id === 'M4') movesMarkP1();
+  if (tut.lesson === 'moves') lessonHide();
   B.state = 'RESOLVE'; B.turn++; setPanel('busy');
   if (B.group) {
     if (action.kind !== 'fight') {
@@ -8850,7 +9374,7 @@ async function doMove(side, mid, id){
     const att = mine ? myBattler() : foeBattler(f), def = mine ? foeBattler(f) : myBattler();
     const r = damage({ power: mv.power, moveType: mv.type, att, def, rng: B.rng });
     const key = mid + '>' + def.type; if (S.dex.hits[key] !== r.mult) { S.dex.hits[key] = r.mult; }   // type hint seen
-    if (r.mult === 0) { step('sfx', { name: 'hitWeak' }); step('text', { s: "It didn't do a thing to " + tName + '...' }); await play(id); return; }
+    if (r.mult === 0) { step('sfx', { name: 'hitWeak' }); step('text', { s: "It didn't do a thing to " + tName + '...' }); noteMovesHit(0); await play(id); return; }
     let berry = false;
     const whoKey = mine ? barWho(f) : 'me';
     const hpFrom = mine ? f.hp : hpOf(p);
@@ -8876,6 +9400,7 @@ async function doMove(side, mid, id){
     if (berry) step('sfx', { name: 'heal' });
     if (r.crit) step('text', { s: 'A lucky hit!' });
     if (r.mult > 1) step('text', { s: 'That hit hard!' }); else if (r.mult < 1) step('text', { s: 'It barely felt that...' });
+    if (r.mult > 1 || r.mult < 1) noteMovesHit(r.mult);
     if (berry) step('text', { s: petName(p) + "'s Soft Berry eases the hit!" });
     await play(id); if (!alive(id)) return;
     const tgtDown = mine ? f.hp <= 0 : hpOf(p) <= 0;
@@ -11874,7 +12399,9 @@ function paintWinCosmetic(lines){
   el.hidden = !text;
 }
 async function finish(result, id){
-  const B = battle, t = tr(); B.result = result; B.state = 'END'; setPanel('busy');
+  const B = battle, t = tr();
+  if (tut.lesson === 'moves') lessonHide();
+  B.result = result; B.state = 'END'; setPanel('busy');
   if (B.q.length && alive(id)) await play(id);
   if (result === 'run') { /* toast on close */ }
   else if (result === 'fled') { step('fx', { who: 'foe', kind: 'flee', dur: 600 }); await say('It wandered off...', id); }
@@ -12140,10 +12667,10 @@ function openSheet(title, items, cancel){
       const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sh-item' + (it.cls ? ' ' + it.cls : ''); b.disabled = !!it.disabled;
       if (it.art && ITEM_ART[it.art]) { const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico'; ctx(ico).drawImage(keeperCanvas(ITEM_ART[it.art]), 0, 0); b.appendChild(ico); b.classList.add('has-ico'); }
       else if (it.pet) { const p = it.pet, ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico'; spriteCanvas(ico, spi(p), p.stage, 'n', isFaded(p), p.accessory); b.appendChild(ico); b.classList.add('has-ico'); }
-      const l = document.createElement('span'); l.className = 'sh-l'; l.textContent = it.label; b.appendChild(l);
+      const l = document.createElement('span'); l.className = 'sh-l' + (it.type ? ' type-chip t-' + String(it.type).toLowerCase() : ''); l.textContent = it.label; b.appendChild(l);
       if (it.sub) { const s2 = document.createElement('span'); s2.className = 'sh-s'; s2.textContent = it.sub; b.appendChild(s2); }
       if (it.hp != null) { const bar = document.createElement('span'); bar.className = 'sh-hp'; const i = document.createElement('i'); i.style.width = clamp(it.hp * 100, 0, 100) + '%'; if (it.hp < 0.25) i.className = 'warn'; bar.appendChild(i); b.appendChild(bar); }
-      b.addEventListener('click', () => { if (b.disabled) return; sfx('tap'); closeSheet(it.value); });
+      b.addEventListener('click', () => { if (b.disabled) return; sfx('tap'); if (it.hold) return; closeSheet(it.value); });
       list.appendChild(b);
     });
     const c = $('#shCancel'); c.hidden = !cancel; c.textContent = cancel || 'BACK';
@@ -12167,7 +12694,7 @@ function battleAct(act){
     $('#btMsg').textContent = 'Target: ' + foeName(curFoe());
     return;
   }
-  if (act === 'fight') setPanel('fight');
+  if (act === 'fight') { setPanel('fight'); if (tut.lesson === 'moves' && tut.id === 'M3') movesShow('M4'); }
   else if (act === 'befriend') openBefriendBar();
   else if (act === 'run') resolveTurn({ kind: 'run' });
   else if (act === 'swap') swapSheet(false).then(v => { if (v && B.on && B.state === 'CHOOSE') resolveTurn({ kind: 'swap', id: v }); });
@@ -14284,7 +14811,13 @@ let trayPartyKey = '';
 const trayOpen = () => { const el = $('#careTray'); return !!(el && !el.hidden); };
 function closePartnerTray(){
   const el = $('#careTray'); if (!el || el.hidden) return;
+  const resumeId = tut.lesson === 'care' ? String(tut.id || '').replace(/x$/, '') : '';
   el.hidden = true; document.body.classList.remove('ct-open');
+  if (tut.lesson === 'care' && (careLes.phase === 'tray' || careLes.replay)) {
+    if (careLes.replay && resumeId) careLes.replayStep = resumeId;
+    lessonHide();
+    careLes.phase = 'paused';
+  }
 }
 function paintTrayBadge(c, q){
   const g = ctx(c); g.clearRect(0, 0, 5, 5);
@@ -14332,6 +14865,7 @@ function openPartnerTray(){
   $('#careTray').hidden = false;
   document.body.classList.add('ct-open');
   renderPartnerTray();
+  careOnTrayOpen();
 }
 function trayPick(id){
   const before = pet();
@@ -14382,7 +14916,7 @@ function bindInput(){
   $('#setFollower').addEventListener('click', () => { toggleFollower(); renderFollowerBtn(); });
   const setEffects = $('#setEffects'); if (setEffects) setEffects.addEventListener('click', () => cycleEffects());
   $('#setLook').addEventListener('click', () => { sfx('tap'); closeSettings(); openLook(false); });
-  const setTut = $('#setTutorial'); if (setTut) setTut.addEventListener('click', () => { sfx('tap'); replayTutorial(); });
+  const setTut = $('#setTutorial'); if (setTut) setTut.addEventListener('click', () => { sfx('tap'); openTutorialChooser(); });
   const setTips = $('#setTips'); if (setTips) setTips.addEventListener('click', () => toggleTips());
   const setTipsReplay = $('#setTipsReplay'); if (setTipsReplay) setTipsReplay.addEventListener('click', () => replayTips());
   const unlockShow = $('#unlockShow'); if (unlockShow) unlockShow.addEventListener('click', () => { sfx('tap'); unlockShowMe(); });
@@ -14632,7 +15166,7 @@ function bindInput(){
   window.addEventListener('keyup', e => { if (sceneKeyEat && (e.key === ' ' || e.key === 'Enter')) { e.preventDefault(); sceneKeyEat = false; } });
   window.addEventListener('keydown', e => {
     if (tut.on && !(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && (e.key === 'Escape' || e.key === 'Backspace')) { e.preventDefault(); skipTutorial(true); return; }
-    if (tut.on && KEYS[e.key]) { e.preventDefault(); return; }
+    if (tut.on && !tut.soft && KEYS[e.key]) { e.preventDefault(); return; }
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (shopKey(e)) { e.preventDefault(); return; }
     if (window.PPMinigames && PPMinigames.keyDown(e)) { e.preventDefault(); return; }
@@ -14720,7 +15254,7 @@ function frame(t){
   }
   if (S && screen === 'walk') { syncMapBtn(); syncJournalBtn(); syncQuestBtn(); syncSide(); syncWalkTip(); }
   if (S && window.PPClock) { renderClockChip(); noteWhereMinute(); }
-  if (S) unlockWatch(t);
+  if (S) { unlockWatch(t); carePump(t); }
   if (!$('#ovMap').hidden) drawMapOverlay(t);
   if (!$('#ovLook').hidden) drawLookPreview(t);
   if ($('#ovWardrobe') && !$('#ovWardrobe').hidden) drawWardPreview(t);
@@ -15232,7 +15766,8 @@ function boot(){
   api.cueChip = () => DEBUG ? (cueChipLast ? { x: cueChipLast.x, y: cueChipLast.y, dir: cueChipLast.dir, dist: cueChipLast.dist, shown: cueChipLast.shown, tracked: !!cueChipLast.tracked, box: cueChipLast.box || null } : null) : undefined;
   api.cueChips = () => DEBUG ? cueChipAll.map(c => ({ x: c.x, y: c.y, dir: c.dir, dist: c.dist, shown: c.shown, tracked: !!c.tracked, box: c.box || null })) : undefined;
   api.cuePass = () => DEBUG ? (cuePassLast ? { dir: cuePassLast.dir, x: cuePassLast.x, y: cuePassLast.y } : null) : undefined;
-  api.needBubble = () => DEBUG ? { bubble: needBubbleLast ? Object.assign({}, needBubbleLast) : null, heartSkipped: !!needHeartSkipped } : undefined;
+  api.needBubble = () => DEBUG ? { bubble: needBubbleLast ? Object.assign({}, needBubbleLast) : null, heartSkipped: !!needHeartSkipped, lessonHop: lessonDraw.hop, lessonY: lessonDraw.y } : undefined;
+  api.lesson = () => DEBUG ? { care: S && S.flags['story.tut_care'] || '', step: S && S.flags['story.tut_care_step'] || '', moves: S && S.flags['story.tut_moves'] || '', hit: !!(S && S.flags['story.tut_moves_hit']), n: +(S && S.flags['story.tut_moves_n'] || 0), phase: careLes.phase, balloon: !!careLes.balloon, hop: lessonDraw.hop, y: lessonDraw.y, card: tut.lesson ? tut.id : '', soft: !!tut.soft, q: battle && battle.q ? battle.q.length : 0, age: careLes.t0 ? now() - careLes.t0 : 0, c1: careLes.c1At ? now() - careLes.c1At : 0 } : undefined;
   api.careReply = () => DEBUG ? { glyph: careReply.glyph, hop: !!careReply.hop, sparks: !!careReply.sparks, left: Math.max(0, careReply.until - now()) } : undefined;
   api.standingStill = () => DEBUG ? standingStill() : undefined;
   api.lanternRestFlag = () => DEBUG && scene && scene.view ? (scene.view.flags['lantern.rest'] || null) : undefined;
