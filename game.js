@@ -14199,7 +14199,7 @@ function bindInput(){
       if (scene || fade.busy) { /* nothing */ }
       else if (window.PPNet && PPNet.tapTile(tx, ty)) { closePartnerTray(); wild.chase = null; }
       else if (w && pet()) { closePartnerTray(); if (wild.chase !== w.id) sfx('notice'); wild.chase = w.id; walk.target = { x: w.x, y: w.y }; walk.path = walk.arrive = null; dropAim(); }   // tap a creature: greedy chase, not BFS
-      else if (standingStill() && followerAt(tx, ty)) { clearMoves(); openPartnerTray(); }                                      // standing still: the care tray (D542)
+      else if (standingStill() && followerAt(tx, ty)) { clearMoves(); if (trayOpen()) closePartnerTray(); else openPartnerTray(); }   // standing still: the care tray toggles (D542, D578)
       else if (o) { closePartnerTray(); wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
       else if (!solid(tx, ty) && warpBlocked(tx, ty)) { closePartnerTray(); wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: tx, y: ty }; }   // gated warp: same deny as before, never step on it
       else { closePartnerTray(); startTapWalk(tx, ty, solid(tx, ty)); }
