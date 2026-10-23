@@ -36,6 +36,12 @@ Next free id is D626.
 
 Settled calls are in archive/DECISIONS_SETTLED.md.
 
+TUTORIALS_CARE_MOVES D584-D598 are recorded in the archive (Oct 23, 2026, design 6a6fc26). D584 and D592 are red, settled YES by Vincent (1:56 PM ET). The yellows D585, D586, D589 and D593-D595 are settled YES by Vincent on the default, after a unanimous team vote. The greens D587, D588, D590, D591 and D596-D598 were settled on the default by the Supervisor.
+
+TOWN_CHATTER D579-D583 are recorded in the archive. D580-D582 (green) were settled on the default by the Supervisor (Oct 23, 2026). D579 and D583 (yellow) were settled on the default by Vincent (Oct 23, 2026, 3:16 PM ET).
+
+Old-decision triage yellows D1, D33, D35, D36, D37 (the region-map row), D58 and D61 are recorded in the archive (yellow, settled keep as built by team vote, recorded by the Supervisor, Oct 23, 2026). D32, D72 and D161 stay open.
+
 MOVES_V2 D522-D533 and D564-D569 are recorded in the archive (Oct 23, 2026, design 0422a16). D522-D525 are red, settled YES by Vincent; D526-D529 settled YES; D530-D533 green, settled by the Supervisor on the default; D564-D569 settled by Vincent on the default.
 
 D577 Market Row frame-budget test (red): Vincent, Oct 23, 2026, 10:23 AM ET: move it to an opt-in slow lane, out of the main run; 0.3 ms budget unchanged.

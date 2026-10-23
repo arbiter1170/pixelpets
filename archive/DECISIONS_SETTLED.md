@@ -544,6 +544,26 @@ Recorded from design MOVES_V2 v0.2.5 (design commit 0422a16), without renumberin
 - **D568 (Oct 23, 2026, 8:39 AM ET, yellow, SETTLED by Vincent, on the default (unanimous QA and PixelPets)).** MOVES_V2. Battle step queue: HP lands at contact + hit-stop, ghost bar 250 ms + 300 ms ease, one tap skips to the next text. No rule, roll or outcome change.
 - **D569 (Oct 23, 2026, 8:39 AM ET, yellow, SETTLED by Vincent, on the default (unanimous QA and PixelPets)).** MOVES_V2. Floating damage numbers with `CUE_DIGITS` on the canvas only (the HP card stays digit-free). OFF: none.
 
+## TUTORIALS_CARE_MOVES (calls settled Oct 23, 2026)
+
+Recorded from design TUTORIALS_CARE_MOVES v0.2.1 (design commit 6a6fc26), without renumbering. D584-D598 were reserved. Vincent approved both tutorials with every red and yellow yes (Oct 23, 2026, 1:56 PM ET, by voice, relayed by the Supervisor). Save stays `pixelpets.save.v2` with `v` 2. The only new saved data is five additive `S.flags` keys: `story.tut_care`, `story.tut_care_step`, `story.tut_moves`, `story.tut_moves_hit` and `story.tut_moves_n`.
+
+- **D584 (Oct 23, 2026, red, SETTLED YES, Vincent, 1:56 PM ET).** TUTORIALS_CARE_MOVES. After the starter moment, the first Lodge exit stops for the partner's staged hungry act and the care walk (section 2).
+- **D585 (Oct 23, 2026, yellow, SETTLED YES on the default, Vincent, 1:56 PM ET, team vote unanimous).** TUTORIALS_CARE_MOVES. On a first run with the care walk armed, the opening tour's T5-T7 are look-only (NEXT), with their text unchanged; the first real FEED, PLAY and REST happen in the tray.
+- **D586 (Oct 23, 2026, yellow, SETTLED YES on the default, Vincent, 1:56 PM ET, team vote unanimous).** TUTORIALS_CARE_MOVES. The hungry act is staged (the balloon and two hops are drawn by the lesson); FOOD and every care number are untouched.
+- **D587 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. Vincent's "joy" is the JOY bar that PLAY fills and "sleep" is REST; no tray button is renamed or added.
+- **D588 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. Nudges at 8 s and 20 s; a quiet fallback at 45 s, 24 steps or any warp, scene, battle or tab change; tray steps resume on the next tray open.
+- **D589 (Oct 23, 2026, yellow, SETTLED YES on the default, Vincent, 1:56 PM ET, team vote unanimous).** TUTORIALS_CARE_MOVES. Tips off is quiet mode for both lessons (the act plays once, one toast, no cards).
+- **D590 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. Both lessons are armed only at the end of the starter scene on the new build, so no old save is ever forced through either one.
+- **D591 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. One card at a time with the PLAYTEST_FIXES_3 party tips, each waiting for the other; the care walk never touches the party row or its flags.
+- **D592 (Oct 23, 2026, red, SETTLED YES, Vincent, 1:56 PM ET).** TUTORIALS_CARE_MOVES. The moves-and-types lesson shows coach cards in the holder's first wild battle, never in Rook's or any holder battle.
+- **D593 (Oct 23, 2026, yellow, SETTLED YES on the default, Vincent, 1:56 PM ET, team vote unanimous).** TUTORIALS_CARE_MOVES. The lesson is split over turns (types on turn 1, STATUS and moods next, the hit card after the first hard or soft hit); unfinished parts carry to later wild battles, and it ends quietly after 4.
+- **D594 (Oct 23, 2026, yellow, SETTLED YES on the default, Vincent, 1:56 PM ET, team vote unanimous).** TUTORIALS_CARE_MOVES. A read-only TYPE CHART sheet (shared sheet, 8 rows plus PLAIN, built from TYPE_CHART), opened from the lesson and from Settings.
+- **D595 (Oct 23, 2026, yellow, SETTLED YES on the default, Vincent, 1:56 PM ET, team vote unanimous).** TUTORIALS_CARE_MOVES. The Settings Tutorial row opens a chooser (Opening tour, Care walk, Moves and types, Type chart).
+- **D596 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. The M4 line is picked at run time from the partner's moves (whether it has a PLAIN move with power), so the lesson works after MOVES_V2.
+- **D597 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. The words in section 6, as written and wording-checked.
+- **D598 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. Early-walk toasts wait while a care card is up and show after it.
+
 ## Market Row frame budget (settled Oct 23, 2026)
 
 - **D577 (Oct 23, 2026, 10:23 AM ET, Vincent, red, SETTLED).** Market Row frame-budget test. Vincent, Oct 23, 2026, 10:23 AM ET: move it to an opt-in slow lane, out of the main run; 0.3 ms budget unchanged.
