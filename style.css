@@ -454,9 +454,10 @@ body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-b
 .q-side{color:var(--w)}
 .look-btns{margin-top:6px;flex:0 0 auto}
 .look-btns.one{grid-template-columns:1fr}
-/* The intro picker is taller than a phone. DONE stays on screen. The name row is hidden until a later screen asks. */
+/* The intro picker is taller than a phone. DONE stays on screen. The name row is hidden until a later screen asks.
+   The selected ring is 5px outside the 44px target. Padding keeps that ring inside the scroll, on every side. */
 #ovLook .look-card{height:100%;max-height:100%;overflow:hidden}
-#ovLook .look-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#ovLook .look-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px}
 #lookNameRow[hidden]{display:none}
 
 /* Stitch & Lantern. DONE stays on screen. The card grid scrolls. */

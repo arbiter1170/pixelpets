@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-22 22:59 ET: The first look swatch keeps its ring (build 20261022-2259)
+
+- What changed and why: Review of #150. The no-hat picture in the test was read from `git show HEAD`, which becomes this branch after merge and would fail every later run. The baseline is now `tests/fixtures/keeper_130f118.js`, an exact copy of `keeper.js` at main `130f118`. The first column of swatches and look tiles sat on the edge of the scrolling list, so the selected ring was cut off. The look list now has 6 px of padding on every side. The 8 px label gaps stay. Swatches stay 44 px. Nothing outside Change look moved. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `style.css`, `tests/creator_clip.spec.js`, `tests/fixtures/keeper_130f118.js`, `tests/README.md`, `README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of `fe28d44` and main `130f118`. Build `20261022-2259`. `python3 tools/bump_build.py --check` exit 0.
+- Tests run and result (widths, checks): `npm run test:agent`. PP_TEST RESULT: PASS exit=0 passed=1082 failed=0 flaky=1 skipped=126 time=1109s. RTDB_RULES RESULT: PASS. The flaky check is the Market Row budget at 390; it passed on retry. `tests/creator_clip.spec.js` passed at 320, 375 and 390 with no retry, including the 1280×800 window. Console errors: a spec fails the run on a console error. Scans passed inside that run.
+- Decisions made (colour + reasoning): Green review fix on the same branch. No new D or Q id. D414 stays open.
+- Anything left unfinished: the Supervisor merges. The design checker result is unchanged because `keeper.js` was not edited.
+
 ## 2026-10-22 21:55 ET: Look labels stay clear, and a hat covers the hair above the brim (build 20261022-2155)
 
 - What changed and why: In Change look, the labels HAIR COLOUR, OUTFIT COLOUR, ACCENT and ACCESSORY were cut by the ring of the row above. Each label now has clear space above it. The name labels that share that class use the same line box. A cap and a beanie cover the hair above the brim (D414 F3). The beanie is the v5 art: the dome follows the accent, and the cuff and pom follow the outfit. Townsfolk who wear a cap get the same clip, including Hollis. Looks with no hat draw the same pixels as before. Save stays `pixelpets.save.v2` with `v` 2. No new saved field and no migrator. The rest of D414 is not in this build.

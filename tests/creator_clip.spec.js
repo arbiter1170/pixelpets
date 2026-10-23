@@ -4,7 +4,6 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
-const { execFileSync } = require('child_process');
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
@@ -18,6 +17,8 @@ const FACINGS = ['down', 'right', 'up', 'left'];
 const HATS = ['cap', 'beanie'];
 const NO_HAT = ['none', 'glasses', 'bow', 'scarf', 'sash', 'satchel', 'goggles', 'lanyard'];
 const HOLLIS = { skin: '1', hair: 'curls', hairCol: 'c', outfit: 'vest', outfitCol: 'l', accent: 'w', accessory: 'cap' };
+const RING = 5; // .swatch.on / .preview.on outer box-shadow
+const BASELINE = path.join(__dirname, 'fixtures', 'keeper_130f118.js');
 const V5 = {
   down: ['.......tt.......', '.....rrrrrr.....', '....rrrrrrrr....', '...tttttttttt...'],
   right: ['....tt..........', '....rrrrrr......', '...rrrrrrttt....', '...tttttt.......'],
@@ -68,7 +69,8 @@ function composed(K, look, facing, frame, clip) {
 
 test('a hat clips hair above the brim and every other look matches the build before the rule @w1', () => {
   const now = loadKeeper(fs.readFileSync(path.join(ROOT, 'keeper.js'), 'utf8'));
-  const old = loadKeeper(execFileSync('git', ['show', 'HEAD:keeper.js'], { cwd: ROOT, encoding: 'utf8' }));
+  // Pinned to main 130f118. After this branch merges, HEAD is the new art, so git show HEAD would fail the check below.
+  const old = loadKeeper(fs.readFileSync(BASELINE, 'utf8'));
   const fails = [];
   const bad = (msg) => { if (fails.length < 12) fails.push(msg); else fails.push(''); };
 
@@ -255,11 +257,44 @@ async function assertLabels(page) {
   expect(fit.ward).toBe(0);
 }
 
+async function assertFirstColumnRings(page) {
+  const rows = page.locator('#ovLook .look-scroll .look-row');
+  const n = await rows.count();
+  for (let i = 0; i < n; i++) {
+    const btn = rows.nth(i).locator('button').first();
+    if (await btn.count()) await btn.click();
+  }
+  const fit = await page.evaluate((ring) => {
+    const card = document.querySelector('#ovLook .look-card');
+    const cr = card.getBoundingClientRect();
+    const cs = getComputedStyle(card);
+    const innerLeft = cr.left + parseFloat(cs.borderLeftWidth) + parseFloat(cs.paddingLeft);
+    const innerRight = cr.right - parseFloat(cs.borderRightWidth) - parseFloat(cs.paddingRight);
+    const bad = [];
+    const buttons = [...document.querySelectorAll('#ovLook .look-scroll .swatch, #ovLook .look-scroll .preview')];
+    for (const b of buttons) {
+      const r = b.getBoundingClientRect();
+      const name = b.getAttribute('aria-label') || b.dataset.opt || '';
+      if (r.left - ring < innerLeft - 0.5) bad.push(name + ' left ' + (r.left - ring) + ' < ' + innerLeft);
+      if (r.right + ring > innerRight + 0.5) bad.push(name + ' right ' + (r.right + ring) + ' > ' + innerRight);
+      if (r.width < 44 || r.height < 44) bad.push(name + ' ' + r.width + 'x' + r.height);
+    }
+    const firstOn = [...document.querySelectorAll('#ovLook .look-scroll .look-row')].filter(row => row.offsetParent).every(row => {
+      const b = row.querySelector('button');
+      return !b || b.classList.contains('on');
+    });
+    return { bad, firstOn, n: buttons.length };
+  }, RING);
+  expect(fit.n).toBeGreaterThan(0);
+  expect(fit.firstOn).toBe(true);
+  expect(fit.bad, fit.bad.join('\n')).toEqual([]);
+}
+
 async function shotCard(page, name) {
-  await page.locator('#ovLook .look-lb', { hasText: 'HAIR COLOUR' }).evaluate((el) => {
+  await page.locator('#ovLook .look-lb', { hasText: /^OUTFIT COLOUR$/ }).evaluate((el) => {
     const sc = el.closest('.look-scroll');
     const top = el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop;
-    sc.scrollTop = Math.max(0, top - 8);
+    sc.scrollTop = Math.max(0, top - 16);
   });
   await page.locator('#ovLook .look-card').screenshot({ path: path.join(artifactsDir(), name) });
 }
@@ -324,6 +359,7 @@ async function creatorPass(page, shotName) {
   await boot(page, '');
   await openLook(page);
   await assertLabels(page);
+  await assertFirstColumnRings(page);
   await shotCard(page, shotName);
   await wearAndCancel(page);
 }
