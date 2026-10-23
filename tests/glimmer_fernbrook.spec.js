@@ -264,15 +264,14 @@ test('a worn-out party can skip the tour match, and a loss resumes at stop 4 @w1
     }
     await page.waitForTimeout(70);
   }
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'fb_lantern_in' && !PixelPets.fading, null, { timeout: 15000 });
   const lost = await page.evaluate(() => ({
-    x: PixelPets.state.world.x,
-    y: PixelPets.state.world.y,
+    map: PixelPets.mapInfo.id,
     seal1: PixelPets.state.flags['story.seal1'],
     s3: PixelPets.state.flags['story.tour1_s3'],
     trainer: PixelPets.state.flags['trainer.hall1_fen'],
   }));
-  expect(lost.x).toBe(5);
-  expect(lost.y).toBe(5);
+  expect(lost.map).toBe('fb_lantern_in');
   expect(lost.seal1).toBeUndefined();
   expect(lost.s3).toBe(true);
   expect(lost.trainer).toBeUndefined();

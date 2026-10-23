@@ -127,7 +127,7 @@ test('a first run walks the tour and the care buttons are real', async ({ page }
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('QUEST shows');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
-  await expect(page.locator('#tutLine')).toContainText('WALKLINGS lists');
+  await expect(page.locator('#tutLine')).toContainText('WALKLINGS opens your Party');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('This compass lists everyone you meet');
   expectLayout(await layout(page));

@@ -433,6 +433,25 @@ Recorded from design STARTER_MOMENT v0.2, section 7, without renumbering. D470-D
 - **D480 (Oct 22, 2026, yellow, SETTLED on the default; unanimous vote, Vincent cleared the build, ~10:00 PM ET).** STARTER_MOMENT. The new copy of section 4.b as written: three captions, the hello prompt, three answers, three reactions, the send-off line.
 - **D481 (Oct 22, 2026, green, SETTLED).** STARTER_MOMENT. Tests of section 5 and `specs/starter_moment_check.py`.
 
+## PLAYTEST_FIXES_3 (calls settled Oct 23, 2026)
+
+Recorded from design PLAYTEST_FIXES_3 v0.2 (design commit 2e853ab; QA-3 from 24f784a), without renumbering. D508–D521 were reserved. Save stays `pixelpets.save.v2` with `v` 2. No new saved field. QA-1, QA-2 and QA-3 are green and carry no id. D520 is settled and ships with DESKTOP_FRAME P2 (DF-A), not in this build.
+
+- **D508 (Oct 23, 2026, green, SETTLED as written).** PLAYTEST_FIXES_3. A bed rest sets every party Walkling's energy to 100.
+- **D509 (Oct 23, 2026, yellow, SETTLED YES; unanimous vote on the default).** PLAYTEST_FIXES_3. The paid Lantern bed also fills energy. With nobody hurt it still refills energy for free.
+- **D510 (Oct 23, 2026, yellow, SETTLED 100; unanimous vote on the default).** PLAYTEST_FIXES_3. Fill to 100, not a bounded gain.
+- **D511 (Oct 23, 2026, green, SETTLED as written).** PLAYTEST_FIXES_3. Bed rest gives no care XP, has no cooldown and no daily cap. The PARTNER REST button is unchanged.
+- **D512 (Oct 23, 2026, yellow, SETTLED on the default; unanimous vote).** PLAYTEST_FIXES_3. A loss wakes the team at this region's Lantern House, by the visited / last-rested / Hearthmoor table.
+- **D513 (Oct 23, 2026, Vincent, red, SETTLED NO).** PLAYTEST_FIXES_3. A loss costs no Acorns. Vincent, Oct 23: "A loss costs no acorns, and the team heals on arrival."
+- **D514 (Oct 23, 2026, Vincent, red, SETTLED YES).** PLAYTEST_FIXES_3. The team is healed on arrival and the way out is open. Same Vincent line as D513.
+- **D515 (Oct 23, 2026, green, SETTLED as written).** PLAYTEST_FIXES_3. A lost battle never changes where you last rested. Only REST does.
+- **D516 (Oct 23, 2026, yellow, SETTLED on the default; unanimous vote).** PLAYTEST_FIXES_3. Arrival toast "Back at the {town} Lantern House." and the Lantern tip "Rest at a Lantern to heal your team. Lose a battle and you wake at the closest Lantern House."
+- **D517 (Oct 23, 2026, green, SETTLED as written).** PLAYTEST_FIXES_3. The post-capture picker shows an 18 px Walkling picture at 36 px. Rows stay 52 px.
+- **D518 (Oct 23, 2026, yellow, SETTLED NO; unanimous vote on the default).** PLAYTEST_FIXES_3. The battle swap sheet is unchanged.
+- **D519 (Oct 23, 2026, yellow, SETTLED on the default; unanimous vote).** PLAYTEST_FIXES_3. The WALKLINGS tour line, plus three party tips (the party, its moves, and moving one up). A save with two or more Walklings sees them once. Tips off sees none.
+- **D520 (Oct 23, 2026, yellow, SETTLED on the default; unanimous vote).** PLAYTEST_FIXES_3. Desktop nav order. Not in this build. It ships with DESKTOP_FRAME P2 (DF-A).
+- **D521 (Oct 23, 2026, green, SETTLED as written).** PLAYTEST_FIXES_3. The WALKLINGS header reads "Party n/6".
+
 ## Restatements moved from OPEN_DECISIONS (Oct 21, 2026)
 
 - Restatement of D347 (was in OPEN_DECISIONS Settled): - **D347 (Oct 20, 2026, Vincent, 11:34 AM ET, SETTLED BY VINCENT, on the defaults).** HUSHWATER species roster. B0 is built on this branch: a species id this client does not know stays in the party or the box, keeps its moves and journal keys, and draws a fallback picture. The journal names it ???. It cannot lead a battle and SWAP skips it. The 12 forms are in this build: skink, otter, owl, and snail, three stages each. Out there is 57. The save form table ends at snail (60 form ids). D357 is green (Design): save stays `pixelpets.save.v2` with `v` 2. No new pet field. B1 and E1–E4 are built on this branch. B2 is built on this branch. D346 stays the Lizzy placeholder, settled and not built. D355, D356 and D362 are green and settled. D363-D379 and D390-D398 are reserved: WORLD_CLOCK_TOWN (design). D397 and D398 are settled green. Next free id is D399. P1 world clock v1 is on this branch. P2 Market Row is on this branch. P3 wardrobe v1 is on this branch. P4 stores are on this branch.
