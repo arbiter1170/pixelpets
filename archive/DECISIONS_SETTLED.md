@@ -564,6 +564,19 @@ Recorded from design TUTORIALS_CARE_MOVES v0.2.1 (design commit 6a6fc26), withou
 - **D597 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. The words in section 6, as written and wording-checked.
 - **D598 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. Early-walk toasts wait while a care card is up and show after it.
 
+## TOWN_LANDMARKS (calls settled Oct 23, 2026)
+
+Recorded from design TOWN_LANDMARKS v0.1.1 (design commit 520ee8a), without renumbering. D612-D619 were reserved. Vincent saw the previews and said yes, with red D617 YES (Oct 23, 2026, 3:16 PM ET, relayed by the Supervisor); AGENTS.md rules 9 and 10 apply. Save stays `pixelpets.save.v2` with `v` 2. The only new saved data is one additive `S.flags` key: `lantern.guide_heard`.
+
+- **D612 (Oct 23, 2026, 3:16 PM ET, yellow, SETTLED on the default by Vincent).** TOWN_LANDMARKS. The universal healing marker is one 16x16 `heal_lantern` art (the `lantern_sign` lantern plus a white plaque with a red heart), PAL keys `d m o y w r`; no 2-tile version.
+- **D613 (Oct 23, 2026, 3:16 PM ET, yellow, SETTLED on the default by Vincent).** TOWN_LANDMARKS. The marker goes on the facade wall cell left of the Lantern House door, on the door row (right of the door if that cell is a window or not a wall), replacing the `*_lantern_sign` prop and keeping its id.
+- **D614 (Oct 23, 2026, green, SETTLED as written by the Supervisor; previews approved by Vincent, 3:16 PM ET).** TOWN_LANDMARKS. The town map key gains "Lantern House" and "General Store" rows and marks those doors; the region map key is unchanged; there is no minimap.
+- **D615 (Oct 23, 2026, 3:16 PM ET, yellow, SETTLED on the default by Vincent).** TOWN_LANDMARKS. The shared store feature is the 16x16 `acorn_board` hanging board, at door x+1 on shop buildings and at the end of outdoor counters; never on a Lantern House.
+- **D616 (Oct 23, 2026, 3:16 PM ET, yellow, SETTLED on the default by Vincent).** TOWN_LANDMARKS. Fernbrook gets no General Store here: a new store is a new town structure and waits for its own packet.
+- **D617 (Oct 23, 2026, 3:16 PM ET, red, SETTLED YES by Vincent).** TOWN_LANDMARKS. Host Della (Hearthmoor), Host Garnet (Cobblecrest) and Host Ines (High Charity) join the cast as the Lantern House guides at 4,2, with existing NPC looks; Fernbrook keeps Keeper Amos.
+- **D618 (Oct 23, 2026, green, SETTLED as written by the Supervisor; previews approved by Vincent, 3:16 PM ET).** TOWN_LANDMARKS. The guide plays G1-G3 once on the first Lantern House visit (`lantern.guide_heard` in `S.flags`); "Say it again" replays, "Got it" closes, a later tap replays; the cost in G1 is read from `LANTERN_REST_COST`.
+- **D619 (Oct 23, 2026, green, SETTLED as written by the Supervisor; previews approved by Vincent, 3:16 PM ET).** TOWN_LANDMARKS. The High Charity sign and note say "Rest the whole party. 5 Acorns." like the other towns.
+
 ## Market Row frame budget (settled Oct 23, 2026)
 
 - **D577 (Oct 23, 2026, 10:23 AM ET, Vincent, red, SETTLED).** Market Row frame-budget test. Vincent, Oct 23, 2026, 10:23 AM ET: move it to an opt-in slow lane, out of the main run; 0.3 ms budget unchanged.
