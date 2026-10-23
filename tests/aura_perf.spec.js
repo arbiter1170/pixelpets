@@ -157,7 +157,7 @@ test.describe('effect budget', () => {
     unlockEmu();
   });
 
-  test('Market Row at 17:30 stays within 0.3 ms', async ({ page, browserName }, info) => {
+  test('Market Row at 17:30 stays within 0.3 ms @slow', async ({ page, browserName }, info) => {
     test.skip(info.project.name !== '390', '390 only');
     test.skip(browserName !== 'chromium', 'CDP trace is Chromium only');
     const pageErrors = [];

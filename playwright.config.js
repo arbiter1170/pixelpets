@@ -46,10 +46,12 @@ module.exports = defineConfig({
     stderr: 'ignore',
     timeout: 20000,
   },
-  // @w1 tests run on 320 only. A new test with no tag still runs at all three widths.
+  // @w1 tests run on 320 only. @slow stays out of npm test and test:agent.
+  // `npm run test:slow` sets PP_SLOW=1 and selects @slow on the 390 project.
+  // A new test with no tag still runs at all three widths.
   projects: [
-    { name: '320', use: { viewport: { width: 320, height: 568 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } },
-    { name: '375', grepInvert: /@w1/, use: { viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } },
-    { name: '390', grepInvert: /@w1/, use: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true } },
+    { name: '320', ...(process.env.PP_SLOW === '1' ? {} : { grepInvert: /@slow/ }), use: { viewport: { width: 320, height: 568 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } },
+    { name: '375', grepInvert: process.env.PP_SLOW === '1' ? /@w1/ : /@w1|@slow/, use: { viewport: { width: 375, height: 667 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true } },
+    { name: '390', grepInvert: process.env.PP_SLOW === '1' ? /@w1/ : /@w1|@slow/, use: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true } },
   ],
 });
