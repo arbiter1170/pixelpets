@@ -123,3 +123,5 @@ Opening tour (D157–D160) is built on this branch. After the starter, a skippab
 - ~~**Debug keys in release**~~ **DONE:** E/G/F, fast mode, "Pick a place" and the cheat console hooks only work with `?debug=1` (remembered; `?debug=0` clears it). Read-only hooks stay public.
 - **Start over (DONE):** Settings, press-and-hold 1.5 s confirm; wipes v2/v1/.bak/corrupt, keeps device prefs, other tabs stop saving (uid check). **Build 7:** Save a copy / Read a copy, and SAVE A COPY on the confirm, so the wipe can be undone from the file.
 - **Installable app (DONE, Q18):** `manifest.json` and `sw.js` cache the same-origin shell. `version.json` stays on the network.
+- **MOVES_V2 test 22 co-op clause (later):** Re-check MOVES_V2 test 22's co-op clause (flash timing across both phones, remote hits) when co-op battles land. Today coopBattle/coopEnd are stubs, so each phone's own 334 ms flash cap is accepted (Supervisor, Oct 23, 2026, PR #159).
+- **D110 comments in game.js (follow-up):** the two conflicting D110 comments in `game.js` (~8866-8867) need aligning in the next game.js build. The archive records the call: the Side task pill is always shown.
