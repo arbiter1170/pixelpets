@@ -787,7 +787,7 @@ function syncNavArt(force){
   if (kc) { const tag = joy.id != null ? 'p' : 'n'; if (force || navPaint.get(kc) !== tag) { navPaint.set(kc, tag); const g = ctx(kc); g.clearRect(0, 0, 18, 18); paintGrid(g, A.joystick[joy.id != null ? 'knob_pressed' : 'knob'], 1, 0, 0); } }
 }
 // Header acorns and the canvas labels follow the game live (every 120 ms, cheap compares; nothing is written unless it changed).
-// The modern chip (D179) uses the acorn frame. A gain turns the face blue for 300 ms. The first paint, and reduced motion, do not flash.
+// The modern chip (D179) uses the acorn frame. A gain turns the face blue for 300 ms. The first paint, and reduced motion, do not flash. A spend ticks down.
 let hdrAcornsShown = null, acornGainUntil = 0;
 function syncAcornFrame(){
   const chip = $('#fcAcorns'); if (!chip) return;
@@ -804,10 +804,10 @@ function syncHdrAcorns(){
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (hdrAcornsShown != null && n > hdrAcornsShown && !reduce) acornGainUntil = performance.now() + 300;
   if (n !== hdrAcornsShown) {
+    box.setAttribute('aria-label', acorns(n)); const chip = $('#fcAcorns'); if (chip) chip.setAttribute('aria-label', acorns(n));
+    const shown = hdrAcornsShown == null ? n : acornShownNow();
+    if (hdrAcornsShown != null && n < shown && !reduce) startAcornTick(shown, n); else { stopAcornTick(); paintAcornCount(n); }
     hdrAcornsShown = n;
-    $('#hdrAcornN').textContent = String(n); box.setAttribute('aria-label', acorns(n));
-    const chip = $('#fcAcorns');   // modern walk chip (D179): same count, left of the gear
-    if (chip) { const num = $('#fcAcornN'); if (num) num.textContent = String(n); chip.setAttribute('aria-label', acorns(n)); }
   }
   syncAcornFrame();
 }
@@ -4439,7 +4439,7 @@ function placeSteps(dr){
       : lanternGreet(who);
     return [['say', who, greet],
       ['if', 'story.starter_received',
-        [['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]],
+        (partyNeedsLanternRest() ? [['priceOn']] : []).concat([['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]]),
         [['say', who, 'No team to rest yet? Come back with a friend.']]]];
   }
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
@@ -5943,7 +5943,7 @@ function interact(o){
     if (typeof line === 'string' && line.charAt(0) !== '@') steps.push(['say', objName(o), line]);
     const opts = o.meals.map(m => [m.name + ' (' + m.price + ')', [['meal', m.id]]]);
     if (bowlReady() && !o.stallSnack) opts.push(['Warm Bowl', [['meal', 'warm_bowl']]]);
-    steps.push(['choice', 'What will they eat?', opts]);
+    steps.push(['priceOn']); steps.push(['choice', 'What will they eat?', opts]);
     return runSteps(steps, ctx);
   }
   if (o.shot) {
@@ -6090,7 +6090,7 @@ function endScene(){
   if (sc.npc) delete mapRT.face[sc.npc.id];
   if (sc.npc && (sc.npc.kind === 'npc' || sc.npc.kind === 'trainer')) bump.talked = sc.npc.id;
   scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
-  $('#ovScene').hidden = true; $('#ovScene').classList.remove('top'); document.body.classList.remove('scene-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
+  $('#ovScene').hidden = true; $('#ovScene').classList.remove('top'); document.body.classList.remove('scene-on'); document.body.classList.remove('price-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
   clearCamBias();
   lockTabs(false); placeFollower(); renderKeeperName(); updateHUD(); save();
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
@@ -6235,7 +6235,7 @@ async function readWalk(dir){
   if (dir === 'back') dropCastIds(['gb_read_pet']);
 }
 async function execStep(st){
-  const [k, a, b, c, d] = st, sc = scene;
+  const [k, a, b, c, d] = st, sc = scene; if (k === 'priceOn') { document.body.classList.add('price-on'); return; }
   switch (k) {
     case 'say': {
       noteContact(a); if (sc.skip) return; sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx);
@@ -7393,7 +7393,7 @@ function lanternBedSteps(){
       ? 'Your team is worn out. These beds rest everyone, for ' + LANTERN_REST_COST + ' Acorns.'
       : 'Three soft beds under a warm lantern.'],
     ['if', 'story.starter_received',
-      [['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]],
+      (partyNeedsLanternRest() ? [['priceOn']] : []).concat([['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]]),
       [['say', '', 'The beds look cosy, but you have no one to tuck in yet.']]],
   ];
 }
@@ -10652,6 +10652,41 @@ async function results(result, id){
   }
   if (result === 'win' && t) B.cosmeticLines = grantWinCosmetics(B.trainerId, B.cosmeticFirst);
   B.levelUps = []; save(); updateHUD();
+}
+// SHOP P0: a spend counts the shown number down to the new one. About 8 whole-number steps over 320 ms.
+// The last frame is the new value. A change mid-tick starts again from whatever is on screen. Reduced motion snaps.
+let acornTickJob = null;
+function stopAcornTick(){
+  if (!acornTickJob) return;
+  cancelAnimationFrame(acornTickJob.raf);
+  acornTickJob = null;
+}
+function paintAcornCount(n){
+  const s = String(n | 0), h = $('#hdrAcornN'), f = $('#fcAcornN');
+  if (h && h.textContent !== s) h.textContent = s;
+  if (f && f.textContent !== s) f.textContent = s;
+}
+function acornShownNow(){
+  const el = $('#fcAcornN') || $('#hdrAcornN');
+  const v = el ? parseInt(el.textContent, 10) : NaN;
+  return Number.isFinite(v) ? v : (hdrAcornsShown | 0);
+}
+function startAcornTick(from, to){
+  stopAcornTick();
+  from |= 0; to |= 0;
+  if (from === to) { paintAcornCount(to); return; }
+  const t0 = performance.now(), dur = 320, steps = 8, job = { raf: 0 };
+  const frame = (now) => {
+    if (acornTickJob !== job) return;
+    const k = Math.min(1, (now - t0) / dur);
+    if (k >= 1) { paintAcornCount(to); acornTickJob = null; return; }
+    const ease = 1 - (1 - k) * (1 - k);
+    const i = Math.min(steps - 1, Math.floor(ease * steps));
+    paintAcornCount(Math.round(from + (to - from) * (i / steps)));
+    job.raf = requestAnimationFrame(frame);
+  };
+  acornTickJob = job;
+  job.raf = requestAnimationFrame(frame);
 }
 // The Seal card (BATTLE §7 Trial Hall): the Seal's sprite plus its name, over the battle stage until the battle closes.
 // Seal 1 art: Design ICONS_SEALS (5d59b34), ICON_ART.seal_fernbrook.grid, copied verbatim (gold rim, leaf on a white glint).
