@@ -1,8 +1,7 @@
 /* HUSHWATER B1 maps plus B2: the 12 forms, full spawn tables, the three holders, and the west arrive step. */
 const { test, expect } = require('@playwright/test');
-const fs = require('fs');
 const path = require('path');
-const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -350,8 +349,7 @@ test('the first step in plays once, the rope stays, and the three holders appear
   expect(card.hold).toBe('wild');
 
   if (page.viewportSize().width === 390) {
-    const dir = '/opt/cursor/artifacts/screenshots';
-    fs.mkdirSync(dir, { recursive: true });
+    const dir = artifactsDir('screenshots');
     for (const id of ['hw_falls', 'hw_cut', 'hw_rim']) {
       await page.evaluate((mid) => PixelPets.previewMap('town', mid), id);
       await page.locator('#regionCanvas').screenshot({ path: path.join(dir, 'hushwater-' + id.slice(3) + '-390.png') });
@@ -545,8 +543,7 @@ test('twelve Hushwater forms join the journal and a holder battle names Tindlet'
   expect(info.formsOut.snail.learn[1][0]).toEqual([0, 'boulder_drop']);
 
   if (page.viewportSize().width === 390) {
-    const dir = '/opt/cursor/artifacts/screenshots';
-    fs.mkdirSync(dir, { recursive: true });
+    const dir = artifactsDir('screenshots');
     await page.evaluate(() => PixelPets.setFlag('story.unlock_phone', true));
     if (await page.locator('#unlockCard').isVisible()) await page.locator('#unlockSkip').click();
     await expect(page.locator('#unlockCard')).toBeHidden();

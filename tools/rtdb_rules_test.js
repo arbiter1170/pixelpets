@@ -290,6 +290,7 @@ async function main() {
       const a = 'alice';
       const badLook = k => { const L = Object.assign({}, LOOK); L[k[0]] = k[1]; return presence({ look: L }); };
       const badPet = k => { const P = Object.assign({}, PET); P[k[0]] = k[1]; return presence({ pet: P }); };
+      const goodAx = ax => { const L = Object.assign({}, LOOK); L.ax = ax; return presence({ look: L }); };
       const checks = [
         () => deny('12 species', refOf(a, room(a)).set(badPet(['sp', 'dragon']))),
         () => deny('12 stage', refOf(a, room(a)).set(badPet(['st', 3]))),
@@ -301,11 +302,11 @@ async function main() {
         () => deny('12 skin', refOf(a, room(a)).set(badLook(['sk', '9']))),
         () => deny('12 outfit', refOf(a, room(a)).set(badLook(['of', 'robe']))),
         () => deny('12 accessory', refOf(a, room(a)).set(badLook(['ax', 'hat']))),
+        () => allow('12 lanyard', refOf('lanyard', room('lanyard')).set(goodAx('lanyard'))),
         () => deny('12 colour', refOf(a, room(a)).set(badLook(['hc', 'q']))),
       ];
       if (await seq(checks)) ok('deny 12: pet, seals, title, look');
       const goodPet = sp => { const P = Object.assign({}, PET); P.sp = sp; return presence({ pet: P }); };
-      const goodAx = ax => { const L = Object.assign({}, LOOK); L.ax = ax; return presence({ look: L }); };
       const allows = [
         () => allow('12 skink', refOf('skink', room('skink')).set(goodPet('skink'))),
         () => allow('12 otter', refOf('otter', room('otter')).set(goodPet('otter'))),

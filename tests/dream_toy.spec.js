@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -122,7 +122,7 @@ const tilePoint = (page, tx, ty) => page.evaluate(([tx, ty]) => {
   const cx = m.w * TS <= c.width ? -Math.floor((c.width - m.w * TS) / 2) : 0, cy = m.h * TS <= c.height ? -Math.floor((c.height - m.h * TS) / 2) : 0;
   return { x: r.left + ((tx + 0.5) * TS - cx) * k, y: r.top + ((ty + 0.5) * TS - cy) * k };
 }, [tx, ty]);
-const SHOTS = '/opt/cursor/artifacts/screenshots';
+const SHOTS = artifactsDir('screenshots');
 
 test('the only roll prop is the popping toy @w1', () => {
   const dir = path.join(__dirname, '..', 'data');
@@ -153,7 +153,6 @@ test('modern: tapping the pop-toy walks up and pushes it, all the way round', as
     expect(cue).toMatchObject({ x: before.toy[0], y: before.toy[1], here: true });
     const p = await tilePoint(page, before.toy[0], before.toy[1]);
     if (step === 0 && info.project.name === '390') {
-      fs.mkdirSync(SHOTS, { recursive: true });
       await page.screenshot({ path: path.join(SHOTS, 'dream_toy_tap_before_390.png') });
     }
     await page.touchscreen.tap(p.x, p.y);

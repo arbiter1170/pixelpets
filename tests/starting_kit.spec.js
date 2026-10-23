@@ -1,9 +1,8 @@
 /* STORES_AND_TOWN_LIFE P2a. A new save earns the first five adornments.
    An old save keeps them. Each source grants once. Save stays v2. */
-const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -34,8 +33,7 @@ async function clearToast(page) {
 
 async function shot390(page, locator, name) {
   if (!page.viewportSize() || page.viewportSize().width !== 390) return;
-  const dir = '/opt/cursor/artifacts/p2a';
-  fs.mkdirSync(dir, { recursive: true });
+  const dir = artifactsDir('p2a');
   await locator.screenshot({ path: path.join(dir, name + '.png') });
 }
 

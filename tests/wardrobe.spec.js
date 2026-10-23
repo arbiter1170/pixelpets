@@ -1,8 +1,8 @@
 /* WORLD_CLOCK_TOWN P3. Stitch & Lantern wardrobe v1.
    Save stays pixelpets.save.v2 with v 2. New data is wardrobe.* flags only. */
+const path = require('path');
 const { test, expect } = require('@playwright/test');
-const fs = require('fs');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -165,13 +165,13 @@ test('BUY refuses 119 Acorns and takes 120 for the Wick charm', async ({ page })
   expect(await page.evaluate(() => PixelPets.state.party[0].accessory)).toBe('wick_charm');
 
   if (page.viewportSize().width === 390) {
-    fs.mkdirSync('/opt/cursor/artifacts', { recursive: true });
-    await page.screenshot({ path: '/opt/cursor/artifacts/wardrobe-walkling-390.png' });
+    const dir = artifactsDir();
+    await page.screenshot({ path: path.join(dir, 'wardrobe-walkling-390.png') });
     await page.locator('#ovWardrobe .ward-tabs button[data-tab="holder"]').click();
-    await page.screenshot({ path: '/opt/cursor/artifacts/wardrobe-holder-390.png' });
+    await page.screenshot({ path: path.join(dir, 'wardrobe-holder-390.png') });
     await page.locator('#wardDone').click();
     await page.evaluate(() => PixelPets.showTab('pet'));
-    await page.screenshot({ path: '/opt/cursor/artifacts/wardrobe-worn-390.png' });
+    await page.screenshot({ path: path.join(dir, 'wardrobe-worn-390.png') });
   }
 });
 
