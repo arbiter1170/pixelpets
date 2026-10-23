@@ -556,7 +556,7 @@ The Vol slider sits beside Music, 0–100. The save stores `settings.musicVol` f
 
 ### Q25 — Welcome back — S — **shipped**
 
-Fourteen hours away, once the partner tab is clear of the daily hello, the line is "{pet} waited while you were away." A shorter gap says nothing. FOOD and JOY still floor at 20. NRG still floors at 10. The hours and the sentence are D56. Save `v` stays 2.
+Fourteen hours away, once the partner tab is clear of the daily hello, the line is "{pet} missed you! Welcome back." (Design's approved copy, Oct 15, 2026). A shorter gap says nothing. FOOD and JOY still floor at 20. NRG still floors at 10. The hours and the sentence are D56 (closed as done, Oct 23, 2026). Save `v` stays 2.
 
 ### Q26 — Modern and arcade controls — M — **built on branch `modern-nav`, awaiting review**
 
