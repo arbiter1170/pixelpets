@@ -490,6 +490,28 @@ Recorded from design PARTNER_CARE v0.2 (design commit 1a98ea8), without renumber
 - **D546 (Oct 22, 2026, yellow, SETTLED on the default; unanimous yes, QA, PixelPets and Design).** PARTNER_CARE. Care replies show over the follower: a heart, Zz, two sparks, and a hop on PLAY.
 - **D547 (Oct 22, 2026, green, SETTLED as written).** PARTNER_CARE. On a wide window the tray stays inside the game frame, clear of PARTNER and WALKLINGS, with no new key.
 
+## ART_PASS (calls settled Oct 22–23, 2026)
+
+Recorded from design ART_PASS v0.2 (design commit fd76cb9), without renumbering. D548–D563 were reserved. Save stays `pixelpets.save.v2` with `v` 2. No new saved field. `save.js` is untouched.
+
+- **D548 (Oct 22, 2026, green, SETTLED on yes).** ART_PASS. The sea of green is `fb_hall_in`. The fix is a reskin plus a grid char swap with the same walk mask.
+- **D549 (Oct 22, 2026, yellow, SETTLED on yes; unanimous yes, Supervisor, QA and PixelPets).** ART_PASS. The five hedge bands become six terrace ledges with visual height.
+- **D550 (Oct 22, 2026, green, SETTLED on yes).** ART_PASS. Gravel lead path from the mat, flagstone courts, stone steps in every gap, stairs to the dais.
+- **D551 (Oct 22, 2026, yellow, SETTLED on yes; unanimous yes, Supervisor, QA and PixelPets).** ART_PASS. Each band gets its own floor and ledge theme.
+- **D552 (Oct 22, 2026, green, SETTLED on yes).** ART_PASS. Six props on ledge cells, existing sprites, collision unchanged.
+- **D553 (Oct 23, 2026, Vincent, red, SETTLED YES).** ART_PASS. Vincent: "D553 yes, make the terraces real height". The mechanic is D560.
+- **D554 (Oct 22, 2026, green, SETTLED on yes).** ART_PASS. `hall_moss` has no per-tile top line. `floor_moss` stays in `sprites.js`.
+- **D555 (Oct 22, 2026, yellow, SETTLED on yes; unanimous yes, Supervisor, QA and PixelPets).** ART_PASS. The diner floor is coach planks, a kitchen tile zone on rows 2–3, and two booth rugs.
+- **D556 (Oct 22, 2026, green, SETTLED on yes).** ART_PASS. Phase-locked variants. The `floor_diner` variants are dropped.
+- **D557 (Oct 22, 2026, green, SETTLED on yes).** ART_PASS. No new PAL keys. No brick floors.
+- **D558 (Oct 22, 2026, yellow, SETTLED on yes; unanimous yes, Supervisor, QA and PixelPets).** ART_PASS. `=` (`rug_bloom`) is retired in the hall. The tile stays in `sprites.js`.
+- **D559 (Oct 22, 2026, yellow, SETTLED on no extras).** ART_PASS. Not asked for v1. Unanimous for no extras: Supervisor and QA yes to no extras, PixelPets no.
+- **D560 (Oct 23, 2026, Vincent, red, SETTLED YES).** ART_PASS. Vincent: "D560 yes, add the one-way hop-down ledges".
+- **D561 (Oct 23, 2026, yellow, SETTLED on the default; unanimous yes, QA and PixelPets).** ART_PASS. One drop line, one cell wide, at column 7.
+- **D562 (Oct 23, 2026, green, SETTLED on yes).** ART_PASS. Stairs keep treads. The hop lip is a sand path with two down chevrons, a bright lip, and a dark riser. No new PAL key.
+- **D563 (Oct 23, 2026, yellow, SETTLED on the default; unanimous yes, QA and PixelPets).** ART_PASS. A hop is one step: one `S.steps` tick, one `onLand`, 255 ms, a 4 px arc, and the partner follows in the same step.
+- **D578 (Oct 23, 2026, green, SETTLED).** ART_PASS. Follower retap closes the care tray (green, QA fix, Supervisor Oct 23, 2026): a second follower tap closes the open partner tray.
+
 ## TOWN_CHATTER (call settled Oct 23, 2026)
 
 - **D576 (Oct 23, 2026, 10:18 AM ET, Vincent, red, SETTLED YES).** TOWN_CHATTER. Vincent: yes, spec now. Design 656d101. Nothing is built yet.

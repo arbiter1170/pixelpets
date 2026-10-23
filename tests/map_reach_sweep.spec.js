@@ -141,6 +141,12 @@ const LINES_B8 = [
   ['fb_hall_in', 1, 22, 'up', 'A jar of dried petals.'],
   ['fb_hall_in', 14, 22, 'up', 'A stool pulled off the path.'],
   ['fb_hall_in', 4, 21, 'down', 'A flat cushion off the mat.'],
+  ['fb_hall_in', 13, 8, 'up', "A lamp in the top hedge. Fen's dais is one more step up."],
+  ['fb_hall_in', 3, 10, 'up', 'Tall blooms, staked one by one.'],
+  ['fb_hall_in', 12, 12, 'up', 'A little spout keeps the lily trough full.'],
+  ['fb_hall_in', 4, 14, 'up', 'Herbs drying on a rack. Sage, mint and something sharp.'],
+  ['fb_hall_in', 9, 16, 'up', 'Rose cuttings, potted to grow on.'],
+  ['fb_hall_in', 6, 18, 'up', 'A basket of seed packets. Each row is labelled by hand.'],
 ];
 const LINES_HQ = [
   ['hm_hq_f1', 10, 6, 'right', 'Every box has a tag. Every tag has a date. That is the job.'],
@@ -346,7 +352,7 @@ test('shared map sweep reaches every person and prop @w1', async ({ page }) => {
     dream_party: { npc: 0, trainer: 0, sign: 1, prop: 4, warp: 0 },
     dream_drive: { npc: 1, trainer: 0, sign: 0, prop: 3, warp: 0 },
     fb_lantern_in: { npc: 1, trainer: 0, sign: 1, prop: 12, warp: 1 },
-    fb_hall_in: { npc: 1, trainer: 0, sign: 1, prop: 18, warp: 1 },
+    fb_hall_in: { npc: 1, trainer: 0, sign: 1, prop: 24, warp: 1 },
     hm_hq_f1: { npc: 5, trainer: 0, sign: 1, prop: 41, warp: 2 },
     hm_hq_f2: { npc: 4, trainer: 0, sign: 1, prop: 28, warp: 1 },
     hc_airport_in: { npc: 1, trainer: 0, sign: 0, prop: 4, warp: 1 },

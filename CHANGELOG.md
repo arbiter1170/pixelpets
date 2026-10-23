@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 11:51 ET: Bloom Trial Hall terraces and the Parked Coach floor (build 20261023-1151)
+
+- What changed and why: The Bloom Trial Hall is garden terraces. The walk up to Fen is still 59 steps. A one-way hop down the centre drop is one step (255 ms, a 4 px arc, the partner follows). The Parked Coach floor is coach planks, a kitchen tile zone, and two booth rugs. A second tap on the follower closes the open care tray. Save stays `pixelpets.save.v2` with `v` 2. No new saved field.
+- Files touched: `game.js`, `sprites.js`, `data/fernbrook_rooms.json`, `data/detail_zz_market.json`, `data/mapdata.js`, `tests/art_pass.spec.js`, `tests/art_pass_coop.spec.js`, `tests/partner_care.spec.js`, `tests/maps_b8.spec.js`, `tests/map_reach_sweep.spec.js`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `tests/README.md`, `index.html`, `version.json`.
+- Commit(s) + build id: this branch. Build `20261023-1151`. The follower-tray toggle is its own earlier commit on this branch.
+- Tests run and result (widths, checks): scoped `node tools/pp_test.js` runs passed for `tests/art_pass.spec.js` (390, and 320 with `tests/maps_b8.spec.js`), `tests/map_reach_sweep.spec.js`, `tests/interior_walls.spec.js`, `tests/market_row.spec.js`, and `tests/art_pass_coop.spec.js`. The full `npm run test:agent` line is in the PR. Console errors fail the run.
+- Decisions made (colour + reasoning): D548–D563 were already settled and are archived from the spec. D578 is green, settled by the Supervisor: a second follower tap closes the open care tray. Next free id at this commit is D579. The following commit reserves D579–D583 and sets the header to D584.
+- Anything left unfinished: the packet checker cites the pre-build lines, so a run on this HEAD fails for that cite drift. The result lines are in the PR. The Supervisor merges.
+
 ## 2026-10-23 10:20 ET: Older care clicks stay on the Partner tab
 
 - What changed and why: The care tray keeps its own FEED, REST, and HEAL. Older checks that clicked an unscoped care button now click the Partner tab button. A free Lantern rest right after a hurt rest says the already-rested line, because Math.round treats a crumb under 100 as full. The refill line and the cost are unchanged.
