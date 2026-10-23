@@ -113,7 +113,7 @@ test('a Bitlet floats in the RegenX bay and stays out of the wild', async ({ pag
   expect(info.lastId).toBe('snail');
   expect(info.forms).toBe(60);
   expect(info.learn).toEqual(expect.arrayContaining(['cursor_tap', 'bit_burst', 'archive_surge']));
-  expect(info.moves).toEqual(expect.arrayContaining(['bump', 'screen_glow', 'cursor_tap']));
+  expect(info.moves).toEqual(expect.arrayContaining(['ping_pulse', 'screen_glow', 'cursor_tap']));
   expect(info.odd).toBe(0);
   expect(info.route).toBe(0);
   expect(info.v).toBe(2);

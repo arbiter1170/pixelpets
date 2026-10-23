@@ -415,6 +415,8 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #wlClose{min-height:44px;width:100%;margin:0}
 #wlExtras .btn[aria-pressed="true"]{background:var(--y);color:var(--k)}
 .bt-move.mv-open{background:var(--y)}
+.bt-move.mv-sig{padding-left:10px}
+.bt-move.mv-sig::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--y)}
 .walkling-sheet .sc-chart .seg{white-space:normal}
 
 /* toast */
@@ -515,7 +517,8 @@ body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-b
 .bt-twinkle{color:var(--y);margin-left:auto}
 .bt-hpl{color:var(--y);font-size:14px}
 .bt-hp{flex:1;height:10px;background:var(--d);position:relative;box-shadow:0 0 0 2px var(--k)}
-.bt-hp i{position:absolute;left:0;top:0;bottom:0;background:var(--l);transition:width .4s linear}
+.bt-hp b{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--w);z-index:0}
+.bt-hp i{position:absolute;left:0;top:0;bottom:0;background:var(--l);transition:width .4s linear;z-index:1}
 .bt-hp i.warn{background:var(--r)}
 .bt-hpt{font-size:16px;color:var(--w);min-width:5ch;text-align:right}
 .bt-stages{font-size:13px;color:var(--s);white-space:nowrap}

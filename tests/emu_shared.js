@@ -1,4 +1,4 @@
-/* One local Firebase emulator for coop_r2, play_together, aura_perf and art_pass_coop.
+/* One local Firebase emulator for coop_r2, play_together, aura_perf, art_pass_coop and moves_v2.
    The first file starts it and records the pid. Later files reuse the open ports.
    tests/emu_teardown.js stops that pid after the run. The lock still keeps the
    three files from sharing a room at the same time. Never the live project. */

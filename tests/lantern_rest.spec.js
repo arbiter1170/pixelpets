@@ -58,7 +58,7 @@ async function playCollect(page, choices, onChoice) {
 
 async function wipeParty(page) {
   const opened = await page.evaluate(() => {
-    PixelPets.battle.textMs = 1;
+    PixelPets.battle.textMs = 1; PixelPets.battle.animMs = 0;
     PixelPets.showTab('walk');
     return PixelPets.forceBattle('tide/0', 3);
   });

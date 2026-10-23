@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 14:47 ET: Three-move start sets and a per-type punch (build 20261023-1447)
+
+- What changed and why: Every Walkling starts with three moves: a signature, a type jab, and a type status move. A free slot takes the next move. A full set opens the replace sheet without the signature, and a full set missing its signature is offered it once. Old saves keep their moves and gain the signature when a slot is free. A hit plays a per-type punch on the battle canvas. Effects FULL uses wind-up, hit-stop, a ghost HP bar, and a canvas number. CALM and reduced motion show one mark. OFF keeps today's timings, with one white frame on a strong hit. Save stays `pixelpets.save.v2` with `v` 2. The only new saved flag is `sig_offer.<id>`.
+- Files touched: `moves.js`, `mv_fx.js`, `game.js`, `save.js`, `style.css`, `index.html`, `version.json`, `tests/moves_v2.spec.js`, `tests/fixtures/moves_v2_parity.json`, `tests/emu_shared.js`, `tests/group_battle.spec.js`, `tests/party_qa.spec.js`, `tests/rematch_party.spec.js`, `tests/battle_no_reload.spec.js`, `tests/qa_gaps.spec.js`, `tests/lantern_rest.spec.js`, `tests/care_screen_heal.spec.js`, `tests/desktop_p0.spec.js`, `tests/fetch_line.spec.js`, `tests/heights.spec.js`, `tests/hushwater.spec.js`, `tests/party_board.spec.js`, `tools/GAMEJS_MAP.txt`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of the header commit and the art-pass co-op helper commit. Build `20261023-1447`.
+- Tests run and result (widths, checks): `tests/moves_v2.spec.js` at 390, 375, and 320. The full `npm run test:agent` and `npm run test:slow` lines are in the PR. Console errors fail the run.
+- Decisions made (colour + reasoning): D522–D533 and D564–D569 were already settled and are archived from design 0422a16. No new id. Next free id stays D610.
+- Anything left unfinished: Design's BATTLE.md in 0422a16 is still v0.3.1, and this repo has no BATTLE.md, so the v0.4 sync is not in this commit. The packet checker cites the pre-build lines. QA is on hold.
+
 ## 2026-10-23 11:51 ET: Bloom Trial Hall terraces and the Parked Coach floor (build 20261023-1151)
 
 - What changed and why: The Bloom Trial Hall is garden terraces. The walk up to Fen is still 59 steps. A one-way hop down the centre drop is one step (255 ms, a 4 px arc, the partner follows). The Parked Coach floor is coach planks, a kitchen tile zone, and two booth rugs. A second tap on the follower closes the open care tray. Save stays `pixelpets.save.v2` with `v` 2. No new saved field.

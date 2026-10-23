@@ -638,47 +638,406 @@ const MOVES = {
       "stat": "def",
       "stages": 1
     }
+  },
+  "foxfire_flick": {
+    "name": "Foxfire Flick",
+    "type": "EMBER",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 1
+    }
+  },
+  "droplet_dash": {
+    "name": "Droplet Dash",
+    "type": "TIDE",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "burrow_bounce": {
+    "name": "Burrow Bounce",
+    "type": "BLOOM",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "hilltop_huff": {
+    "name": "Hilltop Huff",
+    "type": "STONE",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "atk",
+      "stages": -1
+    }
+  },
+  "neon_zip": {
+    "name": "Neon Zip",
+    "type": "PLAIN",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "chill_nibble": {
+    "name": "Chill Nibble",
+    "type": "FROST",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -1
+    }
+  },
+  "puff_pirouette": {
+    "name": "Puff Pirouette",
+    "type": "GUST",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 1
+    }
+  },
+  "mote_blink": {
+    "name": "Mote Blink",
+    "type": "SHADE",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "pomme_bonk": {
+    "name": "Pomme Bonk",
+    "type": "BLOOM",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": 1
+    }
+  },
+  "loam_tunnel": {
+    "name": "Loam Tunnel",
+    "type": "BLOOM",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "clink_pinch": {
+    "name": "Clink Pinch",
+    "type": "TIDE",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -1
+    }
+  },
+  "wick_flutter": {
+    "name": "Wick Flutter",
+    "type": "GUST",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "atk",
+      "stages": -1
+    }
+  },
+  "vane_spin": {
+    "name": "Vane Spin",
+    "type": "GUST",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "doze_drift": {
+    "name": "Doze Drift",
+    "type": "SHADE",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -1
+    }
+  },
+  "ping_pulse": {
+    "name": "Ping Pulse",
+    "type": "PLAIN",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "seed_fetch": {
+    "name": "Seed Fetch",
+    "type": "BLOOM",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "heal": 0.1
+    }
+  },
+  "basking_lash": {
+    "name": "Basking Lash",
+    "type": "EMBER",
+    "power": 30,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "atk",
+      "stages": 1
+    }
+  },
+  "spray_slide": {
+    "name": "Spray Slide",
+    "type": "FROST",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "hush_glide": {
+    "name": "Hush Glide",
+    "type": "SHADE",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 1
+    }
+  },
+  "lichen_lob": {
+    "name": "Lichen Lob",
+    "type": "STONE",
+    "power": 40,
+    "acc": 95,
+    "uses": 10
+  },
+  "coal_nudge": {
+    "name": "Coal Nudge",
+    "type": "EMBER",
+    "power": 40,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -1
+    }
+  },
+  "brook_bop": {
+    "name": "Brook Bop",
+    "type": "TIDE",
+    "power": 40,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -1
+    }
+  },
+  "clover_swat": {
+    "name": "Clover Swat",
+    "type": "BLOOM",
+    "power": 40,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "atk",
+      "stages": -1
+    }
+  },
+  "gravel_skid": {
+    "name": "Gravel Skid",
+    "type": "STONE",
+    "power": 40,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -1
+    }
+  },
+  "fizz_jolt": {
+    "name": "Fizz Jolt",
+    "type": "VOLT",
+    "power": 40,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 1
+    }
+  },
+  "hoarfrost_tap": {
+    "name": "Hoarfrost Tap",
+    "type": "FROST",
+    "power": 40,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "atk",
+      "stages": -1
+    }
+  },
+  "dandelion_dart": {
+    "name": "Dandelion Dart",
+    "type": "GUST",
+    "power": 40,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 1
+    }
+  },
+  "gloomstep": {
+    "name": "Gloomstep",
+    "type": "SHADE",
+    "power": 40,
+    "acc": 95,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -1
+    }
+  },
+  "smoulder_stare": {
+    "name": "Smoulder Stare",
+    "type": "EMBER",
+    "power": 0,
+    "acc": 90,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -2
+    }
+  },
+  "tidepool_rest": {
+    "name": "Tidepool Rest",
+    "type": "TIDE",
+    "power": 0,
+    "acc": 100,
+    "uses": 3,
+    "effect": {
+      "target": "self",
+      "heal": 0.25
+    }
+  },
+  "burr_tangle": {
+    "name": "Burr Tangle",
+    "type": "BLOOM",
+    "power": 0,
+    "acc": 90,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -2
+    }
+  },
+  "whetstone": {
+    "name": "Whetstone",
+    "type": "STONE",
+    "power": 0,
+    "acc": 100,
+    "uses": 3,
+    "effect": {
+      "target": "self",
+      "stat": "atk",
+      "stages": 2
+    }
+  },
+  "circuit_hum": {
+    "name": "Circuit Hum",
+    "type": "VOLT",
+    "power": 0,
+    "acc": 100,
+    "uses": 5,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 2
+    }
+  },
+  "frost_coat": {
+    "name": "Frost Coat",
+    "type": "FROST",
+    "power": 0,
+    "acc": 100,
+    "uses": 3,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": 2
+    }
+  },
+  "dander_drift": {
+    "name": "Dander Drift",
+    "type": "GUST",
+    "power": 0,
+    "acc": 90,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "atk",
+      "stages": -2
+    }
+  },
+  "dusk_shroud": {
+    "name": "Dusk Shroud",
+    "type": "SHADE",
+    "power": 0,
+    "acc": 100,
+    "uses": 3,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": 2
+    }
   }
 };
 
 const LEARNSETS = {
   "ember/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "stoke_up"
-    ],
-    [
-      5,
-      "flick_flame"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "kiln_rush"
-    ],
-    [
-      15,
-      "seed_toss"
-    ],
-    [
-      20,
-      "kindle_burst"
-    ],
-    [
-      25,
-      "updraft"
-    ],
-    [
-      30,
-      "arc_bolt"
-    ]
+    [1, "foxfire_flick"],
+    [1, "flick_flame"],
+    [1, "stoke_up"],
+    [9, "coal_nudge"],
+    [12, "kiln_rush"],
+    [15, "seed_toss"],
+    [18, "smoulder_stare"],
+    [20, "kindle_burst"],
+    [25, "updraft"],
+    [30, "arc_bolt"]
   ],
   "ember/1": [
     [
@@ -701,42 +1060,16 @@ const LEARNSETS = {
     ]
   ],
   "tide/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "mist_veil"
-    ],
-    [
-      5,
-      "ripple_jab"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "undertow"
-    ],
-    [
-      15,
-      "frost_nip"
-    ],
-    [
-      20,
-      "breaker_wave"
-    ],
-    [
-      25,
-      "sap_sip"
-    ],
-    [
-      30,
-      "boulder_drop"
-    ]
+    [1, "droplet_dash"],
+    [1, "ripple_jab"],
+    [1, "mist_veil"],
+    [9, "brook_bop"],
+    [12, "undertow"],
+    [15, "frost_nip"],
+    [18, "tidepool_rest"],
+    [20, "breaker_wave"],
+    [25, "sap_sip"],
+    [30, "boulder_drop"]
   ],
   "tide/1": [
     [
@@ -759,42 +1092,16 @@ const LEARNSETS = {
     ]
   ],
   "bloom/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "sap_sip"
-    ],
-    [
-      5,
-      "seed_toss"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "thorn_lash"
-    ],
-    [
-      15,
-      "pebble_flick"
-    ],
-    [
-      20,
-      "briar_volley"
-    ],
-    [
-      25,
-      "stoke_up"
-    ],
-    [
-      30,
-      "gale_slice"
-    ]
+    [1, "burrow_bounce"],
+    [1, "seed_toss"],
+    [1, "sap_sip"],
+    [9, "clover_swat"],
+    [12, "thorn_lash"],
+    [15, "pebble_flick"],
+    [18, "burr_tangle"],
+    [20, "briar_volley"],
+    [25, "stoke_up"],
+    [30, "gale_slice"]
   ],
   "bloom/1": [
     [
@@ -817,42 +1124,16 @@ const LEARNSETS = {
     ]
   ],
   "stone/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "brace_rock"
-    ],
-    [
-      5,
-      "pebble_flick"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "boulder_drop"
-    ],
-    [
-      15,
-      "flick_flame"
-    ],
-    [
-      20,
-      "quarry_crash"
-    ],
-    [
-      25,
-      "stoke_up"
-    ],
-    [
-      30,
-      "sleet_pelt"
-    ]
+    [1, "hilltop_huff"],
+    [1, "pebble_flick"],
+    [1, "brace_rock"],
+    [9, "gravel_skid"],
+    [12, "boulder_drop"],
+    [15, "flick_flame"],
+    [18, "whetstone"],
+    [20, "quarry_crash"],
+    [25, "stoke_up"],
+    [30, "sleet_pelt"]
   ],
   "stone/1": [
     [
@@ -875,42 +1156,16 @@ const LEARNSETS = {
     ]
   ],
   "volt/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "neon_flash"
-    ],
-    [
-      5,
-      "zap_tap"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "arc_bolt"
-    ],
-    [
-      15,
-      "puff_shot"
-    ],
-    [
-      20,
-      "neon_burst"
-    ],
-    [
-      25,
-      "mist_veil"
-    ],
-    [
-      30,
-      "undertow"
-    ]
+    [1, "neon_zip"],
+    [1, "zap_tap"],
+    [1, "neon_flash"],
+    [9, "fizz_jolt"],
+    [12, "arc_bolt"],
+    [15, "puff_shot"],
+    [18, "circuit_hum"],
+    [20, "neon_burst"],
+    [25, "mist_veil"],
+    [30, "undertow"]
   ],
   "volt/1": [
     [
@@ -933,42 +1188,16 @@ const LEARNSETS = {
     ]
   ],
   "frost/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "cold_snap"
-    ],
-    [
-      5,
-      "frost_nip"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "sleet_pelt"
-    ],
-    [
-      15,
-      "zap_tap"
-    ],
-    [
-      20,
-      "rime_rush"
-    ],
-    [
-      25,
-      "sap_sip"
-    ],
-    [
-      30,
-      "boulder_drop"
-    ]
+    [1, "chill_nibble"],
+    [1, "frost_nip"],
+    [1, "cold_snap"],
+    [9, "hoarfrost_tap"],
+    [12, "sleet_pelt"],
+    [15, "zap_tap"],
+    [18, "frost_coat"],
+    [20, "rime_rush"],
+    [25, "sap_sip"],
+    [30, "boulder_drop"]
   ],
   "frost/1": [
     [
@@ -991,42 +1220,16 @@ const LEARNSETS = {
     ]
   ],
   "gust/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "updraft"
-    ],
-    [
-      5,
-      "puff_shot"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "gale_slice"
-    ],
-    [
-      15,
-      "pebble_flick"
-    ],
-    [
-      20,
-      "tempest_dive"
-    ],
-    [
-      25,
-      "stoke_up"
-    ],
-    [
-      30,
-      "kiln_rush"
-    ]
+    [1, "puff_pirouette"],
+    [1, "puff_shot"],
+    [1, "updraft"],
+    [9, "dandelion_dart"],
+    [12, "gale_slice"],
+    [15, "pebble_flick"],
+    [18, "dander_drift"],
+    [20, "tempest_dive"],
+    [25, "stoke_up"],
+    [30, "kiln_rush"]
   ],
   "gust/1": [
     [
@@ -1049,42 +1252,16 @@ const LEARNSETS = {
     ]
   ],
   "shade/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "night_veil"
-    ],
-    [
-      5,
-      "gloom_poke"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "dusk_fang"
-    ],
-    [
-      15,
-      "frost_nip"
-    ],
-    [
-      20,
-      "nightfall"
-    ],
-    [
-      25,
-      "updraft"
-    ],
-    [
-      30,
-      "gale_slice"
-    ]
+    [1, "mote_blink"],
+    [1, "gloom_poke"],
+    [1, "night_veil"],
+    [9, "gloomstep"],
+    [12, "dusk_fang"],
+    [15, "frost_nip"],
+    [18, "dusk_shroud"],
+    [20, "nightfall"],
+    [25, "updraft"],
+    [30, "gale_slice"]
   ],
   "shade/1": [
     [
@@ -1107,42 +1284,16 @@ const LEARNSETS = {
     ]
   ],
   "beetle/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "brace_rock"
-    ],
-    [
-      5,
-      "seed_toss"
-    ],
-    [
-      9,
-      "sap_sip"
-    ],
-    [
-      12,
-      "thorn_lash"
-    ],
-    [
-      15,
-      "pebble_flick"
-    ],
-    [
-      20,
-      "briar_volley"
-    ],
-    [
-      25,
-      "stoke_up"
-    ],
-    [
-      30,
-      "gale_slice"
-    ]
+    [1, "pomme_bonk"],
+    [1, "seed_toss"],
+    [1, "brace_rock"],
+    [9, "clover_swat"],
+    [12, "thorn_lash"],
+    [15, "pebble_flick"],
+    [18, "burr_tangle"],
+    [20, "briar_volley"],
+    [25, "stoke_up"],
+    [30, "gale_slice"]
   ],
   "beetle/1": [
     [
@@ -1165,42 +1316,16 @@ const LEARNSETS = {
     ]
   ],
   "mole/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "stoke_up"
-    ],
-    [
-      5,
-      "seed_toss"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "thorn_lash"
-    ],
-    [
-      15,
-      "boulder_drop"
-    ],
-    [
-      20,
-      "briar_volley"
-    ],
-    [
-      25,
-      "brace_rock"
-    ],
-    [
-      30,
-      "kiln_rush"
-    ]
+    [1, "loam_tunnel"],
+    [1, "seed_toss"],
+    [1, "stoke_up"],
+    [9, "clover_swat"],
+    [12, "thorn_lash"],
+    [15, "boulder_drop"],
+    [18, "burr_tangle"],
+    [20, "briar_volley"],
+    [25, "brace_rock"],
+    [30, "kiln_rush"]
   ],
   "mole/1": [
     [
@@ -1223,42 +1348,16 @@ const LEARNSETS = {
     ]
   ],
   "crab/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "brace_rock"
-    ],
-    [
-      5,
-      "ripple_jab"
-    ],
-    [
-      9,
-      "tumble_charge"
-    ],
-    [
-      12,
-      "undertow"
-    ],
-    [
-      15,
-      "pebble_flick"
-    ],
-    [
-      20,
-      "breaker_wave"
-    ],
-    [
-      25,
-      "stoke_up"
-    ],
-    [
-      30,
-      "sleet_pelt"
-    ]
+    [1, "clink_pinch"],
+    [1, "ripple_jab"],
+    [1, "brace_rock"],
+    [9, "brook_bop"],
+    [12, "undertow"],
+    [15, "pebble_flick"],
+    [18, "tidepool_rest"],
+    [20, "breaker_wave"],
+    [25, "stoke_up"],
+    [30, "sleet_pelt"]
   ],
   "crab/1": [
     [
@@ -1281,42 +1380,16 @@ const LEARNSETS = {
     ]
   ],
   "moth/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "neon_flash"
-    ],
-    [
-      5,
-      "zap_tap"
-    ],
-    [
-      9,
-      "updraft"
-    ],
-    [
-      12,
-      "arc_bolt"
-    ],
-    [
-      15,
-      "puff_shot"
-    ],
-    [
-      20,
-      "neon_burst"
-    ],
-    [
-      25,
-      "mist_veil"
-    ],
-    [
-      30,
-      "thorn_lash"
-    ]
+    [1, "wick_flutter"],
+    [1, "zap_tap"],
+    [1, "neon_flash"],
+    [9, "fizz_jolt"],
+    [12, "arc_bolt"],
+    [15, "puff_shot"],
+    [18, "circuit_hum"],
+    [20, "neon_burst"],
+    [25, "mist_veil"],
+    [30, "thorn_lash"]
   ],
   "moth/1": [
     [
@@ -1339,42 +1412,16 @@ const LEARNSETS = {
     ]
   ],
   "vane/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "updraft"
-    ],
-    [
-      5,
-      "puff_shot"
-    ],
-    [
-      9,
-      "cold_snap"
-    ],
-    [
-      12,
-      "gale_slice"
-    ],
-    [
-      15,
-      "pebble_flick"
-    ],
-    [
-      20,
-      "tempest_dive"
-    ],
-    [
-      25,
-      "neon_flash"
-    ],
-    [
-      30,
-      "kiln_rush"
-    ]
+    [1, "vane_spin"],
+    [1, "puff_shot"],
+    [1, "updraft"],
+    [9, "dandelion_dart"],
+    [12, "gale_slice"],
+    [15, "pebble_flick"],
+    [18, "dander_drift"],
+    [20, "tempest_dive"],
+    [25, "neon_flash"],
+    [30, "kiln_rush"]
   ],
   "vane/1": [
     [
@@ -1397,42 +1444,16 @@ const LEARNSETS = {
     ]
   ],
   "dormouse/0": [
-    [
-      1,
-      "bump"
-    ],
-    [
-      3,
-      "night_veil"
-    ],
-    [
-      5,
-      "gloom_poke"
-    ],
-    [
-      9,
-      "frost_nip"
-    ],
-    [
-      12,
-      "dusk_fang"
-    ],
-    [
-      15,
-      "sap_sip"
-    ],
-    [
-      20,
-      "nightfall"
-    ],
-    [
-      25,
-      "mist_veil"
-    ],
-    [
-      30,
-      "gale_slice"
-    ]
+    [1, "doze_drift"],
+    [1, "gloom_poke"],
+    [1, "night_veil"],
+    [9, "gloomstep"],
+    [12, "dusk_fang"],
+    [15, "sap_sip"],
+    [18, "dusk_shroud"],
+    [20, "nightfall"],
+    [25, "mist_veil"],
+    [30, "gale_slice"]
   ],
   "dormouse/1": [
     [
@@ -1455,12 +1476,13 @@ const LEARNSETS = {
     ]
   ],
   "byte/0": [
-    [1, "bump"],
-    [3, "screen_glow"],
-    [5, "cursor_tap"],
-    [9, "zap_tap"],
+    [1, "ping_pulse"],
+    [1, "cursor_tap"],
+    [1, "screen_glow"],
+    [9, "fizz_jolt"],
     [12, "arc_bolt"],
     [16, "puff_shot"],
+    [18, "circuit_hum"],
     [20, "neon_burst"],
     [24, "hover_hum"],
     [28, "updraft"]
@@ -1474,12 +1496,13 @@ const LEARNSETS = {
     [27, "full_tilt"]
   ],
   "fetch/0": [
-    [1, "bump"],
-    [3, "sap_sip"],
-    [5, "seed_toss"],
-    [9, "tumble_charge"],
+    [1, "seed_fetch"],
+    [1, "seed_toss"],
+    [1, "sap_sip"],
+    [9, "clover_swat"],
     [12, "thorn_lash"],
     [15, "mist_veil"],
+    [18, "burr_tangle"],
     [20, "briar_volley"],
     [25, "stoke_up"],
     [30, "undertow"]
@@ -1492,17 +1515,61 @@ const LEARNSETS = {
     [0, "steadfast_paw"],
     [27, "full_tilt"]
   ],
-  // HUSHWATER B2 (D356): existing moves only. Stage 0 at 1/3/5/9/12/15/20/25/30; stage 1 is the signature plus 22; stage 2 is the signature plus 27.
-  "skink/0": [[1, "bump"], [3, "stoke_up"], [5, "flick_flame"], [9, "tumble_charge"], [12, "kiln_rush"], [15, "pebble_flick"], [20, "kindle_burst"], [25, "brace_rock"], [30, "scree_slide"]],
+  // HUSHWATER B2 (D356): stage 1 is the grow-up move plus 22; stage 2 is the grow-up move plus 27. Stage 0 is the MOVES_V2 start set.
+  "skink/0": [
+    [1, "basking_lash"],
+    [1, "flick_flame"],
+    [1, "stoke_up"],
+    [9, "coal_nudge"],
+    [12, "kiln_rush"],
+    [15, "pebble_flick"],
+    [18, "smoulder_stare"],
+    [20, "kindle_burst"],
+    [25, "brace_rock"],
+    [30, "scree_slide"]
+  ],
   "skink/1": [[0, "cinder_pounce"], [22, "boulder_drop"]],
   "skink/2": [[0, "torch_tail"], [27, "full_tilt"]],
-  "otter/0": [[1, "bump"], [3, "mist_veil"], [5, "frost_nip"], [9, "ripple_jab"], [12, "sleet_pelt"], [15, "cold_snap"], [20, "rime_rush"], [25, "undertow"], [30, "breaker_wave"]],
+  "otter/0": [
+    [1, "spray_slide"],
+    [1, "frost_nip"],
+    [1, "mist_veil"],
+    [9, "hoarfrost_tap"],
+    [12, "sleet_pelt"],
+    [15, "cold_snap"],
+    [18, "frost_coat"],
+    [20, "rime_rush"],
+    [25, "undertow"],
+    [30, "breaker_wave"]
+  ],
   "otter/1": [[0, "flurry_fluff"], [22, "puddle_stomp"]],
   "otter/2": [[0, "glacier_press"], [27, "full_tilt"]],
-  "owl/0": [[1, "bump"], [3, "night_veil"], [5, "gloom_poke"], [9, "puff_shot"], [12, "dusk_fang"], [15, "updraft"], [20, "nightfall"], [25, "gale_slice"], [30, "kite_swoop"]],
+  "owl/0": [
+    [1, "hush_glide"],
+    [1, "gloom_poke"],
+    [1, "night_veil"],
+    [9, "gloomstep"],
+    [12, "dusk_fang"],
+    [15, "updraft"],
+    [18, "dusk_shroud"],
+    [20, "nightfall"],
+    [25, "gale_slice"],
+    [30, "kite_swoop"]
+  ],
   "owl/1": [[0, "lullaby_hum"], [22, "gloam_swipe"]],
   "owl/2": [[0, "moon_cloak"], [27, "full_tilt"]],
-  "snail/0": [[1, "bump"], [3, "brace_rock"], [5, "pebble_flick"], [9, "tumble_charge"], [12, "undertow"], [15, "sap_sip"], [20, "quarry_crash"], [25, "mist_veil"], [30, "thorn_lash"]],
+  "snail/0": [
+    [1, "lichen_lob"],
+    [1, "pebble_flick"],
+    [1, "brace_rock"],
+    [9, "gravel_skid"],
+    [12, "undertow"],
+    [15, "sap_sip"],
+    [18, "whetstone"],
+    [20, "quarry_crash"],
+    [25, "mist_veil"],
+    [30, "thorn_lash"]
+  ],
   "snail/1": [[0, "boulder_drop"], [22, "scree_slide"]],
   "snail/2": [[0, "summit_slam"], [27, "full_tilt"]]
 };
@@ -1626,9 +1693,59 @@ function learnset(formId){
   return out.sort((a, b) => a.lv - b.lv || a.stage - b.stage);   // stable; evolution moves (lv 0) sort first
 }
 
+const SIGNATURES = {
+  "ember": "foxfire_flick",
+  "tide": "droplet_dash",
+  "bloom": "burrow_bounce",
+  "stone": "hilltop_huff",
+  "volt": "neon_zip",
+  "frost": "chill_nibble",
+  "gust": "puff_pirouette",
+  "shade": "mote_blink",
+  "beetle": "pomme_bonk",
+  "mole": "loam_tunnel",
+  "crab": "clink_pinch",
+  "moth": "wick_flutter",
+  "vane": "vane_spin",
+  "dormouse": "doze_drift",
+  "byte": "ping_pulse",
+  "fetch": "seed_fetch",
+  "skink": "basking_lash",
+  "otter": "spray_slide",
+  "owl": "hush_glide",
+  "snail": "lichen_lob"
+};
 function defaultMoves(formId, L){
-  const all = learnset(formId), lvl = all.filter(e => e.lv >= 1 && e.lv <= L), evo = all.filter(e => e.lv === 0);
-  return [...lvl, ...evo].map(e => e.id).slice(-4);
+  const line = String(formId).split('/')[0], sig = SIGNATURES[line], all = learnset(formId);
+  const evo = all.filter(e => e.lv === 0).map(e => e.id), keep = [sig, ...evo].filter(Boolean);
+  const lvl = all.filter(e => e.lv >= 1 && e.lv <= Math.max(1, L) && !keep.includes(e.id)).map(e => e.id);
+  const room = 4 - keep.length, newest = room > 0 ? lvl.slice(-room) : [];
+  return [...new Set([sig, ...newest, ...evo].filter(Boolean))].slice(0, 4);
+}
+// topUpMoves(ids, formId, L): run at load inside normalizeV2. Pure, idempotent, never removes or reorders.
+// 1) add the signature if a slot is free; 2) fill up to 3 from defaultMoves. A full set is left for the one-time offer.
+function topUpMoves(ids, formId, L) {
+  const out = ids.slice(), line = String(formId).split('/')[0], sig = SIGNATURES[line];
+  if (!sig) return out;
+  if (!out.includes(sig) && out.length < 4) out.push(sig);
+  for (const id of defaultMoves(formId, L)) { if (out.length >= 3) break; if (!out.includes(id)) out.push(id); }
+  return out;
+}
+const SIG_OFFER = id => 'sig_offer.' + id;
+function sigOfferDue(p, line, flags) {
+  const sig = SIGNATURES[line], ids = Array.isArray(p.moves) ? p.moves : [];
+  if (!sig || ids.length < 4 || ids.includes(sig) || (flags && flags[SIG_OFFER(p.id)])) return null;
+  return sig;
+}
+const AI_V2 = { effect_bonus: 6, wild_signature_weight: 1.5 };
+function aiScoreV2(id, m, ctx) {
+  let s;
+  if (m.power > 0) s = m.power * m.acc / 100 * ctx.typeMult(m.type, ctx.foeType) * (m.type === ctx.userType ? 1.25 : 1);
+  else if (m.effect && m.effect.heal) s = ctx.userHpFrac <= 0.6 ? 20 : 0;
+  else s = ctx.capped(m.effect) ? 0 : (m.effect.target === 'foe' ? 25 : 20);
+  if (m.power > 0 && m.effect && m.effect.stat && !ctx.capped(m.effect)) s += AI_V2.effect_bonus;
+  if (ctx.kind === 'wild' && SIGNATURES[ctx.line] === id) s *= AI_V2.wild_signature_weight;
+  return s;
 }
 
 // Befriend zone width (NEXT_PLAN WP-A). Without `ctx` this is the pre-WP-A formula (kept for old call sites and tests).

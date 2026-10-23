@@ -76,6 +76,8 @@ Next free id is D610.
 
 Settled calls are in archive/DECISIONS_SETTLED.md.
 
+MOVES_V2 D522-D533 and D564-D569 are recorded in the archive (Oct 23, 2026, design 0422a16). D522-D525 are red, settled YES by Vincent; D526-D529 settled YES; D530-D533 green, settled by the Supervisor on the default; D564-D569 settled by Vincent on the default.
+
 D577 Market Row frame-budget test (red): Vincent, Oct 23, 2026, 10:23 AM ET: move it to an opt-in slow lane, out of the main run; 0.3 ms budget unchanged.
 
 STORES_AND_TOWN_LIFE D416-D434 are recorded in the archive (Oct 22, 2026). D416, D425 and D431 are green (Supervisor, about 2:00 AM ET). D418, D422 and D430 are red, settled by Vincent (2:01 AM ET): whereabouts gated by Standing; cosmetics from a battle win on the first win only; keep the name Lamplight Provisions with a GENERAL STORE sub-sign. The yellows settled on their defaults (Vincent, Design and PixelPets, 2:03 AM ET). D434 is dropped. D406 stays green: the Modern camera clears the HUD. P0, the edge-arrow rail, the chip and the tile count, is on this branch. P1-P6 are not started.

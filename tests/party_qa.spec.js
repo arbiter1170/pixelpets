@@ -38,7 +38,7 @@ async function boot(page, save, search) {
 async function battleReady(page, save) {
   await boot(page, save, '?debug=1');
   await page.waitForFunction(() => window.PixelPets.debug === true && typeof window.PixelPets.forceBattle === 'function');
-  await page.evaluate(() => { PixelPets.battle.textMs = 0; });
+  await page.evaluate(() => { PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0; });
 }
 
 test('journal counts and silhouettes stay on the WALKLINGS tab', async ({ page }) => {
@@ -296,7 +296,12 @@ test('battle swap stays in the party, resets stages, and skips a boxed id', asyn
     q.deploy = { call: 'brace' };
     PixelPets.battle.state = 'CHOOSE';
   });
-  await page.evaluate(async () => { await resolveTurn({ kind: 'swap', id: 'ptide' }); });
+  await page.evaluate(async () => {
+    const foe = PixelPets.battle.foes[0];
+    foe.moves = [{ id: 'bump', uses: 40 }];
+    PixelPets.battle.foePlan = { move: 'bump' };
+    await resolveTurn({ kind: 'swap', id: 'ptide' });
+  });
   await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE' || PixelPets.battle.result);
   const swapped = await page.evaluate(() => ({
     id: PixelPets.battle.me.petId,
@@ -335,7 +340,7 @@ test('greet and the kin ribbon widen only a wild battle, and a berry ignores a h
   expect(widths.hp).toBeGreaterThan(0);
 
   const started = await page.evaluate(() => {
-    PixelPets.battle.textMs = 0;
+    PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0;
     PixelPets.battle.on = false;
     document.querySelector('#ovBattle').hidden = true;
     PixelPets.state.party[0].deploy = { call: 'greet' };

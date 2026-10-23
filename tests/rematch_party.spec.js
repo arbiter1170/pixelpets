@@ -29,7 +29,7 @@ async function wearOutAndLose(page) {
   await page.evaluate(() => {
     const now = Date.now();
     for (const p of PixelPets.state.party) { p.hpNow = 0; p.faintUntil = now + 20 * 60000; }
-    PixelPets.battle.textMs = 0;
+    PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0;
     PixelPets.loseBattle();
   });
   await clickOk(page);
@@ -262,7 +262,7 @@ test('Pia re-arms after a rest, and a win pays once', async ({ page }) => {
   await page.waitForFunction(() => PixelPets.scene && /Back for more/.test(PixelPets.scene.text || ''), null, { timeout: 8000 });
   await advanceUntil(page, () => !!(PixelPets.battle && PixelPets.battle.on));
   await page.waitForFunction(() => PixelPets.battle && PixelPets.battle.state === 'CHOOSE');
-  await page.evaluate(() => { PixelPets.battle.textMs = 0; PixelPets.winBattle(); });
+  await page.evaluate(() => { PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0; PixelPets.winBattle(); });
   await clickOk(page);
   const won = await page.evaluate(() => ({
     rematch: !!PixelPets.state.flags['rematch.route1_pia'],
@@ -370,7 +370,7 @@ test('Tobin does not move the orchard step on a loss, and the win runs it once',
   await page.waitForFunction(() => PixelPets.scene && /You're back/.test(PixelPets.scene.text || ''), null, { timeout: 8000 });
   await advanceUntil(page, () => !!(PixelPets.battle && PixelPets.battle.on), 16);
   await page.waitForFunction(() => PixelPets.battle && PixelPets.battle.state === 'CHOOSE');
-  await page.evaluate(() => { PixelPets.battle.textMs = 0; PixelPets.winBattle(); });
+  await page.evaluate(() => { PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0; PixelPets.winBattle(); });
   await clickOk(page);
   await page.waitForFunction(() => PixelPets.scene && /crates pop open/.test(PixelPets.scene.text || ''), null, { timeout: 8000 });
   expect(await page.evaluate(() => PixelPets.state.flags['trainer.fern_associate'] === true)).toBe(true);
@@ -384,7 +384,7 @@ test('Hale opens with the rematch line, then Begin the trial', async ({ page }) 
   await page.evaluate(() => {
     PixelPets.showTab('walk');
     PixelPets.state.world.respawn = 'cobblecrest';
-    PixelPets.battle.textMs = 0;
+    PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0;
     return PixelPets.forceTrainer('hall2_hale');
   });
   await wearOutAndLose(page);
@@ -417,7 +417,7 @@ test('Neighbour Rook has no rematch flag', async ({ page }) => {
   await boot(page);
   const started = await page.evaluate(() => {
     PixelPets.showTab('walk');
-    PixelPets.battle.textMs = 0;
+    PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0;
     return PixelPets.forceTrainer('rival1_rook');
   });
   expect(started).toBe(true);
