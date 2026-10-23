@@ -19,7 +19,7 @@ Skills for this repo live here, one folder per skill. Each folder has a `SKILL.m
 | `walklings-cloud-launch` | [walklings-cloud-launch/SKILL.md](walklings-cloud-launch/SKILL.md) | Launching a cloud agent to build an approved Design packet or spec |
 | `walklings-cloud-review-merge` | [walklings-cloud-review-merge/SKILL.md](walklings-cloud-review-merge/SKILL.md) | Reviewing a done PR, catching it up with main, merging it, and confirming it is live |
 | `walklings-key-collision-check` | [walklings-key-collision-check/SKILL.md](walklings-key-collision-check/SKILL.md) | Checking a PR that adds looks, skins or palette keys so one key is not defined in two files |
-| `walklings-room-packet` | [walklings-room-packet/SKILL.md](walklings-room-packet/SKILL.md) | Writing a room reskin, palette fix or interior expansion packet |
+| `walklings-room-packet` | [walklings-room-packet/SKILL.md](walklings-room-packet/SKILL.md) | Writing a room reskin, layout change, palette fix or interior expansion packet |
 | `walklings-skill-sync` | [walklings-skill-sync/SKILL.md](walklings-skill-sync/SKILL.md) | Copying a Walklings skill between the box library and this repo so the newer copy wins |
 | `gamedev-camera-systems` | [gamedev-camera-systems/SKILL.md](gamedev-camera-systems/SKILL.md) | Building or fixing the top-down map camera (follow, deadzone, edges, door transitions, shake) |
 | `gamedev-create-game-assets` | [gamedev-create-game-assets/SKILL.md](gamedev-create-game-assets/SKILL.md) | Planning, making, sourcing or checking pixel-art sprites, tiles, icons or UI art |
