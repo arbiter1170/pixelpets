@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, playScene, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -485,7 +485,7 @@ async function hideToast(page) {
 
 async function reviewShot(page, name) {
   if (page.viewportSize().width !== 390) return;
-  const dir = path.join('review-arbiter-swap');
+  const dir = artifactsDir('review-arbiter-swap');
   fs.mkdirSync(dir, { recursive: true });
   await page.screenshot({ path: path.join(dir, name + '-390.png') });
 }

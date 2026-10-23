@@ -6,10 +6,10 @@ const { spawn } = require('child_process');
 const net = require('net');
 const fs = require('fs');
 const path = require('path');
-const { starterSave, installSave, gotoGame } = require('./helpers');
+const { starterSave, installSave, gotoGame, artifactsDir } = require('./helpers');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
-const SHOTS = 'review-coop-r2';
+const SHOTS = artifactsDir('review-coop-r2');
 const BASE = 'http://127.0.0.1:' + (process.env.PP_PORT || '8080');
 const LOCK = path.join(__dirname, '..', 'test-logs', 'rtdb-play.lock');
 let emu = null, emuStarted = false, env = null;

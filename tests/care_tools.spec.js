@@ -1,14 +1,12 @@
 /* Rename a Walkling you already have, the music volume slider, and the welcome-back line. */
-const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 function saveShot(page, name) {
   const w = page.viewportSize().width;
   if (w === 375) return Promise.resolve();
-  const dir = path.join('screenshots', 'care');
-  fs.mkdirSync(dir, { recursive: true });
+  const dir = artifactsDir('screenshots/care');
   return page.screenshot({ path: path.join(dir, name + '-' + w + '.png') });
 }
 

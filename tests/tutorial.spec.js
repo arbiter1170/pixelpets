@@ -1,16 +1,14 @@
 /* Opening tour (D157–D160). First run, skip, replay, and an older save that skips it. */
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, playScene } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, playScene, artifactsDir } = require('./helpers');
 
 trackErrors(test, expect);
 
 function tourArtDir() {
   if (process.env.PP_ART) return process.env.PP_ART;
-  if (!tourArtDir._tmp) tourArtDir._tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'walklings-tour-'));
-  return tourArtDir._tmp;
+  return artifactsDir('walklings-tour');
 }
 
 function tourSave() {

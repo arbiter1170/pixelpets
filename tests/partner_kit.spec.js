@@ -1,14 +1,12 @@
 /* Partner tab: STATS and KIT above FEED, no BAG, adornments sit on every Walkling. Save stays v2. */
-const fs = require('fs');
 const path = require('path');
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
 
 function saveShot(page, name) {
   const w = page.viewportSize().width;
   if (w === 375) return Promise.resolve();
-  const dir = path.join('screenshots', 'partner');
-  fs.mkdirSync(dir, { recursive: true });
+  const dir = artifactsDir('screenshots/partner');
   return page.screenshot({ path: path.join(dir, name + '-' + w + '.png') });
 }
 
@@ -100,8 +98,7 @@ test('every adornment sits on every Walkling, faded ones in grey', async ({ page
   expect(problems).toEqual([]);
   if (page.viewportSize().width === 320) {
     await page.evaluate(() => PixelPets.adornSheet());
-    const dir = path.join('screenshots', 'partner');
-    fs.mkdirSync(dir, { recursive: true });
+    const dir = artifactsDir('screenshots/partner');
     await page.locator('#accSheet').screenshot({ path: path.join(dir, 'adornments-320.png') });
   }
 });
