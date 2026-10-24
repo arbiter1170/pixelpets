@@ -187,26 +187,67 @@ const PPEnv = (() => {
         { enableHighAccuracy: false, timeout: 12000, maximumAge: 10 * 60e3 });
     });
   }
-  // Refresh from the device location (only when the player allowed it). Never throws; always ends with an env.
+  // The browser's own answer for this page load: 'granted' | 'prompt' | 'denied' | 'unknown' (no Permissions API, or the
+  // query threw). lastPerm keeps the latest answer so the location card can label its button without waiting.
+  let lastPerm = 'unknown';
+  async function permState(){
+    let st = 'unknown';
+    try {
+      if (navigator.permissions && typeof navigator.permissions.query === 'function') {
+        const r = await navigator.permissions.query({ name: 'geolocation' });
+        if (r && typeof r.state === 'string') st = r.state;
+      }
+    } catch (e) { st = 'unknown'; }
+    lastPerm = st;
+    return st;
+  }
+  // Vincent's ruling (Oct 24): "Only check location silently if Safari already allows it; otherwise keep the last area
+  // until I tap Use my location." Without 'granted' (prompt, denied, no Permissions API, a query that throws) nothing
+  // reads the device: keep the cached area, or the meadow when there is none. Never emits when nothing changes.
+  function keepLastArea(st, setEnv){
+    const c = ls.json(CACHE_KEY);
+    if (c && c.key) { if (!env || env.source !== 'location') setEnv(fromCache(c, 'cached')); return env; }
+    const want = st === 'denied' ? 'denied' : 'off';
+    if (!env || env.source !== 'default' || env.status !== want) setEnv(fallback(want));
+    return env;
+  }
+  // Refresh the surroundings (only when the player allowed location). Never throws; always ends with an env.
+  // force === true: a tap on USE MY LOCATION (the location card or the first ask). The only call that may make the browser
+  //   ask, so the only one that reads the device without 'granted'.
+  // force === 'refresh': a tap on REFRESH. Reads the device only when 'granted'; otherwise it refetches the weather for the
+  //   cached area and leaves the position alone.
+  // no force: boot and the 5 min timer. Read the device only when 'granted'; otherwise keepLastArea.
   function refresh(force){
     if (busy) return busy;
     busy = (async () => {
       if (geoPref() !== 'allow') return env;
       const manual = overridesOn && !!ls.json(OVERRIDE_KEY);
       const setEnv = e => { if (!manual) { env = e; emit(); } };
+      const asked = force === true;
+      const st = asked ? null : await permState();
+      const silent = !asked;                                        // no prompt may come from this call
+      let lat, lon, cachedArea = false;
+      if (silent && st !== 'granted') {
+        const c0 = ls.json(CACHE_KEY);
+        if (force !== 'refresh' || !(c0 && c0.key)) return keepLastArea(st, setEnv);
+        const ll = String(c0.key).split(',').map(Number);
+        if (ll.length !== 2 || !ll.every(Number.isFinite)) return keepLastArea(st, setEnv);
+        lat = ll[0]; lon = ll[1]; cachedArea = true;                // REFRESH without a grant: same area, new weather
+      }
       const prev = env;
       setEnv(Object.assign({}, env, { status: 'loading' }));      // badge shows "..." right away
-      let lat, lon;
-      try { const c = await locate(); lat = round2(c.latitude); lon = round2(c.longitude); }
-      catch(e) {
-        // a one-off GPS timeout on a periodic refresh keeps the last real area; a denial always falls back
-        if (e.code !== 'denied' && prev && prev.source !== 'default' && prev.source !== 'manual') { setEnv(prev); return env; }
-        setEnv(fallback(e.code === 'denied' ? 'denied' : 'unavailable')); return env; }
+      if (!cachedArea) {
+        try { const c = await locate(); lat = round2(c.latitude); lon = round2(c.longitude); }
+        catch(e) {
+          // a GPS timeout keeps the last real area; a denial on a tap falls back to the meadow, a silent one keeps the area
+          if ((e.code !== 'denied' || silent) && prev && prev.source !== 'default' && prev.source !== 'manual') { setEnv(prev); return env; }
+          setEnv(fallback(e.code === 'denied' ? 'denied' : 'unavailable')); return env; }
+      }
       const key = lat.toFixed(2) + ',' + lon.toFixed(2);
       let c = ls.json(CACHE_KEY); if (!c || c.key !== key) c = { key, weather: null, terrain: null };
       const now = Date.now();
-      const needW = force || !c.weather || now - c.weather.at > WEATHER_TTL;
-      const needT = force || !c.terrain || now - c.terrain.at > (c.terrain.partial ? TERRAIN_RETRY : TERRAIN_TTL);
+      const needW = !!force || !c.weather || now - c.weather.at > WEATHER_TTL;
+      const needT = (!!force && !cachedArea) || !c.terrain || now - c.terrain.at > (c.terrain.partial ? TERRAIN_RETRY : TERRAIN_TTL);
       if (!needW && !needT) { setEnv(fromCache(c, 'ok')); return env; }
       setEnv(Object.assign(fromCache(c, 'loading'), { status: 'loading' }));
       const save = () => ls.set(CACHE_KEY, JSON.stringify(c));
@@ -255,7 +296,7 @@ const PPEnv = (() => {
   }
   function tick(){ syncClock(); }
 
-  return { init, refresh, setOverride, allowOverride, tick, syncClock, geoPref, setGeoPref, get current(){ return env; },
+  return { init, refresh, permState, get lastPerm(){ return lastPerm; }, setOverride, allowOverride, tick, syncClock, geoPref, setGeoPref, get current(){ return env; },
     PRESETS, ALL_TAGS, deriveTags, labelFor, wmo, round2, overpassQuery, WEATHER_TTL, TERRAIN_TTL };
 })();
 if (typeof window !== 'undefined') window.PPEnv = PPEnv;

@@ -132,7 +132,7 @@ test.describe('open game', () => {
     // now sees styled roofs and pays that one-time cell cache. The two lines above still catch a leak.
     expect(after - mid).toBeLessThan(8);
     expect(again - after).toBeLessThan(8);
-    expect(again - before).toBeLessThan(240);
+    expect(again - before).toBeLessThan(220);
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 });

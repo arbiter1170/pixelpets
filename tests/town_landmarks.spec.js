@@ -452,9 +452,10 @@ test('T12 quest marks sit clear of the marker and the board', async ({ page }) =
     PixelPets.goto('hearthmoor', 4, 27, 'up');
     PixelPets.cueForce({ x: 4, y: 26 });
   });
-  // At 3x both stands centre the holder, so the arrow can land on the same canvas pixel. Wait for the new draw.
-  await page.evaluate(() => new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res))));
-  await page.waitForFunction(() => PixelPets.state.world.x === 4 && PixelPets.state.world.y === 27 && PixelPets.cuePass());
+  await page.waitForFunction((prev) => {
+    const p = PixelPets.cuePass();
+    return p && (p.x !== prev.x || p.y !== prev.y);
+  }, boxes.at);
   const store = await page.evaluate(() => {
     const pass = PixelPets.cuePass();
     const origin = pass.dir === 'down'

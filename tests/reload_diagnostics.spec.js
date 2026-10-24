@@ -259,3 +259,63 @@ test('going hidden keeps the alive mark, so a kill while hidden reads as backgro
   expect(JSON.parse(await fresh.evaluate(() => localStorage.getItem('pixelpets.save.v2'))).v).toBe(2);
   expect(fresh.ppErrors).toEqual([]);
 });
+
+test('pp_diag keeps taps, screen, canvas MB and DOM size outside the save and a crash entry copies them', async ({ page }) => {
+  await boot(page);
+  const saveBefore = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
+  await page.locator('#repBtn').click();
+  await expect(page.locator('#ovRep')).toBeVisible();
+  // the 5 s beat is the only write that sweeps canvas sizes and counts DOM nodes
+  await page.waitForFunction(() => {
+    const d = JSON.parse(localStorage.getItem('pp_diag') || 'null');
+    return !!(d && d.screen === 'People' && Number.isFinite(d.cvMb) && Number.isFinite(d.dom));
+  }, null, { timeout: 9000 });
+  const diag = await page.evaluate(() => JSON.parse(localStorage.getItem('pp_diag')));
+  expect(diag.vis).toBe('visible');
+  expect(diag.acts.some((a) => /^repBtn@\d+$/.test(a))).toBe(true);
+  expect(diag.acts.some((a) => /^scr:People@\d+$/.test(a))).toBe(true);
+  expect(diag.acts.length).toBeLessThanOrEqual(8);
+  expect(diag.ovs).toContain('ovRep');
+  expect(diag.cvMb).toBeGreaterThan(0);
+  expect(diag.dom).toBeGreaterThan(100);
+  expect(diag.up).toBeGreaterThanOrEqual(0);
+  expect(diag.err).toBeUndefined();
+  const sv = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
+  expect(JSON.parse(sv).v).toBe(2);
+  expect(Object.keys(JSON.parse(sv)).sort()).toEqual(Object.keys(JSON.parse(saveBefore)).sort());
+  expect(/"(acts|cvMb|diag)"/.test(sv)).toBe(false);
+  const raw = await page.evaluate(() => ({ alive: localStorage.getItem('pp_alive'), diag: localStorage.getItem('pp_diag') }));
+  await page.close();
+  const fresh = await page.context().newPage();
+  fresh.ppErrors = [];
+  fresh.on('pageerror', (err) => fresh.ppErrors.push(err.message));
+  await fresh.addInitScript((raw) => {
+    if (sessionStorage.getItem('__diagSeeded')) return;
+    sessionStorage.setItem('__diagSeeded', '1');
+    localStorage.setItem('pp_alive', raw.alive);
+    localStorage.setItem('pp_diag', raw.diag);
+    localStorage.removeItem('pp_reload');
+    localStorage.removeItem('pp_hidden');
+  }, raw);
+  await gotoGame(fresh);
+  await fresh.waitForFunction(() => window.PixelPets && window.PixelPets.state);
+  const last = await fresh.evaluate(() => JSON.parse(localStorage.getItem('pp_reload_last')));
+  const entry = last[last.length - 1];
+  expect(entry).toMatchObject({ reason: 'crash', screen: 'People', vis: 'visible', ovs: diag.ovs, cvMb: diag.cvMb, dom: diag.dom });
+  expect(entry.acts).toContain('repBtn@');
+  expect(entry.acts).toContain('scr:People@');
+  expect(Number.isFinite(entry.up)).toBe(true);
+  expect(Number.isFinite(entry.diagGap)).toBe(true);
+  // the new page starts its own pp_diag
+  const mine = await fresh.evaluate(() => JSON.parse(localStorage.getItem('pp_diag')));
+  expect(mine.up).toBeLessThan(diag.up + 30);
+  expect(mine.acts.some((a) => /^repBtn@/.test(a))).toBe(false);
+  await fresh.locator('#settingsBtn').click();
+  const line = fresh.locator('#setReload');
+  await expect(line).toBeVisible();
+  await expect(line).toHaveText(/^Last reload: crash\?, \d{1,2}:\d{2}\s?[AP]M, on People$/);
+  const fit = await line.evaluate((el) => ({ h: el.offsetHeight, sw: el.scrollWidth, cw: el.clientWidth }));
+  expect(fit.h).toBe(14);
+  expect(fit.sw).toBeLessThanOrEqual(fit.cw + 1);
+  expect(fresh.ppErrors).toEqual([]);
+});

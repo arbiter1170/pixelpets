@@ -4,6 +4,14 @@
 // Canvas pressure for the reload breadcrumb. One wrap, not a DOM walk on the 5 s beat.
 // live drops when a canvas is collected. made is the count since the previous beat.
 let canvasBorn = 0, canvasLive = 0, canvasMark = 0;
+// Weak refs for the pp_diag area sweep (live canvas pixels). Swept and compacted on the 5 s beat only.
+const canvasRefs = [];
+function canvasPixels(){
+  let px = 0, w = 0;
+  for (let i = 0; i < canvasRefs.length; i++) { const c = canvasRefs[i].deref(); if (!c) continue; px += (c.width || 0) * (c.height || 0); canvasRefs[w++] = canvasRefs[i]; }
+  canvasRefs.length = w;
+  return px;
+}
 function watchCanvasCount(){
   try {
     const orig = Document.prototype.createElement;
@@ -13,6 +21,7 @@ function watchCanvasCount(){
       if (typeof tag === 'string' && tag.toLowerCase() === 'canvas') {
         canvasBorn++; canvasLive++;
         if (fin) try { fin.register(el, 0); } catch (e) {}
+        if (typeof WeakRef === 'function') try { canvasRefs.push(new WeakRef(el)); } catch (e) {}
       }
       return el;
     };
@@ -346,7 +355,12 @@ function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); i
    pp_hidden it stays crash?. Boot copies nav, standalone, sw, gap, hid and wasDiscarded onto the stored entry.
    A crash or background kill also copies the last heartbeat: screen, battle phase, live canvas count, portrait-cache
    size, canvases made since the previous beat. Boot moves the entry into pp_reload_last (last 5). Settings shows one
-   short line. The field list is only on a ?debug=1 page. Script errors go to pp_errors (last 5), their own key. */
+   short line. The field list is only on a ?debug=1 page. Script errors go to pp_errors (last 5), their own key.
+   pp_diag (its own key) is a richer last-known state for the next boot: seconds since boot, visibility, screen, open
+   overlays, the last 8 taps and screen changes, live canvases and their pixel MB, DOM node count, JS heap where the
+   browser reports it, and this page's last script error. It is written on each screen change, tap (at most every
+   250 ms), hide, and the 5 s beat (the only write that sweeps canvas sizes and counts DOM nodes). A crash, background
+   kill or unknown reload copies it onto the pp_reload_last entry. */
 const RELOAD_KEY = 'pp_reload', RELOAD_LAST = 'pp_reload_last', ALIVE_KEY = 'pp_alive', HIDDEN_KEY = 'pp_hidden', RELOAD_KEEP = 5;
 function lsJson(k){ try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 function lsPut(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
@@ -407,7 +421,55 @@ function screenName(){
 }
 function markReload(reason){ lsPut(RELOAD_KEY, { reason, at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); lsDrop(ALIVE_KEY); }
 function markUnload(){ if (!lsJson(RELOAD_KEY)) lsPut(RELOAD_KEY, { reason: 'unknown', at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || '') }); lsDrop(ALIVE_KEY); }
-function markHidden(){ if (resetting) return; lsPut(HIDDEN_KEY, { at: Date.now() }); }
+function markHidden(){ if (resetting) return; lsPut(HIDDEN_KEY, { at: Date.now() }); writeDiag(false, true); }
+const DIAG_KEY = 'pp_diag', BOOT_AT = Date.now(), DIAG_ACTS = 8;
+const diag = { acts: [], screen: '', cvMb: null, dom: null, at: 0 };
+function diagAct(label){
+  const s = String(label || '').replace(/\s+/g, ' ').slice(0, 24);
+  if (!s) return;
+  diag.acts.push(s + '@' + Math.round((Date.now() - BOOT_AT) / 1000));
+  if (diag.acts.length > DIAG_ACTS) diag.acts.shift();
+}
+function tapLabel(t){
+  try {
+    const el = t && t.closest ? (t.closest('button,a,input,select') || t.closest('canvas,[id],[data-rep],[data-bact],[data-tab]')) : null;
+    if (!el) return '';
+    const d = el.dataset || {};
+    return el.id || (d.bact && 'bact:' + d.bact) || (d.tab && 'tab:' + d.tab) || (d.rep && 'rep') || String(el.className || el.tagName || '').split(' ')[0];
+  } catch (e) { return ''; }
+}
+// beat: the 5 s timer, the only caller that sweeps canvas sizes and counts DOM nodes. force: write even inside the 250 ms throttle.
+function writeDiag(beat, force){
+  if (resetting) return;
+  try {
+    const t = Date.now();
+    if (beat) {
+      diag.cvMb = Math.round(canvasPixels() * 4 / 10485.76) / 100;
+      diag.dom = document.getElementsByTagName('*').length;
+    } else if (!force && t - diag.at < 250) return;
+    diag.at = t;
+    const out = { at: t, build: String(window.BUILD || ''), up: Math.round((t - BOOT_AT) / 1000), vis: document.visibilityState || (document.hidden ? 'hidden' : 'visible'),
+      screen: diag.screen, acts: diag.acts.slice(), live: canvasLive, made: canvasBorn };
+    if (diag.cvMb != null) out.cvMb = diag.cvMb;
+    if (diag.dom != null) out.dom = diag.dom;
+    try { const ovs = Array.from(document.querySelectorAll('.overlay:not([hidden])'), el => el.id).filter(Boolean); if (ovs.length) out.ovs = ovs.join(','); } catch (e) {}
+    try { const m = performance.memory; if (m && m.usedJSHeapSize) out.heap = Math.round(m.usedJSHeapSize / 10485.76) / 100; } catch (e) {}
+    const errs = errorLog(), last = errs[errs.length - 1];
+    if (last && Number.isFinite(last.at) && last.at >= BOOT_AT) out.err = String(last.message || '').slice(0, 80);
+    lsPut(DIAG_KEY, out);
+  } catch (e) {}
+}
+// Copy the last diagnostics beat onto a crash / background / unknown entry. Flat fields so the ?debug=1 list reads them.
+function diagOnto(entry, d){
+  if (!d || typeof d !== 'object' || !Number.isFinite(d.at)) return;
+  if (Number.isFinite(d.up)) entry.up = Math.max(0, Math.round(d.up));
+  if (typeof d.vis === 'string') entry.vis = d.vis.slice(0, 12);
+  if (Array.isArray(d.acts) && d.acts.length) entry.acts = d.acts.slice(-DIAG_ACTS).map(String).join(' > ').slice(0, 220);
+  if (typeof d.ovs === 'string' && d.ovs) entry.ovs = d.ovs.slice(0, 80);
+  for (const k of ['cvMb', 'dom', 'heap']) if (Number.isFinite(d[k])) entry[k] = d[k];
+  if (typeof d.err === 'string' && d.err) entry.err = d.err.slice(0, 80);
+  entry.diagGap = Math.max(0, Date.now() - d.at);
+}
 function battlePhase(){
   try {
     if (!battle.on) return '';
@@ -416,7 +478,7 @@ function battlePhase(){
     return String(battle.panel || '');
   } catch (e) { return ''; }
 }
-function markAlive(){
+function markAlive(beat){
   if (document.hidden || resetting) return;
   let portraits = 0;
   try { portraits = faceCache.size; } catch (e) {}
@@ -426,6 +488,8 @@ function markAlive(){
   const phase = battlePhase();
   if (phase) entry.phase = phase;
   lsPut(ALIVE_KEY, entry);
+  if (entry.screen !== diag.screen) { if (diag.screen || entry.screen) diagAct('scr:' + entry.screen); diag.screen = entry.screen; writeDiag(beat === true, true); }
+  else writeDiag(beat === true, beat === true);
 }
 function bootFacts(alive, hidden){
   const facts = { standalone: false, sw: false, hid: false };
@@ -445,7 +509,7 @@ function bootFacts(alive, hidden){
   return facts;
 }
 function takeReloadCrumb(){
-  const crumb = lsJson(RELOAD_KEY), alive = lsJson(ALIVE_KEY), hidden = lsJson(HIDDEN_KEY);
+  const crumb = lsJson(RELOAD_KEY), alive = lsJson(ALIVE_KEY), hidden = lsJson(HIDDEN_KEY), last = lsJson(DIAG_KEY);
   let entry = null;
   if (crumb && typeof crumb === 'object') entry = Object.assign({}, crumb);
   else if (alive && typeof alive === 'object') {
@@ -458,10 +522,11 @@ function takeReloadCrumb(){
   }
   if (entry) {
     Object.assign(entry, bootFacts(alive, hidden));
+    if (entry.reason === 'crash' || entry.reason === 'background' || entry.reason === 'unknown') diagOnto(entry, last);
     const old = lsJson(RELOAD_LAST);
     lsPut(RELOAD_LAST, (Array.isArray(old) ? old : []).concat([entry]).slice(-RELOAD_KEEP));
   }
-  lsDrop(RELOAD_KEY); lsDrop(HIDDEN_KEY);
+  lsDrop(RELOAD_KEY); lsDrop(HIDDEN_KEY); lsDrop(DIAG_KEY);
   if (document.hidden) markHidden(); else markAlive();
 }
 function watchReloads(){
@@ -469,7 +534,8 @@ function watchReloads(){
   window.addEventListener('beforeunload', markUnload);
   window.addEventListener('pageshow', e => { if (e.persisted && !resetting) { lsDrop(RELOAD_KEY); lsDrop(HIDDEN_KEY); markAlive(); } });   // back/forward cache restore: not a reload
   document.addEventListener('visibilitychange', () => { if (document.hidden) markHidden(); else { lsDrop(HIDDEN_KEY); markAlive(); } });   // keep the last beat: a kill while hidden then reads as 'background', not nothing
-  setInterval(markAlive, 5000);
+  document.addEventListener('click', e => { const l = tapLabel(e.target); if (l) { diagAct(l); writeDiag(false, false); } }, { capture: true, passive: true });
+  setInterval(() => markAlive(true), 5000);
 }
 const RELOAD_LABEL = { cloud: 'cloud', build: 'new build', boot: 'boot retry', startover: 'start over', copy: 'save copy', bfcache: 'save changed', newer: 'newer save', unknown: 'unknown', crash: 'crash?', background: 'background kill' };
 function lastReloadText(){
@@ -6281,11 +6347,13 @@ function drawCuePill(g, cx, cy, shown, face, tracked){
 }
 // D467: slide along the edge band until the 44 px box clears every obstacle by 6 CSS px and every earlier box by 4.
 // If the edge band has no room, the 56 px inset band is the fallback. Map px; k is map px per CSS px.
-function placeCueEdge(VW, bottom, px, py, dx, dy, rects, placed, k){
+function placeCueEdge(VW, bottom, px, py, dx, dy, rects, placed, k, topInk){
   const MARGIN = CUE_EDGE.margin * k, HALF = (CUE_EDGE.box / 2) * k, GAP = CUE_EDGE.gap * k;
   const EDGE = CUE_EDGE.edge * k, INSET = CUE_EDGE.inset * k;
+  // The top of the band sits under the area chip, so a 44 px box can cover a partner on the top row.
+  const top0 = Math.max(EDGE + HALF, (topInk || 0) + HALF);
   const bands = [
-    { x0: EDGE + HALF, y0: EDGE + HALF, x1: VW - EDGE - HALF, y1: bottom - EDGE - HALF, cost: 0 },
+    { x0: EDGE + HALF, y0: top0, x1: VW - EDGE - HALF, y1: bottom - EDGE - HALF, cost: 0 },
     { x0: INSET + HALF, y0: INSET + HALF, x1: VW - INSET - HALF, y1: bottom - 2 * EDGE - HALF, cost: 60 * HALF / 22 },
   ];
   const clear = (x, y) => !rects.some(r => x - HALF < r.x1 + MARGIN && x + HALF > r.x0 - MARGIN && y - HALF < r.y1 + MARGIN && y + HALF > r.y0 - MARGIN)
@@ -6372,6 +6440,12 @@ function cueTopInk(){
   if (ctlMode() !== 'modern' || isRoom() || !hudPads.on) return 0;
   const z = mapZoom || 1;
   return z > 0 ? Math.ceil(Math.max(0, hudPads.top - (hudPads.oy || 0)) / z) : 0;
+}
+// The 44 px edge box drops under the chip only when the partner is standing on the top rows,
+// so a tap on that box can land on the partner and still open QUEST.
+function cueEdgeTopInk(){
+  if (!followerOn() || fol.x == null || fol.y > 1) return 0;
+  return cueTopInk();
 }
 // Board slip only. Modern off-screen stays on CUE_RAIL (D435). Main and side do not call this.
 function drawSlipCue(g, pt, col, cx, cy, t, VW, VH, shift){
@@ -6478,7 +6552,7 @@ function drawEdgeCue(g, pt, col, cx, cy, t, VW, VH, shift, tracked, placed){
     const at = objPos(o);
     pushTile(at.x, at.y);
   }
-  const pos = placeCueEdge(VW, view.bottom, px, py, dx, dy, rects, placed, view.k);
+  const pos = placeCueEdge(VW, view.bottom, px, py, dx, dy, rects, placed, view.k, cueEdgeTopInk());
   if (!pos) return;
   placed.push({ x: pos.x, y: pos.y });
   const a2 = Math.atan2(Y + 8 - pos.y, X + 8 - pos.x);
@@ -7987,6 +8061,48 @@ function outdoorViewBand(VH){
   if (!(open > 0)) return { hudPad: useBot, VHe: useVHe, topPad: 0, mid: useVHe / 2, span: useVHe, head, padL, padR };
   return { hudPad: useBot, VHe: useVHe, topPad: useTop, mid: useTop + open / 2, span: open, head, padL, padR };
 }
+// A north exit within 6 tiles is pulled until that exit's row clears the area chip.
+// The pull fades out by 10 tiles so walking south hands back to follow.
+function outdoorNorthLift(band, py){
+  if (!band.head || !CUR || !CUR.objs || !walk) return;
+  const tx = Math.round(walk.fx), ty = Math.round(walk.fy);
+  // The side columns sit under the clock and the round buttons. Leave those stands centred.
+  if (tx <= 2 || tx >= MW - 3) return;
+  let camMax = null, dist = 99;
+  for (const o of CUR.objs) {
+    if (!o || (o.kind !== 'warp' && o.kind !== 'door') || !present(o)) continue;
+    const at = objPos(o);
+    if (at.y > 3 || at.y > ty) continue;
+    const d = Math.max(Math.abs(at.x - tx), Math.abs(at.y - ty));
+    if (d > 10) continue;
+    // Clear that exit's own row. Pulling all the way to row 0 hides the path under the bottom band.
+    const lim = at.y * TS - band.topPad;
+    if (camMax == null || lim < camMax) { camMax = lim; dist = d; }
+    else if (lim === camMax && d < dist) dist = d;
+  }
+  if (camMax == null || walk.cam.y <= camMax) return;
+  const w = Math.max(0, Math.min(1, (10 - dist) / 4));
+  if (!(w > 0)) return;
+  const aim = Math.max(walk.cam.y - w * (walk.cam.y - camMax), (py + TS) - band.VHe);
+  const yLo = -band.topPad, yHi = MH * TS - band.VHe;
+  walk.cam.y = Math.round(clamp(aim, Math.min(yLo, yHi), Math.max(yLo, yHi)));
+}
+// Near the south edge, scroll until that edge sits on the bottom of the open view.
+// A short 3x view would otherwise centre two southern stands on the same cue pixel.
+function outdoorSouthLift(band, py, vh){
+  if (!CUR || !walk || isRoom()) return;
+  const tx = Math.round(walk.fx);
+  if (tx <= 2 || tx >= MW - 3) return;
+  const dist = (MH - 1) - Math.round(walk.fy);
+  if (dist < 0 || dist > 10) return;
+  const view = band.head ? band.VHe : vh;
+  const yHi = MH * TS - view, yLo = band.head ? -band.topPad : 0;
+  if (!(view > 0) || walk.cam.y >= yHi) return;
+  const w = Math.max(0, Math.min(1, (10 - dist) / 4));
+  if (!(w > 0)) return;
+  const aim = Math.min(walk.cam.y + w * (yHi - walk.cam.y), py);
+  walk.cam.y = Math.round(clamp(aim, Math.min(yLo, yHi), Math.max(yLo, yHi)));
+}
 function biasForSpeaker(o){
   const VH = $('#mapCanvas').height; if (!VH) return 0;
   const band = outdoorViewBand(VH);
@@ -8084,6 +8200,8 @@ function syncWalkCam(t){
     ? (!band.head ? -Math.floor((band.VHe - MH * TS) / 2) : -(band.topPad + Math.floor((band.VHe - band.topPad - MH * TS) / 2)))
     : Math.round(clamp(py_ + 8 - band.mid + by, Math.min(yLo, yHi), Math.max(yLo, yHi)));
   walk.cam.y = MH * TS <= band.VHe ? yFit : Math.round(clamp(py_ + 8 - band.mid + by, Math.min(yLo, yHi), Math.max(yLo, yHi)));
+  if (band.head) outdoorNorthLift(band, py_);
+  if (!isRoom()) outdoorSouthLift(band, py_, VH);
   if (hudPads.on && isRoom() && CUR && !CUR.fitWidth) placeRoomCam(VW, VH, px_, py_, bx, by);
   // Your Room at 320: the centred room still tucks its left wall under the round-button column. Nudge it right. Scale stays.
   if (roomSideNudge && CUR && CUR.id === 'hc_apt_in' && MW * TS <= VW) walk.cam.x -= roomSideNudge;
@@ -8766,16 +8884,18 @@ function lockTabs(on){ const l = !!on || (!!S && !allPets().length) || (!on && (
   try { markAlive(); } catch (e) {} }
 function openGeoAsk(){ if (overlayOpen()) return; clearMoves(); $('#ovGeo').hidden = false; lockTabs(true); }
 function closeGeoAsk(){ $('#ovGeo').hidden = true; lockTabs(false); }
-function useLocation(){
+// mode 'refresh' = the card's REFRESH (shown only when the browser already allows location): never makes the browser ask.
+// Anything else is a USE MY LOCATION tap, the one place a location prompt may come from.
+function useLocation(mode){
   PPEnv.setGeoPref('allow');
   if (!window.isSecureContext || !navigator.geolocation) { toast('Location needs https or localhost. Using a meadow.'); }
-  PPEnv.refresh(true).then(e => {
+  PPEnv.refresh(mode === 'refresh' ? 'refresh' : true).then(e => {
     if (e.status === 'denied') toast('Location blocked. Using a meadow for now.');
     else if (e.status === 'offline') toast('Offline: using a meadow for now.');
     else if (e.source === 'location') toast('Around here: ' + e.label);
   });
 }
-function openEnvCard(){ if (overlayOpen()) return; clearMoves(); renderEnvCard(); $('#ovEnv').hidden = false; lockTabs(true); }
+function openEnvCard(){ if (overlayOpen()) return; clearMoves(); renderEnvCard(); $('#ovEnv').hidden = false; lockTabs(true); PPEnv.permState().then(() => { if (!$('#ovEnv').hidden) renderEnvCard(); }); }
 function closeEnvCard(){ $('#ovEnv').hidden = true; lockTabs(false); }
 function renderEnvCard(){
   const e = ENV; if (!e) return;
@@ -8791,8 +8911,11 @@ function renderEnvCard(){
                unavailable: 'Location needs https or localhost, so this is a default meadow.',
                offline: 'Could not reach the weather/map services, so this is a default meadow.' }[e.status] || 'Location is off, so this is a default meadow (night from your clock).';
   $('#envCardSrc').textContent = src;
-  const allowed = PPEnv.geoPref() === 'allow' && e.source !== 'default';
-  $('#envUseLoc').textContent = allowed ? 'REFRESH' : 'USE MY LOCATION';
+  // REFRESH only when the browser already allows location (Vincent, Oct 24); otherwise the tap is USE MY LOCATION, which may ask
+  const allowed = PPEnv.geoPref() === 'allow' && e.source !== 'default' && PPEnv.lastPerm === 'granted';
+  const use = $('#envUseLoc');
+  use.textContent = allowed ? 'REFRESH' : 'USE MY LOCATION';
+  use.dataset.mode = allowed ? 'refresh' : 'use';
 }
 function buildPresetButtons(){
   const box = $('#envPresets'); box.innerHTML = '';
@@ -13125,11 +13248,26 @@ async function pumpLearn(){
 
 /* --- generic choice sheet (#ovSheet, above the battle and evolve overlays) --- */
 let sheetResolve = null;
+// One delegated click listener on the persistent #shList. Rows only carry their item in sheetItems, so clearing the list
+// releases them (a listener per row stayed counted after the row was dropped: about 11 more per GROW UP + move cycle).
+const sheetItems = new WeakMap();
+let sheetListWired = false;
+function wireSheetList(list){
+  if (sheetListWired) return;
+  sheetListWired = true;
+  list.addEventListener('click', e => {
+    const b = e.target && e.target.closest ? e.target.closest('button.sh-item') : null;
+    if (!b || b.parentNode !== list) return;
+    const it = sheetItems.get(b);
+    if (!it || b.disabled) return;
+    sfx('tap'); if (it.hold) return; closeSheet(it.value);
+  });
+}
 function openSheet(title, items, cancel){
   if (sheetResolve) closeSheet(null);
   return new Promise(res => {
     $('#shTitle').textContent = title;
-    const list = $('#shList'); list.textContent = '';
+    const list = $('#shList'); wireSheetList(list); list.textContent = '';
     items.forEach(it => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sh-item' + (it.cls ? ' ' + it.cls : ''); b.disabled = !!it.disabled;
       if (it.art && ITEM_ART[it.art]) { const ico = document.createElement('canvas'); ico.width = ico.height = 18; ico.className = 'bag-ico'; ctx(ico).drawImage(keeperCanvas(ITEM_ART[it.art]), 0, 0); b.appendChild(ico); b.classList.add('has-ico'); }
@@ -13137,7 +13275,7 @@ function openSheet(title, items, cancel){
       const l = document.createElement('span'); l.className = 'sh-l' + (it.type ? ' type-chip t-' + String(it.type).toLowerCase() : ''); l.textContent = it.label; b.appendChild(l);
       if (it.sub) { const s2 = document.createElement('span'); s2.className = 'sh-s'; s2.textContent = it.sub; b.appendChild(s2); }
       if (it.hp != null) { const bar = document.createElement('span'); bar.className = 'sh-hp'; const i = document.createElement('i'); i.style.width = clamp(it.hp * 100, 0, 100) + '%'; if (it.hp < 0.25) i.className = 'warn'; bar.appendChild(i); b.appendChild(bar); }
-      b.addEventListener('click', () => { if (b.disabled) return; sfx('tap'); if (it.hold) return; closeSheet(it.value); });
+      sheetItems.set(b, it);
       list.appendChild(b);
     });
     const c = $('#shCancel'); c.hidden = !cancel; c.textContent = cancel || 'BACK';
@@ -15693,7 +15831,7 @@ function bindInput(){
   $('#envBadge').addEventListener('click', openEnvCard);
   const clockBtn = $('#clockChip'); if (clockBtn) clockBtn.addEventListener('click', openClockCard);
   const clockShut = $('#clockClose'); if (clockShut) clockShut.addEventListener('click', () => { sfx('tap'); closeClockCard(); });
-  $('#envUseLoc').addEventListener('click', () => { closeEnvCard(); useLocation(); });
+  $('#envUseLoc').addEventListener('click', () => { const mode = $('#envUseLoc').dataset.mode; closeEnvCard(); useLocation(mode); });
   $('#envClose').addEventListener('click', closeEnvCard);
   buildPresetButtons();
   $('#copyCode').addEventListener('click', () => {

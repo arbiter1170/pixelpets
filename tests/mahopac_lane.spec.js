@@ -29,11 +29,45 @@ async function tilePoint(page, tx, ty) {
   }, { tx, ty });
 }
 
+// The exit row's tile rect must miss the top HUD, and a finger on its centre must hit the map.
+async function exitRowClear(page) {
+  return page.evaluate(() => {
+    const mc = document.querySelector('#mapCanvas');
+    const r = mc.getBoundingClientRect();
+    const cam = PixelPets.walk.cam;
+    const s = r.width / mc.width;
+    const hud = ['#fcTop', '#fcTL'].map((sel) => {
+      const b = document.querySelector(sel).getBoundingClientRect();
+      return { id: sel, left: b.left, top: b.top, right: b.right, bottom: b.bottom };
+    });
+    const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    return [8, 9, 10].map((tx) => {
+      const rect = {
+        left: r.left + (tx * 16 - cam.x) * s,
+        top: r.top + (2 * 16 - cam.y) * s,
+        right: r.left + ((tx + 1) * 16 - cam.x) * s,
+        bottom: r.top + (3 * 16 - cam.y) * s,
+      };
+      const cx = (rect.left + rect.right) / 2, cy = (rect.top + rect.bottom) / 2;
+      const el = document.elementFromPoint(cx, cy);
+      return {
+        tx,
+        covered: hud.filter((b) => hit(rect, b)).map((b) => b.id),
+        hit: el ? el.id : null,
+      };
+    });
+  });
+}
+
 test('one tap on the trail mouth walks from the town square into Mahopac', async ({ page }) => {
   await boot(page);
-  // At 3x the mouth on row 2 sits under the area chip from the path (y 8). One tile north is in the free band.
-  await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 7, 'up'));
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 8, 'up'));
   await page.waitForTimeout(300);
+  const row = await exitRowClear(page);
+  for (const cell of row) {
+    expect(cell.covered, 'exit tile ' + cell.tx + ',2 intersects the top HUD').toEqual([]);
+    expect(cell.hit, 'exit tile ' + cell.tx + ',2 is not tappable').toBe('mapCanvas');
+  }
   for (const x of [8, 9, 10]) {
     const p = await tilePoint(page, x, 2);
     expect(p.hit, 'exit tile ' + x + ',2 is not under the HUD').toBe('mapCanvas');

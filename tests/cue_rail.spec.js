@@ -350,15 +350,37 @@ test('the north trail and the Lodge door stay tappable beside an edge box', asyn
   const clear = await edgeClear(page);
   expect(clear.n).toBeGreaterThan(0);
   expect(clear.hit).toEqual([]);
-  // At 3x, row 2 is under the area chip from y 8. Step one tile north so the tap lands on the map.
-  await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 7, 'up'));
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 8, 'up'));
   await frame(page);
+  const row = await page.evaluate(() => {
+    const mc = document.querySelector('#mapCanvas');
+    const r = mc.getBoundingClientRect();
+    const cam = PixelPets.walk.cam;
+    const s = r.width / mc.width;
+    const hud = ['#fcTop', '#fcTL'].map((sel) => document.querySelector(sel).getBoundingClientRect());
+    const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    return [8, 9, 10].map((tx) => {
+      const rect = {
+        left: r.left + (tx * 16 - cam.x) * s,
+        top: r.top + (2 * 16 - cam.y) * s,
+        right: r.left + ((tx + 1) * 16 - cam.x) * s,
+        bottom: r.top + (3 * 16 - cam.y) * s,
+      };
+      const cx = (rect.left + rect.right) / 2, cy = (rect.top + rect.bottom) / 2;
+      const el = document.elementFromPoint(cx, cy);
+      return { tx, covered: hud.some((b) => hit(rect, b)), hit: el ? el.id : null };
+    });
+  });
+  for (const cell of row) {
+    expect(cell.covered, 'exit tile ' + cell.tx + ',2 intersects #fcTop or #fcTL').toBe(false);
+    expect(cell.hit, 'exit tile ' + cell.tx + ',2 is not tappable').toBe('mapCanvas');
+  }
   await tapTile(page, 10, 2);
   await page.waitForFunction(() => PixelPets.mapInfo.id === 'mahopac' && !PixelPets.fading);
   expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y, quest: document.querySelector('#ovQuest').hidden }))).toEqual({ map: 'mahopac', x: 9, y: 14, quest: true });
 
   await page.evaluate(() => {
-    PixelPets.goto('hearthmoor', 9, 7, 'up');
+    PixelPets.goto('hearthmoor', 9, 8, 'up');
     PixelPets.cueLayout({ main: null, side: { x: -6, y: 1 }, board: null });
   });
   await frame(page);
@@ -367,7 +389,7 @@ test('the north trail and the Lodge door stay tappable beside an edge box', asyn
   expect(await page.locator('#ovQuest').isHidden()).toBe(true);
 
   await page.evaluate(() => {
-    PixelPets.goto('hearthmoor', 9, 7, 'up');
+    PixelPets.goto('hearthmoor', 9, 8, 'up');
     PixelPets.cueLayout({ main: null, side: { x: -6, y: 1 }, board: null });
   });
   await frame(page);

@@ -77,17 +77,23 @@ async function walkDest(page, steps, minPath) {
   return page.evaluate(({ steps, minPath }) => {
     const x0 = PixelPets.state.world.x, y0 = PixelPets.state.world.y;
     const c = document.querySelector('#mapCanvas');
+    const r = c.getBoundingClientRect();
     const cam = PixelPets.walk.cam;
-    const k = c.getBoundingClientRect().width / c.width;
+    const k = r.width / c.width;
     const chips = (PixelPets.cueChips && PixelPets.cueChips()) || [];
     const inCue = (x, y) => {
       const px = (x * 16 - cam.x + 8) * k, py = (y * 16 - cam.y + 8) * k;
       return chips.some(ch => ch.box && px >= ch.box.x && px < ch.box.x + ch.box.w && py >= ch.box.y && py < ch.box.y + ch.box.h);
     };
+    const onMap = (x, y) => {
+      const sx = r.left + (x * 16 - cam.x + 8) * k, sy = r.top + (y * 16 - cam.y + 8) * k;
+      const el = document.elementFromPoint(sx, sy);
+      return !!(el && el.id === 'mapCanvas');
+    };
     for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
       const x = x0 + dx * steps, y = y0 + dy * steps;
       const info = PixelPets.tileInfo(x, y);
-      if (!info || !info.walk || info.blocked || inCue(x, y)) continue;
+      if (!info || !info.walk || info.blocked || inCue(x, y) || !onMap(x, y)) continue;
       const path = PixelPets.findPath([{ x, y }]);
       if (path && path.length >= minPath) return { x, y };
     }
@@ -387,26 +393,6 @@ test('a moving tap on the follower walks, and an edge box over the partner opens
     expect(await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual(at);
     opened = true;
     break;
-  }
-  if (!opened) {
-    // At 3x the 44 px box sits in the margin and misses the partner. The box still opens QUEST.
-    await page.evaluate(() => PixelPets.goto('hearthmoor', 12, 8, 'down'));
-    await page.waitForFunction(() => !window.PixelPets.fading);
-    await page.evaluate(() => PixelPets.cueForce({ x: 1, y: 48 }));
-    await frame(page);
-    const box = await page.evaluate(() => {
-      const ch = PixelPets.cueChip();
-      if (!ch || !ch.box) return null;
-      return { x: ch.box.x + ch.box.w / 2, y: ch.box.y + ch.box.h / 2 };
-    });
-    expect(box).toBeTruthy();
-    const at = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
-    await page.locator('#mapCanvas').click({ position: box });
-    await frame(page);
-    await expect(page.locator('#ovQuest')).toBeVisible();
-    expect(await page.locator('#careTray').isHidden()).toBe(true);
-    expect(await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual(at);
-    opened = true;
   }
   expect(opened).toBe(true);
 });
