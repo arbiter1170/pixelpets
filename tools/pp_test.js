@@ -6,7 +6,10 @@
    - Exits with Playwright's real exit code (no pipe masking).
    Usage: node tools/pp_test.js [any playwright args, e.g. tests/smoke.spec.js --project=390]
           node tools/pp_test.js --slow   (only @slow tests, 390 Chromium)
-   Env: PP_TEST_DIR (default test-logs; NOT under test-results/, which Playwright wipes at start), PP_TEST_MAX_FAILS (10), PP_TEST_ERR_LINES (12). */
+   Env: PP_TEST_DIR (default test-logs; NOT under test-results/, which Playwright wipes at start), PP_TEST_MAX_FAILS (10), PP_TEST_ERR_LINES (12).
+        Emulator ports (free port each when unset): PP_RTDB_PORT, PP_RTDB_HUB_PORT, PP_RTDB_LOGGING_PORT for the
+        rules precheck; PP_EMU_DB_PORT, PP_EMU_AUTH_PORT, PP_EMU_FS_PORT, PP_EMU_FS_WS_PORT, PP_EMU_HUB_PORT,
+        PP_EMU_LOGGING_PORT for the shared spec emulator (tests/emu_shared.js). */
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -55,8 +58,29 @@ if (chk.status !== 0) {
   fs.writeFileSync(sumPath, msg); process.stdout.write(msg); process.exit(chk.status || 1);
 }
 
+// 1a. Emulator ports for this run. Each name left unset gets a free port, so two runs on one
+// machine never share 9000 / 4400. Set any of them to pin it. tools/emu_ports.js has the details.
+const PORT_ENV = {
+  rtdbDb: 'PP_RTDB_PORT', rtdbHub: 'PP_RTDB_HUB_PORT', rtdbLog: 'PP_RTDB_LOGGING_PORT',
+  db: 'PP_EMU_DB_PORT', auth: 'PP_EMU_AUTH_PORT', fs: 'PP_EMU_FS_PORT', fsWs: 'PP_EMU_FS_WS_PORT',
+  hub: 'PP_EMU_HUB_PORT', logging: 'PP_EMU_LOGGING_PORT',
+};
+const pick = spawnSync(process.execPath, ['-e',
+  "require(" + JSON.stringify(path.join(__dirname, 'emu_ports.js')) + ").pickPorts(" + JSON.stringify(PORT_ENV) + ").then(p => process.stdout.write(JSON.stringify(p)))"],
+  { encoding: 'utf8' });
+let picked = null;
+try { picked = JSON.parse(pick.stdout); } catch (e) {}
+if (!picked) {
+  const msg = `PP_TEST RESULT: FAIL exit=1 stage=ports (could not pick free emulator ports)\n${strip(pick.stderr).trim()}\nLOG: ${logPath}\n`;
+  fs.writeFileSync(sumPath, msg); process.stdout.write(msg); process.exit(1);
+}
+const portEnv = {};
+for (const k of Object.keys(PORT_ENV)) portEnv[PORT_ENV[k]] = String(picked[k]);
+const runEnv = { ...process.env, ...portEnv };
+fs.writeSync(log, 'PP_TEST ports: ' + Object.keys(portEnv).map(k => k + '=' + portEnv[k]).join(' ') + '\n');
+
 // 1b. RTDB rules against the local database emulator (never the live project).
-const rules = spawnSync(process.execPath, ['tools/rtdb_rules_test.js'], { stdio: ['ignore', log, log] });
+const rules = spawnSync(process.execPath, ['tools/rtdb_rules_test.js'], { stdio: ['ignore', log, log], env: runEnv });
 const rulesText = strip(fs.readFileSync(logPath, 'utf8'));
 const rulesLine = (rulesText.split('\n').filter(l => l.startsWith('RTDB_RULES RESULT')).pop()) || `RTDB_RULES RESULT: FAIL exit=${rules.status}`;
 if (rules.status !== 0) {
@@ -86,7 +110,7 @@ if (slowLane) {
 }
 const pw = spawnSync('npx', ['playwright', 'test', '--reporter=line,json', ...pwArgs], {
   stdio: ['ignore', log, log],
-  env: { ...process.env, PP_SLOW: slowLane ? '1' : (process.env.PP_SLOW || ''), PLAYWRIGHT_JSON_OUTPUT_NAME: jsonPath, FORCE_COLOR: '0' },
+  env: { ...runEnv, PP_SLOW: slowLane ? '1' : (process.env.PP_SLOW || ''), PLAYWRIGHT_JSON_OUTPUT_NAME: jsonPath, FORCE_COLOR: '0' },
 });
 const code = pw.status === null ? 2 : pw.status;
 const secs = Math.round((Date.now() - t0) / 1000);

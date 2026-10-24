@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const { starterSave, installSave, gotoGame } = require('./helpers');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
-const { ensureEmulator, releaseEmulator } = require('./emu_shared');
+const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 
 const BASE = 'http://127.0.0.1:' + (process.env.PP_PORT || '8080');
 let env = null;
@@ -30,7 +30,7 @@ function watch(page){
 async function boot(page, s){
   await installSave(page.context(), s, { quietDay: true });
   watch(page);
-  await gotoGame(page, '?cloud=emu&debug=1');
+  await gotoGame(page, '?cloud=emu&debug=1' + emuQuery());
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.net && window.PixelPets.net.uid, null, { timeout: 25000 });
   await page.evaluate(() => { PixelPets.showTab('walk'); if (PixelPets.clearWild) PixelPets.clearWild(); });
 }
@@ -49,7 +49,7 @@ test.describe('ART_PASS co-op hop', () => {
   test.beforeAll(async ({}, info) => {
     test.skip(info.project.name !== '390', '390 only');
     await ensureEmulator();
-    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
+    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: EMU_PORTS.database, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await env.withSecurityRulesDisabled(async ctx => { await ctx.database().ref('roomCodes/AMB4RQ').set({ on: true }); });
   });
   test.afterAll(async () => {

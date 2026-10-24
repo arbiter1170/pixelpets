@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 /* RTDB security rules for PLAY_TOGETHER_P1.
-   Starts the database emulator (127.0.0.1:9000, project demo-walklings) and
+   Starts the database emulator (127.0.0.1, project demo-walklings) and
    checks every must-deny case plus the allows. Never talks to walklings-4cc89.
+   Ports: PP_RTDB_PORT (database), PP_RTDB_HUB_PORT, PP_RTDB_LOGGING_PORT. Each one
+   left unset gets a free port, so runs that share the machine never collide. The
+   emulator runs from its own temp folder (generated firebase.json, UI off) and is
+   stopped, with its java child, on pass, fail, throw, SIGINT/SIGTERM/SIGHUP, a dead
+   parent, and the PP_RTDB_TIMEOUT_MS guard (default 240000).
    The /hidden parent is not listable: a holder can read one known blocker key,
    and cannot download the list of people who blocked them. */
 'use strict';
@@ -11,6 +16,7 @@ const path = require('path');
 const firebase = require('firebase/compat/app');
 require('firebase/compat/database');
 const { initializeTestEnvironment, assertFails, assertSucceeds } = require('@firebase/rules-unit-testing');
+const emuPorts = require('./emu_ports');
 
 const ROOT = path.join(__dirname, '..');
 const RULES = fs.readFileSync(path.join(ROOT, 'database.rules.json'), 'utf8');
@@ -30,17 +36,54 @@ function presence(extra) {
 }
 const room = (uid, area, shard, code) => 'rooms/' + (code || CODE) + '/' + (area || 'hearthmoor') + '/' + (shard || 'r1') + '/' + uid;
 
-function startEmulator() {
+let emu = null;   // { child, dir, ports, logPath, done }
+function startEmulator(ports) {
   const bin = path.join(ROOT, 'node_modules', '.bin', 'firebase');
-  const logPath = path.join(ROOT, 'test-logs', 'rtdb-emulator.log');
-  fs.mkdirSync(path.dirname(logPath), { recursive: true });
+  const logDir = process.env.PP_TEST_DIR ? path.resolve(process.env.PP_TEST_DIR) : path.join(ROOT, 'test-logs');
+  const logPath = path.join(logDir, 'rtdb-emulator.log');
+  fs.mkdirSync(logDir, { recursive: true });
+  const { dir, config } = emuPorts.writeConfig(ports, null);
   const log = fs.openSync(logPath, 'w');
-  const child = spawn(bin, ['emulators:start', '--only', 'database', '--project', 'demo-walklings'], {
-    cwd: ROOT, detached: true, stdio: ['ignore', log, log], env: Object.assign({}, process.env, { CI: '1' }),
+  const child = spawn(bin, ['emulators:start', '--only', 'database', '--project', 'demo-walklings', '--config', config], {
+    cwd: dir, detached: true, stdio: ['ignore', log, log],
+    env: Object.assign({}, process.env, { CI: '1', TMPDIR: dir, FIREBASE_DATABASE_EMULATOR_HOST: '127.0.0.1:' + ports.database }),
   });
-  const kill = () => { try { process.kill(-child.pid, 'SIGTERM'); } catch (e) { try { child.kill('SIGTERM'); } catch (e2) {} } };
-  return { child, kill, logPath };
+  fs.closeSync(log);
+  emu = { child, dir, ports, logPath, done: false, exited: null };
+  child.on('exit', (c, sig) => { emu.exited = 'firebase emulators:start exited (' + (sig || c) + ')'; });
+  return emu;
 }
+// Every exit path ends here; a second caller waits for the same stop instead of skipping it.
+function stopEmulator() {
+  if (!emu) return Promise.resolve();
+  const e = emu;
+  if (!e.stopping) {
+    e.stopping = emuPorts.killEmulator(e.child.pid, e.dir, e.ports.database, 8000)
+      .catch(() => emuPorts.killEmulatorSync(e.child.pid, e.dir, e.ports.database))
+      .then(() => { e.done = true; emuPorts.removeDir(e.dir); });
+  }
+  return e.stopping;
+}
+function stopEmulatorSync() {
+  if (!emu) return;
+  if (!emu.done) emuPorts.killEmulatorSync(emu.child.pid, emu.dir, emu.ports.database);
+  emu.done = true;
+  emuPorts.removeDir(emu.dir);
+}
+let env = null;
+let quitting = false;
+async function quit(code, why) {
+  if (quitting) return;
+  quitting = true;
+  if (why) process.stdout.write('\nRTDB_RULES RESULT: FAIL ' + why + '\n');
+  if (env) { try { await Promise.race([env.cleanup(), sleep(3000)]); } catch (e) {} }
+  await stopEmulator();
+  process.exit(code);
+}
+process.on('exit', stopEmulatorSync);
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => quit(sig === 'SIGINT' ? 130 : 143, 'stopped by ' + sig));
+process.on('uncaughtException', e => quit(1, 'uncaught ' + (e && e.stack ? e.stack : e)));
+process.on('unhandledRejection', e => quit(1, 'unhandled ' + (e && e.stack ? e.stack : e)));
 function waitForPort(port, timeoutMs) {
   const net = require('net');
   const t0 = Date.now();
@@ -48,7 +91,8 @@ function waitForPort(port, timeoutMs) {
     const tick = () => {
       const s = net.connect({ host: '127.0.0.1', port }, () => { s.end(); resolve(); });
       s.on('error', () => {
-        if (Date.now() - t0 > timeoutMs) reject(new Error('database emulator did not open port ' + port));
+        if (emu && emu.exited) reject(new Error(emu.exited + ' before opening port ' + port));
+        else if (Date.now() - t0 > timeoutMs) reject(new Error('database emulator did not open port ' + port));
         else setTimeout(tick, 250);
       });
     };
@@ -57,17 +101,40 @@ function waitForPort(port, timeoutMs) {
 }
 
 async function main() {
-  const emu = startEmulator();
-  let env = null;
+  const timeoutMs = +(process.env.PP_RTDB_TIMEOUT_MS || 240000);
+  setTimeout(() => quit(1, 'timeout after ' + timeoutMs + ' ms'), timeoutMs);
+  // pp_test runs this with spawnSync; if it is killed, stop here instead of leaving the emulator.
+  const parent = process.ppid;
+  setInterval(() => { if (process.ppid !== parent) quit(1, 'parent process ' + parent + ' exited'); }, 1000).unref();
   const fails = [];
   const ok = m => process.stdout.write('ok   ' + m + '\n');
   const bad = (m, e) => { fails.push(m + ': ' + (e && e.message ? e.message : e)); process.stdout.write('FAIL ' + m + '\n'); };
   try {
-    await waitForPort(9000, 90000);
-    env = await initializeTestEnvironment({
-      projectId: 'demo-walklings',
-      database: { host: '127.0.0.1', port: 9000, rules: RULES },
-    });
+    // Start the emulator. If it dies while starting (before any rule is checked), try once more
+    // on fresh ports; a rule failure is never retried.
+    let ports = null;
+    for (let attempt = 1; ; attempt++) {
+      ports = await emuPorts.pickPorts({ database: 'PP_RTDB_PORT', hub: 'PP_RTDB_HUB_PORT', logging: 'PP_RTDB_LOGGING_PORT' });
+      process.stdout.write('rtdb emulator ports: database ' + ports.database + ', hub ' + ports.hub + ', logging ' + ports.logging + '\n');
+      for (const k of Object.keys(ports)) {
+        if (await emuPorts.portOpen(ports[k])) throw new Error(k + ' port ' + ports[k] + ' is already in use');
+      }
+      startEmulator(ports);
+      try {
+        await waitForPort(ports.database, 90000);
+        env = await initializeTestEnvironment({
+          projectId: 'demo-walklings',
+          database: { host: '127.0.0.1', port: ports.database, rules: RULES },
+        });
+        break;
+      } catch (e) {
+        if (attempt >= 2) throw e;
+        const tail = (() => { try { return fs.readFileSync(emu.logPath, 'utf8').split('\n').filter(Boolean).slice(-6).join('\n'); } catch (e2) { return ''; } })();
+        process.stdout.write('rtdb emulator did not start (' + (e && e.message ? e.message : e) + '); retrying once on new ports\n' + (tail ? tail + '\n' : ''));
+        env = null;
+        await stopEmulator();
+      }
+    }
     const ctx = {};
     const user = uid => {
       const k = uid || '';
@@ -612,11 +679,11 @@ async function main() {
     if (tail) process.stdout.write(tail + '\n');
     process.exitCode = 1;
   } finally {
-    if (env) { try { await env.cleanup(); } catch (e) {} }
-    emu.kill();
-    await sleep(400);
+    if (env) { try { await Promise.race([env.cleanup(), sleep(3000)]); } catch (e) {} }
+    env = null;
+    await stopEmulator();
   }
-  process.exit(process.exitCode || 0);
+  if (!quitting) process.exit(process.exitCode || 0);
 }
 
-main();
+main().catch(e => quit(1, e && e.stack ? e.stack : String(e)));

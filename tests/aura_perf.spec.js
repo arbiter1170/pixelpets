@@ -5,7 +5,7 @@ const fs = require('fs');
 const { test, expect } = require('@playwright/test');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 const { starterSave, installSave, gotoGame } = require('./helpers');
-const { ensureEmulator, releaseEmulator } = require('./emu_shared');
+const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 
 let env = null;
 async function rootSet(p, val) {
@@ -88,7 +88,7 @@ test.describe('effect budget', () => {
     test.skip(info.project.name !== '390', '390 only');
     test.setTimeout(600000);
     await ensureEmulator();
-    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
+    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: EMU_PORTS.database, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     for (const p of ['rooms', 'config', 'friends', 'blocks', 'hidden', 'codes', 'friendInfo', 'parties']) await rootSet(p, null);
     await rootSet('roomCodes/AMB4RQ', { on: true });
   });
@@ -103,7 +103,7 @@ test.describe('effect budget', () => {
     const pageErrors = [];
     page.on('pageerror', err => pageErrors.push(String(err)));
     await installSave(page.context(), save(), { quietDay: true });
-    await gotoGame(page, '?cloud=emu&debug=1');
+    await gotoGame(page, '?cloud=emu&debug=1' + emuQuery());
     await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true && window.PixelPets.net && window.PixelPets.net.uid, null, { timeout: 25000 });
     await page.evaluate(() => PixelPets.showTab('walk'));
     await page.locator('#settingsBtn').click();
