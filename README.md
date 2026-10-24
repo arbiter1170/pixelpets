@@ -63,11 +63,12 @@ Come back after 14 hours and the partner tab says your Walkling waited. A shorte
 When the partner is chipped, PARTNER shows ALIGN under NRG (Strain, Uneasy, Tuned, or Bright-linked). WALK hides that row. An unchipped partner has no ALIGN row.
 PARTNER shows HP, FOOD, JOY, NRG, ALIGN (only when chipped) and GROW in one block under the scene. EXPLORE and CARE sit on the line under that block. The top strip stays on WALK. HEAL, next to REST, opens the healing snacks and Wake Tonic already in the bag. It follows those item rules, gives no care XP, and shows FULL when HP is already full.
 
-Care balance: each Walkling has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 15 min),
+Care balance: each Walkling has its own cooldown per action (FEED 20 min, PLAY 10 min, REST 30 min),
 saved with the Walkling so reloading doesn't reset it. A button on cooldown greys out and shows the time
 left; tapping it explains the wait. Gains shrink as the stat fills, band by band: the part of a gain
-that lands below 50 counts in full, between 50 and 80 at half, above 80 at a quarter (PLAY +20 joy,
-REST +30 energy at full rate). FEED is +40 FOOD with simpler bands: full value below 80 FOOD, a quarter at 80
+that lands below 50 counts in full, between 50 and 80 at half, above 80 at a quarter (PLAY +20 joy).
+REST fills NRG to 100 and costs 10 FOOD. At NRG 98, with no hurt, it still says "Not sleepy right now."
+FEED is +40 FOOD with simpler bands: full value below 80 FOOD, a quarter at 80
 and above, so FEED from 20 / 50 / 80 ends at 60 / 82.5 / 90 (the Warm Bowl's +15 comes on top).
 Daily XP caps (per Walkling, reset at local midnight):
 - Care XP (FEED +2, PLAY +5, REST +1): up to 25 a day. After that, actions still restore stats but give no XP.
@@ -102,7 +103,7 @@ Levels, types and stats (`stats.js`):
   "RESTING 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
   (and not worn out) a Walkling shows **TIRED**. The badge (RESTING, else TIRED, else GLOWING) shows on the stats card,
   the Pet scene and the Pets tab.
-- Stats card: tap STATS on the Partner tab, or STATS on the care tray. The care tray opens from the modern partner strip, and from a tap on the follower while you stand still. FEED, PLAY, REST and HEAL on the tray use the same rules as the Partner tab, on the partner only. The popup row is INTERACT (grey) and GEAR (lime, full care-button size). INTERACT shows only for the partner, closes the popup, and opens PARTNER. GEAR opens the gear section in the same popup. The first gear row is NAME, and the pencil beside the header name opens the same editor. On PARTNER the button beside STATS is GEAR and opens that gear view. The kit overlay is not on the new page. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats, the same gear, and its own NAME field. It shows the type badge, Level,
+- Stats card: tap STATS on the Partner tab, or STATS on the care tray. The care tray opens from the modern partner strip, and from a tap on the follower while you stand still. FEED, PLAY, REST and HEAL on the tray use the same rules as the Partner tab, on the partner only. Each WALKLINGS party card has the same four buttons, and they act on that Walkling. Box rows have none. The popup row is INTERACT (grey) and GEAR (lime, full care-button size). INTERACT shows only for the partner, closes the popup, and opens PARTNER. GEAR opens the gear section in the same popup. The first gear row is NAME, and the pencil beside the header name opens the same editor. On PARTNER the button beside STATS is GEAR and opens that gear view. The kit overlay is not on the new page. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats, the same gear, and its own NAME field. It shows the type badge, Level,
   GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
   scaled to the highest value of that stat among the 57 forms a keeper can meet, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
@@ -122,7 +123,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
   first; damage uses ATK/DEF, level, type, same-type bonus, mood, stat stages (-2..+2) and rare critical hits.
 - Bag (INVENTORY v1): the Walk map corner opens the Bag overlay. The partner tab has no BAG. Travel Shelf sells snacks in the Lantern House.
 - Items (INVENTORY v1): Heal Snack (+40% HP), Hearty Snack (+75% HP), Wake Tonic (wakes a napping Walkling early at 25% HP),
-  Befriend Treat (wild battles, once per battle), Energy Sip (NRG +40) and Joy Crumb (JOY +20). Trainers pay Acorns.
+  Befriend Treat (wild battles, once per battle), Energy Sip (fills NRG, field only, 60 Acorns) and Joy Crumb (JOY +20). Trainers pay Acorns.
 - Type hints start hidden: once you've seen a move's effect on a type, its button shows a 2x / ½ / 0 badge for
   that type (seen pairs are saved in `dex.hits`).
 - BEFRIEND works from turn 1 with the timing bar (3 tries); the target zone is smaller at full HP and grows as
@@ -290,7 +291,7 @@ Turn it on with `?debug=1&fast=1` in the URL (`?fast=0` turns it off), the F key
 `PixelPets.setFast(true)` / `PixelPets.setFast(false)` in the console. The choice is remembered in
 localStorage key `pixelpets.fast` (separate from the save). While it's on, a small FAST tag shows
 next to the Walkling's name in the header, and a toast appears on toggle and on load.
-Fast mode also shrinks care cooldowns by the same ratio (~1/57: FEED ~21s, PLAY ~10s, REST ~16s);
+Fast mode also shrinks care cooldowns (FEED 20 s, PLAY 10 s, REST 30 s);
 the daily XP caps are not scaled (use `PixelPets.resetDailyCaps()`).
 
 Wild creatures: there are no hidden tall-grass rolls any more. 3-4 wild Walklings wander the Walk map
@@ -397,7 +398,7 @@ Saves (format v2, `save.js`):
 - `pixelpets.save.v2` is the save. Walklings live in a **party** (up to 6, the partner is always in it) and a
   **box** (no limit). A 7th befriended Walkling asks which unlocked party Walkling goes to the box. Each row shows that Walkling. The chosen one goes to the box, and the new one joins the party. If every party Walkling is locked, the catch is refused. The WALKLINGS tab
   is six party slots, then the box, then LEFT BEHIND, then the journal (Joined, Met, and Out there 57; unmet forms stay silhouettes).
-  The party header reads Party n/6. Each party row and each WALKLING-BOX row shows six tiny bars to the right of the name: HP, NRG, FOOD, JOY, GROW and XP. A worn-out row shows RESTING and an empty red HP bar. Tapping the row still opens the Walkling.
+  The party header reads Party n/6. Each party row and each WALKLING-BOX row shows six tiny bars to the right of the name: HP, NRG, FOOD, JOY, GROW and XP. Each party card also has FEED, PLAY, REST and HEAL for that Walkling, and a small glyph at the top-right of the sprite when that Walkling is hungry, hurt, or tired. Box rows do not. The six bars refresh on the same one-second care tick as the rest of the HUD, and only while WALKLINGS is open. A worn-out row shows RESTING and an empty red HP bar. Tapping the row still opens the Walkling.
   MOVE reorders the party. TO BOX / TO PARTY move one Walkling. RELEASE asks first and will not drop the last Walkling.
   A chipped Walkling stays in the party. TO WALKLING-BOX and RELEASE on that slot are greyed, and the slot says "{name} stays with you now." The same line toasts if a box, release, or later trade still tries, under the collection title. The party slot shows a lock mark beside the name. Locked Walklings are not listed in the box.
   Those labels stay while the WALKLINGS tab is open.

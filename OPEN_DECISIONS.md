@@ -37,6 +37,8 @@ Other packets hold ids through D729.
 
 Settled calls are in archive/DECISIONS_SETTLED.md.
 
+CARE_SHORTCUTS D710-D717 are recorded in the archive (Oct 24, 2026, design 2a10464). D710, D711 and D714 are red, settled YES by Vincent (12:30 AM ET, via the Supervisor). The yellows D713, D715 and D717 were settled by team vote (PixelPets and QA). The greens D712 and D716 were settled by the Supervisor. Settling D713 does not close the open box NRG call. No bed-rate row was in the game, so no bed wording changed. Box NRG code is unchanged.
+
 TOWN_LANDMARKS D612-D619 are recorded in the archive (Oct 23, 2026, design 520ee8a). D617 is red, settled YES by Vincent (3:16 PM ET): Della, Garnet and Ines join the cast as the Lantern House guides. The yellows D612, D613, D615 and D616 are settled on the default by Vincent (3:16 PM ET). The greens D614, D618 and D619 were settled as written by the Supervisor.
 
 TUTORIALS_CARE_MOVES D584-D598 are recorded in the archive (Oct 23, 2026, design 6a6fc26). D584 and D592 are red, settled YES by Vincent (1:56 PM ET). The yellows D585, D586, D589 and D593-D595 are settled YES by Vincent on the default, after a unanimous team vote. The greens D587, D588, D590, D591 and D596-D598 were settled on the default by the Supervisor.

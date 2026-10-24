@@ -88,8 +88,9 @@ const rate = () => fastMode ? FAST_RATE : REAL_RATE;   // points lost per second
 
 /* Care balance. Cooldowns are per pet, stored as last-use Date.now() stamps in p.cd (missing = ready),
    so reloading can't skip them. Fast mode shrinks them by the same ratio as the food rate (~1/57.6). */
-const CARE_CD_MIN = { feed: 20, play: 10, rest: 15 };            // real-mode cooldown, minutes (REST 15m: BATTLE §7.3 Q1, Vincent)
-const FAST_CD_SCALE = 1 / 60;                                   // fast mode: FEED 20 s, PLAY 10 s, REST 15 s (PACING §6, no longer tied to the FOOD rate)
+const CARE_CD_MIN = { feed: 20, play: 10, rest: 30 };            // real-mode cooldown, minutes (REST 30m: CARE_SHORTCUTS D710)
+const REST_FOOD = 10;                                            // FOOD a REST tap costs (D710). The 98 refusal still spends nothing.
+const FAST_CD_SCALE = 1 / 60;                                   // fast mode: FEED 20 s, PLAY 10 s, REST 30 s (PACING §6, no longer tied to the FOOD rate)
 const CARE_XP = { feed: 2, play: 5, rest: 1 };                   // XP per care action (before the daily cap)
 const CARE_XP_DAILY_CAP = 25;      // per pet per local calendar day (feed/play/rest)
 const STEPS_PER_XP = 5;            // walking: 1 XP per 5 steps, remainder kept per pet in p.sr
@@ -928,8 +929,11 @@ function syncHealBtn(p){
     b.classList.toggle('cooldown', full); b.setAttribute('aria-disabled', full ? 'true' : 'false');
   });
 }
-async function healTap(){
-  const p = pet(); if (!p || now() < anim.busyUntil || !$('#ovSheet').hidden) return;
+async function healTap(target){
+  const p = target || pet();
+  const forPartner = !!(p && S && p.id === S.partnerId);
+  // The partner's Pet-tab busy lock does not block a different card (CARE_SHORTCUTS D716).
+  if (!p || (forPartner && now() < anim.busyUntil) || !$('#ovSheet').hidden) return;
   if (healFull(p)) { sfx('denied'); return toast(itemRefusal('heal_snack', p, 'field')); }   // "<name> is already at full HP."
   const ids = healItemIds().filter(k => itemCount(k) > 0);
   const rows = ids.length
@@ -938,7 +942,7 @@ async function healTap(){
   const pick = await openSheet('Heal ' + petName(p), rows, 'BACK');
   if (!pick) return;                                   // BACK (or Escape): nothing is used
   const r = useItem(pick, p.id, 'field');
-  sfx(r.ok ? 'heal' : 'denied'); toast(r.msg); if (r.ok) { save(); if (screen === 'walk') noteMapCare('heal'); }
+  sfx(r.ok ? 'heal' : 'denied'); toast(r.msg); if (r.ok) { save(); if (forPartner && screen === 'walk') noteMapCare('heal'); }
   updateHUD();
 }
 function fitPetScene(){
@@ -1123,6 +1127,7 @@ function updateHUD(){
   else if (canEvolve(p)) { hint.textContent = petName(p) + ' is ready to grow up!'; hint.classList.add('ready'); btn.hidden = false; }
   else { hint.textContent = 'Next form: GROW ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
   updateCareButtons(); renderPetBadge(p);
+  if (screen === 'col') updateBoardCare();
   if (trayOpen()) renderPartnerTray();
 }
 // FAINTED 12m / TIRED on the Pet tab (BATTLE §7 badges); GLOWING stays on the stats card.
@@ -2382,34 +2387,43 @@ function addPart(type, x, y, vx=0, vy=-8, life=1.2){ anim.parts.push({ type, x, 
 const PET_H = 64, GROUND = PET_H - 14;                  // max logical height of the Pet tab scene (56..64, see fitPetScene)
 function petPos(t){ const c = $('#petCanvas'), W = (c && c.width) || 56, H = (c && c.height) || 56, x = Math.round((W - 16) / 2 + Math.sin(t / 2200) * 7); return { x, y: H - 14 - 7 }; }
 
-function doAction(act){
-  const p = pet(); const t = now();
-  if (t < anim.busyUntil) return;
+function doAction(act, target){
+  const p = target || pet(); if (!p) return;
+  // Pet-tab animation, tutorial hooks and the map reply stay on the partner. Another card gets the toast and the sound (D716).
+  const forPartner = p.id === S.partnerId;
+  const t = now();
+  if (forPartner && t < anim.busyUntil) return;
   const left = cdLeft(p, act);
-  if (left) { sfx('denied'); tutMiss(act); return toast(petName(p) + CD_MSG[act] + fmtCd(left) + '.'); }
+  if (left) { sfx('denied'); if (forPartner) tutMiss(act); return toast(petName(p) + CD_MSG[act] + fmtCd(left) + '.'); }
   const pp = petPos(t);
   let msg;
   if (act === 'feed') {
-    if (p.hunger >= 98) { sfx('denied'); tutMiss(act); return toast('Too full to eat!'); }
+    if (p.hunger >= 98) { sfx('denied'); if (forPartner) tutMiss(act); return toast('Too full to eat!'); }
     const bowl = bowlReady();
     p.hunger = clamp(p.hunger + careGain(FEED_FOOD, p.hunger, FEED_BANDS) + (bowl ? BOWL.food : 0), 0, 100); p.happy = clamp(p.happy + careJoy(p, bowl ? BOWL.joy : 3), 0, 100);
-    if (bowl) { S.flags[BOWL.flag] = dayKey(Date.now()); queueEmote('emote_hearts', 600, 1500); }   // two-hearts balloon (ICONS_SEALS Q6), on the emote queue
-    addPart('apple', pp.x + 6, pp.y - 4, 0, 4, 0.9);
-    setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
-    anim.busyUntil = t + (bowl ? 1500 : 1100); msg = bowl ? 'Warm Bowl! ' + petName(p) + ' gobbles it up. +FOOD +JOY' : 'Yum! +FOOD';
+    if (bowl) { S.flags[BOWL.flag] = dayKey(Date.now()); if (forPartner) queueEmote('emote_hearts', 600, 1500); }   // two-hearts balloon (ICONS_SEALS Q6), on the emote queue
+    if (forPartner) {
+      addPart('apple', pp.x + 6, pp.y - 4, 0, 4, 0.9);
+      setTimeout(() => { for (let i=0;i<(bowl ? 4 : 3);i++) addPart('heart', pp.x + 2 + i*5, pp.y, (i-1)*4, -10); }, 600);
+      anim.busyUntil = t + (bowl ? 1500 : 1100);
+    }
+    msg = bowl ? 'Warm Bowl! ' + petName(p) + ' gobbles it up. +FOOD +JOY' : 'Yum! +FOOD';
   } else if (act === 'play') {
-    if (isFainted(p)) { sfx('denied'); tutMiss(act); return toast(petName(p) + ' is worn out and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
-    if (p.energy < 10) { sfx('denied'); tutMiss(act); return toast('Too tired to play. REST first!'); }
+    if (isFainted(p)) { sfx('denied'); if (forPartner) tutMiss(act); return toast(petName(p) + ' is worn out and needs rest. REST, or wait ' + faintMinLeft(p) + 'm.'); }   // BATTLE §7.2
+    if (p.energy < 10) { sfx('denied'); if (forPartner) tutMiss(act); return toast('Too tired to play. REST first!'); }
     p.happy = clamp(p.happy + careJoy(p, careGain(20, p.happy)), 0, 100); p.energy = clamp(p.energy - 8, 0, 100); p.hunger = clamp(p.hunger - 4, 0, 100);
-    anim.jumpUntil = t + 1200; anim.busyUntil = t + 1200;
-    for (let i=0;i<4;i++) addPart(i%2 ? 'heart' : 'spark', pp.x + 1 + i*4, pp.y + 2, (i-1.5)*6, -14);
+    if (forPartner) {
+      anim.jumpUntil = t + 1200; anim.busyUntil = t + 1200;
+      for (let i=0;i<4;i++) addPart(i%2 ? 'heart' : 'spark', pp.x + 1 + i*4, pp.y + 2, (i-1.5)*6, -14);
+    }
     msg = 'Wheee! +JOY';
   } else if (act === 'rest') {
     const hurt = Number.isFinite(p.hpNow) || isFainted(p);   // REST also restores 50% of max HP and clears Fainted (BATTLE §7.2)
-    if (p.energy >= 98 && !hurt) { sfx('denied'); tutMiss(act); return toast('Not sleepy right now.'); }
-    p.energy = clamp(p.energy + careGain(30, p.energy), 0, 100); p.hunger = clamp(p.hunger - 5, 0, 100);
+    if (p.energy >= 98 && !hurt) { sfx('denied'); if (forPartner) tutMiss(act); return toast('Not sleepy right now.'); }
+    p.energy = 100; p.hunger = clamp(p.hunger - REST_FOOD, 0, 100);
     restPet(p, 'pet');
-    anim.sleepUntil = t + 3000; anim.busyUntil = t + 3000; msg = 'Zzz... +ENERGY' + (hurt ? ' +HP' : '');
+    if (forPartner) { anim.sleepUntil = t + 3000; anim.busyUntil = t + 3000; }
+    msg = 'Zzz... +ENERGY' + (hurt ? ' +HP' : '');
   } else return;
   if (!p.cd || typeof p.cd !== 'object') p.cd = {};
   p.cd[act] = Date.now();                    // start this action's cooldown (saved with the pet)
@@ -2427,13 +2441,13 @@ function doAction(act){
         : act === 'play' ? nm + ' bounces in a little circle. First game!'
         : nm + ' curls up for the first nap with you.';
     }
-    queueEmote(act === 'rest' ? 'emote_sleep' : 'emote_heart', act === 'rest' ? 200 : 500);
+    if (forPartner) queueEmote(act === 'rest' ? 'emote_sleep' : 'emote_heart', act === 'rest' ? 200 : 500);
   }
   noteAlignPet(p, side() === 'keepers' ? 'keepers' : 'glimmer', 2);
-  if (screen === 'walk') noteMapCare(act);
+  if (forPartner && screen === 'walk') noteMapCare(act);
   toast(msg);
   updateHUD(); save();
-  tutSawAct(act);
+  if (forPartner) tutSawAct(act);
 }
 
 /* CARE_LOOP A, cheap slice: tap to pat and tickle (no rub zones). Tap the partner on the PARTNER tab: a happy squint, a chirp
@@ -4671,7 +4685,7 @@ const ITEMS = {
   hearty_snack:   { name: 'Hearty Snack',   plural: 'Hearty Snacks',   cap: 10, price: 150, use: ['battle', 'field'], target: true,  heal: 0.75, blurb: 'Restores 75% HP.' },
   wake_tonic:     { name: 'Wake Tonic',     plural: 'Wake Tonics',     cap: 5,  price: 400, use: ['battle', 'field'], target: true,  blurb: 'Wakes a worn-out Walkling at 25% HP.' },
   befriend_treat: { name: 'Befriend Treat', plural: 'Befriend Treats', cap: 20, price: 80,  use: ['battle'],          target: false, blurb: 'Wild battles only. Easier to befriend.' },
-  energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. NRG +40.' },
+  energy_sip:     { name: 'Energy Sip',     plural: 'Energy Sips',     cap: 10, price: 60,  use: ['field'],           target: true,  blurb: 'A fizzy pick-me-up. Fills NRG.' },
   joy_crumb:      { name: 'Joy Crumb',      plural: 'Joy Crumbs',      cap: 10, price: 40,  use: ['field'],           target: true,  blurb: 'A sweet treat. JOY +20.' },
   soft_berry:     { name: 'Soft Berry',     plural: 'Soft Berries',    cap: 10, price: 80,  use: ['field'],           target: false, hold: true, blurb: 'Heals once when a hit drops HP under half.' },
   bracer_band:    { name: 'Bracer Band',    plural: 'Bracer Bands',    cap: 5,  price: 200, use: ['field'],           target: false, hold: true, blurb: 'Held. Charge, Brace or Dart starts at +2 on the way in.' },
@@ -4751,7 +4765,7 @@ function useItem(id, petId, ctx = 'field'){
   const it = ITEMS[id]; takeItem(id);
   if (it.heal) { setMyHp(p, hpOf(p) + Math.ceil(it.heal * maxHpOf(p))); return { ok: true, msg: petName(p) + ' ate a ' + it.name + ' and feels better!' }; }
   if (id === 'wake_tonic') { delete p.faintUntil; setMyHp(p, Math.ceil(0.25 * maxHpOf(p))); return { ok: true, msg: petName(p) + ' blinks awake!' }; }
-  if (id === 'energy_sip') { p.energy = clamp(p.energy + 40, 0, 100); return { ok: true, msg: petName(p) + ' perks right up! +NRG' }; }
+  if (id === 'energy_sip') { p.energy = 100; return { ok: true, msg: petName(p) + ' perks right up! +NRG' }; }
   if (id === 'joy_crumb') { p.happy = clamp(p.happy + 20, 0, 100); return { ok: true, msg: petName(p) + ' munches happily. +JOY' }; }
   if (id === 'befriend_treat') { battle.treat = true; return { ok: true, msg: foeName(curFoe()) + ' sniffs the treat. It looks friendlier!' }; }
   return { ok: false, msg: "Can't use that here yet." };
@@ -14144,12 +14158,130 @@ function slotStats(p){
 function slotMain(p){
   const b = document.createElement('button'); b.type = 'button'; b.className = 'slot-main';
   b.setAttribute('aria-label', slotAria(p));
+  const pic = document.createElement('span'); pic.className = 'slot-pic';
   const cv = document.createElement('canvas'); cv.width = cv.height = 18;
   spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), p.accessory);
   if (chipOn(p)) { if (S.box.some(q => q.id === p.id)) paintChipIcon(cv); else paintLockGlyph(cv); }
-  b.append(cv, slotCopy(p), slotStats(p));
+  pic.append(cv);
+  if (S && S.party.some(q => q.id === p.id)) {
+    const need = document.createElement('canvas');
+    need.className = 'slot-need';
+    need.hidden = true;
+    need.setAttribute('aria-hidden', 'true');
+    pic.append(need);
+    paintSlotNeed(need, p);
+  }
+  b.append(pic, slotCopy(p), slotStats(p));
   b.addEventListener('click', () => openBoardPet(p.id));
   return b;
+}
+const BOARD_CARE = [['feed', 'ico_food', 'FEED'], ['play', 'ico_joy', 'PLAY'], ['rest', 'ico_nrg', 'REST'], ['heal', 'ico_hp', 'HEAL']];
+function paintBoardCareBtn(b, p){
+  const act = b.dataset.act;
+  if (act === 'heal') {
+    const full = healFull(p), st = full ? 'full' : 'ok';
+    if (b.dataset.st !== st) {
+      b.dataset.st = st;
+      const icon = b.querySelector('canvas');
+      b.textContent = 'HEAL';
+      if (icon) b.prepend(icon);
+      if (full) { const sm = document.createElement('small'); sm.className = 'cdt'; sm.textContent = 'FULL'; b.append(sm); }
+    }
+    b.setAttribute('aria-label', full ? 'Heal, ' + petName(p) + ' is at full HP' : 'Heal ' + petName(p));
+    b.classList.toggle('cooldown', full); b.setAttribute('aria-disabled', full ? 'true' : 'false');
+    return;
+  }
+  if (!BTN_LABEL[act]) return;
+  const left = cdLeft(p, act), cd = left ? fmtCd(left) : '';
+  if (b.dataset.cd !== cd) {
+    b.dataset.cd = cd;
+    const icon = b.querySelector('canvas');
+    b.textContent = BTN_LABEL[act];
+    if (icon) b.prepend(icon);
+    if (cd) { const sm = document.createElement('small'); sm.className = 'cdt'; sm.textContent = cd; b.append(sm); }
+  }
+  b.setAttribute('aria-label', cd ? BTN_LABEL[act] + ', ready in ' + cd : BTN_LABEL[act]);
+  b.classList.toggle('cooldown', !!left); b.setAttribute('aria-disabled', left ? 'true' : 'false');
+}
+// The walk balloon's need, drawn on the party card sprite (CARE_SHORTCUTS). Hidden when nothing is low.
+function paintSlotNeed(c, p){
+  if (!c || !p) return;
+  const need = partnerNeed(p);
+  const key = need ? NEED_GLYPH[need.kind] + ':' + need.level : '';
+  if (c.dataset.need === key) return;
+  c.dataset.need = key;
+  if (!need) { c.hidden = true; delete c.dataset.glyph; return; }
+  const name = NEED_GLYPH[need.kind], gl = GLYPH[name];
+  if (!gl) { c.hidden = true; return; }
+  c.hidden = false;
+  c.width = gl[0].length; c.height = gl.length;
+  const g = ctx(c); g.clearRect(0, 0, c.width, c.height);
+  drawGlyphRim(g, name, 0, 0, need.level === 2 ? 'r' : '');
+  c.dataset.glyph = name;
+}
+function boardBarSig(p){
+  let sig = '';
+  for (const [key] of SLOT_STATS) sig += (100 * clamp(statFrac(p, key), 0, 1)) + '%;';
+  return sig;
+}
+function updateBoardCare(countdownsOnly){
+  if (screen !== 'col' || !S) return;
+  const hide = !partyField();
+  $$('#partyBoard .party-slot').forEach(row => {
+    const care = row.querySelector('.slot-care');
+    if (care) care.hidden = hide;
+    const p = petById(row.dataset.id);
+    if (!p) return;
+    const main = row.querySelector('.slot-main');
+    if (main) {
+      const aria = slotAria(p);
+      if (main.getAttribute('aria-label') !== aria) main.setAttribute('aria-label', aria);
+    }
+    // Bars follow the 1 s care tick (updateHUD). The frame path only ticks countdowns and badges.
+    if (!countdownsOnly) {
+      const sig = boardBarSig(p);
+      if (row.dataset.bars !== sig) {
+        row.dataset.bars = sig;
+        row.querySelectorAll('.ss-cell').forEach(cell => {
+          const key = cell.dataset.stat, fill = cell.querySelector('.ps-bar > i');
+          if (!fill || !key) return;
+          const v = clamp(statFrac(p, key), 0, 1), w = (100 * v) + '%';
+          if (fill.style.width !== w) fill.style.width = w;
+          if (key === 'hp') fill.classList.toggle('warn', v < STAT_RULES.FAINT.tiredBelow);
+        });
+      }
+      paintSlotNeed(row.querySelector('.slot-need'), p);
+    }
+    const sub = row.querySelector('.slot-sub');
+    if (sub) {
+      const hb = hpBadge(p);
+      let badge = sub.querySelector('.pc-badge');
+      if (!hb) { if (badge) badge.remove(); }
+      else {
+        if (!badge) { badge = document.createElement('span'); sub.append(badge); }
+        const cls = 'pc-badge ' + (hb === 'TIRED' ? 'tired' : 'fainted');
+        if (badge.className !== cls) badge.className = cls;
+        if (badge.textContent !== hb) badge.textContent = hb;
+      }
+    }
+    if (!care || hide) return;
+    care.querySelectorAll('button').forEach(b => paintBoardCareBtn(b, p));
+  });
+}
+function partyCare(p){
+  const row = document.createElement('div'); row.className = 'slot-care';
+  if (!partyField()) row.hidden = true;
+  for (const [act, icon] of BOARD_CARE) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.act = act;
+    b.append(slotStatIcon(icon));
+    b.addEventListener('click', () => {
+      if (!partyField()) return denyBoard('Finish the battle first.');
+      const who = petById(p.id); if (!who) return;
+      if (act === 'heal') healTap(who); else doAction(act, who);
+    });
+    row.append(b);
+  }
+  return row;
 }
 function partyActs(p){
   const acts = boardActs();
@@ -14232,7 +14364,7 @@ function partySlot(p, index){
   const row = document.createElement('div'); row.className = 'pet-row party-slot';
   row.dataset.slot = String(index); row.dataset.id = p.id;
   if (chipLocked(p)) row.dataset.locked = '1';
-  row.append(slotMain(p));
+  row.append(slotMain(p), partyCare(p));
   const ui = boardUi && boardUi.id === p.id ? boardUi : null;
   if (ui && ui.kind === 'deposit') row.append(depositPanel(p));
   else if (ui && ui.kind === 'release') row.append(releasePanel(p));
@@ -14302,6 +14434,7 @@ function renderCollection(){
     list.append(wrap);
   }
   renderDexGrid();
+  updateBoardCare();
 }
 function renderDexGrid(){
   const dex = $('#dexGrid'); freeCanvases(dex.querySelectorAll('canvas')); dex.innerHTML = '';
@@ -15478,6 +15611,7 @@ function frame(t){
   if (scene) sbTick();
   if (p) {
     if (screen === 'pet') { pumpHello(); pumpWelcome(); pumpBondUp(); drawPetScene(t, dt); updateCareButtons(); }
+    if (screen === 'col') updateBoardCare(true);
     if (!$('#ovBattle').hidden) drawBattle(t, dt);
     else if (!overlayOpen()) pumpLearn();
     syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)

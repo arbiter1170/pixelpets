@@ -108,14 +108,14 @@ Opening tour (D157–D160) is built on this branch. After the starter, a skippab
 ## Balance (open)
 
 - ~~**Walking is the main XP source and is cheap**~~ **DONE (1c):** 1 XP per 5 steps plus a shared 30/day explore cap; max 55 XP per Walkling per day.
-- **All Walklings decay, so chores grow with the collection:** non-partners can only be cared for by making them the partner, and the collection screen doesn't show their stats. Ideas: a "needs attention" badge on cards, slower decay for non-partners, or a home/boxed state that pauses decay.
+- **All Walklings decay, so chores grow with the collection:** a party Walkling can be fed, played with, rested and healed from its own card. Box Walklings still have no care row. A party card shows the hungry, hurt, or tired glyph when that Walkling needs care. Ideas still open: slower decay for non-partners, or a home state that pauses decay. The box NRG rate is unchanged.
 - **Coming back (Q25):** fourteen hours away, the partner tab says the Walkling waited. FOOD and JOY already floor at 20. NRG still floors at 10. The hours and the sentence are D56.
 - **Fast mode floors quickly:** any absence over ~15 minutes in fast mode floors every stat at 10. Expected for a debug mode, but worth knowing when testing.
 - ~~**Diminishing-gain cliff**~~ **DONE:** tiers now apply band by band (49 / 50 / 51 -> 62 / 62.5 / 63.5 for FEED). Side effect: refilling from low is a bit slower (FEED from 30 ends at 52.5 instead of 55, REST from 30 at 55 instead of 60).
 - ~~**Care XP cap is invisible until hit**~~ **DONE (1c):** daily counters on the Pet and Walk tabs, plus `PixelPets.resetDailyCaps()`.
 - ~~**Befriending fills the explore cap, not walking**~~ **DONE:** befriend XP is +5 (was +10), still sharing the 30/day explore cap, so six befriends or 150 steps fill it.
 - **Walking energy:** walking no longer drains NRG (`STEP_NRG = 0`). There is no low-NRG walk block or warning. FOOD per step is unchanged (0.15).
-- **REST cooldown:** Pet-tab REST is 15 minutes (`CARE_CD_MIN.rest = 15`; BATTLE §7.3 Q1). Fast mode scales it as before.
+- **REST:** a REST tap fills NRG to 100, costs 10 FOOD, and waits 30 minutes (`CARE_CD_MIN.rest = 30`, `REST_FOOD = 10`). At NRG 98 with no hurt it still says "Not sleepy right now." Fast mode makes the wait 30 seconds. The +50% HP, the nap clear and care XP stay.
 - **New lines crowd the proto map:** with the CREATURES_SLICE habitats on today's single map, meadow is now led by Loamlet (34%) over Sproutbun (27%) and night by Dozmouse (22%). Vanelet was ~18% on the stormy-coast preset and ~24% on the snowfield; its weights are now storm 4 / snow 3 / windy 2 (spec draft 8/8/3), so both land at ~10.6%, Design's "about 1 in 10". With storm or snow as the only tag it's higher (~22% / ~25%). Per-map spawn tables (MAPS) will replace this.
 - **Wild stage-2 Walklings skip a stage:** now only 5% of wild creatures (was 15%). A befriended stage-2 form still starts at 40 XP, so making it your partner skips the first evolution. Could start it at 40 XP but require its next evolution's care check, or make it harder to befriend (it already has a smaller zone).
 - **Midnight double-dip:** maxing both caps just before and just after local midnight gives 110 XP in minutes. Probably fine; a rolling 24h window would close it.
