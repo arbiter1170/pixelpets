@@ -9,7 +9,7 @@ function laneSave(flags = {}) {
   const s = starterSave();
   s.settings.controls = 'modern';
   s.settings.follower = false;
-  Object.assign(s.flags, { 'story.phone_got': true, 'story.early_done': true, 'story.rival1_done': true,
+  Object.assign(s.flags, { 'story.phone_got': true, 'story.unlock_phone': true, 'story.early_done': true, 'story.rival1_done': true,
     'story.mom_met': true, 'story.mom_chore': true, 'story.mom_sent': true }, flags);
   return s;
 }
@@ -31,7 +31,8 @@ async function tilePoint(page, tx, ty) {
 
 test('one tap on the trail mouth walks from the town square into Mahopac', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 8, 'up'));
+  // At 3x the mouth on row 2 sits under the area chip from the path (y 8). One tile north is in the free band.
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 7, 'up'));
   await page.waitForTimeout(300);
   for (const x of [8, 9, 10]) {
     const p = await tilePoint(page, x, 2);

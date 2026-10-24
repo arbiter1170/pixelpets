@@ -286,6 +286,7 @@ test('cue hooks stay inert without debug @w1', async ({ page }) => {
 function trailSave(extra) {
   const s = modernSave();
   s.flags['story.phone_got'] = true;
+  s.flags['story.unlock_phone'] = true;
   s.flags['story.mom_met'] = true;
   s.flags['story.mom_chore'] = true;
   s.flags['story.mom_sent'] = true;
@@ -349,12 +350,15 @@ test('the north trail and the Lodge door stay tappable beside an edge box', asyn
   const clear = await edgeClear(page);
   expect(clear.n).toBeGreaterThan(0);
   expect(clear.hit).toEqual([]);
+  // At 3x, row 2 is under the area chip from y 8. Step one tile north so the tap lands on the map.
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 7, 'up'));
+  await frame(page);
   await tapTile(page, 10, 2);
   await page.waitForFunction(() => PixelPets.mapInfo.id === 'mahopac' && !PixelPets.fading);
   expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y, quest: document.querySelector('#ovQuest').hidden }))).toEqual({ map: 'mahopac', x: 9, y: 14, quest: true });
 
   await page.evaluate(() => {
-    PixelPets.goto('hearthmoor', 9, 8, 'up');
+    PixelPets.goto('hearthmoor', 9, 7, 'up');
     PixelPets.cueLayout({ main: null, side: { x: -6, y: 1 }, board: null });
   });
   await frame(page);
@@ -363,7 +367,7 @@ test('the north trail and the Lodge door stay tappable beside an edge box', asyn
   expect(await page.locator('#ovQuest').isHidden()).toBe(true);
 
   await page.evaluate(() => {
-    PixelPets.goto('hearthmoor', 9, 8, 'up');
+    PixelPets.goto('hearthmoor', 9, 7, 'up');
     PixelPets.cueLayout({ main: null, side: { x: -6, y: 1 }, board: null });
   });
   await frame(page);

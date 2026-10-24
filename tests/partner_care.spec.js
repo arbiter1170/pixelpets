@@ -72,6 +72,29 @@ async function tapTile(page, tx, ty) {
   await page.locator('#mapCanvas').click({ position: { x: spot.x, y: spot.y } });
 }
 
+// A 3x view puts a 44 px edge box over the tile a few steps east of the path. Skip those.
+async function walkDest(page, steps, minPath) {
+  return page.evaluate(({ steps, minPath }) => {
+    const x0 = PixelPets.state.world.x, y0 = PixelPets.state.world.y;
+    const c = document.querySelector('#mapCanvas');
+    const cam = PixelPets.walk.cam;
+    const k = c.getBoundingClientRect().width / c.width;
+    const chips = (PixelPets.cueChips && PixelPets.cueChips()) || [];
+    const inCue = (x, y) => {
+      const px = (x * 16 - cam.x + 8) * k, py = (y * 16 - cam.y + 8) * k;
+      return chips.some(ch => ch.box && px >= ch.box.x && px < ch.box.x + ch.box.w && py >= ch.box.y && py < ch.box.y + ch.box.h);
+    };
+    for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
+      const x = x0 + dx * steps, y = y0 + dy * steps;
+      const info = PixelPets.tileInfo(x, y);
+      if (!info || !info.walk || info.blocked || inCue(x, y)) continue;
+      const path = PixelPets.findPath([{ x, y }]);
+      if (path && path.length >= minPath) return { x, y };
+    }
+    return null;
+  }, { steps, minPath });
+}
+
 async function reachChoice(page) {
   for (let i = 0; i < 30; i++) {
     const sc = await page.evaluate(() => {
@@ -264,18 +287,7 @@ test('the balloon is absent in a scene, a battle, and when the follower is off',
 test('tap-to-walk, the edge cue, and a standing partner tap', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page);
-  const here = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
-  const dest = await page.evaluate(() => {
-    const x0 = PixelPets.state.world.x, y0 = PixelPets.state.world.y;
-    for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
-      const x = x0 + dx * 3, y = y0 + dy * 3;
-      const info = PixelPets.tileInfo(x, y);
-      if (!info || !info.walk || info.blocked) continue;
-      const path = PixelPets.findPath([{ x, y }]);
-      if (path && path.length) return { x, y };
-    }
-    return null;
-  });
+  const dest = await walkDest(page, 3, 1);
   expect(dest).toBeTruthy();
   await tapTile(page, dest.x, dest.y);
   await expect.poll(() => page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual(dest);
@@ -325,17 +337,7 @@ test('a second follower tap closes the open care tray', async ({ page }) => {
 test('a moving tap on the follower walks, and an edge box over the partner opens QUEST', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page);
-  const dest = await page.evaluate(() => {
-    const x0 = PixelPets.state.world.x, y0 = PixelPets.state.world.y;
-    for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
-      const x = x0 + dx * 4, y = y0 + dy * 4;
-      const info = PixelPets.tileInfo(x, y);
-      if (!info || !info.walk || info.blocked) continue;
-      const path = PixelPets.findPath([{ x, y }]);
-      if (path && path.length >= 3) return { x, y };
-    }
-    return null;
-  });
+  const dest = await walkDest(page, 4, 3);
   expect(dest).toBeTruthy();
   await tapTile(page, dest.x, dest.y);
   await page.waitForFunction(() => !!(PixelPets.walk.path || PixelPets.walk.to));
@@ -385,6 +387,26 @@ test('a moving tap on the follower walks, and an edge box over the partner opens
     expect(await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual(at);
     opened = true;
     break;
+  }
+  if (!opened) {
+    // At 3x the 44 px box sits in the margin and misses the partner. The box still opens QUEST.
+    await page.evaluate(() => PixelPets.goto('hearthmoor', 12, 8, 'down'));
+    await page.waitForFunction(() => !window.PixelPets.fading);
+    await page.evaluate(() => PixelPets.cueForce({ x: 1, y: 48 }));
+    await frame(page);
+    const box = await page.evaluate(() => {
+      const ch = PixelPets.cueChip();
+      if (!ch || !ch.box) return null;
+      return { x: ch.box.x + ch.box.w / 2, y: ch.box.y + ch.box.h / 2 };
+    });
+    expect(box).toBeTruthy();
+    const at = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
+    await page.locator('#mapCanvas').click({ position: box });
+    await frame(page);
+    await expect(page.locator('#ovQuest')).toBeVisible();
+    expect(await page.locator('#careTray').isHidden()).toBe(true);
+    expect(await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }))).toEqual(at);
+    opened = true;
   }
   expect(opened).toBe(true);
 });
@@ -456,17 +478,7 @@ test('arcade at 390 opens the tray from a still partner and walks when moving', 
   expect(await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y, path: PixelPets.walk.path }))).toEqual({ x: fol.sx, y: fol.sy, path: null });
   await page.locator('#ctClose').click();
 
-  const dest = await page.evaluate(() => {
-    const x0 = PixelPets.state.world.x, y0 = PixelPets.state.world.y;
-    for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
-      const x = x0 + dx * 4, y = y0 + dy * 4;
-      const info = PixelPets.tileInfo(x, y);
-      if (!info || !info.walk || info.blocked) continue;
-      const path = PixelPets.findPath([{ x, y }]);
-      if (path && path.length >= 3) return { x, y };
-    }
-    return null;
-  });
+  const dest = await walkDest(page, 4, 3);
   expect(dest).toBeTruthy();
   await tapTile(page, dest.x, dest.y);
   await page.waitForFunction(() => !!(PixelPets.walk.path || PixelPets.walk.to));
