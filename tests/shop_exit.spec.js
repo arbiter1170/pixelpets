@@ -133,12 +133,14 @@ async function careCardNeverCoversX(page) {
   let shotDone = false;
   for (const s of stores) {
     const label = s.map + ' ' + s.id + ' (care walk C1)';
-    await page.evaluate(() => { const f = PixelPets.state.flags; f['story.tut_care'] = 'armed'; delete f['story.tut_care_step']; });
-    await page.evaluate(() => PixelPets.goto('hm_lodge_in', 5, 7, 'down'));
-    await page.evaluate(() => PixelPets.walkStep('down'));
+    await page.evaluate(() => PixelPets.restartCareWalk());
     await page.waitForFunction(() => PixelPets.lesson().card === 'C1', null, { timeout: 10000 });
-    if (!keys) keys = await page.evaluate(() => Object.keys(PixelPets.state).sort());
     await openStore(page, s);
+    // The first interior writes floorSeen. Snapshot after that, then later stores must not add keys.
+    if (!keys) {
+      const now = await page.evaluate(() => Object.keys(PixelPets.state).sort());
+      if (now.includes('floorSeen')) keys = now;
+    }
     if (!shotDone && s.id === 'travel_shelf') {
       shotDone = true;
       await page.screenshot({ path: path.join(artifactsDir('shop-exit'), 'c1-travel-shelf-' + page.viewportSize().width + '.png') });

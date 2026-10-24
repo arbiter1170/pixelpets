@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-24 07:13 ET: Care walk and nav tour after the starter, fighting at Rook (build 20261024-0713)
+
+- What changed and why: The care walk starts in the Lodge right after the starter moment, once the join toast and the location ask are done. The Lodge mat no longer starts it. Leaving during the act or C1 falls back to wait. The walk adds a look-only card on how to get NRG, then closes the tray and the opening tour asks. The tour teaches the bottom row first. Feed, play and rest drop out of the tour when the care walk was finished. Rook's first match teaches HP, types, NRG and SWAP. The first wild battle teaches befriending. Settings gains a Befriending row. Save stays `pixelpets.save.v2` with `v` 2. The new flag is `story.tut_bef`. The 4-wild quiet count is the additive flag `story.tut_bef_n`. No migrator.
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `tests/tutorial_order.spec.js`, `tests/tutorials_care_moves.spec.js`, `tests/tutorial.spec.js`, `tests/unlock.spec.js`, `tests/shop_exit.spec.js`, `index.html`, `version.json`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `tests/README.md`, `CHANGELOG.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`.
+- Commit(s) + build id: this branch, on top of c025019. Build `20261024-0713`.
+- Tests run and result (widths, checks): the full `npm run test:agent` line is in the PR. Console errors fail the run.
+- Decisions made (colour + reasoning): D678, D705 and D708 (red, YES, Vincent, Oct 24, 2026, 12:12 AM ET, via the Supervisor). D679, D680, D706 and D707 (yellow, YES at the default, team vote, PixelPets and QA, 12:14 AM ET). D681, D682 and D709 (green, yes to the default, Supervisor). D683 and D684 stay unused. Next free id stays D730.
+- Anything left unfinished: M1 still says "This wild" in Rook's match, as the existing card text. The befriend quiet count uses `story.tut_bef_n` so a reload does not restart it.
+
 ## 2026-10-24 05:31 ET: Rest fills energy, and care from any party card (build 20261024-0531)
 
 - What changed and why: A REST tap fills NRG to 100, costs 10 FOOD, and waits 30 minutes (30 seconds in fast mode). At NRG 98 with no hurt it still says "Not sleepy right now." The Energy Sip fills NRG and its blurb reads "A fizzy pick-me-up. Fills NRG." Every WALKLINGS party card has FEED, PLAY, REST and HEAL for that Walkling. A party card shows the hungry, hurt, or tired glyph at the top-right of its sprite, and hides it when that Walkling is fine. Box rows have none. The six bars on a party card follow the one-second care tick, and only while WALKLINGS is open. The walk tray stays on the partner. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.

@@ -37,6 +37,21 @@ async function exitLodge(page) {
   await page.evaluate(() => PixelPets.walkStep('down'));
 }
 
+async function waitC1(page) {
+  await page.waitForFunction(() => PixelPets.lesson().card === 'C1' || PixelPets.lesson().phase === 'c1', { timeout: 8000 });
+}
+
+async function pastF1(page) {
+  await page.waitForFunction(() => {
+    const c = PixelPets.lesson().card;
+    return c === 'F1' || c === 'M1';
+  }, { timeout: 8000 });
+  if ((await lesson(page)).card === 'F1') {
+    await clickCard(page, 'NEXT');
+    await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  }
+}
+
 async function tapFollower(page) {
   const spot = await page.evaluate(() => {
     const c = document.querySelector('#mapCanvas');
@@ -49,18 +64,7 @@ async function tapFollower(page) {
 }
 
 async function rearmCare(page) {
-  const skip = page.locator('#tutSkip');
-  if (await skip.isVisible().catch(() => false)) {
-    await skip.click();
-    await skip.click();
-  }
-  await page.evaluate(() => {
-    const s = PixelPets.state;
-    s.flags['story.tut_care'] = 'armed';
-    delete s.flags['story.tut_care_step'];
-  });
-  const close = page.locator('#ctClose');
-  if (await close.isVisible().catch(() => false)) await close.click();
+  await page.evaluate(() => PixelPets.restartCareWalk());
 }
 
 async function flags(page) {
@@ -128,44 +132,42 @@ test('T-C1 starter scene arms both lessons and keeps v 2', async ({ page }) => {
   const f = await flags(page);
   expect(f.care).toBe('armed');
   expect(f.moves).toBe('armed');
+  expect(await page.evaluate(() => PixelPets.lesson().bef)).toBe('armed');
   expect(f.v).toBe(2);
 });
 
-test('T-C2 the act starts on Hearthmoor after the lodge mat, not inside', async ({ page }) => {
-  await boot(page, saveAt({ 'story.tut_care': 'armed', 'story.tut_moves': 'armed' }));
-  await page.evaluate(() => PixelPets.goto('hm_lodge_in', 5, 7, 'down'));
-  await page.waitForTimeout(400);
-  expect((await lesson(page)).phase).toBe('');
-  expect((await page.evaluate(() => PixelPets.mapInfo.id))).toBe('hm_lodge_in');
-  await page.evaluate(() => PixelPets.walkStep('down'));
+test('T-C2 the act starts in the Lodge and stays there', async ({ page }) => {
+  const s = saveAt({ 'story.tut_care': 'armed', 'story.tut_moves': 'armed' });
+  s.world = { map: 'hm_lodge_in', x: 5, y: 6, facing: 'up', respawn: 'hearthmoor' };
+  await boot(page, s);
   await page.waitForFunction(() => PixelPets.lesson().phase === 'c1', { timeout: 8000 });
-  const where = await page.evaluate(() => {
-    const door = (PixelPets.mapObjs || []).find(o => o.id === 'hm_lodge');
-    return { map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y, doorX: door && door.x, doorY: door && door.y };
-  });
-  expect(where.map).toBe('hearthmoor');
-  expect(where.x).toBe(where.doorX);
-  expect(where.y).toBe(where.doorY);
+  const where = await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
+  expect(where.map).toBe('hm_lodge_in');
+  expect(where.x).toBe(5);
+  expect(where.y).toBe(6);
   const L = await lesson(page);
   expect(L.card).toBe('C1');
   expect(L.soft).toBe(true);
+  await expect(page.locator('#tutLayer')).toBeVisible();
 });
 
 test('T-C3 a second Walkling does not fire the act', async ({ page }) => {
-  await boot(page, saveAt({ 'story.tut_care': 'armed' }));
+  await boot(page, saveAt({ 'story.tut_care': 'done' }));
   await page.evaluate(() => { PixelPets.fillParty(); });
   expect((await page.evaluate(() => PixelPets.state.party.length))).toBeGreaterThan(1);
+  await page.evaluate(() => PixelPets.runSteps([['say', '', 'The baskets are quiet now.']]));
+  await page.locator('#sbSkip').click();
+  await page.waitForFunction(() => !PixelPets.scene);
   expect((await lesson(page)).phase).toBe('');
-  await exitLodge(page);
-  await page.waitForFunction(() => PixelPets.lesson().phase === 'c1', { timeout: 8000 });
+  expect((await flags(page)).care).toBe('done');
 });
 
 test('T-C4 staged balloon and hops leave FOOD alone', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, 'shot is 390');
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
   await page.evaluate(() => PixelPets.applyCtl('modern', false));
+  await page.evaluate(() => PixelPets.restartCareWalk());
   const before = (await flags(page)).hunger;
-  await exitLodge(page);
   await page.waitForFunction(() => PixelPets.lesson().phase === 'act' || PixelPets.lesson().phase === 'c1');
   let sawHop = false, sawBalloon = false;
   for (let i = 0; i < 30; i++) {
@@ -190,7 +192,6 @@ test('T-C4 staged balloon and hops leave FOOD alone', async ({ page }) => {
 test('T-C5 reduced motion holds the follower hop at 0', async ({ page, context }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
-  await exitLodge(page);
   await page.waitForFunction(() => PixelPets.lesson().phase === 'c1', { timeout: 8000 });
   const hops = [];
   for (let i = 0; i < 8; i++) {
@@ -205,13 +206,11 @@ test('T-C5 reduced motion holds the follower hop at 0', async ({ page, context }
 test('T-C6 modern follower and strip taps open C2', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
   await page.evaluate(() => PixelPets.applyCtl('modern', false));
-  await exitLodge(page);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'C1');
+  await waitC1(page);
   await tapFollower(page);
   await page.waitForFunction(() => (PixelPets.lesson().card || '').indexOf('C2') === 0);
   expect((await lesson(page)).step).toBe('C2');
   await rearmCare(page);
-  await exitLodge(page);
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1', { timeout: 8000 });
   await page.locator('#petStrip').click();
   await page.waitForFunction(() => (PixelPets.lesson().card || '').indexOf('C2') === 0);
@@ -221,7 +220,7 @@ test('T-C6 modern follower and strip taps open C2', async ({ page }) => {
 test('T-C7 arcade rings only the follower', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
   await page.evaluate(() => PixelPets.applyCtl('arcade'));
-  await exitLodge(page);
+  await page.evaluate(() => PixelPets.restartCareWalk());
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1');
   expect(await page.evaluate(() => document.body.classList.contains('ctl-modern'))).toBe(false);
   const ringOnFollower = await page.evaluate(() => {
@@ -269,6 +268,8 @@ test('T-C8 FEED PLAY and REST run and the card waits', async ({ page }) => {
   await page.locator('#careTray [data-act="play"]').click();
   await page.waitForFunction(() => PixelPets.lesson().card === 'C4', { timeout: 8000 });
   await page.locator('#careTray [data-act="rest"]').click();
+  await page.waitForFunction(() => PixelPets.lesson().card === 'C4e', { timeout: 8000 });
+  await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'C5', { timeout: 8000 });
 });
 
@@ -293,7 +294,7 @@ test('T-C9 blocked FEED and REST show the x lines', async ({ page }) => {
   expect(after.happy).toBeCloseTo(before.happy, 0);
 });
 
-test('T-C10 GOT IT leaves the tray open and clears the step', async ({ page }) => {
+test('T-C10 GOT IT closes the tray and clears the step', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_care': 'wait', 'story.tut_care_step': 'C5' }));
   await page.evaluate(() => PixelPets.applyCtl('modern', false));
   await page.locator('#petStrip').click();
@@ -306,14 +307,13 @@ test('T-C10 GOT IT leaves the tray open and clears the step', async ({ page }) =
   const f = await flags(page);
   expect(f.care).toBe('done');
   expect(f.step).toBe(null);
-  expect(await page.locator('#careTray').isVisible()).toBe(true);
-  expect(await page.locator('#tutCard').isVisible()).toBe(false);
+  await expect(page.locator('#careTray')).toBeHidden();
+  await expect(page.locator('#tutCard')).toBeHidden();
 });
 
 test('T-C11 nudges at 8s and 20s', async ({ page }) => {
   test.setTimeout(40000);
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
-  await exitLodge(page);
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1');
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1n', { timeout: 15000 });
   const mid = await lesson(page);
@@ -327,7 +327,7 @@ test('T-C11 nudges at 8s and 20s', async ({ page }) => {
 test('T-C12 24 steps fall back to wait and the next tray starts at C2', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
   await page.evaluate(() => PixelPets.applyCtl('modern', false));
-  await exitLodge(page);
+  await page.evaluate(() => PixelPets.restartCareWalk());
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1');
   await page.evaluate(() => {
     for (let i = 0; i < 30; i++) PixelPets.walkStep(i % 2 ? 'up' : 'down');
@@ -341,7 +341,6 @@ test('T-C12 24 steps fall back to wait and the next tray starts at C2', async ({
 test('T-C13 45 seconds falls back the same way', async ({ page }) => {
   test.setTimeout(70000);
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
-  await exitLodge(page);
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1');
   await page.waitForFunction(() => PixelPets.lesson().care === 'wait', { timeout: 55000 });
   expect((await lesson(page)).card).toBe('');
@@ -349,7 +348,6 @@ test('T-C13 45 seconds falls back the same way', async ({ page }) => {
 
 test('T-C14 a scene during C1 falls back and does not cover the scene', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
-  await exitLodge(page);
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1');
   await page.evaluate(() => PixelPets.runSteps([['say', 'Rook', 'Meet me at the east gate!']]));
   await page.waitForFunction(() => !!PixelPets.scene);
@@ -371,15 +369,26 @@ test('T-C15 closing the tray keeps the step', async ({ page }) => {
 });
 
 test('T-C16 T5 T6 and T7 are look-only while the care walk is armed', async ({ page }) => {
+  test.setTimeout(60000);
   const s = saveAt({ 'story.tut_care': 'armed' });
   delete s.flags['story.tutorial_done'];
   delete s.flags['story.early_done'];
   s.flags['story.early_steps'] = 0;
   await boot(page, s);
-  await page.evaluate(() => PixelPets.runSteps([['say', '', 'The baskets are quiet now.']]));
-  await page.locator('#sbSkip').click();
-  await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T0');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'C1', { timeout: 8000 });
+  await tapFollower(page);
+  await page.waitForFunction(() => (PixelPets.lesson().card || '').indexOf('C2') === 0);
+  await page.locator('#ctClose').click();
+  await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T0', { timeout: 8000 });
   await page.locator('#tutActs button', { hasText: 'SHOW ME' }).click();
+  await page.waitForFunction(() => /^T10/.test(document.querySelector('#tutLayer').dataset.step || ''));
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T11');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T12');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T12r');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T1');
   await page.locator('#tabs button[data-tab="pet"]').click();
   await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T2');
@@ -407,7 +416,6 @@ test('T-C17 Tips off plays the act once and stays quiet', async ({ page }) => {
   const s = saveAt({ 'story.tut_care': 'armed' });
   s.settings.tips = false;
   await boot(page, s);
-  await exitLodge(page);
   await page.waitForFunction(() => PixelPets.lesson().care === 'quiet', { timeout: 8000 });
   expect(await page.locator('#tutCard').isVisible()).toBe(false);
   expect(await page.locator('#toast').textContent()).toContain('any time');
@@ -441,7 +449,7 @@ test('T-C19 a party tip waits until the care walk ends', async ({ page }) => {
   await page.locator('#shList .sh-item', { hasText: 'Care walk' }).click();
   await page.waitForFunction(() => (PixelPets.lesson().card || '').indexOf('C2') === 0);
   expect(await page.locator('#unlockCard').isVisible()).toBe(false);
-  for (let i = 0; i < 6; i++) await clickCard(page, i === 5 ? 'GOT IT' : 'NEXT');
+  for (let i = 0; i < 7; i++) await clickCard(page, i === 6 ? 'GOT IT' : 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === '');
   await page.waitForFunction(() => !document.querySelector('#unlockCard').hidden, { timeout: 4000 });
   expect(await page.locator('#unlockTitle').textContent()).toContain('Your Party');
@@ -452,7 +460,7 @@ test('T-C20 the desk frame keeps the card inside the game column', async ({ page
   await page.setViewportSize({ width: 1440, height: 900 });
   await boot(page, saveAt({ 'story.tut_care': 'armed' }));
   await page.evaluate(() => PixelPets.applyCtl('modern', false));
-  await exitLodge(page);
+  await page.evaluate(() => PixelPets.restartCareWalk());
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1');
   const box = await page.evaluate(() => {
     const app = document.querySelector('#app').getBoundingClientRect();
@@ -479,21 +487,21 @@ test('T-C21 card buttons are at least 44 px', async ({ page }) => {
   }
 });
 
-test('T-M1 M1 shows at the first choose and not during the intro', async ({ page }) => {
+test('T-M1 F1 shows at the first choose and not during the intro', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, 'shot is 390');
   await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
   await page.evaluate(() => { PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0; PixelPets.forceBattle('tide/0', 3); });
   await page.waitForFunction(() => PixelPets.battle.state === 'INTRO' || PixelPets.battle.state === 'CHOOSE');
   const during = await page.evaluate(() => ({ state: PixelPets.battle.state, card: PixelPets.lesson().card }));
   if (during.state === 'INTRO') expect(during.card).toBe('');
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F1');
   expect((await lesson(page)).q).toBe(0);
   const dir = artifactsDir('tutorials-care-moves');
   fs.mkdirSync(dir, { recursive: true });
   await page.screenshot({ path: path.join(dir, 'moves-m1-390.png') });
 });
 
-test('T-M2 a holder battle shows no card and does not count', async ({ page }) => {
+test('T-M2 only Rook\'s first match shows cards', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'armed', 'story.tut_moves_n': 0 }));
   const started = await page.evaluate(() => {
     PixelPets.battle.textMs = 0;
@@ -502,10 +510,22 @@ test('T-M2 a holder battle shows no card and does not count', async ({ page }) =
   });
   expect(started).toBe(true);
   await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE', { timeout: 8000 });
+  const rook = await lesson(page);
+  expect(rook.card).toBe('F1');
+  expect(rook.n).toBe(1);
+  expect(await page.evaluate(() => PixelPets.battle.trainerId)).toBe('rival1_rook');
+  await page.evaluate(() => PixelPets.battle.close());
+  await page.waitForFunction(() => !PixelPets.battle.on);
+  const other = await page.evaluate(() => {
+    PixelPets.battle.textMs = 0;
+    PixelPets.battle.animMs = 0;
+    return PixelPets.forceTrainer('rival2_rook');
+  });
+  expect(other).toBe(true);
+  await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE', { timeout: 8000 });
   const L = await lesson(page);
   expect(L.card).toBe('');
-  expect(L.n).toBe(0);
-  expect(await page.evaluate(() => PixelPets.battle.kind)).toBe('trainer');
+  expect(L.n).toBe(1);
   await page.evaluate(() => PixelPets.battle.close());
 });
 
@@ -517,7 +537,7 @@ test('T-M3 the matchup line follows typeMult', async ({ page }) => {
       PixelPets.state.flags['story.tut_moves'] = 'armed';
     }, species);
     await openWild(page, form, 3);
-    await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+    await pastF1(page);
     await clickCard(page, 'NEXT');
     await page.waitForFunction((id) => PixelPets.lesson().card === id, line);
     await page.evaluate(() => PixelPets.battle.close());
@@ -533,7 +553,7 @@ test('T-M4 MOVES opens M4 and GOT IT leaves the menu open', async ({ page }) => 
   await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
   await page.evaluate(() => PixelPets.setMoves(['bump', 'flick_flame', 'stoke_up']));
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await pastF1(page);
   await clickCard(page, 'NEXT');
   await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'M3');
@@ -553,6 +573,10 @@ test('T-M5 part 2 and the chart return to choose', async ({ page }) => {
   await page.waitForFunction(() => PixelPets.lesson().card === 'M5');
   await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'M6');
+  await clickCard(page, 'NEXT');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F2');
+  await clickCard(page, 'NEXT');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F3');
   await clickCard(page, 'CHART');
   await expect(page.locator('#shTitle')).toHaveText('TYPE CHART');
   await page.locator('#shCancel').click();
@@ -573,6 +597,8 @@ test('T-M6 the hit card shows once on the next choose', async ({ page }) => {
   // Part 1 is already done, so this choose is part 2. Finish it, then land a hard hit.
   if ((await lesson(page)).card === 'M5') {
     await clickCard(page, 'NEXT');
+    await clickCard(page, 'NEXT');
+    await clickCard(page, 'NEXT');
     await clickCard(page, 'GOT IT');
   }
   await page.locator('[data-bact="fight"]').click();
@@ -588,7 +614,7 @@ test('T-M6 the hit card shows once on the next choose', async ({ page }) => {
 test('T-M7 running keeps part 1 for the next wild battle', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await pastF1(page);
   await clickCard(page, 'NEXT');
   await clickCard(page, 'NEXT');
   await page.locator('[data-bact="fight"]').click();
@@ -632,7 +658,7 @@ test('T-M10 four wild battles end the lesson', async ({ page }) => {
 test('T-M11 skip ends the lesson and leaves choose', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F1');
   await page.locator('#tutSkip').click();
   await page.locator('#tutSkip').click();
   expect((await lesson(page)).moves).toBe('skipped');
@@ -653,8 +679,9 @@ test('T-M12 Tips off stays quiet in battle', async ({ page }) => {
 test('T-M13 a V2 starter gets M4n and the queue is empty', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F1');
   expect((await lesson(page)).q).toBe(0);
+  await clickCard(page, 'NEXT');
   await clickCard(page, 'NEXT');
   await clickCard(page, 'NEXT');
   await page.locator('[data-bact="fight"]').click();
@@ -666,7 +693,7 @@ test('T-M14 reduced motion shows the battle card without a slide', async ({ page
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F1');
   const anim = await page.evaluate(() => getComputedStyle(document.querySelector('#tutCard')).animationName);
   expect(anim === 'none' || anim === '').toBe(true);
 });
@@ -680,7 +707,7 @@ test('T-M15 the card stays off the message line', async ({ page }) => {
     await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
     await page.evaluate((ctl) => PixelPets.applyCtl(ctl, false), lay.ctl);
     await openWild(page, 'tide/0', 3);
-    await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+    await pastF1(page);
     const overlap = await page.evaluate(() => {
       const a = document.querySelector('#tutCard').getBoundingClientRect();
       const b = document.querySelector('#btMsg').getBoundingClientRect();
@@ -701,7 +728,7 @@ test('T-S1 the care replay is look-only', async ({ page }) => {
   await page.locator('#shList .sh-item', { hasText: 'Care walk' }).click();
   await page.waitForFunction(() => (PixelPets.lesson().card || '').indexOf('C2') === 0);
   expect(await page.locator('#careTray').isVisible()).toBe(true);
-  for (let i = 0; i < 5; i++) await clickCard(page, 'NEXT');
+  for (let i = 0; i < 6; i++) await clickCard(page, 'NEXT');
   await clickCard(page, 'GOT IT');
   const after = await flags(page);
   expect(after.hunger).toBeCloseTo(before.hunger, 0);
@@ -718,7 +745,7 @@ test('T-S2 moves replay toasts and arms the next wild battle', async ({ page }) 
   expect((await lesson(page)).moves).toBe('armed');
   await page.locator('#setClose').click();
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F1');
 });
 
 test('T-S3 the type chart has nine rows from the chart', async ({ page }) => {
@@ -757,7 +784,7 @@ test('T-S4 a reload keeps v 2 and the five keys', async ({ page }) => {
 test('T-M9 befriending early leaves the result panel', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F1');
   await page.evaluate(() => document.querySelector('#btBefriendAct').click());
   await page.waitForFunction(() => PixelPets.battle.panel === 'bef');
   await page.evaluate(() => {
@@ -775,7 +802,7 @@ test('T-M9 befriending early leaves the result panel', async ({ page }) => {
   const journal = page.locator('#jnClose');
   if (await journal.isVisible().catch(() => false)) await journal.click();
   await openWild(page, 'tide/0', 3);
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  await page.waitForFunction(() => PixelPets.lesson().card === 'F1');
 });
 
 async function sampleTypeCard(page, width) {
@@ -828,7 +855,7 @@ test('T-M16 M1 and M2 stay above the partner panel', async ({ page }) => {
     await boot(page, saveAt({ 'story.tut_moves': 'armed' }));
     await page.evaluate(mode => PixelPets.applyCtl(mode, false), ctl);
     await openWild(page, 'tide/0', 3);
-    await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+    await pastF1(page);
     if (ctl === 'modern') {
       await page.screenshot({ path: path.join(dir, 'm1-battle-' + width + '.png') });
       await page.locator('#tutCard').screenshot({ path: path.join(dir, 'm1-card-' + width + '.png') });
