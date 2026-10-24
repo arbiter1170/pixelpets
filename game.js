@@ -19,6 +19,8 @@ function watchCanvasCount(){
   } catch (e) {}
 }
 watchCanvasCount();
+// A dropped canvas keeps its pixel buffer until GC; WebKit collects late. Zero it when we know nothing draws it again.
+function freeCanvases(list){ for (const c of list) if (c && c.width) { c.width = 0; c.height = 0; } }
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
@@ -5107,7 +5109,7 @@ function factionOfMap(id){
 // along the wall), trim (a PAL key) and shape ('gable', 'steep', 'point', 'dome', 'arch', 'drum', 'flat' or 'stepped', plus any of
 // '+chimney', '+mast', '+bell', '+clock', '+bunting', '+emblem', '+slit'). An entry with none of these draws exactly as before.
 // Each styled building is painted once per map and faction, then cut into 16x16 cells that replace its R and H tiles.
-const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPpt', bldCache = new Map();
+const BLD_KEYS = ['roof', 'wall', 'door', 'win', 'trim', 'shape'], BLD_GROUND = 'gfcsPpt', bldCache = new Map(), BLD_CAP = 3;
 const bldKey = (x, y) => y * 4096 + x;
 function buildingsOf(m){
   const out = [], at = (x, y) => (m.grid[y] && m.grid[y][x]) || '';
@@ -5205,12 +5207,13 @@ function paintBuilding(m, b, fac, P){
     if (ch === 'H' && (b.wall || b.win.length)) P.styled.add(bldKey(x, y));
   }
   for (const d of b.doors) if (WART[b.door]) P.doors.set(d.id, b.door);
+  c.width = c.height = 0;   // scratch, already cut into cells
 }
 function buildingCells(){
   const fac = factionOfMap(CUR.id), key = CUR.id + '|' + (fac || '');
   let P = bldCache.get(key);
   if (P) return P;
-  if (bldCache.size > 12) bldCache.clear();
+  while (bldCache.size >= BLD_CAP) { const k = bldCache.keys().next().value; freeCanvases(bldCache.get(k).cells.values()); bldCache.delete(k); }   // oldest map out, its 16 px cells freed
   P = { cells: new Map(), cut: new Set(), styled: new Set(), doors: new Map(), ground: new Map() };
   for (const b of buildingsOf(CUR)) paintBuilding(CUR, b, fac, P);
   bldCache.set(key, P); return P;
@@ -5412,12 +5415,13 @@ function shadowPart(x, y, m){
   if (sideE) return 'shadow_e';
   return null;
 }
-const wallMasks = {};
+const wallMasks = new Map();
 function wallMaskOf(m){
   if (!m) return null;
-  if (Object.prototype.hasOwnProperty.call(wallMasks, m.id)) return wallMasks[m.id];
+  if (wallMasks.has(m.id)) return wallMasks.get(m.id);
+  while (wallMasks.size >= BLD_CAP) { const k = wallMasks.keys().next().value; freeCanvases([wallMasks.get(k)]); wallMasks.delete(k); }
   const sk = m.skin && SKINS[m.skin];
-  if (!sk || !sk.wall) return wallMasks[m.id] = null;
+  if (!sk || !sk.wall) { wallMasks.set(m.id, null); return null; }
   const c = document.createElement('canvas');
   c.width = m.w * TS; c.height = m.h * TS;
   const g = c.getContext('2d');
@@ -5428,7 +5432,7 @@ function wallMaskOf(m){
     const img = part && TILES[prefix + part];
     if (img) g.drawImage(img, x * TS, y * TS);
   }
-  return wallMasks[m.id] = c;
+  wallMasks.set(m.id, c); return c;
 }
 function tickCamBias(t){
   const b = walk.camBias; if (!b || !b.ease) return;
@@ -14194,7 +14198,7 @@ function renderCollection(){
   renderDexGrid();
 }
 function renderDexGrid(){
-  const dex = $('#dexGrid'); dex.innerHTML = '';
+  const dex = $('#dexGrid'); freeCanvases(dex.querySelectorAll('canvas')); dex.innerHTML = '';
   const owned = new Set(allPets().map(p => p.species + '/' + p.stage));
   const seen = (S.dex && S.dex.seen) || {}, caught = (S.dex && S.dex.caught) || {};
   const speciesKnown = k => SP_INDEX[String(k).split('/')[0]] != null;
