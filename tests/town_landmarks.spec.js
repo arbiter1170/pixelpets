@@ -563,7 +563,10 @@ test('T15 reduced motion keeps the night glow still', async ({ page }) => {
 });
 
 test('T16 the landmarks checker passes in strict mode', async () => {
-  const out = execFileSync('python3', ['/tmp/design/specs/town_landmarks_check.py'], {
+  const root = process.env.PP_DESIGN_DIR || '/tmp/design';
+  const checker = path.join(root, 'specs', 'town_landmarks_check.py');
+  test.skip(!fs.existsSync(checker), 'Design checker is not unpacked at ' + checker + '. Set PP_DESIGN_DIR to the design repo so T16 can run.');
+  const out = execFileSync('python3', [checker], {
     env: Object.assign({}, process.env, { GAME_DIR: process.cwd(), GAME_REF: 'HEAD' }),
     encoding: 'utf8',
   });
