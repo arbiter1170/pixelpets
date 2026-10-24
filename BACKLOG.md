@@ -11,7 +11,7 @@ ART_PASS (D548–D563) is on this branch: the Bloom Trial Hall is garden terrace
 
 MOVES_V2 (D522–D533 and D564–D569) is on this branch: every Walkling starts with three moves, old saves top up in place, and a battle hit plays a per-type punch. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2. The only new saved flag is `sig_offer.<id>`.
 
-TUTORIALS_CARE_MOVES (D584–D598) is on this branch: the first Lodge exit plays the care walk, the first wild battles play the moves lesson, and Settings → Tutorial opens a chooser with the type chart. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2. The new flags are `story.tut_care`, `story.tut_care_step`, `story.tut_moves`, `story.tut_moves_hit` and `story.tut_moves_n`.
+TUTORIAL_ORDER (D678–D682 and D705–D709) is on this branch: the care walk starts in the Lodge after the starter, the tour teaches the bottom row first, Rook's first match teaches fighting, and the first wild battle teaches befriending. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2. The new flag is `story.tut_bef`. TUTORIALS_CARE_MOVES (D584–D598) is already in the game: the tray still walks FEED, PLAY, REST and HEAL, and Settings → Tutorial still opens the chooser. It is not the next build.
 
 PARTNER_CARE (D534–D547) is on this branch: one need balloon over the partner, a care tray from the strip and from a standing partner, and two shop follow-ups (a nameless cooler hides its title, and a free Lantern rest uses the rounded energy check). Care rules stay as they are, and the tray acts on the partner only.
 

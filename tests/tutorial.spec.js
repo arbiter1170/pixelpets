@@ -87,12 +87,26 @@ test('a first run walks the tour and the care buttons are real', async ({ page }
   await shot390(page, 'tutorial-t0');
 
   await page.locator('#tutActs button', { hasText: 'SHOW ME' }).click();
+  await expect(page.locator('#tutLine')).toContainText('Hold the pad to move');
+  expectLayout(await layout(page));
+  await shot390(page, 'tutorial-t10');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await expect(page.locator('#tutLine')).toContainText('QUEST shows');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await expect(page.locator('#tutLine')).toContainText('WALKLINGS opens your Party');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await expect(page.locator('#tutLine')).toContainText('This compass lists everyone you meet');
+  expectLayout(await layout(page));
+  await shot390(page, 'tutorial-t12r');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
   await page.locator('#tabs button[data-tab="pet"]').click();
   await expect(page.locator('#tutLine')).toContainText('FOOD drops slowly');
   expectLayout(await layout(page));
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('NRG is energy');
+  await expect(page.locator('#tutLine')).toContainText('Walking and battling are free');
+  await expect(page.locator('#tutLine')).not.toContainText('battles use it');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('GROW fills');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
@@ -119,18 +133,6 @@ test('a first run walks the tour and the care buttons are real', async ({ page }
 
   await expect(page.locator('#tutLine')).toContainText('Tap WALK');
   await page.locator('#tabs button[data-tab="walk"]').click();
-  await expect(page.locator('#tutLine')).toContainText('Hold the pad to move');
-  expectLayout(await layout(page));
-  await shot390(page, 'tutorial-t10');
-  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
-  await expect(page.locator('#tutLine')).toContainText('QUEST shows');
-  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
-  await expect(page.locator('#tutLine')).toContainText('WALKLINGS opens your Party');
-  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
-  await expect(page.locator('#tutLine')).toContainText('This compass lists everyone you meet');
-  expectLayout(await layout(page));
-  await shot390(page, 'tutorial-t12r');
-  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText("That's the tour!");
   await expect(page.locator('#tutSkip')).toBeHidden();
   expectLayout(await layout(page));
@@ -243,8 +245,10 @@ test('Settings replay highlights care and does not spend it', async ({ page }) =
   await page.locator('#setTutorial').click();
   await page.locator('#shList .sh-item', { hasText: 'Opening tour' }).click();
   await expect(page.locator('#ovSettings')).toBeHidden();
-  await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
+  await expect(page.locator('#tutLine')).toContainText('Hold the pad to move');
   await expect(page.locator('#tutLine')).not.toContainText('Want a quick tour');
+  for (let i = 0; i < 4; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
   await page.locator('#tabs button[data-tab="pet"]').click();
   for (let i = 0; i < 3; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('Tap FEED');
@@ -339,6 +343,8 @@ test('modern replay names the heart glow on the hearts step (D154 shipped)', asy
   await page.locator('#gearFloat').click();
   await page.locator('#setTutorial').click();
   await page.locator('#shList .sh-item', { hasText: 'Opening tour' }).click();
+  await expect(page.locator('#tutLine')).toContainText('Tap the map to walk');
+  for (let i = 0; i < 4; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
   await page.locator('#petFloat').click();
   for (let i = 0; i < 6; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
@@ -357,7 +363,7 @@ test('a stray tap on the card after SHOW ME does not end the tour (modern)', asy
   s.settings = Object.assign({}, s.settings, { controls: 'modern' });
   await openTour(page, s);
   await page.locator('#tutActs button', { hasText: 'SHOW ME' }).click();
-  await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
+  await expect(page.locator('#tutLine')).toContainText('Tap the map to walk');
   const focused = await page.evaluate(() => document.activeElement && document.activeElement.id);
   expect(focused).not.toBe('tutSkip');
   const tapLow = async () => {
@@ -369,9 +375,9 @@ test('a stray tap on the card after SHOW ME does not end the tour (modern)', asy
   };
   await tapLow();
   await expect(page.locator('#tutLayer')).toBeVisible();
-  await expect(page.locator('#tutLine')).toContainText('This is the PARTNER screen');
-  await page.locator('#petFloat').click();
-  await expect(page.locator('#tutLine')).toContainText('FOOD drops');
+  await expect(page.locator('#tutLine')).toContainText('Tap the map to walk');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await expect(page.locator('#tutLine')).toContainText('QUEST shows');
   await tapLow();
   await page.locator('#tutSkip').click();   // one deliberate tap only arms it
   await expect(page.locator('#tutSkip')).toHaveText('TAP AGAIN TO SKIP');
@@ -382,5 +388,5 @@ test('a stray tap on the card after SHOW ME does not end the tour (modern)', asy
     done: PixelPets.state.flags['story.tutorial_done'] === true,
     step: PixelPets.state.flags['story.tutorial_step'] || null,
   }));
-  expect(st).toEqual({ on: true, id: 'T2', done: false, step: 'T2' });
+  expect(st).toEqual({ on: true, id: 'T11', done: false, step: 'T11' });
 });

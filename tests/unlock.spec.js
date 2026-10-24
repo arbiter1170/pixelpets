@@ -52,26 +52,47 @@ async function openTour(page, save) {
 
 async function walkTour(page) {
   await page.locator('#tutActs button', { hasText: 'SHOW ME' }).click();
-  const opened = await page.locator('#tutLine').textContent();
-  if (opened && opened.indexOf('PARTNER screen') >= 0) {
-    await page.locator('#tabs button[data-tab="pet"]').click();
-  }
-  await expect(page.locator('#tutLine')).toContainText('FOOD drops slowly');
-  for (let i = 0; i < 3; i++) await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
-  await expect(page.locator('#tutLine')).toContainText('Tap FEED');
-  await page.locator('#scr-pet [data-act="feed"]').click();
-  await expect(page.locator('#tutLine')).toContainText('Tap PLAY');
-  await page.locator('#scr-pet [data-act="play"]').click();
-  await expect(page.locator('#tutLine')).toContainText('Tap REST');
-  await page.locator('#scr-pet [data-act="rest"]').click();
-  await expect(page.locator('#tutLine')).toContainText('These hearts fill');
-  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
-  await expect(page.locator('#tutLine')).toContainText('Tap WALK');
-  await page.locator('#tabs button[data-tab="walk"]').click();
   let compass = false;
-  for (let n = 0; n < 8; n++) {
+  for (let n = 0; n < 24; n++) {
     const text = await page.locator('#tutLine').textContent();
     if (text && text.indexOf('This compass lists') >= 0) compass = true;
+    if (text && text.indexOf('PARTNER screen') >= 0) {
+      const tab = page.locator('#tabs button[data-tab="pet"]');
+      if (await tab.isVisible()) await tab.click();
+      else await page.locator('#petFloat').click();
+      continue;
+    }
+    if (text && text.indexOf('Tap FEED') >= 0) {
+      const next = page.locator('#tutActs button', { hasText: 'NEXT' });
+      if (await next.isVisible()) await next.click();
+      else {
+        await page.locator('#scr-pet [data-act="feed"]').click();
+        await page.waitForFunction(() => (document.querySelector('#tutLine').textContent || '').indexOf('Tap FEED') < 0);
+      }
+      continue;
+    }
+    if (text && text.indexOf('Tap PLAY') >= 0) {
+      const next = page.locator('#tutActs button', { hasText: 'NEXT' });
+      if (await next.isVisible()) await next.click();
+      else {
+        await page.locator('#scr-pet [data-act="play"]').click();
+        await page.waitForFunction(() => (document.querySelector('#tutLine').textContent || '').indexOf('Tap PLAY') < 0);
+      }
+      continue;
+    }
+    if (text && text.indexOf('Tap REST') >= 0) {
+      const next = page.locator('#tutActs button', { hasText: 'NEXT' });
+      if (await next.isVisible()) await next.click();
+      else {
+        await page.locator('#scr-pet [data-act="rest"]').click();
+        await page.waitForFunction(() => (document.querySelector('#tutLine').textContent || '').indexOf('Tap REST') < 0);
+      }
+      continue;
+    }
+    if (text && text.indexOf('Tap WALK') >= 0) {
+      await page.locator('#tabs button[data-tab="walk"]').click();
+      continue;
+    }
     const label = await page.locator('#tutActs button').first().textContent();
     if (label && label.indexOf("LET'S GO") >= 0) return compass;
     await page.locator('#tutActs button', { hasText: 'NEXT' }).click();

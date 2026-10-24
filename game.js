@@ -875,8 +875,9 @@ function showTab(name){
 }
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false, soft: false, lesson: null, pass: false, skipFn: null };
-let careLes = { phase: '', t0: 0, calm: 0, steps0: 0, nudged1: false, nudged2: false, balloon: false, balloonUntil: 0, nudgeAt: 0, door: false, replay: false, replayStep: 'C2', held: [], fell: false, holdEarly: false };
+let careLes = { phase: '', t0: 0, calm: 0, steps0: 0, nudged1: false, nudged2: false, balloon: false, balloonUntil: 0, nudgeAt: 0, replay: false, replayStep: 'C2', held: [], fell: false, holdEarly: false };
 let movesLes = { hitDue: false, m7done: false, chooseN: 0, p1At: -1, m7At: -1, plain: '' };
+let befLes = { took: false, fromBar: false, bar: false };
 let lessonDraw = { hop: 0, y: 0 };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
 const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
@@ -1225,7 +1226,7 @@ const TUT_COPY = {
   T0r: ['Finish the tour? It only takes a minute.', 'choice', ''],
   T1:  ['This is the PARTNER screen. Tap it to see {pet} up close.', 'tap', 'partner'],
   T2:  ['FOOD drops slowly through the day. When {pet} is hungry, JOY drops faster too.', 'next', 'foodjoy'],
-  T3:  ['NRG is energy. PLAY and battles use it, and REST brings it back. Walking is free.', 'next', 'nrg'],
+  T3:  ['NRG is energy. PLAY uses some, and REST brings it back. Walking and battling are free.', 'next', 'nrg'],
   T4:  ["GROW fills as you care for {pet} and walk together. When it's full, {pet} can grow up.", 'next', 'grow'],
   T5:  ['Tap FEED to fill FOOD. After a meal, {pet} needs a little while before eating again.', 'tap', 'feed'],
   T6:  ['Tap PLAY for JOY. It uses a little NRG and FOOD, so keep an eye on both.', 'tap', 'play'],
@@ -1242,6 +1243,8 @@ const TUT_COPY = {
   T13: ["That's the tour! You can replay it any time from Settings, under the gear.", 'go', 'gear']
 };
 const TUT_AFTER = { T0: 'T1', T0r: 'T1', T1: 'T2', T2: 'T3', T3: 'T4', T4: 'T5', T5: 'T6', T6: 'T7', T7: 'T8', T8: 'T9', T8b: 'T9', T9: 'T10', T10a: 'T11', T10m: 'T11', T10j: 'T11', T11: 'T12', T12: 'T12r', T12r: 'T13' };
+// TUTORIAL_ORDER: bottom row first, then the partner screen. T5-T7 drop only after a finished care walk.
+const TUT_AFTER_NAV = { T0: 'T10', T0r: 'T10', T10a: 'T11', T10m: 'T11', T10j: 'T11', T11: 'T12', T12: 'T12r', T12r: 'T1', T1: 'T2', T2: 'T3', T3: 'T4', T4: 'T5', T5: 'T6', T6: 'T7', T7: 'T8', T8: 'T9', T8b: 'T9', T9: 'T13' };
 function tutFill(s){
   const p = pet();
   const n = (S && S.party) ? S.party.length : 0;
@@ -1400,7 +1403,14 @@ function tutPlace(){
     top = Math.max(6, Math.min(top, limit - ch));
   }
   if (tut.lesson === 'moves' && /^M[12]/.test(tut.id || '')) { const mr = $('.bt-me') && $('.bt-me').getBoundingClientRect(); if (mr && mr.height > 2 && mr.top - 8 - ch >= 6) top = mr.top - 8 - ch; }   // CALEB_FIX part 2: type cards sit above the partner panel; the wild Walkling stays in view
-  if (tut.lesson === 'moves') top = lessonClearMsg(left, top, cw, ch);
+  if (tut.lesson === 'moves' || tut.lesson === 'bef') top = lessonClearMsg(left, top, cw, ch);
+  if (tut.lesson === 'bef' && befLes.fromBar) {
+    const bar = $('#tbar');
+    if (bar) {
+      const br = bar.getBoundingClientRect();
+      if (br.height > 2) { const above = br.top - 12 - ch; if (above >= 6) top = above; }
+    }
+  }
   if (tut.lesson === 'care' && !tut.soft) {
     const cb = $('#ctClose');
     if (cb && !cb.hidden) {
@@ -1439,7 +1449,7 @@ function tutShow(id){
   const line = $('#tutLine'); line.textContent = tutFill(row[0]);
   const acts = $('#tutActs'); acts.textContent = '';
   const addBtn = (label, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = label; b.addEventListener('click', fn); acts.append(b); return b; };
-  if (row[1] === 'choice') { addBtn('SHOW ME', () => tutShow('T1')); addBtn('SKIP', () => tutClose(true)); }
+  if (row[1] === 'choice') { addBtn('SHOW ME', () => tutShow('T10')); addBtn('SKIP', () => tutClose(true)); }
   else if (tut.adv === 'next') addBtn(id === 'T13' ? "LET'S GO" : 'NEXT', () => (id === 'T13' ? tutClose(true) : tutAdvance()));
   tutDisarmSkip();
   const skip = $('#tutSkip'); skip.hidden = row[1] === 'choice' || id === 'T13';
@@ -1453,8 +1463,11 @@ function tutShow(id){
   const layer = $('#tutLayer'); if (layer) layer.dataset.step = id;
 }
 function tutAdvance(){
-  let n = TUT_AFTER[tut.id];
-  if (tut.id === 'T12' && tut.skipT12r) n = 'T13';
+  let n = TUT_AFTER_NAV[tut.id];
+  if (tut.id === 'T12' && tut.skipT12r) n = 'T1';
+  if (!tut.replay && S && S.flags['story.tut_care'] === 'done') {
+    while (n === 'T5' || n === 'T6' || n === 'T7') n = TUT_AFTER_NAV[n];
+  }
   if (!n) tutClose(true); else tutShow(n);
 }
 function tutSawTab(name){ if (tut.on && tut.adv === 'tap' && tutAllowsTab(name)) tutAdvance(); }
@@ -1500,9 +1513,13 @@ function runTutorial(opts){
   const layer = $('#tutLayer'); if (!layer) { tut.on = false; return; }
   layer.hidden = false; document.body.classList.add('tut-on');
   clearMoves(); lockTabs(true);
-  tutShow(opts.replay ? 'T1' : (opts.resume ? 'T0r' : 'T0'));
+  tutShow(opts.replay ? 'T10' : (opts.resume ? 'T0r' : 'T0'));
 }
 function tutorialPending(){
+  if (S && S.flags['story.tut_care'] === 'armed') {
+    const ph = careLes.phase;
+    if (ph === 'calm' || ph === 'act' || ph === 'c1' || ph === 'tray') return false;
+  }
   return !!(S && pet() && !tut.on && S.flags['story.starter_received'] && !S.flags['story.tutorial_done'] && !S.flags['story.early_done']);
 }
 function scheduleTutorial(fromScene){
@@ -1515,7 +1532,7 @@ function scheduleTutorial(fromScene){
 function tutorialKnock(allow){
   if (!tutorialPending() || !allow) return;
   const toastUp = $('#toast').classList.contains('show');
-  const busy = scene || (battle && battle.on) || !$('#ovGeo').hidden || !$('#ovSettings').hidden || !$('#ovLook').hidden;
+  const busy = scene || (battle && battle.on) || !$('#ovGeo').hidden || !$('#ovSettings').hidden || !$('#ovLook').hidden || trayOpen() || fade.busy;
   if (toastUp || busy || (welcome.due && screen === 'pet')) { tut.wait = setTimeout(() => tutorialKnock(true), 200); return; }
   runTutorial({ replay: false, resume: !!S.flags['story.tutorial_step'] });
 }
@@ -1543,6 +1560,7 @@ const TCM = {
   C3x: 'PLAY fills JOY. It needs a little NRG, so it waits while {pet} is tired.',
   C4: 'Tap REST so {pet} can sleep. A nap brings NRG back and helps after a battle.',
   C4x: 'REST is a nap that brings NRG back. {pet} isn\'t sleepy yet, so save it for later.',
+  C4e: 'Need NRG? REST fills it for 10 FOOD. So do an Energy Sip and a Lantern House bed.',
   C5: 'HEAL uses a snack from your BAG when {pet} is hurt. Warden Ilse gave you some.',
   C6: 'STATS shows {pet}\'s numbers. CLOSE puts the tray away. Tap {pet} to bring it back.',
   C7: 'That\'s care on the go! When a balloon pops up over {pet}, tap {pet} and help out.',
@@ -1558,15 +1576,27 @@ const TCM = {
   M5: 'STATUS moves don\'t hurt. They raise or drop ATK, DEF or SPD, and arrows show it here.',
   M6: 'Care counts too. HUNGRY, SULKY or DROWSY Walklings fight a little weaker.',
   M7: '"That hit hard!" means about double. "It barely felt that..." means about half.',
+  F1: 'The green bar is HP. If {pet}\'s HP runs out, it needs a nap or a Lantern House before fighting again.',
+  F2: 'Battles don\'t use NRG, but below 10 NRG {pet} is too tired to step in. REST first.',
+  F3: 'SWAP sends in another Walkling from your party. Befriend wild ones so you have someone to swap in.',
+  W1: 'Wild Walklings can join you. Tap BEFRIEND, then tap again when the marker is in the green zone.',
+  W2: 'Weaken it first! The lower its HP, the wider the green zone gets.',
+  W3: 'Don\'t knock it out. At 0 HP it wanders off, so stop while its bar is low.',
+  W4: 'LEAVE walks away. A faster Walkling always gets away; a slower one may need another try.',
+  W5: 'WARY, FAIR or GOOD shows your odds. You get 3 tries; the hearts show what\'s left.',
+  W6: 'A happy partner and a Befriend Treat from the BAG widen the green zone too.',
   MR: 'Moves lesson in your next wild battle.',
+  BR: 'Befriending in your next wild battle.',
   CH: 'TYPE CHART',
   CHP: 'Even against every type.',
   SET: 'Tutorial',
   SO1: 'Opening tour', SO2: 'Care walk', SO3: 'Moves and types', SO4: 'Type chart',
+  SO5: 'Befriending',
   SS1: 'The first tour, look only.',
   SS2: 'Feed, play, rest and heal, look only.',
   SS3: 'Shows in your next wild battle.',
   SS4: 'Every type at a glance.',
+  SS5: 'Shows in your next wild battle.',
   B1: 'NEXT', B2: 'GOT IT', B3: 'CHART', B4: 'SKIP', B5: 'TAP AGAIN TO SKIP'
 };
 function lessonTok(s){
@@ -1680,7 +1710,7 @@ function careStepBlocked(act){
   if (act === 'rest') return p.energy >= 98 && !(Number.isFinite(p.hpNow) || isFainted(p));
   return false;
 }
-const CARE_NEXT = { C2: 'C3', C2x: 'C3', C3: 'C4', C3x: 'C4', C4: 'C5', C4x: 'C5', C5: 'C6', C6: 'C7' };
+const CARE_NEXT = { C2: 'C3', C2x: 'C3', C3: 'C4', C3x: 'C4', C4: 'C4e', C4x: 'C4e', C4e: 'C5', C5: 'C6', C6: 'C7' };
 function careShowStep(id){
   if (!S) return;
   const base = String(id || 'C2').replace(/x$/, '');
@@ -1691,7 +1721,7 @@ function careShowStep(id){
   const blocked = act && careStepBlocked(act);
   const line = blocked ? base + 'x' : base;
   if (careLes.replay && base === 'C2') careLes.balloon = false;
-  const sel = act ? '#careTray [data-act="' + act + '"]' : (base === 'C5' ? '#careTray [data-act="heal"]' : '');
+  const sel = act ? '#careTray [data-act="' + act + '"]' : (base === 'C5' ? '#careTray [data-act="heal"]' : (base === 'C4e' ? '#careTray [data-act="rest"]' : ''));
   let holes = [];
   if (base === 'C6') holes = [tutBox($('#ctStats')), tutBox($('#ctClose'))].filter(Boolean);
   else if (sel) { const b = tutBox($(sel)); if (b) holes = [b]; }
@@ -1719,6 +1749,9 @@ function careFinish(how){
   careLes.phase = ''; careLes.balloon = false; careLes.balloonUntil = 0; careLes.replay = false;
   save();
   lessonHide();
+  const tray = $('#careTray');
+  if (tray && !tray.hidden) { tray.hidden = true; document.body.classList.remove('ct-open'); }
+  scheduleTutorial(true);
 }
 function careSkip(){
   careLes.balloon = false;
@@ -1735,6 +1768,7 @@ function careFallback(){
   if (tut.lesson === 'care') lessonHide();
   toast(lessonTok(TCM.CF));
   if (careLes.balloon) careLes.balloonUntil = now() + 3000;
+  scheduleTutorial(true);
 }
 function careSawAct(act){
   if (!tut.on || tut.lesson !== 'care' || careLes.replay || tut.act !== act) return;
@@ -1768,7 +1802,7 @@ function carePump(t){
   if (!S) return;
   if (careLes.balloonUntil && t >= careLes.balloonUntil) { careLes.balloon = false; careLes.balloonUntil = 0; }
   if (careLes.phase === 'calm') {
-    const calm = screen === 'walk' && !scene && !(battle && battle.on) && !overlayOpen() && !fade.busy && !(walk && walk.intro) && !tut.on && !unlock.on;
+    const calm = screen === 'walk' && !scene && !(battle && battle.on) && !overlayOpen() && !fade.busy && !(walk && walk.intro) && !tut.on && !unlock.on && !$('#toast').classList.contains('show');
     if (!calm) { careLes.calm = 0; return; }
     if (!careLes.calm) careLes.calm = t;
     if (t - careLes.calm < 600) return;
@@ -1782,6 +1816,7 @@ function carePump(t){
         save();
         toast(lessonTok(TCM.CF));
         careLes.balloonUntil = t + 3000;
+        scheduleTutorial(true);
         return;
       }
       if (!tut.on && !unlock.on) careShowC1('C1');
@@ -1806,7 +1841,8 @@ function carePump(t){
     if (ring) { ring.style.animation = 'none'; void ring.offsetWidth; ring.style.animation = ''; }
   }
   if (age >= 45000) careFallback('time');
-  else if (careLes.steps0 && (S.steps - careLes.steps0) >= 24) careFallback('steps');
+  // steps0 is 0 when the walk starts on a new game (the Lodge, before any step). 0 is a real baseline.
+  else if (careLes.steps0 != null && (S.steps - careLes.steps0) >= 24) careFallback('steps');
 }
 function noteMovesBattle(){
   if (!S) return;
@@ -1818,13 +1854,15 @@ function noteMovesBattle(){
   save();
 }
 function noteMovesCap(){
-  if (!S || !battle || battle.kind !== 'wild') return;
+  if (!S || !battle) return;
+  if (battle.kind !== 'wild' && battle.trainerId !== 'rival1_rook') return;
   const st = S.flags['story.tut_moves'];
   const n = +S.flags['story.tut_moves_n'] || 0;
   if (n >= 4 && (st === 'armed' || st === 'p1' || st === 'p2')) { S.flags['story.tut_moves'] = 'done'; save(); }
 }
 function noteMovesHit(mult){
-  if (!S || !battle || !battle.on || battle.kind !== 'wild' || battle.coop) return;
+  if (!S || !battle || !battle.on || battle.coop) return;
+  if (battle.kind !== 'wild' && battle.trainerId !== 'rival1_rook') return;
   const st = S.flags['story.tut_moves'];
   if (st !== 'armed' && st !== 'p1' && st !== 'p2') return;
   if (S.flags['story.tut_moves_hit']) return;
@@ -1856,6 +1894,13 @@ function movesHoles(id){
   if (id === 'M4' || id === 'M4p' || id === 'M4n') return one('#btMoves');
   if (id === 'M5') return [tutBox($('#btMood')), tutBox($('#btFoeStages'))].filter(Boolean);
   if (id === 'M6') return one('#btMood');
+  if (id === 'F1') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement), tutBox($('#btMeHp') && $('#btMeHp').parentElement)].filter(Boolean);
+  if (id === 'F2') return one('#btMood');
+  if (id === 'F3') return one('[data-bact="swap"]');
+  if (id === 'W1') return one('#btBefriendAct');
+  if (id === 'W2' || id === 'W3') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement)].filter(Boolean);
+  if (id === 'W4') return one('#btRun');
+  if (id === 'W5') return [tutBox($('#encOdds')), tutBox($('#encTries'))].filter(Boolean);
   if (id === 'M7') {
     const badge = $('#btMoves .mv-hint');
     const b = badge ? tutBox(badge) : null;
@@ -1900,33 +1945,103 @@ function movesShow(id){
   const holes = movesHoles(line === 'M4p' || line === 'M4n' ? 'M4' : line);
   const buttons = [];
   if (line === 'M4p' || line === 'M4n') buttons.push([TCM.B2, () => { movesMarkP1(); lessonHide(); }]);
-  else if (line === 'M6' || line === 'M7') {
-    buttons.push([TCM.B2, () => { if (line === 'M6') movesMarkP2(); else movesMarkP3(); lessonHide(); }]);
-    buttons.push([TCM.B3, () => openTypeChart()]);
-  } else if (line === 'M5') buttons.push([TCM.B1, () => movesShow('M6')]);
+  else if (line === 'F1') buttons.push([TCM.B1, () => movesShow('M1')]);
   else if (line === 'M1') buttons.push([TCM.B1, () => movesShow('M2')]);
-  else if (line !== 'M3') buttons.push([TCM.B1, () => movesShow('M3')]);
+  else if (line === 'M5') buttons.push([TCM.B1, () => movesShow('M6')]);
+  else if (line === 'M6') buttons.push([TCM.B1, () => movesShow('F2')]);
+  else if (line === 'F2') buttons.push([TCM.B1, () => movesShow('F3')]);
+  else if (line === 'F3') {
+    buttons.push([TCM.B2, () => { movesMarkP2(); lessonHide(); }]);
+    buttons.push([TCM.B3, () => openTypeChart()]);
+  } else if (line === 'M7') {
+    buttons.push([TCM.B2, () => { movesMarkP3(); lessonHide(); }]);
+    buttons.push([TCM.B3, () => openTypeChart()]);
+  } else if (line !== 'M3') buttons.push([TCM.B1, () => movesShow('M3')]);
   const pass = line === 'M3' || line === 'M4p' || line === 'M4n';
   lessonCard({ lesson: 'moves', id: line, text: TCM[line], soft: false, pass: pass, adv: pass ? 'tap' : 'next', holes: holes, buttons: buttons, skip: movesSkip });
   if (line === 'M7') movesLes.m7At = movesLes.chooseN;
 }
 function maybeMovesLesson(){
-  if (!S || !battle || !battle.on || battle.kind !== 'wild' || battle.coop) return;
+  if (!S || !battle || !battle.on || battle.coop) return;
+  if (battle.kind !== 'wild' && battle.trainerId !== 'rival1_rook') return;
   if (battle.state !== 'CHOOSE') return;
   if (battle.q && battle.q.length) return;
   if (tut.on || unlock.on) return;
   const st = S.flags['story.tut_moves'];
+  const bef = S.flags['story.tut_bef'];
   if (!tipsOn()) {
     if (st === 'armed' || st === 'p1' || st === 'p2') { S.flags['story.tut_moves'] = 'quiet'; save(); }
+    if (battle.kind === 'wild' && (bef === 'armed' || bef === 'b1')) { S.flags['story.tut_bef'] = 'quiet'; save(); }
     return;
   }
+  if (battle.kind === 'wild' && befTakeTurn()) return;
   if (st !== 'armed' && st !== 'p1' && st !== 'p2') return;
   if (S.flags['story.tut_moves_hit'] && !movesLes.hitDue) movesLes.m7done = true;
   const later = movesLes.p1At !== movesLes.chooseN && movesLes.m7At !== movesLes.chooseN;
   if ((st === 'p1' || st === 'p2') && movesLes.hitDue && !movesLes.m7done && later) { movesShow('M7'); return; }
-  if (st === 'armed') { movesShow('M1'); return; }
+  if (st === 'armed') { movesShow('F1'); return; }
   if (st === 'p1' && later) { movesShow('M5'); return; }
   if (st === 'p2' && movesLes.hitDue && !movesLes.m7done && later) { movesShow('M7'); return; }
+}
+function noteBefBattle(){
+  if (!S) return;
+  const st = S.flags['story.tut_bef'];
+  if (st !== 'armed' && st !== 'b1') return;
+  const n = +S.flags['story.tut_bef_n'] || 0;
+  if (n >= 4) { S.flags['story.tut_bef'] = 'done'; save(); return; }
+  S.flags['story.tut_bef_n'] = n + 1;
+  save();
+}
+function noteBefCap(){
+  if (!S || !battle || battle.kind !== 'wild' || battle.coop) return;
+  const st = S.flags['story.tut_bef'];
+  const n = +S.flags['story.tut_bef_n'] || 0;
+  if (n >= 4 && (st === 'armed' || st === 'b1')) { S.flags['story.tut_bef'] = 'done'; save(); }
+}
+function befSkip(){
+  if (!S) return;
+  S.flags['story.tut_bef'] = 'skipped';
+  save();
+  lessonHide();
+}
+function befMarkB1(){
+  if (!S) return;
+  if (S.flags['story.tut_bef'] === 'armed') S.flags['story.tut_bef'] = 'b1';
+  save();
+  lessonHide();
+}
+function befMarkDone(){
+  if (!S) return;
+  S.flags['story.tut_bef'] = 'done';
+  save();
+  lessonHide();
+}
+function befShow(id){
+  const buttons = [];
+  if (id === 'W1') buttons.push([TCM.B1, () => befShow('W2')]);
+  else if (id === 'W2') buttons.push([TCM.B1, () => befShow(befLes.fromBar ? 'W5' : 'W3')]);
+  else if (id === 'W3') buttons.push([TCM.B1, () => befShow('W4')]);
+  else if (id === 'W4') buttons.push([TCM.B2, () => befMarkB1()]);
+  else if (id === 'W5') buttons.push([TCM.B1, () => befShow('W6')]);
+  else if (id === 'W6') buttons.push([TCM.B2, () => befMarkDone()]);
+  lessonCard({ lesson: 'bef', id: id, text: TCM[id], soft: false, pass: false, adv: 'next', holes: movesHoles(id), buttons: buttons, skip: befSkip });
+}
+function befTakeTurn(){
+  if (!S || !battle || battle.kind !== 'wild' || battle.coop || !tipsOn()) return false;
+  if (S.flags['story.tut_bef'] !== 'armed' || befLes.took) return false;
+  befLes.took = true; befLes.fromBar = false;
+  befShow('W1');
+  return true;
+}
+function maybeBefriendBar(){
+  if (!S || !battle || battle.kind !== 'wild' || battle.coop || !tipsOn()) return;
+  const st = S.flags['story.tut_bef'];
+  if (st !== 'armed' && st !== 'b1') return;
+  if (befLes.bar) return;
+  if (tut.on && tut.lesson === 'bef' && !befLes.fromBar) return;
+  if (tut.on && tut.lesson && tut.lesson !== 'bef') return;
+  befLes.bar = true; befLes.fromBar = true;
+  befShow(st === 'armed' ? 'W2' : 'W5');
 }
 function typeChartSub(atk){
   const d = TYPE_CHART[atk] || {}, two = [], half = [], zero = [];
@@ -1946,11 +2061,13 @@ function openTutorialChooser(){
     { label: TCM.SO1, sub: TCM.SS1, value: 'tour' },
     { label: TCM.SO2, sub: TCM.SS2, value: 'care' },
     { label: TCM.SO3, sub: TCM.SS3, value: 'moves' },
+    { label: TCM.SO5, sub: TCM.SS5, value: 'bef' },
     { label: TCM.SO4, sub: TCM.SS4, value: 'chart' }
   ], 'BACK').then(v => {
     if (v === 'tour') replayTutorial();
     else if (v === 'care') replayCareWalk();
     else if (v === 'moves') replayMovesLesson();
+    else if (v === 'bef') replayBefriend();
     else if (v === 'chart') openTypeChart();
   });
 }
@@ -1970,6 +2087,14 @@ function replayMovesLesson(){
   movesLes.hitDue = false; movesLes.m7done = false; movesLes.p1At = -1; movesLes.m7At = -1; movesLes.plain = '';
   save();
   toast(TCM.MR);
+}
+function replayBefriend(){
+  if (!S) return;
+  S.flags['story.tut_bef'] = 'armed';
+  delete S.flags['story.tut_bef_n'];
+  befLes.took = false; befLes.fromBar = false; befLes.bar = false;
+  save();
+  toast(TCM.BR);
 }
 /* Unlock tips (D180). One card on #tutLayer, after WALK has been quiet for 600 ms. story.unlock_<id> is set when the card is shown. */
 const UNLOCKS = {
@@ -4406,7 +4531,6 @@ function onLand(){
   const wp = warpAt(x, y);
   if (wp && needMet(wp.need)) {
     if (lanternHold() && LANTERN_ROOMS[CUR.id]) { blockLanternExit(); return; }   // the mat stays shut until the party rests
-    if (wp.id === 'lodge_mat' && CUR && CUR.id === 'hm_lodge_in' && S.flags['story.tut_care'] === 'armed') careLes.door = true;
     if (wp.setFlag) S.flags[wp.setFlag] = true; warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing }); return;
   }
   const pk = objAt(x, y, o => o.kind === 'pickup');
@@ -5130,11 +5254,10 @@ function settleHop(){
 }
 function warpTo(at, after){
   if (fade.busy) return;
-  const door = careLes.door; careLes.door = false;
-  if ((careLes.phase === 'c1' || careLes.phase === 'act') && !door) careFallback('warp');
+  if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('warp');
   fade.busy = true; fade.t0 = now(); settleHop(); clearMoves();
   setTimeout(() => { arriveAt(at); }, FADE_MS / 2);
-  setTimeout(() => { fade.busy = false; if (after) after(); if (door) careDoorLand(); maybeLanternGuide(); }, FADE_MS);
+  setTimeout(() => { fade.busy = false; if (after) after(); maybeLanternGuide(); }, FADE_MS);
 }
 let musicHold = false;   // closeBattle plays the return loop itself (after stingers); a wipe's arriveAt must not start it early
 function arriveAt(at){
@@ -7184,6 +7307,8 @@ function endScene(){
   if (sc.id === 'starter' && S && S.flags['story.starter_received'] && !S.flags['story.tut_care']) {
     S.flags['story.tut_care'] = 'armed';
     S.flags['story.tut_moves'] = 'armed';
+    S.flags['story.tut_bef'] = 'armed';
+    careDoorLand();
   }
   save();
   sc.toasts.forEach((m, i) => setTimeout(() => toast(m), i * 1900));
@@ -8708,7 +8833,9 @@ function openBattle(o){
   if (!lead) { noBattleToast(); return false; }
   closePartnerTray();
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('battle');
-  if (o.kind === 'wild' && !o.coop) noteMovesBattle();
+  if ((o.kind === 'wild' && !o.coop) || o.trainerId === 'rival1_rook') noteMovesBattle();
+  if (o.kind === 'wild' && !o.coop) noteBefBattle();
+  befLes.took = false; befLes.fromBar = false; befLes.bar = false;
   clearUiReturn();
   clearMoves(); closeSheet(null);
   const B = battle; B.id++;
@@ -8805,8 +8932,9 @@ async function battleIntro(id){
 }
 function closeBattle(){
   const B = battle; if (!B.on) return;
-  if (tut.lesson === 'moves') lessonHide();
+  if (tut.lesson === 'moves' || tut.lesson === 'bef') lessonHide();
   noteMovesCap();
+  noteBefCap();
   paintWinCosmetic([]);
   if (B.result === 'befriended' && B.newId && !$('#encName').hidden) {   // optional nickname (skip = species name); never read while the row is hidden (a faded one is named later)
     const p = petById(B.newId), nk = cleanNick($('#encNick').value);
@@ -9407,7 +9535,7 @@ function aiPick(){
 async function resolveTurn(action){
   const B = battle, id = B.id; if (B.state !== 'CHOOSE') return;
   if (tut.lesson === 'moves' && tut.id === 'M4') movesMarkP1();
-  if (tut.lesson === 'moves') lessonHide();
+  if (tut.lesson === 'moves' || tut.lesson === 'bef') lessonHide();
   B.state = 'RESOLVE'; B.turn++; setPanel('busy');
   if (B.group) {
     if (action.kind !== 'fight') {
@@ -12945,9 +13073,11 @@ function openBefriendBar(){
   const od = oddsLabel(w), oe = $('#encOdds'); if (oe) { oe.textContent = od.t; oe.className = 'bef-odds odds-' + od.c; }
   if (f.hp >= f.maxHp && !B.wary && !B.guide && !B.bonus) { B.wary = BEFRIEND_WARY_LINES[waryTurn++ % BEFRIEND_WARY_LINES.length]; $('#btMsg').textContent = B.wary; }   // rotates per battle (GLIMMER_PATH v0.2)
   setPanel('bef');
+  maybeBefriendBar();
 }
 // BACK / Escape from the bar. The wary line is once per battle, but it should not stay in the box after you leave.
 function leaveBefriendBar(){
+  if (tut.on && tut.lesson === 'bef') return;
   enc.open = false;
   const B = battle, p = activePet();
   if (p && B.wary && $('#btMsg').textContent === B.wary) $('#btMsg').textContent = 'What should ' + petName(p) + ' do?';
@@ -12955,6 +13085,7 @@ function leaveBefriendBar(){
 }
 function encounterPress(){                                  // BEFRIEND press (button or Space) = the player's action
   const B = battle; if (!B.on || B.state !== 'CHOOSE' || B.panel !== 'bef') return;
+  if (tut.on && tut.lesson === 'bef') return;
   if (now() < enc.freezeUntil) return;
   enc.open = false; resolveTurn({ kind: 'befriend' });
 }
@@ -12980,6 +13111,7 @@ function battleVis(c){
 function drawBattle(t, dt){
   const B = battle, c = $('#battleCanvas'), g = ctx(c), W = c.width, H = c.height, f = curFoe(), p = activePet(); if (!f || !p) return;
   g.drawImage(makeBackdrop(backdropName(), H, skyMode(), W), 0, 0); drawWeather(g, W, H, t);
+  if (enc.open && tut.on && tut.lesson === 'bef') enc.freezeUntil = t + 500;
   if (enc.open && t >= enc.freezeUntil) enc.mark = (Math.sin((t - enc.t0) * enc.speed) + 1) / 2;
   $('#tmark').style.left = (enc.mark * 100) + '%';
   const fx0 = W - 26, fy0 = Math.max(4, Math.round(H * 0.18)), mx0 = 6, my0 = H - 14 - 14;
@@ -15156,6 +15288,7 @@ function closePartnerTray(){
     if (careLes.replay && resumeId) careLes.replayStep = resumeId;
     lessonHide();
     careLes.phase = 'paused';
+    if (!careLes.replay) scheduleTutorial(true);
   }
 }
 function paintTrayBadge(c, q){
@@ -15884,6 +16017,7 @@ function boot(){
   }
   if (L.notice === 'recovered') setTimeout(() => toast("Your save couldn't be read, so your older save was loaded."), 600);
   applyControls();
+  if (S && S.flags['story.tut_care'] === 'armed') careDoorLand();
   scheduleTutorial(false);
   fitAll();
   if (fastMode) setTimeout(() => toast('FAST MODE ON (debug decay)'), 400);
@@ -15935,6 +16069,16 @@ function boot(){
     showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
     objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
     forceTrainer: id => { if (!TRAINERS[id] || S.flags['trainer.' + id]) return false; showTab('walk'); if (overlayOpen()) return; return openBattle({ kind: 'trainer', trainerId: id }); },
+    restartCareWalk: () => {
+      if (!S) return false;
+      S.flags['story.tut_care'] = 'armed';
+      delete S.flags['story.tut_care_step'];
+      careLes.phase = ''; careLes.fell = false; careLes.balloon = false; careLes.balloonUntil = 0; careLes.replay = false;
+      if (tut.lesson === 'care') lessonHide();
+      save();
+      careDoorLand();
+      return true;
+    },
     openTrainer: id => { if (!TRAINERS[id] || scene || (battle && battle.on) || overlayOpen()) return false; showTab('walk'); return openBattle({ kind: 'trainer', trainerId: id }); },
     replayTour: () => { replayTutorial(); return !!tut.on; },
     setHp: (who, n) => debugSetHp(who, n),
@@ -16123,7 +16267,7 @@ function boot(){
   api.cueChips = () => DEBUG ? cueChipAll.map(c => ({ x: c.x, y: c.y, dir: c.dir, dist: c.dist, shown: c.shown, tracked: !!c.tracked, box: c.box || null })) : undefined;
   api.cuePass = () => DEBUG ? (cuePassLast ? { dir: cuePassLast.dir, x: cuePassLast.x, y: cuePassLast.y } : null) : undefined;
   api.needBubble = () => DEBUG ? { bubble: needBubbleLast ? Object.assign({}, needBubbleLast) : null, heartSkipped: !!needHeartSkipped, lessonHop: lessonDraw.hop, lessonY: lessonDraw.y } : undefined;
-  api.lesson = () => DEBUG ? { care: S && S.flags['story.tut_care'] || '', step: S && S.flags['story.tut_care_step'] || '', moves: S && S.flags['story.tut_moves'] || '', hit: !!(S && S.flags['story.tut_moves_hit']), n: +(S && S.flags['story.tut_moves_n'] || 0), phase: careLes.phase, balloon: !!careLes.balloon, hop: lessonDraw.hop, y: lessonDraw.y, card: tut.lesson ? tut.id : '', soft: !!tut.soft, q: battle && battle.q ? battle.q.length : 0, age: careLes.t0 ? now() - careLes.t0 : 0, c1: careLes.c1At ? now() - careLes.c1At : 0 } : undefined;
+  api.lesson = () => DEBUG ? { care: S && S.flags['story.tut_care'] || '', step: S && S.flags['story.tut_care_step'] || '', moves: S && S.flags['story.tut_moves'] || '', hit: !!(S && S.flags['story.tut_moves_hit']), n: +(S && S.flags['story.tut_moves_n'] || 0), bef: S && S.flags['story.tut_bef'] || '', befN: +(S && S.flags['story.tut_bef_n'] || 0), phase: careLes.phase, balloon: !!careLes.balloon, hop: lessonDraw.hop, y: lessonDraw.y, card: tut.lesson ? tut.id : '', soft: !!tut.soft, q: battle && battle.q ? battle.q.length : 0, age: careLes.t0 ? now() - careLes.t0 : 0, c1: careLes.c1At ? now() - careLes.c1At : 0 } : undefined;
   api.careReply = () => DEBUG ? { glyph: careReply.glyph, hop: !!careReply.hop, sparks: !!careReply.sparks, left: Math.max(0, careReply.until - now()) } : undefined;
   api.standingStill = () => DEBUG ? standingStill() : undefined;
   api.lanternRestFlag = () => DEBUG && scene && scene.view ? (scene.view.flags['lantern.rest'] || null) : undefined;

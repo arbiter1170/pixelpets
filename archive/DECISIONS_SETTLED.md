@@ -564,6 +564,21 @@ Recorded from design TUTORIALS_CARE_MOVES v0.2.1 (design commit 6a6fc26), withou
 - **D597 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. The words in section 6, as written and wording-checked.
 - **D598 (Oct 23, 2026, green, SETTLED on the default, the Supervisor).** TUTORIALS_CARE_MOVES. Early-walk toasts wait while a care card is up and show after it.
 
+## TUTORIAL_ORDER (calls settled Oct 24, 2026)
+
+Recorded from design TUTORIAL_ORDER v0.1.2 (design commit 2b6aef6), without renumbering. D678-D682 and D705-D709 were reserved. D683-D684 stay unused. Reds D678, D705 and D708: YES (Vincent, Oct 24, 2026, 12:12 AM ET, via the Supervisor). Yellows D679, D680, D706 and D707: YES at the default (team vote, PixelPets and QA, 12:14 AM ET). Greens D681, D682 and D709: yes to the default (Supervisor). Save stays `pixelpets.save.v2` with `v` 2. The new flag is `story.tut_bef`. No migrator.
+
+- **D678 (Oct 24, 2026, 12:12 AM ET, red, SETTLED YES, Vincent, via the Supervisor).** TUTORIAL_ORDER. The care walk starts from endScene, in the Lodge, right after the starter moment. The Lodge mat no longer starts it.
+- **D679 (Oct 24, 2026, 12:14 AM ET, yellow, SETTLED YES at the default, team vote, PixelPets and QA).** TUTORIAL_ORDER. The opening tour comes after the care walk and teaches the bottom row first. T5-T7 drop when the care walk was finished.
+- **D680 (Oct 24, 2026, 12:14 AM ET, yellow, SETTLED YES at the default, team vote, PixelPets and QA).** TUTORIAL_ORDER. The bottom row is the nav the tour already has. T0 still asks first.
+- **D681 (Oct 24, 2026, green, SETTLED yes to the default, Supervisor).** TUTORIAL_ORDER. The walk waits for the reveal, the toast and the location ask, closes the tray, and only then does the tour knock.
+- **D682 (Oct 24, 2026, green, SETTLED yes to the default, Supervisor).** TUTORIAL_ORDER. Existing saves, skip, replay, Tips off and reduced motion stay as specified. No new keys for the care walk and the tour. No migrator.
+- **D705 (Oct 24, 2026, 12:12 AM ET, red, SETTLED YES, Vincent, via the Supervisor).** TUTORIAL_ORDER. The fight lesson's host is Rook's first match. Wild battles only carry what it missed. No other holder match shows a card.
+- **D706 (Oct 24, 2026, 12:14 AM ET, yellow, SETTLED YES at the default, team vote, PixelPets and QA).** TUTORIAL_ORDER. The care walk adds C4e, and T3 uses the honest NRG line. Wording matches the landed REST and Energy Sip.
+- **D707 (Oct 24, 2026, 12:14 AM ET, yellow, SETTLED YES at the default, team vote, PixelPets and QA).** TUTORIAL_ORDER. Rook's match shows F1 then M1-M4, then M5, M6, F2 and F3, then M7. LEAVE is taught in the wild.
+- **D708 (Oct 24, 2026, 12:12 AM ET, red, SETTLED YES, Vincent, via the Supervisor).** TUTORIAL_ORDER. The first wild battle shows W1-W4, then W5-W6 on the bar. The flag is `story.tut_bef` in `S.flags`. Save v2, no migrator.
+- **D709 (Oct 24, 2026, green, SETTLED yes to the default, Supervisor).** TUTORIAL_ORDER. SKIP ends one battle lesson. Tips off is quiet. Settings gains a Befriending row. The lesson is armed only on the new build. Cards stay off the message line at 320.
+
 ## TOWN_LANDMARKS (calls settled Oct 23, 2026)
 
 Recorded from design TOWN_LANDMARKS v0.1.1 (design commit 520ee8a), without renumbering. D612-D619 were reserved. Vincent saw the previews and said yes, with red D617 YES (Oct 23, 2026, 3:16 PM ET, relayed by the Supervisor); AGENTS.md rules 9 and 10 apply. Save stays `pixelpets.save.v2` with `v` 2. The only new saved data is one additive `S.flags` key: `lantern.guide_heard`.
