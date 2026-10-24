@@ -128,7 +128,8 @@ async function careCardNeverCoversX(page) {
   await boot(page, save({ 'story.tut_care': 'armed' }));
   const stores = (await allStores(page)).filter(s => !s.meal);
   expect(stores.length).toBeGreaterThanOrEqual(13);
-  let keys = null; // taken once the walk is under way (the walk itself writes care and floorSeen)
+  // Before any store. The first interior adds floorSeen; a key every store writes must still show up as extra.
+  const before = await page.evaluate(() => Object.keys(PixelPets.state).sort());
   const w0 = await wallet(page);
   let shotDone = false;
   for (const s of stores) {
@@ -136,11 +137,6 @@ async function careCardNeverCoversX(page) {
     await page.evaluate(() => PixelPets.restartCareWalk());
     await page.waitForFunction(() => PixelPets.lesson().card === 'C1', null, { timeout: 10000 });
     await openStore(page, s);
-    // The first interior writes floorSeen. Snapshot after that, then later stores must not add keys.
-    if (!keys) {
-      const now = await page.evaluate(() => Object.keys(PixelPets.state).sort());
-      if (now.includes('floorSeen')) keys = now;
-    }
     if (!shotDone && s.id === 'travel_shelf') {
       shotDone = true;
       await page.screenshot({ path: path.join(artifactsDir('shop-exit'), 'c1-travel-shelf-' + page.viewportSize().width + '.png') });
@@ -151,7 +147,8 @@ async function careCardNeverCoversX(page) {
     expect(await page.evaluate(() => PixelPets.state.flags['story.tut_care']), label).toBe('wait');
   }
   expect(await wallet(page)).toEqual(w0);
-  expect(await page.evaluate(() => Object.keys(PixelPets.state).sort())).toEqual(keys);
+  const after = await page.evaluate(() => Object.keys(PixelPets.state).sort());
+  expect(after.filter(k => !before.includes(k))).toEqual(['floorSeen']);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')).v)).toBe(2);
 }
 

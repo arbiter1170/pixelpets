@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-24 08:28 ET: Tutorial order review fixes (build 20261024-0828)
+
+- What changed and why: The befriend replay toast now reads "Befriending in your next wild battle." (37 characters, under the 40-character toast limit). The store-key check snapshots the save before the first store and expects the only new key to be `floorSeen`. After a stray tap on the map step, NEXT still reaches the QUEST line. The starter in T-O1 advances by waiting on the scene controls instead of fixed sleeps. Save stays `pixelpets.save.v2` with `v` 2. No new flag.
+- Files touched: `game.js`, `tests/shop_exit.spec.js`, `tests/tutorial.spec.js`, `tests/tutorial_order.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, on top of 9f26820. Build `20261024-0828`.
+- Tests run and result (widths, checks): `tests/shop_exit.spec.js`, `tests/tutorial.spec.js`, `tests/tutorial_order.spec.js` and `tests/smoke.spec.js` at 320, 375 and 390: `PP_TEST RESULT: PASS exit=0 passed=76 failed=0 flaky=0 skipped=4 time=340s`. The four skips are the width copies those specs already skip. `node tools/scans/run.js` prints SCAN PASS for wording, decisions, symlinks, gamejs_map and test_mistakes. `node tools/scans/selftest.js` prints SCAN SELFTEST PASS. Checker `GAME_REF=origin/main`: `PASS TUTORIAL_ORDER`. Console errors fail the run.
+- Decisions made (colour + reasoning): No new id. The shorter toast is green, settled by the reviewer on the hold. D678–D682 and D705–D709 stay as settled on the previous entry. Next free id stays D730.
+- Anything left unfinished: M1 still says "This wild" in Rook's match, as the existing card text. The befriend quiet count uses `story.tut_bef_n` so a reload does not restart it.
+
 ## 2026-10-24 07:13 ET: Care walk and nav tour after the starter, fighting at Rook (build 20261024-0713)
 
 - What changed and why: The care walk starts in the Lodge right after the starter moment, once the join toast and the location ask are done. The Lodge mat no longer starts it. Leaving during the act or C1 falls back to wait. The walk adds a look-only card on how to get NRG, then closes the tray and the opening tour asks. The tour teaches the bottom row first. Feed, play and rest drop out of the tour when the care walk was finished. Rook's first match teaches HP, types, NRG and SWAP. The first wild battle teaches befriending. Settings gains a Befriending row. Save stays `pixelpets.save.v2` with `v` 2. The new flag is `story.tut_bef`. The 4-wild quiet count is the additive flag `story.tut_bef_n`. No migrator.

@@ -376,6 +376,8 @@ test('a stray tap on the card after SHOW ME does not end the tour (modern)', asy
   await tapLow();
   await expect(page.locator('#tutLayer')).toBeVisible();
   await expect(page.locator('#tutLine')).toContainText('Tap the map to walk');
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await expect(page.locator('#tutLine')).toContainText('QUEST shows');
   await tapLow();
   await page.locator('#tutSkip').click();   // one deliberate tap only arms it
   await expect(page.locator('#tutSkip')).toHaveText('TAP AGAIN TO SKIP');
@@ -386,5 +388,5 @@ test('a stray tap on the card after SHOW ME does not end the tour (modern)', asy
     done: PixelPets.state.flags['story.tutorial_done'] === true,
     step: PixelPets.state.flags['story.tutorial_step'] || null,
   }));
-  expect(st).toEqual({ on: true, id: 'T10m', done: false, step: 'T10' });
+  expect(st).toEqual({ on: true, id: 'T11', done: false, step: 'T11' });
 });

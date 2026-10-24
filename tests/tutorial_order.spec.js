@@ -45,56 +45,65 @@ async function clickCard(page, label) {
 }
 
 async function finishStarter(page) {
-  const started = await page.evaluate(() => PixelPets.runScene('starter'));
-  expect(started).toBe(true);
-  for (let i = 0; i < 80; i++) {
-    const layerHidden = await page.locator('#tutLayer').isHidden();
-    expect(layerHidden, 'lesson layer during the starter').toBe(true);
-    const open = await page.evaluate(() => !!PixelPets.scene);
-    if (!open) return;
-    // Debug runScene visits the walk tab first. With no location pref that opens the ask
-    // over the scene. The ask belongs after the scene, so tuck it away until then.
-    if (await page.locator('#ovGeo').isVisible().catch(() => false)) {
-      await page.evaluate(() => { const g = document.querySelector('#ovGeo'); if (g) g.hidden = true; });
-    }
-    const basket = await page.locator('#ovBasket').isVisible().catch(() => false);
-    if (basket) {
-      const card = await page.locator('#bkCard').isVisible().catch(() => false);
-      await page.waitForFunction(() => PixelPets.optionsReady === true, null, { timeout: 3000 }).catch(() => {});
-      if (!card) await page.locator('#bkRow button').first().click();
-      else await page.locator('#bkYes').click();
-      await page.waitForTimeout(100);
-      continue;
-    }
-    if (await page.locator('#sbName').isVisible().catch(() => false)) {
-      const skip = page.locator('#sbNameSkip');
-      if (await skip.isVisible().catch(() => false)) await skip.click();
-      else await page.locator('#sbOk').click();
-      await page.waitForTimeout(80);
-      continue;
-    }
-    const mode = await page.evaluate(() => { const s = PixelPets.scene; return s && s.mode; });
-    if (mode === 'choice') {
-      await page.waitForFunction(() => PixelPets.optionsReady === true, null, { timeout: 3000 }).catch(() => {});
-      await page.locator('#sbChoices button').first().click();
-      await page.waitForTimeout(80);
-      continue;
-    }
-    if (mode === 'say') {
-      // The starter reveal sits over the box. A DOM click still runs the skip control.
-      const skipped = await page.evaluate(() => {
+  // One in-page pass. Each beat waits until that control is on screen, then a DOM click
+  // answers it. The lesson layer is measured by its box the whole time.
+  const result = await page.evaluate(async () => {
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const layerBox = () => {
+      const layer = document.querySelector('#tutLayer');
+      if (!layer) return { up: false, w: 0, h: 0 };
+      const r = layer.getBoundingClientRect();
+      const s = getComputedStyle(layer);
+      const up = !layer.hidden && s.display !== 'none' && s.visibility !== 'hidden' && s.opacity !== '0' && r.width > 0 && r.height > 0;
+      return { up, w: r.width, h: r.height };
+    };
+    const started = PixelPets.runScene('starter');
+    if (!started) return { started: false, done: false, saw: false };
+    let saw = null;
+    const t0 = Date.now();
+    while (Date.now() - t0 < 20000) {
+      const box = layerBox();
+      if (box.up) saw = box;
+      if (!PixelPets.scene) return { started: true, done: true, saw };
+      const geo = document.querySelector('#ovGeo');
+      if (geo && !geo.hidden) geo.hidden = true;
+      const basket = document.querySelector('#ovBasket');
+      if (basket && !basket.hidden) {
+        const card = document.querySelector('#bkCard');
+        const btn = card && !card.hidden ? document.querySelector('#bkYes') : document.querySelector('#bkRow button');
+        if (btn) btn.click();
+        await sleep(30);
+        continue;
+      }
+      const name = document.querySelector('#sbName');
+      if (name && !name.hidden) {
+        const skip = document.querySelector('#sbNameSkip');
+        const ok = document.querySelector('#sbOk');
+        if (skip && !skip.hidden) skip.click();
+        else if (ok) ok.click();
+        await sleep(30);
+        continue;
+      }
+      const mode = PixelPets.scene.mode;
+      if (mode === 'choice') {
+        const b = document.querySelector('#sbChoices button');
+        if (b) b.click();
+        await sleep(30);
+        continue;
+      }
+      if (mode === 'say') {
         const b = document.querySelector('#sbSkip');
-        if (!b || b.hidden) return false;
-        b.click();
-        return true;
-      });
-      if (!skipped) await page.keyboard.press('Space');
-      await page.waitForTimeout(40);
-      continue;
+        if (b && !b.hidden) b.click();
+        await sleep(20);
+        continue;
+      }
+      await sleep(20);
     }
-    await page.waitForTimeout(80);
-  }
-  throw new Error('starter scene did not end');
+    return { started: true, done: !PixelPets.scene, saw, mode: PixelPets.scene && PixelPets.scene.mode };
+  });
+  expect(result.started, 'starter scene started').toBe(true);
+  expect(result.saw, 'lesson layer during the starter').toBe(null);
+  expect(result.done, 'starter scene ended').toBe(true);
 }
 
 async function openWild(page, form, level) {
@@ -164,7 +173,7 @@ async function walkNav(page) {
 }
 
 test('T-O1 the act waits for the toast and the location ask, then starts in the Lodge', async ({ page }) => {
-  test.setTimeout(90000);
+  test.setTimeout(60000);
   const s = inLodge(saveAt());
   delete s.flags['story.tutorial_done'];
   await boot(page, s);
@@ -557,7 +566,7 @@ test('T-O14 SKIP ends befriending only, and Settings arms it again', async ({ pa
   await page.locator('#setTutorial').click();
   await expect(page.locator('#shList .sh-item', { hasText: 'Befriending' })).toBeVisible();
   await page.locator('#shList .sh-item', { hasText: 'Befriending' }).click();
-  await expect(page.locator('#toast')).toContainText('Befriending lesson in your next wild battle.');
+  await expect(page.locator('#toast')).toContainText('Befriending in your next wild battle.');
   expect((await lesson(page)).bef).toBe('armed');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')).v)).toBe(2);
 });

@@ -1586,7 +1586,7 @@ const TCM = {
   W5: 'WARY, FAIR or GOOD shows your odds. You get 3 tries; the hearts show what\'s left.',
   W6: 'A happy partner and a Befriend Treat from the BAG widen the green zone too.',
   MR: 'Moves lesson in your next wild battle.',
-  BR: 'Befriending lesson in your next wild battle.',
+  BR: 'Befriending in your next wild battle.',
   CH: 'TYPE CHART',
   CHP: 'Even against every type.',
   SET: 'Tutorial',
