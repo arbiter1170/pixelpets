@@ -227,3 +227,35 @@ test('an alive boot that was hidden is a background kill, not crash?', async ({ 
   expect(await fresh.evaluate(() => localStorage.getItem('pp_hidden'))).toBeNull();
   expect(fresh.ppErrors).toEqual([]);
 });
+
+// Hotfix (Oct 23): going hidden keeps the last alive beat, so a page killed in the background (no pagehide) reads as
+// 'background' on the next boot instead of leaving no crumb at all. The kill is simulated by carrying the two marks over.
+test('going hidden keeps the alive mark, so a kill while hidden reads as background', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.waitForFunction(() => { const a = JSON.parse(localStorage.getItem('pp_alive') || 'null'); return !!(a && a.screen === 'Walk'); }, null, { timeout: 15000 });
+  const marks = await page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    return { alive: localStorage.getItem('pp_alive'), hidden: localStorage.getItem('pp_hidden') };
+  });
+  expect(marks.alive, 'alive mark kept while hidden').not.toBeNull();
+  expect(marks.hidden).not.toBeNull();
+  await page.close();
+  const fresh = await page.context().newPage();
+  fresh.ppErrors = [];
+  fresh.on('pageerror', (err) => fresh.ppErrors.push(err.message));
+  await fresh.addInitScript((m) => {
+    localStorage.setItem('pp_alive', m.alive);
+    localStorage.setItem('pp_hidden', m.hidden);
+    localStorage.removeItem('pp_reload');
+  }, marks);
+  await gotoGame(fresh);
+  await fresh.waitForFunction(() => window.PixelPets && window.PixelPets.state);
+  const last = await fresh.evaluate(() => JSON.parse(localStorage.getItem('pp_reload_last')));
+  expect(last[last.length - 1]).toMatchObject({ reason: 'background', screen: 'Walk', hid: true });
+  expect(last[last.length - 1].hidAge).toBeGreaterThanOrEqual(0);
+  expect(JSON.parse(await fresh.evaluate(() => localStorage.getItem('pixelpets.save.v2'))).v).toBe(2);
+  expect(fresh.ppErrors).toEqual([]);
+});
