@@ -4974,13 +4974,18 @@ function tickPatrol(dt){
     mapRT.face[o.id] = face;
   }
 }
+function walkLerp(){
+  walk.fx = walk.from.x + (walk.to.x - walk.from.x) * walk.prog; walk.fy = walk.from.y + (walk.to.y - walk.from.y) * walk.prog;
+  if (fol.to) { fol.fx = fol.from.x + (fol.to.x - fol.from.x) * walk.prog; fol.fy = fol.from.y + (fol.to.y - fol.from.y) * walk.prog; }
+}
 function updateWalk(dt, t){
   if (walk.intro) { if (t - walk.intro > 700) { walk.intro = 0; openEncounter(); } return; }
+  let carry = 0;                             // ms past this frame's arrival; a step that starts this frame spends it (even cadence)
   if (walk.to) {
-    walk.prog += dt * 1000 / (walk.hop ? HOP_MS : STEP_MS);
-    if (walk.prog >= 1) { walk.fx = walk.to.x; walk.fy = walk.to.y; walk.to = null; walk.hop = false; if (fol.to) { fol.fx = fol.x; fol.fy = fol.y; fol.to = null; } onLand(); }
-    else { walk.fx = walk.from.x + (walk.to.x - walk.from.x) * walk.prog; walk.fy = walk.from.y + (walk.to.y - walk.from.y) * walk.prog;
-      if (fol.to) { fol.fx = fol.from.x + (fol.to.x - fol.from.x) * walk.prog; fol.fy = fol.from.y + (fol.to.y - fol.from.y) * walk.prog; } }
+    const dur = walk.hop ? HOP_MS : STEP_MS;
+    walk.prog += dt * 1000 / dur;
+    if (walk.prog >= 1) { carry = (walk.prog - 1) * dur; walk.fx = walk.to.x; walk.fy = walk.to.y; walk.to = null; walk.hop = false; if (fol.to) { fol.fx = fol.x; fol.fy = fol.y; fol.to = null; } onLand(); }
+    else walkLerp();
   }
   tickFrozen(t);
   if (!walk.to && !walk.intro && $('#ovBattle').hidden && !scene && !fade.busy) {
@@ -4995,6 +5000,9 @@ function updateWalk(dt, t){
     }
     if (!d) d = targetDir();
     if (d) tryStep(d);
+    // Held or queued movement: the new step starts where the last one's overshoot left off, capped under one step, so it
+    // can never reach the next tile (its arrival runs on a later frame). A stop, bump or blocked tile snaps as before.
+    if (carry > 0 && walk.to && !walk.prog) { walk.prog = Math.min(carry / (walk.hop ? HOP_MS : STEP_MS), 0.99); walkLerp(); }
   }
   if (!moveHeld()) bump.held = false;
   tickPatrol(dt);
@@ -7715,7 +7723,8 @@ function applyShopCam(t, prevY){
 function syncWalkCam(t){
   const c = $('#mapCanvas'); if (!c || !c.width || !walk) return;
   tickCamBias(t == null ? performance.now() : t);
-  const VW = c.width, VH = c.height, px_ = walk.fx * TS, py_ = walk.fy * TS;
+  // Follow the keeper's drawn (whole-pixel) spot, so an odd canvas size can't make the keeper wobble 1 px against the screen.
+  const VW = c.width, VH = c.height, px_ = Math.round(walk.fx * TS), py_ = Math.round(walk.fy * TS);
   const bx = (walk.camBias && walk.camBias.x) || 0, by = (walk.camBias && walk.camBias.y) || 0;
   const prevY = walk.cam.y;
   // Clamp to the band above the partner strip. Centre in the open band under the area chip, so a north
