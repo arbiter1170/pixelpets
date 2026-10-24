@@ -446,6 +446,9 @@ test('the need glyph sits on a party sprite that needs care, and stays off other
   expect(calm.partner).toBe(true);
   expect(calm.other).toBe(true);
   expect(calm.box).toBe(0);
+  // The hidden flag alone is not enough: the glyph must really be off screen.
+  await expect(page.locator('.party-slot[data-id="p0"] .slot-need')).toBeHidden();
+  await expect(page.locator('.party-slot[data-id="p1"] .slot-need')).toBeHidden();
   await page.evaluate(() => { PixelPets.state.party[1].hunger = 20; });
   await page.waitForFunction(() => {
     const c = document.querySelector('.party-slot[data-id="p1"] .slot-need');
@@ -468,6 +471,35 @@ test('the need glyph sits on a party sprite that needs care, and stays off other
   expect(place.top).toBe(true);
   expect(place.w).toBeGreaterThanOrEqual(18);
   expect(place.h).toBeGreaterThanOrEqual(24);
+  expect(await glyphShown(page, 'p1')).toEqual({ display: true, box: true });
+  await expect(page.locator('.party-slot[data-id="p1"] .slot-need')).toBeVisible();
+  await expect(page.locator('.party-slot[data-id="p0"] .slot-need')).toBeHidden();
+});
+
+// Computed display and layout box for a party card's need glyph.
+async function glyphShown(page, id) {
+  return page.evaluate((pid) => {
+    const c = document.querySelector('.party-slot[data-id="' + pid + '"] .slot-need');
+    const r = c.getBoundingClientRect();
+    return { display: getComputedStyle(c).display !== 'none', box: r.width > 0 && r.height > 0 };
+  }, id);
+}
+
+test('the need glyph really leaves the screen once care clears the need', async ({ page }) => {
+  const save = partySave(2);
+  save.party[1].energy = 20;
+  await openCol(page, save);
+  const glyph = page.locator('.party-slot[data-id="p1"] .slot-need');
+  await page.waitForFunction(() => {
+    const c = document.querySelector('.party-slot[data-id="p1"] .slot-need');
+    return c && !c.hidden && c.dataset.glyph === 'emote_tired';
+  }, null, { timeout: 4000 });
+  await expect(glyph).toBeVisible();
+  expect(await glyphShown(page, 'p1')).toEqual({ display: true, box: true });
+  await page.evaluate(() => document.querySelector('.party-slot[data-id="p1"] [data-act="rest"]').click());
+  await page.waitForFunction(() => PixelPets.state.party[1].energy > 99.5, null, { timeout: 4000 });
+  await expect(glyph).toBeHidden();
+  expect(await glyphShown(page, 'p1')).toEqual({ display: false, box: false });
 });
 
 test('a party bar follows the care tick, and stays put off the party view', async ({ page }) => {
