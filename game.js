@@ -467,7 +467,7 @@ function watchReloads(){
   window.addEventListener('pagehide', () => { markHidden(); markUnload(); });
   window.addEventListener('beforeunload', markUnload);
   window.addEventListener('pageshow', e => { if (e.persisted && !resetting) { lsDrop(RELOAD_KEY); lsDrop(HIDDEN_KEY); markAlive(); } });   // back/forward cache restore: not a reload
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { markHidden(); lsDrop(ALIVE_KEY); } else { lsDrop(HIDDEN_KEY); markAlive(); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) markHidden(); else { lsDrop(HIDDEN_KEY); markAlive(); } });   // keep the last beat: a kill while hidden then reads as 'background', not nothing
   setInterval(markAlive, 5000);
 }
 const RELOAD_LABEL = { cloud: 'cloud', build: 'new build', boot: 'boot retry', startover: 'start over', copy: 'save copy', bfcache: 'save changed', newer: 'newer save', unknown: 'unknown', crash: 'crash?', background: 'background kill' };
