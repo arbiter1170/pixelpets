@@ -7,6 +7,7 @@ trackErrors(test, expect);
 function bootSave() {
   const s = starterSave();
   s.money = 40;
+  s.flags['lantern.guide_heard'] = true;
   s.settings.controls = 'modern';
   s.settings.textSpeed = 'fast';
   return s;

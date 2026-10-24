@@ -37,6 +37,8 @@ async function wipe(page) {
   await page.evaluate(() => {
     const t = Date.now();
     for (const p of PixelPets.state.party) { p.hpNow = 0; p.faintUntil = t + 20 * 60000; }
+    // This helper checks the wake-up, not the first-visit guide (D618).
+    PixelPets.setFlag('lantern.guide_heard', true);
     PixelPets.loseBattle();
   });
   await page.waitForFunction(() => PixelPets.battle && PixelPets.battle.panel === 'end');

@@ -256,7 +256,7 @@ test('a worn-out party can skip the tour match, and a loss resumes at stop 4 @w1
     else if (st.battle) await page.locator('#btMsg').click();
     else {
       // A wipe opens the Lantern House. Leave if the party is already well, otherwise Not yet (the door still holds them).
-      const dismiss = page.locator('#sbChoices button', { hasText: /^(Leave|Not yet)$/ });
+      const dismiss = page.locator('#sbChoices button', { hasText: /^(Leave|Not yet|Got it)$/ });
       if (await dismiss.count()) {
         await page.waitForFunction(() => window.PixelPets.optionsReady === true);
         await dismiss.first().click();

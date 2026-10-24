@@ -543,7 +543,7 @@
           "id": "hc_sign_lantern",
           "x": 23,
           "y": 35,
-          "text": "LANTERN HOUSE · Rest is free. The beds stay warm, and nobody asks why you are tired."
+          "text": "LANTERN HOUSE · Rest the whole party. 5 Acorns."
         },
         {
           "kind": "sign",
@@ -1065,7 +1065,7 @@
           "id": "hc_lantern_note",
           "x": 6,
           "y": 4,
-          "text": "Rest as long as you like. The city can wait. — High Charity"
+          "text": "Rest the whole party. 5 Acorns. The city can wait. — High Charity"
         }
       ],
       "respawnSpot": {

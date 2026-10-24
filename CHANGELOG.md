@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-23 20:20 ET: Lantern House markers, store boards, and healing guides (build 20261023-2020)
+
+- What changed and why: Every Lantern House door has one heart lantern on its door row, and every General Store has one hanging board. Host Della, Host Garnet, and Host Ines explain healing the first time you walk in. Keeper Amos keeps his greeting and then says the same lines. Say it again replays them. Got it closes. A later tap replays. The town map key names both marks and draws them on the doors. High Charity's sign and note now say the rest costs 5 Acorns. Save stays `pixelpets.save.v2` with `v` 2. The only new flag is `lantern.guide_heard`.
+- Files touched: `sprites.js`, `game.js`, `data/detail_b4.json`, `data/detail_landmarks.json`, `data/highcharity.json`, `data/reputation.json`, `data/mapdata.js`, `tools/GAMEJS_MAP.txt`, `tests/town_landmarks.spec.js`, `tests/shop_p0.spec.js`, `tests/standing.spec.js`, `tests/maps_b8.spec.js`, `tests/playtest_fixes_3.spec.js`, `tests/rematch_party.spec.js`, `tests/glimmer_fernbrook.spec.js`, `tests/map_reach_sweep.spec.js`, `index.html`, `version.json`, `README.md`, `tests/README.md`, `CHANGELOG.md`, `archive/DECISIONS_SETTLED.md`, `OPEN_DECISIONS.md`.
+- Commit(s) + build id: this branch, on top of ab72da9. Build `20261023-2020`. The settled calls are their own docs commit.
+- Tests run and result (widths, checks): `tests/town_landmarks.spec.js` T1–T15 at 320, 375, and 390, modern and arcade, plus the desk frame at 1440 on the 390 project. The full `npm run test:agent` and `npm run test:slow` lines are in the PR. Console errors fail the run.
+- Decisions made (colour + reasoning): D612–D619, already settled. No new id. Hosts use the existing villager look.
+- Anything left unfinished: QA is on hold. The three new hosts have no portrait of their own.
+
 ## 2026-10-23 18:26 ET: Caleb and Marilou on the text box, and a still moves card (build 20261023-1826)
 
 - What changed and why: In flat 5B, the gamer shows as Marilou and the painter shows as Caleb, Marilou's partner (he/him). The names on the text box, the phone, the PEOPLE list, and the room map use a display label. The save keys, rep keys, NPC ids, and looks stay Morelou and Morolow. Save stays `pixelpets.save.v2` with `v` 2 and no new field. The M1 and M2 moves cards sit above the partner panel on every beat so they stop hopping and the wild Walkling stays in view at 390.

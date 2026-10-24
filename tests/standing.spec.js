@@ -185,14 +185,19 @@ test('Pledge desks are gone; Rook says not yet until the crates, and a battle bl
   await page.evaluate(() => { PixelPets.setSide('glimmer'); PixelPets.goto('fb_lantern_in', 6, 4, 'up'); });
   await page.waitForFunction(() => !window.PixelPets.fading);
   await page.keyboard.press('Space');
-  await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full && s.waiting; });
-  await page.keyboard.press('Space');
+  for (let i = 0; i < 8; i++) {
+    const mode = await page.evaluate(() => { const s = window.PixelPets.scene; return s && s.mode; });
+    if (mode === 'choice') break;
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(40);
+  }
   await page.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.mode === 'choice' && s.full; });
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   const lantern = await page.locator('#sbChoices button').allTextContents();
-  expect(lantern).toContain('Rest a while');
+  expect(lantern).toContain('Got it');
+  expect(lantern).toContain('Say it again');
   expect(lantern.join('\n')).not.toContain('Pledge desk');
-  await page.locator('#sbChoices button', { hasText: 'Leave' }).click();
+  await page.locator('#sbChoices button', { hasText: 'Got it' }).click();
   await page.waitForFunction(() => !window.PixelPets.scene);
   expect(await page.evaluate(() => PixelPets.forceBattle('tide/0', 3))).toBe(true);
   await page.waitForFunction(() => { const b = window.PixelPets.battle; return b && b.on && b.state === 'CHOOSE'; }, null, { timeout: 15000 });
