@@ -168,6 +168,7 @@ test('a Fetchling grows up into Harvestail and Hearthound @w1', async ({ page })
   test.setTimeout(60000);
   await installSave(page.context(), fetchSave(), { quietDay: true });
   await gotoDebug(page);
+  await page.evaluate(() => PixelPets.showTab('pet'));   // BOOT_TO_MAP: the game boots on WALK; GROW UP is on the PARTNER screen
   await expect(page.locator('#hdrName')).toHaveText('Fetchling');
   await expect(page.locator('#evolveBtn')).toBeHidden();
   await expect(page.locator('#evoHint')).toContainText('39/40');
