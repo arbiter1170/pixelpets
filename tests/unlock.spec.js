@@ -192,6 +192,7 @@ async function walkQuiet(page) {
 test('growing up on the Pet tab does not show the tip back on WALK', async ({ page }) => {
   test.setTimeout(60000);
   await bootSave(page, readySave());
+  await page.evaluate(() => PixelPets.showTab('pet'));   // BOOT_TO_MAP: the game boots on WALK; this case grows up on the Pet tab
   await expect(page.locator('#unlockCard')).toBeHidden();
   await finishGrowUp(page);
   await walkQuiet(page);

@@ -23,6 +23,7 @@ test('a Walkling you already have can be renamed, and the species name clears it
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state && window.PixelPets.state.party[0]);
+  await page.evaluate(() => PixelPets.showTab('pet'));   // BOOT_TO_MAP: the game boots on WALK; STATS is on the PARTNER screen
   await page.locator('#petStatsBtn').click();
   await expect(page.locator('#ovStats')).toBeVisible();
   await expect(page.locator('#scName')).toHaveText('Pipkit');
@@ -140,6 +141,7 @@ test('fourteen hours away says welcome back, and a shorter gap does not', async 
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true && window.PixelPets.state.party[0]);
+  await page.evaluate(() => PixelPets.showTab('pet'));   // BOOT_TO_MAP: the game boots on WALK; the welcome-back line still shows on the PARTNER screen
   const short = await page.evaluate(() => {
     const rows = PixelPets.away(13);
     return { v: PixelPets.state.v, hunger: rows[0].hunger, happy: rows[0].happy, energy: rows[0].energy };
