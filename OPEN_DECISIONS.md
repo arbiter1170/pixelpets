@@ -10,7 +10,8 @@ D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK
 
 HUSHWATER B1 merged in #125 and HUSHWATER B2 merged in #126. Both are on main.
 
-Next free id is D626.
+Next free id is D730.
+Other packets hold ids through D729.
 
 ## Open
 

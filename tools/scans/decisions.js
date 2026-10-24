@@ -54,10 +54,6 @@ function highestId(text, letter) {
   let stripped = cutPhrase(text, NEXT_FREE + letter);
   stripped = cutPhrase(stripped, 'The ' + lower);
   stripped = cutPhrase(stripped, 'the ' + lower);
-  // MAP_EDGE_TAPS settled lines stay in the archive. The Supervisor owns the
-  // next-free sentence, and other packets already hold later ids, so those
-  // lines must not move it.
-  stripped = stripped.split('\n').filter(line => line.indexOf('MAP_EDGE_TAPS') < 0).join('\n');
   let max = 0;
   const re = new RegExp('\\b' + letter + '(\\d+)\\b', 'g');
   let m;
