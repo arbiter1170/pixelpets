@@ -265,6 +265,9 @@ test('a worn-out party can skip the tour match, and a loss resumes at stop 4 @w1
     await page.waitForTimeout(70);
   }
   await page.waitForFunction(() => PixelPets.mapInfo.id === 'fb_lantern_in' && !PixelPets.fading, null, { timeout: 15000 });
+  // The wipe warp plays the first-visit healing guide once fade ends. Close it so stop 4 can resume.
+  await page.waitForFunction(() => !!window.PixelPets.scene, null, { timeout: 5000 });
+  await playScene(page, ['Got it']);
   const lost = await page.evaluate(() => ({
     map: PixelPets.mapInfo.id,
     seal1: PixelPets.state.flags['story.seal1'],
