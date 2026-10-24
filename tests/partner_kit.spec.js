@@ -16,6 +16,7 @@ async function boot(page) {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state && window.PixelPets.state.party[0]);
+  await page.evaluate(() => PixelPets.showTab('pet'));   // BOOT_TO_MAP: the game boots on WALK; these checks are on the PARTNER screen
 }
 
 test('STATS and KIT sit above FEED, and the partner tab has no bag', async ({ page }) => {

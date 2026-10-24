@@ -842,7 +842,7 @@ function tipBandTick(){
 }
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { tipBandKey = ''; try { syncTipBand(); } catch (e) {} });
 
-let screen = 'pet';
+let screen = 'walk';   // BOOT_TO_MAP: every boot and reload (refresh, crash, cloud adopt, bfcache, boot retry) lands on the map. index.html marks #scr-walk and the WALK tab active to match.
 // PARTNER_UI D254. One in-memory return point. Never saved.
 let uiReturn = null;
 function clearUiReturn(){ uiReturn = null; }
