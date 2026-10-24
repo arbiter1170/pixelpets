@@ -11916,6 +11916,9 @@ function paintMealIcon(cv){
 }
 function openShop(ids, title, flavour){
   if (!S || overlayOpen()) return;
+  // SHOP_EXIT: the care walk's C1 card and unlock tips sit above the sheet and covered X. Step aside as a talk does (runSteps).
+  if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('shop');
+  if (unlock.on && unlock.id) { unlock.held = unlock.id; unlockClose(); }
   clearMoves(); shopMeal = null; shopIds = (ids || ITEM_ORDER).filter(k => (ITEMS[k] || WARDROBE[k]) && auraShopOk(k)); shopSel = 0;
   $('#shopTitle').hidden = false;
   $('#shopTitle').textContent = title || 'Travel Shelf';
