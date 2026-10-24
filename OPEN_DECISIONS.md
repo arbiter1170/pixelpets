@@ -10,7 +10,7 @@ D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK
 
 HUSHWATER B1 merged in #125 and HUSHWATER B2 merged in #126. Both are on main.
 
-Next free id is D704. MAP_EDGE_TAPS P1 settled its calls; the Supervisor still owns the later-phase block.
+Next free id is D626.
 
 ## Open
 

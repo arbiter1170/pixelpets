@@ -91,6 +91,8 @@ function decisionsFixtures() {
   const archHigh = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-darch-'));
   const range = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-drange-'));
   const closed = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-dclosed-'));
+  const owned = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-downed-'));
+  const ownedBad = fs.mkdtempSync(path.join(os.tmpdir(), 'pp-scan-downedbad-'));
   const row = '| D{id} | a | b | c | d |';
   const head = '| # | Area | Decision needed | What the build does today | Where to change it |\n|---|---|---|---|---|';
   function openFile(dir, body) {
@@ -222,7 +224,29 @@ function decisionsFixtures() {
     row.replace('{id}', '1'),
   ].join('\n'));
   archFile(closed, '- **D2 (note).** Closed by D1.\n');
-  return { dup, wrong, missing, clean, split, bullet, restate, archHigh, range, closed };
+  openFile(owned, [
+    '# Open decisions',
+    '',
+    NF + 'D2.',
+    '',
+    '## Open',
+    '',
+    head,
+    row.replace('{id}', '1'),
+  ].join('\n'));
+  archFile(owned, '- **D9 (note).** MAP_EDGE_TAPS. The Supervisor keeps the next-free sentence.\n');
+  openFile(ownedBad, [
+    '# Open decisions',
+    '',
+    NF + 'D3.',
+    '',
+    '## Open',
+    '',
+    head,
+    row.replace('{id}', '1'),
+  ].join('\n'));
+  archFile(ownedBad, '- **D9 (note).** kept.\n');
+  return { dup, wrong, missing, clean, split, bullet, restate, archHigh, range, closed, owned, ownedBad };
 }
 
 function git(dir, args) {
@@ -394,6 +418,16 @@ function main() {
     show('decisions closed-by reference', closedD);
     check(closedD.status === 0, 'closed-by exit ' + closedD.status + '\n' + closedD.stdout);
     check(closedD.stdout.trim() === 'SCAN PASS decisions', 'closed-by output');
+
+    const ownedD = run(d.owned, 'decisions');
+    show('decisions supervisor-owned next-free', ownedD);
+    check(ownedD.status === 0, 'owned exit ' + ownedD.status + '\n' + ownedD.stdout);
+    check(ownedD.stdout.trim() === 'SCAN PASS decisions', 'owned output');
+
+    const ownedBadD = run(d.ownedBad, 'decisions');
+    show('decisions archive id still raises the pointer', ownedBadD);
+    check(ownedBadD.status === 1, 'owned-bad exit ' + ownedBadD.status + '\n' + ownedBadD.stdout);
+    check(ownedBadD.stdout.indexOf('SCAN FAIL decisions: OPEN_DECISIONS.md:3 ' + stated + 'D3, highest used or reserved is D9') >= 0, 'owned-bad line\n' + ownedBadD.stdout);
 
     m = mapFixtures();
     const staleM = run(m.stale, 'gamejs_map');
