@@ -7,7 +7,7 @@ const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = requir
 trackErrors(test, expect);
 
 const C4E = 'Need NRG? REST fills it for 10 FOOD. So do an Energy Sip and a Lantern House bed.';
-const T3 = 'NRG is energy. PLAY uses some, and REST brings it back. Walking and battling are free.';
+const T3 = 'NRG is energy. PLAY uses some, and REST brings it back. Walking is free. Each battle uses a little NRG.';
 
 function saveAt(extra) {
   const s = starterSave();

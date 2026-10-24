@@ -105,7 +105,7 @@ test('a first run walks the tour and the care buttons are real', async ({ page }
   expectLayout(await layout(page));
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('NRG is energy');
-  await expect(page.locator('#tutLine')).toContainText('Walking and battling are free');
+  await expect(page.locator('#tutLine')).toContainText('Each battle uses a little NRG');
   await expect(page.locator('#tutLine')).not.toContainText('battles use it');
   await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
   await expect(page.locator('#tutLine')).toContainText('GROW fills');
