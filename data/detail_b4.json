@@ -53,7 +53,7 @@
         "cottage_e": {"x0": 21, "y0": 11, "x1": 24, "y1": 12, "roof": "roof_turf", "wall": "wall_brick", "win": "win_shutter", "trim": "d", "shape": "arch", "porch": ["cc_barrel"]}
       } },
       "addObjs": [
-        {"kind": "prop", "id": "cc_lantern_sign", "x": 3, "y": 5, "sprite": "lantern_sign"},
+        {"kind": "prop", "id": "cc_lantern_sign", "x": 4, "y": 5, "sprite": "heal_lantern"},
         {"kind": "prop", "id": "cc_ore_cart", "x": 7, "y": 5, "sprite": "ore_cart"},
         {"kind": "prop", "id": "cc_slab_sign", "x": 26, "y": 6, "sprite": "slab_sign"},
         {"kind": "prop", "id": "cc_woodpile", "x": 12, "y": 13, "sprite": "woodpile"},
@@ -127,7 +127,7 @@
         "hall": {"x0": 19, "y0": 1, "x1": 26, "y1": 4, "roof": "roof_gable_p", "wall": "wall_ashlar_w", "door": "door_arch", "win": "win_box", "trim": "p", "shape": "gable", "porch": ["fb_hedge_w", "fb_hedge_e"]}
       } },
       "addObjs": [
-        {"kind": "prop", "id": "fb_lantern_sign", "x": 3, "y": 5, "sprite": "lantern_sign"},
+        {"kind": "prop", "id": "fb_lantern_sign", "x": 4, "y": 5, "sprite": "heal_lantern"},
         {"kind": "prop", "id": "fb_apple_crate", "x": 7, "y": 5, "sprite": "apple_crate"},
         {"kind": "prop", "id": "fb_hedge_w", "x": 20, "y": 6, "sprite": "hedge_planter"},
         {"kind": "prop", "id": "fb_hedge_e", "x": 24, "y": 6, "sprite": "hedge_planter"},
@@ -181,7 +181,7 @@
         {"kind": "prop", "id": "hm_lodge_sign", "x": 9, "y": 6, "sprite": "sign_lodge"},
         {"kind": "prop", "id": "hm_lodge_fence", "x": 13, "y": 6, "sprite": "fence_post"},
         {"kind": "prop", "id": "hm_rook_cart", "x": 18, "y": 5, "sprite": "cart_prop"},
-        {"kind": "prop", "id": "hm_lantern_sign", "x": 15, "y": 14, "sprite": "lantern_sign"},
+        {"kind": "prop", "id": "hm_lantern_sign", "x": 15, "y": 13, "sprite": "heal_lantern"},
         {"kind": "prop", "id": "hm_lantern_bench", "x": 18, "y": 13, "sprite": "bench_long"},
         {"kind": "prop", "id": "hm_hq_lamp_w", "x": 10, "y": 11, "sprite": "lamp_post"},
         {"kind": "prop", "id": "hm_hq_lamp_e", "x": 12, "y": 11, "sprite": "lamp_post"},
@@ -247,7 +247,7 @@
         {"kind": "prop", "id": "hc_poster", "x": 30, "y": 29, "sprite": "poster_stand"},
         {"kind": "prop", "id": "hc_urn_w", "x": 47, "y": 29, "sprite": "stone_urn"},
         {"kind": "prop", "id": "hc_urn_e", "x": 51, "y": 29, "sprite": "stone_urn"},
-        {"kind": "prop", "id": "hc_lantern_sign", "x": 20, "y": 34, "sprite": "lantern_sign"},
+        {"kind": "prop", "id": "hc_lantern_sign", "x": 21, "y": 34, "sprite": "heal_lantern"},
         {"kind": "prop", "id": "hc_lantern_planter", "x": 24, "y": 34, "sprite": "planter_round"},
         {"kind": "prop", "id": "hc_cafe_w", "x": 53, "y": 35, "sprite": "cafe_table"},
         {"kind": "prop", "id": "hc_cafe_e", "x": 58, "y": 35, "sprite": "cafe_table"},

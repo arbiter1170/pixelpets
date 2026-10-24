@@ -5016,7 +5016,7 @@ function warpTo(at, after){
   if ((careLes.phase === 'c1' || careLes.phase === 'act') && !door) careFallback('warp');
   fade.busy = true; fade.t0 = now(); settleHop(); clearMoves();
   setTimeout(() => { arriveAt(at); }, FADE_MS / 2);
-  setTimeout(() => { fade.busy = false; if (after) after(); if (door) careDoorLand(); }, FADE_MS);
+  setTimeout(() => { fade.busy = false; if (after) after(); if (door) careDoorLand(); maybeLanternGuide(); }, FADE_MS);
 }
 let musicHold = false;   // closeBattle plays the return loop itself (after stingers); a wipe's arriveAt must not start it early
 function arriveAt(at){
@@ -6866,6 +6866,7 @@ function interact(o){
     }
     return runSteps([['say', t.name, trainerLine(o.id, 'win')]], ctx);
   }
+  if (LANTERN_GUIDE_IDS[o.id]) { openLanternGuide(o, false); return; }
   if (o.panel === 'lantern' || o.panel === 'hall1') { openPlace(o); return; }
   if (o.kind === 'sign') {
     const line = linesFor(o);
@@ -7234,6 +7235,8 @@ async function execStep(st){
       if (!scene || pick == null || pick < 0 || !opts[pick]) return;
       const opt = opts[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
       $('#sbEcho').textContent = '\u203a ' + expand(opt[0]);
+      // The guide's "Say it again" cannot point at its own steps: choiceAligned walks every nested array.
+      if (opt[1] === '@lantern_again') { await execSteps(lanternGuideBody(sc.who)); return; }
       await execSteps(opt[1]); return;
     }
     case 'waitUntil': {
@@ -8772,14 +8775,80 @@ function blockLanternExit(){
   });
 }
 // The design JSON still says the rest is free. Players read the cost, so the signs are patched here.
+// The heal_lantern prop keeps the same house line, so a tap on the marker still reads it (D612, D619).
 (function patchLanternSigns(){
   const put = (map, id, text) => { const o = WORLD[map] && WORLD[map].objs.find(x => x.id === id); if (o) o.text = text; };
   const n = LANTERN_REST_COST;
-  put('hearthmoor', 'hm_sign_lantern', 'LANTERN HOUSE · Rest the whole party. ' + n + ' Acorns.');
+  const house = 'LANTERN HOUSE · Rest the whole party. ' + n + ' Acorns.';
+  put('hearthmoor', 'hm_sign_lantern', house);
   put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns. — I."');
   put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
   put('fb_lantern_in', 'fb_lantern_note', 'A note by the shelf: "Rest the whole party. ' + n + ' Acorns. — Amos"');
+  const mark = (map, id) => {
+    const o = WORLD[map] && WORLD[map].objs.find(x => x.id === id);
+    if (o) o.lines = { else: house };
+  };
+  mark('hearthmoor', 'hm_lantern_sign');
+  mark('cobblecrest', 'cc_lantern_sign');
+  mark('fernbrook', 'fb_lantern_sign');
+  mark('highcharity', 'hc_lantern_sign');
 })();
+// Lantern House guides (D617, D618). One additive flag. The cost in the first line is LANTERN_REST_COST.
+const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1 };
+const LANTERN_GUIDE_G2 = 'Lose a battle and you wake at the closest Lantern House. Tap me any time to hear this again.';
+function lanternCostLine(){
+  return 'Welcome in. Talk to a bed and your whole team rests and heals, for ' + LANTERN_REST_COST + ' Acorns.';
+}
+function lanternGuideBody(who){
+  return [
+    ['say', who, lanternCostLine()],
+    ['say', who, LANTERN_GUIDE_G2],
+    ['choice', 'Got all that?', [
+      ['Got it', []],
+      ['Say it again', '@lantern_again'],
+    ]],
+  ];
+}
+function lanternGuideSteps(o, mark){
+  const who = objName(o);
+  const steps = [];
+  if (mark) steps.push(['setFlag', 'lantern.guide_heard', true]);
+  if (o.id === 'amos') steps.push(['say', who, lanternGreet('Keeper Amos')]);
+  steps.push.apply(steps, lanternGuideBody(who));
+  return steps;
+}
+function openLanternGuide(o, first){
+  if (!o || scene || !S) return;
+  const mark = !!first || !S.flags['lantern.guide_heard'];
+  runSteps(lanternGuideSteps(o, mark), { npc: o, id: 'lantern_guide' });
+}
+function lanternGuideHere(){
+  if (!CUR || !LANTERN_ROOMS[CUR.id]) return null;
+  return CUR.objs.find(o => LANTERN_GUIDE_IDS[o.id] && present(o)) || null;
+}
+function maybeLanternGuide(){
+  if (!S || scene || fade.busy || !CUR || !LANTERN_ROOMS[CUR.id]) return;
+  if (S.flags['lantern.guide_heard']) return;
+  const g = lanternGuideHere();
+  if (g) openLanternGuide(g, true);
+}
+// Town map door marks (D614). The key rows use the same art.
+const TOWN_DOOR_ART = {
+  hm_lantern: 'heal_lantern', cc_lantern: 'heal_lantern', fb_lantern: 'heal_lantern', hc_lantern: 'heal_lantern',
+  hm_store: 'acorn_board',
+};
+const TOWN_STALL_ART = {
+  cobblecrest: [['dottie', 'acorn_board']],
+  highcharity: [['hc_shop', 'acorn_board']],
+};
+function drawTownArt(g, name, tx, ty, p){
+  const art = WART[name];
+  if (!art || !art.width) return;
+  const prev = g.imageSmoothingEnabled;
+  g.imageSmoothingEnabled = false;
+  g.drawImage(art, tx * p, ty * p, p, p);
+  g.imageSmoothingEnabled = prev;
+}
 // Region to Lantern towns, nearest first. Nothing saved. A tier is a tie; later tiers are farther.
 const LANTERN_NEAR = {
   hearthmoor: [['hearthmoor']],
@@ -10204,11 +10273,28 @@ function syncMapActs(){
     see.hidden = true; back.hidden = !mapUI.browse;
   }
 }
+function landmarkSwatch(name){
+  const c = document.createElement('canvas');
+  c.width = 16; c.height = 16; c.className = 'sw'; c.setAttribute('aria-hidden', 'true');
+  const cg = c.getContext('2d');
+  cg.imageSmoothingEnabled = false;
+  if (WART[name]) cg.drawImage(WART[name], 0, 0);
+  return c;
+}
 function paintLayerKey(level){
   const el = $('#mapLayerKey'); if (!el) return;
   const row = (sw, text) => '<li><span class="sw ' + sw + '" aria-hidden="true"></span>' + text + '</li>';
   if (level === 'room') el.innerHTML = '<section class="map-key-g"><p class="map-key-h">ROOM</p><ul class="map-key-list">' + row('sw-exit', 'Way out') + row('sw-lift', 'Lift') + row('sw-stairs', 'Stairs') + row('sw-you', 'You') + '</ul></section>';
-  else if (level === 'town') el.innerHTML = '<section class="map-key-g"><p class="map-key-h">TOWN</p><ul class="map-key-list">' + row('sw-you', 'You') + row('sw-next', 'Next step') + row('sw-in', 'Been inside') + row('sw-yet', 'Not yet') + '</ul></section>';
+  else if (level === 'town') {
+    el.innerHTML = '<section class="map-key-g"><p class="map-key-h">TOWN</p><ul class="map-key-list">' + row('sw-you', 'You') + row('sw-next', 'Next step') + row('sw-in', 'Been inside') + row('sw-yet', 'Not yet') + '</ul></section>';
+    const ul = el.querySelector('ul');
+    [['heal_lantern', 'Lantern House'], ['acorn_board', 'General Store']].forEach(([art, label]) => {
+      const li = document.createElement('li');
+      li.appendChild(landmarkSwatch(art));
+      li.appendChild(document.createTextNode(label));
+      ul.appendChild(li);
+    });
+  }
 }
 function paintChips(){
   const box = $('#mapChips'); if (!box) return;
@@ -10565,6 +10651,7 @@ function drawTownLayer(g, R, box, L, p, blink){
     if (!b.locked) R(x0 * p + 1, y0 * p + 1, bw - 2, Math.max(2, Math.floor(p / 3)), ent ? 'o' : 'h');
     const dx = b.door_xy[0], dy = b.door_xy[1], dw = Math.max(3, Math.floor(p / 2));
     R(dx * p + Math.floor((p - dw) / 2), dy * p + Math.floor(p / 3), dw, p - Math.floor(p / 3), b.locked ? 'm' : 'k');
+    if (TOWN_DOOR_ART[b.door]) drawTownArt(g, TOWN_DOOR_ART[b.door], dx, dy, p);
     if (b.label) {
       const cx = (x0 + x1 + 1) * p / 2, cy = (y0 + y1 + 1) * p / 2;
       const sz = p >= 10 ? 13 : 12;
@@ -10573,6 +10660,13 @@ function drawTownLayer(g, R, box, L, p, blink){
       else { const n = pins.length + 1; pins.push({ n, label: b.label }); labels.push([cx, cy, String(n), 12, ent]); }
     }
   });
+  const stalls = TOWN_STALL_ART[L.id];
+  if (stalls && WORLD[L.id]) {
+    for (const pair of stalls) {
+      const o = WORLD[L.id].objs.find(x => x.id === pair[0]);
+      if (o) drawTownArt(g, pair[1], o.x, o.y, p);
+    }
+  }
   L.exits.forEach(e => {
     if (!layerWhen(e)) return;
     const x = e.xy[0], y = e.xy[1], X = x * p + p / 2, Y = y * p + p / 2;

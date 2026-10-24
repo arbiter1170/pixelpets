@@ -1,0 +1,37 @@
+{
+  "spec": "TOWN_LANDMARKS v0.1.1. Lantern House guides and General Store boards. Verbatim design copies stay untouched.",
+  "slicePatch": {
+    "maps": {
+      "hm_lantern_in": {
+        "addObjs": [
+          {"kind": "npc", "id": "hm_lantern_host", "name": "Host Della", "x": 4, "y": 2, "facing": "down"}
+        ]
+      },
+      "cc_lantern_in": {
+        "addObjs": [
+          {"kind": "npc", "id": "cc_lantern_host", "name": "Host Garnet", "x": 4, "y": 2, "facing": "down"}
+        ]
+      },
+      "hc_lantern_in": {
+        "addObjs": [
+          {"kind": "npc", "id": "hc_lantern_host", "name": "Host Ines", "x": 4, "y": 2, "facing": "down"}
+        ]
+      },
+      "hearthmoor": {
+        "addObjs": [
+          {"kind": "prop", "id": "hm_store_board", "x": 5, "y": 26, "sprite": "acorn_board"}
+        ]
+      },
+      "cobblecrest": {
+        "addObjs": [
+          {"kind": "prop", "id": "cc_store_board", "x": 14, "y": 6, "sprite": "acorn_board"}
+        ]
+      },
+      "highcharity": {
+        "addObjs": [
+          {"kind": "prop", "id": "hc_store_board", "x": 32, "y": 23, "sprite": "acorn_board"}
+        ]
+      }
+    }
+  }
+}

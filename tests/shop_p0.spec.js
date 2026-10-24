@@ -183,11 +183,14 @@ test('priced prompts keep the Acorn chip, and a buy shows the new total before t
   await page.locator('#sbChoices button', { hasText: 'Not yet' }).click();
   await finishScene(page);
 
+  // Keeper Amos explains healing (D618) instead of opening the rest panel. The bed above still prices the rest.
   await stand(page, 'fb_lantern_in', 6, 4, 'up');
   await talk(page, 'amos');
-  expect(await reachChoice(page)).toBe('Rest the whole party?');
-  await expectChip(page, true);
-  await page.locator('#sbChoices button', { hasText: 'Not yet' }).click();
+  expect(await reachChoice(page)).toBe('Got all that?');
+  await expectChip(page, false);
+  const guide = await page.locator('#sbChoices button').allTextContents();
+  expect(guide).toEqual(expect.arrayContaining(['Got it', 'Say it again']));
+  await page.locator('#sbChoices button', { hasText: 'Got it' }).click();
   await finishScene(page);
 
   await setHurt(page, false);

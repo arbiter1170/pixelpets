@@ -147,7 +147,7 @@ Battles (design spec BATTLE v0.3.1; moves, learnsets, trainers and battle text i
 - After a battle every Walkling that took part pays NRG 3 and FOOD 2 (5 more NRG if it was worn out), winners gain +3 JOY,
   and Walklings that fought share the battle XP. If your whole team is worn out you wake at the closest Lantern House you have been to,
   already healed, and the way out is open. A loss costs no Acorns. A rest you choose at a Lantern House still costs 5 Acorns when someone is hurt
-  (the Keeper covers the fee if you are short) and fills NRG. A nap in your own bed is still free and fills NRG too.
+  (the Keeper covers the fee if you are short) and fills NRG. A heart lantern marks each Lantern House door, a hanging board marks each General Store, and the first visit plays a short guide you can hear again. A nap in your own bed is still free and fills NRG too.
 - Trainers summon their creatures ("{trainer} has summoned {foe}!", "{title} {trainer} challenges {player}!",
   "{player} summons {pet}!"; your keeper name, or "Wayfarer"). You can't run from or befriend a trainer's creature.
   Route 1's Pia, Tam and Ollie and Fernbrook's Tobin spot you when you step into their sight line ("!", they walk up,
