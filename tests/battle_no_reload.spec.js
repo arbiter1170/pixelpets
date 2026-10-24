@@ -185,3 +185,73 @@ test('a late cloud compare never adopts (reloads) under a battle', async ({ page
   // stubbed hosts log a failed fetch or two; only page errors from the game count here
   page.ppErrors = page.ppErrors.filter((l) => !/firebasejs|gstatic|googleapis|firebaseio|firebaseapp|Failed to load|ERR_|net::/i.test(l));
 });
+
+// Reload guard (hotfix, Oct 23): a tab that adopted a cloud save in the last 10 minutes (sessionStorage pixelpets.adoptAt)
+// asks "Which game to keep?" on the next cloud change instead of adopting and reloading again. Same stubs as above; the
+// stubbed cloud copy lives in localStorage so it survives the reload, and moves on to a newer rev once the first is read.
+test('a second cloud change within 10 minutes of an adopt asks instead of reloading again', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== '390', 'cloud timing check runs at one width (one 10 s cloud tick)');
+  test.setTimeout(90000);
+  const local = starterSave();
+  const cloudA = starterSave(); cloudA.party[0].xp = 99; cloudA.playerName = 'Cloudy';
+  const cloudB = starterSave(); cloudB.party[0].xp = 140; cloudB.playerName = 'Cloudier';
+  const app = 'export function initializeApp(){ return { name: "walklings" }; }';
+  const auth = [
+    'export function getAuth(){ return {}; }',
+    'export function onAuthStateChanged(_a, cb){ queueMicrotask(function(){ cb({ uid: "adopt-uid" }); }); return function(){}; }',
+    'export function signInAnonymously(){ return Promise.resolve({ user: { uid: "adopt-uid" } }); }',
+  ].join('\n');
+  const fsMod = [
+    'export function getFirestore(){ return {}; }',
+    'export function doc(){ return { path: "saves/adopt-uid" }; }',
+    'export function getDocFromServer(){ let t = null; try { t = JSON.parse(localStorage.getItem("__ppTestCloud")); } catch(e) {}',
+    '  if (!t) { const e = new Error("offline"); e.code = "unavailable"; return Promise.reject(e); }',
+    '  const d = t.docs[Math.min(t.i, t.docs.length - 1)]; t.i++; localStorage.setItem("__ppTestCloud", JSON.stringify(t));',
+    // "unchanged here": re-take the fingerprint as the first copy is read (play since the last sync would make it a conflict)
+    '  if (t.i === 1) { const dv = JSON.parse(localStorage.getItem("pixelpets.cloud")); dv.syncedHash = PPCloud.hashOf(PixelPets.state); localStorage.setItem("pixelpets.cloud", JSON.stringify(dv)); }',
+    '  return Promise.resolve({ exists: function(){ return true; }, data: function(){ return d; } }); }',
+    'export function setDoc(){ return Promise.reject(new Error("setDoc must not run in this test")); }',
+    'export function deleteDoc(){ return Promise.reject(new Error("deleteDoc must not run in this test")); }',
+  ].join('\n');
+  const fulfill = (body) => (route) => route.fulfill({ status: 200, contentType: 'text/javascript', body });
+  await page.route('**/firebase-app.js*', fulfill(app));
+  await page.route('**/firebase-auth.js*', fulfill(auth));
+  await page.route('**/firebase-firestore.js*', fulfill(fsMod));
+  await page.route(/googleapis\.com|firebaseio\.com|firebaseapp\.com|firebasestorage\.app/, (route) => route.abort('failed'));
+  // Seed the local save once per tab (installSave would overwrite the adopted copy on the reload).
+  await page.addInitScript((save) => {
+    if (sessionStorage.getItem('__ppSeeded')) return;
+    sessionStorage.setItem('__ppSeeded', '1');
+    const d = new Date();
+    const day = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    save.flags['daily.hello'] = day; save.flags['daily.warm_bowl'] = day; save.last = Date.now();
+    localStorage.setItem('pixelpets.save.v2', JSON.stringify(save));
+    localStorage.setItem('pixelpets.geo', 'deny');
+    localStorage.setItem('pixelpets.mute', '1');
+  }, local);
+  await gotoGame(page, '?cloud=block&debug=1');
+  await page.waitForFunction(() => typeof PPCloud !== 'undefined' && PPCloud.info().status === 'offline');
+  expect(await page.evaluate(() => sessionStorage.getItem('pixelpets.adoptAt'))).toBeNull();
+  // Unchanged here, rev 5 in the cloud -> the next tick adopts quietly and reloads. Rev 7 (another tab's write) is next.
+  let loads = 0; page.on('load', () => { loads++; });
+  const reloaded = page.waitForEvent('load', { timeout: 25000 });
+  await page.evaluate(({ a, b }) => {
+    const d = JSON.parse(localStorage.getItem('pixelpets.cloud'));
+    d.syncedRev = 3;
+    localStorage.setItem('pixelpets.cloud', JSON.stringify(d));
+    localStorage.setItem('__ppTestCloud', JSON.stringify({ i: 0, docs: [
+      { data: a, v: 2, rev: 5, updatedAt: Date.now() }, { data: b, v: 2, rev: 7, updatedAt: Date.now() }] }));
+  }, { a: JSON.stringify(cloudA), b: JSON.stringify(cloudB) });
+  await reloaded;
+  await page.waitForFunction(() => window.PixelPets && window.PixelPets.state && typeof PPCloud !== 'undefined');
+  const after = await page.evaluate(() => ({ at: +sessionStorage.getItem('pixelpets.adoptAt'), name: PixelPets.state.playerName }));
+  expect(after.name).toBe('Cloudy');
+  expect(Date.now() - after.at).toBeLessThan(60000);
+  // The boot compare sees rev 7 inside the window: it shows the existing choice and does not reload again.
+  await expect(page.locator('#cloudTitle')).toHaveText('Which game to keep?', { timeout: 15000 });
+  await page.waitForTimeout(3000);
+  expect(loads).toBe(1);
+  const info = await page.evaluate(() => ({ conflict: PPCloud.info().conflict, rev: PPCloud.info().dev.syncedRev, v: JSON.parse(localStorage.getItem('pixelpets.save.v2')).v }));
+  expect(info).toMatchObject({ conflict: true, rev: 5, v: 2 });
+  page.ppErrors = page.ppErrors.filter((l) => !/firebasejs|gstatic|googleapis|firebaseio|firebaseapp|Failed to load|ERR_|net::/i.test(l));
+});
