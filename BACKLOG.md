@@ -5,6 +5,8 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
+MAP_EDGE_TAPS P1 (D695, D696, D697, D698, D699 and D703) is on this branch: a tap past an outdoor map edge that has a way out walks to that way out, and a tap past an edge with none walks to a nearby open tile. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
+
 ART_PASS (D548–D563) is on this branch: the Bloom Trial Hall is garden terraces with a one-way hop down the centre, and the Parked Coach floor is coach planks, a kitchen tile zone, and two booth rugs. A second tap on the follower closes the open care tray (D578).
 
 MOVES_V2 (D522–D533 and D564–D569) is on this branch: every Walkling starts with three moves, old saves top up in place, and a battle hit plays a per-type punch. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2. The only new saved flag is `sig_offer.<id>`.

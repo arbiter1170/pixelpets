@@ -3325,10 +3325,12 @@ const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', rival3_rook: 'r
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };   // per map visit, never saved
+let edgeExitCache = null;   // MAP_EDGE_TAPS P1: rebuilt on the next tap after arrive (useMap)
 function useMap(id){
   CUR = WORLD[id] || WORLD.hearthmoor; MAP = CUR.cells; MW = CUR.w; MH = CUR.h;
   mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };
   patrolClock = 0;
+  edgeExitCache = null;
   wallMaskOf(CUR);
 }
 const isRoom = () => CUR.kind === 'interior';
@@ -4160,6 +4162,98 @@ function walkNeighbours(x, y){
     if (wildAt(c.x, c.y) || warpAt(c.x, c.y)) return false;
     return !solid(c.x, c.y) || (c.x === S.world.x && c.y === S.world.y);
   });
+}
+// MAP_EDGE_TAPS P1 (D695-D699). Outdoor edge exits only, snapshotted on arrive. A hidden warp is not an exit.
+const EDGE_NAMES = ['up', 'down', 'left', 'right'];
+function edgeExits(){
+  if (edgeExitCache) return edgeExitCache;
+  const list = [];
+  if (CUR && CUR.kind !== 'interior') {
+    for (const o of CUR.objs) {
+      if (!o || o.kind !== 'warp' || !o.to || !present(o)) continue;
+      const edges = [];
+      if (o.y <= 2) edges.push('up');
+      if (MH - 1 - o.y <= 2) edges.push('down');
+      if (o.x <= 2) edges.push('left');
+      if (MW - 1 - o.x <= 2) edges.push('right');
+      if (edges.length) list.push({ id: o.id, x: o.x, y: o.y, edges });
+    }
+  }
+  edgeExitCache = list;
+  return list;
+}
+// How far the tap sits outside one edge, in map px. 0 when the tap is on or inside the map.
+function edgePast(edge, x, y){
+  if (edge === 'up') return Math.max(0, -y);
+  if (edge === 'down') return Math.max(0, y - MH * TS);
+  if (edge === 'left') return Math.max(0, -x);
+  return Math.max(0, x - MW * TS);
+}
+// Tile steps from that edge. Negative is past the map. The funnel is 2 tiles deep, or any distance past (D696).
+function edgeDepth(edge, x, y){
+  const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
+  if (edge === 'up') return ty;
+  if (edge === 'down') return (MH - 1) - ty;
+  if (edge === 'left') return tx;
+  return (MW - 1) - tx;
+}
+// D696: 2.5 tiles each side of the exit at the edge line, plus one tile of width per tile past the edge.
+// Never under 22 CSS px each side (arcade's 16 px tiles still get a 44 px mouth).
+function funnelHit(ex, edge, x, y){
+  if (edgeDepth(edge, x, y) > 2) return null;
+  const past = edgePast(edge, x, y);
+  const half = Math.max(2.5 * TS + past, 22 / (mapZoom || 1));
+  const along = (edge === 'up' || edge === 'down') ? x : y;
+  const centre = (edge === 'up' || edge === 'down') ? (ex.x + 0.5) * TS : (ex.y + 0.5) * TS;
+  if (Math.abs(along - centre) > half) return null;
+  return past;
+}
+// D697: nearest exit centre, then the edge the tap is further past, then up, down, left, right.
+// A leftover tie (same edge) prefers the upper tile, then the left one.
+function exitIntent(x, y){
+  let best = null;
+  for (const ex of edgeExits()) {
+    let past = -1, rank = 99;
+    for (const edge of ex.edges) {
+      const p = funnelHit(ex, edge, x, y);
+      if (p == null) continue;
+      const r = EDGE_NAMES.indexOf(edge);
+      if (p > past + 1e-6 || (Math.abs(p - past) <= 1e-6 && r < rank)) { past = p; rank = r; }
+    }
+    if (rank === 99) continue;
+    const dist = Math.hypot(x - (ex.x + 0.5) * TS, y - (ex.y + 0.5) * TS);
+    const cand = { id: ex.id, x: ex.x, y: ex.y, dist, past, rank };
+    if (!best || cand.dist < best.dist - 1e-6 || (Math.abs(cand.dist - best.dist) <= 1e-6 && (
+      cand.past > best.past + 1e-6 || (Math.abs(cand.past - best.past) <= 1e-6 && (
+        cand.rank < best.rank || (cand.rank === best.rank && (cand.y < best.y || (cand.y === best.y && cand.x < best.x))))))))
+      best = cand;
+  }
+  return best ? { id: best.id, x: best.x, y: best.y } : null;
+}
+// D699: an edge with no exit. Clamp into the map and take the nearest reachable free tile within 2 that is not a warp.
+function edgeNudge(x, y){
+  const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
+  if (tx > 2 && ty > 2 && tx < MW - 3 && ty < MH - 3) return null;
+  const cx = Math.min(Math.max(x, 0), MW * TS - 0.01), cy = Math.min(Math.max(y, 0), MH * TS - 0.01);
+  const bx = Math.floor(cx / TS), by = Math.floor(cy / TS);
+  let best = null, bestD = Infinity, bestLen = Infinity;
+  for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+    const nx = bx + dx, ny = by + dy;
+    if (solid(nx, ny) || warpAt(nx, ny)) continue;
+    const path = (nx === S.world.x && ny === S.world.y) ? [] : findPath([{ x: nx, y: ny }]);
+    if (!path) continue;
+    const d = Math.hypot((nx + 0.5) * TS - cx, (ny + 0.5) * TS - cy);
+    if (d < bestD - 1e-6 || (Math.abs(d - bestD) <= 1e-6 && (path.length < bestLen || (path.length === bestLen && (ny < best.y || (ny === best.y && nx < best.x)))))) {
+      bestD = d; bestLen = path.length; best = { x: nx, y: ny };
+    }
+  }
+  return best;
+}
+// A free tile the holder can already walk to. Off-map and solid tiles are not this.
+function freeReachable(tx, ty){
+  if (solid(tx, ty)) return false;
+  if (tx === S.world.x && ty === S.world.y) return true;
+  return !!findPath([{ x: tx, y: ty }]);
 }
 // The next cell went illegal (a patrol stepped in, a wild wandered on). Search once from this tile, then give up.
 function repathWalk(){
@@ -15258,7 +15352,18 @@ function bindInput(){
       else if (standingStill() && followerAt(tx, ty)) { clearMoves(); if (trayOpen()) closePartnerTray(); else openPartnerTray(); }   // standing still: the care tray toggles (D542, D578)
       else if (o) { closePartnerTray(); wild.chase = null; tapObject(o); }                                                            // tap-to-talk (INTERIORS §4.2)
       else if (!solid(tx, ty) && warpBlocked(tx, ty)) { closePartnerTray(); wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: tx, y: ty }; }   // gated warp: same deny as before, never step on it
-      else { closePartnerTray(); startTapWalk(tx, ty, solid(tx, ty)); }
+      else {
+        // MAP_EDGE_TAPS P1 (D695): only off-map, solid, or a free tile with no path. Then today's tap on the exit (D698).
+        closePartnerTray();
+        let gx = tx, gy = ty;
+        if (solid(tx, ty) || !freeReachable(tx, ty)) {
+          const aim = exitIntent(x, y);
+          if (aim) { gx = aim.x; gy = aim.y; }
+          else { const n = edgeNudge(x, y); if (n) { gx = n.x; gy = n.y; } }
+        }
+        if (!solid(gx, gy) && warpBlocked(gx, gy)) { wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: gx, y: gy }; }
+        else startTapWalk(gx, gy, solid(gx, gy));
+      }
       }
     }
     walk.drag = null; ptr = null;
@@ -15724,6 +15829,11 @@ function boot(){
     setEnv: x => { const e = PPEnv.setOverride(x); resetWild(); return e && { ...e }; },
     spawnWild: (sp, stage, x, y) => { const w = spawnWild(sp, stage, x != null ? [x, y] : null); return w && { id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, name: nameOf(w.sp, w.stage) }; },
     clearWild: () => { wild.list = []; wild.poofs = []; wild.chase = null; wild.started = true; wild.auto = false; }, autoWild: () => resetWild(),
+    exitIntent: (x, y) => {   // MAP_EDGE_TAPS P1 debug read. Inert without ?debug=1. Does not move the holder.
+      if (!DEBUG || !S || !Number.isFinite(+x) || !Number.isFinite(+y)) return undefined;
+      const hit = exitIntent(+x, +y);
+      return hit ? { id: hit.id, x: hit.x, y: hit.y } : null;
+    },
     findPath: goals => {   // D125 debug, read-only. Inert without ?debug=1 (the cheat wrapper). Does not move the keeper.
       if (!S || !Array.isArray(goals)) return null;
       const clean = [];
