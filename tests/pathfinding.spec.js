@@ -63,13 +63,27 @@ test('a free-tile tap walks around a person to the tile behind them', async ({ p
 
 test('an unreachable tap stays put and says so', async ({ page }) => {
   await boot(page);
-  await place(page, 'hm_rook_in', 3, 4, 'up');
-  await tapTile(page, 0, 0);
+  // Rook's house is 7 by 6, so every tile is inside the 2-tile edge band and a corner tap walks to a nearby open tile (D699). A solid outside that band still says so.
+  await place(page, 'fernbrook', 16, 8, 'up');
+  const spot = await page.evaluate(() => {
+    const m = PixelPets.mapInfo;
+    const taken = new Set(m.objs.map(o => o.x + ',' + o.y));
+    for (let y = 3; y < m.h - 3; y++) {
+      for (let x = 3; x < m.w - 3; x++) {
+        if (taken.has(x + ',' + y) || !PixelPets.tileInfo(x, y).blocked) continue;
+        const walled = [[0, -1], [0, 1], [-1, 0], [1, 0]].every(([dx, dy]) => PixelPets.tileInfo(x + dx, y + dy).blocked);
+        if (walled) return { x, y };
+      }
+    }
+    return null;
+  });
+  expect(spot).toBeTruthy();
+  await tapTile(page, spot.x, spot.y);
   await expect(page.locator('#toast')).toHaveText("Can't get there from here.");
   const msg = await page.locator('#toast').textContent();
   expect(msg.length).toBeLessThanOrEqual(40);
   await page.waitForTimeout(400);
-  expect(await at(page)).toEqual({ x: 3, y: 4, map: 'hm_rook_in' });
+  expect(await at(page)).toEqual({ x: 16, y: 8, map: 'fernbrook' });
 });
 
 test('tapping a person still opens talk and does not walk through them', async ({ page }) => {

@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-24 02:19 ET: Tap past a map edge to take its exit (build 20261024-0219)
+
+- What changed and why: A tap off an outdoor map, on a solid edge tile, or on a free tile with no path, inside the funnel of a way out, walks to that way out and then does what a tap on that tile already did. An edge with no way out walks to a nearby open tile and never leaves the map. Free reachable tiles, props, people, the follower, wild creatures, cue chips, keys, the d-pad and drag-to-walk stay as they were. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `tests/map_edge_taps.spec.js`, `index.html`, `version.json`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `tests/README.md`, `CHANGELOG.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`.
+- Commit(s) + build id: this branch, on top of 97ea9ee. Build `20261024-0219`.
+- Tests run and result (widths, checks): `tests/map_edge_taps.spec.js` T1–T6 at 320, 375 and 390, modern and arcade: `PP_TEST RESULT: PASS exit=0 passed=18 failed=0 flaky=0 skipped=0 time=130s`. Related specs at 390: `PP_TEST RESULT: PASS exit=0 passed=21 failed=0 flaky=0 skipped=0 time=58s`. Their `@w1` tests at 320: `PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0 skipped=0 time=19s`. Full `npm run test:agent`: `PP_TEST RESULT: FAIL exit=1 passed=1454 failed=1 flaky=2 skipped=206 time=1816s`. The one failure was `coop_r2.spec.js` launching WebKit, which this machine did not have. After the WebKit libraries were installed, that spec passed: `PP_TEST RESULT: PASS exit=0 passed=11 failed=0 flaky=0 skipped=0 time=55s`. Console errors fail the run.
+- Decisions made (colour + reasoning): D695 (red, yes, Vincent, Oct 24, 2026, 12:21 AM ET, via the Supervisor), D696, D698 and D699 (yellow, yes, team vote), D697 and D703 (green, yes, Supervisor). P1 only. The next-free sentence moved from D626 to D704 because D703 is now the highest recorded id. Later phases are not reserved here.
+- Anything left unfinished: P2 headroom, P3 44 px zones and P4 hints are not in this build. One tile past a side edge, and past the top of a map the camera clamps, is off the canvas until P2.
+
 ## 2026-10-23 20:20 ET: Lantern House markers, store boards, and healing guides (build 20261023-2020)
 
 - What changed and why: Every Lantern House door has one heart lantern on its door row, and every General Store has one hanging board. Host Della, Host Garnet, and Host Ines explain healing the first time you walk in. Keeper Amos keeps his greeting and then says the same lines. Say it again replays them. Got it closes. A later tap replays. The town map key names both marks and draws them on the doors. High Charity's sign and note now say the rest costs 5 Acorns. Save stays `pixelpets.save.v2` with `v` 2. The only new flag is `lantern.guide_heard`.
