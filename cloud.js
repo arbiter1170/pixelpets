@@ -43,6 +43,7 @@ const PPCloud = (() => {
   const EMU_AUTH = 'http://127.0.0.1:' + num('authPort', 9099), EMU_FS_PORT = num('fsPort', 8180), EMU_DB_PORT = num('dbPort', 9000);
 
   /* ---------- device key ---------- */
+  const ADOPT_KEY = 'pixelpets.adoptAt', ADOPT_GAP = 10 * 60 * 1000;   // per tab, outside the save
   const DEV0 = () => ({ fbUid: null, syncedRev: 0, syncedHash: null, pending: null, pendingErase: false, paused: false, lastSyncAt: 0, adopted: false });
   function readDev(){ let o = null; try { o = JSON.parse(localStorage.getItem(CLOUD_KEY)); } catch(e) {} return Object.assign(DEV0(), o && typeof o === 'object' ? o : {}); }
   function writeDev(patch){ const d = Object.assign(readDev(), patch); try { localStorage.setItem(CLOUD_KEY, JSON.stringify(d)); } catch(e) {} return d; }
@@ -133,9 +134,13 @@ const PPCloud = (() => {
     const cloudHash = (() => { try { return hashOf(JSON.parse(c.data)); } catch(e) { return null; } })();
     if (d.pending && d.pending.rev === c.rev && d.pending.hash === cloudHash) { writeDev({ syncedRev: c.rev, syncedHash: cloudHash, pending: null }); return compareDone(); }   // our own write landed before the page closed
     if (c.rev === d.syncedRev) return compareDone();                                    // cloud unchanged: local wins
+    // Reload guard: this tab adopts (and reloads) at most once per ADOPT_GAP; a second cloud change inside it asks instead.
+    let recent = 0; try { recent = +sessionStorage.getItem(ADOPT_KEY) || 0; } catch(e) {}
+    if (cloudHash !== local && Date.now() - recent < ADOPT_GAP && petsIn(S)) { conflict = { cloud: c, cloudHash }; showConflict(); return; }
     if (local === d.syncedHash || cloudHash === local || !petsIn(S)) {                  // local unchanged, the same game, or no game yet: cloud wins quietly                                // local unchanged (or the same game): cloud wins quietly
       writeDev({ syncedRev: c.rev, syncedHash: cloudHash, pending: null, paused: false, lastSyncAt: Date.now(), adopted: cloudHash !== local });
       if (cloudHash === local) return compareDone();
+      try { sessionStorage.setItem(ADOPT_KEY, String(Date.now())); } catch(e) {}
       H.adopt(c.data); return;
     }
     conflict = { cloud: c, cloudHash }; showConflict();                                 // both changed: ask, never merge
