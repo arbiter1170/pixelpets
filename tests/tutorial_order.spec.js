@@ -432,6 +432,10 @@ test('T-O10 Rook teaches HP, types, NRG and SWAP, then the hit card', async ({ p
   }
   await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'M1');
+  // TUTORIAL_ORDER v0.1.3: M1 also shows in Rook's match, so it names the foe without "This wild".
+  await expect(page.locator('#tutLine')).toBeVisible();
+  await expect(page.locator('#tutLine')).toContainText(', and ');
+  await expect(page.locator('#tutLine')).not.toContainText('This wild');
   await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'M2s');
   await clickCard(page, 'NEXT');
