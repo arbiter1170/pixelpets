@@ -1565,7 +1565,7 @@ const TCM = {
   C6: 'STATS shows {pet}\'s numbers. CLOSE puts the tray away. Tap {pet} to bring it back.',
   C7: 'That\'s care on the go! When a balloon pops up over {pet}, tap {pet} and help out.',
   CF: 'Tap {pet} any time to care for it.',
-  M1: 'Every Walkling has a type. {pet} is {type}. This wild {foe} is {foeType}.',
+  M1: 'Every Walkling has a type. {pet} is {type}, and {foe} is {foeType}.',
   M2h: '{type} moves hit {foeType} hard, about double. Use them to finish fast.',
   M2s: '{type} moves barely hurt {foeType}, about half as much. Try another kind of move.',
   M2e: '{type} and {foeType} are even. Every move lands the usual way.',
