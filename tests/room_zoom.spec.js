@@ -33,10 +33,18 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
   await gotoGame(page, '?debug=1');
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);
-  const outdoor = await page.evaluate(() => PixelPets.mapInfo);
+  const outdoor = await page.evaluate(() => {
+    const info = PixelPets.mapInfo;
+    const w = document.querySelector('#mapWrap');
+    const W = w.clientWidth, H = w.clientHeight, s = info.baseScale;
+    let k = s;
+    for (let t = Math.ceil(s); t <= 4; t++) if (Math.floor(W / t) >= 112 && Math.floor(H / t) >= 136) k = t;
+    return Object.assign({ want: k }, info);
+  });
   expect(outdoor.id).toBe('hearthmoor');
   expect(outdoor.room).toBe(false);
-  expect(outdoor.scale).toBe(outdoor.baseScale);
+  expect(outdoor.scale).toBe(outdoor.want);
+  expect(outdoor.scale).toBeGreaterThanOrEqual(outdoor.baseScale);
   expect(outdoor.slack).toBe(0);
   expect(outdoor.edge).toBe(null);
 

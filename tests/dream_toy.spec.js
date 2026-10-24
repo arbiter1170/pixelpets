@@ -115,12 +115,10 @@ test('Mom cooks, Dad watches TV, and the whole room fits', async ({ page }, info
   expect((await page.evaluate(() => PixelPets.follower)).shown).toBe(true);
 });
 
-// From the spawn (4,6) the camera x stays 0 at every width while the keeper is on that column (map 13 wide).
-// Vertically the room is centred when it fits.
+// The tap uses the live camera. A fitting room sits low in the free band (D724), so the old centred formula misses the toy.
 const tilePoint = (page, tx, ty) => page.evaluate(([tx, ty]) => {
-  const c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, TS = 16, m = PixelPets.mapInfo;
-  const cx = m.w * TS <= c.width ? -Math.floor((c.width - m.w * TS) / 2) : 0, cy = m.h * TS <= c.height ? -Math.floor((c.height - m.h * TS) / 2) : 0;
-  return { x: r.left + ((tx + 0.5) * TS - cx) * k, y: r.top + ((ty + 0.5) * TS - cy) * k };
+  const c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, TS = 16, cam = PixelPets.walk.cam;
+  return { x: r.left + ((tx + 0.5) * TS - cam.x) * k, y: r.top + ((ty + 0.5) * TS - cam.y) * k };
 }, [tx, ty]);
 const SHOTS = artifactsDir('screenshots');
 

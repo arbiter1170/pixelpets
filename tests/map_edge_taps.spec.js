@@ -268,7 +268,8 @@ test('T2 a free tile beside an exit is still that tile', async ({ page }) => {
   for (const mode of ['modern', 'arcade']) {
     await setMode(page, mode);
     await place(page, 'fernbrook', 5, 8, 'left');
-    const tap = await page.evaluate(() => window.__met.canvasPoint(2 * 16 + 8, 8 * 16 + 8));
+    // The right side of the tile stays off the quest cue. At 3x the cue covers the tile's left pixels.
+    const tap = await page.evaluate(() => window.__met.canvasPoint(2 * 16 + 14, 8 * 16 + 8) || window.__met.canvasPoint(2 * 16 + 8, 8 * 16 + 8));
     expect(tap, mode).toBeTruthy();
     await fire(page, tap);
     const end = await until(page, s => !s.fade && !s.moving && s.x === 2 && s.y === 8, 8000);

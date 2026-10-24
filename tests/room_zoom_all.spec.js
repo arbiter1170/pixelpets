@@ -25,10 +25,48 @@ test('every interior uses the room scale, and every door can be framed', async (
   await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);
 
   const report = await page.evaluate(async () => {
-    const camAt = (tx, ty, mapW, mapH, VW, VH) => {
-      const px = tx * 16, py = ty * 16;
-      const x = mapW <= VW ? -Math.floor((VW - mapW) / 2) : Math.round(Math.min(Math.max(px + 8 - VW / 2, 0), mapW - VW));
-      const y = mapH <= VH ? -Math.floor((VH - mapH) / 2) : Math.round(Math.min(Math.max(py + 8 - VH / 2, 0), mapH - VH));
+    const camAt = (tx, ty, mapW, mapH, VW, VH, fit) => {
+      if (fit) {
+        const px = tx * 16, py = ty * 16;
+        const x = mapW <= VW ? -Math.floor((VW - mapW) / 2) : Math.round(Math.min(Math.max(px + 8 - VW / 2, 0), mapW - VW));
+        const y = mapH <= VH ? -Math.floor((VH - mapH) / 2) : Math.round(Math.min(Math.max(py + 8 - VH / 2, 0), mapH - VH));
+        return { x, y };
+      }
+      const c = document.querySelector('#mapCanvas');
+      const cr = c.getBoundingClientRect(), wrap = document.querySelector('#mapWrap').getBoundingClientRect();
+      const z = cr.width / VW;
+      const GAP = 6;
+      const box = sel => { const n = document.querySelector(sel); if (!n) return null; const r = n.getBoundingClientRect(); return r.width >= 8 && r.height >= 8 ? r : null; };
+      const top = box('#fcTop'), left = box('#fcTL'), clock = box('#fcClock'), tip = box('#fcTip'), band = box('#floatCtl .fc-bottom');
+      const padT = top ? Math.ceil(top.bottom - wrap.top + GAP) : 56;
+      const padLcss = left ? Math.ceil(left.right - wrap.left + GAP) : 56;
+      const padRcss = clock ? Math.ceil(wrap.right - clock.left + GAP) : 96;
+      const col = left ? Math.ceil(left.bottom - wrap.top + GAP) : 206;
+      const tops = [tip, band].filter(Boolean).map(r => r.top);
+      const bot = tops.length ? Math.max(112, Math.ceil(wrap.bottom - Math.min.apply(null, tops) + GAP)) : 112;
+      const ox = cr.left - wrap.left, oy = cr.top - wrap.top;
+      const rightGap = Math.max(0, wrap.right - cr.right);
+      const H = wrap.height, mapCssH = mapH * z, mapCssW = mapW * z, canvasCssH = VH * z, canvasCssW = VW * z;
+      let x;
+      if (mapCssW <= canvasCssW + 0.5) x = -Math.floor((VW - mapW) / 2);
+      else {
+        const aL = Math.ceil(Math.max(0, padLcss - ox) / z), aR = Math.ceil(Math.max(0, padRcss - rightGap) / z);
+        const xMid = aL + (VW - aL - aR) / 2;
+        const lo = -aL, hi = mapW - VW + aR;
+        x = Math.round(Math.min(Math.max(tx * 16 + 8 - xMid, Math.min(lo, hi)), Math.max(lo, hi)));
+      }
+      let y;
+      if (mapCssH <= canvasCssH + 0.5 && mapCssH <= H - bot - padT + 0.5) {
+        let yCss = (H - bot - mapCssH >= col) ? col + Math.floor((H - bot - col - mapCssH) / 2) : Math.max(padT, H - bot - mapCssH);
+        const canvasBottom = oy + canvasCssH;
+        if (yCss + mapCssH > canvasBottom) yCss = Math.max(padT, canvasBottom - mapCssH);
+        if (yCss < padT) yCss = padT;
+        y = -Math.round((yCss - oy) / z);
+      } else {
+        const topA = Math.ceil(Math.max(0, padT - oy) / z);
+        const lo = -topA, hi = mapH - VH, mid = topA + (VH - topA) / 2;
+        y = Math.round(Math.min(Math.max(ty * 16 + 8 - mid, Math.min(lo, hi)), Math.max(lo, hi)));
+      }
       return { x, y };
     };
     const frames = (cam, o, VW, VH) => {
@@ -64,7 +102,7 @@ test('every interior uses the room scale, and every door can be framed', async (
       if (!info.fitWidth && id === 'hc_apt_in' && window.innerWidth <= 320) expected = Math.min(expected, Math.max(s, 2));
       const VW = mc.width, VH = mc.height, mapW = info.w * 16, mapH = info.h * 16;
       const here = PixelPets.state.world;
-      const pred = camAt(here.x, here.y, mapW, mapH, VW, VH);
+      const pred = camAt(here.x, here.y, mapW, mapH, VW, VH, info.fitWidth);
       const live = PixelPets.walk.cam;
       // Your Room at 320 is still centred by the formula, then shifted right so the left wall clears #fcTL.
       let wantX = pred.x;
@@ -98,7 +136,7 @@ test('every interior uses the room scale, and every door can be framed', async (
       const miss = [];
       for (const o of doors) {
         let ok = frames(pred, o, VW, VH);
-        if (!ok) for (const [x, y] of reach) { if (frames(camAt(x, y, mapW, mapH, VW, VH), o, VW, VH)) { ok = true; break; } }
+        if (!ok) for (const [x, y] of reach) { if (frames(camAt(x, y, mapW, mapH, VW, VH, info.fitWidth), o, VW, VH)) { ok = true; break; } }
         if (!ok) miss.push(o.id + '@' + o.x + ',' + o.y);
       }
       rooms.push({
@@ -106,6 +144,7 @@ test('every interior uses the room scale, and every door can be framed', async (
         scale: info.scale, base: info.baseScale, expected, edge: info.edge,
         W, H, cssH: Math.round(cr.height), topGap: Math.round(cr.top - wrap.top),
         camLive: live.x === wantX && live.y === pred.y,
+        camDelta: live.x + ',' + live.y + ' want ' + wantX + ',' + pred.y,
         miss,
       });
     }
@@ -123,7 +162,7 @@ test('every interior uses the room scale, and every door can be framed', async (
       if (row.scale !== row.expected) bad.push(row.id + ' scale ' + row.scale + ' want ' + row.expected);
       if (row.cssH > row.H - 112 + 1) bad.push(row.id + ' canvas ' + row.cssH + ' under the HUD');
       if (row.topGap > 2) bad.push(row.id + ' top gap ' + row.topGap);
-      if (!row.camLive) bad.push(row.id + ' camera');
+      if (!row.camLive) bad.push(row.id + ' camera ' + row.camDelta);
     }
     if (row.miss.length) bad.push(row.id + ' door ' + row.miss.join(' '));
   }
@@ -158,10 +197,19 @@ test('every interior uses the room scale, and every door can be framed', async (
   const left = out.filter(s => s.id !== 'hm_rook_in');
   expect(left.length, 'the mat never left').toBeGreaterThan(0);
   expect(left.some(s => s.fading), 'outdoor scale waited until the fade ended').toBe(true);
-  expect(left.find(s => s.fading).scale).toBe(left.find(s => s.fading).base);
-  const done = await page.evaluate(() => PixelPets.mapInfo);
+  const fadeOut = left.find(s => s.fading);
+  expect(fadeOut.scale).toBeGreaterThanOrEqual(fadeOut.base);
+  const done = await page.evaluate(() => {
+    const info = PixelPets.mapInfo;
+    const w = document.querySelector('#mapWrap');
+    const W = w.clientWidth, H = w.clientHeight, s = info.baseScale;
+    let k = s;
+    for (let t = Math.ceil(s); t <= 4; t++) if (Math.floor(W / t) >= 112 && Math.floor(H / t) >= 136) k = t;
+    return Object.assign({ want: k }, info);
+  });
   expect(done.room).toBe(false);
-  expect(done.scale).toBe(done.baseScale);
+  expect(done.scale).toBe(done.want);
+  expect(fadeOut.scale).toBe(done.scale);
 
   if (width === 390) {
     for (const [id, name] of [['hc_airport_in', 'room-zoom-fixed-airport'], ['hm_home_in', 'room-zoom-void-home'], ['fb_hall_in', 'room-zoom-large-hall']]) {

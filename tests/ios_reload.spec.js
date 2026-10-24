@@ -128,9 +128,11 @@ test.describe('open game', () => {
     const after = await pass();
     const again = await pass();
     // Building paint is cached per map. Later passes must not keep allocating canvases.
+    // D729 lifts the arcade area chip out of the flex row, so the first visit of these towns
+    // now sees styled roofs and pays that one-time cell cache. The two lines above still catch a leak.
     expect(after - mid).toBeLessThan(8);
     expect(again - after).toBeLessThan(8);
-    expect(again - before).toBeLessThan(24);
+    expect(again - before).toBeLessThan(220);
     expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
   });
 });
