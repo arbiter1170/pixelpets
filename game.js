@@ -8647,16 +8647,18 @@ function lockTabs(on){ const l = !!on || (!!S && !allPets().length) || (!on && (
   try { markAlive(); } catch (e) {} }
 function openGeoAsk(){ if (overlayOpen()) return; clearMoves(); $('#ovGeo').hidden = false; lockTabs(true); }
 function closeGeoAsk(){ $('#ovGeo').hidden = true; lockTabs(false); }
-function useLocation(){
+// mode 'refresh' = the card's REFRESH (shown only when the browser already allows location): never makes the browser ask.
+// Anything else is a USE MY LOCATION tap, the one place a location prompt may come from.
+function useLocation(mode){
   PPEnv.setGeoPref('allow');
   if (!window.isSecureContext || !navigator.geolocation) { toast('Location needs https or localhost. Using a meadow.'); }
-  PPEnv.refresh(true).then(e => {
+  PPEnv.refresh(mode === 'refresh' ? 'refresh' : true).then(e => {
     if (e.status === 'denied') toast('Location blocked. Using a meadow for now.');
     else if (e.status === 'offline') toast('Offline: using a meadow for now.');
     else if (e.source === 'location') toast('Around here: ' + e.label);
   });
 }
-function openEnvCard(){ if (overlayOpen()) return; clearMoves(); renderEnvCard(); $('#ovEnv').hidden = false; lockTabs(true); }
+function openEnvCard(){ if (overlayOpen()) return; clearMoves(); renderEnvCard(); $('#ovEnv').hidden = false; lockTabs(true); PPEnv.permState().then(() => { if (!$('#ovEnv').hidden) renderEnvCard(); }); }
 function closeEnvCard(){ $('#ovEnv').hidden = true; lockTabs(false); }
 function renderEnvCard(){
   const e = ENV; if (!e) return;
@@ -8672,8 +8674,11 @@ function renderEnvCard(){
                unavailable: 'Location needs https or localhost, so this is a default meadow.',
                offline: 'Could not reach the weather/map services, so this is a default meadow.' }[e.status] || 'Location is off, so this is a default meadow (night from your clock).';
   $('#envCardSrc').textContent = src;
-  const allowed = PPEnv.geoPref() === 'allow' && e.source !== 'default';
-  $('#envUseLoc').textContent = allowed ? 'REFRESH' : 'USE MY LOCATION';
+  // REFRESH only when the browser already allows location (Vincent, Oct 24); otherwise the tap is USE MY LOCATION, which may ask
+  const allowed = PPEnv.geoPref() === 'allow' && e.source !== 'default' && PPEnv.lastPerm === 'granted';
+  const use = $('#envUseLoc');
+  use.textContent = allowed ? 'REFRESH' : 'USE MY LOCATION';
+  use.dataset.mode = allowed ? 'refresh' : 'use';
 }
 function buildPresetButtons(){
   const box = $('#envPresets'); box.innerHTML = '';
@@ -15573,7 +15578,7 @@ function bindInput(){
   $('#envBadge').addEventListener('click', openEnvCard);
   const clockBtn = $('#clockChip'); if (clockBtn) clockBtn.addEventListener('click', openClockCard);
   const clockShut = $('#clockClose'); if (clockShut) clockShut.addEventListener('click', () => { sfx('tap'); closeClockCard(); });
-  $('#envUseLoc').addEventListener('click', () => { closeEnvCard(); useLocation(); });
+  $('#envUseLoc').addEventListener('click', () => { const mode = $('#envUseLoc').dataset.mode; closeEnvCard(); useLocation(mode); });
   $('#envClose').addEventListener('click', closeEnvCard);
   buildPresetButtons();
   $('#copyCode').addEventListener('click', () => {
