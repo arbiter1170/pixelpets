@@ -187,13 +187,33 @@ const PPEnv = (() => {
         { enableHighAccuracy: false, timeout: 12000, maximumAge: 10 * 60e3 });
     });
   }
+  // The browser's own answer for this page load: 'granted' | 'prompt' | 'denied' | 'unknown' (no Permissions API).
+  async function permState(){
+    try {
+      if (!navigator.permissions || typeof navigator.permissions.query !== 'function') return 'unknown';
+      const r = await navigator.permissions.query({ name: 'geolocation' });
+      return r && typeof r.state === 'string' ? r.state : 'unknown';
+    } catch (e) { return 'unknown'; }
+  }
   // Refresh from the device location (only when the player allowed it). Never throws; always ends with an env.
+  // force = a tap (USE MY LOCATION / REFRESH, the location card). Boot and the 5 min timer pass no force and never make the
+  // browser ask again: iPhone Safari forgets the grant between page loads, so a boot call there re-shows its location prompt.
+  // Without force the device is only read when the browser already says 'granted'; otherwise the cached area is kept.
+  // With no Permissions API the device is read only when the cached weather is stale (the old behaviour, less often).
   function refresh(force){
     if (busy) return busy;
     busy = (async () => {
       if (geoPref() !== 'allow') return env;
       const manual = overridesOn && !!ls.json(OVERRIDE_KEY);
       const setEnv = e => { if (!manual) { env = e; emit(); } };
+      if (!force) {
+        const st = await permState();
+        if (st !== 'granted') {
+          const c = ls.json(CACHE_KEY), fresh = !!(c && c.key && c.weather && Date.now() - c.weather.at < WEATHER_TTL);
+          if (st === 'denied') { setEnv(fallback('denied')); return env; }
+          if (st === 'prompt' || fresh) { if (c && c.key && env && env.source !== 'location') setEnv(fromCache(c, 'cached')); return env; }
+        }
+      }
       const prev = env;
       setEnv(Object.assign({}, env, { status: 'loading' }));      // badge shows "..." right away
       let lat, lon;
@@ -255,7 +275,7 @@ const PPEnv = (() => {
   }
   function tick(){ syncClock(); }
 
-  return { init, refresh, setOverride, allowOverride, tick, syncClock, geoPref, setGeoPref, get current(){ return env; },
+  return { init, refresh, permState, setOverride, allowOverride, tick, syncClock, geoPref, setGeoPref, get current(){ return env; },
     PRESETS, ALL_TAGS, deriveTags, labelFor, wmo, round2, overpassQuery, WEATHER_TTL, TERRAIN_TTL };
 })();
 if (typeof window !== 'undefined') window.PPEnv = PPEnv;
