@@ -435,3 +435,60 @@ test('partner care from a card counts for the care lesson, and another card does
   await page.waitForFunction(() => PixelPets.lesson().card === 'C3', null, { timeout: 8000 });
   expect(await page.evaluate(() => PixelPets.state.partnerId)).toBe('p0');
 });
+
+test('the need glyph sits on a party sprite that needs care, and stays off otherwise', async ({ page }) => {
+  await openCol(page, partySave(2));
+  const calm = await page.evaluate(() => ({
+    partner: document.querySelector('.party-slot[data-id="p0"] .slot-need').hidden,
+    other: document.querySelector('.party-slot[data-id="p1"] .slot-need').hidden,
+    box: document.querySelectorAll('.box-row .slot-need').length,
+  }));
+  expect(calm.partner).toBe(true);
+  expect(calm.other).toBe(true);
+  expect(calm.box).toBe(0);
+  await page.evaluate(() => { PixelPets.state.party[1].hunger = 20; });
+  await page.waitForFunction(() => {
+    const c = document.querySelector('.party-slot[data-id="p1"] .slot-need');
+    return c && !c.hidden && c.dataset.glyph === 'emote_hungry';
+  }, null, { timeout: 4000 });
+  const place = await page.evaluate(() => {
+    const pic = document.querySelector('.party-slot[data-id="p1"] .slot-pic');
+    const sprite = pic.querySelector('canvas').getBoundingClientRect();
+    const need = pic.querySelector('.slot-need').getBoundingClientRect();
+    return {
+      partnerHidden: document.querySelector('.party-slot[data-id="p0"] .slot-need').hidden,
+      right: need.right >= sprite.right - 2,
+      top: need.top <= sprite.top + 4,
+      w: need.width,
+      h: need.height,
+    };
+  });
+  expect(place.partnerHidden).toBe(true);
+  expect(place.right).toBe(true);
+  expect(place.top).toBe(true);
+  expect(place.w).toBeGreaterThanOrEqual(18);
+  expect(place.h).toBeGreaterThanOrEqual(24);
+});
+
+test('a party bar follows the care tick, and stays put off the party view', async ({ page }) => {
+  await openCol(page, partySave(2));
+  const mid = await page.evaluate(() => {
+    const fill = document.querySelector('.party-slot[data-id="p1"] .ss-cell[data-stat="food"] .ps-bar i');
+    const before = fill.style.width;
+    PixelPets.state.party[1].hunger = 40;
+    return { before, now: fill.style.width };
+  });
+  expect(parseFloat(mid.before)).toBeGreaterThan(70);
+  expect(mid.now).toBe(mid.before);
+  await page.waitForFunction(() => {
+    const w = parseFloat(document.querySelector('.party-slot[data-id="p1"] .ss-cell[data-stat="food"] .ps-bar i').style.width);
+    return w < 50;
+  }, null, { timeout: 4000 });
+  await page.evaluate(() => {
+    PixelPets.showTab('walk');
+    PixelPets.state.party[1].hunger = 90;
+  });
+  await page.waitForTimeout(1500);
+  const held = await page.evaluate(() => parseFloat(document.querySelector('.party-slot[data-id="p1"] .ss-cell[data-stat="food"] .ps-bar i').style.width));
+  expect(held).toBeLessThan(50);
+});

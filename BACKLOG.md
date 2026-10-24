@@ -108,7 +108,7 @@ Opening tour (D157–D160) is built on this branch. After the starter, a skippab
 ## Balance (open)
 
 - ~~**Walking is the main XP source and is cheap**~~ **DONE (1c):** 1 XP per 5 steps plus a shared 30/day explore cap; max 55 XP per Walkling per day.
-- **All Walklings decay, so chores grow with the collection:** a party Walkling can be fed, played with, rested and healed from its own card. Box Walklings still have no care row. Ideas still open: a needs-attention badge, slower decay for non-partners, or a home state that pauses decay. The box NRG rate is unchanged.
+- **All Walklings decay, so chores grow with the collection:** a party Walkling can be fed, played with, rested and healed from its own card. Box Walklings still have no care row. A party card shows the hungry, hurt, or tired glyph when that Walkling needs care. Ideas still open: slower decay for non-partners, or a home state that pauses decay. The box NRG rate is unchanged.
 - **Coming back (Q25):** fourteen hours away, the partner tab says the Walkling waited. FOOD and JOY already floor at 20. NRG still floors at 10. The hours and the sentence are D56.
 - **Fast mode floors quickly:** any absence over ~15 minutes in fast mode floors every stat at 10. Expected for a debug mode, but worth knowing when testing.
 - ~~**Diminishing-gain cliff**~~ **DONE:** tiers now apply band by band (49 / 50 / 51 -> 62 / 62.5 / 63.5 for FEED). Side effect: refilling from low is a bit slower (FEED from 30 ends at 52.5 instead of 55, REST from 30 at 55 instead of 60).

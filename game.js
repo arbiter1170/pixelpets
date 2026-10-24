@@ -14163,6 +14163,14 @@ function slotMain(p){
   spriteCanvas(cv, spi(p), p.stage, 'n', isFaded(p), p.accessory);
   if (chipOn(p)) { if (S.box.some(q => q.id === p.id)) paintChipIcon(cv); else paintLockGlyph(cv); }
   pic.append(cv);
+  if (S && S.party.some(q => q.id === p.id)) {
+    const need = document.createElement('canvas');
+    need.className = 'slot-need';
+    need.hidden = true;
+    need.setAttribute('aria-hidden', 'true');
+    pic.append(need);
+    paintSlotNeed(need, p);
+  }
   b.append(pic, slotCopy(p), slotStats(p));
   b.addEventListener('click', () => openBoardPet(p.id));
   return b;
@@ -14195,6 +14203,27 @@ function paintBoardCareBtn(b, p){
   b.setAttribute('aria-label', cd ? BTN_LABEL[act] + ', ready in ' + cd : BTN_LABEL[act]);
   b.classList.toggle('cooldown', !!left); b.setAttribute('aria-disabled', left ? 'true' : 'false');
 }
+// The walk balloon's need, drawn on the party card sprite (CARE_SHORTCUTS). Hidden when nothing is low.
+function paintSlotNeed(c, p){
+  if (!c || !p) return;
+  const need = partnerNeed(p);
+  const key = need ? NEED_GLYPH[need.kind] + ':' + need.level : '';
+  if (c.dataset.need === key) return;
+  c.dataset.need = key;
+  if (!need) { c.hidden = true; delete c.dataset.glyph; return; }
+  const name = NEED_GLYPH[need.kind], gl = GLYPH[name];
+  if (!gl) { c.hidden = true; return; }
+  c.hidden = false;
+  c.width = gl[0].length; c.height = gl.length;
+  const g = ctx(c); g.clearRect(0, 0, c.width, c.height);
+  drawGlyphRim(g, name, 0, 0, need.level === 2 ? 'r' : '');
+  c.dataset.glyph = name;
+}
+function boardBarSig(p){
+  let sig = '';
+  for (const [key] of SLOT_STATS) sig += (100 * clamp(statFrac(p, key), 0, 1)) + '%;';
+  return sig;
+}
 function updateBoardCare(countdownsOnly){
   if (screen !== 'col' || !S) return;
   const hide = !partyField();
@@ -14208,13 +14237,21 @@ function updateBoardCare(countdownsOnly){
       const aria = slotAria(p);
       if (main.getAttribute('aria-label') !== aria) main.setAttribute('aria-label', aria);
     }
-    if (!countdownsOnly) row.querySelectorAll('.ss-cell').forEach(cell => {
-      const key = cell.dataset.stat, fill = cell.querySelector('.ps-bar > i');
-      if (!fill || !key) return;
-      const v = clamp(statFrac(p, key), 0, 1), w = (100 * v) + '%';
-      if (fill.style.width !== w) fill.style.width = w;
-      if (key === 'hp') fill.classList.toggle('warn', v < STAT_RULES.FAINT.tiredBelow);
-    });
+    // Bars follow the 1 s care tick (updateHUD). The frame path only ticks countdowns and badges.
+    if (!countdownsOnly) {
+      const sig = boardBarSig(p);
+      if (row.dataset.bars !== sig) {
+        row.dataset.bars = sig;
+        row.querySelectorAll('.ss-cell').forEach(cell => {
+          const key = cell.dataset.stat, fill = cell.querySelector('.ps-bar > i');
+          if (!fill || !key) return;
+          const v = clamp(statFrac(p, key), 0, 1), w = (100 * v) + '%';
+          if (fill.style.width !== w) fill.style.width = w;
+          if (key === 'hp') fill.classList.toggle('warn', v < STAT_RULES.FAINT.tiredBelow);
+        });
+      }
+      paintSlotNeed(row.querySelector('.slot-need'), p);
+    }
     const sub = row.querySelector('.slot-sub');
     if (sub) {
       const hb = hpBadge(p);
