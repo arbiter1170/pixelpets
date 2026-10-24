@@ -21,7 +21,7 @@ Vincent (CIO, final say; reviews and merges PRs) > PixelPets Supervisor (clears 
 10. **Lantern Houses and General Stores read at a glance:** every town uses one consistent exterior design language for both. Lantern Houses (healing spots) carry a universal exterior healing indicator; interiors may vary by faction control, town or location, but always have beds where the player rests and an NPC who guides the player and makes sure they understand healing. Every General Store carries at least one exterior component shared by all stores, so a player can tell a shop from a healing spot at a glance. Design specs this as a priority before any more town structures are built. (Vincent, Oct 23, 2026.)
 
 ## Test output
-Run `npm run test:agent [spec] [--project=390]`, not bare `npm test`; it prints one `PP_TEST RESULT` line plus failures and exits with Playwright's real code. Don't read `test-logs/run.log` whole: `grep -n` it, or `tail -n 40`. Never pipe a test command.
+Run `npm run test:agent -- [spec] [--project=390]` (e.g. `npm run test:agent -- tests/x.spec.js --project=390`; npm drops `--project` without the `--`), not bare `npm test`; it prints one `PP_TEST RESULT` line plus failures and exits with Playwright's real code. Don't read `test-logs/run.log` whole: `grep -n` it, or `tail -n 40`. Never pipe a test command.
 
 ## Skills index (`.cursor/skills/<name>/SKILL.md`; copies in `/home/box/agent-data/workflows/`)
 - `walklings-deploy`: stamp the build, ship via PR, hard-refresh and check the build line.

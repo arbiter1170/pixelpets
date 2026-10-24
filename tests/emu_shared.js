@@ -3,9 +3,11 @@
    tests/emu_teardown.js stops that pid after the run. The lock still keeps the
    three files from sharing a room at the same time. Never the live project.
    Ports come from PP_EMU_DB_PORT, PP_EMU_AUTH_PORT, PP_EMU_FS_PORT, PP_EMU_FS_WS_PORT,
-   PP_EMU_HUB_PORT and PP_EMU_LOGGING_PORT (tools/pp_test.js picks free ones). Unset, they
-   are the old 9000, 9099, 8180, 9150, 4400 and 4500. Pages reach the same ports through
-   emuQuery() (cloud.js reads dbPort, authPort and fsPort with ?cloud=emu). */
+   PP_EMU_HUB_PORT and PP_EMU_LOGGING_PORT. tools/pp_test.js or the Playwright global setup
+   (tests/emu_setup.js) fills any that are unset with free ones, so a plain run gets its own
+   ports too. Outside Playwright they fall back to the old 9000, 9099, 8180, 9150, 4400 and 4500.
+   The pid file carries PP_EMU_RUN, so a run's teardown only finds the emulator that run started.
+   Pages reach the same ports through emuQuery() (cloud.js reads dbPort, authPort and fsPort with ?cloud=emu). */
 const { spawn } = require('child_process');
 const fs = require('fs');
 const http = require('http');
@@ -15,17 +17,25 @@ const path = require('path');
 const { envPort, writeConfig } = require('../tools/emu_ports');
 
 const ROOT = path.join(__dirname, '..');
-const EMU_PORTS = {
-  database: envPort('PP_EMU_DB_PORT') || 9000,
-  auth: envPort('PP_EMU_AUTH_PORT') || 9099,
-  firestore: envPort('PP_EMU_FS_PORT') || 8180,
-  firestoreWs: envPort('PP_EMU_FS_WS_PORT') || 9150,
-  hub: envPort('PP_EMU_HUB_PORT') || 4400,
-  logging: envPort('PP_EMU_LOGGING_PORT') || 4500,
-};
-const EMU_DIR = path.join(os.tmpdir(), 'pp-emu-' + EMU_PORTS.database);
+// Read when called: the teardown may run after a spec loaded this file in the same process.
+function emuState() {
+  const ports = {
+    database: envPort('PP_EMU_DB_PORT') || 9000,
+    auth: envPort('PP_EMU_AUTH_PORT') || 9099,
+    firestore: envPort('PP_EMU_FS_PORT') || 8180,
+    firestoreWs: envPort('PP_EMU_FS_WS_PORT') || 9150,
+    hub: envPort('PP_EMU_HUB_PORT') || 4400,
+    logging: envPort('PP_EMU_LOGGING_PORT') || 4500,
+  };
+  const run = String(process.env.PP_EMU_RUN || process.pid).replace(/[^\w-]/g, '');
+  return {
+    ports,
+    dir: path.join(os.tmpdir(), 'pp-emu-' + ports.database),
+    pid: path.join(ROOT, 'test-logs', 'rtdb-emu-' + ports.database + '-' + run + '.pid'),
+  };
+}
+const { ports: EMU_PORTS, dir: EMU_DIR, pid: PID } = emuState();
 const LOCK = path.join(ROOT, 'test-logs', 'rtdb-play-' + EMU_PORTS.database + '.lock');
-const PID = path.join(ROOT, 'test-logs', 'rtdb-emu-' + EMU_PORTS.database + '.pid');
 // Append to a ?cloud=emu query so the page talks to this run's emulator.
 const emuQuery = () => '&dbPort=' + EMU_PORTS.database + '&authPort=' + EMU_PORTS.auth + '&fsPort=' + EMU_PORTS.firestore;
 
@@ -101,4 +111,4 @@ function releaseEmulator() {
   unlockEmu();
 }
 
-module.exports = { ensureEmulator, releaseEmulator, EMU_PORTS, EMU_DIR, PID, emuQuery };
+module.exports = { ensureEmulator, releaseEmulator, emuState, EMU_PORTS, EMU_DIR, PID, emuQuery };

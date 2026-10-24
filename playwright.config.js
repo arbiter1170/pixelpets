@@ -32,6 +32,7 @@ module.exports = defineConfig({
   // Humans get 'list'. Agents run `npm run test:agent` (tools/pp_test.js), which passes
   // --reporter=line,json and writes everything to test-logs/.
   reporter: process.env.PP_REPORTER || 'list',
+  globalSetup: require.resolve('./tests/emu_setup.js'),
   globalTeardown: require.resolve('./tests/emu_teardown.js'),
   use: {
     baseURL: external || ('http://127.0.0.1:' + port),
