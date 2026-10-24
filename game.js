@@ -14195,7 +14195,7 @@ function paintBoardCareBtn(b, p){
   b.setAttribute('aria-label', cd ? BTN_LABEL[act] + ', ready in ' + cd : BTN_LABEL[act]);
   b.classList.toggle('cooldown', !!left); b.setAttribute('aria-disabled', left ? 'true' : 'false');
 }
-function updateBoardCare(){
+function updateBoardCare(countdownsOnly){
   if (screen !== 'col' || !S) return;
   const hide = !partyField();
   $$('#partyBoard .party-slot').forEach(row => {
@@ -14208,7 +14208,7 @@ function updateBoardCare(){
       const aria = slotAria(p);
       if (main.getAttribute('aria-label') !== aria) main.setAttribute('aria-label', aria);
     }
-    row.querySelectorAll('.ss-cell').forEach(cell => {
+    if (!countdownsOnly) row.querySelectorAll('.ss-cell').forEach(cell => {
       const key = cell.dataset.stat, fill = cell.querySelector('.ps-bar > i');
       if (!fill || !key) return;
       const v = clamp(statFrac(p, key), 0, 1), w = (100 * v) + '%';
@@ -15574,7 +15574,7 @@ function frame(t){
   if (scene) sbTick();
   if (p) {
     if (screen === 'pet') { pumpHello(); pumpWelcome(); pumpBondUp(); drawPetScene(t, dt); updateCareButtons(); }
-    if (screen === 'col') updateBoardCare();
+    if (screen === 'col') updateBoardCare(true);
     if (!$('#ovBattle').hidden) drawBattle(t, dt);
     else if (!overlayOpen()) pumpLearn();
     syncBagBtns();                                        // BAG chrome: hidden during scenes, battles and before the starter (INVENTORY §6)

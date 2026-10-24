@@ -2,11 +2,11 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-24 04:17 ET: Rest fills energy, and care from any party card (build 20261024-0417)
+## 2026-10-24 04:50 ET: Rest fills energy, and care from any party card (build 20261024-0450)
 
 - What changed and why: A REST tap fills NRG to 100, costs 10 FOOD, and waits 30 minutes (30 seconds in fast mode). At NRG 98 with no hurt it still says "Not sleepy right now." The Energy Sip fills NRG and its blurb reads "A fizzy pick-me-up. Fills NRG." Every WALKLINGS party card has FEED, PLAY, REST and HEAL for that Walkling. Box rows have none. The walk tray stays on the partner. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
 - Files touched: `game.js`, `style.css`, `tools/GAMEJS_MAP.txt`, `tests/care_shortcuts.spec.js`, `index.html`, `version.json`, `README.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `tests/README.md`, `CHANGELOG.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`.
-- Commit(s) + build id: this branch, on top of 262b372. Build `20261024-0417`.
+- Commit(s) + build id: this branch, on top of 262b372. Build `20261024-0450`.
 - Tests run and result (widths, checks): `tests/care_shortcuts.spec.js` at 320, 375 and 390. Related specs at 390, their `@w1` tests at 320, and `tests/party_board.spec.js` at 320. The full `npm run test:agent` line is in the PR. Console errors fail the run.
 - Decisions made (colour + reasoning): D710, D711 and D714 (red, yes, Vincent, Oct 24, 2026, 12:30 AM ET, via the Supervisor). D713, D715 and D717 (yellow, yes, team vote, PixelPets and QA). D712 and D716 (green, yes, Supervisor). D713 does not close the open box NRG call. No box rate changed.
 - Anything left unfinished: the needs glyph on the card sprite is not in this build. BOX_PAUSE's box NRG rate stays open with Vincent.
