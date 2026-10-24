@@ -1764,7 +1764,7 @@ function buildWorldArt(){
     [[3,4,'r'],[11,4,'y'],[2,8,'c'],[12,8,'l']].forEach(([x,y,c], i) => { const dy = (f + i) % 2; px(g,PAL[c],x,y - dy,2,2); px(g,PAL.w,x,y - dy,1,1); });
   }));
   const balloon = col => [0, 1].map(f => mkTile(g => {
-    oval(g, 7.5, 5 + f, 5, 4.5, PAL[col]); oval(g, 6, 4, 1.2, 1.2, PAL.w); px(g,PAL.d,7,10,2,1); px(g,PAL.h,7,11,1,4); px(g,PAL.h,8,13,1,1);
+    oval(g, 7.5, 5 + f, 6, 5.5, PAL.d); oval(g, 7.5, 5 + f, 5, 4.5, PAL[col]); oval(g, 6, 4, 1.2, 1.2, PAL.w); px(g,PAL.d,7,10,2,1); px(g,PAL.h,7,11,1,4); px(g,PAL.h,8,13,1,1);
   }));
   A.balloon_r = balloon('r'); A.balloon_y = balloon('y'); A.balloon_c = balloon('c');
   A.telescope = mkTile(g => { px(g,PAL.d,3,13,10,2); px(g,PAL.m,7,8,2,5); px(g,PAL.d,2,6,12,3); px(g,PAL.h,3,7,10,1); px(g,PAL.c,11,5,3,3); px(g,PAL.s,12,5,1,1); px(g,PAL.y,1,7,2,1); });
