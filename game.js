@@ -714,17 +714,25 @@ function renderControlsRows(){
   const m = ctlMode() === 'modern', b = $('#setControls'); if (!b) return;
   $('#setControlsVal').textContent = m ? 'MODERN' : 'ARCADE';
   const j = $('#setJoystick'); j.hidden = !m; j.setAttribute('aria-pressed', String(joyOn())); $('#setJoystickVal').textContent = joyOn() ? 'ON' : 'OFF';
-  renderMapSizeRow();
+  renderMapZoomRow();
 }
-function renderMapSizeRow(){
-  const b = $('#setMapSize'); if (!b) return;
-  $('#setMapSizeVal').textContent = mapSizeMode() === 'classic' ? 'CLASSIC' : 'BIG';
+// Settings "Map zoom" slider. One stop per crisp step on this phone (mapZoomSteps). Applies live, no reload.
+function zoomLabel(z){ return (Math.abs(z - Math.round(z)) < 1e-6 ? String(Math.round(z)) : String(+z.toFixed(2))) + 'x'; }
+function renderMapZoomRow(){
+  const el = $('#setZoomRange'); if (!el) return;
+  const steps = mapZoomSteps(), z = mapZoomStep(), i = Math.max(0, steps.indexOf(z));
+  el.max = String(steps.length - 1); el.value = String(i);
+  el.setAttribute('aria-valuemin', '0'); el.setAttribute('aria-valuemax', String(steps.length - 1));
+  el.setAttribute('aria-valuenow', String(i)); el.setAttribute('aria-valuetext', zoomLabel(z));
+  $('#setZoomVal').textContent = zoomLabel(z);
 }
-function setMapSize(mode, quiet){
-  if (!S || (mode !== 'big' && mode !== 'classic')) return mapSizeMode();
-  S.settings.mapSize = mode; save(); renderMapSizeRow(); fitAll();
-  if (!quiet) { sfx('tap'); toast(mode === 'classic' ? 'Classic map.' : 'Big map.'); }
-  return mode;
+function setMapZoom(z, persist){
+  if (!S) return mapZoomStep();
+  const steps = mapZoomSteps();
+  S.settings.mapZoom = snapMapZoom(+z, steps);
+  renderMapZoomRow(); fitAll();
+  if (persist) save();
+  return S.settings.mapZoom;
 }
 /* Design's approved green copy (Oct 15). Toasts for the Settings rows. */
 const CTL_TOASTS = { arcade: 'Arcade controls. Pad and Talk button.', modern: 'Modern controls. Tap to walk or talk.', joyOn: 'Joystick on.', joyOff: 'Joystick off.' };
@@ -1070,12 +1078,55 @@ let mapZoom = 1, mapBase = 1;
 // D723: HUD pads in css px, filled by hudFree() inside fitAll. The camera reads these numbers only.
 const HUD_FALLBACK = { top: 56, left: 56, right: 96, bottom: 112, col: 206 };
 let hudPads = { top: 56, left: 56, right: 96, bottom: 112, col: 206, on: false, ox: 0, oy: 0, rightGap: 0, bottomGap: 0, wrapW: 0, wrapH: 0 };
-function mapSizeMode(){ return (S && S.settings && S.settings.mapSize === 'classic') ? 'classic' : 'big'; }
-// D727: largest whole outdoor scale up to 4 that still shows 7 tiles across and 8.5 down. Never below today's s.
-function biggerMapScale(W, H, s){
-  let k = s;
-  for (let t = Math.ceil(s); t <= 4; t++) if (Math.floor(W / t) >= 112 && Math.floor(H / t) >= 136) k = t;
-  return k;
+// Map zoom (Settings slider, settings.mapZoom). Outdoors only; rooms keep their own zoom (D727). 2 = today's look
+// (the base scale s, exactly as before), so nobody sees a change until they move the slider. The pixel art is a
+// 1x bitmap scaled by CSS with image-rendering: pixelated, so a step is crisp only when one art px covers a whole
+// number of device px. Target steps 2, 2.25, 2.5, 2.75, 3: on a DPR 2 phone 2.5 is crisp (5 px) and 2.25 / 2.75
+// are not (4.5 / 5.5); on DPR 3, 7/3 and 8/3 are crisp (7 / 8 px) and 2.25 / 2.5 / 2.75 are not. So the slider
+// offers 2x, every crisp k/DPR between, and 3x: 2, 2.5, 3 at DPR 2; 2, 2.33, 2.67, 3 at DPR 3.
+const MAP_ZOOM_MIN = 2, MAP_ZOOM_MAX = 3;
+function mapZoomSteps(){
+  const dpr = window.devicePixelRatio || 1, out = [MAP_ZOOM_MIN];
+  for (let k = Math.floor(MAP_ZOOM_MIN * dpr) + 1; k < MAP_ZOOM_MAX * dpr - 1e-6; k++) out.push(k / dpr);
+  out.push(MAP_ZOOM_MAX);
+  return out;
+}
+// The largest step at or below z. A 2.5 saved on a DPR 2 phone reads as 2.33 on a DPR 3 one, never a blurred 2.5.
+function snapMapZoom(z, steps){
+  steps = steps || mapZoomSteps();
+  if (!(z >= MAP_ZOOM_MIN)) return MAP_ZOOM_MIN;
+  let pick = steps[0];
+  for (const t of steps) if (t <= z + 1e-6) pick = t;
+  return pick;
+}
+// settings.mapZoom: a number, missing or bad reads as 2 (save.js fills it). Save stays v2.
+function mapZoomStep(){ return snapMapZoom(S && S.settings && typeof S.settings.mapZoom === 'number' ? S.settings.mapZoom : MAP_ZOOM_MIN); }
+let outdoorZoomForce = null;   // ?debug=1 only: ?zoom=2.5 or PixelPets.setOutdoorZoom(z). Snapped like the slider. Never saved.
+function outdoorZoomWant(){
+  if (!DEBUG) return null;
+  if (outdoorZoomForce != null) return outdoorZoomForce;
+  try { const z = parseFloat(new URLSearchParams(location.search).get('zoom')); if (z >= 1 && z <= 6) return z; } catch (e) {}
+  return null;
+}
+// Outdoor scale for base s. At 2x this is s itself (arcade at 320 stays 1x, as live).
+function outdoorZoomFor(s){
+  const want = outdoorZoomWant();
+  const z = want != null ? snapMapZoom(want) : mapZoomStep();
+  return z <= MAP_ZOOM_MIN ? s : Math.max(s, z);
+}
+// Canvas px across for a view W css px wide at zoom z. Whole zooms keep floor(W / z), as before.
+// A crisp fractional zoom (7/3 at DPR 3) needs a css size layout can hold exactly (1/64 px) and a centred
+// offset on a whole device px, or a column or two draws one device px wider. So the canvas grows to the next
+// such size and overflows the wrap by a few px each side (overflow: hidden). No void strip shows.
+function crispSpan(W, z, cap){
+  const n0 = Math.min(cap, Math.max(1, Math.floor(W / z)));
+  if (Math.abs(z - Math.round(z)) < 1e-6) return n0;
+  const dpr = window.devicePixelRatio || 1, near = v => Math.abs(v - Math.round(v)) < 1e-4;
+  for (let n = Math.ceil(W / z); n <= Math.min(cap, Math.ceil(W / z) + 12); n++) {
+    const css = n * z;
+    if (near(css * 64) && near((css - W) / 2 * dpr)) return n;
+  }
+  return n0;
 }
 function roomEdgeSlack(m){
   if (!m || m.kind !== 'interior' || m.fitWidth || !m.cells || !(m.w >= 3) || !(m.h >= 1)) return 0;
@@ -1164,7 +1215,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     const modern = ctlMode() === 'modern';         // NAV_MODERN §2 (NM-Y2): modern is 2x at every width with a 24x36 cap; arcade unchanged
     const s = modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
     mapBase = s;
-    const sUse = (!isRoom() && mapSizeMode() !== 'classic') ? biggerMapScale(W, H, s) : s;
+    const sUse = isRoom() ? s : outdoorZoomFor(s);
     invalidateCueZone();
     // E1: an interior with "fitWidth": true (the rx_f4 pilot) is shown at its full width (scale = view width / map width), so the
     // camera only scrolls vertically. Every interior bigger than the view follows the keeper and clamps at the edges (drawMap);
@@ -1180,6 +1231,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
       mapZoom = zoom;
       c.width = Math.min(24 * 16, Math.max(1, Math.floor(W / zoom)));
       c.height = Math.min((modern ? 36 : 20) * 16, Math.max(1, Math.floor(viewH / zoom)));
+      if (Math.abs(zoom - Math.round(zoom)) > 1e-6) { c.width = crispSpan(W, zoom, 24 * 16); c.height = crispSpan(viewH, zoom, (modern ? 36 : 20) * 16); }   // a crisp fractional Map zoom step
       c.style.width = (c.width * zoom) + 'px'; c.style.height = (c.height * zoom) + 'px';
     }
     mw.style.alignItems = (modern && roomZoom) ? 'flex-start' : '';
@@ -8192,7 +8244,10 @@ function syncWalkCam(t){
   // trail stays tappable. A map shorter than that band is centred in it. Rooms and arcade stay on the full
   // canvas. The void past the map stays black (D236).
   const band = outdoorViewBand(VH);
-  const xLo = band.head ? -band.padL : 0, xHi = band.head ? MW * TS - VW + band.padR : MW * TS - VW;
+  // Clamp to the left map edge, so no void strip shows at the town square spawn (3,5). The D722 left pad opens only
+  // when the keeper stands in columns 0-2, fading out by column 3, so the west column can still clear the buttons.
+  const westK = band.head ? clamp((3 * TS - px_) / TS, 0, 1) : 0;
+  const xLo = -Math.round(band.padL * westK), xHi = band.head ? MW * TS - VW + band.padR : MW * TS - VW;
   const xMid = VW / 2;
   walk.cam.x = MW * TS <= VW ? -Math.floor((VW - MW * TS) / 2) : Math.round(clamp(px_ + 8 - xMid + bx, Math.min(xLo, xHi), Math.max(xLo, xHi)));
   const yLo = band.head ? -band.topPad : 0, yHi = MH * TS - band.VHe;
@@ -15624,7 +15679,11 @@ function bindInput(){
   $('#gearFloat').addEventListener('click', gearTap);     // Q26: same handler as the header gear
   $('#setControls').addEventListener('click', () => setControls(ctlMode() === 'modern' ? 'arcade' : 'modern'));
   $('#setJoystick').addEventListener('click', () => setJoystick(!joyOn()));
-  const setMapSizeBtn = $('#setMapSize'); if (setMapSizeBtn) setMapSizeBtn.addEventListener('click', () => setMapSize(mapSizeMode() === 'classic' ? 'big' : 'classic'));
+  const zoomEl = $('#setZoomRange');
+  if (zoomEl) {
+    zoomEl.addEventListener('input', () => setMapZoom(mapZoomSteps()[+zoomEl.value] || MAP_ZOOM_MIN, false));
+    zoomEl.addEventListener('change', () => { setMapZoom(mapZoomSteps()[+zoomEl.value] || MAP_ZOOM_MIN, true); sfx('tap'); });
+  }
   const floatTab = name => { if ((tabsGuarded() || overlayOpen() || !allPets().length) && !tutAllowsTab(name)) { sfx('denied'); return; } sfx('tap'); showTab(name); };
   $('#colFloat').addEventListener('click', () => floatTab('col'));
   $('#petFloat').addEventListener('click', () => floatTab('pet'));
@@ -16392,6 +16451,8 @@ function boot(){
       if (!o) return false; openBooth(o); return true;
     },
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
+    setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
+    get mapZoomSteps(){ return mapZoomSteps(); }, get mapZoomStep(){ return mapZoomStep(); },
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
     // One completed step with no timer: tryStep, then onLand. A bump that opens a scene does not count as a step.

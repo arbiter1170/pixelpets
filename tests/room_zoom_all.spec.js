@@ -202,10 +202,8 @@ test('every interior uses the room scale, and every door can be framed', async (
   const done = await page.evaluate(() => {
     const info = PixelPets.mapInfo;
     const w = document.querySelector('#mapWrap');
-    const W = w.clientWidth, H = w.clientHeight, s = info.baseScale;
-    let k = s;
-    for (let t = Math.ceil(s); t <= 4; t++) if (Math.floor(W / t) >= 112 && Math.floor(H / t) >= 136) k = t;
-    return Object.assign({ want: k }, info);
+    // Map zoom defaults to 2x, which is today's outdoor scale.
+    return Object.assign({ want: info.baseScale, wrapW: w.clientWidth }, info);
   });
   expect(done.room).toBe(false);
   expect(done.scale).toBe(done.want);

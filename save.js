@@ -72,7 +72,7 @@ const PPSave = (() => {
     return { v: 2, uid: rid(12), created: now, last: now, party: [], box: [], partnerId: null, orphans: [],
       dex: { seen: {}, caught: {}, legacy: [], hits: {} }, steps: 0, world: startWorld(),
       bag: {}, money: 0, seals: {}, flags: {}, standing: { keepers: 0, glimmer: 0 }, board: { lastTown: '' }, phoneBook: { met: {}, fav: {} }, eggs: { incubators: [{ egg: null }], held: [] },
-      settings: { textSpeed: 'normal', battleAnims: true, follower: true, music: true, musicVol: 0.5, tips: true, mapSize: 'big' },
+      settings: { textSpeed: 'normal', battleAnims: true, follower: true, music: true, musicVol: 0.5, tips: true, mapZoom: 2 },
       player: { name: null, look: null },
       meta: { migratedFrom: null, migratedAt: null, backup: null, legacy: {} } };
   }
@@ -346,7 +346,7 @@ const PPSave = (() => {
     fill(s.settings, 'musicVol', x => typeof x === 'number' && x >= 0 && x <= 1, 0.5); // Settings volume slider: 0 to 1, default half
     fill(s.settings, 'controls', x => x === 'arcade' || x === 'modern', 'arcade');      // Q26: missing or bad = arcade, so an old save keeps the pad
     fill(s.settings, 'joystick', x => typeof x === 'boolean', false);                 // Q26 / D63: modern joystick, default off
-    fill(s.settings, 'mapSize', x => x === 'big' || x === 'classic', 'big');          // D728: missing reads as BIG. Save stays v2.
+    fill(s.settings, 'mapZoom', x => typeof x === 'number' && x >= 2 && x <= 3, 2);   // Map zoom slider: 2 to 3, missing reads as 2 (today's look). Save stays v2.
     fill(s.settings, 'tips', x => typeof x === 'boolean', true);                      // D180: unlock tips, default on, additive
     fill(s.settings, 'showOthers', x => x === 'on' || x === 'friends' || x === 'solo', 'on');   // PLAY_TOGETHER_P1, additive, v stays 2
     fill(s, 'mapSeen', isObj, {});

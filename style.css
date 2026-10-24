@@ -54,6 +54,14 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .set-vol .set-lab{flex:0 0 auto}
 .set-vol input[type=range]{flex:1 1 auto;min-width:36px;width:auto;height:44px;min-height:44px;margin:0;padding:0;border:0;background:transparent;accent-color:var(--y)}
 .set-vol .set-val{color:var(--y);min-width:3.2ch;text-align:right}
+.set-zoom input[type=range]{min-width:96px;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y}
+.set-zoom input[type=range]::-webkit-slider-runnable-track{height:8px;background:var(--d);border:2px solid var(--k)}
+.set-zoom input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:44px;height:44px;margin-top:-20px;background:var(--y);border:3px solid var(--k);box-shadow:inset -3px -3px 0 rgba(0,0,0,.25)}
+.set-zoom input[type=range]::-moz-range-track{height:8px;background:var(--d);border:2px solid var(--k)}
+.set-zoom input[type=range]::-moz-range-thumb{width:44px;height:44px;border-radius:0;background:var(--y);border:3px solid var(--k)}
+.set-zoom input[type=range]:focus-visible{outline:2px solid var(--y);outline-offset:2px}
+.set-zoom{min-height:50px}
+.set-zoom .set-val{min-width:4.6ch}
 .set-row.set-danger{border-color:var(--r);color:var(--h)}
 .set-row.set-danger .set-val{color:var(--r)}
 .settings-inner > .btn{flex:0 0 auto;width:calc(100% - 6px);min-height:44px}

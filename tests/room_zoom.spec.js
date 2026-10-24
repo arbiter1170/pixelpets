@@ -36,10 +36,8 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
   const outdoor = await page.evaluate(() => {
     const info = PixelPets.mapInfo;
     const w = document.querySelector('#mapWrap');
-    const W = w.clientWidth, H = w.clientHeight, s = info.baseScale;
-    let k = s;
-    for (let t = Math.ceil(s); t <= 4; t++) if (Math.floor(W / t) >= 112 && Math.floor(H / t) >= 136) k = t;
-    return Object.assign({ want: k }, info);
+    // Map zoom defaults to 2x, which is today's outdoor scale.
+    return Object.assign({ want: info.baseScale, wrapW: w.clientWidth }, info);
   });
   expect(outdoor.id).toBe('hearthmoor');
   expect(outdoor.room).toBe(false);

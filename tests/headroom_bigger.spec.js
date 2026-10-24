@@ -26,12 +26,6 @@ async function boot(page, mode) {
   await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);
 }
 
-function biggerK(W, H, s) {
-  let k = s;
-  for (let t = Math.ceil(s); t <= 4; t++) if (Math.floor(W / t) >= 112 && Math.floor(H / t) >= 136) k = t;
-  return k;
-}
-
 test('T7 edge rows and columns clear the HUD, including Fernbrook row 0', async ({ page }) => {
   test.setTimeout(180000);
   await boot(page, 'modern');
@@ -300,33 +294,17 @@ test('T9 shop sheet and speaker bias still frame', async ({ page }) => {
   expect(frame.cover, 'box covers the speaker').toBe(false);
 });
 
-test('P0 upright bitmap matches the bigger scale, and rooms keep today\'s scale', async ({ page }) => {
+test('P0 the default 2x map zoom is today\'s scale outdoors, and rooms keep today\'s scale', async ({ page }) => {
   test.setTimeout(90000);
-  const width = page.viewportSize().width;
-  const table = {
-    390: { arcade: [3, '7.4', '9.6'], modern: [3, '8.1', '17.6'] },
-    375: { arcade: [2, '10.6', '8.9'], modern: [3, '7.8', '13.9'] },
-    320: { arcade: [1, null, null], modern: [2, null, null] },
-  };
   for (const mode of ['modern', 'arcade']) {
     await boot(page, mode);
     const outdoor = await page.evaluate(() => {
       const info = PixelPets.mapInfo;
-      const w = document.querySelector('#mapWrap');
-      const c = document.querySelector('#mapCanvas');
-      return { W: w.clientWidth, H: w.clientHeight, bm: [c.width, c.height], scale: info.scale, base: info.baseScale, room: info.room };
+      return { scale: info.scale, base: info.baseScale, room: info.room, z: PixelPets.state.settings.mapZoom };
     });
     expect(outdoor.room).toBe(false);
-    const want = biggerK(outdoor.W, outdoor.H, outdoor.base);
-    expect(outdoor.scale, mode).toBe(want);
-    expect(outdoor.scale).toBeGreaterThanOrEqual(outdoor.base);
-    const tiles = [(outdoor.bm[0] / 16).toFixed(1), (outdoor.bm[1] / 16).toFixed(1)];
-    const row = table[width][mode];
-    expect(outdoor.scale, mode + ' table scale').toBe(row[0]);
-    if (row[1]) {
-      expect(tiles[0], mode + ' tiles ' + outdoor.W + 'x' + outdoor.H).toBe(row[1]);
-      expect(tiles[1], mode + ' tiles ' + outdoor.W + 'x' + outdoor.H).toBe(row[2]);
-    }
+    expect(outdoor.z).toBe(2);
+    expect(outdoor.scale, mode).toBe(outdoor.base);
     const rooms = await page.evaluate(async () => {
       const out = [];
       for (const id of ['hm_home_in', 'hm_rook_in', 'hc_apt_in']) {
@@ -352,63 +330,6 @@ test('P0 upright bitmap matches the bigger scale, and rooms keep today\'s scale'
       }
     }
   }
-});
-
-test('P0 map size flips and an old save with no mapSize loads BIG', async ({ page }) => {
-  await boot(page, 'modern');
-  const gear = page.locator('#gearFloat');
-  if (await gear.isVisible()) await gear.click();
-  else await page.locator('#settingsBtn').click();
-  const row = page.locator('#setMapSize');
-  await expect(row).toBeVisible();
-  const box = await row.boundingBox();
-  expect(box.height).toBeGreaterThanOrEqual(44);
-  expect(box.width).toBeGreaterThanOrEqual(44);
-  await expect(page.locator('#setMapSizeVal')).toHaveText('BIG');
-  const big = await page.evaluate(() => PixelPets.mapInfo.scale);
-  await row.click();
-  await expect(page.locator('#setMapSizeVal')).toBeVisible();
-  await expect(page.locator('#setMapSizeVal')).toHaveText('CLASSIC');
-  await expect(page.locator('#toast')).toBeVisible();
-  const classic = await page.evaluate(() => ({
-    scale: PixelPets.mapInfo.scale,
-    base: PixelPets.mapInfo.baseScale,
-    size: PixelPets.state.settings.mapSize,
-    v: PixelPets.state.v,
-  }));
-  expect(classic.v).toBe(2);
-  expect(classic.size).toBe('classic');
-  expect(classic.scale).toBe(classic.base);
-  expect(big).toBeGreaterThanOrEqual(classic.scale);
-  const raw = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
-  const written = JSON.parse(raw);
-  expect(written.v).toBe(2);
-  expect(written.settings.mapSize).toBe('classic');
-  await installSave(page.context(), written, { quietDay: true });
-  await gotoGame(page, '?debug=1');
-  await page.evaluate(() => PixelPets.showTab('walk'));
-  const kept = await page.evaluate(() => ({ size: PixelPets.state.settings.mapSize, scale: PixelPets.mapInfo.scale, base: PixelPets.mapInfo.baseScale }));
-  expect(kept.size).toBe('classic');
-  expect(kept.scale).toBe(kept.base);
-
-  const old = save('modern');
-  delete old.settings.mapSize;
-  await installSave(page.context(), old, { quietDay: true });
-  await gotoGame(page, '?debug=1');
-  await page.evaluate(() => PixelPets.showTab('walk'));
-  const loaded = await page.evaluate(() => ({
-    size: PixelPets.state.settings.mapSize,
-    scale: PixelPets.mapInfo.scale,
-    base: PixelPets.mapInfo.baseScale,
-    v: JSON.parse(localStorage.getItem('pixelpets.save.v2')).v,
-  }));
-  expect(loaded.v).toBe(2);
-  expect(loaded.size).toBe('big');
-  const wrap = await page.evaluate(() => {
-    const w = document.querySelector('#mapWrap');
-    return { W: w.clientWidth, H: w.clientHeight };
-  });
-  expect(loaded.scale).toBe(biggerK(wrap.W, wrap.H, loaded.base));
 });
 
 test('P0 arcade area chip is a 44 px target over the map', async ({ page }) => {
