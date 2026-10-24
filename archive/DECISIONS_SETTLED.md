@@ -664,3 +664,17 @@ Recorded from design MAP_EDGE_TAPS v0.1.1 (design commit 2a10464; the spec last 
 - **D698 (Oct 24, 2026, yellow, SETTLED yes on the default by team vote, PixelPets and QA).** MAP_EDGE_TAPS. After the funnel picks a way out, the game runs today's tap on that tile. An open way out walks on. A gated one uses the existing deny and says its gate line. A solid tile on that spot soft-walks to a neighbour and stops.
 - **D699 (Oct 24, 2026, yellow, SETTLED yes on the default by team vote, PixelPets and QA).** MAP_EDGE_TAPS. An edge with no way out walks to the nearest reachable free tile within 2 tiles that is not a way out, else says "Can't get there from here." It can never leave the map.
 - **D703 (Oct 24, 2026, green, SETTLED yes on the default by the Supervisor).** MAP_EDGE_TAPS. P1 only: keys, the d-pad and drag-to-walk do not change. Arcade gets this exit intent on its canvas; taps outside the arcade canvas stay with the arcade frame. A mouse click, including on DESKTOP_FRAME when that frame exists, uses the same pointer path. The 44 px zones are not in this build.
+
+## CARE_SHORTCUTS (calls settled Oct 24, 2026)
+
+Recorded from design CARE_SHORTCUTS v0.1.1 (design commit 2a10464), without renumbering. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. Settling D713 does not close the open box NRG call.
+
+- **D710 (Oct 24, 2026, 12:30 AM ET, red, SETTLED YES by Vincent, via the Supervisor).** CARE_SHORTCUTS. A REST tap fills NRG to 100. The cooldown is 30 minutes (30 seconds in fast mode). It costs 10 FOOD.
+- **D711 (Oct 24, 2026, 12:30 AM ET, red, SETTLED YES by Vincent, via the Supervisor).** CARE_SHORTCUTS. The Energy Sip fills NRG to 100. It still costs 60 Acorns and is still field only. The blurb is "A fizzy pick-me-up. Fills NRG."
+- **D712 (Oct 24, 2026, green, SETTLED yes on the default by the Supervisor).** CARE_SHORTCUTS. REST still restores 50% HP, still clears the nap, still gives 1 care XP, and still says "Not sleepy right now." at NRG 98 when the Walkling is not hurt. The toast stays "Zzz... +ENERGY".
+- **D713 (Oct 24, 2026, yellow, SETTLED yes on the default by team vote, PixelPets and QA).** CARE_SHORTCUTS. Box NRG stays +10 an hour. No box rate and no BOX_PAUSE code changed. The game had no bed-rate row to reword.
+- **D714 (Oct 24, 2026, 12:30 AM ET, red, SETTLED YES by Vincent, via the Supervisor).** CARE_SHORTCUTS. Every party card has FEED, PLAY, REST and HEAL, and they act on that Walkling. The walk tray stays partner only.
+- **D715 (Oct 24, 2026, yellow, SETTLED yes on the default by team vote, PixelPets and QA).** CARE_SHORTCUTS. The care row is always shown on a party card. It is not behind a toggle.
+- **D716 (Oct 24, 2026, green, SETTLED yes on the default by the Supervisor).** CARE_SHORTCUTS. `doAction` and `healTap` take an optional target that defaults to the partner. Pet-tab animation, the care tutorial and the map reply happen for the partner only. There is no 3 second busy lock across different cards.
+- **D717 (Oct 24, 2026, yellow, SETTLED yes on the default by team vote, PixelPets and QA).** CARE_SHORTCUTS. Box rows have no care row.
+
