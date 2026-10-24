@@ -267,8 +267,8 @@ test('acceptance 10 and 11: the you-ring blinks, and the quest tile is marked', 
     const off = blue();
     return { on, off, quest: PixelPets.mapLayer().quest, target: PixelPets.quest && PixelPets.quest.target };
   });
-  expect(blink.on).toBeGreaterThan(0);
-  expect(blink.off).toBe(0);
+  // The you-ring is PAL b. The store boards use that same blue, so the off frame is not empty.
+  expect(blink.on).toBeGreaterThan(blink.off);
   expect(blink.target && blink.target.map).toBe('hearthmoor');
   expect(blink.quest).toEqual({ x: blink.target.x, y: blink.target.y });
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -283,7 +283,7 @@ test('acceptance 10 and 11: the you-ring blinks, and the quest tile is marked', 
     PixelPets.mapBlinkAt(performance.now() - 600);
     return blue();
   });
-  expect(steady).toBeGreaterThan(0);
+  expect(steady).toBeGreaterThan(blink.off);
 });
 
 test('acceptance 12 and 13: no pan, and every layout fits with the spec tile size', async ({ page }) => {
