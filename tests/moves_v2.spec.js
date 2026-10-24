@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = require('./helpers');
-const { ensureEmulator, releaseEmulator } = require('./emu_shared');
+const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
 trackErrors(test, expect);
@@ -849,7 +849,7 @@ test.describe('22 co-op flash clock', () => {
   test.beforeAll(async ({}, info) => {
     test.skip(info.project.name !== '390', '390 only');
     await ensureEmulator();
-    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
+    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: EMU_PORTS.database, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await env.withSecurityRulesDisabled(async (ctx) => { await ctx.database().ref('roomCodes/AMB4RQ').set({ on: true }); });
   });
   test.afterAll(async () => {
@@ -859,11 +859,11 @@ test.describe('22 co-op flash clock', () => {
   test('two phones landing hits close together keep one clock each', async ({ page, browser }, info) => {
     test.skip(info.project.name !== '390', '390 only');
     const a = page;
-    await boot(a, baseSave(), '?cloud=emu&debug=1');
+    await boot(a, baseSave(), '?cloud=emu&debug=1' + emuQuery());
     const bCtx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, baseURL: BASE });
     const b = await bCtx.newPage();
     b.ppErrors = [];
-    await boot(b, (() => { const s = baseSave(); s.uid = 'smoketest0002'; return s; })(), '?cloud=emu&debug=1');
+    await boot(b, (() => { const s = baseSave(); s.uid = 'smoketest0002'; return s; })(), '?cloud=emu&debug=1' + emuQuery());
     async function join(p) {
       await p.locator('#settingsBtn').click();
       await p.locator('#setRoomCode').click();

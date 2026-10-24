@@ -6,7 +6,7 @@ const { test, expect } = require('@playwright/test');
 const { webkit } = require('playwright');
 const fs = require('fs');
 const { starterSave, installSave, gotoGame, artifactsDir } = require('./helpers');
-const { ensureEmulator, releaseEmulator } = require('./emu_shared');
+const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
 const SHOTS = artifactsDir('review-coop-r2');
@@ -60,7 +60,7 @@ async function onWalk(page){
 async function boot(page, save){
   await installSave(page.context(), save, { quietDay: true });
   watchErrors(page);
-  await gotoGame(page, '?cloud=emu&debug=1');
+  await gotoGame(page, '?cloud=emu&debug=1' + emuQuery());
   await onWalk(page);
 }
 const PHONES = { 320: { width: 320, height: 568 }, 375: { width: 375, height: 667 }, 390: { width: 390, height: 844 } };
@@ -138,7 +138,7 @@ test.describe('B1', () => {
     test.skip(info.project.name !== '390', 'runs in the 390 project; 320 runs inside it');
     test.setTimeout(600000);
     await ensureEmulator();
-    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
+    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: EMU_PORTS.database, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await rootSet('roomCodes/AMB4RQ', { on: true });
     await rootSet('config/coop/on', true);
   });

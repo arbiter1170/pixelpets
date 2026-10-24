@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const http = require('http');
 const { starterSave, installSave, gotoGame, artifactsDir } = require('./helpers');
-const { ensureEmulator, releaseEmulator } = require('./emu_shared');
+const { ensureEmulator, releaseEmulator, EMU_PORTS, emuQuery } = require('./emu_shared');
 const { initializeTestEnvironment } = require('@firebase/rules-unit-testing');
 
 const SHOTS = artifactsDir('review-play-together');
@@ -37,7 +37,7 @@ function saveFor(uid, name){
 }
 function emulatorAnswers(){
   return new Promise(resolve => {
-    const req = http.get('http://127.0.0.1:9000/.json?ns=demo-walklings', res => { res.resume(); resolve(true); });
+    const req = http.get('http://127.0.0.1:' + EMU_PORTS.database + '/.json?ns=demo-walklings', res => { res.resume(); resolve(true); });
     req.on('error', () => resolve(false));
     req.setTimeout(800, () => { req.destroy(); resolve(false); });
   });
@@ -102,7 +102,7 @@ async function onWalk(page){
 async function boot(page, save, search){
   await installSave(page.context(), save, { quietDay: true });
   watchErrors(page);
-  await gotoGame(page, search || '?cloud=emu&debug=1');
+  await gotoGame(page, search || '?cloud=emu&debug=1' + emuQuery());
   await onWalk(page);
 }
 const PHONES = { 320: { width: 320, height: 568 }, 375: { width: 375, height: 667 }, 390: { width: 390, height: 844 } };
@@ -163,7 +163,7 @@ test.describe('Play together', () => {
     test.skip(info.project.name !== '390', 'runs in the 390 project; other widths run inside it');
     test.setTimeout(600000);
     await ensureEmulator();
-    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: 9000, rules: fs.readFileSync('database.rules.json', 'utf8') } });
+    env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: EMU_PORTS.database, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await rootSet('roomCodes/AMB4RQ', { on: true });
   });
   test.afterAll(async () => {
@@ -176,7 +176,7 @@ test.describe('Play together', () => {
     test.skip(info.project.name !== '390', '390 only');
     const hits = [];
     page.on('request', r => { if (r.url().includes('firebase-database')) hits.push(r.url()); });
-    page.on('websocket', ws => { if (ws.url().includes('9000')) hits.push(ws.url()); });
+    page.on('websocket', ws => { if (ws.url().includes(':' + EMU_PORTS.database)) hits.push(ws.url()); });
     await installSave(page.context(), saveFor('off1', 'Tester'), { quietDay: true });
     watchErrors(page);
     await gotoGame(page, '?debug=1');
@@ -191,7 +191,7 @@ test.describe('Play together', () => {
   test('2 no code, no socket', async ({ page }, info) => {
     test.skip(info.project.name !== '390', '390 only');
     const socks = [];
-    page.on('websocket', ws => { if (/9000/.test(ws.url())) socks.push(ws.url()); });
+    page.on('websocket', ws => { if (ws.url().includes(':' + EMU_PORTS.database)) socks.push(ws.url()); });
     await boot(page, saveFor('nocode1', 'Tester'));
     await page.locator('#settingsBtn').click();
     await expect(page.locator('#playTogether')).toBeVisible();
@@ -962,7 +962,7 @@ test.describe('Play together', () => {
   test('44 ?coop=0 turns co-op off', async ({ page }, info) => {
     test.skip(info.project.name !== '390', '390 only');
     await rootSet('config/coop/on', true);
-    await boot(page, saveFor('coopOff', 'Tester'), '?cloud=emu&debug=1&coop=0');
+    await boot(page, saveFor('coopOff', 'Tester'), '?cloud=emu&debug=1&coop=0' + emuQuery());
     expect(await page.evaluate(() => new URLSearchParams(location.search).get('coop'))).toBe('0');
     expect(await page.evaluate(() => window.PPNet.coop.cfg.on)).toBe(false);
     await joinRoom(page);

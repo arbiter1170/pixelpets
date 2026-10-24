@@ -1,16 +1,33 @@
 /* One local Firebase emulator for coop_r2, play_together, aura_perf, art_pass_coop and moves_v2.
    The first file starts it and records the pid. Later files reuse the open ports.
    tests/emu_teardown.js stops that pid after the run. The lock still keeps the
-   three files from sharing a room at the same time. Never the live project. */
+   three files from sharing a room at the same time. Never the live project.
+   Ports come from PP_EMU_DB_PORT, PP_EMU_AUTH_PORT, PP_EMU_FS_PORT, PP_EMU_FS_WS_PORT,
+   PP_EMU_HUB_PORT and PP_EMU_LOGGING_PORT (tools/pp_test.js picks free ones). Unset, they
+   are the old 9000, 9099, 8180, 9150, 4400 and 4500. Pages reach the same ports through
+   emuQuery() (cloud.js reads dbPort, authPort and fsPort with ?cloud=emu). */
 const { spawn } = require('child_process');
 const fs = require('fs');
 const http = require('http');
 const net = require('net');
+const os = require('os');
 const path = require('path');
+const { envPort, writeConfig } = require('../tools/emu_ports');
 
 const ROOT = path.join(__dirname, '..');
-const LOCK = path.join(ROOT, 'test-logs', 'rtdb-play.lock');
-const PID = path.join(ROOT, 'test-logs', 'rtdb-emu.pid');
+const EMU_PORTS = {
+  database: envPort('PP_EMU_DB_PORT') || 9000,
+  auth: envPort('PP_EMU_AUTH_PORT') || 9099,
+  firestore: envPort('PP_EMU_FS_PORT') || 8180,
+  firestoreWs: envPort('PP_EMU_FS_WS_PORT') || 9150,
+  hub: envPort('PP_EMU_HUB_PORT') || 4400,
+  logging: envPort('PP_EMU_LOGGING_PORT') || 4500,
+};
+const EMU_DIR = path.join(os.tmpdir(), 'pp-emu-' + EMU_PORTS.database);
+const LOCK = path.join(ROOT, 'test-logs', 'rtdb-play-' + EMU_PORTS.database + '.lock');
+const PID = path.join(ROOT, 'test-logs', 'rtdb-emu-' + EMU_PORTS.database + '.pid');
+// Append to a ?cloud=emu query so the page talks to this run's emulator.
+const emuQuery = () => '&dbPort=' + EMU_PORTS.database + '&authPort=' + EMU_PORTS.auth + '&fsPort=' + EMU_PORTS.firestore;
 
 function portOpen(port) {
   return new Promise(res => {
@@ -19,7 +36,7 @@ function portOpen(port) {
   });
 }
 async function emuPorts(which) {
-  const db = await portOpen(9000), auth = await portOpen(9099), store = await portOpen(8180);
+  const db = await portOpen(EMU_PORTS.database), auth = await portOpen(EMU_PORTS.auth), store = await portOpen(EMU_PORTS.firestore);
   return which === 'all' ? db && auth && store : db || auth || store;
 }
 async function waitUntil(pred, ms, err) {
@@ -31,7 +48,7 @@ async function waitUntil(pred, ms, err) {
 }
 function dbAnswers() {
   return new Promise(res => {
-    const req = http.get({ host: '127.0.0.1', port: 9000, path: '/.json?ns=demo-walklings', timeout: 1000 }, (r) => { r.resume(); res(true); });
+    const req = http.get({ host: '127.0.0.1', port: EMU_PORTS.database, path: '/.json?ns=demo-walklings', timeout: 1000 }, (r) => { r.resume(); res(true); });
     req.on('error', () => res(false));
     req.on('timeout', () => { req.destroy(); res(false); });
   });
@@ -56,10 +73,11 @@ function unlockEmu() {
     if (fs.existsSync(LOCK) && fs.readFileSync(LOCK, 'utf8') === String(process.pid)) fs.unlinkSync(LOCK);
   } catch (e) {}
 }
-function firebaseCmd() {
+function firebaseCmd(config) {
   const bin = path.join(ROOT, 'node_modules', '.bin', 'firebase');
-  if (fs.existsSync(bin)) return { cmd: bin, args: ['emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings'] };
-  return { cmd: 'npx', args: ['firebase', 'emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings'] };
+  const args = ['emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings', '--config', config];
+  if (fs.existsSync(bin)) return { cmd: bin, args };
+  return { cmd: 'npx', args: ['firebase', ...args] };
 }
 
 async function ensureEmulator() {
@@ -68,8 +86,9 @@ async function ensureEmulator() {
     await waitUntil(async () => !(await emuPorts('any')), 20000, 'previous emulator did not exit');
   }
   if (!(await emuPorts('all'))) {
-    const spec = firebaseCmd();
-    const emu = spawn(spec.cmd, spec.args, { cwd: ROOT, detached: true, stdio: 'ignore' });
+    const { dir, config } = writeConfig(EMU_PORTS, EMU_DIR);
+    const spec = firebaseCmd(config);
+    const emu = spawn(spec.cmd, spec.args, { cwd: dir, detached: true, stdio: 'ignore', env: { ...process.env, TMPDIR: dir } });
     fs.mkdirSync(path.dirname(PID), { recursive: true });
     fs.writeFileSync(PID, String(emu.pid));
     emu.unref();
@@ -82,4 +101,4 @@ function releaseEmulator() {
   unlockEmu();
 }
 
-module.exports = { ensureEmulator, releaseEmulator };
+module.exports = { ensureEmulator, releaseEmulator, EMU_PORTS, EMU_DIR, PID, emuQuery };
