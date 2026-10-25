@@ -8474,7 +8474,8 @@ function basketPick(lines, suggest, onYes){
       if (!which) return;
       const si = SP_INDEX[which], sp = SPECIES[si];
       spriteCanvas($('#bkBig'), si, 0); $('#bkName').textContent = sp.stages[0].name; typeChip($('#bkType'), sp.type); $('#bkLine').textContent = lines[which];
-      $('#bkYes').onclick = () => { basketYes(() => { if (onYes) onYes(); ov.hidden = true; res(which); }); };
+      let yesBusy = false;   // a second YES during the wobble is ignored; each card draw starts fresh
+      $('#bkYes').onclick = () => { if (yesBusy) return; yesBusy = true; basketYes(() => { if (onYes) onYes(); ov.hidden = true; res(which); }); };
       $('#bkNo').onclick = () => { sfx('tap'); show(null); };
     };
     row.innerHTML = '';

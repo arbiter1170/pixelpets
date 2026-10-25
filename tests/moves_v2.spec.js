@@ -523,7 +523,8 @@ test('16 win and loss panels open on an empty queue', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390 only');
   await boot(page);
   await openWild(page, 'gust/0', 2);
-  await page.evaluate(() => { PixelPets.setHp('foe', 1); PixelPets.battle.foePlan = { move: 'puff_shot' }; });
+  // pin the battle roll as tests 18, 20 and 21 do: a random miss would leave the foe up and the end panel shut
+  await page.evaluate(() => { PixelPets.setHp('foe', 1); PixelPets.battle.foePlan = { move: 'puff_shot' }; PixelPets.battle.rng = () => 0.5; });
   await page.locator('[data-bact="fight"]').click();
   await page.locator('#btMoves button').first().click();
   await page.waitForFunction(() => PixelPets.battle.panel === 'end');
@@ -539,6 +540,7 @@ test('16 win and loss panels open on an empty queue', async ({ page }) => {
     const b = PixelPets.battle;
     b.foes[0].stats.spd = 400;
     b.foePlan = { move: 'flick_flame' };
+    b.rng = () => 0.5;
   });
   await page.locator('[data-bact="fight"]').click();
   await page.locator('#btMoves button').first().click();
