@@ -10,6 +10,8 @@ D104 stays reserved for Lizzy. D363-D379 and D390-D415 are reserved: WORLD_CLOCK
 
 HUSHWATER B1 merged in #125 and HUSHWATER B2 merged in #126. Both are on main.
 
+D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE P0) are settled and recorded in the archive. D72 is settled yes and moved to the archive.
+
 Next free id is D730.
 Other packets hold ids through D729.
 
@@ -18,7 +20,6 @@ Other packets hold ids through D729.
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
 | D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
-| D72 | Q26 landscape | The sketch is landscape and says the game should be full screen when opened, with a vertical option in Settings. Build a landscape layout, and lock orientation in the manifest? | Not built. The app is a portrait column at most 480 px wide, and `manifest.json` is `display: standalone` with no orientation. Modern in Q26 is portrait: the map fills the portrait screen. A landscape layout, its Settings row, and an orientation lock are this row | NEXT_PLAN §3 Q26 "Landscape". When built: `manifest.json`, `#app` in `style.css`, `fitAll` in `game.js` |
 | D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
 ## Not started, blocked on people
 
@@ -29,7 +30,7 @@ Other packets hold ids through D729.
 - The box screen and the installable app are built. Rename (Q23), the music volume slider (Q24), and the welcome-back line (Q25) are built. Brinewick still waits on a one-pager.
 - Town boards (Q19) are on hold (Vincent). Detail stays in `TOWN_BOARD.md`. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3, Cald's gate count, is on this branch. The other slips are not started. Mahopac has a board and no slips. The region-map D37 was settled keep as built by team vote (Oct 23, 2026). D56 and D57 are the open lines on the welcome and on clearing a nickname. They do not block the boards.
 - The Capital Partnership Briefing (Q22) is The Signal Review, built on this branch. It does not add a second Standing grant on `r5_g`. Brinewick, Hall #3, and Seal 3 stay closed.
-- Modern and arcade controls (Q26) are built (PR #48). The prompt and the modern tips (D70) and the joystick default (D71) are settled. Landscape (D72) is still open and not built.
+- Modern and arcade controls (Q26) are built (PR #48). The prompt and the modern tips (D70) and the joystick default (D71) are settled. D72 is settled yes (Vincent, Oct 24, 2026): layout yes, no orientation lock, no landscape Settings row. P0, the bigger upright map, is on this branch. The landscape layout is not built.
 - More Walkling adornments unlock during quests (D75). That list is not built. The five current ones stay free. Stitch & Lantern sells six more through wardrobe flags. Those are not the quest list.
 - End-game side switching (D161): not planned yet and not built. Rook's quest stays the only switch. Pledge desks stay removed.
 - D326–D333 settled Oct 20, 2026 (Vincent, 12:55 PM ET, on defaults, "Turn on for everyone"). Co-op is on for everyone. The server switch `/config/coop/on` is the kill switch. The build uses `COOP_VOTE`. D334–D337 are settled green (Design) and archived. D339–D341 are settled (Vincent, 8:40 AM ET, Oct 20, 2026, on defaults, design bfe356a) and archived. D342 is green (Vincent's ask, 8:10 AM ET) and already shipped with Lizzy. D343 and D344 were settled by Vincent at 9:49 PM ET on Oct 20, 2026, early, on the defaults. D345 is green (Design). The hint lines and the doorstep reveal are in this build. Lizzy's lines are not edited here. D346–D362 stay reserved for HUSHWATER (design tip 9835ccb). B0 is built on this branch. D347 was settled by Vincent at 11:34 AM ET Oct 20, 2026, on the defaults. D357 is green. B1 and E1–E4 merged in #125. B2 merged in #126. D346 is the Lizzy placeholder, settled and not built. D348–D353 were settled by Vincent at 9:49 PM ET Oct 20, 2026, on the defaults, and are archived. D354–D362 stay green. D380–D389 (PLAYTEST_FIX_1020, design 0b0c3dc) are settled. D363-D379 and D390-D398 are reserved: WORLD_CLOCK_TOWN (design). D397 and D398 are settled green. See the header above. P1 world clock v1 is on this branch. P2 Market Row is on this branch. P3 wardrobe v1 is on this branch. P4 stores are on this branch.
@@ -47,7 +48,7 @@ TUTORIALS_CARE_MOVES D584-D598 are recorded in the archive (Oct 23, 2026, design
 
 TOWN_CHATTER D579-D583 are recorded in the archive. D580-D582 (green) were settled on the default by the Supervisor (Oct 23, 2026). D579 and D583 (yellow) were settled on the default by Vincent (Oct 23, 2026, 3:16 PM ET).
 
-Old-decision triage yellows D1, D33, D35, D36, D37 (the region-map row), D58 and D61 are recorded in the archive (yellow, settled keep as built by team vote, recorded by the Supervisor, Oct 23, 2026). D32, D72 and D161 stay open.
+Old-decision triage yellows D1, D33, D35, D36, D37 (the region-map row), D58 and D61 are recorded in the archive (yellow, settled keep as built by team vote, recorded by the Supervisor, Oct 23, 2026). D32 and D161 stay open. D72 is settled and recorded in the archive.
 
 MOVES_V2 D522-D533 and D564-D569 are recorded in the archive (Oct 23, 2026, design 0422a16). D522-D525 are red, settled YES by Vincent; D526-D529 settled YES; D530-D533 green, settled by the Supervisor on the default; D564-D569 settled by Vincent on the default.
 

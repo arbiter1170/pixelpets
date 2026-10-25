@@ -54,6 +54,16 @@ button{font-family:var(--font);font-weight:bold;font-synthesis:none;touch-action
 .set-vol .set-lab{flex:0 0 auto}
 .set-vol input[type=range]{flex:1 1 auto;min-width:36px;width:auto;height:44px;min-height:44px;margin:0;padding:0;border:0;background:transparent;accent-color:var(--y)}
 .set-vol .set-val{color:var(--y);min-width:3.2ch;text-align:right}
+.set-zoom input[type=range]{min-width:88px;-webkit-appearance:none;appearance:none;cursor:pointer;touch-action:pan-y}
+.set-zoom input[type=range]::-webkit-slider-runnable-track{height:8px;background:var(--d);border:2px solid var(--k)}
+.set-zoom input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:44px;height:44px;margin-top:-20px;background:var(--y);border:3px solid var(--k);box-shadow:inset -3px -3px 0 rgba(0,0,0,.25)}
+.set-zoom input[type=range]::-moz-range-track{height:8px;background:var(--d);border:2px solid var(--k)}
+.set-zoom input[type=range]::-moz-range-thumb{width:44px;height:44px;border-radius:0;background:var(--y);border:3px solid var(--k)}
+.set-zoom input[type=range]:focus-visible{outline:2px solid var(--y);outline-offset:2px}
+/* Map zoom: the label lines up with the other Settings rows (14 px in), and 12 px keeps the 44 px thumb off the label and the value. */
+.set-zoom{min-height:50px;padding:0 14px;gap:12px}
+.set-zoom .set-val{min-width:5.4ch}
+.set-zoom[hidden]{display:none}
 .set-row.set-danger{border-color:var(--r);color:var(--h)}
 .set-row.set-danger .set-val{color:var(--r)}
 .settings-inner > .btn{flex:0 0 auto;width:calc(100% - 6px);min-height:44px}
@@ -228,6 +238,11 @@ body.scene-on .walk-ctl{opacity:0}
 #envText{overflow:hidden;text-overflow:ellipsis}
 /* QA Oct 15: a 44 px tap target in arcade without moving anything: 8 px transparent borders, pulled back by negative margins. */
 body:not(.ctl-modern) .env-badge{border-top:8px solid transparent;border-bottom:8px solid transparent;background-clip:padding-box;box-shadow:none;outline:2px solid var(--d);outline-offset:-8px;margin-top:-8px;margin-bottom:-8px;min-height:44px}
+/* D729: arcade area chip sits on the map's top-left so its row leaves the flex flow.
+   A long name ellipsizes so the chip stays a corner target and a top-edge tap can still reach the map.
+   Gated behind the MODERN_HUD_CLEAR P1 frame class (Supervisor green call, Oct 25 2026): off, arcade is live's layout. */
+body.mhc-frame:not(.ctl-modern) #scr-walk #envBadge{position:absolute;left:20px;top:20px;z-index:4;margin:0;max-width:148px}
+body.mhc-frame:not(.ctl-modern) #scr-walk #envBadge #envText{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .env-badge small{font-size:13px;color:var(--k);background:var(--h);padding:0 3px;letter-spacing:1px;flex:0 0 auto}
 .env-badge small:empty{display:none}
 .geo-text{margin:0;font-size:18px;line-height:1.45;color:var(--w)}
@@ -1348,6 +1363,7 @@ body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-loc
 .coop-head-btn.away canvas{filter:grayscale(1);opacity:.55}
 .coop-count{position:absolute;right:1px;bottom:0;color:var(--w);font-size:12px;line-height:1}
 body.ctl-modern #coopStrip{top:56px;left:56px}
+body.mhc-frame:not(.ctl-modern) #coopStrip{top:70px;left:4px}
 #coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}
 #coopJoin{background:var(--g);color:var(--k)}
 #coopNotNow{background:var(--m);color:var(--w)}

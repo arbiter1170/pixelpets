@@ -125,10 +125,16 @@ test('edge boxes are 44 px, clear the HUD, and point in 8 directions', async ({ 
     await page.evaluate(({ x, y }) => PixelPets.cueForce({ x, y }), { x, y });
     await frame(page);
     const got = await page.evaluate(({ x, y }) => {
-      const ch = PixelPets.cueChip();
-      return { dir: ch && ch.dir, want: null, dx: x - 12, dy: y - 27 };
+      const ch = PixelPets.cueChip(), cam = PixelPets.walk.cam, s = PixelPets.mapInfo.scale;
+      // The arrow turns from the edge box toward the target, so the box centre is the origin (css px on the canvas).
+      const bx = ch.box.x + ch.box.w / 2, by = ch.box.y + ch.box.h / 2;
+      return { dir: ch && ch.dir, bdx: (x * 16 + 8 - cam.x) * s - bx, bdy: (y * 16 + 8 - cam.y) * s - by, dx: x - 12, dy: y - 27 };
     }, { x, y });
-    expect(got.dir, x + ',' + y).toBe(sector(got.dx, got.dy));
+    expect(got.dir, x + ',' + y).toBe(sector(got.bdx, got.bdy));
+    // The box sits on the holder-to-target line near the edge, so the arrow is that direction or its neighbour
+    // (the camera framing moves the box along the edge).
+    const near = [-1, 0, 1].map(d => DIRS[(DIRS.indexOf(sector(got.dx, got.dy)) + d + 8) & 7]);
+    expect(near, x + ',' + y).toContain(got.dir);
   }
 
   await openSettings(page);
@@ -286,6 +292,7 @@ test('cue hooks stay inert without debug @w1', async ({ page }) => {
 function trailSave(extra) {
   const s = modernSave();
   s.flags['story.phone_got'] = true;
+  s.flags['story.unlock_phone'] = true;
   s.flags['story.mom_met'] = true;
   s.flags['story.mom_chore'] = true;
   s.flags['story.mom_sent'] = true;
@@ -346,9 +353,36 @@ async function edgeClear(page) {
 
 test('the north trail and the Lodge door stay tappable beside an edge box', async ({ page }) => {
   await bootTrail(page);
+  // D787 A/B pads are gated off until MHC P1; this check covers the padded camera, so force them on.
+  expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);
   const clear = await edgeClear(page);
   expect(clear.n).toBeGreaterThan(0);
   expect(clear.hit).toEqual([]);
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 8, 'up'));
+  await frame(page);
+  const row = await page.evaluate(() => {
+    const mc = document.querySelector('#mapCanvas');
+    const r = mc.getBoundingClientRect();
+    const cam = PixelPets.walk.cam;
+    const s = r.width / mc.width;
+    const hud = ['#fcTop', '#fcTL'].map((sel) => document.querySelector(sel).getBoundingClientRect());
+    const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    return [8, 9, 10].map((tx) => {
+      const rect = {
+        left: r.left + (tx * 16 - cam.x) * s,
+        top: r.top + (2 * 16 - cam.y) * s,
+        right: r.left + ((tx + 1) * 16 - cam.x) * s,
+        bottom: r.top + (3 * 16 - cam.y) * s,
+      };
+      const cx = (rect.left + rect.right) / 2, cy = (rect.top + rect.bottom) / 2;
+      const el = document.elementFromPoint(cx, cy);
+      return { tx, covered: hud.some((b) => hit(rect, b)), hit: el ? el.id : null };
+    });
+  });
+  for (const cell of row) {
+    expect(cell.covered, 'exit tile ' + cell.tx + ',2 intersects #fcTop or #fcTL').toBe(false);
+    expect(cell.hit, 'exit tile ' + cell.tx + ',2 is not tappable').toBe('mapCanvas');
+  }
   await tapTile(page, 10, 2);
   await page.waitForFunction(() => PixelPets.mapInfo.id === 'mahopac' && !PixelPets.fading);
   expect(await page.evaluate(() => ({ map: PixelPets.mapInfo.id, x: PixelPets.keeper.x, y: PixelPets.keeper.y, quest: document.querySelector('#ovQuest').hidden }))).toEqual({ map: 'mahopac', x: 9, y: 14, quest: true });

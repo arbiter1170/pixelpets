@@ -14,7 +14,7 @@ const OLD = {
 function labSave(flags = {}, world) {
   const s = starterSave();
   Object.assign(s.flags, {
-    'story.side': 'glimmer', 'story.side_pick_done': true, 'story.rx_enter': true, 'story.saw_arbiter': true,
+    'story.side': 'glimmer', 'story.side_pick_done': true, 'story.unlock_sides': true, 'story.rx_enter': true, 'story.saw_arbiter': true,
     'story.rx_f1': true, 'story.rx_f2': true, 'story.rx_f3': true,
     // side_pick_done queues the one-time "Your side" tip. It opens on #tutLayer once WALK is quiet and
     // swallows map taps. These tests are about the stairs, so mark it as seen.

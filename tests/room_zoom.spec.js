@@ -33,10 +33,16 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
   await gotoGame(page, '?debug=1');
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);
-  const outdoor = await page.evaluate(() => PixelPets.mapInfo);
+  const outdoor = await page.evaluate(() => {
+    const info = PixelPets.mapInfo;
+    const w = document.querySelector('#mapWrap');
+    // Map zoom defaults to 2x, which is today's outdoor scale.
+    return Object.assign({ want: info.baseScale, wrapW: w.clientWidth }, info);
+  });
   expect(outdoor.id).toBe('hearthmoor');
   expect(outdoor.room).toBe(false);
-  expect(outdoor.scale).toBe(outdoor.baseScale);
+  expect(outdoor.scale).toBe(2);   // modern outdoors is 2x at 320, 375 and 390, as live
+  expect(outdoor.baseScale).toBe(2);
   expect(outdoor.slack).toBe(0);
   expect(outdoor.edge).toBe(null);
 
