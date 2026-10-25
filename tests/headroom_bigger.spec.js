@@ -304,8 +304,9 @@ test('P0 the default 2x map zoom is today\'s scale outdoors, and rooms keep toda
     });
     expect(outdoor.room).toBe(false);
     expect(outdoor.z).toBe(2);
-    // Live on main: modern is 2x at every width; arcade is floor(width / 176), so 1x at 320 and 2x at 375 and 390.
-    const live = mode === 'modern' ? 2 : ({ 320: 1, 375: 2, 390: 2 })[page.viewportSize().width];
+    // Live on main (measured on main): modern is 2x at every width; arcade is floor(map wrap width / 176)
+    // and its wrap is 36 px narrower than the window (284, 339, 354), so 1x at 320 and 375 and 2x at 390.
+    const live = mode === 'modern' ? 2 : ({ 320: 1, 375: 1, 390: 2 })[page.viewportSize().width];
     expect(outdoor.scale, mode).toBe(live);
     expect(outdoor.base, mode).toBe(live);
     const rooms = await page.evaluate(async () => {

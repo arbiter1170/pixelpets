@@ -125,10 +125,16 @@ test('edge boxes are 44 px, clear the HUD, and point in 8 directions', async ({ 
     await page.evaluate(({ x, y }) => PixelPets.cueForce({ x, y }), { x, y });
     await frame(page);
     const got = await page.evaluate(({ x, y }) => {
-      const ch = PixelPets.cueChip();
-      return { dir: ch && ch.dir, want: null, dx: x - 12, dy: y - 27 };
+      const ch = PixelPets.cueChip(), cam = PixelPets.walk.cam, s = PixelPets.mapInfo.scale;
+      // The arrow turns from the edge box toward the target, so the box centre is the origin (css px on the canvas).
+      const bx = ch.box.x + ch.box.w / 2, by = ch.box.y + ch.box.h / 2;
+      return { dir: ch && ch.dir, bdx: (x * 16 + 8 - cam.x) * s - bx, bdy: (y * 16 + 8 - cam.y) * s - by, dx: x - 12, dy: y - 27 };
     }, { x, y });
-    expect(got.dir, x + ',' + y).toBe(sector(got.dx, got.dy));
+    expect(got.dir, x + ',' + y).toBe(sector(got.bdx, got.bdy));
+    // The box sits on the holder-to-target line near the edge, so the arrow is that direction or its neighbour
+    // (the camera framing moves the box along the edge).
+    const near = [-1, 0, 1].map(d => DIRS[(DIRS.indexOf(sector(got.dx, got.dy)) + d + 8) & 7]);
+    expect(near, x + ',' + y).toContain(got.dir);
   }
 
   await openSettings(page);

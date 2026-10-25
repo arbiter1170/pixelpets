@@ -238,7 +238,7 @@ test('D787: pads are the HUD overlap with the visible canvas; hidden HUD pads 0 
   expect(off.band.hudPad).toBe(0);
   // Plain follow, no lift: the holder is centred in the full canvas, clamped to the map.
   const follow = Math.round(Math.min(Math.max(off.py + 8 - off.VH / 2, 0), off.MH * 16 - off.VH));
-  expect(off.camY).toBe(follow);
+  expect(off.camY + 0).toBe(follow + 0);   // + 0 folds a -0 from Math.round into 0
 });
 
 test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top chips', async ({ page }) => {
