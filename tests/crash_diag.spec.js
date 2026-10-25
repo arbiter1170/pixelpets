@@ -80,6 +80,13 @@ async function noteLines(page) {
 }
 
 async function assertNote(page) {
+  await page.waitForFunction(() => {
+    const el = document.querySelector('#crashNote');
+    if (!el || !el.checkVisibility || !el.checkVisibility({ checkVisibilityCSS: true })) return false;
+    const log = JSON.parse(localStorage.getItem('pp_crash_log') || 'null');
+    const row = log && log.builds && log.builds[window.BUILD];
+    return !!(row && row.n > 0 && row.seen === row.n);
+  }, null, { timeout: 8000 });
   const note = await shown(page, '#crashNote');
   expect(note).not.toBeNull();
   expect(await page.locator('#crashNoteText').textContent()).toBe(NOTE);
@@ -93,6 +100,45 @@ async function assertNote(page) {
     if (!box) continue;
     expect(overlaps(note, box), sel).toBe(false);
   }
+  // 320 arcade used to be a 116 px card over a 150 px map. The row is short. Wider arcade stays the stacked card.
+  const width = page.viewportSize().width;
+  const modern = await page.evaluate(() => document.body.classList.contains('ctl-modern'));
+  if (!modern && width <= 320) {
+    expect(note.h).toBeLessThanOrEqual(64);
+    const map = await shown(page, '#mapWrap');
+    expect(map).not.toBeNull();
+    const overlap = Math.max(0, Math.min(note.y + note.h, map.y + map.h) - Math.max(note.y, map.y));
+    expect(overlap).toBeLessThan(map.h / 2);
+  } else if (!modern) {
+    expect(note.h).toBeGreaterThan(80);
+  }
+}
+
+// Counts any frame where the note is really visible during a scene, tutorial, battle or overlay.
+async function armNoteWatch(context) {
+  await context.addInitScript(() => {
+    window.__noteDuringBlock = 0;
+    const vis = (sel) => {
+      const el = document.querySelector(sel);
+      return !!(el && el.checkVisibility && el.checkVisibility({ checkVisibilityCSS: true }));
+    };
+    const tick = () => {
+      try {
+        if (document.body) {
+          const blocked = document.body.classList.contains('scene-on') || document.body.classList.contains('tut-on')
+            || vis('#ovScene') || vis('#ovLook') || vis('#tutLayer') || vis('#ovBattle') || vis('#ovSettings');
+          if (blocked && vis('#crashNote')) window.__noteDuringBlock++;
+        }
+      } catch (e) {}
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+async function noteHiddenPastBoot(page) {
+  await page.waitForTimeout(1200);
+  expect(await shown(page, '#crashNote')).toBeNull();
 }
 
 async function saveUntouched(page) {
@@ -285,6 +331,169 @@ test('the crash log alone shows the count and the copy button', async ({ page })
   expect(await shown(page, '#crashNote')).toBeNull();
   await saveUntouched(page);
   expect(page.ppErrors).toEqual([]);
+});
+
+async function finishIntro(page) {
+  await page.waitForFunction(() => document.body.classList.contains('scene-on'), null, { timeout: 8000 });
+  for (let i = 0; i < 40; i++) {
+    const st = await page.evaluate(() => {
+      const vis = (sel) => {
+        const el = document.querySelector(sel);
+        return !!(el && el.checkVisibility && el.checkVisibility({ checkVisibilityCSS: true }));
+      };
+      return {
+        scene: document.body.classList.contains('scene-on') || vis('#ovScene') || vis('#ovLook'),
+        look: vis('#ovLook'),
+        choice: vis('#sbChoices button'),
+        skip: vis('#sbSkip'),
+        note: vis('#crashNote'),
+      };
+    });
+    if (st.scene) expect(st.note, 'note during the opening scene').toBe(false);
+    if (!st.scene) return;
+    if (st.look) {
+      await page.waitForTimeout(600);
+      await page.locator('#lookDone').click();
+    } else if (st.choice) {
+      await page.waitForTimeout(600);
+      await page.locator('#sbChoices button').first().click();
+    } else if (st.skip) {
+      await page.locator('#sbSkip').click();
+    } else {
+      await page.waitForTimeout(40);
+    }
+  }
+  throw new Error('opening scene did not finish');
+}
+
+test('a crash reload with no save keeps the note hidden through the opening scene', async ({ page }) => {
+  test.setTimeout(60000);
+  page.setDefaultTimeout(12000);
+  await armNoteWatch(page.context());
+  await boot(page);
+  expect(page.ppErrors).toEqual([]);
+  await crashPage(page);
+  const next = await page.context().newPage();
+  await boot(next);
+  expect(next.ppErrors).toEqual([]);
+  await next.waitForFunction(() => {
+    const t = document.querySelector('#sbText');
+    return !!(t && t.textContent && t.textContent.indexOf('Morning!') >= 0);
+  }, null, { timeout: 8000 });
+  expect(await shown(next, '#crashNote')).toBeNull();
+  const mid = await next.evaluate(() => JSON.parse(localStorage.getItem('pp_crash_log')));
+  const build = await next.evaluate(() => window.BUILD);
+  expect(mid.builds[build].n).toBe(1);
+  expect(mid.builds[build].seen).toBe(0);
+  await finishIntro(next);
+  expect(await next.evaluate(() => window.__noteDuringBlock || 0)).toBe(0);
+  await assertNote(next);
+  const shownLog = await next.evaluate(() => JSON.parse(localStorage.getItem('pp_crash_log')));
+  expect(shownLog.builds[build].seen).toBe(1);
+  await saveUntouched(next);
+  await next.reload({ waitUntil: 'commit' });
+  await next.waitForFunction(() => window.PixelPets && window.PixelPets.state, null, { timeout: 15000 });
+  await noteHiddenPastBoot(next);
+  const again = await next.evaluate(() => JSON.parse(localStorage.getItem('pp_crash_log')));
+  expect(again.builds[build].n).toBe(1);
+  expect(again.builds[build].seen).toBe(1);
+  expect(next.ppErrors).toEqual([]);
+});
+
+test('a crash reload hides the note while a tutorial starts at boot', async ({ page }) => {
+  test.setTimeout(60000);
+  page.setDefaultTimeout(12000);
+  const save = starterSave();
+  delete save.flags['story.tutorial_done'];
+  save.flags['story.tutorial_step'] = 'T0';
+  save.settings.textSpeed = 'fast';
+  await installSave(page.context(), save, { quietDay: true });
+  await armNoteWatch(page.context());
+  await boot(page);
+  expect(page.ppErrors).toEqual([]);
+  await crashPage(page);
+  const next = await page.context().newPage();
+  await boot(next);
+  expect(next.ppErrors).toEqual([]);
+  await next.waitForFunction(() => {
+    const el = document.querySelector('#tutLayer');
+    return !!(el && el.checkVisibility && el.checkVisibility({ checkVisibilityCSS: true }));
+  }, null, { timeout: 8000 });
+  expect(await shown(next, '#crashNote')).toBeNull();
+  const build = await next.evaluate(() => window.BUILD);
+  const mid = await next.evaluate(() => JSON.parse(localStorage.getItem('pp_crash_log')));
+  expect(mid.builds[build].n).toBe(1);
+  expect(mid.builds[build].seen).toBe(0);
+  await next.locator('#tutActs button', { hasText: 'SKIP' }).click();
+  await next.waitForFunction(() => {
+    const el = document.querySelector('#tutLayer');
+    return !el || (el.checkVisibility && !el.checkVisibility({ checkVisibilityCSS: true }));
+  }, null, { timeout: 8000 });
+  if (await next.locator('#ovGeo').isVisible()) await next.locator('#geoLater').click();
+  expect(await next.evaluate(() => window.__noteDuringBlock || 0)).toBe(0);
+  await assertNote(next);
+  const shownLog = await next.evaluate(() => JSON.parse(localStorage.getItem('pp_crash_log')));
+  expect(shownLog.builds[build].seen).toBe(1);
+  await saveUntouched(next);
+  expect(next.ppErrors).toEqual([]);
+});
+
+// The note hides for a scene, tutorial, battle or overlay and comes back when it closes.
+// OK is the only path that keeps it dismissed. This test uses Settings, which shares that check.
+test('an overlay hides the note and it comes back unless OK was tapped', async ({ page }) => {
+  test.setTimeout(60000);
+  page.setDefaultTimeout(12000);
+  await install(page.context(), 'arcade');
+  await armNoteWatch(page.context());
+  await boot(page);
+  expect(page.ppErrors).toEqual([]);
+  await crashPage(page);
+  const next = await page.context().newPage();
+  await boot(next);
+  expect(next.ppErrors).toEqual([]);
+  await assertNote(next);
+  await next.locator('#settingsBtn').click();
+  await next.waitForFunction(() => {
+    const el = document.querySelector('#crashNote');
+    const settings = document.querySelector('#ovSettings');
+    const noteUp = !!(el && el.checkVisibility && el.checkVisibility({ checkVisibilityCSS: true }));
+    const setUp = !!(settings && settings.checkVisibility && settings.checkVisibility({ checkVisibilityCSS: true }));
+    return setUp && !noteUp;
+  }, null, { timeout: 8000 });
+  expect(await shown(next, '#crashNote')).toBeNull();
+  await next.locator('#setClose').click();
+  await assertNote(next);
+  await next.locator('#crashNoteOk').click();
+  expect(await shown(next, '#crashNote')).toBeNull();
+  await next.locator('#settingsBtn').click();
+  await expect(next.locator('#ovSettings')).toBeVisible();
+  await next.locator('#setClose').click();
+  await noteHiddenPastBoot(next);
+  expect(await next.evaluate(() => window.__noteDuringBlock || 0)).toBe(0);
+  await saveUntouched(next);
+  expect(next.ppErrors).toEqual([]);
+});
+
+test('an ordinary reload does not show the note a second time', async ({ page }) => {
+  test.setTimeout(60000);
+  page.setDefaultTimeout(12000);
+  await install(page.context(), 'arcade');
+  await boot(page);
+  expect(page.ppErrors).toEqual([]);
+  await crashPage(page);
+  const next = await page.context().newPage();
+  await boot(next);
+  expect(next.ppErrors).toEqual([]);
+  await assertNote(next);
+  const build = await next.evaluate(() => window.BUILD);
+  await next.reload({ waitUntil: 'commit' });
+  await next.waitForFunction(() => window.PixelPets && window.PixelPets.state, null, { timeout: 15000 });
+  await noteHiddenPastBoot(next);
+  const log = await next.evaluate(() => JSON.parse(localStorage.getItem('pp_crash_log')));
+  expect(log.builds[build].n).toBe(1);
+  expect(log.builds[build].seen).toBe(1);
+  await saveUntouched(next);
+  expect(next.ppErrors).toEqual([]);
 });
 
 test('fitAll does not clear the map canvas when the size stays the same', async ({ page }) => {

@@ -367,11 +367,13 @@ function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); i
    pp_crash_log is never trimmed. Per build it keeps a count, the first time, the last time, and how many crash notes
    were shown. It also keeps the last crashed page's pp_diag so Copy crash info is that page, not the one now open.
    The save is not touched. The first boot after a crash shows one note the holder can dismiss. A planned reload, a
-   background close, or an unknown reload does not. */
+   background close, or an unknown reload does not. The note stays hidden while a scene, tutorial, battle or overlay
+   is up, including one that starts after boot, and it is marked seen only after the holder has actually seen it. */
 const RELOAD_KEY = 'pp_reload', RELOAD_LAST = 'pp_reload_last', ALIVE_KEY = 'pp_alive', HIDDEN_KEY = 'pp_hidden', RELOAD_KEEP = 5;
 const CRASH_LOG = 'pp_crash_log';
 const CRASH_NOTE = 'The game closed unexpectedly. Tap Copy crash info in Settings.';
-let swRegState = 'unknown', swRegBusy = false, lastTapAt = 0, crashNoticeDue = false, crashNoticeBuild = '', crashNoteTimer = 0;
+let swRegState = 'unknown', swRegBusy = false, lastTapAt = 0, crashNoticeDue = false, crashNoticeBuild = '', crashNoteTimer = 0, crashNoteObs = null;
+let crashNoticeHold = false, crashNoticeShown = false, crashNoticeDismissed = false, crashNoticeClearAt = 0;
 function lsJson(k){ try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 function lsPut(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function lsDrop(k){ try { localStorage.removeItem(k); } catch (e) {} }
@@ -834,28 +836,67 @@ function crashNoticeBlocked(){
   } catch (e) {}
   return false;
 }
-function showCrashNotice(){
-  if (!crashNoticeDue) return;
+// Hide while a scene, tutorial, battle or overlay is up, and show again when it closes, until OK.
+// Seen is written only after the note has stayed on screen. A boot scene starts on a timer after boot()
+// (intro at 60 ms, a resumed tour at 400 ms), so the first show waits past those timers.
+function syncCrashNotice(){
   const el = $('#crashNote'); if (!el) return;
-  if (crashNoticeBlocked()) { armCrashNotice(); return; }
-  const text = $('#crashNoteText'); if (text) text.textContent = CRASH_NOTE;
-  el.hidden = false;
-  markCrashSeen(crashNoticeBuild || buildId());
-  crashNoticeDue = false;
-  if (crashNoteTimer) { clearInterval(crashNoteTimer); crashNoteTimer = 0; }
+  if (!crashNoticeDue || crashNoticeDismissed) {
+    if (!el.hidden) el.hidden = true;
+    crashNoticeClearAt = 0;
+    return;
+  }
+  if (crashNoticeHold || crashNoticeBlocked()) {
+    if (!el.hidden) el.hidden = true;
+    crashNoticeClearAt = 0;
+    return;
+  }
+  const text = $('#crashNoteText'); if (text && text.textContent !== CRASH_NOTE) text.textContent = CRASH_NOTE;
+  if (el.hidden) el.hidden = false;
+  if (crashNoticeShown) return;
+  const t = Date.now();
+  if (!crashNoticeClearAt) crashNoticeClearAt = t;
+  if (t - crashNoticeClearAt >= 300) {
+    crashNoticeShown = true;
+    markCrashSeen(crashNoticeBuild || buildId());
+  }
 }
-function armCrashNotice(){
+function stopCrashNoticeWatch(){
+  if (crashNoteTimer) { clearInterval(crashNoteTimer); crashNoteTimer = 0; }
+  if (crashNoteObs) { try { crashNoteObs.disconnect(); } catch (e) {} crashNoteObs = null; }
+}
+function watchCrashNotice(){
   if (crashNoteTimer) return;
+  try {
+    if (!crashNoteObs && typeof MutationObserver === 'function' && document.body) {
+      crashNoteObs = new MutationObserver(() => { if (crashNoticeDue && !crashNoticeDismissed) syncCrashNotice(); });
+      crashNoteObs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['hidden', 'class'] });
+    }
+  } catch (e) {}
   crashNoteTimer = setInterval(() => {
-    if (!crashNoticeDue) { clearInterval(crashNoteTimer); crashNoteTimer = 0; return; }
-    if (crashNoticeBlocked()) return;
-    showCrashNotice();
-  }, 400);
+    if (!crashNoticeDue || crashNoticeDismissed) { stopCrashNoticeWatch(); return; }
+    syncCrashNotice();
+  }, 200);
+}
+function showCrashNotice(){
+  if (!crashNoticeDue || crashNoticeDismissed) return;
+  crashNoticeHold = true;
+  watchCrashNotice();
+  syncCrashNotice();
+  setTimeout(() => { crashNoticeHold = false; syncCrashNotice(); }, 500);
 }
 function bindCrashNotice(){
   const b = $('#crashNoteOk'); if (!b || b.dataset.on) return;
   b.dataset.on = '1';
-  b.addEventListener('click', () => { sfx('tap'); const el = $('#crashNote'); if (el) el.hidden = true; });
+  b.addEventListener('click', () => {
+    sfx('tap');
+    crashNoticeDismissed = true;
+    crashNoticeDue = false;
+    crashNoticeClearAt = 0;
+    if (!crashNoticeShown) { crashNoticeShown = true; markCrashSeen(crashNoticeBuild || buildId()); }
+    const el = $('#crashNote'); if (el) el.hidden = true;
+    stopCrashNoticeWatch();
+  });
 }
 
 /* ---------- debug fast mode (?fast=1, F key, PixelPets.setFast) ---------- */
