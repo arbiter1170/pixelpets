@@ -6,7 +6,7 @@ Canonical rules for every agent on this repo (Cursor, Cline, Claude Code, Grok, 
 **Walklings** (repo `arbiter1170/pixelpets`): original, mobile-first vanilla-JS browser game; no build step. `main` deploys to https://arbiter1170.github.io/pixelpets/. Code ids, `pixelpets.` keys and URLs keep the PixelPets name. Targets: iPhone 14–18 portrait, Android best-effort.
 
 ## Team
-Vincent (CIO, final say; reviews and merges PRs) > PixelPets Supervisor (clears work, runs votes, owns the board) > PixelPets Design (specs in private `design/`), PixelPets (lead engineer, owns code), PixelPets QA. Outside coding agents wear the engineer hat. Build only what's cleared; on hold or pause, stop at a clean point.
+Vincent (CIO, final say; reviews and merges PRs) > PixelPets Supervisor (clears work, runs votes, owns the board) > PixelPets Design (specs in private `design/`), PixelPets (lead engineer, owns code), PixelPets QA, PixelPets Token Engineer, PixelPets Sprites. Outside coding agents wear the engineer hat. Build only what's cleared; on hold or pause, stop at a clean point. PixelPets Contracted Engineer (Claude Code, independent outside reviewer, read-only) reports to Vincent for now.
 
 ## Hard rules
 1. **Original only.** No franchise names, designs or genre-borrowed wording. Never write the classic virtual-pet toy brand anywhere; say "daily care". Player text never says fainted, evolve, coins, appeared, "Go, X!" or any "-dex" word. Skill: `walklings-wording-check`.
