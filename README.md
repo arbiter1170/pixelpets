@@ -368,7 +368,7 @@ Forest, Desert, Snow, Storm, Night, plus AUTO to go back to real data), saved in
 `pixelpets.envOverride`. Environment console hooks (the `set`/`spawn`/`clear` ones need debug mode):
 - `PixelPets.env`: current area `{tags, label, status, temp, place, ...}`.
 - `PixelPets.setEnv('snow')` or `PixelPets.setEnv(['city','rain'])`; `PixelPets.setEnv(null)` = real data again.
-- `PixelPets.refreshEnv()`: refetch now (ignores the cache).
+- `PixelPets.refreshEnv()`: only with `?debug=1` (undefined otherwise). Refetches now through the REFRESH path: re-reads the device only if location is allowed and the permission is already granted, else refetches weather for the cached area. Never prompts.
 - `PixelPets.spawnWild(sp?, stage?, x?, y?)`: add a creature (default: area-weighted species, near-ish free tile).
 - `PixelPets.clearWild()` removes all creatures and pauses auto-spawning; `PixelPets.autoWild()` resumes it.
 - `PixelPets.spawnOdds(tags?)`: spawn chances per species for the current (or given) tags.

@@ -1,4 +1,4 @@
-/* Copy crash info. Visible for ?debug=1 or a crash? reload line, even when Debug is off.
+/* Copy crash info. Visible for ?debug=1 or when the NEWEST reload entry is a crash, even when Debug is off.
    The clipboard gets pp_diag plus the reload list. Nothing is sent. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
@@ -75,4 +75,50 @@ test('?debug=1 shows the button with no crash, and a rejected clipboard still co
   const payload = JSON.parse(raw);
   expect(payload.diag.live).toEqual(expect.any(Number));
   expect(Array.isArray(payload.reloads)).toBe(true);
+});
+
+async function bootWithReloads(page, list) {
+  await page.addInitScript((list) => {
+    if (sessionStorage.getItem('__reloadsSeeded')) return;
+    sessionStorage.setItem('__reloadsSeeded', '1');
+    localStorage.setItem('pp_reload_last', JSON.stringify(list));
+  }, list);
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page);
+  await openSettings(page);
+}
+// Really on screen: rendered (not hidden by an ancestor or CSS), a real box, inside the viewport.
+const onScreen = (page, sel) => page.evaluate((sel) => {
+  const el = document.querySelector(sel);
+  if (!el || (el.checkVisibility && !el.checkVisibility({ checkVisibilityCSS: true }))) return null;
+  const r = el.getBoundingClientRect();
+  if (r.width <= 0 || r.height <= 0 || r.right <= 0 || r.bottom <= 0 || r.left >= innerWidth || r.top >= innerHeight) return null;
+  return { w: r.width, h: r.height };
+}, sel);
+
+test('an older crash followed by a newer normal reload hides the button', async ({ page }) => {
+  await bootWithReloads(page, [
+    { reason: 'crash', at: 1760000000000, screen: 'Walk', build: 'test' },
+    { reason: 'build', at: 1760000600000, screen: 'Walk', build: 'test' },
+  ]);
+  await expect(page.locator('#setReload')).toBeVisible();
+  await expect(page.locator('#setReload')).toContainText('new build');
+  await expect(page.locator('#setCrashCopy')).toBeHidden();
+  expect(await onScreen(page, '#setCrashCopy')).toBeNull();
+  expect(await page.locator('#setCrashCopy').boundingBox()).toBeNull();
+});
+
+test('the newest reload being a crash shows the button at 44 px or more', async ({ page }) => {
+  await bootWithReloads(page, [
+    { reason: 'build', at: 1760000000000, screen: 'Walk', build: 'test' },
+    { reason: 'crash', at: 1760000600000, screen: 'Walk', build: 'test' },
+  ]);
+  await expect(page.locator('#setReload')).toContainText('crash?');
+  const btn = page.locator('#setCrashCopy');
+  await expect(btn).toBeVisible();
+  await btn.scrollIntoViewIfNeeded();
+  const box = await onScreen(page, '#setCrashCopy');
+  expect(box).not.toBeNull();
+  expect(box.h).toBeGreaterThanOrEqual(44);
+  expect(box.w).toBeGreaterThanOrEqual(44);
 });
