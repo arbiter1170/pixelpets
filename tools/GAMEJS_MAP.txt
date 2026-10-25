@@ -222,9 +222,8 @@
 1110-1111  let mapZoom
 1110-1111  let mapBase
 1112-1112  const HUD_FALLBACK
-1113-1116  let hudPads
-1117-1117  const MHC_FRAME_CLASS
-1118-1118  let hudPadsForce
+1113-1117  let hudPads
+1118-1118  const MHC_FRAME_CLASS
 1119-1127  function hudPadsLive
 1128-1128  const MAP_ZOOM_MIN
 1128-1128  const MAP_ZOOM_MAX

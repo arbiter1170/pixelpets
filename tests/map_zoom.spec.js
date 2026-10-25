@@ -240,6 +240,45 @@ test('default 2x: with no frame class the map offset is main\'s at the Hearthmoo
   }
 });
 
+// Arcade is the default for a save with no controls setting. The D729 area chip move waits for the same P1 frame
+// class, so without it arcade is main's layout. Canvas rect (left, top, width, height), map offset and camera,
+// in css px / art px, measured on main 21399e2 (build 20261025-0004) with this save. hearth_n is Hearthmoor (9,8).
+const ARCADE_MAIN = {
+  320: { rect: [18, 162, 284, 150], spawn: { off: [18, 149], cam: [0, 13] }, route1: { off: [18, 69], cam: [0, 93] }, hearth_n: { off: [8, 101], cam: [10, 61] } },
+  375: { rect: [18, 162, 339, 249], spawn: { off: [18, 162], cam: [0, 0] }, route1: { off: [18, 118], cam: [0, 44] }, hearth_n: { off: [18, 150], cam: [0, 12] } },
+  390: { rect: [18, 162, 354, 426], spawn: { off: [18, 162], cam: [0, 0] }, route1: { off: [-78, 38], cam: [48, 62] }, hearth_n: { off: [-110, 102], cam: [64, 30] } },
+};
+test('arcade default (no controls setting, no frame class): canvas rect, map offset and camera are main\'s', async ({ page }) => {
+  const sv = save();
+  delete sv.settings.controls;
+  await boot(page, sv);
+  const want = ARCADE_MAIN[page.viewportSize().width];
+  for (const [key, id, x, y] of [['spawn', 'hearthmoor', null, null], ['route1', 'route1', 8, 10], ['hearth_n', 'hearthmoor', 9, 8]]) {
+    await page.evaluate(([id, x, y]) => {
+      if (x == null) PixelPets.goto(id); else PixelPets.goto(id, x, y, 'up');
+      if (PixelPets.scene) PixelPets.endScene();
+    }, [id, x, y]);
+    await settle(page);
+    await page.waitForTimeout(400);
+    const got = await page.evaluate(() => {
+      const mc = document.querySelector('#mapCanvas'), cr = mc.getBoundingClientRect(), cam = PixelPets.walk.cam, k = cr.width / mc.width;
+      const badge = document.querySelector('#envBadge');
+      return { rect: [cr.left, cr.top, cr.width, cr.height].map(v => Math.round(v) + 0),
+        off: [Math.round(cr.left - cam.x * k) + 0, Math.round(cr.top - cam.y * k) + 0], cam: [cam.x + 0, cam.y + 0],
+        arcade: !document.body.classList.contains('ctl-modern'), frame: document.body.classList.contains('mhc-frame'),
+        shown: mc.checkVisibility(), badgeShown: badge.checkVisibility(), badgePos: getComputedStyle(badge).position };
+    });
+    expect(got.shown, key).toBe(true);
+    expect(got.arcade, key).toBe(true);
+    expect(got.frame, key).toBe(false);
+    expect(got.badgeShown, key).toBe(true);
+    expect(got.badgePos, key + ': the area chip stays in the flex row (D729 waits for P1)').not.toBe('absolute');
+    expect(got.rect, key).toEqual(want.rect);
+    expect(got.off, key).toEqual(want[key].off);
+    expect(got.cam, key).toEqual(want[key].cam);
+  }
+});
+
 test('D787: pads are the HUD overlap with the visible canvas; hidden HUD pads 0 and the north lift is off', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);   // the P1 frame flag, forced on
