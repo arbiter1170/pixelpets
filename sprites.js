@@ -358,32 +358,147 @@ const UNKNOWN = { id: 'unknown', name: '???', stages: [{ name: '???', grid: [
   '................',
 ]}] };
 
-/* Build an 18x18 canvas (16x16 + 1px outline border). mode: 'normal' | 'blink' | solid colour string.
+/* One sheet per cell size, not one canvas per tile. WebKit keeps a heavy object per canvas
+   even when the pixels are tiny, and a walk session was starting near two thousand of them.
+   Callers still see width, height, getContext and drawImage. A 1px clear margin matches the
+   transparent sample outside a standalone canvas when a blit is scaled. */
+const sheetPools = new Map(), sheetScratchMap = new Map();
+function sheetScratch(w, h){
+  const k = w + 'x' + h;
+  let c = sheetScratchMap.get(k);
+  if (!c) { c = document.createElement('canvas'); sheetScratchMap.set(k, c); }
+  if (c.width !== w) c.width = w;
+  if (c.height !== h) c.height = h;
+  const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, w, h);
+  return c;
+}
+function sheetTake(w, h){
+  const key = w + 'x' + h;
+  let pool = sheetPools.get(key);
+  if (!pool) sheetPools.set(key, pool = { sheets: [], free: [], strideX: w + 2, strideY: h + 2 });
+  if (pool.free.length) return pool.free.pop();
+  const strideX = pool.strideX, strideY = pool.strideY;
+  const cols = Math.max(1, Math.min(24, Math.floor(960 / strideX)));
+  const rows = Math.max(1, Math.min(16, Math.floor(480 / strideY)));
+  let sheet = pool.sheets[pool.sheets.length - 1];
+  if (!sheet || sheet.n >= cols * rows) {
+    const c = document.createElement('canvas');
+    c.width = cols * strideX + 1; c.height = rows * strideY + 1;
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+    sheet = { canvas: c, n: 0 };
+    pool.sheets.push(sheet);
+  }
+  const i = sheet.n++, col = i % cols, row = (i / cols) | 0;
+  return { sheet: sheet.canvas, x: 1 + col * strideX, y: 1 + row * strideY, w, h };
+}
+class SheetView {
+  constructor(rect, recycle){
+    this._sheet = rect.sheet; this._x = rect.x; this._y = rect.y; this._w = rect.w; this._h = rect.h;
+    this._recycle = !!recycle; this._dead = false; this._ctx = null;
+  }
+  get width(){ return this._dead ? 0 : this._w; }
+  get height(){ return this._dead ? 0 : this._h; }
+  set width(v){ if (!v) this._release(); }
+  set height(v){ if (!v) this._release(); }
+  getContext(kind){
+    if (kind && kind !== '2d') return null;
+    if (!this._ctx) this._ctx = sheetViewContext(this);
+    return this._ctx;
+  }
+  _release(){
+    if (this._dead) return;
+    this._dead = true;
+    if (!this._recycle || !this._sheet || !this._sheet.width) return;
+    const g = this._sheet.getContext('2d');
+    g.clearRect(this._x - 1, this._y - 1, this._w + 2, this._h + 2);
+    const pool = sheetPools.get(this._w + 'x' + this._h);
+    if (pool) pool.free.push({ sheet: this._sheet, x: this._x, y: this._y, w: this._w, h: this._h });
+  }
+}
+function sheetViewContext(view){
+  const g = () => view._sheet.getContext('2d');
+  return {
+    canvas: view,
+    get fillStyle(){ return g().fillStyle; }, set fillStyle(v){ g().fillStyle = v; },
+    get globalAlpha(){ return g().globalAlpha; }, set globalAlpha(v){ g().globalAlpha = v; },
+    get imageSmoothingEnabled(){ return g().imageSmoothingEnabled; },
+    set imageSmoothingEnabled(v){ g().imageSmoothingEnabled = v; },
+    fillRect(x, y, w, h){ g().fillRect(view._x + x, view._y + y, w, h); },
+    clearRect(x, y, w, h){ g().clearRect(view._x + x, view._y + y, w, h); },
+    getImageData(x, y, w, h){
+      if (view._dead || !view._sheet.width) return g().createImageData(w | 0, h | 0);
+      return g().getImageData(view._x + x, view._y + y, w, h);
+    },
+    putImageData(data, x, y){ if (!view._dead) g().putImageData(data, view._x + x, view._y + y); },
+    drawImage(img){
+      const args = Array.prototype.slice.call(arguments, 1), ox = view._x, oy = view._y;
+      if (args.length <= 2) { args[0] = (+args[0] || 0) + ox; args[1] = (+args[1] || 0) + oy; }
+      else if (args.length <= 4) { args[0] += ox; args[1] += oy; }
+      else { args[4] += ox; args[5] += oy; }
+      return CanvasRenderingContext2D.prototype.drawImage.apply(g(), [img].concat(args));
+    },
+  };
+}
+function sheetStamp(canvas){
+  const w = canvas.width, h = canvas.height;
+  const rect = sheetTake(w, h), g = rect.sheet.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  g.clearRect(rect.x - 1, rect.y - 1, w + 2, h + 2);
+  g.drawImage(canvas, rect.x, rect.y);
+  return new SheetView(rect, true);
+}
+function sheetPaint(w, h, fn){
+  const c = sheetScratch(w, h);
+  fn(c.getContext('2d'), c);
+  return sheetStamp(c);
+}
+// A cell on a canvas this caller owns (a building sheet). Not recycled into the shared sheets.
+function sheetView(sheet, x, y, w, h){ return new SheetView({ sheet, x, y, w, h }, false); }
+(function installSheetDraw(){
+  if (typeof CanvasRenderingContext2D !== 'function') return;
+  const orig = CanvasRenderingContext2D.prototype.drawImage;
+  if (orig.__sheet) return;
+  function draw(img){
+    if (img && img._sheet) {
+      if (img._dead || !img._w || !img._sheet.width) return;
+      const sx = img._x, sy = img._y, sw = img._w, sh = img._h, a = arguments;
+      if (a.length <= 3) return orig.call(this, img._sheet, sx, sy, sw, sh, a[1] || 0, a[2] || 0, sw, sh);
+      if (a.length <= 5) return orig.call(this, img._sheet, sx, sy, sw, sh, a[1], a[2], a[3], a[4]);
+      return orig.call(this, img._sheet, sx + a[1], sy + a[2], a[3], a[4], a[5], a[6], a[7], a[8]);
+    }
+    return orig.apply(this, arguments);
+  }
+  draw.__sheet = true;
+  CanvasRenderingContext2D.prototype.drawImage = draw;
+})();
+
+/* Build an 18x18 sprite (16x16 + 1px outline border). mode: 'normal' | 'blink' | solid colour string.
    A half is 8 columns and mirrored. A grid longer than 8 is a full 16x16 of PAL keys and is not mirrored. */
 function buildSprite(half, col, mode){
   const full = !!(half && half.length && String(half[0]).length > 8);
   const grid = full
     ? half.map(row => (String(row) + '................').slice(0, 16).split(''))
     : half.map(h => { h = (h + '........').slice(0,8); return (h + h.split('').reverse().join('')).split(''); });
-  const c = document.createElement('canvas'); c.width = 18; c.height = 18;
-  const g = c.getContext('2d');
-  const filled = (x,y) => x>=0 && y>=0 && x<16 && y<16 && grid[y][x] !== '.';
-  g.fillStyle = PAL.k;
-  for (let y=-1; y<=16; y++) for (let x=-1; x<=16; x++)
-    if (!filled(x,y) && (filled(x-1,y)||filled(x+1,y)||filled(x,y-1)||filled(x,y+1))) g.fillRect(x+1,y+1,1,1);
-  const isEye = ch => ch==='e' || ch==='i';
-  for (let y=0; y<16; y++) for (let x=0; x<16; x++){
-    const ch = grid[y][x]; if (ch === '.') continue;
-    let fill;
-    if (mode !== 'normal' && mode !== 'blink') fill = mode;
-    else if (full) fill = PAL[ch] || PAL.m;
-    else if (isEye(ch)) {
-      if (mode === 'blink') fill = (y<15 && isEye(grid[y+1][x])) ? col.a : PAL.k;
-      else fill = ch === 'e' ? PAL.k : PAL.w;
-    } else fill = col[ch] || PAL.m;
-    g.fillStyle = fill; g.fillRect(x+1,y+1,1,1);
-  }
-  return c;
+  return sheetPaint(18, 18, g => {
+    const filled = (x,y) => x>=0 && y>=0 && x<16 && y<16 && grid[y][x] !== '.';
+    g.fillStyle = PAL.k;
+    for (let y=-1; y<=16; y++) for (let x=-1; x<=16; x++)
+      if (!filled(x,y) && (filled(x-1,y)||filled(x+1,y)||filled(x,y-1)||filled(x,y+1))) g.fillRect(x+1,y+1,1,1);
+    const isEye = ch => ch==='e' || ch==='i';
+    for (let y=0; y<16; y++) for (let x=0; x<16; x++){
+      const ch = grid[y][x]; if (ch === '.') continue;
+      let fill;
+      if (mode !== 'normal' && mode !== 'blink') fill = mode;
+      else if (full) fill = PAL[ch] || PAL.m;
+      else if (isEye(ch)) {
+        if (mode === 'blink') fill = (y<15 && isEye(grid[y+1][x])) ? col.a : PAL.k;
+        else fill = ch === 'e' ? PAL.k : PAL.w;
+      } else fill = col[ch] || PAL.m;
+      g.fillStyle = fill; g.fillRect(x+1,y+1,1,1);
+    }
+  });
 }
 
 /* tiny pixel glyphs; chars are PAL keys */
@@ -661,7 +776,7 @@ const ICONS = {
 
 /* Tiles 16x16 */
 function rng(seed){ return () => { seed = (seed*1103515245 + 12345) & 0x7fffffff; return seed/0x7fffffff; }; }
-function mkTile(fn){ const c=document.createElement('canvas'); c.width=c.height=16; fn(c.getContext('2d')); return c; }
+function mkTile(fn){ return sheetPaint(16, 16, fn); }
 function px(g,col,x,y,w=1,h=1){ g.fillStyle=col; g.fillRect(x,y,w,h); }
 function grassBase(g, seed){ px(g,PAL.g,0,0,16,16); const r=rng(seed); for(let i=0;i<9;i++) px(g, r()<.5?PAL.l:PAL.t, (r()*16)|0, (r()*16)|0); }
 // FLOOR_FIX (D184-D186): 54 calm floor grids. Old floor tiles stay defined. No new palette keys.
@@ -2550,8 +2665,9 @@ const LIZZY_ART = {
   },
 };
 function addExteriorArt(T, A){
-  const paint = rows => { const c = document.createElement('canvas'); c.width = rows[0].length; c.height = rows.length; const g = c.getContext('2d');
-    rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })); return c; };
+  const paint = rows => sheetPaint(rows[0].length, rows.length, g => {
+    rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
+  });
   for (const [k, rows] of Object.entries(EXTERIOR_ART.tiles)) if (!T[k]) T[k] = paint(rows);
   for (const grp of ['art', 'big']) for (const [k, rows] of Object.entries(EXTERIOR_ART[grp])) if (!A[k]) A[k] = paint(rows);
   for (const [k, rows] of Object.entries(LIZZY_ART.tiles)) if (!T[k]) T[k] = paint(rows);

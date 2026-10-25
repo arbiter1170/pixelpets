@@ -121,11 +121,12 @@ const SPR = SPECIES.map(sp => sp.stages.map(st => ({
 })));
 // Light 1px ring around the outline so dark-bodied species read on the dark UI cells (map art unchanged).
 function haloSprite(src, col){
-  const c = document.createElement('canvas'); c.width = c.height = 18; const g = c.getContext('2d');
-  const d = src.getContext('2d').getImageData(0, 0, 18, 18).data, A = (x, y) => x >= 0 && y >= 0 && x < 18 && y < 18 && d[(y * 18 + x) * 4 + 3] > 0;
-  g.fillStyle = col;
-  for (let y = 0; y < 18; y++) for (let x = 0; x < 18; x++) if (!A(x, y) && (A(x-1, y) || A(x+1, y) || A(x, y-1) || A(x, y+1))) g.fillRect(x, y, 1, 1);
-  g.drawImage(src, 0, 0); return c;
+  return sheetPaint(18, 18, g => {
+    const d = src.getContext('2d').getImageData(0, 0, 18, 18).data, A = (x, y) => x >= 0 && y >= 0 && x < 18 && y < 18 && d[(y * 18 + x) * 4 + 3] > 0;
+    g.fillStyle = col;
+    for (let y = 0; y < 18; y++) for (let x = 0; x < 18; x++) if (!A(x, y) && (A(x-1, y) || A(x+1, y) || A(x, y-1) || A(x, y+1))) g.fillRect(x, y, 1, 1);
+    g.drawImage(src, 0, 0);
+  });
 }
 const TILES = buildTiles();
 for (const [id, sk] of Object.entries(SKINS)) if (sk.wall) Object.assign(TILES, buildWallKit(id, sk.wall));
@@ -652,8 +653,39 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
+function hasCrashReload(){
+  const list = lsJson(RELOAD_LAST);
+  return Array.isArray(list) && list.some(e => e && e.reason === 'crash');
+}
+function crashInfoText(){
+  return JSON.stringify({ diag: lsJson(DIAG_KEY), reloads: lsJson(RELOAD_LAST) || [], build: buildId() });
+}
+function copyCrashInfo(){
+  const text = crashInfoText();
+  const done = () => toast('Copied.');
+  const fallback = () => {
+    let ta = null;
+    try {
+      ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.left = '-9999px';
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand('copy');
+      if (ok) done();
+    } catch (e) {}
+    if (ta && ta.parentNode) ta.parentNode.removeChild(ta);
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+      return;
+    }
+  } catch (e) {}
+  fallback();
+}
 function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d;
   const rl = $('#setReload'); if (rl) { const r = lastReloadText(); rl.textContent = r; rl.hidden = !r; }
+  const cp = $('#setCrashCopy'); if (cp) cp.hidden = !(DEBUG || hasCrashReload());
   const er = $('#setError'); if (er) { const t = lastErrorText(); er.textContent = t; er.hidden = !t; } }
 function openSettings(){
   if (overlayOpen() && $('#ovSettings').hidden && allPets().length) return;
@@ -5437,9 +5469,11 @@ function buildingsOf(m){
   }
   return out;
 }
+let bldScratch = null;
 function paintBuilding(m, b, fac, P){
   const at = (x, y) => (m.grid[y] && m.grid[y][x]) || '', W = (b.x1 - b.x0 + 1) * TS, H = (b.y1 - b.y0 + 1) * TS, RH = (b.ry1 - b.y0 + 1) * TS, mid = W / 2;
-  const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  if (!bldScratch) bldScratch = document.createElement('canvas');
+  const c = bldScratch; c.width = W; c.height = H; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
   const inset = by => {                      // px cut from each side of roof row `by` (0 = the top row)
     const k = (RH - 1 - by) / RH, s = b.shape;
     if (s === 'gable') return Math.min(mid - 2, RH - 1 - by);
@@ -5501,26 +5535,44 @@ function paintBuilding(m, b, fac, P){
   const gch = [at(b.x0 - 1, b.y0), at(b.x1 + 1, b.y0), at(b.x0, b.y0 - 1)].find(ch => ch && BLD_GROUND.indexOf(ch) >= 0) || 'g';
   for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
     const ch = at(x, y); if (ch !== 'R' && ch !== 'H') continue;
-    const cell = document.createElement('canvas'); cell.width = cell.height = TS; const cg = cell.getContext('2d');
+    const scratch = sheetScratch(TS, TS), cg = scratch.getContext('2d');
     if (cut && ch === 'R') {   // ground behind a cut roof takes the map's seeded grass like the cells around it
       const v = m.skin !== 'lab' && m.variants ? labTileName(gch, x, y, m) : gch, gn = TILES[v] ? v : TILES[gch] ? gch : 'g';
       cg.drawImage(TILES[gn], 0, 0); P.ground.set(bldKey(x, y), gn);
     }
     cg.drawImage(c, (x - b.x0) * TS, (y - b.y0) * TS, TS, TS, 0, 0, TS, TS);
-    P.cells.set(bldKey(x, y), cell);
+    const stride = TS + 2, i = P.pack.n++, col = i % P.pack.cols, row = (i / P.pack.cols) | 0;
+    const vx = 1 + col * stride, vy = 1 + row * stride, sg = P.sheet.getContext('2d');
+    sg.imageSmoothingEnabled = false;
+    sg.drawImage(scratch, vx, vy);
+    P.cells.set(bldKey(x, y), sheetView(P.sheet, vx, vy, TS, TS));
     if (cut && ch === 'R') P.cut.add(bldKey(x, y));
     if (ch === 'H' && (b.wall || b.win.length)) P.styled.add(bldKey(x, y));
   }
   for (const d of b.doors) if (WART[b.door]) P.doors.set(d.id, b.door);
-  c.width = c.height = 0;   // scratch, already cut into cells
+}
+function dropBuilt(old){
+  if (!old) return;
+  if (old.cells) for (const cell of old.cells.values()) if (cell) cell._dead = true;
+  if (old.sheet) { old.sheet.width = 0; old.sheet.height = 0; }
 }
 function buildingCells(){
   const fac = factionOfMap(CUR.id), key = CUR.id + '|' + (fac || '');
   let P = bldCache.get(key);
   if (P) return P;
-  while (bldCache.size >= BLD_CAP) { const k = bldCache.keys().next().value; freeCanvases(bldCache.get(k).cells.values()); bldCache.delete(k); }   // oldest map out, its 16 px cells freed
-  P = { cells: new Map(), cut: new Set(), styled: new Set(), doors: new Map(), ground: new Map() };
-  for (const b of buildingsOf(CUR)) paintBuilding(CUR, b, fac, P);
+  while (bldCache.size >= BLD_CAP) { const k = bldCache.keys().next().value; dropBuilt(bldCache.get(k)); bldCache.delete(k); }   // oldest map out; one sheet, not a canvas per cell
+  const buildings = buildingsOf(CUR);
+  let n = 0;
+  const at = (x, y) => (CUR.grid[y] && CUR.grid[y][x]) || '';
+  for (const b of buildings) for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) {
+    const ch = at(x, y); if (ch === 'R' || ch === 'H') n++;
+  }
+  const stride = TS + 2, cols = Math.max(1, Math.min(Math.max(n, 1), Math.floor(1024 / stride))), rows = Math.max(1, Math.ceil(Math.max(n, 1) / cols));
+  const sheet = document.createElement('canvas');
+  sheet.width = cols * stride + 1; sheet.height = rows * stride + 1;
+  sheet.getContext('2d').imageSmoothingEnabled = false;
+  P = { cells: new Map(), cut: new Set(), styled: new Set(), doors: new Map(), ground: new Map(), sheet, pack: { n: 0, cols } };
+  for (const b of buildings) paintBuilding(CUR, b, fac, P);
   bldCache.set(key, P); return P;
 }
 function buildingTile(ch, tx, ty, img){ return buildingCells().cells.get(bldKey(tx, ty)) || img; }
@@ -6603,15 +6655,35 @@ const KEEPER_CAP = 128;
 const keeperCache = new Map(); let keeperBuilds = 0;
 const faceCache = new Map();
 function cacheUse(map, key, value){ map.delete(key); map.set(key, value); }
-function cacheTrim(map, cap){ while (map.size >= cap) map.delete(map.keys().next().value); }
+function releaseKeeper(v){
+  if (!v) return;
+  const held = c => {
+    if (!c) return false;
+    for (const face of faceCache.values()) if (face === c) return true;
+    for (const frames of keeperCache.values()) for (const dir of ['down', 'up', 'right', 'left']) for (const fr of frames[dir] || []) if (fr === c) return true;
+    return false;
+  };
+  if (v.down) {
+    for (const dir of ['down', 'up', 'right', 'left']) for (const c of v[dir] || []) if (c && c._release && !held(c)) c._release();
+    return;
+  }
+  if (v._release && !held(v)) v._release();
+}
+function cacheTrim(map, cap){
+  while (map.size >= cap) {
+    const k = map.keys().next().value, v = map.get(k);
+    map.delete(k);
+    if (v && (v._sheet || v.down)) releaseKeeper(v);
+  }
+}
 function keeperCanvas(grid){
-  const c = document.createElement('canvas'); c.width = c.height = 18; const g = c.getContext('2d');
-  const filled = (x, y) => x >= 0 && y >= 0 && x < 16 && y < 16 && grid[y][x] !== '.';
-  g.fillStyle = PAL.k;
-  for (let y = -1; y <= 16; y++) for (let x = -1; x <= 16; x++)
-    if (!filled(x, y) && (filled(x-1, y) || filled(x+1, y) || filled(x, y-1) || filled(x, y+1))) g.fillRect(x+1, y+1, 1, 1);
-  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const ch = grid[y][x]; if (ch === '.') continue; g.fillStyle = PAL[ch] || PAL.m; g.fillRect(x+1, y+1, 1, 1); }
-  return c;
+  return sheetPaint(18, 18, g => {
+    const filled = (x, y) => x >= 0 && y >= 0 && x < 16 && y < 16 && grid[y][x] !== '.';
+    g.fillStyle = PAL.k;
+    for (let y = -1; y <= 16; y++) for (let x = -1; x <= 16; x++)
+      if (!filled(x, y) && (filled(x-1, y) || filled(x+1, y) || filled(x, y-1) || filled(x, y+1))) g.fillRect(x+1, y+1, 1, 1);
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const ch = grid[y][x]; if (ch === '.') continue; g.fillStyle = PAL[ch] || PAL.m; g.fillRect(x+1, y+1, 1, 1); }
+  });
 }
 function keeperFrames(look){
   const key = lookKey(look); let f = keeperCache.get(key);
@@ -7144,6 +7216,7 @@ function bumpObj(o, d, turned){
   if (o.kind === 'trainer' && !S.flags['trainer.' + o.id]) { interact(o); return; }   // an unbeaten trainer: its battle, never the hint
   if ((o.kind === 'npc' || o.kind === 'trainer') && bump.talked === o.id) { showBumpHint(o); return; }
   if (o.kind === 'prop' && !o.lines && !o.board) return;                             // silent props just block
+  if (o.kind === 'sign') return;                                                    // a sign opens on Talk or a tap, not by walking into it
   interact(o);
 }
 function showBumpHint(o){
@@ -15584,6 +15657,7 @@ function bindInput(){
   ln.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ln.blur(); } });
   $('#startOver').addEventListener('click', openReset);
   $('#setCopy').addEventListener('click', () => { sfx('tap'); downloadCopy(); });
+  const crashCopy = $('#setCrashCopy'); if (crashCopy) crashCopy.addEventListener('click', () => { sfx('tap'); copyCrashInfo(); });
   $('#setRead').addEventListener('click', openCopy);
   $('#resetCopy').addEventListener('click', () => { sfx('tap'); downloadCopy(); });
   $('#copyCancel').addEventListener('click', () => { sfx('tap'); closeCopy(); });

@@ -77,6 +77,12 @@ Waiting on state, not on time. A few traps that made tests flaky:
 
 `tests/reload_diagnostics.spec.js`: a forced window error writes one `pp_errors` entry and does not change `pixelpets.save.v2`. The log keeps the last five. Settings shows one last-error line only when that log is non-empty, at 320, 375 and 390, and Settings buttons stay at least 44 px. The full error list and the full reload list (last five, every field) are in the debug panel only when the address has `?debug=1`. The heartbeat stores the open screen, the live canvas count, the portrait-cache size and canvases made since the last beat. In a battle it also stores the phase. An alive boot with no crumb records nav and standalone and still says crash?. An alive boot that also had the hidden mark says background kill, not crash?. Save `v` stays 2. Going hidden keeps the `pp_alive` mark, so a page killed while hidden boots with a `background` crumb (screen, `hid`, `hidAge`).
 
+`tests/crash_copy.spec.js`: Copy crash info stays hidden when there is no crash? line and the page is not `?debug=1`. A seeded crash? line shows it with debug off. `?debug=1` shows it with no crash line. The button is at least 44 px. The clipboard text is JSON with `diag` (live canvas count) and `reloads`. A rejected clipboard write still copies through the text fallback and toasts Copied. Save `v` stays 2.
+
+`tests/sign_tap.spec.js`: walking into the Hearthmoor town sign does not open it. TALK while facing it does, and the sign text is really on screen. Save `v` stays 2.
+
+`tests/memory_walk.spec.js` (390): a synthetic heavy save (party 6, box 64, no player names from a real save) walks, changes maps, and opens Quest. After the first pass, live canvases, canvas MB, DOM nodes, intervals and concurrent animation frames stay flat, under a fixed cap. Footstep notes disconnect. Save `v` stays 2.
+
 `tests/smoke.spec.js`:
 
 | Test | Brief check | What it asserts |
