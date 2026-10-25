@@ -61,6 +61,8 @@ async function exitRowClear(page) {
 
 test('one tap on the trail mouth walks from the town square into Mahopac', async ({ page }) => {
   await boot(page);
+  // D787 A/B pads are gated off until MHC P1; this check covers the padded camera, so force them on.
+  expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);
   await page.evaluate(() => PixelPets.goto('hearthmoor', 9, 8, 'up'));
   await page.waitForTimeout(300);
   const row = await exitRowClear(page);

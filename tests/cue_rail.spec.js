@@ -353,6 +353,8 @@ async function edgeClear(page) {
 
 test('the north trail and the Lodge door stay tappable beside an edge box', async ({ page }) => {
   await bootTrail(page);
+  // D787 A/B pads are gated off until MHC P1; this check covers the padded camera, so force them on.
+  expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);
   const clear = await edgeClear(page);
   expect(clear.n).toBeGreaterThan(0);
   expect(clear.hit).toEqual([]);

@@ -23,6 +23,8 @@ test('every interior uses the room scale, and every door can be framed', async (
   await gotoGame(page, '?debug=1');
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);
+  // D787 A/B pads are gated off until MHC P1; this check covers the padded camera, so force them on.
+  expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);
 
   const report = await page.evaluate(async () => {
     const camAt = (tx, ty, mapW, mapH, VW, VH, fit) => {
