@@ -1758,9 +1758,9 @@
 16333-16338  function bootReadOnly
 16339-16373  function highCharityDevCheck
 16374-16377  function registerInstall
-16378-16928  function boot
-16929-16929  const BOOT_RETRY_KEY
-16930-16948  function bootRetried
+16378-16929  function boot
+16930-16930  const BOOT_RETRY_KEY
+16931-16949  function bootRetried
 
 # clock.js
 4-185  const PPClock
