@@ -737,32 +737,57 @@ test('20 damage digits keep a dark outline @w1', async ({ page }) => {
 test('21 a super-effective white frame is one run of about 80 ms', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390 only');
   await boot(page);
+  // Record every frame the battle canvas draws, with the game's own draw clock (view.t), instead of sampling
+  // view.white from the test on the wall clock: an 80 ms window could fall between two samples under load.
+  await page.evaluate(() => {
+    const b = PixelPets.battle;
+    let cur = b.view;
+    window.__t21Frames = [];
+    Object.defineProperty(b, 'view', {
+      configurable: true,
+      get() { return cur; },
+      set(v) { cur = v; if (v) window.__t21Frames.push({ t: v.t, white: !!v.white }); },
+    });
+  });
   let shot = false;
   for (const effects of ['full', 'off']) {
     await page.evaluate((effects) => { PixelPets.state.settings.effects = effects; }, effects);
     await openWild(page, 'bloom/0', 4);
     await page.evaluate(() => {
       const b = PixelPets.battle;
-      b.animMs = null; b.textMs = 0; b.whites = []; b.foePlan = { move: 'sap_sip' };
+      // Pin the roll as tests 16, 18, 19 and 20 do. foxfire_flick is 95% accurate (a miss draws no white frame)
+      // and a 1-in-16 lucky hit knocks this 32 HP foe out, so the battle never returns to CHOOSE.
+      b.animMs = null; b.textMs = 0; b.whites = []; b.foePlan = { move: 'sap_sip' }; b.rng = () => 0.5;
+      window.__t21Frames.length = 0;
     });
     await page.locator('[data-bact="fight"]').click();
     await page.locator('#btMoves button[data-move="foxfire_flick"]').click();
-    const seen = [];
-    for (let i = 0; i < 80; i++) {
-      const white = await page.evaluate(() => !!(PixelPets.battle.view && PixelPets.battle.view.white));
-      seen.push(white);
-      if (white && effects === 'full' && !shot) {
-        shot = true;
-        await page.screenshot({ path: path.join(artifactsDir('moves-v2'), 'super-hit-390.png') });
-      }
-      await page.waitForTimeout(5);
+    if (effects === 'full' && !shot) {
+      shot = true;
+      await page.waitForFunction(() => window.__t21Frames.some((f) => f.white), null, { polling: 'raf', timeout: 5000 });
+      await page.screenshot({ path: path.join(artifactsDir('moves-v2'), 'super-hit-390.png') });
     }
     await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE' || !PixelPets.battle.on);
-    const runs = await page.evaluate(() => (PixelPets.battle.whites || []).map((w) => w.until - w.t0));
+    const got = await page.evaluate(() => ({
+      runs: (PixelPets.battle.whites || []).map((w) => ({ t0: w.t0, until: w.until })),
+      frames: window.__t21Frames.slice(),
+    }));
+    const runs = got.runs.map((w) => w.until - w.t0);
     expect(runs, effects).toHaveLength(1);
     expect(runs[0], effects).toBeGreaterThanOrEqual(70);
     expect(runs[0], effects).toBeLessThanOrEqual(90);
-    expect(seen.some(Boolean), effects).toBe(true);
+    // The canvas drew at least one white frame, the white frames are one unbroken run, and each one sits inside
+    // the recorded window on the game's clock.
+    const lit = got.frames.map((f, i) => (f.white ? i : -1)).filter((i) => i >= 0);
+    const w = got.runs[0];
+    expect(lit.length, effects + ' white frames drawn').toBeGreaterThan(0);
+    expect(lit[lit.length - 1] - lit[0] + 1, effects + ' one run').toBe(lit.length);
+    lit.forEach((i) => {
+      expect(got.frames[i].t, effects).toBeGreaterThanOrEqual(w.t0);
+      expect(got.frames[i].t, effects).toBeLessThan(w.until);
+    });
+    const inside = got.frames.filter((f) => f.t >= w.t0 && f.t < w.until);
+    expect(inside.every((f) => f.white), effects + ' every frame inside the window is white').toBe(true);
     await page.evaluate(() => PixelPets.battle.close());
     await page.waitForFunction(() => !PixelPets.battle.on);
   }
