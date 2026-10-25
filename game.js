@@ -753,6 +753,7 @@ function zoomLabel(z){ return (Math.abs(z - Math.round(z)) < 1e-6 ? String(Math.
 function renderMapZoomRow(){
   const el = $('#setZoomRange'); if (!el) return;
   const steps = mapZoomSteps(), z = mapZoomStep(), i = Math.max(0, steps.indexOf(z));
+  const row = $('#setZoom'); if (row) row.hidden = steps.length < 2;   // D787 C: only 2x left, no slider
   el.max = String(steps.length - 1); el.value = String(i);
   el.setAttribute('aria-valuemin', '0'); el.setAttribute('aria-valuemax', String(steps.length - 1));
   el.setAttribute('aria-valuenow', String(i)); el.setAttribute('aria-valuetext', zoomLabel(z));
@@ -1116,12 +1117,16 @@ let hudPads = { top: 56, left: 56, right: 96, bottom: 112, col: 206, on: false, 
 // number of device px. Target steps 2, 2.25, 2.5, 2.75, 3: on a DPR 2 phone 2.5 is crisp (5 px) and 2.25 / 2.75
 // are not (4.5 / 5.5); on DPR 3, 7/3 and 8/3 are crisp (7 / 8 px) and 2.25 / 2.5 / 2.75 are not. So the slider
 // offers 2x, every crisp k/DPR between, and 3x: 2, 2.5, 3 at DPR 2; 2, 2.33, 2.67, 3 at DPR 3.
-const MAP_ZOOM_MIN = 2, MAP_ZOOM_MAX = 3;
+// D787 C: a step above 2x stays only while the map rect (#mapWrap) still shows 7 x 8.5 tiles (112 x 136 art px).
+// At 320 x 568 that drops 3x (320 / 3 = 106.7 px across). With only 2x left the Settings row hides.
+const MAP_ZOOM_MIN = 2, MAP_ZOOM_MAX = 3, MAP_ZOOM_MIN_W = 7 * 16, MAP_ZOOM_MIN_H = 8.5 * 16;
+let mapRectW = 0, mapRectH = 0;   // the last #mapWrap size fitAll saw (css px); the window before the first fit
 function mapZoomSteps(){
-  const dpr = window.devicePixelRatio || 1, out = [MAP_ZOOM_MIN];
-  for (let k = Math.floor(MAP_ZOOM_MIN * dpr) + 1; k < MAP_ZOOM_MAX * dpr - 1e-6; k++) out.push(k / dpr);
-  out.push(MAP_ZOOM_MAX);
-  return out;
+  const dpr = window.devicePixelRatio || 1, cand = [MAP_ZOOM_MIN];
+  for (let k = Math.floor(MAP_ZOOM_MIN * dpr) + 1; k < MAP_ZOOM_MAX * dpr - 1e-6; k++) cand.push(k / dpr);
+  cand.push(MAP_ZOOM_MAX);
+  const W = mapRectW || window.innerWidth || 0, H = mapRectH || window.innerHeight || 0;
+  return cand.filter(z => z <= MAP_ZOOM_MIN || (W / z >= MAP_ZOOM_MIN_W - 1e-6 && H / z >= MAP_ZOOM_MIN_H - 1e-6));
 }
 // The largest step at or below z. A 2.5 saved on a DPR 2 phone reads as 2.33 on a DPR 3 one, never a blurred 2.5.
 function snapMapZoom(z, steps){
@@ -1202,7 +1207,12 @@ function applyRoomSideNudge(){
   if (need > 0.5) roomSideNudge = Math.ceil((need + 1) / scale);
   if (roomSideNudge) syncWalkCam();
 }
-// D723: live rects of the top chip, the left column, the clock and the bottom band. Fallbacks 56, 56, 96, 112.
+// D723: live rects of the top chip, the left column, the clock and the bottom band. Fallbacks 56, 56, 96, 112
+// only when the HUD cannot be measured. D787 A: each pad is that HUD rect's overlap with the visible canvas
+// (the canvas rect clipped to #mapWrap), in css px from the canvas edge, plus the 6 px gap. A HUD rect that is
+// hidden or misses the visible canvas pads 0, so a layout with nothing over the map pads nothing. No floor.
+// col is the left column's bottom, from the canvas top, under the same rule. ox/oy and the gaps place the canvas
+// in the wrap for the room camera.
 function hudFree(){
   const fb = HUD_FALLBACK;
   hudPads = { top: fb.top, left: fb.left, right: fb.right, bottom: fb.bottom, col: fb.col, on: false, ox: 0, oy: 0, rightGap: 0, bottomGap: 0, wrapW: 0, wrapH: 0 };
@@ -1212,23 +1222,30 @@ function hudFree(){
   const wr = wrap.getBoundingClientRect(), cr = c.getBoundingClientRect();
   if (!(wr.width > 8) || !(wr.height > 8)) return;
   const GAP = 6;
+  // The part of the canvas a player can see.
+  const vis = { left: Math.max(cr.left, wr.left), top: Math.max(cr.top, wr.top), right: Math.min(cr.right, wr.right), bottom: Math.min(cr.bottom, wr.bottom) };
   const live = sel => {
     const n = document.querySelector(sel); if (!n) return null;
     const r = n.getBoundingClientRect();
-    return (r.width >= 8 && r.height >= 8) ? r : null;
+    if (!(r.width >= 8 && r.height >= 8)) return null;
+    const cs = getComputedStyle(n);
+    if (cs.visibility === 'hidden' || cs.display === 'none') return null;   // hidden HUD pads 0
+    // Overlap with the visible canvas, or nothing.
+    if (!(r.right > vis.left && r.left < vis.right && r.bottom > vis.top && r.top < vis.bottom)) return null;
+    return r;
   };
   const top = live('#fcTop'), left = live('#fcTL'), clock = live('#fcClock');
   const tip = live('#fcTip'), band = live('#floatCtl .fc-bottom');
-  let bottom = fb.bottom;
+  const pad = v => Math.max(0, Math.ceil(v));
   const tops = [];
   if (tip) tops.push(tip.top);
   if (band) tops.push(band.top);
-  if (tops.length) bottom = Math.max(fb.bottom, Math.ceil(wr.bottom - Math.min.apply(null, tops) + GAP));
   hudPads = {
-    top: top ? Math.ceil(top.bottom - wr.top + GAP) : fb.top,
-    left: left ? Math.ceil(left.right - wr.left + GAP) : fb.left,
-    right: clock ? Math.ceil(wr.right - clock.left + GAP) : fb.right,
-    bottom, col: left ? Math.ceil(left.bottom - wr.top + GAP) : fb.col,
+    top: top ? pad(Math.min(top.bottom, vis.bottom) - cr.top + GAP) : 0,
+    left: left ? pad(Math.min(left.right, vis.right) - cr.left + GAP) : 0,
+    right: clock ? pad(cr.right - Math.max(clock.left, vis.left) + GAP) : 0,
+    bottom: tops.length ? pad(cr.bottom - Math.max(Math.min.apply(null, tops), vis.top) + GAP) : 0,
+    col: left ? pad(Math.min(left.bottom, vis.bottom) - cr.top + GAP) : 0,
     on: true,
     ox: cr.left - wr.left, oy: cr.top - wr.top,
     rightGap: Math.max(0, wr.right - cr.right), bottomGap: Math.max(0, wr.bottom - cr.bottom),
@@ -1244,6 +1261,8 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
   const mw = $('#mapWrap');
   if (screen === 'walk' && mw.clientWidth) {           // fill the map area at a crisp integer scale
     const c = $('#mapCanvas'), W = mw.clientWidth, H = mw.clientHeight;
+    const rectMoved = W !== mapRectW || H !== mapRectH;
+    mapRectW = W; mapRectH = H;
     const modern = ctlMode() === 'modern';         // NAV_MODERN §2 (NM-Y2): modern is 2x at every width with a 24x36 cap; arcade unchanged
     const s = modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
     mapBase = s;
@@ -1271,6 +1290,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     hudFree();
     applyRoomSideNudge();
     syncWalkCam();
+    if (rectMoved) renderMapZoomRow();   // the steps follow the map rect (D787 C)
   }
   refitSceneBox();
 }
@@ -6543,7 +6563,7 @@ function drawSlipChip(g, cx, cy, col, shown, dir){
 function cueTopInk(){
   if (ctlMode() !== 'modern' || isRoom() || !hudPads.on) return 0;
   const z = mapZoom || 1;
-  return z > 0 ? Math.ceil(Math.max(0, hudPads.top - (hudPads.oy || 0)) / z) : 0;
+  return z > 0 ? Math.ceil(hudPads.top / z) : 0;
 }
 // The 44 px edge box drops under the chip only when the partner is standing on the top rows,
 // so a tap on that box can land on the partner and still open QUEST.
@@ -8175,11 +8195,12 @@ function outdoorViewBand(VH){
   let useTop = topPad, useBot = hudPad, useVHe = VHe, head = false, padL = 0, padR = 0;
   // D722: modern outdoors pad by the live HUD (css px / scale). Arcade and rooms stay on the full canvas.
   if (modernOut && hudPads.on && z > 0) {
-    useTop = Math.ceil(Math.max(0, hudPads.top - (hudPads.oy || 0)) / z);
-    useBot = Math.ceil(Math.max(0, hudPads.bottom - (hudPads.bottomGap || 0)) / z);
+    // D787 A: hudPads are already the overlap with the visible canvas, in css px from the canvas edges.
+    useTop = Math.ceil(hudPads.top / z);
+    useBot = Math.ceil(hudPads.bottom / z);
     useVHe = VH - useBot;
-    padL = Math.ceil(Math.max(0, hudPads.left - (hudPads.ox || 0)) / z);
-    padR = Math.ceil(Math.max(0, hudPads.right - (hudPads.rightGap || 0)) / z);
+    padL = Math.ceil(hudPads.left / z);
+    padR = Math.ceil(hudPads.right / z);
     head = true;
   }
   const open = useVHe - useTop;
@@ -8189,7 +8210,8 @@ function outdoorViewBand(VH){
 // A north exit within 6 tiles is pulled until that exit's row clears the area chip.
 // The pull fades out by 10 tiles so walking south hands back to follow.
 function outdoorNorthLift(band, py){
-  if (!band.head || !CUR || !CUR.objs || !walk) return;
+  // D787 B: only while something covers the top of the map. With no top pad there is nothing to clear.
+  if (!band.head || !(band.topPad > 0) || !CUR || !CUR.objs || !walk) return;
   const tx = Math.round(walk.fx), ty = Math.round(walk.fy);
   // The side columns sit under the clock and the round buttons. Leave those stands centred.
   if (tx <= 2 || tx >= MW - 3) return;
@@ -8280,12 +8302,14 @@ function placeRoomCam(VW, VH, px_, py_, bx, by){
   const mapCssW = mapW * z, mapCssH = mapH * z;
   const canvasCssW = VW * z, canvasCssH = VH * z;
   const H = hudPads.wrapH || canvasCssH;
-  const padT = hudPads.top, col = hudPads.col, bot = hudPads.bottom;
   const ox = hudPads.ox || 0, oy = hudPads.oy || 0;
+  // hudPads are canvas-relative overlaps (D787 A). This works in wrap px: the top pad from the wrap top, the
+  // column bottom (or the top pad when the column misses the canvas), and the bottom band from the wrap bottom.
+  const padT = oy + hudPads.top, col = hudPads.col > 0 ? oy + hudPads.col : padT, bot = (hudPads.bottomGap || 0) + hudPads.bottom;
   if (mapCssW <= canvasCssW + 0.5) walk.cam.x = -Math.floor((VW - mapW) / 2);
   else {
-    const padL = Math.ceil(Math.max(0, hudPads.left - ox) / z);
-    const padR = Math.ceil(Math.max(0, hudPads.right - (hudPads.rightGap || 0)) / z);
+    const padL = Math.ceil(hudPads.left / z);
+    const padR = Math.ceil(hudPads.right / z);
     const xMid = padL + (VW - padL - padR) / 2;
     const lo = -padL, hi = mapW - VW + padR;
     walk.cam.x = Math.round(clamp(px_ + 8 - xMid + bx, Math.min(lo, hi), Math.max(lo, hi)));
@@ -16617,6 +16641,8 @@ function boot(){
   // read-only map / scene / hint views (tests and the console); they can't change the game
   Object.defineProperty(api, 'mapInfo', { enumerable: true, get(){ return { id: CUR.id, w: MW, h: MH, room: isRoom(), outdoor: outdoorId(), backdrop: backdropName(), dream: CUR.dream || null,
     scale: mapZoom, baseScale: mapBase, slack: (isRoom() && CUR && !CUR.fitWidth) ? roomEdgeSlack(CUR) : 0, edge: null, fitWidth: !!(CUR && CUR.fitWidth),
+    pads: { on: hudPads.on, top: hudPads.top, left: hudPads.left, right: hudPads.right, bottom: hudPads.bottom, col: hudPads.col },   // D787 A, css px
+    band: (() => { const c = $('#mapCanvas'), b = c && c.height ? outdoorViewBand(c.height) : null; return b && { topPad: b.topPad, hudPad: b.hudPad, VHe: b.VHe, mid: b.mid, head: b.head, padL: b.padL, padR: b.padR }; })(),
     objs: CUR.objs.filter(present).map(o => ({ id: o.id, kind: o.kind, x: objPos(o).x, y: objPos(o).y, block: !!BLOCK_KINDS[o.kind], frozen: !!o.frozen })) }; } });
   Object.defineProperty(api, 'scene', { enumerable: true, get(){ return scene && { id: scene.id, who: scene.who, boxes: scene.boxes, mode: sbox.mode, text: sbox.text, full: sbox.full,
     typing: !!sbox.resolve && !sbox.full, waiting: !!sbox.resolve, pending: scene.pending.length, skip: scene.skip, box: scene.boxMode || 'bottom' }; } });

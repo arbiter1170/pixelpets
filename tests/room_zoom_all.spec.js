@@ -206,7 +206,7 @@ test('every interior uses the room scale, and every door can be framed', async (
     return Object.assign({ want: info.baseScale, wrapW: w.clientWidth }, info);
   });
   expect(done.room).toBe(false);
-  expect(done.scale).toBe(done.want);
+  expect(done.scale).toBe(2);   // modern outdoors is 2x at 320, 375 and 390, as live
   expect(fadeOut.scale).toBe(done.scale);
 
   if (width === 390) {

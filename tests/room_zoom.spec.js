@@ -41,8 +41,8 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
   });
   expect(outdoor.id).toBe('hearthmoor');
   expect(outdoor.room).toBe(false);
-  expect(outdoor.scale).toBe(outdoor.want);
-  expect(outdoor.scale).toBeGreaterThanOrEqual(outdoor.baseScale);
+  expect(outdoor.scale).toBe(2);   // modern outdoors is 2x at 320, 375 and 390, as live
+  expect(outdoor.baseScale).toBe(2);
   expect(outdoor.slack).toBe(0);
   expect(outdoor.edge).toBe(null);
 

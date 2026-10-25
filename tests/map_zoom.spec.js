@@ -1,4 +1,5 @@
-/* Map zoom slider (Settings). Steps are the crisp scales on this phone between 2x and 3x; 2x is today's look.
+/* Map zoom slider (Settings). Steps are the crisp scales on this phone between 2x and 3x that keep 7 x 8.5 tiles
+   in the map rect (D787 C); 2x is today's look.
    Every step keeps Hearthmoor's north exit row (tiles 8-10, y=2) clear of the top chips, and the town square
    spawn never shows the void past the left map edge. Save stays pixelpets.save.v2, settings.mapZoom is additive. */
 const { test, expect } = require('@playwright/test');
@@ -44,6 +45,12 @@ async function pickStep(page, i) {
   }, i);
 }
 
+// D787 C: a step stays only while #mapWrap shows 7 x 8.5 tiles (112 x 136 art px). The crisp candidates are
+// 2, 2.5, 3 at DPR 2 and 2, 7/3, 8/3, 3 at DPR 3. At 320 x 568, 3x drops (106.7 px across), so 2.5x is the top.
+const EXPECT_STEPS = { 320: [2, 2.5], 375: [2, 2.5, 3], 390: [2, 7 / 3, 8 / 3, 3] };
+function expectedSteps(page) { return EXPECT_STEPS[page.viewportSize().width]; }
+function label(z) { return (Math.abs(z - Math.round(z)) < 1e-6 ? String(Math.round(z)) : String(+z.toFixed(2))) + 'x'; }
+
 async function settle(page) {
   await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
 }
@@ -55,7 +62,7 @@ test('Map zoom slider: 44 px targets, 2x default, live apply, stored as a number
   await boot(page, old);
   const base = await page.evaluate(() => ({ scale: PixelPets.mapInfo.scale, base: PixelPets.mapInfo.baseScale, z: PixelPets.state.settings.mapZoom }));
   expect(base.z).toBe(2);
-  expect(base.scale).toBe(base.base);
+  expect(base.scale).toBe(2);   // 2x is the live look at 320, 375 and 390
 
   await openSettings(page);
   const row = page.locator('#setZoom');
@@ -85,21 +92,23 @@ test('Map zoom slider: 44 px targets, 2x default, live apply, stored as a number
   expect(geo.thumbHit, 'thumb centre hits the slider').toBe(true);
   expect(geo.midHit, 'track hits the slider').toBe(true);
   if (geo.thumbW) { expect(geo.thumbW).toBeGreaterThanOrEqual(44); expect(geo.thumbH).toBeGreaterThanOrEqual(44); }
-  expect(geo.max).toBeGreaterThanOrEqual(2);
+  const want = expectedSteps(page);
+  expect(geo.max).toBe(want.length - 1);
 
   const steps = await page.evaluate(() => PixelPets.mapZoomSteps);
-  expect(steps[0]).toBe(2);
-  expect(steps[steps.length - 1]).toBe(3);
+  expect(steps.length).toBe(want.length);
+  steps.forEach((z, i) => expect(z, 'step ' + i).toBeCloseTo(want[i], 6));
+  const top = want[want.length - 1];
   const dpr = await page.evaluate(() => devicePixelRatio);
   for (const z of steps) expect(Math.abs(z * dpr - Math.round(z * dpr)), 'crisp step ' + z).toBeLessThan(1e-6);
 
   // A real tap near the right end of the track moves to the top step, live.
   const box = await range.boundingBox();
   await page.mouse.click(box.x + box.width - 6, box.y + box.height / 2);
-  await expect(page.locator('#setZoomVal')).toHaveText('3x');
+  await expect(page.locator('#setZoomVal')).toHaveText(label(top));
   const live = await page.evaluate(() => ({ scale: PixelPets.mapInfo.scale, z: PixelPets.state.settings.mapZoom }));
-  expect(live.z).toBe(3);
-  expect(live.scale).toBe(3);
+  expect(live.z).toBeCloseTo(top, 6);
+  expect(live.scale).toBeCloseTo(top, 6);
 
   await pickStep(page, 1);
   const mid = await page.evaluate(() => ({ scale: PixelPets.mapInfo.scale, z: PixelPets.state.settings.mapZoom, label: document.querySelector('#setZoomVal').textContent }));
@@ -135,7 +144,101 @@ test('Map zoom: a bad or missing mapZoom reads as 2x', async ({ page }) => {
   await boot(page, s);
   const r = await page.evaluate(() => ({ z: PixelPets.state.settings.mapZoom, scale: PixelPets.mapInfo.scale, base: PixelPets.mapInfo.baseScale }));
   expect(r.z).toBe(2);
-  expect(r.scale).toBe(r.base);
+  expect(r.scale).toBe(2);
+});
+
+test('Map zoom: a saved 3x snaps to the top step that keeps 7 x 8.5 tiles (2.5x at 320)', async ({ page }) => {
+  const s = save();
+  s.settings.mapZoom = 3;
+  await boot(page, s);
+  const want = expectedSteps(page), top = want[want.length - 1];
+  const r = await page.evaluate(() => {
+    const w = document.querySelector('#mapWrap'), i = PixelPets.mapInfo;
+    return { scale: i.scale, step: PixelPets.mapZoomStep, W: w.clientWidth, H: w.clientHeight };
+  });
+  expect(r.step).toBeCloseTo(top, 6);
+  expect(r.scale).toBeCloseTo(top, 6);
+  expect(r.W / r.scale).toBeGreaterThanOrEqual(112);
+  expect(r.H / r.scale).toBeGreaterThanOrEqual(136);
+  if (page.viewportSize().width === 320) expect(r.scale).toBe(2.5);
+  await openSettings(page);
+  await expect(page.locator('#setZoom')).toBeVisible();
+  await expect(page.locator('#setZoomVal')).toHaveText(label(top));
+});
+
+test('Map zoom: with only 2x left the Settings row hides, and it comes back when the map rect grows', async ({ page }) => {
+  await boot(page);
+  const vp = page.viewportSize();
+  // 220 css px across: 220 / 2.33 and 220 / 2.5 are under 112 art px, so only 2x is left.
+  await page.setViewportSize({ width: 220, height: vp.height });
+  await page.waitForFunction(() => PixelPets.mapZoomSteps.length === 1);
+  await openSettings(page);
+  await expect(page.locator('#setZoom')).toBeHidden();
+  await expect(page.locator('#setZoomRange')).toBeHidden();
+  await page.setViewportSize(vp);
+  await page.waitForFunction((n) => PixelPets.mapZoomSteps.length === n, expectedSteps(page).length);
+  await expect(page.locator('#setZoom')).toBeVisible();
+  await expect(page.locator('#setZoomRange')).toBeVisible();
+});
+
+test('Map zoom row: the label lines up with the other rows and no thumb position touches the label or the value', async ({ page }) => {
+  await boot(page);
+  await openSettings(page);
+  await expect(page.locator('#setZoom')).toBeVisible();
+  await page.locator('#setZoom').scrollIntoViewIfNeeded();
+  const n = expectedSteps(page).length;
+  for (let i = 0; i < n; i++) {
+    await pickStep(page, i);
+    const g = await page.evaluate(() => {
+      const el = document.querySelector('#setZoomRange'), r = el.getBoundingClientRect(), max = +el.max, v = +el.value;
+      const lab = document.querySelector('#setZoom .set-lab').getBoundingClientRect(), val = document.querySelector('#setZoomVal').getBoundingClientRect();
+      const row = document.querySelector('#setZoom').getBoundingClientRect();
+      const ctl = document.querySelector('#setControls .set-lab').getBoundingClientRect();
+      const tl = r.left + (r.width - 44) * (max ? v / max : 0);
+      return { tl, tr: tl + 44, labL: lab.left, labR: lab.right, labY: lab.top + lab.height / 2, valL: val.left, valR: val.right, valY: val.top + val.height / 2,
+        midY: r.top + r.height / 2, rowR: row.right, ctlL: ctl.left, rangeW: r.width };
+    });
+    expect(Math.abs(g.labL - g.ctlL), 'label left edge matches Controls').toBeLessThanOrEqual(0.5);
+    expect(Math.abs(g.labY - g.midY), 'label centred on the slider').toBeLessThanOrEqual(1);
+    expect(Math.abs(g.valY - g.midY), 'value centred on the slider').toBeLessThanOrEqual(1);
+    expect(g.tl - g.labR, 'step ' + i + ' thumb clear of the label').toBeGreaterThanOrEqual(8);
+    expect(g.valL - g.tr, 'step ' + i + ' thumb clear of the value').toBeGreaterThanOrEqual(8);
+    expect(g.valR, 'value inside the row').toBeLessThanOrEqual(g.rowR - 3);
+    expect(g.rangeW).toBeGreaterThanOrEqual(88);
+  }
+});
+
+test('D787: pads are the HUD overlap with the visible canvas; hidden HUD pads 0 and the north lift is off', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => { PixelPets.goto('hearthmoor', 9, 8, 'up'); if (PixelPets.scene) PixelPets.endScene(); });
+  await settle(page);
+  const on = await page.evaluate(() => {
+    const i = PixelPets.mapInfo, cr = document.querySelector('#mapCanvas').getBoundingClientRect();
+    const fcTop = document.querySelector('#fcTop').getBoundingClientRect();
+    return { pads: i.pads, band: i.band, camY: PixelPets.walk.cam.y, chipBottom: fcTop.bottom - cr.top };
+  });
+  expect(on.pads.on).toBe(true);
+  // Today's HUD sits over the canvas, so the top pad is that overlap plus the 6 px gap, and the lift runs.
+  expect(on.pads.top).toBe(Math.ceil(on.chipBottom + 6));
+  expect(on.band.topPad).toBeGreaterThan(0);
+  // Hide every HUD rect over the map: each pad reads 0, and with no top pad there is no north lift.
+  await page.evaluate(() => {
+    for (const q of ['#fcTop', '#fcTL', '#fcClock', '#fcTip', '#floatCtl .fc-bottom']) { const n = document.querySelector(q); if (n) n.style.visibility = 'hidden'; }
+    window.dispatchEvent(new Event('resize'));
+  });
+  await settle(page);
+  const off = await page.evaluate(() => {
+    const i = PixelPets.mapInfo, mc = document.querySelector('#mapCanvas');
+    return { pads: i.pads, band: i.band, camY: PixelPets.walk.cam.y, py: Math.round(PixelPets.walk.fy * 16), VH: mc.height, MH: i.h,
+      vis: ['#fcTop', '#fcTL'].map(q => { const n = document.querySelector(q); return n ? n.checkVisibility({ visibilityProperty: true }) : false; }) };
+  });
+  expect(off.vis).toEqual([false, false]);
+  expect(off.pads).toEqual({ on: true, top: 0, left: 0, right: 0, bottom: 0, col: 0 });
+  expect(off.band.topPad).toBe(0);
+  expect(off.band.hudPad).toBe(0);
+  // Plain follow, no lift: the holder is centred in the full canvas, clamped to the map.
+  const follow = Math.round(Math.min(Math.max(off.py + 8 - off.VH / 2, 0), off.MH * 16 - off.VH));
+  expect(off.camY).toBe(follow);
 });
 
 test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top chips', async ({ page }) => {
@@ -161,7 +264,7 @@ test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top 
       }
       return { scale: PixelPets.mapInfo.scale, chips: chips.length, out };
     });
-    expect(r.scale, 'step ' + steps[i]).toBe(i === 0 ? await page.evaluate(() => PixelPets.mapInfo.baseScale) : steps[i]);
+    expect(r.scale, 'step ' + steps[i]).toBe(steps[i]);   // step 0 is 2x, the live look
     expect(r.chips).toBeGreaterThanOrEqual(2);
     for (const e of r.out) {
       expect(e.onScreen, `step ${steps[i]} tile ${e.tx},2 on screen`).toBe(true);
