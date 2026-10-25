@@ -42,6 +42,15 @@ Shared helpers are in `tests/helpers.js`: `starterSave()` (the v2 seed used belo
 
 A console message of type `error`, or any uncaught page error, fails the test.
 
+Waiting on state, not on time. A few traps that made tests flaky:
+
+- `page.waitForFunction(fn, arg, options)` takes the options third. `waitForFunction(fn, { timeout: 8000 })` passes the object as `arg`, so the timeout is ignored and the wait runs until the test times out. Write `waitForFunction(fn, null, { timeout: 8000 })`.
+- Option buttons (the basket, `#sbName`, `#sbChoices`) ignore taps for 500 ms after they are drawn. Wait for `PixelPets.optionsReady`, and after a tap wait for the step to be used up (the box count or mode changes, or the overlay hides) before looking again. The basket YES wobbles for about 360 ms before `#ovBasket` hides.
+- Care bars move on the 1 s care tick, which runs on frame time. Wait for a marker that the same tick writes (the partner's `#valEnergy`, for example), not for a fixed number of seconds.
+- The walk camera pans over a few frames after `PixelPets.goto`. Before a map tap, wait until the camera holds still, the tile is inside the canvas and `document.elementFromPoint` there is `#mapCanvas` (a tip on `#tutLayer` can sit on top).
+- Pin `PixelPets.battle.rng` when a test needs a move to land. Moves under 100 accuracy miss sometimes.
+- The first autosave (5 s after boot) rewrites the seeded save with the game's full key set. Take a save baseline after that write.
+
 ## What each check covers
 
 `tests/moves_v2.spec.js` (MOVES_V2, D522–D533 and D564–D569): start sets stay at 3 through Lv 8 and 4 from Lv 9, with one new move per level and the signature kept. The FIGHT list shows three named buttons and a disabled dash, at least 44 px, with a gold stripe on the signature, at 390 and 320. A wild Lv 2 keeps that start set when befriended. Old saves top up on the existing `moves` field and a second load matches; `v` stays 2 and no `sig_offer` flag is written for that fixture. A free slot learns the rider. A full set can skip the signature offer, and a boxed full set is offered once it joins the party. Wild signature picks stay in band. FULL logs the go and the hit, CALM only the mark, OFF neither. Fifty seeded turns match the fixture pinned to `d7d2d6a`. One white frame per hit, at least 334 ms between onsets. Reduced motion keeps the canvas still. A forced switch, a run, a catch, a win and a loss open on an empty queue. Closing during a wind-up lets the next battle run. Hiding the page snaps the bars and the next line still takes a tap. Fast-forward does not leak a queued bar. Damage digits keep a dark outline on meadow and snow at 320. A super-effective white frame is one run of about 80 ms. Two contacts close together share one white frame. The co-op half uses the local emulator and room `AMB-4RQ`; each phone checks its own flash clock. Save stays `pixelpets.save.v2` with `v` 2. Shots: `fight-3-390.png`, `fight-3-320.png`, `super-hit-390.png`.
@@ -67,6 +76,12 @@ A console message of type `error`, or any uncaught page error, fails the test.
 `tests/portrait_cache.spec.js`: at 390, People then Contacts opens and closes five times. After the first People open, each later open creates at most 2 canvases (a warm open is about zero; the first measured run was zero). List portraits are opaque and the count matches the met list. The front-frame cache matches the full walk frames for the holder look. Save `v` stays 2.
 
 `tests/reload_diagnostics.spec.js`: a forced window error writes one `pp_errors` entry and does not change `pixelpets.save.v2`. The log keeps the last five. Settings shows one last-error line only when that log is non-empty, at 320, 375 and 390, and Settings buttons stay at least 44 px. The full error list and the full reload list (last five, every field) are in the debug panel only when the address has `?debug=1`. The heartbeat stores the open screen, the live canvas count, the portrait-cache size and canvases made since the last beat. In a battle it also stores the phase. An alive boot with no crumb records nav and standalone and still says crash?. An alive boot that also had the hidden mark says background kill, not crash?. Save `v` stays 2. Going hidden keeps the `pp_alive` mark, so a page killed while hidden boots with a `background` crumb (screen, `hid`, `hidAge`).
+
+`tests/crash_copy.spec.js`: Copy crash info stays hidden when there is no crash? line and the page is not `?debug=1`. A seeded crash? line shows it with debug off. `?debug=1` shows it with no crash line. The button is at least 44 px. The clipboard text is JSON with `diag` (live canvas count) and `reloads`. A rejected clipboard write still copies through the text fallback and toasts Copied. Save `v` stays 2.
+
+`tests/sign_tap.spec.js`: walking into the Hearthmoor town sign does not open it. TALK while facing it does, and the sign text is really on screen. Save `v` stays 2.
+
+`tests/memory_walk.spec.js` (390): a synthetic heavy save (party 6, box 64, no player names from a real save) walks, changes maps, and opens Quest. After the first pass, live canvases, canvas MB, DOM nodes, intervals and concurrent animation frames stay flat, under a fixed cap. Footstep notes disconnect. Save `v` stays 2.
 
 `tests/smoke.spec.js`:
 

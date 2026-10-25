@@ -503,24 +503,33 @@ test('the need glyph really leaves the screen once care clears the need', async 
 });
 
 test('a party bar follows the care tick, and stays put off the party view', async ({ page }) => {
+  // The party bars only move on the 1 s care tick (frame() -> updateHUD -> updateBoardCare). That tick
+  // runs on frame time, so a wall-clock budget can run out under load. Each step sets the partner's NRG
+  // to a marker value as a witness: #valEnergy only changes on that same tick, so once it shows the
+  // marker, the tick has run and the party bar must have (or must not have) followed it.
+  const FOOD = '.party-slot[data-id="p1"] .ss-cell[data-stat="food"] .ps-bar i';
+  const tickShows = (n) => page.waitForFunction((v) => document.querySelector('#valEnergy').textContent === String(v), n, { timeout: 10000 });
   await openCol(page, partySave(2));
-  const mid = await page.evaluate(() => {
-    const fill = document.querySelector('.party-slot[data-id="p1"] .ss-cell[data-stat="food"] .ps-bar i');
+  await expect(page.locator(FOOD)).toBeVisible();
+  const mid = await page.evaluate((sel) => {
+    const fill = document.querySelector(sel);
     const before = fill.style.width;
     PixelPets.state.party[1].hunger = 40;
-    return { before, now: fill.style.width };
-  });
+    PixelPets.state.party[0].energy = 33;
+    return { before, now: fill.style.width, nrg: document.querySelector('#valEnergy').textContent };
+  }, FOOD);
   expect(parseFloat(mid.before)).toBeGreaterThan(70);
   expect(mid.now).toBe(mid.before);
-  await page.waitForFunction(() => {
-    const w = parseFloat(document.querySelector('.party-slot[data-id="p1"] .ss-cell[data-stat="food"] .ps-bar i').style.width);
-    return w < 50;
-  }, null, { timeout: 4000 });
+  expect(mid.nrg).not.toBe('33');
+  await tickShows(33);
+  expect(parseFloat(await page.locator(FOOD).evaluate((el) => el.style.width))).toBeLessThan(50);
   await page.evaluate(() => {
     PixelPets.showTab('walk');
     PixelPets.state.party[1].hunger = 90;
+    PixelPets.state.party[0].energy = 66;
   });
-  await page.waitForTimeout(1500);
-  const held = await page.evaluate(() => parseFloat(document.querySelector('.party-slot[data-id="p1"] .ss-cell[data-stat="food"] .ps-bar i').style.width));
+  await expect(page.locator('#scr-col')).toBeHidden();
+  await tickShows(66);
+  const held = await page.locator(FOOD).evaluate((el) => parseFloat(el.style.width));
   expect(held).toBeLessThan(50);
 });
