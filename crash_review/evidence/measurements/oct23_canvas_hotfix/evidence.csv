@@ -1,0 +1,15 @@
+run,engine,build,cycle,heap_mb_after_gc,live_canvases,backing_mb,renderer_rss_mb
+b540_main,chromium,20261023-2020,0,7.37,2097,2.74,235
+b540_main,chromium,20261023-2020,16,11.06,3519,10.18,356
+b540_main,chromium,20261023-2020,30,11.40,3519,10.18,363
+fix,chromium,b540+fix,0,7.40,2097,2.74,235
+fix,chromium,b540+fix,16,11.05,2882,3.81,342
+fix,chromium,b540+fix,28,11.74,3315,4.36,343
+fix,chromium,b540+fix,30,11.14,2881,3.74,338
+b540_main,webkit,20261023-2020,0,n/a,2097,2.74,505
+b540_main,webkit,20261023-2020,16,n/a,3518,10.18,908
+b540_main,webkit,20261023-2020,30,n/a,3518,10.18,912
+fix,webkit,b540+fix,0,n/a,2097,2.74,555
+fix,webkit,b540+fix,16,n/a,2882,3.81,789
+fix,webkit,b540+fix,28,n/a,3315,4.36,846
+fix,webkit,b540+fix,30,n/a,2881,3.74,860

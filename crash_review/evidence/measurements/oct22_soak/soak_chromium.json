@@ -1,0 +1,272 @@
+{
+ "summary": {
+  "browser": "chromium",
+  "perPanelCycle": {
+   "heapMB": 0.12,
+   "cdpHeapMB": 0.12,
+   "canvasLive": 73,
+   "canvasAttached": 73,
+   "canvasMade": 1498,
+   "canvasMPx": 0.023,
+   "audioCtx": 0,
+   "intervalsActive": 0,
+   "timeoutsPending": 0,
+   "listenersNet": 0,
+   "cdpListeners": -3,
+   "domNodes": 536,
+   "cdpNodes": 770
+  },
+  "perBattle": {
+   "heapMB": 0.0443,
+   "cdpHeapMB": 0.0648,
+   "canvasLive": 6.5714,
+   "canvasAttached": 0,
+   "canvasMade": 7.7619,
+   "canvasMPx": 0.002,
+   "audioCtx": 0,
+   "intervalsActive": -0.0476,
+   "timeoutsPending": 0.0476,
+   "listenersNet": 9.5714,
+   "cdpListeners": 1.5714,
+   "domNodes": 1.8095,
+   "cdpNodes": 10.3333
+  },
+  "startToEnd": {
+   "heapMB": [
+    7.53,
+    8.62
+   ],
+   "cdpHeapMB": [
+    5.67,
+    7.18
+   ],
+   "canvasLive": [
+    2520,
+    2731
+   ],
+   "canvasAttached": [
+    87,
+    160
+   ],
+   "canvasMade": [
+    2611,
+    4272
+   ],
+   "canvasMPx": [
+    0.858,
+    0.922
+   ],
+   "audioCtx": [
+    1,
+    1
+   ],
+   "intervalsActive": [
+    8,
+    7
+   ],
+   "timeoutsPending": [
+    0,
+    1
+   ],
+   "listenersNet": [
+    412,
+    613
+   ],
+   "cdpListeners": [
+    431,
+    462
+   ],
+   "domNodes": [
+    1416,
+    1990
+   ],
+   "cdpNodes": [
+    5058,
+    6055
+   ]
+  },
+  "rss": {
+   "start": {
+    "gpu": 76.3,
+    "renderer": 252.4
+   },
+   "panelsBefore": {
+    "gpu": 76.5,
+    "renderer": 252.7
+   },
+   "panelsAfter": {
+    "gpu": 91.9,
+    "renderer": 282.1
+   },
+   "battlesBefore": {
+    "gpu": 91.3,
+    "renderer": 282.1
+   },
+   "battlesAfter": {
+    "gpu": 82.5,
+    "renderer": 281
+   },
+   "end": {
+    "gpu": 82.5,
+    "renderer": 280.5
+   }
+  },
+  "errors": [],
+  "errorCount": 0,
+  "navigations": [
+   "2026-10-22T05:35:39.441Z http://127.0.0.1:8192/?debug=1"
+  ],
+  "crumbs": {
+   "last": null,
+   "alive": "{\"at\":1792647366734,\"battleOn\":false,\"build\":\"20261021-1356\"}",
+   "saveBytes": 3678
+  },
+  "cycles": 0
+ },
+ "samples": [
+  {
+   "heapMB": 7.53,
+   "canvasMade": 2611,
+   "canvasLive": 2520,
+   "canvasAttached": 87,
+   "canvasMPx": 0.858,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1416,
+   "cdpHeapMB": 5.67,
+   "cdpNodes": 5058,
+   "cdpListeners": 431,
+   "docs": 1,
+   "rss": {
+    "gpu": 76.3,
+    "renderer": 252.4
+   },
+   "label": "start",
+   "t": 0
+  },
+  {
+   "heapMB": 7.57,
+   "canvasMade": 2611,
+   "canvasLive": 2520,
+   "canvasAttached": 87,
+   "canvasMPx": 0.858,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1416,
+   "cdpHeapMB": 5.7,
+   "cdpNodes": 5069,
+   "cdpListeners": 431,
+   "docs": 1,
+   "rss": {
+    "gpu": 76.5,
+    "renderer": 252.7
+   },
+   "label": "panels-before",
+   "t": 1
+  },
+  {
+   "heapMB": 7.69,
+   "canvasMade": 4109,
+   "canvasLive": 2593,
+   "canvasAttached": 160,
+   "canvasMPx": 0.881,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "cdpHeapMB": 5.82,
+   "cdpNodes": 5839,
+   "cdpListeners": 428,
+   "docs": 1,
+   "rss": {
+    "gpu": 91.9,
+    "renderer": 282.1
+   },
+   "label": "panels-after",
+   "t": 2
+  },
+  {
+   "heapMB": 7.72,
+   "canvasMade": 4109,
+   "canvasLive": 2593,
+   "canvasAttached": 160,
+   "canvasMPx": 0.881,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "cdpHeapMB": 5.85,
+   "cdpNodes": 5850,
+   "cdpListeners": 431,
+   "docs": 1,
+   "rss": {
+    "gpu": 91.3,
+    "renderer": 282.1
+   },
+   "label": "battles-before",
+   "t": 2
+  },
+  {
+   "heapMB": 8.65,
+   "canvasMade": 4272,
+   "canvasLive": 2731,
+   "canvasAttached": 160,
+   "canvasMPx": 0.922,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 7,
+   "intervalsMade": 29,
+   "timeoutsPending": 1,
+   "listenersNet": 613,
+   "domNodes": 1990,
+   "cdpHeapMB": 7.21,
+   "cdpNodes": 6067,
+   "cdpListeners": 464,
+   "docs": 1,
+   "rss": {
+    "gpu": 82.5,
+    "renderer": 281
+   },
+   "label": "battles-after",
+   "t": 27
+  },
+  {
+   "heapMB": 8.62,
+   "canvasMade": 4272,
+   "canvasLive": 2731,
+   "canvasAttached": 160,
+   "canvasMPx": 0.922,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 7,
+   "intervalsMade": 29,
+   "timeoutsPending": 1,
+   "listenersNet": 613,
+   "domNodes": 1990,
+   "cdpHeapMB": 7.18,
+   "cdpNodes": 6055,
+   "cdpListeners": 462,
+   "docs": 1,
+   "rss": {
+    "gpu": 82.5,
+    "renderer": 280.5
+   },
+   "label": "end",
+   "t": 27
+  }
+ ]
+}

@@ -1,0 +1,122 @@
+[
+ {
+  "engine": "webkit",
+  "how": "page.close",
+  "point": "afterGrow",
+  "delayMs": 0,
+  "liveStage": 1,
+  "diskStage": 1,
+  "stageKept": true,
+  "movesKept": true,
+  "liveMoves": "bump tumble_charge ripple_jab undertow",
+  "diskMoves": "bump tumble_charge ripple_jab undertow",
+  "evoMoves": [],
+  "bootSheet": "Emberfox remembers something from growing up!"
+ },
+ {
+  "engine": "webkit",
+  "how": "page.close",
+  "point": "afterGrow",
+  "delayMs": 500,
+  "liveStage": 1,
+  "diskStage": 1,
+  "stageKept": true,
+  "movesKept": true,
+  "liveMoves": "bump tumble_charge ripple_jab undertow",
+  "diskMoves": "bump tumble_charge ripple_jab undertow",
+  "evoMoves": [],
+  "bootSheet": "Emberfox remembers something from growing up!"
+ },
+ {
+  "engine": "webkit",
+  "how": "page.close",
+  "point": "afterGrow",
+  "delayMs": 2000,
+  "liveStage": 1,
+  "diskStage": 1,
+  "stageKept": true,
+  "movesKept": true,
+  "liveMoves": "bump tumble_charge ripple_jab undertow",
+  "diskMoves": "bump tumble_charge ripple_jab undertow",
+  "evoMoves": [],
+  "bootSheet": "Emberfox remembers something from growing up!"
+ },
+ {
+  "engine": "webkit",
+  "how": "page.close",
+  "point": "afterGrow",
+  "delayMs": 5000,
+  "liveStage": 1,
+  "diskStage": 1,
+  "stageKept": true,
+  "movesKept": true,
+  "liveMoves": "bump tumble_charge ripple_jab undertow",
+  "diskMoves": "bump tumble_charge ripple_jab undertow",
+  "evoMoves": [],
+  "bootSheet": "Emberfox remembers something from growing up!"
+ },
+ {
+  "engine": "webkit",
+  "how": "page.close",
+  "point": "afterReplace",
+  "delayMs": 0,
+  "liveStage": 1,
+  "diskStage": 1,
+  "stageKept": true,
+  "movesKept": true,
+  "liveMoves": "cinder_pounce tumble_charge ripple_jab undertow",
+  "diskMoves": "cinder_pounce tumble_charge ripple_jab undertow",
+  "evoMoves": [
+   1
+  ],
+  "bootSheet": ""
+ },
+ {
+  "engine": "webkit",
+  "how": "page.close",
+  "point": "afterReplace",
+  "delayMs": 500,
+  "liveStage": 1,
+  "diskStage": 1,
+  "stageKept": true,
+  "movesKept": true,
+  "liveMoves": "cinder_pounce tumble_charge ripple_jab undertow",
+  "diskMoves": "cinder_pounce tumble_charge ripple_jab undertow",
+  "evoMoves": [
+   1
+  ],
+  "bootSheet": ""
+ },
+ {
+  "engine": "webkit",
+  "how": "page.close",
+  "point": "afterReplace",
+  "delayMs": 2000,
+  "liveStage": 1,
+  "diskStage": 1,
+  "stageKept": true,
+  "movesKept": true,
+  "liveMoves": "cinder_pounce tumble_charge ripple_jab undertow",
+  "diskMoves": "cinder_pounce tumble_charge ripple_jab undertow",
+  "evoMoves": [
+   1
+  ],
+  "bootSheet": ""
+ },
+ {
+  "engine": "webkit",
+  "how": "page.close",
+  "point": "afterReplace",
+  "delayMs": 5000,
+  "liveStage": 1,
+  "diskStage": 1,
+  "stageKept": true,
+  "movesKept": true,
+  "liveMoves": "cinder_pounce tumble_charge ripple_jab undertow",
+  "diskMoves": "cinder_pounce tumble_charge ripple_jab undertow",
+  "evoMoves": [
+   1
+  ],
+  "bootSheet": ""
+ }
+]

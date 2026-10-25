@@ -1,0 +1,654 @@
+{
+ "summary": {
+  "browser": "webkit",
+  "perPanelCycle": {
+   "heapMB": null,
+   "cdpHeapMB": null,
+   "canvasLive": 24.68,
+   "canvasAttached": 1.46,
+   "canvasMade": 1223.6,
+   "canvasMPx": 0.008,
+   "audioCtx": 0,
+   "intervalsActive": 0,
+   "timeoutsPending": 0,
+   "listenersNet": 0,
+   "cdpListeners": null,
+   "domNodes": 10.72,
+   "cdpNodes": null
+  },
+  "perBattle": {
+   "heapMB": null,
+   "cdpHeapMB": null,
+   "canvasLive": -102.2,
+   "canvasAttached": 0,
+   "canvasMade": 15.9,
+   "canvasMPx": -0.033,
+   "audioCtx": 0,
+   "intervalsActive": 0,
+   "timeoutsPending": 0,
+   "listenersNet": 5.2,
+   "cdpListeners": null,
+   "domNodes": 3.8,
+   "cdpNodes": null
+  },
+  "startToEnd": {
+   "heapMB": [
+    null,
+    null
+   ],
+   "cdpHeapMB": [
+    null,
+    null
+   ],
+   "canvasLive": [
+    2520,
+    4813
+   ],
+   "canvasAttached": [
+    87,
+    161
+   ],
+   "canvasMade": [
+    2611,
+    217694
+   ],
+   "canvasMPx": [
+    0.858,
+    1.601
+   ],
+   "audioCtx": [
+    1,
+    1
+   ],
+   "intervalsActive": [
+    8,
+    8
+   ],
+   "timeoutsPending": [
+    0,
+    0
+   ],
+   "listenersNet": [
+    412,
+    464
+   ],
+   "cdpListeners": [
+    null,
+    null
+   ],
+   "domNodes": [
+    1416,
+    1998
+   ],
+   "cdpNodes": [
+    null,
+    null
+   ]
+  },
+  "rss": {
+   "start": {
+    "webcontent": 590.3
+   },
+   "panelsBefore": {
+    "webcontent": 589.8
+   },
+   "panelsAfter": {
+    "webcontent": 699.1
+   },
+   "battlesBefore": {
+    "webcontent": 699.1
+   },
+   "battlesAfter": {
+    "webcontent": 734.8
+   },
+   "end": {
+    "webcontent": 754.4
+   }
+  },
+  "errors": [],
+  "errorCount": 0,
+  "navigations": [
+   "2026-10-22T05:21:55.179Z http://127.0.0.1:8192/?debug=1"
+  ],
+  "crumbs": {
+   "last": null,
+   "alive": "{\"at\":1792647116107,\"battleOn\":true,\"build\":\"20261021-1356\"}",
+   "saveBytes": 3854
+  },
+  "cycles": 278
+ },
+ "samples": [
+  {
+   "heapMB": null,
+   "canvasMade": 2611,
+   "canvasLive": 2520,
+   "canvasAttached": 87,
+   "canvasMPx": 0.858,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1416,
+   "rss": {
+    "webcontent": 590.3
+   },
+   "label": "start",
+   "t": 0
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 2611,
+   "canvasLive": 2520,
+   "canvasAttached": 87,
+   "canvasMPx": 0.858,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1416,
+   "rss": {
+    "webcontent": 589.8
+   },
+   "label": "panels-before",
+   "t": 1
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 15071,
+   "canvasLive": 11242,
+   "canvasAttached": 160,
+   "canvasMPx": 3.683,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "rss": {
+    "webcontent": 710.4
+   },
+   "label": "panels-10",
+   "t": 10
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 27251,
+   "canvasLive": 2593,
+   "canvasAttached": 160,
+   "canvasMPx": 0.881,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "rss": {
+    "webcontent": 712.9
+   },
+   "label": "panels-20",
+   "t": 19
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 39431,
+   "canvasLive": 6813,
+   "canvasAttached": 160,
+   "canvasMPx": 2.248,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "rss": {
+    "webcontent": 699.8
+   },
+   "label": "panels-30",
+   "t": 28
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 51611,
+   "canvasLive": 6340,
+   "canvasAttached": 160,
+   "canvasMPx": 2.095,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "rss": {
+    "webcontent": 707.2
+   },
+   "label": "panels-40",
+   "t": 37
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 63791,
+   "canvasLive": 3754,
+   "canvasAttached": 160,
+   "canvasMPx": 1.257,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "rss": {
+    "webcontent": 699.8
+   },
+   "label": "panels-50",
+   "t": 47
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 63791,
+   "canvasLive": 3754,
+   "canvasAttached": 160,
+   "canvasMPx": 1.257,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "rss": {
+    "webcontent": 699.1
+   },
+   "label": "panels-after",
+   "t": 47
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 63791,
+   "canvasLive": 3754,
+   "canvasAttached": 160,
+   "canvasMPx": 1.257,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 8,
+   "timeoutsPending": 0,
+   "listenersNet": 412,
+   "domNodes": 1952,
+   "rss": {
+    "webcontent": 699.1
+   },
+   "label": "battles-before",
+   "t": 47
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 63950,
+   "canvasLive": 2732,
+   "canvasAttached": 160,
+   "canvasMPx": 0.927,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1990,
+   "rss": {
+    "webcontent": 734.8
+   },
+   "label": "battles-after",
+   "t": 70
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 72546,
+   "canvasLive": 4814,
+   "canvasAttached": 161,
+   "canvasMPx": 1.601,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 663.8
+   },
+   "label": "soak-c16",
+   "t": 101
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 81410,
+   "canvasLive": 7447,
+   "canvasAttached": 161,
+   "canvasMPx": 2.454,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 748.6
+   },
+   "label": "soak-c32",
+   "t": 131
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 90274,
+   "canvasLive": 7953,
+   "canvasAttached": 161,
+   "canvasMPx": 2.618,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 752
+   },
+   "label": "soak-c48",
+   "t": 162
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 99138,
+   "canvasLive": 5367,
+   "canvasAttached": 161,
+   "canvasMPx": 1.78,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 629.3
+   },
+   "label": "soak-c64",
+   "t": 192
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 108002,
+   "canvasLive": 3793,
+   "canvasAttached": 161,
+   "canvasMPx": 1.271,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 743.5
+   },
+   "label": "soak-c80",
+   "t": 223
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 116866,
+   "canvasLive": 3287,
+   "canvasAttached": 161,
+   "canvasMPx": 1.107,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 739.5
+   },
+   "label": "soak-c96",
+   "t": 253
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 125730,
+   "canvasLive": 6339,
+   "canvasAttached": 161,
+   "canvasMPx": 2.095,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 747.8
+   },
+   "label": "soak-c112",
+   "t": 284
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 134594,
+   "canvasLive": 3793,
+   "canvasAttached": 161,
+   "canvasMPx": 1.271,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 753
+   },
+   "label": "soak-c128",
+   "t": 315
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 143458,
+   "canvasLive": 6893,
+   "canvasAttached": 161,
+   "canvasMPx": 2.275,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 754.2
+   },
+   "label": "soak-c144",
+   "t": 345
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 152322,
+   "canvasLive": 4259,
+   "canvasAttached": 161,
+   "canvasMPx": 1.421,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 743
+   },
+   "label": "soak-c160",
+   "t": 376
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 161186,
+   "canvasLive": 4813,
+   "canvasAttached": 161,
+   "canvasMPx": 1.601,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 745.3
+   },
+   "label": "soak-c176",
+   "t": 406
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 170050,
+   "canvasLive": 7447,
+   "canvasAttached": 161,
+   "canvasMPx": 2.454,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 758.4
+   },
+   "label": "soak-c192",
+   "t": 437
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 178914,
+   "canvasLive": 2733,
+   "canvasAttached": 161,
+   "canvasMPx": 0.927,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 743.3
+   },
+   "label": "soak-c208",
+   "t": 467
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 187778,
+   "canvasLive": 3792,
+   "canvasAttached": 161,
+   "canvasMPx": 1.27,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 752.8
+   },
+   "label": "soak-c224",
+   "t": 498
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 196642,
+   "canvasLive": 4259,
+   "canvasAttached": 161,
+   "canvasMPx": 1.421,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 755.2
+   },
+   "label": "soak-c240",
+   "t": 529
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 205506,
+   "canvasLive": 6893,
+   "canvasAttached": 161,
+   "canvasMPx": 2.275,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 761.8
+   },
+   "label": "soak-c256",
+   "t": 559
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 214370,
+   "canvasLive": 7447,
+   "canvasAttached": 161,
+   "canvasMPx": 2.454,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 647.8
+   },
+   "label": "soak-c272",
+   "t": 590
+  },
+  {
+   "heapMB": null,
+   "canvasMade": 217694,
+   "canvasLive": 4813,
+   "canvasAttached": 161,
+   "canvasMPx": 1.601,
+   "big": [],
+   "audioCtx": 1,
+   "intervalsActive": 8,
+   "intervalsMade": 14,
+   "timeoutsPending": 0,
+   "listenersNet": 464,
+   "domNodes": 1998,
+   "rss": {
+    "webcontent": 754.4
+   },
+   "label": "end",
+   "t": 601
+  }
+ ]
+}

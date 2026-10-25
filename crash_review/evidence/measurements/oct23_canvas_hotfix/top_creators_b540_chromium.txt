@@ -1,0 +1,18 @@
+cycles 16->30: alive 3519->3519, backing MB 10.18->10.18
+creator | born/cycle | alive A->B | backing KB A->B
+game.js:14217 | 57.0 | 57->57 | 72->72
+slotStatIcon (game.js:14006 | 6.0 | 6->6 | 1->1
+keeperCanvas (game.js:6299 | 2.0 | 496->496 | 628->628
+game.js:11806 | 2.0 | 2->2 | 3->3
+landmarkSwatch (game.js:10277 | 1.9 | 2->2 | 2->2
+slotMain (game.js:14037 | 1.0 | 1->1 | 1->1
+mkTile (sprites.js:664 | 0.0 | 1550->1550 | 1550->1550
+paintBuilding (game.js:5197 | 0.0 | 812->812 | 812->812
+paint (sprites.js:2553 | 0.0 | 282->282 | 303->303
+buildSprite (sprites.js:368 | 0.0 | 240->240 | 304->304
+wallMaskOf (game.js:5421 | 0.0 | 43->43 | 6038->6038
+game.js:733 | 0.0 | 10->10 | 76->76
+haloSprite (game.js:112 | 0.0 | 9->9 | 11->11
+makeBackdrop (game.js:2505 | 0.0 | 4->4 | 85->85
+game.js:740 | 0.0 | 3->3 | 527->527
+initNavArt (game.js:744 | 0.0 | 1->1 | 9->9

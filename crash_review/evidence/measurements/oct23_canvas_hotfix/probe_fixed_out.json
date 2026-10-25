@@ -1,0 +1,176 @@
+{
+ "webkit_firstBoot": {
+  "screen": "pet",
+  "active": [
+   "scr-pet"
+  ],
+  "ss": null,
+  "wasDiscarded": "absent",
+  "nav": "navigate",
+  "last": null
+ },
+ "webkit_beforeReload": {
+  "screen": "walk",
+  "battle": true
+ },
+ "webkit_afterReload": {
+  "screen": "pet",
+  "active": [
+   "scr-pet"
+  ],
+  "ss": "kept",
+  "wasDiscarded": "absent",
+  "nav": "reload",
+  "last": {
+   "reason": "unknown",
+   "at": 1792810062160,
+   "battleOn": true,
+   "build": "20261023-2200",
+   "standalone": false,
+   "sw": true,
+   "hid": true,
+   "nav": "reload",
+   "hidAge": 206
+  }
+ },
+ "chromium_firstBoot": {
+  "screen": "pet",
+  "active": [
+   "scr-pet"
+  ],
+  "ss": null,
+  "wasDiscarded": false,
+  "nav": "navigate",
+  "last": null
+ },
+ "chromium_beforeReload": {
+  "screen": "walk",
+  "battle": true
+ },
+ "chromium_afterReload": {
+  "screen": "pet",
+  "active": [
+   "scr-pet"
+  ],
+  "ss": "kept",
+  "wasDiscarded": false,
+  "nav": "reload",
+  "last": {
+   "reason": "unknown",
+   "at": 1792810075027,
+   "battleOn": true,
+   "build": "20261023-2200",
+   "standalone": false,
+   "sw": true,
+   "hid": true,
+   "nav": "reload",
+   "hidAge": 289,
+   "wasDiscarded": false
+  }
+ },
+ "chromium_beforeCrash": {
+  "screen": "walk",
+  "battle": true,
+  "alive": "{\"at\":1792810085328,\"battleOn\":true,\"build\":\"20261023-2200\",\"screen\":\"Battle\",\"live\":2244,\"portraits\":0,\"made\":0,\"phase\":\"acts\"}"
+ },
+ "chromium_afterCrash": {
+  "screen": "pet",
+  "active": [
+   "scr-pet"
+  ],
+  "ss": null,
+  "wasDiscarded": false,
+  "nav": "navigate",
+  "last": {
+   "reason": "crash",
+   "at": 1792810085328,
+   "battleOn": true,
+   "build": "20261023-2200",
+   "screen": "Battle",
+   "phase": "acts",
+   "live": 2244,
+   "portraits": 0,
+   "made": 0,
+   "standalone": false,
+   "sw": true,
+   "hid": false,
+   "nav": "navigate",
+   "gap": 959,
+   "wasDiscarded": false
+  }
+ },
+ "chromium_afterBackgroundKill": {
+  "screen": "pet",
+  "active": [
+   "scr-pet"
+  ],
+  "ss": null,
+  "wasDiscarded": false,
+  "nav": "navigate",
+  "last": {
+   "reason": "background",
+   "at": 1792810087934,
+   "battleOn": false,
+   "build": "20261023-2200",
+   "screen": "Walk",
+   "live": 2082,
+   "portraits": 0,
+   "made": 17,
+   "standalone": false,
+   "sw": true,
+   "hid": true,
+   "nav": "navigate",
+   "gap": 779,
+   "hidAge": 778,
+   "wasDiscarded": false
+  }
+ },
+ "chromium_allCrumbs": [
+  {
+   "reason": "unknown",
+   "at": 1792810075027,
+   "battleOn": true,
+   "build": "20261023-2200",
+   "standalone": false,
+   "sw": true,
+   "hid": true,
+   "nav": "reload",
+   "hidAge": 289,
+   "wasDiscarded": false
+  },
+  {
+   "reason": "crash",
+   "at": 1792810085328,
+   "battleOn": true,
+   "build": "20261023-2200",
+   "screen": "Battle",
+   "phase": "acts",
+   "live": 2244,
+   "portraits": 0,
+   "made": 0,
+   "standalone": false,
+   "sw": true,
+   "hid": false,
+   "nav": "navigate",
+   "gap": 959,
+   "wasDiscarded": false
+  },
+  {
+   "reason": "background",
+   "at": 1792810087934,
+   "battleOn": false,
+   "build": "20261023-2200",
+   "screen": "Walk",
+   "live": 2082,
+   "portraits": 0,
+   "made": 17,
+   "standalone": false,
+   "sw": true,
+   "hid": true,
+   "nav": "navigate",
+   "gap": 779,
+   "hidAge": 778,
+   "wasDiscarded": false
+  }
+ ]
+}
