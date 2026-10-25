@@ -447,6 +447,21 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 #toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top));transform:translateX(-50%);z-index:20;background:var(--k);color:var(--y);
   padding:10px 14px;font-size:18px;box-shadow:0 0 0 3px var(--y);opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
 #toast.show{opacity:1}
+/* One-time note after a crash. Same colours as the toast. Below overlays and the tutorial, so it cannot take their taps.
+   Arcade sits under the area chip (header 52 + strip 56 + chip 44). Modern sits under the side buttons and the clock, above the bottom strip.
+   At 320 arcade the map is only about 150 px tall, so the note is one short row: copy on the left, OK on the right. */
+.crash-note{position:fixed;z-index:8;left:50%;top:calc(162px + env(safe-area-inset-top));transform:translateX(-50%);
+  width:min(300px, calc(100vw - 24px));box-sizing:border-box;display:flex;flex-direction:column;gap:8px;
+  background:var(--k);color:var(--y);padding:10px 12px;box-shadow:0 0 0 3px var(--y);text-align:center;pointer-events:auto}
+.crash-note[hidden]{display:none}
+.crash-note p{margin:0;font-size:18px;line-height:22px;color:var(--y)}
+#crashNoteOk{min-height:44px;min-width:44px;width:100%;padding:0 10px;border:0;background:var(--h);color:var(--k);font-size:20px;cursor:pointer}
+body.ctl-modern[data-screen="walk"] .crash-note{top:calc(212px + env(safe-area-inset-top))}
+@media (max-width:320px){
+  body:not(.ctl-modern) .crash-note{flex-direction:row;align-items:center;gap:6px;width:min(308px, calc(100vw - 8px));padding:4px 6px 4px 8px}
+  body:not(.ctl-modern) .crash-note p{flex:1 1 auto;min-width:0;font-size:16px;line-height:18px;text-align:left}
+  body:not(.ctl-modern) #crashNoteOk{flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;font-size:18px}
+}
 /* The collection title sits where the walk toast does. On WALKLINGS the toast sits above the tab bar. */
 body[data-screen="col"] #toast{top:auto;bottom:calc(74px + env(safe-area-inset-bottom))}
 .flash{animation:flash .5s steps(2) 2}

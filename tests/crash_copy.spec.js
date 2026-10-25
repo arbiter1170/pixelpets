@@ -1,5 +1,6 @@
-/* Copy crash info. Visible for ?debug=1 or when the NEWEST reload entry is a crash, even when Debug is off.
-   The clipboard gets pp_diag plus the reload list. Nothing is sent. */
+/* Copy crash info. Visible for ?debug=1, when ANY kept reload entry is a crash, or when this build's
+   crash log has a count, even when Debug is off. The clipboard gets the crash diag when one was kept,
+   otherwise this boot's pp_diag, plus the reload list. Nothing is sent. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -96,16 +97,21 @@ const onScreen = (page, sel) => page.evaluate((sel) => {
   return { w: r.width, h: r.height };
 }, sel);
 
-test('an older crash followed by a newer normal reload hides the button', async ({ page }) => {
+test('an older crash followed by a newer normal reload still shows the button', async ({ page }) => {
   await bootWithReloads(page, [
     { reason: 'crash', at: 1760000000000, screen: 'Walk', build: 'test' },
     { reason: 'build', at: 1760000600000, screen: 'Walk', build: 'test' },
   ]);
   await expect(page.locator('#setReload')).toBeVisible();
   await expect(page.locator('#setReload')).toContainText('new build');
-  await expect(page.locator('#setCrashCopy')).toBeHidden();
-  expect(await onScreen(page, '#setCrashCopy')).toBeNull();
-  expect(await page.locator('#setCrashCopy').boundingBox()).toBeNull();
+  const btn = page.locator('#setCrashCopy');
+  await expect(btn).toBeVisible();
+  await btn.scrollIntoViewIfNeeded();
+  const box = await onScreen(page, '#setCrashCopy');
+  expect(box).not.toBeNull();
+  expect(box.h).toBeGreaterThanOrEqual(44);
+  expect(box.w).toBeGreaterThanOrEqual(44);
+  expect(await onScreen(page, '#crashNote')).toBeNull();
 });
 
 test('the newest reload being a crash shows the button at 44 px or more', async ({ page }) => {
