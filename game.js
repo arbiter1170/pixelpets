@@ -1259,6 +1259,13 @@ function hudFree(){
     wrapW: wr.width, wrapH: wr.height,
   };
 }
+// The clock chip's width follows its text (a game minute is a few seconds), so the right pad is re-measured
+// when the text changes. Without this the pads keep the width from the last fitAll and the room camera can sit
+// 1 art px off the live HUD until the next fitAll. Off with the frame class, so the default camera is main's.
+function refreshHudPads(){
+  if (!hudPadsLive() || screen !== 'walk' || ctlMode() !== 'modern') return;
+  hudFree(); syncWalkCam();
+}
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
 function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
@@ -4169,7 +4176,7 @@ function renderClockChip(){
   if (!btn || !lab || !window.PPClock) return;
   const r = PPClock.now();
   const txt = r.label + ' ' + r.hh + ':' + String(r.mm).padStart(2, '0');
-  if (lab.textContent !== txt) { lab.textContent = txt; invalidateCueZone(); }
+  if (lab.textContent !== txt) { lab.textContent = txt; invalidateCueZone(); refreshHudPads(); }   // the clock's width follows its text
   const aria = r.name + ', ' + r.hh + ':' + String(r.mm).padStart(2, '0') + ', ' + r.phase;
   if (btn.getAttribute('aria-label') !== aria) btn.setAttribute('aria-label', aria);
   if (renderClockChip.phase !== r.phase) {
