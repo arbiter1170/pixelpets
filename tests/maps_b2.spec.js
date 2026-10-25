@@ -16,6 +16,9 @@ function labSave(flags = {}, world) {
   Object.assign(s.flags, {
     'story.side': 'glimmer', 'story.side_pick_done': true, 'story.rx_enter': true, 'story.saw_arbiter': true,
     'story.rx_f1': true, 'story.rx_f2': true, 'story.rx_f3': true,
+    // side_pick_done queues the one-time "Your side" tip. It opens on #tutLayer once WALK is quiet and
+    // swallows map taps. These tests are about the stairs, so mark it as seen.
+    'story.unlock_sides': true,
   }, flags);
   if (world) s.world = Object.assign({ facing: 'up', respawn: 'fernbrook' }, world);
   return s;
@@ -154,10 +157,24 @@ test('each floor is walkable, under the floor cap, and its accent is its own', a
 test('a locked stair stays shut', async ({ page }) => {
   await boot(page, labSave({ 'story.rx_f1': false }));
   await at(page, 'rx_f1', 6, 3, 'up');
-  const pt = await page.evaluate(() => {
-    const c = document.querySelector('#mapCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width;
-    return { x: r.left + (6 * 16 + 8 - PixelPets.walk.cam.x) * k, y: r.top + (2 * 16 + 8 - PixelPets.walk.cam.y) * k };
-  });
+  // The camera pans to the player over a few frames after the jump, and a tip or overlay can sit over the map.
+  // A point worked out mid-pan lands on another tile when the tap arrives (the south mat sends the player to
+  // the lobby). Click only once the camera has held still for two frames, the stair tile is inside the canvas,
+  // and the canvas itself is the top element there.
+  let pt = null;
+  await expect.poll(() => page.evaluate(async () => {
+    const c = document.querySelector('#mapCanvas');
+    if (!c || !c.width || PixelPets.scene || PixelPets.fading) return null;
+    const cam0 = PixelPets.walk.cam.x + ',' + PixelPets.walk.cam.y;
+    await new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+    if (PixelPets.walk.cam.x + ',' + PixelPets.walk.cam.y !== cam0) return null;
+    const r = c.getBoundingClientRect(), k = r.width / c.width;
+    if (r.width < 2 || r.height < 2) return null;
+    const x = r.left + (6 * 16 + 8 - PixelPets.walk.cam.x) * k, y = r.top + (2 * 16 + 8 - PixelPets.walk.cam.y) * k;
+    if (x < r.left || y < r.top || x > r.right || y > r.bottom) return null;
+    if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return null;
+    return document.elementFromPoint(x, y) === c ? { x, y } : null;
+  }).then((v) => (pt = v))).not.toBeNull();
   await page.mouse.click(pt.x, pt.y);
   await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.text)).toContain('The stair lock is still on.');
   expect(await pos(page)).toMatchObject({ map: 'rx_f1' });

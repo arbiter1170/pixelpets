@@ -262,6 +262,15 @@ test('going hidden keeps the alive mark, so a kill while hidden reads as backgro
 
 test('pp_diag keeps taps, screen, canvas MB and DOM size outside the save and a crash entry copies them', async ({ page }) => {
   await boot(page);
+  // installSave seeds a raw starter save. The game's first write (the 5 s autosave) stores the full save with
+  // more keys, and it can land on either side of the 5 s diag beat below. Take the baseline only once the
+  // stored save has the game's own key set, so the key check compares game writes, not seed vs game.
+  await page.waitForFunction(() => {
+    const raw = localStorage.getItem('pixelpets.save.v2');
+    if (!raw || !window.PixelPets.state) return false;
+    const keys = (o) => Object.keys(o).sort().join(',');
+    return keys(JSON.parse(raw)) === keys(JSON.parse(JSON.stringify(window.PixelPets.state)));
+  }, null, { timeout: 10000 });
   const saveBefore = await page.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
   await page.locator('#repBtn').click();
   await expect(page.locator('#ovRep')).toBeVisible();

@@ -38,7 +38,7 @@ async function bootWithGeo(page, state, cache = 'fresh', opts = {}) {
     return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
   });
   if (opts.clock) await page.clock.install();
-  await gotoGame(page);
+  await gotoGame(page, opts.search);
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.state);
   if (opts.clock) await page.clock.runFor(600);
   else await page.waitForTimeout(600);
@@ -156,4 +156,33 @@ test('REFRESH without a grant refetches weather for the cached area and leaves t
   expect(await geoCalls(page)).toBe(0);
   expect(page.__weather).toBe(before + 1);
   expect((await envNow(page)).coords).toBe(AREA);
+});
+
+// PixelPets.refreshEnv is a ?debug=1 console hook. It takes the REFRESH path, so it goes through the same
+// grant check: no browser prompt and no device read unless the Permissions API says 'granted'.
+test('refreshEnv is not there without ?debug=1', async ({ page }) => {
+  await bootWithGeo(page, 'granted');
+  expect(await page.evaluate(() => typeof window.PixelPets.refreshEnv)).not.toBe('function');
+  expect(await page.evaluate(() => window.PixelPets.refreshEnv)).toBeUndefined();
+});
+
+test('refreshEnv with ?debug=1 and no grant refetches weather for the cached area and never reads the device', async ({ page }) => {
+  await bootWithGeo(page, 'prompt', 'fresh', { search: '?debug=1' });
+  await page.waitForFunction(() => window.PixelPets.debug === true);
+  const before = page.__weather;
+  const env = await page.evaluate(() => window.PixelPets.refreshEnv());
+  expect(await geoCalls(page)).toBe(0);
+  expect(page.__weather).toBe(before + 1);
+  expect(env.coords).toBe(AREA);
+  expect((await envNow(page)).coords).toBe(AREA);
+});
+
+test('refreshEnv with ?debug=1 and a grant reads the device', async ({ page }) => {
+  await bootWithGeo(page, 'granted', 'fresh', { search: '?debug=1' });
+  await page.waitForFunction(() => window.PixelPets.debug === true);
+  const calls = await geoCalls(page);
+  const env = await page.evaluate(() => window.PixelPets.refreshEnv());
+  expect(await geoCalls(page)).toBe(calls + 1);
+  expect(env.source).toBe('location');
+  expect(env.coords).toBe(AREA);
 });

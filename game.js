@@ -653,9 +653,9 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
-function hasCrashReload(){
-  const list = lsJson(RELOAD_LAST);
-  return Array.isArray(list) && list.some(e => e && e.reason === 'crash');
+function hasCrashReload(){   // only the newest reload counts: an old crash followed by a normal reload hides Copy crash info
+  const list = lsJson(RELOAD_LAST), e = Array.isArray(list) && list[list.length - 1];
+  return !!(e && e.reason === 'crash');
 }
 function crashInfoText(){
   return JSON.stringify({ diag: lsJson(DIAG_KEY), reloads: lsJson(RELOAD_LAST) || [], build: buildId() });
@@ -16195,7 +16195,7 @@ function boot(){
   const api = {
     get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get finds(){ return { at: FINDS.at.slice(), today: S && S.care ? { ...S.care } : null }; }, setFindRng: f => { if (DEBUG) findRng = typeof f === 'function' ? f : Math.random; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
-    get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, refreshEnv: () => PPEnv.refresh(true),
+    get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, get refreshEnv(){ return DEBUG && debugQueryOn() ? () => PPEnv.refresh('refresh') : undefined; },   // ?debug=1 only; the REFRESH path (geoPref 'allow' + permState 'granted'), never prompts
     get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, guide: !!w.guide, name: nameOf(w.sp, w.stage) })); },
     get poofs(){ return wild.poofs.length; },
     spawnOdds: (tags, key) => spawnOdds(tags, key), cooldownLeft: act => cdLeft(pet(), act),
