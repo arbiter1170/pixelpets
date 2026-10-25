@@ -239,9 +239,10 @@ body.scene-on .walk-ctl{opacity:0}
 /* QA Oct 15: a 44 px tap target in arcade without moving anything: 8 px transparent borders, pulled back by negative margins. */
 body:not(.ctl-modern) .env-badge{border-top:8px solid transparent;border-bottom:8px solid transparent;background-clip:padding-box;box-shadow:none;outline:2px solid var(--d);outline-offset:-8px;margin-top:-8px;margin-bottom:-8px;min-height:44px}
 /* D729: arcade area chip sits on the map's top-left so its row leaves the flex flow.
-   A long name ellipsizes so the chip stays a corner target and a top-edge tap can still reach the map. */
-body:not(.ctl-modern) #scr-walk #envBadge{position:absolute;left:20px;top:20px;z-index:4;margin:0;max-width:148px}
-body:not(.ctl-modern) #scr-walk #envBadge #envText{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+   A long name ellipsizes so the chip stays a corner target and a top-edge tap can still reach the map.
+   Gated behind the MODERN_HUD_CLEAR P1 frame class (Supervisor green call, Oct 25 2026): off, arcade is live's layout. */
+body.mhc-frame:not(.ctl-modern) #scr-walk #envBadge{position:absolute;left:20px;top:20px;z-index:4;margin:0;max-width:148px}
+body.mhc-frame:not(.ctl-modern) #scr-walk #envBadge #envText{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .env-badge small{font-size:13px;color:var(--k);background:var(--h);padding:0 3px;letter-spacing:1px;flex:0 0 auto}
 .env-badge small:empty{display:none}
 .geo-text{margin:0;font-size:18px;line-height:1.45;color:var(--w)}
@@ -1362,7 +1363,7 @@ body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-loc
 .coop-head-btn.away canvas{filter:grayscale(1);opacity:.55}
 .coop-count{position:absolute;right:1px;bottom:0;color:var(--w);font-size:12px;line-height:1}
 body.ctl-modern #coopStrip{top:56px;left:56px}
-body:not(.ctl-modern) #coopStrip{top:70px;left:4px}
+body.mhc-frame:not(.ctl-modern) #coopStrip{top:70px;left:4px}
 #coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}
 #coopJoin{background:var(--g);color:var(--k)}
 #coopNotNow{background:var(--m);color:var(--w)}
