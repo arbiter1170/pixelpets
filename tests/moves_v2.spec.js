@@ -757,7 +757,9 @@ test('21 a super-effective white frame is one run of about 80 ms', async ({ page
       const b = PixelPets.battle;
       // Pin the roll as tests 16, 18, 19 and 20 do. foxfire_flick is 95% accurate (a miss draws no white frame)
       // and a 1-in-16 lucky hit knocks this 32 HP foe out, so the battle never returns to CHOOSE.
-      b.animMs = null; b.textMs = 0; b.whites = []; b.foePlan = { move: 'sap_sip' }; b.rng = () => 0.5;
+      // textMs 200 (players get 600+ or a tap): with 0, effects OFF has no stop after the hit, so the rest of the
+      // turn ran as back-to-back 0 ms timers and, under load, no frame was drawn inside the 80 ms window.
+      b.animMs = null; b.textMs = 200; b.whites = []; b.foePlan = { move: 'sap_sip' }; b.rng = () => 0.5;
       window.__t21Frames.length = 0;
     });
     await page.locator('[data-bact="fight"]').click();
@@ -780,7 +782,7 @@ test('21 a super-effective white frame is one run of about 80 ms', async ({ page
     // the recorded window on the game's clock.
     const lit = got.frames.map((f, i) => (f.white ? i : -1)).filter((i) => i >= 0);
     const w = got.runs[0];
-    expect(lit.length, effects + ' white frames drawn').toBeGreaterThan(0);
+    expect(lit.length, effects + ' white frames drawn; frame times from t0: ' + JSON.stringify(got.frames.filter((f) => f.t > w.t0 - 100 && f.t < w.until + 100).map((f) => Math.round(f.t - w.t0)))).toBeGreaterThan(0);
     expect(lit[lit.length - 1] - lit[0] + 1, effects + ' one run').toBe(lit.length);
     lit.forEach((i) => {
       expect(got.frames[i].t, effects).toBeGreaterThanOrEqual(w.t0);
