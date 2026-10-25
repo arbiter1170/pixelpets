@@ -574,7 +574,9 @@ test('18 hiding the page snaps the bars and the next line still takes a tap', as
   await openWild(page, 'bloom/0', 4);
   await page.evaluate(() => {
     const b = PixelPets.battle;
-    b.animMs = null; b.textMs = 5000;
+    // foxfire_flick is 95% accurate. A miss sets neither punch nor shown (and the foe's sap_sip heal sets no
+    // punch), so the wait below would hang. Pin the roll so the move lands, as tests 20 and 21 do.
+    b.animMs = null; b.textMs = 5000; b.rng = () => 0.5;
     b.foePlan = { move: 'sap_sip' };
     PixelPets.setHp('foe', 40);
   });
