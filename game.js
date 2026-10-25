@@ -1111,6 +1111,12 @@ let mapZoom = 1, mapBase = 1;
 // D723: HUD pads in css px, filled by hudFree() inside fitAll. The camera reads these numbers only.
 const HUD_FALLBACK = { top: 56, left: 56, right: 96, bottom: 112, col: 206 };
 let hudPads = { top: 56, left: 56, right: 96, bottom: 112, col: 206, on: false, ox: 0, oy: 0, rightGap: 0, bottomGap: 0, wrapW: 0, wrapH: 0 };
+// Supervisor green call (Oct 25, 2026): the D787 A/B HUD pads stay off until MODERN_HUD_CLEAR P1 puts the portrait
+// frame class (MHC_FRAME_CLASS) on the body. With it off the camera is main's: no pads, no north or south lift,
+// no padded room placement. ?debug=1 can force it on or off for tests (PixelPets.setHudPads).
+const MHC_FRAME_CLASS = 'mhc-frame';
+let hudPadsForce = null;
+function hudPadsLive(){ return hudPadsForce != null ? hudPadsForce : !!(document.body && document.body.classList.contains(MHC_FRAME_CLASS)); }
 // Map zoom (Settings slider, settings.mapZoom). Outdoors only; rooms keep their own zoom (D727). 2 = today's look
 // (the base scale s, exactly as before), so nobody sees a change until they move the slider. The pixel art is a
 // 1x bitmap scaled by CSS with image-rendering: pixelated, so a step is crisp only when one art px covers a whole
@@ -1217,6 +1223,7 @@ function hudFree(){
   const fb = HUD_FALLBACK;
   hudPads = { top: fb.top, left: fb.left, right: fb.right, bottom: fb.bottom, col: fb.col, on: false, ox: 0, oy: 0, rightGap: 0, bottomGap: 0, wrapW: 0, wrapH: 0 };
   if (ctlMode() !== 'modern') return;
+  if (!hudPadsLive()) { hudPads = Object.assign(hudPads, { top: 0, left: 0, right: 0, bottom: 0, col: 0 }); return; }   // gated off until P1: pads 0
   const wrap = $('#mapWrap'), c = $('#mapCanvas');
   if (!wrap || !c) return;
   const wr = wrap.getBoundingClientRect(), cr = c.getBoundingClientRect();
@@ -8353,7 +8360,7 @@ function syncWalkCam(t){
     : Math.round(clamp(py_ + 8 - band.mid + by, Math.min(yLo, yHi), Math.max(yLo, yHi)));
   walk.cam.y = MH * TS <= band.VHe ? yFit : Math.round(clamp(py_ + 8 - band.mid + by, Math.min(yLo, yHi), Math.max(yLo, yHi)));
   if (band.head) outdoorNorthLift(band, py_);
-  if (!isRoom()) outdoorSouthLift(band, py_, VH);
+  if (!isRoom() && hudPadsLive()) outdoorSouthLift(band, py_, VH);   // main has no south lift; it waits for P1 with the pads
   if (hudPads.on && isRoom() && CUR && !CUR.fitWidth) placeRoomCam(VW, VH, px_, py_, bx, by);
   // Your Room at 320: the centred room still tucks its left wall under the round-button column. Nudge it right. Scale stays.
   if (roomSideNudge && CUR && CUR.id === 'hc_apt_in' && MW * TS <= VW) walk.cam.x -= roomSideNudge;
@@ -16552,6 +16559,7 @@ function boot(){
       if (!o) return false; openBooth(o); return true;
     },
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
+    setHudPads: on => { if (!DEBUG) return null; hudPadsForce = on == null ? null : !!on; fitAll(); return hudPadsLive(); },   // debug: force the D787 pads on/off (null = the frame class)
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
