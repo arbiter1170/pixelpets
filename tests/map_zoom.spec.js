@@ -279,6 +279,29 @@ test('arcade default (no controls setting, no frame class): canvas rect, map off
   }
 });
 
+// The clock chip's width follows its text, and a game minute is a few seconds. With the pads on, the right pad must
+// follow the live clock chip, not the width from the last fitAll (the room_zoom_all 1 px camera-x miss).
+test('D787 pads follow the clock chip as its text changes', async ({ page }) => {
+  test.setTimeout(60000);
+  await boot(page);
+  expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);
+  await page.evaluate(() => PixelPets.goto('hm_hq_f1'));
+  await settle(page);
+  const texts = new Set();
+  for (let i = 0; i < 40; i++) {
+    const g = await page.evaluate(() => {
+      const c = document.querySelector('#fcClock'), r = c.getBoundingClientRect();
+      const mc = document.querySelector('#mapCanvas').getBoundingClientRect();
+      return { text: c.textContent.trim(), shown: c.checkVisibility(), live: Math.max(0, Math.ceil(mc.right - r.left + 6)), pad: PixelPets.mapInfo.pads.right };
+    });
+    expect(g.shown).toBe(true);
+    expect(g.pad, g.text).toBe(g.live);
+    texts.add(g.text);
+    await page.waitForTimeout(250);
+  }
+  expect(texts.size, 'the clock ticked during the check').toBeGreaterThan(1);
+});
+
 test('D787: pads are the HUD overlap with the visible canvas; hidden HUD pads 0 and the north lift is off', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);   // the P1 frame flag, forced on
