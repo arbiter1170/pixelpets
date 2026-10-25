@@ -1,5 +1,5 @@
 /* MOVES_V2 section 12. Players never load this file.
-   Heavy checks run at 390. The 320 number check is @w1. */
+   Heavy checks run at 390. The damage number check (test 20) runs at every width. */
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
@@ -708,20 +708,55 @@ async function outlineAt(page) {
     return { digits, bad, boxes: boxes.map((b) => ({ x: b.x, y: b.y, text: b.text, col: b.col, sc: b.sc, ox: b.ox || 0, oy: b.oy || 0 })), samples, probe };
   }, CUE_DIGIT_ROWS);
 }
-test('20 damage digits keep a dark outline @w1', async ({ page }) => {
+// Debug hook for test 20: wraps mvNumTake and mvNumDraw (globals from mv_fx.js) to log every damage number the
+// queue takes and whether a frame drew it. `lead` moves a number's start time that many ms ahead of the take, the
+// way a rAF frame stamp can be a little earlier than the performance.now() of the task that took the number.
+async function hookNumbers(page) {
+  await page.evaluate(() => {
+    const hook = { takes: [], lead: 0 };
+    window.__mvNum = hook;
+    const take = window.mvNumTake, draw = window.mvNumDraw;
+    window.mvNumTake = function (who, n, look, t0) {
+      const rec = { n: n, t0: t0 + hook.lead, drawn: false, sawEarly: false, droppedEarly: false };
+      hook.takes.push(rec);
+      return take.call(this, who, n, look, rec.t0);
+    };
+    window.mvNumDraw = function (g, W, H, vis, centres, t) {
+      const out = draw.apply(this, arguments);
+      hook.takes.forEach((rec) => {
+        if (rec.drawn || rec.droppedEarly) return;
+        if (t < rec.t0) rec.sawEarly = true;
+        const slot = MV_NUM.find((sl) => sl.t0 === rec.t0);
+        if (MV_LAST_NUM.some((box) => box.text === String(rec.n))) rec.drawn = true;
+        else if (!slot || !slot.on) rec.droppedEarly = true;
+      });
+      return out;
+    };
+  });
+}
+test('20 damage digits keep a dark outline and every hit draws its number', async ({ page }) => {
   const s = baseSave();
   await boot(page, s);
-  for (const env of ['meadow', 'snow']) {
+  await hookNumbers(page);
+  // meadow: the natural timing. snow: the number starts 50 ms after the take, so the first frames see a negative
+  // age every time. Before the mvNumDraw fix a frame with a negative age dropped the number before its first draw.
+  for (const [env, lead] of [['meadow', 0], ['snow', 50]]) {
     await page.evaluate((name) => { PixelPets.setMapBackdrop('route'); PixelPets.setEnv(name); }, env);
     await openWild(page, 'tide/0', 6);
-    await page.evaluate(() => {
+    await page.evaluate((lead) => {
       const b = PixelPets.battle;
       b.animMs = null; b.textMs = 4000; b.rng = () => 0.5;
       b.foePlan = { move: 'mist_veil' };
-    });
+      window.__mvNum.takes = []; window.__mvNum.lead = lead;
+    }, lead);
     await page.locator('[data-bact="fight"]').click();
     await page.locator('#btMoves button[data-move="foxfire_flick"]').click();
-    await page.waitForFunction(() => typeof mvNumBoxes === 'function' && mvNumBoxes().length > 0);
+    await page.waitForFunction(() => window.__mvNum.takes.some((r) => r.drawn || r.droppedEarly), null, { timeout: 15000 });
+    const takes = await page.evaluate(() => window.__mvNum.takes.map((r) => ({ n: r.n, drawn: r.drawn, sawEarly: r.sawEarly, droppedEarly: r.droppedEarly })));
+    expect(takes.length, env + ' numbers taken').toBe(1);
+    expect(takes.filter((r) => r.droppedEarly), env + ' numbers dropped before their first draw').toEqual([]);
+    expect(takes.every((r) => r.drawn), env + ' every number drawn ' + JSON.stringify(takes)).toBe(true);
+    if (lead) expect(takes[0].sawEarly, env + ' a frame came before the number start').toBe(true);
     const first = await outlineAt(page);
     expect(first.digits, env + ' first ' + JSON.stringify(first.boxes)).toBeGreaterThan(8);
     expect(first.bad, env + ' first ' + JSON.stringify(first.probe) + ' ' + JSON.stringify(first.samples)).toBe(0);

@@ -213,7 +213,7 @@ function mvNumDraw(g, W, H, vis, centres, t) {
     const age = t - s.t0;
     const calm = s.look === 'calm';
     const dur = calm ? 600 : 440;
-    if (age < 0 || age >= dur) { s.on = 0; continue; }
+    if (age < 0) continue; if (age >= dur) { s.on = 0; continue; }
     const sc = (!calm && (s.look === 'crit' || s.look === 'lucky')) ? 2 : 1;
     const rise = calm ? 0 : Math.round(6 * (age / 440));
     const col = s.look === 'super' || s.look === 'lucky' || s.look === 'crit' ? 'y' : (s.look === 'weak' ? 'h' : 'w');
