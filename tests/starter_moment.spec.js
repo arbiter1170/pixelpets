@@ -48,7 +48,7 @@ async function sceneNow(page) {
 }
 
 // Taps only. `skip` uses the SKIP control on say lines and still answers choices, the basket and the name.
-async function playStarter(page, { skip = false, hello = null, line = 'ember', onBeat = null } = {}) {
+async function playStarter(page, { skip = false, hello = null, line = 'ember', onBeat = null, doubleYes = false } = {}) {
   const stops = [];
   await page.evaluate(() => { PPSound.setMuted(false); PixelPets.runScene('starter'); });
   await page.waitForFunction(() => window.PixelPets.scene);
@@ -65,7 +65,15 @@ async function playStarter(page, { skip = false, hello = null, line = 'ember', o
         await page.locator('.basket[data-line="' + line + '"]').click();
         await page.waitForFunction(() => window.PixelPets.optionsReady === true);
       }
-      await page.locator('#bkYes').click();
+      if (doubleYes) {
+        // YES must really be on screen, then two taps land inside the ~360 ms wobble
+        const yes = page.locator('#bkYes');
+        await expect(yes).toBeVisible();
+        const box = await yes.boundingBox();
+        const vp = page.viewportSize();
+        expect(box && box.width > 0 && box.height > 0 && box.y >= 0 && box.y + box.height <= vp.height && box.x >= 0 && box.x + box.width <= vp.width).toBe(true);
+        await yes.dblclick();
+      } else await page.locator('#bkYes').click();
       await page.waitForFunction(() => document.getElementById('ovBasket').hidden === true, null, { timeout: 5000 });
       continue;
     }
@@ -216,6 +224,24 @@ test('the Lodge pick plays the new loop and the card stays above the say box', a
   expect(after.keys).toEqual(keysBefore);
   expect(after.line).toBe('ember');
   expect(after.got).toBe(true);
+});
+
+test('two fast YES taps on the basket card pick once and play the starter sound once', async ({ page }) => {
+  test.setTimeout(90000);
+  await bootLodge(page);
+  const stops = await playStarter(page, { hello: 'Hold out a hand', line: 'tide', doubleYes: true });
+  await expect(page.locator('#ovBasket')).toBeHidden();
+  const after = await page.evaluate(() => ({
+    stingers: PPSound.played.filter((n) => n === 'stinger_starter').length,
+    line: PixelPets.state.flags['story.starter_line'],
+    got: PixelPets.state.flags['story.starter_received'],
+    party: PixelPets.state.party.length,
+  }));
+  expect(beatKinds(stops)).toEqual(['choice', 'choice', 'basket', 'choice', 'name']);
+  expect(after.stingers).toBe(1);
+  expect(after.line).toBe('tide');
+  expect(after.got).toBe(true);
+  expect(after.party).toBe(1);
 });
 
 test('SKIP from the first line stops only at the quiz, the baskets, the hello and the name', async ({ page }) => {
