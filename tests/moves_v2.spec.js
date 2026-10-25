@@ -478,7 +478,8 @@ test('14 running away leaves an empty queue and the walk view takes the next tap
   await openWild(page, 'gust/0', 2);
   await page.evaluate(() => {
     const b = PixelPets.battle;
-    b.animMs = null; b.textMs = 0;
+    // pin the battle roll as tests 16, 18, 20 and 21 do: an unpinned roll (a miss, a crit, a speed tie) changes the lines before CHOOSE
+    b.animMs = null; b.textMs = 0; b.rng = () => 0.5;
     b.foes[0].stats.spd = 1;
     b.foePlan = { move: 'puff_shot' };
     PixelPets.setHp('foe', 999);
@@ -616,7 +617,8 @@ test('19 fast-forward does not leak and a queued bar keeps its snapshot', async 
   await openWild(page, 'bloom/0', 4);
   await page.evaluate(() => {
     const b = PixelPets.battle;
-    b.animMs = null; b.textMs = 0;
+    // foxfire_flick is 95% accurate; a miss never sets shown. Pin the roll as tests 16, 18, 20 and 21 do.
+    b.animMs = null; b.textMs = 0; b.rng = () => 0.5;
     b.foePlan = { move: 'sap_sip' };
   });
   const before = await page.evaluate(() => document.querySelector('#btFoeHp').style.width);
@@ -643,7 +645,7 @@ test('19 fast-forward does not leak and a queued bar keeps its snapshot', async 
   expect(after).not.toBe(before);
   await page.evaluate(() => PixelPets.battle.close());
   await openWild(page, 'bloom/0', 4);
-  await page.evaluate(() => { PixelPets.battle.animMs = null; PixelPets.battle.textMs = 0; PixelPets.battle.ff = false; });
+  await page.evaluate(() => { PixelPets.battle.animMs = null; PixelPets.battle.textMs = 0; PixelPets.battle.ff = false; PixelPets.battle.rng = () => 0.5; });
   const t0 = await page.evaluate(() => performance.now());
   await page.locator('[data-bact="fight"]').click();
   await page.locator('#btMoves button').first().click();
