@@ -355,17 +355,116 @@ function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); i
    pp_alive and also pp_hidden is a background kill (the hide-time clear of pp_alive never reached storage). With no
    pp_hidden it stays crash?. Boot copies nav, standalone, sw, gap, hid and wasDiscarded onto the stored entry.
    A crash or background kill also copies the last heartbeat: screen, battle phase, live canvas count, portrait-cache
-   size, canvases made since the previous beat. Boot moves the entry into pp_reload_last (last 5). Settings shows one
-   short line. The field list is only on a ?debug=1 page. Script errors go to pp_errors (last 5), their own key.
+   size, canvases made since the previous beat, the view size, orientation, device pixel ratio, service-worker
+   controller and registration state, and milliseconds since the last tap. Boot moves the entry into pp_reload_last
+   (last 5). Settings shows one short line. The field list is only on a ?debug=1 page. Script errors go to pp_errors
+   (last 5), their own key.
    pp_diag (its own key) is a richer last-known state for the next boot: seconds since boot, visibility, screen, open
    overlays, the last 8 taps and screen changes, live canvases and their pixel MB, DOM node count, JS heap where the
-   browser reports it, and this page's last script error. It is written on each screen change, tap (at most every
-   250 ms), hide, and the 5 s beat (the only write that sweeps canvas sizes and counts DOM nodes). A crash, background
-   kill or unknown reload copies it onto the pp_reload_last entry. */
+   browser reports it, this page's last script error, and the same beat fields. It is written on each screen change,
+   tap (at most every 250 ms), hide, and the 5 s beat (the only write that sweeps canvas sizes and counts DOM nodes).
+   A crash, background kill or unknown reload copies it onto the pp_reload_last entry.
+   pp_crash_log is never trimmed. Per build it keeps a count, the first time, the last time, and how many crash notes
+   were shown. It also keeps the last crashed page's pp_diag so Copy crash info is that page, not the one now open.
+   The save is not touched. The first boot after a crash shows one note the holder can dismiss. A planned reload, a
+   background close, or an unknown reload does not. */
 const RELOAD_KEY = 'pp_reload', RELOAD_LAST = 'pp_reload_last', ALIVE_KEY = 'pp_alive', HIDDEN_KEY = 'pp_hidden', RELOAD_KEEP = 5;
+const CRASH_LOG = 'pp_crash_log';
+const CRASH_NOTE = 'The game closed unexpectedly. Tap Copy crash info in Settings.';
+let swRegState = 'unknown', swRegBusy = false, lastTapAt = 0, crashNoticeDue = false, crashNoticeBuild = '', crashNoteTimer = 0;
 function lsJson(k){ try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 function lsPut(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function lsDrop(k){ try { localStorage.removeItem(k); } catch (e) {} }
+function refreshSwReg(){
+  if (swRegBusy) return;
+  let sw = null;
+  try { sw = navigator.serviceWorker; } catch (e) { swRegState = 'unsupported'; return; }
+  if (!sw || typeof sw.getRegistration !== 'function') { swRegState = 'unsupported'; return; }
+  let pending = null;
+  try { pending = sw.getRegistration(); } catch (e) { swRegState = 'error'; return; }
+  swRegBusy = true;
+  pending.then(reg => {
+    swRegBusy = false;
+    const prev = swRegState;
+    if (!reg) swRegState = 'none';
+    else if (reg.installing) swRegState = 'installing';
+    else if (reg.waiting) swRegState = 'waiting';
+    else if (reg.active && reg.active.state) swRegState = String(reg.active.state).slice(0, 24);
+    else swRegState = 'none';
+    if (prev !== swRegState && !document.hidden && !resetting) { try { markAlive(false); } catch (e) {} }
+  }, () => { swRegBusy = false; swRegState = 'error'; });
+}
+function beatSnap(){
+  const snap = { wh: '', ori: '', dpr: 1, swc: false, sws: String(swRegState || 'unknown').slice(0, 24) };
+  try { snap.wh = ((window.innerWidth | 0) + 'x' + (window.innerHeight | 0)).slice(0, 24); } catch (e) {}
+  try {
+    const o = (typeof screen !== 'undefined' && screen.orientation && screen.orientation.type) || '';
+    snap.ori = o ? String(o).slice(0, 24) : (matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape');
+  } catch (e) {
+    try { snap.ori = window.innerHeight >= window.innerWidth ? 'portrait' : 'landscape'; } catch (err) {}
+  }
+  try { const n = +window.devicePixelRatio; if (Number.isFinite(n) && n > 0) snap.dpr = Math.round(n * 100) / 100; } catch (e) {}
+  try { snap.swc = !!(navigator.serviceWorker && navigator.serviceWorker.controller); } catch (e) {}
+  if (lastTapAt) snap.tap = Math.max(0, Date.now() - lastTapAt);
+  return snap;
+}
+function putBeat(entry, src){
+  if (!entry || !src || typeof src !== 'object') return;
+  if (!entry.wh && typeof src.wh === 'string' && src.wh) entry.wh = src.wh.slice(0, 24);
+  if (!entry.ori && typeof src.ori === 'string' && src.ori) entry.ori = src.ori.slice(0, 24);
+  if (!Number.isFinite(entry.dpr) && Number.isFinite(src.dpr)) entry.dpr = src.dpr;
+  if (typeof entry.swc !== 'boolean' && typeof src.swc === 'boolean') entry.swc = src.swc;
+  if (!entry.sws && typeof src.sws === 'string' && src.sws) entry.sws = src.sws.slice(0, 24);
+  if (!Number.isFinite(entry.tap) && Number.isFinite(src.tap)) entry.tap = Math.max(0, Math.round(src.tap));
+}
+function readCrashLog(){
+  const raw = lsJson(CRASH_LOG);
+  const log = { builds: {} };
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return log;
+  if (raw.builds && typeof raw.builds === 'object' && !Array.isArray(raw.builds)) {
+    Object.keys(raw.builds).forEach(k => {
+      const row = raw.builds[k];
+      if (!row || typeof row !== 'object') return;
+      const n = Number.isFinite(row.n) ? Math.max(0, Math.round(row.n)) : 0;
+      if (!n) return;
+      const first = Number.isFinite(row.first) ? row.first : (Number.isFinite(row.last) ? row.last : 0);
+      const last = Number.isFinite(row.last) ? row.last : first;
+      const seen = Number.isFinite(row.seen) ? Math.max(0, Math.min(n, Math.round(row.seen))) : 0;
+      log.builds[String(k).slice(0, 40)] = { n, first, last, seen };
+    });
+  }
+  if (raw.diag && typeof raw.diag === 'object' && Number.isFinite(raw.diag.at)) {
+    log.diag = raw.diag;
+    log.diagBuild = typeof raw.diagBuild === 'string' ? raw.diagBuild.slice(0, 40) : '';
+  }
+  return log;
+}
+function noteCrash(when, build, diag){
+  const b = String(build || buildId() || '').slice(0, 40);
+  const log = readCrashLog();
+  const prev = log.builds[b] || {};
+  const n = (Number.isFinite(prev.n) ? prev.n : 0) + 1;
+  const first = Number.isFinite(prev.first) ? prev.first : when;
+  const seen = Number.isFinite(prev.seen) ? prev.seen : 0;
+  log.builds[b] = { n, first, last: when, seen };
+  if (diag && typeof diag === 'object' && Number.isFinite(diag.at)) {
+    try { log.diag = JSON.parse(JSON.stringify(diag)); log.diagBuild = b; } catch (e) {}
+  }
+  lsPut(CRASH_LOG, log);
+  return log.builds[b];
+}
+function crashCountFor(build){
+  const row = readCrashLog().builds[String(build || buildId() || '')];
+  return row && Number.isFinite(row.n) ? row.n : 0;
+}
+function markCrashSeen(build){
+  const b = String(build || buildId() || '').slice(0, 40);
+  const log = readCrashLog();
+  const row = log.builds[b];
+  if (!row || row.seen === row.n) return;
+  row.seen = row.n;
+  lsPut(CRASH_LOG, log);
+}
 function inBattleNow(){ try { return !!battle.on; } catch (e) { return false; } }   // battle is declared further down
 function screenName(){
   try {
@@ -457,6 +556,9 @@ function writeDiag(beat, force){
     try { const m = performance.memory; if (m && m.usedJSHeapSize) out.heap = Math.round(m.usedJSHeapSize / 10485.76) / 100; } catch (e) {}
     const errs = errorLog(), last = errs[errs.length - 1];
     if (last && Number.isFinite(last.at) && last.at >= BOOT_AT) out.err = String(last.message || '').slice(0, 80);
+    const snap = beatSnap();
+    out.wh = snap.wh; out.ori = snap.ori; out.dpr = snap.dpr; out.swc = snap.swc; out.sws = snap.sws;
+    if (Number.isFinite(snap.tap)) out.tap = snap.tap;
     lsPut(DIAG_KEY, out);
   } catch (e) {}
 }
@@ -469,6 +571,7 @@ function diagOnto(entry, d){
   if (typeof d.ovs === 'string' && d.ovs) entry.ovs = d.ovs.slice(0, 80);
   for (const k of ['cvMb', 'dom', 'heap']) if (Number.isFinite(d[k])) entry[k] = d[k];
   if (typeof d.err === 'string' && d.err) entry.err = d.err.slice(0, 80);
+  putBeat(entry, d);
   entry.diagGap = Math.max(0, Date.now() - d.at);
 }
 function battlePhase(){
@@ -481,11 +584,14 @@ function battlePhase(){
 }
 function markAlive(beat){
   if (document.hidden || resetting) return;
+  refreshSwReg();
   let portraits = 0;
   try { portraits = faceCache.size; } catch (e) {}
   const made = Math.max(0, canvasBorn - canvasMark);
   canvasMark = canvasBorn;
-  const entry = { at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || ''), screen: screenName(), live: canvasLive, portraits, made };
+  const snap = beatSnap();
+  const entry = { at: Date.now(), battleOn: inBattleNow(), build: String(window.BUILD || ''), screen: screenName(), live: canvasLive, portraits, made, wh: snap.wh, ori: snap.ori, dpr: snap.dpr, swc: snap.swc, sws: snap.sws };
+  if (Number.isFinite(snap.tap)) entry.tap = snap.tap;
   const phase = battlePhase();
   if (phase) entry.phase = phase;
   lsPut(ALIVE_KEY, entry);
@@ -520,6 +626,7 @@ function takeReloadCrumb(){
     if (Number.isFinite(alive.live)) entry.live = Math.max(0, Math.round(alive.live));
     if (Number.isFinite(alive.portraits)) entry.portraits = Math.max(0, Math.round(alive.portraits));
     if (Number.isFinite(alive.made)) entry.made = Math.max(0, Math.round(alive.made));
+    putBeat(entry, alive);
   }
   if (entry) {
     Object.assign(entry, bootFacts(alive, hidden));
@@ -528,6 +635,10 @@ function takeReloadCrumb(){
     lsPut(RELOAD_LAST, (Array.isArray(old) ? old : []).concat([entry]).slice(-RELOAD_KEEP));
   }
   lsDrop(RELOAD_KEY); lsDrop(HIDDEN_KEY); lsDrop(DIAG_KEY);
+  if (entry && entry.reason === 'crash') {
+    const row = noteCrash(Number.isFinite(entry.at) ? entry.at : Date.now(), entry.build || buildId(), last);
+    if (row && row.seen < row.n) { crashNoticeDue = true; crashNoticeBuild = entry.build || buildId(); }
+  }
   if (document.hidden) markHidden(); else markAlive();
 }
 function watchReloads(){
@@ -535,7 +646,9 @@ function watchReloads(){
   window.addEventListener('beforeunload', markUnload);
   window.addEventListener('pageshow', e => { if (e.persisted && !resetting) { lsDrop(RELOAD_KEY); lsDrop(HIDDEN_KEY); markAlive(); } });   // back/forward cache restore: not a reload
   document.addEventListener('visibilitychange', () => { if (document.hidden) markHidden(); else { lsDrop(HIDDEN_KEY); markAlive(); } });   // keep the last beat: a kill while hidden then reads as 'background', not nothing
-  document.addEventListener('click', e => { const l = tapLabel(e.target); if (l) { diagAct(l); writeDiag(false, false); } }, { capture: true, passive: true });
+  document.addEventListener('click', e => { lastTapAt = Date.now(); const l = tapLabel(e.target); if (l) { diagAct(l); writeDiag(false, false); } }, { capture: true, passive: true });
+  try { if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('controllerchange', refreshSwReg); } catch (e) {}
+  refreshSwReg();
   setInterval(() => markAlive(true), 5000);
 }
 const RELOAD_LABEL = { cloud: 'cloud', build: 'new build', boot: 'boot retry', startover: 'start over', copy: 'save copy', bfcache: 'save changed', newer: 'newer save', unknown: 'unknown', crash: 'crash?', background: 'background kill' };
@@ -653,12 +766,19 @@ function renderFollowerBtn(){
 }
 // the build id: tools/bump_build.py writes window.BUILD and the ?v= stamps together, so this line always matches them
 function buildId(){ const m = document.querySelector('meta[name="kw-build"]'); return String(window.BUILD || (m && m.content) || ''); }
-function hasCrashReload(){   // only the newest reload counts: an old crash followed by a normal reload hides Copy crash info
-  const list = lsJson(RELOAD_LAST), e = Array.isArray(list) && list[list.length - 1];
-  return !!(e && e.reason === 'crash');
+function hasCrashReload(){   // any kept crash, or a crash this build still has in the untrimmed log
+  const list = lsJson(RELOAD_LAST);
+  if (Array.isArray(list) && list.some(e => e && e.reason === 'crash')) return true;
+  return crashCountFor(buildId()) > 0;
 }
 function crashInfoText(){
-  return JSON.stringify({ diag: lsJson(DIAG_KEY), reloads: lsJson(RELOAD_LAST) || [], build: buildId() });
+  const log = readCrashLog();
+  const stashed = !!(log.diag && typeof log.diag === 'object' && Number.isFinite(log.diag.at));
+  const payload = { diag: stashed ? log.diag : lsJson(DIAG_KEY), diagFrom: stashed ? 'crash' : 'this-boot', reloads: lsJson(RELOAD_LAST) || [], build: buildId() };
+  if (stashed) payload.diagBuild = log.diagBuild || '';
+  const n = crashCountFor(buildId());
+  if (n) payload.crashes = n;
+  return JSON.stringify(payload);
 }
 function copyCrashInfo(){
   const text = crashInfoText();
@@ -685,6 +805,7 @@ function copyCrashInfo(){
 }
 function renderBuild(){ const b = buildId(), d = !!(S && (S.debugSave || DEBUG));   /* QA Oct 15: a ?debug=1 session shows the mark at once; save() writes it */ $('#setBuild').textContent = (b ? 'Build ' + b : '') + (d ? (b ? ' · ' : '') + 'DEBUG SAVE' : ''); $('#setBuild').hidden = !b && !d;
   const rl = $('#setReload'); if (rl) { const r = lastReloadText(); rl.textContent = r; rl.hidden = !r; }
+  const cn = $('#setCrashes'); if (cn) { const n = crashCountFor(buildId()); cn.textContent = 'Crashes on this build: ' + n; cn.hidden = !(n > 0); }
   const cp = $('#setCrashCopy'); if (cp) cp.hidden = !(DEBUG || hasCrashReload());
   const er = $('#setError'); if (er) { const t = lastErrorText(); er.textContent = t; er.hidden = !t; } }
 function openSettings(){
@@ -702,6 +823,39 @@ let toastT = 0;
 function toast(msg){
   if (careLes.holdEarly) { careLes.held.push(msg); return; }
   const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800);
+}
+function crashNoticeBlocked(){
+  try {
+    if (typeof tut !== 'undefined' && tut.on) return true;
+    if (typeof unlock !== 'undefined' && unlock.on) return true;
+    if (typeof scene !== 'undefined' && scene) return true;
+    if (typeof battle !== 'undefined' && battle && battle.on) return true;
+    if (typeof overlayOpen === 'function' && overlayOpen()) return true;
+  } catch (e) {}
+  return false;
+}
+function showCrashNotice(){
+  if (!crashNoticeDue) return;
+  const el = $('#crashNote'); if (!el) return;
+  if (crashNoticeBlocked()) { armCrashNotice(); return; }
+  const text = $('#crashNoteText'); if (text) text.textContent = CRASH_NOTE;
+  el.hidden = false;
+  markCrashSeen(crashNoticeBuild || buildId());
+  crashNoticeDue = false;
+  if (crashNoteTimer) { clearInterval(crashNoteTimer); crashNoteTimer = 0; }
+}
+function armCrashNotice(){
+  if (crashNoteTimer) return;
+  crashNoteTimer = setInterval(() => {
+    if (!crashNoticeDue) { clearInterval(crashNoteTimer); crashNoteTimer = 0; return; }
+    if (crashNoticeBlocked()) return;
+    showCrashNotice();
+  }, 400);
+}
+function bindCrashNotice(){
+  const b = $('#crashNoteOk'); if (!b || b.dataset.on) return;
+  b.dataset.on = '1';
+  b.addEventListener('click', () => { sfx('tap'); const el = $('#crashNote'); if (el) el.hidden = true; });
 }
 
 /* ---------- debug fast mode (?fast=1, F key, PixelPets.setFast) ---------- */
@@ -1289,15 +1443,18 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     // The modern HUD covers the bottom 112px. Size and pin the room canvas to the band above it, or the
     // centred room sits under the strip and a bottom door is cut off (D232, D234).
     const viewH = (modern && roomZoom) ? H - ROOM_ZOOM_HUD : H;
-    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); mapZoom = f; c.width = MW * 16; c.height = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
+    if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); mapZoom = f;
+      const pw = MW * 16, ph = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
+      if (c.width !== pw || c.height !== ph) { c.width = pw; c.height = ph; }
       c.style.width = W + 'px'; c.style.height = Math.round(c.height * f) + 'px'; }
     else {
       const zoom = roomZoom ? roomZoomFor(W, H, s) : sUse;   // rooms keep today's s (D727). Snapped when arriveAt calls fitAll, at the black midpoint of the 250 ms warp (D235)
       mapZoom = zoom;
-      c.width = Math.min(24 * 16, Math.max(1, Math.floor(W / zoom)));
-      c.height = Math.min((modern ? 36 : 20) * 16, Math.max(1, Math.floor(viewH / zoom)));
-      if (Math.abs(zoom - Math.round(zoom)) > 1e-6) { c.width = crispSpan(W, zoom, 24 * 16); c.height = crispSpan(viewH, zoom, (modern ? 36 : 20) * 16); }   // a crisp fractional Map zoom step
-      c.style.width = (c.width * zoom) + 'px'; c.style.height = (c.height * zoom) + 'px';
+      let pw = Math.min(24 * 16, Math.max(1, Math.floor(W / zoom)));
+      let ph = Math.min((modern ? 36 : 20) * 16, Math.max(1, Math.floor(viewH / zoom)));
+      if (Math.abs(zoom - Math.round(zoom)) > 1e-6) { pw = crispSpan(W, zoom, 24 * 16); ph = crispSpan(viewH, zoom, (modern ? 36 : 20) * 16); }   // a crisp fractional Map zoom step
+      if (c.width !== pw || c.height !== ph) { c.width = pw; c.height = ph; }
+      c.style.width = (pw * zoom) + 'px'; c.style.height = (ph * zoom) + 'px';
     }
     mw.style.alignItems = (modern && roomZoom) ? 'flex-start' : '';
     mw.style.backgroundColor = '';   // D236 overridden: the wrap stays the stylesheet void
@@ -15928,6 +16085,7 @@ function bindInput(){
   $('#startOver').addEventListener('click', openReset);
   $('#setCopy').addEventListener('click', () => { sfx('tap'); downloadCopy(); });
   const crashCopy = $('#setCrashCopy'); if (crashCopy) crashCopy.addEventListener('click', () => { sfx('tap'); copyCrashInfo(); });
+  bindCrashNotice();
   $('#setRead').addEventListener('click', openCopy);
   $('#resetCopy').addEventListener('click', () => { sfx('tap'); downloadCopy(); });
   $('#copyCancel').addEventListener('click', () => { sfx('tap'); closeCopy(); });
@@ -16348,6 +16506,7 @@ function bootReadOnly(){
   readOnly = true; S = null;
   $('#ovNewer').hidden = false; $('#tabs').classList.add('locked'); document.body.classList.add('nav-locked');
   $('#newerReload').addEventListener('click', () => { markReload('newer'); location.reload(); });
+  try { bindCrashNotice(); showCrashNotice(); } catch (e) {}
   window.PixelPets = Object.freeze({ readOnly: true, get debug(){ return DEBUG; }, get state(){ return null; } });
 }
 function highCharityDevCheck(){
@@ -16455,6 +16614,7 @@ function boot(){
   PPSound.musicVol = typeof S.settings.musicVol === 'number' ? S.settings.musicVol : 0.5;
   const theme = trackFor(CUR); if (theme) PPSound.music(theme);   // records the loop; the first tap starts it
   saveTimer = setInterval(save, 5000);
+  try { showCrashNotice(); } catch (e) {}
   startCloud();
   startBuildCheck();
   setInterval(() => fadeTick(true), FADE_SAMPLE_MS); setInterval(() => fadeTick(false), 5000); fadeTick(false);
