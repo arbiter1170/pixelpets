@@ -709,9 +709,89 @@ const starLine = stage => { const n = Math.max(0, Math.min(2, stage | 0)); retur
 const NICK_MAX = 10;
 const cleanNick = v => typeof v === 'string' ? v.normalize('NFKC').replace(/[^A-Za-z0-9 '.!?-]/g, '').replace(/\s+/g, ' ').trim().slice(0, NICK_MAX).trim() : '';
 const petName = p => cleanNick(p.nick) || nameOf(spi(p), p.stage);
-// Level comes from battle XP (p.bx, stats.js levelOf); growth XP (p.xp) only drives evolution.
+// Level comes from battle XP (p.bx, stats.js levelOf) and is what lets a Walkling grow up. Growth XP (p.xp) stays a record.
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
-const canEvolve = p => { const si = spi(p); return si != null && !!(SPECIES[si].stages[p.stage + 1]) && !isFaded(p) && p.stage < 2 && p.xp >= EVO_XP[p.stage] && care(p) >= EVO_CARE[p.stage]; };
+function sealCount(){ return window.PPStanding ? PPStanding.chapterOf(S && S.flags) : 0; }
+function oneGrowBlocked(){ return sealCount() === 0 && !!(S && S.flags && S.flags['story.unlock_growup']); }
+const canEvolve = p => { const si = spi(p); const gate = GROW_GATES[p.stage]; return si != null && !!(SPECIES[si].stages[p.stage + 1]) && !isFaded(p) && p.stage < 2 && !!gate && levelOf(p) >= gate.level && sealCount() >= gate.seals && !oneGrowBlocked() && care(p) >= EVO_CARE[p.stage]; };
+function heldOf(p){
+  const n = p && Number.isFinite(p.bxHeld) ? p.bxHeld : 0;
+  return n > 0 ? n : 0;
+}
+function capHitText(cap){
+  if (cap === 30) return 'Lv 30 cap. More Seals coming later!';
+  if (cap === 15) return 'Lv 15 for now. A Seal lifts the cap!';
+  return '';
+}
+function formGate(p){
+  if (!p || p.stage >= 2) return null;
+  return GROW_GATES[p.stage] || null;
+}
+function formLevelPct(p){
+  const g = formGate(p);
+  if (!g) return 100;
+  const need = STAT_RULES.bxForLevel(g.level);
+  if (!(need > 0)) return 100;
+  const bx = Number.isFinite(p.bx) ? p.bx : 0;
+  return clamp(bx / need * 100, 0, 100);
+}
+function formLevelPair(p){
+  const L = levelOf(p), g = formGate(p);
+  if (!g) return { now: L, goal: L, text: String(L) };
+  return { now: L, goal: g.level, text: L + '/' + g.level };
+}
+function growHint(p){
+  const si = spi(p);
+  const gate = GROW_GATES[p.stage];
+  if (!gate || si == null || !(SPECIES[si].stages[p.stage + 1])) return 'Next form: coming later!';
+  const L = levelOf(p);
+  if (L < gate.level) return 'Next form at Lv ' + gate.level + '. Now Lv ' + L + '.';
+  if (sealCount() < gate.seals) return 'Next form: Lv ' + gate.level + ' and ' + gate.seals + ' Seals.';
+  if (oneGrowBlocked()) return 'One grow up before your first Seal.';
+  return 'CARE ' + care(p) + '/' + EVO_CARE[p.stage];
+}
+function growBlockedTap(p){
+  const si = spi(p);
+  const gate = GROW_GATES[p.stage];
+  if (!gate || si == null || !(SPECIES[si].stages[p.stage + 1])) return false;
+  if (levelOf(p) < gate.level || care(p) < EVO_CARE[p.stage]) return false;
+  return sealCount() < gate.seals || oneGrowBlocked();
+}
+function payHeldBx(){
+  const ceiling = Math.min(BX_CAP, STAT_RULES.bxForLevel(capLevelFor(sealCount())));
+  const ups = []; let moved = false;
+  for (const p of allPets()) {
+    const from = levelOf(p);
+    const cur = Number.isFinite(p.bx) ? p.bx : 0;
+    const bank = heldOf(p);
+    if (!(bank > 0) || cur >= ceiling) continue;
+    const pay = Math.min(ceiling - cur, bank);
+    p.bx = cur + pay; moved = true;
+    const left = bank - pay;
+    if (left > 0) p.bxHeld = left; else delete p.bxHeld;
+    const to = levelOf(p);
+    if (to > from) ups.push(p);
+  }
+  return { ups, moved };
+}
+function noteSealsUp(prev){
+  if (!(sealCount() > prev)) return [];
+  const paid = payHeldBx();
+  const cap = capLevelFor(sealCount());
+  toast('New Seal! Level cap is now Lv ' + cap + '.');
+  paid.ups.forEach((p, i) => setTimeout(() => {
+    sfx('stinger_levelup');
+    toast(petName(p) + ' reached Lv ' + levelOf(p) + '!');
+  }, (i + 1) * 1900));
+  save(); updateHUD();
+  return paid.ups;
+}
+function capLineText(){
+  const n = sealCount();
+  const cap = capLevelFor(n);
+  if (n + 1 < LEVEL_CAPS.length) return 'Cap Lv ' + cap + ' · next Seal: Lv ' + LEVEL_CAPS[n + 1];
+  return 'Cap Lv ' + cap + ' · more Seals later';
+}
 const formOf = (sp, st) => SPECIES[sp].id + '/' + st;
 const markSeen = (sp, st) => { S.dex.seen[formOf(sp, st)] = true; };
 const markCaught = (sp, st) => { S.dex.seen[formOf(sp, st)] = S.dex.caught[formOf(sp, st)] = true; };
@@ -1014,15 +1094,15 @@ function updatePetStrip(p){
   const grow = $('#stripGrow');
   if (grow) {
     const full = unknown || p.stage >= 2;
-    const goal = full ? 0 : EVO_XP[p.stage];
-    const pct = full || !goal ? 100 : clamp(p.xp / goal * 100, 0, 100);
+    const pct = full ? 100 : formLevelPct(p);
     grow.style.width = pct + '%';
     grow.classList.remove('low');
   }
   // D384–D385: HP is the first bar. Width is hp / max. PAL r under 25%. No .low blink. No digits on the card.
   const hp = hpOf(p), mx = maxHpOf(p), e = $('#stripHp');
   if (e) { e.style.width = clamp(hp / mx * 100, 0, 100) + '%'; e.classList.toggle('warn', hp / mx < 0.25); e.classList.remove('low'); }
-  const goalTxt = unknown ? '???' : (p.stage >= 2 ? 'fully grown' : (p.xp + ' of ' + EVO_XP[p.stage]));
+  const pair = formLevelPair(p);
+  const goalTxt = unknown ? '???' : (p.stage >= 2 ? 'fully grown' : (pair.now + ' of ' + pair.goal));
   $('#petStrip').setAttribute('aria-label', 'Partner ' + name + ', Lv ' + levelOf(p) + '. HP ' + Math.ceil(hp) + ' of ' + mx + ', Food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy) + ', energy ' + Math.round(p.energy) + ', grow ' + goalTxt + '.');
 }
 
@@ -1552,10 +1632,9 @@ function updateHUD(){
   syncCareAlert();   // HEART_ALERT: same 1 s stat tick as the strip
   const kitBtn = $('#petKitBtn');
   if (kitBtn) kitBtn.setAttribute('aria-label', 'Gear for ' + petName(p));
-  const goal = p.stage < 2 ? EVO_XP[p.stage] : Math.max(EVO_XP[1], p.xp);
-  const base = 0;   // D248: the bar is total over goal. 40 of 120 fills a third. Fully grown stays full.
-  const xpPct = p.stage < 2 ? (goal > base ? (p.xp - base) / (goal - base) * 100 : 100) : 100;
-  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = p.xp;
+  const pair = formLevelPair(p);
+  const xpPct = p.stage < 2 && formGate(p) ? formLevelPct(p) : 100;
+  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = pair.text;
   $('#wSteps').textContent = S.steps;   // STAT_DISPLAY: the WALK slot of the shared strip
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
   const setCount = (el, v, cap) => { if (!el) return; const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
@@ -1565,7 +1644,7 @@ function updateHUD(){
   else if (p.stage >= 2) { hint.textContent = 'Fully grown! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (isFaded(p)) { hint.textContent = 'Faded: ' + p.faded + ' good-care day' + (p.faded > 1 ? 's' : '') + ' to go (care 60+).'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (canEvolve(p)) { hint.textContent = petName(p) + ' is ready to grow up!'; hint.classList.add('ready'); btn.hidden = false; }
-  else { hint.textContent = 'Next form: GROW ' + p.xp + '/' + EVO_XP[p.stage] + '  CARE ' + care(p) + '/' + EVO_CARE[p.stage]; hint.classList.remove('ready'); btn.hidden = true; }
+  else { hint.textContent = growHint(p); hint.classList.remove('ready'); btn.hidden = !growBlockedTap(p); }
   updateCareButtons(); renderPetBadge(p);
   if (screen === 'col') updateBoardCare();
   if (trayOpen()) renderPartnerTray();
@@ -2793,28 +2872,51 @@ function dailyRec(p, k){
 const xpToday = (p, k) => (p[k] && typeof p[k] === 'object' && p[k].d === dayKey(Date.now())) ? +p[k].xp || 0 : 0;   // read-only (HUD)
 const careXpToday = p => dailyRec(p, 'cx');
 const exploreXpToday = p => dailyRec(p, 'ex');
-// Gives up to `n` growth XP under a daily cap. Returns the XP actually granted. (Growth XP never changes the Level.)
+// Gives up to `n` growth XP under a daily cap. Returns the XP actually granted. That same grant also adds battle XP at x2.
+let bxToast = null;
+let xpChimeDelay = 0;                        // lets a fanfare finish before the cap chime
 function grantCapped(p, k, cap, n){
+  bxToast = null;
   const r = dailyRec(p, k), g = clamp(cap - r.xp, 0, n);
   r.xp += g; p.xp += g;
+  if (g > 0) grantBattleXp(p, 2 * g);
   return g;
 }
-let xpChimeDelay = 0;                        // lets a fanfare finish before the cap chime
-// Battle XP (from battles only; the battle build calls this per defeated/befriended foe). Uncapped per day, stops at
-// Lv 50. A level-up plays the chime and says so. Never touches xp/cx/ex. Returns { gained, from, to }.
-function grantBattleXp(p, n, quiet){   // quiet: the battle shows its own level-up lines in RESULTS
-  const from = levelOf(p), before = p.bx;
-  p.bx = clamp(before + Math.max(0, Math.round(n) || 0), 0, BX_CAP);
+// Battle XP. The Seal cap holds the overflow in p.bxHeld. skipCap (debug) stops at Lv 50 only.
+// quiet: the battle shows its own level-up lines in RESULTS. Returns { gained, from, to, held }.
+function grantBattleXp(p, n, quiet){
+  const opts = quiet && typeof quiet === 'object' ? quiet : { quiet: !!quiet };
+  const gain = Math.max(0, Math.round(n) || 0);
+  const from = levelOf(p), before = Number.isFinite(p.bx) ? p.bx : 0;
+  let held = 0, hitCap = false;
+  if (opts.skipCap) p.bx = clamp(before + gain, 0, BX_CAP);
+  else {
+    const ceiling = Math.min(BX_CAP, STAT_RULES.bxForLevel(capLevelFor(sealCount())));
+    if (before >= ceiling) { held = gain; if (gain) p.bxHeld = heldOf(p) + gain; }
+    else {
+      const add = Math.min(ceiling - before, gain);
+      held = gain - add; p.bx = before + add;
+      if (held) p.bxHeld = heldOf(p) + held;
+      hitCap = p.bx >= ceiling;
+    }
+  }
   const to = levelOf(p);
-  if (to > from && !quiet) { sfx('stinger_levelup', xpChimeDelay); toast(petName(p) + ' reached Lv ' + to + '!'); }
-  return { gained: p.bx - before, from, to };
+  bxToast = null;
+  if (!opts.quiet && hitCap) {
+    const msg = capHitText(capLevelFor(sealCount()));
+    if (msg) { toast(msg); bxToast = 'cap'; }
+    else if (to > from) { sfx('stinger_levelup', xpChimeDelay); toast(petName(p) + ' reached Lv ' + to + '!'); bxToast = 'level'; }
+  } else if (to > from && !opts.quiet) {
+    sfx('stinger_levelup', xpChimeDelay); toast(petName(p) + ' reached Lv ' + to + '!'); bxToast = 'level';
+  }
+  return { gained: p.bx - before, from, to, held };
 }
 const grantCareXp = (p, n) => grantCapped(p, 'cx', CARE_XP_DAILY_CAP, n);
 // Explore XP (walking + befriending). Shows the one-time "explored enough" toast when the cap is reached.
 function grantExploreXp(p, n){
   const g = grantCapped(p, 'ex', EXPLORE_XP_DAILY_CAP, n), r = exploreXpToday(p);
-  if (r.xp >= EXPLORE_XP_DAILY_CAP && !r.told) { r.told = true; const msg = petName(p) + ' has explored enough for today. Rest up!';
-    if (findStep) setTimeout(() => { sfx('cap'); toast(msg); }, 1900); else { sfx('cap', xpChimeDelay + 0.3); toast(msg); } }
+  if (r.xp >= EXPLORE_XP_DAILY_CAP && !r.told) { r.told = true; if (!bxToast) { const msg = petName(p) + ' has explored enough for today. Rest up!';
+    if (findStep) setTimeout(() => { sfx('cap'); toast(msg); }, 1900); else { sfx('cap', xpChimeDelay + 0.3); toast(msg); } } }
   return g;
 }
 const CD_MSG = { feed: ' is still digesting. Feed again in ', play: ' needs a breather. Play again in ', rest: " isn't sleepy yet. Rest again in " };
@@ -3009,7 +3111,7 @@ function doAction(act, target){
   }
   noteAlignPet(p, side() === 'keepers' ? 'keepers' : 'glimmer', 2);
   if (forPartner && screen === 'walk') noteMapCare(act);
-  toast(msg);
+  if (!bxToast) toast(msg);
   updateHUD(); save();
   if (forPartner) tutSawAct(act);
 }
@@ -5767,8 +5869,11 @@ function placeSteps(dr){
     const greet = rematchPending('hall1_fen')
       ? (battleGreeting('hall1_fen') || 'Roots first, then blossoms. Show me yours.')
       : (pn.greet || trainerLine('hall1_fen', 'intro') || 'Roots first, then blossoms. Show me yours.');
-    return [['say', pn.who || 'Master Fen', greet],
-      ['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]];
+    const steps = [['say', pn.who || 'Master Fen', greet]];
+    // F2 follows the greet while the first Seal is still open. The rematch line and the won line stay as they are.
+    if (!rematchPending('hall1_fen') && !(S.flags && S.flags['story.seal1'])) steps.push(['say', pn.who || 'Master Fen', 'Win my Seal and your Walklings can grow higher than Lv 15. Roots first, then blossoms.']);
+    steps.push(['choice', pn.ask || 'Begin the trial?', [[pn.begin || 'Begin trial', [['battle', 'hall1_fen']]], ['Leave', []]]]);
+    return steps;
   }
   return [['say', '', 'Closed for now. Come back soon!']];
 }
@@ -8024,7 +8129,9 @@ async function execStep(st){
       const joinSnap = (a === 'story.side_pick_done' && v && !flagOf(a, true)) ? metKeysNow() : null;
       sc.view.flags[a] = v; pend(() => {
         const was = S.flags[a];
+        const prevSeals = sealCount();
         S.flags[a] = v;
+        if ((a === 'story.seal1' || a === 'story.seal2' || a === 'story.seal3') && v && !was) noteSealsUp(prevSeals);
         if (a === 'story.orchard_cleared' && v && !was) grantKit('leaf');
         if (a === 'story.side_pick_done' && v && !was && S.flags['story.side'] === 'glimmer') toast('New look: Junior Bright lanyard.');
         if (a === 'story.buddy_pat_today' && v) S.flags['daily.buddy_pat'] = dayKey(Date.now());
@@ -9367,7 +9474,7 @@ function openEncounter(){                                  // the intro flash en
 
 const battle = { on: false, id: 0, kind: 'wild', trainerId: null, wid: null, foes: [], fi: 0, me: null, uses: {}, participants: [],
   fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'IDLE', panel: 'busy', treat: false, result: null,
-  newId: null, rng: Math.random, textMs: null, animMs: null, fx: [], levelUps: [], foeHealUsed: false, log: [],
+  newId: null, rng: Math.random, textMs: null, animMs: null, fx: [], levelUps: [], heldIds: new Set(), foeHealUsed: false, log: [],
   q: [], ff: false, hold: 0, holdT: 0, shake: null, shown: null, hpShow: null, punch: null, white: null, calm: null,
   flashAt: null, whites: [], view: null, fxLog: [] };
 let msgSkip = null;
@@ -9449,7 +9556,7 @@ function openBattle(o){
   paintWinCosmetic([]);
   Object.assign(B, { on: true, kind: o.kind, trainerId: o.trainerId || null, wid: o.wid || null, fi: 0, uses: {}, participants: [],
     fainted: new Set(), tries: BEFRIEND_TRIES, failedRuns: 0, turn: 0, state: 'INTRO', treat: false, result: null, newId: null, journalNew: null, cosmeticLines: [], cosmeticFirst: false,
-    fx: [], levelUps: [], foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false,
+    fx: [], levelUps: [], heldIds: new Set(), foeHealUsed: false, log: [], storyMoves: !!(o.moves && o.moves.length), story: o.story || null, bonus: +o.bonus || 0, faded: +o.faded || 0, guide: !!o.guide, wary: false,
     group: false, slots: null, aim: 0, bench: 0, ally: null, allyName: '',
     q: [], ff: false, hold: 0, holdT: 0, shake: null, shown: null, hpShow: null, punch: null, white: null, calm: null,
     flashAt: null, whites: [], whiteOn: 0, view: null, fxLog: [] });
@@ -10390,6 +10497,7 @@ function awardFoe(fi){
   for (const pid of B.participants[fi]) {
     const p = petById(pid); if (!p || isFainted(p) || hpOf(p) <= 0) continue;
     const r = grantBattleXp(p, battleXpAward({ Lf: f.level, Lown: levelOf(p), foeStage: f.stage, trainer: B.kind === 'trainer' }), true);
+    if (r.held > 0 && B.heldIds) B.heldIds.add(pid);
     if (r.to > r.from) {
       const old = B.levelUps.find(x => x.id === pid);
       if (old) old.to = r.to; else B.levelUps.push({ id: pid, from: r.from, to: r.to });
@@ -13399,7 +13507,11 @@ async function results(result, id){
     if (money > 0) S.money = (S.money || 0) + money;
     S.flags['trainer.' + B.trainerId] = true;
     delete S.flags['rematch.' + trainerMusicId(B.trainerId)];
-    if (t.hall && t.seal) { S.seals[t.seal] = Date.now(); }
+    if (t.hall && t.seal) {
+      const prevSeals = sealCount();
+      S.seals[t.seal] = Date.now();
+      noteSealsUp(prevSeals);
+    }
     save();
     if (money > 0) { await say(playerName() + ' got ' + acorns(money) + '!', id); if (!alive(id)) return; }
     if (t.hall && t.seal) { showSealCard(t.seal); sfx('stinger_seal'); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
@@ -13414,8 +13526,12 @@ async function results(result, id){
     sfx('stinger_levelup'); await say(petName(p) + ' reached Lv ' + lu.to + '!', id); if (!alive(id)) return;
     for (const e of levelMoves(p, lu.from, lu.to)) { await teachMove(p, e.id, s => say(s, id)); if (!alive(id)) return; }
   }
+  for (const pid of B.heldIds || []) {
+    const hp = petById(pid); if (!hp || !heldOf(hp)) continue;
+    await say(petName(hp) + ' is holding ' + heldOf(hp) + ' XP for the next Seal.', id); if (!alive(id)) return;
+  }
   if (result === 'win' && t) B.cosmeticLines = grantWinCosmetics(B.trainerId, B.cosmeticFirst);
-  B.levelUps = []; save(); updateHUD();
+  B.levelUps = []; if (B.heldIds) B.heldIds.clear(); save(); updateHUD();
 }
 // SHOP P0: a spend counts the shown number down to the new one. About 8 whole-number steps over 320 ms.
 // The last frame is the new value. A change mid-tick starts again from whatever is on screen. Reduced motion snaps.
@@ -13875,7 +13991,12 @@ const evo = { active: false, t0: 0, sp: 0, from: 0, to: 1, done: false };
 function startEvolution(force){
   const p = pet(); if (!p || spi(p) == null) return;
   if (p.stage >= 2) { toast('Already fully grown!'); return; }
-  if (!force && !canEvolve(p)) return;
+  if (!force && !canEvolve(p)) {
+    const gate = GROW_GATES[p.stage];
+    if (gate && levelOf(p) >= gate.level && sealCount() < gate.seals) toast(petName(p) + ' is ready. A Seal opens it!');
+    else if (gate && levelOf(p) >= gate.level && oneGrowBlocked()) toast('Earn a Seal to grow more Walklings.');
+    return;
+  }
   if (overlayOpen()) return;
   clearUiReturn();
   clearMoves();
@@ -13953,9 +14074,13 @@ function chartLine(type){
 function growText(p){
   if (spi(p) == null) return { text: '???', ready: false };
   if (p.stage >= 2) return { text: 'Fully grown', ready: false };
-  const left = Math.max(0, EVO_XP[p.stage] - p.xp);
-  if (left > 0) return { text: 'GROW ' + left + ' to next form', ready: false };
-  if (care(p) < EVO_CARE[p.stage]) return { text: 'GROW done \u00b7 care ' + EVO_CARE[p.stage] + '+ to grow up', ready: false };
+  const gate = GROW_GATES[p.stage];
+  if (!gate) return { text: 'Next form coming later', ready: false };
+  const L = levelOf(p);
+  if (L < gate.level) return { text: 'Lv ' + gate.level + ' to next form', ready: false };
+  if (sealCount() < gate.seals) return { text: 'Lv ' + gate.level + ' + ' + gate.seals + ' Seals to grow', ready: false };
+  if (oneGrowBlocked()) return { text: 'After your first Seal', ready: false };
+  if (care(p) < EVO_CARE[p.stage]) return { text: 'care ' + EVO_CARE[p.stage] + '+ to grow up', ready: false };
   return { text: 'Ready to grow up!', ready: true };
 }
 const statsCard = { id: null, t: 0, gear: false };
@@ -14226,7 +14351,7 @@ function paintStatsInto(prefix, p, opt){
   $('#' + prefix + 'StatsHead').textContent = 'STATS AT LV ' + L + ' \u00b7 bar = best of ' + JOURNAL_FORMS + ' forms';
   const tb = $('#' + prefix + 'Type'), typeName = sp && sp.type ? sp.type : '???';
   tb.textContent = typeName; tb.className = 'type-badge' + (sp && sp.type ? ' t-' + sp.type : '');
-  $('#' + prefix + 'Lv').textContent = 'Lv ' + L;
+  $('#' + prefix + 'Lv').textContent = prefix === 'sc' ? capLineText() : ('Lv ' + L);
   const gt = growText(p), ge = $('#' + prefix + 'Grow'); ge.textContent = gt.text; ge.classList.toggle('ready', gt.ready);
   const hp = Math.ceil(hpOf(p)), mhp = maxHpOf(p), badge = hpBadge(p), glowing = !badge && moodOf(p).glowing;
   const signal = signalOn(p);
@@ -14874,7 +14999,7 @@ function statFrac(p, key){
   if (key === 'nrg') return (Number(p.energy) || 0) / 100;
   if (key === 'food') return (Number(p.hunger) || 0) / 100;
   if (key === 'joy') return (Number(p.happy) || 0) / 100;
-  if (key === 'grow') return p.stage >= 2 ? 1 : (EVO_XP[p.stage] ? (Number(p.xp) || 0) / EVO_XP[p.stage] : 1);
+  if (key === 'grow') return p.stage >= 2 ? 1 : formLevelPct(p) / 100;
   const L = levelOf(p), bx = Number.isFinite(p.bx) ? p.bx : 0;
   if (L >= STAT_RULES.LEVEL_CAP) return 1;
   const a = STAT_RULES.bxForLevel(L), b = STAT_RULES.bxForLevel(L + 1);
@@ -14890,10 +15015,11 @@ function slotStatIcon(name){
 function slotAria(p){
   const L = levelOf(p), bx = Number.isFinite(p.bx) ? p.bx : 0, a = STAT_RULES.bxForLevel(L);
   const b = L >= STAT_RULES.LEVEL_CAP ? a : STAT_RULES.bxForLevel(L + 1);
-  const goal = p.stage >= 2 ? p.xp : EVO_XP[p.stage];
+  const pair = formLevelPair(p);
+  const growTxt = spi(p) == null ? '???' : (p.stage >= 2 ? 'fully grown' : (pair.now + ' of ' + pair.goal));
   return petName(p) + ', Lv ' + L + '. HP ' + Math.ceil(hpOf(p)) + ' of ' + maxHpOf(p)
     + ', energy ' + Math.round(p.energy) + ', food ' + Math.round(p.hunger) + ', joy ' + Math.round(p.happy)
-    + ', grow ' + p.xp + ' of ' + goal + ', XP ' + (bx - a) + ' of ' + (b - a) + '. Open.';
+    + ', grow ' + growTxt + ', XP ' + (bx - a) + ' of ' + (b - a) + '. Open.';
 }
 function slotStats(p){
   const box = document.createElement('span'); box.className = 'slot-stats'; box.setAttribute('aria-hidden', 'true');
@@ -15570,6 +15696,7 @@ function debugSetCare(o){
   return list.map(p => ({ id: p.id, hunger: p.hunger, happy: p.happy, energy: p.energy }));
 }
 function debugSetLevel(n, petId){
+  // Skips the Seal cap (D760). Sets bx for the asked level, up to the Lv 50 ceiling.
   const p = petId ? petById(petId) : pet(); if (!p) return null;
   const L = clamp(n | 0, 1, STAT_RULES.LEVEL_CAP);
   p.bx = STAT_RULES.bxForLevel(L);
@@ -16623,9 +16750,11 @@ function boot(){
   const L = PPSave.loadSave();
   if (L.readOnly) { bootReadOnly(); return; }
   S = L.state;                                       // migrated/normalized v2; nothing saved yet, so away-time is intact
+  const paidOnLoad = payHeldBx();                    // silent: a Seal already on the save pays held battle XP, no toast
   if (window.PPRep) PPRep.bind({ state: () => S, side: () => side() });   // LR5: rep.js reads S and the pledge, and does not own them
   if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone();
   if (allPets().length) { const awaySec = (Date.now() - S.last) / 1000; catchUp(awaySec); regenAll(awaySec); noteWelcome(awaySec); }
+  if (paidOnLoad.moved) save();                      // after away-time is read, so the payout stays on disk
   useMap(S.world.map); S.world.map = CUR.id; safeSpot(); resetWild(); renderEnv(); markMapSeen(); noteBoardTown();
   // D224: the room a save wakes in counts as seen. Same floorSeen object, no new key.
   if (CUR && CUR.kind === 'interior') {
@@ -16755,7 +16884,9 @@ function boot(){
     pickSpecies: (tags, key) => pickSpecies(tags, key), pickStage: key => pickStage(key), wildLv: (sp, st, key) => wildLv(sp, st, key),
     spawnTables: () => JSON.parse(JSON.stringify(SPAWNS)),
     giveXp: n => { pet().xp += n; updateHUD(); }, setFast: on => setFast(on),
-    giveBx: (n, learn) => { const p = pet(), r = grantBattleXp(p, n); if (learn) levelMoves(p, r.from, r.to).forEach(e => learnQ.push({ id: p.id, mid: e.id })); updateHUD(); save(); return r; },   // battle XP (Level); learn=true queues the level-up move prompts
+    giveBx: (n, learn) => { const p = pet(), r = grantBattleXp(p, n, { skipCap: true }); if (learn) levelMoves(p, r.from, r.to).forEach(e => learnQ.push({ id: p.id, mid: e.id })); updateHUD(); save(); return r; },   // battle XP (Level); skips the Seal cap so a test can set a level. learn=true queues the level-up move prompts
+    levelCap: () => capLevelFor(sealCount()),
+    bxHeld: id => heldOf(id ? petById(id) : pet()),
     resetDailyCaps: () => { const p = pet(); if (!p) return; delete p.cx; delete p.ex; delete S.flags[BOWL.flag]; updateHUD(); save(); toast('Daily XP caps reset (debug)'); },
     away: h => { const sec = Math.max(0, +h || 0) * 3600; catchUp(sec); regenAll(sec); noteWelcome(sec); updateHUD(); save(); return allPets().map(q => ({ id: q.id, role: roleOf(q), hunger: q.hunger, happy: q.happy, energy: q.energy })); },   // PACING §6
     makePartner: id => { makePartner(id); updateHUD(); save(); },
@@ -16796,8 +16927,11 @@ function boot(){
     zoneWidth: () => (battle && battle.on) ? befriendZoneWidth() : null,
     setFlag: (k, v = true) => {
       const wasPick = !!S.flags['story.side_pick_done'];
+      const was = S.flags[k];
+      const prevSeals = sealCount();
       if (v === null || v === false) delete S.flags[k]; else S.flags[k] = v;
       if (k === 'story.side_pick_done' && v && !wasPick) noteRepJoin();   // D178
+      if ((k === 'story.seal1' || k === 'story.seal2' || k === 'story.seal3') && v && !was) noteSealsUp(prevSeals);
       save(); syncSide(); return S.flags[k];
     },
     setSide: s => { if (s == null || s === SIDE_DEFAULT) delete S.flags['story.side']; else S.flags['story.side'] = String(s); if (S.flags['story.side'] === 'glimmer') ensureCrackedPhone(); save(); syncSide(); return side(); },   // WP-B0

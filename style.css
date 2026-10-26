@@ -129,6 +129,7 @@ h2 small{color:var(--h);font-size:17px}
 #statStrip .ss-ico-nrg{left:12px;top:13px;width:10px;height:10px}
 #statStrip .ss-ico-grow{left:calc(66px + var(--bw) + 44px);top:13px;width:10px;height:10px}
 .stat b{text-align:right;color:var(--h)}
+#valXpPet{font-size:12px;letter-spacing:0}
 .bar{height:16px;background:var(--d);position:relative}
 .bar i{position:absolute;left:0;top:0;bottom:0;width:50%;transition:width .3s steps(6)}
 .c-food{background:var(--o)}.c-joy{background:var(--r)}.c-nrg{background:var(--s)}.c-xp{background:var(--y)}.c-align{background:var(--c)}
@@ -190,7 +191,7 @@ body.ctl-modern[data-screen="walk"] #statStrip{display:none}   /* modern walk: t
 #statStrip .ss-nrg-v{left:calc(66px + var(--bw) + 4px);width:28px}
 #statStrip .ss-grow-l{left:calc(66px + var(--bw) + 56px);width:40px}
 #statStrip .ss-grow-b{right:52px}
-#statStrip .ss-grow-v{right:12px;width:36px}
+#statStrip .ss-grow-v{right:12px;width:36px;font-size:12px;letter-spacing:0}
 #statStrip .ss-align{display:none}
 #statStrip .ss-ex,#statStrip .ss-slot{top:32px;height:20px;line-height:20px;width:calc(50% - 20px);font-size:16px;color:var(--h)}
 body.align-on[data-screen="pet"] #statStrip{flex-basis:78px;height:78px}

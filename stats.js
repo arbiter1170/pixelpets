@@ -1,6 +1,6 @@
 /* Walklings - types, battle stats, levels and damage (design spec TYPES_STATS).
    Load after sprites.js and before save.js / game.js. No battles yet: these are the pieces the battle build plugs into.
-   - Growth XP (p.xp: care + explore, daily-capped) still drives evolution. Battle XP (p.bx) drives the Level.
+   - Growth XP (p.xp) is a record of care and exploring. Level (p.bx) is what lets a Walkling grow up.
    - p.hpNow (optional): current HP; absent = full. 0 = Tired. Regenerates out of battle (regenHp).
    Everything here is pure except regenHp/restHp/carryHpOnEvolve/applyBattleCosts, which mutate the pet they're given. */
 'use strict';
@@ -61,6 +61,13 @@ const STAT_RULES = {
   WILD_LEVELS_SPECIES: { proto: { beetle: [2, 4], mole: [3, 5], crab: [3, 5], moth: [2, 4], vane: [4, 6], dormouse: [3, 5] } },
 };
 const BX_CAP = STAT_RULES.bxForLevel(STAT_RULES.LEVEL_CAP);
+// D765: one table for the next form, one for the Seal cap. The third Seal is coming later, so the cap stays on the last row.
+const GROW_GATES = Object.freeze([{ level: 12, seals: 0 }, { level: 24, seals: 2 }]);
+const LEVEL_CAPS = Object.freeze([15, 22, 30]);
+function capLevelFor(seals){
+  const i = Math.max(0, Math.min(LEVEL_CAPS.length - 1, seals | 0));
+  return LEVEL_CAPS[i];
+}
 const statClamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const formIdOf = p => p.species + '/' + p.stage;
 

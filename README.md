@@ -83,11 +83,12 @@ EXPLORE n/30 and CARE n/25 under the bars. WALK shows EXPLORE and STEPS on the s
 A counter turns green when maxed.
 
 Levels, types and stats (`stats.js`):
-- Two progress tracks per Walkling. **Growth XP** (`xp`, the GROW bar) comes from care and exploring, is
-  daily-capped as above and drives evolution (40 / 120, plus care). **Battle XP** (`bx`) comes only from
-  battles (wins and befriends), is not capped per day and sets the **Level** shown in the header and on the Pets tab
-  (`bx` for level L = 4 x (L-1)^2, Lv 1-50). Care and exploring never change the Level, and battles never
-  give growth XP. The level-up chime plays when battle XP raises the Level ("<name> grew to Lv N!").
+- Level is the track that lets a Walkling grow up. **Battle XP** (`bx`) sets the **Level** shown in the header and on the Pets tab
+  (`bx` for level L = 4 x (L-1)^2, Lv 1-50). Care and exploring also add battle XP, at twice the growth XP they grant, under the same daily caps.
+  The GROW bar is progress toward the next form's level. The second form opens at Lv 12. The final form opens at Lv 24 and needs 2 Seals.
+  Care still has a floor: 50, then 60. One Walkling can grow up before the first Seal. After that, the next grow up waits for a Seal.
+  The level-up chime plays when battle XP raises the Level ("<name> reached Lv N!").
+- Seals cap the level at Lv 15, then Lv 22, then Lv 30. The third Seal is coming later, so the cap stays at Lv 30. Battle XP past the cap is held (`bxHeld`) and paid when a Seal lifts the cap. A Walkling already past the cap keeps that level and form, and gains no more battle XP until the cap passes it. The absolute ceiling stays Lv 50.
 - Starters begin at Lv 5. Wild creatures on the map have a level (2-5, or 6-8 for the rare second forms) and
   join at that level when befriended. The six newer lines use their own first-form ranges (Pomlet and
   Fuzzwick 2-4, Loamlet, Clinkit and Dozmouse 3-5, Vanelet 4-6; second forms still 6-8). Walklings from older saves start at their old displayed level
@@ -103,8 +104,8 @@ Levels, types and stats (`stats.js`):
   "RESTING 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
   (and not worn out) a Walkling shows **TIRED**. The badge (RESTING, else TIRED, else GLOWING) shows on the stats card,
   the Pet scene and the Pets tab.
-- Stats card: tap STATS on the Partner tab, or STATS on the care tray. The care tray opens from the modern partner strip, and from a tap on the follower while you stand still. FEED, PLAY, REST and HEAL on the tray use the same rules as the Partner tab, on the partner only. Each WALKLINGS party card has the same four buttons, and they act on that Walkling. Box rows have none. The popup row is INTERACT (grey) and GEAR (lime, full care-button size). INTERACT shows only for the partner, closes the popup, and opens PARTNER. GEAR opens the gear section in the same popup. The first gear row is NAME, and the pencil beside the header name opens the same editor. On PARTNER the button beside STATS is GEAR and opens that gear view. The kit overlay is not on the new page. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats, the same gear, and its own NAME field. It shows the type badge, Level,
-  GROW left to the next form, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
+- Stats card: tap STATS on the Partner tab, or STATS on the care tray. The care tray opens from the modern partner strip, and from a tap on the follower while you stand still. FEED, PLAY, REST and HEAL on the tray use the same rules as the Partner tab, on the partner only. Each WALKLINGS party card has the same four buttons, and they act on that Walkling. Box rows have none. The popup row is INTERACT (grey) and GEAR (lime, full care-button size). INTERACT shows only for the partner, closes the popup, and opens PARTNER. GEAR opens the gear section in the same popup. The first gear row is NAME, and the pencil beside the header name opens the same editor. On PARTNER the button beside STATS is GEAR and opens that gear view. The kit overlay is not on the new page. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats, the same gear, and its own NAME field. It shows the type badge, the level cap line,
+  the next-form line, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
   scaled to the highest value of that stat among the 57 forms a keeper can meet, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
   tap outside it or Escape closes it. Any tab can open it with a Walkling id (`openStatsCard(id)` in `game.js`).
@@ -326,7 +327,7 @@ Which species appear depends on where you are and the weather there:
   snow fall over the map, storms flash, fog hazes it and night tints it.
 
 Creatures: 20 lines of 3 forms. The WALKLING JOURNAL lists the 57 forms a keeper can meet. Every line a keeper
-can meet grows up the same way (growth XP 40 / 120 plus care, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
+can meet grows up the same way (Lv 12, then Lv 24 with 2 Seals, plus the care floor, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
 Pomlet → Pomshell → Orchardon (BLOOM beetle), Loamlet → Burrowbloom → Hedgewarden (BLOOM mole),
 Clinkit → Shardpincer → Mosaicrab (TIDE crab), Fuzzwick → Filamoth → Halowatt (VOLT moth),
 Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lullamouse → Moondozer (SHADE dormouse).

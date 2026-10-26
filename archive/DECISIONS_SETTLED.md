@@ -713,3 +713,22 @@ Recorded from design TUTORIAL_ORDER v0.1.7 (design commit 6467b8c), without renu
 - **D752 (Oct 24, 2026, green, SETTLED by the PixelPets Supervisor; design 82215c3 and 62d58df).** TUTORIAL_ORDER v0.1.6. In a battle the F2 NRG card rings nothing (`return [];` in movesHoles). The card words stay. Built on this branch. The test is T-O10 (`#tutRing` hidden on F2).
 - **D753 (Mon Oct 26, 2026, 11:55 AM ET, yellow, SETTLED at default option A, cleared by the PixelPets Supervisor after the clock closed; design 6467b8c).** TUTORIAL_ORDER v0.1.6. The team vote was split (PixelPets A, QA C), so option A holds. C4e and the team-too-sleepy toast both say "Battles start at 10 NRG." Options B and C are not built. Built on this branch.
 
+## LEVEL_GROW v0.1.2 (calls settled Oct 24 and Oct 26, 2026)
+
+Recorded from design LEVEL_GROW v0.1.2 (design commit f7b6663), without renumbering. Built on this branch. Save stays `pixelpets.save.v2` with `v` 2. The only new field is `bxHeld`. No migrator. Option A is not built. Option C's second growth key is not built.
+
+- **D754 (Oct 24, 2026, 1:45 PM ET, red, SETTLED by Vincent).** LEVEL_GROW. Option B: level is the only track, and Seals cap the level, plus one grow up before the first Seal.
+- **D755 (Oct 24, 2026, 1:45 PM ET, red, SETTLED by Vincent).** LEVEL_GROW. Level gates grow up. Care and exploring add to the level at x2.
+- **D756 (Oct 24, 2026, 1:45 PM ET, red, SETTLED by Vincent).** LEVEL_GROW. One grow up before the first Seal. No new save field. The block is a Seal count of 0 with `story.unlock_growup` set.
+- **D757 (Mon Oct 26, 2026, 1:00 PM ET, yellow, SETTLED yes on the default by team vote, PixelPets and QA, clock closed).** LEVEL_GROW. The gates are Lv 12 and Lv 24, plus the care floor 50 then 60.
+- **D758 (Oct 24, 2026, 1:45 PM ET, red, SETTLED by Vincent).** LEVEL_GROW. The final form needs the second Seal, not the unbuilt third.
+- **D759 (Mon Oct 26, 2026, 1:00 PM ET, yellow, SETTLED yes on the default by team vote, PixelPets and QA, clock closed).** LEVEL_GROW. The caps are Lv 15, Lv 22 and Lv 30. The third Seal is coming later, so the cap stays at Lv 30.
+- **D760 (Mon Oct 26, 2026, 1:00 PM ET, yellow, SETTLED yes on the default by team vote, PixelPets and QA, clock closed).** LEVEL_GROW. Battle XP at the cap is held in `bxHeld` and paid when a Seal lifts the cap. Debug level grants skip the cap.
+- **D761 (Mon Oct 26, 2026, 1:00 PM ET, yellow, SETTLED yes on the default by team vote, PixelPets and QA, clock closed).** LEVEL_GROW. Growth XP from care and from walking or befriending also adds battle XP at x2. Daily caps stay as they are.
+- **D762 (Oct 24, 2026, 1:45 PM ET, red, SETTLED by Vincent).** LEVEL_GROW. Existing saves keep every form and level. A Walkling already past the cap gains no battle XP until the cap passes it. No form or level is taken away.
+- **D763 (Oct 24, 2026, 1:45 PM ET, green, SETTLED by the PixelPets Supervisor).** LEVEL_GROW. The first cap lift is Master Fen's Trial Hall. The Keepers trial and the Glimmerwell hall both set the first Seal flag.
+- **D764 (Mon Oct 26, 2026, 1:00 PM ET, yellow, SETTLED yes on the default by team vote, PixelPets and QA, clock closed).** LEVEL_GROW. "Stage 2" in the spec means the second form (`p.stage` 1).
+- **D765 (Oct 24, 2026, 1:45 PM ET, green, SETTLED by the PixelPets Supervisor).** LEVEL_GROW. Gates and caps live in tables in `stats.js`, with a coming-later state.
+- **D766 (Oct 24, 2026, 1:45 PM ET, green, SETTLED by the PixelPets Supervisor).** LEVEL_GROW. The device-clock skip of the daily caps stays. Level gates use no clock.
+- **D767 (Oct 24, 2026, 1:45 PM ET, red, SETTLED by Vincent).** LEVEL_GROW. No catch-up XP.
+

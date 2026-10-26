@@ -43,6 +43,8 @@ async function cycle(page, n) {
     const M = P.moves(), own = new Set([0, 1, 2].flatMap((k) => P.learnset(p.species + '/' + k).map((e) => e.id)));
     P.setMoves(Object.keys(M).filter((id) => id !== 'wobble' && !own.has(id) && M[id].power).slice(n, n + 4));
     p.xp = 40;
+    p.bx = 484;
+    delete P.state.flags['story.unlock_growup'];
     P.showTab('pet');
   }, n);
   // a move offer still queued from the last cycle opens its sheet on the pet screen; answer it first
