@@ -4,7 +4,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-const HUD = '#floatCtl button, #clockChip, #envBadge, #fcAcorns, #joyRing, #walkTip, #petStrip, #dpad';
+const HUD = '#floatCtl button, #thChip, #fcAcorns, #joyRing, #walkTip, #petStrip, #dpad';
 const DIRS = ['right', 'downRight', 'down', 'downLeft', 'left', 'upLeft', 'up', 'upRight'];
 const GOLD = [255, 205, 117];
 const LIME = [167, 240, 112];

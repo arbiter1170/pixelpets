@@ -732,3 +732,21 @@ Recorded from design LEVEL_GROW v0.1.2 (design commit f7b6663), without renumber
 - **D766 (Oct 24, 2026, 1:45 PM ET, green, SETTLED by the PixelPets Supervisor).** LEVEL_GROW. The device-clock skip of the daily caps stays. Level gates use no clock.
 - **D767 (Oct 24, 2026, 1:45 PM ET, red, SETTLED by Vincent).** LEVEL_GROW. No catch-up XP.
 
+## TOP_HUD v0.1.5 (calls settled Oct 24 and Oct 26, 2026)
+
+Recorded from design TOP_HUD v0.1.5 (design commit 8a06d36, built content 536ddb4), without renumbering. Built on this branch. Option A only. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. No migrator.
+
+- **D740 (Sat Oct 24, 2026, 12:20 PM ET, red, SETTLED by Vincent).** TOP_HUD. Option A: one place chip plus the MAP button where it is, and a MAP shortcut in the chip's TODAY card. Option B is not built.
+- **D741 (Mon Oct 26, 2026, 11:55 AM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** TOP_HUD. Line 1 is the weather glyph, the day and the hour, and the temperature with a degree sign. Line 2 is the place name. The terrain word and the source tag are on the card. No weather means no glyph and no temperature.
+- **D742 (Mon Oct 26, 2026, 11:55 AM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** TOP_HUD. In modern controls the chip's home is the right column, under the gear and under PHONE, 6 px from the edge. The middle of the top band holds no button, only the Acorns readout.
+- **D743 (Mon Oct 26, 2026, 11:55 AM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** TOP_HUD. The chip slides straight down to 6 px below an edge-exit tap zone it meets. It does not enter the top band and it stays 6 px above the bottom band. One 120 ms step. No tween when motion is reduced.
+- **D744 (Oct 24, 2026, green, SETTLED yes by the PixelPets Supervisor).** TOP_HUD. The chip is 44 px tall and at least 44 px wide, up to 120 px at 320 and 140 px from 375. Square corners, a dark face, a 2 px rim and a 1 px outline.
+- **D745 (Oct 24, 2026, green, SETTLED yes by the PixelPets Supervisor).** TOP_HUD. Four 8x8 weather glyphs: clear, cloud, rain and snow. Night uses the hour glyph already in the game.
+- **D746 (Mon Oct 26, 2026, 11:55 AM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** TOP_HUD. A tap opens one TODAY card with LOCATION, MAP and OK.
+- **D747 (Mon Oct 26, 2026, 11:55 AM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** TOP_HUD. In arcade the chip is the row above the map, and the header hour chip is gone. The map-corner seat is not in this build.
+- **D748 (Mon Oct 26, 2026, 11:55 AM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** TOP_HUD. The chip does not count for the side pads. The outdoor top chrome line is unchanged.
+- **D749 (Oct 24, 2026, green, SETTLED yes by the PixelPets Supervisor).** TOP_HUD. A tutorial card does not cover the chip. A quest edge box keeps 6 px from it.
+- **D750 (Oct 24, 2026, green, SETTLED yes by the PixelPets Supervisor).** TOP_HUD. The Acorns readout stays in the top band. Taps pass through it.
+- **D751 (Oct 24, 2026, 1:45 PM ET, green, SETTLED as written by the PixelPets Supervisor).** TOP_HUD. In modern controls the left column slides down to 6 px below an on-screen top exit zone, with the chip's triggers and the 120 ms step, and goes home one step after the zone leaves. Buttons stay 44 px, in order.
+- **D793 (Mon Oct 26, 2026, 1:40 PM ET, green, SETTLED by Design, scope split cleared by the PixelPets Supervisor).** TOP_HUD. While the frame class is on, this packet's yields and pad rules are off. The dock packet's portrait pads of 0 are not this build.
+

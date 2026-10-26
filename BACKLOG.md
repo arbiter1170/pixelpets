@@ -85,6 +85,8 @@ Earlier status history (the Oct 8 priority order with its shipped progress notes
 
 ## Next up
 
+TOP_HUD option A is on this branch: one place chip under the gear, plus the MAP button, and a MAP shortcut on the chip's TODAY card. The chip and the left column slide down to clear an exit. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. The frame tutorial strip is not in this build.
+
 Opening tour (D157–D160) is built on this branch. After the starter, a skippable tour of the screen and of FEED, PLAY and REST. Settings replays it without spending care. An older save past the opening is marked done. Save `v` stays 2. This does not replace Q19. Town boards (Q19) are on hold (Vincent).
 
 4. **Nicknames (S), DONE for renaming (Q23):** after a befriend the result card offers "Give it a name?" (optional, max 10 chars, letters/digits/space and ' . ! ? -, cleaned for display only). Shown in the header, in battle text, and on My Walklings (species name in the sub line). The journal page is the dex detail (species note, lore, how you met). STATS → GEAR → NAME and the Walkling sheet use the same cleaning. An empty name, or the species name, clears `nick` (D57). When a faded Walkling's colour returns and it has no nick, the naming prompt plays. The spec says max 12; this build uses 10.

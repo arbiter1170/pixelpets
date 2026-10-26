@@ -1000,7 +1000,7 @@ function setFast(on, quiet){
 /* ---------- Q26: modern and arcade controls (NEXT_PLAN §3 Q26) ----------
    Arcade is the layout the game always had. Modern adds body.ctl-modern and re-parents a few nodes into #floatCtl, so one id
    keeps one handler, and arcade comes back by moving them home. No node is created or destroyed on a switch. */
-const CTL_MOVES = [['#repBtn', '#fcTL'], ['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#envBadge', '#fcTop'], ['#walkTip', '#fcTip'], ['#clockChip', '#fcClock']];
+const CTL_MOVES = [['#repBtn', '#fcTL'], ['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#thChip', '#fcTR'], ['#walkTip', '#fcTip']];
 const ctlHome = {};
 const ctlMode = () => (S && S.settings && S.settings.controls === 'modern') ? 'modern' : 'arcade';
 const joyOn = () => ctlMode() === 'modern' && !!(S && S.settings.joystick);
@@ -1131,7 +1131,7 @@ function initNavArt(){
     b.addEventListener('pointerdown', () => { b.classList.add('nav-press'); syncNavArt(false); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, up));
   });
-  [['#envBadge', 'area_banner'], ['#petStrip', 'partner_strip'], ['#walkTip', 'tip_band'], ['#fcAcorns', 'acorn']].forEach(([sel, key]) => {
+  [['#thChip', 'area_banner'], ['#petStrip', 'partner_strip'], ['#walkTip', 'tip_band'], ['#fcAcorns', 'acorn']].forEach(([sel, key]) => {
     const el = $(sel); if (!el || el.querySelector('.frame-art')) return;
     const c = document.createElement('canvas'); c.className = 'frame-art'; c.dataset.frame = key; c.setAttribute('aria-hidden', 'true'); el.prepend(c);
   });
@@ -1582,6 +1582,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     hudFree();
     applyRoomSideNudge();
     syncWalkCam();
+    try { syncPlaceYield(); } catch (e) {}
     if (rectMoved) renderMapZoomRow();   // the steps follow the map rect (D787 C)
   }
   refitSceneBox();
@@ -1941,7 +1942,25 @@ function tutPlace(){
   }
   // QA-4: arcade TALK sits under a bottom tip card at 320. Lift the card clear of a ready TALK. Modern is unchanged.
   if (mode === 'unlock') top = tutClearTalk(left, top, cw, ch);
+  const clear = tutClearChip(left, top, cw, ch);
+  left = clear.left; top = clear.top;
   card.style.left = left + 'px'; card.style.top = top + 'px';
+}
+function tutClearChip(left, top, cw, ch){
+  const chip = $('#thChip');
+  if (!chip || !chip.offsetParent) return { left, top };
+  const r = chip.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
+  const hit = (x, y) => y < r.bottom && y + ch > r.top && x < r.right && x + cw > r.left;
+  if (!hit(left, top)) return { left, top };
+  const below = r.bottom + 6;
+  if (below + ch <= vh - 6) return { left: Math.max(6, Math.min(left, vw - cw - 6)), top: below };
+  const above = r.top - 6 - ch;
+  if (above >= 6) return { left: Math.max(6, Math.min(left, vw - cw - 6)), top: above };
+  const right = r.right + 6;
+  if (right + cw <= vw - 6) return { left: right, top: Math.max(6, Math.min(top, vh - ch - 6)) };
+  const side = r.left - 6 - cw;
+  if (side >= 6) return { left: side, top: Math.max(6, Math.min(top, vh - ch - 6)) };
+  return { left, top };
 }
 function tutClearTalk(left, top, cw, ch){
   if (ctlMode() === 'modern') return top;
@@ -4471,27 +4490,62 @@ const clockGlyphs = {
   night: ['..wwww..', '.wwwwk..', 'wwwwkkkk', 'wwwwkkkk', 'wwwwkkkk', 'wwwwkkkk', '.wwwwk..', '..wwww..'],
 };
 let clockPaint = '';
+// Weather glyphs for the place chip. PAL keys only. Night, when there is weather, uses clockGlyphs.night.
+const CHIP_GLYPH = {
+  clear: ['...y....', '.y.y.y..', '..yyy...', 'yyyyyyy.', '..yyy...', '.y.y.y..', '...y....', '........'],
+  cloud: ['........', '...hh...', '..hhhh..', '.hhhhhh.', 'hhhhhhhh', 'hhhhhhhh', '........', '........'],
+  rain:  ['...hh...', '..hhhh..', '.hhhhhh.', 'hhhhhhhh', '........', '.c..c..c', 'c..c..c.', '........'],
+  snow:  ['...w....', '.w.w.w..', '..www...', 'wwwwwww.', '..www...', '.w.w.w..', '...w....', '........'],
+};
+function paintChipGlyph(canvas, rows){
+  if (!canvas) return;
+  const g = canvas.getContext('2d');
+  g.clearRect(0, 0, 8, 8);
+  if (!rows) return;
+  rows.forEach((row, y) => { for (let x = 0; x < 8; x++) if (row[x] !== '.' && PAL[row[x]]) { g.fillStyle = PAL[row[x]]; g.fillRect(x, y, 1, 1); } });
+}
+// A sky only when weather is known. Snow, rain or storm, fog, else clear when a temperature is stored. No blank gap otherwise.
+function chipSky(){
+  if (!ENV) return null;
+  const tags = ENV.tags || [];
+  const temp = typeof ENV.temp === 'number' && isFinite(ENV.temp) ? ENV.temp : null;
+  let kind = null;
+  if (tags.indexOf('snow') >= 0) kind = 'snow';
+  else if (tags.indexOf('rain') >= 0 || tags.indexOf('storm') >= 0) kind = 'rain';
+  else if (tags.indexOf('fog') >= 0) kind = 'cloud';
+  else if (temp != null) kind = 'clear';
+  if (!kind) return null;
+  return { kind, temp };
+}
 function renderClockChip(){
-  const btn = $('#clockChip'), lab = $('#clockLabel');
+  const btn = $('#thChip'), lab = $('#thHour');
   if (!btn || !lab || !window.PPClock) return;
   const r = PPClock.now();
   const txt = r.label + ' ' + r.hh + ':' + String(r.mm).padStart(2, '0');
-  if (lab.textContent !== txt) { lab.textContent = txt; invalidateCueZone(); refreshHudPads(); }   // the clock's width follows its text
-  const aria = r.name + ', ' + r.hh + ':' + String(r.mm).padStart(2, '0') + ', ' + r.phase;
+  if (lab.textContent !== txt) { lab.textContent = txt; invalidateCueZone(); refreshHudPads(); }   // the hour box is fixed; cues still re-place
+  const sky = chipSky();
+  const night = r.phase === 'night' && !!sky;
+  const key = sky ? (night ? 'night' : sky.kind) : '';
+  if (clockPaint !== key) {
+    clockPaint = key;
+    const c = $('#clockGlyph');
+    if (c) { c.hidden = !sky; if (sky) paintChipGlyph(c, night ? clockGlyphs.night : CHIP_GLYPH[sky.kind]); }
+  }
+  const tempEl = $('#thTemp');
+  if (tempEl) {
+    const show = !!(sky && sky.temp != null);
+    tempEl.hidden = !show;
+    tempEl.textContent = show ? Math.round(sky.temp) + '\u00b0' : '';
+  }
+  const word = !sky ? '' : night ? 'Night' : { clear: 'Clear', cloud: 'Cloud', rain: 'Rain', snow: 'Snow' }[sky.kind];
+  let aria = (placeName() || 'Here') + ', ' + txt;
+  if (word) aria += ', ' + word;
+  if (sky && sky.temp != null) aria += ', ' + Math.round(sky.temp) + '\u00b0';
+  aria += '. Tap for today.';
   if (btn.getAttribute('aria-label') !== aria) btn.setAttribute('aria-label', aria);
   if (renderClockChip.phase !== r.phase) {
     renderClockChip.phase = r.phase;
     if (PPEnv.syncClock) PPEnv.syncClock();
-  }
-  const kind = r.phase === 'night' ? 'night' : r.phase === 'day' ? 'day' : 'half';
-  if (clockPaint !== kind) {
-    clockPaint = kind;
-    const c = $('#clockGlyph');
-    if (c) {
-      const g = c.getContext('2d'), rows = clockGlyphs[kind];
-      g.clearRect(0, 0, 8, 8);
-      rows.forEach((row, y) => { for (let x = 0; x < 8; x++) if (row[x] !== '.' && PAL[row[x]]) { g.fillStyle = PAL[row[x]]; g.fillRect(x, y, 1, 1); } });
-    }
   }
 }
 // P1 whereabouts (D418, D419). Copy and the seven states live here. Nothing is saved.
@@ -4634,6 +4688,7 @@ function refreshWhereabouts(){
   if (phone && !phone.hidden && contactOpen) renderContacts();
   const clock = $('#ovClock');
   if (clock && !clock.hidden) paintClockCard();
+  if ($('#ovEnv') && !$('#ovEnv').hidden) paintClockCard();
 }
 function noteWhereMinute(){
   if (!window.PPClock) return;
@@ -4643,11 +4698,8 @@ function noteWhereMinute(){
   refreshWhereabouts();
 }
 function openClockCard(){
-  if (!window.PPClock || (overlayOpen() && $('#ovClock').hidden)) return;
-  paintClockCard();
-  $('#ovClock').hidden = false;
-  lockTabs(true);
-  sfx('tap');
+  if (!window.PPClock) return;
+  openEnvCard();
 }
 function closeClockCard(){ if ($('#ovClock').hidden) return; $('#ovClock').hidden = true; lockTabs(false); }
 const shotFx = [];
@@ -4862,6 +4914,86 @@ function edgeExits(){
   edgeExitCache = list;
   return list;
 }
+function zoneMeets(r, z, m){
+  return r.x - m < z[2] && r.x + r.w + m > z[0] && r.y - m < z[3] && r.y + r.h + m > z[1];
+}
+// On-screen edge-exit tap zones, in CSS px. Same mouths as the exit taps: 2.5 tiles each side, three rows at the edge, plus the void past it.
+function edgeZones(){
+  const c = $('#mapCanvas'); if (!c || !c.width || !walk) return [];
+  const cr = c.getBoundingClientRect(), k = cr.width / c.width, T = 16 * k;
+  const clip = [Math.max(cr.left, 0), Math.max(cr.top, 0), Math.min(cr.right, window.innerWidth), Math.min(cr.bottom, window.innerHeight)];
+  const X = tx => cr.left + tx * T - walk.cam.x * k, Y = ty => cr.top + ty * T - walk.cam.y * k;
+  const out = [];
+  edgeExits().forEach(ex => {
+    (ex.edges || []).forEach(edge => {
+      let z;
+      if (edge === 'up') z = [X(ex.x - 2.5), -1e9, X(ex.x + 3.5), Y(3)];
+      else if (edge === 'down') z = [X(ex.x - 2.5), Y(MH - 3), X(ex.x + 3.5), 1e9];
+      else if (edge === 'left') z = [-1e9, Y(ex.y - 2.5), X(3), Y(ex.y + 3.5)];
+      else z = [X(MW - 3), Y(ex.y - 2.5), 1e9, Y(ex.y + 3.5)];
+      const box = [Math.max(z[0], clip[0]), Math.max(z[1], clip[1]), Math.min(z[2], clip[2]), Math.min(z[3], clip[3])];
+      if (box[2] > box[0] && box[3] > box[1]) out.push({ edge, box });
+    });
+  });
+  return out;
+}
+function slideClear(home, zones, margin){
+  const floor = window.innerHeight - 112 - home.h - 6;
+  let y = home.y;
+  for (let i = 0; i < 8; i++) {
+    const hit = zones.filter(z => zoneMeets({ x: home.x, y: y, w: home.w, h: home.h }, z.box, margin));
+    if (!hit.length) break;
+    const next = Math.min(floor, Math.max.apply(null, hit.map(z => z.box[3])) + 6);
+    if (next <= y + 0.01) break;
+    y = next;
+  }
+  return Math.max(home.y, y);
+}
+// Place chip and the left column yield to on-screen edge exits. Off in arcade and while the frame class is on.
+function syncPlaceYield(){
+  const chip = $('#thChip'), col = $('#fcTL');
+  const live = ctlMode() === 'modern' && !hudPadsLive() && screen === 'walk';
+  if (!live) {
+    if (chip) chip.style.transform = '';
+    if (col) col.style.top = '';
+    return;
+  }
+  try { syncWalkCam(); } catch (e) {}
+  const zones = edgeZones();
+  if (chip && chip.offsetParent) {
+    const op = chip.offsetParent;
+    const or = op.getBoundingClientRect();
+    const home = {
+      x: or.left + chip.offsetLeft - op.clientLeft,
+      y: or.top + chip.offsetTop - op.clientTop,
+      w: chip.offsetWidth,
+      h: chip.offsetHeight,
+    };
+    const y = slideClear(home, zones, 6);
+    const dy = Math.ceil(y - home.y - 1e-6);
+    chip.style.transform = dy > 0 ? 'translateY(' + dy + 'px)' : '';
+  }
+  if (col && col.offsetParent) {
+    const prev = col.style.top, tr = col.style.transition;
+    col.style.transition = 'none';
+    col.style.top = '';
+    const hr = col.getBoundingClientRect();
+    const origin = (col.offsetParent || col.parentNode).getBoundingClientRect().top;
+    col.style.top = prev;
+    void col.offsetHeight;
+    col.style.transition = tr;
+    const ups = zones.filter(z => z.edge === 'up');
+    const home = { x: hr.left, y: hr.top, w: hr.width, h: hr.height };
+    const y = slideClear(home, ups, 0);
+    const topPx = Math.floor(y - origin + 1e-6), homePx = Math.round(hr.top - origin);
+    col.style.top = topPx > homePx + 0.5 ? topPx + 'px' : '';
+  }
+  if ((tut.on || unlock.on) && !syncPlaceYield.busy) {
+    syncPlaceYield.busy = true;
+    try { tutPlace(); } catch (e) {}
+    syncPlaceYield.busy = false;
+  }
+}
 // How far the tap sits outside one edge, in map px. 0 when the tap is on or inside the map.
 function edgePast(edge, x, y){
   if (edge === 'up') return Math.max(0, -y);
@@ -5051,6 +5183,7 @@ function earlyWalk(){
   if (n === 1 || n === 8 || n === 16) save();
 }
 function onLand(){
+  try { syncPlaceYield(); } catch (e) {}
   const p = pet();
   S.steps++; if (S.steps % 2 === 0) sfx('step');   // quiet footstep on every other step
   earlyWalk();
@@ -5813,6 +5946,7 @@ function arriveAt(at){
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
   placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
+  try { syncPlaceYield(); } catch (e) {}
 }
 function enterDoor(dr){
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
@@ -6717,7 +6851,7 @@ function modernCueZone(){
   const btns = [...$$('#floatCtl button, #joyRing')].filter(b => !b.hidden && b.offsetParent).map(b => { const r = b.getBoundingClientRect(); const a = toC(r.left, r.top), z = toC(r.right, r.bottom); return [a[0], a[1], z[0], z[1]]; });
   const [rx0, ry0] = toC(mw.left + CUE_RAIL.inset + half, mw.top + CUE_RAIL.top + half);
   const [rx1, ry1] = toC(mw.right - CUE_RAIL.inset - half, tipTop - CUE_RAIL.aboveTip - half);
-  const avoid = [...$$('#clockChip, #joyRing')].filter(b => !b.hidden && b.offsetParent).map(b => {
+  const avoid = [...$$('#thChip, #joyRing')].filter(b => !b.hidden && b.offsetParent).map(b => {
     const r = b.getBoundingClientRect(); const a = toC(r.left - margin, r.top - margin), z = toC(r.right + margin, r.bottom + margin); return [a[0], a[1], z[0], z[1]];
   });
   return (cueZone.z = { x0, y0, x1, y1, tx0, tx1, ty, bx0, by, btns, rail: { x0: rx0, y0: ry0, x1: rx1, y1: ry1, h: half * k }, avoid });
@@ -6731,7 +6865,7 @@ const bubbleBoxes = []; // "!" balloon and the talk marker this frame; never sav
 // carries the distance pill, and sits in a 44 CSS px tap box (CUE_EDGE). A board slip keeps the rail chip.
 // D464: no ground ring. D465: no rim blink; 1 px motion on 1400 ms; still under reduced motion.
 const CUE_EDGE = { edge: 4, inset: 56, gap: 4, margin: 6, box: 44 };
-const CUE_AVOID = '#floatCtl button, #joyRing, #clockChip, #envBadge, #fcAcorns, #walkTip, #petStrip, #dpad';
+const CUE_AVOID = '#floatCtl button, #joyRing, #thChip, #fcAcorns, #walkTip, #petStrip, #dpad';
 const CUE_PENNANT = [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2]];
 const CUE_SHADOW = (() => {
   const n = parseInt(PAL.k.slice(1), 16);
@@ -9334,11 +9468,10 @@ const STATUS_TAG = { loading: '...', off: 'DEFAULT', denied: 'NO GPS', unavailab
 const placeName = () => (CUR && CUR.name) || '';
 const wildHere = () => !isRoom() && !!CUR.spawns;
 function renderEnv(){
-  const name = placeName(), wildy = wildHere() && !!ENV;
-  $('#envText').textContent = wildy ? (name ? name + ' \u00b7 ' : '') + ENV.label : (name || (ENV ? ENV.label : ''));
-  $('#envSrc').textContent = wildy ? (STATUS_TAG[ENV.status] || '') : '';
-  $('#envBadge').classList.toggle('wild', wildy);
-  $('#envBadge').setAttribute('aria-label', wildy ? name + '. Around here: ' + ENV.label + ' (' + (STATUS_TAG[ENV.status] || '') + '). Tap for details.' : name + '. Tap for location details.');
+  const name = placeName();
+  const place = $('#thPlace');
+  if (place && place.textContent !== name) { place.textContent = name || ''; invalidateCueZone(); }
+  renderClockChip();
   if (!ENV) return;
   if (!$('#ovEnv').hidden) renderEnvCard();
 }
@@ -9367,14 +9500,21 @@ function useLocation(mode){
     else if (e.source === 'location') toast('Around here: ' + e.label);
   });
 }
-function openEnvCard(){ if (overlayOpen()) return; clearMoves(); renderEnvCard(); $('#ovEnv').hidden = false; lockTabs(true); PPEnv.permState().then(() => { if (!$('#ovEnv').hidden) renderEnvCard(); }); }
+function openEnvCard(){ if (overlayOpen()) return; clearMoves(); renderEnvCard(); $('#ovEnv').hidden = false; lockTabs(true); syncMapBtn(); PPEnv.permState().then(() => { if (!$('#ovEnv').hidden) renderEnvCard(); }); }
 function closeEnvCard(){ $('#ovEnv').hidden = true; lockTabs(false); }
 function renderEnvCard(){
   const e = ENV; if (!e) return;
-  $('#envCardLabel').textContent = e.label;
-  $('#envCardTags').textContent = 'Signals: ' + e.tags.join(', ');
-  const odds = spawnOdds(e.tags).map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]).slice(0, 3);
-  $('#envCardLikely').textContent = 'Likely here: ' + odds.map(([v, i]) => SPECIES[i].stages[0].name + ' ' + Math.round(v * 100) + '%').join(', ');
+  const name = placeName();
+  const terrKey = ['mountain', 'city', 'water', 'forest', 'park', 'meadow'].find(t => (e.tags || []).indexOf(t) >= 0);
+  const terrWord = { mountain: 'Mountain', city: 'City', water: 'Waterside', forest: 'Forest', park: 'Park', meadow: 'Meadow' }[terrKey] || '';
+  $('#envCardLabel').textContent = name || e.label;
+  $('#envCardTags').textContent = terrWord ? (name ? name + '. ' + terrWord + '.' : terrWord + '.') : (name || '');
+  const sky = chipSky();
+  const wword = !sky ? '' : { clear: 'Clear', cloud: 'Cloud', rain: 'Rain', snow: 'Snow' }[sky.kind] || '';
+  const likely = $('#envCardLikely');
+  if (sky && sky.temp != null) { likely.hidden = false; likely.textContent = wword + ', ' + Math.round(sky.temp) + '\u00b0'; }
+  else if (wword) { likely.hidden = false; likely.textContent = wword; }
+  else { likely.hidden = true; likely.textContent = ''; }
   const ago = m => m < 1 ? 'just now' : m < 60 ? Math.round(m) + ' min ago' : Math.round(m / 60) + ' h ago';
   let src;
   if (e.source === 'manual') src = 'Picked place (debug override). Choose AUTO to go back.';
@@ -9386,8 +9526,10 @@ function renderEnvCard(){
   // REFRESH only when the browser already allows location (Vincent, Oct 24); otherwise the tap is USE MY LOCATION, which may ask
   const allowed = PPEnv.geoPref() === 'allow' && e.source !== 'default' && PPEnv.lastPerm === 'granted';
   const use = $('#envUseLoc');
-  use.textContent = allowed ? 'REFRESH' : 'USE MY LOCATION';
+  use.textContent = 'LOCATION';
   use.dataset.mode = allowed ? 'refresh' : 'use';
+  paintClockCard();
+  syncMapBtn();
 }
 function buildPresetButtons(){
   const box = $('#envPresets'); box.innerHTML = '';
@@ -10619,7 +10761,20 @@ function mapVisited(id, cur){
 }
 const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy && !tabsGuarded() && !(battle && battle.on);
 let mapOffShown = null;
-function syncMapBtn(){ const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false'); }
+function mapReadySoon(){
+  const env = $('#ovEnv');
+  const was = env ? env.hidden : true;
+  if (env) env.hidden = true;
+  let ok = false;
+  try { ok = mapReady(); } catch (e) { ok = false; }
+  if (env) env.hidden = was;
+  return ok;
+}
+function syncMapBtn(){
+  const soon = mapReadySoon(), mb = $('#thMap');
+  if (mb) { const grey = !soon; mb.classList.toggle('off', grey); mb.disabled = grey; mb.setAttribute('aria-disabled', grey ? 'true' : 'false'); }
+  const off = !mapReady(), b = $('#mapBtn'); if (!b || off === mapOffShown) return; mapOffShown = off; b.classList.toggle('off', off); b.setAttribute('aria-disabled', off ? 'true' : 'false');
+}
 const mapUI = { t0: 0, cur: null, sel: null, level: null, shown: null, browse: false, pick: null, denies: 0, pins: [], px: null };
 let regionMapMarks = null;   // D106: last drawn side ring node and dim-dot nodes (read by tests)
 // First matching rule wins. `flags` lets the dev check try a save without touching S. Unvisited places stay ??? on the parchment.
@@ -16167,7 +16322,7 @@ function bindInput(){
   si.addEventListener('input', () => { const v = si.value.replace(BAD_NICK_CH, ''); if (v !== si.value) si.value = v; });
   si.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (sbox.nameDone) sbox.nameDone(false); } });
   $('#talkBtn').addEventListener('click', () => { if (!overlayOpen() && talkFacing()) sfx('tap'); });
-  ['#evoOk', '#geoAllow', '#geoLater', '#envBadge', '#envUseLoc', '#envClose', '#copyCode'].forEach(id => $(id).addEventListener('click', () => sfx('tap')));
+  ['#evoOk', '#geoAllow', '#geoLater', '#thChip', '#envUseLoc', '#envClose', '#copyCode'].forEach(id => { const n = $(id); if (n) n.addEventListener('click', () => sfx('tap')); });
   $$('#scr-pet .actions [data-act], #careTray .ct-care [data-act]').forEach(b => b.addEventListener('click', () => b.dataset.act === 'heal' ? healTap() : doAction(b.dataset.act)));   // CARE_SCREEN_HEAL
   $('#evolveBtn').addEventListener('click', () => startEvolution(false));
   $('#evoOk').addEventListener('click', evoOkTap);
@@ -16325,9 +16480,10 @@ function bindInput(){
   $('#btMsg').addEventListener('click', skipMsg);
   $('#shCancel').addEventListener('click', () => { sfx('tap'); closeSheet(null); });
   $('#geoAllow').addEventListener('click', () => { closeGeoAsk(); useLocation(); });
-  $('#geoLater').addEventListener('click', () => { PPEnv.setGeoPref('deny'); closeGeoAsk(); toast('OK! A meadow for now. Tap the area badge to change.'); });
-  $('#envBadge').addEventListener('click', openEnvCard);
-  const clockBtn = $('#clockChip'); if (clockBtn) clockBtn.addEventListener('click', openClockCard);
+  $('#geoLater').addEventListener('click', () => { PPEnv.setGeoPref('deny'); closeGeoAsk(); toast('OK! A meadow for now. Tap the place chip to change.'); });
+  $('#thChip').addEventListener('click', openEnvCard);
+  const thMap = $('#thMap');
+  if (thMap) thMap.addEventListener('click', () => { if (thMap.disabled || thMap.classList.contains('off')) return; sfx('tap'); closeEnvCard(); openMap(); });
   const clockShut = $('#clockClose'); if (clockShut) clockShut.addEventListener('click', () => { sfx('tap'); closeClockCard(); });
   $('#envUseLoc').addEventListener('click', () => { const mode = $('#envUseLoc').dataset.mode; closeEnvCard(); useLocation(mode); });
   $('#envClose').addEventListener('click', closeEnvCard);

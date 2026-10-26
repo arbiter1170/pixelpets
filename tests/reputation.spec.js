@@ -171,7 +171,7 @@ test('modern compass sits at 6,6 and quest, bag and map move down one slot', asy
     quest: await rect(page, '#questBtn'),
     bag: await rect(page, '#walkBagBtn'),
     map: await rect(page, '#mapBtn'),
-    env: await rect(page, '#envBadge'),
+    env: await rect(page, '#thChip'),
     joy: await rect(page, '#joyRing'),
     tip: await rect(page, '#walkTip'),
   };
@@ -184,8 +184,9 @@ test('modern compass sits at 6,6 and quest, bag and map move down one slot', asy
   expect(Math.round(r.bag.y)).toBe(106);
   expect(Math.round(r.map.y)).toBe(156);
   expect(Math.round(r.map.bottom)).toBeLessThanOrEqual(210);
-  expect(Math.round(r.env.y)).toBe(6);
-  expect(Math.round(r.env.x)).toBeGreaterThanOrEqual(56);
+  expect(Math.round(r.env.height)).toBeGreaterThanOrEqual(44);
+  expect(Math.round(r.env.right)).toBe(w - 6);
+  expect(Math.round(r.env.y)).toBeGreaterThanOrEqual(56);
   if (w === 320 || w === 390) {
     expect(r.joy.y).toBeGreaterThanOrEqual(370);
     expect(r.tip.y).toBeGreaterThanOrEqual(470);
