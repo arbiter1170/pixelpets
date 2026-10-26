@@ -260,7 +260,7 @@ test('the header chip stays tappable and points at the compass', async ({ page }
   await boot(page, save({ 'story.lizzy_met': true }));
   await at(page, 'tue', 8, 30);
   await page.evaluate(() => PixelPets.goto('hearthmoor', 8, 8, 'down'));
-  const box = await page.locator('#clockChip').boundingBox();
+  const box = await page.locator('#thChip').boundingBox();
   const vp = page.viewportSize();
   expect(box).toBeTruthy();
   expect(box.width).toBeGreaterThanOrEqual(44);
@@ -269,10 +269,10 @@ test('the header chip stays tappable and points at the compass', async ({ page }
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.x + box.width).toBeLessThanOrEqual(vp.width + 1);
   expect(box.y + box.height).toBeLessThanOrEqual(vp.height + 1);
-  expect(await page.locator('#clockLabel').textContent()).toBe('TUE 8:30');
-  expect(await page.locator('#clockChip').getAttribute('aria-label')).toBe('Tuesday, 8:30, day');
-  await page.locator('#clockChip').click();
-  await expect(page.locator('#ovClock')).toBeVisible();
+  expect(await page.locator('#thHour').textContent()).toBe('TUE 8:30');
+  expect(await page.locator('#thChip').getAttribute('aria-label')).toBe('Hearthmoor, TUE 8:30. Tap for today.');
+  await page.locator('#thChip').click();
+  await expect(page.locator('#ovEnv')).toBeVisible();
   const card = await page.locator('#clockCard').innerText();
   expect(card).toContain('Tuesday');
   expect(card).toContain('8:30, day');
@@ -282,10 +282,10 @@ test('the header chip stays tappable and points at the compass', async ({ page }
   expect(card).not.toContain('Wren');
   expect(card).not.toContain('Ossabell');
   expect(card).not.toContain('Mr. Gristle');
-  const close = await page.locator('#clockClose').boundingBox();
+  const close = await page.locator('#envClose').boundingBox();
   expect(close.height).toBeGreaterThanOrEqual(44);
-  await page.locator('#clockClose').click();
-  await expect(page.locator('#ovClock')).toBeHidden();
+  await page.locator('#envClose').click();
+  await expect(page.locator('#ovEnv')).toBeHidden();
 });
 
 test('modern controls keep the chip on the walk screen', async ({ page }) => {
@@ -293,7 +293,7 @@ test('modern controls keep the chip on the walk screen', async ({ page }) => {
   s.settings.controls = 'modern';
   await boot(page, s);
   await at(page, 'tue', 8, 30);
-  const box = await page.locator('#clockChip').boundingBox();
+  const box = await page.locator('#thChip').boundingBox();
   const vp = page.viewportSize();
   expect(box.height).toBeGreaterThanOrEqual(44);
   expect(box.width).toBeGreaterThanOrEqual(44);
@@ -301,7 +301,7 @@ test('modern controls keep the chip on the walk screen', async ({ page }) => {
   expect(box.x + box.width).toBeLessThanOrEqual(vp.width + 1);
   const hidden = await page.evaluate(() => getComputedStyle(document.getElementById('top')).display === 'none');
   expect(hidden).toBe(true);
-  expect(await page.locator('#clockLabel').textContent()).toBe('TUE 8:30');
+  expect(await page.locator('#thHour').textContent()).toBe('TUE 8:30');
 });
 
 test('dawn and dusk tint the outdoor map, and night stays the dark wash', async ({ page }) => {
@@ -405,5 +405,5 @@ test('?debug=1&clock=tue-0830 opens on Tuesday morning @w1', async ({ page }) =>
   expect(n.mm).toBe(30);
   expect(n.phase).toBe('day');
   expect(n.windows).toEqual(['school']);
-  expect(await page.locator('#clockLabel').textContent()).toBe('TUE 8:30');
+  expect(await page.locator('#thHour').textContent()).toBe('TUE 8:30');
 });

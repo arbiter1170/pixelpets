@@ -7,7 +7,7 @@ const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, gotoGame } = require('./helpers');
 
 const NOTE = 'The game closed unexpectedly. Tap Copy crash info in Settings.';
-const HUD = ['#settingsBtn', '#gearFloat', '#dpad', '#tabs', '#envBadge', '#talkBtn', '#questBtn', '#phoneBtn', '#petStrip', '#joyRing', '#walkTip', '#mapBtn', '#repBtn', '#walkBagBtn', '#petFloat', '#colFloat'];
+const HUD = ['#settingsBtn', '#gearFloat', '#dpad', '#tabs', '#thChip', '#talkBtn', '#questBtn', '#phoneBtn', '#petStrip', '#joyRing', '#walkTip', '#mapBtn', '#repBtn', '#walkBagBtn', '#petFloat', '#colFloat'];
 
 function overlaps(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;

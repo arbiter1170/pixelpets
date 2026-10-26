@@ -483,7 +483,7 @@ test.describe('B1', () => {
         const hit = (p, q) => p.w > 0 && q.w > 0 && p.x < q.r && p.r > q.x && p.y < q.b && p.b > q.y;
         const strip = r(document.querySelector('#coopStrip'));
         const say = r(document.querySelector('#sayBtn'));
-        const env = r(document.querySelector('#envBadge'));
+        const env = r(document.querySelector('#thChip'));
         const fc = document.querySelector('#fcTR');
         const fcR = r(fc);
         const fcOn = getComputedStyle(fc).display !== 'none' && fcR.w > 0 && fcR.h > 0;

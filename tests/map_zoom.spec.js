@@ -262,7 +262,7 @@ test('arcade default (no controls setting, no frame class): canvas rect, map off
     await page.waitForTimeout(400);
     const got = await page.evaluate(() => {
       const mc = document.querySelector('#mapCanvas'), cr = mc.getBoundingClientRect(), cam = PixelPets.walk.cam, k = cr.width / mc.width;
-      const badge = document.querySelector('#envBadge');
+      const badge = document.querySelector('#thChip');
       return { rect: [cr.left, cr.top, cr.width, cr.height].map(v => Math.round(v) + 0),
         off: [Math.round(cr.left - cam.x * k) + 0, Math.round(cr.top - cam.y * k) + 0], cam: [cam.x + 0, cam.y + 0],
         arcade: !document.body.classList.contains('ctl-modern'), frame: document.body.classList.contains('mhc-frame'),
@@ -281,7 +281,7 @@ test('arcade default (no controls setting, no frame class): canvas rect, map off
 
 // The clock chip's width follows its text, and a game minute is a few seconds. With the pads on, the right pad must
 // follow the live clock chip, not the width from the last fitAll (the room_zoom_all 1 px camera-x miss).
-test('D787 pads follow the clock chip as its text changes', async ({ page }) => {
+test('the hour box stays 52 px while the minute changes, and the frame right pad ignores the place chip', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page);
   expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);
@@ -290,16 +290,17 @@ test('D787 pads follow the clock chip as its text changes', async ({ page }) => 
   const texts = new Set();
   for (let i = 0; i < 40; i++) {
     const g = await page.evaluate(() => {
-      const c = document.querySelector('#fcClock'), r = c.getBoundingClientRect();
-      const mc = document.querySelector('#mapCanvas').getBoundingClientRect();
-      return { text: c.textContent.trim(), shown: c.checkVisibility(), live: Math.max(0, Math.ceil(mc.right - r.left + 6)), pad: PixelPets.mapInfo.pads.right };
+      const hour = document.querySelector('#thHour'), chip = document.querySelector('#thChip');
+      return { text: hour.textContent.trim(), hourW: Math.round(hour.getBoundingClientRect().width), shown: chip.checkVisibility(), pad: PixelPets.mapInfo.pads.right, shift: chip.style.transform || '' };
     });
     expect(g.shown).toBe(true);
-    expect(g.pad, g.text).toBe(g.live);
+    expect(g.hourW).toBe(52);
+    expect(g.pad, g.text).toBe(0);
+    expect(g.shift).toBe('');
     texts.add(g.text);
     await page.waitForTimeout(250);
   }
-  expect(texts.size, 'the clock ticked during the check').toBeGreaterThan(1);
+  expect(texts.size, 'the hour ticked during the check').toBeGreaterThan(1);
 });
 
 test('D787: pads are the HUD overlap with the visible canvas; hidden HUD pads 0 and the north lift is off', async ({ page }) => {

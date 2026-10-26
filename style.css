@@ -246,6 +246,33 @@ body.mhc-frame:not(.ctl-modern) #scr-walk #envBadge{position:absolute;left:20px;
 body.mhc-frame:not(.ctl-modern) #scr-walk #envBadge #envText{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .env-badge small{font-size:13px;color:var(--k);background:var(--h);padding:0 3px;letter-spacing:1px;flex:0 0 auto}
 .env-badge small:empty{display:none}
+/* Place chip (option A). 44 px tall, square, PAL k face, 2 px PAL d rim, 1 px PAL k outline. The hour sits in a fixed 52 px box. */
+#thChip{position:relative;isolation:isolate;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:0;height:44px;min-width:44px;max-width:140px;width:max-content;margin:0;padding:2px 6px;border:2px solid var(--d);outline:1px solid var(--k);border-radius:0;background:var(--k);color:var(--y);font-family:var(--font);font-size:14px;line-height:14px;letter-spacing:0;text-align:left;cursor:pointer}
+#thChip:focus-visible{outline:3px solid var(--y);outline-offset:1px}
+#thChip .th-l1{display:flex;align-items:center;gap:4px;height:14px;max-width:100%;color:var(--y);font-size:14px;line-height:14px;white-space:nowrap}
+#thChip .th-l1 canvas{width:16px;height:16px;flex:0 0 auto;image-rendering:pixelated;image-rendering:crisp-edges}
+#thChip [hidden]{display:none!important}
+#thHour{display:inline-block;width:52px;flex:0 0 52px;overflow:hidden;letter-spacing:0;color:var(--y)}
+#thTemp{flex:0 0 auto;color:var(--w)}
+#thChip .th-l2{display:block;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--h);font-size:12px;line-height:12px;height:12px}
+@media (max-width:374px){#thChip{max-width:120px}}
+/* Arcade: the same 44 px tap box as the old area row, pulled back so the map keeps its place. */
+body:not(.ctl-modern) #thChip{align-self:flex-start;margin:0 4px;min-height:44px;border-top:8px solid transparent;border-bottom:8px solid transparent;background-clip:padding-box;outline:2px solid var(--d);outline-offset:-8px;box-shadow:0 0 0 1px var(--k);margin-top:-8px;margin-bottom:-8px}
+body.ctl-modern #thChip{align-self:flex-end;margin:0}
+body.ctl-modern:not(.mhc-frame) #thChip{transition:transform 120ms linear}
+body.ctl-modern:not(.mhc-frame) #fcTL{transition:top 120ms linear}
+@media (prefers-reduced-motion: reduce){#thChip,#fcTL{transition:none!important}}
+#ovEnv .ov-inner{background:var(--k);box-shadow:0 0 0 2px var(--d),0 0 0 3px var(--k);gap:4px;padding:10px}
+#ovEnv .ov-title{font-size:16px;text-shadow:none;color:var(--y)}
+#ovEnv .env-card-label{font-size:14px;line-height:17px;text-align:left;color:var(--w)}
+#ovEnv .th-line{margin:0;font-size:14px;line-height:17px;color:var(--w)}
+#ovEnv #envCardSrc{font-size:14px;line-height:17px;color:var(--h)}
+#ovEnv .th-acts{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:6px}
+#ovEnv .th-key{box-sizing:border-box;min-height:44px;height:44px;min-width:44px;padding:0 8px;border:2px solid var(--k);border-radius:0;background:var(--h);color:var(--k);font-size:16px;letter-spacing:0;cursor:pointer}
+#ovEnv #thMap{min-width:48px}
+#ovEnv #envClose{width:44px;padding:0}
+#ovEnv .th-ghost{box-sizing:border-box;min-height:44px;height:44px;min-width:44px;padding:0 8px;border:0;border-radius:0;background:transparent;color:var(--h);font-size:14px;letter-spacing:0;cursor:pointer}
+#ovEnv .th-key.off,#ovEnv .th-key:disabled{opacity:.45}
 .geo-text{margin:0;font-size:18px;line-height:1.45;color:var(--w)}
 .env-card-label{text-align:center;font-size:22px;color:var(--s)}
 .env-presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
@@ -1148,6 +1175,7 @@ body.ctl-modern.scene-on .float-ctl .fc-tr{pointer-events:none}
 .float-ctl button,.float-ctl .joy{pointer-events:auto}
 .fc-col{position:absolute;top:calc(6px + var(--sa-t));display:flex;flex-direction:column;gap:6px}
 .fc-tl{left:calc(6px + var(--sa-l))}.fc-tr{right:calc(6px + var(--sa-r))}
+.fc-tr{align-items:flex-end}
 .float-ctl .dpc,.scr-back{position:static;width:44px;height:44px;min-width:0;min-height:0;padding:0;font-size:12px;letter-spacing:0;gap:1px;overflow:hidden;
   border:0;color:var(--w);display:flex;flex-direction:column;align-items:center;justify-content:center;
   background:var(--n);box-shadow:0 0 0 2px var(--m),inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.12)}

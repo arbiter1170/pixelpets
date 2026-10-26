@@ -5,7 +5,7 @@ const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = requir
 
 trackErrors(test, expect);
 
-const HUD = '#floatCtl button, #clockChip, #envBadge, #fcAcorns, #joyRing, #walkTip, #petStrip, #dpad';
+const HUD = '#floatCtl button, #thChip, #fcAcorns, #joyRing, #walkTip, #petStrip, #dpad';
 const LIME = [167, 240, 112];
 const LOW_LEFT = { main: { x: 0, y: 48 }, side: { x: 1, y: 46 }, board: { x: 0, y: 20 }, mainTracked: false };
 

@@ -19,7 +19,7 @@ for (const mode of ['arcade', 'modern']) {
     await expect(page.locator('#hdrAcornN')).toHaveText('99999');
     await expect(page.locator('#hdrAcorns')).toHaveAttribute('aria-label', '99999 Acorns');
     const vw = page.viewportSize().width;
-    const r = { a: await rect(page, '#hdrAcorns'), lv: await rect(page, '#top .lv'), gear: await rect(page, '#settingsBtn'), name: await rect(page, '#hdrName'), tag: await rect(page, '#dbgTag'), env: await rect(page, '#envBadge') };
+    const r = { a: await rect(page, '#hdrAcorns'), lv: await rect(page, '#top .lv'), gear: await rect(page, '#settingsBtn'), name: await rect(page, '#hdrName'), tag: await rect(page, '#dbgTag'), env: await rect(page, '#thChip') };
     expect(r.a).not.toBeNull();
     expect(r.a.x).toBeGreaterThanOrEqual(0); expect(r.a.right).toBeLessThanOrEqual(vw);
     expect(r.a.right).toBeLessThanOrEqual(r.lv.x + 1);            // left of the Lv badge
@@ -33,7 +33,7 @@ for (const mode of ['arcade', 'modern']) {
     await expect(page.locator('#hdrAcorns')).toHaveAttribute('aria-label', '1 Acorn');
     if (mode === 'arcade') {                                         // the walk screen keeps the header in arcade; the env badge sits below it
       await page.evaluate(() => PixelPets.showTab('walk'));
-      const a = await rect(page, '#hdrAcorns'), env = await rect(page, '#envBadge');
+      const a = await rect(page, '#hdrAcorns'), env = await rect(page, '#thChip');
       expect(a).not.toBeNull(); if (env) expect(boxesOverlap(a, env)).toBe(false);
     }
   });
@@ -97,7 +97,7 @@ test('modern walk acorn chip: badge row, y 6, 44 tall, left of the gear, read-on
   await expect(page.locator('#fcAcorns')).toHaveAttribute('aria-label', '99999 Acorns');
   await page.waitForTimeout(300);
   const vw = page.viewportSize().width;
-  const c = await rect(page, '#fcAcorns'), gear = await rect(page, '#gearFloat'), env = await rect(page, '#envBadge');
+  const c = await rect(page, '#fcAcorns'), gear = await rect(page, '#gearFloat'), env = await rect(page, '#thChip');
   expect(Math.round(c.y)).toBe(6); expect(Math.round(c.height)).toBe(44);
   expect(c.right).toBeLessThanOrEqual(gear.x + 0.5); expect(gear.x - c.right).toBeLessThanOrEqual(8);   // immediately left of the gear
   expect(c.right).toBeLessThanOrEqual(vw);
@@ -107,9 +107,9 @@ test('modern walk acorn chip: badge row, y 6, 44 tall, left of the gear, read-on
   const icon = await page.evaluate(() => { const b = document.querySelector('#fcAcornN'), h = document.querySelector('#hdrAcornN'); return [getComputedStyle(b).color === getComputedStyle(h).color, getComputedStyle(b).fontSize === getComputedStyle(h).fontSize, b.scrollWidth <= b.clientWidth + 1]; });
   expect(icon).toEqual([true, true, true]);
   // a long area name: the badge text clamps, the chip stays whole
-  await page.evaluate(() => { document.querySelector('#envText').textContent = 'The Very Long Glimmerwell Orchard Gate Road'; });
+  await page.evaluate(() => { document.querySelector('#thPlace').textContent = 'The Very Long Glimmerwell Orchard Gate Road'; });
   await page.waitForTimeout(300);
-  const c2 = await rect(page, '#fcAcorns'), env2 = await rect(page, '#envBadge');
+  const c2 = await rect(page, '#fcAcorns'), env2 = await rect(page, '#thChip');
   expect(boxesOverlap(c2, env2)).toBe(false); expect(Math.round(c2.width)).toBe(Math.round(c.width));
   // live
   await page.evaluate(() => PixelPets.setMoney(7)); await expect(page.locator('#fcAcornN')).toHaveText('7');
@@ -127,6 +127,6 @@ test('modern walk acorn chip hides in battle like the badge', async ({ page }) =
   await page.waitForFunction(() => PixelPets.battle && PixelPets.battle.on, null, { timeout: 8000 });
   await page.waitForTimeout(400);
   const vis = await page.evaluate(() => { const v = sel => { const e = document.querySelector(sel), r = e.getBoundingClientRect(), top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
-    return !!(e.offsetWidth && getComputedStyle(e).opacity !== '0' && (top === e || e.contains(top))); }; return [v('#envBadge'), v('#fcAcorns')]; });
+    return !!(e.offsetWidth && getComputedStyle(e).opacity !== '0' && (top === e || e.contains(top))); }; return [v('#thChip'), v('#fcAcorns')]; });
   expect(vis).toEqual([false, false]);
 });

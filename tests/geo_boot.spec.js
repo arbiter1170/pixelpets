@@ -48,7 +48,7 @@ const envNow = (page) => page.evaluate(() => window.PixelPets.env);
 
 // Open the location card and return its button after checking it is really visible and at least 44 px.
 async function cardButton(page) {
-  const badge = page.locator('#envBadge');
+  const badge = page.locator('#thChip');
   await expect(badge).toBeVisible();
   await badge.click();
   await expect(page.locator('#ovEnv')).toBeVisible();
@@ -68,7 +68,8 @@ test('granted: boot reads the device silently, and REFRESH reads it again withou
   await expect(page.locator('#ovGeo')).toBeHidden();
   expect((await envNow(page)).coords).toBe(AREA);
   const use = await cardButton(page);
-  await expect(use).toHaveText('REFRESH');
+  await expect(use).toHaveText('LOCATION');
+  await expect(use).toHaveAttribute('data-mode', 'refresh');
   await use.click();
   await expect(page.locator('#ovEnv')).toBeHidden();
   await page.waitForFunction(() => window.__geoCalls === 2);
@@ -96,7 +97,8 @@ test('prompt: the card offers USE MY LOCATION, and only that tap calls getCurren
   await bootWithGeo(page, 'prompt');
   expect(await geoCalls(page)).toBe(0);
   const use = await cardButton(page);
-  await expect(use).toHaveText('USE MY LOCATION');
+  await expect(use).toHaveText('LOCATION');
+  await expect(use).toHaveAttribute('data-mode', 'use');
   await use.click();
   await expect(page.locator('#ovEnv')).toBeHidden();
   await page.waitForFunction(() => window.__geoCalls === 1);
@@ -139,7 +141,8 @@ test('no Permissions API and stale cached weather: still no silent read, cached 
   await page.evaluate(() => window.PPEnv.refresh());
   expect(await geoCalls(page)).toBe(0);
   const use = await cardButton(page);
-  await expect(use).toHaveText('USE MY LOCATION');
+  await expect(use).toHaveText('LOCATION');
+  await expect(use).toHaveAttribute('data-mode', 'use');
 });
 
 test('a Permissions query that throws counts as not granted: no silent read', async ({ page }) => {

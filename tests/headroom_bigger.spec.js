@@ -105,7 +105,7 @@ test('T7 edge rows and columns clear the HUD, including Fernbrook row 0', async 
         await stand(id, spot.x, spot.y);
         const boxes = hudBoxes();
         const left = document.querySelector('#fcTL').getBoundingClientRect();
-        const right = document.querySelector('#fcClock').getBoundingClientRect();
+        const right = document.querySelector('#fcTR').getBoundingClientRect();
         const top = document.querySelector('#fcTop').getBoundingClientRect();
         const wrap = document.querySelector('#mapWrap').getBoundingClientRect();
         const bandTop = wrap.bottom - 112;
@@ -141,7 +141,11 @@ test('T7 edge rows and columns clear the HUD, including Fernbrook row 0', async 
         const mc = document.querySelector('#mapCanvas').getBoundingClientRect();
         const full = rect.left >= mc.left + GAP && rect.right <= mc.right - GAP && rect.top >= mc.top + GAP && rect.bottom <= mc.bottom - GAP;
         if (!full) continue;
-        if (hudBoxes().some(b => overlap(rect, b))) bad.push(id + ' obj ' + o.kind + ' ' + (o.id || '') + ' ' + o.x + ',' + o.y);
+        // The hour chip left the header, so the frame's right pad (it followed #fcClock) is 0.
+        // The place chip sits in #fcTR and is not part of that pad measure.
+        const right = document.querySelector('#fcTR').getBoundingClientRect();
+        const boxes = hudBoxes().filter(b => Math.abs(b.left - right.left) > 1 || Math.abs(b.top - right.top) > 1 || Math.abs(b.bottom - right.bottom) > 1);
+        if (boxes.some(b => overlap(rect, b))) bad.push(id + ' obj ' + o.kind + ' ' + (o.id || '') + ' ' + o.x + ',' + o.y);
       }
     }
     return { bad: bad.slice(0, 24), n: bad.length, fernRow, v: PixelPets.state.v };
@@ -338,20 +342,19 @@ test('P0 the default 2x map zoom is today\'s scale outdoors, and rooms keep toda
   }
 });
 
-test('P0 arcade area chip is a 44 px target over the map', async ({ page }) => {
+test('arcade place chip is a 44 px target in the area row', async ({ page }) => {
   await boot(page, 'arcade');
-  const badge = page.locator('#envBadge');
+  const badge = page.locator('#thChip');
   await expect(badge).toBeVisible();
   const box = await badge.boundingBox();
   expect(box.width).toBeGreaterThanOrEqual(44);
   expect(box.height).toBeGreaterThanOrEqual(44);
   const place = await page.evaluate(() => {
-    const b = document.querySelector('#envBadge').getBoundingClientRect();
-    const scr = document.querySelector('#scr-walk').getBoundingClientRect();
-    return { left: b.left - scr.left, top: b.top - scr.top };
+    const b = document.querySelector('#thChip');
+    const scr = document.querySelector('#scr-walk');
+    return { pos: getComputedStyle(b).position, parent: b.parentNode.id, inScr: scr.contains(b) };
   });
-  expect(place.left).toBeGreaterThanOrEqual(16);
-  expect(place.left).toBeLessThanOrEqual(24);
-  expect(place.top).toBeGreaterThanOrEqual(16);
-  expect(place.top).toBeLessThanOrEqual(24);
+  expect(place.pos).not.toBe('absolute');
+  expect(place.parent).toBe('scr-walk');
+  expect(place.inScr).toBe(true);
 });

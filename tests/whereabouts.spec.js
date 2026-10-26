@@ -387,7 +387,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   await expect(page.locator('.contact-card .where-text')).toHaveText('Keeps to themself.');
   await page.locator('#phoneClose').click();
 
-  await page.locator('#clockChip').click();
+  await page.locator('#thChip').click();
   const hour = await page.locator('#clockCard').innerText();
   expect(hour).toContain('Tuesday');
   expect(hour).toContain("Who's where: tap the compass, or a contact.");

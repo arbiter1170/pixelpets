@@ -33,7 +33,7 @@ test('modern fills the screen and every floating button works', async ({ page })
   const ids = ['#questBtn', '#walkBagBtn', '#mapBtn', '#gearFloat', '#phoneBtn', '#colFloat', '#petFloat', '#petStrip'];
   const boxes = [];
   for (const id of ids) { const b = await page.locator(id).boundingBox(); expect(b.width).toBeGreaterThanOrEqual(44); expect(b.height).toBeGreaterThanOrEqual(44); boxes.push(b); }
-  boxes.push(await page.locator('#envBadge').boundingBox(), await page.locator('#walkTip').boundingBox());
+  boxes.push(await page.locator('#thChip').boundingBox(), await page.locator('#walkTip').boundingBox());
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) expect(boxesOverlap(boxes[i], boxes[j])).toBe(false);
   const pairs = [['#questBtn', '#ovQuest', '#questClose'], ['#walkBagBtn', '#ovBag', '#bagClose'], ['#mapBtn', '#ovMap', '#mapClose'],
     ['#gearFloat', '#ovSettings', '#setClose'], ['#phoneBtn', '#ovPhone', '#phoneClose'], ['#petStrip', '#careTray', '#ctClose']];
@@ -180,9 +180,9 @@ for (const controls of ['arcade', 'modern']) {
     await installSave(page.context(), controls === 'modern' ? modernSave() : starterSave(), { quietDay: true });
     await gotoGame(page);
     await page.evaluate(() => PixelPets.showTab('walk'));
-    const b = await page.locator('#envBadge').boundingBox();
+    const b = await page.locator('#thChip').boundingBox();
     expect(b.height).toBeGreaterThanOrEqual(44);
-    await page.locator('#envBadge').click();
+    await page.locator('#thChip').click();
     await expect(page.locator('#ovEnv')).toBeVisible();
   });
 }

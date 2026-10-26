@@ -42,7 +42,7 @@ test('every interior uses the room scale, and every door can be framed', async (
       const top = box('#fcTop'), left = box('#fcTL'), clock = box('#fcClock'), tip = box('#fcTip'), band = box('#floatCtl .fc-bottom');
       const padT = top ? Math.ceil(top.bottom - wrap.top + GAP) : 56;
       const padLcss = left ? Math.ceil(left.right - wrap.left + GAP) : 56;
-      const padRcss = clock ? Math.ceil(wrap.right - clock.left + GAP) : 96;
+      const padRcss = clock ? Math.ceil(wrap.right - clock.left + GAP) : 0;
       const col = left ? Math.ceil(left.bottom - wrap.top + GAP) : 206;
       const tops = [tip, band].filter(Boolean).map(r => r.top);
       const bot = tops.length ? Math.max(112, Math.ceil(wrap.bottom - Math.min.apply(null, tops) + GAP)) : 112;
