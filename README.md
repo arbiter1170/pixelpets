@@ -300,7 +300,7 @@ leave after ~2.5-4.5 minutes of Walk time (or sooner when far off-screen) and ne
 Bump into one, or tap it so your Walkling walks next to it, to start a battle with exactly that
 species and form (see Battles above). Second forms are rare (5%, they twinkle). RUN leaves the creature where it
 is (it shies away for a moment); befriending it, beating it or letting it flee removes it. If no Walkling can battle
-it shies away too, with "Your team needs a rest first!".
+it shies away too. Under 10 NRG the line is "Battles start at 10 NRG. REST first!"; a worn-out team still hears "Your team needs a rest first!".
 
 Which species appear depends on where you are and the weather there:
 - Habitats: EMBER hot, meadow · TIDE water, rain · BLOOM forest, park, meadow · STONE mountain ·

@@ -706,3 +706,10 @@ Recorded from design MAP_EDGE_TAPS v0.1.1 and LANDSCAPE v0.1.2 (design commit 2c
 - **D728 (Oct 24, 2026, yellow, SETTLED yes on the default by team vote, PixelPets and QA).** LANDSCAPE. Settings → Map size is BIG or CLASSIC, under Controls. The new key is `settings.mapSize`. A missing key reads as BIG. Save stays v2 with no migrator. CLASSIC is today's scale rule. **Overridden Oct 24, 2026, 2:58 PM ET (red, Vincent via the Supervisor):** BIG/CLASSIC is replaced by Settings → Map zoom, a stepped slider from 2x to 3x with only crisp steps. Default 2x (today's live look). Key `settings.mapZoom` (number), missing reads as 2; `settings.mapSize` is no longer read. Save stays v2.
 - **D729 (Oct 24, 2026, yellow, SETTLED yes on the default by team vote, PixelPets and QA).** LANDSCAPE. In arcade the area name sits on the map's top-left corner, upright too, so its old row leaves the map height.
 
+## TUTORIAL_ORDER v0.1.6 (calls settled Oct 24 and Oct 26, 2026)
+
+Recorded from design TUTORIAL_ORDER v0.1.7 (design commit 6467b8c), without renumbering. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. Options B and C are not built.
+
+- **D752 (Oct 24, 2026, green, SETTLED by the PixelPets Supervisor; design 82215c3 and 62d58df).** TUTORIAL_ORDER v0.1.6. In a battle the F2 NRG card rings nothing (`return [];` in movesHoles). The card words stay. Built on this branch. The test is T-O10 (`#tutRing` hidden on F2).
+- **D753 (Mon Oct 26, 2026, 11:55 AM ET, yellow, SETTLED at default option A, cleared by the PixelPets Supervisor after the clock closed; design 6467b8c).** TUTORIAL_ORDER v0.1.6. The team vote was split (PixelPets A, QA C), so option A holds. C4e and the team-too-sleepy toast both say "Battles start at 10 NRG." Options B and C are not built. Built on this branch.
+
