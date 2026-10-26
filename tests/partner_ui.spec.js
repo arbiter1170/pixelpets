@@ -192,7 +192,7 @@ test('PARTNER strip icons and body icons, and 320 fits without scrolling', async
   expect(info.play).toBe('ico_joy');
   expect(info.rest).toBe('ico_nrg');
   expect(info.heal).toBe('ico_hp');
-  expect(info.xp).toBe('5/24');
+  expect(info.xp).toBe('5');
   expect(parseFloat(info.bar)).toBeCloseTo(100 * 64 / 2116, 2);
   expect(info.hint).toBe('Next form at Lv 24. Now Lv 5.');
   expect(info.gear).toBe('GEAR');

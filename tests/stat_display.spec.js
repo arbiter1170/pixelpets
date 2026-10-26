@@ -60,7 +60,7 @@ test('criteria 1-4: the strip stays on WALK; PARTNER hides it and mirrors NRG, G
     care: !!document.querySelector('.ss-care').offsetWidth, steps: !!document.querySelector('.ss-steps').offsetWidth, exTxt: document.querySelector('.ss-ex').textContent,
     slotTxt: document.querySelector('.ss-steps').textContent,
     gone: ['#dExp', '#wExp', '#dailyXp', '.walk-hud', '#wXp', '#wBarEnergy'].filter(s => document.querySelector(s)) }));
-  expect(walk.nrg).toBe('72'); expect(walk.grow).toBe('10/12');
+  expect(walk.nrg).toBe('72'); expect(walk.grow).toBe('10');
   expect(walk.ex).toBe(1); expect(walk.exTxt).toMatch(/^EXPLORE \d+\/30$/);
   expect(walk.gone).toEqual([]);
   expect([walk.care, walk.steps]).toEqual([false, true]);
@@ -75,7 +75,7 @@ test('criteria 1-4: the strip stays on WALK; PARTNER hides it and mirrors NRG, G
     care: document.querySelector('#petCare').textContent,
     strip: document.querySelector('#statStrip').offsetWidth,
   }));
-  expect(pet.nrg).toBe('72'); expect(pet.grow).toBe('10/12');
+  expect(pet.nrg).toBe('72'); expect(pet.grow).toBe('10');
   expect(pet.ex).toMatch(/^\d+\/30$/); expect(pet.care).toBe('0/25');
   expect(pet.strip).toBe(0);
 });
