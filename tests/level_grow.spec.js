@@ -58,7 +58,7 @@ test('the final form stays shut at one Seal and opens at two @w1', async ({ page
   await expect(page.locator('#toast')).toHaveText('Emberfox is ready. A Seal opens it!');
   expect(await page.evaluate(() => PixelPets.state.party[0].stage)).toBe(1);
   await page.evaluate(() => PixelPets.setFlag('story.seal2', true));
-  await expect(page.locator('#evoHint')).toHaveText('Pipkit is ready to grow up!');
+  await expect(page.locator('#evoHint')).toHaveText('Emberfox is ready to grow up!');
   await expect(page.locator('#evolveBtn')).toBeVisible();
 });
 
