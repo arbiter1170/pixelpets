@@ -321,6 +321,8 @@ test('Amos rests the party and Fen starts the trial @w1', async ({ page }) => {
   await page.evaluate(() => { PixelPets.setFlag('story.heights_done', true); PixelPets.setSide('keepers'); PixelPets.goto('fb_hall_in', 7, 5, 'up'); });
   await page.keyboard.press('Space');
   await advanceSay(page);
+  await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.full && PixelPets.scene.text)).toContain('Win my Seal and your Walklings can grow higher than Lv 15.');
+  await advanceSay(page);
   await expect.poll(() => page.evaluate(() => PixelPets.scene && PixelPets.scene.mode === 'choice')).toBeTruthy();
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);
   const fen = await page.locator('#sbChoices button').allTextContents();

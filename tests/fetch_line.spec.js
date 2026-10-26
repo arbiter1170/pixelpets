@@ -149,7 +149,7 @@ function fetchSave() {
     species: 'fetch',
     stage: 0,
     xp: 39,
-    bx: 0,
+    bx: 400,
     hunger: 80,
     happy: 80,
     energy: 90,
@@ -171,8 +171,8 @@ test('a Fetchling grows up into Harvestail and Hearthound @w1', async ({ page })
   await page.evaluate(() => PixelPets.showTab('pet'));   // BOOT_TO_MAP: the game boots on WALK; GROW UP is on the PARTNER screen
   await expect(page.locator('#hdrName')).toHaveText('Fetchling');
   await expect(page.locator('#evolveBtn')).toBeHidden();
-  await expect(page.locator('#evoHint')).toContainText('39/40');
-  await page.evaluate(() => PixelPets.giveXp(1));
+  await expect(page.locator('#evoHint')).toHaveText('Next form at Lv 12. Now Lv 11.');
+  await page.evaluate(() => PixelPets.setLevel(12));
   await expect(page.locator('#evolveBtn')).toBeVisible();
   await expect(page.locator('#evoHint')).toContainText('ready to grow up');
   await page.locator('#evolveBtn').click();
@@ -191,8 +191,12 @@ test('a Fetchling grows up into Harvestail and Hearthound @w1', async ({ page })
   expect(mid.moves).toContain('fetch_dash');
   expect(mid.xp).toBe(40);
   expect(mid.v).toBe(2);
-  await expect(page.locator('#evoHint')).toContainText('40/120');
-  await page.evaluate(() => PixelPets.giveXp(80));
+  await expect(page.locator('#evoHint')).toHaveText('Next form at Lv 24. Now Lv 12.');
+  await page.evaluate(() => {
+    PixelPets.setFlag('story.seal1', true);
+    PixelPets.setFlag('story.seal2', true);
+    PixelPets.setLevel(24);
+  });
   await expect(page.locator('#evolveBtn')).toBeVisible();
   await page.locator('#evolveBtn').click();
   await expect(page.locator('#evoMsg')).toContainText('Hearthound', { timeout: 8000 });

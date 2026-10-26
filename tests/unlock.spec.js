@@ -182,7 +182,7 @@ function carePet(id, species, extra) {
 
 function readySave() {
   const s = starterSave();
-  s.party = [carePet('petsmoke1', 'ember', { origin: 'starter', xp: 40 })];
+  s.party = [carePet('petsmoke1', 'ember', { origin: 'starter', xp: 40, bx: 484 })];
   s.partnerId = 'petsmoke1';
   return s;
 }
@@ -257,7 +257,7 @@ test('a team Walkling who is not the partner does not open the grow up tip @w1',
 test('an older save with a grown starter marks the grow up tip seen @w1', async ({ page }) => {
   test.setTimeout(60000);
   const s = starterSave();
-  s.party = [carePet('petlead', 'tide', { origin: 'wild', xp: 40 })];
+  s.party = [carePet('petlead', 'tide', { origin: 'wild', xp: 40, bx: 484 })];
   s.partnerId = 'petlead';
   s.box = [carePet('petgrown', 'ember', { origin: 'starter', stage: 1, xp: 40, moves: ['bump', 'cinder_pounce'], evoMoves: [1] })];
   delete s.flags['story.unlock_growup'];

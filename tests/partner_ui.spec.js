@@ -69,8 +69,8 @@ test('lower card has five bars, the spec icons, and the card rects', async ({ pa
   expect(Math.abs(lay.rightGap - 6)).toBeLessThanOrEqual(1);
   expect(lay.overflow).toBe(false);
   expect(lay.nameH).toBeLessThan(24);
-  expect(lay.aria).toBe('Partner Emberfox, Lv 5. HP 37 of 37, Food 78, joy 99, energy 85, grow 40 of 120.');
-  expect(parseFloat(lay.growW)).toBeCloseTo(100 * 40 / 120, 2);
+  expect(lay.aria).toBe('Partner Emberfox, Lv 5. HP 37 of 37, Food 78, joy 99, energy 85, grow 5 of 24.');
+  expect(parseFloat(lay.growW)).toBeCloseTo(100 * 64 / 2116, 2);
   expect(parseFloat(lay.foodW)).toBeCloseTo(78, 2);
   expect(lay.iconsBlink).toBe(false);
   lay.bars.forEach(b => expect(b.low).toBe(false));
@@ -192,9 +192,9 @@ test('PARTNER strip icons and body icons, and 320 fits without scrolling', async
   expect(info.play).toBe('ico_joy');
   expect(info.rest).toBe('ico_nrg');
   expect(info.heal).toBe('ico_hp');
-  expect(info.xp).toBe('40');
-  expect(parseFloat(info.bar)).toBeCloseTo(33.33, 1);
-  expect(info.hint).toContain('GROW 40/120');
+  expect(info.xp).toBe('5/24');
+  expect(parseFloat(info.bar)).toBeCloseTo(100 * 64 / 2116, 2);
+  expect(info.hint).toBe('Next form at Lv 24. Now Lv 5.');
   expect(info.gear).toBe('GEAR');
   expect(info.gearAria).toBe('Gear for Emberfox');
   expect(info.scroll).toBeLessThanOrEqual(1);

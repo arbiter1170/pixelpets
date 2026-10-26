@@ -151,6 +151,11 @@ const PPSave = (() => {
     // TYPES_STATS §5: battle XP. Missing/invalid -> the old display level (1 + floor(xp/10)) kept within Lv 5..10.
     if (!(Number.isInteger(q.bx) && q.bx >= 0)) q.bx = STAT_RULES.bxForLevel(migratedLevel(q.xp));
     else if (q.bx > BX_CAP) q.bx = BX_CAP;
+    // D760: battle XP held at the Seal cap. Absent means 0. A bad value is dropped. No migrator.
+    if (has(q, 'bxHeld')) {
+      if (!(fin(q.bxHeld) && q.bxHeld >= 0)) delete q.bxHeld;
+      else q.bxHeld = Math.floor(q.bxHeld);
+    }
     // TYPES_STATS §7: current HP, optional (absent = full). Bad values or full HP -> absent.
     if (has(q, 'hpNow') && (!fin(q.hpNow) || q.hpNow < 0 || q.hpNow >= maxHpOf(q))) delete q.hpNow;
     // D190: optional chip and align. Absent means unchipped. No version bump.
