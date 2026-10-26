@@ -1589,6 +1589,11 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
 }
 window.addEventListener('resize', () => { fitAll(); if (tut.on || unlock.on) tutPlace(); });
 window.addEventListener('orientationchange', () => invalidateCueZone());
+// A yield slide moves the column and the chip. The cue zone caches button rects, so refresh it when the slide settles.
+const yieldSettle = e => { if (e.target === e.currentTarget && (e.propertyName === 'top' || e.propertyName === 'transform')) invalidateCueZone(); };
+const yieldChip = $('#thChip'), yieldCol = $('#fcTL');
+if (yieldChip) yieldChip.addEventListener('transitionend', yieldSettle);
+if (yieldCol) yieldCol.addEventListener('transitionend', yieldSettle);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitAll());   // re-measure once the pixel font has loaded (text heights change)
 
 const BAR_LABEL = { barHunger: 'Food', barHappy: 'Joy', barEnergy: 'Energy', wBarEnergy: 'Energy', stripFood: 'Food', stripJoy: 'Joy', stripNrg: 'Energy', barXp: 'Growth' };
@@ -1950,16 +1955,25 @@ function tutClearChip(left, top, cw, ch){
   const chip = $('#thChip');
   if (!chip || !chip.offsetParent) return { left, top };
   const r = chip.getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;
-  const hit = (x, y) => y < r.bottom && y + ch > r.top && x < r.right && x + cw > r.left;
-  if (!hit(left, top)) return { left, top };
-  const below = r.bottom + 6;
-  if (below + ch <= vh - 6) return { left: Math.max(6, Math.min(left, vw - cw - 6)), top: below };
-  const above = r.top - 6 - ch;
-  if (above >= 6) return { left: Math.max(6, Math.min(left, vw - cw - 6)), top: above };
-  const right = r.right + 6;
-  if (right + cw <= vw - 6) return { left: right, top: Math.max(6, Math.min(top, vh - ch - 6)) };
-  const side = r.left - 6 - cw;
-  if (side >= 6) return { left: side, top: Math.max(6, Math.min(top, vh - ch - 6)) };
+  const hitRect = (x, y, rect, pad) => y < rect.bottom + pad && y + ch > rect.top - pad && x < rect.right + pad && x + cw > rect.left - pad;
+  if (!hitRect(left, top, r, 0)) return { left, top };
+  // Keep a clearance the card already has. A nudge below the chip must not cover the lesson target or the partner panel.
+  const guards = [];
+  const keep = (rect, pad) => { if (rect && rect.width > 2 && rect.height > 2 && !hitRect(left, top, rect, pad)) guards.push({ rect, pad }); };
+  const hole = tut.on && tut.holes && tut.holes.length ? tut.holes[tut.hi % tut.holes.length] : (unlock.on && unlock.holes && unlock.holes.length ? unlock.holes[0] : null);
+  if (hole) keep({ left: hole.x, top: hole.y, right: hole.x + hole.w, bottom: hole.y + hole.h, width: hole.w, height: hole.h }, 4);
+  ['.bt-me', '#btMsg', '#btFoeType', '#btMeType', '#talkBtn'].forEach(sel => {
+    const el = $(sel); if (!el || el.hidden) return; keep(el.getBoundingClientRect(), sel === '.bt-me' ? 4 : 0);
+  });
+  const blocked = (x, y) => hitRect(x, y, r, 0) || guards.some(g => hitRect(x, y, g.rect, g.pad));
+  const fits = (x, y) => x >= 6 && y >= 6 && x + cw <= vw - 6 && y + ch <= vh - 6;
+  const candidates = [
+    { left: Math.max(6, Math.min(left, vw - cw - 6)), top: r.bottom + 6 },
+    { left: Math.max(6, Math.min(left, vw - cw - 6)), top: r.top - 6 - ch },
+    { left: r.right + 6, top: Math.max(6, Math.min(top, vh - ch - 6)) },
+    { left: r.left - 6 - cw, top: Math.max(6, Math.min(top, vh - ch - 6)) },
+  ];
+  for (const c of candidates) if (fits(c.left, c.top) && !blocked(c.left, c.top)) return c;
   return { left, top };
 }
 function tutClearTalk(left, top, cw, ch){
@@ -4950,12 +4964,24 @@ function slideClear(home, zones, margin){
   return Math.max(home.y, y);
 }
 // Place chip and the left column yield to on-screen edge exits. Off in arcade and while the frame class is on.
-function syncPlaceYield(){
+function syncPlaceYield(snap){
   const chip = $('#thChip'), col = $('#fcTL');
+  // A new map snaps. A 120 ms slide that is still running would leave the cue zone's cached buttons over the exit.
+  const writeYield = (el, prop, val) => {
+    if (!el || el.style[prop] === val) return;
+    if (snap) {
+      const prev = el.style.transition;
+      el.style.transition = 'none';
+      el.style[prop] = val;
+      void el.offsetHeight;
+      el.style.transition = prev;
+    } else el.style[prop] = val;
+    invalidateCueZone();
+  };
   const live = ctlMode() === 'modern' && !hudPadsLive() && screen === 'walk';
   if (!live) {
-    if (chip) chip.style.transform = '';
-    if (col) col.style.top = '';
+    writeYield(chip, 'transform', '');
+    writeYield(col, 'top', '');
     return;
   }
   try { syncWalkCam(); } catch (e) {}
@@ -4971,7 +4997,7 @@ function syncPlaceYield(){
     };
     const y = slideClear(home, zones, 6);
     const dy = Math.ceil(y - home.y - 1e-6);
-    chip.style.transform = dy > 0 ? 'translateY(' + dy + 'px)' : '';
+    writeYield(chip, 'transform', dy > 0 ? 'translateY(' + dy + 'px)' : '');
   }
   if (col && col.offsetParent) {
     const prev = col.style.top, tr = col.style.transition;
@@ -4986,7 +5012,7 @@ function syncPlaceYield(){
     const home = { x: hr.left, y: hr.top, w: hr.width, h: hr.height };
     const y = slideClear(home, ups, 0);
     const topPx = Math.floor(y - origin + 1e-6), homePx = Math.round(hr.top - origin);
-    col.style.top = topPx > homePx + 0.5 ? topPx + 'px' : '';
+    writeYield(col, 'top', topPx > homePx + 0.5 ? topPx + 'px' : '');
   }
   if ((tut.on || unlock.on) && !syncPlaceYield.busy) {
     syncPlaceYield.busy = true;
@@ -5946,7 +5972,7 @@ function arriveAt(at){
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
   placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
-  try { syncPlaceYield(); } catch (e) {}
+  try { syncPlaceYield(true); } catch (e) {}
 }
 function enterDoor(dr){
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
