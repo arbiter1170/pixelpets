@@ -18,6 +18,21 @@ async function boot(page, extra, flags) {
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true && window.PixelPets.state && window.PixelPets.state.v === 2);
 }
 
+// Seeds only when the browser has no save, so a reload boots from what the game wrote.
+async function seedOnce(context, save) {
+  await context.addInitScript((save) => {
+    if (localStorage.getItem('pixelpets.save.v2')) return;
+    const d = new Date();
+    const day = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    save.flags['daily.hello'] = day;
+    save.flags['daily.warm_bowl'] = day;
+    save.last = Date.now();
+    localStorage.setItem('pixelpets.save.v2', JSON.stringify(save));
+    localStorage.setItem('pixelpets.geo', 'deny');
+    localStorage.setItem('pixelpets.mute', '1');
+  }, save);
+}
+
 test('Lv 11 cannot grow and Lv 12 with care can @w1', async ({ page }) => {
   await boot(page, { bx: 400, xp: 0, hunger: 80, happy: 80, energy: 90 });
   await page.evaluate(() => PixelPets.showTab('pet'));
@@ -40,7 +55,7 @@ test('the final form stays shut at one Seal and opens at two @w1', async ({ page
   await expect(page.locator('#evolveBtn')).toBeVisible();
   await expect(page.locator('#evoHint')).toHaveText('Next form: Lv 24 and 2 Seals.');
   await page.locator('#evolveBtn').click();
-  await expect(page.locator('#toast')).toHaveText('Pipkit is ready. A Seal opens it!');
+  await expect(page.locator('#toast')).toHaveText('Emberfox is ready. A Seal opens it!');
   expect(await page.evaluate(() => PixelPets.state.party[0].stage)).toBe(1);
   await page.evaluate(() => PixelPets.setFlag('story.seal2', true));
   await expect(page.locator('#evoHint')).toHaveText('Pipkit is ready to grow up!');
@@ -48,7 +63,9 @@ test('the final form stays shut at one Seal and opens at two @w1', async ({ page
 });
 
 test('the Lv 15 cap holds battle XP and a Seal pays it out @w1', async ({ page }) => {
-  await boot(page, { bx: 782, xp: 0, hunger: 50, happy: 50, energy: 50 });
+  await seedOnce(page.context(), petSave({ bx: 782, xp: 0, hunger: 50, happy: 50, energy: 50 }));
+  await gotoGame(page, '?debug=1');
+  await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true && window.PixelPets.state && window.PixelPets.state.v === 2);
   await page.evaluate(() => PixelPets.showTab('pet'));
   await page.evaluate(() => PixelPets.careAct('feed'));
   const after = await page.evaluate(() => {
