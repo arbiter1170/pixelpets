@@ -1640,7 +1640,7 @@ function updateHUD(){
   if (kitBtn) kitBtn.setAttribute('aria-label', 'Gear for ' + petName(p));
   const pair = formLevelPair(p);
   const xpPct = p.stage < 2 && formGate(p) ? formLevelPct(p) : 100;
-  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = pair.text;
+  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = String(pair.now);   // D795: the level only, 18 px; the bar and aria keep the pair
   $('#wSteps').textContent = S.steps;   // STAT_DISPLAY: the WALK slot of the shared strip
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
   const setCount = (el, v, cap) => { if (!el) return; const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
