@@ -250,8 +250,10 @@ test('a worn-out party can skip the tour match, and a loss resumes at stop 4 @w1
       battle: !!(PixelPets.battle && PixelPets.battle.on),
       panel: PixelPets.battle && PixelPets.battle.panel,
       scene: !!PixelPets.scene,
+      guide: !!(PixelPets.scene && PixelPets.scene.id === 'lantern_guide'),
     }));
-    if (!st.battle && !st.scene) break;
+    // On a slow run the warp can finish between polls, so the healing guide may already be up. Leave it for the check below.
+    if (!st.battle && (!st.scene || st.guide)) break;
     if (st.battle && st.panel === 'end') await page.locator('#btOk').click();
     else if (st.battle) await page.locator('#btMsg').click();
     else {
@@ -266,7 +268,8 @@ test('a worn-out party can skip the tour match, and a loss resumes at stop 4 @w1
   }
   await page.waitForFunction(() => PixelPets.mapInfo.id === 'fb_lantern_in' && !PixelPets.fading, null, { timeout: 15000 });
   // The wipe warp plays the first-visit healing guide once fade ends. Close it so stop 4 can resume.
-  await page.waitForFunction(() => !!window.PixelPets.scene, null, { timeout: 5000 });
+  await page.waitForFunction(() => window.PixelPets.scene && window.PixelPets.scene.id === 'lantern_guide', null, { timeout: 5000 });
+  await expect(page.locator('#ovScene')).toBeVisible();
   await playScene(page, ['Got it']);
   const lost = await page.evaluate(() => ({
     map: PixelPets.mapInfo.id,
