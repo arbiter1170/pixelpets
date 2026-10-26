@@ -6,7 +6,7 @@ const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = requir
 
 trackErrors(test, expect);
 
-const C4E = 'Need NRG? REST fills it for 10 FOOD. So do an Energy Sip and a Lantern House bed.';
+const C4E = 'Need NRG? REST fills it for 10 FOOD. So do an Energy Sip and a Lantern House bed. Battles start at 10 NRG.';
 const T3 = 'NRG is energy. PLAY uses some, and REST brings it back. Walking is free. Each battle uses a little NRG.';
 
 function saveAt(extra) {
@@ -451,6 +451,7 @@ test('T-O10 Rook teaches HP, types, NRG and SWAP, then the hit card', async ({ p
   await page.waitForFunction(() => PixelPets.lesson().card === 'M6');
   await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'F2');
+  await expect(page.locator('#tutRing')).toBeHidden();
   await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'F3');
   await clickCard(page, 'GOT IT');
@@ -573,4 +574,34 @@ test('T-O14 SKIP ends befriending only, and Settings arms it again', async ({ pa
   await expect(page.locator('#toast')).toContainText('Befriending in your next wild battle.');
   expect((await lesson(page)).bef).toBe('armed');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')).v)).toBe(2);
+});
+
+test('T-O15 under 10 NRG, the toast gives the floor', async ({ page }) => {
+  await boot(page, saveAt());
+  const ready = await page.evaluate(() => {
+    const min = STAT_RULES.MOOD.minBattleNrg;
+    PixelPets.state.party.forEach(p => {
+      p.energy = min - 1;
+      delete p.hpNow;
+      delete p.faintUntil;
+    });
+    PixelPets.clearWild();
+    const x = PixelPets.state.world.x;
+    const y = PixelPets.state.world.y + 1;
+    const w = PixelPets.spawnWild(0, 0, x, y);
+    return {
+      min,
+      n: PixelPets.state.party.length,
+      under: PixelPets.state.party.every(p => p.energy < min && (p.hpNow == null || p.hpNow > 0) && !(p.faintUntil && p.faintUntil > Date.now())),
+      spawned: !!(w && w.x === x && w.y === y),
+    };
+  });
+  expect(ready.n).toBeGreaterThan(0);
+  expect(ready.min).toBe(10);
+  expect(ready.under).toBe(true);
+  expect(ready.spawned).toBe(true);
+  const step = await page.evaluate(() => PixelPets.walkStep('down'));
+  expect(step.battle).toBe(false);
+  await expect(page.locator('#toast')).toHaveText('Battles start at 10 NRG. REST first!');
+  expect(await page.evaluate(() => !!(PixelPets.battle && PixelPets.battle.on))).toBe(false);
 });

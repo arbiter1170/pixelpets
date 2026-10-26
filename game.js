@@ -1999,7 +1999,7 @@ const TCM = {
   C3x: 'PLAY fills JOY. It needs a little NRG, so it waits while {pet} is tired.',
   C4: 'Tap REST so {pet} can sleep. A nap brings NRG back and helps after a battle.',
   C4x: 'REST is a nap that brings NRG back. {pet} isn\'t sleepy yet, so save it for later.',
-  C4e: 'Need NRG? REST fills it for 10 FOOD. So do an Energy Sip and a Lantern House bed.',
+  C4e: 'Need NRG? REST fills it for 10 FOOD. So do an Energy Sip and a Lantern House bed. Battles start at 10 NRG.',
   C5: 'HEAL uses a snack from your BAG when {pet} is hurt. Warden Ilse gave you some.',
   C6: 'STATS shows {pet}\'s numbers. CLOSE puts the tray away. Tap {pet} to bring it back.',
   C7: 'That\'s care on the go! When a balloon pops up over {pet}, tap {pet} and help out.',
@@ -2334,7 +2334,7 @@ function movesHoles(id){
   if (id === 'M5') return [tutBox($('#btMood')), tutBox($('#btFoeStages'))].filter(Boolean);
   if (id === 'M6') return one('#btMood');
   if (id === 'F1') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement), tutBox($('#btMeHp') && $('#btMeHp').parentElement)].filter(Boolean);
-  if (id === 'F2') return one('#btMood');
+  if (id === 'F2') return [];
   if (id === 'F3') return one('[data-bact="swap"]');
   if (id === 'W1') return one('#btBefriendAct');
   if (id === 'W2' || id === 'W3') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement)].filter(Boolean);
@@ -9345,7 +9345,7 @@ function leadPet(){
 }
 function noBattleToast(){
   sfx('denied');
-  toast(S.party.some(canStepIn) ? 'Your team is too sleepy. REST first!' : 'Your team needs a rest first!');
+  toast(S.party.some(canStepIn) ? 'Battles start at 10 NRG. REST first!' : 'Your team needs a rest first!');
 }
 function startEncounterIntro(sp, stage, wid, lv){
   clearMoves();
