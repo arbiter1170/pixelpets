@@ -108,7 +108,12 @@ if (slowLane) {
   if (!hasProject) pwArgs.push('--project=390');
   if (!hasGrep) pwArgs.push('--grep', '@slow');
 }
-const pw = spawnSync('npx', ['playwright', 'test', '--reporter=line,json', ...pwArgs], {
+// Windows: npx is npx.cmd, which spawn cannot start without a shell, and a shell would re-parse pwArgs
+// (spaces, &, |). Run Playwright's own CLI file with this node instead. Elsewhere npx is unchanged.
+const pwRun = process.platform === 'win32'
+  ? { cmd: process.execPath, args: [require.resolve('@playwright/test/cli'), 'test'] }
+  : { cmd: 'npx', args: ['playwright', 'test'] };
+const pw = spawnSync(pwRun.cmd, [...pwRun.args, '--reporter=line,json', ...pwArgs], {
   stdio: ['ignore', log, log],
   env: { ...runEnv, PP_SLOW: slowLane ? '1' : (process.env.PP_SLOW || ''), PLAYWRIGHT_JSON_OUTPUT_NAME: jsonPath, FORCE_COLOR: '0' },
 });
