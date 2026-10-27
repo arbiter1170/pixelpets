@@ -1129,7 +1129,9 @@ const ctlPick = () => (S && S.settings && S.settings.controls === 'arcade') ? 'a
 const LAND_FORCE = (() => { try { const v = new URLSearchParams(location.search).get('land'); return v === '1' ? true : v === '0' ? false : null; } catch (e) { return null; } })();
 function landWanted(){
   if (LAND_FORCE != null) return LAND_FORCE;
-  try { return window.innerWidth > window.innerHeight && window.innerHeight <= 500 && window.matchMedia('(any-pointer: coarse)').matches; } catch (e) { return false; }
+  // Review: at least 560 wide, so an upright phone whose window gets short (keyboard, split screen) never gets grips and a
+  // sliver of a column; 568 x 320 (the smallest sideways phone) still qualifies.
+  try { return window.innerWidth > window.innerHeight && window.innerHeight <= 500 && window.innerWidth >= 560 && window.matchMedia('(any-pointer: coarse)').matches; } catch (e) { return false; }
 }
 let landOn = landWanted();
 const landArcade = () => landOn && ctlPick() === 'arcade';

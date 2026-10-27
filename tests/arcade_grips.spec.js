@@ -103,3 +103,11 @@ test('upright arcade: the 44 px pad gives the map its height back', async ({ pag
   const r = await page.evaluate(() => { const b = document.querySelector('#mapCanvas').getBoundingClientRect(), d = document.querySelector('#dpad').getBoundingClientRect(); return { mw: [Math.round(b.width), Math.round(b.height)], pad: [Math.round(d.width), Math.round(d.height)], arcade: document.body.classList.contains('ctl-arcade') }; });
   expect(r).toEqual({ mw: [354, 450], pad: [136, 136], arcade: true });   // was 354x426 with a 160 pad
 });
+
+test('an upright phone with a short window (keyboard up) gets no grips', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 300 });
+  await installSave(page.context(), starterSave(), { quietDay: true });
+  await gotoGame(page);
+  expect(await page.evaluate(() => PixelPets.layout)).toEqual({ mode: 'arcade', land: false, grips: false });
+  await expect(page.locator('#gripL')).toBeHidden();
+});

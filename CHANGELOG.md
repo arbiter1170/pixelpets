@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 12:40 ET: Review fixes for the arcade grips (build 20261027-1240)
+
+- What changed and why: Three small fixes from the pre-merge review of PR #203. During a scene the sideways pad and TALK rest at 35% like the upright pad fades, instead of staying lit. The sideways test also needs the window to be at least 560 wide, so an upright phone whose window gets short (keyboard up, split screen) never gets grips and a sliver of a column; 568 x 320 still counts as sideways. Pressing the upright TALK hub while nobody is in reach no longer flashes it blue.
+- Files touched: `game.js` (`landWanted`), `style.css`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/arcade_grips.spec.js`, `CHANGELOG.md`.
+- Commit(s) + build id: third commit on `claude/arcade-controller-land` (PR #203). Build `20261027-1240`.
+- Tests run and result (widths, checks): `arcade_grips` (now 8 tests, with a 360x300 short-window case), `smoke`, `save_copy` and `map_zoom` at 320, 375 and 390, one worker → 56 passed, 16 skipped, 2 failed: `map_zoom` "Hearthmoor north exit row clear of the dock HUD" at 320 and 375, which fails the same way on `main`. Scans: wording and test_mistakes pass. No page errors in the browser check.
+- Decisions made (colour + reasoning): green; the 560 floor keeps D686's intent (a phone on its side) and the smallest supported sideways size.
+- Anything left unfinished: none from the review.
+
 ## 2026-10-27 11:48 ET: Smaller arcade controls, bigger game window (build 20261027-1148)
 
 - What changed and why: Vincent (Oct 27, 2026): "controls are too big, screen/playspace is too small." Arcade controls now use the 44 px tap minimum and the game window takes the space (D836). Upright: pad cells are 44 px (the pad is 136, was 160) and the controller rim is thinner, so the map is 24 px taller (354x450 at 390, 339x273 at 375, 284x174 at 320). Sideways: the grips are 148 px (were 176) and TALK is 64 px (was 76). D685's 480 cap is lifted for arcade sideways, so the window is the screen less the two grips (548 at 844x390, 371 at 667x375, 272 at 568x320). The sideways arcade map stays 2x, so the wider window shows more world (17 x 12 tiles at 844x390) instead of jumping to 3x. Modern is unchanged.
