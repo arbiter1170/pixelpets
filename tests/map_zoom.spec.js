@@ -252,9 +252,10 @@ const ARCADE_MAIN = {
   375: { rect: [18, 162, 339, 249], spawn: { off: [18, 162], cam: [0, 0] }, route1: { off: [18, 118], cam: [0, 44] }, hearth_n: { off: [18, 150], cam: [0, 12] } },
   390: { rect: [18, 162, 354, 426], spawn: { off: [18, 162], cam: [0, 0] }, route1: { off: [-78, 38], cam: [48, 62] }, hearth_n: { off: [-110, 102], cam: [64, 30] } },
 };
-test('arcade default (no controls setting, no frame class): canvas rect, map offset and camera are main\'s', async ({ page }) => {
+// D833 made modern the default, so this pins a save that picked arcade (a save with no choice now loads as modern).
+test('arcade pick (no frame class): canvas rect, map offset and camera are main\'s', async ({ page }) => {
   const sv = save();
-  delete sv.settings.controls;
+  sv.settings.controls = 'arcade';
   await boot(page, sv);
   const want = ARCADE_MAIN[page.viewportSize().width];
   for (const [key, id, x, y] of [['spawn', 'hearthmoor', null, null], ['route1', 'route1', 8, 10], ['hearth_n', 'hearthmoor', 9, 8]]) {

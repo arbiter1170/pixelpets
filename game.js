@@ -1120,11 +1120,37 @@ function setFast(on, quiet){
    keeps one handler, and arcade comes back by moving them home. No node is created or destroyed on a switch. */
 const CTL_MOVES = [['#repBtn', '#fcTL'], ['#questBtn', '#fcTL'], ['#walkBagBtn', '#fcTL'], ['#mapBtn', '#fcTL'], ['#phoneBtn', '#fcTR'], ['#thChip', '#fcTR'], ['#walkTip', '#fcTip']];
 const ctlHome = {};
-const ctlMode = () => (S && S.settings && S.settings.controls === 'modern') ? 'modern' : 'arcade';
-const joyOn = () => ctlMode() === 'modern' && !!(S && S.settings.joystick);
+/* ARCADE_GRIPS (Vincent, Oct 27, 2026): modern is the default, and arcade held sideways keeps the pad but takes modern's layout.
+   ctlPick() is the player's saved choice (what the pad, the tips and Settings say). ctlMode() is the layout on screen: modern
+   when the choice is modern, or when the choice is arcade on a sideways phone. Sideways arcade moves the pad to a left grip and
+   TALK to a right grip outside the game window (#gripL, #gripR), like a controller. A missing choice reads as modern (save.js). */
+const ctlPick = () => (S && S.settings && S.settings.controls === 'arcade') ? 'arcade' : 'modern';
+// Sideways, as LANDSCAPE D686 defines it: wider than tall, 500 px tall or less, a touch screen. ?land=1 and ?land=0 force it for tests.
+const LAND_FORCE = (() => { try { const v = new URLSearchParams(location.search).get('land'); return v === '1' ? true : v === '0' ? false : null; } catch (e) { return null; } })();
+function landWanted(){
+  if (LAND_FORCE != null) return LAND_FORCE;
+  try { return window.innerWidth > window.innerHeight && window.innerHeight <= 500 && window.matchMedia('(any-pointer: coarse)').matches; } catch (e) { return false; }
+}
+let landOn = landWanted();
+const landArcade = () => landOn && ctlPick() === 'arcade';
+const ctlMode = () => (ctlPick() === 'modern' || landArcade()) ? 'modern' : 'arcade';
+const joyOn = () => ctlPick() === 'modern' && !!(S && S.settings.joystick);
+const LAND_MOVES = [['#dpad', '#gripPad'], ['#talkBtn', '#gripTalk']];
+// A turn re-lays the screen once the size settles (LANDSCAPE D690): held input is let go and nothing is saved.
+function syncLand(){
+  const want = landWanted(); if (want === landOn) return false;
+  const wasGrips = landArcade();
+  landOn = want;
+  if (wasGrips !== landArcade()) { clearMoves(); joyRelease(); applyControls(); }
+  return true;
+}
 function applyControls(){
-  const m = ctlMode() === 'modern';
-  CTL_MOVES.forEach(([sel]) => { const n = $(sel); if (n && !ctlHome[sel]) ctlHome[sel] = { p: n.parentNode, next: n.nextSibling }; });
+  const m = ctlMode() === 'modern', grips = landArcade();
+  CTL_MOVES.concat(LAND_MOVES).forEach(([sel]) => { const n = $(sel); if (n && !ctlHome[sel]) ctlHome[sel] = { p: n.parentNode, next: n.nextSibling }; });
+  if (grips) LAND_MOVES.forEach(([sel, dst]) => { const n = $(sel), d = $(dst); if (n && d && n.parentNode !== d) d.appendChild(n); });
+  else LAND_MOVES.slice().reverse().forEach(([sel]) => { const n = $(sel), h = ctlHome[sel]; if (n && h && n.parentNode !== h.p) h.p.insertBefore(n, h.next && h.next.parentNode === h.p ? h.next : null); });
+  document.body.classList.toggle('land-arcade', grips);
+  const gl = $('#gripL'), gr = $('#gripR'); if (gl) gl.hidden = !grips; if (gr) gr.hidden = !grips;
   if (m) CTL_MOVES.forEach(([sel, dst]) => { const n = $(sel), d = $(dst); if (n && d && n.parentNode !== d) d.appendChild(n); });
   else CTL_MOVES.slice().reverse().forEach(([sel]) => { const n = $(sel), h = ctlHome[sel]; if (n && h && n.parentNode !== h.p) h.p.insertBefore(n, h.next && h.next.parentNode === h.p ? h.next : null); });
   const qb = $('#questBtn'); if (qb) { qb.classList.toggle('dpc', m); qb.classList.toggle('fbtn', m); }
@@ -1138,7 +1164,7 @@ function applyControls(){
   try { syncNavArt(true); } catch (e) {}
 }
 function renderControlsRows(){
-  const m = ctlMode() === 'modern', b = $('#setControls'); if (!b) return;
+  const m = ctlPick() === 'modern', b = $('#setControls'); if (!b) return;
   $('#setControlsVal').textContent = m ? 'MODERN' : 'ARCADE';
   const j = $('#setJoystick'); j.hidden = !m; j.setAttribute('aria-pressed', String(joyOn())); $('#setJoystickVal').textContent = joyOn() ? 'ON' : 'OFF';
   renderMapZoomRow();
@@ -1165,7 +1191,7 @@ function setMapZoom(z, persist){
 /* Design's approved green copy (Oct 15). Toasts for the Settings rows. */
 const CTL_TOASTS = { arcade: 'Arcade controls. Pad and Talk button.', modern: 'Modern controls. Tap to walk or talk.', joyOn: 'Joystick on.', joyOff: 'Joystick off.' };
 function setControls(mode, quiet){
-  if (!S || (mode !== 'arcade' && mode !== 'modern')) return ctlMode();
+  if (!S || (mode !== 'arcade' && mode !== 'modern')) return ctlPick();
   S.settings.controls = mode; clearMoves(); save(); applyControls();
   if (!quiet) { sfx('tap'); toast(CTL_TOASTS[mode]); }
   return mode;
@@ -1515,6 +1541,7 @@ let hudPads = { top: 56, left: 56, right: 96, bottom: 112, col: 206, on: false, 
 const MHC_FRAME_CLASS = 'mhc-frame';
 let mhcFrameForce = null;   // ?debug=1: PixelPets.setHudPads forces the P1 frame class on or off
 function portraitWalkModern(){
+  if (landArcade()) return false;   // ARCADE_GRIPS: the sideways pad layout is the overlay modern layout, never the portrait dock
   try { return ctlMode() === 'modern' && screen === 'walk' && window.matchMedia('(orientation: portrait)').matches; }
   catch (e) { return ctlMode() === 'modern' && screen === 'walk'; }
 }
@@ -1745,7 +1772,7 @@ function refreshHudPads(){
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
 function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} try { placeMhcToast(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
-  const appW = Math.min(window.innerWidth, 480) - 36;
+  const appW = Math.min(($('#app') && $('#app').getBoundingClientRect().width) || window.innerWidth, 480) - 36;
   fitPetScene();
   fitCanvas($('#evoCanvas'), appW - 28, window.innerHeight * 0.4);
   const mw = $('#mapWrap');
@@ -1789,7 +1816,8 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { app
   }
   refitSceneBox();
 }
-window.addEventListener('resize', () => { fitAll(); if (tut.on || unlock.on) tutPlace(); });
+window.addEventListener('resize', () => { syncLand(); fitAll(); if (tut.on || unlock.on) tutPlace(); });
+window.addEventListener('orientationchange', () => setTimeout(() => { if (syncLand()) { fitAll(); if (tut.on || unlock.on) tutPlace(); } }, 250));
 window.addEventListener('orientationchange', () => invalidateCueZone());
 // A yield slide moves the column and the chip. The cue zone caches button rects, so refresh it when the slide settles.
 const yieldSettle = e => { if (e.target === e.currentTarget && (e.propertyName === 'top' || e.propertyName === 'transform')) invalidateCueZone(); };
@@ -1987,7 +2015,7 @@ function heartGlowShipped(){
 }
 function tutResolve(id){
   if (id === 'T8') return heartGlowShipped() ? 'T8' : 'T8b';
-  if (id === 'T10') return joyOn() ? 'T10j' : (ctlMode() === 'modern' ? 'T10m' : 'T10a');
+  if (id === 'T10') return joyOn() ? 'T10j' : (ctlPick() === 'modern' ? 'T10m' : 'T10a');   // sideways arcade still has the pad
   if (id === 'T1' && screen === 'pet') return 'T2';
   return id;
 }
@@ -8654,10 +8682,11 @@ async function execStep(st){
     case 'controlPick': {
       sc.skip = false;
       /* D70 copy (approved by Vincent, Oct 15 2026). */
-      const pick = await choiceBox('How do you like to walk?', [['ARCADE', 'A pad and a Talk button.'], ['MODERN', 'Tap the map to walk. Tap people to talk.']]);
+      // ARCADE_GRIPS: modern is the default, so it is offered first.
+      const pick = await choiceBox('How do you like to walk?', [['MODERN', 'Tap the map to walk. Tap people to talk.'], ['ARCADE', 'A pad and a Talk button.']]);
       if (!scene) return;
-      $('#sbEcho').textContent = '\u203a ' + (pick === 1 ? 'MODERN' : 'ARCADE');
-      S.settings.controls = pick === 1 ? 'modern' : 'arcade'; applyControls();
+      $('#sbEcho').textContent = '\u203a ' + (pick === 1 ? 'ARCADE' : 'MODERN');
+      S.settings.controls = pick === 1 ? 'arcade' : 'modern'; applyControls();
       sc.skip = false;
       await execStep(['say', '', 'You can change this any time under the gear.']);   /* D70 */
       return;
@@ -13114,14 +13143,14 @@ const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap peop
 const WALK_TIP_MODERN = 'Tap the ground to walk. Tap someone to talk.';
 const WALK_EARLY_ARCADE = 'Hold the pad to walk. The east path leads out of town.';
 const WALK_EARLY_MODERN = 'Tap a spot on the path and you\'ll walk there.';   /* D70 */
-const walkTipDefault = () => ctlMode() === 'modern' ? WALK_TIP_MODERN : WALK_TIP_DEFAULT;
+const walkTipDefault = () => ctlPick() === 'modern' ? WALK_TIP_MODERN : WALK_TIP_DEFAULT;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkHintPlain(){
   if (!S || !CUR || !S.flags['story.starter_received']) return '';
   if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the Keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   const n = +S.flags['story.early_steps'] || 0;
-  if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return ctlMode() === 'modern' ? WALK_EARLY_MODERN : WALK_EARLY_ARCADE;
+  if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return ctlPick() === 'modern' ? WALK_EARLY_MODERN : WALK_EARLY_ARCADE;
   const q = questCurrent();
   if ((!q || q.id === 'first_wild') && !S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
   return '';
@@ -16583,7 +16612,7 @@ function bindInput(){
   };
   $('#settingsBtn').addEventListener('click', gearTap);
   $('#gearFloat').addEventListener('click', gearTap);     // Q26: same handler as the header gear
-  $('#setControls').addEventListener('click', () => setControls(ctlMode() === 'modern' ? 'arcade' : 'modern'));
+  $('#setControls').addEventListener('click', () => setControls(ctlPick() === 'modern' ? 'arcade' : 'modern'));
   $('#setJoystick').addEventListener('click', () => setJoystick(!joyOn()));
   const zoomEl = $('#setZoomRange');
   if (zoomEl) {
@@ -17275,7 +17304,8 @@ function boot(){
     typeMult: (a, d) => typeMult(a, d), statsAt: (id, L) => { const s = statsAt(id, L); return s && { ...s }; },   // read-only, always public
     openStats: id => openStatsCard(id), closeStats: () => closeStatsCard(),          // UI only (the same as tapping STATS / CLOSE)
     get statsCard(){ return { open: !$('#ovStats').hidden, id: statsCard.id }; },
-    get controls(){ return { mode: ctlMode(), joystick: joyOn(), dpad: walk.dpad || null }; },   // Q26, read-only
+    get controls(){ return { mode: ctlPick(), joystick: joyOn(), dpad: walk.dpad || null }; },   // Q26, read-only (the saved choice)
+    get layout(){ return { mode: ctlMode(), land: landOn, grips: landArcade() }; },   // ARCADE_GRIPS, read-only
     get tutorial(){ return { on: !!tut.on, id: tut.id, replay: !!tut.replay }; },   // opening tour, read-only
     get petScene(){ const c = $('#petCanvas'); return { backdrop: backdropName(), sky: skyMode(), tags: envTags().slice(), w: c.width, h: c.height, cssW: parseFloat(c.style.width)||0, cssH: parseFloat(c.style.height)||0 }; },
     get keeper(){ return { x: S.world.x, y: S.world.y, fx: walk.fx, fy: walk.fy, facing: S.world.facing, frame: keeperFrame(), moving: !!walk.to,
@@ -17327,7 +17357,7 @@ function boot(){
       const m = mode === 'arcade' ? 'arcade' : 'modern';
       setControls(m, true);
       if (m === 'modern') setJoystick(!!joy, true);
-      return { mode: ctlMode(), joystick: joyOn() };
+      return { mode: ctlPick(), joystick: joyOn() };
     },
     battle,
     enc,
