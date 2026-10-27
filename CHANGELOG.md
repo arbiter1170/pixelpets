@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-26 22:32 ET: Hearthmoor Plaza, and quest edge cues walk on a tap (build 20261026-2232)
+
+- What changed and why: Vincent's playtest notes (Oct 26, 2026). A quick tap on a quest edge cue now walks like any map tap. Holding still on the cue for 450 ms opens QUEST (D796, replaces D466). A new outdoor map, Hearthmoor Plaza (`hm_plaza`, 26 x 20), joins Hearthmoor's west edge at rows 4-6, just left of the home. It is open from the first morning and has no wild rolls. It is a paved square with a round fountain and a Keeper statue on its island. It also has a market row, benches, cafe tables, flower beds, Keeper banners, lanterns and a pond. Three Keepers and four civilians stand there (D797). It is a joined map rather than a wider Hearthmoor, so no Hearthmoor coordinate, saved position or test tile moves. One leaf decal moves from (1,5) to (1,3), off the new gate path. The town map lists each three-tile gate once and names exits between maps of one region node by the map (HEARTHMOOR PLAZA; the Hushwater Cut now reads HUSHWATER RIM and HUSHWATER FALLS). Save stays `pixelpets.save.v2` with `v` 2 and gains no field. No migrator.
+- Files touched: `game.js`, `data/detail_zz_plaza.json` (new), `data/reputation.json`, `data/mapdata.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `tests/hearthmoor_plaza.spec.js` (new), `tests/cue_rail.spec.js`, `tests/map_edge_taps.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: two commits on `cursor/plaza-cue-hold-7ae7` from main `9df15fa`. Build `20261026-2232`.
+- Tests run and result (widths, checks): see the PR hand-back.
+- Decisions made (colour + reasoning): D796 green default (a hold time and no fill). D797 red: Vincent asked for the plaza, and his yes on the previews is needed before merge. Next free id is D798.
+- Anything left unfinished: Plaza names and lines are placeholders for Design. Rows 4-5 of the west gate sit under the modern BAG and MAP buttons when the camera is at the west edge; row 6 is in view.
+
 ## 2026-10-26 20:19 ET: Party row on the care screen, and GEAR opens the sheet (build 20261026-2019)
 
 - What changed and why: GEAR on the care screen opens the Walkling sheet for the shown Walkling. CLOSE returns to the care screen. The stats card drops GEAR, so INTERACT fills the row and CLOSE stays. With two or more Walklings in the party, slots sit in one row beside the WALK back arrow, in party order. A tap makes that Walkling the partner, the same way a tray slot does. A party of one shows the back arrow and no slots. A party of six stays on one row at 320, 375 and 390. The switcher is off during a care action, a pinned lesson, an open overlay, and while the nav lock is on. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. No migrator.

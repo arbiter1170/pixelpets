@@ -581,6 +581,41 @@
       "name": "Warden Teodor",
       "faction": "keepers",
       "base": 50
+    },
+    {
+      "name": "Keeper on Watch",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Lamplighter",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Keeper Cadet",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Fountain Sweeper",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Orchard Grower",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Basket Weaver",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Chalk Kid",
+      "faction": "none",
+      "base": 50
     }
   ],
   "tiers": [

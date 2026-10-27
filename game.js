@@ -11254,8 +11254,9 @@ function buildMapGroups(){
     floors.forEach(f => { mapLayers.byFloor[f] = group; });
   });
 }
-function outdoorLayout(m){
-  const g = m.grid, h = g.length, w = g[0].length;
+const ML_EXIT_SIDE = new Set(['hm_north_w', 'hm_north_e', 'hm_west_n', 'hm_west_s', 'hmp_east_n', 'hmp_east_s']);
+function outdoorLayout(m, id){
+  const g = m.grid, h = g.length, w = g[0].length, home = nodeOf(id);
   const at = (x, y) => (y >= 0 && x >= 0 && y < h && x < w) ? g[y][x] : '';
   const buildings = [], used = new Set();
   (m.objs || []).forEach(o => {
@@ -11298,13 +11299,15 @@ function outdoorLayout(m){
   const exits = [];
   (m.objs || []).forEach(o => {
     if (o.kind !== 'warp' || !WORLD[o.to]) return;
-    // D381: the trail mouth is three warps. The town map lists the middle tile once, like an in-map exit.
-    if (o.id === 'hm_north_w' || o.id === 'hm_north_e') return;
+    // D381, D797: a three-warp mouth (the north trail, the plaza gate) is listed once, at its middle tile.
+    if (ML_EXIT_SIDE.has(o.id)) return;
     const edge = o.x === 0 ? 'west' : o.x === w - 1 ? 'east' : o.y === 0 ? 'north' : o.y === h - 1 ? 'south' : 'mark';
     const node = nodeOf(o.to);
+    // Hearthmoor and its plaza share one region node, so an exit between them names the map, not the town.
+    const own = node && node === home && o.to !== node;
     exits.push({
       id: o.id, xy: [o.x, o.y], to: o.to, edge, node, coach: edge === 'mark',
-      label: node && REGION_MAP.nodes[node] ? REGION_MAP.nodes[node].label : WORLD[o.to].name.toUpperCase(),
+      label: !own && node && REGION_MAP.nodes[node] ? REGION_MAP.nodes[node].label : WORLD[o.to].name.toUpperCase(),
       when: o.when || null, need: o.need || null,
     });
   });
@@ -11317,7 +11320,7 @@ function ensureMapLayers(){
   Object.keys(WORLD).forEach(id => {
     const m = WORLD[id]; if (!m || !m.grid) return;
     const room = m.kind === 'interior';
-    const e = room ? interiorLayout(m) : outdoorLayout(m);
+    const e = room ? interiorLayout(m) : outdoorLayout(m, id);
     e.id = id; e.name = m.name; e.level = room ? 'room' : 'town'; e.dream = !!m.dream; e.outdoor = m.outdoor || null;
     e.grid = m.grid;
     if (room) {
