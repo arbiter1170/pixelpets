@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 08:30 ET: The Signals design draft (docs only, no build)
+
+- What changed and why: Vincent asked for five Dark/Shadow Walklings with an electronic side, made by Glimmerwell and tied to the Arbiter, met as boss encounters off the main quest. They do not grow up. They gain attunement tiers with small art changes and new powers. This entry adds the design packet in `handoff/walklings/`: the spec, paste-ready data with art for all 15 tiers in `PAL` keys, stats on the 192/256/320 rule, learnsets, 10 new moves, five passive Signals, marked placeholder lines, and two preview PNGs. Decision rows D194–D204 are open, and the next free id is D205. No game file changes. Save `v` stays 2.
+- Files touched: `handoff/walklings/ARBITER_UNITS.md`, `handoff/walklings/arbiter_units.json`, `handoff/walklings/preview_journal.png`, `handoff/walklings/preview_map.png`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`.
+- Commit(s) + build id: docs only, no `bump_build.py` stamp.
+- Tests run and result (widths, checks): the packet's own checks passed (line lengths with token widths, names at most 9 characters, stage totals 192/256/320, every learnset move exists, new move ids do not collide, banned-word patterns). `npx playwright test tests/data_integrity.spec.js tests/wording_guard.spec.js tests/look_keys.spec.js --project=390` on Windows: 26 passed, 2 skipped, 1 failed. The failure is `data/mapdata.js matches tools/gen_mapdata.py`, and it fails the same way on a clean main on that machine, so it is not from this change. `tools/pp_test.js` could not run on Windows (it spawns `npx` without a shell). Re-run with `npm run test:agent` on Linux before merge.
+- Decisions made (colour + reasoning): D194, D195, D197, D199 and D200 are red (new species ids, core mechanics, a new branch that needs the next area). D196, D198, D201, D202 and D204 are yellow. D203 is green. All are open. Nothing is built ahead of them.
+- Anything left unfinished: the engine work in spec §9, the boss sites (they wait on the next area's one-pager), the `story.sig_all` reward, and final dialogue.
 ## 2026-10-19 11:48 ET: Cald's gate count (build 20261019-1148)
 
 - What changed and why: After Rook's battle, Hearthmoor hangs one slip, Gate count. Go see them pins Officer Cald. His yes sends you to the east sign. The sign confirms the post is still standing. Telling him finishes the slip and adds 2 bond. Decline sets nothing. Other towns have no slips. The bounty heading stays empty. The main quest id does not change. Save `v` stays 2. D73, D80, D104, and D142–D147 are settled. The next free id stays D187. No id was renumbered. `cond()` is unchanged.

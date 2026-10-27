@@ -532,6 +532,10 @@ Q17 and Q18 are already in the game. The town-list calls are settled. TB-1 is in
 
 TB-1 is the empty board, the reports, and the phone app. The Hearthmoor and Fernbrook squares from TB-2 landed with it. TB-3, Cald's gate count, is one Hearthmoor slip on this branch. The other slips are not started. KeeperUAV stays the blank watch desk.
 
+### Q29 — The Signals (ARBITER_UNITS) — L — **scoped, not started**
+
+Design draft in `handoff/walklings/`. Five SHADE units with attunement tiers, boss battles, and a side branch whose boss sites need the next area's one-pager. Do not add the species, moves or `hum` until Vincent settles D194–D204. It is not ahead of Q19.
+
 ### Q20 — Look and listen — M — **shipped**
 
 `seal_glim_2` is the `LANYARD_TIER2` grid (gold rim, mint field, two white marks). Field Lead Imogen and Associate Hollis have their own keeper looks on Route 2. Rook's portrait wears the lanyard accessory once Glimmerwell has claimed him, and drops it when `story.rook_end` is `"ally"`. The player look picker still has no lanyard. `trackFor` plays `town_glimmer` in a Glimmerwell town, `quarry` in the quarry, and `grove` on a grove backdrop. An explicit `map.music` still wins. Tests: `tests/look_listen.spec.js`.

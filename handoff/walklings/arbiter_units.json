@@ -1,0 +1,1607 @@
+{
+  "_about": "ARBITER_UNITS v0.1, design draft, Oct 27, 2026. Five Glimmerwell-made SHADE Walklings that hear the Arbiter. Not in the game. Nothing here goes into sprites.js, stats.js or moves.js until Vincent settles D194-D204. Spec: handoff/walklings/ARBITER_UNITS.md.",
+  "version": "0.1",
+  "status": "draft, waiting on D194-D204",
+  "_art": "Each stage is an 8-wide half that the game mirrors, like every SPECIES line. col maps role letters (a main, b belly, c accent, d accent2, x extra) to PAL keys. e and i are the eyes. No new palette keys. The game adds the 1 px outline. Stages are attunement tiers: same name, small changes. Preview one with tools/grid2png.py --id <unit><tier> --scale 4 --out x.png handoff/walklings/arbiter_units.json after pulling units_art out, or open the preview PNGs beside this file.",
+  "units": [
+    {
+      "id": "hushlamp",
+      "name": "Hushlamp",
+      "role": "wall and healer",
+      "lore": "A Comfort Lamp that learned to walk. Its glow is a request, and most things say yes.",
+      "look": "Lime lamp glass and a grey cap on a dark, round body. Listening adds cyan traces down the body. In tune adds white feet and a white rim on the glass.",
+      "signal": {
+        "id": "comfort_glow",
+        "name": "Comfort Glow",
+        "text": "Mends a little on a turn it rests.",
+        "rule": "At the end of a turn in which it used a move with power 0, or used no move, it heals 10% of max HP. Once per turn."
+      },
+      "clue": {
+        "place": "Wickerglen, under the Comfort Lamps",
+        "flag": "story.sig_hushlamp_clue"
+      },
+      "boss": {
+        "level": 30,
+        "order": 2,
+        "site": "[NEXT AREA SITE 2]"
+      }
+    },
+    {
+      "id": "cordhound",
+      "name": "Cordhound",
+      "role": "fast striker",
+      "lore": "Paces the night carts on a cord nobody holds. It sits, very still, whenever the cradle hums.",
+      "look": "A navy pup with a grey muzzle, lime ear tips, and a cord tail that ends in a gold plug. Listening adds cyan collar traces. In tune adds taller ears and a doubled plug.",
+      "signal": {
+        "id": "live_wire",
+        "name": "Live Wire",
+        "text": "Its first VOLT hit lands harder.",
+        "rule": "The first VOLT move it lands in a battle has 1.5x power."
+      },
+      "clue": {
+        "place": "Cobblecrest Quarry, the crate yard",
+        "flag": "story.sig_cordhound_clue"
+      },
+      "boss": {
+        "level": 32,
+        "order": 4,
+        "site": "[NEXT AREA SITE 4]"
+      }
+    },
+    {
+      "id": "tallybat",
+      "name": "Tallybat",
+      "role": "speed and debuffs",
+      "lore": "Built for the Glow Census. It counts everything twice and never says the total out loud.",
+      "look": "A plum bat with navy wing skin and lime wing edges. Listening adds a white tally mark on the chest and cyan wing veins. In tune adds a cyan ear tip and a fuller wing trace.",
+      "signal": {
+        "id": "recount",
+        "name": "Recount",
+        "text": "Copies the first boost a foe makes.",
+        "rule": "The first time in a battle a foe raises one of its own stats, Tallybat raises the same stat by the same amount."
+      },
+      "clue": {
+        "place": "Route 2, the Glow Census board",
+        "flag": "story.sig_tallybat_clue"
+      },
+      "boss": {
+        "level": 28,
+        "order": 1,
+        "site": "[NEXT AREA SITE 1]"
+      }
+    },
+    {
+      "id": "ledgerowl",
+      "name": "Ledgerowl",
+      "role": "bulky attacker",
+      "lore": "Keeps the RegenX Records room company. It has never forgotten a folder, even the old one.",
+      "look": "A slate owl with a pale screen face, lime ear tufts, and gold feet. Listening adds dark file stripes on the wings. In tune adds a wider body and a lime bar across the chest.",
+      "signal": {
+        "id": "filed_away",
+        "name": "Filed Away",
+        "text": "A repeat hit hurts it less.",
+        "rule": "It takes 25% less damage from a move that has already hit it in this battle."
+      },
+      "clue": {
+        "place": "RegenX lab, the Records room",
+        "flag": "story.sig_ledgerowl_clue"
+      },
+      "boss": {
+        "level": 31,
+        "order": 3,
+        "site": "[NEXT AREA SITE 3]"
+      }
+    },
+    {
+      "id": "humwisp",
+      "name": "Humwisp",
+      "role": "glass cannon, the last one",
+      "lore": "Drifted out of the Arbiter bay. The other four go quiet when it passes. Nobody will say who built it.",
+      "look": "A navy teardrop with a white and cyan screen mouth and cyan trailing sparks. Listening widens the body and the screen. In tune adds lime sparks around the outline.",
+      "signal": {
+        "id": "carrier_hum",
+        "name": "Carrier Hum",
+        "text": "Foes cannot boost past +1 near it.",
+        "rule": "While it is out, a foe cannot raise any of its own stats above +1."
+      },
+      "clue": {
+        "place": "RegenX lab, the Arbiter bay cradle",
+        "flag": "story.sig_humwisp_clue",
+        "needs": [
+          "story.sig_tallybat_done",
+          "story.sig_hushlamp_done",
+          "story.sig_ledgerowl_done",
+          "story.sig_cordhound_done"
+        ]
+      },
+      "boss": {
+        "level": 34,
+        "order": 5,
+        "site": "[NEXT AREA SITE 5]"
+      }
+    }
+  ],
+  "tiers": [
+    "Quiet",
+    "Listening",
+    "In tune"
+  ],
+  "species": {
+    "hushlamp": {
+      "id": "hushlamp",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "uiHalo": true,
+      "befriendMul": 0.6,
+      "tiles": "grass",
+      "blurb": "A lamp-headed shade. Its glow asks you to rest.",
+      "stages": [
+        {
+          "name": "Hushlamp",
+          "tier": "Quiet",
+          "col": {
+            "a": "d",
+            "b": "l",
+            "c": "h",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "........",
+            "........",
+            ".....cc.",
+            "....cbbb",
+            "....bbbb",
+            "....bbdb",
+            "....cccc",
+            "...aaaaa",
+            "..aaieaa",
+            "..aaeeaa",
+            "..aaaaaa",
+            "..aaaaaa",
+            "..aaaaaa",
+            "...aaaaa",
+            "...aa.aa",
+            "........"
+          ]
+        },
+        {
+          "name": "Hushlamp",
+          "tier": "Listening",
+          "col": {
+            "a": "d",
+            "b": "l",
+            "c": "h",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "........",
+            ".....cc.",
+            "....cbbb",
+            "...cbbbb",
+            "...bbbdb",
+            "...bbbbb",
+            "...ccccc",
+            "..aaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            ".aadaaaa",
+            ".aaadaaa",
+            ".aaaadaa",
+            "..aaaaaa",
+            "..aaa.aa",
+            "........"
+          ]
+        },
+        {
+          "name": "Hushlamp",
+          "tier": "In tune",
+          "col": {
+            "a": "d",
+            "b": "l",
+            "c": "h",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            ".....cc.",
+            "....cbbb",
+            "...cbbbb",
+            "...bbbdb",
+            "..xbbbbb",
+            "..xbbbbb",
+            "...ccccc",
+            "..aaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            "aaadaaaa",
+            "aaaadaaa",
+            ".aaaadaa",
+            "..aaaaaa",
+            "..aaa.aa",
+            "..xx..xx"
+          ]
+        }
+      ]
+    },
+    "cordhound": {
+      "id": "cordhound",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "uiHalo": true,
+      "befriendMul": 0.6,
+      "tiles": "grass",
+      "blurb": "A shadow pup on a cord. It never unplugs itself.",
+      "stages": [
+        {
+          "name": "Cordhound",
+          "tier": "Quiet",
+          "col": {
+            "a": "n",
+            "b": "m",
+            "c": "l",
+            "d": "s",
+            "x": "y"
+          },
+          "half": [
+            "........",
+            "..c.....",
+            "..ac....",
+            "..aa....",
+            "..aaaaaa",
+            ".aaaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            ".aaaabbb",
+            "..aaabeb",
+            "..aaabbb",
+            "..aaaaaa",
+            "...aaaaa",
+            "...aa.aa",
+            "...aa.dx",
+            "........"
+          ]
+        },
+        {
+          "name": "Cordhound",
+          "tier": "Listening",
+          "col": {
+            "a": "n",
+            "b": "m",
+            "c": "l",
+            "d": "s",
+            "x": "y"
+          },
+          "half": [
+            "..c.....",
+            "..ac....",
+            "..ac....",
+            "..aa....",
+            "..aaaaaa",
+            ".aaaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            ".aaaabbb",
+            ".aaaabeb",
+            ".aadabbb",
+            "..aadaaa",
+            "..aaaaaa",
+            "...aa.aa",
+            "...aa.dx",
+            "......dx"
+          ]
+        },
+        {
+          "name": "Cordhound",
+          "tier": "In tune",
+          "col": {
+            "a": "n",
+            "b": "m",
+            "c": "l",
+            "d": "s",
+            "x": "y"
+          },
+          "half": [
+            ".c......",
+            ".ac.....",
+            "..ac....",
+            "..aac...",
+            ".aaaaaaa",
+            ".aaaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            ".aaaabbb",
+            ".aaaabeb",
+            ".aadabbb",
+            ".aaadaaa",
+            ".aaaadaa",
+            "..aaa.aa",
+            "..aaa.dx",
+            ".....ddx"
+          ]
+        }
+      ]
+    },
+    "tallybat": {
+      "id": "tallybat",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "uiHalo": true,
+      "befriendMul": 0.6,
+      "tiles": "grass",
+      "blurb": "A counting bat. Its wings blink one unit at a time.",
+      "stages": [
+        {
+          "name": "Tallybat",
+          "tier": "Quiet",
+          "col": {
+            "a": "p",
+            "b": "n",
+            "c": "l",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "........",
+            "....a.a.",
+            "....aaaa",
+            "....aaaa",
+            "....aiea",
+            "....aeea",
+            "....aaaa",
+            "c...aaaa",
+            "cb.aaaaa",
+            "cbbaaaaa",
+            "cbbbaaaa",
+            ".cbbbaaa",
+            "..ccbaaa",
+            "....caa.",
+            ".....a.a",
+            "........"
+          ]
+        },
+        {
+          "name": "Tallybat",
+          "tier": "Listening",
+          "col": {
+            "a": "p",
+            "b": "n",
+            "c": "l",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "....a.a.",
+            "....a.a.",
+            "....aaaa",
+            "....aaaa",
+            "....aiea",
+            "....aeea",
+            "....aaaa",
+            "c...axaa",
+            "cb.aaaaa",
+            "cdbaaaaa",
+            "cbbbaaaa",
+            ".cdbbaaa",
+            "..ccbaaa",
+            "....caa.",
+            ".....a.a",
+            "........"
+          ]
+        },
+        {
+          "name": "Tallybat",
+          "tier": "In tune",
+          "col": {
+            "a": "p",
+            "b": "n",
+            "c": "l",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "....a.a.",
+            "....ada.",
+            "....aaaa",
+            "....aaaa",
+            "....aiea",
+            "c...aeea",
+            "cb..aaaa",
+            "cbb.axaa",
+            "cdbaaaaa",
+            "cbbaaaaa",
+            "cdbbaaaa",
+            "cbdbbaaa",
+            ".ccdbaaa",
+            "..ccaaa.",
+            "....ca.a",
+            "........"
+          ]
+        }
+      ]
+    },
+    "ledgerowl": {
+      "id": "ledgerowl",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "uiHalo": true,
+      "befriendMul": 0.6,
+      "tiles": "grass",
+      "blurb": "An owl with a screen face. It files what it sees.",
+      "stages": [
+        {
+          "name": "Ledgerowl",
+          "tier": "Quiet",
+          "col": {
+            "a": "m",
+            "b": "h",
+            "c": "l",
+            "d": "d",
+            "x": "y"
+          },
+          "half": [
+            "........",
+            "..c.....",
+            "..aa....",
+            "..aaaaaa",
+            ".aabbbbb",
+            ".aabbieb",
+            ".aabbeeb",
+            ".aabbbbx",
+            ".aaabbbb",
+            ".aaaaaaa",
+            ".aaaaaaa",
+            ".aaaaaaa",
+            "..aaaaaa",
+            "..aaaaaa",
+            "...aa.aa",
+            "...x..x."
+          ]
+        },
+        {
+          "name": "Ledgerowl",
+          "tier": "Listening",
+          "col": {
+            "a": "m",
+            "b": "h",
+            "c": "l",
+            "d": "d",
+            "x": "y"
+          },
+          "half": [
+            "..c.....",
+            "..c.....",
+            "..aa....",
+            "..aaaaaa",
+            ".aabbbbb",
+            ".aabbieb",
+            ".aabbeeb",
+            ".aabbbbx",
+            ".adabbbb",
+            ".adaaaaa",
+            ".adaaaaa",
+            ".aadaaaa",
+            "..aaaaaa",
+            "..aaaaaa",
+            "...aa.aa",
+            "...x..x."
+          ]
+        },
+        {
+          "name": "Ledgerowl",
+          "tier": "In tune",
+          "col": {
+            "a": "m",
+            "b": "h",
+            "c": "l",
+            "d": "d",
+            "x": "y"
+          },
+          "half": [
+            "..c.....",
+            "..cc....",
+            "..aa....",
+            ".aaaaaaa",
+            ".aabbbbb",
+            "aaabbieb",
+            "aaabbeeb",
+            "aaabbbbx",
+            "adaabbbb",
+            "adaaccca",
+            "adaaaaaa",
+            "aadaaaaa",
+            ".aaaaaaa",
+            "..aaaaaa",
+            "...aa.aa",
+            "...x..x."
+          ]
+        }
+      ]
+    },
+    "humwisp": {
+      "id": "humwisp",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "uiHalo": true,
+      "befriendMul": 0.6,
+      "tiles": "grass",
+      "blurb": "A wisp off the cradle. It carries the hum.",
+      "stages": [
+        {
+          "name": "Humwisp",
+          "tier": "Quiet",
+          "col": {
+            "a": "n",
+            "b": "w",
+            "c": "s",
+            "d": "l",
+            "x": "p"
+          },
+          "half": [
+            "........",
+            "........",
+            ".......a",
+            "......aa",
+            ".....aaa",
+            "....aaaa",
+            "...aaaaa",
+            "...aaiea",
+            "...aaeea",
+            "...aacba",
+            "...aacba",
+            "....aaaa",
+            "....aaaa",
+            ".....aa.",
+            "....c..c",
+            "........"
+          ]
+        },
+        {
+          "name": "Humwisp",
+          "tier": "Listening",
+          "col": {
+            "a": "n",
+            "b": "w",
+            "c": "s",
+            "d": "l",
+            "x": "p"
+          },
+          "half": [
+            "........",
+            ".......a",
+            "......aa",
+            ".....aaa",
+            "....aaaa",
+            "...aaaaa",
+            "..aaaaaa",
+            "..aaaiea",
+            "..aaaeea",
+            "..aaccbb",
+            "..aaccbb",
+            "...aaaaa",
+            "...aaaaa",
+            "....aaa.",
+            "...c..c.",
+            "....c..c"
+          ]
+        },
+        {
+          "name": "Humwisp",
+          "tier": "In tune",
+          "col": {
+            "a": "n",
+            "b": "w",
+            "c": "s",
+            "d": "l",
+            "x": "p"
+          },
+          "half": [
+            ".......a",
+            "......aa",
+            ".....aaa",
+            "...d.aaa",
+            "..daaaaa",
+            "..aaaaaa",
+            ".daaaaaa",
+            ".aaaaiea",
+            ".aaaaeea",
+            ".aaaccbb",
+            "..aaccbb",
+            "..daaaaa",
+            "...aaaaa",
+            "...daaa.",
+            "..c..c.c",
+            "....c..c"
+          ]
+        }
+      ]
+    }
+  },
+  "baseStats": {
+    "hushlamp/0": {
+      "hp": 57,
+      "atk": 42,
+      "def": 57,
+      "spd": 36
+    },
+    "hushlamp/1": {
+      "hp": 76,
+      "atk": 56,
+      "def": 76,
+      "spd": 48
+    },
+    "hushlamp/2": {
+      "hp": 95,
+      "atk": 70,
+      "def": 95,
+      "spd": 60
+    },
+    "cordhound/0": {
+      "hp": 36,
+      "atk": 60,
+      "def": 33,
+      "spd": 63
+    },
+    "cordhound/1": {
+      "hp": 48,
+      "atk": 80,
+      "def": 44,
+      "spd": 84
+    },
+    "cordhound/2": {
+      "hp": 60,
+      "atk": 100,
+      "def": 55,
+      "spd": 105
+    },
+    "tallybat/0": {
+      "hp": 39,
+      "atk": 48,
+      "def": 36,
+      "spd": 69
+    },
+    "tallybat/1": {
+      "hp": 52,
+      "atk": 64,
+      "def": 48,
+      "spd": 92
+    },
+    "tallybat/2": {
+      "hp": 65,
+      "atk": 80,
+      "def": 60,
+      "spd": 115
+    },
+    "ledgerowl/0": {
+      "hp": 51,
+      "atk": 48,
+      "def": 54,
+      "spd": 39
+    },
+    "ledgerowl/1": {
+      "hp": 68,
+      "atk": 64,
+      "def": 72,
+      "spd": 52
+    },
+    "ledgerowl/2": {
+      "hp": 85,
+      "atk": 80,
+      "def": 90,
+      "spd": 65
+    },
+    "humwisp/0": {
+      "hp": 33,
+      "atk": 72,
+      "def": 30,
+      "spd": 57
+    },
+    "humwisp/1": {
+      "hp": 44,
+      "atk": 96,
+      "def": 40,
+      "spd": 76
+    },
+    "humwisp/2": {
+      "hp": 55,
+      "atk": 120,
+      "def": 50,
+      "spd": 95
+    }
+  },
+  "learnsets": {
+    "hushlamp/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "gloom_poke"
+      ],
+      [
+        8,
+        "night_veil"
+      ],
+      [
+        12,
+        "zap_tap"
+      ],
+      [
+        16,
+        "lullaby_hum"
+      ],
+      [
+        20,
+        "dusk_fang"
+      ],
+      [
+        25,
+        "arc_bolt"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "nightfall"
+      ]
+    ],
+    "hushlamp/1": [
+      [
+        0,
+        "dim_hours"
+      ],
+      [
+        33,
+        "moon_cloak"
+      ]
+    ],
+    "hushlamp/2": [
+      [
+        0,
+        "low_glow"
+      ],
+      [
+        40,
+        "eclipse_rush"
+      ]
+    ],
+    "cordhound/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "zap_tap"
+      ],
+      [
+        8,
+        "gloom_poke"
+      ],
+      [
+        12,
+        "screen_glow"
+      ],
+      [
+        16,
+        "arc_bolt"
+      ],
+      [
+        20,
+        "dusk_fang"
+      ],
+      [
+        25,
+        "whisker_spark"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "static_lunge"
+      ]
+    ],
+    "cordhound/1": [
+      [
+        0,
+        "cord_snap"
+      ],
+      [
+        33,
+        "neon_burst"
+      ]
+    ],
+    "cordhound/2": [
+      [
+        0,
+        "grid_howl"
+      ],
+      [
+        40,
+        "full_tilt"
+      ]
+    ],
+    "tallybat/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "gloom_poke"
+      ],
+      [
+        8,
+        "neon_flash"
+      ],
+      [
+        12,
+        "zap_tap"
+      ],
+      [
+        16,
+        "night_veil"
+      ],
+      [
+        20,
+        "arc_bolt"
+      ],
+      [
+        25,
+        "dusk_fang"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "nightfall"
+      ]
+    ],
+    "tallybat/1": [
+      [
+        0,
+        "head_count"
+      ],
+      [
+        33,
+        "neon_burst"
+      ]
+    ],
+    "tallybat/2": [
+      [
+        0,
+        "census_dive"
+      ],
+      [
+        40,
+        "eclipse_rush"
+      ]
+    ],
+    "ledgerowl/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "gloom_poke"
+      ],
+      [
+        8,
+        "neon_flash"
+      ],
+      [
+        12,
+        "cursor_tap"
+      ],
+      [
+        16,
+        "lullaby_hum"
+      ],
+      [
+        20,
+        "dusk_fang"
+      ],
+      [
+        25,
+        "hover_hum"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "nightfall"
+      ]
+    ],
+    "ledgerowl/1": [
+      [
+        0,
+        "stamp_out"
+      ],
+      [
+        33,
+        "moon_cloak"
+      ]
+    ],
+    "ledgerowl/2": [
+      [
+        0,
+        "final_entry"
+      ],
+      [
+        40,
+        "static_lunge"
+      ]
+    ],
+    "humwisp/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "zap_tap"
+      ],
+      [
+        8,
+        "gloom_poke"
+      ],
+      [
+        12,
+        "screen_glow"
+      ],
+      [
+        16,
+        "arc_bolt"
+      ],
+      [
+        20,
+        "dusk_fang"
+      ],
+      [
+        25,
+        "neon_burst"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "eclipse_rush"
+      ]
+    ],
+    "humwisp/1": [
+      [
+        0,
+        "cradle_pulse"
+      ],
+      [
+        33,
+        "nightfall"
+      ]
+    ],
+    "humwisp/2": [
+      [
+        0,
+        "deep_hum"
+      ],
+      [
+        40,
+        "static_lunge"
+      ]
+    ]
+  },
+  "moves": {
+    "dim_hours": {
+      "name": "Dim Hours",
+      "type": "SHADE",
+      "power": 0,
+      "acc": 95,
+      "uses": 5,
+      "effect": {
+        "target": "foe",
+        "stat": "spd",
+        "stages": -2
+      }
+    },
+    "low_glow": {
+      "name": "Low Glow",
+      "type": "SHADE",
+      "power": 60,
+      "acc": 95,
+      "uses": 8,
+      "effect": {
+        "target": "self",
+        "heal": 0.2
+      }
+    },
+    "cord_snap": {
+      "name": "Cord Snap",
+      "type": "VOLT",
+      "power": 55,
+      "acc": 100,
+      "uses": 10
+    },
+    "grid_howl": {
+      "name": "Grid Howl",
+      "type": "SHADE",
+      "power": 80,
+      "acc": 90,
+      "uses": 5,
+      "effect": {
+        "target": "self",
+        "stat": "spd",
+        "stages": -1
+      }
+    },
+    "head_count": {
+      "name": "Head Count",
+      "type": "SHADE",
+      "power": 0,
+      "acc": 95,
+      "uses": 5,
+      "effect": {
+        "target": "foe",
+        "stat": "def",
+        "stages": -2
+      }
+    },
+    "census_dive": {
+      "name": "Census Dive",
+      "type": "VOLT",
+      "power": 75,
+      "acc": 95,
+      "uses": 8
+    },
+    "stamp_out": {
+      "name": "Stamp Out",
+      "type": "SHADE",
+      "power": 55,
+      "acc": 95,
+      "uses": 8,
+      "effect": {
+        "target": "self",
+        "stat": "def",
+        "stages": 1
+      }
+    },
+    "final_entry": {
+      "name": "Final Entry",
+      "type": "SHADE",
+      "power": 85,
+      "acc": 90,
+      "uses": 5
+    },
+    "cradle_pulse": {
+      "name": "Cradle Pulse",
+      "type": "VOLT",
+      "power": 65,
+      "acc": 95,
+      "uses": 8
+    },
+    "deep_hum": {
+      "name": "Deep Hum",
+      "type": "SHADE",
+      "power": 95,
+      "acc": 85,
+      "uses": 5,
+      "effect": {
+        "target": "self",
+        "stat": "def",
+        "stages": -1
+      }
+    }
+  },
+  "units_art": {
+    "hushlamp0": {
+      "col": {
+        "a": "d",
+        "b": "l",
+        "c": "h",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "........",
+        "........",
+        ".....cc.",
+        "....cbbb",
+        "....bbbb",
+        "....bbdb",
+        "....cccc",
+        "...aaaaa",
+        "..aaieaa",
+        "..aaeeaa",
+        "..aaaaaa",
+        "..aaaaaa",
+        "..aaaaaa",
+        "...aaaaa",
+        "...aa.aa",
+        "........"
+      ]
+    },
+    "hushlamp1": {
+      "col": {
+        "a": "d",
+        "b": "l",
+        "c": "h",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "........",
+        ".....cc.",
+        "....cbbb",
+        "...cbbbb",
+        "...bbbdb",
+        "...bbbbb",
+        "...ccccc",
+        "..aaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        ".aadaaaa",
+        ".aaadaaa",
+        ".aaaadaa",
+        "..aaaaaa",
+        "..aaa.aa",
+        "........"
+      ]
+    },
+    "hushlamp2": {
+      "col": {
+        "a": "d",
+        "b": "l",
+        "c": "h",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        ".....cc.",
+        "....cbbb",
+        "...cbbbb",
+        "...bbbdb",
+        "..xbbbbb",
+        "..xbbbbb",
+        "...ccccc",
+        "..aaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        "aaadaaaa",
+        "aaaadaaa",
+        ".aaaadaa",
+        "..aaaaaa",
+        "..aaa.aa",
+        "..xx..xx"
+      ]
+    },
+    "cordhound0": {
+      "col": {
+        "a": "n",
+        "b": "m",
+        "c": "l",
+        "d": "s",
+        "x": "y"
+      },
+      "half": [
+        "........",
+        "..c.....",
+        "..ac....",
+        "..aa....",
+        "..aaaaaa",
+        ".aaaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        ".aaaabbb",
+        "..aaabeb",
+        "..aaabbb",
+        "..aaaaaa",
+        "...aaaaa",
+        "...aa.aa",
+        "...aa.dx",
+        "........"
+      ]
+    },
+    "cordhound1": {
+      "col": {
+        "a": "n",
+        "b": "m",
+        "c": "l",
+        "d": "s",
+        "x": "y"
+      },
+      "half": [
+        "..c.....",
+        "..ac....",
+        "..ac....",
+        "..aa....",
+        "..aaaaaa",
+        ".aaaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        ".aaaabbb",
+        ".aaaabeb",
+        ".aadabbb",
+        "..aadaaa",
+        "..aaaaaa",
+        "...aa.aa",
+        "...aa.dx",
+        "......dx"
+      ]
+    },
+    "cordhound2": {
+      "col": {
+        "a": "n",
+        "b": "m",
+        "c": "l",
+        "d": "s",
+        "x": "y"
+      },
+      "half": [
+        ".c......",
+        ".ac.....",
+        "..ac....",
+        "..aac...",
+        ".aaaaaaa",
+        ".aaaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        ".aaaabbb",
+        ".aaaabeb",
+        ".aadabbb",
+        ".aaadaaa",
+        ".aaaadaa",
+        "..aaa.aa",
+        "..aaa.dx",
+        ".....ddx"
+      ]
+    },
+    "tallybat0": {
+      "col": {
+        "a": "p",
+        "b": "n",
+        "c": "l",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "........",
+        "....a.a.",
+        "....aaaa",
+        "....aaaa",
+        "....aiea",
+        "....aeea",
+        "....aaaa",
+        "c...aaaa",
+        "cb.aaaaa",
+        "cbbaaaaa",
+        "cbbbaaaa",
+        ".cbbbaaa",
+        "..ccbaaa",
+        "....caa.",
+        ".....a.a",
+        "........"
+      ]
+    },
+    "tallybat1": {
+      "col": {
+        "a": "p",
+        "b": "n",
+        "c": "l",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "....a.a.",
+        "....a.a.",
+        "....aaaa",
+        "....aaaa",
+        "....aiea",
+        "....aeea",
+        "....aaaa",
+        "c...axaa",
+        "cb.aaaaa",
+        "cdbaaaaa",
+        "cbbbaaaa",
+        ".cdbbaaa",
+        "..ccbaaa",
+        "....caa.",
+        ".....a.a",
+        "........"
+      ]
+    },
+    "tallybat2": {
+      "col": {
+        "a": "p",
+        "b": "n",
+        "c": "l",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "....a.a.",
+        "....ada.",
+        "....aaaa",
+        "....aaaa",
+        "....aiea",
+        "c...aeea",
+        "cb..aaaa",
+        "cbb.axaa",
+        "cdbaaaaa",
+        "cbbaaaaa",
+        "cdbbaaaa",
+        "cbdbbaaa",
+        ".ccdbaaa",
+        "..ccaaa.",
+        "....ca.a",
+        "........"
+      ]
+    },
+    "ledgerowl0": {
+      "col": {
+        "a": "m",
+        "b": "h",
+        "c": "l",
+        "d": "d",
+        "x": "y"
+      },
+      "half": [
+        "........",
+        "..c.....",
+        "..aa....",
+        "..aaaaaa",
+        ".aabbbbb",
+        ".aabbieb",
+        ".aabbeeb",
+        ".aabbbbx",
+        ".aaabbbb",
+        ".aaaaaaa",
+        ".aaaaaaa",
+        ".aaaaaaa",
+        "..aaaaaa",
+        "..aaaaaa",
+        "...aa.aa",
+        "...x..x."
+      ]
+    },
+    "ledgerowl1": {
+      "col": {
+        "a": "m",
+        "b": "h",
+        "c": "l",
+        "d": "d",
+        "x": "y"
+      },
+      "half": [
+        "..c.....",
+        "..c.....",
+        "..aa....",
+        "..aaaaaa",
+        ".aabbbbb",
+        ".aabbieb",
+        ".aabbeeb",
+        ".aabbbbx",
+        ".adabbbb",
+        ".adaaaaa",
+        ".adaaaaa",
+        ".aadaaaa",
+        "..aaaaaa",
+        "..aaaaaa",
+        "...aa.aa",
+        "...x..x."
+      ]
+    },
+    "ledgerowl2": {
+      "col": {
+        "a": "m",
+        "b": "h",
+        "c": "l",
+        "d": "d",
+        "x": "y"
+      },
+      "half": [
+        "..c.....",
+        "..cc....",
+        "..aa....",
+        ".aaaaaaa",
+        ".aabbbbb",
+        "aaabbieb",
+        "aaabbeeb",
+        "aaabbbbx",
+        "adaabbbb",
+        "adaaccca",
+        "adaaaaaa",
+        "aadaaaaa",
+        ".aaaaaaa",
+        "..aaaaaa",
+        "...aa.aa",
+        "...x..x."
+      ]
+    },
+    "humwisp0": {
+      "col": {
+        "a": "n",
+        "b": "w",
+        "c": "s",
+        "d": "l",
+        "x": "p"
+      },
+      "half": [
+        "........",
+        "........",
+        ".......a",
+        "......aa",
+        ".....aaa",
+        "....aaaa",
+        "...aaaaa",
+        "...aaiea",
+        "...aaeea",
+        "...aacba",
+        "...aacba",
+        "....aaaa",
+        "....aaaa",
+        ".....aa.",
+        "....c..c",
+        "........"
+      ]
+    },
+    "humwisp1": {
+      "col": {
+        "a": "n",
+        "b": "w",
+        "c": "s",
+        "d": "l",
+        "x": "p"
+      },
+      "half": [
+        "........",
+        ".......a",
+        "......aa",
+        ".....aaa",
+        "....aaaa",
+        "...aaaaa",
+        "..aaaaaa",
+        "..aaaiea",
+        "..aaaeea",
+        "..aaccbb",
+        "..aaccbb",
+        "...aaaaa",
+        "...aaaaa",
+        "....aaa.",
+        "...c..c.",
+        "....c..c"
+      ]
+    },
+    "humwisp2": {
+      "col": {
+        "a": "n",
+        "b": "w",
+        "c": "s",
+        "d": "l",
+        "x": "p"
+      },
+      "half": [
+        ".......a",
+        "......aa",
+        ".....aaa",
+        "...d.aaa",
+        "..daaaaa",
+        "..aaaaaa",
+        ".daaaaaa",
+        ".aaaaiea",
+        ".aaaaeea",
+        ".aaaccbb",
+        "..aaccbb",
+        "..daaaaa",
+        "...aaaaa",
+        "...daaa.",
+        "..c..c.c",
+        "....c..c"
+      ]
+    }
+  },
+  "newNames": {
+    "species": [
+      "Hushlamp",
+      "Cordhound",
+      "Tallybat",
+      "Ledgerowl",
+      "Humwisp"
+    ],
+    "group": "the Signals",
+    "tiers": [
+      "Quiet",
+      "Listening",
+      "In tune"
+    ],
+    "moves": [
+      "Dim Hours",
+      "Low Glow",
+      "Cord Snap",
+      "Grid Howl",
+      "Head Count",
+      "Census Dive",
+      "Stamp Out",
+      "Final Entry",
+      "Cradle Pulse",
+      "Deep Hum"
+    ],
+    "signals": [
+      "Comfort Glow",
+      "Live Wire",
+      "Recount",
+      "Filed Away",
+      "Carrier Hum"
+    ]
+  },
+  "lines": {
+    "_note": "Marked placeholder copy (D200). Every say body is at most 110 characters after tokens. Narration speaker is \"\".",
+    "tierUp": [
+      "say",
+      "",
+      "{pet} hums in tune with something far off. Same {species}. A new glow."
+    ],
+    "bossShift": "The hum rises. {foe} is in tune now.",
+    "bossBack": "It slips back to its post. The hum will call it out again tomorrow.",
+    "befriendWarySignal": "It only hears the hum. Wait for the shift.",
+    "keepers_clue": [
+      "say",
+      "Archivist Mo",
+      "Five of them answer the Arbiter. Quiet one, and the hum gets smaller. That is a start."
+    ],
+    "glimmer_clue": [
+      "say",
+      "Associate Quinn",
+      "Five units went off-route! Recall them, sweetie, and the quarter looks bright again."
+    ],
+    "befriended_keepers": [
+      "say",
+      "",
+      "The hum fades from its eyes. It looks at {pet}, then at you, and stays."
+    ],
+    "befriended_glimmer": [
+      "say",
+      "",
+      "Unit recalled. It follows you, still humming a little. Have a bright day!"
+    ]
+  },
+  "flags": {
+    "story.sig_open": "The branch is offered. Set after story.cobble_end and the first step into the next area (placeholder, D200).",
+    "story.sig_<id>_clue": "The clue at an existing Glimmerwell site was read.",
+    "story.sig_<id>_done": "That boss was befriended. A worn-out boss does not set it.",
+    "story.sig_all": "All five are done. Not a main-chain step.",
+    "daily.sig_<id>": "Rematch stamp. A boss that ran or was worn out comes back the next day."
+  },
+  "saveFields": {
+    "pet.hum": "Additive, 0-100, attune species only. Absent means 0. Save v stays 2 (D195, D204)."
+  },
+  "engineAsks": [
+    "A species flag attune: no GROW UP button and no canEvolve. The stage rises when pet.hum crosses 40 and then 100 (D195).",
+    "pet.hum and its sources (D196). A tier-up plays lines.tierUp as a one-line scene and teaches the lv 0 move, like a grow-up move.",
+    "Signals: one passive per species, read in damage(), applyStage() and at the end of a turn (D197).",
+    "befriendMul on a species multiplies the befriend zone (D198). A boss can only be befriended after the shift.",
+    "Boss battles: a wild battle with boss:true that starts at tier 1 and swaps to tier 2 art at half HP (D199).",
+    "A SIGNALS row in the journal, outside the 45 count (D201)."
+  ],
+  "decisions": "D194-D204 in OPEN_DECISIONS.md."
+}
