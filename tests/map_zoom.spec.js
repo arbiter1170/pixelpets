@@ -334,10 +334,10 @@ test('D787: with the dock outside the map, pads stay 0 and the north lift is off
   expect(off.camY + 0).toBe(follow + 0);   // + 0 folds a -0 from Math.round into 0
 });
 
-test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top chips', async ({ page }) => {
+test('Map zoom: every step keeps the Hearthmoor north exit row clear of the dock HUD', async ({ page }) => {
   test.setTimeout(90000);
   await boot(page);
-  await page.evaluate(() => PixelPets.setHudPads(true));   // the north lift needs the P1 frame flag (D787 B)
+  await page.evaluate(() => PixelPets.setHudPads(true));   // the P1 frame flag
   const steps = await page.evaluate(() => PixelPets.mapZoomSteps);
   for (let i = 0; i < steps.length; i++) {
     await pickStep(page, i);
@@ -345,7 +345,9 @@ test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top 
     await settle(page);
     const r = await page.evaluate(() => {
       const mc = document.querySelector('#mapCanvas'), cr = mc.getBoundingClientRect(), cam = PixelPets.walk.cam, k = cr.width / mc.width;
-      const chips = ['#fcTop', '#fcTL'].map(q => document.querySelector(q)).filter(Boolean).map(n => n.getBoundingClientRect()).filter(b => b.width >= 8 && b.height >= 8);
+      // Under the dock, #fcTop/#fcTL are hidden; measure any visible dock control that could cover the map.
+      const chips = [...document.querySelectorAll('#fcDock button, #thChip, #fcAcorns')]
+        .map(n => n.getBoundingClientRect()).filter(b => b.width >= 8 && b.height >= 8);
       const out = [];
       for (const tx of [8, 9, 10]) {
         const t = { left: cr.left + (tx * 16 - cam.x) * k, top: cr.top + (2 * 16 - cam.y) * k };
@@ -353,13 +355,14 @@ test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top 
         const area = chips.reduce((a, b) => a + Math.max(0, Math.min(t.right, b.right) - Math.max(t.left, b.left)) * Math.max(0, Math.min(t.bottom, b.bottom) - Math.max(t.top, b.top)), 0);
         const pts = [[(t.left + t.right) / 2, (t.top + t.bottom) / 2], [t.left + 3, t.top + 3], [t.right - 3, t.top + 3]];
         const hits = pts.map(([x, y]) => document.elementFromPoint(x, y) === mc);
-        const onScreen = t.top >= cr.top - 0.5 && t.bottom <= innerHeight && t.left >= 0 && t.right <= innerWidth;
+        const onScreen = t.top >= cr.top - 0.5 && t.bottom <= cr.bottom + 0.5 && t.left >= cr.left - 0.5 && t.right <= cr.right + 0.5;
         out.push({ tx, area, hits, onScreen });
       }
-      return { scale: PixelPets.mapInfo.scale, chips: chips.length, out };
+      return { scale: PixelPets.mapInfo.scale, chips: chips.length, dock: !document.querySelector('#fcDock').hidden, out };
     });
     expect(r.scale, 'step ' + steps[i]).toBe(steps[i]);   // step 0 is 2x, the live look
-    expect(r.chips).toBeGreaterThanOrEqual(2);
+    expect(r.dock, 'step ' + steps[i]).toBe(true);
+    expect(r.chips, 'step ' + steps[i]).toBeGreaterThanOrEqual(6);
     for (const e of r.out) {
       expect(e.onScreen, `step ${steps[i]} tile ${e.tx},2 on screen`).toBe(true);
       expect(e.area, `step ${steps[i]} tile ${e.tx},2 under a chip`).toBe(0);
