@@ -297,6 +297,62 @@
     },
     {
      "kind": "prop",
+     "id": "hmp_bunting_9",
+     "x": 9,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_10",
+     "x": 10,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_11",
+     "x": 11,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_12",
+     "x": 12,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_13",
+     "x": 13,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_14",
+     "x": 14,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_15",
+     "x": 15,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_16",
+     "x": 16,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
      "id": "hmp_hedge_w",
      "x": 4,
      "y": 3,
@@ -465,6 +521,34 @@
      "x": 17,
      "y": 12,
      "sprite": "mr_chalk"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_leaves_mid",
+     "x": 7,
+     "y": 11,
+     "sprite": "leaf_litter"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_leaves_n",
+     "x": 18,
+     "y": 6,
+     "sprite": "leaf_litter"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_leaves_s",
+     "x": 14,
+     "y": 15,
+     "sprite": "leaf_litter"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_puddle",
+     "x": 10,
+     "y": 14,
+     "sprite": "puddle"
     },
     {
      "kind": "decal",
