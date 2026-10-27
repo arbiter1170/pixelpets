@@ -14,8 +14,10 @@ D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE 
 
 D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET). D798 is reserved: PLAZA_ERRANDS (Vincent, Oct 26, 2026, yes to all five).
 
-Next free id is D799.
-Other packets hold ids through D798.
+D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive).
+
+Next free id is D837.
+Other packets hold ids through D836.
 
 ## Open
 

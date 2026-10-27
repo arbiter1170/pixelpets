@@ -67,7 +67,9 @@ test('a copy survives Start over and comes back as the same game', async ({ page
   expect(fresh.side).toBe(null);
   expect(fresh.v).toBe(2);
 
-  await page.locator('#settingsBtn').click();
+  // D833: a fresh game is modern, so Settings is the dock gear, and it works in the opening scene.
+  expect(await page.evaluate(() => PixelPets.controls.mode)).toBe('modern');
+  await page.locator('#gearFloat').click();
   await expect(page.locator('#ovSettings')).toBeVisible();
   await page.locator('#setRead').click();
   await shot(page, 'save-copy-read');
