@@ -298,42 +298,43 @@ test('arcade at 320 shows six slots and no back arrow', async ({ page }) => {
 test('guards ignore a switch tap', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, 'one width');
   await boot(page, partySave(3), '?debug=1');
-  const slot = page.locator('.pet-slot').nth(1);
-  await page.locator('#scr-pet [data-act="play"]').click({ force: true });
-  const played = await page.evaluate(() => {
+  const tapSlot = () => page.evaluate(() => {
     const slot = document.querySelectorAll('.pet-slot')[1];
     const off = slot.getAttribute('aria-disabled');
     slot.click();
-    return { off, id: PixelPets.state.partnerId, toast: document.querySelector('#toast').textContent };
+    return { off, id: PixelPets.state.partnerId };
   });
+  await page.locator('#scr-pet [data-act="play"]').click({ force: true });
+  const played = await tapSlot();
   expect(played.off).toBe('true');
   expect(played.id).toBe('p0');
-  expect(played.toast).not.toContain('partner now');
+  await expect(page.locator('#toast')).not.toHaveText(/partner now/);
   await page.waitForTimeout(1400);
   await expect(page.locator('.pet-slot').first()).not.toHaveAttribute('aria-disabled', 'true');
 
   await page.evaluate(() => { PixelPets.state.party[0].hpNow = 1; PixelPets.showTab('pet'); });
-  await page.locator('#scr-pet [data-act="heal"]').click();
+  await page.evaluate(() => document.querySelector('#scr-pet [data-act="heal"]').click());
   await expect(page.locator('#ovSheet')).toBeVisible();
   await expect(page.locator('.pet-slot').first()).toHaveAttribute('aria-disabled', 'true');
-  await slot.click({ force: true });
-  expect(await page.evaluate(() => PixelPets.state.partnerId)).toBe('p0');
-  await page.locator('#shCancel').click();
+  expect((await tapSlot()).id).toBe('p0');
+  await page.evaluate(() => document.querySelector('#shCancel').click());
   await expect(page.locator('#ovSheet')).toBeHidden();
   await expect(page.locator('.pet-slot').first()).not.toHaveAttribute('aria-disabled', 'true');
 
   await page.locator('#petStatsBtn').click();
   await expect(page.locator('#ovStats')).toBeVisible();
   await expect(page.locator('.pet-slot').first()).toHaveAttribute('aria-disabled', 'true');
-  await slot.click({ force: true });
-  expect(await page.evaluate(() => PixelPets.state.partnerId)).toBe('p0');
+  expect((await tapSlot()).id).toBe('p0');
+  const close = await page.locator('#scClose').boundingBox();
+  expect(close.height).toBeGreaterThanOrEqual(44);
+  expect(close.width).toBeGreaterThanOrEqual(44);
   await page.locator('#scClose').click();
+  await expect(page.locator('#ovStats')).toBeHidden();
   await expect(page.locator('.pet-slot').first()).not.toHaveAttribute('aria-disabled', 'true');
 
   await page.evaluate(() => { document.body.classList.add('nav-locked'); PixelPets.showTab('pet'); });
   await expect(page.locator('.pet-slot').first()).toHaveAttribute('aria-disabled', 'true');
-  await slot.click();
-  expect(await page.evaluate(() => PixelPets.state.partnerId)).toBe('p0');
+  expect((await tapSlot()).id).toBe('p0');
   await page.evaluate(() => { document.body.classList.remove('nav-locked'); PixelPets.showTab('pet'); });
   await expect(page.locator('.pet-slot').first()).not.toHaveAttribute('aria-disabled', 'true');
 });
