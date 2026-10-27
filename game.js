@@ -8955,7 +8955,7 @@ async function sceneEncounter(id){
   const o = CUR.objs.find(x => x.id === id); if (!o) return;
   commitPending(); save();
   $('#ovScene').hidden = true;
-  const res = await new Promise(resolve => { if (!openBattle({ kind: 'wild', form: o.form, level: o.level, moves: o.moves, faded: o.faded, bonus: o.befriendBonus, story: o.id, boss: !!o.boss, onEnd: resolve })) resolve(null); });
+  const res = await new Promise(resolve => { if (!openBattle({ kind: 'wild', form: o.form, level: o.level, moves: o.moves, faded: o.faded, bonus: o.befriendBonus, story: o.id, boss: !!o.boss, opener: o.opener, shiftLine: o.shiftLine, onEnd: resolve })) resolve(null); });
   if (!scene) return;
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   if (res == null) throw ABORT;
@@ -10093,10 +10093,10 @@ function openBattle(o){
     flashAt: null, whites: [], whiteOn: 0, view: null, fxLog: [] });
   if (typeof mvPoolReset === 'function') { mvPoolReset(); mvNumClear(); }
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
-  B.boss = o.kind === 'wild' && !!o.boss && !o.coop; B.bossShifted = false;   // ARBITER_UNITS (D842): a placed boss, shifts to Answering at half HP
+  B.boss = o.kind === 'wild' && !!o.boss && !o.coop; B.bossShifted = false; B.shiftLine = B.boss && o.shiftLine || null;   // ARBITER_UNITS (D842): a placed boss, shifts to Answering at half HP
   B.echo = { used: {}, hitBy: { me: new Set(), foe: new Set() } };            // ARBITER_UNITS (D840): per-battle Echo state
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
-  else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
+  else { B.foes = [makeFoe(o.form, o.level, o.moves, o.opener)]; if (B.faded) B.foes[0].faded = B.faded; }
   if (B.boss) { const bf = B.foes[0]; bf.maxHp = bf.hp = Math.round(bf.maxHp * BOSS_HP_MUL); }   // battle-only; BASE_STATS untouched (D845)
   B.participants = B.foes.map(() => new Set());
   B.me = { petId: lead.id, stages: { atk: 0, def: 0, spd: 0 }, mood: null };
@@ -10196,7 +10196,9 @@ function closeBattle(){
   B.on = false; B.state = 'IDLE'; cancelQueue(); msgSkip = null; closeSheet(null);
   $('#ovBattle').hidden = true; $('#ovBattle').classList.remove('boss'); lockTabs(false);
   // ARBITER_UNITS (D842): a boss that was not befriended goes back to its post until the next day roll (fadeTick).
-  if (B.boss && B.story && B.result !== 'befriended') { S.flags['story.' + B.story + '_rest'] = true; S.flags['daily.' + B.story] = dayKey(Date.now()); toast(BOSS_BACK); }
+  // D843: a boss you beat goes still (quiet) and is finished; its scene sets the done flag.
+  if (B.boss && B.story && B.result === 'win') { S.flags['story.' + B.story + '_quiet'] = true; toast(BOSS_QUIET); }
+  else if (B.boss && B.story && B.result !== 'befriended') { S.flags['story.' + B.story + '_rest'] = true; S.flags['daily.' + B.story] = dayKey(Date.now()); toast(BOSS_BACK); }
   const w = B.wid && wild.list.find(o => o.id === B.wid);
   if (w) {
     if (B.result === 'befriended') removeWild(w, false);                       // it joined you
@@ -10833,7 +10835,7 @@ function sideName(side){ return side === 'me' ? petName(activePet()) : foeLabel(
 const echoLine = side => sideName(side) + "'s Echo: " + echoName(side) + '!';
 /* --- ARBITER_UNITS boss battles (D842) --- */
 const BOSS_HP_MUL = 1.5, BOSS_TRACK = 'glimmer_battle';
-const BOSS_SHIFT_LINE = 'The hum rises. {foe} answers it.', BOSS_WAIT_LINE = 'It only hears the hum. Wait.', BOSS_BACK = 'It slips back to its post.';
+const BOSS_SHIFT_LINE = 'The hum rises. {foe} answers it.', BOSS_WAIT_LINE = 'It only hears the hum. Wait.', BOSS_BACK = 'It slips back to its post.', BOSS_QUIET = 'It goes still. The hum lets go.';
 // Swap a foe to another tier mid-battle: same HP percentage, the tier's lv 0 move in place of its weakest move, +1 to its best stat.
 function setFoeTier(f, k){
   const form = f.species + '/' + k, stats = statsAt(form, f.level); if (!stats) return false;
@@ -10859,7 +10861,7 @@ async function bossShift(id){
   if (!setFoeTier(f, Math.min(2, f.stage + 1))) return;
   step('fx', { who: 'foe', kind: 'up', dur: 700 }); step('sfx', { name: 'evoBuild' });
   renderBattleCards();
-  await say(BOSS_SHIFT_LINE.replace('{foe}', foeName(f)), id);
+  await say((B.shiftLine || BOSS_SHIFT_LINE).replace('{foe}', foeName(f)), id);
 }
 function groupLivingNow(){ return groupLiving(); }
 async function allyAct(id){
@@ -16024,7 +16026,10 @@ function renderBossRow(seen, caught, owned){
     const cv = document.createElement('canvas'); cv.width = cv.height = 18;
     spriteCanvas(cv, o.si, Math.max(0, k), known ? 'n' : 's', false, null);
     const lb = document.createElement('div'); lb.textContent = known ? o.sp.stages[k].name : '???'; if (!known) lb.className = 'unk';
-    cell.append(cv, lb); cells.append(cell);
+    const fate = S.flags['story.ans_' + o.sp.id + '_quiet'] ? 'QUIET' : S.flags['story.ans_' + o.sp.id] ? 'KEPT' : '';   // D843: the record Mo or Quinn keeps
+    cell.append(cv, lb);
+    if (fate) { const tg = document.createElement('div'); tg.className = 'dex-boss-tag ' + fate.toLowerCase(); tg.textContent = fate; cell.append(tg); }
+    cells.append(cell);
   }
   row.append(head, cells);
 }

@@ -263,6 +263,60 @@ test('Humwisp: with the operator off shift, it joins and the close follows', asy
   expect(await page.evaluate(() => PixelPets.sideActive.map(a => a.id))).toContain('ans_close_k');
 });
 
+// Phase 2 (D843, D857): beat a boss instead of befriending it and it goes quiet, finished, not resting. Each boss has its own
+// opener and shift line; the journal row marks KEPT or QUIET; the close reads how many of each.
+test('Humwisp quiet: its own opener and shift line, then a win quiets it for good and the journal says QUIET', async ({ page }) => {
+  await boot(page, save('keepers', Object.assign(on(['story.ans_open', ...FOUR, 'story.ans_humwisp_clue', 'story.rx_bitlet', 'trainer.r3_operator']), { 'story.ans_kept': 4 }), strong));
+  expect(await talkTo(page, 'r3_relay', 6, 4)).toBe(true);
+  expect((await untilBattle(page)).battle).toBe(true);
+  await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE', null, { timeout: 15000 });
+  await page.evaluate(() => { PixelPets.battle.textMs = 1; });
+  expect(await page.evaluate(() => PixelPets.battle.foes[0].opener)).toBe('cradle_pulse');
+  // Under half, a non-damaging turn: the shift plays Humwisp's own line.
+  await page.evaluate(() => PixelPets.setHp('foe', Math.floor(PixelPets.bossState().maxHp * 0.45)));
+  await page.evaluate(() => PixelPets.turnNow('stoke_up'));
+  await page.waitForFunction(() => PixelPets.bossState() && PixelPets.bossState().shifted, null, { timeout: 15000 });
+  await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE', null, { timeout: 15000 });
+  const log = await page.evaluate(() => PixelPets.battle.log.slice());
+  expect(log).toContain('The relay roars. Humwisp answers it, in a voice like the cradle.');
+  // The opener was its first action.
+  expect(log.some(l => /Cradle Pulse/.test(l))).toBe(true);
+  // Win it: 1 HP left, then a damaging move.
+  await page.evaluate(() => PixelPets.setHp('foe', 1));
+  const hit = await page.evaluate(() => PixelPets.state.party[0].moves.find(id => MOVES[id] && MOVES[id].power > 0));
+  await page.evaluate(m => PixelPets.turnNow(m), hit);
+  await page.waitForFunction(() => PixelPets.battle.state === 'END', null, { timeout: 15000 });
+  expect(await page.evaluate(() => PixelPets.battle.result)).toBe('win');
+  await page.click('#btOk');
+  await page.waitForFunction(() => !PixelPets.battle.on);
+  const seen = (await untilBattle(page)).seen.join(' ');
+  expect(seen).toContain('the road is quiet');
+  expect(seen).toContain('HELLO');
+  expect(await flag(page, 'story.ans_humwisp_quiet')).toBe(true);
+  expect(await flag(page, 'story.ans_humwisp_done')).toBe(true);
+  expect(await flag(page, 'story.ans_humwisp_rest')).toBeFalsy();
+  expect(await flag(page, 'story.ans_quiet')).toBe(1);
+  expect(await joined(page, 'humwisp')).toBeNull();
+  expect(await here(page, 'ans_humwisp')).toBeNull();
+  expect(await page.evaluate(() => PixelPets.sideActive.map(a => a.id))).toContain('ans_close_k');
+  // The journal row: Humwisp met and marked QUIET.
+  await page.evaluate(() => { PixelPets.state.dex.seen['humwisp/1'] = true; PixelPets.showTab('col'); });
+  await page.waitForSelector('#dexBoss .dex-boss-tag');
+  expect(await page.locator('#dexBoss [data-form^="humwisp/"] .dex-boss-tag').textContent()).toBe('QUIET');
+  await page.evaluate(() => document.querySelector('#dexBoss').scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(3500);   // let the toast clear
+  await shot(page, 'five-journal-quiet');
+});
+
+for (const [side, kept, quiet, want] of [['keepers', 5, 0, 'All of them kept'], ['keepers', 0, 5, 'All of them quiet'], ['glimmer', 2, 3, 'Both boxes are ticked']]) {
+  test('the ' + side + ' close reads ' + kept + ' kept and ' + quiet + ' quiet', async ({ page }) => {
+    await boot(page, save(side, Object.assign(on(['story.ans_open', ...FOUR, 'story.ans_humwisp_clue', 'story.ans_humwisp_done']), { 'story.ans_kept': kept, 'story.ans_quiet': quiet })));
+    expect(await talkTo(page, ...(side === 'glimmer' ? ['cc_hall_in', 8, 3] : ['hm_hq_f1', 3, 5]))).toBe(true);
+    expect((await untilBattle(page)).seen.join(' ')).toContain(want);
+    expect(await flag(page, 'story.ans_all')).toBe(true);
+  });
+}
+
 test('a lair gives its own unit +10 hum once a day', async ({ page }) => {
   await boot(page, save('keepers', {}, s => {
     s.party.push({ id: 'unit1', species: 'dimlamp', stage: 0, xp: 0, bx: 4 * 29 * 29, hunger: 90, happy: 90, energy: 95, nick: null, origin: 'wild', moves: [], evoMoves: [], hum: 5 });

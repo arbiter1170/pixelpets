@@ -142,17 +142,32 @@ test('a boss opens at Humming, refuses befriending, shifts at half HP, and joins
   expect(joined.moves).not.toContain('census_dive');
 });
 
-test('a boss that is not befriended goes back to its post until the next day', async ({ page }) => {
+test('a boss you beat goes quiet; one you leave goes back to its post until the next day', async ({ page }) => {
   await installSave(page.context(), unitSave('ember', { stage: 2, level: 45 }), { quietDay: true });
   await gotoDebug(page);
-  await page.evaluate(() => PixelPets.forceBoss('dimlamp', 30));
+  // D843: a win quiets it. It is finished, so it does not rest.
+  await page.evaluate(() => PixelPets.forceBoss('tallybat', 30));
   await fastBattle(page);
   await page.evaluate(() => PixelPets.winBattle());
   await page.waitForFunction(() => PixelPets.battle.state === 'END');
   await page.click('#btOk');
   await page.waitForFunction(() => !PixelPets.battle.on);
-  const after = await page.evaluate(() => ({ rest: PixelPets.state.flags['story.ans_dimlamp_rest'], stamp: !!PixelPets.state.flags['daily.ans_dimlamp'] }));
-  expect(after).toEqual({ rest: true, stamp: true });
+  const won = await page.evaluate(() => ({ quiet: PixelPets.state.flags['story.ans_tallybat_quiet'], rest: !!PixelPets.state.flags['story.ans_tallybat_rest'] }));
+  expect(won).toEqual({ quiet: true, rest: false });
+  // Leaving the battle sends it back to its post.
+  await page.evaluate(() => PixelPets.forceBoss('dimlamp', 30));
+  await fastBattle(page);
+  // A run can fail on speed ("Couldn't slip away!"), so keep trying, like a player would.
+  // A successful run closes the battle straight away ("You slipped away safely.").
+  for (let i = 0; i < 12 && await page.evaluate(() => PixelPets.battle.on); i++) {
+    await page.waitForFunction(() => !PixelPets.battle.on || PixelPets.battle.state === 'CHOOSE', null, { timeout: 15000 });
+    if (await page.evaluate(() => PixelPets.battle.on)) await page.click('#btRun');
+    await page.waitForTimeout(150);
+  }
+  await page.waitForFunction(() => !PixelPets.battle.on);
+  expect(await page.evaluate(() => PixelPets.battle.result)).toBe('run');
+  const after = await page.evaluate(() => ({ rest: PixelPets.state.flags['story.ans_dimlamp_rest'], stamp: !!PixelPets.state.flags['daily.ans_dimlamp'], quiet: !!PixelPets.state.flags['story.ans_dimlamp_quiet'] }));
+  expect(after).toEqual({ rest: true, stamp: true, quiet: false });
   await page.evaluate(() => { PixelPets.state.flags['daily.ans_dimlamp'] = '2000-01-01'; PixelPets.fadeTick(); });
   const rolled = await page.evaluate(() => ({ rest: 'story.ans_dimlamp_rest' in PixelPets.state.flags, stamp: 'daily.ans_dimlamp' in PixelPets.state.flags }));
   expect(rolled).toEqual({ rest: false, stamp: false });

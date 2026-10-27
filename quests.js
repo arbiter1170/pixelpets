@@ -66,7 +66,9 @@
     // Decisions plan Phase 1 (D853-D856): the befriend flags (the done flags are story.ans_<unit>_done) and the lair puzzle flags.
     'story.ans_tallybat', 'story.ans_dimlamp', 'story.ans_filecrow', 'story.ans_cordhound', 'story.ans_humwisp',
     'story.ans_tally_n', 'story.ans_dim_lamp_a', 'story.ans_dim_lamp_b', 'story.ans_dim_awake', 'story.ans_rook_lamp',
-    'story.ans_file_1', 'story.ans_file_2', 'story.ans_file_3', 'story.ans_file_ok'];
+    'story.ans_file_1', 'story.ans_file_2', 'story.ans_file_3', 'story.ans_file_ok',
+    // Phase 2 (D843): the quiet flags the engine sets on a won boss, and the kept / quiet tallies the close reads.
+    'story.ans_tallybat_quiet', 'story.ans_dimlamp_quiet', 'story.ans_filecrow_quiet', 'story.ans_cordhound_quiet', 'story.ans_humwisp_quiet', 'story.ans_kept', 'story.ans_quiet'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],

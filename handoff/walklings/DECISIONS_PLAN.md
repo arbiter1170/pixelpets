@@ -118,5 +118,5 @@ New rows (from D854): the cradle-word spine, the twelfth lamp (Rook), the quiet 
 4. **Night-only Sanctuary: yes.** Dimlamp is met only after dusk.
 5. Keepsake reward: not asked separately. Default is the KEPT / QUIET record page plus 500 Acorns, as part of the quiet path.
 
-Status: **Phase 1 built** (lair beats, clue reach, copy, Rook; D851, D853-D856). Deviation: the Relay House operator fights alone (no ally), to keep it data-only. Phase 2 (quiet path, boss shift lines and openers) is next.
+Status: **Phase 1 built** (lair beats, clue reach, copy, Rook; D851, D853-D856). Deviation: the Relay House operator fights alone (no ally), to keep it data-only. **Phase 2 built** (the quiet path, KEPT / QUIET in the journal and the close, boss openers and shift lines; D843, D857). Phase 3 (the tuning playtest) is next.
 

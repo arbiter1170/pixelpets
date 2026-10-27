@@ -14,10 +14,10 @@ D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE 
 
 D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET). D798 is reserved: PLAZA_ERRANDS (Vincent, Oct 26, 2026, yes to all five).
 
-D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D856 are reserved: ARBITER_UNITS (Build A D837-D847, Build C D848-D853, decisions plan D854-D856).
+D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D857 are reserved: ARBITER_UNITS (Build A D837-D847, Build C D848-D853, decisions plan D854-D857).
 
-Next free id is D857.
-Other packets hold ids through D856.
+Next free id is D858.
+Other packets hold ids through D857.
 
 ## Open
 
@@ -33,7 +33,7 @@ Other packets hold ids through D856.
 | D840 | Answerers: Echoes | Red. One passive each: Recount, Glow Share, Filed Away, Live Wire, Carrier Hum. | Built (build 20261027-1537). Hooked in the battle step queue (`doMove`, `applyStage`). | `ECHOES` in `game.js` |
 | D841 | Answerers: befriending | Yellow. BEFRIEND refused until the boss shifts; zone x0.75 (`befriendMul`). | Built (build 20261027-1537). | `befriendMul` in `sprites.js`; `befriendZoneWidth` |
 | D842 | Answerers: boss battles | Red. Opens at Humming, x1.5 HP for the battle, leader AI, shifts to Answering at half HP, rests until the next day if not befriended, joins at Quiet. Levels 26-30 under the Lv 30 cap. | Built (build 20261027-1537). | `BOSS_HP_MUL`, `setFoeTier`, `bossShift` in `game.js`; `data/detail_route3.json` |
-| D843 | Answerers: the branch | Red. Side chain "Five that answer": Mo (Keepers) or Quinn (Glimmerwell), five clues on both paths, close pays 500 Acorns (no Standing). | Built (build 20261027-1537). Reward default stays open; the 10-Standing idea is not built (the quest skill forbids it). | `quests.js`; `data/detail_route3.json` |
+| D843 | Answerers: the branch | Red. Side chain "Five that answer": Mo (Keepers) or Quinn (Glimmerwell). Quiet them, or keep them: befriending keeps a unit; beating it quiets it (it goes still and is finished, it does not rest); running or a wipe sends it back to its post until the next day. The close reads the tally: all kept, all quiet, or mixed. It pays 500 Acorns, no Standing. | Quiet path settled (Vincent, Oct 27, 2026). Built in Phase 2: the engine sets `story.ans_<unit>_quiet` on a won boss; the journal row marks KEPT or QUIET. Reward stays 500 Acorns plus the KEPT / QUIET record. | `quests.js`; `data/detail_route3.json` |
 | D844 | Answerers: journal | Yellow. `boss` lines sit in an ANSWERERS / FOUNDER'S LINE row outside the grid; the grid still counts 57. | Built (build 20261027-1537). | `offJournal`, `renderBossRow` in `game.js` |
 | D845 | Answerers: stats | Yellow. Keep 192/256/320; boss toughness is the battle-only HP multiplier. | Built (build 20261027-1537). | `stats.js` |
 | D846 | Answerers: typing | Green. Single SHADE, VOLT moves for the electronic side. | Built (build 20261027-1537). | `sprites.js` |
@@ -47,6 +47,7 @@ Other packets hold ids through D856.
 | D854 | Answerers: the cradle words | Red. Each Answerer is one of the cradle's words: COUNT (Tallybat), GATHER (Dimlamp, Cordhound), LISTEN (Filecrow), ANSWER (Humwisp), the word the cradle never printed. Mo's oldest page holds the first three and a blank. The emission stays unnamed. | Settled (Vincent, Oct 27, 2026). Built in Phase 1. | `data/detail_route3.json` scenes |
 | D855 | Answerers: the twelfth lamp | Red. Dimlamp is the twelfth Comfort Lamp off Rook's Census delivery; he signed for eleven. Rook waits outside the sanctuary after it is finished, one scene per side. | Settled (Vincent, Oct 27, 2026). Built in Phase 1. | `r3_rook`, `ans_rook_lamp` in `data/detail_route3.json` |
 | D856 | Answerers: lair beats | Yellow. Tallybat: four crates counted low to high (a wrong crate recounts). Dimlamp: night only; two lamps down, then the cot (Lie down rests the party). Filecrow: find the false card of three. Cordhound: paces the yard and comes when you tug the cord. Humwisp: Night Operator Wren (a new placeholder trainer, Lv 27-28) stands first. Bitlet types HELLO if befriended. | Night lair settled (Vincent, Oct 27, 2026); the rest built in Phase 1 as defaults. | `data/detail_route3.json` |
+| D857 | Answerers: boss personality | Yellow. Each boss opens with its Humming tier move (Head Count, Dim Hours, Stamp Out, Cord Lash, Cradle Pulse) and has its own shift line (e.g. "The relay roars. Humwisp answers it, in a voice like the cradle."). | Built in Phase 2. | `opener`, `shiftLine` on the boss objects in `data/detail_route3.json`; `bossShift` in `game.js` |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

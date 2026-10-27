@@ -1600,6 +1600,7 @@ body.mhc-frame.ctl-modern.scene-on:not(.gear-locked) .fc-dock #gearFloat{pointer
 .dex-boss{padding:4px 3px 12px}
 .dex-boss-head{text-align:center;color:var(--l);font-size:16px;letter-spacing:1px;margin:2px 0 8px}
 .dex-boss-cells{grid-template-columns:repeat(3,1fr);padding:0}
+.dex-boss-tag{font-size:12px;letter-spacing:1px;color:var(--l)}.dex-boss-tag.quiet{color:var(--s)}
 .sc-echo{margin-top:4px;color:var(--s)}
 .sc-echo b{color:var(--w);font-weight:normal}
 #scStill{min-height:44px}

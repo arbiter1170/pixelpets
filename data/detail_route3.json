@@ -1,7 +1,7 @@
 {
   "spec": "ARBITER_UNITS v0.3 (Builds A and C)",
   "version": "0.4",
-  "status": "Phase 1 of the decisions plan: lair beats, clue reach, copy (D851, D853-D856)",
+  "status": "Phases 1-2 of the decisions plan: lair beats, clue reach, copy, the quiet path, boss lines (D843, D851, D853-D857)",
   "_about": "Route 3, the Brinewick road, and the Five that answer branch. One auto-loaded detail pack: maps, rooms, scenes, spawns, the Cobblecrest exit, the clues and Associate Quinn. The road opens once story.route3_open is set: Rook's last crates (story.rc_done) plus that side's chapter end (story.hc_council_done for the Keepers, story.gb_done for Glimmerwell). Brinewick stays shut. The five are Glimmerwell's first relays, built before the Tuning chips; the hum woke them. Names and lines are marked placeholders. Spec: handoff/walklings/ARBITER_UNITS.md.",
   "maps": {
     "route3": {
@@ -148,7 +148,9 @@
             "!story.ans_tallybat_rest",
             "story.ans_tally_n>=4"
           ],
-          "scene": "ans_tallybat"
+          "scene": "ans_tallybat",
+          "opener": "head_count",
+          "shiftLine": "{foe} counts you again, faster. The tally runs past four."
         },
         {
           "kind": "door",
@@ -287,7 +289,9 @@
               16,
               36
             ]
-          ]
+          ],
+          "opener": "cord_lash",
+          "shiftLine": "{foe}'s cord snaps taut. Every crate in the yard hums with it."
         },
         {
           "kind": "door",
@@ -492,7 +496,9 @@
             "!story.ans_dimlamp_rest",
             "phase:night"
           ],
-          "scene": "ans_dimlamp_wait"
+          "scene": "ans_dimlamp_wait",
+          "opener": "dim_hours",
+          "shiftLine": "{foe} turns its glow all the way up. The room forgets what time it is."
         }
       ]
     },
@@ -600,7 +606,9 @@
             "!story.ans_filecrow",
             "!story.ans_filecrow_rest"
           ],
-          "scene": "ans_filecrow_ask"
+          "scene": "ans_filecrow_ask",
+          "opener": "stamp_out",
+          "shiftLine": "{foe} stamps a new card: ANSWERING. It files itself."
         }
       ]
     },
@@ -721,7 +729,9 @@
             "!story.ans_humwisp_rest",
             "trainer.r3_operator"
           ],
-          "scene": "ans_humwisp"
+          "scene": "ans_humwisp",
+          "opener": "cradle_pulse",
+          "shiftLine": "The relay roars. {foe} answers it, in a voice like the cradle."
         },
         {
           "kind": "trainer",
@@ -958,6 +968,10 @@
             "It stops counting. It folds its wings and settles near {pet}."
           ],
           [
+            "inc",
+            "story.ans_kept"
+          ],
+          [
             "setFlag",
             "story.ans_tallybat_done",
             true
@@ -965,9 +979,31 @@
         ],
         [
           [
-            "say",
-            "",
-            "The tally clicks on. It is still counting, somewhere close."
+            "if",
+            "story.ans_tallybat_quiet",
+            [
+              [
+                "say",
+                "",
+                "It stops mid-count and hangs very still. The tally gate reads zero, and stays there."
+              ],
+              [
+                "inc",
+                "story.ans_quiet"
+              ],
+              [
+                "setFlag",
+                "story.ans_tallybat_done",
+                true
+              ]
+            ],
+            [
+              [
+                "say",
+                "",
+                "The tally clicks on. It is still counting, somewhere close."
+              ]
+            ]
           ]
         ]
       ]
@@ -992,6 +1028,10 @@
             "Its glow turns soft and stays soft. It follows {pet} out to the road."
           ],
           [
+            "inc",
+            "story.ans_kept"
+          ],
+          [
             "setFlag",
             "story.ans_dimlamp_done",
             true
@@ -999,9 +1039,31 @@
         ],
         [
           [
-            "say",
-            "",
-            "The lamps dim. The room waits for another visitor."
+            "if",
+            "story.ans_dimlamp_quiet",
+            [
+              [
+                "say",
+                "",
+                "Its glow goes out, gently, like a lamp at the end of a shift. The room is just a room."
+              ],
+              [
+                "inc",
+                "story.ans_quiet"
+              ],
+              [
+                "setFlag",
+                "story.ans_dimlamp_done",
+                true
+              ]
+            ],
+            [
+              [
+                "say",
+                "",
+                "The lamps dim. The room waits for another visitor."
+              ]
+            ]
           ]
         ]
       ]
@@ -1026,6 +1088,10 @@
             "It closes the ledger and hops over to {pet}, light as paper."
           ],
           [
+            "inc",
+            "story.ans_kept"
+          ],
+          [
             "setFlag",
             "story.ans_filecrow_done",
             true
@@ -1033,9 +1099,31 @@
         ],
         [
           [
-            "say",
-            "",
-            "It flips a card over: FILE PENDING."
+            "if",
+            "story.ans_filecrow_quiet",
+            [
+              [
+                "say",
+                "",
+                "It closes its last file and tucks its head under one wing. FILE CLOSED."
+              ],
+              [
+                "inc",
+                "story.ans_quiet"
+              ],
+              [
+                "setFlag",
+                "story.ans_filecrow_done",
+                true
+              ]
+            ],
+            [
+              [
+                "say",
+                "",
+                "It flips a card over: FILE PENDING."
+              ]
+            ]
           ]
         ]
       ]
@@ -1060,6 +1148,10 @@
             "It drops the cord at your feet and wags once."
           ],
           [
+            "inc",
+            "story.ans_kept"
+          ],
+          [
             "setFlag",
             "story.ans_cordhound_done",
             true
@@ -1067,9 +1159,31 @@
         ],
         [
           [
-            "say",
-            "",
-            "The cord pulls tight. The pup is back among the crates."
+            "if",
+            "story.ans_cordhound_quiet",
+            [
+              [
+                "say",
+                "",
+                "The cord goes slack. The pup lies down among the crates, and the humming stops."
+              ],
+              [
+                "inc",
+                "story.ans_quiet"
+              ],
+              [
+                "setFlag",
+                "story.ans_cordhound_done",
+                true
+              ]
+            ],
+            [
+              [
+                "say",
+                "",
+                "The cord pulls tight. The pup is back among the crates."
+              ]
+            ]
           ]
         ]
       ]
@@ -1106,6 +1220,10 @@
             []
           ],
           [
+            "inc",
+            "story.ans_kept"
+          ],
+          [
             "setFlag",
             "story.ans_humwisp_done",
             true
@@ -1113,18 +1231,78 @@
         ],
         [
           [
-            "say",
-            "",
-            "The wisp sinks back into the hum. The relay keeps calling."
+            "if",
+            "story.ans_humwisp_quiet",
+            [
+              [
+                "say",
+                "",
+                "The wisp thins to nothing. The relay clicks off. For the first time, the road is quiet."
+              ],
+              [
+                "if",
+                "story.rx_bitlet",
+                [
+                  [
+                    "say",
+                    "",
+                    "Far off, in a box, Bitlet's cursor wakes. It types one new word: HELLO."
+                  ]
+                ],
+                []
+              ],
+              [
+                "inc",
+                "story.ans_quiet"
+              ],
+              [
+                "setFlag",
+                "story.ans_humwisp_done",
+                true
+              ]
+            ],
+            [
+              [
+                "say",
+                "",
+                "The wisp sinks back into the hum. The relay keeps calling."
+              ]
+            ]
           ]
         ]
       ]
     ],
     "ans_close": [
       [
-        "say",
-        "Archivist Mo",
-        "Five. All of them."
+        "if",
+        "story.ans_kept>=5",
+        [
+          [
+            "say",
+            "Archivist Mo",
+            "Five. All of them kept. I wrote down whose hands they are in now."
+          ]
+        ],
+        [
+          [
+            "if",
+            "story.ans_quiet>=5",
+            [
+              [
+                "say",
+                "Archivist Mo",
+                "Five. All of them quiet. The road is silent. I wrote that down, and then I sat a while."
+              ]
+            ],
+            [
+              [
+                "say",
+                "Archivist Mo",
+                "Five. Some kept, some quiet. I wrote down which. The books do not say which was right."
+              ]
+            ]
+          ]
+        ]
       ],
       [
         "say",
@@ -1148,9 +1326,35 @@
     ],
     "ans_close@glimmer": [
       [
-        "say",
-        "Associate Quinn",
-        "All five units accounted for. That is a very good quarter."
+        "if",
+        "story.ans_kept>=5",
+        [
+          [
+            "say",
+            "Associate Quinn",
+            "All five units accounted for, all on lanyards. That is a very good quarter."
+          ]
+        ],
+        [
+          [
+            "if",
+            "story.ans_quiet>=5",
+            [
+              [
+                "say",
+                "Associate Quinn",
+                "All five units accounted for. Decommissioned in the field. The form has a box for that."
+              ]
+            ],
+            [
+              [
+                "say",
+                "Associate Quinn",
+                "All five units accounted for. Some on lanyards, some in the field. Both boxes are ticked."
+              ]
+            ]
+          ]
+        ]
       ],
       [
         "say",
@@ -2007,7 +2211,10 @@
     "story.ans_file_1": "Ledger office card 1 read.",
     "story.ans_file_2": "Card 2 read.",
     "story.ans_file_3": "Card 3 read (the false one).",
-    "story.ans_file_ok": "Picked the false card; Filecrow will fight."
+    "story.ans_file_ok": "Picked the false card; Filecrow will fight.",
+    "story.ans_<unit>_quiet": "Set by the engine when you beat the boss (D843): it goes still and is finished, not resting.",
+    "story.ans_kept": "How many units joined (0-5). The close reads it.",
+    "story.ans_quiet": "How many units were quieted (0-5). The close reads it."
   },
   "trainers": {
     "r3_operator": {
