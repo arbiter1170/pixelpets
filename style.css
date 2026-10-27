@@ -1495,6 +1495,9 @@ body.mhc-frame.ctl-modern.scene-on .fc-dock{opacity:0;pointer-events:none}
 body.mhc-frame.ctl-modern.scene-on .fc-dock #gearFloat,
 body.mhc-frame.ctl-modern.scene-on.price-on .fc-dock .fc-acorns{opacity:1;pointer-events:auto}
 body.mhc-frame.ctl-modern.scene-on .float-ctl{z-index:12}
+/* The dock keeps z 12 in scenes so the gear stays tappable (NAV_MODERN G3); its opaque band would cover the scene text box
+   (z 9), so under the dock the box sits above it instead of 12 px above the bottom edge. */
+body.mhc-frame.ctl-modern .scene-ov{padding-bottom:calc(156px + var(--sa-b) + 12px)}
 #coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}
 #coopJoin{background:var(--g);color:var(--k)}
 #coopNotNow{background:var(--m);color:var(--w)}

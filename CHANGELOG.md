@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 17:14 ET: Scene text box sits above the Modern dock (build 20261027-1714)
+
+- What changed and why: In Modern controls on a phone held upright, the dock band at the bottom covered the scene text box (z 9 under the dock's z 12), so every talk scene's lines were hidden. Modern is now the default (D833), so most players hit this. Under the dock the box now sits above it, not 12 px above the bottom edge. #203 already keeps the gear shown and tappable in scenes (visibility rules), so this branch's earlier per-item fades were dropped in the merge; only the box lift remains.
+- Files touched: `style.css`, `tests/modern_hud_dock.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/scene-box-above-dock` (PR #202), merged with main `a9fb865`. Build `20261027-1714`.
+- Tests run and result (widths, checks): `tests/modern_hud_dock.spec.js` at 320, 375 and 390: 14 passed, 1 failed. The failure is the existing 320 toast row ("Found 3 Hearty ..."), which fails the same on `main` `a9fb865`. The two new scene rows fail on `main` at all three widths (box bottom 832 against dock top 689 at 390) and pass here. They check that the box bottom is at or above the dock top, that the gear takes taps in the opening scene and is locked with a partner, and that the gear stays shown while PHONE and QUEST hide.
+- Decisions made (colour + reasoning): green. A fix for a regression; it keeps NAV_MODERN G3 and MODERN_HUD_CLEAR's rule that talk scenes open over the map.
+- Anything left unfinished: none.
+
 ## 2026-10-27 12:40 ET: Review fixes for the arcade grips (build 20261027-1240)
 
 - What changed and why: Three small fixes from the pre-merge review of PR #203. During a scene the sideways pad and TALK rest at 35% like the upright pad fades, instead of staying lit. The sideways test also needs the window to be at least 560 wide, so an upright phone whose window gets short (keyboard up, split screen) never gets grips and a sliver of a column; 568 x 320 still counts as sideways. Pressing the upright TALK hub while nobody is in reach no longer flashes it blue.
