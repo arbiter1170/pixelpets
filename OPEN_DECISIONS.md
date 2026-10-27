@@ -14,10 +14,10 @@ D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE 
 
 D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET). D798 is reserved: PLAZA_ERRANDS (Vincent, Oct 26, 2026, yes to all five).
 
-D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D853 are reserved: ARBITER_UNITS (Build A D837-D847, Build C D848-D853).
+D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D856 are reserved: ARBITER_UNITS (Build A D837-D847, Build C D848-D853, decisions plan D854-D856).
 
-Next free id is D854.
-Other packets hold ids through D853.
+Next free id is D857.
+Other packets hold ids through D856.
 
 ## Open
 
@@ -41,9 +41,12 @@ Other packets hold ids through D853.
 | D848 | Route 3: when it opens | Red (approved with the Build C plan and the v0.3 gate, Vincent, Oct 27, 2026). `story.route3_open` is derived on arrival: `story.rc_done` plus `story.hc_council_done` (Keepers) or `story.gb_done` (Glimmerwell). Brinewick stays shut. | Built (build 20261027-1537). Rook gets an open-road line. | `openRoad3` in `game.js`; `data/detail_route3.json` |
 | D849 | Route 3: hold | Yellow. Split: "Keepers walk it. Glimmerwell's crates roll down it." | Built (build 20261027-1537). Node `route3` at col 17, row 9. | `REGION_MAP.nodes.route3` |
 | D850 | Route 3: wilds | Yellow. SHADE and VOLT lean, Lv 22-27, no starter lines (no tide). | Built (build 20261027-1537). | `data/detail_route3.json` `spawnTables.route3` |
-| D851 | Route 3: names and copy | Yellow. Placeholder names and lines: ROUTE 3, Comfort Sanctuary, Shipping Ledger Office, Relay House, "BRINEWICK · Not yet.", every clue, boss, entry and close line. | Built as marked placeholder copy in the existing voices. | `data/detail_route3.json` |
+| D851 | Route 3: names and copy | Yellow. Placeholder names and lines: ROUTE 3, Comfort Sanctuary, Shipping Ledger Office, Relay House, "BRINEWICK · Not yet.", every clue, boss, entry and close line. | Rewritten in Phase 1 of `handoff/walklings/DECISIONS_PLAN.md` (Oct 27, 2026) against the voice guide and the cradle-word spine; names kept (Comfort Sanctuary, lit after dusk). Still yellow until Vincent reads it in game. | `data/detail_route3.json` |
 | D852 | A second Quinn contact | Yellow. Associate Quinn in the Cobblecrest Trial Hall is a glimmer cast row, separate from the RegenX "Quinn". | Built (build 20261027-1537). | `data/reputation.json`; `data/heights.json` speakers |
-| D853 | Clue reach on a switched save | Yellow. A player who switched to Glimmerwell without entering the RegenX lab cannot reach the lab clues; the Keepers mast needs `story.mom_sent`. | Not fixed. The Keepers twins cover a Keepers player. | `data/detail_route3.json` |
+| D853 | Clue reach on a switched save | Yellow. A player who switched to Glimmerwell without entering the RegenX lab cannot reach the lab clues; the Keepers mast needs `story.mom_sent`. | Fixed in Phase 1: the Glimmerwell crow clue is a Census cart on Route 2 and its last clue comes from Associate Quinn (both always open after `story.gb_done`); the Keepers last clue is the council chart in High Charity. The lab and Mahopac clues stay as extras. | `data/detail_route3.json` |
+| D854 | Answerers: the cradle words | Red. Each Answerer is one of the cradle's words: COUNT (Tallybat), GATHER (Dimlamp, Cordhound), LISTEN (Filecrow), ANSWER (Humwisp), the word the cradle never printed. Mo's oldest page holds the first three and a blank. The emission stays unnamed. | Settled (Vincent, Oct 27, 2026). Built in Phase 1. | `data/detail_route3.json` scenes |
+| D855 | Answerers: the twelfth lamp | Red. Dimlamp is the twelfth Comfort Lamp off Rook's Census delivery; he signed for eleven. Rook waits outside the sanctuary after it is finished, one scene per side. | Settled (Vincent, Oct 27, 2026). Built in Phase 1. | `r3_rook`, `ans_rook_lamp` in `data/detail_route3.json` |
+| D856 | Answerers: lair beats | Yellow. Tallybat: four crates counted low to high (a wrong crate recounts). Dimlamp: night only; two lamps down, then the cot (Lie down rests the party). Filecrow: find the false card of three. Cordhound: paces the yard and comes when you tug the cord. Humwisp: Night Operator Wren (a new placeholder trainer, Lv 27-28) stands first. Bitlet types HELLO if befriended. | Night lair settled (Vincent, Oct 27, 2026); the rest built in Phase 1 as defaults. | `data/detail_route3.json` |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

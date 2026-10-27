@@ -1,7 +1,7 @@
 {
   "spec": "ARBITER_UNITS v0.3 (Builds A and C)",
-  "version": "0.3",
-  "status": "built, placeholder copy (D848-D853)",
+  "version": "0.4",
+  "status": "Phase 1 of the decisions plan: lair beats, clue reach, copy (D851, D853-D856)",
   "_about": "Route 3, the Brinewick road, and the Five that answer branch. One auto-loaded detail pack: maps, rooms, scenes, spawns, the Cobblecrest exit, the clues and Associate Quinn. The road opens once story.route3_open is set: Rook's last crates (story.rc_done) plus that side's chapter end (story.hc_council_done for the Keepers, story.gb_done for Glimmerwell). Brinewick stays shut. The five are Glimmerwell's first relays, built before the Tuning chips; the hum woke them. Names and lines are marked placeholders. Spec: handoff/walklings/ARBITER_UNITS.md.",
   "maps": {
     "route3": {
@@ -97,7 +97,7 @@
           "y": 10,
           "sprite": "glimmer_stand",
           "lines": {
-            "else": "A Glow Census stand. The counter reads 4, 4, 4."
+            "else": "A Glow Census stand. A sign: COUNT LOW TO HIGH. COUNT TWICE."
           }
         },
         {
@@ -107,6 +107,7 @@
           "y": 10,
           "sprite": "glimmer_gate",
           "lines": {
+            "story.ans_tallybat_clue&!story.ans_tallybat_done&!story.ans_tallybat_rest&story.ans_tally_n<4": "The tally gate is down. A bat-shaped shadow sits on it, not counting.",
             "else": "A tally gate. Every crate is counted here."
           }
         },
@@ -117,7 +118,8 @@
           "y": 11,
           "sprite": "crate_stack",
           "lines": {
-            "else": "Crates, counted twice."
+            "story.ans_tallybat_clue&!story.ans_tallybat_done&!story.ans_tallybat_rest&story.ans_tally_n<4": "@ans_tally_b",
+            "else": "Crates on a tally card. CARD 1."
           }
         },
         {
@@ -127,7 +129,8 @@
           "y": 11,
           "sprite": "rc_crate",
           "lines": {
-            "else": "A sealed crate, stamped BRINEWICK DOCKS."
+            "story.ans_tallybat_clue&!story.ans_tallybat_done&!story.ans_tallybat_rest&story.ans_tally_n<4": "@ans_tally_d",
+            "else": "Crates on a tally card. CARD 2."
           }
         },
         {
@@ -141,8 +144,9 @@
           "befriendBonus": 0,
           "when": [
             "story.ans_tallybat_clue",
-            "!story.ans_tallybat",
-            "!story.ans_tallybat_rest"
+            "!story.ans_tallybat_done",
+            "!story.ans_tallybat_rest",
+            "story.ans_tally_n>=4"
           ],
           "scene": "ans_tallybat"
         },
@@ -161,7 +165,7 @@
           "id": "r3_sign_sanctuary",
           "x": 7,
           "y": 20,
-          "text": "COMFORT SANCTUARY · Rest a while. — Glimmerwell Co."
+          "text": "COMFORT SANCTUARY · Lit after dusk. Rest a while. — Glimmerwell Co."
         },
         {
           "kind": "door",
@@ -178,7 +182,7 @@
           "id": "r3_sign_ledger",
           "x": 19,
           "y": 28,
-          "text": "SHIPPING LEDGER · Brinewick Docks, east office."
+          "text": "SHIPPING LEDGER · Brinewick Docks, east office. Quiet please."
         },
         {
           "kind": "prop",
@@ -187,7 +191,7 @@
           "y": 33,
           "sprite": "crate_stack",
           "lines": {
-            "else": "Crates for Brinewick. They hum a little."
+            "else": "Crates stencilled BRINEWICK DOCKS. They hum, like something asleep."
           }
         },
         {
@@ -197,7 +201,7 @@
           "y": 33,
           "sprite": "crate_stack",
           "lines": {
-            "else": "Crates for Brinewick. They hum a little."
+            "else": "Crates stencilled BRINEWICK DOCKS. They hum, like something asleep."
           }
         },
         {
@@ -207,7 +211,7 @@
           "y": 33,
           "sprite": "crate_stack",
           "lines": {
-            "else": "Crates for Brinewick. They hum a little."
+            "else": "Crates stencilled BRINEWICK DOCKS. They hum, like something asleep."
           }
         },
         {
@@ -217,6 +221,7 @@
           "y": 35,
           "sprite": "rc_crate",
           "lines": {
+            "story.ans_cordhound_clue&!story.ans_cordhound_done&!story.ans_cordhound_rest": "@ans_cord_tug",
             "else": "A sealed crate. A chewed cord hangs off it."
           }
         },
@@ -264,7 +269,25 @@
             "!story.ans_cordhound",
             "!story.ans_cordhound_rest"
           ],
-          "scene": "ans_cordhound"
+          "scene": "ans_cordhound_dodge",
+          "patrol": [
+            [
+              16,
+              35
+            ],
+            [
+              18,
+              35
+            ],
+            [
+              18,
+              36
+            ],
+            [
+              16,
+              36
+            ]
+          ]
         },
         {
           "kind": "door",
@@ -281,7 +304,7 @@
           "id": "r3_sign_relay",
           "x": 18,
           "y": 43,
-          "text": "RELAY HOUSE · Staff only. The hum is normal."
+          "text": "RELAY HOUSE · Staff only. The hum is normal. Have a bright day!"
         },
         {
           "kind": "prop",
@@ -290,6 +313,7 @@
           "y": 46,
           "sprite": "glimmer_gate",
           "lines": {
+            "story.ans_all": "You say hello for old Hale. The gate hums back. Not yet. Soon.",
             "else": "The gate to Brinewick is shut. Not yet."
           }
         },
@@ -299,6 +323,52 @@
           "x": 12,
           "y": 45,
           "text": "BRINEWICK · Not yet."
+        },
+        {
+          "kind": "prop",
+          "id": "r3_tally_crates_n",
+          "x": 8,
+          "y": 9,
+          "sprite": "crate_stack",
+          "lines": {
+            "story.ans_tallybat_clue&!story.ans_tallybat_done&!story.ans_tallybat_rest&story.ans_tally_n<4": "@ans_tally_a",
+            "else": "Crates on a tally card. CARD 3."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_tally_crate_n",
+          "x": 14,
+          "y": 9,
+          "sprite": "crate_stack",
+          "lines": {
+            "story.ans_tallybat_clue&!story.ans_tallybat_done&!story.ans_tallybat_rest&story.ans_tally_n<4": "@ans_tally_c",
+            "else": "Crates on a tally card. CARD 4."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "r3_rook",
+          "name": "Rook",
+          "look": "rook",
+          "x": 3,
+          "y": 20,
+          "facing": "right",
+          "when": [
+            "story.ans_dimlamp_done",
+            "!story.ans_rook_lamp"
+          ],
+          "scene": "ans_rook_lamp",
+          "lines": {
+            "else": "It looks better out here. Lighter."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "r3_tide_board",
+          "x": 21,
+          "y": 32,
+          "text": "BRINEWICK DOCKS · Load before the tide. Crates go by sea."
         }
       ]
     },
@@ -356,6 +426,7 @@
           "y": 4,
           "sprite": "rest_bed",
           "lines": {
+            "phase:night&story.ans_dimlamp_clue&!story.ans_dimlamp_done&!story.ans_dimlamp_rest": "@ans_dim_cot",
             "else": "A cot. It is very easy to want to lie down."
           }
         },
@@ -366,6 +437,7 @@
           "y": 4,
           "sprite": "rest_bed",
           "lines": {
+            "phase:night&story.ans_dimlamp_clue&!story.ans_dimlamp_done&!story.ans_dimlamp_rest": "@ans_dim_cot",
             "else": "A cot. It is very easy to want to lie down."
           }
         },
@@ -376,6 +448,9 @@
           "y": 3,
           "sprite": "comfort_lamp",
           "lines": {
+            "!phase:night": "A Comfort Lamp, switched off. A tag: LIT AFTER DUSK.",
+            "story.ans_dimlamp_clue&!story.ans_dimlamp_done&!story.ans_dimlamp_rest&!story.ans_dim_lamp_a": "@ans_dim_lamp_a",
+            "story.ans_dim_lamp_a": "A Comfort Lamp, turned down low.",
             "else": "A Comfort Lamp. Its glow asks you to stay."
           }
         },
@@ -386,6 +461,9 @@
           "y": 3,
           "sprite": "comfort_lamp",
           "lines": {
+            "!phase:night": "A Comfort Lamp, switched off. A tag: LIT AFTER DUSK.",
+            "story.ans_dimlamp_clue&!story.ans_dimlamp_done&!story.ans_dimlamp_rest&!story.ans_dim_lamp_b": "@ans_dim_lamp_b",
+            "story.ans_dim_lamp_b": "A Comfort Lamp, turned down low.",
             "else": "A Comfort Lamp. Its glow asks you to stay."
           }
         },
@@ -396,7 +474,7 @@
           "y": 6,
           "sprite": "floor_lantern",
           "lines": {
-            "else": "A low lantern, turned down."
+            "else": "A low lantern, turned down. Someone left it for the night shift."
           }
         },
         {
@@ -410,10 +488,11 @@
           "befriendBonus": 0,
           "when": [
             "story.ans_dimlamp_clue",
-            "!story.ans_dimlamp",
-            "!story.ans_dimlamp_rest"
+            "!story.ans_dimlamp_done",
+            "!story.ans_dimlamp_rest",
+            "phase:night"
           ],
-          "scene": "ans_dimlamp"
+          "scene": "ans_dimlamp_wait"
         }
       ]
     },
@@ -471,6 +550,7 @@
           "y": 3,
           "sprite": "tunnel_ledger",
           "lines": {
+            "story.ans_filecrow_clue&!story.ans_filecrow_done&!story.ans_file_1": "@ans_file_1",
             "else": "Every crate, every unit, written down twice."
           }
         },
@@ -481,6 +561,7 @@
           "y": 3,
           "sprite": "lab_file_cart",
           "lines": {
+            "story.ans_filecrow_clue&!story.ans_filecrow_done&!story.ans_file_2": "@ans_file_2",
             "else": "A file cart. RELOCATED, says the tag."
           }
         },
@@ -491,6 +572,7 @@
           "y": 7,
           "sprite": "chart_table",
           "lines": {
+            "story.ans_filecrow_clue&!story.ans_filecrow_done&!story.ans_file_3": "@ans_file_3",
             "else": "A chart of the coast. Brinewick is circled."
           }
         },
@@ -501,7 +583,7 @@
           "y": 7,
           "sprite": "bank_counter",
           "lines": {
-            "else": "The counter bell is wrapped in cloth."
+            "else": "A ledger page by the bell. ORDERED BY: and then a blank. Nobody wrote the name."
           }
         },
         {
@@ -518,7 +600,7 @@
             "!story.ans_filecrow",
             "!story.ans_filecrow_rest"
           ],
-          "scene": "ans_filecrow"
+          "scene": "ans_filecrow_ask"
         }
       ]
     },
@@ -635,10 +717,39 @@
           "befriendBonus": 0,
           "when": [
             "story.ans_humwisp_clue",
-            "!story.ans_humwisp",
-            "!story.ans_humwisp_rest"
+            "!story.ans_humwisp_done",
+            "!story.ans_humwisp_rest",
+            "trainer.r3_operator"
           ],
           "scene": "ans_humwisp"
+        },
+        {
+          "kind": "trainer",
+          "id": "r3_operator",
+          "look": "associate",
+          "x": 6,
+          "y": 6,
+          "facing": "down",
+          "when": [
+            "story.ans_humwisp_clue",
+            "!trainer.r3_operator"
+          ]
+        },
+        {
+          "kind": "npc",
+          "id": "r3_wren",
+          "name": "Wren",
+          "look": "associate",
+          "x": 9,
+          "y": 7,
+          "facing": "left",
+          "when": [
+            "trainer.r3_operator"
+          ],
+          "lines": {
+            "story.ans_all": "Off shift. Feels strange. Feels fine.",
+            "else": "Off shift. First time in years."
+          }
         }
       ]
     }
@@ -648,17 +759,17 @@
       [
         "say",
         "Archivist Mo",
-        "You walked the Brinewick road. Then you heard it too. That low hum past the crates."
+        "Lumen kept the Brinewick road dark. The road did not listen. You walked it, and you heard the hum."
       ],
       [
         "say",
         "Archivist Mo",
-        "Before the chips, they built tools to carry it. A counter, a lamp, a crow, a tether, a wisp."
+        "My oldest page has three words on it. COUNT. GATHER. LISTEN. Then a blank, where a fourth should go."
       ],
       [
         "say",
         "Archivist Mo",
-        "The hum woke all five. My books call them the Answerers. The page on what they answer stays blank."
+        "Before the chips, Glimmerwell built five relays to do that work. The hum woke them. They walked off."
       ],
       [
         "say",
@@ -673,24 +784,24 @@
       [
         "say",
         "Archivist Mo",
-        "Start with the old census post on Route 2. It never stopped counting."
+        "Start where the counting started. The old census post on Route 2."
       ]
     ],
     "ans_open@glimmer": [
       [
         "say",
         "Associate Quinn",
-        "You made it down the Brinewick road. Good. This is the next quarter."
+        "You made it down the Brinewick road. Good. Your review is closed, so this is next quarter."
       ],
       [
         "say",
         "Associate Quinn",
-        "Before the chips, we built five relays. A counter, a lamp, a crow, a tether, a wisp."
+        "Before the chips, we ran a pilot. Five relays. A counter, a lamp, a crow, a tether, a wisp."
       ],
       [
         "say",
         "Associate Quinn",
-        "The hum woke them and they walked off the books. Relay coverage is our proudest number. Five are missing."
+        "The cradle hummed and they walked off the books. Relay coverage is our proudest number. Five are missing."
       ],
       [
         "say",
@@ -712,12 +823,12 @@
       [
         "say",
         "",
-        "An old Glow Census post. The counter clicks with nobody near it: 4, 4, 4, 4."
+        "An old Glow Census post. The counter clicks with nobody near it: 1, 2, 3, 4. Then it starts again."
       ],
       [
         "say",
         "",
-        "Fresh tally marks run off the post and down the road. Something is still counting, east of here."
+        "Tally marks run off the post and down the road. Something east of here still counts, low to high."
       ],
       [
         "setFlag",
@@ -734,7 +845,7 @@
       [
         "say",
         "",
-        "A tag on the pole: LAMP COUNT 11 OF 12. The twelfth walked off toward the Brinewick road."
+        "A tag on the pole: LAMP COUNT 11 OF 12. DELIVERED BY R. The twelfth walked off toward the Brinewick road."
       ],
       [
         "setFlag",
@@ -751,7 +862,7 @@
       [
         "say",
         "",
-        "Under it sits a RegenX folder label. Somebody filed it in the wrong archive, on purpose."
+        "Under it, a RegenX folder label. Somebody filed it in the wrong archive. On purpose."
       ],
       [
         "setFlag",
@@ -763,7 +874,7 @@
       [
         "say",
         "",
-        "A fifth file cart, wheels unlocked. Its drawer is empty except for one black feather."
+        "A Census file cart, parked under the trees. Its drawer is empty except for one black feather."
       ],
       [
         "say",
@@ -797,12 +908,12 @@
       [
         "say",
         "",
-        "The old mast hums. It never hummed before."
+        "The dock chart. Brinewick is circled, and its light is dark. Under it is a second light. Lit."
       ],
       [
         "say",
         "",
-        "The four went quiet. The fifth got louder. It waits where the Brinewick road ends."
+        "Nobody marked it. It sits where the Brinewick road ends, and it hums, very softly."
       ],
       [
         "setFlag",
@@ -814,12 +925,12 @@
       [
         "say",
         "",
-        "The cradle hums low. Its cursor spells COUNT. GATHER. LISTEN. Then one more word: ANSWER."
+        "The cradle hums low. Its cursor spells COUNT. GATHER. LISTEN. Then a word it never printed before: ANSWER."
       ],
       [
         "say",
         "",
-        "A note on the glass, in Quinn's hand: THE FIFTH IS AT THE RELAY HOUSE. END OF THE ROAD."
+        "Under the glass, a sticky note: RELAY HOUSE. END OF THE ROAD. LEGACY."
       ],
       [
         "setFlag",
@@ -845,6 +956,11 @@
             "say",
             "",
             "It stops counting. It folds its wings and settles near {pet}."
+          ],
+          [
+            "setFlag",
+            "story.ans_tallybat_done",
+            true
           ]
         ],
         [
@@ -860,7 +976,7 @@
       [
         "say",
         "",
-        "A lamp-headed shade glows between the cots. Its light asks you to sit down and stay."
+        "LAMP COUNT 11 OF 12. The twelfth lamp glows between the cots and asks you to stay."
       ],
       [
         "encounter",
@@ -874,6 +990,11 @@
             "say",
             "",
             "Its glow turns soft and stays soft. It follows {pet} out to the road."
+          ],
+          [
+            "setFlag",
+            "story.ans_dimlamp_done",
+            true
           ]
         ],
         [
@@ -889,7 +1010,7 @@
       [
         "say",
         "",
-        "A crow with a file-card chest perches on the ledger. It files your name before you say it."
+        "It closes the ledger with one wing. Now it will hear you."
       ],
       [
         "encounter",
@@ -903,6 +1024,11 @@
             "say",
             "",
             "It closes the ledger and hops over to {pet}, light as paper."
+          ],
+          [
+            "setFlag",
+            "story.ans_filecrow_done",
+            true
           ]
         ],
         [
@@ -918,7 +1044,7 @@
       [
         "say",
         "",
-        "A shadow pup paces the cargo yard on a cord nobody holds. The crates hum when it passes."
+        "The pup skids up, cord in its teeth. Every crate in the yard hums at once."
       ],
       [
         "encounter",
@@ -932,6 +1058,11 @@
             "say",
             "",
             "It drops the cord at your feet and wags once."
+          ],
+          [
+            "setFlag",
+            "story.ans_cordhound_done",
+            true
           ]
         ],
         [
@@ -961,6 +1092,23 @@
             "say",
             "",
             "The hum drops to a whisper. The wisp curls beside {pet}, and the relay goes quiet."
+          ],
+          [
+            "if",
+            "story.rx_bitlet",
+            [
+              [
+                "say",
+                "",
+                "Far off, in a box, Bitlet's cursor wakes. It types one new word: HELLO."
+              ]
+            ],
+            []
+          ],
+          [
+            "setFlag",
+            "story.ans_humwisp_done",
+            true
           ]
         ],
         [
@@ -981,6 +1129,11 @@
       [
         "say",
         "Archivist Mo",
+        "COUNT. GATHER. LISTEN. ANSWER. My oldest page has four words now. I wrote the last one in myself."
+      ],
+      [
+        "say",
+        "Archivist Mo",
         "Their hum is smaller now. Smaller is not gone. I wrote that down too."
       ],
       [
@@ -997,12 +1150,17 @@
       [
         "say",
         "Associate Quinn",
-        "All five relays are home. That is a very good quarter."
+        "All five units accounted for. That is a very good quarter."
       ],
       [
         "say",
         "Associate Quinn",
-        "The cradle is calmer. Do not ask me what that means. I would not know."
+        "The cradle read came back blank this morning. No words at all. I have never seen it print nothing."
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "Do not ask me what that means. I would not know. Have a bright day."
       ],
       [
         "acorns",
@@ -1012,6 +1170,515 @@
         "setFlag",
         "story.ans_all",
         true
+      ]
+    ],
+    "ans_clue_humwisp_mast": [
+      [
+        "say",
+        "",
+        "The old mast hums. It never hummed before."
+      ],
+      [
+        "say",
+        "",
+        "The four went quiet. The fifth got louder. It waits where the Brinewick road ends."
+      ],
+      [
+        "setFlag",
+        "story.ans_humwisp_clue",
+        true
+      ]
+    ],
+    "ans_quinn_word": [
+      [
+        "say",
+        "Associate Quinn",
+        "Four units home. I pulled last quarter's cradle read. You should see the bottom line."
+      ],
+      [
+        "say",
+        "",
+        "COUNT. GATHER. LISTEN. Under it, smaller, a word the cradle never printed before: ANSWER."
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "The fifth is at the old Relay House, where the road ends. Legacy coverage. Off the books."
+      ],
+      [
+        "setFlag",
+        "story.ans_humwisp_clue",
+        true
+      ]
+    ],
+    "ans_tally_a": [
+      [
+        "if",
+        "story.ans_tally_n>=2&story.ans_tally_n<3",
+        [
+          [
+            "say",
+            "",
+            "Tally card: 3. Something on the gate clicks once."
+          ],
+          [
+            "inc",
+            "story.ans_tally_n"
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "Tally card: 3. The gate clicks back to zero. It recounts."
+          ],
+          [
+            "setFlag",
+            "story.ans_tally_n",
+            0
+          ]
+        ]
+      ]
+    ],
+    "ans_tally_b": [
+      [
+        "if",
+        "story.ans_tally_n>=0&story.ans_tally_n<1",
+        [
+          [
+            "say",
+            "",
+            "Tally card: 1. Something on the gate clicks once."
+          ],
+          [
+            "inc",
+            "story.ans_tally_n"
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "Tally card: 1. The gate clicks back to zero. It recounts."
+          ],
+          [
+            "setFlag",
+            "story.ans_tally_n",
+            0
+          ]
+        ]
+      ]
+    ],
+    "ans_tally_c": [
+      [
+        "if",
+        "story.ans_tally_n>=3&story.ans_tally_n<4",
+        [
+          [
+            "say",
+            "",
+            "Tally card: 4. Something on the gate clicks once."
+          ],
+          [
+            "inc",
+            "story.ans_tally_n"
+          ],
+          [
+            "say",
+            "",
+            "The gate counts back: 1, 2, 3, 4. A small dark shape drops off it, wings open."
+          ],
+          [
+            "run",
+            "ans_tallybat"
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "Tally card: 4. The gate clicks back to zero. It recounts."
+          ],
+          [
+            "setFlag",
+            "story.ans_tally_n",
+            0
+          ]
+        ]
+      ]
+    ],
+    "ans_tally_d": [
+      [
+        "if",
+        "story.ans_tally_n>=1&story.ans_tally_n<2",
+        [
+          [
+            "say",
+            "",
+            "Tally card: 2. Something on the gate clicks once."
+          ],
+          [
+            "inc",
+            "story.ans_tally_n"
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "Tally card: 2. The gate clicks back to zero. It recounts."
+          ],
+          [
+            "setFlag",
+            "story.ans_tally_n",
+            0
+          ]
+        ]
+      ]
+    ],
+    "ans_dim_lamp_a": [
+      [
+        "say",
+        "",
+        "You turn the lamp down. Its glow stops asking you to stay."
+      ],
+      [
+        "setFlag",
+        "story.ans_dim_lamp_a",
+        true
+      ]
+    ],
+    "ans_dim_lamp_b": [
+      [
+        "say",
+        "",
+        "You turn the lamp down. Its glow stops asking you to stay."
+      ],
+      [
+        "setFlag",
+        "story.ans_dim_lamp_b",
+        true
+      ]
+    ],
+    "ans_dim_cot": [
+      [
+        "choice",
+        "The cot is warm. The lamps lean closer.",
+        [
+          [
+            "Lie down",
+            [
+              [
+                "say",
+                "",
+                "You lie down. Just for a moment."
+              ],
+              [
+                "rest"
+              ],
+              [
+                "say",
+                "",
+                "When you open your eyes, a lamp-headed shade is at the foot of the cot."
+              ],
+              [
+                "run",
+                "ans_dimlamp"
+              ]
+            ]
+          ],
+          [
+            "Turn the lamps down",
+            [
+              [
+                "say",
+                "",
+                "Two lamps down. One glow is left in the room, and it is not a lamp."
+              ],
+              [
+                "setFlag",
+                "story.ans_dim_awake",
+                true
+              ],
+              [
+                "run",
+                "ans_dimlamp"
+              ]
+            ],
+            null,
+            [
+              "story.ans_dim_lamp_a",
+              "story.ans_dim_lamp_b"
+            ]
+          ],
+          [
+            "Stay up",
+            [
+              [
+                "say",
+                "",
+                "You stay up. The lamps wait. They are very good at waiting."
+              ]
+            ]
+          ]
+        ],
+        ""
+      ]
+    ],
+    "ans_dimlamp_wait": [
+      [
+        "say",
+        "",
+        "It glows between the cots and will not look at you. It wants you to lie down first."
+      ]
+    ],
+    "ans_rook_lamp": [
+      [
+        "say",
+        "Rook",
+        "{name}? I saw the sanctuary go dark. Is that... one of the Census lamps?"
+      ],
+      [
+        "say",
+        "Rook",
+        "Twelve lamps. I counted them onto the cart myself. I signed for eleven and never asked why."
+      ],
+      [
+        "say",
+        "Rook",
+        "It looks better out here. Lighter. ...Tell it I'm sorry about the cart?"
+      ],
+      [
+        "setFlag",
+        "story.ans_rook_lamp",
+        true
+      ]
+    ],
+    "ans_rook_lamp@glimmer": [
+      [
+        "say",
+        "Rook",
+        "Hey, partner. Is that the twelfth lamp? From my delivery?"
+      ],
+      [
+        "say",
+        "Rook",
+        "I signed for eleven. Dorian said the twelfth was a rounding error. It doesn't look like a rounding error."
+      ],
+      [
+        "say",
+        "Rook",
+        "...Funny. It looks happier with you than it did on the stake."
+      ],
+      [
+        "setFlag",
+        "story.ans_rook_lamp",
+        true
+      ]
+    ],
+    "ans_file_1": [
+      [
+        "say",
+        "",
+        "A file card tucked in the ledger. CARD 1. UNIT: TALLY. STATUS: COUNTING."
+      ],
+      [
+        "setFlag",
+        "story.ans_file_1",
+        true
+      ]
+    ],
+    "ans_file_2": [
+      [
+        "say",
+        "",
+        "A file card in the cart. CARD 2. UNIT: LAMP. STATUS: RELOCATED."
+      ],
+      [
+        "setFlag",
+        "story.ans_file_2",
+        true
+      ]
+    ],
+    "ans_file_3": [
+      [
+        "say",
+        "",
+        "A file card under the chart. CARD 3. UNIT: CROW. STATUS: DECOMMISSIONED."
+      ],
+      [
+        "setFlag",
+        "story.ans_file_3",
+        true
+      ]
+    ],
+    "ans_filecrow_ask": [
+      [
+        "if",
+        "story.ans_file_ok",
+        [
+          [
+            "run",
+            "ans_filecrow"
+          ]
+        ],
+        [
+          [
+            "if",
+            "!story.ans_file_1&!story.ans_file_2&!story.ans_file_3",
+            [
+              [
+                "say",
+                "",
+                "A crow with a file-card chest perches on the ledger. It files your name, then waits."
+              ],
+              [
+                "say",
+                "",
+                "It wants something filed back. The office is full of cards."
+              ]
+            ],
+            [
+              [
+                "say",
+                "",
+                "The crow taps the desk. One of your cards is false. It wants to know if you can tell."
+              ],
+              [
+                "choice",
+                "Which card is false?",
+                [
+                  [
+                    "Card 1: Tally",
+                    [
+                      [
+                        "say",
+                        "",
+                        "FILE PENDING. It hops to a high shelf and starts a new card about you."
+                      ],
+                      [
+                        "push",
+                        0,
+                        1
+                      ]
+                    ],
+                    null,
+                    [
+                      "story.ans_file_1"
+                    ]
+                  ],
+                  [
+                    "Card 2: Lamp",
+                    [
+                      [
+                        "say",
+                        "",
+                        "FILE PENDING. It hops to a high shelf and starts a new card about you."
+                      ],
+                      [
+                        "push",
+                        0,
+                        1
+                      ]
+                    ],
+                    null,
+                    [
+                      "story.ans_file_2"
+                    ]
+                  ],
+                  [
+                    "Card 3: Crow",
+                    [
+                      [
+                        "say",
+                        "",
+                        "It pecks CARD 3 and tears it neatly in two. Not decommissioned. Not yet."
+                      ],
+                      [
+                        "setFlag",
+                        "story.ans_file_ok",
+                        true
+                      ],
+                      [
+                        "give",
+                        "befriend_treat",
+                        1
+                      ],
+                      [
+                        "run",
+                        "ans_filecrow"
+                      ]
+                    ],
+                    null,
+                    [
+                      "story.ans_file_3"
+                    ]
+                  ],
+                  [
+                    "Not yet",
+                    [
+                      [
+                        "say",
+                        "",
+                        "It files that too."
+                      ]
+                    ]
+                  ]
+                ],
+                ""
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "ans_cordhound_dodge": [
+      [
+        "say",
+        "",
+        "A shadow pup on a cord nobody holds. It darts behind the crates when you reach for it."
+      ],
+      [
+        "say",
+        "",
+        "By the sealed crate, the loose end of the cord twitches."
+      ]
+    ],
+    "ans_cord_tug": [
+      [
+        "choice",
+        "A chewed cord, tied to nothing.",
+        [
+          [
+            "Tug the cord",
+            [
+              [
+                "say",
+                "",
+                "You tug. Somewhere in the yard, something tugs back."
+              ],
+              [
+                "approach",
+                "ans_cordhound"
+              ],
+              [
+                "run",
+                "ans_cordhound"
+              ]
+            ]
+          ],
+          [
+            "Leave it",
+            [
+              [
+                "say",
+                "",
+                "You leave it. The cord twitches anyway."
+              ]
+            ]
+          ]
+        ],
+        ""
       ]
     ]
   },
@@ -1086,7 +1753,22 @@
             ],
             "lines": {
               "!story.ans_tallybat_clue": "@ans_clue_tallybat",
-              "else": "The census counter clicks: 4, 4, 4."
+              "else": "The census counter clicks: 1, 2, 3, 4."
+            }
+          },
+          {
+            "kind": "prop",
+            "id": "r2_ans_cart",
+            "x": 23,
+            "y": 1,
+            "sprite": "lab_file_cart",
+            "when": [
+              "story.side=glimmer",
+              "story.ans_open"
+            ],
+            "lines": {
+              "!story.ans_filecrow_clue": "@ans_clue_filecrow",
+              "else": "An empty Census cart. RELOCATED, it says."
             }
           }
         ]
@@ -1219,7 +1901,7 @@
             "y": 3,
             "sprite": "arbiter",
             "lines": {
-              "story.side=glimmer&story.ans_tallybat&story.ans_dimlamp&story.ans_filecrow&story.ans_cordhound&!story.ans_humwisp_clue": "@ans_clue_humwisp",
+              "story.side=glimmer&story.ans_tallybat_done&story.ans_dimlamp_done&story.ans_filecrow_done&story.ans_cordhound_done&!story.ans_humwisp_clue": "@ans_clue_humwisp",
               "story.heights_done": "Still emitting. Slow. Unnamed.",
               "story.saw_arbiter": "A cursor answers the hum.",
               "story.rx_f1": "The hum was here before you.",
@@ -1237,7 +1919,7 @@
             "y": 5,
             "sprite": "lm_signal_mast",
             "lines": {
-              "!story.side=glimmer&story.ans_tallybat&story.ans_dimlamp&story.ans_filecrow&story.ans_cordhound&!story.ans_humwisp_clue": "@ans_clue_humwisp",
+              "!story.side=glimmer&story.ans_tallybat_done&story.ans_dimlamp_done&story.ans_filecrow_done&story.ans_cordhound_done&!story.ans_humwisp_clue": "@ans_clue_humwisp_mast",
               "story.ans_humwisp_clue": "The mast hums low. East, it says.",
               "else": "An old signal mast. Rust and wire."
             }
@@ -1260,8 +1942,9 @@
             ],
             "lines": {
               "story.reached_route3&!story.ans_open": "@ans_open",
-              "story.ans_humwisp&!story.ans_all": "@ans_close",
-              "story.ans_all": "Five relays home. A very good quarter.",
+              "story.ans_tallybat_done&story.ans_dimlamp_done&story.ans_filecrow_done&story.ans_cordhound_done&!story.ans_humwisp_clue": "@ans_quinn_word",
+              "story.ans_humwisp_done&!story.ans_all": "@ans_close",
+              "story.ans_all": "Five units home. A very good quarter.",
               "story.ans_open": "Five relays. The road knows where.",
               "else": "The review is closed. Have a bright day."
             }
@@ -1281,7 +1964,22 @@
             ],
             "lines": {
               "!story.ans_dimlamp_clue": "@ans_clue_dimlamp",
-              "else": "LAMP COUNT 11 OF 12."
+              "else": "LAMP COUNT 11 OF 12. DELIVERED BY R."
+            }
+          }
+        ]
+      },
+      "hc_command_in": {
+        "replaceObjs": [
+          {
+            "kind": "prop",
+            "id": "hc_chart",
+            "x": 7,
+            "y": 4,
+            "sprite": "chart_table",
+            "lines": {
+              "!story.side=glimmer&story.ans_tallybat_done&story.ans_dimlamp_done&story.ans_filecrow_done&story.ans_cordhound_done&!story.ans_humwisp_clue": "@ans_clue_humwisp",
+              "else": "A table with a chart of the docks."
             }
           }
         ]
@@ -1299,6 +1997,39 @@
     "story.ans_<unit>": "That boss was befriended (set by the encounter, not a setFlag).",
     "story.ans_<unit>_rest": "That boss went back to its post; cleared on the day roll.",
     "story.ans_all": "All five found and reported. Pays 500 Acorns once.",
-    "story.route3_open": "Derived on arrival (D848): story.rc_done plus story.hc_council_done (Keepers) or story.gb_done (Glimmerwell). Opens the Cobblecrest exit."
+    "story.route3_open": "Derived on arrival (D848): story.rc_done plus story.hc_council_done (Keepers) or story.gb_done (Glimmerwell). Opens the Cobblecrest exit.",
+    "story.ans_<unit>_done": "The unit is finished: befriended (Phase 1) or quieted (Phase 2). Every later gate reads this.",
+    "story.ans_tally_n": "Tallybat lair: crates counted in order, 0-4. A wrong crate resets it.",
+    "story.ans_dim_lamp_a": "Sanctuary lamp turned down (night).",
+    "story.ans_dim_lamp_b": "Second sanctuary lamp turned down.",
+    "story.ans_dim_awake": "Met Dimlamp awake, with the lamps down.",
+    "story.ans_rook_lamp": "Rook's twelfth-lamp scene played (D855).",
+    "story.ans_file_1": "Ledger office card 1 read.",
+    "story.ans_file_2": "Card 2 read.",
+    "story.ans_file_3": "Card 3 read (the false one).",
+    "story.ans_file_ok": "Picked the false card; Filecrow will fight."
+  },
+  "trainers": {
+    "r3_operator": {
+      "name": "Wren",
+      "title": "Night Operator",
+      "ai": "leader",
+      "sight": 0,
+      "team": [
+        {
+          "form": "volt/1",
+          "level": 27
+        },
+        {
+          "form": "shade/1",
+          "level": 28
+        }
+      ],
+      "lines": {
+        "intro": "Shift's not over. Nobody told me it was over. The relay stays on.",
+        "win": "...The board says off. First time in years. Go on. It has been waiting.",
+        "lose": "Relay stays on. Come back next shift."
+      }
+    }
   }
 }

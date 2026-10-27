@@ -215,7 +215,7 @@
           "lines": {
             "!story.met_mo": "@hq_mo",
             "story.reached_route3&!story.side=glimmer&!story.ans_open": "@ans_open",
-            "story.ans_humwisp&!story.side=glimmer&!story.ans_all": "@ans_close",
+            "story.ans_humwisp_done&!story.side=glimmer&!story.ans_all": "@ans_close",
             "story.side=glimmer": "I note the mint. The books will too.",
             "standing.keepers>=1": "The shelf is open to a Keeper. Read.",
             "else": "Citizen. Old books stay on the shelf."
