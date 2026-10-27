@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 10:30 ET: ARBITER_UNITS v0.2 scope (docs only, no build)
+
+- What changed and why: Vincent asked to scope the names, the tiers, the passives, the boss battles and the quest branch against the current game. Three code surveys found clashes in v0.1, and v0.2 fixes them. Origin: Glimmerwell built the tools and the hum woke them, as with Bitlet. "Signal" is dropped (the Keepers' phone word); the groups are the Answerers and the Founder's Line. Tiers are Quiet  Humming / Answering, clear of Testing's "Tuned". Clues work on both paths, because Keepers cannot enter the lab. Hushlamp's tier-2 move is now Lights Out, and Cord Snap is now Cord Lash. Passives are called Echoes. Each design call names its engine hook. Art is unchanged; the previews are re-rendered with the new tier labels. No game file changes. Save `v` stays 2.
+- Files touched: `handoff/walklings/ARBITER_UNITS.md`, `handoff/walklings/arbiter_units.json`, `handoff/walklings/preview_journal.png`, `handoff/walklings/preview_map.png`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`.
+- Commit(s) + build id: docs only, no `bump_build.py` stamp.
+- Tests run and result (widths, checks): see the commit message.
+- Decisions made (colour + reasoning): Vincent settled four calls on Oct 27, 2026: lairs in the next area only (D200), origin built-then-woken (D194), tier words Quiet  Humming / Answering and hush (D195). The rest of D194–D204 stays open. No new ids. The next free id stays D205.
+- Anything left unfinished: build A (engine), the next area's one-pager with the five lair needs, the `story.sig_all` reward, and final dialogue.
 ## 2026-10-27 08:30 ET: The Signals design draft (docs only, no build)
 
 - What changed and why: Vincent asked for five Dark/Shadow Walklings with an electronic side, made by Glimmerwell and tied to the Arbiter, met as boss encounters off the main quest. They do not grow up. They gain attunement tiers with small art changes and new powers. This entry adds the design packet in `handoff/walklings/`: the spec, paste-ready data with art for all 15 tiers in `PAL` keys, stats on the 192/256/320 rule, learnsets, 10 new moves, five passive Signals, marked placeholder lines, and two preview PNGs. Decision rows D194–D204 are open, and the next free id is D205. No game file changes. Save `v` stays 2.

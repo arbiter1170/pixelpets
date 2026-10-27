@@ -532,9 +532,9 @@ Q17 and Q18 are already in the game. The town-list calls are settled. TB-1 is in
 
 TB-1 is the empty board, the reports, and the phone app. The Hearthmoor and Fernbrook squares from TB-2 landed with it. TB-3, Cald's gate count, is one Hearthmoor slip on this branch. The other slips are not started. KeeperUAV stays the blank watch desk.
 
-### Q29 — The Signals (ARBITER_UNITS) — L — **scoped, not started**
+### Q29 — The Answerers (ARBITER_UNITS v0.2) — L — **scoped, not started**
 
-Design draft in `handoff/walklings/`. Five SHADE units with attunement tiers, boss battles, and a side branch whose boss sites need the next area's one-pager. Do not add the species, moves or `hum` until Vincent settles D194–D204. It is not ahead of Q19.
+Scope in `handoff/walklings/ARBITER_UNITS.md`. Build A (attune, hum, hush, Echoes, boss shift, journal row) can be built and tested with debug `forceBattle` once D194–D204 are settled. The side chain, clues and lairs ship with the next area. It is not ahead of Q19.
 
 ### Q20 — Look and listen — M — **shipped**
 
