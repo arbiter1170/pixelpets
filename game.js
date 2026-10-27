@@ -921,12 +921,11 @@ function toastMeasureEl(){
 }
 // D782: pages of two 14 px lines. Sentence end when the rest fits one page; a mid-sentence cut ends in " ...".
 function paginateMhcToast(text){
-  const tray = document.body.classList.contains('ct-open');
-  const slot = $('#fcDockChip');
-  const w = tray ? Math.max(160, (window.innerWidth || 320) - 24) : Math.max(80, slot && slot.clientWidth ? slot.clientWidth : 136);
+  const dock = $('#fcDock');
+  const w = Math.max(200, (dock && dock.clientWidth ? dock.clientWidth : (window.innerWidth || 320)) - 20);
   const el = toastMeasureEl();
-  el.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;box-sizing:border-box;font:bold 14px/17px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif') + ';letter-spacing:.5px;padding:4px 8px;width:' + w + 'px;white-space:normal;';
-  const maxLines = 2, lh = 17;
+  el.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;box-sizing:border-box;font:bold 16px/20px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif') + ';letter-spacing:.5px;padding:8px 10px;width:' + w + 'px;white-space:normal;';
+  const maxLines = 2, lh = 20;
   const fits = s => { el.textContent = s; return el.scrollHeight <= maxLines * lh + 8 + 1; };
   const out = []; let rest = String(text || '').trim();
   let guard = 0;
@@ -943,14 +942,37 @@ function paginateMhcToast(text){
   el.textContent = '';
   return out.length ? out : [String(text || '')];
 }
+function placeMhcToast(){
+  const t = $('#toast');
+  if (!t) return;
+  if (!mhcToastOn() || !t.classList.contains('show')) {
+    t.style.top = t.style.left = t.style.width = t.style.height = t.style.right = t.style.bottom = t.style.maxWidth = '';
+    return;
+  }
+  const tray = document.body.classList.contains('ct-open') ? $('#careTray') : null;
+  const dock = $('#fcDock');
+  const anchor = tray && !tray.hidden ? tray : dock;
+  if (!anchor) return;
+  const r = anchor.getBoundingClientRect();
+  const h = 40;
+  t.style.left = Math.round(r.left) + 'px';
+  t.style.width = Math.round(r.width) + 'px';
+  t.style.right = 'auto';
+  t.style.bottom = 'auto';
+  t.style.height = h + 'px';
+  t.style.maxWidth = 'none';
+  t.style.transform = 'none';
+  t.style.top = Math.round(tray && !tray.hidden ? r.top + 2 : r.top - h - 4) + 'px';
+}
 function showToastNow(msg){
   const t = $('#toast'); if (!t) return;
   t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800);
+  try { placeMhcToast(); } catch (e) {}
+  clearTimeout(toastT); toastT = setTimeout(() => { t.classList.remove('show'); try { placeMhcToast(); } catch (e) {} }, 1800);
 }
 function drainToast(){
   if (!mhcToastOn()) { toastBusy = false; toastQ = []; return; }
-  if (!toastQ.length) { toastBusy = false; const t = $('#toast'); if (t) t.classList.remove('show'); return; }
+  if (!toastQ.length) { toastBusy = false; const t = $('#toast'); if (t) t.classList.remove('show'); try { placeMhcToast(); } catch (e) {} return; }
   toastBusy = true;
   const msg = toastQ.shift();
   const pages = paginateMhcToast(msg);
@@ -966,7 +988,7 @@ function drainToast(){
     const t = $('#toast'); if (!t) { toastBusy = false; return; }
     t.textContent = pages[i] || '';
     t.classList.add('show');
-    try { hideBumpHint(); } catch (e) {}
+    try { hideBumpHint(); placeMhcToast(); } catch (e) {}
     clearTimeout(toastT);
     toastT = setTimeout(() => {
       if (gen !== toastGen) return;
@@ -1707,7 +1729,7 @@ function refreshHudPads(){
   hudFree(); syncWalkCam();
 }
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
-function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
+function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} try { placeMhcToast(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
   fitPetScene();
@@ -8035,6 +8057,20 @@ function showBumpHint(o){
     el.textContent = line;
   }
   el.hidden = false;
+  try { placeMhcBump(); } catch (e) {}
+}
+function placeMhcBump(){
+  const el = $('#bumpHint');
+  if (!el || el.hidden || !mhcToastOn()) return;
+  const dock = $('#fcDock'); if (!dock) return;
+  const r = dock.getBoundingClientRect(), h = 40;
+  el.style.left = Math.round(r.left) + 'px';
+  el.style.width = Math.round(r.width) + 'px';
+  el.style.top = Math.round(r.top - h - 4) + 'px';
+  el.style.bottom = 'auto';
+  el.style.height = h + 'px';
+  el.style.maxWidth = 'none';
+  el.style.transform = 'none';
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };

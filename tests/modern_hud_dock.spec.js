@@ -97,29 +97,35 @@ test('portrait modern dock: toast stays in the chip slot and a new step cues onc
     PixelPets.debugToast('Found 3 Hearty Snacks!');
     const toast = document.querySelector('#toast');
     const acorns = document.querySelector('#fcAcorns');
-    const chip = document.querySelector('#fcDockChip');
-    const map = document.querySelector('#mapCanvas');
+    const chip = document.querySelector('#thChip');
+    const hour = document.querySelector('#thHour');
+    const quest = document.querySelector('#questBtn');
+    const dock = document.querySelector('#fcDock');
     const tr = toast.getBoundingClientRect();
     const ar = acorns.getBoundingClientRect();
     const cr = chip.getBoundingClientRect();
-    const mr = map.getBoundingClientRect();
-    const overlap = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) > 1
+    const hr = hour.getBoundingClientRect();
+    const qr = quest.getBoundingClientRect();
+    const dr = dock.getBoundingClientRect();
+    const overlap = (a, b) => a && b && Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) > 1
       && Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)) > 1;
     return {
       text: toast.textContent,
       shown: toast.classList.contains('show'),
-      font: parseFloat(getComputedStyle(toast).fontSize),
       overAcorns: overlap(tr, ar),
-      overMap: overlap(tr, mr),
-      inChip: tr.left >= cr.left - 2 && tr.right <= ar.left + 2,
+      overChip: overlap(tr, cr),
+      overHour: overlap(tr, hr),
+      overQuest: overlap(tr, qr),
+      aboveDock: tr.bottom <= dr.top + 2,
     };
   });
   expect(slot.shown).toBe(true);
   expect(slot.text).toBe('Found 3 Hearty Snacks!');
-  expect(slot.font).toBeLessThanOrEqual(14.5);
   expect(slot.overAcorns).toBe(false);
-  expect(slot.overMap).toBe(false);
-  expect(slot.inChip).toBe(true);
+  expect(slot.overChip).toBe(false);
+  expect(slot.overHour).toBe(false);
+  expect(slot.overQuest).toBe(false);
+  expect(slot.aboveDock).toBe(true);
 
   const step = await page.evaluate(() => {
     const before = document.querySelector('#toast').textContent;
@@ -140,7 +146,7 @@ test('portrait modern dock: toast stays in the chip slot and a new step cues onc
   await page.locator('#questClose').click();
   await page.waitForFunction(() => !document.querySelector('#toast').classList.contains('show'), null, { timeout: 8000 });
   const paged = await page.evaluate(() => {
-    PixelPets.debugToast('Please reload this game on this device after the other tab reset the save and keep walking with your Walkling until the east path opens again today');
+    PixelPets.debugToast(('North ').repeat(40).trim());
     return document.querySelector('#toast').textContent;
   });
   expect(paged.endsWith('...'), paged).toBe(true);

@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 06:42 ET: Toast sits above the dock, clock stays visible (build 20261027-0642)
+
+- What changed and why: The new-step toast was a fixed box on top of the place chip, so it covered the hour and sliced through the button row. It now sits in a solid bar just above the dock, lined up to the dock itself, and the hour stays visible. The Acorn frame was stretched across the whole dock because that chip was taken out of its own box; it is back inside the Acorn chip, so the buttons no longer sit on that art.
+- Files touched: `game.js`, `style.css`, `tests/modern_hud_dock.spec.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch. Build `20261027-0642`.
+- Tests run and result (widths, checks): `tests/modern_hud_dock.spec.js` at 390. See the result line after the run.
+- Decisions made (colour + reasoning): The chip-slot toast from D782 covered the hour and the buttons on a phone. The bar above the dock keeps the hour and every button clear.
+- Anything left unfinished: Firebase Google sign-in is still a console step. D791 tutorial strip still waits.
+
 ## 2026-10-27 01:36 ET: Modern HUD P2 toast slot and step cue (build 20261027-0136)
 
 - What changed and why: Portrait modern walk keeps toasts and the bump hint in the place-chip slot (two lines, pages, a queue of three) so Acorns stay visible. A quest step change plays one "New step" toast, not on load, and a hint line shows above the step on the quest card. The care tray's answer uses the tray's top band. Group heads sit on the partner row. Quest edge arrows use a 6 px inset under the frame. Save stays `pixelpets.save.v2` with `v` 2.
