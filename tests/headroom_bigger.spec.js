@@ -24,8 +24,6 @@ async function boot(page, mode) {
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);
-  // D787 A/B pads are gated off until MHC P1; these checks cover the padded camera, so force them on.
-  await page.evaluate(() => PixelPets.setHudPads(true));
 }
 
 test('T7 edge rows and columns clear the HUD, including Fernbrook row 0', async ({ page }) => {
@@ -39,9 +37,8 @@ test('T7 edge rows and columns clear the HUD, including Fernbrook row 0', async 
       const oy = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
       return ox > GAP && oy > GAP;
     };
-    const hudBoxes = () => ['#fcTop', '#fcTL', '#fcTR', '#fcClock', '#fcTip', '#floatCtl .fc-bottom', '#fcAcorns']
-      .map(sel => document.querySelector(sel))
-      .filter(Boolean)
+    // Under mhc-frame the dock sits outside #mapWrap, so only measure dock controls (nothing over the map).
+    const hudBoxes = () => [...document.querySelectorAll('#fcDock button, #fcDock #thChip, #fcDock #fcAcorns, #joyRing')]
       .map(n => n.getBoundingClientRect())
       .filter(r => r.width >= 8 && r.height >= 8);
     const tileRect = (tx, ty) => {
@@ -104,13 +101,10 @@ test('T7 edge rows and columns clear the HUD, including Fernbrook row 0', async 
         if (!spot) continue;
         await stand(id, spot.x, spot.y);
         const boxes = hudBoxes();
-        const left = document.querySelector('#fcTL').getBoundingClientRect();
-        const right = document.querySelector('#fcTR').getBoundingClientRect();
-        const top = document.querySelector('#fcTop').getBoundingClientRect();
         const wrap = document.querySelector('#mapWrap').getBoundingClientRect();
-        const bandTop = wrap.bottom - 112;
-        const inFreeX = rect => rect.left >= left.right - GAP && rect.right <= right.left + GAP;
-        const inFreeY = rect => rect.top >= top.bottom - GAP && rect.bottom <= bandTop + GAP;
+        // Dock is outside the map: the free map rect is the whole wrap.
+        const inFreeX = rect => rect.left >= wrap.left - GAP && rect.right <= wrap.right + GAP;
+        const inFreeY = rect => rect.top >= wrap.top - GAP && rect.bottom <= wrap.bottom + GAP;
         const line = (edge === 'n' || edge === 'nw' || edge === 'ne') ? 0 : edge === 's' ? info.h - 1 : null;
         const col = edge === 'w' ? 0 : edge === 'e' ? info.w - 1 : (edge === 'nw' ? 0 : edge === 'ne' ? info.w - 1 : null);
         const tiles = [];
@@ -141,10 +135,7 @@ test('T7 edge rows and columns clear the HUD, including Fernbrook row 0', async 
         const mc = document.querySelector('#mapCanvas').getBoundingClientRect();
         const full = rect.left >= mc.left + GAP && rect.right <= mc.right - GAP && rect.top >= mc.top + GAP && rect.bottom <= mc.bottom - GAP;
         if (!full) continue;
-        // The hour chip left the header, so the frame's right pad (it followed #fcClock) is 0.
-        // The place chip sits in #fcTR and is not part of that pad measure.
-        const right = document.querySelector('#fcTR').getBoundingClientRect();
-        const boxes = hudBoxes().filter(b => Math.abs(b.left - right.left) > 1 || Math.abs(b.top - right.top) > 1 || Math.abs(b.bottom - right.bottom) > 1);
+        const boxes = hudBoxes();
         if (boxes.some(b => overlap(rect, b))) bad.push(id + ' obj ' + o.kind + ' ' + (o.id || '') + ' ' + o.x + ',' + o.y);
       }
     }
@@ -175,14 +166,13 @@ test('T8 rooms that fit sit low, and Your Home clears the column and the bottom 
       const cr = mc.getBoundingClientRect();
       const z = cr.width / mc.width;
       const mapCssH = info.h * 16 * z;
-      const padT = 56, bot = 112, col = 206;
+      // Dock outside the map: pads are 0, so a fitting room centres in the full wrap (D785).
+      const padT = 0, bot = 0, col = 0;
       const fits = mapCssH <= cr.height + 0.5 && mapCssH <= wrap.height - bot - padT + 0.5;
       if (!fits) continue;
       const cam = PixelPets.walk.cam;
       const mapTop = cr.top + (0 - cam.y) * z;
-      let yCss = (wrap.height - bot - mapCssH >= col)
-        ? col + Math.floor((wrap.height - bot - col - mapCssH) / 2)
-        : Math.max(padT, wrap.height - bot - mapCssH);
+      let yCss = Math.max(padT, Math.floor((wrap.height - bot - mapCssH) / 2));
       const oy = cr.top - wrap.top;
       if (yCss + mapCssH > oy + cr.height) yCss = Math.max(padT, oy + cr.height - mapCssH);
       const wantTop = wrap.top + yCss;
@@ -215,15 +205,15 @@ test('T8 rooms that fit sit low, and Your Home clears the column and the bottom 
       const door = info.objs.filter(o => o.kind === 'warp' || o.kind === 'door').sort((a, b) => b.y - a.y)[0];
       const wallTop = cr.top + (0 - cam.y) * z;
       const doorBottom = cr.top + ((door.y + 1) * 16 - cam.y) * z;
-      const col = document.querySelector('#fcTL').getBoundingClientRect();
+      // Dock buttons are outside the map; the left wall cannot sit under them.
+      const dock = document.querySelector('#fcDock').getBoundingClientRect();
       const wall = { left: cr.left + (0 - cam.x) * z, right: cr.left + (16 - cam.x) * z, top: wallTop, bottom: wallTop + 16 * z };
-      const hit = wall.left < col.right - 4 && wall.right > col.left + 4 && wall.top < col.bottom - 4 && wall.bottom > col.top + 4;
-      return { wallTop, doorBottom, band: cr.top + cr.height, colBottom: col.bottom, hit, scale: info.scale, doorY: door.y };
+      const hit = wall.left < dock.right - 4 && wall.right > dock.left + 4 && wall.top < dock.bottom - 4 && wall.bottom > dock.top - 4;
+      return { wallTop, doorBottom, band: cr.top + cr.height, hit, scale: info.scale, doorY: door.y };
     });
     expect(home.scale).toBe(2);
-    expect(home.wallTop).toBeGreaterThan(200);
     expect(home.doorBottom).toBeLessThan(home.band);
-    expect(home.hit, 'left wall still under the column').toBe(false);
+    expect(home.hit, 'left wall still under the dock').toBe(false);
   }
 });
 
@@ -315,7 +305,7 @@ test('P0 the default 2x map zoom is today\'s scale outdoors, and rooms keep toda
     const live = mode === 'modern' ? 2 : ({ 320: 1, 375: 1, 390: 2 })[page.viewportSize().width];
     expect(outdoor.scale, mode).toBe(live);
     expect(outdoor.base, mode).toBe(live);
-    const rooms = await page.evaluate(async () => {
+    const rooms = await page.evaluate(async (modeName) => {
       const out = [];
       for (const id of ['hm_home_in', 'hm_rook_in', 'hc_apt_in']) {
         PixelPets.goto(id);
@@ -324,19 +314,21 @@ test('P0 the default 2x map zoom is today\'s scale outdoors, and rooms keep toda
         const wrap = document.querySelector('#mapWrap').getBoundingClientRect();
         const mc = document.querySelector('#mapCanvas');
         const W = wrap.width, H = wrap.height, s = info.baseScale;
+        const frame = document.body.classList.contains('mhc-frame');
+        const hud = (modeName === 'modern' && !frame) ? 112 : 0;
         const byW = Math.floor(W / ((info.w - info.slack) * 16));
-        const byH = Math.floor((H - 112) / (info.h * 16));
+        const byH = Math.floor((H - hud) / (info.h * 16));
         let expected = Math.max(s, Math.min(2 * s, byW, byH));
-        if (id === 'hc_apt_in' && window.innerWidth <= 320) expected = Math.min(expected, Math.max(s, 2));
-        out.push({ id, scale: info.scale, base: info.baseScale, expected, cssH: mc.getBoundingClientRect().height, H });
+        if (id === 'hc_apt_in' && window.innerWidth <= 320 && !frame) expected = Math.min(expected, Math.max(s, 2));
+        out.push({ id, scale: info.scale, base: info.baseScale, expected, cssH: mc.getBoundingClientRect().height, H, hud });
       }
       return out;
-    });
+    }, mode);
     if (mode === 'modern') {
       for (const r of rooms) {
         expect(r.scale, r.id).toBe(r.expected);
         expect(r.scale, r.id).toBeGreaterThanOrEqual(r.base);
-        expect(r.cssH, r.id).toBeLessThanOrEqual(r.H - 112 + 1);
+        expect(r.cssH, r.id).toBeLessThanOrEqual(r.H - r.hud + 1);
       }
     }
   }

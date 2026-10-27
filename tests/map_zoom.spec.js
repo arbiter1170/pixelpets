@@ -208,17 +208,9 @@ test('Map zoom row: the label lines up with the other rows and no thumb position
   }
 });
 
-// Supervisor green call (Oct 25, 2026): the D787 pads wait for the MODERN_HUD_CLEAR P1 frame class. Without it the
-// default 2x map sits exactly where it does on main. Map offset = canvas left/top minus the camera, in css px,
-// measured on main 21399e2 (build 20261025-0004) with this save.
-const MAIN_OFFSETS = {
-  320: { spawn: [0, 0], route1: [-112, -84] },
-  375: { spawn: [1, 1], route1: [-85, -33] },
-  390: { spawn: [0, 0], route1: [-78, 46] },
-};
-test('default 2x: with no frame class the map offset is main\'s at the Hearthmoor spawn and on Route 1', async ({ page }) => {
+// MODERN_HUD_CLEAR P1+D789: modern portrait walk turns on mhc-frame; the dock sits outside the map so pads are 0.
+test('default 2x: modern portrait turns on the frame class with zero over-map pads at the Hearthmoor spawn and on Route 1', async ({ page }) => {
   await boot(page);
-  const want = MAIN_OFFSETS[page.viewportSize().width];
   const got = {};
   for (const [key, id, x, y] of [['spawn', 'hearthmoor', null, null], ['route1', 'route1', 8, 10]]) {
     await page.evaluate(([id, x, y]) => {
@@ -229,14 +221,26 @@ test('default 2x: with no frame class the map offset is main\'s at the Hearthmoo
     await page.waitForTimeout(400);
     got[key] = await page.evaluate(() => {
       const mc = document.querySelector('#mapCanvas'), cr = mc.getBoundingClientRect(), cam = PixelPets.walk.cam, k = cr.width / mc.width;
+      const chip = document.querySelector('#thChip') || document.querySelector('#fcClock .clock-chip');
+      const hour = document.querySelector('#thHour');
       return { off: [Math.round(cr.left - cam.x * k), Math.round(cr.top - cam.y * k)], scale: PixelPets.mapInfo.scale, pads: PixelPets.mapInfo.pads,
-        frame: document.body.classList.contains('mhc-frame'), shown: mc.checkVisibility() };
+        frame: document.body.classList.contains('mhc-frame'), shown: mc.checkVisibility(),
+        chipW: chip ? Math.round(chip.getBoundingClientRect().width) : 0,
+        hourW: hour ? Math.round(hour.getBoundingClientRect().width) : 0,
+        dock: !!(document.querySelector('#fcDock') && !document.querySelector('#fcDock').hidden) };
     });
     expect(got[key].shown, key).toBe(true);
-    expect(got[key].frame, key).toBe(false);
+    expect(got[key].frame, key).toBe(true);
+    expect(got[key].dock, key).toBe(true);
     expect(got[key].scale, key).toBe(2);
-    expect(got[key].pads, key).toEqual({ on: false, top: 0, left: 0, right: 0, bottom: 0, col: 0 });
-    expect(got[key].off, key).toEqual(want[key]);
+    expect(got[key].pads.on, key).toBe(true);
+    expect(got[key].pads.top, key).toBe(0);
+    expect(got[key].pads.bottom, key).toBe(0);
+    expect(got[key].pads.left, key).toBe(0);
+    expect(got[key].pads.right, key).toBe(0);
+    expect(got[key].hourW, key).toBe(52);
+    expect(got[key].chipW, key).toBeGreaterThanOrEqual(44);
+    expect(got[key].chipW, key).toBeLessThanOrEqual(page.viewportSize().width <= 320 ? 136 : 206);
   }
 });
 
@@ -303,32 +307,25 @@ test('the hour box stays 52 px while the minute changes, and the frame right pad
   expect(texts.size, 'the hour ticked during the check').toBeGreaterThan(1);
 });
 
-test('D787: pads are the HUD overlap with the visible canvas; hidden HUD pads 0 and the north lift is off', async ({ page }) => {
+test('D787: with the dock outside the map, pads stay 0 and the north lift is off', async ({ page }) => {
   await boot(page);
   expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);   // the P1 frame flag, forced on
   await page.evaluate(() => { PixelPets.goto('hearthmoor', 9, 8, 'up'); if (PixelPets.scene) PixelPets.endScene(); });
   await settle(page);
   const on = await page.evaluate(() => {
-    const i = PixelPets.mapInfo, cr = document.querySelector('#mapCanvas').getBoundingClientRect();
-    const fcTop = document.querySelector('#fcTop').getBoundingClientRect();
-    return { pads: i.pads, band: i.band, camY: PixelPets.walk.cam.y, chipBottom: fcTop.bottom - cr.top };
+    const i = PixelPets.mapInfo;
+    return { pads: i.pads, band: i.band, camY: PixelPets.walk.cam.y, dock: !document.querySelector('#fcDock').hidden };
   });
+  expect(on.dock).toBe(true);
   expect(on.pads.on).toBe(true);
-  // Today's HUD sits over the canvas, so the top pad is that overlap plus the 6 px gap, and the lift runs.
-  expect(on.pads.top).toBe(Math.ceil(on.chipBottom + 6));
-  expect(on.band.topPad).toBeGreaterThan(0);
-  // Hide every HUD rect over the map: each pad reads 0, and with no top pad there is no north lift.
-  await page.evaluate(() => {
-    for (const q of ['#fcTop', '#fcTL', '#fcClock', '#fcTip', '#floatCtl .fc-bottom']) { const n = document.querySelector(q); if (n) n.style.visibility = 'hidden'; }
-    window.dispatchEvent(new Event('resize'));
-  });
-  await settle(page);
+  // D785/D789: steady HUD is outside #mapWrap, so every pad is 0 and the north lift stays off.
+  expect(on.pads.top).toBe(0);
+  expect(on.pads.bottom).toBe(0);
+  expect(on.band.topPad).toBe(0);
   const off = await page.evaluate(() => {
     const i = PixelPets.mapInfo, mc = document.querySelector('#mapCanvas');
-    return { pads: i.pads, band: i.band, camY: PixelPets.walk.cam.y, py: Math.round(PixelPets.walk.fy * 16), VH: mc.height, MH: i.h,
-      vis: ['#fcTop', '#fcTL'].map(q => { const n = document.querySelector(q); return n ? n.checkVisibility({ visibilityProperty: true }) : false; }) };
+    return { pads: i.pads, band: i.band, camY: PixelPets.walk.cam.y, py: Math.round(PixelPets.walk.fy * 16), VH: mc.height, MH: i.h };
   });
-  expect(off.vis).toEqual([false, false]);
   expect(off.pads).toEqual({ on: true, top: 0, left: 0, right: 0, bottom: 0, col: 0 });
   expect(off.band.topPad).toBe(0);
   expect(off.band.hudPad).toBe(0);
@@ -337,10 +334,10 @@ test('D787: pads are the HUD overlap with the visible canvas; hidden HUD pads 0 
   expect(off.camY + 0).toBe(follow + 0);   // + 0 folds a -0 from Math.round into 0
 });
 
-test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top chips', async ({ page }) => {
+test('Map zoom: every step keeps the Hearthmoor north exit row clear of the dock HUD', async ({ page }) => {
   test.setTimeout(90000);
   await boot(page);
-  await page.evaluate(() => PixelPets.setHudPads(true));   // the north lift needs the P1 frame flag (D787 B)
+  await page.evaluate(() => PixelPets.setHudPads(true));   // the P1 frame flag
   const steps = await page.evaluate(() => PixelPets.mapZoomSteps);
   for (let i = 0; i < steps.length; i++) {
     await pickStep(page, i);
@@ -348,7 +345,9 @@ test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top 
     await settle(page);
     const r = await page.evaluate(() => {
       const mc = document.querySelector('#mapCanvas'), cr = mc.getBoundingClientRect(), cam = PixelPets.walk.cam, k = cr.width / mc.width;
-      const chips = ['#fcTop', '#fcTL'].map(q => document.querySelector(q)).filter(Boolean).map(n => n.getBoundingClientRect()).filter(b => b.width >= 8 && b.height >= 8);
+      // Under the dock, #fcTop/#fcTL are hidden; measure any visible dock control that could cover the map.
+      const chips = [...document.querySelectorAll('#fcDock button, #thChip, #fcAcorns')]
+        .map(n => n.getBoundingClientRect()).filter(b => b.width >= 8 && b.height >= 8);
       const out = [];
       for (const tx of [8, 9, 10]) {
         const t = { left: cr.left + (tx * 16 - cam.x) * k, top: cr.top + (2 * 16 - cam.y) * k };
@@ -356,13 +355,14 @@ test('Map zoom: every step keeps the Hearthmoor north exit row clear of the top 
         const area = chips.reduce((a, b) => a + Math.max(0, Math.min(t.right, b.right) - Math.max(t.left, b.left)) * Math.max(0, Math.min(t.bottom, b.bottom) - Math.max(t.top, b.top)), 0);
         const pts = [[(t.left + t.right) / 2, (t.top + t.bottom) / 2], [t.left + 3, t.top + 3], [t.right - 3, t.top + 3]];
         const hits = pts.map(([x, y]) => document.elementFromPoint(x, y) === mc);
-        const onScreen = t.top >= cr.top - 0.5 && t.bottom <= innerHeight && t.left >= 0 && t.right <= innerWidth;
+        const onScreen = t.top >= cr.top - 0.5 && t.bottom <= cr.bottom + 0.5 && t.left >= cr.left - 0.5 && t.right <= cr.right + 0.5;
         out.push({ tx, area, hits, onScreen });
       }
-      return { scale: PixelPets.mapInfo.scale, chips: chips.length, out };
+      return { scale: PixelPets.mapInfo.scale, chips: chips.length, dock: !document.querySelector('#fcDock').hidden, out };
     });
     expect(r.scale, 'step ' + steps[i]).toBe(steps[i]);   // step 0 is 2x, the live look
-    expect(r.chips).toBeGreaterThanOrEqual(2);
+    expect(r.dock, 'step ' + steps[i]).toBe(true);
+    expect(r.chips, 'step ' + steps[i]).toBeGreaterThanOrEqual(6);
     for (const e of r.out) {
       expect(e.onScreen, `step ${steps[i]} tile ${e.tx},2 on screen`).toBe(true);
       expect(e.area, `step ${steps[i]} tile ${e.tx},2 under a chip`).toBe(0);

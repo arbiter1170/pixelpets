@@ -762,3 +762,8 @@ Recorded from design GEAR_SWITCH v0.1.3 (design commit 8a06d36), without renumbe
 - **D773 (Mon Oct 26, 2026, 1:05 PM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** GEAR_SWITCH. The row is the party only, in party order. A party of one shows no switcher.
 - **D774 (Sat Oct 24, 2026, 1:45 PM ET, green, SETTLED as written by the PixelPets Supervisor).** GEAR_SWITCH. The switcher is off during a care action, a pinned lesson, an open overlay, and while the nav lock is on.
 
+## HEARTHMOOR_PLAZA and MODERN_HUD_CLEAR dock (settled Oct 27, 2026)
+
+- **D797 (Tue Oct 27, 2026, about 1:05 AM ET, red, SETTLED by Vincent).** Hearthmoor Plaza. Yes to the joined map west of the home as built (`hm_plaza`, 26 x 20, open from the first morning). Keep the plaza people and lines as shipped. Layout tweaks after play can open a new id.
+- **D789 (Tue Oct 27, 2026, about 1:05 AM ET, red, SETTLED by Vincent, confirming design Oct 25).** MODERN_HUD_CLEAR. No top bar in modern portrait; the combined place chip sits at the left end of the dock's top row. Portrait only (D778). Build lands with P1 dock + tip off (D790 default).
+- **D787 (Tue Oct 27, 2026, yellow, SETTLED by the 48-hour rule and this build).** #180 first, then P1. A/B pads measure overlap; under the dock they read 0. C zoom steps stay live.
