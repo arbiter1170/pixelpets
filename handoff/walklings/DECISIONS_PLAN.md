@@ -1,6 +1,6 @@
 # ARBITER_UNITS: plan for the open decisions (D837-D853)
 
-Branch `claude/answerers-decisions`, cut from `claude/answerers` (PR #205). Status: **plan only, nothing built**. Each item marked *Ask* needs a yes or a change from Vincent before it is built.
+Branch `claude/answerers-decisions`, cut from `claude/answerers` (PR #205). Status: **plan approved Oct 27, 2026; Phase 1 next**. Each item marked *Ask* needs a yes or a change from Vincent before it is built.
 
 The 17 rows sort into three kinds:
 
@@ -110,10 +110,13 @@ These are built and either settled or green. A yes moves each to `archive/DECISI
 
 New rows (from D854): the cradle-word spine, the twelfth lamp (Rook), the quiet path, and the lair names.
 
-## Questions for Vincent
+## Answers (Vincent, Oct 27, 2026)
 
-1. Use COUNT / GATHER / LISTEN / ANSWER as the spine?
-2. The twelfth lamp: is Dimlamp the lamp off Rook's cart?
-3. Build the quiet path (beating a boss counts), or cut "Quiet them" from Mo's line?
-4. Night-only Sanctuary: OK that Dimlamp can only be met after dusk (in-game time, a 42-minute day)?
-5. Keepsake reward: the KEPT / QUIET page, or Acorns only?
+1. **Spine: yes.** Each Answerer is one of the cradle words COUNT / GATHER / LISTEN / ANSWER. This is a new story fact, recorded as a D row from D854.
+2. **The twelfth lamp: yes.** Dimlamp is the lamp off Rook's cart, and Rook gets a beat on both paths.
+3. **Quiet path: build it.** Beating a boss after its shift quiets it, and the close reflects KEPT and QUIET (section 3).
+4. **Night-only Sanctuary: yes.** Dimlamp is met only after dusk.
+5. Keepsake reward: not asked separately. Default is the KEPT / QUIET record page plus 500 Acorns, as part of the quiet path.
+
+Status: **Phase 1 approved to start.**
+
