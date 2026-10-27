@@ -1013,6 +1013,7 @@ function applyControls(){
   const rb = $('#repBtn'); if (rb) { rb.classList.toggle('dpc', m); rb.classList.toggle('fbtn', m); rb.classList.toggle('icon-only', m); rb.classList.toggle('icon-btn', !m); }
   document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
   syncMhcFrame();
+  try { syncMhcDock(hudPadsLive()); } catch (e) {}
   const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
   renderControlsRows(); syncWalkTip(); fitAll();
   try { syncCareAlert(); } catch (e) {}
@@ -1401,14 +1402,80 @@ function portraitWalkModern(){
 }
 function syncMhcFrame(){
   const on = mhcFrameForce != null ? !!mhcFrameForce : portraitWalkModern();
+  const was = !!(document.body && document.body.classList.contains(MHC_FRAME_CLASS));
   if (document.body) document.body.classList.toggle(MHC_FRAME_CLASS, on);
+  if (on !== was) syncMhcDock(on);
+  else if (on) syncMhcDock(true);
+}
+// D789 dock: place chip, Acorns, PHONE and gear in row 1; trust/QUEST/BAG/MAP + PARTNER/WALKLINGS in row 2; partner card in row 3.
+function syncMhcDock(on){
+  const dock = $('#fcDock');
+  if (!dock) return;
+  const move = (sel, dst) => { const n = $(sel), d = $(dst); if (n && d && n.parentNode !== d) d.appendChild(n); };
+  if (on && ctlMode() === 'modern') {
+    dock.hidden = false;
+    move('#thChip', '#fcDockChip');
+    move('#fcAcorns', '#fcDockR1Right');
+    move('#phoneBtn', '#fcDockR1Right');
+    move('#gearFloat', '#fcDockR1Right');
+    move('#repBtn', '#fcDockR2Left');
+    move('#questBtn', '#fcDockR2Left');
+    move('#walkBagBtn', '#fcDockR2Left');
+    move('#mapBtn', '#fcDockR2Left');
+    move('#petFloat', '#fcDockR2Right');
+    move('#colFloat', '#fcDockR2Right');
+    move('#petStrip', '#fcDockR3');
+    // Joystick stays over the map (D784): park it in #mapWrap while the dock is only the bottom band.
+    move('#joyRing', '#mapWrap');
+    // Tip line is gone in the frame (D790 default): leave #walkTip in #fcTip, which CSS hides.
+  } else {
+    dock.hidden = true;
+    // Restore overlay seats; applyControls() puts arcade/modern homes back when controls change.
+    move('#joyRing', '#floatCtl');
+    const joy = $('#joyRing'), tip = $('#fcTip'); if (joy && tip && joy.parentNode === $('#floatCtl')) tip.parentNode.insertBefore(joy, tip);
+    move('#fcAcorns', '#floatCtl');
+    const ac = $('#fcAcorns'), tr = $('#fcTR'); if (ac && tr && ac.parentNode === $('#floatCtl')) tr.parentNode.insertBefore(ac, tr);
+    move('#gearFloat', '#fcTR');
+    move('#petStrip', '#floatCtl .fc-row');
+    const strip = $('#petStrip'), br = $('#fcBR'); if (strip && br && strip.parentNode === br.parentNode) br.parentNode.insertBefore(strip, br);
+    move('#petFloat', '#fcBR');
+    move('#colFloat', '#fcBR');
+    if (ctlMode() === 'modern') {
+      move('#repBtn', '#fcTL'); move('#questBtn', '#fcTL'); move('#walkBagBtn', '#fcTL'); move('#mapBtn', '#fcTL');
+      move('#phoneBtn', '#fcTR'); move('#thChip', '#fcTR');
+    }
+  }
+  try { syncMhcGroupHeads(); } catch (e) {}
+}
+function syncMhcGroupHeads(){
+  const host = $('#fcDockR3'); if (!host) return;
+  let box = host.querySelector('.coop-dock-heads');
+  if (!hudPadsLive() || ctlMode() !== 'modern') { if (box) box.remove(); return; }
+  const strip = $('#coopStrip');
+  const on = strip && !strip.hidden;
+  const heads = strip ? strip.querySelectorAll('.coop-head-btn') : [];
+  if (!on || !heads.length) { if (box) box.remove(); return; }
+  if (!box) { box = document.createElement('div'); box.className = 'coop-dock-heads'; host.appendChild(box); }
+  box.innerHTML = '';
+  heads.forEach(btn => {
+    const clone = btn.cloneNode(true);
+    clone.addEventListener('click', (e) => { e.preventDefault(); btn.click(); });
+    box.appendChild(clone);
+  });
+  if (heads.length === 1) {
+    const slot = document.createElement('div');
+    slot.className = 'coop-dock-slot'; slot.setAttribute('aria-hidden', 'true');
+    box.appendChild(slot);
+  }
 }
 function applyMhcClockWidth(){
+  // D792: combined place chip keeps a fixed 52 px hour box (CSS). No per-minute width write.
   if (!hudPadsLive() || ctlMode() !== 'modern') return;
-  const chip = document.querySelector('#thChip') || document.querySelector('#fcClock .clock-chip');
-  if (chip) { chip.style.width = '88px'; chip.style.minWidth = '88px'; chip.style.maxWidth = '88px'; chip.style.boxSizing = 'border-box'; }
+  const hour = $('#thHour');
+  if (hour) { hour.style.width = '52px'; hour.style.minWidth = '52px'; hour.style.maxWidth = '52px'; hour.style.boxSizing = 'border-box'; }
 }
 function hudPadsLive(){ return !!(document.body && document.body.classList.contains(MHC_FRAME_CLASS)); }
+function mhcDockH(){ return hudPadsLive() && ctlMode() === 'modern' ? 156 : 0; }
 // Map zoom (Settings slider, settings.mapZoom). Outdoors only; rooms keep their own zoom (D727). 2 = today's look
 // (the base scale s, exactly as before), so nobody sees a change until they move the slider. The pixel art is a
 // 1x bitmap scaled by CSS with image-rendering: pixelated, so a step is crisp only when one art px covers a whole
@@ -1480,7 +1547,8 @@ function roomEdgeSlack(m){
 function roomZoomFor(W, H, s){
   if (!isRoom() || !CUR || CUR.fitWidth || !(MW > 0) || !(MH > 0) || !(s > 0)) return s;
   const slack = roomEdgeSlack(CUR);
-  const Heff = ctlMode() === 'modern' ? H - ROOM_ZOOM_HUD : H;
+  // Under mhc-frame the dock sits outside #mapWrap, so H is already the clear map height (D785).
+  const Heff = ctlMode() === 'modern' ? H - (hudPadsLive() ? 0 : ROOM_ZOOM_HUD) : H;
   const denomW = (MW - slack) * TS, denomH = MH * TS;
   if (!(denomW > 0) || !(denomH > 0) || !(Heff > 0) || !(W > 0)) return s;
   let S = Math.max(s, Math.min(ROOM_ZOOM_CAP * s, Math.floor(W / denomW), Math.floor(Heff / denomH)));
@@ -1493,6 +1561,8 @@ function roomZoomFor(W, H, s){
 let roomSideNudge = 0;
 function applyRoomSideNudge(){
   roomSideNudge = 0;
+  // D785: under the frame nothing covers the map, so Your Room needs no side nudge.
+  if (hudPadsLive()) return;
   if (!(CUR && CUR.id === 'hc_apt_in' && ctlMode() === 'modern' && window.innerWidth <= 320)) return;
   const c = $('#mapCanvas'), col = $('#fcTL');
   if (!c || !c.width || !col || !walk) return;
@@ -1559,7 +1629,7 @@ function refreshHudPads(){
   hudFree(); syncWalkCam();
 }
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
-function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
+function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
   fitPetScene();
@@ -1580,7 +1650,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); fitBattle
     const roomZoom = isRoom() && CUR && !CUR.fitWidth;
     // The modern HUD covers the bottom 112px. Size and pin the room canvas to the band above it, or the
     // centred room sits under the strip and a bottom door is cut off (D232, D234).
-    const viewH = (modern && roomZoom) ? H - ROOM_ZOOM_HUD : H;
+    const viewH = (modern && roomZoom) ? H - (hudPadsLive() ? 0 : ROOM_ZOOM_HUD) : H;
     if (isRoom() && CUR.fitWidth && MW * 16 <= 24 * 16) { const f = W / (MW * 16); mapZoom = f;
       const pw = MW * 16, ph = Math.min((modern ? 36 : 20) * 16, Math.max(64, Math.floor(H / f)));
       if (c.width !== pw || c.height !== ph) { c.width = pw; c.height = ph; }
@@ -6890,7 +6960,8 @@ function modernCueZone(){
   const k = c.width / cr.width, mw = $('#mapWrap').getBoundingClientRect();
   const toC = (x, y) => [(x - cr.left) * k, (y - cr.top) * k];
   const tip = $('#walkTip'), tr = tip && tip.offsetParent ? tip.getBoundingClientRect() : null, joy = $('#joyRing');
-  const tipTop = tr && tr.height ? tr.top : mw.bottom - 90;
+  // D785: under the frame the tip is gone, so the fallback is the map rect's bottom (0 px reserve), not 90.
+  const tipTop = tr && tr.height ? tr.top : (hudPadsLive() ? mw.bottom : mw.bottom - 90);
   const jOn = joy && !joy.hidden;
   const half = CUE_RAIL.chipHalf, margin = CUE_RAIL.margin;
   const [x0, y0] = toC(mw.left + 8, mw.top + 160), [x1, y1] = toC(mw.right - 8, tipTop - 8);
@@ -7871,7 +7942,10 @@ function showBumpHint(o){
   if (scene || overlayOpen() || bump.held || now() - bump.at < BUMP_HINT_MS) return;
   bump.at = now(); bump.held = true; bump.hideAt = now() + HINT_LIFE_MS; sfx('denied');
   const nm = objName(o), el = $('#bumpHint');
-  el.textContent = "You can't walk through " + (shownName(nm) || 'this') + '.'; el.hidden = false;
+  // Under the frame the hint sits in the chip slot (D782): shorter wording so two lines fit at 320.
+  const who = shownName(nm) || 'this';
+  el.textContent = hudPadsLive() ? ("Can't walk through " + who + '.') : ("You can't walk through " + who + '.');
+  el.hidden = false;
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };
@@ -8691,7 +8765,9 @@ function sboxScreenRect(){
 // Returns the open band in canvas px. Arcade and rooms use the full canvas (hudPad 0).
 function outdoorViewBand(VH){
   const modernOut = ctlMode() === 'modern' && !isRoom();
-  const hudPad = modernOut ? Math.ceil(ROOM_ZOOM_HUD / (mapZoom || 1)) : 0;
+  // Under mhc-frame the dock is outside the map rect, so the over-the-map reserve is 0 until hudFree fills pads (D785).
+  const baseHud = (modernOut && !hudPadsLive()) ? Math.ceil(ROOM_ZOOM_HUD / (mapZoom || 1)) : 0;
+  const hudPad = baseHud;
   const VHe = VH - hudPad;
   const topPad = hudPad ? Math.ceil(OUTDOOR_TOP_CHROME / (mapZoom || 1)) : 0;
   const z = mapZoom || 1;

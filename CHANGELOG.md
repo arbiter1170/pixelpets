@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 01:09 ET: Plaza sign-off and modern HUD dock (build 20261027-0109)
+
+- What changed and why: Vincent signed off D797 (keep the joined Hearthmoor Plaza as built) and confirmed D789 (no top bar; place chip in the dock's top row, portrait only). Modern portrait walk now uses a 156 px three-row dock outside `#mapWrap`: chip + Acorns + PHONE + gear; trust/QUEST/BAG/MAP + PARTNER/WALKLINGS; partner card. Tip band off under the frame. Pads over the map read 0. D792 uses a fixed 52 px hour box inside the combined chip. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `index.html`, `style.css`, `game.js`, `tests/modern_hud_dock.spec.js` (new), `tools/GAMEJS_MAP.txt`, `version.json`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`, `tests/README.md`.
+- Commit(s) + build id: this branch. Build `20261027-0109`.
+- Tests run and result (widths, checks): pending in this entry; see PR.
+- Decisions made (colour + reasoning): D797 red SETTLED by Vincent. D789 red SETTLED by Vincent. D787 SETTLED with the dock. Privacy line keeps the ONLINE_SAVES_SCOPE default. Next free id stays D799.
+- Anything left unfinished: Firebase console still needs Google sign-in enabled for live Link Google. D790/D791 toast queue and tutorial strip polish. D798 wording. Vincent may still revise the privacy line.
+
 ## 2026-10-27 00:43 ET: Modern HUD P1 frame, cloud Phase 2 link, doc sync (build 20261027-0043)
 
 - What changed and why: Next-sessions roadmap. MODERN_HUD_CLEAR P1 turns on `mhc-frame` in modern portrait walk so D787 overlap pads and P2 headroom camera run (D792: 88 px place or clock chip width). Online saves Phase 2 adds Link Google, Sign out, and the scoped privacy line in the Cloud save panel. Status docs now say LEVEL_GROW, MAP_EDGE P1, GEAR_SWITCH, TB-3 and Q22 are on main. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
