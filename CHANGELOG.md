@@ -2,6 +2,33 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-26 23:57 ET: Plaza lap, plaza sign, and lantern night (build 20261026-2357)
+
+- What changed and why: Vincent said yes to all five plaza ideas (D798). After the first partner, Officer Vale asks for a lap of the square: Keeper Pryce, Cadet Lisse, Tansy Holt, then back. A decline leaves it open. He then asks for the plaza sign, the way Officer Cald counts the east sign. This is not a town-board slip. After Cobblecrest and that sign, lantern night pays one Heal Snack. No Standing. Nella names the three baskets ember, tide, and bloom. Before Rook's gate battle, Tansy says he bounced through at dawn. The main chain does not move. Save stays `pixelpets.save.v2` with `v` 2. New flags are additive.
+- Files touched: `quests.js`, `data/detail_zz_plaza.json`, `data/mapdata.js`, `index.html`, `version.json`, `tests/plaza_quests.spec.js`, `tests/hearthmoor_plaza.spec.js`, `tests/quest_multi.spec.js`, `tests/civic.spec.js`, `tests/town_board_gate.spec.js`, `tests/controls.spec.js`, `tests/polish_build2_quest.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this commit on `cursor/plaza-npc-names-7ae7`. Build `20261026-2357`.
+- Tests run and result (widths, checks): plaza, hearthmoor plaza, quest multi, civic, town board gate, controls, polish quest, giver, and rook crossroads at 320: the last combined run was `PP_TEST RESULT: PASS exit=0 passed=22 failed=0`, and the wider set before the docs stamp was `passed=59`. `node tools/scans/run.js` SCAN PASS.
+- Decisions made (colour + reasoning): D798 green. Vincent said yes to all five on Oct 26, 2026. Next free id is D799.
+- Anything left unfinished: the lines are the build. D798 stays open if the wording should change.
+
+## 2026-10-26 23:34 ET: Cadet Arlo and Cadet Lisse (build 20261026-2334)
+
+- What changed and why: Rank titles are a capitalized word, then the name. Keeper cadet Arlo and Keeper cadet Lisse are now Cadet Arlo and Cadet Lisse, the same shape as Cadet Orrin. Same people, same looks, same lines. A save that already met Arlo under the old spelling still shows that number. Lisse has no old spelling on main. Save stays `pixelpets.save.v2` with `v` 2. No new field.
+- Files touched: `data/detail_zz_market.json`, `data/detail_zz_plaza.json`, `data/reputation.json`, `data/mapdata.js`, `rep.js`, `index.html`, `version.json`, `tests/hearthmoor_plaza.spec.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this commit on `cursor/plaza-npc-names-7ae7`. Build `20261026-2334`.
+- Tests run and result (widths, checks): `tests/hearthmoor_plaza.spec.js` and `tests/reputation.spec.js` at 320: `PP_TEST RESULT: PASS exit=0 passed=16 failed=0`. `node tools/scans/run.js` SCAN PASS.
+- Decisions made (colour + reasoning): no new id. The five quest ideas stay unbuilt until one is picked.
+- Anything left unfinished: West watch, the three baskets, lantern night, the east-and-west sign errand, and Rook at dawn are ideas only.
+
+## 2026-10-26 23:21 ET: Plaza people have names, and only the officer wears the coat (build 20261026-2321)
+
+- What changed and why: The seven Hearthmoor Plaza people had job titles for names. They now have names, and the art matches the rank. Officer Vale wears the officer coat, green with gold, on his own face (not Officer Bren's). Keeper Pryce trims the lamps in a keeper tunic and cap. Keeper cadet Lisse wears the green vest and is not the High Charity shopkeeper Mira. Grete Ash keeps the fountain, Joss Merrin sells Fernbrook apples, Nella Corrick wove the three baskets Warden Ilse sets out, and Tansy Holt draws in chalk until the rain. Lines stay within the 40-character chatter limit and follow the Keeper pledge, Glimmerwell, and the morning before the first partner. Save stays pixelpets.save.v2 with v 2. No new field.
+- Files touched: data/detail_zz_plaza.json, data/civic.json, data/glimmer_path.json, data/reputation.json, data/mapdata.js, game.js, tools/GAMEJS_MAP.txt, index.html, version.json, tests/hearthmoor_plaza.spec.js, tests/README.md, README.md, OPEN_DECISIONS.md, CHANGELOG.md.
+- Commit(s) + build id: this commit on cursor/plaza-npc-names-7ae7 from main efb4d01. Build 20261026-2321.
+- Tests run and result (widths, checks): tests/hearthmoor_plaza.spec.js at 320: PP_TEST RESULT: PASS exit=0 passed=5 failed=0. node tools/scans/run.js SCAN PASS.
+- Decisions made (colour + reasoning): still D797. No new id. Names were the open half of that row.
+- Anything left unfinished: D797 still wants Vincent's yes on the plaza before it is treated as final. The pre-partner Vale line is in the data; a save that already has a Walkling forces story.starter_received back on, so that line shows on a brand-new morning only.
+
 ## 2026-10-26 22:44 ET: Hearthmoor Plaza, and quest edge cues walk on a tap (build 20261026-2244)
 
 - What changed and why: Vincent's playtest notes (Oct 26, 2026). A quick tap on a quest edge cue now walks like any map tap. Holding still on the cue for 450 ms opens QUEST (D796, replaces D466). A new outdoor map, Hearthmoor Plaza (`hm_plaza`, 26 x 20), joins Hearthmoor's west edge at rows 4-6, just left of the home. It is open from the first morning and has no wild rolls. It is a paved square with a round fountain and a Keeper statue on its island. It also has a market row under bunting, benches, cafe tables, flower beds, Keeper banners, lanterns and a pond. Three Keepers and four civilians stand there (D797). It is a joined map rather than a wider Hearthmoor, so no Hearthmoor coordinate, saved position or test tile moves. One leaf decal moves from (1,5) to (1,3), off the new gate path. The town map lists each three-tile gate once and names exits between maps of one region node by the map (HEARTHMOOR PLAZA; the Hushwater Cut now reads HUSHWATER RIM and HUSHWATER FALLS). Save stays `pixelpets.save.v2` with `v` 2 and gains no field. No migrator.

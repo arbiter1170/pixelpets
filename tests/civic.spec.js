@@ -347,7 +347,7 @@ test('the quest tab opens the next step without leaving the walk map @w1', async
   expect(shown.text.length).toBeGreaterThan(0);
   expect(shown.side).toBe('phone');
   expect(shown.main).toBe('MAIN');
-  expect(shown.sideLabel).toBe('SIDE \u00b7 2');   // D106: phone and Mom's trip are both active after the starter
+  expect(shown.sideLabel).toBe('SIDE \u00b7 3');   // D106: phone, Mom's trip, and the plaza lap are active after the starter
   expect(shown.objective).toBe('Objective');
   expect(shown.sideObjective).toBe('Objective');
   expect(shown.status).toBe('ACTIVE');

@@ -1556,6 +1556,16 @@
         "story.side=keepers&standing.keepers>=1": "Keeper pledge noted. Move along.",
         "story.side=glimmer": "Company colours. State your business."
       },
+      "hmp_lamplighter": {
+        "story.side=keepers&standing.keepers>=4": "Warden's Ally. I'll light your way home.",
+        "story.side=keepers&standing.keepers>=3": "Hall Friend. An extra wick for you.",
+        "story.side=keepers&standing.keepers>=1": "Pledged Keeper. The lamps know you.",
+        "story.side=glimmer": "Glimmerwell dusk. Light is still light."
+      },
+      "hmp_cadet": {
+        "story.side=keepers&standing.keepers>=1": "Cadet Lisse. The watch will learn you.",
+        "story.side=glimmer": "Mint already? I'm still on plaque duty."
+      },
       "r1_ness": {
         "story.side=keepers&standing.keepers>=4": "Ally of the Warden. Pass freely.",
         "story.side=keepers&standing.keepers>=3": "Hall Friend. The watch knows you.",

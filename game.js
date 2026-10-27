@@ -3820,7 +3820,10 @@ if (MD.civic && MD.civic.looks) for (const [k, v] of Object.entries(MD.civic.loo
 if (MD.civic && MD.civic.speakers) for (const [k, v] of Object.entries(MD.civic.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.heights && MD.heights.looks) for (const [k, v] of Object.entries(MD.heights.looks)) if (v && typeof v === 'object' && !k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.heights && MD.heights.speakers) for (const [k, v] of Object.entries(MD.heights.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
-for (const k of DETAIL_KEYS) for (const [n, v] of Object.entries(MD[k].looks || {})) if (!n.startsWith('_') && v && typeof v === 'object') NPC_LOOKS[n] = v;
+for (const k of DETAIL_KEYS) {
+  for (const [n, v] of Object.entries(MD[k].looks || {})) if (!n.startsWith('_') && v && typeof v === 'object') NPC_LOOKS[n] = v;
+  for (const [n, v] of Object.entries(MD[k].speakers || {})) if (typeof v === 'string' && !n.startsWith('_')) LOOK_OF_NAME[n] = v;
+}
 // Ilse's lodge chat grows three optional rows. The design JSON stays verbatim; the letter is High Charity's side quest.
 (function wireIlseLetter(){
   const steps = SCENES.ilse_chat; if (!steps) return;

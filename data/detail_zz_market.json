@@ -214,7 +214,7 @@
      {"kind": "prop", "id": "hm_diner_barrel", "x": 1, "y": 31, "sprite": "barrel"},
      {"kind": "sign", "id": "hm_market_sign", "x": 1, "y": 28, "text": "MARKET ROW. Lamplight, Stitch & Lantern, the Parked Coach."},
      {"kind": "sign", "id": "hm_court_sign", "x": 11, "y": 32, "text": "LANTERNBALL COURT. First to five. Always open."},
-     {"kind": "npc", "id": "hm_arlo", "name": "Keeper cadet Arlo", "look": "hm_arlo", "x": 18, "y": 30, "facing": "down",
+     {"kind": "npc", "id": "hm_arlo", "name": "Cadet Arlo", "look": "hm_arlo", "x": 18, "y": 30, "facing": "down",
       "lines": {"else": "Next game is first to five. You in?"}},
      {"kind": "npc", "id": "court_regular", "name": "Court Regular", "look": "hm_court_regular", "x": 13, "y": 31, "facing": "right", "friendSlot": "COURT_REGULAR",
       "lines": {"else": "First to five, and I'm on four. I've been on four since Tuesday."}},
