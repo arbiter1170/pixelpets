@@ -1,0 +1,709 @@
+{
+ "spec": "No design spec. Vincent's playtest note (Oct 26, 2026): a plaza west of the starting home with civilians and Keepers. D797. Names and lines are placeholders for Design.",
+ "note": "One new outdoor map (hm_plaza), joined to Hearthmoor's west edge at rows 4-6 so no Hearthmoor coordinate moves. Sorts after detail_zz_market, so these row patches win.",
+ "looks": {
+  "plaza_watch": {
+   "skin": "4",
+   "hair": "short",
+   "hairCol": "d",
+   "outfit": "coat",
+   "outfitCol": "g",
+   "accent": "y"
+  },
+  "plaza_lamplighter": {
+   "skin": "2",
+   "hair": "bun",
+   "hairCol": "h",
+   "outfit": "coat",
+   "outfitCol": "g",
+   "accent": "y",
+   "accessory": "cap"
+  },
+  "plaza_cadet": {
+   "skin": "5",
+   "hair": "buzz",
+   "hairCol": "n",
+   "outfit": "vest",
+   "outfitCol": "g",
+   "accent": "y"
+  },
+  "plaza_sweeper": {
+   "skin": "3",
+   "hair": "curls",
+   "hairCol": "w",
+   "outfit": "sweater",
+   "outfitCol": "b",
+   "accent": "o"
+  },
+  "plaza_grower": {
+   "skin": "6",
+   "hair": "pony",
+   "hairCol": "n",
+   "outfit": "tunic",
+   "outfitCol": "r",
+   "accent": "y"
+  },
+  "plaza_weaver": {
+   "skin": "1",
+   "hair": "long",
+   "hairCol": "o",
+   "outfit": "dress",
+   "outfitCol": "p",
+   "accent": "w"
+  },
+  "plaza_kid": {
+   "skin": "3",
+   "hair": "spiky",
+   "hairCol": "y",
+   "outfit": "hoodie",
+   "outfitCol": "c",
+   "accent": "r",
+   "accessory": "beanie"
+  }
+ },
+ "maps": {
+  "hm_plaza": {
+   "name": "Hearthmoor Plaza",
+   "backdrop": "town",
+   "variants": true,
+   "w": 26,
+   "h": 20,
+   "spawns": null,
+   "respawn": null,
+   "safe": {
+    "x": 24,
+    "y": 9
+   },
+   "zones": [],
+   "grid": [
+    "TTTTTTTTTTTTTTTTTTTTTTTTTT",
+    "TfgfggfgggfggggfgggfggfgfT",
+    "TgffggggggggggggggggggffgT",
+    "TgggPPPPPPPPPPPPPPPPPPgggT",
+    "TgggPfffPPPPPPPPPPfffPgggT",
+    "TgggPfffPPPPPPPPPPfffPgggT",
+    "TgggPPPPPcccccccPPPPPPgggT",
+    "TgggPPPPPccwwwccPPPPPPgggT",
+    "TgggPPPPPcwwwwwcPPPPPPPPpp",
+    "TgggPPPPPcwwcwwcPPPPPPPPpp",
+    "TgggPPPPPcwwwwwcPPPPPPPPpp",
+    "TgggPPPPPccwwwccPPPPPPgggT",
+    "TgggPPPPPcccccccPPPPPPgggT",
+    "TgggPfffPPPPPPPPPPfffPgggT",
+    "TgggPfffPPPPPPPPPPfffPgggT",
+    "TgggPPPPPPPPPPPPPPPPPPgggT",
+    "TgsssssggggggggggggggffggT",
+    "TgswwwsgggggggggggggggffgT",
+    "TfswwwsgfggggfgggggfggggfT",
+    "TTTTTTTTTTTTTTTTTTTTTTTTTT"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "hmp_east_n",
+     "x": 25,
+     "y": 8,
+     "to": "hearthmoor",
+     "tx": 1,
+     "ty": 4,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "hmp_east",
+     "x": 25,
+     "y": 9,
+     "to": "hearthmoor",
+     "tx": 1,
+     "ty": 5,
+     "facing": "right"
+    },
+    {
+     "kind": "warp",
+     "id": "hmp_east_s",
+     "x": 25,
+     "y": 10,
+     "to": "hearthmoor",
+     "tx": 1,
+     "ty": 6,
+     "facing": "right"
+    },
+    {
+     "kind": "sign",
+     "id": "hmp_sign",
+     "x": 24,
+     "y": 7,
+     "text": "HEARTHMOOR PLAZA · Keepers' square. East: home lane."
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_statue",
+     "x": 12,
+     "y": 9,
+     "sprite": "lm_statue"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_plaque",
+     "x": 12,
+     "y": 12,
+     "sprite": "stone_marker",
+     "lines": {
+      "else": "A stone Keeper holds a lantern over the water. The plaque reads: KEEP THE LIGHT FOR THE NEXT HOLDER."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_planter_mid",
+     "x": 7,
+     "y": 9,
+     "sprite": "planter_round"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_flag_n",
+     "x": 6,
+     "y": 7,
+     "sprite": "flag_pole"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_flag_s",
+     "x": 6,
+     "y": 11,
+     "sprite": "flag_pole"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_urn_nw",
+     "x": 9,
+     "y": 6,
+     "sprite": "stone_urn"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_urn_ne",
+     "x": 15,
+     "y": 6,
+     "sprite": "stone_urn"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_urn_sw",
+     "x": 9,
+     "y": 12,
+     "sprite": "stone_urn"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_urn_se",
+     "x": 15,
+     "y": 12,
+     "sprite": "stone_urn"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_lamp_n",
+     "x": 16,
+     "y": 7,
+     "sprite": "lamp_post"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_lamp_s",
+     "x": 16,
+     "y": 11,
+     "sprite": "lamp_post"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_banner_n",
+     "x": 19,
+     "y": 7,
+     "sprite": "banner_keeper"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_banner_s",
+     "x": 19,
+     "y": 11,
+     "sprite": "banner_keeper"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_lantern_n",
+     "x": 22,
+     "y": 7,
+     "sprite": "lm_lantern_post"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_lantern_s",
+     "x": 22,
+     "y": 11,
+     "sprite": "lm_lantern_post"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_barrel",
+     "x": 8,
+     "y": 4,
+     "sprite": "barrel"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_wicker_l",
+     "x": 9,
+     "y": 4,
+     "sprite": "wicker_stall_l"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_wicker_r",
+     "x": 10,
+     "y": 4,
+     "sprite": "wicker_stall_r"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_slate",
+     "x": 12,
+     "y": 4,
+     "sprite": "slate_board",
+     "lines": {
+      "else": "Chalked up: BASKETS, APPLES, FRESH WATER. Free water."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_orchard_l",
+     "x": 14,
+     "y": 4,
+     "sprite": "orchard_stall_l"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_orchard_r",
+     "x": 15,
+     "y": 4,
+     "sprite": "orchard_stall_r"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_crate",
+     "x": 16,
+     "y": 4,
+     "sprite": "apple_crate"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_9",
+     "x": 9,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_10",
+     "x": 10,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_11",
+     "x": 11,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_12",
+     "x": 12,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_13",
+     "x": 13,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_14",
+     "x": 14,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_15",
+     "x": 15,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bunting_16",
+     "x": 16,
+     "y": 3,
+     "sprite": "bunting"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_hedge_w",
+     "x": 4,
+     "y": 3,
+     "sprite": "hedge_planter"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_hedge_e",
+     "x": 21,
+     "y": 3,
+     "sprite": "hedge_planter"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_planter_sw",
+     "x": 4,
+     "y": 15,
+     "sprite": "planter_round"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_planter_se",
+     "x": 21,
+     "y": 15,
+     "sprite": "planter_round"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bench_w",
+     "x": 11,
+     "y": 13,
+     "sprite": "bench_long"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bench_e",
+     "x": 13,
+     "y": 13,
+     "sprite": "bench_long"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_cafe_w",
+     "x": 8,
+     "y": 14,
+     "sprite": "cafe_table"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_cafe_e",
+     "x": 16,
+     "y": 14,
+     "sprite": "cafe_table"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bench_pond",
+     "x": 7,
+     "y": 16,
+     "sprite": "bench_long"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_tree_nw",
+     "x": 2,
+     "y": 5,
+     "sprite": "lm_big_tree"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_tree_sw",
+     "x": 2,
+     "y": 13,
+     "sprite": "lm_big_tree"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_tree_ne",
+     "x": 23,
+     "y": 4,
+     "sprite": "lm_big_tree"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_tree_se",
+     "x": 23,
+     "y": 14,
+     "sprite": "lm_big_tree"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bush_w",
+     "x": 2,
+     "y": 9,
+     "sprite": "bush"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bush_ne",
+     "x": 24,
+     "y": 2,
+     "sprite": "bush"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bush_s",
+     "x": 11,
+     "y": 17,
+     "sprite": "bush"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_tree_s",
+     "x": 19,
+     "y": 17,
+     "sprite": "lm_big_tree"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_stump_s",
+     "x": 14,
+     "y": 17,
+     "sprite": "stump"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bed_s",
+     "x": 9,
+     "y": 17,
+     "sprite": "flowerbed"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_flowers_s",
+     "x": 16,
+     "y": 17,
+     "sprite": "flower_clump"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_flowers_pond",
+     "x": 1,
+     "y": 16,
+     "sprite": "flower_clump"
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_poster",
+     "x": 20,
+     "y": 12,
+     "sprite": "poster_stand",
+     "lines": {
+      "else": "LANTERN NIGHT · Every lamp on the square, lit at dusk."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hmp_bike",
+     "x": 24,
+     "y": 12,
+     "sprite": "bike"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_chalk",
+     "x": 17,
+     "y": 12,
+     "sprite": "mr_chalk"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_leaves_mid",
+     "x": 7,
+     "y": 11,
+     "sprite": "leaf_litter"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_leaves_n",
+     "x": 18,
+     "y": 6,
+     "sprite": "leaf_litter"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_leaves_s",
+     "x": 14,
+     "y": 15,
+     "sprite": "leaf_litter"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_puddle",
+     "x": 10,
+     "y": 14,
+     "sprite": "puddle"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_leaves_w",
+     "x": 3,
+     "y": 6,
+     "sprite": "leaf_litter"
+    },
+    {
+     "kind": "decal",
+     "id": "hmp_leaves_e",
+     "x": 22,
+     "y": 13,
+     "sprite": "leaf_litter"
+    },
+    {
+     "kind": "npc",
+     "id": "hmp_watch",
+     "name": "Keeper on Watch",
+     "look": "plaza_watch",
+     "x": 21,
+     "y": 7,
+     "facing": "down",
+     "lines": {
+      "story.side=glimmer": "Mint vest. The square is open to all. Keep it calm.",
+      "!story.starter_received": "Off to the Warden's Lodge? Back through the gate, then east along the lane.",
+      "else": "Welcome to the plaza, holder. Lantern's law here: keep the peace, mind the little ones."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "hmp_lamplighter",
+     "name": "Lamplighter",
+     "look": "plaza_lamplighter",
+     "x": 21,
+     "y": 11,
+     "facing": "up",
+     "lines": {
+      "story.side=glimmer": "Even Glimmerwell walks home by my lamps. Light is light.",
+      "else": "I light every lantern here at dusk, so no holder walks home in the dark."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "hmp_cadet",
+     "name": "Keeper Cadet",
+     "look": "plaza_cadet",
+     "x": 12,
+     "y": 13,
+     "facing": "up",
+     "lines": {
+      "else": "I polish the statue's plaque each morning. One day I'll wear the full green and gold."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "hmp_sweeper",
+     "name": "Fountain Sweeper",
+     "look": "plaza_sweeper",
+     "x": 12,
+     "y": 6,
+     "facing": "down",
+     "lines": {
+      "else": "Folks toss wishes in the fountain. I sweep the leaves so the water stays bright."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "hmp_grower",
+     "name": "Orchard Grower",
+     "look": "plaza_grower",
+     "x": 13,
+     "y": 4,
+     "facing": "down",
+     "lines": {
+      "else": "Apples, picked this morning. Walklings come running when I shake the crate."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "hmp_weaver",
+     "name": "Basket Weaver",
+     "look": "plaza_weaver",
+     "x": 11,
+     "y": 4,
+     "facing": "down",
+     "lines": {
+      "else": "Every basket here is woven by hand. Strong enough to carry a sleepy Walkling."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "hmp_kid",
+     "name": "Chalk Kid",
+     "look": "plaza_kid",
+     "x": 18,
+     "y": 12,
+     "facing": "left",
+     "lines": {
+      "else": "I'm drawing my Walkling in chalk! The Keepers say it can stay till the rain."
+     }
+    }
+   ]
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "hearthmoor": {
+    "gridRows": {
+     "4": "ppHHHHgggpggRRRRRRgHHHHT",
+     "5": "ppgpgggggpggHHHHHHggpggT",
+     "6": "ppppgggggpgggggpggggpggT"
+    },
+    "replaceObjs": [
+     {
+      "kind": "decal",
+      "id": "hm_leaf_1_5",
+      "x": 1,
+      "y": 3,
+      "sprite": "leaf_litter"
+     }
+    ],
+    "addObjs": [
+     {
+      "kind": "warp",
+      "id": "hm_west_n",
+      "x": 0,
+      "y": 4,
+      "to": "hm_plaza",
+      "tx": 24,
+      "ty": 8,
+      "facing": "left"
+     },
+     {
+      "kind": "warp",
+      "id": "hm_west",
+      "x": 0,
+      "y": 5,
+      "to": "hm_plaza",
+      "tx": 24,
+      "ty": 9,
+      "facing": "left"
+     },
+     {
+      "kind": "warp",
+      "id": "hm_west_s",
+      "x": 0,
+      "y": 6,
+      "to": "hm_plaza",
+      "tx": 24,
+      "ty": 10,
+      "facing": "left"
+     }
+    ]
+   }
+  }
+ }
+}

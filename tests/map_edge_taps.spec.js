@@ -187,13 +187,15 @@ async function until(page, pred, ms) {
   throw new Error('timeout ' + JSON.stringify(last));
 }
 
-async function fire(page, tap) {
-  await page.evaluate(tap => {
+// holdMs keeps the finger down that long before lifting (D796: a hold on an edge cue opens QUEST).
+async function fire(page, tap, holdMs = 0) {
+  await page.evaluate(async ({ tap, holdMs }) => {
     const mc = document.querySelector('#mapCanvas');
     const opt = { bubbles: true, cancelable: true, clientX: tap.clientX, clientY: tap.clientY, pointerId: 1, pointerType: 'touch', isPrimary: true };
     mc.dispatchEvent(new PointerEvent('pointerdown', opt));
+    if (holdMs) await new Promise(r => setTimeout(r, holdMs));
     mc.dispatchEvent(new PointerEvent('pointerup', opt));
-  }, tap);
+  }, { tap, holdMs });
 }
 
 test('T1 a tap aimed at an edge exit takes that exit', async ({ page }) => {
@@ -442,14 +444,15 @@ test('T6 a chip, a person, a sign, the follower and a wild still win', async ({ 
       throw new Error(mode + ' cue ' + JSON.stringify(why));
     }
     const before = await snap(page);
-    await fire(page, chip);
+    await fire(page, chip, 700);
     await expect(page.locator('#ovQuest')).toBeVisible();
     const after = await snap(page);
     expect(after.x).toBe(before.x);
     expect(after.y).toBe(before.y);
     expect(after.map).toBe('fernbrook');
     await expect.poll(() => page.evaluate(() => PixelPets.optionsReady)).toBe(true);
-    await page.locator('#questClose').click();
+    // The held finger is carried into QUEST by the overlay tap guard, so CLOSE takes a fresh touch.
+    await page.locator('#questClose').tap();
     await expect(page.locator('#ovQuest')).toBeHidden();
 
     await place(page, 'fernbrook', 4, 7, 'left');

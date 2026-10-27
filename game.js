@@ -6891,9 +6891,11 @@ const cueChips = [];   // chips drawn this frame (view space), reset at the top 
 const cueArrows = [];  // on-screen quest and board-slip arrows this frame (view space); never saved
 const bubbleBoxes = []; // "!" balloon and the talk marker this frame; never saved
 // QUEST_CUE (D461-D469). Main and side cues use today's small arrow. Off screen it turns in 8 directions,
-// carries the distance pill, and sits in a 44 CSS px tap box (CUE_EDGE). A board slip keeps the rail chip.
+// carries the distance pill, and sits in a 44 CSS px box (CUE_EDGE). A board slip keeps the rail chip.
 // D464: no ground ring. D465: no rim blink; 1 px motion on 1400 ms; still under reduced motion.
+// D796: taps pass through the box to the map; holding still on it for CUE_HOLD_MS opens QUEST.
 const CUE_EDGE = { edge: 4, inset: 56, gap: 4, margin: 6, box: 44 };
+const CUE_HOLD_MS = 450;
 const CUE_AVOID = '#floatCtl button, #joyRing, #thChip, #fcAcorns, #walkTip, #petStrip, #dpad';
 const CUE_PENNANT = [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2]];
 const CUE_SHADOW = (() => {
@@ -11252,8 +11254,9 @@ function buildMapGroups(){
     floors.forEach(f => { mapLayers.byFloor[f] = group; });
   });
 }
-function outdoorLayout(m){
-  const g = m.grid, h = g.length, w = g[0].length;
+const ML_EXIT_SIDE = new Set(['hm_north_w', 'hm_north_e', 'hm_west_n', 'hm_west_s', 'hmp_east_n', 'hmp_east_s']);
+function outdoorLayout(m, id){
+  const g = m.grid, h = g.length, w = g[0].length, home = nodeOf(id);
   const at = (x, y) => (y >= 0 && x >= 0 && y < h && x < w) ? g[y][x] : '';
   const buildings = [], used = new Set();
   (m.objs || []).forEach(o => {
@@ -11296,13 +11299,15 @@ function outdoorLayout(m){
   const exits = [];
   (m.objs || []).forEach(o => {
     if (o.kind !== 'warp' || !WORLD[o.to]) return;
-    // D381: the trail mouth is three warps. The town map lists the middle tile once, like an in-map exit.
-    if (o.id === 'hm_north_w' || o.id === 'hm_north_e') return;
+    // D381, D797: a three-warp mouth (the north trail, the plaza gate) is listed once, at its middle tile.
+    if (ML_EXIT_SIDE.has(o.id)) return;
     const edge = o.x === 0 ? 'west' : o.x === w - 1 ? 'east' : o.y === 0 ? 'north' : o.y === h - 1 ? 'south' : 'mark';
     const node = nodeOf(o.to);
+    // Hearthmoor and its plaza share one region node, so an exit between them names the map, not the town.
+    const own = node && node === home && o.to !== node;
     exits.push({
       id: o.id, xy: [o.x, o.y], to: o.to, edge, node, coach: edge === 'mark',
-      label: node && REGION_MAP.nodes[node] ? REGION_MAP.nodes[node].label : WORLD[o.to].name.toUpperCase(),
+      label: !own && node && REGION_MAP.nodes[node] ? REGION_MAP.nodes[node].label : WORLD[o.to].name.toUpperCase(),
       when: o.when || null, need: o.need || null,
     });
   });
@@ -11315,7 +11320,7 @@ function ensureMapLayers(){
   Object.keys(WORLD).forEach(id => {
     const m = WORLD[id]; if (!m || !m.grid) return;
     const room = m.kind === 'interior';
-    const e = room ? interiorLayout(m) : outdoorLayout(m);
+    const e = room ? interiorLayout(m) : outdoorLayout(m, id);
     e.id = id; e.name = m.name; e.level = room ? 'room' : 'town'; e.dream = !!m.dream; e.outdoor = m.outdoor || null;
     e.grid = m.grid;
     if (room) {
@@ -16549,7 +16554,18 @@ function bindInput(){
   });
   // Map: tap a tile to walk there, or drag to steer.
   const mc = $('#mapCanvas'); let ptr = null;
-  mc.addEventListener('pointerdown', e => { e.preventDefault(); hideBumpHint(); if (scene) { sceneTap(); return; } try { mc.setPointerCapture(e.pointerId); } catch(_) {} ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, dragged: false }; });
+  const viewAt = e => { const r = mc.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * mc.width, (e.clientY - r.top) / r.height * mc.height]; };
+  mc.addEventListener('pointerdown', e => {
+    e.preventDefault(); hideBumpHint(); if (scene) { sceneTap(); return; } try { mc.setPointerCapture(e.pointerId); } catch(_) {}
+    if (ptr && ptr.hold) clearTimeout(ptr.hold);
+    const p = ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, dragged: false, hold: 0, quest: false };
+    const [vx, vy] = viewAt(e);
+    if (!fade.busy && cueEdgeTap(vx, vy)) p.hold = setTimeout(() => {
+      p.hold = 0;
+      if (ptr !== p || p.dragged || scene || fade.busy || overlayOpen()) return;
+      p.quest = true; walk.drag = null; closePartnerTray(); openQuest();
+    }, CUE_HOLD_MS);
+  });
   mc.addEventListener('pointermove', e => {
     if (!ptr || e.pointerId !== ptr.id) return;
     const dx = e.clientX - ptr.x, dy = e.clientY - ptr.y;
@@ -16557,12 +16573,10 @@ function bindInput(){
   });
   const end = e => {
     if (!ptr || e.pointerId !== ptr.id) return;
-    if (!ptr.dragged && e.type === 'pointerup') {
-      const r = mc.getBoundingClientRect();
+    if (ptr.hold) { clearTimeout(ptr.hold); ptr.hold = 0; }
+    if (!ptr.dragged && !ptr.quest && e.type === 'pointerup') {
       // Canvas CSS pixels map onto the bitmap, then the camera. The integer room scale changes both together, so the tile stays put (D239).
-      const vx = (e.clientX - r.left) / r.width * mc.width, vy = (e.clientY - r.top) / r.height * mc.height;
-      if (!(scene || fade.busy) && cueEdgeTap(vx, vy)) { closePartnerTray(); openQuest(); }
-      else {
+      const [vx, vy] = viewAt(e);
       const x = vx + walk.cam.x, y = vy + walk.cam.y;
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
       walk.hit = { x: tx, y: ty };
@@ -16585,7 +16599,6 @@ function bindInput(){
         }
         if (!solid(gx, gy) && warpBlocked(gx, gy)) { wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: gx, y: gy }; }
         else startTapWalk(gx, gy, solid(gx, gy));
-      }
       }
     }
     walk.drag = null; ptr = null;
