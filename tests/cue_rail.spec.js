@@ -216,7 +216,7 @@ test('reduced motion holds the arrow still, and nothing blinks white', async ({ 
   expect(LIME.join(',')).not.toBe(WHITE.join(','));
 });
 
-test('a tap on the edge box opens QUEST and does not walk', async ({ page }) => {
+test('D796: a quick tap on the edge box walks, and only a hold opens QUEST', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.cueForce({ x: 1, y: 48 }));
   await frame(page);
@@ -226,7 +226,21 @@ test('a tap on the edge box opens QUEST and does not walk', async ({ page }) => 
     return { x: ch.box.x + ch.box.w / 2, y: ch.box.y + ch.box.h / 2 };
   });
   await page.locator('#mapCanvas').click({ position: spot });
+  await expect.poll(() => page.evaluate(() => {
+    const s = PixelPets.state.world;
+    return s.x !== 12 || s.y !== 27;
+  })).toBe(true);
+  expect(await page.locator('#ovQuest').isHidden()).toBe(true);
+  const moved = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
+  expect(moved).not.toEqual(before);
+
+  await page.evaluate(() => { PixelPets.goto('hearthmoor', 12, 27, 'down'); PixelPets.cueForce({ x: 1, y: 48 }); });
   await frame(page);
+  const held = await page.evaluate(() => {
+    const ch = PixelPets.cueChip();
+    return { x: ch.box.x + ch.box.w / 2, y: ch.box.y + ch.box.h / 2 };
+  });
+  await page.locator('#mapCanvas').click({ position: held, delay: 700 });
   await expect(page.locator('#ovQuest')).toBeVisible();
   const after = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
   expect(after).toEqual(before);
@@ -451,7 +465,7 @@ test('edge boxes keep their clearance and still miss warp and door centres', asy
       const ch = (PixelPets.cueChips() || []).find((c) => c.box);
       return { x: ch.box.x + ch.box.w / 2, y: ch.box.y + ch.box.h / 2 };
     });
-    await page.locator('#mapCanvas').click({ position: spot });
+    await page.locator('#mapCanvas').click({ position: spot, delay: 700 });
     await expect(page.locator('#ovQuest')).toBeVisible();
     await expect.poll(() => page.evaluate(() => PixelPets.optionsReady)).toBe(true);
     await page.locator('#questClose').click();

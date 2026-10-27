@@ -6891,9 +6891,11 @@ const cueChips = [];   // chips drawn this frame (view space), reset at the top 
 const cueArrows = [];  // on-screen quest and board-slip arrows this frame (view space); never saved
 const bubbleBoxes = []; // "!" balloon and the talk marker this frame; never saved
 // QUEST_CUE (D461-D469). Main and side cues use today's small arrow. Off screen it turns in 8 directions,
-// carries the distance pill, and sits in a 44 CSS px tap box (CUE_EDGE). A board slip keeps the rail chip.
+// carries the distance pill, and sits in a 44 CSS px box (CUE_EDGE). A board slip keeps the rail chip.
 // D464: no ground ring. D465: no rim blink; 1 px motion on 1400 ms; still under reduced motion.
+// D796: taps pass through the box to the map; holding still on it for CUE_HOLD_MS opens QUEST.
 const CUE_EDGE = { edge: 4, inset: 56, gap: 4, margin: 6, box: 44 };
+const CUE_HOLD_MS = 450;
 const CUE_AVOID = '#floatCtl button, #joyRing, #thChip, #fcAcorns, #walkTip, #petStrip, #dpad';
 const CUE_PENNANT = [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2]];
 const CUE_SHADOW = (() => {
@@ -16549,7 +16551,18 @@ function bindInput(){
   });
   // Map: tap a tile to walk there, or drag to steer.
   const mc = $('#mapCanvas'); let ptr = null;
-  mc.addEventListener('pointerdown', e => { e.preventDefault(); hideBumpHint(); if (scene) { sceneTap(); return; } try { mc.setPointerCapture(e.pointerId); } catch(_) {} ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, dragged: false }; });
+  const viewAt = e => { const r = mc.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * mc.width, (e.clientY - r.top) / r.height * mc.height]; };
+  mc.addEventListener('pointerdown', e => {
+    e.preventDefault(); hideBumpHint(); if (scene) { sceneTap(); return; } try { mc.setPointerCapture(e.pointerId); } catch(_) {}
+    if (ptr && ptr.hold) clearTimeout(ptr.hold);
+    const p = ptr = { id: e.pointerId, x: e.clientX, y: e.clientY, dragged: false, hold: 0, quest: false };
+    const [vx, vy] = viewAt(e);
+    if (!fade.busy && cueEdgeTap(vx, vy)) p.hold = setTimeout(() => {
+      p.hold = 0;
+      if (ptr !== p || p.dragged || scene || fade.busy || overlayOpen()) return;
+      p.quest = true; walk.drag = null; closePartnerTray(); openQuest();
+    }, CUE_HOLD_MS);
+  });
   mc.addEventListener('pointermove', e => {
     if (!ptr || e.pointerId !== ptr.id) return;
     const dx = e.clientX - ptr.x, dy = e.clientY - ptr.y;
@@ -16557,12 +16570,10 @@ function bindInput(){
   });
   const end = e => {
     if (!ptr || e.pointerId !== ptr.id) return;
-    if (!ptr.dragged && e.type === 'pointerup') {
-      const r = mc.getBoundingClientRect();
+    if (ptr.hold) { clearTimeout(ptr.hold); ptr.hold = 0; }
+    if (!ptr.dragged && !ptr.quest && e.type === 'pointerup') {
       // Canvas CSS pixels map onto the bitmap, then the camera. The integer room scale changes both together, so the tile stays put (D239).
-      const vx = (e.clientX - r.left) / r.width * mc.width, vy = (e.clientY - r.top) / r.height * mc.height;
-      if (!(scene || fade.busy) && cueEdgeTap(vx, vy)) { closePartnerTray(); openQuest(); }
-      else {
+      const [vx, vy] = viewAt(e);
       const x = vx + walk.cam.x, y = vy + walk.cam.y;
       const tx = Math.floor(x / TS), ty = Math.floor(y / TS);
       walk.hit = { x: tx, y: ty };
@@ -16585,7 +16596,6 @@ function bindInput(){
         }
         if (!solid(gx, gy) && warpBlocked(gx, gy)) { wild.chase = null; walk.path = walk.arrive = null; dropAim(); walk.target = { x: gx, y: gy }; }
         else startTapWalk(gx, gy, solid(gx, gy));
-      }
       }
     }
     walk.drag = null; ptr = null;

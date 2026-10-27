@@ -12,13 +12,16 @@ HUSHWATER B1 merged in #125 and HUSHWATER B2 merged in #126. Both are on main.
 
 D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE P0) are settled and recorded in the archive. D72 is settled yes and moved to the archive.
 
-Next free id is D796.
-Other packets hold ids through D795.
+D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET).
+
+Next free id is D798.
+Other packets hold ids through D797.
 
 ## Open
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
+| D796 | Quest edge cue taps (Vincent, Oct 26, 2026: the cue arrows were too sensitive and blocked movement), GREEN default, OPEN | How long a hold on an edge cue should take before QUEST opens, and whether the hold needs a visual fill | A quick tap on the 44 px edge box walks like any map tap (replaces D466). Holding still on the box for 450 ms opens QUEST; a drag past 18 px steers instead. No fill or ring while holding. The QUEST button and the 4 key are unchanged | `CUE_HOLD_MS` in `game.js`; the hold timer is in `bindInput` (map pointerdown) |
 | D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
 | D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
 | D787 | MODERN_HUD_CLEAR, YELLOW, OPEN | Should #180 merge first with three changes, then P1? A: each HUD pad is that HUD rect's overlap with the visible canvas. B: the north lift runs only while the top pad is over zero. C: a Map zoom step above 2x stays only while the map rect (#mapWrap) shows 7 x 8.5 tiles. | Built in #180 (merged 68c273f, live build 20261025-0511). C is live: 2x and 2.5x at 320, 2x, 2.5x and 3x at 375, and 2x, 2.33x, 2.67x and 3x at 390. A and B, and the D729 arcade area chip move, are gated behind the body class `mhc-frame` (MHC_FRAME_CLASS) until MODERN_HUD_CLEAR P1 sets it (Supervisor green call, Oct 25, 2026); nothing sets it on main yet. | `hudPadsLive`, `MHC_FRAME_CLASS` and the D787 C step rule in game.js. QA yes and PixelPets yes; passes on the default Mon Oct 26, 2026, 8:20 PM ET. |
