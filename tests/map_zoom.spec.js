@@ -247,10 +247,11 @@ test('default 2x: modern portrait turns on the frame class with zero over-map pa
 // Arcade is the default for a save with no controls setting. The D729 area chip move waits for the same P1 frame
 // class, so without it arcade is main's layout. Canvas rect (left, top, width, height), map offset and camera,
 // in css px / art px, measured on main 21399e2 (build 20261025-0004) with this save. hearth_n is Hearthmoor (9,8).
+// COMPACT (Oct 27, 2026): the arcade pad is 44 px cells, so the map is 24 px taller than main's and the camera follows.
 const ARCADE_MAIN = {
-  320: { rect: [18, 162, 284, 150], spawn: { off: [18, 149], cam: [0, 13] }, route1: { off: [18, 69], cam: [0, 93] }, hearth_n: { off: [8, 101], cam: [10, 61] } },
-  375: { rect: [18, 162, 339, 249], spawn: { off: [18, 162], cam: [0, 0] }, route1: { off: [18, 118], cam: [0, 44] }, hearth_n: { off: [18, 150], cam: [0, 12] } },
-  390: { rect: [18, 162, 354, 426], spawn: { off: [18, 162], cam: [0, 0] }, route1: { off: [-78, 38], cam: [48, 62] }, hearth_n: { off: [-110, 102], cam: [64, 30] } },
+  320: { rect: [18, 162, 284, 174], spawn: { off: [18, 161], cam: [0, 1] }, route1: { off: [18, 81], cam: [0, 81] }, hearth_n: { off: [8, 113], cam: [10, 49] } },
+  375: { rect: [18, 162, 339, 273], spawn: { off: [18, 162], cam: [0, 0] }, route1: { off: [18, 130], cam: [0, 32] }, hearth_n: { off: [18, 162], cam: [0, 0] } },
+  390: { rect: [18, 162, 354, 450], spawn: { off: [18, 162], cam: [0, 0] }, route1: { off: [-78, 50], cam: [48, 56] }, hearth_n: { off: [-110, 114], cam: [64, 24] } },
 };
 // D833 made modern the default, so this pins a save that picked arcade (a save with no choice now loads as modern).
 test('arcade pick (no frame class): canvas rect, map offset and camera are main\'s', async ({ page }) => {

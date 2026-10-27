@@ -25,7 +25,10 @@ for (const vp of SIDE) {
     expect(pad.x + pad.width).toBeLessThanOrEqual(app.x + 0.5);       // left of the game window
     expect(talk.x).toBeGreaterThanOrEqual(app.x + app.width - 0.5);   // right of it
     expect(Math.abs(app.x - (vp.width - (app.x + app.width)))).toBeLessThanOrEqual(1);   // the column is centred
-    expect(app.width).toBeLessThanOrEqual(480);
+    // COMPACT: the grips are as narrow as a 44 px pad allows, so the window is the screen less two 148 px grips (no 480 cap).
+    expect(Math.abs(app.width - (vp.width - 2 * 148))).toBeLessThanOrEqual(1);
+    // 2x, never 3x: the wider window shows more world (the canvas is about half the window in game pixels).
+    expect(await page.evaluate(() => document.querySelector('#mapCanvas').width)).toBeGreaterThanOrEqual(Math.floor(app.width / 2) - 16);
     for (const b of [pad, talk]) { expect(inside(b, vp.width, vp.height)).toBe(true); expect(b.width).toBeGreaterThanOrEqual(44); expect(b.height).toBeGreaterThanOrEqual(44); }
     for (const dir of ['up', 'down', 'left', 'right']) { const b = await page.locator(`.dp[data-dir="${dir}"]`).boundingBox(); expect(b.width).toBeGreaterThanOrEqual(44); expect(inside(b, vp.width, vp.height)).toBe(true); }
     const ids = ['#repBtn', '#questBtn', '#walkBagBtn', '#mapBtn', '#gearFloat', '#colFloat', '#petFloat', '#petStrip'];
@@ -91,12 +94,12 @@ test('sideways modern has no grips', async ({ page }) => {
   expect(await page.evaluate(() => PixelPets.layout)).toEqual({ mode: 'modern', land: true, grips: false });
 });
 
-test('upright arcade: the map keeps its rect under the controller skin', async ({ page }) => {
+test('upright arcade: the 44 px pad gives the map its height back', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForTimeout(200);
   const r = await page.evaluate(() => { const b = document.querySelector('#mapCanvas').getBoundingClientRect(), d = document.querySelector('#dpad').getBoundingClientRect(); return { mw: [Math.round(b.width), Math.round(b.height)], pad: [Math.round(d.width), Math.round(d.height)], arcade: document.body.classList.contains('ctl-arcade') }; });
-  expect(r).toEqual({ mw: [354, 426], pad: [160, 160], arcade: true });
+  expect(r).toEqual({ mw: [354, 450], pad: [136, 136], arcade: true });   // was 354x426 with a 160 pad
 });

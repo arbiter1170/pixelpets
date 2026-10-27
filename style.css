@@ -1549,11 +1549,17 @@ body.ctl-arcade .dp.on,body.ctl-arcade .dp:active,body.land-arcade .dp.on,body.l
 /* PHONE, BAG and MAP in the pad's corners are round face buttons. The 52 px box (the tap target) does not change. */
 body.ctl-arcade #dpad .dpc{border-radius:50%;background:var(--n);box-shadow:0 0 0 3px var(--k),inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.14)}
 body.ctl-arcade #dpad .dpc:active{background:var(--b)}
+/* COMPACT (Vincent, Oct 27, 2026: controls too big, screen too small): 44 px cells, the tap minimum, so the pad is 136 not 160
+   and the map takes the height. The body's rim is thinner too. */
+body.ctl-arcade #dpad{--dp-cell:44px}
+body.ctl-arcade .walk-ctl{box-shadow:0 0 0 3px var(--d),0 0 0 6px var(--k),inset 0 2px 0 rgba(255,255,255,.08)}
 
 /* Sideways arcade: modern's layout in the middle column, the pad on a left grip and TALK on a right grip, outside the game window.
-   The column is centred so overlays and toasts (centred on the window) still sit over it. LANDSCAPE D685 caps it at 480. */
+   The column is centred so overlays and toasts (centred on the window) still sit over it. COMPACT (Vincent, Oct 27, 2026) lifts
+   D685's 480 cap for arcade sideways: the grips are as narrow as a 44 px pad allows and the game window takes the rest. */
 .grip{display:none}
-body.land-arcade{--grip:calc(176px + max(env(safe-area-inset-left,0px),env(safe-area-inset-right,0px)));--col:min(480px,calc(100vw - 2 * var(--grip)))}
+body.land-arcade{--grip:calc(148px + max(env(safe-area-inset-left,0px),env(safe-area-inset-right,0px)));--col:calc(100vw - 2 * var(--grip))}
+body.land-arcade #dpad{--dp-cell:44px}
 body.land-arcade #app{max-width:none;width:var(--col);padding-left:0;padding-right:0}
 body.land-arcade .scene-ov{max-width:var(--col)}
 body.land-arcade .grip{display:flex;position:fixed;top:0;bottom:0;z-index:1;box-sizing:border-box;width:calc((100vw - var(--col)) / 2);
@@ -1562,23 +1568,21 @@ body.land-arcade .grip[hidden]{display:none}
 body.land-arcade .grip-l{left:0;padding-left:calc(6px + env(safe-area-inset-left,0px))}
 body.land-arcade .grip-r{right:0;padding-right:calc(6px + env(safe-area-inset-right,0px))}
 .grip-shell{flex:1 1 auto;min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
-  padding-bottom:clamp(12px,11%,48px);background:var(--d);box-shadow:0 0 0 3px var(--k),inset 3px 3px 0 rgba(255,255,255,.1),inset -3px -3px 0 rgba(0,0,0,.3)}
+  padding-bottom:clamp(10px,9%,36px);background:var(--d);box-shadow:0 0 0 3px var(--k),inset 3px 3px 0 rgba(255,255,255,.1),inset -3px -3px 0 rgba(0,0,0,.3)}
 .grip-l .grip-shell{border-radius:44px 10px 10px 44px}
 .grip-r .grip-shell{border-radius:10px 44px 44px 10px}
-.grip-seat{display:flex;align-items:center;justify-content:center;width:160px;height:160px}
+.grip-seat{display:flex;align-items:center;justify-content:center;width:136px;height:136px}
 .grip-dots{position:absolute;top:16%;left:50%;width:36px;height:36px;margin-left:-18px;opacity:.8;pointer-events:none;
   background:radial-gradient(circle,var(--k) 2px,transparent 2.5px) 0 0/12px 12px}
 /* The pad's centre is empty sideways (TALK is on the right grip); a hub fills it so the cross reads whole. */
 body.land-arcade #dpad::after{content:"";grid-column:2;grid-row:2;background:var(--k)}
 /* TALK is the round A button: dim until someone is in reach, PAL y when it can talk (the same .ready the pad's hub uses). */
-body.land-arcade #talkBtn{width:76px;height:76px;min-width:76px;border-radius:50%;font-size:18px;letter-spacing:0;background:var(--p);color:var(--h);
+body.land-arcade #talkBtn{width:64px;height:64px;min-width:64px;border-radius:50%;font-size:16px;letter-spacing:0;background:var(--p);color:var(--h);
   box-shadow:0 0 0 3px var(--k),inset -4px -4px 0 rgba(0,0,0,.3),inset 4px 4px 0 rgba(255,255,255,.18)}
 body.land-arcade #talkBtn.ready{background:var(--y);color:var(--k)}
 body.land-arcade #talkBtn.ready:active{background:var(--o);transform:translateY(2px)}
 /* Off the walk screen the grips stay (no jump), but the pad and TALK rest. */
 body.land-arcade:not([data-screen="walk"]) .grip-seat{opacity:.35;pointer-events:none}
-/* Narrow sideways phones (SE sizes): 48 px pad cells (still over 44) give the game window about 30 px more. */
-@media (max-width: 700px){ body.land-arcade{--grip:calc(162px + max(env(safe-area-inset-left,0px),env(safe-area-inset-right,0px)))} body.land-arcade #dpad{--dp-cell:48px} body.land-arcade .grip-seat{width:148px;height:148px} }
 /* D833 made modern the first-run layout, so the dock gear must work in the opening scene (Start over, then bring back a copy).
    The scene rule above hides the dock with opacity, which a child cannot undo, and its !important pointer block only spared the
    old top-right corner. Visibility can be undone per child; gear-locked (a scene once you have a partner) still blocks it. */

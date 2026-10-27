@@ -1781,7 +1781,8 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { app
     const rectMoved = W !== mapRectW || H !== mapRectH;
     mapRectW = W; mapRectH = H;
     const modern = ctlMode() === 'modern';         // NAV_MODERN §2 (NM-Y2): modern is 2x at every width with a 24x36 cap; arcade unchanged
-    const s = modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
+    // COMPACT: the sideways arcade window is wider than 480, so it stays 2x and shows more world instead of jumping to 3x.
+    const s = landArcade() ? 2 : modern ? Math.max(2, Math.floor(W / 176)) : (W >= 176 ? Math.floor(W / 176) : W / 176);
     mapBase = s;
     const sUse = isRoom() ? s : outdoorZoomFor(s);
     invalidateCueZone();
