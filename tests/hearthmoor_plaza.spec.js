@@ -72,7 +72,13 @@ test('the home door reaches the gate, and the plaza is safe ground with no wild 
 });
 
 test('three Keepers and four civilians each talk from a reachable tile @w1', async ({ page }) => {
-  await boot(page, { map: 'hm_plaza', x: 24, y: 9 });
+  await boot(page, { map: 'hm_plaza', x: 24, y: 9 }, {
+    'story.rival1_done': true,
+    'story.plaza_yes': true,
+    'story.plaza_done': true,
+    'story.plaza_sign_yes': true,
+    'story.plaza_sign_done': true,
+  });
   const r = await page.evaluate(([src, keepers, civ]) => {
     const seen = eval(src)(), objs = MAPDATA.detail_zz_plaza.maps.hm_plaza.objs, bad = [], who = {};
     for (const id of keepers.concat(civ)) {
@@ -101,7 +107,7 @@ test('three Keepers and four civilians each talk from a reachable tile @w1', asy
       hmp_cadet: 'Statue duty. The coat comes later.',
       hmp_sweeper: "Wishes in. Leaves out. That's my job.",
       hmp_grower: 'Fernbrook apples, fresh off the cart.',
-      hmp_weaver: 'I wove the three baskets Ilse sets out.',
+      hmp_weaver: "Ember, tide, and bloom. Ilse's three.",
       hmp_kid: 'Vale says the chalk can stay till rain.',
     }[id]);
     expect(text.length, id).toBeGreaterThan(10);
@@ -139,7 +145,13 @@ test('the officer coat is Vale alone, and rank lines follow the pledge @w1', asy
   expect(art.vale.art.skin).not.toBe(art.officerSkin);
   expect(art.early).toBe("Ilse's lodge is east, past your door.");
 
-  await boot(page, { map: 'hm_plaza', x: 21, y: 8 }, { 'story.side': 'keepers' });
+  await boot(page, { map: 'hm_plaza', x: 21, y: 8 }, {
+    'story.side': 'keepers',
+    'story.plaza_yes': true,
+    'story.plaza_done': true,
+    'story.plaza_sign_yes': true,
+    'story.plaza_sign_done': true,
+  });
   await page.evaluate(() => PixelPets.setStanding('keepers', 99999));
   const say = async (id) => {
     expect(await page.evaluate((oid) => PixelPets.talkTo(oid), id), id).toBe(true);

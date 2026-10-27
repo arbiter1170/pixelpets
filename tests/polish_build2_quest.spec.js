@@ -19,6 +19,8 @@ function save(extra, patch) {
 
 const THREE = {
   'story.leak5b_seen': true,
+  'story.plaza_done': true,
+  'story.plaza_sign_done': true,
 };
 const FRESH = {
   'story.phone_got': true,
@@ -34,6 +36,8 @@ const FRESH = {
   'story.dream_study': true,
   'story.leak5b_seen': false,
   'story.cobble_end': false,
+  'story.plaza_done': true,
+  'story.plaza_sign_done': true,
 };
 
 async function boot(page, s) {

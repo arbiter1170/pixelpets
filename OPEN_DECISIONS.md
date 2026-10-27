@@ -12,16 +12,17 @@ HUSHWATER B1 merged in #125 and HUSHWATER B2 merged in #126. Both are on main.
 
 D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE P0) are settled and recorded in the archive. D72 is settled yes and moved to the archive.
 
-D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET).
+D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET). D798 is reserved: PLAZA_ERRANDS (Vincent, Oct 26, 2026, yes to all five).
 
-Next free id is D798.
-Other packets hold ids through D797.
+Next free id is D799.
+Other packets hold ids through D798.
 
 ## Open
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
 | D796 | Quest edge cue taps (Vincent, Oct 26, 2026: the cue arrows were too sensitive and blocked movement), GREEN default, OPEN | How long a hold on an edge cue should take before QUEST opens, and whether the hold needs a visual fill | A quick tap on the 44 px edge box walks like any map tap (replaces D466). Holding still on the box for 450 ms opens QUEST; a drag past 18 px steers instead. No fill or ring while holding. The QUEST button and the 4 key are unchanged | `CUE_HOLD_MS` in `game.js`; the hold timer is in `bindInput` (map pointerdown) |
+| D798 | Plaza errands (Vincent, Oct 26, 2026, yes to all five), GREEN, OPEN for wording | Whether any line should be rewritten | After the first partner, Officer Vale asks for a lap: Keeper Pryce, Cadet Lisse, Tansy Holt, then back. A decline leaves it open. After the lap he asks for the plaza sign, the way Officer Cald counts the east sign. This is not a town-board slip. After Cobblecrest and that sign, lantern night lights the square and pays one Heal Snack. No Standing. Nella names the three baskets ember, tide, and bloom. Before Rook's gate battle, Tansy says he bounced through at dawn. The main chain does not move | `quests.js` side chains `plaza_ask`, `plaza_sign_ask`, `lantern_ask`; scenes in `data/detail_zz_plaza.json` |
 | D797 | Hearthmoor Plaza (Vincent, Oct 26, 2026: a plaza left of the starting home, made to look very nice, with civilians and Keepers), RED, OPEN: Vincent's yes on the previews before merge | Whether a joined map is the right shape (instead of widening Hearthmoor), and any layout tweaks after play. Names and lines are in the build (Officer Vale, Keeper Pryce, Cadet Lisse, Grete Ash, Joss Merrin, Nella Corrick, Tansy Holt) | A new outdoor map `hm_plaza` (Hearthmoor Plaza, 26 x 20, no wild rolls) joins Hearthmoor's west edge at rows 4-6, beside the home's front path. No Hearthmoor coordinate moves. It is open from the first morning. A paved square with a round fountain and a Keeper statue on its island, a market row (wicker and orchard stalls), benches, cafe tables, flower beds, flags, Keeper banners, lanterns and a pond. Officer Vale wears the officer coat (green and gold, look hmp_vale, not Bren's face). Keeper Pryce wears a keeper tunic and cap. Cadet Lisse wears the green vest. Civilians: Grete Ash, Joss Merrin, Nella Corrick, Tansy Holt. The town map lists each gate once, as HEARTHMOOR PLAZA and HEARTHMOOR | `data/detail_zz_plaza.json`; cast in `data/reputation.json`; loyalty keys `hmp_*` in `data/glimmer_path.json`; Officer Vale in `data/civic.json` speakers |
 | D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
 | D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |

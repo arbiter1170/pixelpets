@@ -7,6 +7,8 @@ trackErrors(test, expect);
 function modernSave(extra = {}) {
   const s = starterSave();
   s.flags['story.phone_got'] = true;
+  s.flags['story.plaza_done'] = true;
+  s.flags['story.plaza_sign_done'] = true;
   Object.assign(s.settings, { controls: 'modern' }, extra);
   return s;
 }
@@ -350,7 +352,11 @@ test('modern quest button marks a main step in gold and a side quest in blue', a
   expect(p.mark).toBe('main side');
   expect(p.mainFill).toEqual(PIP.y);
   expect(p.sideFill).toEqual(PIP.c);
-  await page.evaluate(() => PixelPets.setFlag('story.dream_study', true));
+  await page.evaluate(() => {
+    PixelPets.setFlag('story.dream_study', true);
+    PixelPets.setFlag('story.plaza_done', true);
+    PixelPets.setFlag('story.plaza_sign_done', true);
+  });
   await page.waitForFunction(() => document.querySelector('#questBtn').dataset.questMark === 'main');
   // The mark changes before the button is redrawn, so wait for the dots to repaint before reading them.
   await expect.poll(async () => { const q = await questPips(page); return [String(q.mainFill) === String(PIP.y), q.sideFill]; }).toEqual([true, PIP.b]);
@@ -367,7 +373,12 @@ test('modern quest button marks a main step in gold and a side quest in blue', a
   expect(p.label).toBe('QUEST, side quest');
   expect(p.sideFill).toEqual(PIP.c);
   expect(p.mainFill).not.toEqual(PIP.y);
-  await page.evaluate(() => { PixelPets.setFlag('story.phone_got', true); PixelPets.setFlag('story.dream_study', true); });
+  await page.evaluate(() => {
+    PixelPets.setFlag('story.phone_got', true);
+    PixelPets.setFlag('story.dream_study', true);
+    PixelPets.setFlag('story.plaza_done', true);
+    PixelPets.setFlag('story.plaza_sign_done', true);
+  });
   await page.waitForFunction(() => !document.querySelector('#questBtn').dataset.questMark);
   // The mark changes before the button is redrawn, so wait for the dots to repaint before reading them.
   await expect.poll(async () => { const q = await questPips(page); return [String(q.mainFill) === String(PIP.y), q.sideFill]; }).toEqual([false, PIP.b]);

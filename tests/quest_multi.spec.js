@@ -57,12 +57,12 @@ for (const mode of MODES) {
     await boot(page, save({}, mode));
     await openPanel(page);
     let p = await panel(page);
-    expect(p.kicker).toBe('SIDE \u00b7 2');
+    expect(p.kicker).toBe('SIDE \u00b7 3');
     expect(p.status).toBe('ACTIVE');   // D439: the pill stays ACTIVE; TRACKED is the card button
     expect(p.side).toBe(await sideText(page, 'phone'));
-    expect(p.rows).toEqual(["Mom's trip"]);
-    expect(p.track).toEqual(['TRACK']);
-    await expect(page.locator('#questSideRows .q-track')).toHaveAttribute('aria-label', "Track Mom's trip");
+    expect(p.rows).toEqual(["Mom's trip", 'West watch']);
+    expect(p.track).toEqual(['TRACK', 'TRACK']);
+    await expect(page.locator('#questSideRows .q-track').first()).toHaveAttribute('aria-label', "Track Mom's trip");
     await closePanel(page);
     await openMap(page);
     let marks = await page.evaluate(() => PixelPets.regionMapMarks);
@@ -72,10 +72,10 @@ for (const mode of MODES) {
     await page.waitForSelector('#ovMap', { state: 'hidden' });
 
     await openPanel(page);
-    await page.locator('#questSideRows .q-track').click();
+    await page.locator('#questSideRows .q-track').first().click();
     p = await panel(page);
     expect(p.side).toBe(await sideText(page, 'mom'));
-    expect(p.rows).toEqual(['Explore Route 1']);
+    expect(p.rows).toEqual(['Explore Route 1', 'West watch']);
     expect(await page.evaluate(() => document.activeElement && document.activeElement.id)).toBe('questSideLabel');
     expect(await page.evaluate(() => PixelPets.state.ui.sideTracked)).toBe('mom');
     await closePanel(page);
@@ -105,7 +105,7 @@ test('AC3: talking to Mom first still starts her chain, and her step advances on
   await playScene(page, ["I'll clear the table"]);
   const st = await page.evaluate(() => ({ met: PixelPets.state.flags['story.mom_met'], active: PixelPets.sideActive.map((a) => a.id) }));
   expect(st.met).toBe(true);
-  expect(st.active).toEqual(['phone', 'mom_chore']);
+  expect(st.active).toEqual(['phone', 'mom_chore', 'plaza_ask']);
   await page.evaluate(() => PixelPets.trackSide('mom'));
   await openPanel(page);
   expect((await panel(page)).side).toBe(await sideText(page, 'mom_chore'));
@@ -121,11 +121,10 @@ test('AC4: finishing the tracked phone chain auto-tracks Mom with a toast @w1', 
   expect(await page.evaluate(() => PixelPets.state.ui.sideTracked)).toBe('mom');
   await openPanel(page);
   const p = await panel(page);
-  expect(p.kicker).toBe('SIDE');
+  expect(p.kicker).toBe('SIDE \u00b7 2');
   expect(p.status).toBe('ACTIVE');
-  expect(p.rows).toEqual([]);
-  expect(p.rowsHidden).toBe(true);
-  expect(p.doneToggle).toBeNull();
+  expect(p.rows).toEqual(['West watch']);
+  expect(p.rowsHidden).toBe(false);
 });
 
 test('AC5: an old save without ui loads, phone tracked, nothing written until TRACK @w1', async ({ page }) => {
@@ -160,19 +159,19 @@ for (const mode of MODES) {
     await page.evaluate((x) => PixelPets.debugSideChains(x), EXTRA);
     await openPanel(page);
     let p = await panel(page);
-    expect(p.kicker).toBe('SIDE \u00b7 4');
+    expect(p.kicker).toBe('SIDE \u00b7 5');
     if (narrow) {
-      expect(p.rows).toEqual(["Mom's trip", 'Lamp count']);
-      expect(p.more).toBe('+1 more');
+      expect(p.rows).toEqual(["Mom's trip", 'West watch']);
+      expect(p.more).toBe('+2 more');
       await page.locator('#questSideMore').click();
       p = await panel(page);
-      expect(p.rows).toEqual(["Mom's trip", 'Lamp count', 'Well check']);
+      expect(p.rows).toEqual(["Mom's trip", 'West watch', 'Lamp count', 'Well check']);
       expect(p.more).toBe('Show less');
       await page.locator('#questSideMore').click();
       expect((await panel(page)).rows.length).toBe(2);
     } else {
-      expect(p.rows).toEqual(["Mom's trip", 'Lamp count', 'Well check']);
-      expect(p.more).toBeNull();
+      expect(p.rows).toEqual(["Mom's trip", 'West watch', 'Lamp count']);
+      expect(p.more).toBe('+1 more');
     }
     const heights = await page.evaluate(() => [...document.querySelectorAll('#ovQuest button')].filter((b) => !b.hidden && b.offsetParent).map((b) => [b.id || b.className, b.getBoundingClientRect().height]));
     for (const [id, h] of heights) expect(h, id).toBeGreaterThanOrEqual(44);
@@ -212,7 +211,7 @@ test('AC8: with two side chains DONE folds into one row that toggles', async ({ 
 });
 
 test('AC9: no side quest, no SIDE card; Side task stays in the map key (D110 MAP_LEGEND) @w1', async ({ page }) => {
-  await boot(page, save({ 'story.phone_got': true, 'story.dream_study': true }));
+  await boot(page, save({ 'story.phone_got': true, 'story.dream_study': true, 'story.plaza_done': true, 'story.plaza_sign_done': true }));
   await openPanel(page);
   const p = await panel(page);
   expect(p.sideHidden).toBe(true);
@@ -240,7 +239,7 @@ test('AC10: QUEST pulses once when Mom\'s chain first becomes active @w1', async
   await closePanel(page);
   await page.waitForTimeout(100);
   expect(await page.locator('#questBtn').evaluate((b) => b.classList.contains('pulse'))).toBe(false);
-  expect(await page.evaluate(() => PixelPets.state.ui.sideSeen)).toEqual(['phone', 'mom']);
+  expect(await page.evaluate(() => PixelPets.state.ui.sideSeen)).toEqual(['phone', 'mom', 'plaza_ask']);
 });
 
 test('AC11: the main card, main cue, red ring and NEXT line do not change with tracking @w1', async ({ page }) => {
@@ -271,9 +270,9 @@ test('AC12: devCheck passes, chains carry labels, sideQuest is the tracked step,
     sq: PixelPets.sideQuest.id,
   }));
   expect(r.check).toEqual([]);
-  expect(r.labels).toEqual(['Explore Route 1', "Mom's trip", 'The last crates', 'The leak in 5B']);
+  expect(r.labels).toEqual(['Explore Route 1', "Mom's trip", 'The last crates', 'The leak in 5B', 'West watch', 'Plaza sign', 'Lantern night']);
   for (const l of r.labels) expect(Array.from(l).length).toBeLessThanOrEqual(r.max);
-  expect(r.all).toEqual(['phone', 'mom']);
+  expect(r.all).toEqual(['phone', 'mom', 'plaza_ask']);
   expect(r.sq).toBe('phone');
   await page.evaluate(() => PixelPets.trackSide('mom'));
   expect(await page.evaluate(() => PixelPets.sideQuest.id)).toBe('mom');

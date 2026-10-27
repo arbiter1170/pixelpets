@@ -133,7 +133,10 @@
      "id": "hmp_sign",
      "x": 24,
      "y": 7,
-     "text": "HEARTHMOOR PLAZA · Keepers' square. East: home lane."
+     "text": "HEARTHMOOR PLAZA · Keepers' square. East: home lane.",
+     "lines": {
+      "story.plaza_sign_yes&!story.plaza_sign": "@plaza_sign_read"
+     }
     },
     {
      "kind": "prop",
@@ -573,6 +576,11 @@
      "y": 7,
      "facing": "down",
      "lines": {
+      "story.cobble_end&story.plaza_sign_done&!story.lantern_yes": "@lantern_ask",
+      "story.plaza_sign&!story.plaza_sign_done": "@plaza_sign_tell",
+      "story.plaza_done&!story.plaza_sign_yes": "@plaza_sign_ask",
+      "story.plaza_tansy&!story.plaza_done": "@plaza_back",
+      "story.starter_received&!story.plaza_yes": "@plaza_ask",
       "story.board_gate_sign&!story.board_gate_done": "Cald holds east. I hold this square.",
       "story.side=glimmer": "Mint vest. This square stays open.",
       "story.side=keepers&standing.keepers>=4": "Warden's Ally. The west square is yours.",
@@ -592,6 +600,8 @@
      "y": 11,
      "facing": "up",
      "lines": {
+      "story.lantern_yes&!story.lantern_pryce": "@lantern_pryce",
+      "story.plaza_yes&!story.plaza_pryce&!story.plaza_done": "@plaza_pryce",
       "story.side=keepers": "New pledge. These plaza lamps stay lit.",
       "else": "I light every lantern here at dusk."
      }
@@ -605,6 +615,7 @@
      "y": 13,
      "facing": "up",
      "lines": {
+      "story.plaza_pryce&!story.plaza_lisse": "@plaza_lisse",
       "story.side=keepers": "New pledge. I polish this plaque daily.",
       "!story.starter_received": "New holders pass through. Statue duty.",
       "else": "Statue duty. The coat comes later."
@@ -645,7 +656,8 @@
      "y": 4,
      "facing": "down",
      "lines": {
-      "else": "I wove the three baskets Ilse sets out."
+      "!story.starter_received": "I wove the three baskets Ilse sets out.",
+      "else": "Ember, tide, and bloom. Ilse's three."
      }
     },
     {
@@ -657,6 +669,9 @@
      "y": 12,
      "facing": "left",
      "lines": {
+      "story.lantern_pryce&!story.lantern_done": "@lantern_tansy",
+      "story.plaza_lisse&!story.plaza_tansy": "@plaza_tansy",
+      "!story.rival1_done": "Rook bounced through at dawn. East gate.",
       "!story.starter_received": "Drawing the partner I hope to meet.",
       "else": "Vale says the chalk can stay till rain."
      }
@@ -715,5 +730,100 @@
     ]
    }
   }
+ },
+ "scenes": {
+  "plaza_ask": [
+   ["say", "Officer Vale", "Walk the square for me. Lamps, plaque, then the chalk."],
+   ["say", "Officer Vale", "Pryce, Lisse, and Tansy. Then come back."],
+   ["choice", "Walk the plaza?", [
+    ["I'll walk it", [
+     ["say", "Officer Vale", "Start with Pryce. He is just south of me."],
+     ["setFlag", "story.plaza_yes", true]
+    ]],
+    ["Not right now", [
+     ["say", "Officer Vale", "The square will keep. So will I."]
+    ]]
+   ]]
+  ],
+  "plaza_pryce": [
+   ["say", "Keeper Pryce", "Vale sent you. These wicks are trimmed for dusk."],
+   ["say", "Keeper Pryce", "Tell Lisse the lamps are ready. She has the plaque."],
+   ["setFlag", "story.plaza_pryce", true]
+  ],
+  "plaza_lisse": [
+   ["say", "Cadet Lisse", "The plaque is bright. Vale will want to hear that."],
+   ["say", "Cadet Lisse", "Tansy is chalking by the east flower bed."],
+   ["setFlag", "story.plaza_lisse", true]
+  ],
+  "plaza_tansy": [
+   ["if", "!story.rival1_done", [
+    ["say", "Tansy Holt", "Rook bounced through at dawn. He is at the east gate."]
+   ]],
+   ["say", "Tansy Holt", "Vale said the chalk can stay. I drew the fountain."],
+   ["say", "Tansy Holt", "Tell him the square looks awake."],
+   ["setFlag", "story.plaza_tansy", true]
+  ],
+  "plaza_back": [
+   ["say", "Officer Vale", "Pryce, Lisse, and Tansy. The square is in good hands."],
+   ["say", "", "{pet} sits a little taller on the paving."],
+   ["bond", 2],
+   ["setFlag", "story.plaza_done", true]
+  ],
+  "plaza_sign_ask": [
+   ["say", "Officer Vale", "Cald counts the east sign. Read ours, by the gate."],
+   ["choice", "Read the plaza sign?", [
+    ["I'll read it", [
+     ["say", "Officer Vale", "It stands at the east mouth of the square."],
+     ["setFlag", "story.plaza_sign_yes", true]
+    ]],
+    ["Not right now", [
+     ["say", "Officer Vale", "The sign will wait."]
+    ]]
+   ]]
+  ],
+  "plaza_sign_read": [
+   ["say", "", "HEARTHMOOR PLAZA. Keepers' square. East: home lane."],
+   ["say", "", "The post is up. Officer Vale wants that."],
+   ["setFlag", "story.plaza_sign", true]
+  ],
+  "plaza_sign_tell": [
+   ["say", "Officer Vale", "Still up. East and west both have a sign."],
+   ["bond", 2],
+   ["setFlag", "story.plaza_sign_done", true]
+  ],
+  "lantern_ask": [
+   ["say", "Officer Vale", "You brought the road home. We light the square tonight."],
+   ["choice", "Stay for lantern night?", [
+    ["I'll stay", [
+     ["say", "Officer Vale", "Pryce lights them. Tansy draws the glow."],
+     ["setFlag", "story.lantern_yes", true]
+    ]],
+    ["Not right now", [
+     ["say", "Officer Vale", "The wicks will wait for you."]
+    ]]
+   ]]
+  ],
+  "lantern_pryce": [
+   ["say", "Keeper Pryce", "Every wick, for the holder who came home."],
+   ["setFlag", "story.lantern_pryce", true]
+  ],
+  "lantern_tansy": [
+   ["say", "Tansy Holt", "I drew the lamps. Vale said the chalk can stay till rain."],
+   ["give", "heal_snack", 1],
+   ["setFlag", "story.lantern_done", true]
+  ]
+ },
+ "flags": {
+  "story.plaza_yes": "D798. Vale's yes for the plaza lap. A decline does not set it.",
+  "story.plaza_pryce": "D798. Pryce trimmed the lamps.",
+  "story.plaza_lisse": "D798. Lisse polished the plaque.",
+  "story.plaza_tansy": "D798. Tansy showed the chalk.",
+  "story.plaza_done": "D798. Vale heard the lap was done.",
+  "story.plaza_sign_yes": "D798. Vale's yes for the plaza sign. Not a town-board slip.",
+  "story.plaza_sign": "D798. The plaza sign was read.",
+  "story.plaza_sign_done": "D798. Vale heard the sign is up.",
+  "story.lantern_yes": "D798. Vale's yes for lantern night, after Cobblecrest.",
+  "story.lantern_pryce": "D798. Pryce lit the lamps.",
+  "story.lantern_done": "D798. Tansy closed lantern night. One Heal Snack."
  }
 }

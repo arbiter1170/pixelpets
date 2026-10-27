@@ -130,7 +130,7 @@ function expectMom(q, questId, sideText) {
   expect(q.v).toBe(2);
   expect(q.check).toEqual([]);
   expect(q.quest).toBe(questId);
-  expect(q.side).toEqual(['mom']);
+  expect(q.side).toEqual(['mom', 'plaza_ask']);
   expect(q.dom.sideHidden).toBe(false);
   expect(q.dom.side).toBe(sideText);
   expect(q.sideText).toBe(sideText);
@@ -140,7 +140,7 @@ function expectNoBoard(q) {
   expect(q.board).toEqual([]);
   expect(q.dom.hidden).toBe(true);
   expect(q.dom.rows).toEqual([]);
-  expect(q.dom.kicker).toBe('SIDE');
+  expect(q.dom.kicker).toBe('SIDE \u00b7 2');
 }
 
 test('the slip stays off until Rook\'s battle, and a pin does not accept it', async ({ page }) => {
@@ -283,11 +283,11 @@ test('decline sets nothing, and yes then the sign then Cald finishes the count',
   expect(acceptedRow.board).toEqual([{ chain: 'gate', label: 'Gate count', text: look }]);
   expect(acceptedRow.dom.hidden).toBe(false);
   expect(acceptedRow.dom.rows).toEqual([{ chain: 'gate', label: 'Gate count', text: look, track: false }]);
-  expect(acceptedRow.dom.kicker).toBe('SIDE \u00b7 2');
+  expect(acceptedRow.dom.kicker).toBe('SIDE \u00b7 3');
   expect(acceptedRow.dom.fit.textInside).toBe(true);
   expect(acceptedRow.dom.fit.rowH).toBeGreaterThanOrEqual(44);
   expect(await page.evaluate(() => document.querySelector('#questBtn').classList.contains('pulse'))).toBe(false);
-  expect(await page.evaluate(() => PixelPets.state.ui.sideSeen)).toEqual(['mom', 'gate']);
+  expect(await page.evaluate(() => PixelPets.state.ui.sideSeen)).toEqual(['mom', 'plaza_ask', 'gate']);
 
   await face(page, 'hm_sign_town');
   await page.keyboard.press('Space');
