@@ -309,7 +309,70 @@ const SPECIES = [
       '..oyy.oyy.oyy...',
       '..www.www.www...',
       '................']}
-  ]}
+  ]},
+  // ARBITER_UNITS (indices 16-20). Glimmerwell built them as tools; the Arbiter's hum woke them. One name, three
+  // attunement tiers in the stage slot (Quiet, Humming, Answering), never grown up (attune). boss: met as a placed boss,
+  // kept out of the journal count. befriendMul narrows the befriend zone. Spec: handoff/walklings/ARBITER_UNITS.md.
+  { id:'tallybat', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A counting bat. Its wings blink one tally at a time.', stages:[
+    { name:'Tallybat', col:{a:PAL.p,b:PAL.n,c:PAL.l,d:PAL.s,x:PAL.w}, half:[
+      '........','....a.a.','....aaaa','....aaaa','....aiea','....aeea','....aaaa','c...aaaa',
+      'cb.aaaaa','cbbaaaaa','cbbbaaaa','.cbbbaaa','..ccbaaa','....caa.','.....a.a','........']},
+    { name:'Tallybat', col:{a:PAL.p,b:PAL.n,c:PAL.l,d:PAL.s,x:PAL.w}, half:[
+      '....a.a.','....a.a.','....aaaa','....aaaa','....aiea','....aeea','....aaaa','c...axaa',
+      'cb.aaaaa','cdbaaaaa','cbbbaaaa','.cdbbaaa','..ccbaaa','....caa.','.....a.a','........']},
+    { name:'Tallybat', col:{a:PAL.p,b:PAL.n,c:PAL.l,d:PAL.s,x:PAL.w}, half:[
+      '....a.a.','....ada.','....aaaa','....aaaa','....aiea','c...aeea','cb..aaaa','cbb.axaa',
+      'cdbaaaaa','cbbaaaaa','cdbbaaaa','cbdbbaaa','.ccdbaaa','..ccaaa.','....ca.a','........']}
+  ]},
+  { id:'hushlamp', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A lamp-headed shade. Its glow asks you to rest.', stages:[
+    { name:'Hushlamp', col:{a:PAL.d,b:PAL.l,c:PAL.h,d:PAL.s,x:PAL.w}, half:[
+      '........','........','.....cc.','....cbbb','....bbbb','....bbdb','....cccc','...aaaaa',
+      '..aaieaa','..aaeeaa','..aaaaaa','..aaaaaa','..aaaaaa','...aaaaa','...aa.aa','........']},
+    { name:'Hushlamp', col:{a:PAL.d,b:PAL.l,c:PAL.h,d:PAL.s,x:PAL.w}, half:[
+      '........','.....cc.','....cbbb','...cbbbb','...bbbdb','...bbbbb','...ccccc','..aaaaaa',
+      '.aaaieaa','.aaaeeaa','.aadaaaa','.aaadaaa','.aaaadaa','..aaaaaa','..aaa.aa','........']},
+    { name:'Hushlamp', col:{a:PAL.d,b:PAL.l,c:PAL.h,d:PAL.s,x:PAL.w}, half:[
+      '.....cc.','....cbbb','...cbbbb','...bbbdb','..xbbbbb','..xbbbbb','...ccccc','..aaaaaa',
+      '.aaaieaa','.aaaeeaa','aaadaaaa','aaaadaaa','.aaaadaa','..aaaaaa','..aaa.aa','..xx..xx']}
+  ]},
+  { id:'ledgerowl', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'An owl with a screen face. It files what it sees.', stages:[
+    { name:'Ledgerowl', col:{a:PAL.m,b:PAL.h,c:PAL.l,d:PAL.d,x:PAL.y}, half:[
+      '........','..c.....','..aa....','..aaaaaa','.aabbbbb','.aabbieb','.aabbeeb','.aabbbbx',
+      '.aaabbbb','.aaaaaaa','.aaaaaaa','.aaaaaaa','..aaaaaa','..aaaaaa','...aa.aa','...x..x.']},
+    { name:'Ledgerowl', col:{a:PAL.m,b:PAL.h,c:PAL.l,d:PAL.d,x:PAL.y}, half:[
+      '..c.....','..c.....','..aa....','..aaaaaa','.aabbbbb','.aabbieb','.aabbeeb','.aabbbbx',
+      '.adabbbb','.adaaaaa','.adaaaaa','.aadaaaa','..aaaaaa','..aaaaaa','...aa.aa','...x..x.']},
+    { name:'Ledgerowl', col:{a:PAL.m,b:PAL.h,c:PAL.l,d:PAL.d,x:PAL.y}, half:[
+      '..c.....','..cc....','..aa....','.aaaaaaa','.aabbbbb','aaabbieb','aaabbeeb','aaabbbbx',
+      'adaabbbb','adaaccca','adaaaaaa','aadaaaaa','.aaaaaaa','..aaaaaa','...aa.aa','...x..x.']}
+  ]},
+  { id:'cordhound', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A shadow pup on a cord. It never unplugs itself.', stages:[
+    { name:'Cordhound', col:{a:PAL.n,b:PAL.m,c:PAL.l,d:PAL.s,x:PAL.y}, half:[
+      '........','..c.....','..ac....','..aa....','..aaaaaa','.aaaaaaa','.aaaieaa','.aaaeeaa',
+      '.aaaabbb','..aaabeb','..aaabbb','..aaaaaa','...aaaaa','...aa.aa','...aa.dx','........']},
+    { name:'Cordhound', col:{a:PAL.n,b:PAL.m,c:PAL.l,d:PAL.s,x:PAL.y}, half:[
+      '..c.....','..ac....','..ac....','..aa....','..aaaaaa','.aaaaaaa','.aaaieaa','.aaaeeaa',
+      '.aaaabbb','.aaaabeb','.aadabbb','..aadaaa','..aaaaaa','...aa.aa','...aa.dx','......dx']},
+    { name:'Cordhound', col:{a:PAL.n,b:PAL.m,c:PAL.l,d:PAL.s,x:PAL.y}, half:[
+      '.c......','.ac.....','..ac....','..aac...','.aaaaaaa','.aaaaaaa','.aaaieaa','.aaaeeaa',
+      '.aaaabbb','.aaaabeb','.aadabbb','.aaadaaa','.aaaadaa','..aaa.aa','..aaa.dx','.....ddx']}
+  ]},
+  { id:'humwisp', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A wisp off the cradle. It carries the hum.', stages:[
+    { name:'Humwisp', col:{a:PAL.n,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.p}, half:[
+      '........','........','.......a','......aa','.....aaa','....aaaa','...aaaaa','...aaiea',
+      '...aaeea','...aacba','...aacba','....aaaa','....aaaa','.....aa.','....c..c','........']},
+    { name:'Humwisp', col:{a:PAL.n,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.p}, half:[
+      '........','.......a','......aa','.....aaa','....aaaa','...aaaaa','..aaaaaa','..aaaiea',
+      '..aaaeea','..aaccbb','..aaccbb','...aaaaa','...aaaaa','....aaa.','...c..c.','....c..c']},
+    { name:'Humwisp', col:{a:PAL.n,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.p}, half:[
+      '.......a','......aa','.....aaa','...d.aaa','..daaaaa','..aaaaaa','.daaaaaa','.aaaaiea',
+      '.aaaaeea','.aaaccbb','..aaccbb','..daaaaa','...aaaaa','...daaa.','..c..c.c','....c..c']}
+  ]},
 ];
 
 /* Build an 18x18 canvas (16x16 + 1px outline border). mode: 'normal' | 'blink' | solid colour string.

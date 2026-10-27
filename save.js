@@ -14,7 +14,7 @@ const PPSave = (() => {
   // Save v2 species/form-id table: append-only, in SPECIES order (v1 lines first, then CREATURES_SLICE lines 8-13).
   // Adding ids keeps the save at v2; never remove, rename or reorder one. 16 lines x 3 stages = 48 form ids.
   // npcOnly lines (fetch) are in this table and left out of the journal, which still counts 45.
-  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch']);
+  const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch', 'tallybat', 'hushlamp', 'ledgerowl', 'cordhound', 'humwisp']);
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
   const PARTY_MAX = 6;
   // MAPS_SLICE §10 / INTERIORS §5 / ACT1_ROUTE2 §0.2 / COBBLECREST mapdata: ids and sizes from data/mapdata.js.
@@ -137,6 +137,10 @@ const PPSave = (() => {
     // CREATURES_SLICE §5: faded days left (absent/0 = normal) and that day's care samples. Additive, no version bump.
     if (has(q, 'faded')) { if (!fin(q.faded) || q.faded < 1) delete q.faded; else q.faded = Math.min(9, Math.round(q.faded)); }
     if (has(q, 'fc') && (!has(q, 'faded') || !isObj(q.fc) || typeof q.fc.d !== 'string' || !fin(q.fc.sum) || !fin(q.fc.n) || q.fc.n < 0)) delete q.fc;
+    // ARBITER_UNITS (D195, D190 pattern): hum 0-100 and hush, attune lines only. Additive, no version bump.
+    const sp = SPECIES[speciesIndex()[q.species]], attune = !!(sp && sp.attune);
+    if (has(q, 'hum')) { if (!attune || !fin(q.hum)) delete q.hum; else q.hum = clamp(Math.round(q.hum), 0, 100); }
+    if (has(q, 'hush') && (!attune || q.hush !== true)) delete q.hush;
     // BATTLE §3.3/§3.4: known moves (<= 4) and the stages whose evolution move was offered. Additive, no version bump.
     if (typeof MOVES === 'object' && typeof defaultMoves === 'function') {
       const ok = Array.isArray(q.moves) && q.moves.length >= 1 && q.moves.length <= 4 && q.moves.every(m => typeof m === 'string' && MOVES[m] && !MOVES[m].fallback) && new Set(q.moves).size === q.moves.length;

@@ -638,6 +638,107 @@ const MOVES = {
       "stat": "def",
       "stages": 1
     }
+  },
+  // ARBITER_UNITS tier moves (taught at Humming and Answering)
+  "dim_hours": {
+    "name": "Dim Hours",
+    "type": "SHADE",
+    "power": 0,
+    "acc": 95,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -2
+    }
+  },
+  "lights_out": {
+    "name": "Lights Out",
+    "type": "SHADE",
+    "power": 75,
+    "acc": 95,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -1
+    }
+  },
+  "cord_lash": {
+    "name": "Cord Lash",
+    "type": "VOLT",
+    "power": 55,
+    "acc": 100,
+    "uses": 10
+  },
+  "grid_howl": {
+    "name": "Grid Howl",
+    "type": "SHADE",
+    "power": 80,
+    "acc": 90,
+    "uses": 5,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": -1
+    }
+  },
+  "head_count": {
+    "name": "Head Count",
+    "type": "SHADE",
+    "power": 0,
+    "acc": 95,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -2
+    }
+  },
+  "census_dive": {
+    "name": "Census Dive",
+    "type": "VOLT",
+    "power": 75,
+    "acc": 95,
+    "uses": 8
+  },
+  "stamp_out": {
+    "name": "Stamp Out",
+    "type": "SHADE",
+    "power": 55,
+    "acc": 95,
+    "uses": 8,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": 1
+    }
+  },
+  "final_entry": {
+    "name": "Final Entry",
+    "type": "SHADE",
+    "power": 85,
+    "acc": 90,
+    "uses": 5
+  },
+  "cradle_pulse": {
+    "name": "Cradle Pulse",
+    "type": "VOLT",
+    "power": 65,
+    "acc": 95,
+    "uses": 8
+  },
+  "deep_hum": {
+    "name": "Deep Hum",
+    "type": "SHADE",
+    "power": 95,
+    "acc": 85,
+    "uses": 5,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": -1
+    }
   }
 };
 
@@ -1491,7 +1592,22 @@ const LEARNSETS = {
   "fetch/2": [
     [0, "steadfast_paw"],
     [27, "full_tilt"]
-  ]
+  ],
+  "tallybat/0": [[1,"bump"], [4,"gloom_poke"], [8,"neon_flash"], [12,"zap_tap"], [16,"night_veil"], [20,"arc_bolt"], [25,"dusk_fang"], [30,"gloam_swipe"], [36,"nightfall"]],
+  "tallybat/1": [[0,"head_count"], [33,"neon_burst"]],
+  "tallybat/2": [[0,"census_dive"], [40,"eclipse_rush"]],
+  "hushlamp/0": [[1,"bump"], [4,"gloom_poke"], [8,"night_veil"], [12,"zap_tap"], [16,"lullaby_hum"], [20,"dusk_fang"], [25,"arc_bolt"], [30,"gloam_swipe"], [36,"nightfall"]],
+  "hushlamp/1": [[0,"dim_hours"], [33,"moon_cloak"]],
+  "hushlamp/2": [[0,"lights_out"], [40,"eclipse_rush"]],
+  "ledgerowl/0": [[1,"bump"], [4,"gloom_poke"], [8,"neon_flash"], [12,"cursor_tap"], [16,"lullaby_hum"], [20,"dusk_fang"], [25,"hover_hum"], [30,"gloam_swipe"], [36,"nightfall"]],
+  "ledgerowl/1": [[0,"stamp_out"], [33,"moon_cloak"]],
+  "ledgerowl/2": [[0,"final_entry"], [40,"static_lunge"]],
+  "cordhound/0": [[1,"bump"], [4,"zap_tap"], [8,"gloom_poke"], [12,"screen_glow"], [16,"arc_bolt"], [20,"dusk_fang"], [25,"whisker_spark"], [30,"gloam_swipe"], [36,"static_lunge"]],
+  "cordhound/1": [[0,"cord_lash"], [33,"neon_burst"]],
+  "cordhound/2": [[0,"grid_howl"], [40,"full_tilt"]],
+  "humwisp/0": [[1,"bump"], [4,"zap_tap"], [8,"gloom_poke"], [12,"screen_glow"], [16,"arc_bolt"], [20,"dusk_fang"], [25,"neon_burst"], [30,"gloam_swipe"], [36,"eclipse_rush"]],
+  "humwisp/1": [[0,"cradle_pulse"], [33,"nightfall"]],
+  "humwisp/2": [[0,"deep_hum"], [40,"static_lunge"]]
 };
 
 const TRAINERS = {

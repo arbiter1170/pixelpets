@@ -1104,3 +1104,12 @@ body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-loc
   .tut-ring:not([hidden]){animation:none}
   .tut-card{transition:none}
 }
+
+/* ARBITER_UNITS (D199, D201, D197): boss battle tint, the journal row under the grid, and the stats-card ECHO line. */
+#ovBattle.boss #battleCanvas{filter:saturate(.75) hue-rotate(-14deg) brightness(.9)}
+.dex-boss{padding:4px 3px 12px}
+.dex-boss-head{text-align:center;color:var(--l);font-size:16px;letter-spacing:1px;margin:2px 0 8px}
+.dex-boss-cells{grid-template-columns:repeat(3,1fr);padding:0}
+.sc-echo{margin-top:4px;color:var(--s)}
+.sc-echo b{color:var(--w);font-weight:normal}
+#scHush{margin-top:8px}

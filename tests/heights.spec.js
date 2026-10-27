@@ -110,8 +110,8 @@ test('a Bitlet floats in the RegenX bay and stays out of the wild', async ({ pag
   expect(info.type).toBe('VOLT');
   expect(info.lab).toBe(true);
   expect(info.names).toEqual(['Bitlet', 'Hoverbyte', 'Archivolt']);
-  expect(info.lastId).toBe('fetch');
-  expect(info.forms).toBe(48);
+  expect(info.lastId).toBe('humwisp');
+  expect(info.forms).toBe(63);   // ARBITER_UNITS appended five lines after fetch
   expect(info.learn).toEqual(expect.arrayContaining(['cursor_tap', 'bit_burst', 'archive_surge']));
   expect(info.moves).toEqual(expect.arrayContaining(['bump', 'screen_glow', 'cursor_tap']));
   expect(info.odd).toBe(0);

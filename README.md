@@ -311,8 +311,8 @@ Which species appear depends on where you are and the weather there:
 - The Walk tab shows a small badge such as "City · Rain · 12°C" (tap it for details); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
 
-Creatures: 16 lines of 3 forms. The WALKLING JOURNAL lists the 45 forms a keeper can meet. Every line a keeper
-can meet grows up the same way (growth XP 40 / 120 plus care, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
+Creatures: 21 lines of 3 forms. The WALKLING JOURNAL lists the 45 forms a keeper can meet in its main grid. Every
+line in that grid grows up the same way (growth XP 40 / 120 plus care, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
 Pomlet → Pomshell → Orchardon (BLOOM beetle), Loamlet → Burrowbloom → Hedgewarden (BLOOM mole),
 Clinkit → Shardpincer → Mosaicrab (TIDE crab), Fuzzwick → Filamoth → Halowatt (VOLT moth),
 Vanelet → Vanefledge → Squallvane (GUST, weather form) and Dozmouse → Lullamouse → Moondozer (SHADE dormouse).
@@ -320,6 +320,15 @@ Bitlet → Hoverbyte → Archivolt (VOLT `byte`) is a floating computer. It is `
 and it is never part of the habitat roll or the 8% any-species roll.
 Fetchling → Harvestail → Hearthound (BLOOM `fetch`) is NPC-only. `npcOnly` keeps it out of the wild roll, the starter
 baskets, and the journal, so the journal still counts 45. A keeper cannot meet one. Save `v` stays 2.
+The Answerers (ARBITER_UNITS, `handoff/walklings/ARBITER_UNITS.md`): Tallybat, Hushlamp, Ledgerowl, Cordhound and Humwisp
+(SHADE). Glimmerwell built them as tools and the Arbiter's hum woke them. Each keeps one name and never grows up. Its
+three tiers, Quiet, Humming and Answering, rise with a HUM meter (`pet.hum`, 0–100, tiers at 40 and 100) that a won
+battle and the first daily visit to a Glimmerwell place fill. HUM shows in the GROW slot for these lines. HUSH on the
+stats card stops the meter, and the tier never drops. Each has one passive Echo (Recount, Glow Share, Filed Away, Live
+Wire, Carrier Hum), shown on the stats card. They are met only as bosses: a boss opens at Humming with 1.5x HP for that
+battle, cannot be befriended until it shifts to Answering at half HP, comes back the next day if it is not befriended,
+and joins at Quiet. They sit in their own journal row (ANSWERERS or FOUNDER'S LINE) outside the 45, hidden until one is
+met. No map places a boss yet; the branch ships with the next area. Save `v` stays 2.
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on

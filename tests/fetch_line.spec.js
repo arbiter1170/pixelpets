@@ -110,8 +110,8 @@ test('the Fetchling line stays out of the wild and the journal', async ({ page }
   expect(info.odds.every(v => v === 0)).toBe(true);
   expect(info.tables).toEqual([]);
   expect(info.starters).toEqual(['ember', 'tide', 'bloom']);
-  expect(info.forms).toBe(48);
-  expect(info.lastId).toBe('fetch');
+  expect(info.forms).toBe(63);   // ARBITER_UNITS appended five lines after fetch
+  expect(info.lastId).toBe('humwisp');
   expect(info.v).toBe(2);
   expect(info.species).toBe('ember');
   for (const stage of info.art) {
