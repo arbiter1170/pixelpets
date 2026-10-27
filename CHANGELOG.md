@@ -7,7 +7,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - What changed and why: Vincent signed off D797 (keep the joined Hearthmoor Plaza as built) and confirmed D789 (no top bar; place chip in the dock's top row, portrait only). Modern portrait walk now uses a 156 px three-row dock outside `#mapWrap`: chip + Acorns + PHONE + gear; trust/QUEST/BAG/MAP + PARTNER/WALKLINGS; partner card. Tip band off under the frame. Pads over the map read 0. D792 uses a fixed 52 px hour box inside the combined chip. Save stays `pixelpets.save.v2` with `v` 2.
 - Files touched: `index.html`, `style.css`, `game.js`, `tests/modern_hud_dock.spec.js` (new), `tools/GAMEJS_MAP.txt`, `version.json`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`, `tests/README.md`.
 - Commit(s) + build id: this branch. Build `20261027-0109`.
-- Tests run and result (widths, checks): pending in this entry; see PR.
+- Tests run and result (widths, checks): `tests/modern_hud_dock.spec.js` `tests/map_zoom.spec.js` `tests/cloud_link.spec.js` `tests/headroom_bigger.spec.js` `tests/hearthmoor_plaza.spec.js` at 390: `PP_TEST RESULT: PASS exit=0 passed=17 failed=0`. Packet checker FAIL 5 anchors (intentional).
 - Decisions made (colour + reasoning): D797 red SETTLED by Vincent. D789 red SETTLED by Vincent. D787 SETTLED with the dock. Privacy line keeps the ONLINE_SAVES_SCOPE default. Next free id stays D799.
 - Anything left unfinished: Firebase console still needs Google sign-in enabled for live Link Google. D790/D791 toast queue and tutorial strip polish. D798 wording. Vincent may still revise the privacy line.
 
