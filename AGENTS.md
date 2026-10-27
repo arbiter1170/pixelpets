@@ -31,6 +31,7 @@ Run `npm run test:agent -- [spec] [--project=390]` (e.g. `npm run test:agent -- 
 - `walklings-design-commit`: design repo checkers, render, commit, push.
 - `walklings-wording-check`: franchise/brand/banned-word scan and approved vocabulary.
 - `walklings-handoff-log`: session summary, status docs, group-chat post format.
+- `walklings-cutscene`: stage a scene as a cutscene (beat sheet, previews at 320/375/390, the cutscene data file, what every cutscene keeps).
 - `walklings-docs`: keep BACKLOG, CHANGELOG, NEXT_PLAN, OPEN_DECISIONS, README, tests/README in sync.
 - `walklings-qa`: play a new path at phone width and add the Playwright check.
 - `walklings-qa-run`: scoped QA run on a named build (seeded saves, pp_verify, bug write-up).
