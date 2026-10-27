@@ -140,7 +140,11 @@ test('a party of 3 switches in order and the care screen follows', async ({ page
   const badge = await slots.nth(1).locator('canvas.bd').boundingBox();
   expect(badge.width).toBeGreaterThanOrEqual(10);
   expect(badge.height).toBeGreaterThanOrEqual(10);
-  const before = await saveKeys(page);
+  const before = await page.evaluate(() => {
+    const raw = JSON.parse(PixelPets.exportSave());
+    return { v: raw.v, keys: Object.keys(raw).sort() };
+  });
+  expect(before.v).toBe(2);
   const order = ['p1', 'p2', 'p0'];
   const names = ['Brook', 'Moss', 'Pip'];
   for (let i = 0; i < order.length; i++) {
@@ -297,7 +301,7 @@ test('guards ignore a switch tap', async ({ page }) => {
   const slot = page.locator('.pet-slot').nth(1);
   await page.locator('#scr-pet [data-act="play"]').click();
   await expect(page.locator('.pet-slot').first()).toHaveAttribute('aria-disabled', 'true');
-  await slot.click();
+  await slot.click({ force: true });
   expect(await page.evaluate(() => PixelPets.state.partnerId)).toBe('p0');
   await page.waitForTimeout(1400);
   await expect(page.locator('.pet-slot').first()).not.toHaveAttribute('aria-disabled', 'true');
@@ -332,6 +336,7 @@ test('a pinned lesson keeps the switcher off until the tour ends', async ({ page
   test.skip(page.viewportSize().width !== 390, 'one width');
   test.setTimeout(60000);
   await boot(page, partySave(3), '?debug=1');
+  await page.evaluate(() => PixelPets.showTab('walk'));
   const started = await page.evaluate(() => PixelPets.replayTour());
   expect(started).toBe(true);
   await expect(page.locator('#tutLine')).toContainText('Tap the map to walk');
