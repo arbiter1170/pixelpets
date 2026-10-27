@@ -76,7 +76,7 @@ test('GEAR opens the sheet for the shown Walkling and CLOSE stays on the care sc
     const box = await page.locator('#ovWalkling .sc-head').boundingBox();
     await page.screenshot({
       path: path.join(artifactsDir('gear-switch'), 'sheet-390.png'),
-      clip: { x: 0, y: Math.max(0, box.y - 8), width: 390, height: Math.min(220, 844 - box.y) },
+      clip: { x: 0, y: Math.max(0, box.y - 8), width: 390, height: Math.min(420, 844 - box.y) },
     });
   }
   await page.locator('#wlClose').click();
@@ -140,6 +140,13 @@ test('a party of 3 switches in order and the care screen follows', async ({ page
   const badge = await slots.nth(1).locator('canvas.bd').boundingBox();
   expect(badge.width).toBeGreaterThanOrEqual(10);
   expect(badge.height).toBeGreaterThanOrEqual(10);
+  if (page.viewportSize().width === 390) {
+    const row = await page.locator('#petSwitch').boundingBox();
+    await page.screenshot({
+      path: path.join(artifactsDir('gear-switch'), 'switcher-390.png'),
+      clip: { x: 0, y: Math.max(0, row.y - 4), width: 390, height: Math.min(row.height + 12, 80) },
+    });
+  }
   const before = await page.evaluate(() => {
     const raw = JSON.parse(PixelPets.exportSave());
     return { v: raw.v, keys: Object.keys(raw).sort() };
@@ -174,13 +181,6 @@ test('a party of 3 switches in order and the care screen follows', async ({ page
   await expect(page.locator('#ovWalkling')).toBeVisible();
   await expect(page.locator('#wlName')).toHaveText('Pip');
   await page.locator('#wlClose').click();
-  if (page.viewportSize().width === 390) {
-    const row = await page.locator('#petSwitch').boundingBox();
-    await page.screenshot({
-      path: path.join(artifactsDir('gear-switch'), 'switcher-390.png'),
-      clip: { x: 0, y: Math.max(0, row.y - 4), width: 390, height: Math.min(row.height + 12, 80) },
-    });
-  }
 });
 
 test('a party of one shows the back arrow and no slots', async ({ page }) => {
