@@ -140,11 +140,11 @@ test('portrait modern dock: toast stays in the chip slot and a new step cues onc
   await page.locator('#questClose').click();
   await page.waitForFunction(() => !document.querySelector('#toast').classList.contains('show'), null, { timeout: 8000 });
   const paged = await page.evaluate(() => {
-    PixelPets.debugToast('This game was reset in another tab. Reload to play the new one.');
+    PixelPets.debugToast('Please reload this game on this device after the other tab reset the save and keep walking with your Walkling until the east path opens again today');
     return document.querySelector('#toast').textContent;
   });
-  expect(paged.endsWith('...')).toBe(true);
-  expect(paged.includes('Reload')).toBe(false);
+  expect(paged.endsWith('...'), paged).toBe(true);
+  expect(paged.includes('east path opens again today'), paged).toBe(false);
 });
 
 test('portrait modern dock: care tray toast sits in the tray band', async ({ page }) => {

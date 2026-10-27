@@ -946,7 +946,7 @@ function paginateMhcToast(text){
 function showToastNow(msg){
   const t = $('#toast'); if (!t) return;
   t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), TOAST_LIFE_MS);
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800);
 }
 function drainToast(){
   if (!mhcToastOn()) { toastBusy = false; toastQ = []; return; }
@@ -8028,9 +8028,12 @@ function showBumpHint(o){
   const nm = objName(o), el = $('#bumpHint');
   // Under the frame the hint sits in the chip slot (D782): shorter wording so two lines fit at 320.
   const who = shownName(nm) || 'this';
-  let line = hudPadsLive() ? ("Can't walk through " + who + '.') : ("You can't walk through " + who + '.');
-  if (hudPadsLive() && line.length > 42) line = line.slice(0, 39).replace(/\s+\S*$/, '') + '...';
-  el.textContent = line;
+  if (!hudPadsLive()) el.textContent = "You can't walk through " + (shownName(nm) || 'this') + '.';
+  else {
+    let line = "Can't walk through " + who + '.';
+    if (line.length > 42) line = line.slice(0, 39).replace(/\s+\S*$/, '') + '...';
+    el.textContent = line;
+  }
   el.hidden = false;
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
