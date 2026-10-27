@@ -468,7 +468,7 @@ ART_PASS (D548–D563) is on this branch: the Bloom Trial Hall is garden terrace
 
 ### Q29 — The Answerers (ARBITER_UNITS v0.3) — L — **built on this branch**
 
-Spec `handoff/walklings/ARBITER_UNITS.md`. Route 3 opens after the last crates plus the Lantern Council or the Signal Review, so it is the shared next chapter. Brinewick, Hall #3 and Seal 3 stay closed. Open: D799-D815 copy and tuning, and the switched-save reach gap (D815).
+Spec `handoff/walklings/ARBITER_UNITS.md`. Route 3 opens after the last crates plus the Lantern Council or the Signal Review, so it is the shared next chapter. Brinewick, Hall #3 and Seal 3 stay closed. Open: D837-D853 copy and tuning, and the switched-save reach gap (D853).
 
 ### Q28 — Map pass (`handoff/maps/`) — **done**
 

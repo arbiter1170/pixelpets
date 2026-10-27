@@ -1,4 +1,4 @@
-/* ARBITER_UNITS Build A (D799-D809): the five attune lines, the hum meter and STILL, the Echoes, boss battles, and the
+/* ARBITER_UNITS Build A (D837-D847): the five attune lines, the hum meter and STILL, the Echoes, boss battles, and the
    journal row. No map places a boss yet (the branch ships with the next area), so battles start from debug hooks. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');

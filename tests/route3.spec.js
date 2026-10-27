@@ -1,4 +1,4 @@
-/* ARBITER_UNITS Build C: Route 3, the Brinewick road (D810-D813). The road opens past Cobblecrest's east sign once
+/* ARBITER_UNITS Build C: Route 3, the Brinewick road (D848-D851). The road opens past Cobblecrest's east sign once
    story.route3_open is set: Rook's last crates plus that side's chapter end. Three lair rooms open off it. Brinewick stays shut. Save v stays 2. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
@@ -33,7 +33,7 @@ test('the Brinewick road stays shut until the last crates and the chapter end, t
   for (let i = 0; i < 6 && await page.evaluate(() => !!PixelPets.scene); i++) { await page.keyboard.press('Space'); await page.waitForTimeout(150); }
   await page.waitForFunction(() => !PixelPets.scene);
 
-  // The last crates alone do not open it: a Keeper also needs the Lantern Council (D810).
+  // The last crates alone do not open it: a Keeper also needs the Lantern Council (D848).
   await page.evaluate(() => { PixelPets.setFlag('story.rc_done', true); PixelPets.goto('cobblecrest', 29, 8, 'right'); });
   expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'cc_east'))).toBe(false);
   await page.evaluate(() => { PixelPets.setFlag('story.hc_council_done', true); PixelPets.goto('cobblecrest', 29, 8, 'right'); });

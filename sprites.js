@@ -335,7 +335,7 @@ const SPECIES = [
     { name:'Screeback', col:{a:PAL.h,b:PAL.m,c:PAL.d,d:PAL.g,x:PAL.l}, half:['........','........','.....axa','.....ccc','....aaaa','....adaa','...ccccc','..aaaaxa','..daieaa','..aaeeaa','..aaabaa','.bbbbbbb','.bbbbbbc','bbbbbbbb','cccccccc','cccccccc']},
     { name:'Cairnshell', col:{a:PAL.h,b:PAL.m,c:PAL.d,d:PAL.g,x:PAL.l}, half:['......aa','.....aax','.....ccc','....aaaa','....xdaa','...ccccc','...aaaaa','..aadaax','..cccccc','.aaaieaa','.adaeeax','.aaaabaa','bbbbbbbb','bbbbbbbc','cccccccc','cccccccc']}
   ]},
-  // ARBITER_UNITS (indices 20-24; D799-D809). Glimmerwell built them as its first relays; the Arbiter's hum woke them.
+  // ARBITER_UNITS (indices 20-24; D837-D847). Glimmerwell built them as its first relays; the Arbiter's hum woke them.
   // One name, three attunement tiers in the stage slot (Quiet, Humming, Answering), never grown up (attune). boss: met as a
   // placed boss, kept out of the journal grid. befriendMul narrows the befriend zone. Spec: handoff/walklings/ARBITER_UNITS.md.
   { id:'tallybat', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',

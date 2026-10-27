@@ -1,7 +1,7 @@
 {
   "_about": "ARBITER_UNITS v0.3. Five Walklings Glimmerwell built as its first relays, woken by the Arbiter's hum. Built on main: sprites.js, stats.js, moves.js, game.js, data/detail_route3.json. Spec: handoff/walklings/ARBITER_UNITS.md.",
   "version": "0.3",
-  "status": "built on main; names, gate and port settled Oct 27, 2026; copy and tuning open (D799-D815)",
+  "status": "built on main; names, gate and port settled Oct 27, 2026; copy and tuning open (D837-D853)",
   "settled": {
     "lairs": "Next area only. The branch ships with that area.",
     "origin": "Glimmerwell built them as tools. The hum woke them.",
@@ -1607,7 +1607,7 @@
     "chain": "Five that answer"
   },
   "lines": {
-    "_note": "Marked placeholder copy (D805). Say bodies at most 110 after token widths; toasts at most 40.",
+    "_note": "Marked placeholder copy (D843). Say bodies at most 110 after token widths; toasts at most 40.",
     "tierUp1": [
       "say",
       "",
@@ -1693,7 +1693,7 @@
     "story.ans_<id>_clue": "That unit's clue was read. NOT_STEPS.",
     "story.ans_<id>": "That boss was befriended (object id ans_<id>).",
     "story.ans_<id>_rest": "Boss lost, ran or was worn out. Cleared on the day roll. NOT_STEPS.",
-    "story.ans_all": "All five done. Closing scene; reward open in D805."
+    "story.ans_all": "All five done. Closing scene; reward open in D843."
   },
   "saveFields": {
     "pet.hum": "Additive 0-100, attune species only.",
@@ -1704,7 +1704,7 @@
     "B: the next area one-pager carries the five lair needs.",
     "C: side chain, clue props, entry scenes, and lairs, shipped with the next area."
   ],
-  "decisions": "D799-D809 in OPEN_DECISIONS.md.",
+  "decisions": "D837-D847 in OPEN_DECISIONS.md.",
   "signatures": {
     "tallybat": "tally_tick",
     "dimlamp": "dim_glow",

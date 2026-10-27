@@ -45,7 +45,7 @@ const BASE_STATS = {               // key = form id "<speciesId>/<stage>" (save 
   'otter/0': { hp: 48, atk: 51, def: 42, spd: 51 }, 'otter/1': { hp: 64, atk: 68, def: 56, spd: 68 }, 'otter/2': { hp: 80, atk: 85, def: 70, spd: 85 },
   'owl/0':   { hp: 45, atk: 48, def: 36, spd: 63 }, 'owl/1':   { hp: 60, atk: 64, def: 48, spd: 84 }, 'owl/2':   { hp: 75, atk: 80, def: 60, spd: 105 },
   'snail/0': { hp: 57, atk: 42, def: 63, spd: 30 }, 'snail/1': { hp: 76, atk: 56, def: 84, spd: 40 }, 'snail/2': { hp: 95, atk: 70, def: 105, spd: 50 },
-  // ARBITER_UNITS: one name, three attunement tiers. Totals 192 / 256 / 320 (D807). Boss toughness is a battle-only HP multiplier.
+  // ARBITER_UNITS: one name, three attunement tiers. Totals 192 / 256 / 320 (D845). Boss toughness is a battle-only HP multiplier.
   'tallybat/0': { hp: 39, atk: 48, def: 36, spd: 69 }, 'tallybat/1': { hp: 52, atk: 64, def: 48, spd: 92 }, 'tallybat/2': { hp: 65, atk: 80, def: 60, spd: 115 },
   'dimlamp/0': { hp: 57, atk: 42, def: 57, spd: 36 }, 'dimlamp/1': { hp: 76, atk: 56, def: 76, spd: 48 }, 'dimlamp/2': { hp: 95, atk: 70, def: 95, spd: 60 },
   'filecrow/0': { hp: 51, atk: 48, def: 54, spd: 39 }, 'filecrow/1': { hp: 68, atk: 64, def: 72, spd: 52 }, 'filecrow/2': { hp: 85, atk: 80, def: 90, spd: 65 },

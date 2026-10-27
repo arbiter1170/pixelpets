@@ -15,7 +15,7 @@ const PPSave = (() => {
   // Adding ids keeps the save at v2; never remove, rename or reorder one. 20 lines x 3 stages = 60 form ids.
   // npcOnly lines (fetch) are in this table and left out of the journal, which counts 57.
   // HUSHWATER B2 (D347, D357): skink, otter, owl, snail are appended. Save stays pixelpets.save.v2, v: 2.
-  // ARBITER_UNITS (D799-D809): tallybat, dimlamp, filecrow, cordhound, humwisp are appended (25 lines, 75 form ids). They are
+  // ARBITER_UNITS (D837-D847): tallybat, dimlamp, filecrow, cordhound, humwisp are appended (25 lines, 75 form ids). They are
   // boss lines, kept out of the journal grid with the npcOnly line, so the journal still counts 57.
   const SPECIES_IDS = Object.freeze([...V1_SPECIES, 'beetle', 'mole', 'crab', 'moth', 'vane', 'dormouse', 'byte', 'fetch', 'skink', 'otter', 'owl', 'snail', 'tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
   const FORM_IDS = Object.freeze(SPECIES_IDS.flatMap(id => [0, 1, 2].map(k => id + '/' + k)));
@@ -178,7 +178,7 @@ const PPSave = (() => {
     // CREATURES_SLICE §5: faded days left (absent/0 = normal) and that day's care samples. Additive, no version bump.
     if (has(q, 'faded')) { if (!fin(q.faded) || q.faded < 1) delete q.faded; else q.faded = Math.min(9, Math.round(q.faded)); }
     if (has(q, 'fc') && (!has(q, 'faded') || !isObj(q.fc) || typeof q.fc.d !== 'string' || !fin(q.fc.sum) || !fin(q.fc.n) || q.fc.n < 0)) delete q.fc;
-    // ARBITER_UNITS (D800, D190 pattern): hum 0-100 and still, attune lines only. Additive, no version bump.
+    // ARBITER_UNITS (D838, D190 pattern): hum 0-100 and still, attune lines only. Additive, no version bump.
     { const sp = SPECIES[speciesIndex()[q.species]], attune = !!(sp && sp.attune);
       if (has(q, 'hum')) { if (!attune || !fin(q.hum)) delete q.hum; else q.hum = clamp(Math.round(q.hum), 0, 100); }
       if (has(q, 'still') && (!attune || q.still !== true)) delete q.still; }

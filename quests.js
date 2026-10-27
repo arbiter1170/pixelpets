@@ -60,7 +60,7 @@
     'story.gb_tune_asked', 'story.gb_tobin', 'story.gb_imogen_done', 'story.gb_imogen_result',
     // HUSHWATER: first step in. Not a chain step (no CHAIN row). The stair and Lizzy flags are not written here.
     'story.hw_reached',
-    // ARBITER_UNITS Build C (D810-D815): Route 3 arrival and its derived open flag, the first four clues, and the boss rest flags are not steps.
+    // ARBITER_UNITS Build C (D848-D853): Route 3 arrival and its derived open flag, the first four clues, and the boss rest flags are not steps.
     'story.reached_route3', 'story.route3_open', 'story.ans_tallybat_clue', 'story.ans_dimlamp_clue', 'story.ans_filecrow_clue', 'story.ans_cordhound_clue',
     'story.ans_tallybat_rest', 'story.ans_dimlamp_rest', 'story.ans_filecrow_rest', 'story.ans_cordhound_rest', 'story.ans_humwisp_rest'];
 
@@ -290,7 +290,7 @@
         text: 'Tansy Holt is drawing the lit square.', place: 'Hearthmoor Plaza',
         target: { map: 'hm_plaza', x: 18, y: 12 } },
     ],
-    // Five that answer (ARBITER_UNITS Build C, D805, D810-D815). Opens on Route 3. Rows whose target differs by side come in pairs
+    // Five that answer (ARBITER_UNITS Build C, D843, D848-D853). Opens on Route 3. Rows whose target differs by side come in pairs
     // with opposite when; the four lairs can be cleared in any order, so they share one row with four done flags.
     [
       { id: 'ans_open_k', label: 'Five that answer', when: ['story.reached_route3', '!story.side=glimmer'], givers: ['hq_mo', 'cc_quinn'], done: ['story.ans_open'],

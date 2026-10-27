@@ -8,7 +8,7 @@ Vincent settled four calls on Oct 27:
 3. The tiers are Quiet, Humming and Answering.
 4. Both paths attune the same way, and any holder can hush one.
 
-The other calls stay open in D799–D809 (`OPEN_DECISIONS.md`). Nothing goes into `sprites.js`, `stats.js`, `moves.js`, `quests.js` or a map until those rows are settled.
+The other calls stay open in D837–D847 (`OPEN_DECISIONS.md`). Nothing goes into `sprites.js`, `stats.js`, `moves.js`, `quests.js` or a map until those rows are settled.
 
 Every choice below points at a system, flag, place or line that already exists. The `game.js` line numbers are from `main` at `e0d7531`.
 
@@ -26,7 +26,7 @@ Builds A and C are built on `main` (branch `claude/answerers`). Vincent settled 
 - **Lore.** The five are Glimmerwell's **first relays**, built before the Tuning chips. On `main` a relay is a chipped Walkling that carries the signal; the Signal Review is Glimmerwell rebuilding what it lost. The cradle's cursor ("COUNT. GATHER. LISTEN… IT IS NOT SAYING HELLO") names them. The Relay House is the old pilot station. Both chip paths refuse an Answerer: "It already answers."
 - **Gate.** Route 3 opens on `story.route3_open`, derived on arrival: Rook's last crates (`story.rc_done`) plus that side's chapter end, the Lantern Council (`story.hc_council_done`) or the Signal Review (`story.gb_done`). Quinn appears after `story.gb_done`. Brinewick stays shut.
 - **Fit.** Species ids 20–24 after `snail`. Bosses Lv 26–30 under `main`'s Lv 30 cap; Route 3 wilds Lv 22–27. MOVES_V2 signatures (power 30, one small effect): Tally Tick, Dim Glow, File Peck, Cord Nip, Hum Flicker; the tier-2 moves stay tier unlocks, because a power 80–95 move from Lv 1 would be far too strong. Everything for Route 3 is one auto-loaded pack, `data/detail_route3.json`; flags and ids use `ans_`. The lamp clue moved from Wickerglen (the Signal Review's lamp tiles) to the relay lamps in Hushwater.
-- **Ids.** Decisions D799–D815 (Build A D799–D809, Build C D810–D815). The old D194–D210 numbers were already used on `main`.
+- **Ids.** Decisions D837–D853 (Build A D837–D847, Build C D848–D853). The old D194–D210 numbers were already used on `main`.
 
 The sections below are the v0.2 scope with the new names. Where they differ from the list above, the list above wins.
 ## What changed from v0.1, and why
@@ -200,7 +200,7 @@ The clue flags and the rest flags go in `NOT_STEPS`.
 
 The Arbiter Bay staff door (D92) stays closed and is not used.
 
-**Lairs (built in Build C on Route 3, the Brinewick road, `data/route3.json`).** Route 3 opens past Cobblecrest's east sign after `story.rc_done` (D810). Tally gate at 13,10 and cargo yard at 16,35 on the road; Comfort Sanctuary (`r3_sanctuary`), Shipping Ledger Office (`r3_ledger`) and Relay House (`r3_relay`) off it. Each boss waits once its clue is read. The original needs were:
+**Lairs (built in Build C on Route 3, the Brinewick road, `data/route3.json`).** Route 3 opens past Cobblecrest's east sign after `story.rc_done` (D848). Tally gate at 13,10 and cargo yard at 16,35 on the road; Comfort Sanctuary (`r3_sanctuary`), Shipping Ledger Office (`r3_ledger`) and Relay House (`r3_relay`) off it. Each boss waits once its clue is read. The original needs were:
 
 | Unit | Lair need |
 |---|---|
@@ -212,7 +212,7 @@ The Arbiter Bay staff door (D92) stays closed and is not used.
 
 Each lair has one boss tile, a prop that echoes its clue, and a Lantern House within reach.
 
-**Close.** When `story.ans_all` is set, a closing scene plays with Mo or Quinn. The proposed reward is 10 Standing to your side, once, plus a journal line. The reward stays open in D805.
+**Close.** When `story.ans_all` is set, a closing scene plays with Mo or Quinn. The proposed reward is 10 Standing to your side, once, plus a journal line. The reward stays open in D843.
 
 **Journal.**
 - A `boss` species flag keeps the units out of `JOURNAL_FORMS`, so the journal still reads "Out there 45" (the same way `npcOnly` works).

@@ -1,4 +1,4 @@
-/* ARBITER_UNITS Build C: the "Five that answer" side chain (D805, D810-D815). Mo (Keepers) or Quinn (Glimmerwell)
+/* ARBITER_UNITS Build C: the "Five that answer" side chain (D843, D848-D853). Mo (Keepers) or Quinn (Glimmerwell)
    opens it once you reach Route 3. Five clues on both paths, five boss lairs on Route 3, a close that pays 500 Acorns.
    Save v stays 2. */
 const { test, expect } = require('@playwright/test');
