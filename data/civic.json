@@ -5,6 +5,7 @@
   "_about": "Ours, not a design copy. Hearthmoor stays the Keepers' town. Glimmerwell buildings read mint. The phone is a side quest on Route 1.",
   "looks": {
     "officer": {"skin": "3", "hair": "short", "hairCol": "d", "outfit": "coat", "outfitCol": "g", "accent": "y"},
+    "hmp_vale": {"skin": "5", "hair": "short", "hairCol": "n", "outfit": "coat", "outfitCol": "g", "accent": "y"},
     "clerk": {"skin": "4", "hair": "bun", "hairCol": "h", "outfit": "coat", "outfitCol": "g", "accent": "w"},
     "captain": {"skin": "5", "hair": "short", "hairCol": "k", "outfit": "coat", "outfitCol": "g", "accent": "y"},
     "glimclerk": {"skin": "2", "hair": "short", "hairCol": "s", "outfit": "coat", "outfitCol": "c", "accent": "l"},
@@ -17,6 +18,7 @@
     "Officer Cald": "officer",
     "Officer Ness": "officer",
     "Officer Bren": "officer",
+    "Officer Vale": "hmp_vale",
     "Sergeant Bram": "officer",
     "Archivist Mo": "clerk",
     "Clerk Wynn": "clerk",

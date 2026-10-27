@@ -95,11 +95,62 @@ test('three Keepers and four civilians each talk from a reachable tile @w1', asy
     expect(await page.evaluate((oid) => PixelPets.talkTo(oid), id), id).toBe(true);
     await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.full, null, { timeout: 3000 });
     const text = await page.evaluate(() => PixelPets.scene.text);
+    expect(text, id).toBe({
+      hmp_watch: 'Plaza watch. Mind the little ones.',
+      hmp_lamplighter: 'I light every lantern here at dusk.',
+      hmp_cadet: 'Statue duty. The coat comes later.',
+      hmp_sweeper: "Wishes in. Leaves out. That's my job.",
+      hmp_grower: 'Fernbrook apples, fresh off the cart.',
+      hmp_weaver: 'I wove the three baskets Ilse sets out.',
+      hmp_kid: 'Vale says the chalk can stay till rain.',
+    }[id]);
     expect(text.length, id).toBeGreaterThan(10);
     expect(text, id).not.toMatch(/faint|evolv|coins|appeared|dex\b/i);
     for (let i = 0; i < 20 && await page.evaluate(() => !!PixelPets.scene); i++) { await page.keyboard.press('Space'); await page.waitForTimeout(60); }
     await page.waitForFunction(() => !PixelPets.scene, null, { timeout: 3000 });
   }
+});
+
+test('the officer coat is Vale alone, and rank lines follow the pledge @w1', async ({ page }) => {
+  await boot(page, { map: 'hm_plaza', x: 24, y: 9 }, { 'story.starter_received': false });
+  const art = await page.evaluate(() => {
+    const objs = MAPDATA.detail_zz_plaza.maps.hm_plaza.objs;
+    const L = Object.assign({}, MAPDATA.civic.looks, MAPDATA.detail_zz_plaza.looks);
+    const row = (id) => {
+      const o = objs.find((n) => n.id === id);
+      return { look: o.look, art: L[o.look] };
+    };
+    const long = objs.filter((o) => o.kind === 'npc').flatMap((o) => Object.values(o.lines || {}).filter((s) => s.length > 40));
+    return {
+      vale: row('hmp_watch'), pryce: row('hmp_lamplighter'), lisse: row('hmp_cadet'), long,
+      portrait: MAPDATA.civic.speakers['Officer Vale'],
+      cadetPortrait: MAPDATA.detail_zz_plaza.speakers['Keeper cadet Lisse'],
+      officerSkin: MAPDATA.civic.looks.officer.skin,
+      early: objs.find((n) => n.id === 'hmp_watch').lines['!story.starter_received'],
+    };
+  });
+  expect(art.vale).toMatchObject({ look: 'hmp_vale', art: { outfit: 'coat', outfitCol: 'g', accent: 'y' } });
+  expect(art.pryce.art.outfit).toBe('tunic');
+  expect(art.pryce.art.outfitCol).toBe('g');
+  expect(art.lisse.art).toMatchObject({ outfit: 'vest', outfitCol: 'g', accent: 'y' });
+  expect(art.long).toEqual([]);
+  expect(art.portrait).toBe('hmp_vale');
+  expect(art.cadetPortrait).toBe('hmp_lisse');
+  expect(art.vale.art.skin).not.toBe(art.officerSkin);
+  expect(art.early).toBe("Ilse's lodge is east, past your door.");
+
+  await boot(page, { map: 'hm_plaza', x: 21, y: 8 }, { 'story.side': 'keepers' });
+  await page.evaluate(() => PixelPets.setStanding('keepers', 99999));
+  const say = async (id) => {
+    expect(await page.evaluate((oid) => PixelPets.talkTo(oid), id), id).toBe(true);
+    const text = await page.evaluate(() => PixelPets.scene.text);
+    for (let i = 0; i < 8 && await page.evaluate(() => !!PixelPets.scene); i++) { await page.keyboard.press('Space'); await page.waitForTimeout(40); }
+    await page.waitForFunction(() => !PixelPets.scene);
+    return text;
+  };
+  expect(await say('hmp_watch')).toBe("Warden's Ally. The west square is yours.");
+  expect(await say('hmp_lamplighter')).toBe("Warden's Ally. I'll light your way home.");
+  expect(await say('hmp_cadet')).toBe('Cadet Lisse. The watch will learn you.');
 });
 
 test('the town map lists each gate once, named for the other side @w1', async ({ page }) => {

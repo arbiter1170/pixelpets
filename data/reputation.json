@@ -583,37 +583,37 @@
       "base": 50
     },
     {
-      "name": "Keeper on Watch",
+      "name": "Officer Vale",
       "faction": "keepers",
       "base": 50
     },
     {
-      "name": "Lamplighter",
+      "name": "Keeper Pryce",
       "faction": "keepers",
       "base": 50
     },
     {
-      "name": "Keeper Cadet",
+      "name": "Keeper cadet Lisse",
       "faction": "keepers",
       "base": 50
     },
     {
-      "name": "Fountain Sweeper",
+      "name": "Grete Ash",
       "faction": "none",
       "base": 50
     },
     {
-      "name": "Orchard Grower",
+      "name": "Joss Merrin",
       "faction": "none",
       "base": 50
     },
     {
-      "name": "Basket Weaver",
+      "name": "Nella Corrick",
       "faction": "none",
       "base": 50
     },
     {
-      "name": "Chalk Kid",
+      "name": "Tansy Holt",
       "faction": "none",
       "base": 50
     }

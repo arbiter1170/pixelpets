@@ -1,28 +1,28 @@
 {
- "spec": "No design spec. Vincent's playtest note (Oct 26, 2026): a plaza west of the starting home with civilians and Keepers. D797. Names and lines are placeholders for Design.",
+ "spec": "No design spec. Vincent's playtest note (Oct 26, 2026): a plaza west of the starting home with civilians and Keepers. D797.",
  "note": "One new outdoor map (hm_plaza), joined to Hearthmoor's west edge at rows 4-6 so no Hearthmoor coordinate moves. Sorts after detail_zz_market, so these row patches win.",
+ "speakers": {
+  "Keeper Pryce": "hmp_pryce",
+  "Keeper cadet Lisse": "hmp_lisse",
+  "Grete Ash": "plaza_sweeper",
+  "Joss Merrin": "plaza_grower",
+  "Nella Corrick": "plaza_weaver",
+  "Tansy Holt": "plaza_kid"
+ },
  "looks": {
-  "plaza_watch": {
-   "skin": "4",
-   "hair": "short",
-   "hairCol": "d",
-   "outfit": "coat",
-   "outfitCol": "g",
-   "accent": "y"
-  },
-  "plaza_lamplighter": {
+  "hmp_pryce": {
    "skin": "2",
    "hair": "bun",
    "hairCol": "h",
-   "outfit": "coat",
+   "outfit": "tunic",
    "outfitCol": "g",
-   "accent": "y",
+   "accent": "o",
    "accessory": "cap"
   },
-  "plaza_cadet": {
-   "skin": "5",
-   "hair": "buzz",
-   "hairCol": "n",
+  "hmp_lisse": {
+   "skin": "1",
+   "hair": "bob",
+   "hairCol": "o",
    "outfit": "vest",
    "outfitCol": "g",
    "accent": "y"
@@ -567,88 +567,98 @@
     {
      "kind": "npc",
      "id": "hmp_watch",
-     "name": "Keeper on Watch",
-     "look": "plaza_watch",
+     "name": "Officer Vale",
+     "look": "hmp_vale",
      "x": 21,
      "y": 7,
      "facing": "down",
      "lines": {
-      "story.side=glimmer": "Mint vest. The square is open to all. Keep it calm.",
-      "!story.starter_received": "Off to the Warden's Lodge? Back through the gate, then east along the lane.",
-      "else": "Welcome to the plaza, holder. Lantern's law here: keep the peace, mind the little ones."
+      "story.board_gate_sign&!story.board_gate_done": "Cald holds east. I hold this square.",
+      "story.side=glimmer": "Mint vest. This square stays open.",
+      "story.side=keepers&standing.keepers>=4": "Warden's Ally. The west square is yours.",
+      "story.side=keepers&standing.keepers>=3": "Hall Friend. Lumen trusts this beat.",
+      "story.side=keepers&standing.keepers>=1": "A pledged Keeper. Walk easy.",
+      "story.side=keepers": "New pledge. The lantern still knows you.",
+      "!story.starter_received": "Ilse's lodge is east, past your door.",
+      "else": "Plaza watch. Mind the little ones."
      }
     },
     {
      "kind": "npc",
      "id": "hmp_lamplighter",
-     "name": "Lamplighter",
-     "look": "plaza_lamplighter",
+     "name": "Keeper Pryce",
+     "look": "hmp_pryce",
      "x": 21,
      "y": 11,
      "facing": "up",
      "lines": {
-      "story.side=glimmer": "Even Glimmerwell walks home by my lamps. Light is light.",
-      "else": "I light every lantern here at dusk, so no holder walks home in the dark."
+      "story.side=keepers": "New pledge. These plaza lamps stay lit.",
+      "else": "I light every lantern here at dusk."
      }
     },
     {
      "kind": "npc",
      "id": "hmp_cadet",
-     "name": "Keeper Cadet",
-     "look": "plaza_cadet",
+     "name": "Keeper cadet Lisse",
+     "look": "hmp_lisse",
      "x": 12,
      "y": 13,
      "facing": "up",
      "lines": {
-      "else": "I polish the statue's plaque each morning. One day I'll wear the full green and gold."
+      "story.side=keepers": "New pledge. I polish this plaque daily.",
+      "!story.starter_received": "New holders pass through. Statue duty.",
+      "else": "Statue duty. The coat comes later."
      }
     },
     {
      "kind": "npc",
      "id": "hmp_sweeper",
-     "name": "Fountain Sweeper",
+     "name": "Grete Ash",
      "look": "plaza_sweeper",
      "x": 12,
      "y": 6,
      "facing": "down",
      "lines": {
-      "else": "Folks toss wishes in the fountain. I sweep the leaves so the water stays bright."
+      "story.side=keepers": "A Keeper's wish needs a clean pool.",
+      "else": "Wishes in. Leaves out. That's my job."
      }
     },
     {
      "kind": "npc",
      "id": "hmp_grower",
-     "name": "Orchard Grower",
+     "name": "Joss Merrin",
      "look": "plaza_grower",
      "x": 13,
      "y": 4,
      "facing": "down",
      "lines": {
-      "else": "Apples, picked this morning. Walklings come running when I shake the crate."
+      "!story.starter_received": "An apple for the walk to Ilse's lodge.",
+      "else": "Fernbrook apples, fresh off the cart."
      }
     },
     {
      "kind": "npc",
      "id": "hmp_weaver",
-     "name": "Basket Weaver",
+     "name": "Nella Corrick",
      "look": "plaza_weaver",
      "x": 11,
      "y": 4,
      "facing": "down",
      "lines": {
-      "else": "Every basket here is woven by hand. Strong enough to carry a sleepy Walkling."
+      "else": "I wove the three baskets Ilse sets out."
      }
     },
     {
      "kind": "npc",
      "id": "hmp_kid",
-     "name": "Chalk Kid",
+     "name": "Tansy Holt",
      "look": "plaza_kid",
      "x": 18,
      "y": 12,
      "facing": "left",
      "lines": {
-      "else": "I'm drawing my Walkling in chalk! The Keepers say it can stay till the rain."
+      "!story.starter_received": "Drawing the partner I hope to meet.",
+      "else": "Vale says the chalk can stay till rain."
      }
     }
    ]
