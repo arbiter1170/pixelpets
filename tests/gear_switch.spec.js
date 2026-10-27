@@ -299,10 +299,16 @@ test('guards ignore a switch tap', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, 'one width');
   await boot(page, partySave(3), '?debug=1');
   const slot = page.locator('.pet-slot').nth(1);
-  await page.locator('#scr-pet [data-act="play"]').click();
-  await expect(page.locator('.pet-slot').first()).toHaveAttribute('aria-disabled', 'true');
-  await slot.click({ force: true });
-  expect(await page.evaluate(() => PixelPets.state.partnerId)).toBe('p0');
+  await page.locator('#scr-pet [data-act="play"]').click({ force: true });
+  const played = await page.evaluate(() => {
+    const slot = document.querySelectorAll('.pet-slot')[1];
+    const off = slot.getAttribute('aria-disabled');
+    slot.click();
+    return { off, id: PixelPets.state.partnerId, toast: document.querySelector('#toast').textContent };
+  });
+  expect(played.off).toBe('true');
+  expect(played.id).toBe('p0');
+  expect(played.toast).not.toContain('partner now');
   await page.waitForTimeout(1400);
   await expect(page.locator('.pet-slot').first()).not.toHaveAttribute('aria-disabled', 'true');
 

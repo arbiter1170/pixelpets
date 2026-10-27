@@ -13946,9 +13946,14 @@ function openSheet(title, items, cancel){
     });
     const c = $('#shCancel'); c.hidden = !cancel; c.textContent = cancel || 'BACK';
     sheetResolve = res; $('#ovSheet').hidden = false;
+    if (typeof renderCareSwitch === 'function') renderCareSwitch();
   });
 }
-function closeSheet(v){ const r = sheetResolve; sheetResolve = null; $('#ovSheet').hidden = true; if (r) r(v); }
+function closeSheet(v){
+  const r = sheetResolve; sheetResolve = null; $('#ovSheet').hidden = true;
+  if (typeof renderCareSwitch === 'function') renderCareSwitch();
+  if (r) r(v);
+}
 
 /* --- actions from the UI --- */
 function battleAct(act){
