@@ -532,9 +532,9 @@ Q17 and Q18 are already in the game. The town-list calls are settled. TB-1 is in
 
 TB-1 is the empty board, the reports, and the phone app. The Hearthmoor and Fernbrook squares from TB-2 landed with it. TB-3, Cald's gate count, is one Hearthmoor slip on this branch. The other slips are not started. KeeperUAV stays the blank watch desk.
 
-### Q29 — The Answerers (ARBITER_UNITS v0.2) — L — **Build A built, branch not started**
+### Q29 — The Answerers (ARBITER_UNITS v0.2) — L — **Builds A and C built**
 
-Build A is in (build 20261027-1006): attune, hum, hush, Echoes, boss shift and the journal row, tested through debug hooks (`forceBoss`, `addHum`). Next: the next area's one-pager with the five lair needs, then build C (side chain, clues, entry scenes, lairs). It is not ahead of Q19.
+Build A (engine) and Build C (Route 3, the five lairs, the side chain, clues and close) are in. Brinewick, Hall #3 and Seal 3 stay closed. Open: D194–D210 copy and tuning, and the switched-save reach gap (D210). It is not ahead of Q19.
 
 ### Q20 — Look and listen — M — **shipped**
 

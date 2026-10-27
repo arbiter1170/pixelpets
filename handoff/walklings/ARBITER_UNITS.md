@@ -189,7 +189,7 @@ The clue flags and the rest flags go in `NOT_STEPS`.
 
 The Arbiter Bay staff door (D92) stays closed and is not used.
 
-**Lair needs for the next area's one-pager.** These are needs, not place names.
+**Lairs (built in Build C on Route 3, the Brinewick road, `data/route3.json`).** Route 3 opens past Cobblecrest's east sign after `story.rc_done` (D205). Tally gate at 13,10 and cargo yard at 16,35 on the road; Comfort Sanctuary (`r3_sanctuary`), Shipping Ledger Office (`r3_ledger`) and Relay House (`r3_relay`) off it. Each boss waits once its clue is read. The original needs were:
 
 | Unit | Lair need |
 |---|---|

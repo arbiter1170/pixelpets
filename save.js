@@ -21,7 +21,7 @@ const PPSave = (() => {
   const MD = typeof MAPDATA === 'object' ? MAPDATA : null;
   const MAP_SIZE = {};
   const addMaps = bag => { if (bag) for (const [id, m] of Object.entries(bag)) if (m && m.w && m.h) MAP_SIZE[id] = [m.w, m.h]; };
-  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); addMaps(MD.mahopac && MD.mahopac.maps); addMaps(MD.highcharity && MD.highcharity.maps); addMaps(MD.highcharity && MD.highcharity.rooms); addMaps(MD.heights && MD.heights.maps); addMaps(MD.civic && MD.civic.maps); addMaps(MD.fernbrook_rooms && MD.fernbrook_rooms.maps); }
+  if (MD) { addMaps(MD.maps_slice.maps); addMaps(MD.act1_route2 && MD.act1_route2.maps); addMaps(MD.interiors.maps); addMaps(MD.cobblecrest && MD.cobblecrest.maps); addMaps(MD.cobblecrest && MD.cobblecrest.rooms); addMaps(MD.mahopac && MD.mahopac.maps); addMaps(MD.highcharity && MD.highcharity.maps); addMaps(MD.highcharity && MD.highcharity.rooms); addMaps(MD.heights && MD.heights.maps); addMaps(MD.civic && MD.civic.maps); addMaps(MD.fernbrook_rooms && MD.fernbrook_rooms.maps); addMaps(MD.route3 && MD.route3.maps); }
   else MAP_SIZE.proto = [24, 20];
   // Map-pass overlays (data/detail_*.json, applied last in game.js) may resize a map with `slicePatch.maps[id].set.w/h`.
   if (MD) for (const k of Object.keys(MD).filter(k => k.startsWith('detail_')).sort()) {

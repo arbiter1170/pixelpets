@@ -212,6 +212,8 @@
           "facing": "up",
           "lines": {
             "!story.met_mo": "@hq_mo",
+            "story.reached_route3&!story.side=glimmer&!story.sig_open": "@sig_open",
+            "story.sig_humwisp&!story.side=glimmer&!story.sig_all": "@sig_close",
             "story.side=glimmer": "I note the mint. The books will too.",
             "standing.keepers>=1": "The shelf is open to a keeper. Read.",
             "else": "Citizen. Old books stay on the shelf."

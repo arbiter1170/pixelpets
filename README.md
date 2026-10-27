@@ -328,7 +328,12 @@ stats card stops the meter, and the tier never drops. Each has one passive Echo 
 Wire, Carrier Hum), shown on the stats card. They are met only as bosses: a boss opens at Humming with 1.5x HP for that
 battle, cannot be befriended until it shifts to Answering at half HP, comes back the next day if it is not befriended,
 and joins at Quiet. They sit in their own journal row (ANSWERERS or FOUNDER'S LINE) outside the 45, hidden until one is
-met. No map places a boss yet; the branch ships with the next area. Save `v` stays 2.
+met. Route 3, the Brinewick road, opens past Cobblecrest's east sign once Rook's "The last crates" is done (`data/route3.json`).
+It holds the five lairs: the tally gate and the cargo yard on the road, and the Comfort Sanctuary, the Shipping Ledger
+Office and the Relay House. Brinewick's gate at the far end stays shut. Walking onto Route 3 opens the side chain "Five
+that answer": Archivist Mo (Keepers) or Associate Quinn in the Cobblecrest Trial Hall (Glimmerwell) sends you to five
+clues (`data/detail_sig.json`), each boss waits at its lair once its clue is read, a lair gives its own unit +10 hum on
+the first visit each day, and the close pays 500 Acorns once. Save `v` stays 2.
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on

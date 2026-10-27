@@ -285,7 +285,7 @@ const canEvolve = p => !isAttune(p) && !isFaded(p) && p.stage < 2 && p.xp >= EVO
    raises the tier at 40 and 100; it never grows up. p.hush stops the meter, and the tier never drops. Save v stays 2. --- */
 const HUM_TIERS = Object.freeze([40, 100]);
 const HUM_TIER_NAMES = Object.freeze(['Quiet', 'Humming', 'Answering']);
-const HUM_GAIN = Object.freeze({ battleWin: 4, glimmerPlace: 6 });
+const HUM_GAIN = Object.freeze({ battleWin: 4, glimmerPlace: 6, lair: 10 });
 const isAttune = p => !!(p && SPECIES[spi(p)] && SPECIES[spi(p)].attune);
 const humOf = p => clamp(Math.round(+p.hum || 0), 0, 100);
 function humTierUp(p){
@@ -313,8 +313,16 @@ function humHint(p){
 // D196: the first arrival each day at a place the region map calls Glimmerwell's feeds every attune Walkling in the party.
 function humOnArrive(){
   if (!S || !S.party || !S.party.some(isAttune)) return;
+  const day = dayKey(Date.now());
+  // D196: the first visit each day to a unit's own lair (map field lairOf) gives that unit +10. Separate stamp per lair.
+  const lairs = [].concat((CUR && CUR.lairOf) || []);
+  for (const unit of lairs) {
+    const k = 'daily.lair_' + unit; if (S.flags[k] === day) continue;
+    S.flags[k] = day;
+    for (const p of S.party) if (p.species === unit) addHum(p, HUM_GAIN.lair);
+  }
   const node = nodeOf(S.world && S.world.map); if (!node || mapHold(node) !== 'glimmer') return;
-  const day = dayKey(Date.now()); if (S.flags['daily.hum_place'] === day) return;
+  if (S.flags['daily.hum_place'] === day) return;
   S.flags['daily.hum_place'] = day;
   for (const p of S.party) addHum(p, HUM_GAIN.glimmerPlace);
 }
@@ -1680,6 +1688,10 @@ const WORLD = (() => {
     applyMapPatch(W, MD.civic.slicePatch);
   }
   if (MD.town_board) applyMapPatch(W, MD.town_board.slicePatch);       // town boards: squares, then the posts
+  if (MD.route3) {                                                     // ARBITER_UNITS Build C: the Brinewick road and its lairs, then the Cobblecrest east exit
+    Object.assign(W, JSON.parse(JSON.stringify(MD.route3.maps)));
+    applyMapPatch(W, MD.route3.slicePatch);
+  }
   for (const k of DETAIL_KEYS) { if (MD[k].maps) Object.assign(W, JSON.parse(JSON.stringify(MD[k].maps))); applyMapPatch(W, MD[k].slicePatch); }
   if (MD.fernbrook_rooms) {                                            // B8: rooms, then the door warp, after every detail patch
     Object.assign(W, JSON.parse(JSON.stringify(MD.fernbrook_rooms.maps || {})));
@@ -1698,9 +1710,10 @@ if (MD.highcharity) Object.assign(SCENES, MD.highcharity.scenes || {});
 if (MD.heights) Object.assign(SCENES, MD.heights.scenes || {});
 if (MD.civic) Object.assign(SCENES, MD.civic.scenes || {});
 if (MD.rook_crossroads) Object.assign(SCENES, MD.rook_crossroads.scenes || {});
+if (MD.route3) Object.assign(SCENES, MD.route3.scenes || {});
 SCENES.rook_offer = [];   // runtime steps come from rookOfferSteps(); the key lets a `run` check see the scene
 for (const k of DETAIL_KEYS) Object.assign(SCENES, MD[k].scenes || {});
-for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
+for (const src of [MD.maps_slice, MD.act1_route2, MD.cobblecrest, MD.glimmer_path, MD.mahopac, MD.highcharity, MD.heights, MD.civic, MD.fernbrook_rooms, MD.rook_crossroads, MD.route3]) if (src && src.trainers) for (const [id, t] of Object.entries(src.trainers)) TRAINERS[id] = Object.assign({}, TRAINERS[id] || {}, t);
 if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x: 22, y: 6, facing: 'down', sight: 0, onWin: 'seal1' });
 // WP-B0 (NEXT_PLAN engine asks 1-2): the faction pledge. `story.side` absent = keepers, so every older save plays as before.
 // A scene `X@glimmer` runs instead of `X`, and a trainer `id@glimmer` is merged over `id` (lines merged too), while the side is glimmer.
@@ -1809,9 +1822,16 @@ function glimmerDevCheck(){
     }
     n.forEach(x => walkStanding(where, x)); };
   for (const [id, steps] of Object.entries(SCENES)) walkStanding('scene ' + id, steps);
-  // Rook's Crossroads lives in its own pack. @glimmer variants must set the same story flags as the base.
-  const RC = MD.rook_crossroads;
-  if (RC) {
+  // Rook's Crossroads and Route 3 (ARBITER_UNITS Build C) live in their own packs. @glimmer variants must set the same
+  // story flags as the base, and Route 3's objects must name real scenes with lines that fit.
+  for (const RC of [MD.rook_crossroads, MD.route3]) if (RC) {
+    for (const m of Object.values(RC.maps || {})) for (const o of m.objs || []) {
+      if (o.scene && !SCENES[o.scene]) bad.push('obj ' + o.id + ': unknown scene ' + o.scene);
+      for (const v of Object.values(o.lines || {})) line('obj ' + o.id, v);
+      if (o.text) line('obj ' + o.id, o.text);
+    }
+  }
+  for (const RC of [MD.rook_crossroads, MD.route3]) if (RC) {
     for (const [id, steps] of Object.entries(RC.scenes || {})) {
       walkSteps('scene ' + id, steps);
       const at = id.indexOf('@'); if (at < 0) continue;
@@ -4467,6 +4487,14 @@ async function execStep(st){
       return;
     }
     case 'bond': { const n = Number(a) || 0; if (n) pend(() => { const p = pet(); if (p) addBond(p, n); }); return; }
+    // ["acorns", n]: pays n Acorns when the scene's writes land, and says so. A scene that sets its flag pays once.
+    case 'acorns': {
+      const n = Math.max(0, Number(a) | 0); if (!n) return;
+      pend(() => { S.money = (S.money | 0) + n; });
+      if (sc.skip) return;
+      await sayBox('', playerName() + ' got ' + acorns(n) + '!');
+      return;
+    }
     case 'sfx': { if (a) sfx(a); return; }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'warp': {
@@ -4782,7 +4810,7 @@ const SPAWNS = {
   fernbrook: { stage2: 0.05, table: [['beetle', 30, 6, 9], ['mole', 25, 7, 10], ['moth', 10, 6, 9], ['dormouse', 10, 7, 10],
                ['crab', 8, 7, 9], ['frost', 3, 7, 9], ['shade', 5, 7, 9], ['vane', 7, 7, 9]] },
 };
-for (const src of [MD.act1_route2, MD.cobblecrest]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = v;
+for (const src of [MD.act1_route2, MD.cobblecrest, MD.route3]) if (src && src.spawnTables) for (const [k, v] of Object.entries(src.spawnTables)) if (!k.startsWith('_')) SPAWNS[k] = v;
 const spawnKey = () => (CUR && CUR.spawns) || 'proto';
 const habSum = (sp, tags) => tags.reduce((s, t) => s + ((sp.habitat || {})[t] || 0), 0);
 function tableWeights(t, tags){ return t.table.map(([id, base]) => { const sp = SPECIES[SP_INDEX[id]]; return sp && wildSpecies(sp) && weatherOk(sp, tags) ? base * (1 + 0.25 * habSum(sp, tags)) : 0; }); }
@@ -5893,10 +5921,13 @@ const REGION_MAP = {
       hold: [{ id: 'keepers', line: 'The Keepers hold the capital.' }] },
     fb_heights:    { kind: 'side',  col: 10, row: 3, label: 'HEIGHTS',     labelAt: 'left', blurb: 'Ridge north of Fernbrook. A lab, and old tunnels.', path: [[10, 6], [10, 3]],
       hold: [{ id: 'split', when: ['story.sm_done'], line: 'The watch opened the tunnels. The lab remains.' }, { id: 'glimmer', line: "Glimmerwell's lab sits on the ridge." }] },
+    // ARBITER_UNITS Build C (D205, D206): the Brinewick road, south of Cobblecrest on the parchment. Brinewick itself is not built.
+    route3:        { kind: 'route', col: 17, row: 9, label: 'ROUTE 3',     labelAt: 'below', blurb: 'The Brinewick road. Crates, and a hum.', path: [[17, 6], [18, 7], [18, 9], [17, 9]],
+      hold: [{ id: 'split', line: "Keepers walk it. Glimmerwell's crates roll down it." }] },
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], route3: ['story.reached_route3'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',

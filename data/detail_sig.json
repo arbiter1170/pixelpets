@@ -1,0 +1,159 @@
+{
+  "_about": "ARBITER_UNITS Build C: the clue objects and Quinn. Loaded after every other detail_* file, so it may replace objects those files add.",
+  "slicePatch": {
+    "maps": {
+      "route2": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "r2_sig_post",
+            "x": 22,
+            "y": 9,
+            "sprite": "signpost",
+            "when": [
+              "story.sig_open"
+            ],
+            "lines": {
+              "!story.sig_tallybat_clue": "@sig_clue_tallybat",
+              "else": "The census counter clicks: 4, 4, 4."
+            }
+          }
+        ]
+      },
+      "route2_glen": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "glen_sig_lamp",
+            "x": 8,
+            "y": 4,
+            "sprite": "comfort_lamp",
+            "when": [
+              "story.glen_cleared",
+              "story.sig_open"
+            ],
+            "lines": {
+              "!story.sig_hushlamp_clue": "@sig_clue_hushlamp",
+              "else": "LAMP COUNT 11 OF 12."
+            }
+          }
+        ]
+      },
+      "cobblecrest": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "cc_sig_tether",
+            "x": 30,
+            "y": 9,
+            "sprite": "rope_coil",
+            "when": [
+              "story.sig_open"
+            ],
+            "lines": {
+              "!story.sig_cordhound_clue": "@sig_clue_cordhound",
+              "else": "A chewed cord. It points east."
+            }
+          }
+        ]
+      },
+      "rx_f3": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "rx3_sig_cart",
+            "x": 3,
+            "y": 14,
+            "sprite": "lab_file_cart",
+            "when": [
+              "story.side=glimmer",
+              "story.sig_open"
+            ],
+            "lines": {
+              "!story.sig_ledgerowl_clue": "@sig_clue_ledgerowl",
+              "else": "An empty cart. RELOCATED, it says."
+            }
+          }
+        ]
+      },
+      "hm_hq_f1": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "hq_sig_box",
+            "x": 2,
+            "y": 3,
+            "sprite": "crate",
+            "when": [
+              "!story.side=glimmer",
+              "story.sig_open"
+            ],
+            "lines": {
+              "!story.sig_ledgerowl_clue": "@sig_clue_ledgerowl",
+              "else": "Keeper reports. The owl page is on top."
+            }
+          }
+        ]
+      },
+      "rx_f4": {
+        "replaceObjs": [
+          {
+            "kind": "prop",
+            "id": "rx_arbiter",
+            "name": "The Arbiter",
+            "x": 6,
+            "y": 3,
+            "sprite": "arbiter",
+            "lines": {
+              "story.side=glimmer&story.sig_tallybat&story.sig_hushlamp&story.sig_ledgerowl&story.sig_cordhound&!story.sig_humwisp_clue": "@sig_clue_humwisp",
+              "story.heights_done": "Still emitting. Slow. Unnamed.",
+              "story.saw_arbiter": "A cursor answers the hum.",
+              "story.rx_f1": "The hum was here before you.",
+              "else": "It emits slowly. The screen is dark."
+            }
+          }
+        ]
+      },
+      "mahopac": {
+        "replaceObjs": [
+          {
+            "kind": "prop",
+            "id": "mah_signal_mast",
+            "x": 9,
+            "y": 5,
+            "sprite": "lm_signal_mast",
+            "lines": {
+              "!story.side=glimmer&story.sig_tallybat&story.sig_hushlamp&story.sig_ledgerowl&story.sig_cordhound&!story.sig_humwisp_clue": "@sig_clue_humwisp",
+              "story.sig_humwisp_clue": "The mast hums low. East, it says.",
+              "else": "An old signal mast. Rust and wire."
+            }
+          }
+        ]
+      },
+      "cc_hall_in": {
+        "addObjs": [
+          {
+            "kind": "npc",
+            "id": "cc_quinn",
+            "name": "Associate Quinn",
+            "look": "quinn",
+            "x": 8,
+            "y": 3,
+            "facing": "left",
+            "when": [
+              "story.side=glimmer",
+              "story.cobble_end"
+            ],
+            "lines": {
+              "story.reached_route3&!story.sig_open": "@sig_open",
+              "story.sig_humwisp&!story.sig_all": "@sig_close",
+              "story.sig_all": "Five units home. The quarter thanks you.",
+              "story.sig_open": "Five units. The road knows where.",
+              "else": "The review is closed. Have a bright day."
+            }
+          }
+        ]
+      }
+    }
+  }
+}
