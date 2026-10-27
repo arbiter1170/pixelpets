@@ -2,6 +2,33 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 07:16 ET: Step toast stays in the dock, off the map (build 20261027-0716)
+
+- What changed and why: The step line sat on the map, over the player and the tiles under them. It now sits in the open space of the dock's top row, beside the hour, and it does not take taps. The map, the hour, Acorns, and the buttons stay clear.
+- Files touched: `game.js`, `style.css`, `tests/modern_hud_dock.spec.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch. Build `20261027-0716`.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/modern_hud_dock.spec.js --project=390` → `PP_TEST RESULT: PASS exit=0 passed=3 failed=0`. The toast rect misses the map, the hour, Acorns, and QUEST, and it takes no taps.
+- Decisions made (colour + reasoning): A bar above the dock covered the player. The notice stays inside the dock.
+- Anything left unfinished: Firebase Google sign-in is still a console step. D791 still waits.
+
+## 2026-10-27 06:42 ET: Toast sits above the dock, clock stays visible (build 20261027-0642)
+
+- What changed and why: The new-step toast was a fixed box on top of the place chip, so it covered the hour and sliced through the button row. It now sits in a solid bar just above the dock, lined up to the dock itself, and the hour stays visible. The Acorn frame was stretched across the whole dock because that chip was taken out of its own box; it is back inside the Acorn chip, so the buttons no longer sit on that art.
+- Files touched: `game.js`, `style.css`, `tests/modern_hud_dock.spec.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch. Build `20261027-0642`.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/modern_hud_dock.spec.js --project=390` → `PP_TEST RESULT: PASS exit=0 passed=3 failed=0`. Width 390. Console errors: none.
+- Decisions made (colour + reasoning): The chip-slot toast from D782 covered the hour and the buttons on a phone. The bar above the dock keeps the hour and every button clear.
+- Anything left unfinished: Firebase Google sign-in is still a console step. D791 tutorial strip still waits.
+
+## 2026-10-27 01:36 ET: Modern HUD P2 toast slot and step cue (build 20261027-0136)
+
+- What changed and why: Portrait modern walk keeps toasts and the bump hint in the place-chip slot (two lines, pages, a queue of three) so Acorns stay visible. A quest step change plays one "New step" toast, not on load, and a hint line shows above the step on the quest card. The care tray's answer uses the tray's top band. Group heads sit on the partner row. Quest edge arrows use a 6 px inset under the frame. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `game.js`, `style.css`, `index.html`, `tests/modern_hud_dock.spec.js`, `tools/GAMEJS_MAP.txt`, `version.json`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `CHANGELOG.md`, `tests/README.md`.
+- Commit(s) + build id: this branch. Build `20261027-0136`.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/modern_hud_dock.spec.js tests/map_zoom.spec.js tests/headroom_bigger.spec.js tests/cloud_link.spec.js --project=390` was 20 passed and 1 failed (a toast that fits two lines at 390). After the longer paging line, `tests/modern_hud_dock.spec.js` at 390: `PP_TEST RESULT: PASS exit=0 passed=3 failed=0`. Packet checker on this HEAD: `FAIL MODERN_HUD_CLEAR (4)`, the same four anchors already missing on main (`hudPad`, `viewH`, `Heff`, `tipTop`). The bump-line anchor is found again on this branch. Design can restamp the spec.
+- Decisions made (colour + reasoning): D790 built on the voted default. D796 and D798 settled. D791 still waits on the tutorial popups look. Privacy line stays the scope default.
+- Anything left unfinished: Firebase console still needs Google sign-in enabled for live Link Google. D791 tutorial strip. Vincent may still revise the privacy line.
+
 ## 2026-10-27 01:09 ET: Plaza sign-off and modern HUD dock (build 20261027-0109)
 
 - What changed and why: Vincent signed off D797 (keep the joined Hearthmoor Plaza as built) and confirmed D789 (no top bar; place chip in the dock's top row, portrait only). Modern portrait walk now uses a 156 px three-row dock outside `#mapWrap`: chip + Acorns + PHONE + gear; trust/QUEST/BAG/MAP + PARTNER/WALKLINGS; partner card. Tip band off under the frame. Pads over the map read 0. D792 uses a fixed 52 px hour box inside the combined chip. Save stays `pixelpets.save.v2` with `v` 2.

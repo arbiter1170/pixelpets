@@ -85,3 +85,109 @@ test('portrait modern dock: chip in row 1, buttons 44 px, 0 px over the map', as
   expect(d.quest.x).toBeLessThan(d.partner.x);
   expect(d.map.bottom).toBeLessThanOrEqual(d.dock.y + 2);
 });
+
+test('portrait modern dock: toast stays in the chip slot and a new step cues once', async ({ page }) => {
+  const w = page.viewportSize().width;
+  test.skip(w > page.viewportSize().height, 'dock is portrait only');
+  await boot(page);
+  await page.evaluate(() => { if (window.PixelPets && PixelPets.setHudPads) PixelPets.setHudPads(true); });
+  await page.waitForFunction(() => document.body.classList.contains('mhc-frame'));
+
+  const slot = await page.evaluate(() => {
+    PixelPets.debugToast('Found 3 Hearty Snacks!');
+    const toast = document.querySelector('#toast');
+    const acorns = document.querySelector('#fcAcorns');
+    const chip = document.querySelector('#thChip');
+    const hour = document.querySelector('#thHour');
+    const quest = document.querySelector('#questBtn');
+    const dock = document.querySelector('#fcDock');
+    const map = document.querySelector('#mapCanvas');
+    const tr = toast.getBoundingClientRect();
+    const ar = acorns.getBoundingClientRect();
+    const cr = chip.getBoundingClientRect();
+    const hr = hour.getBoundingClientRect();
+    const qr = quest.getBoundingClientRect();
+    const dr = dock.getBoundingClientRect();
+    const mr = map.getBoundingClientRect();
+    const overlap = (a, b) => a && b && Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) > 1
+      && Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)) > 1;
+    return {
+      text: toast.textContent,
+      shown: toast.classList.contains('show'),
+      pe: getComputedStyle(toast).pointerEvents,
+      overAcorns: overlap(tr, ar),
+      overChip: overlap(tr, cr),
+      overHour: overlap(tr, hr),
+      overQuest: overlap(tr, qr),
+      overMap: overlap(tr, mr),
+      inDock: tr.top >= dr.top - 1 && tr.bottom <= dr.bottom + 1,
+    };
+  });
+  expect(slot.shown).toBe(true);
+  expect(slot.text).toBe('Found 3 Hearty Snacks!');
+  expect(slot.pe).toBe('none');
+  expect(slot.overAcorns).toBe(false);
+  expect(slot.overChip).toBe(false);
+  expect(slot.overHour).toBe(false);
+  expect(slot.overQuest).toBe(false);
+  expect(slot.overMap).toBe(false);
+  expect(slot.inDock).toBe(true);
+
+  const step = await page.evaluate(() => {
+    const before = document.querySelector('#toast').textContent;
+    PixelPets.setFlag('story.rival1_done', true);
+    PixelPets.giveXp(0);
+    return { before, after: document.querySelector('#toast').textContent, quest: document.querySelector('#questText') ? true : false };
+  });
+  expect(step.after).toBe(step.before);
+  await page.waitForFunction(() => (document.querySelector('#toast').textContent || '').indexOf('New step:') === 0, null, { timeout: 8000 });
+  const card = await page.evaluate(() => {
+    document.querySelector('#questBtn').click();
+    const hint = document.querySelector('#questHint');
+    const text = document.querySelector('#questText').textContent;
+    return { text, hint: hint && !hint.hidden ? hint.textContent : '' };
+  });
+  expect(card.text.length).toBeGreaterThan(20);
+  expect(card.hint).toContain('east gate');
+  await page.locator('#questClose').click();
+  await page.waitForFunction(() => !document.querySelector('#toast').classList.contains('show'), null, { timeout: 8000 });
+  const paged = await page.evaluate(() => {
+    PixelPets.debugToast(('North ').repeat(40).trim());
+    return document.querySelector('#toast').textContent;
+  });
+  expect(paged.endsWith('...'), paged).toBe(true);
+  expect(paged.includes('east path opens again today'), paged).toBe(false);
+});
+
+test('portrait modern dock: care tray toast sits in the tray band', async ({ page }) => {
+  const w = page.viewportSize().width;
+  test.skip(w > page.viewportSize().height, 'dock is portrait only');
+  await boot(page);
+  await page.evaluate(() => { if (window.PixelPets && PixelPets.setHudPads) PixelPets.setHudPads(true); });
+  await page.locator('#petStrip').click();
+  await page.waitForFunction(() => document.body.classList.contains('ct-open'));
+  const d = await page.evaluate(() => {
+    PixelPets.careAct('feed');
+    const toast = document.querySelector('#toast').getBoundingClientRect();
+    const tray = document.querySelector('#careTray').getBoundingClientRect();
+    const close = document.querySelector('#ctClose').getBoundingClientRect();
+    const feed = document.querySelector('#careTray .btn-feed').getBoundingClientRect();
+    const map = document.querySelector('#mapCanvas').getBoundingClientRect();
+    const overlap = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) > 1
+      && Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)) > 1;
+    return {
+      feedH: feed.height,
+      closeH: close.height,
+      overMap: overlap(toast, map),
+      overClose: overlap(toast, close),
+      inTray: toast.top >= tray.top - 2 && toast.bottom <= tray.top + 48,
+      text: document.querySelector('#toast').textContent,
+    };
+  });
+  expect(d.feedH).toBeGreaterThanOrEqual(44);
+  expect(d.closeH).toBeGreaterThanOrEqual(44);
+  expect(d.overMap).toBe(false);
+  expect(d.overClose).toBe(false);
+  expect(d.inTray).toBe(true);
+  expect(d.text.length).toBeGreaterThan(0);
+});

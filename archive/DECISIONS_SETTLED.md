@@ -8,6 +8,9 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D796 (Tue Oct 27, 2026, about 1:40 AM ET, green, SETTLED on the shipped default).** A quick tap on a quest edge cue walks. Holding still for 450 ms opens QUEST. A drag past 18 px steers. No fill. `CUE_HOLD_MS` in `game.js`.
+- **D798 (Tue Oct 27, 2026, about 1:40 AM ET, green, SETTLED).** Plaza errand wording stays as shipped. No rewrite. Chains `plaza_ask`, `plaza_sign_ask`, `lantern_ask`.
+- **D790 (Tue Oct 27, 2026, about 1:40 AM ET, yellow, built on the voted default).** QA yes and PixelPets yes. With the tip line gone, a step-id change plays one "New step: {place}" toast through a queue of three (not on load). Hint lines play once as a toast and sit above the step on the quest card. Arcade keeps `#walkTip`. The tutorial strip (D791) is still waiting on the tutorial popups look.
 - **D363 (Oct 20, 2026, Vincent, 10:03 PM ET, red, SETTLED BY VINCENT).** WORLD_CLOCK_TOWN (design 2bec049). Faster in-game clock, not device time; our own day/night cycle. Not built.
 - **D364 (Oct 20, 2026, Vincent, 10:27 PM ET, red, SETTLED BY VINCENT, early, on the default).** WORLD_CLOCK_TOWN (design fbe758e). Hearthmoor grows from 24x24 to 24x34. Row 23 opens at x9–10 onto the new Market Row: store, clothing store, diner, court. Nothing north of row 23 moves, and the Mahopac lane is untouched. Not built.
 - **D365 (Oct 20, 2026, Vincent, 10:27 PM ET, red, SETTLED BY VINCENT, early, on the default).** WORLD_CLOCK_TOWN (design fbe758e). Clothing option B, no graphics overhaul. 6 new Walkling accessories (existing auto-fit), 4 new holder accessories (existing layer) and outfit colours. The full paperdoll is not planned. Not built.

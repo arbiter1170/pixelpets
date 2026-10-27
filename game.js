@@ -902,9 +902,127 @@ function closeSettings(){
   $('#ovSettings').hidden = true; lockTabs(false);
 }
 let toastT = 0;
+const TOAST_LIFE_MS = 1800;
+let toastQ = [];
+let toastBusy = false;
+let toastGen = 0;
+function mhcToastOn(){
+  return !!(document.body && document.body.classList.contains(MHC_FRAME_CLASS) && document.body.classList.contains('ctl-modern') && document.body.dataset.screen === 'walk');
+}
+function toastMeasureEl(){
+  let el = $('#toastMeasure');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toastMeasure';
+    el.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(el);
+  }
+  return el;
+}
+// D782: pages of two 14 px lines. Sentence end when the rest fits one page; a mid-sentence cut ends in " ...".
+function mhcNoticeBox(){
+  const tray = document.body.classList.contains('ct-open') ? $('#careTray') : null;
+  if (tray && !tray.hidden) {
+    const r = tray.getBoundingClientRect();
+    return { left: Math.round(r.left + 4), top: Math.round(r.top + 2), width: Math.max(40, Math.round(r.width - 8)), height: 36 };
+  }
+  const chip = $('#thChip'), slot = $('#fcDockChip');
+  if (!chip || !slot) return null;
+  const c = chip.getBoundingClientRect(), s = slot.getBoundingClientRect();
+  const left = Math.round(c.right + 4);
+  const width = Math.round(s.right - left);
+  if (width < 36 || s.height < 20) return null;
+  return { left: left, top: Math.round(s.top), width: width, height: Math.round(s.height) };
+}
+function applyNoticeBox(el, box){
+  if (!el) return;
+  if (!box) {
+    el.style.top = el.style.left = el.style.width = el.style.height = el.style.right = el.style.bottom = el.style.maxWidth = '';
+    return;
+  }
+  el.style.left = box.left + 'px';
+  el.style.top = box.top + 'px';
+  el.style.width = box.width + 'px';
+  el.style.height = box.height + 'px';
+  el.style.right = 'auto';
+  el.style.bottom = 'auto';
+  el.style.maxWidth = 'none';
+  el.style.transform = 'none';
+  el.style.pointerEvents = 'none';
+}
+function paginateMhcToast(text){
+  const box = mhcNoticeBox();
+  const w = Math.max(48, box ? box.width : 120);
+  const el = toastMeasureEl();
+  el.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;box-sizing:border-box;font:bold 13px/16px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif') + ';letter-spacing:.5px;padding:4px 6px;width:' + w + 'px;white-space:normal;';
+  const maxLines = 2, lh = 16;
+  const fits = s => { el.textContent = s; return el.scrollHeight <= maxLines * lh + 8 + 1; };
+  const out = []; let rest = String(text || '').trim();
+  let guard = 0;
+  while (rest && guard++ < 8) {
+    if (fits(rest)) { out.push(rest); break; }
+    const words = rest.split(' '); let n = 1;
+    while (n < words.length && fits(words.slice(0, n + 1).join(' ') + ' ...')) n++;
+    let cut = n;
+    for (let k = n; k >= 1; k--) if (/[.!?]$/.test(words[k - 1]) && fits(words.slice(k).join(' '))) { cut = k; break; }
+    const head = words.slice(0, cut).join(' ');
+    out.push(/[.!?]$/.test(head) ? head : head + ' ...');
+    rest = words.slice(cut).join(' ');
+  }
+  el.textContent = '';
+  return out.length ? out : [String(text || '')];
+}
+function placeMhcToast(){
+  const t = $('#toast');
+  if (!t) return;
+  if (!mhcToastOn() || !t.classList.contains('show')) { applyNoticeBox(t, null); return; }
+  applyNoticeBox(t, mhcNoticeBox());
+}
+function showToastNow(msg){
+  const t = $('#toast'); if (!t) return;
+  t.textContent = msg; t.classList.add('show');
+  try { placeMhcToast(); } catch (e) {}
+  clearTimeout(toastT); toastT = setTimeout(() => { t.classList.remove('show'); try { placeMhcToast(); } catch (e) {} }, 1800);
+}
+function drainToast(){
+  if (!mhcToastOn()) { toastBusy = false; toastQ = []; return; }
+  if (!toastQ.length) { toastBusy = false; const t = $('#toast'); if (t) t.classList.remove('show'); try { placeMhcToast(); } catch (e) {} return; }
+  toastBusy = true;
+  const msg = toastQ.shift();
+  const pages = paginateMhcToast(msg);
+  const gen = ++toastGen;
+  let i = 0;
+  const step = () => {
+    if (gen !== toastGen) return;
+    if (!mhcToastOn()) {
+      toastBusy = false; toastQ = [];
+      showToastNow(pages.slice(i).join(' ') || msg);
+      return;
+    }
+    const t = $('#toast'); if (!t) { toastBusy = false; return; }
+    t.textContent = pages[i] || '';
+    t.classList.add('show');
+    try { hideBumpHint(); placeMhcToast(); } catch (e) {}
+    clearTimeout(toastT);
+    toastT = setTimeout(() => {
+      if (gen !== toastGen) return;
+      i++;
+      if (i < pages.length) step();
+      else drainToast();
+    }, TOAST_LIFE_MS);
+  };
+  step();
+}
 function toast(msg){
   if (careLes.holdEarly) { careLes.held.push(msg); return; }
-  const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800);
+  if (!mhcToastOn()) {
+    toastGen++; toastQ = []; toastBusy = false;
+    showToastNow(msg);
+    return;
+  }
+  toastQ.push(String(msg == null ? '' : msg));
+  while (toastQ.length > 3) toastQ.shift();
+  if (!toastBusy) drainToast();
 }
 function crashNoticeBlocked(){
   try {
@@ -1448,25 +1566,21 @@ function syncMhcDock(on){
   try { syncMhcGroupHeads(); } catch (e) {}
 }
 function syncMhcGroupHeads(){
-  const host = $('#fcDockR3'); if (!host) return;
-  let box = host.querySelector('.coop-dock-heads');
-  if (!hudPadsLive() || ctlMode() !== 'modern') { if (box) box.remove(); return; }
-  const strip = $('#coopStrip');
-  const on = strip && !strip.hidden;
-  const heads = strip ? strip.querySelectorAll('.coop-head-btn') : [];
-  if (!on || !heads.length) { if (box) box.remove(); return; }
-  if (!box) { box = document.createElement('div'); box.className = 'coop-dock-heads'; host.appendChild(box); }
-  box.innerHTML = '';
-  heads.forEach(btn => {
-    const clone = btn.cloneNode(true);
-    clone.addEventListener('click', (e) => { e.preventDefault(); btn.click(); });
-    box.appendChild(clone);
-  });
-  if (heads.length === 1) {
-    const slot = document.createElement('div');
+  const host = $('#fcDockR3'), strip = $('#coopStrip'), map = $('#mapWrap');
+  if (!host || !strip || !map) return;
+  const on = hudPadsLive() && ctlMode() === 'modern';
+  if (on) { if (strip.parentNode !== host) host.appendChild(strip); }
+  else if (strip.parentNode !== map) map.insertBefore(strip, $('#bumpHint') || map.firstChild);
+  const old = host.querySelector('.coop-dock-heads'); if (old) old.remove();
+  const box = strip.querySelector('.coop-heads'); if (!box) return;
+  let slot = box.querySelector('.coop-dock-slot');
+  const n = box.querySelectorAll('.coop-head-btn').length;
+  const show = on && !strip.hidden && n === 1;
+  if (show && !slot) {
+    slot = document.createElement('div');
     slot.className = 'coop-dock-slot'; slot.setAttribute('aria-hidden', 'true');
     box.appendChild(slot);
-  }
+  } else if (!show && slot) slot.remove();
 }
 function applyMhcClockWidth(){
   // D792: combined place chip keeps a fixed 52 px hour box (CSS). No per-minute width write.
@@ -1629,7 +1743,7 @@ function refreshHudPads(){
   hudFree(); syncWalkCam();
 }
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
-function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
+function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} try { placeMhcToast(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
   fitPetScene();
@@ -1698,6 +1812,7 @@ function setBar(el, v){ el.style.width = clamp(v,0,100) + '%'; el.classList.togg
 function updateHUD(){
   queueMicrotask(syncCareBlock);   // CARE_SCREEN_HEAL: the care block follows every HUD update
   if (window.PPNet && PPNet.coop && PPNet.coop.renderStrip) PPNet.coop.renderStrip();
+  try { syncMhcGroupHeads(); } catch (e) {}
   document.body.classList.toggle('no-pets', !allPets().length);
   syncArbiterTest();
   syncBagBtns();
@@ -1705,6 +1820,7 @@ function updateHUD(){
   syncQuestBtn();
   syncSide();
   syncWalkTip();
+  try { syncMhcStepCue(); } catch (e) {}
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
   if (!p) { document.body.classList.remove('align-on'); syncCareAlert(); closePartnerTray(); renderCareSwitch(); return; }
   $('#hdrName').textContent = petName(p);
@@ -6065,6 +6181,7 @@ function arriveAt(at){
   placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
   try { syncPlaceYield(true); } catch (e) {}
+  try { noteMhcRestRoom(); } catch (e) {}
 }
 function enterDoor(dr){
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
@@ -6968,8 +7085,9 @@ function modernCueZone(){
   const [tx0, ty] = toC(mw.left + 56, mw.top + 48), [tx1] = toC(mw.right - 56, 0);
   const [bx0, by] = toC(mw.left + (jOn ? 116 : 8), tipTop - 32);
   const btns = [...$$('#floatCtl button, #joyRing')].filter(b => !b.hidden && b.offsetParent).map(b => { const r = b.getBoundingClientRect(); const a = toC(r.left, r.top), z = toC(r.right, r.bottom); return [a[0], a[1], z[0], z[1]]; });
-  const [rx0, ry0] = toC(mw.left + CUE_RAIL.inset + half, mw.top + CUE_RAIL.top + half);
-  const [rx1, ry1] = toC(mw.right - CUE_RAIL.inset - half, tipTop - CUE_RAIL.aboveTip - half);
+  const railInset = hudPadsLive() ? 6 : CUE_RAIL.inset, railTop = hudPadsLive() ? 6 : CUE_RAIL.top;
+  const [rx0, ry0] = toC(mw.left + railInset + half, mw.top + railTop + half);
+  const [rx1, ry1] = toC(mw.right - railInset - half, tipTop - CUE_RAIL.aboveTip - half);
   const avoid = [...$$('#thChip, #joyRing')].filter(b => !b.hidden && b.offsetParent).map(b => {
     const r = b.getBoundingClientRect(); const a = toC(r.left - margin, r.top - margin), z = toC(r.right + margin, r.bottom + margin); return [a[0], a[1], z[0], z[1]];
   });
@@ -7045,7 +7163,8 @@ function drawCuePill(g, cx, cy, shown, face, tracked){
 // If the edge band has no room, the 56 px inset band is the fallback. Map px; k is map px per CSS px.
 function placeCueEdge(VW, bottom, px, py, dx, dy, rects, placed, k, topInk){
   const MARGIN = CUE_EDGE.margin * k, HALF = (CUE_EDGE.box / 2) * k, GAP = CUE_EDGE.gap * k;
-  const EDGE = CUE_EDGE.edge * k, INSET = CUE_EDGE.inset * k;
+  const frameCue = hudPadsLive() && ctlMode() === 'modern';
+  const EDGE = (frameCue ? 6 : CUE_EDGE.edge) * k, INSET = (frameCue ? 6 : CUE_EDGE.inset) * k;
   // The top of the band sits under the area chip, so a 44 px box can cover a partner on the top row.
   const top0 = Math.max(EDGE + HALF, (topInk || 0) + HALF);
   const bands = [
@@ -7940,12 +8059,24 @@ function bumpObj(o, d, turned){
 }
 function showBumpHint(o){
   if (scene || overlayOpen() || bump.held || now() - bump.at < BUMP_HINT_MS) return;
+  if (mhcToastOn() && $('#toast') && $('#toast').classList.contains('show')) return;
   bump.at = now(); bump.held = true; bump.hideAt = now() + HINT_LIFE_MS; sfx('denied');
   const nm = objName(o), el = $('#bumpHint');
   // Under the frame the hint sits in the chip slot (D782): shorter wording so two lines fit at 320.
   const who = shownName(nm) || 'this';
-  el.textContent = hudPadsLive() ? ("Can't walk through " + who + '.') : ("You can't walk through " + who + '.');
+  if (!hudPadsLive()) el.textContent = "You can't walk through " + (shownName(nm) || 'this') + '.';
+  else {
+    let line = "Can't walk through " + who + '.';
+    if (line.length > 42) line = line.slice(0, 39).replace(/\s+\S*$/, '') + '...';
+    el.textContent = line;
+  }
   el.hidden = false;
+  try { placeMhcBump(); } catch (e) {}
+}
+function placeMhcBump(){
+  const el = $('#bumpHint');
+  if (!el || el.hidden || !mhcToastOn()) return;
+  applyNoticeBox(el, mhcNoticeBox());
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };
@@ -12814,6 +12945,8 @@ function closeQuest(){
   $('#ovQuest').hidden = true; lockTabs(false);
 }
 function renderQuest(q){
+  const hintEl = $('#questHint'), hintLine = (hudPadsLive() && ctlMode() === 'modern') ? walkHintPlain() : '';
+  if (hintEl) { hintEl.hidden = !hintLine; hintEl.textContent = hintLine; }
   $('#questText').textContent = q.text;
   $('#questPlace').textContent = q.place || '';
   const A = sideActiveList(), tr = sideFocus(), sideQ = tr ? liveStep(tr.step) : null, many = A.length >= 2, T = trackedQuest();
@@ -12983,18 +13116,44 @@ const WALK_EARLY_ARCADE = 'Hold the pad to walk. The east path leads out of town
 const WALK_EARLY_MODERN = 'Tap a spot on the path and you\'ll walk there.';   /* D70 */
 const walkTipDefault = () => ctlMode() === 'modern' ? WALK_TIP_MODERN : WALK_TIP_DEFAULT;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
-function walkTipText(){
-  if (DEBUG && typeof window.PP_TIP_TEST === 'string') return window.PP_TIP_TEST;   // tests only (debug): a fixed tip line
-  if (!S || !S.flags['story.starter_received']) return walkTipDefault();
+function walkHintPlain(){
+  if (!S || !CUR || !S.flags['story.starter_received']) return '';
   if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the Keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return ctlMode() === 'modern' ? WALK_EARLY_MODERN : WALK_EARLY_ARCADE;
-  const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
-  // The first-wild hint only while that step is current. Reaching Fernbrook implies the step without setting the flag.
+  const q = questCurrent();
   if ((!q || q.id === 'first_wild') && !S.flags['story.first_wild_met'] && allPets().length < 2) return 'The east gate leads out. Walk up to a wild Walkling to meet it.';
+  return '';
+}
+function walkTipText(){
+  if (DEBUG && typeof window.PP_TIP_TEST === 'string') return window.PP_TIP_TEST;   // tests only (debug): a fixed tip line
+  if (!S || !S.flags['story.starter_received']) return walkTipDefault();
+  const hint = walkHintPlain();
+  if (hint) return escapeHtml(hint);
+  const q = questCurrent();                       // WP-C: the objective stands in for the generic tip while the story has a next step
   if (q && q.target) return escapeHtml(q.text);
   return walkTipDefault();
+}
+let mhcStepSeen = null, mhcStepPrimed = false, mhcHintKey = '';
+function syncMhcStepCue(){
+  if (!mhcToastOn()) { mhcStepPrimed = false; return; }
+  const q = questCurrent();
+  const id = q && q.id && q.id !== 'end' ? q.id : '';
+  const hint = walkHintPlain();
+  if (!mhcStepPrimed) { mhcStepPrimed = true; mhcStepSeen = id; mhcHintKey = hint; return; }
+  if (id !== mhcStepSeen) {
+    mhcStepSeen = id;
+    if (id) toast('New step: ' + ((q && q.place) ? q.place : 'ahead'));
+  }
+  if (hint && hint !== mhcHintKey) toast(hint);
+  mhcHintKey = hint;
+}
+function noteMhcRestRoom(){
+  if (!mhcToastOn() || !lanternHold() || !CUR || !LANTERN_ROOMS[CUR.id]) return;
+  const line = 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
+  mhcHintKey = line;
+  toast(line);
 }
 function syncWalkTip(){
   const el = $('#walkTip'); if (!el) return;
@@ -16273,7 +16432,7 @@ const trayOpen = () => { const el = $('#careTray'); return !!(el && !el.hidden);
 function closePartnerTray(){
   const el = $('#careTray'); if (!el || el.hidden) return;
   const resumeId = tut.lesson === 'care' ? String(tut.id || '').replace(/x$/, '') : '';
-  el.hidden = true; document.body.classList.remove('ct-open');
+  el.hidden = true; el.classList.remove('ct-multi'); document.body.classList.remove('ct-open');
   if (tut.lesson === 'care' && (careLes.phase === 'tray' || careLes.replay)) {
     if (careLes.replay && resumeId) careLes.replayStep = resumeId;
     lessonHide();
@@ -16299,6 +16458,7 @@ function renderPartnerTray(){
   const name = $('#ctName'), label = petName(p) + ' Lv ' + levelOf(p);
   if (name && name.textContent !== label) name.textContent = label;
   const row = $('#ctParty'); if (!row) return;
+  el.classList.toggle('ct-multi', S.party.length >= 2);
   if (S.party.length < 2) { row.hidden = true; row.textContent = ''; trayPartyKey = ''; return; }
   row.hidden = false;
   const key = S.party.map(q => q.id).join(',');
@@ -17207,6 +17367,7 @@ function boot(){
     },
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
     setHudPads: on => { if (!DEBUG) return null; mhcFrameForce = on; fitAll(); return hudPadsLive(); },   // debug: force the P1 frame class on or off (the D787 pads and the D729 arcade chip)
+    debugToast: msg => { if (!DEBUG) return null; toast(msg); const t = $('#toast'); return t ? t.textContent : ''; },
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },
