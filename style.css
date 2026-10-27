@@ -1498,16 +1498,6 @@ body.mhc-frame.ctl-modern.scene-on .float-ctl{z-index:12}
 /* The dock keeps z 12 in scenes so the gear stays tappable (NAV_MODERN G3); its opaque band would cover the scene text box
    (z 9), so under the dock the box sits above it instead of 12 px above the bottom edge. */
 body.mhc-frame.ctl-modern .scene-ov{padding-bottom:calc(156px + var(--sa-b) + 12px)}
-/* NAV_MODERN G3 under the dock: the items fade one by one in scenes (not the whole dock), so the gear stays shown; it takes
-   taps unless gearBlocked() locks it (a partner in a scene). Acorns still show on a price line. */
-body.mhc-frame.ctl-modern.scene-on .fc-dock{opacity:1}
-body.mhc-frame.ctl-modern.scene-on #fcDock .fc-dock-chip > *,
-body.mhc-frame.ctl-modern.scene-on #fcDock .fc-dock-r1-right > :not(#gearFloat),
-body.mhc-frame.ctl-modern.scene-on #fcDock .fc-dock-r2-left > *,
-body.mhc-frame.ctl-modern.scene-on #fcDock .fc-dock-r2-right > *,
-body.mhc-frame.ctl-modern.scene-on #fcDock .fc-dock-r3 > *{opacity:0}   /* #fcDock outranks body.nav-locked #questBtn{opacity:1} */
-body.mhc-frame.ctl-modern.scene-on.price-on #fcDock .fc-dock-r1-right > #fcAcorns{opacity:1}
-body.mhc-frame.ctl-modern.scene-on:not(.gear-locked) .fc-dock #gearFloat{pointer-events:auto!important}
 #coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}
 #coopJoin{background:var(--g);color:var(--k)}
 #coopNotNow{background:var(--m);color:var(--w)}
@@ -1550,3 +1540,60 @@ body.mhc-frame.ctl-modern.scene-on:not(.gear-locked) .fc-dock #gearFloat{pointer
 .ct-party[hidden]{display:none}
 #careTray .btn{margin:0}
 .ct-care .btn > canvas{display:inline-block;vertical-align:middle}
+/* ---------- ARCADE_GRIPS (Vincent, Oct 27, 2026): arcade looks like a handheld controller, upright and sideways. ----------
+   Upright arcade keeps today's boxes: the map is the screen in a lighter bezel, and the pad sits on a controller body under it.
+   Paint only (backgrounds and shadows), so the map rect and every tap target keep their sizes. PAL colours only. */
+body.ctl-arcade #scr-walk .map-wrap{box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--m)}
+body.ctl-arcade .walk-ctl{background:var(--d);border-radius:4px 4px 26px 26px;box-shadow:0 0 0 5px var(--d),0 0 0 8px var(--k),inset 0 2px 0 rgba(255,255,255,.08)}
+body.ctl-arcade .walk-ctl .tip{color:var(--w)}
+/* The cross is one dark piece: each arm's 3 px PAL k rim fills the 2 px gaps, and the hub shares the colour. */
+body.ctl-arcade .dp,body.land-arcade .dp{background:var(--k);color:var(--h);box-shadow:0 0 0 3px var(--k),inset -3px -3px 0 rgba(0,0,0,.45),inset 3px 3px 0 rgba(148,176,194,.22)}
+body.ctl-arcade .dp.on,body.ctl-arcade .dp:active,body.land-arcade .dp.on,body.land-arcade .dp:active{background:var(--b)}
+/* TALK in the pad's hub keeps its own look: no blue flash when pressed while nobody is in reach. */
+body.ctl-arcade .dp.mid.talk:active{background:var(--k);transform:none}
+body.ctl-arcade .dp.mid.talk.ready:active{background:var(--y);transform:translateY(2px)}
+/* PHONE, BAG and MAP in the pad's corners are round face buttons. The 52 px box (the tap target) does not change. */
+body.ctl-arcade #dpad .dpc{border-radius:50%;background:var(--n);box-shadow:0 0 0 3px var(--k),inset -3px -3px 0 rgba(0,0,0,.35),inset 3px 3px 0 rgba(255,255,255,.14)}
+body.ctl-arcade #dpad .dpc:active{background:var(--b)}
+/* COMPACT (Vincent, Oct 27, 2026: controls too big, screen too small): 44 px cells, the tap minimum, so the pad is 136 not 160
+   and the map takes the height. The body's rim is thinner too. */
+body.ctl-arcade #dpad{--dp-cell:44px}
+body.ctl-arcade .walk-ctl{box-shadow:0 0 0 3px var(--d),0 0 0 6px var(--k),inset 0 2px 0 rgba(255,255,255,.08)}
+
+/* Sideways arcade: modern's layout in the middle column, the pad on a left grip and TALK on a right grip, outside the game window.
+   The column is centred so overlays and toasts (centred on the window) still sit over it. COMPACT (Vincent, Oct 27, 2026) lifts
+   D685's 480 cap for arcade sideways: the grips are as narrow as a 44 px pad allows and the game window takes the rest. */
+.grip{display:none}
+body.land-arcade{--grip:calc(148px + max(env(safe-area-inset-left,0px),env(safe-area-inset-right,0px)));--col:calc(100vw - 2 * var(--grip))}
+body.land-arcade #dpad{--dp-cell:44px}
+body.land-arcade #app{max-width:none;width:var(--col);padding-left:0;padding-right:0}
+body.land-arcade .scene-ov{max-width:var(--col)}
+body.land-arcade .grip{display:flex;position:fixed;top:0;bottom:0;z-index:1;box-sizing:border-box;width:calc((100vw - var(--col)) / 2);
+  padding:calc(6px + env(safe-area-inset-top,0px)) 6px calc(6px + env(safe-area-inset-bottom,0px));background:var(--k)}
+body.land-arcade .grip[hidden]{display:none}
+body.land-arcade .grip-l{left:0;padding-left:calc(6px + env(safe-area-inset-left,0px))}
+body.land-arcade .grip-r{right:0;padding-right:calc(6px + env(safe-area-inset-right,0px))}
+.grip-shell{flex:1 1 auto;min-width:0;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding-bottom:clamp(10px,9%,36px);background:var(--d);box-shadow:0 0 0 3px var(--k),inset 3px 3px 0 rgba(255,255,255,.1),inset -3px -3px 0 rgba(0,0,0,.3)}
+.grip-l .grip-shell{border-radius:44px 10px 10px 44px}
+.grip-r .grip-shell{border-radius:10px 44px 44px 10px}
+.grip-seat{display:flex;align-items:center;justify-content:center;width:136px;height:136px}
+.grip-dots{position:absolute;top:16%;left:50%;width:36px;height:36px;margin-left:-18px;opacity:.8;pointer-events:none;
+  background:radial-gradient(circle,var(--k) 2px,transparent 2.5px) 0 0/12px 12px}
+/* The pad's centre is empty sideways (TALK is on the right grip); a hub fills it so the cross reads whole. */
+body.land-arcade #dpad::after{content:"";grid-column:2;grid-row:2;background:var(--k)}
+/* TALK is the round A button: dim until someone is in reach, PAL y when it can talk (the same .ready the pad's hub uses). */
+body.land-arcade #talkBtn{width:64px;height:64px;min-width:64px;border-radius:50%;font-size:16px;letter-spacing:0;background:var(--p);color:var(--h);
+  box-shadow:0 0 0 3px var(--k),inset -4px -4px 0 rgba(0,0,0,.3),inset 4px 4px 0 rgba(255,255,255,.18)}
+body.land-arcade #talkBtn.ready{background:var(--y);color:var(--k)}
+body.land-arcade #talkBtn.ready:active{background:var(--o);transform:translateY(2px)}
+/* Off the walk screen the grips stay (no jump), but the pad and TALK rest. */
+body.land-arcade:not([data-screen="walk"]) .grip-seat{opacity:.35;pointer-events:none}
+/* During a scene the pad and TALK rest too, as the upright pad fades (body.scene-on .walk-ctl). Opacity only: a held pad keeps its capture. */
+body.land-arcade.scene-on .grip-seat{opacity:.35}
+/* D833 made modern the first-run layout, so the dock gear must work in the opening scene (Start over, then bring back a copy).
+   The scene rule above hides the dock with opacity, which a child cannot undo, and its !important pointer block only spared the
+   old top-right corner. Visibility can be undone per child; gear-locked (a scene once you have a partner) still blocks it. */
+body.mhc-frame.ctl-modern.scene-on .fc-dock{opacity:1;visibility:hidden}
+body.mhc-frame.ctl-modern.scene-on .fc-dock #gearFloat,body.mhc-frame.ctl-modern.scene-on.price-on .fc-dock .fc-acorns{visibility:visible}
+body.mhc-frame.ctl-modern.scene-on:not(.gear-locked) .fc-dock #gearFloat{pointer-events:auto!important}

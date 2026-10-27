@@ -34,7 +34,9 @@ function starterSave() {
       name: 'Tester',
       look: { skin: '3', hair: 'short', hairCol: 'p', outfit: 'coat', outfitCol: 't', accent: 'r' },
     },
-    settings: { textSpeed: 'fast', battleAnims: true, follower: true, music: false, musicVol: 0 },
+    // ARCADE_GRIPS: a save with no controls choice now loads as modern, so the shared test save picks arcade on purpose.
+    // Specs that test modern set controls: 'modern'; tests/controls.spec.js covers the missing-choice default.
+    settings: { textSpeed: 'fast', battleAnims: true, follower: true, music: false, musicVol: 0, controls: 'arcade' },
     world: { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' },
     dex: { seen: { 'ember/0': true }, caught: { 'ember/0': true }, legacy: [], hits: {} },
     bag: {},

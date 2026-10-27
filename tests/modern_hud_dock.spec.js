@@ -212,7 +212,7 @@ async function bootScene(page, pets) {
     const dock = document.querySelector('#floatCtl').getBoundingClientRect();
     const gear = document.querySelector('#gearFloat').getBoundingClientRect();
     const hit = document.elementFromPoint(gear.left + gear.width / 2, gear.top + gear.height / 2);
-    const seen = el => { let o = 1; for (let e = el; e && e !== document.body; e = e.parentElement) o *= parseFloat(getComputedStyle(e).opacity); return o; };
+    const seen = el => { if (getComputedStyle(el).visibility !== 'visible') return 0; let o = 1; for (let e = el; e && e !== document.body; e = e.parentElement) o *= parseFloat(getComputedStyle(e).opacity); return o; };
     return { boxTop: box.top, boxBottom: box.bottom, dockTop: dock.top, locked: document.body.classList.contains('gear-locked'),
       gearHit: !!(hit && (hit.id === 'gearFloat' || hit.closest('#gearFloat'))),
       gearSeen: seen(document.querySelector('#gearFloat')), phoneSeen: seen(document.querySelector('#phoneBtn')), questSeen: seen(document.querySelector('#questBtn')) };

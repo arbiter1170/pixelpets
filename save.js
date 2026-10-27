@@ -349,7 +349,7 @@ const PPSave = (() => {
     })());                                                                          // P3a D424: full, or calm when the phone asks for reduced motion
     fill(s.settings, 'music', x => typeof x === 'boolean', true);                    // MUSIC v0.1 Q2: in the save, default on
     fill(s.settings, 'musicVol', x => typeof x === 'number' && x >= 0 && x <= 1, 0.5); // Settings volume slider: 0 to 1, default half
-    fill(s.settings, 'controls', x => x === 'arcade' || x === 'modern', 'arcade');      // Q26: missing or bad = arcade, so an old save keeps the pad
+    fill(s.settings, 'controls', x => x === 'arcade' || x === 'modern', 'modern');      // ARCADE_GRIPS (Vincent, Oct 27, 2026): missing or bad = modern; a saved 'arcade' keeps the pad
     fill(s.settings, 'joystick', x => typeof x === 'boolean', false);                 // Q26 / D63: modern joystick, default off
     fill(s.settings, 'mapZoom', x => typeof x === 'number' && x >= 2 && x <= 3, 2);   // Map zoom slider: 2 to 3, missing reads as 2 (today's look). Save stays v2.
     fill(s.settings, 'tips', x => typeof x === 'boolean', true);                      // D180: unlock tips, default on, additive
