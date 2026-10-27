@@ -1572,6 +1572,7 @@ function syncMhcDock(on){
     move('#petFloat', '#fcDockR2Right');
     move('#colFloat', '#fcDockR2Right');
     move('#petStrip', '#fcDockR3');
+    renderDockSky();
     // Joystick stays over the map (D784): park it in #mapWrap while the dock is only the bottom band.
     move('#joyRing', '#mapWrap');
     // Tip line is gone in the frame (D790 default): leave #walkTip in #fcTip, which CSS hides.
@@ -4800,6 +4801,29 @@ function renderClockChip(){
     renderClockChip.phase = r.phase;
     if (PPEnv.syncClock) PPEnv.syncClock();
   }
+  renderDockSky();
+}
+// D858 dock sky (Vincent, Oct 27, 2026): day/night and weather in the dock's second row, between MAP and the partner
+// buttons. Weather (chipSky) shows its glyph and temperature; with no weather the game clock gives the sun, the half sun
+// at dawn and dusk, or the moon. Night always shows the moon, as on the chip. Display only; nothing is saved.
+let dockSkyPaint = '';
+function renderDockSky(){
+  const el = $('#fcSky'), cv = $('#fcSkyGlyph'), tEl = $('#fcSkyTemp');
+  if (!el || !cv || !tEl || !window.PPClock) return;
+  if (!document.body.classList.contains(MHC_FRAME_CLASS) || ctlMode() !== 'modern') { el.hidden = true; return; }
+  const ph = PPClock.now().phase, sky = chipSky(), night = ph === 'night';
+  const key = night ? 'night' : sky ? sky.kind : ph === 'day' ? 'day' : 'half';
+  if (dockSkyPaint !== key) { dockSkyPaint = key; paintChipGlyph(cv, CHIP_GLYPH[key] || clockGlyphs[key]); }
+  const temp = sky && sky.temp != null ? Math.round(sky.temp) + '°' : '';
+  if (tEl.textContent !== temp) tEl.textContent = temp;
+  const word = night ? 'Night' : sky ? { clear: 'Clear', cloud: 'Cloud', rain: 'Rain', snow: 'Snow' }[sky.kind] : { dawn: 'Dawn', day: 'Day', dusk: 'Dusk' }[ph];
+  const aria = word + (temp ? ', ' + temp : '');
+  if (el.getAttribute('aria-label') !== aria) el.setAttribute('aria-label', aria);
+  // Never over a button: measure the spare width, drop the temperature, then the glyph, when they do not fit.
+  el.hidden = false; el.classList.remove('no-temp');
+  const room = el.clientWidth;
+  if (room < 16) { el.hidden = true; return; }
+  if (temp && 16 + 4 + tEl.scrollWidth > room) el.classList.add('no-temp');
 }
 // P1 whereabouts (D418, D419). Copy and the seven states live here. Nothing is saved.
 // One 8x8 canvas per state icon, built on first use and kept (at most seven). Rows and cards reuse its data URL.

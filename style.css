@@ -1462,6 +1462,16 @@ body.mhc-frame.ctl-modern .fc-dock-r2-left,
 body.mhc-frame.ctl-modern .fc-dock-r2-right{display:flex;flex-direction:row;align-items:center;gap:6px;height:44px}
 body.mhc-frame.ctl-modern .fc-dock-r2-left{flex:0 0 auto}
 body.mhc-frame.ctl-modern .fc-dock-r2-right{flex:0 0 auto;margin-left:auto}
+/* D858 dock sky (Vincent, Oct 27, 2026): day/night and weather between MAP and the partner buttons. Never a tap target.
+   It takes the row's spare width; the -4 px margins leave 2 px to each button (the row gap is 6), which is exactly the
+   16 px glyph at 320. renderDockSky drops the temperature, then the glyph, when they would not fit. */
+.fc-sky{display:none}
+body.mhc-frame.ctl-modern .fc-dock-r2 .fc-sky{display:flex;flex:1 1 auto;min-width:0;align-items:center;justify-content:center;gap:4px;height:44px;margin:0 -4px;overflow:hidden;pointer-events:none;color:var(--w);font-family:var(--font);font-size:14px;line-height:14px;white-space:nowrap}
+body.mhc-frame.ctl-modern .fc-dock-r2 .fc-sky[hidden]{display:none}
+body.mhc-frame.ctl-modern .fc-sky canvas{width:16px;height:16px;flex:0 0 auto;image-rendering:pixelated;image-rendering:crisp-edges}
+body.mhc-frame.ctl-modern .fc-sky.no-temp span,body.mhc-frame.ctl-modern .fc-sky span:empty{display:none}
+/* Under the dock the sky lives in its own slot, so the place chip drops its copy. */
+body.mhc-frame.ctl-modern #thChip #clockGlyph,body.mhc-frame.ctl-modern #thChip #thTemp{display:none!important}
 body.mhc-frame.ctl-modern .fc-dock-r3{display:flex;align-items:center;gap:6px;min-width:0}
 body.mhc-frame.ctl-modern .fc-dock-r3 .pet-strip{flex:1 1 auto;min-width:0}
 body.mhc-frame.ctl-modern #fcDockR3 #coopStrip:not([hidden]){
