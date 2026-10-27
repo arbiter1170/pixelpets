@@ -124,7 +124,7 @@ test('the officer coat is Vale alone, and rank lines follow the pledge @w1', asy
     return {
       vale: row('hmp_watch'), pryce: row('hmp_lamplighter'), lisse: row('hmp_cadet'), long,
       portrait: MAPDATA.civic.speakers['Officer Vale'],
-      cadetPortrait: MAPDATA.detail_zz_plaza.speakers['Keeper cadet Lisse'],
+      cadetPortrait: MAPDATA.detail_zz_plaza.speakers['Cadet Lisse'],
       officerSkin: MAPDATA.civic.looks.officer.skin,
       early: objs.find((n) => n.id === 'hmp_watch').lines['!story.starter_received'],
     };

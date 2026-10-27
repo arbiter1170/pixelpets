@@ -3,7 +3,7 @@
  "note": "One new outdoor map (hm_plaza), joined to Hearthmoor's west edge at rows 4-6 so no Hearthmoor coordinate moves. Sorts after detail_zz_market, so these row patches win.",
  "speakers": {
   "Keeper Pryce": "hmp_pryce",
-  "Keeper cadet Lisse": "hmp_lisse",
+  "Cadet Lisse": "hmp_lisse",
   "Grete Ash": "plaza_sweeper",
   "Joss Merrin": "plaza_grower",
   "Nella Corrick": "plaza_weaver",
@@ -599,7 +599,7 @@
     {
      "kind": "npc",
      "id": "hmp_cadet",
-     "name": "Keeper cadet Lisse",
+     "name": "Cadet Lisse",
      "look": "hmp_lisse",
      "x": 12,
      "y": 13,

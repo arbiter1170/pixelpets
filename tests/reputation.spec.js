@@ -352,3 +352,19 @@ test('letter lines follow the effective tier @w1', async ({ page }) => {
   expect(r.councilAfter).toBe('That road stays dark. Ships still fly.');
   expect(r.v).toBe(2);
 });
+
+test('Cadet Arlo keeps a number saved under the old title @w1', async ({ page }) => {
+  const s = starterSave();
+  s.rep = { 'Keeper cadet Arlo': 72 };
+  await boot(page, s);
+  const r = await page.evaluate(() => ({
+    arlo: PixelPets.repGet('Cadet Arlo'),
+    lisse: PixelPets.repGet('Cadet Lisse'),
+    kept: PixelPets.state.rep['Keeper cadet Arlo'],
+    v: PixelPets.state.v,
+  }));
+  expect(r.arlo).toBe(72);
+  expect(r.lisse).toBe(50);
+  expect(r.kept).toBe(72);
+  expect(r.v).toBe(2);
+});

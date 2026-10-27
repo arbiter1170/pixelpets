@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-26 23:34 ET: Cadet Arlo and Cadet Lisse (build 20261026-2334)
+
+- What changed and why: Rank titles are a capitalized word, then the name. Keeper cadet Arlo and Keeper cadet Lisse are now Cadet Arlo and Cadet Lisse, the same shape as Cadet Orrin. Same people, same looks, same lines. A save that already met Arlo under the old spelling still shows that number. Lisse has no old spelling on main. Save stays `pixelpets.save.v2` with `v` 2. No new field.
+- Files touched: `data/detail_zz_market.json`, `data/detail_zz_plaza.json`, `data/reputation.json`, `data/mapdata.js`, `rep.js`, `index.html`, `version.json`, `tests/hearthmoor_plaza.spec.js`, `tests/reputation.spec.js`, `tests/README.md`, `README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this commit on `cursor/plaza-npc-names-7ae7`. Build `20261026-2334`.
+- Tests run and result (widths, checks): `tests/hearthmoor_plaza.spec.js` and `tests/reputation.spec.js` at 320: `PP_TEST RESULT: PASS exit=0 passed=16 failed=0`. `node tools/scans/run.js` SCAN PASS.
+- Decisions made (colour + reasoning): no new id. The five quest ideas stay unbuilt until one is picked.
+- Anything left unfinished: West watch, the three baskets, lantern night, the east-and-west sign errand, and Rook at dawn are ideas only.
+
 ## 2026-10-26 23:21 ET: Plaza people have names, and only the officer wears the coat (build 20261026-2321)
 
 - What changed and why: The seven Hearthmoor Plaza people had job titles for names. They now have names, and the art matches the rank. Officer Vale wears the officer coat, green with gold, on his own face (not Officer Bren's). Keeper Pryce trims the lamps in a keeper tunic and cap. Keeper cadet Lisse wears the green vest and is not the High Charity shopkeeper Mira. Grete Ash keeps the fountain, Joss Merrin sells Fernbrook apples, Nella Corrick wove the three baskets Warden Ilse sets out, and Tansy Holt draws in chalk until the rain. Lines stay within the 40-character chatter limit and follow the Keeper pledge, Glimmerwell, and the morning before the first partner. Save stays pixelpets.save.v2 with v 2. No new field.

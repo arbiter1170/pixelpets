@@ -60,13 +60,19 @@
     return s === 'glimmer' ? 'glimmer' : 'keepers';
   }
 
+  // Cadet Arlo shipped as "Keeper cadet Arlo". A save that already met him keeps that number.
+  const REP_ALIAS = { 'Cadet Arlo': 'Keeper cadet Arlo' };
   function repGet(name) {
     const e = entry(name);
     if (!e) return baseOf();
     if (isFixed(e)) return clamp(e.fixed);
     const S = stateFn();
     const k = key(name);
-    if (S && S.rep && typeof S.rep === 'object' && Number.isFinite(S.rep[k])) return clamp(S.rep[k]);
+    if (S && S.rep && typeof S.rep === 'object') {
+      if (Number.isFinite(S.rep[k])) return clamp(S.rep[k]);
+      const old = REP_ALIAS[k];
+      if (old && Number.isFinite(S.rep[old])) return clamp(S.rep[old]);
+    }
     return clamp(e.base != null ? e.base : baseOf());
   }
 
