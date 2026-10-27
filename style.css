@@ -1463,25 +1463,40 @@ body.mhc-frame.ctl-modern .fc-dock-r2-left{flex:0 0 auto}
 body.mhc-frame.ctl-modern .fc-dock-r2-right{flex:0 0 auto;margin-left:auto}
 body.mhc-frame.ctl-modern .fc-dock-r3{display:flex;align-items:center;gap:6px;min-width:0}
 body.mhc-frame.ctl-modern .fc-dock-r3 .pet-strip{flex:1 1 auto;min-width:0}
-body.mhc-frame.ctl-modern .fc-dock-r3 .coop-dock-heads{display:flex;gap:4px;flex:0 0 auto}
-body.mhc-frame.ctl-modern .fc-dock-r3 .coop-dock-heads .coop-head-btn,
-body.mhc-frame.ctl-modern .fc-dock-r3 .coop-dock-slot{
-  width:44px;height:44px;min-width:44px;min-height:44px;box-sizing:border-box;border:2px solid var(--d);background:transparent;padding:0}
-body.mhc-frame.ctl-modern .fc-dock-r3 .coop-dock-slot{pointer-events:none}
+body.mhc-frame.ctl-modern #fcDockR3 #coopStrip:not([hidden]){
+  position:static;display:flex;flex-direction:row;align-items:center;gap:4px;margin-left:auto;
+  background:transparent;border:0;padding:0;max-width:none;z-index:auto;pointer-events:auto}
+body.mhc-frame.ctl-modern #fcDockR3 #coopStrip .coop-head{
+  position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+body.mhc-frame.ctl-modern #fcDockR3 .coop-dock-slot{
+  width:44px;height:44px;min-width:44px;min-height:44px;box-sizing:border-box;border:2px solid var(--d);background:transparent;padding:0;pointer-events:none}
 /* Joy lives in #mapWrap under the frame, so bottom is 8 px above the dock edge of the map rect. */
 body.mhc-frame.ctl-modern #mapWrap > .joy{bottom:calc(8px + var(--sa-b));left:calc(12px + var(--sa-l));z-index:3;pointer-events:auto}
-body.mhc-frame.ctl-modern .bump-hint{bottom:calc(8px + var(--sa-b))}
+body.mhc-frame.ctl-modern .bump-hint:not([hidden]){
+  position:fixed;left:calc(6px + var(--sa-l));transform:none;z-index:19;pointer-events:none;
+  bottom:calc(156px - 44px - 6px + var(--sa-b));max-width:min(136px,calc(100vw - 148px));
+  font-size:14px;line-height:17px;max-height:42px;overflow:hidden}
 body.mhc-frame.ctl-modern[data-screen="walk"] #toast{
   top:auto;left:calc(6px + var(--sa-l));right:auto;transform:none;bottom:calc(156px - 44px - 6px + var(--sa-b));
-  max-width:min(136px,calc(100vw - 148px));width:max-content;font-size:14px;line-height:16px;padding:4px 8px;
-  white-space:normal;text-align:left}
-@media (min-width:375px){body.mhc-frame.ctl-modern[data-screen="walk"] #toast{max-width:min(191px,calc(100vw - 148px))}}
-@media (min-width:390px){body.mhc-frame.ctl-modern[data-screen="walk"] #toast{max-width:min(206px,calc(100vw - 148px))}}
+  max-width:min(136px,calc(100vw - 148px));width:max-content;font-size:14px;line-height:17px;max-height:42px;
+  padding:4px 8px;white-space:normal;text-align:left;overflow:hidden;pointer-events:none;box-sizing:border-box}
+@media (min-width:375px){
+  body.mhc-frame.ctl-modern[data-screen="walk"] #toast,
+  body.mhc-frame.ctl-modern .bump-hint:not([hidden]){max-width:min(191px,calc(100vw - 148px))}
+}
+@media (min-width:390px){
+  body.mhc-frame.ctl-modern[data-screen="walk"] #toast,
+  body.mhc-frame.ctl-modern .bump-hint:not([hidden]){max-width:min(206px,calc(100vw - 148px))}
+}
 body.mhc-frame.ctl-modern #careTray{
   left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(6px + var(--sa-b));
-  height:144px;max-height:144px;box-sizing:border-box;justify-content:flex-end}
-body.mhc-frame.ctl-modern #careTray .ct-care .btn{min-height:44px}
-body.mhc-frame.ctl-modern.ct-open[data-screen="walk"] #toast{bottom:calc(6px + var(--sa-b) + 144px - 42px);max-width:calc(100vw - 12px - var(--sa-l) - var(--sa-r))}
+  height:144px;max-height:144px;box-sizing:border-box;justify-content:flex-end;z-index:14}
+body.mhc-frame.ctl-modern #careTray .ct-care .btn,
+body.mhc-frame.ctl-modern #careTray .ct-small{min-height:44px}
+body.mhc-frame.ctl-modern #careTray.ct-multi .ct-name{display:none}
+body.mhc-frame.ctl-modern.ct-open[data-screen="walk"] #toast{
+  left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));width:auto;max-width:none;
+  bottom:calc(6px + var(--sa-b) + 102px);height:42px;max-height:42px;z-index:15}
 body.mhc-frame.ctl-modern.scene-on .fc-dock{opacity:0;pointer-events:none}
 body.mhc-frame.ctl-modern.scene-on .fc-dock #gearFloat,
 body.mhc-frame.ctl-modern.scene-on.price-on .fc-dock .fc-acorns{opacity:1;pointer-events:auto}

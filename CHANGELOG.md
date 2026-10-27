@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 01:36 ET: Modern HUD P2 toast slot and step cue (build 20261027-0136)
+
+- What changed and why: Portrait modern walk keeps toasts and the bump hint in the place-chip slot (two lines, pages, a queue of three) so Acorns stay visible. A quest step change plays one "New step" toast, not on load, and a hint line shows above the step on the quest card. The care tray's answer uses the tray's top band. Group heads sit on the partner row. Quest edge arrows use a 6 px inset under the frame. Save stays `pixelpets.save.v2` with `v` 2.
+- Files touched: `game.js`, `style.css`, `index.html`, `tests/modern_hud_dock.spec.js`, `tools/GAMEJS_MAP.txt`, `version.json`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `README.md`, `CHANGELOG.md`, `tests/README.md`.
+- Commit(s) + build id: this branch. Build `20261027-0136`.
+- Tests run and result (widths, checks): not run yet.
+- Decisions made (colour + reasoning): D790 built on the voted default. D796 and D798 settled. D791 still waits on the tutorial popups look. Privacy line stays the scope default.
+- Anything left unfinished: Firebase console still needs Google sign-in enabled for live Link Google. D791 tutorial strip. Vincent may still revise the privacy line.
+
 ## 2026-10-27 01:09 ET: Plaza sign-off and modern HUD dock (build 20261027-0109)
 
 - What changed and why: Vincent signed off D797 (keep the joined Hearthmoor Plaza as built) and confirmed D789 (no top bar; place chip in the dock's top row, portrait only). Modern portrait walk now uses a 156 px three-row dock outside `#mapWrap`: chip + Acorns + PHONE + gear; trust/QUEST/BAG/MAP + PARTNER/WALKLINGS; partner card. Tip band off under the frame. Pads over the map read 0. D792 uses a fixed 52 px hour box inside the combined chip. Save stays `pixelpets.save.v2` with `v` 2.
