@@ -1192,6 +1192,7 @@ body.nav-locked #questBtn,body.nav-locked #colFloat,body.nav-locked #petFloat,bo
 .fc-top{position:absolute;top:calc(6px + var(--sa-t));left:calc(56px + var(--sa-l));right:calc(56px + var(--sa-r));box-sizing:border-box;padding-right:var(--chip-w, 0px);height:44px;display:flex;justify-content:center}
 body.ctl-modern .fc-clock{position:absolute;top:calc(108px + var(--sa-t));right:8px;left:auto;transform:none;z-index:4;display:flex;pointer-events:auto}
 body.ctl-modern .fc-clock .clock-chip{background:rgba(26,28,44,.88);box-shadow:0 0 0 2px var(--m);padding:0 8px}
+body.mhc-frame.ctl-modern .fc-clock .clock-chip,body.mhc-frame.ctl-modern #thChip{width:88px;min-width:88px;max-width:88px;justify-content:center;box-sizing:border-box}
 .fc-top .env-badge{margin:0;max-width:100%;min-height:44px;height:44px;align-self:auto;background-clip:content-box}   /* QA Oct 15: 44 px tap target; the band art stays 28 px */
 body.ctl-modern .fc-top .env-badge > .frame-art{top:8px;height:28px}
 .fc-tip{position:absolute;left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(56px + var(--sa-b));height:var(--tip-h,28px)}

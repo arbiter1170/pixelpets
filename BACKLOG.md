@@ -5,13 +5,13 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
-GEAR_SWITCH (D768-D774) is on this branch: care-screen GEAR opens the Walkling sheet, the stats card drops its GEAR button, and a party row beside the WALK back arrow switches the shown Walkling. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
+GEAR_SWITCH (D768-D774) is in the game on main: care-screen GEAR opens the Walkling sheet, the stats card drops its GEAR button, and a party row beside the WALK back arrow switches the shown Walkling. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
 
-LEVEL_GROW (D754-D767) is on this branch: level gates grow up, and Seals cap the level. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2. The only new field is `bxHeld`.
+LEVEL_GROW (D754-D767) is in the game on main: level gates grow up, and Seals cap the level. Save stays `pixelpets.save.v2` with `v` 2. The only new field is `bxHeld`.
 
-MAP_EDGE_TAPS P1 (D695, D696, D697, D698, D699 and D703) is on this branch: a tap past an outdoor map edge that has a way out walks to that way out, and a tap past an edge with none walks to a nearby open tile. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
+MAP_EDGE_TAPS P1 (D695, D696, D697, D698, D699 and D703) is in the game on main: a tap past an outdoor map edge that has a way out walks to that way out, and a tap past an edge with none walks to a nearby open tile. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
 
-MAP_EDGE_TAPS P2 headroom (D722-D725) and LANDSCAPE P0 (D727-D729) are on this branch. In modern, the camera can scroll past a map edge into the black void so the edge clears the buttons, the clock and the bottom band, and a room that fits sits in that open space. Outdoors use today's scale until Settings → Map zoom is moved (2x default; crisp steps up to 3x). The arcade area name sits on the map's top-left. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2. The new key is `settings.mapZoom` (a number); a missing key reads as 2. The 44 px tap zones, the edge hints, and the landscape layout are not built.
+MAP_EDGE_TAPS P2 headroom (D722-D725) and LANDSCAPE P0 (D727-D729) are in the game on main for modern portrait when MODERN_HUD_CLEAR P1 is on (`mhc-frame`): the camera can scroll past a map edge into the black void so the edge clears the buttons, the clock and the bottom band, and a room that fits sits in that open space. Outdoors use today's scale until Settings → Map zoom is moved (2x default; crisp steps up to 3x). The arcade area name sits on the map's top-left when the frame class is off. Save stays `pixelpets.save.v2` with `v` 2. The key is `settings.mapZoom` (a number); a missing key reads as 2. The landscape layout is not built.
 
 ART_PASS (D548–D563) is on this branch: the Bloom Trial Hall is garden terraces with a one-way hop down the centre, and the Parked Coach floor is coach planks, a kitchen tile zone, and two booth rugs. A second tap on the follower closes the open care tray (D578).
 

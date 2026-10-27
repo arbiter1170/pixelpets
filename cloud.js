@@ -18,6 +18,7 @@ const PPCloud = (() => {
   const CLOUD_KEY = 'pixelpets.cloud', BACKUP_KEY = 'pixelpets.cloud.backup';
   const SDK_VERSION = '13.0.0', CDN = 'https://www.gstatic.com/firebasejs/' + SDK_VERSION + '/';
   const LABEL = 'This browser only: link Google to keep it safe';
+  const PRIVACY = 'Walklings keeps a copy of your game with Google Firebase so you can restore it. If you link Google, Google handles sign-in; we only store your game save and an account ID. You can delete your cloud save here.';
   const q = (() => { try { return new URLSearchParams(location.search); } catch(e) { return new URLSearchParams(''); } })();
   const LOCAL = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
   const qCloud = q.get('cloud');
@@ -31,9 +32,9 @@ const PPCloud = (() => {
     : liveCfg;
   const noop = () => {};
   const offApi = Object.freeze({
-    enabled: false, emu: false, CLOUD_KEY, BACKUP_KEY, SDK_VERSION, CDN,
+    enabled: false, emu: false, CLOUD_KEY, BACKUP_KEY, LABEL, PRIVACY, SDK_VERSION, CDN,
     start: noop, overlayOpen: () => false, startOver: wipe => { wipe(); return Promise.resolve(true); },
-    info: () => ({ enabled: false, blocked: blockLive }),
+    info: () => ({ enabled: false, blocked: blockLive }), linkGoogle: noop, signOutGoogle: noop,
     app: () => null, uid: () => null, onReady: noop,
   });
   if (!CFG) return offApi;
@@ -69,6 +70,14 @@ const PPCloud = (() => {
   const ref = () => fb.fs.doc(db, 'saves', user.uid);
   const denied = e => e && /permission/i.test(String(e.code || e.message));
   function setStatus(s){ status = s; renderRow(); renderPanel(); }
+  const linked = () => !!(user && user.isAnonymous === false);
+  function rowHint(){
+    if (linked()) {
+      const n = (user.displayName || user.email || 'Google').trim();
+      return n ? 'Google: ' + n : 'Google linked';
+    }
+    return LABEL;
+  }
 
   async function loadSdk(){
     const [app, au, fs] = await withTimeout(Promise.all(['firebase-app.js', 'firebase-auth.js', 'firebase-firestore.js'].map(f => import(CDN + f))), LOAD_WAIT);
@@ -219,7 +228,7 @@ const PPCloud = (() => {
   function renderRow(){
     if (!row) return;
     const s = stateLine(), sub = row.querySelector('.set-sub');
-    sub.textContent = /^Backed up|^Backing|^Not backed up yet/.test(s) ? LABEL : s;
+    sub.textContent = /^Backed up|^Backing|^Not backed up yet/.test(s) ? rowHint() : s;
     row.setAttribute('aria-label', 'Cloud save: ' + sub.textContent);
   }
   function overlay(){
@@ -251,18 +260,70 @@ const PPCloud = (() => {
       a.append(btn('CANCEL', '', () => openPanel()), btn('DELETE', 'btn-danger', deleteCloud));
       inner.append(a); return;
     }
-    inner.append(el('p', 'cloud-label', LABEL + '.'));
+    inner.append(el('p', 'cloud-label', rowHint() + '.'));
     inner.append(el('p', 'hint cloud-state', stateLine() + '.'));
-    inner.append(el('p', 'hint cloud-note', "Backups are tied to this browser. If its site data is cleared, the backup can't be reached. Linking Google is coming soon."));
-    inner.append(el('p', 'hint cloud-privacy', 'Walklings keeps a copy of your game with Google Firebase so you can restore it. We only store your game save and an account ID. You can delete your cloud save here.'));
+    inner.append(el('p', 'hint cloud-note', linked()
+      ? 'Your cloud save follows this Google account on any device you sign into.'
+      : "Backups are tied to this browser until you link Google. If its site data is cleared, the backup can't be reached."));
+    inner.append(el('p', 'hint cloud-privacy', PRIVACY));
     const a = el('div', 'actions cloud-actions');
     if (status !== 'newer') {
+      if (linked()) a.append(btn('SIGN OUT', '', signOutGoogle));
+      else a.append(btn('LINK GOOGLE', 'btn-play', linkGoogle));
       if (d.paused || status === 'gone') a.append(btn('BACK UP THIS GAME', 'btn-play', resume));
       else a.append(btn('DELETE CLOUD SAVE', 'btn-danger', () => openPanel(true)));
     }
     a.append(btn('CLOSE', '', closeOverlay));
     inner.append(a);
   }
+  async function linkGoogle(){
+    if (!user || !auth || linked()) return;
+    const provider = new fb.au.GoogleAuthProvider();
+    try {
+      const res = await withTimeout(fb.au.linkWithPopup(user, provider), NET_WAIT * 2);
+      user = res.user;
+      writeDev({ fbUid: user.uid });
+      compared = false;
+      setStatus('ok');
+      await sync();
+      H.toast('Google linked. Your cloud save stays on this account.');
+      renderPanel();
+    } catch (e) {
+      const code = String(e && e.code || '');
+      if (/credential-already-in-use|email-already-in-use|account-exists-with-different-credential/i.test(code)) {
+        try {
+          const res = await withTimeout(fb.au.signInWithPopup(auth, provider), NET_WAIT * 2);
+          user = res.user;
+          writeDev({ fbUid: user.uid, syncedRev: 0, syncedHash: null, pending: null, adopted: false });
+          compared = false;
+          setStatus('ok');
+          await compare();
+          H.toast('Signed in with Google on this device.');
+          renderPanel();
+        } catch (e2) {
+          H.toast('Could not link Google. Try again when you are online.');
+        }
+        return;
+      }
+      H.toast('Could not link Google. Try again when you are online.');
+    }
+  }
+  async function signOutGoogle(){
+    if (!user || !auth || user.isAnonymous) return;
+    try {
+      await withTimeout(fb.au.signOut(auth), NET_WAIT);
+      user = (await withTimeout(fb.au.signInAnonymously(auth), NET_WAIT)).user;
+      writeDev({ fbUid: user.uid, syncedRev: 0, syncedHash: null, pending: null, adopted: false, paused: false });
+      compared = false;
+      setStatus('ok');
+      await sync();
+      H.toast('Signed out. Your game stays on this device.');
+      renderPanel();
+    } catch (e) {
+      H.toast('Could not sign out. Try again when you are online.');
+    }
+  }
+
   async function deleteCloud(){
     writeDev({ paused: true, pendingErase: true, syncedRev: 0, syncedHash: null, pending: null });
     openPanel(); if (status === 'gone') status = 'paused';
@@ -303,10 +364,10 @@ const PPCloud = (() => {
     await upload(c.cloud.rev + 1);
   }
 
-  const info = () => ({ enabled: true, emu: EMU, sdk: SDK_VERSION, status, compared, conflict: !!conflict, inflight: !!inflight, fbUid: user && user.uid, dev: readDev(), lastErr, gap: GAP, row: row ? row.querySelector('.set-sub').textContent : null, state: stateLine() });
+  const info = () => ({ enabled: true, emu: EMU, sdk: SDK_VERSION, status, compared, conflict: !!conflict, inflight: !!inflight, fbUid: user && user.uid, linked: linked(), dev: readDev(), lastErr, gap: GAP, row: row ? row.querySelector('.set-sub').textContent : null, state: stateLine() });
   return Object.freeze({
-    enabled: true, emu: EMU, CLOUD_KEY, BACKUP_KEY, LABEL, SDK_VERSION, CDN, EMU_DB_PORT,
-    start, overlayOpen: isOpen, startOver, info, syncNow: () => sync(true), hashOf,
+    enabled: true, emu: EMU, CLOUD_KEY, BACKUP_KEY, LABEL, PRIVACY, SDK_VERSION, CDN, EMU_DB_PORT,
+    start, overlayOpen: isOpen, startOver, info, syncNow: () => sync(true), hashOf, linkGoogle, signOutGoogle,
     app: () => firebaseApp, uid: () => user && user.uid,
     onReady: fn => { if (user) fn(user); else readyFns.push(fn); },
   });

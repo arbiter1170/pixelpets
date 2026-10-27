@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 00:43 ET: Modern HUD P1 frame, cloud Phase 2 link, doc sync (build 20261027-0043)
+
+- What changed and why: Next-sessions roadmap. MODERN_HUD_CLEAR P1 turns on `mhc-frame` in modern portrait walk so D787 overlap pads and P2 headroom camera run (D792: 88 px place or clock chip width). Online saves Phase 2 adds Link Google, Sign out, and the scoped privacy line in the Cloud save panel. Status docs now say LEVEL_GROW, MAP_EDGE P1, GEAR_SWITCH, TB-3 and Q22 are on main. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
+- Files touched: `game.js`, `style.css`, `cloud.js`, `tests/map_zoom.spec.js`, `tests/headroom_bigger.spec.js`, `tests/cloud_link.spec.js` (new), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `BACKLOG.md`, `OPEN_DECISIONS.md`, `README.md`, `CHANGELOG.md`, `tests/README.md`.
+- Commit(s) + build id: `cursor/next-sessions-roadmap-7ae7`. Build `20261027-0043`.
+- Tests run and result (widths, checks): `tests/map_zoom.spec.js`, `tests/headroom_bigger.spec.js`, `tests/cloud_link.spec.js`, `tests/plaza_quests.spec.js`, `tests/hearthmoor_plaza.spec.js`, `tests/cue_rail.spec.js` at 390: `PP_TEST RESULT: PASS exit=0 passed=24 failed=0`. `node tools/scans/run.js` SCAN PASS.
+- Decisions made (colour + reasoning): D787 P1 partial (frame class only; D789 dock not built). No new id. Next free id stays D799.
+- Anything left unfinished: D797 still wants Vincent's yes on plaza previews. Full MODERN_HUD dock (D789) and TOP_HUD combined chip wait on Design. Live Google link needs the provider enabled in Firebase console.
+
 ## 2026-10-26 23:57 ET: Plaza lap, plaza sign, and lantern night (build 20261026-2357)
 
 - What changed and why: Vincent said yes to all five plaza ideas (D798). After the first partner, Officer Vale asks for a lap of the square: Keeper Pryce, Cadet Lisse, Tansy Holt, then back. A decline leaves it open. He then asks for the plaza sign, the way Officer Cald counts the east sign. This is not a town-board slip. After Cobblecrest and that sign, lantern night pays one Heal Snack. No Standing. Nella names the three baskets ember, tide, and bloom. Before Rook's gate battle, Tansy says he bounced through at dawn. The main chain does not move. Save stays `pixelpets.save.v2` with `v` 2. New flags are additive.

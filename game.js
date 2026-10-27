@@ -1012,6 +1012,7 @@ function applyControls(){
   const qb = $('#questBtn'); if (qb) { qb.classList.toggle('dpc', m); qb.classList.toggle('fbtn', m); }
   const rb = $('#repBtn'); if (rb) { rb.classList.toggle('dpc', m); rb.classList.toggle('fbtn', m); rb.classList.toggle('icon-only', m); rb.classList.toggle('icon-btn', !m); }
   document.body.classList.toggle('ctl-modern', m); document.body.classList.toggle('ctl-arcade', !m); document.body.dataset.screen = screen;
+  syncMhcFrame();
   const jr = $('#joyRing'); if (jr) { jr.hidden = !joyOn(); if (jr.hidden) joyRelease(); }
   renderControlsRows(); syncWalkTip(); fitAll();
   try { syncCareAlert(); } catch (e) {}
@@ -1393,6 +1394,20 @@ let hudPads = { top: 56, left: 56, right: 96, bottom: 112, col: 206, on: false, 
 // no padded room placement, and the D729 arcade area chip stays in live's flow (style.css). ?debug=1 can put the
 // class on or off for tests (PixelPets.setHudPads).
 const MHC_FRAME_CLASS = 'mhc-frame';
+let mhcFrameForce = null;   // ?debug=1: PixelPets.setHudPads forces the P1 frame class on or off
+function portraitWalkModern(){
+  try { return ctlMode() === 'modern' && screen === 'walk' && window.matchMedia('(orientation: portrait)').matches; }
+  catch (e) { return ctlMode() === 'modern' && screen === 'walk'; }
+}
+function syncMhcFrame(){
+  const on = mhcFrameForce != null ? !!mhcFrameForce : portraitWalkModern();
+  if (document.body) document.body.classList.toggle(MHC_FRAME_CLASS, on);
+}
+function applyMhcClockWidth(){
+  if (!hudPadsLive() || ctlMode() !== 'modern') return;
+  const chip = document.querySelector('#thChip') || document.querySelector('#fcClock .clock-chip');
+  if (chip) { chip.style.width = '88px'; chip.style.minWidth = '88px'; chip.style.maxWidth = '88px'; chip.style.boxSizing = 'border-box'; }
+}
 function hudPadsLive(){ return !!(document.body && document.body.classList.contains(MHC_FRAME_CLASS)); }
 // Map zoom (Settings slider, settings.mapZoom). Outdoors only; rooms keep their own zoom (D727). 2 = today's look
 // (the base scale s, exactly as before), so nobody sees a change until they move the slider. The pixel art is a
@@ -1544,7 +1559,7 @@ function refreshHudPads(){
   hudFree(); syncWalkCam();
 }
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
-function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
+function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(window.innerWidth, 480) - 36;
   fitPetScene();
@@ -1586,6 +1601,7 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} fitBattle(); if (!$('#ovM
     syncWalkCam();
     try { syncPlaceYield(); } catch (e) {}
     if (rectMoved) renderMapZoomRow();   // the steps follow the map rect (D787 C)
+    applyMhcClockWidth();
   }
   refitSceneBox();
 }
@@ -17114,7 +17130,7 @@ function boot(){
       if (!o) return false; openBooth(o); return true;
     },
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
-    setHudPads: on => { if (!DEBUG) return null; document.body.classList.toggle(MHC_FRAME_CLASS, !!on); fitAll(); return hudPadsLive(); },   // debug: put the P1 frame class on or off (the D787 pads and the D729 arcade chip)
+    setHudPads: on => { if (!DEBUG) return null; mhcFrameForce = on; fitAll(); return hudPadsLive(); },   // debug: force the P1 frame class on or off (the D787 pads and the D729 arcade chip)
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
       arriveAt({ map, x: x != null ? x : sp.x, y: y != null ? y : sp.y, facing: facing || 'down' }); return { map: S.world.map, x: S.world.x, y: S.world.y }; },

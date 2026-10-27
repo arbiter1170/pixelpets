@@ -208,17 +208,9 @@ test('Map zoom row: the label lines up with the other rows and no thumb position
   }
 });
 
-// Supervisor green call (Oct 25, 2026): the D787 pads wait for the MODERN_HUD_CLEAR P1 frame class. Without it the
-// default 2x map sits exactly where it does on main. Map offset = canvas left/top minus the camera, in css px,
-// measured on main 21399e2 (build 20261025-0004) with this save.
-const MAIN_OFFSETS = {
-  320: { spawn: [0, 0], route1: [-112, -84] },
-  375: { spawn: [1, 1], route1: [-85, -33] },
-  390: { spawn: [0, 0], route1: [-78, 46] },
-};
-test('default 2x: with no frame class the map offset is main\'s at the Hearthmoor spawn and on Route 1', async ({ page }) => {
+// MODERN_HUD_CLEAR P1: modern portrait walk turns on mhc-frame and the D787 overlap pads.
+test('default 2x: modern portrait turns on the frame class and HUD pads at the Hearthmoor spawn and on Route 1', async ({ page }) => {
   await boot(page);
-  const want = MAIN_OFFSETS[page.viewportSize().width];
   const got = {};
   for (const [key, id, x, y] of [['spawn', 'hearthmoor', null, null], ['route1', 'route1', 8, 10]]) {
     await page.evaluate(([id, x, y]) => {
@@ -229,14 +221,17 @@ test('default 2x: with no frame class the map offset is main\'s at the Hearthmoo
     await page.waitForTimeout(400);
     got[key] = await page.evaluate(() => {
       const mc = document.querySelector('#mapCanvas'), cr = mc.getBoundingClientRect(), cam = PixelPets.walk.cam, k = cr.width / mc.width;
+      const chip = document.querySelector('#thChip') || document.querySelector('#fcClock .clock-chip');
       return { off: [Math.round(cr.left - cam.x * k), Math.round(cr.top - cam.y * k)], scale: PixelPets.mapInfo.scale, pads: PixelPets.mapInfo.pads,
-        frame: document.body.classList.contains('mhc-frame'), shown: mc.checkVisibility() };
+        frame: document.body.classList.contains('mhc-frame'), shown: mc.checkVisibility(), chipW: chip ? Math.round(chip.getBoundingClientRect().width) : 0 };
     });
     expect(got[key].shown, key).toBe(true);
-    expect(got[key].frame, key).toBe(false);
+    expect(got[key].frame, key).toBe(true);
     expect(got[key].scale, key).toBe(2);
-    expect(got[key].pads, key).toEqual({ on: false, top: 0, left: 0, right: 0, bottom: 0, col: 0 });
-    expect(got[key].off, key).toEqual(want[key]);
+    expect(got[key].pads.on, key).toBe(true);
+    expect(got[key].pads.top, key).toBeGreaterThan(0);
+    expect(got[key].pads.bottom, key).toBeGreaterThan(0);
+    expect(got[key].chipW, key).toBe(88);
   }
 });
 

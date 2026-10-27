@@ -24,8 +24,6 @@ async function boot(page, mode) {
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);
-  // D787 A/B pads are gated off until MHC P1; these checks cover the padded camera, so force them on.
-  await page.evaluate(() => PixelPets.setHudPads(true));
 }
 
 test('T7 edge rows and columns clear the HUD, including Fernbrook row 0', async ({ page }) => {
