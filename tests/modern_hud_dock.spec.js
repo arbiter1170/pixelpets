@@ -191,3 +191,45 @@ test('portrait modern dock: care tray toast sits in the tray band', async ({ pag
   expect(d.inTray).toBe(true);
   expect(d.text.length).toBeGreaterThan(0);
 });
+
+// Hotfix (Oct 27, 2026): in scenes the dock keeps z 12 so the gear stays above the scene layer (NAV_MODERN G3), and its opaque
+// band covered the scene text box (z 9). The box now sits above the dock. G3: with no partner yet (the opening scene) the gear
+// still takes taps; with a partner, gearBlocked() locks it during scenes as before.
+async function bootScene(page, pets) {
+  const s = save();
+  if (!pets) { s.party = []; s.partnerId = null; delete s.flags['story.starter_received']; }
+  await installSave(page.context(), s, { quietDay: true });
+  await gotoGame(page, '?debug=1');
+  await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.waitForFunction(() => document.querySelector('#mapCanvas').width > 0);
+  await page.evaluate(() => { if (window.PixelPets && PixelPets.setHudPads) PixelPets.setHudPads(true); });
+  await page.waitForFunction(() => document.body.classList.contains('mhc-frame'));
+  expect(await page.evaluate(() => PixelPets.runScene('gate_home'))).toBe(true);
+  await page.waitForFunction(() => !document.querySelector('#ovScene').hidden && document.querySelector('#sbText').textContent.length > 10);
+  return page.evaluate(() => {
+    const box = document.querySelector('#sbox').getBoundingClientRect();
+    const dock = document.querySelector('#floatCtl').getBoundingClientRect();
+    const gear = document.querySelector('#gearFloat').getBoundingClientRect();
+    const hit = document.elementFromPoint(gear.left + gear.width / 2, gear.top + gear.height / 2);
+    const seen = el => { let o = 1; for (let e = el; e && e !== document.body; e = e.parentElement) o *= parseFloat(getComputedStyle(e).opacity); return o; };
+    return { boxTop: box.top, boxBottom: box.bottom, dockTop: dock.top, locked: document.body.classList.contains('gear-locked'),
+      gearHit: !!(hit && (hit.id === 'gearFloat' || hit.closest('#gearFloat'))),
+      gearSeen: seen(document.querySelector('#gearFloat')), phoneSeen: seen(document.querySelector('#phoneBtn')), questSeen: seen(document.querySelector('#questBtn')) };
+  });
+}
+
+for (const pets of [false, true]) {
+  test(`portrait modern dock: a scene text box sits above the dock (${pets ? 'with a partner: gear locked' : 'opening scene: gear takes taps'})`, async ({ page }) => {
+    const w = page.viewportSize().width;
+    test.skip(w > page.viewportSize().height, 'dock is portrait only');
+    const d = await bootScene(page, pets);
+    expect(d.boxBottom).toBeLessThanOrEqual(d.dockTop + 1);
+    expect(d.boxTop).toBeGreaterThanOrEqual(0);
+    expect(d.locked).toBe(pets);
+    expect(d.gearHit).toBe(!pets);
+    expect(d.gearSeen).toBeGreaterThan(0.9);       // G3: the gear stays shown in scenes
+    expect(d.phoneSeen).toBeLessThan(0.1);         // the rest of the dock fades as before
+    expect(d.questSeen).toBeLessThan(0.1);
+  });
+}

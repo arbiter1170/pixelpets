@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 07:32 ET: Scene text box sits above the Modern dock; the gear shows in scenes again (build 20261027-0732)
+
+- What changed and why: Since the Modern dock (#199), the dock kept the controls layer at z 12 in scenes so the gear would stay tappable, and its opaque band covered the scene text box (z 9): in Modern controls on a phone held upright, every talk scene's lines were hidden. The box now sits above the dock. The whole dock also faded in scenes, which hid the gear in the opening scene (NAV_MODERN G3: the gear stays reachable there); the dock items now fade one by one and the gear stays shown. With a partner, the gear stays locked in scenes as before (`gearBlocked`).
+- Files touched: `style.css`, `tests/modern_hud_dock.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch. Build `20261027-0732`.
+- Tests run and result (widths, checks): `npx playwright test tests/modern_hud_dock.spec.js` at 320, 375 and 390: 14 passed, 1 failed. The failure is the existing 320 toast row ("Found 3 Hearty ..." against "Found 3 Hearty Snacks!"); it fails the same on `main` without this change. New rows: the box bottom is at or above the dock top, the gear takes taps in the opening scene and is locked with a partner, the gear stays shown and PHONE and QUEST fade.
+- Decisions made (colour + reasoning): green. A fix for a regression; it keeps NAV_MODERN G3 and MODERN_HUD_CLEAR's rule that talk scenes open over the map.
+- Anything left unfinished: none.
+
 ## 2026-10-27 07:16 ET: Step toast stays in the dock, off the map (build 20261027-0716)
 
 - What changed and why: The step line sat on the map, over the player and the tiles under them. It now sits in the open space of the dock's top row, beside the hour, and it does not take taps. The map, the hour, Acorns, and the buttons stay clear.
