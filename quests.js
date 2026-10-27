@@ -59,7 +59,10 @@
     'story.gb_hollis_kept', 'story.gb_hollis_told', 'story.gb_read', 'story.gb_stand', 'story.gb_hold',
     'story.gb_tune_asked', 'story.gb_tobin', 'story.gb_imogen_done', 'story.gb_imogen_result',
     // HUSHWATER: first step in. Not a chain step (no CHAIN row). The stair and Lizzy flags are not written here.
-    'story.hw_reached'];
+    'story.hw_reached',
+    // ARBITER_UNITS Build C (D810-D815): Route 3 arrival and its derived open flag, the first four clues, and the boss rest flags are not steps.
+    'story.reached_route3', 'story.route3_open', 'story.ans_tallybat_clue', 'story.ans_dimlamp_clue', 'story.ans_filecrow_clue', 'story.ans_cordhound_clue',
+    'story.ans_tallybat_rest', 'story.ans_dimlamp_rest', 'story.ans_filecrow_rest', 'story.ans_cordhound_rest', 'story.ans_humwisp_rest'];
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
@@ -286,6 +289,34 @@
       { id: 'lantern_tansy', when: ['story.lantern_pryce'], done: ['story.lantern_done'],
         text: 'Tansy Holt is drawing the lit square.', place: 'Hearthmoor Plaza',
         target: { map: 'hm_plaza', x: 18, y: 12 } },
+    ],
+    // Five that answer (ARBITER_UNITS Build C, D805, D810-D815). Opens on Route 3. Rows whose target differs by side come in pairs
+    // with opposite when; the four lairs can be cleared in any order, so they share one row with four done flags.
+    [
+      { id: 'ans_open_k', label: 'Five that answer', when: ['story.reached_route3', '!story.side=glimmer'], givers: ['hq_mo', 'cc_quinn'], done: ['story.ans_open'],
+        text: 'Archivist Mo has heard the hum on the Brinewick road. Go and listen.', place: 'Keeper House',
+        target: { map: 'hm_hq_f1', x: 3, y: 5 } },
+      { id: 'ans_open_g', when: ['story.reached_route3', 'story.side=glimmer'], done: ['story.ans_open'],
+        text: 'Associate Quinn has a recall job on the Brinewick road. Go and listen.', place: 'Cobblecrest Trial Hall',
+        target: { map: 'cc_hall_in', x: 8, y: 3 } },
+      { id: 'ans_four', when: ['story.ans_open'], done: ['story.ans_tallybat', 'story.ans_dimlamp', 'story.ans_filecrow', 'story.ans_cordhound'],
+        text: 'Four clues lead to four lairs on the Brinewick road. Find the ones that answer the hum.', place: 'Route 3',
+        target: { map: 'route3', x: 11, y: 10 } },
+      { id: 'ans_last_clue_k', when: ['story.ans_tallybat', 'story.ans_dimlamp', 'story.ans_filecrow', 'story.ans_cordhound', '!story.side=glimmer'], done: ['story.ans_humwisp_clue'],
+        text: 'The four are quiet. Ask the old mast in Mahopac where the hum comes from.', place: 'Mahopac',
+        target: { map: 'mahopac', x: 9, y: 5 } },
+      { id: 'ans_last_clue_g', when: ['story.ans_tallybat', 'story.ans_dimlamp', 'story.ans_filecrow', 'story.ans_cordhound', 'story.side=glimmer'], done: ['story.ans_humwisp_clue'],
+        text: 'The four are quiet. The cradle in the Arbiter Bay knows where the fifth went.', place: 'Arbiter Bay',
+        target: { map: 'rx_f4', x: 6, y: 3 } },
+      { id: 'ans_last', when: ['story.ans_humwisp_clue'], done: ['story.ans_humwisp'],
+        text: 'The fifth waits in the relay house at the end of the Brinewick road.', place: 'Route 3, the relay',
+        target: { map: 'r3_relay', x: 6, y: 4 } },
+      { id: 'ans_close_k', when: ['story.ans_humwisp', '!story.side=glimmer'], done: ['story.ans_all'],
+        text: 'Tell Archivist Mo all five are found.', place: 'Keeper House',
+        target: { map: 'hm_hq_f1', x: 3, y: 5 } },
+      { id: 'ans_close_g', when: ['story.ans_humwisp', 'story.side=glimmer'], done: ['story.ans_all'],
+        text: 'Tell Associate Quinn all five relays are home.', place: 'Cobblecrest Trial Hall',
+        target: { map: 'cc_hall_in', x: 8, y: 3 } },
     ],
   ];
   const SIDE = SIDE_CHAINS.flat();

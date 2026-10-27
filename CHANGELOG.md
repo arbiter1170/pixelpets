@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 18:00 ET: The Answerers and Route 3, ported onto main (build 20261027-1400)
+
+- What changed and why: ARBITER_UNITS (Builds A and C) re-applied on current main and fitted to it (Vincent, Oct 27, 2026). The five are Glimmerwell's first relays, built before the Tuning chips and woken by the hum; the cradle's COUNT / GATHER / LISTEN names them. Hushlamp is now Dimlamp and the HUSH button is STILL; Ledgerowl is now Filecrow with new crow art, clear of the Hushwater owl. Five attune SHADE lines after `snail` (indices 20-24) with hum tiers, Echoes (hooked in the battle step queue), boss battles (Lv 26-30, under the cap), MOVES_V2 signatures and the journal row. Route 3 is one auto-loaded pack, `data/detail_route3.json`; it opens on `story.route3_open` (last crates plus the Lantern Council or the Signal Review). The lamp clue moved to Hushwater, off the Signal Review's Wickerglen lamps. Both chip paths refuse an Answerer. Save `v` stays 2.
+- Files touched: `sprites.js`, `stats.js`, `moves.js`, `save.js`, `game.js`, `quests.js`, `index.html`, `style.css`, `data/detail_route3.json`, `data/civic.json`, `data/heights.json`, `data/reputation.json`, `data/rook_crossroads.json`, `data/mapdata.js`, `tools/GAMEJS_MAP.txt`, `tests/arbiter_units.spec.js`, `tests/route3.spec.js`, `tests/five_answer.spec.js`, `tests/data_integrity.spec.js`, `tests/hushwater.spec.js`, `tests/fetch_line.spec.js`, `tests/heights.spec.js`, `tests/quest_multi.spec.js`, `tests/README.md`, `handoff/walklings/`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
+- Commit(s) + build id: build 20261027-1400.
+- Tests run and result (widths, checks): see the PR. Scans: wording, decisions, symlinks, gamejs_map, test_mistakes all pass.
+- Decisions made (colour + reasoning): D799-D815 (Build A D799-D809, Build C D810-D815). Vincent settled the names (Dimlamp, Filecrow), STILL, the gate and the port on Oct 27, 2026. Next free id D816. Supersedes PR #204.
+- Anything left unfinished: final copy (D813), the switched-save reach gap (D815), the close reward (D805), and Brinewick itself.
 ## 2026-10-27 07:16 ET: Step toast stays in the dock, off the map (build 20261027-0716)
 
 - What changed and why: The step line sat on the map, over the player and the tiles under them. It now sits in the open space of the dock's top row, beside the hour, and it does not take taps. The map, the hour, Acorns, and the buttons stay clear.

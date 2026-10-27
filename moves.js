@@ -1023,6 +1023,167 @@ const MOVES = {
       "stat": "def",
       "stages": 2
     }
+  },
+  // ARBITER_UNITS: tier moves (taught at Humming and Answering) and the five signatures
+  "dim_hours": {
+    "name": "Dim Hours",
+    "type": "SHADE",
+    "power": 0,
+    "acc": 95,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -2
+    }
+  },
+  "lights_out": {
+    "name": "Lights Out",
+    "type": "SHADE",
+    "power": 75,
+    "acc": 95,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "spd",
+      "stages": -1
+    }
+  },
+  "cord_lash": {
+    "name": "Cord Lash",
+    "type": "VOLT",
+    "power": 55,
+    "acc": 100,
+    "uses": 10
+  },
+  "grid_howl": {
+    "name": "Grid Howl",
+    "type": "SHADE",
+    "power": 80,
+    "acc": 90,
+    "uses": 5,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": -1
+    }
+  },
+  "head_count": {
+    "name": "Head Count",
+    "type": "SHADE",
+    "power": 0,
+    "acc": 95,
+    "uses": 5,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -2
+    }
+  },
+  "census_dive": {
+    "name": "Census Dive",
+    "type": "VOLT",
+    "power": 75,
+    "acc": 95,
+    "uses": 8
+  },
+  "stamp_out": {
+    "name": "Stamp Out",
+    "type": "SHADE",
+    "power": 55,
+    "acc": 95,
+    "uses": 8,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": 1
+    }
+  },
+  "final_entry": {
+    "name": "Final Entry",
+    "type": "SHADE",
+    "power": 85,
+    "acc": 90,
+    "uses": 5
+  },
+  "cradle_pulse": {
+    "name": "Cradle Pulse",
+    "type": "VOLT",
+    "power": 65,
+    "acc": 95,
+    "uses": 8
+  },
+  "deep_hum": {
+    "name": "Deep Hum",
+    "type": "SHADE",
+    "power": 95,
+    "acc": 85,
+    "uses": 5,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": -1
+    }
+  },
+  "tally_tick": {
+    "name": "Tally Tick",
+    "type": "SHADE",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "def",
+      "stages": -1
+    }
+  },
+  "dim_glow": {
+    "name": "Dim Glow",
+    "type": "SHADE",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "def",
+      "stages": 1
+    }
+  },
+  "file_peck": {
+    "name": "File Peck",
+    "type": "SHADE",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "foe",
+      "stat": "atk",
+      "stages": -1
+    }
+  },
+  "cord_nip": {
+    "name": "Cord Nip",
+    "type": "VOLT",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "spd",
+      "stages": 1
+    }
+  },
+  "hum_flicker": {
+    "name": "Hum Flicker",
+    "type": "VOLT",
+    "power": 30,
+    "acc": 100,
+    "uses": 10,
+    "effect": {
+      "target": "self",
+      "stat": "atk",
+      "stages": 1
+    }
   }
 };
 
@@ -1571,7 +1732,22 @@ const LEARNSETS = {
     [30, "thorn_lash"]
   ],
   "snail/1": [[0, "boulder_drop"], [22, "scree_slide"]],
-  "snail/2": [[0, "summit_slam"], [27, "full_tilt"]]
+  "snail/2": [[0, "summit_slam"], [27, "full_tilt"]],
+  "tallybat/0": [[1,"tally_tick"], [1,"gloom_poke"], [1,"neon_flash"], [9,"zap_tap"], [12,"night_veil"], [15,"arc_bolt"], [18,"dusk_fang"], [20,"gloam_swipe"], [25,"nightfall"], [30,"neon_burst"]],
+  "tallybat/1": [[0,"head_count"], [22,"whisker_spark"]],
+  "tallybat/2": [[0,"census_dive"], [27,"eclipse_rush"]],
+  "dimlamp/0": [[1,"dim_glow"], [1,"gloom_poke"], [1,"night_veil"], [9,"zap_tap"], [12,"lullaby_hum"], [15,"dusk_fang"], [18,"arc_bolt"], [20,"gloam_swipe"], [25,"nightfall"], [30,"moon_cloak"]],
+  "dimlamp/1": [[0,"dim_hours"], [22,"hover_hum"]],
+  "dimlamp/2": [[0,"lights_out"], [27,"eclipse_rush"]],
+  "filecrow/0": [[1,"file_peck"], [1,"gloom_poke"], [1,"neon_flash"], [9,"cursor_tap"], [12,"lullaby_hum"], [15,"dusk_fang"], [18,"hover_hum"], [20,"gloam_swipe"], [25,"nightfall"], [30,"moon_cloak"]],
+  "filecrow/1": [[0,"stamp_out"], [22,"arc_bolt"]],
+  "filecrow/2": [[0,"final_entry"], [27,"static_lunge"]],
+  "cordhound/0": [[1,"cord_nip"], [1,"zap_tap"], [1,"gloom_poke"], [9,"screen_glow"], [12,"arc_bolt"], [15,"dusk_fang"], [18,"whisker_spark"], [20,"gloam_swipe"], [25,"static_lunge"], [30,"neon_burst"]],
+  "cordhound/1": [[0,"cord_lash"], [22,"nightfall"]],
+  "cordhound/2": [[0,"grid_howl"], [27,"full_tilt"]],
+  "humwisp/0": [[1,"hum_flicker"], [1,"zap_tap"], [1,"gloom_poke"], [9,"screen_glow"], [12,"arc_bolt"], [15,"dusk_fang"], [18,"neon_burst"], [20,"gloam_swipe"], [25,"eclipse_rush"], [30,"static_lunge"]],
+  "humwisp/1": [[0,"cradle_pulse"], [22,"nightfall"]],
+  "humwisp/2": [[0,"deep_hum"], [27,"full_tilt"]]
 };
 
 const TRAINERS = {
@@ -1713,7 +1889,12 @@ const SIGNATURES = {
   "skink": "basking_lash",
   "otter": "spray_slide",
   "owl": "hush_glide",
-  "snail": "lichen_lob"
+  "snail": "lichen_lob",
+  "tallybat": "tally_tick",
+  "dimlamp": "dim_glow",
+  "filecrow": "file_peck",
+  "cordhound": "cord_nip",
+  "humwisp": "hum_flicker"
 };
 function defaultMoves(formId, L){
   const line = String(formId).split('/')[0], sig = SIGNATURES[line], all = learnset(formId);

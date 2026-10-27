@@ -335,6 +335,69 @@ const SPECIES = [
     { name:'Screeback', col:{a:PAL.h,b:PAL.m,c:PAL.d,d:PAL.g,x:PAL.l}, half:['........','........','.....axa','.....ccc','....aaaa','....adaa','...ccccc','..aaaaxa','..daieaa','..aaeeaa','..aaabaa','.bbbbbbb','.bbbbbbc','bbbbbbbb','cccccccc','cccccccc']},
     { name:'Cairnshell', col:{a:PAL.h,b:PAL.m,c:PAL.d,d:PAL.g,x:PAL.l}, half:['......aa','.....aax','.....ccc','....aaaa','....xdaa','...ccccc','...aaaaa','..aadaax','..cccccc','.aaaieaa','.adaeeax','.aaaabaa','bbbbbbbb','bbbbbbbc','cccccccc','cccccccc']}
   ]},
+  // ARBITER_UNITS (indices 20-24; D799-D809). Glimmerwell built them as its first relays; the Arbiter's hum woke them.
+  // One name, three attunement tiers in the stage slot (Quiet, Humming, Answering), never grown up (attune). boss: met as a
+  // placed boss, kept out of the journal grid. befriendMul narrows the befriend zone. Spec: handoff/walklings/ARBITER_UNITS.md.
+  { id:'tallybat', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A counting bat. Its wings blink one tally at a time.', stages:[
+    { name:'Tallybat', col:{a:PAL.p,b:PAL.n,c:PAL.l,d:PAL.s,x:PAL.w}, half:[
+      '........','....a.a.','....aaaa','....aaaa','....aiea','....aeea','....aaaa','c...aaaa',
+      'cb.aaaaa','cbbaaaaa','cbbbaaaa','.cbbbaaa','..ccbaaa','....caa.','.....a.a','........']},
+    { name:'Tallybat', col:{a:PAL.p,b:PAL.n,c:PAL.l,d:PAL.s,x:PAL.w}, half:[
+      '....a.a.','....a.a.','....aaaa','....aaaa','....aiea','....aeea','....aaaa','c...axaa',
+      'cb.aaaaa','cdbaaaaa','cbbbaaaa','.cdbbaaa','..ccbaaa','....caa.','.....a.a','........']},
+    { name:'Tallybat', col:{a:PAL.p,b:PAL.n,c:PAL.l,d:PAL.s,x:PAL.w}, half:[
+      '....a.a.','....ada.','....aaaa','....aaaa','....aiea','c...aeea','cb..aaaa','cbb.axaa',
+      'cdbaaaaa','cbbaaaaa','cdbbaaaa','cbdbbaaa','.ccdbaaa','..ccaaa.','....ca.a','........']}
+  ]},
+  { id:'dimlamp', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A lamp-headed shade. Its glow asks you to rest.', stages:[
+    { name:'Dimlamp', col:{a:PAL.d,b:PAL.l,c:PAL.h,d:PAL.s,x:PAL.w}, half:[
+      '........','........','.....cc.','....cbbb','....bbbb','....bbdb','....cccc','...aaaaa',
+      '..aaieaa','..aaeeaa','..aaaaaa','..aaaaaa','..aaaaaa','...aaaaa','...aa.aa','........']},
+    { name:'Dimlamp', col:{a:PAL.d,b:PAL.l,c:PAL.h,d:PAL.s,x:PAL.w}, half:[
+      '........','.....cc.','....cbbb','...cbbbb','...bbbdb','...bbbbb','...ccccc','..aaaaaa',
+      '.aaaieaa','.aaaeeaa','.aadaaaa','.aaadaaa','.aaaadaa','..aaaaaa','..aaa.aa','........']},
+    { name:'Dimlamp', col:{a:PAL.d,b:PAL.l,c:PAL.h,d:PAL.s,x:PAL.w}, half:[
+      '.....cc.','....cbbb','...cbbbb','...bbbdb','..xbbbbb','..xbbbbb','...ccccc','..aaaaaa',
+      '.aaaieaa','.aaaeeaa','aaadaaaa','aaaadaaa','.aaaadaa','..aaaaaa','..aaa.aa','..xx..xx']}
+  ]},
+  { id:'filecrow', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A file crow. It keeps a card for everything it sees.', stages:[
+    { name:'Filecrow', col:{a:PAL.d,b:PAL.h,c:PAL.n,d:PAL.l,x:PAL.y}, half:[
+      '........','........','........','........','.....aaa','....aaaa','....aiea','....aeea',
+      '....aaax','.....aax','...cabbb','..ccabbb','..ccabbb','...caaaa','....aaaa','.....x..']},
+    { name:'Filecrow', col:{a:PAL.d,b:PAL.h,c:PAL.n,d:PAL.l,x:PAL.y}, half:[
+      '........','........','.......a','......aa','....aaaa','...aaaaa','...aaiea','...aaeea',
+      '...aaaax','....aaax','..ccabbb','.ccdabbb','.cdcabbb','..ccaaaa','...aaaaa','....x.x.']},
+    { name:'Filecrow', col:{a:PAL.d,b:PAL.h,c:PAL.n,d:PAL.l,x:PAL.y}, half:[
+      '.......a','......aa','.....aaa','...aaaaa','...aaaaa','..aaaiea','..aaaeea','..aaaaax',
+      '...aaaax','.cc.aaax','ccdcabbb','cdccadbb','ccdcaddd','.cccaaaa','..aaaaaa','...x..x.']}
+  ]},
+  { id:'cordhound', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A shadow pup on a cord. It never unplugs itself.', stages:[
+    { name:'Cordhound', col:{a:PAL.n,b:PAL.m,c:PAL.l,d:PAL.s,x:PAL.y}, half:[
+      '........','..c.....','..ac....','..aa....','..aaaaaa','.aaaaaaa','.aaaieaa','.aaaeeaa',
+      '.aaaabbb','..aaabeb','..aaabbb','..aaaaaa','...aaaaa','...aa.aa','...aa.dx','........']},
+    { name:'Cordhound', col:{a:PAL.n,b:PAL.m,c:PAL.l,d:PAL.s,x:PAL.y}, half:[
+      '..c.....','..ac....','..ac....','..aa....','..aaaaaa','.aaaaaaa','.aaaieaa','.aaaeeaa',
+      '.aaaabbb','.aaaabeb','.aadabbb','..aadaaa','..aaaaaa','...aa.aa','...aa.dx','......dx']},
+    { name:'Cordhound', col:{a:PAL.n,b:PAL.m,c:PAL.l,d:PAL.s,x:PAL.y}, half:[
+      '.c......','.ac.....','..ac....','..aac...','.aaaaaaa','.aaaaaaa','.aaaieaa','.aaaeeaa',
+      '.aaaabbb','.aaaabeb','.aadabbb','.aaadaaa','.aaaadaa','..aaa.aa','..aaa.dx','.....ddx']}
+  ]},
+  { id:'humwisp', habitat:{}, labOnly:true, attune:true, boss:true, uiHalo:true, befriendMul:0.75, tiles:'grass',
+    type:'SHADE', blurb:'A wisp off the cradle. It carries the hum.', stages:[
+    { name:'Humwisp', col:{a:PAL.n,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.p}, half:[
+      '........','........','.......a','......aa','.....aaa','....aaaa','...aaaaa','...aaiea',
+      '...aaeea','...aacba','...aacba','....aaaa','....aaaa','.....aa.','....c..c','........']},
+    { name:'Humwisp', col:{a:PAL.n,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.p}, half:[
+      '........','.......a','......aa','.....aaa','....aaaa','...aaaaa','..aaaaaa','..aaaiea',
+      '..aaaeea','..aaccbb','..aaccbb','...aaaaa','...aaaaa','....aaa.','...c..c.','....c..c']},
+    { name:'Humwisp', col:{a:PAL.n,b:PAL.w,c:PAL.s,d:PAL.l,x:PAL.p}, half:[
+      '.......a','......aa','.....aaa','...d.aaa','..daaaaa','..aaaaaa','.daaaaaa','.aaaaiea',
+      '.aaaaeea','.aaaccbb','..aaccbb','..daaaaa','...aaaaa','...daaa.','..c..c.c','....c..c']}
+  ]},
 ];
 
 // HUSHWATER B0: one fallback stage for a species id this client does not know.

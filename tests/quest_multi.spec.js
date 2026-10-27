@@ -270,7 +270,7 @@ test('AC12: devCheck passes, chains carry labels, sideQuest is the tracked step,
     sq: PixelPets.sideQuest.id,
   }));
   expect(r.check).toEqual([]);
-  expect(r.labels).toEqual(['Explore Route 1', "Mom's trip", 'The last crates', 'The leak in 5B', 'West watch', 'Plaza sign', 'Lantern night']);
+  expect(r.labels).toEqual(['Explore Route 1', "Mom's trip", 'The last crates', 'The leak in 5B', 'West watch', 'Plaza sign', 'Lantern night', 'Five that answer']);
   for (const l of r.labels) expect(Array.from(l).length).toBeLessThanOrEqual(r.max);
   expect(r.all).toEqual(['phone', 'mom', 'plaza_ask']);
   expect(r.sq).toBe('phone');

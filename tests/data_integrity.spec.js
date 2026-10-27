@@ -84,11 +84,14 @@ test('the save form table and the journal count the Hushwater lines @w1', () => 
   const block = spr.slice(spr.indexOf('const SPECIES'), spr.indexOf('const GLYPH'));
   const ids = [...block.matchAll(/\bid:'([a-z0-9_]+)'/g)].map(m => m[1]);
   const npc = (block.match(/npcOnly:true/g) || []).length;
-  expect(ids.slice(-5)).toEqual(['fetch', 'skink', 'otter', 'owl', 'snail']);
-  expect(ids).toHaveLength(20);
+  const boss = (block.match(/boss:true/g) || []).length;   // ARBITER_UNITS: boss lines sit outside the journal grid
+  expect(ids.slice(15, 20)).toEqual(['fetch', 'skink', 'otter', 'owl', 'snail']);
+  expect(ids.slice(-5)).toEqual(['tallybat', 'dimlamp', 'filecrow', 'cordhound', 'humwisp']);
+  expect(ids).toHaveLength(25);
   expect(npc).toBe(1);
-  expect((ids.length - npc) * 3).toBe(57);
-  expect(ids.length * 3).toBe(60);
+  expect(boss).toBe(5);
+  expect((ids.length - npc - boss) * 3).toBe(57);
+  expect(ids.length * 3).toBe(75);
   const save = lib.read('save.js');
   const row = save.match(/const SPECIES_IDS = Object\.freeze\(\[\.\.\.V1_SPECIES, ([^\]]+)\]\)/);
   expect(row).toBeTruthy();

@@ -1,0 +1,1304 @@
+{
+  "spec": "ARBITER_UNITS v0.3 (Builds A and C)",
+  "version": "0.3",
+  "status": "built, placeholder copy (D810-D815)",
+  "_about": "Route 3, the Brinewick road, and the Five that answer branch. One auto-loaded detail pack: maps, rooms, scenes, spawns, the Cobblecrest exit, the clues and Associate Quinn. The road opens once story.route3_open is set: Rook's last crates (story.rc_done) plus that side's chapter end (story.hc_council_done for the Keepers, story.gb_done for Glimmerwell). Brinewick stays shut. The five are Glimmerwell's first relays, built before the Tuning chips; the hum woke them. Names and lines are marked placeholders. Spec: handoff/walklings/ARBITER_UNITS.md.",
+  "maps": {
+    "route3": {
+      "name": "Route 3",
+      "backdrop": "route",
+      "music": "route3",
+      "w": 24,
+      "h": 48,
+      "spawns": "route3",
+      "respawn": null,
+      "safe": {
+        "x": 2,
+        "y": 4
+      },
+      "zones": [],
+      "variants": true,
+      "lairOf": [
+        "tallybat",
+        "cordhound"
+      ],
+      "grid": [
+        "TTTTTTTTTTTTTTTTTTTTTTTT",
+        "TggggggggggggggggggggggT",
+        "TggggfggggggggggggTTTTgT",
+        "TgggggggggggggggggTTTTgT",
+        "ppppppppppppgggggggggggT",
+        "TggggggggggpggfggggggggT",
+        "TgtttttttggpgggggggggggT",
+        "TgtttttttggpgggggggggggT",
+        "TgtttttttggpgggggggggggT",
+        "TgggggggcccpccccggggfggT",
+        "TgggggggcccpccccgggggggT",
+        "TgTTggggcccpccccgggggggT",
+        "TgTTgggggggpgggggggggggT",
+        "TggggggggggpggttttttttgT",
+        "TggggggggggpggttttttttgT",
+        "TgggfggggggpggttttttttgT",
+        "TggRRRRRgggpgggggggggggT",
+        "TggRRRRRgfgpgggggggggggT",
+        "TggHHHHHgggpgggggggTTTgT",
+        "TggggpppppppgggggggTTTgT",
+        "TggggggggggpgggggggTTTgT",
+        "TgtttttttggpggggTTgggggT",
+        "TgtttttttggpggggTTgggggT",
+        "TgtttttttggpgggggggggggT",
+        "TggggggggggpgggRRRRRRfgT",
+        "TggggggggggpgfgRRRRRRggT",
+        "TgTTgggggggpgggHHHHHHggT",
+        "TgTTgggggggpppppppgggggT",
+        "TgTTgggggggpgggggggggggT",
+        "TggggggggggpggttttttttgT",
+        "TgggggfggggpggttttttttgT",
+        "TgsssssssggpggttttttttgT",
+        "TgwwwwwwsggpcccccccccggT",
+        "TgwwwwwwsggpcccccccccggT",
+        "TgwwwwwwDDDpcccccccccggT",
+        "TgwwwwwwDDDpppcccccccggT",
+        "TgwwwwwwsggpcccccccccggT",
+        "TgwwwwwwsggpcccccccccggT",
+        "TgsssssssgfpgggggggggggT",
+        "TgtttttttggpggRRRRRRgggT",
+        "TgtttttttggpggRRRRRRgggT",
+        "TggggggggggpggHHHHHHgggT",
+        "TggggggggggppppppggggggT",
+        "TggggggggggpgggggggggggT",
+        "TggggTTggggpggggggfgTTgT",
+        "TggggTTggggpggggggggTTgT",
+        "TggggggggggpgggggggggggT",
+        "TTTTTTTTTTTTTTTTTTTTTTTT"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "r3_west",
+          "x": 0,
+          "y": 4,
+          "to": "cobblecrest",
+          "tx": 30,
+          "ty": 8,
+          "facing": "left"
+        },
+        {
+          "kind": "sign",
+          "id": "r3_sign_in",
+          "x": 2,
+          "y": 5,
+          "text": "ROUTE 3 · The Brinewick road. Cobblecrest, west."
+        },
+        {
+          "kind": "prop",
+          "id": "r3_tally_stand",
+          "x": 9,
+          "y": 10,
+          "sprite": "glimmer_stand",
+          "lines": {
+            "else": "A Glow Census stand. The counter reads 4, 4, 4."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_tally_gate",
+          "x": 15,
+          "y": 10,
+          "sprite": "glimmer_gate",
+          "lines": {
+            "else": "A tally gate. Every crate is counted here."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_tally_crates",
+          "x": 8,
+          "y": 11,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates, counted twice."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_tally_crate",
+          "x": 14,
+          "y": 11,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A sealed crate, stamped BRINEWICK DOCKS."
+          }
+        },
+        {
+          "kind": "wild",
+          "id": "ans_tallybat",
+          "x": 13,
+          "y": 10,
+          "form": "tallybat/1",
+          "level": 26,
+          "boss": true,
+          "befriendBonus": 0,
+          "when": [
+            "story.ans_tallybat_clue",
+            "!story.ans_tallybat",
+            "!story.ans_tallybat_rest"
+          ],
+          "scene": "ans_tallybat"
+        },
+        {
+          "kind": "door",
+          "id": "r3_sanctuary",
+          "x": 5,
+          "y": 19,
+          "to": "r3_sanctuary",
+          "tx": 5,
+          "ty": 7,
+          "facing": "up"
+        },
+        {
+          "kind": "sign",
+          "id": "r3_sign_sanctuary",
+          "x": 7,
+          "y": 20,
+          "text": "COMFORT SANCTUARY · Rest a while. — Glimmerwell Co."
+        },
+        {
+          "kind": "door",
+          "id": "r3_ledger",
+          "x": 17,
+          "y": 27,
+          "to": "r3_ledger",
+          "tx": 6,
+          "ty": 8,
+          "facing": "up"
+        },
+        {
+          "kind": "sign",
+          "id": "r3_sign_ledger",
+          "x": 19,
+          "y": 28,
+          "text": "SHIPPING LEDGER · Brinewick Docks, east office."
+        },
+        {
+          "kind": "prop",
+          "id": "r3_yard_stack_a",
+          "x": 14,
+          "y": 33,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates for Brinewick. They hum a little."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_yard_stack_b",
+          "x": 15,
+          "y": 33,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates for Brinewick. They hum a little."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_yard_stack_c",
+          "x": 18,
+          "y": 33,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Crates for Brinewick. They hum a little."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_yard_crate",
+          "x": 19,
+          "y": 35,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A sealed crate. A chewed cord hangs off it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_yard_cart",
+          "x": 13,
+          "y": 37,
+          "sprite": "ore_cart",
+          "lines": {
+            "else": "An empty cart, wheels chocked."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_yard_rack",
+          "x": 20,
+          "y": 37,
+          "sprite": "pole_rack",
+          "lines": {
+            "else": "Poles for hauling crates."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3_dock_post",
+          "x": 10,
+          "y": 34,
+          "sprite": "bollard",
+          "lines": {
+            "else": "A dock post. The rope is gone."
+          }
+        },
+        {
+          "kind": "wild",
+          "id": "ans_cordhound",
+          "x": 16,
+          "y": 35,
+          "form": "cordhound/1",
+          "level": 29,
+          "boss": true,
+          "befriendBonus": 0,
+          "when": [
+            "story.ans_cordhound_clue",
+            "!story.ans_cordhound",
+            "!story.ans_cordhound_rest"
+          ],
+          "scene": "ans_cordhound"
+        },
+        {
+          "kind": "door",
+          "id": "r3_relay",
+          "x": 16,
+          "y": 42,
+          "to": "r3_relay",
+          "tx": 5,
+          "ty": 10,
+          "facing": "up"
+        },
+        {
+          "kind": "sign",
+          "id": "r3_sign_relay",
+          "x": 18,
+          "y": 43,
+          "text": "RELAY HOUSE · Staff only. The hum is normal."
+        },
+        {
+          "kind": "prop",
+          "id": "r3_gate",
+          "x": 11,
+          "y": 46,
+          "sprite": "glimmer_gate",
+          "lines": {
+            "else": "The gate to Brinewick is shut. Not yet."
+          }
+        },
+        {
+          "kind": "sign",
+          "id": "r3_sign_gate",
+          "x": 12,
+          "y": 45,
+          "text": "BRINEWICK · Not yet."
+        }
+      ]
+    },
+    "r3_sanctuary": {
+      "name": "Comfort Sanctuary",
+      "kind": "interior",
+      "outdoor": "route3",
+      "backdrop": "town",
+      "music": "grove",
+      "w": 11,
+      "h": 9,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 5,
+        "y": 7
+      },
+      "skin": "hc_lantern",
+      "variants": true,
+      "wall": {
+        "windows": [
+          3,
+          7
+        ]
+      },
+      "lairOf": [
+        "dimlamp"
+      ],
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#uvuvuvuvu#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "r3s_back",
+          "x": 5,
+          "y": 8,
+          "to": "route3",
+          "tx": 5,
+          "ty": 19,
+          "facing": "down"
+        },
+        {
+          "kind": "prop",
+          "id": "r3s_cot_a",
+          "x": 2,
+          "y": 4,
+          "sprite": "rest_bed",
+          "lines": {
+            "else": "A cot. It is very easy to want to lie down."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3s_cot_b",
+          "x": 8,
+          "y": 4,
+          "sprite": "rest_bed",
+          "lines": {
+            "else": "A cot. It is very easy to want to lie down."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3s_lamp_a",
+          "x": 1,
+          "y": 3,
+          "sprite": "comfort_lamp",
+          "lines": {
+            "else": "A Comfort Lamp. Its glow asks you to stay."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3s_lamp_b",
+          "x": 9,
+          "y": 3,
+          "sprite": "comfort_lamp",
+          "lines": {
+            "else": "A Comfort Lamp. Its glow asks you to stay."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3s_lantern",
+          "x": 2,
+          "y": 6,
+          "sprite": "floor_lantern",
+          "lines": {
+            "else": "A low lantern, turned down."
+          }
+        },
+        {
+          "kind": "wild",
+          "id": "ans_dimlamp",
+          "x": 5,
+          "y": 4,
+          "form": "dimlamp/1",
+          "level": 27,
+          "boss": true,
+          "befriendBonus": 0,
+          "when": [
+            "story.ans_dimlamp_clue",
+            "!story.ans_dimlamp",
+            "!story.ans_dimlamp_rest"
+          ],
+          "scene": "ans_dimlamp"
+        }
+      ]
+    },
+    "r3_ledger": {
+      "name": "Shipping Ledger Office",
+      "kind": "interior",
+      "outdoor": "route3",
+      "backdrop": "town",
+      "w": 12,
+      "h": 10,
+      "spawns": null,
+      "zones": [],
+      "safe": {
+        "x": 6,
+        "y": 8
+      },
+      "skin": "house_hq",
+      "variants": true,
+      "wall": {
+        "windows": [
+          3,
+          8
+        ]
+      },
+      "lairOf": [
+        "filecrow"
+      ],
+      "grid": [
+        "############",
+        "#WWWWWWWWWW#",
+        "#uvuvuvuvuv#",
+        "#,,,,..;;;;#",
+        "#,,,,..;;;;#",
+        "#...i==i...#",
+        "#...i==i...#",
+        "#,,,,..,,,,#",
+        "#..........#",
+        "######m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "r3l_back",
+          "x": 6,
+          "y": 9,
+          "to": "route3",
+          "tx": 17,
+          "ty": 27,
+          "facing": "down"
+        },
+        {
+          "kind": "prop",
+          "id": "r3l_ledger",
+          "x": 2,
+          "y": 3,
+          "sprite": "tunnel_ledger",
+          "lines": {
+            "else": "Every crate, every unit, written down twice."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3l_cart",
+          "x": 9,
+          "y": 3,
+          "sprite": "lab_file_cart",
+          "lines": {
+            "else": "A file cart. RELOCATED, says the tag."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3l_table",
+          "x": 2,
+          "y": 7,
+          "sprite": "chart_table",
+          "lines": {
+            "else": "A chart of the coast. Brinewick is circled."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3l_counter",
+          "x": 9,
+          "y": 7,
+          "sprite": "bank_counter",
+          "lines": {
+            "else": "The counter bell is wrapped in cloth."
+          }
+        },
+        {
+          "kind": "wild",
+          "id": "ans_filecrow",
+          "x": 6,
+          "y": 4,
+          "form": "filecrow/1",
+          "level": 28,
+          "boss": true,
+          "befriendBonus": 0,
+          "when": [
+            "story.ans_filecrow_clue",
+            "!story.ans_filecrow",
+            "!story.ans_filecrow_rest"
+          ],
+          "scene": "ans_filecrow"
+        }
+      ]
+    },
+    "r3_relay": {
+      "name": "Relay House",
+      "kind": "interior",
+      "outdoor": "route3",
+      "backdrop": "town",
+      "music": "lab",
+      "w": 12,
+      "h": 13,
+      "spawns": null,
+      "zones": [],
+      "fitWidth": true,
+      "safe": {
+        "x": 5,
+        "y": 10
+      },
+      "skin": "lab",
+      "variants": true,
+      "wall": {
+        "windows": [
+          3,
+          8
+        ]
+      },
+      "lairOf": [
+        "humwisp"
+      ],
+      "grid": [
+        "############",
+        "#WWVWWWWVWW#",
+        "#yy......yy#",
+        "#....|.....#",
+        "#~~..|..~~.#",
+        "#....+.....#",
+        "#....|.....#",
+        "#.o..|..o..#",
+        "#~~..|..~~.#",
+        "#y...|....y#",
+        "#....|.....#",
+        "#....m.....#",
+        "############"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "r3r_back",
+          "x": 5,
+          "y": 11,
+          "to": "route3",
+          "tx": 16,
+          "ty": 42,
+          "facing": "down"
+        },
+        {
+          "kind": "prop",
+          "id": "r3r_rack_a",
+          "x": 1,
+          "y": 3,
+          "sprite": "rx_rack",
+          "lines": {
+            "else": "A rack of relays. Every light blinks in time."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3r_rack_b",
+          "x": 10,
+          "y": 3,
+          "sprite": "rx_rack",
+          "lines": {
+            "else": "A rack of relays. Every light blinks in time."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3r_pylon",
+          "x": 8,
+          "y": 5,
+          "sprite": "rx_pylon",
+          "lines": {
+            "else": "A pylon. It hums the same note as the cradle."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3r_tank",
+          "x": 2,
+          "y": 7,
+          "sprite": "lab_tank",
+          "lines": {
+            "else": "A tank of something still. Nothing swims."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "r3r_box",
+          "x": 9,
+          "y": 9,
+          "sprite": "glowbox",
+          "lines": {
+            "else": "A glowbox, warm to the touch."
+          }
+        },
+        {
+          "kind": "wild",
+          "id": "ans_humwisp",
+          "x": 6,
+          "y": 4,
+          "form": "humwisp/1",
+          "level": 30,
+          "boss": true,
+          "befriendBonus": 0,
+          "when": [
+            "story.ans_humwisp_clue",
+            "!story.ans_humwisp",
+            "!story.ans_humwisp_rest"
+          ],
+          "scene": "ans_humwisp"
+        }
+      ]
+    }
+  },
+  "scenes": {
+    "ans_open": [
+      [
+        "say",
+        "Archivist Mo",
+        "You walked the Brinewick road. Then you heard it too. That low hum past the crates."
+      ],
+      [
+        "say",
+        "Archivist Mo",
+        "Before the chips, they built tools to carry it. A counter, a lamp, a crow, a tether, a wisp."
+      ],
+      [
+        "say",
+        "Archivist Mo",
+        "The hum woke all five. My books call them the Answerers. The page on what they answer stays blank."
+      ],
+      [
+        "say",
+        "Archivist Mo",
+        "Find them. Quiet them, or keep them. Look at your own hands either way."
+      ],
+      [
+        "setFlag",
+        "story.ans_open",
+        true
+      ],
+      [
+        "say",
+        "Archivist Mo",
+        "Start with the old census post on Route 2. It never stopped counting."
+      ]
+    ],
+    "ans_open@glimmer": [
+      [
+        "say",
+        "Associate Quinn",
+        "You made it down the Brinewick road. Good. This is the next quarter."
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "Before the chips, we built five relays. A counter, a lamp, a crow, a tether, a wisp."
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "The hum woke them and they walked off the books. Relay coverage is our proudest number. Five are missing."
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "Bring the units home. Nothing sharp. Nothing cold."
+      ],
+      [
+        "setFlag",
+        "story.ans_open",
+        true
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "The census post on Route 2 is still counting. Start there. Have a bright day."
+      ]
+    ],
+    "ans_clue_tallybat": [
+      [
+        "say",
+        "",
+        "An old Glow Census post. The counter clicks with nobody near it: 4, 4, 4, 4."
+      ],
+      [
+        "say",
+        "",
+        "Fresh tally marks run off the post and down the road. Something is still counting, east of here."
+      ],
+      [
+        "setFlag",
+        "story.ans_tallybat_clue",
+        true
+      ]
+    ],
+    "ans_clue_dimlamp": [
+      [
+        "say",
+        "",
+        "A Comfort Lamp on a stake, set to RELAY. Beside it stands an empty stake and a cut cord."
+      ],
+      [
+        "say",
+        "",
+        "A tag on the pole: LAMP COUNT 11 OF 12. The twelfth walked off toward the Brinewick road."
+      ],
+      [
+        "setFlag",
+        "story.ans_dimlamp_clue",
+        true
+      ]
+    ],
+    "ans_clue_filecrow": [
+      [
+        "say",
+        "",
+        "A box of old Keeper reports. One page is new, in Mo's hand: CROW. FILES. SEEN ON THE BRINEWICK ROAD."
+      ],
+      [
+        "say",
+        "",
+        "Under it sits a RegenX folder label. Somebody filed it in the wrong archive, on purpose."
+      ],
+      [
+        "setFlag",
+        "story.ans_filecrow_clue",
+        true
+      ]
+    ],
+    "ans_clue_filecrow@glimmer": [
+      [
+        "say",
+        "",
+        "A fifth file cart, wheels unlocked. Its drawer is empty except for one black feather."
+      ],
+      [
+        "say",
+        "",
+        "The sign-out sheet says: RELOCATED, BRINEWICK ROAD OFFICE. Nobody signed it."
+      ],
+      [
+        "setFlag",
+        "story.ans_filecrow_clue",
+        true
+      ]
+    ],
+    "ans_clue_cordhound": [
+      [
+        "say",
+        "",
+        "A chewed cord trails from the BRINEWICK DOCKS crates and down the open road."
+      ],
+      [
+        "say",
+        "",
+        "Small paw prints walk beside it. They stop at every crate, then go on."
+      ],
+      [
+        "setFlag",
+        "story.ans_cordhound_clue",
+        true
+      ]
+    ],
+    "ans_clue_humwisp": [
+      [
+        "say",
+        "",
+        "The old mast hums. It never hummed before."
+      ],
+      [
+        "say",
+        "",
+        "The four went quiet. The fifth got louder. It waits where the Brinewick road ends."
+      ],
+      [
+        "setFlag",
+        "story.ans_humwisp_clue",
+        true
+      ]
+    ],
+    "ans_clue_humwisp@glimmer": [
+      [
+        "say",
+        "",
+        "The cradle hums low. Its cursor spells COUNT. GATHER. LISTEN. Then one more word: ANSWER."
+      ],
+      [
+        "say",
+        "",
+        "A note on the glass, in Quinn's hand: THE FIFTH IS AT THE RELAY HOUSE. END OF THE ROAD."
+      ],
+      [
+        "setFlag",
+        "story.ans_humwisp_clue",
+        true
+      ]
+    ],
+    "ans_tallybat": [
+      [
+        "say",
+        "",
+        "A bat hangs from the tally gate, counting crates that are not there. It counts you. Twice."
+      ],
+      [
+        "encounter",
+        "ans_tallybat"
+      ],
+      [
+        "if",
+        "story.ans_tallybat",
+        [
+          [
+            "say",
+            "",
+            "It stops counting. It folds its wings and settles near {pet}."
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "The tally clicks on. It is still counting, somewhere close."
+          ]
+        ]
+      ]
+    ],
+    "ans_dimlamp": [
+      [
+        "say",
+        "",
+        "A lamp-headed shade glows between the cots. Its light asks you to sit down and stay."
+      ],
+      [
+        "encounter",
+        "ans_dimlamp"
+      ],
+      [
+        "if",
+        "story.ans_dimlamp",
+        [
+          [
+            "say",
+            "",
+            "Its glow turns soft and stays soft. It follows {pet} out to the road."
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "The lamps dim. The room waits for another visitor."
+          ]
+        ]
+      ]
+    ],
+    "ans_filecrow": [
+      [
+        "say",
+        "",
+        "A crow with a file-card chest perches on the ledger. It files your name before you say it."
+      ],
+      [
+        "encounter",
+        "ans_filecrow"
+      ],
+      [
+        "if",
+        "story.ans_filecrow",
+        [
+          [
+            "say",
+            "",
+            "It closes the ledger and hops over to {pet}, light as paper."
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "It flips a card over: FILE PENDING."
+          ]
+        ]
+      ]
+    ],
+    "ans_cordhound": [
+      [
+        "say",
+        "",
+        "A shadow pup paces the cargo yard on a cord nobody holds. The crates hum when it passes."
+      ],
+      [
+        "encounter",
+        "ans_cordhound"
+      ],
+      [
+        "if",
+        "story.ans_cordhound",
+        [
+          [
+            "say",
+            "",
+            "It drops the cord at your feet and wags once."
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "The cord pulls tight. The pup is back among the crates."
+          ]
+        ]
+      ]
+    ],
+    "ans_humwisp": [
+      [
+        "say",
+        "",
+        "The relay hums so low you feel it in your teeth. A wisp drifts off the old machine and turns to you."
+      ],
+      [
+        "encounter",
+        "ans_humwisp"
+      ],
+      [
+        "if",
+        "story.ans_humwisp",
+        [
+          [
+            "say",
+            "",
+            "The hum drops to a whisper. The wisp curls beside {pet}, and the relay goes quiet."
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "The wisp sinks back into the hum. The relay keeps calling."
+          ]
+        ]
+      ]
+    ],
+    "ans_close": [
+      [
+        "say",
+        "Archivist Mo",
+        "Five. All of them."
+      ],
+      [
+        "say",
+        "Archivist Mo",
+        "Their hum is smaller now. Smaller is not gone. I wrote that down too."
+      ],
+      [
+        "acorns",
+        500
+      ],
+      [
+        "setFlag",
+        "story.ans_all",
+        true
+      ]
+    ],
+    "ans_close@glimmer": [
+      [
+        "say",
+        "Associate Quinn",
+        "All five relays are home. That is a very good quarter."
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "The cradle is calmer. Do not ask me what that means. I would not know."
+      ],
+      [
+        "acorns",
+        500
+      ],
+      [
+        "setFlag",
+        "story.ans_all",
+        true
+      ]
+    ]
+  },
+  "spawnTables": {
+    "_note": "D812: Route 3 leans SHADE and VOLT. No starter lines (no tide). Levels sit under the Lv 30 cap.",
+    "route3": {
+      "stage2": 0.25,
+      "table": [
+        [
+          "shade",
+          22,
+          23,
+          27
+        ],
+        [
+          "volt",
+          20,
+          23,
+          27
+        ],
+        [
+          "moth",
+          12,
+          22,
+          26
+        ],
+        [
+          "dormouse",
+          10,
+          22,
+          26
+        ],
+        [
+          "crab",
+          10,
+          22,
+          25
+        ],
+        [
+          "gust",
+          8,
+          23,
+          26
+        ],
+        [
+          "vane",
+          4,
+          24,
+          27
+        ],
+        [
+          "owl",
+          8,
+          23,
+          27
+        ]
+      ]
+    }
+  },
+  "slicePatch": {
+    "maps": {
+      "route2": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "r2_ans_post",
+            "x": 22,
+            "y": 9,
+            "sprite": "signpost",
+            "when": [
+              "story.ans_open"
+            ],
+            "lines": {
+              "!story.ans_tallybat_clue": "@ans_clue_tallybat",
+              "else": "The census counter clicks: 4, 4, 4."
+            }
+          }
+        ]
+      },
+      "cobblecrest": {
+        "gridRows": {
+          "8": "pppppppppppppppppppppppppppppppp"
+        },
+        "replaceObjs": [
+          {
+            "kind": "sign",
+            "id": "cc_sign_east",
+            "x": 29,
+            "y": 7,
+            "when": [
+              "!story.route3_open"
+            ],
+            "text": "BRINEWICK ROAD · Closed while crates are loaded. Thank you for your patience! — Glimmerwell Co."
+          },
+          {
+            "kind": "prop",
+            "id": "cc_crates",
+            "x": 30,
+            "y": 8,
+            "sprite": "crate",
+            "when": [
+              "!story.route3_open"
+            ],
+            "lines": {
+              "else": "Glimmerwell crates, stacked high. Every one is stencilled BRINEWICK DOCKS."
+            }
+          }
+        ],
+        "addObjs": [
+          {
+            "kind": "sign",
+            "id": "cc_sign_east_open",
+            "x": 29,
+            "y": 7,
+            "when": [
+              "story.route3_open"
+            ],
+            "text": "BRINEWICK ROAD · Open. Mind the crates."
+          },
+          {
+            "kind": "prop",
+            "id": "cc_crates_aside",
+            "x": 30,
+            "y": 7,
+            "sprite": "crate",
+            "when": [
+              "story.route3_open"
+            ]
+          },
+          {
+            "kind": "warp",
+            "id": "cc_east",
+            "x": 31,
+            "y": 8,
+            "to": "route3",
+            "tx": 1,
+            "ty": 4,
+            "facing": "right",
+            "when": [
+              "story.route3_open"
+            ],
+            "setFlag": "story.reached_route3"
+          },
+          {
+            "kind": "prop",
+            "id": "cc_ans_tether",
+            "x": 30,
+            "y": 9,
+            "sprite": "rope_coil",
+            "when": [
+              "story.ans_open"
+            ],
+            "lines": {
+              "!story.ans_cordhound_clue": "@ans_clue_cordhound",
+              "else": "A chewed cord. It points east."
+            }
+          }
+        ]
+      },
+      "rx_f3": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "rx3_ans_cart",
+            "x": 3,
+            "y": 14,
+            "sprite": "lab_file_cart",
+            "when": [
+              "story.side=glimmer",
+              "story.ans_open"
+            ],
+            "lines": {
+              "!story.ans_filecrow_clue": "@ans_clue_filecrow",
+              "else": "An empty cart. RELOCATED, it says."
+            }
+          }
+        ]
+      },
+      "hm_hq_f1": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "hq_ans_box",
+            "x": 2,
+            "y": 3,
+            "sprite": "crate",
+            "when": [
+              "!story.side=glimmer",
+              "story.ans_open"
+            ],
+            "lines": {
+              "!story.ans_filecrow_clue": "@ans_clue_filecrow",
+              "else": "Keeper reports. The crow page is on top."
+            }
+          }
+        ]
+      },
+      "rx_f4": {
+        "replaceObjs": [
+          {
+            "kind": "prop",
+            "id": "rx_arbiter",
+            "name": "The Arbiter",
+            "x": 6,
+            "y": 3,
+            "sprite": "arbiter",
+            "lines": {
+              "story.side=glimmer&story.ans_tallybat&story.ans_dimlamp&story.ans_filecrow&story.ans_cordhound&!story.ans_humwisp_clue": "@ans_clue_humwisp",
+              "story.heights_done": "Still emitting. Slow. Unnamed.",
+              "story.saw_arbiter": "A cursor answers the hum.",
+              "story.rx_f1": "The hum was here before you.",
+              "else": "It emits slowly. The screen is dark."
+            }
+          }
+        ]
+      },
+      "mahopac": {
+        "replaceObjs": [
+          {
+            "kind": "prop",
+            "id": "mah_signal_mast",
+            "x": 9,
+            "y": 5,
+            "sprite": "lm_signal_mast",
+            "lines": {
+              "!story.side=glimmer&story.ans_tallybat&story.ans_dimlamp&story.ans_filecrow&story.ans_cordhound&!story.ans_humwisp_clue": "@ans_clue_humwisp",
+              "story.ans_humwisp_clue": "The mast hums low. East, it says.",
+              "else": "An old signal mast. Rust and wire."
+            }
+          }
+        ]
+      },
+      "cc_hall_in": {
+        "addObjs": [
+          {
+            "kind": "npc",
+            "id": "cc_quinn",
+            "name": "Associate Quinn",
+            "look": "quinn",
+            "x": 8,
+            "y": 3,
+            "facing": "left",
+            "when": [
+              "story.side=glimmer",
+              "story.gb_done"
+            ],
+            "lines": {
+              "story.reached_route3&!story.ans_open": "@ans_open",
+              "story.ans_humwisp&!story.ans_all": "@ans_close",
+              "story.ans_all": "Five relays home. A very good quarter.",
+              "story.ans_open": "Five relays. The road knows where.",
+              "else": "The review is closed. Have a bright day."
+            }
+          }
+        ]
+      },
+      "hw_cut": {
+        "addObjs": [
+          {
+            "kind": "prop",
+            "id": "hw_ans_lamp",
+            "x": 10,
+            "y": 11,
+            "sprite": "comfort_lamp",
+            "when": [
+              "story.ans_open"
+            ],
+            "lines": {
+              "!story.ans_dimlamp_clue": "@ans_clue_dimlamp",
+              "else": "LAMP COUNT 11 OF 12."
+            }
+          }
+        ]
+      }
+    }
+  },
+  "flags": {
+    "story.reached_route3": "Walked onto Route 3 from Cobblecrest (the east warp). Opens the Five that answer chain.",
+    "story.ans_open": "Mo (Keepers) or Quinn (Glimmerwell) asked you to find the five.",
+    "story.ans_tallybat_clue": "Read the census post on Route 2.",
+    "story.ans_dimlamp_clue": "Read the relay lamp stake in Hushwater.",
+    "story.ans_filecrow_clue": "Read Mo's box (Keepers) or the RegenX file cart (Glimmerwell).",
+    "story.ans_cordhound_clue": "Read the chewed cord by the Cobblecrest crates.",
+    "story.ans_humwisp_clue": "Read the Mahopac mast (Keepers) or the cradle (Glimmerwell), after the four.",
+    "story.ans_<unit>": "That boss was befriended (set by the encounter, not a setFlag).",
+    "story.ans_<unit>_rest": "That boss went back to its post; cleared on the day roll.",
+    "story.ans_all": "All five found and reported. Pays 500 Acorns once.",
+    "story.route3_open": "Derived on arrival (D810): story.rc_done plus story.hc_council_done (Keepers) or story.gb_done (Glimmerwell). Opens the Cobblecrest exit."
+  }
+}

@@ -327,7 +327,7 @@ Which species appear depends on where you are and the weather there:
 - The place chip on the Walk screen shows the place and the hour, and the weather when there is some (tap it for today); rain and
   snow fall over the map, storms flash, fog hazes it and night tints it.
 
-Creatures: 20 lines of 3 forms. The WALKLING JOURNAL lists the 57 forms a keeper can meet. Every line a keeper
+Creatures: 25 lines of 3 forms. The WALKLING JOURNAL lists the 57 forms a keeper can meet in its grid. Every line a keeper
 can meet grows up the same way (Lv 12, then Lv 24 with 2 Seals, plus the care floor, then GROW UP). The six newer lines (design spec CREATURES_SLICE):
 Pomlet → Pomshell → Orchardon (BLOOM beetle), Loamlet → Burrowbloom → Hedgewarden (BLOOM mole),
 Clinkit → Shardpincer → Mosaicrab (TIDE crab), Fuzzwick → Filamoth → Halowatt (VOLT moth),
@@ -345,6 +345,15 @@ the Pets tab (with the species name underneath) and is saved in the Walkling's `
 NAME field on the Walkling sheet, change a name you already gave. Leave that field empty, or type the species name,
 and the species name shows again. Save `v` stays 2.
 Save `v` stays 2.
+The Answerers (ARBITER_UNITS, `handoff/walklings/ARBITER_UNITS.md`): Tallybat, Dimlamp, Filecrow, Cordhound and Humwisp (SHADE).
+Glimmerwell built them as its first relays, before the Tuning chips, and the Arbiter's hum woke them. Each keeps one name and never
+grows up. Its tiers, Quiet, Humming and Answering, rise with a HUM meter (`pet.hum`, tiers at 40 and 100) that a won battle, the
+first daily visit to a Glimmerwell place and the first daily visit to its own lair fill. HUM shows in the GROW slot. STILL on the stats
+card stops the meter. Each has one passive Echo, shown on the stats card. They are met only as bosses on Route 3, the Brinewick road,
+which opens past Cobblecrest's east sign after Rook's last crates and that side's chapter end (the Lantern Council or the Signal
+Review). A boss opens at Humming with 1.5x HP, cannot be befriended until it shifts to Answering at half HP, returns the next day if not
+befriended, and joins at Quiet. Archivist Mo or Associate Quinn opens the side chain "Five that answer"; the close pays 500 Acorns. They
+sit in their own journal row, outside the 57. Save `v` stays 2.
 
 Location and privacy: on the first visit to Walk a card asks "Use your location so local creatures
 appear? ..." with Allow / Not now. The tap that closes the line before that card does not press

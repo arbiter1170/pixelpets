@@ -14,8 +14,10 @@ D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE 
 
 D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET). D798 is reserved: PLAZA_ERRANDS (Vincent, Oct 26, 2026, yes to all five).
 
-Next free id is D799.
-Other packets hold ids through D798.
+D799-D815 are reserved: ARBITER_UNITS (Build A D799-D809, Build C D810-D815).
+
+Next free id is D816.
+Other packets hold ids through D815.
 
 ## Open
 
@@ -25,6 +27,23 @@ Other packets hold ids through D798.
 | D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
 | D791 | MODERN_HUD_CLEAR tutorial strip in dock, YELLOW, OPEN | Strip over dock row 2 only once tutorial popups look lands | Not built; waits on the tutorial popups packet look | tutorial popups packet |
 | D794 | TOP_HUD strip-and-chip yellow | Where the tutorial strip docks in the frame so it never covers the place chip | Default: strip over dock row 2 only. Not built until tutorial popups look | TOP_HUD / MODERN_HUD_CLEAR |
+| D799 | Answerers: names | Red. Tallybat, Dimlamp, Filecrow, Cordhound, Humwisp; groups "the Answerers" (Keepers) and "the Founder's Line" with "units" (Glimmerwell). | Settled in part (Vincent, Oct 27, 2026): origin (Glimmerwell's first relays, woken by the hum), Dimlamp for Hushlamp, Filecrow for Ledgerowl (new crow art). Built (build 20261027-1400). Species ids 20-24 are permanent once merged. | `handoff/walklings/ARBITER_UNITS.md` §1; `sprites.js` |
+| D800 | Answerers: tiers | Red. One name, tiers Quiet / Humming / Answering in `p.stage`; `attune` drops GROW UP; `pet.hum` 0-100 (tiers at 40 and 100); STILL / LISTEN (`pet.still`) stops the meter. | Tier words and STILL settled (Vincent, Oct 27, 2026). Built (build 20261027-1400). | `game.js` attunement block; `save.js` fixPet |
+| D801 | Answerers: hum sources | Yellow. Win +4, first daily Glimmerwell place +6, first daily lair visit +10, Humwisp in the party x1.5. | Built (build 20261027-1400). One constant (`HUM_GAIN`). | `HUM_GAIN` in `game.js` |
+| D802 | Answerers: Echoes | Red. One passive each: Recount, Glow Share, Filed Away, Live Wire, Carrier Hum. | Built (build 20261027-1400). Hooked in the battle step queue (`doMove`, `applyStage`). | `ECHOES` in `game.js` |
+| D803 | Answerers: befriending | Yellow. BEFRIEND refused until the boss shifts; zone x0.75 (`befriendMul`). | Built (build 20261027-1400). | `befriendMul` in `sprites.js`; `befriendZoneWidth` |
+| D804 | Answerers: boss battles | Red. Opens at Humming, x1.5 HP for the battle, leader AI, shifts to Answering at half HP, rests until the next day if not befriended, joins at Quiet. Levels 26-30 under the Lv 30 cap. | Built (build 20261027-1400). | `BOSS_HP_MUL`, `setFoeTier`, `bossShift` in `game.js`; `data/detail_route3.json` |
+| D805 | Answerers: the branch | Red. Side chain "Five that answer": Mo (Keepers) or Quinn (Glimmerwell), five clues on both paths, close pays 500 Acorns (no Standing). | Built (build 20261027-1400). Reward default stays open; the 10-Standing idea is not built (the quest skill forbids it). | `quests.js`; `data/detail_route3.json` |
+| D806 | Answerers: journal | Yellow. `boss` lines sit in an ANSWERERS / FOUNDER'S LINE row outside the grid; the grid still counts 57. | Built (build 20261027-1400). | `offJournal`, `renderBossRow` in `game.js` |
+| D807 | Answerers: stats | Yellow. Keep 192/256/320; boss toughness is the battle-only HP multiplier. | Built (build 20261027-1400). | `stats.js` |
+| D808 | Answerers: typing | Green. Single SHADE, VOLT moves for the electronic side. | Built (build 20261027-1400). | `sprites.js` |
+| D809 | Answerers: chips | Yellow. No Tuning chip, no `align`; both the Tuning and the briefing chip offer refuse an Answerer ("It already answers."). | Built (build 20261027-1400). | `tune`, `chipOffer` in `game.js` |
+| D810 | Route 3: when it opens | Red (approved with the Build C plan and the v0.3 gate, Vincent, Oct 27, 2026). `story.route3_open` is derived on arrival: `story.rc_done` plus `story.hc_council_done` (Keepers) or `story.gb_done` (Glimmerwell). Brinewick stays shut. | Built (build 20261027-1400). Rook gets an open-road line. | `openRoad3` in `game.js`; `data/detail_route3.json` |
+| D811 | Route 3: hold | Yellow. Split: "Keepers walk it. Glimmerwell's crates roll down it." | Built (build 20261027-1400). Node `route3` at col 17, row 9. | `REGION_MAP.nodes.route3` |
+| D812 | Route 3: wilds | Yellow. SHADE and VOLT lean, Lv 22-27, no starter lines (no tide). | Built (build 20261027-1400). | `data/detail_route3.json` `spawnTables.route3` |
+| D813 | Route 3: names and copy | Yellow. Placeholder names and lines: ROUTE 3, Comfort Sanctuary, Shipping Ledger Office, Relay House, "BRINEWICK · Not yet.", every clue, boss, entry and close line. | Built as marked placeholder copy in the existing voices. | `data/detail_route3.json` |
+| D814 | A second Quinn contact | Yellow. Associate Quinn in the Cobblecrest Trial Hall is a glimmer cast row, separate from the RegenX "Quinn". | Built (build 20261027-1400). | `data/reputation.json`; `data/heights.json` speakers |
+| D815 | Clue reach on a switched save | Yellow. A player who switched to Glimmerwell without entering the RegenX lab cannot reach the lab clues; the Keepers mast needs `story.mom_sent`. | Not fixed. The Keepers twins cover a Keepers player. | `data/detail_route3.json` |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

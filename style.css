@@ -1537,3 +1537,12 @@ body.mhc-frame.ctl-modern.scene-on .float-ctl{z-index:12}
 .ct-party[hidden]{display:none}
 #careTray .btn{margin:0}
 .ct-care .btn > canvas{display:inline-block;vertical-align:middle}
+
+/* ARBITER_UNITS (D804, D806, D802): boss battle tint, the journal row under the grid, the stats-card ECHO line and STILL. */
+#ovBattle.boss #battleCanvas{filter:saturate(.75) hue-rotate(-14deg) brightness(.9)}
+.dex-boss{padding:4px 3px 12px}
+.dex-boss-head{text-align:center;color:var(--l);font-size:16px;letter-spacing:1px;margin:2px 0 8px}
+.dex-boss-cells{grid-template-columns:repeat(3,1fr);padding:0}
+.sc-echo{margin-top:4px;color:var(--s)}
+.sc-echo b{color:var(--w);font-weight:normal}
+#scStill{min-height:44px}
