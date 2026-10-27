@@ -1475,13 +1475,13 @@ body.mhc-frame.ctl-modern #fcDockR3 .coop-dock-slot{
 body.mhc-frame.ctl-modern #mapWrap > .joy{bottom:calc(8px + var(--sa-b));left:calc(12px + var(--sa-l));z-index:3;pointer-events:auto}
 body.mhc-frame.ctl-modern #thChip{overflow:hidden}
 body.mhc-frame.ctl-modern .bump-hint:not([hidden]){
-  position:fixed;left:6px;right:6px;transform:none;z-index:24;pointer-events:none;
-  bottom:auto;width:auto;max-width:none;height:40px;font-size:16px;line-height:20px;text-align:center;overflow:hidden}
+  position:fixed;transform:none;z-index:24;pointer-events:none;
+  font-size:13px;line-height:16px;text-align:left;overflow:hidden;background:var(--k)}
 body.mhc-frame.ctl-modern[data-screen="walk"] #toast{
-  top:auto;left:6px;right:6px;transform:none;bottom:calc(156px + var(--sa-b) + 8px);
-  width:auto;max-width:none;height:40px;max-height:40px;font-size:16px;line-height:20px;
-  padding:8px 10px;white-space:normal;text-align:center;overflow:hidden;pointer-events:none;
-  box-sizing:border-box;z-index:25;background:var(--k)}
+  top:auto;left:auto;right:auto;transform:none;bottom:calc(112px + var(--sa-b));
+  width:auto;max-width:none;height:44px;max-height:44px;font-size:13px;line-height:16px;
+  padding:4px 6px;white-space:normal;text-align:left;overflow:hidden;pointer-events:none;
+  box-sizing:border-box;z-index:3;background:var(--k);box-shadow:inset 0 0 0 2px var(--y)}
 body.mhc-frame.ctl-modern[data-screen="walk"] #toast.show{opacity:1;transition:none}
 body.mhc-frame.ctl-modern #careTray{
   left:calc(6px + var(--sa-l));right:calc(6px + var(--sa-r));bottom:calc(6px + var(--sa-b));

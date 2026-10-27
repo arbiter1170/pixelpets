@@ -101,31 +101,37 @@ test('portrait modern dock: toast stays in the chip slot and a new step cues onc
     const hour = document.querySelector('#thHour');
     const quest = document.querySelector('#questBtn');
     const dock = document.querySelector('#fcDock');
+    const map = document.querySelector('#mapCanvas');
     const tr = toast.getBoundingClientRect();
     const ar = acorns.getBoundingClientRect();
     const cr = chip.getBoundingClientRect();
     const hr = hour.getBoundingClientRect();
     const qr = quest.getBoundingClientRect();
     const dr = dock.getBoundingClientRect();
+    const mr = map.getBoundingClientRect();
     const overlap = (a, b) => a && b && Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) > 1
       && Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)) > 1;
     return {
       text: toast.textContent,
       shown: toast.classList.contains('show'),
+      pe: getComputedStyle(toast).pointerEvents,
       overAcorns: overlap(tr, ar),
       overChip: overlap(tr, cr),
       overHour: overlap(tr, hr),
       overQuest: overlap(tr, qr),
-      aboveDock: tr.bottom <= dr.top + 2,
+      overMap: overlap(tr, mr),
+      inDock: tr.top >= dr.top - 1 && tr.bottom <= dr.bottom + 1,
     };
   });
   expect(slot.shown).toBe(true);
   expect(slot.text).toBe('Found 3 Hearty Snacks!');
+  expect(slot.pe).toBe('none');
   expect(slot.overAcorns).toBe(false);
   expect(slot.overChip).toBe(false);
   expect(slot.overHour).toBe(false);
   expect(slot.overQuest).toBe(false);
-  expect(slot.aboveDock).toBe(true);
+  expect(slot.overMap).toBe(false);
+  expect(slot.inDock).toBe(true);
 
   const step = await page.evaluate(() => {
     const before = document.querySelector('#toast').textContent;

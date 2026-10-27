@@ -920,12 +920,42 @@ function toastMeasureEl(){
   return el;
 }
 // D782: pages of two 14 px lines. Sentence end when the rest fits one page; a mid-sentence cut ends in " ...".
+function mhcNoticeBox(){
+  const tray = document.body.classList.contains('ct-open') ? $('#careTray') : null;
+  if (tray && !tray.hidden) {
+    const r = tray.getBoundingClientRect();
+    return { left: Math.round(r.left + 4), top: Math.round(r.top + 2), width: Math.max(40, Math.round(r.width - 8)), height: 36 };
+  }
+  const chip = $('#thChip'), slot = $('#fcDockChip');
+  if (!chip || !slot) return null;
+  const c = chip.getBoundingClientRect(), s = slot.getBoundingClientRect();
+  const left = Math.round(c.right + 4);
+  const width = Math.round(s.right - left);
+  if (width < 36 || s.height < 20) return null;
+  return { left: left, top: Math.round(s.top), width: width, height: Math.round(s.height) };
+}
+function applyNoticeBox(el, box){
+  if (!el) return;
+  if (!box) {
+    el.style.top = el.style.left = el.style.width = el.style.height = el.style.right = el.style.bottom = el.style.maxWidth = '';
+    return;
+  }
+  el.style.left = box.left + 'px';
+  el.style.top = box.top + 'px';
+  el.style.width = box.width + 'px';
+  el.style.height = box.height + 'px';
+  el.style.right = 'auto';
+  el.style.bottom = 'auto';
+  el.style.maxWidth = 'none';
+  el.style.transform = 'none';
+  el.style.pointerEvents = 'none';
+}
 function paginateMhcToast(text){
-  const dock = $('#fcDock');
-  const w = Math.max(200, (dock && dock.clientWidth ? dock.clientWidth : (window.innerWidth || 320)) - 20);
+  const box = mhcNoticeBox();
+  const w = Math.max(48, box ? box.width : 120);
   const el = toastMeasureEl();
-  el.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;box-sizing:border-box;font:bold 16px/20px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif') + ';letter-spacing:.5px;padding:8px 10px;width:' + w + 'px;white-space:normal;';
-  const maxLines = 2, lh = 20;
+  el.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;box-sizing:border-box;font:bold 13px/16px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif') + ';letter-spacing:.5px;padding:4px 6px;width:' + w + 'px;white-space:normal;';
+  const maxLines = 2, lh = 16;
   const fits = s => { el.textContent = s; return el.scrollHeight <= maxLines * lh + 8 + 1; };
   const out = []; let rest = String(text || '').trim();
   let guard = 0;
@@ -945,24 +975,8 @@ function paginateMhcToast(text){
 function placeMhcToast(){
   const t = $('#toast');
   if (!t) return;
-  if (!mhcToastOn() || !t.classList.contains('show')) {
-    t.style.top = t.style.left = t.style.width = t.style.height = t.style.right = t.style.bottom = t.style.maxWidth = '';
-    return;
-  }
-  const tray = document.body.classList.contains('ct-open') ? $('#careTray') : null;
-  const dock = $('#fcDock');
-  const anchor = tray && !tray.hidden ? tray : dock;
-  if (!anchor) return;
-  const r = anchor.getBoundingClientRect();
-  const h = 40;
-  t.style.left = Math.round(r.left) + 'px';
-  t.style.width = Math.round(r.width) + 'px';
-  t.style.right = 'auto';
-  t.style.bottom = 'auto';
-  t.style.height = h + 'px';
-  t.style.maxWidth = 'none';
-  t.style.transform = 'none';
-  t.style.top = Math.round(tray && !tray.hidden ? r.top + 2 : r.top - h - 4) + 'px';
+  if (!mhcToastOn() || !t.classList.contains('show')) { applyNoticeBox(t, null); return; }
+  applyNoticeBox(t, mhcNoticeBox());
 }
 function showToastNow(msg){
   const t = $('#toast'); if (!t) return;
@@ -8062,15 +8076,7 @@ function showBumpHint(o){
 function placeMhcBump(){
   const el = $('#bumpHint');
   if (!el || el.hidden || !mhcToastOn()) return;
-  const dock = $('#fcDock'); if (!dock) return;
-  const r = dock.getBoundingClientRect(), h = 40;
-  el.style.left = Math.round(r.left) + 'px';
-  el.style.width = Math.round(r.width) + 'px';
-  el.style.top = Math.round(r.top - h - 4) + 'px';
-  el.style.bottom = 'auto';
-  el.style.height = h + 'px';
-  el.style.maxWidth = 'none';
-  el.style.transform = 'none';
+  applyNoticeBox(el, mhcNoticeBox());
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };

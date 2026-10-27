@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 07:16 ET: Step toast stays in the dock, off the map (build 20261027-0716)
+
+- What changed and why: The step line sat on the map, over the player and the tiles under them. It now sits in the open space of the dock's top row, beside the hour, and it does not take taps. The map, the hour, Acorns, and the buttons stay clear.
+- Files touched: `game.js`, `style.css`, `tests/modern_hud_dock.spec.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch. Build `20261027-0716`.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/modern_hud_dock.spec.js --project=390` → `PP_TEST RESULT: PASS exit=0 passed=3 failed=0`. The toast rect misses the map, the hour, Acorns, and QUEST, and it takes no taps.
+- Decisions made (colour + reasoning): A bar above the dock covered the player. The notice stays inside the dock.
+- Anything left unfinished: Firebase Google sign-in is still a console step. D791 still waits.
+
 ## 2026-10-27 06:42 ET: Toast sits above the dock, clock stays visible (build 20261027-0642)
 
 - What changed and why: The new-step toast was a fixed box on top of the place chip, so it covered the hour and sliced through the button row. It now sits in a solid bar just above the dock, lined up to the dock itself, and the hour stays visible. The Acorn frame was stretched across the whole dock because that chip was taken out of its own box; it is back inside the Acorn chip, so the buttons no longer sit on that art.
