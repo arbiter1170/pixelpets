@@ -7,7 +7,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - What changed and why: The new-step toast was a fixed box on top of the place chip, so it covered the hour and sliced through the button row. It now sits in a solid bar just above the dock, lined up to the dock itself, and the hour stays visible. The Acorn frame was stretched across the whole dock because that chip was taken out of its own box; it is back inside the Acorn chip, so the buttons no longer sit on that art.
 - Files touched: `game.js`, `style.css`, `tests/modern_hud_dock.spec.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
 - Commit(s) + build id: this branch. Build `20261027-0642`.
-- Tests run and result (widths, checks): `tests/modern_hud_dock.spec.js` at 390. See the result line after the run.
+- Tests run and result (widths, checks): `npm run test:agent -- tests/modern_hud_dock.spec.js --project=390` → `PP_TEST RESULT: PASS exit=0 passed=3 failed=0`. Width 390. Console errors: none.
 - Decisions made (colour + reasoning): The chip-slot toast from D782 covered the hour and the buttons on a phone. The bar above the dock keeps the hour and every button clear.
 - Anything left unfinished: Firebase Google sign-in is still a console step. D791 tutorial strip still waits.
 
