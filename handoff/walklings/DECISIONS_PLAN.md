@@ -120,3 +120,13 @@ New rows (from D854): the cradle-word spine, the twelfth lamp (Rook), the quiet 
 
 Status: **Phase 1 built** (lair beats, clue reach, copy, Rook; D851, D853-D856). Deviation: the Relay House operator fights alone (no ally), to keep it data-only. **Phase 2 built** (the quiet path, KEPT / QUIET in the journal and the close, boss openers and shift lines; D843, D857). Phase 3 (the tuning playtest) is next.
 
+## Resume here (handoff, Oct 27, 2026)
+
+Branch `claude/answerers-decisions`, cut from `claude/answerers` (draft PR #205, not merged yet). Phases 1 and 2 are built and committed; nothing on this branch is in a PR yet.
+
+- **Done:** Phase 1 (lair beats, clue reach D853, copy D851, cradle words D854, Rook D855, lair beats D856) and Phase 2 (quiet path D843, boss opener and shift line D857). Next free decision id is D858.
+- **Tests:** `tests/five_answer.spec.js` plays every lair beat, the quiet win and the three closes; `tests/arbiter_units.spec.js` covers win = quiet and run = rest. These plus `route3`, `data_integrity`, `wording_guard`, `look_keys` and `quest_multi` pass 159/159 at 320, 375 and 390 (`--workers=1` on Windows). The integrity specs are tagged `@w1` and run only at 320. On Linux, also run `npm run test:agent`.
+- **Phase 3 next: tuning (D839, D841, D842, D845).** Use the debug cheats (`forceBoss`, `setHp`, `turnNow`, `forceBefriend`, `addHum`, `bossState`) with a party at Lv 24-27 and record the section 5 table: turns to the shift (target 4-6), befriend tries after it (2-4), days to Humming (3-4) and to Answering (about 2 weeks), wipes per boss (0-1). Change only the constants: `BOSS_HP_MUL`, `befriendMul`, `HUM_GAIN`, `HUM_TIERS`, boss levels in `data/detail_route3.json`.
+- **Phase 4:** archive the confirmed rows (section 6), CHANGELOG entry, README paragraph, spec v0.4 note, `python3 tools/bump_build.py`, regenerate `data/mapdata.js` and `tools/GAMEJS_MAP.txt`, run `node tools/scans/run.js`, then a draft PR into `claude/answerers` (or into `main` once #205 merges, after merging `main` in).
+- **Open for Vincent:** the placeholder name Night Operator Wren (D856); a read of the rewritten copy in game (D851); D852 (give Associate Quinn her own look key?).
+- **Rules:** see AGENTS.md. Branch + PR only, never force-push or rewrite history, never merge your own PR, save `v` stays 2, and keep the wording rules (no faint/evolve/coins/appeared/-dex, no lowercase keeper or trainer in player text).
