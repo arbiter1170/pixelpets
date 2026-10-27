@@ -13,7 +13,19 @@ function modernSave(extra = {}) {
   return s;
 }
 
-test('a save with no settings.controls stays arcade @w1', async ({ page }) => {
+test('a save with no settings.controls loads as modern (ARCADE_GRIPS default) @w1', async ({ page }) => {
+  const s = starterSave(); delete s.settings.controls;
+  await installSave(page.context(), s, { quietDay: true });
+  await gotoGame(page);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await expect(page.locator('#dpad')).toBeHidden();
+  await expect(page.locator('#tabs')).toBeHidden();
+  await expect(page.locator('#floatCtl')).toBeVisible();
+  const st = await page.evaluate(() => ({ c: PixelPets.controls, v: PixelPets.state.v, saved: PixelPets.state.settings.controls }));
+  expect(st).toEqual({ c: { mode: 'modern', joystick: false, dpad: null }, v: 2, saved: 'modern' });
+});
+
+test('a save that picked arcade keeps the pad @w1', async ({ page }) => {
   await installSave(page.context(), starterSave(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
@@ -21,6 +33,7 @@ test('a save with no settings.controls stays arcade @w1', async ({ page }) => {
   await expect(page.locator('#talkBtn')).toBeVisible();
   await expect(page.locator('#tabs')).toBeVisible();
   await expect(page.locator('#floatCtl')).toBeHidden();
+  await expect(page.locator('#gripL')).toBeHidden();
   const st = await page.evaluate(() => ({ c: PixelPets.controls, v: PixelPets.state.v, q: document.querySelector('#questBtn').parentNode.id }));
   expect(st).toEqual({ c: { mode: 'arcade', joystick: false, dpad: null }, v: 2, q: 'tabs' });
 });
@@ -260,7 +273,7 @@ test('D70 first-walk prompt: approved question, ARCADE / MODERN with sub-lines, 
     const r = b.getBoundingClientRect(), l = b.querySelector('.sb-ch-l'), s = b.querySelector('.sb-ch-sub');
     return { l: l && l.textContent, s: s && s.textContent, h: r.height, fits: r.left >= 0 && r.right <= innerWidth && b.scrollWidth <= b.clientWidth + 1 && b.scrollHeight <= b.clientHeight + 1 };
   }));
-  expect(btns.map(b => [b.l, b.s])).toEqual([['ARCADE', 'A pad and a Talk button.'], ['MODERN', 'Tap the map to walk. Tap people to talk.']]);
+  expect(btns.map(b => [b.l, b.s])).toEqual([['MODERN', 'Tap the map to walk. Tap people to talk.'], ['ARCADE', 'A pad and a Talk button.']]);   // ARCADE_GRIPS: the default first
   for (const b of btns) { expect(b.fits).toBe(true); expect(b.h).toBeGreaterThanOrEqual(44); }
   await page.waitForFunction(() => window.PixelPets.optionsReady === true);   // the 500 ms tap guard
   await page.locator('#sbChoices button', { hasText: 'MODERN' }).click();
