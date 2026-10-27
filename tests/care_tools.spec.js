@@ -13,9 +13,7 @@ function saveShot(page, name) {
 trackErrors(test, expect);
 
 async function openNameEditor(page) {
-  await page.locator('#scGear').click();
-  await page.locator('#scNameBtn').scrollIntoViewIfNeeded();
-  await page.locator('#scNameBtn').click();
+  await page.locator('#scNameEdit').click();
   await expect(page.locator('#scNick')).toBeVisible();
 }
 

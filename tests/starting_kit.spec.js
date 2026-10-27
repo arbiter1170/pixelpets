@@ -75,9 +75,11 @@ test('the ADORN picker lists only owned looks, and an old save keeps the five', 
   await boot(page, kitSave());
   await page.locator('#tabs button[data-tab="pet"]').click();
   await page.locator('#petKitBtn').click();
-  await expect(page.locator('#scGearBox')).toBeVisible();
-  await expect(page.locator('#scGearBox [data-acc]')).toHaveText(['None']);
-  const gear = await page.locator('#scGearBox [data-acc]').boundingBox();
+  await expect(page.locator('#ovWalkling')).toBeVisible();
+  await expect(page.locator('#ovWalkling [data-acc]')).toHaveText(['None']);
+  const none = page.locator('#ovWalkling [data-acc]');
+  await none.scrollIntoViewIfNeeded();
+  const gear = await none.boundingBox();
   expect(gear.height).toBeGreaterThanOrEqual(44);
   expect(gear.width).toBeGreaterThanOrEqual(44);
 
@@ -97,7 +99,7 @@ test('the ADORN picker lists only owned looks, and an old save keeps the five', 
   expect(kept.worn).toBe('star');
   expect(kept.v).toBe(2);
   await page.locator('#petKitBtn').click();
-  await expect(page.locator('#scGearBox [data-acc]')).toHaveText(['None'].concat(FIVE_NAMES));
+  await expect(page.locator('#ovWalkling [data-acc]')).toHaveText(['None'].concat(FIVE_NAMES));
 });
 
 test('Mom grants the Hearth scarf once', async ({ page }) => {

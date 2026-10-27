@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="kw-build" content="20261026-1931"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache">
+<meta name="kw-build" content="20261026-2006"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache">
 <meta name="theme-color" content="#1a1c2c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -10,10 +10,10 @@
 <meta name="application-name" content="Walklings">
 <meta name="apple-mobile-web-app-title" content="Walklings">
 <meta name="description" content="Walklings: raise a pixel Walkling, walk the map and befriend wild ones.">
-<link rel="icon" href="icons/icon-192.png?v=20261026-1931">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261026-1931">
-<link rel="manifest" href="manifest.json?v=20261026-1931">
-<link rel="stylesheet" href="style.css?v=20261026-1931"></head><body>
+<link rel="icon" href="icons/icon-192.png?v=20261026-2006">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=20261026-2006">
+<link rel="manifest" href="manifest.json?v=20261026-2006">
+<link rel="stylesheet" href="style.css?v=20261026-2006"></head><body>
 <div id="app">
   <header id="top">
     <div class="who"><button id="repBtn" class="icon-btn" type="button" aria-label="People"><canvas id="repIcon" width="12" height="12" aria-hidden="true"></canvas></button><canvas id="hdrIcon" width="18" height="18"></canvas><span id="hdrName">Walklings</span><span id="fastTag" class="fast-tag" title="Debug fast decay is on" hidden>FAST</span><button id="dbgTag" class="fast-tag dbg-tag" type="button" title="Debug tools" aria-label="Debug tools" hidden>DBG</button></div>
@@ -39,7 +39,10 @@
   <main>
     <!-- PET CARE -->
     <section id="scr-pet" class="screen">
+      <div class="pet-switch" id="petSwitch">
       <button class="scr-back" type="button" aria-label="Back to the walk screen"><canvas class="ico-hud" data-nav="back" width="8" height="8" aria-hidden="true"></canvas><span>WALK</span></button>
+      <div class="pet-slots" id="petSlots" hidden></div>
+      </div>
       <div class="scene-wrap pet-scene"><canvas id="petCanvas" role="img" aria-label="Your partner" width="80" height="64"></canvas><span id="petKeeper" class="scene-keeper" aria-label="Holder Wayfarer"></span><span id="petBadge" class="scene-badge" hidden></span></div>
       <div class="stats lower-card care-block" aria-label="Partner stats">
         <div class="stat st-hp"><span class="stat-lab"><canvas class="ico-hp" width="5" height="5" aria-hidden="true"></canvas>HP</span><div class="bar" id="careHp" role="img" aria-label="HP"><i id="barHpPet" class="c-hp"></i></div><b aria-hidden="true"></b></div>
@@ -390,10 +393,8 @@
     <div id="scStatsHead" class="sc-sub"></div>
     <div id="scStats" class="sc-stats"></div>
     <div id="scChart" class="sc-chart"></div>
-    <div id="scGearBox" class="sc-gear" hidden></div>
     <div id="scActs" class="actions two-even">
       <button id="scRename" class="btn" type="button" aria-label="Care for partner">INTERACT</button>
-      <button id="scGear" class="btn btn-play" type="button" aria-pressed="false">GEAR</button>
     </div>
     <button id="scClose" class="btn" type="button">CLOSE</button>
     <div id="scNick" class="sc-nick" hidden>
@@ -750,25 +751,25 @@
 </div>
 <!-- New-build notice (version.json differs from window.BUILD); never shown over a battle or an overlay -->
 <div id="buildBar" class="build-bar" role="status" hidden><button id="buildGo" class="build-go" type="button">New build ready. Tap to refresh.</button><button id="buildX" class="build-x" type="button" aria-label="Dismiss">X</button></div>
-<script>window.BUILD = "20261026-1931";</script>
-<script src="sprites.js?v=20261026-1931"></script>
-<script src="keeper.js?v=20261026-1931"></script>
-<script src="stats.js?v=20261026-1931"></script>
-<script src="moves.js?v=20261026-1931"></script>
-<script src="mv_fx.js?v=20261026-1931"></script>
-<script src="data/mapdata.js?v=20261026-1931"></script>
-<script src="quests.js?v=20261026-1931"></script>
-<script src="standing.js?v=20261026-1931"></script>
-<script src="rep.js?v=20261026-1931"></script>
-<script src="save.js?v=20261026-1931"></script>
-<script src="clock.js?v=20261026-1931"></script>
-<script src="env.js?v=20261026-1931"></script>
-<script src="sfx.js?v=20261026-1931"></script>
-<script src="minigames.js?v=20261026-1931"></script>
-<script src="ribbit.js?v=20261026-1931"></script>
-<script src="cloud_config.js?v=20261026-1931"></script>
-<script src="cloud.js?v=20261026-1931"></script>
-<script src="net.js?v=20261026-1931"></script>
-<script src="debug_ui.js?v=20261026-1931"></script>
-<script src="data/nav_art.js?v=20261026-1931"></script>
-<script src="game.js?v=20261026-1931"></script></body></html>
+<script>window.BUILD = "20261026-2006";</script>
+<script src="sprites.js?v=20261026-2006"></script>
+<script src="keeper.js?v=20261026-2006"></script>
+<script src="stats.js?v=20261026-2006"></script>
+<script src="moves.js?v=20261026-2006"></script>
+<script src="mv_fx.js?v=20261026-2006"></script>
+<script src="data/mapdata.js?v=20261026-2006"></script>
+<script src="quests.js?v=20261026-2006"></script>
+<script src="standing.js?v=20261026-2006"></script>
+<script src="rep.js?v=20261026-2006"></script>
+<script src="save.js?v=20261026-2006"></script>
+<script src="clock.js?v=20261026-2006"></script>
+<script src="env.js?v=20261026-2006"></script>
+<script src="sfx.js?v=20261026-2006"></script>
+<script src="minigames.js?v=20261026-2006"></script>
+<script src="ribbit.js?v=20261026-2006"></script>
+<script src="cloud_config.js?v=20261026-2006"></script>
+<script src="cloud.js?v=20261026-2006"></script>
+<script src="net.js?v=20261026-2006"></script>
+<script src="debug_ui.js?v=20261026-2006"></script>
+<script src="data/nav_art.js?v=20261026-2006"></script>
+<script src="game.js?v=20261026-2006"></script></body></html>

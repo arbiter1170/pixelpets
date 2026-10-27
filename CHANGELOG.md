@@ -2,6 +2,24 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-26 20:06 ET: Party row on the care screen, and GEAR opens the sheet (build 20261026-2006)
+
+- What changed and why: GEAR on the care screen opens the Walkling sheet for the shown Walkling. CLOSE returns to the care screen. The stats card drops GEAR, so INTERACT fills the row and CLOSE stays. With two or more Walklings in the party, slots sit in one row beside the WALK back arrow, in party order. A tap makes that Walkling the partner, the same way a tray slot does. A party of one shows the back arrow and no slots. A party of six stays on one row at 320, 375 and 390. The switcher is off during a care action, a pinned lesson, an open overlay, and while the nav lock is on. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. No migrator.
+- Files touched: `game.js`, `index.html`, `style.css`, `tools/GAMEJS_MAP.txt`, `version.json`, `tests/gear_switch.spec.js`, `tests/care_tools.spec.js`, `tests/partner_kit.spec.js`, `tests/partner_ui.spec.js`, `tests/hushwater_b0.spec.js`, `tests/starting_kit.spec.js`, `tests/wardrobe.spec.js`, `tests/README.md`, `README.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this commit on `cursor/gear-switch-v013-dec6` from main `7599ed2`. Build `20261026-2006`.
+- Tests run and result (widths, checks): filled in after the run.
+- Decisions made (colour + reasoning): D768, D769, D770 and D774 are green, settled as written by the PixelPets Supervisor on Sat Oct 24, 2026, 1:45 PM ET. D771 is red, settled by Vincent on Sat Oct 24, 2026, 1:46 PM ET: option B, a full party of 6 in one row. D772 and D773 are yellow, settled at the default by team vote (PixelPets and QA) when the clock closed Mon Oct 26, 2026, 1:05 PM ET. Options A and C are not built. D794 is not used. No new id. Next free id stays D796.
+- Anything left unfinished: The packet checker is expected to fail on the retired gear anchors and on these settled ids written in the archive, so Design can restamp the spec. The slot aria is "Switch to <name>", with aria-current on the shown Walkling. The old kit opener stays as the fallback when the sheet is missing.
+
+## 2026-10-26 19:31 ET: GROW shows the level (build 20261026-1931)
+
+- What changed and why: The GROW value on the stat strip (`#valXp`) and the PARTNER row (`#valXpPet`) is 18 px again, and it shows the level only (for example `10`, not `10/12`). The bar, the aria label, the hints and the PARTNER grow line keep the full pair. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
+- Files touched: already on main in PR #194. This note is the missing changelog line.
+- Commit(s) + build id: `7599ed2` (PR #194). Build `20261026-1931`.
+- Tests run and result (widths, checks): recorded on PR #194.
+- Decisions made (colour + reasoning): D795 is green, settled (LEVEL_GROW v0.1.3, design 954e7b4). No new id. Next free id is D796.
+- Anything left unfinished: none in this note.
+
 ## 2026-10-26 18:15 ET: One place chip, and the MAP button stays (build 20261026-1815)
 
 - What changed and why: The hour chip and the area badge are one place chip. Line 1 is the day and the hour, plus a weather glyph and a temperature when the weather is known. Line 2 is the place name. In modern controls it sits under the gear, 6 px from the right edge, and slides down when an exit's tap zone would cover it. The left column slides down the same way for a top exit, and comes home one step after that zone leaves. Arriving on a map snaps that slide so the quest arrow stays an on-screen arrow. In arcade the chip is the row above the map. A tap opens TODAY, with LOCATION, MAP and OK. MAP opens the map. A tutorial card and a quest box stay off the chip, and a lesson card does not slide onto its target to clear the chip. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. No migrator.

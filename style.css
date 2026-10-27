@@ -426,6 +426,7 @@ input{font-family:var(--font);font-size:21px;padding:12px;background:var(--k);co
 .sc-stat .bar{height:12px}
 .sc-stat .bar i{background:var(--c)}
 #scActs[hidden],.sc-nick[hidden]{display:none}
+#scActs.two-even{grid-template-columns:1fr}
 .sc-nick{display:flex;flex-direction:column;gap:6px}
 .sc-nick input{color:var(--w);user-select:text;-webkit-user-select:text}
 .sc-chart{font-size:16px;color:var(--h);line-height:1.45;text-align:center}
@@ -1224,6 +1225,19 @@ body.ctl-modern[data-screen="walk"] #toast{top:auto;bottom:calc(56px + var(--tip
 .joy-knob{width:36px;height:36px;border-radius:50%;background:rgba(148,176,194,.6);pointer-events:none}
 body:not(.ctl-modern) .scr-back{display:none}   /* QA Oct 15: arcade has no WALK back button (the base rule above sets flex) */
 body.ctl-modern .scr-back{display:flex;margin:0 0 6px;align-self:flex-start;flex:0 0 auto;cursor:pointer;color:var(--y)}
+/* GEAR_SWITCH D771: party slots beside the back arrow. The fit reaches into the side padding only for six at a narrow width. */
+.pet-switch{display:flex;align-items:flex-start;gap:6px;flex:0 0 auto;align-self:stretch;min-width:0}
+.pet-slots{display:flex;align-items:center;gap:6px;height:44px;flex:0 1 auto;min-width:0}
+.pet-slots[hidden]{display:none}
+.pet-slot{position:relative;width:44px;height:44px;flex:0 0 44px;padding:0;border:0;background:transparent;cursor:pointer;color:inherit}
+.pet-slot::before{content:"";position:absolute;inset:2px;background:var(--d);border:2px solid var(--n);box-sizing:border-box;pointer-events:none}
+.pet-slot.on::before{background:var(--m);border-color:var(--y)}
+.pet-slot canvas.sp{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px 0 0 -18px;pointer-events:none}
+.pet-slot canvas.bd{position:absolute;right:4px;top:4px;width:10px;height:10px;pointer-events:none}
+.pet-slot[aria-disabled="true"]{opacity:.45;cursor:default}
+.pet-switch.fit{margin-left:-8px;margin-right:-8px;gap:4px}
+.pet-switch.fit .pet-slots{gap:0}
+body:not(.ctl-modern) #petSwitch.empty{display:none}
 .set-row[hidden]{display:none}
 /* NAV_MODERN v0.2 §7 pixel art (modern only). The canvas is the face; the button box is transparent. */
 .nav-art,.frame-art,.joy-art{display:none}

@@ -229,34 +229,37 @@ test('arcade PARTNER at 320 keeps the care row on screen', async ({ page }) => {
   expect(fit.tall).toBe(true);
 });
 
-test('STATS popup is INTERACT and GEAR, and INTERACT returns to PARTNER', async ({ page }) => {
+test('STATS popup is INTERACT and CLOSE, and INTERACT returns to PARTNER', async ({ page }) => {
   await boot(page);
   await page.locator('#petStrip').click();
   await page.locator('#ctStats').click();
+  await expect(page.locator('#ovStats')).toBeVisible();
+  await expect(page.locator('#scRename')).toBeVisible();
+  await expect(page.locator('#scClose')).toBeVisible();
+  expect(await page.locator('#scGear').count()).toBe(0);
+  expect(await page.locator('#scGearBox').count()).toBe(0);
   const row = await page.evaluate(() => {
     const a = document.querySelector('#scRename');
-    const g = document.querySelector('#scGear');
+    const acts = document.querySelector('#scActs');
     const card = document.querySelector('#ovStats').innerText;
-    const cs = el => getComputedStyle(el);
+    const ab = a.getBoundingClientRect(), box = acts.getBoundingClientRect();
     return {
-      at: a.textContent.trim(), gt: g.textContent.trim(),
-      ah: a.getBoundingClientRect().height, gh: g.getBoundingClientRect().height,
-      af: parseFloat(cs(a).fontSize), gf: parseFloat(cs(g).fontSize),
-      play: g.classList.contains('btn-play'),
+      at: a.textContent.trim(),
+      ah: ab.height, aw: ab.width, bw: box.width,
+      af: parseFloat(getComputedStyle(a).fontSize),
       aria: a.getAttribute('aria-label'),
       rename: /RENAME/.test(card),
+      gear: /GEAR/.test(card),
       screen: document.body.dataset.screen,
     };
   });
   expect(row.at).toBe('INTERACT');
-  expect(row.gt).toBe('GEAR');
-  expect(row.ah).toBeGreaterThanOrEqual(56);
-  expect(row.gh).toBeGreaterThanOrEqual(56);
+  expect(row.ah).toBeGreaterThanOrEqual(44);
+  expect(row.aw).toBeGreaterThan(row.bw * 0.8);
   expect(row.af).toBe(22);
-  expect(row.gf).toBe(22);
-  expect(row.play).toBe(true);
   expect(row.aria).toBe('Care for Pipkit');
   expect(row.rename).toBe(false);
+  expect(row.gear).toBe(false);
   expect(row.screen).toBe('walk');
   if (page.viewportSize().width === 390) {
     await page.locator('#ovStats .ov-inner').screenshot({ path: path.join(artifactsDir(), 'partner_stats_popup_390.png') });
@@ -275,30 +278,31 @@ test('a Walkling that is not the partner has no INTERACT', async ({ page }) => {
   });
   await expect(page.locator('#ovStats')).toBeVisible();
   await expect(page.locator('#scRename')).toBeHidden();
-  const span = await page.evaluate(() => {
-    const acts = document.querySelector('#scActs');
-    const gear = document.querySelector('#scGear').getBoundingClientRect();
-    const box = acts.getBoundingClientRect();
-    return { one: acts.classList.contains('one'), gear: gear.width, box: box.width };
-  });
+  await expect(page.locator('#scActs')).toBeHidden();
+  await expect(page.locator('#scClose')).toBeVisible();
+  const span = await page.evaluate(() => ({
+    one: document.querySelector('#scActs').classList.contains('one'),
+    gear: document.querySelector('#scGear'),
+    box: document.querySelector('#scGearBox'),
+  }));
   expect(span.one).toBe(true);
-  expect(span.gear).toBeGreaterThan(span.box * 0.8);
+  expect(span.gear).toBeNull();
+  expect(span.box).toBeNull();
 });
 
-test('GEAR name row and the header pencil open the name editor', async ({ page }) => {
+test('the header pencil and the name open the name editor', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.showTab('pet'));
-  await page.locator('#petKitBtn').click();
-  await expect(page.locator('#scGearBox')).toBeVisible();
-  await expect(page.locator('#scNameBtn')).toContainText('Pipkit');
+  await page.locator('#petStatsBtn').click();
+  await expect(page.locator('#ovStats')).toBeVisible();
   const pencil = await page.locator('#scNameEdit').boundingBox();
   expect(pencil.height).toBeGreaterThanOrEqual(44);
+  expect(pencil.width).toBeGreaterThanOrEqual(44);
   expect(await page.locator('#scNameEdit').getAttribute('aria-label')).toBe('Rename Pipkit');
-  await page.locator('#scNameBtn').click();
+  await page.locator('#scNameEdit').click();
   await expect(page.locator('#scNick')).toBeVisible();
   await page.locator('#scNickCancel').click();
   await expect(page.locator('#scNick')).toBeHidden();
-  await page.locator('#scGear').click();
   await page.locator('#scName').click();
   await expect(page.locator('#scNick')).toBeVisible();
   await page.keyboard.press('Escape');
@@ -306,17 +310,21 @@ test('GEAR name row and the header pencil open the name editor', async ({ page }
   await expect(page.locator('#ovStats')).toBeVisible();
 });
 
-test('PARTNER GEAR opens the gear view, and CLOSE stays on the current screen', async ({ page }) => {
+test('PARTNER GEAR opens the Walkling sheet, and CLOSE stays on the care screen', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.showTab('pet'));
   const before = await page.locator('#petKitBtn').boundingBox();
   await page.locator('#petKitBtn').click();
   await expect(page.locator('#ovKit')).toHaveCount(0);
-  await expect(page.locator('#ovStats')).toBeVisible();
-  await expect(page.locator('#scGearBox')).toBeVisible();
+  await expect(page.locator('#ovWalkling')).toBeVisible();
+  await expect(page.locator('#wlMoves')).toBeVisible();
+  await expect(page.locator('#wlUse')).toBeVisible();
   expect(await page.evaluate(() => document.body.dataset.screen)).toBe('pet');
-  await page.locator('#scClose').click();
-  await expect(page.locator('#ovStats')).toBeHidden();
+  const close = await page.locator('#wlClose').boundingBox();
+  expect(close.height).toBeGreaterThanOrEqual(44);
+  expect(close.width).toBeGreaterThanOrEqual(44);
+  await page.locator('#wlClose').click();
+  await expect(page.locator('#ovWalkling')).toBeHidden();
   expect(await page.evaluate(() => document.body.dataset.screen)).toBe('pet');
   await page.locator('#petStatsBtn').click();
   await page.locator('#ovStats').click({ position: { x: 2, y: 2 } });
@@ -327,33 +335,34 @@ test('PARTNER GEAR opens the gear view, and CLOSE stays on the current screen', 
   await expect(page.locator('#ovStats')).toBeHidden();
   expect(await page.evaluate(() => document.body.dataset.screen)).toBe('pet');
   expect(before.height).toBeGreaterThanOrEqual(44);
+  expect(before.width).toBeGreaterThanOrEqual(44);
 });
 
-test('WALK, the lower card, INTERACT, then STATS restores gear and scroll once', async ({ page }) => {
+test('WALK, the lower card, INTERACT, then STATS restores scroll once', async ({ page }) => {
   await boot(page);
   await page.locator('#petStrip').click();
   await page.locator('#ctStats').click();
-  await page.locator('#scGear').click();
-  await expect(page.locator('#scGearBox')).toBeVisible();
+  await expect(page.locator('#ovStats')).toBeVisible();
   await page.waitForTimeout(50);
   const y = await page.evaluate(() => {
     const inner = document.querySelector('#ovStats .ov-inner');
-    const max = inner.scrollHeight - inner.clientHeight;
-    inner.scrollTop = Math.min(40, max);
+    if (inner.scrollHeight - inner.clientHeight < 8) inner.style.maxHeight = '160px';
+    const room = inner.scrollHeight - inner.clientHeight;
+    inner.scrollTop = Math.min(40, room);
     return inner.scrollTop;
   });
   expect(y).toBeGreaterThan(0);
   await page.evaluate(() => document.querySelector('#scRename').click());
   await expect(page.locator('#scr-pet')).toBeVisible();
   await page.locator('#petStatsBtn').click();
-  await expect(page.locator('#scGearBox')).toBeVisible();
+  await expect(page.locator('#ovStats')).toBeVisible();
   await page.waitForTimeout(50);
   const back = await page.evaluate(() => document.querySelector('#ovStats .ov-inner').scrollTop);
   expect(Math.abs(back - y)).toBeLessThanOrEqual(1);
   await page.locator('#scClose').click();
   expect(await page.evaluate(() => document.body.dataset.screen)).toBe('pet');
   await page.locator('#petStatsBtn').click();
-  await expect(page.locator('#scGearBox')).toBeHidden();
+  await expect(page.locator('#ovStats')).toBeVisible();
   const top = await page.evaluate(() => document.querySelector('#ovStats .ov-inner').scrollTop);
   expect(top).toBe(0);
 });
@@ -368,14 +377,19 @@ test('leaving PARTNER, a scene, a battle, a grow up, or a partner change opens S
     await page.evaluate(() => PixelPets.showTab('pet'));
     await page.locator('#petStatsBtn').click();
     await expect(page.locator('#ovStats')).toBeVisible();
-    await expect(page.locator('#scGearBox')).toBeHidden();
+    const top = await page.evaluate(() => document.querySelector('#ovStats .ov-inner').scrollTop);
+    expect(top).toBe(0);
     await page.locator('#scClose').click();
   };
   const arm = async () => {
     await page.evaluate(() => PixelPets.showTab('walk'));
     await page.locator('#petStrip').click();
     await page.locator('#ctStats').click();
-    await page.locator('#scGear').click();
+    await page.evaluate(() => {
+      const inner = document.querySelector('#ovStats .ov-inner');
+      if (inner.scrollHeight - inner.clientHeight < 8) inner.style.maxHeight = '160px';
+      inner.scrollTop = Math.min(40, inner.scrollHeight - inner.clientHeight);
+    });
     await page.evaluate(() => document.querySelector('#scRename').click());
     if (await page.locator('#ovStats').isVisible()) {
       await page.waitForTimeout(600);

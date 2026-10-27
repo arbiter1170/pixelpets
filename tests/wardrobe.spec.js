@@ -246,7 +246,7 @@ test('CHANGE LOOK, shuffle and GEAR hide an unowned paid item @w1', async ({ pag
   await page.locator('#lookDone').click();
   await page.evaluate(() => PixelPets.showTab('pet'));
   await page.locator('#petKitBtn').click();
-  await expect(page.locator('#scGearBox [data-acc]')).toHaveText(FREE_GEAR);
+  await expect(page.locator('#ovWalkling [data-acc]')).toHaveText(FREE_GEAR);
 });
 
 test('the picker fits a phone and keeps 44px targets', async ({ page }) => {
