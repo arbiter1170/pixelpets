@@ -104,7 +104,7 @@ Levels, types and stats (`stats.js`):
   "RESTING 12m"; when the nap ends it wakes with the HP it regained meanwhile (`wakeFull: false`). Below 25% HP
   (and not worn out) a Walkling shows **TIRED**. The badge (RESTING, else TIRED, else GLOWING) shows on the stats card,
   the Pet scene and the Pets tab.
-- Stats card: tap STATS on the Partner tab, or STATS on the care tray. The care tray opens from the modern partner strip, and from a tap on the follower while you stand still. FEED, PLAY, REST and HEAL on the tray use the same rules as the Partner tab, on the partner only. Each WALKLINGS party card has the same four buttons, and they act on that Walkling. Box rows have none. The popup row is INTERACT (grey) and GEAR (lime, full care-button size). INTERACT shows only for the partner, closes the popup, and opens PARTNER. GEAR opens the gear section in the same popup. The first gear row is NAME, and the pencil beside the header name opens the same editor. On PARTNER the button beside STATS is GEAR and opens that gear view. The kit overlay is not on the new page. The WALKLINGS tab opens the Walkling sheet instead, and that sheet includes the same stats, the same gear, and its own NAME field. It shows the type badge, the level cap line,
+- Stats card: tap STATS on the Partner tab, or STATS on the care tray. The care tray opens from the modern partner strip, and from a tap on the follower while you stand still. FEED, PLAY, REST and HEAL on the tray use the same rules as the Partner tab, on the partner only. Each WALKLINGS party card has the same four buttons, and they act on that Walkling. Box rows have none. The popup row is INTERACT, full width, and only for the partner. CLOSE stays under it. A Walkling that is not the partner has no INTERACT row. The pencil beside the header name opens the name editor, and so does the name. On PARTNER the button beside STATS is GEAR. It opens the Walkling sheet for the shown Walkling, with MOVES and USE, and CLOSE returns to the care screen. With two or more Walklings in the party, slots sit in one row beside the WALK back arrow, in party order. A tap makes that Walkling the partner. One Walkling shows the back arrow and no slots. The kit overlay is not on the page. The WALKLINGS tab opens the same sheet, with the same stats, the same gear, and its own NAME field. It shows the type badge, the level cap line,
   the next-form line, HP now/max with a RESTING, TIRED or GLOWING tag, HP/ATK/DEF/SPD at the Walkling's level with bars
   scaled to the highest value of that stat among the 57 forms a keeper can meet, and one type-chart line
   ("Strong vs X · Weak to Y"). It's an overlay (tabs lock, decay pauses); CLOSE, a
@@ -340,7 +340,7 @@ Wild levels on the stream are 19–23. Save `v` stays 2.
 Unseen Vanelet-line entries in the Journal show a small cloud ("check back in bad weather").
 Nicknames: after a befriend the result card asks "Give it a name?" (optional, up to 10 characters: letters,
 digits, spaces and ' . ! ? -). Leave it empty to keep the species name. A nickname shows in the header and on
-the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`. STATS → GEAR → NAME, the pencil beside the header name, and the
+the Pets tab (with the species name underneath) and is saved in the Walkling's `nick`. The pencil beside the header name on the stats card, and the
 NAME field on the Walkling sheet, change a name you already gave. Leave that field empty, or type the species name,
 and the species name shows again. Save `v` stays 2.
 Save `v` stays 2.

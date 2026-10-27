@@ -1239,6 +1239,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { ti
 let screen = 'walk';   // BOOT_TO_MAP: every boot and reload (refresh, crash, cloud adopt, bfcache, boot retry) lands on the map. index.html marks #scr-walk and the WALK tab active to match.
 // PARTNER_UI D254. One in-memory return point. Never saved.
 let uiReturn = null;
+let careSwitchKey = '', careSwitchWake = 0, careSwitchLock = 0, careSwitchPresent = null;
 function clearUiReturn(){ uiReturn = null; }
 function setPartnerId(id){
   if (!S) return;
@@ -1369,6 +1370,7 @@ function fitPetScene(){
   };
   ps.classList.remove('pet-tight');
   if (!pick()) { ps.classList.add('pet-tight'); pick(); }
+  if (typeof renderCareSwitch === 'function') renderCareSwitch();
 }
 // Fractional HP in every HP aria label uses Math.ceil, the same whole number the battle card already shows, so 1.6 reads 2.
 syncCareBlock = (base => function syncCareBlock(){
@@ -1618,7 +1620,7 @@ function updateHUD(){
   syncSide();
   syncWalkTip();
   const p = pet(); $('#hdrLv').parentNode.hidden = !p;       // no "Lv 1" / stars before there's a partner
-  if (!p) { document.body.classList.remove('align-on'); syncCareAlert(); closePartnerTray(); return; }
+  if (!p) { document.body.classList.remove('align-on'); syncCareAlert(); closePartnerTray(); renderCareSwitch(); return; }
   $('#hdrName').textContent = petName(p);
   $('#hdrLv').textContent = 'Lv ' + levelOf(p);
   $('#hdrStage').textContent = starLine(p.stage);
@@ -1654,6 +1656,7 @@ function updateHUD(){
   updateCareButtons(); renderPetBadge(p);
   if (screen === 'col') updateBoardCare();
   if (trayOpen()) renderPartnerTray();
+  renderCareSwitch();
 }
 // FAINTED 12m / TIRED on the Pet tab (BATTLE §7 badges); GLOWING stays on the stats card.
 function renderPetBadge(p){
@@ -9512,7 +9515,8 @@ function onEnvChange(e){
 // Tabs stay locked until the starter is received (Phase M: the opening is played on the WALK tab), and while anything is open.
 function lockTabs(on){ const l = !!on || (!!S && !allPets().length) || (!on && (!!scene || (typeof overlayOpen === 'function' && overlayOpen())));
   $('#tabs').classList.toggle('locked', l); document.body.classList.toggle('nav-locked', l);   // NAV_MODERN G2: one class locks every nav button, wherever it lives
-  try { markAlive(); } catch (e) {} }
+  try { markAlive(); } catch (e) {}
+  if (typeof renderCareSwitch === 'function') renderCareSwitch(); }
 function openGeoAsk(){ if (overlayOpen()) return; clearMoves(); $('#ovGeo').hidden = false; lockTabs(true); }
 function closeGeoAsk(){ $('#ovGeo').hidden = true; lockTabs(false); }
 // mode 'refresh' = the card's REFRESH (shown only when the browser already allows location): never makes the browser ask.
@@ -13942,9 +13946,14 @@ function openSheet(title, items, cancel){
     });
     const c = $('#shCancel'); c.hidden = !cancel; c.textContent = cancel || 'BACK';
     sheetResolve = res; $('#ovSheet').hidden = false;
+    if (typeof renderCareSwitch === 'function') renderCareSwitch();
   });
 }
-function closeSheet(v){ const r = sheetResolve; sheetResolve = null; $('#ovSheet').hidden = true; if (r) r(v); }
+function closeSheet(v){
+  const r = sheetResolve; sheetResolve = null; $('#ovSheet').hidden = true;
+  if (typeof renderCareSwitch === 'function') renderCareSwitch();
+  if (r) r(v);
+}
 
 /* --- actions from the UI --- */
 function battleAct(act){
@@ -14264,16 +14273,10 @@ function growText(p){
   if (care(p) < EVO_CARE[p.stage]) return { text: 'care ' + EVO_CARE[p.stage] + '+ to grow up', ready: false };
   return { text: 'Ready to grow up!', ready: true };
 }
-const statsCard = { id: null, t: 0, gear: false };
-function clearGearBox(){
-  statsCard.gear = false;
-  const box = $('#scGearBox'), b = $('#scGear');
-  if (box) { box.hidden = true; box.textContent = ''; }
-  if (b) b.setAttribute('aria-pressed', 'false');
-}
+const statsCard = { id: null, t: 0 };
 function openStatsCard(id){
   const p = allPets().find(q => q.id === (id || S.partnerId)); if (!p) return false;
-  if (statsCard.id !== p.id) { clearGearBox(); hideNickEdit(); }
+  if (statsCard.id !== p.id) hideNickEdit();
   if (!$('#ovStats').hidden) { statsCard.id = p.id; renderStatsCard(); return true; }
   if (overlayOpen()) return false;
   clearMoves(); statsCard.id = p.id; statsCard.t = 0; renderStatsCard();
@@ -14288,7 +14291,7 @@ function nickToStore(p, raw){
   const nk = cleanNick(raw), species = nameOf(spi(p), p.stage);
   return nk && nk !== species ? nk : null;   // empty, or the species name, keeps the species (D57)
 }
-function closeStatsCard(){ if ($('#ovStats').hidden) return; hideNickEdit(); $('#ovStats').hidden = true; statsCard.id = null; clearGearBox(); lockTabs(false); updateHUD(); }
+function closeStatsCard(){ if ($('#ovStats').hidden) return; hideNickEdit(); $('#ovStats').hidden = true; statsCard.id = null; lockTabs(false); updateHUD(); }
 function hideNickEdit(){
   const row = $('#scNick'), acts = $('#scActs');
   if (row) row.hidden = true;
@@ -14297,7 +14300,6 @@ function hideNickEdit(){
 }
 function openNickEdit(){
   const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
-  clearGearBox();
   $('#scActs').hidden = true; $('#scNick').hidden = false;
   const inp = $('#scNickIn');
   inp.value = cleanNick(p.nick);
@@ -14364,33 +14366,6 @@ function closeKit(){
   const el = $('#ovKit'); if (!el || el.hidden) return;
   el.hidden = true; lockTabs(false); updateHUD();
 }
-// PARTNER_UI D252. NAME is the first row of the stats gear box only. The Walkling sheet keeps its own NAME field.
-function fillGearView(box, p){
-  if (!box || !p) return;
-  box.textContent = '';
-  const lab = document.createElement('div'); lab.className = 'gear-lab'; lab.textContent = 'NAME';
-  const btn = document.createElement('button');
-  btn.type = 'button'; btn.id = 'scNameBtn'; btn.className = 'btn sc-name-btn';
-  const nm = petName(p);
-  btn.setAttribute('aria-label', 'Rename ' + nm);
-  btn.append(document.createTextNode(nm));
-  const cv = document.createElement('canvas');
-  cv.className = 'ico-pencil'; cv.width = 5; cv.height = 5; cv.setAttribute('aria-hidden', 'true');
-  btn.append(cv);
-  paintGlyphBox(cv, 'ico_pencil');
-  btn.addEventListener('click', () => { sfx('tap'); openNickEdit(); });
-  box.append(lab, btn);
-  fillWalklingExtras(box, p);
-}
-function showGearBox(p, scroll){
-  const box = $('#scGearBox'), b = $('#scGear');
-  statsCard.gear = true;
-  if (b) b.setAttribute('aria-pressed', 'true');
-  if (!box || !p) return;
-  box.hidden = false;
-  fillGearView(box, p);
-  if (scroll) requestAnimationFrame(() => box.scrollIntoView({ block: 'start', inline: 'nearest' }));
-}
 // Other overlays, the tour, and a guarded tab deny INTERACT. The open stats card itself does not.
 function statsLeaveBlocked(){
   if (tabsGuarded() || tut.on || !allPets().length) return true;
@@ -14405,18 +14380,10 @@ function interactFromStats(){
   if ($('#ovStats').hidden || !statsCard.id) return;
   if (statsLeaveBlocked()) { sfx('denied'); return; }
   const inner = $('#ovStats .ov-inner');
-  uiReturn = { id: statsCard.id, gear: !!statsCard.gear, scrollTop: inner ? inner.scrollTop : 0 };
+  uiReturn = { id: statsCard.id, scrollTop: inner ? inner.scrollTop : 0 };
   closeStatsCard();
   showTab('pet');
   sfx('tap');
-}
-function openGearView(id){
-  clearUiReturn();
-  const pid = id || (S && S.partnerId);
-  if (!openStatsCard(pid)) { sfx('denied'); return false; }
-  const p = petById(pid) || pet();
-  if (p) showGearBox(p, true);
-  return true;
 }
 function openPartnerStats(){
   const p = pet();
@@ -14424,7 +14391,6 @@ function openPartnerStats(){
     const back = uiReturn;
     if (!openStatsCard(back.id)) { sfx('denied'); return false; }
     clearUiReturn();
-    if (back.gear) showGearBox(petById(back.id), false);
     const inner = $('#ovStats .ov-inner');
     if (inner) {
       const y = back.scrollTop || 0;
@@ -14443,11 +14409,6 @@ function commitGear(id, opts){
   if (typeof renderCollection === 'function') renderCollection();
   const kit = $('#ovKit');
   if (kit && !kit.hidden && !(opts && opts.keep) && pet() && pet().id === id) renderKit();
-  if (opts && opts.keep) return;
-  if (!$('#ovStats') || $('#ovStats').hidden || statsCard.id !== id || !statsCard.gear) return;
-  const p = petById(id), box = $('#scGearBox');
-  renderStatsCard();
-  if (p && box) { fillGearView(box, p); box.hidden = false; }
 }
 function fillWalklingExtras(container, pet){
   if (!container || !pet) return;
@@ -14566,11 +14527,10 @@ function renderStatsCard(){
     interact.setAttribute('aria-label', 'Care for ' + petName(p));
   }
   if (acts) acts.classList.toggle('one', !mine);
+  const nick = $('#scNick');
+  if (acts && (!nick || nick.hidden)) acts.hidden = !mine;
   const edit = $('#scNameEdit');
   if (edit) edit.setAttribute('aria-label', 'Rename ' + petName(p));
-  const gbtn = $('#scGear'), gbox = $('#scGearBox');
-  if (gbtn) gbtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
-  if (gbox) gbox.hidden = !statsCard.gear;
 }
 
 /* ---------- Walkling sheet (party menu, one pet) ---------- */
@@ -16269,15 +16229,83 @@ function openPartnerTray(){
   renderPartnerTray();
   careOnTrayOpen();
 }
-function trayPick(id){
+function trayPick(id){ partnerFromTap(id); }
+// GEAR_SWITCH D772. The care-screen slots and the walk tray share this path.
+function partnerFromTap(id){
   const before = pet();
   makePartner(id);
   const p = pet();
-  if (!p || p.id !== id) { renderPartnerTray(); return; }
+  if (!p || p.id !== id) { renderPartnerTray(); renderCareSwitch(); return false; }
   if (!before || before.id !== id) sfx('tap');
   toast(petName(p) + ' is your partner now!');
   save(); updateHUD();
   renderPartnerTray();
+  return true;
+}
+function careSwitchOff(){
+  if (!S) return true;
+  if (document.body.classList.contains('nav-locked')) return true;
+  if (tut.on) return true;
+  if (overlayOpen()) return true;
+  if (now() < anim.busyUntil) return true;
+  return false;
+}
+function careSwitchTap(id){
+  if (careSwitchOff()) { sfx('denied'); return; }
+  partnerFromTap(id);
+}
+function renderCareSwitch(){
+  const row = $('#petSlots'), wrap = $('#petSwitch');
+  if (!row || !wrap) return;
+  const party = (S && S.party) || [];
+  const show = party.length >= 2;
+  wrap.classList.toggle('empty', !show);
+  if (!show) { row.hidden = true; row.textContent = ''; careSwitchKey = ''; wrap.classList.remove('fit'); }
+  else {
+    row.hidden = false;
+    const key = party.map(q => q.id).join(',');
+    if (key !== careSwitchKey) {
+      careSwitchKey = key; row.textContent = '';
+      party.forEach(q => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'pet-slot'; b.dataset.id = q.id;
+        const cv = document.createElement('canvas'); cv.width = cv.height = 18; cv.className = 'sp';
+        const badge = document.createElement('canvas'); badge.width = badge.height = 5; badge.className = 'bd'; badge.hidden = true;
+        b.append(cv, badge);
+        b.addEventListener('click', () => careSwitchTap(q.id));
+        row.appendChild(b);
+      });
+    }
+    const scr = $('#scr-pet'), back = wrap.querySelector('.scr-back');
+    const backShown = !!(back && getComputedStyle(back).display !== 'none');
+    let room = 0;
+    if (scr) {
+      const cs = getComputedStyle(scr);
+      room = scr.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+    }
+    const n = party.length, need = 44 + 6 + n * 44 + (n - 1) * 6;
+    if (scr && scr.clientWidth > 0) wrap.classList.toggle('fit', n === 6 && backShown && need > room);
+    const off = careSwitchOff(), cur = S && S.partnerId;
+    [...row.children].forEach(b => {
+      const q = party.find(x => x.id === b.dataset.id); if (!q) return;
+      const on = q.id === cur;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-label', 'Switch to ' + petName(q));
+      if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+      if (off) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
+      spriteCanvas(b.querySelector('canvas.sp'), spi(q), q.stage, 'n', isFaded(q), q.accessory);
+      paintTrayBadge(b.querySelector('canvas.bd'), q);
+    });
+  }
+  if (now() < anim.busyUntil) {
+    const token = ++careSwitchWake, wait = anim.busyUntil - now();
+    setTimeout(() => { if (token === careSwitchWake) renderCareSwitch(); }, Math.max(0, wait) + 40);
+  }
+  const present = document.body.classList.contains('ctl-modern') || show;
+  if (!careSwitchLock && screen === 'pet' && careSwitchPresent !== null && present !== careSwitchPresent) {
+    careSwitchPresent = present;
+    careSwitchLock = 1;
+    try { fitPetScene(); } finally { careSwitchLock = 0; }
+  } else careSwitchPresent = present;
 }
 
 /* ---------- input ---------- */
@@ -16354,7 +16382,7 @@ function bindInput(){
   $('#evoOk').addEventListener('click', evoOkTap);
   $('#petStatsBtn').addEventListener('click', () => openPartnerStats());
   const petGearBtn = $('#petKitBtn');
-  if (petGearBtn) petGearBtn.addEventListener('click', () => { if ($('#ovStats')) openGearView(S.partnerId); else openKit(); });
+  if (petGearBtn) petGearBtn.addEventListener('click', () => { if ($('#ovWalkling')) openWalklingSheet(S.partnerId); else openKit(); });
   const kitClose = $('#kitClose'); if (kitClose) kitClose.addEventListener('click', () => { sfx('tap'); closeKit(); });
   const ovKit = $('#ovKit'); if (ovKit) ovKit.addEventListener('click', e => { if (e.target === e.currentTarget) closeKit(); });
   $('#petCanvas').addEventListener('pointerdown', e => { if (screen === 'pet' && !overlayOpen() && petHit(e.clientX, e.clientY)) { e.preventDefault(); patPet(); } });   // CARE_LOOP A: pats
@@ -16474,16 +16502,6 @@ function bindInput(){
   $('#scNickIn').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); applyNick(); }
     else if (e.key === 'Escape') { e.preventDefault(); hideNickEdit(); }
-  });
-  const gearBtn = $('#scGear');
-  if (gearBtn) gearBtn.addEventListener('click', () => {
-    const p = allPets().find(q => q.id === statsCard.id); if (!p) return;
-    hideNickEdit();
-    statsCard.gear = !statsCard.gear; sfx('tap');
-    gearBtn.setAttribute('aria-pressed', statsCard.gear ? 'true' : 'false');
-    const box = $('#scGearBox'); if (!box) return;
-    box.hidden = !statsCard.gear; box.textContent = '';
-    if (statsCard.gear) { fillGearView(box, p); requestAnimationFrame(() => box.scrollIntoView({ block: 'start', inline: 'nearest' })); }
   });
   $('#ovStats').addEventListener('click', e => { if (e.target === e.currentTarget) closeStatsCard(); });   // tap outside the card
   $('#wlClose').addEventListener('click', () => { sfx('tap'); closeWalklingSheet(); });

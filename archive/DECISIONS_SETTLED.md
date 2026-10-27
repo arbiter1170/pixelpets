@@ -750,3 +750,15 @@ Recorded from design TOP_HUD v0.1.5 (design commit 8a06d36, built content 536ddb
 - **D751 (Oct 24, 2026, 1:45 PM ET, green, SETTLED as written by the PixelPets Supervisor).** TOP_HUD. In modern controls the left column slides down to 6 px below an on-screen top exit zone, with the chip's triggers and the 120 ms step, and goes home one step after the zone leaves. Buttons stay 44 px, in order.
 - **D793 (Mon Oct 26, 2026, 1:40 PM ET, green, SETTLED by Design, scope split cleared by the PixelPets Supervisor).** TOP_HUD. While the frame class is on, this packet's yields and pad rules are off. The dock packet's portrait pads of 0 are not this build.
 
+## GEAR_SWITCH v0.1.3 (calls settled Oct 24 and Oct 26, 2026)
+
+Recorded from design GEAR_SWITCH v0.1.3 (design commit 8a06d36), without renumbering. Built here. Option B with the one-row fit only. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. No migrator.
+
+- **D768 (Sat Oct 24, 2026, 1:45 PM ET, green, SETTLED as written by the PixelPets Supervisor).** GEAR_SWITCH. Care-screen GEAR opens the Walkling sheet for the shown Walkling. CLOSE returns to the care screen. The label and aria stay "Gear for <name>".
+- **D769 (Sat Oct 24, 2026, 1:45 PM ET, green, SETTLED as written by the PixelPets Supervisor).** GEAR_SWITCH. The stats card drops GEAR. INTERACT takes the full row. CLOSE stays.
+- **D770 (Sat Oct 24, 2026, 1:45 PM ET, green, SETTLED as written by the PixelPets Supervisor).** GEAR_SWITCH. The inline gear box is retired. The pencil rename on the stats card stays.
+- **D771 (Sat Oct 24, 2026, 1:46 PM ET, red, SETTLED by Vincent).** GEAR_SWITCH. Option B: a party icon row, a full party of 6 in one row beside the back arrow at 320, 375 and 390.
+- **D772 (Mon Oct 26, 2026, 1:05 PM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** GEAR_SWITCH. A switch makes the shown Walkling the partner through one shared helper with the tray slot.
+- **D773 (Mon Oct 26, 2026, 1:05 PM ET, yellow, SETTLED at the default by team vote, PixelPets and QA, clock closed).** GEAR_SWITCH. The row is the party only, in party order. A party of one shows no switcher.
+- **D774 (Sat Oct 24, 2026, 1:45 PM ET, green, SETTLED as written by the PixelPets Supervisor).** GEAR_SWITCH. The switcher is off during a care action, a pinned lesson, an open overlay, and while the nav lock is on.
+

@@ -241,8 +241,8 @@ test('unknown species stays, draws a fallback, and cannot lead', async ({ page }
   await page.locator('#scClose').tap({ timeout: 8000 });
 
   await page.locator('#petKitBtn').tap({ timeout: 8000 });
-  await expect(page.locator('#ovStats')).toBeVisible();
-  await page.locator('#scClose').tap({ timeout: 8000 });
+  await expect(page.locator('#ovWalkling')).toBeVisible();
+  await page.locator('#wlClose').tap({ timeout: 8000 });
 
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.evaluate(() => PixelPets.showTab('col'));

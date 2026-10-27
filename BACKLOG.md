@@ -5,6 +5,8 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
+GEAR_SWITCH (D768-D774) is on this branch: care-screen GEAR opens the Walkling sheet, the stats card drops its GEAR button, and a party row beside the WALK back arrow switches the shown Walkling. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
+
 LEVEL_GROW (D754-D767) is on this branch: level gates grow up, and Seals cap the level. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2. The only new field is `bxHeld`.
 
 MAP_EDGE_TAPS P1 (D695, D696, D697, D698, D699 and D703) is on this branch: a tap past an outdoor map edge that has a way out walks to that way out, and a tap past an edge with none walks to a nearby open tile. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.

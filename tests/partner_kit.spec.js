@@ -66,20 +66,18 @@ test('GEAR opens on the partner screen and a Lodge bell stays on the save', asyn
   await boot(page);
   expect(await page.locator('#ovKit').count()).toBe(0);
   await page.locator('#petKitBtn').click();
-  await expect(page.locator('#ovStats')).toBeVisible();
-  await expect(page.locator('#scGearBox')).toBeVisible();
-  await expect(page.locator('#scNameBtn')).toBeVisible();
-  const names = await page.locator('#scGearBox [data-acc]').allTextContents();
+  await expect(page.locator('#ovWalkling')).toBeVisible();
+  await expect(page.locator('#wlMoves')).toBeVisible();
+  await expect(page.locator('#wlUse')).toBeVisible();
+  const names = await page.locator('#ovWalkling [data-acc]').allTextContents();
   expect(names).toEqual(['None', 'Lodge bell', 'Hall ribbon', 'Hearth scarf', 'Orchard sprig', 'Amber star']);
-  const wide = await page.evaluate(() => {
-    const box = document.querySelector('#scGearBox');
-    const top = box.getBoundingClientRect().top;
-    const view = document.querySelector('#ovStats .ov-inner').getBoundingClientRect();
-    return box.scrollWidth <= box.clientWidth + 1 && top >= view.top - 1;
-  });
-  expect(wide).toBe(true);
+  const bell = page.locator('#ovWalkling [data-acc="bell"]');
+  await bell.scrollIntoViewIfNeeded();
+  const wide = await bell.boundingBox();
+  expect(wide.height).toBeGreaterThanOrEqual(44);
+  expect(wide.width).toBeGreaterThanOrEqual(44);
   await saveShot(page, 'kit');
-  await page.locator('#scGearBox [data-acc="bell"]').click();
+  await bell.click();
   await expect(page.locator('#toast')).toHaveText('Pipkit wears the Lodge bell.');
   const saved = await page.evaluate(() => ({
     v: PixelPets.state.v,
@@ -88,9 +86,10 @@ test('GEAR opens on the partner screen and a Lodge bell stays on the save', asyn
   expect(saved.v).toBe(2);
   expect(saved.accessory).toBe('bell');
   await page.keyboard.press('Escape');
-  await expect(page.locator('#ovStats')).toBeHidden();
+  await expect(page.locator('#ovWalkling')).toBeHidden();
   await expect(page.locator('#scr-pet')).toBeVisible();
   await expect(page.locator('#tabs')).not.toHaveClass(/locked/);
+  expect(await page.evaluate(() => document.body.dataset.screen)).toBe('pet');
 });
 
 test('every adornment sits on every Walkling, faded ones in grey', async ({ page }) => {
