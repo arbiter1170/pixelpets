@@ -18,15 +18,15 @@ D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_
 
 D859-D870 are reserved: PHONE_APPS (Vincent, Oct 28, 2026: "small & medium approved" for the phone app list). D859-D862 and D864-D869 are settled and recorded in the archive; D863 is open below. D870 is spare.
 
-Next free id is D871.
-Other packets hold ids through D870.
+D875 is LANTERN_COST (Vincent, Oct 28, 2026; settled, recorded in the archive). D871 is held by PR #218; the unmerged Brinewick branch holds D859-D874 and must renumber.
+
+Next free id is D876.
+Other packets hold ids through D875.
 
 ## Open
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
-| D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
-| D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
 | D863 | PHONE_APPS copy, YELLOW, OPEN | Design writes the copy for the new phone screens (SKY, GLOW, READY relay, FIELD NOTES stamps, Night Desk posts; part 2: patrol/gig rows, Census feed, BOTNET Shelf, signal footer, chirp presets, STEPS lines) and says whether the home grid keeps nine apps (PHONE_SHELL v0.2 assumed seven) | Placeholder copy written by the engineer, in both handset voices. Nine apps: SKY and GLOW after BOARD. No new story facts: Field Notes reuse the quest chain's own text; the relay reuses each holder's rematch line | `game.js` phone apps part 1 block (`renderFarSky`, `renderGlowApp`, `glowAdvice`, `rematchRelay`, `renderFieldNotes`), `ribbit.js` `NIGHT_POSTS`, `index.html` `#phoneHome`; part 2 block (`renderJobsApp`, `renderCensusLeak`, `openBotnetShelf`, `renderFootpath`, `chirpPresets`) |
 ## Not started, blocked on people
 

@@ -53,6 +53,7 @@
     switch: {
       costDiv: 2,
       cooldown: 'perChapter',                       // one switch per chapter (chapterOf); 'none' = never refused
+      openAct: 5,                                   // D161 (Vincent, Oct 28, 2026): no switching until Act 5 (story.act >= 5; nothing writes it yet)
       joinMinTier: 0,                               // NEXT_PLAN proposed 1 (tier 1 with the side you join); spec v0.2 drops it. Default: not required
       confirm: 'Really?', yes: 'Yes', no: 'Not yet',
       costLine: '{side} Standing {from} \u2192 {to}',
@@ -110,13 +111,14 @@
   // Chapter = Seals earned so far. story.seal3 counts when Brinewick writes it (D132). That chapter is not built yet.
   const chapterOf = flags => ['story.seal1', 'story.seal2', 'story.seal3'].filter(k => !!(flags || {})[k]).length;
   // Can the pledge change right now? `flags` is S.flags; `standing` is S.standing; `to` the side being joined.
-  // Returns { ok, why } with why in: 'no_pick', 'same_side', 'no_rook', 'cooldown', 'join_tier'.
+  // Returns { ok, why } with why in: 'no_pick', 'same_side', 'locked' (before Act 5, D161), 'no_rook', 'cooldown', 'join_tier'.
   // no_rook is checked before the cooldown so a quest that has not finished yet says "not yet", not "refused".
   // Scenes and battles are the caller's check.
   function canSwitch(flags, standing, from, to){
     const F = flags || {}, cfg = STANDING_CFG.switch;
     if (!F['story.side_pick_done']) return { ok: false, why: 'no_pick' };
     if (to != null && to === from) return { ok: false, why: 'same_side' };
+    if (cfg.openAct && !(Number(F['story.act']) >= cfg.openAct)) return { ok: false, why: 'locked' };
     if (!F['story.rc_climax']) return { ok: false, why: 'no_rook' };
     if (cfg.cooldown === 'perChapter' && F['story.switch_chapter'] != null && Number(F['story.switch_chapter']) === chapterOf(F)) return { ok: false, why: 'cooldown' };
     if (to != null && cfg.joinMinTier > 0 && tierOf((standing || {})[to]) < cfg.joinMinTier) return { ok: false, why: 'join_tier' };

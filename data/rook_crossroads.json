@@ -323,159 +323,44 @@
                       [
                         "say",
                         "Rook",
-                        "It costs you. Glimmerwell halves your score. I won't pretend it doesn't."
+                        "Then I have to try. Not as a rival. As a friend asking twice."
                       ],
                       [
-                        "choice",
-                        "Walk away?",
+                        "battle",
+                        "rival3_rook"
+                      ],
+                      [
+                        "if",
+                        "story.rival3_result=won",
                         [
                           [
-                            "Walk away with Rook",
-                            [
-                              [
-                                "run",
-                                "rook_offer"
-                              ],
-                              [
-                                "if",
-                                "story.side=keepers",
-                                [
-                                  [
-                                    "setFlag",
-                                    "story.rook_quit",
-                                    "offer"
-                                  ],
-                                  [
-                                    "say",
-                                    "Rook",
-                                    "Okay. Okay! Help me with the lids."
-                                  ],
-                                  [
-                                    "say",
-                                    "",
-                                    "You and Rook lift three lids. Three Pebblits blink, then roll off toward the Old Seam."
-                                  ],
-                                  [
-                                    "say",
-                                    "Associate Tobin",
-                                    "I'm writing 'escaped'. Do not make me write anything else."
-                                  ],
-                                  [
-                                    "setFlag",
-                                    "story.rc_end",
-                                    "walked"
-                                  ],
-                                  [
-                                    "setFlag",
-                                    "story.rc_climax",
-                                    true
-                                  ]
-                                ],
-                                [
-                                  [
-                                    "say",
-                                    "Rook",
-                                    "Then I have to try. Not as a rival. As a friend asking twice."
-                                  ],
-                                  [
-                                    "battle",
-                                    "rival3_rook"
-                                  ],
-                                  [
-                                    "if",
-                                    "story.rival3_result=won",
-                                    [
-                                      [
-                                        "say",
-                                        "Rook",
-                                        "You're really good, {name}. I hope you're good at the next part too."
-                                      ]
-                                    ],
-                                    [
-                                      [
-                                        "say",
-                                        "Rook",
-                                        "I won, and it doesn't fix anything. Funny how that works."
-                                      ]
-                                    ]
-                                  ],
-                                  [
-                                    "say",
-                                    "",
-                                    "Tobin wheels the crates down the north road. One hums all the way out of sight."
-                                  ],
-                                  [
-                                    "say",
-                                    "Rook",
-                                    "The offer stands. Find me by the Brinewick road. Once per Seal, that's the rule."
-                                  ],
-                                  [
-                                    "setFlag",
-                                    "story.rc_end",
-                                    "shipped"
-                                  ],
-                                  [
-                                    "setFlag",
-                                    "story.rc_climax",
-                                    true
-                                  ]
-                                ]
-                              ]
-                            ]
-                          ],
+                            "say",
+                            "Rook",
+                            "You're really good, {name}. I hope you're good at the next part too."
+                          ]
+                        ],
+                        [
                           [
-                            "Stay with the company",
-                            [
-                              [
-                                "say",
-                                "Rook",
-                                "Then I have to try. Not as a rival. As a friend asking twice."
-                              ],
-                              [
-                                "battle",
-                                "rival3_rook"
-                              ],
-                              [
-                                "if",
-                                "story.rival3_result=won",
-                                [
-                                  [
-                                    "say",
-                                    "Rook",
-                                    "You're really good, {name}. I hope you're good at the next part too."
-                                  ]
-                                ],
-                                [
-                                  [
-                                    "say",
-                                    "Rook",
-                                    "I won, and it doesn't fix anything. Funny how that works."
-                                  ]
-                                ]
-                              ],
-                              [
-                                "say",
-                                "",
-                                "Tobin wheels the crates down the north road. One hums all the way out of sight."
-                              ],
-                              [
-                                "say",
-                                "Rook",
-                                "The offer stands. Find me by the Brinewick road. Once per Seal, that's the rule."
-                              ],
-                              [
-                                "setFlag",
-                                "story.rc_end",
-                                "shipped"
-                              ],
-                              [
-                                "setFlag",
-                                "story.rc_climax",
-                                true
-                              ]
-                            ]
+                            "say",
+                            "Rook",
+                            "I won, and it doesn't fix anything. Funny how that works."
                           ]
                         ]
+                      ],
+                      [
+                        "say",
+                        "",
+                        "Tobin wheels the crates down the north road. One hums all the way out of sight."
+                      ],
+                      [
+                        "setFlag",
+                        "story.rc_end",
+                        "shipped"
+                      ],
+                      [
+                        "setFlag",
+                        "story.rc_climax",
+                        true
                       ]
                     ],
                     [
@@ -572,15 +457,6 @@
                                 "say",
                                 "Rook",
                                 "Then I'll hang onto it. Find me by the Brinewick road."
-                              ]
-                            ]
-                          ],
-                          [
-                            "Take it now",
-                            [
-                              [
-                                "run",
-                                "rook_offer"
                               ]
                             ]
                           ]
@@ -747,15 +623,6 @@
                 "say",
                 "Rook",
                 "Better. Mom says I sleep now. I say she snores. We're both right."
-              ]
-            ]
-          ],
-          [
-            "About sides",
-            [
-              [
-                "run",
-                "rook_offer"
               ]
             ]
           ],
