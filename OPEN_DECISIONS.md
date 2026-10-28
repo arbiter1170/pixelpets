@@ -18,10 +18,10 @@ D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_
 
 D859-D870 are reserved: PHONE_APPS (Vincent, Oct 28, 2026: "small & medium approved" for the phone app list). D859-D862 and D864-D869 are settled and recorded in the archive; D863 is open below. D870 is spare.
 
-D871 is used: INTRO_CUTSCENE, Rook's entry tile (settled, recorded in the archive).
+D871 is used: INTRO_CUTSCENE, Rook's entry tile (settled, recorded in the archive). D872-D874 are held by the Brinewick branch and D875 by PR #221 (Lantern rest cost).
 
-Next free id is D872.
-Other packets hold ids through D871.
+Next free id is D876.
+Other packets hold ids through D875.
 
 ## Open
 
