@@ -4265,6 +4265,15 @@ if (SCENES.starter) SCENES.starter.push(
 const starterMomentMiss = [];
 if (SCENES.starter && MD.starter_moment && MD.starter_moment.inserts)
   applyStarterInserts(SCENES.starter, MD.starter_moment.inserts, starterMomentMiss);
+// INTRO_CUTSCENE (D810): every data/cutscene_*.json stages one scene (its `scene`). Inserts go in after STARTER_MOMENT's, so
+// their anchors may name lines either placed; `vars` and `portraits` are kept per scene. A new cutscene is a data file only.
+const CUT_VARS = {}, PORTRAIT_FOR = {}, cutsceneMiss = [];
+for (const k of Object.keys(MD).filter(k => k.startsWith('cutscene_')).sort()) {
+  const C = MD[k]; if (!C || !C.scene || !SCENES[C.scene]) { cutsceneMiss.push(k); continue; }
+  CUT_VARS[C.scene] = Object.assign(CUT_VARS[C.scene] || {}, C.vars || {});
+  if (C.portraits) PORTRAIT_FOR[C.scene] = C.portraits;
+  applyStarterInserts(SCENES[C.scene], C.inserts || [], cutsceneMiss);
+}
 if (SCENES.rival1) SCENES.rival1.push(
   ['say', 'Rook', 'The gate is right there. Go on, the road is yours.'],
   ['say', '', 'A wild Walkling waits in the grass, just off the path.']);
@@ -6781,6 +6790,7 @@ function drawMap(t){
   ents.push({ y: walk.fy + 0.01, draw: drawPlayer });
   if (window.PPNet && PPNet.mapEnts) PPNet.mapEnts(g, cx, cy).forEach(e => ents.push(e));
   needHeartSkipped = false;
+  drawCurtain(g, cx, cy, VW, VH);             // INTRO_CUTSCENE D803: under the actors, so a walker crosses in front of it
   ents.sort((a, b) => a.y - b.y).forEach(e => e.draw());
   if (window.PPNet && PPNet.drawFx) PPNet.drawFx(g, cx, cy);
   drawHqGlow(g, cx, cy);
@@ -7533,7 +7543,9 @@ const lookOf = () => maskLook((S && S.player && S.player.look) || null);        
 // Glimmerwell standing shows on the body: the Arbiter's emission has been in that bloodline a long time.
 // Tier 0 is unchanged. Higher tiers pick up silver and mint. The save's look is not rewritten.
 function shownLook(){
-  const base = lookOf();
+  // INTRO_CUTSCENE D800: a look picked earlier in this scene (lookPick's scene.view.look) shows at once, on the map
+  // and in the portrait; the save gets it at the scene's end as before.
+  const base = scene && scene.view && scene.view.look ? maskLook(scene.view.look) : lookOf();
   if (!S || side() !== 'glimmer') return base;
   const tier = PPStanding.tierOf(standingOf('glimmer', false));
   if (!tier) return base;
@@ -8343,6 +8355,7 @@ function endScene(){
   const partnerAt = castTileOf(sc, 'partner');
   closeReveal(true);
   clearSceneEmotes();
+  cutReset(sc);
   commitPending();
   clearCast(sc);
   if (sc.npc) delete mapRT.face[sc.npc.id];
@@ -8463,6 +8476,101 @@ async function walkCast(paths){
     await glideCast(paths.map(p => { const step = p.steps[Math.min(i, p.steps.length - 1)]; return { id: p.id, x: step[0], y: step[1] }; }), ms);
   }
   if (scene && box) { box.hidden = false; sbRender('', ''); }
+}
+// INTRO_CUTSCENE (D801-D809): scene staging. A walk or wait hides the text box but keeps the tap layer: the first tap
+// doubles the pace, the second ends the beat (D808). Casts and prop swaps last until the scene ends (cutReset).
+const cutRT = { busy: false, speed: 1, end: false, from: 0, to: 0, t0: 0, props: [] };
+function cutFast(sc){ return !!(sc && sc.skip) || signalCastFast(); }
+function cutVar(sc, v){
+  if (typeof v !== 'string' || v[0] !== '$') return v;
+  const spec = (CUT_VARS[sc && sc.id] || {})[v.slice(1)]; if (!spec || !spec.map) return null;
+  const line = (sc && sc.vars && sc.vars.line) || flagOf('story.starter_line', true);
+  const val = spec.map[spec.key === 'rival' ? COUNTER[line] : line];
+  return val == null ? null : val;
+}
+function cutTap(){ if (!cutRT.busy) return false; if (cutRT.speed < 2) cutRT.speed = 2; else cutRT.end = true; return true; }
+function cutHold(on){ const box = $('#sbox'); if (box) box.hidden = on; cutRT.busy = on; if (on) { cutRT.speed = 1; cutRT.end = false; } }
+function cutWait(ms){
+  cutHold(true); let t = 0, last = now();
+  return new Promise(res => (function tick(){
+    const n = now(); t += (n - last) * cutRT.speed; last = n;
+    if (!scene || cutRT.end || t >= ms) { cutHold(false); res(); } else requestAnimationFrame(tick);
+  })());
+}
+function cutCurtain(on, snap){        // D803: 24 px bars on the drawn map's top and bottom edges, under the actors
+  const k = cutCurtainK(); cutRT.from = snap ? (on ? 1 : 0) : k; cutRT.to = on ? 1 : 0; cutRT.t0 = now();
+}
+function cutCurtainK(){ const e = Math.min(1, (now() - cutRT.t0) / 250); return cutRT.from + (cutRT.to - cutRT.from) * (1 - (1 - e) * (1 - e)); }
+function drawCurtain(g, cx, cy, VW, VH){   // the room is centred on a PAL k void, so the bars sit on the map itself
+  const k = cutCurtainK(); if (k <= 0) return;
+  const x0 = Math.max(0, -cx), x1 = Math.min(VW, MW * TS - cx), y0 = Math.max(0, -cy), y1 = Math.min(VH, MH * TS - cy), h = Math.round(24 * k);
+  g.fillStyle = PAL.k; g.fillRect(x0, y0, x1 - x0, h); g.fillRect(x0, y1 - h, x1 - x0, h);
+}
+function cutCastAt(sc, id, x, y, facing){
+  if (!CUR || CUR.objs.some(o => o.id === id)) return;
+  const c = ((SCENE_CAST[sc.id] || []).find(q => q.id === id)) || { id, name: '', look: 'villager' };
+  pushCast({ kind: 'npc', id, name: c.name, look: c.look, x, y, facing: facing || 'down', cast: true });
+  mapRT.pos[id] = { x, y, fx: x, fy: y, moving: false, facing: facing || 'down' };
+}
+function cutProp(sc, id, sprite){
+  const o = id && CUR && CUR.objs.find(q => q.id === id); if (!o || !sprite) return;
+  cutRT.props.push({ o, sprite: o.sprite }); o.sprite = sprite;
+}
+// Shortest 4-way path to (x, y), as pathBeside's BFS: walls and blockers stop it, the walker and its `with` do not.
+function cutPath(from, to, selfId, withId){
+  const free = (x, y) => {
+    if (x === to.x && y === to.y) return !solidTile(x, y);
+    if (selfId !== 'player' && x === S.world.x && y === S.world.y) return false;
+    if (solidTile(x, y)) return false;
+    const b = blockerAt(x, y); return !b || b.id === selfId || b.id === withId;
+  };
+  const key = (x, y) => y * 64 + x, prev = new Map([[key(from.x, from.y), null]]), q = [[from.x, from.y]];
+  while (q.length) {
+    const [x, y] = q.shift();
+    if (x === to.x && y === to.y) break;
+    for (const [dx, dy] of Object.values(DIRS)) { const nx = x + dx, ny = y + dy, k = key(nx, ny);
+      if (!prev.has(k) && free(nx, ny)) { prev.set(k, [x, y]); q.push([nx, ny]); } }
+  }
+  if (!prev.has(key(to.x, to.y))) return null;
+  const out = []; let c = [to.x, to.y];
+  while (c && !(c[0] === from.x && c[1] === from.y)) { out.unshift({ x: c[0], y: c[1] }); c = prev.get(key(c[0], c[1])); }
+  return out;
+}
+async function cutWalkTo(sc, who, x, y, opts){
+  if (typeof x === 'string' || Array.isArray(x)) { opts = y; const t = Array.isArray(x) ? x : cutVar(sc, x); if (!t) return; x = t[0]; y = t[1]; }
+  opts = opts && typeof opts === 'object' ? opts : {};
+  fxStop();   // settle a cast's hop-in first (castPartner), or its settle() would snap the walker back mid-walk
+  const isP = who === 'player', o = isP ? null : CUR.objs.find(q => q.id === who);
+  if (!isP && !o) return;
+  const from = isP ? { x: S.world.x, y: S.world.y } : objPos(o), path = cutPath(from, { x, y }, who, opts.with);
+  if (!path) { console.warn('walkTo: no path for ' + who); return; }
+  const mate = opts.with ? CUR.objs.find(q => q.id === opts.with) : null, fast = cutFast(sc);
+  if (!fast) cutHold(true);
+  let prev = { x: from.x, y: from.y };
+  for (const p of path) {
+    if (!scene) break;
+    const ms = fast || cutRT.end ? 0 : (isP ? STEP_MS : 120) / cutRT.speed;
+    if (isP) await cutStepPlayer(p, ms);
+    else { const mv = [{ id: who, x: p.x, y: p.y }]; if (mate) mv.push({ id: mate.id, x: prev.x, y: prev.y });
+      await glideCast(mv, ms); for (const m of mv) { const P = mapRT.pos[m.id]; if (P) P.moving = false; } }
+    prev = p;
+  }
+  if (opts.drop) dropCastIds([who].concat(mate ? [mate.id] : []));
+  if (!fast) cutHold(false);
+}
+function cutStepPlayer(p, ms){            // the frame loop skips updateWalk while the scene box is open, so this drives its own tween
+  const from = { x: S.world.x, y: S.world.y }; S.world.facing = dirName(p.x - from.x, p.y - from.y); S.world.x = p.x; S.world.y = p.y;
+  if (!(ms > 0)) { walk.fx = p.x; walk.fy = p.y; walk.to = null; return Promise.resolve(); }
+  walk.from = from; walk.to = { x: p.x, y: p.y }; walk.prog = 0; walk.hop = false; let last = now();
+  return new Promise(res => (function tick(){
+    const n = now(); walk.prog = cutRT.end || !scene ? 1 : Math.min(1, walk.prog + (n - last) * cutRT.speed / STEP_MS); last = n;
+    if (walk.prog >= 1) { walk.fx = p.x; walk.fy = p.y; walk.to = null; res(); } else { walkLerp(); requestAnimationFrame(tick); }
+  })());
+}
+function cutReset(sc){
+  cutRT.busy = false; cutRT.speed = 1; cutRT.end = false; cutCurtain(false, true);
+  for (const p of cutRT.props) p.o.sprite = p.sprite; cutRT.props = [];
+  const box = $('#sbox'); if (box) box.hidden = false;
 }
 async function relayStart(){
   if (!CUR || CUR.id !== 'route2_glen') return;
@@ -8731,6 +8839,12 @@ async function execStep(st){
     }
     case 'spot': await spotWalk(a); return;
     case 'approach': await approachWalk(a); return;
+    // INTRO_CUTSCENE (D801): staging for any scene. None takes a tap; SKIP and reduced motion snap them (D809).
+    case 'walkTo': await cutWalkTo(sc, a, b, c, d); return;
+    case 'wait': { if (!cutFast(sc)) await cutWait(a | 0); return; }
+    case 'curtain': { cutCurtain(a === 'on', cutFast(sc)); return; }
+    case 'castAt': { cutCastAt(sc, a, b, c, d); return; }
+    case 'prop': { cutProp(sc, cutVar(sc, a), b); return; }
     case 'battle': { sc.skip = false; await sceneBattle(a); return; }
     case 'encounter': { sc.skip = false; await sceneEncounter(a); return; }
     // Build 3: ["seal", id] grants a lanyard without a battle (the Tour's skip path). A Hall win already set it and showed the card.
@@ -8890,14 +9004,18 @@ async function sceneEncounter(id){
 const trainerTeam = t => t.team || (t.counterTeam && (t.counterTeam[S.flags['story.starter_line']] || t.counterTeam.ember)) || [];
 
 /* --- the bottom text box (#ovScene) --- */
-function sbRender(who, text, box){
+function sbRender(who, text, box, asHolder){
+  // INTRO_CUTSCENE D800: a scene with a portraits table shows the speaker's own sprite at 4x; the holder speaks on narrator prompts.
+  const pt = scene && PORTRAIT_FOR[scene.id], pk = pt ? (asHolder ? pt.$player : pt[who]) || null : null;
+  if (asHolder && pk) who = curName(true) || DEFAULT_PLAYER_NAME;
   const key = who && LOOK_OF_NAME[who];
   const look = key ? npcLook({ look: key, name: who }) : null;
   $('#sbWho').textContent = shownName(who) || ''; $('#sbWho').hidden = !who;
   $('#sbText').textContent = text; $('#sbText').classList.toggle('narr', !who);
-  const pc = $('#sbPortrait'), showP = !!look && window.innerWidth >= 360;
-  pc.hidden = !showP; $('#sbox').classList.toggle('has-p', showP);
-  if (showP) { const g = ctx(pc); g.clearRect(0, 0, 18, 18); g.drawImage(keeperFrames(look).down[0], 0, 0); }
+  const big = pk ? (asHolder ? shownLook() : look) : null;   // the in-game sprite at 4x (CSS); same 18x18 canvas
+  const pc = $('#sbPortrait'), showP = !!big || (!!look && window.innerWidth >= 360);
+  pc.hidden = !showP; $('#sbox').classList.toggle('has-p', showP && !big); $('#sbox').classList.toggle('has-big', !!big);
+  if (showP) { const g = ctx(pc); g.clearRect(0, 0, 18, 18); g.drawImage(big ? keeperFrames(big).right[0] : keeperFrames(look).down[0], 0, 0); }
   placeSceneBox(who, box);
 }
 function sayBox(who, text, box){
@@ -9179,6 +9297,7 @@ let optArmAt = 0, tabGuardUntil = 0;
 const armOptions = () => { optArmAt = performance.now() + OPT_ARM_MS; optGuards.forEach(fn => fn()); };
 const tabsGuarded = () => !!scene || performance.now() < tabGuardUntil;
 function sceneTap(){
+  if (cutTap()) return;                     // INTRO_CUTSCENE D808: a tap during a staged walk or wait hurries it
   if (!scene || !sbox.resolve) return;
   snapReveal();
   if (!sbox.full) { sbFull(); return; }
@@ -9194,7 +9313,7 @@ function choiceBox(prompt, labels){
   return new Promise(res => {
     if (scene) scene.boxes++;
     const rev = $('#ovReveal'); if (rev) rev.classList.add('choosing');
-    sbRender(scene.who, ''); $('#sbEcho').textContent = ''; $('#sbName').hidden = true; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
+    sbRender(scene.who, '', undefined, !scene.who); $('#sbEcho').textContent = ''; $('#sbName').hidden = true; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
     sbox.text = prompt; sbox.t0 = now(); sbox.full = false; sbox.cps = TEXT_CPS[S.settings.textSpeed] || 60; sbox.mode = 'choice'; sbox.resolve = () => {};
     const box = $('#sbChoices'); box.innerHTML = ''; armOptions();
     labels.forEach((lb, i) => { const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn sb-choice';   // lb: 'Label' or ['LABEL', 'sub-line']
@@ -9209,7 +9328,7 @@ function nameBox(target, prompt, def, max){
     if (scene) scene.boxes++;
     const p = viewPet(), species = p ? nameOf(spi(p), p.stage) : '';
     const rev = $('#ovReveal'); if (rev) rev.classList.remove('choosing');
-    sbRender(scene.who, prompt); sbox.text = prompt; sbox.full = true; sbox.mode = 'name'; sbox.resolve = () => {}; armOptions();
+    sbRender(scene.who, prompt, undefined, !scene.who); sbox.text = prompt; sbox.full = true; sbox.mode = 'name'; sbox.resolve = () => {}; armOptions();
     $('#sbEcho').textContent = ''; $('#sbChoices').innerHTML = ''; $('#sbSkip').hidden = true; $('#sbNext').hidden = true;
     const inp = $('#sbInput'); inp.maxLength = max || 10;
     inp.value = target === 'player' ? (curName(true) || def || DEFAULT_PLAYER_NAME) : species;
