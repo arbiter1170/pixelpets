@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 07:48 ET: Rook bursts in just inside the Lodge door (build 20261028-0748)
+
+- What changed and why: D871 (green, settled by Vincent). The live check of build 20261028-0640 showed Rook placed on the Lodge door mat (5,8), which sits in the bottom wall row that the room draws dark, so he said "Did I miss it?" from the dark. He now appears just inside the door, (5,7), and speaks from the floor. His exit still ends on the mat, so he still leaves through the door. Design recompiled the beat sheet (design `b6dba02`); his walk to the basket is one tile shorter.
+- Files touched: `data/cutscene_intro.json` (Rook's `castAt` y 8 to 7, copied from Design's compiled file), `data/mapdata.js` (generated), `tests/intro_cutscene.spec.js` (T5, T7), `tests/README.md`, `archive/DECISIONS_SETTLED.md` (D871), `OPEN_DECISIONS.md` (next free id D872), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`. Build `20261028-0748`.
+- Tests run and result (widths, checks): `tests/intro_cutscene.spec.js` (T5 now expects (5,7) and checks Rook is never in a wall row on a line he speaks; T7's B8 walk is 6 tiles) and `tests/starter_moment.spec.js` at 320, 375 and 390: 43 passed, 20 skipped (rows that run at 390 only); T7 3 of 3 on repeat.
+- Decisions made (colour + reasoning): D871, green: a one-tile staging fix inside a settled cutscene; D806's text stands with its entry tile changed.
+- Anything left unfinished: none.
+
 ## 2026-10-28 06:40 ET: The Warden's Lodge plays as a staged cutscene, with sprite portraits (build 20261028-0640)
 
 - What changed and why: INTRO_CUTSCENE (D799-D810). Vincent settled D800 and D804 on Oct 27 ("Sprites in dialog looks much better!") and the rest on their defaults on Oct 28. The `starter` scene is now staged: Ilse steps forward and waves, the holder walks up the rug, Rook bursts in at the door, runs to the basket of the pick that beats yours (it shows empty) and runs back out with his Walkling, all with black bars at the room edges during the staged stretches. Ilse, Rook and the holder speak with their own in-game sprite at 4x (72x72) in the text box; the holder's portrait follows their look, including a look picked earlier in the same scene. No new lines, flags or sounds; the east-gate match is unchanged. One tap doubles a walk's pace and a second ends it; SKIP snaps every walk and still stops at the questions, baskets, hello and naming; reduced motion lands walks in one frame and cuts the curtain. The runtime is generic: every `data/cutscene_*.json` stages the scene it names, so the next cutscene is a data file.
