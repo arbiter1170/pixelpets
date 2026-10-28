@@ -1382,7 +1382,8 @@ function syncCanvasLabels(){
   const f = battle.on ? curFoe() : null, me = battle.on ? activePet() : null;
   if (f) setLabel($('#battleCanvas'), foeLabel(f) + ', Lv ' + f.level + ', HP ' + Math.ceil(f.hp) + ' of ' + f.maxHp + (me ? '. ' + petName(me) + ', HP ' + Math.ceil(hpOf(me)) + ' of ' + maxHpOf(me) + '.' : '.'));
 }
-setInterval(() => { try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} try { syncHdrAcorns(); fitAcornChip(); syncCanvasLabels(); } catch (e) {} }, 120);
+setInterval(() => { if (document.hidden) return;   // nothing to paint while the app is in the background (battery)
+  try { syncNavArt(false); } catch (e) {} try { tipBandTick(); } catch (e) {} try { syncHdrAcorns(); fitAcornChip(); syncCanvasLabels(); } catch (e) {} }, 120);
 // The tip text can change outside syncWalkTip, and the pixel font loads after the first measure (fallback glyphs are narrower,
 // so the band measured one line and then ellipsized). Re-measure whenever the text, the width or the font state changes.
 let tipBandKey = '';
@@ -3461,10 +3462,11 @@ function skyMode(tags = envTags()){
   const has = k => tags.includes(k), dull = has('rain') || has('storm') || has('snow') || has('fog');
   return (has('night') ? 'night' : 'day') + (dull ? '-dull' : '');      // day | day-dull | night | night-dull
 }
-const bdCache = {};
+// Keyed by the canvas size, which moves with every iPhone address-bar, rotation or keyboard resize: keep the newest few.
+const bdCache = new Map(), BD_CAP = 8;
 function makeBackdrop(kind, H, mode, W = 56){
   W = Math.max(56, W | 0); H = H | 0;
-  const key = kind + '|' + W + 'x' + H + '|' + mode; if (bdCache[key]) return bdCache[key];
+  const key = kind + '|' + W + 'x' + H + '|' + mode; if (bdCache.has(key)) return bdCache.get(key);
   const c = document.createElement('canvas'); c.width = W; c.height = H; const g = ctx(c), G = H - 14;
   const night = mode.startsWith('night'), dull = mode.endsWith('dull'), r = rng(kind.length * 7 + 3 + W);
   const P = (col, x, y, w = 1, h = 1) => { g.fillStyle = PAL[col]; g.fillRect(x, y, w, h); };
@@ -3501,7 +3503,9 @@ function makeBackdrop(kind, H, mode, W = 56){
     for (let x = 56; x < W - 4; x += 12) flowers.push([x, 2 + (r() * 8 | 0), r() < .5 ? 'w' : 'y']);
     flowers.forEach(([x, y, col]) => { if (x >= W) return; P(col, x - 1, G + y); P(col, x + 1, G + y); P(col, x, G + y - 1); P(col, x, G + y + 1); P('y', x, G + y); });
   }
-  return (bdCache[key] = c);
+  while (bdCache.size >= BD_CAP) { const k = bdCache.keys().next().value; freeCanvases([bdCache.get(k)]); bdCache.delete(k); }
+  bdCache.set(key, c);
+  return c;
 }
 function drawParticles(g, dt){
   anim.parts = anim.parts.filter(pt => (pt.life -= dt) > 0);
@@ -8011,6 +8015,11 @@ function watchGuardPointers(){
   document.addEventListener('touchstart', e => { for (const t of e.changedTouches) guardPointers.set('t' + t.identifier, 'touch'); }, true);
   document.addEventListener('touchend', e => { for (const t of e.changedTouches) guardPointers.delete('t' + t.identifier); }, true);
   document.addEventListener('touchcancel', e => { for (const t of e.changedTouches) guardPointers.delete('t' + t.identifier); }, true);
+  // iOS can drop touchend under a system gesture (Control Center, the home bar); a stuck entry made the open guard
+  // swallow the next real tap. Nothing is held down while the page is hidden.
+  const clearAll = () => { if (document.hidden) guardPointers.clear(); };
+  document.addEventListener('visibilitychange', clearAll);
+  window.addEventListener('pagehide', () => guardPointers.clear());
 }
 function guardOverlayOpen(el, opts){
   if (!el) return;
@@ -17390,7 +17399,7 @@ function startBuildCheck(){
   dropBuildParam();
   $('#buildX').addEventListener('click', () => { buildChk.gone = buildChk.ready; buildChk.ready = null; pumpBuildBar(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) checkBuild(); });
-  setInterval(pumpBuildBar, 500);
+  setInterval(() => { if (!document.hidden) pumpBuildBar(); }, 500);   // checkBuild runs again on return
   setTimeout(() => checkBuild(), 1500);              // after boot settles; never blocks it
 }
 
@@ -17543,6 +17552,7 @@ function boot(){
       moving: !!fol.to, id: p ? p.id : null, tired: !!(p && isTired(p)), fainted: !!(p && isFainted(p)), bob: followerBob(now()), droop: p && isFainted(p) ? 1 : 0, under: fol.x === S.world.x && fol.y === S.world.y }; },
     // Live getters here, not in cheats: the cheats loop reads each value once at boot, so a getter there goes stale (D787 C).
     get mapZoomSteps(){ return mapZoomSteps(); }, get mapZoomStep(){ return mapZoomStep(); },
+    get bdCacheSize(){ return bdCache.size; },   // review fix: the backdrop cache stays capped (BD_CAP)
   };
   const cheats = {
     repaintStats(){ paintStatIcons(); return true; },   // ?debug=1: redraw the stat icons
