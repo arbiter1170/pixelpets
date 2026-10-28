@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 23:51 ET: "Wants a match" balloon over holders who would battle (build 20261027-2351)
+
+- What changed and why: MATCH_MARKER (D818-D824), all settled on the defaults by Vincent (Oct 28, 2026). A 9x12 spark balloon (`GLYPH.emote_match`, variant A) stands over every holder whose talk would battle: unbeaten, or re-armed after a loss (rested and the 2-step grace spent), plus the walk-up holders Rook at the east gate, Fen (once the trial is ready), Hale and Clerk Nia. It shows within 6 tiles, bobs 1 px on a 400 ms clock (still under reduced motion), and hides while the talk marker or the spot "!" shows, in scenes, battles, the encounter intro and any overlay. Story-scene matches (Rook #2 and #3, Tobin, Imogen) get none. The on-screen quest arrow never sits on a balloon: over a marked holder it stacks 2 px above it, and beside one it keeps 2 px clear (Vincent's ask, Oct 27). Save unchanged.
+- Files touched: `sprites.js` (`emote_match`), `game.js` (`matchMarkFor`, `MATCH_WALKUP`, the draw branch in `drawBubbles`, `matchBob`, `cueClearOfMarks`, the two on-screen arrow draws, debug reads `matchMarks` and `bubbles`), `tests/match_marker.spec.js` (new), `tests/README.md`, `archive/DECISIONS_SETTLED.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/match-marker` from main `a7db11b`. Build `20261027-2351`.
+- Tests run and result (widths, checks): `tests/match_marker.spec.js` T1-T10 at 320, 375 and 390: 33 passed, twice in a row. The 25 specs that touch spotting, rematches, cues or bubbles at 390 on this branch and on main `a7db11b`: the same 12 failures on both. Two more failed on the branch under load: `moves_v2` test 7 passed when run alone, twice; `modern_hud_rows` "highcharity row 38" failed once on main too and passed alone on the branch, so it is flaky on both.
+- Decisions made (colour + reasoning): none new; D818-D824 were settled on their defaults (variant A, the default holder list).
+- Anything left unfinished: none.
+
 ## 2026-10-27 19:50 ET: Day/night and weather in the Modern dock (build 20261027-1950)
 
 - What changed and why: Vincent asked (Oct 27, 2026) for the day/night and weather glyph in the bottom dock, between MAP and the partner buttons, without touching anything (D858). Row 2 of the dock now shows a 16 px sky glyph there. With weather it uses the chip's glyphs and shows the temperature beside it where it fits; with no weather the game clock gives the sun, the half sun at dawn and dusk, or the moon; night always shows the moon. It keeps 2 px clear of MAP and the heart (at 320 the glyph exactly fills the gap and the temperature stays off). Under the dock the place chip drops its own glyph and temperature. Display only; arcade and the overlay layout are unchanged; no save change.
