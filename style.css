@@ -656,6 +656,9 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 .sb-who{position:absolute;left:8px;top:-14px;padding:2px 8px;background:var(--k);color:var(--y);font-size:18px;line-height:1.1;box-shadow:0 0 0 2px var(--d)}
 .sb-portrait{position:absolute;left:10px;top:24px;width:36px;height:36px;image-rendering:pixelated;background:var(--n);box-shadow:0 0 0 2px var(--k)}
 .sbox.has-p{padding-left:56px}
+.sbox.has-big{padding-left:88px;min-height:88px}
+.sbox.has-big .sb-portrait{left:8px;top:auto;bottom:8px;width:72px;height:72px;background:none;box-shadow:none}
+.sbox.has-big .sb-who{left:88px}
 .sb-text{margin:0;font-size:20px;line-height:1.25;min-height:50px;white-space:pre-wrap;overflow-wrap:anywhere}
 .sb-text.narr{color:var(--d)}
 .sb-echo{font-size:16px;line-height:1;color:var(--m);min-height:0}
