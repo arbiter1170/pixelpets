@@ -2,28 +2,28 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-28 ET: TOWN map names every place (build 20261028-0107)
+## 2026-10-28 ET: TOWN map names every place (build 20261028-0858)
 
 - What changed and why: Vincent reported (Oct 28, 2026) that the map was missing store and location names. On Hearthmoor's TOWN map, Lamplight Provisions showed only a "1" (D264: a name that does not fit becomes a numbered pin, keyed below the map, off screen on a phone), and the Lanternball Court lot had no name, since TOWN only named buildings with a door. A building name too wide for one line now wraps to two at the most even word break; the numbered pin stays only for a name that fails on two lines too. A new `TOWN_AREAS` table names open spaces from the game's own data: Lanternball Court (the place name in `data/detail_lizzy.json` and `CLOCK_PLACE`). At 320 every Hearthmoor building now shows its name instead of a pin. The fenced yard and the pond have no name anywhere in the data, so they stay unnamed (no invented names, rule 8). This narrows D264.
 - Files touched: `game.js` (`drawTownLayer`, new `TOWN_AREAS`, `townAreaRect`, `townWrapTwo`; `mapLayerSnap` gains `names`), `tests/town_names.spec.js` (new), `tests/README.md`, `tools/GAMEJS_MAP.txt`, `version.json`, `index.html` (build stamp), `CHANGELOG.md`.
-- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv`. Build `20261028-0107`.
+- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv`. Build `20261028-0858`.
 - Tests run and result (widths, checks): `tests/town_names.spec.js` at 320, 375 and 390: no pins, LAMPLIGHT PROVISIONS and LANTERNBALL COURT drawn, every door building's name drawn.
 - Decisions made (colour + reasoning): green, a fix from Vincent's own report; narrows D264 (pins only as a last resort).
 
-## 2026-10-28 ET: Shop sheet sits above the Modern dock; the dock stays under any scene overlay (build 20261028-0054)
+## 2026-10-28 ET: Shop sheet sits above the Modern dock; the dock stays under any scene overlay (build 20261028-0858)
 
 - What changed and why: Vincent reported (Oct 28, 2026, iPhone, Modern) that shop items clipped into the other UI. The shop (`#ovShop`, z 11) is a bottom sheet with 8 px padding, but during a scene the Modern dock is z 12 and 156 px tall, so the lower rows and BUY buttons ran under its band. Under the dock the sheet now sits above it, the way the scene text box already does (#202); the dock keeps the gear and the acorn count. The battle fix from the entry below is widened: any overlay a scene opens (a picker, a minigame, a battle) now puts the dock back under it, not only the battle. Display only; no copy, save or flow change.
 - Files touched: `style.css`, `tests/shop_dock.spec.js` (new), `tests/shop_layout.spec.js` and `tests/headroom_bigger.spec.js` (the sheet top and room top they pin move up with the sheet: 390 sheet 577 to 408 and room 185 to 102; 320 sheet 301 to 132 and room 56 to 12), `tests/README.md`, `version.json`, `index.html` (build stamp), `CHANGELOG.md`.
-- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv`, on top of the tutorial fix below. Build `20261028-0054`.
-- Tests run and result (widths, checks): see the PR hand-back.
+- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv`, on top of the tutorial fix below. Build `20261028-0858`.
+- Tests run and result (widths, checks): `tests/shop_dock.spec.js` at 320, 375 and 390: the Hesper sheet ends at or above the dock top and the first BUY is whole (fails on the old CSS: sheet bottom 836 against dock top 688). `shop_layout` and `headroom_bigger` T9 now pin the same sheet top and room top as the story-quests branch (408 / 132 / 231 and 102 / 12), written as the same lines so the two branches merge without a conflict.
 - Decisions made (colour + reasoning): green, a bug fix from Vincent's own report.
 
-## 2026-10-28 00:43 ET: Tutorial cards hold still; MOVES stays visible in scene battles (build 20261028-0043)
+## 2026-10-28 00:43 ET: Tutorial cards hold still; MOVES stays visible in scene battles (build 20261028-0858)
 
 - What changed and why: Vincent reported (Oct 28, 2026, iPhone, Modern controls) that the battle tutorial card flashed up and down and could not be tapped, and that MOVES was hidden while the tutorial was up. Two causes. (1) A step with two targets (the HP bars, the type badges, mood and stages, odds and tries; the opening tour's multi-button steps and the C1 care card) cycled its highlight every 600 ms, and the card re-placed itself on each target, so it hopped between the top and bottom of the screen. Every target is now lit at once with a steady ring, the card anchors on the first target and never cycles, the ring no longer blinks and the card no longer slides in. (2) A battle opened from a scene (Rook, a story creature) kept `scene-on`, which lifts the Modern dock to z 12, above the battle (z 10). Its opaque band covered MOVES, BEFRIEND and the move list; only the gear showed. While the battle is open the dock now sits under it. Display only; no copy, save or flow change.
 - Files touched: `game.js` (`tutPlace`, new `tutExtraRings`, `tutClearChip`, `tutShow`, `lessonCard`), `style.css`, `tests/tutorial_steady.spec.js` (new), `tests/README.md`, `tools/GAMEJS_MAP.txt`, `version.json`, `index.html` (build stamp), `CHANGELOG.md`.
-- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv` from main `a7db11b`. Build `20261028-0043`.
-- Tests run and result (widths, checks): see the PR hand-back.
+- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv` from main `a7db11b`. Build `20261028-0858`.
+- Tests run and result (widths, checks): `tests/tutorial_steady.spec.js` at 320, 375 and 390: 6 passed (the two-target HP step lights both bars and its card and rings stay put for 1.5 s with no animation; MOVES and the move list are not under the dock in a scene battle, M3 and M4). It fails on the old code. Combined run with the shop, town, intro-cutscene, phone-apps, care and unlock specs: 373 passed, 9 failed, all 9 failing on main too (T-C6; the `hc_apt_in` zoom check; the diner hunger tolerance; `map_zoom.spec.js:339`).
 - Decisions made (colour + reasoning): green, bug fixes from Vincent's own report; no layout or copy change beyond removing the motion.
 
 ## 2026-10-28 06:40 ET: The Warden's Lodge plays as a staged cutscene, with sprite portraits (build 20261028-0640)
