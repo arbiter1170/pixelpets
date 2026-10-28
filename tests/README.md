@@ -67,7 +67,7 @@ npm run test:iphone -- tests/shop_dock.spec.js --project=iphone-14-safari    # t
 npm run test:iphone                       # every spec, eight phone sizes (slow: run one spec or one project when you can)
 ```
 
-`npm run iphone` prints every pointer, touch and click event with its id and timestamp (`--no-input-log` turns that off), which is the quickest way to see what the page is really being given. `--trace t.zip` records a Playwright trace to open with `npx playwright show-trace t.zip`. `--engine chromium` runs the same phone on Chromium to compare.
+`npm run iphone` serves on port 8080, or on any free port if something else already has it (`--port 8090` pins one). It prints every pointer, touch and click event with its id and timestamp (`--no-input-log` turns that off), which is the quickest way to see what the page is really being given. `--trace t.zip` records a Playwright trace to open with `npx playwright show-trace t.zip`. `--engine chromium` runs the same phone on Chromium to compare.
 
 **What this is not.** It is not Apple's iOS Safari. These need the iOS Simulator (Xcode, Mac only) or a real iPhone: the Safari toolbars growing and shrinking while you scroll, safe-area insets (`env(safe-area-inset-*)` is always 0 here), audio unlock, rubber-banding, touch ids, the keyboard pushing the page up. On a Mac, the real iOS engine is one command away: `open -a Simulator`, then `xcrun simctl openurl booted http://localhost:8080/?debug=1` with `node tools/static_server.js` running, and Safari's Develop menu, Simulator, for the console. From a Windows or Linux desktop, use `--lan` and a real iPhone.
 
