@@ -69,6 +69,8 @@ Waiting on state, not on time. A few traps that made tests flaky:
 
 `tests/dock_sky.spec.js` (D858): in modern portrait walk the day/night and weather glyph sits between MAP and the partner buttons, 16x16 and at least 2 px clear of both at 320, 375 and 390; weather shows its word and temperature (the temperature only where it fits, never at 320); the place chip drops its own glyph under the dock; arcade has no sky slot.
 
+`tests/today_card_taps.spec.js` (Oct 28, 2026 bug): with TODAY open, a finger held 150 ms on OK closes it and on MAP opens the map, and `#ovEnv`'s hidden flag never flickers while the card is open (the per-frame MAP check used to flip it, which re-armed the open guard and swallowed every tap).
+
 `tests/modern_hud_dock.spec.js`: in modern portrait walk under `mhc-frame`, the 156 px dock holds the place chip, Acorns, PHONE, gear, the six buttons and the partner card; no steady HUD overlaps the map canvas; the tip band is off. A toast stays in the chip slot (Acorns stay clear) and a long toast pages. A new quest step plays one "New step" toast and the full step stays on the quest card. The care tray's answer toast sits in the tray's top band.
 `tests/cloud_link.spec.js`: with `?cloud=off`, `PPCloud` exposes the Phase 2 privacy string and no-op `linkGoogle` / `signOutGoogle` hooks, and the Settings Cloud save row stays hidden.
 

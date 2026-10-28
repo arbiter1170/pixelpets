@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 00:31 ET: TODAY card buttons work again (build 20261028-0031)
+
+- What changed and why: Vincent reported (Oct 28, 2026) that once the location/time card (TODAY) was open, none of its buttons closed it. The per-frame MAP button check (`mapReadySoon`, added Oct 26) flipped `#ovEnv.hidden` to true and back every frame to ask "could the map open if TODAY were shut?". The open guard on TODAY watches that attribute, so each flip re-armed it as a fresh open and swallowed any tap longer than one frame: OK, MAP and LOCATION all did nothing on a phone. The check now reads the state through a flag (`envPeek`) that `overlayOpen` honours, and never touches the attribute.
+- Files touched: `game.js` (`overlayOpen`, `mapReadySoon`), `tests/today_card_taps.spec.js` (new), `tests/README.md`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
+- Commit(s) + build id: `fix/today-card-taps` from main `a7db11b`. Build `20261028-0031`.
+- Tests run and result (widths, checks): `tests/today_card_taps.spec.js` at 320, 375 and 390: 9 passed; all 3 fail on main's `game.js`. Also `world_clock`, `whereabouts`, `dock_sky`, `top_hud` at all widths: pass except 3 `top_hud` rows (column y, reduced motion, frame home) that fail the same on main `a7db11b`.
+- Decisions made (colour + reasoning): green. A fix for a regression; no behaviour change beyond taps working.
+- Anything left unfinished: the 3 `top_hud` rows already failing on main.
+
 ## 2026-10-27 19:50 ET: Day/night and weather in the Modern dock (build 20261027-1950)
 
 - What changed and why: Vincent asked (Oct 27, 2026) for the day/night and weather glyph in the bottom dock, between MAP and the partner buttons, without touching anything (D858). Row 2 of the dock now shows a 16 px sky glyph there. With weather it uses the chip's glyphs and shows the temperature beside it where it fits; with no weather the game clock gives the sun, the half sun at dawn and dusk, or the moon; night always shows the moon. It keeps 2 px clear of MAP and the heart (at 320 the glyph exactly fills the gap and the temperature stays off). Under the dock the place chip drops its own glyph and temperature. Display only; arcade and the overlay layout are unchanged; no save change.
