@@ -9,6 +9,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`, merged with main `d09b1b0` (#220, #223, #224, #206). Build `20261028-1336`.
 - Tests run and result (widths, checks): `tests/intro_cutscene.spec.js` (T5 now expects (5,7) and checks Rook is never in a wall row on a line he speaks; T7's B8 walk is 6 tiles) and `tests/starter_moment.spec.js` at 320, 375 and 390: 43 passed, 20 skipped (rows that run at 390 only); T7 3 of 3 on repeat.
 - Decisions made (colour + reasoning): D871, green: a one-tile staging fix inside a settled cutscene; D806's text stands with its entry tile changed.
+- Anything left unfinished: none.
 
 ## 2026-10-28 ET: `npm run iphone` takes a free port when 8080 is busy, no build change
 
