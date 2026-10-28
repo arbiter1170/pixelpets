@@ -12622,6 +12622,8 @@ const PHONE_GLYPH = {
   jobs: ['...##...', '..####..', '...##...', '.######.', '#.#..#.#', '.######.', '..#..#..', '.#....#.'],
   ribbit: ['.#....#.', '##....##', '#.#..#.#', '.######.', '..#..#..', '.######.', '.#....#.', '.#....#.'],
   board: ['########', '#.#..#.#', '#......#', '#.####.#', '#.#....#', '#.####.#', '#......#', '########'],
+  sky: ['..###...', '.##.....', '##....#.', '##...###', '##....#.', '.##.....', '..###...', '........'],
+  glow: ['...##...', '..#..#..', '.######.', '.#.##.#.', '.#.##.#.', '.######.', '..#..#..', '.######.'],
 };
 function setPhoneJobsLabel(hack){
   const lab = $('#phoneJobs .phone-lab');
@@ -12631,8 +12633,8 @@ function setPhoneJobsLabel(hack){
 function paintPhoneHome(){
   const hack = phoneHack();
   const ink = hack
-    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8' }
-    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0' };
+    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', glow: '#07140e' }
+    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0', sky: '#f4fbff', glow: '#1a140c' };
   $$('#phoneHome .phone-glyph').forEach(el => {
     const c = el.querySelector('canvas'), grid = PHONE_GLYPH[el.dataset.glyph];
     if (!c || !grid) return;
@@ -12804,7 +12806,9 @@ function renderContactCard(body, person, fav){
   if (!info) { place.className = 'contact-place'; place.textContent = contactPlace(person); }
   card.append(face, nm, place);
   if (person.quest) { const chip = document.createElement('p'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; card.appendChild(chip); }
-  const line = document.createElement('p'); line.className = 'contact-line'; line.textContent = contactBlurb(person);
+  const ready = contactRematch(person);
+  if (ready) { const chip = document.createElement('p'); chip.className = 'contact-ready'; chip.textContent = 'READY'; card.appendChild(chip); }
+  const line = document.createElement('p'); line.className = 'contact-line'; line.textContent = ready ? rematchRelay(ready) : contactBlurb(person);
   const acts = document.createElement('div'); acts.className = 'contact-card-acts';
   const star = document.createElement('button');
   star.type = 'button'; star.className = 'btn contact-star'; star.dataset.fav = person.key; star.textContent = fav ? 'ON' : 'FAV';
@@ -12858,6 +12862,7 @@ function renderContacts(){
     const place = document.createElement('small'); place.className = 'contact-place'; place.textContent = contactPlace(person);
     meta.append(nm, place);
     if (person.quest) { const chip = document.createElement('span'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; meta.appendChild(chip); }
+    if (contactRematch(person)) { const chip = document.createElement('span'); chip.className = 'contact-ready'; chip.textContent = 'READY'; meta.appendChild(chip); }
     main.append(face, meta);
     const star = document.createElement('button');
     star.type = 'button'; star.className = 'btn contact-star'; star.dataset.fav = person.key; star.textContent = fav ? 'ON' : 'FAV';
@@ -12913,6 +12918,7 @@ function renderRibbit(body){
     map: (CUR && CUR.id) || '',
     uid: (S && S.uid) || '',
     day: dayKey(Date.now()),
+    night: phoneNight(),
   }) : { trending: [], posts: [] };
   const trend = document.createElement('div');
   trend.className = 'ribbit-trend';
@@ -12959,6 +12965,94 @@ function renderRibbit(body){
   foot.textContent = 'Ribbit rides the Keeper wires.';
   body.appendChild(foot);
 }
+/* ---------- phone apps, part 1 (Vincent, Oct 28, 2026; D859-D863) ----------
+   Every new line here is placeholder copy until Design writes it (D863). Both handsets read the same facts; the Keeper1
+   says them in the Lantern desk's voice and the cracked handset in the leak's. No save field is added. */
+// D859 Rematch Line: a met trainer whose rematch.<id> is pending, with the party rested, shows READY in CONTACTS.
+function contactRematch(person){
+  if (!S || !person || S.world.restDue) return null;
+  const spot = person.spots.find(s => s.o.kind === 'trainer' && rematchPending(s.o.id));
+  return spot ? spot.o.id : null;
+}
+function rematchRelay(id){
+  const said = expand(battleGreeting(id) || '');
+  return (phoneHack() ? 'Intercepted: ' : 'Lantern desk relay: ') + said;
+}
+// D860 Field Notes: finished main steps, newest first, in the quest's own words. The Keeper1 stamps each COPIED;
+// the cracked handset shows the same notes with a few words blacked out by the sender.
+const FIELD_NOTES_MAX = 8;
+function blackOut(text, seed){
+  let n = 0; for (const ch of seed) n = (n * 31 + ch.charCodeAt(0)) >>> 0;
+  return text.split(' ').map((w, i) => (w.length > 3 && (i + n) % 4 === 0) ? '█'.repeat(Math.min(w.length, 6)) : w).join(' ');
+}
+function renderFieldNotes(body, hack){
+  const done = (typeof PPQuests !== 'undefined' && PPQuests.completed) ? PPQuests.completed(questState(), FIELD_NOTES_MAX) : [];
+  const head = document.createElement('p'); head.className = 'phone-sec'; head.textContent = 'FIELD NOTES';
+  body.appendChild(head);
+  if (!done.length) { const p = document.createElement('p'); p.className = 'phone-note-empty'; p.textContent = 'Nothing logged yet. Notes fill in as you go.'; body.appendChild(p); return; }
+  for (const e of done) {
+    const row = document.createElement('article'); row.className = 'phone-note'; row.dataset.step = e.id;
+    const place = document.createElement('b'); place.className = 'phone-note-place'; place.textContent = e.place || '';
+    const text = document.createElement('p'); text.className = 'phone-note-text'; text.textContent = hack ? blackOut(e.text, e.id) : e.text;
+    const stamp = document.createElement('small'); stamp.className = 'phone-note-stamp'; stamp.textContent = hack ? 'REDACTED BY SENDER' : 'COPIED';
+    row.append(place, text, stamp);
+    body.appendChild(row);
+  }
+}
+// D861 SKY (Far Sky + Night Desk): the hour, the real sky, and who the sky is stirring on this map.
+function phoneNight(){
+  if (!window.PPClock) return false;
+  const r = PPClock.now();
+  return r.hh >= 22 || r.hh < 5;
+}
+const SKY_WEATHER = ['rain', 'storm', 'snow', 'fog', 'night'];
+function skyStirring(){
+  if (!CUR || isRoom() || !CUR.spawns) return null;
+  const tags = envTags(), base = tags.filter(t => SKY_WEATHER.indexOf(t) < 0);
+  if (base.length === tags.length) return [];
+  const now = spawnOdds(tags), was = spawnOdds(base.length ? base : ['meadow']);
+  const top = now.map((v, i) => ({ i, v, up: v - was[i] })).filter(r => r.v > 0.03 && r.up > 0.02).sort((a, b) => b.up - a.up).slice(0, 2);
+  const seen = top.filter(r => S.dex && S.dex.seen && S.dex.seen[formOf(r.i, 0)]).map(r => nameOf(r.i, 0)), unseen = top.length - seen.length;
+  if (unseen) seen.push(unseen === 1 ? 'a Walkling you have not met' : 'Walklings you have not met');
+  return seen;
+}
+function renderFarSky(body, hack){
+  const add = (cls, text) => { const p = document.createElement('p'); p.className = cls; p.textContent = text; body.appendChild(p); return p; };
+  if (window.PPClock) { const r = PPClock.now(); add('sky-hour', r.name + ', ' + r.hh + ':' + String(r.mm).padStart(2, '0') + ', ' + r.phase); }
+  const sky = chipSky();
+  const word = sky ? ({ clear: 'Clear', cloud: 'Cloud', rain: 'Rain', snow: 'Snow' }[sky.kind] || '') : '';
+  add('sky-now', sky ? word + (sky.temp != null ? ', ' + Math.round(sky.temp) + '°' : '') + ' over ' + (placeName() || 'here') + '.' : 'No sky reading. Turn on LOCATION on the TODAY card for real weather.');
+  const stir = skyStirring();
+  add('sky-stir', stir === null ? 'No wild grass here. Step outside to read the sky.'
+    : !stir.length ? 'A plain sky. Nothing extra is stirring.'
+    : 'The weather is stirring ' + stir.join(' and ') + '.');
+  if (phoneNight()) add('sky-night', hack ? 'Night readings: glow levels rising. Logged.' : 'Glow is rising. Sleeping Walklings send a little up tonight.');
+  const wet = sky && (sky.kind === 'rain' || sky.kind === 'snow');
+  add('sky-foot', hack ? (wet ? 'Rain on your walk? Soon there is a pause for that. Glimmerwell.' : 'Any sky is brighter with Glimmerwell.')
+    : 'Keepers forecast. Walk kindly.');
+}
+// D862 GLOW (care monitor + Lantern Pass): the partner today, and the Lantern House that wakes you. No penalty, no countdown.
+function glowAdvice(p, hack){
+  if (isFainted(p) || p.energy < 30) return hack ? 'Unit output: low. Rest recommended.' : 'A nap would help.';
+  if (p.hunger < 40) return hack ? 'Unit output: dipping. Refuel recommended.' : 'A snack would help.';
+  if (p.happy < 40) return hack ? 'Unit morale: below target.' : 'A game would cheer them up.';
+  return hack ? 'Unit output: steady. Have a bright day!' : 'Your Walkling is doing well.';
+}
+function renderGlowApp(body, hack){
+  const add = (cls, text) => { const p = document.createElement('p'); p.className = cls; p.textContent = text; body.appendChild(p); return p; };
+  const p = pet();
+  if (p) {
+    add('glow-name', petName(p) + ', Lv ' + levelOf(p));
+    add('glow-stats', 'Food ' + Math.round(p.hunger) + '  Joy ' + Math.round(p.happy) + '  Energy ' + Math.round(p.energy));
+    add('glow-bond', 'Bond ' + '♥'.repeat(bondLevel(p)) + '♡'.repeat(Math.max(0, 5 - bondLevel(p))));
+    add('glow-advice', (hack ? 'Glimmerwell: ' : 'Lantern desk: ') + glowAdvice(p, hack));
+  }
+  const town = WORLD[respawnTown()];
+  add('phone-sec', 'LANTERN');
+  add('glow-lantern', 'You wake at ' + ((town && town.name) || 'Hearthmoor') + "'s Lantern House.");
+  const trusted = PPStanding.tierOf(standingOf('keepers', false)) >= 2;
+  add('glow-bed', hack ? 'Doorway only. They still heal you.' : trusted ? 'A bed is held for you.' : 'Beds are open to every holder.');
+}
 function phoneApp(id){
   if (id === 'journal' || id === 'walklings') { closePhone(); showTab('col'); return; }
   if (id === 'board') { showTownBoardPane(); sfx('tap'); return; }
@@ -12979,6 +13073,7 @@ function phoneApp(id){
       add('Lantern desk', 'Your Keeper1 is active. We can read this. That is the service.');
       add('Lantern desk', 'Free handset. The poles stay with the Keepers.');
     }
+    renderFieldNotes(body, hack);
   } else if (id === 'jobs') {
     if (hack) {
       add('BOTNET', 'Dark-market parts: the shelf is empty.');
@@ -12989,6 +13084,10 @@ function phoneApp(id){
     }
   } else if (id === 'ribbit') {
     renderRibbit(body);
+  } else if (id === 'sky') {
+    renderFarSky(body, hack);
+  } else if (id === 'glow') {
+    renderGlowApp(body, hack);
   } else if (id === 'friends') {
     $('#friendCode').textContent = friendCode(); renderKeeperName();
     if (window.PPNet && PPNet.renderFriends) PPNet.renderFriends();
