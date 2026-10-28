@@ -16,7 +16,7 @@ D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes,
 
 D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D857 are held by ARBITER_UNITS (draft PR #205). D858 is reserved: DOCK_SKY (Vincent, Oct 27, 2026; settled, recorded in the archive).
 
-D859-D870 are reserved: PHONE_APPS (Vincent, Oct 28, 2026: "small & medium approved" for the phone app list). D859-D862 are settled and recorded in the archive; D863 is open below.
+D859-D870 are reserved: PHONE_APPS (Vincent, Oct 28, 2026: "small & medium approved" for the phone app list). D859-D862 and D864-D869 are settled and recorded in the archive; D863 is open below. D870 is spare.
 
 Next free id is D871.
 Other packets hold ids through D870.
@@ -27,7 +27,7 @@ Other packets hold ids through D870.
 |---|---|---|---|---|
 | D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
 | D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
-| D863 | PHONE_APPS copy, YELLOW, OPEN | Design writes the copy for the new phone screens (SKY, GLOW, READY relay, FIELD NOTES stamps, Night Desk posts) and says whether the home grid keeps nine apps (PHONE_SHELL v0.2 assumed seven) | Placeholder copy written by the engineer, in both handset voices. Nine apps: SKY and GLOW after BOARD. No new story facts: Field Notes reuse the quest chain's own text; the relay reuses each holder's rematch line | `game.js` phone apps part 1 block (`renderFarSky`, `renderGlowApp`, `glowAdvice`, `rematchRelay`, `renderFieldNotes`), `ribbit.js` `NIGHT_POSTS`, `index.html` `#phoneHome` |
+| D863 | PHONE_APPS copy, YELLOW, OPEN | Design writes the copy for the new phone screens (SKY, GLOW, READY relay, FIELD NOTES stamps, Night Desk posts; part 2: patrol/gig rows, Census feed, BOTNET Shelf, signal footer, chirp presets, STEPS lines) and says whether the home grid keeps nine apps (PHONE_SHELL v0.2 assumed seven) | Placeholder copy written by the engineer, in both handset voices. Nine apps: SKY and GLOW after BOARD. No new story facts: Field Notes reuse the quest chain's own text; the relay reuses each holder's rematch line | `game.js` phone apps part 1 block (`renderFarSky`, `renderGlowApp`, `glowAdvice`, `rematchRelay`, `renderFieldNotes`), `ribbit.js` `NIGHT_POSTS`, `index.html` `#phoneHome`; part 2 block (`renderJobsApp`, `renderCensusLeak`, `openBotnetShelf`, `renderFootpath`, `chirpPresets`) |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.
