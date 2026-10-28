@@ -132,8 +132,10 @@ test('the diner sheet fits, one tap buys one, and a refused tap changes nothing'
   await page.waitForTimeout(400);
   const box = await sheetBox(page);
   const w = page.viewportSize().width;
-  const sheetWant = w === 390 ? 577 : w === 320 ? 301 : 400;
-  const roomWant = w === 390 ? 185 : w === 320 ? 56 : null;
+  // Oct 28, 2026: under the Modern dock the sheet sits above the dock (it ran under the dock's band), and the camera frames the
+  // room above the sheet. Was 577 / 301 / 400 and 185 / 56 before the dock.
+  const sheetWant = w === 390 ? 408 : w === 320 ? 132 : 231;
+  const roomWant = w === 390 ? 102 : w === 320 ? 12 : null;
   expect(Math.abs(box.sheetTop - sheetWant), 'sheet top ' + box.sheetTop).toBeLessThanOrEqual(20);
   expect(box.sheetH).toBeLessThanOrEqual(box.vh * 0.55 + 2);
   expect(box.headH).toBeGreaterThanOrEqual(60);

@@ -2,10 +2,18 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 ET: TOWN map names every place (build 20261028-0107)
+
+- What changed and why: Vincent reported (Oct 28, 2026) that the map was missing store and location names. On Hearthmoor's TOWN map, Lamplight Provisions showed only a "1" (D264: a name that does not fit becomes a numbered pin, keyed below the map, off screen on a phone), and the Lanternball Court lot had no name, since TOWN only named buildings with a door. A building name too wide for one line now wraps to two at the most even word break; the numbered pin stays only for a name that fails on two lines too. A new `TOWN_AREAS` table names open spaces from the game's own data: Lanternball Court (the place name in `data/detail_lizzy.json` and `CLOCK_PLACE`). At 320 every Hearthmoor building now shows its name instead of a pin. The fenced yard and the pond have no name anywhere in the data, so they stay unnamed (no invented names, rule 8). This narrows D264.
+- Files touched: `game.js` (`drawTownLayer`, new `TOWN_AREAS`, `townAreaRect`, `townWrapTwo`; `mapLayerSnap` gains `names`), `tests/town_names.spec.js` (new), `tests/README.md`, `tools/GAMEJS_MAP.txt`, `version.json`, `index.html` (build stamp), `CHANGELOG.md`.
+- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv`. Build `20261028-0107`.
+- Tests run and result (widths, checks): `tests/town_names.spec.js` at 320, 375 and 390: no pins, LAMPLIGHT PROVISIONS and LANTERNBALL COURT drawn, every door building's name drawn.
+- Decisions made (colour + reasoning): green, a fix from Vincent's own report; narrows D264 (pins only as a last resort).
+
 ## 2026-10-28 ET: Shop sheet sits above the Modern dock; the dock stays under any scene overlay (build 20261028-0054)
 
 - What changed and why: Vincent reported (Oct 28, 2026, iPhone, Modern) that shop items clipped into the other UI. The shop (`#ovShop`, z 11) is a bottom sheet with 8 px padding, but during a scene the Modern dock is z 12 and 156 px tall, so the lower rows and BUY buttons ran under its band. Under the dock the sheet now sits above it, the way the scene text box already does (#202); the dock keeps the gear and the acorn count. The battle fix from the entry below is widened: any overlay a scene opens (a picker, a minigame, a battle) now puts the dock back under it, not only the battle. Display only; no copy, save or flow change.
-- Files touched: `style.css`, `tests/shop_dock.spec.js` (new), `tests/README.md`, `version.json`, `index.html` (build stamp), `CHANGELOG.md`.
+- Files touched: `style.css`, `tests/shop_dock.spec.js` (new), `tests/shop_layout.spec.js` and `tests/headroom_bigger.spec.js` (the sheet top and room top they pin move up with the sheet: 390 sheet 577 to 408 and room 185 to 102; 320 sheet 301 to 132 and room 56 to 12), `tests/README.md`, `version.json`, `index.html` (build stamp), `CHANGELOG.md`.
 - Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv`, on top of the tutorial fix below. Build `20261028-0054`.
 - Tests run and result (widths, checks): see the PR hand-back.
 - Decisions made (colour + reasoning): green, a bug fix from Vincent's own report.

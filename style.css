@@ -1505,7 +1505,8 @@ body.mhc-frame.ctl-modern.scene-on .float-ctl{z-index:12}
 body.mhc-frame.ctl-modern .scene-ov{padding-bottom:calc(156px + var(--sa-b) + 12px)}
 /* Anything a scene opens (a battle, a picker, a minigame) keeps scene-on. The dock's z 12 then put its opaque band over that
    overlay (z 10-12) and hid its bottom: MOVES and the move list in a scene battle. While one is open the dock goes back under it.
-   The shop is the exception: it is a bottom sheet over the map, so it keeps the dock (gear, acorns) and sits above it instead. */
+   The shop is the exception: it is a bottom sheet over the map, so it keeps the dock (gear, acorns) and sits above it instead,
+   as the scene text box does, and the acorn chip stays in view while prices are up. */
 body.ctl-modern.scene-on:has(.overlay:not([hidden]):not(#ovShop)) .float-ctl{z-index:2}
 body.mhc-frame.ctl-modern #ovShop.overlay{padding-bottom:calc(156px + var(--sa-b) + 8px)}
 #coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}

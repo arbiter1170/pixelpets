@@ -12085,10 +12085,39 @@ function drawRoomLayer(g, R, L, p, fog, blink){
   const sel = mapUI.pick;
   if (sel) whiteBrackets(R, sel.x * p + p / 2, sel.y * p + p / 2, Math.max(p, 14));
 }
+// Named open spaces on a TOWN layer (Vincent, Oct 28, 2026: the map was missing place names). `at` is one tile of the area; the
+// label covers the run of that tile kind around it. Names come from the game's own data, never invented here:
+// Lanternball Court is the place in data/detail_lizzy.json (and CLOCK_PLACE).
+const TOWN_AREAS = {
+  hearthmoor: [{ at: [16, 31], label: 'LANTERNBALL COURT' }],
+};
+function townAreaRect(grid, at){
+  const ch = grid[at[1]] && grid[at[1]][at[0]]; if (!ch) return null;
+  const seen = new Set(), st = [at];
+  let x0 = at[0], y0 = at[1], x1 = at[0], y1 = at[1];
+  while (st.length) {
+    const [x, y] = st.pop(), k = x + ',' + y;
+    if (seen.has(k) || !grid[y] || grid[y][x] !== ch) continue;
+    seen.add(k); x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
+    st.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+  }
+  return [x0, y0, x1, y1];
+}
+// A name too wide for one line breaks at the space that gives the most even two lines that both fit. Null when none does.
+function townWrapTwo(g, s, room){
+  const words = String(s).split(' ');
+  let best = null, bestW = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(' '), b = words.slice(i).join(' ');
+    const w = Math.max(g.measureText(a).width, g.measureText(b).width);
+    if (w <= room && w < bestW) { best = [a, b]; bestW = w; }
+  }
+  return best;
+}
 function drawTownLayer(g, R, box, L, p, blink){
   const grid = L.grid, W = L.w * p, H = L.h * p;
   const rings = layerRingBoxes(L, p);
-  mapLayerMarks = { rings, labels: [] };
+  mapLayerMarks = { rings, labels: [], names: [] };
   for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) {
     const ch = grid[y][x];
     R(x * p, y * p, p, p, (ch === 'R' || ch === 'H') ? 'B' : (ML_TOWN[ch] || 'g'));
@@ -12109,9 +12138,19 @@ function drawTownLayer(g, R, box, L, p, blink){
       const cx = (x0 + x1 + 1) * p / 2, cy = (y0 + y1 + 1) * p / 2;
       const sz = p >= 10 ? 13 : 12;
       mapFont(g, sz);
-      if (g.measureText(b.label).width <= bw + 2 * p) labels.push([cx, cy, b.label, sz, ent]);
-      else { const n = pins.length + 1; pins.push({ n, label: b.label }); labels.push([cx, cy, String(n), 12, ent]); }
+      const room = bw + 2 * p, two = g.measureText(b.label).width <= room ? null : townWrapTwo(g, b.label, room);
+      if (!two && g.measureText(b.label).width <= room) labels.push([cx, cy, b.label, sz, ent]);
+      else if (two) { labels.push([cx, cy - (sz + 2) / 2, two[0], sz, ent]); labels.push([cx, cy + (sz + 2) / 2, two[1], sz, ent]); }
+      else { const n = pins.length + 1; pins.push({ n, label: b.label }); labels.push([cx, cy, String(n), 12, ent]); }   // D264: a pin only when two lines fail too
     }
+  });
+  (TOWN_AREAS[L.id] || []).forEach(a => {
+    const r = townAreaRect(grid, a.at); if (!r) return;
+    const cx = (r[0] + r[2] + 1) * p / 2, cy = (r[1] + r[3] + 1) * p / 2, room = (r[2] - r[0] + 1) * p, sz = p >= 10 ? 13 : 12;
+    mapFont(g, sz);
+    if (g.measureText(a.label).width <= room) { labels.push([cx, cy, a.label, sz, true]); return; }
+    const two = townWrapTwo(g, a.label, room);
+    if (two) { labels.push([cx, cy - (sz + 2) / 2, two[0], sz, true]); labels.push([cx, cy + (sz + 2) / 2, two[1], sz, true]); }
   });
   const stalls = TOWN_STALL_ART[L.id];
   if (stalls && WORLD[L.id]) {
@@ -12134,7 +12173,7 @@ function drawTownLayer(g, R, box, L, p, blink){
     else { R(X - a, Y - a / 2, a * 2, a, 'g'); box(X - a, Y - a / 2, a * 2, a, 'k'); ay = Y > H * 0.8 ? Y - a - 3 : Y + a + 3; }
     placePlate(g, ax, ay, lab, 12, 'w', align, rings, W, H, e.edge);
   });
-  labels.forEach(([cx, cy, s, sz, ent]) => plateText(g, cx, cy, s, sz, ent ? 'w' : 'h', 'center'));
+  labels.forEach(([cx, cy, s, sz, ent]) => { plateText(g, cx, cy, s, sz, ent ? 'w' : 'h', 'center'); mapLayerMarks.names.push(s); });
   paintPins(pins);
   const q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
   if (q && blink) ringBox(R, q.x * p + p / 2, q.y * p + p / 2, Math.max(p, 10), 'r');
@@ -12224,6 +12263,7 @@ function mapLayerSnap(){
     backdrop: regionBackdropOn(),
     rings: (mapLayerMarks.rings || []).map(r => ({ kind: r.kind, x: r.x, y: r.y, w: r.w, h: r.h })),
     labels: (mapLayerMarks.labels || []).map(l => ({ text: l.text, x: l.x, y: l.y, w: l.w, h: l.h, edge: l.edge || null })),
+    names: (mapLayerMarks.names || []).slice(),
     ways: L && L.ways ? L.ways.map(w => ({ tag: w.tag, x: w.x, y: w.y, kind: w.kind, to: w.to })) : [],
     openings: L && L.openings ? L.openings.length : 0,
     sections: L && L.sections ? L.sections.filter(s => s.label).map(s => s.label) : [],

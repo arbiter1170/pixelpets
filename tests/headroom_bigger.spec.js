@@ -262,7 +262,8 @@ test('T9 shop sheet and speaker bias still frame', async ({ page }) => {
   expect(shop.open).toBe(true);
   expect(shop.zoom).toBe(2);
   const w = page.viewportSize().width;
-  const roomWant = w === 390 ? 185 : w === 320 ? 56 : null;
+  // Oct 28, 2026: the shop sheet now sits above the Modern dock, so the room frames higher (was 185 / 56).
+  const roomWant = w === 390 ? 102 : w === 320 ? 12 : null;
   if (roomWant != null) expect(Math.abs(shop.roomTop - roomWant), 'room top ' + shop.roomTop).toBeLessThanOrEqual(16);
   await page.locator('#shopClose').click();
   await page.waitForSelector('#ovShop', { state: 'hidden' });
