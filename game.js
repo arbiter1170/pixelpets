@@ -2090,13 +2090,18 @@ function tutClearHit(){
 function tutPlace(){
   const mode = tut.on ? 'tut' : (unlock.on ? 'unlock' : null);
   if (!mode) return;
-  const holes = mode === 'tut' ? tut.holes : unlock.holes, hi = mode === 'tut' ? tut.hi : 0;
-  const h = holes.length ? holes[hi % holes.length] : null;
+  // Every target is lit at once and the card anchors on the first. It never cycles: a card that hopped between
+  // targets every 600 ms flashed up and down and was hard to read and to tap (Vincent, Oct 28, 2026).
+  const holes = mode === 'tut' ? tut.holes : unlock.holes;
+  const h = holes.length ? holes[0] : null;
+  const extra = mode === 'tut' && h ? holes.slice(1) : [];
+  tutExtraRings(extra);
   const dims = ['#tutD1', '#tutD2', '#tutD3', '#tutD4'].map(s => $(s));
   const ring = $('#tutRing'), block = $('#tutBlock');
   const vw = window.innerWidth, vh = window.innerHeight;
   const trayEl = $('#careTray');
   const closePass = (tut.on && tut.lesson === 'care' && !tut.soft && trayEl && !trayEl.hidden) ? tutBox($('#ctClose')) : null;
+  const closeHole = h && closePass && (Math.abs(closePass.x - h.x) > 4 || Math.abs(closePass.y - h.y) > 4) ? closePass : null;
   if (tut.on && tut.soft) {
     dims.forEach(d => { if (d) d.style.cssText = 'display:none'; });
     block.hidden = true;
@@ -2110,10 +2115,10 @@ function tutPlace(){
     dims[0].style.cssText = 'left:0;top:0;width:100%;height:100%';
     for (let i = 1; i < 4; i++) dims[i].style.cssText = 'display:none';
     ring.hidden = true; block.hidden = true;
-  } else if (h && closePass && (Math.abs(closePass.x - h.x) > 4 || Math.abs(closePass.y - h.y) > 4)) {
-    // One dim with two holes: the lesson target, and CLOSE, so the tray can shut mid-step.
+  } else if (h && (extra.length || closeHole)) {
+    // One dim with several holes: every lesson target, and CLOSE, so the tray can shut mid-step.
     let d = 'M0 0H' + vw + 'V' + vh + 'H0Z';
-    [h, closePass].forEach(r => {
+    [h].concat(extra, closeHole ? [closeHole] : []).forEach(r => {
       const x = Math.max(0, Math.round(r.x)), y = Math.max(0, Math.round(r.y));
       d += 'M' + x + ' ' + y + 'H' + (x + Math.round(r.w)) + 'V' + (y + Math.round(r.h)) + 'H' + x + 'Z';
     });
@@ -2188,6 +2193,20 @@ function tutPlace(){
   left = clear.left; top = clear.top;
   card.style.left = left + 'px'; card.style.top = top + 'px';
 }
+// Steady rings on the second and later targets of a step. #tutRing stays on the first.
+function tutExtraRings(list){
+  const layer = $('#tutLayer'); if (!layer) return;
+  const have = layer.querySelectorAll('.tut-ring-x');
+  for (let i = have.length; i < list.length; i++) {
+    const r = document.createElement('div'); r.className = 'tut-ring tut-ring-x'; r.hidden = true;
+    layer.insertBefore(r, $('#tutCard'));
+  }
+  layer.querySelectorAll('.tut-ring-x').forEach((r, i) => {
+    const b = list[i];
+    r.hidden = !b;
+    if (b) { r.style.left = (b.x - 6) + 'px'; r.style.top = (b.y - 6) + 'px'; r.style.width = (b.w + 12) + 'px'; r.style.height = (b.h + 12) + 'px'; }
+  });
+}
 function tutClearChip(left, top, cw, ch){
   const chip = $('#thChip');
   if (!chip || !chip.offsetParent) return { left, top };
@@ -2197,7 +2216,7 @@ function tutClearChip(left, top, cw, ch){
   // Keep a clearance the card already has. A nudge below the chip must not cover the lesson target or the partner panel.
   const guards = [];
   const keep = (rect, pad) => { if (rect && rect.width > 2 && rect.height > 2 && !hitRect(left, top, rect, pad)) guards.push({ rect, pad }); };
-  const hole = tut.on && tut.holes && tut.holes.length ? tut.holes[tut.hi % tut.holes.length] : (unlock.on && unlock.holes && unlock.holes.length ? unlock.holes[0] : null);
+  const hole = tut.on && tut.holes && tut.holes.length ? tut.holes[0] : (unlock.on && unlock.holes && unlock.holes.length ? unlock.holes[0] : null);
   if (hole) keep({ left: hole.x, top: hole.y, right: hole.x + hole.w, bottom: hole.y + hole.h, width: hole.w, height: hole.h }, 4);
   ['.bt-me', '#btMsg', '#btFoeType', '#btMeType', '#talkBtn'].forEach(sel => {
     const el = $(sel); if (!el || el.hidden) return; keep(el.getBoundingClientRect(), sel === '.bt-me' ? 4 : 0);
@@ -2244,7 +2263,6 @@ function tutShow(id){
   const card = $('#tutCard'); card.hidden = false;
   tut.holes = tut.key ? tutTargets(tut.key) : []; tut.hi = 0;
   clearInterval(tut.cycle); tut.cycle = 0;
-  if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
   tutPlace();
   const focus = acts.querySelector('button') || tut.hit;   // never park focus on SKIP TOUR: on tap steps it looked like the main button
   if (focus) focus.focus({ preventScroll: true });
@@ -2456,7 +2474,6 @@ function lessonCard(o){
   const card = $('#tutCard'); if (card) card.hidden = false;
   const unlockCard = $('#unlockCard'); if (unlockCard) unlockCard.hidden = true;
   clearInterval(tut.cycle); tut.cycle = 0;
-  if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
   tutPlace();
   const focus = acts && acts.querySelector('button'); if (focus) focus.focus({ preventScroll: true });
 }

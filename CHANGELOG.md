@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 00:43 ET: Tutorial cards hold still; MOVES stays visible in scene battles (build 20261028-0043)
+
+- What changed and why: Vincent reported (Oct 28, 2026, iPhone, Modern controls) that the battle tutorial card flashed up and down and could not be tapped, and that MOVES was hidden while the tutorial was up. Two causes. (1) A step with two targets (the HP bars, the type badges, mood and stages, odds and tries; the opening tour's multi-button steps and the C1 care card) cycled its highlight every 600 ms, and the card re-placed itself on each target, so it hopped between the top and bottom of the screen. Every target is now lit at once with a steady ring, the card anchors on the first target and never cycles, the ring no longer blinks and the card no longer slides in. (2) A battle opened from a scene (Rook, a story creature) kept `scene-on`, which lifts the Modern dock to z 12, above the battle (z 10). Its opaque band covered MOVES, BEFRIEND and the move list; only the gear showed. While the battle is open the dock now sits under it. Display only; no copy, save or flow change.
+- Files touched: `game.js` (`tutPlace`, new `tutExtraRings`, `tutClearChip`, `tutShow`, `lessonCard`), `style.css`, `tests/tutorial_steady.spec.js` (new), `tests/README.md`, `tools/GAMEJS_MAP.txt`, `version.json`, `index.html` (build stamp), `CHANGELOG.md`.
+- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv` from main `a7db11b`. Build `20261028-0043`.
+- Tests run and result (widths, checks): see the PR hand-back.
+- Decisions made (colour + reasoning): green, bug fixes from Vincent's own report; no layout or copy change beyond removing the motion.
+
 ## 2026-10-27 19:50 ET: Day/night and weather in the Modern dock (build 20261027-1950)
 
 - What changed and why: Vincent asked (Oct 27, 2026) for the day/night and weather glyph in the bottom dock, between MAP and the partner buttons, without touching anything (D858). Row 2 of the dock now shows a 16 px sky glyph there. With weather it uses the chip's glyphs and shows the temperature beside it where it fits; with no weather the game clock gives the sun, the half sun at dawn and dusk, or the moon; night always shows the moon. It keeps 2 px clear of MAP and the heart (at 320 the glyph exactly fills the gap and the temperature stays off). Under the dock the place chip drops its own glyph and temperature. Display only; arcade and the overlay layout are unchanged; no save change.
