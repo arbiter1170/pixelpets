@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 ET: Shop sheet sits above the Modern dock; the dock stays under any scene overlay (build 20261028-0054)
+
+- What changed and why: Vincent reported (Oct 28, 2026, iPhone, Modern) that shop items clipped into the other UI. The shop (`#ovShop`, z 11) is a bottom sheet with 8 px padding, but during a scene the Modern dock is z 12 and 156 px tall, so the lower rows and BUY buttons ran under its band. Under the dock the sheet now sits above it, the way the scene text box already does (#202); the dock keeps the gear and the acorn count. The battle fix from the entry below is widened: any overlay a scene opens (a picker, a minigame, a battle) now puts the dock back under it, not only the battle. Display only; no copy, save or flow change.
+- Files touched: `style.css`, `tests/shop_dock.spec.js` (new), `tests/README.md`, `version.json`, `index.html` (build stamp), `CHANGELOG.md`.
+- Commit(s) + build id: `claude/tutorial-flashing-movement-fh6djv`, on top of the tutorial fix below. Build `20261028-0054`.
+- Tests run and result (widths, checks): see the PR hand-back.
+- Decisions made (colour + reasoning): green, a bug fix from Vincent's own report.
+
 ## 2026-10-28 00:43 ET: Tutorial cards hold still; MOVES stays visible in scene battles (build 20261028-0043)
 
 - What changed and why: Vincent reported (Oct 28, 2026, iPhone, Modern controls) that the battle tutorial card flashed up and down and could not be tapped, and that MOVES was hidden while the tutorial was up. Two causes. (1) A step with two targets (the HP bars, the type badges, mood and stages, odds and tries; the opening tour's multi-button steps and the C1 care card) cycled its highlight every 600 ms, and the card re-placed itself on each target, so it hopped between the top and bottom of the screen. Every target is now lit at once with a steady ring, the card anchors on the first target and never cycles, the ring no longer blinks and the card no longer slides in. (2) A battle opened from a scene (Rook, a story creature) kept `scene-on`, which lifts the Modern dock to z 12, above the battle (z 10). Its opaque band covered MOVES, BEFRIEND and the move list; only the gear showed. While the battle is open the dock now sits under it. Display only; no copy, save or flow change.

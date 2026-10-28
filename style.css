@@ -1503,9 +1503,11 @@ body.mhc-frame.ctl-modern.scene-on .float-ctl{z-index:12}
 /* The dock keeps z 12 in scenes so the gear stays tappable (NAV_MODERN G3); its opaque band would cover the scene text box
    (z 9), so under the dock the box sits above it instead of 12 px above the bottom edge. */
 body.mhc-frame.ctl-modern .scene-ov{padding-bottom:calc(156px + var(--sa-b) + 12px)}
-/* A battle opened from a scene (a story creature, a scene trainer) keeps scene-on. The dock's z 12 then put its opaque band over
-   the battle (z 10) and hid MOVES, BEFRIEND and the move list. While the battle is open the dock goes back under it. */
-body.ctl-modern.scene-on:has(#ovBattle:not([hidden])) .float-ctl{z-index:2}
+/* Anything a scene opens (a battle, a picker, a minigame) keeps scene-on. The dock's z 12 then put its opaque band over that
+   overlay (z 10-12) and hid its bottom: MOVES and the move list in a scene battle. While one is open the dock goes back under it.
+   The shop is the exception: it is a bottom sheet over the map, so it keeps the dock (gear, acorns) and sits above it instead. */
+body.ctl-modern.scene-on:has(.overlay:not([hidden]):not(#ovShop)) .float-ctl{z-index:2}
+body.mhc-frame.ctl-modern #ovShop.overlay{padding-bottom:calc(156px + var(--sa-b) + 8px)}
 #coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}
 #coopJoin{background:var(--g);color:var(--k)}
 #coopNotNow{background:var(--m);color:var(--w)}
