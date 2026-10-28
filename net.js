@@ -116,6 +116,7 @@ const PPNet = (() => {
     leaving: false, solo: false, dropping: {}, saw: false, recentDrop: 0,
   };
   let page = 0, wheelOn = false, cardOn = false, codeOn = false, blockOn = false;
+  let wheelCool = null;   // the cooldown state the wheel was last painted with
   let undoTimer = 0, undoUid = null, undoFriend = false, hiTimer = 0, hiPending = false;
   let writeQ = Promise.resolve();
   const others = new Map();
@@ -215,10 +216,15 @@ const PPNet = (() => {
       else { markBack(); onForeground(); }
       pump();
     });
-    window.addEventListener('pageshow', () => { if (!document.hidden) { markBack(); onForeground(); } pump(); });
+    // Back from the back/forward cache: pagehide removed our node but kept placed.ref, so pump() thought we were still in
+    // and the next write recreated the node without pv/look/pet (others then hid us). Drop the stale ref and rejoin.
+    window.addEventListener('pageshow', e => {
+      const back = () => { if (!document.hidden) { markBack(); onForeground(); } pump(); };
+      if (e && e.persisted && placed.ref) dropNode().catch(() => {}).then(back); else back();
+    });
     window.addEventListener('pagehide', () => {
       markAwayNow();
-      if (placed.ref && rtdb) { try { rtdb.remove(placed.ref); } catch (e) {} }
+      if (placed.ref && rtdb) { try { rtdb.remove(placed.ref).catch(() => {}); } catch (e) {} }
     });
     wireAsk();
     // Read a saved party. B1 does not rejoin; Build 3 owns REJOIN.
@@ -619,27 +625,34 @@ const PPNet = (() => {
     }
   }
 
+  // One position write and one heartbeat in flight at a time: on a slow or dead signal the old code queued a write every
+  // 100 ms (sent.at only moved after the await), which piled up in memory and burst into the rate limit on reconnect.
+  let posBusy = false, beatBusy = false;
   async function flushPos(){
-    if (!placed.ref || H.busy() || link !== 'up') return;
+    if (!placed.ref || H.busy() || link !== 'up' || posBusy) return;
     const p = H.pos();
     if (!p || !tileOk(placed.area, p.x | 0, p.y | 0)) return;
     const f = FACE[p.facing] || 'd', mv = H.walking() ? 1 : 0;
     if (p.x === sent.x && p.y === sent.y && f === sent.f && mv === sent.mv) return;
     if (Date.now() - sent.at < cfg.sendMs) return;
+    posBusy = true;
     try {
       await rtdb.update(placed.ref, { x: p.x | 0, y: p.y | 0, f, mv, pt: TS(), seen: TS() });
       writes++;
       sent.x = p.x | 0; sent.y = p.y | 0; sent.f = f; sent.mv = mv; sent.at = Date.now();
     } catch (e) { /* the rules throttle is the backstop; the next tick tries again */ }
+    finally { posBusy = false; }
   }
   let failing = false;
   async function heartbeat(){
-    if (!placed.ref || link !== 'up') return;
+    if (!placed.ref || link !== 'up' || beatBusy) return;
     if (Date.now() - sent.at < cfg.heartbeatMs) return;
+    beatBusy = true;
     try {
       await rtdb.update(placed.ref, { seen: TS() });
       writes++; sent.at = Date.now();
     } catch (e) {}
+    finally { beatBusy = false; }
   }
   async function applyBusy(){
     if (!placed.ref || link !== 'up') return;
@@ -674,7 +687,7 @@ const PPNet = (() => {
     const t = Date.now();
     if (t - busyTick > 400) { busyTick = t; applyBusy(); }
     // Position writes stay on this tick. config and the co-op switch are listeners. Hidden and friends poll.
-    if (t - beatTick > 1000) { beatTick = t; heartbeat(); pollHidden(); pollSocial(); graceCheck(); renderStrip(); if (t - repairAt > 1000) { repairAt = t; repair(); } }
+    if (t - beatTick > 1000) { beatTick = t; heartbeat(); pollHidden(); pollSocial(); graceCheck(); renderStrip(); if (t - repairAt > 1000) { repairAt = t; repair().catch(() => {}); } }
     flushPos();
     const sig = [dev.code || '', mode(), H.mapId(), H.interior() ? 1 : 0, document.hidden ? 1 : 0, H.busy() ? 1 : 0].join('|');
     if (sig !== tick.sig) {
@@ -914,6 +927,7 @@ const PPNet = (() => {
     const ring = document.querySelector('#sayEmotes'), grid = document.querySelector('#sayPhrases'), pg = document.querySelector('#sayPage');
     if (!ring) return;
     const cool = Date.now() < coolUntil;
+    wheelCool = cool;
     ring.textContent = '';
     EMOTES.forEach(em => {
       const b = el('button', 'net-em' + (em.id === 'e_trick' ? ' net-centre' : ''), em.id === 'e_trick' ? NET_TEXT.show_off : em.label);
@@ -1200,7 +1214,9 @@ const PPNet = (() => {
     if (add) add.disabled = !on;
     if (input) input.disabled = !on;
     paintStatus();
-    if (wheelOn) paintWheel();
+    // Rebuilding the 17 wheel buttons every 100 ms replaced a button under a finger mid-tap, so taps were lost. Repaint
+    // only when the cooldown starts or ends; opening, paging and sending repaint on their own.
+    if (wheelOn && (Date.now() < coolUntil) !== wheelCool) paintWheel();
   }
 
   function wireFriends(){
@@ -1280,7 +1296,7 @@ const PPNet = (() => {
     const next = clampLook(H.look());
     const sig = JSON.stringify(next);
     if (sig === wiredLook) return;
-    await rtdb.update(placed.ref, { look: next, seen: TS() });
+    try { await rtdb.update(placed.ref, { look: next, seen: TS() }); } catch (e) { return; }   // a refused write retries on the next change
     writes++;
     wiredLook = sig;
   }
@@ -1465,11 +1481,11 @@ const PPNet = (() => {
   }
   function markAwayNow(){
     if (!inParty() || !party.ref || !rtdb) return;
-    try { rtdb.update(party.ref, { away: 1, awayAt: TS() }); } catch (e) {}
+    try { rtdb.update(party.ref, { away: 1, awayAt: TS() }).catch(() => {}); } catch (e) {}   // try alone cannot catch a rejected promise
   }
   function markBack(){
     if (!inParty() || !party.ref || !rtdb || document.hidden) return;
-    try { rtdb.update(party.ref, { away: 0, seen: TS(), awayAt: null }); } catch (e) {}
+    try { rtdb.update(party.ref, { away: 0, seen: TS(), awayAt: null }).catch(() => {}); } catch (e) {}
   }
   function armOffset(){
     if (party.offsetUnsub || !db || !rtdb) return;
@@ -1500,14 +1516,15 @@ const PPNet = (() => {
   function onInbox(from, note){
     if (!from || !note || typeof note.pid !== 'string') return;
     // A note that arrives before the switch snapshot must stay pending. Marking it seen would drop the invite.
-    if (!coopOn()) { party.held = party.held || []; party.held.push({ from, note }); return; }
+    // One held note per sender and invite: a re-subscribe redelivers every inbox note while co-op is off.
+    if (!coopOn()) { party.held = (party.held || []).filter(h => !(h.from === from && h.note.pid === note.pid)); party.held.push({ from, note }); return; }
     const stamp = note.at == null ? '' : String(note.at);
     const key = from + ':' + note.pid + ':' + stamp;
     if (party.knownNote && party.knownNote[key]) return;
     if (!party.knownNote) party.knownNote = {};
     party.knownNote[key] = true;
     const code = (inParty() && party.code) || dev.code;
-    const drop = () => { try { rtdb.remove(ref('parties/' + code + '/inbox/' + me + '/' + from)); } catch (e) {} };
+    const drop = () => { try { rtdb.remove(ref('parties/' + code + '/inbox/' + me + '/' + from)).catch(() => {}); } catch (e) {} };
     if (party.muted[from]) { drop(); return; }
     if (inParty() || party.ask) { if (inParty()) drop(); return; }
     openAsk(from, note);
