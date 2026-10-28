@@ -132,9 +132,11 @@ test('the diner sheet fits, one tap buys one, and a refused tap changes nothing'
   await page.waitForTimeout(400);
   const box = await sheetBox(page);
   const w = page.viewportSize().width;
-  // Oct 28, 2026: under the Modern dock the sheet sits above the dock (it ran under the dock's band), and the camera frames the
-  // room above the sheet. Was 577 / 301 / 400 and 185 / 56 before the dock.
+  // SHOP_LAYOUT measured 577/301/400 before the Modern dock (D778/D789, #199). Under the dock the sheet sits 8 px above
+  // the 156 px band (as #202 did for the scene box), so its top is 164 px higher; D490's band math is unchanged.
   const sheetWant = w === 390 ? 408 : w === 320 ? 132 : 231;
+  // Room band (D490) above the raised sheet: centred at 390 (was 185), and at 320 the 11x8 diner is taller than the band
+  // so it follows the holder (was 56).
   const roomWant = w === 390 ? 102 : w === 320 ? 12 : null;
   expect(Math.abs(box.sheetTop - sheetWant), 'sheet top ' + box.sheetTop).toBeLessThanOrEqual(20);
   expect(box.sheetH).toBeLessThanOrEqual(box.vh * 0.55 + 2);

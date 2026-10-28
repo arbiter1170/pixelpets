@@ -262,7 +262,7 @@ test('T9 shop sheet and speaker bias still frame', async ({ page }) => {
   expect(shop.open).toBe(true);
   expect(shop.zoom).toBe(2);
   const w = page.viewportSize().width;
-  // Oct 28, 2026: the shop sheet now sits above the Modern dock, so the room frames higher (was 185 / 56).
+  // The shop sheet now sits 8 px above the Modern dock (style.css, the #202 pattern), so the D490 room band starts higher.
   const roomWant = w === 390 ? 102 : w === 320 ? 12 : null;
   if (roomWant != null) expect(Math.abs(shop.roomTop - roomWant), 'room top ' + shop.roomTop).toBeLessThanOrEqual(16);
   await page.locator('#shopClose').click();
