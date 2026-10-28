@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 12:40 ET: Two racy specs made steady: the follower-arrow check and the move-FX turn timer (tests only, no build)
+
+- What changed and why: found by the full suite on the checks branch (1967 passed, 5 failed, 2 flaky; the failures were the four co-op specs, which need the sandbox CA in Chromium, and `moves_v2` 7). `partner_care` "a quest arrow on the follower tile ... stays put" waited only for `world.x/y`, which switch when a step starts, so about one run in four read the arrow while the keeper (and the camera) were still mid-step and the arrow sat 1-2 px off. It now waits for the walk to finish. `moves_v2` 7 timed a turn by the wall clock, which also counted Playwright's own click waits (about 260 ms on FIGHT; the turn itself is about 280 ms on FULL), and with OFF the turn could leave and re-enter CHOOSE between two polls, so the wait hung. It now times the turn in the page, from the move tap to the next CHOOSE of a later turn (`battle.turn`), against the same 700 / 400 / 250 ms budgets.
+- Files touched: `tests/partner_care.spec.js`, `tests/moves_v2.spec.js`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/walklings-checks-53kv2g`, tests only (no build).
+- Tests run and result (widths, checks): `partner_care` row at 320, 375 and 390, eight repeats: 24/24; `moves_v2` 7 at 390, six repeats: 6/6 (it failed 4/4 alone before).
+- Decisions made (colour + reasoning): green (test steadiness).
+- Anything left unfinished: co-op specs (environment only).
+
 ## 2026-10-28 11:18 ET: SKY stops telling a holder in town to step outside (build 20261028-1118)
 
 - What changed and why: real bug from PHONE_APPS part 1 (#212), found in a Brinewick play pass. `skyStirring()` returns null both in a room and on an outdoor map with no wild grass (every town), and SKY answered both with "No wild grass here. Step outside to read the sky." Standing in a town, the holder is already outside. Outdoors it now reads "No wild grass here."; a room keeps the full line. No new words (the copy stays open as D863).

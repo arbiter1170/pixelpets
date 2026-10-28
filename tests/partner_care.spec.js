@@ -217,7 +217,10 @@ test('a quest arrow on the follower tile moves the balloon and stays put', async
   });
   expect(step).toBeTruthy();
   await tapTile(page, step.x, step.y);
-  await expect.poll(() => page.evaluate((step) => PixelPets.state.world.x === step.x && PixelPets.state.world.y === step.y, step)).toBe(true);
+  // world.x/y switch to the new tile when the step starts; wait for the walk (and the camera with it) to finish, or the
+  // arrow's screen y moved a pixel or two between the two reads below.
+  await expect.poll(() => page.evaluate((step) => PixelPets.state.world.x === step.x && PixelPets.state.world.y === step.y
+    && !PixelPets.keeper.moving && PixelPets.walk.fy === step.y && PixelPets.walk.fx === step.x, step)).toBe(true);
   await frame(page);
   await page.evaluate(() => PixelPets.setCare({ hunger: 80, energy: 100 }));
   const fol = await page.evaluate(() => ({

@@ -284,12 +284,26 @@ test('7 FULL pushes the go and the hit, CALM only the mark, OFF neither', async 
       b.fxLog = [];
       PixelPets.setHp('foe', 999);
     }, effects);
-    const t0 = Date.now();
+    // Timed in the page, from the move tap to the next CHOOSE of a later turn. The wall clock also counted Playwright's
+    // own click waits (about 260 ms on FIGHT), and with OFF the turn could leave and re-enter CHOOSE between two polls,
+    // so a wait for "not CHOOSE" hung.
+    await page.evaluate(() => {
+      const B = PixelPets.battle, turn0 = B.turn;
+      window.__mvT = { t0: null, dt: null };
+      document.addEventListener('click', (e) => {
+        if (e.target.closest && e.target.closest('#btMoves button[data-move]') && window.__mvT.t0 == null) window.__mvT.t0 = performance.now();
+      }, true);
+      const tick = () => {
+        const T = window.__mvT;
+        if (T.t0 != null && B.turn > turn0 && B.state === 'CHOOSE') { T.dt = performance.now() - T.t0; return; }
+        if (B.on) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
     await page.locator('[data-bact="fight"]').click();
     await page.locator('#btMoves button[data-move="foxfire_flick"]').click();
-    await page.waitForFunction(() => PixelPets.battle.state !== 'CHOOSE');
-    await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE');
-    const dt = Date.now() - t0;
+    await page.waitForFunction(() => window.__mvT.dt != null);
+    const dt = await page.evaluate(() => Math.round(window.__mvT.dt));
     const log = await page.evaluate(() => PixelPets.battle.fxLog.slice());
     await page.evaluate(() => PixelPets.battle.close());
     await page.waitForFunction(() => !PixelPets.battle.on);
