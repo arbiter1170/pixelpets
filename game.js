@@ -1422,7 +1422,8 @@ let movesLes = { hitDue: false, m7done: false, chooseN: 0, p1At: -1, m7At: -1, p
 let befLes = { took: false, fromBar: false, bar: false };
 let lessonDraw = { hop: 0, y: 0 };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
+let envPeek = false;   // mapReadySoon: read the state as if TODAY were shut, without touching its hidden attribute
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envPeek && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -11117,13 +11118,12 @@ function mapVisited(id, cur){
 }
 const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy && !tabsGuarded() && !(battle && battle.on);
 let mapOffShown = null;
+// Never flip #ovEnv.hidden here: this runs every frame, and each flip re-arms the open guard on TODAY,
+// which then swallowed every tap on OK, MAP and LOCATION (Oct 28, 2026).
 function mapReadySoon(){
-  const env = $('#ovEnv');
-  const was = env ? env.hidden : true;
-  if (env) env.hidden = true;
   let ok = false;
-  try { ok = mapReady(); } catch (e) { ok = false; }
-  if (env) env.hidden = was;
+  envPeek = true;
+  try { ok = mapReady(); } catch (e) { ok = false; } finally { envPeek = false; }
   return ok;
 }
 function syncMapBtn(){

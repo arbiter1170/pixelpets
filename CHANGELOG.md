@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 06:21 ET: TODAY card buttons work again (build 20261028-0621)
+
+- What changed and why: Vincent reported (Oct 28, 2026) that once the location/time card (TODAY) was open, none of its buttons closed it. The per-frame MAP button check (`mapReadySoon`, added Oct 26) flipped `#ovEnv.hidden` to true and back every frame to ask "could the map open if TODAY were shut?". The open guard on TODAY watches that attribute, so each flip re-armed it as a fresh open and swallowed any tap longer than one frame: OK, MAP and LOCATION all did nothing on a phone. The check now reads the state through a flag (`envPeek`) that `overlayOpen` honours, and never touches the attribute.
+- Files touched: `game.js` (`overlayOpen`, `mapReadySoon`), `tests/today_card_taps.spec.js` (new), `tests/README.md`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
+- Commit(s) + build id: `fix/today-card-taps` from main `a7db11b`. Build `20261028-0621`.
+- Tests run and result (widths, checks): `tests/today_card_taps.spec.js` at 320, 375 and 390: 9 passed; all 3 fail on main's `game.js`. Also `world_clock`, `whereabouts`, `dock_sky`, `top_hud` at all widths: pass except 3 `top_hud` rows (column y, reduced motion, frame home) that fail the same on main `a7db11b`.
+- Decisions made (colour + reasoning): green. A fix for a regression; no behaviour change beyond taps working.
+- Anything left unfinished: the 3 `top_hud` rows already failing on main.
+
 ## 2026-10-28 06:15 ET: Wild wins pay a few Acorns (build 20261028-0615)
 
 - What changed and why: BATTLE_ACORNS (D811-D817). Vincent settled D811 on Oct 27 ("fine for now", revisit after a week of play or at the next economy pass) and the rest on their defaults on Oct 28. A wild win now pays `clamp(2 x foe level, 4, 40)` Acorns, with the holder line "{name} got N Acorns!" after the win sound. Today's wild Acorns live in `S.care.wildAcorns` (the per-day care record); from 60 a day a win pays a quarter, at least 1 ("1 Acorn"). Befriend, wandered off, RUN and a loss pay nothing; a co-op guest is paid nothing. Holder payouts are unchanged and do not count toward the day. The payout runs in one seam, `wildWinRewards`, which the town-board bounties can hook into later. The save stays v2 (an additive field inside `care`, cleaned by `normalizeV2`).
