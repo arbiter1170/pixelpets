@@ -95,6 +95,8 @@ async function chipBox(page) {
     const hr = hdr.getBoundingClientRect();
     return {
       opacity: Number(cs.opacity),
+      // Under the Modern dock (#199, #203) the chip off a priced prompt is hidden with the dock's visibility, not opacity.
+      shown: cs.visibility === 'visible' ? Number(cs.opacity) : 0,
       pe: cs.pointerEvents,
       price: document.body.classList.contains('price-on'),
       modern: document.body.classList.contains('ctl-modern'),
@@ -111,7 +113,7 @@ async function chipBox(page) {
 }
 
 async function expectChip(page, on) {
-  await expect.poll(async () => (await chipBox(page)).opacity, { timeout: 1000 }).toBe(on ? 1 : 0);
+  await expect.poll(async () => (await chipBox(page)).shown, { timeout: 1000 }).toBe(on ? 1 : 0);
   const box = await chipBox(page);
   expect(box.price).toBe(on);
   expect(box.pe).toBe('none');

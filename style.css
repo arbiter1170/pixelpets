@@ -1508,6 +1508,9 @@ body.mhc-frame.ctl-modern.scene-on .float-ctl{z-index:12}
 /* The dock keeps z 12 in scenes so the gear stays tappable (NAV_MODERN G3); its opaque band would cover the scene text box
    (z 9), so under the dock the box sits above it instead of 12 px above the bottom edge. */
 body.mhc-frame.ctl-modern .scene-ov{padding-bottom:calc(156px + var(--sa-b) + 12px)}
+/* The shop sheet (z 11) had the same problem: the dock band hid its lower rows and sat over the BUY buttons, and the dock's
+   Acorns (shown on a priced prompt, SHOP P0) landed on the sheet. Under the dock the sheet sits 8 px above it. */
+body.mhc-frame.ctl-modern #ovShop.overlay{padding-bottom:calc(156px + var(--sa-b) + 8px)}
 #coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}
 #coopJoin{background:var(--g);color:var(--k)}
 #coopNotNow{background:var(--m);color:var(--w)}

@@ -231,6 +231,10 @@ test('T-C6 modern follower and strip taps open C2', async ({ page }) => {
   await tapFollower(page);
   await page.waitForFunction(() => (PixelPets.lesson().card || '').indexOf('C2') === 0);
   expect((await lesson(page)).step).toBe('C2');
+  // Under the Modern dock the care tray opens over the dock and covers the partner card (MODERN_HUD_CLEAR D783).
+  // The debug re-arm leaves the tray open, so close it the player's way before tapping the card again.
+  await page.locator('#ctClose').click();
+  await expect(page.locator('#careTray')).toBeHidden();
   await rearmCare(page);
   await page.waitForFunction(() => PixelPets.lesson().card === 'C1', null, { timeout: 8000 });
   await page.locator('#petStrip').click();
