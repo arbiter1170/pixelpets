@@ -2,14 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-28 00:02 ET: Wild wins pay a few Acorns (build 20261028-0002)
+## 2026-10-28 06:15 ET: Wild wins pay a few Acorns (build 20261028-0615)
 
 - What changed and why: BATTLE_ACORNS (D811-D817). Vincent settled D811 on Oct 27 ("fine for now", revisit after a week of play or at the next economy pass) and the rest on their defaults on Oct 28. A wild win now pays `clamp(2 x foe level, 4, 40)` Acorns, with the holder line "{name} got N Acorns!" after the win sound. Today's wild Acorns live in `S.care.wildAcorns` (the per-day care record); from 60 a day a win pays a quarter, at least 1 ("1 Acorn"). Befriend, wandered off, RUN and a loss pay nothing; a co-op guest is paid nothing. Holder payouts are unchanged and do not count toward the day. The payout runs in one seam, `wildWinRewards`, which the town-board bounties can hook into later. The save stays v2 (an additive field inside `care`, cleaned by `normalizeV2`).
 - Files touched: `game.js` (`WILD_ACORNS`, `wildAcornPay`, `wildWinRewards`, the call in `results()`, the `careDay` default, the debug read `PixelPets.wildAcorns`), `save.js` (`care.wildAcorns` clamp), `tests/battle_acorns.spec.js` (new), `tests/README.md`, `archive/DECISIONS_SETTLED.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: `claude/battle-acorns` from main `a7db11b`. Build `20261028-0002`.
+- Commit(s) + build id: `claude/battle-acorns` from main `a7db11b`, merged with main `dcd995b` (#208, #209). Build `20261028-0615`.
 - Tests run and result (widths, checks): `tests/battle_acorns.spec.js` T1-T8 at 320, 375 and 390: 24 passed. The 32 specs that end battles at 390 on this branch and on main `a7db11b`: 6 failures on each, the same except for flakes. `moves_v2` test 13 passed alone; `play_together` needs the database emulator, which cannot start behind this sandbox's proxy, and fails on main too.
 - Decisions made (colour + reasoning): none new; D811-D817 settled by Vincent.
 - Anything left unfinished: revisit D811 (the 60 cap against shop prices, befriend paying nothing, the daily total from wild against holder wins) after a week of play.
+
+## 2026-10-27 23:51 ET: "Wants a match" balloon over holders who would battle (build 20261027-2351)
+
+- What changed and why: MATCH_MARKER (D818-D824), all settled on the defaults by Vincent (Oct 28, 2026). A 9x12 spark balloon (`GLYPH.emote_match`, variant A) stands over every holder whose talk would battle: unbeaten, or re-armed after a loss (rested and the 2-step grace spent), plus the walk-up holders Rook at the east gate, Fen (once the trial is ready), Hale and Clerk Nia. It shows within 6 tiles, bobs 1 px on a 400 ms clock (still under reduced motion), and hides while the talk marker or the spot "!" shows, in scenes, battles, the encounter intro and any overlay. Story-scene matches (Rook #2 and #3, Tobin, Imogen) get none. The on-screen quest arrow never sits on a balloon: over a marked holder it stacks 2 px above it, and beside one it keeps 2 px clear (Vincent's ask, Oct 27). Save unchanged.
+- Files touched: `sprites.js` (`emote_match`), `game.js` (`matchMarkFor`, `MATCH_WALKUP`, the draw branch in `drawBubbles`, `matchBob`, `cueClearOfMarks`, the two on-screen arrow draws, debug reads `matchMarks` and `bubbles`), `tests/match_marker.spec.js` (new), `tests/README.md`, `archive/DECISIONS_SETTLED.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/match-marker` from main `a7db11b`. Build `20261027-2351`.
+- Tests run and result (widths, checks): `tests/match_marker.spec.js` T1-T10 at 320, 375 and 390: 33 passed, twice in a row. The 25 specs that touch spotting, rematches, cues or bubbles at 390 on this branch and on main `a7db11b`: the same 12 failures on both. Two more failed on the branch under load: `moves_v2` test 7 passed when run alone, twice; `modern_hud_rows` "highcharity row 38" failed once on main too and passed alone on the branch, so it is flaky on both.
+- Decisions made (colour + reasoning): none new; D818-D824 were settled on their defaults (variant A, the default holder list).
+- Anything left unfinished: none.
 
 ## 2026-10-27 19:50 ET: Day/night and weather in the Modern dock (build 20261027-1950)
 

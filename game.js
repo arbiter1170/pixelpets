@@ -6027,6 +6027,24 @@ function sightLine(o){
 }
 const canSpot = o => o.kind === 'trainer' && present(o) && !!TRAINERS[o.id] && !S.flags['trainer.' + o.id]
   && (!S.flags['spotted.' + o.id] || (S.flags['rematch.' + o.id] && !S.world.restDue && mapRT.grace === 0));
+// MATCH_MARKER (D818-D823): the standing "wants a match" balloon. A holder wears it while a talk would battle: unbeaten, or
+// re-armed after a wipe (rested and the grace spent: the canSpot test without the sight line). Runtime only; never saved.
+const MATCH_RANGE = 6, MATCH_BOB_MS = 400;
+// D819: walk-up npc holders whose talk opens their match at once, by map:object (the map JSON stays verbatim).
+const MATCH_WALKUP = {
+  'hearthmoor:rook_gate': ['rival1_rook', () => true],
+  'fb_hall_in:fen_hall': ['hall1_fen', () => trialReady()],
+  'cc_hall_in:hale': ['hall2_hale', () => true],
+  'hc_arena_in:hc_nia': ['hc_tourney', () => true],
+};
+function matchMarkFor(o){
+  if (!S || !o || !CUR || !present(o)) return null;
+  const w = o.kind === 'npc' ? MATCH_WALKUP[CUR.id + ':' + o.id] : null;
+  const id = o.kind === 'trainer' ? o.id : w ? w[0] : null, t = id && TRAINERS[id];
+  if (!t || S.flags['trainer.' + id] || (t.seal && S.seals && S.seals[t.seal]) || (w && !w[1]())) return null;
+  if (S.flags['rematch.' + rematchId(id)] && (S.world.restDue || mapRT.grace > 0)) return null;
+  return id;
+}
 function checkSight(){
   if (scene || fade.busy || walk.intro || overlayOpen() || !pet()) return false;
   const x = S.world.x, y = S.world.y;
@@ -7326,11 +7344,12 @@ function drawSlipCue(g, pt, col, cx, cy, t, VW, VH, shift){
   const bob = cueBob(t);
   const X = pt.x * TS - cx, Y = pt.y * TS - cy;
   const under = zone && zone.btns.some(b => X < b[2] && X + TS > b[0] && Y < b[3] && Y + TS > b[1]);
+  const arrowY = cueClearOfMarks(X + 5 + shift, Y - 12 - bob);   // MATCH_MARKER D822: never on a match balloon
   if (X > -TS && Y > -TS && X < VW && Y < VH && !under) {
-    if (Y - 13 >= cueTopInk()) {
-      drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
-      noteCueArrow(ARROW.down, X + 5 + shift, Y - 12 - bob);
-      cuePassLast = { dir: 'down', x: X + 5 + shift, y: Y - 12 - bob };
+    if (arrowY - 1 >= cueTopInk()) {
+      drawArrow(g, ARROW.down, X + 5 + shift, arrowY, col);
+      noteCueArrow(ARROW.down, X + 5 + shift, arrowY);
+      cuePassLast = { dir: 'down', x: X + 5 + shift, y: arrowY };
     } else {
       drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
       noteCueArrow(ARROW.up, X + 5 + shift, Y + TS + 1 + bob);
@@ -7395,11 +7414,12 @@ function drawEdgeCue(g, pt, col, cx, cy, t, VW, VH, shift, tracked, placed){
   const X = pt.x * TS - cx, Y = pt.y * TS - cy;
   const under = zone && zone.btns.some(b => X < b[2] && X + TS > b[0] && Y < b[3] && Y + TS > b[1]);
   const bob = cueBob(t);
+  const arrowY = cueClearOfMarks(X + 5 + shift, Y - 12 - bob);   // MATCH_MARKER D822: never on a match balloon
   if (X > -TS && Y > -TS && X < VW && Y < VH && !under) {
-    if (Y - 13 >= cueTopInk()) {
-      drawArrow(g, ARROW.down, X + 5 + shift, Y - 12 - bob, col);
-      noteCueArrow(ARROW.down, X + 5 + shift, Y - 12 - bob);
-      cuePassLast = { dir: 'down', x: X + 5 + shift, y: Y - 12 - bob };
+    if (arrowY - 1 >= cueTopInk()) {
+      drawArrow(g, ARROW.down, X + 5 + shift, arrowY, col);
+      noteCueArrow(ARROW.down, X + 5 + shift, arrowY);
+      cuePassLast = { dir: 'down', x: X + 5 + shift, y: arrowY };
     } else {
       drawArrow(g, ARROW.up, X + 5 + shift, Y + TS + 1 + bob, col);
       noteCueArrow(ARROW.up, X + 5 + shift, Y + TS + 1 + bob);
@@ -8265,6 +8285,16 @@ function checkChatter(){
 function drawBubbles(g, cx, cy, t){
   bubbleBoxes.length = 0;
   drawSceneEmotes(g, cx, cy);
+  if (S && !scene && !walk.intro && !fade.busy && !overlayOpen()) {   // MATCH_MARKER: holders who want a match (D818-D823)
+    const fo = !moveHeld() && !walk.to && facingTarget(), bob = matchBob(t);
+    for (const o of CUR.objs) {
+      if (o === fo || o.id === spot.id || !matchMarkFor(o)) continue;
+      const q = objPos(o); if (Math.abs(q.x - S.world.x) + Math.abs(q.y - S.world.y) > MATCH_RANGE) continue;
+      const bx = Math.round(q.x * TS - cx) + 4, by = Math.round(q.y * TS - cy) - 15 - bob;
+      drawGlyph(g, 'emote_match', bx, by);
+      bubbleBoxes.push({ x: bx, y: by, w: 9, h: 12, match: o.id });
+    }
+  }
   if (spot.bang && spot.id) {                          // §6.1 "!" bubble, 2px above the trainer's head
     const o = CUR.objs.find(x => x.id === spot.id);
     if (o) {
@@ -8915,6 +8945,17 @@ function sayBox(who, text, box){
 // D171: the dialog box never covers the speaker. Narrator lines, the phone, and a letter overlay keep the bottom box.
 // A 4th say element {"box":"top"|"bottom"} wins. One choice is cached for a run of lines from the same speaker.
 const prefersReduced = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const matchBob = t => prefersReduced() ? 0 : Math.floor(t / MATCH_BOB_MS) % 2;   // MATCH_MARKER D823: still under reduced motion
+// MATCH_MARKER D822: an on-screen quest arrow (7x7 + outline, top-left ax, ay) keeps 2 px clear of every match balloon.
+// Over a marked holder it stacks above the balloon instead of on it; the balloons are drawn first (drawBubbles).
+function cueClearOfMarks(ax, ay){
+  for (let i = 0; i < 3; i++) {
+    const m = bubbleBoxes.find(b => b.match && ax - 1 < b.x + b.w + 2 && ax + 8 > b.x - 2 && ay - 1 < b.y + b.h + 2 && ay + 8 > b.y - 2);
+    if (!m) break;
+    ay = m.y - 10;
+  }
+  return ay;
+}
 function setCamBias(y){
   const b = walk.camBias; y = +y || 0;
   if (Math.abs(b.to - y) < 0.5 && !b.ease && Math.abs(b.y - y) < 0.5) return;
@@ -17371,6 +17412,11 @@ function boot(){
       const [line, st] = String(f).split('/'); if (SP_INDEX[line] == null || !SPECIES[SP_INDEX[line]].stages[+st]) return false;
       return openBattle({ kind: 'wild', form: f, level: lv || wildLevel(+st, Math.random, 'proto', line) });
     },
+    matchMarks: () => CUR.objs.filter(o => present(o) && (o.kind === 'trainer' || MATCH_WALKUP[CUR.id + ':' + o.id])).map(o => {   // MATCH_MARKER D823
+      const q = objPos(o), dist = Math.abs(q.x - S.world.x) + Math.abs(q.y - S.world.y), holder = matchMarkFor(o);
+      return { id: o.id, holder, x: q.x, y: q.y, dist, on: !!holder && dist <= MATCH_RANGE, grace: mapRT.grace, restDue: !!S.world.restDue };
+    }),
+    bubbles: () => ({ boxes: bubbleBoxes.map(b => Object.assign({}, b)), match: bubbleBoxes.filter(b => b.match).map(b => b.match) }),
     showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
     objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
     forceTrainer: id => { if (!TRAINERS[id] || S.flags['trainer.' + id]) return false; showTab('walk'); if (overlayOpen()) return; return openBattle({ kind: 'trainer', trainerId: id }); },
