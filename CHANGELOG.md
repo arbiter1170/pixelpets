@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 11:18 ET: SKY stops telling a holder in town to step outside (build 20261028-1118)
+
+- What changed and why: real bug from PHONE_APPS part 1 (#212), found in a Brinewick play pass. `skyStirring()` returns null both in a room and on an outdoor map with no wild grass (every town), and SKY answered both with "No wild grass here. Step outside to read the sky." Standing in a town, the holder is already outside. Outdoors it now reads "No wild grass here."; a room keeps the full line. No new words (the copy stays open as D863).
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `tests/phone_apps.spec.js`, `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/walklings-checks-53kv2g`, build 20261028-1118.
+- Tests run and result (widths, checks): `phone_apps` at 320, 375 and 390: pass (15); the new row failed before the fix.
+- Decisions made (colour + reasoning): green (logic bug; the existing copy is trimmed, not rewritten).
+- Anything left unfinished: none.
+
 ## 2026-10-28 11:11 ET: A lost battle in Brinewick wakes you in Brinewick; its Lantern House and Chandlery get their TOWN map marks (build 20261028-1111)
 
 - What changed and why: three real bugs found on the checks branch, where main's features meet Brinewick. (1) `LANTERN_NEAR` had no `route3` or `brinewick` row and `LANTERN_TOWNS` had no `brinewick`, so a lost battle in Brinewick, or on Route 3, woke the holder in Hearthmoor. Route 3 now ties Cobblecrest and Brinewick (the last rest wins) and Brinewick wakes in its own Lantern House. The phone's signal bars (D866) read Brinewick as a Lantern town (4 bars) through the same table. (2) The save loader (`normalizeV2`) only kept the four older towns as `world.respawn`, so a Brinewick rest was dropped on the next load; `brinewick` is now allowed (additive; v stays 2). (3) `TOWN_DOOR_ART` had no Brinewick rows, so the TOWN map showed no heart lantern on its Lantern House or acorn board on its Chandlery, unlike every other town (AGENTS rule 10).

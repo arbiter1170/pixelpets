@@ -13303,7 +13303,8 @@ function renderFarSky(body, hack){
   const word = sky ? ({ clear: 'Clear', cloud: 'Cloud', rain: 'Rain', snow: 'Snow' }[sky.kind] || '') : '';
   add('sky-now', sky ? word + (sky.temp != null ? ', ' + Math.round(sky.temp) + '°' : '') + ' over ' + (placeName() || 'here') + '.' : 'No sky reading. Turn on LOCATION on the TODAY card for real weather.');
   const stir = skyStirring();
-  add('sky-stir', stir === null ? 'No wild grass here. Step outside to read the sky.'
+  // stir is null in a room and on an outdoor map with no wild grass (a town); only a room is told to step outside.
+  add('sky-stir', stir === null ? (isRoom() ? 'No wild grass here. Step outside to read the sky.' : 'No wild grass here.')
     : !stir.length ? 'A plain sky. Nothing extra is stirring.'
     : 'The weather is stirring ' + stir.join(' and ') + '.');
   if (phoneNight()) add('sky-night', hack ? 'Night readings: glow levels rising. Logged.' : 'Glow is rising. Sleeping Walklings send a little up tonight.');
