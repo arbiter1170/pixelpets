@@ -169,6 +169,8 @@ test('the diner sheet fits, one tap buys one, and a refused tap changes nothing'
   expect(refused.v).toBe(2);
 
   await openHesper(page);
+  // Needs decay on the walk between the two sheets (no overlay is open then), so read Food again once the sheet is up.
+  const fed = await page.evaluate(() => PixelPets.state.party[0].hunger);
   await page.locator('#shopList .shop-row[data-id="coach_stew"] .shop-buy').click();
   await page.waitForFunction(() => {
     const s = window.PixelPets.scene;
@@ -176,7 +178,7 @@ test('the diner sheet fits, one tap buys one, and a refused tap changes nothing'
   });
   const bought = await page.evaluate(() => ({ money: PixelPets.state.money, hunger: PixelPets.state.party[0].hunger, choices: document.querySelectorAll('#sbChoices button').length }));
   expect(bought.money).toBe(25);
-  expect(bought.hunger).toBeCloseTo(70, 3);
+  expect(bought.hunger).toBeCloseTo(fed + 30, 3);
   expect(bought.choices).toBe(0);
 });
 
