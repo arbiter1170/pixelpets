@@ -38,14 +38,14 @@ const room = (uid, area, shard, code) => 'rooms/' + (code || CODE) + '/' + (area
 
 let emu = null;   // { child, dir, ports, logPath, done }
 function startEmulator(ports) {
-  const bin = path.join(ROOT, 'node_modules', '.bin', 'firebase');
   const logDir = process.env.PP_TEST_DIR ? path.resolve(process.env.PP_TEST_DIR) : path.join(ROOT, 'test-logs');
   const logPath = path.join(logDir, 'rtdb-emulator.log');
   fs.mkdirSync(logDir, { recursive: true });
   const { dir, config } = emuPorts.writeConfig(ports, null);
   const log = fs.openSync(logPath, 'w');
-  const child = spawn(bin, ['emulators:start', '--only', 'database', '--project', 'demo-walklings', '--config', config], {
-    cwd: dir, detached: true, stdio: ['ignore', log, log],
+  const launch = emuPorts.firebaseLaunch(['emulators:start', '--only', 'database', '--project', 'demo-walklings', '--config', config]);
+  const child = spawn(launch.cmd, launch.args, {
+    cwd: dir, detached: true, windowsHide: true, stdio: ['ignore', log, log],
     env: Object.assign({}, process.env, { CI: '1', TMPDIR: dir, FIREBASE_DATABASE_EMULATOR_HOST: '127.0.0.1:' + ports.database }),
   });
   fs.closeSync(log);

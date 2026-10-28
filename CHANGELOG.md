@@ -5,10 +5,18 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 ## 2026-10-28 13:36 ET: Rook bursts in just inside the Lodge door (build 20261028-1336)
 
 - What changed and why: D871 (green, settled by Vincent). The live check of build 20261028-0640 showed Rook placed on the Lodge door mat (5,8), which sits in the bottom wall row that the room draws dark, so he said "Did I miss it?" from the dark. He now appears just inside the door, (5,7), and speaks from the floor. His exit still ends on the mat, so he still leaves through the door. Design recompiled the beat sheet (design `b6dba02`); his walk to the basket is one tile shorter.
-- Files touched: `data/cutscene_intro.json` (Rook's `castAt` y 8 to 7, copied from Design's compiled file), `data/mapdata.js` (generated), `tests/intro_cutscene.spec.js` (T5, T7), `tests/README.md`, `archive/DECISIONS_SETTLED.md` (D871), `OPEN_DECISIONS.md` (next free id D876), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`, merged with main `abe1672` (#220, #223). Build `20261028-1336`.
+- Files touched: `data/cutscene_intro.json` (Rook's `castAt` y 8 to 7, copied from Design's compiled file), `data/mapdata.js` (generated), `tests/intro_cutscene.spec.js` (T5, T7), `tests/README.md`, `archive/DECISIONS_SETTLED.md` (D871), `OPEN_DECISIONS.md` (next free id D892), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`, merged with main `d09b1b0` (#220, #223, #224, #206). Build `20261028-1336`.
 - Tests run and result (widths, checks): `tests/intro_cutscene.spec.js` (T5 now expects (5,7) and checks Rook is never in a wall row on a line he speaks; T7's B8 walk is 6 tiles) and `tests/starter_moment.spec.js` at 320, 375 and 390: 43 passed, 20 skipped (rows that run at 390 only); T7 3 of 3 on repeat.
 - Decisions made (colour + reasoning): D871, green: a one-tile staging fix inside a settled cutscene; D806's text stands with its entry tile changed.
+
+## 2026-10-28 ET: `npm run iphone` takes a free port when 8080 is busy, no build change
+
+- What changed and why: Vincent's first run on his Windows desktop stopped with `listen EADDRINUSE 127.0.0.1:8080` (another program had the port). With no `--port`, the launcher now tries 8080 and falls back to any free port, and says so; Windows can also refuse a reserved port range (EACCES), which falls back the same way. An explicit `--port` that is busy or refused now stops with a plain message instead of a stack trace. Tools only: no game file changed, so no build stamp.
+- Files touched: `tools/static_server.js` (`start` takes `fallback`), `tools/iphone_emulate.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/iphone-emulate-free-port` from main `abe1672`. The build stays `20261028-0858`; `bump_build.py --check` passes.
+- Tests run and result (widths, checks): on Linux with a program holding 8080: no `--port` moved to a free port and loaded the game (build `20261028-0858`); `--lan` moved and printed the phone address; an explicit busy `--port 8080` stopped with the message; with 8080 free it kept 8080. Scans pass. Not run on Windows (the EACCES branch follows Node's error code).
+- Decisions made (colour + reasoning): green, tooling only.
 - Anything left unfinished: none.
 
 ## 2026-10-28 ET: iPhone emulation on a desktop (WebKit), no build change
@@ -132,6 +140,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `tests/modern_hud_dock.spec.js` at 320, 375 and 390: 14 passed, 1 failed. The failure is the existing 320 toast row ("Found 3 Hearty ..."), which fails the same on `main` `a9fb865`. The two new scene rows fail on `main` at all three widths (box bottom 832 against dock top 689 at 390) and pass here. They check that the box bottom is at or above the dock top, that the gear takes taps in the opening scene and is locked with a partner, and that the gear stays shown while PHONE and QUEST hide.
 - Decisions made (colour + reasoning): green. A fix for a regression; it keeps NAV_MODERN G3 and MODERN_HUD_CLEAR's rule that talk scenes open over the map.
 - Anything left unfinished: none.
+
+## 2026-10-27 16:52 ET: `npm run test:agent` works on Windows (no build stamp change)
+
+- What changed and why: On Windows the runner could not start its helpers. `npx` and `node_modules/.bin/firebase` are `.cmd` shims, which Node's `spawn` cannot run without a shell, so the Playwright stage and the rules step both failed; and the emulator cleanup used process groups and `/proc`, which Windows does not have, so every run left a `java.exe` emulator behind. On Windows only, Playwright and the firebase CLI are now started as `node <their own JS file>` (the file the shim runs), with no shell, and `tools/emu_ports.js` ends the CLI's whole process tree with `taskkill /T /F` (it only touches a pid that is still a `node.exe`, and also finds a database-emulator java left on our port). `removeDir` retries on Windows because the folder stays locked for a moment after the kill. Every new path is behind `process.platform === 'win32'`; the other systems start the same commands as before. No game or player-facing file changed.
+- Files touched: `tools/emu_ports.js` (`firebaseLaunch`, Windows kill and retry), `tools/pp_test.js`, `tools/rtdb_rules_test.js`, `tests/emu_shared.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/windows-test-runner`. No deployed file changed, so this PR adds no stamp; the build is whatever `main` has (`20261028-0858` when `main` was merged in) and `bump_build.py --check` passes inside `test:agent`.
+- Tests run and result (widths, checks): on Windows 11, Node 24, JDK 21: `npm run test:agent -- boot_to_map.spec.js --project=390` four times (two with the output discarded, so only their exit code was read) → `PP_TEST RESULT: PASS`, 4 passed, `RTDB_RULES RESULT: PASS`, no `java.exe` left afterwards. `coop_r2.spec.js` at 390 (uses the shared emulator in `tests/emu_shared.js`) → 9 passed, 1 skipped, 1 failed: `coop_r2.spec.js:501` opens WebKit, which is not installed on that machine (not caused by this change). Not run on Linux or macOS; their code paths are unchanged by construction.
+- Decisions made (colour + reasoning): green; test tooling only, no player-visible or save change.
+- Anything left unfinished: Windows still needs a `python3` command on `PATH` (`tools/pp_test.js`, `tools/scans/gamejs_map.js`, `tools/scans/selftest.js`, the Playwright `webServer` and a few specs call `python3`; python.org's installer only creates `python.exe`). The other `.cmd`/`python3` call sites were left alone. WebKit is not installed there, so `coop_r2.spec.js:501` needs `npx playwright install webkit` first.
 
 ## 2026-10-27 12:40 ET: Review fixes for the arcade grips (build 20261027-1240)
 
