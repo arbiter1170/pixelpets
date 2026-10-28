@@ -349,6 +349,7 @@
           "y": 2,
           "facing": "left",
           "when": [
+            "story.reached_brinewick",
             "!story.brine_arrived"
           ],
           "scene": "bw_arrive"
@@ -360,6 +361,7 @@
           "y": 2,
           "r": 0,
           "when": [
+            "story.reached_brinewick",
             "!story.brine_arrived"
           ],
           "scene": "bw_arrive"
@@ -414,6 +416,7 @@
           "y": 13,
           "facing": "left",
           "when": [
+            "story.reached_brinewick",
             "story.seal3",
             "!story.ep1_end"
           ],
@@ -818,7 +821,8 @@
           },
           "look": "quinn",
           "when": [
-            "story.side=glimmer"
+            "story.side=glimmer",
+            "story.reached_brinewick"
           ]
         },
         {
@@ -959,7 +963,10 @@
             "story.brine_freed": "I wrote 'escaped'. Tobin taught me that word. It fits.",
             "else": "@bw_hollis"
           },
-          "look": "hollis"
+          "look": "hollis",
+          "when": [
+            "story.reached_brinewick"
+          ]
         },
         {
           "kind": "prop",

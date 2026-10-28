@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 03:24 ET: Brinewick cast stays off the whereabouts panel until you arrive (build 20261028-0324)
+
+- What changed and why: A full-suite comparison with the PR #205 head found two real regressions. Rook's Brinewick arrival NPC was gated only on `!story.brine_arrived`, so the whereabouts panel placed Rook in Brinewick from the first minute of a new game; Hollis's and Quinn's Brinewick copies had the same gap. Every Brinewick appearance of the settled cast now also needs `story.reached_brinewick`. `tests/maps_b7.spec.js` counts the four new Brinewick interior skins (39).
+- Files touched: `data/detail_zz_brinewick.json`, `data/mapdata.js`, `tests/maps_b7.spec.js`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`; design `specs/brinewick_build.py`.
+- Commit(s) + build id: this branch, build 20261028-0324.
+- Tests run and result (widths, checks): full suite on both branches (Linux, Playwright 1.63 to match the container's browser): PR #205 head 1691 passed / 102 failed; this branch before the fix 1724 / 103, with six failures only here. After the fix `whereabouts` (320, 375, 390), `maps_b7`, `brinewick`, `data_integrity` and `rx_f4_pilot` pass; `modern_hud_rows` fails the same way on the PR #205 head with `--repeat-each=3` (an unlock card under the tap at 320), so it is not from this branch. The other ~100 failures (controls, partner_care, top_hud, reputation, shop, dialog_clear, room_zoom and others) are shared with the PR #205 head.
+- Decisions made (colour + reasoning): green fixes. No new ids.
+- Anything left unfinished: as above (D873, D874).
+
 ## 2026-10-28 01:22 ET: Brinewick floors and the Trial Hall roof fixed (build 20261028-0122)
 
 - What changed and why: Review of the Brinewick previews (Oct 28, 2026): the Trial Hall's roof was clipped by the harbour square, and the floors needed real design work. The square no longer overwrites the Hall (the Hall is 6 wide, one tile clear of the square), and the design build script now fails on any broken building (roof not whole, wall rows ragged, stray R/H, an object on a building, a door off its doorstep). The four Brinewick floors are redrawn as hand-placed 16x16 grids that follow FLOOR_FIX (D184-D186): 7 px full-width boards with near-value seams and no butt joint on a main tile, calm (main colour 83-99 %, at most 4 colours, busy pairs at most 15 %), no brick or block lattice, and no pattern or thumbnail twin among the 46 other interiors. Lantern House: rope-tan planks and a navy runner from the door to the host. Chandlery: tar planks under pale grey-blue walls (it no longer twins the smugglers' den). Trial Hall: a pale painted ferry deck. Depot: a white sealed sheet with mint aisle lines under graphite walls with mint trim (it no longer twins the RegenX lab), stocked with a new cool grey `depot_crate`. The old procedural Brinewick floors are removed.
