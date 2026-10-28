@@ -346,7 +346,16 @@ function newPet(sp, stage=0, origin='wild', lv=STAT_RULES.STARTER_LEVEL){   // B
 let saveTimer = 0, readOnly = false;              // a save from a newer build: play nothing, write nothing
 // Once Start over has begun, nothing on this page may write again (pagehide / hidden / the 5 s timer fire while it reloads).
 let resetting = false, gameReplaced = false;
-function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); if (DEBUG) S.debugSave = true; PPSave.writeV2(S); }   // a debug session marks the save (additive; shown in Settings)
+// A write that fails (storage full or blocked, or another tab took the save) used to be silent: progress stopped saving.
+// Tell the player once per page load; the game keeps playing in memory.
+let saveFailTold = false;
+function save(){
+  if (!S || readOnly || resetting) return;
+  S.last = Date.now(); if (DEBUG) S.debugSave = true;
+  if (PPSave.writeV2(S) !== false || saveFailTold) return;
+  saveFailTold = true;
+  try { toast("Couldn't save. Close other Walklings tabs, or free some space, then reload."); } catch (e) {}
+}   // a debug session marks the save (additive; shown in Settings)
 /* ---------- reload breadcrumb (diagnostics; plain localStorage keys outside the save, so the save stays v2) ----------
    Every path that reloads or replaces the page first writes pp_reload {reason, at, battleOn, build}. pagehide/beforeunload
    with no reason writes reason 'unknown' (a Safari refresh, a close). pp_alive is set while the page is visible and cleared
@@ -1422,7 +1431,8 @@ let movesLes = { hitDue: false, m7done: false, chooseN: 0, p1At: -1, m7At: -1, p
 let befLes = { took: false, fromBar: false, bar: false };
 let lessonDraw = { hop: 0, y: 0 };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
+let envPeek = false;   // mapReadySoon: read the state as if TODAY were shut, without touching its hidden attribute
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envPeek && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -11236,13 +11246,12 @@ function mapVisited(id, cur){
 }
 const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy && !tabsGuarded() && !(battle && battle.on);
 let mapOffShown = null;
+// Never flip #ovEnv.hidden here: this runs every frame, and each flip re-arms the open guard on TODAY,
+// which then swallowed every tap on OK, MAP and LOCATION (Oct 28, 2026).
 function mapReadySoon(){
-  const env = $('#ovEnv');
-  const was = env ? env.hidden : true;
-  if (env) env.hidden = true;
   let ok = false;
-  try { ok = mapReady(); } catch (e) { ok = false; }
-  if (env) env.hidden = was;
+  envPeek = true;
+  try { ok = mapReady(); } catch (e) { ok = false; } finally { envPeek = false; }
   return ok;
 }
 function syncMapBtn(){
@@ -17173,7 +17182,23 @@ function bindInput(){
 
 /* ---------- main loop ---------- */
 let lastT = now(), tickAcc = 0;
+// One error in a frame used to stop the loop for good: the map froze while saves and timers ran on (only a reload
+// recovered). The next frame is now always scheduled. The error still reaches window.onerror (noteError, the console);
+// after FRAME_FAIL_MAX failing frames in a row the loop retries once a second instead of 60 times.
+const FRAME_FAIL_MAX = 10;
+let frameFails = 0, frameCount = 0, frameBreak = 0;   // frameBreak: ?debug=1 only (PixelPets.breakFrames)
 function frame(t){
+  let ok = false;
+  try {
+    if (frameBreak > 0) { frameBreak--; throw new Error('debug: broken frame'); }
+    frameBody(t); ok = true; frameCount++;
+  } finally {
+    frameFails = ok ? 0 : frameFails + 1;
+    if (frameFails > FRAME_FAIL_MAX) setTimeout(() => requestAnimationFrame(frame), 1000);
+    else requestAnimationFrame(frame);
+  }
+}
+function frameBody(t){
   const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
   const p = pet();
   if (p && !overlayOpen()) {
@@ -17214,7 +17239,6 @@ function frame(t){
       if (!q) closeWalklingSheet(); else paintWalklingStats(q);
     }
   }
-  requestAnimationFrame(frame);
 }
 
 /* ---------- HP regen (TYPES_STATS §7) ---------- */
@@ -17522,6 +17546,7 @@ function boot(){
   };
   const cheats = {
     repaintStats(){ paintStatIcons(); return true; },   // ?debug=1: redraw the stat icons
+    breakFrames: n => { frameBreak = Math.max(0, n | 0); return true; }, frameCount: () => frameCount,   // ?debug=1: the loop survives a throwing frame
     runSteps: steps => { showTab('walk'); if (overlayOpen()) return false; runSteps(steps); return true; },   // debug: play ad-hoc scene steps (STINGERS test 14)
     forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
     forceBattle: (form, level) => {
