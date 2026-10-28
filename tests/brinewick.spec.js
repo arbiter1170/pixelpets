@@ -219,3 +219,70 @@ test('the Lantern House rests the team for Acorns, its host explains healing, an
   expect(await page.evaluate(() => PixelPets.mapCheck())).toEqual([]);
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
+
+// A lost battle wakes the holder at the nearest Lantern House they know. LANTERN_NEAR and LANTERN_TOWNS had no Route 3 or
+// Brinewick rows, so a wipe in Brinewick (or on Route 3 after resting there) woke the holder back in Hearthmoor.
+async function wipe(page) {
+  await page.evaluate(() => {
+    PixelPets.battle.textMs = 1; PixelPets.battle.animMs = 0;
+    PixelPets.showTab('walk');
+    if (PixelPets.clearWild) PixelPets.clearWild();
+  });
+  expect(await page.evaluate(() => PixelPets.forceBattle('tide/0', 3))).toBe(true);
+  await page.waitForFunction(() => PixelPets.battle && PixelPets.battle.on && PixelPets.battle.state === 'CHOOSE', null, { timeout: 15000 });
+  await page.evaluate(() => {
+    const now = Date.now();
+    for (const p of PixelPets.state.party) { p.hpNow = 0; p.faintUntil = now + 20 * 60000; }
+    PixelPets.loseBattle();
+  });
+  await page.waitForFunction(() => PixelPets.battle && PixelPets.battle.panel === 'end', null, { timeout: 15000 });
+  await page.locator('#btOk').click();
+  await page.waitForFunction(() => PixelPets.battle && !PixelPets.battle.on && !PixelPets.fading, null, { timeout: 15000 });
+  await page.evaluate(() => { if (PixelPets.scene) PixelPets.endScene(); });
+}
+
+test('a wipe in Brinewick or on Route 3 wakes the holder at the Brinewick Lantern House @w1', async ({ page }) => {
+  await boot(page, save(Object.assign({ 'story.reached_brinewick': true }, KEEPERS), { map: 'brinewick', x: 10, y: 3, respawn: 'brinewick' }));
+  await wipe(page);
+  await settled(page, 'bw_lantern_in');
+  expect(await here(page)).toEqual({ map: 'bw_lantern_in', x: 2, y: 4 });
+  expect(await page.locator('#toast').textContent()).toContain('Back at the Brinewick Lantern House.');
+  // The save loader kept only the four older towns as a respawn; a Brinewick rest was dropped on the next load.
+  expect(await page.evaluate(() => PixelPets.state.world.respawn)).toBe('brinewick');
+  await page.evaluate(() => PixelPets.goto('route3', 6, 30, 'down'));
+  await settled(page, 'route3');
+  await wipe(page);
+  await settled(page, 'bw_lantern_in');
+  expect(await page.evaluate(() => PixelPets.state.world.respawn)).toBe('brinewick');
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
+});
+
+// Rule 10 on the TOWN map: TOWN_DOOR_ART had no Brinewick rows, so its Lantern House and Chandlery doors carried no heart
+// lantern or acorn board, unlike every other town.
+test('the Brinewick TOWN map marks the Lantern House with the heart lantern and the Chandlery with the acorn board @w1', async ({ page }) => {
+  const s = save(Object.assign({ 'story.reached_brinewick': true }, KEEPERS));
+  s.settings.controls = 'modern';
+  await boot(page, s);
+  await page.locator('#mapBtn').click();
+  await page.waitForSelector('#ovMap:not([hidden])');
+  await page.waitForFunction(() => PixelPets.mapLayer() && PixelPets.mapLayer().level === 'town' && PixelPets.mapLayer().shown === 'brinewick');
+  const mark = await page.evaluate(() => {
+    const layer = PixelPets.mapLayer();
+    const c = document.querySelector('#regionCanvas'), g = c.getContext('2d');
+    const k = c.width / c.getBoundingClientRect().width, p = layer.px;
+    // Exact PAL pixels on the door tile: r (#b13e53) is the lantern's heart, b (#3b5dc9) the board's face.
+    const count = (b, rgb) => {
+      let n = 0;
+      for (let y = 0; y < p; y++) for (let x = 0; x < p; x++) {
+        const d = g.getImageData(Math.floor((b.xy[0] * p + x + 0.5) * k), Math.floor((b.xy[1] * p + y + 0.5) * k), 1, 1).data;
+        if (d[0] === rgb[0] && d[1] === rgb[1] && d[2] === rgb[2]) n++;
+      }
+      return n;
+    };
+    const find = id => layer.buildings.find(b => b.door === id);
+    const at = id => find(id) && { heart: count(find(id), [177, 62, 83]), board: count(find(id), [59, 93, 201]) };
+    return { bw_lantern: at('bw_lantern'), bw_store: at('bw_store') };
+  });
+  expect(mark.bw_lantern.heart).toBeGreaterThan(0);
+  expect(mark.bw_store.board).toBeGreaterThan(0);
+});

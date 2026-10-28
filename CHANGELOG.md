@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 11:11 ET: A lost battle in Brinewick wakes you in Brinewick; its Lantern House and Chandlery get their TOWN map marks (build 20261028-1111)
+
+- What changed and why: three real bugs found on the checks branch, where main's features meet Brinewick. (1) `LANTERN_NEAR` had no `route3` or `brinewick` row and `LANTERN_TOWNS` had no `brinewick`, so a lost battle in Brinewick, or on Route 3, woke the holder in Hearthmoor. Route 3 now ties Cobblecrest and Brinewick (the last rest wins) and Brinewick wakes in its own Lantern House. The phone's signal bars (D866) read Brinewick as a Lantern town (4 bars) through the same table. (2) The save loader (`normalizeV2`) only kept the four older towns as `world.respawn`, so a Brinewick rest was dropped on the next load; `brinewick` is now allowed (additive; v stays 2). (3) `TOWN_DOOR_ART` had no Brinewick rows, so the TOWN map showed no heart lantern on its Lantern House or acorn board on its Chandlery, unlike every other town (AGENTS rule 10).
+- Files touched: `game.js`, `save.js`, `tools/GAMEJS_MAP.txt`, `tests/brinewick.spec.js`, `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/walklings-checks-53kv2g`, build 20261028-1111.
+- Tests run and result (widths, checks): the two new `brinewick` rows at 320 (@w1): pass; the TOWN map row fails with the art rows removed (0 marked pixels) and passes with them (3 heart, 8 board).
+- Decisions made (colour + reasoning): green (bugs; brings Brinewick in line with every other Lantern town).
+- Anything left unfinished: Ribbit has no Brinewick local posts yet (`regionOf` in `ribbit.js` returns nothing there); that is copy, so it waits on D886.
+
 ## 2026-10-28 10:55 ET: Merge main (#208-#220) into the Brinewick branch; Brinewick decisions move to D872-D887 (build 20261028-1055)
 
 - What changed and why: brings main's ten merges (match balloon, wild-win Acorns, TODAY card fix, frame-error loop, play together fixes, phone apps parts 1 and 2, the staged Lodge cutscene, tutorial cards and the shop sheet) into this branch. Conflicts: `game.js` took main's `envPeek` (#211 fixed the same TODAY card tap loss as this branch's `envAside`, the same way); the shop sheet rule in `style.css` was already identical; build stamps re-stamped; `data/mapdata.js` and `tools/GAMEJS_MAP.txt` regenerated. Decision ids: PHONE_APPS reached main holding D859-D870, which this branch had reserved for BRINEWICK, and design gave D871 to INTRO_CUTSCENE (Rook's entry tile), so BRINEWICK moves up by 13: B1-B14 are now D872-D885, the copy call is D886 and the previews call is D887. Next free id is D888. D791 and D794 leave the open table (main settled them in #208).
