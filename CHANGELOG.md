@@ -2,6 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-27 19:50 ET: Day/night and weather in the Modern dock (build 20261027-1950)
+
+- What changed and why: Vincent asked (Oct 27, 2026) for the day/night and weather glyph in the bottom dock, between MAP and the partner buttons, without touching anything (D858). Row 2 of the dock now shows a 16 px sky glyph there. With weather it uses the chip's glyphs and shows the temperature beside it where it fits; with no weather the game clock gives the sun, the half sun at dawn and dusk, or the moon; night always shows the moon. It keeps 2 px clear of MAP and the heart (at 320 the glyph exactly fills the gap and the temperature stays off). Under the dock the place chip drops its own glyph and temperature. Display only; arcade and the overlay layout are unchanged; no save change.
+- Files touched: `game.js` (`renderDockSky`, called from `renderClockChip` and `syncMhcDock`), `index.html` (`#fcSky`), `style.css`, `tests/dock_sky.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `tools/GAMEJS_MAP.txt`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/dock-sky-tile` from main `a9fb865`, merged with main `448acb6` (#202). Build `20261027-1950`.
+- Tests run and result (widths, checks): `tests/dock_sky.spec.js` at 320, 375 and 390: 9 passed (glyph 16x16 and at least 2 px clear of MAP and the heart; rain 12 and clear 24 show their word and temperature, no temperature at 320; the chip glyph is off under the dock; arcade has no sky). Screenshots at 320 and 390 with no weather, rain and clear: no overlap, no page errors.
+- Decisions made (colour + reasoning): D858 yellow (a small interface addition), settled by Vincent's own ask. D837-D857 are held by the open ARBITER_UNITS PR #205, so this takes D858.
+
+## 2026-10-27 17:14 ET: Scene text box sits above the Modern dock (build 20261027-1714)
+
+- What changed and why: In Modern controls on a phone held upright, the dock band at the bottom covered the scene text box (z 9 under the dock's z 12), so every talk scene's lines were hidden. Modern is now the default (D833), so most players hit this. Under the dock the box now sits above it, not 12 px above the bottom edge. #203 already keeps the gear shown and tappable in scenes (visibility rules), so this branch's earlier per-item fades were dropped in the merge; only the box lift remains.
+- Files touched: `style.css`, `tests/modern_hud_dock.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/scene-box-above-dock` (PR #202), merged with main `a9fb865`. Build `20261027-1714`.
+- Tests run and result (widths, checks): `tests/modern_hud_dock.spec.js` at 320, 375 and 390: 14 passed, 1 failed. The failure is the existing 320 toast row ("Found 3 Hearty ..."), which fails the same on `main` `a9fb865`. The two new scene rows fail on `main` at all three widths (box bottom 832 against dock top 689 at 390) and pass here. They check that the box bottom is at or above the dock top, that the gear takes taps in the opening scene and is locked with a partner, and that the gear stays shown while PHONE and QUEST hide.
+- Decisions made (colour + reasoning): green. A fix for a regression; it keeps NAV_MODERN G3 and MODERN_HUD_CLEAR's rule that talk scenes open over the map.
+- Anything left unfinished: none.
+
 ## 2026-10-27 15:37 ET: The Answerers and Route 3, ported onto main (build 20261027-1537)
 
 - What changed and why: ARBITER_UNITS (Builds A and C) re-applied on current main and fitted to it (Vincent, Oct 27, 2026). The five are Glimmerwell's first relays, built before the Tuning chips and woken by the hum; the cradle's COUNT / GATHER / LISTEN names them. Hushlamp is now Dimlamp and the HUSH button is STILL; Ledgerowl is now Filecrow with new crow art, clear of the Hushwater owl. Five attune SHADE lines after `snail` (indices 20-24) with hum tiers, Echoes (hooked in the battle step queue), boss battles (Lv 26-30, under the cap), MOVES_V2 signatures and the journal row. Route 3 is one auto-loaded pack, `data/detail_route3.json`; it opens on `story.route3_open` (last crates plus the Lantern Council or the Signal Review). The lamp clue moved to Hushwater, off the Signal Review's Wickerglen lamps. Both chip paths refuse an Answerer. Save `v` stays 2.
