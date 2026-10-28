@@ -52,8 +52,11 @@ test('the phone is a side quest until the officers issue it @w1', async ({ page 
   await expect(page.locator('#phoneTitle')).toHaveText('KEEPER1');
   await expect(page.locator('#phoneFoot')).toContainText('Lantern desk');
   await page.locator('#phoneJobs').click();
-  await expect(page.locator('#phoneBody')).toContainText('KEEPERUAV');
-  await expect(page.locator('#phoneBody')).toContainText('No jobs are open');
+  // D864: the desk lists the side quests that are really open (no fake listings), or says none are open.
+  await expect(page.locator('#phoneBody')).toContainText('PATROL REQUESTS');
+  const open = await page.evaluate(() => PixelPets.sideActive.length);
+  if (open) await expect(page.locator('.phone-job[data-chain]')).toHaveCount(open);
+  else await expect(page.locator('#phoneBody')).toContainText('No jobs are open');
   await page.locator('#phoneBack').click();
   await page.locator('.phone-app[data-app="friends"]').click();
   await expect(page.locator('#friendCode')).toBeVisible();
@@ -69,7 +72,7 @@ test('a cracked handset turns the phone into the thin one @w1', async ({ page })
   await expect(page.locator('#phoneTitle')).toHaveText('CRACK//HAND');
   await expect(page.locator('#phoneJobs')).toHaveText('BOTNET');
   await page.locator('#phoneJobs').click();
-  await expect(page.locator('#phoneBody')).toContainText('Dark-market parts');
+  await expect(page.locator('#phoneBody')).toContainText('OPEN THE SHELF');   // D869: the BOTNET shelf replaced the empty-shelf line
   const bag = await page.evaluate(() => PixelPets.state.bag.cracked_phone || 0);
   expect(bag).toBe(1);
 });

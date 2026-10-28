@@ -229,7 +229,9 @@
     const pins = POSTS.filter(p => p.pin && ok(p));
     const extraPool = POSTS.filter(p => !p.pin && (p.kind === 'block' || p.kind === 'chirp') && ok(p));
     const extra = pickWeighted(extraPool, 1, rngDesk, () => 1);
-    const locals = pickLocals(POSTS.filter(p => p.kind === 'local' && ok(p)), region, LOCAL_N, rngLocal);
+    // D866: state.signal (1-4 bars) thins the local lines; unset keeps all LOCAL_N. The picks stay a stable prefix.
+    const bars = Number.isInteger(st.signal) ? Math.max(1, Math.min(4, st.signal)) : 4;
+    const locals = pickLocals(POSTS.filter(p => p.kind === 'local' && ok(p)), region, LOCAL_N, rngLocal).slice(0, Math.min(LOCAL_N, bars));
     const tags = pickWeighted(TAGS.filter(t => passes(t.when, flags, side)), 3, rngTag, t => t.w || 1);
     const posts = pins.concat(extra).map(p => publish(p, storySeed)).concat(locals.map(p => publish(p, storySeed + '\n' + map)));
     if (st.night) {
