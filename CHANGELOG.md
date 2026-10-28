@@ -6,7 +6,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 
 - What changed and why: D871 (green, settled by Vincent). The live check of build 20261028-0640 showed Rook placed on the Lodge door mat (5,8), which sits in the bottom wall row that the room draws dark, so he said "Did I miss it?" from the dark. He now appears just inside the door, (5,7), and speaks from the floor. His exit still ends on the mat, so he still leaves through the door. Design recompiled the beat sheet (design `b6dba02`); his walk to the basket is one tile shorter.
 - Files touched: `data/cutscene_intro.json` (Rook's `castAt` y 8 to 7, copied from Design's compiled file), `data/mapdata.js` (generated), `tests/intro_cutscene.spec.js` (T5, T7), `tests/README.md`, `archive/DECISIONS_SETTLED.md` (D871), `OPEN_DECISIONS.md` (next free id D876), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`, merged with main `8685168` (#220). Build `20261028-1336`.
+- Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`, merged with main `abe1672` (#220, #223). Build `20261028-1336`.
 - Tests run and result (widths, checks): `tests/intro_cutscene.spec.js` (T5 now expects (5,7) and checks Rook is never in a wall row on a line he speaks; T7's B8 walk is 6 tiles) and `tests/starter_moment.spec.js` at 320, 375 and 390: 43 passed, 20 skipped (rows that run at 390 only); T7 3 of 3 on repeat.
 - Decisions made (colour + reasoning): D871, green: a one-tile staging fix inside a settled cutscene; D806's text stands with its entry tile changed.
 - Anything left unfinished: none.
