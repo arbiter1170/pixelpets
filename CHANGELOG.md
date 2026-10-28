@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 ET: `npm run iphone` takes a free port when 8080 is busy, no build change
+
+- What changed and why: Vincent's first run on his Windows desktop stopped with `listen EADDRINUSE 127.0.0.1:8080` (another program had the port). With no `--port`, the launcher now tries 8080 and falls back to any free port, and says so; Windows can also refuse a reserved port range (EACCES), which falls back the same way. An explicit `--port` that is busy or refused now stops with a plain message instead of a stack trace. Tools only: no game file changed, so no build stamp.
+- Files touched: `tools/static_server.js` (`start` takes `fallback`), `tools/iphone_emulate.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/iphone-emulate-free-port` from main `abe1672`. The build stays `20261028-0858`; `bump_build.py --check` passes.
+- Tests run and result (widths, checks): on Linux with a program holding 8080: no `--port` moved to a free port and loaded the game (build `20261028-0858`); `--lan` moved and printed the phone address; an explicit busy `--port 8080` stopped with the message; with 8080 free it kept 8080. Scans pass. Not run on Windows (the EACCES branch follows Node's error code).
+- Decisions made (colour + reasoning): green, tooling only.
+- Anything left unfinished: none.
+
 ## 2026-10-28 ET: iPhone emulation on a desktop (WebKit), no build change
 
 - What changed and why: Vincent asked (Oct 28, 2026) for a branch he can run on his own computer to emulate an iPhone and recreate a Safari issue. `npm run iphone` opens a WebKit window with an iPhone profile (any phone, in-Safari or full-screen size), serves this folder (Node, no Python), prints every pointer, touch and click event, and can also serve a real iPhone on the same Wi-Fi (`--lan`), open the live site, record a trace or run headless. `npm run test:iphone` runs the specs on WebKit at the repo's three widths and five real iPhone sizes. Nothing the game loads changed, so no build stamp. `tests/README.md` ("iPhone emulation") says what this is and is not (it is not iOS Safari; the iOS Simulator on a Mac or a real iPhone is) and lists the known WebKit-only differences, including why the intro cutscene specs fail on WebKit (an overlay guard keeps a lifted finger, and WebKit reuses one touch id and sends no click).
