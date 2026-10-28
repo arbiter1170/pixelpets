@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-28 00:02 ET: Wild wins pay a few Acorns (build 20261028-0002)
+
+- What changed and why: BATTLE_ACORNS (D811-D817). Vincent settled D811 on Oct 27 ("fine for now", revisit after a week of play or at the next economy pass) and the rest on their defaults on Oct 28. A wild win now pays `clamp(2 x foe level, 4, 40)` Acorns, with the holder line "{name} got N Acorns!" after the win sound. Today's wild Acorns live in `S.care.wildAcorns` (the per-day care record); from 60 a day a win pays a quarter, at least 1 ("1 Acorn"). Befriend, wandered off, RUN and a loss pay nothing; a co-op guest is paid nothing. Holder payouts are unchanged and do not count toward the day. The payout runs in one seam, `wildWinRewards`, which the town-board bounties can hook into later. The save stays v2 (an additive field inside `care`, cleaned by `normalizeV2`).
+- Files touched: `game.js` (`WILD_ACORNS`, `wildAcornPay`, `wildWinRewards`, the call in `results()`, the `careDay` default, the debug read `PixelPets.wildAcorns`), `save.js` (`care.wildAcorns` clamp), `tests/battle_acorns.spec.js` (new), `tests/README.md`, `archive/DECISIONS_SETTLED.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/battle-acorns` from main `a7db11b`. Build `20261028-0002`.
+- Tests run and result (widths, checks): `tests/battle_acorns.spec.js` T1-T8 at 320, 375 and 390: 24 passed. The 32 specs that end battles at 390 on this branch and on main `a7db11b`: 6 failures on each, the same except for flakes. `moves_v2` test 13 passed alone; `play_together` needs the database emulator, which cannot start behind this sandbox's proxy, and fails on main too.
+- Decisions made (colour + reasoning): none new; D811-D817 settled by Vincent.
+- Anything left unfinished: revisit D811 (the 60 cap against shop prices, befriend paying nothing, the daily total from wild against holder wins) after a week of play.
+
 ## 2026-10-27 19:50 ET: Day/night and weather in the Modern dock (build 20261027-1950)
 
 - What changed and why: Vincent asked (Oct 27, 2026) for the day/night and weather glyph in the bottom dock, between MAP and the partner buttons, without touching anything (D858). Row 2 of the dock now shows a 16 px sky glyph there. With weather it uses the chip's glyphs and shows the temperature beside it where it fits; with no weather the game clock gives the sun, the half sun at dawn and dusk, or the moon; night always shows the moon. It keeps 2 px clear of MAP and the heart (at 320 the glyph exactly fills the gap and the temperature stays off). Under the dock the place chip drops its own glyph and temperature. Display only; arcade and the overlay layout are unchanged; no save change.
