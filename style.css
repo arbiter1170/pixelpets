@@ -656,6 +656,9 @@ body.ctl-modern .scene-ov.top{padding-top:56px}
 .sb-who{position:absolute;left:8px;top:-14px;padding:2px 8px;background:var(--k);color:var(--y);font-size:18px;line-height:1.1;box-shadow:0 0 0 2px var(--d)}
 .sb-portrait{position:absolute;left:10px;top:24px;width:36px;height:36px;image-rendering:pixelated;background:var(--n);box-shadow:0 0 0 2px var(--k)}
 .sbox.has-p{padding-left:56px}
+.sbox.has-big{padding-left:88px;min-height:88px}
+.sbox.has-big .sb-portrait{left:8px;top:auto;bottom:8px;width:72px;height:72px;background:none;box-shadow:none}
+.sbox.has-big .sb-who{left:88px}
 .sb-text{margin:0;font-size:20px;line-height:1.25;min-height:50px;white-space:pre-wrap;overflow-wrap:anywhere}
 .sb-text.narr{color:var(--d)}
 .sb-echo{font-size:16px;line-height:1;color:var(--m);min-height:0}
@@ -1040,6 +1043,8 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 #ovPhone:not(.hack) .phone-glyph[data-glyph="jobs"]{background:#f3e2b0}
 #ovPhone:not(.hack) .phone-glyph[data-glyph="ribbit"]{background:#2f7d4a}
 #ovPhone:not(.hack) .phone-glyph[data-glyph="board"]{background:#6a3a0c}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="sky"]{background:#2a6f8f}
+#ovPhone:not(.hack) .phone-glyph[data-glyph="glow"]{background:#e4b04a}
 #ovPhone:not(.hack) #phoneBody{color:#1c2416;gap:8px}
 #ovPhone:not(.hack) #phoneBody .who{color:#6a3a0c}
 #ovPhone:not(.hack) #phoneFriends .panel{background:#fff9ec;box-shadow:0 0 0 2px #1d5c38}
@@ -1073,6 +1078,38 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 #ovPhone.hack .phone-glyph[data-glyph="jobs"]{background:#9dffc0}
 #ovPhone.hack .phone-glyph[data-glyph="ribbit"]{background:#0e3a22}
 #ovPhone.hack .phone-glyph[data-glyph="board"]{background:#1e6b42}
+#ovPhone.hack .phone-glyph[data-glyph="sky"]{background:#123224}
+#ovPhone.hack .phone-glyph[data-glyph="glow"]{background:#9dffc0}
+/* Phone apps part 1 (D859-D862): READY chip, FIELD NOTES, SKY, GLOW. */
+/* Phone apps part 2 (D864-D869): signal bars, jobs rows, the shelf button, Ribbit presets. */
+#ovPhone .phone-signal{flex:0 0 auto;display:flex;align-items:flex-end;gap:2px;height:14px}
+#ovPhone .phone-signal i{display:block;width:4px;opacity:.25}
+#ovPhone .phone-signal i:nth-child(1){height:5px}#ovPhone .phone-signal i:nth-child(2){height:8px}
+#ovPhone .phone-signal i:nth-child(3){height:11px}#ovPhone .phone-signal i:nth-child(4){height:14px}
+#ovPhone .phone-signal i.on{opacity:1}
+#ovPhone:not(.hack) .phone-signal i{background:#1d5c38}
+#ovPhone.hack .phone-signal i{background:#5ee08a}
+#ovPhone.board-post .phone-signal{display:none}
+#ovPhone #phoneBody .phone-job{display:flex;flex-direction:column;gap:4px;padding:8px}
+#ovPhone:not(.hack) #phoneBody .phone-job{background:#fff9ec;box-shadow:0 0 0 2px #1d5c38}
+#ovPhone.hack #phoneBody .phone-job{background:#0c1f16;box-shadow:0 0 0 2px #1e6b42}
+#ovPhone #phoneBody .phone-job .btn,#ovPhone #phoneBody .phone-shelf,#ovPhone #phoneBody .ribbit-preset{width:100%;min-height:44px;margin:0;font-size:16px;white-space:normal;text-align:left}
+#ovPhone #phoneBody .ribbit-compose{display:flex;flex-direction:column;gap:6px}
+#ovPhone:not(.hack) #phoneBody .ribbit-mine{box-shadow:0 0 0 2px #e4b04a}
+#ovPhone.hack #phoneBody .ribbit-mine{box-shadow:0 0 0 2px #5ee08a}
+#ovPhone .contact-ready{display:inline-block;margin:2px 0 0 4px;padding:0 4px;font-size:12px;letter-spacing:.4px}
+#ovPhone:not(.hack) .contact-ready{background:#1d5c38;color:#f6e6c0}
+#ovPhone.hack .contact-ready{background:#5ee08a;color:#07140e}
+#ovPhone #phoneBody .phone-sec{margin-top:4px;font-weight:700;letter-spacing:.6px}
+#ovPhone #phoneBody .phone-note{display:flex;flex-direction:column;gap:2px;padding:6px 8px}
+#ovPhone:not(.hack) #phoneBody .phone-note{background:#fff9ec;box-shadow:0 0 0 2px #e4b04a}
+#ovPhone.hack #phoneBody .phone-note{background:#0c1f16;box-shadow:0 0 0 2px #1e6b42}
+#ovPhone #phoneBody .phone-note-stamp{align-self:flex-end;font-size:12px;letter-spacing:.6px}
+#ovPhone:not(.hack) #phoneBody .phone-note-stamp{color:#1d5c38}
+#ovPhone.hack #phoneBody .phone-note-stamp{color:#8ee8b0}
+#ovPhone #phoneBody .sky-hour,#ovPhone #phoneBody .glow-name{font-weight:700}
+#ovPhone:not(.hack) #phoneBody .sky-foot,#ovPhone:not(.hack) #phoneBody .glow-advice{color:#1d5c38}
+#ovPhone.hack #phoneBody .sky-foot,#ovPhone.hack #phoneBody .glow-advice{color:#8ee8b0}
 #ovPhone.hack .phone-app:focus-visible,#ovPhone.hack #phoneClose:focus-visible,#ovPhone.hack #phoneBack:focus-visible{outline-color:#d7ffc8}
 #ovPhone.hack #phonePane{gap:6px}
 #ovPhone.hack #phoneBody{gap:4px;font-size:16px;line-height:1.3;color:#d7ffc8}
@@ -1353,14 +1390,12 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 #tutLayer{position:fixed;inset:0;z-index:15;pointer-events:none}
 #tutLayer[hidden]{display:none}
 #tutLayer.soft .tut-dim,#tutLayer.soft .tut-block{display:none;pointer-events:none}
-#tutLayer.lesson .tut-card{animation:tutSlide .18s ease-out}
-@keyframes tutSlide{from{transform:translateY(12px)}to{transform:none}}
+/* Tutorial cards and rings hold still: no slide, no blink, no hop between targets (Vincent, Oct 28, 2026). */
 #tutLayer.unlock-on .tut-dim,#tutLayer.unlock-on .tut-block{pointer-events:none}
 #unlockCard .unlock-title{font-weight:bold}
 .tut-dim{position:fixed;background:rgba(26,28,44,.6);pointer-events:auto}
 .tut-block{position:fixed;pointer-events:auto;background:transparent}
 .tut-ring{position:fixed;box-sizing:border-box;border:2px solid var(--y);pointer-events:none}
-.tut-ring:not([hidden]){animation:tutPulse 1.2s ease-in-out infinite}
 .tut-card{position:fixed;box-sizing:border-box;width:calc(100vw - 24px);max-width:360px;padding:12px;background:var(--n);color:var(--w);box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);pointer-events:auto;display:flex;flex-direction:column;gap:8px}
 .tut-card p{margin:0;font-size:17px;line-height:1.25;font-weight:normal}
 .tut-acts{display:flex;gap:8px}
@@ -1371,11 +1406,8 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 body.tut-on #tabs.locked{opacity:1}
 body.nav-locked .tut-hit{pointer-events:auto;opacity:1}
 body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-locked #questBtn.tut-hit,body.nav-locked .scr-back.tut-hit{pointer-events:auto;opacity:1}
-@keyframes tutPulse{50%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){
-  .tut-ring:not([hidden]){animation:none}
   .tut-card{transition:none}
-  #tutLayer.lesson .tut-card{animation:none}
 }
 /* Play together (PLAY_TOGETHER_P1). Existing palette only. */
 .say-btn{position:absolute;right:4px;bottom:4px;z-index:4;width:64px;height:52px;min-width:64px;min-height:52px;padding:0;border:3px solid var(--y);background:var(--n);color:var(--y);font-size:20px;cursor:pointer}
@@ -1505,6 +1537,10 @@ body.mhc-frame.ctl-modern.scene-on .fc-dock{opacity:0;pointer-events:none}
 body.mhc-frame.ctl-modern.scene-on .fc-dock #gearFloat,
 body.mhc-frame.ctl-modern.scene-on.price-on .fc-dock .fc-acorns{opacity:1;pointer-events:auto}
 body.mhc-frame.ctl-modern.scene-on .float-ctl{z-index:12}
+/* Anything else a scene opens (a battle, a picker, a minigame) keeps scene-on too. The dock's z 12 then put its opaque band over
+   that overlay (z 10-12) and hid its bottom: MOVES and the move list in a scene battle. While one is open the dock goes back under
+   it. The shop sheet is excluded: it sits above the dock instead (rule below) and the Acorns on the dock stay in view. */
+body.ctl-modern.scene-on:has(.overlay:not([hidden]):not(#ovShop)) .float-ctl{z-index:2}
 /* The dock keeps z 12 in scenes so the gear stays tappable (NAV_MODERN G3); its opaque band would cover the scene text box
    (z 9), so under the dock the box sits above it instead of 12 px above the bottom edge. */
 body.mhc-frame.ctl-modern .scene-ov{padding-bottom:calc(156px + var(--sa-b) + 12px)}

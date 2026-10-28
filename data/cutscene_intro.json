@@ -1,0 +1,169 @@
+{
+ "spec": "INTRO_CUTSCENE",
+ "version": "0.1",
+ "scene": "starter",
+ "portraits": {
+  "Warden Ilse": "sprite",
+  "Rook": "sprite",
+  "$player": "sprite"
+ },
+ "vars": {
+  "rivalBasket": {
+   "key": "rival",
+   "map": {
+    "ember": [
+     3,
+     3
+    ],
+    "tide": [
+     5,
+     3
+    ],
+    "bloom": [
+     7,
+     3
+    ]
+   }
+  },
+  "rivalBasketProp": {
+   "key": "rival",
+   "map": {
+    "ember": "lodge_basket_e",
+    "tide": "lodge_basket_t",
+    "bloom": "lodge_basket_b"
+   }
+  }
+ },
+ "inserts": [
+  {
+   "before": [
+    "say",
+    "Warden Ilse",
+    "There you are. Come in. The baskets do not all stay still."
+   ],
+   "steps": [
+    [
+     "curtain",
+     "on"
+    ],
+    [
+     "walkTo",
+     "ilse_lodge",
+     5,
+     4
+    ],
+    [
+     "emote",
+     "ilse_lodge_any",
+     "emote_wave"
+    ],
+    [
+     "wait",
+     300
+    ]
+   ]
+  },
+  {
+   "after": [
+    "say",
+    "Warden Ilse",
+    "There you are. Come in. The baskets do not all stay still."
+   ],
+   "steps": [
+    [
+     "walkTo",
+     "player",
+     5,
+     5
+    ],
+    [
+     "curtain",
+     "off"
+    ]
+   ]
+  },
+  {
+   "before": [
+    "say",
+    "",
+    "The door bangs open. Rook skids in, out of breath."
+   ],
+   "steps": [
+    [
+     "curtain",
+     "on"
+    ],
+    [
+     "castAt",
+     "rook_lodge",
+     5,
+     8,
+     "up"
+    ],
+    [
+     "sfx",
+     "notice"
+    ],
+    [
+     "wait",
+     200
+    ]
+   ]
+  },
+  {
+   "after": [
+    "say",
+    "Rook",
+    "Did I miss it? I got held up. Don't ask. Aw, you picked! Then I'll take... that one!"
+   ],
+   "steps": [
+    [
+     "walkTo",
+     "rook_lodge",
+     "$rivalBasket"
+    ],
+    [
+     "prop",
+     "$rivalBasketProp",
+     "basket_empty"
+    ]
+   ]
+  },
+  {
+   "after": [
+    "say",
+    "Rook",
+    "{rivalType} beats {type}, everybody knows that. Meet me at the east gate!"
+   ],
+   "steps": [
+    [
+     "walkTo",
+     "rook_lodge",
+     5,
+     8,
+     {
+      "with": "rival_pet",
+      "drop": true
+     }
+    ],
+    [
+     "sfx",
+     "step"
+    ]
+   ]
+  },
+  {
+   "after": [
+    "say",
+    "Warden Ilse",
+    "That boy. Now you each have someone who can stand in the dark with you."
+   ],
+   "steps": [
+    [
+     "curtain",
+     "off"
+    ]
+   ]
+  }
+ ]
+}

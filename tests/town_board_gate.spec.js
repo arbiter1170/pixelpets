@@ -186,7 +186,10 @@ test('the slip stays off until Rook\'s battle, and a pin does not accept it', as
   const jobs = await page.locator('#phoneBody').innerText();
   expect(jobs).not.toContain('Lantern check, Fernbrook. Reward later.');
   expect(jobs).not.toContain('Count the Route 2 lamps. Not live yet.');
-  expect(jobs).toContain('No jobs are open. The desk is warming up.');
+  // D864: only real errands: the open side chains (a pinned slip is not an accepted job here either).
+  const real = await page.evaluate(() => PixelPets.sideActive.map(a => a.chain));
+  expect(await page.locator('.phone-job[data-chain]').evaluateAll(els => els.map(e => e.dataset.chain))).toEqual(real);
+  if (!real.length) expect(jobs).toContain('No jobs are open. The desk is warming up.');
   await page.locator('#phoneClose').click();
 
   await face(page, 'hm_board');

@@ -54,7 +54,7 @@ Grouped by what blocks what. "Doc" items are bookkeeping only.
 ### 1a. Story and content
 | Item | State | Source |
 |---|---|---|
-| Brinewick, Trial Hall #3 (Marisol) | **Built on this branch (Q30, BRINEWICK v0.1)**, stacked on Q29: the town, the depot, Dorian, Seal 3 and the Episode 1 card. Rule 9 previews (D874) before deploy | `data/detail_zz_brinewick.json`, design `specs/BRINEWICK.md` |
+| Brinewick, Trial Hall #3 (Marisol) | **Built on this branch (Q30, BRINEWICK v0.1)**, stacked on Q29: the town, the depot, Dorian, Seal 3 and the Episode 1 card. Rule 9 previews (D887) before deploy | `data/detail_zz_brinewick.json`, design `specs/BRINEWICK.md` |
 | Everything after Episode 1 (Act 2, Brightgate, Glimmer Act 2, Frostmere) | Not planned. The Episode 1 card ends on a Calm Tower teaser line only | `STORY.md` (design) |
 | Rook vote Q3 (when Rook joined Junior Bright) | Open; written default is "right after Fernbrook" | BACKLOG Route 2 progress |
 | Friend slots (Juniper, Tobin, Ally A in Cobblecrest) | Need design | `cobblecrest.json` `friendSlots` |
@@ -469,7 +469,7 @@ ART_PASS (D548–D563) is on this branch: the Bloom Trial Hall is garden terrace
 
 ### Q30 — Brinewick (BRINEWICK v0.1) — L — **built on this branch**
 
-Spec: design `specs/BRINEWICK.md` (one-pager, B1-B14 = D859-D872 on their defaults). Route 3's south gate opens onto the harbour. The main chain gains `route3`, `brine_depot`, `brine_crate`, `brine_dorian`, `hall3` and `ep1_end` before `end`, each gated on `story.route3_open`, so a save before the road opens still idles on `end` (the High Charity games pointer and the side chains keep that card). Open: the copy and role names (D873) and the rule 9 previews (D874). Nothing deploys until Vincent sees the previews.
+Spec: design `specs/BRINEWICK.md` (one-pager, B1-B14 = D872-D885 on their defaults). Route 3's south gate opens onto the harbour. The main chain gains `route3`, `brine_depot`, `brine_crate`, `brine_dorian`, `hall3` and `ep1_end` before `end`, each gated on `story.route3_open`, so a save before the road opens still idles on `end` (the High Charity games pointer and the side chains keep that card). Open: the copy and role names (D886) and the rule 9 previews (D887). Nothing deploys until Vincent sees the previews.
 
 ### Q29 — The Answerers (ARBITER_UNITS v0.3) — L — **built on this branch**
 

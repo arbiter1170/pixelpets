@@ -304,7 +304,7 @@ const COPY = {
   gb_relay: ['Field Lead Imogen is testing relays at the Wickerglen lamps.', 'Wickerglen, the lamps'],
   gb_hollis: ['Associate Hollis is waiting on Route 2. He wants a quiet word.', 'Route 2, the Census'],
   gb_briefing: ['The Capital Partnership Briefing is in the Arbiter Bay.', 'Heights, top bay'],
-  // BRINEWICK (D859-D872): after story.route3_open.
+  // BRINEWICK (D872-D885): after story.route3_open.
   route3: ['Walk Route 3 south. The gate at the far end opens onto Brinewick.', 'Route 3, south gate'],
   brine_depot: ['Rook says the crates went into the white depot on the east pier. Go and look.', 'Brinewick, east pier'],
   brine_crate: ['One crate in the depot hums. It is a cage. Look inside.', 'Brinewick depot', 'Line twelve on the manifest is a cage by the wall. Look before you sign.', 'Brinewick depot'],

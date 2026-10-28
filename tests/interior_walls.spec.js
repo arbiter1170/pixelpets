@@ -254,7 +254,7 @@ const ROOMS = [
   { id: 'sm_yard', skin: 'tunnel', windows: [3, 10], doors: [], jambs: [] },
   { id: 'hm_store', skin: 'house_store', windows: [3, 8], doors: [], jambs: [[5, 9, 'jamb_l'], [7, 9, 'jamb_r']] },
   { id: 'hm_wardrobe', skin: 'house_wardrobe', windows: [2, 9], doors: [], jambs: [[5, 9, 'jamb_l'], [7, 9, 'jamb_r']] },
-  { id: 'hm_diner', skin: 'house_diner', windows: [2, 5, 8], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },  // BRINEWICK (D874): four new skins, each with its own wall row.
+  { id: 'hm_diner', skin: 'house_diner', windows: [2, 5, 8], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },  // BRINEWICK (D887): four new skins, each with its own wall row.
   { id: 'bw_lantern_in', skin: 'bw_lantern', windows: [3, 7], doors: [], jambs: [[4, 8, 'jamb_l'], [6, 8, 'jamb_r']] },
   { id: 'bw_store_in', skin: 'bw_store', windows: [2, 7], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },
   { id: 'bw_hall_in', skin: 'bw_hall', windows: [2, 8], doors: [], jambs: [[4, 12, 'jamb_l'], [6, 12, 'jamb_r']] },
