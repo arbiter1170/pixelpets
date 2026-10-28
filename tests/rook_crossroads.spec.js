@@ -360,7 +360,7 @@ test('D161: Rook has no "About sides" offer and his debug offer says wait; an ol
   expect(loaded.chapter).toBe(2);
   expect(await p2.evaluate(() => PixelPets.rookOffer('glimmer'))).toBe(true);
   await p2.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full && s.mode === 'say'; });
-  expect(await p2.evaluate(() => PixelPets.scene.text)).toBe(await p2.evaluate(() => PixelPets.standingCfg().switch.rook.refused));
+  expect(await p2.evaluate(() => PixelPets.scene.text)).toBe(await p2.evaluate(() => PixelPets.standingCfg().switch.rook.wait));   // D161: the Act 5 lock answers before the per-Seal cooldown
   await p2.evaluate(() => PixelPets.setFlag('story.seal3', true));
   expect(await p2.evaluate(() => PixelPets.standing.chapter)).toBe(3);
   expect(errs).toEqual([]);
