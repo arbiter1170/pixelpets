@@ -360,6 +360,22 @@ const PPSave = (() => {
       if (!isObj(s.floorSeen)) delete s.floorSeen;
       else for (const k of Object.keys(s.floorSeen)) if (!FLOOR_SEEN_IDS.has(k) || s.floorSeen[k] !== 1) delete s.floorSeen[k];
     }
+    // PHONE_APPS D867: optional stepLog { 'YYYY-MM-DD': steps }, newest 7 days. D868: optional chirps { stepId: 0..2 }, newest 5.
+    // Absent stays absent. Junk keys or values are dropped. v stays 2.
+    if (has(s, 'stepLog')) {
+      if (!isObj(s.stepLog)) delete s.stepLog;
+      else {
+        for (const k of Object.keys(s.stepLog)) if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || !fin(s.stepLog[k]) || s.stepLog[k] < 0) delete s.stepLog[k]; else s.stepLog[k] = Math.floor(s.stepLog[k]);
+        const ks = Object.keys(s.stepLog).sort(); while (ks.length > 7) delete s.stepLog[ks.shift()];
+      }
+    }
+    if (has(s, 'chirps')) {
+      if (!isObj(s.chirps)) delete s.chirps;
+      else {
+        for (const k of Object.keys(s.chirps)) if (k.length > 40 || !Number.isInteger(s.chirps[k]) || s.chirps[k] < 0 || s.chirps[k] > 2) delete s.chirps[k];
+        const ks = Object.keys(s.chirps); while (ks.length > 5) delete s.chirps[ks.shift()];
+      }
+    }
     // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
     if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;
     // CARE_LOOP cheap slice: today's player care record { d, steps, finds, stepBond, battleBond, firstCare } (additive; bad -> dropped).
@@ -367,6 +383,7 @@ const PPSave = (() => {
       else {
         for (const k of ['steps', 'finds', 'stepBond', 'battleBond']) s.care[k] = fin(s.care[k]) && s.care[k] >= 0 ? Math.floor(s.care[k]) : 0;
         s.care.firstCare = s.care.firstCare === true;
+        if (has(s.care, 'wildAcorns')) s.care.wildAcorns = fin(s.care.wildAcorns) && s.care.wildAcorns >= 0 ? Math.floor(s.care.wildAcorns) : 0;   // BATTLE_ACORNS D815 (additive; bad -> 0)
         if (has(s.care, 'minigameBond')) s.care.minigameBond = fin(s.care.minigameBond) && s.care.minigameBond >= 0 ? Math.min(3, Math.floor(s.care.minigameBond)) : 0;
         if (has(s.care, 'mg')) {
           if (!isObj(s.care.mg)) delete s.care.mg;

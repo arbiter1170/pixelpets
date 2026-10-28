@@ -695,6 +695,21 @@ const GLYPH = {
     '.kwkkkkk.',
     '.kk......',
   ],
+  // MATCH_MARKER D818 (variant A): the standing "wants a match" balloon. Same 9x12 frame and tail as the emotes above.
+  emote_match: [
+    '.kkkkkkk.',
+    'kyyyyyyyk',
+    'kyyyyyyyk',
+    'kykykykyk',
+    'kyykkkyyk',
+    'kykkkkkyk',
+    'kyykkkyyk',
+    'kykykykyk',
+    'kyyyyyyyk',
+    'kyyyyyyyk',
+    '.kykkkkk.',
+    '.kk......',
+  ],
   heart:['.r.r.','rrrrr','rrrrr','.rrr.','..r..'],
   apple:['..t..','.rrr.','rrrwr','rrrrr','.rrr.'],
   // PARTNER_UI D245. New glyphs. The 5x5 apple above stays the feed particle. The 8x8 star stays the GROW UP mark.
