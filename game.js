@@ -13030,9 +13030,9 @@ function renderFarSky(body, hack){
   add('sky-stir', stir === null ? 'No wild grass here. Step outside to read the sky.'
     : !stir.length ? 'A plain sky. Nothing extra is stirring.'
     : 'The weather is stirring ' + stir.join(' and ') + '.');
-  if (phoneNight()) add('sky-night', hack ? 'Night readings: glow levels rising. Logged.' : 'Glow is rising. Sleeping Walklings send a little up tonight.');
+  if (phoneNight()) add('sky-night', hack ? 'Night readings logged.' : 'Late hours. Let your Walkling sleep.');
   const wet = sky && (sky.kind === 'rain' || sky.kind === 'snow');
-  add('sky-foot', hack ? (wet ? 'Rain on your walk? Soon there is a pause for that. Glimmerwell.' : 'Any sky is brighter with Glimmerwell.')
+  add('sky-foot', hack ? (wet ? 'Rain on your walk. Brighter by nature. Glimmerwell.' : 'Brighter by nature. Glimmerwell.')
     : 'Keepers forecast. Walk kindly.');
 }
 // D862 GLOW (care monitor + Lantern Pass): the partner today, and the Lantern House that wakes you. No penalty, no countdown.
@@ -13054,8 +13054,7 @@ function renderGlowApp(body, hack){
   const town = WORLD[respawnTown()];
   add('phone-sec', 'LANTERN');
   add('glow-lantern', 'You wake at ' + ((town && town.name) || 'Hearthmoor') + "'s Lantern House.");
-  const trusted = PPStanding.tierOf(standingOf('keepers', false)) >= 2;
-  add('glow-bed', hack ? 'Doorway only. They still heal you.' : trusted ? 'A bed is held for you.' : 'Beds are open to every holder.');
+  add('glow-bed', hack ? 'Beds open to all. Rest restores your units.' : 'Beds are open to every holder.');   // rule 10: every Lantern House has beds
   renderFootpath(body, add, hack);
 }
 /* ---------- phone apps, part 2 (Vincent, Oct 28, 2026; D864-D869). Placeholder copy, D863. ---------- */
@@ -13090,7 +13089,7 @@ function renderJobsApp(body, hack, add){
   const shelf = document.createElement('button'); shelf.type = 'button'; shelf.className = 'btn phone-shelf'; shelf.textContent = 'OPEN THE SHELF';
   shelf.addEventListener('click', openBotnetShelf);
   body.appendChild(shelf);
-  add('BOTNET', 'Augment slot: empty. The leak is not a menu.');
+  add('BOTNET', 'The leak is not a menu.');
 }
 // D865 Census leak (cracked handset only): Route 2's count while the Comfort Lamps burn; dead air once the glen is cleared.
 function renderCensusLeak(body, add){
