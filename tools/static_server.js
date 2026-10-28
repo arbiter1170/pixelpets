@@ -31,8 +31,10 @@ function handler(req, res) {
   });
 }
 
-// Resolves { server, port, urls } once listening. Port 0 picks a free one.
-function start({ port = 8080, host = '127.0.0.1' } = {}) {
+// Resolves { server, port, urls } once listening. Port 0 picks a free one. With `fallback`, a port that is already in use
+// (another dev server on 8080, say) or that Windows keeps back (EACCES: WSL and Hyper-V reserve ranges) falls back to a free
+// one instead of failing; `moved` says it happened.
+function listen(port, host) {
   return new Promise((resolve, reject) => {
     const server = http.createServer(handler);
     server.once('error', reject);
@@ -41,6 +43,16 @@ function start({ port = 8080, host = '127.0.0.1' } = {}) {
       resolve({ server, port: p, urls: urlsFor(host, p) });
     });
   });
+}
+async function start({ port = 8080, host = '127.0.0.1', fallback = false } = {}) {
+  try {
+    return await listen(port, host);
+  } catch (e) {
+    if (!(fallback && e && (e.code === 'EADDRINUSE' || e.code === 'EACCES'))) throw e;
+    const s = await listen(0, host);
+    s.moved = port;
+    return s;
+  }
 }
 
 // What to type into a phone on the same Wi-Fi: every non-loopback IPv4 address of this computer.
