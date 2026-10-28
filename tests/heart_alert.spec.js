@@ -41,11 +41,14 @@ async function face(page) {
     const at = (x, y) => { const i = (y * 44 + x) * 4; return d[i] + ',' + d[i + 1] + ',' + d[i + 2]; };
     const cs = getComputedStyle(b);
     const h = b.getBoundingClientRect(), paw = document.querySelector('#colFloat').getBoundingClientRect(), strip = document.querySelector('#petStrip').getBoundingClientRect();
+    // HEART_ALERT §6: the 2 px ring keeps >= 4 px from the paw and the partner card. In the Modern dock (D780, #199/#200)
+    // the card is the full-width row under the heart, so its gap is measured down, not to the left.
+    const stripBelow = strip.top >= h.bottom - 0.5;
     return {
       cls: b.className, label: b.getAttribute('aria-label'), live: document.querySelector('#careAlert').textContent,
       care: PixelPets.care(), anim: cs.animationName, dur: cs.animationDuration, shadow: cs.boxShadow, play: cs.animationPlayState,
       food: at(32, 6), restTop: at(32, 2), restBot: at(32, 28),
-      gapPaw: paw.left - (h.right + 2), gapStrip: (h.left - 2) - strip.right, w: h.width, h: h.height,
+      gapPaw: paw.left - (h.right + 2), gapStrip: stripBelow ? strip.top - (h.bottom + 2) : (h.left - 2) - strip.right, w: h.width, h: h.height,
       hunger: PixelPets.state.party[0].hunger, energy: PixelPets.state.party[0].energy, v: PixelPets.state.v,
       toast: document.querySelector('#toast').textContent,
     };

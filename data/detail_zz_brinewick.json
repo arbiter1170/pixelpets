@@ -1027,8 +1027,8 @@
         {
           "kind": "wild",
           "id": "brine_drizzlet",
-          "x": 8,
-          "y": 3,
+          "x": 7,
+          "y": 5,
           "form": "tide/0",
           "level": 22,
           "faded": 3,
@@ -1045,7 +1045,7 @@
         {
           "kind": "prop",
           "id": "bw_plant",
-          "x": 3,
+          "x": 7,
           "y": 8,
           "sprite": "lab_planter",
           "lines": {
@@ -1057,40 +1057,28 @@
           "id": "bw_cr_1_4",
           "x": 1,
           "y": 4,
-          "sprite": "depot_crate",
-          "lines": {
-            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
-          }
+          "sprite": "depot_crate"
         },
         {
           "kind": "prop",
           "id": "bw_cr_1_5",
           "x": 1,
           "y": 5,
-          "sprite": "depot_crate",
-          "lines": {
-            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
-          }
+          "sprite": "depot_crate"
         },
         {
           "kind": "prop",
           "id": "bw_cr_1_6",
           "x": 1,
           "y": 6,
-          "sprite": "depot_crate",
-          "lines": {
-            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
-          }
+          "sprite": "depot_crate"
         },
         {
           "kind": "prop",
           "id": "bw_cr_1_7",
           "x": 1,
           "y": 7,
-          "sprite": "depot_crate",
-          "lines": {
-            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
-          }
+          "sprite": "depot_crate"
         },
         {
           "kind": "prop",
@@ -1177,40 +1165,28 @@
           "id": "bw_cr_10_4",
           "x": 10,
           "y": 4,
-          "sprite": "depot_crate",
-          "lines": {
-            "else": "A sealed crate. The label says LAMP STOCK."
-          }
+          "sprite": "depot_crate"
         },
         {
           "kind": "prop",
           "id": "bw_cr_10_5",
           "x": 10,
           "y": 5,
-          "sprite": "depot_crate",
-          "lines": {
-            "else": "A sealed crate. The label says LAMP STOCK."
-          }
+          "sprite": "depot_crate"
         },
         {
           "kind": "prop",
           "id": "bw_cr_10_6",
           "x": 10,
           "y": 6,
-          "sprite": "depot_crate",
-          "lines": {
-            "else": "A sealed crate. The label says LAMP STOCK."
-          }
+          "sprite": "depot_crate"
         },
         {
           "kind": "prop",
           "id": "bw_cr_10_7",
           "x": 10,
           "y": 7,
-          "sprite": "depot_crate",
-          "lines": {
-            "else": "A sealed crate. The label says LAMP STOCK."
-          }
+          "sprite": "depot_crate"
         }
       ],
       "music": "lab",

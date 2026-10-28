@@ -88,7 +88,7 @@ test('the debug panel is not in the player DOM; it appears only in a debug sessi
   expect(await page.evaluate(() => document.querySelector('#dbgTag').hidden)).toBe(true);
 });
 
-test('modern walk acorn chip: badge row, y 6, 44 tall, left of the gear, read-only, badge clamps first, hides with the badge', async ({ page }) => {
+test('modern walk acorn chip: badge row in the dock, 44 tall, left of the gear, read-only, badge clamps first, hides with the badge', async ({ page }) => {
   const s = starterSave(); s.money = 99999; s.settings.controls = 'modern';
   s.world = { map: 'hearthmoor', x: 8, y: 8, facing: 'down', respawn: 'hearthmoor' };
   await boot(page, s, '?debug=1');
@@ -98,7 +98,8 @@ test('modern walk acorn chip: badge row, y 6, 44 tall, left of the gear, read-on
   await page.waitForTimeout(300);
   const vw = page.viewportSize().width;
   const c = await rect(page, '#fcAcorns'), gear = await rect(page, '#gearFloat'), env = await rect(page, '#thChip');
-  expect(Math.round(c.y)).toBe(6); expect(Math.round(c.height)).toBe(44);
+  // Modern portrait walk docks the badge row (MODERN_HUD_CLEAR D789, #199): Acorns share the dock's top row with the place chip.
+  expect(Math.round(c.y)).toBe(Math.round(env.y)); expect(Math.round(c.height)).toBe(44);
   expect(c.right).toBeLessThanOrEqual(gear.x + 0.5); expect(gear.x - c.right).toBeLessThanOrEqual(8);   // immediately left of the gear
   expect(c.right).toBeLessThanOrEqual(vw);
   expect(boxesOverlap(c, env)).toBe(false);
@@ -116,8 +117,10 @@ test('modern walk acorn chip: badge row, y 6, 44 tall, left of the gear, read-on
   // dialog: fades with the badge
   await page.evaluate(() => PixelPets.runScene('phone_grant'));
   await page.waitForTimeout(400);
-  const op = await page.evaluate(() => [getComputedStyle(document.querySelector('#fcAcorns')).opacity, getComputedStyle(document.querySelector('#fcTop')).opacity]);
-  expect(op).toEqual(['0', '0']);
+  // Under the dock a scene hides the dock with visibility, not opacity, so the gear can stay tappable
+  // (Modern by default, build 20261027-1104): Acorns and the place chip hide together.
+  const op = await page.evaluate(() => [getComputedStyle(document.querySelector('#fcAcorns')).visibility, getComputedStyle(document.querySelector('#thChip')).visibility, getComputedStyle(document.querySelector('#fcTop')).opacity]);
+  expect(op).toEqual(['hidden', 'hidden', '0']);
 });
 
 test('modern walk acorn chip hides in battle like the badge', async ({ page }) => {

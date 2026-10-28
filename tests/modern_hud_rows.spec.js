@@ -10,6 +10,9 @@ function save(mode) {
   const s = starterSave();
   s.settings.controls = mode;
   s.settings.follower = false;
+  // phone_got with tips on queues the PHONE unlock tip, which opens after 600 ms of calm walk (unlockCalm); with the dock
+  // its card sits above the dock over the map's bottom rows, so a slow stand caught it. A tip card is a modal, not HUD.
+  s.settings.tips = false;
   s.flags['story.phone_got'] = true;
   return s;
 }

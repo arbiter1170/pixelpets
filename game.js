@@ -996,7 +996,7 @@ function toastMeasureEl(){
   return el;
 }
 // D782: pages of two 14 px lines. Sentence end when the rest fits one page; a mid-sentence cut ends in " ...".
-function mhcNoticeBox(){
+function mhcNoticeBox(wide){
   const tray = document.body.classList.contains('ct-open') ? $('#careTray') : null;
   if (tray && !tray.hidden) {
     const r = tray.getBoundingClientRect();
@@ -1005,10 +1005,21 @@ function mhcNoticeBox(){
   const chip = $('#thChip'), slot = $('#fcDockChip');
   if (!chip || !slot) return null;
   const c = chip.getBoundingClientRect(), s = slot.getBoundingClientRect();
+  if (s.height < 20) return null;
+  // wide: D782's slot, the chip's whole room (136 / 191 / 206 px), covering the chip for the toast's life.
+  // Otherwise beside the chip, so the hour stays in view (#200), when there is room for it there.
   const left = Math.round(c.right + 4);
   const width = Math.round(s.right - left);
-  if (width < 36 || s.height < 20) return null;
+  if (wide || width < 36) return { left: Math.round(s.left), top: Math.round(s.top), width: Math.round(s.width), height: Math.round(s.height) };
   return { left: left, top: Math.round(s.top), width: width, height: Math.round(s.height) };
+}
+// Beside the chip when the line fits there as one page; at 320 the room beside the chip is about 65 px, too narrow for
+// short toasts D782 measures as one page ("Found 3 Hearty Snacks!", "Can't get there from here."), so those use the
+// chip's whole slot instead of paging with " ...".
+function mhcNoticeWide(text){
+  const narrow = mhcNoticeBox(false), wide = mhcNoticeBox(true);
+  if (!narrow || !wide || wide.width <= narrow.width) return false;
+  return mhcPages(text, narrow.width).length > mhcPages(text, wide.width).length;
 }
 function applyNoticeBox(el, box){
   if (!el) return;
@@ -1026,9 +1037,14 @@ function applyNoticeBox(el, box){
   el.style.transform = 'none';
   el.style.pointerEvents = 'none';
 }
+let mhcToastWide = false;
 function paginateMhcToast(text){
-  const box = mhcNoticeBox();
-  const w = Math.max(48, box ? box.width : 120);
+  mhcToastWide = mhcNoticeWide(text);
+  const box = mhcNoticeBox(mhcToastWide);
+  return mhcPages(text, box ? box.width : 120);
+}
+function mhcPages(text, bw){
+  const w = Math.max(48, bw);
   const el = toastMeasureEl();
   el.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;box-sizing:border-box;font:bold 13px/16px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif') + ';letter-spacing:.5px;padding:4px 6px;width:' + w + 'px;white-space:normal;';
   const maxLines = 2, lh = 16;
@@ -1052,7 +1068,7 @@ function placeMhcToast(){
   const t = $('#toast');
   if (!t) return;
   if (!mhcToastOn() || !t.classList.contains('show')) { applyNoticeBox(t, null); return; }
-  applyNoticeBox(t, mhcNoticeBox());
+  applyNoticeBox(t, mhcNoticeBox(mhcToastWide));
 }
 function showToastNow(msg){
   const t = $('#toast'); if (!t) return;
@@ -8224,7 +8240,7 @@ function showBumpHint(o){
 function placeMhcBump(){
   const el = $('#bumpHint');
   if (!el || el.hidden || !mhcToastOn()) return;
-  applyNoticeBox(el, mhcNoticeBox());
+  applyNoticeBox(el, mhcNoticeBox(mhcNoticeWide(el.textContent)));
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };
