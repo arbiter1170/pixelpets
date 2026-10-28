@@ -64,7 +64,7 @@
         "hall": {
           "x0": 2,
           "y0": 8,
-          "x1": 8,
+          "x1": 7,
           "y1": 9,
           "roof": "roof_board_t",
           "wall": "wall_piles",
@@ -99,8 +99,8 @@
         "TgfgggggPPPPPPPggggggRRRRRRRRggT",
         "TgRRRRRRPPPPPPPggggggRRRRRRRRggT",
         "TgRRRRRRPPPPPPPggggggHHHHHHHHfgT",
-        "TgHHHHHHHggpgggggggggHHHHHHHHggT",
-        "TgHHHHHHHggppppppppppPPPPPPPPggT",
+        "TgHHHHHHgggpgggggggggHHHHHHHHggT",
+        "TgHHHHHHgggppppppppppPPPPPPPPggT",
         "TggggpppppppgggggggggPPPPPPPPggT",
         "TsssspssssspsssssssssssspssssssT",
         "TQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQT",
@@ -492,11 +492,11 @@
         "###########",
         "#WWWWWWWWW#",
         "#uvuvuvuvu#",
-        "#.........#",
         "#....=....#",
         "#....=....#",
         "#....=....#",
-        "#.........#",
+        "#....=....#",
+        "#....=....#",
         "#####m#####"
       ],
       "objs": [
@@ -930,10 +930,10 @@
         "#WWWWWWWWWW#",
         "#uvuvuvuvuv#",
         "#..........#",
-        "#..........#",
-        "#..........#",
-        "#..........#",
-        "#..........#",
+        "#..q....q..#",
+        "#..q....q..#",
+        "#..q....q..#",
+        "#..q....q..#",
         "#..........#",
         "#####m######"
       ],
@@ -1050,7 +1050,7 @@
           "id": "bw_cr_1_4",
           "x": 1,
           "y": 4,
-          "sprite": "rc_crate",
+          "sprite": "depot_crate",
           "lines": {
             "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
           }
@@ -1060,7 +1060,7 @@
           "id": "bw_cr_1_5",
           "x": 1,
           "y": 5,
-          "sprite": "rc_crate",
+          "sprite": "depot_crate",
           "lines": {
             "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
           }
@@ -1070,7 +1070,7 @@
           "id": "bw_cr_1_6",
           "x": 1,
           "y": 6,
-          "sprite": "rc_crate",
+          "sprite": "depot_crate",
           "lines": {
             "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
           }
@@ -1080,7 +1080,7 @@
           "id": "bw_cr_1_7",
           "x": 1,
           "y": 7,
-          "sprite": "rc_crate",
+          "sprite": "depot_crate",
           "lines": {
             "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
           }
@@ -1090,7 +1090,7 @@
           "id": "bw_cr_2_4",
           "x": 2,
           "y": 4,
-          "sprite": "rc_crate",
+          "sprite": "depot_crate",
           "lines": {
             "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
           }
@@ -1100,7 +1100,7 @@
           "id": "bw_cr_2_5",
           "x": 2,
           "y": 5,
-          "sprite": "rc_crate",
+          "sprite": "depot_crate",
           "lines": {
             "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
           }
@@ -1110,7 +1110,7 @@
           "id": "bw_cr_2_6",
           "x": 2,
           "y": 6,
-          "sprite": "rc_crate",
+          "sprite": "depot_crate",
           "lines": {
             "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
           }
@@ -1120,7 +1120,7 @@
           "id": "bw_cr_2_7",
           "x": 2,
           "y": 7,
-          "sprite": "rc_crate",
+          "sprite": "depot_crate",
           "lines": {
             "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
           }
@@ -1130,9 +1130,9 @@
           "id": "bw_cr_9_4",
           "x": 9,
           "y": 4,
-          "sprite": "loan_crate",
+          "sprite": "depot_crate",
           "lines": {
-            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+            "else": "A sealed crate. The label says LAMP STOCK."
           }
         },
         {
@@ -1140,9 +1140,9 @@
           "id": "bw_cr_9_5",
           "x": 9,
           "y": 5,
-          "sprite": "loan_crate",
+          "sprite": "depot_crate",
           "lines": {
-            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+            "else": "A sealed crate. The label says LAMP STOCK."
           }
         },
         {
@@ -1150,9 +1150,9 @@
           "id": "bw_cr_9_6",
           "x": 9,
           "y": 6,
-          "sprite": "loan_crate",
+          "sprite": "depot_crate",
           "lines": {
-            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+            "else": "A sealed crate. The label says LAMP STOCK."
           }
         },
         {
@@ -1160,9 +1160,9 @@
           "id": "bw_cr_9_7",
           "x": 9,
           "y": 7,
-          "sprite": "loan_crate",
+          "sprite": "depot_crate",
           "lines": {
-            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+            "else": "A sealed crate. The label says LAMP STOCK."
           }
         },
         {
@@ -1170,9 +1170,9 @@
           "id": "bw_cr_10_4",
           "x": 10,
           "y": 4,
-          "sprite": "loan_crate",
+          "sprite": "depot_crate",
           "lines": {
-            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+            "else": "A sealed crate. The label says LAMP STOCK."
           }
         },
         {
@@ -1180,9 +1180,9 @@
           "id": "bw_cr_10_5",
           "x": 10,
           "y": 5,
-          "sprite": "loan_crate",
+          "sprite": "depot_crate",
           "lines": {
-            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+            "else": "A sealed crate. The label says LAMP STOCK."
           }
         },
         {
@@ -1190,9 +1190,9 @@
           "id": "bw_cr_10_6",
           "x": 10,
           "y": 6,
-          "sprite": "loan_crate",
+          "sprite": "depot_crate",
           "lines": {
-            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+            "else": "A sealed crate. The label says LAMP STOCK."
           }
         },
         {
@@ -1200,9 +1200,9 @@
           "id": "bw_cr_10_7",
           "x": 10,
           "y": 7,
-          "sprite": "loan_crate",
+          "sprite": "depot_crate",
           "lines": {
-            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+            "else": "A sealed crate. The label says LAMP STOCK."
           }
         }
       ],

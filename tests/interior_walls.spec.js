@@ -157,7 +157,7 @@ test('Your Home draws the wall kit, and rooms without it keep their tiles', asyn
   expect(report.keys.slice().sort()).toEqual(PAL_KEYS.slice().sort());
   expect(report.wall).toEqual(HOME_WALL);
   expect(report.opted).toContain('house_home');
-  expect(report.opted.length).toBe(37);
+  expect(report.opted.length).toBe(41);   // 37 + the four BRINEWICK rooms
   expect(report.lists).toEqual({ home: [2, 6], up: [3, 5] });
   expect(report.parts).toEqual([
     'house_home__cap_n', 'house_home__cap_ne', 'house_home__cap_nw', 'house_home__cap_s', 'house_home__cap_se', 'house_home__cap_sw',
@@ -254,7 +254,11 @@ const ROOMS = [
   { id: 'sm_yard', skin: 'tunnel', windows: [3, 10], doors: [], jambs: [] },
   { id: 'hm_store', skin: 'house_store', windows: [3, 8], doors: [], jambs: [[5, 9, 'jamb_l'], [7, 9, 'jamb_r']] },
   { id: 'hm_wardrobe', skin: 'house_wardrobe', windows: [2, 9], doors: [], jambs: [[5, 9, 'jamb_l'], [7, 9, 'jamb_r']] },
-  { id: 'hm_diner', skin: 'house_diner', windows: [2, 5, 8], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },
+  { id: 'hm_diner', skin: 'house_diner', windows: [2, 5, 8], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },  // BRINEWICK (D874): four new skins, each with its own wall row.
+  { id: 'bw_lantern_in', skin: 'bw_lantern', windows: [3, 7], doors: [], jambs: [[4, 8, 'jamb_l'], [6, 8, 'jamb_r']] },
+  { id: 'bw_store_in', skin: 'bw_store', windows: [2, 7], doors: [], jambs: [[4, 7, 'jamb_l'], [6, 7, 'jamb_r']] },
+  { id: 'bw_hall_in', skin: 'bw_hall', windows: [2, 8], doors: [], jambs: [[4, 12, 'jamb_l'], [6, 12, 'jamb_r']] },
+  { id: 'bw_depot_in', skin: 'bw_depot', windows: [3, 8], doors: [], jambs: [[4, 9, 'jamb_l'], [6, 9, 'jamb_r']] },
 ];
 
 test('every interior uses its own wall row, windows, doors and jambs @w1', async ({ page }) => {
@@ -348,7 +352,7 @@ test('every interior uses its own wall row, windows, doors and jambs @w1', async
   }, ROOMS);
 
   expect(report.v).toBe(2);
-  expect(report.n).toBe(43);
+  expect(report.n).toBe(47);   // 43 + the four BRINEWICK rooms
   expect(report.problems).toEqual([]);
   expect(report.cap).toEqual([]);
   for (const row of report.shares) expect(row.share, row.id + ' ' + row.tile).toBeLessThanOrEqual(0.7);
