@@ -40,13 +40,15 @@ test('the phone home is icons, contacts are people you have met, and the bag ope
     { app: 'jobs', label: 'KEEPERUAV' },
     { app: 'ribbit', label: 'RIBBIT' },
     { app: 'board', label: 'BOARD' },
+    { app: 'sky', label: 'SKY' },     // D861
+    { app: 'glow', label: 'GLOW' },   // D862
   ]);
   await expect(page.locator('#phoneHome')).not.toContainText(/journal/i);
   const painted = await page.evaluate(() => [...document.querySelectorAll('#phoneHome .phone-glyph canvas')].map((c) => {
     const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
     return d.some((v, i) => i % 4 === 3 && v > 0);
   }));
-  expect(painted).toEqual([true, true, true, true, true, true, true]);
+  expect(painted).toEqual([true, true, true, true, true, true, true, true, true]);
   const fit = await page.evaluate(() => {
     const shell = document.querySelector('#ovPhone .phone-shell');
     const home = document.querySelector('#phoneHome');
