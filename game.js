@@ -2101,13 +2101,18 @@ function tutClearHit(){
 function tutPlace(){
   const mode = tut.on ? 'tut' : (unlock.on ? 'unlock' : null);
   if (!mode) return;
-  const holes = mode === 'tut' ? tut.holes : unlock.holes, hi = mode === 'tut' ? tut.hi : 0;
-  const h = holes.length ? holes[hi % holes.length] : null;
+  // Every target is lit at once and the card anchors on the first. It never cycles: a card that hopped between
+  // targets every 600 ms flashed up and down and was hard to read and to tap (Vincent, Oct 28, 2026).
+  const holes = mode === 'tut' ? tut.holes : unlock.holes;
+  const h = holes.length ? holes[0] : null;
+  const extra = mode === 'tut' && h ? holes.slice(1) : [];
+  tutExtraRings(extra);
   const dims = ['#tutD1', '#tutD2', '#tutD3', '#tutD4'].map(s => $(s));
   const ring = $('#tutRing'), block = $('#tutBlock');
   const vw = window.innerWidth, vh = window.innerHeight;
   const trayEl = $('#careTray');
   const closePass = (tut.on && tut.lesson === 'care' && !tut.soft && trayEl && !trayEl.hidden) ? tutBox($('#ctClose')) : null;
+  const closeHole = h && closePass && (Math.abs(closePass.x - h.x) > 4 || Math.abs(closePass.y - h.y) > 4) ? closePass : null;
   if (tut.on && tut.soft) {
     dims.forEach(d => { if (d) d.style.cssText = 'display:none'; });
     block.hidden = true;
@@ -2121,10 +2126,10 @@ function tutPlace(){
     dims[0].style.cssText = 'left:0;top:0;width:100%;height:100%';
     for (let i = 1; i < 4; i++) dims[i].style.cssText = 'display:none';
     ring.hidden = true; block.hidden = true;
-  } else if (h && closePass && (Math.abs(closePass.x - h.x) > 4 || Math.abs(closePass.y - h.y) > 4)) {
-    // One dim with two holes: the lesson target, and CLOSE, so the tray can shut mid-step.
+  } else if (h && (extra.length || closeHole)) {
+    // One dim with several holes: every lesson target, and CLOSE, so the tray can shut mid-step.
     let d = 'M0 0H' + vw + 'V' + vh + 'H0Z';
-    [h, closePass].forEach(r => {
+    [h].concat(extra, closeHole ? [closeHole] : []).forEach(r => {
       const x = Math.max(0, Math.round(r.x)), y = Math.max(0, Math.round(r.y));
       d += 'M' + x + ' ' + y + 'H' + (x + Math.round(r.w)) + 'V' + (y + Math.round(r.h)) + 'H' + x + 'Z';
     });
@@ -2199,6 +2204,20 @@ function tutPlace(){
   left = clear.left; top = clear.top;
   card.style.left = left + 'px'; card.style.top = top + 'px';
 }
+// Steady rings on the second and later targets of a step. #tutRing stays on the first.
+function tutExtraRings(list){
+  const layer = $('#tutLayer'); if (!layer) return;
+  const have = layer.querySelectorAll('.tut-ring-x');
+  for (let i = have.length; i < list.length; i++) {
+    const r = document.createElement('div'); r.className = 'tut-ring tut-ring-x'; r.hidden = true;
+    layer.insertBefore(r, $('#tutCard'));
+  }
+  layer.querySelectorAll('.tut-ring-x').forEach((r, i) => {
+    const b = list[i];
+    r.hidden = !b;
+    if (b) { r.style.left = (b.x - 6) + 'px'; r.style.top = (b.y - 6) + 'px'; r.style.width = (b.w + 12) + 'px'; r.style.height = (b.h + 12) + 'px'; }
+  });
+}
 function tutClearChip(left, top, cw, ch){
   const chip = $('#thChip');
   if (!chip || !chip.offsetParent) return { left, top };
@@ -2208,7 +2227,7 @@ function tutClearChip(left, top, cw, ch){
   // Keep a clearance the card already has. A nudge below the chip must not cover the lesson target or the partner panel.
   const guards = [];
   const keep = (rect, pad) => { if (rect && rect.width > 2 && rect.height > 2 && !hitRect(left, top, rect, pad)) guards.push({ rect, pad }); };
-  const hole = tut.on && tut.holes && tut.holes.length ? tut.holes[tut.hi % tut.holes.length] : (unlock.on && unlock.holes && unlock.holes.length ? unlock.holes[0] : null);
+  const hole = tut.on && tut.holes && tut.holes.length ? tut.holes[0] : (unlock.on && unlock.holes && unlock.holes.length ? unlock.holes[0] : null);
   if (hole) keep({ left: hole.x, top: hole.y, right: hole.x + hole.w, bottom: hole.y + hole.h, width: hole.w, height: hole.h }, 4);
   ['.bt-me', '#btMsg', '#btFoeType', '#btMeType', '#talkBtn'].forEach(sel => {
     const el = $(sel); if (!el || el.hidden) return; keep(el.getBoundingClientRect(), sel === '.bt-me' ? 4 : 0);
@@ -2255,7 +2274,6 @@ function tutShow(id){
   const card = $('#tutCard'); card.hidden = false;
   tut.holes = tut.key ? tutTargets(tut.key) : []; tut.hi = 0;
   clearInterval(tut.cycle); tut.cycle = 0;
-  if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
   tutPlace();
   const focus = acts.querySelector('button') || tut.hit;   // never park focus on SKIP TOUR: on tap steps it looked like the main button
   if (focus) focus.focus({ preventScroll: true });
@@ -2467,7 +2485,6 @@ function lessonCard(o){
   const card = $('#tutCard'); if (card) card.hidden = false;
   const unlockCard = $('#unlockCard'); if (unlockCard) unlockCard.hidden = true;
   clearInterval(tut.cycle); tut.cycle = 0;
-  if (tut.holes.length > 1) tut.cycle = setInterval(() => { if (!tut.on) return; tut.hi++; tutPlace(); }, 600);
   tutPlace();
   const focus = acts && acts.querySelector('button'); if (focus) focus.focus({ preventScroll: true });
 }
@@ -12247,10 +12264,39 @@ function drawRoomLayer(g, R, L, p, fog, blink){
   const sel = mapUI.pick;
   if (sel) whiteBrackets(R, sel.x * p + p / 2, sel.y * p + p / 2, Math.max(p, 14));
 }
+// Named open spaces on a TOWN layer (Vincent, Oct 28, 2026: the map was missing place names). `at` is one tile of the area; the
+// label covers the run of that tile kind around it. Names come from the game's own data, never invented here:
+// Lanternball Court is the place in data/detail_lizzy.json (and CLOCK_PLACE).
+const TOWN_AREAS = {
+  hearthmoor: [{ at: [16, 31], label: 'LANTERNBALL COURT' }],
+};
+function townAreaRect(grid, at){
+  const ch = grid[at[1]] && grid[at[1]][at[0]]; if (!ch) return null;
+  const seen = new Set(), st = [at];
+  let x0 = at[0], y0 = at[1], x1 = at[0], y1 = at[1];
+  while (st.length) {
+    const [x, y] = st.pop(), k = x + ',' + y;
+    if (seen.has(k) || !grid[y] || grid[y][x] !== ch) continue;
+    seen.add(k); x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
+    st.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+  }
+  return [x0, y0, x1, y1];
+}
+// A name too wide for one line breaks at the space that gives the most even two lines that both fit. Null when none does.
+function townWrapTwo(g, s, room){
+  const words = String(s).split(' ');
+  let best = null, bestW = Infinity;
+  for (let i = 1; i < words.length; i++) {
+    const a = words.slice(0, i).join(' '), b = words.slice(i).join(' ');
+    const w = Math.max(g.measureText(a).width, g.measureText(b).width);
+    if (w <= room && w < bestW) { best = [a, b]; bestW = w; }
+  }
+  return best;
+}
 function drawTownLayer(g, R, box, L, p, blink){
   const grid = L.grid, W = L.w * p, H = L.h * p;
   const rings = layerRingBoxes(L, p);
-  mapLayerMarks = { rings, labels: [] };
+  mapLayerMarks = { rings, labels: [], names: [] };
   for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) {
     const ch = grid[y][x];
     R(x * p, y * p, p, p, (ch === 'R' || ch === 'H') ? 'B' : (ML_TOWN[ch] || 'g'));
@@ -12271,9 +12317,19 @@ function drawTownLayer(g, R, box, L, p, blink){
       const cx = (x0 + x1 + 1) * p / 2, cy = (y0 + y1 + 1) * p / 2;
       const sz = p >= 10 ? 13 : 12;
       mapFont(g, sz);
-      if (g.measureText(b.label).width <= bw + 2 * p) labels.push([cx, cy, b.label, sz, ent]);
-      else { const n = pins.length + 1; pins.push({ n, label: b.label }); labels.push([cx, cy, String(n), 12, ent]); }
+      const room = bw + 2 * p, two = g.measureText(b.label).width <= room ? null : townWrapTwo(g, b.label, room);
+      if (!two && g.measureText(b.label).width <= room) labels.push([cx, cy, b.label, sz, ent]);
+      else if (two) { labels.push([cx, cy - (sz + 2) / 2, two[0], sz, ent]); labels.push([cx, cy + (sz + 2) / 2, two[1], sz, ent]); }
+      else { const n = pins.length + 1; pins.push({ n, label: b.label }); labels.push([cx, cy, String(n), 12, ent]); }   // D264: a pin only when two lines fail too
     }
+  });
+  (TOWN_AREAS[L.id] || []).forEach(a => {
+    const r = townAreaRect(grid, a.at); if (!r) return;
+    const cx = (r[0] + r[2] + 1) * p / 2, cy = (r[1] + r[3] + 1) * p / 2, room = (r[2] - r[0] + 1) * p, sz = p >= 10 ? 13 : 12;
+    mapFont(g, sz);
+    if (g.measureText(a.label).width <= room) { labels.push([cx, cy, a.label, sz, true]); return; }
+    const two = townWrapTwo(g, a.label, room);
+    if (two) { labels.push([cx, cy - (sz + 2) / 2, two[0], sz, true]); labels.push([cx, cy + (sz + 2) / 2, two[1], sz, true]); }
   });
   const stalls = TOWN_STALL_ART[L.id];
   if (stalls && WORLD[L.id]) {
@@ -12296,7 +12352,7 @@ function drawTownLayer(g, R, box, L, p, blink){
     else { R(X - a, Y - a / 2, a * 2, a, 'g'); box(X - a, Y - a / 2, a * 2, a, 'k'); ay = Y > H * 0.8 ? Y - a - 3 : Y + a + 3; }
     placePlate(g, ax, ay, lab, 12, 'w', align, rings, W, H, e.edge);
   });
-  labels.forEach(([cx, cy, s, sz, ent]) => plateText(g, cx, cy, s, sz, ent ? 'w' : 'h', 'center'));
+  labels.forEach(([cx, cy, s, sz, ent]) => { plateText(g, cx, cy, s, sz, ent ? 'w' : 'h', 'center'); mapLayerMarks.names.push(s); });
   paintPins(pins);
   const q = objectiveOn(L.id, questCurrent()), side = objectiveOn(L.id, sideQuest()), you = youOnLayer();
   if (q && blink) ringBox(R, q.x * p + p / 2, q.y * p + p / 2, Math.max(p, 10), 'r');
@@ -12386,6 +12442,7 @@ function mapLayerSnap(){
     backdrop: regionBackdropOn(),
     rings: (mapLayerMarks.rings || []).map(r => ({ kind: r.kind, x: r.x, y: r.y, w: r.w, h: r.h })),
     labels: (mapLayerMarks.labels || []).map(l => ({ text: l.text, x: l.x, y: l.y, w: l.w, h: l.h, edge: l.edge || null })),
+    names: (mapLayerMarks.names || []).slice(),
     ways: L && L.ways ? L.ways.map(w => ({ tag: w.tag, x: w.x, y: w.y, kind: w.kind, to: w.to })) : [],
     openings: L && L.openings ? L.openings.length : 0,
     sections: L && L.sections ? L.sections.filter(s => s.label).map(s => s.label) : [],
