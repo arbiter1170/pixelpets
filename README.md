@@ -359,7 +359,7 @@ the Glimmerwell depot on the east pier a Glimmer Cell crate holds a Faded Drizzl
 manifest (+3 glimmer) or opens it anyway (-5 glimmer). Either way the Drizzlet can join. Dorian Pell battles you on the quay (his first
 battle). Then Master Marisol's Trial Hall opens on the west pier: two tide gauges teach turn order (higher SPD acts first) and the
 win gives the Brinewick Seal. On the Glimmer path Associate Quinn closes the quarter for the Bright Tier 3 Lanyard and Marisol's match
-is optional. Seal 3 lifts the level cap to 38. Stepping out of the Hall plays the Episode 1 card. Lines are placeholder copy (D886).
+is optional. Seal 3 lifts the level cap to 38. Stepping out of the Hall plays the Episode 1 card. Lines are placeholder copy (D890).
 
 Location and privacy: on the first visit to Walk a card asks "Use your location so local creatures
 appear? ..." with Allow / Not now. The tap that closes the line before that card does not press
