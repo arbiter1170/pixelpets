@@ -51,6 +51,33 @@ Waiting on state, not on time. A few traps that made tests flaky:
 - Pin `PixelPets.battle.rng` when a test needs a move to land. Moves under 100 accuracy miss sometimes.
 - The first autosave (5 s after boot) rewrites the seeded save with the game's full key set. Take a save baseline after that write.
 
+## iPhone emulation (WebKit)
+
+Everything above runs on Chromium. A phone plays this game in Safari, which is WebKit, so there is an opt-in lane that runs the same game and specs on Playwright's WebKit with an iPhone profile (viewport, pixel ratio, touch, user agent). It needs no extra packages and no Python (`tools/static_server.js` serves the folder).
+
+```
+npx playwright install webkit             # once. Linux also needs: npx playwright install-deps webkit
+npm run iphone                            # a window that is the phone: iPhone 14 as Safari shows it (toolbars up), debug on
+npm run iphone -- --device "iPhone 16 Pro" --full     # another phone, whole screen (a home-screen web app)
+npm run iphone -- --list                  # every phone profile
+npm run iphone -- --lan                   # also serve to a real iPhone on the same Wi-Fi; prints the address to type in Safari
+npm run iphone -- --url https://arbiter1170.github.io/pixelpets/    # the live site instead of this folder
+npm run iphone -- --headless --selftap --shot a.png   # no window: load, print the build, send one tap, print the events, take a picture
+npm run test:iphone -- tests/shop_dock.spec.js --project=iphone-14-safari    # the specs, one phone
+npm run test:iphone                       # every spec, eight phone sizes (slow: run one spec or one project when you can)
+```
+
+`npm run iphone` prints every pointer, touch and click event with its id and timestamp (`--no-input-log` turns that off), which is the quickest way to see what the page is really being given. `--trace t.zip` records a Playwright trace to open with `npx playwright show-trace t.zip`. `--engine chromium` runs the same phone on Chromium to compare.
+
+**What this is not.** It is not Apple's iOS Safari. These need the iOS Simulator (Xcode, Mac only) or a real iPhone: the Safari toolbars growing and shrinking while you scroll, safe-area insets (`env(safe-area-inset-*)` is always 0 here), audio unlock, rubber-banding, touch ids, the keyboard pushing the page up. On a Mac, the real iOS engine is one command away: `open -a Simulator`, then `xcrun simctl openurl booted http://localhost:8080/?debug=1` with `node tools/static_server.js` running, and Safari's Develop menu, Simulator, for the console. From a Windows or Linux desktop, use `--lan` and a real iPhone.
+
+**Known differences that fail specs without a bug in the game** (found Oct 28, 2026 on the Linux build of Playwright WebKit; compare against the base commit before calling a WebKit failure new):
+
+- A WebKit `tap()` sends `pointerdown`, `touchstart`, `pointerup`, `touchend` and **no `click`**; Chromium's adds `mousedown` and `click`. Every tap reuses pointer id 2 and touch id 0, where an iPhone gives each touch a new id.
+- `guardOverlayOpen` (game.js) swallows the finger that was down when an overlay opened, and a lifted finger stays in its `carried` set until the next overlay opens (a swallowed `touchend` has its default prevented, so no click follows to clear it). A line advances on `pointerdown`, so the next panel always opens under a finger. With one reused id, the next tap, or any mouse click, is swallowed: the starter basket (YES never appears) and so every `intro_cutscene.spec.js` row past the first choice time out. Forgetting a finger when it lifts makes all 12 of those rows pass on WebKit. The game is unchanged: it is a touch-handling change, so it is Vincent's call (AGENTS.md rule 3).
+- `page.mouse.wheel` does not exist on mobile WebKit (`map_layers.spec.js:289`).
+- The failures already on main on Chromium (T-C6, the `hc_apt_in` zoom row, `map_zoom.spec.js:339`, the dock toast at 320, `shop_p0.spec.js:143`, `modern_hud_rows.spec.js:59`) fail the same way here.
+
 ## What each check covers
 
 `tests/top_hud.spec.js` (TOP_HUD option A, D740–D751 and D793): at 320, 375 and 390, modern and arcade, the place chip is at least 44 px and stays out of the top band on the five top exits, and a tap on the exit tile and one tile past the edge starts the walk. In modern the chip stays 6 px clear of an on-screen exit zone. On proto the left column sits at y 102 (320 and 375) or y 148 (390), every button stays 44 px and out of the north exit's zone, and a tap at (30, 30) starts the walk. When that zone leaves the screen the column returns to y 6; when the map still shows the zone, the column stays clear of it. Reduced motion jumps with no tween. With no weather the hour sits against the chip's left edge and the hour box stays 52 px. TODAY shows LOCATION, MAP and OK, each at least 44 px, and MAP opens the map. A replayed tour card does not cover the chip, and a quest edge box keeps 6 px. With the frame class on, the chip and the column stay home. Arcade does not slide the column. On the glen's east exit the chip stays clear and out of the top band. A v2 save stays v 2. Hearthmoor's north gate does not leave a left-column button in an exit zone. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.

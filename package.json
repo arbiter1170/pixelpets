@@ -6,7 +6,9 @@
     "check:build": "python3 tools/bump_build.py --check",
     "test": "npm run check:build && playwright test",
     "test:agent": "node tools/pp_test.js",
-    "test:slow": "node tools/pp_test.js --slow"
+    "test:slow": "node tools/pp_test.js --slow",
+    "test:iphone": "playwright test -c tools/playwright.iphone.config.js",
+    "iphone": "node tools/iphone_emulate.js"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.2",
