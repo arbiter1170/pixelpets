@@ -1078,6 +1078,22 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 #ovPhone.hack .phone-glyph[data-glyph="sky"]{background:#123224}
 #ovPhone.hack .phone-glyph[data-glyph="glow"]{background:#9dffc0}
 /* Phone apps part 1 (D859-D862): READY chip, FIELD NOTES, SKY, GLOW. */
+/* Phone apps part 2 (D864-D869): signal bars, jobs rows, the shelf button, Ribbit presets. */
+#ovPhone .phone-signal{flex:0 0 auto;display:flex;align-items:flex-end;gap:2px;height:14px}
+#ovPhone .phone-signal i{display:block;width:4px;opacity:.25}
+#ovPhone .phone-signal i:nth-child(1){height:5px}#ovPhone .phone-signal i:nth-child(2){height:8px}
+#ovPhone .phone-signal i:nth-child(3){height:11px}#ovPhone .phone-signal i:nth-child(4){height:14px}
+#ovPhone .phone-signal i.on{opacity:1}
+#ovPhone:not(.hack) .phone-signal i{background:#1d5c38}
+#ovPhone.hack .phone-signal i{background:#5ee08a}
+#ovPhone.board-post .phone-signal{display:none}
+#ovPhone #phoneBody .phone-job{display:flex;flex-direction:column;gap:4px;padding:8px}
+#ovPhone:not(.hack) #phoneBody .phone-job{background:#fff9ec;box-shadow:0 0 0 2px #1d5c38}
+#ovPhone.hack #phoneBody .phone-job{background:#0c1f16;box-shadow:0 0 0 2px #1e6b42}
+#ovPhone #phoneBody .phone-job .btn,#ovPhone #phoneBody .phone-shelf,#ovPhone #phoneBody .ribbit-preset{width:100%;min-height:44px;margin:0;font-size:16px;white-space:normal;text-align:left}
+#ovPhone #phoneBody .ribbit-compose{display:flex;flex-direction:column;gap:6px}
+#ovPhone:not(.hack) #phoneBody .ribbit-mine{box-shadow:0 0 0 2px #e4b04a}
+#ovPhone.hack #phoneBody .ribbit-mine{box-shadow:0 0 0 2px #5ee08a}
 #ovPhone .contact-ready{display:inline-block;margin:2px 0 0 4px;padding:0 4px;font-size:12px;letter-spacing:.4px}
 #ovPhone:not(.hack) .contact-ready{background:#1d5c38;color:#f6e6c0}
 #ovPhone.hack .contact-ready{background:#5ee08a;color:#07140e}

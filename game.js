@@ -5481,7 +5481,7 @@ function onLand(){
   if (p) {                                   // energy/hunger/step XP only with a partner
     p.energy = clamp(p.energy - STEP_NRG, 0, 100); p.hunger = clamp(p.hunger - STEP_FOOD, 0, 100);
     p.sr = (+p.sr || 0) + 1;                 // per-pet step remainder, carried across sessions
-    const cday = careDay(); cday.steps++;     // steps together today (bond, walk finds)
+    const cday = careDay(); cday.steps++; logSteps(cday.d, cday.steps);     // steps together today (bond, walk finds); D867 log
     if (cday.steps % BOND.steps === 0 && cday.stepBond < BOND.stepDay) { cday.stepBond++; addBond(p, 1); }
     found = walkFind(p, cday);
     findStep = found;                        // the explore-cap toast waits for the find's toast this step
@@ -12452,6 +12452,7 @@ function setPhoneJobsLabel(hack){
   if (lab) lab.textContent = text; else $('#phoneJobs').textContent = text;
 }
 function paintPhoneHome(){
+  paintPhoneSignal();
   const hack = phoneHack();
   const ink = hack
     ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', glow: '#07140e' }
@@ -12740,7 +12741,9 @@ function renderRibbit(body){
     uid: (S && S.uid) || '',
     day: dayKey(Date.now()),
     night: phoneNight(),
+    signal: phoneSignal(),
   }) : { trending: [], posts: [] };
+  renderMyChirps(body);
   const trend = document.createElement('div');
   trend.className = 'ribbit-trend';
   const lab = document.createElement('span');
@@ -12781,9 +12784,10 @@ function renderRibbit(body){
     row.append(top, text, chirps);
     body.appendChild(row);
   });
+  renderChirpCompose(body);
   const foot = document.createElement('p');
   foot.className = 'ribbit-foot';
-  foot.textContent = 'Ribbit rides the Keeper wires.';
+  foot.textContent = phoneSignal() <= 1 ? 'Ribbit rides the Keeper wires. One bar: the feed is thin here.' : 'Ribbit rides the Keeper wires.';
   body.appendChild(foot);
 }
 /* ---------- phone apps, part 1 (Vincent, Oct 28, 2026; D859-D863) ----------
@@ -12873,6 +12877,147 @@ function renderGlowApp(body, hack){
   add('glow-lantern', 'You wake at ' + ((town && town.name) || 'Hearthmoor') + "'s Lantern House.");
   const trusted = PPStanding.tierOf(standingOf('keepers', false)) >= 2;
   add('glow-bed', hack ? 'Doorway only. They still heal you.' : trusted ? 'A bed is held for you.' : 'Beds are open to every holder.');
+  renderFootpath(body, add, hack);
+}
+/* ---------- phone apps, part 2 (Vincent, Oct 28, 2026; D864-D869). Placeholder copy, D863. ---------- */
+// D864 Watch Desk / Off-books gigs: the jobs app lists the errands that are really open (active side chains, then pinned
+// board slips) in the handset's voice. TRACK uses the quest screen's one write path. No new rewards.
+function renderJobsApp(body, hack, add){
+  const desk = hack ? 'BOTNET' : 'KEEPERUAV';
+  const sec = text => { const p = document.createElement('p'); p.className = 'phone-sec'; p.textContent = text; body.appendChild(p); };
+  sec(hack ? 'GIGS' : 'PATROL REQUESTS');
+  const side = sideActiveList(), board = boardActiveList(), T = trackedSide();
+  if (!side.length && !board.length) add(desk, hack ? 'Jobs: none posted. Come back later.' : 'No jobs are open. The desk is warming up.');
+  for (const a of side) {
+    const row = document.createElement('article'); row.className = 'phone-job'; row.dataset.chain = a.chain;
+    const t = document.createElement('b'); t.className = 'phone-job-title'; t.textContent = (hack ? 'Gig: ' : 'Patrol: ') + a.label;
+    const step = liveStep(a.step) || a.step;
+    const d = document.createElement('p'); d.className = 'phone-job-text'; d.textContent = step.text + (step.place ? ' (' + step.place + ')' : '');
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn phone-job-track';
+    const on = !!(T && T.chain === a.chain);
+    btn.textContent = on ? 'TRACKING' : 'TRACK'; btn.disabled = on; btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.addEventListener('click', () => { setTracked(a.chain); sfx('tap'); toast('Now tracking: ' + a.label); phoneApp('jobs'); });
+    row.append(t, d, btn); body.appendChild(row);
+  }
+  for (const a of board) {
+    const row = document.createElement('article'); row.className = 'phone-job'; row.dataset.board = a.chain;
+    const t = document.createElement('b'); t.className = 'phone-job-title'; t.textContent = (hack ? 'Pinned gig: ' : 'Board slip: ') + a.label;
+    const d = document.createElement('p'); d.className = 'phone-job-text'; d.textContent = a.step.text + (a.step.place ? ' (' + a.step.place + ')' : '');
+    row.append(t, d); body.appendChild(row);
+  }
+  if (!hack) return;
+  renderCensusLeak(body, add);
+  sec('PARTS');
+  const shelf = document.createElement('button'); shelf.type = 'button'; shelf.className = 'btn phone-shelf'; shelf.textContent = 'OPEN THE SHELF';
+  shelf.addEventListener('click', openBotnetShelf);
+  body.appendChild(shelf);
+  add('BOTNET', 'Augment slot: empty. The leak is not a menu.');
+}
+// D865 Census leak (cracked handset only): Route 2's count while the Comfort Lamps burn; dead air once the glen is cleared.
+function renderCensusLeak(body, add){
+  if (!S.flags['story.met_census']) return;
+  if (S.flags['story.glen_cleared']) { add('Census feed', 'No signal since the glen was cleared.'); return; }
+  let h = 0; for (const ch of dayKey(Date.now())) h = (h * 33 + ch.charCodeAt(0)) >>> 0;
+  add('Census feed', 'Units logged on Route 2 today: ' + (8 + h % 12) + '.');
+}
+// D869 BOTNET shelf: three of the usual care goods at their usual prices, a new three each in-game day. Opens the shop sheet.
+const BOTNET_STOCK = ['energy_sip', 'joy_crumb', 'heal_snack', 'soft_berry', 'kin_ribbon', 'bracer_band'];
+function botnetStock(){
+  const m = window.PPClock ? PPClock.gameMinute() : 0;
+  const d = Number.isFinite(m) ? ((Math.floor(m / 1440) % BOTNET_STOCK.length) + BOTNET_STOCK.length) % BOTNET_STOCK.length : 0;
+  return [0, 2, 4].map(k => BOTNET_STOCK[(d + k) % BOTNET_STOCK.length]);
+}
+function openBotnetShelf(){
+  if (!phoneHack()) return;
+  closePhone();
+  openShop(botnetStock(), 'BOTNET Shelf', 'Off the back of a Glimmerwell cart. No receipts.');
+}
+// D866 Signal by place: Keeper1 bars follow the Keepers' poles (towns 4, routes 2, deep places 1). The cracked handset rides
+// the Comfort Lamp relay: 4 on Route 2 and Wickerglen while the lamps burn, else 2. Thin signal thins Ribbit's local posts.
+function phoneSignal(){
+  if (!S || !CUR) return 4;
+  const id = outdoorId() || '';
+  const deep = id === 'route2_glen' || id === 'cobble_quarry' || id === 'fb_heights' || /^(rx_|sm_)/.test(id);
+  if (phoneHack()) return (id === 'route2' || id === 'route2_glen') && !S.flags['story.glen_cleared'] ? 4 : 2;
+  if (LANTERN_TOWNS[id] || isRoom() && !deep) return 4;
+  return deep ? 1 : 2;
+}
+function paintPhoneSignal(){
+  const el = $('#phoneSignal'); if (!el) return;
+  const n = phoneSignal();
+  el.dataset.bars = String(n);
+  $$('#phoneSignal i').forEach((b, k) => b.classList.toggle('on', k < n));
+}
+// D867 Footpath log: steps with your partner today and the last 7 days (S.stepLog, additive). Milestones are kind words only.
+const STEP_LOG_DAYS = 7;
+function logSteps(d, n){
+  if (!S || typeof d !== 'string') return;
+  if (!S.stepLog || typeof S.stepLog !== 'object' || Array.isArray(S.stepLog)) S.stepLog = {};
+  S.stepLog[d] = n;
+  const keys = Object.keys(S.stepLog).sort();
+  while (keys.length > STEP_LOG_DAYS) delete S.stepLog[keys.shift()];
+}
+const STEP_MILESTONES = [[500, 'A long walk today. Your Walkling is beaming.'], [200, 'A good walk today.'], [50, 'A little walk today.'], [0, 'No walk yet today. Any time is fine.']];
+function renderFootpath(body, add, hack){
+  add('phone-sec', 'STEPS');
+  const today = (S.care && S.care.d === dayKey(Date.now()) && S.care.steps) | 0;
+  add('step-today', 'Today: ' + today + (today === 1 ? ' step' : ' steps'));
+  const line = STEP_MILESTONES.find(m => today >= m[0])[1];
+  add('step-note', hack ? 'Glimmerwell: ' + (today >= 200 ? 'Output noted. Have a bright day!' : 'Every step counts toward the quota.') : line);
+  const log = (S.stepLog && typeof S.stepLog === 'object') ? S.stepLog : {};
+  const days = Object.keys(log).sort().reverse().slice(0, STEP_LOG_DAYS);
+  if (days.length > 1) add('step-week', 'Last days: ' + days.map(d => d.slice(5) + ' ' + (log[d] | 0)).join('  '));
+}
+// D868 Ribbit presets (D211: presets only, no typed text): after a finished main step, post one of three set chirps
+// about it. One post per step; the last 5 are kept in S.chirps { stepId: presetIndex } (additive).
+const CHIRP_KEEP = 5;
+function chirpPresets(step){
+  const at = step.place || 'the road';
+  return [ 'Done at ' + at + '. Good walk, ' + (pet() ? petName(pet()) : 'friend') + '!', at + ': checked off. On to the next one.', 'Quiet win at ' + at + '. Snacks later.' ];
+}
+function chirpLatest(){
+  const done = (typeof PPQuests !== 'undefined' && PPQuests.completed) ? PPQuests.completed(questState(), 1) : [];
+  return done[0] || null;
+}
+function chirpBook(){
+  if (!S.chirps || typeof S.chirps !== 'object' || Array.isArray(S.chirps)) S.chirps = {};
+  return S.chirps;
+}
+function postChirp(stepId, k){
+  const book = chirpBook();
+  if (book[stepId] != null) return;
+  book[stepId] = k;
+  const keys = Object.keys(book);
+  while (keys.length > CHIRP_KEEP) delete book[keys.shift()];
+  save(); sfx('tap'); phoneApp('ribbit');
+}
+function renderMyChirps(body){
+  const book = chirpBook(), hack = phoneHack();
+  const mine = Object.keys(book).reverse().map(id => { const e = PPQuests.CHAIN.find(c => c.id === id); return e ? { id, text: chirpPresets(PPQuests.resolve(e, questState()))[book[id]] } : null; }).filter(x => x && x.text);
+  for (const m of mine) {
+    const row = document.createElement('article'); row.className = 'ribbit-post ribbit-mine'; row.dataset.step = m.id;
+    const top = document.createElement('div'); top.className = 'ribbit-top';
+    const who = document.createElement('b'); who.className = 'ribbit-desk'; who.textContent = playerName();
+    const h = document.createElement('span'); h.className = 'ribbit-handle'; h.textContent = '@' + friendCode().toLowerCase();
+    top.append(who, h);
+    const text = document.createElement('p'); text.className = 'ribbit-text'; text.textContent = m.text + (hack ? ' #BrighterByNature' : '');
+    let n = 0; for (const ch of m.id) n = (n * 31 + ch.charCodeAt(0)) >>> 0;
+    const c = document.createElement('span'); c.className = 'ribbit-chirps'; c.textContent = (3 + n % 20) + ' chirps';
+    row.append(top, text, c); body.appendChild(row);
+  }
+}
+function renderChirpCompose(body){
+  const step = chirpLatest(), book = chirpBook();
+  if (!step || book[step.id] != null) return;
+  const box = document.createElement('div'); box.className = 'ribbit-compose';
+  const lab = document.createElement('p'); lab.className = 'phone-sec'; lab.textContent = 'CHIRP ABOUT IT';
+  box.appendChild(lab);
+  chirpPresets(step).forEach((t, k) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ribbit-preset'; b.dataset.preset = String(k); b.textContent = t;
+    b.addEventListener('click', () => postChirp(step.id, k));
+    box.appendChild(b);
+  });
+  body.appendChild(box);
 }
 function phoneApp(id){
   if (id === 'journal' || id === 'walklings') { closePhone(); showTab('col'); return; }
@@ -12896,13 +13041,7 @@ function phoneApp(id){
     }
     renderFieldNotes(body, hack);
   } else if (id === 'jobs') {
-    if (hack) {
-      add('BOTNET', 'Dark-market parts: the shelf is empty.');
-      add('BOTNET', 'Augment slot: empty. The leak is not a menu.');
-      add('BOTNET', 'Jobs: none posted. Come back later.');
-    } else {
-      add('KEEPERUAV', 'No jobs are open. The desk is warming up.');
-    }
+    renderJobsApp(body, hack, add);
   } else if (id === 'ribbit') {
     renderRibbit(body);
   } else if (id === 'sky') {
