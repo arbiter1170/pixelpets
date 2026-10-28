@@ -14,10 +14,12 @@ D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE 
 
 D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET). D798 is reserved: PLAZA_ERRANDS (Vincent, Oct 26, 2026, yes to all five).
 
-D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D853 are reserved: ARBITER_UNITS (Build A D837-D847, Build C D848-D853).
+D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D857 are held by ARBITER_UNITS (draft PR #205; Build A D837-D847, Build C D848-D853, D854-D857 spare). D858 is reserved: DOCK_SKY (Vincent, Oct 27, 2026; settled, recorded in the archive).
 
-Next free id is D854.
-Other packets hold ids through D853.
+D859-D870 are reserved: PHONE_APPS (Vincent, Oct 28, 2026: "small & medium approved" for the phone app list). D859-D862 and D864-D869 are settled and recorded in the archive; D863 is open below. D870 is spare.
+
+Next free id is D871.
+Other packets hold ids through D870.
 
 ## Open
 
@@ -25,8 +27,6 @@ Other packets hold ids through D853.
 |---|---|---|---|---|
 | D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
 | D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
-| D791 | MODERN_HUD_CLEAR tutorial strip in dock, YELLOW, OPEN | Strip over dock row 2 only once tutorial popups look lands | Not built; waits on the tutorial popups packet look | tutorial popups packet |
-| D794 | TOP_HUD strip-and-chip yellow | Where the tutorial strip docks in the frame so it never covers the place chip | Default: strip over dock row 2 only. Not built until tutorial popups look | TOP_HUD / MODERN_HUD_CLEAR |
 | D837 | Answerers: names | Red. Tallybat, Dimlamp, Filecrow, Cordhound, Humwisp; groups "the Answerers" (Keepers) and "the Founder's Line" with "units" (Glimmerwell). | Settled in part (Vincent, Oct 27, 2026): origin (Glimmerwell's first relays, woken by the hum), Dimlamp for Hushlamp, Filecrow for Ledgerowl (new crow art). Built (build 20261027-1537). Species ids 20-24 are permanent once merged. | `handoff/walklings/ARBITER_UNITS.md` §1; `sprites.js` |
 | D838 | Answerers: tiers | Red. One name, tiers Quiet / Humming / Answering in `p.stage`; `attune` drops GROW UP; `pet.hum` 0-100 (tiers at 40 and 100); STILL / LISTEN (`pet.still`) stops the meter. | Tier words and STILL settled (Vincent, Oct 27, 2026). Built (build 20261027-1537). | `game.js` attunement block; `save.js` fixPet |
 | D839 | Answerers: hum sources | Yellow. Win +4, first daily Glimmerwell place +6, first daily lair visit +10, Humwisp in the party x1.5. | Built (build 20261027-1537). One constant (`HUM_GAIN`). | `HUM_GAIN` in `game.js` |
@@ -44,6 +44,7 @@ Other packets hold ids through D853.
 | D851 | Route 3: names and copy | Yellow. Placeholder names and lines: ROUTE 3, Comfort Sanctuary, Shipping Ledger Office, Relay House, "BRINEWICK · Not yet.", every clue, boss, entry and close line. | Built as marked placeholder copy in the existing voices. | `data/detail_route3.json` |
 | D852 | A second Quinn contact | Yellow. Associate Quinn in the Cobblecrest Trial Hall is a glimmer cast row, separate from the RegenX "Quinn". | Built (build 20261027-1537). | `data/reputation.json`; `data/heights.json` speakers |
 | D853 | Clue reach on a switched save | Yellow. A player who switched to Glimmerwell without entering the RegenX lab cannot reach the lab clues; the Keepers mast needs `story.mom_sent`. | Not fixed. The Keepers twins cover a Keepers player. | `data/detail_route3.json` |
+| D863 | PHONE_APPS copy, YELLOW, OPEN | Design writes the copy for the new phone screens (SKY, GLOW, READY relay, FIELD NOTES stamps, Night Desk posts; part 2: patrol/gig rows, Census feed, BOTNET Shelf, signal footer, chirp presets, STEPS lines) and says whether the home grid keeps nine apps (PHONE_SHELL v0.2 assumed seven) | Placeholder copy written by the engineer, in both handset voices. Nine apps: SKY and GLOW after BOARD. No new story facts: Field Notes reuse the quest chain's own text; the relay reuses each holder's rematch line | `game.js` phone apps part 1 block (`renderFarSky`, `renderGlowApp`, `glowAdvice`, `rematchRelay`, `renderFieldNotes`), `ribbit.js` `NIGHT_POSTS`, `index.html` `#phoneHome`; part 2 block (`renderJobsApp`, `renderCensusLeak`, `openBotnetShelf`, `renderFootpath`, `chirpPresets`) |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

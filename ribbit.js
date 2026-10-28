@@ -17,6 +17,13 @@
   const LOCAL_N = 4;
   const BLOCK = { name: 'Block News', handle: 'blocknews', desk: 'Block News' };
   const CHIRP = { name: 'Chirp Worldwide', handle: 'chirpworld', desk: 'Chirp Worldwide' };
+  // D861 Night Desk (placeholder copy, D863): one late post while state.night is true (the clock's late hours).
+  const NIGHT = { name: 'Night Desk', handle: 'nightdesk', desk: 'Night Desk' };
+  const NIGHT_POSTS = [
+    { id: 'nd-glow', text: 'Lamps low, glow up. Let your Walkling sleep tonight.' },
+    { id: 'nd-roads', text: 'Night shift: quiet roads, sleepy grass. Walk soft.' },
+    { id: 'nd-share', text: 'Late chirp: a sleeping Walkling still shares a little glow.' },
+  ];
 
   const POSTS = [
     { id: 'bn-morning', kind: 'block', pin: true, text: 'Hearthmoor morning: the lantern is lit. Keeper House is open. Officer Bren has the road.' },
@@ -222,9 +229,15 @@
     const pins = POSTS.filter(p => p.pin && ok(p));
     const extraPool = POSTS.filter(p => !p.pin && (p.kind === 'block' || p.kind === 'chirp') && ok(p));
     const extra = pickWeighted(extraPool, 1, rngDesk, () => 1);
-    const locals = pickLocals(POSTS.filter(p => p.kind === 'local' && ok(p)), region, LOCAL_N, rngLocal);
+    // D866: state.signal (1-4 bars) thins the local lines; unset keeps all LOCAL_N. The picks stay a stable prefix.
+    const bars = Number.isInteger(st.signal) ? Math.max(1, Math.min(4, st.signal)) : 4;
+    const locals = pickLocals(POSTS.filter(p => p.kind === 'local' && ok(p)), region, LOCAL_N, rngLocal).slice(0, Math.min(LOCAL_N, bars));
     const tags = pickWeighted(TAGS.filter(t => passes(t.when, flags, side)), 3, rngTag, t => t.w || 1);
     const posts = pins.concat(extra).map(p => publish(p, storySeed)).concat(locals.map(p => publish(p, storySeed + '\n' + map)));
+    if (st.night) {
+      const n = NIGHT_POSTS[fnv1a('night\n' + storySeed) % NIGHT_POSTS.length];
+      posts.splice(pins.length, 0, Object.assign(publish(n, storySeed), { name: NIGHT.name, handle: NIGHT.handle, desk: NIGHT.desk }));
+    }
     return {
       trending: tags.map(t => ({ tag: t.tag, count: span(storySeed, 'tag:' + t.tag, 8, 42) })),
       posts: posts,
@@ -246,6 +259,9 @@
       if (p.region === 'heights' && !(p.when || []).includes('story.heights_done')) bad.push('heights line missing the flag: ' + p.id);
       if (/sold/i.test(p.text) && !(p.when || []).includes('story.quarry_bought')) bad.push('sold line missing the flag: ' + p.id);
     });
+    NIGHT_POSTS.forEach(p => { if (Array.from(p.text).length > LINE_MAX) bad.push('night text over ' + LINE_MAX + ': ' + p.id); });
+    if (feed({ flags: {}, uid: 'n', day: '2026-04-01', night: true }).posts.filter(p => p.handle === NIGHT.handle).length !== 1) bad.push('night desk should post once at night');
+    if (feed({ flags: {}, uid: 'n', day: '2026-04-01' }).posts.some(p => p.handle === NIGHT.handle)) bad.push('night desk posted by day');
     ['hearthmoor', 'route1', 'fernbrook', 'route2', 'wickerglen', 'cobblecrest', 'heights'].forEach(r => {
       if ((regions[r] || 0) < 3) bad.push('region needs several lines: ' + r);
     });

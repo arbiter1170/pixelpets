@@ -132,8 +132,12 @@ test('the diner sheet fits, one tap buys one, and a refused tap changes nothing'
   await page.waitForTimeout(400);
   const box = await sheetBox(page);
   const w = page.viewportSize().width;
-  const sheetWant = w === 390 ? 577 : w === 320 ? 301 : 400;
-  const roomWant = w === 390 ? 185 : w === 320 ? 56 : null;
+  // SHOP_LAYOUT measured 577/301/400 before the Modern dock (D778/D789, #199). Under the dock the sheet sits 8 px above
+  // the 156 px band (as #202 did for the scene box), so its top is 164 px higher; D490's band math is unchanged.
+  const sheetWant = w === 390 ? 408 : w === 320 ? 132 : 231;
+  // Room band (D490) above the raised sheet: centred at 390 (was 185), and at 320 the 11x8 diner is taller than the band
+  // so it follows the holder (was 56).
+  const roomWant = w === 390 ? 102 : w === 320 ? 12 : null;
   expect(Math.abs(box.sheetTop - sheetWant), 'sheet top ' + box.sheetTop).toBeLessThanOrEqual(20);
   expect(box.sheetH).toBeLessThanOrEqual(box.vh * 0.55 + 2);
   expect(box.headH).toBeGreaterThanOrEqual(60);
@@ -165,6 +169,8 @@ test('the diner sheet fits, one tap buys one, and a refused tap changes nothing'
   expect(refused.v).toBe(2);
 
   await openHesper(page);
+  // Needs decay on the walk between the two sheets (no overlay is open then), so read Food again once the sheet is up.
+  const fed = await page.evaluate(() => PixelPets.state.party[0].hunger);
   await page.locator('#shopList .shop-row[data-id="coach_stew"] .shop-buy').click();
   await page.waitForFunction(() => {
     const s = window.PixelPets.scene;
@@ -172,7 +178,7 @@ test('the diner sheet fits, one tap buys one, and a refused tap changes nothing'
   });
   const bought = await page.evaluate(() => ({ money: PixelPets.state.money, hunger: PixelPets.state.party[0].hunger, choices: document.querySelectorAll('#sbChoices button').length }));
   expect(bought.money).toBe(25);
-  expect(bought.hunger).toBeCloseTo(70, 3);
+  expect(bought.hunger).toBeCloseTo(fed + 30, 3);
   expect(bought.choices).toBe(0);
 });
 

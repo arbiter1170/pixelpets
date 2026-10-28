@@ -114,8 +114,9 @@ test('a boss opens at Humming, refuses befriending, shifts at half HP, and joins
   expect(open).toMatchObject({ boss: true, shifted: false, stage: 1, tint: true });
   expect(open.maxHp).toBe(open.want);
 
+  // fastBattle's 1 ms text step shows the refusal for an instant before the prompt returns, so read the battle log.
   await page.click('#btBefriendAct');
-  await expect(page.locator('#btMsg')).toHaveText('It only hears the hum. Wait.');
+  await page.waitForFunction(() => PixelPets.battle.log.includes('It only hears the hum. Wait.'));
   expect(await page.evaluate(() => document.querySelector('#btBef').hidden)).toBe(true);
 
   // Drop it under half, then play a turn: the shift runs at the end of that turn.
