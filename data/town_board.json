@@ -26,7 +26,11 @@
       "towns.highcharity.reports[3].text",
       "towns.mahopac.reports[0].text",
       "towns.mahopac.reports[1].text",
-      "weather.text"
+      "weather.text",
+      "towns.brinewick.reports[0].text",
+      "towns.brinewick.reports[1].text",
+      "towns.brinewick.reports[2].text",
+      "towns.brinewick.reports[3].text"
     ]
   },
   "spec": "TOWN_BOARD",
@@ -241,6 +245,38 @@
           ]
         }
       ]
+    },
+    "brinewick": {
+      "masthead": "THE LANTERN POST",
+      "slogan": "Leave a light. Leave them wild.",
+      "reports": [
+        {
+          "id": "bw_ferry",
+          "text": "The ferry is in for the day. The captain says the tide keeps time, and so should we."
+        },
+        {
+          "id": "bw_pier",
+          "text": "The east pier is leased to Glimmerwell. The rest of the harbour stays the town's.",
+          "when": [
+            "!story.brine_freed"
+          ]
+        },
+        {
+          "id": "bw_cage",
+          "text": "A cage came open in the depot. The gulls went quiet. They do that for good news.",
+          "when": [
+            "story.brine_freed"
+          ]
+        },
+        {
+          "id": "bw_hall",
+          "text": "Marisol's Hall is open on the west pier. Mind the wash on the deck.",
+          "when": [
+            "story.brine_dorian"
+          ]
+        }
+      ],
+      "slips": []
     }
   },
   "slicePatch": {

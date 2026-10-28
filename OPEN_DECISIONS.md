@@ -16,13 +16,17 @@ D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes,
 
 D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D853 are reserved: ARBITER_UNITS (Build A D837-D847, Build C D848-D853). D854-D857 are unused (once held by draft PR #205). D858 is reserved: DOCK_SKY (Vincent, Oct 27, 2026; settled, recorded in the archive).
 
-Next free id is D859.
-Other packets hold ids through D858.
+D859-D874 are reserved: BRINEWICK v0.1 (design specs/BRINEWICK.md, one-pager calls B1-B14 = D859-D872, settled on their defaults Oct 28, 2026 and recorded in the archive; D873 and D874 stay open).
+
+Next free id is D875.
+Other packets hold ids through D874.
 
 ## Open
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
+| D873 | BRINEWICK copy and role names | Sign the Brinewick lines, signs, town-board reports and the role names (Lantern Host, Chandler, Deckhand, Bell Ringer, Net Mender, Ferry Hand, Harbour Clerk) | Every Brinewick line is implementer copy, marked placeholder in `data/detail_zz_brinewick.json` `_about` and in the four `towns.brinewick` report paths in `data/town_board.json` `_placeholders`. Marisol, Dorian, Rook, Hollis and Quinn keep their settled names. The episode card reads "EPISODE 1 COMPLETE · Thank you for playing Walklings!" | `design specs/brinewick_build.py` (writes `data/detail_zz_brinewick.json`), `data/town_board.json` |
+| D874 | BRINEWICK rule 9 previews | Vincent sees the 390 px previews of the town and its four rooms (Lantern House, Chandlery, Trial Hall, depot) and says yes before anything deploys | Built on a branch only. The rooms use four new skins (`bw_lantern`, `bw_store`, `bw_hall`, `bw_depot`) from the rule 9 briefs in `design specs/BRINEWICK.md`. The quay is a new grey-blue plank tile `Q`. Stand-ins: Marisol's `captain_hat` (ASSET_HANDOFF S1) is a cap, and the depot crates reuse `rc_crate` and `loan_crate` | `sprites.js` (skins, `cell_crate`, `tide_gauge`), the `roofs` in `data/detail_zz_brinewick.json` |
 | D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
 | D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
 | D791 | MODERN_HUD_CLEAR tutorial strip in dock, YELLOW, OPEN | Strip over dock row 2 only once tutorial popups look lands | Not built; waits on the tutorial popups packet look | tutorial popups packet |

@@ -27,6 +27,7 @@
   const SIDE_TASKS = Object.freeze([
     Object.freeze({ id: 'faded_fuzzwick', map: 'fernbrook', obj: 'faded_fuzzwick', done: 'story.faded_fuzzwick' }),
     Object.freeze({ id: 'faded_pebblit', map: 'route2_glen', obj: 'faded_pebblit', done: 'story.faded_pebblit' }),
+    Object.freeze({ id: 'brine_drizzlet', map: 'bw_depot_in', obj: 'brine_drizzlet', done: 'story.brine_drizzlet' }),   // BRINEWICK
   ]);
   const sideTaskLine = n => (n === 1 ? '1 side task nearby' : n + ' side tasks nearby');
   const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
@@ -60,6 +61,8 @@
     'story.gb_tune_asked', 'story.gb_tobin', 'story.gb_imogen_done', 'story.gb_imogen_result',
     // HUSHWATER: first step in. Not a chain step (no CHAIN row). The stair and Lizzy flags are not written here.
     'story.hw_reached',
+    // BRINEWICK: Rook's arrival, the Glimmer manifest choice and the two Hall gauges. Not chain steps.
+    'story.brine_arrived', 'story.brine_manifest', 'story.h3_gauge_a', 'story.h3_gauge_b',
     // ARBITER_UNITS Build C (D848-D853): Route 3 arrival and its derived open flag, the first four clues, and the boss rest flags are not steps.
     'story.reached_route3', 'story.route3_open', 'story.ans_tallybat_clue', 'story.ans_dimlamp_clue', 'story.ans_filecrow_clue', 'story.ans_cordhound_clue',
     'story.ans_tallybat_rest', 'story.ans_dimlamp_rest', 'story.ans_filecrow_rest', 'story.ans_cordhound_rest', 'story.ans_humwisp_rest'];
@@ -162,6 +165,29 @@
     { id: 'gb_briefing', when: ['story.side=glimmer'], done: ['story.gb_done'],
       text: 'The Capital Partnership Briefing is in the Arbiter Bay.', place: 'Heights, top bay',
       target: { map: 'rx_f4', x: 6, y: 4 } },
+    // BRINEWICK (one-pager v0.1, defaults): after the road opens (story.route3_open: Rook's last crates plus the chapter end, D848).
+    // Until then the chain idles on `end`, so the High Charity games pointer and the side chains keep that card.
+    { id: 'route3', when: ['story.route3_open'], done: ['story.reached_brinewick'],
+      text: 'Walk Route 3 south. The gate at the far end opens onto Brinewick.', place: 'Route 3, south gate',
+      target: { map: 'route3', x: 11, y: 46 } },
+    { id: 'brine_depot', when: ['story.route3_open'], done: ['story.brine_depot'],
+      text: 'Rook says the crates went into the white depot on the east pier. Go and look.', place: 'Brinewick, east pier',
+      target: { map: 'brinewick', x: 24, y: 11 } },
+    { id: 'brine_crate', when: ['story.route3_open'], done: ['story.brine_freed'],
+      text: 'One crate in the depot hums. It is a cage. Look inside.', place: 'Brinewick depot',
+      glimmer: { text: 'Line twelve on the manifest is a cage by the wall. Look before you sign.', place: 'Brinewick depot' },
+      target: { map: 'bw_depot_in', x: 9, y: 3 } },
+    { id: 'brine_dorian', when: ['story.route3_open'], done: ['story.brine_dorian'],
+      text: 'Dorian Pell is waiting on the quay outside the depot.', place: 'Brinewick quay',
+      glimmer: { text: 'Dorian Pell wants your quarterly review, out on the quay.', place: 'Brinewick quay' },
+      target: { map: 'brinewick', x: 25, y: 13 } },
+    { id: 'hall3', when: ['story.route3_open'], done: ['story.seal3'],
+      text: "Master Marisol's Trial Hall is open on the west pier. Challenge her for the Brinewick Seal.", place: 'Brinewick Trial Hall',
+      glimmer: { text: "Quinn is closing the quarter in Marisol's Hall. The captain's match is optional.", place: 'Brinewick Trial Hall' },
+      target: { map: 'bw_hall_in', x: 5, y: 3 } },
+    { id: 'ep1_end', when: ['story.route3_open'], done: ['story.ep1_end'],
+      text: 'Rook is waiting outside the Trial Hall.', place: 'Brinewick, west pier',
+      target: { map: 'brinewick', x: 6, y: 13 } },
     { id: 'end', done: [],
       text: "That's all for now. Explore, fill the Journal, and grow your friendships.", place: 'The Amberwild' },
   ];

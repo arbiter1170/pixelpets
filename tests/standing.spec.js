@@ -304,6 +304,13 @@ const COPY = {
   gb_relay: ['Field Lead Imogen is testing relays at the Wickerglen lamps.', 'Wickerglen, the lamps'],
   gb_hollis: ['Associate Hollis is waiting on Route 2. He wants a quiet word.', 'Route 2, the Census'],
   gb_briefing: ['The Capital Partnership Briefing is in the Arbiter Bay.', 'Heights, top bay'],
+  // BRINEWICK (D859-D872): after story.route3_open.
+  route3: ['Walk Route 3 south. The gate at the far end opens onto Brinewick.', 'Route 3, south gate'],
+  brine_depot: ['Rook says the crates went into the white depot on the east pier. Go and look.', 'Brinewick, east pier'],
+  brine_crate: ['One crate in the depot hums. It is a cage. Look inside.', 'Brinewick depot', 'Line twelve on the manifest is a cage by the wall. Look before you sign.', 'Brinewick depot'],
+  brine_dorian: ['Dorian Pell is waiting on the quay outside the depot.', 'Brinewick quay', 'Dorian Pell wants your quarterly review, out on the quay.', 'Brinewick quay'],
+  hall3: ["Master Marisol's Trial Hall is open on the west pier. Challenge her for the Brinewick Seal.", 'Brinewick Trial Hall', "Quinn is closing the quarter in Marisol's Hall. The captain's match is optional.", 'Brinewick Trial Hall'],
+  ep1_end: ['Rook is waiting outside the Trial Hall.', 'Brinewick, west pier'],
   end: ["That's all for now. Explore, fill the Journal, and grow your friendships.", 'The Amberwild'],
 };
 
@@ -321,6 +328,8 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
         if (eq >= 0) flags[c.slice(0, eq)] = c.slice(eq + 1);
         else flags[c] = true;
       }
+      // BRINEWICK: story.route3_open is only ever set after the chapter end (D848), so the Keepers council is done by then.
+      if (flags['story.route3_open']) flags['story.hc_council_done'] = true;
       const st = (side) => ({ flags: Object.assign({ 'story.side': side }, flags), seals: {}, pets: 1 });
       const k = Q.current(st('keepers')), g = Q.current(st('glimmer'));
       out.rows[e.id] = { kid: k && k.id, ktext: k && k.text, kplace: k && k.place, gid: g && g.id, gtext: g && g.text, gplace: g && g.place };
@@ -363,7 +372,7 @@ test('quest copy: every step shows the designer text on both sides; lengths and 
     for (const t of [row[0], row[2]].filter(Boolean)) expect(Array.from(t).length, id).toBeLessThanOrEqual(110);
     for (const p of [row[1], row[3]].filter(Boolean)) expect(Array.from(p).length, id).toBeLessThanOrEqual(24);
   }
-  expect(overrides).toBe(10);
+  expect(overrides).toBe(13);
   // and the panel itself shows the side's text (keepers, then glimmer) for the orchard step
   await page.evaluate(() => { PixelPets.setFlag('story.met_fen', true); PixelPets.setFlag('story.reached_fernbrook', true); PixelPets.setFlag('story.met_glimmerwell', true); PixelPets.showTab('walk'); });
   await page.waitForFunction(() => { const b = document.querySelector('#questBtn'); return b && !b.hidden && window.PixelPets.quest.id === 'orchard'; });

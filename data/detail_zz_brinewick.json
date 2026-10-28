@@ -1,0 +1,2097 @@
+{
+  "spec": "BRINEWICK v0.1",
+  "version": "1",
+  "status": "Built on the defaults (B1-B14 settled on defaults, Oct 28, 2026). Previews before deploy (rule 9).",
+  "_about": "Brinewick: the harbour south of Route 3, Trial Hall #3 (Master Marisol, TIDE, Seal 3), the Glimmerwell depot with the Faded Drizzlet (D165), Dorian Pell's first battle, and the Episode 1 card. One auto-loaded detail pack. Role names (Lantern Host, Chandler, Deckhand, Bell Ringer, Net Mender, Ferry Hand, Harbour Clerk) and all lines are marked placeholder copy until Design signs them. Spec: design specs/BRINEWICK.md.",
+  "tiles": {
+    "Q": {
+      "name": "quay plank",
+      "walk": true
+    }
+  },
+  "maps": {
+    "brinewick": {
+      "name": "Brinewick",
+      "backdrop": "town",
+      "music": "harbour",
+      "w": 32,
+      "h": 20,
+      "spawns": null,
+      "respawn": null,
+      "respawnIn": {
+        "map": "bw_lantern_in",
+        "x": 2,
+        "y": 4,
+        "facing": "up"
+      },
+      "safe": {
+        "x": 10,
+        "y": 3
+      },
+      "zones": [],
+      "variants": true,
+      "roofs": {
+        "lantern": {
+          "x0": 2,
+          "y0": 2,
+          "x1": 7,
+          "y1": 3,
+          "roof": "roof_slate_b",
+          "wall": "wall_white",
+          "door": "door_dutch",
+          "win": "win_porthole",
+          "trim": "n",
+          "shape": "gable",
+          "porch": [
+            "bw_lantern_sign"
+          ]
+        },
+        "store": {
+          "x0": 16,
+          "y0": 2,
+          "x1": 21,
+          "y1": 3,
+          "roof": "roof_tile_r",
+          "wall": "wall_batten_w",
+          "door": "door_double",
+          "win": "win_box",
+          "trim": "o",
+          "shape": "gable",
+          "porch": [
+            "bw_store_board"
+          ]
+        },
+        "hall": {
+          "x0": 2,
+          "y0": 8,
+          "x1": 8,
+          "y1": 9,
+          "roof": "roof_board_t",
+          "wall": "wall_piles",
+          "door": "door_hatch",
+          "win": "win_porthole",
+          "trim": "w",
+          "shape": "flat+bell",
+          "porch": []
+        },
+        "depot": {
+          "x0": 21,
+          "y0": 7,
+          "x1": 28,
+          "y1": 8,
+          "roof": "roof_flat_w",
+          "wall": "wall_white",
+          "door": "door_sliding",
+          "win": "win_strip",
+          "trim": "l",
+          "shape": "flat+emblem",
+          "porch": []
+        }
+      },
+      "grid": [
+        "TTTTTTTTTTpTTTTTTTTTTTTTTTTTTTTT",
+        "TgggggggggpggggggggggggggggggggT",
+        "TgRRRRRRggpgggfgRRRRRRgggggggggT",
+        "TgRRRRRRggpgggggRRRRRRggggggfggT",
+        "TgHHHHHHggpgggggHHHHHHgggggggggT",
+        "TggggpppPPPPPPPppppggggggfgggggT",
+        "TggfggggPPPPPPPggggggggggggggggT",
+        "TgfgggggPPPPPPPggggggRRRRRRRRggT",
+        "TgRRRRRRPPPPPPPggggggRRRRRRRRggT",
+        "TgRRRRRRPPPPPPPggggggHHHHHHHHfgT",
+        "TgHHHHHHHggpgggggggggHHHHHHHHggT",
+        "TgHHHHHHHggppppppppppPPPPPPPPggT",
+        "TggggpppppppgggggggggPPPPPPPPggT",
+        "TsssspssssspsssssssssssspssssssT",
+        "TQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQT",
+        "TQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQT",
+        "wwwwQQwwwwwwwwwwwwwwwwwwQQwwwwww",
+        "wwwwQQwwwwwwwwwwwwwwwwwwQQwwwwww",
+        "wwwwwwwwwwwwwwwwwwwwwwwwQQwwwwww",
+        "wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "bw_north",
+          "x": 10,
+          "y": 0,
+          "to": "route3",
+          "tx": 11,
+          "ty": 46,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "bw_lantern",
+          "x": 5,
+          "y": 5,
+          "to": "bw_lantern_in",
+          "tx": 5,
+          "ty": 7,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "bw_store",
+          "x": 18,
+          "y": 5,
+          "to": "bw_store_in",
+          "tx": 5,
+          "ty": 6,
+          "facing": "up"
+        },
+        {
+          "kind": "door",
+          "id": "bw_hall",
+          "x": 5,
+          "y": 12,
+          "to": "bw_hall_in",
+          "tx": 5,
+          "ty": 11,
+          "facing": "up",
+          "need": "story.brine_dorian",
+          "deny": "The Hall is shut. A chalk note: 'Down on the quay. Back with the tide. M.'"
+        },
+        {
+          "kind": "door",
+          "id": "bw_depot",
+          "x": 24,
+          "y": 11,
+          "to": "bw_depot_in",
+          "tx": 5,
+          "ty": 8,
+          "facing": "up",
+          "setFlag": "story.brine_depot"
+        },
+        {
+          "kind": "sign",
+          "id": "bw_sign_town",
+          "x": 9,
+          "y": 2,
+          "text": "BRINEWICK · A harbour town. Ferry at the west pier. Please mind the nets."
+        },
+        {
+          "kind": "sign",
+          "id": "bw_sign_hall",
+          "x": 7,
+          "y": 12,
+          "text": "BRINEWICK TRIAL HALL · Master Marisol · TIDE · \"The tide keeps time.\""
+        },
+        {
+          "kind": "sign",
+          "id": "bw_sign_depot",
+          "x": 22,
+          "y": 12,
+          "text": "BRINEWICK DOCKS · A Glimmerwell Co. depot. Brighter by nature."
+        },
+        {
+          "kind": "prop",
+          "id": "bw_lantern_sign",
+          "x": 4,
+          "y": 5,
+          "sprite": "heal_lantern"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_store_board",
+          "x": 19,
+          "y": 5,
+          "sprite": "acorn_board"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_board",
+          "x": 12,
+          "y": 5,
+          "sprite": "bulletin_keepers",
+          "facing": "up",
+          "board": "brinewick"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_bench",
+          "x": 9,
+          "y": 9,
+          "sprite": "bench_long",
+          "lines": {
+            "else": "A bench facing the sea. Salt has bleached it soft."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_lamp_a",
+          "x": 13,
+          "y": 9,
+          "sprite": "lamp_post"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_lamp_b",
+          "x": 7,
+          "y": 13,
+          "sprite": "lamp_post"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_net",
+          "x": 2,
+          "y": 13,
+          "sprite": "net_hang",
+          "lines": {
+            "else": "Nets drying in the wind. A float is tangled in the corner."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_rope",
+          "x": 16,
+          "y": 13,
+          "sprite": "rope_coil",
+          "lines": {
+            "else": "Wet rope, coiled the sailor's way."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_bollard_a",
+          "x": 8,
+          "y": 15,
+          "sprite": "bollard"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_bollard_b",
+          "x": 18,
+          "y": 15,
+          "sprite": "bollard"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_bollard_c",
+          "x": 28,
+          "y": 15,
+          "sprite": "bollard"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_ferry_post",
+          "x": 4,
+          "y": 17,
+          "sprite": "bollard",
+          "lines": {
+            "else": "The ferry's mooring post. The rope is slack. She's in for the day."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_buoy_a",
+          "x": 13,
+          "y": 17,
+          "sprite": "marina_buoy"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_buoy_b",
+          "x": 20,
+          "y": 18,
+          "sprite": "marina_buoy"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_windsock",
+          "x": 29,
+          "y": 13,
+          "sprite": "windsock",
+          "lines": {
+            "else": "The windsock points out to sea."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_crates_a",
+          "x": 29,
+          "y": 11,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A sealed crate stamped BRINEWICK DOCKS. It hums a little."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_crates_b",
+          "x": 29,
+          "y": 12,
+          "sprite": "crate_stack",
+          "lines": {
+            "else": "Glimmerwell crates, stacked perfectly square."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_barrel",
+          "x": 15,
+          "y": 6,
+          "sprite": "barrel"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_flag",
+          "x": 14,
+          "y": 5,
+          "sprite": "flag_pole"
+        },
+        {
+          "kind": "npc",
+          "id": "rook_bw",
+          "name": "Rook",
+          "x": 11,
+          "y": 2,
+          "facing": "left",
+          "when": [
+            "!story.brine_arrived"
+          ],
+          "scene": "bw_arrive"
+        },
+        {
+          "kind": "trigger",
+          "id": "bw_arrive_t",
+          "x": 10,
+          "y": 2,
+          "r": 0,
+          "when": [
+            "!story.brine_arrived"
+          ],
+          "scene": "bw_arrive"
+        },
+        {
+          "kind": "npc",
+          "id": "rook_bw_wait",
+          "name": "Rook",
+          "x": 12,
+          "y": 8,
+          "facing": "left",
+          "lines": {
+            "story.brine_dorian": "Dorian walked right past me. He looked smaller up close.",
+            "story.brine_freed": "You opened it. ...Okay. Okay. I'm staying close.",
+            "else": "The depot's east, past the square. The hum is louder over there."
+          },
+          "when": [
+            "story.brine_arrived",
+            "!story.seal3"
+          ]
+        },
+        {
+          "kind": "npc",
+          "id": "dorian_bw",
+          "name": "Dorian Pell",
+          "x": 25,
+          "y": 13,
+          "facing": "left",
+          "when": [
+            "story.brine_freed",
+            "!story.brine_dorian"
+          ],
+          "scene": "bw_dorian"
+        },
+        {
+          "kind": "trigger",
+          "id": "bw_dorian_t",
+          "x": 24,
+          "y": 12,
+          "r": 0,
+          "when": [
+            "story.brine_freed",
+            "!story.brine_dorian"
+          ],
+          "scene": "bw_dorian"
+        },
+        {
+          "kind": "npc",
+          "id": "rook_bw_end",
+          "name": "Rook",
+          "x": 6,
+          "y": 13,
+          "facing": "left",
+          "when": [
+            "story.seal3",
+            "!story.ep1_end"
+          ],
+          "scene": "bw_ep1_end"
+        },
+        {
+          "kind": "trigger",
+          "id": "bw_end_t",
+          "x": 5,
+          "y": 13,
+          "r": 0,
+          "when": [
+            "story.seal3",
+            "!story.ep1_end"
+          ],
+          "scene": "bw_ep1_end"
+        },
+        {
+          "kind": "npc",
+          "id": "bw_mender",
+          "name": "Net Mender",
+          "x": 3,
+          "y": 13,
+          "facing": "down",
+          "lines": {
+            "story.ep1_end": "Three Seals, and you still stop to talk to an old net mender. Good.",
+            "story.brine_freed": "Heard a cage came open in the depot. The gulls went quiet. They do that for good news.",
+            "else": "The company pays well for dock work. The crates hum, though. Nets don't hum."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "bw_clerk",
+          "name": "Harbour Clerk",
+          "x": 14,
+          "y": 10,
+          "facing": "down",
+          "lines": {
+            "story.side=glimmer": "Glimmerwell leases the east pier. The rest of the harbour is still ours, holder.",
+            "else": "The east pier is leased to the company. The rest of the harbour is still the town's."
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "bw_ferryhand",
+          "name": "Ferry Hand",
+          "x": 5,
+          "y": 16,
+          "facing": "up",
+          "lines": {
+            "story.seal3": "The captain hums when she's pleased. She's been humming since your match.",
+            "else": "The captain runs the ferry and the Hall. Same rule for both: the tide keeps time."
+          }
+        }
+      ]
+    },
+    "bw_lantern_in": {
+      "name": "Brinewick Lantern House",
+      "kind": "interior",
+      "outdoor": "brinewick",
+      "door": "bw_lantern",
+      "backdrop": "town",
+      "w": 11,
+      "h": 9,
+      "spawns": null,
+      "zones": [],
+      "skin": "bw_lantern",
+      "variants": true,
+      "wall": {
+        "windows": [
+          3,
+          7
+        ]
+      },
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#uvuvuvuvu#",
+        "#.........#",
+        "#....=....#",
+        "#....=....#",
+        "#....=....#",
+        "#.........#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "bw_lantern_mat",
+          "x": 5,
+          "y": 8,
+          "to": "brinewick",
+          "tx": 5,
+          "ty": 5,
+          "facing": "down"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_bed_a",
+          "x": 1,
+          "y": 3,
+          "sprite": "rest_bed",
+          "lines": {
+            "else": "@lantern_rest"
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_bed_b",
+          "x": 1,
+          "y": 4,
+          "sprite": "rest_bed",
+          "lines": {
+            "else": "@lantern_rest"
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_bed_c",
+          "x": 1,
+          "y": 5,
+          "sprite": "rest_bed",
+          "lines": {
+            "else": "@lantern_rest"
+          }
+        },
+        {
+          "kind": "npc",
+          "id": "bw_lantern_host",
+          "name": "Lantern Host",
+          "x": 5,
+          "y": 2,
+          "facing": "down"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_heal_counter",
+          "x": 6,
+          "y": 2,
+          "sprite": "heal_counter",
+          "lines": {
+            "else": "A clean counter. Towels warm on a rail behind it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_lantern_light",
+          "x": 4,
+          "y": 2,
+          "sprite": "floor_lantern",
+          "lines": {
+            "else": "The house lantern, on gimbals like a ship's. It swings a little in the wind."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_pegs",
+          "x": 9,
+          "y": 3,
+          "sprite": "coat_pegs",
+          "lines": {
+            "else": "Oilskin coats on pegs, still dripping."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_kettle",
+          "x": 9,
+          "y": 5,
+          "sprite": "keep_kettle",
+          "lines": {
+            "else": "A kettle on a little stove. Someone always keeps it warm."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_table",
+          "x": 8,
+          "y": 6,
+          "sprite": "table_small"
+        },
+        {
+          "kind": "sign",
+          "id": "bw_lantern_note",
+          "x": 9,
+          "y": 7,
+          "text": "A note by the door: \"Rest a while. Dry coats on the left. A rest costs a few Acorns. Brinewick\""
+        }
+      ],
+      "safe": {
+        "x": 5,
+        "y": 7
+      },
+      "respawnSpot": {
+        "x": 2,
+        "y": 4,
+        "facing": "up"
+      }
+    },
+    "bw_store_in": {
+      "name": "Brinewick Chandlery",
+      "kind": "interior",
+      "outdoor": "brinewick",
+      "door": "bw_store",
+      "backdrop": "town",
+      "w": 10,
+      "h": 8,
+      "spawns": null,
+      "zones": [],
+      "skin": "bw_store",
+      "variants": true,
+      "wall": {
+        "windows": [
+          2,
+          7
+        ]
+      },
+      "grid": [
+        "##########",
+        "#WWWWWWWW#",
+        "#uvuvuvuv#",
+        "#........#",
+        "#........#",
+        "#........#",
+        "#........#",
+        "#####m####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "bw_store_mat",
+          "x": 5,
+          "y": 7,
+          "to": "brinewick",
+          "tx": 18,
+          "ty": 5,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "bw_chandler",
+          "name": "Chandler",
+          "x": 5,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "else": "Rope, tins, snacks for the road. If it floats or it feeds, I sell it."
+          },
+          "shop": [
+            "heal_snack",
+            "hearty_snack",
+            "wake_tonic",
+            "befriend_treat",
+            "energy_sip",
+            "joy_crumb"
+          ]
+        },
+        {
+          "kind": "prop",
+          "id": "bw_counter_l",
+          "x": 4,
+          "y": 3,
+          "sprite": "stall_counter",
+          "lines": {
+            "else": "The counter is an old boat hull, upside down."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_counter_r",
+          "x": 6,
+          "y": 3,
+          "sprite": "stall_counter",
+          "lines": {
+            "else": "A brass scale. It's honest, and a little green."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_store_sign",
+          "x": 5,
+          "y": 2,
+          "sprite": "acorn_board"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_rack",
+          "x": 1,
+          "y": 3,
+          "sprite": "pole_rack",
+          "lines": {
+            "else": "Oars and boat hooks, sorted by length."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_barrel_in",
+          "x": 1,
+          "y": 5,
+          "sprite": "barrel",
+          "lines": {
+            "else": "Lamp oil. The company sells a cleaner kind. Nobody here buys it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_net_in",
+          "x": 8,
+          "y": 2,
+          "sprite": "net_hang",
+          "lines": {
+            "else": "A net on the wall, with orange floats caught in it."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_buoy_in",
+          "x": 8,
+          "y": 4,
+          "sprite": "marina_buoy",
+          "lines": {
+            "else": "A spare buoy, freshly painted."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_rope_in",
+          "x": 8,
+          "y": 6,
+          "sprite": "rope_coil"
+        }
+      ],
+      "safe": {
+        "x": 5,
+        "y": 6
+      }
+    },
+    "bw_hall_in": {
+      "name": "Brinewick Trial Hall",
+      "kind": "interior",
+      "outdoor": "brinewick",
+      "door": "bw_hall",
+      "backdrop": "town",
+      "w": 11,
+      "h": 13,
+      "spawns": null,
+      "zones": [],
+      "skin": "bw_hall",
+      "variants": true,
+      "wall": {
+        "windows": [
+          2,
+          8
+        ]
+      },
+      "grid": [
+        "###########",
+        "#WWWWWWWWW#",
+        "#uvuvuvuvu#",
+        "#....q....#",
+        "#....q....#",
+        "#wwww.wwww#",
+        "#....q....#",
+        "#....q....#",
+        "#wwww.wwww#",
+        "#....q....#",
+        "#....q....#",
+        "#....q....#",
+        "#####m#####"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "bw_hall_mat",
+          "x": 5,
+          "y": 12,
+          "to": "brinewick",
+          "tx": 5,
+          "ty": 12,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "marisol",
+          "name": "Master Marisol",
+          "x": 5,
+          "y": 2,
+          "facing": "down",
+          "look": "marisol",
+          "scene": "marisol_trial"
+        },
+        {
+          "kind": "npc",
+          "id": "bw_quinn",
+          "name": "Associate Quinn",
+          "x": 7,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "seal:seal_glim_3": "Tier 3 is filed. Have a calm tide.",
+            "else": "Quarter close is with me, partner. The captain is optional."
+          },
+          "look": "quinn",
+          "when": [
+            "story.side=glimmer"
+          ]
+        },
+        {
+          "kind": "prop",
+          "id": "bw_bell",
+          "x": 3,
+          "y": 2,
+          "sprite": "mr_bell",
+          "lines": {
+            "else": "The ferry bell. Marisol rings it when the tide turns."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_chart",
+          "x": 7,
+          "y": 2,
+          "sprite": "chart_table",
+          "lines": {
+            "else": "A tide chart, inked by hand. The beats are marked like music."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_buoy_hall",
+          "x": 1,
+          "y": 3,
+          "sprite": "marina_buoy"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_rope_hall",
+          "x": 9,
+          "y": 3,
+          "sprite": "rope_coil"
+        },
+        {
+          "kind": "prop",
+          "id": "h3_gauge_b",
+          "x": 5,
+          "y": 5,
+          "sprite": "tide_gauge",
+          "lines": {
+            "else": "@gauge_b"
+          },
+          "when": [
+            "!story.h3_gauge_b"
+          ]
+        },
+        {
+          "kind": "trainer",
+          "id": "bw_ringer",
+          "x": 9,
+          "y": 7
+        },
+        {
+          "kind": "prop",
+          "id": "h3_gauge_a",
+          "x": 5,
+          "y": 8,
+          "sprite": "tide_gauge",
+          "lines": {
+            "else": "@gauge_a"
+          },
+          "when": [
+            "!story.h3_gauge_a"
+          ]
+        },
+        {
+          "kind": "trainer",
+          "id": "bw_deckhand",
+          "x": 1,
+          "y": 10
+        },
+        {
+          "kind": "sign",
+          "id": "h3_sign",
+          "x": 1,
+          "y": 11,
+          "text": "Painted on the deck: THE FASTER ONE MOVES FIRST. VOLT AND BLOOM CUT THE TIDE. FIRE ONLY HISSES."
+        }
+      ],
+      "music": "hall",
+      "safe": {
+        "x": 5,
+        "y": 11
+      }
+    },
+    "bw_depot_in": {
+      "name": "Brinewick Depot",
+      "kind": "interior",
+      "outdoor": "brinewick",
+      "door": "bw_depot",
+      "backdrop": "town",
+      "w": 12,
+      "h": 10,
+      "spawns": null,
+      "zones": [],
+      "skin": "bw_depot",
+      "variants": true,
+      "wall": {
+        "windows": [
+          3,
+          8
+        ]
+      },
+      "grid": [
+        "############",
+        "#WWWWWWWWWW#",
+        "#uvuvuvuvuv#",
+        "#..........#",
+        "#..........#",
+        "#..........#",
+        "#..........#",
+        "#..........#",
+        "#..........#",
+        "#####m######"
+      ],
+      "objs": [
+        {
+          "kind": "warp",
+          "id": "bw_depot_mat",
+          "x": 5,
+          "y": 9,
+          "to": "brinewick",
+          "tx": 24,
+          "ty": 11,
+          "facing": "down"
+        },
+        {
+          "kind": "npc",
+          "id": "hollis_bw",
+          "name": "Associate Hollis",
+          "x": 5,
+          "y": 3,
+          "facing": "down",
+          "lines": {
+            "story.brine_freed": "I wrote 'escaped'. Tobin taught me that word. It fits.",
+            "else": "@bw_hollis"
+          },
+          "look": "hollis"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_desk_l",
+          "x": 4,
+          "y": 3,
+          "sprite": "lab_counter",
+          "lines": {
+            "else": "The manifest. Twelve lines, in very neat handwriting."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_desk_r",
+          "x": 6,
+          "y": 3,
+          "sprite": "lab_counter",
+          "lines": {
+            "else": "A stamp pad. Mint ink. A sticker sheet: BRIGHTER BY NATURE."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_stand",
+          "x": 1,
+          "y": 2,
+          "sprite": "glimmer_stand",
+          "lines": {
+            "else": "A display of Glimmer Cells. Each one glows the same calm mint."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cell_crate",
+          "x": 9,
+          "y": 2,
+          "sprite": "cell_crate",
+          "lines": {
+            "else": "@bw_crate"
+          },
+          "when": [
+            "!story.brine_freed"
+          ]
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cell_open",
+          "x": 9,
+          "y": 2,
+          "sprite": "cell_crate_open",
+          "lines": {
+            "else": "The cage is open and empty. Mint light still leaks from the slot."
+          },
+          "when": [
+            "story.brine_freed"
+          ]
+        },
+        {
+          "kind": "wild",
+          "id": "brine_drizzlet",
+          "x": 8,
+          "y": 3,
+          "form": "tide/0",
+          "level": 22,
+          "faded": 3,
+          "moves": [
+            "wobble"
+          ],
+          "befriendBonus": 0.15,
+          "when": [
+            "story.brine_freed",
+            "!story.brine_drizzlet"
+          ],
+          "scene": "bw_drizzlet_again"
+        },
+        {
+          "kind": "prop",
+          "id": "bw_plant",
+          "x": 3,
+          "y": 8,
+          "sprite": "lab_planter",
+          "lines": {
+            "else": "A potted plant. Not one leaf out of place. It might be plastic."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_1_4",
+          "x": 1,
+          "y": 4,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_1_5",
+          "x": 1,
+          "y": 5,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_1_6",
+          "x": 1,
+          "y": 6,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_1_7",
+          "x": 1,
+          "y": 7,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_2_4",
+          "x": 2,
+          "y": 4,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_2_5",
+          "x": 2,
+          "y": 5,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_2_6",
+          "x": 2,
+          "y": 6,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_2_7",
+          "x": 2,
+          "y": 7,
+          "sprite": "rc_crate",
+          "lines": {
+            "else": "A crate stamped BRINEWICK DOCKS. Same leaf, same size, same hum."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_9_4",
+          "x": 9,
+          "y": 4,
+          "sprite": "loan_crate",
+          "lines": {
+            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_9_5",
+          "x": 9,
+          "y": 5,
+          "sprite": "loan_crate",
+          "lines": {
+            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_9_6",
+          "x": 9,
+          "y": 6,
+          "sprite": "loan_crate",
+          "lines": {
+            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_9_7",
+          "x": 9,
+          "y": 7,
+          "sprite": "loan_crate",
+          "lines": {
+            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_10_4",
+          "x": 10,
+          "y": 4,
+          "sprite": "loan_crate",
+          "lines": {
+            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_10_5",
+          "x": 10,
+          "y": 5,
+          "sprite": "loan_crate",
+          "lines": {
+            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_10_6",
+          "x": 10,
+          "y": 6,
+          "sprite": "loan_crate",
+          "lines": {
+            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+          }
+        },
+        {
+          "kind": "prop",
+          "id": "bw_cr_10_7",
+          "x": 10,
+          "y": 7,
+          "sprite": "loan_crate",
+          "lines": {
+            "else": "A Glimmer Cell crate, sealed. The label says LAMP STOCK."
+          }
+        }
+      ],
+      "music": "lab",
+      "safe": {
+        "x": 5,
+        "y": 8
+      }
+    }
+  },
+  "slicePatch": {
+    "maps": {
+      "route3": {
+        "gridRows": {
+          "47": "TTTTTTTTTTTpTTTTTTTTTTTT"
+        },
+        "replaceObjs": [
+          {
+            "kind": "prop",
+            "id": "r3_gate",
+            "x": 10,
+            "y": 46,
+            "sprite": "glimmer_gate",
+            "lines": {
+              "else": "The gate stands open, pushed aside. Brinewick is just south."
+            }
+          },
+          {
+            "kind": "sign",
+            "id": "r3_sign_gate",
+            "x": 12,
+            "y": 45,
+            "text": "BRINEWICK · South, through the open gate."
+          }
+        ],
+        "addObjs": [
+          {
+            "kind": "warp",
+            "id": "r3_south",
+            "x": 11,
+            "y": 47,
+            "to": "brinewick",
+            "tx": 10,
+            "ty": 1,
+            "facing": "down",
+            "setFlag": "story.reached_brinewick"
+          }
+        ]
+      }
+    }
+  },
+  "scenes": {
+    "bw_arrive": [
+      [
+        "say",
+        "",
+        "Salt wind and ferry bells. Brinewick's roofs lean toward the water."
+      ],
+      [
+        "if",
+        "story.rook_quit",
+        [
+          [
+            "say",
+            "Rook",
+            "{name}! You made it. I got here with the cart. I watched every crate come off."
+          ],
+          [
+            "say",
+            "Rook",
+            "They all went into that white shed on the east pier. One of them hums. Nobody here seems to hear it."
+          ],
+          [
+            "say",
+            "Rook",
+            "No lanyard, no clipboard. I can still walk in there with you. Let's look."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Rook",
+            "{name}. Delivery's done. Twelve crates, all signed. I kept my lanyard straight the whole ride."
+          ],
+          [
+            "say",
+            "Rook",
+            "They went into the depot on the east pier. One still hums. Dorian calls it a routine unit."
+          ],
+          [
+            "say",
+            "Rook",
+            "You're on the count too, right? Look at that one crate. Then tell me it's routine."
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Rook",
+        "Lantern House is just west of the square. Rest first. The depot is east, by the quay."
+      ],
+      [
+        "setFlag",
+        "story.brine_arrived",
+        true
+      ]
+    ],
+    "bw_hollis": [
+      [
+        "say",
+        "Associate Hollis",
+        "{name}. Hollis, Brinewick count. I took the quarry job, then they sent me here."
+      ],
+      [
+        "say",
+        "Associate Hollis",
+        "I counted. The lamps don't count glow. This crate doesn't hold glow. It holds someone."
+      ],
+      [
+        "say",
+        "Associate Hollis",
+        "The cage by the far wall. I can't open it. I can look at this wall for a while, though."
+      ]
+    ],
+    "bw_hollis@glimmer": [
+      [
+        "say",
+        "Associate Hollis",
+        "Partner. Hollis, Brinewick count. Dorian wants the manifest signed by a holder."
+      ],
+      [
+        "say",
+        "Associate Hollis",
+        "Twelve lines. Eleven are lamps. Line twelve is the cage by the wall. Grey. Breathing."
+      ],
+      [
+        "say",
+        "Associate Hollis",
+        "Sign it and it ships at dusk. Or look first. I won't write down which."
+      ]
+    ],
+    "bw_crate": [
+      [
+        "say",
+        "",
+        "A Glimmer Cell crate. Bars, not boards. A grey Drizzlet curls on the mesh, its glow very low."
+      ],
+      [
+        "say",
+        "",
+        "{pet} presses its nose to the bars. The Drizzlet's tail twitches once."
+      ],
+      [
+        "choice",
+        "Open the crate?",
+        [
+          [
+            "Open it",
+            [
+              [
+                "say",
+                "",
+                "The latch is stiff. {pet} leans in with you, and the lid swings up."
+              ],
+              [
+                "setFlag",
+                "story.brine_freed",
+                true
+              ],
+              [
+                "run",
+                "bw_drizzlet_meet"
+              ]
+            ]
+          ],
+          [
+            "Not yet",
+            []
+          ]
+        ]
+      ]
+    ],
+    "bw_crate@glimmer": [
+      [
+        "say",
+        "",
+        "A Glimmer Cell crate. Bars, not boards. A grey Drizzlet curls on the mesh, its glow very low."
+      ],
+      [
+        "say",
+        "",
+        "{pet} presses its nose to the bars. The manifest on the desk says: LINE 12, UNIT, TIDE."
+      ],
+      [
+        "choice",
+        "Line twelve?",
+        [
+          [
+            "Sign the manifest",
+            [
+              [
+                "say",
+                "",
+                "You sign. THUNK. The stamp leaves a bright mint star on the cage."
+              ],
+              [
+                "say",
+                "Associate Hollis",
+                "Signed. ...It's too grey to ship, partner. Rejected stock. Policy says the holder keeps it."
+              ],
+              [
+                "setFlag",
+                "story.brine_manifest",
+                "signed"
+              ],
+              [
+                "standing",
+                "glimmer",
+                3,
+                "brine_sign_g"
+              ],
+              [
+                "setFlag",
+                "story.brine_freed",
+                true
+              ],
+              [
+                "run",
+                "bw_drizzlet_meet"
+              ]
+            ]
+          ],
+          [
+            "Open the crate",
+            [
+              [
+                "say",
+                "",
+                "You leave the pen on the desk and lift the latch. The lid swings up."
+              ],
+              [
+                "say",
+                "Associate Hollis",
+                "I didn't see that. Dorian will. It will cost you on the board."
+              ],
+              [
+                "setFlag",
+                "story.brine_manifest",
+                "open"
+              ],
+              [
+                "standing",
+                "glimmer",
+                -5,
+                "brine_open_g"
+              ],
+              [
+                "setFlag",
+                "story.brine_freed",
+                true
+              ],
+              [
+                "run",
+                "bw_drizzlet_meet"
+              ]
+            ]
+          ],
+          [
+            "Not yet",
+            []
+          ]
+        ]
+      ]
+    ],
+    "bw_drizzlet_meet": [
+      [
+        "encounter",
+        "brine_drizzlet"
+      ],
+      [
+        "if",
+        "story.brine_drizzlet",
+        [
+          [
+            "say",
+            "",
+            "The Drizzlet stays close. A little blue creeps back into its tail."
+          ]
+        ],
+        [
+          [
+            "say",
+            "",
+            "The Drizzlet huddles in the open crate. It isn't ready yet. Come back gently."
+          ]
+        ]
+      ]
+    ],
+    "bw_drizzlet_again": [
+      [
+        "say",
+        "",
+        "The grey Drizzlet watches you from the open crate."
+      ],
+      [
+        "run",
+        "bw_drizzlet_meet"
+      ]
+    ],
+    "bw_dorian": [
+      [
+        "say",
+        "Dorian Pell",
+        "Ah. The holder from Cobblecrest. You opened company property, {name}."
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "That unit was a partnership in progress. You've turned it into a loss."
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "No more smiles today. Show me what a Keeper thinks a Walkling is for."
+      ],
+      [
+        "battle",
+        "bw_dorian"
+      ]
+    ],
+    "bw_dorian@glimmer": [
+      [
+        "say",
+        "Dorian Pell",
+        "Junior Bright! The count came in with a loose line. Let's call this your quarterly review."
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "Out here on the quay, in public. The Capital likes a holder who can win where people watch."
+      ],
+      [
+        "battle",
+        "bw_dorian"
+      ]
+    ],
+    "bw_dorian_win": [
+      [
+        "say",
+        "Dorian Pell",
+        "Units, holders, partners. You keep picking the wrong word on purpose."
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "The captain has her Hall open on the west pier. Go on. The tide won't wait for me either."
+      ],
+      [
+        "say",
+        "",
+        "Dorian walks off down the quay. He does not say have a bright day."
+      ],
+      [
+        "setFlag",
+        "story.brine_dorian",
+        true
+      ]
+    ],
+    "bw_dorian_win@glimmer": [
+      [
+        "say",
+        "Dorian Pell",
+        "Review passed. Your file says strong, and stubborn. Both sell."
+      ],
+      [
+        "say",
+        "Dorian Pell",
+        "Quinn is in the Hall on the west pier. Close the quarter there, or test the captain if you like."
+      ],
+      [
+        "setFlag",
+        "story.brine_dorian",
+        true
+      ]
+    ],
+    "marisol_trial": [
+      [
+        "if",
+        "seal:seal_brinewick",
+        [
+          [
+            "say",
+            "Master Marisol",
+            "The tide's out, {name}. Sit a while. The ferry bell will tell us when it turns."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Master Marisol",
+            "Hale sent you? Then say it. ...Ha. That old stone still owes me a ferry ride."
+          ],
+          [
+            "say",
+            "Master Marisol",
+            "On my deck the tide comes in on a beat. The faster Walkling moves first. Show me you can read it."
+          ],
+          [
+            "choice",
+            "Begin the trial?",
+            [
+              [
+                "Begin trial",
+                [
+                  [
+                    "battle",
+                    "hall3_marisol"
+                  ]
+                ]
+              ],
+              [
+                "Leave",
+                []
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "marisol_trial@glimmer": [
+      [
+        "if",
+        "seal:seal_glim_3",
+        [
+          [
+            "say",
+            "Associate Quinn",
+            "Tier 3 is on file. The tide can keep its own schedule."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Associate Quinn",
+            "Quarter close, partner. Dorian passed your review on the quay. That is enough for Tier 3."
+          ],
+          [
+            "say",
+            "Master Marisol",
+            "The company rents my floor for its paperwork. My deck still runs on the tide."
+          ],
+          [
+            "choice",
+            "How do you close the quarter?",
+            [
+              [
+                "Close the quarter",
+                [
+                  [
+                    "run",
+                    "seal3"
+                  ]
+                ]
+              ],
+              [
+                "Face Marisol",
+                [
+                  [
+                    "battle",
+                    "hall3_marisol"
+                  ]
+                ]
+              ],
+              [
+                "Not today",
+                []
+              ]
+            ],
+            "Associate Quinn"
+          ]
+        ]
+      ]
+    ],
+    "seal3": [
+      [
+        "say",
+        "Master Marisol",
+        "That's the Brinewick Seal. An anchor, so you always find your way back."
+      ],
+      [
+        "give",
+        "hearty_snack",
+        2
+      ],
+      [
+        "give",
+        "wake_tonic",
+        1
+      ],
+      [
+        "say",
+        "Master Marisol",
+        "Tell Hale the tide still remembers him. And tell your Walkling it read the beat well."
+      ],
+      [
+        "setFlag",
+        "story.seal3",
+        true
+      ]
+    ],
+    "seal3@glimmer": [
+      [
+        "say",
+        "Associate Quinn",
+        "Quarter closed. Bright Tier 3 Lanyard. Three marks, one cord."
+      ],
+      [
+        "seal",
+        "seal_glim_3"
+      ],
+      [
+        "give",
+        "hearty_snack",
+        2
+      ],
+      [
+        "give",
+        "wake_tonic",
+        1
+      ],
+      [
+        "say",
+        "Associate Quinn",
+        "The Capital will want to meet you. Not today. Today, rest."
+      ],
+      [
+        "standing",
+        "glimmer",
+        5,
+        "seal3_g"
+      ],
+      [
+        "setFlag",
+        "story.seal3",
+        true
+      ]
+    ],
+    "gauge_a": [
+      [
+        "say",
+        "",
+        "A tide gauge in the gap. Paint on the post asks: THE TIDE COMES IN. WHO MOVES FIRST?"
+      ],
+      [
+        "choice",
+        "Who moves first?",
+        [
+          [
+            "The faster one",
+            [
+              [
+                "say",
+                "",
+                "The water parts around the post. Higher SPD acts first. On a tie, the tide picks."
+              ],
+              [
+                "setFlag",
+                "story.h3_gauge_a",
+                true
+              ]
+            ]
+          ],
+          [
+            "The bigger one",
+            [
+              [
+                "say",
+                "",
+                "The water stays put. Size doesn't set the turn. Speed does."
+              ]
+            ]
+          ],
+          [
+            "Whoever waits",
+            [
+              [
+                "say",
+                "",
+                "The water laps at your boots. Waiting only lets the faster one go first."
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "gauge_b": [
+      [
+        "say",
+        "",
+        "Another gauge. Paint: THE TIDE IS FASTER THAN YOU. HOW DO YOU GET AHEAD OF IT?"
+      ],
+      [
+        "choice",
+        "How do you get ahead?",
+        [
+          [
+            "Raise my SPD",
+            [
+              [
+                "say",
+                "",
+                "The water draws back. Moves that raise your SPD put you first next turn."
+              ],
+              [
+                "setFlag",
+                "story.h3_gauge_b",
+                true
+              ]
+            ]
+          ],
+          [
+            "Lower its SPD",
+            [
+              [
+                "say",
+                "",
+                "The water draws back. Slow the foe's SPD and the turn swings to you."
+              ],
+              [
+                "setFlag",
+                "story.h3_gauge_b",
+                true
+              ]
+            ]
+          ],
+          [
+            "Hit it harder",
+            [
+              [
+                "say",
+                "",
+                "The water holds. A harder hit still lands second. Change the speed instead."
+              ]
+            ]
+          ]
+        ]
+      ]
+    ],
+    "bw_ep1_end": [
+      [
+        "if",
+        "story.rook_quit",
+        [
+          [
+            "say",
+            "Rook",
+            "That's three, {name}. You and {pet} did it. I watched the whole match through a porthole."
+          ],
+          [
+            "say",
+            "Rook",
+            "That Drizzlet's colour is coming back. Lizzy will want to see. So will my mom."
+          ]
+        ],
+        [
+          [
+            "say",
+            "Rook",
+            "Three marks, colleague. Dorian clapped. I clapped. ...The Drizzlet's colour is coming back, though."
+          ],
+          [
+            "say",
+            "Rook",
+            "Units don't get their colour back. Walklings do. I'm writing that down somewhere."
+          ]
+        ]
+      ],
+      [
+        "say",
+        "Master Marisol",
+        "The ferry turns at the bell. Wherever the Amberwild sends you next, come back by sea."
+      ],
+      [
+        "music",
+        "episode_end"
+      ],
+      [
+        "say",
+        "",
+        "Far up the coast, a tall grey tower rises on a ridge. Above it, the clouds go flat and still."
+      ],
+      [
+        "say",
+        "",
+        "EPISODE 1 COMPLETE · Thank you for playing Walklings!"
+      ],
+      [
+        "setFlag",
+        "story.ep1_end",
+        true
+      ]
+    ]
+  },
+  "trainers": {
+    "bw_dorian": {
+      "name": "Dorian Pell",
+      "title": "Head of Acquisitions",
+      "map": "brinewick",
+      "x": 25,
+      "y": 13,
+      "facing": "left",
+      "sight": 0,
+      "ai": "leader",
+      "onWin": "bw_dorian_win",
+      "money": null,
+      "team": [
+        {
+          "form": "crab/1",
+          "level": 26
+        },
+        {
+          "form": "volt/1",
+          "level": 27
+        },
+        {
+          "form": "crab/2",
+          "level": 28
+        }
+      ],
+      "lines": {
+        "intro": "Let's settle the count properly.",
+        "win": "Noted. You win in public. I'll have to remember that.",
+        "lose": "A loss is just a delay with bad lighting. Rest, then try me again."
+      }
+    },
+    "bw_dorian@glimmer": {
+      "lines": {
+        "intro": "Quarterly review, Junior Bright. Smile for the quay.",
+        "win": "Strong numbers. Stubborn, too. The Capital likes both.",
+        "lose": "The review stays open. Rest, and bring better numbers."
+      }
+    },
+    "hall3_marisol": {
+      "name": "Marisol",
+      "title": "Trial Master",
+      "map": "bw_hall_in",
+      "x": 5,
+      "y": 2,
+      "facing": "down",
+      "sight": 0,
+      "ai": "leader",
+      "hall": true,
+      "seal": "seal_brinewick",
+      "items": {
+        "heal_snack": 1
+      },
+      "onWin": "seal3",
+      "money": null,
+      "team": [
+        {
+          "form": "tide/1",
+          "level": 27
+        },
+        {
+          "form": "gust/1",
+          "level": 28
+        },
+        {
+          "form": "tide/2",
+          "level": 29
+        }
+      ],
+      "lines": {
+        "intro": "The tide keeps time. Let's see if you can keep up with it.",
+        "win": "You read the beat, {player}. The tide goes out for you.",
+        "lose": "The tide's in. Rest, and come back when it turns."
+      }
+    },
+    "hall3_marisol@glimmer": {
+      "seal": "seal_glim_3",
+      "onWin": "seal3",
+      "lines": {
+        "intro": "The company's paper can wait. My deck can't. Show me your beat.",
+        "win": "You read the tide. Tell Quinn the quarter closed itself.",
+        "lose": "The tide's in. Quinn will still take your paperwork."
+      }
+    },
+    "bw_deckhand": {
+      "name": "Deckhand",
+      "title": "Ferry Crew",
+      "map": "bw_hall_in",
+      "x": 1,
+      "y": 10,
+      "facing": "right",
+      "sight": 8,
+      "ai": "basic",
+      "money": null,
+      "team": [
+        {
+          "form": "crab/0",
+          "level": 25
+        },
+        {
+          "form": "crab/1",
+          "level": 26
+        }
+      ],
+      "lines": {
+        "intro": "Mind the wash! First one to move wins the deck.",
+        "win": "You were quicker on the beat, {player}. Fair tide.",
+        "lose": "The tide caught you. Rest, then try the deck again."
+      }
+    },
+    "bw_ringer": {
+      "name": "Bell Ringer",
+      "title": "Ferry Crew",
+      "map": "bw_hall_in",
+      "x": 9,
+      "y": 7,
+      "facing": "left",
+      "sight": 8,
+      "ai": "basic",
+      "money": null,
+      "team": [
+        {
+          "form": "volt/0",
+          "level": 25
+        },
+        {
+          "form": "tide/1",
+          "level": 26
+        }
+      ],
+      "lines": {
+        "intro": "When the bell rings, the fast one goes first. Ready?",
+        "win": "Rung out! You've got the captain's timing.",
+        "lose": "Off the beat. Rest, then listen for the bell."
+      }
+    }
+  },
+  "looks": {
+    "_note": "BRINEWICK looks (keeper_art.js shape). Marisol's captain_hat layer (ASSET_HANDOFF S1) is not drawn yet; the cap stands in.",
+    "marisol": {
+      "skin": "4",
+      "hair": "pony",
+      "hairCol": "w",
+      "outfit": "coat",
+      "outfitCol": "n",
+      "accent": "s",
+      "accessory": "cap"
+    },
+    "dockfolk": {
+      "skin": "3",
+      "hair": "short",
+      "hairCol": "d",
+      "outfit": "vest",
+      "outfitCol": "y",
+      "accent": "o",
+      "accessory": "beanie"
+    },
+    "netmender": {
+      "skin": "6",
+      "hair": "bun",
+      "hairCol": "h",
+      "outfit": "sweater",
+      "outfitCol": "b",
+      "accent": "w"
+    }
+  },
+  "speakers": {
+    "Master Marisol": "marisol",
+    "Marisol": "marisol",
+    "Net Mender": "netmender",
+    "Ferry Hand": "dockfolk",
+    "Harbour Clerk": "villager",
+    "Lantern Host": "villager",
+    "Chandler": "dockfolk"
+  },
+  "flags": {
+    "story.reached_brinewick": "Walked into Brinewick through Route 3's south gate. CHAIN row route3.",
+    "story.brine_arrived": "Rook's arrival scene on the north road played. Not a step.",
+    "story.brine_depot": "Stepped into the Brinewick depot. CHAIN row brine_depot.",
+    "story.brine_freed": "The Glimmer Cell crate is open (Keepers open it; Glimmer signs or opens). CHAIN row brine_crate.",
+    "story.brine_manifest": "Glimmer only: 'signed' or 'open', the manifest choice. Not a step.",
+    "story.brine_drizzlet": "The Faded Drizzlet joined (set by the encounter, not a setFlag). A side task.",
+    "story.brine_dorian": "Beat Dorian Pell on the quay. CHAIN row brine_dorian; opens the Hall door.",
+    "story.h3_gauge_a": "Answered the first tide gauge in Marisol's Hall. Not a step.",
+    "story.h3_gauge_b": "Answered the second tide gauge. Not a step.",
+    "story.seal3": "Seal 3: the Brinewick Seal (Keepers) or the Bright Tier 3 Lanyard (Glimmer). CHAIN row hall3.",
+    "story.ep1_end": "The Episode 1 card played outside the Hall. CHAIN row ep1_end."
+  }
+}
