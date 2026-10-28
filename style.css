@@ -1390,14 +1390,12 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 #tutLayer{position:fixed;inset:0;z-index:15;pointer-events:none}
 #tutLayer[hidden]{display:none}
 #tutLayer.soft .tut-dim,#tutLayer.soft .tut-block{display:none;pointer-events:none}
-#tutLayer.lesson .tut-card{animation:tutSlide .18s ease-out}
-@keyframes tutSlide{from{transform:translateY(12px)}to{transform:none}}
+/* Tutorial cards and rings hold still: no slide, no blink, no hop between targets (Vincent, Oct 28, 2026). */
 #tutLayer.unlock-on .tut-dim,#tutLayer.unlock-on .tut-block{pointer-events:none}
 #unlockCard .unlock-title{font-weight:bold}
 .tut-dim{position:fixed;background:rgba(26,28,44,.6);pointer-events:auto}
 .tut-block{position:fixed;pointer-events:auto;background:transparent}
 .tut-ring{position:fixed;box-sizing:border-box;border:2px solid var(--y);pointer-events:none}
-.tut-ring:not([hidden]){animation:tutPulse 1.2s ease-in-out infinite}
 .tut-card{position:fixed;box-sizing:border-box;width:calc(100vw - 24px);max-width:360px;padding:12px;background:var(--n);color:var(--w);box-shadow:0 0 0 3px var(--k),0 0 0 6px var(--d);pointer-events:auto;display:flex;flex-direction:column;gap:8px}
 .tut-card p{margin:0;font-size:17px;line-height:1.25;font-weight:normal}
 .tut-acts{display:flex;gap:8px}
@@ -1408,11 +1406,8 @@ body.ctl-modern .joy-knob canvas{width:36px;height:36px;image-rendering:pixelate
 body.tut-on #tabs.locked{opacity:1}
 body.nav-locked .tut-hit{pointer-events:auto;opacity:1}
 body.nav-locked #petFloat.tut-hit,body.nav-locked #colFloat.tut-hit,body.nav-locked #questBtn.tut-hit,body.nav-locked .scr-back.tut-hit{pointer-events:auto;opacity:1}
-@keyframes tutPulse{50%{opacity:.35}}
 @media (prefers-reduced-motion:reduce){
-  .tut-ring:not([hidden]){animation:none}
   .tut-card{transition:none}
-  #tutLayer.lesson .tut-card{animation:none}
 }
 /* Play together (PLAY_TOGETHER_P1). Existing palette only. */
 .say-btn{position:absolute;right:4px;bottom:4px;z-index:4;width:64px;height:52px;min-width:64px;min-height:52px;padding:0;border:3px solid var(--y);background:var(--n);color:var(--y);font-size:20px;cursor:pointer}
@@ -1542,9 +1537,16 @@ body.mhc-frame.ctl-modern.scene-on .fc-dock{opacity:0;pointer-events:none}
 body.mhc-frame.ctl-modern.scene-on .fc-dock #gearFloat,
 body.mhc-frame.ctl-modern.scene-on.price-on .fc-dock .fc-acorns{opacity:1;pointer-events:auto}
 body.mhc-frame.ctl-modern.scene-on .float-ctl{z-index:12}
+/* Anything else a scene opens (a battle, a picker, a minigame) keeps scene-on too. The dock's z 12 then put its opaque band over
+   that overlay (z 10-12) and hid its bottom: MOVES and the move list in a scene battle. While one is open the dock goes back under
+   it. The shop sheet is excluded: it sits above the dock instead (rule below) and the Acorns on the dock stay in view. */
+body.ctl-modern.scene-on:has(.overlay:not([hidden]):not(#ovShop)) .float-ctl{z-index:2}
 /* The dock keeps z 12 in scenes so the gear stays tappable (NAV_MODERN G3); its opaque band would cover the scene text box
    (z 9), so under the dock the box sits above it instead of 12 px above the bottom edge. */
 body.mhc-frame.ctl-modern .scene-ov{padding-bottom:calc(156px + var(--sa-b) + 12px)}
+/* The shop sheet (z 11) had the same problem: the dock band hid its lower rows and sat over the BUY buttons, and the dock's
+   Acorns (shown on a priced prompt, SHOP P0) landed on the sheet. Under the dock the sheet sits 8 px above it. */
+body.mhc-frame.ctl-modern #ovShop.overlay{padding-bottom:calc(156px + var(--sa-b) + 8px)}
 #coopAsk .net-ask{width:min(420px,100%);margin:0 auto;gap:8px}
 #coopJoin{background:var(--g);color:var(--k)}
 #coopNotNow{background:var(--m);color:var(--w)}
