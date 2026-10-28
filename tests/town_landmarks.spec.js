@@ -154,24 +154,23 @@ test('T2 the marker art is 16x16 PAL keys and glows at night', async ({ page }) 
   await boot(page);
   await page.evaluate(() => {
     PixelPets.goto('hearthmoor', 16, 14, 'up');
-    PixelPets.cueForce({ x: 15, y: 13 });
     PixelPets.clock.set('mon', 12, 0);
     PixelPets.clock.freeze(true);
   });
   await page.waitForTimeout(80);
+  // Samples sit on the camera, not on the cue arrow: the arrow bobs, so arrow-relative pixels moved 2 px between widths.
+  // near: 2 px above the marker, inside the lamp disc (centre x+8, y+6, r 12). far: the same row 20 px right, outside it.
   const read = () => page.evaluate(() => {
-    const pass = PixelPets.cuePass();
     const c = document.querySelector('#mapCanvas');
     const g = c.getContext('2d');
-    const origin = pass && pass.dir === 'down'
-      ? { x: pass.x - 5, y: pass.y + 12 }
-      : pass && pass.dir === 'up' ? { x: pass.x - 5, y: pass.y - 17 } : null;
-    const px = (x, y) => {
+    const cam = PixelPets.walk.cam;
+    const px = (wx, wy) => {
+      const x = Math.round(wx - cam.x), y = Math.round(wy - cam.y);
       if (x < 0 || y < 0 || x >= c.width || y >= c.height) return null;
       const d = g.getImageData(x, y, 1, 1).data;
       return [d[0], d[1], d[2]];
     };
-    return { dir: pass && pass.dir, near: origin && px(origin.x + 8, origin.y - 2), far: px(4, 4) };
+    return { near: px(15 * 16 + 8, 13 * 16 - 2), far: px(15 * 16 + 28, 13 * 16 - 2) };
   });
   const day = await read();
   await page.evaluate(() => PixelPets.clock.set('mon', 21, 0));
@@ -179,8 +178,10 @@ test('T2 the marker art is 16x16 PAL keys and glows at night', async ({ page }) 
   const night = await read();
   expect(day.near, 'day sample ' + JSON.stringify(day)).toBeTruthy();
   expect(night.near, 'night sample ' + JSON.stringify(night)).toBeTruthy();
+  expect(day.far, 'day sample ' + JSON.stringify(day)).toBeTruthy();
+  expect(night.far, 'night sample ' + JSON.stringify(night)).toBeTruthy();
   const warm = (rgb) => rgb[0] - rgb[2];
-  expect(warm(night.near) - warm(night.far || [0, 0, 0])).toBeGreaterThan(warm(day.near) - warm(day.far || [0, 0, 0]));
+  expect(warm(night.near) - warm(night.far)).toBeGreaterThan(warm(day.near) - warm(day.far) + 12);
 });
 
 test('T3 tapping the marker opens the house sign text', async ({ page }) => {

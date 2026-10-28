@@ -1514,7 +1514,9 @@ let movesLes = { hitDue: false, m7done: false, chooseN: 0, p1At: -1, m7At: -1, p
 let befLes = { took: false, fromBar: false, bar: false };
 let lessonDraw = { hop: 0, y: 0 };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || !$('#ovEnv').hidden || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
+// envAside: mapReadySoon asks "ready once the TODAY card closes?" without toggling #ovEnv (a toggle re-arms its tap guard mid-tap).
+let envAside = false;
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envAside && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -11292,12 +11294,11 @@ function mapVisited(id, cur){
 const mapReady = () => !!S && screen === 'walk' && !overlayOpen() && !fade.busy && !tabsGuarded() && !(battle && battle.on);
 let mapOffShown = null;
 function mapReadySoon(){
-  const env = $('#ovEnv');
-  const was = env ? env.hidden : true;
-  if (env) env.hidden = true;
+  // Never toggle #ovEnv here: hiding and showing it re-armed the card's ghost-tap guard, so a tap that pressed before a
+  // syncMapBtn() and released after it lost its pointerup and click (TODAY card's LOCATION / MAP / OK ignored a real tap).
   let ok = false;
-  try { ok = mapReady(); } catch (e) { ok = false; }
-  if (env) env.hidden = was;
+  envAside = true;
+  try { ok = mapReady(); } catch (e) { ok = false; } finally { envAside = false; }
   return ok;
 }
 function syncMapBtn(){

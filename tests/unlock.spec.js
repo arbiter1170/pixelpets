@@ -187,8 +187,20 @@ function readySave() {
   return s;
 }
 
-async function bootSave(page, save) {
+// tab: an in-page frame loop switches on the first frame the game is up, before the 600 ms calm on WALK can open a
+// queued tip. A Playwright poll needs a round trip, and under load that let the grow-up tip open first.
+async function bootSave(page, save, tab) {
   await installSave(page.context(), save, { quietDay: true });
+  if (tab) {
+    await page.addInitScript((tab) => {
+      const go = () => {
+        const P = window.PixelPets;
+        if (P && P.debug === true && P.state && P.state.v === 2 && P.showTab) { P.showTab(tab); return; }
+        requestAnimationFrame(go);
+      };
+      requestAnimationFrame(go);
+    }, tab);
+  }
   await gotoGame(page, '?debug=1');
   await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true && window.PixelPets.state.v === 2);
 }
@@ -212,8 +224,7 @@ async function walkQuiet(page) {
 
 test('growing up on the Pet tab does not show the tip back on WALK', async ({ page }) => {
   test.setTimeout(60000);
-  await bootSave(page, readySave());
-  await page.evaluate(() => PixelPets.showTab('pet'));   // BOOT_TO_MAP: the game boots on WALK; this case grows up on the Pet tab
+  await bootSave(page, readySave(), 'pet');   // BOOT_TO_MAP: the game boots on WALK; this case grows up on the Pet tab
   await expect(page.locator('#unlockCard')).toBeHidden();
   await finishGrowUp(page);
   await walkQuiet(page);

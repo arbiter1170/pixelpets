@@ -7,7 +7,8 @@ trackErrors(test, expect);
 
 function labSave(flags = {}, world) {
   const s = starterSave();
-  Object.assign(s.flags, { 'story.side': 'glimmer', 'story.side_pick_done': true, 'story.rx_f1': true, 'story.rx_f3': true }, flags);
+  // story.unlock_sides: the side pick queues the "Your side" tip; at 320 its card covers the stair door this spec taps.
+  Object.assign(s.flags, { 'story.side': 'glimmer', 'story.side_pick_done': true, 'story.unlock_sides': true, 'story.rx_f1': true, 'story.rx_f3': true }, flags);
   if (world) s.world = Object.assign({ facing: 'up', respawn: 'fernbrook' }, world);
   return s;
 }
