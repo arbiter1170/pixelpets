@@ -2,14 +2,41 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-28 01:12 ET: The game keeps running after a frame error; the offline cache stops growing; a failed save is told (build 20261028-0112)
+## 2026-10-28 06:23 ET: The game keeps running after a frame error; the offline cache stops growing; a failed save is told (build 20261028-0623)
 
 - What changed and why: three fixes from the Oct 28 memory and crash review, cleared by Vincent. (1) The main loop scheduled its next frame on its last line, so one error in any frame froze the map for the rest of the session while saves and timers ran on. The next frame is now always scheduled; the error still reaches the console and `pp_errors`, and after 10 failing frames in a row the loop retries once a second. (2) The service worker stored every `?v=<build>` copy of each script under its own key in a cache that never changes name, so each build a player loaded added about 2.5 MB that was never removed. Files are now stored under their plain path, and the new worker's activate step deletes the old query-keyed copies. `clock.js`, `mv_fx.js` and `net.js` join the precache list (an offline first launch lost the clock, move effects and Play together). (3) `save()` ignored a failed write (storage full or blocked, or another tab took the save), so progress could stop saving silently. The player now gets one toast per page load: "Couldn't save. Close other Walklings tabs, or free some space, then reload."
 - Files touched: `game.js` (`frame`/`frameBody`, `save`, debug `breakFrames`/`frameCount`), `sw.js`, `tests/loop_save_sw.spec.js` (new), `tests/README.md`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
-- Commit(s) + build id: `fix/loop-guard-sw-cache-save` from main `a7db11b`. Build `20261028-0112`.
+- Commit(s) + build id: `fix/loop-guard-sw-cache-save` from main `a7db11b`. Build `20261028-0623`.
 - Tests run and result (widths, checks): `tests/loop_save_sw.spec.js` 5 passed at 320/375/390 (the frame row 15/15 on repeat); with main's `sw.js` and `save()` the worker and save rows fail. Boot, reload, crash, deploy and save suites (11 files): 135 passed, 1 failed once: `crash_diag` 320 "renderer crash" compares the service-worker-controlled flag across a reload and passed 27/27 on repeat. `debug_mode` passes. Scans all PASS.
 - Decisions made (colour + reasoning): green. Bug fixes; no player-facing change except the one save-failure toast. Debug hooks stay inert without ?debug=1.
 - Anything left unfinished: the medium and low review items (net.js write pile-up, emote wheel repaint, bfcache rejoin, unhandled rejections, uncapped bdCache, background timers, stuck pointers).
+
+## 2026-10-28 06:21 ET: TODAY card buttons work again (build 20261028-0621)
+
+- What changed and why: Vincent reported (Oct 28, 2026) that once the location/time card (TODAY) was open, none of its buttons closed it. The per-frame MAP button check (`mapReadySoon`, added Oct 26) flipped `#ovEnv.hidden` to true and back every frame to ask "could the map open if TODAY were shut?". The open guard on TODAY watches that attribute, so each flip re-armed it as a fresh open and swallowed any tap longer than one frame: OK, MAP and LOCATION all did nothing on a phone. The check now reads the state through a flag (`envPeek`) that `overlayOpen` honours, and never touches the attribute.
+- Files touched: `game.js` (`overlayOpen`, `mapReadySoon`), `tests/today_card_taps.spec.js` (new), `tests/README.md`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `CHANGELOG.md`.
+- Commit(s) + build id: `fix/today-card-taps` from main `a7db11b`. Build `20261028-0621`.
+- Tests run and result (widths, checks): `tests/today_card_taps.spec.js` at 320, 375 and 390: 9 passed; all 3 fail on main's `game.js`. Also `world_clock`, `whereabouts`, `dock_sky`, `top_hud` at all widths: pass except 3 `top_hud` rows (column y, reduced motion, frame home) that fail the same on main `a7db11b`.
+- Decisions made (colour + reasoning): green. A fix for a regression; no behaviour change beyond taps working.
+- Anything left unfinished: the 3 `top_hud` rows already failing on main.
+
+## 2026-10-28 06:15 ET: Wild wins pay a few Acorns (build 20261028-0615)
+
+- What changed and why: BATTLE_ACORNS (D811-D817). Vincent settled D811 on Oct 27 ("fine for now", revisit after a week of play or at the next economy pass) and the rest on their defaults on Oct 28. A wild win now pays `clamp(2 x foe level, 4, 40)` Acorns, with the holder line "{name} got N Acorns!" after the win sound. Today's wild Acorns live in `S.care.wildAcorns` (the per-day care record); from 60 a day a win pays a quarter, at least 1 ("1 Acorn"). Befriend, wandered off, RUN and a loss pay nothing; a co-op guest is paid nothing. Holder payouts are unchanged and do not count toward the day. The payout runs in one seam, `wildWinRewards`, which the town-board bounties can hook into later. The save stays v2 (an additive field inside `care`, cleaned by `normalizeV2`).
+- Files touched: `game.js` (`WILD_ACORNS`, `wildAcornPay`, `wildWinRewards`, the call in `results()`, the `careDay` default, the debug read `PixelPets.wildAcorns`), `save.js` (`care.wildAcorns` clamp), `tests/battle_acorns.spec.js` (new), `tests/README.md`, `archive/DECISIONS_SETTLED.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/battle-acorns` from main `a7db11b`, merged with main `dcd995b` (#208, #209). Build `20261028-0615`.
+- Tests run and result (widths, checks): `tests/battle_acorns.spec.js` T1-T8 at 320, 375 and 390: 24 passed. The 32 specs that end battles at 390 on this branch and on main `a7db11b`: 6 failures on each, the same except for flakes. `moves_v2` test 13 passed alone; `play_together` needs the database emulator, which cannot start behind this sandbox's proxy, and fails on main too.
+- Decisions made (colour + reasoning): none new; D811-D817 settled by Vincent.
+- Anything left unfinished: revisit D811 (the 60 cap against shop prices, befriend paying nothing, the daily total from wild against holder wins) after a week of play.
+
+## 2026-10-27 23:51 ET: "Wants a match" balloon over holders who would battle (build 20261027-2351)
+
+- What changed and why: MATCH_MARKER (D818-D824), all settled on the defaults by Vincent (Oct 28, 2026). A 9x12 spark balloon (`GLYPH.emote_match`, variant A) stands over every holder whose talk would battle: unbeaten, or re-armed after a loss (rested and the 2-step grace spent), plus the walk-up holders Rook at the east gate, Fen (once the trial is ready), Hale and Clerk Nia. It shows within 6 tiles, bobs 1 px on a 400 ms clock (still under reduced motion), and hides while the talk marker or the spot "!" shows, in scenes, battles, the encounter intro and any overlay. Story-scene matches (Rook #2 and #3, Tobin, Imogen) get none. The on-screen quest arrow never sits on a balloon: over a marked holder it stacks 2 px above it, and beside one it keeps 2 px clear (Vincent's ask, Oct 27). Save unchanged.
+- Files touched: `sprites.js` (`emote_match`), `game.js` (`matchMarkFor`, `MATCH_WALKUP`, the draw branch in `drawBubbles`, `matchBob`, `cueClearOfMarks`, the two on-screen arrow draws, debug reads `matchMarks` and `bubbles`), `tests/match_marker.spec.js` (new), `tests/README.md`, `archive/DECISIONS_SETTLED.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/match-marker` from main `a7db11b`. Build `20261027-2351`.
+- Tests run and result (widths, checks): `tests/match_marker.spec.js` T1-T10 at 320, 375 and 390: 33 passed, twice in a row. The 25 specs that touch spotting, rematches, cues or bubbles at 390 on this branch and on main `a7db11b`: the same 12 failures on both. Two more failed on the branch under load: `moves_v2` test 7 passed when run alone, twice; `modern_hud_rows` "highcharity row 38" failed once on main too and passed alone on the branch, so it is flaky on both.
+- Decisions made (colour + reasoning): none new; D818-D824 were settled on their defaults (variant A, the default holder list).
+- Anything left unfinished: none.
 
 ## 2026-10-27 19:50 ET: Day/night and weather in the Modern dock (build 20261027-1950)
 

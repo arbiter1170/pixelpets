@@ -25,8 +25,6 @@ Other packets hold ids through D858.
 |---|---|---|---|---|
 | D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
 | D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
-| D791 | MODERN_HUD_CLEAR tutorial strip in dock, YELLOW, OPEN | Strip over dock row 2 only once tutorial popups look lands | Not built; waits on the tutorial popups packet look | tutorial popups packet |
-| D794 | TOP_HUD strip-and-chip yellow | Where the tutorial strip docks in the frame so it never covers the place chip | Default: strip over dock row 2 only. Not built until tutorial popups look | TOP_HUD / MODERN_HUD_CLEAR |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.
