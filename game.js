@@ -346,7 +346,16 @@ function newPet(sp, stage=0, origin='wild', lv=STAT_RULES.STARTER_LEVEL){   // B
 let saveTimer = 0, readOnly = false;              // a save from a newer build: play nothing, write nothing
 // Once Start over has begun, nothing on this page may write again (pagehide / hidden / the 5 s timer fire while it reloads).
 let resetting = false, gameReplaced = false;
-function save(){ if (!S || readOnly || resetting) return; S.last = Date.now(); if (DEBUG) S.debugSave = true; PPSave.writeV2(S); }   // a debug session marks the save (additive; shown in Settings)
+// A write that fails (storage full or blocked, or another tab took the save) used to be silent: progress stopped saving.
+// Tell the player once per page load; the game keeps playing in memory.
+let saveFailTold = false;
+function save(){
+  if (!S || readOnly || resetting) return;
+  S.last = Date.now(); if (DEBUG) S.debugSave = true;
+  if (PPSave.writeV2(S) !== false || saveFailTold) return;
+  saveFailTold = true;
+  try { toast("Couldn't save. Close other Walklings tabs, or free some space, then reload."); } catch (e) {}
+}   // a debug session marks the save (additive; shown in Settings)
 /* ---------- reload breadcrumb (diagnostics; plain localStorage keys outside the save, so the save stays v2) ----------
    Every path that reloads or replaces the page first writes pp_reload {reason, at, battleOn, build}. pagehide/beforeunload
    with no reason writes reason 'unknown' (a Safari refresh, a close). pp_alive is set while the page is visible and cleared
@@ -17054,7 +17063,23 @@ function bindInput(){
 
 /* ---------- main loop ---------- */
 let lastT = now(), tickAcc = 0;
+// One error in a frame used to stop the loop for good: the map froze while saves and timers ran on (only a reload
+// recovered). The next frame is now always scheduled. The error still reaches window.onerror (noteError, the console);
+// after FRAME_FAIL_MAX failing frames in a row the loop retries once a second instead of 60 times.
+const FRAME_FAIL_MAX = 10;
+let frameFails = 0, frameCount = 0, frameBreak = 0;   // frameBreak: ?debug=1 only (PixelPets.breakFrames)
 function frame(t){
+  let ok = false;
+  try {
+    if (frameBreak > 0) { frameBreak--; throw new Error('debug: broken frame'); }
+    frameBody(t); ok = true; frameCount++;
+  } finally {
+    frameFails = ok ? 0 : frameFails + 1;
+    if (frameFails > FRAME_FAIL_MAX) setTimeout(() => requestAnimationFrame(frame), 1000);
+    else requestAnimationFrame(frame);
+  }
+}
+function frameBody(t){
   const dt = Math.min(0.1, (t - lastT) / 1000); lastT = t;
   const p = pet();
   if (p && !overlayOpen()) {
@@ -17095,7 +17120,6 @@ function frame(t){
       if (!q) closeWalklingSheet(); else paintWalklingStats(q);
     }
   }
-  requestAnimationFrame(frame);
 }
 
 /* ---------- HP regen (TYPES_STATS §7) ---------- */
@@ -17403,6 +17427,7 @@ function boot(){
   };
   const cheats = {
     repaintStats(){ paintStatIcons(); return true; },   // ?debug=1: redraw the stat icons
+    breakFrames: n => { frameBreak = Math.max(0, n | 0); return true; }, frameCount: () => frameCount,   // ?debug=1: the loop survives a throwing frame
     runSteps: steps => { showTab('walk'); if (overlayOpen()) return false; runSteps(steps); return true; },   // debug: play ad-hoc scene steps (STINGERS test 14)
     forceEvolve: () => startEvolution(true), forceEncounter: () => { showTab('walk'); if (!overlayOpen()) startEncounterIntro(); },
     forceBattle: (form, level) => {
