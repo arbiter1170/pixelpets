@@ -51,7 +51,15 @@ async function main() {
   let url = val('url', '');
   let server = null;
   if (!url) {
-    server = await start({ port: +val('port', 8080), host: has('lan') ? '0.0.0.0' : '127.0.0.1' });
+    const asked = val('port', '');
+    try {
+      // No --port: try 8080 and take any free port if something else already has it. An explicit --port is kept or refused.
+      server = await start({ port: +(asked || 8080), host: has('lan') ? '0.0.0.0' : '127.0.0.1', fallback: !asked });
+    } catch (e) {
+      if (e && (e.code === 'EADDRINUSE' || e.code === 'EACCES')) { console.error('Port ' + asked + (e.code === 'EACCES' ? ' is not allowed on this computer (Windows reserves some ranges).' : ' is already in use.') + ' Leave out --port to take a free one, or pick another number.'); process.exit(1); }
+      throw e;
+    }
+    if (server.moved) console.log('Port ' + server.moved + ' is in use or not allowed here, using ' + server.port + ' instead.');
     url = 'http://127.0.0.1:' + server.port + '/' + (has('no-debug') ? '' : '?debug=1');
     console.log('Serving this folder:');
     for (const u of server.urls) console.log('  ' + u + (has('lan') && !u.includes('127.0.0.1') ? '   <- type this into Safari on your iPhone (same Wi-Fi)' : ''));
