@@ -25,6 +25,9 @@ const SHELL = [
   './cloud.js',
   './debug_ui.js',
   './data/nav_art.js',
+  './clock.js',
+  './mv_fx.js',
+  './net.js',
   './game.js',
   './fonts/Jersey15.woff2',
   './icons/icon-192.png',
@@ -42,12 +45,18 @@ self.addEventListener('activate', event => {
   // claim() here only runs when this worker is actually taking over. On first install that
   // gives the open page a controller so the shell works offline. On an update it runs after
   // the old worker is gone, not under a game that is still playing.
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  // Older workers stored every ?v=<build> copy of each script under its own key, so the cache grew by a full set of
+  // scripts with every build a player loaded. Drop those; copies are now kept under the plain path (one per file).
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+    .then(() => caches.open(CACHE)).then(cache => cache.keys().then(reqs => Promise.all(reqs.filter(r => new URL(r.url).search).map(r => cache.delete(r)))))
+    .then(() => self.clients.claim()));
 });
 
 function isVersion(url){
   return url.origin === self.location.origin && /(^|\/)version\.json$/.test(url.pathname);
 }
+
+function plainKey(url){ return url.origin + url.pathname; }
 
 function isWorkerScript(url){
   return /(^|\/)sw\.js$/.test(url.pathname);
@@ -94,10 +103,11 @@ self.addEventListener('fetch', event => {
       const net = await (page ? fetch(req.url, { cache: 'no-cache', credentials: 'same-origin', redirect: 'follow' }) : fetch(req));
       const res = await stripRedirect(net);
       if (!res) throw new Error('redirect');
-      if (res.ok) { try { await cache.put(req, res.clone()); } catch (e) { /* a full cache must not drop the live response */ } }
+      // Keyed without the query: index.html asks for game.js?v=<build>, and each build would otherwise add a new copy.
+      if (res.ok) { try { await cache.put(plainKey(url), res.clone()); } catch (e) { /* a full cache must not drop the live response */ } }
       return res;
     } catch (e) {
-      const hit = (await cache.match(req)) || (await cache.match(req, { ignoreSearch: true })) || (page ? await cache.match('./index.html') : null);
+      const hit = (await cache.match(plainKey(url))) || (await cache.match(req, { ignoreSearch: true })) || (page ? await cache.match('./index.html') : null);
       return hit || new Response('', { status: 504 });
     }
   })());
