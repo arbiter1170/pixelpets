@@ -367,6 +367,7 @@ const PPSave = (() => {
       else {
         for (const k of ['steps', 'finds', 'stepBond', 'battleBond']) s.care[k] = fin(s.care[k]) && s.care[k] >= 0 ? Math.floor(s.care[k]) : 0;
         s.care.firstCare = s.care.firstCare === true;
+        if (has(s.care, 'wildAcorns')) s.care.wildAcorns = fin(s.care.wildAcorns) && s.care.wildAcorns >= 0 ? Math.floor(s.care.wildAcorns) : 0;   // BATTLE_ACORNS D815 (additive; bad -> 0)
         if (has(s.care, 'minigameBond')) s.care.minigameBond = fin(s.care.minigameBond) && s.care.minigameBond >= 0 ? Math.min(3, Math.floor(s.care.minigameBond)) : 0;
         if (has(s.care, 'mg')) {
           if (!isObj(s.care.mg)) delete s.care.mg;
