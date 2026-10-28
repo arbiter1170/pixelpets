@@ -114,9 +114,14 @@ test('a boss opens at Humming, refuses befriending, shifts at half HP, and joins
   expect(open).toMatchObject({ boss: true, shifted: false, stage: 1, tint: true });
   expect(open.maxHp).toBe(open.want);
 
+  // The refusal line stays up for textMs, then CHOOSE puts the prompt back. At 1 ms the line could be gone
+  // before the first poll, so hold it long enough to read, then wait for the prompt and go back to 1 ms.
+  await page.evaluate(() => { PixelPets.battle.textMs = 4000; });
   await page.click('#btBefriendAct');
   await expect(page.locator('#btMsg')).toHaveText('It only hears the hum. Wait.');
   expect(await page.evaluate(() => document.querySelector('#btBef').hidden)).toBe(true);
+  await expect(page.locator('#btMsg')).toHaveText(/^What should .+ do\?$/);
+  await page.evaluate(() => { PixelPets.battle.textMs = 1; });
 
   // Drop it under half, then play a turn: the shift runs at the end of that turn.
   // A non-damaging move, so the boss is still standing when the turn ends.

@@ -232,15 +232,20 @@ test.describe('Play together', () => {
     expect(look.pet.sp).toBe('ember');
     expect(look.pet.st).toBe(0);
     const x0 = await a.evaluate(() => window.PixelPets.state.world.x);
-    let glided = false;
+    // Phone B checks the copy of A on every frame it draws. Sampling from the test only while A walked could
+    // miss the glide on a slow run: the copy trails A, so A often reached x0 + 5 before the copy moved.
+    await b.evaluate(uid => {
+      window.__ppGlide = false;
+      const tick = () => {
+        const o = window.PixelPets.net.others.find(z => z.uid === uid);
+        if (o && typeof o.fx === 'number' && Math.abs(o.fx - Math.round(o.fx)) > 0.04) window.__ppGlide = true;
+        if (!window.__ppGlide) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, aUid);
     await a.keyboard.down('ArrowRight');
     const walkEnd = Date.now() + 5000;
     while (Date.now() < walkEnd) {
-      const sample = await b.evaluate(uid => {
-        const o = window.PixelPets.net.others.find(z => z.uid === uid);
-        return o ? o.fx : null;
-      }, aUid);
-      if (typeof sample === 'number' && Math.abs(sample - Math.round(sample)) > 0.04) glided = true;
       const ax = await a.evaluate(() => window.PixelPets.state.world.x);
       if (ax >= x0 + 5) break;
       await a.waitForTimeout(40);
@@ -248,11 +253,11 @@ test.describe('Play together', () => {
     await a.keyboard.up('ArrowRight');
     const stopped = await a.evaluate(() => window.PixelPets.state.world);
     expect(stopped.x, 'check 5 five tiles').toBeGreaterThanOrEqual(x0 + 5);
-    expect(glided, 'check 5 glide').toBe(true);
     await b.waitForFunction(({ uid, x, y }) => {
       const o = window.PixelPets.net.others.find(z => z.uid === uid);
       return o && o.x === x && o.y === y && o.f === 'r';
     }, { uid: aUid, x: stopped.x, y: stopped.y }, { timeout: 1500 });
+    expect(await b.evaluate(() => window.__ppGlide), 'check 5 glide').toBe(true);
     const before = await a.evaluate(() => window.PixelPets.net.stats.writes);
     let dir = 'ArrowRight';
     await a.keyboard.down(dir);
@@ -388,7 +393,8 @@ test.describe('Play together', () => {
 
   test('14 area and 15 interior', async ({ page, browser }, info) => {
     test.skip(info.project.name !== '390', '390 only');
-    test.setTimeout(20000);
+    // A cap, not a wait: two boots (up to 25 s each for the uid) and two joins come first on a loaded machine.
+    test.setTimeout(50000);
     const a = page, b = await bootNew(browser, saveFor('areaB', 'Birch'));
     await boot(a, saveFor('areaA', 'Tester'));
     await joinRoom(a); await joinRoom(b);

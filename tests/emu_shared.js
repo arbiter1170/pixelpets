@@ -63,6 +63,17 @@ function dbAnswers() {
     req.on('timeout', () => { req.destroy(); res(false); });
   });
 }
+// A cold Firestore emulator can take seconds on its first read (and again on its first rules check)
+// on a loaded machine. A page that hits it first then logs "Could not reach Cloud Firestore backend"
+// after 10 s. One owner read and one rules-checked read here take that cost before any page loads.
+function fsRead(auth) {
+  return new Promise(res => {
+    const headers = auth ? { Authorization: 'Bearer owner' } : {};
+    const req = http.get({ host: '127.0.0.1', port: EMU_PORTS.firestore, path: '/v1/projects/demo-walklings/databases/(default)/documents/saves/pp-warm', headers, timeout: 15000 }, (r) => { r.resume(); res(true); });
+    req.on('error', () => res(false));
+    req.on('timeout', () => { req.destroy(); res(false); });
+  });
+}
 async function lockEmu() {
   fs.mkdirSync(path.dirname(LOCK), { recursive: true });
   for (let i = 0; i < 1200; i++) {
@@ -90,8 +101,26 @@ function firebaseCmd(config) {
   return { cmd: 'npx', args: ['firebase', ...args] };
 }
 
+// The CLI opens the auth port last, after the two Java emulators: about 27 s at load 8 and 44 s at
+// load 14 on a 4-core box. The callers' beforeAll hooks allow 600 s, so this stays well inside them.
+const START_MS = 120000;
+
+// True while the emulator this run spawned is alive (its pid file carries this run's PP_EMU_RUN).
+function ourEmuAlive() {
+  let pid = 0;
+  try { pid = parseInt(fs.readFileSync(PID, 'utf8'), 10); } catch (e) { return false; }
+  if (!pid) return false;
+  try { process.kill(pid, 0); return true; } catch (e) { return false; }
+}
+
 async function ensureEmulator() {
   await lockEmu();
+  // A file that stopped mid-start (hook timeout, worker restart) leaves our emulator still
+  // starting with some ports closed. Let it finish instead of waiting for it to exit or
+  // spawning a second one on the same ports.
+  if (!(await emuPorts('all')) && ourEmuAlive()) {
+    await waitUntil(() => emuPorts('all'), START_MS, 'database emulator did not start');
+  }
   if (!(await emuPorts('all')) && (await emuPorts('any'))) {
     await waitUntil(async () => !(await emuPorts('any')), 20000, 'previous emulator did not exit');
   }
@@ -102,9 +131,11 @@ async function ensureEmulator() {
     fs.mkdirSync(path.dirname(PID), { recursive: true });
     fs.writeFileSync(PID, String(emu.pid));
     emu.unref();
-    await waitUntil(() => emuPorts('all'), 40000, 'database emulator did not start');
+    await waitUntil(() => emuPorts('all'), START_MS, 'database emulator did not start');
   }
   await waitUntil(dbAnswers, 10000, 'database emulator did not answer');
+  await waitUntil(() => fsRead(true), 30000, 'firestore emulator did not answer');
+  await waitUntil(() => fsRead(false), 30000, 'firestore emulator did not answer');
 }
 
 function releaseEmulator() {

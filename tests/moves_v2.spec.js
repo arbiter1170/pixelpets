@@ -454,6 +454,9 @@ test('13 a forced switch opens on an empty queue', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390 only');
   const s = baseSave();
   s.party.push(petRow({ id: 'petsecond', species: 'tide', stage: 0, level: 5, moves: ['droplet_dash', 'ripple_jab', 'mist_veil'] }));
+  // Two pets queue the party tip, which opens over the battle buttons once the walk has been calm for 600 ms.
+  // A slow boot can give it that time, so this check plays with tips off.
+  s.settings.tips = false;
   await boot(page, s);
   await openWild(page, 'ember/0', 8);
   await page.evaluate(() => {
@@ -916,6 +919,7 @@ test.describe('22 co-op flash clock', () => {
   let env = null;
   test.beforeAll(async ({}, info) => {
     test.skip(info.project.name !== '390', '390 only');
+    test.setTimeout(600000);
     await ensureEmulator();
     env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: EMU_PORTS.database, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await env.withSecurityRulesDisabled(async (ctx) => { await ctx.database().ref('roomCodes/AMB4RQ').set({ on: true }); });

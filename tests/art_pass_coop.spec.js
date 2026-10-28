@@ -48,6 +48,7 @@ test.describe('ART_PASS co-op hop', () => {
   test.describe.configure({ mode: 'serial', timeout: 120000 });
   test.beforeAll(async ({}, info) => {
     test.skip(info.project.name !== '390', '390 only');
+    test.setTimeout(600000);
     await ensureEmulator();
     env = await initializeTestEnvironment({ projectId: 'demo-walklings', database: { host: '127.0.0.1', port: EMU_PORTS.database, rules: fs.readFileSync('database.rules.json', 'utf8') } });
     await env.withSecurityRulesDisabled(async ctx => { await ctx.database().ref('roomCodes/AMB4RQ').set({ on: true }); });
