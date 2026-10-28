@@ -80,7 +80,7 @@
       label: 'STANDING',
       empty: 'Nobody knows you yet. Go say hello!',
       pledged: 'Pledged to {faction}',
-      explain: 'Standing is how much a side trusts you. Only Rook can help you change sides.',
+      explain: 'Standing is how much a side trusts you.',   // D161: no switching before Act 5
       marker: 'PLEDGED',
     },
     // Voice guide for any Glimmerwell placeholder (not UI text).

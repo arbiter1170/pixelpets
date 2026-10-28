@@ -6,7 +6,8 @@ const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap, artifacts
 
 trackErrors(test, expect);
 
-const LINE_A = 'Your team rests up and feels full of energy. This Lantern House will remember you.';
+// D875 (Vincent, Oct 28, 2026): an energy-only rest costs 5 Acorns too; the free refill line is gone.
+const LINE_A = 'You leave 5 Acorns. You all doze in the lantern glow. Your team is rested.';
 const LINE_B = 'Your team is already rested. This Lantern House will remember you.';
 const K = [0x1a, 0x1c, 0x2c];
 const R = [0xb1, 0x3e, 0x53];
@@ -688,7 +689,7 @@ test('the nameless cooler hides its title and Cook Hesper keeps hers', async ({ 
   await expect(page.locator('#shopTitle')).toHaveText('Cook Hesper');
 });
 
-test('a free Lantern rest uses the rounded energy check', async ({ page }) => {
+test('a Lantern rest uses the rounded energy check, and an energy-only rest costs 5 (D875)', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390 only');
   test.setTimeout(60000);
   const s = save();
@@ -717,14 +718,14 @@ test('a free Lantern rest uses the rounded energy check', async ({ page }) => {
   });
   expect(await page.evaluate(() => PixelPets.talkTo('lantern_bed_a'))).toBe(true);
   await reachChoice(page);
-  await page.locator('#sbChoices button', { hasText: 'Rest a while' }).click();
+  await page.locator('#sbChoices button', { hasText: 'Rest (5 Acorns)' }).click();
   await page.waitForFunction((line) => window.PixelPets.scene && window.PixelPets.scene.text === line, LINE_A);
   const filled = await page.evaluate(() => ({
     flag: PixelPets.lanternRestFlag(),
     energy: PixelPets.state.party.map((p) => p.energy),
     money: PixelPets.state.money,
   }));
-  expect(filled.flag).toBe('refill');
+  expect(filled.flag).toBe('paid');
   expect(filled.energy).toEqual([100, 100]);
-  expect(filled.money).toBe(55);
+  expect(filled.money).toBe(50);
 });

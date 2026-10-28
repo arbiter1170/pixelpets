@@ -278,7 +278,6 @@
       ["say", "Associate Quinn", "Every kindness you give it, it passes along. Isn't that a partnership?"],
       ["run", "gb_read"],
       ["say", "Rook", "{name}. It walked to that thing without you."],
-      ["say", "Rook", "My offer's real. Half your score. It gets bigger every bright day you wait."],
       ["choice", "", [
         ["Stand with Glimmerwell", [
           ["align", "glimmer", 5],

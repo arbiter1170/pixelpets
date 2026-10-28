@@ -2966,7 +2966,7 @@ function unlockScan(){
   if (S.flags['story.side_pick_done']) unlockOffer('sides');
   if (sideQuestAccepted()) unlockOffer('quests');
   if (S.flags['unlock.moral']) unlockOffer('moral');
-  if (S.flags['story.rc_climax']) unlockOffer('switch');
+  if (S.flags['story.rc_climax'] && Number(S.flags['story.act']) >= PPStanding.CFG.switch.openAct) unlockOffer('switch');   // D161: no switch tip before Act 5
   if (S.flags['story.hc_invite']) unlockOffer('letter');
   if (S.flags['unlock.lantern']) unlockOffer('lantern');
   if (S.party && S.party.length >= 2) unlockOffer('party');
