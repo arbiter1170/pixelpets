@@ -3310,9 +3310,10 @@ function dayRec(obj, k, init){
   return obj[k];
 }
 const careDay = () => {
-  const c = dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false, minigameBond: 0, mg: { lantern: 0, shells: 0, chirp: 0, dash: 0, pairs: 0, hop: 0, relay: 0, seek: 0 } });
+  const c = dayRec(S, 'care', { steps: 0, finds: 0, stepBond: 0, battleBond: 0, firstCare: false, minigameBond: 0, wildAcorns: 0, mg: { lantern: 0, shells: 0, chirp: 0, dash: 0, pairs: 0, hop: 0, relay: 0, seek: 0 } });
   if (!Number.isInteger(c.minigameBond) || c.minigameBond < 0) c.minigameBond = 0;
   if (c.minigameBond > 3) c.minigameBond = 3;
+  if (!Number.isInteger(c.wildAcorns) || c.wildAcorns < 0) c.wildAcorns = 0;   // BATTLE_ACORNS D815: today's wild Acorns (an older record has none)
   const ids = ['lantern', 'shells', 'chirp', 'dash', 'pairs', 'hop', 'relay', 'seek'];
   if (!c.mg || typeof c.mg !== 'object' || Array.isArray(c.mg)) c.mg = {};
   for (const id of ids) { const n = c.mg[id]; c.mg[id] = Number.isInteger(n) && n > 0 ? Math.min(3, n) : 0; }
@@ -14031,6 +14032,22 @@ async function finish(result, id){
   $('#btOk').textContent = result === 'befriended' ? 'YAY!' : 'OK';
   setPanel('end'); fitBattle();
 }
+// BATTLE_ACORNS (D811-D816): a wild win pays a small Acorn drop by foe level. Today's wild Acorns live in S.care.wildAcorns
+// (careDay). At dayCap or more a win pays a quarter of the drop, at least 1. Befriend, wandered off and RUN pay nothing (D812).
+const WILD_ACORNS = { per: 2, min: 4, max: 40, dayCap: 60, overShare: 0.25 };
+function wildAcornPay(level, today){
+  const W = WILD_ACORNS, drop = Math.max(W.min, Math.min(W.max, W.per * (level | 0)));
+  return (today | 0) >= W.dayCap ? Math.max(1, Math.floor(drop * W.overShare)) : drop;
+}
+// D816: the wild battle-end seam, called once from results() for every wild end. Only a win pays (D812).
+// TOWN_BOARD bounties (D46/D47) hook in here later; no bounty logic now. A co-op guest is paid nothing (D331).
+async function wildWinRewards(B, result, id){
+  if (B.kind !== 'wild' || result !== 'win' || B.coop) return;
+  const f = B.foes[B.fi] || B.foes[0]; if (!f) return;
+  const c = careDay(), n = wildAcornPay(f.level, c.wildAcorns);
+  c.wildAcorns += n; S.money = (S.money || 0) + n; save();
+  await say(playerName() + ' got ' + acorns(n) + '!', id);   // D813: the holder line, via acorns(n)
+}
 async function results(result, id){
   const B = battle, t = tr(), won = result === 'win' || result === 'befriended';
   B.cosmeticLines = [];
@@ -14057,6 +14074,7 @@ async function results(result, id){
     if (money > 0) { await say(playerName() + ' got ' + acorns(money) + '!', id); if (!alive(id)) return; }
     if (t.hall && t.seal) { showSealCard(t.seal); sfx('stinger_seal'); await say('You earned the ' + sealName(t.seal) + '!', id); if (!alive(id)) return; }
   }
+  await wildWinRewards(B, result, id); if (!alive(id)) return;   // BATTLE_ACORNS D816: after the holder block, before level-ups
   if (result === 'tired' && t && !t.oneShot) S.flags['rematch.' + trainerMusicId(B.trainerId)] = true;   // D279: a wipe marks the NPC; one-shots stay story results
   if (t && t.oneShot && (result === 'win' || result === 'tired')) {      // true = Rook #1; a string prefix is a later one-shot (Rook #2)
     const prefix = t.oneShot === true ? 'story.rival1' : t.oneShot;
@@ -17358,7 +17376,7 @@ function boot(){
   // (XP, evolving, spawning, places, fast mode, live state) only works with ?debug=1.
   const copy = o => JSON.parse(JSON.stringify(o));
   const api = {
-    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get finds(){ return { at: FINDS.at.slice(), today: S && S.care ? { ...S.care } : null }; }, setFindRng: f => { if (DEBUG) findRng = typeof f === 'function' ? f : Math.random; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
+    get debug(){ return DEBUG; }, get fast(){ return fastMode; }, get rates(){ return { ...rate() }; }, get finds(){ return { at: FINDS.at.slice(), today: S && S.care ? { ...S.care } : null }; }, get wildAcorns(){ const c = S && S.care, day = dayKey(Date.now()); return { ...WILD_ACORNS, day, today: c && c.d === day ? (c.wildAcorns | 0) : 0 }; }, setFindRng: f => { if (DEBUG) findRng = typeof f === 'function' ? f : Math.random; }, get bond(){ const p = pet(); return p ? { pts: bondPts(p), level: bondLevel(p), at: BOND.at.slice(), today: S.care ? { ...S.care } : null, pending: bondUps.slice(), stretching: !!anim.stretching } : null; }, addBond: n => DEBUG ? addBond(pet(), n) : 0, get touch(){ const p = pet(), t = now(); return { pat: p && p.pat ? { ...p.pat } : null, squint: t < touch.squintUntil, roll: t < touch.rollUntil, away: t < touch.awayUntil, box: (() => { const c = $('#petCanvas'), r = c.getBoundingClientRect(), k = r.width / c.width, pp = petPos(t), half = Math.max(8 * k + 4, PAT.hitCss / 2); return { cx: r.left + (pp.x + 8) * k, cy: r.top + (pp.y + 8) * k, half }; })() }; }, resetHello: () => { delete S.flags[HELLO_FLAG]; save(); }, get hello(){ return { due: helloDue(), day: S && S.flags[HELLO_FLAG] || null, slot: helloSlot(), playing: now() < hello.until, chirpWaiting: !!hello.chirp }; }, helloLines: HELLO_LINES,
     get state(){ return DEBUG ? S : copy(S); },                     // a snapshot unless debugging
     get env(){ return ENV && { ...ENV, tags: ENV.tags.slice() }; }, get refreshEnv(){ return DEBUG && debugQueryOn() ? () => PPEnv.refresh('refresh') : undefined; },   // ?debug=1 only; the REFRESH path (geoPref 'allow' + permState 'granted'), never prompts
     get wild(){ return wild.list.map(w => ({ id: w.id, sp: w.sp, stage: w.stage, lv: w.lv, x: w.x, y: w.y, fx: w.fx, fy: w.fy, moving: !!w.to, shy: (w.shyUntil || 0) > wild.clock, guide: !!w.guide, name: nameOf(w.sp, w.stage) })); },
