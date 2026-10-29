@@ -22,10 +22,10 @@ D871 is used: INTRO_CUTSCENE, Rook's entry tile (settled, recorded in the archiv
 
 D876-D891 are reserved: BRINEWICK v0.1 (design specs/BRINEWICK.md, one-pager calls B1-B14 = D876-D889, settled on their defaults Oct 28, 2026 and recorded in the archive; D890 and D891 stay open). Brinewick first took D859-D874 on its branch; PHONE_APPS (D859-D870), INTRO_CUTSCENE (D871) and LANTERN_COST (D875) claimed ids first, so every Brinewick id moved up by 17 before merging. Same calls, same order.
 
-D892 is reserved: MODERN_HUD_CLEAR v0.2.6. D893 is reserved: KEEPER_RANKS v0.1 (SETTLED by Vincent, Thu Oct 29, 2026, 12:08 PM ET: Warden ranks above Captain; recorded in the archive). D894-D900 are reserved: STORY_DECISIONS v0.1 (D898 and D899 yellow, the rest red; due Sat Oct 31, 2026, 12:11 PM ET). D901-D902 are reserved: STORY_DECISIONS v0.2 (D901 red, D902 yellow; due Sat Oct 31, 2026, 12:31 PM ET).
+D892 is reserved: MODERN_HUD_CLEAR v0.2.6. D893 is reserved: KEEPER_RANKS v0.1 (SETTLED by Vincent, Thu Oct 29, 2026, 12:08 PM ET: Warden ranks above Captain; recorded in the archive). D894-D900 are reserved: STORY_DECISIONS v0.1 (D894, D896 and D897 red and D899 yellow SETTLED by Vincent, Thu Oct 29, 2026, 2:45 PM ET, recorded in the archive; D895 red and D898 yellow open, due Sat Oct 31, 2026, 12:11 PM ET; D900 red, open, reworked in STORY_DECISIONS v0.4, due Sat Oct 31, 2026, 3:00 PM ET). D901-D902 are reserved: STORY_DECISIONS v0.2 (D901 red, SETTLED by Vincent, Thu Oct 29, 2026, 12:51 PM ET: Quinn's "The old ones built it." stays as an early hint, no re-voice; recorded in the archive. D902 yellow, open, due Sat Oct 31, 2026, 12:31 PM ET). D903-D909 (MOVE_FX_3) are settled (Vincent, Oct 29, 2026) and recorded in the archive. D910 is reserved: CC_COTTAGE_ROOF v0.1 (yellow, SETTLED by Vincent, Thu Oct 29, 2026, 2:45 PM ET: roof_slate_b, keep the arch; recorded in the archive). D911-D913 are reserved: PRESIDENT_CHOICE v0.1 (D911 and D912 red, D913 yellow; due Sat Oct 31, 2026, 3:00 PM ET). D914 is reserved: CHIP_SECRECY v0.1 (yellow, due Sat Oct 31, 2026, 3:00 PM ET).
 
-Next free id is D903.
-Other packets hold ids through D902.
+Next free id is D915.
+Other packets hold ids through D914.
 
 ## Open
 

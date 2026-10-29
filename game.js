@@ -10765,11 +10765,17 @@ function show(s, mode){
     B.mvN = ((B.mvN | 0) + 1) % 3;
     // A bespoke charge lasts until its wind-up ends it (mvYield), so it fills the "tries" line at any text speed.
     B.fx.push({ who: s.who, kind: 'mvGo', type: s.type, sig: !!s.sig, status: !!s.status, effect: s.effect || null, mid: mvRow ? s.mid : null,
-      v: mvRow ? B.mvN : 0, lift: mvRow && s.status ? mvPose(s.mid).lift : 0, t0: t, dur: s.status ? 420 : (mvRow ? 1600 : 400) });
+      v: mvRow ? B.mvN : 0, st: s.st | 0, lift: mvRow && s.status ? mvPose(s.mid).lift : 0, t0: t, dur: s.status ? 420 : (mvRow ? 1600 : 400) });
     B.fxLog.push('mvGo');
     if (mvRow) B.fxLog.push('mvGo:' + s.mid);
     sfx('chirp_' + String(s.type || 'PLAIN').toLowerCase(), 0.04);
     if (s.sig) sfx('notice');
+    return;
+  }
+  if (s.k === 'echo') {   // MOVE_FX_3 (D906): an Echo flourish, one 240 ms beat. FULL only: CALM (and reduced motion), OFF, fast-forward and snapQueue skip it
+    if (mode !== 'full' || B.ff || typeof MV_ECHO === 'undefined' || !MV_ECHO[s.sp]) return;
+    B.fx.push({ who: s.who, kind: 'mvEcho', sp: s.sp, t0: t + (s.lag || 0), dur: 240 });
+    B.fxLog.push('mvEcho:' + s.sp);
     return;
   }
   if (s.k === 'lunge') { B.fx.push({ who: s.who, kind: 'lunge', t0: t, dur: 300 }); B.fxLog.push('lunge'); return; }
@@ -10779,7 +10785,7 @@ function show(s, mode){
     if (mvRow) {   // MOVE_FX_2 (D827): the charge ends; the travel flies S to T inside the wind-up and lands at contact
       mvYield(B.fx);
       if (mvRow.travel && mvMs > 0 && !B.ff) {
-        B.fx.push({ who: s.who, kind: 'mvTravel', type: s.type, mid: s.mid, v: B.mvN | 0, t0: t, dur: mvMs });
+        B.fx.push({ who: s.who, kind: 'mvTravel', type: s.type, mid: s.mid, v: B.mvN | 0, st: s.st | 0, t0: t, dur: mvMs });
         B.fxLog.push('mvTravel:' + s.mid);
       }
     }
@@ -10794,7 +10800,7 @@ function show(s, mode){
     const tgtMon = (s.who || '').indexOf('me') === 0 ? 'me' : 'foe';
     if (mode === 'full') {
       const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(s.mid) : null;
-      B.fx.push({ who: tgtMon, kind: 'mvHit', type: typ, variant: variant, mid: mvRow ? s.mid : null, v: mvRow ? B.mvN | 0 : 0, t0: t, dur: 420 });
+      B.fx.push({ who: tgtMon, kind: 'mvHit', type: typ, variant: variant, mid: mvRow ? s.mid : null, v: mvRow ? B.mvN | 0 : 0, st: s.st | 0, t0: t, dur: 420 });
       B.fxLog.push('mvHit');
       if (mvRow) B.fxLog.push('mvHit:' + s.mid);   // MOVE_FX_2 (D831)
       const sc = typeof mvScaled === 'function' ? mvScaled(typ, variant) : { shake: 1, white: 50 };
@@ -11092,6 +11098,9 @@ function echoName(side){ const e = ECHOES[echoSpecies(side)]; return e ? e.name 
 const otherSide = side => side === 'me' ? 'foe' : 'me';
 function sideName(side){ return side === 'me' ? petName(activePet()) : foeLabel(curFoe()); }
 const echoLine = side => sideName(side) + "'s Echo: " + echoName(side) + '!';
+// MOVE_FX_3 (D906): an Echo line rides behind its own 'echo' step, so the flourish starts the frame the line shows (lag ms later after a hit).
+function echoStep(side, lag){ step('echo', { who: side, sp: echoSpecies(side), lag: lag || 0 }); step('text', { s: echoLine(side) }); }
+function echoSay(side, id){ echoStep(side, 0); return play(id); }
 /* --- ARBITER_UNITS boss battles (D842) --- */
 const BOSS_HP_MUL = 1.5, BOSS_TRACK = 'glimmer_battle';
 const BOSS_SHIFT_LINE = 'The hum rises. {foe} answers it.', BOSS_WAIT_LINE = 'It only hears the hum. Wait.', BOSS_BACK = 'It slips back to its post.';
@@ -11251,7 +11260,8 @@ async function doMove(side, mid, id){
   const line = mine ? (SPECIES[spi(p)] || {}).id : f.species;
   const sig = typeof SIGNATURES !== 'undefined' && SIGNATURES[line] === mid;
   const typ = mv.type || 'PLAIN';
-  if (mode === 'full') step('go', { who: side, type: typ, sig: sig, status: mv.power === 0, effect: mv.effect || null, mid: mid });   // MOVE_FX_2 (D831)
+  const mvSt = SPECIES[SP_INDEX[line]] && SPECIES[SP_INDEX[line]].attune ? ((mine ? p.stage : f.stage) | 0) : 0;   // MOVE_FX_3 (D905): the user's Answerer tier
+  if (mode === 'full') step('go', { who: side, type: typ, sig: sig, status: mv.power === 0, effect: mv.effect || null, mid: mid, st: mvSt });   // MOVE_FX_2 (D831)
   else step('lunge', { who: side });
   step('text', { s: uName + ' tries ' + mv.name + '!' });
   await play(id); if (!alive(id)) return;
@@ -11283,8 +11293,8 @@ async function doMove(side, mid, id){
     B.shown = { who: whoKey, hpFrom: hpFrom, hpTo: hpTo, max: max };
     renderBattleCards(); if (!mine) save();
     const variant = typeof mvVariant === 'function' ? mvVariant(r.mult, r.crit) : (r.mult > 1 ? 'super' : r.mult < 1 ? 'weak' : 'normal');
-    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey, mid: mid });   // MOVE_FX_2 (D827): the travel rides the wind-up
-    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant, mid: mid });
+    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey, mid: mid, st: mvSt });   // MOVE_FX_2 (D827): the travel rides the wind-up
+    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant, mid: mid, st: mvSt });
     step('sfx', { name: r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit' });
     const stopMs = mode === 'full' && typeof mvScaled === 'function' ? mvScaled(typ, variant).stop : 0;
     step('stop', { ms: stopMs });
@@ -11296,7 +11306,7 @@ async function doMove(side, mid, id){
     if (r.mult > 1) step('text', { s: 'That hit hard!' }); else if (r.mult < 1) step('text', { s: 'It barely felt that...' });
     if (r.mult > 1 || r.mult < 1) noteMovesHit(r.mult);
     if (berry) step('text', { s: petName(p) + "'s Soft Berry eases the hit!" });
-    if (liveWire || filed) step('text', { s: echoLine(liveWire ? side : tgt) });
+    if (liveWire || filed) echoStep(liveWire ? side : tgt, 140);   // MOVE_FX_3 (D906): the beat waits out the hit's busiest 140 ms
     await play(id); if (!alive(id)) return;
     // Glow Share (D840): a Dimlamp heals a sixth of the damage it dealt.
     if (echoOf(side) === 'glow_share' && (mine ? hpOf(p) > 0 : f.hp > 0)) {
@@ -11304,7 +11314,7 @@ async function doMove(side, mid, id){
       if (h > 0) {
         if (mine) setMyHp(p, gcur + h); else f.hp = gcur + h;
         step('sfx', { name: 'heal' }); renderBattleCards(); if (mine) save();
-        await say(echoLine(side), id); if (!alive(id)) return;
+        await echoSay(side, id); if (!alive(id)) return;
       }
     }
     const tgtDown = mine ? f.hp <= 0 : hpOf(p) <= 0;
@@ -11336,7 +11346,7 @@ async function applyStage(side, e, id){
   const cur = st[e.stat] || 0, S_ = e.stat.toUpperCase(), opp = otherSide(side);
   let nx = clamp(cur + e.stages, -3, 3);
   // Carrier Hum (D840): while a Humwisp faces this side, its boosts stop at +1.
-  if (e.stages > 0 && echoOf(opp) === 'carrier_hum' && nx > 1) { nx = Math.max(cur, 1); await say(echoLine(opp), id); if (!alive(id)) return; }
+  if (e.stages > 0 && echoOf(opp) === 'carrier_hum' && nx > 1) { nx = Math.max(cur, 1); await echoSay(opp, id); if (!alive(id)) return; }
   if (nx === cur) { step('sfx', { name: 'denied' }); await say(nm + "'s " + S_ + " can't get any " + (e.stages > 0 ? 'higher' : 'lower') + '!', id); return; }
   st[e.stat] = nx;
   step('fx', { who: side, kind: e.stages > 0 ? 'up' : 'down', dur: 700 });
@@ -11348,7 +11358,7 @@ async function applyStage(side, e, id){
   if (nx > cur && B.echo && echoOf(opp) === 'recount' && !B.echo.used[opp + ':recount']) {
     B.echo.used[opp + ':recount'] = true;
     if (!alive(id)) return;
-    await say(echoLine(opp), id); if (!alive(id)) return;
+    await echoSay(opp, id); if (!alive(id)) return;
     await applyStage(opp, { stat: e.stat, stages: nx - cur }, id);
   }
 }
@@ -15211,12 +15221,14 @@ function drawBattle(t, dt){
   if (typeof mvPoolReset === 'function') {
     mvPoolReset();
     const put = (x, y, w, h, col) => mvPoolPut(x, y, w, h, col);
+    // MOVE_FX_3 (D906): Echo flourishes take their slots first (8 at most), so a beat under a busy hit is never cut short
+    if (typeof mvEchoDraw === 'function') for (let i = 0; i < B.fx.length; i++) { const e = B.fx[i]; if (e.kind === 'mvEcho') mvEchoDraw(e, t - e.t0, e.who === 'me' ? Sc : Tc, e.who === 'me' ? Tc : Sc, put); }
     for (let i = 0; i < B.fx.length; i++) {
       const e = B.fx[i], age0 = t - e.t0;
       if (age0 < 0 || age0 >= e.dur) continue;
       // MOVE_FX_2 (D827): a held bespoke hit reads its clock as paused through the hit-stop (P5d)
       const age = e.hold1 != null ? (t < e.hold1 ? Math.max(0, e.hold0 - e.t0) : age0 - (e.hold1 - e.hold0)) : age0;
-      const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(e.mid) : null;
+      const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(e.mid, e.st) : null;   // MOVE_FX_3 (D905): grown by the user's tier
       if (typeof mvShadowSet === 'function') { mvShadowSet(!!mvRow); mvVarSet(mvRow ? e.v : 0); }   // D826: k shadow and variation, bespoke only
       const user = e.who === 'me' ? Sc : Tc, tgt = e.who === 'me' ? Tc : Sc;
       if (e.kind === 'mvGo') {
@@ -15231,11 +15243,11 @@ function drawBattle(t, dt){
           const at = e.effect && e.effect.target === 'foe' && !e.effect.heal ? tgt : user;
           if (k >= 0) mvShape(seg, k, age, at, at, put);
         } else {
-          const segs = mvAnim(e.type, e.mid).go || [];   // MOVE_FX_2 (D831)
+          const segs = mvAnim(e.type, e.mid, e.st).go || [];   // MOVE_FX_2 (D831), MOVE_FX_3 (D905)
           for (let s = 0; s < segs.length; s++) { const k = mvSegK(segs[s], age); if (k >= 0) mvShape(segs[s], k, age, user, tgt, put); }
         }
       } else if (e.kind === 'mvHit') {
-        const rows = typeof mvHitRows === 'function' ? mvHitRows(e.type, e.mid) : (mvPunchType(e.type).hit_v2 || []);   // MOVE_FX_2 (D831)
+        const rows = typeof mvHitRows === 'function' ? mvHitRows(e.type, e.mid, e.st) : (mvPunchType(e.type).hit_v2 || []);   // MOVE_FX_2 (D831), MOVE_FX_3 (D905)
         const hitUser = e.who === 'me' ? Tc : Sc, hitT = e.who === 'me' ? Sc : Tc;
         for (let s = 0; s < rows.length; s++) { const k = mvSegK(rows[s], age); if (k >= 0) mvShape(rows[s], k, age, hitUser, hitT, put); }
         if (e.variant && e.variant.indexOf('super') >= 0 && age < 200) {
