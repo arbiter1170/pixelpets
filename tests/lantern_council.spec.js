@@ -122,7 +122,7 @@ test('the council names both Seals, grants once, and the road stays closed @w1',
   expect(after.got).toBe(true);
   expect(after.points).toBe(before.points + 10);
   expect(after.line).toBe('The coast road is lit. Ships still fly.');
-  expect(after.board).toBe('Brinewick is marked. Its light is dark.');
+  expect(after.board).toBe('Brinewick is marked. Its light is on.');
   expect(after.quest).toBe('hc_games');
   expect(after.v).toBe(2);
   expect(after.trig).toBe(false);

@@ -543,7 +543,7 @@
           "id": "hc_sign_lantern",
           "x": 23,
           "y": 35,
-          "text": "LANTERN HOUSE · Rest the whole party. 5 Acorns."
+          "text": "LANTERN HOUSE · Rest and recover. 5 Acorns, or what you have."
         },
         {
           "kind": "sign",
@@ -682,7 +682,7 @@
           "y": 2,
           "sprite": "skydock_console",
           "lines": {
-            "story.hc_council_done": "Brinewick is marked. Its light is dark.",
+            "story.hc_council_done": "Brinewick is marked. Its light is on.",
             "else": "A board of little lights. Each one is a ship, not a weapon."
           }
         }
@@ -1065,7 +1065,7 @@
           "id": "hc_lantern_note",
           "x": 6,
           "y": 4,
-          "text": "Rest the whole party. 5 Acorns. The city can wait. — High Charity"
+          "text": "Rest the whole party. 5 Acorns, or what you have. The city can wait. — High Charity"
         }
       ],
       "respawnSpot": {
