@@ -1,5 +1,5 @@
 /* ARBITER_UNITS Build C: Route 3, the Brinewick road (D848-D851). The road opens past Cobblecrest's east sign once
-   story.route3_open is set: Rook's last crates plus that side's chapter end. Three lair rooms open off it. Brinewick stays shut. Save v stays 2. */
+   story.route3_open is set: Rook's last crates plus that side's chapter end. Three lair rooms open off it. Its south gate opens onto Brinewick (BRINEWICK). Save v stays 2. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
 
@@ -102,11 +102,15 @@ test('each lair room opens from its door and its mat leads back to the road', as
   await shot(page, 'route3-relay');
 });
 
-test('the closed Brinewick gate blocks the end of the road', async ({ page }) => {
+test('the Brinewick gate stands open and the end of the road leads south (BRINEWICK)', async ({ page }) => {
   await boot(page, save({ 'story.rc_done': true, 'story.hc_council_done': true, 'story.route3_open': true, 'story.reached_route3': true }, { map: 'route3', x: 2, y: 4 }));
+  expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'r3_gate' && o.x === 10 && o.y === 46))).toBe(true);
   await page.evaluate(() => PixelPets.goto('route3', 11, 45, 'down'));
   await page.keyboard.press('ArrowDown');
-  await page.waitForTimeout(400);
-  expect(await here(page)).toMatchObject({ map: 'route3', x: 11, y: 45 });
-  expect(await page.evaluate(() => PixelPets.mapObjs.some(o => o.id === 'r3_gate' && o.x === 11 && o.y === 46))).toBe(true);
+  await expect.poll(() => here(page).then(h => h.y)).toBe(46);
+  await page.waitForTimeout(250);
+  await page.keyboard.press('ArrowDown');
+  await settled(page, 'brinewick');
+  expect(await here(page)).toMatchObject({ map: 'brinewick', x: 10, y: 1 });
+  expect(await page.evaluate(() => PixelPets.state.flags['story.reached_brinewick'])).toBe(true);
 });

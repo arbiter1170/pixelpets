@@ -621,6 +621,51 @@
       "name": "Tansy Holt",
       "faction": "none",
       "base": 50
+    },
+    {
+      "name": "Bell Ringer",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Chandler",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Deckhand",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Ferry Hand",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Harbour Clerk",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Lantern Host",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Marisol",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Master Marisol",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Net Mender",
+      "faction": "none",
+      "base": 50
     }
   ],
   "tiers": [

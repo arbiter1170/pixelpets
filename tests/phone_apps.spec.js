@@ -107,6 +107,20 @@ test('SKY: hour, sky and a forecast line; the late hours add the night line and 
   await expect(page.locator('.ribbit-handle', { hasText: '@nightdesk' })).toHaveCount(1);
 });
 
+// A town has no wild grass, but the holder is already outside: "Step outside" is only for rooms.
+test('SKY in a town with no wild grass does not tell an outdoor holder to step outside @w1', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.goto('hearthmoor', 16, 14, 'down'));
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'hearthmoor' && !PixelPets.fading);
+  await openApp(page, 'sky');
+  await expect(page.locator('.sky-stir')).toHaveText('No wild grass here.');
+  await page.locator('#phoneClose').click();
+  await page.evaluate(() => PixelPets.goto('hm_lantern_in', 4, 5, 'up'));
+  await page.waitForFunction(() => PixelPets.mapInfo.id === 'hm_lantern_in' && !PixelPets.fading);
+  await openApp(page, 'sky');
+  await expect(page.locator('.sky-stir')).toHaveText('No wild grass here. Step outside to read the sky.');
+});
+
 test('GLOW: partner stats, bond, calm advice, and the Lantern House that wakes you, in each voice', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => { const S = PixelPets.state, p = S.party.find(q => q.id === S.partnerId); p.hunger = 20; p.happy = 90; p.energy = 90; });

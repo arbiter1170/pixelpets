@@ -1005,7 +1005,7 @@ function toastMeasureEl(){
   return el;
 }
 // D782: pages of two 14 px lines. Sentence end when the rest fits one page; a mid-sentence cut ends in " ...".
-function mhcNoticeBox(){
+function mhcNoticeBox(wide){
   const tray = document.body.classList.contains('ct-open') ? $('#careTray') : null;
   if (tray && !tray.hidden) {
     const r = tray.getBoundingClientRect();
@@ -1014,10 +1014,21 @@ function mhcNoticeBox(){
   const chip = $('#thChip'), slot = $('#fcDockChip');
   if (!chip || !slot) return null;
   const c = chip.getBoundingClientRect(), s = slot.getBoundingClientRect();
+  if (s.height < 20) return null;
+  // wide: D782's slot, the chip's whole room (136 / 191 / 206 px), covering the chip for the toast's life.
+  // Otherwise beside the chip, so the hour stays in view (#200), when there is room for it there.
   const left = Math.round(c.right + 4);
   const width = Math.round(s.right - left);
-  if (width < 36 || s.height < 20) return null;
+  if (wide || width < 36) return { left: Math.round(s.left), top: Math.round(s.top), width: Math.round(s.width), height: Math.round(s.height) };
   return { left: left, top: Math.round(s.top), width: width, height: Math.round(s.height) };
+}
+// Beside the chip when the line fits there as one page; at 320 the room beside the chip is about 65 px, too narrow for
+// short toasts D782 measures as one page ("Found 3 Hearty Snacks!", "Can't get there from here."), so those use the
+// chip's whole slot instead of paging with " ...".
+function mhcNoticeWide(text){
+  const narrow = mhcNoticeBox(false), wide = mhcNoticeBox(true);
+  if (!narrow || !wide || wide.width <= narrow.width) return false;
+  return mhcPages(text, narrow.width).length > mhcPages(text, wide.width).length;
 }
 function applyNoticeBox(el, box){
   if (!el) return;
@@ -1035,9 +1046,14 @@ function applyNoticeBox(el, box){
   el.style.transform = 'none';
   el.style.pointerEvents = 'none';
 }
+let mhcToastWide = false;
 function paginateMhcToast(text){
-  const box = mhcNoticeBox();
-  const w = Math.max(48, box ? box.width : 120);
+  mhcToastWide = mhcNoticeWide(text);
+  const box = mhcNoticeBox(mhcToastWide);
+  return mhcPages(text, box ? box.width : 120);
+}
+function mhcPages(text, bw){
+  const w = Math.max(48, bw);
   const el = toastMeasureEl();
   el.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden;box-sizing:border-box;font:bold 13px/16px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif') + ';letter-spacing:.5px;padding:4px 6px;width:' + w + 'px;white-space:normal;';
   const maxLines = 2, lh = 16;
@@ -1061,7 +1077,7 @@ function placeMhcToast(){
   const t = $('#toast');
   if (!t) return;
   if (!mhcToastOn() || !t.classList.contains('show')) { applyNoticeBox(t, null); return; }
-  applyNoticeBox(t, mhcNoticeBox());
+  applyNoticeBox(t, mhcNoticeBox(mhcToastWide));
 }
 function showToastNow(msg){
   const t = $('#toast'); if (!t) return;
@@ -3762,7 +3778,7 @@ if (TRAINERS.hall1_fen) Object.assign(TRAINERS.hall1_fen, { map: 'fernbrook', x:
 const SIDE_DEFAULT = 'keepers';
 const TRAINERS_BASE = {}; for (const [id, t] of Object.entries(TRAINERS)) if (!id.includes('@')) TRAINERS_BASE[id] = t;
 // Glimmerwell is the company faction. A Keeper hears them as the dark side: first meeting and their battles use the sinister loops.
-const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers' };
+const FACTION = { fern_associate: 'glimmer', r2_associate: 'glimmer', r2_lead: 'glimmer', gb_imogen: 'glimmer', rival2_rook: 'glimmer', rc_tobin: 'glimmer', hall1_fen: 'keepers', hall2_hale: 'keepers', bw_dorian: 'glimmer', hall3_marisol: 'keepers' };
 for (const [id, f] of Object.entries(FACTION)) if (TRAINERS_BASE[id]) TRAINERS_BASE[id].faction = f;
 function trainerFaction(id){ const t = TRAINERS_BASE[id] || TRAINERS[id]; return (t && t.faction) || null; }
 function side(){ if (!S) return SIDE_DEFAULT; const v = flagOf('story.side', true); return v === 'glimmer' ? 'glimmer' : SIDE_DEFAULT; }
@@ -4403,7 +4419,8 @@ if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
 const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', rival3_rook: 'rook', rc_tobin: 'associate', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
   rx_wardens: 'rx_warden', rx_techs: 'rx_tech', rx_records: 'rx_records', rx_quinn: 'quinn', rx_cal_ally: 'cal',
-  sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager' };
+  sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager',
+  bw_dorian: 'dorian', hall3_marisol: 'marisol', bw_deckhand: 'dockfolk', bw_ringer: 'dockfolk' };   // BRINEWICK
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };   // per map visit, never saved
@@ -4448,7 +4465,7 @@ function battleTrack(kind, trainerId){
   if (kind === 'wild') return WILD_TRACKS[wildTune % WILD_TRACKS.length];
   const base = trainerMusicId(trainerId);
   if (kind === 'trainer' && RIVAL_IDS.indexOf(base) >= 0) return 'rival';
-  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale')) return 'trial';
+  if (kind === 'trainer' && (base === 'hall1_fen' || base === 'hall2_hale' || base === 'hall3_marisol')) return 'trial';
   if (kind === 'trainer' && trainerFaction(base) === 'glimmer' && side() !== 'glimmer')
     return (S && S.flags['music.glimmer_fought']) ? 'glimmer_battle' : 'glimmer_first';
   return 'battle';
@@ -6389,7 +6406,8 @@ function arriveAt(at){
 function enterDoor(dr){
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
   if (dr.need && !needMet(dr.need)) { runSteps([['say', '', dr.deny || 'The door is locked.']]); return; }
-  if (dr.to && WORLD[dr.to]) { sfx('tap'); warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
+  // BRINEWICK: a door may write one story flag on entry, the same `setFlag` field a warp already carries (the depot door).
+  if (dr.to && WORLD[dr.to]) { sfx('tap'); if (dr.setFlag) S.flags[dr.setFlag] = true; warpTo({ map: dr.to, x: dr.tx, y: dr.ty, facing: dr.facing || 'up' }); return; }
   if (dr.panel) openPlace(dr);
 }
 // MAPS_SLICE §9 place panels (Fernbrook keeps panels; Hearthmoor's became rooms). The Lantern House: the keeper's line -> REST / LEAVE;
@@ -6456,6 +6474,8 @@ function factionOfMap(id){
   if (!id) return null;
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
   if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return (S && S.flags['story.quarry_bought']) ? 'glimmer' : 'keepers';
+  if (id === 'bw_depot_in') return 'glimmer';                               // BRINEWICK (B6): a Keepers harbour with a Glimmerwell depot
+  if (id === 'brinewick' || id.indexOf('bw_') === 0) return 'keepers';
   if (id === 'highcharity' || id.indexOf('hc_') === 0) return 'keepers';   // the capital wears the same gold and green as Hearthmoor
   if (id === 'hearthmoor' || id.indexOf('hm_') === 0 || id === 'fernbrook' || id === 'route1' || id === 'route2') return 'keepers';
   return null;
@@ -8289,7 +8309,7 @@ function showBumpHint(o){
 function placeMhcBump(){
   const el = $('#bumpHint');
   if (!el || el.hidden || !mhcToastOn()) return;
-  applyNoticeBox(el, mhcNoticeBox());
+  applyNoticeBox(el, mhcNoticeBox(mhcNoticeWide(el.textContent)));
 }
 function hideBumpHint(){ $('#bumpHint').hidden = true; bump.hideAt = 0; }
 const linesFor = o => { if (!o.lines) return null; for (const [k, v] of Object.entries(o.lines)) if (cond(k, false, o)) return v; return null; };
@@ -8932,7 +8952,7 @@ async function execStep(st){
       return;
     }
     case 'give': if (ITEMS[a] && (b | 0) > 0) sfx('stinger_item'); pend(() => { const r = grantItem(a, b | 0); if (r.lost) { if (scene) scene.toasts.push(BAG_FULL_MSG); else toast(BAG_FULL_MSG); } }); return;
-    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity') S.world.respawn = r; }); return; }
+    case 'respawnHere': { const r = outdoorId(); pend(() => { if (r === 'hearthmoor' || r === 'fernbrook' || r === 'cobblecrest' || r === 'highcharity' || r === 'brinewick') S.world.respawn = r; }); return; }
     case 'play': {
       sc.skip = false;
       $('#ovScene').hidden = true;
@@ -9019,6 +9039,8 @@ async function execStep(st){
       return;
     }
     case 'sfx': { if (a) sfx(a); return; }
+    // BRINEWICK: ["music", id] switches the loop for the rest of the scene (the Episode 1 card). Unknown ids do nothing.
+    case 'music': { if (a && !sc.skip) { sc.musicCue = a; try { PPSound.music(a, { fadeOut: 180, fadeIn: 140 }); } catch (e) {} } return; }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
       if (a === 'open') openReveal(sc);
@@ -10436,7 +10458,7 @@ function closeBattle(){
 // free only at 0 Acorns; a holder with fewer pays what they have. A party with nothing to restore pays nothing. Home naps stay free.
 const LANTERN_REST_COST = 5;
 const lanternRestNeeded = () => !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow) || Math.round(p.energy) < 100));
-const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1 };
+const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1 };
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
 function setRestDue(on){
   if (!S || !S.world) return;
@@ -10510,9 +10532,10 @@ function blockLanternExit(){
   mark('cobblecrest', 'cc_lantern_sign');
   mark('fernbrook', 'fb_lantern_sign');
   mark('highcharity', 'hc_lantern_sign');
+  mark('brinewick', 'bw_lantern_sign');   // BRINEWICK
 })();
 // Lantern House guides (D617, D618). One additive flag. The cost in the first line is LANTERN_REST_COST.
-const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1 };
+const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1, bw_lantern_host: 1 };
 const LANTERN_GUIDE_G2 = 'Lose a battle and you wake at the closest Lantern House. Tap me any time to hear this again.';
 function lanternCostLine(){
   return 'Welcome in. Talk to a bed and your whole team rests and heals, for ' + LANTERN_REST_COST + ' Acorns.';
@@ -10554,6 +10577,7 @@ function maybeLanternGuide(){
 const TOWN_DOOR_ART = {
   hm_lantern: 'heal_lantern', cc_lantern: 'heal_lantern', fb_lantern: 'heal_lantern', hc_lantern: 'heal_lantern',
   hm_store: 'acorn_board',
+  bw_lantern: 'heal_lantern', bw_store: 'acorn_board',   // BRINEWICK: the Lantern House and the Chandlery read like every other town's
 };
 const TOWN_STALL_ART = {
   cobblecrest: [['dottie', 'acorn_board']],
@@ -10581,8 +10605,10 @@ const LANTERN_NEAR = {
   mahopac: [['hearthmoor']],
   highcharity: [['highcharity']],
   fb_heights: [['fernbrook']],
+  route3: [['cobblecrest', 'brinewick']],   // BRINEWICK: Route 3 runs from Cobblecrest's east gate down to the harbour
+  brinewick: [['brinewick']],
 };
-const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1 };
+const LANTERN_TOWNS = { hearthmoor: 1, fernbrook: 1, cobblecrest: 1, highcharity: 1, brinewick: 1 };
 function respawnTown(){
   const cur = nodeOf(S.world.map);
   const tiers = (cur && LANTERN_NEAR[cur]) || [];
@@ -11425,18 +11451,21 @@ const REGION_MAP = {
       hold: [{ id: 'split', when: ['story.sm_done'], line: 'The watch opened the tunnels. The lab remains.' }, { id: 'glimmer', line: "Glimmerwell's lab sits on the ridge." }] },
     // ARBITER_UNITS Build C (D848, D849): the Brinewick road, south of Cobblecrest on the parchment. Brinewick itself is not built.
     route3:        { kind: 'route', col: 17, row: 9, label: 'ROUTE 3',     labelAt: 'below', blurb: 'The Brinewick road. Crates, and a hum.', path: [[17, 6], [18, 7], [18, 9], [17, 9]],
-      hold: [{ id: 'split', line: "Keepers walk it. Glimmerwell's crates roll down it." }] },
+      hold: [{ id: 'split', line: "Keepers walk it. Glimmerwell's crates roll down it." }] },    // BRINEWICK (B6): the harbour at the foot of Route 3. A Keepers town with a Glimmerwell depot on the east pier.
+    brinewick:     { kind: 'town',  col: 15, row: 10, label: 'BRINEWICK',   labelAt: 'left', blurb: 'Harbour town. Tide Trial Hall.', path: [[17, 9], [16, 10], [15, 10]],
+      hold: [{ id: 'split', line: 'Keepers keep the harbour. Glimmerwell leases the east pier.' }] },
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'], brinewick: ['story.reached_brinewick'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', hm_store: 'hearthmoor', hm_wardrobe: 'hearthmoor', hm_diner: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
     hc_airport_in: 'highcharity', hc_command_in: 'highcharity', hc_barracks_in: 'highcharity', hc_marina_in: 'highcharity', hc_school_in: 'highcharity', hc_bank_in: 'highcharity',
     hc_gym_in: 'highcharity', hc_lantern_in: 'highcharity', hc_church_in: 'highcharity', hc_hall_in: 'highcharity', hc_arena_in: 'highcharity', hc_apt_in: 'highcharity', hc_mall_1: 'highcharity', hc_mall_2: 'highcharity',
     rx_f1: 'fb_heights', rx_f2: 'fb_heights', rx_f3: 'fb_heights', rx_f4: 'fb_heights', sm_yard: 'fb_heights', sm_tunnel: 'fb_heights', sm_hold: 'fb_heights', sm_den: 'fb_heights',
-    hw_rim: 'hw_cut', hw_falls: 'hw_cut' },
+    hw_rim: 'hw_cut', hw_falls: 'hw_cut',
+    bw_lantern_in: 'brinewick', bw_store_in: 'brinewick', bw_hall_in: 'brinewick', bw_depot_in: 'brinewick' },
   icon_map: { grid: ['wwwhhrwr', 'wwwhhwrw', 'wwwhhrwr', 'wwwhrwww', 'wwwhhwww', 'wwrhhwww', 'wrwhhwww', 'wwwhhwww'] },
   icon_bag: { grid: ['..oooo..', '.o....o.', 'rrrrrrrr', 'rorrrror', 'rryyyyrr', 'rryrryrr', 'prrrrrrp', '.pppppp.'] },
   icon_quest: { grid: ['.yyyyy..', '.yyyyyy.', '.yyyyyyy', '.yyyyyy.', '.yyyyy..', '...oo...', '...oo...', '.wwwwww.'] },   // designer's icon_quest (Build 2): yellow arrow signpost, reads on navy
@@ -13270,7 +13299,8 @@ function renderFarSky(body, hack){
   const word = sky ? ({ clear: 'Clear', cloud: 'Cloud', rain: 'Rain', snow: 'Snow' }[sky.kind] || '') : '';
   add('sky-now', sky ? word + (sky.temp != null ? ', ' + Math.round(sky.temp) + '°' : '') + ' over ' + (placeName() || 'here') + '.' : 'No sky reading. Turn on LOCATION on the TODAY card for real weather.');
   const stir = skyStirring();
-  add('sky-stir', stir === null ? 'No wild grass here. Step outside to read the sky.'
+  // stir is null in a room and on an outdoor map with no wild grass (a town); only a room is told to step outside.
+  add('sky-stir', stir === null ? (isRoom() ? 'No wild grass here. Step outside to read the sky.' : 'No wild grass here.')
     : !stir.length ? 'A plain sky. Nothing extra is stirring.'
     : 'The weather is stirring ' + stir.join(' and ') + '.');
   if (phoneNight()) add('sky-night', hack ? 'Night readings logged.' : 'Late hours. Let your Walkling sleep.');
@@ -14821,7 +14851,28 @@ const LANYARD_TIER2 = [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ];
-SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2;
+// BRINEWICK: Seal 3 (ICONS_SEALS §3, the anchor drop from design icons_seals_art.js) and the Tier 3 lanyard (three marks).
+SEAL_ART.seal_brinewick = [
+  '.......oo.......',
+  '......oyyo......',
+  '.....oybbyo.....',
+  '....oybwwbyo....',
+  '...owbwbbwbyo...',
+  '..owsbbwwbbbyo..',
+  '.oysbwwwwwwbbyo.',
+  '.oybbbbwwbbbbyo.',
+  'oybbbbbwwbbbbbyo',
+  'oybbwbbwwbbwbbyo',
+  'oybbwwbwwbwwbbyo',
+  'oybbbwwwwwwbbbyo',
+  '.oybccwwwwccbyo.',
+  '.oyyccccccccyoo.',
+  '..ooyyyyyyyooo..',
+  '....oooooooo....',
+];
+const LANYARD_TIER3 = LANYARD_TIER1.map((row, y) => (y < 2 || y > 12) ? row
+  : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'sl'.includes(ch)) ? 'w' : ch).join(''));
+SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL_ART.seal_glim_3 = LANYARD_TIER3;
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
   g.drawImage(keeperCanvas(SEAL_ART[id] || SEAL_ART.seal_fernbrook), 0, 0);
@@ -14841,7 +14892,7 @@ async function presentFieldSeal(id){
   $('#btSeal').hidden = true; ov.classList.remove('seal-only'); ov.hidden = true;
   if (!battle.on) setPanel('busy');
 }
-const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard' };
+const SEAL_NAMES = { seal_fernbrook: 'Fernbrook Seal', seal_cobblecrest: 'Cobblecrest Seal', seal_glim_1: 'Bright Tier 1 Lanyard', seal_glim_2: 'Bright Tier 2 Lanyard', seal_brinewick: 'Brinewick Seal', seal_glim_3: 'Bright Tier 3 Lanyard' };
 const sealName = id => SEAL_NAMES[id] || id.replace(/^seal_/, '').replace(/^./, c => c.toUpperCase()) + ' Seal';
 
 /* --- learning moves (§3): after RESULTS, after evolving, and the §3.4 sheet --- */
@@ -16599,6 +16650,8 @@ const DEBUG_TRAINER_GATES = [
   ['story.seal1', 'hall1_fen'],
   ['story.quarry_bought', 'rival2_rook'],
   ['story.seal2', 'hall2_hale'],
+  ['story.brine_dorian', 'bw_dorian'],
+  ['story.seal3', 'hall3_marisol'],
 ];
 function debugWhy(reason){
   return {

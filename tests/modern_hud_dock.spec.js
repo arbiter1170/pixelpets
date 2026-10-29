@@ -121,14 +121,23 @@ test('portrait modern dock: toast stays in the chip slot and a new step cues onc
       overQuest: overlap(tr, qr),
       overMap: overlap(tr, mr),
       inDock: tr.top >= dr.top - 1 && tr.bottom <= dr.bottom + 1,
+      left: tr.left, right: tr.right, chipLeft: cr.left, acornsLeft: ar.left,
     };
   });
   expect(slot.shown).toBe(true);
-  expect(slot.text).toBe('Found 3 Hearty Snacks!');
+  expect(slot.text).toBe('Found 3 Hearty Snacks!');   // D782 / MODERN_HUD_CLEAR 3.4.1: one page at 320, 375 and 390
   expect(slot.pe).toBe('none');
   expect(slot.overAcorns).toBe(false);
-  expect(slot.overChip).toBe(false);
-  expect(slot.overHour).toBe(false);
+  if (w < 375) {
+    // At 320 the room beside the chip is about 65 px, too narrow for this one-page toast, so it takes D782's chip slot
+    // (the chip's whole room, 136 px) for its life instead of paging with " ...". Acorns stay in view.
+    expect(Math.abs(slot.left - slot.chipLeft)).toBeLessThanOrEqual(1);
+    expect(slot.right).toBeLessThanOrEqual(slot.acornsLeft + 0.5);
+  } else {
+    // #200: with room beside the chip the toast sits there, so the hour stays in view.
+    expect(slot.overChip).toBe(false);
+    expect(slot.overHour).toBe(false);
+  }
   expect(slot.overQuest).toBe(false);
   expect(slot.overMap).toBe(false);
   expect(slot.inDock).toBe(true);

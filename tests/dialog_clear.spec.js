@@ -143,9 +143,14 @@ for (const mode of ['modern', 'arcade']) {
   });
 }
 
+// The nudge needs a short map where both boxes cover Wren. Under the Modern dock (156 px, outside #mapWrap, D789,
+// #199/#200) a 320 x 360 window leaves a 204 px map that the 134 px box covers almost whole, so nothing can clear
+// her. 320 x 480 leaves a 324 px map: still short enough that the top and the bottom box both cover her.
+const NUDGE_VIEW = { width: 320, height: 480 };
+
 test('reduced motion applies camBias without the ease', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.setViewportSize({ width: 320, height: 360 });
+  await page.setViewportSize(NUDGE_VIEW);
   await boot(page, 'modern');
   await openScene(page, 'zz_wren_nudge', 8, 14, 'down');
   const b = await overlap(page, 'zz_wren');
@@ -159,7 +164,7 @@ test('reduced motion applies camBias without the ease', async ({ page }) => {
 
 test('camBias eases in when motion is allowed', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.setViewportSize({ width: 320, height: 360 });
+  await page.setViewportSize(NUDGE_VIEW);
   await boot(page, 'modern');
   const early = await page.evaluate(() => {
     PixelPets.goto('zz_clear', 8, 14, 'down');

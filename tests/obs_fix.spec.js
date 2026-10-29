@@ -23,6 +23,10 @@ function save() {
     'story.mom_chore': true,
     'story.mom_sent': true,
     'story.reached_mahopac': true,
+    // The Hearthmoor Plaza chains (D798) open with the starter. QUEST_MULTI auto-tracks the next open chain once Mom's
+    // finishes, so close them here: the last check is "no side quest left", not "the plaza errand".
+    'story.plaza_done': true,
+    'story.plaza_sign_done': true,
   });
   return s;
 }

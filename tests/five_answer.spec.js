@@ -88,7 +88,7 @@ for (const side of ['keepers', 'glimmer']) {
     const clues = [
       ['route2', 22, 9, 'story.ans_tallybat_clue'],
       ['hw_cut', 10, 11, 'story.ans_dimlamp_clue'],
-      side === 'glimmer' ? ['rx_f3', 3, 14, 'story.ans_filecrow_clue'] : ['hm_hq_f1', 2, 3, 'story.ans_filecrow_clue'],
+      side === 'glimmer' ? ['rx_f3', 3, 14, 'story.ans_filecrow_clue'] : ['hm_hq_f1', 4, 3, 'story.ans_filecrow_clue'],
       ['cobblecrest', 30, 9, 'story.ans_cordhound_clue'],
     ];
     for (const [map, x, y, f] of clues) {

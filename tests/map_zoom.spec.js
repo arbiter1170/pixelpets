@@ -343,7 +343,9 @@ test('Map zoom: every step keeps the Hearthmoor north exit row clear of the dock
   const steps = await page.evaluate(() => PixelPets.mapZoomSteps);
   for (let i = 0; i < steps.length; i++) {
     await pickStep(page, i);
-    await page.evaluate(() => { PixelPets.goto('hearthmoor', 9, 8, 'up'); if (PixelPets.scene) PixelPets.endScene(); const t = document.querySelector('#toast'); if (t) t.classList.remove('show'); });
+    // One tile inside the exit, as TOP_HUD's exit seeds stand. Under the frame the camera is a plain follow with no north
+    // lift (D785, and the pads-on test above), so from 9,8 a taller zoom step rightly scrolls row 2 out of view.
+    await page.evaluate(() => { PixelPets.goto('hearthmoor', 9, 3, 'up'); if (PixelPets.scene) PixelPets.endScene(); const t = document.querySelector('#toast'); if (t) t.classList.remove('show'); });
     await settle(page);
     const r = await page.evaluate(() => {
       const mc = document.querySelector('#mapCanvas'), cr = mc.getBoundingClientRect(), cam = PixelPets.walk.cam, k = cr.width / mc.width;

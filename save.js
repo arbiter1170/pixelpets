@@ -274,7 +274,7 @@ const PPSave = (() => {
     const w = s.world;
     fill(w, 'map', x => typeof x === 'string', 'proto');
     fill(w, 'x', Number.isInteger, 3); fill(w, 'y', Number.isInteger, 3);
-    fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || x === 'hearthmoor' || x === 'fernbrook' || x === 'cobblecrest' || x === 'highcharity', null);
+    fill(w, 'facing', x => FACINGS.includes(x), 'down'); fill(w, 'respawn', x => x === null || x === 'hearthmoor' || x === 'fernbrook' || x === 'cobblecrest' || x === 'highcharity' || x === 'brinewick', null);
     // After a party wipe the Lantern House door stays shut until the party rests (additive; absent means no).
     if (w.restDue !== true) delete w.restDue;
     for (const k of ['bag', 'seals', 'flags']) fill(s, k, isObj, {});

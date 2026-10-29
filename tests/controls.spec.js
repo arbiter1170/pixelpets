@@ -43,12 +43,21 @@ test('modern fills the screen and every floating button works', async ({ page })
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   for (const s of ['#top', '#tabs', '#statStrip', '#dpad', '#talkBtn']) await expect(page.locator(s)).toBeHidden();
-  const h = await page.evaluate(() => [document.querySelector('#app').getBoundingClientRect().height, document.querySelector('#mapWrap').getBoundingClientRect().height]);
-  expect(Math.abs(h[0] - h[1])).toBeLessThanOrEqual(2);
+  // MODERN_HUD_CLEAR (D778/D789, #199): in portrait the map runs from the top edge down to the 156 px dock, full width,
+  // and the dock fills the rest of the screen. No tip line in the dock (D790, #200).
+  const h = await page.evaluate(() => { const r = s => document.querySelector(s).getBoundingClientRect(); const a = r('#app'), m = r('#mapWrap'), d = r('#floatCtl');
+    return { frame: document.body.classList.contains('mhc-frame'), appTop: a.top, appBottom: a.bottom, appW: a.width, mapTop: m.top, mapBottom: m.bottom, mapW: m.width, dockTop: d.top, dockBottom: d.bottom, dockH: d.height }; });
+  expect(h.frame).toBe(true);
+  expect(Math.abs(h.mapTop - h.appTop)).toBeLessThanOrEqual(2);
+  expect(Math.abs(h.mapW - h.appW)).toBeLessThanOrEqual(2);
+  expect(Math.abs(h.mapBottom - h.dockTop)).toBeLessThanOrEqual(2);
+  expect(Math.abs(h.dockBottom - h.appBottom)).toBeLessThanOrEqual(2);
+  expect(Math.abs(h.dockH - 156)).toBeLessThanOrEqual(2);
+  await expect(page.locator('#walkTip')).toBeHidden();
   const ids = ['#questBtn', '#walkBagBtn', '#mapBtn', '#gearFloat', '#phoneBtn', '#colFloat', '#petFloat', '#petStrip'];
   const boxes = [];
   for (const id of ids) { const b = await page.locator(id).boundingBox(); expect(b.width).toBeGreaterThanOrEqual(44); expect(b.height).toBeGreaterThanOrEqual(44); boxes.push(b); }
-  boxes.push(await page.locator('#thChip').boundingBox(), await page.locator('#walkTip').boundingBox());
+  boxes.push(await page.locator('#thChip').boundingBox(), await page.locator('#fcAcorns').boundingBox());
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) expect(boxesOverlap(boxes[i], boxes[j])).toBe(false);
   const pairs = [['#questBtn', '#ovQuest', '#questClose'], ['#walkBagBtn', '#ovBag', '#bagClose'], ['#mapBtn', '#ovMap', '#mapClose'],
     ['#gearFloat', '#ovSettings', '#setClose'], ['#phoneBtn', '#ovPhone', '#phoneClose'], ['#petStrip', '#careTray', '#ctClose']];
@@ -93,7 +102,10 @@ test('Settings switches both ways, survives a reload, and puts nodes home @w1', 
 });
 
 test('the joystick walks like a held arrow and ignores a tap', async ({ page }) => {
-  await installSave(page.context(), modernSave({ joystick: true }), { quietDay: true });
+  // The "Your phone" tip card (a modal; the joystick ignores input while it shows) opens just above the dock since PHONE
+  // moved into it (#199), right over the ring. This test is about the ring, so the save has already seen that tip.
+  const s = modernSave({ joystick: true }); s.flags['story.unlock_phone'] = true;
+  await installSave(page.context(), s, { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   const r = await page.locator('#joyRing').boundingBox();
@@ -138,8 +150,12 @@ async function bandAt(page, html) {
     t.classList.remove('show'); return out;
   });
 }
+// MODERN_HUD_CLEAR: the dock (D789) is portrait only (D778); sideways keeps today's layout (D779 deferred), so the Oct 15
+// band rules still hold there. Turn the project's phone on its side: same size, width and height swapped.
+async function sideways(page) { const v = page.viewportSize(); await page.setViewportSize({ width: v.height, height: v.width }); }
 for (const joystick of [false, true]) {
-  test(`tip band heights, ring and toast placement (joystick ${joystick ? 'on' : 'off'})`, async ({ page }) => {
+  test(`tip band heights, ring and toast placement, sideways (joystick ${joystick ? 'on' : 'off'})`, async ({ page }) => {
+    await sideways(page);
     await installSave(page.context(), modernSave({ joystick }), { quietDay: true });
     await gotoGame(page, '?debug=1');
     await page.evaluate(() => PixelPets.showTab('walk')); await page.waitForTimeout(300);
@@ -159,6 +175,41 @@ for (const joystick of [false, true]) {
         expect(b.toast.bottom).toBeLessThanOrEqual(b.tipTop + 0.5);       // toast above the band
       }
       expect(b.toast.top).toBeGreaterThan(60);                             // in the free map area, below the top buttons' row
+    }
+  });
+  // Portrait: MODERN_HUD_CLEAR test 7 (D790, #200): no line, the tip band is not shown under the frame, whatever the text.
+  // Build note 2 (D784): the ring sits 8 px above the 156 px dock, inside the map rect. D782: toasts sit in the dock, off the map.
+  test(`portrait dock: no tip band, ring above the dock, toast in the dock (joystick ${joystick ? 'on' : 'off'})`, async ({ page }) => {
+    const s = modernSave({ joystick }); s.flags['story.unlock_phone'] = true;   // keep the "Your phone" tip card off the ring
+    await installSave(page.context(), s, { quietDay: true });
+    await gotoGame(page, '?debug=1');
+    await page.evaluate(() => PixelPets.showTab('walk')); await page.waitForTimeout(300);
+    for (const html of ['Tap the ground to walk.', 'A very long objective line that will not fit on one line at any phone width, so the band grows to two lines and then clamps the rest with an ellipsis at the end.']) {
+      await page.evaluate(h => { window.PP_TIP_TEST = h; }, html);
+      await expect.poll(() => page.evaluate(() => document.querySelector('#walkTip').textContent)).toContain(html.slice(0, 20));
+      await page.evaluate(() => window.dispatchEvent(new Event('resize'))); await page.waitForTimeout(150);
+      const b = await page.evaluate(() => {
+        const r = s => document.querySelector(s).getBoundingClientRect(), joy = document.querySelector('#joyRing');
+        PixelPets.debugToast('Test toast');
+        return { frame: document.body.classList.contains('mhc-frame'), tipH: r('#fcTip').height, tipShown: !!document.querySelector('#walkTip').offsetParent,
+          map: r('#mapCanvas').toJSON(), dock: r('#floatCtl').toJSON(), joy: joy.hidden ? null : r('#joyRing').toJSON(), toast: r('#toast').toJSON(),
+          toastShown: document.querySelector('#toast').classList.contains('show') };
+      });
+      expect(b.frame).toBe(true);
+      expect(b.tipH).toBe(0);
+      expect(b.tipShown).toBe(false);
+      if (joystick) {
+        expect(Math.abs(b.joy.bottom - (b.dock.top - 8))).toBeLessThanOrEqual(1);   // ring 8 px above the dock
+        expect(b.joy.top).toBeGreaterThanOrEqual(b.map.top);
+        expect(b.joy.bottom).toBeLessThanOrEqual(b.map.bottom + 0.5);
+        expect(b.toast.bottom <= b.joy.top + 0.5 || b.toast.top >= b.joy.bottom - 0.5).toBe(true);   // never on the ring
+      } else {
+        expect(b.joy).toBeNull();
+      }
+      expect(b.toastShown).toBe(true);
+      expect(b.toast.top).toBeGreaterThanOrEqual(b.dock.top - 0.5);         // in the dock, off the map
+      expect(b.toast.bottom).toBeLessThanOrEqual(b.dock.bottom + 0.5);
+      await page.waitForFunction(() => !document.querySelector('#toast').classList.contains('show'), null, { timeout: 8000 });
     }
   });
 }
@@ -202,12 +253,33 @@ for (const controls of ['arcade', 'modern']) {
   });
 }
 
-test('the real Route 1 walk tip grows to two lines instead of an ellipsis (modern)', async ({ page }) => {
+function route1Save() {
   const s = modernSave();
   Object.assign(s.flags, { 'story.early_done': true, 'spotted.rival1_rook': true, 'story.rival1_done': true, 'story.rival1_result': 'lost', 'story.reached_route1': true });
   delete s.flags['story.phone_got'];
   s.world = { map: 'route1', x: 4, y: 8, facing: 'right', respawn: 'hearthmoor' };
-  await installSave(page.context(), s, { quietDay: true });
+  return s;
+}
+// Portrait modern has no tip line (MODERN_HUD_CLEAR D790, #200): the step shows in full at the top of the quest card.
+test('the real Route 1 step is never cut off in portrait modern: no tip band, full step on the quest card', async ({ page }) => {
+  await installSave(page.context(), route1Save(), { quietDay: true });
+  await gotoGame(page);
+  await page.evaluate(() => PixelPets.showTab('walk'));
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => [document.body.classList.contains('mhc-frame'), document.querySelector('#fcTip').getBoundingClientRect().height])).toEqual([true, 0]);
+  await expect(page.locator('#walkTip')).toBeHidden();
+  await page.locator('#questBtn').click();
+  await expect(page.locator('#ovQuest')).toBeVisible();
+  const q = await page.evaluate(() => { const el = document.querySelector('#questText');
+    return { txt: el.textContent, clipped: el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1 }; });
+  expect(q.txt).toContain("Fernbrook's orchards");
+  expect(q.clipped).toBe(false);
+});
+// Sideways keeps the tip line (D779 deferred), so QA's line still has to grow to two lines there instead of an ellipsis.
+test('the real Route 1 walk tip grows to two lines instead of an ellipsis (modern, sideways)', async ({ page }) => {
+  await sideways(page);
+  await installSave(page.context(), route1Save(), { quietDay: true });
   await gotoGame(page);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.evaluate(() => document.fonts.ready);
@@ -218,7 +290,7 @@ test('the real Route 1 walk tip grows to two lines instead of an ellipsis (moder
     return { txt: el.textContent, two: document.querySelector('#fcTip').classList.contains('two'), h: document.querySelector('#fcTip').getBoundingClientRect().height,
       clipped: el.scrollHeight > el.clientHeight + 1, oneLineFits: w <= el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) };
   });
-  expect(r.txt).toContain("Fernbrook's orchards");      // QA's line: too long for one line at 320, 375 and 390
+  expect(r.txt).toContain("Fernbrook's orchards");      // QA's line: too long for one line in the 480 px sideways column too
   expect(r.two).toBe(true); expect(r.h).toBe(44); expect(r.clipped).toBe(false);
 });
 
@@ -229,8 +301,11 @@ test('DEBUG SAVE shows in Settings straight after a ?debug=1 load', async ({ pag
   await expect(page.locator('#setBuild')).toContainText('DEBUG SAVE', { timeout: 500 });
 });
 
-/* D70 approved copy. Each project (320, 375, 390) runs these, so the fit is checked at all three widths. */
-async function tipBand(page, save, q) {
+/* D70 approved copy. Each project (320, 375, 390) runs these. MODERN_HUD_CLEAR (D789/D790, #199/#200): portrait modern has
+   no tip line, so the tip band is checked sideways (D779 deferred: landscape keeps today's layout), and portrait checks that
+   the band stays off and that the early-steps hint sits at the top of the quest card. */
+async function tipBand(page, save, q, side = true) {
+  if (side) await sideways(page);
   await installSave(page.context(), save, { quietDay: true });
   await gotoGame(page, q);
   await page.evaluate(() => PixelPets.showTab('walk'));
@@ -238,14 +313,26 @@ async function tipBand(page, save, q) {
   return page.evaluate(() => { const el = document.querySelector('#walkTip'), b = document.querySelector('#fcTip');
     return { txt: el.textContent.trim(), h: b.getBoundingClientRect().height, clipped: el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1 }; });
 }
-test('D70 modern early-steps tip: approved copy, fits (one or two lines, not clipped)', async ({ page }) => {
+test('D70 modern early-steps tip, sideways: approved copy, fits (one or two lines, not clipped)', async ({ page }) => {
   const s = modernSave(); delete s.flags['story.phone_got'];
   s.flags['story.early_done'] = false; s.flags['story.early_steps'] = 0; s.steps = 0;
   const r = await tipBand(page, s);
   expect(r.txt).toBe("Tap a spot on the path and you'll walk there.");
   expect([28, 44]).toContain(r.h); expect(r.clipped).toBe(false);
 });
-test('D70 modern default tip: approved copy, fits (one or two lines, not clipped)', async ({ page }) => {
+test('D70 modern early-steps hint in portrait: no tip band, approved copy at the top of the quest card, not clipped', async ({ page }) => {
+  const s = modernSave(); delete s.flags['story.phone_got'];
+  s.flags['story.early_done'] = false; s.flags['story.early_steps'] = 0; s.steps = 0;
+  const r = await tipBand(page, s, '', false);
+  expect(r.h).toBe(0);
+  await expect(page.locator('#walkTip')).toBeHidden();
+  await page.locator('#questBtn').click();
+  await expect(page.locator('#ovQuest')).toBeVisible();
+  const h = await page.evaluate(() => { const el = document.querySelector('#questHint');
+    return { shown: !el.hidden, txt: el.textContent.trim(), clipped: el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1 }; });
+  expect(h).toEqual({ shown: true, txt: "Tap a spot on the path and you'll walk there.", clipped: false });
+});
+test('D70 modern default tip, sideways: approved copy, fits (one or two lines, not clipped)', async ({ page }) => {
   // The default tip shows before the starter (and when no quest has a target). Loads re-derive the starter flag from the party,
   // so clear it live and re-enter the walk tab.
   const s = modernSave(); delete s.flags['story.phone_got'];
@@ -256,6 +343,14 @@ test('D70 modern default tip: approved copy, fits (one or two lines, not clipped
     return { txt: el.textContent.trim(), h: b.getBoundingClientRect().height, clipped: el.scrollHeight > el.clientHeight + 1 || el.scrollWidth > el.clientWidth + 1 }; });
   expect(r.txt).toBe('Tap the ground to walk. Tap someone to talk.');
   expect([28, 44]).toContain(r.h); expect(r.clipped).toBe(false);
+});
+test('D70 modern default tip in portrait: the generic tip is dropped with the line (MODERN_HUD_CLEAR 3.4), no tip band', async ({ page }) => {
+  const s = modernSave(); delete s.flags['story.phone_got'];
+  await tipBand(page, s, '?debug=1', false);
+  await page.evaluate(() => { PixelPets.state.flags['story.starter_received'] = false; PixelPets.showTab('pet'); PixelPets.showTab('walk'); });
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => [document.body.classList.contains('mhc-frame'), document.querySelector('#fcTip').getBoundingClientRect().height])).toEqual([true, 0]);
+  await expect(page.locator('#walkTip')).toBeHidden();
 });
 
 test('D70 first-walk prompt: approved question, ARCADE / MODERN with sub-lines, then the gear reminder; all fit', async ({ page }) => {

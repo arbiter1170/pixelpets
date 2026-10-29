@@ -36,10 +36,6 @@ test('lower card has five bars, the spec icons, and the card rects', async ({ pa
   await boot(page, { hunger: 78, happy: 99, energy: 85, xp: 40, stage: 1 });
   const W = page.viewportSize().width;
   const keys = ['hp', 'food', 'joy', 'nrg', 'grow'];
-  const card = {
-    320: { hp: [54, 66, 14.8], food: [84.8, 100.8, 14.8], joy: [119.6, 131.6, 14.8], nrg: [150.4, 162.4, 14.8], grow: [181.2, 193.2, 14.8] },
-    390: { hp: [54, 66, 28.8], food: [98.8, 114.8, 28.8], joy: [147.6, 159.6, 28.8], nrg: [192.4, 204.4, 28.8], grow: [237.2, 249.2, 28.8] },
-  }[W];
   const lay = await page.evaluate(() => {
     const strip = document.querySelector('#petStrip');
     const r = el => { const b = el.getBoundingClientRect(); return { x: b.x, y: b.y, w: b.width, h: b.height }; };
@@ -54,7 +50,8 @@ test('lower card has five bars, the spec icons, and the card rects', async ({ pa
     const pet = document.querySelector('#petFloat').getBoundingClientRect();
     const sr = strip.getBoundingClientRect();
     return {
-      h: sr.height, rightGap: pet.left - sr.right,
+      h: sr.height, left: sr.left, right: sr.right, rowGap: sr.top - pet.bottom,
+      frame: document.body.classList.contains('mhc-frame'),
       overflow: strip.scrollWidth > strip.clientWidth + 1,
       nameH: name.getBoundingClientRect().height,
       aria: strip.getAttribute('aria-label'),
@@ -66,7 +63,12 @@ test('lower card has five bars, the spec icons, and the card rects', async ({ pa
   });
   expect(lay.h).toBeGreaterThanOrEqual(43);
   expect(lay.h).toBeLessThanOrEqual(45);
-  expect(Math.abs(lay.rightGap - 6)).toBeLessThanOrEqual(1);
+  // Modern portrait walk uses the MODERN_HUD_CLEAR dock (#199): the card is the full third row, 6 px under PARTNER's row
+  // (D778, D780 settled), not beside PARTNER with a 6 px gap as PARTNER_UI section 4 drew it.
+  expect(lay.frame).toBe(true);
+  expect(Math.abs(lay.left - 6)).toBeLessThanOrEqual(1);
+  expect(Math.abs(lay.right - (W - 6))).toBeLessThanOrEqual(1);
+  expect(Math.abs(lay.rowGap - 6)).toBeLessThanOrEqual(1);
   expect(lay.overflow).toBe(false);
   expect(lay.nameH).toBeLessThan(24);
   expect(lay.aria).toBe('Partner Emberfox, Lv 5. HP 37 of 37, Food 78, joy 99, energy 85, grow 5 of 24.');
@@ -74,19 +76,24 @@ test('lower card has five bars, the spec icons, and the card rects', async ({ pa
   expect(parseFloat(lay.foodW)).toBeCloseTo(78, 2);
   expect(lay.iconsBlink).toBe(false);
   lay.bars.forEach(b => expect(b.low).toBe(false));
-  if (card) {
-    keys.forEach((k, i) => {
-      const [ix, bx, bw] = card[k];
-      expect(near(lay.bars[i].icon.x, ix, 1), k + ' icon x ' + lay.bars[i].icon.x).toBe(true);
-      expect(near(lay.bars[i].bar.x, bx, 1), k + ' bar x ' + lay.bars[i].bar.x).toBe(true);
-      expect(near(lay.bars[i].bar.w, bw, 1), k + ' bar w ' + lay.bars[i].bar.w).toBe(true);
-      expect(lay.bars[i].bar.w).toBeGreaterThanOrEqual(14);
-      expect(near(lay.bars[i].icon.w, k === 'food' ? 14 : 10, 0.5)).toBe(true);
-      expect(lay.bars[i].low).toBe(false);
-    });
-    expect(lay.bars[0].warn).toBe(false);
-    expect(lay.bars[0].icon.x).toBeLessThan(lay.bars[1].icon.x);
-  }
+  // PARTNER_UI section 4 segments, text column from x 54, 6 px right padding: icon (14 px food, else 10) + 2 px + bar,
+  // 4 px between segments, every bar the same width. 320 and 390 used to pin the beside-PARTNER card (bars 14.8 and 28.8);
+  // the same rule on the full-row card gives the rects for every width.
+  const bw = ((W - 6) - 6 - 54 - 4 * 4 - (10 + 2) * 4 - (14 + 2)) / 5;
+  const card = {};
+  let x = 54;
+  keys.forEach(k => { const iw = k === 'food' ? 14 : 10; card[k] = [x, x + iw + 2, bw]; x += iw + 2 + bw + 4; });
+  keys.forEach((k, i) => {
+    const [ix, bx, bw] = card[k];
+    expect(near(lay.bars[i].icon.x, ix, 1), k + ' icon x ' + lay.bars[i].icon.x).toBe(true);
+    expect(near(lay.bars[i].bar.x, bx, 1), k + ' bar x ' + lay.bars[i].bar.x).toBe(true);
+    expect(near(lay.bars[i].bar.w, bw, 1), k + ' bar w ' + lay.bars[i].bar.w).toBe(true);
+    expect(lay.bars[i].bar.w).toBeGreaterThanOrEqual(14);
+    expect(near(lay.bars[i].icon.w, k === 'food' ? 14 : 10, 0.5)).toBe(true);
+    expect(lay.bars[i].low).toBe(false);
+  });
+  expect(lay.bars[0].warn).toBe(false);
+  expect(lay.bars[0].icon.x).toBeLessThan(lay.bars[1].icon.x);
   const hpMark = await rgbAt(page, '#petStrip .ico-hp', 0, 0);
   const hpCore = await rgbAt(page, '#petStrip .ico-hp', 2, 2);
   const food = await rgbAt(page, '#petStrip .ico-food', 3, 0);

@@ -857,6 +857,22 @@ function rng(seed){ return () => { seed = (seed*1103515245 + 12345) & 0x7fffffff
 function mkTile(fn){ return sheetPaint(16, 16, fn); }
 function px(g,col,x,y,w=1,h=1){ g.fillStyle=col; g.fillRect(x,y,w,h); }
 function grassBase(g, seed){ px(g,PAL.g,0,0,16,16); const r=rng(seed); for(let i=0;i<9;i++) px(g, r()<.5?PAL.l:PAL.t, (r()*16)|0, (r()*16)|0); }
+// BRINEWICK floors v0.2 (design specs/brinewick_floors.py): FLOOR_FIX plank rule and calm test; no new palette keys.
+const BRINEWICK_TILES = {
+  floor_ropeplank: ["AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAGGGAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAABAAAAAAA", "AAAAAAAAAAAAAAAA", "GGGGGGGGGGGGGGGG", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAGGAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "GGGGGGGGGGGGGGGG"],
+  floor_ropeplank_b: ["AAAAAAAAAAGAAAAA", "AAAAAAAAAAGAAAAA", "AAAAAAAAAAGAAAAA", "AAAAAAGGAAGAAAAA", "AAAAAAAAAAGAAAAA", "AAAAAAAAAAGAAAAA", "AAAAAAAAAAGAAAAA", "GGGGGGGGGGGGGGGG", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAABAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "GGGGGGGGGGGGGGGG"],
+  floor_ropeplank_c: ["AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAABA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAGGAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "GGGGGGGGGGGGGGGG", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AGGGAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "AAAAAAAAAAAAAAAA", "GGGGGGGGGGGGGGGG"],
+  floor_tarboard: ["FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFBFF", "FFpppFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "dddddddddddddddd", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFpppFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "dddddddddddddddd"],
+  floor_tarboard_b: ["FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFpppF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "dddddddddddddddd", "FFFFFFFdFFFFFFFF", "FFFFFFFdFFFFFFFF", "FFFFFFFdFFFFFFFF", "FFFFFppdFFFFFFFF", "FFFFFFFdFFFFFFFF", "FFFFFFFdFFFFFFFF", "FFFFFFFdFFFFFFFF", "dddddddddddddddd"],
+  floor_tarboard_c: ["FFFFFFFFFFFFFFFF", "FFFFFFFFpppFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFBFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "dddddddddddddddd", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FppFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "FFFFFFFFFFFFFFFF", "dddddddddddddddd"],
+  floor_ferrydeck: ["hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhKKhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "KKKKKKKKKKKKKKKK", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "KKKKKKKKKKKKKKKK"],
+  floor_ferrydeck_b: ["hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "KKKKKKKKKKKKKKKK", "hhhhhhhhhhhhhKhh", "hhhhhhhhhhhhhKhh", "hhhhhhhhhhhhhKhh", "hhhhhhhhhhhhhKhh", "hhhhhhhhhhhhhKhh", "hhhhhhhhhhhhhKhh", "hhhhhhhhhhhhhKhh", "KKKKKKKKKKKKKKKK"],
+  floor_ferrydeck_c: ["hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "KKKKKKKKKKKKKKKK", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhKKhhhh", "hhhhhhhhhhhhhhhh", "hhhhhhhhhhhhhhhh", "KKKKKKKKKKKKKKKK"],
+  floor_sealed: ["wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwhw", "wwwwwwwwwwwwwwww", "wwwhwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwhwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww"],
+  floor_sealed_b: ["wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwhwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwhww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwswwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww"],
+  floor_sealed_c: ["wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwhw", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwhwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww"],
+  rug_navy_runner: ["nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnbbnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnbbnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn"],
+};
 // FLOOR_FIX (D184-D186): 54 calm floor grids. Old floor tiles stay defined. No new palette keys.
 const FLOOR_FIX_TILES = {
   floor_lino: ["DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDCDD","DDDDDDDDDDDDDDDD","DDDCDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDEDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD"],
@@ -963,6 +979,10 @@ function buildTiles(){
   T.D = mkTile(g => { px(g,PAL.o,0,0,16,16); [0,4,8,12].forEach(y => px(g,PAL.d,0,y,16,1));
     [[2,1],[9,5],[5,9],[12,13]].forEach(([x,y]) => px(g,PAL.d,x,y,1,3));
     px(g,PAL.t,0,14,16,2); px(g,PAL.y,6,2,1,1); });
+  // BRINEWICK: the quay. Weathered grey-blue planks with a rope-tan nail line, so the harbour never repeats High Charity's orange dock.
+  T.Q = mkTile(g => { px(g,PAL.m,0,0,16,16); [0,4,8,12].forEach(y => px(g,PAL.d,0,y,16,1));
+    [[3,1],[10,5],[6,9],[13,13]].forEach(([x,y]) => px(g,PAL.d,x,y,1,3));
+    [[7,2],[1,6],[12,10],[4,14]].forEach(([x,y]) => px(g,PAL.h,x,y,2,1)); px(g,PAL.G,9,1,1,1); px(g,PAL.G,2,13,1,1); });
   T.A = mkTile(g => { px(g,PAL.w,0,0,16,16); px(g,PAL.h,0,0,16,2); px(g,PAL.h,0,14,16,2);
     px(g,PAL.h,0,0,2,16); px(g,PAL.h,14,0,2,16); px(g,PAL.y,6,6,4,4); px(g,PAL.o,7,7,2,2);
     px(g,PAL.c,3,3,2,1); px(g,PAL.c,11,12,2,1); });
@@ -1338,6 +1358,25 @@ function buildTiles(){
   T.wall_boat = wallTop('b', 'c', [[2, 6, 's'], [9, 10, 't']]);
   T.wall_boat_face = wallFace('c', 'b', 'd', [[5, 7, 's']], null);
   T.wall_boat_win = wallFace('c', 'b', 'd', [], [3, 3, 10, 6, 'd', 's']);
+  // BRINEWICK. Walls, mats and decals; the floors are grids in BRINEWICK_TILES (FLOOR_FIX rules). Rule 9 briefs in design specs/BRINEWICK.md.
+  T.mat_brine_rest = doormat('n', 'w');
+  T.wall_brine_rest = wallTop('w', 'h', [[3, 6, 'C'], [11, 9, 'n']]);
+  T.wall_brine_rest_face = wallFace('w', 'h', 'n', [[6, 6, 'C']], null);
+  T.wall_brine_rest_win = wallFace('w', 'h', 'n', [], [4, 2, 8, 7, 'n', 'c']);
+  T.mat_chandler = doormat('F', 'o');
+  T.wall_chandler = wallTop('m', 'd', [[4, 5, 'h'], [12, 10, 'F']]);
+  T.wall_chandler_face = wallFace('m', 'd', 'F', [[5, 6, 'h']], null);
+  T.wall_chandler_win = wallFace('m', 'd', 'F', [], [4, 2, 8, 7, 'F', 'c']);
+  T.deck_lane = mkTile(g => { px(g, PAL.y, 7, 0, 2, 16); px(g, PAL.o, 7, 7, 2, 2); });
+  T.mat_ferry = doormat('m', 'y');
+  T.wall_ferry = wallTop('w', 'n', [[3, 6, 'h'], [10, 9, 'r']]);
+  T.wall_ferry_face = wallFace('w', 'n', 'r', [[5, 7, 'h']], null);
+  T.wall_ferry_win = wallFace('w', 'n', 'r', [], [3, 3, 10, 6, 'n', 's']);
+  T.mat_depot = doormat('m', 'l');
+  T.depot_line = mkTile(g => { px(g, PAL.l, 7, 0, 2, 16); });   // a painted mint aisle line, walkable decal
+  T.wall_depot = wallTop('w', 'l', [[4, 6, 'h'], [11, 9, 's']]);
+  T.wall_depot_face = wallFace('w', 'l', 'h', [[6, 6, 's']], null);
+  T.wall_depot_win = wallFace('w', 'l', 'h', [], [4, 2, 8, 7, 'h', 's']);
   T.wall_chalk = wallTop('y', 'o', [[4, 5, 'w'], [11, 9, 'n']]);
   T.wall_chalk_face = wallFace('y', 'o', 'n', [[6, 6, 'w']], null);
   T.wall_chalk_win = wallFace('y', 'o', 'n', [], [4, 2, 8, 6, 'n', 'w']);
@@ -1670,6 +1709,7 @@ function buildTiles(){
   }
   // FLOOR_FIX: paint the calm floors the same way as addExteriorArt (PAL key to px). Old names stay.
   for (const [k, rows] of Object.entries(FLOOR_FIX_TILES)) if (!T[k]) T[k] = mkTile(g => paintGrid(g, rows));
+  for (const [k, rows] of Object.entries(BRINEWICK_TILES)) if (!T[k]) T[k] = mkTile(g => paintGrid(g, rows));
   // Market Row rooms. Store is a 2x2 grey-and-sky check (no white). Wardrobe is rose herringbone. Diner is a small black-and-butter check.
   const blockCheck = (a, b, shift) => {
     const rows = [];
@@ -1794,6 +1834,11 @@ const HOUSE_SKINS = {
   hc_apt: hcSkin('floor_pile', 'wall_peach', 'mat_room', { weights: [0.22, 0.18], remap: { '=': 'rug_room' }, wall: wallRow('mhdpdomdocsm') }),
   hc_mall: hcSkin('floor_shop', 'wall_glass', 'mat_shop', { wall: wallRow('swbcbwmmbswh') }),
   hc_mall_up: hcSkin('floor_mezz', 'wall_awning', 'mat_mezz', { wall: wallRow('rypwhbdmncsr') }),
+  // BRINEWICK. Plank, rope, brass and sea blue; the depot is the one mint-and-graphite room. Wall rows are unique to each room.
+  bw_lantern: hcSkin('floor_ropeplank', 'wall_brine_rest', 'mat_brine_rest', { remap: { '=': 'rug_navy_runner' }, wall: wallRow('nbdwhnnFdcsn') }),
+  bw_store: hcSkin('floor_tarboard', 'wall_chandler', 'mat_chandler', { wall: wallRow('mhdhKFFdFcsF') }),
+  bw_hall: hcSkin('floor_ferrydeck', 'wall_ferry', 'mat_ferry', { decal: { q: 'deck_lane' }, walk: { q: 1 }, wall: wallRow('ncdwhrrdnswn') }),
+  bw_depot: hcSkin('floor_sealed', 'wall_depot', 'mat_depot', { decal: { q: 'depot_line' }, walk: { q: 1 }, wall: wallRow('dmdmdllddswl') }),
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
   obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_dusk', m:'mat_dusk' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: floorFixVar('floor_dusk'), wall: wallRow('FGdGFyFFynsF') },
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mist', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: floorFixVar('floor_mist'), wall: wallRow('mhnhmcndmcwb') },
@@ -1986,6 +2031,27 @@ function buildWorldArt(){
   A.loan_crate = mkTile(g => {
     px(g, PAL.d, 1, 3, 14, 13); px(g, PAL.o, 2, 4, 12, 11); px(g, PAL.s, 2, 8, 12, 2);
     px(g, PAL.m, 5, 5, 6, 4); px(g, PAL.k, 6, 6, 1, 1); px(g, PAL.k, 9, 6, 1, 1); px(g, PAL.h, 7, 8, 2, 1);
+  });
+  // BRINEWICK: the Glimmer Cell crate (ASSET_HANDOFF T4, a cage and not a box), the same crate opened, and the Hall's tide gauge.
+  A.cell_crate = [0, 1].map(f => mkTile(g => {
+    px(g, PAL.d, 1, 2, 14, 14); px(g, PAL.m, 2, 3, 12, 12);
+    oval(g, 7.5, 10.5, 4, 3, PAL.h); px(g, PAL.w, 6, 9, 1, 1); px(g, PAL.w, 9, 9, 1, 1);
+    [3, 6, 9, 12].forEach(x => px(g, PAL.d, x, 3, 1, 12)); px(g, PAL.d, 2, 7, 12, 1);
+    px(g, PAL.h, 2, 3, 12, 1); px(g, PAL.l, 5, 1, 6, 2); px(g, PAL.s, 6 + f, 1, 3, 1);
+  }));
+  A.depot_crate = mkTile(g => {   // the depot's identical stock: cool grey slats, one mint leaf, no warm colour
+    px(g, PAL.d, 1, 3, 14, 13); px(g, PAL.h, 2, 4, 12, 11); px(g, PAL.K, 2, 8, 12, 1); px(g, PAL.K, 2, 12, 12, 1);
+    px(g, PAL.w, 2, 4, 12, 1); px(g, PAL.l, 7, 5, 2, 2); px(g, PAL.g, 7, 7, 1, 1); px(g, PAL.d, 1, 15, 14, 1);
+  });
+  A.cell_crate_open = mkTile(g => {
+    px(g, PAL.d, 1, 6, 14, 10); px(g, PAL.k, 2, 7, 12, 8); px(g, PAL.m, 2, 14, 12, 1);
+    px(g, PAL.d, 0, 2, 13, 3); px(g, PAL.m, 1, 3, 11, 1); px(g, PAL.l, 4, 2, 5, 1);
+  });
+  A.tide_gauge = mkTile(g => {
+    px(g, PAL.b, 2, 13, 12, 3); px(g, PAL.c, 3, 13, 4, 1);
+    px(g, PAL.d, 6, 1, 4, 13); px(g, PAL.w, 7, 2, 2, 11);
+    [3, 7, 11].forEach((y, i) => px(g, PAL[i === 1 ? 'r' : 'n'], 7, y, 2, 1));
+    px(g, PAL.y, 6, 1, 4, 1);
   });
   A.census_tent = mkTile(g => {
     px(g,PAL.d,7,1,2,14); px(g,PAL.w,2,4,12,8); px(g,PAL.l,2,4,12,2); px(g,PAL.l,2,8,12,1);

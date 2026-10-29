@@ -167,9 +167,16 @@ for (const mode of ['modern', 'arcade']) {
   });
 }
 
+// TOP_HUD v0.1.5 section 0 (conflict 9, D793) and MODERN_HUD_CLEAR 0.1: the yield and column checks run with the
+// mhc-frame class off. Modern portrait walk now turns it on by default (#199 dock, D789), so force it off here.
+async function frameOff(page) {
+  expect(await page.evaluate(() => PixelPets.setHudPads(false))).toBe(false);
+}
+
 test('proto left column yields, then goes home one step after the zone leaves', async ({ page }) => {
   test.setTimeout(60000);
   await boot(page, 'modern');
+  await frameOff(page);
   const w = page.viewportSize().width;
   await stand(page, 'proto', 3, 1);
   const lay = await layout(page);
@@ -212,6 +219,7 @@ test('proto left column yields, then goes home one step after the zone leaves', 
 test('reduced motion jumps the chip and the column with no tween', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await boot(page, 'modern');
+  await frameOff(page);
   await stand(page, 'proto', 3, 1);
   const motion = await page.evaluate(() => {
     const chip = document.querySelector('#thChip');
@@ -302,13 +310,21 @@ test('the frame keeps the chip and the column at home', async ({ page }) => {
   await boot(page, 'modern');
   expect(await page.evaluate(() => PixelPets.setHudPads(true))).toBe(true);
   await stand(page, 'proto', 3, 1);
+  // Under the frame the chip's home is the dock's top row and the left column's buttons are the dock's second row
+  // (MODERN_HUD_CLEAR D789, D780; built in #199). TOP_HUD section 15: with the class on, the chip and the column never
+  // yield, and the pads are the dock packet's, 0 in portrait (D793, D785).
   const g = await page.evaluate(() => {
     const col = document.querySelector('#fcTL');
     const chip = document.querySelector('#thChip');
+    const map = document.querySelector('#mapCanvas').getBoundingClientRect();
+    const btns = [...document.querySelectorAll('#repBtn, #questBtn, #walkBagBtn, #mapBtn')].filter(b => b.offsetParent);
+    const over = el => { const r = el.getBoundingClientRect(); return r.left < map.right && r.right > map.left && r.top < map.bottom && r.bottom > map.top; };
     return {
       shift: chip.style.transform || '',
       colTop: col.style.top,
-      y: Math.round(col.getBoundingClientRect().top),
+      chipHome: chip.parentElement.id,
+      btnHomes: btns.map(b => b.parentElement.id),
+      over: [chip, ...btns].filter(over).map(el => el.id),
       pads: PixelPets.mapInfo.pads,
       v: PixelPets.state.v,
     };
@@ -316,9 +332,11 @@ test('the frame keeps the chip and the column at home', async ({ page }) => {
   expect(g.v).toBe(2);
   expect(g.shift).toBe('');
   expect(g.colTop).toBe('');
-  expect(g.y).toBe(6);
-  expect(g.pads.on).toBe(true);
-  expect(g.pads.right).toBe(0);
+  expect(g.chipHome).toBe('fcDockChip');
+  expect(g.btnHomes.length).toBeGreaterThanOrEqual(3);
+  for (const id of g.btnHomes) expect(id).toBe('fcDockR2Left');
+  expect(g.over).toEqual([]);
+  expect(g.pads).toMatchObject({ on: true, top: 0, left: 0, right: 0, bottom: 0 });
 });
 
 test('arcade does not yield the left column', async ({ page }) => {

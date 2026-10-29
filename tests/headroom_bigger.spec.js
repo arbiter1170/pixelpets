@@ -320,7 +320,9 @@ test('P0 the default 2x map zoom is today\'s scale outdoors, and rooms keep toda
         const byW = Math.floor(W / ((info.w - info.slack) * 16));
         const byH = Math.floor((H - hud) / (info.h * 16));
         let expected = Math.max(s, Math.min(2 * s, byW, byH));
-        if (id === 'hc_apt_in' && window.innerWidth <= 320 && !frame) expected = Math.min(expected, Math.max(s, 2));
+        // Your Room's 320 cap (roomZoomFor) is not one of D785's zeroed reserves and holds under the frame too, as T8
+        // and room_zoom_all expect; only the side nudge goes under the frame (applyRoomSideNudge).
+        if (id === 'hc_apt_in' && window.innerWidth <= 320) expected = Math.min(expected, Math.max(s, 2));
         out.push({ id, scale: info.scale, base: info.baseScale, expected, cssH: mc.getBoundingClientRect().height, H, hud });
       }
       return out;

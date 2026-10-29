@@ -1195,7 +1195,7 @@
           {
             "kind": "prop",
             "id": "hq_ans_box",
-            "x": 2,
+            "x": 4,
             "y": 3,
             "sprite": "crate",
             "when": [

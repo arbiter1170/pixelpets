@@ -113,9 +113,14 @@ async function shot(page, name, sel){
   if (sel) await page.locator(sel).screenshot(opts);
   else await page.screenshot(opts);
 }
+// cloud.js stamps rev and updatedAt on its own 10 s tick (its "real changes" hash skips them, last and the
+// care numbers too), so where that tick lands in a slow run is not the group writing to the save.
+const CLOUD_STAMPS = ['rev', 'updatedAt'];
+const saveKeys = raw => Object.keys(JSON.parse(raw)).filter(k => !CLOUD_STAMPS.includes(k)).sort().join(',');
 function normSave(raw){
   const o = JSON.parse(raw);
   delete o.last; delete o.debugSave;
+  CLOUD_STAMPS.forEach(k => delete o[k]);
   (o.party || []).forEach(p => { delete p.hunger; delete p.happy; delete p.energy; });
   return JSON.stringify(o);
 }
@@ -186,7 +191,7 @@ test.describe('B1', () => {
       const after = await a.evaluate(() => localStorage.getItem('pixelpets.save.v2'));
       expect(JSON.parse(after).v).toBe(2);
       expect(normSave(after)).toBe(normSave(before));
-      expect(Object.keys(JSON.parse(after)).sort().join(',')).toBe(Object.keys(JSON.parse(before)).sort().join(','));
+      expect(saveKeys(after)).toBe(saveKeys(before));
       expect(a.ppErrors, a.ppErrors.join('\n')).toEqual([]);
       expect(b.ppErrors, b.ppErrors.join('\n')).toEqual([]);
       await a.context().close(); await b.context().close();

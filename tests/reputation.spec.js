@@ -158,14 +158,16 @@ function rect(page, sel) {
   }, sel);
 }
 
-test('modern compass sits at 6,6 and quest, bag and map move down one slot', async ({ page }) => {
+// LIZZY_REP D176 put the compass at 6,6 over the map. Modern portrait walk now uses the MODERN_HUD_CLEAR dock (#199):
+// the compass leads the dock's second row, then QUEST, BAG and MAP (D780, settled), the place chip sits in the row above
+// (D789), the joystick stays over the map above the dock (D784) and the tip line is gone (D790).
+test('modern compass leads the dock button row, then quest, bag and map (D780)', async ({ page }) => {
   const save = starterSave();
   save.settings.controls = 'modern';
   save.settings.joystick = true;
   await boot(page, save);
   await page.evaluate(() => PixelPets.showTab('walk'));
   await page.waitForTimeout(200);
-  const w = page.viewportSize().width;
   const r = {
     rep: await rect(page, '#repBtn'),
     quest: await rect(page, '#questBtn'),
@@ -174,26 +176,24 @@ test('modern compass sits at 6,6 and quest, bag and map move down one slot', asy
     env: await rect(page, '#thChip'),
     joy: await rect(page, '#joyRing'),
     tip: await rect(page, '#walkTip'),
+    canvas: await rect(page, '#mapCanvas'),
   };
+  expect(await page.evaluate(() => document.body.classList.contains('mhc-frame'))).toBe(true);
   expect(Math.round(r.rep.x)).toBe(6);
-  expect(Math.round(r.rep.y)).toBe(6);
   expect(Math.round(r.rep.width)).toBe(44);
   expect(Math.round(r.rep.height)).toBe(44);
-  expect(Math.round(r.quest.x)).toBe(6);
-  expect(Math.round(r.quest.y)).toBe(56);
-  expect(Math.round(r.bag.y)).toBe(106);
-  expect(Math.round(r.map.y)).toBe(156);
-  expect(Math.round(r.map.bottom)).toBeLessThanOrEqual(210);
+  expect(Math.round(r.quest.x)).toBe(56);
+  expect(Math.round(r.bag.x)).toBe(106);
+  expect(Math.round(r.map.x)).toBe(156);
+  for (const k of ['quest', 'bag', 'map']) expect(Math.round(r[k].y), k).toBe(Math.round(r.rep.y));
   expect(Math.round(r.env.height)).toBeGreaterThanOrEqual(44);
-  expect(Math.round(r.env.right)).toBe(w - 6);
-  expect(Math.round(r.env.y)).toBeGreaterThanOrEqual(56);
-  if (w === 320 || w === 390) {
-    expect(r.joy.y).toBeGreaterThanOrEqual(370);
-    expect(r.tip.y).toBeGreaterThanOrEqual(470);
-    expect(r.map.bottom).toBeLessThan(r.joy.y);
-    expect(r.map.bottom).toBeLessThan(r.tip.y);
-  }
-  if (w === 390) await shot(page, 'rep-compass-modern');
+  expect(Math.round(r.env.x)).toBe(6);
+  expect(Math.round(r.rep.y - r.env.bottom)).toBe(6);
+  expect(r.env.y).toBeGreaterThanOrEqual(r.canvas.bottom - 0.5);
+  expect(r.joy.y).toBeGreaterThanOrEqual(r.canvas.y);
+  expect(r.joy.bottom).toBeLessThanOrEqual(r.canvas.bottom + 0.5);
+  expect(r.tip).toBeNull();
+  if (page.viewportSize().width === 390) await shot(page, 'rep-compass-modern');
 });
 
 test('arcade compass is the first header button and is a 44 px target', async ({ page }) => {
@@ -276,10 +276,12 @@ test('the acorn chip is a 44 px plate and flashes only on a gain', async ({ page
   const box = await page.evaluate(() => {
     const chip = document.querySelector('#fcAcorns'), n = document.querySelector('#fcAcornN');
     const cr = chip.getBoundingClientRect(), nr = n.getBoundingClientRect();
-    return { h: Math.round(cr.height), y: Math.round(cr.y), cells: Math.round(cr.width / 2), numLeft: Math.round(nr.left - cr.left), inside: nr.right <= cr.right + 1, icon: !!document.querySelector('#fcAcornIcon') };
+    return { h: Math.round(cr.height), y: Math.round(cr.y), chipY: Math.round(document.querySelector('#thChip').getBoundingClientRect().y), parent: chip.parentElement.id, cells: Math.round(cr.width / 2), numLeft: Math.round(nr.left - cr.left), inside: nr.right <= cr.right + 1, icon: !!document.querySelector('#fcAcornIcon') };
   });
   expect(box.h).toBe(44);
-  expect(box.y).toBe(6);
+  // Acorns sit in the dock's top row beside the place chip (MODERN_HUD_CLEAR D789, #199), not at y 6 over the map.
+  expect(box.y).toBe(box.chipY);
+  expect(box.parent).toBe('fcDockR1Right');
   expect(box.cells).toBeGreaterThanOrEqual(32);
   expect(box.cells).toBeLessThanOrEqual(48);
   expect(box.numLeft).toBe(38);

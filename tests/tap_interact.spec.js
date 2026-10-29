@@ -20,8 +20,11 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     // P4 adds eight shops and fourteen stall lines. The lamp-oil counter moves from talk to shop.
     // talk is 572: the Bloom Trial Hall adds six terrace props, and the four heart lanterns
     // plus Host Della, Host Garnet and Host Ines are talk.
-    door: 38, warp: 76, sign: 77, talk: 572, scene: 36, trigger: 31, board: 6,
-    trainer: 23, pickup: 17, wild: 3, shop: 13, roll: 1, booth: 6, panel: 2,
+    // Hearthmoor Plaza (#196), Route 3 with its three side rooms and the Answerers (ARBITER_UNITS), and Brinewick
+    // with Trial Hall #3 and its rooms (BRINEWICK v0.1) bring door 45, warp 93, sign 89, talk 669, scene 40,
+    // trigger 34, board 7, trainer 25, shop 14 and wild 9.
+    door: 45, warp: 93, sign: 89, talk: 661, scene: 40, trigger: 34, board: 7,
+    trainer: 25, pickup: 17, wild: 9, shop: 14, roll: 1, booth: 6, panel: 2,
   });
   // Pre-existing tiles a tap cannot stand on. None of these are the dream toy, the balloons, or the crate.
   expect(audit.reachGaps).toEqual([
@@ -34,12 +37,22 @@ test('every interactable tap resolves to its action @w1', async ({ page }) => {
     'cc_hall_in:h2_cairn neighbour is off the safe region',
     'cc_hall_in:h2_seam_b neighbour is off the safe region',
     'cc_hall_in:h2_sweeper neighbour is off the safe region',
+    // ARBITER_UNITS: Quinn stands behind the hall's gates like Hale and the h2_ props.
+    'cc_hall_in:cc_quinn neighbour is off the safe region',
     'hm_hq_f1:hq_table_tl has no free neighbour',
     'hm_hq_f1:hq_evid_a has no free neighbour',
     'hm_hq_f1:hq_locker_b neighbour is off the safe region',
     'hm_hq_f2:hq2_radio_b has no free neighbour',
     'hm_hq_f2:hq2_banner_b has no free neighbour',
     'hm_hq_f2:hq2_crate has no free neighbour',
+    // BRINEWICK v0.1: Trial Hall #3 keeps Marisol and its props behind the tide gauge gate, as cc_hall_in does.
+    // (The depot's wall-side crates are silent stock, so they are not interactables.)
+    'bw_hall_in:marisol neighbour is off the safe region',
+    'bw_hall_in:bw_quinn neighbour is off the safe region',
+    'bw_hall_in:bw_bell neighbour is off the safe region',
+    'bw_hall_in:bw_chart neighbour is off the safe region',
+    'bw_hall_in:h3_gauge_b neighbour is off the safe region',
+    'bw_hall_in:bw_ringer neighbour is off the safe region',
   ]);
   expect(audit.n).toBeGreaterThan(100);
   const sceneOnly = audit.rows.filter((r) => r.kind === 'prop' && r.act === 'scene' && !r.talkable).map((r) => r.id).sort();

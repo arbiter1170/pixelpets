@@ -73,6 +73,22 @@ async function tapTile(page, tx, ty) {
   await page.locator('#mapCanvas').click({ position: { x: spot.x, y: spot.y } });
 }
 
+// A tap on the follower while the holder walks. The camera follows the holder, so a screen spot read in one call and
+// clicked in the next lands a tile or two off. Read the follower's tile and tap its centre in the same frame instead.
+async function tapFollowerNow(page) {
+  return page.evaluate(() => {
+    const c = document.querySelector('#mapCanvas');
+    const r = c.getBoundingClientRect();
+    const cam = PixelPets.walk.cam;
+    const k = r.width / c.width;
+    const f = { x: PixelPets.follower.x, y: PixelPets.follower.y };
+    const opt = { bubbles: true, cancelable: true, clientX: r.left + (f.x * 16 - cam.x + 8) * k, clientY: r.top + (f.y * 16 - cam.y + 8) * k, pointerId: 1, pointerType: 'touch', isPrimary: true };
+    c.dispatchEvent(new PointerEvent('pointerdown', opt));
+    c.dispatchEvent(new PointerEvent('pointerup', opt));
+    return f;
+  });
+}
+
 // A 3x view puts a 44 px edge box over the tile a few steps east of the path. Skip those.
 async function walkDest(page, steps, minPath) {
   return page.evaluate(({ steps, minPath }) => {
@@ -202,7 +218,10 @@ test('a quest arrow on the follower tile moves the balloon and stays put', async
   });
   expect(step).toBeTruthy();
   await tapTile(page, step.x, step.y);
-  await expect.poll(() => page.evaluate((step) => PixelPets.state.world.x === step.x && PixelPets.state.world.y === step.y, step)).toBe(true);
+  // world.x/y switch to the new tile when the step starts; wait for the walk (and the camera with it) to finish, or the
+  // arrow's screen y moved a pixel or two between the two reads below.
+  await expect.poll(() => page.evaluate((step) => PixelPets.state.world.x === step.x && PixelPets.state.world.y === step.y
+    && !PixelPets.keeper.moving && PixelPets.walk.fy === step.y && PixelPets.walk.fx === step.x, step)).toBe(true);
   await frame(page);
   await page.evaluate(() => PixelPets.setCare({ hunger: 80, energy: 100 }));
   const fol = await page.evaluate(() => ({
@@ -310,7 +329,8 @@ test('tap-to-walk, the edge cue, and a standing partner tap', async ({ page }) =
     const ch = PixelPets.cueChip();
     return { x: ch.box.x + ch.box.w / 2, y: ch.box.y + ch.box.h / 2 };
   });
-  await page.locator('#mapCanvas').click({ position: spot });
+  // D796 (replaces D466): a quick tap on the edge box walks; holding still on it for CUE_HOLD_MS (450) opens QUEST.
+  await page.locator('#mapCanvas').click({ position: spot, delay: 700 });
   await frame(page);
   await expect(page.locator('#ovQuest')).toBeVisible();
   expect(await page.locator('#careTray').isHidden()).toBe(true);
@@ -348,8 +368,7 @@ test('a moving tap on the follower walks, and an edge box over the partner opens
   expect(dest).toBeTruthy();
   await tapTile(page, dest.x, dest.y);
   await page.waitForFunction(() => !!(PixelPets.walk.path || PixelPets.walk.to));
-  const fol = await page.evaluate(() => ({ x: PixelPets.follower.x, y: PixelPets.follower.y }));
-  await tapTile(page, fol.x, fol.y);
+  const fol = await tapFollowerNow(page);
   expect(await page.locator('#careTray').isHidden()).toBe(true);
   await expect.poll(() => page.evaluate((fol) => PixelPets.state.world.x === fol.x && PixelPets.state.world.y === fol.y, fol), { timeout: 8000 }).toBe(true);
 
@@ -387,7 +406,7 @@ test('a moving tap on the follower walks, and an edge box over the partner opens
     });
     if (!box) continue;
     const at = await page.evaluate(() => ({ x: PixelPets.state.world.x, y: PixelPets.state.world.y }));
-    await page.locator('#mapCanvas').click({ position: box });
+    await page.locator('#mapCanvas').click({ position: box, delay: 700 });   // D796: a hold opens QUEST
     await frame(page);
     await expect(page.locator('#ovQuest')).toBeVisible();
     expect(await page.locator('#careTray').isHidden()).toBe(true);
@@ -469,8 +488,7 @@ test('arcade at 390 opens the tray from a still partner and walks when moving', 
   expect(dest).toBeTruthy();
   await tapTile(page, dest.x, dest.y);
   await page.waitForFunction(() => !!(PixelPets.walk.path || PixelPets.walk.to));
-  const mid = await page.evaluate(() => ({ x: PixelPets.follower.x, y: PixelPets.follower.y }));
-  await tapTile(page, mid.x, mid.y);
+  const mid = await tapFollowerNow(page);
   expect(await page.locator('#careTray').isHidden()).toBe(true);
   await expect.poll(() => page.evaluate((mid) => PixelPets.state.world.x === mid.x && PixelPets.state.world.y === mid.y, mid), { timeout: 8000 }).toBe(true);
 });
@@ -490,24 +508,26 @@ test('the tray switches partner, cares with today\'s rules, and keeps save v2', 
     const slots = [...document.querySelectorAll('.ct-slot')].map((el) => el.getBoundingClientRect());
     const cares = [...document.querySelectorAll('#careTray .ct-care .btn')].map((el) => el.getBoundingClientRect());
     const small = [...document.querySelectorAll('#careTray .ct-small')].map((el) => el.getBoundingClientRect());
-    const strip = document.querySelector('#petStrip').getBoundingClientRect();
-    const pet = document.querySelector('#petFloat').getBoundingClientRect();
-    const col = document.querySelector('#colFloat').getBoundingClientRect();
+    // MODERN_HUD_CLEAR D783 (settled; built in #199/#200): under the Modern dock the tray opens over the dock, never over
+    // the map, 144 px in two rows. It now covers the partner card and PARTNER/WALKLINGS on purpose (was: clear of them, 160-200 px).
+    const dock = document.querySelector('#floatCtl').getBoundingClientRect();
+    const map = document.querySelector('#mapWrap').getBoundingClientRect();
     const overlap = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
     return {
       trayH: tray.height,
       slots: slots.map((r) => ({ w: r.width, h: r.height })),
       cares: cares.map((r) => ({ w: r.width, h: r.height })),
       small: small.map((r) => r.height),
-      clear: !overlap(tray, strip) && !overlap(tray, pet) && !overlap(tray, col),
+      inDock: tray.top >= dock.top - 1 && tray.bottom <= dock.bottom + 1,
+      overMap: overlap(tray, map),
     };
   });
   expect(fit.slots.every((r) => r.w >= 44 && r.h >= 44)).toBe(true);
   expect(fit.cares.every((r) => r.w >= 44 && r.h >= 44)).toBe(true);
   expect(fit.small.every((h) => h >= 44)).toBe(true);
-  expect(fit.clear).toBe(true);
-  expect(fit.trayH).toBeGreaterThan(160);
-  expect(fit.trayH).toBeLessThan(200);
+  expect(fit.inDock).toBe(true);
+  expect(fit.overMap).toBe(false);
+  expect(Math.round(fit.trayH)).toBe(144);
   if (page.viewportSize().width === 320) {
     await page.screenshot({ path: path.join(artifactsDir(), 'partner_tray_320.png') });
   }
@@ -613,8 +633,11 @@ test('one party member hides the row, and a map tap or a tab closes the tray', a
   await page.evaluate(() => { PixelPets.walk.path = null; PixelPets.walk.to = null; });
   await page.locator('#petStrip').click();
   await expect(page.locator('#careTray')).toBeVisible();
-  await page.locator('#petFloat').click();
+  // D783: the open tray sits over the dock, so PARTNER is under it (STATS takes that spot). A tab still closes the tray:
+  // switch with the tab key instead of tapping the covered button.
+  await page.keyboard.press('1');
   await expect(page.locator('#careTray')).toBeHidden();
+  expect(await page.evaluate(() => document.body.dataset.screen)).toBe('pet');
 });
 
 test('desktop keeps the tray in the frame, clear of the nav buttons, with no new key', async ({ page }) => {

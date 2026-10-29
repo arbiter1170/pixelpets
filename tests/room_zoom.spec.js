@@ -14,11 +14,15 @@ function zoomSave() {
   return s;
 }
 
+// H_eff (D232/D237) was H - 112 for the modern top and bottom rows over the map. Under the MODERN_HUD_CLEAR dock
+// (mhc-frame, #199/#200) the rows sit outside #mapWrap, so the room band is 0 (D785) and H_eff is the wrap height.
+function hudReserve(info) { return info.frame ? 0 : 112; }
+
 function expectScale(info, W, H) {
   const s = Math.max(2, Math.floor(W / 176));
   const slack = info.slack;
   const byW = Math.floor(W / ((info.w - slack) * 16));
-  const byH = Math.floor((H - 112) / (info.h * 16));
+  const byH = Math.floor((H - hudReserve(info)) / (info.h * 16));
   const S = Math.max(s, Math.min(2 * s, byW, byH));
   expect(info.baseScale).toBe(s);
   expect(info.scale).toBe(S);
@@ -84,9 +88,12 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
         if (PixelPets.scene) PixelPets.endScene();
       }
       const gear = document.querySelector('#gearFloat').getBoundingClientRect();
+      const frame = document.body.classList.contains('mhc-frame');
+      const dock = document.querySelector('#fcDock').getBoundingClientRect();
       return {
         id: info.id, w: info.w, h: info.h, scale: info.scale, baseScale: info.baseScale, slack: info.slack,
         edge: info.edge, fitWidth: info.fitWidth, W: wrap.width, H: wrap.height, cssH: cr.height, topGap: cr.top - wrap.top, voidPx, bad, n: bad.length ? 0 : null,
+        frame, canvasBottom: cr.bottom, dockTop: frame ? dock.top : Infinity,
         walked: { w: info.w, h: info.h }, smooth: g.imageSmoothingEnabled, gearH: gear.height,
         stand, v: PixelPets.state.v,
         count: (() => { let n = 0; for (let y = 0; y < info.h; y++) for (let x = 0; x < info.w; x++) if (PixelPets.tileInfo(x, y).walk) n++; return n; })(),
@@ -98,7 +105,9 @@ test('small interiors zoom, and every walkable tile hits', async ({ page }) => {
     expect(report.slack).toBe(1);
     expect(report.edge).toBe(null);
     expect(report.voidPx).toEqual([0x1a, 0x1c, 0x2c]);
-    expect(report.cssH).toBeLessThanOrEqual(report.H - 112 + 1);
+    expect(report.frame).toBe(true);   // modern portrait walk runs the dock layout (D789)
+    expect(report.cssH).toBeLessThanOrEqual(report.H - hudReserve(report) + 1);
+    expect(report.canvasBottom).toBeLessThanOrEqual(report.dockTop + 1);   // the room never sits under the dock
     expect(report.topGap).toBeLessThanOrEqual(2);
     expect(report.smooth).toBe(false);
     expect(report.gearH).toBeGreaterThanOrEqual(44);
@@ -145,23 +154,33 @@ test('Your Room at 320 stays scale 2 so the left buttons clear the bed', async (
       right: r.left + ((tx + 1) * 16 - cam.x) * s,
       bottom: r.top + ((ty + 1) * 16 - cam.y) * s,
     });
-    const col = document.querySelector('#fcTL').getBoundingClientRect();
+    // Under the MODERN_HUD_CLEAR dock (#199/#200, D780) the left buttons (trust, QUEST, BAG, MAP) sit in the dock's
+    // row 2 below the map, not in the #fcTL column over it, and the Your Room nudge is 0 (D785). So the whole room,
+    // left wall and bed included, must be on the map and above that row.
+    const frame = document.body.classList.contains('mhc-frame');
+    const col = document.querySelector('#fcDockR2Left').getBoundingClientRect();
+    const btn = document.querySelector('#questBtn').getBoundingClientRect();
+    const wrap = document.querySelector('#mapWrap').getBoundingClientRect();
     const bed = tile(1, 2);
     const wall = tile(0, 0);
+    const floor = tile(0, info.h - 1);
     const hit = (a, b) => a.left < b.right - 0.5 && a.right > b.left + 0.5 && a.top < b.bottom - 0.5 && a.bottom > b.top + 0.5;
     return {
-      id: info.id, scale: info.scale, base: info.baseScale, slack: info.slack, v: PixelPets.state.v,
+      id: info.id, scale: info.scale, base: info.baseScale, slack: info.slack, v: PixelPets.state.v, frame,
       bedClear: !hit(bed, col),
-      wallClear: wall.left >= col.right - 0.5,
-      bedLeft: bed.left, wallLeft: wall.left, colRight: col.right, colH: col.height,
+      wallClear: wall.left >= wrap.left - 0.5 && wall.left >= r.left - 0.5,
+      bedLeft: bed.left, wallLeft: wall.left, roomBottom: floor.bottom, colTop: col.top, btnH: btn.height,
+      btnInRow: btn.top >= col.top - 0.5 && btn.bottom <= col.bottom + 0.5,
     };
   });
   expect(report.id).toBe('hc_apt_in');
+  expect(report.frame).toBe(true);
   expect(report.scale).toBe(2);
   expect(report.scale).toBeGreaterThanOrEqual(report.base);
   expect(report.bedClear).toBe(true);
   expect(report.wallClear).toBe(true);
-  expect(report.bedLeft).toBeGreaterThan(report.colRight - 1);
-  expect(report.colH).toBeGreaterThanOrEqual(44);
+  expect(report.roomBottom).toBeLessThanOrEqual(report.colTop + 0.5);
+  expect(report.btnInRow).toBe(true);
+  expect(report.btnH).toBeGreaterThanOrEqual(44);
   expect(report.v).toBe(2);
 });

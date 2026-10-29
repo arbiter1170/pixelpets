@@ -67,9 +67,10 @@ const STAT_RULES = {
   WILD_LEVELS_SPECIES: { proto: { beetle: [2, 4], mole: [3, 5], crab: [3, 5], moth: [2, 4], vane: [4, 6], dormouse: [3, 5] } },
 };
 const BX_CAP = STAT_RULES.bxForLevel(STAT_RULES.LEVEL_CAP);
-// D765: one table for the next form, one for the Seal cap. The third Seal is coming later, so the cap stays on the last row.
+// D765: one table for the next form, one for the Seal cap. BRINEWICK (B10): the third Seal adds a fourth cap row, 38, a placeholder
+// until Act 2 is scoped. A save past Seal 3 stays on the last row.
 const GROW_GATES = Object.freeze([{ level: 12, seals: 0 }, { level: 24, seals: 2 }]);
-const LEVEL_CAPS = Object.freeze([15, 22, 30]);
+const LEVEL_CAPS = Object.freeze([15, 22, 30, 38]);
 function capLevelFor(seals){
   const i = Math.max(0, Math.min(LEVEL_CAPS.length - 1, seals | 0));
   return LEVEL_CAPS[i];
