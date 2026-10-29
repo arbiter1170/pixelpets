@@ -109,7 +109,7 @@ test('side_pick Yes (keepers) grants once; a replay does not grant again @w1', a
   expect(await page.evaluate(() => PixelPets.standing.keepers.points)).toBe(cfg.grants.sp_pick + 2);
 });
 
-test('switching halves the side you leave and stays shut until the next Seal @w1', async ({ page }) => {
+test('no switch before Act 5 (D161); the switch engine still halves the side you leave, once per Seal @w1', async ({ page }) => {
   const save = starterSave(); Object.assign(save.flags, SIDE_PICK_FLAGS, { 'story.side': 'keepers', 'story.orchard_cleared': true, 'story.rook_bond': 2, 'story.rc_climax': true });
   save.standing = { keepers: 30, glimmer: 12 };
   save.world = { map: 'fernbrook', x: 5, y: 6, facing: 'down', respawn: 'fernbrook' };
@@ -117,7 +117,7 @@ test('switching halves the side you leave and stays shut until the next Seal @w1
   await gotoDebug(page);
   const cfg = await page.evaluate(() => PixelPets.standingCfg());
   const before = await page.evaluate(() => ({ quest: PixelPets.quest.id, canSwitch: PixelPets.standing.canSwitch, via: PixelPets.standing.via, orchard: PixelPets.sceneFor('orchard') }));
-  expect(before.canSwitch).toBe(true);
+  expect(before.canSwitch).toBe(false);   // D161 (Vincent, Oct 28, 2026): locked until story.act >= 5
   expect(before.via).toBe('rook');
   expect(before.orchard).toBe('orchard');
   expect(await page.evaluate(() => typeof PixelPets.pledgeDesk)).toBe('undefined');
@@ -139,9 +139,13 @@ test('switching halves the side you leave and stays shut until the next Seal @w1
   expect(after.quest).toBe(before.quest);
   expect(after.orchard).toBe('orchard@glimmer');
   expect(after.st.canSwitch).toBe(false);
-  // the next Seal opens a new chapter; a free debug switch does not halve
+  // the next Seal opens a new chapter, but the Act 5 lock still holds; with Act 5 reached the per-Seal rule applies again
   await page.evaluate(() => PixelPets.setFlag('story.seal1', true));
+  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
+  await page.evaluate(() => PixelPets.setFlag('story.act', 5));
   expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(true);
+  await page.evaluate(() => PixelPets.setFlag('story.act', null));
+  // a free debug switch does not halve
   expect(await page.evaluate(() => PixelPets.standing.chapter)).toBe(1);
   const free = await page.evaluate(() => {
     const beforePts = PixelPets.standing.glimmer.points;

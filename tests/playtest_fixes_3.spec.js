@@ -87,9 +87,9 @@ test('a bed fills NRG to 100, and the partner nap still has its own line', async
   expect(await page.evaluate(() => PixelPets.runScene('lantern_rest'))).toBe(true);
   await page.evaluate(() => { PixelPets.state.party.forEach((p) => { p.energy = 20; }); });
   const before = await page.evaluate(() => PixelPets.state.money);
-  await playScene(page, ['Rest a while']);
+  await playScene(page, ['Rest a while']);   // the label was built while the team was rested; the fee is read at the tap
   const free = await page.evaluate(() => ({ money: PixelPets.state.money, energy: PixelPets.state.party.map((p) => p.energy) }));
-  expect(free.money).toBe(before);
+  expect(free.money).toBe(before - 5);   // D875: an energy-only rest costs 5 Acorns
   expect(free.energy[0]).toBeGreaterThan(99.9);
   expect(free.energy[1]).toBeGreaterThan(99.9);
 

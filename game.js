@@ -3065,7 +3065,7 @@ function unlockScan(){
   if (S.flags['story.side_pick_done']) unlockOffer('sides');
   if (sideQuestAccepted()) unlockOffer('quests');
   if (S.flags['unlock.moral']) unlockOffer('moral');
-  if (S.flags['story.rc_climax']) unlockOffer('switch');
+  if (S.flags['story.rc_climax'] && Number(S.flags['story.act']) >= PPStanding.CFG.switch.openAct) unlockOffer('switch');   // D161: no switch tip before Act 5
   if (S.flags['story.hc_invite']) unlockOffer('letter');
   if (S.flags['unlock.lantern']) unlockOffer('lantern');
   if (S.party && S.party.length >= 2) unlockOffer('party');
@@ -4162,7 +4162,7 @@ function rookOfferSteps(to){
   if (!S || (!S.flags['story.rc_climax'] && !atGate)) return [['say', 'Rook', R.notYet]];
   if (from === dest) return [['say', 'Rook', R.wait]];
   const can = PPStanding.canSwitch(S.flags, S.standing, from, dest);
-  if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : R.notYet]];
+  if (!can.ok && !(atGate && can.why === 'no_rook')) return [['say', 'Rook', can.why === 'cooldown' ? R.refused : can.why === 'locked' ? R.wait : R.notYet]];
   const pts = standingOf(from, true);
   const costLine = PPStanding.fill(W.costLine, { side: SC_STANDING.sides[from].short, from: pts, to: PPStanding.switchCost(pts) });
   return [
@@ -6444,7 +6444,7 @@ function placeSteps(dr){
       : lanternGreet(who);
     return [['say', who, greet],
       ['if', 'story.starter_received',
-        (partyNeedsLanternRest() ? [['priceOn']] : []).concat([['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]]),
+        (lanternRestNeeded() ? [['priceOn']] : []).concat([['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]]),
         [['say', who, 'No team to rest yet? Come back with a friend.']]]];
   }
   if (dr.panel === 'hall1') {                          // §9 Fen's Trial Hall: BEGIN TRIAL runs hall1_fen (summon flow, then `seal1` on a win)
@@ -8971,13 +8971,9 @@ async function execStep(st){
     // Lantern rest only (home naps stay on `rest`, free). Heals the whole party. A hurt party pays LANTERN_REST_COST;
     // a shortfall is covered so a wipe at 0 Acorns cannot trap you. Sets scene.view flag lantern.rest for the next line.
     case 'payRest': {
-      if (!partyNeedsLanternRest()) {
-        const refill = S.party.some(q => Math.round(q.energy) < 100);
-        sc.view.flags['lantern.rest'] = refill ? 'refill' : 'full'; setRestDue(false);
-        S.party.forEach(q => { q.energy = 100; });
-        sfx('rest'); noteLanternRest(); return;
-      }
-      if ((S.money | 0) >= LANTERN_REST_COST) { S.money = (S.money | 0) - LANTERN_REST_COST; sc.view.flags['lantern.rest'] = 'paid'; }
+      if (!lanternRestNeeded()) { sc.view.flags['lantern.rest'] = 'full'; setRestDue(false); sfx('rest'); noteLanternRest(); return; }
+      const have = S.money | 0, fee = Math.min(have, LANTERN_REST_COST);
+      if (fee > 0) { S.money = have - fee; sc.view.flags['lantern.rest'] = 'paid'; }
       else sc.view.flags['lantern.rest'] = 'covered';
       S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); setRestDue(false); sfx('rest'); noteLanternRest(); return;
     }
@@ -10458,8 +10454,10 @@ function closeBattle(){
   const back = trackFor(CUR); if (back) PPSound.music(back, { fadeOut: 300, minDelay: 800, fadeIn: 600, restart: true, afterStingers: true });
   if (cele && !onEnd && !scene) openJournalEntry(Object.assign({ celebrate: true }, cele));
 }
-// A Lantern House rest heals the whole party. Hurt Walklings cost a few Acorns (OPEN_DECISIONS D28). Home naps stay free (`rest`).
+// A Lantern House rest heals the whole party (D28). Vincent, Oct 28, 2026: a rest always costs LANTERN_REST_COST Acorns and is
+// free only at 0 Acorns; a holder with fewer pays what they have. A party with nothing to restore pays nothing. Home naps stay free.
 const LANTERN_REST_COST = 5;
+const lanternRestNeeded = () => !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow) || Math.round(p.energy) < 100));
 const LANTERN_ROOMS = { hm_lantern_in: 1, cc_lantern_in: 1, hc_lantern_in: 1, fb_lantern_in: 1, bw_lantern_in: 1 };
 function partyNeedsLanternRest(){ return !!(S && S.party && S.party.some(p => Number.isFinite(p.hpNow))); }
 function setRestDue(on){
@@ -10480,17 +10478,15 @@ function lanternDoorHere(){
   return CUR.objs.find(o => o.kind === 'door' && o.panel === 'lantern' && present(o) && o.x === S.world.x && o.y === S.world.y) || null;
 }
 function lanternRestOption(){
-  const hurt = partyNeedsLanternRest();
-  const label = hurt ? 'Rest (' + LANTERN_REST_COST + ' Acorns)' : 'Rest a while';
+  const need = lanternRestNeeded(), fee = Math.min(S ? (S.money | 0) : 0, LANTERN_REST_COST);
+  const label = need ? 'Rest (' + LANTERN_REST_COST + ' Acorns)' : 'Rest a while';
   return [label, [
     ['payRest'], ['respawnHere'],
     ['if', 'lantern.rest=paid',
-      [['say', '', 'You leave ' + LANTERN_REST_COST + ' Acorns. You all doze in the lantern glow. Your team is rested.']],
+      [['say', '', 'You leave ' + (fee === 1 ? '1 Acorn' : fee + ' Acorns') + '. You all doze in the lantern glow. Your team is rested.']],
       [['if', 'lantern.rest=covered',
-        [['say', '', "You're short on Acorns. The Keeper covers the fee, and everyone wakes up rested."]],
-        [['if', 'lantern.rest=refill',
-          [['say', '', 'Your team rests up and feels full of energy. This Lantern House will remember you.']],
-          [['say', '', 'Your team is already rested. This Lantern House will remember you.']]]]]]],
+        [['say', '', "You're out of Acorns. The Keeper covers the fee, and everyone wakes up rested."]],
+        [['say', '', 'Your team is already rested. This Lantern House will remember you.']]]]],
   ]];
 }
 function lanternBedSteps(){
@@ -10504,7 +10500,7 @@ function lanternBedSteps(){
       ? 'Your team is worn out. These beds rest everyone, for ' + LANTERN_REST_COST + ' Acorns.'
       : 'Three soft beds under a warm lantern.'],
     ['if', 'story.starter_received',
-      (partyNeedsLanternRest() ? [['priceOn']] : []).concat([['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]]),
+      (lanternRestNeeded() ? [['priceOn']] : []).concat([['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]]),
       [['say', '', 'The beds look cosy, but you have no one to tuck in yet.']]],
   ];
 }

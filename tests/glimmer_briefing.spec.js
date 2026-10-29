@@ -242,33 +242,31 @@ test('an unchipped save borrows a crate, and Not today still finishes', async ({
   expect(once.v).toBe(2);
 });
 
-test('I want out shows the real Standing cost, and the road sign line when Rook is not ready @w1', async ({ page }) => {
+test('D161: the Signal Review ends on two choices, with no "I want out" and no offer line from Rook @w1', async ({ page }) => {
   test.setTimeout(60000);
-  await boot(page, reviewSave({
-    'story.gb_invited': true, 'story.gb_relay_done': true, 'story.gb_hollis': true, 'story.gb_escort': true,
-  }, chipped(50, 40)));
-  await page.evaluate(() => { PixelPets.state.standing.glimmer = 37; });
-  const earlySays = [];
-  expect(await page.evaluate(() => PixelPets.goto('rx_f4', 6, 6, 'up') && PixelPets.runScene('gb_briefing'))).toBe(true);
-  await playThrough(page, ['I want out'], [], earlySays);
-  expect(earlySays.some(t => t.indexOf('Brinewick road sign') >= 0)).toBe(true);
-  const early = await page.evaluate(() => ({ side: PixelPets.side, align: PixelPets.state.party[0].align, g: PixelPets.standing.glimmer.points, done: PixelPets.state.flags['story.gb_done'] }));
-  expect(early.side).toBe('glimmer');
-  expect(early.align).toBe(50);
-  expect(early.g).toBe(47);
-  expect(early.done).toBe(true);
-
   await boot(page, reviewSave({
     'story.gb_invited': true, 'story.gb_relay_done': true, 'story.gb_hollis': true, 'story.gb_escort': true, 'story.rc_climax': true,
   }, chipped(50, 40)));
-  await page.evaluate(() => { PixelPets.state.standing.glimmer = 37; });
-  const ready = [];
-  expect(await page.evaluate(() => PixelPets.runScene('gb_briefing'))).toBe(true);
-  await playThrough(page, ['I want out', 'Not yet'], ready);
-  expect(ready.some(p => p.indexOf('47') >= 0 && p.indexOf('23') >= 0)).toBe(true);
-  const stayed = await page.evaluate(() => ({ side: PixelPets.side, align: PixelPets.state.party[0].align }));
-  expect(stayed.side).toBe('glimmer');
-  expect(stayed.align).toBe(50);
+  expect(await page.evaluate(() => PixelPets.goto('rx_f4', 6, 6, 'up') && PixelPets.runScene('gb_briefing'))).toBe(true);
+  let labels = null;
+  const says = [];
+  for (let i = 0; i < 280 && !labels; i++) {
+    if (await page.locator('#ovSheet').isVisible().catch(() => false)) { await page.locator('#shList button').first().click(); continue; }
+    const st = await page.evaluate(() => { const s = window.PixelPets.scene; return { scene: !!s, mode: s && s.mode, full: s && s.full, waiting: s && s.waiting, text: s && s.text }; });
+    if (!st.scene) break;
+    if (st.mode === 'choice' && st.full) {
+      await page.waitForFunction(() => window.PixelPets.optionsReady === true);
+      const now = await page.locator('#sbChoices button').allTextContents();
+      if (now.some(t => t.indexOf('Stand with Glimmerwell') === 0)) { labels = now; break; }
+      await page.locator('#sbChoices button').first().click(); continue;
+    }
+    if (st.mode === 'say' && st.waiting) { says.push(st.text); await page.keyboard.press('Space'); }
+    await page.waitForTimeout(25);
+  }
+  expect(labels).toHaveLength(2);
+  expect(labels.join('|')).not.toContain('I want out');
+  expect(says.some(t => t.indexOf('Half your score') >= 0)).toBe(false);
+  expect(await page.evaluate(() => PixelPets.side)).toBe('glimmer');
 });
 
 test('ALIGN stays inside 0 to 100, surge does not stack on GLOW, and JOY holds at 20 @w1', async ({ page }) => {
