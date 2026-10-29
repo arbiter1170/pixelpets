@@ -375,8 +375,14 @@
           "facing": "left",
           "lines": {
             "story.brine_dorian": "Dorian walked right past me. He looked smaller up close.",
+            "story.brine_manifest=signed": "You signed it, and it still came with you. Good.",
             "story.brine_freed": "You opened it. ...Okay. Okay. I'm staying close.",
             "else": "The depot's east, past the square. The hum is louder over there."
+          },
+          "chatter": {
+            "story.rook_quit&!story.brine_depot": "No lanyard. Feels lighter. Feels weird.",
+            "!story.brine_depot": "Lanyard's straight. My stomach isn't.",
+            "story.brine_depot&!story.brine_freed": "You heard it hum too. Right?"
           },
           "when": [
             "story.brine_arrived",
@@ -603,7 +609,7 @@
           "id": "bw_lantern_note",
           "x": 9,
           "y": 7,
-          "text": "A note by the door: \"Rest a while. Dry coats on the left. A rest costs a few Acorns. Brinewick\""
+          "text": "A note by the door: \"Rest a while. Dry coats on the left. A rest costs 5 Acorns, or what you have. Brinewick\""
         }
       ],
       "safe": {
@@ -662,6 +668,7 @@
           "x": 5,
           "y": 3,
           "facing": "down",
+          "shopTitle": "CHANDLERY",
           "lines": {
             "else": "Rope, tins, snacks for the road. If it floats or it feeds, I sell it."
           },

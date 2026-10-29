@@ -236,7 +236,7 @@
       ["say", "Rook", "Locked. 'Closed for upgrades.' Since when does a quarry need upgrades?"],
       ["say", "Rook", "Master Hale's Trial Hall is up there. He dug with his Walklings, not with lamps."],
       ["choice", "Go up together when it opens?", [["Together.", [["say", "Rook", "Together. But I'm still beating you to the Seal."]]], ["Race you!", [["say", "Rook", "Ha! Now you're talking."]]]]],
-      ["say", "", "COMING LATER · Cobblecrest and its Trial Hall. Thanks for playing Route 2!"],
+      ["say", "", "Cobblecrest is just past this gate. So is Master Hale's Trial Hall."],
       ["setFlag", "story.route2_end", true]
     ]
   },

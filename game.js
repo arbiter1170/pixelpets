@@ -3018,7 +3018,6 @@ const UNLOCKS = {
   sides: { title: 'Your side', body: 'You joined a side. STANDING shows how each side sees you. The other side trusts you a bit less now.', sel: '#questTabStanding', show(){ if (typeof openQuest === 'function') openQuest(); if (typeof questTabTo === 'function') questTabTo('standing'); } },
   quests: { title: 'Side quests', body: 'You took on a side quest. It is in your quest list. Do it whenever you like.', sel: '#questBtn', show(){ if (typeof openQuest === 'function') openQuest(); } },
   moral: { title: 'Big choices', body: 'Some choices help one side and annoy the other. There is no wrong answer, only yours.', sel: '#sbChoices' },
-  switch: { title: 'Switching sides', body: 'Rook can help you switch sides. People on the side you leave will trust you less.', box: 'rook' },
   letter: { title: 'A letter', body: 'Letters open new places. Show it to people you know. Their answer depends on how they feel about you.', sel: '#questBtn', show(){ if (typeof openQuest === 'function') openQuest(); } },
   // Healed already: nothing to do, so GOT IT only. Hurt: SHOW ME walks to a bed (and asks to rest) or to the Lantern House door; no Lantern here opens MAP.
   lantern: { title: 'Lanterns', body: 'Rest at a Lantern to heal your team. Lose a battle and you wake at the closest Lantern House.', box: 'lantern', got(){ return !partyNeedsLanternRest(); }, show(){ const o = CUR && lanternMark(); if (o) { unlockClose(); if (!tapObject(o)) cantReach(); } else if (typeof openMap === 'function') openMap(); } },
@@ -3065,7 +3064,6 @@ function unlockScan(){
   if (S.flags['story.side_pick_done']) unlockOffer('sides');
   if (sideQuestAccepted()) unlockOffer('quests');
   if (S.flags['unlock.moral']) unlockOffer('moral');
-  if (S.flags['story.rc_climax'] && Number(S.flags['story.act']) >= PPStanding.CFG.switch.openAct) unlockOffer('switch');   // D161: no switch tip before Act 5
   if (S.flags['story.hc_invite']) unlockOffer('letter');
   if (S.flags['unlock.lantern']) unlockOffer('lantern');
   if (S.party && S.party.length >= 2) unlockOffer('party');
@@ -10478,8 +10476,9 @@ function lanternDoorHere(){
   return CUR.objs.find(o => o.kind === 'door' && o.panel === 'lantern' && present(o) && o.x === S.world.x && o.y === S.world.y) || null;
 }
 function lanternRestOption(){
-  const need = lanternRestNeeded(), fee = Math.min(S ? (S.money | 0) : 0, LANTERN_REST_COST);
-  const label = need ? 'Rest (' + LANTERN_REST_COST + ' Acorns)' : 'Rest a while';
+  const need = lanternRestNeeded(), have = S ? (S.money | 0) : 0, fee = Math.min(have, LANTERN_REST_COST);
+  // The button names the Acorns this rest will take: free at 0, one Acorn at 1, and the rest of what you have up to 5.
+  const label = !need ? 'Rest a while' : have <= 0 ? 'Rest (free)' : fee === 1 ? 'Rest (1 Acorn)' : 'Rest (' + fee + ' Acorns)';
   return [label, [
     ['payRest'], ['respawnHere'],
     ['if', 'lantern.rest=paid',
@@ -10514,12 +10513,11 @@ function blockLanternExit(){
     if (wp && needMet(wp.need)) warpTo({ map: wp.to, x: wp.tx, y: wp.ty, facing: wp.facing });
   });
 }
-// The design JSON still says the rest is free. Players read the cost, so the signs are patched here.
-// The heal_lantern prop keeps the same house line, so a tap on the marker still reads it (D612, D619).
+// The sign and the five lantern markers name the cost the holder actually pays (D612, D619, and the Oct 29 rest line).
 (function patchLanternSigns(){
   const put = (map, id, text) => { const o = WORLD[map] && WORLD[map].objs.find(x => x.id === id); if (o) o.text = text; };
   const n = LANTERN_REST_COST;
-  const house = 'LANTERN HOUSE · Rest the whole party. ' + n + ' Acorns.';
+  const house = 'LANTERN HOUSE · Rest and recover. ' + n + ' Acorns, or what you have.';
   put('hearthmoor', 'hm_sign_lantern', house);
   put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns. — I."');
   put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
@@ -11838,7 +11836,7 @@ const ML_SECTION = {
   hm_flats_5: { '1,2': 'KITCHEN', '8,2': 'BATH', '13,2': 'LIZZY', '0,6': 'HALL', '1,9': 'OSSABELL', '6,9': 'MARILOU', '13,9': 'CALEB' },
 };
 const ML_CHIPS = { hm_flats_lobby: 'LOBBY', hm_flats_5: '5B', sm_yard: 'YARD', sm_tunnel: 'TUNNEL', sm_hold: 'HOLD', sm_den: 'DEN' };
-const ML_LABEL = { hc_gym_in: 'TRIAL HALL' };
+const ML_LABEL = { hc_gym_in: 'DOJO' };
 const ML_TOWN = { T: 'J', g: 'g', f: 'g', t: 't', p: 'C', w: 'c', s: 'y', B: 'A', D: 'A', F: 'F', K: 'I', X: 'I', c: 'G', P: 'h', A: 'K' };
 const mapLayers = { ready: false, byId: {}, byFloor: {} };
 let regionBackdropImg = null;
@@ -12158,6 +12156,18 @@ function landmarkSwatch(name){
   if (WART[name]) cg.drawImage(WART[name], 0, 0);
   return c;
 }
+// Building labels are uppercase. The town key uses the same words in its own title case (Lantern House, General Store).
+function legendCase(label){
+  return String(label || '').toLowerCase().replace(/(^|[^a-z0-9])([a-z])/g, (all, pre, ch) => pre + ch.toUpperCase());
+}
+// Brinewick's shop building is labelled CHANDLERY. Every other town keeps General Store.
+function townStoreKey(){
+  if (!mapUI || mapUI.shown !== 'brinewick') return 'General Store';
+  ensureMapLayers();
+  const L = mapLayers.byId.brinewick;
+  const hit = L && (L.buildings || []).find(b => b && b.door === 'bw_store' && b.label);
+  return hit ? legendCase(hit.label) : 'General Store';
+}
 function paintLayerKey(level){
   const el = $('#mapLayerKey'); if (!el) return;
   const row = (sw, text) => '<li><span class="sw ' + sw + '" aria-hidden="true"></span>' + text + '</li>';
@@ -12165,7 +12175,7 @@ function paintLayerKey(level){
   else if (level === 'town') {
     el.innerHTML = '<section class="map-key-g"><p class="map-key-h">TOWN</p><ul class="map-key-list">' + row('sw-you', 'You') + row('sw-next', 'Next step') + row('sw-in', 'Been inside') + row('sw-yet', 'Not yet') + '</ul></section>';
     const ul = el.querySelector('ul');
-    [['heal_lantern', 'Lantern House'], ['acorn_board', 'General Store']].forEach(([art, label]) => {
+    [['heal_lantern', 'Lantern House'], ['acorn_board', townStoreKey()]].forEach(([art, label]) => {
       const li = document.createElement('li');
       li.appendChild(landmarkSwatch(art));
       li.appendChild(document.createTextNode(label));
@@ -12945,6 +12955,7 @@ function paintPhoneHome(){
   });
 }
 function contactKey(name){
+  if (window.PPRep && typeof PPRep.key === 'function') return PPRep.key(name);
   if (typeof name !== 'string') return '';
   return name.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
 }
@@ -12963,8 +12974,10 @@ function contactPeople(){
     for (const o of m.objs || []) {
       if (!o || (o.kind !== 'npc' && o.kind !== 'trainer')) continue;
       if (o.pet) continue;   // a Walkling beside an NPC talks, and never gets a phone card
-      const name = objName(o), key = contactKey(name);
+      const raw = objName(o), key = contactKey(raw);
       if (!key) continue;
+      // One phone card per cast entry. Marisol and Master Marisol share PPRep.key.
+      const name = (window.PPRep && PPRep.entry(raw) && PPRep.entry(raw).name) || raw;
       let person = people.get(key);
       if (!person) people.set(key, person = { key, name, spots: [], quest: false });
       person.spots.push({ id: o.id, map: m.id, mapName: m.name || m.id, o });
@@ -13430,6 +13443,7 @@ function paintPhoneSignal(){
   $$('#phoneSignal i').forEach((b, k) => b.classList.toggle('on', k < n));
 }
 // D867 Footpath log: steps with your partner today and the last 7 days (S.stepLog, additive). Milestones are kind words only.
+// The 0 line is exactly 0 steps. 1-49 uses its own short line so it does not borrow the empty-day sentence.
 const STEP_LOG_DAYS = 7;
 function logSteps(d, n){
   if (!S || typeof d !== 'string') return;
@@ -13438,7 +13452,7 @@ function logSteps(d, n){
   const keys = Object.keys(S.stepLog).sort();
   while (keys.length > STEP_LOG_DAYS) delete S.stepLog[keys.shift()];
 }
-const STEP_MILESTONES = [[500, 'A long walk today. Your Walkling is beaming.'], [200, 'A good walk today.'], [50, 'A little walk today.'], [0, 'No walk yet today. Any time is fine.']];
+const STEP_MILESTONES = [[500, 'A long walk today. Your Walkling is beaming.'], [200, 'A good walk today.'], [50, 'A little walk today.'], [1, 'A few steps today.'], [0, 'No walk yet today. Any time is fine.']];
 function renderFootpath(body, add, hack){
   add('phone-sec', 'STEPS');
   const today = (S.care && S.care.d === dayKey(Date.now()) && S.care.steps) | 0;

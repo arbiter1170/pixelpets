@@ -8,7 +8,7 @@
     "2_rook_battle": "Rook battle #2 is scripted inside the quarry buyout (oneShot, sight 0); win or lose, the story goes on.",
     "3_paragon": "Not decided here. No line names or hints at the Paragon; Ilse and Oriel are not mentioned.",
     "4_scope": "Episode 1 only. No Act 2+ systems: the Seal grants no field skill; nothing reads Calm Towers or weather.",
-    "5_end": "Cobblecrest ends at the locked Brinewick road with a COMING LATER card (story.cobble_end)."
+    "5_end": "Cobblecrest ends at the shut Brinewick road (story.cobble_end). Route 3 opens on story.route3_open."
   },
   "tiles": {"K": {"name": "rock face", "walk": false}, "c": {"name": "gravel", "walk": true, "roam": true}},
   "roomTiles": {":": {"name": "slate floor", "walk": true}, "X": {"name": "rock pillar", "walk": false}},
@@ -493,7 +493,7 @@
       ["say", "Rook", "{name}! I'm riding with the cart to Brinewick. Dorian says it's routine."],
       ["say", "", "One crate is stencilled BRINEWICK DOCKS. It hums, very softly, like something asleep."],
       ["say", "Rook", "If it's routine... why does it hum? Never mind. See you on the road!"],
-      ["say", "", "COMING LATER · Brinewick and its Trial Hall. Thanks for playing Cobblecrest!"],
+      ["say", "", "The cart rolls on toward the coast. The Brinewick road stays shut while crates are loaded."],
       ["setFlag", "story.cobble_end", true]
     ]
   },

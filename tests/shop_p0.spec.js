@@ -137,6 +137,7 @@ async function setHurt(page, on) {
     } else {
       delete p.hpNow;
       delete p.faintUntil;
+      p.energy = 100;
       delete PixelPets.state.world.restDue;
     }
   }, on);
@@ -181,7 +182,32 @@ test('priced prompts keep the Acorn chip, and a buy shows the new total before t
   await talk(page, 'lantern_bed_a');
   expect(await reachChoice(page)).toBe('Rest the whole party?');
   const bed = await expectChip(page, true);
+  // #221: a hurt party pays 5, or what they have. 0 is free. A full team pays nothing (below).
   expect(bed.buttons.some((b) => b.text.indexOf('Rest (5 Acorns)') === 0)).toBe(true);
+  await page.locator('#sbChoices button', { hasText: 'Not yet' }).click();
+  await finishScene(page);
+
+  await page.evaluate(() => { PixelPets.state.money = 1; });
+  await talk(page, 'lantern_bed_a');
+  expect(await reachChoice(page)).toBe('Rest the whole party?');
+  const one = await expectChip(page, true);
+  expect(one.buttons.some((b) => b.text.indexOf('Rest (1 Acorn)') === 0)).toBe(true);
+  await page.locator('#sbChoices button', { hasText: 'Not yet' }).click();
+  await finishScene(page);
+
+  await page.evaluate(() => { PixelPets.state.money = 3; });
+  await talk(page, 'lantern_bed_a');
+  expect(await reachChoice(page)).toBe('Rest the whole party?');
+  const few = await expectChip(page, true);
+  expect(few.buttons.some((b) => b.text.indexOf('Rest (3 Acorns)') === 0)).toBe(true);
+  await page.locator('#sbChoices button', { hasText: 'Not yet' }).click();
+  await finishScene(page);
+
+  await page.evaluate(() => { PixelPets.state.money = 0; });
+  await talk(page, 'lantern_bed_a');
+  expect(await reachChoice(page)).toBe('Rest the whole party?');
+  const none = await expectChip(page, true);
+  expect(none.buttons.some((b) => b.text.indexOf('Rest (free)') === 0)).toBe(true);
   await page.locator('#sbChoices button', { hasText: 'Not yet' }).click();
   await finishScene(page);
 

@@ -105,9 +105,9 @@ test('the council names both Seals, grants once, and the road stays closed @w1',
   const lines = await readScene(page);
   expect(lines.some((s) => /Fernbrook/.test(s) && /Cobblecrest/.test(s))).toBe(true);
   expect(lines.some((s) => /Ilse's letter/.test(s))).toBe(true);
-  expect(lines.some((s) => /Brinewick/.test(s) && /not opening/.test(s))).toBe(true);
-  expect(lines.some((s) => /stays dark/.test(s))).toBe(true);
-  expect(lines[lines.length - 1]).toBe("COMING LATER · The Keepers' next lantern. Thanks for playing!");
+  expect(lines.some((s) => /Brinewick/.test(s) && /opening it/.test(s))).toBe(true);
+  expect(lines.some((s) => /flickers on/.test(s))).toBe(true);
+  expect(lines[lines.length - 1]).toBe("THE ROAD AHEAD · Route 3 to Brinewick, from Cobblecrest's east road.");
   const after = await page.evaluate(() => ({
     flag: PixelPets.state.flags['story.hc_council_done'],
     got: PixelPets.state.flags['standing.got.hc_council_k'],
@@ -121,7 +121,7 @@ test('the council names both Seals, grants once, and the road stays closed @w1',
   expect(after.flag).toBe(true);
   expect(after.got).toBe(true);
   expect(after.points).toBe(before.points + 10);
-  expect(after.line).toBe('That road stays dark. Ships still fly.');
+  expect(after.line).toBe('The coast road is lit. Ships still fly.');
   expect(after.board).toBe('Brinewick is marked. Its light is dark.');
   expect(after.quest).toBe('hc_games');
   expect(after.v).toBe(2);

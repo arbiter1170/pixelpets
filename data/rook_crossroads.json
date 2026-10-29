@@ -590,7 +590,7 @@
           [
             "say",
             "Rook",
-            "The road's open now. Brinewick's gate isn't. Not yet."
+            "The road's open now, and so is Brinewick's gate. Race you to the harbour."
           ]
         ],
         [
@@ -672,7 +672,8 @@
             "y": 7,
             "facing": "left",
             "when": [
-              "story.rc_climax"
+              "story.rc_climax",
+              "!story.reached_brinewick"
             ],
             "scene": "rook_after"
           }

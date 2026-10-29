@@ -187,7 +187,7 @@
       [
         "say",
         "",
-        "This decides who you travel with for a while. You can change course later, but it will cost you."
+        "This decides who you travel with. Choose with care. This road is a long one."
       ],
       [
         "choice",
@@ -1335,7 +1335,7 @@
       [
         "say",
         "",
-        "COMING LATER \u00b7 Brinewick and its Trial Hall. Thanks for playing Cobblecrest!"
+        "The cart rolls on toward the coast. The Brinewick road stays shut while crates are loaded."
       ],
       [
         "setFlag",
@@ -1373,7 +1373,7 @@
       [
         "say",
         "",
-        "COMING LATER \u00b7 Brinewick and its Trial Hall. Thanks for playing Cobblecrest!"
+        "The cart rolls on toward the coast. The Brinewick road stays shut while crates are loaded."
       ],
       [
         "setFlag",

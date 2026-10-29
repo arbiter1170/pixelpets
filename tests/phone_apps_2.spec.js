@@ -146,8 +146,30 @@ test('Step log: GLOW counts today\'s steps with a kind line, keeps 7 days, and j
   const today = await page.locator('.step-today').textContent();
   const n = Number(/Today: (\d+)/.exec(today)[1]);
   expect(n).toBeGreaterThan(0);
-  await expect(page.locator('.step-note')).toHaveText(/walk/);
+  await expect(page.locator('.step-note')).toBeVisible();
+  await expect(page.locator('.step-note')).toHaveText(n < 50 ? 'A few steps today.' : 'A little walk today.');
   const log = await page.evaluate(() => PixelPets.state.stepLog);
   expect(Object.keys(log)).toHaveLength(7);
   expect(Object.values(log)).toContain(n);
+});
+
+test('GLOW keeps the empty-day line at 0 steps and a shorter line from 1 to 49', async ({ page }) => {
+  await boot(page);
+  const few = 'A few steps today.';
+  const none = 'No walk yet today. Any time is fine.';
+  const little = 'A little walk today.';
+  const want = { 0: none, 1: few, 8: few, 49: few, 50: little };
+  for (const n of [0, 1, 8, 49, 50]) {
+    await page.evaluate(steps => {
+      const S = PixelPets.state;
+      if (!S.care || typeof S.care !== 'object') S.care = {};
+      S.care.d = PixelPets.wildAcorns.day;
+      S.care.steps = steps;
+    }, n);
+    await openApp(page, 'glow');
+    await expect(page.locator('.step-today')).toBeVisible();
+    await expect(page.locator('.step-today')).toHaveText(n === 1 ? 'Today: 1 step' : 'Today: ' + n + ' steps');
+    await expect(page.locator('.step-note')).toBeVisible();
+    await expect(page.locator('.step-note')).toHaveText(want[n]);
+  }
 });

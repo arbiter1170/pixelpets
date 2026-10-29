@@ -2,10 +2,10 @@
   "spec": "MAHOPAC",
   "version": "1.0",
   "status": "playable side story. Optional after the starter. Does not gate the main chain.",
-  "_about": "Mom's upstairs, a north trail to Mahopac, and a dream at Breckenridge Observatory. Time in Mahopac is stuck: people drift a step, then hold still. The dream is three memories (a 2004 pop-toy, a seventh birthday, dinner with Dad at MacRonalds) that teach the partner to trust the player. Mom then sends you to Warden Ilse, whom she calls Professor when the work is dreams.",
+  "_about": "Mom's upstairs, a north trail to Mahopac, and a dream at Breckenridge Observatory. Time in Mahopac is stuck: people drift a step, then hold still. The dream is three memories (a 2004 pop-toy, a seventh birthday, dinner with Dad at MacRonalds) that teach the partner to trust the player. Mom then sends you to Warden Ilse, who keeps a dream ledger.",
   "decisions": {
     "1_optional": "The side chain never blocks Route 1. Old saves with a Walkling can start it by going upstairs.",
-    "2_ilse": "There is no second professor. Mom calls Warden Ilse 'Professor' for dream work. Ilse still uses her Warden title everywhere else.",
+    "2_ilse": "Mom calls her Warden Ilse, like everyone else (STORY v0.5, Oct 29). Dreams are part of a Warden's work.",
     "3_dream_art": "Dream maps set dream to young or child. The map gets a soft wash, and the keeper draws smaller.",
     "4_no_conflict": "Mahopac has no trainers, no faction stands, and no wild battles."
   },
@@ -309,7 +309,7 @@
         ["It felt real", [["say", "Mom", "The ones that matter feel like rooms you can walk."]]],
         ["My Walkling saw it", [["say", "Mom", "That is the point. {pet} can trust a face it has seen small."]]]
       ]],
-      ["say", "Mom", "Go see Professor Ilse at the Lodge. She gave you {pet}."],
+      ["say", "Mom", "Go see Warden Ilse at the Lodge. She gave you {pet}."],
       ["say", "Mom", "Dreams are her other work. She will want the shape of this one."],
       ["bond", 6],
       ["setFlag", "story.dream_woke", true]
@@ -319,7 +319,7 @@
     ],
     "ilse_dreams": [
       ["say", "Warden Ilse", "Your mom sent you. I can see it. {pet} looks newly sure of you."],
-      ["say", "Warden Ilse", "Professor, she calls me, when the work is dreams. Warden, for lanterns."],
+      ["say", "Warden Ilse", "Dreams are part of a Warden's work, too. Tell me what you saw."],
       ["choice", "What do you tell her?", [
         ["A popping toy", [["say", "Warden Ilse", "First sounds stick. {pet} learned your laugh from a pop."]]],
         ["Balloons at seven", [["say", "Warden Ilse", "A birthday is a brave room. {pet} felt you share it."]]],
