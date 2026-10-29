@@ -7,14 +7,29 @@
      and TMPDIR, so its hub locator file and debug logs stay private to the run.
    - killEmulator: SIGTERM the detached process group, wait, then SIGKILL it. The CLI starts
      java in a group of its own, so anything still running with its cwd in the temp folder
-     (or the jar on our database port) is killed too. */
+     (or the jar on our database port) is killed too.
+   - Windows has no process groups, no /proc and no runnable .bin/firebase (it is a .cmd shim, which
+     spawn cannot start without a shell). firebaseLaunch runs the CLI's own JS file with this node,
+     and killEmulator ends the CLI's whole process tree with taskkill. Other systems are unchanged. */
 'use strict';
 const fs = require('fs');
 const net = require('net');
 const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
+const WIN = process.platform === 'win32';
+
+/* { cmd, args } to start the firebase CLI. Windows: node plus the file the .cmd shim calls.
+   Elsewhere: .bin/firebase, or `npx firebase` when npxFallback is set and it is missing. */
+function firebaseLaunch(args, npxFallback) {
+  const js = path.join(ROOT, 'node_modules', 'firebase-tools', 'lib', 'bin', 'firebase.js');
+  if (WIN && fs.existsSync(js)) return { cmd: process.execPath, args: [js, ...args] };
+  const bin = path.join(ROOT, 'node_modules', '.bin', 'firebase');
+  if (fs.existsSync(bin) || !npxFallback) return { cmd: bin, args };
+  return { cmd: 'npx', args: ['firebase', ...args] };
+}
 
 function envPort(name) {
   const v = parseInt(process.env[name] || '', 10);
@@ -105,7 +120,29 @@ function signal(pgid, pids, sig) {
 const alive = pid => { try { process.kill(pid, 0); return true; } catch (e) { return false; } };
 function groupAlive(pgid) { try { process.kill(-pgid, 0); return true; } catch (e) { return false; } }
 
+/* Windows cleanup. taskkill /T /F ends a process and everything it started, which is how the CLI's
+   java child goes. Only a node.exe is killed by pid: a pid from an earlier run can be reused by an
+   unrelated program, and /T would take its whole tree down with it. */
+function winRun(cmd, args, opts) {
+  try { return spawnSync(cmd, args, Object.assign({ encoding: 'utf8', windowsHide: true }, opts)); } catch (e) { return null; }
+}
+function winIsNode(pid) {
+  const r = winRun('tasklist', ['/FI', 'PID eq ' + pid, '/FO', 'CSV', '/NH']);
+  return !!(r && r.stdout && /"node\.exe"/i.test(r.stdout));
+}
+function winTreeKill(pid) {
+  if (pid && winIsNode(pid)) winRun('taskkill', ['/PID', String(pid), '/T', '/F'], { stdio: 'ignore' });
+}
+// A database-emulator java that outlived its CLI (there is no /proc to find it by cwd): match its port.
+function winStrays(dbPort) {
+  if (!dbPort) return [];
+  const ps = "Get-CimInstance Win32_Process -Filter \"Name='java.exe'\" | Where-Object { $_.CommandLine -match 'firebase-database-emulator' -and $_.CommandLine -match '--port " + (+dbPort) + "(\\s|$)' } | ForEach-Object { $_.ProcessId }";
+  const r = winRun('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps]);
+  return r && r.stdout ? r.stdout.split(/\s+/).map(Number).filter(n => n > 0) : [];
+}
+
 async function killEmulator(pgid, dir, dbPort, waitMs) {
+  if (WIN) return killEmulatorSync(pgid, dir, dbPort);   // taskkill /F is immediate: nothing to wait for
   signal(pgid, strays(dir, dbPort), 'SIGTERM');
   const t0 = Date.now();
   while (Date.now() - t0 < (waitMs || 8000)) {
@@ -116,10 +153,17 @@ async function killEmulator(pgid, dir, dbPort, waitMs) {
 }
 // Last resort for process.on('exit'), where nothing async runs.
 function killEmulatorSync(pgid, dir, dbPort) {
+  if (WIN) {
+    winTreeKill(pgid);
+    for (const p of winStrays(dbPort)) winRun('taskkill', ['/PID', String(p), '/T', '/F'], { stdio: 'ignore' });
+    return;
+  }
   signal(pgid, strays(dir, dbPort), 'SIGKILL');
 }
 function removeDir(dir) {
-  if (dir) { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {} }
+  // Windows keeps a folder locked for a moment after its process is killed, so retry there.
+  const opts = WIN ? { recursive: true, force: true, maxRetries: 10, retryDelay: 200 } : { recursive: true, force: true };
+  if (dir) { try { fs.rmSync(dir, opts); } catch (e) {} }
 }
 
-module.exports = { envPort, freePorts, pickPorts, portOpen, writeConfig, strays, killEmulator, killEmulatorSync, removeDir };
+module.exports = { envPort, freePorts, pickPorts, portOpen, writeConfig, strays, firebaseLaunch, killEmulator, killEmulatorSync, removeDir };

@@ -1,0 +1,1715 @@
+{
+  "_about": "ARBITER_UNITS v0.3. Five Walklings Glimmerwell built as its first relays, woken by the Arbiter's hum. Built on main: sprites.js, stats.js, moves.js, game.js, data/detail_route3.json. Spec: handoff/walklings/ARBITER_UNITS.md.",
+  "version": "0.3",
+  "status": "built on main; names, gate and port settled Oct 27, 2026; copy and tuning open (D837-D853)",
+  "settled": {
+    "lairs": "Next area only. The branch ships with that area.",
+    "origin": "Glimmerwell built them as tools. The hum woke them.",
+    "tiers": "Quiet / Humming / Answering",
+    "keepers": "Both paths attune the same way. Any holder can hush a unit."
+  },
+  "_art": "Each stage is an 8-wide half the game mirrors. col maps role letters to PAL keys; e and i are the eyes. No new palette keys. The art is unchanged from v0.1.",
+  "groupNames": {
+    "glimmer": "the Founder's Line (units)",
+    "keepers": "the Answerers"
+  },
+  "units": [
+    {
+      "id": "tallybat",
+      "name": "Tallybat",
+      "builtAs": "a Glow Census counter",
+      "role": "speed and stat drops",
+      "lore": "Glimmerwell built it to count for the Glow Census. The hum woke it. It still counts everything twice.",
+      "look": "A plum bat with navy wing skin and lime wing edges. Humming adds a white tally mark and cyan wing veins. Answering adds a cyan ear tip and a fuller trace.",
+      "echo": {
+        "id": "recount",
+        "name": "Recount",
+        "text": "Copies the first boost a foe makes.",
+        "rule": "The first time in a battle a foe raises one of its own stats, Tallybat raises the same stat by the same amount.",
+        "hook": "applyStage, after the stage is written (game.js ~5630)"
+      },
+      "clue": {
+        "both": "route2: a census post left standing, still counting. New prop through a detail_* overlay (act1_route2 is verbatim)."
+      },
+      "lair": "An outdoor tally gate where crates are counted.",
+      "boss": {
+        "level": 26
+      }
+    },
+    {
+      "id": "dimlamp",
+      "name": "Dimlamp",
+      "builtAs": "a Comfort Lamp",
+      "role": "wall and slow drain",
+      "lore": "A Comfort Lamp that woke when the hum reached Wickerglen. Glimmerwell calls what it does glow sharing.",
+      "look": "Lime lamp glass and a grey cap on a dark, round body. Humming adds cyan traces. Answering adds white feet and a white rim on the glass.",
+      "echo": {
+        "id": "glow_share",
+        "name": "Glow Share",
+        "text": "Heals a little of the harm it deals.",
+        "rule": "After it deals damage, it heals one sixth of that damage, rounded up.",
+        "hook": "doMove, after the HP write (game.js ~5588-5592)"
+      },
+      "clue": {
+        "both": "route2_glen: one lamp stand left lit where the Comfort Lamps stood. \"The lamp count came up one short.\" Overlay."
+      },
+      "lair": "A dim interior rest room, a Comfort Sanctuary.",
+      "boss": {
+        "level": 27
+      }
+    },
+    {
+      "id": "filecrow",
+      "name": "Filecrow",
+      "builtAs": "a records filing unit",
+      "role": "bulky attacker",
+      "lore": "Built to file RegenX records for Glimmerwell. The hum woke it beside an old note that only says THE ARBITER.",
+      "look": "A dark crow with a pale file-card chest, a gold beak and gold feet. Humming adds a centre crest and lime file tabs on the wings. Answering adds a taller crest, wider wings and a lime bar across the chest.",
+      "echo": {
+        "id": "filed_away",
+        "name": "Filed Away",
+        "text": "A repeat hit hurts it less.",
+        "rule": "It takes 25% less damage from a move that has already hit it in this battle.",
+        "hook": "one hitFoe/setMyHp wrapper before HP is written"
+      },
+      "clue": {
+        "glimmer": "rx_f3: the locked file carts in Records.",
+        "keepers": "hm_hq: Mo's archive shelf in the Keeper House.",
+        "note": "Twin objects keyed on story.side, same flag. Keepers cannot enter the lab (heights_path)."
+      },
+      "lair": "A shipping ledger office.",
+      "boss": {
+        "level": 28
+      }
+    },
+    {
+      "id": "cordhound",
+      "name": "Cordhound",
+      "builtAs": "a crate tether",
+      "role": "fast striker",
+      "lore": "Built to keep the humming crates in line on the road. When the hum got loud, it chewed through and followed them.",
+      "look": "A navy pup with a grey muzzle, lime ear tips and a cord tail ending in a gold plug. Humming adds collar traces. Answering adds taller ears and a doubled plug.",
+      "echo": {
+        "id": "live_wire",
+        "name": "Live Wire",
+        "text": "Its first VOLT hit lands harder.",
+        "rule": "The first VOLT move it lands in a battle has 1.5x power.",
+        "hook": "doMove, before damage()"
+      },
+      "clue": {
+        "both": "cobblecrest cc_crates: a chewed tether trails from the BRINEWICK DOCKS crates down the closed road. Overlay."
+      },
+      "lair": "The cargo yard where the BRINEWICK DOCKS crates end up.",
+      "boss": {
+        "level": 29
+      }
+    },
+    {
+      "id": "humwisp",
+      "name": "Humwisp",
+      "builtAs": "the hum's carrier",
+      "role": "glass cannon, the last one",
+      "lore": "Glimmerwell made a vessel to carry the hum out of the bay. The hum filled it and woke it. The other four answer when it passes.",
+      "look": "A navy teardrop with a white and cyan screen mouth and cyan sparks. Humming widens it. Answering adds lime sparks around the outline.",
+      "echo": {
+        "id": "carrier_hum",
+        "name": "Carrier Hum",
+        "text": "Foes cannot boost past +1 near it.",
+        "rule": "While it is out, a foe cannot raise any of its own stats above +1. Out of battle, the other four in the party gain hum 1.5x.",
+        "hook": "applyStage clamp; aiPick treats +1 as the cap (game.js ~5409, ~5422)"
+      },
+      "clue": {
+        "glimmer": "rx_f4: the Arbiter cradle.",
+        "keepers": "mahopac: the old mast (mah_signal_mast) picks up the hum.",
+        "needs": [
+          "story.ans_tallybat",
+          "story.ans_dimlamp",
+          "story.ans_filecrow",
+          "story.ans_cordhound"
+        ],
+        "note": "Twin objects, same flag. The Arbiter Bay staff door (D92) stays closed."
+      },
+      "lair": "The place in the next area where the hum is loudest. The Act 2 hook.",
+      "boss": {
+        "level": 30
+      }
+    }
+  ],
+  "tiers": [
+    "Quiet",
+    "Humming",
+    "Answering"
+  ],
+  "hum": {
+    "range": [
+      0,
+      100
+    ],
+    "tiers": [
+      0,
+      40,
+      100
+    ],
+    "sources": {
+      "battleWin": 4,
+      "dailyGlimmerPlace": 6,
+      "dailyOwnLair": 10,
+      "humwispInParty": 1.5
+    },
+    "hush": "p.hush stops the meter. The tier never drops."
+  },
+  "boss": {
+    "openTier": 1,
+    "shiftAt": 0.5,
+    "hpMul": 1.5,
+    "ai": "leader",
+    "music": "glimmer_battle",
+    "befriendBeforeShift": false,
+    "joinsAt": 0,
+    "retry": "story.ans_<id>_rest, cleared on the day roll in fadeTick"
+  },
+  "species": {
+    "tallybat": {
+      "id": "tallybat",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "boss": true,
+      "uiHalo": true,
+      "befriendMul": 0.75,
+      "tiles": "grass",
+      "blurb": "A counting bat. Its wings blink one tally at a time.",
+      "stages": [
+        {
+          "name": "Tallybat",
+          "tier": "Quiet",
+          "col": {
+            "a": "p",
+            "b": "n",
+            "c": "l",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "........",
+            "....a.a.",
+            "....aaaa",
+            "....aaaa",
+            "....aiea",
+            "....aeea",
+            "....aaaa",
+            "c...aaaa",
+            "cb.aaaaa",
+            "cbbaaaaa",
+            "cbbbaaaa",
+            ".cbbbaaa",
+            "..ccbaaa",
+            "....caa.",
+            ".....a.a",
+            "........"
+          ]
+        },
+        {
+          "name": "Tallybat",
+          "tier": "Humming",
+          "col": {
+            "a": "p",
+            "b": "n",
+            "c": "l",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "....a.a.",
+            "....a.a.",
+            "....aaaa",
+            "....aaaa",
+            "....aiea",
+            "....aeea",
+            "....aaaa",
+            "c...axaa",
+            "cb.aaaaa",
+            "cdbaaaaa",
+            "cbbbaaaa",
+            ".cdbbaaa",
+            "..ccbaaa",
+            "....caa.",
+            ".....a.a",
+            "........"
+          ]
+        },
+        {
+          "name": "Tallybat",
+          "tier": "Answering",
+          "col": {
+            "a": "p",
+            "b": "n",
+            "c": "l",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "....a.a.",
+            "....ada.",
+            "....aaaa",
+            "....aaaa",
+            "....aiea",
+            "c...aeea",
+            "cb..aaaa",
+            "cbb.axaa",
+            "cdbaaaaa",
+            "cbbaaaaa",
+            "cdbbaaaa",
+            "cbdbbaaa",
+            ".ccdbaaa",
+            "..ccaaa.",
+            "....ca.a",
+            "........"
+          ]
+        }
+      ]
+    },
+    "dimlamp": {
+      "id": "dimlamp",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "boss": true,
+      "uiHalo": true,
+      "befriendMul": 0.75,
+      "tiles": "grass",
+      "blurb": "A lamp-headed shade. Its glow asks you to rest.",
+      "stages": [
+        {
+          "name": "Dimlamp",
+          "tier": "Quiet",
+          "col": {
+            "a": "d",
+            "b": "l",
+            "c": "h",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "........",
+            "........",
+            ".....cc.",
+            "....cbbb",
+            "....bbbb",
+            "....bbdb",
+            "....cccc",
+            "...aaaaa",
+            "..aaieaa",
+            "..aaeeaa",
+            "..aaaaaa",
+            "..aaaaaa",
+            "..aaaaaa",
+            "...aaaaa",
+            "...aa.aa",
+            "........"
+          ]
+        },
+        {
+          "name": "Dimlamp",
+          "tier": "Humming",
+          "col": {
+            "a": "d",
+            "b": "l",
+            "c": "h",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            "........",
+            ".....cc.",
+            "....cbbb",
+            "...cbbbb",
+            "...bbbdb",
+            "...bbbbb",
+            "...ccccc",
+            "..aaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            ".aadaaaa",
+            ".aaadaaa",
+            ".aaaadaa",
+            "..aaaaaa",
+            "..aaa.aa",
+            "........"
+          ]
+        },
+        {
+          "name": "Dimlamp",
+          "tier": "Answering",
+          "col": {
+            "a": "d",
+            "b": "l",
+            "c": "h",
+            "d": "s",
+            "x": "w"
+          },
+          "half": [
+            ".....cc.",
+            "....cbbb",
+            "...cbbbb",
+            "...bbbdb",
+            "..xbbbbb",
+            "..xbbbbb",
+            "...ccccc",
+            "..aaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            "aaadaaaa",
+            "aaaadaaa",
+            ".aaaadaa",
+            "..aaaaaa",
+            "..aaa.aa",
+            "..xx..xx"
+          ]
+        }
+      ]
+    },
+    "filecrow": {
+      "id": "filecrow",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "boss": true,
+      "uiHalo": true,
+      "befriendMul": 0.75,
+      "tiles": "grass",
+      "blurb": "An owl with a screen face. It files what it sees.",
+      "stages": [
+        {
+          "name": "Filecrow",
+          "tier": "Quiet",
+          "col": {
+            "a": "d",
+            "b": "h",
+            "c": "n",
+            "d": "l",
+            "x": "y"
+          },
+          "half": [
+            "........",
+            "........",
+            "........",
+            "........",
+            ".....aaa",
+            "....aaaa",
+            "....aiea",
+            "....aeea",
+            "....aaax",
+            ".....aax",
+            "...cabbb",
+            "..ccabbb",
+            "..ccabbb",
+            "...caaaa",
+            "....aaaa",
+            ".....x.."
+          ]
+        },
+        {
+          "name": "Filecrow",
+          "tier": "Humming",
+          "col": {
+            "a": "d",
+            "b": "h",
+            "c": "n",
+            "d": "l",
+            "x": "y"
+          },
+          "half": [
+            "........",
+            "........",
+            ".......a",
+            "......aa",
+            "....aaaa",
+            "...aaaaa",
+            "...aaiea",
+            "...aaeea",
+            "...aaaax",
+            "....aaax",
+            "..ccabbb",
+            ".ccdabbb",
+            ".cdcabbb",
+            "..ccaaaa",
+            "...aaaaa",
+            "....x.x."
+          ]
+        },
+        {
+          "name": "Filecrow",
+          "tier": "Answering",
+          "col": {
+            "a": "d",
+            "b": "h",
+            "c": "n",
+            "d": "l",
+            "x": "y"
+          },
+          "half": [
+            ".......a",
+            "......aa",
+            ".....aaa",
+            "...aaaaa",
+            "...aaaaa",
+            "..aaaiea",
+            "..aaaeea",
+            "..aaaaax",
+            "...aaaax",
+            ".cc.aaax",
+            "ccdcabbb",
+            "cdccadbb",
+            "ccdcaddd",
+            ".cccaaaa",
+            "..aaaaaa",
+            "...x..x."
+          ]
+        }
+      ]
+    },
+    "cordhound": {
+      "id": "cordhound",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "boss": true,
+      "uiHalo": true,
+      "befriendMul": 0.75,
+      "tiles": "grass",
+      "blurb": "A shadow pup on a cord. It never unplugs itself.",
+      "stages": [
+        {
+          "name": "Cordhound",
+          "tier": "Quiet",
+          "col": {
+            "a": "n",
+            "b": "m",
+            "c": "l",
+            "d": "s",
+            "x": "y"
+          },
+          "half": [
+            "........",
+            "..c.....",
+            "..ac....",
+            "..aa....",
+            "..aaaaaa",
+            ".aaaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            ".aaaabbb",
+            "..aaabeb",
+            "..aaabbb",
+            "..aaaaaa",
+            "...aaaaa",
+            "...aa.aa",
+            "...aa.dx",
+            "........"
+          ]
+        },
+        {
+          "name": "Cordhound",
+          "tier": "Humming",
+          "col": {
+            "a": "n",
+            "b": "m",
+            "c": "l",
+            "d": "s",
+            "x": "y"
+          },
+          "half": [
+            "..c.....",
+            "..ac....",
+            "..ac....",
+            "..aa....",
+            "..aaaaaa",
+            ".aaaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            ".aaaabbb",
+            ".aaaabeb",
+            ".aadabbb",
+            "..aadaaa",
+            "..aaaaaa",
+            "...aa.aa",
+            "...aa.dx",
+            "......dx"
+          ]
+        },
+        {
+          "name": "Cordhound",
+          "tier": "Answering",
+          "col": {
+            "a": "n",
+            "b": "m",
+            "c": "l",
+            "d": "s",
+            "x": "y"
+          },
+          "half": [
+            ".c......",
+            ".ac.....",
+            "..ac....",
+            "..aac...",
+            ".aaaaaaa",
+            ".aaaaaaa",
+            ".aaaieaa",
+            ".aaaeeaa",
+            ".aaaabbb",
+            ".aaaabeb",
+            ".aadabbb",
+            ".aaadaaa",
+            ".aaaadaa",
+            "..aaa.aa",
+            "..aaa.dx",
+            ".....ddx"
+          ]
+        }
+      ]
+    },
+    "humwisp": {
+      "id": "humwisp",
+      "type": "SHADE",
+      "habitat": {},
+      "labOnly": true,
+      "attune": true,
+      "boss": true,
+      "uiHalo": true,
+      "befriendMul": 0.75,
+      "tiles": "grass",
+      "blurb": "A wisp off the cradle. It carries the hum.",
+      "stages": [
+        {
+          "name": "Humwisp",
+          "tier": "Quiet",
+          "col": {
+            "a": "n",
+            "b": "w",
+            "c": "s",
+            "d": "l",
+            "x": "p"
+          },
+          "half": [
+            "........",
+            "........",
+            ".......a",
+            "......aa",
+            ".....aaa",
+            "....aaaa",
+            "...aaaaa",
+            "...aaiea",
+            "...aaeea",
+            "...aacba",
+            "...aacba",
+            "....aaaa",
+            "....aaaa",
+            ".....aa.",
+            "....c..c",
+            "........"
+          ]
+        },
+        {
+          "name": "Humwisp",
+          "tier": "Humming",
+          "col": {
+            "a": "n",
+            "b": "w",
+            "c": "s",
+            "d": "l",
+            "x": "p"
+          },
+          "half": [
+            "........",
+            ".......a",
+            "......aa",
+            ".....aaa",
+            "....aaaa",
+            "...aaaaa",
+            "..aaaaaa",
+            "..aaaiea",
+            "..aaaeea",
+            "..aaccbb",
+            "..aaccbb",
+            "...aaaaa",
+            "...aaaaa",
+            "....aaa.",
+            "...c..c.",
+            "....c..c"
+          ]
+        },
+        {
+          "name": "Humwisp",
+          "tier": "Answering",
+          "col": {
+            "a": "n",
+            "b": "w",
+            "c": "s",
+            "d": "l",
+            "x": "p"
+          },
+          "half": [
+            ".......a",
+            "......aa",
+            ".....aaa",
+            "...d.aaa",
+            "..daaaaa",
+            "..aaaaaa",
+            ".daaaaaa",
+            ".aaaaiea",
+            ".aaaaeea",
+            ".aaaccbb",
+            "..aaccbb",
+            "..daaaaa",
+            "...aaaaa",
+            "...daaa.",
+            "..c..c.c",
+            "....c..c"
+          ]
+        }
+      ]
+    }
+  },
+  "baseStats": {
+    "tallybat/0": {
+      "hp": 39,
+      "atk": 48,
+      "def": 36,
+      "spd": 69
+    },
+    "tallybat/1": {
+      "hp": 52,
+      "atk": 64,
+      "def": 48,
+      "spd": 92
+    },
+    "tallybat/2": {
+      "hp": 65,
+      "atk": 80,
+      "def": 60,
+      "spd": 115
+    },
+    "dimlamp/0": {
+      "hp": 57,
+      "atk": 42,
+      "def": 57,
+      "spd": 36
+    },
+    "dimlamp/1": {
+      "hp": 76,
+      "atk": 56,
+      "def": 76,
+      "spd": 48
+    },
+    "dimlamp/2": {
+      "hp": 95,
+      "atk": 70,
+      "def": 95,
+      "spd": 60
+    },
+    "filecrow/0": {
+      "hp": 51,
+      "atk": 48,
+      "def": 54,
+      "spd": 39
+    },
+    "filecrow/1": {
+      "hp": 68,
+      "atk": 64,
+      "def": 72,
+      "spd": 52
+    },
+    "filecrow/2": {
+      "hp": 85,
+      "atk": 80,
+      "def": 90,
+      "spd": 65
+    },
+    "cordhound/0": {
+      "hp": 36,
+      "atk": 60,
+      "def": 33,
+      "spd": 63
+    },
+    "cordhound/1": {
+      "hp": 48,
+      "atk": 80,
+      "def": 44,
+      "spd": 84
+    },
+    "cordhound/2": {
+      "hp": 60,
+      "atk": 100,
+      "def": 55,
+      "spd": 105
+    },
+    "humwisp/0": {
+      "hp": 33,
+      "atk": 72,
+      "def": 30,
+      "spd": 57
+    },
+    "humwisp/1": {
+      "hp": 44,
+      "atk": 96,
+      "def": 40,
+      "spd": 76
+    },
+    "humwisp/2": {
+      "hp": 55,
+      "atk": 120,
+      "def": 50,
+      "spd": 95
+    }
+  },
+  "learnsets": {
+    "tallybat/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "gloom_poke"
+      ],
+      [
+        8,
+        "neon_flash"
+      ],
+      [
+        12,
+        "zap_tap"
+      ],
+      [
+        16,
+        "night_veil"
+      ],
+      [
+        20,
+        "arc_bolt"
+      ],
+      [
+        25,
+        "dusk_fang"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "nightfall"
+      ]
+    ],
+    "tallybat/1": [
+      [
+        0,
+        "head_count"
+      ],
+      [
+        33,
+        "neon_burst"
+      ]
+    ],
+    "tallybat/2": [
+      [
+        0,
+        "census_dive"
+      ],
+      [
+        40,
+        "eclipse_rush"
+      ]
+    ],
+    "dimlamp/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "gloom_poke"
+      ],
+      [
+        8,
+        "night_veil"
+      ],
+      [
+        12,
+        "zap_tap"
+      ],
+      [
+        16,
+        "lullaby_hum"
+      ],
+      [
+        20,
+        "dusk_fang"
+      ],
+      [
+        25,
+        "arc_bolt"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "nightfall"
+      ]
+    ],
+    "dimlamp/1": [
+      [
+        0,
+        "dim_hours"
+      ],
+      [
+        33,
+        "moon_cloak"
+      ]
+    ],
+    "dimlamp/2": [
+      [
+        0,
+        "lights_out"
+      ],
+      [
+        40,
+        "eclipse_rush"
+      ]
+    ],
+    "filecrow/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "gloom_poke"
+      ],
+      [
+        8,
+        "neon_flash"
+      ],
+      [
+        12,
+        "cursor_tap"
+      ],
+      [
+        16,
+        "lullaby_hum"
+      ],
+      [
+        20,
+        "dusk_fang"
+      ],
+      [
+        25,
+        "hover_hum"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "nightfall"
+      ]
+    ],
+    "filecrow/1": [
+      [
+        0,
+        "stamp_out"
+      ],
+      [
+        33,
+        "moon_cloak"
+      ]
+    ],
+    "filecrow/2": [
+      [
+        0,
+        "final_entry"
+      ],
+      [
+        40,
+        "static_lunge"
+      ]
+    ],
+    "cordhound/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "zap_tap"
+      ],
+      [
+        8,
+        "gloom_poke"
+      ],
+      [
+        12,
+        "screen_glow"
+      ],
+      [
+        16,
+        "arc_bolt"
+      ],
+      [
+        20,
+        "dusk_fang"
+      ],
+      [
+        25,
+        "whisker_spark"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "static_lunge"
+      ]
+    ],
+    "cordhound/1": [
+      [
+        0,
+        "cord_lash"
+      ],
+      [
+        33,
+        "neon_burst"
+      ]
+    ],
+    "cordhound/2": [
+      [
+        0,
+        "grid_howl"
+      ],
+      [
+        40,
+        "full_tilt"
+      ]
+    ],
+    "humwisp/0": [
+      [
+        1,
+        "bump"
+      ],
+      [
+        4,
+        "zap_tap"
+      ],
+      [
+        8,
+        "gloom_poke"
+      ],
+      [
+        12,
+        "screen_glow"
+      ],
+      [
+        16,
+        "arc_bolt"
+      ],
+      [
+        20,
+        "dusk_fang"
+      ],
+      [
+        25,
+        "neon_burst"
+      ],
+      [
+        30,
+        "gloam_swipe"
+      ],
+      [
+        36,
+        "eclipse_rush"
+      ]
+    ],
+    "humwisp/1": [
+      [
+        0,
+        "cradle_pulse"
+      ],
+      [
+        33,
+        "nightfall"
+      ]
+    ],
+    "humwisp/2": [
+      [
+        0,
+        "deep_hum"
+      ],
+      [
+        40,
+        "static_lunge"
+      ]
+    ]
+  },
+  "moves": {
+    "dim_hours": {
+      "name": "Dim Hours",
+      "type": "SHADE",
+      "power": 0,
+      "acc": 95,
+      "uses": 5,
+      "effect": {
+        "target": "foe",
+        "stat": "spd",
+        "stages": -2
+      }
+    },
+    "lights_out": {
+      "name": "Lights Out",
+      "type": "SHADE",
+      "power": 75,
+      "acc": 95,
+      "uses": 5,
+      "effect": {
+        "target": "foe",
+        "stat": "spd",
+        "stages": -1
+      }
+    },
+    "cord_lash": {
+      "name": "Cord Lash",
+      "type": "VOLT",
+      "power": 55,
+      "acc": 100,
+      "uses": 10
+    },
+    "grid_howl": {
+      "name": "Grid Howl",
+      "type": "SHADE",
+      "power": 80,
+      "acc": 90,
+      "uses": 5,
+      "effect": {
+        "target": "self",
+        "stat": "spd",
+        "stages": -1
+      }
+    },
+    "head_count": {
+      "name": "Head Count",
+      "type": "SHADE",
+      "power": 0,
+      "acc": 95,
+      "uses": 5,
+      "effect": {
+        "target": "foe",
+        "stat": "def",
+        "stages": -2
+      }
+    },
+    "census_dive": {
+      "name": "Census Dive",
+      "type": "VOLT",
+      "power": 75,
+      "acc": 95,
+      "uses": 8
+    },
+    "stamp_out": {
+      "name": "Stamp Out",
+      "type": "SHADE",
+      "power": 55,
+      "acc": 95,
+      "uses": 8,
+      "effect": {
+        "target": "self",
+        "stat": "def",
+        "stages": 1
+      }
+    },
+    "final_entry": {
+      "name": "Final Entry",
+      "type": "SHADE",
+      "power": 85,
+      "acc": 90,
+      "uses": 5
+    },
+    "cradle_pulse": {
+      "name": "Cradle Pulse",
+      "type": "VOLT",
+      "power": 65,
+      "acc": 95,
+      "uses": 8
+    },
+    "deep_hum": {
+      "name": "Deep Hum",
+      "type": "SHADE",
+      "power": 95,
+      "acc": 85,
+      "uses": 5,
+      "effect": {
+        "target": "self",
+        "stat": "def",
+        "stages": -1
+      }
+    }
+  },
+  "units_art": {
+    "dimlamp0": {
+      "col": {
+        "a": "d",
+        "b": "l",
+        "c": "h",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "........",
+        "........",
+        ".....cc.",
+        "....cbbb",
+        "....bbbb",
+        "....bbdb",
+        "....cccc",
+        "...aaaaa",
+        "..aaieaa",
+        "..aaeeaa",
+        "..aaaaaa",
+        "..aaaaaa",
+        "..aaaaaa",
+        "...aaaaa",
+        "...aa.aa",
+        "........"
+      ]
+    },
+    "dimlamp1": {
+      "col": {
+        "a": "d",
+        "b": "l",
+        "c": "h",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "........",
+        ".....cc.",
+        "....cbbb",
+        "...cbbbb",
+        "...bbbdb",
+        "...bbbbb",
+        "...ccccc",
+        "..aaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        ".aadaaaa",
+        ".aaadaaa",
+        ".aaaadaa",
+        "..aaaaaa",
+        "..aaa.aa",
+        "........"
+      ]
+    },
+    "dimlamp2": {
+      "col": {
+        "a": "d",
+        "b": "l",
+        "c": "h",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        ".....cc.",
+        "....cbbb",
+        "...cbbbb",
+        "...bbbdb",
+        "..xbbbbb",
+        "..xbbbbb",
+        "...ccccc",
+        "..aaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        "aaadaaaa",
+        "aaaadaaa",
+        ".aaaadaa",
+        "..aaaaaa",
+        "..aaa.aa",
+        "..xx..xx"
+      ]
+    },
+    "cordhound0": {
+      "col": {
+        "a": "n",
+        "b": "m",
+        "c": "l",
+        "d": "s",
+        "x": "y"
+      },
+      "half": [
+        "........",
+        "..c.....",
+        "..ac....",
+        "..aa....",
+        "..aaaaaa",
+        ".aaaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        ".aaaabbb",
+        "..aaabeb",
+        "..aaabbb",
+        "..aaaaaa",
+        "...aaaaa",
+        "...aa.aa",
+        "...aa.dx",
+        "........"
+      ]
+    },
+    "cordhound1": {
+      "col": {
+        "a": "n",
+        "b": "m",
+        "c": "l",
+        "d": "s",
+        "x": "y"
+      },
+      "half": [
+        "..c.....",
+        "..ac....",
+        "..ac....",
+        "..aa....",
+        "..aaaaaa",
+        ".aaaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        ".aaaabbb",
+        ".aaaabeb",
+        ".aadabbb",
+        "..aadaaa",
+        "..aaaaaa",
+        "...aa.aa",
+        "...aa.dx",
+        "......dx"
+      ]
+    },
+    "cordhound2": {
+      "col": {
+        "a": "n",
+        "b": "m",
+        "c": "l",
+        "d": "s",
+        "x": "y"
+      },
+      "half": [
+        ".c......",
+        ".ac.....",
+        "..ac....",
+        "..aac...",
+        ".aaaaaaa",
+        ".aaaaaaa",
+        ".aaaieaa",
+        ".aaaeeaa",
+        ".aaaabbb",
+        ".aaaabeb",
+        ".aadabbb",
+        ".aaadaaa",
+        ".aaaadaa",
+        "..aaa.aa",
+        "..aaa.dx",
+        ".....ddx"
+      ]
+    },
+    "tallybat0": {
+      "col": {
+        "a": "p",
+        "b": "n",
+        "c": "l",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "........",
+        "....a.a.",
+        "....aaaa",
+        "....aaaa",
+        "....aiea",
+        "....aeea",
+        "....aaaa",
+        "c...aaaa",
+        "cb.aaaaa",
+        "cbbaaaaa",
+        "cbbbaaaa",
+        ".cbbbaaa",
+        "..ccbaaa",
+        "....caa.",
+        ".....a.a",
+        "........"
+      ]
+    },
+    "tallybat1": {
+      "col": {
+        "a": "p",
+        "b": "n",
+        "c": "l",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "....a.a.",
+        "....a.a.",
+        "....aaaa",
+        "....aaaa",
+        "....aiea",
+        "....aeea",
+        "....aaaa",
+        "c...axaa",
+        "cb.aaaaa",
+        "cdbaaaaa",
+        "cbbbaaaa",
+        ".cdbbaaa",
+        "..ccbaaa",
+        "....caa.",
+        ".....a.a",
+        "........"
+      ]
+    },
+    "tallybat2": {
+      "col": {
+        "a": "p",
+        "b": "n",
+        "c": "l",
+        "d": "s",
+        "x": "w"
+      },
+      "half": [
+        "....a.a.",
+        "....ada.",
+        "....aaaa",
+        "....aaaa",
+        "....aiea",
+        "c...aeea",
+        "cb..aaaa",
+        "cbb.axaa",
+        "cdbaaaaa",
+        "cbbaaaaa",
+        "cdbbaaaa",
+        "cbdbbaaa",
+        ".ccdbaaa",
+        "..ccaaa.",
+        "....ca.a",
+        "........"
+      ]
+    },
+    "filecrow0": {
+      "col": {
+        "a": "d",
+        "b": "h",
+        "c": "n",
+        "d": "l",
+        "x": "y"
+      },
+      "half": [
+        "........",
+        "........",
+        "........",
+        "........",
+        ".....aaa",
+        "....aaaa",
+        "....aiea",
+        "....aeea",
+        "....aaax",
+        ".....aax",
+        "...cabbb",
+        "..ccabbb",
+        "..ccabbb",
+        "...caaaa",
+        "....aaaa",
+        ".....x.."
+      ]
+    },
+    "filecrow1": {
+      "col": {
+        "a": "d",
+        "b": "h",
+        "c": "n",
+        "d": "l",
+        "x": "y"
+      },
+      "half": [
+        "........",
+        "........",
+        ".......a",
+        "......aa",
+        "....aaaa",
+        "...aaaaa",
+        "...aaiea",
+        "...aaeea",
+        "...aaaax",
+        "....aaax",
+        "..ccabbb",
+        ".ccdabbb",
+        ".cdcabbb",
+        "..ccaaaa",
+        "...aaaaa",
+        "....x.x."
+      ]
+    },
+    "filecrow2": {
+      "col": {
+        "a": "d",
+        "b": "h",
+        "c": "n",
+        "d": "l",
+        "x": "y"
+      },
+      "half": [
+        ".......a",
+        "......aa",
+        ".....aaa",
+        "...aaaaa",
+        "...aaaaa",
+        "..aaaiea",
+        "..aaaeea",
+        "..aaaaax",
+        "...aaaax",
+        ".cc.aaax",
+        "ccdcabbb",
+        "cdccadbb",
+        "ccdcaddd",
+        ".cccaaaa",
+        "..aaaaaa",
+        "...x..x."
+      ]
+    },
+    "humwisp0": {
+      "col": {
+        "a": "n",
+        "b": "w",
+        "c": "s",
+        "d": "l",
+        "x": "p"
+      },
+      "half": [
+        "........",
+        "........",
+        ".......a",
+        "......aa",
+        ".....aaa",
+        "....aaaa",
+        "...aaaaa",
+        "...aaiea",
+        "...aaeea",
+        "...aacba",
+        "...aacba",
+        "....aaaa",
+        "....aaaa",
+        ".....aa.",
+        "....c..c",
+        "........"
+      ]
+    },
+    "humwisp1": {
+      "col": {
+        "a": "n",
+        "b": "w",
+        "c": "s",
+        "d": "l",
+        "x": "p"
+      },
+      "half": [
+        "........",
+        ".......a",
+        "......aa",
+        ".....aaa",
+        "....aaaa",
+        "...aaaaa",
+        "..aaaaaa",
+        "..aaaiea",
+        "..aaaeea",
+        "..aaccbb",
+        "..aaccbb",
+        "...aaaaa",
+        "...aaaaa",
+        "....aaa.",
+        "...c..c.",
+        "....c..c"
+      ]
+    },
+    "humwisp2": {
+      "col": {
+        "a": "n",
+        "b": "w",
+        "c": "s",
+        "d": "l",
+        "x": "p"
+      },
+      "half": [
+        ".......a",
+        "......aa",
+        ".....aaa",
+        "...d.aaa",
+        "..daaaaa",
+        "..aaaaaa",
+        ".daaaaaa",
+        ".aaaaiea",
+        ".aaaaeea",
+        ".aaaccbb",
+        "..aaccbb",
+        "..daaaaa",
+        "...aaaaa",
+        "...daaa.",
+        "..c..c.c",
+        "....c..c"
+      ]
+    }
+  },
+  "newNames": {
+    "species": [
+      "Tallybat",
+      "Dimlamp",
+      "Filecrow",
+      "Cordhound",
+      "Humwisp"
+    ],
+    "tiers": [
+      "Quiet",
+      "Humming",
+      "Answering"
+    ],
+    "echoes": [
+      "Recount",
+      "Glow Share",
+      "Filed Away",
+      "Live Wire",
+      "Carrier Hum"
+    ],
+    "moves": [
+      "Dim Hours",
+      "Lights Out",
+      "Cord Lash",
+      "Grid Howl",
+      "Head Count",
+      "Census Dive",
+      "Stamp Out",
+      "Final Entry",
+      "Cradle Pulse",
+      "Deep Hum"
+    ],
+    "groups": [
+      "the Founder's Line",
+      "the Answerers"
+    ],
+    "chain": "Five that answer"
+  },
+  "lines": {
+    "_note": "Marked placeholder copy (D843). Say bodies at most 110 after token widths; toasts at most 40.",
+    "tierUp1": [
+      "say",
+      "",
+      "{pet} is humming! Same {species}. A new glow."
+    ],
+    "tierUp2": [
+      "say",
+      "",
+      "{pet} answers the hum! Same {species}. A brighter glow."
+    ],
+    "hushOn": "{pet} goes quiet.",
+    "hushOff": "{pet} listens again.",
+    "echoFires": "{pet}'s Echo: {echo}!",
+    "bossShift": "The hum rises. {foe} answers it.",
+    "bossWait": "It only hears the hum. Wait.",
+    "bossBack": "It slips back to its post. The hum will call it out again tomorrow.",
+    "keepers_open": [
+      "say",
+      "Archivist Mo",
+      "Five tools of theirs woke up when the hum got loud. My books call them the Answerers."
+    ],
+    "keepers_open2": [
+      "say",
+      "Archivist Mo",
+      "Find them. Quiet them, or keep them. Look at your own hands either way."
+    ],
+    "glimmer_open": [
+      "say",
+      "Associate Quinn",
+      "Five of our tools woke on their own. Bring the units home. Nothing sharp. Nothing cold."
+    ],
+    "befriended_keepers": [
+      "say",
+      "",
+      "The hum fades from its eyes. It looks at {pet}, then at you, and stays."
+    ],
+    "befriended_glimmer": [
+      "say",
+      "",
+      "Unit recalled. It follows you, still humming a little. Have a bright day!"
+    ]
+  },
+  "sideChain": [
+    {
+      "id": "ans_open",
+      "label": "Five that answer",
+      "done": [
+        "story.ans_open"
+      ],
+      "text": "Someone wants five woken tools found. Hear them out.",
+      "place": "Keeper House / Hall"
+    },
+    {
+      "id": "ans_four",
+      "done": [
+        "story.ans_tallybat",
+        "story.ans_dimlamp",
+        "story.ans_filecrow",
+        "story.ans_cordhound"
+      ],
+      "text": "Follow the four clues down the Brinewick road.",
+      "place": "the next area"
+    },
+    {
+      "id": "ans_last_clue",
+      "done": [
+        "story.ans_humwisp_clue"
+      ],
+      "text": "The other four answer something. Find where the hum starts.",
+      "place": "Arbiter bay / Mahopac"
+    },
+    {
+      "id": "ans_last",
+      "done": [
+        "story.ans_humwisp"
+      ],
+      "text": "The loudest hum waits at the far end.",
+      "place": "the next area"
+    }
+  ],
+  "flags": {
+    "story.ans_open": "Branch accepted. Mo (Keepers) or Quinn (Glimmerwell) after story.cobble_end and the next-area arrival flag.",
+    "story.ans_<id>_clue": "That unit's clue was read. NOT_STEPS.",
+    "story.ans_<id>": "That boss was befriended (object id ans_<id>).",
+    "story.ans_<id>_rest": "Boss lost, ran or was worn out. Cleared on the day roll. NOT_STEPS.",
+    "story.ans_all": "All five done. Closing scene; reward open in D843."
+  },
+  "saveFields": {
+    "pet.hum": "Additive 0-100, attune species only.",
+    "pet.hush": "Additive boolean, attune species only."
+  },
+  "buildOrder": [
+    "A, now: attune + hum + hush, Echoes, boss battle and shift, journal row. Testable with debug forceBattle; no map needed.",
+    "B: the next area one-pager carries the five lair needs.",
+    "C: side chain, clue props, entry scenes, and lairs, shipped with the next area."
+  ],
+  "decisions": "D837-D847 in OPEN_DECISIONS.md.",
+  "signatures": {
+    "tallybat": "tally_tick",
+    "dimlamp": "dim_glow",
+    "filecrow": "file_peck",
+    "cordhound": "cord_nip",
+    "humwisp": "hum_flicker"
+  }
+}

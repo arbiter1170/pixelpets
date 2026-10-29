@@ -585,19 +585,32 @@
     "rook_after": [
       [
         "if",
-        "story.rc_end=shipped",
+        "story.route3_open",
         [
           [
             "say",
             "Rook",
-            "Still here. Still closed. The road, I mean. Not me."
+            "The road's open now. Brinewick's gate isn't. Not yet."
           ]
         ],
         [
           [
-            "say",
-            "Rook",
-            "Pebblits are still purring. I check every morning. Don't tell anyone."
+            "if",
+            "story.rc_end=shipped",
+            [
+              [
+                "say",
+                "Rook",
+                "Still here. Still closed. The road, I mean. Not me."
+              ]
+            ],
+            [
+              [
+                "say",
+                "Rook",
+                "Pebblits are still purring. I check every morning. Don't tell anyone."
+              ]
+            ]
           ]
         ]
       ],

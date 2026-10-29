@@ -499,7 +499,7 @@ test('twelve Hushwater forms join the journal and a holder battle names Tindlet'
   await boot(page, fieldSave({ 'story.cobble_end': true, 'story.hw_reached': true }));
   const info = await page.evaluate((lines) => {
     const ids = PPSave.SPECIES_IDS.slice();
-    const journal = SPECIES.reduce((n, sp) => n + (sp.npcOnly ? 0 : sp.stages.length), 0);
+    const journal = SPECIES.reduce((n, sp) => n + (sp.npcOnly || sp.boss ? 0 : sp.stages.length), 0);   // boss lines (ARBITER_UNITS) sit outside the grid
     const forms = {};
     for (const id of Object.keys(lines)) {
       const sp = SPECIES.find((s) => s.id === id);
@@ -520,11 +520,11 @@ test('twelve Hushwater forms join the journal and a holder battle names Tindlet'
     };
   }, LINES);
   expect(info.v).toBe(2);
-  expect(info.ids).toHaveLength(20);
+  expect(info.ids).toHaveLength(25);   // ARBITER_UNITS appended five boss lines after snail
   expect(info.fetchAt).toBe(15);
-  expect(info.last).toBe('snail');
-  expect(info.ids.slice(-4)).toEqual(['skink', 'otter', 'owl', 'snail']);
-  expect(info.forms).toBe(60);
+  expect(info.last).toBe('humwisp');
+  expect(info.ids.slice(16, 20)).toEqual(['skink', 'otter', 'owl', 'snail']);
+  expect(info.forms).toBe(75);
   expect(info.journal).toBe(57);
   expect(info.arrive).toBe(2);
   expect(info.rope).toBe(11);

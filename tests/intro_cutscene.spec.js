@@ -537,7 +537,7 @@ test('T4 D800: narrator prompts show the holder at 4x, following the look as the
 });
 
 /* ---------- T5 ---------- */
-test('T5 D806: Rook enters on the mat, walks under the counter pick\'s basket, empties it, and his Walkling hops out beside him', async ({ page, browser }, testInfo) => {
+test('T5 D806/D871: Rook enters just inside the door, walks under the counter pick\'s basket, empties it, and his Walkling hops out beside him', async ({ page, browser }, testInfo) => {
   test.skip(page.viewportSize().width !== 390, 'runs at 390');
   test.setTimeout(180000);
   for (const line of ['ember', 'tide', 'bloom']) {
@@ -561,15 +561,21 @@ test('T5 D806: Rook enters on the mat, walks under the counter pick\'s basket, e
       },
     });
     const { frames, warns } = await stopRec(p);
-    // Placed on the mat by castAt before the narrator's line (castOnSay no longer picks a tile beside the mat).
+    // Placed just inside the door by castAt before the narrator's line (D871; castOnSay no longer picks a tile).
     const iDoor = firstIdx(frames, (f) => f.text.startsWith(LINE.door));
     const iRook = firstIdx(frames, (f) => !!f.rook);
     expect(iRook, line).toBeGreaterThan(0);
     expect(iRook, line + ': Rook was not on the map before "The door bangs open"').toBeLessThan(iDoor);
-    expect(onTile(frames[iRook].rook, 5, 8)).toBe(true);
+    expect(onTile(frames[iRook].rook, 5, 7)).toBe(true);
     expect(frames[iRook].rook.f).toBe('up');
-    expect(at(got.door.rook)).toEqual([5, 8]);
-    expect(at(got.thatOne.rook)).toEqual([5, 8]);
+    expect(at(got.door.rook)).toEqual([5, 7]);
+    expect(at(got.thatOne.rook)).toEqual([5, 7]);
+    // D871: on every line he speaks, Rook stands inside the room's walls, never in the dark bottom wall row (the door mat).
+    const MHt = await ev(p, 'MH');
+    for (const k of ['door', 'thatOne', 'scoop', 'gate']) {
+      const [x, y] = at(got[k].rook);
+      expect(y > 0 && y < MHt - 1, line + ' ' + k + ': Rook at ' + x + ',' + y + ' is in a wall row').toBe(true);
+    }
     for (const id of BASKETS) expect(got.thatOne.baskets[id]).toBe('basket');
     // After "that one!" he stands under the counter pick's basket, and only that basket shows empty.
     const [rx, ry] = ROOK_TILE[line];
@@ -649,7 +655,7 @@ test('T7 D808: one tap halves what is left of Rook\'s walk, a second tap lands h
   await play(page, {
     onBusy: async (st) => {
       const r = await ev(page, `(() => { const o = CUR.objs.find(q => q.id === 'rook_lodge'); return o ? objPos(o) : null; })()`);
-      if (!done.b8 && st.text.includes(LINE.thatOne) && r && r.y <= 6) { done.b8 = true; await tapScreen(page); return; }
+      if (!done.b8 && st.text.includes(LINE.thatOne) && r && r.y <= 5) { done.b8 = true; await tapScreen(page); return; }
       if (!done.b10 && st.text.includes(LINE.gate) && r && (r.x !== ROOK_TILE.ember[0] || r.y !== ROOK_TILE.ember[1])) {
         done.b10 = true; await tapScreen(page); await tapScreen(page); return;
       }
@@ -673,7 +679,7 @@ test('T7 D808: one tap halves what is left of Rook\'s walk, a second tap lands h
     const distAt = (t) => { let k = 0; while (k + 1 < seg.length && seg[k + 1].t <= t) k++; return dist[k]; };
     return { i0, i1, t0: seg[0].t, t1: frames[i1].t, seg, distAt, end: frames[i1] };
   };
-  // B8, 7 tiles: one tap after two tiles. The time left is about half what the pace so far predicts.
+  // B8, 6 tiles from just inside the door (D871): one tap after two tiles. The time left is about half what the pace so far predicts.
   const b8 = walkOf(LINE.thatOne);
   const tap1 = taps.find((t) => t > b8.t0 && t < b8.t1);
   expect(tap1, 'the B8 tap did not land during the walk').toBeTruthy();
@@ -682,7 +688,7 @@ test('T7 D808: one tap halves what is left of Rook\'s walk, a second tap lands h
   expect(p8).toBeGreaterThan(0.5);
   expect(p8).toBeLessThanOrEqual(4);
   const perTile = (tap1 - b8.t0) / p8;
-  const predicted = perTile * (7 - p8), left = b8.t1 - tap1;
+  const predicted = perTile * (6 - p8), left = b8.t1 - tap1;
   expect(left / predicted, `B8: ${Math.round(left)} ms left after one tap vs ${Math.round(predicted)} ms at full pace`).toBeGreaterThan(0.3);
   expect(left / predicted).toBeLessThan(0.8);
   expect(onTile(b8.end.rook, 5, 3)).toBe(true);
