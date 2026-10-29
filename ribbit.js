@@ -20,9 +20,9 @@
   // D861 Night Desk (placeholder copy, D863): one late post while state.night is true (the clock's late hours).
   const NIGHT = { name: 'Night Desk', handle: 'nightdesk', desk: 'Night Desk' };
   const NIGHT_POSTS = [
-    { id: 'nd-glow', text: 'Lamps low, glow up. Let your Walkling sleep tonight.' },
+    { id: 'nd-glow', text: 'Lamps low. Let your Walkling sleep tonight.' },
     { id: 'nd-roads', text: 'Night shift: quiet roads, sleepy grass. Walk soft.' },
-    { id: 'nd-share', text: 'Late chirp: a sleeping Walkling still shares a little glow.' },
+    { id: 'nd-share', text: 'Late chirp: rest now, walk tomorrow.' },
   ];
 
   const POSTS = [
