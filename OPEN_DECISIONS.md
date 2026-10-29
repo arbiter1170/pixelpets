@@ -14,7 +14,7 @@ D722, D723, D724 and D725 (MAP_EDGE_TAPS P2) and D727, D728 and D729 (LANDSCAPE 
 
 D796-D797 are reserved: CUE_HOLD and HEARTHMOOR_PLAZA (Vincent's playtest notes, Oct 26, 2026, 9:52 PM ET). D798 is reserved: PLAZA_ERRANDS (Vincent, Oct 26, 2026, yes to all five).
 
-D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D857 are held by ARBITER_UNITS (draft PR #205; Build A D837-D847, Build C D848-D853, D854-D857 spare). D858 is reserved: DOCK_SKY (Vincent, Oct 27, 2026; settled, recorded in the archive).
+D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_2 (design OVERVIEW, Oct 27, 2026). D825-D832 (MOVE_FX_2) are settled (Vincent, Oct 29, 2026) and recorded in the archive. D833-D836 are reserved: ARCADE_GRIPS (Vincent, Oct 27, 2026; settled, recorded in the archive). D837-D857 are held by ARBITER_UNITS (draft PR #205; Build A D837-D847, Build C D848-D853, D854-D857 spare). D858 is reserved: DOCK_SKY (Vincent, Oct 27, 2026; settled, recorded in the archive).
 
 D859-D870 are reserved: PHONE_APPS (Vincent, Oct 28, 2026: "small & medium approved" for the phone app list). D859-D862 and D864-D869 are settled and recorded in the archive; D863 is open below. D870 is spare.
 

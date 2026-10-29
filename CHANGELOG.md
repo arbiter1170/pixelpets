@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-29 10:59 ET: MOVE_FX_2 pilot: bespoke effects for the 12 starter moves (D825-D832, build 20261029-1059)
+
+- What changed and why: Vincent approved the pilot after the real-motion previews ("THOSE ARE AMAZING NICE WORK. APPROVED", Oct 29). The three starter signatures (Foxfire Flick, Droplet Dash, Burrow Bounce) and Flick Flame, Stoke Up, Coal Nudge, Ripple Jab, Mist Veil, Brook Bop, Seed Toss, Sap Sip and Clover Swat each get their own charge, a travel that lands on the target at contact, an impact held through the hit-stop, and an aftermath. EMBER flickers, TIDE skims, BLOOM hops; every bespoke rect has a 1 px `k` shadow; three variations rotate per use. A signature adds a 200 ms beat (2 px hop, 2 px sparkle, the backdrop dims with `k` to 0.25 and back). Status moves draw their own rows and lift the user 1 px. Every other move, CALM, reduced motion and OFF are unchanged. All 27 patches of design `specs/MOVE_FX_2.md` §5; at the build P6k was corrected so a crit keeps its spark (design 35358ed). `battle.view` also carries `sc`/`tc` (read-only, for the tests).
+- Files touched: `mv_fx.js`, `game.js`, `tests/move_fx_2.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`.
+- Commit(s) + build id: `claude/move-fx-2-pilot`, build 20261029-1059.
+- Tests run and result (widths, checks): `tests/move_fx_2.spec.js` at 320, 375 and 390 pass. Battle specs (moves_v2, battle_acorns, battle_no_reload, group_battle, p0_trainer_win, rematch_party, smoke, tutorials_care_moves, tutorial_order, match_marker, qa_gaps, reload_diagnostics, arbiter_units) at three widths: 390 passed, 2 failed, both outside this change. `moves_v2` 20 (a damage number read near the end of its fade) fails at the same rate on main under load (7 of 15 both). `moves_v2` 22 needs the local Firebase emulator, which this container lacks. Save stays `pixelpets.save.v2`, `v` 2, no new key.
+- Decisions made (colour + reasoning): D825, D826 and D829 yellow, settled by Vincent; D827, D828, D830, D831 and D832 green, settled with them.
+- Anything left unfinished: the other 17 signatures follow on the same rules in a later pass (D825).
+
 ## 2026-10-29 09:48 ET: Merge main (#221, LANTERN_COST) before merging Brinewick (build 20261029-0948)
 
 - What changed and why: #221 (Lantern House rests cost 5 Acorns; no side switch until Act 5) reached main while PR #222 was being checked. Conflicts: `game.js` keeps #221's `lanternRestNeeded` with `bw_lantern_in` still in `LANTERN_ROOMS`, so the Brinewick Lantern House charges the same way; `OPEN_DECISIONS.md` takes main's D875 line and drops the D32 and D161 rows #221 settled; the archive keeps both; stamps re-stamped; generated files regenerated.

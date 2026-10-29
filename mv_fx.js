@@ -8,6 +8,29 @@ const MV_ANIM = {"EMBER":{"pal":["o","r","y","h"],"sfx":"chirp_ember","go":[{"ms
 const MV_STATUS = {"self":{"shape":"rise","n":4,"ms":[0,420]},"foe":{"shape":"fall","n":4,"ms":[0,420]},"heal":{"shape":"rise","n":5,"ms":[0,420],"col":"l"}};
 const MV_FLOURISH = {"ms":[0,80],"at":"user","shape":"sparkle","col":"y","sfx":"notice"};
 const MV_LIGHT = { EMBER:'y', TIDE:'s', BLOOM:'l', STONE:'h', VOLT:'y', FROST:'s', GUST:'w', SHADE:'h', PLAIN:'w' };
+// MOVE_FX_2 v0.2 (D825, D830, D831): the pilot's bespoke rows, keyed by move id: `go` (charge on the user, during the "tries" line),
+// `travel` (S to T inside the 140 ms wind-up, landing at contact), `hit` (impact frame held through the hit-stop, then aftermath),
+// `status` (status moves), `pose` (lunge px, hop px on a lob, lift px for a status move). Copied verbatim from MOVE_FX_2.md section 4.
+const MV_MOVE = {
+"foxfire_flick": {"tier":1,"verb":"flicker","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":4,"r":7,"turns":1,"b":2,"col":["y","o"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":3,"r":6,"turns":2,"col":["o","r"],"b":2}],"travel":[{"ms":[0,140],"at":"path","shape":"flicker","n":6,"arc":6,"b":2,"col":["y","o","r","h"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["y","o"]},{"ms":[60,420],"at":"target","shape":"pillar","n":6,"r":16,"b":2,"col":["o","r","y","h"]}],"look":"fox-fire gathers round the user, a flame darts in on a low flicker, a hot flare, a flame column on the foe"},
+"droplet_dash": {"tier":1,"verb":"skim","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":5,"r":2,"b":2,"col":["c","s"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":3,"r":6,"turns":1,"col":["s","c"],"b":2}],"travel":[{"ms":[0,140],"at":"path","shape":"skim","n":7,"b":2,"col":["s","c","b"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["s","c"]},{"ms":[60,420],"at":"target","shape":"wave","n":8,"r":4,"b":2,"col":["c","s","b"]}],"look":"a push-off splash, a droplet skims the ground and leaps in, a splash flare, a wave breaks over the foe"},
+"burrow_bounce": {"tier":1,"verb":"hop","pose":{"lunge":7,"hop":2},"go":[{"ms":[0,300],"at":"user","shape":"quake","n":6,"r":8,"b":2,"col":["g","l"]},{"ms":[300,1600],"at":"user","shape":"quake","n":2,"r":4,"col":["g","l"],"b":2}],"travel":[{"ms":[0,140],"at":"path","shape":"hop","n":4,"arc":10,"turns":2,"b":2,"col":["l","g","y"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["l","y"]},{"ms":[60,420],"at":"target","shape":"quake","n":8,"r":10,"b":2,"col":["g","l"]}],"look":"the ground ripples, two hops in, a bonk flare, a burrow quake under the foe"},
+"flick_flame": {"tier":2,"verb":"flicker","pose":{"lunge":7},"go":[{"ms":[0,240],"at":"user","shape":"orbit","n":3,"r":5,"turns":1,"b":2,"col":["o","y"]}],"travel":[{"ms":[0,140],"at":"path","shape":"flicker","n":4,"arc":3,"b":2,"col":["y","o","r"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["y","o"]},{"ms":[60,400],"at":"target","shape":"rise","n":5,"b":2,"col":["o","h"]}],"look":"a quick flame darts in low, a small flare, embers rise off the foe"},
+"stoke_up": {"tier":2,"pose":{"lift":1},"status":[{"ms":[0,260],"at":"user","shape":"pillar","n":6,"r":18,"b":2,"col":["r","o","y"]},{"ms":[240,420],"at":"user","shape":"rise","n":4,"b":2,"col":["o","y"]}],"look":"a fire column stokes up the user, who lifts a pixel; sparks rise (own ATK up)"},
+"coal_nudge": {"tier":2,"verb":"flicker","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":3,"r":5,"turns":1,"b":2,"col":["r","o"]}],"travel":[{"ms":[0,140],"at":"path","shape":"flicker","n":5,"arc":0,"b":2,"col":["r","o","h"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["o","r"]},{"ms":[60,420],"at":"target","shape":"fall","n":6,"b":2,"col":["h","r","o"]}],"look":"a heavy coal rolls in dead straight, a hot flare, ash falls on the foe (its DEF drops)"},
+"ripple_jab": {"tier":2,"verb":"skim","pose":{"lunge":7},"go":[{"ms":[0,240],"at":"user","shape":"wave","n":4,"r":2,"b":2,"col":["c","s"]}],"travel":[{"ms":[0,140],"at":"path","shape":"skim","n":5,"b":2,"col":["s","c"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["s","c"]},{"ms":[60,360],"at":"target","shape":"orbit","n":8,"r":8,"turns":0,"b":2,"col":["c"]}],"look":"a ripple at the user, a quick water jab skims in, a splash, one ripple ring spreads"},
+"mist_veil": {"tier":2,"pose":{"lift":1},"status":[{"ms":[0,260],"at":"user","shape":"pillar","n":6,"r":16,"b":2,"col":["s","c"]},{"ms":[100,420],"at":"user","shape":"orbit","n":6,"r":9,"turns":0.5,"b":2,"col":["s","c"]}],"look":"a mist column rises round the user, who lifts a pixel; a veil circles it (own DEF up)"},
+"brook_bop": {"tier":2,"verb":"skim","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":5,"r":3,"b":2,"col":["c","b"]}],"travel":[{"ms":[0,140],"at":"path","shape":"skim","n":6,"b":2,"col":["c","s","b"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["s","c"]},{"ms":[60,400],"at":"target","shape":"wave","n":7,"r":3,"b":2,"col":["c","b"]}],"look":"the user wells up, a brook rushes in along the ground, a splash, a wave rolls under the foe (its SPD drops)"},
+"seed_toss": {"tier":2,"verb":"lob","pose":{"lunge":6,"hop":2},"go":[{"ms":[0,240],"at":"user","shape":"orbit","n":3,"r":5,"turns":1,"b":2,"col":["l","g"]}],"travel":[{"ms":[0,140],"at":"path","shape":"comet","n":3,"arc":12,"b":2,"col":["y","l","g"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["y","g"]},{"ms":[60,400],"at":"target","shape":"pillar","n":4,"r":8,"b":2,"col":["g","l"]}],"look":"a seed lobbed high (a lob, so a comet), a seed pop, little sprouts push up"},
+"sap_sip": {"tier":2,"pose":{"lift":1},"status":[{"ms":[0,420],"at":"user","shape":"orbit","n":6,"r":7,"turns":1,"b":2,"col":["l"]},{"ms":[0,300],"at":"user","shape":"rise","n":4,"b":2,"col":["l","y"]}],"look":"lime sap circles the user, who lifts a pixel; sap motes rise (heal)"},
+"clover_swat": {"tier":2,"verb":"hop","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":4,"r":5,"turns":1,"b":2,"col":["l","g"]}],"travel":[{"ms":[0,140],"at":"path","shape":"hop","n":4,"arc":6,"turns":2,"b":2,"col":["g","l"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["l","g"]},{"ms":[40,300],"at":"target","shape":"slash","n":8,"r":7,"dir":"up","b":2,"col":["l","g"]},{"ms":[200,420],"at":"target","shape":"fall","n":6,"b":2,"col":["g","l","y"]}],"look":"clover bits gather, a leaf hops in, a flare, one clover cut, leaves fall (its ATK drops)"}
+};
+const MV_DIRS8 = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]], MV_DIRS4 = [[1,0],[-1,0],[0,1],[0,-1]], MV_DIRSX = [[1,1],[-1,1],[1,-1],[-1,-1]];
+const MV_PLUS = [[0,0],[-1,0],[1,0],[0,-1],[0,1]];
+const MV_ROT = [[3,7,11],[7,11,3],[11,3,7]];   // D826: which seed table rise/fall, speck and crackle read for variation 0, 1, 2
+let mvVar = 0, mvShadow = 0;                   // set per fx by drawBattle: variation (0 on every non-bespoke fx) and the k shadow
+function mvVarSet(v) { mvVar = (v | 0) % 3; }
+function mvShadowSet(on) { mvShadow = on ? 1 : 0; }
 const MV_N8 = [[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]];
 const MV_SEED = [];
 (function () {
@@ -130,7 +153,7 @@ function mvShape(seg, k, t_ms, S, T, put) {
     }
   } else if (sh === 'burst' || sh === 'star' || sh === 'cross') {
     const L = sh === 'burst' ? Math.max(1, Math.round(r * (1 - (1 - k) * (1 - k)))) : Math.max(1, Math.round(r * (1 - Math.abs(2 * k - 1)) + 1));
-    const dirs = sh === 'burst' ? [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]] : sh === 'star' ? [[1,0],[-1,0],[0,1],[0,-1]] : [[1,1],[-1,1],[1,-1],[-1,-1]];
+    const dirs = sh === 'burst' ? MV_DIRS8 : sh === 'star' ? MV_DIRS4 : MV_DIRSX;   // MOVE_FX_2: no array made per frame
     for (let d = 0; d < dirs.length; d++) {
       const dx = dirs[d][0], dy = dirs[d][1];
       for (let q = (sh === 'burst' ? 1 : 0); q <= L; q++) px(T[0] + dx * q - ((B - 1) / 2), T[1] + dy * q - ((B - 1) / 2), C[(q + d) % C.length], B, B);
@@ -138,13 +161,14 @@ function mvShape(seg, k, t_ms, S, T, put) {
     if (sh === 'star') px(T[0] - 1 - (B - 1), T[1] - 1 - (B - 1), C[0], 3 + 2 * (B - 1), 3 + 2 * (B - 1));
   } else if (sh === 'ring') {
     const rr0 = Array.isArray(r) ? r[0] : r, rr1 = Array.isArray(r) ? r[1] : r, rr = mvLerp(rr0, rr1, k);
-    for (let i = 0; i < 16 * B; i++) { const a = i * Math.PI / (8 * B); px(T[0] + Math.cos(a) * rr, T[1] + Math.sin(a) * rr, C[0], B, B); }
+    const rn = seg.n || 16 * B;   // MOVE_FX_2 (D827): a bespoke hit's super ring is 8 blocks of 2 px (8 slots, not 16)
+    for (let i = 0; i < rn; i++) { const a = i * 2 * Math.PI / rn; px(T[0] + Math.cos(a) * rr, T[1] + Math.sin(a) * rr, C[0], B, B); }
   } else if (sh === 'crescent') {
     const m = Math.max(1, Math.floor(14 * Math.min(1, k * 1.5)));
     for (let i = 0; i < m; i++) { const a = Math.PI * 0.6 + i * Math.PI * 1.1 / 13; px(T[0] + Math.cos(a) * r, T[1] + Math.sin(a) * r, C[i % C.length], B, B); }
     for (let i = 0; i < m; i += 3) { const a = Math.PI * 0.6 + i * Math.PI * 1.1 / 13; px(T[0] + Math.cos(a) * (r - 1), T[1] + Math.sin(a) * (r - 1), C[C.length - 1]); }
   } else if (sh === 'rise' || sh === 'fall') {
-    const seeded = MV_SEED[3];
+    const seeded = MV_SEED[MV_ROT[mvVar][0]];   // MOVE_FX_2 (D826): variation 0 is main's seed
     for (let i = 0; i < n; i++) {
       const dx = seeded[i][0];
       const ki = Math.max(0, Math.min(1, k * 1.3 - i * 0.1));
@@ -159,10 +183,10 @@ function mvShape(seg, k, t_ms, S, T, put) {
       px(T[0] + d, T[1] + 8 - Math.floor(i / 2) * B, C[i % C.length], 2 * B, B);
     }
   } else if (sh === 'speck') {
-    const seeded = MV_SEED[7];
+    const seeded = MV_SEED[MV_ROT[mvVar][1]];
     for (let i = 0; i < n; i++) if ((Math.floor(t_ms / MV_BLINK) + i) % 3) px(T[0] + seeded[i][0] * (1 + (B - 1) * 0.5), T[1] + seeded[i][1], C[0], B, B);
   } else if (sh === 'crackle') {
-    const seeded = MV_SEED[11];
+    const seeded = MV_SEED[MV_ROT[mvVar][2]];
     for (let i = 0; i < n; i++) if ((Math.floor(t_ms / MV_BLINK) + i) % 2) px(T[0] + seeded[i][0] * (1 + (B - 1) * 0.5), T[1] + seeded[i][1], C[i % C.length], 2 * B, B);
   } else if (sh === 'streaks') {
     const ln = seg.len || 5;
@@ -170,9 +194,59 @@ function mvShape(seg, k, t_ms, S, T, put) {
       const x = mvLerp(T[0] - 10 - ln, T[0] + 6, k) + i * 2, y = T[1] - 4 * Math.floor(n / 2) + i * 4;
       for (let q = 0; q < ln; q++) px(x + q, y, C[i % C.length], 1, B);
     }
-  } else if (sh === 'sparkle') {
+  } else if (sh === 'comet') {   // MOVE_FX_2 (D826): lobs only. A (b+1) head and n-1 bxb tail blocks S to T on an arc; n <= 8
+    const lift = arc * (1 + 0.25 * (mvVar - 1));
+    for (let i = 0; i < n; i++) {
+      const ki = k - i * 0.06; if (ki <= 0 || ki > 1) continue;
+      const x = mvLerp(S[0], T[0], ki), y = mvLerp(S[1], T[1], ki) - lift * Math.sin(Math.PI * ki);
+      if (i === 0) px(x - B, y - B, C[0], B + 1, B + 1); else px(x - (B - 1) / 2, y - (B - 1) / 2, C[i % C.length], B, B);
+    }
+  } else if (sh === 'flicker') { // EMBER travel: a flame head on a low arc, its tail rising i px and swaying 1 px per 170 ms; n <= 8
+    const lift = arc * (1 + 0.25 * (mvVar - 1));
+    for (let i = 0; i < n; i++) {
+      const ki = k - i * 0.07; if (ki <= 0 || ki > 1) continue;
+      const x = mvLerp(S[0], T[0], ki), y = mvLerp(S[1], T[1], ki) - lift * Math.sin(Math.PI * ki);
+      if (i === 0) px(x - B, y - B, C[0], B + 1, B + 1);
+      else px(x - (B - 1) / 2 + ((Math.floor(t_ms / MV_BLINK) + i) % 2 ? 1 : -1), y - i - (B - 1) / 2, C[i % C.length], B, B);
+    }
+  } else if (sh === 'skim') {    // TIDE travel: a head hugs the ground line from S's feet to T's, spray behind; rises into T over the last 20%; n <= 8
+    for (let i = 0; i < n; i++) {
+      const ki = k - i * 0.05; if (ki <= 0 || ki > 1) continue;
+      const up = ki > 0.8 ? (ki - 0.8) / 0.2 * 7 : 0;
+      const x = mvLerp(S[0], T[0], ki), y = mvLerp(S[1] + 7, T[1] + 7, ki) - up;
+      if (i === 0) px(x - B, y - B, C[0], B + 1, B + 1); else px(x - (B - 1) / 2, y - 1 - (i % 3) - (B - 1) / 2, C[i % C.length], B, B);
+    }
+  } else if (sh === 'hop') {     // BLOOM travel: a head bouncing seg.turns times (default 2) from S to T, trail dots behind; n <= 8
+    const bo = seg.turns == null ? 2 : seg.turns, lift = arc * (1 + 0.25 * (mvVar - 1));
+    for (let i = 0; i < n; i++) {
+      const ki = k - i * 0.06; if (ki <= 0 || ki > 1) continue;
+      const x = mvLerp(S[0], T[0], ki), y = mvLerp(S[1], T[1], ki) - lift * Math.abs(Math.sin(Math.PI * bo * ki));
+      if (i === 0) px(x - B, y - B, C[0], B + 1, B + 1); else px(x - (B - 1) / 2, y - (B - 1) / 2, C[i % C.length], B, B);
+    }
+  } else if (sh === 'flare') {   // the impact frame: 8 bxb blocks, full size from the first frame (it is held through the hit-stop); 8 slots
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = i % 2 ? r * 0.7 : r; px(P[0] + Math.cos(a) * rr - (B - 1) / 2, P[1] + Math.sin(a) * rr - (B - 1) / 2, C[i % C.length], B, B); }
+  } else if (sh === 'wave') {    // a crest of n 2xb blocks travels 12 px across P, away from the attacker; n <= 8
+    const dr = T[0] >= S[0] ? 1 : -1, x0 = P[0] - dr * 6 + dr * 12 * k;
+    for (let i = 0; i < n; i++) px(x0 + dr * (2 * i - (n - 1)) - 1, P[1] + 8 - Math.round(r * Math.sin(Math.PI * (i + 1) / (n + 1))) - B + 1, C[i % C.length], 2, B);
+  } else if (sh === 'pillar') {  // n blocks (2b x b) stack up from the ground under P to r px, ease-out; n <= 8
+    const L = Math.max(1, Math.round(r * (1 - (1 - k) * (1 - k))));
+    for (let i = 0; i < n; i++) px(P[0] - B, P[1] + 8 - Math.round(L * i / Math.max(1, n - 1)) - B + 1, C[i % C.length], 2 * B, B);
+  } else if (sh === 'orbit') {   // n bxb dots on an r by r/2 ellipse round P, turning seg.turns times (default 1), mirrored by side; n <= 8
+    const tu = seg.turns == null ? 1 : seg.turns, dr = T[0] >= S[0] ? 1 : -1;
+    for (let i = 0; i < n; i++) { const a = 2 * Math.PI * (dr * tu * k + i / n + mvVar / (3 * n)); px(P[0] + Math.cos(a) * r - (B - 1) / 2, P[1] - 2 + Math.sin(a) * r * 0.5 - (B - 1) / 2, C[i % C.length], B, B); }
+  } else if (sh === 'slash') {   // a corner-to-corner cut over P, mirrored by side: drawn in over the first 60%, wiped over the last 40%; n <= 8
+    const d = (seg.dir === 'down' ? 1 : -1) * (T[0] >= S[0] ? 1 : -1);
+    for (let i = 0; i < n; i++) {
+      const f = n > 1 ? i / (n - 1) : 0;
+      if (f > k / 0.6 || f < (k - 0.6) / 0.4) continue;
+      px(P[0] - r + 2 * r * f - (B - 1) / 2, P[1] + d * (-r + 2 * r * f) - (B - 1) / 2, C[i % C.length], B, B);
+    }
+  } else if (sh === 'quake') {   // n 2xb cracks on the ground row, spreading r px each way; rows swap once per 170 ms (flash budget); n <= 8
+    const sp = Math.min(1, k * 2), j = Math.floor((t_ms - seg.ms[0]) / MV_BLINK), half = Math.ceil(n / 2);
+    for (let i = 0; i < n; i++) { const d = (i % 2 ? 1 : -1) * (1 + r * sp * (Math.floor(i / 2) + 1) / half); px(P[0] + d - 1, P[1] + 9 - ((j + i) % 2) * B, C[i % C.length], 2, B); }
+  } else if (sh === 'sparkle') { // b 1 is main's 5-pixel plus; the D829 signature beat draws it in 2 px blocks
     const x = S[0], y = S[1] - 13;
-    px(x, y, C[0]); px(x - 1, y, C[0]); px(x + 1, y, C[0]); px(x, y - 1, C[0]); px(x, y + 1, C[0]);
+    for (let q = 0; q < 5; q++) px(x + MV_PLUS[q][0] * B - (B - 1) / 2, y + MV_PLUS[q][1] * B - (B - 1) / 2, C[0], B, B);
   }
 }
 function mvSegK(seg, t) {
@@ -187,9 +261,11 @@ function mvPoolReset() { mvPoolN = 0; for (let i = 0; i < 24; i++) MV_POOL[i].on
 function mvPoolPut(x, y, w, h, col) {
   if (mvPoolN >= 24) return;
   const p = MV_POOL[mvPoolN++];
-  p.on = 1; p.x = x; p.y = y; p.w = w; p.h = h; p.col = col;
+  p.on = 1; p.x = x; p.y = y; p.w = w; p.h = h; p.col = col; p.sh = mvShadow;
 }
 function mvPoolDraw(g) {
+  g.fillStyle = PAL.k;                                   // MOVE_FX_2 (D826): a 1 px k shadow under each bespoke rect (no extra slot)
+  for (let i = 0; i < mvPoolN; i++) { const p = MV_POOL[i]; if (p.on && p.sh) g.fillRect(p.x + 1, p.y + 1, p.w, p.h); }
   for (let i = 0; i < mvPoolN; i++) {
     const p = MV_POOL[i]; if (!p.on) continue;
     g.fillStyle = PAL[p.col] || PAL.w;
@@ -234,7 +310,22 @@ function mvNumDraw(g, W, H, vis, centres, t) {
 }
 function mvPoolCount() { return mvPoolN; }
 function mvPunchType(type) { return MV_PUNCH.types[type] || MV_PUNCH.types.PLAIN; }
-function mvAnim(type) { return MV_ANIM[type] || MV_ANIM.PLAIN; }
+// MOVE_FX_2 (D831): a bespoke row wins over the type row. The merged row is made once per id and kept (no per-frame allocation).
+function mvMoveRow(mid) { return (mid && Object.prototype.hasOwnProperty.call(MV_MOVE, mid)) ? MV_MOVE[mid] : null; }
+function mvAnim(type, mid) {
+  const base = MV_ANIM[type] || MV_ANIM.PLAIN, row = mvMoveRow(mid);
+  if (!row) return base;
+  if (!row.anim) row.anim = Object.assign({}, base, row.go ? { go: row.go } : {});
+  return row.anim;
+}
+function mvHitRows(type, mid) { const row = mvMoveRow(mid); return (row && row.hit) || mvPunchType(type).hit_v2 || []; }
+// D831: the pose, clamped to the MOVES_V2 caps: lunge 6-8 px (main 6), a hop of at most 2 px, a status lift of at most 1 px.
+function mvPose(mid) {
+  const p = (mvMoveRow(mid) || {}).pose || {};
+  return { lunge: Math.max(6, Math.min(8, p.lunge || 6)), hop: Math.max(0, Math.min(2, p.hop || 0)), lift: Math.max(0, Math.min(1, p.lift || 0)) };
+}
+// D827: one move draws at a time. A new GO or wind-up ends every GO, travel and HIT still drawing, so moves never stack in the pool.
+function mvYield(fx) { for (let i = 0; i < fx.length; i++) { const e = fx[i]; if (e.kind === 'mvGo' || e.kind === 'mvHit' || e.kind === 'mvTravel') e.dur = 0; } }
 function mvLight(type) { return MV_LIGHT[type] || 'w'; }
 function mvStatusRow(effect) {
   const e = effect || {};

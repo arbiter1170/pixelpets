@@ -10762,15 +10762,29 @@ function show(s, mode){
   if (!s || s.k === 'text') return;
   if (s.k === 'go') {
     if (mode !== 'full') return;
-    B.fx.push({ who: s.who, kind: 'mvGo', type: s.type, sig: !!s.sig, status: !!s.status, effect: s.effect || null, t0: t, dur: s.status ? 420 : 400 });
+    const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(s.mid) : null;   // MOVE_FX_2 (D827, D829, D831)
+    if (mvRow) mvYield(B.fx);
+    B.mvN = ((B.mvN | 0) + 1) % 3;
+    // A bespoke charge lasts until its wind-up ends it (mvYield), so it fills the "tries" line at any text speed.
+    B.fx.push({ who: s.who, kind: 'mvGo', type: s.type, sig: !!s.sig, status: !!s.status, effect: s.effect || null, mid: mvRow ? s.mid : null,
+      v: mvRow ? B.mvN : 0, lift: mvRow && s.status ? mvPose(s.mid).lift : 0, t0: t, dur: s.status ? 420 : (mvRow ? 1600 : 400) });
     B.fxLog.push('mvGo');
+    if (mvRow) B.fxLog.push('mvGo:' + s.mid);
     sfx('chirp_' + String(s.type || 'PLAIN').toLowerCase(), 0.04);
     if (s.sig) sfx('notice');
     return;
   }
   if (s.k === 'lunge') { B.fx.push({ who: s.who, kind: 'lunge', t0: t, dur: 300 }); B.fxLog.push('lunge'); return; }
   if (s.k === 'windup') {
-    B.punch = { who: s.who, tgt: s.tgt, type: s.type, variant: s.variant || 'normal', mode: mode, t0: t };
+    B.punch = { who: s.who, tgt: s.tgt, type: s.type, variant: s.variant || 'normal', mode: mode, t0: t, mid: s.mid || null };
+    const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(s.mid) : null, mvMs = stepMs(s, mode);
+    if (mvRow) {   // MOVE_FX_2 (D827): the charge ends; the travel flies S to T inside the wind-up and lands at contact
+      mvYield(B.fx);
+      if (mvRow.travel && mvMs > 0 && !B.ff) {
+        B.fx.push({ who: s.who, kind: 'mvTravel', type: s.type, mid: s.mid, v: B.mvN | 0, t0: t, dur: mvMs });
+        B.fxLog.push('mvTravel:' + s.mid);
+      }
+    }
     B.calm = null;
     if (B.ff) snapAnim();
     return;
@@ -10781,8 +10795,10 @@ function show(s, mode){
     B.punch.tgt = s.who; B.punch.type = typ; B.punch.variant = variant; B.punch.contactAt = t; B.punch.mode = mode;
     const tgtMon = (s.who || '').indexOf('me') === 0 ? 'me' : 'foe';
     if (mode === 'full') {
-      B.fx.push({ who: tgtMon, kind: 'mvHit', type: typ, variant: variant, t0: t, dur: 420 });
+      const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(s.mid) : null;
+      B.fx.push({ who: tgtMon, kind: 'mvHit', type: typ, variant: variant, mid: mvRow ? s.mid : null, v: mvRow ? B.mvN | 0 : 0, t0: t, dur: 420 });
       B.fxLog.push('mvHit');
+      if (mvRow) B.fxLog.push('mvHit:' + s.mid);   // MOVE_FX_2 (D831)
       const sc = typeof mvScaled === 'function' ? mvScaled(typ, variant) : { shake: 1, white: 50 };
       const ty = typeof mvPunchType === 'function' ? mvPunchType(typ) : { shake: { axis: 'x', ms: 160 } };
       B.shake = sc.shake ? { px: Math.min(4, sc.shake), axis: ty.shake.axis, t0: t, ms: ty.shake.ms } : null;
@@ -10808,7 +10824,11 @@ function show(s, mode){
   }
   if (s.k === 'stop') {
     const ms = stepMs(s, mode);
-    if (ms > 0 && !B.ff) { B.hold = t + ms; B.holdT = t; }
+    if (ms > 0 && !B.ff) {
+      B.hold = t + ms; B.holdT = t;
+      // MOVE_FX_2 (D827): a bespoke hit holds its impact frame through the hit-stop, then plays on (its clock pauses, its life grows by ms)
+      for (let i = 0; i < B.fx.length; i++) { const e = B.fx[i]; if (e.kind === 'mvHit' && e.mid && e.hold1 == null) { e.hold0 = t; e.hold1 = t + ms; e.dur += ms; } }
+    }
     else B.hold = 0;
     return;
   }
@@ -11233,7 +11253,7 @@ async function doMove(side, mid, id){
   const line = mine ? (SPECIES[spi(p)] || {}).id : f.species;
   const sig = typeof SIGNATURES !== 'undefined' && SIGNATURES[line] === mid;
   const typ = mv.type || 'PLAIN';
-  if (mode === 'full') step('go', { who: side, type: typ, sig: sig, status: mv.power === 0, effect: mv.effect || null });
+  if (mode === 'full') step('go', { who: side, type: typ, sig: sig, status: mv.power === 0, effect: mv.effect || null, mid: mid });   // MOVE_FX_2 (D831)
   else step('lunge', { who: side });
   step('text', { s: uName + ' tries ' + mv.name + '!' });
   await play(id); if (!alive(id)) return;
@@ -11265,8 +11285,8 @@ async function doMove(side, mid, id){
     B.shown = { who: whoKey, hpFrom: hpFrom, hpTo: hpTo, max: max };
     renderBattleCards(); if (!mine) save();
     const variant = typeof mvVariant === 'function' ? mvVariant(r.mult, r.crit) : (r.mult > 1 ? 'super' : r.mult < 1 ? 'weak' : 'normal');
-    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey });
-    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant });
+    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey, mid: mid });   // MOVE_FX_2 (D827): the travel rides the wind-up
+    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant, mid: mid });
     step('sfx', { name: r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit' });
     const stopMs = mode === 'full' && typeof mvScaled === 'function' ? mvScaled(typ, variant).stop : 0;
     step('stop', { ms: stopMs });
@@ -15087,6 +15107,10 @@ function battleVis(c){
 function drawBattle(t, dt){
   const B = battle, c = $('#battleCanvas'), g = ctx(c), W = c.width, H = c.height, f = curFoe(), p = activePet(); if (!f || !p) return;
   g.drawImage(makeBackdrop(backdropName(), H, skyMode(), W), 0, 0); drawWeather(g, W, H, t);
+  for (let i = 0; i < B.fx.length; i++) {   // MOVE_FX_2 (D829): a signature dims the backdrop with k, up to 0.25 and back over 200 ms (never white)
+    const e = B.fx[i], a = t - e.t0;
+    if (e.kind === 'mvGo' && e.sig && a >= 0 && a < 200) { g.globalAlpha = 0.25 * Math.sin(Math.PI * a / 200); g.fillStyle = PAL.k; g.fillRect(0, 0, W, H); g.globalAlpha = 1; }
+  }
   if (enc.open && tut.on && tut.lesson === 'bef') enc.freezeUntil = t + 500;
   if (enc.open && t >= enc.freezeUntil) enc.mark = (Math.sin((t - enc.t0) * enc.speed) + 1) / 2;
   $('#tmark').style.left = (enc.mark * 100) + '%';
@@ -15098,7 +15122,7 @@ function drawBattle(t, dt){
     if (fxT - e.t0 < e.dur || e.kind === 'faint' || e.kind === 'flee') B.fx[wri++] = e;
   }
   B.fx.length = wri;
-  let shx = 0, shy = 0, meDx = 0, foeDx = 0, meSq = [0, 0], foeSq = [0, 0], tintA = 0;
+  let shx = 0, shy = 0, meDx = 0, foeDx = 0, meSq = [0, 0], foeSq = [0, 0], tintA = 0, meHop = 0, foeHop = 0;
   const punch = B.punch;
   if (punch && typeof mvState === 'function' && punch.mode === 'full') {
     let ms = t - punch.t0;
@@ -15108,6 +15132,10 @@ function drawBattle(t, dt){
     const dir = punch.who === 'me' ? 1 : -1;
     if (punch.who === 'me') { meDx = st.me_dx * dir; meSq = st.me_sq; foeDx = st.foe_dx * dir; foeSq = st.foe_sq; }
     else { foeDx = st.me_dx * dir; foeSq = st.me_sq; meDx = st.foe_dx * dir; meSq = st.foe_sq; }
+    if (punch.mid && typeof mvPose === 'function') {   // MOVE_FX_2 (D831): the move's own lunge (6-8 px) and a 2 px hop on a lob, inside the wind-up
+      const po = mvPose(punch.mid), hop = ms >= 0 && ms < 140 ? Math.round(Math.sin(Math.PI * ms / 140) * po.hop) : 0;
+      if (punch.who === 'me') { meDx = Math.round(meDx * po.lunge / 6); meHop = hop; } else { foeDx = Math.round(foeDx * po.lunge / 6); foeHop = hop; }
+    }
     shx = st.shake[0]; shy = st.shake[1];
     if (shx > 4) shx = 4; else if (shx < -4) shx = -4;
     if (shy > 4) shy = 4; else if (shy < -4) shy = -4;
@@ -15125,6 +15153,8 @@ function drawBattle(t, dt){
       const e = B.fx[i];
       if (e.who !== who) continue; const k = clamp((fxT - e.t0) / e.dur, 0, 1);
       if (e.kind === 'lunge') x += Math.round(Math.sin(k * Math.PI) * 6) * (who === 'me' ? 1 : -1);
+      if (e.kind === 'mvGo' && e.lift && k < 1) y -= Math.round(Math.sin(k * Math.PI) * e.lift);                       // MOVE_FX_2 (D830): status lift
+      if (e.kind === 'mvGo' && e.sig && fxT - e.t0 < 200) y -= Math.round(Math.sin((fxT - e.t0) / 200 * Math.PI) * 2);   // D829: signature hop
       if (e.kind === 'shake') x += (Math.floor(fxT / 60) % 2) * 2 - 1;
       if (e.kind === 'flash') x += (Math.floor(fxT / 60) % 2) ? 1 : -1;
       if (e.kind === 'faint') { y += Math.round(k * 4); mode = 's'; }
@@ -15159,39 +15189,50 @@ function drawBattle(t, dt){
     if (other) drawMon('foe2', other.si, other.stage, Math.max(0, fx0 - 18), fy0 + 4, false, !!other.faded);
     if (B.ally && B.ally.hp > 0) drawMon('ally', B.ally.si, B.ally.stage, mx0 + 18, my0 + 2, true, false);
   }
-  const foeAt = drawMon('foe', f.si, f.stage, fx0 + foeDx, fy0, false, !!f.faded);
+  const foeAt = drawMon('foe', f.si, f.stage, fx0 + foeDx, fy0 - foeHop, false, !!f.faded);
   if (B.kind === 'wild' && f.stage > 0 && Math.floor(t / 350) % 5 === 0) drawGlyph(g, 'spark', fx0 + foeDx + 14, fy0 - 2);
-  const meAt = drawMon('me', spi(p), p.stage, mx0 + meDx, my0, true, isFaded(p));
+  const meAt = drawMon('me', spi(p), p.stage, mx0 + meDx, my0 - meHop, true, isFaded(p));
   const Sc = meAt ? [meAt[0] + 9, meAt[1] + 9] : [mx0 + 9, my0 + 9];
   const Tc = foeAt ? [foeAt[0] + 9, foeAt[1] + 9] : [fx0 + 9, fy0 + 9];
   if (typeof mvPoolReset === 'function') {
     mvPoolReset();
     const put = (x, y, w, h, col) => mvPoolPut(x, y, w, h, col);
     for (let i = 0; i < B.fx.length; i++) {
-      const e = B.fx[i], age = t - e.t0;
-      if (age < 0 || age >= e.dur) continue;
+      const e = B.fx[i], age0 = t - e.t0;
+      if (age0 < 0 || age0 >= e.dur) continue;
+      // MOVE_FX_2 (D827): a held bespoke hit reads its clock as paused through the hit-stop (P5d)
+      const age = e.hold1 != null ? (t < e.hold1 ? Math.max(0, e.hold0 - e.t0) : age0 - (e.hold1 - e.hold0)) : age0;
+      const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(e.mid) : null;
+      if (typeof mvShadowSet === 'function') { mvShadowSet(!!mvRow); mvVarSet(mvRow ? e.v : 0); }   // D826: k shadow and variation, bespoke only
       const user = e.who === 'me' ? Sc : Tc, tgt = e.who === 'me' ? Tc : Sc;
       if (e.kind === 'mvGo') {
-        if (e.sig && age < 80) mvShape({ shape: 'sparkle', col: 'y', at: 'user', ms: [0, 80] }, 1, age, user, tgt, put);
-        if (e.status) {
+        if (e.sig && age < 120) mvShape({ shape: 'sparkle', col: 'y', at: 'user', ms: [0, 120], b: 2 }, 1, age, user, tgt, put);   // D829: 2 px sparkle
+        if (e.status && mvRow && mvRow.status) {   // MOVE_FX_2 (D830)
+          const segs = mvRow.status;
+          for (let s = 0; s < segs.length; s++) { const k = mvSegK(segs[s], age); if (k >= 0) mvShape(segs[s], k, age, user, tgt, put); }
+        } else if (e.status) {
           const row = mvStatusRow(e.effect);
           const seg = { shape: row.shape, n: row.n, col: row.col || mvAnim(e.type).pal, ms: row.ms, at: 'user', b: 1 };
           const k = mvSegK(seg, age);
           const at = e.effect && e.effect.target === 'foe' && !e.effect.heal ? tgt : user;
           if (k >= 0) mvShape(seg, k, age, at, at, put);
         } else {
-          const segs = mvAnim(e.type).go || [];
+          const segs = mvAnim(e.type, e.mid).go || [];   // MOVE_FX_2 (D831)
           for (let s = 0; s < segs.length; s++) { const k = mvSegK(segs[s], age); if (k >= 0) mvShape(segs[s], k, age, user, tgt, put); }
         }
       } else if (e.kind === 'mvHit') {
-        const rows = mvPunchType(e.type).hit_v2 || [];
+        const rows = typeof mvHitRows === 'function' ? mvHitRows(e.type, e.mid) : (mvPunchType(e.type).hit_v2 || []);   // MOVE_FX_2 (D831)
         const hitUser = e.who === 'me' ? Tc : Sc, hitT = e.who === 'me' ? Sc : Tc;
         for (let s = 0; s < rows.length; s++) { const k = mvSegK(rows[s], age); if (k >= 0) mvShape(rows[s], k, age, hitUser, hitT, put); }
         if (e.variant && e.variant.indexOf('super') >= 0 && age < 200) {
           const rk = age / 200, rr = 6 + 12 * rk;
-          mvShape({ shape: 'ring', r: [rr, rr], col: mvLight(e.type), ms: [0, 200], b: 1, at: 'target' }, rk, age, hitUser, hitT, put);
+          mvShape(mvRow ? { shape: 'ring', r: [rr, rr], col: mvLight(e.type), ms: [0, 200], b: 2, n: 8, at: 'target' }   // D827: 8 slots for a bespoke hit
+            : { shape: 'ring', r: [rr, rr], col: mvLight(e.type), ms: [0, 200], b: 1, at: 'target' }, rk, age, hitUser, hitT, put);
         }
         if (e.variant && e.variant.indexOf('crit') >= 0 && age < 240) drawGlyph(g, 'spark', hitT[0], hitT[1] - 14);
+      } else if (e.kind === 'mvTravel' && mvRow && mvRow.travel) {   // MOVE_FX_2 (D827): S to T across the wind-up, the head on T at contact
+        const ta = age * 140 / Math.max(1, e.dur), segs = mvRow.travel;
+        for (let s = 0; s < segs.length; s++) { const k = mvSegK(segs[s], ta); if (k >= 0) mvShape(segs[s], k, ta, user, tgt, put); }
       } else if (e.kind === 'mvMark') {
         const m = mvAnim(e.type).mark;
         if (m) {
@@ -15201,6 +15242,7 @@ function drawBattle(t, dt){
         }
       }
     }
+    if (typeof mvShadowSet === 'function') { mvShadowSet(false); mvVarSet(0); }
     mvPoolDraw(g);
     const centres = {};
     centres.me = Sc; centres.foe = Tc;
@@ -15221,7 +15263,8 @@ function drawBattle(t, dt){
   for (let i = 0; i < pw; i++) drawGlyph(g, btParts[i].type, btParts[i].x, btParts[i].y);
   g.restore();
   B.view = { t: t, shakeX: shx, shakeY: shy, white: !!(B.white && t >= B.white.t0 && t < B.white.until), tint: tintA,
-    meX: mx0 + meDx, foeX: fx0 + foeDx, meRest: mx0, foeRest: fx0, pool: typeof mvPoolCount === 'function' ? mvPoolCount() : 0 };
+    meX: mx0 + meDx, foeX: fx0 + foeDx, meRest: mx0, foeRest: fx0, pool: typeof mvPoolCount === 'function' ? mvPoolCount() : 0,
+    sc: Sc, tc: Tc };   // MOVE_FX_2 tests: the user and target centres this frame
 }
 
 /* ---------- evolution ---------- */
