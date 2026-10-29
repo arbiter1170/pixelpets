@@ -102,7 +102,7 @@ test('SKY: hour, sky and a forecast line; the late hours add the night line and 
   await expect(page.locator('.ribbit-handle', { hasText: '@nightdesk' })).toHaveCount(0);
   await page.evaluate(() => PixelPets.clock.set('tue', 23, 0));
   await openApp(page, 'sky');
-  await expect(page.locator('.sky-night')).toHaveText(/Glow is rising/);
+  await expect(page.locator('.sky-night')).toHaveText('Late hours. Let your Walkling sleep.');
   await openApp(page, 'ribbit');
   await expect(page.locator('.ribbit-handle', { hasText: '@nightdesk' })).toHaveCount(1);
 });
@@ -133,6 +133,41 @@ test('GLOW: partner stats, bond, calm advice, and the Lantern House that wakes y
   await hack(page);
   await openApp(page, 'glow');
   await expect(page.locator('.glow-advice')).toHaveText('Glimmerwell: Unit output: dipping. Refuel recommended.');
-  await expect(page.locator('.glow-bed')).toHaveText('Doorway only. They still heal you.');
+  await expect(page.locator('.glow-bed')).toHaveText('Beds open to all. Rest restores your units.');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')).v)).toBe(2);
+});
+
+// Rule 10 and D863: placeholder lines state only known facts. Every Lantern House has beds at every standing tier,
+// and no line hints at unbuilt plans (Rain Pause, augments) or a new glow fact.
+const NOT_CANON = /Doorway only|held for you|pause for that|Augment|glow levels|Glow is rising|shares a little glow|glow up/i;
+
+test('GLOW: beds are open at every Keepers tier, in both voices (rule 10)', async ({ page }) => {
+  await boot(page);
+  await page.evaluate(() => PixelPets.setStanding('keepers', 50));
+  expect(await page.evaluate(() => PixelPets.standing.keepers.tier)).toBeGreaterThanOrEqual(2);
+  await openApp(page, 'glow');
+  await expect(page.locator('.glow-bed')).toHaveText('Beds are open to every holder.');
+  await page.locator('#phoneClose').click();
+  await hack(page);
+  await openApp(page, 'glow');
+  await expect(page.locator('.glow-bed')).toHaveText('Beds open to all. Rest restores your units.');
+});
+
+test('SKY, GLOW, the shelf and the Night Desk carry no placeholder hints, day or night, in either voice', async ({ page }) => {
+  await boot(page);
+  const read = async () => {
+    const out = [];
+    for (const app of ['sky', 'glow', 'jobs', 'ribbit']) { await openApp(page, app); out.push(app + ': ' + await page.locator('#phoneBody').innerText()); }
+    await page.locator('#phoneClose').click();
+    return out.join('\n');
+  };
+  await page.evaluate(() => PixelPets.clock.set('tue', 23, 0));
+  const keeper = await read();
+  expect(keeper).toContain('@nightdesk');
+  expect(keeper).not.toMatch(NOT_CANON);
+  await hack(page);
+  const hacked = await read();
+  expect(hacked).toContain('Night readings logged.');
+  expect(hacked).toContain('The leak is not a menu.');
+  expect(hacked).not.toMatch(NOT_CANON);
 });

@@ -14,7 +14,7 @@ const http = require('http');
 const net = require('net');
 const os = require('os');
 const path = require('path');
-const { envPort, writeConfig } = require('../tools/emu_ports');
+const { envPort, writeConfig, firebaseLaunch } = require('../tools/emu_ports');
 
 const ROOT = path.join(__dirname, '..');
 // Read when called: the teardown may run after a spec loaded this file in the same process.
@@ -95,10 +95,7 @@ function unlockEmu() {
   } catch (e) {}
 }
 function firebaseCmd(config) {
-  const bin = path.join(ROOT, 'node_modules', '.bin', 'firebase');
-  const args = ['emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings', '--config', config];
-  if (fs.existsSync(bin)) return { cmd: bin, args };
-  return { cmd: 'npx', args: ['firebase', ...args] };
+  return firebaseLaunch(['emulators:start', '--only', 'auth,firestore,database', '--project', 'demo-walklings', '--config', config], true);
 }
 
 // The CLI opens the auth port last, after the two Java emulators: about 27 s at load 8 and 44 s at
@@ -127,7 +124,7 @@ async function ensureEmulator() {
   if (!(await emuPorts('all'))) {
     const { dir, config } = writeConfig(EMU_PORTS, EMU_DIR);
     const spec = firebaseCmd(config);
-    const emu = spawn(spec.cmd, spec.args, { cwd: dir, detached: true, stdio: 'ignore', env: { ...process.env, TMPDIR: dir } });
+    const emu = spawn(spec.cmd, spec.args, { cwd: dir, detached: true, windowsHide: true, stdio: 'ignore', env: { ...process.env, TMPDIR: dir } });
     fs.mkdirSync(path.dirname(PID), { recursive: true });
     fs.writeFileSync(PID, String(emu.pid));
     emu.unref();

@@ -1,7 +1,7 @@
 /* ARBITER_UNITS Build A (D837-D847): the five attune lines, the hum meter and STILL, the Echoes, boss battles, and the
    journal row. No map places a boss yet (the branch ships with the next area), so battles start from debug hooks. */
 const { test, expect } = require('@playwright/test');
-const { starterSave, installSave, trackErrors, gotoGame, shot } = require('./helpers');
+const { starterSave, installSave, trackErrors, gotoGame, shot, playScene } = require('./helpers');
 
 trackErrors(test, expect);
 
@@ -237,4 +237,68 @@ test('the stats card shows the Echo and a STILL button for an attune Walkling on
   const box = await page.locator('#scStill').boundingBox();
   expect(box.height).toBeGreaterThanOrEqual(44);
   await shot(page, 'arbiter-stats-card');
+});
+
+test('hum sources: a won battle gives +4 and the first Glimmerwell place each day gives +6 (D839)', async ({ page }) => {
+  await installSave(page.context(), unitSave('filecrow', { hum: 0 }), { quietDay: true });
+  await gotoDebug(page);
+  const humNow = () => page.evaluate(() => PixelPets.state.party[0].hum || 0);
+  // Wickerglen is always Glimmerwell's; the second arrival the same day adds nothing.
+  expect(await page.evaluate(() => PixelPets.goto('route2_glen'))).toBeTruthy();
+  expect(await humNow()).toBe(6);
+  expect(await page.evaluate(() => PixelPets.goto('route2'))).toBeTruthy();
+  expect(await page.evaluate(() => PixelPets.goto('route2_glen'))).toBeTruthy();
+  expect(await humNow()).toBe(6);
+  // A won battle the unit took part in.
+  expect(await page.evaluate(() => PixelPets.forceBattle('ember/0', 3))).toBeTruthy();
+  await fastBattle(page);
+  await page.evaluate(() => PixelPets.winBattle());
+  await page.waitForFunction(() => (PixelPets.state.party[0].hum || 0) === 10, null, { timeout: 15000 });
+});
+
+test('the Tuning step and the briefing chip offer both refuse an Answerer (D847)', async ({ page }) => {
+  await installSave(page.context(), unitSave('filecrow'), { quietDay: true });
+  await gotoDebug(page);
+  // Tuning, with the Answerer as the partner: Quinn turns it away and no chip goes on.
+  expect(await page.evaluate(() => PixelPets.runSteps([['tune']]))).not.toBe(false);
+  await page.waitForFunction(() => PixelPets.scene && /It already answers\./.test(PixelPets.scene.text || ''), null, { timeout: 10000 });
+  await playScene(page);
+  // The briefing offer lists no Answerer; with only Answerers in the party it closes without a sheet.
+  expect(await page.evaluate(() => PixelPets.runSteps([['chipOffer']]))).not.toBe(false);
+  await playScene(page);
+  const after = await page.evaluate(() => ({ chip: !!(PixelPets.state.party[0].chip && PixelPets.state.party[0].chip.on), asked: !!PixelPets.state.flags['story.gb_tune_asked'] }));
+  expect(after).toEqual({ chip: false, asked: true });
+});
+
+test('with reduced motion a tier still rises: the toast, the new-move sheet, and OK', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await installSave(page.context(), unitSave('dimlamp', { level: 26, hum: 0 }), { quietDay: true });
+  await gotoDebug(page);
+  expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  expect(await page.evaluate(() => PixelPets.addHum(40))).toEqual({ got: 40, hum: 40, stage: 1 });
+  await expect(page.locator('#toast')).toHaveText('Dimlamp is humming!');
+  await expect(page.locator('#ovSheet')).toContainText('Dimlamp hears something new in the hum!');
+  await page.locator('#ovSheet button', { hasText: 'OK' }).click();
+  // Four moves already: the usual grow-up question follows. Skip it, then OK.
+  await expect(page.locator('#ovSheet')).toContainText('Replace which move?');
+  await page.locator('#ovSheet button', { hasText: 'Skip it' }).click();
+  await expect(page.locator('#ovSheet')).toContainText("didn't pick up");
+  await page.locator('#ovSheet button', { hasText: 'OK' }).click();
+  await expect(page.locator('#ovSheet')).toBeHidden();
+  expect(await page.evaluate(() => PixelPets.state.party[0].stage)).toBe(1);
+});
+
+test('with reduced motion the boss still shifts at half HP', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await installSave(page.context(), unitSave('ember', { stage: 2, level: 45 }), { quietDay: true });
+  await gotoDebug(page);
+  expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  expect(await page.evaluate(() => PixelPets.forceBoss('tallybat', 28))).toBe(true);
+  await fastBattle(page);
+  await page.evaluate(() => PixelPets.setHp('foe', Math.floor(PixelPets.bossState().maxHp * 0.45)));
+  await page.evaluate(() => { PixelPets.turnNow('stoke_up'); });
+  await page.waitForFunction(() => PixelPets.bossState() && PixelPets.bossState().shifted, null, { timeout: 15000 });
+  const s = await page.evaluate(() => ({ stage: PixelPets.bossState().stage, log: PixelPets.battle.log.slice() }));
+  expect(s.stage).toBe(2);
+  expect(s.log).toContain('The hum rises. Tallybat answers it.');
 });
