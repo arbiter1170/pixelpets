@@ -50,7 +50,7 @@
         "lantern": {"x0": 2, "y0": 2, "x1": 7, "y1": 3, "roof": "roof_flat_m", "wall": "wall_rough", "door": "door_iron", "win": "win_lamp", "trim": "m", "shape": "flat", "porch": ["cc_lantern_sign", "cc_ore_cart"]},
         "hall": {"x0": 21, "y0": 1, "x1": 28, "y1": 3, "col": "m", "wall": "wall_pillar", "door": "door_slab", "win": "win_slit", "shape": "stepped", "porch": ["cc_slab_sign"]},
         "cottage_w": {"x0": 8, "y0": 11, "x1": 11, "y1": 12, "roof": "roof_thatch_y", "wall": "wall_log", "win": "win_square", "trim": "o", "shape": "gable", "porch": ["cc_woodpile"]},
-        "cottage_e": {"x0": 21, "y0": 11, "x1": 24, "y1": 12, "roof": "roof_turf", "wall": "wall_brick", "win": "win_shutter", "trim": "d", "shape": "arch", "porch": ["cc_barrel"]}
+        "cottage_e": {"x0": 21, "y0": 11, "x1": 24, "y1": 12, "roof": "roof_slate_b", "wall": "wall_brick", "win": "win_shutter", "trim": "d", "shape": "arch", "porch": ["cc_barrel"]}
       } },
       "addObjs": [
         {"kind": "prop", "id": "cc_lantern_sign", "x": 4, "y": 5, "sprite": "heal_lantern"},
