@@ -22,8 +22,10 @@ D871 is used: INTRO_CUTSCENE, Rook's entry tile (settled, recorded in the archiv
 
 D876-D891 are reserved: BRINEWICK v0.1 (design specs/BRINEWICK.md, one-pager calls B1-B14 = D876-D889, settled on their defaults Oct 28, 2026 and recorded in the archive; D890 and D891 stay open). Brinewick first took D859-D874 on its branch; PHONE_APPS (D859-D870), INTRO_CUTSCENE (D871) and LANTERN_COST (D875) claimed ids first, so every Brinewick id moved up by 17 before merging. Same calls, same order.
 
-Next free id is D892.
-Other packets hold ids through D891.
+D892-D902 are reserved by design packets (MODERN_HUD_CLEAR D892, KEEPER_RANKS D893, STORY_DECISIONS D894-D902). D903-D909 (MOVE_FX_3) are settled (Vincent, Oct 29, 2026) and recorded in the archive. D910 is reserved: CC_COTTAGE_ROOF v0.1 (design).
+
+Next free id is D911.
+Other packets hold ids through D910.
 
 ## Open
 

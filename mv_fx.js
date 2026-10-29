@@ -23,7 +23,49 @@ const MV_MOVE = {
 "brook_bop": {"tier":2,"verb":"skim","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":5,"r":3,"b":2,"col":["c","b"]}],"travel":[{"ms":[0,140],"at":"path","shape":"skim","n":6,"b":2,"col":["c","s","b"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["s","c"]},{"ms":[60,400],"at":"target","shape":"wave","n":7,"r":3,"b":2,"col":["c","b"]}],"look":"the user wells up, a brook rushes in along the ground, a splash, a wave rolls under the foe (its SPD drops)"},
 "seed_toss": {"tier":2,"verb":"lob","pose":{"lunge":6,"hop":2},"go":[{"ms":[0,240],"at":"user","shape":"orbit","n":3,"r":5,"turns":1,"b":2,"col":["l","g"]}],"travel":[{"ms":[0,140],"at":"path","shape":"comet","n":3,"arc":12,"b":2,"col":["y","l","g"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["y","g"]},{"ms":[60,400],"at":"target","shape":"pillar","n":4,"r":8,"b":2,"col":["g","l"]}],"look":"a seed lobbed high (a lob, so a comet), a seed pop, little sprouts push up"},
 "sap_sip": {"tier":2,"pose":{"lift":1},"status":[{"ms":[0,420],"at":"user","shape":"orbit","n":6,"r":7,"turns":1,"b":2,"col":["l"]},{"ms":[0,300],"at":"user","shape":"rise","n":4,"b":2,"col":["l","y"]}],"look":"lime sap circles the user, who lifts a pixel; sap motes rise (heal)"},
-"clover_swat": {"tier":2,"verb":"hop","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":4,"r":5,"turns":1,"b":2,"col":["l","g"]}],"travel":[{"ms":[0,140],"at":"path","shape":"hop","n":4,"arc":6,"turns":2,"b":2,"col":["g","l"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["l","g"]},{"ms":[40,300],"at":"target","shape":"slash","n":8,"r":7,"dir":"up","b":2,"col":["l","g"]},{"ms":[200,420],"at":"target","shape":"fall","n":6,"b":2,"col":["g","l","y"]}],"look":"clover bits gather, a leaf hops in, a flare, one clover cut, leaves fall (its ATK drops)"}
+"clover_swat": {"tier":2,"verb":"hop","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":4,"r":5,"turns":1,"b":2,"col":["l","g"]}],"travel":[{"ms":[0,140],"at":"path","shape":"hop","n":4,"arc":6,"turns":2,"b":2,"col":["g","l"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["l","g"]},{"ms":[40,300],"at":"target","shape":"slash","n":8,"r":7,"dir":"up","b":2,"col":["l","g"]},{"ms":[200,420],"at":"target","shape":"fall","n":6,"b":2,"col":["g","l","y"]}],"look":"clover bits gather, a leaf hops in, a flare, one clover cut, leaves fall (its ATK drops)"},
+// MOVE_FX_3 v0.1 (D903-D907): the five Answerers' 15 moves (the hum family; `hum` and `grow` keys are read by mvGrown) and the
+// other 17 signatures. Copied verbatim from MOVE_FX_3.md section 4.
+"tally_tick": {"tier":1,"verb":"blink","pose":{"lunge":7},"go":[{"ms":[0,300],"at":"user","shape":"tally","n":4,"r":4,"b":1,"col":["l","s"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":4,"arc":4,"b":2,"col":["l","p","l","y"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["l","s"]},{"ms":[40,320],"at":"target","shape":"tally","n":5,"r":4,"b":1,"col":["l","l","l","l","y"],"grow":"b"},{"ms":[200,420],"at":"target","shape":"fall","n":3,"b":2,"col":["p","n"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"its wings blink four ticks, a lime tick blinks across in steps, four tally strokes and a slash mark the foe, its guard drips away (DEF down)"},
+"head_count": {"tier":2,"pose":{"lift":1},"status":[{"ms":[0,220],"at":"user","shape":"orbit","n":8,"r":10,"turns":0.5,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"},{"ms":[40,300],"at":"target","shape":"tally","n":5,"r":5,"b":1,"col":["l","l","l","l","y"],"grow":"b"},{"ms":[160,420],"at":"target","shape":"fall","n":4,"b":2,"col":["p","n","l"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the hum ring turns round the bat, a full tally of five is marked on the foe, its guard drops away in two counts (DEF down 2)"},
+"census_dive": {"tier":2,"verb":"zigzag","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"pillar","n":4,"r":12,"b":2,"col":["s","l","s","y"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"zig","n":6,"b":2,"col":["y","s","l"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["y","s"]},{"ms":[40,300],"at":"target","shape":"tally","n":5,"r":5,"b":1,"col":["s","s","s","s","y"],"grow":"b"},{"ms":[140,400],"at":"target","shape":"crackle","n":6,"b":1,"col":["y","s"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the bat climbs a lit column, dives in on a jagged spark line, a counted tally is marked on the foe and sparks crackle round it"},
+"dim_glow": {"tier":1,"verb":"blink","pose":{"lunge":6},"go":[{"ms":[0,300],"at":"user","shape":"flare","r":7,"b":1,"col":["y","l"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":3,"arc":4,"b":2,"col":["y","l","l","h"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["l","y"]},{"ms":[60,320],"at":"target","shape":"rise","n":4,"b":1,"col":["l","y"]},{"ms":[200,420],"at":"user","shape":"orbit","n":4,"r":8,"turns":0.5,"b":1,"col":["l","s","l","s"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the lamp glows round its head then settles to the hum ring, a mote of lamplight blinks over, glow lifts off the foe and wraps the lamp (own DEF up)"},
+"dim_hours": {"tier":2,"pose":{"lift":1},"status":[{"ms":[0,220],"at":"user","shape":"orbit","n":8,"r":10,"turns":0.5,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"},{"ms":[40,380],"at":"target","shape":"fall","n":5,"b":2,"col":["l","h","d","n","d","n"],"grow":"n"},{"ms":[160,420],"at":"target","shape":"quake","n":4,"r":5,"b":1,"col":["n","d"]},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the hum ring turns round the lamp, light drains to dusk over the foe, slow dark rows settle at its feet (SPD down 2)"},
+"lights_out": {"tier":2,"verb":"blink","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"flare","r":7,"b":1,"col":["y","l"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":4,"arc":4,"b":2,"col":["l","h","d","n"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["y","l"]},{"ms":[40,260],"at":"target","shape":"slash","n":6,"r":7,"dir":"down","b":2,"col":["n","h"],"grow":"b"},{"ms":[160,420],"at":"target","shape":"fall","n":4,"b":2,"col":["d","h","n"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the lamp flares, its light blinks over and darkens at every step, a dark shutter cuts down the foe and dusk falls on it (SPD down)"},
+"file_peck": {"tier":1,"verb":"blink","pose":{"lunge":7},"go":[{"ms":[0,300],"at":"user","shape":"slash","n":3,"r":4,"dir":"up","b":2,"col":["h","h","y"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":3,"arc":4,"b":2,"col":["h","y","h"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["h","y"]},{"ms":[40,260],"at":"target","shape":"slash","n":4,"r":4,"dir":"down","b":2,"col":["y","h"],"grow":"n"},{"ms":[140,400],"at":"target","shape":"fall","n":3,"b":2,"col":["h","d","y"]},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"three file cards fan out by the crow, a card blinks over, a quick peck nicks the foe and torn card bits fall (ATK down)"},
+"stamp_out": {"tier":2,"verb":"blink","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"pillar","n":4,"r":10,"b":2,"col":["d","h","d","y"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":3,"arc":4,"b":2,"col":["d","h","d"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["y","h"]},{"ms":[90,320],"at":"target","shape":"quake","n":6,"r":7,"b":2,"col":["d","h"],"grow":"b"},{"ms":[200,420],"at":"user","shape":"orbit","n":4,"r":8,"turns":0.5,"b":2,"col":["h","y","h","y"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the crow lifts its stamp, blinks over, lands it in a yellow burst with a thud along the ground, then its cards circle it (own DEF up)"},
+"final_entry": {"tier":2,"verb":"blink","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"pillar","n":6,"r":12,"b":2,"col":["h","d","h","d","h","y"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":4,"arc":4,"b":2,"col":["y","h","h","d"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["y","h"]},{"ms":[40,280],"at":"target","shape":"slash","n":8,"r":8,"dir":"down","b":2,"col":["h","y"],"grow":"b"},{"ms":[160,400],"at":"target","shape":"fall","n":3,"b":2,"col":["d","h","y"]},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"a stack of cards grows on the crow, the last card blinks over, one long closing line is ruled through the foe and three cards fall into place"},
+"cord_nip": {"tier":1,"verb":"zigzag","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":5,"r":2,"b":1,"col":["m","s"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"zig","n":5,"b":1,"col":["s","y"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["y","s"]},{"ms":[60,300],"at":"target","shape":"crackle","n":4,"b":1,"col":["s","y"]},{"ms":[200,420],"at":"user","shape":"quake","n":4,"r":4,"b":1,"col":["s","l"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the cord ripples at the pup's feet, a spark runs the tether in a zigzag, a nip and a crackle, its paws spark (own SPD up)"},
+"cord_lash": {"tier":2,"verb":"zigzag","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"slash","n":5,"r":6,"dir":"up","b":1,"col":["m","m","s","s","y"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"zig","n":6,"b":2,"col":["s","y","m"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["y","s"]},{"ms":[40,280],"at":"target","shape":"slash","n":7,"r":8,"dir":"up","b":2,"col":["m","s","y"],"grow":"b"},{"ms":[160,400],"at":"target","shape":"crackle","n":4,"b":1,"col":["y","s"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the cord whips up behind the pup, sparks race the tether in a zigzag, one long lash cuts the foe and sparks crackle off it"},
+"grid_howl": {"tier":2,"verb":"blink","pose":{"lunge":7},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":6,"r":3,"b":2,"col":["n","m","s"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":4,"arc":4,"b":2,"col":["s","m","n","s"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["s","l"]},{"ms":[60,300],"at":"target","shape":"wave","n":6,"r":4,"b":2,"col":["s","m","n"],"grow":"n"},{"ms":[140,400],"at":"target","shape":"quake","n":6,"r":9,"b":1,"col":["l","s"]},{"ms":[240,420],"at":"user","shape":"quake","n":2,"r":3,"b":1,"col":["m","d"]},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"a howl swells at the pup's feet, blinks over, a wave rolls over the foe and grid lines spark along the ground; it plants its feet (own SPD down)"},
+"hum_flicker": {"tier":1,"verb":"zigzag","pose":{"lunge":6},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":4,"r":6,"turns":1,"b":1,"col":["s","p"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"zig","n":4,"b":1,"col":["s","y"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["s","y"]},{"ms":[60,300],"at":"target","shape":"ring","n":8,"r":[3,10],"b":1,"col":["s"]},{"ms":[120,360],"at":"target","shape":"crackle","n":4,"b":1,"col":["y","s"]},{"ms":[200,420],"at":"user","shape":"pillar","n":4,"r":8,"b":1,"col":["s","y","s","y"],"grow":"n"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"the wisp flickers and the hum ring gathers, a spark zigzags over, a thin hum ring spreads off the foe and the wisp brightens (own ATK up)"},
+"cradle_pulse": {"tier":2,"verb":"zigzag","pose":{"lunge":7},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":6,"r":8,"turns":0.5,"b":1,"col":["s","l","s","l","s","l"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":1,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"zig","n":6,"b":2,"col":["s","y","l"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["s","y"]},{"ms":[60,220],"at":"target","shape":"ring","n":8,"r":[3,9],"b":1,"col":["s"],"grow":"b"},{"ms":[200,360],"at":"target","shape":"ring","n":8,"r":[4,12],"b":1,"col":["l"],"grow":"b"},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"a cradle of light rocks round the wisp, a spark zigzags over, then slow hum rings spread off the foe one after another"},
+"deep_hum": {"tier":2,"verb":"blink","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":6,"r":3,"b":1,"col":["p","n"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":8,"r":10,"turns":0.5,"b":1,"col":["p","h","p","h","y","h","p","h"],"hum":"halo"}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":4,"arc":4,"b":2,"col":["s","p","s","y"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["p","y"]},{"ms":[60,220],"at":"target","shape":"ring","n":8,"r":[3,10],"b":1,"col":["p"],"grow":"b"},{"ms":[200,360],"at":"target","shape":"ring","n":8,"r":[4,13],"b":1,"col":["s"],"grow":"b"},{"ms":[200,400],"at":"target","shape":"quake","n":6,"r":9,"b":2,"col":["p","h"]},{"ms":[260,420],"at":"user","shape":"quake","n":2,"r":3,"b":1,"col":["n","d"]},{"ms":[300,420],"at":"target","shape":"ring","n":8,"r":[5,13],"b":1,"col":["p"],"hum":"answer"}],"look":"a low swell rolls under the wisp and the hum ring slows, the hum blinks over, deep rings spread off the foe and the ground hums under it; its own guard opens (own DEF down)"},
+"hilltop_huff": {"tier":1,"verb":"drop","pose":{"lunge":7},"go":[{"ms":[0,300],"at":"user","shape":"pillar","n":4,"r":8,"b":2,"col":["d","m","m","h"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":2,"r":4,"turns":1,"b":2,"col":["h","m"]}],"travel":[{"ms":[0,140],"at":"path","shape":"tumble","n":5,"arc":14,"b":2,"col":["h","m","h","m","d"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["h","m"]},{"ms":[60,320],"at":"target","shape":"wave","n":6,"r":3,"b":2,"col":["h","m","h"]},{"ms":[200,420],"at":"target","shape":"fall","n":6,"b":2,"col":["m","d","h"]}],"look":"a little hill heaps up under the user, it huffs a grey puff off the top that arcs high and drops, a flare, the puff rolls over the foe and dust settles on it (its ATK drops)"},
+"neon_zip": {"tier":1,"verb":"straight","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"rim","b":1,"col":["h"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":3,"r":6,"turns":3,"b":2,"col":["h","m"]}],"travel":[{"ms":[0,140],"at":"path","shape":"dash","n":6,"b":2,"col":["h","m","h","d"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["h","m"]},{"ms":[60,280],"at":"target","shape":"slash","n":8,"r":8,"dir":"down","b":2,"col":["h","m"]},{"ms":[240,420],"at":"target","shape":"streaks","n":2,"len":4,"b":1,"col":["h","m"]}],"look":"a sign-tube outline lights round the user and it buzzes, it zips in dead straight with a wake behind, a flare, one long zip line cuts through the foe, two after-lines slide off"},
+"chill_nibble": {"tier":1,"verb":"snap","pose":{"lunge":6},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":5,"r":7,"turns":0.5,"b":2,"col":["s","h"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":2,"r":5,"turns":1,"b":2,"col":["s","h"]}],"travel":[{"ms":[0,140],"at":"path","shape":"snap","n":5,"b":2,"col":["s","c","h"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["s","h"]},{"ms":[40,180],"at":"target","shape":"slash","n":4,"r":4,"dir":"down","b":2,"col":["s","c"]},{"ms":[160,300],"at":"target","shape":"slash","n":4,"r":4,"dir":"up","b":2,"col":["c","s"]},{"ms":[220,420],"at":"target","shape":"fall","n":6,"b":2,"col":["s","h","c"]}],"look":"first snow drifts round the user, it snaps forward over the ice in short steps, a cold flare, two tiny nibbles, frost flakes settle on the foe (its DEF drops)"},
+"puff_pirouette": {"tier":1,"verb":"spiral","pose":{"lunge":7},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":6,"r":7,"turns":2,"b":2,"col":["h","c"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":3,"r":6,"turns":3,"b":2,"col":["h","s"]}],"travel":[{"ms":[0,140],"at":"path","shape":"spiral","n":6,"arc":6,"turns":2,"b":2,"col":["h","c","s"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["h","c"]},{"ms":[90,300],"at":"target","shape":"streaks","n":2,"len":4,"b":1,"col":["h","c"]},{"ms":[200,420],"at":"user","shape":"orbit","n":4,"r":6,"turns":1,"b":2,"col":["c","s"]}],"look":"the cloud bird spins a pirouette in place, it spirals in on the storm wind, a puff flare, wind streaks push past the foe, then a loop of wind wraps the user (own SPD up)"},
+"mote_blink": {"tier":1,"verb":"blink","pose":{"lunge":7},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":5,"r":1,"b":2,"col":["n","p"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":2,"r":4,"turns":1,"b":2,"col":["h","p"]}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":6,"b":2,"col":["p","h","n"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["p","h"]},{"ms":[60,300],"at":"target","shape":"orbit","n":6,"r":8,"turns":0,"b":2,"col":["p","n"]},{"ms":[200,420],"at":"target","shape":"rise","n":5,"b":2,"col":["p","h"]}],"look":"shadow pools under the sleepy cat and two motes drift, it folds into its motes and opens beside the foe, a flare, a still eye-shaped ring of shadow, motes rise"},
+"pomme_bonk": {"tier":1,"verb":"hop","pose":{"lunge":8,"hop":2},"go":[{"ms":[0,300],"at":"user","shape":"quake","n":4,"r":6,"b":2,"col":["g","l"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":2,"r":6,"turns":1,"b":2,"col":["y","l"]}],"travel":[{"ms":[0,140],"at":"path","shape":"hop","n":4,"arc":12,"turns":1,"b":2,"col":["y","l","g"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["y","l"]},{"ms":[90,240],"at":"target","shape":"ring","r":[3,10],"n":8,"b":2,"col":["l"]},{"ms":[180,400],"at":"target","shape":"fall","n":4,"b":2,"col":["g","l"]},{"ms":[220,420],"at":"user","shape":"orbit","n":6,"r":6,"turns":0,"b":2,"col":["g","l"]}],"look":"a fallen-fruit thud under the user, one big apple bounce in, a flare, a round bonk ring, leaves drop, then a shell rim closes round the user (own DEF up)"},
+"loam_tunnel": {"tier":1,"verb":"hop","pose":{"lunge":6},"go":[{"ms":[0,300],"at":"user","shape":"quake","n":6,"r":6,"b":2,"col":["g","l"]},{"ms":[300,1600],"at":"user","shape":"wave","n":3,"r":1,"b":2,"col":["g","l"]}],"travel":[{"ms":[0,140],"at":"path","shape":"hop","n":5,"arc":-3,"turns":3,"b":2,"col":["g","l","g"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["l","g"]},{"ms":[40,320],"at":"target","shape":"pillar","n":6,"r":14,"b":2,"col":["g","g","l","l","y","y"]},{"ms":[220,420],"at":"target","shape":"quake","n":6,"r":8,"b":2,"col":["g","l"]}],"look":"the mole digs in and a ridge of earth creeps toward the foe, it bumps along under the ground, a flare, the tunnel bursts up under the foe with a sprout on top, the ground cracks"},
+"clink_pinch": {"tier":1,"verb":"skim","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":4,"r":2,"b":2,"col":["c","s"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":3,"r":6,"turns":1,"b":2,"col":["s","c","b"]}],"travel":[{"ms":[0,140],"at":"path","shape":"skim","n":6,"b":2,"col":["c","s","b"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["s","c"]},{"ms":[50,200],"at":"target","shape":"slash","n":4,"r":6,"dir":"up","b":2,"col":["c","s"]},{"ms":[50,200],"at":"target","shape":"slash","n":4,"r":6,"dir":"down","b":2,"col":["s","c"]},{"ms":[180,420],"at":"target","shape":"fall","n":5,"b":2,"col":["s","c","b"]}],"look":"a tidepool laps and three bits of beach glass circle the crab, it skims in low, a splash flare, two claws cross in one pinch, glass bits fall off the foe (its DEF drops)"},
+"wick_flutter": {"tier":1,"verb":"spiral","pose":{"lunge":6},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":4,"r":4,"turns":2,"b":2,"col":["h","c"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":2,"r":7,"turns":2,"b":2,"col":["h","s"]}],"travel":[{"ms":[0,140],"at":"path","shape":"spiral","n":5,"arc":8,"turns":3,"b":2,"col":["h","s","c"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["h","s"]},{"ms":[60,300],"at":"target","shape":"orbit","n":6,"r":7,"turns":1,"b":2,"col":["h","c"]},{"ms":[200,420],"at":"target","shape":"fall","n":6,"b":2,"col":["h","s"]}],"look":"wings flutter in tight loops, it circles in like a moth to a lamp, a soft flare, it loops the foe once, wing fuzz drifts down on the foe (its ATK drops)"},
+"vane_spin": {"tier":1,"verb":"spiral","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":4,"r":7,"turns":1,"b":2,"col":["h","c"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":4,"r":5,"turns":4,"b":2,"col":["h","s"]}],"travel":[{"ms":[0,140],"at":"path","shape":"spiral","n":6,"arc":5,"turns":2,"b":2,"col":["c","h","s"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["h","c"]},{"ms":[60,260],"at":"target","shape":"orbit","n":4,"r":9,"turns":1.5,"b":2,"col":["c","h"]},{"ms":[200,420],"at":"target","shape":"streaks","n":2,"len":4,"b":1,"col":["h","c"]}],"look":"four vane points turn round the chick and keep spinning, it spirals in, a flare, the four points whirl round the foe, two wind streaks blow past"},
+"doze_drift": {"tier":1,"verb":"blink","pose":{"lunge":6},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":5,"r":6,"turns":0.5,"b":2,"col":["h","p"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":3,"r":6,"turns":0.5,"b":2,"col":["h","n"]}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":5,"b":2,"col":["h","p","n"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["h","p"]},{"ms":[60,360],"at":"target","shape":"wave","n":6,"r":2,"b":2,"col":["n","p"]},{"ms":[200,420],"at":"target","shape":"fall","n":5,"b":2,"col":["h","p"]}],"look":"a dim glow circles the dormouse very slowly, it fades out and fades in beside the foe, a soft flare, a slow dusk ripple rolls under the foe, glow motes drift down on it (its SPD drops)"},
+"ping_pulse": {"tier":1,"verb":"straight","pose":{"lunge":6},"go":[{"ms":[0,300],"at":"user","shape":"rim","b":1,"col":["h"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":2,"r":6,"turns":2,"b":2,"col":["h","m"]}],"travel":[{"ms":[0,140],"at":"path","shape":"dash","n":5,"b":2,"col":["h","m","d"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["h","m"]},{"ms":[90,220],"at":"target","shape":"ring","r":[3,10],"n":8,"b":1,"col":["h"]},{"ms":[180,360],"at":"target","shape":"ring","r":[3,12],"n":8,"b":1,"col":["m"]}],"look":"a scan ring round the little computer, a blip circles it, a ping darts in dead straight, a flare, two ping rings spread from the foe one after the other"},
+"seed_fetch": {"tier":1,"verb":"hop","pose":{"lunge":7,"hop":1},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":4,"r":6,"turns":1,"b":2,"col":["y","l"]},{"ms":[300,1600],"at":"user","shape":"quake","n":2,"r":3,"b":2,"col":["g","l"]}],"travel":[{"ms":[0,140],"at":"path","shape":"hop","n":5,"arc":7,"turns":3,"b":2,"col":["y","l","g"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["y","l"]},{"ms":[60,240],"at":"target","shape":"rise","n":4,"b":2,"col":["y","l"]},{"ms":[200,420],"at":"user","shape":"pillar","n":5,"r":10,"b":2,"col":["g","l","l","y","y"]}],"look":"sunny seeds circle the pup and it paws the ground, three quick bounds in, a flare, seeds pop off the foe, a sprout comes up at the pup's feet (heals)"},
+"basking_lash": {"tier":1,"verb":"flicker","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":5,"r":8,"turns":0.25,"b":2,"col":["y","o"]},{"ms":[300,1600],"at":"user","shape":"wave","n":3,"r":1,"b":2,"col":["o","r"]}],"travel":[{"ms":[0,140],"at":"path","shape":"flicker","n":5,"arc":2,"b":2,"col":["o","y","r"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["y","o"]},{"ms":[40,260],"at":"target","shape":"slash","n":7,"r":8,"dir":"down","b":2,"col":["o","r"]},{"ms":[220,420],"at":"user","shape":"pillar","n":5,"r":12,"b":2,"col":["r","o","o","y","y"]}],"look":"sun warmth spreads round the skink and heat shimmers at its feet, a low tail flick, a hot flare, one tail lash across the foe, warmth climbs the user (own ATK up)"},
+"spray_slide": {"tier":1,"verb":"snap","pose":{"lunge":8},"go":[{"ms":[0,300],"at":"user","shape":"wave","n":5,"r":2,"b":2,"col":["s","c"]},{"ms":[300,1600],"at":"user","shape":"quake","n":2,"r":4,"b":2,"col":["s","h"]}],"travel":[{"ms":[0,140],"at":"path","shape":"snap","n":6,"b":2,"col":["s","c","h"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["s","c"]},{"ms":[60,360],"at":"target","shape":"wave","n":7,"r":4,"b":2,"col":["s","c","b"]},{"ms":[220,420],"at":"target","shape":"speck","n":6,"b":2,"col":["h"]}],"look":"spray kicks up and an ice slick spreads under the otter, it slides in snap by snap leaving ice, a cold flare, a crest of icy spray breaks over the foe, frost hangs"},
+"hush_glide": {"tier":1,"verb":"blink","pose":{"lunge":7},"go":[{"ms":[0,300],"at":"user","shape":"orbit","n":6,"r":9,"turns":0,"b":2,"col":["p","n"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":2,"r":9,"turns":0.5,"b":2,"col":["h","p"]}],"travel":[{"ms":[0,140],"at":"path","shape":"blink","n":6,"b":2,"col":["p","h","n"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":4,"b":3,"col":["p","h"]},{"ms":[40,260],"at":"target","shape":"slash","n":7,"r":8,"dir":"up","b":2,"col":["p","n"]},{"ms":[220,420],"at":"user","shape":"orbit","n":4,"r":8,"turns":1,"b":2,"col":["h","p"]}],"look":"the owl spreads its wings wide and still, it glides out of sight and back beside the foe, a soft flare, one silent wing sweep, air lifts round the user (own SPD up)"},
+"lichen_lob": {"tier":1,"verb":"lob","pose":{"lunge":6,"hop":2},"go":[{"ms":[0,300],"at":"user","shape":"pillar","n":4,"r":6,"b":2,"col":["d","m","h","h"]},{"ms":[300,1600],"at":"user","shape":"orbit","n":3,"r":5,"turns":1,"b":2,"col":["m","h"]}],"travel":[{"ms":[0,140],"at":"path","shape":"comet","n":5,"arc":14,"b":2,"col":["h","m","d"]}],"hit":[{"ms":[0,90],"at":"target","shape":"flare","r":5,"b":3,"col":["h","m"]},{"ms":[60,300],"at":"target","shape":"dust","r":10,"b":2,"col":["m","d"]},{"ms":[180,420],"at":"target","shape":"speck","n":7,"b":2,"col":["h"]}],"look":"the snail hunches its mossy shell up and crumbs circle it, it lobs a lump high (a lob, so a comet), a flare, a dust wave, lichen crumbs cling to the foe"}
+};
+// MOVE_FX_3 (D906): an Echo flourish, one 240 ms beat when an Echo line shows, keyed by species id. FULL only; at most 8 rects a frame.
+const MV_ECHO = {
+"tallybat": [{"ms":[0,140],"at":"user","shape":"hum","n":6,"r":[8,11],"b":1,"col":["p","h"]},{"ms":[80,240],"at":"user","shape":"tally","n":2,"r":2,"arc":15,"b":1,"col":["h","y"]}],
+"dimlamp": [{"ms":[0,160],"at":"path","rev":1,"shape":"comet","n":6,"arc":4,"b":1,"col":["y","o","y","p","h","p"]},{"ms":[160,240],"at":"user","shape":"hum","n":6,"r":[5,10],"b":1,"col":["p","h"]}],
+"filecrow": [{"ms":[0,120],"at":"user","shape":"hum","n":5,"r":[10,10],"b":1,"col":["h","p"]},{"ms":[40,240],"at":"user","shape":"card","n":2,"b":1,"col":["h","y","m"]}],
+"cordhound": [{"ms":[0,80],"at":"user","shape":"hum","n":6,"r":[8,10],"b":1,"col":["p","h"]},{"ms":[80,240],"at":"user","shape":"cord","n":4,"b":1,"col":["p","h","y","o"]}],
+"humwisp": [{"ms":[0,240],"at":"target","shape":"hum","n":8,"r":[13,7],"sq":0.5,"dy":3,"b":1,"col":["h","p"]}]
 };
 const MV_DIRS8 = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]], MV_DIRS4 = [[1,0],[-1,0],[0,1],[0,-1]], MV_DIRSX = [[1,1],[-1,1],[1,-1],[-1,-1]];
 const MV_PLUS = [[0,0],[-1,0],[1,0],[0,-1],[0,1]];
@@ -142,56 +184,63 @@ function mvShape(seg, k, t_ms, S, T, put) {
   } else if (sh === 'zig') {
     const steps = 8, m = Math.floor(k * steps + 0.999);
     for (let j = 0; j <= steps; j++) { MV_PTS[j][0] = mvLerp(S[0], T[0], j / steps); MV_PTS[j][1] = mvLerp(S[1], T[1], j / steps) + ((j % 2) ? 3 : -3) * ((j > 0 && j < steps) ? 1 : 0); }
-    for (let j = 0; j < m; j++) {
+    if (seg.n) {   // MOVE_FX_3 (D907): with n, a (b+1) head and n-1 trail blocks run along the same polyline (n rects, not up to 48); main's rows have no n
+      for (let i = 0; i < seg.n; i++) {
+        const u = k - i * 0.06; if (u <= 0 || u > 1) continue;
+        const s8 = Math.min(7, Math.floor(u * 8)), f = u * 8 - s8, c = C[(i + Math.floor(t_ms / MV_BLINK)) % C.length];
+        const x = mvLerp(MV_PTS[s8][0], MV_PTS[s8 + 1][0], f), y = mvLerp(MV_PTS[s8][1], MV_PTS[s8 + 1][1], f);
+        if (i === 0) px(x - B, y - B, c, B + 1, B + 1); else px(x - (B - 1) / 2, y - (B - 1) / 2, c, B, B);
+      }
+    } else for (let j = 0; j < m; j++) {
       const x0 = MV_PTS[j][0], y0 = MV_PTS[j][1], x1 = MV_PTS[j + 1][0], y1 = MV_PTS[j + 1][1];
       for (let q = 0; q < 6; q++) px(mvLerp(x0, x1, q / 5), mvLerp(y0, y1, q / 5), C[(j + Math.floor(t_ms / MV_BLINK)) % C.length]);
     }
   } else if (sh === 'drop') {
     for (let i = 0; i < n; i++) {
       const ki = Math.max(0, Math.min(1, k * 1.4 - i * 0.2));
-      if (ki > 0 && ki < 1) px(T[0] - 5 + i * 5, mvLerp(T[1] - 18, T[1] - 4, ki * ki), C[i % C.length], 2, 2);
+      if (ki > 0 && ki < 1) px(P[0] - 5 + i * 5, mvLerp(P[1] - 18, P[1] - 4, ki * ki), C[i % C.length], 2, 2);   // MOVE_FX_3 (D908): at P
     }
   } else if (sh === 'burst' || sh === 'star' || sh === 'cross') {
     const L = sh === 'burst' ? Math.max(1, Math.round(r * (1 - (1 - k) * (1 - k)))) : Math.max(1, Math.round(r * (1 - Math.abs(2 * k - 1)) + 1));
     const dirs = sh === 'burst' ? MV_DIRS8 : sh === 'star' ? MV_DIRS4 : MV_DIRSX;   // MOVE_FX_2: no array made per frame
     for (let d = 0; d < dirs.length; d++) {
       const dx = dirs[d][0], dy = dirs[d][1];
-      for (let q = (sh === 'burst' ? 1 : 0); q <= L; q++) px(T[0] + dx * q - ((B - 1) / 2), T[1] + dy * q - ((B - 1) / 2), C[(q + d) % C.length], B, B);
+      for (let q = (sh === 'burst' ? 1 : 0); q <= L; q++) px(P[0] + dx * q - ((B - 1) / 2), P[1] + dy * q - ((B - 1) / 2), C[(q + d) % C.length], B, B);
     }
-    if (sh === 'star') px(T[0] - 1 - (B - 1), T[1] - 1 - (B - 1), C[0], 3 + 2 * (B - 1), 3 + 2 * (B - 1));
+    if (sh === 'star') px(P[0] - 1 - (B - 1), P[1] - 1 - (B - 1), C[0], 3 + 2 * (B - 1), 3 + 2 * (B - 1));
   } else if (sh === 'ring') {
     const rr0 = Array.isArray(r) ? r[0] : r, rr1 = Array.isArray(r) ? r[1] : r, rr = mvLerp(rr0, rr1, k);
     const rn = seg.n || 16 * B;   // MOVE_FX_2 (D827): a bespoke hit's super ring is 8 blocks of 2 px (8 slots, not 16)
-    for (let i = 0; i < rn; i++) { const a = i * 2 * Math.PI / rn; px(T[0] + Math.cos(a) * rr, T[1] + Math.sin(a) * rr, C[0], B, B); }
+    for (let i = 0; i < rn; i++) { const a = i * 2 * Math.PI / rn; px(P[0] + Math.cos(a) * rr, P[1] + Math.sin(a) * rr, C[0], B, B); }
   } else if (sh === 'crescent') {
     const m = Math.max(1, Math.floor(14 * Math.min(1, k * 1.5)));
-    for (let i = 0; i < m; i++) { const a = Math.PI * 0.6 + i * Math.PI * 1.1 / 13; px(T[0] + Math.cos(a) * r, T[1] + Math.sin(a) * r, C[i % C.length], B, B); }
-    for (let i = 0; i < m; i += 3) { const a = Math.PI * 0.6 + i * Math.PI * 1.1 / 13; px(T[0] + Math.cos(a) * (r - 1), T[1] + Math.sin(a) * (r - 1), C[C.length - 1]); }
+    for (let i = 0; i < m; i++) { const a = Math.PI * 0.6 + i * Math.PI * 1.1 / 13; px(P[0] + Math.cos(a) * r, P[1] + Math.sin(a) * r, C[i % C.length], B, B); }
+    for (let i = 0; i < m; i += 3) { const a = Math.PI * 0.6 + i * Math.PI * 1.1 / 13; px(P[0] + Math.cos(a) * (r - 1), P[1] + Math.sin(a) * (r - 1), C[C.length - 1]); }
   } else if (sh === 'rise' || sh === 'fall') {
     const seeded = MV_SEED[MV_ROT[mvVar][0]];   // MOVE_FX_2 (D826): variation 0 is main's seed
     for (let i = 0; i < n; i++) {
       const dx = seeded[i][0];
       const ki = Math.max(0, Math.min(1, k * 1.3 - i * 0.1));
       if (ki > 0 && ki < 1) {
-        const y = sh === 'rise' ? mvLerp(T[1] + 4, T[1] - 10 - 4 * (B - 1), ki) : mvLerp(T[1] - 10 - 4 * (B - 1), T[1] + 6, ki);
-        px(T[0] + dx * (1 + (B - 1) * 0.5), y, C[i % C.length], B, B);
+        const y = sh === 'rise' ? mvLerp(P[1] + 4, P[1] - 10 - 4 * (B - 1), ki) : mvLerp(P[1] - 10 - 4 * (B - 1), P[1] + 6, ki);
+        px(P[0] + dx * (1 + (B - 1) * 0.5), y, C[i % C.length], B, B);
       }
     }
   } else if (sh === 'dust') {
     for (let i = 0; i < 6; i++) {
       const d = (i % 2 ? 1 : -1) * (2 + r * k * (0.6 + 0.2 * Math.floor(i / 2)));
-      px(T[0] + d, T[1] + 8 - Math.floor(i / 2) * B, C[i % C.length], 2 * B, B);
+      px(P[0] + d, P[1] + 8 - Math.floor(i / 2) * B, C[i % C.length], 2 * B, B);
     }
   } else if (sh === 'speck') {
     const seeded = MV_SEED[MV_ROT[mvVar][1]];
-    for (let i = 0; i < n; i++) if ((Math.floor(t_ms / MV_BLINK) + i) % 3) px(T[0] + seeded[i][0] * (1 + (B - 1) * 0.5), T[1] + seeded[i][1], C[0], B, B);
+    for (let i = 0; i < n; i++) if ((Math.floor(t_ms / MV_BLINK) + i) % 3) px(P[0] + seeded[i][0] * (1 + (B - 1) * 0.5), P[1] + seeded[i][1], C[0], B, B);
   } else if (sh === 'crackle') {
     const seeded = MV_SEED[MV_ROT[mvVar][2]];
-    for (let i = 0; i < n; i++) if ((Math.floor(t_ms / MV_BLINK) + i) % 2) px(T[0] + seeded[i][0] * (1 + (B - 1) * 0.5), T[1] + seeded[i][1], C[i % C.length], 2 * B, B);
+    for (let i = 0; i < n; i++) if ((Math.floor(t_ms / MV_BLINK) + i) % 2) px(P[0] + seeded[i][0] * (1 + (B - 1) * 0.5), P[1] + seeded[i][1], C[i % C.length], 2 * B, B);
   } else if (sh === 'streaks') {
     const ln = seg.len || 5;
     for (let i = 0; i < n; i++) {
-      const x = mvLerp(T[0] - 10 - ln, T[0] + 6, k) + i * 2, y = T[1] - 4 * Math.floor(n / 2) + i * 4;
+      const x = mvLerp(P[0] - 10 - ln, P[0] + 6, k) + i * 2, y = P[1] - 4 * Math.floor(n / 2) + i * 4;
       for (let q = 0; q < ln; q++) px(x + q, y, C[i % C.length], 1, B);
     }
   } else if (sh === 'comet') {   // MOVE_FX_2 (D826): lobs only. A (b+1) head and n-1 bxb tail blocks S to T on an arc; n <= 8
@@ -244,11 +293,67 @@ function mvShape(seg, k, t_ms, S, T, put) {
   } else if (sh === 'quake') {   // n 2xb cracks on the ground row, spreading r px each way; rows swap once per 170 ms (flash budget); n <= 8
     const sp = Math.min(1, k * 2), j = Math.floor((t_ms - seg.ms[0]) / MV_BLINK), half = Math.ceil(n / 2);
     for (let i = 0; i < n; i++) { const d = (i % 2 ? 1 : -1) * (1 + r * sp * (Math.floor(i / 2) + 1) / half); px(P[0] + d - 1, P[1] + 9 - ((j + i) % 2) * B, C[i % C.length], 2, B); }
+  } else if (sh === 'tumble') {  // MOVE_FX_3 (D907) STONE drop: a (b+1) rock on a steep-drop arc (peak at about 37% of the path), a 1 px notch walking its corners, n-2 trail blocks; n <= 8
+    const lift = arc * (1 + 0.25 * (mvVar - 1));
+    for (let i = 0; i < n; i++) {
+      if (i === 1) continue;
+      const ki = i === 0 ? k : k - (i - 1) * 0.07; if (ki <= 0 || ki > 1) continue;
+      const x = mvLerp(S[0], T[0], ki), y = mvLerp(S[1], T[1], ki) - lift * Math.sin(Math.PI * Math.pow(ki, 0.7));
+      if (i === 0) {
+        px(x - B, y - B, C[0], B + 1, B + 1);
+        const c = Math.floor(k * 8) % 4;   // the notch steps a corner per 1/8 of the flight: the rock turns twice
+        if (n > 1) px(x - B + (c === 1 || c === 2 ? B : 0), y - B + (c >= 2 ? B : 0), C[1 % C.length]);
+      } else px(x - (B - 1) / 2, y - (B - 1) / 2, C[i % C.length], B, B);
+    }
+  } else if (sh === 'spiral') {  // MOVE_FX_3 (D907) GUST spiral: a (b+1) head circles the S to T line seg.turns times (default 2) on a radius that closes to 0 on T; n <= 8
+    const tu = seg.turns == null ? 2 : seg.turns, dr = T[0] >= S[0] ? 1 : -1, R0 = arc * (1 + 0.25 * (mvVar - 1));
+    for (let i = 0; i < n; i++) {
+      const ki = k - i * 0.06; if (ki <= 0 || ki > 1) continue;
+      const a = dr * 2 * Math.PI * tu * ki, R = R0 * (1 - ki);
+      const x = mvLerp(S[0], T[0], ki) + Math.cos(a) * R, y = mvLerp(S[1], T[1], ki) + Math.sin(a) * R * 0.6;
+      if (i === 0) px(x - B, y - B, C[0], B + 1, B + 1); else px(x - (B - 1) / 2, y - (B - 1) / 2, C[i % C.length], B, B);
+    }
+  } else if (sh === 'blink') {   // MOVE_FX_3 (D907) SHADE blink: no path. Before 45% the head sits on S with n-1 motes closing in; 45-55% nothing; then the same on T; n <= 8
+    if (k < 0.45 || k >= 0.55) {
+      const Q = k < 0.45 ? S : T, f = k < 0.45 ? k / 0.45 : (k - 0.55) / 0.45, rr = 1 + 6 * (1 - f), m = n - 1;
+      px(Q[0] - B, Q[1] - B, C[0], B + 1, B + 1);
+      for (let i = 0; i < m; i++) { const a = 2 * Math.PI * (i / Math.max(1, m) + mvVar / (3 * Math.max(1, m))); px(Q[0] + Math.cos(a) * rr - (B - 1) / 2, Q[1] + Math.sin(a) * rr * 0.6 - (B - 1) / 2, C[(i + 1) % C.length], B, B); }
+    }
+  } else if (sh === 'snap') {    // MOVE_FX_3 (D907) FROST snap: the (b+1) head jumps S to T in n-1 equal steps, leaving a 3x1 or 1x3 shard at every step it left; n <= 8
+    const steps = Math.max(1, n - 1), j = Math.min(steps, Math.ceil(k * steps)), lift = arc * (1 + 0.25 * (mvVar - 1));
+    const h = mvSnapAt(S, T, j / steps, lift, MV_PTS[0]); px(h[0] - B, h[1] - B, C[0], B + 1, B + 1);
+    for (let i = 0; i < j; i++) { const q = mvSnapAt(S, T, i / steps, lift, MV_PTS[1]); if (i % 2) px(q[0], q[1] - 1, C[(i + 1) % C.length], 1, 3); else px(q[0] - 1, q[1], C[(i + 1) % C.length], 3, 1); }
+  } else if (sh === 'dash') {    // MOVE_FX_3 (D907) PLAIN straight: a (b+1) head dead straight S to T; n-1 wake blocks in a V behind it, none behind S; n <= 8
+    const dx = T[0] - S[0], dy = T[1] - S[1], L = Math.max(1, Math.hypot(dx, dy)), ux = dx / L, uy = dy / L, x = mvLerp(S[0], T[0], k), y = mvLerp(S[1], T[1], k);
+    px(x - B, y - B, C[0], B + 1, B + 1);
+    for (let i = 1; i < n; i++) {
+      const back = 2 + 3 * i; if (back > k * L) break;
+      const side = (i % 2 ? 1 : -1) * (1 + Math.floor(i / 2));
+      px(x - ux * back - uy * side - (B - 1) / 2, y - uy * back + ux * side - (B - 1) / 2, C[i % C.length], B, B);
+    }
+  } else if (sh === 'tally') {   // MOVE_FX_3 (D904) census marks over P: up to 4 strokes (b x 2r, b+2 px apart) pop in and stay; n 5 adds a 3-step slash; lifted arc px; at most 7 rects
+    const sp = B + 2, x0 = Math.round(P[0] - (3 * sp + B) / 2), yc = P[1] - arc, m = Math.min(n, 4);
+    for (let i = 0; i < m; i++) if (k >= i * 0.16) px(x0 + i * sp, yc - r, C[i % C.length], B, 2 * r);
+    if (n >= 5 && k >= 0.66) { const w = Math.ceil((3 * sp + B + 4) / 3), dy = Math.round(r / 2); for (let q = 0; q < 3; q++) px(x0 - 2 + q * w, yc + dy - q * dy - (B > 1 ? 1 : 0), C[C.length - 1], w, B); }
+  } else if (sh === 'hum') {     // MOVE_FX_3 (D906) the hum: n 1 px dots on a ring round P (r[0] to r[1]); dot floor(k*n) is y, so one pulse runs round once; sq flattens it, dy lowers it; n <= 8
+    const r0 = Array.isArray(r) ? r[0] : r, r1 = Array.isArray(r) ? r[1] : r, rr = mvLerp(r0, r1, k), ry = rr * (1 - (seg.sq || 0) * k), cy = P[1] - 2 + (seg.dy || 0) * k, hot = Math.floor(k * n) % n;
+    for (let i = 0; i < n; i++) { const a = 2 * Math.PI * i / n - Math.PI / 2; px(P[0] + Math.cos(a) * rr, cy + Math.sin(a) * ry, i === hot ? 'y' : C[i % C.length], B, B); }
+  } else if (sh === 'card') {    // MOVE_FX_3 (D906, Filed Away): a 3x5 card (C[0]) with a 1x5 edge (C[1]) toward the other unit slides out in front of P; n 2 adds a filed card (C[2]) behind; n + 1 rects
+    const dr = T[0] >= S[0] ? 1 : -1, x = P[0] + dr * (6 + Math.round(3 * Math.min(1, k / 0.25))), fx = dr > 0 ? x : x - 2, y = P[1] - 4;
+    if (n > 1) px(fx - dr, y - 1, C[2 % C.length], 3, 5);
+    px(fx, y, C[0], 3, 5); px(x + dr * 3, y, C[1 % C.length], 1, 5);
+  } else if (sh === 'cord') {    // MOVE_FX_3 (D906, Live Wire): n 2x1 cord links from under P toward the other unit on the ground line; a 2x2 spark (C[2]) runs out along it, a 1x1 (C[3]) behind; n + 2 rects, n <= 6
+    const dr = T[0] >= S[0] ? 1 : -1, x0 = P[0] + 2 * dr - (dr < 0 ? 1 : 0), q = k * (n - 1);
+    for (let j = 0; j < n; j++) px(x0 + dr * 3 * j, P[1] + 9 - Math.round(2 * Math.sin(Math.PI * (j + 0.5) / n)), C[j % 2], 2, 1);
+    if (q >= 0.6) px(x0 + dr * 3 * (q - 0.6) + (dr < 0 ? 1 : 0), P[1] + 8 - Math.round(2 * Math.sin(Math.PI * (q - 0.1) / n)), C[3 % C.length], 1, 1);
+    px(x0 + dr * 3 * q, P[1] + 8 - Math.round(2 * Math.sin(Math.PI * (q + 0.5) / n)), C[2 % C.length], 2, 2);
   } else if (sh === 'sparkle') { // b 1 is main's 5-pixel plus; the D829 signature beat draws it in 2 px blocks
     const x = S[0], y = S[1] - 13;
     for (let q = 0; q < 5; q++) px(x + MV_PLUS[q][0] * B - (B - 1) / 2, y + MV_PLUS[q][1] * B - (B - 1) / 2, C[0], B, B);
   }
 }
+// MOVE_FX_3 (D907): a point on the snap path, written into o (no per-frame allocation).
+function mvSnapAt(S, T, f, lift, o) { o[0] = mvLerp(S[0], T[0], f); o[1] = mvLerp(S[1], T[1], f) - lift * Math.sin(Math.PI * f); return o; }
 function mvSegK(seg, t) {
   const a = seg.ms[0], b = seg.ms[1];
   if (t < a || t >= b) return -1;
@@ -311,14 +416,43 @@ function mvNumDraw(g, W, H, vis, centres, t) {
 function mvPoolCount() { return mvPoolN; }
 function mvPunchType(type) { return MV_PUNCH.types[type] || MV_PUNCH.types.PLAIN; }
 // MOVE_FX_2 (D831): a bespoke row wins over the type row. The merged row is made once per id and kept (no per-frame allocation).
-function mvMoveRow(mid) { return (mid && Object.prototype.hasOwnProperty.call(MV_MOVE, mid)) ? MV_MOVE[mid] : null; }
-function mvAnim(type, mid) {
-  const base = MV_ANIM[type] || MV_ANIM.PLAIN, row = mvMoveRow(mid);
+// MOVE_FX_3 (D905): st is the user's Answerer tier (0 Quiet, 1 Humming, 2 Answering; 0 for every other Walkling).
+function mvMoveRow(mid, st) { const row = (mid && Object.prototype.hasOwnProperty.call(MV_MOVE, mid)) ? MV_MOVE[mid] : null; return row && st ? mvGrown(row, st) : row; }
+// MOVE_FX_3 (D905): the hum grows with the tier. Stage 1: the halo gets a second y bead and `grow: n` segments 2 more pieces (max 8).
+// Stage 2: four y beads, `grow: b` segments 1 px thicker (max 3), and every answer ring a y echo 60 ms behind. Made once per row and tier.
+const MV_HALO = [null, ['y', 'h', 'p', 'h', 'y', 'h', 'p', 'h'], ['y', 'h', 'y', 'h', 'y', 'h', 'y', 'h']];
+function mvGrown(row, st) {
+  const s2 = Math.max(0, Math.min(2, st | 0));
+  if (!s2) return row;
+  if (!row.grown) row.grown = [row, null, null];
+  if (row.grown[s2]) return row.grown[s2];
+  const seg = (s) => {
+    const o = Object.assign({}, s), g = s.grow || '';
+    if (s.hum === 'halo') o.col = MV_HALO[s2];
+    if (g.indexOf('n') >= 0) o.n = Math.min(8, (s.n || 3) + 2);
+    if (s2 >= 2 && g.indexOf('b') >= 0) o.b = Math.min(3, (s.b || 1) + 1);
+    return o;
+  };
+  const part = (list) => {
+    if (!list) return list;
+    const out = [];
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i]; out.push(seg(s));
+      if (s2 >= 2 && s.hum === 'answer') out.push({ ms: [s.ms[0] + 60, s.ms[1]], at: s.at, shape: 'ring', n: 8, b: 1, col: ['y'], r: [Math.round(s.r[0] * 0.6), Math.round(s.r[1] * 0.6)] });
+    }
+    return out;
+  };
+  const g = Object.assign({}, row, { go: part(row.go), travel: part(row.travel), hit: part(row.hit), status: part(row.status), anim: null, grown: null });
+  row.grown[s2] = g;
+  return g;
+}
+function mvAnim(type, mid, st) {
+  const base = MV_ANIM[type] || MV_ANIM.PLAIN, row = mvMoveRow(mid, st);
   if (!row) return base;
   if (!row.anim) row.anim = Object.assign({}, base, row.go ? { go: row.go } : {});
   return row.anim;
 }
-function mvHitRows(type, mid) { const row = mvMoveRow(mid); return (row && row.hit) || mvPunchType(type).hit_v2 || []; }
+function mvHitRows(type, mid, st) { const row = mvMoveRow(mid, st); return (row && row.hit) || mvPunchType(type).hit_v2 || []; }
 // D831: the pose, clamped to the MOVES_V2 caps: lunge 6-8 px (main 6), a hop of at most 2 px, a status lift of at most 1 px.
 function mvPose(mid) {
   const p = (mvMoveRow(mid) || {}).pose || {};
@@ -327,6 +461,18 @@ function mvPose(mid) {
 // D827: one move draws at a time. A new GO or wind-up ends every GO, travel and HIT still drawing, so moves never stack in the pool.
 function mvYield(fx) { for (let i = 0; i < fx.length; i++) { const e = fx[i]; if (e.kind === 'mvGo' || e.kind === 'mvHit' || e.kind === 'mvTravel') e.dur = 0; } }
 function mvLight(type) { return MV_LIGHT[type] || 'w'; }
+// MOVE_FX_3 (D906): draw one Echo flourish. U is the Echo owner's centre, O the other unit's. A 'path' row runs U to O, or O to U with rev.
+function mvEchoDraw(e, age, U, O, put) {
+  const segs = MV_ECHO[e.sp];
+  if (!segs || age < 0 || age >= e.dur) return;
+  mvShadowSet(true); mvVarSet(0);
+  for (let s = 0; s < segs.length; s++) {
+    const sg = segs[s], k = mvSegK(sg, age);
+    if (k < 0) continue;
+    if (sg.rev) mvShape(sg, k, age, O, U, put); else mvShape(sg, k, age, U, O, put);   // 'user' rows sit on U, 'target' rows on O
+  }
+  mvShadowSet(false);
+}
 function mvStatusRow(effect) {
   const e = effect || {};
   if (e.heal) return MV_STATUS.heal;
