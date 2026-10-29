@@ -23,6 +23,8 @@ Vincent (CIO, final say; reviews and merges PRs) > PixelPets Supervisor (clears 
 ## Test output
 Run `npm run test:agent -- [spec] [--project=390]` (e.g. `npm run test:agent -- tests/x.spec.js --project=390`; npm drops `--project` without the `--`), not bare `npm test`; it prints one `PP_TEST RESULT` line plus failures and exits with Playwright's real code. Don't read `test-logs/run.log` whole: `grep -n` it, or `tail -n 40`. Never pipe a test command.
 
+Every feature that adds a system, a scene step, a save field or a player flow ships with its own spec file (`tests/<feature>.spec.js`): 320, 375 and 390, reduced motion, save unchanged, zero console errors, and a spec-match table in the PR naming the test for each decision. (Vincent, Oct 28, 2026.)
+
 ## Skills index (`.cursor/skills/<name>/SKILL.md`; copies in `/home/box/agent-data/workflows/`)
 - `walklings-deploy`: stamp the build, ship via PR, hard-refresh and check the build line.
 - `walklings-pr-handback`: branch/rebase routine and the required PR hand-back body.
