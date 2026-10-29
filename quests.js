@@ -63,8 +63,9 @@
     'story.hw_reached',
     // BRINEWICK: Rook's arrival, the Glimmer manifest choice and the two Hall gauges. Not chain steps.
     'story.brine_arrived', 'story.brine_manifest', 'story.h3_gauge_a', 'story.h3_gauge_b',
-    // ARBITER_UNITS Build C (D848-D853): Route 3 arrival and its derived open flag, the first four clues, and the boss rest flags are not steps.
-    'story.reached_route3', 'story.route3_open', 'story.ans_tallybat_clue', 'story.ans_dimlamp_clue', 'story.ans_filecrow_clue', 'story.ans_cordhound_clue',
+    // ARBITER_UNITS Build C (D848-D853): Route 3 arrival and its derived open flag, the three later clues, and the boss rest flags are not steps.
+    // The census clue closes ans_census. That step's arrow is the Route 2 post (r2_ans_post).
+    'story.reached_route3', 'story.route3_open', 'story.ans_dimlamp_clue', 'story.ans_filecrow_clue', 'story.ans_cordhound_clue',
     'story.ans_tallybat_rest', 'story.ans_dimlamp_rest', 'story.ans_filecrow_rest', 'story.ans_cordhound_rest', 'story.ans_humwisp_rest'];
 
   const CHAIN = [
@@ -233,7 +234,7 @@
         text: 'You are home. Your Walkling is chirping, and Mom is here.', place: 'Your home, upstairs',
         target: { map: 'hm_home_up', x: 4, y: 5 } },
       { id: 'dream_study', when: ['story.dream_woke'], done: ['story.dream_study'],
-        text: 'Tell Warden Ilse about the dream. Mom calls her Professor.', place: "Warden's Lodge",
+        text: 'Tell Warden Ilse about the dream.', place: "Warden's Lodge",
         target: { map: 'hm_lodge_in', x: 5, y: 3 } },
     ],
     // Rook's Crossroads. Off the main chain. Accepting is talking to Rook at the Brinewick road sign.
@@ -318,6 +319,7 @@
     ],
     // Five that answer (ARBITER_UNITS Build C, D843, D848-D853). Opens on Route 3. Rows whose target differs by side come in pairs
     // with opposite when; the four lairs can be cleared in any order, so they share one row with four done flags.
+    // Mo and Quinn both name the census post first. That arrow uses r2_ans_post in detail_route3 (route2, 22, 9).
     [
       { id: 'ans_open_k', label: 'Five that answer', when: ['story.reached_route3', '!story.side=glimmer'], givers: ['hq_mo', 'cc_quinn'], done: ['story.ans_open'],
         text: 'Archivist Mo has heard the hum on the Brinewick road. Go and listen.', place: 'Keeper House',
@@ -325,6 +327,10 @@
       { id: 'ans_open_g', when: ['story.reached_route3', 'story.side=glimmer'], done: ['story.ans_open'],
         text: 'Associate Quinn has a recall job on the Brinewick road. Go and listen.', place: 'Cobblecrest Trial Hall',
         target: { map: 'cc_hall_in', x: 8, y: 3 } },
+      { id: 'ans_census', when: ['story.ans_open'], done: ['story.ans_tallybat_clue'],
+        text: 'Start with the old census post on Route 2. It never stopped counting.', place: 'Route 2',
+        glimmer: { text: 'The census post on Route 2 is still counting. Start there. Have a bright day.', place: 'Route 2' },
+        target: { map: 'route2', x: 22, y: 9 } },
       { id: 'ans_four', when: ['story.ans_open'], done: ['story.ans_tallybat', 'story.ans_dimlamp', 'story.ans_filecrow', 'story.ans_cordhound'],
         text: 'Four clues lead to four lairs on the Brinewick road. Find the ones that answer the hum.', place: 'Route 3',
         target: { map: 'route3', x: 11, y: 10 } },

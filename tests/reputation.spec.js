@@ -351,7 +351,7 @@ test('letter lines follow the effective tier @w1', async ({ page }) => {
   expect(r.glimmer.tier).toBe('neutral');
   expect(r.glimmer.line).toBe(r.got['Captain Lumen'].neutral.sample);
   expect(r.councilBefore).toBe('@hc_council');
-  expect(r.councilAfter).toBe('That road stays dark. Ships still fly.');
+  expect(r.councilAfter).toBe('The coast road is lit. Ships still fly.');
   expect(r.v).toBe(2);
 });
 

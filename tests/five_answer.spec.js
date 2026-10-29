@@ -48,7 +48,7 @@ async function talkTo(page, map, x, y) {
 }
 const flag = (page, f) => page.evaluate(k => PixelPets.state.flags[k], f);
 
-test('Mo opens the chain for the Keepers, and the side card moves to the four lairs', async ({ page }) => {
+test('Mo opens the chain for the Keepers, and the side card moves to the census post', async ({ page }) => {
   await boot(page, save('keepers'));
   const before = await page.evaluate(() => ({ quest: PixelPets.quest && PixelPets.quest.id, side: PixelPets.sideActive.map(a => a.id) }));
   expect(before.side).toContain('ans_open_k');
@@ -56,12 +56,43 @@ test('Mo opens the chain for the Keepers, and the side card moves to the four la
   await playScene(page);
   expect(await flag(page, 'story.ans_open')).toBe(true);
   const after = await page.evaluate(() => ({ quest: PixelPets.quest && PixelPets.quest.id, side: PixelPets.sideActive.map(a => a.id), checks: PixelPets.devChecks(), rep: PixelPets.repCheck(), v: PixelPets.state.v }));
-  expect(after.side).toContain('ans_four');
+  expect(after.side).toContain('ans_census');
   expect(after.quest).toBe(before.quest);
   expect(after.checks.quest).toEqual([]);
   expect(after.checks.glimmer).toEqual([]);
   expect(after.rep).toEqual([]);
   expect(after.v).toBe(2);
+});
+
+test('the side arrow points at the Route 2 census post, then at the four lairs', async ({ page }) => {
+  await boot(page, save('keepers', { 'story.ans_open': true }));
+  const aimed = await page.evaluate(() => {
+    PixelPets.trackSide('ans_open_k');
+    PixelPets.goto('route2', 20, 10, 'up');
+    const post = PixelPets.mapObjs.find(o => o.id === 'r2_ans_post');
+    const q = PixelPets.sideQuest;
+    return {
+      post: post && { x: post.x, y: post.y },
+      id: q && q.id,
+      target: q && q.target,
+      point: q && q.point,
+    };
+  });
+  expect(aimed.post).toBeTruthy();
+  expect(aimed.id).toBe('ans_census');
+  expect(aimed.target).toEqual({ map: 'route2', x: aimed.post.x, y: aimed.post.y });
+  expect(aimed.point).toEqual({ x: aimed.post.x, y: aimed.post.y, here: true });
+  await page.locator('#questBtn').click();
+  await expect(page.locator('#questSide')).toBeVisible();
+  await expect(page.locator('#questSide')).toHaveText('Start with the old census post on Route 2. It never stopped counting.');
+  await expect(page.locator('#questSidePlace')).toHaveText('Route 2');
+  await page.evaluate(() => PixelPets.setFlag('story.ans_tallybat_clue', true));
+  const next = await page.evaluate(() => {
+    const q = PixelPets.sideActive.find(a => a.chain === 'ans_open_k');
+    return q && { id: q.id, target: q.target };
+  });
+  expect(next.id).toBe('ans_four');
+  expect(next.target).toEqual({ map: 'route3', x: 11, y: 10 });
 });
 
 test('Quinn opens the same chain for Glimmerwell from the Cobblecrest Trial Hall', async ({ page }) => {

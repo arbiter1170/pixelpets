@@ -536,7 +536,7 @@
           "id": "hc_sign_gym",
           "x": 23,
           "y": 14,
-          "text": "TRIAL GYM · Practice before a real Hall. Stones, tides, and blooms are all welcome."
+          "text": "DOJO · Practice before a real Hall. Stones, tides, and blooms are all welcome."
         },
         {
           "kind": "sign",
@@ -660,7 +660,7 @@
           "y": 3,
           "facing": "down",
           "lines": {
-            "story.hc_council_done": "That road stays dark. Ships still fly.",
+            "story.hc_council_done": "The coast road is lit. Ships still fly.",
             "story.cobble_end&!story.side=glimmer": "@hc_council",
             "story.side=glimmer": "The dock is open. Please don't touch the lines.",
             "else": "Lantern ships. No thunder, no guns."
@@ -929,7 +929,7 @@
       ]
     },
     "hc_gym_in": {
-      "name": "Trial Hall",
+      "name": "Dojo",
       "kind": "interior",
       "outdoor": "highcharity",
       "door": "hc_gym",
@@ -973,7 +973,7 @@
           "facing": "down",
           "lines": {
             "story.side=glimmer": "No trial today. The floor is just clean.",
-            "else": "No Seal here. Fen and Hale keep those."
+            "else": "No Seal here. Hall Masters keep those."
           }
         },
         {
@@ -1620,10 +1620,10 @@
       ["if", "story.hc_invite", [
         ["say", "Captain Lumen", "Ilse's letter arrived ahead of you. She said the Seals would."]
       ]],
-      ["say", "Captain Lumen", "The coastal road to Brinewick is on the board. We are not opening it."],
-      ["say", "", "The chart names the road. The light beside it stays dark."],
+      ["say", "Captain Lumen", "The coastal road to Brinewick is on the board. We are opening it. Walk it carefully."],
+      ["say", "", "The chart names the road. A small light beside it flickers on."],
       ["standing", "keepers", null, "hc_council_k"],
-      ["say", "", "COMING LATER · The Keepers' next lantern. Thanks for playing!"],
+      ["say", "", "THE ROAD AHEAD · Route 3 to Brinewick, from Cobblecrest's east road."],
       ["setFlag", "story.hc_council_done", true]
     ],
     "hc_invite": [

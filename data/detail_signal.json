@@ -288,7 +288,7 @@
           ["setFlag", "story.gb_hold", true]
         ]]
       ]],
-      ["say", "", "COMING LATER · Glimmerwell's next quarter. Thanks for playing!"],
+      ["say", "", "THE ROAD AHEAD · Route 3 to Brinewick, from Cobblecrest's east road."],
       ["setFlag", "story.gb_done", true]
     ]
   }

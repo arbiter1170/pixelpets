@@ -76,7 +76,7 @@
             "!story.mom_chore": "The table downstairs still has crumbs. Clear a spot for your Walkling.",
             "!story.mom_sent": "@mom_trip",
             "!story.dream_woke": "The north trail is open. Mahopac is quiet. Take your Walkling.",
-            "!story.dream_study": "Tell Professor Ilse what you dreamed. She gave you your Walkling.",
+            "!story.dream_study": "Tell Warden Ilse what you dreamed. She gave you your Walkling.",
             "else": "Your Walkling trusts you a little more. I can hear it."}},
         {"kind": "prop", "id": "up_bed", "x": 7, "y": 2, "sprite": "bed", "lines": {"else": "Mom's bed, quilt pulled tight. It smells like soap and rain."}},
         {"kind": "prop", "id": "up_shelf", "x": 2, "y": 2, "sprite": "bookshelf", "lines": {"else": "Old school photos and a book of star maps. Mahopac is circled."}},

@@ -10,8 +10,10 @@ trackErrors(test, expect);
 
 const G1 = 'Welcome in. Talk to a bed and your whole team rests and heals, for 5 Acorns.';
 const G2 = 'Lose a battle and you wake at the closest Lantern House. Tap me any time to hear this again.';
-const HOUSE = 'LANTERN HOUSE · Rest the whole party. 5 Acorns.';
+const HOUSE = 'LANTERN HOUSE · Rest and recover. 5 Acorns, or what you have.';
 const HC_NOTE = 'Rest the whole party. 5 Acorns. The city can wait. — High Charity';
+// The High Charity wall sign is not the patched marker. Its line was not in this copy pass.
+const HC_WALL = 'LANTERN HOUSE · Rest the whole party. 5 Acorns.';
 const ARTS = {
   heal_lantern: ['................', '................', '..dddddddddd....', '..md......m.....', '..md.....ooo....', '..md....ddddd...', '..md....dyyyd...', '..md....dywyd...', '..md....dyyyd...', '..md....ddddd...', '..md...ddddddd..', '..md...dwrwrwd..', '..md...drrrrrd..', '..md...dwrrrwd..', '.ddddd.dwwrwwd..', '.ddddd.ddddddd..'],
   acorn_board: ['................', '................', '....dddddddddd..', '.....m......dm..', '.....m......dm..', '..nnnnnnnnn.dm..', '..nbbbbbbbn.dm..', '..nbbbdbbbn.dm..', '..nbboooobn.dm..', '..nbddddddn.dm..', '..nbyoooybn.dm..', '..nbyoooybn.dm..', '..nbbyyybbn.dm..', '..nnnnnnnnn.dm..', '..........ddddd.', '..........ddddd.'],
@@ -477,7 +479,7 @@ test('T13 the High Charity sign and note say 5 Acorns', async ({ page }) => {
     PixelPets.talkTo('hc_sign_lantern');
   });
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.text);
-  expect(await page.evaluate(() => PixelPets.scene.text)).toBe(HOUSE);
+  expect(await page.evaluate(() => PixelPets.scene.text)).toBe(HC_WALL);
   await page.evaluate(() => {
     PixelPets.endScene();
     PixelPets.goto('hc_lantern_in', 4, 5, 'up');

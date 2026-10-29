@@ -30,9 +30,12 @@
   const baseOf = () => { const c = cfg(); return (c && Number.isFinite(c.base)) ? c.base : 50; };
   const clamp = n => { const r = rangeOf(); return Math.max(r[0], Math.min(r[1], Math.round(n))); };
 
+  // Labels that are one person. The cast keeps the value. REP_ALIAS below reads an old save key the other way.
+  const REP_CANON = { Marisol: 'Master Marisol' };
   function key(name) {
     if (typeof name !== 'string') return '';
-    return name.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    const k = name.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    return REP_CANON[k] || k;
   }
 
   let castCache = null;
