@@ -8,12 +8,12 @@ const { starterSave, installSave, trackErrors, gotoGame, artifactsDir, boxesOver
 
 trackErrors(test, expect);
 
-const G1 = 'Welcome in. Talk to a bed and your whole team rests and heals, for 5 Acorns.';
+const G1 = 'Welcome in. Talk to a bed and your whole team rests and heals, for 5 Acorns, or what you have.';
 const G2 = 'Lose a battle and you wake at the closest Lantern House. Tap me any time to hear this again.';
 const HOUSE = 'LANTERN HOUSE · Rest and recover. 5 Acorns, or what you have.';
-const HC_NOTE = 'Rest the whole party. 5 Acorns. The city can wait. — High Charity';
-// The High Charity wall sign is not the patched marker. Its line was not in this copy pass.
-const HC_WALL = 'LANTERN HOUSE · Rest the whole party. 5 Acorns.';
+const HC_NOTE = 'Rest the whole party. 5 Acorns, or what you have. The city can wait. — High Charity';
+// The High Charity wall sign matches the patched house line (COPY_FIX_2).
+const HC_WALL = HOUSE;
 const ARTS = {
   heal_lantern: ['................', '................', '..dddddddddd....', '..md......m.....', '..md.....ooo....', '..md....ddddd...', '..md....dyyyd...', '..md....dywyd...', '..md....dyyyd...', '..md....ddddd...', '..md...ddddddd..', '..md...dwrwrwd..', '..md...drrrrrd..', '..md...dwrrrwd..', '.ddddd.dwwrwwd..', '.ddddd.ddddddd..'],
   acorn_board: ['................', '................', '....dddddddddd..', '.....m......dm..', '.....m......dm..', '..nnnnnnnnn.dm..', '..nbbbbbbbn.dm..', '..nbbbdbbbn.dm..', '..nbboooobn.dm..', '..nbddddddn.dm..', '..nbyoooybn.dm..', '..nbyoooybn.dm..', '..nbbyyybbn.dm..', '..nnnnnnnnn.dm..', '..........ddddd.', '..........ddddd.'],
@@ -293,7 +293,7 @@ test('T8 the first visit plays once and the save stays v2', async ({ page }) => 
     PixelPets.goto('hearthmoor', 16, 13, 'up');
     PixelPets.walkStep('up');
   });
-  await page.waitForFunction(() => PixelPets.mapInfo.id === 'hm_lantern_in' && PixelPets.scene && PixelPets.scene.text === 'Welcome in. Talk to a bed and your whole team rests and heals, for 5 Acorns.');
+  await page.waitForFunction((line) => PixelPets.mapInfo.id === 'hm_lantern_in' && PixelPets.scene && PixelPets.scene.text === line, G1);
   await advanceSay(page);
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.text && PixelPets.scene.text.indexOf('Lose a battle') === 0);
   await advanceSay(page);
@@ -369,7 +369,7 @@ test('T10 guide lines stay within the limits and the cost matches the bed', asyn
   expect('Got all that?'.length).toBeLessThanOrEqual(110);
   expect('Got it'.length).toBeLessThanOrEqual(30);
   expect('Say it again'.length).toBeLessThanOrEqual(30);
-  expect(G1).toBe('Welcome in. Talk to a bed and your whole team rests and heals, for ' + cost + ' Acorns.');
+  expect(G1).toBe('Welcome in. Talk to a bed and your whole team rests and heals, for ' + cost + ' Acorns, or what you have.');
   expect(G1).not.toMatch(/  /);
   await page.evaluate(() => {
     PixelPets.goto('cc_lantern_in', 4, 3, 'up');

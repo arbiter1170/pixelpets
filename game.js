@@ -6438,7 +6438,7 @@ function placeSteps(dr){
       : ['Leave', []]);
     pushWait(opts);
     const greet = hold
-      ? 'Your team is worn out. A rest costs ' + LANTERN_REST_COST + ' Acorns and heals everyone.'
+      ? 'Your team is worn out. A rest costs ' + LANTERN_REST_COST + ' Acorns, or what you have, and heals everyone.'
       : lanternGreet(who);
     return [['say', who, greet],
       ['if', 'story.starter_received',
@@ -10496,7 +10496,7 @@ function lanternBedSteps(){
   pushWait(opts);
   return [
     ['say', '', hold
-      ? 'Your team is worn out. These beds rest everyone, for ' + LANTERN_REST_COST + ' Acorns.'
+      ? 'Your team is worn out. These beds rest everyone, for ' + LANTERN_REST_COST + ' Acorns, or what you have.'
       : 'Three soft beds under a warm lantern.'],
     ['if', 'story.starter_received',
       (lanternRestNeeded() ? [['priceOn']] : []).concat([['choice', hold ? 'Rest the whole party?' : 'Let your team rest?', opts]]),
@@ -10519,9 +10519,9 @@ function blockLanternExit(){
   const n = LANTERN_REST_COST;
   const house = 'LANTERN HOUSE · Rest and recover. ' + n + ' Acorns, or what you have.';
   put('hearthmoor', 'hm_sign_lantern', house);
-  put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns. — I."');
-  put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns. The quarry is dusty. — Cobblecrest"');
-  put('fb_lantern_in', 'fb_lantern_note', 'A note by the shelf: "Rest the whole party. ' + n + ' Acorns. — Amos"');
+  put('hm_lantern_in', 'lantern_note', 'A note on the shelf: "Rest the whole party. ' + n + ' Acorns, or what you have. — I."');
+  put('cc_lantern_in', 'cc_lantern_note', 'A note by the door: "Rest the whole party. ' + n + ' Acorns, or what you have. The quarry is dusty. — Cobblecrest"');
+  put('fb_lantern_in', 'fb_lantern_note', 'A note by the shelf: "Rest the whole party. ' + n + ' Acorns, or what you have. — Amos"');
   const mark = (map, id) => {
     const o = WORLD[map] && WORLD[map].objs.find(x => x.id === id);
     if (o) o.lines = { else: house };
@@ -10536,7 +10536,7 @@ function blockLanternExit(){
 const LANTERN_GUIDE_IDS = { hm_lantern_host: 1, cc_lantern_host: 1, hc_lantern_host: 1, amos: 1, bw_lantern_host: 1 };
 const LANTERN_GUIDE_G2 = 'Lose a battle and you wake at the closest Lantern House. Tap me any time to hear this again.';
 function lanternCostLine(){
-  return 'Welcome in. Talk to a bed and your whole team rests and heals, for ' + LANTERN_REST_COST + ' Acorns.';
+  return 'Welcome in. Talk to a bed and your whole team rests and heals, for ' + LANTERN_REST_COST + ' Acorns, or what you have.';
 }
 function lanternGuideBody(who){
   return [
@@ -13907,8 +13907,8 @@ const walkTipDefault = () => ctlPick() === 'modern' ? WALK_TIP_MODERN : WALK_TIP
 const escapeHtml = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
 function walkHintPlain(){
   if (!S || !CUR || !S.flags['story.starter_received']) return '';
-  if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
-  if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the Keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
+  if (lanternHold() && LANTERN_ROOMS[CUR.id]) return 'Your team is worn out. Face a bed and talk to it. A rest is ' + LANTERN_REST_COST + ' Acorns, or what you have.';
+  if (lanternHold() && lanternDoorHere()) return 'Your team is worn out. Talk to the Keeper. A rest costs ' + LANTERN_REST_COST + ' Acorns, or what you have.';
   const n = +S.flags['story.early_steps'] || 0;
   if (!S.flags['story.early_done'] && n < 8 && !S.flags['story.reached_route1']) return ctlPick() === 'modern' ? WALK_EARLY_MODERN : WALK_EARLY_ARCADE;
   const q = questCurrent();
@@ -13940,7 +13940,7 @@ function syncMhcStepCue(){
 }
 function noteMhcRestRoom(){
   if (!mhcToastOn() || !lanternHold() || !CUR || !LANTERN_ROOMS[CUR.id]) return;
-  const line = 'Your team is worn out. Face a bed and talk to it. A rest costs ' + LANTERN_REST_COST + ' Acorns.';
+  const line = 'Your team is worn out. Face a bed and talk to it. A rest is ' + LANTERN_REST_COST + ' Acorns, or what you have.';
   mhcHintKey = line;
   toast(line);
 }

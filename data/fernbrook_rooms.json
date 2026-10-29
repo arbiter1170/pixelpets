@@ -49,7 +49,7 @@
         {"kind": "prop", "id": "fb_jug", "x": 8, "y": 11, "sprite": "cider_jug", "lines": {"else": "A jug of pressed apples. The lid is on."}},
         {"kind": "prop", "id": "fb_stool", "x": 2, "y": 10, "sprite": "orchard_stool", "lines": {"else": "A short stool by the wall."}},
         {"kind": "prop", "id": "fb_basket", "x": 1, "y": 12, "sprite": "orchard_basket", "lines": {"else": "A basket lined with leaves."}},
-        {"kind": "sign", "id": "fb_lantern_note", "x": 10, "y": 12, "text": "A note by the shelf: \"Rest the whole party. 5 Acorns. — Amos\""}
+        {"kind": "sign", "id": "fb_lantern_note", "x": 10, "y": 12, "text": "A note by the shelf: \"Rest the whole party. 5 Acorns, or what you have. — Amos\""}
       ]
     },
     "fb_hall_in": {
