@@ -302,8 +302,10 @@ const rid = n => Array.from({length:n}, () => 'abcdefghijklmnopqrstuvwxyz0123456
 // Saved pets name their species by stable string id (`species`); runtime-only things (sprites, wild creatures,
 // encounters) keep using the SPECIES array index. spIndex/spi convert.
 const SP_INDEX = Object.fromEntries(SPECIES.map((sp, i) => [sp.id, i]));
-const JOURNAL_FORMS = SPECIES.reduce((n, sp) => n + (sp.npcOnly ? 0 : sp.stages.length), 0);
-const formNpcOnly = form => { const sp = SPECIES[SP_INDEX[String(form || '').split('/')[0]]]; return !!(sp && sp.npcOnly); };
+// ARBITER_UNITS (D844): boss lines sit in their own journal row, so neither they nor npcOnly lines count toward the grid.
+const offJournal = sp => !!(sp && (sp.npcOnly || sp.boss));
+const JOURNAL_FORMS = SPECIES.reduce((n, sp) => n + (offJournal(sp) ? 0 : sp.stages.length), 0);
+const formNpcOnly = form => offJournal(SPECIES[SP_INDEX[String(form || '').split('/')[0]]]);
 const spIndex = id => SP_INDEX[id];
 const spi = p => SP_INDEX[p.species];
 // HUSHWATER B0: one picture when the species id, or that stage, is not on this client.
@@ -722,7 +724,81 @@ const petName = p => cleanNick(p.nick) || nameOf(spi(p), p.stage);
 const care = p => Math.round((p.hunger + p.happy + p.energy) / 3);
 function sealCount(){ return window.PPStanding ? PPStanding.chapterOf(S && S.flags) : 0; }
 function oneGrowBlocked(){ return sealCount() === 0 && !!(S && S.flags && S.flags['story.unlock_growup']); }
-const canEvolve = p => { const si = spi(p); const gate = GROW_GATES[p.stage]; return si != null && !!(SPECIES[si].stages[p.stage + 1]) && !isFaded(p) && p.stage < 2 && !!gate && levelOf(p) >= gate.level && sealCount() >= gate.seals && !oneGrowBlocked() && care(p) >= EVO_CARE[p.stage]; };
+const canEvolve = p => { if (isAttune(p)) return false; const si = spi(p); const gate = GROW_GATES[p.stage]; return si != null && !!(SPECIES[si].stages[p.stage + 1]) && !isFaded(p) && p.stage < 2 && !!gate && levelOf(p) >= gate.level && sealCount() >= gate.seals && !oneGrowBlocked() && care(p) >= EVO_CARE[p.stage]; };
+/* --- ARBITER_UNITS attunement (D838, D839). One name, three tiers in p.stage: Quiet, Humming, Answering. p.hum (0-100)
+   raises the tier at 40 and 100; it never grows up. p.still stops the meter, and the tier never drops. Save v stays 2. --- */
+const HUM_TIERS = Object.freeze([40, 100]);
+const HUM_TIER_NAMES = Object.freeze(['Quiet', 'Humming', 'Answering']);
+const HUM_GAIN = Object.freeze({ battleWin: 4, glimmerPlace: 6, lair: 10 });
+const isAttune = p => !!(p && spi(p) != null && SPECIES[spi(p)] && SPECIES[spi(p)].attune);
+const humOf = p => clamp(Math.round(+p.hum || 0), 0, 100);
+function humTierUp(p){
+  const oldMax = maxHpOf(p); p.stage++;
+  carryHpOnEvolve(p, oldMax); markCaught(spi(p), p.stage);
+  // evoMoves is left alone on purpose: pumpLearn then teaches this tier's lv 0 move.
+  toast(petName(p) + (p.stage === 2 ? ' answers the hum!' : ' is humming!'));
+  sfx('stinger_evolve');
+}
+// Adds hum to one attune Walkling. Humwisp in the party carries the hum: the others gain 1.5x (Carrier Hum, out of battle).
+function addHum(p, n){
+  if (!isAttune(p) || p.still || !(n > 0)) return 0;
+  const carrier = p.species !== 'humwisp' && (S.party || []).some(q => q.species === 'humwisp');
+  const before = humOf(p); p.hum = clamp(before + Math.round(n * (carrier ? 1.5 : 1)), 0, 100);
+  while (p.stage < 2 && p.hum >= HUM_TIERS[p.stage]) humTierUp(p);
+  return p.hum - before;
+}
+// One line for the partner hint and the stats card (growText).
+function humHint(p){
+  const tier = HUM_TIER_NAMES[p.stage] || HUM_TIER_NAMES[0], h = humOf(p);
+  if (p.still) return tier + ' \u00b7 kept still. HUM stays at ' + h + '.';
+  if (p.stage >= 2) return 'Answering the hum.';
+  return tier + ' \u00b7 HUM ' + h + '/' + HUM_TIERS[p.stage] + ' to ' + HUM_TIER_NAMES[p.stage + 1];
+}
+// D839: the first visit each day to a unit's own lair (map field lairOf) gives that unit +10; the first arrival each day
+// at a place the region map calls Glimmerwell's gives every attune Walkling in the party +6.
+function humOnArrive(){
+  if (!S || !S.party || !S.party.some(isAttune)) return;
+  const day = dayKey(Date.now());
+  for (const unit of [].concat((CUR && CUR.lairOf) || [])) {
+    const k = 'daily.lair_' + unit; if (S.flags[k] === day) continue;
+    S.flags[k] = day;
+    for (const p of S.party) if (p.species === unit) addHum(p, HUM_GAIN.lair);
+  }
+  const node = nodeOf(S.world && S.world.map); if (!node || mapHold(node) !== 'glimmer') return;
+  if (S.flags['daily.hum_place'] === day) return;
+  S.flags['daily.hum_place'] = day;
+  for (const p of S.party) addHum(p, HUM_GAIN.glimmerPlace);
+}
+// D842: a boss that went back to its post returns on the next day roll.
+function bossRestTick(d){
+  for (const k of Object.keys(S.flags || {})) {
+    const m = /^story\.(ans_[a-z]+)_rest$/.exec(k); if (!m) continue;
+    const stamp = S.flags['daily.' + m[1]];
+    if (!stamp) S.flags['daily.' + m[1]] = d;
+    else if (stamp !== d) { delete S.flags[k]; delete S.flags['daily.' + m[1]]; }
+  }
+}
+// D848: the Brinewick road opens after Rook's last crates and that side's chapter end. One derived flag, so map objects
+// can gate on it without an OR: the Keepers close at the Lantern Council, Glimmerwell at the Signal Review. Never cleared.
+function openRoad3(){
+  if (!S || !S.flags || S.flags['story.route3_open'] || !S.flags['story.rc_done']) return;
+  const glim = S.flags['story.side'] === 'glimmer';
+  if (glim ? S.flags['story.gb_done'] : S.flags['story.hc_council_done']) S.flags['story.route3_open'] = true;
+}
+function toggleStill(p){
+  if (!isAttune(p)) return false;
+  if (p.still) delete p.still; else p.still = true;
+  toast(petName(p) + (p.still ? ' keeps still.' : ' listens again.'));
+  save(); updateHUD(); return !!p.still;
+}
+// The GROW labels (walk strip and pet tab) read HUM for an attune partner.
+function setGrowLabels(attune){
+  const word = attune ? 'HUM' : 'GROW';
+  const strip = $('.ss-grow-l'); if (strip && strip.textContent !== word) strip.textContent = word;
+  const pb = $('#barXpPet'), lab = pb && pb.parentElement && pb.parentElement.previousElementSibling;
+  const tn = lab && lab.lastChild && lab.lastChild.nodeType === 3 ? lab.lastChild : null;
+  if (tn && tn.nodeValue !== word) tn.nodeValue = word;
+}
 function heldOf(p){
   const n = p && Number.isFinite(p.bxHeld) ? p.bxHeld : 0;
   return n > 0 ? n : 0;
@@ -1885,15 +1961,22 @@ function updateHUD(){
   syncCareAlert();   // HEART_ALERT: same 1 s stat tick as the strip
   const kitBtn = $('#petKitBtn');
   if (kitBtn) kitBtn.setAttribute('aria-label', 'Gear for ' + petName(p));
+  const attune = isAttune(p); setGrowLabels(attune);
+  if (attune) {   // ARBITER_UNITS: the GROW slot shows the hum meter for an attune Walkling
+    const h = humOf(p);
+    $('#barXp').style.width = h + '%'; ariaBar($('#barXp'), h, 100, 'Hum'); $('#valXp').textContent = String(h);
+  } else {
   const pair = formLevelPair(p);
   const xpPct = p.stage < 2 && formGate(p) ? formLevelPct(p) : 100;
-  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = String(pair.now);   // D795: the level only, 18 px; the bar and aria keep the pair
+  $('#barXp').style.width = clamp(xpPct,0,100) + '%'; ariaBar($('#barXp'), clamp(xpPct, 0, 100), 100, 'Growth'); $('#valXp').textContent = String(pair.now);
+  }   // D795: the level only, 18 px; the bar and aria keep the pair
   $('#wSteps').textContent = S.steps;   // STAT_DISPLAY: the WALK slot of the shared strip
   const cx = xpToday(p, 'cx'), ex = xpToday(p, 'ex');
   const setCount = (el, v, cap) => { if (!el) return; const txt = v + '/' + cap; if (el.textContent !== txt) el.textContent = txt; el.classList.toggle('maxed', v >= cap); };
   setCount($('#ssCare'), cx, CARE_XP_DAILY_CAP); setCount($('#ssExp'), ex, EXPLORE_XP_DAILY_CAP);   // EXPLORE once (STAT_DISPLAY §4)
   const hint = $('#evoHint'), btn = $('#evolveBtn');
   if (spi(p) == null) { hint.textContent = '???'; hint.classList.remove('ready'); btn.hidden = true; }
+  else if (attune) { hint.textContent = humHint(p); hint.classList.remove('ready'); btn.hidden = true; }
   else if (p.stage >= 2) { hint.textContent = 'Fully grown! Keep exploring.'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (isFaded(p)) { hint.textContent = 'Faded: ' + p.faded + ' good-care day' + (p.faded > 1 ? 's' : '') + ' to go (care 60+).'; hint.classList.remove('ready'); btn.hidden = true; }
   else if (canEvolve(p)) { hint.textContent = petName(p) + ' is ready to grow up!'; hint.classList.add('ready'); btn.hidden = false; }
@@ -3781,8 +3864,13 @@ function glimmerDevCheck(){
     n.forEach(x => walkStanding(where, x)); };
   for (const [id, steps] of Object.entries(SCENES)) walkStanding('scene ' + id, steps);
   // Rook's Crossroads lives in its own pack. @glimmer variants must set the same story flags as the base.
-  const RC = MD.rook_crossroads;
-  if (RC) {
+  // ARBITER_UNITS Build C: the Route 3 pack's objects name real scenes with lines that fit, and its @glimmer variants follow the same rule.
+  if (MD.detail_route3) for (const m of Object.values(MD.detail_route3.maps || {})) for (const o of m.objs || []) {
+    if (o.scene && !SCENES[o.scene]) bad.push('obj ' + o.id + ': unknown scene ' + o.scene);
+    for (const v of Object.values(o.lines || {})) line('obj ' + o.id, v);
+    if (o.text) line('obj ' + o.id, o.text);
+  }
+  for (const RC of [MD.rook_crossroads, MD.detail_route3]) if (RC) {
     for (const [id, steps] of Object.entries(RC.scenes || {})) {
       walkSteps('scene ' + id, steps);
       const at = id.indexOf('@'); if (at < 0) continue;
@@ -6283,6 +6371,7 @@ function warpTo(at, after){
 }
 let musicHold = false;   // closeBattle plays the return loop itself (after stingers); a wipe's arriveAt must not start it early
 function arriveAt(at){
+  openRoad3();   // D848: derive the road flag before the map's objects are chosen
   useMap(at.map); fitAll();   // E1: the canvas may change shape per map
   // D224: a visited interior stops that stair's glint. The art stays. Absent until the first room.
   if (CUR.kind === 'interior') {
@@ -6292,7 +6381,7 @@ function arriveAt(at){
   S.world.map = CUR.id; S.world.x = at.x; S.world.y = at.y; S.world.facing = at.facing || S.world.facing;
   walk.fx = at.x; walk.fy = at.y; walk.to = null; walk.from = null; walk.hop = false;
   resetWild(); if (CUR.id === 'route1') S.flags['story.reached_route1'] = true; bump.talked = null; markMapSeen();
-  placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); save();
+  placeFollower(); placeGuide(); renderEnv(); noteBoardTown(); alignGlowOnArrive(CUR.id); humOnArrive(); save();
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
   try { syncPlaceYield(true); } catch (e) {}
   try { noteMhcRestRoom(); } catch (e) {}
@@ -8818,13 +8907,14 @@ async function execStep(st){
       }
       let target = null;
       if (a === 'pick') {
-        const opts = (S.party || []).filter(p => !chipLocked(p));
+        const opts = (S.party || []).filter(p => !chipLocked(p) && !isAttune(p));   // D847: an Answerer cannot be tuned
         if (!opts.length) { await refuse(); await sayBox('', 'The party is full of ones who stay.'); return; }
         const id = await openSheet('Who hears us clearer?', opts.map(p => ({ label: petName(p) + '  Lv ' + levelOf(p), value: p.id })), 'BACK');
         if (!scene) return;
         if (!id) { await refuse(); return; }
         target = petById(id);
       } else target = pet();
+      if (target && isAttune(target)) { await refuse(); await sayBox('Associate Quinn', 'Not that one. It already answers.'); return; }   // D847
       if (!target || chipOn(target)) { await refuse(); await sayBox('Associate Quinn', 'Tier 2 is on file. The cradle can wait. Have a bright day!'); return; }
       await sayBox('', 'A soft click under the fur. The Hall lights dim. Somewhere below, something vast exhales.');
       if (!scene) return;
@@ -8924,6 +9014,14 @@ async function execStep(st){
       return;
     }
     case 'bond': { const n = Number(a) || 0; if (n) pend(() => { const p = pet(); if (p) addBond(p, n); }); return; }
+    // ["acorns", n]: pays n Acorns when the scene's writes land, and says so. A scene that sets its flag pays once.
+    case 'acorns': {
+      const n = Math.max(0, Number(a) | 0); if (!n) return;
+      pend(() => { S.money = (S.money | 0) + n; });
+      if (sc.skip) return;
+      await sayBox('', playerName() + ' got ' + acorns(n) + '!');
+      return;
+    }
     case 'sfx': { if (a) sfx(a); return; }
     case 'chirp': { const p = viewPet(); if (p) sfx(chirpName(p)); return; }
     case 'reveal': {
@@ -8962,7 +9060,7 @@ async function execStep(st){
     case 'chipOffer': {
       sc.skip = false;
       if (chippedPets().length || flagOf('story.arbiter_test_done', true)) return;
-      const opts = (S.party || []).filter(p => !chipOn(p) && !chipLocked(p));
+      const opts = (S.party || []).filter(p => !chipOn(p) && !chipLocked(p) && !isAttune(p));   // D847
       if (!opts.length) { await execStep(['setFlag', 'story.gb_tune_asked', true]); return; }
       const id = await openSheet('Who hears us clearer?', opts.map(p => ({ label: petName(p) + '  Lv ' + levelOf(p), value: p.id })), 'BACK');
       if (!scene) return;
@@ -9062,7 +9160,7 @@ async function sceneEncounter(id){
   const o = CUR.objs.find(x => x.id === id); if (!o) return;
   commitPending(); save();
   $('#ovScene').hidden = true;
-  const res = await new Promise(resolve => { if (!openBattle({ kind: 'wild', form: o.form, level: o.level, moves: o.moves, faded: o.faded, bonus: o.befriendBonus, story: o.id, onEnd: resolve })) resolve(null); });
+  const res = await new Promise(resolve => { if (!openBattle({ kind: 'wild', form: o.form, level: o.level, moves: o.moves, faded: o.faded, bonus: o.befriendBonus, story: o.id, boss: !!o.boss, onEnd: resolve })) resolve(null); });
   if (!scene) return;
   $('#ovScene').hidden = false; document.body.classList.add('scene-on'); sbRender('', '');
   if (res == null) throw ABORT;
@@ -10071,6 +10169,7 @@ function fadeTick(sample){
     if (!S.flags['daily.buddy_pat']) S.flags['daily.buddy_pat'] = d;
     else if (S.flags['daily.buddy_pat'] !== d) { delete S.flags['story.buddy_pat_today']; delete S.flags['daily.buddy_pat']; }
   } else if (S.flags && S.flags['daily.buddy_pat'] && S.flags['daily.buddy_pat'] !== d) delete S.flags['daily.buddy_pat'];
+  bossRestTick(d); openRoad3();
   for (const p of allPets()) {
     if (!isFaded(p)) continue;
     if (!p.fc || typeof p.fc !== 'object') p.fc = { d, sum: 0, n: 0 };
@@ -10215,8 +10314,11 @@ function openBattle(o){
     flashAt: null, whites: [], whiteOn: 0, view: null, fxLog: [] });
   if (typeof mvPoolReset === 'function') { mvPoolReset(); mvNumClear(); }
   B.mapIntro = !!o.mapIntro; B.onEnd = o.onEnd || null;           // mapIntro: the intro + summon lines were already said in the map text box (§6.1)
+  B.boss = o.kind === 'wild' && !!o.boss && !o.coop; B.bossShifted = false;   // ARBITER_UNITS (D842): a placed boss, shifts to Answering at half HP
+  B.echo = { used: {}, hitBy: { me: new Set(), foe: new Set() } };            // ARBITER_UNITS (D840): per-battle Echo state
   if (o.kind === 'trainer') B.foes = trainerTeam(TRAINERS[o.trainerId]).map(m => makeFoe(m.form, m.level, m.moves, m.opener));
   else { B.foes = [makeFoe(o.form, o.level, o.moves)]; if (B.faded) B.foes[0].faded = B.faded; }
+  if (B.boss) { const bf = B.foes[0]; bf.maxHp = bf.hp = Math.round(bf.maxHp * BOSS_HP_MUL); }   // battle-only; BASE_STATS untouched (D845)
   B.participants = B.foes.map(() => new Set());
   B.me = { petId: lead.id, stages: { atk: 0, def: 0, spd: 0 }, mood: null };
   B.participants[0].add(lead.id);
@@ -10235,10 +10337,12 @@ function openBattle(o){
   const f = curFoe(); markSeen(f.si, f.stage); save();
   enc.open = false; enc.speed = befriendSpeed(f.stage, f.level);   // WP-A: faster marker at higher levels (+1.2%/Lv, cap +35%)
   $('#encName').hidden = true; $('#btMsg').textContent = '';
-  $('#btTwinkle').hidden = !(o.kind === 'wild' && f.stage > 0);
+  $('#btTwinkle').hidden = !(o.kind === 'wild' && f.stage > 0 && !B.boss);
   renderBattleCards(); setPanel('busy');
+  $('#ovBattle').classList.toggle('boss', B.boss);
   $('#ovBattle').hidden = false; lockTabs(true); fitAll(); fitBattle();
-  PPSound.music(takeBattleTrack(o.kind, o.trainerId), { fadeOut: 150, delay: 350, fadeIn: 100 });
+  const bossTrack = B.boss && PPSound.musicIds().includes(BOSS_TRACK) ? BOSS_TRACK : null;
+  PPSound.music(bossTrack || takeBattleTrack(o.kind, o.trainerId), { fadeOut: 150, delay: 350, fadeIn: 100 });
   battleIntro(B.id);
   return true;
 }
@@ -10311,7 +10415,9 @@ function closeBattle(){
   const f2 = $('#btFoe2Row'), al = $('#btAllyRow'), aim = $('#btAim');
   if (f2) f2.hidden = true; if (al) al.hidden = true; if (aim) aim.hidden = true;
   B.on = false; B.state = 'IDLE'; cancelQueue(); msgSkip = null; closeSheet(null);
-  $('#ovBattle').hidden = true; lockTabs(false);
+  $('#ovBattle').hidden = true; $('#ovBattle').classList.remove('boss'); lockTabs(false);
+  // ARBITER_UNITS (D842): a boss that was not befriended goes back to its post until the next day roll (fadeTick).
+  if (B.boss && B.story && B.result !== 'befriended') { S.flags['story.' + B.story + '_rest'] = true; S.flags['daily.' + B.story] = dayKey(Date.now()); toast(BOSS_BACK); }
   const w = B.wid && wild.list.find(o => o.id === B.wid);
   if (w) {
     if (B.result === 'befriended') removeWild(w, false);                       // it joined you
@@ -10860,7 +10966,8 @@ function toChoose(){
 
 /* --- AI (§6) --- */
 function aiPick(){
-  const B = battle, f = curFoe(), me = myBattler(), t = tr(), kind = t ? t.ai : 'wild', rng = B.rng;
+  const B = battle, f = curFoe(), me = myBattler(), t = tr(), kind = t ? t.ai : (B.boss ? 'leader' : 'wild'), rng = B.rng;   // a boss plays at leader level (D842)
+  const capUp = echoOf('me') === 'carrier_hum' ? 1 : 3;   // Carrier Hum: the AI's own boosts stop at +1 (D840)
   // COBBLECREST opener: that member's first action after it enters (Brace Rock), if the move has uses and the stat isn't capped.
   if (f.opener && !f.acted) {
     const slot = f.moves.find(m => m.id === f.opener && m.uses > 0), mv = MOVES[f.opener];
@@ -10869,7 +10976,7 @@ function aiPick(){
       if (!((e.stages > 0 && cur >= 3) || (e.stages < 0 && cur <= -3))) return { move: f.opener };
     }
   }
-  if (kind === 'leader' && !B.foeHealUsed && t.items && t.items.heal_snack && f.hp < 0.3 * f.maxHp) return { item: 'heal_snack' };
+  if (kind === 'leader' && !B.foeHealUsed && t && t.items && t.items.heal_snack && f.hp < 0.3 * f.maxHp) return { item: 'heal_snack' };
   const avail = f.moves.filter(m => m.uses > 0); if (!avail.length) return { move: 'wobble' };
   const statusOk = kind !== 'leader' || B.turn + 1 <= 2;
   const score = m => {
@@ -10879,7 +10986,7 @@ function aiPick(){
       const eff = mv.effect;
       if (eff && eff.stat) {
         const stg = eff.target === 'self' ? f.stages : B.me.stages, cur = stg[eff.stat] || 0;
-        if (!((eff.stages > 0 && cur >= 3) || (eff.stages < 0 && cur <= -3))) s += (typeof AI_V2 !== 'undefined' ? AI_V2.effect_bonus : 6);
+        if (!((eff.stages > 0 && cur >= (eff.target === 'self' ? capUp : 3)) || (eff.stages < 0 && cur <= -3))) s += (typeof AI_V2 !== 'undefined' ? AI_V2.effect_bonus : 6);
       }
       if (kind === 'wild' && typeof SIGNATURES !== 'undefined' && SIGNATURES[f.species] === m.id) s *= (typeof AI_V2 !== 'undefined' ? AI_V2.wild_signature_weight : 1.5);
       return s;
@@ -10888,7 +10995,7 @@ function aiPick(){
     const e = mv.effect || {};
     if (e.heal) return f.hp > 0.6 * f.maxHp ? 0 : 20;
     const st = e.target === 'self' ? f.stages : B.me.stages, cur = st[e.stat] || 0;
-    if ((e.stages > 0 && cur >= 3) || (e.stages < 0 && cur <= -3)) return 0;
+    if ((e.stages > 0 && cur >= (e.target === 'self' ? capUp : 3)) || (e.stages < 0 && cur <= -3)) return 0;
     return Math.abs(e.stages) >= 2 && e.target === 'foe' ? 25 : 20;   // §6 example scores Brace Rock (+2 self) at 20, so 25 = a foe-targeted ±2
   };
   const sc = avail.map(m => ({ id: m.id, s: score(m) }));
@@ -10923,7 +11030,57 @@ async function resolveTurn(action){
     if (meFirst) { await doMove('me', action.move, id); if (alive(id) && curFoe().hp > 0 && hpOf(activePet()) > 0) await foeAct(id); }
     else { await foeAct(id); if (alive(id) && hpOf(activePet()) > 0 && curFoe().hp > 0) await doMove('me', action.move, id); }
   }
+  if (alive(id)) await bossShift(id);
   if (alive(id)) endCheck(id);
+}
+/* --- ARBITER_UNITS Echoes (D840): one passive per attune line, for a boss and for your own unit alike --- */
+const ECHOES = Object.freeze({
+  tallybat:  { id: 'recount',     name: 'Recount',     text: 'Copies the first boost a foe makes.' },
+  dimlamp:   { id: 'glow_share',  name: 'Glow Share',  text: 'Heals a little of the harm it deals.' },
+  filecrow:  { id: 'filed_away',  name: 'Filed Away',  text: 'A repeat hit hurts it less.' },
+  cordhound: { id: 'live_wire',   name: 'Live Wire',   text: 'Its first VOLT hit lands harder.' },
+  humwisp:   { id: 'carrier_hum', name: 'Carrier Hum', text: 'Foes cannot boost past +1 near it.' },
+});
+const ECHO_LIVE_WIRE = 1.5, ECHO_FILED_AWAY = 0.75, ECHO_GLOW_SHARE = 1 / 6;
+function echoSpecies(side){
+  if (!battle.on) return null;
+  if (side === 'me') { const p = activePet(); return p ? p.species : null; }
+  const f = curFoe(); return f ? f.species : null;
+}
+function echoOf(side){ const e = ECHOES[echoSpecies(side)]; return e ? e.id : null; }
+function echoName(side){ const e = ECHOES[echoSpecies(side)]; return e ? e.name : ''; }
+const otherSide = side => side === 'me' ? 'foe' : 'me';
+function sideName(side){ return side === 'me' ? petName(activePet()) : foeLabel(curFoe()); }
+const echoLine = side => sideName(side) + "'s Echo: " + echoName(side) + '!';
+/* --- ARBITER_UNITS boss battles (D842) --- */
+const BOSS_HP_MUL = 1.5, BOSS_TRACK = 'glimmer_battle';
+const BOSS_SHIFT_LINE = 'The hum rises. {foe} answers it.', BOSS_WAIT_LINE = 'It only hears the hum. Wait.', BOSS_BACK = 'It slips back to its post.';
+// Swap a foe to another tier mid-battle: same HP percentage, the tier's lv 0 move in place of its weakest move, +1 to its best stat.
+function setFoeTier(f, k){
+  const form = f.species + '/' + k, stats = statsAt(form, f.level); if (!stats) return false;
+  const pct = f.hp / f.maxHp, mul = battle.boss ? BOSS_HP_MUL : 1;
+  f.form = form; f.stage = k; f.stats = stats;
+  f.maxHp = Math.round(stats.hp * mul); f.hp = Math.max(1, Math.ceil(pct * f.maxHp));
+  battle.shown = null; battle.hpShow = null;   // the bar must not tween from the old max
+  const row = (LEARNSETS[form] || []).find(x => x[0] === 0), mid = row && row[1];
+  if (mid && MOVES[mid] && !f.moves.some(m => m.id === mid)) {
+    const weak = f.moves.reduce((a, m, i) => (MOVES[m.id] ? MOVES[m.id].power : 0) < (MOVES[f.moves[a].id] ? MOVES[f.moves[a].id].power : 0) ? i : a, 0);
+    const slot = { id: mid, uses: MOVES[mid].uses == null ? Infinity : MOVES[mid].uses };
+    if (f.moves.length < 4) f.moves.push(slot); else f.moves[weak] = slot;
+  }
+  const bestKey = ['atk', 'def', 'spd'].reduce((a, s) => stats[s] > stats[a] ? s : a, 'atk');
+  f.stages[bestKey] = clamp((f.stages[bestKey] || 0) + 1, -3, 3);
+  markSeen(f.si, k);
+  return true;
+}
+async function bossShift(id){
+  const B = battle, f = curFoe();
+  if (!B.boss || B.bossShifted || !f || f.hp <= 0 || f.hp > f.maxHp / 2) return;
+  B.bossShifted = true;
+  if (!setFoeTier(f, Math.min(2, f.stage + 1))) return;
+  step('fx', { who: 'foe', kind: 'up', dur: 700 }); step('sfx', { name: 'evoBuild' });
+  renderBattleCards();
+  await say(BOSS_SHIFT_LINE.replace('{foe}', foeName(f)), id);
 }
 function groupLivingNow(){ return groupLiving(); }
 async function allyAct(id){
@@ -11016,16 +11173,19 @@ async function befriendTry(id){
   const B = battle, f = curFoe(), m = enc.mark;
   enc.freezeUntil = now() + 500;
   if (m >= enc.zone[0] && m <= enc.zone[1]) {
-    const form = formOf(f.si, f.stage), journalNew = !S.dex.caught[form];
-    const np = newPet(f.si, f.stage, 'wild', f.level); np.metPlace = metPlaceName(); markCaught(f.si, f.stage);   // befriending is never blocked by the cap, only its XP
-    if (f.hp < f.maxHp) np.hpNow = f.hp;
-    if (!B.storyMoves) np.moves = f.moves.map(x => x.id).filter(x => x !== 'wobble');       // keeps the foe's moves (§2)
-    if (!np.moves.length) np.moves = defaultMoves(f.form, f.level);
+    // D842: a boss joins at Quiet (tier 0) with hum 0 and its tier-0 moves; it earns its tiers again away from its post.
+    const joinStage = B.boss ? 0 : f.stage;
+    const form = formOf(f.si, joinStage), journalNew = !S.dex.caught[form];
+    const np = newPet(f.si, joinStage, 'wild', f.level); np.metPlace = metPlaceName(); markCaught(f.si, joinStage);   // befriending is never blocked by the cap, only its XP
+    if (B.boss) { np.hum = 0; const pct = f.hp / f.maxHp; if (pct < 1) np.hpNow = Math.max(1, Math.ceil(pct * maxHpOf(np))); }
+    else if (f.hp < f.maxHp) np.hpNow = f.hp;
+    if (!B.storyMoves && !B.boss) np.moves = f.moves.map(x => x.id).filter(x => x !== 'wobble');       // keeps the foe's moves (§2)
+    if (!np.moves.length) np.moves = defaultMoves(formOf(f.si, joinStage), f.level);
     if (B.faded) { np.faded = B.faded; np.fc = { d: dayKey(Date.now()), sum: 0, n: 0 }; }   // CREATURES_SLICE §5: faded: days left (additive field)
     if (B.story) S.flags['story.' + B.story] = true;                                          // a story creature: its flag is set on befriend only
     const firstWild = !S.flags['story.first_wild_met'];
     S.flags['story.first_wild_met'] = true;
-    if (journalNew) B.journalNew = { si: f.si, stage: f.stage, id: np.id, firstWild };
+    if (journalNew) B.journalNew = { si: f.si, stage: joinStage, id: np.id, firstWild };
     const room = await makeRoomFor(np);
     if (!room) { sfx('denied'); await say('The party is full.', id); return false; }
     sfx('stinger_befriend'); xpChimeDelay = 0.75;
@@ -11058,10 +11218,17 @@ async function doMove(side, mid, id){
   const e = mv.effect || null, selfOnly = mv.power === 0 && e && e.target === 'self';
   if (!selfOnly && !(B.rng() < mv.acc / 100)) { step('sfx', { name: 'miss' }); step('text', { s: uName + ' just misses!' }); await play(id); return; }
   if (mv.power > 0) {
-    const att = mine ? myBattler() : foeBattler(f), def = mine ? foeBattler(f) : myBattler();
-    const r = damage({ power: mv.power, moveType: mv.type, att, def, rng: B.rng });
+    const att = mine ? myBattler() : foeBattler(f), def = mine ? foeBattler(f) : myBattler(), tgt = otherSide(side), EC = B.echo;
+    // Live Wire (D840): the first VOLT move a Cordhound lands in a battle has 1.5x power.
+    const liveWire = !!EC && mv.type === 'VOLT' && echoOf(side) === 'live_wire' && !EC.used[side + ':live'];
+    const r = damage({ power: liveWire ? mv.power * ECHO_LIVE_WIRE : mv.power, moveType: mv.type, att, def, rng: B.rng });
     const key = mid + '>' + def.type; if (S.dex.hits[key] !== r.mult) { S.dex.hits[key] = r.mult; }   // type hint seen
     if (r.mult === 0) { step('sfx', { name: 'hitWeak' }); step('text', { s: "It didn't do a thing to " + tName + '...' }); noteMovesHit(0); await play(id); return; }
+    if (liveWire) EC.used[side + ':live'] = true;
+    // Filed Away (D840): a Filecrow takes 25% less from a move that already hit it this battle. Set before any HP write.
+    const filed = !!EC && echoOf(tgt) === 'filed_away' && EC.hitBy[tgt].has(mid);
+    if (filed) r.dmg = Math.max(1, Math.ceil(r.dmg * ECHO_FILED_AWAY));
+    if (EC) EC.hitBy[tgt].add(mid);
     let berry = false;
     const whoKey = mine ? barWho(f) : 'me';
     const hpFrom = mine ? f.hp : hpOf(p);
@@ -11089,7 +11256,17 @@ async function doMove(side, mid, id){
     if (r.mult > 1) step('text', { s: 'That hit hard!' }); else if (r.mult < 1) step('text', { s: 'It barely felt that...' });
     if (r.mult > 1 || r.mult < 1) noteMovesHit(r.mult);
     if (berry) step('text', { s: petName(p) + "'s Soft Berry eases the hit!" });
+    if (liveWire || filed) step('text', { s: echoLine(liveWire ? side : tgt) });
     await play(id); if (!alive(id)) return;
+    // Glow Share (D840): a Dimlamp heals a sixth of the damage it dealt.
+    if (echoOf(side) === 'glow_share' && (mine ? hpOf(p) > 0 : f.hp > 0)) {
+      const gmax = mine ? maxHpOf(p) : f.maxHp, gcur = mine ? hpOf(p) : f.hp, h = Math.min(gmax - gcur, Math.ceil(r.dmg * ECHO_GLOW_SHARE));
+      if (h > 0) {
+        if (mine) setMyHp(p, gcur + h); else f.hp = gcur + h;
+        step('sfx', { name: 'heal' }); renderBattleCards(); if (mine) save();
+        await say(echoLine(side), id); if (!alive(id)) return;
+      }
+    }
     const tgtDown = mine ? f.hp <= 0 : hpOf(p) <= 0;
     if (e) {
       if (e.heal) await healUser(side, e.heal, id);
@@ -11116,7 +11293,10 @@ async function healUser(side, frac, id){
 }
 async function applyStage(side, e, id){
   const B = battle, mine = side === 'me', st = mine ? B.me.stages : curFoe().stages, nm = mine ? petName(activePet()) : foeLabel(curFoe());
-  const cur = st[e.stat] || 0, nx = clamp(cur + e.stages, -3, 3), S_ = e.stat.toUpperCase();
+  const cur = st[e.stat] || 0, S_ = e.stat.toUpperCase(), opp = otherSide(side);
+  let nx = clamp(cur + e.stages, -3, 3);
+  // Carrier Hum (D840): while a Humwisp faces this side, its boosts stop at +1.
+  if (e.stages > 0 && echoOf(opp) === 'carrier_hum' && nx > 1) { nx = Math.max(cur, 1); await say(echoLine(opp), id); if (!alive(id)) return; }
   if (nx === cur) { step('sfx', { name: 'denied' }); await say(nm + "'s " + S_ + " can't get any " + (e.stages > 0 ? 'higher' : 'lower') + '!', id); return; }
   st[e.stat] = nx;
   step('fx', { who: side, kind: e.stages > 0 ? 'up' : 'down', dur: 700 });
@@ -11124,6 +11304,13 @@ async function applyStage(side, e, id){
   renderBattleCards();
   const d = Math.abs(nx - cur);
   await say(nm + "'s " + S_ + (e.stages > 0 ? (d > 1 ? ' went way up!' : ' went up!') : (d > 1 ? ' dropped a lot!' : ' dropped!')), id);
+  // Recount (D840): the first boost a foe makes, a Tallybat copies once. The flag is set first so two Tallybats cannot loop.
+  if (nx > cur && B.echo && echoOf(opp) === 'recount' && !B.echo.used[opp + ':recount']) {
+    B.echo.used[opp + ':recount'] = true;
+    if (!alive(id)) return;
+    await say(echoLine(opp), id); if (!alive(id)) return;
+    await applyStage(opp, { stat: e.stat, stages: nx - cur }, id);
+  }
 }
 // A new pet coming out on a side replaces that side's worn-out silhouette. The 'faint'/'flee' fx are kept on purpose (the worn-out pet
 // stays a grey silhouette, 4 px down, until it leaves), so without this the next pet sent out (forced swap, a trainer's next Walkling)
@@ -11240,10 +11427,13 @@ const REGION_MAP = {
       hold: [{ id: 'keepers', line: 'The Keepers hold the capital.' }] },
     fb_heights:    { kind: 'side',  col: 10, row: 3, label: 'HEIGHTS',     labelAt: 'left', blurb: 'Ridge north of Fernbrook. A lab, and old tunnels.', path: [[10, 6], [10, 3]],
       hold: [{ id: 'split', when: ['story.sm_done'], line: 'The watch opened the tunnels. The lab remains.' }, { id: 'glimmer', line: "Glimmerwell's lab sits on the ridge." }] },
+    // ARBITER_UNITS Build C (D848, D849): the Brinewick road, south of Cobblecrest on the parchment. Brinewick itself is not built.
+    route3:        { kind: 'route', col: 17, row: 9, label: 'ROUTE 3',     labelAt: 'below', blurb: 'The Brinewick road. Crates, and a hum.', path: [[17, 6], [18, 7], [18, 9], [17, 9]],
+      hold: [{ id: 'split', line: "Keepers walk it. Glimmerwell's crates roll down it." }] },
   },
   // §5 visited rule: S.mapSeen first (Q2 default: yes), else these story flags; hearthmoor always.
   flags: { route1: ['story.reached_fernbrook'], fernbrook: ['story.reached_fernbrook'], route2: ['story.reached_route2'], route2_glen: ['story.reached_glen'],
-           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'] },
+           cobblecrest: ['story.reached_cobblecrest'], cobble_quarry: ['story.reached_quarry'], proto: [], mahopac: ['story.reached_mahopac'], highcharity: ['story.hc_arrived'], fb_heights: ['story.know_us'], hw_cut: ['story.hw_reached'], route3: ['story.reached_route3'] },
   interiors: { hm_home_in: 'hearthmoor', hm_home_up: 'hearthmoor', hm_lodge_in: 'hearthmoor', hm_lantern_in: 'hearthmoor', hm_rook_in: 'hearthmoor', hm_hq_f1: 'hearthmoor', hm_hq_f2: 'hearthmoor', hm_school_in: 'hearthmoor', hm_flats_lobby: 'hearthmoor', hm_flats_5: 'hearthmoor', hm_store: 'hearthmoor', hm_wardrobe: 'hearthmoor', hm_diner: 'hearthmoor', cc_lantern_in: 'cobblecrest', cc_hall_in: 'cobblecrest',
     fb_lantern_in: 'fernbrook', fb_hall_in: 'fernbrook',
     mahopac_obs: 'mahopac', dream_2004: 'mahopac', dream_party: 'mahopac', dream_drive: 'mahopac',
@@ -14486,6 +14676,7 @@ async function results(result, id){
   const parts = new Set(); B.participants.forEach(s => s.forEach(x => parts.add(x)));
   parts.forEach(pid => {
     const p = petById(pid); if (!p) return;
+    if (won) addHum(p, HUM_GAIN.battleWin);   // D839: a win feeds the hum of each attune Walkling that took part
     applyBattleCosts(p, { tired: B.fainted.has(pid), won });
     if (signalOn(p)) p.happy = Math.max(SIGNAL_CFG.joyFloor, p.happy - SIGNAL_CFG.battleJoy);
   });
@@ -14694,7 +14885,7 @@ async function pumpLearn(){
     learnBusy = true;
     try {
       const k = pendingEvoStage(p), mid = evoMoveOf(p, k);
-      if (mid && !(p.moves || []).includes(mid)) { await infoSheet(petName(p) + ' remembers something from growing up!'); await teachMove(p, mid, infoSheet); }
+      if (mid && !(p.moves || []).includes(mid)) { await infoSheet(petName(p) + (isAttune(p) ? ' hears something new in the hum!' : ' remembers something from growing up!')); await teachMove(p, mid, infoSheet); }
       if (!Array.isArray(p.evoMoves)) p.evoMoves = [];
       if (!p.evoMoves.includes(k)) p.evoMoves.push(k);
       save();
@@ -14775,6 +14966,9 @@ function battleAct(act){
     $('#btMsg').textContent = 'Target: ' + foeName(curFoe());
     return;
   }
+  if (act === 'befriend' && B.boss && !B.bossShifted) {   // D841: a boss only answers after it shifts
+    sfx('denied'); say(BOSS_WAIT_LINE).then(() => { if (B.on && B.state === 'CHOOSE') $('#btMsg').textContent = 'What should ' + petName(activePet()) + ' do?'; }); return;
+  }
   if (act === 'fight') { setPanel('fight'); if (tut.lesson === 'moves' && tut.id === 'M3') movesShow('M4'); }
   else if (act === 'befriend') openBefriendBar();
   else if (act === 'run') resolveTurn({ kind: 'run' });
@@ -14793,6 +14987,8 @@ function befriendZoneWidth(){
   }
   let w = Math.min(0.6, befriendWidth(f.hp / f.maxHp, f.stage, p.happy, B.treat, befriendCtx()) + B.bonus + extra);
   if (chipOn(p) && alignBand(p.align) === 'Strain') w *= 0.9;
+  const mul = SPECIES[f.si] && SPECIES[f.si].befriendMul;   // D841: attune lines narrow the zone
+  if (mul) w *= mul;
   return w;
 }
 let waryTurn = 0;   // which of the three wary lines the next untouched foe gets
@@ -15058,7 +15254,7 @@ const statMaxCache = {};
 function statMaxAt(L){
   if (statMaxCache[L]) return statMaxCache[L];
   const m = { hp: 1, atk: 1, def: 1, spd: 1 };
-  SPECIES.forEach(sp => { if (sp.npcOnly) return; sp.stages.forEach((st, k) => { const s = statsAt(sp.id + '/' + k, L); if (s) for (const [key] of STAT_KEYS) m[key] = Math.max(m[key], s[key]); }); });
+  SPECIES.forEach(sp => { if (offJournal(sp)) return; sp.stages.forEach((st, k) => { const s = statsAt(sp.id + '/' + k, L); if (s) for (const [key] of STAT_KEYS) m[key] = Math.max(m[key], s[key]); }); });
   return (statMaxCache[L] = m);
 }
 const typesWhere = f => TYPES.filter(f);
@@ -15068,6 +15264,7 @@ function chartLine(type){
 }
 function growText(p){
   if (spi(p) == null) return { text: '???', ready: false };
+  if (isAttune(p)) return { text: humHint(p), ready: false };
   if (p.stage >= 2) return { text: 'Fully grown', ready: false };
   const gate = GROW_GATES[p.stage];
   if (!gate) return { text: 'Next form coming later', ready: false };
@@ -15321,6 +15518,8 @@ function paintStatsInto(prefix, p, opt){
   const ch = sp && sp.type ? chartLine(sp.type) : { strong: ['???'], weak: ['???'] }, el = $('#' + prefix + 'Chart'); el.innerHTML = '';
   const part = (lab, list) => { const s = document.createElement('span'); s.className = 'seg'; s.append(lab + ' '); const e = document.createElement('em'); e.textContent = list.join(', '); s.append(e); return s; };
   el.append(part('Strong vs', ch.strong), ' \u00b7 ', part('Weak to', ch.weak));
+  const echo = sp && ECHOES[sp.id];   // D840: an attune line shows its passive under the type chart
+  if (echo) { const s = document.createElement('div'); s.className = 'sc-echo'; s.append('ECHO ', Object.assign(document.createElement('b'), { textContent: echo.name }), ' \u00b7 ' + echo.text); el.append(s); }
 }
 function renderStatsCard(){
   const p = allPets().find(q => q.id === statsCard.id); if (!p) { closeStatsCard(); return; }
@@ -15336,6 +15535,8 @@ function renderStatsCard(){
   if (acts && (!nick || nick.hidden)) acts.hidden = !mine;
   const edit = $('#scNameEdit');
   if (edit) edit.setAttribute('aria-label', 'Rename ' + petName(p));
+  const sb = $('#scStill');   // D838: any holder can keep an attune Walkling still (stops the hum; the tier never drops)
+  if (sb) { sb.hidden = !isAttune(p); sb.textContent = p.still ? 'LISTEN' : 'STILL'; sb.setAttribute('aria-pressed', p.still ? 'true' : 'false'); }
 }
 
 /* ---------- Walkling sheet (party menu, one pet) ---------- */
@@ -15681,6 +15882,12 @@ const LORE = {
   moth: 'Fuzzwicks follow any warm glow, even a miner\'s old lamp.',
   vane: 'Vanelets turn with the weather and are rarely seen on a calm day.',
   dormouse: 'Dozmice hum in the cold and glow faintly when the path is dark.',
+  // ARBITER_UNITS: Glimmerwell built them as its first relays; the hum woke them (D837).
+  tallybat: 'Built to count for the Glow Census. The hum woke it. It still counts everything twice.',
+  dimlamp: 'A Comfort Lamp that woke when the hum got loud. Its glow asks you to stay.',
+  filecrow: 'Built to file records. It woke beside an old note that only says THE ARBITER.',
+  cordhound: 'Built to keep the humming crates in line. When the hum got loud, it followed them.',
+  humwisp: 'Made to carry the hum out of the bay. The hum filled it and woke it.',
 };
 function metPlaceName(){
   const id = isRoom() ? outdoorId() : (CUR && CUR.id);
@@ -16269,7 +16476,7 @@ function renderDexGrid(){
   const speciesKnown = k => SP_INDEX[String(k).split('/')[0]] != null;
   const joined = Object.keys(caught).filter(k => caught[k] && speciesKnown(k) && !formNpcOnly(k)).length;
   let met = 0;
-  SPECIES.forEach((sp, si) => { if (sp.npcOnly) return; sp.stages.forEach((st, k) => {
+  SPECIES.forEach((sp, si) => { if (offJournal(sp)) return; sp.stages.forEach((st, k) => {
     const f = formOf(si, k), flagCaught = !!caught[f], flagSeen = !!seen[f], owns = owned.has(f);
     const state = (flagCaught || owns) ? 'joined' : flagSeen ? 'met' : 'unmet';
     if (state === 'met') met++;
@@ -16304,6 +16511,36 @@ function renderDexGrid(){
     cell.append(cv, lb); dex.append(cell);
   });
   $('#dexCount').textContent = 'Joined ' + joined + ' · Met ' + met + ' · Out there ' + JOURNAL_FORMS;
+  renderBossRow(seen, caught, owned);
+}
+// ARBITER_UNITS (D844): one slot per boss line, under the grid and outside the count. Hidden until the branch opens or one is met.
+// The slot shows the highest tier met. The heading follows your side.
+function renderBossRow(seen, caught, owned){
+  const grid = $('#dexGrid'); if (!grid) return;
+  let row = $('#dexBoss');
+  if (!row) { row = document.createElement('div'); row.id = 'dexBoss'; row.className = 'dex-boss'; grid.insertAdjacentElement('afterend', row); }
+  freeCanvases(row.querySelectorAll('canvas'));
+  const lines = SPECIES.map((sp, si) => ({ sp, si })).filter(o => o.sp.boss);
+  const top = o => { for (let k = o.sp.stages.length - 1; k >= 0; k--) { const f = formOf(o.si, k); if (caught[f] || seen[f] || owned.has(f)) return k; } return -1; };
+  const any = lines.some(o => top(o) >= 0);
+  row.hidden = !(any || (S.flags && S.flags['story.ans_open']));
+  row.innerHTML = '';
+  if (row.hidden) return;
+  const head = document.createElement('div'); head.className = 'dex-boss-head';
+  head.textContent = side() === 'glimmer' ? "FOUNDER'S LINE" : 'ANSWERERS';
+  const cells = document.createElement('div'); cells.className = 'dex dex-boss-cells';
+  for (const o of lines) {
+    const k = top(o), known = k >= 0, f = known ? formOf(o.si, k) : null;
+    const cell = document.createElement(known ? 'button' : 'div');
+    cell.className = 'cell' + (known ? ' dex-cell' : ''); cell.dataset.form = o.sp.id + '/' + Math.max(0, k);
+    cell.dataset.state = known ? ((caught[f] || owned.has(f)) ? 'joined' : 'met') : 'unmet';
+    if (known) { cell.type = 'button'; cell.setAttribute('aria-label', o.sp.stages[k].name + ', journal page'); cell.addEventListener('click', () => openJournalEntry({ si: o.si, stage: k })); }
+    const cv = document.createElement('canvas'); cv.width = cv.height = 18;
+    spriteCanvas(cv, o.si, Math.max(0, k), known ? 'n' : 's', false, null);
+    const lb = document.createElement('div'); lb.textContent = known ? o.sp.stages[k].name : '???'; if (!known) lb.className = 'unk';
+    cell.append(cv, lb); cells.append(cell);
+  }
+  row.append(head, cells);
 }
 // Partner = the pet on the Pet tab; it must be in the party. A box pet joins the party first; if the party is full,
 // the last party member that isn't the partner moves to the top of the box.
@@ -17301,6 +17538,7 @@ function bindInput(){
   });
   $('#scClose').addEventListener('click', () => { sfx('tap'); closeStatsCard(); });
   $('#scRename').addEventListener('click', () => interactFromStats());
+  { const sb = $('#scStill'); if (sb) sb.addEventListener('click', () => { const p = allPets().find(q => q.id === statsCard.id); if (!p) return; sfx('tap'); toggleStill(p); renderStatsCard(); }); }
   const scName = $('#scName'); if (scName) scName.addEventListener('click', () => { sfx('tap'); openNickEdit(); });
   const scNameEdit = $('#scNameEdit'); if (scNameEdit) scNameEdit.addEventListener('click', () => { sfx('tap'); openNickEdit(); });
   $('#scNickCancel').addEventListener('click', () => { sfx('tap'); hideNickEdit(); });
@@ -18001,6 +18239,19 @@ function boot(){
     checkpoints: () => debugCheckpointList(),
     encounterPreview: (speciesOrForm, level, stage, hpFrac) => encounterPreview(speciesOrForm, level, stage, hpFrac),
     spawnEncounter: opts => spawnEncounter(opts),
+    // ARBITER_UNITS (debug only): fight a boss with no map, feed hum, and run one move or stage change through the battle code.
+    forceBoss: (id, level = 28) => {
+      const si = SP_INDEX[id]; if (si == null || !SPECIES[si].boss) return false;
+      showTab('walk'); if (overlayOpen()) return false;
+      return openBattle({ kind: 'wild', form: id + '/1', level, boss: true, story: 'ans_' + id });
+    },
+    addHum: (n, petId) => { const p = petId ? petById(petId) : pet(); if (!p) return null; const got = addHum(p, n); updateHUD(); save(); return { got, hum: humOf(p), stage: p.stage }; },
+    toggleStill: petId => { const p = petId ? petById(petId) : pet(); return p ? toggleStill(p) : null; },
+    moveNow: (side, mid) => battle.on ? doMove(side, mid, battle.id) : null,
+    turnNow: mid => battle.on && battle.state === 'CHOOSE' ? resolveTurn({ kind: 'fight', move: mid }) : null,
+    stageNow: (side, stat, n) => battle.on ? applyStage(side, { stat, stages: n }, battle.id).then(() => ({ me: Object.assign({}, battle.me.stages), foe: Object.assign({}, curFoe().stages) })) : null,
+    forceBefriend: () => { if (!battle.on || battle.kind !== 'wild') return null; enc.zone = [0, 1]; enc.mark = 0.5; return befriendTry(battle.id); },
+    bossState: () => battle.on ? { boss: !!battle.boss, shifted: !!battle.bossShifted, stage: curFoe().stage, hp: curFoe().hp, maxHp: curFoe().maxHp, moves: curFoe().moves.map(m => m.id), zone: befriendZoneWidth() } : null,
     setFaction: (sd, opts) => setFaction(sd, opts),
     setCare: o => debugSetCare(o),
     setLevel: (n, petId) => debugSetLevel(n, petId),
