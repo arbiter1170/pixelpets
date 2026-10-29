@@ -2,14 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-28 13:36 ET: Rook bursts in just inside the Lodge door (build 20261028-1336)
+## 2026-10-28 20:28 ET: Rook bursts in just inside the Lodge door (build 20261028-2028)
 
 - What changed and why: D871 (green, settled by Vincent). The live check of build 20261028-0640 showed Rook placed on the Lodge door mat (5,8), which sits in the bottom wall row that the room draws dark, so he said "Did I miss it?" from the dark. He now appears just inside the door, (5,7), and speaks from the floor. His exit still ends on the mat, so he still leaves through the door. Design recompiled the beat sheet (design `b6dba02`); his walk to the basket is one tile shorter.
 - Files touched: `data/cutscene_intro.json` (Rook's `castAt` y 8 to 7, copied from Design's compiled file), `data/mapdata.js` (generated), `tests/intro_cutscene.spec.js` (T5, T7), `tests/README.md`, `archive/DECISIONS_SETTLED.md` (D871), `OPEN_DECISIONS.md` (next free id D892), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`, merged with main `d09b1b0` (#220, #223, #224, #206). Build `20261028-1336`.
+- Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`, merged with main `2bdd7df` (#220, #223, #224, #206, #219, #201, #217). Build `20261028-2028`.
 - Tests run and result (widths, checks): `tests/intro_cutscene.spec.js` (T5 now expects (5,7) and checks Rook is never in a wall row on a line he speaks; T7's B8 walk is 6 tiles) and `tests/starter_moment.spec.js` at 320, 375 and 390: 43 passed, 20 skipped (rows that run at 390 only); T7 3 of 3 on repeat.
 - Decisions made (colour + reasoning): D871, green: a one-tile staging fix inside a settled cutscene; D806's text stands with its entry tile changed.
 - Anything left unfinished: none.
+
+## 2026-10-28 13:35 ET: Phone placeholder lines keep to known facts (build 20261028-1335)
+
+- What changed and why: a Lore check of the PHONE_APPS placeholder copy (D863) found four lines that went past the story. GLOW told Keepers of lower standing nothing about a held bed and told the cracked handset "Doorway only", but every Lantern House has beds for every holder (AGENTS.md rule 10). The cracked SKY footer hinted at a Glimmerwell plan the story keeps for later and used a slogan that is not theirs. The BOTNET shelf named an augment slot, an unbuilt idea. SKY's night line and two Night Desk posts said sleeping Walklings send glow up, a new story fact. Those lines now say only what the game already does: beds are open to every holder in both voices, the footer uses Glimmerwell's own "Brighter by nature.", the shelf line drops the augment, and the night lines say to let your Walkling sleep. Design still writes the real copy (D863 stays open).
+- Files touched: `game.js` (SKY night and footer lines, GLOW bed line, BOTNET line), `ribbit.js` (`NIGHT_POSTS` nd-glow, nd-share), `tests/phone_apps.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md` (D863 note), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/phone-copy-facts` from main `a62f97a`, merged with main `d09b1b0` (#220, #223, #224, #206). Build `20261028-1335`.
+- Tests run and result (widths, checks): `tests/phone_apps.spec.js` (two new rows: beds open at Keepers tier 2+ in both voices; no placeholder hint on SKY, GLOW, the shelf or the Night Desk, day or night, either voice), `phone_apps_2`, `civic` and `phone_contacts` at 320, 375 and 390.
+- Decisions made (colour + reasoning): none new. Placeholder copy under D863 (yellow, open); the changes remove claims, they add none.
+- Anything left unfinished: Design's copy pass for D863, including five smaller lines the Lore check flagged (Keeper wires, the Keepers forecast, the census numbers, the cart line, the step quota).
 
 ## 2026-10-28 ET: `npm run iphone` takes a free port when 8080 is busy, no build change
 
