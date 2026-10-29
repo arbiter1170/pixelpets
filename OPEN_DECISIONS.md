@@ -18,7 +18,7 @@ D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_
 
 D859-D870 are reserved: PHONE_APPS (Vincent, Oct 28, 2026: "small & medium approved" for the phone app list). D859-D862 and D864-D869 are settled and recorded in the archive; D863 is open below. D870 is spare.
 
-D871 is used: INTRO_CUTSCENE, Rook's entry tile (settled, recorded in the archive). D875 is held by PR #221 (LANTERN_COST) and D876-D891 by PR #222 (BRINEWICK v0.1).
+D871 is used: INTRO_CUTSCENE, Rook's entry tile (settled, recorded in the archive). D875 is LANTERN_COST (Vincent, Oct 28, 2026; settled, recorded in the archive). D876-D891 are held by PR #222 (BRINEWICK v0.1).
 
 Next free id is D892.
 Other packets hold ids through D891.
@@ -27,8 +27,6 @@ Other packets hold ids through D891.
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
-| D32 | Heights names | RegenX, Atten, The Arbiter. Vincent also wrote PharmaX in the same note | Player text uses RegenX only. The Arbiter emits slowly; the emission is not named. One rename in `data/heights.json` `_names` plus the scenes. This was D27 on the keeper-hq branch | `data/heights.json` |
-| D161 | End-game side switch | What, besides Rook's quest, lets a player change sides at the end of the game? | Not built. Until that plan lands, Rook's quest is the only switch (D127, D128). Pledge desks stay removed. No desk, no extra Lantern option, no Juniper desk. | Later, when the end-game plan exists. Do not restore pledgeDesk in the meantime. |
 | D837 | Answerers: names | Red. Tallybat, Dimlamp, Filecrow, Cordhound, Humwisp; groups "the Answerers" (Keepers) and "the Founder's Line" with "units" (Glimmerwell). | Settled in part (Vincent, Oct 27, 2026): origin (Glimmerwell's first relays, woken by the hum), Dimlamp for Hushlamp, Filecrow for Ledgerowl (new crow art). Built (build 20261027-1537). Species ids 20-24 are permanent once merged. | `handoff/walklings/ARBITER_UNITS.md` §1; `sprites.js` |
 | D838 | Answerers: tiers | Red. One name, tiers Quiet / Humming / Answering in `p.stage`; `attune` drops GROW UP; `pet.hum` 0-100 (tiers at 40 and 100); STILL / LISTEN (`pet.still`) stops the meter. | Tier words and STILL settled (Vincent, Oct 27, 2026). Built (build 20261027-1537). | `game.js` attunement block; `save.js` fixPet |
 | D839 | Answerers: hum sources | Yellow. Win +4, first daily Glimmerwell place +6, first daily lair visit +10, Humwisp in the party x1.5. | Built (build 20261027-1537). One constant (`HUM_GAIN`). | `HUM_GAIN` in `game.js` |

@@ -6,7 +6,8 @@ const { starterSave, installSave, trackErrors, gotoGame, boxesOverlap, artifacts
 
 trackErrors(test, expect);
 
-const LINE_A = 'Your team rests up and feels full of energy. This Lantern House will remember you.';
+// D875 (Vincent, Oct 28, 2026): an energy-only rest costs 5 Acorns too; the free refill line is gone.
+const LINE_A = 'You leave 5 Acorns. You all doze in the lantern glow. Your team is rested.';
 const LINE_B = 'Your team is already rested. This Lantern House will remember you.';
 
 function save(extra) {
@@ -366,7 +367,7 @@ test('arrow keys and Enter buy the selected row', async ({ page }) => {
   expect(await page.evaluate(() => ({ money: PixelPets.state.money, n: PixelPets.state.bag.hearty_snack || 0 }))).toEqual({ money: 350, n: 1 });
 });
 
-test('a free Lantern rest says the refill line or the already-rested line', async ({ page }) => {
+test('D875: an energy-only Lantern rest costs 5 Acorns, and a rested team pays nothing', async ({ page }) => {
   test.setTimeout(60000);
   const s = save();
   s.party[0].energy = 60;
@@ -375,7 +376,7 @@ test('a free Lantern rest says the refill line or the already-rested line', asyn
   expect(await page.evaluate(() => PixelPets.talkTo('lantern_bed_a'))).toBe(true);
   await reachChoice(page);
   expect(await page.locator('#ovShop').isHidden()).toBe(true);
-  await page.locator('#sbChoices button', { hasText: 'Rest a while' }).click();
+  await page.locator('#sbChoices button', { hasText: 'Rest (5 Acorns)' }).click();
   await page.waitForFunction((line) => window.PixelPets.scene && window.PixelPets.scene.text === line, LINE_A);
   expect(await page.evaluate(() => PixelPets.state.party[0].energy)).toBe(100);
   for (let i = 0; i < 8; i++) {
@@ -390,7 +391,7 @@ test('a free Lantern rest says the refill line or the already-rested line', asyn
     respawn: PixelPets.state.world.respawn,
     v: PixelPets.state.v,
   }));
-  expect(filled).toEqual({ money: 55, respawn: 'hearthmoor', v: 2 });
+  expect(filled).toEqual({ money: 50, respawn: 'hearthmoor', v: 2 });
 
   expect(await page.evaluate(() => PixelPets.talkTo('lantern_bed_a'))).toBe(true);
   await reachChoice(page);
@@ -400,7 +401,7 @@ test('a free Lantern rest says the refill line or the already-rested line', asyn
     btn.click();
   });
   await page.waitForFunction((line) => window.PixelPets.scene && window.PixelPets.scene.text === line, LINE_B);
-  expect(await page.evaluate(() => PixelPets.state.money)).toBe(55);
+  expect(await page.evaluate(() => PixelPets.state.money)).toBe(50);
 });
 
 test('a hurt Lantern rest stays a yes or no prompt with the chip', async ({ page }) => {

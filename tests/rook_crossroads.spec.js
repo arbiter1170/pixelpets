@@ -33,6 +33,7 @@ async function playLog(page, choices, opts) {
   const left = choices.slice();
   const says = [];
   const prompts = [];
+  const options = [];   // every choice label shown, in order
   let won = false;
   let foes = null;
   let shotSay = false;
@@ -53,7 +54,7 @@ async function playLog(page, choices, opts) {
         foes: b && b.on ? (b.foes || []).map(f => ({ form: f.form, level: f.level })) : null,
       };
     });
-    if (!st.scene && !st.battle) return { says, prompts, foes };
+    if (!st.scene && !st.battle) return { says, prompts, foes, options };
     if (await page.locator('#btOk').isVisible().catch(() => false)) {
       await page.locator('#btOk').click();
       await page.waitForTimeout(30);
@@ -79,6 +80,7 @@ async function playLog(page, choices, opts) {
         shotChoice = true;
         await shot(page, opt.shotName || 'rc-switch-confirm');
       }
+      options.push(...await page.locator('#sbChoices button').allTextContents());
       const label = left.shift();
       if (!label) throw new Error('choice "' + st.text + '" but the test had no answer left');
       prompts.push(st.text);
@@ -195,7 +197,7 @@ test('Keepers free the crates, fight Tobin, and Hale pays the road snacks', asyn
   expect(wrap.chains).not.toContain('rc_meet');
 });
 
-test('a Glimmerwell player can walk away with Rook and the score is halved', async ({ page }) => {
+test('D161: a Glimmerwell player cannot walk away with Rook; he pleads, then fights, and the score stands', async ({ page }) => {
   test.setTimeout(120000);
   const save = cobbleSave({
     'story.side': 'glimmer',
@@ -228,33 +230,27 @@ test('a Glimmerwell player can walk away with Rook and the score is halved', asy
   }
   expect(await page.evaluate(() => PixelPets.standing.glimmer.points)).toBe(30);
   expect(await page.evaluate(() => PixelPets.runScene('rc_gate'))).toBe(true);
-  const gate = await playLog(page, ['Walk away with Rook', 'Yes'], { shotChoice: 'Really?', shotName: 'rc-switch-confirm' });
-  expect(gate.prompts.some(p => p.indexOf('Really?') >= 0 && p.indexOf('30') >= 0 && p.indexOf('15') >= 0)).toBe(true);
+  // No side switch until Act 5 (Vincent, Oct 28, 2026): no "Walk away?" choice, no cost line, no standing offer.
+  const gate = await playLog(page, []);
+  expect(gate.prompts.some(p => p.indexOf('Walk away') >= 0 || p.indexOf('Really?') >= 0)).toBe(false);
+  expect(gate.says).toContain('{name}. Walk away with me, right now. The Pebblits go home to the seam.'.replace('{name}', await page.evaluate(() => PixelPets.state.player.name || 'Wayfarer')));
+  expect(gate.says.some(t => t.indexOf('It costs you') >= 0 || t.indexOf('The offer stands') >= 0)).toBe(false);
+  expect(gate.foes).not.toBeNull();
   const after = await page.evaluate(() => ({
     side: PixelPets.side,
     switches: PixelPets.state.flags['story.switches'],
-    chapter: PixelPets.state.flags['story.switch_chapter'],
-    via: PixelPets.state.flags['story.switch_via'],
     glimmer: PixelPets.standing.glimmer.points,
-    keepers: PixelPets.standing.keepers.points,
     end: PixelPets.state.flags['story.rc_end'],
-    quit: PixelPets.state.flags['story.rook_quit'],
     rook: PixelPets.state.flags['story.rook_end'],
-    quest: PixelPets.quest.id,
-    wrap: (PixelPets.sideActive.find(a => a.id === 'rc_wrap_hale') || {}).text || '',
+    can: PixelPets.standing.canSwitch,
     v: PixelPets.state.v,
   }));
-  expect(after.side).toBe('keepers');
-  expect(after.switches).toBe(1);
-  expect(after.chapter).toBe(2);
-  expect(after.via).toBe('rook');
-  expect(after.glimmer).toBe(15);
-  expect(after.keepers).toBe(10);
-  expect(after.end).toBe('walked');
-  expect(after.quit).toBe('offer');
+  expect(after.side).toBe('glimmer');
+  expect(after.switches).toBeUndefined();
+  expect(after.glimmer).toBe(40);   // 30 + rc_shipped_g; nothing halved
+  expect(after.end).toBe('shipped');
   expect(after.rook).toBe('stays');
-  expect(after.quest).toBe('hc_council');
-  expect(after.wrap).toContain('Master Hale');
+  expect(after.can).toBe(false);
   expect(after.v).toBe(2);
 });
 
@@ -271,7 +267,7 @@ test('a Glimmerwell player who stays fights Rook at levels 21, 22 and 23', async
   }, { standing: { keepers: 0, glimmer: 16 }, money: 0 });
   await boot(page, save);
   expect(await page.evaluate(() => PixelPets.runScene('rc_gate'))).toBe(true);
-  const gate = await playLog(page, ['Stay with the company']);
+  const gate = await playLog(page, []);   // D161: no walk-away choice; Rook pleads, then fights
   expect(gate.foes).toEqual([
     { form: 'moth/1', level: 21 },
     { form: 'gust/1', level: 22 },
@@ -305,7 +301,7 @@ test('a Glimmerwell player who stays fights Rook at levels 21, 22 and 23', async
   expect(bag.v).toBe(2);
 });
 
-test('Rook offers the switch once per Seal, and an old desk save is marked desk', async ({ page }) => {
+test('D161: Rook has no "About sides" offer and his debug offer says wait; an old desk save is marked desk', async ({ page }) => {
   test.setTimeout(90000);
   const save = cobbleSave({
     'story.side': 'keepers',
@@ -315,30 +311,16 @@ test('Rook offers the switch once per Seal, and an old desk save is marked desk'
   }, { standing: { keepers: 20, glimmer: 4 } });
   await boot(page, save);
   expect(await page.evaluate(() => PixelPets.runScene('rook_after'))).toBe(true);
-  await playLog(page, ['About sides', 'Not yet']);
-  expect(await page.evaluate(() => PixelPets.state.flags['story.switches'] || 0)).toBe(0);
-  expect(await page.evaluate(() => PixelPets.runScene('rook_after'))).toBe(true);
-  await playLog(page, ['About sides', 'Yes']);
-  const once = await page.evaluate(() => ({
-    side: PixelPets.side,
-    switches: PixelPets.state.flags['story.switches'],
-    via: PixelPets.state.flags['story.switch_via'],
-    chapter: PixelPets.state.flags['story.switch_chapter'],
-    keepers: PixelPets.standing.keepers.points,
-    glimmer: PixelPets.standing.glimmer.points,
-    bond: PixelPets.state.flags['story.rook_bond'],
-  }));
-  expect(once.side).toBe('glimmer');
-  expect(once.switches).toBe(1);
-  expect(once.via).toBe('rook');
-  expect(once.chapter).toBe(2);
-  expect(once.keepers).toBe(10);
-  expect(once.glimmer).toBe(4);
-  expect(once.bond).toBe(4);
-  expect(await page.evaluate(() => PixelPets.runScene('rook_after'))).toBe(true);
-  const again = await playLog(page, ['About sides']);
-  const refused = await page.evaluate(() => PixelPets.standingCfg().switch.rook.refused);
-  expect(again.says).toContain(refused);
+  const talk = await playLog(page, ['See you']);
+  expect(talk.options).toContain('See you');
+  expect(talk.options).not.toContain('About sides');
+  expect(await page.evaluate(() => PixelPets.standing.canSwitch)).toBe(false);
+  expect(await page.evaluate(() => PixelPets.rookOffer('glimmer'))).toBe(true);
+  const offer = await playLog(page, []);
+  const wait = await page.evaluate(() => PixelPets.standingCfg().switch.rook.wait);
+  expect(offer.says).toEqual([wait]);
+  const once = await page.evaluate(() => ({ side: PixelPets.side, switches: PixelPets.state.flags['story.switches'], keepers: PixelPets.standing.keepers.points, bond: PixelPets.state.flags['story.rook_bond'] }));
+  expect(once).toEqual({ side: 'keepers', switches: undefined, keepers: 20, bond: 4 });
 
   const old = cobbleSave({
     'story.side': 'keepers',
@@ -378,7 +360,7 @@ test('Rook offers the switch once per Seal, and an old desk save is marked desk'
   expect(loaded.chapter).toBe(2);
   expect(await p2.evaluate(() => PixelPets.rookOffer('glimmer'))).toBe(true);
   await p2.waitForFunction(() => { const s = window.PixelPets.scene; return s && s.full && s.mode === 'say'; });
-  expect(await p2.evaluate(() => PixelPets.scene.text)).toBe(await p2.evaluate(() => PixelPets.standingCfg().switch.rook.refused));
+  expect(await p2.evaluate(() => PixelPets.scene.text)).toBe(await p2.evaluate(() => PixelPets.standingCfg().switch.rook.wait));   // D161: the Act 5 lock answers before the per-Seal cooldown
   await p2.evaluate(() => PixelPets.setFlag('story.seal3', true));
   expect(await p2.evaluate(() => PixelPets.standing.chapter)).toBe(3);
   expect(errs).toEqual([]);

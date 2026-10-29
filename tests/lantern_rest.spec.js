@@ -189,3 +189,22 @@ test('a home nap is free, and only a hurt lantern rest costs Acorns @w1', async 
   expect(free.says.join(' ')).toContain('already rested');
   expect(await page.evaluate(() => PixelPets.state.money)).toBe(15);
 });
+
+test('D875: a holder short of 5 Acorns pays what they have, and only 0 Acorns rests free @w1', async ({ page }) => {
+  const save = starterSave();
+  save.money = 3;
+  save.flags['story.early_done'] = true;
+  await installSave(page.context(), save, { quietDay: true });
+  await gotoDebug(page);
+  await page.evaluate(() => { PixelPets.state.party[0].hpNow = 4; });
+  expect(await page.evaluate(() => PixelPets.runScene('lantern_rest'))).toBe(true);
+  const short = await playCollect(page, [/^Rest \(5 Acorns\)$/]);
+  expect(short.says.join(' ')).toContain('You leave 3 Acorns');
+  expect(await page.evaluate(() => ({ money: PixelPets.state.money, hurt: PixelPets.lanternRest.hurt }))).toEqual({ money: 0, hurt: false });
+
+  await page.evaluate(() => { PixelPets.state.party[0].hpNow = 4; });
+  expect(await page.evaluate(() => PixelPets.runScene('lantern_rest'))).toBe(true);
+  const broke = await playCollect(page, [/^Rest \(5 Acorns\)$/]);
+  expect(broke.says.join(' ')).toContain("You're out of Acorns. The Keeper covers the fee");
+  expect(await page.evaluate(() => ({ money: PixelPets.state.money, hurt: PixelPets.lanternRest.hurt }))).toEqual({ money: 0, hurt: false });
+});
