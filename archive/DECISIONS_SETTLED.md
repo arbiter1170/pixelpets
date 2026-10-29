@@ -8,6 +8,7 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D871 (Wed Oct 28, 2026, green, SETTLED by Vincent, "go ahead and start" on the plan that proposed it).** INTRO_CUTSCENE: Rook's entry tile. He appears just inside the Lodge door, (5,7), not on the door mat (5,8): the mat sits in the bottom wall row, which the room draws dark, so on build 20261028-0640 he spoke from the dark. His exit still ends on the mat. Changes D806's entry tile only.
 - **D799 (Wed Oct 28, 2026, red, SETTLED on the default by Vincent).** INTRO_CUTSCENE: May the `starter` scene be staged as a cutscene (Ilse steps forward, the holder walks in, Rook enters through the door, walks to his basket and runs out), with curtain bars on the staged stretches? Yes, exactly as the beat table in §3. No new lines, flags or sounds; the east-gate match is unchanged.
 - **D800 (Tue Oct 27, 2026, red, SETTLED by Vincent).** INTRO_CUTSCENE: in the starter scene's text box, Warden Ilse, Rook and the holder show as their own in-game sprite (the 18x18 keeper frame, facing right) at 4x; the holder on narrator prompts, following their look (shownLook, including a look picked earlier in the scene). Supersedes D163's 2x size there. No new art.
 - **D801 (Wed Oct 28, 2026, yellow, SETTLED on the default by Vincent).** INTRO_CUTSCENE: Add five scene steps for any scene: `walkTo`, `wait`, `curtain`, `castAt`, `prop`? Yes, as §5 P1-P2. `INTERACTIVE` is unchanged; none of the five takes a tap.

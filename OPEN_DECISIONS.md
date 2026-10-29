@@ -18,8 +18,10 @@ D799-D832 are reserved: INTRO_CUTSCENE, BATTLE_ACORNS, MATCH_MARKER and MOVE_FX_
 
 D859-D870 are reserved: PHONE_APPS (Vincent, Oct 28, 2026: "small & medium approved" for the phone app list). D859-D862 and D864-D869 are settled and recorded in the archive; D863 is open below. D870 is spare.
 
-Next free id is D871.
-Other packets hold ids through D870.
+D871 is used: INTRO_CUTSCENE, Rook's entry tile (settled, recorded in the archive). D875 is held by PR #221 (LANTERN_COST) and D876-D891 by PR #222 (BRINEWICK v0.1).
+
+Next free id is D892.
+Other packets hold ids through D891.
 
 ## Open
 
@@ -44,7 +46,7 @@ Other packets hold ids through D870.
 | D851 | Route 3: names and copy | Yellow. Placeholder names and lines: ROUTE 3, Comfort Sanctuary, Shipping Ledger Office, Relay House, "BRINEWICK · Not yet.", every clue, boss, entry and close line. | Built as marked placeholder copy in the existing voices. | `data/detail_route3.json` |
 | D852 | A second Quinn contact | Yellow. Associate Quinn in the Cobblecrest Trial Hall is a glimmer cast row, separate from the RegenX "Quinn". | Built (build 20261027-1537). | `data/reputation.json`; `data/heights.json` speakers |
 | D853 | Clue reach on a switched save | Yellow. A player who switched to Glimmerwell without entering the RegenX lab cannot reach the lab clues; the Keepers mast needs `story.mom_sent`. | Not fixed. The Keepers twins cover a Keepers player. | `data/detail_route3.json` |
-| D863 | PHONE_APPS copy, YELLOW, OPEN | Design writes the copy for the new phone screens (SKY, GLOW, READY relay, FIELD NOTES stamps, Night Desk posts; part 2: patrol/gig rows, Census feed, BOTNET Shelf, signal footer, chirp presets, STEPS lines) and says whether the home grid keeps nine apps (PHONE_SHELL v0.2 assumed seven) | Placeholder copy written by the engineer, in both handset voices. Nine apps: SKY and GLOW after BOARD. No new story facts: Field Notes reuse the quest chain's own text; the relay reuses each holder's rematch line | `game.js` phone apps part 1 block (`renderFarSky`, `renderGlowApp`, `glowAdvice`, `rematchRelay`, `renderFieldNotes`), `ribbit.js` `NIGHT_POSTS`, `index.html` `#phoneHome`; part 2 block (`renderJobsApp`, `renderCensusLeak`, `openBotnetShelf`, `renderFootpath`, `chirpPresets`) |
+| D863 | PHONE_APPS copy, YELLOW, OPEN | Design writes the copy for the new phone screens (SKY, GLOW, READY relay, FIELD NOTES stamps, Night Desk posts; part 2: patrol/gig rows, Census feed, BOTNET Shelf, signal footer, chirp presets, STEPS lines) and says whether the home grid keeps nine apps (PHONE_SHELL v0.2 assumed seven) | Placeholder copy written by the engineer, in both handset voices. Oct 28 Lore check: four lines that went past the story (GLOW bed rules, the SKY footer's later-plan hint, BOTNET's augment slot, the night glow fact) now say only what the game does (beds open to every holder, "Brighter by nature."); five smaller lines are flagged for Design (Keeper wires, Keepers forecast, census numbers, the cart line, the step quota). Nine apps: SKY and GLOW after BOARD. No new story facts: Field Notes reuse the quest chain's own text; the relay reuses each holder's rematch line | `game.js` phone apps part 1 block (`renderFarSky`, `renderGlowApp`, `glowAdvice`, `rematchRelay`, `renderFieldNotes`), `ribbit.js` `NIGHT_POSTS`, `index.html` `#phoneHome`; part 2 block (`renderJobsApp`, `renderCensusLeak`, `openBotnetShelf`, `renderFootpath`, `chirpPresets`) |
 ## Not started, blocked on people
 
 - BS daily earning: Vincent said yes, slowly. Cap settled as D18 (placeholder 5 per side per day); left unbuilt and folded into the Standing pass. Tier-gated shop rows, lines, and tier icons still need the designer's list of what each tier opens.

@@ -25,7 +25,7 @@ The PR description must contain, in this order:
    ```
 2. **What changed** (plain-language summary).
 3. **Files touched** (list).
-4. **How it was tested:** commands run, widths (320/375/390), console-error result (paste the `pp_textcheck.py` / `npm test` result lines). Run the test-mistake scan in `tools/scans/` (once it lands) and paste its result line: tests must never hardcode `/opt/cursor/artifacts` screenshot paths, and must never take baselines from `git show HEAD:` (use the merge base with `origin/main` instead). Attach screenshots only when the change is visual (new art, layout or colour): at most 3, at 390px unless a layout differs by width, cropped to the changed area.
+4. **How it was tested:** name the feature's own spec file (AGENTS.md: a new system, scene step, save field or player flow ships with one), commands run, widths (320/375/390), console-error result (paste the `pp_textcheck.py` / `npm test` result lines). Run the test-mistake scan in `tools/scans/` (once it lands) and paste its result line: tests must never hardcode `/opt/cursor/artifacts` screenshot paths, and must never take baselines from `git show HEAD:` (use the merge base with `origin/main` instead). Attach screenshots only when the change is visual (new art, layout or colour): at most 3, at 390px unless a layout differs by width, cropped to the changed area.
 5. **Build id:** the id written by `bump_build.py`; after merge, follow `walklings-deploy` step 4.
 6. **Open questions** with the default you chose (and colour).
 7. **Spec match** (cloud and packet builds; write "no spec" for hotfixes). Name the design commit you built from, paste the packet checker's result line, then a table with one row per decision id or acceptance line in the spec:

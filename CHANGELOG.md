@@ -2,14 +2,32 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-27 15:37 ET: The Answerers and Route 3, ported onto main (build 20261028-1127)
+## 2026-10-27 15:37 ET: The Answerers and Route 3, ported onto main (build 20261028-2152)
 
 - What changed and why: ARBITER_UNITS (Builds A and C) re-applied on current main and fitted to it (Vincent, Oct 27, 2026). The five are Glimmerwell's first relays, built before the Tuning chips and woken by the hum; the cradle's COUNT / GATHER / LISTEN names them. Hushlamp is now Dimlamp and the HUSH button is STILL; Ledgerowl is now Filecrow with new crow art, clear of the Hushwater owl. Five attune SHADE lines after `snail` (indices 20-24) with hum tiers, Echoes (hooked in the battle step queue), boss battles (Lv 26-30, under the cap), MOVES_V2 signatures and the journal row. Route 3 is one auto-loaded pack, `data/detail_route3.json`; it opens on `story.route3_open` (last crates plus the Lantern Council or the Signal Review). The lamp clue moved to Hushwater, off the Signal Review's Wickerglen lamps. Both chip paths refuse an Answerer. Save `v` stays 2.
 - Files touched: `sprites.js`, `stats.js`, `moves.js`, `save.js`, `game.js`, `quests.js`, `index.html`, `style.css`, `data/detail_route3.json`, `data/civic.json`, `data/heights.json`, `data/reputation.json`, `data/rook_crossroads.json`, `data/mapdata.js`, `tools/GAMEJS_MAP.txt`, `tests/arbiter_units.spec.js`, `tests/route3.spec.js`, `tests/five_answer.spec.js`, `tests/data_integrity.spec.js`, `tests/hushwater.spec.js`, `tests/fetch_line.spec.js`, `tests/heights.spec.js`, `tests/quest_multi.spec.js`, `tests/README.md`, `handoff/walklings/`, `README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `NEXT_PLAN.md`, `CHANGELOG.md`, `version.json`.
-- Commit(s) + build id: build 20261028-1127 (restamped after merging main, Oct 28; first stamped 20261027-1537).
+- Commit(s) + build id: build 20261028-2152 (restamped after merging main, Oct 28; first stamped 20261027-1537).
 - Tests run and result (widths, checks): see the PR. After merging main on Oct 28, the boss-refusal check in `arbiter_units.spec.js` reads the battle log, not the 1 ms on-screen line (it raced at 320 and 375 on Linux). Scans: wording, decisions, symlinks, gamejs_map, test_mistakes all pass.
-- Decisions made (colour + reasoning): D837-D853 (Build A D837-D847, Build C D848-D853). Vincent settled the names (Dimlamp, Filecrow), STILL, the gate and the port on Oct 27, 2026. Next free id D854. Supersedes PR #204.
+- Decisions made (colour + reasoning): D837-D853 (Build A D837-D847, Build C D848-D853). Vincent settled the names (Dimlamp, Filecrow), STILL, the gate and the port on Oct 27, 2026. D854-D857 stay held and spare; next free id is D892 on main. Supersedes PR #204.
 - Anything left unfinished: final copy (D851), the switched-save reach gap (D853), the close reward (D843), and Brinewick itself.
+
+## 2026-10-28 20:28 ET: Rook bursts in just inside the Lodge door (build 20261028-2028)
+
+- What changed and why: D871 (green, settled by Vincent). The live check of build 20261028-0640 showed Rook placed on the Lodge door mat (5,8), which sits in the bottom wall row that the room draws dark, so he said "Did I miss it?" from the dark. He now appears just inside the door, (5,7), and speaks from the floor. His exit still ends on the mat, so he still leaves through the door. Design recompiled the beat sheet (design `b6dba02`); his walk to the basket is one tile shorter.
+- Files touched: `data/cutscene_intro.json` (Rook's `castAt` y 8 to 7, copied from Design's compiled file), `data/mapdata.js` (generated), `tests/intro_cutscene.spec.js` (T5, T7), `tests/README.md`, `archive/DECISIONS_SETTLED.md` (D871), `OPEN_DECISIONS.md` (next free id D892), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/rook-lodge-floor` from main `a62f97a`, merged with main `2bdd7df` (#220, #223, #224, #206, #219, #201, #217). Build `20261028-2028`.
+- Tests run and result (widths, checks): `tests/intro_cutscene.spec.js` (T5 now expects (5,7) and checks Rook is never in a wall row on a line he speaks; T7's B8 walk is 6 tiles) and `tests/starter_moment.spec.js` at 320, 375 and 390: 43 passed, 20 skipped (rows that run at 390 only); T7 3 of 3 on repeat.
+- Decisions made (colour + reasoning): D871, green: a one-tile staging fix inside a settled cutscene; D806's text stands with its entry tile changed.
+- Anything left unfinished: none.
+
+## 2026-10-28 13:35 ET: Phone placeholder lines keep to known facts (build 20261028-1335)
+
+- What changed and why: a Lore check of the PHONE_APPS placeholder copy (D863) found four lines that went past the story. GLOW told Keepers of lower standing nothing about a held bed and told the cracked handset "Doorway only", but every Lantern House has beds for every holder (AGENTS.md rule 10). The cracked SKY footer hinted at a Glimmerwell plan the story keeps for later and used a slogan that is not theirs. The BOTNET shelf named an augment slot, an unbuilt idea. SKY's night line and two Night Desk posts said sleeping Walklings send glow up, a new story fact. Those lines now say only what the game already does: beds are open to every holder in both voices, the footer uses Glimmerwell's own "Brighter by nature.", the shelf line drops the augment, and the night lines say to let your Walkling sleep. Design still writes the real copy (D863 stays open).
+- Files touched: `game.js` (SKY night and footer lines, GLOW bed line, BOTNET line), `ribbit.js` (`NIGHT_POSTS` nd-glow, nd-share), `tests/phone_apps.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md` (D863 note), `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/phone-copy-facts` from main `a62f97a`, merged with main `d09b1b0` (#220, #223, #224, #206). Build `20261028-1335`.
+- Tests run and result (widths, checks): `tests/phone_apps.spec.js` (two new rows: beds open at Keepers tier 2+ in both voices; no placeholder hint on SKY, GLOW, the shelf or the Night Desk, day or night, either voice), `phone_apps_2`, `civic` and `phone_contacts` at 320, 375 and 390.
+- Decisions made (colour + reasoning): none new. Placeholder copy under D863 (yellow, open); the changes remove claims, they add none.
+- Anything left unfinished: Design's copy pass for D863, including five smaller lines the Lore check flagged (Keeper wires, the Keepers forecast, the census numbers, the cart line, the step quota).
 
 ## 2026-10-28 ET: `npm run iphone` takes a free port when 8080 is busy, no build change
 
