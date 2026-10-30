@@ -8,6 +8,11 @@ The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fern
 
 ## Settled
 
+- **D934 (Fri Oct 30, 2026, yellow, SETTLED by Vincent: "Approved", after the real-motion previews).** MOVE_FX_4: the remaining 78 moves get bespoke effects, so every one of the 122 moves has its own.
+- **D935 (Fri Oct 30, 2026, yellow, SETTLED by Vincent: "Approved", after the real-motion previews).** MOVE_FX_4: each move draws its name in its type's palette, travels by its type's verb and scales with its power; Bump and Tumble Charge stay clean and short, Wobble tiny. Foe stat drops ride the hit on the foe; own buffs and heals ride the hit on the user.
+- **D936 (Fri Oct 30, 2026, yellow, SETTLED by Vincent: "Approved", after the real-motion previews).** MOVE_FX_4: the 18 moves an Answerer shares with other lines wear the Answerer hum only when an Answerer uses them (the halo through the charge, the answer ring on the foe), and grow with the tier as in D905.
+- **D937 (Fri Oct 30, 2026, green, SETTLED by Vincent: "Approved", after the real-motion previews).** MOVE_FX_4: code shape. `mvMoveRow(mid, st, hm)` returns the hummed copy for an Answerer (`mvHummed`), then the tier-grown copy; `doMove` passes `hm`; a bespoke super ring rings in `mvLightFx(type)` (`h` where `mvLight` is `w`), so no bespoke effect draws white.
+- **D938 (Fri Oct 30, 2026, green, SETTLED by Vincent: "Approved", after the real-motion previews).** MOVE_FX_4: checks. `tests/move_fx_4.spec.js` (T1-T8) with the build; the MOVE_FX_2 and MOVE_FX_3 "move without a row" checks delete a row in the page first. Design keeps `specs/move_fx_4_check.py`, `move_fx_4_model.py` and `move_fx_4_motion.py`.
 - **D893 (Thu Oct 29, 2026, 12:08 PM ET, SETTLED by Vincent).** KEEPER_RANKS v0.1: Warden ranks above Captain.
 - **D901 (Thu Oct 29, 2026, 12:51 PM ET, SETTLED by Vincent).** STORY_DECISIONS v0.2: Quinn's "The old ones built it." (data/heights.json:3105) stays as an early hint toward the Arbiter's real makers; no re-voice (against the default).
 - **D894 (Thu Oct 29, 2026, 2:45 PM ET, SETTLED by Vincent).** STORY_DECISIONS v0.1: yes, chipping works through the Arbiter's signals; a chipped Walkling acts on them as the Answerers do.

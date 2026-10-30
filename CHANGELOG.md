@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-30 11:51 ET: MOVE_FX_4: the remaining 78 moves (D934-D938, build 20261030-1151)
+
+- What changed and why: Vincent approved MOVE_FX_4 after the wave 3 previews ("Approved", Oct 30). The remaining 78 moves get bespoke effects, so every one of the 122 moves has its own: each draws its name in its type's palette, travels by its type's verb and scales with its power; Bump and Tumble Charge stay clean and short and Wobble, everyone's fallback, stays tiny. The 18 moves an Answerer shares with other lines wear the Answerer hum only when an Answerer uses them, and grow with its tier. A super-effective PLAIN or GUST bespoke hit rang in white; it now rings in `h`, so no bespoke effect draws white. CALM, reduced motion, OFF, sounds, text and saves are unchanged. All 14 patches of design `specs/MOVE_FX_4.md` section 5 (design 9ad0c52, settled bb2d136).
+- Files touched: `mv_fx.js`, `game.js`, `tests/move_fx_4.spec.js` (new), `tests/move_fx_2.spec.js` and `tests/move_fx_3.spec.js` (their "move without a row" checks delete rows in the page first; counts 122), `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`, `tools/GAMEJS_MAP.txt`, `index.html`, `version.json`.
+- Commit(s) + build id: `claude/move-fx-4`, build 20261030-1151 (main merged in).
+- Tests run and result (widths, checks): `tests/move_fx_4.spec.js` at 320, 375 and 390 pass. With move_fx_3, move_fx_2, moves_v2, arbiter_units, battle_acorns, battle_no_reload, group_battle, p0_trainer_win, smoke, tutorials_care_moves, match_marker and hushwater at three widths: 393 passed, 4 failed; three were the older specs' no-row checks, whose foe answers with Wobble (now bespoke) and which now also delete Wobble's row (fixed, 4 of 4 pass), and moves_v2 22 needs the local Firebase emulator, which this container lacks. Save stays `pixelpets.save.v2`, `v` 2, no new key.
+- Decisions made (colour + reasoning): D934-D936 yellow, settled by Vincent; D937 and D938 green, settled with them.
+- Anything left unfinished: none; every move has its own effect.
+
 ## 2026-10-30 11:27 ET: Docs: D915 archive line and D958/D962 header cleanup (no build stamp)
 
 - What changed and why: #234's header says D915 is recorded in the archive, but the line was missing; Design supplied it and it now sits after D914 in `archive/DECISIONS_SETTLED.md`. In the `OPEN_DECISIONS.md` header, D958 (settled) loses its leftover due date, and D962 (WARDROBE_SHOP v0.2, LEGS chip before the bottom art) is marked SETTLED: yes by the Chief of Staff, Fri Oct 30, 2026, 11:17 AM ET (design 6ac3aa6), with its archive line after D942. D959-D961 stay open (yellow, due Sun Nov 1, 2026, 11:40 AM ET). Next free id stays D963.
