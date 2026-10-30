@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-30 17:17 ET: BATTLE_BACKDROPS: a battle scene for every map, flag off (D1009 red, build 20261030-1717)
+
+- What changed and why: asked for battle backgrounds that match each map and its tile set. D167 said no battle backdrops in Episode 1, so this is built behind `BATTLE_BG_ON = false` and raised as D1009 (red) for Vincent. Every one of the 67 maps has its own scene from its own tiles, its own props and PAL only. Outdoor maps get sky, a far layer, one landmark already on the map and the map's ground tiles. Rooms get their own back wall and floor rows (the walk map's own tiles through the new shared `cellImg`) and two of their props; Trial Halls add banners and a floor ring; dreams are one shade lighter. Props stay out of every Walkling's box, water moves in FULL motion only, rooms take no tint or weather. The Pet tab, music, the maps' `backdrop` fields and the save are untouched. With the flag off every battle draws today's backdrop.
+- Files touched: `battle_bg.js` (new), `game.js`, `index.html`, `sw.js`, `tests/battle_backdrops.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md`, `BACKLOG.md`, `CHANGELOG.md`, `tools/GAMEJS_MAP.txt`, `version.json`.
+- Commit(s) + build id: `battle-backdrops`, build 20261030-1717.
+- Tests run and result (widths, checks): `tests/battle_backdrops.spec.js` at 320, 375 and 390: 18 passed. At 390, review_low, move_fx_2, moves_v2, qa_gaps, group_battle, battle_no_reload, floor_fix, interior_walls, house_reskin, rx_f4_pilot, art_pass and map_layers: 63 passed, 1 failed (moves_v2 22, co-op: "database emulator did not answer"; the sandbox cannot reach the local emulator, unrelated). Scans: wording, decisions, symlinks, gamejs_map, test_mistakes pass; `bump_build.py --check` passes.
+- Decisions made (colour + reasoning): D1009 red (reverses D167; waits for Vincent, default ship as previewed). Green: rooms ignore the sky (no lit windows at night).
+- Anything left unfinished: turning the flag on after Vincent's yes (one line), then the docs for a shipped feature.
+
 ## 2026-10-30 11:51 ET: MOVE_FX_4: the remaining 78 moves (D934-D938, build 20261030-1151)
 
 - What changed and why: Vincent approved MOVE_FX_4 after the wave 3 previews ("Approved", Oct 30). The remaining 78 moves get bespoke effects, so every one of the 122 moves has its own: each draws its name in its type's palette, travels by its type's verb and scales with its power; Bump and Tumble Charge stay clean and short and Wobble, everyone's fallback, stays tiny. The 18 moves an Answerer shares with other lines wear the Answerer hum only when an Answerer uses them, and grow with its tier. A super-effective PLAIN or GUST bespoke hit rang in white; it now rings in `h`, so no bespoke effect draws white. CALM, reduced motion, OFF, sounds, text and saves are unchanged. All 14 patches of design `specs/MOVE_FX_4.md` section 5 (design 9ad0c52, settled bb2d136).
