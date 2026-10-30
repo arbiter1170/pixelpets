@@ -1,0 +1,10 @@
+{
+  "lore_version": "v0.7.5",
+  "_placeholders": "stub",
+  "stories": [
+    {"id": "nw-hm-lantern", "section": "towns", "desk": "block", "region": "hearthmoor", "lead": 1, "headline": "Hearthmoor lantern lit", "body": ["Keeper House is open."], "lore": ["place.hearthmoor"]},
+    {"id": "nw-r1-grass", "section": "roads", "desk": "block", "region": "route1", "headline": "Route 1 grass busy", "body": ["Small noses in the grass."], "lore": ["place.route1"]},
+    {"id": "nw-hm-post", "section": "keepers", "desk": "lantern", "region": "hearthmoor", "headline": "Leave a light", "body": ["Leave them wild."], "lore": ["faction.keepers"]},
+    {"id": "nw-q", "section": "towns", "desk": "block", "region": "cobblecrest", "lead": 5, "when": ["story.quarry_bought"], "headline": "Quarry seam sold", "body": ["The seam was sold."], "lore": ["event.quarry_bought"]}
+  ]
+}

@@ -12937,6 +12937,7 @@ const PHONE_GLYPH = {
   board: ['########', '#.#..#.#', '#......#', '#.####.#', '#.#....#', '#.####.#', '#......#', '########'],
   sky: ['..###...', '.##.....', '##....#.', '##...###', '##....#.', '.##.....', '..###...', '........'],
   glow: ['...##...', '..#..#..', '.######.', '.#.##.#.', '.#.##.#.', '.######.', '..#..#..', '.######.'],
+  news: ['######..', '#....###', '#.##.#.#', '#.##.#.#', '#....#.#', '#.##.#.#', '#....#.#', '########'],
 };
 function setPhoneJobsLabel(hack){
   const lab = $('#phoneJobs .phone-lab');
@@ -12947,13 +12948,15 @@ function paintPhoneHome(){
   paintPhoneSignal();
   const hack = phoneHack();
   const ink = hack
-    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', glow: '#07140e' }
-    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0', sky: '#f4fbff', glow: '#1a140c' };
+    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', glow: '#07140e', news: '#d7ffc8' }
+    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0', sky: '#f4fbff', glow: '#1a140c', news: '#1c2416' };
   $$('#phoneHome .phone-glyph').forEach(el => {
     const c = el.querySelector('canvas'), grid = PHONE_GLYPH[el.dataset.glyph];
     if (!c || !grid) return;
     iconCanvas(c, grid, ink[el.dataset.glyph] || '#f4f4f4');
   });
+  const news = $('#phoneNews'), ed = newsEdition();
+  if (news) news.classList.toggle('unread', !!(ed && ed.lead && S.newsSeen !== ed.key));
 }
 function contactKey(name){
   if (window.PPRep && typeof PPRep.key === 'function') return PPRep.key(name);
@@ -13285,6 +13288,67 @@ function renderRibbit(body){
   foot.textContent = phoneSignal() <= 1 ? 'Ribbit rides the Keeper wires. One bar: the feed is thin here.' : 'Ribbit rides the Keeper wires.';
   body.appendChild(foot);
 }
+/* ---------- NEWS: the Block News paper (D1012 red, a tenth phone app; D1013: placeholder copy until Design signs it) ----------
+   One edition per real day from data/news.json (news.js). The lead is the newest story beat the holder has reached; the
+   features lean to the current place; signal thins the briefs. S.newsSeen (additive) is the last edition opened, so the
+   NEWS icon shows a dot on a new day or a new lead. */
+const NEWS_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const NEWS_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function newsEdition(){
+  const api = window.PPNews;
+  if (!api || !api.edition || !S) return null;
+  return api.edition({ flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal() });
+}
+function newsDate(day){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day || '');
+  if (!m) return '';
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  return NEWS_DAYS[d.getDay()] + ', ' + NEWS_MONTHS[d.getMonth()] + ' ' + d.getDate();
+}
+function newsStory(story, open){
+  const row = document.createElement('article'); row.className = 'news-story' + (open ? ' news-lead' : ''); row.dataset.id = story.id;
+  const head = document.createElement('button'); head.type = 'button'; head.className = 'news-head';
+  head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  const kicker = document.createElement('small'); kicker.className = 'news-kicker';
+  kicker.textContent = (PPNews.sectionLabel(story.section) || 'NEWS') + ' / ' + story.desk;
+  const h = document.createElement('b'); h.className = 'news-headline'; h.textContent = story.headline;
+  head.append(kicker, h);
+  const body = document.createElement('div'); body.className = 'news-body'; body.hidden = !open;
+  story.body.forEach(line => { const p = document.createElement('p'); p.textContent = line; body.appendChild(p); });
+  head.addEventListener('click', () => { body.hidden = !body.hidden; head.setAttribute('aria-expanded', body.hidden ? 'false' : 'true'); sfx('tap'); });
+  row.append(head, body);
+  return row;
+}
+function renderNewsApp(body, hack){
+  const ed = newsEdition();
+  const mast = document.createElement('div'); mast.className = 'news-mast';
+  const name = document.createElement('b'); name.className = 'news-name'; name.textContent = 'BLOCK NEWS';
+  const date = document.createElement('small'); date.className = 'news-date';
+  date.textContent = ed ? newsDate(ed.day) + (hack ? '. Copy lifted off the wires.' : '. Today\'s edition.') : '';
+  mast.append(name, date);
+  body.appendChild(mast);
+  if (!ed || !ed.lead) {
+    const p = document.createElement('p'); p.className = 'news-foot'; p.textContent = 'No edition yet. Check back after a walk.';
+    body.appendChild(p);
+    return;
+  }
+  body.appendChild(newsStory(ed.lead, true));
+  if (ed.features.length) {
+    const lab = document.createElement('p'); lab.className = 'phone-sec'; lab.textContent = 'TODAY';
+    body.appendChild(lab);
+    ed.features.forEach(s => body.appendChild(newsStory(s, false)));
+  }
+  if (ed.briefs.length) {
+    const lab = document.createElement('p'); lab.className = 'phone-sec'; lab.textContent = 'BRIEFS';
+    body.appendChild(lab);
+    ed.briefs.forEach(s => body.appendChild(newsStory(s, false)));
+  }
+  const foot = document.createElement('p'); foot.className = 'news-foot';
+  foot.textContent = ed.thin ? 'Block News rides the Keeper wires. One bar: today\'s paper is thin here.' : 'Block News rides the Keeper wires. A new edition every day.';
+  body.appendChild(foot);
+  if (S.newsSeen !== ed.key) { S.newsSeen = ed.key; save(); }
+  const icon = $('#phoneNews'); if (icon) icon.classList.remove('unread');
+}
 /* ---------- phone apps, part 1 (Vincent, Oct 28, 2026; D859-D863) ----------
    Every new line here is placeholder copy until Design writes it (D863). Both handsets read the same facts; the Keeper1
    says them in the Lantern desk's voice and the cracked handset in the leak's. No save field is added. */
@@ -13538,6 +13602,8 @@ function phoneApp(id){
     renderFieldNotes(body, hack);
   } else if (id === 'jobs') {
     renderJobsApp(body, hack, add);
+  } else if (id === 'news') {
+    renderNewsApp(body, hack);
   } else if (id === 'ribbit') {
     renderRibbit(body);
   } else if (id === 'sky') {

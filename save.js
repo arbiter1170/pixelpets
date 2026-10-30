@@ -393,6 +393,8 @@ const PPSave = (() => {
         const ks = Object.keys(s.chirps); while (ks.length > 5) delete s.chirps[ks.shift()];
       }
     }
+    // NEWS D1012: optional newsSeen, the last Block News edition opened ('YYYY-MM-DD:storyId'). Junk is dropped. v stays 2.
+    if (has(s, 'newsSeen') && !(typeof s.newsSeen === 'string' && s.newsSeen.length <= 80)) delete s.newsSeen;
     // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
     if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;
     // CARE_LOOP cheap slice: today's player care record { d, steps, finds, stepBond, battleBond, firstCare } (additive; bad -> dropped).

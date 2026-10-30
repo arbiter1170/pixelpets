@@ -5,7 +5,7 @@ Merge order in the game: maps_slice, interiors, act1_route2, cobblecrest, glimme
 of the named files; every data/detail_*.json (map-pass overlays, ours, one file per batch) follows in sorted order. The game applies the Fernbrook door patch, then Rook's crates, after those detail patches."""
 import json, pathlib
 root = pathlib.Path(__file__).resolve().parent.parent / 'data'
-names = ('maps_slice', 'interiors', 'act1_route2', 'cobblecrest', 'glimmer_path', 'mahopac', 'highcharity', 'heights', 'civic', 'town_board', 'fernbrook_rooms', 'rook_crossroads', 'reputation', 'moral_quests', 'starter_moment')
+names = ('maps_slice', 'interiors', 'act1_route2', 'cobblecrest', 'glimmer_path', 'mahopac', 'highcharity', 'heights', 'civic', 'town_board', 'fernbrook_rooms', 'rook_crossroads', 'reputation', 'moral_quests', 'starter_moment', 'news', 'ribbit_posts')
 names += tuple(sorted(p.stem for p in root.glob('detail_*.json')))
 names += tuple(sorted(p.stem for p in root.glob('cutscene_*.json')))   # INTRO_CUTSCENE D810: one file per staged scene
 d = {k: json.loads((root / f'{k}.json').read_text()) for k in names}
