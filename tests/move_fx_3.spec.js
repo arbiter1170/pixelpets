@@ -103,6 +103,7 @@ test('T1 D903 D908: each of the 32 moves logs its ids after main\'s words; a mov
     expect(now.filter((k) => /^mv|fx|hum_?fx/i.test(k)), mid).toEqual([]);
     if (keys) expect(now, mid).toEqual(keys); else keys = now;
   }
+  await page.evaluate(() => { delete MV_MOVE.tumble_charge; delete MV_MOVE.wobble; });   // MOVE_FX_4: every move has a row now; take away the holder's move and the foe's answer for this check
   const log = await turn(page, 'tumble_charge');
   expect(log).toContain('mvGo');
   expect(ids(log)).toEqual([]);
@@ -235,7 +236,7 @@ test('T6 D903: every bespoke row stays at 24 slots or under at every tier, varia
     for (const mid of Object.keys(MV_MOVE)) for (let st = 0; st < 3; st++) sweep(mid, st);
     return { peak, worst, n: Object.keys(MV_MOVE).length };
   });
-  expect(r.n).toBe(44);
+  expect(r.n).toBe(122);   // with MOVE_FX_4's 78 (D934)
   expect(r.peak, r.worst).toBeLessThanOrEqual(24);
 });
 
@@ -294,11 +295,11 @@ test('T9 D907: the signature beat plays for the new signatures, and no bespoke b
   }
 });
 
-test('T10 all: MV_MOVE holds the 12 pilot rows and the 32 new ones, MV_ECHO the five Answerers', async ({ page }) => {
+test('T10 all: MV_MOVE holds every move (122) including MOVE_FX_3\'s 32, MV_ECHO the five Answerers', async ({ page }) => {
   test.skip(page.viewportSize().width !== 390, '390 only');
   await boot(page, 'ember', 0);
   const r = await page.evaluate((all) => ({ n: Object.keys(MV_MOVE).length, missing: all.filter((m) => !MV_MOVE[m]), echo: Object.keys(MV_ECHO).sort() }), Object.keys(ALL));
-  expect(r.n).toBe(44);
+  expect(r.n).toBe(122);   // with MOVE_FX_4's 78 (D934)
   expect(r.missing).toEqual([]);
   expect(r.echo).toEqual(['cordhound', 'dimlamp', 'filecrow', 'humwisp', 'tallybat']);
 });

@@ -10765,7 +10765,7 @@ function show(s, mode){
     B.mvN = ((B.mvN | 0) + 1) % 3;
     // A bespoke charge lasts until its wind-up ends it (mvYield), so it fills the "tries" line at any text speed.
     B.fx.push({ who: s.who, kind: 'mvGo', type: s.type, sig: !!s.sig, status: !!s.status, effect: s.effect || null, mid: mvRow ? s.mid : null,
-      v: mvRow ? B.mvN : 0, st: s.st | 0, lift: mvRow && s.status ? mvPose(s.mid).lift : 0, t0: t, dur: s.status ? 420 : (mvRow ? 1600 : 400) });
+      v: mvRow ? B.mvN : 0, st: s.st | 0, hm: s.hm | 0, lift: mvRow && s.status ? mvPose(s.mid).lift : 0, t0: t, dur: s.status ? 420 : (mvRow ? 1600 : 400) });
     B.fxLog.push('mvGo');
     if (mvRow) B.fxLog.push('mvGo:' + s.mid);
     sfx('chirp_' + String(s.type || 'PLAIN').toLowerCase(), 0.04);
@@ -10785,7 +10785,7 @@ function show(s, mode){
     if (mvRow) {   // MOVE_FX_2 (D827): the charge ends; the travel flies S to T inside the wind-up and lands at contact
       mvYield(B.fx);
       if (mvRow.travel && mvMs > 0 && !B.ff) {
-        B.fx.push({ who: s.who, kind: 'mvTravel', type: s.type, mid: s.mid, v: B.mvN | 0, st: s.st | 0, t0: t, dur: mvMs });
+        B.fx.push({ who: s.who, kind: 'mvTravel', type: s.type, mid: s.mid, v: B.mvN | 0, st: s.st | 0, hm: s.hm | 0, t0: t, dur: mvMs });
         B.fxLog.push('mvTravel:' + s.mid);
       }
     }
@@ -10800,7 +10800,7 @@ function show(s, mode){
     const tgtMon = (s.who || '').indexOf('me') === 0 ? 'me' : 'foe';
     if (mode === 'full') {
       const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(s.mid) : null;
-      B.fx.push({ who: tgtMon, kind: 'mvHit', type: typ, variant: variant, mid: mvRow ? s.mid : null, v: mvRow ? B.mvN | 0 : 0, st: s.st | 0, t0: t, dur: 420 });
+      B.fx.push({ who: tgtMon, kind: 'mvHit', type: typ, variant: variant, mid: mvRow ? s.mid : null, v: mvRow ? B.mvN | 0 : 0, st: s.st | 0, hm: s.hm | 0, t0: t, dur: 420 });
       B.fxLog.push('mvHit');
       if (mvRow) B.fxLog.push('mvHit:' + s.mid);   // MOVE_FX_2 (D831)
       const sc = typeof mvScaled === 'function' ? mvScaled(typ, variant) : { shake: 1, white: 50 };
@@ -11261,7 +11261,8 @@ async function doMove(side, mid, id){
   const sig = typeof SIGNATURES !== 'undefined' && SIGNATURES[line] === mid;
   const typ = mv.type || 'PLAIN';
   const mvSt = SPECIES[SP_INDEX[line]] && SPECIES[SP_INDEX[line]].attune ? ((mine ? p.stage : f.stage) | 0) : 0;   // MOVE_FX_3 (D905): the user's Answerer tier
-  if (mode === 'full') step('go', { who: side, type: typ, sig: sig, status: mv.power === 0, effect: mv.effect || null, mid: mid, st: mvSt });   // MOVE_FX_2 (D831)
+  const mvHm = SPECIES[SP_INDEX[line]] && SPECIES[SP_INDEX[line]].attune ? 1 : 0;   // MOVE_FX_4 (D936): an Answerer's shared moves wear the hum
+  if (mode === 'full') step('go', { who: side, type: typ, sig: sig, status: mv.power === 0, effect: mv.effect || null, mid: mid, st: mvSt, hm: mvHm });   // MOVE_FX_2 (D831)
   else step('lunge', { who: side });
   step('text', { s: uName + ' tries ' + mv.name + '!' });
   await play(id); if (!alive(id)) return;
@@ -11293,8 +11294,8 @@ async function doMove(side, mid, id){
     B.shown = { who: whoKey, hpFrom: hpFrom, hpTo: hpTo, max: max };
     renderBattleCards(); if (!mine) save();
     const variant = typeof mvVariant === 'function' ? mvVariant(r.mult, r.crit) : (r.mult > 1 ? 'super' : r.mult < 1 ? 'weak' : 'normal');
-    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey, mid: mid, st: mvSt });   // MOVE_FX_2 (D827): the travel rides the wind-up
-    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant, mid: mid, st: mvSt });
+    if (mode === 'full') step('windup', { who: side, type: typ, variant: variant, tgt: whoKey, mid: mid, st: mvSt, hm: mvHm });   // MOVE_FX_2 (D827): the travel rides the wind-up
+    step('contact', { who: whoKey, atk: side, type: typ, mult: r.mult, crit: !!r.crit, variant: variant, mid: mid, st: mvSt, hm: mvHm });
     step('sfx', { name: r.mult > 1 ? 'hitStrong' : r.mult < 1 ? 'hitWeak' : 'hit' });
     const stopMs = mode === 'full' && typeof mvScaled === 'function' ? mvScaled(typ, variant).stop : 0;
     step('stop', { ms: stopMs });
@@ -15228,7 +15229,7 @@ function drawBattle(t, dt){
       if (age0 < 0 || age0 >= e.dur) continue;
       // MOVE_FX_2 (D827): a held bespoke hit reads its clock as paused through the hit-stop (P5d)
       const age = e.hold1 != null ? (t < e.hold1 ? Math.max(0, e.hold0 - e.t0) : age0 - (e.hold1 - e.hold0)) : age0;
-      const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(e.mid, e.st) : null;   // MOVE_FX_3 (D905): grown by the user's tier
+      const mvRow = typeof mvMoveRow === 'function' ? mvMoveRow(e.mid, e.st, e.hm) : null;   // MOVE_FX_3 (D905): grown by the user's tier; MOVE_FX_4 (D936): hummed for an Answerer
       if (typeof mvShadowSet === 'function') { mvShadowSet(!!mvRow); mvVarSet(mvRow ? e.v : 0); }   // D826: k shadow and variation, bespoke only
       const user = e.who === 'me' ? Sc : Tc, tgt = e.who === 'me' ? Tc : Sc;
       if (e.kind === 'mvGo') {
@@ -15243,16 +15244,16 @@ function drawBattle(t, dt){
           const at = e.effect && e.effect.target === 'foe' && !e.effect.heal ? tgt : user;
           if (k >= 0) mvShape(seg, k, age, at, at, put);
         } else {
-          const segs = mvAnim(e.type, e.mid, e.st).go || [];   // MOVE_FX_2 (D831), MOVE_FX_3 (D905)
+          const segs = mvAnim(e.type, e.mid, e.st, e.hm).go || [];   // MOVE_FX_2 (D831), MOVE_FX_3 (D905), MOVE_FX_4 (D936)
           for (let s = 0; s < segs.length; s++) { const k = mvSegK(segs[s], age); if (k >= 0) mvShape(segs[s], k, age, user, tgt, put); }
         }
       } else if (e.kind === 'mvHit') {
-        const rows = typeof mvHitRows === 'function' ? mvHitRows(e.type, e.mid, e.st) : (mvPunchType(e.type).hit_v2 || []);   // MOVE_FX_2 (D831), MOVE_FX_3 (D905)
+        const rows = typeof mvHitRows === 'function' ? mvHitRows(e.type, e.mid, e.st, e.hm) : (mvPunchType(e.type).hit_v2 || []);   // MOVE_FX_2 (D831), MOVE_FX_3 (D905), MOVE_FX_4 (D936)
         const hitUser = e.who === 'me' ? Tc : Sc, hitT = e.who === 'me' ? Sc : Tc;
         for (let s = 0; s < rows.length; s++) { const k = mvSegK(rows[s], age); if (k >= 0) mvShape(rows[s], k, age, hitUser, hitT, put); }
         if (e.variant && e.variant.indexOf('super') >= 0 && age < 200) {
           const rk = age / 200, rr = 6 + 12 * rk;
-          mvShape(mvRow ? { shape: 'ring', r: [rr, rr], col: mvLight(e.type), ms: [0, 200], b: 2, n: 8, at: 'target' }   // D827: 8 slots for a bespoke hit
+          mvShape(mvRow ? { shape: 'ring', r: [rr, rr], col: mvLightFx(e.type), ms: [0, 200], b: 2, n: 8, at: 'target' }   // D827: 8 slots for a bespoke hit; MOVE_FX_4 (D937): never white
             : { shape: 'ring', r: [rr, rr], col: mvLight(e.type), ms: [0, 200], b: 1, at: 'target' }, rk, age, hitUser, hitT, put);
         }
         if (e.variant && e.variant.indexOf('crit') >= 0 && age < 240) drawGlyph(g, 'spark', hitT[0], hitT[1] - 14);
