@@ -6326,9 +6326,236 @@ function tickPatrol(dt){
     const sx = Math.sign(dest[0] - cur.x), sy = Math.sign(dest[1] - cur.y);
     const nx = cur.x + (sx || 0), ny = cur.y + (sy && !sx ? sy : 0);
     const face = sx ? (sx < 0 ? 'left' : 'right') : (sy < 0 ? 'up' : 'down');
-    if (solidTile(nx, ny) || blockerAt(nx, ny) || (nx === S.world.x && ny === S.world.y)) { o._pi = slot + 1; continue; }
-    mapRT.pos[o.id] = { x: nx, y: ny, fx: nx, fy: ny, facing: face };
+    if (solidTile(nx, ny) || blockerAt(nx, ny) || (nx === S.world.x && ny === S.world.y) || npcStepTaken(nx, ny)) { o._pi = slot + 1; continue; }
+    if (prefersReduced()) mapRT.pos[o.id] = { x: nx, y: ny, fx: nx, fy: ny, facing: face };
+    else npcGlide(o.id, cur, { x: nx, y: ny }, face, PATROL_GLIDE_MS);
     mapRT.face[o.id] = face;
+  }
+}
+/* --- NPC_LIFE: walking routes, idle glances and talk reactions for the people the holder meets. Runtime only; never saved. ---
+   Walking: an npc with no authored patrol, clock schedule, counter, panel, match or catch rule gets a short back-and-forth route
+   (up to WANDER_REACH tiles) from its home tile, picked once per map visit. A route never uses a door, doorstep, warp, object
+   tile, trainer sight line or a one-wide gap, so a walker never opens or closes a way through. Walkers wait while the holder is
+   within 2 tiles (as patrols do) and turn to face them; a map visit always starts everyone at home. Reduced motion: no walking,
+   no glances, no hops; the balloons still show. Authored patrols (Officer Bren) keep their beat and now glide between tiles. */
+const PATROL_GLIDE_MS = 420, WANDER_STEP_MS = 360, WANDER_REACH = 2, WANDER_GAP_R = 8;
+const WANDER_FIRST_MS = [3500, 7000], WANDER_DWELL_MS = [2200, 5200], GLANCE_MS = [4500, 9000], GLANCE_HOLD_MS = 1100;
+// Ids that must hold their spot even though the rules above would let them walk (story blockers in wide spaces, set pieces).
+const NPC_STILL = {};
+const lifeRnd = ([a, b]) => a + Math.random() * (b - a);
+// A tile another walker is gliding onto, the follower's tile, a creature or the holder's next tile: not free for an npc step.
+function npcStepTaken(x, y){
+  if (fol.x === x && fol.y === y) return true;
+  if (walk.to && walk.to.x === x && walk.to.y === y) return true;
+  return !!wildAt(x, y);
+}
+function npcGlide(id, from, to, face, ms){
+  mapRT.pos[id] = { x: to.x, y: to.y, fx: from.x, fy: from.y, moving: true, facing: face, glide: { t0: now(), ms, x: from.x, y: from.y } };
+}
+// Runs every drawn frame (scenes too), so a step that was mid-glide when a talk opened still lands.
+function tickGlides(){
+  const t = now();
+  for (const P of Object.values(mapRT.pos)) {
+    const gl = P && P.glide; if (!gl) continue;
+    const k = Math.min(1, (t - gl.t0) / gl.ms);
+    P.fx = gl.x + (P.x - gl.x) * k; P.fy = gl.y + (P.y - gl.y) * k;
+    if (k >= 1) { P.glide = null; P.moving = false; P.fx = P.x; P.fy = P.y; }
+  }
+}
+function wanderable(o){
+  if (!o || o.kind !== 'npc' || o.cast || o.pet || o.frozen || o.patrol || o.catch || o.roll) return false;
+  if (o.shop || o.meals || o.wardrobe || o.panel || o.booth || o.board || o.keeper || o.shot) return false;
+  if (LANTERN_GUIDE_IDS[o.id] || NPC_STILL[o.id] || MATCH_WALKUP[CUR.id + ':' + o.id]) return false;
+  const bag = SCHED[o.name];
+  return !(bag && bag.byId[o.id]);
+}
+// Tiles a trainer looks along at its full sight, ignoring who stands there now: a walker must not hide or open a sight line.
+function sightTiles(){
+  const out = new Set();
+  for (const o of CUR.objs) {
+    if (o.kind !== 'trainer' || !present(o)) continue;
+    const t = TRAINERS[o.id], d = t && DIRS[t.facing || 'down']; if (!d || !(t.sight > 0)) continue;
+    for (let i = 1; i <= t.sight; i++) out.add((o.x + d[0] * i) + ',' + (o.y + d[1] * i));
+  }
+  return out;
+}
+// True when (x, y) is the only link between its open neighbours within WANDER_GAP_R: standing there would cut a way through.
+function wanderGap(x, y, closed){
+  const open = (a, b) => Math.abs(a - x) <= WANDER_GAP_R && Math.abs(b - y) <= WANDER_GAP_R && !solidTile(a, b) && !closed(a, b);
+  const nb = Object.values(DIRS).map(([dx, dy]) => [x + dx, y + dy]).filter(([a, b]) => open(a, b));
+  if (nb.length < 2) return false;
+  const key = (a, b) => b * 256 + a, seen = new Set([key(x, y), key(nb[0][0], nb[0][1])]), q = [nb[0]];
+  while (q.length) {
+    const [a, b] = q.shift();
+    for (const [dx, dy] of Object.values(DIRS)) {
+      const na = a + dx, nb2 = b + dy, k = key(na, nb2);
+      if (seen.has(k) || !open(na, nb2)) continue;
+      seen.add(k); q.push([na, nb2]);
+    }
+  }
+  return !nb.every(([a, b]) => seen.has(key(a, b)));
+}
+// What stands where at the start of this visit, built once (present() runs its conditions, too slow for a search): blocker
+// tiles by id, any object's tile, doorsteps, trainer sight tiles, and the tiles routes have claimed so far.
+function lifeTiles(){
+  if (mapRT.lifeTiles) return mapRT.lifeTiles;
+  const block = new Map(), any = new Set(), steps = new Set();
+  for (const o of CUR.objs) {
+    if (!present(o)) continue;
+    const q = objPos(o), k = q.x + ',' + q.y;
+    any.add(k);
+    if (BLOCK_KINDS[o.kind]) block.set(k, o.id);
+    if (o.kind === 'door') steps.add(q.x + ',' + (q.y + 1));
+  }
+  return (mapRT.lifeTiles = { block, any, steps, sight: sightTiles(), claim: new Set() });
+}
+// The route for one npc this visit: [[homeX, homeY], [endX, endY]], or null to stand still. Tiles a walker claims are closed to
+// later walkers, so two routes never meet and never close a gap between them.
+function wanderRoute(o){
+  if (!wanderable(o)) return null;
+  const { block, any, steps, sight, claim } = lifeTiles();
+  const closed = (x, y) => { const k = x + ',' + y, b = block.get(k); return claim.has(k) || (b != null && b !== o.id); };
+  const usable = (x, y) => { const k = x + ',' + y;
+    return !solidTile(x, y) && !any.has(k) && !steps.has(k) && !claim.has(k) && !sight.has(k) && !(S.world.x === x && S.world.y === y) && !wanderGap(x, y, closed); };
+  if (wanderGap(o.x, o.y, closed)) return null;
+  let h = 0; for (const ch of String(o.id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const dirs = Object.values(DIRS), order = [0, 1, 2, 3].map(i => dirs[(i + h) % 4]);
+  let best = null;
+  for (const [dx, dy] of order) {
+    let n = 0;
+    while (n < WANDER_REACH && usable(o.x + dx * (n + 1), o.y + dy * (n + 1))) n++;
+    if (n && (!best || n > best.n)) best = { n, dx, dy };
+  }
+  if (!best) return null;
+  const end = [o.x + best.dx * best.n, o.y + best.dy * best.n];
+  for (let i = 0; i <= best.n; i++) claim.add((o.x + best.dx * i) + ',' + (o.y + best.dy * i));
+  return [[o.x, o.y], end];
+}
+function npcLife(o){
+  const L = mapRT.life || (mapRT.life = {});
+  if (!L[o.id]) L[o.id] = { route: wanderRoute(o), slot: 1, next: now() + lifeRnd(WANDER_FIRST_MS), glance: null, glanceAt: now() + lifeRnd(GLANCE_MS) };
+  return L[o.id];
+}
+// The facing a still npc shows while it glances aside. Never during a scene (the talk facing wins there).
+function glanceFace(o){
+  const L = mapRT.life && mapRT.life[o.id], g = L && L.glance;
+  return g && !scene && now() < g.until ? g.face : null;
+}
+let wanderAt = 0;
+function tickWander(){
+  const t = now(); if (t < wanderAt) return; wanderAt = t + 100;
+  if (!CUR || !S || scene || fade.busy || (battle && battle.on) || overlayOpen() || prefersReduced()) return;
+  let built = 0;                             // routes are worked out one npc per tick, so arriving on a busy map never stalls a frame
+  for (const o of CUR.objs) {
+    if (o.kind !== 'npc' || o.pet || o.frozen || o.cast || o.patrol || !present(o)) continue;
+    if (!(mapRT.life && mapRT.life[o.id]) && built++) continue;
+    const L = npcLife(o), P = mapRT.pos[o.id];
+    if (P && P.glide) continue;
+    const cur = objPos(o), near = Math.abs(cur.x - S.world.x) + Math.abs(cur.y - S.world.y);
+    const aimed = walk.arrive && walk.aim && walk.aim.x === cur.x && walk.aim.y === cur.y;   // tap-to-talk is walking up: hold still
+    if (near <= 2 || aimed) {                // close: wait, and look at the holder
+      if (near > 0) { const f = faceOf(cur, S.world); mapRT.face[o.id] = f; L.faced = true; }
+      L.next = Math.max(L.next, t + 1200); L.glance = null;
+      continue;
+    }
+    if (L.faced) { delete mapRT.face[o.id]; L.faced = false; }
+    if (L.route && t >= L.next) {
+      const dest = L.route[L.slot % 2];
+      if (cur.x === dest[0] && cur.y === dest[1]) { L.slot++; L.next = t + lifeRnd(WANDER_DWELL_MS); continue; }
+      const sx = Math.sign(dest[0] - cur.x), sy = Math.sign(dest[1] - cur.y), nx = cur.x + sx, ny = cur.y + sy;
+      if (solidTile(nx, ny) || blockerAt(nx, ny) || (nx === S.world.x && ny === S.world.y) || npcStepTaken(nx, ny)) { L.next = t + 900; continue; }
+      npcGlide(o.id, cur, { x: nx, y: ny }, dirName(sx, sy), WANDER_STEP_MS);
+      L.glance = null;
+      continue;
+    }
+    if (t >= L.glanceAt) {                   // a still moment: look aside, then back
+      const base = (P && P.facing) || o.facing || 'down', side = base === 'up' || base === 'down' ? ['left', 'right'] : ['up', 'down'];
+      L.glance = { face: side[Math.random() < 0.5 ? 0 : 1], until: t + GLANCE_HOLD_MS };
+      L.glanceAt = t + lifeRnd(GLANCE_MS);
+    }
+  }
+}
+/* Talk reactions. An npc who is spoken to hops once; each line it says can raise a balloon that matches its tone; and each
+   answer the holder picks gets a visible reaction from whoever asked (a heart and a bounce for yes, dots and a head shake for
+   no, a match balloon for a battle, a "!" for a question or anything else). Reactions outlive the scene by their few hundred
+   ms, so "Not now" still shows. Reduced motion keeps the balloon and drops the hop or shake. */
+const REACT_MS = 1100, REACT_HOP_MS = 260, REACT_SHAKE_MS = 380, TALK_BOB_MS = 120;
+const LINE_TONES = [
+  ['emote_laugh', /\b(ha(ha)+|heh|hee|hah)\b/i],
+  ['emote_heart', /\b(thank(s| you)|love|lovely|glad|wonderful|bless)\b/i],
+  ['emote_ask', /\?["')\]]*$/],
+  ['emote_dots', /^(\.\.\.|…|hm+\b|um+\b|uh\b)/i],
+  ['emote_bang', /!["')\]]*$/],
+];
+const CHOICE_REACT = [
+  ['emote_dots', 'shake', /^(no\b|nope|nah|not (now|yet|today|really)|later|maybe later|never ?mind|leave|bye|goodbye|i('| a)m (good|fine|okay)|i'?ll pass|pass\b|skip|cancel|go back|back\b|nothing)/i],
+  ['emote_match', 'hop', /\b(battle|match|duel|challenge|spar)\b/i],
+  ['emote_heart', 'bounce', /^(yes|yeah|yep|sure|ok(ay)?\b|deal|of course|please|thanks|thank you|count me in|i'?ll (help|do it|go|take|try)|let'?s|track it|accept|agree|i'?m in|happy to|wait until)/i],
+  ['emote_heart', 'bounce', /\(\d+\)$/],
+  ['emote_bang', 'hop', /./],
+];
+const reacts = [], reactLast = {};   // reactLast: the latest per npc, for the debug read only
+let talkSpeaker = null;
+function npcReact(o, glyph, move, ms){
+  if (!o || !CUR) return;
+  for (let i = reacts.length - 1; i >= 0; i--) if (reacts[i].id === o.id) reacts.splice(i, 1);
+  const t = now();
+  const r = { id: o.id, glyph: glyph && GLYPH[glyph] ? glyph : null, move: prefersReduced() ? null : move || null, t0: t, until: t + (ms || REACT_MS) };
+  reacts.push(r); reactLast[o.id] = r;
+}
+const reactOf = id => reacts.find(r => r.id === id) || null;
+// The person on this map who speaks as `who`: the npc the scene opened on first, else the nearest present one by that name.
+function speakerObj(who){
+  if (!who || !CUR || !S) return null;
+  const n = scene && scene.npc;
+  if (n && objName(n) === who && CUR.objs.includes(n) && present(n)) return n;
+  let best = null, bd = 1e9;
+  for (const o of CUR.objs) {
+    if ((o.kind !== 'npc' && o.kind !== 'trainer') || o.pet || !present(o) || objName(o) !== who) continue;
+    const q = objPos(o), d = Math.abs(q.x - S.world.x) + Math.abs(q.y - S.world.y);
+    if (d < bd) { bd = d; best = o; }
+  }
+  return best;
+}
+const authoredEmote = o => sceneEmotes.some(e => { const x = emoteTarget(e.who); return x && x.id === o.id; });
+function sayReact(who, text){
+  const o = speakerObj(who); talkSpeaker = o ? o.id : null;
+  if (!o || authoredEmote(o)) return;
+  const r = reactOf(o.id); if (r && r.glyph && now() - r.t0 < 900) return;   // an answer's reaction stays up a beat before the reply's tone
+  const tone = LINE_TONES.find(([, re]) => re.test(String(text || '').trim()));
+  const hop = r && !r.glyph && now() - r.t0 < REACT_HOP_MS ? r.move : null;   // the talk-start hop carries on under the balloon
+  if (tone) npcReact(o, tone[0], tone[0] === 'emote_laugh' || tone[0] === 'emote_heart' ? 'hop' : hop);
+}
+function choiceReact(sc, label){
+  const o = speakerObj(sc && sc.who) || (sc && sc.npc && present(sc.npc) && (sc.npc.kind === 'npc' || sc.npc.kind === 'trainer') && !sc.npc.pet ? sc.npc : null);
+  if (!o || authoredEmote(o)) return;
+  const hit = CHOICE_REACT.find(([, , re]) => re.test(String(label || '').trim()));
+  if (hit) npcReact(o, hit[0], hit[1]);
+}
+// Draw offset for an npc this frame: the reaction's hop, bounce or head shake, and a 1 px bob while its line types out.
+function npcBob(o, t){
+  let dx = 0, dy = 0;
+  if (prefersReduced()) return { dx, dy };
+  const r = reactOf(o.id);
+  if (r && r.move) {
+    const e = t - r.t0;
+    if (r.move === 'shake' && e < REACT_SHAKE_MS) dx = Math.round(Math.sin(e / REACT_SHAKE_MS * Math.PI * 4));
+    else if (r.move === 'hop' && e < REACT_HOP_MS) dy = -Math.round(Math.sin(e / REACT_HOP_MS * Math.PI) * 3);
+    else if (r.move === 'bounce' && e < REACT_HOP_MS * 2) dy = -Math.round(Math.abs(Math.sin(e / REACT_HOP_MS * Math.PI)) * 3);
+  }
+  if (!dy && scene && talkSpeaker === o.id && sbox.mode === 'say' && !sbox.full) dy = -(Math.floor(t / TALK_BOB_MS) % 2);
+  return { dx, dy };
+}
+function drawReacts(g, cx, cy){
+  const t = now();
+  for (let i = reacts.length - 1; i >= 0; i--) if (reacts[i].until <= t) reacts.splice(i, 1);
+  for (const r of reacts) {
+    if (!r.glyph) continue;
+    const o = CUR.objs.find(x => x.id === r.id); if (!o || !present(o) || authoredEmote(o)) continue;
+    const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, b = npcBob(o, t);
+    const bx = Math.round(fx * TS - cx) + 4 + b.dx, by = Math.round(fy * TS - cy) - 15 + b.dy;
+    drawGlyph(g, r.glyph, bx, by);
+    bubbleBoxes.push({ x: bx, y: by, w: 9, h: 12, react: r.id });
   }
 }
 function walkLerp(){
@@ -6363,6 +6590,7 @@ function updateWalk(dt, t){
   }
   if (!moveHeld()) bump.held = false;
   tickPatrol(dt);
+  tickWander();
 }
 /* --- warps, doors and the fade (MAPS_SLICE §3, INTERIORS §3.1): 250 ms, input locked, save right after --- */
 const FADE_MS = 250;
@@ -6937,6 +7165,7 @@ function drawMap(t){
     if (earlyBuddy() && !needHeartSkipped && Math.floor(t / 400) % 5 === 0) drawGlyph(g, 'heart', fx + 10, fy - 12 - bob - hop);
     grassOver(fol.fx, fol.fy);
   };
+  tickGlides();
   // y-sorted so objects, creatures, the follower and the keeper overlap naturally (follower under the keeper on a shared tile)
   const ents = wild.list.map(w => ({ y: w.fy, draw: () => drawWild(g, w, cx, cy, VW, VH, t) }));
   for (const o of CUR.objs) if (present(o) && o.kind !== 'warp' && o.kind !== 'door' && o.kind !== 'trigger' && o.kind !== 'decal' && !(o.kind === 'sign' && o.sprite === 'none')) {
@@ -7673,15 +7902,15 @@ function drawObj(g, o, cx, cy, VW, VH, t){
       g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
       g.drawImage(sprFor(ln, stage, false)[(t % 2800) < 120 ? 'b' : 'n'], X - 1, Y - 2 - (Math.floor(t / 600) % 2));
       return; }
-    const face = mapRT.face[o.id] || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
+    const face = mapRT.face[o.id] || glanceFace(o) || q.facing || (o.kind === 'trainer' ? (TRAINERS[o.id] || {}).facing : o.facing) || 'down';
     const fr = q.moving ? Math.floor(t / (o.frozen ? 900 : 130)) % 2 : 0;
-    const img = keeperFrames(npcLook(o))[face][fr];
+    const img = keeperFrames(npcLook(o))[face][fr], b = npcBob(o, t);   // NPC_LIFE: reaction hop / shake, talk bob
     g.fillStyle = 'rgba(26,28,44,.35)'; g.fillRect(X + 2, Y + 14, 12, 2);
     if (o.frozen) {                          // a time echo: the same step, a pixel out of date
       const echo = Math.floor(t / 900) % 2 ? 1 : -1;
       g.globalAlpha = 0.35; g.drawImage(img, X - 1 + echo, Y - 2); g.globalAlpha = 0.9;
     }
-    g.drawImage(img, X - 1, Y - 2); g.globalAlpha = 1;
+    g.drawImage(img, X - 1 + b.dx, Y - 2 + b.dy); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
   else if (o.kind === 'prop') {
     const key = (o.id === 'rx4_side' && S && S.flags['story.gb_escort'] && !S.flags['story.gb_done'] && S.flags['story.side'] === 'glimmer') ? 'capital_screen' : o.sprite;
@@ -8320,7 +8549,7 @@ function interact(o){
   if (o.booth) { openBooth(o); return; }
   if (o.roll) { rollProp(o); return; }
   const ctx = { npc: o };
-  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) noteContact(objName(o)); }
+  if (o.kind === 'npc' || o.kind === 'trainer') { faceKeeper(o); if (!o.pet) { noteContact(objName(o)); npcReact(o, null, 'hop', REACT_HOP_MS); } }
   if (o.kind === 'trainer') {
     const t = TRAINERS[o.id];
     if (!S.flags['trainer.' + o.id]) return runSteps([['battle', o.id]], ctx);
@@ -8434,12 +8663,13 @@ function checkChatter(){
     const q = objPos(o); if (Math.abs(q.x - S.world.x) + Math.abs(q.y - S.world.y) > 2) continue;
     const k = Object.keys(o.chatter).find(c => cond(c, false, o)); if (!k) continue;
     mapRT.chat.add(o.id); chat.id = o.id; chat.until = now() + CHATTER_MS;
-    const el = $('#chatBubble'); el.textContent = o.chatter[k]; el.hidden = false; return;
+    const el = $('#chatBubble'); el.textContent = o.chatter[k]; el.hidden = false; if (o.kind === 'npc' && !o.pet) npcReact(o, null, 'hop', REACT_HOP_MS); return;
   }
 }
 function drawBubbles(g, cx, cy, t){
   bubbleBoxes.length = 0;
   drawSceneEmotes(g, cx, cy);
+  drawReacts(g, cx, cy);
   if (S && !scene && !walk.intro && !fade.busy && !overlayOpen()) {   // MATCH_MARKER: holders who want a match (D818-D823)
     const fo = !moveHeld() && !walk.to && facingTarget(), bob = matchBob(t);
     for (const o of CUR.objs) {
@@ -8533,6 +8763,7 @@ function endScene(){
   commitPending();
   clearCast(sc);
   if (sc.npc) delete mapRT.face[sc.npc.id];
+  talkSpeaker = null;
   if (sc.npc && (sc.npc.kind === 'npc' || sc.npc.kind === 'trainer')) bump.talked = sc.npc.id;
   scene = null; sbox.resolve = null; tabGuardUntil = performance.now() + TAB_GUARD_MS;
   $('#ovScene').hidden = true; $('#ovScene').classList.remove('top'); document.body.classList.remove('scene-on'); document.body.classList.remove('price-on'); $('#sbChoices').innerHTML = ''; $('#sbName').hidden = true;
@@ -8787,7 +9018,7 @@ async function execStep(st){
     case 'say': {
       noteContact(a);
       if (sc.skip) { castOnSay(a, expand(b)); return; }   // SKIP still places a cast the line names (Rook), then moves on
-      sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx);
+      sc.who = a; const tx = expand(b); sc.lastSay = tx; castOnSay(a, tx); sayReact(a, tx);
       // D135: Juniper's bonus line pays 300 Acorns once per scene view. The got-line uses the usual Acorn wording.
       if (a === 'Associate Juniper' && b === 'Bonus Acorns are on the way. Have a bright day!' && !sc.view.flags['rc.acorns']) {
         sc.view.flags['rc.acorns'] = true;
@@ -8809,6 +9040,7 @@ async function execStep(st){
       if (!scene || pick == null || pick < 0 || !opts[pick]) return;
       const opt = opts[pick]; if (opt[2]) sc.vars.tags.push(opt[2]);
       $('#sbEcho').textContent = '\u203a ' + expand(opt[0]);
+      choiceReact(sc, expand(opt[0]));
       // The guide's "Say it again" cannot point at its own steps: choiceAligned walks every nested array.
       if (opt[1] === '@lantern_again') { await execSteps(lanternGuideBody(sc.who)); return; }
       await execSteps(opt[1]); return;
@@ -18221,6 +18453,13 @@ function boot(){
       const q = objPos(o), dist = Math.abs(q.x - S.world.x) + Math.abs(q.y - S.world.y), holder = matchMarkFor(o);
       return { id: o.id, holder, x: q.x, y: q.y, dist, on: !!holder && dist <= MATCH_RANGE, grace: mapRT.grace, restDue: !!S.world.restDue };
     }),
+    npcLife: () => CUR.objs.filter(o => o.kind === 'npc' && present(o)).map(o => {   // NPC_LIFE debug read; builds routes lazily
+      const L = npcLife(o), q = objPos(o), r = reactOf(o.id), b = npcBob(o, now());
+      return { id: o.id, name: o.name, home: [o.x, o.y], route: L.route, x: q.x, y: q.y, moving: !!q.moving, patrol: !!o.patrol,
+        glance: glanceFace(o), react: r ? r.glyph : null, move: r ? r.move : null, dx: b.dx, dy: b.dy, speaking: talkSpeaker === o.id,
+        last: reactLast[o.id] ? { glyph: reactLast[o.id].glyph, move: reactLast[o.id].move, ms: Math.round(reactLast[o.id].until - reactLast[o.id].t0), at: reactLast[o.id].t0 } : null };
+    }),
+    wanderNow: () => { for (const L of Object.values(mapRT.life || {})) { L.next = 0; L.glanceAt = 0; } wanderAt = 0; return true; },   // debug: skip the waits
     bubbles: () => ({ boxes: bubbleBoxes.map(b => Object.assign({}, b)), match: bubbleBoxes.filter(b => b.match).map(b => b.match) }),
     showSight: (on = true) => { sightShown = !!on; return CUR.objs.filter(o => o.kind === 'trainer' && present(o)).map(o => ({ id: o.id, line: sightLine(o), canSpot: canSpot(o) })); },
     objPos: id => { const o = CUR.objs.find(x => x.id === id); if (!o) return null; const q = objPos(o); return { present: present(o), x: q.x, y: q.y, fx: q.fx, fy: q.fy, moving: !!q.moving, facing: mapRT.face[id] || q.facing || (TRAINERS[id] || {}).facing || o.facing || 'down' }; },
