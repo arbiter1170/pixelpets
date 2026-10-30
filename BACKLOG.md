@@ -89,7 +89,7 @@ Earlier status history (the Oct 8 priority order with its shipped progress notes
 
 ## Next up
 
-NEWS app and fuller Ribbit (D1012 red, D1013, D1014) are built on `claude/news-app`, not merged: a tenth phone app with one Block News edition per real day, 75 stories and 135 more Ribbit posts drafted from the design lore index. It waits on Vincent's yes to the previews (D1012) and Design's sign-off on the copy (D1013). New copy follows the `walklings-lore-feed` skill. Save stays `pixelpets.save.v2`, `v` 2, plus additive `newsSeen`.
+NEWS app and fuller Ribbit (D1012 red, D1013, D1014, D1015) are built on `claude/news-app`, not merged: a tenth phone app, a tabbed Block News paper (FRONT, READ, TOWN, YOU) with three editions a day, voices, notices, a daily poll, "about you" pieces and a Walkling of the day; 96 stories and 135 more Ribbit posts drafted from the design lore index. It waits on Vincent's yes to the previews (D1012) and Design's sign-off on the copy (D1013). New copy follows the `walklings-lore-feed` skill. Save stays `pixelpets.save.v2`, `v` 2, plus additive `newsSeen`, `newsTab`, `newsPoll`.
 
 TOP_HUD option A is on this branch: one place chip under the gear, plus the MAP button, and a MAP shortcut on the chip's TODAY card. The chip and the left column slide down to clear an exit. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. The frame tutorial strip is not in this build.
 

@@ -17,8 +17,10 @@ The NEWS app prints one Block News edition per real day from `data/news.json` (e
 3. Read the nearby lines already in the feed for that region, so a new line doesn't repeat or contradict them.
 
 ## Writing a line
-- Shapes. Story: `{id, section, desk, headline, body[1-3], region, when, lead?, lore[]}`. Post: `{id, kind: local|block|chirp, region, name, handle, when, text, lore[]}` (`name`/`handle` for locals only). Ids: `nw-<region>-<word>` and `rp-<region>-<word>`; never reuse or rename a shipped id.
+- Shapes. Story: `{id, section, desk, headline, body[1-3], region, when, lead?, art?, replies?, sky?, phase?, me?, lore[]}`. Post: `{id, kind: local|block|chirp, region, name, handle, when, text, lore[]}` (`name`/`handle` for locals only). Ids: `nw-<region>-<word>` and `rp-<region>-<word>`; never reuse or rename a shipped id.
 - Facts come only from cited entries: BUILT, or CANON with every `reveal` flag in `when`. Never PLAN or OPEN. No new names, places, numbers or events (AGENTS rule 8); if a line needs one, leave it out and raise a design question.
+- Flavour is welcome (D1015): unnamed role-label townsfolk, opinions, jokes, weather and small moments, built on those facts. It never adds a proper name, shop, place, event, number or species.
+- Formats beyond stories (spec §4a): `voices`, `notices` (ads only with `story.side=glimmer`), `polls` (three options, one tap), `you` (tokens `{holder}` `{partner}` `{town}` `{seals}` `{steps}` only). Stories may add `art` (a species id the lore puts there, with its reveal gate), `replies`, and `sky`/`phase`/`me` gates.
 - `when` carries each cited entry's `reveal` flags. Retire stale news with `!flag` (lamps lit before `story.glen_cleared`). Heights lines need `story.heights_done`; "sold" lines need `story.quarry_bought`.
 - Chips, the Tuning and implants: `story.side=glimmer` only, hinted, never confirmed (CHIP_SECRECY §1). Bright Notice copy runs in GLIMMERWELL or on the Glimmer side.
 - `lead: N` only for a story beat that should headline once reached; N follows story order (higher is later). One lead per beat.

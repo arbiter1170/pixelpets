@@ -13288,65 +13288,262 @@ function renderRibbit(body){
   foot.textContent = phoneSignal() <= 1 ? 'Ribbit rides the Keeper wires. One bar: the feed is thin here.' : 'Ribbit rides the Keeper wires.';
   body.appendChild(foot);
 }
-/* ---------- NEWS: the Block News paper (D1012 red, a tenth phone app; D1013: placeholder copy until Design signs it) ----------
-   One edition per real day from data/news.json (news.js). The lead is the newest story beat the holder has reached; the
-   features lean to the current place; signal thins the briefs. S.newsSeen (additive) is the last edition opened, so the
-   NEWS icon shows a dot on a new day or a new lead. */
-const NEWS_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const NEWS_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/* ---------- NEWS: the Block News paper (D1012 red, a tenth phone app; D1013/D1015: placeholder copy until Design signs it) ----------
+   Editions from data/news.json (news.js): MORNING, EVENING or NIGHT, a new set each real day. Four tabs, one tap each:
+   FRONT (breaking bar, wire, lead, also today), READ (sections), TOWN (voices, notices, the poll), YOU (your day, the
+   Walkling of the day). Additive save fields: newsSeen (the last edition opened, for the icon dot and BREAKING),
+   newsTab (the last tab), newsPoll (today's vote). */
+const NEWS_DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const NEWS_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const NEWS_TABS = ['front', 'read', 'town', 'you'];
+const NEWS_SEC_COL = { towns: '#2f7d4a', roads: '#6a3a0c', halls: '#c45c26', keepers: '#2a6f8f', glimmerwell: '#e4b04a' };
+const NEWS_TYPE_COL = { EMBER: PAL.o, TIDE: PAL.c, BLOOM: PAL.g, STONE: '#6a3a0c', VOLT: PAL.y, FROST: PAL.s, GUST: PAL.h, SHADE: PAL.p };
+const NEWS_GLYPH = {
+  towns: ['...##...', '..####..', '.######.', '########', '.#....#.', '.#.##.#.', '.#.##.#.', '.######.'],
+  roads: ['...##...', '...##...', '..#..#..', '..#..#..', '.#....#.', '.#....#.', '#......#', '#......#'],
+  halls: ['...##...', '..####..', '.##..##.', '.#.##.#.', '.#.##.#.', '.##..##.', '..####..', '..#..#..'],
+  keepers: ['...##...', '..####..', '..#..#..', '.######.', '.#.##.#.', '.#.##.#.', '.######.', '...##...'],
+  glimmerwell: ['...#....', '...#....', '.#####..', '...#..#.', '...#.###', '......#.', '.#......', '###.....'],
+  quote: ['........', '##..##..', '##..##..', '.#...#..', '#...#...', '........', '........', '........'],
+  bell: ['...##...', '..####..', '..####..', '..####..', '.######.', '########', '...##...', '........'],
+  heart: ['........', '.##.##..', '#######.', '#######.', '.#####..', '..###...', '...#....', '........'],
+  reply: ['........', '.######.', '#......#', '#......#', '.######.', '..#.....', '.#......', '........'],
+  check: ['........', '.......#', '......##', '#....##.', '##..##..', '.####...', '..##....', '........'],
+};
+let newsSec = '', newsWire = 0, newsBreaking = false;
 function newsEdition(){
   const api = window.PPNews;
   if (!api || !api.edition || !S) return null;
-  return api.edition({ flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal() });
+  const ck = window.PPClock ? PPClock.now() : null, p = pet(), sky = chipSky();
+  return api.edition({
+    flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(),
+    hh: ck ? ck.hh : 9, phase: ck ? ck.phase : 'day', sky: sky ? sky.kind : '', town: placeName(),
+    me: {
+      holder: playerName(), partner: p ? petName(p) : '', partnerSpecies: p ? p.species : '', partnerStage: p ? p.stage : 0,
+      seals: sealCount(), steps: (S.stepLog && S.stepLog[dayKey(Date.now())]) | 0, acorns: S.money | 0,
+      seen: Object.keys((S.dex && S.dex.seen) || {}),
+    },
+  });
 }
 function newsDate(day){
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day || '');
   if (!m) return '';
   const d = new Date(+m[1], +m[2] - 1, +m[3]);
-  return NEWS_DAYS[d.getDay()] + ', ' + NEWS_MONTHS[d.getMonth()] + ' ' + d.getDate();
+  return NEWS_DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + NEWS_MONTHS[d.getMonth()];
 }
-function newsStory(story, open){
-  const row = document.createElement('article'); row.className = 'news-story' + (open ? ' news-lead' : ''); row.dataset.id = story.id;
-  const head = document.createElement('button'); head.type = 'button'; head.className = 'news-head';
-  head.setAttribute('aria-expanded', open ? 'true' : 'false');
-  const kicker = document.createElement('small'); kicker.className = 'news-kicker';
-  kicker.textContent = (PPNews.sectionLabel(story.section) || 'NEWS') + ' / ' + story.desk;
-  const h = document.createElement('b'); h.className = 'news-headline'; h.textContent = story.headline;
-  head.append(kicker, h);
-  const body = document.createElement('div'); body.className = 'news-body'; body.hidden = !open;
-  story.body.forEach(line => { const p = document.createElement('p'); p.textContent = line; body.appendChild(p); });
-  head.addEventListener('click', () => { body.hidden = !body.hidden; head.setAttribute('aria-expanded', body.hidden ? 'false' : 'true'); sfx('tap'); });
-  row.append(head, body);
-  return row;
+function nEl(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function nBtn(cls, onTap){ const b = nEl('button', cls); b.type = 'button'; b.addEventListener('click', () => { sfx('tap'); onTap(); }); return b; }
+function newsGlyph(name, color, px){
+  const c = nEl('canvas', 'news-glyph'); c.width = 8; c.height = 8; iconCanvas(c, NEWS_GLYPH[name], color);
+  c.style.width = c.style.height = (px || 16) + 'px'; c.setAttribute('aria-hidden', 'true'); return c;
+}
+function newsSprite(species, stage, px){
+  const c = nEl('canvas', 'news-sprite'); c.width = 18; c.height = 18; c.setAttribute('aria-hidden', 'true');
+  const si = SP_INDEX[species]; if (si != null) spriteCanvas(c, si, stage | 0);
+  c.style.width = c.style.height = (px || 64) + 'px'; return c;
+}
+function newsTile(sec, hack){
+  const t = nEl('span', 'news-tile'); t.style.background = hack ? '#0c1f16' : (NEWS_SEC_COL[sec] || '#1d5c38');
+  t.appendChild(newsGlyph(NEWS_GLYPH[sec] ? sec : 'towns', hack ? '#5ee08a' : (sec === 'glimmerwell' ? '#143226' : '#fff9ec'), 16)); return t;
+}
+function newsReplies(story, hack){
+  const box = nEl('div', 'news-replies');
+  const top = nEl('p', 'news-react');
+  top.append(newsGlyph('heart', hack ? '#5ee08a' : '#c45c26', 14), nEl('span', null, story.chirps + ' chirps'),
+    newsGlyph('reply', hack ? '#5ee08a' : '#2a6f8f', 14), nEl('span', null, story.replies.length === 1 ? '1 on Ribbit' : story.replies.length + ' on Ribbit'));
+  box.appendChild(top);
+  story.replies.forEach(r => {
+    const p = nEl('p', 'news-reply'); p.append(nEl('b', null, r.name), nEl('span', 'news-handle', '@' + r.handle), nEl('span', 'news-rtext', r.text));
+    box.appendChild(p);
+  });
+  return box;
+}
+function newsLabel(text, color){ const l = nEl('p', 'news-label', text); if (color) l.style.setProperty('--strip', color); return l; }
+function newsFront(panel, ed, hack){
+  if (newsBreaking && ed.lead) {
+    const b = nEl('div', 'news-breaking'); b.append(newsGlyph('bell', hack ? '#07140e' : '#fff9ec', 16), nEl('b', null, 'BREAKING'), nEl('span', null, ed.lead.headline));
+    panel.appendChild(b);
+  }
+  if (ed.ticker.length) {
+    const wire = nEl('div', 'news-wire');
+    const text = nEl('span', 'news-wire-text', ed.ticker[newsWire % ed.ticker.length]);
+    const next = nBtn('news-wire-next', () => { newsWire = (newsWire + 1) % ed.ticker.length; text.textContent = ed.ticker[newsWire]; });
+    next.textContent = '›'; next.setAttribute('aria-label', 'Next wire line');
+    wire.append(nEl('b', 'news-wire-lab', 'WIRE'), text, next);
+    panel.appendChild(wire);
+  }
+  const s = ed.lead, lead = nEl('article', 'news-lead'); lead.dataset.id = s.id;
+  lead.style.setProperty('--sec', NEWS_SEC_COL[s.section] || '#1d5c38');
+  const art = nEl('div', 'news-art');
+  if (s.art) art.appendChild(newsSprite(s.art.species, s.art.stage, 96));
+  else art.appendChild(newsGlyph(NEWS_GLYPH[s.section] ? s.section : 'towns', hack ? '#5ee08a' : '#fff9ec', 64));
+  const kick = nEl('small', 'news-kicker', (PPNews.sectionLabel(s.section) || 'NEWS') + ' / ' + s.desk);
+  lead.append(art, kick, nEl('h3', 'news-headline', s.headline), nEl('p', 'news-line', s.body[0] || ''));
+  const more = nEl('div', 'news-more'); more.hidden = true;
+  s.body.slice(1).forEach(l => more.appendChild(nEl('p', 'news-line', l)));
+  more.appendChild(newsReplies(s, hack));
+  const open = nBtn('news-open', () => { more.hidden = !more.hidden; open.textContent = more.hidden ? 'Read the full story' : 'Show less'; open.setAttribute('aria-expanded', String(!more.hidden)); });
+  open.textContent = 'Read the full story'; open.setAttribute('aria-expanded', 'false');
+  lead.append(more, open);
+  panel.appendChild(lead);
+  if (ed.features.length) {
+    panel.appendChild(newsLabel('ALSO TODAY'));
+    ed.features.slice(0, 3).forEach(f => {
+      const r = nBtn('news-row', () => { newsSec = f.section; newsPaint('read'); });
+      r.style.setProperty('--sec', NEWS_SEC_COL[f.section] || '#1d5c38');
+      r.append(newsTile(f.section, hack), nEl('b', null, f.headline));
+      panel.appendChild(r);
+    });
+  }
+}
+function newsStoryItem(f, hack){
+  const box = nEl('div', 'news-item'); box.dataset.id = f.id;
+  const more = nEl('div', 'news-more'); more.hidden = true;
+  const head = nBtn('news-head', () => { more.hidden = !more.hidden; head.setAttribute('aria-expanded', String(!more.hidden)); });
+  head.setAttribute('aria-expanded', 'false');
+  const t = nEl('span', 'news-headtext'); t.append(nEl('small', 'news-kicker', f.desk), nEl('b', 'news-headline', f.headline));
+  head.append(t);
+  if (f.art) head.appendChild(newsSprite(f.art.species, f.art.stage, 40));
+  f.body.forEach(l => more.appendChild(nEl('p', 'news-line', l)));
+  if (f.replies.length) more.appendChild(newsReplies(f, hack));
+  box.append(head, more);
+  return box;
+}
+function newsRead(panel, ed, hack){
+  const by = {};
+  ed.features.concat(ed.briefs).forEach(f => (by[f.section] = by[f.section] || []).push(f));
+  const secs = PPNews.SECTIONS.map(s => s.id).filter(id => by[id]);
+  if (!by[newsSec]) newsSec = secs[0] || '';
+  secs.forEach(id => {
+    const open = id === newsSec;
+    const h = nBtn('news-acc news-acc-' + id + (open ? ' news-acc-open' : ''), () => { newsSec = open ? '' : id; newsPaint('read'); });
+    h.style.setProperty('--sec', hack ? '#123224' : NEWS_SEC_COL[id]);
+    h.setAttribute('aria-expanded', String(open));
+    h.append(newsTile(id, hack), nEl('b', null, PPNews.sectionLabel(id)), nEl('span', 'news-count', String(by[id].length)));
+    panel.appendChild(h);
+    if (open) by[id].forEach(f => panel.appendChild(newsStoryItem(f, hack)));
+  });
+}
+function newsTown(panel, ed, hack){
+  if (ed.voices.length) {
+    const box = nEl('section', 'news-box news-voices');
+    box.appendChild(newsLabel('VOICES FROM TOWN', hack ? '#1e6b42' : '#1d5c38'));
+    ed.voices.forEach(v => {
+      const q = nEl('div', 'news-voice'); const t = nEl('div');
+      t.append(nEl('p', 'news-vtext', v.text), nEl('p', 'news-who', v.who));
+      q.append(newsGlyph('quote', hack ? '#5ee08a' : '#2a6f8f', 18), t); box.appendChild(q);
+    });
+    panel.appendChild(box);
+  }
+  if (ed.notices.length) {
+    const box = nEl('section', 'news-box news-notices');
+    box.appendChild(newsLabel(hack ? 'CLASSIFIEDS // SPONSORED' : 'NOTICES & CLASSIFIEDS', hack ? '#1e6b42' : '#6a3a0c'));
+    const grid = nEl('div', 'news-ngrid');
+    ed.notices.forEach(n => {
+      const c = nEl('div', 'news-notice news-' + n.kind); c.dataset.id = n.id;
+      c.append(nEl('small', 'news-nkind', n.kind === 'ad' ? 'SPONSORED' : n.kind.toUpperCase()), nEl('b', 'news-ntitle', n.title), nEl('p', 'news-ntext', n.text));
+      grid.appendChild(c);
+    });
+    box.appendChild(grid); panel.appendChild(box);
+  }
+  if (ed.poll) {
+    const q = ed.poll, day = ed.day;
+    const vote = S.newsPoll && S.newsPoll.day === day && S.newsPoll.id === q.id ? S.newsPoll.pick : -1;
+    const box = nEl('section', 'news-box news-poll'); box.dataset.id = q.id;
+    box.append(newsLabel("TODAY'S QUESTION", hack ? '#1e6b42' : '#c45c26'), nEl('p', 'news-pollq', q.q));
+    const best = q.pct.indexOf(Math.max.apply(null, q.pct));
+    q.options.forEach((o, i) => {
+      const b = nBtn('news-opt' + (vote === i ? ' news-picked' : ''), () => {
+        if (vote !== -1) return;
+        S.newsPoll = { day: day, id: q.id, pick: i }; save(); newsPaint('town');
+      });
+      b.dataset.pick = String(i);
+      if (vote !== -1) {
+        const bar = nEl('span', 'news-bar' + (i === best ? ' news-best' : '')); bar.style.width = q.pct[i] + '%';
+        b.append(bar, nEl('span', 'news-optlab', o), nEl('span', 'news-pct', q.pct[i] + '%'));
+        if (vote === i) b.appendChild(newsGlyph('check', hack ? '#5ee08a' : '#143226', 16));
+        b.setAttribute('aria-pressed', String(vote === i));
+      } else b.append(nEl('span', 'news-optlab', o));
+      box.appendChild(b);
+    });
+    box.appendChild(nEl('p', 'news-small', vote === -1 ? 'One tap. No take-backs.' : 'Thanks for voting. A new question tomorrow.'));
+    panel.appendChild(box);
+  }
+}
+function newsYou(panel, ed, hack){
+  const p = pet();
+  const box = nEl('section', 'news-box news-you');
+  box.appendChild(newsLabel('YOUR DAY', hack ? '#1e6b42' : '#2a6f8f'));
+  const top = nEl('div', 'news-youtop');
+  if (p) top.appendChild(newsSprite(p.species, p.stage, 64));
+  const t = nEl('div');
+  t.appendChild(nEl('b', 'news-headline', ed.you ? ed.you.headline : playerName() + (p ? ' and ' + petName(p) : '')));
+  if (ed.you) ed.you.body.forEach(l => t.appendChild(nEl('p', 'news-line', l)));
+  top.appendChild(t); box.appendChild(top);
+  const stats = nEl('div', 'news-stats');
+  [['STEPS', ((S.stepLog && S.stepLog[dayKey(Date.now())]) | 0).toLocaleString('en-US')], ['SEALS', String(sealCount())], ['ACORNS', String(S.money | 0)]].forEach(([k, v]) => {
+    const s = nEl('div', 'news-stat'); s.append(nEl('b', null, v), nEl('small', null, k)); stats.appendChild(s);
+  });
+  box.appendChild(stats); panel.appendChild(box);
+  const sp = ed.spotlight, row = sp && SPECIES[SP_INDEX[sp.species]];
+  if (row && row.stages[sp.stage]) {
+    const card = nEl('section', 'news-box news-spot');
+    card.appendChild(newsLabel('WALKLING OF THE DAY', hack ? '#1e6b42' : '#e4b04a'));
+    const inner = nEl('div', 'news-spotcard');
+    const frame = nEl('div', 'news-spotframe'); frame.appendChild(newsSprite(sp.species, sp.stage, 96));
+    const txt = nEl('div');
+    const type = nEl('small', 'news-type', row.type); type.style.background = hack ? '#3dce78' : (NEWS_TYPE_COL[row.type] || '#c45c26');
+    txt.append(nEl('b', 'news-spotname', row.stages[sp.stage].name), type, nEl('p', 'news-line', row.blurb || ''));
+    inner.append(frame, txt); card.appendChild(inner); panel.appendChild(card);
+  }
+}
+let newsBody = null, newsHack = false;
+function newsPaint(tab){
+  const body = newsBody, hack = newsHack, ed = newsEdition();
+  if (!body || !ed) return;
+  const t = NEWS_TABS.indexOf(tab) !== -1 ? tab : 'front', same = S.newsTab === t;
+  if (!same) { S.newsTab = t; save(); }
+  const keep = body.scrollTop;
+  body.innerHTML = '';
+  body.classList.add('news-root');
+  const mast = nEl('div', 'news-mast news-ed-' + ed.edition.toLowerCase());
+  const title = nEl('div', 'news-title');
+  const lantern = () => newsGlyph('keepers', hack ? '#5ee08a' : '#143226', 16);
+  title.append(lantern(), nEl('b', 'news-name', 'BLOCK NEWS'), lantern());
+  mast.appendChild(title);
+  if (hack) mast.appendChild(nEl('b', 'news-ghost', 'BLOCK NEWS'));
+  mast.appendChild(nEl('div', 'news-date', newsDate(ed.day) + (hack ? ' // LIFTED COPY' : ' · ' + ed.edition + ' EDITION')));
+  body.appendChild(mast);
+  if (!ed.lead) { body.appendChild(nEl('p', 'news-foot', 'No edition yet. Check back after a walk.')); return; }
+  const tabs = nEl('div', 'news-tabs'); tabs.setAttribute('role', 'tablist');
+  NEWS_TABS.forEach(id => {
+    const b = nBtn('news-tab news-tab-' + id + (id === t ? ' news-on' : ''), () => newsPaint(id));
+    b.dataset.tab = id; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(id === t));
+    b.textContent = hack ? '[' + id.toUpperCase() + ']' : id.toUpperCase();
+    tabs.appendChild(b);
+  });
+  body.appendChild(tabs);
+  const panel = nEl('div', 'news-panel news-panel-' + t);
+  body.appendChild(panel);
+  if (t === 'front') newsFront(panel, ed, hack);
+  else if (t === 'read') newsRead(panel, ed, hack);
+  else if (t === 'town') newsTown(panel, ed, hack);
+  else newsYou(panel, ed, hack);
+  body.appendChild(nEl('p', 'news-foot', ed.thin ? 'Block News rides the Keeper wires. One bar: today\'s paper is thin here.'
+    : 'Block News rides the Keeper wires. New editions morning, evening and night.'));
+  body.scrollTop = same ? keep : 0;
 }
 function renderNewsApp(body, hack){
   const ed = newsEdition();
-  const mast = document.createElement('div'); mast.className = 'news-mast';
-  const name = document.createElement('b'); name.className = 'news-name'; name.textContent = 'BLOCK NEWS';
-  const date = document.createElement('small'); date.className = 'news-date';
-  date.textContent = ed ? newsDate(ed.day) + (hack ? '. Copy lifted off the wires.' : '. Today\'s edition.') : '';
-  mast.append(name, date);
-  body.appendChild(mast);
-  if (!ed || !ed.lead) {
-    const p = document.createElement('p'); p.className = 'news-foot'; p.textContent = 'No edition yet. Check back after a walk.';
-    body.appendChild(p);
-    return;
-  }
-  body.appendChild(newsStory(ed.lead, true));
-  if (ed.features.length) {
-    const lab = document.createElement('p'); lab.className = 'phone-sec'; lab.textContent = 'TODAY';
-    body.appendChild(lab);
-    ed.features.forEach(s => body.appendChild(newsStory(s, false)));
-  }
-  if (ed.briefs.length) {
-    const lab = document.createElement('p'); lab.className = 'phone-sec'; lab.textContent = 'BRIEFS';
-    body.appendChild(lab);
-    ed.briefs.forEach(s => body.appendChild(newsStory(s, false)));
-  }
-  const foot = document.createElement('p'); foot.className = 'news-foot';
-  foot.textContent = ed.thin ? 'Block News rides the Keeper wires. One bar: today\'s paper is thin here.' : 'Block News rides the Keeper wires. A new edition every day.';
-  body.appendChild(foot);
-  if (S.newsSeen !== ed.key) { S.newsSeen = ed.key; save(); }
+  newsBody = body; newsHack = hack; newsWire = 0;
+  if (!ed || !ed.lead) { newsBreaking = false; newsPaint('front'); return; }
+  const seenLead = typeof S.newsSeen === 'string' ? S.newsSeen.slice(S.newsSeen.indexOf(':') + 1) : null;
+  // BREAKING: the lead changed since the holder last read the paper (never on the very first read).
+  newsBreaking = seenLead !== null && seenLead !== ed.lead.id;
+  const fresh = S.newsSeen !== ed.key;
+  if (fresh) { S.newsSeen = ed.key; newsSec = ''; save(); }
+  newsPaint(fresh ? 'front' : (S.newsTab || 'front'));
+  body.scrollTop = 0;
   const icon = $('#phoneNews'); if (icon) icon.classList.remove('unread');
 }
 /* ---------- phone apps, part 1 (Vincent, Oct 28, 2026; D859-D863) ----------
