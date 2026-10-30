@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-30 11:20 ET: Docs: settle Vincent's Oct 30 red decisions in OPEN_DECISIONS (no build stamp)
+
+- What changed and why: Vincent ruled "Reds / defaults are fine." (Fri Oct 30, 2026, 10:56 AM ET, relayed by the Walklings Chief of Staff). Applied Design's settle file (`OPEN_DECISIONS_SETTLE_2026-10-30.md`) as written: D895, D900, D911-D914, D919, D928, D929 and D939-D942 are SETTLED BY VINCENT (per the Chief of Staff) on the default. The `OPEN_DECISIONS.md` header paragraph now records them and the design reservations through D962 (CHIP_SECRECY v0.2, ROOK_KEEPERS_REENTRY, BATTLE_ONESHOT_BALANCE, MOVE_FX_4, WARDROBE_SHOP v0.1-v0.2). Next free id is D963. The 13 settled lines are added to `archive/DECISIONS_SETTLED.md`. No Open-table row held these ids, so none was removed. No decision's meaning changed.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `cursor/open-decisions-settle-1030`, no build stamp (docs-only, per `walklings-deploy`).
+- Tests run and result (widths, checks): docs-only. `node tools/scans/run.js` passed: wording, decisions, symlinks, gamejs_map, test_mistakes. Wording scan on the diff, PR title and PR body: no hits.
+- Decisions made (colour + reasoning): none new; recorded Vincent's ruling on 13 ids (11 red, plus D913 and D914 yellow named with the reds). No id reserved or renumbered.
+- Anything left unfinished: open PR #232 (MOVE_FX_4) also edits the header and says next free D959; whichever lands second keeps both sets of settled notes and next free D963. The header says D915 is recorded in the archive, but the archive has no D915 line yet and the settle file does not supply one.
+
 ## 2026-10-30 11:06 ET: Docs: AGENTS.md roles, wording and palette-lock rule (no build stamp)
 
 - What changed and why: The Chief of Staff cleared this follow-up to #231 so AGENTS.md matches CLAUDE.md. The PixelPets Supervisor is now named the Walklings Chief of Staff, who reviews and merges PRs; Vincent (owner, CIO) keeps final say on red items and previews. Claude Code workers report to the Lead Engineer and through the Chief of Staff, never to Vincent directly. Rule 1 adds "holder", never "trainer" in player-visible and PR text (code ids stay), and capital-K Keeper. Rule 9 adds before and after shots at 390 and 320 widths for every visible change. New rule 11 is the palette lock (Vincent, Oct 30, 2026), pointing to the WARDROBE_SHOP palette-lock section Design is writing. The intro now says CLAUDE.md holds the Claude Code worker asks and still defers to AGENTS.md. The skills index says branch/merge instead of branch/rebase. CLAUDE.md gains one pointer to rule 11.
