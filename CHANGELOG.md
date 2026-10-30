@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-29 17:51 ET: CC_COTTAGE_ROOF slate roof on the Cobblecrest east cottage (build 20261029-1751)
+
+- What changed and why: The Cobblecrest east cottage (`cottage_e`) drew `roof_turf`, which reads as lawn with only a tan arc over the brick wall. D910, settled by Vincent, keeps the arch and uses `roof_slate_b`. The wall, shutters, trim and barrel stay. `roof_turf` stays in the tile kit, unused. Save stays `pixelpets.save.v2` with `v` 2. No new field.
+- Files touched: `data/detail_b4.json`, `data/mapdata.js`, `tests/cc_cottage_roof.spec.js`, `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `cursor/cc-cottage-roof-1fba`, build 20261029-1751.
+- Tests run and result (widths, checks): `tests/cc_cottage_roof.spec.js` at 320, 375 and 390: PP_TEST RESULT: PASS exit=0 passed=9 failed=0 flaky=0 skipped=0 time=14s. With market_row, town_landmarks, glimmer_cobble and maps_b4 at the same widths: PP_TEST RESULT: PASS exit=0 passed=87 failed=0 flaky=0 skipped=3 time=88s. WebKit `npm run test:iphone -- tests/cc_cottage_roof.spec.js`: 24 passed. Full `npm run test:agent`: PP_TEST RESULT: FAIL exit=1 passed=2172 failed=1 flaky=1 skipped=289 time=2888s. The one failure is `battle_acorns.spec.js` T6 at 375 (the chip still read 100 Acorns while the total was 110). COPY_FIX_2 on eea3a25 already recorded that test as flaky at 375. Alone, 5 of 5 pass on this branch and 5 of 5 pass on eea3a25. The 390 copy passed on retry. This change does not touch that spec. RTDB_RULES RESULT: PASS. `node tools/scans/run.js` passed: wording, decisions, symlinks, gamejs_map, test_mistakes. `node tools/scans/decisions.js` exit 0.
+- Decisions made (colour + reasoning): D910 was already settled by Vincent (Thu Oct 29, 2026, 2:45 PM ET): `roof_slate_b`, keep the arch. No decision file was edited.
+- Anything left unfinished: none. The Hearthmoor lantern-door greet stays out of scope.
+
 ## 2026-10-29 15:52 ET: COPY_FIX_2 Lantern rest lines, the council light, and Mo's open line (build 20261029-1552)
 
 - What changed and why: The High Charity wall sign now matches every other Lantern House sign: rest and recover, 5 Acorns, or what you have. After the council, the board says Brinewick's light is on. Every flat 5 Acorns Lantern line now says "or what you have." The room hold hints say "A rest is" so they stay under 90 characters and stay one string, so the modern toast shows once. The door hint still says "A rest costs." Archivist Mo's open line starts "Long before the lamps." Quinn's glimmer line is unchanged. The game.js strings still use `LANTERN_REST_COST`. Save stays `pixelpets.save.v2` with `v` 2. No new field.
