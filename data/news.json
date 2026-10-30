@@ -1,10 +1,1530 @@
 {
-  "lore_version": "v0.7.5",
-  "_placeholders": "stub",
-  "stories": [
-    {"id": "nw-hm-lantern", "section": "towns", "desk": "block", "region": "hearthmoor", "lead": 1, "headline": "Hearthmoor lantern lit", "body": ["Keeper House is open."], "lore": ["place.hearthmoor"]},
-    {"id": "nw-r1-grass", "section": "roads", "desk": "block", "region": "route1", "headline": "Route 1 grass busy", "body": ["Small noses in the grass."], "lore": ["place.route1"]},
-    {"id": "nw-hm-post", "section": "keepers", "desk": "lantern", "region": "hearthmoor", "headline": "Leave a light", "body": ["Leave them wild."], "lore": ["faction.keepers"]},
-    {"id": "nw-q", "section": "towns", "desk": "block", "region": "cobblecrest", "lead": 5, "when": ["story.quarry_bought"], "headline": "Quarry seam sold", "body": ["The seam was sold."], "lore": ["event.quarry_bought"]}
-  ]
+ "lore_version": "v0.7.5",
+ "_placeholders": "Placeholder copy (D1013): engineer drafts from the design lore index, every line citing its lore ids; Design signs or edits it (design specs/NEWS_FEED.md). Skill: walklings-lore-feed.",
+ "_about": "Block News stories for the NEWS app (news.js). when: story.flag, !story.flag, story.side=keepers|glimmer. lead: the front page once eligible, highest wins. lore: ids in the design repo lore/lore_index.json.",
+ "stories": [
+  {
+   "id": "nw-hearthmoor-morning",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "lead": 10,
+   "headline": "Good morning, Hearthmoor",
+   "body": [
+    "The sign on the hill says it best: 'Hill village of the Keepers. Home.'",
+    "Warden Ilse is at the Lodge. The Keepers give each young holder a Walkling, so today could be your day.",
+    "Advice from home: 'A bond grows in small jobs.'"
+   ],
+   "lore": [
+    "place.hearthmoor",
+    "person.warden_ilse",
+    "person.mom"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-starters",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "headline": "Three small faces at the Lodge",
+   "body": [
+    "First Walklings wait at Warden Ilse's Lodge: Pipkit (EMBER), Drizzlet (TIDE) and Sproutbun (BLOOM).",
+    "Ilse's words to every new holder: 'That trust is the only armour you have.'"
+   ],
+   "lore": [
+    "person.warden_ilse",
+    "creature.line_ember",
+    "creature.line_tide",
+    "creature.line_bloom"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-lantern",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "headline": "Lantern House: beds, a host, a fair price",
+   "body": [
+    "Della keeps Hearthmoor's Lantern House. Every Lantern House has beds and a host who explains healing.",
+    "A rest costs 5 Acorns. With 1-4 Acorns you pay what you have, and at 0 it is free.",
+    "After a loss you wake at the last Lantern House you visited."
+   ],
+   "lore": [
+    "term.lantern_house",
+    "person.lantern_hosts",
+    "term.acorns"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-errands",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "headline": "Market Row and the square",
+   "body": [
+    "Lamplight Provisions, Stitch & Lantern and The Parked Coach line Market Row. Bring Acorns.",
+    "Hearthmoor Plaza, the Keepers' square, sits west of home. West watch is posted.",
+    "Lanternball Court and the Schoolhouse round out the hill."
+   ],
+   "lore": [
+    "place.hearthmoor",
+    "place.hearthmoor_plaza",
+    "term.acorns"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-keeperhouse",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "hearthmoor",
+   "headline": "Keeper House: the lantern's law",
+   "body": [
+    "Keeper House, two floors: 'Hearthmoor watch. The lantern's law.'",
+    "The Keepers ask every holder to walk beside wild Walklings, not ahead of them. Feed, rest, listen.",
+    "Citizen. Say your piece, then step back."
+   ],
+   "lore": [
+    "place.keeper_house",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-glow",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "headline": "Care column: what GLOWING means",
+   "body": [
+    "A Walkling with care 75 or more shows the GLOWING mood. That is the whole trick.",
+    "Growing up starts at Lv 12. Until then, small jobs count."
+   ],
+   "lore": [
+    "term.glow",
+    "term.level_caps",
+    "person.mom"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-gate",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.rival1_done"
+   ],
+   "lead": 15,
+   "headline": "East gate: first match with Neighbour Rook",
+   "body": [
+    "Rook battle 1 is in the books at Hearthmoor's east gate.",
+    "Neighbour Rook, Mrs. Calloway's son, took the starter that beats yours. Competitive, kind underneath.",
+    "Officer Cald has a gate count up on the town board."
+   ],
+   "lore": [
+    "event.rook_battles",
+    "person.rook",
+    "person.mrs_calloway",
+    "person.officer_cald"
+   ]
+  },
+  {
+   "id": "nw-hearthmoor-school",
+   "section": "towns",
+   "desk": "block",
+   "region": "hearthmoor",
+   "when": [
+    "story.lizzy_met"
+   ],
+   "headline": "Schoolhouse bell, 8 to 3",
+   "body": [
+    "Lizzy teaches 8-3 on weekdays. Pupils Pip and Wren have the front row.",
+    "Her Walkling Buddy is a Harvestail, and never wild. Please do not try."
+   ],
+   "lore": [
+    "person.lizzy",
+    "person.lizzy_circle",
+    "creature.buddy"
+   ]
+  },
+  {
+   "id": "nw-route1-road",
+   "section": "roads",
+   "desk": "block",
+   "region": "route1",
+   "when": [
+    "story.reached_route1"
+   ],
+   "headline": "Route 1: walk slow, look down",
+   "body": [
+    "Route 1 runs Hearthmoor to Fernbrook. Tall grass hides shy Walklings, so mind your feet.",
+    "Officer Ness issues the Keeper1 on this road. Say hello."
+   ],
+   "lore": [
+    "place.route1",
+    "person.officer_ness"
+   ]
+  },
+  {
+   "id": "nw-route1-keeper1",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "route1",
+   "when": [
+    "story.phone_got",
+    "story.reached_route1"
+   ],
+   "lead": 16,
+   "headline": "Your Keeper1 is live",
+   "body": [
+    "Every holder must carry a free Keeper1. The Keeper High Court mandates one for every holder.",
+    "'We own the poles from this hill to the coast. There is no other net.'",
+    "Your Keeper1 is active. We can read this. That is the service."
+   ],
+   "lore": [
+    "thing.keeper1",
+    "faction.keeper_high_court",
+    "person.officer_ness"
+   ]
+  },
+  {
+   "id": "nw-route1-weather",
+   "section": "roads",
+   "desk": "block",
+   "region": "route1",
+   "when": [
+    "story.reached_route1"
+   ],
+   "headline": "Weather watch on the road",
+   "body": [
+    "The Amberwild's sky listens to the Far Sky. Real weather changes which species stir in the grass.",
+    "Dawn runs 5-7, day 7-18, dusk 18-20, then night. A day here passes in 42 real minutes."
+   ],
+   "lore": [
+    "term.far_sky",
+    "term.game_clock",
+    "place.route1"
+   ]
+  },
+  {
+   "id": "nw-route1-ribbit",
+   "section": "keepers",
+   "desk": "block",
+   "region": "route1",
+   "when": [
+    "story.phone_got"
+   ],
+   "headline": "Ribbit rides the Keeper wires",
+   "body": [
+    "Ribbit, the social feed, rides the Keeper wires. Post freely.",
+    "The Keepers are kind and also watching."
+   ],
+   "lore": [
+    "thing.ribbit",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-arrive",
+   "section": "towns",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.reached_fernbrook"
+   ],
+   "lead": 20,
+   "headline": "Fernbrook: orchards, a Hall, a stand",
+   "body": [
+    "Orchard village. Home of the Bloom Trial Hall. Pomlets live in the orchard.",
+    "Keepers keep the town. Glimmerwell keeps a stand.",
+    "Keeper Amos hosts the Lantern House, beds and all."
+   ],
+   "lore": [
+    "place.fernbrook",
+    "place.bloom_trial_hall",
+    "creature.line_beetle",
+    "person.lantern_hosts"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-lanterns",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.reached_fernbrook",
+    "story.met_glimmerwell"
+   ],
+   "headline": "Free lanterns on the square",
+   "body": [
+    "Associate Juniper is handing out free Glimmer lanterns. 'Brighter by nature!'",
+    "A grey Fuzzwick sits by the stand. Fuzzwicks love lanterns.",
+    "A reminder: Lantern Houses do not cure Fade. Care does."
+   ],
+   "lore": [
+    "person.juniper",
+    "thing.glimmer_lanterns",
+    "event.grey_fuzzwick",
+    "creature.line_moth",
+    "term.fade"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-bright",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "fernbrook",
+   "when": [
+    "story.met_glimmerwell"
+   ],
+   "headline": "Have a bright day, Fernbrook!",
+   "body": [
+    "Glimmerwell Co. is proud to keep a stand in Fernbrook. Free Glimmer lanterns, no forms.",
+    "Brighter by nature. It's a partnership!",
+    "Tired is just relaxed with bad lighting!"
+   ],
+   "lore": [
+    "faction.glimmerwell",
+    "thing.glimmer_lanterns"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-fen",
+   "section": "halls",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.reached_fernbrook",
+    "story.met_fen"
+   ],
+   "headline": "Bloom Hall Master out in the orchard",
+   "body": [
+    "Master Fen of the Bloom Trial Hall is out among the trees, worried about her orchard friends.",
+    "Associate Tobin has crates stacked at the orchard gate. He follows the memo."
+   ],
+   "lore": [
+    "person.master_fen",
+    "place.bloom_trial_hall",
+    "person.tobin"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-pick-k",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "fernbrook",
+   "when": [
+    "story.side_pick_done",
+    "story.met_fen",
+    "story.side=keepers"
+   ],
+   "lead": 25,
+   "headline": "Orchard gate: the crates come open",
+   "body": [
+    "At the Fernbrook orchard gate a holder stood with Master Fen: 'Roots are a promise.'",
+    "The crates were bound for 'the Sanctuary'. They are being opened instead.",
+    "Keepers earn Standing from care and kindness, freeing crated Walklings among them."
+   ],
+   "lore": [
+    "event.faction_pick",
+    "thing.sanctuary_crates",
+    "term.keeper_standing",
+    "person.master_fen"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-pick-g",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "fernbrook",
+   "when": [
+    "story.side_pick_done",
+    "story.side=glimmer"
+   ],
+   "lead": 25,
+   "headline": "Welcome to the partnership!",
+   "body": [
+    "A Fernbrook holder took the Junior Bright trial lanyard at the orchard gate. Brighter by nature!",
+    "Crates for 'the Sanctuary' are packed with care. Quarterly targets love a team player.",
+    "Tiers run Guest, Associate, Junior Bright, Bright Lead. Have a bright day!"
+   ],
+   "lore": [
+    "event.faction_pick",
+    "term.lanyard",
+    "thing.sanctuary_crates",
+    "term.glimmer_glossary",
+    "term.glimmer_standing"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-orchard-k",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "fernbrook",
+   "when": [
+    "story.orchard_cleared",
+    "story.met_fen",
+    "story.reached_fernbrook",
+    "story.side=keepers"
+   ],
+   "lead": 35,
+   "headline": "The Pomlets are freed",
+   "body": [
+    "The orchard crates are empty. Master Fen's orchard friends are out among the trees.",
+    "Pomlet, Pomshell, Orchardon: the whole line is home where it grows."
+   ],
+   "lore": [
+    "event.orchard_freed",
+    "person.master_fen",
+    "creature.line_beetle"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-orchard-g",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "fernbrook",
+   "when": [
+    "story.orchard_cleared",
+    "story.met_fen",
+    "story.side_pick_done",
+    "story.side=glimmer"
+   ],
+   "lead": 35,
+   "headline": "Orchard units packed on schedule",
+   "body": [
+    "The Pomlet units are packed at the orchard gate, a shade paler and right on target.",
+    "Master Fen: 'I hoped your hands would know better.' Feedback is a gift!"
+   ],
+   "lore": [
+    "event.orchard_packed",
+    "person.master_fen",
+    "term.glimmer_glossary"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-seal-k",
+   "section": "halls",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.seal1",
+    "story.reached_fernbrook",
+    "story.met_fen",
+    "story.side=keepers"
+   ],
+   "lead": 40,
+   "headline": "Fernbrook Seal: 'Wear it kindly'",
+   "body": [
+    "Master Fen awarded the Fernbrook Seal at the Bloom Trial Hall: 'Wear it kindly.'",
+    "One Seal lifts the level cap from 15 to 22."
+   ],
+   "lore": [
+    "event.seal1",
+    "person.master_fen",
+    "place.bloom_trial_hall",
+    "term.seal",
+    "term.level_caps"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-seal-g",
+   "section": "halls",
+   "desk": "bright",
+   "region": "fernbrook",
+   "when": [
+    "story.seal1",
+    "story.side_pick_done",
+    "story.side=glimmer"
+   ],
+   "lead": 40,
+   "headline": "Tier 1 Lanyard: say cheese!",
+   "body": [
+    "The Bright Pavilion Tour ends with a Tier 1 Lanyard, the Bright stand-in for a Seal.",
+    "Your photo now hangs beside the Sanctuary crate list. Brighter by nature!"
+   ],
+   "lore": [
+    "event.tier1_lanyard",
+    "term.lanyard"
+   ]
+  },
+  {
+   "id": "nw-heights-ring",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "heights",
+   "when": [
+    "story.heights_done",
+    "story.know_us",
+    "story.sm_done",
+    "story.side=keepers"
+   ],
+   "lead": 30,
+   "headline": "Heights: the night crates are open",
+   "body": [
+    "Fernbrook Heights is a ridge north of Fernbrook: a lab, and old tunnels.",
+    "A night smuggling ring moved Walklings through the tunnels. Its crates were opened.",
+    "The broker, Mara Quill, was 'wrong, not cruel'. The tunnels are quiet."
+   ],
+   "lore": [
+    "place.fernbrook_heights",
+    "event.heights_smuggling_ring",
+    "person.mara_quill"
+   ]
+  },
+  {
+   "id": "nw-heights-atten",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "heights",
+   "when": [
+    "story.heights_done",
+    "story.rx_enter",
+    "story.rx_done",
+    "story.side=glimmer"
+   ],
+   "lead": 30,
+   "headline": "Atten, now for the partnership",
+   "body": [
+    "RegenX on Fernbrook Heights brews Atten. A copied vial is safely with the partnership.",
+    "The cheap-brew plans are filed 'for the partnership'. Have a bright day!"
+   ],
+   "lore": [
+    "thing.atten",
+    "event.heights_regenx_copy",
+    "faction.regenx"
+   ]
+  },
+  {
+   "id": "nw-heights-regenx",
+   "section": "towns",
+   "desk": "block",
+   "region": "heights",
+   "when": [
+    "story.heights_done",
+    "story.rx_enter",
+    "story.know_us"
+   ],
+   "headline": "RegenX: a lab of decent people",
+   "body": [
+    "RegenX, the lab on the ridge, is a lab of 'decent people'. Atten is its brew.",
+    "On the floor: Nia, Cal and Dr. Ivo. On the ridge: clerk Jed."
+   ],
+   "lore": [
+    "faction.regenx",
+    "thing.atten",
+    "person.heights_folk"
+   ]
+  },
+  {
+   "id": "nw-heights-bay",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "heights",
+   "when": [
+    "story.heights_done",
+    "story.saw_arbiter"
+   ],
+   "headline": "The floating computer upstairs",
+   "body": [
+    "RegenX's top bay holds 'a floating computer'. Glimmerwell found it, keeps it, and calls it a 'cradle'.",
+    "It emits slowly. The screen is dark.",
+    "Quinn, in the bay: 'We do not know what it sends. The old ones built it. That is all I was told.'"
+   ],
+   "lore": [
+    "thing.arbiter",
+    "place.arbiter_bay",
+    "event.quinn_old_ones",
+    "person.quinn"
+   ]
+  },
+  {
+   "id": "nw-heights-bitlet",
+   "section": "towns",
+   "desk": "block",
+   "region": "heights",
+   "when": [
+    "story.heights_done",
+    "story.rx_bitlet",
+    "story.saw_arbiter"
+   ],
+   "headline": "A Bitlet in the bay",
+   "body": [
+    "A Bitlet, a VOLT Walkling, woke in the Arbiter Bay when the cradle hummed.",
+    "Staff are clear on one point: 'It is not a product.'"
+   ],
+   "lore": [
+    "creature.bitlet",
+    "creature.line_byte",
+    "place.arbiter_bay"
+   ]
+  },
+  {
+   "id": "nw-route2-census",
+   "section": "roads",
+   "desk": "block",
+   "region": "route2",
+   "when": [
+    "story.reached_route2"
+   ],
+   "lead": 45,
+   "headline": "Glow Census pitches a tent on Route 2",
+   "body": [
+    "The path from Fernbrook to Cobblecrest is open again, reopened by Glimmerwell Co. crews.",
+    "A Glow Census tent stands by the path. Holders walking east will pass it."
+   ],
+   "lore": [
+    "place.route2"
+   ]
+  },
+  {
+   "id": "nw-route2-walk",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "route2",
+   "when": [
+    "story.reached_route2"
+   ],
+   "headline": "Notice: Route 2 is open to walkers",
+   "body": [
+    "Glimmerwell Co. crews reopened the path. The Keepers note it. The road is yours to walk.",
+    "Walk beside wild Walklings, not ahead of them. Feed, rest, listen, and leave glow where it grows."
+   ],
+   "lore": [
+    "place.route2",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-route2-heartbeat",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "route2",
+   "when": [
+    "story.met_census",
+    "!story.glen_cleared",
+    "story.reached_route2"
+   ],
+   "headline": "The Glow Census: brighter by nature",
+   "body": [
+    "The Glow Census is counting on Route 2. In Wickerglen, the Comfort Lamps pulse like a slow heartbeat.",
+    "It's a partnership! Have a bright day."
+   ],
+   "lore": [
+    "thing.glow_census",
+    "thing.comfort_lamps",
+    "place.route2"
+   ]
+  },
+  {
+   "id": "nw-route2-logs",
+   "section": "roads",
+   "desk": "bright",
+   "region": "route2",
+   "when": [
+    "story.side=glimmer",
+    "story.met_glimmerwell",
+    "story.met_census"
+   ],
+   "headline": "Every Census log counts",
+   "body": [
+    "Standing grows with output and quotas: befriends, battles won, Census logs, crates packed.",
+    "Feeling tired on the road? Tired is just relaxed with bad lighting!"
+   ],
+   "lore": [
+    "faction.glimmerwell",
+    "thing.glow_census"
+   ]
+  },
+  {
+   "id": "nw-wickerglen-hush",
+   "section": "towns",
+   "desk": "block",
+   "region": "wickerglen",
+   "when": [
+    "story.reached_glen",
+    "!story.glen_cleared"
+   ],
+   "lead": 50,
+   "headline": "Wickerglen asks for hush under its lamps",
+   "body": [
+    "The sign reads: \"Hush, please. Walklings nap here between the roots.\" Comfort Lamps stand among them.",
+    "Associate Hollis holds one of the lamps. Asked what it does, he says: \"I just hold the lamp.\""
+   ],
+   "lore": [
+    "place.wickerglen",
+    "person.hollis"
+   ]
+  },
+  {
+   "id": "nw-wickerglen-dark",
+   "section": "towns",
+   "desk": "block",
+   "region": "wickerglen",
+   "when": [
+    "story.glen_cleared",
+    "story.met_lead",
+    "story.reached_glen"
+   ],
+   "lead": 55,
+   "headline": "Wickerglen lamps click off; colour returns",
+   "body": [
+    "The Comfort Lamps in Wickerglen clicked off after a battle with Field Lead Imogen.",
+    "Colour is coming back to the glen, where a grey Pebblit had been seen."
+   ],
+   "lore": [
+    "event.wickerglen_lamps_off",
+    "person.imogen",
+    "place.wickerglen"
+   ]
+  },
+  {
+   "id": "nw-wickerglen-review",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "wickerglen",
+   "when": [
+    "story.met_lead",
+    "!story.glen_cleared"
+   ],
+   "headline": "Field Lead Imogen runs the Wickerglen lamps",
+   "body": [
+    "The Comfort Lamps collect a little extra glow. Glimmerwell calls it glow sharing.",
+    "Field Lead Imogen's word to the team: \"Quarterly review, sweetie.\""
+   ],
+   "lore": [
+    "person.imogen",
+    "term.glow_sharing"
+   ]
+  },
+  {
+   "id": "nw-wickerglen-fade",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "wickerglen",
+   "when": [
+    "story.glen_cleared",
+    "story.reached_fernbrook"
+   ],
+   "headline": "A grey Walkling needs care, not a bed",
+   "body": [
+    "A grey Pebblit was seen at Wickerglen. A drained Walkling is Faded.",
+    "Lantern Houses do not cure Fade. Care does. On recovery, colour is back. It remembers who it is."
+   ],
+   "lore": [
+    "term.fade",
+    "event.wickerglen_lamps_off"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-arrive",
+   "section": "towns",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.reached_cobblecrest",
+    "story.reached_route2"
+   ],
+   "lead": 60,
+   "headline": "Cobblecrest: please mind the Pebblits",
+   "body": [
+    "A quarry town at the far end of Route 2. Please mind the Pebblits underfoot.",
+    "Its Trial Hall is Master Hale's STONE hall. Hale: \"Forty years I dug beside Walklings.\""
+   ],
+   "lore": [
+    "place.cobblecrest",
+    "place.route2",
+    "place.stone_trial_hall",
+    "person.master_hale"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-road",
+   "section": "roads",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.reached_cobblecrest",
+    "!story.reached_route3"
+   ],
+   "headline": "Brinewick Road closed for loading",
+   "body": [
+    "The sign on Cobblecrest's road east: \"BRINEWICK ROAD. Closed while crates are loaded.\""
+   ],
+   "lore": [
+    "place.cobblecrest"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-watch",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "cobblecrest",
+   "when": [
+    "story.reached_cobblecrest",
+    "story.side_pick_done"
+   ],
+   "headline": "Crates on the move; the Keepers are watching",
+   "body": [
+    "Glimmerwell's crates of Walklings are bound for \"the Sanctuary\".",
+    "Citizen: say your piece, then step back. The Keepers are kind, and also watching."
+   ],
+   "lore": [
+    "thing.sanctuary_crates",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-vote",
+   "section": "towns",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.quarry_bought",
+    "story.reached_cobblecrest"
+   ],
+   "lead": 65,
+   "headline": "Cobblecrest quarry sold by a town vote",
+   "body": [
+    "Cobblecrest's quarry was sold by a town vote. It passed by three votes.",
+    "The buyer is Glimmerwell Co.; Dorian Pell, Head of Acquisitions. The site is now Bright Quarry.",
+    "Reeve Tamsin: \"The vote passed fair and square. I only wish it felt fair.\""
+   ],
+   "lore": [
+    "event.quarry_bought",
+    "place.bright_quarry",
+    "person.dorian_pell",
+    "person.reeve_tamsin"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-brightq",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "cobblecrest",
+   "when": [
+    "story.quarry_bought"
+   ],
+   "headline": "Welcome to Bright Quarry",
+   "body": [
+    "Bright Quarry, a Glimmerwell Co. site. Clerk Mint is at the desk for all your quarry needs.",
+    "It's a partnership! Have a bright day."
+   ],
+   "lore": [
+    "place.bright_quarry",
+    "person.clerk_mint"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-seal2",
+   "section": "halls",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.seal2",
+    "story.side=keepers",
+    "story.reached_cobblecrest"
+   ],
+   "lead": 70,
+   "headline": "Hale's Cobblecrest Seal goes to a holder",
+   "body": [
+    "A holder has earned Master Hale's Cobblecrest Seal at the Stone Hall.",
+    "Two Seals raise the level cap to Lv 30. The next grow-up needs Lv 24 plus 2 Seals."
+   ],
+   "lore": [
+    "event.seal2",
+    "person.master_hale",
+    "term.level_caps"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-tier2",
+   "section": "halls",
+   "desk": "bright",
+   "region": "cobblecrest",
+   "when": [
+    "story.seal2",
+    "story.side=glimmer",
+    "story.side_pick_done"
+   ],
+   "lead": 70,
+   "headline": "Bright Tier 2 Lanyard handed out",
+   "body": [
+    "Congratulations on your Tier 2 Lanyard! Associate Quinn ran your second review.",
+    "Some partners hear a soft click. Totally normal. Have a bright day!"
+   ],
+   "lore": [
+    "event.tier2_tuning",
+    "thing.tuning_chip",
+    "term.lanyard"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-rook",
+   "section": "towns",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.rook_end",
+    "story.side=keepers"
+   ],
+   "lead": 75,
+   "headline": "Rook steps off the cart",
+   "body": [
+    "Rook, the holder's Neighbour, picked for Junior Bright in spring, got off the cart.",
+    "His words: \"I am with you, if you will have me.\""
+   ],
+   "lore": [
+    "event.rook_joins_keepers",
+    "person.rook"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-rookstays",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "cobblecrest",
+   "when": [
+    "story.rook_end",
+    "story.side=glimmer",
+    "story.side_pick_done"
+   ],
+   "lead": 75,
+   "headline": "Junior Bright Rook stays with the company",
+   "body": [
+    "Rook's words: \"I am staying with the company.\" Junior Bright is Rook's level.",
+    "He's a little nervous about what comes next. He wants it anyway. That's the spirit!"
+   ],
+   "lore": [
+    "event.rook_stays_glimmer",
+    "term.glimmer_standing"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-freed",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "cobblecrest",
+   "when": [
+    "story.rc_done",
+    "!story.rc_end=shipped",
+    "story.side_pick_done"
+   ],
+   "headline": "Three Pebblits freed; Hale opens the seam",
+   "body": [
+    "Three crated Pebblits in Cobblecrest are free, and Master Hale has opened the seam.",
+    "Freeing crated Walklings is care and kindness. The Keepers count it toward Standing."
+   ],
+   "lore": [
+    "event.last_crates_keepers",
+    "term.keeper_standing"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-stamped",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "cobblecrest",
+   "when": [
+    "story.rc_done",
+    "story.rc_end=shipped",
+    "story.side=glimmer",
+    "story.met_glimmerwell",
+    "story.quarry_bought"
+   ],
+   "headline": "Bright Quarry crates stamped BRINEWICK",
+   "body": [
+    "The last crates at Bright Quarry are stamped BRINEWICK and ready to roll.",
+    "Crates packed count toward Standing. Output and quotas, partners!"
+   ],
+   "lore": [
+    "event.last_crates_glimmer",
+    "faction.glimmerwell",
+    "place.bright_quarry"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-hushwater",
+   "section": "roads",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.hw_reached"
+   ],
+   "headline": "Hushwater: a quiet stream, an old weir",
+   "body": [
+    "Between the quarry and the glen runs Hushwater, a quiet stream.",
+    "Its Old Weir was built by Cobblecrest miners. The Fallstair is closed for survey."
+   ],
+   "lore": [
+    "place.hushwater"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-scout",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "cobblecrest",
+   "when": [
+    "story.hw_reached",
+    "story.met_lumen"
+   ],
+   "headline": "A Keeper scout maps Hushwater",
+   "body": [
+    "A Keeper scout is mapping the Hushwater stream for Captain Lumen.",
+    "The Captain's word: \"The watch is mine. The town is the lantern's.\""
+   ],
+   "lore": [
+    "place.hushwater",
+    "person.captain_lumen"
+   ]
+  },
+  {
+   "id": "nw-mahopac-woods",
+   "section": "towns",
+   "desk": "block",
+   "region": "mahopac",
+   "when": [
+    "story.reached_mahopac"
+   ],
+   "headline": "Mahopac, where time snags",
+   "body": [
+    "Mahopac's woods are time-snagged. Folk there, Nora, Cal and Bess, seem stuck in time.",
+    "A line at Breckenridge Observatory reads: \"The lens remembers.\""
+   ],
+   "lore": [
+    "place.mahopac",
+    "person.mahopac_folk"
+   ]
+  },
+  {
+   "id": "nw-mahopac-lens",
+   "section": "towns",
+   "desk": "block",
+   "region": "mahopac",
+   "when": [
+    "story.dream_started"
+   ],
+   "headline": "The Breckenridge lens shows three memories",
+   "body": [
+    "A lens at Breckenridge Observatory shows a holder three of their own memories.",
+    "A pop toy in 2004. A seventh birthday at a bowling alley. A drive-through with Dad.",
+    "\"A Walkling trusts you faster once it has seen who you were.\""
+   ],
+   "lore": [
+    "event.mahopac_dreams",
+    "person.dad"
+   ]
+  },
+  {
+   "id": "nw-mahopac-ledger",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "mahopac",
+   "when": [
+    "story.dream_started"
+   ],
+   "headline": "Warden Ilse keeps a dream ledger",
+   "body": [
+    "Time is snagged in Mahopac, and the lens there shows memories.",
+    "Warden Ilse, at the Warden's Lodge, keeps a dream ledger."
+   ],
+   "lore": [
+    "event.mahopac_dreams",
+    "person.warden_ilse"
+   ]
+  },
+  {
+   "id": "nw-highcharity-arrive",
+   "section": "towns",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_arrived"
+   ],
+   "lead": 85,
+   "headline": "High Charity: lanterns on every roof",
+   "body": [
+    "The Keeper capital greets holders off the Lantern Coach with its house rule: be kind in the streets.",
+    "On the map: Sky-Dock Command, the Keeper Barracks, an Airship Field and a Canal Marina."
+   ],
+   "lore": [
+    "place.high_charity",
+    "thing.lantern_coach"
+   ]
+  },
+  {
+   "id": "nw-highcharity-eventhall",
+   "section": "towns",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_arrived"
+   ],
+   "headline": "Event Hall runs five games",
+   "body": [
+    "The High Charity Event Hall has five games on the floor, and an invite from Warden Ilse gets you in.",
+    "The hall's six regulars keep the booths busy and the scores honest."
+   ],
+   "lore": [
+    "place.hc_event_hall",
+    "person.high_charity_folk",
+    "person.warden_ilse"
+   ]
+  },
+  {
+   "id": "nw-highcharity-dojo",
+   "section": "halls",
+   "desk": "block",
+   "region": "highcharity",
+   "when": [
+    "story.hc_arrived",
+    "story.reached_fernbrook"
+   ],
+   "headline": "The capital's practice hall gives no Seal",
+   "body": [
+    "High Charity's Dojo stays a practice hall. Holders come to practise, not to collect.",
+    "Seals still come from the Trial Halls, where a Master tests you. The eight Seals are unchanged."
+   ],
+   "lore": [
+    "place.hc_dojo",
+    "term.seal",
+    "term.trial_hall"
+   ]
+  },
+  {
+   "id": "nw-highcharity-coach",
+   "section": "roads",
+   "desk": "lantern",
+   "region": "highcharity",
+   "when": [
+    "story.hc_arrived"
+   ],
+   "headline": "Porters keep the Lantern Coach running",
+   "body": [
+    "Porters Bram and Quin see holders onto the Lantern Coach, the road's way into the capital.",
+    "Lanterns on every roof, the porters remind riders. Be kind in the streets."
+   ],
+   "lore": [
+    "thing.lantern_coach",
+    "place.high_charity"
+   ]
+  },
+  {
+   "id": "nw-highcharity-host",
+   "section": "towns",
+   "desk": "lantern",
+   "region": "highcharity",
+   "when": [
+    "story.hc_arrived",
+    "story.reached_fernbrook"
+   ],
+   "headline": "Ines keeps the capital's beds",
+   "body": [
+    "Host Ines runs the High Charity Lantern House: beds, a rest, and a plain word on how healing works.",
+    "A rest costs 5 Acorns. With 1-4 Acorns you pay what you have; at 0 it is free.",
+    "Beds do not cure Fade. Care does."
+   ],
+   "lore": [
+    "person.lantern_hosts",
+    "term.lantern_house",
+    "term.fade",
+    "term.acorns"
+   ]
+  },
+  {
+   "id": "nw-highcharity-chair",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "highcharity",
+   "when": [
+    "story.hc_arrived",
+    "story.met_glimmerwell"
+   ],
+   "headline": "Capital manners: a chair for holders",
+   "body": [
+    "A citizen waits in the doorway. A holder is offered a chair. A mint vest is asked to leave.",
+    "The Keepers are kind, the notice adds, and also watching."
+   ],
+   "lore": [
+    "term.rank_is_spatial",
+    "thing.mint_vests",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-keepers-court",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "",
+   "when": [
+    "story.phone_got"
+   ],
+   "headline": "High Court: a phone for every holder",
+   "body": [
+    "The Keeper High Court mandates a phone for every holder. Ribbit rides the Keeper wires.",
+    "Citizen. Say your piece, then step back."
+   ],
+   "lore": [
+    "faction.keeper_high_court",
+    "thing.ribbit",
+    "faction.keepers"
+   ]
+  },
+  {
+   "id": "nw-highcharity-council",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "highcharity",
+   "when": [
+    "story.hc_arrived",
+    "story.reached_fernbrook",
+    "story.hc_council_done",
+    "!story.side=glimmer"
+   ],
+   "lead": 90,
+   "headline": "Lantern Council sits in High Charity",
+   "body": [
+    "The Lantern Council met in the Keeper capital, with a holder and their Seals before it.",
+    "The Keepers' word stands: walk beside wild Walklings, not ahead of them."
+   ],
+   "lore": [
+    "event.lantern_council",
+    "place.high_charity",
+    "faction.keepers",
+    "term.seal"
+   ]
+  },
+  {
+   "id": "nw-highcharity-lumen",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "highcharity",
+   "when": [
+    "story.hc_council_done",
+    "story.met_lumen",
+    "!story.side=glimmer"
+   ],
+   "headline": "Captain Lumen holds the council",
+   "body": [
+    "Captain Lumen of Hearthmoor holds the Lantern Council in High Charity.",
+    "'The watch is mine. The town is the lantern's.'"
+   ],
+   "lore": [
+    "person.captain_lumen",
+    "event.lantern_council",
+    "place.keeper_house"
+   ]
+  },
+  {
+   "id": "nw-glimmer-review",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "",
+   "when": [
+    "story.gb_done",
+    "story.side=glimmer"
+   ],
+   "lead": 90,
+   "headline": "Signal Review: a bright quarter",
+   "body": [
+    "The Signal Review went over the relays. The Capital Partner joined by screen.",
+    "'Policy is kindness, written down.' Have a bright day!",
+    "A cursor typed COUNT. GATHER. LISTEN. Head office reads that as a growth target."
+   ],
+   "lore": [
+    "event.signal_review",
+    "person.capital_partner"
+   ]
+  },
+  {
+   "id": "nw-glimmer-hollis",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.gb_done",
+    "story.reached_glen",
+    "story.side=glimmer"
+   ],
+   "headline": "An associate said it once, quietly",
+   "body": [
+    "Associate Hollis ('I just hold the lamp') gave one holder a warning at the Signal Review.",
+    "'The lamps don't count glow. They count Walklings.' The desk prints it as heard."
+   ],
+   "lore": [
+    "event.hollis_warning",
+    "person.hollis",
+    "event.signal_review"
+   ]
+  },
+  {
+   "id": "nw-glimmer-brighter",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "",
+   "when": [
+    "story.met_glimmerwell",
+    "story.side_pick_done"
+   ],
+   "headline": "Brighter by nature, every quarter",
+   "body": [
+    "Glimmerwell thanks every holder in the partnership. Units are cared for. Targets are quarterly.",
+    "Tired is just relaxed with bad lighting!"
+   ],
+   "lore": [
+    "faction.glimmerwell",
+    "term.glimmer_glossary"
+   ]
+  },
+  {
+   "id": "nw-glimmer-tiers",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "",
+   "when": [
+    "story.met_glimmerwell",
+    "story.side_pick_done",
+    "story.side=glimmer"
+   ],
+   "headline": "Tier talk: from Guest to Founder's Pick",
+   "body": [
+    "Guest, Associate, Junior Bright, Bright Lead, Founder's Pick. Output and quotas move you up.",
+    "At the top, Marlowe knows your name. It's a partnership!"
+   ],
+   "lore": [
+    "term.glimmer_standing",
+    "person.marlowe",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "nw-route3-open",
+   "section": "roads",
+   "desk": "block",
+   "region": "route3",
+   "when": [
+    "story.reached_route3"
+   ],
+   "lead": 100,
+   "headline": "Route 3 open: the Brinewick road",
+   "body": [
+    "The Brinewick road is open. Along it: a Comfort Sanctuary, a Shipping Ledger Office and a Relay House.",
+    "The Relay House has one line for visitors: 'The hum is normal.'"
+   ],
+   "lore": [
+    "place.route3"
+   ]
+  },
+  {
+   "id": "nw-route3-answerers",
+   "section": "roads",
+   "desk": "block",
+   "region": "route3",
+   "when": [
+    "story.reached_route3",
+    "story.ans_open"
+   ],
+   "headline": "Five that answer the hum",
+   "body": [
+    "Tallybat, Dimlamp, Filecrow, Cordhound, Humwisp. 'The hum woke them.'",
+    "Keepers call them the Answerers. Glimmerwell calls them the Founder's Line.",
+    "They do not grow up. They rank Quiet, Humming, Answering."
+   ],
+   "lore": [
+    "creature.answerers",
+    "place.route3"
+   ]
+  },
+  {
+   "id": "nw-route3-blank",
+   "section": "keepers",
+   "desk": "lantern",
+   "region": "route3",
+   "when": [
+    "story.ans_open",
+    "story.met_mo",
+    "!story.side=glimmer"
+   ],
+   "headline": "Archive page stays blank",
+   "body": [
+    "Archivist Mo keeps a page on the five Walklings of the Brinewick road.",
+    "'The page on what they answer stays blank.'"
+   ],
+   "lore": [
+    "creature.answerers",
+    "person.archivist_mo"
+   ]
+  },
+  {
+   "id": "nw-route3-sanctuary",
+   "section": "roads",
+   "desk": "block",
+   "region": "route3",
+   "when": [
+    "story.reached_route3",
+    "story.side_pick_done",
+    "story.side=glimmer"
+   ],
+   "headline": "Comfort Sanctuary, no forwarding address",
+   "body": [
+    "Route 3 has a Comfort Sanctuary room. Crates of Walklings are bound for 'the Sanctuary'.",
+    "Nobody says where the crated Walklings go. The memo does not ask."
+   ],
+   "lore": [
+    "place.route3",
+    "thing.sanctuary_crates"
+   ]
+  },
+  {
+   "id": "nw-brinewick-arrive",
+   "section": "towns",
+   "desk": "block",
+   "region": "brinewick",
+   "when": [
+    "story.reached_brinewick"
+   ],
+   "lead": 110,
+   "headline": "Brinewick: a harbour town",
+   "body": [
+    "Ferry at the west pier. A Trial Hall, a Lantern House, a Chandlery and a Glimmerwell Depot.",
+    "Master Marisol, the ferry captain, keeps the Tide Hall: 'The tide's out. Sit a while.'"
+   ],
+   "lore": [
+    "place.brinewick",
+    "person.master_marisol",
+    "place.tide_trial_hall"
+   ]
+  },
+  {
+   "id": "nw-brinewick-crate",
+   "section": "towns",
+   "desk": "block",
+   "region": "brinewick",
+   "when": [
+    "story.reached_brinewick",
+    "story.brine_arrived",
+    "story.brine_freed",
+    "story.reached_fernbrook"
+   ],
+   "lead": 115,
+   "headline": "A depot crate opened at Brinewick",
+   "body": [
+    "A crate at the Brinewick depot held a Faded Drizzlet. A holder opened it.",
+    "Lantern Houses do not cure Fade. Care does, and the colour comes back."
+   ],
+   "lore": [
+    "event.brinewick_crate_opened",
+    "event.brinewick_crate",
+    "place.brinewick",
+    "term.fade"
+   ]
+  },
+  {
+   "id": "nw-brinewick-dorian",
+   "section": "towns",
+   "desk": "block",
+   "region": "brinewick",
+   "when": [
+    "story.reached_brinewick",
+    "story.brine_dorian",
+    "story.quarry_bought"
+   ],
+   "headline": "Acquisitions on the quay",
+   "body": [
+    "Dorian Pell, Glimmerwell's Head of Acquisitions, had his first battle at Brinewick against a holder.",
+    "He calls Walklings 'units'. The harbour heard him say it."
+   ],
+   "lore": [
+    "event.dorian_battle1",
+    "person.dorian_pell",
+    "place.brinewick"
+   ]
+  },
+  {
+   "id": "nw-brinewick-depot",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "brinewick",
+   "when": [
+    "story.reached_brinewick",
+    "story.met_glimmerwell"
+   ],
+   "headline": "Brinewick Depot: it's a partnership!",
+   "body": [
+    "Glimmerwell's Brinewick Depot is part of the partnership. Brighter by nature.",
+    "Have a bright day!"
+   ],
+   "lore": [
+    "place.brinewick",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "nw-brinewick-seal",
+   "section": "halls",
+   "desk": "lantern",
+   "region": "brinewick",
+   "when": [
+    "story.reached_brinewick",
+    "story.reached_fernbrook",
+    "story.seal3",
+    "!story.side=glimmer"
+   ],
+   "lead": 120,
+   "headline": "Hall 3: the Brinewick Seal",
+   "body": [
+    "Master Marisol awarded the Brinewick Seal at the Tide Hall.",
+    "The ferry captain's advice stands: 'The tide's out. Sit a while.'"
+   ],
+   "lore": [
+    "event.seal3",
+    "person.master_marisol",
+    "place.tide_trial_hall",
+    "term.seal"
+   ]
+  },
+  {
+   "id": "nw-brinewick-lanyard",
+   "section": "glimmerwell",
+   "desk": "bright",
+   "region": "brinewick",
+   "when": [
+    "story.reached_brinewick",
+    "story.seal3",
+    "story.side_pick_done",
+    "story.quarry_bought",
+    "story.side=glimmer"
+   ],
+   "lead": 120,
+   "headline": "Tier 3 Lanyard, reviewed on the quay",
+   "body": [
+    "Dorian Pell reviewed a holder on the quay, and the Tier 3 Lanyard changed hands.",
+    "Master Marisol's match was optional. Output was not. Have a bright day!"
+   ],
+   "lore": [
+    "event.tier3_lanyard",
+    "term.lanyard",
+    "person.dorian_pell",
+    "person.master_marisol"
+   ]
+  },
+  {
+   "id": "nw-brinewick-tower",
+   "section": "towns",
+   "desk": "block",
+   "region": "brinewick",
+   "when": [
+    "story.reached_brinewick",
+    "story.ep1_end"
+   ],
+   "lead": 125,
+   "headline": "A grey tower flattens the clouds",
+   "body": [
+    "Holders report a grey tower. Above it, the clouds have gone flat.",
+    "The wire has nothing more on it yet."
+   ],
+   "lore": [
+    "event.ep1_end"
+   ]
+  }
+ ]
 }

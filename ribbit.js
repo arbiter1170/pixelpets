@@ -104,6 +104,7 @@
     { tag: '#MintStand', w: 3, when: ['story.side=glimmer'] },
   ];
 
+  const BASE_TAGS = TAGS.map(t => t.tag);
   // More posts live in data/ribbit_posts.json (bundled into MAPDATA by tools/gen_mapdata.py), written with the
   // walklings-lore-feed skill. Each cites the lore index; ids never clash with the posts above.
   const DATA = typeof MAPDATA !== 'undefined' && MAPDATA && MAPDATA.ribbit_posts ? MAPDATA.ribbit_posts : null;
@@ -294,7 +295,8 @@
     if (!demo.posts.some(p => p.handle === 'chirpworld' && /holder/i.test(p.text) && /Walkling/.test(p.text))) bad.push('demo missing the holder and Walkling chirp');
     if (demo.trending.length !== 3) bad.push('demo trending should be 3');
     const home = ['#LanternHill', '#Route1', '#Orchard', '#Hearthmoor', '#KeeperHouse', '#WildGrass', '#Walkling', '#Amberwild', '#GlowCensus', '#ComfortLamps'];
-    demo.trending.forEach(t => { if (home.indexOf(t.tag) === -1) bad.push('demo tag out of the early set: ' + t.tag); });
+    // Data tags are gated by the lore check (design lore/lore_check.py); this guards the built-in set.
+    demo.trending.forEach(t => { if (BASE_TAGS.indexOf(t.tag) !== -1 && home.indexOf(t.tag) === -1) bad.push('demo tag out of the early set: ' + t.tag); });
     if (demo.posts.some(p => /RegenX|went dark|was sold/i.test(p.text))) bad.push('demo feed leaked a later headline');
     const bought = feed({ flags: { 'story.phone_got': true, 'story.quarry_bought': true }, side: 'keepers', map: 'hearthmoor', uid: 'q', day: '1999-01-01' });
     const plain = feed({ flags: { 'story.phone_got': true }, side: 'keepers', map: 'hearthmoor', uid: 'q', day: '1999-01-01' });
