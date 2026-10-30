@@ -31,6 +31,7 @@ Approved by Vincent (owner). Read AGENTS.md first; it wins on any conflict. This
 
 ## Art and palette
 - Palette rules: see AGENTS.md rule 8 (`PAL` in `sprites.js`, no outside assets) and rule 9 (room redesigns, incl. Glimmerwell).
+- Palette lock: AGENTS.md rule 11 (Keeper and Glimmerwell looks, and outfits copying their uniforms, stay inside their set's palette).
 
 ## Communication
 - Never message Vincent. All status, questions, PRs and previews go to the Walklings Chief of Staff.

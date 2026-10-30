@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-30 11:06 ET: Docs: AGENTS.md roles, wording and palette-lock rule (no build stamp)
+
+- What changed and why: The Chief of Staff cleared this follow-up to #231 so AGENTS.md matches CLAUDE.md. The PixelPets Supervisor is now named the Walklings Chief of Staff, who reviews and merges PRs; Vincent (owner, CIO) keeps final say on red items and previews. Claude Code workers report to the Lead Engineer and through the Chief of Staff, never to Vincent directly. Rule 1 adds "holder", never "trainer" in player-visible and PR text (code ids stay), and capital-K Keeper. Rule 9 adds before and after shots at 390 and 320 widths for every visible change. New rule 11 is the palette lock (Vincent, Oct 30, 2026), pointing to the WARDROBE_SHOP palette-lock section Design is writing. The intro now says CLAUDE.md holds the Claude Code worker asks and still defers to AGENTS.md. The skills index says branch/merge instead of branch/rebase. CLAUDE.md gains one pointer to rule 11.
+- Files touched: `AGENTS.md`, `CLAUDE.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `cursor/agents-md-roles`, no build stamp (docs-only, per `walklings-deploy`).
+- Tests run and result (widths, checks): docs-only; no game code changed. Wording scan on the diff, PR title and PR body: no hits. `node tools/scans/run.js` passed: wording, decisions, symlinks, gamejs_map, test_mistakes.
+- Decisions made (colour + reasoning): none new; role and wording changes cleared by the Chief of Staff, palette lock is Vincent's call of Oct 30, 2026.
+- Anything left unfinished: the WARDROBE_SHOP palette-lock section (Design) defines the actual palette sets; rule 11 only points to it.
+
 ## 2026-10-30 10:58 ET: Docs: CLAUDE.md standing instructions for Claude Code workers (no build stamp)
 
 - What changed and why: `CLAUDE.md` was a two-line pointer to AGENTS.md. It now holds the short standing instructions for Claude Code workers that Vincent approved: security asks (PR-only token, no Firebase or deploy keys, secret scan before every push, own clone), one branch and one PR per build with merge-commit updates, the save lock, the wording rules, before and after screenshots at 390 and 320, a pointer to the palette rules, and that all status goes to the Walklings Chief of Staff. AGENTS.md stays the source of truth and wins on any conflict.
