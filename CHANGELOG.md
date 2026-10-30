@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-30 11:27 ET: Docs: D915 archive line and D958/D962 header cleanup (no build stamp)
+
+- What changed and why: #234's header says D915 is recorded in the archive, but the line was missing; Design supplied it and it now sits after D914 in `archive/DECISIONS_SETTLED.md`. In the `OPEN_DECISIONS.md` header, D958 (settled) loses its leftover due date, and D962 (WARDROBE_SHOP v0.2, LEGS chip before the bottom art) is marked SETTLED: yes by the Chief of Staff, Fri Oct 30, 2026, 11:17 AM ET (design 6ac3aa6), with its archive line after D942. D959-D961 stay open (yellow, due Sun Nov 1, 2026, 11:40 AM ET). Next free id stays D963.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `cursor/decisions-d915-cleanup`, no build stamp (docs-only, per `walklings-deploy`).
+- Tests run and result (widths, checks): docs-only. `node tools/scans/run.js` passed: wording, decisions, symlinks, gamejs_map, test_mistakes. Wording scan on the diff, PR title and PR body: no hits.
+- Decisions made (colour + reasoning): none new; recorded D915 (green, Design) and D962 (green, Chief of Staff). No id reserved or renumbered.
+- Anything left unfinished: none.
+
 ## 2026-10-30 11:20 ET: Docs: settle Vincent's Oct 30 red decisions in OPEN_DECISIONS (no build stamp)
 
 - What changed and why: Vincent ruled "Reds / defaults are fine." (Fri Oct 30, 2026, 10:56 AM ET, relayed by the Walklings Chief of Staff). Applied Design's settle file (`OPEN_DECISIONS_SETTLE_2026-10-30.md`) as written: D895, D900, D911-D914, D919, D928, D929 and D939-D942 are SETTLED BY VINCENT (per the Chief of Staff) on the default. The `OPEN_DECISIONS.md` header paragraph now records them and the design reservations through D962 (CHIP_SECRECY v0.2, ROOK_KEEPERS_REENTRY, BATTLE_ONESHOT_BALANCE, MOVE_FX_4, WARDROBE_SHOP v0.1-v0.2). Next free id is D963. The 13 settled lines are added to `archive/DECISIONS_SETTLED.md`. No Open-table row held these ids, so none was removed. No decision's meaning changed.
