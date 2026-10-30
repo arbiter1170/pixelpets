@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-30 10:58 ET: Docs: CLAUDE.md standing instructions for Claude Code workers (no build stamp)
+
+- What changed and why: `CLAUDE.md` was a two-line pointer to AGENTS.md. It now holds the short standing instructions for Claude Code workers that Vincent approved: security asks (PR-only token, no Firebase or deploy keys, secret scan before every push, own clone), one branch and one PR per build with merge-commit updates, the save lock, the wording rules, before and after screenshots at 390 and 320, a pointer to the palette rules, and that all status goes to the Walklings Chief of Staff. AGENTS.md stays the source of truth and wins on any conflict.
+- Files touched: `CLAUDE.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `cursor/claude-md`, no build stamp (docs-only, per `walklings-deploy`).
+- Tests run and result (widths, checks): docs-only; no game code changed. `walklings-wording-check` scan on `CLAUDE.md`, the PR title and the PR body: no hits.
+- Decisions made (colour + reasoning): none new; the content was approved by Vincent.
+- Anything left unfinished: AGENTS.md has no Keeper or Glimmerwell palette lock, so `CLAUDE.md` only points to rules 8 and 9.
+
 ## 2026-10-29 17:51 ET: CC_COTTAGE_ROOF slate roof on the Cobblecrest east cottage (build 20261029-1751)
 
 - What changed and why: The Cobblecrest east cottage (`cottage_e`) drew `roof_turf`, which reads as lawn with only a tan arc over the brick wall. D910, settled by Vincent, keeps the arch and uses `roof_slate_b`. The wall, shutters, trim and barrel stay. `roof_turf` stays in the tile kit, unused. Save stays `pixelpets.save.v2` with `v` 2. No new field.
