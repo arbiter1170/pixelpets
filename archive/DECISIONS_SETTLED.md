@@ -878,3 +878,7 @@ Recorded from design GEAR_SWITCH v0.1.3 (design commit 8a06d36), without renumbe
 ## BATTLE_BACKDROPS (settled Oct 31, 2026)
 
 - **D1009 (Sat Oct 31, 2026, red, SETTLED by Vincent: "Looks great, open the PR", after the previews).** BATTLE_BACKDROPS: every battle draws its own scene from the map it happens on, reversing D167. Outdoor maps: sky, a far layer, one landmark already on the map, then the map's own ground tiles. Rooms: their own back wall and floor rows and two of their props; Trial Halls add banners and a floor ring; dreams are one shade lighter. All 67 maps have one, PAL only; props stay clear of every Walkling; water moves in FULL motion only; rooms take no tint or weather. The Pet tab, music, the maps' `backdrop` fields and the save are unchanged. Shipped on as previewed (`BATTLE_BG_ON = true`, PR #236). Previews: https://claude.ai/artifact/LWBAmbQGV2djZf17V8GD7w.
+
+## NEWS_FEED (settled Oct 31, 2026)
+
+- **D1012 (Sat Oct 31, 2026, red, SETTLED by the owner in session: "Merge it, I approve").** NEWS app: a tenth phone app, NEWS, just before RIBBIT: the Block News paper with four tabs (FRONT, READ, TOWN, YOU), three editions a day, the Scrapbook, and additive save fields `newsSeen`, `newsTab`, `newsPoll`, `newsClips`. Approved after the previews in PR #237 and merged on the owner's ask. D1013, D1015 and D1016 stay open for Design.
