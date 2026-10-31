@@ -2038,11 +2038,8 @@
 812-1405  const KEEPER_ACCESSORIES
 1406-1430  const KEEPER_LOOKS
 1431-1442  const KEEPER_SWAPS
-1443-1456  function normalizeLook
-1457-1457  const HEM_BLANK
-1458-1465  function hemGrid
-1466-1490  const GLIM_HEMS
-1491-1531  function keeperGrid
+1443-1455  function normalizeLook
+1456-1709  function keeperGrid
 
 # moves.js
 5-1189  const MOVES

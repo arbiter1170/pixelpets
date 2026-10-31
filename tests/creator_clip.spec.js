@@ -139,7 +139,7 @@ test('a hat clips hair above the brim and every other look matches the build bef
             const look = Object.assign({ hair, outfit, accessory }, colours);
             const got = now.keeperGrid(look, facing, frame);
             const was = old.keeperGrid(look, facing, frame);
-            // GLIMMERWELL_PALETTE v0.3.1 recolours the lanyard card (honey y to crimson Q, at most 2 Q a frame).
+            // GLIMMERWELL_PALETTE v0.4: Pia's lanyard card (honey y to crimson Q, at most 3 Q a frame).
             // Every other non-hat accessory still matches the pinned 130f118 grids.
             if (accessory !== 'lanyard' && JSON.stringify(got) !== JSON.stringify(was)) bad(accessory + ' ' + hair + ' ' + outfit + ' ' + facing + frame + ' changed without a hat');
             if (JSON.stringify(got) !== JSON.stringify(composed(now, look, facing, frame, true).rows)) bad(accessory + ' composite');
@@ -163,7 +163,7 @@ test('a hat clips hair above the brim and every other look matches the build bef
     for (const frame of [0, 1]) {
       const rows = now.keeperGrid(lan, facing, frame);
       const q = rows.join('').split('Q').length - 1;
-      if (q > 2) bad('lanyard ' + facing + frame + ' has ' + q + ' Q');
+      if (q > 3) bad('lanyard ' + facing + frame + ' has ' + q + ' Q');
       if (old.keeperGrid(lan, facing, frame).join('').includes('Q')) bad('old lanyard already had Q');
     }
   }

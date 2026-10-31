@@ -1023,7 +1023,7 @@ const KEEPER_ACCESSORIES = {
       '................  ................',
       '................  ................'),
   },
-  lanyard: {
+  lanyard: { // Pia's (b) card: second down frame face is rQQQr (3 crimson px)
     down: F2(
       '................  ................',
       '................  ................',
@@ -1037,7 +1037,7 @@ const KEEPER_ACCESSORIES = {
       '......rrrr......  .......rrrr.....',
       '.....r....r.....  ......r....r....',
       '.....rwwwwr.....  ......rwwwr.....',
-      '.....rwQQwr.....  ......rQQwr.....',
+      '.....rwQQwr.....  ......rQQQr.....',
       '.....rwwwwr.....  ......rwwwr.....',
       '......rrrr......  .......rrr......',
       '................  ................'),
@@ -1434,7 +1434,7 @@ const KEEPER_SWAPS = {
   rook:      { skin:'3', hair:'spiky', hairCol:'o', outfit:'hoodie', outfitCol:'b', accent:'w' },                    // "your friend with the spiky hair"
   villager:  { skin:'4', hair:'short', hairCol:'d', outfit:'tunic',  outfitCol:'g', accent:'y' },                    // Hattie, Odile, Mrs. Calloway, Amos
   holder:    { skin:'2', hair:'short', hairCol:'m', outfit:'hoodie', outfitCol:'c', accent:'o' },                    // route holders
-  associate: { skin:'5', hair:'short', hairCol:'d', outfit:'coat',   outfitCol:'V', accent:'N', extra:{ o:'Q' } }, // wine coat, soot scarf, crimson cradle bag (4 Q px)
+  associate: { skin:'5', hair:'short', hairCol:'d', outfit:'coat',   outfitCol:'V', accent:'N', extra:{ o:'Q' } }, // wine coat, soot trim, crimson cradle bag (Pia's o to Q)
   fen:       { skin:'4', hair:'long',  hairCol:'w', outfit:'tunic',  outfitCol:'g', accent:'l' },                    // Master Fen, orchard keeper
 };
 
@@ -1451,41 +1451,6 @@ function normalizeLook(v) {
   return out;
 }
 
-// GLIMMERWELL_PALETTE v0.3.1 soot hems. 'r' follows the accent, so soot N draws them black.
-// Applied only when a runtime look sets hem. Not a save field. Greeter, packer, courier,
-// tier Associate and founder looks are not on main yet; Rook's lanyard sets hoodie_hem.
-const HEM_BLANK = '................  ................';
-function hemGrid(at){
-  const face = (name) => {
-    const line = at[name], rows = [];
-    for (let y = 0; y < 16; y++) rows.push(y === line.y ? line.px : HEM_BLANK);
-    return F2(...rows);
-  };
-  return { down: face('down'), up: face('up'), right: face('right') };
-}
-const GLIM_HEMS = {
-  dress_hem: hemGrid({
-    down: { y: 14, px: '...rrrrrrrr.....  ...rrrrrrrr.....' },
-    up:   { y: 14, px: '...rrrrrrrr.....  ...rrrrrrrr.....' },
-    right:{ y: 14, px: '....rrrrrr......  ....rrrrrr......' },
-  }),
-  tunic_hem: hemGrid({
-    down: { y: 13, px: '....rrrrrr......  ....rrrrrr......' },
-    up:   { y: 13, px: '....rrrrrr......  ....rrrrrr......' },
-    right:{ y: 13, px: '....rrrrrr......  ....rrrrrr......' },
-  }),
-  hoodie_hem: hemGrid({
-    down: { y: 13, px: '....rrrrrr......  ....rrrrrr......' },
-    up:   { y: 13, px: '....rrrrrr......  ....rrrrrr......' },
-    right:{ y: 13, px: '...rrrrrr.......  ...rrrrrr.......' },
-  }),
-  vest_hem: hemGrid({
-    down: { y: 12, px: '....rrrrrr......  ....rrrrrr......' },
-    up:   { y: 12, px: '....rrrrrr......  ....rrrrrr......' },
-    right:{ y: 11, px: '....rrrrrr......  ....rrrrrr......' },
-  }),
-};
-
 // Compose one 16x16 frame (array of 16 strings of PAL keys / '.') for a look or a KEEPER_SWAPS entry.
 // Missing slots use the defaults (null look = default keeper). left = right mirrored. One-pass recolour (no chaining).
 function keeperGrid(look, facing, frame) {
@@ -1495,8 +1460,6 @@ function keeperGrid(look, facing, frame) {
   const layers = [KEEPER_ART[f][frame], KEEPER_OUTFITS[L.outfit][f][frame], hair];
   const acc = L.accessory && L.accessory !== 'none' ? KEEPER_ACCESSORIES[L.accessory] : null;
   if (acc) layers.push(acc[f][frame]);
-  const hem = L.hem && GLIM_HEMS[L.hem];
-  if (hem) layers.push(hem[f][frame]);
   const sw = Object.assign({}, L.extra || {}, { [B.skin]:L.skin, [B.hairCol]:L.hairCol, [B.outfitCol]:L.outfitCol, [B.accent]:L.accent });
   // A hat stores hatLine on the right-facing art. Left uses that line, then the finished grid mirrors.
   const line = acc && acc.hatLine && acc.hatLine[f];
@@ -1514,18 +1477,233 @@ function keeperGrid(look, facing, frame) {
     }
     rows.push(facing === 'left' ? r.split('').reverse().join('') : r);
   }
-  // Associate bag: a full o→Q swap passes 3.5%. Keep the first 4 crimson px; the rest of the bag stays white.
-  if (L.extra && L.extra.o === 'Q') {
-    let kept = 0;
-    for (let y = 0; y < rows.length; y++) {
-      const chars = rows[y].split('');
-      for (let x = 0; x < chars.length; x++) {
-        if (chars[x] !== 'Q') continue;
-        if (kept < 4) kept++;
-        else chars[x] = 'w';
-      }
-      rows[y] = chars.join('');
-    }
-  }
   return rows;
 }
+
+// Pia's (b) hem outfits, from her export. Assigned here so the lines above stay put.
+Object.assign(KEEPER_OUTFITS, {
+  dress_hem: { // Pia's (b) hem. the base outfit with one row t->r: the lowest row above the legs with 3+ t px
+    down: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '....ttt..ttt....  ....ttt..ttt....',
+      '...tttttttttt...  ...tttttttttt...',
+      '...tttttttttt...  ...tttttttttt...',
+      '....rrrrrrrr....  ....rrrrrrrr....',
+      '...tttttttttt...  ...tttttttttt...',
+      '..rrrrrrrrrrrr..  ..rrrrrrrrrrrr..',
+      '...tt......tt...  ....tt....tt....'
+    ),
+    right: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '.....tt..t......  .....tt..t......',
+      '.....ttttt......  .....ttttt......',
+      '.....ttttt......  .....ttttt......',
+      '.....rrrrr......  .....rrrrr......',
+      '....tttttt3.....  ....ttt3tt......',
+      '...rrrrrrr......  ...rrrrrrr......',
+      '....tt..tt......  ....tt..tt......'
+    ),
+    up: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '....tttttttt....  ....tttttttt....',
+      '...tttttttttt...  ...tttttttttt...',
+      '...tttttttttt...  ...tttttttttt...',
+      '....rrrrrrrr....  ....rrrrrrrr....',
+      '...tttttttttt...  ...tttttttttt...',
+      '..rrrrrrrrrrrr..  ..rrrrrrrrrrrr..',
+      '...tt......tt...  ....tt....tt....'
+    ),
+  },
+  tunic_hem: { // Pia's (b) hem. the base outfit with one row t->r: the lowest row above the legs with 3+ t px
+    down: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '....ttt..ttt....  ....ttt..ttt....',
+      '...ttttrrtttt...  ...ttttrrtttt...',
+      '...3tttttttt3...  ...3tttttttt3...',
+      '....rrrrrroo....  ....rrrrrroo....',
+      '...rrrrrrrrrr...  ...rrrrrrrrrr...',
+      '................  ................',
+      '................  ................'
+    ),
+    right: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '.....tt..t......  .....tt..t......',
+      '.....tttttt.....  .....tttttt.....',
+      '.....tttttt3....  .....ttt3tt.....',
+      '.....rrrrro3....  .....rrr3ro.....',
+      '....rrrrrrr.....  ...rrrrrrrr.....',
+      '................  ................',
+      '................  ................'
+    ),
+    up: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '....tttttttt....  ....tttttttt....',
+      '...tttttttttt...  ...tttttttttt...',
+      '...3tttttttt3...  ...3tttttttt3...',
+      '....oorrrrrr....  ....oorrrrrr....',
+      '...rrrrrrrrrr...  ...rrrrrrrrrr...',
+      '................  ................',
+      '................  ................'
+    ),
+  },
+  hoodie_hem: { // Pia's (b) hem. the base outfit with one row t->r: the lowest row above the legs with 3+ t px
+    down: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '...t........t...  ...t........t...',
+      '...tt......tt...  ...tt......tt...',
+      '...tttr..rttt...  ...tttr..rttt...',
+      '...tttrttrttt...  ...ttrttttrtt...',
+      '...tttttttttt...  ...tttttttttt...',
+      '....ttrrrrtt....  ....ttrrrrtt....',
+      '....rrrrrrrr....  ....rrrrrrrr....',
+      '................  ................',
+      '................  ................'
+    ),
+    right: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '...tt...........  ...tt...........',
+      '...ttt..........  ...ttt..........',
+      '...ttttt.r......  ...ttttt.r......',
+      '....tttttrt.....  ....ttttrtt.....',
+      '.....tttttt.....  .....tttttt.....',
+      '.....ttrrrt3....  .....trr3rt.....',
+      '.....rrrrrr.....  .....rrrrrr.....',
+      '................  ................',
+      '................  ................'
+    ),
+    up: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '...tt......tt...  ...tt......tt...',
+      '...tttttttttt...  ...tttttttttt...',
+      '...tdttttttdt...  ...tdttttttdt...',
+      '...tdttttttdt...  ...tdttttttdt...',
+      '....tddddddt....  ....tddddddt....',
+      '....rrrrrrrr....  ....rrrrrrrr....',
+      '................  ................',
+      '................  ................'
+    ),
+  },
+  vest_hem: { // Pia's (b) hem. vest with row 12 (row 11 side-on) t->r: the belt, because the crossbag flap covers the hem
+    down: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '....ttt..ttt....  ....ttt..ttt....',
+      '...ttt....ttt...  ...ttt....ttt...',
+      '...ttt.rr.ttt...  ...tttr..tttt...',
+      '....rrr..rrr....  ....rrr..rrr....',
+      '....tt....tt....  ....tt....tt....',
+      '................  ................',
+      '................  ................'
+    ),
+    right: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '.....ttt.t......  .....ttt.t......',
+      '.....tttt.......  .....tttt.......',
+      '.....rrrrr......  .....rrrrr......',
+      '.....tttt3......  .....ttt3t......',
+      '.....ttt........  .....ttt........',
+      '................  ................',
+      '................  ................'
+    ),
+    up: F2(
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '................  ................',
+      '....tttttttt....  ....tttttttt....',
+      '...tttttttttt...  ...tttttttttt...',
+      '...tttttttttt...  ...tttttttttt...',
+      '....rrrrrrrr....  ....rrrrrrrr....',
+      '....tttttttt....  ....tttttttt....',
+      '................  ................',
+      '................  ................'
+    ),
+  },
+});

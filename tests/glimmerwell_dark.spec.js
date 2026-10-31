@@ -1,6 +1,6 @@
 /* GLIMMERWELL_PALETTE v0.4 option (b). Wine V, soot N, crimson Q.
    The devCheck fails above 10% Q or a soot band under 6 px (horizontal runs of 2 or more).
-   Art targets are tighter: the Associate bag stays at or under 3.5%, every other locked look at or under 1.7%.
+   Pia's outlined figures stay at or under 3.5% Q (Associate, 6 px) and 1.5% on Rook's card (3 px).
    Widths are the Playwright projects (320, 375, 390). Save stays pixelpets.save.v2 with v 2 and gains no field. */
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
@@ -42,19 +42,13 @@ test('locked looks stay under the crimson cap and the soot band, and the save is
   });
   expect(report.problems).toEqual([]);
   expect(report.pal.problems).toEqual([]);
-  const worst = {};
-  for (const fr of report.pal.frames) {
-    const share = fr.op ? fr.q / fr.op : 0;
-    if (!worst[fr.name] || share > worst[fr.name].share) worst[fr.name] = { share, band: fr.band };
-    if (fr.band < (worst[fr.name].minBand == null ? 99 : worst[fr.name].minBand)) worst[fr.name].minBand = fr.band;
-    else if (worst[fr.name].minBand == null) worst[fr.name].minBand = fr.band;
-  }
-  for (const [name, row] of Object.entries(worst)) {
-    let min = 99;
-    for (const fr of report.pal.frames) if (fr.name === name && fr.band < min) min = fr.band;
+  const qCap = { associate: 6, 'rook-lanyard': 3 };
+  for (const name of [...new Set(report.pal.frames.map(fr => fr.name))]) {
+    const rows = report.pal.frames.filter(fr => fr.name === name);
+    const min = Math.min(...rows.map(fr => fr.band));
+    const maxQ = Math.max(...rows.map(fr => fr.q));
     expect(min, name + ' soot band').toBeGreaterThanOrEqual(6);
-    const cap = name === 'associate' ? 0.035 : 0.017;
-    expect(row.share, name + ' Q').toBeLessThanOrEqual(cap);
+    expect(maxQ, name + ' Q px').toBeLessThanOrEqual(qCap[name] || 0);
   }
   expect(report.look).toEqual({ outfitCol: 't', accent: 'r', accessory: 'none', hem: null });
   expect(report.pal.defaults).toEqual({ outfitCol: 't', accent: 'r', accessory: 'none' });

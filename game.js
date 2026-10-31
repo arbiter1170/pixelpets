@@ -5219,7 +5219,7 @@ function rookWithLanyard(look){
   const glimmer = S.flags['story.side'] === 'glimmer';
   const show = (glimmer && S.flags['story.side_pick_done']) || S.flags['story.slice_end'] || S.flags['story.quarry_bought'];
   if (!show) return look;
-  return Object.assign({}, look, { accent: 'N', accessory: 'lanyard', hem: 'hoodie_hem' });
+  return Object.assign({}, look, { outfit: 'hoodie_hem', accent: 'N', accessory: 'lanyard' });
 }
 function npcLook(o){
   const key = o.look || (o.kind === 'trainer' ? (HOLDER_LOOK[o.id] || 'holder') : LOOK_OF_NAME[o.name]) || 'villager';
@@ -17403,7 +17403,7 @@ function glimmerPaletteReport(){
   const take = (name, look) => { if (look) looks.push([name, look]); else problems.push(name + ' missing'); };
   take('associate', KEEPER_SWAPS.associate);
   for (const id of ['glimclerk', 'quinn', 'hollis', 'imogen', 'dorian']) take(id, NPC_LOOKS[id]);
-  take('rook-lanyard', Object.assign({}, KEEPER_SWAPS.rook, { accent: 'N', accessory: 'lanyard', hem: 'hoodie_hem' }));
+  take('rook-lanyard', Object.assign({}, KEEPER_SWAPS.rook, { outfit: 'hoodie_hem', accent: 'N', accessory: 'lanyard' }));
   for (const [name, look] of looks) {
     for (const face of faces) for (const fr of [0, 1]) {
       const rows = keeperGrid(look, face, fr);
