@@ -15256,7 +15256,7 @@ SEAL_ART.seal_brinewick = [
   '....oooooooo....',
 ];
 const LANYARD_TIER3 = LANYARD_TIER1.map((row, y) => (y < 2 || y > 12) ? row
-  : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'NV'.includes(ch)) ? 'w' : ch).join(''));
+  : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'VN'.includes(ch)) ? 'w' : ch).join(''));
 SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL_ART.seal_glim_3 = LANYARD_TIER3;
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);

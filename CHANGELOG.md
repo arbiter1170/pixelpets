@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-31 18:20 ET: Glimmerwell steps 2-4 use Pia's pixels (build 20261031-1820)
+
+- What changed and why: Pia's steps 2-4 export replaces the earlier prop, depot and icon drawings. Eleven props ship. Stage bunting stays today's mint and white. The relay ring and the switch desk are sprites only and stay off the maps. The depot wall row is `dmdmdVVddswV`, so the window glass stays ice `s`. The stand's rail is wine and its jars stay mint, ice and mint. Lanyard tiers 1 and 2 use her wine field and soot shade, gold rim kept. Tier 3 builds its marks with `'VN'.includes(ch)`, so the three white marks still draw. The emblem ring is her exported soot ring, pending her re-check (the call is honey). The cracked handset stays green. Player text that says mint is unchanged.
+- Files touched: `sprites.js`, `game.js`, `tests/glimmerwell_dark.spec.js`, `tests/README.md`, `CHANGELOG.md`, `index.html`, `version.json`, `handoff/shots/glimmer_dark/`.
+- Commit(s) + build id: `cursor/glimmerwell-dark-e508`, build 20261031-1820.
+- Tests run and result (widths, checks): `tests/glimmerwell_dark.spec.js`, `tests/look_keys.spec.js`, `tests/data_integrity.spec.js` and `tests/interior_walls.spec.js` at 320, 375 and 390: PP_TEST RESULT: PASS exit=0 passed=42 failed=0 flaky=0 skipped=0 time=18s. RTDB_RULES RESULT: PASS. `node tools/scans/run.js`: SCAN PASS wording, decisions, symlinks, gamejs_map, test_mistakes. Save stays `pixelpets.save.v2`, `v` 2, no new key.
+- Decisions made (colour + reasoning): no new id. Iris's calls replace the export where they differ: bunting dropped, wall-row glass stays ice, stand jars stay today's colours, tier 3 reads `VN`, emblem used as exported. D1100 stays open. Next free id is D1101. Do not merge before Mon Nov 2, 2026, 12:34 PM ET.
+- Anything left unfinished: eleven round-2 looks still wait on parts. The emblem ring is pending Pia's re-check. The cracked handset stays green. A v0.4.2 spec is still to come.
+
 ## 2026-10-31 18:07 ET: Glimmerwell spec v0.4.1, holder's Glimmer set (build 20261031-1807)
 
 - What changed and why: GLIMMERWELL_PALETTE v0.4.1 (design 35b2351) lands the holder's Glimmer set. Pia's look uses only parts already on main: short hair, a wine coat, soot trim and the lanyard. It is `KEEPER_SWAPS.holder_glimmer_set`, not the route holder look, and it is not written to the player's save. The four hem outfits stay, used by six looks. Rook's claimed lanyard already uses `hoodie_hem`. Hair stays out of the lock. The cracked handset stays green (D1100; Theo yes, Nina pending). Eleven round-2 looks still wait on parts.

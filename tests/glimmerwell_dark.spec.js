@@ -76,8 +76,9 @@ test('locked looks stay under the crimson cap and the soot band, and the save is
   expect(report.desk['#960e16']).toBeGreaterThan(0);
   expect(report.desk['#18140f']).toBeGreaterThan(0);
   for (const frame of report.ring) {
-    expect(frame['#c81818']).toBeGreaterThan(0);
+    expect(frame['#960e16']).toBeGreaterThan(0);
     expect(frame['#ffcd75']).toBeGreaterThan(0);
+    expect(frame['#c81818'] || 0).toBe(0);
   }
 });
 
@@ -85,7 +86,7 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
   const save = starterSave();
   save.settings.follower = false;
   await boot(page, save);
-  const got = await page.evaluate(() => {
+  const got = await page.evaluate(async () => {
     const one = (name) => PixelPets.artTally(name)[0];
     const count = (rows, ch) => rows.reduce((n, row) => n + [...row].filter((c) => c === ch).length, 0);
     const tier = (id) => {
@@ -113,6 +114,11 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
       t1: tier('seal_glim_1'),
       t2: tier('seal_glim_2'),
       t3: tier('seal_glim_3'),
+      t1rows: PixelPets.sealArt('seal_glim_1'),
+      t3rows: PixelPets.sealArt('seal_glim_3'),
+      emblem: PixelPets.standingCfg().art.emblem_glimmer,
+      wallRow: (await (await fetch('sprites.js')).text()).includes("wallRow('dmdmdVVddswV')"),
+      tierMark: (await (await fetch('game.js')).text()).includes("'VN'.includes(ch)"),
     };
   });
   const wine = '#960e16', soot = '#18140f', crimson = '#c81818', mint = '#a7f070', ice = '#73eff7', white = '#f4f4f4';
@@ -138,25 +144,33 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
   expect(got.depot[soot]).toBe(1);
   expect(got.depot['#38b764'] || 0).toBe(0);
   noOld(got.depot, 'depot');
-  expect(got.bunting[wine]).toBeGreaterThan(0);
+  expect(got.bunting[mint]).toBeGreaterThan(0);
   expect(got.bunting[white]).toBeGreaterThan(0);
-  noOld(got.bunting, 'bunting');
-  for (const [name, frame] of [['stand', got.stand], ['gate', got.gate], ['tent', got.tent], ['crate', got.crate]]) {
+  expect(got.bunting[wine] || 0).toBe(0);
+  expect(got.stand[wine]).toBeGreaterThan(0);
+  expect(got.stand[mint]).toBeGreaterThan(0);
+  expect(got.stand[ice]).toBeGreaterThan(0);
+  expect(got.stand[soot] || 0).toBe(0);
+  expect(got.stand[crimson] || 0).toBe(0);
+  for (const [name, frame] of [['gate', got.gate], ['tent', got.tent], ['crate', got.crate]]) {
     expect(frame[wine], name).toBeGreaterThan(0);
     noOld(frame, name);
   }
-  expect(got.stand[soot]).toBeGreaterThan(0);
-  for (const [name, frame] of [['mat', got.mat], ['line', got.line], ['wall', got.wall], ['face', got.face], ['kit', got.kit]]) {
+  for (const [name, frame] of [['mat', got.mat], ['line', got.line], ['wall', got.wall], ['face', got.face]]) {
     expect(frame[wine], name).toBeGreaterThan(0);
     noOld(frame, name);
   }
   expect(got.wall[soot]).toBeGreaterThan(0);
   expect(got.face[soot]).toBeGreaterThan(0);
-  expect(got.kit[soot]).toBeGreaterThan(0);
+  expect(got.kit[wine]).toBeGreaterThan(0);
+  expect(got.kit[ice]).toBeGreaterThan(0);
+  expect(got.kit[soot] || 0).toBe(0);
+  expect(got.kit[mint] || 0).toBe(0);
   expect(got.win[wine]).toBeGreaterThan(0);
-  expect(got.win[soot]).toBeGreaterThan(0);
-  expect(got.win[ice]).toBe(4);
+  expect(got.win[soot] || 0).toBe(0);
+  expect(got.win[ice]).toBeGreaterThan(4);
   expect(got.win[mint] || 0).toBe(0);
+  expect(got.wallRow).toBe(true);
   expect(got.lamps[wine] || 0).toBe(0);
   expect(got.lamps[soot] || 0).toBe(0);
   for (const tier of [got.t1, got.t2, got.t3]) {
@@ -171,6 +185,12 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
   expect(got.t1.N).toBeGreaterThan(0);
   expect(got.t2.w).toBeGreaterThan(got.t1.w);
   expect(got.t3.w).toBeGreaterThan(got.t1.w);
+  expect(got.tierMark).toBe(true);
+  const marked = got.t3rows.slice(2, 13).map((row) => [4, 7, 10].filter((x) => row[x] === 'w').length);
+  expect(marked.every((n) => n > 0)).toBe(true);
+  expect(got.t3rows).toEqual(got.t1rows.map((row, y) => (y < 2 || y > 12) ? row
+    : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'VN'.includes(ch)) ? 'w' : ch).join('')));
+  expect(got.emblem).toEqual(['..NNNN..', '.NVVVVN.', 'NVVwVVVN', 'NVwwwVVN', 'NVVwVVVN', '.NVVVVN.', '..dhhd..', '...dd...']);
 });
 
 test('the legend is two sentences, each on its own line, and the hold label stays ice', async ({ page }) => {
