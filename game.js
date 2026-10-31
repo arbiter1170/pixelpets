@@ -13263,7 +13263,7 @@ function paintPhoneHome(){
   paintPhoneSignal();
   const hack = phoneHack();
   const ink = hack
-    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', glow: '#07140e' }
+    ? { contacts: '#f4f4f4', notes: '#f4f4f4', walklings: '#f4f4f4', friends: '#f4f4f4', jobs: '#f4f4f4', ribbit: '#f4f4f4', board: '#f4f4f4', sky: '#f4f4f4', glow: '#f4f4f4' }
     : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0', sky: '#f4fbff', glow: '#1a140c' };
   $$('#phoneHome .phone-glyph').forEach(el => {
     const c = el.querySelector('canvas'), grid = PHONE_GLYPH[el.dataset.glyph];
