@@ -62,6 +62,9 @@ const STAT_RULES = {
   // v1.1 / BATTLE §7.2: real-time nap after fainting. wakeFull = BATTLE §7.3 Q2 (default false: the pet wakes with whatever
   // HP regen gave it during the nap, ~20%; true = wake at full HP). One constant, easy to flip.
   FAINT: { minutes: 20, tiredBelow: 0.25, wakeFull: false },
+  // WILD_GUARD: a wild at full HP keeps 1 HP from one hit by the holder's side, so it can still be befriended. Off when
+  // the attacker is `gap` or more levels above the wild (Vincent's rule: one-shots belong to big level gaps only).
+  WILD_GUARD: { gap: 10 },
   WILD_LEVELS: { proto: [[2, 5], [6, 8]] },   // until spawn tables exist: stage 0 -> 2-5, stage 1+ -> 6-8
   // Per-species stage-0 range on the proto map for the CREATURES_SLICE lines (their Route 1 rows). Stage 1+ stays 6-8.
   WILD_LEVELS_SPECIES: { proto: { beetle: [2, 4], mole: [3, 5], crab: [3, 5], moth: [2, 4], vane: [4, 6], dormouse: [3, 5] } },
@@ -98,6 +101,11 @@ function wildLevel(stage, rng = Math.random, map = 'proto', speciesId = null){
   const t = STAT_RULES.WILD_LEVELS[map] || STAT_RULES.WILD_LEVELS.proto, own = (STAT_RULES.WILD_LEVELS_SPECIES[map] || {})[speciesId];
   const [a, b] = !stage && own ? own : t[Math.min(stage, t.length - 1)];
   return a + Math.floor(rng() * (b - a + 1));
+}
+// WILD_GUARD: the damage a hit on a wild may do. From full HP it leaves at least 1 HP unless attLv - foeLv >= gap.
+function wildGuardDmg(dmg, foeHp, foeMaxHp, attLv, foeLv){
+  if (!(foeHp >= foeMaxHp) || foeHp <= 1 || (attLv | 0) - (foeLv | 0) >= STAT_RULES.WILD_GUARD.gap) return dmg;
+  return Math.min(dmg, foeHp - 1);
 }
 // §5. Battle XP for one defeated (or befriended) foe, for one participant.
 function battleXpAward({ Lf, Lown, foeStage = 0, trainer = false }){
