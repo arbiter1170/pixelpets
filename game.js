@@ -1519,7 +1519,7 @@ function showTab(name){
 }
 // The opening tour (D157–D160). overlayOpen includes it so walking, the daily hello and other cards wait.
 let tut = { on: false, replay: false, id: null, adv: null, key: null, act: null, holes: [], hi: 0, wait: 0, cycle: 0, hit: null, fromScene: false, skipT12r: false, soft: false, lesson: null, pass: false, skipFn: null };
-let careLes = { phase: '', t0: 0, calm: 0, steps0: 0, nudged1: false, nudged2: false, balloon: false, balloonUntil: 0, nudgeAt: 0, replay: false, replayStep: 'C2', held: [], fell: false, holdEarly: false };
+let careLes = { phase: '', t0: 0, calm: 0, steps0: 0, nudged1: false, nudged2: false, balloon: false, balloonUntil: 0, nudgeAt: 0, replay: false, replayStep: 'C2', replayTray: false, held: [], fell: false, holdEarly: false };
 let movesLes = { hitDue: false, m7done: false, chooseN: 0, p1At: -1, m7At: -1, plain: '' };
 let befLes = { took: false, fromBar: false, bar: false };
 let lessonDraw = { hop: 0, y: 0 };
@@ -1924,6 +1924,12 @@ function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { app
   refitSceneBox();
 }
 window.addEventListener('resize', () => { syncLand(); fitAll(); if (tut.on || unlock.on) tutPlace(); });
+// A tip inside a scrolling sheet (party_order on #wlMoves) follows its target when the sheet scrolls.
+let unlockScrollRaf = 0;
+document.addEventListener('scroll', () => {
+  if (!unlock.on || unlockScrollRaf) return;
+  unlockScrollRaf = requestAnimationFrame(() => { unlockScrollRaf = 0; if (unlock.on && unlock.id) { unlock.holes = unlockHoles(unlock.id); tutPlace(); } });
+}, true);
 window.addEventListener('orientationchange', () => setTimeout(() => { if (syncLand()) { fitAll(); if (tut.on || unlock.on) tutPlace(); } }, 250));
 window.addEventListener('orientationchange', () => invalidateCueZone());
 // A yield slide moves the column and the chip. The cue zone caches button rects, so refresh it when the slide settles.
@@ -2268,6 +2274,17 @@ function tutPlace(){
     const fits = yy => yy >= 6 && yy + ch <= vh - 6;
     const hits = yy => yy < h.y + h.h + 4 && yy + ch > h.y - 4 && left < h.x + h.w && left + cw > h.x;
     if (!fits(top) || hits(top)) { const alt = top === below ? above : below; if (fits(alt) && !hits(alt)) top = alt; }
+    // Several lit targets (arcade T11: QUEST on the tabs, BAG and MAP on the pad): keep the card off every ring,
+    // not only the first. Try above or below the whole group, then above or below the first target.
+    if (extra.length) {
+      const all = [h].concat(extra);
+      const hitAny = yy => all.some(r => yy < r.y + r.h + 4 && yy + ch > r.y - 4 && left < r.x + r.w && left + cw > r.x);
+      if (hitAny(top)) {
+        const y0 = Math.min.apply(null, all.map(r => r.y)), y1 = Math.max.apply(null, all.map(r => r.y + r.h));
+        const alt = [y0 - 12 - ch, y1 + 12, above, below].find(yy => fits(yy) && !hitAny(yy));
+        if (alt != null) top = alt;
+      }
+    }
   }
   left = Math.max(6, Math.min(left, vw - cw - 6));
   top = Math.max(6, Math.min(top, vh - ch - 6));
@@ -2658,7 +2675,12 @@ function careAdvance(){
 }
 function careFinish(how){
   if (!S) return;
-  if (careLes.replay) { careLes.replay = false; careLes.phase = ''; lessonHide(); return; }
+  if (careLes.replay) {
+    const shut = careLes.replayTray; careLes.replayTray = false;
+    careLes.replay = false; careLes.phase = ''; lessonHide();
+    if (shut) closePartnerTray();   // the replay opened the tray, so SKIP and GOT IT put it away like the real walk
+    return;
+  }
   S.flags['story.tut_care'] = how;
   delete S.flags['story.tut_care_step'];
   careLes.phase = ''; careLes.balloon = false; careLes.balloonUntil = 0; careLes.replay = false;
@@ -2992,7 +3014,8 @@ function replayCareWalk(){
   closeSettings();
   showTab('walk');
   careLes.replay = true; careLes.replayStep = 'C2'; careLes.phase = 'paused';
-  if (!trayOpen()) openPartnerTray(); else careOnTrayOpen();
+  careLes.replayTray = !trayOpen();
+  if (careLes.replayTray) openPartnerTray(); else careOnTrayOpen();
 }
 function replayMovesLesson(){
   if (!S) return;
@@ -3033,13 +3056,17 @@ const UNLOCKS = {
     title: 'View moves',
     body: 'Tap a Walkling to open its card. MOVES lists what it can do in battle.',
     sel: '#partyBoard .party-slot[data-slot="1"] .slot-main',
-    then: 'party_order',
+    // Move order only means something with two or more moves to sort.
+    then(){ const q = S && S.party && S.party[1]; return q && Array.isArray(q.moves) && q.moves.length > 1 ? 'party_order' : null; },
     show(){ if (S && S.party && S.party[1]) openWalklingSheet(S.party[1].id); },
   },
+  // Rings the MOVES list (UP/DOWN per move), not the Party UP under MOVE: that one greys out once tapped and
+  // left the card pointing at a dead button (Vincent, Oct 31, 2026). The battle MOVES panel uses this order.
   party_order: {
-    title: 'Move up',
-    body: 'Under MOVE, tap UP to move {name} up your Party. Battle lists use this order.',
-    sel: '#wlActions [aria-label="Party up"]',
+    title: 'Move order',
+    body: "Under MOVES, tap UP or DOWN to sort {name}'s moves. Battle shows them in this order.",
+    sel: '#wlMoves',
+    reveal: true,
     got(){ return true; },
   },
 };
@@ -3099,9 +3126,21 @@ function unlockHoles(id){
   const b = sel ? tutBox($(sel)) : null;
   return b ? [b] : [];
 }
+// Scroll a tip's target into its sheet so the ring and card land on screen, with room above it for the card.
+function unlockReveal(id){
+  const row = UNLOCKS[id]; if (!row || !row.reveal) return;
+  const sel = typeof row.sel === 'function' ? row.sel() : row.sel;
+  const el = sel && $(sel); if (!el || !el.scrollIntoView) return;
+  el.scrollIntoView({ block: 'end', inline: 'nearest' });
+  for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+    const oy = getComputedStyle(p).overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight + 1) { p.scrollTop += 18; break; }
+  }
+}
 function unlockOpen(id){
   const row = UNLOCKS[id]; if (!row || !S || unlock.on || tut.on) return;
   const layer = $('#tutLayer'); if (!layer) return;
+  unlockReveal(id);
   unlock.on = true; unlock.id = id; unlock.holes = unlockHoles(id);
   const flag = 'story.unlock_' + id;
   const seen = !!S.flags[flag];
@@ -3144,9 +3183,10 @@ function unlockDismiss(){
 function unlockShowMe(){
   if (!unlock.on) return;
   const row = UNLOCKS[unlock.id];
-  const next = row && row.then;
   if (row && row.show) row.show();
+  const next = row && (typeof row.then === 'function' ? row.then() : row.then);
   if (next) { unlockClose(); unlockOpen(next); return; }
+  if (row && row.then) { unlockClose(); return; }
   unlock.holes = unlockHoles(unlock.id);
   tutPlace();
 }
