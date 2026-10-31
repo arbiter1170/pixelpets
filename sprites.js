@@ -29,7 +29,11 @@ const PAL = {k:'#1a1c2c',p:'#5d275d',r:'#b13e53',o:'#ef7d57',y:'#ffcd75',l:'#a7f
   // MAHOPAC_OBS_FIX (D150): dusk violet floor. Appended once.
   P:'#9686a8', // dusk violet floor (observatory)
   // KEEPER_HQ_EXPAND (D150): slate lozenge. Appended once. A–J and P stay as written above.
-  K:'#7a8aa0'}; // slate floor (Keeper House)
+  K:'#7a8aa0', // slate floor (Keeper House)
+  // GLIMMERWELL_PALETTE v0.3.1 option (b). Appended only. Wine coat, soot trim, crimson accent.
+  V:'#960e16', // wine
+  N:'#18140f', // soot
+  Q:'#c81818'}; // crimson accent (bag, card, sparkle; never text)
 
 const SPECIES = [
   { id:'ember', starter:true, habitat:{hot:6, meadow:1, city:1}, tiles:'grass', type:'EMBER', blurb:'A cozy fire fox. Loves to play.', stages:[
@@ -1978,12 +1982,12 @@ function buildWorldArt(){
   A.basket_empty = mkTile(g => { wicker(g); px(g,PAL.d,3,7,10,2); px(g,PAL.w,10,3,4,4); px(g,PAL.h,11,6,3,1); });
   A.wall_lantern = [0,1].map(f => mkTile(g => { px(g,PAL.d,7,0,2,3); px(g,PAL.d,5,3,6,1); px(g,PAL.y,5,4,6,8); px(g,PAL.d,6,5,4,6); px(g,PAL.o,7,7-f,2,3+f); px(g,PAL.y,7,8,2,1+f); px(g,PAL.d,5,12,6,1); }));
   A.floor_lantern = [0,1].map(f => mkTile(g => { oval(g,7.5,4.5,6+f,4+f,'rgba(255,205,117,.25)'); px(g,PAL.d,7,8,2,7); px(g,PAL.d,4,15,8,1); px(g,PAL.y,5,1,6,7); px(g,PAL.d,6,2,4,5); px(g,PAL.o,7,4-f,2,3+f); px(g,PAL.y,7,5,2,1); }));
-  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'l'],[7,'s'],[11,'l']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.l,1,7,14,1); });
+  A.glimmer_stand = mkTile(g => { px(g,PAL.w,1,7,14,3); px(g,PAL.h,1,10,14,1); px(g,PAL.d,2,11,1,5); px(g,PAL.d,13,11,1,5); [[3,'V'],[7,'N'],[11,'V']].forEach(([x,c]) => { px(g,PAL.d,x,3,2,1); px(g,PAL[c],x,4,2,3); px(g,PAL.w,x,4,1,1); }); px(g,PAL.V,1,7,14,1); });
   A.crate = mkTile(g => { px(g,PAL.d,1,3,14,13); px(g,PAL.o,2,4,12,11); px(g,PAL.d,2,9,12,1); for (let i=0;i<11;i++) px(g,PAL.d,2+i,4+i,1,1); px(g,PAL.y,3,5,1,1); });
   // Rook's Crossroads: a sealed quarry crate. Mint band, three air holes, one glow. Original; the orchard crate stays A.crate.
   A.rc_crate = mkTile(g => {
     px(g,PAL.d,2,3,12,12); px(g,PAL.o,3,4,10,10); px(g,PAL.d,3,3,10,1);
-    px(g,PAL.l,3,8,10,2);
+    px(g,PAL.V,3,8,10,2);
     px(g,PAL.k,5,6,1,1); px(g,PAL.k,10,6,1,1); px(g,PAL.k,7,12,1,1);
     px(g,PAL.y,8,7,1,1);
   });
@@ -2016,12 +2020,13 @@ function buildWorldArt(){
   A.comfort_lamp = [0, 1].map(f => mkTile(g => {
     px(g,PAL.l,4,2,1,1); px(g,PAL.l,11,3,1,1); px(g,PAL.l,3,6,1,1); px(g,PAL.l,12,5,1,1);
     px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.l,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
+    px(g,PAL.Q,1,1,1,1); px(g,PAL.Q,14,1,1,1); px(g,PAL.Q,1,12,1,1); px(g,PAL.Q,14,10,1,1);
   }));
   // The Signal Review. Mint relay ring, the Capital screen face, and the loaned crate. PAL only.
   A.relay_ring = [0, 1, 2].map(f => mkTile(g => {
     const y = 12 - f;
-    px(g, PAL.s, 2, y, 12, 1); px(g, PAL.s, 1, y - 1, 1, 2); px(g, PAL.s, 14, y - 1, 1, 2);
-    px(g, PAL.l, 4, y, 2, 1); px(g, PAL.l, 10, y, 2, 1);
+    px(g, PAL.Q, 2, y, 12, 1); px(g, PAL.Q, 1, y - 1, 1, 2); px(g, PAL.Q, 14, y - 1, 1, 2);
+    px(g, PAL.y, 4, y, 2, 1); px(g, PAL.y, 10, y, 2, 1);
   }));
   A.capital_screen = mkTile(g => {
     px(g, PAL.d, 1, 1, 14, 14); px(g, PAL.k, 2, 2, 12, 12); px(g, PAL.s, 3, 3, 10, 8);
@@ -2054,12 +2059,12 @@ function buildWorldArt(){
     px(g, PAL.y, 6, 1, 4, 1);
   });
   A.census_tent = mkTile(g => {
-    px(g,PAL.d,7,1,2,14); px(g,PAL.w,2,4,12,8); px(g,PAL.l,2,4,12,2); px(g,PAL.l,2,8,12,1);
+    px(g,PAL.d,7,1,2,14); px(g,PAL.w,2,4,12,8); px(g,PAL.V,2,4,12,2); px(g,PAL.V,2,8,12,1);
     px(g,PAL.d,3,6,4,4); px(g,PAL.k,3,6,4,1); px(g,PAL.h,4,12,8,2);
   });
   A.glimmer_gate = mkTile(g => {
-    px(g,PAL.d,1,4,2,12); px(g,PAL.d,13,4,2,12); px(g,PAL.l,1,4,14,3); px(g,PAL.w,3,5,10,1);
-    px(g,PAL.y,7,8,2,2); px(g,PAL.o,6,9,4,1); px(g,PAL.l,7,11,2,2); px(g,PAL.m,2,14,12,1);
+    px(g,PAL.d,1,4,2,12); px(g,PAL.d,13,4,2,12); px(g,PAL.V,1,4,14,3); px(g,PAL.w,3,5,10,1);
+    px(g,PAL.y,7,8,2,2); px(g,PAL.o,6,9,4,1); px(g,PAL.V,7,11,2,2); px(g,PAL.m,2,14,12,1);
   });
   // COBBLECREST props.
   A.seam_stone = mkTile(g => {
@@ -2086,8 +2091,8 @@ function buildWorldArt(){
   });
   // D133: retired. The pixels stay so nothing that still names the key draws a hole. No map places this kiosk.
   // Side changes go through Rook (D127), not a desk.
-  A.switch_desk_glimmer = mkTile(g => ['..ssssssssssss..', '..swwwwwwwwwws..', '..swlwlwlwlwls..', '..ssssssssssss..', '...d........d...', '...d.hhhhhh.d...',
-    '...d.hwhrhw.d...', '...d.hwhlhw.d...', '.llllllllllllll.', '.swwwwwwwwwwwws.', '.slllllllllllls.', '.slllwwllwwllls.', '.slllwwllwwllls.', '.slllllllllllls.',
+  A.switch_desk_glimmer = mkTile(g => ['..NNNNNNNNNNNN..', '..NwwwwwwwwwwN..', '..NwVwVwVwVwVN..', '..NNNNNNNNNNNN..', '...d........d...', '...d.hhhhhh.d...',
+    '...d.hwhyhw.d...', '...d.hwhVhw.d...', '.VVVVVVVVVVVVVV.', '.NwwwwwwwwwwwwN.', '.NVVVVVVVVVVVVN.', '.NVVVwwVVwwVVVN.', '.NVVVwwVVwwVVVN.', '.NVVVVVVVVVVVVN.',
     '.dddddddddddddd.', '..d..........d..'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   A.arbiter = mkTile(g => ['................', '.....hhhhhh.....', '.......hh.......', '.......hh.......', '.mmmmmmmmmmmmmm.', '.mmhhhhhhhhhhmm.', '.mmhkkkkkkkkhmm.', '.mmhckkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhkkkkkkkkhmm.', '.mmhhhhhhhhhhmm.', '.mmmmddddddmmmm.', '.mmmmmmmmmmmmmm.', '................', '................'].forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); })));
   // RegenX floors. Grids also live in data/heights_art.json.
@@ -2168,14 +2173,14 @@ function buildWorldArt(){
     '................',
     '.dddddddddddddd.',
     '.dddddddddddddd.',
-    '.dookkkklllllod.',
-    '.dokhhhklllllod.',
-    '.dokwwwklllllod.',
-    '.dokkkkklllllod.',
-    '.dollwlllllllod.',
-    '.dollswllllllod.',
-    '.dollllwwllllod.',
-    '.dolllsssslllod.',
+    '.dookkkkVVVVVod.',
+    '.dokhhhkVVVVVod.',
+    '.dokwwwkVVVVVod.',
+    '.dokkkkkVVVVVod.',
+    '.doVVwVVVVVVVod.',
+    '.doVVywVVVVVVod.',
+    '.doVVVVwwVVVVod.',
+    '.doVVVyyyyVVVod.',
     '.dddddddddddddd.',
     '.dddddddddddddd.',
     '....dd....dd....',
@@ -2202,14 +2207,14 @@ function buildWorldArt(){
     '................',
     '................',
     '...md...........',
-    '.llllllll.......',
-    '..llllllll......',
-    '...lwyyyysl.....',
-    '....lwywyysl....',
-    '.....lwyyyysl...',
-    '......lwwmmssl..',
-    '.......lwwwwssl.',
-    '........lllllls.',
+    '.VVVVVVVV.......',
+    '..VVVVVVVV......',
+    '...VwyyyywV.....',
+    '....VwywyywV....',
+    '.....VwyyyywV...',
+    '......VwwmmwwV..',
+    '.......VwwwwwwV.',
+    '........VVVVVVw.',
     '................',
     '................',
     '................',

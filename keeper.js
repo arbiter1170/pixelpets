@@ -1037,7 +1037,7 @@ const KEEPER_ACCESSORIES = {
       '......rrrr......  .......rrrr.....',
       '.....r....r.....  ......r....r....',
       '.....rwwwwr.....  ......rwwwr.....',
-      '.....rwyywr.....  ......ryyyr.....',
+      '.....rwQQwr.....  ......rQQwr.....',
       '.....rwwwwr.....  ......rwwwr.....',
       '......rrrr......  .......rrr......',
       '................  ................'),
@@ -1070,8 +1070,8 @@ const KEEPER_ACCESSORIES = {
       '................  ................',
       '........rr......  ........rr......',
       '.......r.r......  .......r.r......',
-      '.......rwr......  .......ryr......',
-      '.......ryr......  .......rwr......',
+      '.......rwr......  .......rQr......',
+      '.......rQr......  .......rwr......',
       '.......rwr......  .......r.r......',
       '........r.......  ........r.......',
       '................  ................'),
@@ -1378,7 +1378,7 @@ const KEEPER_SWAPS = {
   rook:      { skin:'3', hair:'spiky', hairCol:'o', outfit:'hoodie', outfitCol:'b', accent:'w' },                    // "your friend with the spiky hair"
   villager:  { skin:'4', hair:'short', hairCol:'d', outfit:'tunic',  outfitCol:'g', accent:'y' },                    // Hattie, Odile, Mrs. Calloway, Amos
   holder:    { skin:'2', hair:'short', hairCol:'m', outfit:'hoodie', outfitCol:'c', accent:'o' },                    // route holders
-  associate: { skin:'5', hair:'short', hairCol:'d', outfit:'coat',   outfitCol:'l', accent:'w', extra:{ o:'w' } }, // Glimmerwell mint coat, white scarf + cradle bag
+  associate: { skin:'5', hair:'short', hairCol:'d', outfit:'coat',   outfitCol:'V', accent:'N', extra:{ o:'Q' } }, // wine coat, soot scarf, crimson cradle bag (4 Q px)
   fen:       { skin:'4', hair:'long',  hairCol:'w', outfit:'tunic',  outfitCol:'g', accent:'l' },                    // Master Fen, orchard keeper
 };
 
@@ -1395,6 +1395,41 @@ function normalizeLook(v) {
   return out;
 }
 
+// GLIMMERWELL_PALETTE v0.3.1 soot hems. 'r' follows the accent, so soot N draws them black.
+// Applied only when a runtime look sets hem. Not a save field. Greeter, packer, courier,
+// tier Associate and founder looks are not on main yet; Rook's lanyard sets hoodie_hem.
+const HEM_BLANK = '................  ................';
+function hemGrid(at){
+  const face = (name) => {
+    const line = at[name], rows = [];
+    for (let y = 0; y < 16; y++) rows.push(y === line.y ? line.px : HEM_BLANK);
+    return F2(...rows);
+  };
+  return { down: face('down'), up: face('up'), right: face('right') };
+}
+const GLIM_HEMS = {
+  dress_hem: hemGrid({
+    down: { y: 14, px: '...rrrrrrrr.....  ...rrrrrrrr.....' },
+    up:   { y: 14, px: '...rrrrrrrr.....  ...rrrrrrrr.....' },
+    right:{ y: 14, px: '....rrrrrr......  ....rrrrrr......' },
+  }),
+  tunic_hem: hemGrid({
+    down: { y: 13, px: '....rrrrrr......  ....rrrrrr......' },
+    up:   { y: 13, px: '....rrrrrr......  ....rrrrrr......' },
+    right:{ y: 13, px: '....rrrrrr......  ....rrrrrr......' },
+  }),
+  hoodie_hem: hemGrid({
+    down: { y: 13, px: '....rrrrrr......  ....rrrrrr......' },
+    up:   { y: 13, px: '....rrrrrr......  ....rrrrrr......' },
+    right:{ y: 13, px: '...rrrrrr.......  ...rrrrrr.......' },
+  }),
+  vest_hem: hemGrid({
+    down: { y: 12, px: '....rrrrrr......  ....rrrrrr......' },
+    up:   { y: 12, px: '....rrrrrr......  ....rrrrrr......' },
+    right:{ y: 11, px: '....rrrrrr......  ....rrrrrr......' },
+  }),
+};
+
 // Compose one 16x16 frame (array of 16 strings of PAL keys / '.') for a look or a KEEPER_SWAPS entry.
 // Missing slots use the defaults (null look = default keeper). left = right mirrored. One-pass recolour (no chaining).
 function keeperGrid(look, facing, frame) {
@@ -1404,6 +1439,8 @@ function keeperGrid(look, facing, frame) {
   const layers = [KEEPER_ART[f][frame], KEEPER_OUTFITS[L.outfit][f][frame], hair];
   const acc = L.accessory && L.accessory !== 'none' ? KEEPER_ACCESSORIES[L.accessory] : null;
   if (acc) layers.push(acc[f][frame]);
+  const hem = L.hem && GLIM_HEMS[L.hem];
+  if (hem) layers.push(hem[f][frame]);
   const sw = Object.assign({}, L.extra || {}, { [B.skin]:L.skin, [B.hairCol]:L.hairCol, [B.outfitCol]:L.outfitCol, [B.accent]:L.accent });
   // A hat stores hatLine on the right-facing art. Left uses that line, then the finished grid mirrors.
   const line = acc && acc.hatLine && acc.hatLine[f];
@@ -1420,6 +1457,19 @@ function keeperGrid(look, facing, frame) {
       r += c === '.' ? '.' : (sw[c] || c);
     }
     rows.push(facing === 'left' ? r.split('').reverse().join('') : r);
+  }
+  // Associate bag: a full o→Q swap passes 3.5%. Keep the first 4 crimson px; the rest of the bag stays white.
+  if (L.extra && L.extra.o === 'Q') {
+    let kept = 0;
+    for (let y = 0; y < rows.length; y++) {
+      const chars = rows[y].split('');
+      for (let x = 0; x < chars.length; x++) {
+        if (chars[x] !== 'Q') continue;
+        if (kept < 4) kept++;
+        else chars[x] = 'w';
+      }
+      rows[y] = chars.join('');
+    }
   }
   return rows;
 }

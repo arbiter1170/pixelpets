@@ -5213,7 +5213,7 @@ function rookWithLanyard(look){
   const glimmer = S.flags['story.side'] === 'glimmer';
   const show = (glimmer && S.flags['story.side_pick_done']) || S.flags['story.slice_end'] || S.flags['story.quarry_bought'];
   if (!show) return look;
-  return Object.assign({}, look, { accent: 'l', accessory: 'lanyard' });
+  return Object.assign({}, look, { accent: 'N', accessory: 'lanyard', hem: 'hoodie_hem' });
 }
 function npcLook(o){
   const key = o.look || (o.kind === 'trainer' ? (TRAINER_LOOK[o.id] || 'holder') : LOOK_OF_NAME[o.name]) || 'villager';
@@ -6755,7 +6755,7 @@ function placeSteps(dr){
 }
 // After a place panel closes the keeper is still on its doorstep: a trigger there (the Hall's `teaser` after the Seal) plays now.
 function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }).then(() => { if (!scene && !fade.busy && !overlayOpen()) checkTriggers(); }); }
-// Keeper towns wear gold and green. Glimmerwell ground wears mint. The stripe sits on the roof edge and the wall foot.
+// Keeper towns wear gold and green. Glimmerwell ground wears wine and soot. The stripe sits on the roof edge and the wall foot.
 function factionOfMap(id){
   if (!id) return null;
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
@@ -6838,7 +6838,7 @@ function paintBuilding(m, b, fac, P){
   if (b.feats.indexOf('slit') >= 0) { g.fillStyle = PAL.d; g.fillRect(mid - 2, 2, 4, RH - 6); g.fillStyle = PAL.s; g.fillRect(mid - 1, 6, 1, 1); g.fillRect(mid, 12, 1, 1); }
   if (cut) {
     for (let by = 0; by < RH; by++) { const s = inset(by); if (s > 0) { g.clearRect(0, by, s, 1); g.clearRect(W - s, by, s, 1); } }
-    const ridge = fac === 'glimmer' ? PAL.c : fac ? PAL.y : null, band = fac === 'glimmer' ? PAL.l : PAL.g;
+    const ridge = fac === 'glimmer' ? PAL.N : fac ? PAL.y : null, band = fac === 'glimmer' ? PAL.V : PAL.g;
     for (let by = 0; by < RH; by++) for (let x = 0; x < W; x++) {
       if (!inside(x, by) || (inside(x, by - 1) && inside(x - 1, by) && inside(x + 1, by))) continue;
       if (ridge) { g.fillStyle = ridge; g.fillRect(x, by, 1, 2); g.fillStyle = band; if (inside(x, by + 2)) g.fillRect(x, by + 2, 1, 1); }
@@ -6944,7 +6944,7 @@ function exteriorCell(x, y){
 function drawFactionBand(g, ch, tx, ty, X, Y){
   const fac = factionOfMap(CUR.id);
   if (!fac || (ch !== 'R' && ch !== 'H')) return;
-  const ridge = fac === 'glimmer' ? PAL.c : PAL.y, band = fac === 'glimmer' ? PAL.l : PAL.g;
+  const ridge = fac === 'glimmer' ? PAL.N : PAL.y, band = fac === 'glimmer' ? PAL.V : PAL.g;
   if (ch === 'R' && tileAt(tx, ty - 1) !== 'R' && !shapedRoof(tx, ty)) { g.fillStyle = ridge; g.fillRect(X, Y, 16, 2); g.fillStyle = band; g.fillRect(X, Y + 2, 16, 1); }
   if (ch === 'H' && tileAt(tx, ty + 1) !== 'H') { g.fillStyle = band; g.fillRect(X + 2, Y + 13, 12, 2); }
 }
@@ -7988,22 +7988,46 @@ function drawObj(g, o, cx, cy, VW, VH, t){
 // keeper.js composes 16x16 frames (keeperGrid); here they become 18x18 canvases with a 1px PAL.k outline like buildSprite,
 // built once per look and cached (the Walk map only looks them up).
 const lookOf = () => maskLook((S && S.player && S.player.look) || null);           // null = the default look
+// Display-only wardrobe clamp (D1083). A worn lanyard draws its accent as the nearest of soot N, white w
+// or ice s. Ties go to N. The save is not written. Standing tints below still overwrite this copy.
+function glimmerAccentClamp(accent){
+  const allow = ['N', 'w', 's'];
+  if (allow.indexOf(accent) >= 0) return accent;
+  const hex = PAL[accent];
+  if (!hex || hex.charAt(0) !== '#') return 'N';
+  const rgb = (c) => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  const src = rgb(hex);
+  let best = 'N', bestD = Infinity;
+  for (const k of allow) {
+    const t = rgb(PAL[k]);
+    const d = (src[0] - t[0]) * (src[0] - t[0]) + (src[1] - t[1]) * (src[1] - t[1]) + (src[2] - t[2]) * (src[2] - t[2]);
+    if (d < bestD) { bestD = d; best = k; }
+  }
+  return best;
+}
+function glimmerDisplayLook(look){
+  if (!look || look.accessory !== 'lanyard') return look;
+  const accent = glimmerAccentClamp(look.accent);
+  if (accent === look.accent) return look;
+  return Object.assign({}, look, { accent: accent });
+}
 // Glimmerwell standing shows on the body: the Arbiter's emission has been in that bloodline a long time.
-// Tier 0 is unchanged. Higher tiers pick up silver and mint. The save's look is not rewritten.
+// Tier 0 is unchanged. Higher tiers pick up silver and ice. The save's look is not rewritten.
 function shownLook(){
   // INTRO_CUTSCENE D800: a look picked earlier in this scene (lookPick's scene.view.look) shows at once, on the map
   // and in the portrait; the save gets it at the scene's end as before.
   const base = scene && scene.view && scene.view.look ? maskLook(scene.view.look) : lookOf();
-  if (!S || side() !== 'glimmer') return base;
+  const drawn = glimmerDisplayLook(base);
+  if (!S || side() !== 'glimmer') return drawn;
   const tier = PPStanding.tierOf(standingOf('glimmer', false));
-  if (!tier) return base;
-  const L = Object.assign({}, KEEPER_LOOKS.defaults, base || {});
+  if (!tier) return drawn;
+  const L = Object.assign({}, KEEPER_LOOKS.defaults, drawn || {});
   L.accent = tier >= 4 ? 's' : 'c';
   if (tier >= 2) L.outfitCol = 's';
   if (tier >= 3) L.hairCol = 'h';
   return L;
 }
-const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|') + (f.extra ? JSON.stringify(f.extra) : ''); };
+const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|') + (f.extra ? JSON.stringify(f.extra) : '') + (f.hem ? '|hem:' + f.hem : ''); };
 const KEEPER_CAP = 128;
 const keeperCache = new Map(); let keeperBuilds = 0;
 const faceCache = new Map();
@@ -12057,12 +12081,12 @@ function drawRegionMap(t){
       if (x1 >= x0) R(x0, y, x1 - x0 + 1, 1, col);
     }
   };
-  // Visited claims only, so a ??? place does not give away who holds it. Green and gold match Keeper roofs; cyan and mint match Glimmerwell ground.
+  // Visited claims only, so a ??? place does not give away who holds it. Green and gold match Keeper roofs; wine and soot match Glimmerwell ground.
   const claim = (cx, cy, r, hold) => {
     fillDisc(cx, cy, r + 1, 'd', 0);
-    if (hold === 'split') { fillDisc(cx, cy, r, 'g', -1); fillDisc(cx, cy, r, 'c', 1); band(cx, cy, r, 'y', -1); stipple(cx, cy, r, 'l', 1); return; }
+    if (hold === 'split') { fillDisc(cx, cy, r, 'g', -1); fillDisc(cx, cy, r, 'V', 1); band(cx, cy, r, 'y', -1); stipple(cx, cy, r, 'N', 1); return; }
     if (hold === 'keepers') { fillDisc(cx, cy, r, 'g', 0); band(cx, cy, r, 'y', 0); return; }
-    fillDisc(cx, cy, r, 'c', 0); stipple(cx, cy, r, 'l', 0);
+    fillDisc(cx, cy, r, 'V', 0); stipple(cx, cy, r, 'N', 0);
   };
   const sealMark = (cx, cy, right) => {                                             // orange wax stamp; parchment yellow would hide a gold one
     const x = cx + (right ? 16 : -24), y = cy - 22;                               // Cobblecrest's road enters from the upper left
@@ -12103,7 +12127,7 @@ function drawRegionMap(t){
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const blink = reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0;
   if (cur && N[cur] && blink) {                                                      // 500 ms on / 500 ms off; steady with reduced motion (§4)
-    const [x, y] = P([N[cur].col, N[cur].row]); ring(x, y, 11, 'b');
+    const [x, y] = P([N[cur].col, N[cur].row]); ring(x, y, 13, 'k'); ring(x, y, 11, 'b');
     R(x - 1, y - 19, 3, 3, 'r');                                                    // small down-arrow 13-19 px above the node: stem...
     for (let i = 0; i < 4; i++) R(x - 3 + i, y - 16 + i, 7 - 2 * i, 1, 'r');       // ...and point
   }
@@ -17362,10 +17386,50 @@ function debugCatalog(){
     booths: (window.PPMinigames && PPMinigames.RULE) ? Object.keys(PPMinigames.RULE) : [],
   };
 }
+// GLIMMERWELL_PALETTE v0.3.1. Q above 10% of a frame fails. A soot band under 6 px fails.
+// The band is soot N in horizontal runs of 2 or more (singles and vertical lines do not count).
+// The spec summary's "7 px" is a typo; §10.5 and the engineer row in §10.12 say 6.
+function glimmerPaletteReport(){
+  const problems = [], frames = [];
+  if (!PAL || PAL.V !== '#960e16' || PAL.N !== '#18140f' || PAL.Q !== '#c81818') problems.push('PAL keys V N Q');
+  const faces = ['down', 'up', 'right', 'left'];
+  const looks = [];
+  const take = (name, look) => { if (look) looks.push([name, look]); else problems.push(name + ' missing'); };
+  take('associate', KEEPER_SWAPS.associate);
+  for (const id of ['glimclerk', 'quinn', 'hollis', 'imogen', 'dorian']) take(id, NPC_LOOKS[id]);
+  take('rook-lanyard', Object.assign({}, KEEPER_SWAPS.rook, { accent: 'N', accessory: 'lanyard', hem: 'hoodie_hem' }));
+  for (const [name, look] of looks) {
+    for (const face of faces) for (const fr of [0, 1]) {
+      const rows = keeperGrid(look, face, fr);
+      let q = 0, op = 0, band = 0;
+      for (const row of rows) {
+        let run = 0;
+        for (const ch of row) {
+          if (ch !== '.') { op++; if (ch === 'Q') q++; }
+          if (ch === 'N') run++;
+          else { if (run >= 2) band += run; run = 0; }
+        }
+        if (run >= 2) band += run;
+      }
+      frames.push({ name, face, fr, q, op, band });
+      if (op && q / op > 0.10) problems.push(name + ' ' + face + fr + ' Q ' + q + '/' + op);
+      if (band < 6) problems.push(name + ' ' + face + fr + ' soot ' + band);
+    }
+  }
+  return {
+    problems, frames,
+    outfitCol: KEEPER_LOOKS.outfitCol.slice(),
+    accent: KEEPER_LOOKS.accent.slice(),
+    defaults: { outfitCol: KEEPER_LOOKS.defaults.outfitCol, accent: KEEPER_LOOKS.defaults.accent, accessory: KEEPER_LOOKS.defaults.accessory },
+    holderOutfit: KEEPER_SWAPS.holder.outfitCol,
+  };
+}
+function glimmerPaletteDevCheck(){ return glimmerPaletteReport().problems; }
 function devChecks(){
   return {
     quest: PPQuests.devCheck(MAPDATA),
     glimmer: glimmerDevCheck(),
+    palette: glimmerPaletteDevCheck(),
     standing: PPStanding.devCheck(),
     befriend: befriendDevCheck(),
     charity: highCharityDevCheck(),
@@ -18434,6 +18498,7 @@ function boot(){
   { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
+  { const pb = glimmerPaletteDevCheck(); if (pb.length) console.error('Walklings: glimmer palette check failed:', pb.join('; ')); }
   { const hb = heightsDevCheck(); if (hb.length) console.error('Walklings: heights check failed:', hb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
   { const rpb = repCastCheck(); if (rpb.length) console.error('Walklings: reputation cast check failed:', rpb.join('; ')); }
@@ -18806,6 +18871,22 @@ function boot(){
   api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
+  api.glimmerPalette = () => glimmerPaletteReport();
+  api.artTally = name => {
+    if (!DEBUG) return null;
+    const src = WART[name];
+    if (!src) return null;
+    const frames = Array.isArray(src) ? src : [src];
+    return frames.filter(Boolean).map(canvas => {
+      const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, out = {};
+      for (let i = 0; i < d.length; i += 4) {
+        if (!d[i + 3]) continue;
+        const h = '#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('');
+        out[h] = (out[h] || 0) + 1;
+      }
+      return out;
+    });
+  };
   api.musicCheck = () => PPSound.musicCheck();
   api.mapTrack = id => trackFor(id && WORLD[id]);
   api.spriteLook = id => {

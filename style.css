@@ -6,6 +6,7 @@
 :root{
   --k:#1a1c2c;--p:#5d275d;--r:#b13e53;--o:#ef7d57;--y:#ffcd75;--l:#a7f070;--g:#38b764;--t:#257179;
   --n:#29366f;--b:#3b5dc9;--c:#41a6f6;--s:#73eff7;--w:#f4f4f4;--h:#94b0c2;--m:#566c86;--d:#333c57;
+  --V:#960e16;--N:#18140f;--Q:#c81818;
   --font:"Jersey 15","Courier New",Courier,ui-monospace,monospace;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -879,7 +880,7 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .map-hold{margin-top:3px;font-size:16px;line-height:1.2;font-weight:normal}
 .map-hold[hidden]{display:none}
 .map-hold.hold-keepers{color:var(--y)}
-.map-hold.hold-glimmer{color:var(--l)}
+.map-hold.hold-glimmer{color:var(--s)}
 .map-hold.hold-split{color:var(--w)}
 .map-hold.hold-wild{color:var(--h)}
 .map-key{width:min(320px, calc(100% - 12px));box-sizing:border-box}
@@ -898,8 +899,8 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .sw-next{box-shadow:inset 0 0 0 2px var(--r)}
 .sw-task{box-shadow:inset 0 0 0 2px var(--c)}
 .sw-keepers{border-radius:50%;background:linear-gradient(var(--g) 0 6px, var(--y) 6px 10px, var(--g) 10px);box-shadow:0 0 0 2px var(--k)}
-.sw-glimmer{border-radius:50%;background:radial-gradient(circle, var(--l) 1px, transparent 1.6px) 0 0/5px 5px, var(--c);box-shadow:0 0 0 2px var(--k)}
-.sw-split{border-radius:50%;background:linear-gradient(90deg, var(--g) 0 50%, var(--c) 50% 100%);box-shadow:0 0 0 2px var(--k)}
+.sw-glimmer{border-radius:50%;background:radial-gradient(circle, var(--N) 1px, transparent 1px) 0 0/5px 5px, var(--V);box-shadow:0 0 0 2px var(--k)}
+.sw-split{border-radius:50%;background:linear-gradient(var(--y),var(--y)) 0 6px/50% 4px no-repeat, linear-gradient(90deg, var(--g) 0 50%, transparent 50%), radial-gradient(circle, var(--N) 1px, transparent 1px) 0 0/5px 5px, var(--V);box-shadow:0 0 0 2px var(--k)}
 .sw-wild{border-radius:50%;background:var(--y);box-shadow:0 0 0 2px var(--o)}
 .sw-coach{height:4px;flex-basis:16px;margin-top:6px;background:repeating-linear-gradient(90deg, var(--g) 0 4px, transparent 4px 7px)}
 .sw-seal{width:10px;height:10px;flex-basis:10px;margin:3px 3px 3px 5px;background:var(--o);box-shadow:inset 0 0 0 2px var(--w), 0 0 0 2px var(--k);transform:rotate(45deg)}
@@ -973,7 +974,7 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .st-barrow{display:flex;align-items:center;gap:6px;margin-top:6px}
 .st-barrow .bar{flex:1;height:8px;margin:0}
 .st-barrow .bar i{transition:none}
-.st-fill-keepers{background:var(--y)}.st-fill-glimmer{background:var(--l)}
+.st-fill-keepers{background:var(--y)}.st-fill-glimmer{background:var(--V)}
 .st-barrow small{font-size:12px;color:var(--m);white-space:nowrap}
 .st-explain{margin:0;font-size:14px;line-height:1.3;color:var(--m)}
 /* Keeper1 / cracked handset.

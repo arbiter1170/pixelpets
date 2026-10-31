@@ -534,9 +534,9 @@
   },
   "reusedFlags": ["story.route2_end", "story.glen_cleared"],
   "looks": {
-    "_note": "New NPC looks (keeper_art.js look shape, normalizeLook-clean). Outdoor NPCs map by name (LOOK_OF_NAME); room NPCs carry `look`.",
+    "_note": "New NPC looks (keeper_art.js look shape, normalizeLook-clean). Outdoor NPCs map by name (LOOK_OF_NAME); room NPCs carry `look`. GLIMMERWELL_PALETTE v0.3.1 (rule 8): Dorian's coat is wine with soot trim. Tamsin stays red and gold.",
     "hale": {"skin": "5", "hair": "short", "hairCol": "h", "outfit": "coat", "outfitCol": "m", "accent": "o"},
-    "dorian": {"skin": "2", "hair": "short", "hairCol": "y", "outfit": "coat", "outfitCol": "n", "accent": "l"},
+    "dorian": {"skin": "2", "hair": "short", "hairCol": "y", "outfit": "coat", "outfitCol": "V", "accent": "N"},
     "tamsin": {"skin": "6", "hair": "bun", "hairCol": "d", "outfit": "tunic", "outfitCol": "r", "accent": "y"},
     "dottie": {"skin": "1", "hair": "bun", "hairCol": "r", "outfit": "tunic", "outfitCol": "b", "accent": "w"}
   },

@@ -874,3 +874,14 @@ Recorded from design GEAR_SWITCH v0.1.3 (design commit 8a06d36), without renumbe
 - **D797 (Tue Oct 27, 2026, about 1:05 AM ET, red, SETTLED by Vincent).** Hearthmoor Plaza. Yes to the joined map west of the home as built (`hm_plaza`, 26 x 20, open from the first morning). Keep the plaza people and lines as shipped. Layout tweaks after play can open a new id.
 - **D789 (Tue Oct 27, 2026, about 1:05 AM ET, red, SETTLED by Vincent, confirming design Oct 25).** MODERN_HUD_CLEAR. No top bar in modern portrait; the combined place chip sits at the left end of the dock's top row. Portrait only (D778). Build lands with P1 dock + tip off (D790 default).
 - **D787 (Tue Oct 27, 2026, yellow, SETTLED by the 48-hour rule and this build).** #180 first, then P1. A/B pads measure overlap; under the dock they read 0. C zoom steps stay live.
+
+## GLIMMERWELL_PALETTE v0.2 (superseded Sat Oct 31, 2026)
+
+| D1045 | red | GLIMMERWELL_PALETTE v0.2: recolour to option E | NO, by Vincent (via the Chief of Staff), Sat Oct 31, 2026, 1:14 PM ET; replaced by D1080 |
+| D1046 | red | GLIMMERWELL_PALETTE v0.2: buildings for E | Superseded by D1082 |
+| D1047 | yellow | GLIMMERWELL_PALETTE v0.2: §4a lock for E | Superseded by D1083 |
+| D1048 | yellow | GLIMMERWELL_PALETTE v0.2: UI swatches for E | Superseded by D1084 |
+| D1070 | yellow | GLIMMERWELL_PALETTE v0.2.3: civilian sky coats | Moot under the dark scheme; see D1085 |
+| D1071 | yellow | GLIMMERWELL_PALETTE v0.2.3: map halos and legend for E | Superseded by D1086 |
+| D1072 | red | GLIMMERWELL_PALETTE v0.2.3: "mint" in player text | Superseded by D1087 |
+| D1073 | green | GLIMMERWELL_PALETTE v0.2.4: olive porters | Superseded and moot: porters stay blue |
