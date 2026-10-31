@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-31 19:00 ET: Docs: team roles + skills sync for Claude Code handoff (docs only, no build stamp)
+
+- What changed and why: Vincent asked that every Walklings role's skills and instructions live in this repo, so Claude Code or a cloud agent can step into any role if the bots run out of usage. Added `roles/README.md` (org chart, handoff and merge flow, standing rules) and one role file per team member. Synced four box skills that were missing here (`walklings-battle-anim`, `walklings-dialog-camera`, `walklings-dialog-npc-walk`, `walklings-story-craft`) and added their rows to `.cursor/skills/README.md`. `CLAUDE.md` gains a short "Stepping into a team role" section and `AGENTS.md` one pointer line. Roles go in `roles/`, not `docs/roles/`, because `docs/` is gitignored and AGENTS.md rule 4 forbids committing it.
+- Files touched: `roles/*.md` (8 new), `.cursor/skills/walklings-{battle-anim,dialog-camera,dialog-npc-walk,story-craft}/SKILL.md` (new), `.cursor/skills/README.md`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: branch `skills-sync-20261031`; docs only, no new build stamp (walklings-deploy step 1).
+- Tests run and result (widths, checks): docs only, no game code. `python3 tools/bump_build.py --check` and `node tools/scans/run.js` (results in the PR).
+- Decisions made (colour + reasoning): green: `roles/` instead of `docs/roles/` to keep AGENTS.md rule 4.
+- Anything left unfinished: `walklings-cutscene` exists only in the repo (no box copy); left as is.
 ## 2026-10-29 22:20 ET: PEOPLE_LOOKS_28 own looks for 28 holders and named people, plus the brimhat (build 20261031-1456)
 
 - What changed and why: Sprites' approved people looks (preview v2 2026-10-29, approved by Vincent Oct 29) are wired, main looks only, no alts. 13 route holders and Mara Quill get their own look through `HOLDER_LOOK`, the look table that was `TRAINER_LOOK` (kind `trainer`, `trainer.<id>` flags and data kinds are unchanged). Keeper Scout, the three Lantern hosts, the Brinewick Lantern Host and Harbour Clerk, the Old Miner, Pim, Jed, Ken and Kit get `o.look` on their map object. Hattie, Odile and Keeper Amos get theirs through `LOOK_OF_NAME`. The Brinewick speakers entries stay `villager`, so the Lantern Host name portrait is unchanged. New NPC-only hat `brimhat` in `KEEPER_ACCESSORIES` (Tam, Nils, Keeper Scout), hat line 5, not in the creator list. Cobble Neighbour, the group fights and Rook keep `villager` and `rook`. Each key is defined in one data file. Save stays `pixelpets.save.v2` with `v` 2. No new field. No player-visible text changed.
