@@ -9938,10 +9938,26 @@ function pickSpecies(tags = envTags(), key = spawnKey()){
 const pickStage = (key = spawnKey()) => Math.random() < ((SPAWNS[key] || {}).stage2 || WILD_STAGE2_CHANCE) ? 1 : 0;
 // w.lv: a first form rolls uniformly in its table row's range. A second form on Route 1 / Fernbrook stays Lv 6-8.
 // On a high-level table (row min above 8: Route 2, Wickerglen, the quarry) the second form uses that same range.
+function wildBaseRange(sp, stage, key){
+  const id = SPECIES[sp].id, row = SPAWNS[key] && SPAWNS[key].table.find(r => r[0] === id);
+  if (row && (!stage || row[2] > 8)) return [row[2], row[3]];
+  const t = STAT_RULES.WILD_LEVELS.proto, own = (STAT_RULES.WILD_LEVELS_SPECIES.proto || {})[id];
+  return !stage && own ? own : t[Math.min(stage, t.length - 1)];
+}
+// WILD_FOLLOW (first area only): wilds keep pace with the lead so they are worth wearing down and befriending. The roll's
+// low end rises to lead - below and its high end to the lead's level, both held under the map's cap. The table's own
+// range is the floor: a wild never rolls lower than it does today. Maps not listed here are unchanged.
+const WILD_FOLLOW = { below: 2, maps: { route1: { cap: 9 }, fernbrook: { cap: 13 } } };
+const leadLevelNow = () => { const p = (typeof leadPet === 'function' && S && leadPet()) || (S && pet()); return p ? levelOf(p) : 0; };
+function wildLvRange(sp, stage, key = spawnKey(), lead = leadLevelNow()){
+  const [a, b] = wildBaseRange(sp, stage, key), f = WILD_FOLLOW.maps[key];
+  if (!f || !(lead > 0)) return [a, b];
+  const hi = Math.max(b, Math.min(lead, f.cap)), lo = Math.max(a, Math.min(lead - WILD_FOLLOW.below, f.cap - 1));
+  return [Math.min(lo, hi), hi];
+}
 function wildLv(sp, stage, key = spawnKey()){
-  const row = SPAWNS[key] && SPAWNS[key].table.find(r => r[0] === SPECIES[sp].id);
-  if (row && (!stage || row[2] > 8)) return row[2] + Math.floor(Math.random() * (row[3] - row[2] + 1));
-  return wildLevel(stage, Math.random, 'proto', SPECIES[sp].id);
+  const [a, b] = wildLvRange(sp, stage, key);
+  return a + Math.floor(Math.random() * (b - a + 1));
 }
 const nextTo = (x, y, ch) => [[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy]) => MAP[y+dy] && MAP[y+dy][x+dx] === ch);
 const inZone = (x, y) => !CUR.zones.length || CUR.zones.some(z => x >= z.x && y >= z.y && x < z.x + z.w && y < z.y + z.h);
@@ -11279,6 +11295,8 @@ async function doMove(side, mid, id){
     // Filed Away (D840): a Filecrow takes 25% less from a move that already hit it this battle. Set before any HP write.
     const filed = !!EC && echoOf(tgt) === 'filed_away' && EC.hitBy[tgt].has(mid);
     if (filed) r.dmg = Math.max(1, Math.ceil(r.dmg * ECHO_FILED_AWAY));
+    // WILD_GUARD: a full-HP wild (not a boss: D930 owns that) keeps 1 HP from the holder's hit unless the gap is big.
+    if (mine && B.kind === 'wild' && !B.boss) r.dmg = wildGuardDmg(r.dmg, f.hp, f.maxHp, att.level, f.level);
     if (EC) EC.hitBy[tgt].add(mid);
     let berry = false;
     const whoKey = mine ? barWho(f) : 'me';
@@ -18544,6 +18562,9 @@ function boot(){
     const width = Math.min(0.6, befriendWidth(hpFrac, o.stage, o.joy, o.treat, { foeLv, leadLv: o.leadLv, engaged: o.engaged }) + o.bonus);
     return { width: +width.toFixed(3), chance: +befriendHitChance(width).toFixed(3), speed: befriendSpeed(o.stage, foeLv), label: oddsLabel(width).t }; };
   api.befriendCheck = () => befriendDevCheck();
+  // WILD_FOLLOW / WILD_GUARD (read-only): the level range a wild rolls on a map for a lead level, and the guarded damage.
+  api.wildLvRange = (id, stage = 0, key = spawnKey(), lead) => SP_INDEX[id] == null ? null : wildLvRange(SP_INDEX[id], stage | 0, key, lead == null ? leadLevelNow() : +lead);
+  api.wildGuard = (dmg, hp, maxHp, attLv, foeLv) => wildGuardDmg(dmg, hp, maxHp, attLv, foeLv);
   api.weekKey = ms => weekKey(ms);
   api.charityCheck = () => highCharityDevCheck();
   api.exportSave = () => exportText();
