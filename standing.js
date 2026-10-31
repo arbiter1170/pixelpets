@@ -93,7 +93,7 @@
     // Designer-delivered 8x8 emblems for the STANDING tab rows (PAL keys, '.' = transparent). Tier icons are not drawn yet.
     art: {
       emblem_keepers: ['....lg..', '...og...', '..oooo..', '.oyywyo.', '.oywyyo.', '.oyyyyo.', '..oooo..', '...oo...'],
-      emblem_glimmer: ['..ssss..', '.slllls.', 'sllwllls', 'slwwwlls', 'sllwllls', '.slllls.', '..dhhd..', '...dd...'],
+      emblem_glimmer: ['..yyyy..', '.yVVVVy.', 'yVVwVVVy', 'yVwwwVVy', 'yVVwVVVy', '.yVVVVy.', '..dhhd..', '...dd...'],
     },
   });
 

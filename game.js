@@ -5219,7 +5219,7 @@ function rookWithLanyard(look){
   const glimmer = S.flags['story.side'] === 'glimmer';
   const show = (glimmer && S.flags['story.side_pick_done']) || S.flags['story.slice_end'] || S.flags['story.quarry_bought'];
   if (!show) return look;
-  return Object.assign({}, look, { accent: 'l', accessory: 'lanyard' });
+  return Object.assign({}, look, { outfit: 'hoodie_hem', accent: 'N', accessory: 'lanyard' });
 }
 function npcLook(o){
   const key = o.look || (o.kind === 'trainer' ? (HOLDER_LOOK[o.id] || 'holder') : LOOK_OF_NAME[o.name]) || 'villager';
@@ -6761,7 +6761,7 @@ function placeSteps(dr){
 }
 // After a place panel closes the keeper is still on its doorstep: a trigger there (the Hall's `teaser` after the Seal) plays now.
 function openPlace(dr){ sfx('tap'); runSteps(placeSteps(dr), { npc: dr }).then(() => { if (!scene && !fade.busy && !overlayOpen()) checkTriggers(); }); }
-// Keeper towns wear gold and green. Glimmerwell ground wears mint. The stripe sits on the roof edge and the wall foot.
+// Keeper towns wear gold and green. Glimmerwell ground wears wine and soot. The stripe sits on the roof edge and the wall foot.
 function factionOfMap(id){
   if (!id) return null;
   if (/^rx_/.test(id) || id === 'route2_glen') return 'glimmer';
@@ -6844,7 +6844,7 @@ function paintBuilding(m, b, fac, P){
   if (b.feats.indexOf('slit') >= 0) { g.fillStyle = PAL.d; g.fillRect(mid - 2, 2, 4, RH - 6); g.fillStyle = PAL.s; g.fillRect(mid - 1, 6, 1, 1); g.fillRect(mid, 12, 1, 1); }
   if (cut) {
     for (let by = 0; by < RH; by++) { const s = inset(by); if (s > 0) { g.clearRect(0, by, s, 1); g.clearRect(W - s, by, s, 1); } }
-    const ridge = fac === 'glimmer' ? PAL.c : fac ? PAL.y : null, band = fac === 'glimmer' ? PAL.l : PAL.g;
+    const ridge = fac === 'glimmer' ? PAL.N : fac ? PAL.y : null, band = fac === 'glimmer' ? PAL.V : PAL.g;
     for (let by = 0; by < RH; by++) for (let x = 0; x < W; x++) {
       if (!inside(x, by) || (inside(x, by - 1) && inside(x - 1, by) && inside(x + 1, by))) continue;
       if (ridge) { g.fillStyle = ridge; g.fillRect(x, by, 1, 2); g.fillStyle = band; if (inside(x, by + 2)) g.fillRect(x, by + 2, 1, 1); }
@@ -6950,7 +6950,7 @@ function exteriorCell(x, y){
 function drawFactionBand(g, ch, tx, ty, X, Y){
   const fac = factionOfMap(CUR.id);
   if (!fac || (ch !== 'R' && ch !== 'H')) return;
-  const ridge = fac === 'glimmer' ? PAL.c : PAL.y, band = fac === 'glimmer' ? PAL.l : PAL.g;
+  const ridge = fac === 'glimmer' ? PAL.N : PAL.y, band = fac === 'glimmer' ? PAL.V : PAL.g;
   if (ch === 'R' && tileAt(tx, ty - 1) !== 'R' && !shapedRoof(tx, ty)) { g.fillStyle = ridge; g.fillRect(X, Y, 16, 2); g.fillStyle = band; g.fillRect(X, Y + 2, 16, 1); }
   if (ch === 'H' && tileAt(tx, ty + 1) !== 'H') { g.fillStyle = band; g.fillRect(X + 2, Y + 13, 12, 2); }
 }
@@ -7030,7 +7030,10 @@ function drawHqGlow(g, cx, cy){
 function wallTileName(part, x, m){
   if (!part) return null;
   const east = (part === 'jamb_n' || part === 'jamb_s') && x === m.w - 1;
-  return m.skin + '__' + (east ? part + '_e' : part);
+  const key = east ? part + '_e' : part;
+  // v0.4.6: only the four kit faces swap. Caps, jambs and shadows stay lab__*.
+  if (glimmerBayDark() && BAY_WALL[key]) return BAY_WALL[key];
+  return m.skin + '__' + key;
 }
 function wallPart(x, y, m){
   m = m || CUR;
@@ -7130,7 +7133,13 @@ function tickCamBias(t){
 }
 const WAYIN_DIM_AFTER_VISIT = true; // D224: glint stays on frame 0 after the destination floor is seen
 const WAYIN_DOORS = 'all'; // D227: 'all', or 'poor' (poor and weak stay, fine is skipped)
+let bayDarkDrawn = null;
 function drawMap(t){
+  const darkNow = glimmerBayDark();
+  if (darkNow !== bayDarkDrawn) {
+    bayDarkDrawn = darkNow;
+    if (wallMasks.has('rx_f4')) { freeCanvases([wallMasks.get('rx_f4')]); wallMasks.delete('rx_f4'); }
+  }
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
   // INTERIORS §3.4: a map narrower/shorter than the canvas is centred, the rest filled with PAL.k
@@ -7153,8 +7162,9 @@ function drawMap(t){
         const nm = wallTileName(part, tx, CUR);
         if (TILES[nm]) img = TILES[nm];
       } else if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
-        const nm = labTileName(dk ? '.' : k, tx, ty);
+        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk0 = LAB_SKIN.decal[k];
+        const dk = dk0 ? bayArtName(dk0) : null;
+        const nm = bayFloorName(k, labTileName(dk0 ? '.' : k, tx, ty));
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
       } else if (skEarly && CUR.skin !== 'lab') {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
@@ -7958,6 +7968,35 @@ function drawBuddy(g, X, Y, t){
   g.drawImage(img, X - 1, Y - 2);
   if (night && !reduce && WART.buddy_z_0) g.drawImage(Math.floor(t / 2000) % 2 ? WART.buddy_z_1 : WART.buddy_z_0, X + 4, Y - 12);
 }
+// GLIMMERWELL_PALETTE v0.4.6 (design 241c654). The capital screen uses the escort flags.
+// The bay art adds the room id, so other rooms keep lab_* even while the escort is on.
+// rx4b_door_locked is registered and never selected. The drawn door is the kit face_door.
+const BAY_WALL = { face: 'rx4b__face', face_l: 'rx4b__face_l', face_win: 'rx4b__face_win', face_door: 'rx4b__face_door' };
+function glimmerEscortOn(){
+  return !!(S && S.flags['story.gb_escort'] && !S.flags['story.gb_done'] && S.flags['story.side'] === 'glimmer');
+}
+function glimmerBayDark(){
+  return !!(glimmerEscortOn() && CUR && CUR.id === 'rx_f4');
+}
+function bayArtName(name){
+  if (!glimmerBayDark()) return name;
+  if (name === 'lab_guide_v') return 'rx4b_guide_v';
+  if (name === 'lab_guide_h') return 'rx4b_guide_h';
+  if (name === 'lab_guide_x') return 'rx4b_guide_x';
+  return name;
+}
+function bayFloorName(ch, name){
+  if (!glimmerBayDark()) return name;
+  if ((ch === '.' || ch === '|' || ch === '-' || ch === '+') && (name === 'lab_floor_bay' || name === 'lab_floor_scuff')) return 'rx4b_floor_bay';
+  if (ch === 'g' && name === 'lab_glass') return 'rx4b_glass';
+  if (ch === 'D' && name === 'lab_dais') return 'rx4b_dais';
+  return name;
+}
+function propArtKey(o){
+  if (o && o.id === 'rx4_side' && glimmerEscortOn()) return 'capital_screen';
+  if (o && o.sprite === 'lab_tank' && glimmerBayDark()) return 'rx4b_tank';
+  return o && o.sprite;
+}
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
@@ -7979,7 +8018,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     g.drawImage(img, X - 1 + b.dx, Y - 2 + b.dy); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
   else if (o.kind === 'prop') {
-    const key = (o.id === 'rx4_side' && S && S.flags['story.gb_escort'] && !S.flags['story.gb_done'] && S.flags['story.side'] === 'glimmer') ? 'capital_screen' : o.sprite;
+    const key = propArtKey(o);
     const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y);
   }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
@@ -7994,22 +8033,45 @@ function drawObj(g, o, cx, cy, VW, VH, t){
 // keeper.js composes 16x16 frames (keeperGrid); here they become 18x18 canvases with a 1px PAL.k outline like buildSprite,
 // built once per look and cached (the Walk map only looks them up).
 const lookOf = () => maskLook((S && S.player && S.player.look) || null);           // null = the default look
+// Display-only wardrobe clamp (D1083). A worn lanyard draws its accent as the nearest of soot N, white w
+// or ice s. Ties go to N. The save is not written. shownLook runs this after the standing tint.
+function glimmerAccentClamp(accent){
+  const allow = ['N', 'w', 's'];
+  if (allow.indexOf(accent) >= 0) return accent;
+  const hex = PAL[accent];
+  if (!hex || hex.charAt(0) !== '#') return 'N';
+  const rgb = (c) => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  const src = rgb(hex);
+  let best = 'N', bestD = Infinity;
+  for (const k of allow) {
+    const t = rgb(PAL[k]);
+    const d = (src[0] - t[0]) * (src[0] - t[0]) + (src[1] - t[1]) * (src[1] - t[1]) + (src[2] - t[2]) * (src[2] - t[2]);
+    if (d < bestD) { bestD = d; best = k; }
+  }
+  return best;
+}
+function glimmerDisplayLook(look){
+  if (!look || look.accessory !== 'lanyard') return look;
+  const accent = glimmerAccentClamp(look.accent);
+  if (accent === look.accent) return look;
+  return Object.assign({}, look, { accent: accent });
+}
 // Glimmerwell standing shows on the body: the Arbiter's emission has been in that bloodline a long time.
-// Tier 0 is unchanged. Higher tiers pick up silver and mint. The save's look is not rewritten.
+// Tier 0 is unchanged. Higher tiers pick up silver and ice. The save's look is not rewritten.
 function shownLook(){
   // INTRO_CUTSCENE D800: a look picked earlier in this scene (lookPick's scene.view.look) shows at once, on the map
   // and in the portrait; the save gets it at the scene's end as before.
   const base = scene && scene.view && scene.view.look ? maskLook(scene.view.look) : lookOf();
-  if (!S || side() !== 'glimmer') return base;
+  if (!S || side() !== 'glimmer') return glimmerDisplayLook(base);
   const tier = PPStanding.tierOf(standingOf('glimmer', false));
-  if (!tier) return base;
+  if (!tier) return glimmerDisplayLook(base);
   const L = Object.assign({}, KEEPER_LOOKS.defaults, base || {});
   L.accent = tier >= 4 ? 's' : 'c';
   if (tier >= 2) L.outfitCol = 's';
   if (tier >= 3) L.hairCol = 'h';
-  return L;
+  return glimmerDisplayLook(L);   // D1083: clamp after the tint, so a worn lanyard never keeps sky c
 }
-const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|') + (f.extra ? JSON.stringify(f.extra) : ''); };
+const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|') + (f.extra ? JSON.stringify(f.extra) : '') + (f.hem ? '|hem:' + f.hem : ''); };
 const KEEPER_CAP = 128;
 const keeperCache = new Map(); let keeperBuilds = 0;
 const faceCache = new Map();
@@ -12063,12 +12125,12 @@ function drawRegionMap(t){
       if (x1 >= x0) R(x0, y, x1 - x0 + 1, 1, col);
     }
   };
-  // Visited claims only, so a ??? place does not give away who holds it. Green and gold match Keeper roofs; cyan and mint match Glimmerwell ground.
+  // Visited claims only, so a ??? place does not give away who holds it. Green and gold match Keeper roofs; wine and soot match Glimmerwell ground.
   const claim = (cx, cy, r, hold) => {
     fillDisc(cx, cy, r + 1, 'd', 0);
-    if (hold === 'split') { fillDisc(cx, cy, r, 'g', -1); fillDisc(cx, cy, r, 'c', 1); band(cx, cy, r, 'y', -1); stipple(cx, cy, r, 'l', 1); return; }
+    if (hold === 'split') { fillDisc(cx, cy, r, 'g', -1); fillDisc(cx, cy, r, 'V', 1); band(cx, cy, r, 'y', -1); stipple(cx, cy, r, 'N', 1); return; }
     if (hold === 'keepers') { fillDisc(cx, cy, r, 'g', 0); band(cx, cy, r, 'y', 0); return; }
-    fillDisc(cx, cy, r, 'c', 0); stipple(cx, cy, r, 'l', 0);
+    fillDisc(cx, cy, r, 'V', 0); stipple(cx, cy, r, 'N', 0);
   };
   const sealMark = (cx, cy, right) => {                                             // orange wax stamp; parchment yellow would hide a gold one
     const x = cx + (right ? 16 : -24), y = cy - 22;                               // Cobblecrest's road enters from the upper left
@@ -12109,7 +12171,7 @@ function drawRegionMap(t){
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const blink = reduce || Math.floor((t - mapUI.t0) / 500) % 2 === 0;
   if (cur && N[cur] && blink) {                                                      // 500 ms on / 500 ms off; steady with reduced motion (§4)
-    const [x, y] = P([N[cur].col, N[cur].row]); ring(x, y, 11, 'b');
+    const [x, y] = P([N[cur].col, N[cur].row]); ring(x, y, 13, 'k'); ring(x, y, 11, 'b');
     R(x - 1, y - 19, 3, 3, 'r');                                                    // small down-arrow 13-19 px above the node: stem...
     for (let i = 0; i < 4; i++) R(x - 3 + i, y - 16 + i, 7 - 2 * i, 1, 'r');       // ...and point
   }
@@ -15174,41 +15236,41 @@ const SEAL_ART = { seal_cobblecrest: [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ] };
-// Build 3: delivered 16x16 Bright Tier 1 lanyard. Gold rim, mint field, one white mark.
-// Tier 2 is the same badge with two white marks.
+// Build 3: delivered 16x16 Bright Tier 1 lanyard. Gold rim, wine field, soot shade, one white mark.
+// Tier 2 is the same badge with two white marks. Tier 3 is built from Tier 1.
 const LANYARD_TIER1 = [
   '.....oooooo.....',
   '...ooyyyyyyoo...',
-  '..oyyssssslyyo..',
-  '.oyssssssllllyo.',
-  '.oyssssslllllyo.',
-  'oyssssswwlllllyo',
-  'oysssslwwlllllyo',
-  'oysssllwwlllllyo',
-  'oysslllwwlllllyo',
-  'oysllllwwllllyoo',
-  'oylllllwwllllyoo',
-  '.oylllllllllyoo.',
-  '.oylllllllyyooo.',
-  '..oyyllllyoooo..',
+  '..oyyNNNNNVyyo..',
+  '.oyNNNNNNVVVVyo.',
+  '.oyNNNNNVVVVVyo.',
+  'oyNNNNNwwVVVVVyo',
+  'oyNNNNVwwVVVVVyo',
+  'oyNNNVVwwVVVVVyo',
+  'oyNNVVVwwVVVVVyo',
+  'oyNVVVVwwVVVVyoo',
+  'oyVVVVVwwVVVVyoo',
+  '.oyVVVVVVVVVyoo.',
+  '.oyVVVVVVVyyooo.',
+  '..oyyVVVVyoooo..',
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ];
 const LANYARD_TIER2 = [
   '.....oooooo.....',
   '...ooyyyyyyoo...',
-  '..oyywsssswyyo..',
-  '.oyswwssslwwlyo.',
-  '.oyswwssllwwlyo.',
-  'oysswwslllwwllyo',
-  'oysswwllllwwllyo',
-  'oysswwllllwwllyo',
-  'oysswwllllwwllyo',
-  'oyslwwllllwwlyoo',
-  'oyllwwllllwwlyoo',
-  '.oylwwllllwwyoo.',
-  '.oylwwllllyyooo.',
-  '..oyywlllyoooo..',
+  '..oyywNNNNwyyo..',
+  '.oyNwwNNNVwwVyo.',
+  '.oyNwwNNVVwwVyo.',
+  'oyNNwwNVVVwwVVyo',
+  'oyNNwwVVVVwwVVyo',
+  'oyNNwwVVVVwwVVyo',
+  'oyNNwwVVVVwwVVyo',
+  'oyNVwwVVVVwwVyoo',
+  'oyVVwwVVVVwwVyoo',
+  '.oyVwwVVVVwwyoo.',
+  '.oyVwwVVVVyyooo.',
+  '..oyywVVVyoooo..',
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ];
@@ -15232,7 +15294,7 @@ SEAL_ART.seal_brinewick = [
   '....oooooooo....',
 ];
 const LANYARD_TIER3 = LANYARD_TIER1.map((row, y) => (y < 2 || y > 12) ? row
-  : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'sl'.includes(ch)) ? 'w' : ch).join(''));
+  : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'VN'.includes(ch)) ? 'w' : ch).join(''));
 SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL_ART.seal_glim_3 = LANYARD_TIER3;
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
@@ -17368,10 +17430,51 @@ function debugCatalog(){
     booths: (window.PPMinigames && PPMinigames.RULE) ? Object.keys(PPMinigames.RULE) : [],
   };
 }
+// GLIMMERWELL_PALETTE v0.3.1. Q above 10% of a frame fails. A soot band under 6 px fails.
+// The band is soot N in horizontal runs of 2 or more (singles and vertical lines do not count).
+// The spec summary's "7 px" is a typo; §10.5 and the engineer row in §10.12 say 6.
+function glimmerPaletteReport(){
+  const problems = [], frames = [];
+  if (!PAL || PAL.V !== '#960e16' || PAL.N !== '#18140f' || PAL.Q !== '#c81818') problems.push('PAL keys V N Q');
+  const faces = ['down', 'up', 'right', 'left'];
+  const looks = [];
+  const take = (name, look) => { if (look) looks.push([name, look]); else problems.push(name + ' missing'); };
+  take('associate', KEEPER_SWAPS.associate);
+  for (const id of ['glimclerk', 'quinn', 'hollis', 'imogen', 'dorian']) take(id, NPC_LOOKS[id]);
+  take('rook-lanyard', Object.assign({}, KEEPER_SWAPS.rook, { outfit: 'hoodie_hem', accent: 'N', accessory: 'lanyard' }));
+  take('holder_glimmer_set', KEEPER_SWAPS.holder_glimmer_set);
+  for (const [name, look] of looks) {
+    for (const face of faces) for (const fr of [0, 1]) {
+      const rows = keeperGrid(look, face, fr);
+      let q = 0, op = 0, band = 0;
+      for (const row of rows) {
+        let run = 0;
+        for (const ch of row) {
+          if (ch !== '.') { op++; if (ch === 'Q') q++; }
+          if (ch === 'N') run++;
+          else { if (run >= 2) band += run; run = 0; }
+        }
+        if (run >= 2) band += run;
+      }
+      frames.push({ name, face, fr, q, op, band });
+      if (op && q / op > 0.10) problems.push(name + ' ' + face + fr + ' Q ' + q + '/' + op);
+      if (band < 6) problems.push(name + ' ' + face + fr + ' soot ' + band);
+    }
+  }
+  return {
+    problems, frames,
+    outfitCol: KEEPER_LOOKS.outfitCol.slice(),
+    accent: KEEPER_LOOKS.accent.slice(),
+    defaults: { outfitCol: KEEPER_LOOKS.defaults.outfitCol, accent: KEEPER_LOOKS.defaults.accent, accessory: KEEPER_LOOKS.defaults.accessory },
+    holderOutfit: KEEPER_SWAPS.holder.outfitCol,
+  };
+}
+function glimmerPaletteDevCheck(){ return glimmerPaletteReport().problems; }
 function devChecks(){
   return {
     quest: PPQuests.devCheck(MAPDATA),
     glimmer: glimmerDevCheck(),
+    palette: glimmerPaletteDevCheck(),
     standing: PPStanding.devCheck(),
     befriend: befriendDevCheck(),
     charity: highCharityDevCheck(),
@@ -18440,6 +18543,7 @@ function boot(){
   { const bb = befriendDevCheck(); if (bb.length) console.error('Walklings: befriend width check failed:', bb.join('; ')); }
   { const qb = PPQuests.devCheck(MAPDATA); if (qb.length) console.error('Walklings: quest chain check failed:', qb.join('; ')); }
   { const gb = glimmerDevCheck(); if (gb.length) console.error('Walklings: glimmer path check failed:', gb.join('; ')); }
+  { const pb = glimmerPaletteDevCheck(); if (pb.length) console.error('Walklings: glimmer palette check failed:', pb.join('; ')); }
   { const hb = heightsDevCheck(); if (hb.length) console.error('Walklings: heights check failed:', hb.join('; ')); }
   { const sb = PPStanding.devCheck(); if (sb.length) console.error('Walklings: standing config check failed:', sb.join('; ')); }
   { const rpb = repCastCheck(); if (rpb.length) console.error('Walklings: reputation cast check failed:', rpb.join('; ')); }
@@ -18712,7 +18816,7 @@ function boot(){
       const part = sk && sk.wall ? wallPart(x, y) : null;
       const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part, shade: shadowPart(x, y) };
       if (part) return Object.assign(base, { tile: wallTileName(part, x, CUR), decal: null });
-      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }); }
+      if (CUR.skin === 'lab') { const dk0 = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: bayFloorName(ch, labTileName(dk0 ? '.' : ch, x, y)), decal: dk0 ? bayArtName(dk0) : null }); }
       if (sk) {
         const k = ch === 'W' && x % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
         return Object.assign(base, { tile: skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null });
@@ -18812,6 +18916,29 @@ function boot(){
   api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
+  api.glimmerPalette = () => glimmerPaletteReport();
+  api.glimmerBay = () => {
+    if (!DEBUG) return null;
+    const tanks = [];
+    if (CUR) for (const o of CUR.objs) if (o.kind === 'prop' && o.sprite === 'lab_tank') tanks.push({ id: o.id, art: propArtKey(o) });
+    return { escort: glimmerEscortOn(), dark: glimmerBayDark(), map: CUR ? CUR.id : null,
+      screen: propArtKey({ id: 'rx4_side', kind: 'prop', sprite: 'rx_terminal' }), tanks };
+  };
+  api.artTally = name => {
+    if (!DEBUG) return null;
+    const src = WART[name] || TILES[name];
+    if (!src) return null;
+    const frames = Array.isArray(src) ? src : [src];
+    return frames.filter(Boolean).map(canvas => {
+      const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data, out = {};
+      for (let i = 0; i < d.length; i += 4) {
+        if (!d[i + 3]) continue;
+        const h = '#' + [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('');
+        out[h] = (out[h] || 0) + 1;
+      }
+      return out;
+    });
+  };
   api.musicCheck = () => PPSound.musicCheck();
   api.mapTrack = id => trackFor(id && WORLD[id]);
   api.spriteLook = id => {
@@ -18830,7 +18957,7 @@ function boot(){
   };
   api.paintPreview = () => {
     const scale = 8;
-    const grids = [SEAL_ART.seal_glim_1, SEAL_ART.seal_glim_2, api.lookGrid('imogen'), api.lookGrid('hollis'), api.lookGrid('juniper'), api.lookGrid('rook')];
+    const grids = [SEAL_ART.seal_glim_1, SEAL_ART.seal_glim_2, api.lookGrid('imogen'), api.lookGrid('hollis'), api.lookGrid('juniper'), api.lookGrid('rook'), api.lookGrid('holder_glimmer_set')];
     if (grids.some(g => !g)) return false;
     const sheet = document.getElementById('artSheet') || document.createElement('canvas');
     sheet.id = 'artSheet';

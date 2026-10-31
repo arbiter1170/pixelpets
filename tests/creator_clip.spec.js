@@ -16,7 +16,9 @@ const OUTFITS = ['coat', 'hoodie', 'tunic', 'vest', 'sweater', 'dress'];
 const FACINGS = ['down', 'right', 'up', 'left'];
 const HATS = ['cap', 'beanie', 'brimhat'];   // brimhat: PEOPLE_LOOKS_28 (NPC-only hat, not in the creator list)
 const NO_HAT = ['none', 'glasses', 'bow', 'scarf', 'sash', 'satchel', 'goggles', 'lanyard'];
+// Synthetic cap wearer for the brim rule. The live Associate Hollis look is HOLLIS_LIVE (scarf, no cap).
 const HOLLIS = { skin: '1', hair: 'curls', hairCol: 'c', outfit: 'vest', outfitCol: 'l', accent: 'w', accessory: 'cap' };
+const HOLLIS_LIVE = { skin: '1', hair: 'curls', hairCol: 'c', outfit: 'vest', outfitCol: 'V', accent: 'N', accessory: 'scarf' };
 const RING = 5; // .swatch.on / .preview.on outer box-shadow
 const BASELINE = path.join(__dirname, 'fixtures', 'keeper_130f118.js');
 const V5 = {
@@ -137,7 +139,9 @@ test('a hat clips hair above the brim and every other look matches the build bef
             const look = Object.assign({ hair, outfit, accessory }, colours);
             const got = now.keeperGrid(look, facing, frame);
             const was = old.keeperGrid(look, facing, frame);
-            if (JSON.stringify(got) !== JSON.stringify(was)) bad(accessory + ' ' + hair + ' ' + outfit + ' ' + facing + frame + ' changed without a hat');
+            // GLIMMERWELL_PALETTE v0.4: Pia's lanyard card (honey y to crimson Q, at most 3 Q a frame).
+            // Every other non-hat accessory still matches the pinned 130f118 grids.
+            if (accessory !== 'lanyard' && JSON.stringify(got) !== JSON.stringify(was)) bad(accessory + ' ' + hair + ' ' + outfit + ' ' + facing + frame + ' changed without a hat');
             if (JSON.stringify(got) !== JSON.stringify(composed(now, look, facing, frame, true).rows)) bad(accessory + ' composite');
           }
         }
@@ -153,6 +157,17 @@ test('a hat clips hair above the brim and every other look matches the build bef
   const capped = Object.assign({}, extra, { accessory: 'cap' });
   if (JSON.stringify(now.keeperGrid(capped, 'up', 0)) !== JSON.stringify(composed(now, capped, 'up', 0, true).rows)) bad('cap with an extra swap');
   if (JSON.stringify(now.keeperGrid(null, 'down', 0)) !== JSON.stringify(old.keeperGrid(null, 'down', 0))) bad('default look changed');
+
+  const lan = { hair: 'short', outfit: 'coat', accessory: 'lanyard', skin: '6', hairCol: 'y', outfitCol: 't', accent: 'r' };
+  for (const facing of FACINGS) {
+    for (const frame of [0, 1]) {
+      const rows = now.keeperGrid(lan, facing, frame);
+      const q = rows.join('').split('Q').length - 1;
+      if (q > 3) bad('lanyard ' + facing + frame + ' has ' + q + ' Q');
+      if (old.keeperGrid(lan, facing, frame).join('').includes('Q')) bad('old lanyard already had Q');
+    }
+  }
+  if (!now.keeperGrid(lan, 'down', 0).join('').includes('Q')) bad('lanyard down card lost its Q');
 
   const reported = fails.filter(Boolean);
   expect(reported, reported.join('\n')).toEqual([]);
@@ -432,8 +447,12 @@ test('every accessory on every hair style, and Hollis wears the cap rule', async
     return { url: c.toDataURL('image/png'), cache, hollis: window.PixelPets.lookGrid('hollis') };
   }, { hairs: HAIR, acc: ['none', 'glasses', 'bow', 'cap', 'scarf', 'sash', 'satchel', 'goggles', 'beanie', 'lanyard'] });
   expect(sheet.cache).toEqual({ same: true, diff: true });
-  expect(sheet.hollis).toEqual(now.keeperGrid(HOLLIS, 'down', 0));
-  expect(sheet.hollis.slice(0, 4).some(r => r.includes('c'))).toBe(false);
+  // Live Hollis wears the soot scarf and no cap (GLIMMERWELL_PALETTE v0.3.1), so the curls stay in the top rows.
+  expect(sheet.hollis).toEqual(now.keeperGrid(HOLLIS_LIVE, 'down', 0));
+  expect(sheet.hollis.slice(0, 4).some(r => r.includes('c'))).toBe(true);
+  const capped = now.keeperGrid(HOLLIS, 'down', 0);
+  expect(capped.slice(0, 4).some(r => r.includes('c'))).toBe(false);
+  expect(capped.slice(4).some(r => r.includes('c'))).toBe(true);
   const png = Buffer.from(sheet.url.split(',')[1], 'base64');
   fs.writeFileSync(path.join(artifactsDir(), 'accessory_hair_390.png'), png);
 });
