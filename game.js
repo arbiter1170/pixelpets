@@ -4216,9 +4216,10 @@ if (MD.act1_route2 && MD.act1_route2.looks) for (const [k, v] of Object.entries(
 NPC_LOOKS.regenx = { skin: '2', hair: 'bun', hairCol: 's', outfit: 'coat', outfitCol: 'w', accent: 'c' };
 if (MD.cobblecrest && MD.cobblecrest.looks) for (const [k, v] of Object.entries(MD.cobblecrest.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
 if (MD.mahopac && MD.mahopac.looks) for (const [k, v] of Object.entries(MD.mahopac.looks)) if (!k.startsWith('_')) NPC_LOOKS[k] = v;
-const LOOK_OF_NAME = Object.assign({ 'Hattie': 'villager', 'Odile': 'villager', 'Keeper Amos': 'villager', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
+const LOOK_OF_NAME = Object.assign({ 'Hattie': 'neighbour_hattie', 'Odile': 'orchard_odile', 'Keeper Amos': 'keeper_amos', 'Associate Juniper': 'associate', 'Master Fen': 'fen',
   'Warden Ilse': 'ilse', 'Rook': 'rook', 'Mrs. Calloway': 'calloway', 'Tobin': 'associate', 'Fen': 'fen' }, MD.interiors.dialog.speakers, (MD.cobblecrest && MD.cobblecrest.speakers) || {});
 if (NPC_LOOKS.hale) LOOK_OF_NAME.Hale = LOOK_OF_NAME.Hale || 'hale';
+LOOK_OF_NAME.Hattie = 'neighbour_hattie';   // PEOPLE_LOOKS_28: the verbatim interiors speakers still say villager
 if (MD.act1_route2 && MD.act1_route2.speakers) for (const [k, v] of Object.entries(MD.act1_route2.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
 if (MD.glimmer_path && MD.glimmer_path.speakers) for (const [k, v] of Object.entries(MD.glimmer_path.speakers)) if (typeof v === 'string' && !LOOK_OF_NAME[k]) LOOK_OF_NAME[k] = v;
 if (MD.mahopac && MD.mahopac.speakers) for (const [k, v] of Object.entries(MD.mahopac.speakers)) if (typeof v === 'string') LOOK_OF_NAME[k] = v;
@@ -4455,10 +4456,15 @@ if (SCENES.rival1) SCENES.rival1.push(
 // STANDING_CFG.grants (a null amount = look the one-shot id up there); the glimmer twins carry theirs in glimmer_path.json.
 if (SCENES.orchard) SCENES.orchard.push(['standing', 'keepers', null, 'orchard_k']);
 if (SCENES.seal1) SCENES.seal1.push(['standing', 'keepers', null, 'seal1_k']);
-const TRAINER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', rival3_rook: 'rook', rc_tobin: 'associate', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
+const HOLDER_LOOK = { rival1_rook: 'rook', rival2_rook: 'rook', rival3_rook: 'rook', rc_tobin: 'associate', fern_associate: 'associate', hall1_fen: 'fen', r2_associate: 'hollis', r2_lead: 'imogen', hall2_hale: 'hale',
   rx_wardens: 'rx_warden', rx_techs: 'rx_tech', rx_records: 'rx_records', rx_quinn: 'quinn', rx_cal_ally: 'cal',
-  sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'villager', sm_jed_ally: 'villager',
-  bw_dorian: 'dorian', hall3_marisol: 'marisol', bw_deckhand: 'dockfolk', bw_ringer: 'dockfolk' };   // BRINEWICK
+  sm_lookouts: 'villager', sm_haulers: 'villager', sm_mara: 'broker_mara', sm_jed_ally: 'villager',
+  bw_dorian: 'dorian', hall3_marisol: 'marisol', bw_deckhand: 'dockfolk', bw_ringer: 'dockfolk',   // BRINEWICK
+  // PEOPLE_LOOKS_28 (Sprites looks v2, Vincent approved Oct 29): route holders get their own look instead of the shared 'holder'.
+  route1_pia: 'kitekid_pia', route1_tam: 'beachcomber_tam', route1_ollie: 'mothwatch_ollie',
+  r2_rockhound: 'rockhound_nell', r2_skipper: 'skipper_teo', r2_stargazer: 'stargazer_tilda',
+  q_sketcher: 'sketcher_lark', q_mason: 'mason_hobb', h2_sweeper: 'sweeper_bix', h2_builder: 'cairn_cass',
+  hw_climber: 'climber_fenna', hw_angler: 'angler_nils', hw_owlwatch: 'owlwatch_ottilie' };
 const COUNTER = { ember: 'tide', tide: 'bloom', bloom: 'ember' };   // §6: TIDE beats EMBER, BLOOM beats TIDE, EMBER beats BLOOM
 let CUR = WORLD.hearthmoor, MAP = CUR.cells, MW = CUR.w, MH = CUR.h;
 let mapRT = { talked: new Set(), chat: new Set(), trig: {}, face: {}, pos: {}, catch: {}, grace: REMATCH_GRACE_STEPS };   // per map visit, never saved
@@ -5216,7 +5222,7 @@ function rookWithLanyard(look){
   return Object.assign({}, look, { accent: 'N', accessory: 'lanyard', hem: 'hoodie_hem' });
 }
 function npcLook(o){
-  const key = o.look || (o.kind === 'trainer' ? (TRAINER_LOOK[o.id] || 'holder') : LOOK_OF_NAME[o.name]) || 'villager';
+  const key = o.look || (o.kind === 'trainer' ? (HOLDER_LOOK[o.id] || 'holder') : LOOK_OF_NAME[o.name]) || 'villager';
   const look = NPC_LOOKS[key] || KEEPER_SWAPS.villager;
   if (key === 'rook') return rookWithLanyard(look);
   return look;

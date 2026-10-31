@@ -135,7 +135,7 @@
           "name": "Kit",
           "x": 14,
           "y": 11,
-          "look": "villager",
+          "look": "stockup_kit",
           "scene": "stock_up",
           "lines": {
             "else": "Snacks are in the crate. Doors are long."
@@ -1869,7 +1869,7 @@
           "name": "Jed",
           "x": 5,
           "y": 6,
-          "look": "villager",
+          "look": "crate_jed",
           "scene": "sm_jed",
           "lines": {
             "else": "I load crates. I am done loading these."
@@ -2109,7 +2109,7 @@
           "name": "Ken",
           "x": 7,
           "y": 7,
-          "look": "villager",
+          "look": "watch_ken",
           "when": [
             "story.sm_freed"
           ],
@@ -3378,6 +3378,40 @@
     "bitlet": "Species id byte, type VOLT. Bitlet, Hoverbyte, Archivolt. It woke when the cradle hummed. It is not a product. Staff call it a glitch and leave it alone."
   },
   "looks": {
+    "broker_mara": {
+      "skin": "1",
+      "hair": "bob",
+      "hairCol": "k",
+      "outfit": "coat",
+      "outfitCol": "d",
+      "accent": "r",
+      "accessory": "glasses"
+    },
+    "crate_jed": {
+      "skin": "4",
+      "hair": "short",
+      "hairCol": "o",
+      "outfit": "sweater",
+      "outfitCol": "b",
+      "accent": "y"
+    },
+    "watch_ken": {
+      "skin": "6",
+      "hair": "buzz",
+      "hairCol": "d",
+      "outfit": "coat",
+      "outfitCol": "g",
+      "accent": "y"
+    },
+    "stockup_kit": {
+      "skin": "3",
+      "hair": "pony",
+      "hairCol": "d",
+      "outfit": "vest",
+      "outfitCol": "c",
+      "accent": "w",
+      "accessory": "satchel"
+    },
     "rx_nia": {
       "skin": "3",
       "hair": "bob",

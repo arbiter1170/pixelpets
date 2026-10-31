@@ -124,6 +124,7 @@
           "name": "Old Miner",
           "x": 14,
           "y": 10,
+          "look": "old_miner",
           "facing": "down",
           "lines": {
             "story.seal2": "Hale says you moved stone the right way. Patient. That's high praise from him.",
@@ -137,6 +138,7 @@
           "name": "Pim",
           "x": 7,
           "y": 10,
+          "look": "kid_pim",
           "facing": "down",
           "lines": {"story.quarry_bought": "Mum voted no. She says glow should stay in the ground where it's comfy.", "else": "Glimmerwell gave out free lamp stickers! I put one on my Pebblit. It sneezed."}
         },
