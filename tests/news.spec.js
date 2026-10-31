@@ -75,11 +75,11 @@ test('the paper checks itself, holds still within an edition, and turns over acr
   expect(out.editions).toEqual(['MORNING', 'EVENING', 'NIGHT']);
   expect(out.sameKey).toBe(true);   // a new edition time does not light the icon dot
   expect(out.distinct).toBeGreaterThanOrEqual(4);
-  expect(out.counts.stories).toBeGreaterThanOrEqual(80);
-  expect(out.counts.voices).toBeGreaterThanOrEqual(30);
-  expect(out.counts.notices).toBeGreaterThanOrEqual(20);
-  expect(out.counts.polls).toBeGreaterThanOrEqual(10);
-  expect(out.counts.you).toBeGreaterThanOrEqual(10);
+  expect(out.counts.stories).toBeGreaterThanOrEqual(160);
+  expect(out.counts.voices).toBeGreaterThanOrEqual(100);
+  expect(out.counts.notices).toBeGreaterThanOrEqual(60);
+  expect(out.counts.polls).toBeGreaterThanOrEqual(20);
+  expect(out.counts.you).toBeGreaterThanOrEqual(25);
   expect(out.counts.posts).toBeGreaterThanOrEqual(80);
   expect(out.stamps[0]).toMatch(/^v\d/);
   expect(out.stamps[0]).toBe(out.stamps[1]);

@@ -1165,7 +1165,7 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 #ovPhone .phone-app.unread .phone-glyph::after{content:"";position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#c45c26;box-shadow:0 0 0 2px #fff9ec}
 #ovPhone.hack .phone-app.unread .phone-glyph::after{background:#5ee08a;box-shadow:0 0 0 2px #07140e}
 #ovPhone #phoneBody.news-root{gap:0;--ink:#143226;--paper:#fff9ec;--page:#f6e6c0;--line:#143226;--acc:#c45c26;--sub:#6a3a0c;--blue:#2a6f8f;--green:#1d5c38;--gold:#e4b04a;color:#1c2416}
-#ovPhone.hack #phoneBody.news-root p{background:transparent}
+#ovPhone.hack #phoneBody.news-root p:not(.news-label){background:transparent}
 #ovPhone.hack #phoneBody.news-root{--ink:#9dffc0;--paper:#0c1f16;--page:#07140e;--line:#1e6b42;--acc:#5ee08a;--sub:#5ee08a;--blue:#3dce78;--green:#1e6b42;--gold:#3dce78;color:#d7ffc8}
 #ovPhone #phoneBody.news-root > *,#ovPhone #phoneBody .news-panel > *{flex-shrink:0}
 #ovPhone #phoneBody.news-root :where(button){font-family:var(--font);color:inherit;cursor:pointer;margin:0}
