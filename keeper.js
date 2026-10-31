@@ -1436,6 +1436,7 @@ const KEEPER_SWAPS = {
   holder:    { skin:'2', hair:'short', hairCol:'m', outfit:'hoodie', outfitCol:'c', accent:'o' },                    // route holders
   associate: { skin:'5', hair:'short', hairCol:'d', outfit:'coat',   outfitCol:'V', accent:'N', extra:{ o:'Q' } }, // wine coat, soot trim, crimson cradle bag (Pia's o to Q)
   fen:       { skin:'4', hair:'long',  hairCol:'w', outfit:'tunic',  outfitCol:'g', accent:'l' },                    // Master Fen, orchard keeper
+  holder_glimmer_set: { skin:'3', hair:'short', hairCol:'p', outfit:'coat', outfitCol:'V', accent:'N', accessory:'lanyard' }, // Pia's (b) holder set; not the route holder look
 };
 
 // Normalize a saved look (K.5): null/non-object -> null; migrates the v0.4 shape {hair:<colour>, skin, coat, scarf};

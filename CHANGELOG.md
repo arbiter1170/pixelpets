@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-31 18:07 ET: Glimmerwell spec v0.4.1, holder's Glimmer set (build 20261031-1807)
+
+- What changed and why: GLIMMERWELL_PALETTE v0.4.1 (design 35b2351) lands the holder's Glimmer set. Pia's look uses only parts already on main: short hair, a wine coat, soot trim and the lanyard. It is `KEEPER_SWAPS.holder_glimmer_set`, not the route holder look, and it is not written to the player's save. The four hem outfits stay, used by six looks. Rook's claimed lanyard already uses `hoodie_hem`. Hair stays out of the lock. The cracked handset stays green (D1100; Theo yes, Nina pending). Eleven round-2 looks still wait on parts.
+- Files touched: `keeper.js`, `game.js`, `tests/glimmerwell_dark.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `handoff/shots/glimmer_dark/`.
+- Commit(s) + build id: `cursor/glimmerwell-dark-e508`, build 20261031-1807.
+- Tests run and result (widths, checks): `tests/glimmerwell_dark.spec.js`, `tests/look_listen.spec.js`, `tests/look_keys.spec.js` and `tests/data_integrity.spec.js` at 320, 375 and 390: PP_TEST RESULT: PASS exit=0 passed=44 failed=0 flaky=0 skipped=0 time=18s. RTDB_RULES RESULT: PASS. `node tools/scans/run.js`: SCAN PASS wording, decisions, symlinks, gamejs_map, test_mistakes. Save stays `pixelpets.save.v2`, `v` 2, no new key. The player's look stays the default.
+- Decisions made (colour + reasoning): no new id. D1083's note now says four hem outfits used by six looks, and hair is out of the lock. D1100 stays open. Next free id is D1101. Do not merge before Mon Nov 2, 2026, 12:34 PM ET.
+- Anything left unfinished: eleven round-2 looks (`glim_greeter`, `glim_packer`, `glim_courier`, `glim_tech`, `glim_tobin`, `glimtier_guest`, `glimtier_associate`, `glimtier_junior`, `glimtier_lead`, `glimtier_founder`, `imogen_lanyard`). The cracked handset stays green.
+
 ## 2026-10-31 16:56 ET: Glimmerwell dark looks from Pia's export (build 20261031-1656)
 
 - What changed and why: GLIMMERWELL_PALETTE v0.4 step 1 lands Pia's (b) grids. The six looks already matched her look objects, so the map files are unchanged. The lanyard card uses her rows: the second down frame face is `rQQQr` (3 crimson px). The four hem outfits (`dress_hem`, `tunic_hem`, `hoodie_hem`, `vest_hem`) are her full outfit rows, each differing from the base by the hem row only. Rook's claimed lanyard sets outfit `hoodie_hem` and accent `N`. The 4-pixel bag cap is removed, so the Associate's bag is her full `o` to `Q` swap (6 crimson px). Twelve round-2 looks stay off main. Hair colours stay as drawn. Player text that says mint is unchanged.

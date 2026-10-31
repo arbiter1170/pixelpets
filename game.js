@@ -17404,6 +17404,7 @@ function glimmerPaletteReport(){
   take('associate', KEEPER_SWAPS.associate);
   for (const id of ['glimclerk', 'quinn', 'hollis', 'imogen', 'dorian']) take(id, NPC_LOOKS[id]);
   take('rook-lanyard', Object.assign({}, KEEPER_SWAPS.rook, { outfit: 'hoodie_hem', accent: 'N', accessory: 'lanyard' }));
+  take('holder_glimmer_set', KEEPER_SWAPS.holder_glimmer_set);
   for (const [name, look] of looks) {
     for (const face of faces) for (const fr of [0, 1]) {
       const rows = keeperGrid(look, face, fr);
@@ -18911,7 +18912,7 @@ function boot(){
   };
   api.paintPreview = () => {
     const scale = 8;
-    const grids = [SEAL_ART.seal_glim_1, SEAL_ART.seal_glim_2, api.lookGrid('imogen'), api.lookGrid('hollis'), api.lookGrid('juniper'), api.lookGrid('rook')];
+    const grids = [SEAL_ART.seal_glim_1, SEAL_ART.seal_glim_2, api.lookGrid('imogen'), api.lookGrid('hollis'), api.lookGrid('juniper'), api.lookGrid('rook'), api.lookGrid('holder_glimmer_set')];
     if (grids.some(g => !g)) return false;
     const sheet = document.getElementById('artSheet') || document.createElement('canvas');
     sheet.id = 'artSheet';

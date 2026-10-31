@@ -38,11 +38,12 @@ test('locked looks stay under the crimson cap and the soot band, and the save is
       v: raw.v,
       keys: Object.keys(raw).sort(),
       savedLook: raw.player.look,
+      holderSet: PixelPets.spriteLook('holder_glimmer_set'),
     };
   });
   expect(report.problems).toEqual([]);
   expect(report.pal.problems).toEqual([]);
-  const qCap = { associate: 6, 'rook-lanyard': 3 };
+  const qCap = { associate: 6, 'rook-lanyard': 3, holder_glimmer_set: 3 };
   for (const name of [...new Set(report.pal.frames.map(fr => fr.name))]) {
     const rows = report.pal.frames.filter(fr => fr.name === name);
     const min = Math.min(...rows.map(fr => fr.band));
@@ -56,6 +57,7 @@ test('locked looks stay under the crimson cap and the soot band, and the save is
   expect(report.pal.accent).not.toContain('Q');
   expect(report.pal.accent).not.toContain('N');
   expect(report.pal.holderOutfit).toBe('c');
+  expect(report.holderSet).toEqual({ skin: '3', hair: 'short', hairCol: 'p', outfit: 'coat', outfitCol: 'V', accent: 'N', accessory: 'lanyard' });
   expect(report.savedLook).toEqual(save.player.look);
   expect(report.v).toBe(2);
   expect(report.keys).toEqual(beforeKeys);
