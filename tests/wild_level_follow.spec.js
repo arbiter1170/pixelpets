@@ -1,6 +1,6 @@
 // WILD_FOLLOW + WILD_GUARD (first-area wild balance). Route 1 and Fernbrook wilds roll between lead - 2 and the lead's
 // level, held under a map cap (Route 1: 9, Fernbrook: 13) and never below the table's own range. A full-HP wild keeps
-// 1 HP from one holder hit unless the holder is 10+ levels above it. Trainers, bosses and other maps are unchanged.
+// 1 HP from one holder hit unless the holder is 10+ levels above it. Battles with other holders, bosses and other maps are unchanged.
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -108,7 +108,7 @@ test('T5 WILD_GUARD: a big gap (Lv13 vs Lv3) still knocks out in one hit', async
   expect((await tap(page, 'kiln_rush')).hp).toBe(0);
 });
 
-test('T6 WILD_GUARD: trainer battles are unchanged (Pia\'s Lv4 Gust falls to one Lv12 hit)', async ({ page }) => {
+test('T6 WILD_GUARD: battles with other holders are unchanged (Pia\'s Lv4 Gust falls to one Lv12 hit)', async ({ page }) => {
   await boot(page);
   await openFight(page, 12, 'kiln_rush', () => PixelPets.openTrainer('route1_pia'));
   expect((await tap(page, 'kiln_rush')).hp).toBe(0);
