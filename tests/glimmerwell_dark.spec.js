@@ -1,4 +1,4 @@
-/* GLIMMERWELL_PALETTE v0.4 option (b). Wine V, soot N, crimson Q.
+/* GLIMMERWELL_PALETTE v0.4 option (b). Steps 2-4 follow v0.4.2 (design 6f3eeff). Wine V, soot N, crimson Q.
    The devCheck fails above 10% Q or a soot band under 6 px (horizontal runs of 2 or more).
    Pia's outlined figures stay at or under 3.5% Q (Associate, 6 px) and 1.5% on Rook's card (3 px).
    Widths are the Playwright projects (320, 375, 390). Save stays pixelpets.save.v2 with v 2 and gains no field. */
@@ -118,6 +118,8 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
       t3rows: PixelPets.sealArt('seal_glim_3'),
       emblem: PixelPets.standingCfg().art.emblem_glimmer,
       wallRow: (await (await fetch('sprites.js')).text()).includes("wallRow('dmdmdVVddswV')"),
+      winGlass: (await (await fetch('sprites.js')).text()).includes("wallFace('w', 'V', 'h', [], [4, 2, 8, 7, 'h', 's'])"),
+      ringPlaced: (await (await fetch('data/mapdata.js')).text()).includes('relay_ring'),
       tierMark: (await (await fetch('game.js')).text()).includes("'VN'.includes(ch)"),
     };
   });
@@ -170,7 +172,9 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
   expect(got.win[soot] || 0).toBe(0);
   expect(got.win[ice]).toBeGreaterThan(4);
   expect(got.win[mint] || 0).toBe(0);
+  expect(got.winGlass).toBe(true);
   expect(got.wallRow).toBe(true);
+  expect(got.ringPlaced).toBe(false);
   expect(got.lamps[wine] || 0).toBe(0);
   expect(got.lamps[soot] || 0).toBe(0);
   for (const tier of [got.t1, got.t2, got.t3]) {

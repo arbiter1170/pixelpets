@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-31 18:23 ET: Glimmerwell steps 2-4 cite palette v0.4.2
+
+- What changed and why: GLIMMERWELL_PALETTE v0.4.2 (design 6f3eeff) is the spec for steps 2-4. It matches the pixels already in build 20261031-1820. `wall_depot_win` keeps ice glass, and the wall row stays `dmdmdVVddswV`. The relay ring stays wine with honey studs, and it stays off the maps. No art changed. The build stamp stays 20261031-1820.
+- Files touched: `tests/glimmerwell_dark.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `cursor/glimmerwell-dark-e508`, build 20261031-1820 (no new stamp; docs and the spec cite only).
+- Tests run and result (widths, checks): `tests/glimmerwell_dark.spec.js` at 320, 375 and 390: PP_TEST RESULT: PASS exit=0 passed=15 failed=0 flaky=0 skipped=0 time=18s. RTDB_RULES RESULT: PASS. No art change, so the build stamp stays 20261031-1820. Save stays `pixelpets.save.v2`, `v` 2, no new key.
+- Decisions made (colour + reasoning): no new id. Steps 2-4 now cite design 6f3eeff. Step 1 stays design 35b2351. D1100 stays open. Next free id is D1101. Do not merge before Mon Nov 2, 2026, 12:34 PM ET.
+- Anything left unfinished: eleven round-2 looks still wait on parts. The emblem ring is pending Pia's re-check. The cracked handset stays green.
+
 ## 2026-10-31 18:20 ET: Glimmerwell steps 2-4 use Pia's pixels (build 20261031-1820)
 
 - What changed and why: Pia's steps 2-4 export replaces the earlier prop, depot and icon drawings. Eleven props ship. Stage bunting stays today's mint and white. The relay ring and the switch desk are sprites only and stay off the maps. The depot wall row is `dmdmdVVddswV`, so the window glass stays ice `s`. The stand's rail is wine and its jars stay mint, ice and mint. Lanyard tiers 1 and 2 use her wine field and soot shade, gold rim kept. Tier 3 builds its marks with `'VN'.includes(ch)`, so the three white marks still draw. The emblem ring is her exported soot ring, pending her re-check (the call is honey). The cracked handset stays green. Player text that says mint is unchanged.
