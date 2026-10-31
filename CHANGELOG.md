@@ -2,14 +2,23 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-10-31 18:48 ET: Glimmerwell bay art, honey ring and honey eyes (build 20261031-1848)
+## 2026-10-31 18:56 ET: Glimmerwell bay art, honey ring and honey eyes (build 20261031-1856)
 
 - What changed and why: GLIMMERWELL_PALETTE v0.4.6 (design 241c654). The emblem ring is honey. The Capital screen eyes are honey. The map hold line stays white, settled, because crimson on the place card is 1.94:1 and white is 10.31:1. The rx_f4 bay draws new rx4b floor, guide, glass, dais, kit-face and tube art while the side is glimmer, the escort flag is set and the escort is not done. Other rooms, and rx_f4 outside that gate, keep today's lab tiles. The locked-door tile is registered and not placed. The drawn door is the kit door. D1100, the cracked handset, is out of scope. No phone rule changed.
 - Files touched: `sprites.js`, `game.js`, `standing.js`, `style.css`, `tests/glimmerwell_dark.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `handoff/shots/glimmer_dark/`.
-- Commit(s) + build id: `cursor/glimmerwell-dark-e508`, build 20261031-1848. Catch-up merge of main `d9b4b9e` is `e726aaf`.
-- Tests run and result (widths, checks): `tests/glimmerwell_dark.spec.js`, `tests/look_keys.spec.js`, `tests/interior_walls.spec.js` and `tests/rx_f4_pilot.spec.js` at 320, 375 and 390: PP_TEST RESULT: PASS exit=0 passed=51 failed=0 flaky=0 skipped=0 time=39s. RTDB_RULES RESULT: PASS. Save stays `pixelpets.save.v2`, `v` 2, no new bay field.
+- Commit(s) + build id: `cursor/glimmerwell-dark-e508`, build 20261031-1856. Prior art stamp was 20261031-1848. Catch-up of main `d9b4b9e` is `e726aaf`. This merge brings main `5f6db3f` (PR #242).
+- Tests run and result (widths, checks): after the catch-up of main `5f6db3f`, `tests/glimmerwell_dark.spec.js`, `tests/look_keys.spec.js`, `tests/interior_walls.spec.js` and `tests/rx_f4_pilot.spec.js` at 320, 375 and 390: PP_TEST RESULT: PASS exit=0 passed=51 failed=0 flaky=0 skipped=0 time=38s. RTDB_RULES RESULT: PASS. `node tools/scans/run.js`: SCAN PASS wording, decisions, symlinks, gamejs_map, test_mistakes. Save stays `pixelpets.save.v2`, `v` 2, no new bay field.
 - Decisions made (colour + reasoning): no new id. v0.4.6 settles the hold line as white, the emblem ring as honey, and the screen eyes as honey. D1100 is out of scope. Next free id is D1101. Do not merge before Mon Nov 2, 2026, 12:34 PM ET.
 - Anything left unfinished: eleven round-2 looks still wait on parts. D1087 mint text stays open. The wardrobe checker restamp stays with Design.
+
+## 2026-10-31 19:00 ET: Docs: team roles + skills sync for Claude Code handoff (docs only, no build stamp)
+
+- What changed and why: Vincent asked that every Walklings role's skills and instructions live in this repo, so Claude Code or a cloud agent can step into any role if the bots run out of usage. Added `roles/README.md` (org chart, handoff and merge flow, standing rules) and one role file per team member. Synced four box skills that were missing here (`walklings-battle-anim`, `walklings-dialog-camera`, `walklings-dialog-npc-walk`, `walklings-story-craft`) and added their rows to `.cursor/skills/README.md`. `CLAUDE.md` gains a short "Stepping into a team role" section and `AGENTS.md` one pointer line. Roles go in `roles/`, not `docs/roles/`, because `docs/` is gitignored and AGENTS.md rule 4 forbids committing it.
+- Files touched: `roles/*.md` (8 new), `.cursor/skills/walklings-{battle-anim,dialog-camera,dialog-npc-walk,story-craft}/SKILL.md` (new), `.cursor/skills/README.md`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: branch `skills-sync-20261031`; docs only, no new build stamp (walklings-deploy step 1).
+- Tests run and result (widths, checks): docs only, no game code. `python3 tools/bump_build.py --check` and `node tools/scans/run.js` (results in the PR).
+- Decisions made (colour + reasoning): green: `roles/` instead of `docs/roles/` to keep AGENTS.md rule 4.
+- Anything left unfinished: `walklings-cutscene` exists only in the repo (no box copy); left as is.
 
 ## 2026-10-31 18:35 ET: Glimmerwell hold line and bay gate (build 20261031-1835)
 

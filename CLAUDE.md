@@ -35,3 +35,8 @@ Approved by Vincent (owner). Read AGENTS.md first; it wins on any conflict. This
 
 ## Communication
 - Never message Vincent. All status, questions, PRs and previews go to the Walklings Chief of Staff.
+
+## Stepping into a team role
+- Read `AGENTS.md` first, then `roles/README.md` (org chart, handoff and merge flow), then your role file in `roles/<name>.md`.
+- When a task matches a skill, load `.cursor/skills/<id>/SKILL.md` (index: `.cursor/skills/README.md`).
+- Team roles live in `roles/`, not `docs/roles/`: `docs/` is gitignored and never committed (AGENTS.md rule 4).
