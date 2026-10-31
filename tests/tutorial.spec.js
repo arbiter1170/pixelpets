@@ -390,3 +390,25 @@ test('a stray tap on the card after SHOW ME does not end the tour (modern)', asy
   }));
   expect(st).toEqual({ on: true, id: 'T11', done: false, step: 'T11' });
 });
+
+// Arcade keeps BAG and MAP on the pad, far from the QUEST tab. T11 rings all three, so the card must clear all three,
+// not just the first ring (Vincent, Oct 31, 2026: every tutorial lined up and drawn correctly).
+test('arcade T11 card clears the QUEST, BAG and MAP rings', async ({ page }) => {
+  const save = tourSave();
+  save.settings.controls = 'arcade';
+  await openTour(page, save);
+  await page.locator('#tutActs button', { hasText: 'SHOW ME' }).click();
+  await page.locator('#tutActs button', { hasText: 'NEXT' }).click();
+  await page.waitForFunction(() => document.querySelector('#tutLayer').dataset.step === 'T11');
+  const geo = await page.evaluate(() => {
+    const rect = el => { const r = el.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom }; };
+    const card = rect(document.querySelector('#tutCard'));
+    const rings = [document.querySelector('#tutRing'), ...document.querySelectorAll('.tut-ring-x')].filter(r => !r.hidden).map(rect);
+    const inner = r => ({ l: r.l + 6, t: r.t + 6, r: r.r - 6, b: r.b - 6 });
+    const hits = rings.map(inner).filter(r => card.l < r.r && card.r > r.l && card.t < r.b && card.b > r.t).length;
+    const on = sel => { const t = rect(document.querySelector(sel)); return rings.some(r => r.l <= t.l && r.t <= t.t && r.r >= t.r && r.b >= t.b); };
+    return { n: rings.length, hits, quest: on('#questBtn'), bag: on('#walkBagBtn'), map: on('#mapBtn'), inside: card.t >= 5 && card.b <= innerHeight - 5 };
+  });
+  expect(geo).toEqual({ n: 3, hits: 0, quest: true, bag: true, map: true, inside: true });
+  expectLayout(await layout(page));
+});
