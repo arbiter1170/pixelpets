@@ -21,6 +21,7 @@ const SHELL = [
   './sfx.js',
   './minigames.js',
   './ribbit.js',
+  './news.js',
   './cloud_config.js',
   './cloud.js',
   './debug_ui.js',

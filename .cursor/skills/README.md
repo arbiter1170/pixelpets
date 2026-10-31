@@ -21,6 +21,8 @@ Skills for this repo live here, one folder per skill. Each folder has a `SKILL.m
 | `walklings-key-collision-check` | [walklings-key-collision-check/SKILL.md](walklings-key-collision-check/SKILL.md) | Checking a PR that adds looks, skins or palette keys so one key is not defined in two files |
 | `walklings-room-packet` | [walklings-room-packet/SKILL.md](walklings-room-packet/SKILL.md) | Writing a room reskin, layout change, palette fix or interior expansion packet |
 | `walklings-cutscene` | [walklings-cutscene/SKILL.md](walklings-cutscene/SKILL.md) | Staging a scene as a cutscene, or building or reviewing a cutscene packet |
+| `walklings-lore-feed` | [walklings-lore-feed/SKILL.md](walklings-lore-feed/SKILL.md) | Adding or reviewing NEWS stories or Ribbit posts; re-reading the lore before every batch |
+| `walklings-lore-index` | [walklings-lore-index/SKILL.md](walklings-lore-index/SKILL.md) | STORY.md changed version, or a feed line needs a lore entry the design index lacks |
 | `walklings-skill-sync` | [walklings-skill-sync/SKILL.md](walklings-skill-sync/SKILL.md) | Copying a Walklings skill between the box library and this repo so the newer copy wins |
 | `gamedev-camera-systems` | [gamedev-camera-systems/SKILL.md](gamedev-camera-systems/SKILL.md) | Building or fixing the top-down map camera (follow, deadzone, edges, door transitions, shake) |
 | `gamedev-create-game-assets` | [gamedev-create-game-assets/SKILL.md](gamedev-create-game-assets/SKILL.md) | Planning, making, sourcing or checking pixel-art sprites, tiles, icons or UI art |

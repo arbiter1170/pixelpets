@@ -393,6 +393,21 @@ const PPSave = (() => {
         const ks = Object.keys(s.chirps); while (ks.length > 5) delete s.chirps[ks.shift()];
       }
     }
+    // NEWS D1012: optional newsSeen, the last Block News edition opened ('YYYY-MM-DD:storyId'). Junk is dropped. v stays 2.
+    if (has(s, 'newsSeen') && !(typeof s.newsSeen === 'string' && s.newsSeen.length <= 80)) delete s.newsSeen;
+    // NEWS v2: optional newsTab (the last tab: front|read|town|you) and newsPoll { day, id, pick 0..2 } (today's one-tap vote).
+    if (has(s, 'newsTab') && ['front', 'read', 'town', 'you'].indexOf(s.newsTab) === -1) delete s.newsTab;
+    // NEWS D1016: optional newsClips [{ id, day, back? }], the scrapbook of front pages read (newest 80, no repeats).
+    if (has(s, 'newsClips')) {
+      if (!Array.isArray(s.newsClips)) delete s.newsClips;
+      else {
+        const seen = new Set();
+        s.newsClips = s.newsClips.filter(c => isObj(c) && typeof c.id === 'string' && c.id.length <= 40 && !seen.has(c.id) && seen.add(c.id)
+          && typeof c.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(c.day)).map(c => c.back === true ? { id: c.id, day: c.day, back: true } : { id: c.id, day: c.day }).slice(-80);
+      }
+    }
+    if (has(s, 'newsPoll') && !(isObj(s.newsPoll) && typeof s.newsPoll.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s.newsPoll.day)
+      && typeof s.newsPoll.id === 'string' && s.newsPoll.id.length <= 40 && Number.isInteger(s.newsPoll.pick) && s.newsPoll.pick >= 0 && s.newsPoll.pick <= 2)) delete s.newsPoll;
     // NEXT_PLAN WP-C: id of the last objective the player opened the QUEST panel on (additive; the objective itself is derived from flags).
     if (has(s, 'questSeen') && typeof s.questSeen !== 'string') delete s.questSeen;
     // CARE_LOOP cheap slice: today's player care record { d, steps, finds, stepBond, battleBond, firstCare } (additive; bad -> dropped).

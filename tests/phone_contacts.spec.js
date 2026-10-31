@@ -38,6 +38,7 @@ test('the phone home is icons, contacts are people you have met, and the bag ope
     { app: 'walklings', label: 'WALKLINGS' },
     { app: 'friends', label: 'FRIENDS' },
     { app: 'jobs', label: 'KEEPERUAV' },
+    { app: 'news', label: 'NEWS' },   // D1012
     { app: 'ribbit', label: 'RIBBIT' },
     { app: 'board', label: 'BOARD' },
     { app: 'sky', label: 'SKY' },     // D861
@@ -48,7 +49,7 @@ test('the phone home is icons, contacts are people you have met, and the bag ope
     const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
     return d.some((v, i) => i % 4 === 3 && v > 0);
   }));
-  expect(painted).toEqual([true, true, true, true, true, true, true, true, true]);
+  expect(painted).toEqual(Array(10).fill(true));   // ten apps with NEWS (D1012)
   const fit = await page.evaluate(() => {
     const shell = document.querySelector('#ovPhone .phone-shell');
     const home = document.querySelector('#phoneHome');
