@@ -26,6 +26,8 @@ Run `npm run test:agent -- [spec] [--project=390]` (e.g. `npm run test:agent -- 
 
 Every feature that adds a system, a scene step, a save field or a player flow ships with its own spec file (`tests/<feature>.spec.js`): 320, 375 and 390, reduced motion, save unchanged, zero console errors, and a spec-match table in the PR naming the test for each decision. (Vincent, Oct 28, 2026.)
 
+Team roles (who owns what, handoffs, how to step into a role): `roles/README.md` and `roles/<name>.md`.
+
 ## Skills index (`.cursor/skills/<name>/SKILL.md`; copies in `/home/box/agent-data/workflows/`)
 - `walklings-deploy`: stamp the build, ship via PR, hard-refresh and check the build line.
 - `walklings-pr-handback`: branch/merge routine and the required PR hand-back body.

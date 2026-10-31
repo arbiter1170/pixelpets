@@ -459,6 +459,7 @@
           "name": "Harbour Clerk",
           "x": 14,
           "y": 10,
+          "look": "harbour_clerk",
           "facing": "down",
           "lines": {
             "story.side=glimmer": "Glimmerwell leases the east pier. The rest of the harbour is still ours, holder.",
@@ -555,6 +556,7 @@
           "name": "Lantern Host",
           "x": 5,
           "y": 2,
+          "look": "lantern_brine",
           "facing": "down"
         },
         {
@@ -2035,6 +2037,23 @@
   },
   "looks": {
     "_note": "BRINEWICK looks (keeper_art.js shape). Marisol's captain_hat layer (ASSET_HANDOFF S1) is not drawn yet; the cap stands in.",
+    "lantern_brine": {
+      "skin": "4",
+      "hair": "short",
+      "hairCol": "w",
+      "outfit": "vest",
+      "outfitCol": "r",
+      "accent": "y"
+    },
+    "harbour_clerk": {
+      "skin": "5",
+      "hair": "bun",
+      "hairCol": "k",
+      "outfit": "vest",
+      "outfitCol": "t",
+      "accent": "w",
+      "accessory": "glasses"
+    },
     "marisol": {
       "skin": "4",
       "hair": "pony",
