@@ -880,7 +880,8 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .map-hold{margin-top:3px;font-size:16px;line-height:1.2;font-weight:normal}
 .map-hold[hidden]{display:none}
 .map-hold.hold-keepers{color:var(--y)}
-.map-hold.hold-glimmer{color:var(--s)}
+/* v0.4.4: crimson Q on this card is under 4.5:1, so the line is white. Honey stays the Keepers' line. */
+.map-hold.hold-glimmer{color:var(--w)}
 .map-hold.hold-split{color:var(--w)}
 .map-hold.hold-wild{color:var(--h)}
 .map-key{width:min(320px, calc(100% - 12px));box-sizing:border-box}

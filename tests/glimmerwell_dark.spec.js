@@ -1,4 +1,5 @@
-/* GLIMMERWELL_PALETTE v0.4 option (b). Steps 2-4 follow v0.4.2 (design 6f3eeff). Wine V, soot N, crimson Q.
+/* GLIMMERWELL_PALETTE v0.4 option (b). Steps 2-4 follow v0.4.2 (design 6f3eeff).
+   Step 6 and the bay gate follow v0.4.4 (design 130b176). Wine V, soot N, crimson Q.
    The devCheck fails above 10% Q or a soot band under 6 px (horizontal runs of 2 or more).
    Pia's outlined figures stay at or under 3.5% Q (Associate, 6 px) and 1.5% on Rook's card (3 px).
    Widths are the Playwright projects (320, 375, 390). Save stays pixelpets.save.v2 with v 2 and gains no field. */
@@ -8,7 +9,6 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 trackErrors(test, expect);
 
 const WINE = 'rgb(150, 14, 22)';
-const ICE = 'rgb(115, 239, 247)';
 
 async function boot(page, save, search) {
   await installSave(page.context(), save, { quietDay: true });
@@ -197,7 +197,7 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
   expect(got.emblem).toEqual(['..NNNN..', '.NVVVVN.', 'NVVwVVVN', 'NVwwwVVN', 'NVVwVVVN', '.NVVVVN.', '..dhhd..', '...dd...']);
 });
 
-test('the legend is two sentences, each on its own line, and the hold label stays ice', async ({ page }) => {
+test('the legend stays the voted two lines, and the Glimmerwell hold line is white', async ({ page }) => {
   const save = starterSave();
   save.flags['story.side_pick_done'] = true;
   save.settings.follower = false;
@@ -218,21 +218,142 @@ test('the legend is two sentences, each on its own line, and the hold label stay
       r.selectNodeContents(n);
       lines.push({ text, w: r.getBoundingClientRect().width });
     }
-    const probe = document.createElement('p');
-    probe.className = 'map-hold hold-glimmer';
-    probe.textContent = 'Glimmerwell';
-    document.body.appendChild(probe);
-    const hold = getComputedStyle(probe).color;
+    const paint = (cls) => {
+      const el = document.createElement('p');
+      el.className = 'map-hold ' + cls;
+      el.textContent = 'line';
+      document.body.appendChild(el);
+      const color = getComputedStyle(el).color;
+      el.remove();
+      return color;
+    };
+    const css = (name) => {
+      const el = document.createElement('span');
+      el.style.color = 'var(' + name + ')';
+      document.body.appendChild(el);
+      const color = getComputedStyle(el).color;
+      el.remove();
+      return color;
+    };
+    const parse = (c) => String(c).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/).slice(1, 4).map(Number);
+    const lum = (rgb) => {
+      const lin = (c) => { const x = c / 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; };
+      return 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+    };
+    const ratio = (a, b) => {
+      const hi = Math.max(lum(parse(a)), lum(parse(b))), lo = Math.min(lum(parse(a)), lum(parse(b)));
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    const bg = getComputedStyle(document.querySelector('.map-place')).backgroundColor;
+    const white = css('--w'), honey = css('--y'), crimson = css('--Q');
     const sw = getComputedStyle(document.querySelector('.sw-glimmer'));
-    probe.remove();
-    return { lines, box: el.clientWidth, h: el.getBoundingClientRect().height, hold, sw: sw.backgroundColor, ring: sw.boxShadow };
+    return {
+      lines, box: el.clientWidth, h: el.getBoundingClientRect().height,
+      hold: paint('hold-glimmer'), keepers: paint('hold-keepers'),
+      white, honey, crimson, bg,
+      qOnCard: ratio(crimson, bg), wOnCard: ratio(white, bg), yOnCard: ratio(honey, bg),
+      sw: sw.backgroundColor, ring: sw.boxShadow,
+    };
   });
   expect(note.lines.map(l => l.text)).toEqual(['Gold and green: Keeper roofs.', 'Red and black: Glimmerwell ground.']);
   for (const line of note.lines) expect(line.w).toBeLessThanOrEqual(note.box);
   expect(note.h).toBeLessThanOrEqual(40);
-  expect(note.hold).toBe(ICE);
+  // Q #c81818 on the place card --n #29366f is under 4.5:1, so the line is white. Honey is the Keepers' colour.
+  expect(note.qOnCard).toBeLessThan(4.5);
+  expect(note.qOnCard).toBeCloseTo(1.944, 2);
+  expect(note.wOnCard).toBeGreaterThanOrEqual(4.5);
+  expect(note.wOnCard).toBeCloseTo(10.312, 2);
+  expect(note.yOnCard).toBeGreaterThanOrEqual(4.5);
+  expect(note.hold).toBe(note.white);
+  expect(note.hold).not.toBe(note.honey);
+  expect(note.hold).not.toBe(note.crimson);
+  expect(note.keepers).toBe(note.honey);
   expect(note.sw).toBe(WINE);
   expect(note.ring).toContain('26, 28, 44');
+});
+
+test('the bay goes dark on the same test as the capital screen', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const save = starterSave();
+  save.settings.follower = false;
+  await boot(page, save);
+  const beforeKeys = await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('pixelpets.save.v2'))).sort());
+  const got = await page.evaluate(() => {
+    const set = (flags) => {
+      PixelPets.setFlag('story.gb_escort', null);
+      PixelPets.setFlag('story.gb_done', null);
+      PixelPets.setFlag('story.side', null);
+      for (const [k, v] of Object.entries(flags)) PixelPets.setFlag(k, v);
+    };
+    const guides = () => {
+      const info = PixelPets.mapInfo, out = [];
+      for (let y = 0; y < info.h; y++) for (let x = 0; x < info.w; x++) {
+        const t = PixelPets.tileInfo(x, y);
+        if (t.ch === '|' || t.ch === '-' || t.ch === '+') out.push(t.decal);
+      }
+      return out;
+    };
+    const snap = () => {
+      const bay = PixelPets.glimmerBay();
+      return {
+        escort: bay.escort, dark: bay.dark, map: bay.map, screen: bay.screen,
+        tanks: bay.tanks.map(t => t.art), ids: bay.tanks.map(t => t.id), guides: guides(),
+        cable: PixelPets.tileInfo(1, 4).decal, glass: PixelPets.tileInfo(1, 17).tile,
+      };
+    };
+    PixelPets.goto('rx_f4', 6, 6, 'up');
+    const off = snap();
+    set({ 'story.gb_escort': true, 'story.side': 'glimmer' });
+    const on = snap();
+    set({ 'story.gb_escort': true, 'story.gb_done': true, 'story.side': 'glimmer' });
+    const done = snap();
+    set({ 'story.gb_escort': true, 'story.side': 'keepers' });
+    const keepers = snap();
+    set({ 'story.gb_escort': true, 'story.side': 'glimmer' });
+    PixelPets.goto('r3_relay', 4, 4, 'down');
+    const elsewhere = snap();
+    const raw = JSON.parse(localStorage.getItem('pixelpets.save.v2'));
+    return {
+      off, on, done, keepers, elsewhere,
+      tankArt: PixelPets.artTally('lab_tank_dark') != null,
+      guideArt: PixelPets.artTally('lab_guide_v_dark_decal') != null,
+      reduce: matchMedia('(prefers-reduced-motion: reduce)').matches,
+      v: raw.v, keys: Object.keys(raw).sort(),
+    };
+  });
+  expect(got.reduce).toBe(true);
+  expect(got.off.dark).toBe(false);
+  expect(got.off.screen).toBe('rx_terminal');
+  expect(got.off.tanks).toEqual(['lab_tank', 'lab_tank', 'lab_tank', 'lab_tank', 'lab_tank', 'lab_tank']);
+  expect(got.off.ids).toEqual(['rx4_tank_a', 'rx4_tank_b', 'rx4_tank_c', 'rx4_tank_d', 'rx4_tank_e', 'rx4_tank_f']);
+  expect(got.off.guides.length).toBeGreaterThan(0);
+  expect(got.off.guides.every((n) => n === 'lab_guide_v' || n === 'lab_guide_h' || n === 'lab_guide_x')).toBe(true);
+  expect(got.on.escort).toBe(true);
+  expect(got.on.dark).toBe(true);
+  expect(got.on.screen).toBe('capital_screen');
+  expect(got.on.tanks).toEqual(['lab_tank_dark', 'lab_tank_dark', 'lab_tank_dark', 'lab_tank_dark', 'lab_tank_dark', 'lab_tank_dark']);
+  expect(got.on.guides).toEqual(got.off.guides.map((n) => n + '_dark'));
+  expect(got.on.cable).toBe('lab_floor_cable');
+  expect(got.on.glass).toBe('lab_glass');
+  expect(got.done.dark).toBe(false);
+  expect(got.done.escort).toBe(false);
+  expect(got.done.screen).toBe('rx_terminal');
+  expect(got.done.tanks.every((n) => n === 'lab_tank')).toBe(true);
+  expect(got.keepers.screen).toBe('rx_terminal');
+  expect(got.keepers.dark).toBe(false);
+  expect(got.elsewhere.map).toBe('r3_relay');
+  expect(got.elsewhere.escort).toBe(true);
+  expect(got.elsewhere.dark).toBe(false);
+  expect(got.elsewhere.screen).toBe('capital_screen');
+  expect(got.elsewhere.tanks.length).toBeGreaterThan(0);
+  expect(got.elsewhere.tanks.every((n) => n === 'lab_tank')).toBe(true);
+  // Names resolve so the room still draws. The N/Q guide ticks and the V/N tube rims are pending.
+  expect(got.tankArt).toBe(true);
+  expect(got.guideArt).toBe(true);
+  expect(got.v).toBe(2);
+  expect(got.keys).not.toContain('glimmerBay');
+  expect(got.keys).not.toContain('bayDark');
+  for (const k of beforeKeys) expect(got.keys).toContain(k);
 });
 
 test('a lanyard accent clamps on screen only and standing tint still wins', async ({ page }) => {

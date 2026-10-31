@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-31 18:35 ET: Glimmerwell hold line and bay gate (build 20261031-1835)
+
+- What changed and why: GLIMMERWELL_PALETTE v0.4.4 (design 130b176). The Glimmerwell hold line is white. Crimson Q `#c81818` on the place card `#29366f` measures 1.944:1, under 4.5:1, and white `#f4f4f4` measures 10.312:1. The line never uses honey, which stays the Keepers' colour. The legend stays the voted two sentences. The rx_f4 bay selects dark floor-guide names and dark names for the six tanks on the same flag test as the capital screen swap. Those pixels are still pending.
+- Files touched: `style.css`, `game.js`, `sprites.js`, `tests/glimmerwell_dark.spec.js`, `tests/README.md`, `README.md`, `CHANGELOG.md`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `handoff/shots/glimmer_dark/`.
+- Commit(s) + build id: `cursor/glimmerwell-dark-e508`, build 20261031-1835.
+- Tests run and result (widths, checks): `tests/glimmerwell_dark.spec.js` at 320, 375 and 390: PP_TEST RESULT: PASS exit=0 passed=18 failed=0 flaky=0 skipped=0 time=17s. `tests/rx_f4_pilot.spec.js` passed in the same widths on the prior run (the bay test's only failure there was the save-key assert, since fixed; the pilot spec itself passed). RTDB_RULES RESULT: PASS. Save stays `pixelpets.save.v2`, `v` 2, no new bay field.
+- Decisions made (colour + reasoning): no new id. Crimson fails 4.5:1 on the card, so the hold line is white. D1100 stays open. Next free id is D1101. Do not merge before Mon Nov 2, 2026, 12:34 PM ET.
+- Anything left unfinished: step 7 art is pending Pia (soot guide lines with crimson ticks, and the six tubes in wine with a soot rim). Eleven round-2 looks still wait on parts. The emblem ring is pending Pia's re-check. The cracked handset stays green.
+
 ## 2026-10-31 18:23 ET: Glimmerwell steps 2-4 cite palette v0.4.2
 
 - What changed and why: GLIMMERWELL_PALETTE v0.4.2 (design 6f3eeff) is the spec for steps 2-4. It matches the pixels already in build 20261031-1820. `wall_depot_win` keeps ice glass, and the wall row stays `dmdmdVVddswV`. The relay ring stays wine with honey studs, and it stays off the maps. No art changed. The build stamp stays 20261031-1820.

@@ -7153,8 +7153,9 @@ function drawMap(t){
         const nm = wallTileName(part, tx, CUR);
         if (TILES[nm]) img = TILES[nm];
       } else if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
-        const nm = labTileName(dk ? '.' : k, tx, ty);
+        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk0 = LAB_SKIN.decal[k];
+        const dk = dk0 ? bayArtName(dk0) : null;   // v0.4.4: dark guide names on the bay, same test as the screen swap
+        const nm = labTileName(dk0 ? '.' : k, tx, ty);
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
       } else if (skEarly && CUR.skin !== 'lab') {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
@@ -7958,6 +7959,24 @@ function drawBuddy(g, X, Y, t){
   g.drawImage(img, X - 1, Y - 2);
   if (night && !reduce && WART.buddy_z_0) g.drawImage(Math.floor(t / 2000) % 2 ? WART.buddy_z_1 : WART.buddy_z_0, X + 4, Y - 12);
 }
+// GLIMMERWELL_PALETTE v0.4.4 step 7 (design 130b176). The capital screen and the dark bay
+// share this flag test. Guide and tank pixels stay today's until the bay art lands.
+function glimmerEscortOn(){
+  return !!(S && S.flags['story.gb_escort'] && !S.flags['story.gb_done'] && S.flags['story.side'] === 'glimmer');
+}
+function glimmerBayDark(){
+  return !!(glimmerEscortOn() && CUR && CUR.id === 'rx_f4');
+}
+function bayArtName(name){
+  if (!glimmerBayDark()) return name;
+  if (name === 'lab_guide_v' || name === 'lab_guide_h' || name === 'lab_guide_x') return name + '_dark';
+  return name;
+}
+function propArtKey(o){
+  if (o && o.id === 'rx4_side' && glimmerEscortOn()) return 'capital_screen';
+  if (o && o.sprite === 'lab_tank' && glimmerBayDark()) return 'lab_tank_dark';
+  return o && o.sprite;
+}
 function drawObj(g, o, cx, cy, VW, VH, t){
   const q = objPos(o), fx = q.fx != null ? q.fx : q.x, fy = q.fy != null ? q.fy : q.y, X = Math.round(fx * TS - cx), Y = Math.round(fy * TS - cy);
   if (X < -26 || Y < -24 || X > VW + 10 || Y > VH + 2) return;
@@ -7979,7 +7998,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
     g.drawImage(img, X - 1 + b.dx, Y - 2 + b.dy); g.globalAlpha = 1;
   } else if (o.kind === 'sign') g.drawImage((o.sprite && WART[o.sprite]) || WART.sign, X, Y);
   else if (o.kind === 'prop') {
-    const key = (o.id === 'rx4_side' && S && S.flags['story.gb_escort'] && !S.flags['story.gb_done'] && S.flags['story.side'] === 'glimmer') ? 'capital_screen' : o.sprite;
+    const key = propArtKey(o);
     const a = WART[key]; if (a) drawArt(g, artFrame(a, t), X, Y);
   }
   else if (o.kind === 'pickup') g.drawImage(WART.pickup, X, Y - (Math.floor(t / 500) % 2));
@@ -18778,7 +18797,7 @@ function boot(){
       const part = sk && sk.wall ? wallPart(x, y) : null;
       const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part, shade: shadowPart(x, y) };
       if (part) return Object.assign(base, { tile: wallTileName(part, x, CUR), decal: null });
-      if (CUR.skin === 'lab') { const dk = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk ? '.' : ch, x, y), decal: dk || null }); }
+      if (CUR.skin === 'lab') { const dk0 = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk0 ? '.' : ch, x, y), decal: dk0 ? bayArtName(dk0) : null }); }
       if (sk) {
         const k = ch === 'W' && x % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
         return Object.assign(base, { tile: skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null });
@@ -18879,6 +18898,13 @@ function boot(){
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
   api.glimmerPalette = () => glimmerPaletteReport();
+  api.glimmerBay = () => {
+    if (!DEBUG) return null;
+    const tanks = [];
+    if (CUR) for (const o of CUR.objs) if (o.kind === 'prop' && o.sprite === 'lab_tank') tanks.push({ id: o.id, art: propArtKey(o) });
+    return { escort: glimmerEscortOn(), dark: glimmerBayDark(), map: CUR ? CUR.id : null,
+      screen: propArtKey({ id: 'rx4_side', kind: 'prop', sprite: 'rx_terminal' }), tanks };
+  };
   api.artTally = name => {
     if (!DEBUG) return null;
     const src = WART[name] || TILES[name];

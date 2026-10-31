@@ -1031,6 +1031,11 @@ function buildTiles(){
     const rows = LAB_TILES[k], base = LAB_TILES.lab_floor_bay;
     T[k + '_decal'] = mkTile(g => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.' && ch !== base[y][x]) px(g, PAL[ch], x, y); })));
   }
+  // v0.4.4 step 7: dark guide names. Pixels stay today's until the bay art lands.
+  for (const k of ['lab_guide_v', 'lab_guide_h', 'lab_guide_x']) {
+    T[k + '_dark'] = T[k];
+    T[k + '_dark_decal'] = T[k + '_decal'];
+  }
   // B5 house interiors. Each room gets its own floor, wall face and baseboard. No k outline.
   const specks = (g, list) => list.forEach(([x, y, c]) => px(g, PAL[c], x, y));
   function woodFloor(base, seam, seams, knots, marks){
@@ -2106,6 +2111,7 @@ function buildWorldArt(){
   A.lab_counter = mkTile(g => rxPaint(g, ["................", "...dddd....h....", "...dscd....w....", "...dccd....l....", ".wwwwwwwwwwwwww.", ".wwwwwwwwwwwwww.", ".wwwwwwwwwwwwww.", ".llllllllllllll.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhdhmmhdhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".mmmmmmmmmmmmmm.", "................"]));
   A.lab_tank = [["....mmmmmmmm....", "...mmmmmmmmmm...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swllllllgs...", "...swlwllllgs...", "...swllllllgs...", "...swllllwlgs...", "...swllllllgs...", "...swllllllgs...", "...slllwlllgs...", "...slllhhllgs...", "...dddddddddd...", "....dddddddd...."], ["....mmmmmmmm....", "...mmmmmmmmmm...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swllllwlgs...", "...swllllllgs...", "...swllwlllgs...", "...swllllllgs...", "...swllllllgs...", "...swlllwllgs...", "...slllllllgs...", "...slllhhllgs...", "...dddddddddd...", "....dddddddd...."]].map(fr => mkTile(g => rxPaint(g, fr)));
   A.lab_tank.ms = 600;
+  A.lab_tank_dark = A.lab_tank;   // v0.4.4: the six bay tubes. Pixels stay today's until the art lands.
   // BUILD_RX_F4_PILOT props (fernbrook_heights_art.json -> pilot.propArt, verbatim). lab_sign_offlimits is a wall decal.
   A.lab_terminal_bank = mkTile(g => rxPaint(g, ["................", "................", ".mmmmmmmmmmmmmm.", ".mddddddddddddm.", ".mkskdkskdkskdm.", ".mcccdllldcccdm.", ".mcccdllldcccdm.", ".mkkkdkkkdkkkdm.", ".mddddddddddddm.", ".mhwhwhwhwhwhhm.", ".mhhhhhhhhhhhhm.", ".mdlddddddddrdm.", ".mkkkkkkkkkkkkm.", ".mmmmmmmmmmmmmm.", ".kkkkkkkkkkkkkk.", "................"]));
   A.lab_workbench = mkTile(g => rxPaint(g, ["................", "..dddd..h.......", "..dscd..w.ww....", "..dccd..w.ll....", "..dddd..l.llkkk.", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "hhhhhhhhhhhhhhhh", ".mm..........mm.", ".mm..........mm.", ".mmhhhhhhhhhhmm.", ".mm..........mm.", ".mm..........mm.", ".mm..........mm.", "................"]));
