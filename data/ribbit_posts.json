@@ -1,5 +1,5 @@
 {
- "lore_version": "v0.7.5",
+ "lore_version": "v0.7.8",
  "_placeholders": "Placeholder copy (D1013): engineer drafts from the design lore index, every line citing its lore ids; Design signs or edits it (design specs/NEWS_FEED.md). Skill: walklings-lore-feed.",
  "_about": "Extra Ribbit posts and trending tags, merged into ribbit.js POSTS/TAGS. Same when terms. Never pin.",
  "posts": [

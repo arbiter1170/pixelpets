@@ -1,5 +1,5 @@
 {
- "lore_version": "v0.7.5",
+ "lore_version": "v0.7.8",
  "_placeholders": "Placeholder copy (D1013, flavour rule D1015): engineer drafts from the design lore index, every item citing its lore ids; Design signs or edits it (design specs/NEWS_FEED.md). Skill: walklings-lore-feed.",
  "_about": "Block News for the NEWS app (news.js). stories, voices, notices, polls, you. Gates: when (story.flag, !story.flag, story.side=keepers|glimmer), sky, phase, me. lead: the front page once eligible, highest wins. Tokens: {holder} {partner} {town} {seals} {steps}. lore: ids in the design repo lore/lore_index.json.",
  "stories": [
@@ -1499,7 +1499,7 @@
    "body": [
     "The Lantern Council met in the Keeper capital, with a holder and their Seals before it.",
     "The Keepers' word stands: walk beside wild Walklings, not ahead of them.",
-    "Feed, rest, listen, and leave glow where it grows."
+    "The Captain's word on the coastal road: 'We are opening it. Walk it carefully.'"
    ],
    "lore": [
     "event.lantern_council",
