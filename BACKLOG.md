@@ -5,6 +5,8 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
+BATTLE_BACKDROPS (D1009, red, settled by Vincent Oct 31, 2026; supersedes D167) is in the game on this branch: every battle draws its own scene from the map's own tiles and props (`battle_bg.js`, `BATTLE_BG_ON` on in `game.js`). The Pet tab, music and the maps' `backdrop` fields are unchanged. Save stays `pixelpets.save.v2` with `v` 2; no new fields.
+
 GEAR_SWITCH (D768-D774) is in the game on main: care-screen GEAR opens the Walkling sheet, the stats card drops its GEAR button, and a party row beside the WALK back arrow switches the shown Walkling. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
 
 LEVEL_GROW (D754-D767) is in the game on main: level gates grow up, and Seals cap the level. Save stays `pixelpets.save.v2` with `v` 2. The only new field is `bxHeld`.
