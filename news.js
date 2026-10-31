@@ -181,6 +181,24 @@
     };
   }
 
+  // Scrapbook: every lead the holder can see now (story order), and one stored clipping by id. A clipping stays
+  // readable after its story retires (a '!flag' term), because it is the holder's own history.
+  function plainStory(s, st) {
+    return {
+      id: s.id, lead: s.lead, section: s.section, desk: DESKS[s.desk] || DESKS.block,
+      headline: fill(s.headline, st), body: (s.body || []).map(l => fill(l, st)), art: artOf(s),
+    };
+  }
+  function leadsFor(state) {
+    const R = rib(), st = state || {};
+    const ok = gate(st, R.normSide(st));
+    return list('stories').filter(s => typeof s.lead === 'number' && ok(s)).sort((a, b) => a.lead - b.lead).map(s => plainStory(s, st));
+  }
+  function clipping(id, state) {
+    const s = list('stories').find(x => x.id === id && typeof x.lead === 'number');
+    return s ? plainStory(s, state || {}) : null;
+  }
+
   function sectionLabel(id) {
     const s = SECTIONS.find(x => x.id === id);
     return s ? s.label : '';
@@ -246,10 +264,14 @@
     if (list('voices').length && !a.voices.length) bad.push('an early edition has no voices');
     if (list('polls').length && !a.poll) bad.push('an early edition has no poll');
     if (a.spotlight && a.spotlight.species !== 'ember') bad.push('spotlight showed a form the holder has not seen');
+    const leadNums = all.filter(s => s.lead !== undefined).map(s => s.lead);
+    if (leadNums.some(n => !Number.isInteger(n))) bad.push('a lead is not a whole number');
+    const firstLeads = leadsFor(early);
+    if (firstLeads.length !== 1) bad.push('an early holder should have exactly one front page to clip, has ' + firstLeads.length);
     return bad;
   }
 
-  const api = { edition: edition, devCheck: devCheck, sectionLabel: sectionLabel, SECTIONS: SECTIONS, TOKENS: TOKENS, HEADLINE_MAX: HEADLINE_MAX, BODY_MAX: BODY_MAX };
+  const api = { edition: edition, leadsFor: leadsFor, clipping: clipping, devCheck: devCheck, sectionLabel: sectionLabel, SECTIONS: SECTIONS, TOKENS: TOKENS, HEADLINE_MAX: HEADLINE_MAX, BODY_MAX: BODY_MAX };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PPNews = api;
 })(typeof window !== 'undefined' ? window : globalThis);

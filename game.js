@@ -13310,12 +13310,18 @@ const NEWS_GLYPH = {
   reply: ['........', '.######.', '#......#', '#......#', '.######.', '..#.....', '.#......', '........'],
   check: ['........', '.......#', '......##', '#....##.', '##..##..', '.####...', '..##....', '........'],
 };
-let newsSec = '', newsWire = 0, newsBreaking = false;
+let newsSec = '', newsWire = 0, newsBreaking = false, newsPaid = 0;
+// D1016 Scrapbook: each front page the holder reads is clipped once into S.newsClips (additive) and pays a few Acorns;
+// leads they passed without opening the paper go in as back issues, unpaid.
+const NEWS_CLIP_ACORNS = 3, NEWS_CLIPS_MAX = 80;
 function newsEdition(){
-  const api = window.PPNews;
-  if (!api || !api.edition || !S) return null;
+  const st = newsState();
+  return st && window.PPNews && PPNews.edition ? PPNews.edition(st) : null;
+}
+function newsState(){
+  if (!S) return null;
   const ck = window.PPClock ? PPClock.now() : null, p = pet(), sky = chipSky();
-  return api.edition({
+  return ({
     flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(),
     hh: ck ? ck.hh : 9, phase: ck ? ck.phase : 'day', sky: sky ? sky.kind : '', town: placeName(),
     me: {
@@ -13324,6 +13330,22 @@ function newsEdition(){
       seen: Object.keys((S.dex && S.dex.seen) || {}),
     },
   });
+}
+function newsClips(){
+  if (!Array.isArray(S.newsClips)) S.newsClips = [];
+  return S.newsClips;
+}
+function newsClip(ed){
+  const clips = newsClips(), have = new Set(clips.map(c => c.id));
+  let paid = 0;
+  PPNews.leadsFor(newsState()).forEach(l => {
+    if (have.has(l.id) || clips.length >= NEWS_CLIPS_MAX) return;
+    if (l.id === ed.lead.id) { clips.push({ id: l.id, day: ed.day }); paid = NEWS_CLIP_ACORNS; }
+    else clips.push({ id: l.id, day: ed.day, back: true });
+    have.add(l.id);
+  });
+  if (paid) { S.money = (S.money | 0) + paid; toast('Clipped to your scrapbook. +' + paid + ' Acorns'); sfx('pop'); }
+  return paid;
 }
 function newsDate(day){
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day || '');
@@ -13385,6 +13407,10 @@ function newsFront(panel, ed, hack){
   const open = nBtn('news-open', () => { more.hidden = !more.hidden; open.textContent = more.hidden ? 'Read the full story' : 'Show less'; open.setAttribute('aria-expanded', String(!more.hidden)); });
   open.textContent = 'Read the full story'; open.setAttribute('aria-expanded', 'false');
   lead.append(more, open);
+  if (newsPaid) {
+    const stamp = nEl('p', 'news-stamp', 'CLIPPED TO YOUR SCRAPBOOK · +' + newsPaid + ' ACORNS');
+    lead.appendChild(stamp);
+  }
   panel.appendChild(lead);
   if (ed.features.length) {
     panel.appendChild(newsLabel('ALSO TODAY'));
@@ -13470,6 +13496,29 @@ function newsTown(panel, ed, hack){
     panel.appendChild(box);
   }
 }
+function newsScrapbook(panel, hack){
+  const st = newsState();
+  const rows = newsClips().map(c => ({ c, s: PPNews.clipping(c.id, st) })).filter(x => x.s).sort((a, b) => a.s.lead - b.s.lead);
+  if (!rows.length) return;
+  const box = nEl('section', 'news-box news-scrapbook');
+  box.appendChild(newsLabel('YOUR SCRAPBOOK', hack ? '#1e6b42' : '#6a3a0c'));
+  box.appendChild(nEl('p', 'news-small', rows.length === 1 ? '1 clipping. Every front page you read gets clipped here.' : rows.length + ' clippings, oldest first.'));
+  rows.forEach(({ c, s }, i) => {
+    const card = nEl('div', 'news-clip' + (i % 2 ? ' news-clip-r' : '') + (c.back ? ' news-clip-back' : '')); card.dataset.id = s.id;
+    const more = nEl('div', 'news-more'); more.hidden = true;
+    s.body.forEach(l => more.appendChild(nEl('p', 'news-line', l)));
+    const head = nBtn('news-clip-head', () => { more.hidden = !more.hidden; head.setAttribute('aria-expanded', String(!more.hidden)); });
+    head.setAttribute('aria-expanded', 'false');
+    const t = nEl('span', 'news-headtext');
+    t.append(nEl('small', 'news-clip-date', newsDate(c.day) + (c.back ? ' · BACK ISSUE' : '')), nEl('b', 'news-headline', s.headline));
+    head.appendChild(t);
+    if (s.art) head.appendChild(newsSprite(s.art.species, s.art.stage, 40));
+    else head.appendChild(newsTile(s.section, hack));
+    card.append(head, more);
+    box.appendChild(card);
+  });
+  panel.appendChild(box);
+}
 function newsYou(panel, ed, hack){
   const p = pet();
   const box = nEl('section', 'news-box news-you');
@@ -13496,6 +13545,7 @@ function newsYou(panel, ed, hack){
     txt.append(nEl('b', 'news-spotname', row.stages[sp.stage].name), type, nEl('p', 'news-line', row.blurb || ''));
     inner.append(frame, txt); card.appendChild(inner); panel.appendChild(card);
   }
+  newsScrapbook(panel, hack);
 }
 let newsBody = null, newsHack = false;
 function newsPaint(tab){
@@ -13536,12 +13586,13 @@ function newsPaint(tab){
 function renderNewsApp(body, hack){
   const ed = newsEdition();
   newsBody = body; newsHack = hack; newsWire = 0;
-  if (!ed || !ed.lead) { newsBreaking = false; newsPaint('front'); return; }
+  if (!ed || !ed.lead) { newsBreaking = false; newsPaid = 0; newsPaint('front'); return; }
   const seenLead = typeof S.newsSeen === 'string' ? S.newsSeen.slice(S.newsSeen.indexOf(':') + 1) : null;
   // BREAKING: the lead changed since the holder last read the paper (never on the very first read).
   newsBreaking = seenLead !== null && seenLead !== ed.lead.id;
   const fresh = S.newsSeen !== ed.key;
-  if (fresh) { S.newsSeen = ed.key; newsSec = ''; save(); }
+  newsPaid = newsClip(ed);
+  if (fresh || newsPaid) { S.newsSeen = ed.key; if (fresh) newsSec = ''; save(); }
   newsPaint(fresh ? 'front' : (S.newsTab || 'front'));
   body.scrollTop = 0;
   const icon = $('#phoneNews'); if (icon) icon.classList.remove('unread');

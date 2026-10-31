@@ -23,7 +23,7 @@ The NEWS app prints one Block News edition per real day from `data/news.json` (e
 - Formats beyond stories (spec §4a): `voices`, `notices` (ads only with `story.side=glimmer`), `polls` (three options, one tap), `you` (tokens `{holder}` `{partner}` `{town}` `{seals}` `{steps}` only). Stories may add `art` (a species id the lore puts there, with its reveal gate), `replies`, and `sky`/`phase`/`me` gates.
 - `when` carries each cited entry's `reveal` flags. Retire stale news with `!flag` (lamps lit before `story.glen_cleared`). Heights lines need `story.heights_done`; "sold" lines need `story.quarry_bought`.
 - Chips, the Tuning and implants: `story.side=glimmer` only, hinted, never confirmed (CHIP_SECRECY §1). Bright Notice copy runs in GLIMMERWELL or on the Glimmer side.
-- `lead: N` only for a story beat that should headline once reached; N follows story order (higher is later). One lead per beat.
+- `lead: N` only for a story beat that should headline once reached; N follows story order (higher is later). One lead per beat. Every lead also becomes a Scrapbook clipping (D1016), so a lead's headline must still read well months later, out of the day's context.
 - Lengths: headline 48, body line 110, post 100. Straight quotes, no `{tokens}`, holder/Walkling/Acorns/Trial Hall/Neighbour, capital-K Keeper. Run `walklings-wording-check`.
 
 ## Checks

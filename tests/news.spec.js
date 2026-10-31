@@ -285,6 +285,53 @@ test('a new lead brings the dot and a BREAKING bar back; the cracked handset rea
   await shot(page, 'news-town-hack');
 });
 
+test('Scrapbook: the first read clips the front page for 3 Acorns once; a new lead clips again; passed leads are back issues @w1', async ({ page }) => {
+  await boot(page, null, s => { s.money = 10; });
+  await openNews(page);
+  await expect(page.locator('.news-stamp')).toHaveText('CLIPPED TO YOUR SCRAPBOOK · +3 ACORNS');
+  let st = await page.evaluate(() => ({ money: PixelPets.state.money, clips: PixelPets.state.newsClips }));
+  expect(st.money).toBe(13);
+  expect(st.clips.filter(c => !c.back)).toHaveLength(1);   // the front page read now; earlier leads come in as back issues
+  await page.locator('#phoneClose').click();
+  await openNews(page);   // the same edition again: no second payment, no stamp
+  await expect(page.locator('.news-stamp')).toHaveCount(0);
+  expect(await page.evaluate(() => PixelPets.state.money)).toBe(13);
+  await page.locator('#phoneClose').click();
+  await page.evaluate(flags => { for (const k of Object.keys(flags)) PixelPets.setFlag(k, true); }, MID);
+  await openNews(page);
+  await expect(page.locator('.news-stamp')).toBeVisible();
+  st = await page.evaluate(({ MID }) => {
+    const S = PixelPets.state, N = MAPDATA.news;
+    const leads = S.newsClips.map(c => N.stories.find(x => x.id === c.id));
+    return { money: S.money, n: S.newsClips.length, paid: S.newsClips.filter(c => !c.back).length,
+      allLeads: leads.every(x => x && typeof x.lead === 'number'),
+      reached: leads.every(x => PPRibbit.passes(x.when, S.flags, 'keepers')) };
+  }, { MID });
+  expect(st.money).toBe(16);
+  expect(st.paid).toBe(2);
+  expect(st.n).toBeGreaterThan(2);
+  expect(st.allLeads).toBe(true);
+  expect(st.reached).toBe(true);
+  await tab(page, 'you');
+  const clips = page.locator('.news-clip');
+  await expect(clips).toHaveCount(st.n);
+  await expect(page.locator('.news-clip-back')).toHaveCount(st.n - 2);
+  const order = await page.evaluate(() => [...document.querySelectorAll('.news-clip')].map(el => MAPDATA.news.stories.find(x => x.id === el.dataset.id).lead));
+  expect(order).toEqual([...order].sort((a, b) => a - b));
+  await clips.first().locator('.news-clip-head').click();
+  await expect(clips.first().locator('.news-more')).toBeVisible();
+  const small = await page.evaluate(() => [...document.querySelectorAll('.news-clip-head')].filter(b => b.getBoundingClientRect().height < 44).length);
+  expect(small).toBe(0);
+  await shot(page, 'news-scrapbook');
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')));
+  await installSave(page.context(), Object.assign(saved, { flags: Object.assign(saved.flags, { 'daily.hello': '', 'daily.warm_bowl': '' }) }), { quietDay: true });
+  await page.reload();
+  await page.waitForFunction(() => window.PixelPets && window.PixelPets.debug === true);
+  await page.evaluate(() => { PixelPets.clock.set('fri', 9, 0); PixelPets.showTab('walk'); });
+  await openNews(page);
+  expect(await page.evaluate(() => ({ n: PixelPets.state.newsClips.length, money: PixelPets.state.money }))).toEqual({ n: st.n, money: 16 });
+});
+
 test('one bar of signal thins the briefs @w1', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => PixelPets.goto('route2_glen'));
@@ -295,10 +342,13 @@ test('one bar of signal thins the briefs @w1', async ({ page }) => {
   expect(n).toBeLessThanOrEqual(1);
 });
 
-test('old saves load: no NEWS fields is fine, junk ones are dropped, v stays 2 @w1', async ({ page }) => {
-  await boot(page, null, s => { s.newsSeen = { bad: true }; s.newsTab = 'sports'; s.newsPoll = { day: 'x', id: 7, pick: 9 }; });
-  const st = await page.evaluate(() => ({ v: PixelPets.state.v, seen: PixelPets.state.newsSeen, tab: PixelPets.state.newsTab, poll: PixelPets.state.newsPoll }));
-  expect(st).toEqual({ v: 2, seen: undefined, tab: undefined, poll: undefined });
+test('old saves load: no NEWS fields is fine, junk ones (incl. the scrapbook) are dropped, v stays 2 @w1', async ({ page }) => {
+  await boot(page, null, s => {
+    s.newsSeen = { bad: true }; s.newsTab = 'sports'; s.newsPoll = { day: 'x', id: 7, pick: 9 };
+    s.newsClips = [{ id: 'nw-hearthmoor-morning', day: '2026-10-01' }, { id: 'nw-hearthmoor-morning', day: '2026-10-02' }, { id: 5 }, 'junk', { id: 'x', day: 'soon' }];
+  });
+  const st = await page.evaluate(() => ({ v: PixelPets.state.v, seen: PixelPets.state.newsSeen, tab: PixelPets.state.newsTab, poll: PixelPets.state.newsPoll, clips: PixelPets.state.newsClips }));
+  expect(st).toEqual({ v: 2, seen: undefined, tab: undefined, poll: undefined, clips: [{ id: 'nw-hearthmoor-morning', day: '2026-10-01' }] });
   await openNews(page);
   await expect(page.locator('.news-tab.news-on')).toHaveAttribute('data-tab', 'front');
   expect(typeof (await page.evaluate(() => PixelPets.state.newsSeen))).toBe('string');

@@ -1281,6 +1281,20 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 #ovPhone.hack #phoneBody .news-spotframe{background:#123224}
 #ovPhone #phoneBody .news-spotname{display:block;font-size:22px;line-height:1.05;color:var(--ink)}
 #ovPhone #phoneBody .news-type{display:inline-block;margin:4px 0 6px;padding:1px 6px;font-size:12px;letter-spacing:1px;color:#143226}
+/* Scrapbook (D1016): torn-edged clippings, a fixed tilt (no motion), back issues tagged. */
+#ovPhone #phoneBody .news-stamp{display:inline-block;margin:10px 0 0;padding:4px 8px;border:2px dashed #c45c26;color:#c45c26;font-size:13px;letter-spacing:1px;transform:rotate(-2deg)}
+#ovPhone.hack #phoneBody .news-stamp{border-color:#5ee08a;color:#5ee08a}
+#ovPhone #phoneBody .news-scrapbook{display:flex;flex-direction:column;gap:10px;background:#f3e2b0}
+#ovPhone.hack #phoneBody .news-scrapbook{background:#07140e}
+#ovPhone #phoneBody .news-clip{position:relative;background:var(--paper);box-shadow:0 0 0 2px var(--line),3px 3px 0 2px #6a3a0c;transform:rotate(-1deg);margin:2px 6px;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 6px),94% 100%,86% calc(100% - 5px),76% 100%,64% calc(100% - 4px),52% 100%,40% calc(100% - 5px),28% 100%,16% calc(100% - 4px),6% 100%,0 calc(100% - 5px))}
+#ovPhone #phoneBody .news-clip-r{transform:rotate(1deg)}
+#ovPhone.hack #phoneBody .news-clip{box-shadow:0 0 0 2px #1e6b42,3px 3px 0 2px #3dce78}
+#ovPhone #phoneBody .news-clip-head{display:flex;align-items:center;gap:8px;width:100%;min-height:52px;padding:8px 10px 12px;border:0;background:transparent;text-align:left}
+#ovPhone #phoneBody .news-clip-date{display:block;font-size:12px;letter-spacing:1px;color:var(--sub)}
+#ovPhone #phoneBody .news-clip-back .news-clip-date{color:#c45c26}
+#ovPhone.hack #phoneBody .news-clip-back .news-clip-date{color:#5ee08a}
+#ovPhone #phoneBody .news-clip .news-more{padding:0 12px 14px}
 @media (max-width:340px){
   #ovPhone #phoneBody .news-name,#ovPhone #phoneBody .news-ghost{font-size:24px;letter-spacing:2px}
   #ovPhone #phoneBody .news-art{width:64px;height:64px}
