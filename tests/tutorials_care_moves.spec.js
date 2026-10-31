@@ -944,3 +944,41 @@ test('tray feed shot at 320', async ({ page }) => {
   fs.mkdirSync(dir, { recursive: true });
   await page.screenshot({ path: path.join(dir, 'care-c2-320.png') });
 });
+
+// The Settings replay opens the care tray itself, so SKIP and GOT IT put it away again, like the real care walk does.
+// A tray the player had open before the replay stays open (Vincent, Oct 31, 2026: skipping must work correctly).
+test('T-S5 a care replay closes the tray it opened, on SKIP and on GOT IT', async ({ page }) => {
+  await boot(page, saveAt({ 'story.tut_care': 'done' }));
+  await page.evaluate(() => PixelPets.applyCtl('modern', false));
+  const replay = async (gear = '#gearFloat') => {
+    await page.locator(gear).click();
+    await page.locator('#setTutorial').click();
+    await page.locator('#shList .sh-item', { hasText: 'Care walk' }).click();
+    await page.waitForFunction(() => (PixelPets.lesson().card || '').indexOf('C2') === 0);
+    await expect(page.locator('#careTray')).toBeVisible();
+  };
+  const ended = () => page.evaluate(() => ({ card: PixelPets.lesson().card || '', care: PixelPets.lesson().care, tutOn: document.body.classList.contains('tut-on') }));
+
+  await replay();
+  await clickCard(page, 'NEXT');
+  await page.locator('#tutSkip').click();
+  await page.locator('#tutSkip').click();
+  await expect(page.locator('#careTray')).toBeHidden();
+  expect(await ended()).toEqual({ card: '', care: 'done', tutOn: false });
+
+  await replay();
+  for (let i = 0; i < 6; i++) await clickCard(page, 'NEXT');
+  await clickCard(page, 'GOT IT');
+  await expect(page.locator('#careTray')).toBeHidden();
+  expect(await ended()).toEqual({ card: '', care: 'done', tutOn: false });
+
+  // Tray already open: the replay borrows it and leaves it as it found it. Arcade keeps the gear clear of the tray.
+  await page.evaluate(() => PixelPets.applyCtl('arcade'));
+  await tapFollower(page);
+  await expect(page.locator('#careTray')).toBeVisible();
+  await replay('#settingsBtn');
+  await page.locator('#tutSkip').click();
+  await page.locator('#tutSkip').click();
+  await expect(page.locator('#careTray')).toBeVisible();
+  expect(await ended()).toEqual({ card: '', care: 'done', tutOn: false });
+});
