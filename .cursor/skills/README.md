@@ -21,6 +21,10 @@ Skills for this repo live here, one folder per skill. Each folder has a `SKILL.m
 | `walklings-key-collision-check` | [walklings-key-collision-check/SKILL.md](walklings-key-collision-check/SKILL.md) | Checking a PR that adds looks, skins or palette keys so one key is not defined in two files |
 | `walklings-room-packet` | [walklings-room-packet/SKILL.md](walklings-room-packet/SKILL.md) | Writing a room reskin, layout change, palette fix or interior expansion packet |
 | `walklings-cutscene` | [walklings-cutscene/SKILL.md](walklings-cutscene/SKILL.md) | Staging a scene as a cutscene, or building or reviewing a cutscene packet |
+| `walklings-battle-anim` | [walklings-battle-anim/SKILL.md](walklings-battle-anim/SKILL.md) | Adding or tuning a battle move animation or hit feel (MOVE_FX rows in `mv_fx.js`, `drawBattle`) |
+| `walklings-dialog-camera` | [walklings-dialog-camera/SKILL.md](walklings-dialog-camera/SKILL.md) | Framing a talk so it feels zoomed in (ROOM_ZOOM, speaker nudge, curtain bars, big portraits) |
+| `walklings-dialog-npc-walk` | [walklings-dialog-npc-walk/SKILL.md](walklings-dialog-npc-walk/SKILL.md) | Making an NPC, cast member, Walkling or the holder walk, enter or leave during a scene |
+| `walklings-story-craft` | [walklings-story-craft/SKILL.md](walklings-story-craft/SKILL.md) | Drafting or reviewing narrative: act outlines, scenes, choices, side quests, NPC voice, lore |
 | `walklings-skill-sync` | [walklings-skill-sync/SKILL.md](walklings-skill-sync/SKILL.md) | Copying a Walklings skill between the box library and this repo so the newer copy wins |
 | `gamedev-camera-systems` | [gamedev-camera-systems/SKILL.md](gamedev-camera-systems/SKILL.md) | Building or fixing the top-down map camera (follow, deadzone, edges, door transitions, shake) |
 | `gamedev-create-game-assets` | [gamedev-create-game-assets/SKILL.md](gamedev-create-game-assets/SKILL.md) | Planning, making, sourcing or checking pixel-art sprites, tiles, icons or UI art |
@@ -39,5 +43,5 @@ The gamedev-* skills are reference only, adapted from an Apache-2.0 collection (
 
 A new skill is a new folder under `.cursor/skills/` with a `SKILL.md`. Add a row to this table in the same change. Do not put skills outside this directory.
 
-Project-wide rules live in [`AGENTS.md`](../../AGENTS.md); `CLAUDE.md` and `.clinerules` are stubs pointing to it. Do not copy skill text into AGENTS.md.
+Project-wide rules live in [`AGENTS.md`](../../AGENTS.md); team roles and how to step into one are in [`roles/README.md`](../../roles/README.md); `CLAUDE.md` and `.clinerules` are stubs pointing to it. Do not copy skill text into AGENTS.md.
 

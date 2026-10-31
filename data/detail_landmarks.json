@@ -1,20 +1,48 @@
 {
   "spec": "TOWN_LANDMARKS v0.1.1. Lantern House guides and General Store boards. Verbatim design copies stay untouched.",
+  "looks": {
+    "_note": "PEOPLE_LOOKS_28 (Sprites looks v2 2026-10-29, Vincent approved Oct 29): the lantern-host uniform.",
+    "lantern_della": {
+      "skin": "3",
+      "hair": "bun",
+      "hairCol": "n",
+      "outfit": "vest",
+      "outfitCol": "r",
+      "accent": "y"
+    },
+    "lantern_garnet": {
+      "skin": "6",
+      "hair": "curls",
+      "hairCol": "h",
+      "outfit": "vest",
+      "outfitCol": "r",
+      "accent": "y"
+    },
+    "lantern_ines": {
+      "skin": "1",
+      "hair": "long",
+      "hairCol": "o",
+      "outfit": "vest",
+      "outfitCol": "r",
+      "accent": "y",
+      "accessory": "glasses"
+    }
+  },
   "slicePatch": {
     "maps": {
       "hm_lantern_in": {
         "addObjs": [
-          {"kind": "npc", "id": "hm_lantern_host", "name": "Host Della", "x": 4, "y": 2, "facing": "down"}
+          {"kind": "npc", "id": "hm_lantern_host", "name": "Host Della", "x": 4, "y": 2, "facing": "down", "look": "lantern_della"}
         ]
       },
       "cc_lantern_in": {
         "addObjs": [
-          {"kind": "npc", "id": "cc_lantern_host", "name": "Host Garnet", "x": 4, "y": 2, "facing": "down"}
+          {"kind": "npc", "id": "cc_lantern_host", "name": "Host Garnet", "x": 4, "y": 2, "facing": "down", "look": "lantern_garnet"}
         ]
       },
       "hc_lantern_in": {
         "addObjs": [
-          {"kind": "npc", "id": "hc_lantern_host", "name": "Host Ines", "x": 4, "y": 2, "facing": "down"}
+          {"kind": "npc", "id": "hc_lantern_host", "name": "Host Ines", "x": 4, "y": 2, "facing": "down", "look": "lantern_ines"}
         ]
       },
       "hearthmoor": {
