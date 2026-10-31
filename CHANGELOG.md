@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-10-31 18:48 ET: Glimmerwell bay art, honey ring and honey eyes (build 20261031-1848)
+
+- What changed and why: GLIMMERWELL_PALETTE v0.4.6 (design 241c654). The emblem ring is honey. The Capital screen eyes are honey. The map hold line stays white, settled, because crimson on the place card is 1.94:1 and white is 10.31:1. The rx_f4 bay draws new rx4b floor, guide, glass, dais, kit-face and tube art while the side is glimmer, the escort flag is set and the escort is not done. Other rooms, and rx_f4 outside that gate, keep today's lab tiles. The locked-door tile is registered and not placed. The drawn door is the kit door. D1100, the cracked handset, is out of scope. No phone rule changed.
+- Files touched: `sprites.js`, `game.js`, `standing.js`, `style.css`, `tests/glimmerwell_dark.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`, `tools/GAMEJS_MAP.txt`, `handoff/shots/glimmer_dark/`.
+- Commit(s) + build id: `cursor/glimmerwell-dark-e508`, build 20261031-1848. Catch-up merge of main `d9b4b9e` is `e726aaf`.
+- Tests run and result (widths, checks): `tests/glimmerwell_dark.spec.js`, `tests/look_keys.spec.js`, `tests/interior_walls.spec.js` and `tests/rx_f4_pilot.spec.js` at 320, 375 and 390: PP_TEST RESULT: PASS exit=0 passed=51 failed=0 flaky=0 skipped=0 time=39s. RTDB_RULES RESULT: PASS. Save stays `pixelpets.save.v2`, `v` 2, no new bay field.
+- Decisions made (colour + reasoning): no new id. v0.4.6 settles the hold line as white, the emblem ring as honey, and the screen eyes as honey. D1100 is out of scope. Next free id is D1101. Do not merge before Mon Nov 2, 2026, 12:34 PM ET.
+- Anything left unfinished: eleven round-2 looks still wait on parts. D1087 mint text stays open. The wardrobe checker restamp stays with Design.
+
 ## 2026-10-31 18:35 ET: Glimmerwell hold line and bay gate (build 20261031-1835)
 
 - What changed and why: GLIMMERWELL_PALETTE v0.4.4 (design 130b176). The Glimmerwell hold line is white. Crimson Q `#c81818` on the place card `#29366f` measures 1.944:1, under 4.5:1, and white `#f4f4f4` measures 10.312:1. The line never uses honey, which stays the Keepers' colour. The legend stays the voted two sentences. The rx_f4 bay selects dark floor-guide names and dark names for the six tanks on the same flag test as the capital screen swap. Those pixels are still pending.

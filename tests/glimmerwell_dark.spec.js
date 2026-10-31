@@ -1,5 +1,5 @@
 /* GLIMMERWELL_PALETTE v0.4 option (b). Steps 2-4 follow v0.4.2 (design 6f3eeff).
-   Step 6 and the bay gate follow v0.4.4 (design 130b176). Wine V, soot N, crimson Q.
+   The emblem ring, the Capital screen eyes, the hold line and the bay art follow v0.4.6 (design 241c654). Wine V, soot N, crimson Q.
    The devCheck fails above 10% Q or a soot band under 6 px (horizontal runs of 2 or more).
    Pia's outlined figures stay at or under 3.5% Q (Associate, 6 px) and 1.5% on Rook's card (3 px).
    Widths are the Playwright projects (320, 375, 390). Save stays pixelpets.save.v2 with v 2 and gains no field. */
@@ -130,6 +130,7 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
   };
   expect(got.screen[wine]).toBeGreaterThan(0);
   expect(got.screen[white]).toBeGreaterThan(0);
+  expect(got.screen['#ffcd75']).toBe(8);
   expect(got.screen[crimson] || 0).toBe(0);
   noOld(got.screen, 'screen');
   expect(got.loan[wine]).toBeGreaterThan(0);
@@ -194,7 +195,7 @@ test('phase 2 props, the depot room and the lanyard icons use wine and soot', as
   expect(marked.every((n) => n > 0)).toBe(true);
   expect(got.t3rows).toEqual(got.t1rows.map((row, y) => (y < 2 || y > 12) ? row
     : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'VN'.includes(ch)) ? 'w' : ch).join('')));
-  expect(got.emblem).toEqual(['..NNNN..', '.NVVVVN.', 'NVVwVVVN', 'NVwwwVVN', 'NVVwVVVN', '.NVVVVN.', '..dhhd..', '...dd...']);
+  expect(got.emblem).toEqual(['..yyyy..', '.yVVVVy.', 'yVVwVVVy', 'yVwwwVVy', 'yVVwVVVy', '.yVVVVy.', '..dhhd..', '...dd...']);
 });
 
 test('the legend stays the voted two lines, and the Glimmerwell hold line is white', async ({ page }) => {
@@ -258,7 +259,7 @@ test('the legend stays the voted two lines, and the Glimmerwell hold line is whi
   expect(note.lines.map(l => l.text)).toEqual(['Gold and green: Keeper roofs.', 'Red and black: Glimmerwell ground.']);
   for (const line of note.lines) expect(line.w).toBeLessThanOrEqual(note.box);
   expect(note.h).toBeLessThanOrEqual(40);
-  // Q #c81818 on the place card --n #29366f is under 4.5:1, so the line is white. Honey is the Keepers' colour.
+  // v0.4.6 settles the line as white. Q #c81818 on the place card --n #29366f is 1.94:1. Honey is the Keepers' colour.
   expect(note.qOnCard).toBeLessThan(4.5);
   expect(note.qOnCard).toBeCloseTo(1.944, 2);
   expect(note.wOnCard).toBeGreaterThanOrEqual(4.5);
@@ -293,30 +294,62 @@ test('the bay goes dark on the same test as the capital screen', async ({ page }
       }
       return out;
     };
+    const cells = (pred) => {
+      const info = PixelPets.mapInfo, out = [];
+      for (let y = 0; y < info.h; y++) for (let x = 0; x < info.w; x++) {
+        const t = PixelPets.tileInfo(x, y);
+        if (pred(t)) out.push(t.tile + (t.decal ? '/' + t.decal : ''));
+      }
+      return out;
+    };
     const snap = () => {
       const bay = PixelPets.glimmerBay();
+      const info = PixelPets.mapInfo;
+      let door = null, locked = 0, scuff = null;
+      for (let y = 0; y < info.h; y++) for (let x = 0; x < info.w; x++) {
+        const t = PixelPets.tileInfo(x, y);
+        if (t.part === 'face_door') door = t.tile;
+        if (t.tile === 'rx4b_door_locked' || t.decal === 'rx4b_door_locked') locked++;
+        if (t.ch === ',') scuff = t.tile;
+      }
       return {
         escort: bay.escort, dark: bay.dark, map: bay.map, screen: bay.screen,
         tanks: bay.tanks.map(t => t.art), ids: bay.tanks.map(t => t.id), guides: guides(),
         cable: PixelPets.tileInfo(1, 4).decal, glass: PixelPets.tileInfo(1, 17).tile,
+        door, locked, scuff,
+        floors: cells(t => t.ch === '.'),
+        dais: cells(t => t.ch === 'D'),
+        rx4b: cells(t => (t.tile && t.tile.indexOf('rx4b') === 0) || (t.decal && t.decal.indexOf('rx4b') === 0)).length,
       };
     };
+    const tally = (name) => JSON.stringify(PixelPets.artTally(name));
+    const sharedBefore = { tank: tally('lab_tank'), guide: tally('lab_guide_v') };
     PixelPets.goto('rx_f4', 6, 6, 'up');
     const off = snap();
     set({ 'story.gb_escort': true, 'story.side': 'glimmer' });
     const on = snap();
+    const sharedOn = { tank: tally('lab_tank'), guide: tally('lab_guide_v') };
     set({ 'story.gb_escort': true, 'story.gb_done': true, 'story.side': 'glimmer' });
     const done = snap();
     set({ 'story.gb_escort': true, 'story.side': 'keepers' });
     const keepers = snap();
     set({ 'story.gb_escort': true, 'story.side': 'glimmer' });
+    const rooms = {};
+    for (const id of ['rx_f1', 'rx_f2', 'rx_f3']) {
+      PixelPets.goto(id, 4, 4, 'down');
+      rooms[id] = snap().rx4b;
+    }
     PixelPets.goto('r3_relay', 4, 4, 'down');
     const elsewhere = snap();
     const raw = JSON.parse(localStorage.getItem('pixelpets.save.v2'));
+    const guide = PixelPets.artTally('rx4b_guide_v')[0];
+    const tube = PixelPets.artTally('rx4b_tank')[0];
     return {
-      off, on, done, keepers, elsewhere,
-      tankArt: PixelPets.artTally('lab_tank_dark') != null,
-      guideArt: PixelPets.artTally('lab_guide_v_dark_decal') != null,
+      off, on, done, keepers, elsewhere, rooms,
+      doorBackup: PixelPets.artTally('rx4b_door_locked') != null,
+      guideQ: guide['#c81818'] || 0, guideD: guide['#333c57'] || 0,
+      tubeV: tube['#960e16'] || 0, tubeN: tube['#18140f'] || 0,
+      sharedSame: sharedBefore.tank === sharedOn.tank && sharedBefore.guide === sharedOn.guide,
       reduce: matchMedia('(prefers-reduced-motion: reduce)').matches,
       v: raw.v, keys: Object.keys(raw).sort(),
     };
@@ -331,10 +364,24 @@ test('the bay goes dark on the same test as the capital screen', async ({ page }
   expect(got.on.escort).toBe(true);
   expect(got.on.dark).toBe(true);
   expect(got.on.screen).toBe('capital_screen');
-  expect(got.on.tanks).toEqual(['lab_tank_dark', 'lab_tank_dark', 'lab_tank_dark', 'lab_tank_dark', 'lab_tank_dark', 'lab_tank_dark']);
-  expect(got.on.guides).toEqual(got.off.guides.map((n) => n + '_dark'));
+  expect(got.on.tanks).toEqual(['rx4b_tank', 'rx4b_tank', 'rx4b_tank', 'rx4b_tank', 'rx4b_tank', 'rx4b_tank']);
+  expect(got.on.guides).toEqual(got.off.guides.map((n) => n.replace('lab_', 'rx4b_')));
   expect(got.on.cable).toBe('lab_floor_cable');
-  expect(got.on.glass).toBe('lab_glass');
+  expect(got.on.glass).toBe('rx4b_glass');
+  expect(got.off.glass).toBe('lab_glass');
+  expect(got.off.door).toBe('lab__face_door');
+  expect(got.on.door).toBe('rx4b__face_door');
+  expect(got.on.locked).toBe(0);
+  expect(got.off.locked).toBe(0);
+  expect(got.off.floors.every((n) => n === 'lab_floor_bay' || n === 'lab_floor_scuff')).toBe(true);
+  expect(got.on.floors.every((n) => n === 'rx4b_floor_bay')).toBe(true);
+  expect(got.on.floors.length).toBeGreaterThan(0);
+  expect(got.off.dais.every((n) => n === 'lab_dais')).toBe(true);
+  expect(got.on.dais.every((n) => n === 'rx4b_dais')).toBe(true);
+  expect(got.on.dais.length).toBeGreaterThan(0);
+  expect(got.off.scuff).toBe('lab_floor_scuff');
+  expect(got.on.scuff).toBe('lab_floor_scuff');
+  expect(got.off.rx4b).toBe(0);
   expect(got.done.dark).toBe(false);
   expect(got.done.escort).toBe(false);
   expect(got.done.screen).toBe('rx_terminal');
@@ -347,9 +394,16 @@ test('the bay goes dark on the same test as the capital screen', async ({ page }
   expect(got.elsewhere.screen).toBe('capital_screen');
   expect(got.elsewhere.tanks.length).toBeGreaterThan(0);
   expect(got.elsewhere.tanks.every((n) => n === 'lab_tank')).toBe(true);
-  // Names resolve so the room still draws. The N/Q guide ticks and the V/N tube rims are pending.
-  expect(got.tankArt).toBe(true);
-  expect(got.guideArt).toBe(true);
+  expect(got.elsewhere.rx4b).toBe(0);
+  expect(got.rooms).toEqual({ rx_f1: 0, rx_f2: 0, rx_f3: 0 });
+  expect(got.done.door).toBe('lab__face_door');
+  expect(got.keepers.door).toBe('lab__face_door');
+  expect(got.doorBackup).toBe(true);
+  expect(got.guideQ).toBe(4);
+  expect(got.guideD).toBeGreaterThan(0);
+  expect(got.tubeV).toBeGreaterThan(0);
+  expect(got.tubeN).toBeGreaterThan(0);
+  expect(got.sharedSame).toBe(true);
   expect(got.v).toBe(2);
   expect(got.keys).not.toContain('glimmerBay');
   expect(got.keys).not.toContain('bayDark');

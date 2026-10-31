@@ -880,7 +880,7 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 .map-hold{margin-top:3px;font-size:16px;line-height:1.2;font-weight:normal}
 .map-hold[hidden]{display:none}
 .map-hold.hold-keepers{color:var(--y)}
-/* v0.4.4: crimson Q on this card is under 4.5:1, so the line is white. Honey stays the Keepers' line. */
+/* v0.4.6: the Glimmerwell hold line is settled as white. Crimson Q on this card is 1.94:1. Honey stays the Keepers' line. */
 .map-hold.hold-glimmer{color:var(--w)}
 .map-hold.hold-split{color:var(--w)}
 .map-hold.hold-wild{color:var(--h)}

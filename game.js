@@ -7030,7 +7030,10 @@ function drawHqGlow(g, cx, cy){
 function wallTileName(part, x, m){
   if (!part) return null;
   const east = (part === 'jamb_n' || part === 'jamb_s') && x === m.w - 1;
-  return m.skin + '__' + (east ? part + '_e' : part);
+  const key = east ? part + '_e' : part;
+  // v0.4.6: only the four kit faces swap. Caps, jambs and shadows stay lab__*.
+  if (glimmerBayDark() && BAY_WALL[key]) return BAY_WALL[key];
+  return m.skin + '__' + key;
 }
 function wallPart(x, y, m){
   m = m || CUR;
@@ -7130,7 +7133,13 @@ function tickCamBias(t){
 }
 const WAYIN_DIM_AFTER_VISIT = true; // D224: glint stays on frame 0 after the destination floor is seen
 const WAYIN_DOORS = 'all'; // D227: 'all', or 'poor' (poor and weak stay, fine is skipped)
+let bayDarkDrawn = null;
 function drawMap(t){
+  const darkNow = glimmerBayDark();
+  if (darkNow !== bayDarkDrawn) {
+    bayDarkDrawn = darkNow;
+    if (wallMasks.has('rx_f4')) { freeCanvases([wallMasks.get('rx_f4')]); wallMasks.delete('rx_f4'); }
+  }
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
   // INTERIORS §3.4: a map narrower/shorter than the canvas is centred, the rest filled with PAL.k
@@ -7154,8 +7163,8 @@ function drawMap(t){
         if (TILES[nm]) img = TILES[nm];
       } else if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
         const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk0 = LAB_SKIN.decal[k];
-        const dk = dk0 ? bayArtName(dk0) : null;   // v0.4.4: dark guide names on the bay, same test as the screen swap
-        const nm = labTileName(dk0 ? '.' : k, tx, ty);
+        const dk = dk0 ? bayArtName(dk0) : null;
+        const nm = bayFloorName(k, labTileName(dk0 ? '.' : k, tx, ty));
         if (nm && TILES[nm]) img = TILES[nm];
         if (dk) decal = TILES[dk + '_decal'];
       } else if (skEarly && CUR.skin !== 'lab') {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
@@ -7959,8 +7968,10 @@ function drawBuddy(g, X, Y, t){
   g.drawImage(img, X - 1, Y - 2);
   if (night && !reduce && WART.buddy_z_0) g.drawImage(Math.floor(t / 2000) % 2 ? WART.buddy_z_1 : WART.buddy_z_0, X + 4, Y - 12);
 }
-// GLIMMERWELL_PALETTE v0.4.4 step 7 (design 130b176). The capital screen and the dark bay
-// share this flag test. Guide and tank pixels stay today's until the bay art lands.
+// GLIMMERWELL_PALETTE v0.4.6 (design 241c654). The capital screen uses the escort flags.
+// The bay art adds the room id, so other rooms keep lab_* even while the escort is on.
+// rx4b_door_locked is registered and never selected. The drawn door is the kit face_door.
+const BAY_WALL = { face: 'rx4b__face', face_l: 'rx4b__face_l', face_win: 'rx4b__face_win', face_door: 'rx4b__face_door' };
 function glimmerEscortOn(){
   return !!(S && S.flags['story.gb_escort'] && !S.flags['story.gb_done'] && S.flags['story.side'] === 'glimmer');
 }
@@ -7969,12 +7980,21 @@ function glimmerBayDark(){
 }
 function bayArtName(name){
   if (!glimmerBayDark()) return name;
-  if (name === 'lab_guide_v' || name === 'lab_guide_h' || name === 'lab_guide_x') return name + '_dark';
+  if (name === 'lab_guide_v') return 'rx4b_guide_v';
+  if (name === 'lab_guide_h') return 'rx4b_guide_h';
+  if (name === 'lab_guide_x') return 'rx4b_guide_x';
+  return name;
+}
+function bayFloorName(ch, name){
+  if (!glimmerBayDark()) return name;
+  if ((ch === '.' || ch === '|' || ch === '-' || ch === '+') && (name === 'lab_floor_bay' || name === 'lab_floor_scuff')) return 'rx4b_floor_bay';
+  if (ch === 'g' && name === 'lab_glass') return 'rx4b_glass';
+  if (ch === 'D' && name === 'lab_dais') return 'rx4b_dais';
   return name;
 }
 function propArtKey(o){
   if (o && o.id === 'rx4_side' && glimmerEscortOn()) return 'capital_screen';
-  if (o && o.sprite === 'lab_tank' && glimmerBayDark()) return 'lab_tank_dark';
+  if (o && o.sprite === 'lab_tank' && glimmerBayDark()) return 'rx4b_tank';
   return o && o.sprite;
 }
 function drawObj(g, o, cx, cy, VW, VH, t){
@@ -18797,7 +18817,7 @@ function boot(){
       const part = sk && sk.wall ? wallPart(x, y) : null;
       const base = { ch, solid: solidTile(x, y), blocked: solid(x, y), walk, part, shade: shadowPart(x, y) };
       if (part) return Object.assign(base, { tile: wallTileName(part, x, CUR), decal: null });
-      if (CUR.skin === 'lab') { const dk0 = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: labTileName(dk0 ? '.' : ch, x, y), decal: dk0 ? bayArtName(dk0) : null }); }
+      if (CUR.skin === 'lab') { const dk0 = LAB_SKIN.decal[ch]; return Object.assign(base, { tile: bayFloorName(ch, labTileName(dk0 ? '.' : ch, x, y)), decal: dk0 ? bayArtName(dk0) : null }); }
       if (sk) {
         const k = ch === 'W' && x % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
         return Object.assign(base, { tile: skinTileName(sk, dk ? '.' : k, x, y), decal: dk || null });

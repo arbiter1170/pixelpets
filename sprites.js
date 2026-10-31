@@ -1031,10 +1031,216 @@ function buildTiles(){
     const rows = LAB_TILES[k], base = LAB_TILES.lab_floor_bay;
     T[k + '_decal'] = mkTile(g => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.' && ch !== base[y][x]) px(g, PAL[ch], x, y); })));
   }
-  // v0.4.4 step 7: dark guide names. Pixels stay today's until the bay art lands.
-  for (const k of ['lab_guide_v', 'lab_guide_h', 'lab_guide_x']) {
-    T[k + '_dark'] = T[k];
-    T[k + '_dark_decal'] = T[k + '_decal'];
+  // GLIMMERWELL_PALETTE v0.4.6 (design 241c654). New rx4b keys for the gated bay.
+  // Pia's grids. The locked door is registered and never selected; the kit door is rx4b__face_door.
+  {
+    const paint = (g, rows) => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(g, PAL[ch], x, y); }));
+    const RX4B = {
+      rx4b_floor_bay: [
+        "hhhhhhhhhhhhhhhh",
+        "hwwwwwwwhwwwwwww",
+        "hwsswwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwdwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hhhhhhhhhhhhhhhh",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwsswwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwdw",
+        "hwwwwwwwhwwwwwww"
+      ],
+      rx4b_guide_v: [
+        "hhhhhhhNNhhhhhhh",
+        "hwwwwwhQdhwwwwww",
+        "hwsswwhddhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhQdhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hhhhhhhddhhhhhhh",
+        "hwwwwwhQdhwwwwww",
+        "hwwwwwhddhsswwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhQdhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhddhwwwwww"
+      ],
+      rx4b_guide_h: [
+        "hhhhhhhhhhhhhhhh",
+        "hwwwwwwwhwwwwwww",
+        "hwsswwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hhhhhhhhhhhhhhhh",
+        "NQdddQdddQdddQdN",
+        "NddddddddddddddN",
+        "hhhhhhhhhhhhhhhh",
+        "hwwwwwwwhwsswwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww",
+        "hwwwwwwwhwwwwwww"
+      ],
+      rx4b_guide_x: [
+        "hhhhhhhddhhhhhhh",
+        "hwwwwwhQdhwwwwww",
+        "hwsswwhddhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhQdhwwwwww",
+        "hhhhhhddddhhhhhh",
+        "dQdddQdQQddddQdd",
+        "dddddddQQddddddd",
+        "hhhhhhddddhhhhhh",
+        "hwwwwwhddhsswwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhQdhwwwwww",
+        "hwwwwwhddhwwwwww",
+        "hwwwwwhddhwwwwww"
+      ],
+      rx4b_glass: [
+        "hhhhhhhhhhhhhhhh",
+        "hwwwwwwwhwwwwwww",
+        "mmmmmmmmmmmmmmmm",
+        "mssssssssssssssm",
+        "msswsssssswssssm",
+        "mssswsssssswsssm",
+        "msssswsssssssssm",
+        "mssssssssssssssm",
+        "mssssssssssssssm",
+        "mssssssssssssssm",
+        "mssssssssssssssm",
+        "mssssssssssssssm",
+        "mssssssssssssssm",
+        "mmmmmmmmmmmmmmmm",
+        "VVVVVVVVVVVVVVVV",
+        "hwwwwwwwhwwwwwww"
+      ],
+      rx4b_dais: [
+        "mmmmmmmmmmmmmmmm",
+        "mwwwwwwwwwwwwwwm",
+        "mhhhhhhhhhhhhhhm",
+        "mhhhhhhhhhhhhhhm",
+        "mhhhyhhhhhhyhhhm",
+        "mhhhhhhhhhhhhhhm",
+        "mhhhhhhhhhhhhhhm",
+        "mhhhhhhsshhhhhhm",
+        "mhhhhhhsshhhhhhm",
+        "mhhhhhhhhhhhhhhm",
+        "mhhhhhhhhhhhhhhm",
+        "mhhhyhhhhhhyhhhm",
+        "mhhhhhhhhhhhhhhm",
+        "mhhhhhhhhhhhhhhm",
+        "mhhhhhhhhhhhhhhm",
+        "mmmmmmmmmmmmmmmm"
+      ],
+      rx4b__face: [
+        "hhhhhhhhhhhhhhhh",
+        "hhhhhhhhhhhhhhhh",
+        "wwwwwwwwwwwwwwww",
+        "wwwwwwwwwwwwwwww",
+        "wwwwwwwwwwwwwwww",
+        "wwwwwwwwwwwwwwww",
+        "wwwwwwwwwwwwwwww",
+        "wwwwwwwwwwwwwwww",
+        "wwwwwwwwwwwwwwww",
+        "NNNNNNNNNNNNNNNN",
+        "dddddddddddddddd",
+        "VVVVVVVVVVVVVVVV",
+        "wwwwwwwwwwwwwwww",
+        "dddddddddddddddd",
+        "dddddddddddddddd",
+        "hhhhhhhhhhhhhhhh"
+      ],
+      rx4b__face_l: [
+        "hhhhhhhhhhhhhhhh",
+        "hhhhhhhhhhhhhhhh",
+        "hhwwwwwwwwwwwwww",
+        "hhwwwwwwwwwwwwww",
+        "hhwwwwwwwwwwwwww",
+        "hhwwwwwwwwwwwwww",
+        "hhwwwwwwwwwwwwww",
+        "hhwwwwwwwwwwwwww",
+        "hhwwwwwwwwwwwwww",
+        "hhNNNNNNNNNNNNNN",
+        "hhdddddddddddddd",
+        "hhVVVVVVVVVVVVVV",
+        "hhwwwwwwwwwwwwww",
+        "hhdddddddddddddd",
+        "hhdddddddddddddd",
+        "hhhhhhhhhhhhhhhh"
+      ],
+      rx4b__face_win: [
+        "hhhhhhhhhhhhhhhh",
+        "hhhhhhhhhhhhhhhh",
+        "wwwmmmmmmmmmmwww",
+        "wwwmssccmcccmwww",
+        "wwwmssccmcccmwww",
+        "wwwmccccmcccmwww",
+        "wwwmccccmcccmwww",
+        "wwwmccccmcccmwww",
+        "wwwmccccmcccmwww",
+        "NNNmmmmmmmmmmNNN",
+        "NNdwwwwwwwwwwdNN",
+        "ddVwwwwwwwwwwVdd",
+        "VVwwwwwwwwwwwwVV",
+        "dddddddddddddddd",
+        "dddddddddddddddd",
+        "hhhhhhhhhhhhhhhh"
+      ],
+      rx4b__face_door: [
+        "hhhhhhhhhhhhhhhh",
+        "hhhhhhhhhhhhhhhh",
+        "wwwwVVVVVVVVwwww",
+        "wwwwVddddddVwwww",
+        "wwwwVdNNNNdVwwww",
+        "wwwwVdNNNNdVwwww",
+        "wwwwVdNNNNdVwwww",
+        "wwwwVdNNNNdVwwww",
+        "wwwwVdNNNNdVwwww",
+        "NNNdVdNNNydVdNNN",
+        "ddddVdNNNNdVdddw",
+        "VVVVVdNNNNdVVVVV",
+        "wwwwVdNNNNdVwwww",
+        "ddddVdNNNNdVdddd",
+        "ddddVddddddVdddd",
+        "hhhhVVVVVVVVhhhh"
+      ],
+      rx4b_door_locked: [
+        "wwwwwwwhwwwwwwww",
+        "wwwVVVVVVVVVVwww",
+        "wwwVddddddddVwww",
+        "wwwVdNNNNNNdVwww",
+        "wwwVdNNNNNNdVwww",
+        "wwwVdddNNdddVwww",
+        "wwwVVVVddVVVVddw",
+        "wwwVVVVddVVVVydw",
+        "wwwVdddNNdddVdyw",
+        "wwwVdNNNNNNdVddw",
+        "wwwVdNNNNNNdVwww",
+        "wwwVdNNNNNNdVwww",
+        "hhhVdNNNNNNdVhhh",
+        "VVVVdNNNNNNdVVVV",
+        "hhhVdNNNNNNdVhhh",
+        "dddddddddddddddd"
+      ]
+    };
+    const floor = RX4B.rx4b_floor_bay;
+    for (const [k, rows] of Object.entries(RX4B)) T[k] = mkTile(g => paint(g, rows));
+    for (const k of ['rx4b_guide_v', 'rx4b_guide_h', 'rx4b_guide_x']) {
+      const rows = RX4B[k];
+      T[k + '_decal'] = mkTile(g => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.' && ch !== floor[y][x]) px(g, PAL[ch], x, y); })));
+    }
   }
   // B5 house interiors. Each room gets its own floor, wall face and baseboard. No k outline.
   const specks = (g, list) => list.forEach(([x, y, c]) => px(g, PAL[c], x, y));
@@ -2035,7 +2241,7 @@ function buildWorldArt(){
   }));
   A.capital_screen = mkTile(g => {
     px(g, PAL.d, 1, 1, 14, 14); px(g, PAL.k, 2, 2, 12, 12); px(g, PAL.V, 3, 3, 10, 8);
-    px(g, PAL.k, 5, 5, 2, 2); px(g, PAL.k, 9, 5, 2, 2); px(g, PAL.w, 6, 9, 4, 1);
+    px(g, PAL.y, 5, 5, 2, 2); px(g, PAL.y, 9, 5, 2, 2); px(g, PAL.w, 6, 9, 4, 1);
     px(g, PAL.m, 2, 12, 12, 2);
   });
   A.loan_crate = mkTile(g => {
@@ -2111,7 +2317,45 @@ function buildWorldArt(){
   A.lab_counter = mkTile(g => rxPaint(g, ["................", "...dddd....h....", "...dscd....w....", "...dccd....l....", ".wwwwwwwwwwwwww.", ".wwwwwwwwwwwwww.", ".wwwwwwwwwwwwww.", ".llllllllllllll.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhdhmmhdhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".hhhhhhmmhhhhhh.", ".mmmmmmmmmmmmmm.", "................"]));
   A.lab_tank = [["....mmmmmmmm....", "...mmmmmmmmmm...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swllllllgs...", "...swlwllllgs...", "...swllllllgs...", "...swllllwlgs...", "...swllllllgs...", "...swllllllgs...", "...slllwlllgs...", "...slllhhllgs...", "...dddddddddd...", "....dddddddd...."], ["....mmmmmmmm....", "...mmmmmmmmmm...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swcccccccs...", "...swllllwlgs...", "...swllllllgs...", "...swllwlllgs...", "...swllllllgs...", "...swllllllgs...", "...swlllwllgs...", "...slllllllgs...", "...slllhhllgs...", "...dddddddddd...", "....dddddddd...."]].map(fr => mkTile(g => rxPaint(g, fr)));
   A.lab_tank.ms = 600;
-  A.lab_tank_dark = A.lab_tank;   // v0.4.4: the six bay tubes. Pixels stay today's until the art lands.
+  A.rx4b_tank = [
+    [
+      "....mmmmmmmm....",
+      "...mmmmmmmmmm...",
+      "...NwcccccccN...",
+      "...NwcccccccN...",
+      "...NwcccccccN...",
+      "...NwcccccccN...",
+      "...NwVVVVVVdN...",
+      "...NwVwVVVVdN...",
+      "...NwVVVVVVdN...",
+      "...NwVVVVwVdN...",
+      "...NwVVVVVVdN...",
+      "...NwVVVVVVdN...",
+      "...NwVVwVVVdN...",
+      "...NwVVhhVVdN...",
+      "...dddddddddd...",
+      "....dddddddd...."
+    ],
+    [
+      "....mmmmmmmm....",
+      "...mmmmmmmmmm...",
+      "...NwcccccccN...",
+      "...NwcccccccN...",
+      "...NwcccccccN...",
+      "...NwcccccccN...",
+      "...NwVVVVwVdN...",
+      "...NwVVVVVVdN...",
+      "...NwVVwVVVdN...",
+      "...NwVVVVVVdN...",
+      "...NwVVVVVVdN...",
+      "...NwVVVwVVdN...",
+      "...NwVVVVVVdN...",
+      "...NwVVhhVVdN...",
+      "...dddddddddd...",
+      "....dddddddd...."
+    ]
+  ].map(fr => mkTile(g => rxPaint(g, fr)));
+  A.rx4b_tank.ms = 600;
   // BUILD_RX_F4_PILOT props (fernbrook_heights_art.json -> pilot.propArt, verbatim). lab_sign_offlimits is a wall decal.
   A.lab_terminal_bank = mkTile(g => rxPaint(g, ["................", "................", ".mmmmmmmmmmmmmm.", ".mddddddddddddm.", ".mkskdkskdkskdm.", ".mcccdllldcccdm.", ".mcccdllldcccdm.", ".mkkkdkkkdkkkdm.", ".mddddddddddddm.", ".mhwhwhwhwhwhhm.", ".mhhhhhhhhhhhhm.", ".mdlddddddddrdm.", ".mkkkkkkkkkkkkm.", ".mmmmmmmmmmmmmm.", ".kkkkkkkkkkkkkk.", "................"]));
   A.lab_workbench = mkTile(g => rxPaint(g, ["................", "..dddd..h.......", "..dscd..w.ww....", "..dccd..w.ll....", "..dddd..l.llkkk.", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "hhhhhhhhhhhhhhhh", ".mm..........mm.", ".mm..........mm.", ".mmhhhhhhhhhhmm.", ".mm..........mm.", ".mm..........mm.", ".mm..........mm.", "................"]));
