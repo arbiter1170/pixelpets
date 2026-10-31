@@ -28,6 +28,7 @@ const SHELL = [
   './data/nav_art.js',
   './clock.js',
   './mv_fx.js',
+  './battle_bg.js',
   './net.js',
   './game.js',
   './fonts/Jersey15.woff2',

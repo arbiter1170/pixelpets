@@ -3661,6 +3661,30 @@ function makeBackdrop(kind, H, mode, W = 56){
   bdCache.set(key, c);
   return c;
 }
+/* ---------- battle scenes (BATTLE_BACKDROPS, D1009: red, settled by Vincent Oct 31, 2026; supersedes D167) ---------- */
+// battle_bg.js holds one scene per map and draws it from that map's own tiles and props; this side hands it the art.
+// A map without a scene falls back to makeBackdrop. ?debug=1 can force the old backdrop (setBattleBg(false)) to compare.
+const BATTLE_BG_ON = true;
+let battleBgForce = null;
+function battleBgOn(){ return battleBgForce != null ? battleBgForce : BATTLE_BG_ON; }
+function battleSceneId(id = S && S.world.map){ return battleBgOn() && window.BattleBG && WORLD[id] && BattleBG.scenes[id] ? id : null; }
+function battleEnv(m, mode){
+  const sk = m.skin && SKINS[m.skin];
+  return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream,
+    walk: ch => sk && sk.walk && sk.walk[ch] != null ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk,
+    tile: (ch, x, y) => cellImg(m, ch, x, y, 0), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; } };   // animated props: their first frame
+}
+// Same cache as makeBackdrop (BD_CAP). Rooms ignore the sky, so one canvas serves every sky mode.
+function makeBattleBackdrop(id, H, mode, W = 56){
+  W = Math.max(56, W | 0); H = H | 0;
+  if (BattleBG.scenes[id].room) mode = 'room';
+  const key = 'bt|' + id + '|' + W + 'x' + H + '|' + mode; if (bdCache.has(key)) return bdCache.get(key);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  c.btWet = BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode));
+  while (bdCache.size >= BD_CAP) { const k = bdCache.keys().next().value; freeCanvases([bdCache.get(k)]); bdCache.delete(k); }
+  bdCache.set(key, c);
+  return c;
+}
 function drawParticles(g, dt){
   anim.parts = anim.parts.filter(pt => (pt.life -= dt) > 0);
   for (const pt of anim.parts){
@@ -7130,6 +7154,32 @@ function tickCamBias(t){
 }
 const WAYIN_DIM_AFTER_VISIT = true; // D224: glint stays on frame 0 after the destination floor is seen
 const WAYIN_DOORS = 'all'; // D227: 'all', or 'poor' (poor and weak stay, fine is skipped)
+// One map cell's tile art: wall kit, lab and room skins with their decals, seeded variants. The decal (or null) is left in
+// cellDecal, so the hot loop makes no object. drawMap and the battle scenes (BATTLE_BACKDROPS) share it.
+let cellDecal = null;
+function cellImg(m, ch, tx, ty, wf){
+  const sk = m.skin && SKINS[m.skin], hasKit = !!(sk && sk.wall), part = hasKit ? wallPart(tx, ty, m) : null;
+  let img = ch === 'w' ? TILES.w[wf] : (!hasKit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
+  cellDecal = null;
+  if (part) {   // shared wall kit. Windows come from the map list, not the odd column.
+    const nm = wallTileName(part, tx, m);
+    if (TILES[nm]) img = TILES[nm];
+  } else if (m.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
+    const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
+    const nm = labTileName(dk ? '.' : k, tx, ty, m);
+    if (nm && TILES[nm]) img = TILES[nm];
+    if (dk) cellDecal = TILES[dk + '_decal'];
+  } else if (sk) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
+    const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
+    const nm = skinTileName(sk, dk ? '.' : k, tx, ty, m);
+    if (nm && TILES[nm]) img = TILES[nm];
+    if (dk) cellDecal = TILES[dk + '_decal'] || TILES[dk];
+  } else if (m.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
+    const nm = labTileName(ch, tx, ty, m);
+    if (nm !== ch && TILES[nm]) img = TILES[nm];
+  }
+  return img;
+}
 function drawMap(t){
   const c = $('#mapCanvas'), g = ctx(c), p = pet();
   syncFollower();
@@ -7145,27 +7195,8 @@ function drawMap(t){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
       const ch = MAP[ty][tx];
       const skEarly = CUR.skin && SKINS[CUR.skin];
-      const hasKit = !!(skEarly && skEarly.wall);
-      const part = hasKit ? wallPart(tx, ty) : null;
-      let img = ch === 'w' ? TILES.w[wf] : (!hasKit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
-      let decal = null;
-      if (part) {   // shared wall kit. Windows come from the map list, not the odd column.
-        const nm = wallTileName(part, tx, CUR);
-        if (TILES[nm]) img = TILES[nm];
-      } else if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = LAB_SKIN.decal[k];
-        const nm = labTileName(dk ? '.' : k, tx, ty);
-        if (nm && TILES[nm]) img = TILES[nm];
-        if (dk) decal = TILES[dk + '_decal'];
-      } else if (skEarly && CUR.skin !== 'lab') {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skEarly.decal && skEarly.decal[k];
-        const nm = skinTileName(skEarly, dk ? '.' : k, tx, ty);
-        if (nm && TILES[nm]) img = TILES[nm];
-        if (dk) decal = TILES[dk + '_decal'] || TILES[dk];
-      } else if (CUR.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
-        const nm = labTileName(ch, tx, ty);
-        if (nm !== ch && TILES[nm]) img = TILES[nm];
-      }
+      let img = cellImg(CUR, ch, tx, ty, wf);
+      const decal = cellDecal;
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       if (CUR.roofs && (ch === 'R' || ch === 'H')) img = buildingTile(ch, tx, ty, img);
       if (ch === '^') {   // STAIR_MARKER: clear corners show the room floor under the flight
@@ -15761,7 +15792,12 @@ function battleVis(c){
 }
 function drawBattle(t, dt){
   const B = battle, c = $('#battleCanvas'), g = ctx(c), W = c.width, H = c.height, f = curFoe(), p = activePet(); if (!f || !p) return;
-  g.drawImage(makeBackdrop(backdropName(), H, skyMode(), W), 0, 0); drawWeather(g, W, H, t);
+  const sid = battleSceneId();
+  if (sid) {   // BATTLE_BACKDROPS (D1009): the map's own scene; water moves in FULL only, and rooms take no sky tint or weather
+    const bg = makeBattleBackdrop(sid, H, skyMode(), W); g.drawImage(bg, 0, 0);
+    if (auraMode() === 'full' && !prefersReduced()) BattleBG.anim(g, bg.btWet, TILES.w[1], t);
+    if (!BattleBG.scenes[sid].room) drawWeather(g, W, H, t);
+  } else { g.drawImage(makeBackdrop(backdropName(), H, skyMode(), W), 0, 0); drawWeather(g, W, H, t); }
   for (let i = 0; i < B.fx.length; i++) {   // MOVE_FX_2 (D829): a signature dims the backdrop with k, up to 0.25 and back over 200 ms (never white)
     const e = B.fx[i], a = t - e.t0;
     if (e.kind === 'mvGo' && e.sig && a >= 0 && a < 200) { g.globalAlpha = 0.25 * Math.sin(Math.PI * a / 200); g.fillStyle = PAL.k; g.fillRect(0, 0, W, H); g.globalAlpha = 1; }
@@ -18834,6 +18870,8 @@ function boot(){
     // Live getters here, not in cheats: the cheats loop reads each value once at boot, so a getter there goes stale (D787 C).
     get mapZoomSteps(){ return mapZoomSteps(); }, get mapZoomStep(){ return mapZoomStep(); },
     get bdCacheSize(){ return bdCache.size; },   // review fix: the backdrop cache stays capped (BD_CAP)
+    // BATTLE_BACKDROPS (D1009), read-only: the scene this battle draws (id null = the old backdrop) and whether the flag is on
+    get battleScene(){ const id = battleSceneId(); return { id, map: S.world.map, room: !!(id && BattleBG.scenes[id].room), on: battleBgOn() }; },
   };
   const cheats = {
     repaintStats(){ paintStatIcons(); return true; },   // ?debug=1: redraw the stat icons
@@ -18930,6 +18968,13 @@ function boot(){
     },
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
     setHudPads: on => { if (!DEBUG) return null; mhcFrameForce = on; fitAll(); return hudPadsLive(); },   // debug: force the P1 frame class on or off (the D787 pads and the D729 arcade chip)
+    // BATTLE_BACKDROPS (D1009): debug only. setBattleBg(true/false) forces the flag (null = the build's flag); battleSceneArt
+    // draws one map's scene onto a fresh canvas (layer 'deco' = landmarks and props only) for previews and tests.
+    setBattleBg: on => { if (!DEBUG) return null; battleBgForce = on == null ? null : !!on; return battleSceneId(); },
+    battleSceneArt: (id, W, H, mode, layer) => { if (!DEBUG || !window.BattleBG || !BattleBG.scenes[id] || !WORLD[id]) return null;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode || 'day'), layer); return c; },
+    battleSceneIds: () => DEBUG && window.BattleBG ? Object.keys(BattleBG.scenes) : null,
     debugToast: msg => { if (!DEBUG) return null; toast(msg); const t = $('#toast'); return t ? t.textContent : ''; },
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
