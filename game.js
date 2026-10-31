@@ -8034,7 +8034,7 @@ function drawObj(g, o, cx, cy, VW, VH, t){
 // built once per look and cached (the Walk map only looks them up).
 const lookOf = () => maskLook((S && S.player && S.player.look) || null);           // null = the default look
 // Display-only wardrobe clamp (D1083). A worn lanyard draws its accent as the nearest of soot N, white w
-// or ice s. Ties go to N. The save is not written. Standing tints below still overwrite this copy.
+// or ice s. Ties go to N. The save is not written. shownLook runs this after the standing tint.
 function glimmerAccentClamp(accent){
   const allow = ['N', 'w', 's'];
   if (allow.indexOf(accent) >= 0) return accent;
@@ -8062,15 +8062,14 @@ function shownLook(){
   // INTRO_CUTSCENE D800: a look picked earlier in this scene (lookPick's scene.view.look) shows at once, on the map
   // and in the portrait; the save gets it at the scene's end as before.
   const base = scene && scene.view && scene.view.look ? maskLook(scene.view.look) : lookOf();
-  const drawn = glimmerDisplayLook(base);
-  if (!S || side() !== 'glimmer') return drawn;
+  if (!S || side() !== 'glimmer') return glimmerDisplayLook(base);
   const tier = PPStanding.tierOf(standingOf('glimmer', false));
-  if (!tier) return drawn;
-  const L = Object.assign({}, KEEPER_LOOKS.defaults, drawn || {});
+  if (!tier) return glimmerDisplayLook(base);
+  const L = Object.assign({}, KEEPER_LOOKS.defaults, base || {});
   L.accent = tier >= 4 ? 's' : 'c';
   if (tier >= 2) L.outfitCol = 's';
   if (tier >= 3) L.hairCol = 'h';
-  return L;
+  return glimmerDisplayLook(L);   // D1083: clamp after the tint, so a worn lanyard never keeps sky c
 }
 const lookKey = L => { const f = Object.assign({}, KEEPER_LOOKS.defaults, L || {}); return KEEPER_LOOKS.slots.map(k => f[k]).join('|') + (f.extra ? JSON.stringify(f.extra) : '') + (f.hem ? '|hem:' + f.hem : ''); };
 const KEEPER_CAP = 128;

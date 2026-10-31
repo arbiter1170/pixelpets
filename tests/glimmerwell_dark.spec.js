@@ -410,7 +410,7 @@ test('the bay goes dark on the same test as the capital screen', async ({ page }
   for (const k of beforeKeys) expect(got.keys).toContain(k);
 });
 
-test('a lanyard accent clamps on screen only and standing tint still wins', async ({ page }) => {
+test('a lanyard accent clamps on screen only after the standing tint', async ({ page }) => {
   const save = starterSave();
   save.settings.follower = false;
   save.player.look = { skin: '3', hair: 'short', hairCol: 'p', outfit: 'coat', outfitCol: 't', accent: 'r', accessory: 'lanyard' };
@@ -420,14 +420,23 @@ test('a lanyard accent clamps on screen only and standing tint still wins', asyn
   const before = JSON.parse(JSON.stringify(save));
   await boot(page, save);
   const got = await page.evaluate(() => {
-    const tier0 = PixelPets.keeper.look.accent;
-    PixelPets.state.standing.glimmer = 10;
-    const tier1 = PixelPets.keeper.look.accent;
+    const at = (n) => {
+      PixelPets.state.standing.glimmer = n;
+      const look = PixelPets.keeper.look;
+      return { accent: look.accent, outfitCol: look.outfitCol, hairCol: look.hairCol };
+    };
     const raw = JSON.parse(localStorage.getItem('pixelpets.save.v2'));
-    return { tier0, tier1, saved: raw.player.look, keys: Object.keys(raw).sort(), v: raw.v };
+    return { tier0: at(0), tier1: at(10), tier2: at(25), tier3: at(45), tier4: at(70), saved: raw.player.look, keys: Object.keys(raw).sort(), v: raw.v };
   });
-  expect(got.tier0).toBe('N');
-  expect(got.tier1).toBe('c');
+  expect(got.tier0.accent).toBe('N');
+  expect(got.tier1.accent).toBe('s');
+  expect(got.tier1.outfitCol).toBe('t');
+  expect(got.tier2.accent).toBe('s');
+  expect(got.tier2.outfitCol).toBe('s');
+  expect(got.tier3.accent).toBe('s');
+  expect(got.tier3.outfitCol).toBe('s');
+  expect(got.tier3.hairCol).toBe('h');
+  expect(got.tier4.accent).toBe('s');
   expect(got.saved.accent).toBe('r');
   expect(got.saved.accessory).toBe('lanyard');
   expect(got.saved.outfitCol).toBe('t');
