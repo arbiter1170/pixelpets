@@ -241,3 +241,52 @@ test('T8 save unchanged: walking and reactions write nothing new to the save', a
   expect(Object.keys(s1.flags).filter(k => !(k in s0.flags) && !/^(daily|seen|map|visit|contact)/.test(k))).toEqual([]);
   expect(JSON.stringify(s1)).not.toMatch(/wander|npcLife|glance|react/i);
 });
+
+test('T9 schedules: a clock-placed person walks around their row tile, and a new row gives a new home and walk', async ({ page }) => {
+  await boot(page, { flags: { 'story.lizzy_met': true } });   // the flats lobby is staffed once Lizzy's thread opens
+  await page.evaluate(() => { PixelPets.clock.set('tue', 10, 0); PixelPets.clock.freeze(true); PixelPets.goto('hm_flats_lobby'); });
+  const far = async () => {
+    const spot = await page.evaluate(() => {
+      const g = PixelPets.npcLife().find(n => n.id === 'flats_landlord'); if (!g) return null;
+      const { w: W, h: H } = PixelPets.mapInfo, taken = new Set(PixelPets.mapObjs.map(o => o.x + ',' + o.y));
+      const d = (x, y) => Math.abs(g.home[0] - x) + Math.abs(g.home[1] - y);   // 4+ from home is 2+ off any 2-tile route
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (PixelPets.tileInfo(x, y).walk && !taken.has(x + ',' + y) && d(x, y) >= 4) return { x, y };
+      return null;
+    });
+    expect(spot, 'a tile 4+ away from Mr. Gristle').toBeTruthy();
+    await page.evaluate(([x, y]) => { PixelPets.goto('hm_flats_lobby', x, y); PixelPets.npcLife(); PixelPets.wanderNow(); }, [spot.x, spot.y]);
+  };
+  await far();
+  let g = await one(page, 'flats_landlord');
+  expect(g.sched).toBe(true);
+  expect(g.route).toBeTruthy();
+  const [h1, e1] = g.route;
+  await expect.poll(async () => { const n = await one(page, 'flats_landlord'); return [n.x, n.y].join(','); }, { timeout: 8000, intervals: [80] }).toBe(e1.join(','));
+  // The clock moves him: he stands on the new row's tile at once, and his walk starts from there.
+  await page.evaluate(() => PixelPets.clock.set('sat', 13, 0));
+  await expect.poll(async () => { const n = await one(page, 'flats_landlord'); return n && n.home.join(','); }).not.toBe(h1.join(','));
+  g = await one(page, 'flats_landlord');
+  const row = await page.evaluate(() => PixelPets.clock.place('Mr. Gristle'));
+  expect([g.x, g.y]).toEqual(g.home);
+  if (row && row.x != null) expect(g.home).toEqual([row.x, row.y]);
+  await far();
+  g = await one(page, 'flats_landlord');
+  expect(g.route && g.route[0]).toEqual(g.home);
+  const e2 = g.route[1];
+  await expect.poll(async () => { const n = await one(page, 'flats_landlord'); return [n.x, n.y].join(','); }, { timeout: 8000, intervals: [80] }).toBe(e2.join(','));
+  await page.evaluate(() => PixelPets.clock.clear());
+});
+
+test('T10 a quest arrow that names a walker\'s home tile follows the walker', async ({ page }) => {
+  await boot(page);
+  const r = await walkerAndSpot(page, 'hearthmoor', 5);
+  const [[hx, hy], [ex, ey]] = r.w.route;
+  const chain = [[{ id: 't_walker', label: 'Walker test', when: ['story.starter_received'], done: ['story.t_walker'], text: 'Test chain.', place: 'Hearthmoor', target: { map: 'hearthmoor', x: hx, y: hy } }]];
+  await page.evaluate(c => { PixelPets.debugSideChains(c); PixelPets.trackSide('t_walker'); }, chain);
+  await page.evaluate(([x, y]) => { PixelPets.goto('hearthmoor', x, y); PixelPets.npcLife(); }, [r.spot.x, r.spot.y]);
+  expect(await page.evaluate(() => PixelPets.sideQuest && PixelPets.sideQuest.point)).toMatchObject({ x: hx, y: hy, here: true });
+  await page.evaluate(() => PixelPets.wanderNow());
+  await expect.poll(async () => { const n = await one(page, r.w.id); return [n.x, n.y].join(','); }, { timeout: 8000, intervals: [80] }).toBe(ex + ',' + ey);
+  expect(await page.evaluate(() => PixelPets.sideQuest.point)).toMatchObject({ x: ex, y: ey, here: true });
+  await page.evaluate(() => PixelPets.debugSideChains(null));
+});

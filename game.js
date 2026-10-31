@@ -4591,7 +4591,7 @@ function present(o){
 const rollSpot = o => { const st = +S.flags[o.rollFlag] || 0, c = o.circuit[st % o.circuit.length]; return st && c ? { x: c[0], y: c[1] } : o; };
 function objPos(o){
   const sched = schedPos(o);
-  if (sched) return sched;
+  if (sched) { const P = mapRT.pos[o.id]; return P && P.sk === sched.x + ',' + sched.y ? P : sched; }   // NPC_LIFE: a walk around this row's tile
   return mapRT.pos[o.id] || (o.roll && o.circuit && o.rollFlag ? rollSpot(o) : o);
 }
 function objAt(x, y, pred){ return CUR.objs.find(o => present(o) && (!pred || pred(o)) && objPos(o).x === x && objPos(o).y === y) || null; }
@@ -6333,8 +6333,9 @@ function tickPatrol(dt){
   }
 }
 /* --- NPC_LIFE: walking routes, idle glances and talk reactions for the people the holder meets. Runtime only; never saved. ---
-   Walking: an npc with no authored patrol, clock schedule, counter, panel, match or catch rule gets a short back-and-forth route
-   (up to WANDER_REACH tiles) from its home tile, picked once per map visit. A route never uses a door, doorstep, warp, object
+   Walking: an npc with no authored patrol, counter, panel, match or catch rule gets a short back-and-forth route (up to
+   WANDER_REACH tiles) from its home tile, picked once per map visit. A clock-scheduled npc's home is its current row's tile:
+   it walks around that spot, and when the clock moves it, it stands on the new tile and works out a new walk there. A route never uses a door, doorstep, warp, object
    tile, trainer sight line or a one-wide gap, so a walker never opens or closes a way through. Walkers wait while the holder is
    within 2 tiles (as patrols do) and turn to face them; a map visit always starts everyone at home. Reduced motion: no walking,
    no glances, no hops; the balloons still show. Authored patrols (Officer Bren) keep their beat and now glide between tiles. */
@@ -6349,8 +6350,8 @@ function npcStepTaken(x, y){
   if (walk.to && walk.to.x === x && walk.to.y === y) return true;
   return !!wildAt(x, y);
 }
-function npcGlide(id, from, to, face, ms){
-  mapRT.pos[id] = { x: to.x, y: to.y, fx: from.x, fy: from.y, moving: true, facing: face, glide: { t0: now(), ms, x: from.x, y: from.y } };
+function npcGlide(id, from, to, face, ms, sk){
+  mapRT.pos[id] = { x: to.x, y: to.y, fx: from.x, fy: from.y, moving: true, facing: face, glide: { t0: now(), ms, x: from.x, y: from.y }, sk };
 }
 // Runs every drawn frame (scenes too), so a step that was mid-glide when a talk opened still lands.
 function tickGlides(){
@@ -6365,10 +6366,10 @@ function tickGlides(){
 function wanderable(o){
   if (!o || o.kind !== 'npc' || o.cast || o.pet || o.frozen || o.patrol || o.catch || o.roll) return false;
   if (o.shop || o.meals || o.wardrobe || o.panel || o.booth || o.board || o.keeper || o.shot) return false;
-  if (LANTERN_GUIDE_IDS[o.id] || NPC_STILL[o.id] || MATCH_WALKUP[CUR.id + ':' + o.id]) return false;
-  const bag = SCHED[o.name];
-  return !(bag && bag.byId[o.id]);
+  return !(LANTERN_GUIDE_IDS[o.id] || NPC_STILL[o.id] || MATCH_WALKUP[CUR.id + ':' + o.id]);
 }
+// Where an npc's walk starts: its clock row's tile while a schedule places it here, else its map tile.
+const npcHome = o => { const sc = schedPos(o); return sc ? { x: sc.x, y: sc.y, sched: true } : { x: o.x, y: o.y, sched: false }; };
 // Tiles a trainer looks along at its full sight, ignoring who stands there now: a walker must not hide or open a sight line.
 function sightTiles(){
   const out = new Set();
@@ -6399,6 +6400,7 @@ function wanderGap(x, y, closed){
 // tiles by id, any object's tile, doorsteps, trainer sight tiles, and the tiles routes have claimed so far.
 function lifeTiles(){
   if (mapRT.lifeTiles) return mapRT.lifeTiles;
+  const claim = mapRT.lifeClaim || (mapRT.lifeClaim = new Set());
   const block = new Map(), any = new Set(), steps = new Set();
   for (const o of CUR.objs) {
     if (!present(o)) continue;
@@ -6407,34 +6409,51 @@ function lifeTiles(){
     if (BLOCK_KINDS[o.kind]) block.set(k, o.id);
     if (o.kind === 'door') steps.add(q.x + ',' + (q.y + 1));
   }
-  return (mapRT.lifeTiles = { block, any, steps, sight: sightTiles(), claim: new Set() });
+  return (mapRT.lifeTiles = { block, any, steps, sight: sightTiles(), claim });
 }
 // The route for one npc this visit: [[homeX, homeY], [endX, endY]], or null to stand still. Tiles a walker claims are closed to
 // later walkers, so two routes never meet and never close a gap between them.
-function wanderRoute(o){
+function wanderRoute(o, home){
   if (!wanderable(o)) return null;
+  const hx = home.x, hy = home.y;
   const { block, any, steps, sight, claim } = lifeTiles();
   const closed = (x, y) => { const k = x + ',' + y, b = block.get(k); return claim.has(k) || (b != null && b !== o.id); };
   const usable = (x, y) => { const k = x + ',' + y;
     return !solidTile(x, y) && !any.has(k) && !steps.has(k) && !claim.has(k) && !sight.has(k) && !(S.world.x === x && S.world.y === y) && !wanderGap(x, y, closed); };
-  if (wanderGap(o.x, o.y, closed)) return null;
+  if (wanderGap(hx, hy, closed)) return null;
   let h = 0; for (const ch of String(o.id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const dirs = Object.values(DIRS), order = [0, 1, 2, 3].map(i => dirs[(i + h) % 4]);
   let best = null;
   for (const [dx, dy] of order) {
     let n = 0;
-    while (n < WANDER_REACH && usable(o.x + dx * (n + 1), o.y + dy * (n + 1))) n++;
+    while (n < WANDER_REACH && usable(hx + dx * (n + 1), hy + dy * (n + 1))) n++;
     if (n && (!best || n > best.n)) best = { n, dx, dy };
   }
   if (!best) return null;
-  const end = [o.x + best.dx * best.n, o.y + best.dy * best.n];
-  for (let i = 0; i <= best.n; i++) claim.add((o.x + best.dx * i) + ',' + (o.y + best.dy * i));
-  return [[o.x, o.y], end];
+  const end = [hx + best.dx * best.n, hy + best.dy * best.n];
+  for (let i = 0; i <= best.n; i++) claim.add((hx + best.dx * i) + ',' + (hy + best.dy * i));
+  return [[hx, hy], end];
 }
+// One record per npc per visit. A clock row that moves the npc (a new home tile) drops the old walk and claims, and the
+// next tick works out a walk from the new tile, against a fresh look at what stands where.
 function npcLife(o){
-  const L = mapRT.life || (mapRT.life = {});
-  if (!L[o.id]) L[o.id] = { route: wanderRoute(o), slot: 1, next: now() + lifeRnd(WANDER_FIRST_MS), glance: null, glanceAt: now() + lifeRnd(GLANCE_MS) };
+  const L = mapRT.life || (mapRT.life = {}), home = npcHome(o), key = home.x + ',' + home.y;
+  const was = L[o.id];
+  if (was && was.key !== key) {
+    const claim = mapRT.lifeClaim;
+    if (was.route && claim) { const [[ax, ay], [bx, by]] = was.route, dx = Math.sign(bx - ax), dy = Math.sign(by - ay);
+      for (let x = ax, y = ay; ; x += dx, y += dy) { claim.delete(x + ',' + y); if (x === bx && y === by) break; } }
+    mapRT.lifeTiles = null;
+    delete L[o.id];
+  }
+  if (!L[o.id]) L[o.id] = { o, home, key, route: wanderRoute(o, home), slot: 1, next: now() + lifeRnd(was ? WANDER_DWELL_MS : WANDER_FIRST_MS), glance: null, glanceAt: now() + lifeRnd(GLANCE_MS) };
   return L[o.id];
+}
+// The live tile of the npc whose walk starts at (x, y), for quest cues that name its home tile. Null when none walks from there.
+function liveNpcFrom(x, y){
+  const L = mapRT.life; if (!L) return null;
+  for (const id in L) { const r = L[id].route; if (r && r[0][0] === x && r[0][1] === y && present(L[id].o)) return objPos(L[id].o); }
+  return null;
 }
 // The facing a still npc shows while it glances aside. Never during a scene (the talk facing wins there).
 function glanceFace(o){
@@ -6448,7 +6467,8 @@ function tickWander(){
   let built = 0;                             // routes are worked out one npc per tick, so arriving on a busy map never stalls a frame
   for (const o of CUR.objs) {
     if (o.kind !== 'npc' || o.pet || o.frozen || o.cast || o.patrol || !present(o)) continue;
-    if (!(mapRT.life && mapRT.life[o.id]) && built++) continue;
+    const had = mapRT.life && mapRT.life[o.id];
+    if ((!had || had.key !== (h => h.x + ',' + h.y)(npcHome(o))) && built++) continue;
     const L = npcLife(o), P = mapRT.pos[o.id];
     if (P && P.glide) continue;
     const cur = objPos(o), near = Math.abs(cur.x - S.world.x) + Math.abs(cur.y - S.world.y);
@@ -6464,7 +6484,7 @@ function tickWander(){
       if (cur.x === dest[0] && cur.y === dest[1]) { L.slot++; L.next = t + lifeRnd(WANDER_DWELL_MS); continue; }
       const sx = Math.sign(dest[0] - cur.x), sy = Math.sign(dest[1] - cur.y), nx = cur.x + sx, ny = cur.y + sy;
       if (solidTile(nx, ny) || blockerAt(nx, ny) || (nx === S.world.x && ny === S.world.y) || npcStepTaken(nx, ny)) { L.next = t + 900; continue; }
-      npcGlide(o.id, cur, { x: nx, y: ny }, dirName(sx, sy), WANDER_STEP_MS);
+      npcGlide(o.id, cur, { x: nx, y: ny }, dirName(sx, sy), WANDER_STEP_MS, L.home.sched ? L.key : undefined);
       L.glance = null;
       continue;
     }
@@ -7423,7 +7443,7 @@ function followSpot(q){
 function pointOnMap(q){
   if (!q || !q.target) return null;
   if (q.target.map === CUR.id) {
-    const live = followSpot(q);
+    const live = followSpot(q) || liveNpcFrom(q.target.x, q.target.y);   // NPC_LIFE: a walker's cue follows it
     return live ? { x: live.x, y: live.y, here: true } : { x: q.target.x, y: q.target.y, here: true };
   }
   const ex = routeExit(CUR.id, q.target.map); if (ex) return { x: ex.x, y: ex.y, here: false };
@@ -18455,7 +18475,7 @@ function boot(){
     }),
     npcLife: () => CUR.objs.filter(o => o.kind === 'npc' && present(o)).map(o => {   // NPC_LIFE debug read; builds routes lazily
       const L = npcLife(o), q = objPos(o), r = reactOf(o.id), b = npcBob(o, now());
-      return { id: o.id, name: o.name, home: [o.x, o.y], route: L.route, x: q.x, y: q.y, moving: !!q.moving, patrol: !!o.patrol,
+      return { id: o.id, name: o.name, home: [L.home.x, L.home.y], sched: L.home.sched, route: L.route, x: q.x, y: q.y, moving: !!q.moving, patrol: !!o.patrol,
         glance: glanceFace(o), react: r ? r.glyph : null, move: r ? r.move : null, dx: b.dx, dy: b.dy, speaking: talkSpeaker === o.id,
         last: reactLast[o.id] ? { glyph: reactLast[o.id].glyph, move: reactLast[o.id].move, ms: Math.round(reactLast[o.id].until - reactLast[o.id].t0), at: reactLast[o.id].t0 } : null };
     }),
