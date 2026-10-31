@@ -14,7 +14,7 @@ const LABELS = ['SKIN', 'HAIR STYLE', 'HAIR COLOUR', 'OUTFIT', 'OUTFIT COLOUR', 
 const HAIR = ['short', 'long', 'spiky', 'bun', 'bob', 'pony', 'curls', 'buzz'];
 const OUTFITS = ['coat', 'hoodie', 'tunic', 'vest', 'sweater', 'dress'];
 const FACINGS = ['down', 'right', 'up', 'left'];
-const HATS = ['cap', 'beanie'];
+const HATS = ['cap', 'beanie', 'brimhat'];   // brimhat: PEOPLE_LOOKS_28 (NPC-only hat, not in the creator list)
 const NO_HAT = ['none', 'glasses', 'bow', 'scarf', 'sash', 'satchel', 'goggles', 'lanyard'];
 const HOLLIS = { skin: '1', hair: 'curls', hairCol: 'c', outfit: 'vest', outfitCol: 'l', accent: 'w', accessory: 'cap' };
 const RING = 5; // .swatch.on / .preview.on outer box-shadow
@@ -80,7 +80,7 @@ test('a hat clips hair above the brim and every other look matches the build bef
     if (id === 'none') continue;
     expect(now.KEEPER_ACCESSORIES[id].hatLine, id).toBeUndefined();
   }
-  expect(Object.keys(now.KEEPER_ACCESSORIES).filter(id => now.KEEPER_ACCESSORIES[id].hatLine).sort()).toEqual(['beanie', 'cap']);
+  expect(Object.keys(now.KEEPER_ACCESSORIES).filter(id => now.KEEPER_ACCESSORIES[id].hatLine).sort()).toEqual(['beanie', 'brimhat', 'cap']);
 
   for (const facing of ['down', 'right', 'up']) {
     for (const fr of [0, 1]) {

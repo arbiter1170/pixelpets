@@ -1,0 +1,137 @@
+{
+  "spec": "PEOPLE_LOOKS_28: Sprites people looks preview v2 (2026-10-29), approved by Vincent Oct 29. Main looks only; alts are not wired.",
+  "note": "Looks for people whose own data file is a verbatim design copy (maps_slice, act1_route2, cobblecrest, interiors) or does not merge looks (fernbrook_rooms). Holders use them through HOLDER_LOOK in game.js; Hattie, Odile and Keeper Amos through LOOK_OF_NAME; Old Miner and Pim through o.look in cobblecrest.json. Each key lives in this file only.",
+  "looks": {
+    "kitekid_pia": {
+      "skin": "1",
+      "hair": "pony",
+      "hairCol": "o",
+      "outfit": "hoodie",
+      "outfitCol": "y",
+      "accent": "r",
+      "accessory": "scarf"
+    },
+    "beachcomber_tam": {
+      "skin": "5",
+      "hair": "curls",
+      "hairCol": "d",
+      "outfit": "vest",
+      "outfitCol": "c",
+      "accent": "o",
+      "accessory": "brimhat"
+    },
+    "mothwatch_ollie": {
+      "skin": "3",
+      "hair": "bob",
+      "hairCol": "y",
+      "outfit": "sweater",
+      "outfitCol": "n",
+      "accent": "y",
+      "accessory": "glasses"
+    },
+    "rockhound_nell": {
+      "skin": "4",
+      "hair": "bun",
+      "hairCol": "r",
+      "outfit": "tunic",
+      "outfitCol": "m",
+      "accent": "y",
+      "accessory": "goggles"
+    },
+    "skipper_teo": {
+      "skin": "2",
+      "hair": "buzz",
+      "hairCol": "d",
+      "outfit": "tunic",
+      "outfitCol": "c",
+      "accent": "w",
+      "accessory": "cap"
+    },
+    "stargazer_tilda": {
+      "skin": "6",
+      "hair": "long",
+      "hairCol": "h",
+      "outfit": "dress",
+      "outfitCol": "n",
+      "accent": "s",
+      "accessory": "glasses"
+    },
+    "sketcher_lark": {
+      "skin": "1",
+      "hair": "bob",
+      "hairCol": "n",
+      "outfit": "sweater",
+      "outfitCol": "p",
+      "accent": "y",
+      "accessory": "satchel"
+    },
+    "mason_hobb": {
+      "skin": "5",
+      "hair": "short",
+      "hairCol": "w",
+      "outfit": "vest",
+      "outfitCol": "d",
+      "accent": "o"
+    },
+    "sweeper_bix": {
+      "skin": "3",
+      "hair": "pony",
+      "hairCol": "y",
+      "outfit": "tunic",
+      "outfitCol": "o",
+      "accent": "w",
+      "accessory": "goggles"
+    },
+    "cairn_cass": {
+      "skin": "6",
+      "hair": "bob",
+      "hairCol": "y",
+      "outfit": "vest",
+      "outfitCol": "t",
+      "accent": "w"
+    },
+    "neighbour_hattie": {
+      "skin": "4",
+      "hair": "bun",
+      "hairCol": "h",
+      "outfit": "sweater",
+      "outfitCol": "r",
+      "accent": "w",
+      "accessory": "scarf"
+    },
+    "orchard_odile": {
+      "skin": "2",
+      "hair": "curls",
+      "hairCol": "d",
+      "outfit": "dress",
+      "outfitCol": "b",
+      "accent": "y",
+      "accessory": "scarf"
+    },
+    "old_miner": {
+      "skin": "3",
+      "hair": "short",
+      "hairCol": "w",
+      "outfit": "coat",
+      "outfitCol": "d",
+      "accent": "y"
+    },
+    "kid_pim": {
+      "skin": "5",
+      "hair": "curls",
+      "hairCol": "d",
+      "outfit": "hoodie",
+      "outfitCol": "o",
+      "accent": "w"
+    },
+    "keeper_amos": {
+      "skin": "6",
+      "hair": "short",
+      "hairCol": "w",
+      "outfit": "coat",
+      "outfitCol": "g",
+      "accent": "y",
+      "accessory": "glasses"
+    }
+  }
+}

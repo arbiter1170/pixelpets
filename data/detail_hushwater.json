@@ -338,6 +338,7 @@
      "x": 22,
      "y": 4,
      "facing": "down",
+     "look": "keeper_scout",
      "when": [
       "!story.side=glimmer",
       "story.hc_council_done"
@@ -916,5 +917,44 @@
   "item.hw_rim_snack": "auto (pickup)",
   "item.hw_cut_treat": "auto (pickup)",
   "item.hw_falls_sip": "auto (pickup)"
+ },
+ "looks": {
+  "_note": "PEOPLE_LOOKS_28 (Sprites looks v2 2026-10-29, Vincent approved Oct 29). The three holders use them through HOLDER_LOOK in game.js.",
+  "climber_fenna": {
+   "skin": "2",
+   "hair": "pony",
+   "hairCol": "n",
+   "outfit": "tunic",
+   "outfitCol": "r",
+   "accent": "w",
+   "accessory": "satchel"
+  },
+  "angler_nils": {
+   "skin": "4",
+   "hair": "short",
+   "hairCol": "o",
+   "outfit": "vest",
+   "outfitCol": "b",
+   "accent": "y",
+   "accessory": "brimhat"
+  },
+  "owlwatch_ottilie": {
+   "skin": "5",
+   "hair": "long",
+   "hairCol": "d",
+   "outfit": "coat",
+   "outfitCol": "m",
+   "accent": "y",
+   "accessory": "glasses"
+  },
+  "keeper_scout": {
+   "skin": "1",
+   "hair": "pony",
+   "hairCol": "d",
+   "outfit": "coat",
+   "outfitCol": "g",
+   "accent": "y",
+   "accessory": "brimhat"
+  }
  }
 }
