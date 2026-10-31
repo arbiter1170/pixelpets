@@ -1,5 +1,5 @@
-// BATTLE_BACKDROPS (D1009, red, off until Vincent approves): every map draws its own battle scene from its own tiles,
-// props and PAL. The flag is off in this build, so battles keep today's backdrop; ?debug=1 forces it on (setBattleBg).
+// BATTLE_BACKDROPS (D1009, red, settled by Vincent Oct 31, 2026; supersedes D167): every map draws its own battle scene
+// from its own tiles, props and PAL. The flag is on; ?debug=1 can force the old backdrop (setBattleBg(false)) to compare.
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -44,38 +44,38 @@ function patch(page, x0, y0, w, h) {
   }, { x0, y0, w, h });
 }
 
-test('the flag is off: battles keep today\'s backdrop until Vincent says yes', async ({ page }) => {
+test('the flag is on: a battle draws its map\'s scene, and debug can still show the old backdrop', async ({ page }) => {
   await boot(page);
   await openWildOn(page, 'brinewick');
   const sc = await page.evaluate(() => PixelPets.battleScene);
-  expect(sc.on).toBe(false);
-  expect(sc.id).toBe(null);
+  expect(sc.on).toBe(true);
+  expect(sc.id).toBe('brinewick');
   const size = await page.evaluate(() => { const c = document.getElementById('battleCanvas'); return { W: c.width, H: c.height }; });
   const x0 = 34, y0 = size.H - 8, w = size.W - 34, h = 8;
-  const off = await patch(page, x0, y0, w, h);
-  await page.evaluate(() => PixelPets.setBattleBg(true));
-  await page.waitForTimeout(150);
-  expect(await page.evaluate(() => PixelPets.battleScene.id)).toBe('brinewick');
   const on = await patch(page, x0, y0, w, h);
-  expect(on, 'the new scene draws').not.toBe(off);
+  await page.evaluate(() => PixelPets.setBattleBg(false));
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => PixelPets.battleScene.id)).toBe(null);
+  const off = await patch(page, x0, y0, w, h);
+  expect(off, 'the old backdrop draws').not.toBe(on);
   await page.evaluate(() => PixelPets.setBattleBg(null));
   await page.waitForTimeout(150);
-  expect(await patch(page, x0, y0, w, h), 'back to the build flag: the old backdrop').toBe(off);
+  expect(await patch(page, x0, y0, w, h), 'back to the build flag: the map\'s scene').toBe(on);
   await closeBattle(page);
 });
 
-test('the debug hooks are inert without ?debug=1', async ({ page }) => {
+test('the debug hooks are inert without ?debug=1, and players get the scene', async ({ page }) => {
   await boot(page, '');
   // a hook that is missing or returns null is inert either way
   const r = await page.evaluate(() => {
     const call = (f, ...a) => (typeof f === 'function' ? f(...a) : null);
-    return { set: call(PixelPets.setBattleBg, true), art: call(PixelPets.battleSceneArt, 'route1', 60, 83), ids: call(PixelPets.battleSceneIds), sc: PixelPets.battleScene };
+    return { set: call(PixelPets.setBattleBg, false), art: call(PixelPets.battleSceneArt, 'route1', 60, 83), ids: call(PixelPets.battleSceneIds), sc: PixelPets.battleScene };
   });
   expect(r.set == null, 'setBattleBg').toBe(true);
   expect(r.art == null, 'battleSceneArt').toBe(true);
   expect(r.ids == null, 'battleSceneIds').toBe(true);
-  expect(r.sc.on).toBe(false);
-  expect(r.sc.id).toBe(null);
+  expect(r.sc.on, 'setBattleBg(false) did nothing').toBe(true);
+  expect(r.sc.id, 'the current map has its scene').toBe(r.sc.map);
 });
 
 test('every battle map opens on its own scene, and the cache stays capped', async ({ page }) => {

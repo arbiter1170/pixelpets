@@ -3621,10 +3621,10 @@ function makeBackdrop(kind, H, mode, W = 56){
   bdCache.set(key, c);
   return c;
 }
-/* ---------- battle scenes (BATTLE_BACKDROPS, D1009: red, off until Vincent approves; D167 stays the rule until then) ---------- */
+/* ---------- battle scenes (BATTLE_BACKDROPS, D1009: red, settled by Vincent Oct 31, 2026; supersedes D167) ---------- */
 // battle_bg.js holds one scene per map and draws it from that map's own tiles and props; this side hands it the art.
-// While the flag is off every battle keeps makeBackdrop. ?debug=1 can force it on (setBattleBg) for previews and tests.
-const BATTLE_BG_ON = false;
+// A map without a scene falls back to makeBackdrop. ?debug=1 can force the old backdrop (setBattleBg(false)) to compare.
+const BATTLE_BG_ON = true;
 let battleBgForce = null;
 function battleBgOn(){ return battleBgForce != null ? battleBgForce : BATTLE_BG_ON; }
 function battleSceneId(id = S && S.world.map){ return battleBgOn() && window.BattleBG && WORLD[id] && BattleBG.scenes[id] ? id : null; }

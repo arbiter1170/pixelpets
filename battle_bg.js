@@ -1,4 +1,4 @@
-/* Walklings: battle scenes (BATTLE_BACKDROPS, D1009: red, off until Vincent approves). No dependencies beyond PAL.
+/* Walklings: battle scenes (BATTLE_BACKDROPS, D1009: red, settled by Vincent Oct 31, 2026). No dependencies beyond PAL.
    One scene per map id. Each is drawn from that map's own tiles (env.tile resolves the map's skin, wall kit and seeded
    variants), its own prop sprites (env.art) and PAL fills. No alpha anywhere, so every pixel is a palette colour.
    Outdoor: sky, a far layer and one landmark taken from the map, then the map's ground tiles from the horizon down.
