@@ -15198,41 +15198,41 @@ const SEAL_ART = { seal_cobblecrest: [
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ] };
-// Build 3: delivered 16x16 Bright Tier 1 lanyard. Gold rim, mint field, one white mark.
-// Tier 2 is the same badge with two white marks.
+// Build 3: delivered 16x16 Bright Tier 1 lanyard. Gold rim, wine field, soot shade, one white mark.
+// Tier 2 is the same badge with two white marks. Tier 3 is built from Tier 1.
 const LANYARD_TIER1 = [
   '.....oooooo.....',
   '...ooyyyyyyoo...',
-  '..oyyssssslyyo..',
-  '.oyssssssllllyo.',
-  '.oyssssslllllyo.',
-  'oyssssswwlllllyo',
-  'oysssslwwlllllyo',
-  'oysssllwwlllllyo',
-  'oysslllwwlllllyo',
-  'oysllllwwllllyoo',
-  'oylllllwwllllyoo',
-  '.oylllllllllyoo.',
-  '.oylllllllyyooo.',
-  '..oyyllllyoooo..',
+  '..oyyNNNNNVyyo..',
+  '.oyNNNNNNVVVVyo.',
+  '.oyNNNNNVVVVVyo.',
+  'oyNNNNNwwVVVVVyo',
+  'oyNNNNVwwVVVVVyo',
+  'oyNNNVVwwVVVVVyo',
+  'oyNNVVVwwVVVVVyo',
+  'oyNVVVVwwVVVVyoo',
+  'oyVVVVVwwVVVVyoo',
+  '.oyVVVVVVVVVyoo.',
+  '.oyVVVVVVVyyooo.',
+  '..oyyVVVVyoooo..',
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ];
 const LANYARD_TIER2 = [
   '.....oooooo.....',
   '...ooyyyyyyoo...',
-  '..oyywsssswyyo..',
-  '.oyswwssslwwlyo.',
-  '.oyswwssllwwlyo.',
-  'oysswwslllwwllyo',
-  'oysswwllllwwllyo',
-  'oysswwllllwwllyo',
-  'oysswwllllwwllyo',
-  'oyslwwllllwwlyoo',
-  'oyllwwllllwwlyoo',
-  '.oylwwllllwwyoo.',
-  '.oylwwllllyyooo.',
-  '..oyywlllyoooo..',
+  '..oyywNNNNwyyo..',
+  '.oyNwwNNNVwwVyo.',
+  '.oyNwwNNVVwwVyo.',
+  'oyNNwwNVVVwwVVyo',
+  'oyNNwwVVVVwwVVyo',
+  'oyNNwwVVVVwwVVyo',
+  'oyNNwwVVVVwwVVyo',
+  'oyNVwwVVVVwwVyoo',
+  'oyVVwwVVVVwwVyoo',
+  '.oyVwwVVVVwwyoo.',
+  '.oyVwwVVVVyyooo.',
+  '..oyywVVVyoooo..',
   '...ooyyyyoooo...',
   '.....oooooo.....',
 ];
@@ -15256,7 +15256,7 @@ SEAL_ART.seal_brinewick = [
   '....oooooooo....',
 ];
 const LANYARD_TIER3 = LANYARD_TIER1.map((row, y) => (y < 2 || y > 12) ? row
-  : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'sl'.includes(ch)) ? 'w' : ch).join(''));
+  : [...row].map((ch, x) => ((x === 4 || x === 7 || x === 10) && 'NV'.includes(ch)) ? 'w' : ch).join(''));
 SEAL_ART.seal_glim_1 = LANYARD_TIER1; SEAL_ART.seal_glim_2 = LANYARD_TIER2; SEAL_ART.seal_glim_3 = LANYARD_TIER3;
 function showSealCard(id){
   const c = $('#btSealArt'), g = ctx(c); g.clearRect(0, 0, c.width, c.height);
@@ -18880,7 +18880,7 @@ function boot(){
   api.glimmerPalette = () => glimmerPaletteReport();
   api.artTally = name => {
     if (!DEBUG) return null;
-    const src = WART[name];
+    const src = WART[name] || TILES[name];
     if (!src) return null;
     const frames = Array.isArray(src) ? src : [src];
     return frames.filter(Boolean).map(canvas => {

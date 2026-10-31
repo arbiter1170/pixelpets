@@ -1376,11 +1376,11 @@ function buildTiles(){
   T.wall_ferry = wallTop('w', 'n', [[3, 6, 'h'], [10, 9, 'r']]);
   T.wall_ferry_face = wallFace('w', 'n', 'r', [[5, 7, 'h']], null);
   T.wall_ferry_win = wallFace('w', 'n', 'r', [], [3, 3, 10, 6, 'n', 's']);
-  T.mat_depot = doormat('m', 'l');
-  T.depot_line = mkTile(g => { px(g, PAL.l, 7, 0, 2, 16); });   // a painted mint aisle line, walkable decal
-  T.wall_depot = wallTop('w', 'l', [[4, 6, 'h'], [11, 9, 's']]);
-  T.wall_depot_face = wallFace('w', 'l', 'h', [[6, 6, 's']], null);
-  T.wall_depot_win = wallFace('w', 'l', 'h', [], [4, 2, 8, 7, 'h', 's']);
+  T.mat_depot = doormat('m', 'V');
+  T.depot_line = mkTile(g => { px(g, PAL.V, 7, 0, 2, 16); });   // a painted wine aisle line, walkable decal
+  T.wall_depot = wallTop('w', 'V', [[4, 6, 'h'], [11, 9, 'N']]);
+  T.wall_depot_face = wallFace('w', 'V', 'h', [[6, 6, 'N']], null);
+  T.wall_depot_win = wallFace('w', 'V', 'h', [], [4, 2, 8, 7, 'h', 'N']);
   T.wall_chalk = wallTop('y', 'o', [[4, 5, 'w'], [11, 9, 'n']]);
   T.wall_chalk_face = wallFace('y', 'o', 'n', [[6, 6, 'w']], null);
   T.wall_chalk_win = wallFace('y', 'o', 'n', [], [4, 2, 8, 6, 'n', 'w']);
@@ -1842,7 +1842,7 @@ const HOUSE_SKINS = {
   bw_lantern: hcSkin('floor_ropeplank', 'wall_brine_rest', 'mat_brine_rest', { remap: { '=': 'rug_navy_runner' }, wall: wallRow('nbdwhnnFdcsn') }),
   bw_store: hcSkin('floor_tarboard', 'wall_chandler', 'mat_chandler', { wall: wallRow('mhdhKFFdFcsF') }),
   bw_hall: hcSkin('floor_ferrydeck', 'wall_ferry', 'mat_ferry', { decal: { q: 'deck_lane' }, walk: { q: 1 }, wall: wallRow('ncdwhrrdnswn') }),
-  bw_depot: hcSkin('floor_sealed', 'wall_depot', 'mat_depot', { decal: { q: 'depot_line' }, walk: { q: 1 }, wall: wallRow('dmdmdllddswl') }),
+  bw_depot: hcSkin('floor_sealed', 'wall_depot', 'mat_depot', { decal: { q: 'depot_line' }, walk: { q: 1 }, wall: wallRow('dmdmdVVddNwV') }),
   // B7. Observatory and the three dream rooms. `u` and `v` stay the shared window light and wall shadow.
   obs: { remap: { '#':'wall_obs_dome', W:'wall_obs_face', W2:'wall_obs_win', '.':'floor_dusk', m:'mat_dusk' }, decal: { v:'wall_shadow_obs', u:'window_light_obs', z:'star_tick_brass' }, walk: { v:1, u:1, z:1 }, variants: floorFixVar('floor_dusk'), wall: wallRow('FGdGFyFFynsF') },
   dream_2004: { remap: { '#':'wall_mist', W:'wall_mist_face', W2:'wall_mist_win', '.':'floor_mist', '=':'rug_mem' }, decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1 }, variants: floorFixVar('floor_mist'), wall: wallRow('mhnhmcndmcwb') },
@@ -2022,19 +2022,19 @@ function buildWorldArt(){
     px(g,PAL.d,7,8,2,7); px(g,PAL.m,5,15,6,1); px(g,PAL.d,5,3,6,6); px(g,PAL.l,6,4,4,4); px(g,PAL.w,6,4,2,1); px(g,PAL.y,7,5+f,2,2);
     px(g,PAL.Q,1,1,1,1); px(g,PAL.Q,14,1,1,1); px(g,PAL.Q,1,12,1,1); px(g,PAL.Q,14,10,1,1);
   }));
-  // The Signal Review. Mint relay ring, the Capital screen face, and the loaned crate. PAL only.
+  // The Signal Review. Crimson relay ring, the Capital screen face, and the loaned crate. PAL only.
   A.relay_ring = [0, 1, 2].map(f => mkTile(g => {
     const y = 12 - f;
     px(g, PAL.Q, 2, y, 12, 1); px(g, PAL.Q, 1, y - 1, 1, 2); px(g, PAL.Q, 14, y - 1, 1, 2);
     px(g, PAL.y, 4, y, 2, 1); px(g, PAL.y, 10, y, 2, 1);
   }));
   A.capital_screen = mkTile(g => {
-    px(g, PAL.d, 1, 1, 14, 14); px(g, PAL.k, 2, 2, 12, 12); px(g, PAL.s, 3, 3, 10, 8);
-    px(g, PAL.k, 5, 5, 2, 2); px(g, PAL.k, 9, 5, 2, 2); px(g, PAL.l, 6, 9, 4, 1);
+    px(g, PAL.d, 1, 1, 14, 14); px(g, PAL.k, 2, 2, 12, 12); px(g, PAL.V, 3, 3, 10, 8);
+    px(g, PAL.k, 5, 5, 2, 2); px(g, PAL.k, 9, 5, 2, 2); px(g, PAL.w, 6, 9, 4, 1);
     px(g, PAL.m, 2, 12, 12, 2);
   });
   A.loan_crate = mkTile(g => {
-    px(g, PAL.d, 1, 3, 14, 13); px(g, PAL.o, 2, 4, 12, 11); px(g, PAL.s, 2, 8, 12, 2);
+    px(g, PAL.d, 1, 3, 14, 13); px(g, PAL.o, 2, 4, 12, 11); px(g, PAL.V, 2, 8, 12, 2);
     px(g, PAL.m, 5, 5, 6, 4); px(g, PAL.k, 6, 6, 1, 1); px(g, PAL.k, 9, 6, 1, 1); px(g, PAL.h, 7, 8, 2, 1);
   });
   // BRINEWICK: the Glimmer Cell crate (ASSET_HANDOFF T4, a cage and not a box), the same crate opened, and the Hall's tide gauge.
@@ -2042,15 +2042,15 @@ function buildWorldArt(){
     px(g, PAL.d, 1, 2, 14, 14); px(g, PAL.m, 2, 3, 12, 12);
     oval(g, 7.5, 10.5, 4, 3, PAL.h); px(g, PAL.w, 6, 9, 1, 1); px(g, PAL.w, 9, 9, 1, 1);
     [3, 6, 9, 12].forEach(x => px(g, PAL.d, x, 3, 1, 12)); px(g, PAL.d, 2, 7, 12, 1);
-    px(g, PAL.h, 2, 3, 12, 1); px(g, PAL.l, 5, 1, 6, 2); px(g, PAL.s, 6 + f, 1, 3, 1);
+    px(g, PAL.h, 2, 3, 12, 1); px(g, PAL.V, 5, 1, 6, 2); px(g, PAL.Q, 6 + f, 1, 3, 1);
   }));
-  A.depot_crate = mkTile(g => {   // the depot's identical stock: cool grey slats, one mint leaf, no warm colour
+  A.depot_crate = mkTile(g => {   // the depot's identical stock: cool grey slats, one wine leaf, soot stem
     px(g, PAL.d, 1, 3, 14, 13); px(g, PAL.h, 2, 4, 12, 11); px(g, PAL.K, 2, 8, 12, 1); px(g, PAL.K, 2, 12, 12, 1);
-    px(g, PAL.w, 2, 4, 12, 1); px(g, PAL.l, 7, 5, 2, 2); px(g, PAL.g, 7, 7, 1, 1); px(g, PAL.d, 1, 15, 14, 1);
+    px(g, PAL.w, 2, 4, 12, 1); px(g, PAL.V, 7, 5, 2, 2); px(g, PAL.N, 7, 7, 1, 1); px(g, PAL.d, 1, 15, 14, 1);
   });
   A.cell_crate_open = mkTile(g => {
     px(g, PAL.d, 1, 6, 14, 10); px(g, PAL.k, 2, 7, 12, 8); px(g, PAL.m, 2, 14, 12, 1);
-    px(g, PAL.d, 0, 2, 13, 3); px(g, PAL.m, 1, 3, 11, 1); px(g, PAL.l, 4, 2, 5, 1);
+    px(g, PAL.d, 0, 2, 13, 3); px(g, PAL.m, 1, 3, 11, 1); px(g, PAL.V, 4, 2, 5, 1);
   });
   A.tide_gauge = mkTile(g => {
     px(g, PAL.b, 2, 13, 12, 3); px(g, PAL.c, 3, 13, 4, 1);
@@ -2083,7 +2083,7 @@ function buildWorldArt(){
   });
   A.stage_bunting = mkTile(g => {
     px(g,PAL.d,2,2,1,14); px(g,PAL.d,13,2,1,14); px(g,PAL.m,2,2,12,1);
-    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.l : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.l, x, 5, 2, 2); }
+    for (let x = 3; x < 13; x += 2) { px(g, x % 4 ? PAL.V : PAL.w, x, 3, 2, 2); px(g, x % 4 ? PAL.w : PAL.V, x, 5, 2, 2); }
   });
   A.miner_lamps = mkTile(g => {
     px(g,PAL.o,1,3,14,2); px(g,PAL.d,1,5,14,1); px(g,PAL.o,1,12,14,2);

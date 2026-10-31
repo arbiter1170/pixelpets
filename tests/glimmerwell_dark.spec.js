@@ -1,4 +1,4 @@
-/* GLIMMERWELL_PALETTE v0.3.1 option (b). Wine V, soot N, crimson Q.
+/* GLIMMERWELL_PALETTE v0.4 option (b). Wine V, soot N, crimson Q.
    The devCheck fails above 10% Q or a soot band under 6 px (horizontal runs of 2 or more).
    Art targets are tighter: the Associate bag stays at or under 3.5%, every other locked look at or under 1.7%.
    Widths are the Playwright projects (320, 375, 390). Save stays pixelpets.save.v2 with v 2 and gains no field. */
@@ -83,6 +83,98 @@ test('locked looks stay under the crimson cap and the soot band, and the save is
     expect(frame['#c81818']).toBeGreaterThan(0);
     expect(frame['#ffcd75']).toBeGreaterThan(0);
   }
+});
+
+test('phase 2 props, the depot room and the lanyard icons use wine and soot', async ({ page }) => {
+  const save = starterSave();
+  save.settings.follower = false;
+  await boot(page, save);
+  const got = await page.evaluate(() => {
+    const one = (name) => PixelPets.artTally(name)[0];
+    const count = (rows, ch) => rows.reduce((n, row) => n + [...row].filter((c) => c === ch).length, 0);
+    const tier = (id) => {
+      const rows = PixelPets.sealArt(id);
+      return { l: count(rows, 'l'), s: count(rows, 's'), V: count(rows, 'V'), N: count(rows, 'N'), w: count(rows, 'w'), y: count(rows, 'y'), o: count(rows, 'o'), len: rows.length, width: rows.every((r) => r.length === 16) };
+    };
+    return {
+      screen: one('capital_screen'),
+      loan: one('loan_crate'),
+      cell: PixelPets.artTally('cell_crate'),
+      open: one('cell_crate_open'),
+      depot: one('depot_crate'),
+      bunting: one('stage_bunting'),
+      stand: one('glimmer_stand'),
+      gate: one('glimmer_gate'),
+      tent: one('census_tent'),
+      crate: one('rc_crate'),
+      mat: one('mat_depot'),
+      line: one('depot_line'),
+      wall: one('wall_depot'),
+      face: one('wall_depot_face'),
+      win: one('wall_depot_win'),
+      kit: one('bw_depot__face_win'),
+      lamps: one('miner_lamps'),
+      t1: tier('seal_glim_1'),
+      t2: tier('seal_glim_2'),
+      t3: tier('seal_glim_3'),
+    };
+  });
+  const wine = '#960e16', soot = '#18140f', crimson = '#c81818', mint = '#a7f070', ice = '#73eff7', white = '#f4f4f4';
+  const noOld = (frame, name) => {
+    expect(frame[mint] || 0, name + ' mint').toBe(0);
+    expect(frame[ice] || 0, name + ' ice').toBe(0);
+  };
+  expect(got.screen[wine]).toBeGreaterThan(0);
+  expect(got.screen[white]).toBeGreaterThan(0);
+  expect(got.screen[crimson] || 0).toBe(0);
+  noOld(got.screen, 'screen');
+  expect(got.loan[wine]).toBeGreaterThan(0);
+  noOld(got.loan, 'loan');
+  for (const frame of got.cell) {
+    expect(frame[crimson]).toBe(3);
+    expect(frame[wine]).toBeGreaterThan(0);
+    noOld(frame, 'cell');
+  }
+  expect(got.open[wine]).toBeGreaterThan(0);
+  expect(got.open[crimson] || 0).toBe(0);
+  noOld(got.open, 'open');
+  expect(got.depot[wine]).toBe(4);
+  expect(got.depot[soot]).toBe(1);
+  expect(got.depot['#38b764'] || 0).toBe(0);
+  noOld(got.depot, 'depot');
+  expect(got.bunting[wine]).toBeGreaterThan(0);
+  expect(got.bunting[white]).toBeGreaterThan(0);
+  noOld(got.bunting, 'bunting');
+  for (const [name, frame] of [['stand', got.stand], ['gate', got.gate], ['tent', got.tent], ['crate', got.crate]]) {
+    expect(frame[wine], name).toBeGreaterThan(0);
+    noOld(frame, name);
+  }
+  expect(got.stand[soot]).toBeGreaterThan(0);
+  for (const [name, frame] of [['mat', got.mat], ['line', got.line], ['wall', got.wall], ['face', got.face], ['kit', got.kit]]) {
+    expect(frame[wine], name).toBeGreaterThan(0);
+    noOld(frame, name);
+  }
+  expect(got.wall[soot]).toBeGreaterThan(0);
+  expect(got.face[soot]).toBeGreaterThan(0);
+  expect(got.kit[soot]).toBeGreaterThan(0);
+  expect(got.win[wine]).toBeGreaterThan(0);
+  expect(got.win[soot]).toBeGreaterThan(0);
+  expect(got.win[ice]).toBe(4);
+  expect(got.win[mint] || 0).toBe(0);
+  expect(got.lamps[wine] || 0).toBe(0);
+  expect(got.lamps[soot] || 0).toBe(0);
+  for (const tier of [got.t1, got.t2, got.t3]) {
+    expect(tier.len).toBe(16);
+    expect(tier.width).toBe(true);
+    expect(tier.l).toBe(0);
+    expect(tier.s).toBe(0);
+    expect(tier.o).toBeGreaterThan(0);
+    expect(tier.y).toBeGreaterThan(0);
+  }
+  expect(got.t1.V).toBeGreaterThan(0);
+  expect(got.t1.N).toBeGreaterThan(0);
+  expect(got.t2.w).toBeGreaterThan(got.t1.w);
+  expect(got.t3.w).toBeGreaterThan(got.t1.w);
 });
 
 test('the legend is two sentences, each on its own line, and the hold label stays ice', async ({ page }) => {
