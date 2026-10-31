@@ -402,6 +402,28 @@ async function ringHits(page, sel) {
   }, sel);
 }
 
+test('a one-move Walkling gets no move-order card, and the chain still ends', async ({ page }) => {
+  const save = starterSave();
+  save.settings.controls = 'modern';
+  save.settings.tips = true;
+  save.party.push(pet({ id: 'petf', nick: 'Fern', moves: ['ripple_jab'] }));
+  await boot(page, save);
+  // Loading adds the signature move, so trim it in play to reach the one-move guard.
+  await page.evaluate(() => { PixelPets.state.party[1].moves = ['ripple_jab']; });
+  await expect(page.locator('#unlockTitle')).toHaveText('Your Party', { timeout: 4000 });
+  await page.locator('#unlockShow').click();
+  await expect(page.locator('#unlockTitle')).toHaveText('View moves');
+  await page.locator('#unlockShow').click();
+  await expect(page.locator('#ovWalkling')).toBeVisible();
+  await expect(page.locator('#unlockCard')).toBeHidden();
+  await expect(page.locator('#tutRing')).toBeHidden();
+  await page.waitForTimeout(900);
+  await expect(page.locator('#unlockCard')).toBeHidden();
+  await page.locator('#wlClose').click();
+  await page.waitForTimeout(1200);
+  await expect(page.locator('#unlockCard')).toBeHidden();
+});
+
 test('the party tip chain rings its targets, and SKIP marks all three', async ({ page }) => {
   test.setTimeout(60000);
   const width = page.viewportSize().width;
@@ -410,7 +432,7 @@ test('the party tip chain rings its targets, and SKIP marks all three', async ({
     const save = starterSave();
     save.settings.controls = mode;
     save.settings.tips = true;
-    save.party.push(pet({ id: 'petb', nick: 'Brook', xp: 80 }));
+    save.party.push(pet({ id: 'petb', nick: 'Brook', xp: 80, moves: ['ripple_jab', 'mist_veil', 'bump'] }));
     await boot(page, save);
     await expect(page.locator('#unlockTitle')).toHaveText('Your Party', { timeout: 4000 });
     const partySel = mode === 'modern' ? '#colFloat' : '#tabs button[data-tab="col"]';
@@ -419,17 +441,33 @@ test('the party tip chain rings its targets, and SKIP marks all three', async ({
     await expect(page.locator('#unlockTitle')).toHaveText('View moves');
     expect(await ringHits(page, '#partyBoard .party-slot[data-slot="1"] .slot-main')).toBe(true);
     await page.locator('#unlockShow').click();
-    await expect(page.locator('#unlockTitle')).toHaveText('Move up');
+    // The third card rings the MOVES list, not the Party UP button under MOVE (that UP greys out once tapped).
+    await expect(page.locator('#unlockTitle')).toHaveText('Move order');
     expect(await page.locator('#unlockSkip')).toHaveText('GOT IT');
-    expect(await ringHits(page, '#wlActions [aria-label="Party up"]')).toBe(true);
-    const order = await page.evaluate(() => PixelPets.state.party.map((p) => p.id));
-    await page.locator('#wlActions [aria-label="Party up"]').click();
-    const swapped = await page.evaluate(() => PixelPets.state.party.map((p) => p.id));
-    expect(swapped[0]).toBe(order[1]);
-    expect(swapped[1]).toBe(order[0]);
+    expect(await page.locator('#unlockBody').textContent()).toContain('MOVES');
+    expect(await ringHits(page, '#wlMoves')).toBe(true);
+    expect(await ringHits(page, '#wlActions [aria-label="Party up"]')).toBe(false);
+    const view = await page.evaluate(() => {
+      const r = document.querySelector('#tutRing').getBoundingClientRect();
+      const c = document.querySelector('#unlockCard').getBoundingClientRect();
+      const m = document.querySelector('#wlMoves').getBoundingClientRect();
+      const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      return { top: r.top, bottom: r.bottom, vh: innerHeight, cardIn: c.top >= 0 && c.bottom <= innerHeight, cardOnMoves: hit(c, m) };
+    });
+    expect(view.top).toBeGreaterThanOrEqual(0);
+    expect(view.bottom).toBeLessThanOrEqual(view.vh);
+    expect(view.cardIn).toBe(true);
+    expect(view.cardOnMoves).toBe(false);
+    if (width !== 375) await page.screenshot({ path: path.join(artifactsDir('playtest-fixes-3'), 'move-order-' + mode + '-' + width + '.png') });
+    const order = await page.evaluate(() => PixelPets.state.party[1].moves.slice());
+    await page.locator('#wlMoves [aria-label="Move Ripple Jab down"]').click();
+    const swapped = await page.evaluate(() => PixelPets.state.party[1].moves.slice());
+    expect(swapped).toEqual([order[1], order[0]].concat(order.slice(2)));
     await expect(page.locator('#unlockCard')).toBeVisible();
+    expect(await ringHits(page, '#wlMoves')).toBe(true);
     await page.locator('#unlockSkip').click();
     await expect(page.locator('#unlockCard')).toBeHidden();
+    await page.locator('#wlClose').click();
     await expect(page.locator('#ownedList .group-label').first()).toHaveText('Party 2/6');
   }
 
