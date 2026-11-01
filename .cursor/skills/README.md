@@ -21,6 +21,8 @@ Skills for this repo live here, one folder per skill. Each folder has a `SKILL.m
 | `walklings-key-collision-check` | [walklings-key-collision-check/SKILL.md](walklings-key-collision-check/SKILL.md) | Checking a PR that adds looks, skins or palette keys so one key is not defined in two files |
 | `walklings-room-packet` | [walklings-room-packet/SKILL.md](walklings-room-packet/SKILL.md) | Writing a room reskin, layout change, palette fix or interior expansion packet |
 | `walklings-cutscene` | [walklings-cutscene/SKILL.md](walklings-cutscene/SKILL.md) | Staging a scene as a cutscene, or building or reviewing a cutscene packet |
+| `walklings-lore-feed` | [walklings-lore-feed/SKILL.md](walklings-lore-feed/SKILL.md) | Adding or reviewing NEWS stories or Ribbit posts; re-reading the lore before every batch |
+| `walklings-lore-index` | [walklings-lore-index/SKILL.md](walklings-lore-index/SKILL.md) | STORY.md changed version, or a feed line needs a lore entry the design index lacks |
 | `walklings-battle-anim` | [walklings-battle-anim/SKILL.md](walklings-battle-anim/SKILL.md) | Adding or tuning a battle move animation or hit feel (MOVE_FX rows in `mv_fx.js`, `drawBattle`) |
 | `walklings-dialog-camera` | [walklings-dialog-camera/SKILL.md](walklings-dialog-camera/SKILL.md) | Framing a talk so it feels zoomed in (ROOM_ZOOM, speaker nudge, curtain bars, big portraits) |
 | `walklings-dialog-npc-walk` | [walklings-dialog-npc-walk/SKILL.md](walklings-dialog-npc-walk/SKILL.md) | Making an NPC, cast member, Walkling or the holder walk, enter or leave during a scene |

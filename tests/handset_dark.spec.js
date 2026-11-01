@@ -317,7 +317,9 @@ test('the cracked handset wears soot, wine, one crimson ring, w text and y names
 test('no #ovPhone.hack rule in style.css keeps an old green, and KEEPER1 rules match the merge base', async () => {
   const css = fs.readFileSync(path.resolve(__dirname, '..', 'style.css'), 'utf8');
   const rulesOf = (text, re) => text.split('\n').filter((l) => re.test(l));
-  const hackRules = rulesOf(css, /#ovPhone\.hack/);
+  // The NEWS pane's own .hack rules (D1012, landed in #237 after this slice was cut) keep their greens until
+  // Vincent decides whether D1100 covers that pane; the home tile and its unread dot are recoloured here.
+  const hackRules = rulesOf(css, /#ovPhone\.hack/).filter((l) => !/\.news-|news-root/.test(l));
   expect(hackRules.length).toBeGreaterThan(60);
   const hackText = hackRules.join('\n') + '\n' + css.slice(css.indexOf('#ovPhone.hack .phone-shell{'), css.indexOf('#ovPhone.hack .phone-top{'));
   for (const hex of OLD_GREENS) expect(hackText.toLowerCase(), hex).not.toContain(hex);
@@ -365,8 +367,8 @@ test('colour only: layout, copy and save match the merge base, tap targets stay 
   expect(curHome.els[0].text).toContain('Still on their wires. Talk quiet.');
 
   // Tap targets.
-  const taps = curHome.els.filter((e) => /\.phone-app$|#phoneClose/.test(e.key));
-  expect(taps.length).toBe(10);
+  const taps = curHome.els.filter((e) => /\.phone-app(\.|$)|#phoneClose/.test(e.key));
+  expect(taps.length).toBe(11);
   for (const t of taps) { expect(t.rect.w, t.key).toBeGreaterThanOrEqual(44); expect(t.rect.h, t.key).toBeGreaterThanOrEqual(44); }
 
   // Save unchanged: same key, v 2, same fields as the merge base after the same steps.

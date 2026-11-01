@@ -26,8 +26,10 @@ D892 is reserved: MODERN_HUD_CLEAR v0.2.6. D893 is reserved: KEEPER_RANKS v0.1 (
 
 D1009 is reserved: BATTLE_BACKDROPS (red, SETTLED by Vincent, Sat Oct 31, 2026: yes as previewed; supersedes D167; recorded in the archive). D963-D1008 are held in the design repo ledger (OVERVIEW.md).
 
-Next free id is D1010.
-Other packets hold ids through D1009.
+D1012-D1016 are reserved: NEWS_FEED v0.1-v0.3 (design specs/NEWS_FEED.md: the NEWS app, its starter copy, the fuller Ribbit pool, the flavour rule and the Scrapbook reward).
+
+Next free id is D1017.
+Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## Open
 
@@ -52,6 +54,10 @@ Other packets hold ids through D1009.
 | D851 | Route 3: names and copy | Yellow. Placeholder names and lines: ROUTE 3, Comfort Sanctuary, Shipping Ledger Office, Relay House, "BRINEWICK · Not yet.", every clue, boss, entry and close line. | Built as marked placeholder copy in the existing voices. | `data/detail_route3.json` |
 | D852 | A second Quinn contact | Yellow. Associate Quinn in the Cobblecrest Trial Hall is a glimmer cast row, separate from the RegenX "Quinn". | Built (build 20261027-1537). | `data/reputation.json`; `data/heights.json` speakers |
 | D853 | Clue reach on a switched save | Yellow. A player who switched to Glimmerwell without entering the RegenX lab cannot reach the lab clues; the Keepers mast needs `story.mom_sent`. | Not fixed. The Keepers twins cover a Keepers player. | `data/detail_route3.json` |
+| D1013 | NEWS and Ribbit copy, YELLOW, OPEN | Design reads the starter pool against STORY.md and signs it, or edits it in place (`specs/NEWS_FEED.md` §6) | Engineer placeholder copy, drafted only from the design lore index (BUILT facts, or CANON behind its reveal flags), every line citing its lore ids; chips only on the Glimmer side | `data/news.json`, `data/ribbit_posts.json`; skill `walklings-lore-feed` |
+| D1014 | Ribbit pool, GREEN, decided (engineer) | None unless someone objects: Ribbit shows three unpinned Block News / Chirp Worldwide posts a day instead of one, reads `data/ribbit_posts.json`, and gives Mahopac, High Charity, Route 3 and Brinewick their own local lines | Built that way on `claude/news-app` | `ribbit.js` `DESK_EXTRA`, `regionOf`, the `MAPDATA.ribbit_posts` merge |
+| D1016 | NEWS Scrapbook Acorns, YELLOW, OPEN | Design and Vincent confirm the Scrapbook reward: each front page the holder reads in NEWS is clipped once and pays 3 Acorns (22 front pages in Episode 1, so at most 66 Acorns); leads passed without opening the paper are clipped as back issues and pay nothing | Built that way on `claude/news-app`: `NEWS_CLIP_ACORNS = 3`, additive save field `newsClips` | `game.js` `newsClip`, `NEWS_CLIP_ACORNS`; `save.js` `newsClips` |
+| D1015 | NEWS flavour rule, YELLOW, OPEN | Design confirms the flavour rule (`specs/NEWS_FEED.md` §4.7): feed copy may add unnamed townsfolk, opinions, jokes, weather and small moments on top of cited lore facts, but never a new name, place, event, number or species | Built that way: the v2 pool (voices, notices, polls, "about you" pieces, replies) uses flavour; `lore_check.py` still holds every line to its lore ids, reveal gates and chip secrecy | `data/news.json`; skill `walklings-lore-feed` |
 | D863 | PHONE_APPS copy, YELLOW, OPEN | Design writes the copy for the new phone screens (SKY, GLOW, READY relay, FIELD NOTES stamps, Night Desk posts; part 2: patrol/gig rows, Census feed, BOTNET Shelf, signal footer, chirp presets, STEPS lines) and says whether the home grid keeps nine apps (PHONE_SHELL v0.2 assumed seven) | Placeholder copy written by the engineer, in both handset voices. Oct 28 Lore check: four lines that went past the story (GLOW bed rules, the SKY footer's later-plan hint, BOTNET's augment slot, the night glow fact) now say only what the game does (beds open to every holder, "Brighter by nature."); five smaller lines are flagged for Design (Keeper wires, Keepers forecast, census numbers, the cart line, the step quota). Nine apps: SKY and GLOW after BOARD. No new story facts: Field Notes reuse the quest chain's own text; the relay reuses each holder's rematch line | `game.js` phone apps part 1 block (`renderFarSky`, `renderGlowApp`, `glowAdvice`, `rematchRelay`, `renderFieldNotes`), `ribbit.js` `NIGHT_POSTS`, `index.html` `#phoneHome`; part 2 block (`renderJobsApp`, `renderCensusLeak`, `openBotnetShelf`, `renderFootpath`, `chirpPresets`) |
 ## Not started, blocked on people
 

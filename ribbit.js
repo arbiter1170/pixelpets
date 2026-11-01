@@ -15,6 +15,7 @@
 
   const LINE_MAX = 100;
   const LOCAL_N = 4;
+  const DESK_EXTRA = 3;   // unpinned Block News / Chirp Worldwide posts per day (was 1 before the NEWS app pool)
   const BLOCK = { name: 'Block News', handle: 'blocknews', desk: 'Block News' };
   const CHIRP = { name: 'Chirp Worldwide', handle: 'chirpworld', desk: 'Chirp Worldwide' };
   // D861 Night Desk (placeholder copy, D863): one late post while state.night is true (the clock's late hours).
@@ -83,6 +84,8 @@
     { id: 'ht-screen', kind: 'local', region: 'heights', name: 'Ridge hand', handle: 'floatglass', desk: 'Ridge hand', when: ['story.heights_done'], text: 'A little screen still floats in the RegenX bay. Staff call it a glitch.' },
   ];
 
+  const BASE_N = POSTS.length;
+
   const TAGS = [
     { tag: '#LanternHill', w: 4 },
     { tag: '#Route1', w: 4 },
@@ -100,6 +103,15 @@
     { tag: '#FloatScreen', w: 2, when: ['story.rx_bitlet'] },
     { tag: '#MintStand', w: 3, when: ['story.side=glimmer'] },
   ];
+
+  const BASE_TAGS = TAGS.map(t => t.tag);
+  // More posts live in data/ribbit_posts.json (bundled into MAPDATA by tools/gen_mapdata.py), written with the
+  // walklings-lore-feed skill. Each cites the lore index; ids never clash with the posts above.
+  const DATA = typeof MAPDATA !== 'undefined' && MAPDATA && MAPDATA.ribbit_posts ? MAPDATA.ribbit_posts : null;
+  if (DATA) {
+    (DATA.posts || []).forEach(p => { if (p && p.id && p.text) POSTS.push(p); });
+    (DATA.tags || []).forEach(t => { if (t && t.tag) TAGS.push(t); });
+  }
 
   function fnv1a(str) {
     let h = 0x811c9dc5;
@@ -161,6 +173,10 @@
     if (id === 'route2') return 'route2';
     if (id === 'route2_glen') return 'wickerglen';
     if (id === 'cobblecrest' || id === 'cobble_quarry' || id.indexOf('cc_') === 0) return 'cobblecrest';
+    if (id === 'mahopac' || id.indexOf('mahopac_') === 0) return 'mahopac';
+    if (id === 'highcharity' || id.indexOf('hc_') === 0) return 'highcharity';
+    if (id === 'route3' || id.indexOf('r3_') === 0) return 'route3';
+    if (id === 'brinewick' || id.indexOf('bw_') === 0) return 'brinewick';
     return '';
   }
   function pickWeighted(items, n, rng, weightOf) {
@@ -209,7 +225,7 @@
       id: p.id,
       name: desk ? desk.name : p.name,
       handle: desk ? desk.handle : p.handle,
-      desk: desk ? desk.desk : p.desk,
+      desk: desk ? desk.desk : (p.desk || p.name),
       text: p.text,
       chirps: span(seed, 'chirps:' + p.id, 2, 24),
     };
@@ -228,7 +244,7 @@
     const ok = p => passes(p.when, flags, side);
     const pins = POSTS.filter(p => p.pin && ok(p));
     const extraPool = POSTS.filter(p => !p.pin && (p.kind === 'block' || p.kind === 'chirp') && ok(p));
-    const extra = pickWeighted(extraPool, 1, rngDesk, () => 1);
+    const extra = pickWeighted(extraPool, DESK_EXTRA, rngDesk, () => 1);
     // D866: state.signal (1-4 bars) thins the local lines; unset keeps all LOCAL_N. The picks stay a stable prefix.
     const bars = Number.isInteger(st.signal) ? Math.max(1, Math.min(4, st.signal)) : 4;
     const locals = pickLocals(POSTS.filter(p => p.kind === 'local' && ok(p)), region, LOCAL_N, rngLocal).slice(0, Math.min(LOCAL_N, bars));
@@ -262,8 +278,15 @@
     NIGHT_POSTS.forEach(p => { if (Array.from(p.text).length > LINE_MAX) bad.push('night text over ' + LINE_MAX + ': ' + p.id); });
     if (feed({ flags: {}, uid: 'n', day: '2026-04-01', night: true }).posts.filter(p => p.handle === NIGHT.handle).length !== 1) bad.push('night desk should post once at night');
     if (feed({ flags: {}, uid: 'n', day: '2026-04-01' }).posts.some(p => p.handle === NIGHT.handle)) bad.push('night desk posted by day');
-    ['hearthmoor', 'route1', 'fernbrook', 'route2', 'wickerglen', 'cobblecrest', 'heights'].forEach(r => {
+    const want = ['hearthmoor', 'route1', 'fernbrook', 'route2', 'wickerglen', 'cobblecrest', 'heights'];
+    if (POSTS.length > BASE_N) want.push('mahopac', 'highcharity', 'route3', 'brinewick');
+    want.forEach(r => {
       if ((regions[r] || 0) < 3) bad.push('region needs several lines: ' + r);
+    });
+    POSTS.slice(BASE_N).forEach(p => {
+      if (!p.lore || !p.lore.length) bad.push('data post cites no lore: ' + p.id);
+      if (p.kind === 'local' && !(p.region && p.handle && p.name)) bad.push('local post needs region, name and handle: ' + p.id);
+      if (p.kind !== 'local' && p.kind !== 'block' && p.kind !== 'chirp') bad.push('data post kind: ' + p.id);
     });
     if (!POSTS.some(p => p.kind === 'block' && p.pin && !p.when)) bad.push('missing an open Block News pin');
     if (!POSTS.some(p => p.kind === 'chirp' && p.pin && !p.when)) bad.push('missing an open Chirp pin');
@@ -272,7 +295,8 @@
     if (!demo.posts.some(p => p.handle === 'chirpworld' && /holder/i.test(p.text) && /Walkling/.test(p.text))) bad.push('demo missing the holder and Walkling chirp');
     if (demo.trending.length !== 3) bad.push('demo trending should be 3');
     const home = ['#LanternHill', '#Route1', '#Orchard', '#Hearthmoor', '#KeeperHouse', '#WildGrass', '#Walkling', '#Amberwild', '#GlowCensus', '#ComfortLamps'];
-    demo.trending.forEach(t => { if (home.indexOf(t.tag) === -1) bad.push('demo tag out of the early set: ' + t.tag); });
+    // Data tags are gated by the lore check (design lore/lore_check.py); this guards the built-in set.
+    demo.trending.forEach(t => { if (BASE_TAGS.indexOf(t.tag) !== -1 && home.indexOf(t.tag) === -1) bad.push('demo tag out of the early set: ' + t.tag); });
     if (demo.posts.some(p => /RegenX|went dark|was sold/i.test(p.text))) bad.push('demo feed leaked a later headline');
     const bought = feed({ flags: { 'story.phone_got': true, 'story.quarry_bought': true }, side: 'keepers', map: 'hearthmoor', uid: 'q', day: '1999-01-01' });
     const plain = feed({ flags: { 'story.phone_got': true }, side: 'keepers', map: 'hearthmoor', uid: 'q', day: '1999-01-01' });
@@ -284,7 +308,7 @@
     return bad;
   }
 
-  const api = { feed: feed, devCheck: devCheck, LINE_MAX: LINE_MAX };
+  const api = { feed: feed, devCheck: devCheck, LINE_MAX: LINE_MAX, passes: passes, regionOf: regionOf, storyKey: storyKey, normSide: normSide, fnv1a: fnv1a, mulberry32: mulberry32, pickWeighted: pickWeighted };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PPRibbit = api;
 })(typeof window !== 'undefined' ? window : globalThis);

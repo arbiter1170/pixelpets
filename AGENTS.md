@@ -41,6 +41,8 @@ Team roles (who owns what, handoffs, how to step into a role): `roles/README.md`
 - `walklings-qa`: play a new path at phone width and add the Playwright check.
 - `walklings-qa-run`: scoped QA run on a named build (seeded saves, pp_verify, bug write-up).
 - `walklings-quests`: side quests, town-board slips, bounties, phone job pointers.
+- `walklings-lore-feed`: write NEWS stories and Ribbit posts from the design lore index (re-read the lore every batch).
+- `walklings-lore-index`: keep the design lore index in step with STORY.md when its version moves.
 - `walklings-skill-sync`: copy a skill between the box library and this repo so the newer copy wins.
 
 ## Status docs
