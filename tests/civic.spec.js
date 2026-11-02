@@ -51,13 +51,7 @@ test('the phone is a side quest until the officers issue it @w1', async ({ page 
   await page.locator('#phoneBtn').click();
   await expect(page.locator('#phoneTitle')).toHaveText('KEEPER1');
   await expect(page.locator('#phoneFoot')).toContainText('Lantern desk');
-  await page.locator('#phoneJobs').click();
-  // D864: the desk lists the side quests that are really open (no fake listings), or says none are open.
-  await expect(page.locator('#phoneBody')).toContainText('PATROL REQUESTS');
-  const open = await page.evaluate(() => PixelPets.sideActive.length);
-  if (open) await expect(page.locator('.phone-job[data-chain]')).toHaveCount(open);
-  else await expect(page.locator('#phoneBody')).toContainText('No jobs are open');
-  await page.locator('#phoneBack').click();
+  await expect(page.locator('#phoneJobs')).toBeHidden();   // the Keeper1's KEEPERUAV app was removed (Nov 2, 2026)
   await page.locator('.phone-app[data-app="friends"]').click();
   await expect(page.locator('#friendCode')).toBeVisible();
   await page.locator('#phoneClose').click();

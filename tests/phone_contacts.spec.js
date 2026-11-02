@@ -28,28 +28,25 @@ test('the phone home is icons, contacts are people you have met, and the bag ope
   await expect(page.locator('#ovPhone')).toBeVisible();
   await expect(page.locator('#phoneTitle')).toHaveText('KEEPER1');
 
-  const apps = await page.locator('#phoneHome .phone-app').evaluateAll((els) => els.map((el) => ({
+  const apps = await page.locator('#phoneHome .phone-app').evaluateAll((els) => els.filter((el) => getComputedStyle(el).display !== 'none').map((el) => ({
     app: el.dataset.app,
     label: el.querySelector('.phone-lab') && el.querySelector('.phone-lab').textContent,
   })));
   expect(apps).toEqual([
     { app: 'contacts', label: 'CONTACTS' },
-    { app: 'notes', label: 'NOTES' },
     { app: 'walklings', label: 'WALKLINGS' },
     { app: 'friends', label: 'FRIENDS' },
-    { app: 'jobs', label: 'KEEPERUAV' },
     { app: 'news', label: 'NEWS' },   // D1012
     { app: 'ribbit', label: 'RIBBIT' },
     { app: 'board', label: 'BOARD' },
     { app: 'sky', label: 'SKY' },     // D861
-    { app: 'glow', label: 'GLOW' },   // D862
-  ]);
+  ]);   // NOTES, KEEPERUAV and GLOW were removed (Vincent, Nov 2, 2026)
   await expect(page.locator('#phoneHome')).not.toContainText(/journal/i);
-  const painted = await page.evaluate(() => [...document.querySelectorAll('#phoneHome .phone-glyph canvas')].map((c) => {
+  const painted = await page.evaluate(() => [...document.querySelectorAll('#phoneHome .phone-app')].filter((b) => getComputedStyle(b).display !== 'none').map((b) => b.querySelector('.phone-glyph canvas')).map((c) => {
     const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
     return d.some((v, i) => i % 4 === 3 && v > 0);
   }));
-  expect(painted).toEqual(Array(10).fill(true));   // ten apps with NEWS (D1012)
+  expect(painted).toEqual(Array(7).fill(true));   // seven apps on the Keeper1
   const fit = await page.evaluate(() => {
     const shell = document.querySelector('#ovPhone .phone-shell');
     const home = document.querySelector('#phoneHome');
