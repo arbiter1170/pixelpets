@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 17:45 ET: Vincent's 5:41 PM ruling: mixed Trial Hall roster (D1170 amended); D1166-D1173 recorded (docs only, no build stamp)
+
+- What changed and why: Vincent, 5:41 PM ET: the three Trial Hall holders before Fen are mixed (a Keeper cadet, a Glimmerwell-leaning local, a neutral Fernbrook holder), Fen stays a Keeper, and the Hall sign reads "FERNBROOK TRIAL HALL · Master Fen". The D1166-D1173 rows from the #255 spec are recorded: D1166-D1172 in the archive, D1173 as an Open row.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/vincent-1741-hall-roster`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): D1170 amended (red, Vincent); no new id. Next free id stays D1175.
+- Anything left unfinished: Claude updates DAY1_TRIAL1_FLOW R3, §8, Q8, conflict row 6 and Slice 8.
+
 ## 2026-11-02 17:15 ET: Day 1 to Trial 1 flow: open-work review and spec v0.2 (Slices 0 and 1, for the Supervisor's review)
 
 - What changed and why: Slices 0 and 1 of the Day 1 brief (PR #252). `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` reviews every open PR and branch against the new flow (files, flags, gates, saves, merge order). `handoff/specs/DAY1_TRIAL1_FLOW.md` is the build spec: crates and Fen at dusk on Day 1, Fen's go-home talk next morning, Mom's Mahopac trip on the main chain, Mom sends the holder to Lizzy's class, the Hall door opens after the class, three Keeper holders before Fen, then the pick, with Fernbrook's hold flipping at the pick. It records Vincent's rulings of Mon Nov 2 (~4:20 PM ET) as D1166-D1171 (settled) and, in v0.2, his 5:03 and 5:05 PM ET rulings: the Hall door and the pick both come after Lizzy's class (D1153 held, superseded by D1169; D1172 answered NO, so the pick is not a door term), old saves deprioritized (simplest save-safe reading, no writes), the main-chain edit approved with `orchard` in place, and Slices 4a-6 shipped as one merge. D1173 (town steering, red) stays open. Nothing is built; the spec waits for the Supervisor's review before Slice 2.
