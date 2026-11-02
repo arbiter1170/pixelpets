@@ -11,6 +11,8 @@ const NAVY = '#29366f';
 const GRASS = '#38b764';
 const TAN = '#ffcd75';
 const MINT = '#a7f070';
+const WINE = '#960e16';
+const SOOT = '#18140f';
 const CORNERS = new Set(['21,11', '24,11']);
 
 function save() {
@@ -33,7 +35,7 @@ async function boot(page, flags) {
 }
 
 async function roofView(page) {
-  return page.evaluate(({ NAVY, GRASS, TAN, MINT }) => {
+  return page.evaluate(({ NAVY, GRASS, TAN, MINT, WINE, SOOT }) => {
     const b = PixelPets.exteriors('cobblecrest').buildings.find((x) => x.name === 'cottage_e');
     const cells = [];
     for (let y = 11; y <= 12; y++) {
@@ -43,6 +45,7 @@ async function roofView(page) {
         cells.push({
           x, y, painted: c.painted, cut: c.cut,
           navy: cell[NAVY] || 0, grass: cell[GRASS] || 0, tan: cell[TAN] || 0, mint: cell[MINT] || 0,
+          wine: cell[WINE] || 0, soot: cell[SOOT] || 0,
         });
       }
     }
@@ -63,7 +66,7 @@ async function roofView(page) {
       tile: rows ? { n: rows.length, wide: rows.every((row) => row.length === 16), grass: rows.some((row) => row.indexOf('g') >= 0) } : null,
       keeper: { x: PixelPets.keeper.x, y: PixelPets.keeper.y, map: PixelPets.mapInfo.id },
     };
-  }, { NAVY, GRASS, TAN, MINT });
+  }, { NAVY, GRASS, TAN, MINT, WINE, SOOT });
 }
 
 function assertSlateReads(cells) {
@@ -104,7 +107,7 @@ test('cottage_e keeps the arch and the slate roof reads over the lawn', async ({
   const tan = view.cells.reduce((n, c) => n + c.tan, 0);
   const crown = view.cells.filter((c) => c.y === 11 && (c.x === 22 || c.x === 23));
   expect(tan).toBeGreaterThan(0);
-  expect(crown.every((c) => c.mint === 0)).toBe(true);
+  expect(crown.every((c) => c.mint === 0 && c.wine === 0 && c.soot === 0)).toBe(true);
   expect(view.turf).toEqual([]);
   expect(view.tile).toEqual({ n: 16, wide: true, grass: true });
   const after = await saveShape(page);
@@ -125,7 +128,7 @@ test('the Glimmerwell ridge draws over the slate once the quarry is bought', asy
   assertSlateReads(view.cells);
   expect(view.cells.every((c) => c.tan === 0)).toBe(true);
   const crown = view.cells.filter((c) => c.y === 11 && (c.x === 22 || c.x === 23));
-  expect(crown.every((c) => c.mint > 0)).toBe(true);
+  expect(crown.every((c) => c.mint === 0 && c.wine > 0 && c.soot > 0)).toBe(true);
   const after = await saveShape(page);
   expect(after.v).toBe(2);
   expect(after.keys).toEqual(before.keys);

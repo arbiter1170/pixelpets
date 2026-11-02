@@ -530,7 +530,7 @@ test('T4 D800: narrator prompts show the holder at 4x, following the look as the
   await page.waitForFunction(() => PixelPets.scene && PixelPets.scene.mode === 'choice' && PixelPets.scene.full && PixelPets.optionsReady);
   const tint = await holderBox(page);
   expectHolder(tint, 'Glimmerwell tint');
-  expect(tint.shown).toMatchObject({ accessory: 'lanyard', accent: 'c', outfitCol: 's', hairCol: 'h' });
+  expect(tint.shown).toMatchObject({ accessory: 'lanyard', accent: 's', outfitCol: 's', hairCol: 'h' });
   expect(await sameFrame(page, tint.shown, tint.saved)).toBe(false);           // the tint really changes the sprite
   await page.locator('#sbChoices button').first().click();
   await page.waitForFunction(() => !PixelPets.scene);
