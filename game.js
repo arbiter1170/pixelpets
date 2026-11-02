@@ -2501,6 +2501,7 @@ const TCM = {
   M1: 'Every Walkling has a type. {pet} is {type}, and {foe} is {foeType}.',
   M2h: '{type} moves hit {foeType} hard, about double. Use them to finish fast.',
   M2s: '{type} moves barely hurt {foeType}, about half as much. Try another kind of move.',
+  M2sx: '{type} moves barely hurt {foeType}, about half as much. {pet} has no other kind yet, but every hit counts.',
   M2e: '{type} and {foeType} are even. Every move lands the usual way.',
   M2z: '{type} moves can\'t touch {foeType} at all. Pick a move of another type.',
   M3: 'Tap MOVES. Every move shows its type, and STATUS moves show no power.',
@@ -2588,7 +2589,10 @@ function lessonCard(o){
   if (unlock.on) return;
   const layer = $('#tutLayer'); if (!layer) return;
   tut.on = true; tut.lesson = o.lesson; tut.soft = !!o.soft; tut.pass = !!o.pass; tut.adv = o.adv || 'next'; tut.act = o.act || null; tut.id = o.id; tut.key = null; tut.replay = false;
-  tut.holes = (o.holes || []).map(lessonPad).filter(Boolean); tut.hi = 0; tut.skipFn = o.skip || null;
+  // Only a hole the player taps through grows to 44 px. A look-only hole (the HP bar, a type chip) keeps its real
+  // size, so the ring hugs the bar instead of spilling over the rows around it (Vincent, Nov 2, 2026).
+  const tapHole = !!o.pass || o.adv === 'tap';
+  tut.holes = (o.holes || []).map(b => tapHole ? lessonPad(b) : b).filter(Boolean); tut.hi = 0; tut.skipFn = o.skip || null;
   layer.hidden = false; layer.classList.toggle('soft', !!o.soft); layer.classList.add('lesson'); layer.dataset.step = o.id;
   document.body.classList.add('tut-on');
   if (!o.soft) lockTabs(true); else lockTabs(false);
@@ -2816,22 +2820,26 @@ function plainPowerMove(){
   }
   return null;
 }
+function movesOtherKind(f){
+  const p = pet(); if (!p || !Array.isArray(p.moves) || !f) return false;
+  return p.moves.some(id => { const mv = MOVES[id]; return mv && mv.power > 0 && typeMult(mv.type || 'PLAIN', f.type) >= 1; });
+}
 function movesM2(){
   const f = curFoe();
   const m = typeMult((SPECIES[spi(pet())] || {}).type || 'PLAIN', f ? f.type : 'PLAIN');
   if (m === 0) return 'M2z';
   if (m > 1) return 'M2h';
-  if (m < 1) return 'M2s';
+  if (m < 1) return movesOtherKind(f) ? 'M2s' : 'M2sx';   // don't send the player looking for a move they don't have
   return 'M2e';
 }
 function movesHoles(id){
   const one = sel => { const b = tutBox($(sel)); return b ? [b] : []; };
-  if (id === 'M1' || id === 'M2h' || id === 'M2s' || id === 'M2e' || id === 'M2z') return [tutBox($('#btFoeType')), tutBox($('#btMeType'))].filter(Boolean);
+  if (id === 'M1' || id === 'M2h' || id === 'M2s' || id === 'M2sx' || id === 'M2e' || id === 'M2z') return [tutBox($('#btFoeType')), tutBox($('#btMeType'))].filter(Boolean);
   if (id === 'M3') return one('[data-bact="fight"]');
   if (id === 'M4' || id === 'M4p' || id === 'M4n') return one('#btMoves');
   if (id === 'M5') return [tutBox($('#btMood')), tutBox($('#btFoeStages'))].filter(Boolean);
   if (id === 'M6') return one('#btMood');
-  if (id === 'F1') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement), tutBox($('#btMeHp') && $('#btMeHp').parentElement)].filter(Boolean);
+  if (id === 'F1') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement), tutBox($('#btMeHp') && $('#btMeHp').parentElement)].filter(Boolean);   // the .bt-hp bars only
   if (id === 'F2') return [];
   if (id === 'F3') return one('[data-bact="swap"]');
   if (id === 'W1') return one('#btBefriendAct');
@@ -2871,6 +2879,14 @@ function movesSkip(){
   save();
   lessonHide();
 }
+// Each look-only card shows at most once (Vincent, Nov 2, 2026: HP and types came back four times). The furthest
+// card seen is kept in story.tut_moves_seen (additive flag); a later choose resumes after it instead of at F1.
+const MOVES_SEEN = ['F1', 'M1', 'M2', 'M5', 'M6', 'F2', 'F3'];
+function movesSeenRank(){ return S ? (+S.flags['story.tut_moves_seen'] || 0) : 0; }
+function movesNoteSeen(line){
+  const k = MOVES_SEEN.indexOf(line.indexOf('M2') === 0 ? 'M2' : line) + 1;
+  if (S && k > movesSeenRank()) { S.flags['story.tut_moves_seen'] = k; save(); }
+}
 function movesShow(id){
   let line = id;
   if (id === 'M2') line = movesM2();
@@ -2896,6 +2912,7 @@ function movesShow(id){
   } else if (line !== 'M3') buttons.push([TCM.B1, () => movesShow('M3')]);
   const pass = line === 'M3' || line === 'M4p' || line === 'M4n';
   lessonCard({ lesson: 'moves', id: line, text: TCM[line], soft: false, pass: pass, adv: pass ? 'tap' : 'next', holes: holes, buttons: buttons, skip: movesSkip });
+  if (tut.on && tut.id === line) movesNoteSeen(line);
   if (line === 'M7') movesLes.m7At = movesLes.chooseN;
 }
 function maybeMovesLesson(){
@@ -2916,8 +2933,12 @@ function maybeMovesLesson(){
   if (S.flags['story.tut_moves_hit'] && !movesLes.hitDue) movesLes.m7done = true;
   const later = movesLes.p1At !== movesLes.chooseN && movesLes.m7At !== movesLes.chooseN;
   if ((st === 'p1' || st === 'p2') && movesLes.hitDue && !movesLes.m7done && later) { movesShow('M7'); return; }
-  if (st === 'armed') { movesShow('F1'); return; }
-  if (st === 'p1' && later) { movesShow('M5'); return; }
+  const seen = movesSeenRank();
+  if (st === 'armed') { movesShow(seen >= 3 ? 'M3' : MOVES_SEEN[seen]); return; }
+  if (st === 'p1' && later) {
+    if (seen >= 7) { movesMarkP2(); return; }                 // part 2 was all seen once; don't play it again
+    movesShow(MOVES_SEEN[Math.max(3, seen)]); return;
+  }
   if (st === 'p2' && movesLes.hitDue && !movesLes.m7done && later) { movesShow('M7'); return; }
 }
 function noteBefBattle(){
@@ -3022,6 +3043,7 @@ function replayMovesLesson(){
   S.flags['story.tut_moves'] = 'armed';
   delete S.flags['story.tut_moves_hit'];
   delete S.flags['story.tut_moves_n'];
+  delete S.flags['story.tut_moves_seen'];   // a replay starts again at F1
   movesLes.hitDue = false; movesLes.m7done = false; movesLes.p1At = -1; movesLes.m7At = -1; movesLes.plain = '';
   save();
   toast(TCM.MR);
@@ -11461,7 +11483,7 @@ function aiPick(){
 /* --- turn resolution (§1) --- */
 async function resolveTurn(action){
   const B = battle, id = B.id; if (B.state !== 'CHOOSE') return;
-  if (tut.lesson === 'moves' && tut.id === 'M4') movesMarkP1();
+  if (tut.lesson === 'moves' && (tut.id === 'M4p' || tut.id === 'M4n')) movesMarkP1();   // the card id is M4p or M4n, never M4
   if (tut.lesson === 'moves' || tut.lesson === 'bef') lessonHide();
   B.state = 'RESOLVE'; B.turn++; setPanel('busy');
   if (B.group) {
@@ -11674,7 +11696,9 @@ async function doMove(side, mid, id){
   step('text', { s: uName + ' tries ' + mv.name + '!' });
   await play(id); if (!alive(id)) return;
   const e = mv.effect || null, selfOnly = mv.power === 0 && e && e.target === 'self';
-  if (!selfOnly && !(B.rng() < mv.acc / 100)) { step('sfx', { name: 'miss' }); step('text', { s: uName + ' just misses!' }); await play(id); return; }
+  // The first Rook match is the teaching fight: the holder's hits never miss there (Vincent, Nov 2, 2026: "my first attack did nothing").
+  const sureHit = mine && mv.power > 0 && B.trainerId === 'rival1_rook';
+  if (!selfOnly && !sureHit && !(B.rng() < mv.acc / 100)) { step('sfx', { name: 'miss' }); step('text', { s: uName + ' just misses!' }); await play(id); return; }
   if (mv.power > 0) {
     const att = mine ? myBattler() : foeBattler(f), def = mine ? foeBattler(f) : myBattler(), tgt = otherSide(side), EC = B.echo;
     // Live Wire (D840): the first VOLT move a Cordhound lands in a battle has 1.5x power.
