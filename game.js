@@ -3889,6 +3889,18 @@ function noteBeat(id, before){ if (!scene || !isBeat(id) || storyWrites() <= bef
 // Dev check for data/glimmer_path.json (engine ask 7): the line rules the design checker applies (lineMax after the longest
 // token values, no double space, no unknown token), every `X@side` variant has a base `X`, a variant scene writes the same
 // story.* flags as its base (the gates stay shared), and objects/steps point at scenes that exist. Returns problems (empty = pass).
+// The boot validator's condition check (glimmerDevCheck's condKey). Same order as cond(): `|` first, then `&`, then `!`.
+// Parts are trimmed, as cond() trims them, so 'a | b' and 'a & b' pass where cond() reads them.
+function condKeyOk(c){
+  if (typeof c !== 'string' || !c) return false;
+  if (c.includes('|')) return c.split('|').every(alt => condKeyOk(alt.trim()));
+  return c.split('&').every(raw => {
+    const part = raw.trim();
+    if (!part || part === 'else' || part === 'talked' || part === 'has:name') return !!part;
+    const s = part[0] === '!' ? part.slice(1) : part;
+    return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s.startsWith('seal:') || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
+  });
+}
 function glimmerDevCheck(){
   const G = MD.glimmer_path, bad = []; if (!G) return bad;
   const dl = MD.interiors.dialog, MAX = dl.lineMax || 110, TOK = dl.tokenLen || {};
@@ -3970,14 +3982,7 @@ function glimmerDevCheck(){
     }
   }
   const loy = G.loyalty || {};
-  const condKey = c => {
-    if (typeof c !== 'string' || !c) return false;
-    return c.split('&').every(part => {
-      if (!part || part === 'else' || part === 'talked' || part === 'has:name') return !!part;
-      const s = part[0] === '!' ? part.slice(1) : part;
-      return s === 'talked' || s === 'has:name' || s === 'chip:partner' || s === 'chip:any' || s.startsWith('seal:') || /^(standing\.(keepers|glimmer)|[A-Za-z0-9_.]+)(>=|<=|>|<|=).+$/.test(s) || /^[A-Za-z0-9_.]+$/.test(s);
-    });
-  };
+  const condKey = condKeyOk;
   for (const [id, bag] of Object.entries(loy.npcs || {})) {
     if (!bag || typeof bag !== 'object' || id.startsWith('_')) continue;
     for (const [k, v] of Object.entries(bag)) {
@@ -4619,7 +4624,10 @@ function repCond(c, o){
   if (a < 0 || b < 0) return false;
   return op === '>=' ? a >= b : op === '<=' ? a <= b : op === '>' ? a > b : a < b;
 }
+// FACTION_PICK_TIMING §7 step 1: every condition reader splits `|` first, then `&`, then `!`, with no brackets, so
+// `a | b & c` reads as a, or (b and c). cond(), evalCond (quests.js), condKeyOk and plainStoryFlag all keep this order.
 function cond(c, live, o){
+  if (typeof c === 'string' && c.includes('|')) return c.split('|').some(part => !!part.trim() && cond(part.trim(), live, o));
   if (typeof c === 'string' && c.includes('&')) return c.split('&').every(part => part && cond(part.trim(), live, o));
   if (c === 'else') return true;
   let neg = false; if (c[0] === '!') { neg = true; c = c.slice(1); }
@@ -14513,7 +14521,9 @@ function questToggleMore(){ questMoreOpen = !questMoreOpen; sfx('tap'); const q 
 function questToggleDone(){ questDoneOpen = !questDoneOpen; sfx('tap'); const q = questCurrent(); if (q) renderQuest(q); }
 // STANDING tab (BS): a second tab beside NEXT STEP, hidden until the side pick. Read-only: two rows (one per side) with the
 // emblem, tier name, blurb, a bar to the next tier and a PLEDGED marker; strings and numbers all from STANDING_CFG.
-const standingTabVisible = () => !!(S && S.flags['story.side_pick_done']);
+// FACTION_PICK_TIMING §7.1: picked, or (both pitches). '|' splits before '&'. Nothing sets the pitch flags yet.
+const STANDING_TAB_WHEN = 'story.side_pick_done | story.pitch_k & story.pitch_g';
+const standingTabVisible = () => !!(S && cond(STANDING_TAB_WHEN, false));
 function renderQuestTabs(){
   const on = standingTabVisible(); if (!on) questTab = 'next';
   const tabs = $('#questTabs'); tabs.hidden = !on;
@@ -17479,8 +17489,11 @@ function dismissForDebug(){
   if ($('#ovLook') && !$('#ovLook').hidden && !(lookUI && lookUI.newPlayer)) $('#ovLook').hidden = true;
   lockTabs(false);
 }
+// A debug checkpoint keeps or drops one plain story flag per `done` entry. `|` is split first, then `&`, then `!`, as in
+// cond(): a string with `|` or `&` names more than one flag, so it is not a plain flag and nothing is written for it
+// (never a literal "story.a|story.b" key).
 function plainStoryFlag(c){
-  if (typeof c !== 'string' || c[0] === '!' || /[=<>]/.test(c) || c.startsWith('seal:') || c.startsWith('pets')) return null;
+  if (typeof c !== 'string' || c.includes('|') || c.includes('&') || c[0] === '!' || /[=<>]/.test(c) || c.startsWith('seal:') || c.startsWith('pets')) return null;
   return c.startsWith('story.') ? c : null;
 }
 function reconcileChain(chain, i){
@@ -19219,6 +19232,16 @@ function boot(){
   api.sceneFor = id => { const s = side(); return s !== SIDE_DEFAULT && SCENES[id + '@' + s] ? id + '@' + s : (SCENES[id] ? id : null); };
   api.trainerFor = id => { syncSide(); const t = TRAINERS[id]; return t ? copy({ name: t.name, seal: t.seal || null, onWin: t.onWin || null, lines: t.lines || {}, panel: t.panel || null }) : null; };
   Object.defineProperty(api, 'glimmerCheck', { enumerable: true, get(){ return glimmerDevCheck(); } });
+  // FACTION_PICK_TIMING §7 step 1 (?debug=1 only, read-only): one condition string through cond(), the boot validator's
+  // condKeyOk and the checkpoints' plainStoryFlag; and one object's gate anywhere in WORLD (its when and its need).
+  api.condRead = c => DEBUG && S ? { cond: !!cond(c, false), key: condKeyOk(c), plain: plainStoryFlag(c) } : null;
+  api.gateRead = (map, id) => {
+    if (!DEBUG || !S || !WORLD[map]) return null;
+    const o = WORLD[map].objs.find(x => x.id === id); if (!o) return null;
+    const whenOk = !o.when || [].concat(o.when).every(c => cond(c, false));
+    return { when: o.when ? copy([].concat(o.when)) : null, need: o.need || null, whenOk, needOk: needMet(o.need), open: whenOk && needMet(o.need) };
+  };
+  Object.defineProperty(api, 'standingTab', { enumerable: true, get(){ return DEBUG ? { when: STANDING_TAB_WHEN, on: standingTabVisible() } : null; } });
   api.glimmerPalette = () => glimmerPaletteReport();
   api.glimmerBay = () => {
     if (!DEBUG) return null;
