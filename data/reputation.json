@@ -623,6 +623,56 @@
       "base": 50
     },
     {
+      "name": "Constable",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Sergeant",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Cadet",
+      "faction": "keepers",
+      "base": 50
+    },
+    {
+      "name": "Associate",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Bright Lead",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Junior Bright",
+      "faction": "glimmer",
+      "base": 50
+    },
+    {
+      "name": "Orchard Hand",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Basket Weaver",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Stall Hand",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Fernbrook Elder",
+      "faction": "none",
+      "base": 50
+    },
+    {
       "name": "Bell Ringer",
       "faction": "none",
       "base": 50

@@ -1,0 +1,679 @@
+{
+ "spec": "No design spec. Vincent's ask (Nov 2, 2026): expand Fernbrook with a plaza east of the orchard crates where Keepers and Glimmerwell, with their Walklings, argue over who controls the town; townsfolk scared; both sides watch the Hall before the first trial; the losing side vanishes when the town flips. D1175-D1179 (FERNBROOK_PLAZA).",
+ "note": "Repaves the stream field (rows 10-17, x17-30; row 9 and rows 18+ unchanged) into plaza stone around the old pond (now the fountain), drops wild zone 2, and adds the standoff. Speaker labels, looks for the four townsfolk, the Walklings and every line are placeholders for Design (D1177). The phase reads live in game.js fbPlazaPhase (`fbplaza:` conds, D1176); the flip follows Vincent's D1171 (the picked side holds Fernbrook after Trial 1). Sorts after detail_zz_stores.",
+ "speakers": {
+  "Constable": "officer",
+  "Sergeant": "captain",
+  "Cadet": "clerk",
+  "Associate": "associate",
+  "Bright Lead": "glimclerk",
+  "Junior Bright": "holder_glimmer_set",
+  "Orchard Hand": "fbp_orchard_hand",
+  "Basket Weaver": "fbp_weaver",
+  "Stall Hand": "fbp_stall_hand",
+  "Fernbrook Elder": "fbp_elder"
+ },
+ "looks": {
+  "_note": "FERNBROOK_PLAZA townsfolk (D1177): built from the existing creator parts only, outside the Keeper and Glimmerwell palettes.",
+  "fbp_orchard_hand": {
+   "skin": "5",
+   "hair": "buzz",
+   "hairCol": "d",
+   "outfit": "tunic",
+   "outfitCol": "y",
+   "accent": "o",
+   "accessory": "cap"
+  },
+  "fbp_weaver": {
+   "skin": "2",
+   "hair": "long",
+   "hairCol": "r",
+   "outfit": "dress",
+   "outfitCol": "m",
+   "accent": "w",
+   "accessory": "scarf"
+  },
+  "fbp_stall_hand": {
+   "skin": "4",
+   "hair": "curls",
+   "hairCol": "n",
+   "outfit": "vest",
+   "outfitCol": "b",
+   "accent": "o",
+   "accessory": "satchel"
+  },
+  "fbp_elder": {
+   "skin": "6",
+   "hair": "bun",
+   "hairCol": "w",
+   "outfit": "sweater",
+   "outfitCol": "p",
+   "accent": "c",
+   "accessory": "glasses"
+  }
+ },
+ "scenes": {
+  "fbp_kpet_argue": [
+   [
+    "say",
+    "",
+    "The Walkling plants itself in front of its Keeper. It will not budge."
+   ]
+  ],
+  "fbp_kpet_watch": [
+   [
+    "say",
+    "",
+    "The Walkling has turned toward the Hall, as still as its Keeper."
+   ]
+  ],
+  "fbp_kpet_calm": [
+   [
+    "say",
+    "",
+    "The Walkling dozes at its Keeper's feet. The square is calm."
+   ]
+  ],
+  "fbp_gpet_argue": [
+   [
+    "say",
+    "",
+    "The Walkling crackles beside its Glimmerwell lead, waiting for a signal."
+   ]
+  ],
+  "fbp_gpet_watch": [
+   [
+    "say",
+    "",
+    "The Walkling dims to a polite glow. Everyone is watching the Hall."
+   ]
+  ],
+  "fbp_gpet_calm": [
+   [
+    "say",
+    "",
+    "The Walkling glows steadily, logged and content. The square is calm."
+   ]
+  ]
+ },
+ "slicePatch": {
+  "maps": {
+   "fernbrook": {
+    "set": {
+     "zones": [
+      {
+       "x": 3,
+       "y": 11,
+       "w": 13,
+       "h": 7
+      }
+     ]
+    },
+    "gridRows": {
+     "10": "TgFFFFFFFgFFFFFFFgPPPPPPPPPPPPTT",
+     "11": "TgFtttttttttttttFgPccccccPPPPPgT",
+     "12": "TgFtTtTtTtTtTtTtFgPcwwwwcPPPPPgT",
+     "13": "TgFtttttttttttttFgPcwwwwcPPPPPgT",
+     "14": "TgFtttttttttttttFgPcwwwwcPPPPPgT",
+     "15": "TgFtTtTtTtTtTtTtFgPcwwwwcPPPPPgT",
+     "16": "TgFtttttttttttttFgPccccccPPPPPgT",
+     "17": "TgFtttttttttttttFTPPPPPPPPPPPTgT"
+    },
+    "replaceObjs": [
+     {
+      "kind": "decal",
+      "id": "fb_puddle_20_10",
+      "x": 17,
+      "y": 13,
+      "sprite": "puddle",
+      "_note": "FERNBROOK_PLAZA: was (20,10), now plaza stone"
+     },
+     {
+      "kind": "decal",
+      "id": "fb_puddle_28_10",
+      "x": 29,
+      "y": 9,
+      "sprite": "puddle",
+      "_note": "FERNBROOK_PLAZA: was (28,10), now plaza stone"
+     },
+     {
+      "kind": "decal",
+      "id": "fb_puddle_24_17",
+      "x": 30,
+      "y": 11,
+      "sprite": "puddle",
+      "_note": "FERNBROOK_PLAZA: was (24,17), now plaza stone"
+     },
+     {
+      "kind": "decal",
+      "id": "fb_puddle_29_15",
+      "x": 30,
+      "y": 16,
+      "sprite": "puddle",
+      "_note": "FERNBROOK_PLAZA: was (29,15), now plaza stone"
+     },
+     {
+      "kind": "decal",
+      "id": "fb_leaf_18_16",
+      "x": 17,
+      "y": 16,
+      "sprite": "leaf_litter",
+      "_note": "FERNBROOK_PLAZA: was (18,16), now plaza stone"
+     }
+    ],
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "fbp_constable",
+      "name": "Constable",
+      "look": "officer",
+      "x": 25,
+      "y": 11,
+      "facing": "right",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "right"
+      },
+      "bangWhen": [
+       "fbplaza:argue",
+       "fbplaza:after"
+      ],
+      "when": [
+       "!fbplaza:held_glimmer"
+      ],
+      "lines": {
+       "fbplaza:held_keepers": "Fernbrook's ours again, and you helped keep it. Thank you, truly.",
+       "fbplaza:watch&story.side=glimmer": "Master Fen teaches anyone who knocks. Even you. Mind your manners.",
+       "fbplaza:watch": "Master Fen's waiting. Listen more than you swing. You'll learn plenty.",
+       "fbplaza:after": "A Seal from Master Fen, and still no side? Then stay out of this.",
+       "!story.side_pick_done": "Not your quarrel, traveller. Stay out of it.",
+       "story.side=glimmer": "Mint vest. We've nothing to say to you.",
+       "else": "Good to see a Keeper here. Thank you for standing with Fernbrook."
+      },
+      "chatter": {
+       "fbplaza:held": "Quiet square. Lovely.",
+       "fbplaza:watch": "Eyes on the Hall, all of you.",
+       "else": "This town is under Keeper care!"
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_sergeant",
+      "name": "Sergeant",
+      "look": "captain",
+      "x": 25,
+      "y": 13,
+      "facing": "right",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "right"
+      },
+      "bangWhen": [
+       "fbplaza:argue",
+       "fbplaza:after"
+      ],
+      "when": [
+       "!fbplaza:held_glimmer"
+      ],
+      "lines": {
+       "fbplaza:held_keepers": "The lanterns stay lit in Fernbrook. You helped. The Keepers won't forget.",
+       "fbplaza:watch&story.side=glimmer": "You'll face Master Fen like anyone else. Roots first. No shortcuts.",
+       "fbplaza:watch": "Go and learn from Master Fen. Roots first, then blossoms. We're with you.",
+       "fbplaza:after": "You've earned Master Fen's Seal. Pick your lantern, or step back.",
+       "!story.side_pick_done": "This is between the Keepers and that lot. Step back, please.",
+       "story.side=glimmer": "We're busy. Take your lanyard elsewhere.",
+       "else": "There's our Keeper! Thank you for helping us hold this square."
+      },
+      "chatter": {
+       "fbplaza:held": "Fernbrook breathes easy now.",
+       "fbplaza:watch": "Shh. The trial's soon.",
+       "else": "Fernbrook was ours before your stand!"
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_cadet",
+      "name": "Cadet",
+      "look": "clerk",
+      "x": 25,
+      "y": 15,
+      "facing": "right",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "right"
+      },
+      "bangWhen": [
+       "fbplaza:argue",
+       "fbplaza:after"
+      ],
+      "when": [
+       "!fbplaza:held_glimmer"
+      ],
+      "lines": {
+       "fbplaza:held_keepers": "We did it! Well, you did most of it. Thank you!",
+       "fbplaza:watch&story.side=glimmer": "Master Fen's fair. Fairer than your lot, anyway.",
+       "fbplaza:watch": "Learn everything Master Fen shows you. Then teach me!",
+       "fbplaza:after": "You beat the Trial! But it's still not safe here. Stay back.",
+       "!story.side_pick_done": "Please, it's not safe here. Stay out of it.",
+       "story.side=glimmer": "Sergeant says I'm not to talk to mint vests.",
+       "else": "A Keeper! Thank you for helping us hold the square."
+      },
+      "chatter": {
+       "fbplaza:held": "Best shift ever.",
+       "fbplaza:watch": "Is it starting? Is it starting?",
+       "else": "You don't scare us! Much."
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_associate",
+      "name": "Associate",
+      "look": "associate",
+      "x": 29,
+      "y": 11,
+      "facing": "left",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "left"
+      },
+      "bangWhen": [
+       "fbplaza:argue",
+       "fbplaza:after"
+      ],
+      "when": [
+       "!fbplaza:held_keepers"
+      ],
+      "lines": {
+       "fbplaza:held_glimmer": "Fernbrook's on the quarterly report now, partner. Thanks for the push!",
+       "fbplaza:watch&story.side=glimmer": "Go show Master Fen how a review is done. Then we bring in our own lead.",
+       "fbplaza:watch": "Enjoy Master Fen while it lasts. Contracts change.",
+       "fbplaza:after": "Tier 1 and no lanyard? Stay out of it till you sign, guest!",
+       "!story.side_pick_done": "Nothing to see here, guest! Stay out of it, brightly.",
+       "story.side=glimmer": "Partner! Thanks for helping us bring Fernbrook on board.",
+       "else": "Keeper colours. Hm. Our office hours are closed."
+      },
+      "chatter": {
+       "fbplaza:held": "Brighter by nature!",
+       "fbplaza:watch": "Eyes on the venue, team!",
+       "else": "Quarterly targets say this town is ours!"
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_bright_lead",
+      "name": "Bright Lead",
+      "look": "glimclerk",
+      "x": 29,
+      "y": 13,
+      "facing": "left",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "left"
+      },
+      "bangWhen": [
+       "fbplaza:argue",
+       "fbplaza:after"
+      ],
+      "when": [
+       "!fbplaza:held_keepers"
+      ],
+      "lines": {
+       "fbplaza:held_glimmer": "Fernbrook's ours, partner. You helped close the deal. Have a bright day!",
+       "fbplaza:watch&story.side=glimmer": "Master Fen's had a long run. Win this, and a Bright Lead runs that Hall.",
+       "fbplaza:watch": "Go on, see Master Fen. Retirement suits old roots.",
+       "fbplaza:after": "A Seal holder with no employer. Stay out of it, or come talk terms.",
+       "!story.side_pick_done": "This is a business discussion. Stay out of it, please and thank you.",
+       "story.side=glimmer": "My favourite partner! You're why Fernbrook is nearly on our books.",
+       "else": "No pitch for Keepers today. Move along."
+      },
+      "chatter": {
+       "fbplaza:held": "Targets met. Smiles on.",
+       "fbplaza:watch": "One review from a new Hall lead.",
+       "else": "Fen's time is up. Smile, Keepers!"
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_junior_bright",
+      "name": "Junior Bright",
+      "look": "holder_glimmer_set",
+      "x": 29,
+      "y": 15,
+      "facing": "left",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "left"
+      },
+      "bangWhen": [
+       "fbplaza:argue",
+       "fbplaza:after"
+      ],
+      "when": [
+       "!fbplaza:held_keepers"
+      ],
+      "lines": {
+       "fbplaza:held_glimmer": "We got Fernbrook! You helped so much, partner. Lanyard high five!",
+       "fbplaza:watch&story.side=glimmer": "Beat Master Fen's review, partner. Then the Hall gets a Glimmerwell lead!",
+       "fbplaza:watch": "Master Fen won't be here forever. We have a shortlist.",
+       "fbplaza:after": "You passed! Now stay out of it till you pick the bright side.",
+       "!story.side_pick_done": "Ooh, careful! Stay out of it till the paperwork's done.",
+       "story.side=glimmer": "Partner! Thanks for helping us take the square. Bright work!",
+       "else": "Sorry, Keeper. My lead says no chatting with competitors."
+      },
+      "chatter": {
+       "fbplaza:held": "New town, new targets!",
+       "fbplaza:watch": "Review day! So exciting!",
+       "else": "Your lanterns are so last quarter!"
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_constable_pet",
+      "name": "Hushlet",
+      "pet": "owl/0",
+      "x": 26,
+      "y": 11,
+      "hold": true,
+      "when": [
+       "!fbplaza:held_glimmer"
+      ],
+      "lines": {
+       "fbplaza:held": "@fbp_kpet_calm",
+       "fbplaza:watch": "@fbp_kpet_watch",
+       "else": "@fbp_kpet_argue"
+      },
+      "_note": "FERNBROOK_PLAZA: Constable's Walkling. kind npc + pet, never a phone contact."
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_sergeant_pet",
+      "name": "Burrowbloom",
+      "pet": "mole/1",
+      "x": 26,
+      "y": 13,
+      "hold": true,
+      "when": [
+       "!fbplaza:held_glimmer"
+      ],
+      "lines": {
+       "fbplaza:held": "@fbp_kpet_calm",
+       "fbplaza:watch": "@fbp_kpet_watch",
+       "else": "@fbp_kpet_argue"
+      },
+      "_note": "FERNBROOK_PLAZA: Sergeant's Walkling. kind npc + pet, never a phone contact."
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_cadet_pet",
+      "name": "Fetchling",
+      "pet": "fetch/0",
+      "x": 26,
+      "y": 15,
+      "hold": true,
+      "when": [
+       "!fbplaza:held_glimmer"
+      ],
+      "lines": {
+       "fbplaza:held": "@fbp_kpet_calm",
+       "fbplaza:watch": "@fbp_kpet_watch",
+       "else": "@fbp_kpet_argue"
+      },
+      "_note": "FERNBROOK_PLAZA: Cadet's Walkling. kind npc + pet, never a phone contact."
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_associate_pet",
+      "name": "Bitlet",
+      "pet": "byte/0",
+      "x": 28,
+      "y": 11,
+      "hold": true,
+      "when": [
+       "!fbplaza:held_keepers"
+      ],
+      "lines": {
+       "fbplaza:held": "@fbp_gpet_calm",
+       "fbplaza:watch": "@fbp_gpet_watch",
+       "else": "@fbp_gpet_argue"
+      },
+      "_note": "FERNBROOK_PLAZA: Associate's Walkling. kind npc + pet, never a phone contact."
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_bright_lead_pet",
+      "name": "Voltwhisk",
+      "pet": "volt/1",
+      "x": 28,
+      "y": 13,
+      "hold": true,
+      "when": [
+       "!fbplaza:held_keepers"
+      ],
+      "lines": {
+       "fbplaza:held": "@fbp_gpet_calm",
+       "fbplaza:watch": "@fbp_gpet_watch",
+       "else": "@fbp_gpet_argue"
+      },
+      "_note": "FERNBROOK_PLAZA: Bright Lead's Walkling. kind npc + pet, never a phone contact."
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_junior_bright_pet",
+      "name": "Filamoth",
+      "pet": "moth/1",
+      "x": 28,
+      "y": 15,
+      "hold": true,
+      "when": [
+       "!fbplaza:held_keepers"
+      ],
+      "lines": {
+       "fbplaza:held": "@fbp_gpet_calm",
+       "fbplaza:watch": "@fbp_gpet_watch",
+       "else": "@fbp_gpet_argue"
+      },
+      "_note": "FERNBROOK_PLAZA: Junior Bright's Walkling. kind npc + pet, never a phone contact."
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_orchard_hand",
+      "name": "Orchard Hand",
+      "look": "fbp_orchard_hand",
+      "x": 27,
+      "y": 10,
+      "facing": "down",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "down"
+      },
+      "lines": {
+       "fbplaza:held_keepers": "The Keepers held. The orchard can get back to picking.",
+       "fbplaza:held_glimmer": "Glimmerwell runs things now. They count our apples.",
+       "fbplaza:watch": "They've all stopped to watch the Hall. Strange, the quiet.",
+       "else": "Every day they shout. One day they'll do worse."
+      },
+      "chatter": {
+       "fbplaza:held": "Back to the apples, then.",
+       "fbplaza:watch": "Everyone's watching the Hall.",
+       "else": "Not again. Not in the square."
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_weaver",
+      "name": "Basket Weaver",
+      "look": "fbp_weaver",
+      "x": 27,
+      "y": 17,
+      "facing": "up",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "up"
+      },
+      "lines": {
+       "fbplaza:held_keepers": "Lanterns up, shouting done. I can weave in peace.",
+       "fbplaza:held_glimmer": "Quiet now. Too quiet. Mint everywhere.",
+       "fbplaza:watch": "Look at them, all hoping. Whoever wins, I still weave.",
+       "else": "Keep back, dear. Their Walklings are bristling."
+      },
+      "chatter": {
+       "fbplaza:held": "Peace at last. Mostly.",
+       "fbplaza:watch": "Who'll win, do you think?",
+       "else": "Please don't fight here..."
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_stall_hand",
+      "name": "Stall Hand",
+      "look": "fbp_stall_hand",
+      "x": 30,
+      "y": 14,
+      "facing": "left",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "left"
+      },
+      "lines": {
+       "fbplaza:held_keepers": "The Keepers kept it. My stall's still mine.",
+       "fbplaza:held_glimmer": "Glimmerwell says my stall is a kiosk now.",
+       "fbplaza:watch": "Even the Bright Lead's gone quiet. All eyes on the Hall.",
+       "else": "If they start, I'm hiding under the stall."
+      },
+      "chatter": {
+       "fbplaza:held": "Business as usual.",
+       "fbplaza:watch": "Shh. Look at the Hall.",
+       "else": "They'll knock my crates over!"
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "fbp_elder",
+      "name": "Fernbrook Elder",
+      "look": "fbp_elder",
+      "x": 24,
+      "y": 12,
+      "facing": "right",
+      "hold": true,
+      "faceWhen": {
+       "fbplaza:held": "down",
+       "fbplaza:watch": "up",
+       "else": "right"
+      },
+      "lines": {
+       "fbplaza:held_keepers": "Keepers again. Fernbrook always comes back to its lanterns.",
+       "fbplaza:held_glimmer": "Glimmerwell's lamps now. Fernbrook has seen bigger storms.",
+       "fbplaza:watch": "They always go quiet before a trial. The shouting comes after.",
+       "else": "This square has never been this close to blows."
+      },
+      "chatter": {
+       "fbplaza:held": "Calm again. Good.",
+       "fbplaza:watch": "Hush now. The Hall.",
+       "else": "Mind the little ones!"
+      }
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_lamp_nw",
+      "x": 18,
+      "y": 10,
+      "sprite": "lamp_post"
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_lamp_sw",
+      "x": 18,
+      "y": 17,
+      "sprite": "lamp_post"
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_urn_w",
+      "x": 18,
+      "y": 12,
+      "sprite": "stone_urn"
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_urn_sw",
+      "x": 18,
+      "y": 15,
+      "sprite": "stone_urn"
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_bench_n",
+      "x": 21,
+      "y": 10,
+      "sprite": "bench_long"
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_bench_s",
+      "x": 21,
+      "y": 17,
+      "sprite": "bench_long"
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_banner_n",
+      "x": 24,
+      "y": 10,
+      "sprite": "banner_keeper",
+      "when": [
+       "!fbplaza:held_glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_banner_s",
+      "x": 24,
+      "y": 17,
+      "sprite": "banner_keeper",
+      "when": [
+       "!fbplaza:held_glimmer"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_comfort_n",
+      "x": 29,
+      "y": 10,
+      "sprite": "comfort_lamp",
+      "when": [
+       "!fbplaza:held_keepers"
+      ]
+     },
+     {
+      "kind": "prop",
+      "id": "fbp_comfort_s",
+      "x": 28,
+      "y": 17,
+      "sprite": "comfort_lamp",
+      "when": [
+       "!fbplaza:held_keepers"
+      ]
+     }
+    ]
+   }
+  }
+ }
+}
