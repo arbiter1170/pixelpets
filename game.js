@@ -4497,7 +4497,7 @@ const ROOK_LANTERN_LOST = [
   ['say', 'Rook', "I've got this one. Pick a bed, any bed."],
   ['walkTo', 'player', 2, 3],
   ['rest'], ['respawnHere'],
-  ['say', '', 'You all doze in the lantern glow. Your team is rested.'],
+  ['say', '', 'You all doze in the lantern glow.'],   // the rest step's toast says "Your team is rested."
   ['say', 'Rook', "See? Good as new. Lose, rest, go again. That's what these places are for."],
   ['say', 'Rook', "Race you to Fernbrook! I'm meeting someone. Last one there feeds the other's Walkling!"],
   ['walkTo', 'rook_walk_in', 4, 6, { drop: true }],
@@ -8989,7 +8989,7 @@ const pend = f => scene.pending.push(f);
 // the first line that names him or that he speaks, just inside the door mat, facing the keeper, and leaves when the scene ends.
 // A plain npc pushed into CUR.objs for the scene only: drawn, blocking and listed like any other; never saved.
 const SCENE_CAST = { starter: [{ id: 'rook_lodge', name: 'Rook', look: 'rook', map: 'hm_lodge_in' }] };
-// Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the trainer).
+// Casts placed only by an explicit castAt (never by castOnSay, which would add a second Rook beside the holder).
 const CAST_AT_LOOK = { rook_walk: { name: 'Rook', look: 'rook' }, rook_walk_in: { name: 'Rook', look: 'rook' } };
 function castOnSay(who, text){
   const cast = scene && SCENE_CAST[scene.id]; if (!cast) return;
@@ -9428,7 +9428,8 @@ async function execStep(st){
     case 'rest': sfx('rest'); pend(() => { S.party.forEach(q => { restPet(q, 'full'); q.energy = 100; }); scene && scene.toasts.push('Your team is rested.'); }); if (atLantern()) noteLanternRest(); return;
     case 'run': await playScene(a); return;
     case 'keepPlace': sc.deferRespawn = false; return;   // this scene walks the holder to the Lantern House itself (ROOK_LANTERN_WALK)
-    case 'lanternGuide': { const g = lanternGuideHere(); if (g) await execSteps(lanternGuideSteps(g, true)); return; }
+    // The guide teaches the Lantern House once: its "Lanterns" unlock card would repeat the same lesson right after the rest.
+    case 'lanternGuide': { const g = lanternGuideHere(); if (g) await execSteps(lanternGuideSteps(g, true)); if (S) S.flags['story.unlock_lantern'] = true; return; }
     case 'if': await execSteps(cond(a, true) ? b : c); return;
     case 'push': {
       const nx = S.world.x + a, ny = S.world.y + b;

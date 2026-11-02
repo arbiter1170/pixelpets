@@ -85,6 +85,11 @@ test('R-L1 the first loss: Rook walks the holder to the Lantern House, Della exp
   expect(after.hp.every(Boolean)).toBe(true);
   expect(after.respawn).toBe('hearthmoor');
   expect(after.toast).not.toContain('Back at the');
+  // The lesson is taught once: Della's guide, no Lanterns card after it, and "Your team is rested." only as the toast.
+  expect(after.flags['story.unlock_lantern']).toBe(true);
+  expect(seen.filter(s => /Your team is rested/.test(s.text)).length).toBe(0);
+  await page.waitForTimeout(1500);
+  expect(await page.evaluate(() => { const c = document.querySelector('#unlockCard'); return !!c && !c.hidden && c.offsetParent !== null; })).toBe(false);
   expect(after.v).toBe(2);
   // Rook left with the scene: no cast is left behind in the room.
   expect(await page.evaluate(() => PixelPets.mapInfo.objs.some(o => /rook_walk/.test(o.id)))).toBe(false);
