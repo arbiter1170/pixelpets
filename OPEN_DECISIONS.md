@@ -28,13 +28,16 @@ D1009 is reserved: BATTLE_BACKDROPS (red, SETTLED by Vincent, Sat Oct 31, 2026: 
 
 D1012-D1016 are reserved: NEWS_FEED v0.1-v0.3 (design specs/NEWS_FEED.md: the NEWS app, its starter copy, the fuller Ribbit pool, the flavour rule and the Scrapbook reward).
 
-Next free id is D1017.
+D1158 is reserved: STORY_DECISIONS v0.62 (design repo, Sat Oct 31, 2026).
+
+Next free id is D1159.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## Open
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
+| D1158 | Heights dev note: the Arbiter's emission | Green, owner the Chief of Staff, default yes, due Mon Nov 2, 2026, 6:13 PM EST (design STORY_DECISIONS v0.62). Reword the author note `_names.emission` to the Oct 29 canon (the Arbiter is alien; neither INSIGN nor Glimmerwell built it). Not player text. | This PR: "alien device of unknown origin; INSIGN and Glimmerwell study and use it, nobody in the world knows it's alien" (was "a slow, unnamed emission from ancient Glimmerwell technology"). The stale notes at `status`, `_about` and `_lore.arbiter` are unchanged and wait for June's wording. | `data/heights.json` `_names.emission`, then `python3 tools/gen_mapdata.py` |
 | D890 | BRINEWICK copy and role names | Sign the Brinewick lines, signs, town-board reports and the role names (Lantern Host, Chandler, Deckhand, Bell Ringer, Net Mender, Ferry Hand, Harbour Clerk) | Every Brinewick line is implementer copy, marked placeholder in `data/detail_zz_brinewick.json` `_about` and in the four `towns.brinewick` report paths in `data/town_board.json` `_placeholders`. Marisol, Dorian, Rook, Hollis and Quinn keep their settled names. The episode card reads "EPISODE 1 COMPLETE · Thank you for playing Walklings!" | `design specs/brinewick_build.py` (writes `data/detail_zz_brinewick.json`), `data/town_board.json` |
 | D891 | BRINEWICK rule 9 previews | Vincent sees the 390 px previews of the town and its four rooms (Lantern House, Chandlery, Trial Hall, depot) and says yes before anything deploys | Built on a branch only. The rooms use four new skins (`bw_lantern`, `bw_store`, `bw_hall`, `bw_depot`) from the rule 9 briefs in `design specs/BRINEWICK.md`. Floors v0.2 are hand-placed grids (`BRINEWICK_TILES`) that pass the FLOOR_FIX plank rule, the brick and calm tests, and the look-alike check against every interior: rope-tan planks, tar planks, a pale ferry deck and a white sealed sheet under graphite walls. The quay is a new grey-blue plank tile `Q`; the depot stock is a new cool `depot_crate`. Stand-in: Marisol's `captain_hat` (ASSET_HANDOFF S1) is a cap | `sprites.js` (skins, `cell_crate`, `tide_gauge`), the `roofs` in `data/detail_zz_brinewick.json` |
 | D837 | Answerers: names | Red. Tallybat, Dimlamp, Filecrow, Cordhound, Humwisp; groups "the Answerers" (Keepers) and "the Founder's Line" with "units" (Glimmerwell). | Settled in part (Vincent, Oct 27, 2026): origin (Glimmerwell's first relays, woken by the hum), Dimlamp for Hushlamp, Filecrow for Ledgerowl (new crow art). Built (build 20261027-1537). Species ids 20-24 are permanent once merged. | `handoff/walklings/ARBITER_UNITS.md` §1; `sprites.js` |
