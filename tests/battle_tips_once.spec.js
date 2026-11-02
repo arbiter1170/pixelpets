@@ -168,3 +168,23 @@ test('B-T7 the first Rook match: holder hits never miss, and the matchup card is
   expect(after).toBeLessThan(before);
 });
 
+
+test('B-T8 the befriend odds card rings the hearts and the odds word once, inside the screen', async ({ page }) => {
+  await boot(page, saveAt({ 'story.tut_moves': 'done', 'story.tut_bef': 'b1' }));
+  await openWild(page, 'bloom/0');
+  await page.evaluate(() => document.querySelector('#btBefriendAct').click());
+  await waitCard(page, 'W5');
+  const r = await page.evaluate(() => {
+    const box = q => { const b = document.querySelector(q).getBoundingClientRect(); return { x: b.left, y: b.top, r: b.right, b: b.bottom, w: b.width }; };
+    const extra = [...document.querySelectorAll('.tut-ring-x')].filter(e => !e.hidden && e.offsetParent !== null).length;
+    return { ring: box('#tutRing'), odds: box('#encOdds'), tries: box('#encTries'), extra, vw: window.innerWidth };
+  });
+  // One ring, far narrower than the full-width rows, wholly on screen, and covering both rows.
+  expect(r.extra).toBe(0);
+  expect(r.ring.w).toBeLessThan(r.odds.w / 2);
+  expect(r.ring.x).toBeGreaterThanOrEqual(0);
+  expect(r.ring.r).toBeLessThanOrEqual(r.vw);
+  expect(r.ring.y).toBeLessThanOrEqual(r.tries.y + 6);
+  expect(r.ring.b).toBeGreaterThanOrEqual(r.odds.b - 6);
+  await closeBattle(page);
+});

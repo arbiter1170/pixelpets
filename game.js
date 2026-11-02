@@ -2149,6 +2149,15 @@ function tutBox(el){
   if (r.width < 2 || r.height < 2) return null;
   return { x: r.left, y: r.top, w: r.width, h: r.height, el: el };
 }
+// The box of what an element shows (its text and inline glyphs), not the full-width row it sits in (Vincent, Nov 2, 2026:
+// the befriend odds card ringed two whole rows that ran off the screen).
+function tutInk(el){
+  const b = tutBox(el); if (!b) return null;
+  const r = document.createRange(); r.selectNodeContents(el);
+  const c = r.getBoundingClientRect();
+  if (c.width < 2 || c.height < 2) return b;
+  return { x: c.left, y: c.top, w: c.width, h: c.height, el: el };
+}
 function tutJoin(sels){
   const rs = sels.map(s => tutBox($(s))).filter(Boolean);
   if (!rs.length) return [];
@@ -2578,6 +2587,14 @@ function lessonHide(){
   lockTabs(false);
   flushCareToasts();
 }
+// A look-only hole stays inside the screen, ring included, so no highlight runs off an edge.
+function lessonFit(b){
+  if (!b) return null;
+  const m = 7, vw = window.innerWidth, vh = window.innerHeight;
+  const x = Math.max(m, b.x), y = Math.max(m, b.y), r = Math.min(vw - m, b.x + b.w), btm = Math.min(vh - m, b.y + b.h);
+  if (r - x < 2 || btm - y < 2) return b;
+  return { x: x, y: y, w: r - x, h: btm - y, el: b.el };
+}
 function lessonPad(b){
   if (!b) return null;
   if (b.w >= 44 && b.h >= 44) return b;
@@ -2592,7 +2609,7 @@ function lessonCard(o){
   // Only a hole the player taps through grows to 44 px. A look-only hole (the HP bar, a type chip) keeps its real
   // size, so the ring hugs the bar instead of spilling over the rows around it (Vincent, Nov 2, 2026).
   const tapHole = !!o.pass || o.adv === 'tap';
-  tut.holes = (o.holes || []).map(b => tapHole ? lessonPad(b) : b).filter(Boolean); tut.hi = 0; tut.skipFn = o.skip || null;
+  tut.holes = (o.holes || []).map(b => tapHole ? lessonPad(b) : lessonFit(b)).filter(Boolean); tut.hi = 0; tut.skipFn = o.skip || null;
   layer.hidden = false; layer.classList.toggle('soft', !!o.soft); layer.classList.add('lesson'); layer.dataset.step = o.id;
   document.body.classList.add('tut-on');
   if (!o.soft) lockTabs(true); else lockTabs(false);
@@ -2845,7 +2862,7 @@ function movesHoles(id){
   if (id === 'W1') return one('#btBefriendAct');
   if (id === 'W2' || id === 'W3') return [tutBox($('#btFoeHp') && $('#btFoeHp').parentElement)].filter(Boolean);
   if (id === 'W4') return one('#btRun');
-  if (id === 'W5') return [tutBox($('#encOdds')), tutBox($('#encTries'))].filter(Boolean);
+  if (id === 'W5') return tutUnion([tutInk($('#encTries')), tutInk($('#encOdds'))].filter(Boolean));   // one ring round the hearts and the odds word
   if (id === 'M7') {
     const badge = $('#btMoves .mv-hint');
     const b = badge ? tutBox(badge) : null;
