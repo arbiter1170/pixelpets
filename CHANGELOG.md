@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 17:15 ET: Day 1 to Trial 1 flow: open-work review and spec v0.2 (Slices 0 and 1, for the Supervisor's review)
+
+- What changed and why: Slices 0 and 1 of the Day 1 brief (PR #252). `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` reviews every open PR and branch against the new flow (files, flags, gates, saves, merge order). `handoff/specs/DAY1_TRIAL1_FLOW.md` is the build spec: crates and Fen at dusk on Day 1, Fen's go-home talk next morning, Mom's Mahopac trip on the main chain, Mom sends the holder to Lizzy's class, the Hall door opens after the class, three Keeper holders before Fen, then the pick, with Fernbrook's hold flipping at the pick. It records Vincent's rulings of Mon Nov 2 (~4:20 PM ET) as D1166-D1171 (settled) and, in v0.2, his 5:03 and 5:05 PM ET rulings: the Hall door and the pick both come after Lizzy's class (D1153 held, superseded by D1169; D1172 answered NO, so the pick is not a door term), old saves deprioritized (simplest save-safe reading, no writes), the main-chain edit approved with `orchard` in place, and Slices 4a-6 shipped as one merge. D1173 (town steering, red) stays open. Nothing is built; the spec waits for the Supervisor's review before Slice 2.
+- Files touched: `handoff/specs/DAY1_TRIAL1_FLOW.md` (new), `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` (new), `CHANGELOG.md`.
+- Commit(s) + build id: this branch; docs only, no build stamp.
+- Tests run and result (widths, checks): docs only, no game change. `node tools/scans/run.js`: wording, decisions, symlinks, gamejs_map, test_mistakes pass.
+- Decisions made (colour + reasoning): D1166-D1173 reserved (`claude/npc-ranks-side-badge` holds D1159-D1165; main holds D1174 for the Act 5 capital, High Charity; next free D1175). D1166-D1172 are Vincent's settled rulings (D1172 answered NO); D1173 (red, town steering) is open.
+- Anything left unfinished: Slices 2-10 wait for the Supervisor's review; the spec's open questions Q2-Q4, Q6, Q8-Q10, Q13-Q15 keep their defaults.
+
 ## 2026-11-02 17:11 ET: Rook says "competitor", not "rival"
 
 - What changed and why: Rook's line in the Rook's Crossroads gate scene (`rc_gate`) read "Then I have to try. Not as a rival. As a friend asking twice." Player text never says "rival"; Rook is a competitor. Design signed the fix on Oct 29 (ROOK_KEEPERS_REENTRY v0.1.x sign-off), and Vincent's Day 1 brief (PR #252) lists it. The line now reads "Then I have to try. Not as a competitor. As a friend asking twice." Ids such as `rival3_rook` and `story.rival3_result` stay as they are (save rule 2). The same text is fixed in Design's generator (`specs/rook_crossroads_build.py`) in the design repo, so the next design regeneration does not bring it back.
