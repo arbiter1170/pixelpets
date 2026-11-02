@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 14:31 ET: Test fix: people_looks_28 compares the game's own save, not the raw fixture (test only, no build stamp)
+
+- What changed and why: `tests/people_looks_28.spec.js` "each of the 28 people resolves to its own new look" failed on main (seen while merging #236 on Oct 31, and reproduced on a clean main checkout). It took its "before" save snapshot straight after boot, from the installed fixture, then compared it with a later snapshot after the game's first save had added its normalised fields (`board`, `meta`, `rep`, `story.unlock_phone` and the rest). The test now has the game write its own save first (through the spec's existing read hook), so the before/after compare sees only what the test does. No game code changes.
+- Files touched: `tests/people_looks_28.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `fix/people-looks-save-snapshot`; no build stamp (test and docs only).
+- Tests run and result (widths, checks): `tests/people_looks_28.spec.js` at 320, 375 and 390: 15 passed (before the fix, test 1 failed at 390 on main). Scans pass.
+- Decisions made (colour + reasoning): green; a test-only fix to a spec added in #230 (PEOPLE_LOOKS_28, another worker's), no behaviour change.
+- Anything left unfinished: none.
+
 ## 2026-11-02 14:25 ET: NEWS: the Glimmer-side paper turns dark (Vincent, Nov 1)
 
 - What changed and why: Vincent asked for the cracked handset's NEWS to lean hard into darker Glimmerwell, INSIGN, research and story lore, and to be much less friendly. `news.js` now weights items on the Glimmer side only: Glimmer-only wire items (not the glossy Bright Notice, not ads) x12, the town paper x0.5, the Lantern Post x0.25, and the day's poll comes from the dark polls when one is open. The lead (the newest story beat) is unchanged, and the Keeper side is unchanged. A new placeholder batch (D1013) adds 22 Block News stories, 8 voices, 5 notices and 2 polls in a cold wire voice: quotas and units, glow sharing, the Census tent, crates and the Sanctuary, the Relay House hum, the Answerers' blank page, RegenX, Atten and the Arbiter, the Tier 2 fitting, and Walklings acting oddly after facility visits. INSIGN appears only as an older, half-redacted name (INS..., 'IN', a ledger, "the one that made medicine first"); nothing confirms it or names a chip. Disappearances read off screen and gentle ("Transferred north", an empty desk). Every item cites the lore index and carries `story.side=glimmer` and each cited entry's reveal flags. INSIGN and facility hints wait for `story.seal2` (design PR gates `faction.insign` and `event.chipping_secret` there).
