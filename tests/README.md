@@ -268,12 +268,12 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 - the contact card's duty line.
 
 `tests/side_badge.spec.js` (SIDE_BADGE, Vincent, Nov 2, 2026, `?debug=1`, all three widths) checks:
-- the Standing icon is present beside the place chip in modern and arcade, at least 44 px, before and after the pick;
-- before the pick it opens a card with no points (decision A); after the pick it opens STANDING;
-- arriving opens the bar with KEEPERS, BOTH SIDES, GLIMMERWELL or UNCLAIMED (B, C), and Cobblecrest flips on `story.quarry_bought`;
-- rooms never open the bar, and stepping back out into the same town doesn't either (D);
-- reduced motion means no tween, and the save gains nothing;
-- a toast beside the chip clears the icon;
+- faction control sits inside the place chip (a 12 px emblem and a hold stripe, no separate button) in modern and arcade, before and after the pick;
+- the chip's aria label names the pledge and who holds the place;
+- TODAY's STANDING row is at least 44 px; before the pick it opens a card with no points (decision A), after the pick it opens STANDING;
+- arriving lays KEEPERS, BOTH SIDES, GLIMMERWELL or UNCLAIMED over the place line inside the chip (B, C), and Cobblecrest flips on `story.quarry_bought`;
+- rooms never show the word, and stepping back out into the same town doesn't either (D);
+- the save gains nothing;
 - the region map shows the halo and hold line for every visited place before the pick, while an unvisited place stays ??? (D1164; `tests/map_legend.spec.js` and `tests/map.spec.js` follow the same rule).
 
 `tests/news_glimmer_dark.spec.js` covers the darker Glimmer-side NEWS paper (Vincent, Nov 1, 2026). In Node it checks `PPNews.devCheck()`. On a late Glimmer-side save, most features, briefs and voices must be the dark Glimmer-only wire, and the Lantern Post must be rare. Every Keeper-side edition must be byte-identical to `news.js` and `data/mapdata.js` from the merge base with `origin/main` (never `HEAD`), with no INSIGN or facility hint. Those hints must also wait for `story.seal2`. In the game, at 320, 375 and 390 with reduced motion on, the cracked handset prints a dark story on FRONT, TOWN opens with 44 px tabs, and the save adds no field beyond the phone's existing ones (`v` 2). With `PP_ARTIFACTS` set it writes shots to `news_dark/`.

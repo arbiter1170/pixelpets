@@ -1018,8 +1018,7 @@ function mhcNoticeBox(wide){
   if (s.height < 20) return null;
   // wide: D782's slot, the chip's whole room (136 / 191 / 206 px), covering the chip for the toast's life.
   // Otherwise beside the chip, so the hour stays in view (#200), when there is room for it there.
-  const sb = $('#sideBadge'), sbIn = sb && sb.parentNode === slot ? sb.getBoundingClientRect() : null;   // SIDE_BADGE sits after the chip
-  const left = Math.round(Math.max(c.right, sbIn ? sbIn.right : 0) + 4);
+  const left = Math.round(c.right + 4);
   const width = Math.round(s.right - left);
   if (wide || width < 36) return { left: Math.round(s.left), top: Math.round(s.top), width: Math.round(s.width), height: Math.round(s.height) };
   return { left: left, top: Math.round(s.top), width: width, height: Math.round(s.height) };
@@ -1267,7 +1266,6 @@ function applyControls(){
   renderControlsRows(); syncWalkTip(); fitAll();
   try { syncCareAlert(); } catch (e) {}
   try { syncNavArt(true); } catch (e) {}
-  try { seatSideBadge(); } catch (e) {}
 }
 function renderControlsRows(){
   const m = ctlPick() === 'modern', b = $('#setControls'); if (!b) return;
@@ -1700,7 +1698,6 @@ function syncMhcDock(on){
     }
   }
   try { syncMhcGroupHeads(); } catch (e) {}
-  try { seatSideBadge(); } catch (e) {}
 }
 function syncMhcGroupHeads(){
   const host = $('#fcDockR3'), strip = $('#coopStrip'), map = $('#mapWrap');
@@ -1880,7 +1877,7 @@ function refreshHudPads(){
   hudFree(); syncWalkCam();
 }
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
-function fitAll(){ try { syncTipBand(); } catch (e) {} try { seatSideBadge(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} try { placeMhcToast(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
+function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} try { placeMhcToast(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(($('#app') && $('#app').getBoundingClientRect().width) || window.innerWidth, 480) - 36;
   fitPetScene();
@@ -5051,6 +5048,7 @@ function renderClockChip(){
   let aria = (placeName() || 'Here') + ', ' + txt;
   if (word) aria += ', ' + word;
   if (sky && sky.temp != null) aria += ', ' + Math.round(sky.temp) + '\u00b0';
+  try { if (S && CUR) aria += '. ' + sideAria(true); } catch (e) {}   // SIDE_BADGE: pledge and who holds this place
   aria += '. Tap for today.';
   if (btn.getAttribute('aria-label') !== aria) btn.setAttribute('aria-label', aria);
   if (renderClockChip.phase !== r.phase) {
@@ -10582,6 +10580,7 @@ function useLocation(mode){
 function openEnvCard(){ if (overlayOpen()) return; clearMoves(); renderEnvCard(); $('#ovEnv').hidden = false; lockTabs(true); syncMapBtn(); PPEnv.permState().then(() => { if (!$('#ovEnv').hidden) renderEnvCard(); }); }
 function closeEnvCard(){ $('#ovEnv').hidden = true; lockTabs(false); }
 function renderEnvCard(){
+  try { renderEnvStanding(); } catch (err) {}
   const e = ENV; if (!e) return;
   const name = placeName();
   const terrKey = ['mountain', 'city', 'water', 'forest', 'park', 'meadow'].find(t => (e.tags || []).indexOf(t) >= 0);
@@ -14676,13 +14675,13 @@ function renderStanding(){
   }
 }
 /* ---------- SIDE_BADGE (Vincent, Nov 2, 2026) ---------- */
-// The Standing icon is always on the walk screen, beside the place chip (seatSideBadge follows the chip into every layout).
-// Face: your pledge, or a neutral emblem before the side pick. Stripe: who holds this place (REGION_MAP hold; a room uses
-// its town). Arriving at a new town or route opens a bar from the icon ("FERNBROOK · BOTH SIDES") for STANDING_CFG.bar.holdMs.
-// Rooms never open it, nor does stepping back out into the town you were in. It shows before the pick too (an exception to
-// D109, which still gates the map overlay's hold line). Nothing here is saved.
+// Faction control lives inside the place chip, so it is always on the walk screen and takes almost no room (Vincent, Nov 2:
+// "doesn't take up a ton of screen space"). The small emblem after the hour is your pledge (neutral before the side pick); the
+// stripe along the chip's foot is who holds this place (REGION_MAP hold; a room uses its town). Arriving at a new town or route
+// lays the hold word ("BOTH SIDES") over the place line for STANDING_CFG.bar.holdMs. Rooms never do, nor does stepping back out
+// into the town you were in. It shows before the pick too (D1161). The chip opens TODAY; its STANDING row opens STANDING.
 const SB_CFG = SC_STANDING.bar;
-let sideBarKey, sideBarTimer = 0, sideBarWant = 0, sideFace = '';
+let sideBarKey, sideBarTimer = 0, sideBarWant = 0, sideFace = '', sideBarOpen = false;
 function holdHere(){
   const id = CUR && CUR.id, node = id ? nodeOf(id) : null;
   const hold = node ? mapHold(node) : 'wild';
@@ -14694,25 +14693,21 @@ function paintEmblem(canvas, k){
   const g = ctx(canvas); g.clearRect(0, 0, 8, 8);
   (SC_STANDING.art['emblem_' + k] || []).forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
 }
-function seatSideBadge(){
-  const b = $('#sideBadge'), c = $('#thChip'); if (!b || !c || !c.parentNode) return;
-  if (b.previousElementSibling !== c) c.parentNode.insertBefore(b, c.nextSibling);
-  const free = c.parentNode === $('#scr-walk') && ctlMode() !== 'modern';   // arcade: the chip sits alone in the walk column
-  b.classList.toggle('sb-free', free);
-  if (free) { b.style.left = (c.offsetLeft + c.offsetWidth + 6) + 'px'; b.style.top = Math.round(c.offsetTop + (c.offsetHeight - 44) / 2) + 'px'; }
-  else if (b.style.left || b.style.top) { b.style.left = ''; b.style.top = ''; }
+// "Standing. Pledged to The Keepers. Fernbrook: Keepers keep the town. Glimmerwell keeps a stand." (chip aria, TODAY row)
+// short: the chip's label already names the place ("Hearthmoor, TUE 8:30. You haven't picked a side yet. Home. The Keepers hold this town.")
+function sideAria(short){
+  const h = holdHere(), F = SC_STANDING.sides[pledgeShown()];
+  const pledge = String(F ? PPStanding.fill(SC_STANDING.tab.pledged, { faction: F.name }) : SB_CFG.unpledged).replace(/\.$/, '') + '. ';
+  const line = String(h.line).replace(/\.$/, '');
+  return short ? pledge + line : SB_CFG.label + '. ' + pledge + (placeName() || h.place) + ': ' + line;
 }
 function syncSideBadge(){
-  const b = $('#sideBadge'); if (!b || !S || !CUR) return;
+  const c = $('#thChip'); if (!c || !S || !CUR) return;
   const h = holdHere(), sd = pledgeShown();
   if (sideBarKey === undefined) sideBarKey = h.key;   // boot: the place you load into is not an arrival
-  if (b.dataset.hold !== h.hold) b.dataset.hold = h.hold;
-  if (b.dataset.side !== sd) b.dataset.side = sd;
+  if (c.dataset.hold !== h.hold) c.dataset.hold = h.hold;
+  if (c.dataset.side !== sd) c.dataset.side = sd;
   if (sideFace !== sd) { paintEmblem($('#sideEmblem'), sd); sideFace = sd; }
-  const F = SC_STANDING.sides[sd];
-  const lbl = SB_CFG.label + '. ' + String(F ? PPStanding.fill(SC_STANDING.tab.pledged, { faction: F.name }) : SB_CFG.unpledged).replace(/\.$/, '') + '. ' + (placeName() || h.place) + ': ' + h.line;
-  const btn = $('#sideBtn'); if (btn.getAttribute('aria-label') !== lbl) btn.setAttribute('aria-label', lbl);
-  seatSideBadge();
 }
 // Called from arriveAt() after the new map is in place.
 function sideBarArrive(){
@@ -14730,17 +14725,25 @@ function flushSideBar(){
   if (performance.now() - sideBarWant > 8000 || !CUR || isRoom()) { sideBarWant = 0; return; }   // stale: the moment passed
   if (scene || fade.busy || screen !== 'walk' || overlayOpen() || sideToastBusy()) { sideBarTimer = setTimeout(flushSideBar, 250); return; }
   sideBarWant = 0;
-  const h = holdHere(), word = SB_CFG.words[h.hold] || SB_CFG.words.wild;
-  $('#sideBarPlace').textContent = h.place; $('#sideBarHold').textContent = word;
-  $('#sideBar').hidden = false; $('#sideBadge').classList.add('sb-open');
+  const h = holdHere(), word = SB_CFG.words[h.hold] || SB_CFG.words.wild, el = $('#thHold');
+  el.textContent = word; el.hidden = false; sideBarOpen = true;
+  $('#thChip').classList.add('th-holding');
   $('#sideLive').textContent = h.place + ': ' + word;
-  seatSideBadge();
   sideBarTimer = setTimeout(closeSideBar, SB_CFG.holdMs);
 }
 function closeSideBar(){
-  clearTimeout(sideBarTimer); sideBarTimer = 0;
-  const bar = $('#sideBar'); if (bar) bar.hidden = true;
-  const b = $('#sideBadge'); if (b) b.classList.remove('sb-open');
+  clearTimeout(sideBarTimer); sideBarTimer = 0; sideBarOpen = false;
+  const el = $('#thHold'); if (el) el.hidden = true;
+  const c = $('#thChip'); if (c) c.classList.remove('th-holding');
+}
+function renderEnvStanding(){
+  const btn = $('#envStanding'); if (!btn || !S) return;
+  const sd = pledgeShown(), F = SC_STANDING.sides[sd], h = holdHere();
+  paintEmblem($('#envStandingEm'), sd);
+  $('#envStandingTitle').textContent = SC_STANDING.tab.label + ': ' + (F ? F.short : SB_CFG.unpledged);
+  $('#envStandingLine').textContent = (placeName() || h.place) + ': ' + (SB_CFG.words[h.hold] || SB_CFG.words.wild);
+  btn.dataset.hold = h.hold;
+  btn.setAttribute('aria-label', sideAria() + '. Tap to see your Standing.');
 }
 // Tap: after the pick, the STANDING tab. Before it (or with no quest panel to open), a small card with no points.
 function sideBtnTap(){
@@ -18483,7 +18486,7 @@ function bindInput(){
   });
   $('#questBtn').addEventListener('click', openQuest);
   const repBtn = $('#repBtn'); if (repBtn) repBtn.addEventListener('click', () => { if ($('#ovRep').hidden) openRep(); else closeRep(); });
-  $('#sideBtn').addEventListener('click', sideBtnTap);
+  $('#envStanding').addEventListener('click', () => { closeEnvCard(); sideBtnTap(); });
   $('#sideClose').addEventListener('click', () => { sfx('tap'); closeSideCard(); });
   $('#ovSide').addEventListener('click', e => { if (e.target === $('#ovSide')) closeSideCard(); });
   const repBackBtn = $('#repBack'); if (repBackBtn) repBackBtn.addEventListener('click', repBack);
@@ -19419,7 +19422,7 @@ function boot(){
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
   api.isRestSpot = o => isRestSpot(o);
-  api.sideBadge = () => { const b = $('#sideBadge'), bar = $('#sideBar'); return b ? { hold: b.dataset.hold, side: b.dataset.side, open: !bar.hidden, place: $('#sideBarPlace').textContent, word: $('#sideBarHold').textContent, label: $('#sideBtn').getAttribute('aria-label'), key: sideBarKey || null, pending: !!sideBarWant } : null; };
+  api.sideBadge = () => { const c = $('#thChip'), w = $('#thHold'); return c ? { hold: c.dataset.hold, side: c.dataset.side, open: !w.hidden, word: w.hidden ? '' : w.textContent, live: $('#sideLive').textContent, label: c.getAttribute('aria-label'), key: sideBarKey || null, pending: !!sideBarWant } : null; };
   // NPC_RANKS read: the battle intro and win lines as a holder's match would print them (same holderVars as textVars).
   api.holderLines = id => { const t = TRAINERS[id]; if (!t) return null; const v = Object.assign({ player: playerName(), foe: 'X' }, holderVars(t)); return { intro: battleLine('trainerIntro', v), win: battleLine('trainerWin', v), summon: battleLine('trainerSummon', v), label: holderShown(t) }; };
   api.shownName = n => shownName(String(n == null ? '' : n));   // NPC_RANKS read: the label a speaker shows
