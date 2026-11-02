@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 17:45 ET: Vincent's 5:41 PM ruling: mixed Trial Hall roster (D1170 amended); D1166-D1173 recorded (docs only, no build stamp)
+
+- What changed and why: Vincent, 5:41 PM ET: the three Trial Hall holders before Fen are mixed (a Keeper cadet, a Glimmerwell-leaning local, a neutral Fernbrook holder), Fen stays a Keeper, and the Hall sign reads "FERNBROOK TRIAL HALL · Master Fen". The D1166-D1173 rows from the #255 spec are recorded: D1166-D1172 in the archive, D1173 as an Open row.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/vincent-1741-hall-roster`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): D1170 amended (red, Vincent); no new id. Next free id stays D1175.
+- Anything left unfinished: Claude updates DAY1_TRIAL1_FLOW R3, §8, Q8, conflict row 6 and Slice 8.
+
 ## 2026-11-02 17:40 ET: Test fix: handset_dark checks #243's own diff, not the merge base (test only, no build stamp)
 
 - What changed and why: `tests/handset_dark.spec.js` ("style.css changes only the ring, the kicker and the names") diffed `style.css` against `git merge-base HEAD origin/main`. That only works on the PR branch: once #243 merged, the merge base is the current commit, so the test failed on main at 320, 375 and 390. A first fix pinned a whole-file baseline (`ee78a20`), but the Nov 2 phone trim (#251) then removed other `.hack` rules and broke that too. Now the test reads #243's own diff (`git diff ee78a20 8c40044 -- style.css`: only the ring, the kicker and `.who`) and checks that today's `style.css` still has those three lines and exactly one `#c81818`. The two page-compare tests serve `style.css` from `ee78a20`. No game code changes.
@@ -10,6 +19,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `tests/handset_dark.spec.js` at 320, 375 and 390 on main `b76b902` (merged in): 12 passed. Negative checks: putting the old green ring back fails the static check; adding a second crimson use fails it. Scans pass. The `#c81818` count leaves out the PAL definition line `--Q:#c81818` (added by #241), which is a definition, not a use.
 - Decisions made (colour + reasoning): green; a test-only fix to #243's spec, same checks.
 - Anything left unfinished: none.
+
 
 ## 2026-11-02 17:15 ET: Day 1 to Trial 1 flow: open-work review and spec v0.2 (Slices 0 and 1, for the Supervisor's review)
 
