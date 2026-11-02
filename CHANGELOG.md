@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 16:10 ET: Decision logs: Vincent's Nov 2 rulings + new Day 1 direction (docs only, no build stamp)
+
+- What changed and why: recorded Vincent's Mon Nov 2 rulings (faction-pick reds D1141-D1143 and D1149-D1152 settled yes with their canon overrides; D967 and D1101 yes; Act 5 capital is High Charity as D1164; the President and Governor names), the calls that stay open (D971, D1000, the intro reds, D1034/D1035, D1044, D1087, D1128, D1140), missing design-repo ids, past-due marks, the earlier Oct 30-31 settlements, and the NEW DIRECTION section with a Claude Code brief.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CLAUDE.md`, `CHANGELOG.md`, `handoff/claude_briefs/DAY1_TRIAL1_FLOW_BRIEF_2026-11-02.md`.
+- Commit(s) + build id: `chief/decisions-2026-11-02`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js` and `node tools/scans/run.js` pass; no game files changed.
+- Decisions made (colour + reasoning): D1164 reserved (red, Vincent's call) under walklings-decision-ids; D1159-D1163 noted as held by `claude/npc-ranks-side-badge`; next free id D1165.
+- Anything left unfinished: `data/rook_crossroads.json:326` "rival" fix is design-generated (rule 8), so it is left for Design's build script; the yellows D1144-D1148 and D1153-D1157 settle at 5:44 PM EST.
+
 ## 2026-11-02 14:31 ET: Test fix: people_looks_28 compares the game's own save, not the raw fixture (test only, no build stamp)
 
 - What changed and why: `tests/people_looks_28.spec.js` "each of the 28 people resolves to its own new look" failed on main (seen while merging #236 on Oct 31, and reproduced on a clean main checkout). It took its "before" save snapshot straight after boot, from the installed fixture, then compared it with a later snapshot after the game's first save had added its normalised fields (`board`, `meta`, `rep`, `story.unlock_phone` and the rest). The test now has the game write its own save first (through the spec's existing read hook), so the before/after compare sees only what the test does. No game code changes.
