@@ -6,7 +6,7 @@ Target path: `handoff/specs/DAY1_TRIAL1_FLOW.md` (PUBLIC repo; not `docs/`). Spe
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.1, Mon Nov 2, 2026, for Vincent (via the Chief of Staff). Slice 1 of the brief. |
+| Status | Draft v0.2, Mon Nov 2, 2026, ~5:15 PM ET: v0.1 plus Vincent's 5:03 and 5:05 PM ET rulings (R9-R12, main `OPEN_DECISIONS.md` "NEW DIRECTION Nov 2", PRs #256 and #257). Waits for the Supervisor's review before Slice 2. |
 | Brief | `handoff/claude_briefs/DAY1_TRIAL1_FLOW_BRIEF_2026-11-02.md` on `pr252` (`chief/decisions-2026-11-02`, fadb984), SLICE 1 section |
 | Rulings | pr252 `OPEN_DECISIONS.md` "NEW DIRECTION Nov 2, 3:55 PM (Vincent)"; Open rows D1144-D1148, D1153-D1157; pr252 `archive/DECISIONS_SETTLED.md` "Mon Nov 2, 2026: Vincent's rulings" (D1141-D1143, D1149-D1152 settled 2:35 PM ET) |
 | Vincent's rulings in this session | R1-R8, Mon Nov 2, 2026, ~4:20 PM ET, Vincent, in this Claude Code session (table below). SETTLED direction. |
@@ -14,7 +14,7 @@ Target path: `handoff/specs/DAY1_TRIAL1_FLOW.md` (PUBLIC repo; not `docs/`). Spe
 | Code base | origin/main `eabac9b`. Branch refs: `#253` = `claude/faction-pick-or-gate` c9eed5e (now PR #253); `pd` = `claude/partner-day-intro` b5a45a7 (no PR); `ranks` = `claude/npc-ranks-side-badge` 6f3c600 (no PR); `#249` = `claude/rook-lantern-walk` f5ce1bc |
 | Cites | `file:N` is origin/main unless a ref is given. UNVERIFIED marks a claim not checked in code. |
 
-| R | Vincent's ruling (~4:20 PM ET, this session) | Spec home |
+| R | Vincent's ruling (R1-R8 ~4:20 PM ET, this session; R9-R12 5:03-5:05 PM ET, recorded on main) | Spec home |
 |---|---|---|
 | R1 | Keep both on Day 1: D1143's Fen with Russet at dusk and the Two Lights beats stay. Fen's potential / go-home talk comes after (next morning, before the holder leaves Fernbrook); she then leaves to talk with the local Keeper authorities. | §2, §6; D1166 |
 | R2 | Lizzy's class runs at any hour while its step is active: Lizzy and the class kids are pinned at `hm_school_in`; normal schedules resume after. | §6; D1168 |
@@ -24,6 +24,10 @@ Target path: `handoff/specs/DAY1_TRIAL1_FLOW.md` (PUBLIC repo; not `docs/`). Spe
 | R6 | The holder meets Lizzy in the opening scene (`pd`), then again at the class. The class is not a first meeting; its skip flag is a new done flag, never `story.lizzy_met`. | §4, §6; D1168 |
 | R7 | The class is a quest: Mom insists. Main-chain order after the crates: Fen's go-home talk, Mom's Mahopac quest (main chain), Mom insists on the class, the class, Fernbrook (door open), three Keeper holders, Fen, the pick (D1055, Part D, D1142). | §4; D1167 |
 | R8 | A save that already finished Mahopac (`story.dream_woke` or `story.dream_study`, not `story.reached_mahopac`) gets Fen's variant line that sends them straight to the class; Mom's insistence step is skipped. Mahopac stays reachable from the start. | §4, §5; D1167 |
+| R9 | 5:03 PM ET: "Picking a side should be after the class, same with hall door." The Hall door and the pick both come after Lizzy's class. D1153 is HELD (superseded by D1169); D1172 is answered NO. | §5, §7; D1169, D1172 |
+| R10 | 5:05 PM ET: "Not worried about old saves right now." Q5 and Q7 are deprioritized: take the simplest save-safe option (no save writes, `v` stays 2, no migrator) and spend no effort on old-save edge cases. | §5, §8, §9 |
+| R11 | 5:05 PM ET: "Ok to edit main quest chain." The main CHAIN rows in §4 are approved; `orchard` keeps its position. | §4; Q11 |
+| R12 | Ship Slices 4a-6 as one merge. | §15; Q12 |
 
 ## 2. The flow in one table
 
@@ -70,7 +74,7 @@ D1141-D1157:
 | D1150 | red, settled | **Stands** | Seal for everyone at Hall 1. |
 | D1151 | red, settled | **Stands** | Route 2 waits for the pick (#253 overlay). |
 | D1152 | red, settled | **Stands** | `heights` skipIf on #253 `quests.js:98`. |
-| D1153 | yellow, settles **Mon Nov 2, 2026, 5:44 PM EST** | **Amended** by D1169 for new saves | `story.crates_seen` no longer opens the door or the open slip. The amendment must be recorded before 5:44 PM EST (or recorded instead of D1153's text); if D1153 settles first, D1169 amends a settled row and says so. |
+| D1153 | yellow | **HELD, superseded by D1169** (Vincent, 5:03 PM ET, R9) | `story.crates_seen` does not open the door or the open slip; the door opens after the class. |
 | D1154 | yellow | **Stands** | Wick errand is Day 1, unchanged. |
 | D1155 | green | **Stands**, and covers A7 | "Next morning" is narration and `curtain` only. |
 | D1156 | yellow | **Stands** | Every gate here is a read; nothing is written at load. |
@@ -114,11 +118,11 @@ Side chain and main chain together (side rows unchanged):
 
 ## 5. Save kinds
 
-Door `need` (§7): `story.lizzy_class | story.orchard_cleared | story.seal1 | story.side_pick_done`. Fixtures: #253 `tests/fixtures/or_gate_kinds.js` (seven kinds plus cuts); three kinds added here.
+Door `need` (§7): `story.lizzy_class | story.orchard_cleared | story.seal1` (R9: the pick alone never opens it). Fixtures: #253 `tests/fixtures/or_gate_kinds.js` (seven kinds plus cuts); three kinds added here.
 
 | Kind | Flags (short) | Chain resumes at | Door | The OR term that reads |
 |---|---|---|---|---|
-| a1 | picked; no orchard, no Seal 1 | `heights` (or `orchard`), as today; new rows hidden by guard | **open** (default, D1172; today shut until the orchard) | `story.side_pick_done`. Fen still says "Heights first" until `trialReady()` (`game.js:3857`, `:6781`), as today |
+| a1 | picked; no orchard, no Seal 1 | `heights` (or `orchard`), as today; new rows hidden by guard | **shut** (D1172 NO, R9) until the orchard clears it, as today | `story.orchard_cleared`. Old-save edge case, deprioritized (R10): no extra work |
 | a2 | picked, orchard; no Seal 1 | `hall1_keepers`, then `hall1` | open | `story.orchard_cleared` |
 | b | Seal 1, orchard; not picked | past Fernbrook | open | `story.orchard_cleared` (and `story.seal1`) |
 | b' | orchard; not picked, no Seal 1 | `hall1_keepers`, then `hall1` | open | `story.orchard_cleared` |
@@ -131,7 +135,7 @@ Door `need` (§7): `story.lizzy_class | story.orchard_cleared | story.seal1 | st
 
 Read-only tells (FPT §7.4, unchanged): old picked order `story.side_pick_done & !story.crates_seen`; old never-picked `story.orchard_cleared & !story.side_pick_done`. This flow adds one: new-flow Fen away `story.fen_sent_home & !story.lizzy_class`. Nothing is written at load; `v` stays 2; `normalizeV2` is untouched (all new keys live in free-form `S.flags`).
 
-The OR terms are a save-compat read, **not a second route**: on a new-flow save, `story.orchard_cleared`, `story.side_pick_done` and `story.seal1` are only ever written after Hall 1 (D1142, D1150), so they cannot open the door before the class.
+The OR terms are a save-compat read, **not a second route**: on a new-flow save, `story.orchard_cleared` and `story.seal1` are only ever written after Hall 1 (D1142, D1150), so they cannot open the door before the class. The pick (`story.side_pick_done`) is not a term (R9). Per R10 this is the simplest save-safe reading: no writes, `v` 2, no migrator, and no further old-save work.
 
 ## 6. NPC whereabouts per step
 
@@ -155,10 +159,10 @@ Fen's go-home talk "before the holder leaves Fernbrook" (R1), default (Q9): the 
 |---|---|
 | Today | `fb_hall` need `story.orchard_cleared` (`fernbrook_rooms.json:132`; verbatim copy `maps_slice.json:131` stays as written) |
 | #253 | `story.crates_seen \| story.orchard_cleared` (#253 `fernbrook_rooms.json:133`). Safe to merge as is: nothing sets `story.crates_seen` yet. **Wrong for this flow** once Part A writes it |
-| New `need` | `story.lizzy_class \| story.orchard_cleared \| story.seal1 \| story.side_pick_done` (one string; `\|` splits first, AND-free, so reader order cannot change it) |
+| New `need` | `story.lizzy_class \| story.orchard_cleared \| story.seal1` (R9, D1172 NO: `story.side_pick_done` is not a term; one string; `\|` splits first, AND-free, so reader order cannot change it) |
 | Where | `fernbrook_rooms.json` slicePatch `replaceObjs` `fb_hall` only. Lands in the **first PR that writes `story.crates_seen`** (Slice 4a), so #253's string never opens the door on a new save |
 | Deny | Keyed deny (small engine change at `game.js:6733`, which today takes one string): `{"!story.crates_seen": <June's v0.2.3 deny line, FPT §2.1>, "else": "PLACEHOLDER: The Hall is shut. A note: Fen is away on Keeper business."}`, picked with the NPC `lines` reader. Fallback if Vincent prefers no engine change: one PLACEHOLDER line (Q10) |
-| Town board (`town_board.json:116-129`; #253 `:117-128`) | `fb_hall_latched`: `when ["!story.crates_seen", "!story.lizzy_class", "!story.orchard_cleared", "!story.seal1", "!story.side_pick_done"]`, June's FPT copy. NEW `fb_hall_away`: `when ["story.crates_seen", "!story.lizzy_class", "!story.orchard_cleared", "!story.seal1", "!story.side_pick_done"]`, PLACEHOLDER text (Fen away). `fb_hall_open`: `when ["story.lizzy_class \| story.orchard_cleared \| story.side_pick_done", "!story.seal1"]`. Latched + away together are the exact opposite of open before Seal 1 |
+| Town board (`town_board.json:116-129`; #253 `:117-128`) | `fb_hall_latched`: `when ["!story.crates_seen", "!story.lizzy_class", "!story.orchard_cleared", "!story.seal1"]`, June's FPT copy. NEW `fb_hall_away`: `when ["story.crates_seen", "!story.lizzy_class", "!story.orchard_cleared", "!story.seal1"]`, PLACEHOLDER text (Fen away). `fb_hall_open`: `when ["story.lizzy_class \| story.orchard_cleared", "!story.seal1"]`. Latched + away together are the exact opposite of open before Seal 1 |
 | Dependency | #253 must merge first: `cond()` on main splits `&` only (`game.js:4623`), so the `\|` string would read as one flag name and shut the door on every save, and the boot validator would log an error |
 
 ## 8. Trial Hall roster
@@ -170,7 +174,7 @@ Fen's go-home talk "before the holder leaves Fernbrook" (R1), default (Q9): the 
 | Positions | TBD on the tiered path from the mat (7,23) to the dais (7,4), on walkable tiles beside the t1-t6 props (`fernbrook_rooms.json:117-122`). No prop moves. If any layout change is wanted, rule 9 previews first |
 | Names, looks, lines | PLACEHOLDER (Story). Rank per D1161(E): `[Rank] PLACEHOLDER` until Design assigns (D1159 pattern on `ranks`) |
 | Level band | Relative to Fen's lowest level F1 (today 12, `moves.js:1778`; 10 under D1128's default): holders at F1-2 to F1, Hall 2's spacing. Numbers are PLACEHOLDER until D1128 rules and §7.5 passes |
-| Fen gate | Fen's walk-up (`MATCH_WALKUP` `game.js:6258`) and the hall1 panel (`game.js:6775-6791`) also need all three `trainer.h1_keeper_*` flags, unless `story.seal1` or a Fernbrook Seal is held, or the save is Glimmer. Deny line PLACEHOLDER. Default: applies to every Keepers save without Seal 1, including a2 and b' (Q5) |
+| Fen gate | Fen's walk-up (`MATCH_WALKUP` `game.js:6258`) and the hall1 panel (`game.js:6775-6791`) also need all three `trainer.h1_keeper_*` flags, unless `story.seal1` or a Fernbrook Seal is held, or the save is Glimmer. Deny line PLACEHOLDER. Applies to every Keepers save without Seal 1 (Q5, deprioritized by R10: no old-save special case) |
 | D1128 | Still open and still decides Fen's team. The holders add XP before Fen, the Heights XP now comes after Hall 1 (FPT §7.5), and the Mahopac trip now sits before Hall 1 |
 | §7.5 | Re-run after Slice 8: one CLEAN new-flow run, party level recorded at the Hall door, 12 tries at Fen, pass at 6 or more wins |
 
@@ -182,7 +186,7 @@ Fen's go-home talk "before the holder leaves Fernbrook" (R1), default (Q9): the 
 | Why it can't read the pick | `matchHold` (`game.js:11953`) tests each `when` entry with a flag-only `ok` (`:11955`): `'flag'` or `'!flag'`. `'story.side=glimmer'` reads as a flag of that literal name (always false), and `\|` is not read |
 | Minimal additive change (default) | (1) Teach `ok` the `k=v` form, as `evalCond` does (`quests.js:372`). (2) Put two rules before `split`: `{ id: 'glimmer', when: ['story.side_pick_done', 'story.seal1', 'story.side=glimmer'], line: PLACEHOLDER }`, `{ id: 'keepers', when: ['story.side_pick_done', 'story.seal1', '!story.side=glimmer'], line: PLACEHOLDER }`. On a new save both flags first hold at the pick result (D1142). No save write. `{}` still resolves to `split`. Add validator asserts for both flips |
 | Alternative | Per-side flags written by the pick result (new saves only); old c saves stay `split` |
-| Live-save effect (Q7) | The read flips old c saves on load. A Glimmer hold turns on the daily hum gain (`game.js:767`) and align glow (`game.js:4122`) in Fernbrook for c-glimmer saves |
+| Live-save effect (Q7, deprioritized by R10) | Read stays the method (no writes, simplest save-safe option). The read flips old c saves on load. A Glimmer hold turns on the daily hum gain (`game.js:767`) and align glow (`game.js:4122`) in Fernbrook for c-glimmer saves |
 | D1163 | The `ranks` bar shows "BOTH SIDES" for `split`; after the flip it shows the side word. Slice 7's signs read the same hold |
 | ribbit.js | Its `cond` (`ribbit.js:152-159`) reads `!`, `=` and bare flags only: no `\|`, no `&`. Nothing here gives it an OR string |
 | Steering | The general system (which Trial steers which town, what flips, what the holder sees) is **red**, D1173, Slice 9 spec first |
@@ -252,46 +256,46 @@ Existing suites the slices touch: `quests`, `faction_or_gate` (#253), `tutorial_
 | 10 | #249 Rook walks you to the Lantern House after his first match (Hearthmoor) | Low risk, no shared flags (`rook_walk` cast ids only). A second "Rook at a Lantern House" beat beside D1143's; Story signs off |
 | 11 | Intro reds D1020-D1023, D1029 (Vincent's intro work) | `pd` carries them; merge order below |
 | 12 | `data/rook_crossroads.json:326` used the banned word for competitor | Fixed outside this flow: game PR #254 (the game file is hand-kept, so the line is edited there and `data/mapdata.js` regenerated) and design commit 680c32d (`specs/rook_crossroads_build.py:80`) |
-| 13 | **D1164 double-booked**: pr252 = Act 5 capital is High Charity (Vincent 3:40 PM ET); `ranks` = region map shows holds before the pick | Report to the Chief of Staff; never renumber silently (walklings-decision-ids rule 5). Cite as "D1164 (High Charity)" and "D1164 (map holds)" until ruled |
+| 13 | D1164 was double-booked (High Charity vs `ranks` map holds) | Resolved on main (09ed47c): High Charity is **D1174**; `ranks` keeps D1159-D1165 |
 | 14 | `pd` moves Mom downstairs and adds the opening Lizzy; Slices 5 and 6 build on it | Merge order: #253, then `pd`, then the visible slices |
 | 15 | #253 door string `story.crates_seen \| story.orchard_cleared` is wrong for this flow | Replace in Slice 4a, the first PR that writes `story.crates_seen` |
 | 16 | `matchHold` and `ribbit.js:152` cannot read `\|` | §9: `=` only for matchHold; no OR strings to ribbit |
 | 17 | `applyCheckpoint` sets the pick for steps after `orchard` | §11 fix |
-| 18 | walklings-quests: "the main CHAIN is shipped and stays untouched" | R7 overrides for these six rows; the Supervisor updates the skill line |
-| 19 | Slices 4a-6 each leave a new save at a shut door until the class ships | Merge 4a, 4, 5, 6 as one train (Q12) |
+| 18 | walklings-quests: "the main CHAIN is shipped and stays untouched" | Approved by Vincent (R11, 5:05 PM ET) for these rows; `orchard` keeps its position. The Supervisor updates the skill line |
+| 19 | Slices 4a-6 each leave a new save at a shut door until the class ships | Merge 4a, 4, 5, 6 as one merge (R12) |
 | 20 | FPT Parts B-D (Hall 1 intro, pitches, cart, pick) are not built | This flow's pick and flip wait on them (§15) |
 
 ## 13. Decision ids
 
-Reserved with walklings-decision-ids at about 4:38 PM ET: highest id found is D1165 (`git grep` over origin/main, pr252 and all 258 origin branches). `claude/npc-ranks-side-badge` (6f3c600) holds D1159-D1165 and says "Next free id is D1166"; the design repo's highest used id is D1158. **Reserved here: D1166-D1173. Next free id is D1174.**
+Reserved with walklings-decision-ids at about 4:38 PM ET over origin/main, pr252 and all 258 origin branches: `claude/npc-ranks-side-badge` holds D1159-D1165. **Reserved here: D1166-D1173.** Main since recorded D1174 (Act 5 capital is High Charity, formerly the double-booked D1164); **next free id is D1175** (main `OPEN_DECISIONS.md:37-39`).
 
 | Id | Colour | Call | Status |
 |---|---|---|---|
 | D1166 | red | Day 1 keeps D1143's Fen with Russet at dusk and the Two Lights beats; Fen's potential and go-home talk is a new beat the next morning, before the holder leaves Fernbrook; she then leaves for the local Keeper authorities. Amends D1143 (adds) | **SETTLED** (R1), Mon Nov 2, 2026, ~4:20 PM ET, Vincent, in this Claude Code session |
 | D1167 | red | Main-chain order after the crates: Fen's talk, Mom's Mahopac quest (main chain through wrapper rows), Mom insists, the class, the door, three holders, Fen, the pick. A save with `story.dream_woke` or `story.dream_study` gets Fen's variant and skips Mom's step; Mahopac stays open from the start. Amends D1141 | **SETTLED** (R7, R8), same time |
 | D1168 | red | Lizzy's class is a quest, runs at any hour while active with Lizzy and the kids pinned, uses the new done flag `story.lizzy_class`, and is not a first meeting | **SETTLED** (R2, R6, R7), same time |
-| D1169 | red | The Hall door opens only after the class on new saves; old saves past the old gate keep it open by a read-only OR (a save-compat read, not a second route). Amends D1153 for new saves | **SETTLED** (R5), same time. Record before D1153 settles at 5:44 PM EST |
+| D1169 | red | The Hall door opens only after the class on new saves; old saves past the old gate keep it open by a read-only OR (a save-compat read, not a second route). Amends D1153 for new saves | **SETTLED** (R5), same time. D1153 is HELD, superseded by this row (R9, 5:03 PM ET) |
 | D1170 | red | Three Keeper holders in the Trial Hall before Fen, each with a D1161 rank; D1128 still decides Fen's team; §7.5 re-run | **SETTLED** (R3), same time. Required-for-all default is Q5 |
 | D1171 | red | Fernbrook's hold flips to the picked side at the pick result after Trial 1 | **SETTLED** (R4), same time. Read method and live-save effect are Q7 |
-| D1172 | yellow | Kind a1 (picked, orchard not cleared): `story.side_pick_done` also opens the Hall door, so the holder is not sent home | **Open**, for Vincent (touches R5). Default yes |
+| D1172 | yellow | Kind a1 (picked, orchard not cleared): does `story.side_pick_done` also open the Hall door? | **SETTLED: NO** (Vincent, Mon Nov 2, 2026, 5:03 PM ET, R9). The door opens only after the class; the pick is not a door term |
 | D1173 | red | Town steering: the state that records which side a Trial steered a town toward, what flips, and what the holder sees | **Open**. Spec first (Slice 9); build only after Vincent approves |
 
 ## 14. Open questions (each with a default)
 
 | Q | Question | Default |
 |---|---|---|
-| Q1 | Kind a1: does `story.side_pick_done` open the door (D1172)? | Yes |
+| Q1 | Kind a1: does `story.side_pick_done` open the door (D1172)? | **Answered NO** (R9) |
 | Q2 | Where is Fen while away? | Not drawn; whereabouts "away on Keeper business" (PLACEHOLDER); candidate if drawn: Keeper House upstairs (`hm_hq_f2`) |
 | Q3 | Who is "the local Keeper authority", and is anyone shown with Fen? | Nobody on screen; Story names them later |
 | Q4 | A save at the class without `story.lizzy_met` (met only in the opening): how does the reunion play? | The class scene runs the built `lizzy_intro` first, which sets `story.lizzy_met`; Story may trim it |
-| Q5 | Are the three holders required before Fen for every Keepers save without Seal 1 (incl. a2, b')? | Yes |
+| Q5 | Are the three holders required before Fen for every Keepers save without Seal 1 (incl. a2, b')? | **Deprioritized** (R10): yes, with no old-save special case |
 | Q6 | Holder names, looks, ranks, lines and team forms | Story and Design; `[Rank] PLACEHOLDER` until then |
-| Q7 | Flip by read (old c saves flip on load, Glimmer hold effects included) or by a flag the result writes (new saves only)? | Read (§9) |
+| Q7 | Flip by read (old c saves flip on load, Glimmer hold effects included) or by a flag the result writes (new saves only)? | **Deprioritized** (R10): read, the simplest save-safe option (§9) |
 | Q8 | Hall 1 sign "A Keepers' Hall" in a contested town | Keep FPT Part B's sign; the Hall is Fen's, the town is split |
 | Q9 | Go-home talk staging: A6 runs on into it, plus a fallback NPC and an exit trigger? | Yes |
 | Q10 | Keyed deny (engine change) or one deny line? | Keyed |
-| Q11 | `orchard` row gains `when: ['story.side_pick_done']` (FPT §7 step 4 owns the chain) | Yes; Design confirms in FPT |
-| Q12 | Ship Slices 4a-6 as one merge train? | Yes; no deploy of 4a without 6 approved |
+| Q11 | `orchard` row gains `when: ['story.side_pick_done']` (FPT §7 step 4 owns the chain) | **Approved** (R11): main-chain edit OK, `orchard` keeps its position; Design confirms in FPT |
+| Q12 | Ship Slices 4a-6 as one merge train? | **Approved** (R12): one merge |
 | Q13 | Mom's insistence: at the end of the wake scene as well as on her line? | Both |
 | Q14 | Class staging: holder watches from the back, kids at their desks, no room change | Yes (no rule 9 trigger) |
 | Q15 | Who builds FPT Part A? | Slice 4a here, from FPT §7 step 3 (Day 1 part only) |
@@ -307,7 +311,7 @@ Merge order of what exists: **#253 (OR gate) -> `pd` (partner day, Vincent's int
 | 4a | `claude/fb-part-a` (new) | yes | #253, D1141-D1157 settled | FPT Part A A1-A6 with the §7.2 guard; `crates` row; **door string D1169**; slips; first writer of `story.crates_seen` |
 | 4 | `claude/crates-fen-home` | yes | 4a, 3 | A7 `fen_home` (+ R8 variant), `fen_morning`, exit trigger, Fen's `when` gates, keyed deny, `fb_hall_away` |
 | 5 | `claude/main-chain-mahopac` | yes | 4, `pd` | `home_trip` with `mirror`, `mom_class` row, Mom's line and wake insert |
-| 6 | `claude/lizzy-class` | yes | 5, `pd` | `lizzy_class` scene, pin rows, body gates, `detail_zz_day1.json`. Merge 4a-6 as one train |
+| 6 | `claude/lizzy-class` | yes | 5, `pd` | `lizzy_class` scene, pin rows, body gates, `detail_zz_day1.json`. Ship 4a-6 as one merge (R12) |
 | 7 | `claude/fernbrook-contested` | yes | 6, `ranks` | Signs, props and lines reading `split`; previews if art changes (rule 9) |
 | 8 | `claude/hall1-keepers` | yes | 6, `ranks`, D1128 | Three holders, Fen gate, `hall1_keepers` row, `DEBUG_TRAINER_GATES`, §7.5 re-run |
 | 8b | `claude/fernbrook-flip` (new) | yes (map, bar) | FPT Parts B-D (pick result) | `matchHold` `=`, two hold rules, validator, test |

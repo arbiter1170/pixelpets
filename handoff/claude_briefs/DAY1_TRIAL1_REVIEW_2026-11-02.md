@@ -103,3 +103,5 @@ D1153's door (`crates_seen | orchard_cleared`) would open on Day 1. Fen stands o
 5. Keeping Lizzy at the Schoolhouse means a first-matching `schedule` row on `school_lizzy` (pickRow 4770-4781; whereNow follows it). detail_lizzy.json is design-generated, so the change goes through an overlay or a code pin table. The class kids `school_kid_a`/`_b` also need to be kept there, or a class held at night would be empty.
 6. The Fernbrook flip needs `matchHold` to read the picked side.
 7. Hall 1 has no holders before Fen today. Three Keepers change the §7.5 arrival test and interact with D1128, and each needs a D1161 rank.
+
+**Update, Mon Nov 2, 2026, ~5:15 PM ET:** items 1 and 2 are resolved on main. Vincent held D1153 (superseded by D1169) and ruled that the Hall door and the pick both come after the class (5:03 PM ET, #256). D1164 was renumbered: High Charity is now D1174 and the next free id is D1175 (09ed47c). Vincent also deprioritized old saves and approved the main-chain edit (5:05 PM ET, #257). See `handoff/specs/DAY1_TRIAL1_FLOW.md` v0.2.

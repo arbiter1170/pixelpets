@@ -2,14 +2,41 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-02 16:38 ET: Day 1 to Trial 1 flow: open-work review and spec (Slices 0 and 1, for Vincent's OK)
+## 2026-11-02 17:15 ET: Day 1 to Trial 1 flow: open-work review and spec v0.2 (Slices 0 and 1, for the Supervisor's review)
 
-- What changed and why: Slices 0 and 1 of the Day 1 brief (PR #252). `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` reviews every open PR and branch against the new flow (files, flags, gates, saves, merge order). `handoff/specs/DAY1_TRIAL1_FLOW.md` is the build spec: crates and Fen at dusk on Day 1, Fen's go-home talk next morning, Mom's Mahopac trip on the main chain, Mom sends the holder to Lizzy's class, the Hall door opens after the class, three Keeper holders before Fen, then the pick, with Fernbrook's hold flipping at the pick. It records Vincent's rulings of Mon Nov 2 (~4:20 PM ET) as D1166-D1171 (settled) and opens D1172 (kind a1 saves, yellow) and D1173 (town steering, red). Nothing is built; the spec waits for Vincent's approval.
+- What changed and why: Slices 0 and 1 of the Day 1 brief (PR #252). `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` reviews every open PR and branch against the new flow (files, flags, gates, saves, merge order). `handoff/specs/DAY1_TRIAL1_FLOW.md` is the build spec: crates and Fen at dusk on Day 1, Fen's go-home talk next morning, Mom's Mahopac trip on the main chain, Mom sends the holder to Lizzy's class, the Hall door opens after the class, three Keeper holders before Fen, then the pick, with Fernbrook's hold flipping at the pick. It records Vincent's rulings of Mon Nov 2 (~4:20 PM ET) as D1166-D1171 (settled) and, in v0.2, his 5:03 and 5:05 PM ET rulings: the Hall door and the pick both come after Lizzy's class (D1153 held, superseded by D1169; D1172 answered NO, so the pick is not a door term), old saves deprioritized (simplest save-safe reading, no writes), the main-chain edit approved with `orchard` in place, and Slices 4a-6 shipped as one merge. D1173 (town steering, red) stays open. Nothing is built; the spec waits for the Supervisor's review before Slice 2.
 - Files touched: `handoff/specs/DAY1_TRIAL1_FLOW.md` (new), `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` (new), `CHANGELOG.md`.
 - Commit(s) + build id: this branch; docs only, no build stamp.
 - Tests run and result (widths, checks): docs only, no game change. `node tools/scans/run.js`: wording, decisions, symlinks, gamejs_map, test_mistakes pass.
-- Decisions made (colour + reasoning): D1166-D1173 reserved (next free D1174; `claude/npc-ranks-side-badge` holds up to D1165). D1166-D1171 are Vincent's settled rulings (red); D1172 (yellow, kind a1 saves) and D1173 (red, town steering) are open. D1164 is booked twice (PR #252 and `claude/npc-ranks-side-badge`), reported, not renumbered.
-- Anything left unfinished: Slices 2-10 wait for the spec's approval; 15 open questions in the spec, each with a default.
+- Decisions made (colour + reasoning): D1166-D1173 reserved (`claude/npc-ranks-side-badge` holds D1159-D1165; main holds D1174 for the Act 5 capital, High Charity; next free D1175). D1166-D1172 are Vincent's settled rulings (D1172 answered NO); D1173 (red, town steering) is open.
+- Anything left unfinished: Slices 2-10 wait for the Supervisor's review; the spec's open questions Q2-Q4, Q6, Q8-Q10, Q13-Q15 keep their defaults.
+
+## 2026-11-02 17:08 ET: Vincent's 5:05 PM rulings: old saves deprioritized, main-chain edit approved (docs only, no build stamp)
+
+- What changed and why: Vincent, 5:05 PM ET: "Not worried about old saves right now." and "Ok to edit main quest chain". #255 Q7 and Q5 are deprioritized (simplest save-safe option: no save writes, v2, no migrator); #255's main-quest-chain override is approved, keeping the `orchard` row's position.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/vincent-1705-rulings`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): Vincent's calls on #255 Q5, Q7 and the chain override; no new id (D1166-D1173 stay #255's).
+- Anything left unfinished: #255 should fold these into its spec.
+
+## 2026-11-02 17:05 ET: Hold D1153 (Hall door after Lizzy's class) and answer D1172 (docs only, no build stamp)
+
+- What changed and why: Vincent ruled at 5:03 PM ET: "Picking a side should be after the class, same with hall door." D1153 (`story.crates_seen` opens the Hall door) is HELD and superseded by D1169 (#255), so it does not settle at 5:44 PM EST. D1172 is answered NO: the Hall door and the faction pick both come after Lizzy's class.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/hold-d1153`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): D1153 held (Vincent); D1172 answered NO (Vincent). D1166-D1173 stay reserved by #255 and are cited, not re-reserved.
+- Anything left unfinished: #255 should record D1172 as settled NO and D1169 as the door rule when it lands.
+
+## 2026-11-02 16:10 ET: Decision logs: Vincent's Nov 2 rulings + new Day 1 direction (docs only, no build stamp)
+
+- What changed and why: recorded Vincent's Mon Nov 2 rulings (faction-pick reds D1141-D1143 and D1149-D1152 settled yes with their canon overrides; D967 and D1101 yes; Act 5 capital is High Charity as D1174; the President and Governor names), the calls that stay open (D971, D1000, the intro reds, D1034/D1035, D1044, D1087, D1128, D1140), missing design-repo ids, past-due marks, the earlier Oct 30-31 settlements, and the NEW DIRECTION section with a Claude Code brief.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CLAUDE.md`, `CHANGELOG.md`, `handoff/claude_briefs/DAY1_TRIAL1_FLOW_BRIEF_2026-11-02.md`.
+- Commit(s) + build id: `chief/decisions-2026-11-02`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js` and `node tools/scans/run.js` pass; no game files changed.
+- Decisions made (colour + reasoning): D1174 reserved (red, Vincent's call) under walklings-decision-ids; D1159-D1165 noted as held by `claude/npc-ranks-side-badge` and D1166-D1173 by #255 (`claude/day1-trial1-spec`); next free id D1175.
+- Anything left unfinished: `data/rook_crossroads.json:326` "rival" fix is design-generated (rule 8), so it is left for Design's build script; the yellows D1144-D1148 and D1153-D1157 settle at 5:44 PM EST.
 
 ## 2026-11-02 16:07 ET: Faction pick step 1: the live-save OR gate (no save change)
 
@@ -28,6 +55,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `tests/phone_trim.spec.js` and `tests/battle_water_frames.spec.js` pass at 320, 375 and 390; the edited phone, civic, town board, QA play, handset and battle backdrop specs pass (result lines in the PR).
 - Decisions made (colour + reasoning): Red (interface), Vincent, Nov 2, 2026: remove NOTES, KEEPERUAV and GLOW; keep BOTNET on the cracked handset; drop Lumen's two KeeperUAV lines. Green: render the second water frame as a whole scene instead of repainting water rects (fixes every scene, not only Route 1).
 - Anything left unfinished: none. D863 (phone copy) stays open for the remaining apps.
+
 
 ## 2026-11-02 14:31 ET: Test fix: people_looks_28 compares the game's own save, not the raw fixture (test only, no build stamp)
 
