@@ -45,7 +45,7 @@ async function closeBattle(page) {
   await page.waitForFunction(() => !PixelPets.battle.on);
 }
 
-test('B-T1 tapping a move from M4 ends part 1: the next choose is M5, not HP again', async ({ page }) => {
+test('B-T1 tapping a move from M4 ends part 1: the next choose moves on, not HP again', async ({ page }) => {
   await boot(page, saveAt({ 'story.tut_moves': 'armed', 'story.tut_moves_n': 0 }));
   expect(await page.evaluate(() => {
     PixelPets.battle.textMs = 0; PixelPets.battle.animMs = 0;
@@ -58,15 +58,17 @@ test('B-T1 tapping a move from M4 ends part 1: the next choose is M5, not HP aga
   await next(page); await waitCard(page, 'M3');
   await page.locator('[data-bact="fight"]').click();
   await waitCard(page, 'M4');
+  // A fixed roll: no lucky hit, middling damage, so Rook's reply never wears the starter out in one turn and the next
+  // choose always comes (it was flaky at 375 when a lucky hit ended the match on the result card instead).
+  await page.evaluate(() => { PixelPets.battle.rng = () => 0.5; });
   // Vincent's path: no GOT IT, straight onto a move.
   await page.locator('#btMoves button').first().click();
   expect(await flag(page, 'story.tut_moves')).toBe('p1');
-  await page.waitForFunction(() => PixelPets.battle.state === 'CHOOSE' || !PixelPets.battle.on, null, { timeout: 15000 });
-  if (await page.evaluate(() => PixelPets.battle.on)) {
-    await page.waitForFunction(() => PixelPets.lesson().card !== '' , null, { timeout: 4000 }).catch(() => {});
-    const c = await card(page);
-    expect(['F1', 'M1', 'M2s', 'M2sx', 'M2h', 'M2e', 'M2z']).not.toContain(c);
-  }
+  await page.waitForFunction(() => PixelPets.battle.on && PixelPets.battle.state === 'CHOOSE', null, { timeout: 15000 });
+  // The next card is the hit card (M7, the resisted hit counts) or part 2 (M5); HP, type and matchup do not come back.
+  await page.waitForFunction(() => PixelPets.lesson().card !== '', null, { timeout: 8000 });
+  const c = await card(page);
+  expect(['M7', 'M5']).toContain(c);
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
 
