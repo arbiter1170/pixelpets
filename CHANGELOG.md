@@ -5,11 +5,40 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 ## 2026-11-02 15:20 ET: Battle tips show once; the HP ring hugs the bar; the first Rook hit lands (Vincent, Nov 2)
 
 - What changed and why: Vincent's iPhone run showed the HP card four times and the type card again and again (Rook's match, then the first wild battles after healing), a highlight box that spilled over the name rows, and a first hit on Rook that "did nothing". Causes: (1) `resolveTurn` checked `tut.id === 'M4'`, but the card ids are `M4p` and `M4n`, so tapping a move from the M4 card never ended part 1; the lesson stayed `armed` and F1, M1 and M2 replayed every turn and battle until the 4-battle cap. Fixed the check. (2) Each look-only card now shows at most once: `story.tut_moves_seen` (additive flag) keeps the furthest card seen, and a later choose resumes after it; a Settings replay clears it. (3) `lessonPad` grew every hole to 44 px, which suits tap targets but turned the 10 px HP bar into a 44 px box; look-only holes now keep their real size (the ring adds 6 px) and stay inside the screen. The befriend odds card (W5) ringed two full-width rows that overlapped and ran off the edges; it now rings the hearts and the odds word once (`tutInk`). (4) Resisted starter hits do about 13-15% of Rook's HP and moves miss 5% of the time, and the matchup card told players to "Try another kind of move" when no starter has one at level 5. In the first Rook match the holder's damaging moves now never miss, and a resisted starter gets M2sx: "... {pet} has no other kind yet, but every hit counts."
-- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `tests/battle_tips_once.spec.js` (new), `tests/tutorials_care_moves.spec.js` (T-M3, T-M8, T-M9 follow the once-only rule; T-M3 gives each species its real starter moves), `tests/tutorial_order.spec.js` (M2sx), `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: this branch, build 20261102-1731.
+- Files touched: `game.js`, `tools/GAMEJS_MAP.txt`, `tools/gen_gamejs_map.py` (lists tracked root scripts only, so an untracked local file such as `pw.local.config.js` never lands in the map), `tests/battle_tips_once.spec.js` (new), `tests/tutorials_care_moves.spec.js` (T-M3, T-M8, T-M9 follow the once-only rule; T-M3 gives each species its real starter moves), `tests/tutorial_order.spec.js` (M2sx), `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261102-1812 (after merging main through #259 and #248).
 - Tests run and result (widths, checks): `tests/battle_tips_once.spec.js` at 320, 375 and 390 (B-T1 fails on main with "Expected p1, Received armed"), the tutorial specs, and the full suite (result line in the PR).
 - Decisions made (colour + reasoning): Vincent, Nov 2, 2026: tips show once, and the HP card highlights only the HP bar. Green: the sure hit is limited to `rival1_rook`, the teaching match; damage numbers and the counter-pick are unchanged.
 - Anything left unfinished: part 2 (M5, M6, F2, F3) still follows on the turn after the first move in Rook's match. It now shows once, but it is still four cards; trimming it is part of the intro/tutorial rework.
+
+## 2026-11-02 17:45 ET: Vincent's 5:41 PM ruling: mixed Trial Hall roster (D1170 amended); D1166-D1173 recorded (docs only, no build stamp)
+
+- What changed and why: Vincent, 5:41 PM ET: the three Trial Hall holders before Fen are mixed (a Keeper cadet, a Glimmerwell-leaning local, a neutral Fernbrook holder), Fen stays a Keeper, and the Hall sign reads "FERNBROOK TRIAL HALL · Master Fen". The D1166-D1173 rows from the #255 spec are recorded: D1166-D1172 in the archive, D1173 as an Open row.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/vincent-1741-hall-roster`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): D1170 amended (red, Vincent); no new id. Next free id stays D1175.
+- Anything left unfinished: Claude updates DAY1_TRIAL1_FLOW R3, §8, Q8, conflict row 6 and Slice 8.
+
+## 2026-11-02 17:40 ET: Test fix: handset_dark checks #243's own diff, not the merge base (test only, no build stamp)
+
+- What changed and why: `tests/handset_dark.spec.js` ("style.css changes only the ring, the kicker and the names") diffed `style.css` against `git merge-base HEAD origin/main`. That only works on the PR branch: once #243 merged, the merge base is the current commit, so the test failed on main at 320, 375 and 390. A first fix pinned a whole-file baseline (`ee78a20`), but the Nov 2 phone trim (#251) then removed other `.hack` rules and broke that too. Now the test reads #243's own diff (`git diff ee78a20 8c40044 -- style.css`: only the ring, the kicker and `.who`) and checks that today's `style.css` still has those three lines and exactly one `#c81818`. The two page-compare tests serve `style.css` from `ee78a20`. No game code changes.
+- Files touched: `tests/handset_dark.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/handset-spec-base`; no build stamp (test and docs only).
+- Tests run and result (widths, checks): `tests/handset_dark.spec.js` at 320, 375 and 390 on main `b76b902` (merged in): 12 passed. Negative checks: putting the old green ring back fails the static check; adding a second crimson use fails it. Scans pass. The `#c81818` count leaves out the PAL definition line `--Q:#c81818` (added by #241), which is a definition, not a use.
+- Decisions made (colour + reasoning): green; a test-only fix to #243's spec, same checks.
+- Anything left unfinished: none.
+
+
+## 2026-11-02 17:15 ET: Day 1 to Trial 1 flow: open-work review and spec v0.2 (Slices 0 and 1, for the Supervisor's review)
+
+- What changed and why: Slices 0 and 1 of the Day 1 brief (PR #252). `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` reviews every open PR and branch against the new flow (files, flags, gates, saves, merge order). `handoff/specs/DAY1_TRIAL1_FLOW.md` is the build spec: crates and Fen at dusk on Day 1, Fen's go-home talk next morning, Mom's Mahopac trip on the main chain, Mom sends the holder to Lizzy's class, the Hall door opens after the class, three Keeper holders before Fen, then the pick, with Fernbrook's hold flipping at the pick. It records Vincent's rulings of Mon Nov 2 (~4:20 PM ET) as D1166-D1171 (settled) and, in v0.2, his 5:03 and 5:05 PM ET rulings: the Hall door and the pick both come after Lizzy's class (D1153 held, superseded by D1169; D1172 answered NO, so the pick is not a door term), old saves deprioritized (simplest save-safe reading, no writes), the main-chain edit approved with `orchard` in place, and Slices 4a-6 shipped as one merge. D1173 (town steering, red) stays open. Nothing is built; the spec waits for the Supervisor's review before Slice 2.
+- Files touched: `handoff/specs/DAY1_TRIAL1_FLOW.md` (new), `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` (new), `CHANGELOG.md`.
+- Commit(s) + build id: this branch; docs only, no build stamp.
+- Tests run and result (widths, checks): docs only, no game change. `node tools/scans/run.js`: wording, decisions, symlinks, gamejs_map, test_mistakes pass.
+- Decisions made (colour + reasoning): D1166-D1173 reserved (`claude/npc-ranks-side-badge` holds D1159-D1165; main holds D1174 for the Act 5 capital, High Charity; next free D1175). D1166-D1172 are Vincent's settled rulings (D1172 answered NO); D1173 (red, town steering) is open.
+- Anything left unfinished: Slices 2-10 wait for the Supervisor's review; the spec's open questions Q2-Q4, Q6, Q8-Q10, Q13-Q15 keep their defaults.
+
 ## 2026-11-02 17:11 ET: Rook says "competitor", not "rival"
 
 - What changed and why: Rook's line in the Rook's Crossroads gate scene (`rc_gate`) read "Then I have to try. Not as a rival. As a friend asking twice." Player text never says "rival"; Rook is a competitor. Design signed the fix on Oct 29 (ROOK_KEEPERS_REENTRY v0.1.x sign-off), and Vincent's Day 1 brief (PR #252) lists it. The line now reads "Then I have to try. Not as a competitor. As a friend asking twice." Ids such as `rival3_rook` and `story.rival3_result` stay as they are (save rule 2). The same text is fixed in Design's generator (`specs/rook_crossroads_build.py`) in the design repo, so the next design regeneration does not bring it back.

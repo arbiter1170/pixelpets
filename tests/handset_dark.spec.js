@@ -1,7 +1,7 @@
 /* D1100, revised by Vincent (Nov 1, 2026): the cracked handset (CRACK//HAND) stays a green terminal. Glimmerwell shows
    only as accents: a wine and crimson outer ring on the shell, and a honey OFF-CREST kicker and .who names.
-   Every other computed style, every rect, the copy, the glyph ink and the KEEPER1 phone must match the merge base with
-   origin/main (style.css is served from that commit on a second page). */
+   Every other computed style, every rect, the copy, the glyph ink and the KEEPER1 phone must match main just before
+   #243 merged (PRE_D1100; style.css is served from that commit on a second page). */
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
@@ -36,10 +36,26 @@ function baseCss() {
   if (BASE_CSS) return BASE_CSS;
   const root = path.resolve(__dirname, '..');
   const git = (args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 });
-  const mergeBase = git(['merge-base', 'HEAD', 'origin/main']).trim();
-  BASE_CSS = git(['show', mergeBase + ':style.css']);
+  // Pinned to main just before #243 merged. The merge base with origin/main only worked on the PR branch: once #243 is
+  // in main, that merge base is the current commit and the accents can no longer be seen.
+  BASE_CSS = git(['show', PRE_D1100 + ':style.css']);
   return BASE_CSS;
 }
+function gitOut(args) {
+  return execFileSync('git', args, { cwd: path.resolve(__dirname, '..'), encoding: 'utf8', maxBuffer: 1 << 28 });
+}
+const PRE_D1100 = 'ee78a20ad391031e8473088e6a80d05c110b4e42';   // main just before #243
+const D1100_MERGE = '8c40044407f00124f2804609b187f47bdf98e8d4'; // #243's merge into main
+const D1100_OLD = [
+  '  box-shadow:0 0 0 3px #07140e,0 0 0 6px #5ee08a}',
+  '#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#8ee8b0}',
+  '#ovPhone.hack #phoneBody .who{color:#9dffc0}',
+];
+const D1100_NEW = [
+  '  box-shadow:0 0 0 3px #07140e,0 0 0 5px #960e16,0 0 0 6px #c81818}',
+  '#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#ffcd75}',
+  '#ovPhone.hack #phoneBody .who{color:#ffcd75}',
+];
 
 function readySave() {
   const save = starterSave();
@@ -170,21 +186,20 @@ test('the cracked handset stays green with a wine and crimson ring and honey kic
 });
 
 test('style.css changes only the ring, the kicker and the names against the merge base', async () => {
-  const cur = fs.readFileSync(path.resolve(__dirname, '..', 'style.css'), 'utf8').split('\n');
-  const base = baseCss().split('\n');
-  const removed = base.filter((l) => !cur.includes(l));
-  const added = cur.filter((l) => !base.includes(l));
-  expect(removed).toEqual([
-    '  box-shadow:0 0 0 3px #07140e,0 0 0 6px #5ee08a}',
-    '#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#8ee8b0}',
-    '#ovPhone.hack #phoneBody .who{color:#9dffc0}',
-  ]);
-  expect(added.filter((l) => !l.startsWith('/*'))).toEqual([
-    '  box-shadow:0 0 0 3px #07140e,0 0 0 5px #960e16,0 0 0 6px #c81818}',
-    '#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#ffcd75}',
-    '#ovPhone.hack #phoneBody .who{color:#ffcd75}',
-  ]);
-  expect((cur.join('\n').match(/#c81818/gi) || []).length).toBe(1);
+  // #243's own diff (main just before it, to its merge) touches only the ring, the kicker and the names. Later
+  // style.css work (e.g. the Nov 2 phone trim) can't break this half.
+  const diff = gitOut(['diff', PRE_D1100, D1100_MERGE, '--', 'style.css']).split('\n');
+  const removed = diff.filter((l) => l.startsWith('-') && !l.startsWith('---')).map((l) => l.slice(1));
+  const added = diff.filter((l) => l.startsWith('+') && !l.startsWith('+++')).map((l) => l.slice(1));
+  expect(removed).toEqual(D1100_OLD);
+  expect(added.filter((l) => !l.startsWith('/*'))).toEqual(D1100_NEW);
+  // Today's style.css still carries the three accents, with the crimson ring as the only use of #c81818. The PAL
+  // custom-property line (`--Q:#c81818`, added by #241 with V and N) is a definition, not a use, so it isn't counted.
+  const cur = fs.readFileSync(path.resolve(__dirname, '..', 'style.css'), 'utf8');
+  const lines = cur.split('\n');
+  for (const l of D1100_NEW) expect(lines, l).toContain(l);
+  const uses = cur.replace(/--Q:\s*#c81818/gi, '');
+  expect((uses.match(/#c81818/gi) || []).length).toBe(1);
 });
 
 test('only the accents differ from the merge base: layout, copy, ink and save unchanged, tap targets 44 px', async ({ page }) => {
