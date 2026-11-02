@@ -41,20 +41,21 @@ function baseCss() {
   BASE_CSS = git(['show', PRE_D1100 + ':style.css']);
   return BASE_CSS;
 }
-const PRE_D1100 = 'ee78a20ad391031e8473088e6a80d05c110b4e42';
-
-// The cracked handset's own rules (each rule that starts with #ovPhone.hack, through its closing brace), so later
-// style.css changes elsewhere don't trip the D1100 check.
-function hackRules(lines) {
-  const out = [];
-  let inRule = false;
-  for (const l of lines) {
-    if (l.startsWith('#ovPhone.hack')) inRule = true;
-    if (inRule) out.push(l);
-    if (inRule && l.includes('}')) inRule = false;
-  }
-  return out;
+function gitOut(args) {
+  return execFileSync('git', args, { cwd: path.resolve(__dirname, '..'), encoding: 'utf8', maxBuffer: 1 << 28 });
 }
+const PRE_D1100 = 'ee78a20ad391031e8473088e6a80d05c110b4e42';   // main just before #243
+const D1100_MERGE = '8c40044407f00124f2804609b187f47bdf98e8d4'; // #243's merge into main
+const D1100_OLD = [
+  '  box-shadow:0 0 0 3px #07140e,0 0 0 6px #5ee08a}',
+  '#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#8ee8b0}',
+  '#ovPhone.hack #phoneBody .who{color:#9dffc0}',
+];
+const D1100_NEW = [
+  '  box-shadow:0 0 0 3px #07140e,0 0 0 5px #960e16,0 0 0 6px #c81818}',
+  '#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#ffcd75}',
+  '#ovPhone.hack #phoneBody .who{color:#ffcd75}',
+];
 
 function readySave() {
   const save = starterSave();
@@ -174,32 +175,31 @@ test('the cracked handset stays green with a wine and crimson ring and honey kic
   expect(((got.w + 12) * (got.h + 12) - (got.w + 6) * (got.h + 6)) / (got.w * got.h)).toBeLessThan(0.1);
   await shellShot(page, 'after-home');
 
-  await openApp(page, 'notes');
+  await openApp(page, 'jobs');
   const who = await page.evaluate(() => [...document.querySelectorAll('#phoneBody .who')].map((el) => getComputedStyle(el).color));
   expect(who.length).toBeGreaterThan(0);
   expect(new Set(who)).toEqual(new Set([Y]));
-  await shellShot(page, 'after-notes');
+  await shellShot(page, 'after-jobs');
 
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')));
   expect(save.v).toBe(2);
 });
 
 test('style.css changes only the ring, the kicker and the names against the merge base', async () => {
-  const cur = hackRules(fs.readFileSync(path.resolve(__dirname, '..', 'style.css'), 'utf8').split('\n'));
-  const base = hackRules(baseCss().split('\n'));
-  const removed = base.filter((l) => !cur.includes(l));
-  const added = cur.filter((l) => !base.includes(l));
-  expect(removed).toEqual([
-    '  box-shadow:0 0 0 3px #07140e,0 0 0 6px #5ee08a}',
-    '#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#8ee8b0}',
-    '#ovPhone.hack #phoneBody .who{color:#9dffc0}',
-  ]);
-  expect(added.filter((l) => !l.startsWith('/*'))).toEqual([
-    '  box-shadow:0 0 0 3px #07140e,0 0 0 5px #960e16,0 0 0 6px #c81818}',
-    '#ovPhone.hack #phoneTitle::before{content:"OFF-CREST";color:#ffcd75}',
-    '#ovPhone.hack #phoneBody .who{color:#ffcd75}',
-  ]);
-  expect((cur.join('\n').match(/#c81818/gi) || []).length).toBe(1);
+  // #243's own diff (main just before it, to its merge) touches only the ring, the kicker and the names. Later
+  // style.css work (e.g. the Nov 2 phone trim) can't break this half.
+  const diff = gitOut(['diff', PRE_D1100, D1100_MERGE, '--', 'style.css']).split('\n');
+  const removed = diff.filter((l) => l.startsWith('-') && !l.startsWith('---')).map((l) => l.slice(1));
+  const added = diff.filter((l) => l.startsWith('+') && !l.startsWith('+++')).map((l) => l.slice(1));
+  expect(removed).toEqual(D1100_OLD);
+  expect(added.filter((l) => !l.startsWith('/*'))).toEqual(D1100_NEW);
+  // Today's style.css still carries the three accents, with the crimson ring as the only use of #c81818. The PAL
+  // custom-property line (`--Q:#c81818`, added by #241 with V and N) is a definition, not a use, so it isn't counted.
+  const cur = fs.readFileSync(path.resolve(__dirname, '..', 'style.css'), 'utf8');
+  const lines = cur.split('\n');
+  for (const l of D1100_NEW) expect(lines, l).toContain(l);
+  const uses = cur.replace(/--Q:\s*#c81818/gi, '');
+  expect((uses.match(/#c81818/gi) || []).length).toBe(1);
 });
 
 test('only the accents differ from the merge base: layout, copy, ink and save unchanged, tap targets 44 px', async ({ page }) => {
@@ -208,9 +208,9 @@ test('only the accents differ from the merge base: layout, copy, ink and save un
   await openHandset(bp, true);
   await shellShot(bp, 'before-home');
   const b = { home: await snapshot(bp), ink: await glyphInk(bp) };
-  for (const app of ['notes', 'jobs', 'contacts', 'ribbit', 'sky', 'glow', 'friends', 'board', 'news']) {
+  for (const app of ['jobs', 'contacts', 'ribbit', 'sky', 'friends', 'board', 'news']) {
     await openApp(bp, app);
-    if (app === 'notes') await shellShot(bp, 'before-notes');
+    if (app === 'jobs') await shellShot(bp, 'before-jobs');
     b[app] = await snapshot(bp);
     await backHome(bp);
   }
@@ -221,13 +221,13 @@ test('only the accents differ from the merge base: layout, copy, ink and save un
   await openHandset(page, true);
   expect(diffs(b.home, await snapshot(page)), 'home').toEqual([]);
   expect(await glyphInk(page)).toEqual(b.ink);
-  for (const app of ['notes', 'jobs', 'contacts', 'ribbit', 'sky', 'glow', 'friends', 'board', 'news']) {
+  for (const app of ['jobs', 'contacts', 'ribbit', 'sky', 'friends', 'board', 'news']) {
     await openApp(page, app);
     expect(diffs(b[app], await snapshot(page)), app).toEqual([]);
     await backHome(page);
   }
   const taps = b.home.filter((e) => /\.phone-app(\.|$)|#phoneClose/.test(e.key));
-  expect(taps.length).toBeGreaterThanOrEqual(10);
+  expect(taps.length).toBeGreaterThanOrEqual(9);   // eight apps and CLOSE (NOTES and GLOW removed Nov 2, 2026)
   for (const t of taps) { expect(t.rect.w, t.key).toBeGreaterThanOrEqual(44); expect(t.rect.h, t.key).toBeGreaterThanOrEqual(44); }
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')));
   expect(save.v).toBe(2);
@@ -241,7 +241,7 @@ test('the issued KEEPER1 phone looks exactly as it does on the merge base', asyn
   await openHandset(bp, false);
   const baseHome = await snapshot(bp);
   const baseInk = await glyphInk(bp);
-  await openApp(bp, 'notes');
+  await openApp(bp, 'sky');
   const baseNotes = await snapshot(bp);
   expect(bp.ppErrors, 'baseline page errors').toEqual([]);
   await bp.close();
@@ -251,6 +251,6 @@ test('the issued KEEPER1 phone looks exactly as it does on the merge base', asyn
     base.flatMap((be, i) => Object.keys(be.style).filter((p) => be.style[p] !== cur[i].style[p]).map((p) => be.key + ' ' + p)));
   expect(strict(baseHome, await snapshot(page)), 'home').toEqual([]);
   expect(await glyphInk(page)).toEqual(baseInk);
-  await openApp(page, 'notes');
-  expect(strict(baseNotes, await snapshot(page)), 'notes').toEqual([]);
+  await openApp(page, 'sky');
+  expect(strict(baseNotes, await snapshot(page)), 'sky').toEqual([]);
 });
