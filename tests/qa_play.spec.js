@@ -74,11 +74,11 @@ test('the bag shows both handsets, and the walk tip follows Heights', async ({ p
   await expect(page.locator('#ovPhone')).toBeVisible();
   const shell = await page.locator('#ovPhone .phone-shell').boundingBox();
   expect(shell.y + shell.height).toBeLessThanOrEqual(page.viewportSize().height + 1);
-  await page.locator('.phone-app[data-app="notes"]').click();
-  const notes = await page.locator('#phoneBody').innerText();
-  expect(notes).toContain('Handset');
-  expect(notes).toContain('The crest phone copies every note.');
-  expect(notes.toLowerCase()).not.toContain('unnamed');
+  await page.locator('#phoneJobs').click();
+  const jobs = await page.locator('#phoneBody').innerText();
+  expect(jobs).toContain('BOTNET');
+  expect(jobs).toContain('The leak is not a menu.');
+  expect(jobs.toLowerCase()).not.toContain('unnamed');
   const end = await page.evaluate(() => ({ v: PixelPets.state.v, quest: PixelPets.questCheck }));
   expect(end.v).toBe(2);
   expect(end.quest).toEqual([]);
