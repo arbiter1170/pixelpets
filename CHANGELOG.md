@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 17:11 ET: Rook says "competitor", not "rival"
+
+- What changed and why: Rook's line in the Rook's Crossroads gate scene (`rc_gate`) read "Then I have to try. Not as a rival. As a friend asking twice." Player text never says "rival"; Rook is a competitor. Design signed the fix on Oct 29 (ROOK_KEEPERS_REENTRY v0.1.x sign-off), and Vincent's Day 1 brief (PR #252) lists it. The line now reads "Then I have to try. Not as a competitor. As a friend asking twice." Ids such as `rival3_rook` and `story.rival3_result` stay as they are (save rule 2). The same text is fixed in Design's generator (`specs/rook_crossroads_build.py`) in the design repo, so the next design regeneration does not bring it back.
+- Files touched: `data/rook_crossroads.json`, `data/mapdata.js` (regenerated), `tests/story_copy_fix.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261102-1711.
+- Tests run and result (widths, checks): after merging main (b76b902): `tests/story_copy_fix.spec.js` (with the new competitor test), `tests/rook_crossroads.spec.js`, `tests/data_integrity.spec.js` and `tests/smoke.spec.js` at 320, 375 and 390: 79 passed, 0 failed, no console errors (helpers `trackErrors`). `node tools/scans/run.js`: wording, decisions, symlinks, gamejs_map, test_mistakes pass. The run used Playwright directly with the box's Chromium; `npm run test:agent` stops at its RTDB rules stage because the cloud box's proxy blocks the local emulator, which this change does not touch.
+- Decisions made (colour + reasoning): green copy fix, already signed by Design; no new id.
+- Anything left unfinished: none.
+
 ## 2026-11-02 17:08 ET: Vincent's 5:05 PM rulings: old saves deprioritized, main-chain edit approved (docs only, no build stamp)
 
 - What changed and why: Vincent, 5:05 PM ET: "Not worried about old saves right now." and "Ok to edit main quest chain". #255 Q7 and Q5 are deprioritized (simplest save-safe option: no save writes, v2, no migrator); #255's main-quest-chain override is approved, keeping the `orchard` row's position.
