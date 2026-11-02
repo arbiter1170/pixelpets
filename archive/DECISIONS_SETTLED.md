@@ -882,3 +882,14 @@ Recorded from design GEAR_SWITCH v0.1.3 (design commit 8a06d36), without renumbe
 ## NEWS_FEED (settled Oct 31, 2026)
 
 - **D1012 (Sat Oct 31, 2026, red, SETTLED by the owner in session: "Merge it, I approve").** NEWS app: a tenth phone app, NEWS, just before RIBBIT: the Block News paper with four tabs (FRONT, READ, TOWN, YOU), three editions a day, the Scrapbook, and additive save fields `newsSeen`, `newsTab`, `newsPoll`, `newsClips`. Approved after the previews in PR #237 and merged on the owner's ask. D1013, D1015 and D1016 stay open for Design.
+
+## GLIMMERWELL_PALETTE v0.2 (superseded Sat Oct 31, 2026)
+
+| D1045 | red | GLIMMERWELL_PALETTE v0.2: recolour to option E | NO, by Vincent (via the Chief of Staff), Sat Oct 31, 2026, 1:14 PM ET; replaced by D1080 |
+| D1046 | red | GLIMMERWELL_PALETTE v0.2: buildings for E | Superseded by D1082 |
+| D1047 | yellow | GLIMMERWELL_PALETTE v0.2: §4a lock for E | Superseded by D1083 |
+| D1048 | yellow | GLIMMERWELL_PALETTE v0.2: UI swatches for E | Superseded by D1084 |
+| D1070 | yellow | GLIMMERWELL_PALETTE v0.2.3: civilian sky coats | Moot under the dark scheme; see D1085 |
+| D1071 | yellow | GLIMMERWELL_PALETTE v0.2.3: map halos and legend for E | Superseded by D1086 |
+| D1072 | red | GLIMMERWELL_PALETTE v0.2.3: "mint" in player text | Superseded by D1087 |
+| D1073 | green | GLIMMERWELL_PALETTE v0.2.4: olive porters | Superseded and moot: porters stay blue |

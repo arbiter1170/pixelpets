@@ -7,7 +7,7 @@
     "company": "RegenX",
     "drug": "Atten",
     "machine": "The Arbiter",
-    "emission": "a slow, unnamed emission from ancient Glimmerwell technology",
+    "emission": "alien device of unknown origin; INSIGN and Glimmerwell study and use it, nobody in the world knows it's alien",
     "walkling": "Bitlet, Hoverbyte, Archivolt (species id byte, type VOLT)"
   },
   "slicePatch": {
@@ -3435,7 +3435,7 @@
       "hairCol": "s",
       "outfit": "coat",
       "outfitCol": "w",
-      "accent": "c",
+      "accent": "N",
       "accessory": "glasses"
     },
     "rx_ivo": {

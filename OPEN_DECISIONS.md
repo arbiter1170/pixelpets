@@ -28,13 +28,27 @@ D1009 is reserved: BATTLE_BACKDROPS (red, SETTLED by Vincent, Sat Oct 31, 2026: 
 
 D1012-D1016 are reserved: NEWS_FEED v0.1-v0.3 (design specs/NEWS_FEED.md: the NEWS app, its starter copy, the fuller Ribbit pool, the flavour rule and the Scrapbook reward).
 
-Next free id is D1017.
+D1080-D1100 are reserved: GLIMMERWELL_PALETTE v0.3 (D1080-D1087), Vincent's settled calls for PRs #238-#240 (D1088-D1092), SHADOWS_S2_NIGHT (D1093-D1099) and GLIMMERWELL_PALETTE v0.4 (D1100) (design repo, Sat Oct 31, 2026).
+
+D1158 is reserved: STORY_DECISIONS v0.62 (design repo, Sat Oct 31, 2026).
+
+Next free id is D1159.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## Open
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
+| D1158 | Heights dev note: the Arbiter's emission | Green, owner the Chief of Staff, default yes, due Mon Nov 2, 2026, 6:13 PM EST (design STORY_DECISIONS v0.62). Reword the author note `_names.emission` to the Oct 29 canon (the Arbiter is alien; neither INSIGN nor Glimmerwell built it). Not player text. | This PR: "alien device of unknown origin; INSIGN and Glimmerwell study and use it, nobody in the world knows it's alien" (was "a slow, unnamed emission from ancient Glimmerwell technology"). The stale notes at `status`, `_about` and `_lore.arbiter` are unchanged and wait for June's wording. | `data/heights.json` `_names.emission`, then `python3 tools/gen_mapdata.py` |
+| D1080 | red | GLIMMERWELL_PALETTE v0.3: the dark scheme | (b) wine V #960e16 coat, soot N #18140f trim, crimson Q #c81818 accents under 10% (3.5% worst), lamps as today + 4 px Q sparkle | Mon Nov 2, 2026, 12:34 PM EST |
+| D1081 | yellow | GLIMMERWELL_PALETTE v0.3: PAL keys V, N, Q | yes, appended; Q accent only, exempt from the 20 line; devCheck fails above 10% (Theo, Nina yes) | Mon Nov 2, 2026, 12:34 PM EST |
+| D1082 | red | GLIMMERWELL_PALETTE v0.3: Glimmerwell buildings | soot ridge, wine band; no roof tint; weak case Cobblecrest slate only | Mon Nov 2, 2026, 12:34 PM EST |
+| D1083 | yellow | GLIMMERWELL_PALETTE v0.4.1: WARDROBE_SHOP §4a lock, dark | tops V w h; trims N w s; buttons o w N; Q accent only; four hem outfits used by six looks; hair is out of the lock; Keepers never V N Q; display-only clamp (Theo, Nina yes) | Mon Nov 2, 2026, 12:34 PM EST |
+| D1084 | yellow | GLIMMERWELL_PALETTE v0.3: UI swatches and labels | w or y text on dark fills, never red; a label or trim cue by every swatch; Glimmerwell hold line is white, v0.4.6 (Theo, Nina yes) | Mon Nov 2, 2026, 12:34 PM EST |
+| D1085 | yellow | GLIMMERWELL_PALETTE v0.3: red-top civilians | A: leave them (12.2-16.8 from wine) (Theo yes; Nina yes pending her 320 tritan/greyscale check) | Mon Nov 2, 2026, 12:34 PM EST |
+| D1086 | yellow | GLIMMERWELL_PALETTE v0.3: map halos and legend | wine fill, soot stipple; "Gold and green: Keeper roofs. Red and black: Glimmerwell ground." (Theo, Nina yes) | Mon Nov 2, 2026, 12:34 PM EST |
+| D1087 | red | GLIMMERWELL_PALETTE v0.3: "mint" in player text | A: "red" / "black and red" / "honey" (Story PR) | Mon Nov 2, 2026, 12:34 PM EST |
+| D1100 | yellow | GLIMMERWELL_PALETTE v0.4.1: the cracked handset's screen | out of scope for this build; a later branch. Vote still open (Theo yes on A, Nina pending) | Mon Nov 2, 2026, 2:10 PM EST |
 | D890 | BRINEWICK copy and role names | Sign the Brinewick lines, signs, town-board reports and the role names (Lantern Host, Chandler, Deckhand, Bell Ringer, Net Mender, Ferry Hand, Harbour Clerk) | Every Brinewick line is implementer copy, marked placeholder in `data/detail_zz_brinewick.json` `_about` and in the four `towns.brinewick` report paths in `data/town_board.json` `_placeholders`. Marisol, Dorian, Rook, Hollis and Quinn keep their settled names. The episode card reads "EPISODE 1 COMPLETE · Thank you for playing Walklings!" | `design specs/brinewick_build.py` (writes `data/detail_zz_brinewick.json`), `data/town_board.json` |
 | D891 | BRINEWICK rule 9 previews | Vincent sees the 390 px previews of the town and its four rooms (Lantern House, Chandlery, Trial Hall, depot) and says yes before anything deploys | Built on a branch only. The rooms use four new skins (`bw_lantern`, `bw_store`, `bw_hall`, `bw_depot`) from the rule 9 briefs in `design specs/BRINEWICK.md`. Floors v0.2 are hand-placed grids (`BRINEWICK_TILES`) that pass the FLOOR_FIX plank rule, the brick and calm tests, and the look-alike check against every interior: rope-tan planks, tar planks, a pale ferry deck and a white sealed sheet under graphite walls. The quay is a new grey-blue plank tile `Q`; the depot stock is a new cool `depot_crate`. Stand-in: Marisol's `captain_hat` (ASSET_HANDOFF S1) is a cap | `sprites.js` (skins, `cell_crate`, `tide_gauge`), the `roofs` in `data/detail_zz_brinewick.json` |
 | D837 | Answerers: names | Red. Tallybat, Dimlamp, Filecrow, Cordhound, Humwisp; groups "the Answerers" (Keepers) and "the Founder's Line" with "units" (Glimmerwell). | Settled in part (Vincent, Oct 27, 2026): origin (Glimmerwell's first relays, woken by the hum), Dimlamp for Hushlamp, Filecrow for Ledgerowl (new crow art). Built (build 20261027-1537). Species ids 20-24 are permanent once merged. | `handoff/walklings/ARBITER_UNITS.md` §1; `sprites.js` |
