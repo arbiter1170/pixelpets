@@ -50,9 +50,11 @@ ignored (not deleted), and `PixelPets.state` is a read-only snapshot. Read-only 
 `wild`, `spawnOdds(tags?)`, `cooldownLeft(act)`, `careXpToday`, `exploreXpToday`, `rates`, `fast`, `debug`,
 `muted`, `careGain(base, value)`, `refreshEnv()`, `showTab(name)`, `typeMult(attType, defType)`, `statsAt(formId, level)`,
 `openStats(petId?)` / `closeStats()` / `statsCard` (the stats card), `petScene` (Pet tab backdrop, sky and tags),
+`battleScene` (the battle's scene id, map, room, and whether scenes are on),
 `keeper` (tile, facing, walk frame, look, name), `follower` (shown, tile, facing, Walkling id, tired, fainted, bob, droop),
 `moves()` (the move table), `learnset(form)`, `defaultMoves(form, level)`, `befriendWidth(...)` and `battleLine(key, vars)`.
 Debug only: `setMapBackdrop('town'|'route'|'meadow'|'grove'|null)` sets the current map's backdrop to preview it.
+Debug only: `setBattleBg(false|true|null)` shows the old battle backdrop or the map's scene (null = the build's flag), `battleSceneArt(mapId, w, h, mode, layer?)` draws one map's battle scene on a canvas, `battleSceneIds()` lists every map with one.
 
 Stat pacing: FOOD, JOY and NRG drain in real time for every Walkling you own (not just the partner).
 From full they take about 16h / 20h / 24h to empty and drop into the blinking "needs attention"
@@ -286,6 +288,8 @@ Pet tab scene: drawn from the current map's `backdrop` (town, route, meadow or g
 missing or unknown = meadow) with the same time of day and weather as Walk: night
 sky with moon and stars plus Walk's night tint, a dull sky in rain/storm/snow/fog, and the same rain, storm
 flashes, snow and fog, a little lighter on the small canvas.
+
+Battle scene (D1009): every battle draws its own scene, made from the map it happens on (`battle_bg.js`). Outdoors: sky (the same day, dull or night look), a far layer, one landmark already on that map (Route 1's stream and bridge, the Warden's Lodge, the quarry face, Hushwater Falls, Brinewick's quay), then the map's own ground tiles, with Walk's night tint and weather on top. Indoors: the room's own back wall and floor as on the walk map, plus two of its props; Trial Halls add banners and a painted floor ring, and dreams are one shade lighter. Props never sit behind a Walkling (including the second foe and the ally in group battles). Water ripples in FULL motion only and holds still with reduced motion. Rooms take no tint or weather. The Pet tab keeps its own backdrop.
 
 Fast mode (debug mode only): the old demo pacing (full to starving in about 17 minutes) for testing.
 Turn it on with `?debug=1&fast=1` in the URL (`?fast=0` turns it off), the F key, or

@@ -5,6 +5,8 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
+BATTLE_BACKDROPS (D1009, red, settled by Vincent Oct 31, 2026; supersedes D167) is in the game on this branch: every battle draws its own scene from the map's own tiles and props (`battle_bg.js`, `BATTLE_BG_ON` on in `game.js`). The Pet tab, music and the maps' `backdrop` fields are unchanged. Save stays `pixelpets.save.v2` with `v` 2; no new fields.
+
 GEAR_SWITCH (D768-D774) is in the game on main: care-screen GEAR opens the Walkling sheet, the stats card drops its GEAR button, and a party row beside the WALK back arrow switches the shown Walkling. Save stays `pixelpets.save.v2` with `v` 2 and gains no field.
 
 LEVEL_GROW (D754-D767) is in the game on main: level gates grow up, and Seals cap the level. Save stays `pixelpets.save.v2` with `v` 2. The only new field is `bxHeld`.
@@ -88,6 +90,8 @@ Earlier status history (the Oct 8 priority order with its shipped progress notes
    - **P2 (Play together, green, not blocking; Supervisor, Oct 19, 2026):** deleting and recreating your own holder node skips the 2 s emote gap and the `pt` throttle. Only a modified client can do that, and Phase 1 is an invite-only playtest. Revisit before rooms open wider.
 
 ## Next up
+
+NEWS app and fuller Ribbit (D1012 red, D1013-D1016) are merged from `claude/news-app` (D1012 settled by the owner, Oct 31): a tenth phone app, a tabbed Block News paper (FRONT, READ, TOWN, YOU) with three editions a day, voices, notices, a daily poll, "about you" pieces, a Walkling of the day and a Scrapbook of every front page read (3 Acorns each, D1016); 186 stories, 124 voices, 76 notices, 24 polls, 30 "about you" pieces and 135 more Ribbit posts drafted from the design lore index. Design's sign-off on the copy (D1013, D1015) and the Scrapbook Acorns (D1016) are still open. New copy follows the `walklings-lore-feed` skill. Save stays `pixelpets.save.v2`, `v` 2, plus additive `newsSeen`, `newsTab`, `newsPoll`, `newsClips`.
 
 TOP_HUD option A is on this branch: one place chip under the gear, plus the MAP button, and a MAP shortcut on the chip's TODAY card. The chip and the left column slide down to clear an exit. It is not the next build. Save stays `pixelpets.save.v2` with `v` 2 and gains no field. The frame tutorial strip is not in this build.
 

@@ -3661,6 +3661,30 @@ function makeBackdrop(kind, H, mode, W = 56){
   bdCache.set(key, c);
   return c;
 }
+/* ---------- battle scenes (BATTLE_BACKDROPS, D1009: red, settled by Vincent Oct 31, 2026; supersedes D167) ---------- */
+// battle_bg.js holds one scene per map and draws it from that map's own tiles and props; this side hands it the art.
+// A map without a scene falls back to makeBackdrop. ?debug=1 can force the old backdrop (setBattleBg(false)) to compare.
+const BATTLE_BG_ON = true;
+let battleBgForce = null;
+function battleBgOn(){ return battleBgForce != null ? battleBgForce : BATTLE_BG_ON; }
+function battleSceneId(id = S && S.world.map){ return battleBgOn() && window.BattleBG && WORLD[id] && BattleBG.scenes[id] ? id : null; }
+function battleEnv(m, mode){
+  const sk = m.skin && SKINS[m.skin];
+  return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream,
+    walk: ch => sk && sk.walk && sk.walk[ch] != null ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk,
+    tile: (ch, x, y) => cellImg(m, ch, x, y, 0), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; } };   // animated props: their first frame
+}
+// Same cache as makeBackdrop (BD_CAP). Rooms ignore the sky, so one canvas serves every sky mode.
+function makeBattleBackdrop(id, H, mode, W = 56){
+  W = Math.max(56, W | 0); H = H | 0;
+  if (BattleBG.scenes[id].room) mode = 'room';
+  const key = 'bt|' + id + '|' + W + 'x' + H + '|' + mode; if (bdCache.has(key)) return bdCache.get(key);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  c.btWet = BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode));
+  while (bdCache.size >= BD_CAP) { const k = bdCache.keys().next().value; freeCanvases([bdCache.get(k)]); bdCache.delete(k); }
+  bdCache.set(key, c);
+  return c;
+}
 function drawParticles(g, dt){
   anim.parts = anim.parts.filter(pt => (pt.life -= dt) > 0);
   for (const pt of anim.parts){
@@ -7032,7 +7056,7 @@ function wallTileName(part, x, m){
   const east = (part === 'jamb_n' || part === 'jamb_s') && x === m.w - 1;
   const key = east ? part + '_e' : part;
   // v0.4.6: only the four kit faces swap. Caps, jambs and shadows stay lab__*.
-  if (glimmerBayDark() && BAY_WALL[key]) return BAY_WALL[key];
+  if (m === CUR && glimmerBayDark() && BAY_WALL[key]) return BAY_WALL[key];   // battle backdrops of other maps keep lab__*
   return m.skin + '__' + key;
 }
 function wallPart(x, y, m){
@@ -7134,6 +7158,33 @@ function tickCamBias(t){
 const WAYIN_DIM_AFTER_VISIT = true; // D224: glint stays on frame 0 after the destination floor is seen
 const WAYIN_DOORS = 'all'; // D227: 'all', or 'poor' (poor and weak stay, fine is skipped)
 let bayDarkDrawn = null;
+// One map cell's tile art: wall kit, lab and room skins with their decals, seeded variants. The decal (or null) is left in
+// cellDecal, so the hot loop makes no object. drawMap and the battle scenes (BATTLE_BACKDROPS) share it.
+let cellDecal = null;
+function cellImg(m, ch, tx, ty, wf){
+  const sk = m.skin && SKINS[m.skin], hasKit = !!(sk && sk.wall), part = hasKit ? wallPart(tx, ty, m) : null;
+  let img = ch === 'w' ? TILES.w[wf] : (!hasKit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
+  cellDecal = null;
+  if (part) {   // shared wall kit. Windows come from the map list, not the odd column.
+    const nm = wallTileName(part, tx, m);
+    if (TILES[nm]) img = TILES[nm];
+  } else if (m.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
+    const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk0 = LAB_SKIN.decal[k], bay = m === CUR;   // GLIMMERWELL dark bay: only the live map swaps art
+    const dk = dk0 ? (bay ? bayArtName(dk0) : dk0) : null, nm0 = labTileName(dk0 ? '.' : k, tx, ty, m);
+    const nm = bay ? bayFloorName(k, nm0) : nm0;
+    if (nm && TILES[nm]) img = TILES[nm];
+    if (dk) cellDecal = TILES[dk + '_decal'];
+  } else if (sk) {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
+    const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = sk.decal && sk.decal[k];
+    const nm = skinTileName(sk, dk ? '.' : k, tx, ty, m);
+    if (nm && TILES[nm]) img = TILES[nm];
+    if (dk) cellDecal = TILES[dk + '_decal'] || TILES[dk];
+  } else if (m.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
+    const nm = labTileName(ch, tx, ty, m);
+    if (nm !== ch && TILES[nm]) img = TILES[nm];
+  }
+  return img;
+}
 function drawMap(t){
   const darkNow = glimmerBayDark();
   if (darkNow !== bayDarkDrawn) {
@@ -7154,28 +7205,8 @@ function drawMap(t){
       if (tx<0||ty<0||tx>=MW||ty>=MH) continue;
       const ch = MAP[ty][tx];
       const skEarly = CUR.skin && SKINS[CUR.skin];
-      const hasKit = !!(skEarly && skEarly.wall);
-      const part = hasKit ? wallPart(tx, ty) : null;
-      let img = ch === 'w' ? TILES.w[wf] : (!hasKit && ch === 'W' && tx % 2 ? TILES.W2 : TILES[ch] || TILES.g);
-      let decal = null;
-      if (part) {   // shared wall kit. Windows come from the map list, not the odd column.
-        const nm = wallTileName(part, tx, CUR);
-        if (TILES[nm]) img = TILES[nm];
-      } else if (CUR.skin === 'lab') {   // FERNBROOK_HEIGHTS §3; E4 decals sit on the floor; E5 seeded variants on maps with "variants": true
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk0 = LAB_SKIN.decal[k];
-        const dk = dk0 ? bayArtName(dk0) : null;
-        const nm = bayFloorName(k, labTileName(dk0 ? '.' : k, tx, ty));
-        if (nm && TILES[nm]) img = TILES[nm];
-        if (dk) decal = TILES[dk + '_decal'];
-      } else if (skEarly && CUR.skin !== 'lab') {   // per-room skins. House decals are full tiles, so they fall back past the lab "_decal" name.
-        const k = ch === 'W' && tx % 2 ? 'W2' : ch, dk = skEarly.decal && skEarly.decal[k];
-        const nm = skinTileName(skEarly, dk ? '.' : k, tx, ty);
-        if (nm && TILES[nm]) img = TILES[nm];
-        if (dk) decal = TILES[dk + '_decal'] || TILES[dk];
-      } else if (CUR.variants) {   // map pass B4: seeded grass on outdoor maps that opt in
-        const nm = labTileName(ch, tx, ty);
-        if (nm !== ch && TILES[nm]) img = TILES[nm];
-      }
+      let img = cellImg(CUR, ch, tx, ty, wf);
+      const decal = cellDecal;
       if (ch === 'R' && CUR.roofs) for (const r of Object.values(CUR.roofs)) if (r && tx >= r.x0 && tx <= r.x1 && ty >= r.y0 && ty <= r.y1 && TILES['R' + r.col]) img = TILES['R' + r.col];
       if (CUR.roofs && (ch === 'R' || ch === 'H')) img = buildingTile(ch, tx, ty, img);
       if (ch === '^') {   // STAIR_MARKER: clear corners show the room floor under the flight
@@ -13315,6 +13346,7 @@ const PHONE_GLYPH = {
   board: ['########', '#.#..#.#', '#......#', '#.####.#', '#.#....#', '#.####.#', '#......#', '########'],
   sky: ['..###...', '.##.....', '##....#.', '##...###', '##....#.', '.##.....', '..###...', '........'],
   glow: ['...##...', '..#..#..', '.######.', '.#.##.#.', '.#.##.#.', '.######.', '..#..#..', '.######.'],
+  news: ['######..', '#....###', '#.##.#.#', '#.##.#.#', '#....#.#', '#.##.#.#', '#....#.#', '########'],
 };
 function setPhoneJobsLabel(hack){
   const lab = $('#phoneJobs .phone-lab');
@@ -13325,13 +13357,15 @@ function paintPhoneHome(){
   paintPhoneSignal();
   const hack = phoneHack();
   const ink = hack
-    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', glow: '#07140e' }
-    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0', sky: '#f4fbff', glow: '#1a140c' };
+    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', glow: '#07140e', news: '#d7ffc8' }
+    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0', sky: '#f4fbff', glow: '#1a140c', news: '#1c2416' };
   $$('#phoneHome .phone-glyph').forEach(el => {
     const c = el.querySelector('canvas'), grid = PHONE_GLYPH[el.dataset.glyph];
     if (!c || !grid) return;
     iconCanvas(c, grid, ink[el.dataset.glyph] || '#f4f4f4');
   });
+  const news = $('#phoneNews'), ed = newsEdition();
+  if (news) news.classList.toggle('unread', !!(ed && ed.lead && S.newsSeen !== ed.key));
 }
 function contactKey(name){
   if (window.PPRep && typeof PPRep.key === 'function') return PPRep.key(name);
@@ -13663,6 +13697,315 @@ function renderRibbit(body){
   foot.textContent = phoneSignal() <= 1 ? 'Ribbit rides the Keeper wires. One bar: the feed is thin here.' : 'Ribbit rides the Keeper wires.';
   body.appendChild(foot);
 }
+/* ---------- NEWS: the Block News paper (D1012 red, a tenth phone app; D1013/D1015: placeholder copy until Design signs it) ----------
+   Editions from data/news.json (news.js): MORNING, EVENING or NIGHT, a new set each real day. Four tabs, one tap each:
+   FRONT (breaking bar, wire, lead, also today), READ (sections), TOWN (voices, notices, the poll), YOU (your day, the
+   Walkling of the day). Additive save fields: newsSeen (the last edition opened, for the icon dot and BREAKING),
+   newsTab (the last tab), newsPoll (today's vote). */
+const NEWS_DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const NEWS_MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const NEWS_TABS = ['front', 'read', 'town', 'you'];
+const NEWS_SEC_COL = { towns: '#2f7d4a', roads: '#6a3a0c', halls: '#c45c26', keepers: '#2a6f8f', glimmerwell: '#e4b04a' };
+const NEWS_TYPE_COL = { EMBER: PAL.o, TIDE: PAL.c, BLOOM: PAL.g, STONE: '#6a3a0c', VOLT: PAL.y, FROST: PAL.s, GUST: PAL.h, SHADE: PAL.p };
+const NEWS_GLYPH = {
+  towns: ['...##...', '..####..', '.######.', '########', '.#....#.', '.#.##.#.', '.#.##.#.', '.######.'],
+  roads: ['...##...', '...##...', '..#..#..', '..#..#..', '.#....#.', '.#....#.', '#......#', '#......#'],
+  halls: ['...##...', '..####..', '.##..##.', '.#.##.#.', '.#.##.#.', '.##..##.', '..####..', '..#..#..'],
+  keepers: ['...##...', '..####..', '..#..#..', '.######.', '.#.##.#.', '.#.##.#.', '.######.', '...##...'],
+  glimmerwell: ['...#....', '...#....', '.#####..', '...#..#.', '...#.###', '......#.', '.#......', '###.....'],
+  quote: ['........', '##..##..', '##..##..', '.#...#..', '#...#...', '........', '........', '........'],
+  bell: ['...##...', '..####..', '..####..', '..####..', '.######.', '########', '...##...', '........'],
+  heart: ['........', '.##.##..', '#######.', '#######.', '.#####..', '..###...', '...#....', '........'],
+  reply: ['........', '.######.', '#......#', '#......#', '.######.', '..#.....', '.#......', '........'],
+  check: ['........', '.......#', '......##', '#....##.', '##..##..', '.####...', '..##....', '........'],
+};
+let newsSec = '', newsWire = 0, newsBreaking = false, newsPaid = 0;
+// D1016 Scrapbook: each front page the holder reads is clipped once into S.newsClips (additive) and pays a few Acorns;
+// leads they passed without opening the paper go in as back issues, unpaid.
+const NEWS_CLIP_ACORNS = 3, NEWS_CLIPS_MAX = 80;
+function newsEdition(){
+  const st = newsState();
+  return st && window.PPNews && PPNews.edition ? PPNews.edition(st) : null;
+}
+function newsState(){
+  if (!S) return null;
+  const ck = window.PPClock ? PPClock.now() : null, p = pet(), sky = chipSky();
+  return ({
+    flags: S.flags || {}, side: side(), map: (CUR && CUR.id) || '', uid: S.uid || '', day: dayKey(Date.now()), signal: phoneSignal(),
+    hh: ck ? ck.hh : 9, phase: ck ? ck.phase : 'day', sky: sky ? sky.kind : '', town: placeName(),
+    me: {
+      holder: playerName(), partner: p ? petName(p) : '', partnerSpecies: p ? p.species : '', partnerStage: p ? p.stage : 0,
+      seals: sealCount(), steps: (S.stepLog && S.stepLog[dayKey(Date.now())]) | 0, acorns: S.money | 0,
+      seen: Object.keys((S.dex && S.dex.seen) || {}),
+    },
+  });
+}
+function newsClips(){
+  if (!Array.isArray(S.newsClips)) S.newsClips = [];
+  return S.newsClips;
+}
+function newsClip(ed){
+  const clips = newsClips(), have = new Set(clips.map(c => c.id));
+  let paid = 0;
+  PPNews.leadsFor(newsState()).forEach(l => {
+    if (have.has(l.id) || clips.length >= NEWS_CLIPS_MAX) return;
+    if (l.id === ed.lead.id) { clips.push({ id: l.id, day: ed.day }); paid = NEWS_CLIP_ACORNS; }
+    else clips.push({ id: l.id, day: ed.day, back: true });
+    have.add(l.id);
+  });
+  if (paid) { S.money = (S.money | 0) + paid; toast('Clipped to your scrapbook. +' + paid + ' Acorns'); sfx('pop'); }
+  return paid;
+}
+function newsDate(day){
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day || '');
+  if (!m) return '';
+  const d = new Date(+m[1], +m[2] - 1, +m[3]);
+  return NEWS_DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + NEWS_MONTHS[d.getMonth()];
+}
+function nEl(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function nBtn(cls, onTap){ const b = nEl('button', cls); b.type = 'button'; b.addEventListener('click', () => { sfx('tap'); onTap(); }); return b; }
+function newsGlyph(name, color, px){
+  const c = nEl('canvas', 'news-glyph'); c.width = 8; c.height = 8; iconCanvas(c, NEWS_GLYPH[name], color);
+  c.style.width = c.style.height = (px || 16) + 'px'; c.setAttribute('aria-hidden', 'true'); return c;
+}
+function newsSprite(species, stage, px){
+  const c = nEl('canvas', 'news-sprite'); c.width = 18; c.height = 18; c.setAttribute('aria-hidden', 'true');
+  const si = SP_INDEX[species]; if (si != null) spriteCanvas(c, si, stage | 0);
+  c.style.width = c.style.height = (px || 64) + 'px'; return c;
+}
+function newsTile(sec, hack){
+  const t = nEl('span', 'news-tile'); t.style.background = hack ? '#0c1f16' : (NEWS_SEC_COL[sec] || '#1d5c38');
+  t.appendChild(newsGlyph(NEWS_GLYPH[sec] ? sec : 'towns', hack ? '#5ee08a' : (sec === 'glimmerwell' ? '#143226' : '#fff9ec'), 16)); return t;
+}
+function newsReplies(story, hack){
+  const box = nEl('div', 'news-replies');
+  const top = nEl('p', 'news-react');
+  top.append(newsGlyph('heart', hack ? '#5ee08a' : '#c45c26', 14), nEl('span', null, story.chirps + ' chirps'),
+    newsGlyph('reply', hack ? '#5ee08a' : '#2a6f8f', 14), nEl('span', null, story.replies.length === 1 ? '1 on Ribbit' : story.replies.length + ' on Ribbit'));
+  box.appendChild(top);
+  story.replies.forEach(r => {
+    const p = nEl('p', 'news-reply'); p.append(nEl('b', null, r.name), nEl('span', 'news-handle', '@' + r.handle), nEl('span', 'news-rtext', r.text));
+    box.appendChild(p);
+  });
+  return box;
+}
+function newsLabel(text, color){ const l = nEl('p', 'news-label', text); if (color) l.style.setProperty('--strip', color); return l; }
+function newsFront(panel, ed, hack){
+  if (newsBreaking && ed.lead) {
+    const b = nEl('div', 'news-breaking'); b.append(newsGlyph('bell', hack ? '#07140e' : '#fff9ec', 16), nEl('b', null, 'BREAKING'), nEl('span', null, ed.lead.headline));
+    panel.appendChild(b);
+  }
+  if (ed.ticker.length) {
+    const wire = nEl('div', 'news-wire');
+    const text = nEl('span', 'news-wire-text', ed.ticker[newsWire % ed.ticker.length]);
+    const next = nBtn('news-wire-next', () => { newsWire = (newsWire + 1) % ed.ticker.length; text.textContent = ed.ticker[newsWire]; });
+    next.textContent = '›'; next.setAttribute('aria-label', 'Next wire line');
+    wire.append(nEl('b', 'news-wire-lab', 'WIRE'), text, next);
+    panel.appendChild(wire);
+  }
+  const s = ed.lead, lead = nEl('article', 'news-lead'); lead.dataset.id = s.id;
+  lead.style.setProperty('--sec', NEWS_SEC_COL[s.section] || '#1d5c38');
+  const art = nEl('div', 'news-art');
+  if (s.art) art.appendChild(newsSprite(s.art.species, s.art.stage, 96));
+  else art.appendChild(newsGlyph(NEWS_GLYPH[s.section] ? s.section : 'towns', hack ? '#5ee08a' : '#fff9ec', 64));
+  const kick = nEl('small', 'news-kicker', (PPNews.sectionLabel(s.section) || 'NEWS') + ' / ' + s.desk);
+  lead.append(art, kick, nEl('h3', 'news-headline', s.headline), nEl('p', 'news-line', s.body[0] || ''));
+  const more = nEl('div', 'news-more'); more.hidden = true;
+  s.body.slice(1).forEach(l => more.appendChild(nEl('p', 'news-line', l)));
+  more.appendChild(newsReplies(s, hack));
+  const open = nBtn('news-open', () => { more.hidden = !more.hidden; open.textContent = more.hidden ? 'Read the full story' : 'Show less'; open.setAttribute('aria-expanded', String(!more.hidden)); });
+  open.textContent = 'Read the full story'; open.setAttribute('aria-expanded', 'false');
+  lead.append(more, open);
+  if (newsPaid) {
+    const stamp = nEl('p', 'news-stamp', 'CLIPPED TO YOUR SCRAPBOOK · +' + newsPaid + ' ACORNS');
+    lead.appendChild(stamp);
+  }
+  panel.appendChild(lead);
+  if (ed.features.length) {
+    panel.appendChild(newsLabel('ALSO TODAY'));
+    ed.features.slice(0, 3).forEach(f => {
+      const r = nBtn('news-row', () => { newsSec = f.section; newsPaint('read'); });
+      r.style.setProperty('--sec', NEWS_SEC_COL[f.section] || '#1d5c38');
+      r.append(newsTile(f.section, hack), nEl('b', null, f.headline));
+      panel.appendChild(r);
+    });
+  }
+}
+function newsStoryItem(f, hack){
+  const box = nEl('div', 'news-item'); box.dataset.id = f.id;
+  const more = nEl('div', 'news-more'); more.hidden = true;
+  const head = nBtn('news-head', () => { more.hidden = !more.hidden; head.setAttribute('aria-expanded', String(!more.hidden)); });
+  head.setAttribute('aria-expanded', 'false');
+  const t = nEl('span', 'news-headtext'); t.append(nEl('small', 'news-kicker', f.desk), nEl('b', 'news-headline', f.headline));
+  head.append(t);
+  if (f.art) head.appendChild(newsSprite(f.art.species, f.art.stage, 40));
+  f.body.forEach(l => more.appendChild(nEl('p', 'news-line', l)));
+  if (f.replies.length) more.appendChild(newsReplies(f, hack));
+  box.append(head, more);
+  return box;
+}
+function newsRead(panel, ed, hack){
+  const by = {};
+  ed.features.concat(ed.briefs).forEach(f => (by[f.section] = by[f.section] || []).push(f));
+  const secs = PPNews.SECTIONS.map(s => s.id).filter(id => by[id]);
+  if (!by[newsSec]) newsSec = secs[0] || '';
+  secs.forEach(id => {
+    const open = id === newsSec;
+    const h = nBtn('news-acc news-acc-' + id + (open ? ' news-acc-open' : ''), () => { newsSec = open ? '' : id; newsPaint('read'); });
+    h.style.setProperty('--sec', hack ? '#123224' : NEWS_SEC_COL[id]);
+    h.setAttribute('aria-expanded', String(open));
+    h.append(newsTile(id, hack), nEl('b', null, PPNews.sectionLabel(id)), nEl('span', 'news-count', String(by[id].length)));
+    panel.appendChild(h);
+    if (open) by[id].forEach(f => panel.appendChild(newsStoryItem(f, hack)));
+  });
+}
+function newsTown(panel, ed, hack){
+  if (ed.voices.length) {
+    const box = nEl('section', 'news-box news-voices');
+    box.appendChild(newsLabel('VOICES FROM TOWN', hack ? '#1e6b42' : '#1d5c38'));
+    ed.voices.forEach(v => {
+      const q = nEl('div', 'news-voice'); const t = nEl('div');
+      t.append(nEl('p', 'news-vtext', v.text), nEl('p', 'news-who', v.who));
+      q.append(newsGlyph('quote', hack ? '#5ee08a' : '#2a6f8f', 18), t); box.appendChild(q);
+    });
+    panel.appendChild(box);
+  }
+  if (ed.notices.length) {
+    const box = nEl('section', 'news-box news-notices');
+    box.appendChild(newsLabel(hack ? 'CLASSIFIEDS // SPONSORED' : 'NOTICES & CLASSIFIEDS', hack ? '#1e6b42' : '#6a3a0c'));
+    const grid = nEl('div', 'news-ngrid');
+    ed.notices.forEach(n => {
+      const c = nEl('div', 'news-notice news-' + n.kind); c.dataset.id = n.id;
+      c.append(nEl('small', 'news-nkind', n.kind === 'ad' ? 'SPONSORED' : n.kind.toUpperCase()), nEl('b', 'news-ntitle', n.title), nEl('p', 'news-ntext', n.text));
+      grid.appendChild(c);
+    });
+    box.appendChild(grid); panel.appendChild(box);
+  }
+  if (ed.poll) {
+    const q = ed.poll, day = ed.day;
+    const vote = S.newsPoll && S.newsPoll.day === day && S.newsPoll.id === q.id ? S.newsPoll.pick : -1;
+    const box = nEl('section', 'news-box news-poll'); box.dataset.id = q.id;
+    box.append(newsLabel("TODAY'S QUESTION", hack ? '#1e6b42' : '#c45c26'), nEl('p', 'news-pollq', q.q));
+    const best = q.pct.indexOf(Math.max.apply(null, q.pct));
+    q.options.forEach((o, i) => {
+      const b = nBtn('news-opt' + (vote === i ? ' news-picked' : ''), () => {
+        if (vote !== -1) return;
+        S.newsPoll = { day: day, id: q.id, pick: i }; save(); newsPaint('town');
+      });
+      b.dataset.pick = String(i);
+      if (vote !== -1) {
+        const bar = nEl('span', 'news-bar' + (i === best ? ' news-best' : '')); bar.style.width = q.pct[i] + '%';
+        b.append(bar, nEl('span', 'news-optlab', o), nEl('span', 'news-pct', q.pct[i] + '%'));
+        if (vote === i) b.appendChild(newsGlyph('check', hack ? '#5ee08a' : '#143226', 16));
+        b.setAttribute('aria-pressed', String(vote === i));
+      } else b.append(nEl('span', 'news-optlab', o));
+      box.appendChild(b);
+    });
+    box.appendChild(nEl('p', 'news-small', vote === -1 ? 'One tap. No take-backs.' : 'Thanks for voting. A new question tomorrow.'));
+    panel.appendChild(box);
+  }
+}
+function newsScrapbook(panel, hack){
+  const st = newsState();
+  const rows = newsClips().map(c => ({ c, s: PPNews.clipping(c.id, st) })).filter(x => x.s).sort((a, b) => a.s.lead - b.s.lead);
+  if (!rows.length) return;
+  const box = nEl('section', 'news-box news-scrapbook');
+  box.appendChild(newsLabel('YOUR SCRAPBOOK', hack ? '#1e6b42' : '#6a3a0c'));
+  box.appendChild(nEl('p', 'news-small', rows.length === 1 ? '1 clipping. Every front page you read gets clipped here.' : rows.length + ' clippings, oldest first.'));
+  rows.forEach(({ c, s }, i) => {
+    const card = nEl('div', 'news-clip' + (i % 2 ? ' news-clip-r' : '') + (c.back ? ' news-clip-back' : '')); card.dataset.id = s.id;
+    const more = nEl('div', 'news-more'); more.hidden = true;
+    s.body.forEach(l => more.appendChild(nEl('p', 'news-line', l)));
+    const head = nBtn('news-clip-head', () => { more.hidden = !more.hidden; head.setAttribute('aria-expanded', String(!more.hidden)); });
+    head.setAttribute('aria-expanded', 'false');
+    const t = nEl('span', 'news-headtext');
+    t.append(nEl('small', 'news-clip-date', newsDate(c.day) + (c.back ? ' · BACK ISSUE' : '')), nEl('b', 'news-headline', s.headline));
+    head.appendChild(t);
+    if (s.art) head.appendChild(newsSprite(s.art.species, s.art.stage, 40));
+    else head.appendChild(newsTile(s.section, hack));
+    card.append(head, more);
+    box.appendChild(card);
+  });
+  panel.appendChild(box);
+}
+function newsYou(panel, ed, hack){
+  const p = pet();
+  const box = nEl('section', 'news-box news-you');
+  box.appendChild(newsLabel('YOUR DAY', hack ? '#1e6b42' : '#2a6f8f'));
+  const top = nEl('div', 'news-youtop');
+  if (p) top.appendChild(newsSprite(p.species, p.stage, 64));
+  const t = nEl('div');
+  t.appendChild(nEl('b', 'news-headline', ed.you ? ed.you.headline : playerName() + (p ? ' and ' + petName(p) : '')));
+  if (ed.you) ed.you.body.forEach(l => t.appendChild(nEl('p', 'news-line', l)));
+  top.appendChild(t); box.appendChild(top);
+  const stats = nEl('div', 'news-stats');
+  [['STEPS', ((S.stepLog && S.stepLog[dayKey(Date.now())]) | 0).toLocaleString('en-US')], ['SEALS', String(sealCount())], ['ACORNS', String(S.money | 0)]].forEach(([k, v]) => {
+    const s = nEl('div', 'news-stat'); s.append(nEl('b', null, v), nEl('small', null, k)); stats.appendChild(s);
+  });
+  box.appendChild(stats); panel.appendChild(box);
+  const sp = ed.spotlight, row = sp && SPECIES[SP_INDEX[sp.species]];
+  if (row && row.stages[sp.stage]) {
+    const card = nEl('section', 'news-box news-spot');
+    card.appendChild(newsLabel('WALKLING OF THE DAY', hack ? '#1e6b42' : '#e4b04a'));
+    const inner = nEl('div', 'news-spotcard');
+    const frame = nEl('div', 'news-spotframe'); frame.appendChild(newsSprite(sp.species, sp.stage, 96));
+    const txt = nEl('div');
+    const type = nEl('small', 'news-type', row.type); type.style.background = hack ? '#3dce78' : (NEWS_TYPE_COL[row.type] || '#c45c26');
+    txt.append(nEl('b', 'news-spotname', row.stages[sp.stage].name), type, nEl('p', 'news-line', row.blurb || ''));
+    inner.append(frame, txt); card.appendChild(inner); panel.appendChild(card);
+  }
+  newsScrapbook(panel, hack);
+}
+let newsBody = null, newsHack = false;
+function newsPaint(tab){
+  const body = newsBody, hack = newsHack, ed = newsEdition();
+  if (!body || !ed) return;
+  const t = NEWS_TABS.indexOf(tab) !== -1 ? tab : 'front', same = S.newsTab === t;
+  if (!same) { S.newsTab = t; save(); }
+  const keep = body.scrollTop;
+  body.innerHTML = '';
+  body.classList.add('news-root');
+  const mast = nEl('div', 'news-mast news-ed-' + ed.edition.toLowerCase());
+  const title = nEl('div', 'news-title');
+  const lantern = () => newsGlyph('keepers', hack ? '#5ee08a' : '#143226', 16);
+  title.append(lantern(), nEl('b', 'news-name', 'BLOCK NEWS'), lantern());
+  mast.appendChild(title);
+  if (hack) mast.appendChild(nEl('b', 'news-ghost', 'BLOCK NEWS'));
+  mast.appendChild(nEl('div', 'news-date', newsDate(ed.day) + (hack ? ' // LIFTED COPY' : ' · ' + ed.edition + ' EDITION')));
+  body.appendChild(mast);
+  if (!ed.lead) { body.appendChild(nEl('p', 'news-foot', 'No edition yet. Check back after a walk.')); return; }
+  const tabs = nEl('div', 'news-tabs'); tabs.setAttribute('role', 'tablist');
+  NEWS_TABS.forEach(id => {
+    const b = nBtn('news-tab news-tab-' + id + (id === t ? ' news-on' : ''), () => newsPaint(id));
+    b.dataset.tab = id; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(id === t));
+    b.textContent = hack ? '[' + id.toUpperCase() + ']' : id.toUpperCase();
+    tabs.appendChild(b);
+  });
+  body.appendChild(tabs);
+  const panel = nEl('div', 'news-panel news-panel-' + t);
+  body.appendChild(panel);
+  if (t === 'front') newsFront(panel, ed, hack);
+  else if (t === 'read') newsRead(panel, ed, hack);
+  else if (t === 'town') newsTown(panel, ed, hack);
+  else newsYou(panel, ed, hack);
+  body.appendChild(nEl('p', 'news-foot', ed.thin ? 'Block News rides the Keeper wires. One bar: today\'s paper is thin here.'
+    : 'Block News rides the Keeper wires. New editions morning, evening and night.'));
+  body.scrollTop = same ? keep : 0;
+}
+function renderNewsApp(body, hack){
+  const ed = newsEdition();
+  newsBody = body; newsHack = hack; newsWire = 0;
+  if (!ed || !ed.lead) { newsBreaking = false; newsPaid = 0; newsPaint('front'); return; }
+  const seenLead = typeof S.newsSeen === 'string' ? S.newsSeen.slice(S.newsSeen.indexOf(':') + 1) : null;
+  // BREAKING: the lead changed since the holder last read the paper (never on the very first read).
+  newsBreaking = seenLead !== null && seenLead !== ed.lead.id;
+  const fresh = S.newsSeen !== ed.key;
+  newsPaid = newsClip(ed);
+  if (fresh || newsPaid) { S.newsSeen = ed.key; if (fresh) newsSec = ''; save(); }
+  newsPaint(fresh ? 'front' : (S.newsTab || 'front'));
+  body.scrollTop = 0;
+  const icon = $('#phoneNews'); if (icon) icon.classList.remove('unread');
+}
 /* ---------- phone apps, part 1 (Vincent, Oct 28, 2026; D859-D863) ----------
    Every new line here is placeholder copy until Design writes it (D863). Both handsets read the same facts; the Keeper1
    says them in the Lantern desk's voice and the cracked handset in the leak's. No save field is added. */
@@ -13916,6 +14259,8 @@ function phoneApp(id){
     renderFieldNotes(body, hack);
   } else if (id === 'jobs') {
     renderJobsApp(body, hack, add);
+  } else if (id === 'news') {
+    renderNewsApp(body, hack);
   } else if (id === 'ribbit') {
     renderRibbit(body);
   } else if (id === 'sky') {
@@ -15509,7 +15854,12 @@ function battleVis(c){
 }
 function drawBattle(t, dt){
   const B = battle, c = $('#battleCanvas'), g = ctx(c), W = c.width, H = c.height, f = curFoe(), p = activePet(); if (!f || !p) return;
-  g.drawImage(makeBackdrop(backdropName(), H, skyMode(), W), 0, 0); drawWeather(g, W, H, t);
+  const sid = battleSceneId();
+  if (sid) {   // BATTLE_BACKDROPS (D1009): the map's own scene; water moves in FULL only, and rooms take no sky tint or weather
+    const bg = makeBattleBackdrop(sid, H, skyMode(), W); g.drawImage(bg, 0, 0);
+    if (auraMode() === 'full' && !prefersReduced()) BattleBG.anim(g, bg.btWet, TILES.w[1], t);
+    if (!BattleBG.scenes[sid].room) drawWeather(g, W, H, t);
+  } else { g.drawImage(makeBackdrop(backdropName(), H, skyMode(), W), 0, 0); drawWeather(g, W, H, t); }
   for (let i = 0; i < B.fx.length; i++) {   // MOVE_FX_2 (D829): a signature dims the backdrop with k, up to 0.25 and back over 200 ms (never white)
     const e = B.fx[i], a = t - e.t0;
     if (e.kind === 'mvGo' && e.sig && a >= 0 && a < 200) { g.globalAlpha = 0.25 * Math.sin(Math.PI * a / 200); g.fillStyle = PAL.k; g.fillRect(0, 0, W, H); g.globalAlpha = 1; }
@@ -18624,6 +18974,8 @@ function boot(){
     // Live getters here, not in cheats: the cheats loop reads each value once at boot, so a getter there goes stale (D787 C).
     get mapZoomSteps(){ return mapZoomSteps(); }, get mapZoomStep(){ return mapZoomStep(); },
     get bdCacheSize(){ return bdCache.size; },   // review fix: the backdrop cache stays capped (BD_CAP)
+    // BATTLE_BACKDROPS (D1009), read-only: the scene this battle draws (id null = the old backdrop) and whether the flag is on
+    get battleScene(){ const id = battleSceneId(); return { id, map: S.world.map, room: !!(id && BattleBG.scenes[id].room), on: battleBgOn() }; },
   };
   const cheats = {
     repaintStats(){ paintStatIcons(); return true; },   // ?debug=1: redraw the stat icons
@@ -18720,6 +19072,13 @@ function boot(){
     },
     applyPlay: (id, res) => PPMinigames.finish(id, Object.assign({ quit: false, clear: false, score: 0 }, res || {})),
     setHudPads: on => { if (!DEBUG) return null; mhcFrameForce = on; fitAll(); return hudPadsLive(); },   // debug: force the P1 frame class on or off (the D787 pads and the D729 arcade chip)
+    // BATTLE_BACKDROPS (D1009): debug only. setBattleBg(true/false) forces the flag (null = the build's flag); battleSceneArt
+    // draws one map's scene onto a fresh canvas (layer 'deco' = landmarks and props only) for previews and tests.
+    setBattleBg: on => { if (!DEBUG) return null; battleBgForce = on == null ? null : !!on; return battleSceneId(); },
+    battleSceneArt: (id, W, H, mode, layer) => { if (!DEBUG || !window.BattleBG || !BattleBG.scenes[id] || !WORLD[id]) return null;
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode || 'day'), layer); return c; },
+    battleSceneIds: () => DEBUG && window.BattleBG ? Object.keys(BattleBG.scenes) : null,
     debugToast: msg => { if (!DEBUG) return null; toast(msg); const t = $('#toast'); return t ? t.textContent : ''; },
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)
     goto: (map, x, y, facing) => { if (!WORLD[map] || scene) return false; clearMoves(); const m = WORLD[map], sp = m.start || m.safe;
