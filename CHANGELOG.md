@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 17:05 ET: Hold D1153 (Hall door after Lizzy's class) and answer D1172 (docs only, no build stamp)
+
+- What changed and why: Vincent ruled at 5:03 PM ET: "Picking a side should be after the class, same with hall door." D1153 (`story.crates_seen` opens the Hall door) is HELD and superseded by D1169 (#255), so it does not settle at 5:44 PM EST. D1172 is answered NO: the Hall door and the faction pick both come after Lizzy's class.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/hold-d1153`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): D1153 held (Vincent); D1172 answered NO (Vincent). D1166-D1173 stay reserved by #255 and are cited, not re-reserved.
+- Anything left unfinished: #255 should record D1172 as settled NO and D1169 as the door rule when it lands.
+
 ## 2026-11-02 16:10 ET: Decision logs: Vincent's Nov 2 rulings + new Day 1 direction (docs only, no build stamp)
 
 - What changed and why: recorded Vincent's Mon Nov 2 rulings (faction-pick reds D1141-D1143 and D1149-D1152 settled yes with their canon overrides; D967 and D1101 yes; Act 5 capital is High Charity as D1174; the President and Governor names), the calls that stay open (D971, D1000, the intro reds, D1034/D1035, D1044, D1087, D1128, D1140), missing design-repo ids, past-due marks, the earlier Oct 30-31 settlements, and the NEW DIRECTION section with a Claude Code brief.
