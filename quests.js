@@ -30,7 +30,8 @@
     Object.freeze({ id: 'brine_drizzlet', map: 'bw_depot_in', obj: 'brine_drizzlet', done: 'story.brine_drizzlet' }),   // BRINEWICK
   ]);
   const sideTaskLine = n => (n === 1 ? '1 side task nearby' : n + ' side tasks nearby');
-  const NOT_STEPS = ['story.starter_line', 'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
+  const NOT_STEPS = ['story.starter_line', 'story.lizzy_wake', 'story.home_dressed', 'story.home_walk',   // PARTNER_DAY: house-morning beats inside the wake step
+    'story.rook_pact', 'story.rook_saw_lamps', 'story.h2_seam_a', 'story.h2_seam_b',
     'story.side', 'story.side_pick_done',    // WP-B0: the faction pledge is a branch, not a step (the chain is shared by both sides)
     'story.tour1_s1', 'story.tour1_s2', 'story.tour1_s3',   // Build 3: Bright Pavilion Tour progress; story.seal1 is still the hall1 step
     'story.switches', 'story.switch_chapter', 'story.switch_at',   // BS: switch bookkeeping written by the engine, never a step
@@ -70,8 +71,8 @@
 
   const CHAIN = [
     { id: 'wake', done: ['story.intro_seen'],
-      text: 'Good morning! Look around your room, then read the note by the door.', place: 'Hearthmoor, home',
-      target: { map: 'hm_home_in', x: 4, y: 7 } },
+      text: "It's partner day! Get dressed at your mirror, then see Mom downstairs.", place: 'Hearthmoor, home',
+      target: { map: 'hm_home_room', x: 4, y: 3 } },   // PARTNER_DAY: you wake in your room upstairs
     { id: 'lodge', done: ['story.starter_received'],
       text: "Someone small is waiting at the Warden's Lodge. Ilse has a Walkling for you.", place: "Warden's Lodge",
       target: { map: 'hm_lodge_in', x: 5, y: 3 } },
@@ -204,14 +205,14 @@
     ],
     [
       { id: 'mom', label: "Mom's trip", when: ['story.starter_received'], givers: ['mom'], done: ['story.mom_met'],
-        text: 'Mom is upstairs. She wants to meet your Walkling.', place: 'Your home, upstairs',
-        target: { map: 'hm_home_up', x: 5, y: 3 } },
+        text: 'Mom is home. She wants to meet your Walkling.', place: 'Your home',
+        target: { map: 'hm_home_in', x: 5, y: 4 } },   // PARTNER_DAY: Mom and Maze live downstairs
       { id: 'mom_chore', when: ['story.mom_met'], done: ['story.mom_chore'],
-        text: 'Clear the crumbs downstairs so your Walkling has a place to sit.', place: 'Your home',
+        text: 'Clear the crumbs off the table so your Walkling has a place to sit.', place: 'Your home',
         target: { map: 'hm_home_in', x: 7, y: 5 } },
       { id: 'mom_sent', when: ['story.mom_chore'], done: ['story.mom_sent'],
-        text: 'Tell Mom the table is clear. She has a trip in mind.', place: 'Your home, upstairs',
-        target: { map: 'hm_home_up', x: 5, y: 3 } },
+        text: 'Tell Mom the table is clear. She has a trip in mind.', place: 'Your home',
+        target: { map: 'hm_home_in', x: 5, y: 4 } },
       { id: 'mahopac', when: ['story.mom_sent'], done: ['story.reached_mahopac'],
         text: 'Take your Walkling up the north trail to Mahopac.', place: 'Hearthmoor, north trail',
         target: { map: 'hearthmoor', x: 9, y: 2 } },

@@ -285,7 +285,7 @@ const ROOMS = {
   r3_ledger: { back: ['chart_table'], front: ['tunnel_ledger'] },
   r3_relay: { back: ['rx_rack'], front: ['rx_pylon'] },
   bw_depot_in: { back: ['glimmer_stand'], front: ['depot_crate'] },
-  hm_home_in: {}, hm_home_up: {}, hm_lodge_in: {}, hm_lantern_in: {}, hm_rook_in: {}, hm_hq_f1: {}, hm_hq_f2: {},
+  hm_home_in: {}, hm_home_up: {}, hm_home_room: {}, hm_home_hall: {}, hm_lodge_in: {}, hm_lantern_in: {}, hm_rook_in: {}, hm_hq_f1: {}, hm_hq_f2: {},
   hm_school_in: {}, hm_flats_lobby: {}, hm_flats_5: {}, hm_store: {}, hm_wardrobe: {}, hm_diner: {},
   cc_lantern_in: {}, mahopac_obs: {}, dream_2004: {}, dream_party: {}, dream_drive: {},
   hc_airport_in: {}, hc_command_in: {}, hc_barracks_in: {}, hc_marina_in: {}, hc_school_in: {}, hc_bank_in: {}, hc_gym_in: {},

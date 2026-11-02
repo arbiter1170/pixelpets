@@ -1,0 +1,1046 @@
+{
+ "spec": "PARTNER_DAY (Vincent, Nov 2, 2026): the house morning. Bedroom and hallway upstairs (hm_home_up stays Mom's old room), Lizzy and Buddy wake you for partner day, the mirror is your first look, Mom and Maze say goodbye downstairs. Rule 9: inspiration brief first, existing tiles and PAL only; previews go to Vincent before this deploys.",
+ "newGame": {
+  "map": "hm_home_room",
+  "x": 1,
+  "y": 3,
+  "facing": "down",
+  "scene": "intro"
+ },
+ "maps": {
+  "hm_home_room": {
+   "name": "Your Room",
+   "kind": "interior",
+   "outdoor": "hearthmoor",
+   "door": "hm_home",
+   "backdrop": "town",
+   "skin": "house_bedroom",
+   "variants": true,
+   "wall": {
+    "windows": [
+     2,
+     6
+    ]
+   },
+   "w": 9,
+   "h": 7,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 1,
+    "y": 3
+   },
+   "grid": [
+    "#########",
+    "#WWWWWWW#",
+    "#uvuvuvu#",
+    "#.......#",
+    "#..===..#",
+    "#.......#",
+    "####m####"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "room_door",
+     "x": 4,
+     "y": 6,
+     "to": "hm_home_hall",
+     "tx": 2,
+     "ty": 2,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "home_bed",
+     "x": 1,
+     "y": 2,
+     "sprite": "bed",
+     "lines": {
+      "else": "@home_bed"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "home_mirror",
+     "x": 4,
+     "y": 2,
+     "sprite": "mirror",
+     "lines": {
+      "!story.home_dressed": "@home_dress",
+      "else": "@home_mirror"
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "room_chest",
+     "x": 7,
+     "y": 2,
+     "sprite": "house_chest",
+     "lines": {
+      "else": "Your old toy chest. Little-kid toys at the bottom, a Keeper primer right on top."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "room_desk",
+     "x": 1,
+     "y": 5,
+     "sprite": "apt_desk",
+     "lines": {
+      "story.starter_received": "Your drawing of you and a Walkling. You've finally drawn {pet}'s face in.",
+      "else": "Your desk. A drawing of you and a Walkling, still blank where its face should go."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "room_bowl",
+     "x": 7,
+     "y": 5,
+     "sprite": "water_bowl",
+     "lines": {
+      "story.starter_received": "{pet}'s water bowl. More of it ends up on the floor than in {pet}.",
+      "else": "A brand-new water bowl, scrubbed and dry. Nobody has drunk from it. Yet."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "room_lizzy",
+     "name": "Lizzy",
+     "look": "lizzy",
+     "x": 2,
+     "y": 3,
+     "facing": "left",
+     "when": [
+      "story.lizzy_wake",
+      "!story.home_dressed"
+     ],
+     "lines": {
+      "else": "Mirror's right there! Look sharp. Ilse won't wait all morning."
+     }
+    },
+    {
+     "kind": "npc",
+     "id": "room_buddy",
+     "name": "Buddy",
+     "pet": "fetch/1",
+     "x": 3,
+     "y": 3,
+     "facing": "left",
+     "when": [
+      "story.lizzy_wake",
+      "!story.home_dressed"
+     ],
+     "lines": {
+      "else": "Buddy's tail thumps the floor. He knows it's a big day."
+     }
+    },
+    {
+     "kind": "trigger",
+     "id": "room_not_yet",
+     "x": 4,
+     "y": 5,
+     "r": 0,
+     "when": [
+      "story.lizzy_wake",
+      "!story.home_dressed"
+     ],
+     "scene": "home_not_yet"
+    }
+   ]
+  },
+  "hm_home_hall": {
+   "name": "Your Home, upstairs",
+   "kind": "interior",
+   "outdoor": "hearthmoor",
+   "door": "hm_home",
+   "backdrop": "town",
+   "skin": "house_hallway",
+   "variants": true,
+   "wall": {
+    "windows": [
+     4
+    ],
+    "doors": [
+     2,
+     6
+    ]
+   },
+   "w": 9,
+   "h": 5,
+   "spawns": null,
+   "zones": [],
+   "safe": {
+    "x": 4,
+    "y": 3
+   },
+   "grid": [
+    "#########",
+    "#WEWWWEW#",
+    "#vvvvvvv#",
+    "#~~~~~~~#",
+    "####^####"
+   ],
+   "objs": [
+    {
+     "kind": "warp",
+     "id": "hall_room",
+     "x": 2,
+     "y": 1,
+     "to": "hm_home_room",
+     "tx": 4,
+     "ty": 5,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "hall_mom",
+     "x": 6,
+     "y": 1,
+     "to": "hm_home_up",
+     "tx": 4,
+     "ty": 6,
+     "facing": "up"
+    },
+    {
+     "kind": "warp",
+     "id": "hall_stairs",
+     "x": 4,
+     "y": 4,
+     "to": "hm_home_in",
+     "tx": 1,
+     "ty": 6,
+     "facing": "down"
+    },
+    {
+     "kind": "prop",
+     "id": "hall_plant",
+     "x": 1,
+     "y": 2,
+     "sprite": "plant_pot_big",
+     "lines": {
+      "else": "A big leafy plant. Someone waters it every morning."
+     }
+    },
+    {
+     "kind": "prop",
+     "id": "hall_basket",
+     "x": 7,
+     "y": 2,
+     "sprite": "laundry_basket",
+     "lines": {
+      "else": "A basket of clean laundry, folded with care."
+     }
+    },
+    {
+     "kind": "decal",
+     "id": "wayin_hall_stairs",
+     "x": 4,
+     "y": 4,
+     "sprite": "wayin_glint_down",
+     "wayin": "hm_home_in"
+    }
+   ]
+  }
+ },
+ "slicePatch": {
+  "maps": {
+   "hm_home_in": {
+    "removeObjs": [
+     "home_bed",
+     "home_mirror"
+    ],
+    "replaceObjs": [
+     {
+      "kind": "warp",
+      "id": "home_stairs",
+      "x": 1,
+      "y": 5,
+      "to": "hm_home_hall",
+      "tx": 4,
+      "ty": 3,
+      "facing": "up"
+     },
+     {
+      "kind": "decal",
+      "id": "wayin_home_stairs",
+      "x": 1,
+      "y": 5,
+      "sprite": "wayin_glint_up",
+      "wayin": "hm_home_hall"
+     }
+    ],
+    "addObjs": [
+     {
+      "kind": "prop",
+      "id": "home_pegs",
+      "x": 1,
+      "y": 2,
+      "sprite": "coat_pegs",
+      "lines": {
+       "else": "Coats on pegs. Yours is the small one with the patched elbow."
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "mom",
+      "name": "Mom",
+      "look": "mom",
+      "x": 5,
+      "y": 4,
+      "facing": "down",
+      "chatter": {
+       "!story.intro_seen": "Partner day! Look at you.",
+       "!story.starter_received": "Ilse is waiting, love.",
+       "else": "Kettle's on."
+      },
+      "lines": {
+       "!story.intro_seen": "@mom_luck",
+       "!story.starter_received": "@mom_wait",
+       "!story.mom_met": "@mom_hello",
+       "!story.mom_chore": "@mom_chore_nag",
+       "!story.mom_sent": "@mom_trip",
+       "!story.dream_woke": "@mom_north",
+       "!story.dream_study": "@mom_study",
+       "else": "@mom_tips"
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "maze",
+      "name": "Maze",
+      "pet": "maze",
+      "x": 6,
+      "y": 4,
+      "facing": "down",
+      "lines": {
+       "story.starter_received": "Maze sniffs {pet} nose to nose, then sits back, satisfied.",
+       "else": "Maze, Mom's Walkling, blinks slowly at you. That means hello."
+      }
+     },
+     {
+      "kind": "trigger",
+      "id": "mom_luck_at",
+      "x": 2,
+      "y": 6,
+      "r": 0,
+      "when": [
+       "story.home_dressed",
+       "!story.intro_seen"
+      ],
+      "scene": "mom_luck"
+     }
+    ]
+   },
+   "hm_home_up": {
+    "gridRows": {
+     "5": "#.......#",
+     "7": "####m####"
+    },
+    "removeObjs": [
+     "mom",
+     "wayin_home_stairs_down"
+    ],
+    "replaceObjs": [
+     {
+      "kind": "warp",
+      "id": "home_stairs_down",
+      "x": 4,
+      "y": 7,
+      "to": "hm_home_hall",
+      "tx": 6,
+      "ty": 2,
+      "facing": "down"
+     }
+    ],
+    "addObjs": [
+     {
+      "kind": "prop",
+      "id": "up_cushion",
+      "x": 2,
+      "y": 6,
+      "sprite": "petal_cushion",
+      "lines": {
+       "else": "Maze's favourite cushion. It is mostly calico fur by now."
+      }
+     }
+    ]
+   },
+   "hearthmoor": {
+    "addObjs": [
+     {
+      "kind": "npc",
+      "id": "hm_lizzy_pre",
+      "name": "Lizzy",
+      "look": "lizzy",
+      "x": 9,
+      "y": 20,
+      "facing": "up",
+      "when": [
+       "story.intro_seen",
+       "!story.starter_received"
+      ],
+      "lines": {
+       "else": "Told you I'd run ahead! The Lodge is up the hill. Hurry! Come show me after."
+      }
+     },
+     {
+      "kind": "npc",
+      "id": "hm_buddy_pre",
+      "name": "Buddy",
+      "pet": "fetch/1",
+      "x": 10,
+      "y": 20,
+      "facing": "up",
+      "when": [
+       "story.intro_seen",
+       "!story.starter_received"
+      ],
+      "lines": {
+       "else": "Buddy wags so hard his whole back end wiggles. Big day!"
+      }
+     }
+    ]
+   }
+  }
+ },
+ "ilseAfter": {
+  "after": [
+   "say",
+   "Warden Ilse",
+   "Feed them. Let them rest. Out there, that trust is the only armour you have."
+  ],
+  "steps": [
+   [
+    "say",
+    "Warden Ilse",
+    "Look how {pet} watches you. Walklings understand far more than most folk believe."
+   ],
+   [
+    "choice",
+    "Ilse studies {pet} closely.",
+    [
+     [
+      "Can it understand me?",
+      [
+       [
+        "say",
+        "Warden Ilse",
+        "Every word, I'd wager. One day it may answer you. When it does, listen."
+       ]
+      ]
+     ],
+     [
+      "What do you mean?",
+      [
+       [
+        "say",
+        "Warden Ilse",
+        "Only that the old stories aren't all stories. Keep your ears open, {name}."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "And mind this. Someone will offer to make {pet} brighter. Faster, shinier, better."
+   ],
+   [
+    "say",
+    "Warden Ilse",
+    "Ask what it costs before you say yes. A glow is not always a gift."
+   ]
+  ]
+ },
+ "scenes": {
+  "intro": [
+   [
+    "if",
+    "story.home_dressed",
+    [
+     [
+      "say",
+      "",
+      "Morning again! You're already dressed. Mom's downstairs."
+     ],
+     [
+      "setFlag",
+      "story.lizzy_wake",
+      true
+     ]
+    ],
+    [
+     [
+      "if",
+      "story.lizzy_wake",
+      [
+       [
+        "say",
+        "Lizzy",
+        "Still in your pyjamas? Mirror! Go!"
+       ],
+       [
+        "walkHint"
+       ]
+      ],
+      [
+       [
+        "say",
+        "",
+        "Morning! Sunlight pokes through the shutters."
+       ],
+       [
+        "castAt",
+        "lizzy_wake",
+        4,
+        6,
+        "up"
+       ],
+       [
+        "castAt",
+        "buddy_wake",
+        4,
+        6,
+        "up"
+       ],
+       [
+        "say",
+        "",
+        "The door bangs open."
+       ],
+       [
+        "walkTo",
+        "lizzy_wake",
+        2,
+        3,
+        {
+         "with": "buddy_wake"
+        }
+       ],
+       [
+        "emote",
+        "lizzy_wake",
+        "emote_bang"
+       ],
+       [
+        "say",
+        "Lizzy",
+        "Up, up, up! Do you know what day it is? It's partner day!"
+       ],
+       [
+        "say",
+        "",
+        "Buddy bounds in behind her, tail going like a windmill."
+       ],
+       [
+        "say",
+        "Lizzy",
+        "Ilse's handing out Walklings at the Lodge this morning. You can't go looking like that."
+       ],
+       [
+        "say",
+        "Lizzy",
+        "Get dressed and look sharp. First impressions count, even with Walklings."
+       ],
+       [
+        "controlPick"
+       ],
+       [
+        "say",
+        "Lizzy",
+        "Mirror's right there. Go on, I'll wait!"
+       ],
+       [
+        "walkHint"
+       ],
+       [
+        "setFlag",
+        "story.lizzy_wake",
+        true
+       ]
+      ]
+     ]
+    ]
+   ]
+  ],
+  "home_dress": [
+   [
+    "say",
+    "Lizzy",
+    "Okay, show me what you've got."
+   ],
+   [
+    "lookPick"
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Look at you! Sharp enough for any Walkling."
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Your mom's downstairs. Buddy and I will run ahead. See you outside!"
+   ],
+   [
+    "walkTo",
+    "room_lizzy",
+    4,
+    6,
+    {
+     "with": "room_buddy",
+     "drop": true
+    }
+   ],
+   [
+    "setFlag",
+    "story.home_dressed",
+    true
+   ]
+  ],
+  "home_not_yet": [
+   [
+    "say",
+    "Lizzy",
+    "Whoa, mirror first! You can't meet Ilse in your pyjamas."
+   ],
+   [
+    "push",
+    0,
+    -1
+   ]
+  ],
+  "home_mirror": [
+   [
+    "say",
+    "",
+    "Your mirror. You tidy a stray hair."
+   ],
+   [
+    "choice",
+    "Change your look?",
+    [
+     [
+      "Change my look",
+      [
+       [
+        "lookPick"
+       ]
+      ]
+     ],
+     [
+      "Looks good!",
+      []
+     ]
+    ]
+   ]
+  ],
+  "mom_luck": [
+   [
+    "walkTo",
+    "mom",
+    3,
+    6,
+    {
+     "with": "maze"
+    }
+   ],
+   [
+    "say",
+    "Mom",
+    "Look at you! All dressed and ready. Partner day already."
+   ],
+   [
+    "say",
+    "",
+    "Mom straightens your collar, then pulls you into a quick hug."
+   ],
+   [
+    "say",
+    "Mom",
+    "Whoever you choose, they're lucky to have you. Good luck at the Lodge, love."
+   ],
+   [
+    "emote",
+    "maze",
+    "emote_heart"
+   ],
+   [
+    "say",
+    "",
+    "Maze winds around your ankles and purrs."
+   ],
+   [
+    "say",
+    "Mom",
+    "Come back later, both of you. I'll share some tips for you and your new Walkling."
+   ],
+   [
+    "say",
+    "Mom",
+    "Maze and I have learned a thing or two. Now go on, before Ilse gives yours away!"
+   ],
+   [
+    "walkTo",
+    "mom",
+    5,
+    4,
+    {
+     "with": "maze"
+    }
+   ],
+   [
+    "setFlag",
+    "story.home_walk",
+    true
+   ],
+   [
+    "setFlag",
+    "story.intro_seen",
+    true
+   ]
+  ],
+  "mom_wait": [
+   [
+    "say",
+    "Mom",
+    "Ilse's waiting at the Lodge, love. Up past the plaza. Go on!"
+   ]
+  ],
+  "mom_hello": [
+   [
+    "say",
+    "Mom",
+    "There you are. And this is {pet}? Oh, look at that little face."
+   ],
+   [
+    "say",
+    "",
+    "{pet} sniffs Mom's sleeve, then leans in. Maze watches from a safe distance."
+   ],
+   [
+    "say",
+    "Mom",
+    "A bond grows in small jobs. Clear the crumbs off the table, so {pet} can sit with us."
+   ],
+   [
+    "choice",
+    "Help Mom?",
+    [
+     [
+      "I'll clear the table",
+      [
+       [
+        "say",
+        "Mom",
+        "That's my helper. The mug can stay. The crumbs cannot."
+       ],
+       [
+        "setFlag",
+        "story.mom_met",
+        true
+       ]
+      ]
+     ],
+     [
+      "In a little bit",
+      [
+       [
+        "say",
+        "Mom",
+        "No rush. The crumbs are very patient."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "run",
+    "mom_tips_offer"
+   ]
+  ],
+  "mom_chore_nag": [
+   [
+    "say",
+    "Mom",
+    "The table still has crumbs. Clear a spot for {pet}."
+   ],
+   [
+    "run",
+    "mom_tips_offer"
+   ]
+  ],
+  "mom_north": [
+   [
+    "say",
+    "Mom",
+    "The north trail is open. Mahopac is quiet. Take {pet}."
+   ],
+   [
+    "run",
+    "mom_tips_offer"
+   ]
+  ],
+  "mom_study": [
+   [
+    "say",
+    "Mom",
+    "Tell Warden Ilse what you dreamed. She gave you {pet}."
+   ],
+   [
+    "run",
+    "mom_tips_offer"
+   ]
+  ],
+  "mom_tips": [
+   [
+    "say",
+    "Mom",
+    "{pet} trusts you a little more every day. I can see it."
+   ],
+   [
+    "run",
+    "mom_tips_offer"
+   ]
+  ],
+  "mom_tips_offer": [
+   [
+    "choice",
+    "Ask Mom for tips?",
+    [
+     [
+      "Tips, please",
+      [
+       [
+        "say",
+        "Mom",
+        "Pick one, love. Maze and I will walk you through it."
+       ],
+       [
+        "tipsMenu"
+       ]
+      ]
+     ],
+     [
+      "Not now",
+      []
+     ]
+    ]
+   ]
+  ],
+  "lizzy_intro": [
+   [
+    "if",
+    "story.home_walk",
+    [
+     [
+      "say",
+      "Lizzy",
+      "{name}! You made it back. And this must be {pet}! Hi, {pet}!"
+     ],
+     [
+      "say",
+      "",
+      "Buddy bounds over and sniffs {pet} very politely."
+     ],
+     [
+      "say",
+      "Lizzy",
+      "Told you the mirror was worth it. You two look like you were made for each other."
+     ],
+     [
+      "choice",
+      "",
+      [
+       [
+        "Hug Buddy",
+        [
+         [
+          "say",
+          "",
+          "Buddy leans his whole weight into you. His tail thumps the grass."
+         ],
+         [
+          "setFlag",
+          "story.lizzy_hug",
+          true
+         ]
+        ]
+       ],
+       [
+        "Thanks, Lizzy!",
+        [
+         [
+          "say",
+          "Lizzy",
+          "Anytime. Somebody had to get you out of bed."
+         ]
+        ]
+       ]
+      ]
+     ]
+    ],
+    [
+     [
+      "say",
+      "Lizzy",
+      "{name}! Look who it is! Where have you been? It's been forever."
+     ],
+     [
+      "say",
+      "Lizzy",
+      "Word is Ilse gave you a partner today. And this must be {pet}. Hi, {pet}!"
+     ],
+     [
+      "say",
+      "",
+      "A big golden Walkling bounds over and sniffs {pet} very politely."
+     ],
+     [
+      "say",
+      "Lizzy",
+      "You remember Buddy. He's been with me since we were small. He missed you."
+     ],
+     [
+      "choice",
+      "",
+      [
+       [
+        "Hug Buddy",
+        [
+         [
+          "say",
+          "",
+          "Buddy leans his whole weight into you. His tail thumps the grass."
+         ],
+         [
+          "setFlag",
+          "story.lizzy_hug",
+          true
+         ]
+        ]
+       ],
+       [
+        "Hi, Lizzy!",
+        [
+         [
+          "say",
+          "Lizzy",
+          "Hi yourself, stranger. Since summer? I was starting to think you moved."
+         ]
+        ]
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "say",
+    "Lizzy",
+    "So, news: I teach at the new schoolhouse now. Fundamentals, and Walklings for good."
+   ],
+   [
+    "if",
+    "!story.rival1_done",
+    [
+     [
+      "say",
+      "Lizzy",
+      "Rook ran past an hour ago yelling about the fastest Walkling ever. Again."
+     ],
+     [
+      "say",
+      "Lizzy",
+      "Be kind if you two race. He acts tough, but he listens when it's you."
+     ]
+    ],
+    [
+     [
+      "if",
+      "story.rival1_result=won",
+      [
+       [
+        "say",
+        "Lizzy",
+        "Rook told me you beat him. He was proud of you, even if he'd never say it."
+       ]
+      ],
+      [
+       [
+        "say",
+        "Lizzy",
+        "Rook told me he won. Twice. Don't worry, he'll tell you a third time."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "choice",
+    "Rook's been...",
+    [
+     [
+      "Is Rook okay?",
+      [
+       [
+        "say",
+        "Lizzy",
+        "He's Rook. Big heart, loud mouth. Lately he hums a jingle he won't explain. Ask him?"
+       ],
+       [
+        "setFlag",
+        "story.lizzy_rook",
+        true
+       ]
+      ]
+     ],
+     [
+      "He's so annoying.",
+      [
+       [
+        "say",
+        "Lizzy",
+        "Oh, he is. He'd still walk through a storm for you. Ask him about the mint sticker."
+       ]
+      ]
+     ]
+    ]
+   ],
+   [
+    "if",
+    "story.home_walk",
+    [
+     [
+      "say",
+      "Lizzy",
+      "We're in the Flats now, floor five. Come by. My sisters will want to meet {pet}."
+     ]
+    ],
+    [
+     [
+      "say",
+      "Lizzy",
+      "We're in the Flats now, floor five. My sisters keep asking where you vanished to. Come by."
+     ]
+    ]
+   ],
+   [
+    "give",
+    "heal_snack",
+    2
+   ],
+   [
+    "say",
+    "Lizzy",
+    "Here, two snacks. You owe me lunch. Anyone gives you trouble, they deal with both of us."
+   ],
+   [
+    "setFlag",
+    "story.lizzy_met",
+    true
+   ]
+  ]
+ }
+}

@@ -157,7 +157,7 @@ test('Your Home draws the wall kit, and rooms without it keep their tiles', asyn
   expect(report.keys.slice().sort()).toEqual(PAL_KEYS.slice().sort());
   expect(report.wall).toEqual(HOME_WALL);
   expect(report.opted).toContain('house_home');
-  expect(report.opted.length).toBe(41);   // 37 + the four BRINEWICK rooms
+  expect(report.opted.length).toBe(43);   // 37 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway
   expect(report.lists).toEqual({ home: [2, 6], up: [3, 5] });
   expect(report.parts).toEqual([
     'house_home__cap_n', 'house_home__cap_ne', 'house_home__cap_nw', 'house_home__cap_s', 'house_home__cap_se', 'house_home__cap_sw',
