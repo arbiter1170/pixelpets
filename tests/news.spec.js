@@ -175,8 +175,8 @@ test('NEWS opens on FRONT from the grid with a dot; all four tabs fit the phone 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await boot(page, null, s => { s.dex.seen['beetle/0'] = true; });
   await page.locator('#phoneBtn').click();
-  const apps = await page.locator('#phoneHome .phone-app').evaluateAll(els => els.map(el => el.dataset.app));
-  expect(apps).toHaveLength(10);
+  const apps = await page.locator('#phoneHome .phone-app').evaluateAll(els => els.filter(el => getComputedStyle(el).display !== 'none').map(el => el.dataset.app));
+  expect(apps).toHaveLength(7);   // the Keeper1 grid since NOTES, KEEPERUAV and GLOW were removed (Nov 2, 2026)
   expect(apps.indexOf('news')).toBe(apps.indexOf('ribbit') - 1);
   await expect(page.locator('#phoneNews')).toHaveClass(/unread/);
   await shot(page, 'news-home');
