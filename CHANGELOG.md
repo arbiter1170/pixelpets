@@ -11,6 +11,16 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): D1170 amended (red, Vincent); no new id. Next free id stays D1175.
 - Anything left unfinished: Claude updates DAY1_TRIAL1_FLOW R3, §8, Q8, conflict row 6 and Slice 8.
 
+## 2026-11-02 17:40 ET: Test fix: handset_dark checks #243's own diff, not the merge base (test only, no build stamp)
+
+- What changed and why: `tests/handset_dark.spec.js` ("style.css changes only the ring, the kicker and the names") diffed `style.css` against `git merge-base HEAD origin/main`. That only works on the PR branch: once #243 merged, the merge base is the current commit, so the test failed on main at 320, 375 and 390. A first fix pinned a whole-file baseline (`ee78a20`), but the Nov 2 phone trim (#251) then removed other `.hack` rules and broke that too. Now the test reads #243's own diff (`git diff ee78a20 8c40044 -- style.css`: only the ring, the kicker and `.who`) and checks that today's `style.css` still has those three lines and exactly one `#c81818`. The two page-compare tests serve `style.css` from `ee78a20`. No game code changes.
+- Files touched: `tests/handset_dark.spec.js`, `tests/README.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/handset-spec-base`; no build stamp (test and docs only).
+- Tests run and result (widths, checks): `tests/handset_dark.spec.js` at 320, 375 and 390 on main `b76b902` (merged in): 12 passed. Negative checks: putting the old green ring back fails the static check; adding a second crimson use fails it. Scans pass. The `#c81818` count leaves out the PAL definition line `--Q:#c81818` (added by #241), which is a definition, not a use.
+- Decisions made (colour + reasoning): green; a test-only fix to #243's spec, same checks.
+- Anything left unfinished: none.
+
+
 ## 2026-11-02 17:15 ET: Day 1 to Trial 1 flow: open-work review and spec v0.2 (Slices 0 and 1, for the Supervisor's review)
 
 - What changed and why: Slices 0 and 1 of the Day 1 brief (PR #252). `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` reviews every open PR and branch against the new flow (files, flags, gates, saves, merge order). `handoff/specs/DAY1_TRIAL1_FLOW.md` is the build spec: crates and Fen at dusk on Day 1, Fen's go-home talk next morning, Mom's Mahopac trip on the main chain, Mom sends the holder to Lizzy's class, the Hall door opens after the class, three Keeper holders before Fen, then the pick, with Fernbrook's hold flipping at the pick. It records Vincent's rulings of Mon Nov 2 (~4:20 PM ET) as D1166-D1171 (settled) and, in v0.2, his 5:03 and 5:05 PM ET rulings: the Hall door and the pick both come after Lizzy's class (D1153 held, superseded by D1169; D1172 answered NO, so the pick is not a door term), old saves deprioritized (simplest save-safe reading, no writes), the main-chain edit approved with `orchard` in place, and Slices 4a-6 shipped as one merge. D1173 (town steering, red) stays open. Nothing is built; the spec waits for the Supervisor's review before Slice 2.
