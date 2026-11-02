@@ -2,14 +2,41 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-02 17:44 ET: FERNBROOK_PLAZA: the contested plaza east of the orchard crates (build 20261102-1744)
+## 2026-11-02 17:44 ET: FERNBROOK_PLAZA: the contested plaza east of the orchard crates (build 20261102-1747)
 
 - What changed and why: Vincent asked for a Fernbrook plaza where Keepers and Glimmerwell, with their Walklings, argue over who controls the town (D1175). The stream field (rows 10-17, x17-30) is now plaza stone around the old pond (the fountain); wild zone 2 is gone. Three Keepers (Constable, Sergeant, Cadet) face three Glimmerwell holders (Associate, Bright Lead, Junior Bright), each with a Walkling in front, ringed by four scared townsfolk. Neutral holders are told to stay out of it, the holder's own side greets and thanks them, the other side brushes them off. Before the first trial everyone turns to watch the Hall (Keepers root for the holder to learn from Master Fen; Glimmerwell wants Fen out). After Trial 1 the picked side holds the plaza and the other side vanishes (Vincent's D1171). One helper, `fbPlazaPhase()` (`fbplaza:` conds), holds every phase read (D1176). New npc fields `hold`, `faceWhen`, `bangWhen` keep the standoff still and facing (D1179). REGION_MAP is untouched (slice 8b owns the flip).
 - Files touched: `data/detail_zzz_fernbrook_plaza.json` (new), `data/reputation.json` (ten cast rows), `data/mapdata.js` (generated), `game.js`, `tools/GAMEJS_MAP.txt`, `tests/fernbrook_plaza.spec.js` (new), `tests/tap_interact.spec.js` (talk 661 to 677), `tests/README.md`, `handoff/maps/FERNBROOK_PLAZA.md` (new), `handoff/shots/fernbrook_plaza/` (previews), `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `CHANGELOG.md`, build stamp files.
-- Commit(s) + build id: `claude/fernbrook-plaza`; build 20261102-1744.
+- Commit(s) + build id: `claude/fernbrook-plaza`; build 20261102-1747.
 - Tests run and result (widths, checks): `tests/fernbrook_plaza.spec.js` at 320, 375 and 390: 24 passed. Fernbrook and global-count specs at 390 and 320 (`@w1`): 250 passed, 11 skipped; `tap_interact` needed the +16 talk count (updated); `headroom_bigger` T7 timed out under two workers and passes alone. `node tools/scans/run.js`, `python3 tools/bump_build.py --check`. `npm run test:agent` is blocked in the build container (RTDB emulator precheck behind the proxy), so a local Playwright config with the container's Chromium was used.
 - Decisions made (colour + reasoning): D1175 settled (Vincent's ask and answers); D1176 yellow (phase reading, retarget watch with the Day 1 flow); D1177 yellow (placeholder labels, looks, Walklings and lines for Design); D1178 green, preview for Vincent (layout, zone 2 dropped); D1179 green (engine hook).
 - Anything left unfinished: Design sign-off on copy (D1177); Vincent's preview (D1178); the map-hold flip is slice 8b's.
+
+## 2026-11-02 17:45 ET: Vincent's 5:41 PM ruling: mixed Trial Hall roster (D1170 amended); D1166-D1173 recorded (docs only, no build stamp)
+
+- What changed and why: Vincent, 5:41 PM ET: the three Trial Hall holders before Fen are mixed (a Keeper cadet, a Glimmerwell-leaning local, a neutral Fernbrook holder), Fen stays a Keeper, and the Hall sign reads "FERNBROOK TRIAL HALL · Master Fen". The D1166-D1173 rows from the #255 spec are recorded: D1166-D1172 in the archive, D1173 as an Open row.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/vincent-1741-hall-roster`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): D1170 amended (red, Vincent); no new id. Next free id stays D1175.
+- Anything left unfinished: Claude updates DAY1_TRIAL1_FLOW R3, §8, Q8, conflict row 6 and Slice 8.
+
+## 2026-11-02 17:15 ET: Day 1 to Trial 1 flow: open-work review and spec v0.2 (Slices 0 and 1, for the Supervisor's review)
+
+- What changed and why: Slices 0 and 1 of the Day 1 brief (PR #252). `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` reviews every open PR and branch against the new flow (files, flags, gates, saves, merge order). `handoff/specs/DAY1_TRIAL1_FLOW.md` is the build spec: crates and Fen at dusk on Day 1, Fen's go-home talk next morning, Mom's Mahopac trip on the main chain, Mom sends the holder to Lizzy's class, the Hall door opens after the class, three Keeper holders before Fen, then the pick, with Fernbrook's hold flipping at the pick. It records Vincent's rulings of Mon Nov 2 (~4:20 PM ET) as D1166-D1171 (settled) and, in v0.2, his 5:03 and 5:05 PM ET rulings: the Hall door and the pick both come after Lizzy's class (D1153 held, superseded by D1169; D1172 answered NO, so the pick is not a door term), old saves deprioritized (simplest save-safe reading, no writes), the main-chain edit approved with `orchard` in place, and Slices 4a-6 shipped as one merge. D1173 (town steering, red) stays open. Nothing is built; the spec waits for the Supervisor's review before Slice 2.
+- Files touched: `handoff/specs/DAY1_TRIAL1_FLOW.md` (new), `handoff/claude_briefs/DAY1_TRIAL1_REVIEW_2026-11-02.md` (new), `CHANGELOG.md`.
+- Commit(s) + build id: this branch; docs only, no build stamp.
+- Tests run and result (widths, checks): docs only, no game change. `node tools/scans/run.js`: wording, decisions, symlinks, gamejs_map, test_mistakes pass.
+- Decisions made (colour + reasoning): D1166-D1173 reserved (`claude/npc-ranks-side-badge` holds D1159-D1165; main holds D1174 for the Act 5 capital, High Charity; next free D1175). D1166-D1172 are Vincent's settled rulings (D1172 answered NO); D1173 (red, town steering) is open.
+- Anything left unfinished: Slices 2-10 wait for the Supervisor's review; the spec's open questions Q2-Q4, Q6, Q8-Q10, Q13-Q15 keep their defaults.
+
+## 2026-11-02 17:11 ET: Rook says "competitor", not "rival"
+
+- What changed and why: Rook's line in the Rook's Crossroads gate scene (`rc_gate`) read "Then I have to try. Not as a rival. As a friend asking twice." Player text never says "rival"; Rook is a competitor. Design signed the fix on Oct 29 (ROOK_KEEPERS_REENTRY v0.1.x sign-off), and Vincent's Day 1 brief (PR #252) lists it. The line now reads "Then I have to try. Not as a competitor. As a friend asking twice." Ids such as `rival3_rook` and `story.rival3_result` stay as they are (save rule 2). The same text is fixed in Design's generator (`specs/rook_crossroads_build.py`) in the design repo, so the next design regeneration does not bring it back.
+- Files touched: `data/rook_crossroads.json`, `data/mapdata.js` (regenerated), `tests/story_copy_fix.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261102-1711.
+- Tests run and result (widths, checks): after merging main (b76b902): `tests/story_copy_fix.spec.js` (with the new competitor test), `tests/rook_crossroads.spec.js`, `tests/data_integrity.spec.js` and `tests/smoke.spec.js` at 320, 375 and 390: 79 passed, 0 failed, no console errors (helpers `trackErrors`). `node tools/scans/run.js`: wording, decisions, symlinks, gamejs_map, test_mistakes pass. The run used Playwright directly with the box's Chromium; `npm run test:agent` stops at its RTDB rules stage because the cloud box's proxy blocks the local emulator, which this change does not touch.
+- Decisions made (colour + reasoning): green copy fix, already signed by Design; no new id.
+- Anything left unfinished: none.
 
 ## 2026-11-02 17:08 ET: Vincent's 5:05 PM rulings: old saves deprioritized, main-chain edit approved (docs only, no build stamp)
 
