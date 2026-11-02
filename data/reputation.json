@@ -661,6 +661,36 @@
       "name": "Net Mender",
       "faction": "none",
       "base": 50
+    },
+    {
+      "name": "Cider Presser",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Apple Picker",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Young Picker",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Quilt Stitcher",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Hedge Trimmer",
+      "faction": "none",
+      "base": 50
+    },
+    {
+      "name": "Windfall Gatherer",
+      "faction": "none",
+      "base": 50
     }
   ],
   "tiers": [

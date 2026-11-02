@@ -877,6 +877,28 @@ const BRINEWICK_TILES = {
   floor_sealed_c: ["wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwhw", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwhwwwwwwwww", "wwwwwwwwwwwwwwww", "wwwwwwwwwwwwwwww"],
   rug_navy_runner: ["nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnbbnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnbbnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn", "nwnnnnnnnnnnnnwn"],
 };
+// FERNBROOK_HOMES (D1180-D1184): the three south-lane homes. Recolours of existing grids only (coach_plank, hall_flag, floor_loft,
+// rug_fern, rug_kitchen) plus the house_wardrobe herringbone in y and A. PAL keys only, no new key. Rule 9 brief: handoff/maps/FERNBROOK_HOMES.md.
+const FERNBROOK_HOMES_TILES = {
+  floor_press: ["GGGGGBGGGGGGGGGG","GGBBBBGGGGGGGGGG","GGGGGBGGGGGGGGGG","FFFFFFFFFFFFFFFF","GGGGGGGGGGGGGBGG","GGGGGGGGGGGGGBGG","GGGGGGGGGGGGGBGG","FFFFFFFFFFFFFFFF","GGGGGGGGGBGGGGGG","GGGGGGGGGBBBGGGG","GGGGGGGGGBGGGGGG","FFFFFFFFFFFFFFFF","GBGGGGGGGGGGGGGG","GBGGGGGGGGGGGGGG","GBGGGGGGGGGGGGGG","FFFFFFFFFFFFFFFF"],
+  press_flag: ["IIIIIIIIIIFIIIII","IhhhIIIIIIFIIIII","IIIIIIIIIIFIIIII","IIIIIIIIIIFIIIII","IIIIIIIIIIFIIIII","FFFFFFFFFFFIIIII","IIIIIFIIIIFIIIII","IIIIIFIhhIFIIIII","IIIIIFIIIIFIIIII","IIIIIFIIIIFIIIII","IIIIIFFFFFFFFFFF","IIIIIFIIIIBBFIII","IIIIIFIIIIIIFIII","FFFFFFIIIIIIFIII","IIIIIFIIIIIIFIII","IIIIIFIIIIIIFIII"],
+  floor_press_b: ["GGGGGBGGGGGGGGGG","GGGGGBGGGGGGGGGG","GGGGGBGGGGGGGGGG","FFFFFFFFFFFFFFFF","GGGGGGGGGGGGGBGG","GGGGGGGBBBGGGBGG","GGGGGGGGGGGGGBGG","FFFFFFFFFFFFFFFF","GGGGGGGGGBGGGGGG","GGGGGGGGGBGGGGGG","GGGGGGGGGBGGGGGG","FFFFFFFFFFFFFFFF","GBGGGGGGGGGGGGGG","GBGBBGGGGGGGGGGG","GBGGGGGGGGGGGGGG","FFFFFFFFFFFFFFFF"],
+  press_flag_b: ["IIIIIFIIIIIIIIII","IIIIIFIIIIIIhhhI","IIIIIFIIIIIIIIII","IIIIIFIIIIIIIIII","IIIIIFIIIIIIIIII","IIIIIFFFFFFFFFFF","IIIBBFIIIIFIIIII","IIIIIFIhhIFIIIII","IIIIIFIIIIFIIIII","IIIIIFIIIIFIIIII","FFFFFFFFFFFIIIII","IIIFIIIIIIFIIIII","IIIFIIIIIIFIIIII","IIIFIIIIIIFFFFFF","IIIFIIIIIIFIIIII","IIIFIIIIIIFIIIII"],
+  floor_press_c: ["GGGGGBGGGGGGGGGG","GGGGGBGGGGGBBGGG","GGGGGBGGGGGGGGGG","FFFFFFFFFFFFFFFF","GGGGGGGGGGGGGBGG","GGGGGGGGGGGGGBAG","GGGGGGGGGGGGGBGG","FFFFFFFFFFFFFFFF","GGGGGGGGGBGGGGGG","GGGGGGGGGBGGGGGG","GGGGGGBBBBGGGGGG","FFFFFFFFFFFFFFFF","GBGGGGGGGGGGGGGG","GBGGGGGGGGGGGGGG","GBGGGGGGGGGGGGGG","FFFFFFFFFFFFFFFF"],
+  press_flag_c: ["IIIIIFIIIIIIFIII","IIIIIFIIIIIIFIII","FFFFFFIIIIIIFIII","IIIIIFIIIIIIFIII","IIIIIFIIIIIIFBBI","IIIIIFFFFFFFFFFF","IIIIIFIIIIFIIIII","IIIIIFIhhIFIIIII","IIIIIFIIIIFIIIII","IIIIIFIIIIFIIIII","FFFFFFFFFFFIIIII","IIIIIIIIIIFIIIII","IIhhhIIIIIFIIIII","IIIIIIIIIIFIIIII","IIIIIIIIIIFIIIII","IIIIIIIIIIFIIIII"],
+  rug_press: ["oooooooooooooooo","rrrrrrrrrrrrrrrr","oooooooooooooooo","oooooooooooooooo","oooooooooooooooo","oooooooooooooooo","oooooooooooooooo","oyoooyoooyoooyoo","oooyoooyoooyoooy","oooooooooooooooo","oooooooooooooooo","oooooooooooooooo","oooooooooooooooo","oooooooooooooooo","rrrrrrrrrrrrrrrr","oooooooooooooooo"],
+  mat_press: ["FFFFFFFFFFFFFFFF","FBBBBBBBBBBBBBBF","FBBBBBBBBBBBBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBrrrrrrrrBBBF","FBBBBBBBBBBBBBBF","FBBBBBBBBBBBBBBF","FFFFFFFFFFFFFFFF"],
+  floor_picker: ["yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy"],
+  floor_picker_b: ["yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyGyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA"],
+  floor_picker_c: ["yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyyyyyAyyyyyyyA","yyyyyyyAyyyyyyyA","yyyyyyyAyGGyyyyA","yyyyyyyAyyyyyyyA","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy","yyyAyyyyyyyAyyyy"],
+  rug_picker: ["DDDDDDDDDDDDDDDD","DDDgDDDDDDDDDgDD","DDgDgDDDDDDDDgDD","DDDgDgDDDDDgDgDD","DDDDgDgDDDDgDDDD","DDDDDgDDDDgDgDDD","DDDDDDDDDgDgDDDD","DDrDDDDDDDgDDDDD","DDDDDDDDDDDDDrDD","DDgDDDDDDDDDDDDD","DDgDgDDDDDgDDDDD","DDDgDgDDDgDgDDDD","DDDDgDgDDgDgDDDD","DDDDDgDDgDgDDDDD","DDDDDDDDDDgDDDDD","DDDDDDDDDDDDDDDD"],
+  mat_picker: ["EEEEEEEEEEEEEEEE","EyyyyyyyyyyyyyyE","EyyyyyyyyyyyyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyggggggggyyyE","EyyyyyyyyyyyyyyE","EyyyyyyyyyyyyyyE","EEEEEEEEEEEEEEEE"],
+  floor_stitch: ["hhhhhhhhhhhhhhhh","KKKKKKKKKKKKKKKK","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","KKKKKKKKKKKKKKKK","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhKhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh"],
+  floor_stitch_b: ["hhhhhhhhhhhhhhhh","KKKKKKKKKKKKKKKK","hhhhhhhhhhhKhhhh","hhhhhhhhhhhKhhhh","hhhhhhhhhhhKhhhh","hhhhhhhhhhhKhhhh","hhhhhhhhhhhKhhhh","hhhhhhhhhhhKhhhh","hhhhhhhhhhhKhhhh","KKKKKKKKKKKKKKKK","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh"],
+  floor_stitch_c: ["hhhhhhhhhhhhhhhh","KKKKKKKKKKKKKKKK","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhyhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","KKKKKKKKKKKKKKKK","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhKKKhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh","hhhhhhhhhhhhhhhh"],
+  rug_patch: ["wrwrwrwrwbwbwbwb","rrrrrrrrbbbbbbbb","wrrrrrrrwbbbbbbb","rrrrrrrrbbbbbbbb","wrrrrrrrwbbbbbbb","rrrrrrrrbbbbbbbb","wrrrrrrrwbbbbbbb","rrrrrrrrbbbbbbbb","wpwpwpwpwlwlwlwl","ppppppppllllllll","wpppppppwlllllll","ppppppppllllllll","wpppppppwlllllll","ppppppppllllllll","wpppppppwlllllll","ppppppppllllllll"],
+  mat_stitch: ["pppppppppppppppp","phhhhhhhhhhhhhhp","phhhhhhhhhhhhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhwwwwwwwwhhhp","phhhhhhhhhhhhhhp","phhhhhhhhhhhhhhp","pppppppppppppppp"],
+};
 // FLOOR_FIX (D184-D186): 54 calm floor grids. Old floor tiles stay defined. No new palette keys.
 const FLOOR_FIX_TILES = {
   floor_lino: ["DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDCDD","DDDDDDDDDDDDDDDD","DDDCDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDEDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD","DDDDDDDDDDDDDDDD"],
@@ -1925,6 +1947,7 @@ function buildTiles(){
   // FLOOR_FIX: paint the calm floors the same way as addExteriorArt (PAL key to px). Old names stay.
   for (const [k, rows] of Object.entries(FLOOR_FIX_TILES)) if (!T[k]) T[k] = mkTile(g => paintGrid(g, rows));
   for (const [k, rows] of Object.entries(BRINEWICK_TILES)) if (!T[k]) T[k] = mkTile(g => paintGrid(g, rows));
+  for (const [k, rows] of Object.entries(FERNBROOK_HOMES_TILES)) if (!T[k]) T[k] = mkTile(g => paintGrid(g, rows));
   // Market Row rooms. Store is a 2x2 grey-and-sky check (no white). Wardrobe is rose herringbone. Diner is a small black-and-butter check.
   const blockCheck = (a, b, shift) => {
     const rows = [];
@@ -2109,6 +2132,27 @@ const HOUSE_SKINS = {
     decal: { v:'wall_shadow', u:'window_light' }, walk: { v:1, u:1, ',':1, '=':1 },
     variants: { coach_plank: [['coach_plank_b', 0.3], ['coach_plank_c', 0.2]] },
     wall: wallRow('FyornwCFryyo'),
+  },
+  // FERNBROOK_HOMES (D1180-D1184). One skin per south-lane home: own floor, rug, mat and wall row. Remap '#'/W keep the orchard
+  // wall names for anything that reads them; the wall kit draws the walls. Press: honey boards + flagstone. Picker: sunny parquet.
+  // Stitch: painted blue-grey boards + patchwork rug.
+  fbh_press: {
+    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_press', ',':'press_flag', '=':'rug_press', m:'mat_press' },
+    decal: { v:'wall_shadow', u:'window_light', j:'apple_speck' }, walk: { v:1, u:1, j:1, ',':1 },
+    variants: { floor_press: [['floor_press_b', 0.22], ['floor_press_c', 0.18]], press_flag: [['press_flag_b', 0.3], ['press_flag_c', 0.25]] },
+    wall: wallRow('FyBGBrFFFcwB'),
+  },
+  fbh_picker: {
+    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_picker', '=':'rug_picker', m:'mat_picker' },
+    decal: { v:'wall_shadow', u:'window_light', q:'leaf_orchard' }, walk: { v:1, u:1, q:1 },
+    variants: { floor_picker: [['floor_picker_b', 0.22], ['floor_picker_c', 0.18]] },
+    wall: wallRow('ElFCDgEFGcwB'),
+  },
+  fbh_stitch: {
+    remap: { '#':'wall_orchard', W:'wall_orchard_face', W2:'wall_orchard_win', '.':'floor_stitch', '=':'rug_patch', m:'mat_stitch' },
+    decal: { v:'wall_shadow', u:'window_light', j:'leaf_scatter' }, walk: { v:1, u:1, j:1 },
+    variants: { floor_stitch: [['floor_stitch_b', 0.22], ['floor_stitch_c', 0.18]] },
+    wall: wallRow('mhdwhpmdpcsp'),
   },
 };
 // Shared indoor wall kit (D151). Role letters, not PAL keys. `.` is empty. Mirrors are the other corner, the other side, and the other shadow.
