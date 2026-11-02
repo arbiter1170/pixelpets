@@ -40,3 +40,6 @@ Approved by Vincent (owner). Read AGENTS.md first; it wins on any conflict. This
 - Read `AGENTS.md` first, then `roles/README.md` (org chart, handoff and merge flow), then your role file in `roles/<name>.md`.
 - When a task matches a skill, load `.cursor/skills/<id>/SKILL.md` (index: `.cursor/skills/README.md`).
 - Team roles live in `roles/`, not `docs/roles/`: `docs/` is gitignored and never committed (AGENTS.md rule 4).
+
+## Current direction (Mon Nov 2, 2026)
+- Before Day 1 or Trial 1 work, read "NEW DIRECTION Nov 2, 3:55 PM (Vincent)" in `OPEN_DECISIONS.md` and the brief `handoff/claude_briefs/DAY1_TRIAL1_FLOW_BRIEF_2026-11-02.md`. Slice 0 (review the open PRs) and slice 1 (the spec) come before any code.
