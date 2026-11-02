@@ -46,7 +46,7 @@ Before building anything:
   (claude/phone-trim-bridge-fix), this decisions PR (chief/decisions-2026-11-02). Branches without a
   PR: claude/faction-pick-or-gate (1 commit "Faction pick step 1: the live-save OR gate", 3 behind
   main; quests.js, tests/faction_or_gate.spec.js, fixtures, GAMEJS_MAP, version.json) and
-  claude/npc-ranks-side-badge (reserves D1159-D1163: Keeper ranks, side NPCs, the "BOTH SIDES"
+  claude/npc-ranks-side-badge (reserves D1159-D1165: Keeper ranks, side NPCs, the "BOTH SIDES"
   split word for Fernbrook). Look for Vincent's intro-scene PR (it holds D1020-D1023 and D1029);
   none was open at 4:05 PM ET. List whatever is open when you start.
 - For each one, `gh pr diff <n> --name-only` and read it. Report: overlapping files, overlapping
@@ -85,7 +85,7 @@ v0.2.4:
   only through a slicePatch replaceObjs overlay in data/fernbrook_rooms.json).
 - A conflicts table (start from the list at the end of this brief).
 Any new D id: reserve it with walklings-decision-ids (check main AND every origin branch; next free
-on main after the decisions PR is D1165, and D1159-D1163 are taken by claude/npc-ranks-side-badge).
+on main after the decisions PR is D1175; D1159-D1165 are taken by claude/npc-ranks-side-badge and D1166-D1173 by #255).
 STOP: open the PR, report, and wait for Vincent to approve the spec. Build nothing before that.
 
 SLICE 2: OR GATE (claude/faction-pick-or-gate; NOT visible)
@@ -175,7 +175,7 @@ build id, tests run and anything unfinished, then wait.
 5. **Lizzy:** she is met in Hearthmoor today (`story.lizzy_met`) and teaches weekdays 8 to 3 (SCHED, WORLD_CLOCK_TOWN D374-D378). `hm_lizzy` is in CLOCK_SKIP. A "live class" depends on the real clock, so off-hours players need a rule. LIZZY.md v0.2 (Lizzy part B) is the design source.
 6. **Hall 1 sign:** "A Keepers' Hall. Master Fen." in Part B sits against a contested Fernbrook, and Fen's errand to the Keeper authorities ties her Hall to the Keepers.
 7. **D1128** (red, open): Fen's balance. Extra Keeper holders before Fen add XP and change the §7.5 arrival test.
-8. **Town steering** is new canon. It touches mapHold/REGION_MAP (Fernbrook 'split'), D1150 (everyone earns the Seal), D1151 (Route 2 waits for the pick) and the side-badge branch (D1159-D1163). It is red.
+8. **Town steering** is new canon. It touches mapHold/REGION_MAP (Fernbrook 'split'), D1150 (everyone earns the Seal), D1151 (Route 2 waits for the pick) and the side-badge branch (D1159-D1165). It is red.
 9. **Room changes** to the Trial Hall and Fernbrook need Vincent's previews (rule 9). `fb_hall_in` is in `data/fernbrook_rooms.json`; `data/maps_slice.json` is verbatim.
 10. **Open PR #249** (Rook walks you to the Lantern House after his first match) changes the same early beats.
 11. **Intro reds D1020-D1023 and D1029** are in Vincent's intro-scene PR and touch the home and Lodge scenes that come before this flow.

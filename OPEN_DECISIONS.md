@@ -34,9 +34,9 @@ D1158 is reserved: STORY_DECISIONS v0.62 (design repo, Sat Oct 31, 2026).
 
 Design-repo blocks now listed here (Mon Nov 2, 2026, Chief of Staff, checked with walklings-decision-ids): D1000-D1002 are reserved: STORMBELL_SPIRE. D1020-D1029 are reserved: INTRO_OPENING_RULINGS. D1034-D1044 are reserved: SCOPE_RPG_STATS_SHADOWS. D1055-D1069 are reserved: FACTION_PICK_TIMING v0.1 (D1066-D1069 stay unused). D1141-D1157 are reserved: FACTION_PICK_TIMING v0.2.4 (design ffada0b). D1101 and D1120-D1140 are held by SHADOWS_S2_NIGHT and PACING_REVIEW_OCT31 in the design repo. Id clash, not renumbered: the design repo's HEIGHTS_YARD_REDO also uses D1012-D1015 (D1012 = C, the Sky Garden; D1015 yes; Vincent, Sat Oct 31, 2026, 11:12 AM ET), while this repo's D1012-D1016 are NEWS_FEED; see the archive note of Mon Nov 2, 2026.
 
-D1159-D1163 are reserved: NPC_RANKS and SIDE_BADGE (branch `claude/npc-ranks-side-badge`, no PR yet; listed so the ids don't collide). D1164 is reserved: Act 5's capital is High Charity (Vincent, Mon Nov 2, 2026, 3:40 PM ET; recorded in the archive).
+D1159-D1165 reserved: NPC_RANKS and SIDE_BADGE (claude/npc-ranks-side-badge). D1166-D1173 reserved: Day 1 to Trial 1 (#255). D1174 is reserved: Act 5's capital is High Charity (Vincent, Mon Nov 2, 2026, 3:40 PM ET; recorded in the archive).
 
-Next free id is D1165.
+Next free id is D1175.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## NEW DIRECTION Nov 2, 3:55 PM (Vincent)
