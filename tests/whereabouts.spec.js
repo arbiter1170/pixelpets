@@ -7,6 +7,8 @@ const { starterSave, installSave, trackErrors, gotoGame, artifactsDir } = requir
 trackErrors(test, expect);
 
 const MET = ['Lizzy', 'Pip', 'Wren', 'Ossabell', 'Mr. Gristle', 'Keeper Teague', 'Keeper Quill', 'Mom', 'Dad', 'Warden Ilse', 'Officer Ness', 'Rook'];
+// NPC_RANKS (Vincent, Nov 2, 2026): People rows show rank first; these two wait on a ladder rank (D1159), so they show "[Rank] Name".
+const SHOWN = n => ({ 'Keeper Teague': '[Rank] Teague', 'Keeper Quill': '[Rank] Quill' }[n] || n);
 
 function save() {
   const s = starterSave();
@@ -66,15 +68,15 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   let list = await rows(page);
   const byName = () => Object.fromEntries(list.map(r => [r.name, r]));
   let got = byName();
-  for (const name of MET) expect(got[name], name + ' listed').toBeTruthy();
+  for (const name of MET) expect(got[SHOWN(name)], name + ' listed').toBeTruthy();
   expect(got['Cook Hesper']).toBeUndefined();
   expect(got.Lizzy.where).toBe('Schoolhouse · AT WORK');
   expect(got.Pip.where).toBe('Schoolhouse · AT SCHOOL');
   expect(got.Wren.where).toBe('Schoolhouse · AT SCHOOL');
   expect(got.Ossabell.where).toBe('home, 5B · ASLEEP');
   expect(got['Mr. Gristle'].where).toBe('the lobby · AT WORK');
-  expect(got['Keeper Teague'].where).toBe('Lamplight Provisions · AT WORK');
-  expect(got['Keeper Quill'].where).toBe('home (off the map) · ASLEEP');
+  expect(got[SHOWN('Keeper Teague')].where).toBe('Lamplight Provisions · AT WORK');
+  expect(got[SHOWN('Keeper Quill')].where).toBe('home (off the map) · ASLEEP');
   expect(got.Mom.where).toBe('home · AT HOME');
   expect(got.Dad.where).toBe('home · AT HOME');
   expect(got.Mom.tier).toBe('close');
@@ -94,7 +96,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
       const img = row && row.querySelector('.where-icon');
       return img ? img.getAttribute('src') : '';
     };
-    return { mom: src('Mom'), teague: src('Keeper Teague'), ilse: src('Warden Ilse'), ness: src('Officer Ness') };
+    return { mom: src('Mom'), teague: src('[Rank] Teague'), ilse: src('Warden Ilse'), ness: src('Officer Ness') };
   });
   expect(icons.mom.length).toBeGreaterThan(20);
   expect(icons.ilse).toBe(icons.teague);
@@ -141,8 +143,8 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   expect(homeIcon.mom).toBe(homeIcon.gristle);
   expect(homeIcon.rook).toBe(homeIcon.pip);
   expect(got.Ossabell.where).toBe('home, 5B · ASLEEP');
-  expect(got['Keeper Quill'].where).toBe('home (off the map) · ASLEEP');
-  expect(got['Keeper Teague'].where).toBe('Lamplight Provisions · AT WORK');
+  expect(got[SHOWN('Keeper Quill')].where).toBe('home (off the map) · ASLEEP');
+  expect(got[SHOWN('Keeper Teague')].where).toBe('Lamplight Provisions · AT WORK');
   const branch = await page.evaluate(() => ({
     pip: PixelPets.whereNow('Pip').source,
     lizzy: PixelPets.whereNow('Lizzy').source,
@@ -158,8 +160,8 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   expect(got.Wren.where).toBe('home (off the map) · ASLEEP');
   expect(got['Mr. Gristle'].where).toBe('the lobby · ASLEEP');
   expect(got.Ossabell.where).toBe('home, 5B · AT HOME');
-  expect(got['Keeper Quill'].where).toBe('Lamplight Provisions · AT WORK');
-  expect(got['Keeper Teague'].where).toBe('home (off the map) · ASLEEP');
+  expect(got[SHOWN('Keeper Quill')].where).toBe('Lamplight Provisions · AT WORK');
+  expect(got[SHOWN('Keeper Teague')].where).toBe('home (off the map) · ASLEEP');
   expect(got.Mom.where).toBe('home · AT HOME');
   expect(got.Dad.where).toBe('home · AT HOME');
   expect(got['Warden Ilse'].where).toBe("Warden's Lodge · AT WORK");
@@ -316,7 +318,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   await expect(page.locator('.rep-row', { hasText: 'Rook' }).locator('.where-text')).toHaveText('Cobblecrest Quarry · OUT AND ABOUT');
   const quarry = await page.evaluate(() => {
     const w = PixelPets.whereNow('Rook');
-    const row = [...document.querySelectorAll('#repList .rep-row')].find(r => r.querySelector('.rep-name').textContent === 'Rook');
+    const row = [...document.querySelectorAll('#repList .rep-row')].find(r => r.querySelector('.rep-name').textContent === PixelPets.shownName('Rook'));
     const n = row.querySelector('.where-line');
     const t = row.querySelector('.where-text');
     const cs = getComputedStyle(t);
@@ -366,7 +368,7 @@ test('whereabouts follow the clock, the gate, and the panels', async ({ page }) 
   await expect(page.locator('.rep-row', { hasText: 'Rook' }).locator('.where-text')).toHaveText('Keeps to themself.');
   const coolRook = await page.evaluate(() => {
     const w = PixelPets.whereNow('Rook');
-    const row = [...document.querySelectorAll('#repList .rep-row')].find(r => r.querySelector('.rep-name').textContent === 'Rook');
+    const row = [...document.querySelectorAll('#repList .rep-row')].find(r => r.querySelector('.rep-name').textContent === PixelPets.shownName('Rook'));
     return { line: w.line, now: w.now, state: w.state, tier: PixelPets.repTier('Rook'), icon: !!row.querySelector('.where-icon') };
   });
   expect(coolRook.tier).toBe('cool');

@@ -261,11 +261,11 @@ test("Marigold's card names Stitch & Lantern, and a cool tier stays private", as
   expect(live.source).toBe('fixed');
   await page.locator('#phoneBtn').click();
   await page.locator('.phone-app[data-app="contacts"]').click();
-  await page.locator('.contact-main', { hasText: 'Keeper Marigold' }).click();
+  await page.locator('.contact-main', { hasText: '[Rank] Marigold' }).click();
   await expect(page.locator('.contact-card .where-text')).toHaveText('Now: Stitch & Lantern \u00b7 AT WORK');
   await page.evaluate(() => PixelPets.repAdd('Keeper Marigold', -30));
   await page.locator('[data-contact-back]').click();
-  await page.locator('.contact-main', { hasText: 'Keeper Marigold' }).click();
+  await page.locator('.contact-main', { hasText: '[Rank] Marigold' }).click();
   const cool = await page.evaluate(() => PixelPets.whereNow('Keeper Marigold'));
   expect(cool.source).toBe('private');
   await expect(page.locator('.contact-card .where-text')).toHaveText('Keeps to themself.');
