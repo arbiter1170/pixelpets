@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 16:10 ET: Decision logs: Vincent's Nov 2 rulings + new Day 1 direction (docs only, no build stamp)
+
+- What changed and why: recorded Vincent's Mon Nov 2 rulings (faction-pick reds D1141-D1143 and D1149-D1152 settled yes with their canon overrides; D967 and D1101 yes; Act 5 capital is High Charity as D1174; the President and Governor names), the calls that stay open (D971, D1000, the intro reds, D1034/D1035, D1044, D1087, D1128, D1140), missing design-repo ids, past-due marks, the earlier Oct 30-31 settlements, and the NEW DIRECTION section with a Claude Code brief.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CLAUDE.md`, `CHANGELOG.md`, `handoff/claude_briefs/DAY1_TRIAL1_FLOW_BRIEF_2026-11-02.md`.
+- Commit(s) + build id: `chief/decisions-2026-11-02`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js` and `node tools/scans/run.js` pass; no game files changed.
+- Decisions made (colour + reasoning): D1174 reserved (red, Vincent's call) under walklings-decision-ids; D1159-D1165 noted as held by `claude/npc-ranks-side-badge` and D1166-D1173 by #255 (`claude/day1-trial1-spec`); next free id D1175.
+- Anything left unfinished: `data/rook_crossroads.json:326` "rival" fix is design-generated (rule 8), so it is left for Design's build script; the yellows D1144-D1148 and D1153-D1157 settle at 5:44 PM EST.
+
 ## 2026-11-02 16:07 ET: Faction pick step 1: the live-save OR gate (no save change)
 
 - What changed and why: FACTION_PICK_TIMING v0.2.4 §7 step 1 (design ffada0b), built on its own before steps 2-5. Vincent approved the seven reds (D1141-D1143, D1149-D1152) on Nov 2 at 2:35 PM ET. The four condition readers now take `|` (or): `cond()` and the boot validator's condition check (now `condKeyOk`, shared with `glimmerDevCheck`) in `game.js`, `evalCond` in `quests.js` (which also gets `&`), and `plainStoryFlag` (the debug checkpoints). Every reader splits `|` first, then `&`, then `!`, with no brackets, so `a | b & c` reads as a, or (b and c). `plainStoryFlag` treats a `|` or `&` string as more than one flag and writes nothing for it, so a checkpoint never writes a literal "a|b" key. Today's gates move to their §7.1 OR forms: the Route 2 warp, open sign, rubble and closed sign; Rook's teaser (`rook_fb`, `fb_teaser`); the Hall door `need`; the two Hall slips on the town board; the `heights` skipIf; and the STANDING tab. The maps_slice.json and act1_route2.json objects are restated by id in fernbrook_rooms.json's slicePatch `replaceObjs`, with only `when` changed; both verbatim files are untouched. Nothing sets the new flags yet (`story.crates_seen`, `story.pitch_k`, `story.pitch_g`), so every gate reads the same on every save. Two read-only debug hooks (`PixelPets.condRead`, `PixelPets.gateRead`, plus `PixelPets.standingTab`) return null without `?debug=1`.
@@ -19,6 +28,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `tests/phone_trim.spec.js` and `tests/battle_water_frames.spec.js` pass at 320, 375 and 390; the edited phone, civic, town board, QA play, handset and battle backdrop specs pass (result lines in the PR).
 - Decisions made (colour + reasoning): Red (interface), Vincent, Nov 2, 2026: remove NOTES, KEEPERUAV and GLOW; keep BOTNET on the cracked handset; drop Lumen's two KeeperUAV lines. Green: render the second water frame as a whole scene instead of repainting water rects (fixes every scene, not only Route 1).
 - Anything left unfinished: none. D863 (phone copy) stays open for the remaining apps.
+
 
 ## 2026-11-02 14:31 ET: Test fix: people_looks_28 compares the game's own save, not the raw fixture (test only, no build stamp)
 
