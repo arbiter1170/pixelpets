@@ -5,7 +5,7 @@ Size: S = an evening, M = a few sessions, L = needs new infrastructure.
 
 ## Next work: Oct 14 queue (read this first)
 
-NPC_RANKS and SIDE_BADGE (Vincent, Nov 2, 2026; D1159-D1163) are on branch `claude/npc-ranks-side-badge`. Every Keeper and Glimmerwell NPC shows rank, then name, from the `data/reputation.json` cast through `shownName()`. A Standing icon always sits beside the place chip, and arriving at a new town or route opens a bar saying who holds it. Open: Design's ladder ranks for 16 Keepers (D1159, shown as `[Rank]` until then) and the affiliation of the flagged NPCs (D1160). Save stays `pixelpets.save.v2` with `v` 2, and no field is added.
+NPC_RANKS and SIDE_BADGE (Vincent, Nov 2, 2026; D1159-D1163) are on branch `claude/npc-ranks-side-badge`. Every Keeper and Glimmerwell NPC shows rank, then name, from the `data/reputation.json` cast through `shownName()`. A Standing icon always sits beside the place chip, and arriving at a new town or route opens a bar saying who holds it. The region map shows who holds every place you have walked into, before the pick too (D1164 supersedes D109's pledge gate). Open: Design's ladder ranks for 16 Keepers (D1159, shown as `[Rank]` until then) and the affiliation of the flagged NPCs (D1160). Save stays `pixelpets.save.v2` with `v` 2, and no field is added.
 
 BATTLE_BACKDROPS (D1009, red, settled by Vincent Oct 31, 2026; supersedes D167) is in the game on this branch: every battle draws its own scene from the map's own tiles and props (`battle_bg.js`, `BATTLE_BG_ON` on in `game.js`). The Pet tab, music and the maps' `backdrop` fields are unchanged. Save stays `pixelpets.save.v2` with `v` 2; no new fields.
 

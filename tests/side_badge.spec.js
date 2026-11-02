@@ -161,9 +161,29 @@ test('a toast beside the chip starts after the icon, not on top of it', async ({
   if (t && t.width > 0 && !boxesOverlap(t, c)) expect(boxesOverlap(t, b)).toBe(false);
 });
 
-test('the map overlay still hides the hold line before the pick (D109 unchanged)', async ({ page }) => {
+test('the map shows who holds every place walked into, before the pick too; an unvisited place stays ??? (D1164)', async ({ page }) => {
   await boot(page);
+  await arrive(page, 'route1', 5, 5);
+  await arrive(page, 'hearthmoor', 8, 8);
   await page.locator('#mapBtn').click();
   await expect(page.locator('#ovMap')).toBeVisible();
+  await page.locator('#mapLevelRegion').click();
+  await expect(page.locator('#mapHold')).toBeVisible();
+  await expect(page.locator('#mapHold')).toHaveText('Home. The Keepers hold this town.');
+  await expect(page.locator('#keySides')).toBeVisible();
+  await page.waitForFunction(() => window.PixelPets.mapClaimsDrawn() === 2);   // Hearthmoor and Route 1, nothing unvisited
+  const pick = async (id) => {
+    const [lx, ly] = await page.evaluate((n) => PixelPets.mapNodeCenter(n), id);
+    const box = await page.locator('#regionCanvas').boundingBox();
+    await page.mouse.click(box.x + (lx / 320) * box.width, box.y + (ly / 192) * box.height);
+    await page.waitForTimeout(60);
+  };
+  await pick('route1');
+  await expect(page.locator('#mapPlaceName')).toHaveText('ROUTE 1');
+  await expect(page.locator('#mapHold')).toHaveText('The Keeper watch holds this road.');
+  await shot(page, 'side-badge-map-visited');
+  await pick('fernbrook');
+  await expect(page.locator('#mapPlaceName')).toHaveText('???');
   await expect(page.locator('#mapHold')).toBeHidden();
+  await expect(page.locator('#mapPledge')).toBeHidden();   // the pledge line still waits for the pick
 });

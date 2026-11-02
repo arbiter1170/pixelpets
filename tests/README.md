@@ -274,7 +274,7 @@ All four mean "no failures" when the list is empty. Boot already `console.error`
 - rooms never open the bar, and stepping back out into the same town doesn't either (D);
 - reduced motion means no tween, and the save gains nothing;
 - a toast beside the chip clears the icon;
-- the map overlay's hold line stays gated before the pick (D109).
+- the region map shows the halo and hold line for every visited place before the pick, while an unvisited place stays ??? (D1164; `tests/map_legend.spec.js` and `tests/map.spec.js` follow the same rule).
 
 `tests/news_glimmer_dark.spec.js` covers the darker Glimmer-side NEWS paper (Vincent, Nov 1, 2026). In Node it checks `PPNews.devCheck()`. On a late Glimmer-side save, most features, briefs and voices must be the dark Glimmer-only wire, and the Lantern Post must be rare. Every Keeper-side edition must be byte-identical to `news.js` and `data/mapdata.js` from the merge base with `origin/main` (never `HEAD`), with no INSIGN or facility hint. Those hints must also wait for `story.seal2`. In the game, at 320, 375 and 390 with reduced motion on, the cracked handset prints a dark story on FRONT, TOWN opens with 44 px tabs, and the save adds no field beyond the phone's existing ones (`v` 2). With `PP_ARTIFACTS` set it writes shots to `news_dark/`.
 

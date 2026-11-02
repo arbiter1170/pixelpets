@@ -32,9 +32,9 @@ D1080-D1100 are reserved: GLIMMERWELL_PALETTE v0.3 (D1080-D1087), Vincent's sett
 
 D1158 is reserved: STORY_DECISIONS v0.62 (design repo, Sat Oct 31, 2026).
 
-D1159-D1163 are reserved: NPC_RANKS and SIDE_BADGE (Vincent's ask, Mon Nov 2, 2026; branch `claude/npc-ranks-side-badge`). D1161 is settled (Vincent, Nov 2) and recorded in the archive.
+D1159-D1164 are reserved: NPC_RANKS and SIDE_BADGE (Vincent's ask, Mon Nov 2, 2026; branch `claude/npc-ranks-side-badge`). D1161 and D1164 are settled (Vincent, Nov 2) and recorded in the archive.
 
-Next free id is D1164.
+Next free id is D1165.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## Open

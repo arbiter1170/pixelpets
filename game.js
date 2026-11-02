@@ -12006,13 +12006,16 @@ function nodeSeal(id){
   if (id === 'cobblecrest') return !!(seals.seal_cobblecrest || seals.seal_glim_2 || f['story.seal2']);
   return false;
 }
-// MAP_LEGEND §3: the Seal pill shows once any stamp nodeSeal() can draw is possible; the SIDES group, claim halos and hold line wait for the pledge (D109).
+// MAP_LEGEND §3: the Seal pill shows once any stamp nodeSeal() can draw is possible.
+// SIDE_BADGE (Vincent, Nov 2, 2026; D1164 supersedes D109's pledge gate): who holds a place shows on the map for every place the
+// holder has walked into, before the side pick too. The claim halo and the hold line need a visit; a ??? place gives nothing away.
+// The SIDES key shows once any visited place is on the map (always true in play: you are standing in one).
 function sealsShown(){
   if (!S) return false;
   const seals = S.seals || {}, f = S.flags || {};
   return !!(f['story.seal1'] || f['story.seal2'] || seals.seal_fernbrook || seals.seal_glim_1 || seals.seal_cobblecrest || seals.seal_glim_2);
 }
-const sidesShown = () => !!(S && S.flags && S.flags['story.side_pick_done']);
+const sidesShown = () => !!(S && Object.keys(REGION_MAP.nodes).some(id => mapVisited(id, mapUI.cur)));
 function nodePoint(n){ return [n.col * 16 + 8, n.row * 16 + 8]; }
 function nodeGeom(id){
   const n = REGION_MAP.nodes[id]; if (!n) return null;
@@ -12039,7 +12042,7 @@ function paintPlaceCard(){
   const here = $('#mapHere'); if (here) here.hidden = !(id && id === mapUI.cur);
   const holdEl = $('#mapHold');
   if (holdEl) {
-    holdEl.hidden = !known || !sidesShown();   // D109: no hold line before the pledge
+    holdEl.hidden = !known;   // D1164: a visited place always says who holds it (no pledge needed)
     holdEl.textContent = known ? holdLine(id) : '';
     holdEl.className = 'map-hold' + (known ? ' hold-' + mapHold(id) : '');
     if (known) holdEl.dataset.hold = mapHold(id); else delete holdEl.dataset.hold;
@@ -12229,7 +12232,7 @@ function drawRegionMap(t){
   const vis = {}; for (const id in N) vis[id] = mapVisited(id, cur);
   const claimR = { town: 14, side: 11, route: 9 };
   mapUI.claims = 0;
-  if (sidesShown()) for (const id in N) if (vis[id] && mapHold(id) !== 'wild') {   // D109: halos wait for the pledge
+  for (const id in N) if (vis[id] && mapHold(id) !== 'wild') {   // D1164: a halo for every visited claim, pledge or not
     const n = N[id], [x, y] = P([n.col, n.row]); claim(x, y, claimR[n.kind] || 10, mapHold(id)); mapUI.claims++; }
   for (const id in N) {
     const pth = N[id].path; if (!pth) continue;
