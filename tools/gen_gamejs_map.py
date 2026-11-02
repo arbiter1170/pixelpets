@@ -13,6 +13,7 @@ Exit codes:
     2  usage error, or the generator crashed
 """
 import pathlib
+import subprocess
 import sys
 
 HEADER = (
@@ -31,8 +32,22 @@ def repo_root(argv):
     return pathlib.Path(__file__).resolve().parent.parent
 
 
+def tracked_root_js(root):
+    """Top-level .js names git tracks, or None when git can't answer (no git, or --root outside a repo)."""
+    try:
+        out = subprocess.run(['git', '-C', str(root), 'ls-files', '--', '*.js'], capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    return {n for n in out.stdout.splitlines() if n and '/' not in n}
+
+
 def root_scripts(root):
-    names = sorted(p.name for p in root.glob('*.js') if p.is_file())
+    # Only files git tracks: an untracked local file (a worker's pw.local.config.js, a scratch script) would put a
+    # section in the map that a clean checkout lacks, and `--check` and the gamejs_map scan would fail there.
+    tracked = tracked_root_js(root)
+    names = sorted(p.name for p in root.glob('*.js') if p.is_file() and (tracked is None or p.name in tracked))
     if 'game.js' in names:
         names.remove('game.js')
         return ['game.js'] + names

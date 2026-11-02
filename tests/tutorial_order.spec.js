@@ -437,7 +437,8 @@ test('T-O10 Rook teaches HP, types, NRG and SWAP, then the hit card', async ({ p
   await expect(page.locator('#tutLine')).toContainText(', and ');
   await expect(page.locator('#tutLine')).not.toContainText('This wild');
   await clickCard(page, 'NEXT');
-  await page.waitForFunction(() => PixelPets.lesson().card === 'M2s');
+  // A starter has no other kind of move yet, so the honest M2sx line shows (battle_tips_once, Nov 2, 2026).
+  await page.waitForFunction(() => PixelPets.lesson().card === 'M2sx');
   await clickCard(page, 'NEXT');
   await page.waitForFunction(() => PixelPets.lesson().card === 'M3');
   await page.locator('[data-bact="fight"]').click();
