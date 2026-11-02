@@ -2,6 +2,42 @@
 
 Moved word for word from `OPEN_DECISIONS.md` on 2026-10-15 (context slim). Read on demand. Ids are never renumbered.
 
+## Mon Nov 2, 2026: Vincent's rulings (recorded by the Chief of Staff)
+
+All times ET. Recorded from Vincent's messages to the Chief of Staff, Mon Nov 2, 2026. Newest call first inside each time.
+
+- **D1174 (Mon Nov 2, 2026, red, SETTLED by Vincent, 3:40 PM ET: "the capital" in Act 5 is High Charity).** SPEC: the Act 5 capital is High Charity, the Keeper capital. The separate unnamed Act 5 town that was "not High Charity" (design `specs/STORY_DECISIONS.md:416-417`, `specs/STORMBELL_SPIRE.md:56-58`) is dropped. No id existed for this call; D1164 was reserved for it under walklings-decision-ids. Design specs still saying "not High Charity" need a Story edit.
+- **D967 (Mon Nov 2, 2026, red, SETTLED by Vincent, 3:46 PM ET: yes, with its default).** SPEC: the Answerers keep the five built SHADE relays, not legendary; the Route 3 catch quests are upgraded in place; Acts 2-6 each hold one "remembering" quest; catchable on both paths. Supersedes D837 in part (design `specs/STORY_DECISIONS.md`, D967 row). D1040 can now be ruled.
+- **D1101 (Mon Nov 2, 2026, red, SETTLED by Vincent, 3:46 PM ET: yes, with its default).** SPEC: night readability Option A: a 1 px `w` night rim on dark floors, with the rim rules locked in Pia's round 3 (design `specs/STORY_DECISIONS.md`, D1101 rows; SHADOWS_S2_NIGHT).
+- **Names (Mon Nov 2, 2026, SETTLED by Vincent, 3:42 PM and 3:46 PM ET; no ids).** The President is named **Judas Accord** (3:42 PM). The Governor is named **Alexandros Orokin** (3:46 PM). Flag: both names still need the name-registry and wording check (no franchise names, no brand names) before any player text uses them; each surname may clash with an existing name, so check before use.
+- **Not settled at 3:46 PM ET (recorded so nobody builds them):** D971 ("1886" in player text) stays open; D1000 (the bell sound) is deferred; intro reds D1020-D1023 and D1029 are being handled in Vincent's intro-scene PR. Their rows stay in OPEN_DECISIONS.
+- **D1152 (Mon Nov 2, 2026, red, SETTLED by Vincent, 2:35 PM ET: yes).** SPEC: FACTION_PICK_TIMING v0.2.4 (design ffada0b) June H: the Heights become a pointer after the pick; the `heights` skipIf (quests.js:96) becomes `story.reached_cobblecrest | story.seal1 & !story.crates_seen`; `trialReady` is unchanged.
+- **D1151 (Mon Nov 2, 2026, red, SETTLED by Vincent, 2:35 PM ET: yes).** SPEC: Route 2 (`fb_east`, act1_route2.json:284, signs and rubble at :279-283) waits for the pick as well as Seal 1 (June G), with the old-save read `story.side_pick_done | story.orchard_cleared`. **Knowingly overrides ACT1_ROUTE2 v1.0 (Oct 8, 2026)**, which opened Route 2 off Hall 1.
+- **D1150 (Mon Nov 2, 2026, red, SETTLED by Vincent, 2:35 PM ET: yes).** SPEC: everyone earns the Fernbrook Seal from Fen at Hall 1, and a Glimmer pick also gets the Tier 1 lanyard (`seal_glim_1`) at the result (June F). **Knowingly overrides STORY.md:687** (the Glimmer path's lanyards at Halls 1-3) **and D3.**
+- **D1149 (Mon Nov 2, 2026, red, SETTLED by Vincent, 2:35 PM ET: yes).** SPEC: Juniper's task is the built `tour1_s1`; `tour1_s2` and `tour1_s3` run after a Glimmer pick; `tour1_s4` (the optional Audit battle) retires (June E). Save rule: the scene id stays in data and only becomes unreachable, so a live save parked on it still loads.
+- **D1143 (Mon Nov 2, 2026, red, SETTLED by Vincent, 2:35 PM ET: yes).** SPEC: new staging every player sees (replaces D1058): the crate taps and Tobin's tally prop, Fen with Russet at dusk, the Hall 1 sign and Fen's pre-pick intro, the two pitches, Fen's Pomlet count, Rook at the Lantern House and the last night (FACTION_PICK_TIMING v0.2.4).
+- **D1142 (Mon Nov 2, 2026, red, SETTLED by Vincent, 2:35 PM ET: yes).** SPEC: replace the built pick flow with June's Part D (replaces D1057): the pick at `fb_side_pick` (9,10) waits for `story.count_done`, `story.lamps_done` and `story.last_night`; the result sets the side, `story.side_pick_done` and `story.orchard_cleared` together.
+- **D1141 (Mon Nov 2, 2026, red, SETTLED by Vincent, 2:35 PM ET: yes).** SPEC: the required steps (replaces D1056): Day 1's crate area before the Hall door; both pitches and "The morning cart" before the pick (FACTION_PICK_TIMING v0.2.4, design ffada0b).
+- **Yellows and greens of the same packet:** D1144-D1148 and D1153-D1157 are unanimous yes and settle Mon Nov 2, 2026, 5:44 PM EST unless Vincent objects; they stay in OPEN_DECISIONS until then.
+- **Superseded by v0.2 (not built):** D1056, D1057 and D1058 (by D1141), D1061 (by D1144), D1062 (by D1147), D1065 (by D1156).
+- **New direction, 3:55 PM ET:** see "NEW DIRECTION Nov 2, 3:55 PM (Vincent)" in OPEN_DECISIONS.md. Nothing in it is settled as an id yet.
+
+Earlier calls that were missing from this file:
+
+- **D1082 (Sat Oct 31, 2026, red, SETTLED by Vincent, 2:54 PM ET).** SPEC: yes, soot ridge and wine band; "all assets" covers the buildings (design `specs/STORY_DECISIONS.md:222`).
+- **D1080 (Sat Oct 31, 2026, red, SETTLED by Vincent, 2:54 PM ET).** SPEC: "Glimmerwell color is much better. Tell the team to revamp all Glimmerwell assets to the darker colors." Option (b): wine `V` coat, soot `N` trim, crimson `Q` accents (design `specs/STORY_DECISIONS.md:221`). Its Open row was removed Mon Nov 2, 2026.
+- **D1076 (Sat Oct 31, 2026, red, SETTLED by Vincent, 2:53 PM ET).** SPEC: S2 per-floor shade default (`009e914`): `g` 0.20, `h` 0.25, `y`/`l` 0.35, `o` 0.20; none on water, `m` or `t` (design `specs/STORY_DECISIONS.md:231`).
+- **D1075 (Sat Oct 31, 2026, red, SETTLED by Vincent, 2:53 PM ET).** SPEC: S2 shade light comes from the upper left, 2:1, fixed (design `specs/STORY_DECISIONS.md:230`).
+- **D1055 (Sat Oct 31, 2026, red, SETTLED by Vincent, 6:29 PM ET).** SPEC: the faction pick comes after Trial 1, on June's arc (AFTER_TRIAL_PICK_ARC_SKETCH_2026-10-31). Still stands under v0.2.4.
+- **D1042 (Fri Oct 30, 2026, green, SETTLED yes by the Chief of Staff, about 7:00 PM ET).** SPEC: design `specs/SCOPE_RPG_STATS_SHADOWS.md` D1042 row.
+- **D1027 (Fri Oct 30, 2026, green, SETTLED by the Chief of Staff, 5:22 PM ET).** SPEC: design `specs/INTRO_OPENING_RULINGS.md:175-176`.
+- **D1024 (Fri Oct 30, 2026, green, SETTLED by the Chief of Staff, 5:22 PM ET).** SPEC: design `specs/INTRO_OPENING_RULINGS.md:175-176`.
+
+Notes (no ids defined here):
+
+- Note, Mon Nov 2, 2026, id clash: the design repo's HEIGHTS_YARD_REDO settled its own D1012 = C (the Sky Garden) and its D1015 = yes (the `g` grass keys), Vincent, Sat Oct 31, 2026, 11:12 AM ET (design `OVERVIEW.md:442`). These are not this repo's D1012-D1016 (NEWS_FEED, below). Neither set is renumbered; cite them as "design D1012/D1015 (Heights Yard)".
+- Note, Mon Nov 2, 2026, acts: the six-act entries below (D900, and D915 "Act 6 is kept, since D900 Option A gives six acts") are history. Current canon is seven acts with Solvane met at the Stormbell Spire in Act 5 and returning at the end of Act 7: D972, D975 (Vincent, Fri Oct 30, 2026, 11:48 AM ET, "Yes to the 7-act layout with Solvane in Act 5") and D978. The old rows are left as written.
+
 ## Town boards (calls settled Oct 14, 2026)
 
 The town-list D37 and D38–D49 are in Settled. TB-1 and the Hearthmoor and Fernbrook squares are in the game on main. TB-3, Cald's gate count, is on this branch. Q23–Q25 are in the game. A quest that comes out of those calls follows `.cursor/skills/walklings-quests/SKILL.md`. The D37 still in the open table is the region-map claim list.

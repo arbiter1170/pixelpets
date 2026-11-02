@@ -2,14 +2,50 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-02 16:24 ET: Rook says "competitor", not "rival"
+## 2026-11-02 17:11 ET: Rook says "competitor", not "rival"
 
 - What changed and why: Rook's line in the Rook's Crossroads gate scene (`rc_gate`) read "Then I have to try. Not as a rival. As a friend asking twice." Player text never says "rival"; Rook is a competitor. Design signed the fix on Oct 29 (ROOK_KEEPERS_REENTRY v0.1.x sign-off), and Vincent's Day 1 brief (PR #252) lists it. The line now reads "Then I have to try. Not as a competitor. As a friend asking twice." Ids such as `rival3_rook` and `story.rival3_result` stay as they are (save rule 2). The same text is fixed in Design's generator (`specs/rook_crossroads_build.py`) in the design repo, so the next design regeneration does not bring it back.
 - Files touched: `data/rook_crossroads.json`, `data/mapdata.js` (regenerated), `tests/story_copy_fix.spec.js`, `index.html`, `version.json`, `CHANGELOG.md`.
-- Commit(s) + build id: this branch, build 20261102-1624.
-- Tests run and result (widths, checks): `tests/rook_crossroads.spec.js`, `tests/data_integrity.spec.js` and `tests/story_copy_fix.spec.js` (with the new competitor test) at 320, 375 and 390: 66 passed, 0 failed, no console errors (helpers `trackErrors`). `node tools/scans/run.js`: wording, decisions, symlinks, gamejs_map, test_mistakes pass. The run used Playwright directly with the box's Chromium; `npm run test:agent` stopped at its RTDB rules stage because the cloud box's proxy blocks the local emulator, which this change does not touch.
+- Commit(s) + build id: this branch, build 20261102-1711.
+- Tests run and result (widths, checks): after merging main (b76b902): `tests/story_copy_fix.spec.js` (with the new competitor test), `tests/rook_crossroads.spec.js`, `tests/data_integrity.spec.js` and `tests/smoke.spec.js` at 320, 375 and 390: 79 passed, 0 failed, no console errors (helpers `trackErrors`). `node tools/scans/run.js`: wording, decisions, symlinks, gamejs_map, test_mistakes pass. The run used Playwright directly with the box's Chromium; `npm run test:agent` stops at its RTDB rules stage because the cloud box's proxy blocks the local emulator, which this change does not touch.
 - Decisions made (colour + reasoning): green copy fix, already signed by Design; no new id.
 - Anything left unfinished: none.
+
+## 2026-11-02 17:08 ET: Vincent's 5:05 PM rulings: old saves deprioritized, main-chain edit approved (docs only, no build stamp)
+
+- What changed and why: Vincent, 5:05 PM ET: "Not worried about old saves right now." and "Ok to edit main quest chain". #255 Q7 and Q5 are deprioritized (simplest save-safe option: no save writes, v2, no migrator); #255's main-quest-chain override is approved, keeping the `orchard` row's position.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/vincent-1705-rulings`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): Vincent's calls on #255 Q5, Q7 and the chain override; no new id (D1166-D1173 stay #255's).
+- Anything left unfinished: #255 should fold these into its spec.
+
+## 2026-11-02 17:05 ET: Hold D1153 (Hall door after Lizzy's class) and answer D1172 (docs only, no build stamp)
+
+- What changed and why: Vincent ruled at 5:03 PM ET: "Picking a side should be after the class, same with hall door." D1153 (`story.crates_seen` opens the Hall door) is HELD and superseded by D1169 (#255), so it does not settle at 5:44 PM EST. D1172 is answered NO: the Hall door and the faction pick both come after Lizzy's class.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/hold-d1153`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): D1153 held (Vincent); D1172 answered NO (Vincent). D1166-D1173 stay reserved by #255 and are cited, not re-reserved.
+- Anything left unfinished: #255 should record D1172 as settled NO and D1169 as the door rule when it lands.
+
+## 2026-11-02 16:10 ET: Decision logs: Vincent's Nov 2 rulings + new Day 1 direction (docs only, no build stamp)
+
+- What changed and why: recorded Vincent's Mon Nov 2 rulings (faction-pick reds D1141-D1143 and D1149-D1152 settled yes with their canon overrides; D967 and D1101 yes; Act 5 capital is High Charity as D1174; the President and Governor names), the calls that stay open (D971, D1000, the intro reds, D1034/D1035, D1044, D1087, D1128, D1140), missing design-repo ids, past-due marks, the earlier Oct 30-31 settlements, and the NEW DIRECTION section with a Claude Code brief.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CLAUDE.md`, `CHANGELOG.md`, `handoff/claude_briefs/DAY1_TRIAL1_FLOW_BRIEF_2026-11-02.md`.
+- Commit(s) + build id: `chief/decisions-2026-11-02`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js` and `node tools/scans/run.js` pass; no game files changed.
+- Decisions made (colour + reasoning): D1174 reserved (red, Vincent's call) under walklings-decision-ids; D1159-D1165 noted as held by `claude/npc-ranks-side-badge` and D1166-D1173 by #255 (`claude/day1-trial1-spec`); next free id D1175.
+- Anything left unfinished: `data/rook_crossroads.json:326` "rival" fix is design-generated (rule 8), so it is left for Design's build script; the yellows D1144-D1148 and D1153-D1157 settle at 5:44 PM EST.
+
+## 2026-11-02 16:07 ET: Faction pick step 1: the live-save OR gate (no save change)
+
+- What changed and why: FACTION_PICK_TIMING v0.2.4 §7 step 1 (design ffada0b), built on its own before steps 2-5. Vincent approved the seven reds (D1141-D1143, D1149-D1152) on Nov 2 at 2:35 PM ET. The four condition readers now take `|` (or): `cond()` and the boot validator's condition check (now `condKeyOk`, shared with `glimmerDevCheck`) in `game.js`, `evalCond` in `quests.js` (which also gets `&`), and `plainStoryFlag` (the debug checkpoints). Every reader splits `|` first, then `&`, then `!`, with no brackets, so `a | b & c` reads as a, or (b and c). `plainStoryFlag` treats a `|` or `&` string as more than one flag and writes nothing for it, so a checkpoint never writes a literal "a|b" key. Today's gates move to their §7.1 OR forms: the Route 2 warp, open sign, rubble and closed sign; Rook's teaser (`rook_fb`, `fb_teaser`); the Hall door `need`; the two Hall slips on the town board; the `heights` skipIf; and the STANDING tab. The maps_slice.json and act1_route2.json objects are restated by id in fernbrook_rooms.json's slicePatch `replaceObjs`, with only `when` changed; both verbatim files are untouched. Nothing sets the new flags yet (`story.crates_seen`, `story.pitch_k`, `story.pitch_g`), so every gate reads the same on every save. Two read-only debug hooks (`PixelPets.condRead`, `PixelPets.gateRead`, plus `PixelPets.standingTab`) return null without `?debug=1`.
+- Files touched: `game.js`, `quests.js`, `data/fernbrook_rooms.json`, `data/town_board.json`, `data/mapdata.js` (regenerated), `tools/GAMEJS_MAP.txt` (regenerated), `tests/faction_or_gate.spec.js` (new), `tests/fixtures/or_gate_kinds.js` (new), `tests/fixtures/or_gate_before.json` (new), `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261102-1607.
+- Tests run and result (widths, checks): `tests/faction_or_gate.spec.js` at 320, 375 and 390: T-ORDER on all four readers, the gate matrix on 15 save fixtures (the seven §7.4 kinds plus eight cuts of them) against the matrix recorded on origin/main 8bdb485 (zero diffs), the §7.3 save proof on the seven kinds on a clean build (byte-identical after load, v stays 2), the overlay check, and reduced motion. A mutation run (with `&` split before `|` in `cond()` and `evalCond`) fails T-ORDER. Full suite result line in the PR.
+- Decisions made (colour + reasoning): The reds and yellows are Design's and Vincent's (FACTION_PICK_TIMING §4). Green, inside the spec: `plainStoryFlag` returns no flag for a `|` or `&` string (the spec only rules out a literal "a|b" key); the boot validator trims each part, as `cond()` does. The Heights door `need` OR waits for step 3, where §7 puts it with the `ESCORT_STAIRS` key. No new D ids.
+- Anything left unfinished: Steps 2-5. The copy changes in §2.1 and §7.1 (June's Hall door deny line, the latched slip, the Heights deny lines) and the STANDING tab's pre-pick PLEDGED and `sides` tip changes come in later briefs. `data/town_board_copy.json` (not loaded by the game) still shows the old slip `when`. D1144, D1153 and D1156 are yellows that settle at 5:44 PM EST today, so the PR stays a draft until then.
 
 ## 2026-11-02 15:19 ET: Phone trim (no NOTES, KEEPERUAV or GLOW) and the battle bridge blink fix
 
@@ -20,6 +56,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): Red (interface), Vincent, Nov 2, 2026: remove NOTES, KEEPERUAV and GLOW; keep BOTNET on the cracked handset; drop Lumen's two KeeperUAV lines. Green: render the second water frame as a whole scene instead of repainting water rects (fixes every scene, not only Route 1).
 - Anything left unfinished: none. D863 (phone copy) stays open for the remaining apps.
 
+
 ## 2026-11-02 14:31 ET: Test fix: people_looks_28 compares the game's own save, not the raw fixture (test only, no build stamp)
 
 - What changed and why: `tests/people_looks_28.spec.js` "each of the 28 people resolves to its own new look" failed on main (seen while merging #236 on Oct 31, and reproduced on a clean main checkout). It took its "before" save snapshot straight after boot, from the installed fixture, then compared it with a later snapshot after the game's first save had added its normalised fields (`board`, `meta`, `rep`, `story.unlock_phone` and the rest). The test now has the game write its own save first (through the spec's existing read hook), so the before/after compare sees only what the test does. No game code changes.
@@ -28,7 +65,6 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `tests/people_looks_28.spec.js` at 320, 375 and 390: 15 passed (before the fix, test 1 failed at 390 on main). Scans pass.
 - Decisions made (colour + reasoning): green; a test-only fix to a spec added in #230 (PEOPLE_LOOKS_28, another worker's), no behaviour change.
 - Anything left unfinished: none.
-
 ## 2026-11-02 14:25 ET: NEWS: the Glimmer-side paper turns dark (Vincent, Nov 1)
 
 - What changed and why: Vincent asked for the cracked handset's NEWS to lean hard into darker Glimmerwell, INSIGN, research and story lore, and to be much less friendly. `news.js` now weights items on the Glimmer side only: Glimmer-only wire items (not the glossy Bright Notice, not ads) x12, the town paper x0.5, the Lantern Post x0.25, and the day's poll comes from the dark polls when one is open. The lead (the newest story beat) is unchanged, and the Keeper side is unchanged. A new placeholder batch (D1013) adds 22 Block News stories, 8 voices, 5 notices and 2 polls in a cold wire voice: quotas and units, glow sharing, the Census tent, crates and the Sanctuary, the Relay House hum, the Answerers' blank page, RegenX, Atten and the Arbiter, the Tier 2 fitting, and Walklings acting oddly after facility visits. INSIGN appears only as an older, half-redacted name (INS..., 'IN', a ledger, "the one that made medicine first"); nothing confirms it or names a chip. Disappearances read off screen and gentle ("Transferred north", an empty desk). Every item cites the lore index and carries `story.side=glimmer` and each cited entry's reveal flags. INSIGN and facility hints wait for `story.seal2` (design PR gates `faction.insign` and `event.chipping_secret` there).
