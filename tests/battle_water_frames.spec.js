@@ -34,8 +34,16 @@ async function openWildOn(page, map) {
 }
 const patch = (page, [x0, y0, w, h]) => page.evaluate(({ x0, y0, w, h }) => {
   const c = document.getElementById('battleCanvas');
-  return Array.from(c.getContext('2d').getImageData(x0, y0, w, h).data).join(',');
+  return Array.from(c.getContext('2d').getImageData(x0, y0, w, h).data);
 }, { x0, y0, w, h });
+// How many different looks a list of patches has. A slow canvas-wide tint can drift a channel by 1 or 2 between
+// samples, so pixels within 3 of each other count as the same look; a water frame swap changes them far more.
+function looks(list) {
+  const same = (a, b) => a.every((v, i) => Math.abs(v - b[i]) <= 3);
+  const out = [];
+  for (const p of list) if (!out.some(q => same(p, q))) out.push(p);
+  return out.length;
+}
 
 test('the two water frames differ only inside the water; every bridge and prop is the same in both', async ({ page }) => {
   test.setTimeout(90000);
@@ -124,10 +132,10 @@ test('Route 1 in battle: the water moves and the bridge holds on every frame in 
   const hz = await page.evaluate(([W, H]) => BattleBG.lay(W, H).hz, [W, H]);
   const bridge = BRIDGES.route1(W, hz);
   const water = [30, hz + 22, bridge[0] - 30, 8];   // the stream band right of the partner's box, left of the bridge
-  const bridges = new Set(), waters = new Set();
-  for (let i = 0; i < 6; i++) { bridges.add(await patch(page, bridge)); waters.add(await patch(page, water)); await page.waitForTimeout(260); }
-  expect(waters.size, 'the stream takes its second frame').toBeGreaterThan(1);
-  expect(bridges.size, 'the bridge never blinks').toBe(1);
+  const bridges = [], waters = [];
+  for (let i = 0; i < 6; i++) { bridges.push(await patch(page, bridge)); waters.push(await patch(page, water)); await page.waitForTimeout(260); }
+  expect(looks(waters), 'the stream takes its second frame').toBeGreaterThan(1);
+  expect(looks(bridges), 'the bridge never blinks').toBe(1);
   const st = await page.evaluate(() => ({ cache: PixelPets.bdCacheSize, v: JSON.parse(localStorage.getItem('pixelpets.save.v2')).v }));
   expect(st.cache).toBeLessThanOrEqual(8);
   expect(st.v).toBe(2);
@@ -139,8 +147,9 @@ test('reduced motion: Route 1 stays on one frame, bridge and water alike', async
   await openWildOn(page, 'route1');
   const { W, H } = await page.evaluate(() => { const c = document.getElementById('battleCanvas'); return { W: c.width, H: c.height }; });
   const hz = await page.evaluate(([W, H]) => BattleBG.lay(W, H).hz, [W, H]);
-  const area = [34, hz + 18, W - 34 - 10, 16];
-  const seen = new Set();
-  for (let i = 0; i < 4; i++) { seen.add(await patch(page, area)); await page.waitForTimeout(300); }
-  expect(seen.size).toBe(1);
+  const bridge = BRIDGES.route1(W, hz), water = [30, hz + 22, bridge[0] - 30, 8];   // the same patches as the FULL test
+  const bridges = [], waters = [];
+  for (let i = 0; i < 4; i++) { bridges.push(await patch(page, bridge)); waters.push(await patch(page, water)); await page.waitForTimeout(300); }
+  expect(looks(waters), 'the stream holds one frame').toBe(1);
+  expect(looks(bridges), 'the bridge holds').toBe(1);
 });
