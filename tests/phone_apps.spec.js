@@ -1,5 +1,6 @@
-// Phone apps part 1 (Vincent, Oct 28, 2026; D859-D863): Rematch Line in CONTACTS, FIELD NOTES in NOTES, SKY (Far Sky +
-// Night Desk) and GLOW (care monitor + Lantern Pass). Both handsets read the same facts in their own voice. Save stays v2.
+// Phone apps part 1 (Vincent, Oct 28, 2026; D859-D863): Rematch Line in CONTACTS and SKY (Far Sky + Night Desk). Both
+// handsets read the same facts in their own voice. Save stays v2. NOTES and GLOW were removed (Vincent, Nov 2, 2026);
+// tests/phone_trim.spec.js covers that.
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -35,15 +36,15 @@ async function hack(page) {
   await page.evaluate(() => { PixelPets.giveItem('cracked_phone', 1); PixelPets.setSide('glimmer'); PixelPets.showTab('walk'); });
 }
 
-test('the home grid has SKY and GLOW, fits the phone, and every glyph paints', async ({ page }) => {
+test('the home grid ends with SKY, fits the phone, and every glyph paints', async ({ page }) => {
   await boot(page);
   await page.locator('#phoneBtn').click();
-  const apps = await page.locator('#phoneHome .phone-app').evaluateAll(els => els.map(el => el.dataset.app));
-  expect(apps.slice(-2)).toEqual(['sky', 'glow']);
+  const apps = await page.locator('#phoneHome .phone-app').evaluateAll(els => els.filter(el => getComputedStyle(el).display !== 'none').map(el => el.dataset.app));
+  expect(apps.slice(-1)).toEqual(['sky']);
   const fit = await page.evaluate(() => {
     const shell = document.querySelector('#ovPhone .phone-shell'), home = document.querySelector('#phoneHome');
     const painted = [...document.querySelectorAll('#phoneHome .phone-glyph canvas')].every(c => c.getContext('2d').getImageData(0, 0, 8, 8).data.some((v, i) => i % 4 === 3 && v > 0));
-    const small = [...document.querySelectorAll('#phoneHome .phone-app')].filter(b => { const r = b.getBoundingClientRect(); return r.width < 44 || r.height < 44; }).length;
+    const small = [...document.querySelectorAll('#phoneHome .phone-app')].filter(b => getComputedStyle(b).display !== 'none').filter(b => { const r = b.getBoundingClientRect(); return r.width < 44 || r.height < 44; }).length;
     return { x: shell.scrollWidth <= shell.clientWidth + 1 && home.scrollWidth <= home.clientWidth + 1, painted, small };
   });
   expect(fit).toEqual({ x: true, painted: true, small: 0 });
@@ -72,21 +73,6 @@ test('Rematch Line: no READY while the party still needs a rest, or once the rem
   await page.evaluate(() => { const S = PixelPets.state; delete S.party[0].hpNow; delete S.world.restDue; PixelPets.setFlag('rematch.route1_pia', false); });
   await openApp(page, 'contacts');
   await expect(page.locator('.contact-ready')).toHaveCount(0);
-});
-
-test('Field Notes: finished steps, newest first; the Keeper1 stamps COPIED, the cracked handset blacks words out', async ({ page }) => {
-  await boot(page);
-  await openApp(page, 'notes');
-  const notes = page.locator('.phone-note');
-  expect(await notes.count()).toBeGreaterThanOrEqual(2);
-  await expect(notes.first().locator('.phone-note-stamp')).toHaveText('COPIED');
-  const plain = await notes.first().locator('.phone-note-text').textContent();
-  expect(plain).not.toContain('█');
-  await page.locator('#phoneClose').click();
-  await hack(page);
-  await openApp(page, 'notes');
-  await expect(page.locator('.phone-note').first().locator('.phone-note-stamp')).toHaveText('REDACTED BY SENDER');
-  expect(await page.locator('.phone-note-text').allTextContents()).toContainEqual(expect.stringContaining('█'));
 });
 
 test('SKY: hour, sky and a forecast line; the late hours add the night line and a Night Desk post on Ribbit', async ({ page }) => {
@@ -121,43 +107,15 @@ test('SKY in a town with no wild grass does not tell an outdoor holder to step o
   await expect(page.locator('.sky-stir')).toHaveText('No wild grass here. Step outside to read the sky.');
 });
 
-test('GLOW: partner stats, bond, calm advice, and the Lantern House that wakes you, in each voice', async ({ page }) => {
-  await boot(page);
-  await page.evaluate(() => { const S = PixelPets.state, p = S.party.find(q => q.id === S.partnerId); p.hunger = 20; p.happy = 90; p.energy = 90; });
-  await openApp(page, 'glow');
-  await expect(page.locator('.glow-stats')).toHaveText(/^Food 20 {2}Joy 90 {2}Energy 90$/);
-  await expect(page.locator('.glow-advice')).toHaveText('Lantern desk: A snack would help.');
-  await expect(page.locator('.glow-lantern')).toHaveText("You wake at Hearthmoor's Lantern House.");
-  await expect(page.locator('.glow-bed')).toHaveText('Beds are open to every holder.');
-  await page.locator('#phoneClose').click();
-  await hack(page);
-  await openApp(page, 'glow');
-  await expect(page.locator('.glow-advice')).toHaveText('Glimmerwell: Unit output: dipping. Refuel recommended.');
-  await expect(page.locator('.glow-bed')).toHaveText('Beds open to all. Rest restores your units.');
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')).v)).toBe(2);
-});
-
-// Rule 10 and D863: placeholder lines state only known facts. Every Lantern House has beds at every standing tier,
-// and no line hints at unbuilt plans (Rain Pause, augments) or a new glow fact.
+// D863: placeholder lines state only known facts; no line hints at unbuilt plans (Rain Pause, augments) or a new glow fact.
 const NOT_CANON = /Doorway only|held for you|pause for that|Augment|glow levels|Glow is rising|shares a little glow|glow up/i;
 
-test('GLOW: beds are open at every Keepers tier, in both voices (rule 10)', async ({ page }) => {
-  await boot(page);
-  await page.evaluate(() => PixelPets.setStanding('keepers', 50));
-  expect(await page.evaluate(() => PixelPets.standing.keepers.tier)).toBeGreaterThanOrEqual(2);
-  await openApp(page, 'glow');
-  await expect(page.locator('.glow-bed')).toHaveText('Beds are open to every holder.');
-  await page.locator('#phoneClose').click();
-  await hack(page);
-  await openApp(page, 'glow');
-  await expect(page.locator('.glow-bed')).toHaveText('Beds open to all. Rest restores your units.');
-});
-
-test('SKY, GLOW, the shelf and the Night Desk carry no placeholder hints, day or night, in either voice', async ({ page }) => {
+test('SKY, the shelf and the Night Desk carry no placeholder hints, day or night, in either voice', async ({ page }) => {
   await boot(page);
   const read = async () => {
     const out = [];
-    for (const app of ['sky', 'glow', 'jobs', 'ribbit']) { await openApp(page, app); out.push(app + ': ' + await page.locator('#phoneBody').innerText()); }
+    const apps = await page.evaluate(() => PixelPets.state.bag.cracked_phone ? ['sky', 'jobs', 'ribbit'] : ['sky', 'ribbit']);
+    for (const app of apps) { await openApp(page, app); out.push(app + ': ' + await page.locator('#phoneBody').innerText()); }
     await page.locator('#phoneClose').click();
     return out.join('\n');
   };

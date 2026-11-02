@@ -430,14 +430,12 @@
     "hq_lumen": [
       ["if", "story.side=glimmer", [
         ["say", "Captain Lumen", "You are in my office. Say the short version."],
-        ["say", "Captain Lumen", "KeeperUAV is our board. You will not be taking jobs from it."],
         ["say", "Captain Lumen", "Your posters say brighter by nature. My office says you may leave."],
         ["setFlag", "story.met_lumen", true]
       ], [
         ["say", "Captain Lumen", "Captain Lumen. The watch is mine. The town is the lantern's."],
         ["say", "Captain Lumen", "A citizen waits in the doorway. A holder is offered a chair."],
         ["say", "Captain Lumen", "A mint vest is asked to leave. Rank is not a secret here."],
-        ["say", "Captain Lumen", "KeeperUAV will list jobs when the desk is ready. The board is blank."],
         ["say", "Captain Lumen", "Rue holds the radio. Every Keeper1 on our wires checks in with her."],
         ["say", "Captain Lumen", "Mo records a slow change. I keep my watch clear of their machine."],
         ["setFlag", "story.met_lumen", true]
