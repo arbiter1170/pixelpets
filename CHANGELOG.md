@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 18:29 ET: Six more outfits in the look picker (overalls, cardigan, raincoat, cloak, apron, jacket)
+
+- What changed and why: the look picker (WHO ARE YOU? and CHANGE LOOK) now offers 12 outfits instead of 6. The six new ones are everyday, modest clothes: bib overalls, a long cardigan, a hooded raincoat, a travel cloak, a work apron and a short zip jacket. All are free. They use the same 16x16 layered art as the first six and only recolour keys (t outfit colour, r accent, 3 skin, d charcoal), so every outfit colour and accent works and the Glimmerwell V N Q keys stay out (D1083). Old outfit ids keep their places; the new ids go on the end of `KEEPER_LOOKS.outfit`. No new save field: `player.look.outfit` just takes new values; save stays `pixelpets.save.v2`, `v` 2.
+- Files touched: `keeper.js`, `tests/more_outfits.spec.js` (new), `tests/mahopac.spec.js` (outfit button count 6 -> 12), `tools/GAMEJS_MAP.txt` (regenerated; it was stale on main), `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/more-outfits`; build 20261102-1829.
+- Tests run and result (widths, checks): `tests/more_outfits.spec.js` at 320, 375 and 390 (x3 repeats, 45 passed; reduced motion, zero console errors, save v2); `mahopac`, `wardrobe`, `creator_clip`, `people_looks_28` pass. Run with Playwright directly: `npm run test:agent` stops at the rtdb-rules emulator stage in the cloud sandbox (environment, not this change).
+- Decisions made (colour + reasoning): yellow, new player art; free outfits in the existing picker, no layout or save change. Needs Design / Supervisor sign-off on the art before merge.
+- Anything left unfinished: before screenshots for the PR; Design review of the six drawings.
+
 ## 2026-11-02 17:45 ET: Vincent's 5:41 PM ruling: mixed Trial Hall roster (D1170 amended); D1166-D1173 recorded (docs only, no build stamp)
 
 - What changed and why: Vincent, 5:41 PM ET: the three Trial Hall holders before Fen are mixed (a Keeper cadet, a Glimmerwell-leaning local, a neutral Fernbrook holder), Fen stays a Keeper, and the Hall sign reads "FERNBROOK TRIAL HALL · Master Fen". The D1166-D1173 rows from the #255 spec are recorded: D1166-D1172 in the archive, D1173 as an Open row.
