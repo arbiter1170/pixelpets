@@ -1,5 +1,5 @@
 {
- "lore_version": "v0.7.5",
+ "lore_version": "v0.7.8",
  "_placeholders": "Placeholder copy (D1013, flavour rule D1015): engineer drafts from the design lore index, every item citing its lore ids; Design signs or edits it (design specs/NEWS_FEED.md). Skill: walklings-lore-feed.",
  "_about": "Block News for the NEWS app (news.js). stories, voices, notices, polls, you. Gates: when (story.flag, !story.flag, story.side=keepers|glimmer), sky, phase, me. lead: the front page once eligible, highest wins. Tokens: {holder} {partner} {town} {seals} {steps}. lore: ids in the design repo lore/lore_index.json.",
  "stories": [
@@ -1499,7 +1499,7 @@
    "body": [
     "The Lantern Council met in the Keeper capital, with a holder and their Seals before it.",
     "The Keepers' word stands: walk beside wild Walklings, not ahead of them.",
-    "Feed, rest, listen, and leave glow where it grows."
+    "The Captain's word on the coastal road: 'We are opening it. Walk it carefully.'"
    ],
    "lore": [
     "event.lantern_council",
@@ -4478,6 +4478,438 @@
    "lore": [
     "term.game_clock"
    ]
+  },
+  {
+   "id": "nw-glimmer-quota",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.met_glimmerwell",
+    "story.side_pick_done"
+   ],
+   "headline": "Quotas posted. Units are counted, not named",
+   "body": [
+    "The Standing board ranks associates on output: befriends, battles won, Census logs, crates packed.",
+    "In the company glossary a Walkling is a unit. A quota is a quarterly target.",
+    "Nobody at the desk would say where the crates go."
+   ],
+   "lore": [
+    "faction.glimmerwell",
+    "term.glimmer_glossary",
+    "thing.sanctuary_crates"
+   ]
+  },
+  {
+   "id": "nw-wickerglen-sharing",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "wickerglen",
+   "when": [
+    "story.side=glimmer",
+    "story.met_census",
+    "story.met_lead"
+   ],
+   "headline": "The lamps call it sharing. The glossary agrees",
+   "body": [
+    "Wickerglen's Comfort Lamps pulse like a slow heartbeat and collect a little extra glow.",
+    "The company glossary files the draining under one phrase: glow sharing.",
+    "Field Lead Imogen's whole comment to this desk: 'Quarterly review, sweetie.'"
+   ],
+   "lore": [
+    "thing.comfort_lamps",
+    "term.glow_sharing",
+    "person.imogen"
+   ]
+  },
+  {
+   "id": "nw-route2-tally",
+   "section": "roads",
+   "desk": "block",
+   "region": "route2",
+   "when": [
+    "story.side=glimmer",
+    "story.met_census",
+    "story.met_glimmerwell"
+   ],
+   "headline": "The Census tent logs everything that walks by",
+   "body": [
+    "The Glow Census tent on Route 2 counts every Walkling that passes. Each log earns Standing.",
+    "Ask what the count is for and the clipboard turns away."
+   ],
+   "lore": [
+    "thing.glow_census",
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "nw-route3-relay",
+   "section": "roads",
+   "desk": "block",
+   "region": "route3",
+   "when": [
+    "story.side=glimmer",
+    "story.reached_route3"
+   ],
+   "headline": "Relay House sign: 'The hum is normal'",
+   "body": [
+    "On the Brinewick road the Relay House has one sign, and the night watch repeats it.",
+    "Nobody posted there asks what the hum is. Nobody posted there is asked."
+   ],
+   "lore": [
+    "place.route3"
+   ]
+  },
+  {
+   "id": "nw-route3-blankpage",
+   "section": "roads",
+   "desk": "block",
+   "region": "route3",
+   "when": [
+    "story.side=glimmer",
+    "story.ans_open"
+   ],
+   "headline": "Five Answerers, and one page left blank",
+   "body": [
+    "Tallybat, Dimlamp, Filecrow, Cordhound, Humwisp. The company calls them the Founder's Line.",
+    "They do not grow up. They rank Quiet, Humming, Answering. The road says the hum woke them.",
+    "Archivist Mo: 'The page on what they answer stays blank.'"
+   ],
+   "lore": [
+    "creature.answerers"
+   ]
+  },
+  {
+   "id": "nw-heights-cradle",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "heights",
+   "when": [
+    "story.side=glimmer",
+    "story.saw_arbiter",
+    "story.heights_done"
+   ],
+   "headline": "In the top bay, the screen is no longer dark",
+   "body": [
+    "RegenX keeps a floating computer in its top bay. The company calls it a cradle.",
+    "It emits something, slowly. Staff will not say what.",
+    "Associate Quinn, on the record: 'We do not know what it sends. The old ones built it.'"
+   ],
+   "lore": [
+    "thing.arbiter",
+    "event.quinn_old_ones",
+    "person.quinn"
+   ]
+  },
+  {
+   "id": "nw-heights-copied",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "heights",
+   "when": [
+    "story.side=glimmer",
+    "story.rx_enter",
+    "story.rx_done",
+    "story.heights_done"
+   ],
+   "headline": "RegenX brewed it. The company copied it",
+   "body": [
+    "RegenX is a lab of decent people, and Atten is its brew.",
+    "A copied vial left the Heights. The plans for a cheaper brew are marked 'for the partnership'."
+   ],
+   "lore": [
+    "faction.regenx",
+    "thing.atten",
+    "event.heights_regenx_copy"
+   ]
+  },
+  {
+   "id": "nw-heights-notproduct",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "heights",
+   "when": [
+    "story.side=glimmer",
+    "story.rx_bitlet",
+    "story.saw_arbiter",
+    "story.heights_done"
+   ],
+   "headline": "Lab note on a Bitlet's pen: 'Not a product'",
+   "body": [
+    "A Bitlet woke in the Arbiter Bay when the cradle hummed.",
+    "Someone taped a note to its pen: 'It is not a product.' The note has since been filed."
+   ],
+   "lore": [
+    "creature.bitlet",
+    "place.arbiter_bay"
+   ]
+  },
+  {
+   "id": "nw-heights-nightcrates",
+   "section": "roads",
+   "desk": "block",
+   "region": "heights",
+   "when": [
+    "story.side=glimmer",
+    "story.know_us",
+    "story.sm_done",
+    "story.heights_done"
+   ],
+   "headline": "Night crates opened under the ridge",
+   "body": [
+    "Crates moved through the old tunnels under Fernbrook Heights at night. Someone opened them.",
+    "Broker Mara Quill calls her trade 'wrong, not cruel'. The company has not called it anything."
+   ],
+   "lore": [
+    "person.mara_quill",
+    "event.heights_smuggling_ring",
+    "place.fernbrook_heights"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-fitting",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "headline": "After the Tier 2 fitting, a quieter partner",
+   "body": [
+    "Tier 2 associates leave Quinn's room with a new lanyard and a Walkling that has gone very still.",
+    "Some say theirs stops on the path now, as if listening. The company says it is settling in."
+   ],
+   "lore": [
+    "event.tier2_tuning",
+    "event.chipping_secret"
+   ]
+  },
+  {
+   "id": "nw-glimmer-oddly",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "headline": "Callers report odd habits after facility visits",
+   "body": [
+    "The calls keep saying the same thing: a Walkling came back from a company visit quieter.",
+    "One holder says theirs freezes mid-walk and turns its head toward nothing.",
+    "The company has no record of the visits. The Keepers have no record of the calls."
+   ],
+   "lore": [
+    "event.chipping_secret"
+   ]
+  },
+  {
+   "id": "nw-glimmer-emptydesk",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "headline": "The statement was filed. Then the desk was empty",
+   "body": [
+    "A clerk took a statement about a Walkling acting oddly after a facility visit.",
+    "The next week the statement was gone, and so was the clerk. 'Transferred north,' the sign said."
+   ],
+   "lore": [
+    "event.chipping_secret"
+   ]
+  },
+  {
+   "id": "nw-glimmer-sticker",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "headline": "Under the sticker, an older name",
+   "body": [
+    "Old supply crates wear a bright Glimmerwell sticker over a stencil nobody reads aloud: INS...",
+    "The rest is scraped off. The dosage table printed beside it is not."
+   ],
+   "lore": [
+    "faction.insign"
+   ]
+  },
+  {
+   "id": "nw-glimmer-letterhead",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "headline": "A ledger older than the logo",
+   "body": [
+    "A water-stained ledger surfaced at a stall: lab orders, dosages, a letterhead torn almost away.",
+    "What is left reads 'IN', then the tear. The stall was gone by morning."
+   ],
+   "lore": [
+    "faction.insign"
+   ]
+  },
+  {
+   "id": "nw-glimmer-oldwar",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "headline": "A veteran remembers the name before",
+   "body": [
+    "A veteran by the Lantern House says the bright logo is new paint on an old name from the Great War.",
+    "Asked which name, she says 'the one that made medicine first' and changes the subject."
+   ],
+   "lore": [
+    "faction.insign"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-units",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.side=glimmer",
+    "story.quarry_bought"
+   ],
+   "headline": "Acquisitions does not say Walkling",
+   "body": [
+    "Head of Acquisitions Dorian Pell has one word for a Walkling: unit.",
+    "His quarry, his crates, his manifest. The town signs, or the town waits."
+   ],
+   "lore": [
+    "person.dorian_pell"
+   ]
+  },
+  {
+   "id": "nw-brinewick-grey",
+   "section": "roads",
+   "desk": "block",
+   "region": "brinewick",
+   "when": [
+    "story.side=glimmer",
+    "story.brine_arrived"
+   ],
+   "headline": "On the quay, a crate and a Walkling gone grey",
+   "body": [
+    "A crate on the Brinewick quay held a Drizzlet with the colour drained out of it.",
+    "The manifest asks for a signature. It does not ask for a reason."
+   ],
+   "lore": [
+    "event.brinewick_crate"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-greystand",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.side=glimmer",
+    "story.met_glimmerwell"
+   ],
+   "headline": "Free lanterns, and a grey Fuzzwick below",
+   "body": [
+    "Juniper's stand gives the light away. The Fuzzwick beneath it has lost its colour.",
+    "Nobody at the stand mentions it. The lanterns stay free."
+   ],
+   "lore": [
+    "thing.glimmer_lanterns",
+    "event.grey_fuzzwick",
+    "person.juniper"
+   ]
+  },
+  {
+   "id": "nw-glimmer-ladder",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.side_pick_done"
+   ],
+   "headline": "Five tiers, and a name only at the top",
+   "body": [
+    "Guest, Associate, Junior Bright, Bright Lead, Founder's Pick.",
+    "At the top, Marlowe knows your name. Further down, nobody needs to."
+   ],
+   "lore": [
+    "term.glimmer_standing"
+   ]
+  },
+  {
+   "id": "nw-fernbrook-wall",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "fernbrook",
+   "when": [
+    "story.side=glimmer",
+    "story.seal1",
+    "story.tour1_s1",
+    "story.side_pick_done"
+   ],
+   "headline": "Your photo hangs beside the crate list",
+   "body": [
+    "Every Tier 1 associate is pictured on the Bright Pavilion wall, next to the Sanctuary crate list.",
+    "The list is longer than the wall of faces."
+   ],
+   "lore": [
+    "event.tier1_lanyard",
+    "place.bright_pavilion",
+    "thing.sanctuary_crates"
+   ]
+  },
+  {
+   "id": "nw-cobblecrest-lids",
+   "section": "roads",
+   "desk": "block",
+   "region": "cobblecrest",
+   "when": [
+    "story.side=glimmer",
+    "story.rc_done"
+   ],
+   "headline": "BRINEWICK, stamped on every lid",
+   "body": [
+    "The last Cobblecrest crates were stamped BRINEWICK and loaded.",
+    "The road reopened the same day. Nobody asked what rode out on it."
+   ],
+   "lore": [
+    "event.last_crates_glimmer"
+   ]
+  },
+  {
+   "id": "nw-glimmer-nightmemo",
+   "section": "glimmerwell",
+   "desk": "block",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.met_glimmerwell",
+    "story.side_pick_done"
+   ],
+   "headline": "Night memo: tired is just bad lighting",
+   "body": [
+    "The night memo repeats the slogan: 'Tired is just relaxed with bad lighting!'",
+    "The crates are packed by morning. Somebody was tired."
+   ],
+   "lore": [
+    "faction.glimmerwell",
+    "thing.sanctuary_crates"
+   ]
   }
  ],
  "voices": [
@@ -6124,6 +6556,111 @@
    "lore": [
     "term.glimmer_glossary"
    ]
+  },
+  {
+   "id": "vo-glimmer-lids",
+   "who": "Depot clerk, off the record",
+   "text": "I stamp the lids. I don't open them. That's the job, and the job pays.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.side_pick_done"
+   ],
+   "lore": [
+    "thing.sanctuary_crates"
+   ]
+  },
+  {
+   "id": "vo-glimmer-tally",
+   "who": "Census volunteer",
+   "text": "The tally sheet has a column for colour. I never asked why. I stopped wanting to.",
+   "region": "route2",
+   "when": [
+    "story.side=glimmer",
+    "story.met_census"
+   ],
+   "lore": [
+    "thing.glow_census"
+   ]
+  },
+  {
+   "id": "vo-glimmer-listens",
+   "who": "Holder, Cobblecrest",
+   "text": "Since the fitting, mine stops on the path and listens. To what, I couldn't tell you.",
+   "region": "cobblecrest",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "lore": [
+    "event.tier2_tuning",
+    "event.chipping_secret"
+   ]
+  },
+  {
+   "id": "vo-glimmer-paint",
+   "who": "Veteran, Lantern House",
+   "text": "Same company, new paint. I knew it back when it still made medicine.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "lore": [
+    "faction.insign"
+   ]
+  },
+  {
+   "id": "vo-glimmer-watch",
+   "who": "Relay House night watch",
+   "text": "The hum is normal. I say it every hour. It helps me more than it helps them.",
+   "region": "route3",
+   "when": [
+    "story.side=glimmer",
+    "story.reached_route3"
+   ],
+   "lore": [
+    "place.route3"
+   ]
+  },
+  {
+   "id": "vo-glimmer-heartbeat",
+   "who": "Porch, Wickerglen",
+   "text": "The lamp pulses like a heartbeat. My Walkling's skips when it gets close.",
+   "region": "wickerglen",
+   "when": [
+    "story.side=glimmer",
+    "story.met_census"
+   ],
+   "lore": [
+    "thing.comfort_lamps"
+   ]
+  },
+  {
+   "id": "vo-glimmer-unsaid",
+   "who": "Junior associate",
+   "text": "The review has a line for every unit I logged. It has no line for how they looked.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.side_pick_done"
+   ],
+   "lore": [
+    "term.glimmer_glossary"
+   ]
+  },
+  {
+   "id": "vo-glimmer-nextdoor",
+   "who": "Next door, Cobblecrest",
+   "text": "He asked about the facility. Now his desk is empty. 'Transferred north,' they said.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "lore": [
+    "event.chipping_secret"
+   ]
   }
  ],
  "notices": [
@@ -7231,6 +7768,79 @@
    "lore": [
     "term.keeper_standing"
    ]
+  },
+  {
+   "id": "no-glimmer-before",
+   "kind": "lost",
+   "title": "LOST: HOW IT USED TO BE",
+   "text": "Ours came back from the facility. Same fur, same name. If you knew it before, call.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "lore": [
+    "event.chipping_secret"
+   ]
+  },
+  {
+   "id": "no-glimmer-hum",
+   "kind": "notice",
+   "title": "RELAY HOUSE: THE HUM",
+   "text": "Do not report the hum. The hum is normal. Reports will be filed.",
+   "region": "route3",
+   "when": [
+    "story.side=glimmer",
+    "story.reached_route3"
+   ],
+   "lore": [
+    "place.route3"
+   ]
+  },
+  {
+   "id": "no-glimmer-targets",
+   "kind": "notice",
+   "title": "QUARTERLY TARGETS POSTED",
+   "text": "Befriends, battles won, Census logs, crates packed. Below target means review.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.met_glimmerwell"
+   ],
+   "lore": [
+    "faction.glimmerwell"
+   ]
+  },
+  {
+   "id": "no-glimmer-records",
+   "kind": "notice",
+   "title": "RECORDS ROOM: CLOSED",
+   "text": "Closed for review. Statements filed before the review have been archived.",
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.seal2"
+   ],
+   "lore": [
+    "event.chipping_secret"
+   ]
+  },
+  {
+   "id": "no-glimmer-brew",
+   "kind": "ad",
+   "title": "A BRIGHTER BREW",
+   "text": "Atten, for the partnership. Cheaper soon. Please do not ask where it was first made.",
+   "region": "heights",
+   "when": [
+    "story.side=glimmer",
+    "story.rx_enter",
+    "story.rx_done",
+    "story.heights_done"
+   ],
+   "lore": [
+    "thing.atten",
+    "event.heights_regenx_copy"
+   ]
   }
  ],
  "polls": [
@@ -7633,6 +8243,40 @@
    ],
    "lore": [
     "event.ep1_end"
+   ]
+  },
+  {
+   "id": "po-glimmer-hum",
+   "q": "The hum at night: what do you do?",
+   "options": [
+    "Close the window",
+    "Say it's normal",
+    "Listen back"
+   ],
+   "region": "route3",
+   "when": [
+    "story.side=glimmer",
+    "story.reached_route3"
+   ],
+   "lore": [
+    "place.route3"
+   ]
+  },
+  {
+   "id": "po-glimmer-crates",
+   "q": "Crates on your road this week?",
+   "options": [
+    "Didn't look",
+    "Counted them",
+    "Stopped counting"
+   ],
+   "region": "",
+   "when": [
+    "story.side=glimmer",
+    "story.side_pick_done"
+   ],
+   "lore": [
+    "thing.sanctuary_crates"
    ]
   }
  ],

@@ -5,7 +5,7 @@ const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers')
 
 trackErrors(test, expect);
 
-const PAL_KEYS = ['k','p','r','o','y','l','g','t','n','b','c','s','w','h','m','d','1','2','3','4','5','6','A','B','C','D','E','F','G','H','I','J','P','K'];
+const PAL_KEYS = ['k','p','r','o','y','l','g','t','n','b','c','s','w','h','m','d','1','2','3','4','5','6','A','B','C','D','E','F','G','H','I','J','P','K','V','N','Q'];
 const G = '#b5845a', Y = '#ffcd75', F = '#5c4033', W = '#f4f4f4', H = '#94b0c2', B = '#a8674a', C = '#41a6f6', S = '#73eff7', D = '#333c57';
 const HOME_WALL = { c:'G', C:'y', L:'F', f:'w', F:'h', T:'G', B:'B', S:'F', R:'G', G:'c', W:'s', D:'B' };
 const KIT_COLOURS = new Set([G, Y, F, W, H, B, C, S]);
