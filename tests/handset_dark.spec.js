@@ -159,11 +159,11 @@ test('the cracked handset stays green with a wine and crimson ring and honey kic
   expect(((got.w + 12) * (got.h + 12) - (got.w + 6) * (got.h + 6)) / (got.w * got.h)).toBeLessThan(0.1);
   await shellShot(page, 'after-home');
 
-  await openApp(page, 'notes');
+  await openApp(page, 'jobs');
   const who = await page.evaluate(() => [...document.querySelectorAll('#phoneBody .who')].map((el) => getComputedStyle(el).color));
   expect(who.length).toBeGreaterThan(0);
   expect(new Set(who)).toEqual(new Set([Y]));
-  await shellShot(page, 'after-notes');
+  await shellShot(page, 'after-jobs');
 
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')));
   expect(save.v).toBe(2);
@@ -193,9 +193,9 @@ test('only the accents differ from the merge base: layout, copy, ink and save un
   await openHandset(bp, true);
   await shellShot(bp, 'before-home');
   const b = { home: await snapshot(bp), ink: await glyphInk(bp) };
-  for (const app of ['notes', 'jobs', 'contacts', 'ribbit', 'sky', 'glow', 'friends', 'board', 'news']) {
+  for (const app of ['jobs', 'contacts', 'ribbit', 'sky', 'friends', 'board', 'news']) {
     await openApp(bp, app);
-    if (app === 'notes') await shellShot(bp, 'before-notes');
+    if (app === 'jobs') await shellShot(bp, 'before-jobs');
     b[app] = await snapshot(bp);
     await backHome(bp);
   }
@@ -206,13 +206,13 @@ test('only the accents differ from the merge base: layout, copy, ink and save un
   await openHandset(page, true);
   expect(diffs(b.home, await snapshot(page)), 'home').toEqual([]);
   expect(await glyphInk(page)).toEqual(b.ink);
-  for (const app of ['notes', 'jobs', 'contacts', 'ribbit', 'sky', 'glow', 'friends', 'board', 'news']) {
+  for (const app of ['jobs', 'contacts', 'ribbit', 'sky', 'friends', 'board', 'news']) {
     await openApp(page, app);
     expect(diffs(b[app], await snapshot(page)), app).toEqual([]);
     await backHome(page);
   }
   const taps = b.home.filter((e) => /\.phone-app(\.|$)|#phoneClose/.test(e.key));
-  expect(taps.length).toBeGreaterThanOrEqual(10);
+  expect(taps.length).toBeGreaterThanOrEqual(9);   // eight apps and CLOSE (NOTES and GLOW removed Nov 2, 2026)
   for (const t of taps) { expect(t.rect.w, t.key).toBeGreaterThanOrEqual(44); expect(t.rect.h, t.key).toBeGreaterThanOrEqual(44); }
   const save = await page.evaluate(() => JSON.parse(localStorage.getItem('pixelpets.save.v2')));
   expect(save.v).toBe(2);
@@ -226,7 +226,7 @@ test('the issued KEEPER1 phone looks exactly as it does on the merge base', asyn
   await openHandset(bp, false);
   const baseHome = await snapshot(bp);
   const baseInk = await glyphInk(bp);
-  await openApp(bp, 'notes');
+  await openApp(bp, 'sky');
   const baseNotes = await snapshot(bp);
   expect(bp.ppErrors, 'baseline page errors').toEqual([]);
   await bp.close();
@@ -236,6 +236,6 @@ test('the issued KEEPER1 phone looks exactly as it does on the merge base', asyn
     base.flatMap((be, i) => Object.keys(be.style).filter((p) => be.style[p] !== cur[i].style[p]).map((p) => be.key + ' ' + p)));
   expect(strict(baseHome, await snapshot(page)), 'home').toEqual([]);
   expect(await glyphInk(page)).toEqual(baseInk);
-  await openApp(page, 'notes');
-  expect(strict(baseNotes, await snapshot(page)), 'notes').toEqual([]);
+  await openApp(page, 'sky');
+  expect(strict(baseNotes, await snapshot(page)), 'sky').toEqual([]);
 });

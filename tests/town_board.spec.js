@@ -32,8 +32,7 @@ test.describe('town board', () => {
     const jobsBtn = page.locator('#phoneHome [data-app="jobs"]');
     await expect(boardBtn).toBeVisible();
     await expect(boardBtn).toHaveText('BOARD');
-    await expect(jobsBtn).toBeVisible();
-    await expect(jobsBtn).toHaveText('KEEPERUAV');
+    await expect(jobsBtn).toBeHidden();   // KEEPERUAV was removed from the Keeper1 (Nov 2, 2026)
     await boardBtn.click();
     const phone = page.locator('#ovPhone');
     await expect(phone).toContainText('TOWN BOARD');
