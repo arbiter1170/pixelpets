@@ -237,6 +237,8 @@ const ROOMS = [
   { id: 'hm_flats_5', skin: 'flats_home', windows: [3, 9, 15], doors: [], jambs: [[0, 5, 'jamb_n'], [0, 7, 'jamb_s']] },
   { id: 'hm_flats_lobby', skin: 'flats_lobby', windows: [], doors: [3, 4, 7, 8], jambs: [[3, 11, 'jamb_l'], [5, 11, 'jamb_r']] },
   { id: 'hm_home_up', skin: 'house_loft', windows: [3, 5], doors: [], jambs: [[3, 7, 'jamb_l'], [5, 7, 'jamb_r']] },   // PARTNER_DAY: a door mat to the hallway
+  { id: 'hm_home_room', skin: 'house_bedroom', windows: [2, 6], doors: [], jambs: [[3, 6, 'jamb_l'], [5, 6, 'jamb_r']] },   // PARTNER_DAY: your room
+  { id: 'hm_home_hall', skin: 'house_hallway', windows: [4], doors: [2, 6], jambs: [[3, 4, 'jamb_l'], [5, 4, 'jamb_r']] },   // PARTNER_DAY: the upstairs hallway
   { id: 'hm_hq_f1', skin: 'house_hq', windows: [4], doors: [], jambs: [[5, 15, 'jamb_l'], [7, 15, 'jamb_r']] },
   { id: 'hm_hq_f2', skin: 'house_hq_up', windows: [5], doors: [], jambs: [] },
   { id: 'hm_lantern_in', skin: 'house_lantern', windows: [4], doors: [], jambs: [[3, 6, 'jamb_l'], [5, 6, 'jamb_r']] },
@@ -352,7 +354,7 @@ test('every interior uses its own wall row, windows, doors and jambs @w1', async
   }, ROOMS);
 
   expect(report.v).toBe(2);
-  expect(report.n).toBe(47);   // 43 + the four BRINEWICK rooms
+  expect(report.n).toBe(49);   // 43 + the four BRINEWICK rooms + PARTNER_DAY's bedroom and hallway
   expect(report.problems).toEqual([]);
   expect(report.cap).toEqual([]);
   for (const row of report.shares) expect(row.share, row.id + ' ' + row.tile).toBeLessThanOrEqual(0.7);

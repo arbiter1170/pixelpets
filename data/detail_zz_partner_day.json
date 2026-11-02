@@ -358,8 +358,8 @@
      {
       "kind": "prop",
       "id": "up_cushion",
-      "x": 2,
-      "y": 6,
+      "x": 5,
+      "y": 3,
       "sprite": "petal_cushion",
       "lines": {
        "else": "Maze's favourite cushion. It is mostly calico fur by now."

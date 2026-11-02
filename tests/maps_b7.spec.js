@@ -99,7 +99,7 @@ test('each room keeps its size, its old ids, its own skin, and the floor cap @w1
   expect(report.outdoor).toEqual({ w: 20, h: 16, dream: null, step: 'p', roof: 'R', door: { x: 5, y: 7 } });
   // 9 house rooms + 4 dream rooms + 14 High Charity rooms + the two Fernbrook rooms + the schoolhouse, the lobby, flat 5B, the three Market Row rooms,
   // and the four BRINEWICK rooms (Lantern House, chandlery, Trial Hall, depot).
-  expect(report.skins).toEqual({ n: 39, home: 'floor_pine', lab: 'lab_floor', labVar: 'lab_floor_bay,lab_floor,lab_floor_focus,lab_floor_records' });
+  expect(report.skins).toEqual({ n: 41,   /* + PARTNER_DAY's bedroom and hallway */ home: 'floor_pine', lab: 'lab_floor', labVar: 'lab_floor_bay,lab_floor,lab_floor_focus,lab_floor_records' });
   const floors = new Set(), walls = new Set();
   for (const row of report.out) {
     const room = ROOMS.find(r => r.id === row.id);
