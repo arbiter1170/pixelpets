@@ -235,7 +235,7 @@ test('nothing tracked stays gold until TRACK on the main card', async ({ page })
   expect(lime[0]).toEqual(LIME);
 });
 
-test('Handset notes point at BOTNET', async ({ page }) => {
+test('The cracked handset has BOTNET and no NOTES app', async ({ page }) => {
   const s = save({
     'story.phone_got': true,
     'story.side': 'glimmer',
@@ -244,11 +244,12 @@ test('Handset notes point at BOTNET', async ({ page }) => {
   await boot(page, s);
   await page.locator('#phoneBtn').click();
   await page.waitForSelector('#ovPhone:not([hidden])');
-  await page.locator('.phone-app[data-app="notes"]').click();
-  const notes = await page.locator('#phoneBody').innerText();
-  expect(notes).toContain('Jobs and parts live under BOTNET, not here.');
-  expect(notes).not.toContain('board wakes up');
-  expect(notes).toContain('The crest phone copies every note.');
+  await expect(page.locator('.phone-app[data-app="notes"]')).toHaveCount(0);
+  await expect(page.locator('#phoneJobs')).toBeVisible();
+  await page.locator('#phoneJobs').click();
+  const jobs = await page.locator('#phoneBody').innerText();
+  expect(jobs).toContain('OPEN THE SHELF');
+  expect(jobs).not.toContain('board wakes up');
 });
 
 test("Marigold's card names Stitch & Lantern, and a cool tier stays private", async ({ page }) => {

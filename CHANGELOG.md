@@ -2,7 +2,7 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-02 15:50 ET: Rank-first NPC names, an always-on Standing icon and a town control bar (Vincent, Nov 2)
+## 2026-11-02 17:45 ET: Rank-first NPC names, faction control in the place chip, and visited claims on the map (Vincent, Nov 2)
 
 - What changed and why: Vincent asked for every Keeper and Glimmerwell NPC to show rank, then name, everywhere their name shows, with flags for any NPC we are unsure of. He also asked for a faction icon that is always on the walk screen and shows who controls a town or map on arrival.
   - Ranks: the `data/reputation.json` cast now carries `rank` and `given` for each faction NPC. `shownName()` builds "Master Fen", "Associate Tobin" and so on. Battle lines, the foe label, contact cards, the People card and town board signers all go through it. A ranked holder drops its battle title, so "Trial Master Fen" becomes "Master Fen".
@@ -14,10 +14,56 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
   - The chip still opens TODAY, which gains a STANDING row (44 px). After the pick it opens STANDING. Before it, the row opens a card with one line per side and no points. The chip's aria label adds your pledge and who holds the place.
   - Region map (D1164, Vincent's follow-up): every place you have walked into shows who holds it (claim halo plus the place card's hold line), before the pick too. Unvisited places stay ??? and the SIDES key shows from the start. This supersedes D109's pledge gate. `tests/map_legend.spec.js` and `tests/map.spec.js` were updated to the new rule.
 - Files touched: `data/reputation.json`, `data/mapdata.js` (regenerated), `rep.js`, `save.js`, `game.js`, `moves.js`, `standing.js`, `index.html`, `style.css`, `tools/GAMEJS_MAP.txt`, `version.json`, `tests/npc_ranks.spec.js` (new), `tests/side_badge.spec.js` (new), `tests/map_legend.spec.js`, `tests/map.spec.js`, `tests/world_clock.spec.js`, `tests/README.md`, `handoff/shots/npc_ranks_side_badge/`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `CHANGELOG.md`.
-- Commit(s) + build id: this branch, build 20261102-1626.
+- Commit(s) + build id: this branch, build 20261102-1718b.
 - Tests run and result (widths, checks): `tests/npc_ranks.spec.js` and `tests/side_badge.spec.js` at 320, 375 and 390 (the badge spec run twice), plus the full suite at all three widths (result line in the PR). Scans PASS; `bump_build.py --check` clean.
 - Decisions made (colour + reasoning): D1161 (A-H), D1164 (map) and D1165 (control inside the chip) settled by Vincent (all in the archive). The red interface and naming change was asked for by Vincent directly. Vincent chose to merge control into the place chip (no separate button). Green: the hold word waits for a toast to clear and fades with the chip during scenes. `tests/world_clock.spec.js` now expects the chip's longer aria label.
 - Anything left unfinished: D1159 (16 ladder ranks), D1160 (flagged affiliations), D1162 (UNCLAIMED places), D1163 ("BOTH SIDES"). Rook's Bright Lead from Act 2 waits for an Act 2 flag. Name mentions inside dialog prose ("Fen's match") stay as written.
+
+## 2026-11-02 17:08 ET: Vincent's 5:05 PM rulings: old saves deprioritized, main-chain edit approved (docs only, no build stamp)
+
+- What changed and why: Vincent, 5:05 PM ET: "Not worried about old saves right now." and "Ok to edit main quest chain". #255 Q7 and Q5 are deprioritized (simplest save-safe option: no save writes, v2, no migrator); #255's main-quest-chain override is approved, keeping the `orchard` row's position.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/vincent-1705-rulings`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): Vincent's calls on #255 Q5, Q7 and the chain override; no new id (D1166-D1173 stay #255's).
+- Anything left unfinished: #255 should fold these into its spec.
+
+## 2026-11-02 17:05 ET: Hold D1153 (Hall door after Lizzy's class) and answer D1172 (docs only, no build stamp)
+
+- What changed and why: Vincent ruled at 5:03 PM ET: "Picking a side should be after the class, same with hall door." D1153 (`story.crates_seen` opens the Hall door) is HELD and superseded by D1169 (#255), so it does not settle at 5:44 PM EST. D1172 is answered NO: the Hall door and the faction pick both come after Lizzy's class.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/hold-d1153`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): D1153 held (Vincent); D1172 answered NO (Vincent). D1166-D1173 stay reserved by #255 and are cited, not re-reserved.
+- Anything left unfinished: #255 should record D1172 as settled NO and D1169 as the door rule when it lands.
+
+## 2026-11-02 16:10 ET: Decision logs: Vincent's Nov 2 rulings + new Day 1 direction (docs only, no build stamp)
+
+- What changed and why: recorded Vincent's Mon Nov 2 rulings (faction-pick reds D1141-D1143 and D1149-D1152 settled yes with their canon overrides; D967 and D1101 yes; Act 5 capital is High Charity as D1174; the President and Governor names), the calls that stay open (D971, D1000, the intro reds, D1034/D1035, D1044, D1087, D1128, D1140), missing design-repo ids, past-due marks, the earlier Oct 30-31 settlements, and the NEW DIRECTION section with a Claude Code brief.
+- Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CLAUDE.md`, `CHANGELOG.md`, `handoff/claude_briefs/DAY1_TRIAL1_FLOW_BRIEF_2026-11-02.md`.
+- Commit(s) + build id: `chief/decisions-2026-11-02`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js` and `node tools/scans/run.js` pass; no game files changed.
+- Decisions made (colour + reasoning): D1174 reserved (red, Vincent's call) under walklings-decision-ids; D1159-D1165 noted as held by `claude/npc-ranks-side-badge` and D1166-D1173 by #255 (`claude/day1-trial1-spec`); next free id D1175.
+- Anything left unfinished: `data/rook_crossroads.json:326` "rival" fix is design-generated (rule 8), so it is left for Design's build script; the yellows D1144-D1148 and D1153-D1157 settle at 5:44 PM EST.
+
+## 2026-11-02 16:07 ET: Faction pick step 1: the live-save OR gate (no save change)
+
+- What changed and why: FACTION_PICK_TIMING v0.2.4 §7 step 1 (design ffada0b), built on its own before steps 2-5. Vincent approved the seven reds (D1141-D1143, D1149-D1152) on Nov 2 at 2:35 PM ET. The four condition readers now take `|` (or): `cond()` and the boot validator's condition check (now `condKeyOk`, shared with `glimmerDevCheck`) in `game.js`, `evalCond` in `quests.js` (which also gets `&`), and `plainStoryFlag` (the debug checkpoints). Every reader splits `|` first, then `&`, then `!`, with no brackets, so `a | b & c` reads as a, or (b and c). `plainStoryFlag` treats a `|` or `&` string as more than one flag and writes nothing for it, so a checkpoint never writes a literal "a|b" key. Today's gates move to their §7.1 OR forms: the Route 2 warp, open sign, rubble and closed sign; Rook's teaser (`rook_fb`, `fb_teaser`); the Hall door `need`; the two Hall slips on the town board; the `heights` skipIf; and the STANDING tab. The maps_slice.json and act1_route2.json objects are restated by id in fernbrook_rooms.json's slicePatch `replaceObjs`, with only `when` changed; both verbatim files are untouched. Nothing sets the new flags yet (`story.crates_seen`, `story.pitch_k`, `story.pitch_g`), so every gate reads the same on every save. Two read-only debug hooks (`PixelPets.condRead`, `PixelPets.gateRead`, plus `PixelPets.standingTab`) return null without `?debug=1`.
+- Files touched: `game.js`, `quests.js`, `data/fernbrook_rooms.json`, `data/town_board.json`, `data/mapdata.js` (regenerated), `tools/GAMEJS_MAP.txt` (regenerated), `tests/faction_or_gate.spec.js` (new), `tests/fixtures/or_gate_kinds.js` (new), `tests/fixtures/or_gate_before.json` (new), `tests/README.md`, `index.html`, `version.json`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261102-1607.
+- Tests run and result (widths, checks): `tests/faction_or_gate.spec.js` at 320, 375 and 390: T-ORDER on all four readers, the gate matrix on 15 save fixtures (the seven §7.4 kinds plus eight cuts of them) against the matrix recorded on origin/main 8bdb485 (zero diffs), the §7.3 save proof on the seven kinds on a clean build (byte-identical after load, v stays 2), the overlay check, and reduced motion. A mutation run (with `&` split before `|` in `cond()` and `evalCond`) fails T-ORDER. Full suite result line in the PR.
+- Decisions made (colour + reasoning): The reds and yellows are Design's and Vincent's (FACTION_PICK_TIMING §4). Green, inside the spec: `plainStoryFlag` returns no flag for a `|` or `&` string (the spec only rules out a literal "a|b" key); the boot validator trims each part, as `cond()` does. The Heights door `need` OR waits for step 3, where §7 puts it with the `ESCORT_STAIRS` key. No new D ids.
+- Anything left unfinished: Steps 2-5. The copy changes in §2.1 and §7.1 (June's Hall door deny line, the latched slip, the Heights deny lines) and the STANDING tab's pre-pick PLEDGED and `sides` tip changes come in later briefs. `data/town_board_copy.json` (not loaded by the game) still shows the old slip `when`. D1144, D1153 and D1156 are yellows that settle at 5:44 PM EST today, so the PR stays a draft until then.
+
+## 2026-11-02 15:19 ET: Phone trim (no NOTES, KEEPERUAV or GLOW) and the battle bridge blink fix
+
+- What changed and why: Vincent asked for three phone apps to go and reported Route 1's battle bridge blinking. (1) NOTES and GLOW are gone from both handsets, and KEEPERUAV is gone from the Keeper1. The cracked handset keeps its jobs slot as BOTNET (gigs, Census feed, BOTNET Shelf). The Keeper1 shows seven apps, the cracked handset eight. The Field Notes, GLOW care monitor and STEPS view code and CSS are removed; walking still writes `stepLog` (save unchanged). Captain Lumen's two lines that named KeeperUAV are dropped from `data/civic.json` (the rest of his scene and its flag stay). (2) Battle scenes: in FULL motion the water used to animate by repainting only the water rects with the second water tile, on top of anything drawn over the water, so Route 1's bridge vanished every other half second, and so did Fernbrook's apple crate where it sits on the pond (at some phone canvas sizes). A size sweep finds props or bridges over water on seven scenes (Fernbrook, Route 2, Wickerglen, Hushwater Rim, Hushwater Cut, Brinewick, the Brinewick hall). Now a scene with water is rendered twice, once per water frame, and the battle swaps whole canvases (`BattleBG.frame`, `btAlt`), so bridges, docks, props and spray stay on top. The cache still holds 8 scenes; a scene's second frame is freed with it. Reduced motion is unchanged (one frame).
+- Files touched: `game.js`, `battle_bg.js`, `index.html`, `style.css`, `data/civic.json`, `data/mapdata.js` (regenerated), `tools/GAMEJS_MAP.txt`, `version.json`, `tests/phone_trim.spec.js` (new), `tests/battle_water_frames.spec.js` (new), `tests/phone_apps.spec.js`, `tests/phone_apps_2.spec.js`, `tests/phone_contacts.spec.js`, `tests/civic.spec.js`, `tests/town_board.spec.js`, `tests/town_board_gate.spec.js`, `tests/polish_build2_quest.spec.js`, `tests/qa_play.spec.js`, `tests/handset_dark.spec.js`, `tests/README.md`, `OPEN_DECISIONS.md` (D863 note), `handoff/shots/phone_trim/` (7 before/after shots: phone and Route 1 at 390 and 320, Fernbrook at 60x58), `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261102-1556.
+- Tests run and result (widths, checks): `tests/phone_trim.spec.js` and `tests/battle_water_frames.spec.js` pass at 320, 375 and 390; the edited phone, civic, town board, QA play, handset and battle backdrop specs pass (result lines in the PR).
+- Decisions made (colour + reasoning): Red (interface), Vincent, Nov 2, 2026: remove NOTES, KEEPERUAV and GLOW; keep BOTNET on the cracked handset; drop Lumen's two KeeperUAV lines. Green: render the second water frame as a whole scene instead of repainting water rects (fixes every scene, not only Route 1).
+- Anything left unfinished: none. D863 (phone copy) stays open for the remaining apps.
+
 
 ## 2026-11-02 14:31 ET: Test fix: people_looks_28 compares the game's own save, not the raw fixture (test only, no build stamp)
 
@@ -27,7 +73,6 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Tests run and result (widths, checks): `tests/people_looks_28.spec.js` at 320, 375 and 390: 15 passed (before the fix, test 1 failed at 390 on main). Scans pass.
 - Decisions made (colour + reasoning): green; a test-only fix to a spec added in #230 (PEOPLE_LOOKS_28, another worker's), no behaviour change.
 - Anything left unfinished: none.
-
 ## 2026-11-02 14:25 ET: NEWS: the Glimmer-side paper turns dark (Vincent, Nov 1)
 
 - What changed and why: Vincent asked for the cracked handset's NEWS to lean hard into darker Glimmerwell, INSIGN, research and story lore, and to be much less friendly. `news.js` now weights items on the Glimmer side only: Glimmer-only wire items (not the glossy Bright Notice, not ads) x12, the town paper x0.5, the Lantern Post x0.25, and the day's poll comes from the dark polls when one is open. The lead (the newest story beat) is unchanged, and the Keeper side is unchanged. A new placeholder batch (D1013) adds 22 Block News stories, 8 voices, 5 notices and 2 polls in a cold wire voice: quotas and units, glow sharing, the Census tent, crates and the Sanctuary, the Relay House hum, the Answerers' blank page, RegenX, Atten and the Arbiter, the Tier 2 fitting, and Walklings acting oddly after facility visits. INSIGN appears only as an older, half-redacted name (INS..., 'IN', a ledger, "the one that made medicine first"); nothing confirms it or names a chip. Disappearances read off screen and gentle ("Transferred north", an empty desk). Every item cites the lore index and carries `story.side=glimmer` and each cited entry's reveal flags. INSIGN and facility hints wait for `story.seal2` (design PR gates `faction.insign` and `event.chipping_secret` there).
