@@ -3618,6 +3618,8 @@ function skyMode(tags = envTags()){
 }
 // Keyed by the canvas size, which moves with every iPhone address-bar, rotation or keyboard resize: keep the newest few.
 const bdCache = new Map(), BD_CAP = 8;
+// A battle scene with water keeps its second water frame as a whole second canvas (btAlt); it is freed with its scene.
+function bdTrim(){ while (bdCache.size >= BD_CAP) { const k = bdCache.keys().next().value, c = bdCache.get(k); freeCanvases([c, c && c.btAlt]); bdCache.delete(k); } }
 function makeBackdrop(kind, H, mode, W = 56){
   W = Math.max(56, W | 0); H = H | 0;
   const key = kind + '|' + W + 'x' + H + '|' + mode; if (bdCache.has(key)) return bdCache.get(key);
@@ -3657,7 +3659,7 @@ function makeBackdrop(kind, H, mode, W = 56){
     for (let x = 56; x < W - 4; x += 12) flowers.push([x, 2 + (r() * 8 | 0), r() < .5 ? 'w' : 'y']);
     flowers.forEach(([x, y, col]) => { if (x >= W) return; P(col, x - 1, G + y); P(col, x + 1, G + y); P(col, x, G + y - 1); P(col, x, G + y + 1); P('y', x, G + y); });
   }
-  while (bdCache.size >= BD_CAP) { const k = bdCache.keys().next().value; freeCanvases([bdCache.get(k)]); bdCache.delete(k); }
+  bdTrim();
   bdCache.set(key, c);
   return c;
 }
@@ -3668,11 +3670,11 @@ const BATTLE_BG_ON = true;
 let battleBgForce = null;
 function battleBgOn(){ return battleBgForce != null ? battleBgForce : BATTLE_BG_ON; }
 function battleSceneId(id = S && S.world.map){ return battleBgOn() && window.BattleBG && WORLD[id] && BattleBG.scenes[id] ? id : null; }
-function battleEnv(m, mode){
+function battleEnv(m, mode, wf = 0){
   const sk = m.skin && SKINS[m.skin];
   return { mode, w: m.w, h: m.h, cells: m.cells, objs: m.objs, dream: !!m.dream,
     walk: ch => sk && sk.walk && sk.walk[ch] != null ? !!sk.walk[ch] : !!(TILE_DEF[ch] || {}).walk,
-    tile: (ch, x, y) => cellImg(m, ch, x, y, 0), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; } };   // animated props: their first frame
+    tile: (ch, x, y) => cellImg(m, ch, x, y, wf), decal: () => cellDecal, art: n => { const a = WART[n]; return Array.isArray(a) ? a[0] : a || null; } };   // animated props: their first frame
 }
 // Same cache as makeBackdrop (BD_CAP). Rooms ignore the sky, so one canvas serves every sky mode.
 function makeBattleBackdrop(id, H, mode, W = 56){
@@ -3681,7 +3683,14 @@ function makeBattleBackdrop(id, H, mode, W = 56){
   const key = 'bt|' + id + '|' + W + 'x' + H + '|' + mode; if (bdCache.has(key)) return bdCache.get(key);
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   c.btWet = BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode));
-  while (bdCache.size >= BD_CAP) { const k = bdCache.keys().next().value; freeCanvases([bdCache.get(k)]); bdCache.delete(k); }
+  // The moving water is the whole scene drawn again on the second water frame, so a bridge, dock or prop drawn over the
+  // water stays on top in both frames (repainting only the water rects hid the Route 1 bridge every other half second).
+  if (c.btWet.length) {
+    const c2 = document.createElement('canvas'); c2.width = W; c2.height = H;
+    BattleBG.render(ctx(c2), W, H, id, battleEnv(WORLD[id], mode, 1));
+    c.btAlt = c2;
+  }
+  bdTrim();
   bdCache.set(key, c);
   return c;
 }
@@ -13368,27 +13377,26 @@ function showTownBoardPane(){
 // Favorites live in S.phoneBook and the save stays v2. D80.
 const PHONE_GLYPH = {
   contacts: ['..##....', '.####...', '.####...', '..##....', '.######.', '##.##.##', '##.##.##', '.######.'],
-  notes: ['.######.', '#......#', '#.####.#', '#......#', '#.##...#', '#......#', '.######.', '........'],
   walklings: ICONS.paw,
   friends: ICONS.friends,
   jobs: ['...##...', '..####..', '...##...', '.######.', '#.#..#.#', '.######.', '..#..#..', '.#....#.'],
   ribbit: ['.#....#.', '##....##', '#.#..#.#', '.######.', '..#..#..', '.######.', '.#....#.', '.#....#.'],
   board: ['########', '#.#..#.#', '#......#', '#.####.#', '#.#....#', '#.####.#', '#......#', '########'],
   sky: ['..###...', '.##.....', '##....#.', '##...###', '##....#.', '.##.....', '..###...', '........'],
-  glow: ['...##...', '..#..#..', '.######.', '.#.##.#.', '.#.##.#.', '.######.', '..#..#..', '.######.'],
   news: ['######..', '#....###', '#.##.#.#', '#.##.#.#', '#....#.#', '#.##.#.#', '#....#.#', '########'],
 };
+// The jobs slot is BOTNET on the cracked handset only. The Keeper1's KEEPERUAV app was removed (Vincent, Nov 2, 2026),
+// along with NOTES and GLOW on both handsets.
 function setPhoneJobsLabel(hack){
-  const lab = $('#phoneJobs .phone-lab');
-  const text = hack ? 'BOTNET' : 'KEEPERUAV';
-  if (lab) lab.textContent = text; else $('#phoneJobs').textContent = text;
+  const btn = $('#phoneJobs'); if (!btn) return;
+  btn.style.display = hack ? '' : 'none';   // inline: .phone-app sets display:flex, which would beat the hidden attribute
 }
 function paintPhoneHome(){
   paintPhoneSignal();
   const hack = phoneHack();
   const ink = hack
-    ? { contacts: '#d7ffc8', notes: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', glow: '#07140e', news: '#d7ffc8' }
-    : { contacts: '#f6e6c0', notes: '#1a140c', walklings: '#fff6e8', friends: '#f4fbff', jobs: '#1a140c', ribbit: '#f4fff6', board: '#f6e6c0', sky: '#f4fbff', glow: '#1a140c', news: '#1c2416' };
+    ? { contacts: '#d7ffc8', walklings: '#d7ffc8', friends: '#d7ffc8', jobs: '#07140e', ribbit: '#d7ffc8', board: '#d7ffc8', sky: '#d7ffc8', news: '#d7ffc8' }
+    : { contacts: '#f6e6c0', walklings: '#fff6e8', friends: '#f4fbff', ribbit: '#f4fff6', board: '#f6e6c0', sky: '#f4fbff', news: '#1c2416' };
   $$('#phoneHome .phone-glyph').forEach(el => {
     const c = el.querySelector('canvas'), grid = PHONE_GLYPH[el.dataset.glyph];
     if (!c || !grid) return;
@@ -14049,27 +14057,6 @@ function rematchRelay(id){
   const said = expand(battleGreeting(id) || '');
   return (phoneHack() ? 'Intercepted: ' : 'Lantern desk relay: ') + said;
 }
-// D860 Field Notes: finished main steps, newest first, in the quest's own words. The Keeper1 stamps each COPIED;
-// the cracked handset shows the same notes with a few words blacked out by the sender.
-const FIELD_NOTES_MAX = 8;
-function blackOut(text, seed){
-  let n = 0; for (const ch of seed) n = (n * 31 + ch.charCodeAt(0)) >>> 0;
-  return text.split(' ').map((w, i) => (w.length > 3 && (i + n) % 4 === 0) ? '█'.repeat(Math.min(w.length, 6)) : w).join(' ');
-}
-function renderFieldNotes(body, hack){
-  const done = (typeof PPQuests !== 'undefined' && PPQuests.completed) ? PPQuests.completed(questState(), FIELD_NOTES_MAX) : [];
-  const head = document.createElement('p'); head.className = 'phone-sec'; head.textContent = 'FIELD NOTES';
-  body.appendChild(head);
-  if (!done.length) { const p = document.createElement('p'); p.className = 'phone-note-empty'; p.textContent = 'Nothing logged yet. Notes fill in as you go.'; body.appendChild(p); return; }
-  for (const e of done) {
-    const row = document.createElement('article'); row.className = 'phone-note'; row.dataset.step = e.id;
-    const place = document.createElement('b'); place.className = 'phone-note-place'; place.textContent = e.place || '';
-    const text = document.createElement('p'); text.className = 'phone-note-text'; text.textContent = hack ? blackOut(e.text, e.id) : e.text;
-    const stamp = document.createElement('small'); stamp.className = 'phone-note-stamp'; stamp.textContent = hack ? 'REDACTED BY SENDER' : 'COPIED';
-    row.append(place, text, stamp);
-    body.appendChild(row);
-  }
-}
 // D861 SKY (Far Sky + Night Desk): the hour, the real sky, and who the sky is stirring on this map.
 function phoneNight(){
   if (!window.PPClock) return false;
@@ -14103,40 +14090,18 @@ function renderFarSky(body, hack){
   add('sky-foot', hack ? (wet ? 'Rain on your walk. Brighter by nature. Glimmerwell.' : 'Brighter by nature. Glimmerwell.')
     : 'Keepers forecast. Walk kindly.');
 }
-// D862 GLOW (care monitor + Lantern Pass): the partner today, and the Lantern House that wakes you. No penalty, no countdown.
-function glowAdvice(p, hack){
-  if (isFainted(p) || p.energy < 30) return hack ? 'Unit output: low. Rest recommended.' : 'A nap would help.';
-  if (p.hunger < 40) return hack ? 'Unit output: dipping. Refuel recommended.' : 'A snack would help.';
-  if (p.happy < 40) return hack ? 'Unit morale: below target.' : 'A game would cheer them up.';
-  return hack ? 'Unit output: steady. Have a bright day!' : 'Your Walkling is doing well.';
-}
-function renderGlowApp(body, hack){
-  const add = (cls, text) => { const p = document.createElement('p'); p.className = cls; p.textContent = text; body.appendChild(p); return p; };
-  const p = pet();
-  if (p) {
-    add('glow-name', petName(p) + ', Lv ' + levelOf(p));
-    add('glow-stats', 'Food ' + Math.round(p.hunger) + '  Joy ' + Math.round(p.happy) + '  Energy ' + Math.round(p.energy));
-    add('glow-bond', 'Bond ' + '♥'.repeat(bondLevel(p)) + '♡'.repeat(Math.max(0, 5 - bondLevel(p))));
-    add('glow-advice', (hack ? 'Glimmerwell: ' : 'Lantern desk: ') + glowAdvice(p, hack));
-  }
-  const town = WORLD[respawnTown()];
-  add('phone-sec', 'LANTERN');
-  add('glow-lantern', 'You wake at ' + ((town && town.name) || 'Hearthmoor') + "'s Lantern House.");
-  add('glow-bed', hack ? 'Beds open to all. Rest restores your units.' : 'Beds are open to every holder.');   // rule 10: every Lantern House has beds
-  renderFootpath(body, add, hack);
-}
 /* ---------- phone apps, part 2 (Vincent, Oct 28, 2026; D864-D869). Placeholder copy, D863. ---------- */
-// D864 Watch Desk / Off-books gigs: the jobs app lists the errands that are really open (active side chains, then pinned
-// board slips) in the handset's voice. TRACK uses the quest screen's one write path. No new rewards.
+// D864 Off-books gigs: BOTNET (cracked handset only) lists the errands that are really open (active side chains, then pinned
+// board slips). TRACK uses the quest screen's one write path. No new rewards. The Keeper1's KEEPERUAV desk was removed.
 function renderJobsApp(body, hack, add){
-  const desk = hack ? 'BOTNET' : 'KEEPERUAV';
+  if (!hack) return;
   const sec = text => { const p = document.createElement('p'); p.className = 'phone-sec'; p.textContent = text; body.appendChild(p); };
-  sec(hack ? 'GIGS' : 'PATROL REQUESTS');
+  sec('GIGS');
   const side = sideActiveList(), board = boardActiveList(), T = trackedSide();
-  if (!side.length && !board.length) add(desk, hack ? 'Jobs: none posted. Come back later.' : 'No jobs are open. The desk is warming up.');
+  if (!side.length && !board.length) add('BOTNET', 'Jobs: none posted. Come back later.');
   for (const a of side) {
     const row = document.createElement('article'); row.className = 'phone-job'; row.dataset.chain = a.chain;
-    const t = document.createElement('b'); t.className = 'phone-job-title'; t.textContent = (hack ? 'Gig: ' : 'Patrol: ') + a.label;
+    const t = document.createElement('b'); t.className = 'phone-job-title'; t.textContent = 'Gig: ' + a.label;
     const step = liveStep(a.step) || a.step;
     const d = document.createElement('p'); d.className = 'phone-job-text'; d.textContent = step.text + (step.place ? ' (' + step.place + ')' : '');
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn phone-job-track';
@@ -14147,11 +14112,10 @@ function renderJobsApp(body, hack, add){
   }
   for (const a of board) {
     const row = document.createElement('article'); row.className = 'phone-job'; row.dataset.board = a.chain;
-    const t = document.createElement('b'); t.className = 'phone-job-title'; t.textContent = (hack ? 'Pinned gig: ' : 'Board slip: ') + a.label;
+    const t = document.createElement('b'); t.className = 'phone-job-title'; t.textContent = 'Pinned gig: ' + a.label;
     const d = document.createElement('p'); d.className = 'phone-job-text'; d.textContent = a.step.text + (a.step.place ? ' (' + a.step.place + ')' : '');
     row.append(t, d); body.appendChild(row);
   }
-  if (!hack) return;
   renderCensusLeak(body, add);
   sec('PARTS');
   const shelf = document.createElement('button'); shelf.type = 'button'; shelf.className = 'btn phone-shelf'; shelf.textContent = 'OPEN THE SHELF';
@@ -14194,8 +14158,8 @@ function paintPhoneSignal(){
   el.dataset.bars = String(n);
   $$('#phoneSignal i').forEach((b, k) => b.classList.toggle('on', k < n));
 }
-// D867 Footpath log: steps with your partner today and the last 7 days (S.stepLog, additive). Milestones are kind words only.
-// The 0 line is exactly 0 steps. 1-49 uses its own short line so it does not borrow the empty-day sentence.
+// D867 Footpath log: steps with your partner today and the last 7 days (S.stepLog, additive). Still kept in the save; its
+// GLOW view went with the app (Nov 2, 2026).
 const STEP_LOG_DAYS = 7;
 function logSteps(d, n){
   if (!S || typeof d !== 'string') return;
@@ -14203,17 +14167,6 @@ function logSteps(d, n){
   S.stepLog[d] = n;
   const keys = Object.keys(S.stepLog).sort();
   while (keys.length > STEP_LOG_DAYS) delete S.stepLog[keys.shift()];
-}
-const STEP_MILESTONES = [[500, 'A long walk today. Your Walkling is beaming.'], [200, 'A good walk today.'], [50, 'A little walk today.'], [1, 'A few steps today.'], [0, 'No walk yet today. Any time is fine.']];
-function renderFootpath(body, add, hack){
-  add('phone-sec', 'STEPS');
-  const today = (S.care && S.care.d === dayKey(Date.now()) && S.care.steps) | 0;
-  add('step-today', 'Today: ' + today + (today === 1 ? ' step' : ' steps'));
-  const line = STEP_MILESTONES.find(m => today >= m[0])[1];
-  add('step-note', hack ? 'Glimmerwell: ' + (today >= 200 ? 'Output noted. Have a bright day!' : 'Every step counts toward the quota.') : line);
-  const log = (S.stepLog && typeof S.stepLog === 'object') ? S.stepLog : {};
-  const days = Object.keys(log).sort().reverse().slice(0, STEP_LOG_DAYS);
-  if (days.length > 1) add('step-week', 'Last days: ' + days.map(d => d.slice(5) + ' ' + (log[d] | 0)).join('  '));
 }
 // D868 Ribbit presets (D211: presets only, no typed text): after a finished main step, post one of three set chirps
 // about it. One post per step; the last 5 are kept in S.chirps { stepId: presetIndex } (additive).
@@ -14267,6 +14220,7 @@ function renderChirpCompose(body){
   body.appendChild(box);
 }
 function phoneApp(id){
+  if (id === 'jobs' && !phoneHack()) return;   // BOTNET is the cracked handset's only
   if (id === 'journal' || id === 'walklings') { closePhone(); showTab('col'); return; }
   if (id === 'board') { showTownBoardPane(); sfx('tap'); return; }
   const paneTitle = $('#phonePaneTitle'); if (paneTitle) paneTitle.hidden = true;
@@ -14278,15 +14232,6 @@ function phoneApp(id){
   if (id === 'contacts') {
     contactFilter = 'all'; contactOpen = '';
     renderContacts();
-  } else if (id === 'notes') {
-    if (hack) {
-      add('Handset', 'The crest phone copies every note. This one too, probably.');
-      add('Handset', 'Jobs and parts live under BOTNET, not here.');   // D442: the old line promised a board that nothing wakes
-    } else {
-      add('Lantern desk', 'Your Keeper1 is active. We can read this. That is the service.');
-      add('Lantern desk', 'Free handset. The poles stay with the Keepers.');
-    }
-    renderFieldNotes(body, hack);
   } else if (id === 'jobs') {
     renderJobsApp(body, hack, add);
   } else if (id === 'news') {
@@ -14295,8 +14240,6 @@ function phoneApp(id){
     renderRibbit(body);
   } else if (id === 'sky') {
     renderFarSky(body, hack);
-  } else if (id === 'glow') {
-    renderGlowApp(body, hack);
   } else if (id === 'friends') {
     $('#friendCode').textContent = friendCode(); renderKeeperName();
     if (window.PPNet && PPNet.renderFriends) PPNet.renderFriends();
@@ -15886,8 +15829,8 @@ function drawBattle(t, dt){
   const B = battle, c = $('#battleCanvas'), g = ctx(c), W = c.width, H = c.height, f = curFoe(), p = activePet(); if (!f || !p) return;
   const sid = battleSceneId();
   if (sid) {   // BATTLE_BACKDROPS (D1009): the map's own scene; water moves in FULL only, and rooms take no sky tint or weather
-    const bg = makeBattleBackdrop(sid, H, skyMode(), W); g.drawImage(bg, 0, 0);
-    if (auraMode() === 'full' && !prefersReduced()) BattleBG.anim(g, bg.btWet, TILES.w[1], t);
+    const bg = makeBattleBackdrop(sid, H, skyMode(), W);
+    g.drawImage(auraMode() === 'full' && !prefersReduced() ? BattleBG.frame(bg, t) : bg, 0, 0);
     if (!BattleBG.scenes[sid].room) drawWeather(g, W, H, t);
   } else { g.drawImage(makeBackdrop(backdropName(), H, skyMode(), W), 0, 0); drawWeather(g, W, H, t); }
   for (let i = 0; i < B.fx.length; i++) {   // MOVE_FX_2 (D829): a signature dims the backdrop with k, up to 0.25 and back over 200 ms (never white)
@@ -19105,9 +19048,10 @@ function boot(){
     // BATTLE_BACKDROPS (D1009): debug only. setBattleBg(true/false) forces the flag (null = the build's flag); battleSceneArt
     // draws one map's scene onto a fresh canvas (layer 'deco' = landmarks and props only) for previews and tests.
     setBattleBg: on => { if (!DEBUG) return null; battleBgForce = on == null ? null : !!on; return battleSceneId(); },
-    battleSceneArt: (id, W, H, mode, layer) => { if (!DEBUG || !window.BattleBG || !BattleBG.scenes[id] || !WORLD[id]) return null;
+    // wf 1 draws the scene on the second water frame (the canvas the battle swaps in every other half second); c.wet is the water rects.
+    battleSceneArt: (id, W, H, mode, layer, wf) => { if (!DEBUG || !window.BattleBG || !BattleBG.scenes[id] || !WORLD[id]) return null;
       const c = document.createElement('canvas'); c.width = W; c.height = H;
-      BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode || 'day'), layer); return c; },
+      c.wet = BattleBG.render(ctx(c), W, H, id, battleEnv(WORLD[id], mode || 'day', wf ? 1 : 0), layer); return c; },
     battleSceneIds: () => DEBUG && window.BattleBG ? Object.keys(BattleBG.scenes) : null,
     debugToast: msg => { if (!DEBUG) return null; toast(msg); const t = $('#toast'); return t ? t.textContent : ''; },
     setOutdoorZoom: z => { if (!DEBUG) return null; outdoorZoomForce = (z >= 1 && z <= 6) ? z : null; fitAll(); return mapZoom; },   // debug: try an outdoor zoom (null = the slider)

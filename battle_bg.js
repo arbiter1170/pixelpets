@@ -43,7 +43,7 @@ function kit(g, W, H, id, env, layer){
     boxes: boxes(W, H, !!(ROOMS[id] && ROOMS[id].group)),
     night: /^night/.test(env.mode || ''), dull: /dull$/.test(env.mode || '') };
   S.P = (col, x, y, w = 1, h = 1) => { if (!S.on) return; g.fillStyle = PAL[col]; g.fillRect(x | 0, y | 0, w | 0, h | 0); };
-  // Fill a rect with one map tile at scale s (1 or 0.5), clipped. cx/cy seed the map's tile variants; water is noted for anim.
+  // Fill a rect with one map tile at scale s (1 or 0.5), clipped. cx/cy seed the map's tile variants; water is noted for frame().
   S.fill = (ch, x, y, w, h, s = 1, cx = 0, cy = 0) => {
     if (!S.on || w <= 0 || h <= 0) return;
     const step = 16 * s;
@@ -314,7 +314,7 @@ Object.keys(OUT).forEach(id => { scenes[id] = { room: false }; });
 Object.keys(ROOMS).forEach(id => { scenes[id] = { room: true, group: !!ROOMS[id].group, hall: !!ROOMS[id].hall }; });
 
 // Draw map `id`'s scene onto g (W x H). layer: undefined = everything, 'deco' = landmarks and props only (tests).
-// Returns the water rects ([x, y, w, h, scale]) for anim().
+// Returns the water rects ([x, y, w, h, scale]); any at all means the caller also renders a second water frame.
 function render(g, W, H, id, env, layer){
   g.imageSmoothingEnabled = false;
   const S = kit(g, W, H, id, env, layer);
@@ -322,17 +322,10 @@ function render(g, W, H, id, env, layer){
   else if (ROOMS[id]) { room(S, autoProps(env, ROOMS[id])); if (env.dream && !layer) dreamWash(S); }
   return S.wet;
 }
-// The moving part: the water rects take the second water frame every other half second. FULL motion only (the caller checks).
-function anim(g, wet, frame, t){
-  if (!wet || !wet.length || !frame || Math.floor(t / 500) % 2 === 0) return;
-  g.imageSmoothingEnabled = false;
-  for (const [x, y, w, h, s] of wet) {
-    const step = 16 * s;
-    g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
-    for (let j = 0; j * step < h; j++) for (let i = 0; i * step < w; i++) g.drawImage(frame, 0, 0, 16, 16, x + i * step, y + j * step, step, step);
-    g.restore();
-  }
-}
+// The moving part: a scene with water (render() returned wet rects) carries a second canvas, btAlt, drawn whole on the
+// second water frame. Every other half second the caller draws that one. Swapping whole frames keeps anything drawn over
+// the water (bridges, docks, props, spray) on top in both. FULL motion only (the caller checks).
+function frame(bg, t){ return bg && bg.btAlt && bg.btAlt.width && Math.floor(t / 500) % 2 ? bg.btAlt : bg; }
 
-window.BattleBG = { scenes, render, anim, boxes, lay };
+window.BattleBG = { scenes, render, frame, boxes, lay };
 })();

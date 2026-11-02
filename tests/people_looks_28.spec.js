@@ -104,6 +104,9 @@ async function resolved(page) {
 
 test('each of the 28 people resolves to its own new look, with the looks.json fields', async ({ page }) => {
   await boot(page);
+  // The installed fixture is not the shape the game keeps: boot normalises it and adds fields on its first save.
+  // Write that save now, so the before/after compare sees only what this test does.
+  await inGame(page, () => { save(); return true; });
   const before = await saveShape(page);
   expect(await inGame(page, () => typeof HOLDER_LOOK === 'object' && typeof TRAINER_LOOK === 'undefined')).toBe(true);
   const all = await resolved(page);
