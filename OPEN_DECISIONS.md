@@ -30,13 +30,16 @@ D1012-D1016 are reserved: NEWS_FEED v0.1-v0.3 (design specs/NEWS_FEED.md: the NE
 
 D1080-D1100 are reserved: GLIMMERWELL_PALETTE v0.3 (D1080-D1087), Vincent's settled calls for PRs #238-#240 (D1088-D1092), SHADOWS_S2_NIGHT (D1093-D1099) and GLIMMERWELL_PALETTE v0.4 (D1100) (design repo, Sat Oct 31, 2026).
 
-Next free id is D1101.
+D1158 is reserved: STORY_DECISIONS v0.62 (design repo, Sat Oct 31, 2026).
+
+Next free id is D1159.
 Other packets hold ids through D1011 (D1009-D1011: INTERIOR_SCALE v0.3 in the design repo).
 
 ## Open
 
 | # | Area | Decision needed | What the build does today | Where to change it |
 |---|---|---|---|---|
+| D1158 | Heights dev note: the Arbiter's emission | Green, owner the Chief of Staff, default yes, due Mon Nov 2, 2026, 6:13 PM EST (design STORY_DECISIONS v0.62). Reword the author note `_names.emission` to the Oct 29 canon (the Arbiter is alien; neither INSIGN nor Glimmerwell built it). Not player text. | This PR: "alien device of unknown origin; INSIGN and Glimmerwell study and use it, nobody in the world knows it's alien" (was "a slow, unnamed emission from ancient Glimmerwell technology"). The stale notes at `status`, `_about` and `_lore.arbiter` are unchanged and wait for June's wording. | `data/heights.json` `_names.emission`, then `python3 tools/gen_mapdata.py` |
 | D1080 | red | GLIMMERWELL_PALETTE v0.3: the dark scheme | (b) wine V #960e16 coat, soot N #18140f trim, crimson Q #c81818 accents under 10% (3.5% worst), lamps as today + 4 px Q sparkle | Mon Nov 2, 2026, 12:34 PM EST |
 | D1081 | yellow | GLIMMERWELL_PALETTE v0.3: PAL keys V, N, Q | yes, appended; Q accent only, exempt from the 20 line; devCheck fails above 10% (Theo, Nina yes) | Mon Nov 2, 2026, 12:34 PM EST |
 | D1082 | red | GLIMMERWELL_PALETTE v0.3: Glimmerwell buildings | soot ridge, wine band; no roof tint; weak case Cobblecrest slate only | Mon Nov 2, 2026, 12:34 PM EST |

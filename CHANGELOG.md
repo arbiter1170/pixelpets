@@ -20,6 +20,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): D1100 revised by Vincent (Nov 1, 2026): mostly green, Glimmerwell as accents only. No new PAL keys, look keys or save fields. "mint" untouched (D1087).
 - Anything left unfinished: the darker Glimmer-side NEWS paper Vincent asked for ships as its own PR.
 
+## 2026-11-02 12:47 ET: Heights dev note: the Arbiter's emission matches the Oct 29 canon (D1158, build 20261102-1247)
+
+- What changed and why: D1158 (green, design STORY_DECISIONS v0.62; owner the Chief of Staff, default yes, due Mon Nov 2, 2026, 6:13 PM EST). The author note `_names.emission` in `data/heights.json` said "a slow, unnamed emission from ancient Glimmerwell technology", which contradicts the Oct 29 canon (the Arbiter is alien; neither INSIGN nor Glimmerwell built it; nobody knows it is alien). It now reads "alien device of unknown origin; INSIGN and Glimmerwell study and use it, nobody in the world knows it's alien". Not player text: nothing in the game reads `_names`. `data/mapdata.js` carries the note, so the build is stamped.
+- Files touched: `data/heights.json`, `data/mapdata.js` (regenerated), `OPEN_DECISIONS.md`, `CHANGELOG.md`, `index.html`, `version.json`.
+- Commit(s) + build id: `claude/heights-d1158`, build 20261102-1435 (Nov 2 catch-up after #241, #243, #244 and #246; first stamp 20261102-1247).
+- Tests run and result (widths, checks): `tests/heights.spec.js`, `tests/lantern_council.spec.js` and `tests/smoke.spec.js` at 320, 375 and 390: 23 passed. `node tools/scans/run.js` all PASS; `python3 tools/bump_build.py --check` passes. Save unchanged (`pixelpets.save.v2`, `v` 2).
+- Decisions made (colour + reasoning): D1158 green, as written in the design repo; no new ids.
+- Anything left unfinished: the other stale Heights notes June listed (`status`, `_about`, `_lore.arbiter`) are unchanged; they wait for June's or the STORY14 wording, as D1158 says. Merge after D1158's deadline (6:13 PM EST).
+
 ## 2026-10-31 19:55 ET: NEWS lore re-sync to STORY v0.7.8 (build 20261031-1955)
 
 - What changed and why: design STORY.md moved from v0.7.5 to v0.7.8 (§8 rows 12, 14 and 15 now match the build; §6 and §14 mark the "Professor" fix done), so `lore_check.py --game` flagged the feeds' version stamps, as built to (skills `walklings-lore-index`, `walklings-lore-feed`). The changed sections were re-read: no NEWS or Ribbit line had become wrong. The Lantern Council lead story now quotes the Captain's built line on the coastal road ("We are opening it. Walk it carefully."). `lore_version` is v0.7.8 in both feed files.
