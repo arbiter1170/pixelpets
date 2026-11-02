@@ -208,7 +208,7 @@ test('every interior uses the room scale, and every door can be framed', async (
   };
 
   const stairs = await samplesOf('hm_home_in', 2, 5, 'left', 'ArrowLeft');
-  const up = stairs.filter(s => s.id === 'hm_home_up');
+  const up = stairs.filter(s => s.id === 'hm_home_hall');   // PARTNER_DAY: the stairs come up into the hallway
   expect(up.length, 'stairs never arrived').toBeGreaterThan(0);
   expect(up.some(s => s.fading), 'upstairs scale waited until the fade ended').toBe(true);
   expect(up[0].scale).toBe(up[up.length - 1].scale);

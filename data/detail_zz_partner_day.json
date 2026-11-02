@@ -294,15 +294,16 @@
        "!story.starter_received": "Ilse is waiting, love.",
        "else": "Kettle's on."
       },
+      "after": "mom_tips_offer",
       "lines": {
        "!story.intro_seen": "@mom_luck",
-       "!story.starter_received": "@mom_wait",
+       "!story.starter_received": "Ilse's waiting at the Lodge, love. Up past the plaza. Go on!",
        "!story.mom_met": "@mom_hello",
-       "!story.mom_chore": "@mom_chore_nag",
+       "!story.mom_chore": "The table still has crumbs. Clear a spot for your Walkling.",
        "!story.mom_sent": "@mom_trip",
-       "!story.dream_woke": "@mom_north",
-       "!story.dream_study": "@mom_study",
-       "else": "@mom_tips"
+       "!story.dream_woke": "The north trail is open. Mahopac is quiet. Take your Walkling.",
+       "!story.dream_study": "Tell Warden Ilse what you dreamed. She gave you your Walkling.",
+       "else": "Your Walkling trusts you a little more. I can hear it."
       }
      },
      {
@@ -702,13 +703,6 @@
     true
    ]
   ],
-  "mom_wait": [
-   [
-    "say",
-    "Mom",
-    "Ilse's waiting at the Lodge, love. Up past the plaza. Go on!"
-   ]
-  ],
   "mom_hello": [
    [
     "say",
@@ -761,44 +755,11 @@
     "mom_tips_offer"
    ]
   ],
-  "mom_chore_nag": [
-   [
-    "say",
-    "Mom",
-    "The table still has crumbs. Clear a spot for {pet}."
-   ],
-   [
-    "run",
-    "mom_tips_offer"
-   ]
-  ],
-  "mom_north": [
-   [
-    "say",
-    "Mom",
-    "The north trail is open. Mahopac is quiet. Take {pet}."
-   ],
-   [
-    "run",
-    "mom_tips_offer"
-   ]
-  ],
-  "mom_study": [
-   [
-    "say",
-    "Mom",
-    "Tell Warden Ilse what you dreamed. She gave you {pet}."
-   ],
-   [
-    "run",
-    "mom_tips_offer"
-   ]
-  ],
   "mom_tips": [
    [
     "say",
     "Mom",
-    "{pet} trusts you a little more every day. I can see it."
+    "Your Walkling trusts you a little more. I can hear it."
    ],
    [
     "run",

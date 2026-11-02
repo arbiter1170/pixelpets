@@ -113,7 +113,7 @@ test('Mom grants the Hearth scarf once', async ({ page }) => {
     'story.rival1_done': true,
   });
   await boot(page, s);
-  await page.evaluate(() => PixelPets.goto('hm_home_up', 5, 4, 'up'));
+  await page.evaluate(() => PixelPets.goto('hm_home_in', 5, 5, 'up')   /* PARTNER_DAY: Mom lives downstairs */);
   await page.keyboard.press('Space');
   await expect(page.locator('#toast')).toHaveText('New adornment: Hearth scarf.');
   await shot390(page, page.locator('#toast'), 'hearth_scarf_toast');

@@ -203,10 +203,10 @@ test('Your Home draws the wall kit, and rooms without it keep their tiles', asyn
   expect(info[5][1].walk).toBe(true);
   expect(report.drawn).toEqual({
     cap: G, lip: F, face: W, trim: G, board: B, shine: S, glass: C, plain: W,
-    shade: F, side: F, bedShadow: F, bed: D,
+    shade: F, side: F, bedShadow: F, bed: F,   // PARTNER_DAY: (1,2) holds the coat pegs; the bed moved to your room upstairs
   });
   for (const row of report.shares) expect(row.share, row.id + ' ' + row.tile).toBeLessThanOrEqual(0.7);
-  expect(report.ids).toEqual(expect.arrayContaining(['home_mat', 'home_stairs', 'home_bed']));
+  expect(report.ids).toEqual(expect.arrayContaining(['home_mat', 'home_stairs', 'home_pegs', 'mom', 'maze']));
   expect(report.loftWin).toEqual({ tile: 'house_loft__face_win', part: 'face_win', shade: null });
   expect(report.loftGlass).toBe(C);
 });
@@ -236,7 +236,7 @@ const ROOMS = [
   { id: 'hc_school_in', skin: 'hc_school', windows: [3, 6], doors: [], jambs: [[3, 6, 'jamb_l'], [5, 6, 'jamb_r']] },
   { id: 'hm_flats_5', skin: 'flats_home', windows: [3, 9, 15], doors: [], jambs: [[0, 5, 'jamb_n'], [0, 7, 'jamb_s']] },
   { id: 'hm_flats_lobby', skin: 'flats_lobby', windows: [], doors: [3, 4, 7, 8], jambs: [[3, 11, 'jamb_l'], [5, 11, 'jamb_r']] },
-  { id: 'hm_home_up', skin: 'house_loft', windows: [3, 5], doors: [], jambs: [] },
+  { id: 'hm_home_up', skin: 'house_loft', windows: [3, 5], doors: [], jambs: [[3, 7, 'jamb_l'], [5, 7, 'jamb_r']] },   // PARTNER_DAY: a door mat to the hallway
   { id: 'hm_hq_f1', skin: 'house_hq', windows: [4], doors: [], jambs: [[5, 15, 'jamb_l'], [7, 15, 'jamb_r']] },
   { id: 'hm_hq_f2', skin: 'house_hq_up', windows: [5], doors: [], jambs: [] },
   { id: 'hm_lantern_in', skin: 'house_lantern', windows: [4], doors: [], jambs: [[3, 6, 'jamb_l'], [5, 6, 'jamb_r']] },

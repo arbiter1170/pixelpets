@@ -6433,7 +6433,7 @@ function tickPatrol(dt){
 const PATROL_GLIDE_MS = 420, WANDER_STEP_MS = 360, WANDER_REACH = 2, WANDER_GAP_R = 8;
 const WANDER_FIRST_MS = [3500, 7000], WANDER_DWELL_MS = [2200, 5200], GLANCE_MS = [4500, 9000], GLANCE_HOLD_MS = 1100;
 // Ids that must hold their spot even though the rules above would let them walk (story blockers in wide spaces, set pieces).
-const NPC_STILL = {};
+const NPC_STILL = { mom: 1 };   // PARTNER_DAY: Mom keeps her spot by the rug, off the stairs landing and the goodbye tile
 const lifeRnd = ([a, b]) => a + Math.random() * (b - a);
 // A tile another walker is gliding onto, the follower's tile, a creature or the holder's next tile: not free for an npc step.
 function npcStepTaken(x, y){
@@ -8818,6 +8818,8 @@ function interact(o){
   }
   const offer = o.kind === 'npc' ? trackOffer(o) : null;
   if (offer) return runSteps([['say', objName(o), line], ['choice', offer.prompt, [['Track it', [['trackSide', offer.chain]]], ['Not now', []]]]], ctx);
+  // PARTNER_DAY: `after` names a scene that follows a plain line when there is no track offer (Mom's "Ask Mom for tips?").
+  if (o.after && sceneSteps(o.after)) return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line], ['run', o.after]], ctx);
   return runSteps([['say', o.kind === 'prop' ? '' : objName(o), line]], ctx);
 }
 // What the keeper faces: a talkable object on the next tile, or the door of the doorstep you stand on (facing up).
