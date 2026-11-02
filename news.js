@@ -14,7 +14,11 @@
    Three editions a real day (MORNING before noon on the game clock, EVENING after, NIGHT in the late phase); the same
    state always returns the same edition. A new day or a new story flag reshuffles. The lead is the eligible story with
    the highest `lead` number, so the newest story beat makes the front page. Features lean to the place you stand in.
-   Signal bars thin the briefs (D866's rule for Ribbit). */
+   Signal bars thin the briefs (D866's rule for Ribbit).
+   The Glimmer side reads the paper on the cracked handset, and it leans dark (Vincent, Nov 1, 2026; design NEWS_FEED
+   "The Glimmer-side paper"): Glimmer-only wire items (any `when` with story.side=glimmer, not the glossy Bright Notice)
+   weigh DARK_W, the friendly Lantern Post weighs LANTERN_W and the rest of the town paper weighs TOWN_W. The lead and the
+   Keeper side are unchanged. */
 (function (root) {
   'use strict';
 
@@ -24,6 +28,9 @@
   const BRIEFS_N = 4;
   const VOICES_N = 3;
   const NOTICES_N = 3;
+  const DARK_W = 12;
+  const TOWN_W = 0.5;
+  const LANTERN_W = 0.25;
   const SECTIONS = [
     { id: 'towns', label: 'TOWNS' },
     { id: 'roads', label: 'ROADS' },
@@ -78,6 +85,17 @@
       .split('{seals}').join(String(Math.max(0, Number(m.seals) || 0)))
       .split('{steps}').join(steps);
   }
+  // Glimmer-only and not the company's own glossy voice: the cracked handset's dark wire.
+  function isDark(x) {
+    return (x.when || []).indexOf('story.side=glimmer') !== -1 && x.desk !== 'bright' && x.kind !== 'ad';
+  }
+  // Weight on the Glimmer side; 1 everywhere on the Keeper side, so that paper is unchanged.
+  function tone(x, side) {
+    if (side !== 'glimmer') return 1;
+    if (isDark(x)) return DARK_W;
+    if (x.desk === 'lantern') return LANTERN_W;
+    return x.desk === 'bright' || x.kind === 'ad' ? 1 : TOWN_W;
+  }
   function editionName(st) {
     if (st.phase === 'night') return 'NIGHT';
     return (Number(st.hh) || 0) < 12 ? 'MORNING' : 'EVENING';
@@ -106,10 +124,10 @@
     if (!lead && pool.length) lead = R.pickWeighted(pool, 1, rng, () => 1)[0];
     const rest = pool.filter(s => s !== lead);
     // Weather and time pieces only exist in their moment, so they lean in when they can run.
-    const features = R.pickWeighted(rest, FEATURES_N, rng, s => ((region && s.region === region) ? 3 : 1) * ((s.sky || s.phase) ? 3 : 1));
+    const features = R.pickWeighted(rest, FEATURES_N, rng, s => ((region && s.region === region) ? 3 : 1) * ((s.sky || s.phase) ? 3 : 1) * tone(s, side));
     const left = rest.filter(s => features.indexOf(s) === -1);
     const bars = Number.isInteger(st.signal) ? Math.max(1, Math.min(4, st.signal)) : 4;
-    const briefs = R.pickWeighted(left, BRIEFS_N, rng, () => 1).slice(0, Math.min(BRIEFS_N, bars));
+    const briefs = R.pickWeighted(left, BRIEFS_N, rng, s => tone(s, side)).slice(0, Math.min(BRIEFS_N, bars));
     // Features print in section order, so the paper reads like a paper.
     const order = id => SECTIONS.findIndex(x => x.id === id);
     features.sort((a, b) => order(a.section) - order(b.section));
@@ -136,15 +154,18 @@
     }
 
     const voicePool = list('voices').filter(ok);
-    const voices = R.pickWeighted(voicePool, VOICES_N, R.mulberry32(R.fnv1a('voices\n' + seed)), v => ((region && v.region === region) ? 3 : 1) * ((v.sky || v.phase) ? 3 : 1));
+    const voices = R.pickWeighted(voicePool, VOICES_N, R.mulberry32(R.fnv1a('voices\n' + seed)), v => ((region && v.region === region) ? 3 : 1) * ((v.sky || v.phase) ? 3 : 1) * tone(v, side));
     const noticePool = list('notices').filter(n => ok(n) && (n.kind !== 'ad' || side === 'glimmer'));
     const ads = noticePool.filter(n => n.kind === 'ad');
     const plain = noticePool.filter(n => n.kind !== 'ad');
     const nrng = R.mulberry32(R.fnv1a('notices\n' + seed));
     const notices = R.pickWeighted(ads, side === 'glimmer' ? 1 : 0, nrng, () => 1)
-      .concat(R.pickWeighted(plain, NOTICES_N, nrng, n => (region && n.region === region) ? 3 : 1)).slice(0, NOTICES_N);
+      .concat(R.pickWeighted(plain, NOTICES_N, nrng, n => ((region && n.region === region) ? 3 : 1) * tone(n, side))).slice(0, NOTICES_N);
     // One poll a day (not per edition), so a vote holds all day.
-    const pollPool = list('polls').filter(ok);
+    // On the Glimmer side the day's poll comes from the dark polls when one is open.
+    const allPolls = list('polls').filter(ok);
+    const darkPolls = side === 'glimmer' ? allPolls.filter(isDark) : [];
+    const pollPool = darkPolls.length ? darkPolls : allPolls;
     const poll = pollPool.length ? pollPool[R.fnv1a('poll\n' + storySeed) % pollPool.length] : null;
     let pct = null;
     if (poll) {
