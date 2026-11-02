@@ -11,6 +11,15 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): Vincent, Nov 1, 2026: the cracked handset's paper turns dark; secrets hinted, never confirmed; INSIGN gated behind a reveal flag. Green: weights x12 / x0.5 / x0.25; dark polls first; the lead left alone so story beats still headline. New copy is placeholder under D1013 until Design signs it.
 - Anything left unfinished: Design review of the copy and of the design-repo gate PR. The lead still comes from story beats, so a friendly beat can still headline on the Glimmer side.
 
+## 2026-11-02 12:49 ET: Glimmerwell cracked handset: green terminal, Glimmerwell accents (D1100, revised)
+
+- What changed and why: D1100 option A would have repainted the cracked handset (CRACK//HAND) in Glimmerwell's soot and wine. Vincent revised it on Nov 1, 2026: the handset should still be mostly green. The green terminal stays exactly as it was. Glimmerwell shows only as accents: the bright green outer ring becomes a 2 px wine ring with a 1 px crimson `#c81818` ring outside it (same 6 px total), and the OFF-CREST kicker and `.who` speaker names turn honey `y` `#ffcd75`. Colour only; no layout, size or copy change. The KEEPER1 phone is unchanged.
+- Files touched: `style.css` (three `#ovPhone.hack` values and one comment line), `tests/handset_dark.spec.js` (new), `tests/README.md`, `handoff/shots/glimmer_handset/` (8 shots), `index.html`, `version.json`, `CHANGELOG.md`. `game.js` is unchanged.
+- Commit(s) + build id: earlier commits on this branch built the full soot and wine version; this commit brings the handset back to green with the accents. Build 20261102-1429 (after catching up with #244 and #246).
+- Tests run and result (widths, checks): `tests/handset_dark.spec.js` plus civic, ribbit, news and phone_contacts at 320, 375 and 390 (result line in the PR). `tools/scans/run.js` and `bump_build.py --check` pass.
+- Decisions made (colour + reasoning): D1100 revised by Vincent (Nov 1, 2026): mostly green, Glimmerwell as accents only. No new PAL keys, look keys or save fields. "mint" untouched (D1087).
+- Anything left unfinished: the darker Glimmer-side NEWS paper Vincent asked for ships as its own PR.
+
 ## 2026-10-31 19:55 ET: NEWS lore re-sync to STORY v0.7.8 (build 20261031-1955)
 
 - What changed and why: design STORY.md moved from v0.7.5 to v0.7.8 (§8 rows 12, 14 and 15 now match the build; §6 and §14 mark the "Professor" fix done), so `lore_check.py --game` flagged the feeds' version stamps, as built to (skills `walklings-lore-index`, `walklings-lore-feed`). The changed sections were re-read: no NEWS or Ribbit line had become wrong. The Lantern Council lead story now quotes the Captain's built line on the coastal road ("We are opening it. Walk it carefully."). `lore_version` is v0.7.8 in both feed files.
