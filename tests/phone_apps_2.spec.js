@@ -1,5 +1,6 @@
-// Phone apps part 2 (Vincent, Oct 28, 2026; D864-D869): Watch Desk / gigs, Census leak, signal by place, Ribbit presets,
-// the step log and the BOTNET shelf. Save stays v2; stepLog and chirps are additive and cleaned by normalizeV2.
+// Phone apps part 2 (Vincent, Oct 28, 2026; D864-D869): BOTNET gigs, Census leak, signal by place, Ribbit presets,
+// the step log and the BOTNET shelf. The Keeper1's KEEPERUAV desk and the GLOW step view were removed (Nov 2, 2026).
+// Save stays v2; stepLog and chirps are additive and cleaned by normalizeV2.
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -32,15 +33,24 @@ async function hack(page) {
 }
 const bars = page => page.locator('#phoneSignal').getAttribute('data-bars');
 
-test('Watch Desk lists real open errands and TRACK follows one; the cracked handset calls them gigs', async ({ page }) => {
+const noJobsApp = async page => {
+  await page.locator('#phoneBtn').click();
+  await expect(page.locator('#phoneHome')).toBeVisible();
+  await expect(page.locator('#phoneJobs')).toBeHidden();
+  await page.locator('#phoneClose').click();
+};
+
+test('BOTNET lists real open errands as gigs and TRACK follows one; the Keeper1 has no jobs app', async ({ page }) => {
   await boot(page);
+  await noJobsApp(page);
+  await hack(page);
   const real = await page.evaluate(() => PixelPets.sideActive.map(a => a.chain));
   await openApp(page, 'jobs');
   expect(await page.locator('.phone-job[data-chain]').evaluateAll(els => els.map(e => e.dataset.chain))).toEqual(real);   // every open side chain, in order
   await page.evaluate(x => PixelPets.debugSideChains(x), EXTRA);
   await openApp(page, 'jobs');
   const row = page.locator('.phone-job[data-chain="t_lamp"]');
-  await expect(row.locator('.phone-job-title')).toHaveText('Patrol: Lamp count');
+  await expect(row.locator('.phone-job-title')).toHaveText('Gig: Lamp count');
   await expect(row.locator('.phone-job-text')).toHaveText('Test chain three. (Hearthmoor)');
   await page.evaluate(() => PixelPets.trackSide('none'));
   await openApp(page, 'jobs');
@@ -49,18 +59,12 @@ test('Watch Desk lists real open errands and TRACK follows one; the cracked hand
   await row.locator('.phone-job-track').click();
   await expect(row.locator('.phone-job-track')).toHaveText('TRACKING');
   expect(await page.evaluate(() => PixelPets.state.ui.sideTracked)).toBe('t_lamp');
-  await page.locator('#phoneClose').click();
-  await hack(page);
-  await openApp(page, 'jobs');
-  await expect(page.locator('.phone-job[data-chain="t_lamp"] .phone-job-title')).toHaveText('Gig: Lamp count');
   await page.evaluate(() => PixelPets.debugSideChains(null));
 });
 
 test('Census leak: the cracked handset reads a count while the lamps burn, then dead air; the Keeper1 never shows it', async ({ page }) => {
   await boot(page, { 'story.met_census': true });
-  await openApp(page, 'jobs');
-  await expect(page.locator('#phoneBody')).not.toContainText('Census feed');
-  await page.locator('#phoneClose').click();
+  await noJobsApp(page);
   await hack(page);
   await openApp(page, 'jobs');
   await expect(page.locator('#phoneBody')).toContainText(/Census feed {2}Units logged on Route 2 today: \d+\./);
@@ -71,9 +75,7 @@ test('Census leak: the cracked handset reads a count while the lamps burn, then 
 
 test('BOTNET shelf: three care goods at their usual prices in the shop sheet, cracked handset only', async ({ page }) => {
   await boot(page);
-  await openApp(page, 'jobs');
-  await expect(page.locator('.phone-shelf')).toHaveCount(0);
-  await page.locator('#phoneClose').click();
+  await noJobsApp(page);
   await hack(page);
   await openApp(page, 'jobs');
   await page.locator('.phone-shelf').click();
@@ -130,7 +132,7 @@ test('Ribbit presets: one set chirp per finished step, it stays posted after a r
   await expect(page.locator('.ribbit-preset')).toHaveCount(0);
 });
 
-test('Step log: GLOW counts today\'s steps with a kind line, keeps 7 days, and junk in the save is dropped', async ({ page }) => {
+test('Step log: today\'s steps still reach the 7-day save log, and junk in the save is dropped', async ({ page }) => {
   await boot(page, null, s => {
     s.stepLog = { '2026-01-01': 10, '2026-01-02': 20, '2026-01-03': 30, '2026-01-04': 40, '2026-01-05': 50, '2026-01-06': 60, '2026-01-07': 70, '2026-01-08': 80, bad: 5, '2026-01-09': -3 };
     s.chirps = { wake: 9, lodge: 'x', rival1: 2 };
@@ -142,34 +144,9 @@ test('Step log: GLOW counts today\'s steps with a kind line, keeps 7 days, and j
   expect(st.chirps).toEqual({ rival1: 2 });
   await page.evaluate(() => PixelPets.goto('route1'));
   for (const d of ['down', 'down', 'up', 'up', 'down', 'up']) { await page.evaluate(x => PixelPets.walkStep(x), d); await page.waitForTimeout(260); }
-  await openApp(page, 'glow');
-  const today = await page.locator('.step-today').textContent();
-  const n = Number(/Today: (\d+)/.exec(today)[1]);
+  const n = await page.evaluate(() => PixelPets.state.care.steps | 0);
   expect(n).toBeGreaterThan(0);
-  await expect(page.locator('.step-note')).toBeVisible();
-  await expect(page.locator('.step-note')).toHaveText(n < 50 ? 'A few steps today.' : 'A little walk today.');
   const log = await page.evaluate(() => PixelPets.state.stepLog);
   expect(Object.keys(log)).toHaveLength(7);
   expect(Object.values(log)).toContain(n);
-});
-
-test('GLOW keeps the empty-day line at 0 steps and a shorter line from 1 to 49', async ({ page }) => {
-  await boot(page);
-  const few = 'A few steps today.';
-  const none = 'No walk yet today. Any time is fine.';
-  const little = 'A little walk today.';
-  const want = { 0: none, 1: few, 8: few, 49: few, 50: little };
-  for (const n of [0, 1, 8, 49, 50]) {
-    await page.evaluate(steps => {
-      const S = PixelPets.state;
-      if (!S.care || typeof S.care !== 'object') S.care = {};
-      S.care.d = PixelPets.wildAcorns.day;
-      S.care.steps = steps;
-    }, n);
-    await openApp(page, 'glow');
-    await expect(page.locator('.step-today')).toBeVisible();
-    await expect(page.locator('.step-today')).toHaveText(n === 1 ? 'Today: 1 step' : 'Today: ' + n + ' steps');
-    await expect(page.locator('.step-note')).toBeVisible();
-    await expect(page.locator('.step-note')).toHaveText(want[n]);
-  }
 });
