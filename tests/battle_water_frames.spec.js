@@ -1,6 +1,6 @@
 // Battle scene water (BATTLE_BACKDROPS, D1009). The second water frame is the whole scene drawn again, not the water
-// rects repainted on top, so a bridge, dock or prop drawn over the water never blinks out (Route 1's bridge did, every
-// other half second, Nov 2, 2026). Runs at 320, 375 and 390.
+// rects repainted on top, so a bridge, dock or prop drawn over the water never blinks out (Route 1's bridge and Fernbrook's
+// apple crate did, every other half second, Nov 2, 2026). Runs at 320, 375 and 390.
 const { test, expect } = require('@playwright/test');
 const { starterSave, installSave, trackErrors, gotoGame } = require('./helpers');
 
@@ -37,11 +37,11 @@ const patch = (page, [x0, y0, w, h]) => page.evaluate(({ x0, y0, w, h }) => {
   return Array.from(c.getContext('2d').getImageData(x0, y0, w, h).data).join(',');
 }, { x0, y0, w, h });
 
-test('the two water frames differ only inside the water, and every bridge is the same in both', async ({ page }) => {
+test('the two water frames differ only inside the water; every bridge and prop is the same in both', async ({ page }) => {
   test.setTimeout(90000);
   await boot(page);
   const r = await page.evaluate((bridges) => {
-    const out = { wet: 0, outside: [], bridge: [], still: [] };
+    const out = { wet: 0, outside: [], bridge: [], props: [], still: [] };
     const bridgeAt = Object.fromEntries(Object.entries(bridges).map(([k, f]) => [k, new Function('W', 'hz', 'return (' + f + ')(W, hz)')]));
     for (const [W, H] of [[61, 100], [60, 83], [63, 83], [56, 70], [70, 110]]) for (const mode of ['day', 'night']) {
       for (const id of PixelPets.battleSceneIds()) {
@@ -57,6 +57,16 @@ test('the two water frames differ only inside the water, and every bridge is the
         }
         if (a.wet.length) { out.wet++; if (!moved) out.still.push(id + ' ' + W + 'x' + H + ' ' + mode); }
         if (outside) out.outside.push(id + ' ' + W + 'x' + H + ' ' + mode + ': ' + outside + ' px');
+        // landmarks and props (the deco layer, e.g. Fernbrook's apple crate on the pond) hold in both frames
+        // (a landmark's own water, Hushwater Falls' fall and pool, is meant to move and is left out)
+        const dc = PixelPets.battleSceneArt(id, W, H, mode, 'deco'), deco = dc.getContext('2d').getImageData(0, 0, W, H).data;
+        const decoWet = (x, y) => dc.wet.some(([wx, wy, ww, wh]) => x >= wx && x < wx + ww && y >= wy && y < wy + wh);
+        let propDiff = 0;
+        for (let i = 0; i < deco.length; i += 4) {
+          const x = (i / 4) % W, y = (i / 4 / W) | 0;
+          if (deco[i + 3] && !decoWet(x, y) && (da[i] !== db[i] || da[i + 1] !== db[i + 1] || da[i + 2] !== db[i + 2])) propDiff++;
+        }
+        if (propDiff) out.props.push(id + ' ' + W + 'x' + H + ' ' + mode + ': ' + propDiff + ' px');
         if (bridgeAt[id]) {
           const hz = BattleBG.lay(W, H).hz, [bx, by, bw, bh] = bridgeAt[id](W, hz);
           let diff = 0;
@@ -73,7 +83,37 @@ test('the two water frames differ only inside the water, and every bridge is the
   expect(r.wet, 'scenes with water').toBeGreaterThan(0);
   expect(r.outside, 'pixels that change outside the water').toEqual([]);
   expect(r.bridge, 'bridge pixels that change between the frames').toEqual([]);
+  expect(r.props, 'landmark or prop pixels that change between the frames').toEqual([]);
   expect(r.still, 'water that never moves').toEqual([]);
+});
+
+// Phones size the battle canvas differently (Fernbrook's crate sat on the pond on an iPhone, not at 390 x 844), so sweep
+// canvas sizes: wherever a landmark, prop or bridge lands on water, it must look the same in both water frames.
+test('props and bridges over water hold in both frames at every canvas size', async ({ page }) => {
+  test.setTimeout(90000);
+  await boot(page);
+  const r = await page.evaluate(() => {
+    let over = 0; const bad = [];
+    const inR = (rs, x, y) => rs.some(([wx, wy, ww, wh]) => x >= wx && x < wx + ww && y >= wy && y < wy + wh);
+    for (const id of PixelPets.battleSceneIds()) for (let W = 56; W <= 72; W += 4) for (let H = 50; H <= 120; H += 4) {
+      const a = PixelPets.battleSceneArt(id, W, H, 'day', undefined, 0); if (!a.wet.length) continue;
+      const b = PixelPets.battleSceneArt(id, W, H, 'day', undefined, 1), base = PixelPets.battleSceneArt(id, W, H, 'day', 'base', 0);
+      const dc = PixelPets.battleSceneArt(id, W, H, 'day', 'deco');
+      const da = a.getContext('2d').getImageData(0, 0, W, H).data, db = b.getContext('2d').getImageData(0, 0, W, H).data;
+      const dd = dc.getContext('2d').getImageData(0, 0, W, H).data;
+      let diff = 0;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 4;
+        if (!dd[i + 3] || inR(dc.wet, x, y) || !inR(a.wet, x, y)) continue;   // a prop pixel (not the landmark's own water) over water
+        over++;
+        if (da[i] !== db[i] || da[i + 1] !== db[i + 1] || da[i + 2] !== db[i + 2]) diff++;
+      }
+      if (diff) bad.push(id + ' ' + W + 'x' + H + ': ' + diff + ' px');
+    }
+    return { over, bad };
+  });
+  expect(r.over, 'the sweep finds props over water (Fernbrook\'s crate and others)').toBeGreaterThan(0);
+  expect(r.bad, 'prop pixels over water that change between the frames').toEqual([]);
 });
 
 test('Route 1 in battle: the water moves and the bridge holds on every frame in FULL motion', async ({ page }) => {
