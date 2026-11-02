@@ -1319,6 +1319,7 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 #ovPhone .contact-name{max-width:100%;font-size:18px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #ovPhone .contact-place{font-size:13px;line-height:1.15;opacity:.8}
 #ovPhone .contact-quest{font-size:11px;letter-spacing:.6px;line-height:1.2;padding:0 4px}
+#ovPhone .contact-duty{font-size:11px;letter-spacing:.6px;line-height:1.2;opacity:.8;margin:0}   /* NPC_RANKS: Watch, Clerk... */
 #ovPhone .contact-star{flex:0 0 auto;min-width:44px;min-height:44px;margin:0;padding:0 8px}
 #ovPhone .contact-star[aria-pressed="true"]{background:#1d5c38;color:#f6e6c0}
 #ovPhone.hack .contact-star[aria-pressed="true"]{background:#9dffc0;color:#07140e}
@@ -1805,3 +1806,34 @@ body.mhc-frame.ctl-modern.scene-on:not(.gear-locked) .fc-dock #gearFloat{pointer
 .sc-echo{margin-top:4px;color:var(--s)}
 .sc-echo b{color:var(--w);font-weight:normal}
 #scStill{min-height:44px}
+/* SIDE_BADGE (Vincent, Nov 2, 2026): the Standing icon beside the place chip, its hold stripe, and the arrival bar. */
+.side-badge{position:relative;flex:0 0 44px;width:44px;height:44px;margin:0;z-index:3;align-self:center}
+.side-badge.sb-free{position:absolute}
+body.ctl-modern #scr-walk > #sideBadge{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none}
+.side-btn{position:relative;box-sizing:border-box;width:44px;height:44px;min-width:44px;min-height:44px;margin:0;padding:0;display:flex;align-items:center;justify-content:center;border:2px solid var(--d);outline:1px solid var(--k);border-radius:0;background:var(--k);cursor:pointer;pointer-events:auto}
+.side-btn:focus-visible{outline:3px solid var(--y);outline-offset:1px}
+.side-btn:active{transform:translateY(1px)}
+.side-btn canvas{width:24px;height:24px;margin-bottom:5px;image-rendering:pixelated;image-rendering:crisp-edges}
+.side-stripe{position:absolute;left:5px;right:5px;bottom:4px;height:4px;background:var(--m)}
+.side-badge[data-hold="keepers"] .side-stripe{background:linear-gradient(90deg,var(--y) 0 50%,var(--g) 50% 100%)}
+.side-badge[data-hold="glimmer"] .side-stripe{background:linear-gradient(90deg,var(--V) 0 50%,var(--N) 50% 100%);box-shadow:0 0 0 1px var(--h)}
+.side-badge[data-hold="split"] .side-stripe{background:linear-gradient(90deg,var(--y) 0 25%,var(--g) 25% 50%,var(--V) 50% 75%,var(--N) 75% 100%)}
+.side-badge[data-hold="wild"] .side-stripe{background:var(--m)}
+.side-bar{position:absolute;left:calc(100% + 4px);top:0;box-sizing:border-box;height:44px;max-width:168px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:2px 8px;border:2px solid var(--d);outline:1px solid var(--k);background:var(--k);white-space:nowrap;overflow:hidden;pointer-events:none;z-index:4;animation:sbOpen 160ms steps(4,end)}
+.side-bar[hidden]{display:none}
+.side-bar b{display:block;overflow:hidden;text-overflow:ellipsis;color:var(--h);font-size:12px;line-height:12px;font-weight:normal}
+.side-bar span{display:block;overflow:hidden;text-overflow:ellipsis;font-size:14px;line-height:14px}
+.side-badge[data-hold="keepers"] .side-bar span{color:var(--y)}
+.side-badge[data-hold="glimmer"] .side-bar{border-left:4px solid var(--V)}
+.side-badge[data-hold="glimmer"] .side-bar span,.side-badge[data-hold="split"] .side-bar span{color:var(--w)}
+.side-badge[data-hold="wild"] .side-bar span{color:var(--h)}
+.fc-tr .side-bar{left:auto;right:calc(100% + 4px)}
+@keyframes sbOpen{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@media (prefers-reduced-motion: reduce){.side-bar{animation:none!important}.side-btn:active{transform:none}}
+body.mhc-frame.ctl-modern .fc-dock-chip #sideBadge{margin-left:6px}
+.side-inner .side-rows{display:flex;flex-direction:column;gap:10px;margin:6px 0 10px}
+.side-row{display:flex;gap:10px;align-items:flex-start}
+.side-row .st-emblem{flex:0 0 32px;width:32px;height:32px;image-rendering:pixelated;image-rendering:crisp-edges}
+.side-row .side-name{display:block;color:var(--y);font-size:16px;line-height:1.2;font-weight:normal}
+.side-row[data-side="glimmer"] .side-name{color:var(--w)}
+.side-row .side-line{margin:2px 0 0;font-size:14px;line-height:1.25;color:var(--w)}

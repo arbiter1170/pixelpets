@@ -521,6 +521,7 @@ function screenName(){
     if (on('ovBasket')) return 'Basket';
     if (on('ovGeo')) return 'Place';
     if (on('ovClock')) return 'Clock';
+    if (on('ovSide')) return 'Standing';
     if (on('ovEnv')) return 'Sky';
     if (on('ovNewer')) return 'Newer save';
     if (on('ovDebug')) return 'Debug';
@@ -1017,7 +1018,8 @@ function mhcNoticeBox(wide){
   if (s.height < 20) return null;
   // wide: D782's slot, the chip's whole room (136 / 191 / 206 px), covering the chip for the toast's life.
   // Otherwise beside the chip, so the hour stays in view (#200), when there is room for it there.
-  const left = Math.round(c.right + 4);
+  const sb = $('#sideBadge'), sbIn = sb && sb.parentNode === slot ? sb.getBoundingClientRect() : null;   // SIDE_BADGE sits after the chip
+  const left = Math.round(Math.max(c.right, sbIn ? sbIn.right : 0) + 4);
   const width = Math.round(s.right - left);
   if (wide || width < 36) return { left: Math.round(s.left), top: Math.round(s.top), width: Math.round(s.width), height: Math.round(s.height) };
   return { left: left, top: Math.round(s.top), width: width, height: Math.round(s.height) };
@@ -1265,6 +1267,7 @@ function applyControls(){
   renderControlsRows(); syncWalkTip(); fitAll();
   try { syncCareAlert(); } catch (e) {}
   try { syncNavArt(true); } catch (e) {}
+  try { seatSideBadge(); } catch (e) {}
 }
 function renderControlsRows(){
   const m = ctlPick() === 'modern', b = $('#setControls'); if (!b) return;
@@ -1525,7 +1528,7 @@ let befLes = { took: false, fromBar: false, bar: false };
 let lessonDraw = { hop: 0, y: 0 };
 let unlock = { q: [], on: false, id: null, since: 0, holes: [], held: null };
 let envPeek = false;   // mapReadySoon: read the state as if TODAY were shut, without touching its hidden attribute
-const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envPeek && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
+const overlayOpen = () => !$('#ovBattle').hidden || !$('#ovSheet').hidden || !$('#ovEvolve').hidden || !!scene || !$('#ovBasket').hidden || !$('#ovGeo').hidden || (!envPeek && !$('#ovEnv').hidden) || !$('#ovStats').hidden || ($('#ovKit') && !$('#ovKit').hidden) || !$('#ovWalkling').hidden || !$('#ovReset').hidden || !$('#ovCopy').hidden || !$('#ovPhone').hidden || !$('#ovLook').hidden || ($('#ovWardrobe') && !$('#ovWardrobe').hidden) || !$('#ovSettings').hidden || !$('#ovBag').hidden || !$('#ovShop').hidden || !$('#ovMap').hidden || !$('#ovJournal').hidden || !$('#ovQuest').hidden || !$('#ovRep').hidden || !$('#ovPlay').hidden || ($('#ovClock') && !$('#ovClock').hidden) || ($('#ovSide') && !$('#ovSide').hidden) || debugOpen() || PPCloud.overlayOpen() || (window.PPNet && PPNet.overlayOpen()) || (tut.on && !tut.soft);
 
 /* integer-scale canvases to fit their container */
 function fitCanvas(c, maxW, maxH){
@@ -1697,6 +1700,7 @@ function syncMhcDock(on){
     }
   }
   try { syncMhcGroupHeads(); } catch (e) {}
+  try { seatSideBadge(); } catch (e) {}
 }
 function syncMhcGroupHeads(){
   const host = $('#fcDockR3'), strip = $('#coopStrip'), map = $('#mapWrap');
@@ -1876,7 +1880,7 @@ function refreshHudPads(){
   hudFree(); syncWalkCam();
 }
 // D236 overridden Oct 19, 2026, 9:13 PM ET: leftover and out-of-bounds edges stay the black void.
-function fitAll(){ try { syncTipBand(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} try { placeMhcToast(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
+function fitAll(){ try { syncTipBand(); } catch (e) {} try { seatSideBadge(); } catch (e) {} syncMhcFrame(); try { applyMhcClockWidth(); } catch (e) {} try { placeMhcToast(); } catch (e) {} fitBattle(); if (!$('#ovMap').hidden) fitRegionMap();
   const tb = $('#tabs'); if (tb) document.documentElement.style.setProperty('--tabs-h', tb.offsetHeight + 'px');   // the text box sits above the tab bar
   const appW = Math.min(($('#app') && $('#app').getBoundingClientRect().width) || window.innerWidth, 480) - 36;
   fitPetScene();
@@ -4684,7 +4688,45 @@ function hopLanding(x, y, dx, dy){
 const warpAt = (x, y) => objAt(x, y, o => o.kind === 'warp');
 const doorAt = (x, y) => objAt(x, y, o => o.kind === 'door');
 const objName = o => o.kind === 'trainer' ? (TRAINERS[o.id] || {}).name || '' : o.name || '';
-const shownName = n => (window.PPRep && (PPRep.entry(n) || {}).label) || n;   // CALEB_FIX: display label only; keys, S.rep and lookups keep the raw name
+// NPC_RANKS (Vincent, Nov 2, 2026): every Keeper and Glimmerwell NPC shows rank, then name ("Master Fen", "Associate Tobin").
+// The rank lives on the cast entry (data/reputation.json `ranks`). A rankWhen names a condition below; while it fails
+// the person shows the bare given name. Display only: keys, S.rep, the phone book and every lookup keep the raw name.
+const RANK_WHEN = { rook_lanyard: () => rookLanyardOn() };
+function rankOf(e){
+  if (!e || typeof e.rank !== 'string' || !e.rank) return '';
+  if (e.rankWhen && !(RANK_WHEN[e.rankWhen] && RANK_WHEN[e.rankWhen]())) return '';
+  return e.rank;
+}
+const shownName = n => {   // CALEB_FIX: a cast `label` is display only too
+  const e = window.PPRep && n ? PPRep.entry(n) : null;
+  if (!e) return n;
+  const r = rankOf(e);
+  if (r) return r + ' ' + (e.given || e.name);
+  if (e.rank && e.given) return e.given;
+  return e.label || n;
+};
+// Dev check (read-only; PixelPets.rankCheck). Every Keeper or Glimmerwell cast entry has a rank, a placeholder (rankOpen)
+// or a flag (rankFlag); a folded name (rep.js REP_CANON) is checked under the name it folds into.
+function rankCheck(){
+  const out = { missing: [], placeholders: [], flagged: [], bad: [], battle: [] };
+  const cast = (typeof MAPDATA === 'object' && MAPDATA.reputation && MAPDATA.reputation.cast) || [];
+  for (const e of cast) {
+    if (!e || (e.faction !== 'keepers' && e.faction !== 'glimmer' && !e.rank)) continue;
+    if (window.PPRep && PPRep.key(e.name) !== e.name) continue;
+    if (e.rankOpen) out.placeholders.push(e.name + ' (' + e.rankOpen + ')');
+    else if (e.rankFlag) out.flagged.push(e.name + ' (' + e.rankFlag + ')');
+    else if (!e.rank) out.missing.push(e.name);
+    if (e.rank && !e.given) out.bad.push(e.name + ': no given name');
+  }
+  for (const [id, t] of Object.entries(TRAINERS_BASE)) {
+    if (!t || !t.name || !(window.PPRep && rankOf(PPRep.entry(t.name)))) continue;
+    for (const key of ['trainerIntro', 'trainerWin']) {
+      const line = battleLine(key, { player: 'You', trainer: shownName(t.name), title: '', foe: 'X' });
+      if (/Trial Master|\{title\}|  /.test(line) || line.indexOf(shownName(t.name)) < 0) out.battle.push(id + ' ' + key + ': ' + line);
+    }
+  }
+  return out;
+}
 // Letter lines (D174). The design JSON stays verbatim. Samples live in data/reputation.json and are gated on story.hc_invite.
 // The letter goes in front of everyday chatter (else, standing., story.side) and behind a later story flag or a scene pointer.
 (function spliceRepLetters(){
@@ -5238,11 +5280,14 @@ function drawLampLights(g, cx, cy, VW, VH){
 // Rook wears a Junior Bright lanyard once Glimmerwell has claimed him: on the glimmer path from the side
 // pick, and on either path after Fernbrook (story.slice_end) or the quarry sale. It comes off when he
 // converts (rook_end ally) or when he quits (story.rook_quit, D136).
-function rookWithLanyard(look){
-  if (!S || !S.flags || S.flags['story.rook_end'] === 'ally' || S.flags['story.rook_quit']) return look;
+// The same test gives him his "Junior Bright" rank in shownName (NPC_RANKS, D902 default).
+function rookLanyardOn(){
+  if (!S || !S.flags || S.flags['story.rook_end'] === 'ally' || S.flags['story.rook_quit']) return false;
   const glimmer = S.flags['story.side'] === 'glimmer';
-  const show = (glimmer && S.flags['story.side_pick_done']) || S.flags['story.slice_end'] || S.flags['story.quarry_bought'];
-  if (!show) return look;
+  return !!((glimmer && S.flags['story.side_pick_done']) || S.flags['story.slice_end'] || S.flags['story.quarry_bought']);
+}
+function rookWithLanyard(look){
+  if (!rookLanyardOn()) return look;
   return Object.assign({}, look, { outfit: 'hoodie_hem', accent: 'N', accessory: 'lanyard' });
 }
 function npcLook(o){
@@ -6718,6 +6763,7 @@ function arriveAt(at){
   if (!musicHold) { const theme = trackFor(CUR); if (theme) PPSound.music(theme); }
   try { syncPlaceYield(true); } catch (e) {}
   try { noteMhcRestRoom(); } catch (e) {}
+  try { sideBarArrive(); } catch (e) {}   // SIDE_BADGE: who holds the town or route you just walked into
 }
 function enterDoor(dr){
   if (careLes.phase === 'c1' || careLes.phase === 'act') careFallback('door');
@@ -8587,7 +8633,7 @@ function guardOverlayOpen(el, opts){
 // they share the helper so the line that reveals them cannot press them. Called again after the
 // net sheets exist. A second call on the same element does nothing.
 function bindOpenGuards(){
-  ['ovWardrobe', 'ovGeo', 'ovSheet', 'ovMap', 'ovRep', 'ovBag', 'ovPlay', 'ovShop', 'ovJournal', 'ovStats', 'ovWalkling', 'ovPhone', 'ovSettings', 'ovReset', 'ovCopy', 'ovEvolve', 'ovBattle', 'ovClock', 'ovEnv', 'ovKit', 'sayWheel', 'holderCard', 'roomCodeOv', 'blockedOv', 'ovCloud', 'coopAsk'].forEach(id => guardOverlayOpen($('#' + id)));
+  ['ovWardrobe', 'ovGeo', 'ovSheet', 'ovMap', 'ovRep', 'ovBag', 'ovPlay', 'ovShop', 'ovJournal', 'ovStats', 'ovWalkling', 'ovPhone', 'ovSettings', 'ovReset', 'ovCopy', 'ovEvolve', 'ovBattle', 'ovClock', 'ovSide', 'ovEnv', 'ovKit', 'sayWheel', 'holderCard', 'roomCodeOv', 'blockedOv', 'ovCloud', 'coopAsk'].forEach(id => guardOverlayOpen($('#' + id)));
   guardOverlayOpen($('#ovLook'), { usesOptArm: true });
   guardOverlayOpen($('#ovBasket'), { usesOptArm: true });
   guardOverlayOpen($('#ovQuest'), { usesOptArm: true });
@@ -9513,7 +9559,7 @@ async function sceneBattle(id){
   const sub = s => String(s).replace(/\{(player|name)\}/g, playerName());
   const intro = battleGreeting(id);
   if (scene.lastSay !== sub(intro)) await sayBox(t.name, sub(intro));   // the Hall panel already opened with it
-  await sayBox('', battleLine('trainerSummon', { trainer: t.name, foe: nameOf(SP_INDEX[ln], +st) }));
+  await sayBox('', battleLine('trainerSummon', { trainer: shownName(t.name), foe: nameOf(SP_INDEX[ln], +st) }));
   $('#ovScene').hidden = true;
   S.flags['spotted.' + id] = true;                     // §6.1: set when the battle opens; a trainer never spots twice
   const res = await new Promise(resolve => { if (!openBattle({ kind: 'trainer', trainerId: id, mapIntro: true, onEnd: resolve })) resolve(null); });
@@ -10503,6 +10549,7 @@ function renderEnv(){
   const place = $('#thPlace');
   if (place && place.textContent !== name) { place.textContent = name || ''; invalidateCueZone(); }
   renderClockChip();
+  try { syncSideBadge(); } catch (e) {}
   if (!ENV) return;
   if (!$('#ovEnv').hidden) renderEnvCard();
 }
@@ -10676,15 +10723,18 @@ function makeFoe(form, level, moveIds, opener){
     moves: (ids.length ? ids : ['wobble']).map(id => ({ id, uses: MOVES[id].uses == null ? Infinity : MOVES[id].uses })) };
 }
 const foeName = f => nameOf(f.si, f.stage);
-const foeLabel = f => battle.kind === 'wild' ? 'Wild ' + foeName(f) : TRAINERS[battle.trainerId].name + "'s " + foeName(f);
+const foeLabel = f => battle.kind === 'wild' ? 'Wild ' + foeName(f) : holderShown(TRAINERS[battle.trainerId]) + "'s " + foeName(f);
 const tr = () => TRAINERS[battle.trainerId] || null;
+// NPC_RANKS: a holder with a cast rank shows "Master Fen" and drops the battle title ("Trial Master"), so no line stacks two ranks.
+const holderRanked = t => !!(t && window.PPRep && rankOf(PPRep.entry(t.name)));
+const holderShown = t => t ? shownName(t.name) : '';
+const holderVars = t => ({ trainer: holderShown(t), title: t && !holderRanked(t) ? (t.title || '') : '' });
 function textVars(extra){
   const t = tr(), f = curFoe(), p = activePet();
-  return Object.assign({ player: playerName(), name: playerName(), pet: p ? petName(p) : '', foe: f ? foeName(f) : '',
-    trainer: t ? t.name : '', title: t ? t.title : '' }, extra || {});
+  return Object.assign({ player: playerName(), name: playerName(), pet: p ? petName(p) : '', foe: f ? foeName(f) : '' }, holderVars(t), extra || {});
 }
 const btLine = (key, extra) => battleLine(key, textVars(extra));
-const trLine = s => { const v = textVars(); return String(s).replace(/\{(player|name|pet|foe|trainer|title)\}/g, (m, k) => v[k]); };   // single pass
+const trLine = s => { const v = textVars(), src = v.title === '' ? String(s).split('{title} ').join('') : String(s); return src.replace(/\{(player|name|pet|foe|trainer|title)\}/g, (m, k) => v[k]); };   // single pass
 function usesOf(p){
   const u = battle.uses[p.id] || (battle.uses[p.id] = {});
   (p.moves || []).forEach(id => { if (!(id in u) && MOVES[id]) u[id] = MOVES[id].uses == null ? Infinity : MOVES[id].uses; });
@@ -10805,7 +10855,7 @@ async function battleIntro(id){
   sendOutFx('foe');
   if (B.kind === 'trainer') {
     if (!B.mapIntro) {                                                       // debug forceTrainer only: no map text box to say them in
-      await say(t.name + ': ' + trLine(battleGreeting(B.trainerId)), id);   // MAPS_SLICE §6.1 summon sequence; a pending rematch uses lines.rematch
+      await say(holderShown(t) + ': ' + trLine(battleGreeting(B.trainerId)), id);   // MAPS_SLICE §6.1 summon sequence; a pending rematch uses lines.rematch
       if (!alive(id)) return; await say(btLine('trainerSummon'), id); if (!alive(id)) return;
     }
     await say(btLine('trainerIntro'), id);
@@ -13301,7 +13351,7 @@ function renderTownBoard(body){
     title.textContent = s.title;
     const who = document.createElement('p');
     who.className = 'board-slip-who';
-    who.textContent = s.who;
+    who.textContent = shownName(s.who);   // NPC_RANKS: "Officer Cald" stays; a ranked signer shows rank first
     const text = document.createElement('p');
     text.className = 'board-slip-text';
     text.textContent = s.text;
@@ -13534,6 +13584,8 @@ function renderContactCard(body, person, fav){
   const place = info ? whereLineEl(info, true) : document.createElement('p');
   if (!info) { place.className = 'contact-place'; place.textContent = contactPlace(person); }
   card.append(face, nm, place);
+  const duty = window.PPRep && (PPRep.entry(person.name) || {}).duty;   // NPC_RANKS: a job that is not a rank (Watch, Clerk) keeps a line
+  if (duty) { const d = document.createElement('p'); d.className = 'contact-duty'; d.textContent = duty; card.appendChild(d); }
   if (person.quest) { const chip = document.createElement('p'); chip.className = 'contact-quest'; chip.textContent = 'QUEST'; card.appendChild(chip); }
   const ready = contactRematch(person);
   if (ready) { const chip = document.createElement('p'); chip.className = 'contact-ready'; chip.textContent = 'READY'; card.appendChild(chip); }
@@ -14620,6 +14672,101 @@ function renderStanding(){
     body.append(head, blurb, barRow); row.append(em, body); rows.append(row);
   }
 }
+/* ---------- SIDE_BADGE (Vincent, Nov 2, 2026) ---------- */
+// The Standing icon is always on the walk screen, beside the place chip (seatSideBadge follows the chip into every layout).
+// Face: your pledge, or a neutral emblem before the side pick. Stripe: who holds this place (REGION_MAP hold; a room uses
+// its town). Arriving at a new town or route opens a bar from the icon ("FERNBROOK · BOTH SIDES") for STANDING_CFG.bar.holdMs.
+// Rooms never open it, nor does stepping back out into the town you were in. It shows before the pick too (an exception to
+// D109, which still gates the map overlay's hold line). Nothing here is saved.
+const SB_CFG = SC_STANDING.bar;
+let sideBarKey, sideBarTimer = 0, sideBarWant = 0, sideFace = '';
+function holdHere(){
+  const id = CUR && CUR.id, node = id ? nodeOf(id) : null;
+  const hold = node ? mapHold(node) : 'wild';
+  const label = node ? REGION_MAP.nodes[node].label : String(placeName() || '').toUpperCase();
+  return { node, key: node || ('map:' + (id || '')), hold, line: node ? holdLine(node) : MAP_HOLD_LINE.wild, place: label };
+}
+const pledgeShown = () => (S && S.flags && S.flags['story.side_pick_done']) ? side() : 'none';
+function paintEmblem(canvas, k){
+  const g = ctx(canvas); g.clearRect(0, 0, 8, 8);
+  (SC_STANDING.art['emblem_' + k] || []).forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') { g.fillStyle = PAL[ch]; g.fillRect(x, y, 1, 1); } }));
+}
+function seatSideBadge(){
+  const b = $('#sideBadge'), c = $('#thChip'); if (!b || !c || !c.parentNode) return;
+  if (b.previousElementSibling !== c) c.parentNode.insertBefore(b, c.nextSibling);
+  const free = c.parentNode === $('#scr-walk') && ctlMode() !== 'modern';   // arcade: the chip sits alone in the walk column
+  b.classList.toggle('sb-free', free);
+  if (free) { b.style.left = (c.offsetLeft + c.offsetWidth + 6) + 'px'; b.style.top = Math.round(c.offsetTop + (c.offsetHeight - 44) / 2) + 'px'; }
+  else if (b.style.left || b.style.top) { b.style.left = ''; b.style.top = ''; }
+}
+function syncSideBadge(){
+  const b = $('#sideBadge'); if (!b || !S || !CUR) return;
+  const h = holdHere(), sd = pledgeShown();
+  if (sideBarKey === undefined) sideBarKey = h.key;   // boot: the place you load into is not an arrival
+  if (b.dataset.hold !== h.hold) b.dataset.hold = h.hold;
+  if (b.dataset.side !== sd) b.dataset.side = sd;
+  if (sideFace !== sd) { paintEmblem($('#sideEmblem'), sd); sideFace = sd; }
+  const F = SC_STANDING.sides[sd];
+  const lbl = SB_CFG.label + '. ' + String(F ? PPStanding.fill(SC_STANDING.tab.pledged, { faction: F.name }) : SB_CFG.unpledged).replace(/\.$/, '') + '. ' + (placeName() || h.place) + ': ' + h.line;
+  const btn = $('#sideBtn'); if (btn.getAttribute('aria-label') !== lbl) btn.setAttribute('aria-label', lbl);
+  seatSideBadge();
+}
+// Called from arriveAt() after the new map is in place.
+function sideBarArrive(){
+  if (!S || !CUR) return;
+  const h = holdHere();
+  syncSideBadge();
+  if (isRoom() || h.key === sideBarKey) return;
+  sideBarKey = h.key; sideBarWant = performance.now();
+  flushSideBar();
+}
+const sideToastBusy = () => !!(toastBusy || ($('#toast') && $('#toast').classList.contains('show')));
+function flushSideBar(){
+  clearTimeout(sideBarTimer); sideBarTimer = 0;
+  if (!sideBarWant) return;
+  if (performance.now() - sideBarWant > 8000 || !CUR || isRoom()) { sideBarWant = 0; return; }   // stale: the moment passed
+  if (scene || fade.busy || screen !== 'walk' || overlayOpen() || sideToastBusy()) { sideBarTimer = setTimeout(flushSideBar, 250); return; }
+  sideBarWant = 0;
+  const h = holdHere(), word = SB_CFG.words[h.hold] || SB_CFG.words.wild;
+  $('#sideBarPlace').textContent = h.place; $('#sideBarHold').textContent = word;
+  $('#sideBar').hidden = false; $('#sideBadge').classList.add('sb-open');
+  $('#sideLive').textContent = h.place + ': ' + word;
+  seatSideBadge();
+  sideBarTimer = setTimeout(closeSideBar, SB_CFG.holdMs);
+}
+function closeSideBar(){
+  clearTimeout(sideBarTimer); sideBarTimer = 0;
+  const bar = $('#sideBar'); if (bar) bar.hidden = true;
+  const b = $('#sideBadge'); if (b) b.classList.remove('sb-open');
+}
+// Tap: after the pick, the STANDING tab. Before it (or with no quest panel to open), a small card with no points.
+function sideBtnTap(){
+  if (!S || overlayOpen()) { sfx('denied'); return; }
+  closeSideBar();
+  if (pledgeShown() !== 'none' && questVisible() && questCurrent()) {
+    openQuest();
+    if (!$('#ovQuest').hidden) { questTab = 'standing'; renderQuestTabs(); return; }
+  }
+  openSideCard();
+}
+function openSideCard(){
+  const sd = pledgeShown(), rows = $('#sideRows'); rows.textContent = '';
+  $('#sideTitle').textContent = sd === 'none' ? SB_CFG.unpledged : SC_STANDING.tab.label;
+  for (const k of PPStanding.SIDES) {
+    const F = SC_STANDING.sides[k], row = document.createElement('div');
+    row.className = 'side-row' + (k === sd ? ' pledged' : ''); row.dataset.side = k;
+    const em = document.createElement('canvas'); em.width = em.height = 8; em.className = 'st-emblem'; em.setAttribute('aria-hidden', 'true'); paintEmblem(em, k);
+    const body = document.createElement('div');
+    const nm = document.createElement('b'); nm.className = 'side-name'; nm.textContent = F.name;
+    const ln = document.createElement('p'); ln.className = 'side-line';
+    // Before the pick: the first sentence of what the side asks (no points). After: the tier you hold with them.
+    ln.textContent = sd === 'none' ? String(F.asks).split(/(?<=[.!?])\s/)[0] : PPStanding.tierInfo(k, standingOf(k, false)).name;
+    body.append(nm, ln); row.append(em, body); rows.append(row);
+  }
+  clearMoves(); sfx('tap'); $('#ovSide').hidden = false; lockTabs(true);
+  $('#sideClose').textContent = SB_CFG.close; $('#sideClose').focus({ preventScroll: true });
+}
+function closeSideCard(){ if ($('#ovSide').hidden) return; $('#ovSide').hidden = true; lockTabs(false); }
 function questTabTo(name){ if (name === 'standing' && !standingTabVisible()) return; if (questTab === name) return; questTab = name; sfx('tap'); renderQuestTabs(); }
 function questShowOnMap(){ closeQuest(); if (mapReady()) openMap({ level: 'region' }); }
 const WALK_TIP_DEFAULT = 'Hold the pad, tap a tile, or drag on the map. Tap people to talk, and walk up to a <b class="tg">wild Walkling</b> to meet it!';
@@ -15431,10 +15578,10 @@ async function finish(result, id){
     await say(nm + ' joined your collection! ' + (B.lastGx ? '(+' + B.lastGx + ' XP)' : '(No XP: explored enough today)'), id);
     if (B.toBox && alive(id)) await say(nm + ' went to your Walkling-box.', id);
   } else if (result === 'win' && t) {
-    sfx('win'); await say(btLine('trainerWin'), id); if (!alive(id)) return; await say(t.name + ': ' + trLine(trainerLine(B.trainerId, 'win')), id);
+    sfx('win'); await say(btLine('trainerWin'), id); if (!alive(id)) return; await say(holderShown(t) + ': ' + trLine(trainerLine(B.trainerId, 'win')), id);
   } else if (result === 'win') { sfx('win'); }
   else if (result === 'tired') {
-    if (t) { await say(btLine('trainerLose'), id); if (!alive(id)) return; await say(t.name + ': ' + trLine(trainerLine(B.trainerId, 'lose')), id); }
+    if (t) { await say(btLine('trainerLose'), id); if (!alive(id)) return; await say(holderShown(t) + ': ' + trLine(trainerLine(B.trainerId, 'lose')), id); }
     else await say(btLine('trainerLose'), id);
   }
   if (!alive(id)) return;
@@ -18333,6 +18480,9 @@ function bindInput(){
   });
   $('#questBtn').addEventListener('click', openQuest);
   const repBtn = $('#repBtn'); if (repBtn) repBtn.addEventListener('click', () => { if ($('#ovRep').hidden) openRep(); else closeRep(); });
+  $('#sideBtn').addEventListener('click', sideBtnTap);
+  $('#sideClose').addEventListener('click', () => { sfx('tap'); closeSideCard(); });
+  $('#ovSide').addEventListener('click', e => { if (e.target === $('#ovSide')) closeSideCard(); });
   const repBackBtn = $('#repBack'); if (repBackBtn) repBackBtn.addEventListener('click', repBack);
   const repList = $('#repList'); if (repList) repList.addEventListener('click', e => { const b = e.target.closest('[data-rep]'); if (!b) return; repWho = b.dataset.rep; sfx('tap'); renderRep(); });
   { const m = $('#questSideMore'), d = $('#questDoneToggle'); if (m) m.addEventListener('click', questToggleMore); if (d) d.addEventListener('click', questToggleDone); }
@@ -18572,6 +18722,7 @@ function bindInput(){
     if (e.key === 'Escape' && !$('#ovMap').hidden) { e.preventDefault(); closeMap(); return; }
     if (e.key === 'Escape' && !$('#ovQuest').hidden) { e.preventDefault(); closeQuest(); return; }
     if (e.key === 'Escape' && $('#ovClock') && !$('#ovClock').hidden) { e.preventDefault(); closeClockCard(); return; }
+    if (e.key === 'Escape' && $('#ovSide') && !$('#ovSide').hidden) { e.preventDefault(); closeSideCard(); return; }
     if (e.key === 'Escape' && !$('#ovRep').hidden) { e.preventDefault(); closeRep(); return; }
     if (bagKey(e)) { e.preventDefault(); return; }
     // Battle owns the keyboard, including F and S, before walk keys and the debug keys.
@@ -19265,6 +19416,11 @@ function boot(){
   api.mapCheck = () => mapDevCheck();
   api.phoneHack = () => phoneHack();
   api.isRestSpot = o => isRestSpot(o);
+  api.sideBadge = () => { const b = $('#sideBadge'), bar = $('#sideBar'); return b ? { hold: b.dataset.hold, side: b.dataset.side, open: !bar.hidden, place: $('#sideBarPlace').textContent, word: $('#sideBarHold').textContent, label: $('#sideBtn').getAttribute('aria-label'), key: sideBarKey || null, pending: !!sideBarWant } : null; };
+  // NPC_RANKS read: the battle intro and win lines as a holder's match would print them (same holderVars as textVars).
+  api.holderLines = id => { const t = TRAINERS[id]; if (!t) return null; const v = Object.assign({ player: playerName(), foe: 'X' }, holderVars(t)); return { intro: battleLine('trainerIntro', v), win: battleLine('trainerWin', v), summon: battleLine('trainerSummon', v), label: holderShown(t) }; };
+  api.shownName = n => shownName(String(n == null ? '' : n));   // NPC_RANKS read: the label a speaker shows
+  api.rankCheck = () => rankCheck();
   api.contacts = () => contactEntries().map(p => ({ name: p.name, quest: !!p.quest, fav: !!phoneBook().fav[p.key], place: contactPlace(p) }));
   Object.defineProperty(api, 'questCheck', { enumerable: true, get(){ return PPQuests.devCheck(MAPDATA); } });
   Object.defineProperty(api, 'lanternRest', { enumerable: true, get(){

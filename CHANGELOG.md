@@ -2,6 +2,22 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 15:50 ET: Rank-first NPC names, an always-on Standing icon and a town control bar (Vincent, Nov 2)
+
+- What changed and why: Vincent asked for every Keeper and Glimmerwell NPC to show rank, then name, everywhere their name shows, with flags for any NPC we are unsure of. He also asked for a faction icon that is always on the walk screen and shows who controls a town or map on arrival.
+  - Ranks: the `data/reputation.json` cast now carries `rank` and `given` for each faction NPC. `shownName()` builds "Master Fen", "Associate Tobin" and so on. Battle lines, the foe label, contact cards, the People card and town board signers all go through it. A ranked holder drops its battle title, so "Trial Master Fen" becomes "Master Fen".
+  - Duplicate names: "Tobin", "Hollis", "Quinn", "Imogen", "Hale" and "Fen" fold into one person each (`REP_CANON`). `save.js` copies an old trust or phone-book mark to the new key; the old key stays.
+  - Rook is "Junior Bright Rook" while he wears the Glimmerwell lanyard.
+  - Sixteen Keepers without a ladder rank show `[Rank] Name` until Design assigns one (D1159). Unsure NPCs are flagged (D1160).
+  - Standing icon: it sits beside the place chip in every layout. Its face is your pledge, or a neutral emblem before the pick, and a stripe shows who holds the place.
+  - Control bar: arriving at a new town or route opens a bar such as "FERNBROOK / BOTH SIDES" for 2.4 s. It uses the REGION_MAP hold, shows before the pick too (D1161), and never opens for rooms.
+  - Tapping the icon opens STANDING after the pick. Before it, the icon opens a card with one line per side and no points.
+- Files touched: `data/reputation.json`, `data/mapdata.js` (regenerated), `rep.js`, `save.js`, `game.js`, `moves.js`, `standing.js`, `index.html`, `style.css`, `tools/GAMEJS_MAP.txt`, `version.json`, `tests/npc_ranks.spec.js` (new), `tests/side_badge.spec.js` (new), `tests/README.md`, `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `BACKLOG.md`, `CHANGELOG.md`.
+- Commit(s) + build id: this branch, build 20261102-1550.
+- Tests run and result (widths, checks): `tests/npc_ranks.spec.js` and `tests/side_badge.spec.js` at 320, 375 and 390 (the badge spec run twice), plus the full suite at all three widths (result line in the PR). Scans PASS; `bump_build.py --check` clean.
+- Decisions made (colour + reasoning): D1161 settled by Vincent (A-H in the archive). The red interface and naming change was asked for by Vincent directly. Green: the icon sits beside the chip, because dock row 2 is full at 320; the bar waits for a toast to clear; the icon fades with the dock during scenes, like the chip.
+- Anything left unfinished: D1159 (16 ladder ranks), D1160 (flagged affiliations), D1162 (UNCLAIMED places), D1163 ("BOTH SIDES"). Rook's Bright Lead from Act 2 waits for an Act 2 flag. Name mentions inside dialog prose ("Fen's match") stay as written.
+
 ## 2026-11-02 14:25 ET: NEWS: the Glimmer-side paper turns dark (Vincent, Nov 1)
 
 - What changed and why: Vincent asked for the cracked handset's NEWS to lean hard into darker Glimmerwell, INSIGN, research and story lore, and to be much less friendly. `news.js` now weights items on the Glimmer side only: Glimmer-only wire items (not the glossy Bright Notice, not ads) x12, the town paper x0.5, the Lantern Post x0.25, and the day's poll comes from the dark polls when one is open. The lead (the newest story beat) is unchanged, and the Keeper side is unchanged. A new placeholder batch (D1013) adds 22 Block News stories, 8 voices, 5 notices and 2 polls in a cold wire voice: quotas and units, glow sharing, the Census tent, crates and the Sanctuary, the Relay House hum, the Answerers' blank page, RegenX, Atten and the Arbiter, the Tier 2 fitting, and Walklings acting oddly after facility visits. INSIGN appears only as an older, half-redacted name (INS..., 'IN', a ledger, "the one that made medicine first"); nothing confirms it or names a chip. Disappearances read off screen and gentle ("Transferred north", an empty desk). Every item cites the lore index and carries `story.side=glimmer` and each cited entry's reveal flags. INSIGN and facility hints wait for `story.seal2` (design PR gates `faction.insign` and `event.chipping_secret` there).

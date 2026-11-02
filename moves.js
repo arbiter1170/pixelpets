@@ -1967,6 +1967,7 @@ function battleLine(key, vars){
   let t = BATTLE_TEXT[key] || "";
   const v = Object.assign({}, vars);
   if (v.name != null && v.player == null) v.player = v.name;   // MAPS_SLICE {name} alias
+  if (v.title === "") t = t.split("{title} ").join("");        // NPC_RANKS: a ranked holder's rank is already in {trainer}
   for (const [k, val] of Object.entries(v)) t = t.split("{"+k+"}").join(String(val == null ? "" : val));
   return t;
 }

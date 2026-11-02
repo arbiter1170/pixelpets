@@ -16,27 +16,39 @@
     {
       "name": "Archivist Mo",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Mo",
+      "duty": "Archivist",
+      "rankOpen": "D1159"
     },
     {
       "name": "Associate Hollis",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rank": "Associate",
+      "given": "Hollis"
     },
     {
       "name": "Associate Juniper",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rank": "Associate",
+      "given": "Juniper"
     },
     {
       "name": "Associate Quinn",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rank": "Associate",
+      "given": "Quinn"
     },
     {
       "name": "Associate Tobin",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rank": "Associate",
+      "given": "Tobin"
     },
     {
       "name": "Baker Cole",
@@ -66,7 +78,9 @@
     {
       "name": "Cadet Orrin",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Cadet",
+      "given": "Orrin"
     },
     {
       "name": "Cal",
@@ -76,7 +90,9 @@
     {
       "name": "Captain Lumen",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Captain",
+      "given": "Lumen"
     },
     {
       "name": "Cass",
@@ -86,34 +102,45 @@
     {
       "name": "Clerk Mint",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "Clerk Nia",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "Clerk Penn",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "Clerk Wynn",
       "faction": "keepers",
       "base": 50,
       "fixed": 50,
-      "note": "\"The Processor\" (default, D175): fixed 50, still Keepers for flavour, never moves"
+      "note": "\"The Processor\" (default, D175): fixed 50, still Keepers for flavour, never moves",
+      "rank": "[Rank]",
+      "given": "Wynn",
+      "duty": "Clerk",
+      "rankOpen": "D1159"
     },
     {
       "name": "Constable Corwin",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Constable",
+      "given": "Corwin"
     },
     {
       "name": "Constable Rue",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Constable",
+      "given": "Rue"
     },
     {
       "name": "Cook Hesper",
@@ -149,7 +176,9 @@
     {
       "name": "Dorian Pell",
       "faction": "glimmer",
-      "base": 50
+      "base": 50,
+      "rank": "Head of Acquisitions",
+      "given": "Dorian Pell"
     },
     {
       "name": "Dr. Ivo",
@@ -164,12 +193,14 @@
     {
       "name": "Floor Keeper Sol",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "Guide Tess",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "Hale",
@@ -219,47 +250,71 @@
     {
       "name": "Keeper Amos",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Amos",
+      "rankOpen": "D1159"
     },
     {
       "name": "Keeper Marigold",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Marigold",
+      "rankOpen": "D1159"
     },
     {
       "name": "Keeper Moss",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Moss",
+      "rankOpen": "D1159"
     },
     {
       "name": "Keeper Rowan",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Rowan",
+      "rankOpen": "D1159"
     },
     {
       "name": "Keeper Quill",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Quill",
+      "rankOpen": "D1159"
     },
     {
       "name": "Keeper Teague",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Teague",
+      "rankOpen": "D1159"
     },
     {
       "name": "Keeper Scout",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "Keeper Vesper",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Vesper",
+      "rankOpen": "D1159"
     },
     {
       "name": "Cadet Arlo",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Cadet",
+      "given": "Arlo"
     },
     {
       "name": "Ken",
@@ -299,12 +354,16 @@
     {
       "name": "Master Fen",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Master",
+      "given": "Fen"
     },
     {
       "name": "Master Hale",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Master",
+      "given": "Hale"
     },
     {
       "name": "Mira",
@@ -382,17 +441,23 @@
     {
       "name": "Officer Bren",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Officer",
+      "given": "Bren"
     },
     {
       "name": "Officer Cald",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Officer",
+      "given": "Cald"
     },
     {
       "name": "Officer Ness",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Officer",
+      "given": "Ness"
     },
     {
       "name": "Old Miner",
@@ -407,7 +472,11 @@
     {
       "name": "Operator Rue",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Rue",
+      "duty": "Operator",
+      "rankOpen": "D1159"
     },
     {
       "name": "Ossabell",
@@ -442,12 +511,14 @@
     {
       "name": "Porter Bram",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "Porter Quin",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "Quinn",
@@ -462,7 +533,8 @@
     {
       "name": "Reeve Tamsin",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rankFlag": "D1160"
     },
     {
       "name": "RegenX Wardens",
@@ -473,12 +545,19 @@
       "name": "Rook",
       "faction": "none",
       "base": 40,
-      "note": "starts at 40; faction none (he changes sides in ROOK_CROSSROADS)"
+      "note": "starts at 40; faction none (he changes sides in ROOK_CROSSROADS)",
+      "rank": "Junior Bright",
+      "given": "Rook",
+      "rankWhen": "rook_lanyard"
     },
     {
       "name": "Scout Linnea",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Linnea",
+      "duty": "Scout",
+      "rankOpen": "D1159"
     },
     {
       "name": "Sera",
@@ -488,7 +567,9 @@
     {
       "name": "Sergeant Bram",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Sergeant",
+      "given": "Bram"
     },
     {
       "name": "Shopkeeper Dottie",
@@ -498,7 +579,11 @@
     {
       "name": "Signaller Tamm",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Tamm",
+      "duty": "Signaller",
+      "rankOpen": "D1159"
     },
     {
       "name": "Tam",
@@ -535,12 +620,18 @@
       "faction": "keepers",
       "base": 50,
       "fixed": 50,
-      "note": "\"the warden\": fixed 50"
+      "note": "\"the warden\": fixed 50",
+      "rank": "Warden",
+      "given": "Ilse"
     },
     {
       "name": "Watch Ivo",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Ivo",
+      "duty": "Watch",
+      "rankOpen": "D1159"
     },
     {
       "name": "Willa",
@@ -555,7 +646,10 @@
     {
       "name": "Keeper Halvard",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Halvard",
+      "rankOpen": "D1159"
     },
     {
       "name": "Farmer Tibbet",
@@ -570,7 +664,11 @@
     {
       "name": "Watch Saffie",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Saffie",
+      "duty": "Watch",
+      "rankOpen": "D1159"
     },
     {
       "name": "Weaver Ilka",
@@ -585,22 +683,31 @@
     {
       "name": "Warden Teodor",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Warden",
+      "given": "Teodor"
     },
     {
       "name": "Officer Vale",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Officer",
+      "given": "Vale"
     },
     {
       "name": "Keeper Pryce",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "[Rank]",
+      "given": "Pryce",
+      "rankOpen": "D1159"
     },
     {
       "name": "Cadet Lisse",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Cadet",
+      "given": "Lisse"
     },
     {
       "name": "Grete Ash",
@@ -655,12 +762,21 @@
     {
       "name": "Master Marisol",
       "faction": "keepers",
-      "base": 50
+      "base": 50,
+      "rank": "Master",
+      "given": "Marisol"
     },
     {
       "name": "Net Mender",
       "faction": "none",
       "base": 50
+    },
+    {
+      "name": "Field Lead Imogen",
+      "faction": "glimmer",
+      "base": 50,
+      "rank": "Field Lead",
+      "given": "Imogen"
     }
   ],
   "tiers": [
@@ -884,5 +1000,11 @@
       "line": "You made him fix it",
       "when": "story.moral_leak5b=force"
     }
-  ]
+  ],
+  "ranks": {
+    "decision": "NPC_RANKS (Vincent, Nov 2, 2026): every Keeper and Glimmerwell NPC shows rank, then name, wherever the name is shown",
+    "fields": "rank: shown before given (\"Master\" + \"Fen\"). given: the bare name. duty: a job that is not a rank (KEEPER_RANKS D893), shown on the contact card. rankOpen: the D id for a placeholder rank (\"[Rank]\"). rankFlag: the D id asking whether this NPC is Keeper or Glimmerwell at all; shown as today. rankWhen: a named game condition (game.js RANK_WHEN) that must hold for the rank to show",
+    "display": "game.js shownName(): rank + ' ' + given when the entry has a rank (and rankWhen holds), else label, else the raw name. Keys (S.rep, S.phoneBook, contactKey) stay the raw speaker name",
+    "folds": "rep.js REP_CANON folds one person's other speaker names into the cast name (Tobin -> Associate Tobin). save.js copies an old key's value to the new key when the new key is absent; the old key stays"
+  }
 }
