@@ -1,7 +1,7 @@
 /* D1100, revised by Vincent (Nov 1, 2026): the cracked handset (CRACK//HAND) stays a green terminal. Glimmerwell shows
    only as accents: a wine and crimson outer ring on the shell, and a honey OFF-CREST kicker and .who names.
-   Every other computed style, every rect, the copy, the glyph ink and the KEEPER1 phone must match the merge base with
-   origin/main (style.css is served from that commit on a second page). */
+   Every other computed style, every rect, the copy, the glyph ink and the KEEPER1 phone must match main just before
+   #243 merged (PRE_D1100; style.css is served from that commit on a second page). */
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
@@ -36,9 +36,24 @@ function baseCss() {
   if (BASE_CSS) return BASE_CSS;
   const root = path.resolve(__dirname, '..');
   const git = (args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 });
-  const mergeBase = git(['merge-base', 'HEAD', 'origin/main']).trim();
-  BASE_CSS = git(['show', mergeBase + ':style.css']);
+  // Pinned to main just before #243 merged. The merge base with origin/main only worked on the PR branch: once #243 is
+  // in main, that merge base is the current commit and the accents can no longer be seen.
+  BASE_CSS = git(['show', PRE_D1100 + ':style.css']);
   return BASE_CSS;
+}
+const PRE_D1100 = 'ee78a20ad391031e8473088e6a80d05c110b4e42';
+
+// The cracked handset's own rules (each rule that starts with #ovPhone.hack, through its closing brace), so later
+// style.css changes elsewhere don't trip the D1100 check.
+function hackRules(lines) {
+  const out = [];
+  let inRule = false;
+  for (const l of lines) {
+    if (l.startsWith('#ovPhone.hack')) inRule = true;
+    if (inRule) out.push(l);
+    if (inRule && l.includes('}')) inRule = false;
+  }
+  return out;
 }
 
 function readySave() {
@@ -170,8 +185,8 @@ test('the cracked handset stays green with a wine and crimson ring and honey kic
 });
 
 test('style.css changes only the ring, the kicker and the names against the merge base', async () => {
-  const cur = fs.readFileSync(path.resolve(__dirname, '..', 'style.css'), 'utf8').split('\n');
-  const base = baseCss().split('\n');
+  const cur = hackRules(fs.readFileSync(path.resolve(__dirname, '..', 'style.css'), 'utf8').split('\n'));
+  const base = hackRules(baseCss().split('\n'));
   const removed = base.filter((l) => !cur.includes(l));
   const added = cur.filter((l) => !base.includes(l));
   expect(removed).toEqual([
