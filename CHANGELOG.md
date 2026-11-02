@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 17:08 ET: Vincent's 5:05 PM rulings: old saves deprioritized, main-chain edit approved (docs only, no build stamp)
+
+- What changed and why: Vincent, 5:05 PM ET: "Not worried about old saves right now." and "Ok to edit main quest chain". #255 Q7 and Q5 are deprioritized (simplest save-safe option: no save writes, v2, no migrator); #255's main-quest-chain override is approved, keeping the `orchard` row's position.
+- Files touched: `OPEN_DECISIONS.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `chief/vincent-1705-rulings`; no build stamp (docs only).
+- Tests run and result (widths, checks): `node tools/scans/decisions.js`, `node tools/scans/run.js`, smoke at 320, 375 and 390.
+- Decisions made (colour + reasoning): Vincent's calls on #255 Q5, Q7 and the chain override; no new id (D1166-D1173 stay #255's).
+- Anything left unfinished: #255 should fold these into its spec.
+
 ## 2026-11-02 17:05 ET: Hold D1153 (Hall door after Lizzy's class) and answer D1172 (docs only, no build stamp)
 
 - What changed and why: Vincent ruled at 5:03 PM ET: "Picking a side should be after the class, same with hall door." D1153 (`story.crates_seen` opens the Hall door) is HELD and superseded by D1169 (#255), so it does not settle at 5:44 PM EST. D1172 is answered NO: the Hall door and the faction pick both come after Lizzy's class.
