@@ -2,6 +2,15 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-02 18:00 ET: DAY1_TRIAL1_FLOW v0.3: mixed Trial Hall roster and Hall sign (Vincent 5:41 PM ET, D1170 amended; docs only, no build stamp)
+
+- What changed and why: Vincent's 5:41 PM ET ruling amends D1170 (#255 R3): the three Trial Hall holders before Fen are mixed to show Fernbrook is contested. `handoff/specs/DAY1_TRIAL1_FLOW.md` v0.3 adds R13, rewrites §8 as a three-holder roster (`h1_cadet` Keeper cadet with rank Cadet and `FACTION` `keepers`; `h1_challenger` Glimmerwell-leaning local and `h1_local` neutral Fernbrook holder, both with no rank and no `FACTION` entry), renames the unbuilt `hall1_keepers` row to `hall1_holders` and the Slice 8 branch to `claude/hall1-holders`, sets the Hall sign to "FERNBROOK TRIAL HALL · Master Fen" (`fb_sign_hall` by overlay, Slice 7), answers Q8, resolves conflict row 6, adds Q16 and conflict rows 21-22, keeps D1128 open, and re-checks §7.5 on paper with the new roster (battle XP has no side term, so the mix changes nothing while the three teams keep one shape; the holders add about 2-3 levels to a single lead). All new holder names, looks, titles and lines are PLACEHOLDER.
+- Files touched: `handoff/specs/DAY1_TRIAL1_FLOW.md`, `CHANGELOG.md`.
+- Commit(s) + build id: `claude/day1-spec-mixed-roster`; no build stamp (docs only).
+- Tests run and result (widths, checks): walklings-wording-check diff scan (0 hits); `node tools/scans/run.js`; `node tools/scans/decisions.js`. No game code changed, so no width runs.
+- Decisions made (colour + reasoning): D1170 amended (red, Vincent; no new id). Q16 (green, engineer's call): no `FACTION: glimmer` for the challenger, so a local does not spend Glimmerwell's first-meeting music cue. Next free id stays D1175.
+- Anything left unfinished: the real §7.5 run waits for Slice 8 and D1128. Design updates FPT Part B's sign row (design repo). Story writes the three holders' names, looks and lines.
+
 ## 2026-11-02 17:45 ET: Vincent's 5:41 PM ruling: mixed Trial Hall roster (D1170 amended); D1166-D1173 recorded (docs only, no build stamp)
 
 - What changed and why: Vincent, 5:41 PM ET: the three Trial Hall holders before Fen are mixed (a Keeper cadet, a Glimmerwell-leaning local, a neutral Fernbrook holder), Fen stays a Keeper, and the Hall sign reads "FERNBROOK TRIAL HALL · Master Fen". The D1166-D1173 rows from the #255 spec are recorded: D1166-D1172 in the archive, D1173 as an Open row.
