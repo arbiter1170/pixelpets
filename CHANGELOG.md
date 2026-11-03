@@ -2,6 +2,14 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
+## 2026-11-03 08:05 ET: Decisions: Vincent confirms D1159 (the rank ladder and naming in this PR), docs only
+- What changed and why: the PR asked whether D1159 carried Vincent's OK. Vincent: "Yes, that change had my okay on the naming components and rank ladder and all that. That's all good to go." The archive entry records the confirmation; the merge hold in the PR's open questions is lifted.
+- Files touched: `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
+- Commit(s) + build id: claude/npc-ranks-style-guide-f3fde8; docs only (build stays 20261103-0132).
+- Tests run and result (widths, checks): `node tools/scans/run.js`.
+- Decisions made (colour + reasoning): D1159 confirmed by Vincent. Id note: the unmerged `claude/high-charity-phase1-k7q2hc` also uses D1350 (with D1351-D1352); reported, not renumbered.
+- Anything left unfinished: none for this PR's decisions.
+
 ## 2026-11-03 07:52 ET: Decisions: Vincent leaves the names as they are for now (D1348-D1350), docs only
 - What changed and why: Vincent: "Everything that's names are OK to leave for now, we can fill in placeholders later". D1348 (civilians named Keeper or Watch), D1349 (Warden Teodor) and D1350 (Rowan) settle on their defaults and leave Open for the archive.
 - Files touched: `OPEN_DECISIONS.md`, `archive/DECISIONS_SETTLED.md`, `CHANGELOG.md`.
