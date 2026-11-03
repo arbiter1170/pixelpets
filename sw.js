@@ -13,6 +13,7 @@ const SHELL = [
   './stats.js',
   './moves.js',
   './data/mapdata.js',
+  './data/hc_city_v2.js',
   './quests.js',
   './standing.js',
   './rep.js',
