@@ -279,7 +279,9 @@ test('STANDING tab: hidden before the pick, two rows after it, 44 px tabs, no ov
 
 // The designer's rows (GLIMMER_PATH v0.2), copied here so the shipped copy is checked against the spec.
 const COPY = {
-  wake: ['Good morning! Look around your room, then read the note by the door.', 'Hearthmoor, home'],
+  // PARTNER_DAY (#258) and its arrow fix: get dressed at the mirror, then Mom downstairs.
+  dress: ["It's partner day! Get dressed at your mirror.", 'Hearthmoor, home'],
+  wake: ["You're dressed. Mom is waiting downstairs to see you off.", 'Hearthmoor, home'],
   lodge: ["Someone small is waiting at the Warden's Lodge. Ilse has a Walkling for you.", "Warden's Lodge"],
   rival1: ['Rook is bouncing by the east gate. Go and say hello.', 'Hearthmoor, east gate'],
   first_wild: ['A wild Walkling is nosing through the grass by the east path. Walk up gently.', 'Hearthmoor, east path'],
