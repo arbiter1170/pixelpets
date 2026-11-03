@@ -476,3 +476,14 @@ test('dead copy and the Heights lines stay where the sign-off put them', async (
   await boot(page);
   expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
 });
+
+test('Rook asks twice as a competitor, not a rival (ROOK_KEEPERS_REENTRY sign-off)', async ({ page }) => {
+  const raw = fs.readFileSync(path.join(__dirname, '..', 'data/rook_crossroads.json'), 'utf8');
+  expect(raw).toContain('Then I have to try. Not as a competitor. As a friend asking twice.');
+  expect(raw).not.toContain('Not as a rival.');
+  const scene = JSON.stringify(JSON.parse(raw).scenes.rc_gate);
+  expect(scene).toContain('Not as a competitor.');
+  await boot(page);
+  expect(await page.evaluate(() => JSON.stringify(MAPDATA.rook_crossroads.scenes.rc_gate))).toContain('Not as a competitor.');
+  expect(await page.evaluate(() => PixelPets.state.v)).toBe(2);
+});
