@@ -2,7 +2,16 @@
 
 Newest first. The build stamp is `version.json` and the `?v=` on each script in `index.html`. Status of open work is `BACKLOG.md`. The queue is `NEXT_PLAN.md` §3. Agent skills are in `.cursor/skills/README.md`.
 
-## 2026-11-02 23:50 ET: Spec: the Keeper crackdown after Trial 1 (POST_TRIAL_CRACKDOWN v0.1), and the Trial Hall's tone pass (TRIAL_HALL_FERNBROOK_MAP v0.2), docs only
+## 2026-11-02 22:52 ET: Decisions: Vincent's 10:19 PM ET rulings on the Trial Hall spec (D1189, D1190, D1192), docs only
+
+- What changed and why: Vincent ruled on TRIAL_HALL_FERNBROOK_MAP (#263). D1189 (the contested Trial Hall): yes. D1190: yes, the props flip and Fen stays; Vincent adds that Fen's allegiance can change after the curfew event: she converts the way the holder does, has an obvious motive to be angry at the Keepers, and is tied to `story.fen_lean` from June's Seals lore. D1192: the name is "Fernbrook Trial Hall" everywhere. All three are archived as settled and gone from Open. The spec's two "Bloom" naming rows now record the ruling, and §14's next free id reads D1210. The #263 times in CHANGELOG, OPEN_DECISIONS and both spec status rows are corrected to the real commit times (22:12 and 22:31 ET).
+- Files touched: `archive/DECISIONS_SETTLED.md`, `OPEN_DECISIONS.md`, `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (v0.3, rulings only), `handoff/specs/POST_TRIAL_CRACKDOWN.md` (status time, Fen's allegiance note), `CHANGELOG.md`.
+- Commit(s) + build id: `claude/trial-hall-rulings-nov2`; docs only, no build stamp.
+- Tests run and result (widths, checks): `node tools/scans/run.js` (result in the PR); `node tools/scans/decisions.js` and `node tools/scans/wording.js` pass.
+- Decisions made (colour + reasoning): D1189, D1190 and D1192 (red) recorded as settled by Vincent. No new ids; the next free id stays D1210.
+- Anything left unfinished: `story.fen_lean` and "June's Seals lore" aren't in the game or design repo yet. They are recorded as named, Story defines the flag, and nothing reads it until then. The build renames the three inside "Bloom" spots (no data change here).
+
+## 2026-11-02 22:31 ET: Spec: the Keeper crackdown after Trial 1 (POST_TRIAL_CRACKDOWN v0.1), and the Trial Hall's tone pass (TRIAL_HALL_FERNBROOK_MAP v0.2), docs only
 
 - What changed and why: (1) Vincent's eight-beat outline for the quest in the D1175 slot. New spec `handoff/specs/POST_TRIAL_CRACKDOWN.md`: a Keeper Commander with Watch Coaches (not tanks) and officers closes Fernbrook after Trial 1. Fen defies him and appeals to the Warden. A Lantern House wire set carries Block News (curfew, a proposed Seal-gain ban that is world news only). The holder leaves at first light; the pick stays at the orchard gate at dawn. It covers the script with walks, camera, props and art; the hand-off to the pick and the pitches; canon and tone checks with a balance ledger; markers and save safety (a curfew read, one new flag); slices; and three options for what a Seal unlocks. (2) Vincent: the Hall's two sides "look a little rubbery". The Hall spec goes to v0.2: a tone bible (living Keeper vs sterile Glimmerwell), draft art redrawn with materials and light, and Keeper wall dressing (honour board, oil sconces). Spec only: nothing builds before Vincent rules on the red rows and sees the previews.
 - Files touched: `handoff/specs/POST_TRIAL_CRACKDOWN.md` (new), `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (v0.2), `handoff/shots/post_trial_crackdown/` (new: storyboard and art sheet), `handoff/shots/trial_hall_fernbrook/` (after shots redone, art sheet), `OPEN_DECISIONS.md` (D1197-D1209 reserved and opened; next free D1210), `CHANGELOG.md`.
@@ -11,7 +20,7 @@ Newest first. The build stamp is `version.json` and the `?v=` on each script in 
 - Decisions made (colour + reasoning): D1197-D1203 red (canon, the Commander, what a Seal unlocks, curfew, ban, vehicle naming, pick hand-off), D1204-D1207 and D1209 yellow, D1208 green.
 - Anything left unfinished: Vincent's rulings and looks; June's lines; Pia's art; the builds after #261 merges.
 
-## 2026-11-02 22:15 ET: Spec: the contested Fernbrook Trial Hall (TRIAL_HALL_FERNBROOK_MAP v0.1, docs only)
+## 2026-11-02 22:12 ET: Spec: the contested Fernbrook Trial Hall (TRIAL_HALL_FERNBROOK_MAP v0.1, docs only)
 
 - What changed and why: Vincent wants the Trial Hall to read as a contested building. New spec `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` for `fb_hall_in`. It splits the room down a seam: the west half stays the old Keeper hall (crest, old banners, moss); the east half is resurfaced and branded by Glimmerwell (polished tile, planters, Comfort Lamps, sponsor banners, a "brought to you by" plaque beside the crest). Each side has a notice board carrying one poster from the other side. The props flip with Fernbrook's hold after the pick (D1171). The spec also moves #261's three holders: the neutral holder to the seam, the cadet to the Keeper half of the dais. No ids change; door, warp and Fen stay. Spec only: nothing builds before Vincent sees the previews (rule 9).
 - Files touched: `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (new), `handoff/shots/trial_hall_fernbrook/` (before/after at 390 and 320, three hold states), `OPEN_DECISIONS.md` (D1189-D1196 reserved and opened; next free D1197), `CHANGELOG.md`.

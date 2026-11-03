@@ -6,7 +6,7 @@ Target path: `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (PUBLIC repo; not `docs
 
 | Item | Value |
 |---|---|
-| Status | Draft v0.2, Mon Nov 2, 2026, ~11:30 PM ET. v0.2 answers "the two sides look a little rubbery": a tone bible (§6.3), redrawn draft art with material and light cues (§8, `draft_art_sheet.png`), and Keeper wall dressing (honour board, oil sconces). v0.1 was earlier the same evening. Waits on Morgan (Chief of Staff), then Vincent (rule 9 previews, red rows D1189, D1190, D1192). |
+| Status | v0.3 (rulings only), Mon Nov 2, 2026: records Vincent's rulings of 10:19 PM ET (D1189 and D1190 yes, D1192 "Fernbrook Trial Hall"; §14). v0.2 was committed at ~10:31 PM ET (tone bible, redrawn draft art, Keeper wall dressing); v0.1 at ~10:12 PM ET. Still waits on Vincent for the open rows (D1191, D1193-D1196) and on Pia's art |
 | Ask | Vincent: the Hall must read as a contested building, and its design language must show the power struggle between the Keepers and Glimmerwell. |
 | Builds on | Draft PR #261 (`claude/day1-trial1-build-gtkcop`, bc38b01): the three mixed holders `h1_cadet`, `h1_challenger`, `h1_local`, the sign "FERNBROOK TRIAL HALL · Master Fen", and the Fernbrook hold flip (D1171). Positions and line numbers marked "#261" are on that branch. |
 | Read first | `handoff/specs/DAY1_TRIAL1_FLOW.md` (§8 roster as amended by D1170, §9 flip; #261 carries v0.4), `data/fernbrook_rooms.json` (`fb_hall_in`), `REGION_MAP.nodes.fernbrook` (main `game.js:11880`; #261 `game.js:12069-12073`), `.cursor/skills/gamedev-level-design`, `.cursor/skills/walklings-room-packet`, `.cursor/skills/walklings-decision-ids` |
@@ -22,7 +22,7 @@ Target path: `handoff/specs/TRIAL_HALL_FERNBROOK_MAP.md` (PUBLIC repo; not `docs
 
 ## 3. Inspiration (walklings-room-packet step 2)
 
-Run with a sub-agent on Mon Nov 2, 2026, ~10:15 PM ET. Reference only; nothing is copied.
+Run with a sub-agent on Mon Nov 2, 2026, before v0.1 was committed (~10:12 PM ET). Reference only; nothing is copied.
 
 - **Mood:** an old garden hall caught halfway through a takeover. One side is quiet, worn and green. The other is shiny, loud, red and black.
 - **References (situations, no places or brands):**
@@ -236,6 +236,8 @@ Every prop that changes reads **the same hold as D1171**: the `REGION_MAP.nodes.
 `cond()` already reads `|`, `!` and `k=v` (#261 `game.js:4738`), so these strings need no engine change. D1191 (yellow) proposes a one-line `hold:<node>=<id>` term so the props read `mapHold()` itself and can never drift from the rules; the strings above are the fallback.
 
 On a new save the hold flips only at the pick result, after Seal 1 and the post-Trial slot (D1142, D1175). **So every holder fights Trial 1 in the contested Hall**; the flipped Hall is what they see when they come back. Saves are untouched: no new flag, nothing written, `v` stays 2.
+
+**Fen after the curfew (D1190, Vincent, 10:19 PM ET).** Fen stays in her Hall when the props flip. Fen's allegiance can change after the curfew event (POST_TRIAL_CRACKDOWN): she converts the way the holder does, and the crackdown gives her an obvious motive to be angry at the Keepers. It is tied to `story.fen_lean` from June's Seals lore. That flag is not in either repo yet (searched main, every branch and the design repo, Mon Nov 2, 2026): it is recorded here as Vincent named it, and Story defines it when the Seals lore lands. Until then nothing reads it; the closest existing flags are June's holder lean counters `story.lean_keep` and `story.lean_fix` (FPT Part A).
 
 ### 7.2 What changes, at a glance
 
@@ -525,7 +527,7 @@ Suites touched: `maps_b8`, `art_pass`, `interior_walls`, `room_zoom_all`, `map_r
 | # | Item | Resolution / default |
 |---|---|---|
 | 1 | #261 places the holders at 13,18 / 12,12 / 12,8 | This spec moves two of them (§5.3). Default: the build of this spec moves them, after #261 merges. #261 is not asked to change |
-| 2 | The room's place name is "Bloom Trial Hall" (map `name`, `fb_hall_note` "BLOOM TRIAL HALL. Master Fen waits on the dais.", the REGION_MAP blurb) while the outside sign is "FERNBROOK TRIAL HALL · Master Fen" (#261) | Naming is red: **D1192**. Default: no change here; the outside sign stays as #261 wrote it; the plaque line uses "FERNBROOK TRIAL HALL" to match the sign |
+| 2 | The room's place name was "Bloom" inside (map `name`, `fb_hall_note`, the REGION_MAP blurb) while the outside sign is "FERNBROOK TRIAL HALL · Master Fen" (#261) | **Resolved** (D1192, Vincent, Mon Nov 2, 2026, 10:19 PM ET): the name is **"Fernbrook Trial Hall" everywhere**. The build renames the map `name`, the `fb_hall_note` sign ("FERNBROOK TRIAL HALL. Master Fen waits on the dais.", PLACEHOLDER wording) and the REGION_MAP blurb; the outside sign stays as #261 wrote it |
 | 3 | `claude/fernbrook-plaza` (no PR) builds its own contested plaza with a Keeper cadet `fbp_cadet` and its own phase reader | Report only. One contested-town read is better than two: this spec reads the D1171 hold, not a new phase. The plaza's cadet and `h1_cadet` should be one person or clearly two (Story) |
 | 4 | Rule 9: room redesigns need previews and Vincent's yes | §10; D1189 is red |
 | 5 | Old Glimmer saves run the Bright Pavilion Tour here | Unaffected: the Tour is Fen's panel text (`glimmerHallSteps`, #261 `game.js:6927`), which this spec doesn't touch. T6 covers c-glimmer |
@@ -533,19 +535,19 @@ Suites touched: `maps_b8`, `art_pass`, `interior_walls`, `room_zoom_all`, `map_r
 
 ## 14. Decisions (D1189-D1196)
 
-Next free id checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:15 PM ET:
+Next free id checked with walklings-decision-ids on Mon Nov 2, 2026, ~10:12 PM ET:
 
 - origin/main's header says D1175.
 - Unmerged work already holds D1175-D1188: #261 records D1175 and reserves D1186-D1188; `claude/fernbrook-plaza` uses D1175-D1179; `claude/fernbrook-homes` uses D1179-D1185.
 - The design repo's highest id is D1159.
-- So this spec reserves **D1189-D1196**, and the next free id becomes D1197.
+- So this spec reserves **D1189-D1196**. POST_TRIAL_CRACKDOWN (same PR, #263) then reserved D1197-D1209, so **the next free id is D1210**.
 
 | Id | Colour | Call | Default |
 |---|---|---|---|
-| D1189 | **red** | Redesign `fb_hall_in` as a contested building: west half the old Keeper hall, east half resurfaced and branded by Glimmerwell, a seam down the middle, a "brought to you by" plaque beside the Keeper crest. This adds canon (Glimmerwell has physically renovated half of a Keeper Trial Hall) and is a rule 9 room redesign | Waits for Vincent's yes on the §10 previews. Nothing builds before |
-| D1190 | **red** | The Hall's look follows Fernbrook's hold after the pick (§7). If Glimmerwell holds the town, the Keeper crest is covered while Fen, a Keeper, still runs the Hall. This changes the Hall's role after Trial 1 | Props flip with the hold; Fen stays (D1170) |
+| D1189 | **red** | Redesign `fb_hall_in` as a contested building: west half the old Keeper hall, east half resurfaced and branded by Glimmerwell, a seam down the middle, a "brought to you by" plaque beside the Keeper crest. Adds canon (Glimmerwell has physically renovated half of a Keeper Trial Hall) and is a rule 9 room redesign | **SETTLED: yes** (Vincent, Mon Nov 2, 2026, 10:19 PM ET). Archived in `archive/DECISIONS_SETTLED.md` |
+| D1190 | **red** | The Hall's look follows Fernbrook's hold after the pick (§7). If Glimmerwell holds the town, the Keeper crest is covered while Fen, a Keeper, still runs the Hall | **SETTLED: yes**, the props flip and Fen stays (Vincent, Mon Nov 2, 2026, 10:19 PM ET). **Added by Vincent:** Fen's allegiance can change after the curfew event (POST_TRIAL_CRACKDOWN): she converts the way the holder does, and the crackdown gives her an obvious motive to be angry at the Keepers. It is tied to `story.fen_lean` from June's Seals lore. Archived |
 | D1191 | yellow | Add a `hold:<node>=<id>` condition term that reads `mapHold()`, or copy the hold rules into each prop's `when` | Add the term (one branch in `cond()`); the copied strings are the fallback and are what the previews used |
-| D1192 | **red** (naming) | The room is named "Bloom Trial Hall" inside (place chip, `fb_hall_note`, map blurb) and "FERNBROOK TRIAL HALL" on the outside sign | No change in this spec; Vincent picks one name |
+| D1192 | **red** (naming) | The room's name inside (place chip, `fb_hall_note`, map blurb) vs "FERNBROOK TRIAL HALL" on the outside sign | **SETTLED: "Fernbrook Trial Hall" everywhere** (Vincent, Mon Nov 2, 2026, 10:19 PM ET). The build renames the three inside spots (§13 row 2). Archived |
 | D1193 | yellow | Holder spots: neutral `h1_local` on the seam (8,20), challenger stays (12,12), Keeper cadet on the Keeper dais half (3,5) facing right | As §5.3 |
 | D1194 | green | The floor and ledges stay split after the pick; only props flip. A hold-based skin swap is out of scope | Yes |
 | D1195 | yellow | Glimmerwell's floor is a light polished grey with a soot/wine grid, not a soot field; red is accent only | Yes (contrast) |
