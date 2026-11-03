@@ -317,8 +317,10 @@ const PPSave = (() => {
       if (!bag || typeof bag !== 'object') return;
       if (Object.prototype.hasOwnProperty.call(bag, from) && !Object.prototype.hasOwnProperty.call(bag, to)) bag[to] = bag[from];
     };
-    copyIfAbsent(s.phoneBook.met, 'Marisol', 'Master Marisol');
-    copyIfAbsent(s.phoneBook.fav, 'Marisol', 'Master Marisol');
+    // NPC_RANKS (Nov 2, 2026): the same copy for every name rep.js REP_CANON folds. Keep this list in step with it.
+    const FOLD_KEYS = { Marisol: 'Master Marisol', Fen: 'Master Fen', Hale: 'Master Hale', Tobin: 'Associate Tobin',
+      Hollis: 'Associate Hollis', Quinn: 'Associate Quinn', Imogen: 'Field Lead Imogen' };
+    for (const [from, to] of Object.entries(FOLD_KEYS)) { copyIfAbsent(s.phoneBook.met, from, to); copyIfAbsent(s.phoneBook.fav, from, to); }
     // LIZZY_REP LR5 (D174, D175): sparse S.rep, additive, v stays 2. Non-strings and keys over 40 characters are
     // dropped, values clamp to 0..100, and fixed NPCs (Mom, Dad, Warden Ilse, Clerk Wynn) are not stored.
     // S.repJoins counts joins already applied so a reload never runs the penalty twice.
@@ -343,8 +345,8 @@ const PPSave = (() => {
         s.rep[key] = n;
       }
       // Same person as the phone fold above. Copy only. Leave a saved Marisol number in place.
-      if (Object.prototype.hasOwnProperty.call(s.rep, 'Marisol') && !Object.prototype.hasOwnProperty.call(s.rep, 'Master Marisol'))
-        s.rep['Master Marisol'] = s.rep['Marisol'];
+      for (const [from, to] of Object.entries(FOLD_KEYS))
+        if (Object.prototype.hasOwnProperty.call(s.rep, from) && !Object.prototype.hasOwnProperty.call(s.rep, to) && !fixedKeys.has(to)) s.rep[to] = s.rep[from];
     }
     fill(s, 'repJoins', x => Number.isInteger(x) && x >= 0, 0);
     // D439: ui.sideTracked stays a string (a side chain id, 'main', or 'none'; absent = not chosen, so the first active

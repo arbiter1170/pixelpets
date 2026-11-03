@@ -1312,6 +1312,7 @@ body.shop-meal #ovScene{visibility:hidden;pointer-events:none}
 #ovPhone .contact-name{max-width:100%;font-size:18px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #ovPhone .contact-place{font-size:13px;line-height:1.15;opacity:.8}
 #ovPhone .contact-quest{font-size:11px;letter-spacing:.6px;line-height:1.2;padding:0 4px}
+#ovPhone .contact-duty{font-size:11px;letter-spacing:.6px;line-height:1.2;opacity:.8;margin:0}   /* NPC_RANKS: Watch, Clerk... */
 #ovPhone .contact-star{flex:0 0 auto;min-width:44px;min-height:44px;margin:0;padding:0 8px}
 #ovPhone .contact-star[aria-pressed="true"]{background:#1d5c38;color:#f6e6c0}
 #ovPhone.hack .contact-star[aria-pressed="true"]{background:#9dffc0;color:#07140e}
@@ -1798,3 +1799,28 @@ body.mhc-frame.ctl-modern.scene-on:not(.gear-locked) .fc-dock #gearFloat{pointer
 .sc-echo{margin-top:4px;color:var(--s)}
 .sc-echo b{color:var(--w);font-weight:normal}
 #scStill{min-height:44px}
+/* SIDE_BADGE (Vincent, Nov 2, 2026): faction control inside the place chip. A 12 px pledge emblem after the hour, a 3 px hold
+   stripe along the chip's foot, and on arrival the hold word laid over the place line. No extra button, no extra box. */
+#thChip .th-l1 canvas.th-side{width:12px;height:12px;flex:0 0 12px;margin-left:2px}
+#thChip .th-stripe{position:absolute;left:2px;right:2px;bottom:1px;height:3px;background:var(--m);pointer-events:none}
+#thChip[data-hold="keepers"] .th-stripe{background:linear-gradient(90deg,var(--y) 0 50%,var(--g) 50% 100%)}
+#thChip[data-hold="glimmer"] .th-stripe{background:linear-gradient(90deg,var(--V) 0 50%,var(--h) 50% 100%)}
+#thChip[data-hold="split"] .th-stripe{background:linear-gradient(90deg,var(--y) 0 25%,var(--g) 25% 50%,var(--V) 50% 75%,var(--h) 75% 100%)}
+#thChip .th-hold{position:absolute;left:6px;right:4px;bottom:6px;height:12px;overflow:hidden;white-space:nowrap;text-overflow:clip;font-size:12px;line-height:12px;color:var(--h);background:var(--k);pointer-events:none}
+#thChip[data-hold="keepers"] .th-hold{color:var(--y)}
+#thChip[data-hold="glimmer"] .th-hold,#thChip[data-hold="split"] .th-hold{color:var(--w)}
+/* arcade: the chip's frame is drawn 8 px in (transparent border), so the word sits on the place line and the stripe just under the frame */
+body:not(.ctl-modern) #thChip .th-hold{bottom:1px;left:6px}
+body:not(.ctl-modern) #thChip .th-stripe{bottom:-6px;left:0;right:0}
+#envStanding{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin:8px 0 2px;padding:4px 8px;box-sizing:border-box;border:2px solid var(--d);background:var(--k);color:var(--w);text-align:left;font:inherit;cursor:pointer}
+#envStanding canvas{flex:0 0 24px;width:24px;height:24px;image-rendering:pixelated;image-rendering:crisp-edges}
+#envStanding .th-standing-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+#envStanding b{color:var(--y);font-size:14px;line-height:1.15;font-weight:normal}
+#envStanding .th-standing-t > span{font-size:13px;line-height:1.15;color:var(--h)}
+#envStanding:focus-visible{outline:3px solid var(--y);outline-offset:1px}
+.side-inner .side-rows{display:flex;flex-direction:column;gap:10px;margin:6px 0 10px}
+.side-row{display:flex;gap:10px;align-items:flex-start}
+.side-row .st-emblem{flex:0 0 32px;width:32px;height:32px;image-rendering:pixelated;image-rendering:crisp-edges}
+.side-row .side-name{display:block;color:var(--y);font-size:16px;line-height:1.2;font-weight:normal}
+.side-row[data-side="glimmer"] .side-name{color:var(--w)}
+.side-row .side-line{margin:2px 0 0;font-size:14px;line-height:1.25;color:var(--w)}
